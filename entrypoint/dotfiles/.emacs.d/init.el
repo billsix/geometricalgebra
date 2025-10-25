@@ -6,7 +6,7 @@
 ;; theme
 (load-theme 'modus-vivendi t)
 ;(load-theme 'material t)
-;(load-theme 'dracula t)
+(load-theme 'dracula t)
 ;(load-theme 'monokai t)
 ;(load-theme 'zenburn t)
 
@@ -39,7 +39,7 @@
 (setq lsp-auto-guess-root nil)
 
 (defun my-lsp-root (&rest _)
-  "/mvp/")
+  "/geometricalgebra/")
 
 (advice-add 'lsp--calculate-root :override #'my-lsp-root)
 

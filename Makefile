@@ -2,7 +2,12 @@
 
 CONTAINER_CMD = podman
 CONTAINER_NAME = geometricalgebra
-FILES_TO_MOUNT = -v $(shell pwd):/geometricalgebra/:Z
+
+FILES_TO_MOUNT = -v $(shell pwd):/geometricalgebra/:Z \
+		-v ./entrypoint/entrypoint.sh:/entrypoint.sh:Z \
+		-v ./entrypoint/format.sh:/format.sh:Z \
+		-v ./entrypoint/.bashrc:/root/.bashrc:Z
+
 
 
 .PHONY: all
