@@ -1,0 +1,2 @@
+cd /geometricalgebra/
+exec bash
