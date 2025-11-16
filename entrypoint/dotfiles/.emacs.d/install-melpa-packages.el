@@ -15,10 +15,7 @@
         avy
         which-key
         helm-xref
-        dape
-        dap-mode
         blacken
-        bookmark
         elpy
 
         material-theme

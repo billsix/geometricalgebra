@@ -8,13 +8,11 @@ FILES_TO_MOUNT = -v $(shell pwd):/geometricalgebra/:Z \
 		-v ./entrypoint/format.sh:/format.sh:Z \
 		-v ./entrypoint/.bashrc:/root/.bashrc:Z
 
-
-
 .PHONY: all
-all: clean image html ## Build the HTML and PDF from scratch in Debian Bulleye
+all: image shell ## Build the image and go into the shell
 
 .PHONY: image
-image: ## Build a podman image in which to build the book
+image: ## Build the OCI image
 	$(CONTAINER_CMD) build -t $(CONTAINER_NAME) .
 
 
