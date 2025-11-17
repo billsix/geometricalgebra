@@ -50,11 +50,6 @@ class MultiVector:
         return self * other
 
 
-x: MultiVector = MultiVector({(1,): 1})
-y: MultiVector = MultiVector({(2,): 1})
-z: MultiVector = MultiVector({(3,): 1})
-
-
 def sort_types(foo: tuple[int, ...], val):
     def s(foo: list[int, ...], val):
         current_val: int = foo[0]
@@ -85,3 +80,8 @@ def remove_same_components(foo: tuple[int, ...], val):
 
     foo_sorted, val = s(list(foo), val)
     return tuple(foo_sorted), val
+
+
+x: MultiVector = MultiVector({(1,): 1})
+y: MultiVector = MultiVector({(2,): 1})
+z: MultiVector = MultiVector({(3,): 1})
