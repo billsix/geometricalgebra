@@ -10,38 +10,28 @@ class MultiVector:
     components: dict[tuple[int, ...], typing.Any]
 
     def __add__(self, other):
-        combined_dict = {}
-        for key, value in self.components.items():
-            combined_dict[key] = value
-        for key, value in other.components.items():
-            if key in combined_dict:
-                combined_dict[key] += value
-            else:
-                combined_dict[key] = value
-            combined_dict[key] = sympy.simplify(combined_dict[key])
-        return MultiVector(components=combined_dict)
+        return MultiVector(
+            components={
+                k: self.components.get(k, 0) + other.components.get(k, 0)
+                for k in [*self.components.keys(), *other.components.keys()]
+            }
+        )
 
     def __mul__(self, other):
-        if self.components.keys() == tuple():
-            combined_dict = {}
-            for key, value in self.components.items():
-                combined_dict[key] = sympy.simplify(
-                    other * self.components[tuple()]
-                )
-            return MultiVector(components=combined_dict)
-        elif isinstance(other, numbers.Number) or isinstance(other, sympy.Expr):
-            combined_dict = {}
-            for key, value in self.components.items():
-                combined_dict[key] = sympy.simplify(other * value)
-            return MultiVector(components=combined_dict)
+        if isinstance(other, numbers.Number) or isinstance(other, sympy.Expr):
+            return MultiVector(
+                components={
+                    k: other * self.components[k]
+                    for k in self.components.keys()
+                }
+            )
         else:
             combined_dict = {}
             for key_left, value_left in self.components.items():
                 for key_right, value_right in other.components.items():
                     my_type, sign = sort_types(key_left + key_right, 1)
-                    existing_value_for_type = combined_dict.get(my_type, 0)
-                    combined_dict[my_type] = sympy.simplify(
-                        existing_value_for_type
+                    combined_dict[my_type] = (
+                        combined_dict.get(my_type, 0)
                         + sign * value_left * value_right
                     )
             return MultiVector(components=combined_dict)
