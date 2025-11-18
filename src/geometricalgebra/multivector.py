@@ -19,6 +19,7 @@
 import dataclasses
 import numbers
 import typing
+from functools import reduce
 
 import sympy
 
@@ -31,7 +32,7 @@ class MultiVector:
         return MultiVector(
             components={
                 k: self.components.get(k, 0) + other.components.get(k, 0)
-                for k in [*self.components.keys(), *other.components.keys()]
+                for k in self.components.keys() | other.components.keys()
             }
         )
 
@@ -44,18 +45,32 @@ class MultiVector:
                 }
             )
         else:
-            combined_dict = {}
-            for key_left, value_left in self.components.items():
-                for key_right, value_right in other.components.items():
-                    my_type, sign = sort_types(key_left + key_right, 1)
-                    combined_dict[my_type] = (
-                        combined_dict.get(my_type, 0)
-                        + sign * value_left * value_right
-                    )
-            return MultiVector(components=combined_dict)
+            return MultiVector(
+                components=sum_dicts(
+                    [
+                        {
+                            type(key_left + key_right): sign(
+                                key_left + key_right
+                            )
+                            * value_left
+                            * value_right
+                        }
+                        for key_left, value_left in self.components.items()
+                        for key_right, value_right in other.components.items()
+                    ]
+                )
+            )
 
     def __rmul__(self, other):
         return self * other
+
+
+def type(foo: tuple[int, ...]):
+    return sort_types(foo, 1)[0]
+
+
+def sign(foo: tuple[int, ...]):
+    return sort_types(foo, 1)[1]
 
 
 def sort_types(foo: tuple[int, ...], val):
@@ -88,6 +103,13 @@ def remove_same_components(foo: tuple[int, ...], val):
 
     foo_sorted, val = s(list(foo), val)
     return tuple(foo_sorted), val
+
+
+def sum_dicts(dicts):
+    def sum_2_dicts(a, b):
+        return {k: a.get(k, 0) + b.get(k, 0) for k in a.keys() | b.keys()}
+
+    return reduce(sum_2_dicts, dicts, {})
 
 
 x: MultiVector = MultiVector({(1,): 1})
