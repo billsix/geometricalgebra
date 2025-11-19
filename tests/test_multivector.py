@@ -53,11 +53,11 @@ def test_multivector_absolute_units():
 
     # test permutations
     assert (x * y * z) == mv.MultiVector({(1, 2, 3): 1})
-    assert (x * z * y) == mv.MultiVector({(1, 2, 3): -1})
-    assert (z * x * y) == mv.MultiVector({(1, 2, 3): 1})
-    assert (z * y * x) == mv.MultiVector({(1, 2, 3): -1})
-    assert (y * x * z) == mv.MultiVector({(1, 2, 3): -1})
-    assert (y * z * x) == mv.MultiVector({(1, 2, 3): 1})
+    assert (x * z * y) == -(x * y * z)
+    assert (z * x * y) == (x * y * z)
+    assert (z * y * x) == -(x * y * z)
+    assert (y * x * z) == -(x * y * z)
+    assert (y * z * x) == (x * y * z)
 
 
 def test_multivector_mult():

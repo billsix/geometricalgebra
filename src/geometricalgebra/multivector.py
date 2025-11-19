@@ -68,6 +68,9 @@ class MultiVector:
     def __rmul__(self, other):
         return self * other
 
+    def __neg__(self):
+        return -1 * self
+
 
 def type(foo: tuple[int, ...]):
     return sort_types(foo, 1)[0]
