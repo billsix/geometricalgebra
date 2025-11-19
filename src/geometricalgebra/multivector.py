@@ -71,36 +71,23 @@ def sign(foo: tuple[int, ...]):
     return sort_types(foo, 1)[1]
 
 
-def sort_types(foo: tuple[int, ...], val):
-    def s(foo: list[int], val):
-        current_val: int = foo[0]
-        for i in range(1, len(foo)):
-            if foo[i] < current_val:
-                return s(
-                    foo[: i - 1] + [foo[i]] + [foo[i - 1]] + foo[i + 1 :], -val
-                )
-            else:
-                current_val = foo[i]
-        return foo, val
+def sort_types(tuple_items: tuple[int, ...], val):
+    def sort(items: list[int], value):
+        match items:
+            case []:
+                return items, value
+            case [single]:
+                return items, value
+            case [a, b, *rest] if a == b:
+                return sort(rest, value)
+            case [a, b, *rest] if a > b:
+                return sort([b, a] + rest, -value)
+            case [a, *rest]:
+                tail, new_val = sort(rest, value)
+                return [a] + tail, new_val
 
-    foo_sorted, val = s(list(foo), val)
-    return remove_same_components(tuple(foo_sorted), val)
-
-
-def remove_same_components(foo: tuple[int, ...], val):
-    def s(foo: list[int], val):
-        if foo == list():
-            return foo, val
-        current_val: int = foo[0]
-        for i in range(1, len(foo)):
-            if foo[i] == current_val:
-                return s(foo[: i - 1] + foo[i + 1 :], val)
-            else:
-                current_val = foo[i]
-        return foo, val
-
-    foo_sorted, val = s(list(foo), val)
-    return tuple(foo_sorted), val
+    sorted_list, new_val = sort(list(tuple_items), val)
+    return tuple(sorted_list), new_val
 
 
 def sum_dicts(dicts):
