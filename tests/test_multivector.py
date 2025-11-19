@@ -75,3 +75,54 @@ def test_multivector_mult():
     assert vec1 * vec2 == mv.MultiVector(
         {(): a_x * b_x + a_y * b_y, (1, 2): a_x * b_y - a_y * b_x}
     )
+
+
+def test_multivector_grade():
+    a: mv.MultiVector = 3 * mv.x + 4 * mv.y
+    assert a.r_vector_part(0) == mv.zero
+    assert a.scalar_part() == mv.zero
+    assert a.max_grade() == 1
+
+    b: mv.MultiVector = 3 * mv.x + 4 * mv.y
+
+    assert (b * b).scalar_part() == mv.MultiVector({(): 25})
+    assert (b * b).r_vector_part(1) == mv.zero
+    assert (b * b).r_vector_part(2) == mv.zero
+    assert (b * b).max_grade() == 0
+
+    c: mv.MultiVector = -4 * mv.x + 3 * mv.y
+    assert (b * c).scalar_part() == mv.zero
+    assert (b * c).r_vector_part(1) == mv.zero
+    assert (b * c).r_vector_part(2) == 25 * mv.x * mv.y
+    assert (b * c).max_grade() == 2
+
+    i3: mv.MultiVector = mv.x * mv.y * mv.z
+    assert i3.scalar_part() == mv.zero
+    assert i3.r_vector_part(1) == mv.zero
+    assert i3.r_vector_part(2) == mv.zero
+    assert i3.r_vector_part(3) == i3
+    assert i3.max_grade() == 3
+
+
+def test_multivector_dot():
+    a: mv.MultiVector = 3 * mv.x + 4 * mv.y
+    assert a.dot(a) == mv.MultiVector({tuple(): 25})
+    c: mv.MultiVector = -4 * mv.x + 3 * mv.y
+    assert a.dot(c) == mv.zero
+
+    a_x, a_y, b_x, b_y = sympy.symbols("a_x a_y b_x b_y")
+    vec1: mv.MultiVector = a_x * mv.x + a_y * mv.y
+    vec2: mv.MultiVector = b_x * mv.x + b_y * mv.y
+    assert vec1.dot(vec2) == mv.MultiVector({(): a_x * b_x + a_y * b_y})
+
+
+def test_multivector_wedge():
+    a: mv.MultiVector = 3 * mv.x + 4 * mv.y
+    assert a.wedge(a) == mv.zero
+    c: mv.MultiVector = -4 * mv.x + 3 * mv.y
+    assert a.wedge(c) == 25 * mv.x * mv.y
+
+    a_x, a_y, b_x, b_y = sympy.symbols("a_x a_y b_x b_y")
+    vec1: mv.MultiVector = a_x * mv.x + a_y * mv.y
+    vec2: mv.MultiVector = b_x * mv.x + b_y * mv.y
+    assert vec1.wedge(vec2) == mv.MultiVector({(1, 2): a_x * b_y - a_y * b_x})

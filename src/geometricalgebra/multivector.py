@@ -29,6 +29,16 @@ import sympy
 class MultiVector:
     components: dict[tuple[int, ...], typing.Any]
 
+    def __post_init__(self):
+        # prune zero components
+        self.components = {
+            k: self.components[k]
+            for k in self.components.keys()
+            if self.components[k] != 0
+        }
+        # excepty for scalar
+        self.components = sum_dicts([self.components, {tuple(): 0}])
+
     def __add__(self, other):
         return MultiVector(
             components={
@@ -64,6 +74,47 @@ class MultiVector:
                         ]
                     )
                 )
+
+    def dot(self, other):
+        return sum(
+            [
+                (self.r_vector_part(x) * other.r_vector_part(y)).r_vector_part(
+                    abs(x - y)
+                )
+                for x, y in itertools.product(
+                    range(self.max_grade() + 1), range(other.max_grade() + 1)
+                )
+            ],
+            start=zero,
+        )
+
+    def wedge(self, other):
+        return sum(
+            [
+                (self.r_vector_part(x) * other.r_vector_part(y)).r_vector_part(
+                    x + y
+                )
+                for x, y in itertools.product(
+                    range(self.max_grade() + 1), range(other.max_grade() + 1)
+                )
+            ],
+            start=zero,
+        )
+
+    def r_vector_part(self, r):
+        return MultiVector(
+            components={
+                k: self.components[k]
+                for k in self.components.keys()
+                if len(k) == r
+            }
+        )
+
+    def scalar_part(self):
+        return self.r_vector_part(r=0)
+
+    def max_grade(self):
+        return max([len(k) for k in self.components.keys()])
 
     def __rmul__(self, other):
         return self * other
@@ -119,3 +170,4 @@ def sum_dicts(dicts):
 x: MultiVector = MultiVector({(1,): 1})
 y: MultiVector = MultiVector({(2,): 1})
 z: MultiVector = MultiVector({(3,): 1})
+zero: MultiVector = MultiVector({tuple(): 0})
