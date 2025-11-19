@@ -37,29 +37,27 @@ class MultiVector:
         )
 
     def __mul__(self, other):
-        if isinstance(other, numbers.Number) or isinstance(other, sympy.Expr):
-            return MultiVector(
-                components={
-                    k: other * self.components[k]
-                    for k in self.components.keys()
-                }
-            )
-        else:
-            return MultiVector(
-                components=sum_dicts(
-                    [
-                        {
-                            type(key_left + key_right): sign(
-                                key_left + key_right
-                            )
-                            * value_left
-                            * value_right
-                        }
-                        for key_left, value_left in self.components.items()
-                        for key_right, value_right in other.components.items()
-                    ]
+        match other:
+            case numbers.Number() as n:
+                return self * MultiVector({tuple(): n})
+            case sympy.Expr() as s:
+                return self * MultiVector({tuple(): s})
+            case _:
+                return MultiVector(
+                    components=sum_dicts(
+                        [
+                            {
+                                type(key_left + key_right): sign(
+                                    key_left + key_right
+                                )
+                                * value_left
+                                * value_right
+                            }
+                            for key_left, value_left in self.components.items()
+                            for key_right, value_right in other.components.items()
+                        ]
+                    )
                 )
-            )
 
     def __rmul__(self, other):
         return self * other
