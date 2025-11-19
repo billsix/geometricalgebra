@@ -17,9 +17,10 @@
 
 
 import dataclasses
+import functools
+import itertools
 import numbers
 import typing
-from functools import reduce
 
 import sympy
 
@@ -53,8 +54,13 @@ class MultiVector:
                                 * value_left
                                 * value_right
                             }
-                            for key_left, value_left in self.components.items()
-                            for key_right, value_right in other.components.items()
+                            for (key_left, value_left), (
+                                key_right,
+                                value_right,
+                            ) in itertools.product(
+                                self.components.items(),
+                                other.components.items(),
+                            )
                         ]
                     )
                 )
@@ -94,7 +100,7 @@ def sum_dicts(dicts):
     def sum_2_dicts(a, b):
         return {k: a.get(k, 0) + b.get(k, 0) for k in a.keys() | b.keys()}
 
-    return reduce(sum_2_dicts, dicts, {})
+    return functools.reduce(sum_2_dicts, dicts, {})
 
 
 x: MultiVector = MultiVector({(1,): 1})
