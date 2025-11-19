@@ -72,7 +72,7 @@ def sign(foo: tuple[int, ...]):
 
 
 def sort_types(foo: tuple[int, ...], val):
-    def s(foo: list[int, ...], val):
+    def s(foo: list[int], val):
         current_val: int = foo[0]
         for i in range(1, len(foo)):
             if foo[i] < current_val:
@@ -88,7 +88,7 @@ def sort_types(foo: tuple[int, ...], val):
 
 
 def remove_same_components(foo: tuple[int, ...], val):
-    def s(foo: list[int, ...], val):
+    def s(foo: list[int], val):
         if foo == list():
             return foo, val
         current_val: int = foo[0]
