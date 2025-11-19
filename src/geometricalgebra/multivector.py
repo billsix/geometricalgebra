@@ -90,7 +90,17 @@ def sort_types(tuple_items: tuple[int, ...], val):
                 return sort([b, a] + rest, -value)
             case [a, *rest]:
                 tail, new_val = sort(rest, value)
-                return [a] + tail, new_val
+                match tail:
+                    case []:
+                        return [a], new_val
+                    case [single]:
+                        return [a, single], new_val
+                    case [first, *rest] if a == first:
+                        return sort(rest, new_val)
+                    case [first, *rest] if a > first:
+                        return sort([first, a] + rest, -new_val)
+                    case _:
+                        return [a] + tail, new_val
 
     sorted_list, new_val = sort(list(tuple_items), val)
     return tuple(sorted_list), new_val

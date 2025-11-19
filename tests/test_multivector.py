@@ -37,16 +37,27 @@ def test_multivector_absolute_units():
     z: mv.MultiVector = mv.z
     assert z == mv.MultiVector({(3,): 1})
 
+    # test addition
     assert x + y == mv.MultiVector({(1,): 1, (2,): 1})
     assert x + z == mv.MultiVector({(1,): 1, (3,): 1})
     assert y + z == mv.MultiVector({(2,): 1, (3,): 1})
 
+    # test scalar multiplication
     assert x * 2 == mv.MultiVector({(1,): 2})
     assert 2 * x == mv.MultiVector({(1,): 2})
     assert y * 2 == mv.MultiVector({(2,): 2})
     assert z * 2 == mv.MultiVector({(3,): 2})
 
+    # test addition on relative units
     assert (x + y) * 2 == mv.MultiVector({(1,): 2, (2,): 2})
+
+    # test permutations
+    assert (x * y * z) == mv.MultiVector({(1, 2, 3): 1})
+    assert (x * z * y) == mv.MultiVector({(1, 2, 3): -1})
+    assert (z * x * y) == mv.MultiVector({(1, 2, 3): 1})
+    assert (z * y * x) == mv.MultiVector({(1, 2, 3): -1})
+    assert (y * x * z) == mv.MultiVector({(1, 2, 3): -1})
+    assert (y * z * x) == mv.MultiVector({(1, 2, 3): 1})
 
 
 def test_multivector_mult():
