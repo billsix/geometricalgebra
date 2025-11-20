@@ -12,6 +12,8 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
                    python3-sympy \
                    python3-pytest \
                    ruff \
+                   emacs-gtk+x11 \
+                   emacs-pgtk \
                    tmux && \
      # clean out dnf \
      dnf clean all && \

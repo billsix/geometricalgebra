@@ -8,6 +8,15 @@ FILES_TO_MOUNT = -v $(shell pwd):/geometricalgebra/:Z \
 		-v ./entrypoint/format.sh:/format.sh:Z \
 		-v ./entrypoint/.bashrc:/root/.bashrc:Z
 
+
+X_FLAGS_FOR_CONTAINER = -e DISPLAY=$(DISPLAY) \
+	-v /tmp/.X11-unix:/tmp/.X11-unix \
+	--security-opt label=type:container_runtime_t
+
+WAYLAND_FLAGS_FOR_CONTAINER = -e "WAYLAND_DISPLAY=${WAYLAND_DISPLAY}" \
+                              -e "XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}" \
+                              -v "${XDG_RUNTIME_DIR}:${XDG_RUNTIME_DIR}"
+
 .PHONY: all
 all: image shell ## Build the image and go into the shell
 
@@ -22,7 +31,8 @@ shell:  ## Get Shell into a ephermeral container made from the image
 		--entrypoint /bin/bash \
 		$(FILES_TO_MOUNT) \
 		-v ./entrypoint/shell.sh:/shell.sh:Z \
-		$(USE_X) \
+		$(X_FLAGS_FOR_CONTAINER) \
+		$(WAYLAND_FLAGS_FOR_CONTAINER) \
 		$(CONTAINER_NAME) \
 		/shell.sh
 
