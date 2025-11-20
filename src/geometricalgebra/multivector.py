@@ -27,23 +27,28 @@ import sympy
 
 @dataclasses.dataclass
 class MultiVector:
-    components: dict[tuple[int, ...], typing.Any]
+    blades: dict[tuple[int, ...], typing.Any]
+
+    @staticmethod
+    def sum_dicts(dicts):
+        def sum_2_dicts(a, b):
+            return {k: a.get(k, 0) + b.get(k, 0) for k in a.keys() | b.keys()}
+
+        return functools.reduce(sum_2_dicts, dicts, {})
 
     def __post_init__(self):
-        # prune zero components
-        self.components = {
-            k: self.components[k]
-            for k in self.components.keys()
-            if self.components[k] != 0
+        # prune zero blades
+        self.blades = {
+            k: self.blades[k] for k in self.blades.keys() if self.blades[k] != 0
         }
         # excepty for scalar
-        self.components = sum_dicts([self.components, {tuple(): 0}])
+        self.blades = MultiVector.sum_dicts([self.blades, {tuple(): 0}])
 
     def __add__(self, other):
         return MultiVector(
-            components={
-                k: self.components.get(k, 0) + other.components.get(k, 0)
-                for k in self.components.keys() | other.components.keys()
+            blades={
+                k: self.blades.get(k, 0) + other.blades.get(k, 0)
+                for k in self.blades.keys() | other.blades.keys()
             }
         )
 
@@ -54,26 +59,57 @@ class MultiVector:
             case sympy.Expr() as s:
                 return self * MultiVector({tuple(): s})
             case _:
+
+                def mult_blades(tuple_items: tuple[int, ...], val):
+                    def canonicalize(items: list[int], value):
+                        match items:
+                            case []:
+                                return [], value
+                            case [a]:
+                                return [a], value
+                            case [a, b, *rest] if a == b:
+                                return canonicalize(rest, value)
+                            case [a, b, *rest] if a > b:
+                                return canonicalize([b, a] + rest, -value)
+                            case [a, *rest]:
+                                sorted_rest, new_val = canonicalize(rest, value)
+                                match sorted_rest:
+                                    case [b, *rest] if a == b:
+                                        return canonicalize(
+                                            [a, b] + rest, new_val
+                                        )
+                                    case [b, *rest] if a > b:
+                                        return canonicalize(
+                                            [b, a] + rest, -new_val
+                                        )
+                                    case _:
+                                        return [a] + sorted_rest, new_val
+
+                    sorted_list, new_val = canonicalize(list(tuple_items), val)
+                    return {tuple(sorted_list): new_val}
+
                 return MultiVector(
-                    components=sum_dicts(
+                    blades=MultiVector.sum_dicts(
                         [
-                            {
-                                type(key_left + key_right): sign(
-                                    key_left + key_right
-                                )
-                                * value_left
-                                * value_right
-                            }
+                            mult_blades(
+                                key_left + key_right, value_left * value_right
+                            )
                             for (key_left, value_left), (
                                 key_right,
                                 value_right,
                             ) in itertools.product(
-                                self.components.items(),
-                                other.components.items(),
+                                self.blades.items(),
+                                other.blades.items(),
                             )
                         ]
                     )
                 )
+
+    def __rmul__(self, other):
+        return self * other
+
+    def __neg__(self):
+        return -1 * self
 
     def dot(self, other):
         return sum(
@@ -81,9 +117,7 @@ class MultiVector:
                 (self.r_vector_part(x) * other.r_vector_part(y)).r_vector_part(
                     abs(x - y)
                 )
-                for x, y in itertools.product(
-                    range(self.max_grade() + 1), range(other.max_grade() + 1)
-                )
+                for x, y in itertools.product(self.grades(), other.grades())
             ],
             start=zero,
         )
@@ -94,77 +128,26 @@ class MultiVector:
                 (self.r_vector_part(x) * other.r_vector_part(y)).r_vector_part(
                     x + y
                 )
-                for x, y in itertools.product(
-                    range(self.max_grade() + 1), range(other.max_grade() + 1)
-                )
+                for x, y in itertools.product(self.grades(), other.grades())
             ],
             start=zero,
         )
 
     def r_vector_part(self, r):
         return MultiVector(
-            components={
-                k: self.components[k]
-                for k in self.components.keys()
-                if len(k) == r
+            blades={
+                k: self.blades[k] for k in self.blades.keys() if len(k) == r
             }
         )
 
     def scalar_part(self):
         return self.r_vector_part(r=0)
 
+    def grades(self):
+        return list(set(len(k) for k in self.blades.keys()))
+
     def max_grade(self):
-        return max([len(k) for k in self.components.keys()])
-
-    def __rmul__(self, other):
-        return self * other
-
-    def __neg__(self):
-        return -1 * self
-
-
-def type(foo: tuple[int, ...]):
-    return sort_types(foo, 1)[0]
-
-
-def sign(foo: tuple[int, ...]):
-    return sort_types(foo, 1)[1]
-
-
-def sort_types(tuple_items: tuple[int, ...], val):
-    def sort(items: list[int], value):
-        match items:
-            case []:
-                return items, value
-            case [single]:
-                return items, value
-            case [a, b, *rest] if a == b:
-                return sort(rest, value)
-            case [a, b, *rest] if a > b:
-                return sort([b, a] + rest, -value)
-            case [a, *rest]:
-                tail, new_val = sort(rest, value)
-                match tail:
-                    case []:
-                        return [a], new_val
-                    case [single]:
-                        return [a, single], new_val
-                    case [first, *rest] if a == first:
-                        return sort(rest, new_val)
-                    case [first, *rest] if a > first:
-                        return sort([first, a] + rest, -new_val)
-                    case _:
-                        return [a] + tail, new_val
-
-    sorted_list, new_val = sort(list(tuple_items), val)
-    return tuple(sorted_list), new_val
-
-
-def sum_dicts(dicts):
-    def sum_2_dicts(a, b):
-        return {k: a.get(k, 0) + b.get(k, 0) for k in a.keys() | b.keys()}
-
-    return functools.reduce(sum_2_dicts, dicts, {})
+        return max(self.grades())
 
 
 x: MultiVector = MultiVector({(1,): 1})
