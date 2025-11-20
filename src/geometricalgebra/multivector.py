@@ -66,28 +66,28 @@ class MultiVector:
         )
 
     def __mul__(self, rhs):
-        def mult_blade(items: list[int], value):
+        def mult_blade_list(items: list[int], value):
             match items:
                 case []:
                     return [], value
                 case [a]:
                     return [a], value
                 case [a, b, *rest] if a == b:
-                    return mult_blade(rest, value)
+                    return mult_blade_list(rest, value)
                 case [a, b, *rest] if a > b:
-                    return mult_blade([b, a, *rest], -value)
+                    return mult_blade_list([b, a, *rest], -value)
                 case [a, *rest]:
-                    sorted_rest, new_val = mult_blade(rest, value)
+                    sorted_rest, new_val = mult_blade_list(rest, value)
                     match sorted_rest:
                         case [b, *rest] if a == b:
-                            return mult_blade([a, b, *rest], new_val)
+                            return mult_blade_list([a, b, *rest], new_val)
                         case [b, *rest] if a > b:
-                            return mult_blade([b, a, *rest], -new_val)
+                            return mult_blade_list([b, a, *rest], -new_val)
                         case _:
                             return [a, *sorted_rest], new_val
 
-        def mult_scalar_from_blade(items: tuple[int], value):
-            sorted_list, new_val = mult_blade(list(items), value)
+        def mult_blade(items: tuple[int], value):
+            sorted_list, new_val = mult_blade_list(list(items), value)
             return {tuple(sorted_list): new_val}
 
         match rhs:
@@ -99,7 +99,7 @@ class MultiVector:
                 return MultiVector(
                     scalar_from_blade=MultiVector.sum_dicts(
                         [
-                            mult_scalar_from_blade(
+                            mult_blade(
                                 [*blade_left, *blade_right],
                                 scalar_left * scalar_right,
                             )
