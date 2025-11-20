@@ -5,6 +5,7 @@ authors = [{name="William Emerison Six", email="billsix@gmail.com"}]
 description = "Geometric Algebra"
 
 dependencies = [
+    "sympy",
 ]
 
 [build-system]
