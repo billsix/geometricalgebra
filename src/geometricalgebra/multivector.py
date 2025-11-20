@@ -27,116 +27,123 @@ import sympy
 
 @dataclasses.dataclass
 class MultiVector:
-    blades: dict[tuple[int, ...], typing.Any]
+    scalar_from_blade: dict[tuple[int, ...], typing.Any]
+
+    def __post_init__(self):
+        # prune zero scalar_from_blade
+        self.scalar_from_blade = {
+            blade: self.scalar_from_blade[blade]
+            for blade in self.scalar_from_blade.keys()
+            if self.scalar_from_blade[blade] != 0
+        }
+        # excepty for scalar
+        self.scalar_from_blade = MultiVector.sum_dicts([self.scalar_from_blade, {tuple(): 0}])
+
+    @staticmethod
+    def from_scalar(scalar: numbers.Number):
+        return MultiVector({tuple(): scalar})
+
+    @staticmethod
+    def from_sympy_expr(s: sympy.Expr):
+        return MultiVector({tuple(): s})
 
     @staticmethod
     def sum_dicts(dicts):
-        def sum_2_dicts(a, b):
-            return {k: a.get(k, 0) + b.get(k, 0) for k in a.keys() | b.keys()}
+        def sum_2_dicts(dict1, dict2):
+            return {
+                blade: dict1.get(blade, 0) + dict2.get(blade, 0)
+                for blade in dict1.keys() | dict2.keys()
+            }
 
         return functools.reduce(sum_2_dicts, dicts, {})
 
-    def __post_init__(self):
-        # prune zero blades
-        self.blades = {
-            k: self.blades[k] for k in self.blades.keys() if self.blades[k] != 0
-        }
-        # excepty for scalar
-        self.blades = MultiVector.sum_dicts([self.blades, {tuple(): 0}])
-
-    def __add__(self, other):
+    def __add__(self, rhs):
         return MultiVector(
-            blades={
-                k: self.blades.get(k, 0) + other.blades.get(k, 0)
-                for k in self.blades.keys() | other.blades.keys()
+            scalar_from_blade={
+                blade: self.scalar_from_blade.get(blade, 0) + rhs.scalar_from_blade.get(blade, 0)
+                for blade in self.scalar_from_blade.keys() | rhs.scalar_from_blade.keys()
             }
         )
 
-    def __mul__(self, other):
-        match other:
+    def __mul__(self, rhs):
+        def mult_blade(items: list[int], value):
+            match items:
+                case []:
+                    return [], value
+                case [a]:
+                    return [a], value
+                case [a, b, *rest] if a == b:
+                    return mult_blade(rest, value)
+                case [a, b, *rest] if a > b:
+                    return mult_blade([b, a, *rest], -value)
+                case [a, *rest]:
+                    sorted_rest, new_val = mult_blade(rest, value)
+                    match sorted_rest:
+                        case [b, *rest] if a == b:
+                            return mult_blade([a, b, *rest], new_val)
+                        case [b, *rest] if a > b:
+                            return mult_blade([b, a, *rest], -new_val)
+                        case _:
+                            return [a, *sorted_rest], new_val
+
+        def mult_scalar_from_blade(items: tuple[int], value):
+            sorted_list, new_val = mult_blade(list(items), value)
+            return {tuple(sorted_list): new_val}
+
+        match rhs:
             case numbers.Number() as n:
-                return self * MultiVector({tuple(): n})
+                return self * MultiVector.from_scalar(n)
             case sympy.Expr() as s:
-                return self * MultiVector({tuple(): s})
+                return self * MultiVector.from_sympy_expr(s)
             case _:
-
-                def mult_blades(tuple_items: tuple[int, ...], val):
-                    def canonicalize(items: list[int], value):
-                        match items:
-                            case []:
-                                return [], value
-                            case [a]:
-                                return [a], value
-                            case [a, b, *rest] if a == b:
-                                return canonicalize(rest, value)
-                            case [a, b, *rest] if a > b:
-                                return canonicalize([b, a] + rest, -value)
-                            case [a, *rest]:
-                                sorted_rest, new_val = canonicalize(rest, value)
-                                match sorted_rest:
-                                    case [b, *rest] if a == b:
-                                        return canonicalize(
-                                            [a, b] + rest, new_val
-                                        )
-                                    case [b, *rest] if a > b:
-                                        return canonicalize(
-                                            [b, a] + rest, -new_val
-                                        )
-                                    case _:
-                                        return [a] + sorted_rest, new_val
-
-                    sorted_list, new_val = canonicalize(list(tuple_items), val)
-                    return {tuple(sorted_list): new_val}
-
                 return MultiVector(
-                    blades=MultiVector.sum_dicts(
+                    scalar_from_blade=MultiVector.sum_dicts(
                         [
-                            mult_blades(
-                                key_left + key_right, value_left * value_right
+                            mult_scalar_from_blade(
+                                [*blade_left, *blade_right],
+                                scalar_left * scalar_right,
                             )
-                            for (key_left, value_left), (
-                                key_right,
-                                value_right,
+                            for (blade_left, scalar_left), (
+                                blade_right,
+                                scalar_right,
                             ) in itertools.product(
-                                self.blades.items(),
-                                other.blades.items(),
+                                self.scalar_from_blade.items(),
+                                rhs.scalar_from_blade.items(),
                             )
                         ]
                     )
                 )
 
-    def __rmul__(self, other):
-        return self * other
+    def __rmul__(self, lhs):
+        return self * lhs
 
     def __neg__(self):
         return -1 * self
 
-    def dot(self, other):
+    def dot(self, rhs):
         return sum(
             [
-                (self.r_vector_part(x) * other.r_vector_part(y)).r_vector_part(
-                    abs(x - y)
-                )
-                for x, y in itertools.product(self.grades(), other.grades())
+                (self.r_vector_part(x) * rhs.r_vector_part(y)).r_vector_part(abs(x - y))
+                for x, y in itertools.product(self.grades(), rhs.grades())
             ],
             start=zero,
         )
 
-    def wedge(self, other):
+    def wedge(self, rhs):
         return sum(
             [
-                (self.r_vector_part(x) * other.r_vector_part(y)).r_vector_part(
-                    x + y
-                )
-                for x, y in itertools.product(self.grades(), other.grades())
+                (self.r_vector_part(x) * rhs.r_vector_part(y)).r_vector_part(x + y)
+                for x, y in itertools.product(self.grades(), rhs.grades())
             ],
             start=zero,
         )
 
     def r_vector_part(self, r):
         return MultiVector(
-            blades={
-                k: self.blades[k] for k in self.blades.keys() if len(k) == r
+            scalar_from_blade={
+                blade: self.scalar_from_blade[blade]
+                for blade in self.scalar_from_blade.keys()
+                if len(blade) == r
             }
         )
 
@@ -144,7 +151,7 @@ class MultiVector:
         return self.r_vector_part(r=0)
 
     def grades(self):
-        return list(set(len(k) for k in self.blades.keys()))
+        return list(set(len(blade) for blade in self.scalar_from_blade.keys()))
 
     def max_grade(self):
         return max(self.grades())
@@ -153,4 +160,5 @@ class MultiVector:
 x: MultiVector = MultiVector({(1,): 1})
 y: MultiVector = MultiVector({(2,): 1})
 z: MultiVector = MultiVector({(3,): 1})
-zero: MultiVector = MultiVector({tuple(): 0})
+zero: MultiVector = MultiVector.from_scalar(0)
+one: MultiVector = MultiVector.from_scalar(1)
