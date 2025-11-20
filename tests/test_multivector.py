@@ -21,7 +21,7 @@ import sympy
 import geometricalgebra.multivector as mv
 
 
-def test_multivector_add():
+def test_multivector_add() -> None:
     a = mv.MultiVector({(4, 2): 5, (2, 1): 6})
     b = mv.MultiVector({(1,): 5, (2,): 6})
     c = mv.MultiVector({(1,): 7, (2,): 8})
@@ -29,7 +29,7 @@ def test_multivector_add():
     assert b + c == mv.MultiVector({(1,): 12, (2,): 14})
 
 
-def test_multivector_absolute_units():
+def test_multivector_absolute_units() -> None:
     x: mv.MultiVector = mv.x
     assert x == mv.MultiVector({(1,): 1})
     y: mv.MultiVector = mv.y
@@ -60,7 +60,7 @@ def test_multivector_absolute_units():
     assert (y * z * x) == (x * y * z)
 
 
-def test_multivector_mult():
+def test_multivector_mult() -> None:
     a = 3 * mv.x + 4 * mv.y
 
     assert a * a == mv.MultiVector({(): 25, (1, 2): 0})
@@ -77,7 +77,7 @@ def test_multivector_mult():
     )
 
 
-def test_multivector_grade():
+def test_multivector_grade() -> None:
     a: mv.MultiVector = 3 * mv.x + 4 * mv.y
     assert a.r_vector_part(0) == mv.zero
     assert a.scalar_part() == mv.zero
@@ -104,7 +104,7 @@ def test_multivector_grade():
     assert i3.max_grade() == 3
 
 
-def test_multivector_dot():
+def test_multivector_dot() -> None:
     a: mv.MultiVector = 3 * mv.x + 4 * mv.y
     assert a.dot(a) == mv.MultiVector({tuple(): 25})
     c: mv.MultiVector = -4 * mv.x + 3 * mv.y
@@ -116,7 +116,7 @@ def test_multivector_dot():
     assert vec1.dot(vec2) == mv.MultiVector({(): a_x * b_x + a_y * b_y})
 
 
-def test_multivector_wedge():
+def test_multivector_wedge() -> None:
     a: mv.MultiVector = 3 * mv.x + 4 * mv.y
     assert a.wedge(a) == mv.zero
     c: mv.MultiVector = -4 * mv.x + 3 * mv.y
