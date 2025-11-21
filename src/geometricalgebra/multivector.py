@@ -138,7 +138,7 @@ class MultiVector:
             start=zero,
         )
 
-    def r_vector_part(self, r):
+    def r_vector_part(self, r) -> 'MultiVector':
         return MultiVector(
             scalar_from_blade={
                 blade: self.scalar_from_blade[blade]
@@ -147,14 +147,27 @@ class MultiVector:
             }
         )
 
-    def scalar_part(self):
+    def scalar_part(self) -> 'MultiVector':
         return self.r_vector_part(r=0)
 
-    def grades(self):
+    def grades(self) -> list[int]:
         return list(set(len(blade) for blade in self.scalar_from_blade.keys()))
 
-    def max_grade(self):
+    def max_grade(self) -> int:
         return max(self.grades())
+
+    def reverse(self) -> 'MultiVector':
+        """
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 5
+        """
+        return sum(
+            [
+                -1**(g*(g-1)/2) * self.r_vector_part(x)
+                for x in self.grades()
+            ],
+            start=zero,
+        )
+
 
 
 x: MultiVector = MultiVector({(1,): 1})
