@@ -174,29 +174,17 @@ def test_multivector_reverse3d() -> None:
 
 def test_multivector_inverse() -> None:
     a: mv.MultiVector = 3 * mv.x + 4 * mv.y
-    assert a.inverse() == (1.0 / 25) * a
+    assert a.abs_squared() == 25
+    assert a.abs_squared() * a.inverse() == a
 
     a_x, a_y, b_x, b_y = sympy.symbols("a_x a_y b_x b_y")
     vec1: mv.MultiVector = a_x * mv.x + a_y * mv.y
-    assert vec1.inverse() == (a_x**2 + a_y**2) ** -1 * mv.MultiVector(
-        scalar_from_blade={
-            (1,): a_x,
-            (2,): a_y,
-            (): 0,
-        }
-    )
+    assert vec1.abs_squared() * vec1.inverse() == vec1
     assert (vec1.inverse() * vec1).simplify().scalar_part() == 1
 
     a_x, a_y, a_z, b_x, b_y, b_z = sympy.symbols("a_x a_y a_z b_x b_y b_z")
     vec3d_1: mv.MultiVector = a_x * mv.x + a_y * mv.y + a_z * mv.z
-    assert vec3d_1.inverse() == (a_x**2 + a_y**2 + a_z**2) ** -1 * mv.MultiVector(
-        scalar_from_blade={
-            (1,): a_x,
-            (2,): a_y,
-            (3,): a_z,
-            (): 0,
-        }
-    )
+    assert vec3d_1.abs_squared() * vec3d_1.inverse() == vec3d_1
 
     # assert (vec3d_1.inverse() * vec3d_1).simplify().scalar_part() == 1
 

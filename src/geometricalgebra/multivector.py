@@ -121,6 +121,10 @@ class MultiVector:
     def __neg__(self):
         return -1 * self
 
+    def __abs__(self) -> numbers.Number:
+        return self.abs_squared() ** (1/2)
+
+
     def dot(self, rhs):
         return sum(
             [
@@ -183,13 +187,16 @@ class MultiVector:
             }
         )
 
+    def abs_squared(self) -> numbers.Number:
+        return ((self.reverse() * self).scalar_part())
+
     def inverse(self) -> "MultiVector":
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 42
 
         Note sure if I'm doing it correctly
         """
-        return self * ((self.reverse() * self).scalar_part() ** -1)
+        return self * (self.abs_squared() ** -1)
 
 
 x: MultiVector = MultiVector({(1,): 1})
