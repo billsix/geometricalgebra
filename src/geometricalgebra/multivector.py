@@ -19,6 +19,7 @@
 import dataclasses
 import functools
 import itertools
+import math
 import numbers
 import typing
 
@@ -138,7 +139,7 @@ class MultiVector:
             start=zero,
         )
 
-    def r_vector_part(self, r) -> 'MultiVector':
+    def r_vector_part(self, r) -> "MultiVector":
         return MultiVector(
             scalar_from_blade={
                 blade: self.scalar_from_blade[blade]
@@ -147,8 +148,8 @@ class MultiVector:
             }
         )
 
-    def scalar_part(self) -> 'MultiVector':
-        return self.r_vector_part(r=0)
+    def scalar_part(self) -> numbers.Number:
+        return self.r_vector_part(r=0).scalar_from_blade[tuple()]
 
     def grades(self) -> list[int]:
         return list(set(len(blade) for blade in self.scalar_from_blade.keys()))
@@ -156,18 +157,39 @@ class MultiVector:
     def max_grade(self) -> int:
         return max(self.grades())
 
-    def reverse(self) -> 'MultiVector':
+    def reverse(self) -> "MultiVector":
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 5
+
+        to avoid using floats, I subtituted (-1)**(r*(r-1)/2) with an equivalent
+        expression
         """
         return sum(
             [
-                -1**(g*(g-1)/2) * self.r_vector_part(x)
-                for x in self.grades()
+                self.r_vector_part(r) if (r * (r - 1) / 2) % 2 == 0 else -self.r_vector_part(r)
+                for r in self.grades()
             ],
             start=zero,
         )
 
+    def scalar_is_very_close_to(self, x: float):
+        return self.max_grade() == 0 and math.isclose(x, self.scalar_part())
+
+    def simplify(self) -> "MultiVector":
+        return MultiVector(
+            scalar_from_blade={
+                blade: sympy.simplify(self.scalar_from_blade[blade])
+                for blade in self.scalar_from_blade.keys()
+            }
+        )
+
+    def inverse(self) -> "MultiVector":
+        """
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 42
+
+        Note sure if I'm doing it correctly
+        """
+        return self * ((self.reverse() * self).scalar_part() ** -1)
 
 
 x: MultiVector = MultiVector({(1,): 1})

@@ -22,9 +22,9 @@ import geometricalgebra.multivector as mv
 
 
 def test_multivector_add() -> None:
-    a = mv.MultiVector({(4, 2): 5, (2, 1): 6})
-    b = mv.MultiVector({(1,): 5, (2,): 6})
-    c = mv.MultiVector({(1,): 7, (2,): 8})
+    a: mv.MultiVector = mv.MultiVector({(4, 2): 5, (2, 1): 6})
+    b: mv.MultiVector = mv.MultiVector({(1,): 5, (2,): 6})
+    c: mv.MultiVector = mv.MultiVector({(1,): 7, (2,): 8})
 
     assert b + c == mv.MultiVector({(1,): 12, (2,): 14})
 
@@ -61,43 +61,67 @@ def test_multivector_absolute_units() -> None:
 
 
 def test_multivector_mult() -> None:
-    a = 3 * mv.x + 4 * mv.y
+    a: mv.MultiVector = 3 * mv.x + 4 * mv.y
 
     assert a * a == mv.MultiVector({(): 25, (1, 2): 0})
 
-    i = mv.x * mv.y
+    i: mv.MultiVector = mv.x * mv.y
     assert a * i == -4 * mv.x + 3 * mv.y
     assert (a * i) * i == -3 * mv.x + -4 * mv.y
 
     a_x, a_y, b_x, b_y = sympy.symbols("a_x a_y b_x b_y")
-    vec1 = a_x * mv.x + a_y * mv.y
-    vec2 = b_x * mv.x + b_y * mv.y
+    vec1: mv.MultiVector = a_x * mv.x + a_y * mv.y
+    vec2: mv.MultiVector = b_x * mv.x + b_y * mv.y
     assert vec1 * vec2 == mv.MultiVector(
         {(): a_x * b_x + a_y * b_y, (1, 2): a_x * b_y - a_y * b_x}
     )
 
 
+def test_multivector_mult3d() -> None:
+    i: mv.MultiVector = mv.x * mv.y * mv.z
+
+    a_x, a_y, a_z, b_x, b_y, b_z = sympy.symbols("a_x a_y a_z b_x b_y b_z")
+    vec1: mv.MultiVector = a_x * mv.x + a_y * mv.y + a_z * mv.z
+    vec2: mv.MultiVector = b_x * mv.x + b_y * mv.y + b_z * mv.z
+    assert vec1 * vec2 == mv.MultiVector(
+        {
+            (): a_x * b_x + a_y * b_y + a_z * b_z,
+            (1, 2): a_x * b_y - a_y * b_x,
+            (1, 3): a_x * b_z - a_z * b_x,
+            (2, 3): a_y * b_z - a_z * b_y,
+        }
+    )
+
+    # TODO - figure out how to take the dual
+    # assert vec1 * vec2 * i == mv.MultiVector(
+    #     {(3,): a_x * b_y - a_y * b_x,
+    #      (2,): a_z * b_x + a_x * b_z,
+    #      (1,): a_y * b_z - a_z * b_y,
+    #      }
+    # )
+
+
 def test_multivector_grade() -> None:
     a: mv.MultiVector = 3 * mv.x + 4 * mv.y
     assert a.r_vector_part(0) == mv.zero
-    assert a.scalar_part() == mv.zero
+    assert a.scalar_part() == 0
     assert a.max_grade() == 1
 
     b: mv.MultiVector = 3 * mv.x + 4 * mv.y
 
-    assert (b * b).scalar_part() == mv.MultiVector({(): 25})
+    assert (b * b).scalar_part() == 25
     assert (b * b).r_vector_part(1) == mv.zero
     assert (b * b).r_vector_part(2) == mv.zero
     assert (b * b).max_grade() == 0
 
     c: mv.MultiVector = -4 * mv.x + 3 * mv.y
-    assert (b * c).scalar_part() == mv.zero
+    assert (b * c).scalar_part() == 0
     assert (b * c).r_vector_part(1) == mv.zero
     assert (b * c).r_vector_part(2) == 25 * mv.x * mv.y
     assert (b * c).max_grade() == 2
 
     i3: mv.MultiVector = mv.x * mv.y * mv.z
-    assert i3.scalar_part() == mv.zero
+    assert i3.scalar_part() == 0
     assert i3.r_vector_part(1) == mv.zero
     assert i3.r_vector_part(2) == mv.zero
     assert i3.r_vector_part(3) == i3
@@ -126,3 +150,56 @@ def test_multivector_wedge() -> None:
     vec1: mv.MultiVector = a_x * mv.x + a_y * mv.y
     vec2: mv.MultiVector = b_x * mv.x + b_y * mv.y
     assert vec1.wedge(vec2) == mv.MultiVector({(1, 2): a_x * b_y - a_y * b_x})
+
+
+def test_multivector_reverse() -> None:
+    a: mv.MultiVector = 3 * mv.x + 4 * mv.y
+    assert (a * a).reverse() == a * a
+
+    b: mv.MultiVector = 5 * mv.x + 10 * mv.y
+    assert (b * a).reverse() == a * b
+
+    a_x, a_y, b_x, b_y = sympy.symbols("a_x a_y b_x b_y")
+    vec1: mv.MultiVector = a_x * mv.x + a_y * mv.y
+    vec2: mv.MultiVector = b_x * mv.x + b_y * mv.y
+    assert (vec2 * vec1).reverse() == vec1 * vec2
+
+
+def test_multivector_reverse3d() -> None:
+    a_x, a_y, a_z, b_x, b_y, b_z = sympy.symbols("a_x a_y a_z b_x b_y b_z")
+    vec1: mv.MultiVector = a_x * mv.x + a_y * mv.y + a_z * mv.z
+    vec2: mv.MultiVector = b_x * mv.x + b_y * mv.y + b_z * mv.z
+    assert (vec2 * vec1).reverse() == vec1 * vec2
+
+
+def test_multivector_inverse() -> None:
+    a: mv.MultiVector = 3 * mv.x + 4 * mv.y
+    assert a.inverse() == (1.0 / 25) * a
+
+    a_x, a_y, b_x, b_y = sympy.symbols("a_x a_y b_x b_y")
+    vec1: mv.MultiVector = a_x * mv.x + a_y * mv.y
+    assert vec1.inverse() == (a_x**2 + a_y**2) ** -1 * mv.MultiVector(
+        scalar_from_blade={
+            (1,): a_x,
+            (2,): a_y,
+            (): 0,
+        }
+    )
+    assert (vec1.inverse() * vec1).simplify().scalar_part() == 1
+
+    a_x, a_y, a_z, b_x, b_y, b_z = sympy.symbols("a_x a_y a_z b_x b_y b_z")
+    vec3d_1: mv.MultiVector = a_x * mv.x + a_y * mv.y + a_z * mv.z
+    assert vec3d_1.inverse() == (a_x**2 + a_y**2 + a_z**2) ** -1 * mv.MultiVector(
+        scalar_from_blade={
+            (1,): a_x,
+            (2,): a_y,
+            (3,): a_z,
+            (): 0,
+        }
+    )
+
+    # assert (vec3d_1.inverse() * vec3d_1).simplify().scalar_part() == 1
+
+    # vec3d_2: mv.MultiVector = b_x * mv.x + b_y * mv.y + b_z * mv.z
+    # print((vec3d_1 * vec3d_2).inverse())
+    # assert ((vec3d_1 * vec3d_2).inverse() * (vec3d_1 * vec3d_2)).scalar_part() == 1
