@@ -49,6 +49,14 @@ class MultiVector:
         return MultiVector({tuple(): s})
 
     @staticmethod
+    def pseudoscaler(g: int):
+        return math.prod([MultiVector({(x,): 1}) for x in range(1, g + 1)], start=one)
+
+    @staticmethod
+    def pseudoscaler_squared(g: int):
+        return MultiVector.pseudoscaler(g) * MultiVector.pseudoscaler(g)
+
+    @staticmethod
     def sum_dicts(dicts):
         def sum_2_dicts(dict1, dict2):
             return {
@@ -116,14 +124,19 @@ class MultiVector:
                 )
 
     def __rmul__(self, lhs):
-        return self * lhs
+        match lhs:
+            case numbers.Number() as n:
+                return self * MultiVector.from_scalar(n)
+            case sympy.Expr() as s:
+                return self * MultiVector.from_sympy_expr(s)
+            case _:
+                return -self.__mul__(lhs)
 
     def __neg__(self):
         return -1 * self
 
     def __abs__(self) -> numbers.Number:
-        return self.abs_squared() ** (1/2)
-
+        return sympy.sqrt(self.abs_squared())
 
     def dot(self, rhs):
         return sum(
@@ -169,10 +182,7 @@ class MultiVector:
         expression
         """
         return sum(
-            [
-                self.r_vector_part(r) if (r * (r - 1) / 2) % 2 == 0 else -self.r_vector_part(r)
-                for r in self.grades()
-            ],
+            [self.r_vector_part(r) * (1 if r % 4 in (0, 1) else -1) for r in self.grades()],
             start=zero,
         )
 
@@ -188,15 +198,37 @@ class MultiVector:
         )
 
     def abs_squared(self) -> numbers.Number:
-        return ((self.reverse() * self).scalar_part())
+        return (self.reverse() * self).simplify()
 
     def inverse(self) -> "MultiVector":
         """
-        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 42
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18
 
         Note sure if I'm doing it correctly
         """
-        return self * (self.abs_squared() ** -1)
+        return self.reverse().simplify() * (self.abs_squared().scalar_part() ** (-1))
+
+
+def project(onto_mv: MultiVector):
+    """
+    page 18
+    """
+
+    def value(value: MultiVector):
+        return (value.dot(onto_mv)) * onto_mv.inverse()
+
+    return value
+
+
+def reject(from_mv: MultiVector):
+    """
+    page 18
+    """
+
+    def value(value: MultiVector):
+        return (value.wedge(from_mv)) * from_mv.inverse()
+
+    return value
 
 
 x: MultiVector = MultiVector({(1,): 1})
@@ -204,3 +236,14 @@ y: MultiVector = MultiVector({(2,): 1})
 z: MultiVector = MultiVector({(3,): 1})
 zero: MultiVector = MultiVector.from_scalar(0)
 one: MultiVector = MultiVector.from_scalar(1)
+
+a_x, a_y, a_z, b_x, b_y, b_z = sympy.symbols("a_x a_y a_z b_x b_y b_z")
+
+sym_vec2_1: MultiVector = a_x * x + a_y * y
+sym_vec2_2: MultiVector = b_x * x + b_y * y
+
+sym_vec3_1: MultiVector = a_x * x + a_y * y + a_z * z
+sym_vec3_2: MultiVector = b_x * x + b_y * y + b_z * z
+
+sym_vec_plane: MultiVector = sym_vec3_1 * sym_vec3_2
+sym_vec_plane_simplified: MultiVector = sym_vec_plane.simplify()
