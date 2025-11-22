@@ -70,7 +70,10 @@ def test_multivector_mult() -> None:
     assert (a * i) * i == -3 * mv.x + -4 * mv.y
 
     assert mv.sym_vec2_1 * mv.sym_vec2_2 == mv.MultiVector(
-        {(): mv.a_x * mv.b_x + mv.a_y * mv.b_y, (1, 2): mv.a_x * mv.b_y - mv.a_y * mv.b_x}
+        {
+            (): mv.a_x * mv.b_x + mv.a_y * mv.b_y,
+            (1, 2): mv.a_x * mv.b_y - mv.a_y * mv.b_x,
+        }
     )
 
 

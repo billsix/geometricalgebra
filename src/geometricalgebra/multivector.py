@@ -205,7 +205,7 @@ class MultiVector:
         expression
         """
         return sum(
-            [self.r_vector_part(r) * (1 if r % 4 in (0, 1) else -1) for r in self.grades()],
+            [MultiVector.pseudoscaler_squared(r) * self.r_vector_part(r) for r in self.grades()],
             start=zero,
         )
 
