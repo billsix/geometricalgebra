@@ -75,7 +75,9 @@ class MultiVector:
         )
 
     def __mul__(self, rhs):
-        def mult_blade_list(basis_blades: list[int], value):
+        def mult_blade_list(
+            basis_blades: list[int], value: numbers.Number
+        ) -> tuple[list[int], numbers.Number]:
             match basis_blades:
                 case []:
                     return [], value
@@ -93,8 +95,9 @@ class MultiVector:
                         case _:
                             return mult_blade_list([a, *sorted_rest], new_val)
 
-
-        def mult_blade(basis_blades: tuple[int], value):
+        def mult_blade(
+            basis_blades: list[int], value: numbers.Number
+        ) -> dict[tuple[int, ...], numbers.Number]:
             sorted_list, new_val = mult_blade_list(list(basis_blades), value)
             return {tuple(sorted_list): new_val}
 
@@ -122,7 +125,7 @@ class MultiVector:
                     )
                 )
 
-    def __rmul__(self, lhs):
+    def __rmul__(self, lhs) -> "MultiVector":
         match lhs:
             case numbers.Number() as n:
                 return self * MultiVector.from_scalar(n)
@@ -131,13 +134,13 @@ class MultiVector:
             case _:
                 return -self.__mul__(lhs)
 
-    def __neg__(self):
+    def __neg__(self) -> "MultiVector":
         return -1 * self
 
     def __abs__(self) -> numbers.Number:
         return sympy.sqrt(self.abs_squared())
 
-    def dot(self, rhs):
+    def dot(self, rhs) -> "MultiVector":
         return sum(
             [
                 (self.r_vector_part(x) * rhs.r_vector_part(y)).r_vector_part(abs(x - y))
@@ -146,7 +149,7 @@ class MultiVector:
             start=zero,
         )
 
-    def wedge(self, rhs):
+    def wedge(self, rhs) -> "MultiVector":
         return sum(
             [
                 (self.r_vector_part(x) * rhs.r_vector_part(y)).r_vector_part(x + y)
@@ -185,9 +188,6 @@ class MultiVector:
             start=zero,
         )
 
-    def scalar_is_very_close_to(self, x: float):
-        return self.max_grade() == 0 and math.isclose(x, self.scalar_part())
-
     def simplify(self) -> "MultiVector":
         return MultiVector(
             scalar_from_blade={
@@ -207,7 +207,7 @@ class MultiVector:
         """
         return self.reverse().simplify() * (self.abs_squared().scalar_part() ** (-1))
 
-    def dual(self, g: int):
+    def dual(self, g: int) -> "MultiVector":
         return self * MultiVector.pseudoscaler(g).inverse()
 
 
