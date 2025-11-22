@@ -75,8 +75,8 @@ class MultiVector:
         )
 
     def __mul__(self, rhs):
-        def mult_blade_list(items: list[int], value):
-            match items:
+        def mult_blade_list(basis_blades: list[int], value):
+            match basis_blades:
                 case []:
                     return [], value
                 case [a]:
@@ -94,8 +94,8 @@ class MultiVector:
                             return mult_blade_list([a, *sorted_rest], new_val)
 
 
-        def mult_blade(items: tuple[int], value):
-            sorted_list, new_val = mult_blade_list(list(items), value)
+        def mult_blade(basis_blades: tuple[int], value):
+            sorted_list, new_val = mult_blade_list(list(basis_blades), value)
             return {tuple(sorted_list): new_val}
 
         match rhs:
