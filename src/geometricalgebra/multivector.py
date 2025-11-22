@@ -57,7 +57,9 @@ class MultiVector:
             if self.scalar_from_blade[blade] != 0
         }
         # excepty for scalar
-        self.scalar_from_blade = MultiVector.sum_dicts([self.scalar_from_blade, {tuple(): 0}])
+        self.scalar_from_blade = MultiVector.sum_dicts(
+            [self.scalar_from_blade, {tuple(): 0}]
+        )
 
     @staticmethod
     def from_scalar(scalar: int | float):
@@ -69,7 +71,9 @@ class MultiVector:
 
     @staticmethod
     def pseudoscaler(g: int) -> "MultiVector":
-        return math.prod([MultiVector({(x,): 1}) for x in range(1, g + 1)], start=one)
+        return math.prod(
+            [MultiVector({(x,): 1}) for x in range(1, g + 1)], start=one
+        )
 
     @staticmethod
     def pseudoscaler_squared(g: int) -> "MultiVector":
@@ -77,7 +81,9 @@ class MultiVector:
 
     @staticmethod
     def sum_dicts(dicts: list[dict[list[int], Numeric]]):
-        def sum_2_dicts(dict1: dict[list[int], Numeric], dict2: dict[list[int], Numeric]):
+        def sum_2_dicts(
+            dict1: dict[list[int], Numeric], dict2: dict[list[int], Numeric]
+        ):
             return {
                 blade: dict1.get(blade, 0) + dict2.get(blade, 0)
                 for blade in dict1.keys() | dict2.keys()
@@ -88,33 +94,41 @@ class MultiVector:
     def __add__(self, rhs) -> "MultiVector":
         return MultiVector(
             scalar_from_blade={
-                blade: self.scalar_from_blade.get(blade, 0) + rhs.scalar_from_blade.get(blade, 0)
-                for blade in self.scalar_from_blade.keys() | rhs.scalar_from_blade.keys()
+                blade: self.scalar_from_blade.get(blade, 0)
+                + rhs.scalar_from_blade.get(blade, 0)
+                for blade in self.scalar_from_blade.keys()
+                | rhs.scalar_from_blade.keys()
             }
         )
 
     def __mul__(self, rhs) -> "MultiVector":
-        def mult_blade_list(basis_blades: list[int], value: Numeric) -> tuple[list[int], Numeric]:
+        def mult_blade_list(
+            basis_blades: list[int], value: Numeric
+        ) -> tuple[list[int], Numeric]:
             match basis_blades:
                 case []:
                     return [], value
                 case [a]:
                     return [a], value
-                case [a, b, *rest] if a == b:
+                case [a, c, *rest] if a == c:
                     return mult_blade_list(rest, value)
-                case [a, b, *rest] if a > b:
-                    return mult_blade_list([b, a, *rest], -value)
-                case [a, *rest]:
-                    sorted_rest, new_val = mult_blade_list(rest, value)
+                case [a, c, *rest] if a > c:
+                    return mult_blade_list([c, a, *rest], -value)
+                case [a, c, *rest] if a < c:
+                    sorted_rest, new_val = mult_blade_list([c, *rest], value)
                     match sorted_rest:
                         case [b, *_] if a < b:
                             return [a, *sorted_rest], new_val
                         case _:
                             return mult_blade_list([a, *sorted_rest], new_val)
                 case _:
-                    raise ValueError("Unable to sort")
+                    raise ValueError(
+                        "This code should never be able to be excuted - if printed this is a major logic error on my part"
+                    )
 
-        def mult_blade(basis_blades: list[int], value: Numeric) -> dict[tuple[int, ...], Numeric]:
+        def mult_blade(
+            basis_blades: list[int], value: Numeric
+        ) -> dict[tuple[int, ...], Numeric]:
             sorted_list, new_val = mult_blade_list(list(basis_blades), value)
             return {tuple(sorted_list): new_val}
 
@@ -164,7 +178,9 @@ class MultiVector:
     def dot(self, rhs) -> "MultiVector":
         return sum(
             [
-                (self.r_vector_part(x) * rhs.r_vector_part(y)).r_vector_part(abs(x - y))
+                (self.r_vector_part(x) * rhs.r_vector_part(y)).r_vector_part(
+                    abs(x - y)
+                )
                 for x, y in itertools.product(self.grades(), rhs.grades())
             ],
             start=zero,
@@ -173,7 +189,9 @@ class MultiVector:
     def wedge(self, rhs) -> "MultiVector":
         return sum(
             [
-                (self.r_vector_part(x) * rhs.r_vector_part(y)).r_vector_part(x + y)
+                (self.r_vector_part(x) * rhs.r_vector_part(y)).r_vector_part(
+                    x + y
+                )
                 for x, y in itertools.product(self.grades(), rhs.grades())
             ],
             start=zero,
@@ -205,7 +223,10 @@ class MultiVector:
         expression
         """
         return sum(
-            [MultiVector.pseudoscaler_squared(r) * self.r_vector_part(r) for r in self.grades()],
+            [
+                MultiVector.pseudoscaler_squared(r) * self.r_vector_part(r)
+                for r in self.grades()
+            ],
             start=zero,
         )
 
@@ -226,7 +247,9 @@ class MultiVector:
 
         Note sure if I'm doing it correctly
         """
-        return self.reverse().simplify() * (self.abs_squared().scalar_part() ** (-1))
+        return self.reverse().simplify() * (
+            self.abs_squared().scalar_part() ** (-1)
+        )
 
     def dual(self, g: int) -> "MultiVector":
         return self * MultiVector.pseudoscaler(g).inverse()

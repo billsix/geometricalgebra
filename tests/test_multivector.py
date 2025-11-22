@@ -181,9 +181,13 @@ def test_multivector_pseudoscalar() -> None:
     i15: mv.MultiVector = mv.MultiVector.pseudoscaler(14)
 
     assert i1 * i1 == mv.MultiVector.from_scalar(1)
-    assert mv.MultiVector.pseudoscaler_squared(1) == mv.MultiVector.from_scalar(1)
+    assert mv.MultiVector.pseudoscaler_squared(1) == mv.MultiVector.from_scalar(
+        1
+    )
     assert i2 * i2 == mv.MultiVector.from_scalar(-1)
-    assert mv.MultiVector.pseudoscaler_squared(2) == mv.MultiVector.from_scalar(-1)
+    assert mv.MultiVector.pseudoscaler_squared(2) == mv.MultiVector.from_scalar(
+        -1
+    )
     assert i3 * i3 == mv.MultiVector.from_scalar(-1)
     assert i4 * i4 == mv.MultiVector.from_scalar(1)
     assert i5 * i5 == mv.MultiVector.from_scalar(1)
@@ -206,11 +210,15 @@ def test_multivector_reverse() -> None:
     b: mv.MultiVector = 5 * mv.x + 10 * mv.y
     assert (b * a).reverse() == a * b
 
-    assert (mv.sym_vec2_2 * mv.sym_vec2_1).reverse() == mv.sym_vec2_1 * mv.sym_vec2_2
+    assert (
+        mv.sym_vec2_2 * mv.sym_vec2_1
+    ).reverse() == mv.sym_vec2_1 * mv.sym_vec2_2
 
 
 def test_multivector_reverse3d() -> None:
-    assert (mv.sym_vec3_2 * mv.sym_vec3_1).reverse() == mv.sym_vec3_1 * mv.sym_vec3_2
+    assert (
+        mv.sym_vec3_2 * mv.sym_vec3_1
+    ).reverse() == mv.sym_vec3_1 * mv.sym_vec3_2
 
 
 def test_multivector_inverse() -> None:
@@ -218,11 +226,19 @@ def test_multivector_inverse() -> None:
     assert a.abs_squared() == mv.MultiVector.from_scalar(25)
     assert a.abs_squared() * a.inverse() == a
 
-    assert mv.sym_vec2_1.abs_squared() * mv.sym_vec2_1.inverse() == mv.sym_vec2_1
-    assert (mv.sym_vec2_1.inverse() * mv.sym_vec2_1).simplify().scalar_part() == 1
+    assert (
+        mv.sym_vec2_1.abs_squared() * mv.sym_vec2_1.inverse() == mv.sym_vec2_1
+    )
+    assert (
+        mv.sym_vec2_1.inverse() * mv.sym_vec2_1
+    ).simplify().scalar_part() == 1
 
-    assert mv.sym_vec3_1.abs_squared() * mv.sym_vec3_1.inverse() == mv.sym_vec3_1
-    assert (mv.sym_vec3_1.inverse() * mv.sym_vec3_1).simplify() == mv.MultiVector.from_scalar(1)
+    assert (
+        mv.sym_vec3_1.abs_squared() * mv.sym_vec3_1.inverse() == mv.sym_vec3_1
+    )
+    assert (
+        mv.sym_vec3_1.inverse() * mv.sym_vec3_1
+    ).simplify() == mv.MultiVector.from_scalar(1)
 
     plane: mv.MultiVector = mv.sym_vec_plane_simplified
     assert (plane * plane.inverse()).simplify() == mv.one
@@ -240,6 +256,10 @@ def test_project_and_reject() -> None:
     assert mv.project(onto_mv=2 * mv.x)(a) == 3 * mv.x
     assert mv.reject(from_mv=2 * mv.x)(a) == 4 * mv.y
 
-    parallel_to_vec1: mv.MultiVector = mv.project(onto_mv=mv.sym_vec2_1)(mv.sym_vec2_2)
-    perp_to_vec1: mv.MultiVector = mv.reject(from_mv=mv.sym_vec2_1)(mv.sym_vec2_2)
+    parallel_to_vec1: mv.MultiVector = mv.project(onto_mv=mv.sym_vec2_1)(
+        mv.sym_vec2_2
+    )
+    perp_to_vec1: mv.MultiVector = mv.reject(from_mv=mv.sym_vec2_1)(
+        mv.sym_vec2_2
+    )
     assert mv.sym_vec2_2 == (parallel_to_vec1 + perp_to_vec1).simplify()
