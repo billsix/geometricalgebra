@@ -1,0 +1,6 @@
+* TODO [#1] Geometric Algebra
+    - [ ] Add docstrings
+    - [ ] Make example jupyter notebook
+      - [ ] Figure out how to format with sympy and latex
+    - [ ] Make sphinx docs
+      - [ ] integrate example notebook
