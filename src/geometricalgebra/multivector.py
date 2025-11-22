@@ -25,6 +25,27 @@ import typing
 
 import sympy
 
+from typing import Protocol, TypeVar
+
+T_co = TypeVar('T_co', covariant=True)
+
+class Numeric(Protocol[T_co]):
+    """Generic numeric protocol."""
+
+    def __add__(self: T_co, other) -> T_co: ...
+    #def __radd__(self: T_co, other) -> T_co: ...
+    #def __sub__(self: T_co, other) -> T_co: ...
+    #def __rsub__(self: T_co, other) -> T_co: ...
+    def __mul__(self: T_co, other) -> T_co: ...
+    def __rmul__(self: T_co, other) -> T_co: ...
+    #def __truediv__(self: T_co, other) -> T_co: ...
+    #def __rtruediv__(self: T_co, other) -> T_co: ...
+    def __neg__(self: T_co) -> T_co: ...
+    #def __pos__(self: T_co) -> T_co: ...
+    def __abs__(self: T_co) -> T_co: ...
+    #def __pow__(self: T_co, other) -> T_co: ...
+    #def __rpow__(self: T_co, other) -> T_co: ...
+
 
 @dataclasses.dataclass
 class MultiVector:
@@ -41,7 +62,7 @@ class MultiVector:
         self.scalar_from_blade = MultiVector.sum_dicts([self.scalar_from_blade, {tuple(): 0}])
 
     @staticmethod
-    def from_scalar(scalar: numbers.Number):
+    def from_scalar(scalar: Numeric):
         return MultiVector({tuple(): scalar})
 
     @staticmethod
@@ -76,8 +97,8 @@ class MultiVector:
 
     def __mul__(self, rhs):
         def mult_blade_list(
-            basis_blades: list[int], value: numbers.Number
-        ) -> tuple[list[int], numbers.Number]:
+            basis_blades: list[int], value: Numeric
+        ) -> tuple[list[int], Numeric]:
             match basis_blades:
                 case []:
                     return [], value
@@ -96,13 +117,13 @@ class MultiVector:
                             return mult_blade_list([a, *sorted_rest], new_val)
 
         def mult_blade(
-            basis_blades: list[int], value: numbers.Number
-        ) -> dict[tuple[int, ...], numbers.Number]:
+            basis_blades: list[int], value: Numeric
+        ) -> dict[tuple[int, ...], Numeric]:
             sorted_list, new_val = mult_blade_list(list(basis_blades), value)
             return {tuple(sorted_list): new_val}
 
         match rhs:
-            case numbers.Number() as n:
+            case Numeric() as n:
                 return self * MultiVector.from_scalar(n)
             case sympy.Expr() as s:
                 return self * MultiVector.from_sympy_expr(s)
@@ -127,7 +148,7 @@ class MultiVector:
 
     def __rmul__(self, lhs) -> "MultiVector":
         match lhs:
-            case numbers.Number() as n:
+            case Numeric() as n:
                 return self * MultiVector.from_scalar(n)
             case sympy.Expr() as s:
                 return self * MultiVector.from_sympy_expr(s)
@@ -137,7 +158,7 @@ class MultiVector:
     def __neg__(self) -> "MultiVector":
         return -1 * self
 
-    def __abs__(self) -> numbers.Number:
+    def __abs__(self) -> Numeric:
         return sympy.sqrt(self.abs_squared())
 
     def dot(self, rhs) -> "MultiVector":
@@ -167,7 +188,7 @@ class MultiVector:
             }
         )
 
-    def scalar_part(self) -> numbers.Number:
+    def scalar_part(self) -> Numeric:
         return self.r_vector_part(r=0).scalar_from_blade[tuple()]
 
     def grades(self) -> list[int]:
@@ -196,7 +217,7 @@ class MultiVector:
             }
         )
 
-    def abs_squared(self) -> numbers.Number:
+    def abs_squared(self) -> Numeric:
         return (self.reverse() * self).simplify()
 
     def inverse(self) -> "MultiVector":
