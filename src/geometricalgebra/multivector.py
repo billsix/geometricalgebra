@@ -88,12 +88,11 @@ class MultiVector:
                 case [a, *rest]:
                     sorted_rest, new_val = mult_blade_list(rest, value)
                     match sorted_rest:
-                        case [b, *rest] if a == b:
-                            return mult_blade_list([a, b, *rest], new_val)
-                        case [b, *rest] if a > b:
-                            return mult_blade_list([b, a, *rest], -new_val)
-                        case _:
+                        case [b, *_] if a < b:
                             return [a, *sorted_rest], new_val
+                        case _:
+                            return mult_blade_list([a, *sorted_rest], new_val)
+
 
         def mult_blade(items: tuple[int], value):
             sorted_list, new_val = mult_blade_list(list(items), value)
