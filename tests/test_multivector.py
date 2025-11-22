@@ -16,6 +16,8 @@
 # Boston, MA 02111-1307, USA.
 
 
+import itertools
+
 import geometricalgebra.multivector as mv
 
 
@@ -73,8 +75,6 @@ def test_multivector_mult() -> None:
 
 
 def test_multivector_mult3d() -> None:
-    i: mv.MultiVector = mv.MultiVector.pseudoscaler(3)
-
     assert mv.sym_vec3_1 * mv.sym_vec3_2 == mv.MultiVector(
         {
             (): mv.a_x * mv.b_x + mv.a_y * mv.b_y + mv.a_z * mv.b_z,
@@ -84,13 +84,27 @@ def test_multivector_mult3d() -> None:
         }
     )
 
-    # TODO - figure out how to take the dual
-    # assert vec1 * vec2 * i == mv.MultiVector(
-    #     {(3,): a_x * b_y - a_y * b_x,
-    #      (2,): a_z * b_x + a_x * b_z,
-    #      (1,): a_y * b_z - a_z * b_y,
-    #      }
-    # )
+
+def test_multivector_dual() -> None:
+    assert (mv.sym_vec3_1.wedge(mv.sym_vec3_2)).dual(g=3) == mv.MultiVector(
+        {
+            (3,): mv.a_x * mv.b_y - mv.a_y * mv.b_x,
+            (2,): -mv.a_x * mv.b_z + mv.a_z * mv.b_x,
+            (1,): mv.a_y * mv.b_z - mv.a_z * mv.b_y,
+        }
+    )
+
+    def planewise(plane, vec1, vec2):
+        proj = mv.project(plane)
+        return proj(vec1).wedge(proj(vec2)).dual(g=3)
+
+    assert (mv.sym_vec3_1.wedge(mv.sym_vec3_2)).dual(g=3) == sum(
+        [
+            planewise(axis_1.wedge(axis_2), mv.sym_vec3_1, mv.sym_vec3_2)
+            for axis_1, axis_2 in itertools.combinations([mv.x, mv.y, mv.z], 2)
+        ],
+        start=mv.zero,
+    )
 
 
 def test_multivector_grade() -> None:

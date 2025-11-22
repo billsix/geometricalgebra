@@ -208,6 +208,9 @@ class MultiVector:
         """
         return self.reverse().simplify() * (self.abs_squared().scalar_part() ** (-1))
 
+    def dual(self, g: int):
+        return self * MultiVector.pseudoscaler(g).inverse()
+
 
 def project(onto_mv: MultiVector):
     """
