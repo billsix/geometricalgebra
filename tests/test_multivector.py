@@ -65,7 +65,7 @@ def test_multivector_mult() -> None:
 
     assert a * a == mv.MultiVector({(): 25, (1, 2): 0})
 
-    i: mv.MultiVector = mv.MultiVector.pseudoscaler(2)
+    i: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(2)
     assert a * i == -4 * mv.x + 3 * mv.y
     assert (a * i) * i == -3 * mv.x + -4 * mv.y
 
@@ -159,33 +159,33 @@ def test_multivector_wedge() -> None:
     )
 
 
-def test_multivector_pseudoscalar() -> None:
-    assert mv.MultiVector.pseudoscaler(1) == mv.x
-    assert mv.MultiVector.pseudoscaler(2) == mv.x * mv.y
-    assert mv.MultiVector.pseudoscaler(3) == mv.x * mv.y * mv.z
+def test_multivector_unit_pseudoscalar() -> None:
+    assert mv.MultiVector.unit_pseudoscalar(1) == mv.x
+    assert mv.MultiVector.unit_pseudoscalar(2) == mv.x * mv.y
+    assert mv.MultiVector.unit_pseudoscalar(3) == mv.x * mv.y * mv.z
 
-    i1: mv.MultiVector = mv.MultiVector.pseudoscaler(1)
-    i2: mv.MultiVector = mv.MultiVector.pseudoscaler(2)
-    i3: mv.MultiVector = mv.MultiVector.pseudoscaler(3)
-    i4: mv.MultiVector = mv.MultiVector.pseudoscaler(4)
-    i5: mv.MultiVector = mv.MultiVector.pseudoscaler(5)
-    i6: mv.MultiVector = mv.MultiVector.pseudoscaler(6)
-    i7: mv.MultiVector = mv.MultiVector.pseudoscaler(7)
-    i8: mv.MultiVector = mv.MultiVector.pseudoscaler(8)
-    i9: mv.MultiVector = mv.MultiVector.pseudoscaler(9)
-    i10: mv.MultiVector = mv.MultiVector.pseudoscaler(10)
-    i11: mv.MultiVector = mv.MultiVector.pseudoscaler(11)
-    i12: mv.MultiVector = mv.MultiVector.pseudoscaler(12)
-    i13: mv.MultiVector = mv.MultiVector.pseudoscaler(13)
-    i14: mv.MultiVector = mv.MultiVector.pseudoscaler(14)
-    i15: mv.MultiVector = mv.MultiVector.pseudoscaler(14)
+    i1: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(1)
+    i2: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(2)
+    i3: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(3)
+    i4: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(4)
+    i5: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(5)
+    i6: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(6)
+    i7: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(7)
+    i8: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(8)
+    i9: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(9)
+    i10: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(10)
+    i11: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(11)
+    i12: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(12)
+    i13: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(13)
+    i14: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(14)
+    i15: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(14)
 
     assert i1 * i1 == mv.MultiVector.from_scalar(1)
-    assert mv.MultiVector.pseudoscaler_squared(1) == mv.MultiVector.from_scalar(
+    assert mv.MultiVector.unit_pseudoscalar_squared(1) == mv.MultiVector.from_scalar(
         1
     )
     assert i2 * i2 == mv.MultiVector.from_scalar(-1)
-    assert mv.MultiVector.pseudoscaler_squared(2) == mv.MultiVector.from_scalar(
+    assert mv.MultiVector.unit_pseudoscalar_squared(2) == mv.MultiVector.from_scalar(
         -1
     )
     assert i3 * i3 == mv.MultiVector.from_scalar(-1)

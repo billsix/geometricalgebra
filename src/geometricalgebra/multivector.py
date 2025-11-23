@@ -70,14 +70,14 @@ class MultiVector:
         return MultiVector({tuple(): s})
 
     @staticmethod
-    def pseudoscaler(g: int) -> "MultiVector":
+    def unit_pseudoscalar(g: int) -> "MultiVector":
         return math.prod(
             [MultiVector({(x,): 1}) for x in range(1, g + 1)], start=one
         )
 
     @staticmethod
-    def pseudoscaler_squared(g: int) -> "MultiVector":
-        return MultiVector.pseudoscaler(g) * MultiVector.pseudoscaler(g)
+    def unit_pseudoscalar_squared(g: int) -> "MultiVector":
+        return MultiVector.unit_pseudoscalar(g) * MultiVector.unit_pseudoscalar(g)
 
     @staticmethod
     def sum_dicts(dicts: list[dict[list[int], Numeric]]):
@@ -224,7 +224,7 @@ class MultiVector:
         """
         return sum(
             [
-                MultiVector.pseudoscaler_squared(r) * self.r_vector_part(r)
+                MultiVector.unit_pseudoscalar_squared(r) * self.r_vector_part(r)
                 for r in self.grades()
             ],
             start=zero,
@@ -252,7 +252,7 @@ class MultiVector:
         )
 
     def dual(self, g: int) -> "MultiVector":
-        return self * MultiVector.pseudoscaler(g).inverse()
+        return self * MultiVector.unit_pseudoscalar(g).inverse()
 
 
 def project(onto_mv: MultiVector):
