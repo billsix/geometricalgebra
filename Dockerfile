@@ -9,8 +9,10 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
                    npm \
                    python3 \
                    python3-pip \
+                   python3-setuptools \
                    python3-sympy \
                    python3-pytest \
+                   python3-wheel \
                    ruff \
                    emacs-gtk+x11 \
                    emacs-pgtk \
