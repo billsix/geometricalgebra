@@ -141,6 +141,11 @@ class MultiVector:
             )
             return {tuple(sorted_list): new_mag}
 
+        def increase_grade(
+            blade_left: list[int], blade_right: list[int]
+        ) -> list[int]:
+            return [*blade_left, *blade_right]
+
         match rhs:
             case int() as n:
                 return self * MultiVector.from_scalar(n)
@@ -154,7 +159,7 @@ class MultiVector:
                         [
                             decrease_grade(
                                 scalar_left * scalar_right,
-                                [*blade_left, *blade_right],
+                                increase_grade(blade_left, blade_right),
                             )
                             for (blade_left, scalar_left), (
                                 blade_right,
