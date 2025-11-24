@@ -104,7 +104,7 @@ class MultiVector:
         )
 
     def __mul__(self, rhs) -> "MultiVector":
-        def mult_blade_list(
+        def decrease_grade_list(
             magnitude: Numeric, basis_blades: list[int]
         ) -> tuple[Numeric, list[int]]:
             match basis_blades:
@@ -113,28 +113,30 @@ class MultiVector:
                 case [a]:
                     return magnitude, [a]
                 case [a, c, *rest] if a == c:
-                    return mult_blade_list(magnitude, rest)
+                    return decrease_grade_list(magnitude, rest)
                 case [a, c, *rest] if a > c:
-                    return mult_blade_list(-magnitude, [c, a, *rest])
+                    return decrease_grade_list(-magnitude, [c, a, *rest])
                 case [a, c, *rest] if a < c:
-                    new_mag, sorted_rest = mult_blade_list(
+                    new_mag, sorted_rest = decrease_grade_list(
                         magnitude, [c, *rest]
                     )
                     match sorted_rest:
                         case [b, *_] if a < b:
                             return new_mag, [a, *sorted_rest]
                         case _:
-                            return mult_blade_list(new_mag, [a, *sorted_rest])
+                            return decrease_grade_list(
+                                new_mag, [a, *sorted_rest]
+                            )
                 case _:
                     raise ValueError(
                         "This code should never be able to be excuted - if printed this is a major logic error on my part"
                     )
 
-        def mult_blade(
+        def decrease_grade(
             magnitude: Numeric,
             basis_blades: list[int],
         ) -> dict[tuple[int, ...], Numeric]:
-            new_mag, sorted_list = mult_blade_list(
+            new_mag, sorted_list = decrease_grade_list(
                 magnitude, list(basis_blades)
             )
             return {tuple(sorted_list): new_mag}
@@ -150,7 +152,7 @@ class MultiVector:
                 return MultiVector(
                     scalar_from_blade=MultiVector.sum_dicts(
                         [
-                            mult_blade(
+                            decrease_grade(
                                 scalar_left * scalar_right,
                                 [*blade_left, *blade_right],
                             )
