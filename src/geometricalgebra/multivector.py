@@ -77,7 +77,9 @@ class MultiVector:
 
     @staticmethod
     def unit_pseudoscalar_squared(g: int) -> "MultiVector":
-        return MultiVector.unit_pseudoscalar(g) * MultiVector.unit_pseudoscalar(g)
+        return MultiVector.unit_pseudoscalar(g) * MultiVector.unit_pseudoscalar(
+            g
+        )
 
     @staticmethod
     def sum_dicts(dicts: list[dict[list[int], Numeric]]):
@@ -103,34 +105,39 @@ class MultiVector:
 
     def __mul__(self, rhs) -> "MultiVector":
         def mult_blade_list(
-            basis_blades: list[int], value: Numeric
-        ) -> tuple[list[int], Numeric]:
+            magnitude: Numeric, basis_blades: list[int]
+        ) -> tuple[Numeric, list[int]]:
             match basis_blades:
                 case []:
-                    return [], value
+                    return magnitude, []
                 case [a]:
-                    return [a], value
+                    return magnitude, [a]
                 case [a, c, *rest] if a == c:
-                    return mult_blade_list(rest, value)
+                    return mult_blade_list(magnitude, rest)
                 case [a, c, *rest] if a > c:
-                    return mult_blade_list([c, a, *rest], -value)
+                    return mult_blade_list(-magnitude, [c, a, *rest])
                 case [a, c, *rest] if a < c:
-                    sorted_rest, new_val = mult_blade_list([c, *rest], value)
+                    new_mag, sorted_rest = mult_blade_list(
+                        magnitude, [c, *rest]
+                    )
                     match sorted_rest:
                         case [b, *_] if a < b:
-                            return [a, *sorted_rest], new_val
+                            return new_mag, [a, *sorted_rest]
                         case _:
-                            return mult_blade_list([a, *sorted_rest], new_val)
+                            return mult_blade_list(new_mag, [a, *sorted_rest])
                 case _:
                     raise ValueError(
                         "This code should never be able to be excuted - if printed this is a major logic error on my part"
                     )
 
         def mult_blade(
-            basis_blades: list[int], value: Numeric
+            magnitude: Numeric,
+            basis_blades: list[int],
         ) -> dict[tuple[int, ...], Numeric]:
-            sorted_list, new_val = mult_blade_list(list(basis_blades), value)
-            return {tuple(sorted_list): new_val}
+            new_mag, sorted_list = mult_blade_list(
+                magnitude, list(basis_blades)
+            )
+            return {tuple(sorted_list): new_mag}
 
         match rhs:
             case int() as n:
@@ -144,8 +151,8 @@ class MultiVector:
                     scalar_from_blade=MultiVector.sum_dicts(
                         [
                             mult_blade(
-                                [*blade_left, *blade_right],
                                 scalar_left * scalar_right,
+                                [*blade_left, *blade_right],
                             )
                             for (blade_left, scalar_left), (
                                 blade_right,

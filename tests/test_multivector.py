@@ -181,13 +181,13 @@ def test_multivector_unit_pseudoscalar() -> None:
     i15: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(14)
 
     assert i1 * i1 == mv.MultiVector.from_scalar(1)
-    assert mv.MultiVector.unit_pseudoscalar_squared(1) == mv.MultiVector.from_scalar(
+    assert mv.MultiVector.unit_pseudoscalar_squared(
         1
-    )
+    ) == mv.MultiVector.from_scalar(1)
     assert i2 * i2 == mv.MultiVector.from_scalar(-1)
-    assert mv.MultiVector.unit_pseudoscalar_squared(2) == mv.MultiVector.from_scalar(
-        -1
-    )
+    assert mv.MultiVector.unit_pseudoscalar_squared(
+        2
+    ) == mv.MultiVector.from_scalar(-1)
     assert i3 * i3 == mv.MultiVector.from_scalar(-1)
     assert i4 * i4 == mv.MultiVector.from_scalar(1)
     assert i5 * i5 == mv.MultiVector.from_scalar(1)
