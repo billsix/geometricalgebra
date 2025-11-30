@@ -47,18 +47,18 @@ class Numeric(Protocol):
 
 @dataclasses.dataclass
 class MultiVector:
-    scalar_from_blade: dict[tuple[int, ...], typing.Any]
+    coefficient_of_blade: dict[tuple[int, ...], Numeric]
 
     def __post_init__(self):
-        # prune zero scalar_from_blade
-        self.scalar_from_blade = {
-            blade: self.scalar_from_blade[blade]
-            for blade in self.scalar_from_blade.keys()
-            if self.scalar_from_blade[blade] != 0
+        # prune zero coefficient_of_blade
+        self.coefficient_of_blade = {
+            blade: self.coefficient_of_blade[blade]
+            for blade in self.coefficient_of_blade.keys()
+            if self.coefficient_of_blade[blade] != 0
         }
         # excepty for scalar
-        self.scalar_from_blade = MultiVector.sum_dicts(
-            [self.scalar_from_blade, {tuple(): 0}]
+        self.coefficient_of_blade = MultiVector.sum_dicts(
+            [self.coefficient_of_blade, {tuple(): 0}]
         )
 
     @staticmethod
@@ -95,11 +95,11 @@ class MultiVector:
 
     def __add__(self, rhs) -> "MultiVector":
         return MultiVector(
-            scalar_from_blade={
-                blade: self.scalar_from_blade.get(blade, 0)
-                + rhs.scalar_from_blade.get(blade, 0)
-                for blade in self.scalar_from_blade.keys()
-                | rhs.scalar_from_blade.keys()
+            coefficient_of_blade={
+                blade: self.coefficient_of_blade.get(blade, 0)
+                + rhs.coefficient_of_blade.get(blade, 0)
+                for blade in self.coefficient_of_blade.keys()
+                | rhs.coefficient_of_blade.keys()
             }
         )
 
@@ -142,7 +142,7 @@ class MultiVector:
             return {tuple(sorted_list): new_mag}
 
         def increase_grade(
-            blade_left: list[int], blade_right: list[int]
+            blade_left: tuple[int, ...], blade_right: tuple[int, ...]
         ) -> list[int]:
             return [*blade_left, *blade_right]
 
@@ -155,7 +155,7 @@ class MultiVector:
                 return self * MultiVector.from_sympy_expr(s)
             case _:
                 return MultiVector(
-                    scalar_from_blade=MultiVector.sum_dicts(
+                    coefficient_of_blade=MultiVector.sum_dicts(
                         [
                             decrease_grade(
                                 scalar_left * scalar_right,
@@ -165,8 +165,8 @@ class MultiVector:
                                 blade_right,
                                 scalar_right,
                             ) in itertools.product(
-                                self.scalar_from_blade.items(),
-                                rhs.scalar_from_blade.items(),
+                                self.coefficient_of_blade.items(),
+                                rhs.coefficient_of_blade.items(),
                             )
                         ]
                     )
@@ -213,18 +213,18 @@ class MultiVector:
 
     def r_vector_part(self, r) -> "MultiVector":
         return MultiVector(
-            scalar_from_blade={
-                blade: self.scalar_from_blade[blade]
-                for blade in self.scalar_from_blade.keys()
+            coefficient_of_blade={
+                blade: self.coefficient_of_blade[blade]
+                for blade in self.coefficient_of_blade.keys()
                 if len(blade) == r
             }
         )
 
     def scalar_part(self) -> Numeric:
-        return self.r_vector_part(r=0).scalar_from_blade[tuple()]
+        return self.r_vector_part(r=0).coefficient_of_blade[tuple()]
 
     def grades(self) -> list[int]:
-        return list(set(len(blade) for blade in self.scalar_from_blade.keys()))
+        return list(set(len(blade) for blade in self.coefficient_of_blade.keys()))
 
     def max_grade(self) -> int:
         return max(self.grades())
@@ -246,9 +246,9 @@ class MultiVector:
 
     def simplify(self) -> "MultiVector":
         return MultiVector(
-            scalar_from_blade={
-                blade: sympy.simplify(self.scalar_from_blade[blade])
-                for blade in self.scalar_from_blade.keys()
+            coefficient_of_blade={
+                blade: sympy.simplify(self.coefficient_of_blade[blade])
+                for blade in self.coefficient_of_blade.keys()
             }
         )
 
