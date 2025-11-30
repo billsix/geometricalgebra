@@ -118,7 +118,6 @@ def test_multivector_grade() -> None:
 
     b: mv.MultiVector = 3 * mv.x + 4 * mv.y
 
-
     assert (b * b).scalar_part() == 25
     assert (b * b).r_vector_part(1) == mv.zero
     assert (b * b).r_vector_part(2) == mv.zero

@@ -20,7 +20,6 @@ import dataclasses
 import functools
 import itertools
 import math
-import typing
 from typing import Protocol
 
 import sympy
@@ -77,9 +76,8 @@ class MultiVector:
 
     @staticmethod
     def unit_pseudoscalar_squared(g: int) -> "MultiVector":
-        return MultiVector.unit_pseudoscalar(g) * MultiVector.unit_pseudoscalar(
-            g
-        )
+        unit_pseudoscalar: MultiVector = MultiVector.unit_pseudoscalar(g)
+        return unit_pseudoscalar * unit_pseudoscalar
 
     @staticmethod
     def sum_dicts(dicts: list[dict[list[int], Numeric]]):
@@ -189,24 +187,31 @@ class MultiVector:
     def __abs__(self) -> Numeric | sympy.Expr:
         return sympy.sqrt(self.abs_squared())
 
-    def dot(self, rhs) -> "MultiVector":
+    def dot(lhs, rhs) -> "MultiVector":
         return sum(
             [
-                (self.r_vector_part(x) * rhs.r_vector_part(y)).r_vector_part(
-                    abs(x - y)
+                (
+                    lhs.r_vector_part(left_grade)
+                    * rhs.r_vector_part(right_grade)
+                ).r_vector_part(abs(left_grade - right_grade))
+                for left_grade, right_grade in itertools.product(
+                    lhs.grades(), rhs.grades()
                 )
-                for x, y in itertools.product(self.grades(), rhs.grades())
+                if left_grade > 0 and right_grade > 0
             ],
             start=zero,
         )
 
-    def wedge(self, rhs) -> "MultiVector":
+    def wedge(lhs, rhs) -> "MultiVector":
         return sum(
             [
-                (self.r_vector_part(x) * rhs.r_vector_part(y)).r_vector_part(
-                    x + y
+                (
+                    lhs.r_vector_part(left_grade)
+                    * rhs.r_vector_part(right_grade)
+                ).r_vector_part(left_grade + right_grade)
+                for left_grade, right_grade in itertools.product(
+                    lhs.grades(), rhs.grades()
                 )
-                for x, y in itertools.product(self.grades(), rhs.grades())
             ],
             start=zero,
         )
@@ -224,7 +229,9 @@ class MultiVector:
         return self.r_vector_part(r=0).coefficient_of_blade[tuple()]
 
     def grades(self) -> list[int]:
-        return list(set(len(blade) for blade in self.coefficient_of_blade.keys()))
+        return list(
+            set(len(blade) for blade in self.coefficient_of_blade.keys())
+        )
 
     def max_grade(self) -> int:
         return max(self.grades())
@@ -238,8 +245,8 @@ class MultiVector:
         """
         return sum(
             [
-                MultiVector.unit_pseudoscalar_squared(r) * self.r_vector_part(r)
-                for r in self.grades()
+                MultiVector.unit_pseudoscalar_squared(g) * self.r_vector_part(g)
+                for g in self.grades()
             ],
             start=zero,
         )
