@@ -55,10 +55,6 @@ class MultiVector:
             for blade in self.coefficient_of_blade.keys()
             if self.coefficient_of_blade[blade] != 0
         }
-        # excepty for scalar
-        self.coefficient_of_blade = MultiVector.sum_dicts(
-            [self.coefficient_of_blade, {tuple(): 0}]
-        )
 
     @staticmethod
     def from_scalar(scalar: int | float):
@@ -82,7 +78,8 @@ class MultiVector:
     @staticmethod
     def sum_dicts(dicts: list[dict[list[int], Numeric]]):
         def sum_2_dicts(
-            dict1: dict[list[int], Numeric], dict2: dict[list[int], Numeric]
+            dict1: dict[list[int], Numeric],
+            dict2: dict[list[int], Numeric],
         ):
             return {
                 blade: dict1.get(blade, 0) + dict2.get(blade, 0)
@@ -226,7 +223,7 @@ class MultiVector:
         )
 
     def scalar_part(self) -> Numeric:
-        return self.r_vector_part(r=0).coefficient_of_blade[tuple()]
+        return self.r_vector_part(r=0).coefficient_of_blade.get(tuple(), 0)
 
     def grades(self) -> list[int]:
         return list(
