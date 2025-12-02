@@ -3,7 +3,10 @@ FROM registry.fedoraproject.org/fedora:43
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     echo "keepcache=True" >> /etc/dnf/dnf.conf && \
-    dnf upgrade -y && \
+    dnf upgrade -y
+
+RUN --mount=type=cache,target=/var/cache/libdnf5 \
+    --mount=type=cache,target=/var/lib/dnf \
     dnf install -y \
                    emacs \
                    npm \
@@ -20,12 +23,10 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
 
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
-     export VIRTUAL_ENV_DISABLE_PROMPT 1 && \
+     export VIRTUAL_ENV_DISABLE_PROMPT=1 && \
      python3 -m venv /venv --system-site-packages  && \
      source /venv/bin/activate && \
      python -m pip install --upgrade pip setuptools && \
-     # clean out dnf \
-     dnf clean all && \
      # install pyright for lsp \
      npm install -g pyright
 
@@ -34,5 +35,9 @@ COPY entrypoint/dotfiles/ /root/
 
 RUN emacs --batch --load /root/.emacs.d/install-melpa-packages.el && \
     echo "alias ls='ls --color=auto'" >> ~/.bashrc
+
+
+RUN source /venv/bin/activate && \
+    python -m pip install ty
 
 ENTRYPOINT ["/entrypoint.sh"]
