@@ -16,7 +16,14 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
                    ruff \
                    emacs-gtk+x11 \
                    emacs-pgtk \
-                   tmux && \
+                   tmux
+
+RUN --mount=type=cache,target=/var/cache/libdnf5 \
+    --mount=type=cache,target=/var/lib/dnf \
+     export VIRTUAL_ENV_DISABLE_PROMPT 1 && \
+     python3 -m venv /venv --system-site-packages  && \
+     source /venv/bin/activate && \
+     python -m pip install --upgrade pip setuptools && \
      # clean out dnf \
      dnf clean all && \
      # install pyright for lsp \
