@@ -237,6 +237,16 @@ class MultiVector:
     def dual(self, g: int) -> "MultiVector":
         return self * MultiVector.unit_pseudoscalar(g).inverse()
 
+    def _repr_latex_(self):
+        blades = [
+            str(self.coefficient_of_blade[blade]) + rf"\mathbf{{e}}_{{{''.join(map(str, blade))}}}"
+            if blade != tuple()
+            else str(self.coefficient_of_blade[blade])
+            for blade in self.coefficient_of_blade.keys()
+        ]
+        # latex_string = r"$\frac{1}{2}$"
+        return "$" + " +  ".join(blades) + "$"
+
 
 def project(onto_mv: MultiVector):
     """

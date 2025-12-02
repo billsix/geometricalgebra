@@ -1,12 +1,20 @@
 .DEFAULT_GOAL := help
 
+USE_JUPYTER ?= 1
+USE_SPYDER ?= 1
+
+
 CONTAINER_CMD = podman
 CONTAINER_NAME = geometricalgebra
 
 FILES_TO_MOUNT = -v $(shell pwd):/geometricalgebra/:Z \
 		-v ./entrypoint/entrypoint.sh:/entrypoint.sh:Z \
+		-v ./entrypoint/jupyter.sh:/usr/local/bin/jupyter.sh:Z \
+		-v ./entrypoint/spyder.sh:/usr/local/bin/spyder.sh:Z \
 		-v ./entrypoint/format.sh:/format.sh:Z \
 		-v ./entrypoint/.bashrc:/root/.bashrc:Z
+
+EXPOSE_PORT = -p 8888:8888
 
 
 X_FLAGS_FOR_CONTAINER = -e DISPLAY=$(DISPLAY) \
@@ -22,7 +30,10 @@ all: image shell ## Build the image and go into the shell
 
 .PHONY: image
 image: ## Build the OCI image
-	$(CONTAINER_CMD) build -t $(CONTAINER_NAME) .
+	$(CONTAINER_CMD) build -t $(CONTAINER_NAME) \
+                         --build-arg USE_JUPYTER=$(USE_JUPYTER) \
+                         --build-arg USE_SPYDER=$(USE_SPYDER) \
+                         .
 
 
 .PHONY: shell
@@ -33,6 +44,7 @@ shell:  ## Get Shell into a ephermeral container made from the image
 		-v ./entrypoint/shell.sh:/shell.sh:Z \
 		$(X_FLAGS_FOR_CONTAINER) \
 		$(WAYLAND_FLAGS_FOR_CONTAINER) \
+		$(EXPOSE_PORT) \
 		$(CONTAINER_NAME) \
 		/shell.sh
 
