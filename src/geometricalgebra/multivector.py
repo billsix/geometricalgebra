@@ -74,10 +74,10 @@ class MultiVector:
         return unit_pseudoscalar * unit_pseudoscalar
 
     @staticmethod
-    def sum_dicts(dicts: list[dict[list[int], Numeric]]):
+    def sum_dicts(dicts: list[dict[tuple[int], Numeric]]):
         def sum_2_dicts(
-            dict1: dict[list[int], Numeric],
-            dict2: dict[list[int], Numeric],
+            dict1: dict[tuple[int], Numeric],
+            dict2: dict[tuple[int], Numeric],
         ):
             return {blade: dict1.get(blade, 0) + dict2.get(blade, 0) for blade in dict1.keys() | dict2.keys()}
 

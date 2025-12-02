@@ -76,6 +76,10 @@ def test_multivector_mult() -> None:
         }
     )
 
+    assert mv.sym_vec2_1 * mv.sym_vec2_2 == (
+        mv.sym_vec2_1.dot(mv.sym_vec2_2) + (mv.sym_vec2_1 * i).dot(mv.sym_vec2_2) * i
+    )
+
 
 def test_multivector_mult3d() -> None:
     assert mv.sym_vec3_1 * mv.sym_vec3_2 == mv.MultiVector(
