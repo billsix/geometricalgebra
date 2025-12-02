@@ -41,20 +41,15 @@ import geometricalgebra.multivector as mv
 warnings.filterwarnings("error", category=RuntimeWarning)
 
 # %%
-
-# %%
-
-
-# %%
 # faoeuaoue
-i = mv.x * mv.y
+i = mv.e1 * mv.e2
 i
 
 # %%
 i * i
 
 # %%
-2 * mv.x + 3 * mv.y
+2 * mv.e1 + 3 * mv.e2
 
 
 # %% [markdown]
@@ -62,5 +57,14 @@ i * i
 # -----
 #
 # Foo bar
+
+# %%
+mv.sym_vec2_1
+
+# %%
+mv.sym_vec2_2
+
+# %%
+mv.sym_vec2_1 * mv.sym_vec2_2
 
 # %%

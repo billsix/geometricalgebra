@@ -239,9 +239,12 @@ class MultiVector:
 
     def _repr_latex_(self):
         blades = [
-            str(self.coefficient_of_blade[blade]) + rf"\mathbf{{e}}_{{{''.join(map(str, blade))}}}"
+            "("
+            + sympy.latex(sympy.sympify(str(self.coefficient_of_blade[blade])))
+            + ")"
+            + sympy.latex(sympy.sympify(sympy.symbols("e_" + ''.join(map(str, blade)), bold=True)))
             if blade != tuple()
-            else str(self.coefficient_of_blade[blade])
+            else "(" + str(self.coefficient_of_blade[blade]) + ")"
             for blade in self.coefficient_of_blade.keys()
         ]
         # latex_string = r"$\frac{1}{2}$"
@@ -270,19 +273,19 @@ def reject(from_mv: MultiVector):
     return value
 
 
-x: MultiVector = MultiVector({(1,): 1})
-y: MultiVector = MultiVector({(2,): 1})
-z: MultiVector = MultiVector({(3,): 1})
+e1: MultiVector = MultiVector({(1,): 1})
+e2: MultiVector = MultiVector({(2,): 1})
+e3: MultiVector = MultiVector({(3,): 1})
 zero: MultiVector = MultiVector.from_scalar(0)
 one: MultiVector = MultiVector.from_scalar(1)
 
 a_x, a_y, a_z, b_x, b_y, b_z = sympy.symbols("a_x a_y a_z b_x b_y b_z")
 
-sym_vec2_1: MultiVector = a_x * x + a_y * y
-sym_vec2_2: MultiVector = b_x * x + b_y * y
+sym_vec2_1: MultiVector = a_x * e1 + a_y * e2
+sym_vec2_2: MultiVector = b_x * e1 + b_y * e2
 
-sym_vec3_1: MultiVector = a_x * x + a_y * y + a_z * z
-sym_vec3_2: MultiVector = b_x * x + b_y * y + b_z * z
+sym_vec3_1: MultiVector = a_x * e1 + a_y * e2 + a_z * e3
+sym_vec3_2: MultiVector = b_x * e1 + b_y * e2 + b_z * e3
 
 sym_vec_plane: MultiVector = sym_vec3_1 * sym_vec3_2
 sym_vec_plane_simplified: MultiVector = sym_vec_plane.simplify()
