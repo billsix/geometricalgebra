@@ -242,10 +242,10 @@ class MultiVector:
             "("
             + sympy.latex(sympy.sympify(str(self.coefficient_of_blade[blade])))
             + ")"
-            + sympy.latex(sympy.sympify(sympy.symbols("e_" + "".join(map(str, blade)), bold=True)))
+            + sympy.latex(sympy.sympify("*".join(map(lambda b: "e_" + str(b), blade))))
             if blade != tuple()
             else "(" + sympy.latex(sympy.sympify(str(self.coefficient_of_blade[blade]))) + ")"
-            for blade in self.coefficient_of_blade.keys()
+            for blade in sorted(self.coefficient_of_blade.keys())
         ]
         # latex_string = r"$\frac{1}{2}$"
         return "$" + " +  ".join(blades) + "$"
