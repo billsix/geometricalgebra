@@ -22,7 +22,6 @@ import geometricalgebra.multivector as mv
 
 
 def test_multivector_add() -> None:
-    a: mv.MultiVector = mv.MultiVector({(4, 2): 5, (2, 1): 6})
     b: mv.MultiVector = mv.MultiVector({(1,): 5, (2,): 6})
     c: mv.MultiVector = mv.MultiVector({(1,): 7, (2,): 8})
 

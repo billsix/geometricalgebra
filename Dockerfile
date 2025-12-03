@@ -78,5 +78,9 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
       echo "font/size = 18" >> ~/.config/spyder-py3/config/spyder.ini; \
     fi ;
 
+RUN echo "/usr/local/bin/jupyter.sh" >> ~/.bash_history && \
+    echo "emacs src/geometricalgebra/multivector.py tests/test_multivector.py &" >> ~/.bash_history
+
+
 
 ENTRYPOINT ["/entrypoint.sh"]
