@@ -42,14 +42,14 @@ warnings.filterwarnings("error", category=RuntimeWarning)
 
 # %%
 # faoeuaoue
-i = mv.e1 * mv.e2
+i = mv.e_1 * mv.e_2
 i
 
 # %%
 i * i
 
 # %%
-2 * mv.e1 + 3 * mv.e2
+2 * mv.e_1 + 3 * mv.e_2
 
 
 # %% [markdown]
