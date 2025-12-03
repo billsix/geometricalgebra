@@ -67,4 +67,18 @@ mv.sym_vec2_2
 # %%
 mv.sym_vec2_1 * mv.sym_vec2_2
 
+
+# %%
+def gram_fe_to_mol_fe(gram_fe: float) -> mv.MultiVector:
+    # let gram_fe be e_1
+    # let mol_fe be e_2
+    unit_gram_fe: mv.MultiVector = mv.e_1
+    unit_mol_fe: mv.MultiVector = mv.e_2
+
+    ratio: mv.MultiVector = (55.85 * unit_gram_fe).inverse() * (1 * unit_mol_fe)
+    return gram_fe * unit_gram_fe * ratio
+
+
+gram_fe_to_mol_fe(gram_fe=95.8)
+
 # %%
