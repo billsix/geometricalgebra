@@ -146,7 +146,9 @@ def test_multivector_dot() -> None:
     c: mv.MultiVector = -4 * mv.e_1 + 3 * mv.e_2
     assert a.dot(c) == mv.zero
 
-    assert mv.sym_vec2_1.dot(mv.sym_vec2_2) == mv.MultiVector({(): mv.a_x * mv.b_x + mv.a_y * mv.b_y})
+    assert mv.sym_vec2_1.dot(mv.sym_vec2_2) == mv.MultiVector(
+        {(): mv.a_x * mv.b_x + mv.a_y * mv.b_y}
+    )
 
 
 def test_multivector_wedge() -> None:
@@ -155,7 +157,9 @@ def test_multivector_wedge() -> None:
     c: mv.MultiVector = -4 * mv.e_1 + 3 * mv.e_2
     assert a.wedge(c) == 25 * mv.e_1 * mv.e_2
 
-    assert mv.sym_vec2_1.wedge(mv.sym_vec2_2) == mv.MultiVector({(1, 2): mv.a_x * mv.b_y - mv.a_y * mv.b_x})
+    assert mv.sym_vec2_1.wedge(mv.sym_vec2_2) == mv.MultiVector(
+        {(1, 2): mv.a_x * mv.b_y - mv.a_y * mv.b_x}
+    )
 
 
 def test_multivector_unit_pseudoscalar() -> None:
@@ -221,7 +225,9 @@ def test_multivector_inverse() -> None:
     assert (mv.sym_vec2_1.inverse() * mv.sym_vec2_1).simplify().scalar_part() == 1
 
     assert mv.sym_vec3_1.abs_squared() * mv.sym_vec3_1.inverse() == mv.sym_vec3_1
-    assert (mv.sym_vec3_1.inverse() * mv.sym_vec3_1).simplify() == mv.MultiVector.from_scalar(1)
+    assert (
+        mv.sym_vec3_1.inverse() * mv.sym_vec3_1
+    ).simplify() == mv.MultiVector.from_scalar(1)
 
     plane: mv.MultiVector = mv.sym_vec_plane_simplified
     assert (plane * plane.inverse()).simplify() == mv.one

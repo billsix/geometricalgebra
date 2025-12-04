@@ -79,20 +79,27 @@ class MultiVector:
             dict1: dict[tuple[int], Numeric],
             dict2: dict[tuple[int], Numeric],
         ):
-            return {blade: dict1.get(blade, 0) + dict2.get(blade, 0) for blade in dict1.keys() | dict2.keys()}
+            return {
+                blade: dict1.get(blade, 0) + dict2.get(blade, 0)
+                for blade in dict1.keys() | dict2.keys()
+            }
 
         return functools.reduce(sum_2_dicts, dicts, {})
 
     def __add__(self, rhs) -> "MultiVector":
         return MultiVector(
             coefficient_of_blade={
-                blade: self.coefficient_of_blade.get(blade, 0) + rhs.coefficient_of_blade.get(blade, 0)
-                for blade in self.coefficient_of_blade.keys() | rhs.coefficient_of_blade.keys()
+                blade: self.coefficient_of_blade.get(blade, 0)
+                + rhs.coefficient_of_blade.get(blade, 0)
+                for blade in self.coefficient_of_blade.keys()
+                | rhs.coefficient_of_blade.keys()
             }
         )
 
     def __mul__(self, rhs) -> "MultiVector":
-        def decrease_grade_list(magnitude: Numeric, basis_blades: list[int]) -> tuple[Numeric, list[int]]:
+        def decrease_grade_list(
+            magnitude: Numeric, basis_blades: list[int]
+        ) -> tuple[Numeric, list[int]]:
             match basis_blades:
                 case []:
                     return magnitude, []
@@ -121,7 +128,9 @@ class MultiVector:
             new_mag, sorted_list = decrease_grade_list(magnitude, list(basis_blades))
             return {tuple(sorted_list): new_mag}
 
-        def increase_grade(blade_left: tuple[int, ...], blade_right: tuple[int, ...]) -> list[int]:
+        def increase_grade(
+            blade_left: tuple[int, ...], blade_right: tuple[int, ...]
+        ) -> list[int]:
             return [*blade_left, *blade_right]
 
         match rhs:
@@ -170,10 +179,12 @@ class MultiVector:
     def dot(lhs, rhs) -> "MultiVector":
         return sum(
             [
-                (lhs.r_vector_part(left_grade) * rhs.r_vector_part(right_grade)).r_vector_part(
-                    abs(left_grade - right_grade)
+                (
+                    lhs.r_vector_part(left_grade) * rhs.r_vector_part(right_grade)
+                ).r_vector_part(abs(left_grade - right_grade))
+                for left_grade, right_grade in itertools.product(
+                    lhs.grades(), rhs.grades()
                 )
-                for left_grade, right_grade in itertools.product(lhs.grades(), rhs.grades())
                 if left_grade > 0 and right_grade > 0
             ],
             start=zero,
@@ -182,8 +193,12 @@ class MultiVector:
     def wedge(lhs, rhs) -> "MultiVector":
         return sum(
             [
-                (lhs.r_vector_part(left_grade) * rhs.r_vector_part(right_grade)).r_vector_part(left_grade + right_grade)
-                for left_grade, right_grade in itertools.product(lhs.grades(), rhs.grades())
+                (
+                    lhs.r_vector_part(left_grade) * rhs.r_vector_part(right_grade)
+                ).r_vector_part(left_grade + right_grade)
+                for left_grade, right_grade in itertools.product(
+                    lhs.grades(), rhs.grades()
+                )
             ],
             start=zero,
         )
@@ -191,7 +206,9 @@ class MultiVector:
     def r_vector_part(self, r) -> "MultiVector":
         return MultiVector(
             coefficient_of_blade={
-                blade: self.coefficient_of_blade[blade] for blade in self.coefficient_of_blade.keys() if len(blade) == r
+                blade: self.coefficient_of_blade[blade]
+                for blade in self.coefficient_of_blade.keys()
+                if len(blade) == r
             }
         )
 
@@ -212,14 +229,18 @@ class MultiVector:
         expression
         """
         return sum(
-            [MultiVector.unit_pseudoscalar_squared(g) * self.r_vector_part(g) for g in self.grades()],
+            [
+                MultiVector.unit_pseudoscalar_squared(g) * self.r_vector_part(g)
+                for g in self.grades()
+            ],
             start=zero,
         )
 
     def simplify(self) -> "MultiVector":
         return MultiVector(
             coefficient_of_blade={
-                blade: sympy.simplify(self.coefficient_of_blade[blade]) for blade in self.coefficient_of_blade.keys()
+                blade: sympy.simplify(self.coefficient_of_blade[blade])
+                for blade in self.coefficient_of_blade.keys()
             }
         )
 
@@ -244,7 +265,9 @@ class MultiVector:
             + ")"
             + sympy.latex(sympy.sympify("*".join(map(lambda b: "e_" + str(b), blade))))
             if blade != tuple()
-            else "(" + sympy.latex(sympy.sympify(str(self.coefficient_of_blade[blade]))) + ")"
+            else "("
+            + sympy.latex(sympy.sympify(str(self.coefficient_of_blade[blade])))
+            + ")"
             for blade in sorted(self.coefficient_of_blade.keys())
         ]
         # latex_string = r"$\frac{1}{2}$"
