@@ -20,12 +20,12 @@ import dataclasses
 import functools
 import itertools
 import math
-from typing import Protocol
+import typing
 
 import sympy
 
 
-class Numeric(Protocol):
+class Numeric(typing.Protocol):
     """Generic numeric protocol."""
 
     def __add__(self, other) -> "Numeric": ...
@@ -44,9 +44,12 @@ class Numeric(Protocol):
     # def __rpow__(self, other) -> 'Numeric': ...
 
 
+BladeCoef = dict[tuple[int, ...], Numeric]
+
+
 @dataclasses.dataclass
 class MultiVector:
-    coefficient_of_blade: dict[tuple[int, ...], Numeric]
+    coefficient_of_blade: BladeCoef
 
     def __post_init__(self):
         # prune zero coefficient_of_blade
@@ -74,13 +77,10 @@ class MultiVector:
         return unit_pseudoscalar * unit_pseudoscalar
 
     @staticmethod
-    def sum_dicts(dicts: list[dict[tuple[int], Numeric]]):
-        def sum_2_dicts(
-            dict1: dict[tuple[int], Numeric],
-            dict2: dict[tuple[int], Numeric],
-        ):
+    def sum_dicts(dicts: list[BladeCoef]) -> BladeCoef:
+        def sum_2_dicts(dict1: BladeCoef, dict2: BladeCoef) -> BladeCoef:
             return {
-                blade: dict1.get(blade, 0) + dict2.get(blade, 0)
+                blade: dict1.get(blade, 0) + dict2.get(blade, 0)  # type: ignore
                 for blade in dict1.keys() | dict2.keys()
             }
 
@@ -89,10 +89,13 @@ class MultiVector:
     def __add__(self, rhs) -> "MultiVector":
         return MultiVector(
             coefficient_of_blade={
-                blade: self.coefficient_of_blade.get(blade, 0)
-                + rhs.coefficient_of_blade.get(blade, 0)
-                for blade in self.coefficient_of_blade.keys()
-                | rhs.coefficient_of_blade.keys()
+                blade: (
+                    self.coefficient_of_blade.get(blade, 0)
+                    + rhs.coefficient_of_blade.get(blade, 0)
+                )
+                for blade in (
+                    self.coefficient_of_blade.keys() | rhs.coefficient_of_blade.keys()
+                )
             }
         )
 
@@ -117,14 +120,12 @@ class MultiVector:
                         case _:
                             return decrease_grade_list(new_mag, [a, *sorted_rest])
                 case _:
-                    raise ValueError(
-                        "This code should never be able to be excuted"
-                    )
+                    raise ValueError("This code should never be able to be excuted")
 
         def decrease_grade(
             magnitude: Numeric,
             basis_blades: list[int],
-        ) -> dict[tuple[int, ...], Numeric]:
+        ) -> BladeCoef:
             new_mag, sorted_list = decrease_grade_list(magnitude, list(basis_blades))
             return {tuple(sorted_list): new_mag}
 
@@ -176,34 +177,29 @@ class MultiVector:
     def __abs__(self) -> Numeric | sympy.Expr:
         return sympy.sqrt(self.abs_squared())
 
-    def dot(lhs, rhs) -> "MultiVector":
+    def dot(self, rhs) -> "MultiVector":
         return sum(
             [
-                (
-                    lhs.r_vector_part(left_grade) * rhs.r_vector_part(right_grade)
-                ).r_vector_part(abs(left_grade - right_grade))
-                for left_grade, right_grade in itertools.product(
-                    lhs.grades(), rhs.grades()
-                )
-                if left_grade > 0 and right_grade > 0
+                (self.r(lg) * rhs.r(rg)).r(abs(lg - rg))
+                for lg, rg in itertools.product(self.grades(), rhs.grades())
+                if lg > 0 and rg > 0
             ],
             start=zero,
         )
 
-    def wedge(lhs, rhs) -> "MultiVector":
+    def wedge(self, rhs) -> "MultiVector":
         return sum(
             [
-                (
-                    lhs.r_vector_part(left_grade) * rhs.r_vector_part(right_grade)
-                ).r_vector_part(left_grade + right_grade)
-                for left_grade, right_grade in itertools.product(
-                    lhs.grades(), rhs.grades()
-                )
+                (self.r(lg) * rhs.r(rg)).r(lg + rg)
+                for lg, rg in itertools.product(self.grades(), rhs.grades())
             ],
             start=zero,
         )
 
-    def r_vector_part(self, r) -> "MultiVector":
+    def r(self, part: int) -> "MultiVector":
+        return self.r_vector_part(part)
+
+    def r_vector_part(self, r: int) -> "MultiVector":
         return MultiVector(
             coefficient_of_blade={
                 blade: self.coefficient_of_blade[blade]
@@ -213,7 +209,7 @@ class MultiVector:
         )
 
     def scalar_part(self) -> Numeric:
-        return self.r_vector_part(r=0).coefficient_of_blade.get(tuple(), 0)
+        return self.r(0).coefficient_of_blade.get(tuple(), 0)  # type: ignore
 
     def grades(self) -> list[int]:
         return list(set(len(blade) for blade in self.coefficient_of_blade.keys()))
@@ -230,7 +226,7 @@ class MultiVector:
         """
         return sum(
             [
-                MultiVector.unit_pseudoscalar_squared(g) * self.r_vector_part(g)
+                MultiVector.unit_pseudoscalar_squared(g) * self.r(g)
                 for g in self.grades()
             ],
             start=zero,
@@ -239,7 +235,7 @@ class MultiVector:
     def simplify(self) -> "MultiVector":
         return MultiVector(
             coefficient_of_blade={
-                blade: sympy.simplify(self.coefficient_of_blade[blade])
+                blade: sympy.simplify(self.coefficient_of_blade[blade])  # type: ignore
                 for blade in self.coefficient_of_blade.keys()
             }
         )
@@ -274,23 +270,23 @@ class MultiVector:
         return "$" + " +  ".join(blades) + "$"
 
 
-def project(onto_mv: MultiVector):
+def project(onto_mv: MultiVector) -> typing.Callable[[MultiVector], MultiVector]:
     """
     page 18
     """
 
-    def value(value: MultiVector):
+    def value(value: MultiVector) -> MultiVector:
         return (value.dot(onto_mv)) * onto_mv.inverse()
 
     return value
 
 
-def reject(from_mv: MultiVector):
+def reject(from_mv: MultiVector) -> typing.Callable[[MultiVector], MultiVector]:
     """
     page 18
     """
 
-    def value(value: MultiVector):
+    def value(value: MultiVector) -> MultiVector:
         return (value.wedge(from_mv)) * from_mv.inverse()
 
     return value
