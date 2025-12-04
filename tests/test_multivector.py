@@ -22,36 +22,36 @@ import geometricalgebra.multivector as mv
 
 
 def test_multivector_add() -> None:
-    b: mv.MultiVector = mv.MultiVector({(1,): 5, (2,): 6})
-    c: mv.MultiVector = mv.MultiVector({(1,): 7, (2,): 8})
+    b: mv.MultiVector = mv.MultiVector({(1,): 5, (2,): 6})  # type: ignore
+    c: mv.MultiVector = mv.MultiVector({(1,): 7, (2,): 8})  # type: ignore
 
-    assert b + c == mv.MultiVector({(1,): 12, (2,): 14})
+    assert b + c == mv.MultiVector({(1,): 12, (2,): 14})  # type: ignore
 
 
 def test_multivector_absolute_units() -> None:
     x: mv.MultiVector = mv.e_1
-    assert x == mv.MultiVector({(1,): 1})
+    assert x == mv.MultiVector({(1,): 1})  # type: ignore
     y: mv.MultiVector = mv.e_2
-    assert y == mv.MultiVector({(2,): 1})
+    assert y == mv.MultiVector({(2,): 1})  # type: ignore
     z: mv.MultiVector = mv.e_3
-    assert z == mv.MultiVector({(3,): 1})
+    assert z == mv.MultiVector({(3,): 1})  # type: ignore
 
     # test addition
-    assert x + y == mv.MultiVector({(1,): 1, (2,): 1})
-    assert x + z == mv.MultiVector({(1,): 1, (3,): 1})
-    assert y + z == mv.MultiVector({(2,): 1, (3,): 1})
+    assert x + y == mv.MultiVector({(1,): 1, (2,): 1})  # type: ignore
+    assert x + z == mv.MultiVector({(1,): 1, (3,): 1})  # type: ignore
+    assert y + z == mv.MultiVector({(2,): 1, (3,): 1})  # type: ignore
 
     # test scalar multiplication
-    assert x * 2 == mv.MultiVector({(1,): 2})
-    assert 2 * x == mv.MultiVector({(1,): 2})
-    assert y * 2 == mv.MultiVector({(2,): 2})
-    assert z * 2 == mv.MultiVector({(3,): 2})
+    assert x * 2 == mv.MultiVector({(1,): 2})  # type: ignore
+    assert 2 * x == mv.MultiVector({(1,): 2})  # type: ignore
+    assert y * 2 == mv.MultiVector({(2,): 2})  # type: ignore
+    assert z * 2 == mv.MultiVector({(3,): 2})  # type: ignore
 
     # test addition on relative units
-    assert (x + y) * 2 == mv.MultiVector({(1,): 2, (2,): 2})
+    assert (x + y) * 2 == mv.MultiVector({(1,): 2, (2,): 2})  # type: ignore
 
     # test permutations
-    assert (x * y * z) == mv.MultiVector({(1, 2, 3): 1})
+    assert (x * y * z) == mv.MultiVector({(1, 2, 3): 1})  # type: ignore
     assert (x * z * y) == -(x * y * z)
     assert (z * x * y) == (x * y * z)
     assert (z * y * x) == -(x * y * z)
@@ -62,7 +62,7 @@ def test_multivector_absolute_units() -> None:
 def test_multivector_mult() -> None:
     a: mv.MultiVector = 3 * mv.e_1 + 4 * mv.e_2
 
-    assert a * a == mv.MultiVector({(): 25, (1, 2): 0})
+    assert a * a == mv.MultiVector({(): 25, (1, 2): 0})  # type: ignore
 
     i: mv.MultiVector = mv.MultiVector.unit_pseudoscalar(2)
     assert a * i == -4 * mv.e_1 + 3 * mv.e_2
@@ -142,7 +142,7 @@ def test_multivector_grade() -> None:
 
 def test_multivector_dot() -> None:
     a: mv.MultiVector = 3 * mv.e_1 + 4 * mv.e_2
-    assert a.dot(a) == mv.MultiVector({tuple(): 25})
+    assert a.dot(a) == mv.MultiVector({tuple(): 25})  # type: ignore
     c: mv.MultiVector = -4 * mv.e_1 + 3 * mv.e_2
     assert a.dot(c) == mv.zero
 

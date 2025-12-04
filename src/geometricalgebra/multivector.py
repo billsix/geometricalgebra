@@ -58,7 +58,7 @@ class MultiVector:
 
     @staticmethod
     def from_scalar(scalar: int | float):
-        return MultiVector({tuple(): scalar})
+        return MultiVector({tuple(): scalar})  # type: ignore
 
     @staticmethod
     def from_sympy_expr(s: sympy.Expr):
@@ -66,7 +66,7 @@ class MultiVector:
 
     @staticmethod
     def unit_pseudoscalar(g: int) -> "MultiVector":
-        return math.prod([MultiVector({(x,): 1}) for x in range(1, g + 1)], start=one)
+        return math.prod([MultiVector({(x,): 1}) for x in range(1, g + 1)], start=one)  # type: ignore
 
     @staticmethod
     def unit_pseudoscalar_squared(g: int) -> "MultiVector":
@@ -273,9 +273,9 @@ def reject(from_mv: MultiVector):
     return value
 
 
-e_1: MultiVector = MultiVector({(1,): 1})
-e_2: MultiVector = MultiVector({(2,): 1})
-e_3: MultiVector = MultiVector({(3,): 1})
+e_1: MultiVector = MultiVector({(1,): 1})  # type: ignore
+e_2: MultiVector = MultiVector({(2,): 1})  # type: ignore
+e_3: MultiVector = MultiVector({(3,): 1})  # type: ignore
 zero: MultiVector = MultiVector.from_scalar(0)
 one: MultiVector = MultiVector.from_scalar(1)
 
