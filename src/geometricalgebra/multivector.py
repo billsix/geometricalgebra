@@ -118,7 +118,7 @@ class MultiVector:
                             return decrease_grade_list(new_mag, [a, *sorted_rest])
                 case _:
                     raise ValueError(
-                        "This code should never be able to be excuted - if printed this is a major logic error on my part"
+                        "This code should never be able to be excuted"
                     )
 
         def decrease_grade(
