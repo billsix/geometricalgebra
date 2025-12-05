@@ -4,3 +4,5 @@ cd /geometricalgebra/
 
 ruff check . --fix
 ruff format --line-length=88
+
+ty check

@@ -44,10 +44,6 @@ RUN emacs --batch --load /root/.emacs.d/install-melpa-packages.el && \
 RUN source /venv/bin/activate && \
     python -m pip install ty
 
-RUN source /venv/bin/activate && \
-    ty check
-
-
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     if [ "$USE_JUPYTER" = "1" ]; then \
