@@ -16,6 +16,10 @@
 ;; Disable eglot hooks for python-mode
 (remove-hook 'python-mode-hook 'eglot-ensure)
 
+(use-package yafolding
+  :ensure t
+  :hook (prog-mode . yafolding-mode))
+
 
 (use-package lsp-mode
   :hook ((python-mode . lsp-deferred))
