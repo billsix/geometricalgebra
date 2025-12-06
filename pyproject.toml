@@ -5,6 +5,17 @@ authors = [{name="William Emerison Six", email="billsix@gmail.com"}]
 description = "Geometric Algebra"
 
 dependencies = [
+    "glfw",
+    "jupyter",
+    "jupyter-lsp",
+    "jupyter-ydoc",
+    "jupyterlab",
+    "jupyterlab-mathjax3",
+    "jupytext",
+    "mathjax",
+    "matplotlib",
+    "numpy",
+    "ruff",
     "sympy",
     "setuptools>=78.1.1",
 ]

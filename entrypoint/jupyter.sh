@@ -1,4 +1,5 @@
 cd /geometricalgebra
+/usr/local/bin/percentToIpynb.sh
 export VIRTUAL_ENV_DISABLE_PROMPT=1
 source /venv/bin/activate
 # in general this is super dangerous, but for our purposes,

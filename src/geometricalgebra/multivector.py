@@ -259,7 +259,7 @@ class MultiVector:
             "("
             + sympy.latex(sympy.sympify(str(self.coefficient_of_blade[blade])))
             + ")"
-            + sympy.latex(sympy.sympify("*".join(map(lambda b: "e_" + str(b), blade))))
+            + " ".join(map(lambda b: r"\mathbf{\vec{e}}_" + str(b), blade))
             if blade != tuple()
             else "("
             + sympy.latex(sympy.sympify(str(self.coefficient_of_blade[blade])))
