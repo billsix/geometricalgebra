@@ -68,7 +68,13 @@ mv.sym_vec2_1
 mv.sym_vec2_2
 
 # %%
-Math("$($" + mv.sym_vec2_1._repr_latex_()  + "$)*$($" + mv.sym_vec2_2._repr_latex_() "$)$")
+Math(
+    "$($"
+    + mv.sym_vec2_1._repr_latex_()
+    + "$)*($"
+    + mv.sym_vec2_2._repr_latex_()
+    + "$)$"
+)
 
 # %%
 mv.sym_vec2_1 * mv.sym_vec2_2
