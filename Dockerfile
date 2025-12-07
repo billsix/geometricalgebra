@@ -1,86 +1,68 @@
-FROM registry.fedoraproject.org/fedora:43
+FROM docker.io/debian:trixie
 
-ARG USE_JUPYTER=0
-ARG USE_SPYDER=0
+ARG USE_JUPYTER=1
+ARG USE_SPYDER=1
 
 
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
-    --mount=type=cache,target=/var/lib/dnf \
-    echo "keepcache=True" >> /etc/dnf/dnf.conf && \
-    dnf upgrade -y
+# Install necessary packages for OpenGL
+RUN apt update -y
+RUN apt install -y \
+    emacs \
+    fonts-mathjax \
+    g++ \
+    gcc \
+    git \
+    jupyter \
+    jupyterlab \
+    libglfw3 \
+    mesa-va-drivers \
+    mesa-vdpau-drivers \
+    npm \
+    python3 \
+    python3-dev \
+    python3-jupyter-server-mathjax \
+    python3-jupytext \
+    python3-opengl \
+    python3-pip \
+    python3-pyglfw \
+    python3-pytest \
+    python3-setuptools \
+    python3-sympy \
+    python3-venv \
+    python3-wheel \
+    texlive-latex-base \
+    texlive-latex-recommended \
+    texlive-science  \
+    tmux \
+    which
 
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
-    --mount=type=cache,target=/var/lib/dnf \
-    dnf install -y \
-                   emacs \
-                   npm \
-                   python3 \
-                   python3-pip \
-                   python3-setuptools \
-                   python3-sympy \
-                   python3-pytest \
-                   python3-wheel \
-                   ruff \
-                   emacs-gtk+x11 \
-                   emacs-pgtk \
-                   tmux
 
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
-    --mount=type=cache,target=/var/lib/dnf \
-     export VIRTUAL_ENV_DISABLE_PROMPT=1 && \
-     python3 -m venv /venv --system-site-packages  && \
-     source /venv/bin/activate && \
-     python -m pip install --upgrade pip setuptools && \
-     # install pyright for lsp \
+RUN echo FOO && python3 -m venv /venv --system-site-packages  && \
+    . /venv/bin/activate && \
+    python -m pip install --upgrade pip setuptools && \
+       python3 -m pip install ty --root-user-action=ignore  # ty \
+       cd ~/ && # imgui \
+       git clone https://github.com/billsix/pyimgui.git && \
+       cd pyimgui && \
+       git submodule init && git submodule update && \
+       python3 -m pip install . --root-user-action=ignore
+
+
+RUN  # install pyright for lsp \
      npm install -g pyright
 
+
+RUN . /venv/bin/activate && \
+    python -m pip install ty
 
 COPY entrypoint/dotfiles/ /root/
 
 RUN emacs --batch --load /root/.emacs.d/install-melpa-packages.el && \
     echo "alias ls='ls --color=auto'" >> ~/.bashrc
 
-
-RUN source /venv/bin/activate && \
-    python -m pip install ty
-
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
-    --mount=type=cache,target=/var/lib/dnf \
-    if [ "$USE_JUPYTER" = "1" ]; then \
-       dnf install -y \
-                   jupyter \
-                   jupyterlab  \
-                   jupytext \
-                   mathjax \
-                   mathjax-main-fonts \
-                   mathjax-math-fonts \
-                   python3-jupyterlab-jupytext \
-        	   python3-jupyter-lsp  ; \
-    fi;
-
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
-    --mount=type=cache,target=/var/lib/dnf \
-    if [ "$USE_SPYDER" = "1" ]; then \
-      dnf install -y   \
-                   mesa-dri-drivers  \
-                   mesa-libGLU-devel && \
-      dnf install -y python3-spyder && \
-      mkdir -p ~/.config/spyder-py3/config && \
-      echo "[editor]" >> ~/.config/spyder-py3/config/spyder.ini && \
-      echo "font/family = Source Code Pro" >> ~/.config/spyder-py3/config/spyder.ini && \
-      echo "font/size = 24" >> ~/.config/spyder-py3/config/spyder.ini && \
-      echo "[file_explorer]" >> ~/.config/spyder-py3/config/spyder.ini && \
-      echo "visible = False" >> ~/.config/spyder-py3/config/spyder.ini && \
-      echo "[tours]" >> ~/.config/spyder-py3/config/spyder.ini && \
-      echo "show_tour_message = False" >> ~/.config/spyder-py3/config/spyder.ini && \
-      echo "[appearance]" >> ~/.config/spyder-py3/config/spyder.ini && \
-      echo "font/family = Adwaita Mono" >> ~/.config/spyder-py3/config/spyder.ini && \
-      echo "font/size = 18" >> ~/.config/spyder-py3/config/spyder.ini; \
-    fi ;
-
 RUN echo "/usr/local/bin/jupyter.sh" >> ~/.bash_history && \
     echo "emacs src/geometricalgebra/multivector.py tests/test_multivector.py &" >> ~/.bash_history
 
-
+RUN apt install -y emacs-pgtk
 
 ENTRYPOINT ["/entrypoint.sh"]

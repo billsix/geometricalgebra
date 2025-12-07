@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.18.1
+#       jupytext_version: 1.16.4
 #   kernelspec:
 #     display_name: geometricalgebra
 #     language: python
@@ -68,13 +68,7 @@ mv.sym_vec2_1
 mv.sym_vec2_2
 
 # %%
-Math(
-    "$($"
-    + mv.sym_vec2_1._repr_latex_()
-    + "$)*($"
-    + mv.sym_vec2_2._repr_latex_()
-    + "$)$"
-)
+Math("$($" + mv.sym_vec2_1._repr_latex_()  + "$)*$($" + mv.sym_vec2_2._repr_latex_() "$)$")
 
 # %%
 mv.sym_vec2_1 * mv.sym_vec2_2
