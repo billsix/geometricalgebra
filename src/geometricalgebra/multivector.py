@@ -100,39 +100,27 @@ class MultiVector:
         )
 
     def __mul__(self, rhs) -> "MultiVector":
-        def decrease_grade_list(
-            magnitude: Numeric, basis_blades: list[int]
-        ) -> tuple[Numeric, list[int]]:
+        def decrease_grade(
+            basis_blades: tuple[int, ...], magnitude: Numeric
+        ) -> tuple[tuple[int, ...], Numeric]:
             match basis_blades:
-                case []:
-                    return magnitude, []
-                case [a]:
-                    return magnitude, [a]
-                case [a, c, *rest] if a == c:
-                    return decrease_grade_list(magnitude, rest)
-                case [a, c, *rest] if a > c:
-                    return decrease_grade_list(-magnitude, [c, a, *rest])
-                case [a, c, *rest] if a < c:
-                    new_mag, sorted_rest = decrease_grade_list(magnitude, [c, *rest])
+                case ():
+                    return (), magnitude
+                case (a,):
+                    return (a,), magnitude
+                case (a, c, *rest) if a == c:
+                    return decrease_grade(tuple(rest), magnitude)
+                case (a, c, *rest) if a > c:
+                    return decrease_grade((c, a, *rest), -magnitude)
+                case (a, c, *rest) if a < c:
+                    sorted_rest, new_mag = decrease_grade((c, *rest), magnitude)
                     match sorted_rest:
-                        case [b, *_] if a < b:
-                            return new_mag, [a, *sorted_rest]
+                        case (b, *_) if a < b:
+                            return (a, *sorted_rest), new_mag
                         case _:
-                            return decrease_grade_list(new_mag, [a, *sorted_rest])
+                            return decrease_grade((a, *sorted_rest), new_mag)
                 case _:
                     raise ValueError("This code should never be able to be excuted")
-
-        def decrease_grade(
-            magnitude: Numeric,
-            basis_blades: list[int],
-        ) -> BladeCoef:
-            new_mag, sorted_list = decrease_grade_list(magnitude, list(basis_blades))
-            return {tuple(sorted_list): new_mag}
-
-        def increase_grade(
-            blade_left: tuple[int, ...], blade_right: tuple[int, ...]
-        ) -> list[int]:
-            return [*blade_left, *blade_right]
 
         match rhs:
             case int() as n:
@@ -145,9 +133,13 @@ class MultiVector:
                 return MultiVector(
                     coefficient_of_blade=MultiVector.sum_dicts(
                         [
-                            decrease_grade(
-                                scalar_left * scalar_right,
-                                increase_grade(blade_left, blade_right),
+                            dict(
+                                [
+                                    decrease_grade(
+                                        basis_blades=(*blade_left, *blade_right),
+                                        magnitude=scalar_left * scalar_right,
+                                    )
+                                ]
                             )
                             for (blade_left, scalar_left), (
                                 blade_right,
