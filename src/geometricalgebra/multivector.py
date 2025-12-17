@@ -90,9 +90,9 @@ class MultiVector:
                 case (a,):
                     return (a,), magnitude
                 case (a, c, *rest) if a == c:
-                    return decrease_grade(tuple(rest), magnitude)
+                    return decrease_grade((*rest,), magnitude)
                 case (a, c, *rest) if a > c:
-                    return decrease_grade((c, a, *rest), -magnitude)
+                    return decrease_grade((c, a, *rest), -magnitude)  # type: ignore
                 case (a, c, *rest) if a < c:
                     sorted_rest, new_mag = decrease_grade((c, *rest), magnitude)
                     match sorted_rest:
@@ -118,7 +118,7 @@ class MultiVector:
                                 [
                                     decrease_grade(
                                         basis_blades=(*blade_left, *blade_right),
-                                        magnitude=scalar_left * scalar_right,
+                                        magnitude=scalar_left * scalar_right,  # type: ignore
                                     )
                                 ]
                             )
@@ -222,7 +222,7 @@ class MultiVector:
 
         Note sure if I'm doing it correctly
         """
-        return self.reverse().simplify() * (self.abs_squared().scalar_part() ** (-1))
+        return self.reverse().simplify() * (self.abs_squared().scalar_part() ** (-1))  # type: ignore
 
     def dual(self, g: int) -> "MultiVector":
         return self * MultiVector.unit_pseudoscalar(g).inverse()
