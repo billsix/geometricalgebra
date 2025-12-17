@@ -35,6 +35,8 @@
 # %%
 import warnings
 
+from IPython.display import Math
+
 import geometricalgebra.multivector as mv
 
 # turn warnings into exceptions
@@ -59,7 +61,6 @@ i * i
 # Foo bar
 
 # %%
-from IPython.display import Math
 
 # %%
 mv.sym_vec2_1

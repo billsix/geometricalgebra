@@ -20,31 +20,12 @@ import dataclasses
 import functools
 import itertools
 import math
+import numbers
 import typing
 
 import sympy
 
-
-class Numeric(typing.Protocol):
-    """Generic numeric protocol."""
-
-    def __add__(self, other) -> "Numeric": ...
-    # def __radd__(self, other) -> 'Numeric': ...
-    # def __sub__(self, other) -> 'Numeric': ...
-    # def __rsub__(self, other) -> 'Numeric': ...
-    def __mul__(self, other) -> "Numeric": ...
-    def __rmul__(self, other) -> "Numeric": ...
-    # def __truediv__(self, other) -> 'Numeric': ...
-    # def __rtruediv__(self, other) -> 'Numeric': ...
-    def __neg__(self) -> "Numeric": ...
-    # def __pos__(self) -> 'Numeric': ...
-    def __abs__(self) -> "Numeric": ...
-    def __pow__(self, other) -> "Numeric": ...
-
-    # def __rpow__(self, other) -> 'Numeric': ...
-
-
-BladeCoef = dict[tuple[int, ...], Numeric]
+BladeCoef = dict[tuple[int, ...], numbers.Number]
 
 
 @dataclasses.dataclass
@@ -65,7 +46,7 @@ class MultiVector:
 
     @staticmethod
     def from_sympy_expr(s: sympy.Expr):
-        return MultiVector({tuple(): s})
+        return MultiVector({tuple(): s})  # type: ignore
 
     @staticmethod
     def unit_pseudoscalar(g: int) -> "MultiVector":
@@ -101,8 +82,8 @@ class MultiVector:
 
     def __mul__(self, rhs) -> "MultiVector":
         def decrease_grade(
-            basis_blades: tuple[int, ...], magnitude: Numeric
-        ) -> tuple[tuple[int, ...], Numeric]:
+            basis_blades: tuple[int, ...], magnitude: numbers.Number
+        ) -> tuple[tuple[int, ...], numbers.Number]:
             match basis_blades:
                 case ():
                     return (), magnitude
@@ -166,7 +147,7 @@ class MultiVector:
     def __neg__(self) -> "MultiVector":
         return -1 * self
 
-    def __abs__(self) -> Numeric | sympy.Expr:
+    def __abs__(self) -> numbers.Number | sympy.Expr:
         return sympy.sqrt(self.abs_squared())
 
     def dot(self, rhs) -> "MultiVector":
@@ -200,7 +181,7 @@ class MultiVector:
             }
         )
 
-    def scalar_part(self) -> Numeric:
+    def scalar_part(self) -> numbers.Number:
         return self.r(0).coefficient_of_blade.get(tuple(), 0)  # type: ignore
 
     def grades(self) -> list[int]:
