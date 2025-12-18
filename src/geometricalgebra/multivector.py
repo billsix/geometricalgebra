@@ -228,15 +228,20 @@ class MultiVector:
         return self * MultiVector.unit_pseudoscalar(g).inverse()
 
     def _repr_latex_(self):
+        def add_parens_or_dont(x):
+            if isinstance(x, sympy.Expr):
+                if x.is_Add:
+                    return "(" + sympy.latex(sympy.sympify(str(x))) + ")"
+                else:
+                    return sympy.latex(sympy.sympify(str(x)))
+            else:
+                return sympy.latex(sympy.sympify(str(x)))
+
         blades = [
-            "("
-            + sympy.latex(sympy.sympify(str(self.coefficient_of_blade[blade])))
-            + ")"
+            add_parens_or_dont(self.coefficient_of_blade[blade])
             + " ".join(map(lambda b: r"\mathbf{\vec{e}}_" + str(b), blade))
             if blade != tuple()
-            else "("
-            + sympy.latex(sympy.sympify(str(self.coefficient_of_blade[blade])))
-            + ")"
+            else add_parens_or_dont(self.coefficient_of_blade[blade])
             for blade in sorted(self.coefficient_of_blade.keys())
         ]
         # latex_string = r"$\frac{1}{2}$"
@@ -271,13 +276,13 @@ e_3: MultiVector = MultiVector({(3,): 1})  # type: ignore
 zero: MultiVector = MultiVector.from_scalar(0)
 one: MultiVector = MultiVector.from_scalar(1)
 
-a_x, a_y, a_z, b_x, b_y, b_z = sympy.symbols("a_x a_y a_z b_x b_y b_z")
+a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3")
 
-sym_vec2_1: MultiVector = a_x * e_1 + a_y * e_2
-sym_vec2_2: MultiVector = b_x * e_1 + b_y * e_2
+sym_vec2_1: MultiVector = a_1 * e_1 + a_2 * e_2
+sym_vec2_2: MultiVector = b_1 * e_1 + b_2 * e_2
 
-sym_vec3_1: MultiVector = a_x * e_1 + a_y * e_2 + a_z * e_3
-sym_vec3_2: MultiVector = b_x * e_1 + b_y * e_2 + b_z * e_3
+sym_vec3_1: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+sym_vec3_2: MultiVector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
 
 sym_vec_plane: MultiVector = sym_vec3_1 * sym_vec3_2
 sym_vec_plane_simplified: MultiVector = sym_vec_plane.simplify()

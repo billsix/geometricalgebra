@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.16.4
+#       jupytext_version: 1.18.1
 #   kernelspec:
 #     display_name: geometricalgebra
 #     language: python
@@ -37,21 +37,21 @@ import warnings
 
 from IPython.display import Math
 
-import geometricalgebra.multivector as mv
+from geometricalgebra.multivector import e_1, e_2, sym_vec2_1, sym_vec2_2
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)
 
 # %%
 # faoeuaoue
-i = mv.e_1 * mv.e_2
+i = e_1 * e_2
 i
 
 # %%
 i * i
 
 # %%
-2 * mv.e_1 + 3 * mv.e_2
+2 * e_1 + 3 * e_2
 
 
 # %% [markdown]
@@ -61,32 +61,30 @@ i * i
 # Foo bar
 
 # %%
+sym_vec2_1
 
 # %%
-mv.sym_vec2_1
-
-# %%
-mv.sym_vec2_2
+sym_vec2_2
 
 # %%
 Math(
     "$($"
-    + mv.sym_vec2_1._repr_latex_()
+    + sym_vec2_1._repr_latex_()
     + "$)*($"
-    + mv.sym_vec2_2._repr_latex_()
+    + sym_vec2_2._repr_latex_()
     + "$)$"
 )
 
 # %%
-mv.sym_vec2_1 * mv.sym_vec2_2
+sym_vec2_1 * sym_vec2_2
 
 
 # %%
 def gram_fe_to_mol_fe(gram_fe: float) -> mv.MultiVector:
     # let gram_fe be e_1
     # let mol_fe be e_2
-    unit_gram_fe: mv.MultiVector = mv.e_1
-    unit_mol_fe: mv.MultiVector = mv.e_2
+    unit_gram_fe: mv.MultiVector = e_1
+    unit_mol_fe: mv.MultiVector = e_2
 
     ratio: mv.MultiVector = (55.85 * unit_gram_fe).inverse() * (1 * unit_mol_fe)
     return gram_fe * unit_gram_fe * ratio
