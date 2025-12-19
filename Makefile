@@ -1,6 +1,5 @@
 .DEFAULT_GOAL := help
 
-USE_JUPYTER ?= 1
 USE_SPYDER ?= 1
 
 
@@ -32,7 +31,6 @@ all: image shell ## Build the image and go into the shell
 .PHONY: image
 image: ## Build the OCI image
 	$(CONTAINER_CMD) build -t $(CONTAINER_NAME) \
-                         --build-arg USE_JUPYTER=$(USE_JUPYTER) \
                          --build-arg USE_SPYDER=$(USE_SPYDER) \
                          .
 

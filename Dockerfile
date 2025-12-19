@@ -1,6 +1,5 @@
 FROM registry.fedoraproject.org/fedora:43
 
-ARG USE_JUPYTER=0
 ARG USE_SPYDER=0
 
 
@@ -44,19 +43,6 @@ RUN emacs --batch --load /root/.emacs.d/install-melpa-packages.el && \
 RUN source /venv/bin/activate && \
     python -m pip install ty
 
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
-    --mount=type=cache,target=/var/lib/dnf \
-    if [ "$USE_JUPYTER" = "1" ]; then \
-       dnf install -y \
-                   jupyter \
-                   jupyterlab  \
-                   jupytext \
-                   mathjax \
-                   mathjax-main-fonts \
-                   mathjax-math-fonts \
-                   python3-jupyterlab-jupytext \
-        	   python3-jupyter-lsp  ; \
-    fi;
 
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
