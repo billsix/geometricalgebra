@@ -61,7 +61,7 @@ def test_multivector_absolute_units() -> None:
     assert ((e_1 + e_2) * 2) == ((e_1 + e_2) + (e_1 + e_2))
 
     # test permutations
-    assert (e_1 * e_2 * e_3).abs_squared() == MultiVector.from_scalar(1)
+    assert (e_1 * e_2 * e_3).abs_squared() == 1
     assert (e_1 * e_3 * e_2) == -1 * (e_1 * e_2 * e_3)
     assert (e_3 * e_1 * e_2) == (e_1 * e_2 * e_3)
     assert (e_3 * e_2 * e_1) == -1 * (e_1 * e_2 * e_3)
@@ -71,7 +71,7 @@ def test_multivector_absolute_units() -> None:
 
 def test_multivector_mult() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2
-    assert a.abs_squared() == MultiVector.from_scalar(25)
+    assert a.abs_squared() == 25
 
     assert (a * a) == MultiVector.from_scalar(25)
 
@@ -200,6 +200,18 @@ def test_multivector_dot() -> None:
     assert sym_vec2_1.dot(sym_vec2_2) == MultiVector.from_scalar(a_1 * b_1 + a_2 * b_2)
 
 
+def test_multivector_cosine() -> None:
+    a: MultiVector = 3 * e_1 + 4 * e_2
+    assert a.cosine(a) == 1
+    b: MultiVector = -4 * e_1 + 3 * e_2
+    assert a.cosine(b) == 0
+
+    # print(sym_vec2_1.cosine(sym_vec2_2) * abs(sym_vec2_1) * abs(sym_vec2_2))
+    assert MultiVector.from_scalar(
+        sym_vec2_1.cosine(sym_vec2_2) * abs(sym_vec2_1) * abs(sym_vec2_2)
+    ) == sym_vec2_1.dot(sym_vec2_2)
+
+
 def test_multivector_wedge() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2
     assert a.wedge(a) == zero
@@ -267,7 +279,7 @@ def test_multivector_reverse_3d() -> None:
 
 def test_multivector_inverse() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2
-    assert a.abs_squared() == MultiVector.from_scalar(25)
+    assert a.abs_squared() == 25
     assert a.abs_squared() * a.inverse() == a
 
     assert sym_vec2_1.abs_squared() * sym_vec2_1.inverse() == sym_vec2_1

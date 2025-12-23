@@ -216,8 +216,8 @@ class MultiVector:
             }
         )
 
-    def abs_squared(self) -> "MultiVector":
-        return (self.reverse() * self).simplify()
+    def abs_squared(self) -> numbers.Number:
+        return (self.reverse() * self).simplify().scalar_part()
 
     def inverse(self) -> "MultiVector":
         """
@@ -225,7 +225,7 @@ class MultiVector:
 
         Note sure if I'm doing it correctly
         """
-        return self.reverse().simplify() * (self.abs_squared().scalar_part() ** (-1))  # type: ignore
+        return self.reverse().simplify() * (self.abs_squared() ** (-1))  # type: ignore
 
     def dual(self, g: int) -> "MultiVector":
         return self * MultiVector.unit_pseudoscalar(g).inverse()
@@ -249,6 +249,17 @@ class MultiVector:
             [self.r_vector_part(g) for g in self.grades() if g % 2 == 1],
             start=zero,
         )
+
+    def cosine(self, other: "MultiVector") -> numbers.Number:
+        """
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 14
+
+        """
+        return (
+            (self.reverse() * other).scalar_part()
+            * (abs(self) ** (-1))
+            * (abs(other) ** (-1))
+        )  # type: ignore
 
     def _repr_latex_(self):
         def add_parens_or_dont(x):
