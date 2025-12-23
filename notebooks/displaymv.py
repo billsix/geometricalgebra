@@ -37,7 +37,7 @@ import warnings
 
 from IPython.display import Math
 
-from geometricalgebra.multivector import e_1, e_2, sym_vec2_1, sym_vec2_2
+from geometricalgebra.multivector import MultiVector, e_1, e_2, sym_vec2_1, sym_vec2_2
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)
@@ -67,26 +67,20 @@ sym_vec2_1
 sym_vec2_2
 
 # %%
-Math(
-    "$($"
-    + sym_vec2_1._repr_latex_()
-    + "$)*($"
-    + sym_vec2_2._repr_latex_()
-    + "$)$"
-)
+Math("$($" + sym_vec2_1._repr_latex_() + "$)*($" + sym_vec2_2._repr_latex_() + "$)$")
 
 # %%
 sym_vec2_1 * sym_vec2_2
 
 
 # %%
-def gram_fe_to_mol_fe(gram_fe: float) -> mv.MultiVector:
+def gram_fe_to_mol_fe(gram_fe: float) -> MultiVector:
     # let gram_fe be e_1
     # let mol_fe be e_2
-    unit_gram_fe: mv.MultiVector = e_1
-    unit_mol_fe: mv.MultiVector = e_2
+    unit_gram_fe: MultiVector = e_1
+    unit_mol_fe: MultiVector = e_2
 
-    ratio: mv.MultiVector = (55.85 * unit_gram_fe).inverse() * (1 * unit_mol_fe)
+    ratio: MultiVector = (55.85 * unit_gram_fe).inverse() * (1 * unit_mol_fe)
     return gram_fe * unit_gram_fe * ratio
 
 
