@@ -181,6 +181,9 @@ class MultiVector:
             }
         )
 
+    def is_homogeneous_of_grade_r(self, r: int) -> bool:
+        return self == self.r_vector_part(r)
+
     def scalar_part(self) -> numbers.Number:
         return self.r(0).coefficient_of_blade.get(tuple(), 0)  # type: ignore
 
@@ -226,6 +229,26 @@ class MultiVector:
 
     def dual(self, g: int) -> "MultiVector":
         return self * MultiVector.unit_pseudoscalar(g).inverse()
+
+    def even_part(self) -> "MultiVector":
+        """
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
+
+        """
+        return sum(
+            [self.r_vector_part(g) for g in self.grades() if g % 2 == 0],
+            start=zero,
+        )
+
+    def odd_part(self) -> "MultiVector":
+        """
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
+
+        """
+        return sum(
+            [self.r_vector_part(g) for g in self.grades() if g % 2 == 1],
+            start=zero,
+        )
 
     def _repr_latex_(self):
         def add_parens_or_dont(x):

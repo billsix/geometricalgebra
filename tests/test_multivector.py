@@ -163,6 +163,34 @@ def test_multivector_grade() -> None:
     assert i3.max_grade() == 3
 
 
+def test_is_homogeneous_of_grade_r() -> None:
+    a: MultiVector = 3 * e_1 + 4 * e_2
+    assert a.is_homogeneous_of_grade_r(1)
+    assert (a * a).is_homogeneous_of_grade_r(0)
+    assert not (a * a).is_homogeneous_of_grade_r(1)
+    assert not (a * a).is_homogeneous_of_grade_r(2)
+
+    b: MultiVector = -4 * e_1 + 3 * e_2
+
+    assert (a * b).is_homogeneous_of_grade_r(2)
+    assert (a.wedge(b)).is_homogeneous_of_grade_r(2)
+
+    c: MultiVector = 0 * e_1 + 5 * e_2
+    assert not (a * c).is_homogeneous_of_grade_r(2)
+    assert (a.wedge(c)).is_homogeneous_of_grade_r(2)
+
+
+def test_even_part_odd_part() -> None:
+    assert (sym_vec3_1).odd_part() == sym_vec3_1
+    assert (sym_vec3_1).even_part() == zero
+    assert (sym_vec3_1 * sym_vec3_2).odd_part() == zero
+    assert (sym_vec3_1 * sym_vec3_2).even_part() == sym_vec3_1 * sym_vec3_2
+
+    assert (sym_vec3_1 * sym_vec3_2) == (sym_vec3_1 * sym_vec3_2).odd_part() + (
+        sym_vec3_1 * sym_vec3_2
+    ).even_part()
+
+
 def test_multivector_dot() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2
     assert a.dot(a) == MultiVector.from_scalar(25)
