@@ -80,6 +80,9 @@ class MultiVector:
             }
         )
 
+    def __sub__(self, rhs) -> "MultiVector":
+        return self + -rhs
+
     def __mul__(self, rhs) -> "MultiVector":
         def decrease_grade(
             basis_blades: tuple[int, ...], magnitude: numbers.Number
