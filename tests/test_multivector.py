@@ -43,9 +43,17 @@ from geometricalgebra.multivector import (
 def test_multivector_add() -> None:
     a: MultiVector = 5 * e_1 + 6 * e_2
     b: MultiVector = 7 * e_1 + 8 * e_2
-
     assert (a + b) == (12 * e_1 + 14 * e_2)
 
+    c: MultiVector = 7 * e_1 + 2 * e_2
+    d: MultiVector = 1 * e_1 + 3 * e_3
+    assert (c + d) == (8 * e_1 + 2 * e_2 + 3 * e_3)
+
+def test_multivector_subtract() -> None:
+    a: MultiVector = 5 * e_1 + 6 * e_2
+    b: MultiVector = 7 * e_1 + 9 * e_2
+    # doc-region-end test add
+    assert (b - a) == (2 * e_1 + 3 * e_2)
 
 def test_multivector_absolute_units() -> None:
     # test addition
