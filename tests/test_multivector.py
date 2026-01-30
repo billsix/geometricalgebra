@@ -35,7 +35,7 @@ from geometricalgebra.multivector import (
     sym_vec2_2,
     sym_vec3_1,
     sym_vec3_2,
-    sym_vec_plane_simplified,
+    sym_vec_plane,
     zero,
 )
 
@@ -49,11 +49,13 @@ def test_multivector_add() -> None:
     d: MultiVector = 1 * e_1 + 3 * e_3
     assert (c + d) == (8 * e_1 + 2 * e_2 + 3 * e_3)
 
+
 def test_multivector_subtract() -> None:
     a: MultiVector = 5 * e_1 + 6 * e_2
     b: MultiVector = 7 * e_1 + 9 * e_2
     # doc-region-end test add
     assert (b - a) == (2 * e_1 + 3 * e_2)
+
 
 def test_multivector_absolute_units() -> None:
     # test addition
@@ -291,14 +293,14 @@ def test_multivector_inverse() -> None:
     assert a.abs_squared() * a.inverse() == a
 
     assert sym_vec2_1.abs_squared() * sym_vec2_1.inverse() == sym_vec2_1
-    assert (sym_vec2_1.inverse() * sym_vec2_1).simplify().scalar_part() == 1
+    assert (sym_vec2_1.inverse() * sym_vec2_1).scalar_part() == 1
 
     assert sym_vec3_1.abs_squared() * sym_vec3_1.inverse() == sym_vec3_1
-    assert (sym_vec3_1.inverse() * sym_vec3_1).simplify() == MultiVector.from_scalar(1)
+    assert (sym_vec3_1.inverse() * sym_vec3_1) == MultiVector.from_scalar(1)
 
-    plane: MultiVector = sym_vec_plane_simplified
-    assert (plane * plane.inverse()).simplify() == mv.one
-    assert (plane.inverse() * plane).simplify() == mv.one
+    plane: MultiVector = sym_vec_plane
+    assert (plane * plane.inverse()) == mv.one
+    assert (plane.inverse() * plane) == mv.one
 
 
 def test_project_and_reject() -> None:
@@ -314,4 +316,4 @@ def test_project_and_reject() -> None:
 
     parallel_to_vec1: MultiVector = mv.project(onto_mv=sym_vec2_1)(sym_vec2_2)
     perp_to_vec1: MultiVector = mv.reject(from_mv=sym_vec2_1)(sym_vec2_2)
-    assert sym_vec2_2 == (parallel_to_vec1 + perp_to_vec1).simplify()
+    assert sym_vec2_2 == (parallel_to_vec1 + perp_to_vec1)

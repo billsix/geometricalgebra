@@ -33,9 +33,14 @@ class MultiVector:
     coefficient_of_blade: BladeCoef
 
     def __post_init__(self):
+        # simplify all coefficients
+        self.coefficient_of_blade = {
+            blade: sympy.simplify(self.coefficient_of_blade[blade])  # type: ignore
+            for blade in self.coefficient_of_blade.keys()
+        }
         # prune zero coefficient_of_blade
         self.coefficient_of_blade = {
-            blade: self.coefficient_of_blade[blade]
+            blade: self.coefficient_of_blade[blade]  # type: ignore
             for blade in self.coefficient_of_blade.keys()
             if self.coefficient_of_blade[blade] != 0
         }
@@ -211,16 +216,8 @@ class MultiVector:
             start=zero,
         )
 
-    def simplify(self) -> "MultiVector":
-        return MultiVector(
-            coefficient_of_blade={
-                blade: sympy.simplify(self.coefficient_of_blade[blade])  # type: ignore
-                for blade in self.coefficient_of_blade.keys()
-            }
-        )
-
     def abs_squared(self) -> numbers.Number:
-        return (self.reverse() * self).simplify().scalar_part()
+        return (self.reverse() * self).scalar_part()
 
     def inverse(self) -> "MultiVector":
         """
@@ -228,7 +225,7 @@ class MultiVector:
 
         Note sure if I'm doing it correctly
         """
-        return self.reverse().simplify() * (self.abs_squared() ** (-1))  # type: ignore
+        return self.reverse() * (self.abs_squared() ** (-1))  # type: ignore
 
     def dual(self, g: int) -> "MultiVector":
         return self * MultiVector.unit_pseudoscalar(g).inverse()
@@ -321,5 +318,4 @@ sym_vec2_2: MultiVector = b_1 * e_1 + b_2 * e_2
 sym_vec3_1: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
 sym_vec3_2: MultiVector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
 
-sym_vec_plane: MultiVector = sym_vec3_1 * sym_vec3_2
-sym_vec_plane_simplified: MultiVector = sym_vec_plane.simplify()
+sym_vec_plane: MultiVector = sym_vec3_1.wedge(sym_vec3_2)
