@@ -100,14 +100,10 @@ def test_multivector_mult() -> None:
     )
 
 
-
-
 def test_multivector_mult3d() -> None:
-
     def planewise_wedge(plane, vec1, vec2):
         proj: MultiVectorFn = MultiVector.project(plane)
         return proj(vec1).wedge(proj(vec2))
-
 
     assert (sym_vec3_1 * sym_vec3_2) == (
         MultiVector.from_scalar(a_1 * b_1 + a_2 * b_2 + a_3 * b_3)
@@ -370,3 +366,37 @@ def test_reflect() -> None:
     assert MultiVector.reflect(across=[e_2, e_3])(a) == -3 * e_1 + 4 * e_2 + 5 * e_3
     assert MultiVector.reflect(across=[e_3, e_1])(a) == 3 * e_1 + -4 * e_2 + 5 * e_3
     assert MultiVector.reflect(across=[e_1, e_3])(a) == 3 * e_1 + -4 * e_2 + 5 * e_3
+
+
+def test_rotate() -> None:
+    # rotate across planes
+    a: MultiVector = 3 * e_1 + 4 * e_2 + 5 * e_3
+    # rotate across e_1 e_2 plane
+    assert (
+        MultiVector.rotate(from_vector=e_1, to_vector=e_2)(a)
+        == -4 * e_1 + 3 * e_2 + 5 * e_3
+    )
+    assert (
+        MultiVector.rotate(from_vector=e_2, to_vector=e_1)(a)
+        == 4 * e_1 - 3 * e_2 + 5 * e_3
+    )
+    # rotate across e_2 e_3 plane
+    b: MultiVector = 5 * e_1 + 3 * e_2 + 4 * e_3
+    assert (
+        MultiVector.rotate(from_vector=e_2, to_vector=e_3)(b)
+        == 5 * e_1 + -4 * e_2 + 3 * e_3
+    )
+    assert (
+        MultiVector.rotate(from_vector=e_3, to_vector=e_2)(b)
+        == 5 * e_1 + 4 * e_2 - 3 * e_3
+    )
+    # rotate across e_3 e_1 plane
+    c: MultiVector = 4 * e_1 + 5 * e_2 + 3 * e_3
+    assert (
+        MultiVector.rotate(from_vector=e_3, to_vector=e_1)(c)
+        == 3 * e_1 + 5 * e_2 + -4 * e_3
+    )
+    assert (
+        MultiVector.rotate(from_vector=e_1, to_vector=e_3)(c)
+        == -3 * e_1 + 5 * e_2 + 4 * e_3
+    )

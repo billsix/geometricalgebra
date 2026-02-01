@@ -340,14 +340,14 @@ class MultiVector:
     def reflect(
         across: "MultiVector" | Sequence["MultiVector"],
     ) -> MultiVectorFn:
-        get_parellel: MultiVectorFn = MultiVector.project(across)
+        get_parallel: MultiVectorFn = MultiVector.project(across)
         get_perp: MultiVectorFn = MultiVector.reject(across)
 
         def r(value: MultiVector) -> MultiVector:
             assert value.is_vector()  # TODO - can this be generalized?
             assert isinstance(across, MultiVector)  # to satisfy type checking
 
-            return get_parellel(value) - get_perp(value)
+            return get_parallel(value) - get_perp(value)
 
         match across:
             case _ as sequence if isinstance(across, Sequence):
@@ -361,6 +361,19 @@ class MultiVector:
                 return r
             case _:
                 raise Exception("TODO - implement project for " + str(across))
+
+    @staticmethod
+    def rotate(from_vector: "MultiVector", to_vector: "MultiVector") -> MultiVectorFn:
+        plane: MultiVector = from_vector ^ to_vector
+
+        get_parallel: MultiVectorFn = MultiVector.project(plane)
+        get_perp: MultiVectorFn = MultiVector.reject(plane)
+
+        def r(value: MultiVector) -> MultiVector:
+            assert value.is_vector()  # TODO - can this be generalized?
+            return (get_parallel(value) * from_vector * to_vector) + get_perp(value)
+
+        return r
 
     def _repr_latex_(self):
         def add_parens_or_dont(x):
