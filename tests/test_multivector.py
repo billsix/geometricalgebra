@@ -17,11 +17,11 @@
 
 
 import itertools
-import typing
 
 import geometricalgebra.multivector as mv
 from geometricalgebra.multivector import (
     MultiVector,
+    MultiVectorFn,
     a_1,
     a_2,
     a_3,
@@ -100,12 +100,15 @@ def test_multivector_mult() -> None:
     )
 
 
-def planewise_wedge(plane, vec1, vec2):
-    proj: typing.Callable[["MultiVector"], "MultiVector"] = MultiVector.project(plane)
-    return proj(vec1).wedge(proj(vec2))
 
 
 def test_multivector_mult3d() -> None:
+
+    def planewise_wedge(plane, vec1, vec2):
+        proj: MultiVectorFn = MultiVector.project(plane)
+        return proj(vec1).wedge(proj(vec2))
+
+
     assert (sym_vec3_1 * sym_vec3_2) == (
         MultiVector.from_scalar(a_1 * b_1 + a_2 * b_2 + a_3 * b_3)
         + (a_1 * b_2 - a_2 * b_1) * e_1 * e_2
@@ -349,3 +352,21 @@ def test_project_and_reject() -> None:
     parallel_to_vec1: MultiVector = MultiVector.project(onto=sym_vec2_1)(sym_vec2_2)
     perp_to_vec1: MultiVector = MultiVector.reject(away_from=sym_vec2_1)(sym_vec2_2)
     assert sym_vec2_2 == (parallel_to_vec1 + perp_to_vec1)
+
+
+def test_reflect() -> None:
+    a: MultiVector = 3 * e_1 + 4 * e_2 + 5 * e_3
+
+    # reflect across vectors
+    assert MultiVector.reflect(across=e_1)(a) == 3 * e_1 + -4 * e_2 + -5 * e_3
+    assert MultiVector.reflect(across=e_2)(a) == -3 * e_1 + 4 * e_2 + -5 * e_3
+    assert MultiVector.reflect(across=e_3)(a) == -3 * e_1 + -4 * e_2 + 5 * e_3
+
+    # reflect across planes
+    assert MultiVector.reflect(across=[e_1, e_2])(a) == 3 * e_1 + 4 * e_2 + -5 * e_3
+    assert MultiVector.reflect(across=e_1 * e_2)(a) == 3 * e_1 + 4 * e_2 + -5 * e_3
+    assert MultiVector.reflect(across=e_1 ^ e_2)(a) == 3 * e_1 + 4 * e_2 + -5 * e_3
+
+    assert MultiVector.reflect(across=[e_2, e_3])(a) == -3 * e_1 + 4 * e_2 + 5 * e_3
+    assert MultiVector.reflect(across=[e_3, e_1])(a) == 3 * e_1 + -4 * e_2 + 5 * e_3
+    assert MultiVector.reflect(across=[e_1, e_3])(a) == 3 * e_1 + -4 * e_2 + 5 * e_3

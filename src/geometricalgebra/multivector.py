@@ -23,10 +23,12 @@ import math
 import numbers
 import typing
 from collections.abc import Sequence
+from typing import Callable
 
 import sympy
 
 BladeCoef = dict[tuple[int, ...], numbers.Number]
+MultiVectorFn = Callable[["MultiVector"], "MultiVector"]
 
 
 @dataclasses.dataclass
@@ -281,12 +283,13 @@ class MultiVector:
     @staticmethod
     def project(
         onto: "MultiVector" | Sequence["MultiVector"],
-    ) -> typing.Callable[["MultiVector"], "MultiVector"]:
+    ) -> MultiVectorFn:
         """
         page 18
         """
 
         def p(value: MultiVector) -> MultiVector:
+            assert value.is_vector()  # TODO - can this be generalized?
             assert isinstance(onto, MultiVector)  # to satisfy type checking
             return (value.dot(onto)) * onto.inverse()
 
@@ -309,13 +312,14 @@ class MultiVector:
 
     @staticmethod
     def reject(
-        away_from: "MultiVector" | list["MultiVector"],
-    ) -> typing.Callable[["MultiVector"], "MultiVector"]:
+        away_from: "MultiVector" | Sequence["MultiVector"],
+    ) -> MultiVectorFn:
         """
         page 18
         """
 
         def r(value: MultiVector) -> MultiVector:
+            assert value.is_vector()  # TODO - can this be generalized?
             assert isinstance(away_from, MultiVector)  # to satisfy type checking
             return (value.wedge(away_from)) * away_from.inverse()
 
@@ -331,6 +335,32 @@ class MultiVector:
                 return r
             case _:
                 raise Exception("TODO - implement project for " + str(away_from))
+
+    @staticmethod
+    def reflect(
+        across: "MultiVector" | Sequence["MultiVector"],
+    ) -> MultiVectorFn:
+        get_parellel: MultiVectorFn = MultiVector.project(across)
+        get_perp: MultiVectorFn = MultiVector.reject(across)
+
+        def r(value: MultiVector) -> MultiVector:
+            assert value.is_vector()  # TODO - can this be generalized?
+            assert isinstance(across, MultiVector)  # to satisfy type checking
+
+            return get_parellel(value) - get_perp(value)
+
+        match across:
+            case _ as sequence if isinstance(across, Sequence):
+                assert isinstance(sequence, Sequence)  # to satisfy type checking
+                return MultiVector.reflect(MultiVector.outer_product(*sequence))
+            case MultiVector() as away_from_vector if away_from_vector.is_vector():
+                return r
+            case MultiVector() as away_from_bivector if (
+                away_from_bivector.is_bivector()
+            ):
+                return r
+            case _:
+                raise Exception("TODO - implement project for " + str(across))
 
     def _repr_latex_(self):
         def add_parens_or_dont(x):
