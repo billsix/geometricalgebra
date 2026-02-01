@@ -22,6 +22,7 @@ import itertools
 import math
 import numbers
 import typing
+from collections.abc import Sequence
 
 import sympy
 
@@ -177,6 +178,13 @@ class MultiVector:
             start=zero,
         )
 
+    def __xor__(self, other: typing.Self) -> "MultiVector":
+        return self.wedge(other)
+
+    @staticmethod
+    def outer_product(*vectors: "MultiVector") -> "MultiVector":
+        return functools.reduce(lambda a, b: a ^ b, vectors)
+
     def r(self, part: int) -> "MultiVector":
         return self.r_vector_part(part)
 
@@ -191,6 +199,15 @@ class MultiVector:
 
     def is_homogeneous_of_grade_r(self, r: int) -> bool:
         return self == self.r_vector_part(r)
+
+    def is_vector(self) -> bool:
+        return self.is_homogeneous_of_grade_r(r=1)
+
+    def is_bivector(self) -> bool:
+        return self.is_homogeneous_of_grade_r(r=2)
+
+    def is_trivector(self) -> bool:
+        return self.is_homogeneous_of_grade_r(r=3)
 
     def scalar_part(self) -> numbers.Number:
         return self.r(0).coefficient_of_blade.get(tuple(), 0)  # type: ignore
@@ -261,6 +278,60 @@ class MultiVector:
             * (abs(other) ** (-1))
         )  # type: ignore
 
+    @staticmethod
+    def project(
+        onto: "MultiVector" | Sequence["MultiVector"],
+    ) -> typing.Callable[["MultiVector"], "MultiVector"]:
+        """
+        page 18
+        """
+
+        def p(value: MultiVector) -> MultiVector:
+            assert isinstance(onto, MultiVector)  # to satisfy type checking
+            return (value.dot(onto)) * onto.inverse()
+
+        # TODO - for project and reject, I need to look at Hestenes' definitions
+        # I'm not sure the special cases he defines, or how to test for them.
+        # I'm still trying to fully understand what makes something a kblade
+        # vs kvector, and how his project and reject definition of pseudoscalars
+        # applies to bivectors, for instance.
+
+        match onto:
+            case _ as sequence if isinstance(onto, Sequence):
+                assert isinstance(sequence, Sequence)  # to satisfy type checking
+                return MultiVector.project(MultiVector.outer_product(*sequence))
+            case MultiVector() as onto_vector if onto_vector.is_vector():
+                return p
+            case MultiVector() as onto_bivector if onto_bivector.is_bivector():
+                return p
+            case _:
+                raise Exception("TODO - implement project for " + str(onto))
+
+    @staticmethod
+    def reject(
+        away_from: "MultiVector" | list["MultiVector"],
+    ) -> typing.Callable[["MultiVector"], "MultiVector"]:
+        """
+        page 18
+        """
+
+        def r(value: MultiVector) -> MultiVector:
+            assert isinstance(away_from, MultiVector)  # to satisfy type checking
+            return (value.wedge(away_from)) * away_from.inverse()
+
+        match away_from:
+            case _ as sequence if isinstance(away_from, Sequence):
+                assert isinstance(sequence, Sequence)  # to satisfy type checking
+                return MultiVector.reject(MultiVector.outer_product(*sequence))
+            case MultiVector() as away_from_vector if away_from_vector.is_vector():
+                return r
+            case MultiVector() as away_from_bivector if (
+                away_from_bivector.is_bivector()
+            ):
+                return r
+            case _:
+                raise Exception("TODO - implement project for " + str(away_from))
+
     def _repr_latex_(self):
         def add_parens_or_dont(x):
             if isinstance(x, sympy.Expr):
@@ -280,28 +351,6 @@ class MultiVector:
         ]
         # latex_string = r"$\frac{1}{2}$"
         return "$" + " +  ".join(blades) + "$"
-
-
-def project(onto_mv: MultiVector) -> typing.Callable[[MultiVector], MultiVector]:
-    """
-    page 18
-    """
-
-    def value(value: MultiVector) -> MultiVector:
-        return (value.dot(onto_mv)) * onto_mv.inverse()
-
-    return value
-
-
-def reject(from_mv: MultiVector) -> typing.Callable[[MultiVector], MultiVector]:
-    """
-    page 18
-    """
-
-    def value(value: MultiVector) -> MultiVector:
-        return (value.wedge(from_mv)) * from_mv.inverse()
-
-    return value
 
 
 e_1: MultiVector = MultiVector({(1,): 1})  # type: ignore
