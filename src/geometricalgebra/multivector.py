@@ -164,6 +164,10 @@ class MultiVector:
     def normalize(self) -> "MultiVector":
         return self * (abs(self) ** (-1))  # type: ignore
 
+    def component(self, x: typing.Self) -> numbers.Number:
+        # TODO - is this really how I should define it?
+        return self.dot(x).scalar_part()
+
     def dot(self, rhs) -> "MultiVector":
         return sum(
             [
