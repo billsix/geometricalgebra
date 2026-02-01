@@ -18,6 +18,8 @@
 
 import itertools
 
+import sympy
+
 import geometricalgebra.multivector as mv
 from geometricalgebra.multivector import (
     MultiVector,
@@ -368,6 +370,11 @@ def test_reflect() -> None:
     assert MultiVector.reflect(across=[e_1, e_3])(a) == 3 * e_1 + -4 * e_2 + 5 * e_3
 
 
+def test_normalize() -> None:
+    assert sym_vec2_1.normalize() == sym_vec2_1 * (abs(sym_vec2_1) ** (-1))  # type: ignore
+    assert sym_vec3_1.normalize() == sym_vec3_1 * (abs(sym_vec3_1) ** (-1))  # type: ignore
+
+
 def test_rotate() -> None:
     # rotate across planes
     a: MultiVector = 3 * e_1 + 4 * e_2 + 5 * e_3
@@ -399,4 +406,52 @@ def test_rotate() -> None:
     assert (
         MultiVector.rotate(from_vector=e_1, to_vector=e_3)(c)
         == -3 * e_1 + 5 * e_2 + 4 * e_3
+    )
+
+
+def test_rotate_angle() -> None:
+    # rotate across planes
+    a: MultiVector = 3 * e_1 + 4 * e_2 + 5 * e_3
+    # rotate across e_1 e_2 plane
+    #   pi /2
+    assert (
+        MultiVector.rotate(
+            from_vector=e_1, to_vector=e_2, angle_in_radians=sympy.pi / 2
+        )(a)
+        == -4 * e_1 + 3 * e_2 + 5 * e_3
+    )
+    #   pi
+    assert (
+        MultiVector.rotate(from_vector=e_1, to_vector=e_2, angle_in_radians=sympy.pi)(a)
+        == -3 * e_1 + -4 * e_2 + 5 * e_3
+    )
+    #   3pi /2
+    assert (
+        MultiVector.rotate(
+            from_vector=e_1, to_vector=e_2, angle_in_radians=3 * sympy.pi / 2
+        )(a)
+        == 4 * e_1 + -3 * e_2 + 5 * e_3
+    )
+    #   2pi
+    assert (
+        MultiVector.rotate(
+            from_vector=e_1, to_vector=e_2, angle_in_radians=2 * sympy.pi
+        )(a)
+        == 3 * e_1 + 4 * e_2 + 5 * e_3
+    )
+    #   pi /4
+    assert (
+        MultiVector.rotate(
+            from_vector=e_1, to_vector=e_2, angle_in_radians=sympy.pi / 4
+        )(1 * e_1 + 0 * e_2 + 5 * e_3)
+        == (sympy.sqrt(2) / 2) * e_1 + (sympy.sqrt(2) / 2) * e_2 + 5 * e_3
+    )
+
+    # show size of vectors in plane does not matter
+    #   pi /2
+    assert (
+        MultiVector.rotate(
+            from_vector=10 * e_1, to_vector=50 * e_2, angle_in_radians=sympy.pi / 2
+        )(a)
+        == -4 * e_1 + 3 * e_2 + 5 * e_3
     )

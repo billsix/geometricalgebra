@@ -161,6 +161,9 @@ class MultiVector:
     def __abs__(self) -> numbers.Number | sympy.Expr:
         return sympy.sqrt(self.abs_squared())
 
+    def normalize(self) -> "MultiVector":
+        return self * (abs(self) ** (-1))  # type: ignore
+
     def dot(self, rhs) -> "MultiVector":
         return sum(
             [
@@ -340,14 +343,14 @@ class MultiVector:
     def reflect(
         across: "MultiVector" | Sequence["MultiVector"],
     ) -> MultiVectorFn:
-        get_parallel: MultiVectorFn = MultiVector.project(across)
-        get_perp: MultiVectorFn = MultiVector.reject(across)
+        components_in_plane: MultiVectorFn = MultiVector.project(across)
+        components_exterior_to_plane: MultiVectorFn = MultiVector.reject(across)
 
         def r(value: MultiVector) -> MultiVector:
             assert value.is_vector()  # TODO - can this be generalized?
             assert isinstance(across, MultiVector)  # to satisfy type checking
 
-            return get_parallel(value) - get_perp(value)
+            return components_in_plane(value) - components_exterior_to_plane(value)
 
         match across:
             case _ as sequence if isinstance(across, Sequence):
@@ -363,17 +366,45 @@ class MultiVector:
                 raise Exception("TODO - implement project for " + str(across))
 
     @staticmethod
-    def rotate(from_vector: "MultiVector", to_vector: "MultiVector") -> MultiVectorFn:
+    def rotate(
+        from_vector: "MultiVector",
+        to_vector: "MultiVector",
+        angle_in_radians: None | float = None,
+    ) -> MultiVectorFn:
+        assert from_vector.is_vector()
+        assert to_vector.is_vector()
         plane: MultiVector = from_vector ^ to_vector
 
-        get_parallel: MultiVectorFn = MultiVector.project(plane)
-        get_perp: MultiVectorFn = MultiVector.reject(plane)
+        components_in_plane: MultiVectorFn = MultiVector.project(plane)
+        components_exterior_to_plane: MultiVectorFn = MultiVector.reject(plane)
 
-        def r(value: MultiVector) -> MultiVector:
-            assert value.is_vector()  # TODO - can this be generalized?
-            return (get_parallel(value) * from_vector * to_vector) + get_perp(value)
+        if angle_in_radians is None:
 
-        return r
+            def r(value: MultiVector) -> MultiVector:
+                assert value.is_vector()  # TODO - can this be generalized?
+                return (
+                    components_in_plane(value) * from_vector * to_vector
+                ) + components_exterior_to_plane(value)
+
+            return r
+        else:
+            c = sympy.cos(angle_in_radians)
+            s = sympy.sin(angle_in_radians)
+
+            parallel_in_plane = from_vector.normalize()
+            perp_in_plane = MultiVector.reject(away_from=from_vector)(
+                to_vector
+            ).normalize()
+
+            def r(value: MultiVector) -> MultiVector:
+                assert value.is_vector()  # TODO - can this be generalized?
+                return (
+                    components_in_plane(value)
+                    * parallel_in_plane
+                    * (c * parallel_in_plane + s * perp_in_plane)
+                ) + components_exterior_to_plane(value)
+
+            return r
 
     def _repr_latex_(self):
         def add_parens_or_dont(x):
