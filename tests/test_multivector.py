@@ -20,7 +20,6 @@ import itertools
 
 import sympy
 
-import geometricalgebra.multivector as mv
 from geometricalgebra.multivector import (
     MultiVector,
     MultiVectorFn,
@@ -338,8 +337,8 @@ def test_multivector_inverse() -> None:
     assert (sym_vec3_1.inverse() * sym_vec3_1) == one
 
     plane: MultiVector = sym_vec_plane
-    assert (plane * plane.inverse()) == mv.one
-    assert (plane.inverse() * plane) == mv.one
+    assert (plane * plane.inverse()) == one
+    assert (plane.inverse() * plane) == one
 
 
 def test_project_and_reject() -> None:
