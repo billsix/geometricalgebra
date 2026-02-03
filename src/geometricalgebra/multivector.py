@@ -25,6 +25,7 @@ import typing
 from collections.abc import Sequence
 from typing import Callable
 
+import numpy as np
 import sympy
 
 BladeCoef = dict[tuple[int, ...], numbers.Number]
@@ -43,7 +44,7 @@ class MultiVector:
         }
         # prune zero coefficient_of_blade
         self.coefficient_of_blade = {
-            blade: self.coefficient_of_blade[blade]  # type: ignore
+            blade: self.coefficient_of_blade[blade]
             for blade in self.coefficient_of_blade.keys()
             if self.coefficient_of_blade[blade] != 0
         }
@@ -128,8 +129,11 @@ class MultiVector:
                             dict(
                                 [
                                     decrease_grade(
-                                        basis_blades=(*blade_left, *blade_right),
-                                        magnitude=scalar_left * scalar_right,  # type: ignore
+                                        basis_blades=(
+                                            *blade_left,
+                                            *blade_right,
+                                        ),
+                                        magnitude=scalar_left * scalar_right,
                                     )
                                 ]
                             )
@@ -292,7 +296,9 @@ class MultiVector:
     def is_trivector(self) -> bool:
         return self.is_homogeneous_of_grade_r(r=3)
 
-    def is_orthogonal_to(self, other: typing.Self) -> bool:
+    def is_orthogonal_to(
+        self, other: typing.Self, float_close_to_zero: bool = False
+    ) -> bool:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 9,
         between equations 1.32 and 1.33
@@ -303,7 +309,34 @@ class MultiVector:
         assert self.is_vector()
         assert other.is_vector()
 
-        return self.inner_product(other) == zero
+        return bool(
+            np.isclose(
+                float(self.inner_product(other).scalar_part()),
+                float(0.0),
+                rtol=1e-5,
+                atol=1e-5,
+            )
+            if float_close_to_zero
+            else (self.inner_product(other) == zero)
+        )
+
+    def is_parallel_to(
+        self, other: typing.Self, float_close_to_zero: bool = False
+    ) -> bool:
+        """
+        not sure if I'm doing this correctly
+        """
+
+        # TODO - defined for vectors only right now, it's probably defined more
+        # generally later in the book
+        assert self.is_vector()
+        assert other.is_vector()
+
+        return bool(
+            np.isclose(float(self.cosine(other)), float(1.0), rtol=1e-5, atol=1e-5)
+            if float_close_to_zero
+            else (self.cosine(other) == 1)
+        )
 
     def scalar_part(self) -> numbers.Number:
         return self.r_vector_part(0).coefficient_of_blade.get(tuple(), 0)  # type: ignore
@@ -492,6 +525,21 @@ class MultiVector:
                 ) + components_exterior_to_plane(value)
 
             return r
+
+    def is_close(self, other: typing.Self) -> bool:
+        return all(
+            [
+                np.isclose(
+                    float(self.coefficient_of_blade.get(blade, 0)),
+                    float(other.coefficient_of_blade.get(blade, 0)),
+                    rtol=1e-5,
+                    atol=1e-5,
+                )
+                for blade in (
+                    self.coefficient_of_blade.keys() | other.coefficient_of_blade.keys()
+                )
+            ]
+        )
 
     def _repr_latex_(self):
         def add_parens_or_dont(x):
