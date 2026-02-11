@@ -93,6 +93,40 @@ class MultiVector:
         return self + -rhs
 
     def __mul__(self, rhs) -> "MultiVector":
+        # make order the absolute units in a way that would
+        # be considered positive in a full space.
+        # For instance, e_1 * e_3 should be reprented as a negative
+        # value, because e_1 * e_2 * e_3 = 1,
+        # therefore e_1 * e_3 * e_2 = -1,
+        def fix_sign(
+            basis_blades: tuple[int, ...], magnitude: numbers.Number
+        ) -> tuple[tuple[int, ...], numbers.Number]:
+            match basis_blades:
+                case _ if len(basis_blades) <= 1:
+                    return basis_blades, magnitude
+                case _:
+                    _, mag = decrease_grade(
+                        basis_blades=(
+                            *basis_blades,
+                            *(
+                                sorted(
+                                    list(
+                                        set(list(range(1, max(basis_blades))))
+                                        - set(basis_blades)
+                                    )
+                                )
+                            ),
+                        ),
+                        magnitude=1,  # type: ignore
+                    )
+                    match mag:
+                        case -1:
+                            return (basis_blades[1],) + (
+                                basis_blades[0],
+                            ) + basis_blades[2:], -magnitude  # type: ignore
+                        case _:
+                            return basis_blades, magnitude
+
         def decrease_grade(
             basis_blades: tuple[int, ...], magnitude: numbers.Number
         ) -> tuple[tuple[int, ...], numbers.Number]:
@@ -128,12 +162,14 @@ class MultiVector:
                         [
                             dict(
                                 [
-                                    decrease_grade(
-                                        basis_blades=(
-                                            *blade_left,
-                                            *blade_right,
-                                        ),
-                                        magnitude=scalar_left * scalar_right,
+                                    fix_sign(
+                                        *decrease_grade(
+                                            basis_blades=(
+                                                *blade_left,
+                                                *blade_right,
+                                            ),
+                                            magnitude=scalar_left * scalar_right,
+                                        )
                                     )
                                 ]
                             )
@@ -565,6 +601,13 @@ class MultiVector:
 e_1: MultiVector = MultiVector({(1,): 1})  # type: ignore
 e_2: MultiVector = MultiVector({(2,): 1})  # type: ignore
 e_3: MultiVector = MultiVector({(3,): 1})  # type: ignore
+e_4: MultiVector = MultiVector({(4,): 1})  # type: ignore
+e_5: MultiVector = MultiVector({(5,): 1})  # type: ignore
+e_6: MultiVector = MultiVector({(6,): 1})  # type: ignore
+e_7: MultiVector = MultiVector({(7,): 1})  # type: ignore
+e_8: MultiVector = MultiVector({(8,): 1})  # type: ignore
+e_9: MultiVector = MultiVector({(9,): 1})  # type: ignore
+e_10: MultiVector = MultiVector({(10,): 1})  # type: ignore
 zero: MultiVector = MultiVector.from_scalar(0)
 one: MultiVector = MultiVector.from_scalar(1)
 

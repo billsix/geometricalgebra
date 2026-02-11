@@ -32,6 +32,7 @@ from geometricalgebra.multivector import (
     e_1,
     e_2,
     e_3,
+    e_4,
     one,
     sym_vec2_1,
     sym_vec2_2,
@@ -79,6 +80,42 @@ def test_multivector_absolute_units() -> None:
     assert (e_3 * e_2 * e_1) == -1 * (e_1 * e_2 * e_3)
     assert (e_2 * e_1 * e_3) == -1 * (e_1 * e_2 * e_3)
     assert (e_2 * e_3 * e_1) == (e_1 * e_2 * e_3)
+
+    # test internal representation
+    # 2D
+    assert (a_1 * e_1) * (b_2 * e_2) == MultiVector({(1, 2): a_1 * b_2})
+    assert (b_2 * e_2) * (a_1 * e_1) == MultiVector({(1, 2): -a_1 * b_2})
+
+    # 3D
+    assert (a_1 * e_2) * (b_2 * e_3) == MultiVector({(2, 3): a_1 * b_2})
+    assert (b_2 * e_3) * (a_1 * e_2) == MultiVector({(2, 3): -a_1 * b_2})
+
+    # 3D
+    assert (a_1 * e_3) * (b_2 * e_1) == MultiVector({(3, 1): a_1 * b_2})
+    assert (b_2 * e_1) * (a_1 * e_3) == MultiVector({(3, 1): -a_1 * b_2})
+
+    # 4D
+    assert (a_1 * e_1) * (b_2 * e_4) == MultiVector({(1, 4): a_1 * b_2})
+    assert (b_2 * e_4) * (a_1 * e_1) == MultiVector({(1, 4): -a_1 * b_2})
+
+    # 4D
+    assert (a_1 * e_4) * (b_2 * e_2) == MultiVector({(4, 2): a_1 * b_2})
+    assert (b_2 * e_2) * (a_1 * e_4) == MultiVector({(4, 2): -a_1 * b_2})
+
+    # 4D
+    assert (a_1 * e_3) * (b_2 * e_4) == MultiVector({(3, 4): a_1 * b_2})
+    assert (b_2 * e_4) * (a_1 * e_3) == MultiVector({(3, 4): -a_1 * b_2})
+
+    # 4D
+    assert (a_3 * e_2) * (a_1 * e_3) * (b_2 * e_4) == MultiVector(
+        {(3, 2, 4): -a_3 * a_1 * b_2}
+    )
+    assert (a_1 * e_3) * (a_3 * e_2) * (b_2 * e_4) == MultiVector(
+        {(3, 2, 4): a_3 * a_1 * b_2}
+    )
+    assert (a_1 * e_3) * (b_2 * e_4) * (a_3 * e_2) == MultiVector(
+        {(3, 2, 4): -a_3 * a_1 * b_2}
+    )
 
 
 def test_multivector_mult() -> None:
