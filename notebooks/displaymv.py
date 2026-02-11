@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.18.1
+#       jupytext_version: 1.19.1
 #   kernelspec:
 #     display_name: geometricalgebra
 #     language: python
@@ -37,7 +37,16 @@ import warnings
 
 from IPython.display import Math
 
-from geometricalgebra.multivector import MultiVector, e_1, e_2, sym_vec2_1, sym_vec2_2
+from geometricalgebra.multivector import (
+    MultiVector,
+    e_1,
+    e_2,
+    e_3,
+    sym_vec2_1,
+    sym_vec2_2,
+    sym_vec3_1,
+    sym_vec3_2,
+)
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)
@@ -51,7 +60,7 @@ i
 i * i
 
 # %%
-2 * e_1 + 3 * e_2
+2 * e_1 + 3 * e_2 + 5 * e_1
 
 
 # %% [markdown]
@@ -70,7 +79,27 @@ sym_vec2_2
 Math("$($" + sym_vec2_1._repr_latex_() + "$)*($" + sym_vec2_2._repr_latex_() + "$)$")
 
 # %%
-sym_vec2_1 * sym_vec2_2
+sym_vec2_1 ^ sym_vec2_2
+
+# %%
+e1e2plane = MultiVector.project(onto=e_1 * e_2)
+e1e2plane(sym_vec3_1) ^ e1e2plane(sym_vec3_2)
+
+# %%
+e2e3plane = MultiVector.project(onto=e_2 * e_3)
+e2e3plane(sym_vec3_1) ^ e2e3plane(sym_vec3_2)
+
+# %%
+e1e3plane = MultiVector.project(onto=e_1 * e_3)
+e1e3plane(sym_vec3_1) ^ e1e3plane(sym_vec3_2)
+
+# %%
+# ordering of the plane doesn't matter
+e3e1plane = MultiVector.project(onto=e_3 * e_1)
+e3e1plane(sym_vec3_1) ^ e1e3plane(sym_vec3_2)
+
+# %%
+sym_vec3_1 * sym_vec3_2
 
 
 # %%
@@ -85,5 +114,7 @@ def gram_fe_to_mol_fe(gram_fe: float) -> MultiVector:
 
 
 gram_fe_to_mol_fe(gram_fe=95.8)
+
+# %%
 
 # %%
