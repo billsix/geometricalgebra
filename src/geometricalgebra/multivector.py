@@ -123,6 +123,22 @@ class MultiVector:
             case sympy.Expr() as s:
                 return self * MultiVector.from_sympy_expr(s)
             case _:
+
+                def make_disordered_pseudoscalar(
+                    basis_blades: tuple[int, ...],
+                ) -> tuple[int, ...]:
+                    return (
+                        *basis_blades,
+                        *(
+                            sorted(
+                                list(
+                                    set(list(range(1, max(basis_blades))))
+                                    - set(basis_blades)
+                                )
+                            )
+                        ),
+                    )
+
                 # make order the absolute units in a way that would
                 # be considered positive in a full space.
                 # For instance, e_1 * e_3 should be reprented as a negative
@@ -136,17 +152,7 @@ class MultiVector:
                             return basis_blades, magnitude
                         case _:
                             _, mag = decrease_grade(
-                                basis_blades=(
-                                    *basis_blades,
-                                    *(
-                                        sorted(
-                                            list(
-                                                set(list(range(1, max(basis_blades))))
-                                                - set(basis_blades)
-                                            )
-                                        )
-                                    ),
-                                ),
+                                basis_blades=make_disordered_pseudoscalar(basis_blades),
                                 magnitude=1,  # type: ignore
                             )
                             match mag:
