@@ -93,40 +93,6 @@ class MultiVector:
         return self + -rhs
 
     def __mul__(self, rhs) -> "MultiVector":
-        # make order the absolute units in a way that would
-        # be considered positive in a full space.
-        # For instance, e_1 * e_3 should be reprented as a negative
-        # value, because e_1 * e_2 * e_3 = 1,
-        # therefore e_1 * e_3 * e_2 = -1,
-        def fix_sign(
-            basis_blades: tuple[int, ...], magnitude: numbers.Number
-        ) -> tuple[tuple[int, ...], numbers.Number]:
-            match basis_blades:
-                case _ if len(basis_blades) <= 1:
-                    return basis_blades, magnitude
-                case _:
-                    _, mag = decrease_grade(
-                        basis_blades=(
-                            *basis_blades,
-                            *(
-                                sorted(
-                                    list(
-                                        set(list(range(1, max(basis_blades))))
-                                        - set(basis_blades)
-                                    )
-                                )
-                            ),
-                        ),
-                        magnitude=1,  # type: ignore
-                    )
-                    match mag:
-                        case -1:
-                            return (basis_blades[1],) + (
-                                basis_blades[0],
-                            ) + basis_blades[2:], -magnitude  # type: ignore
-                        case _:
-                            return basis_blades, magnitude
-
         def decrease_grade(
             basis_blades: tuple[int, ...], magnitude: numbers.Number
         ) -> tuple[tuple[int, ...], numbers.Number]:
@@ -157,12 +123,46 @@ class MultiVector:
             case sympy.Expr() as s:
                 return self * MultiVector.from_sympy_expr(s)
             case _:
+                # make order the absolute units in a way that would
+                # be considered positive in a full space.
+                # For instance, e_1 * e_3 should be reprented as a negative
+                # value, because e_1 * e_2 * e_3 = 1,
+                # therefore e_1 * e_3 * e_2 = -1,
+                def make_positive(
+                    basis_blades: tuple[int, ...], magnitude: numbers.Number
+                ) -> tuple[tuple[int, ...], numbers.Number]:
+                    match basis_blades:
+                        case _ if len(basis_blades) <= 1:
+                            return basis_blades, magnitude
+                        case _:
+                            _, mag = decrease_grade(
+                                basis_blades=(
+                                    *basis_blades,
+                                    *(
+                                        sorted(
+                                            list(
+                                                set(list(range(1, max(basis_blades))))
+                                                - set(basis_blades)
+                                            )
+                                        )
+                                    ),
+                                ),
+                                magnitude=1,  # type: ignore
+                            )
+                            match mag:
+                                case -1:
+                                    return (basis_blades[1],) + (
+                                        basis_blades[0],
+                                    ) + basis_blades[2:], -magnitude  # type: ignore
+                                case _:
+                                    return basis_blades, magnitude
+
                 return MultiVector(
                     coefficient_of_blade=MultiVector.sum_dicts(
                         [
                             dict(
                                 [
-                                    fix_sign(
+                                    make_positive(
                                         *decrease_grade(
                                             basis_blades=(
                                                 *blade_left,
