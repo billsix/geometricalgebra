@@ -23,13 +23,18 @@ import math
 import numbers
 import typing
 from collections.abc import Sequence
-from typing import Callable
+from typing import Callable, NamedTuple
 
 import numpy as np
 import sympy
 
 BladeCoef = dict[tuple[int, ...], numbers.Number]
 MultiVectorFn = Callable[["MultiVector"], "MultiVector"]
+
+
+class BladeDictionaryEntry(NamedTuple):
+    blade: tuple[int, ...]
+    coefficient: numbers.Number
 
 
 @dataclasses.dataclass
@@ -66,16 +71,6 @@ class MultiVector:
         unit_pseudoscalar: MultiVector = MultiVector.unit_pseudoscalar(g)
         return unit_pseudoscalar * unit_pseudoscalar
 
-    @staticmethod
-    def sum_dicts(dicts: list[BladeCoef]) -> BladeCoef:
-        def sum_2_dicts(dict1: BladeCoef, dict2: BladeCoef) -> BladeCoef:
-            return {
-                blade: dict1.get(blade, 0) + dict2.get(blade, 0)  # type: ignore
-                for blade in dict1.keys() | dict2.keys()
-            }
-
-        return functools.reduce(sum_2_dicts, dicts, {})
-
     def __add__(self, rhs) -> "MultiVector":
         return MultiVector(
             coefficient_of_blade={
@@ -89,32 +84,10 @@ class MultiVector:
             }
         )
 
-    def __sub__(self, rhs) -> "MultiVector":
+    def __sub__(self, rhs: typing.Self) -> "MultiVector":
         return self + -rhs
 
     def __mul__(self, rhs) -> "MultiVector":
-        def decrease_grade(
-            basis_blades: tuple[int, ...], magnitude: numbers.Number
-        ) -> tuple[tuple[int, ...], numbers.Number]:
-            match basis_blades:
-                case ():
-                    return (), magnitude
-                case (a,):
-                    return (a,), magnitude
-                case (a, c, *rest) if a == c:
-                    return decrease_grade((*rest,), magnitude)
-                case (a, c, *rest) if a > c:
-                    return decrease_grade((c, a, *rest), -magnitude)  # type: ignore
-                case (a, c, *rest) if a < c:
-                    sorted_rest, new_mag = decrease_grade((c, *rest), magnitude)
-                    match sorted_rest:
-                        case (b, *_) if a < b:
-                            return (a, *sorted_rest), new_mag
-                        case _:
-                            return decrease_grade((a, *sorted_rest), new_mag)
-                case _:
-                    raise ValueError("This code should never be able to be excuted")
-
         match rhs:
             case int() as n:
                 return self * MultiVector.from_scalar(n)
@@ -123,58 +96,117 @@ class MultiVector:
             case sympy.Expr() as s:
                 return self * MultiVector.from_sympy_expr(s)
             case _:
+
+                def decrease_grade(
+                    basis_blade: BladeDictionaryEntry,
+                ) -> BladeDictionaryEntry:
+                    match basis_blade.blade:
+                        case ():
+                            return basis_blade
+                        case (a,):
+                            return basis_blade
+                        case (a, c, *rest) if a == c:
+                            return decrease_grade(
+                                BladeDictionaryEntry(
+                                    blade=(*rest,), coefficient=basis_blade.coefficient
+                                )
+                            )
+                        case (a, c, *rest) if a > c:
+                            return decrease_grade(
+                                BladeDictionaryEntry(
+                                    blade=(c, a, *rest),
+                                    coefficient=-(basis_blade.coefficient),  # type: ignore
+                                )
+                            )  # type: ignore
+                        case (a, c, *rest) if a < c:
+                            sortedBladeDictionyEntriy: BladeDictionaryEntry = (
+                                decrease_grade(
+                                    BladeDictionaryEntry(
+                                        blade=(c, *rest),
+                                        coefficient=basis_blade.coefficient,
+                                    )
+                                )
+                            )
+                            match sortedBladeDictionyEntriy.blade:
+                                case (b, *_) if a < b:
+                                    return BladeDictionaryEntry(
+                                        blade=(a, *sortedBladeDictionyEntriy.blade),
+                                        coefficient=sortedBladeDictionyEntriy.coefficient,
+                                    )
+                                case _:
+                                    return decrease_grade(
+                                        BladeDictionaryEntry(
+                                            blade=(a, *sortedBladeDictionyEntriy.blade),
+                                            coefficient=sortedBladeDictionyEntriy.coefficient,
+                                        )
+                                    )
+                        case _:
+                            raise ValueError(
+                                "This code should never be able to be excuted"
+                            )
+
                 # make order the absolute units in a way that would
                 # be considered positive in a full space.
                 # For instance, e_1 * e_3 should be reprented as a negative
                 # value, because e_1 * e_2 * e_3 = 1,
                 # therefore e_1 * e_3 * e_2 = -1,
                 def make_positive(
-                    basis_blades: tuple[int, ...], magnitude: numbers.Number
-                ) -> tuple[tuple[int, ...], numbers.Number]:
-                    match basis_blades:
-                        case _ if len(basis_blades) <= 1:
-                            return basis_blades, magnitude
-                        case _:
-
-                            def make_disordered_pseudoscalar(
-                                basis_blades: tuple[int, ...],
-                            ) -> tuple[int, ...]:
-                                return (
-                                    *basis_blades,
-                                    *(
-                                        sorted(
-                                            list(
-                                                set(list(range(1, max(basis_blades))))
-                                                - set(basis_blades)
-                                            )
-                                        )
-                                    ),
-                                )
-
-                            _, mag = decrease_grade(
-                                basis_blades=make_disordered_pseudoscalar(basis_blades),
-                                magnitude=1,  # type: ignore
+                    basis_blade: BladeDictionaryEntry,
+                ) -> BladeDictionaryEntry:
+                    if len(basis_blade.blade) <= 1:
+                        return basis_blade
+                    else:
+                        missing_directions: tuple[int, ...] = sorted(
+                            list(
+                                set(list(range(1, max(basis_blade.blade))))
+                                - set(basis_blade.blade)
                             )
-                            match mag:
-                                case -1:
-                                    return (basis_blades[1],) + (
-                                        basis_blades[0],
-                                    ) + basis_blades[2:], -magnitude  # type: ignore
-                                case _:
-                                    return basis_blades, magnitude
+                        )
+
+                        has_positive_orientation: bool = (
+                            1
+                            == decrease_grade(
+                                BladeDictionaryEntry(
+                                    blade=(*basis_blade.blade, *missing_directions),
+                                    coefficient=1,  # type: ignore
+                                )
+                            ).coefficient
+                        )
+
+                        return (
+                            basis_blade
+                            if has_positive_orientation
+                            else BladeDictionaryEntry(
+                                (basis_blade.blade[1],)
+                                + (basis_blade.blade[0],)
+                                + basis_blade.blade[2:],
+                                -(basis_blade.coefficient),  # type: ignore
+                            )
+                        )
+
+                def sum_dicts(dicts: list[BladeCoef]) -> BladeCoef:
+                    def sum_2_dicts(dict1: BladeCoef, dict2: BladeCoef) -> BladeCoef:
+                        return {
+                            blade: dict1.get(blade, 0) + dict2.get(blade, 0)  # type: ignore
+                            for blade in dict1.keys() | dict2.keys()
+                        }
+
+                    return functools.reduce(sum_2_dicts, dicts, {})
 
                 return MultiVector(
-                    coefficient_of_blade=MultiVector.sum_dicts(
+                    coefficient_of_blade=sum_dicts(
                         [
                             dict(
                                 [
                                     make_positive(
-                                        *decrease_grade(
-                                            basis_blades=(
-                                                *blade_left,
-                                                *blade_right,
-                                            ),
-                                            magnitude=scalar_left * scalar_right,
+                                        decrease_grade(
+                                            BladeDictionaryEntry(
+                                                blade=(
+                                                    *blade_left,
+                                                    *blade_right,
+                                                ),
+                                                coefficient=scalar_left * scalar_right,  # type: ignore
+                                            )
                                         )
                                     )
                                 ]
