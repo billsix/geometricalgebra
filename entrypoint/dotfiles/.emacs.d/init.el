@@ -5,8 +5,8 @@
 
 ;; theme
 ;(load-theme 'modus-vivendi t)
-;(load-theme 'material t)
-(load-theme 'dracula t)
+(load-theme 'material t)
+;(load-theme 'dracula t)
 ;(load-theme 'monokai t)
 ;(load-theme 'zenburn t)
 
