@@ -20,9 +20,8 @@ import itertools
 
 import sympy
 
-from geometricalgebra.multivector import (
+from geometricalgebra.ginf import (
     MultiVector,
-    MultiVectorFn,
     a_1,
     a_2,
     a_3,
@@ -39,7 +38,9 @@ from geometricalgebra.multivector import (
     sym_vec3_1,
     sym_vec3_2,
     sym_vec_plane,
-    zero,
+)
+from geometricalgebra.multivector import (
+    MultiVectorFn,
 )
 
 
@@ -161,7 +162,7 @@ def test_multivector_mult3d() -> None:
                 for axis_1, axis_2 in itertools.combinations([e_1, e_2, e_3], 2)
             ],
         ],
-        start=zero,
+        start=MultiVector.zero(),
     )
 
     assert sym_vec3_1.dot(sym_vec3_2) == sym_vec3_1.dot(sym_vec3_2)
@@ -171,45 +172,45 @@ def test_multivector_mult3d() -> None:
             planewise_wedge(plane=axis_1 * axis_2, vec1=sym_vec3_1, vec2=sym_vec3_2)
             for axis_1, axis_2 in itertools.combinations([e_1, e_2, e_3], 2)
         ],
-        start=zero,
+        start=MultiVector.zero(),
     )
 
 
 def test_multivector_dual() -> None:
     assert sym_vec2_1.dual(g=2) == sum(
         [a_2 * e_1, -a_1 * e_2],
-        start=zero,
+        start=MultiVector.zero(),
     )
 
     assert sym_vec3_1.dual(g=3) == sum(
         [-a_3 * e_1 * e_2, -a_2 * e_3 * e_1, -a_1 * e_2 * e_3],
-        start=zero,
+        start=MultiVector.zero(),
     )
 
 
 def test_multivector_grade() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2
-    assert a.r_vector_part(0) == zero
+    assert a.r_vector_part(0) == MultiVector.zero()
     assert a.scalar_part() == 0
     assert a.max_grade() == 1
 
     b: MultiVector = 3 * e_1 + 4 * e_2
 
     assert (b * b).scalar_part() == 25
-    assert (b * b).r_vector_part(1) == zero
-    assert (b * b).r_vector_part(2) == zero
+    assert (b * b).r_vector_part(1) == MultiVector.zero()
+    assert (b * b).r_vector_part(2) == MultiVector.zero()
     assert (b * b).max_grade() == 0
 
     c: MultiVector = -4 * e_1 + 3 * e_2
     assert (b * c).scalar_part() == 0
-    assert (b * c).r_vector_part(1) == zero
+    assert (b * c).r_vector_part(1) == MultiVector.zero()
     assert (b * c).r_vector_part(2) == 25 * e_1 * e_2
     assert (b * c).max_grade() == 2
 
     i3: MultiVector = e_1 * e_2 * e_3
     assert i3.scalar_part() == 0
-    assert i3.r_vector_part(1) == zero
-    assert i3.r_vector_part(2) == zero
+    assert i3.r_vector_part(1) == MultiVector.zero()
+    assert i3.r_vector_part(2) == MultiVector.zero()
     assert i3.r_vector_part(3) == i3
     assert i3.max_grade() == 3
 
@@ -246,8 +247,8 @@ def test_is_bivector() -> None:
 
 def test_even_part_odd_part() -> None:
     assert (sym_vec3_1).odd_part() == sym_vec3_1
-    assert (sym_vec3_1).even_part() == zero
-    assert (sym_vec3_1 * sym_vec3_2).odd_part() == zero
+    assert (sym_vec3_1).even_part() == MultiVector.zero()
+    assert (sym_vec3_1 * sym_vec3_2).odd_part() == MultiVector.zero()
     assert (sym_vec3_1 * sym_vec3_2).even_part() == sym_vec3_1 * sym_vec3_2
 
     assert (sym_vec3_1 * sym_vec3_2) == (sym_vec3_1 * sym_vec3_2).odd_part() + (
@@ -260,7 +261,7 @@ def test_multivector_dot() -> None:
     assert a.dot(a) == MultiVector.from_scalar(25)
     assert a.dot(a).is_scalar()
     c: MultiVector = -4 * e_1 + 3 * e_2
-    assert a.dot(c) == zero
+    assert a.dot(c) == MultiVector.zero()
 
     assert sym_vec2_1.dot(sym_vec2_2) == MultiVector.from_scalar(a_1 * b_1 + a_2 * b_2)
     assert sym_vec2_1.dot(sym_vec2_2).is_scalar()
@@ -286,7 +287,7 @@ def test_multivector_cosine() -> None:
 
 def test_multivector_wedge() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2
-    assert a.wedge(a) == zero
+    assert a.wedge(a) == MultiVector.zero()
     c: MultiVector = -4 * e_1 + 3 * e_2
     assert a.wedge(c) == 25 * e_1 * e_2
 
@@ -384,7 +385,7 @@ def test_project_and_reject() -> None:
     assert MultiVector.reject(away_from=e_1)(a) == 4 * e_2
 
     assert MultiVector.project(onto=[e_1, e_2])(a) == a
-    assert MultiVector.reject(away_from=[e_1, e_2])(a) == zero
+    assert MultiVector.reject(away_from=[e_1, e_2])(a) == MultiVector.zero()
 
     assert MultiVector.project(onto=e_1)(2 * a) == 6 * e_1
     assert MultiVector.reject(away_from=e_1)(2 * a) == 8 * e_2
