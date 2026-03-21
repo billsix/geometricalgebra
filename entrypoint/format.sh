@@ -2,7 +2,6 @@
 
 cd /geometricalgebra/
 
-source /venv/bin/activate
 ruff check . --fix
 ruff format --line-length=88
 

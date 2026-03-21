@@ -1,5 +1,3 @@
 cd /geometricalgebra/
-export VIRTUAL_ENV_DISABLE_PROMPT=1
-source /venv/bin/activate
-python3 -m pip install -e .
+uv pip install --system --no-deps --no-index --no-build-isolation -e .
 exec bash
