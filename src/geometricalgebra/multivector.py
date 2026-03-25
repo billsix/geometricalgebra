@@ -1,4 +1,4 @@
-# Copyright (c) 2025 William Emerison Six
+# Copyright (c) 2025-2026 William Emerison Six
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -117,7 +117,7 @@ class MultiVector:
                                     blade=(c, a, *rest),
                                     coefficient=-(basis_blade.coefficient),  # type: ignore
                                 )
-                            )  # type: ignore
+                            )
                         case (a, c, *rest) if a < c:
                             sortedBladeDictionyEntriy: BladeDictionaryEntry = (
                                 decrease_grade(
@@ -385,7 +385,7 @@ class MultiVector:
 
         return bool(
             np.isclose(
-                float(self.inner_product(other).scalar_part()),
+                float(self.inner_product(other).scalar_part()),  # type: ignore
                 float(0.0),
                 rtol=1e-5,
                 atol=1e-5,
@@ -407,7 +407,7 @@ class MultiVector:
         assert other.is_vector()
 
         return bool(
-            np.isclose(float(self.cosine(other)), float(1.0), rtol=1e-5, atol=1e-5)
+            np.isclose(float(self.cosine(other)), float(1.0), rtol=1e-5, atol=1e-5)  # type: ignore
             if float_close_to_zero
             else (self.cosine(other) == 1)
         )
@@ -481,7 +481,7 @@ class MultiVector:
             self.reverse().scalar_product(other)
             * (abs(self) ** (-1))  # type: ignore
             * (abs(other) ** (-1))  # type: ignore
-        )  # type: ignore
+        )
 
     @staticmethod
     def project(
@@ -561,7 +561,6 @@ class MultiVector:
     def rotate(
         from_vector: "MultiVector",
         to_vector: "MultiVector",
-        angle_in_radians: None | float = None,
     ) -> MultiVectorFn:
         assert from_vector.is_vector()
         assert to_vector.is_vector()
@@ -570,42 +569,20 @@ class MultiVector:
         components_in_plane: MultiVectorFn = MultiVector.project(plane)
         components_exterior_to_plane: MultiVectorFn = MultiVector.reject(plane)
 
-        if angle_in_radians is None:
+        def r(value: MultiVector) -> MultiVector:
+            assert value.is_vector()  # TODO - can this be generalized?
+            return (
+                components_in_plane(value) * from_vector * to_vector
+            ) + components_exterior_to_plane(value)
 
-            def r(value: MultiVector) -> MultiVector:
-                assert value.is_vector()  # TODO - can this be generalized?
-                return (
-                    components_in_plane(value) * from_vector * to_vector
-                ) + components_exterior_to_plane(value)
-
-            return r
-        else:
-            c = sympy.cos(angle_in_radians)
-            s = sympy.sin(angle_in_radians)
-
-            parallel_in_plane: MultiVector = from_vector.normalize()
-            assert parallel_in_plane.is_vector()
-            perpendicular_in_plane: MultiVector = MultiVector.reject(
-                away_from=from_vector
-            )(to_vector).normalize()
-            assert perpendicular_in_plane.is_vector()
-
-            def r(value: MultiVector) -> MultiVector:
-                assert value.is_vector()  # TODO - can this be generalized?
-                return (
-                    components_in_plane(value)
-                    * parallel_in_plane
-                    * (c * parallel_in_plane + s * perpendicular_in_plane)
-                ) + components_exterior_to_plane(value)
-
-            return r
+        return r
 
     def is_close(self, other: typing.Self) -> bool:
         return all(
             [
                 np.isclose(
-                    float(self.coefficient_of_blade.get(blade, 0)),
-                    float(other.coefficient_of_blade.get(blade, 0)),
+                    float(self.coefficient_of_blade.get(blade, 0)),  # type: ignore
+                    float(other.coefficient_of_blade.get(blade, 0)),  # type: ignore
                     rtol=1e-5,
                     atol=1e-5,
                 )
