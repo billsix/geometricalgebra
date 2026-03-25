@@ -14,7 +14,6 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     dnf install -y \
                    emacs \
-                   npm \
                    python3 \
                    python3-setuptools \
                    python3-sympy \
@@ -26,7 +25,6 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
                    tmux \
                    uv \
                    ty ;  \
-    npm install -g pyright && \
     emacs --batch --load /root/.emacs.d/install-melpa-packages.el && \
     echo "alias ls='ls --color=auto'" >> ~/.bashrc && \
     if [ "$USE_SPYDER" = "1" ]; then \
@@ -49,6 +47,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     echo "/usr/local/bin/jupyter.sh" >> ~/.bash_history && \
     echo "emacs src/geometricalgebra/multivector.py tests/test_multivector.py &" >> ~/.bash_history && \
     uv pip install --system setuptools && \
+    dnf install -y libatomic && uv pip install --system pyright && \
     uv pip install --system -r /requirements.txt && \
     rm /requirements.txt
 
