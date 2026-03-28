@@ -1,6 +1,7 @@
 FROM registry.fedoraproject.org/fedora:43
 
 ARG USE_SPYDER=0
+ARG USE_EMACS=0
 
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \

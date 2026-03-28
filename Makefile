@@ -1,6 +1,7 @@
 .DEFAULT_GOAL := help
 
-USE_SPYDER ?= 1
+USE_SPYDER ?= 0
+USE_EMACS ?= 0
 
 
 CONTAINER_CMD = podman
@@ -25,6 +26,13 @@ WAYLAND_FLAGS_FOR_CONTAINER = -e "WAYLAND_DISPLAY=${WAYLAND_DISPLAY}" \
                               -e "XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}" \
                               -v "${XDG_RUNTIME_DIR}:${XDG_RUNTIME_DIR}"
 
+
+ifeq ($(USE_EMACS), 1)
+  ELPA_MOUNT= -v $(CURDIR)/entrypoint/dotfiles/.emacs.d/elpa:/root/.emacs.d/elpa:U,z
+else
+  ELPA_MOUNT=
+endif
+
 .PHONY: all
 all: image shell ## Build the image and go into the shell
 
@@ -32,6 +40,8 @@ all: image shell ## Build the image and go into the shell
 image: ## Build the OCI image
 	$(CONTAINER_CMD) build -t $(CONTAINER_NAME) \
                          --build-arg USE_SPYDER=$(USE_SPYDER) \
+                         --build-arg USE_EMACS=$(USE_EMACS) \
+                         $(ELPA_MOUNT) \
                          .
 
 
@@ -44,6 +54,7 @@ shell:  ## Get Shell into a ephermeral container made from the image
 		$(X_FLAGS_FOR_CONTAINER) \
 		$(WAYLAND_FLAGS_FOR_CONTAINER) \
 		$(EXPOSE_PORT) \
+                $(ELPA_MOUNT) \
 		$(CONTAINER_NAME) \
 		/shell.sh
 
