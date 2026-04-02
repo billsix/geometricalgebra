@@ -610,7 +610,7 @@ class MultiVector:
             for blade in sorted(self.coefficient_of_blade.keys())
         ]
         # latex_string = r"$\frac{1}{2}$"
-        return "$" + " +  ".join(blades) + "$"
+        return "$" + ("0" if (self == zero) else " +  ".join(blades)) + "$"
 
 
 e_1: MultiVector = MultiVector({(1,): 1})  # type: ignore
