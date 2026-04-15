@@ -23,18 +23,18 @@ import math
 import numbers
 import typing
 from collections.abc import Sequence
-from typing import Callable, NamedTuple
+from typing import Callable, NamedTuple, TypeIs
 
 import numpy as np
 import sympy
 
-BladeCoef = dict[tuple[int, ...], numbers.Number]
+BladeCoef = dict[tuple[int, ...], numbers.Real]
 MultiVectorFn = Callable[["MultiVector"], "MultiVector"]
 
 
 class BladeDictionaryEntry(NamedTuple):
     blade: tuple[int, ...]
-    coefficient: numbers.Number
+    coefficient: numbers.Real
 
 
 @dataclasses.dataclass
@@ -156,10 +156,12 @@ class MultiVector:
                     if len(basis_blade.blade) <= 1:
                         return basis_blade
                     else:
-                        missing_directions: tuple[int, ...] = sorted(
-                            list(
-                                set(list(range(1, max(basis_blade.blade))))
-                                - set(basis_blade.blade)
+                        missing_directions: tuple[int, ...] = tuple(
+                            sorted(
+                                list(
+                                    set(list(range(1, max(basis_blade.blade))))
+                                    - set(basis_blade.blade)
+                                )
                             )
                         )
 
@@ -187,7 +189,10 @@ class MultiVector:
                 def sum_dicts(dicts: list[BladeCoef]) -> BladeCoef:
                     def sum_2_dicts(dict1: BladeCoef, dict2: BladeCoef) -> BladeCoef:
                         return {
-                            blade: dict1.get(blade, 0) + dict2.get(blade, 0)  # type: ignore
+                            blade: typing.cast(
+                                numbers.Real,
+                                (dict1.get(blade, 0) + dict2.get(blade, 0)),
+                            )
                             for blade in dict1.keys() | dict2.keys()
                         }
 
@@ -205,7 +210,10 @@ class MultiVector:
                                                     *blade_left,
                                                     *blade_right,
                                                 ),
-                                                coefficient=scalar_left * scalar_right,  # type: ignore
+                                                coefficient=typing.cast(
+                                                    numbers.Real,
+                                                    scalar_left * scalar_right,
+                                                ),
                                             )
                                         )
                                     )
@@ -236,23 +244,23 @@ class MultiVector:
     def __neg__(self) -> "MultiVector":
         return -1 * self
 
-    def __abs__(self) -> numbers.Number | sympy.Expr:
+    def __abs__(self) -> numbers.Real | sympy.Expr:
         return self.magnitude()
 
-    def magnitude(self) -> numbers.Number | sympy.Expr:
+    def magnitude(self) -> numbers.Real | sympy.Expr:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 13,
         equation 1.49
         """
         return sympy.sqrt(self.magnitude_squared())
 
-    def magnitude_squared(self) -> numbers.Number:
+    def magnitude_squared(self) -> numbers.Real:
         return self.reverse().scalar_product(self)
 
     def normalize(self) -> "MultiVector":
-        return self * (abs(self) ** (-1))  # type: ignore
+        return self * (abs(self) ** (-1))
 
-    def component(self, x: typing.Self) -> numbers.Number:
+    def component(self, x: typing.Self) -> numbers.Real:
         # TODO - is this really how I should define it?
         return self.dot(x).scalar_part()
 
@@ -314,7 +322,7 @@ class MultiVector:
             start=zero,
         )
 
-    def scalar_product(self, other: typing.Self) -> numbers.Number:
+    def scalar_product(self, other: typing.Self) -> numbers.Real:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 13,
         equation 1.44
@@ -385,7 +393,7 @@ class MultiVector:
 
         return bool(
             np.isclose(
-                float(self.inner_product(other).scalar_part()),  # type: ignore
+                float(self.inner_product(other).scalar_part()),
                 float(0.0),
                 rtol=1e-5,
                 atol=1e-5,
@@ -407,12 +415,12 @@ class MultiVector:
         assert other.is_vector()
 
         return bool(
-            np.isclose(float(self.cosine(other)), float(1.0), rtol=1e-5, atol=1e-5)  # type: ignore
+            np.isclose(float(self.cosine(other)), float(1.0), rtol=1e-5, atol=1e-5)
             if float_close_to_zero
             else (self.cosine(other) == 1)
         )
 
-    def scalar_part(self) -> numbers.Number:
+    def scalar_part(self) -> numbers.Real:
         return self.r_vector_part(0).coefficient_of_blade.get(tuple(), 0)  # type: ignore
 
     def grades(self) -> list[int]:
@@ -446,7 +454,7 @@ class MultiVector:
 
         Note sure if I'm doing it correctly
         """
-        return self.reverse() * (self.magnitude_squared() ** (-1))  # type: ignore
+        return self.reverse() * (self.magnitude_squared() ** (-1))
 
     def dual(self, g: int) -> "MultiVector":
         return self * MultiVector.unit_pseudoscalar(g).inverse()
@@ -471,16 +479,17 @@ class MultiVector:
             start=zero,
         )
 
-    def cosine(self, other: "MultiVector") -> numbers.Number:
+    def cosine(self, other: "MultiVector") -> numbers.Real:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 14,
         equation 1.53b
 
         """
-        return (
+        return typing.cast(
+            numbers.Real,
             self.reverse().scalar_product(other)
-            * (abs(self) ** (-1))  # type: ignore
-            * (abs(other) ** (-1))  # type: ignore
+            * typing.cast(numbers.Real, abs(self) ** (-1))
+            * typing.cast(numbers.Real, (abs(other) ** (-1))),
         )
 
     @staticmethod
@@ -492,8 +501,14 @@ class MultiVector:
         equations 2.9a, 2.9b, 2.9c
         """
         if isinstance(onto, Sequence):
-            assert isinstance(onto, Sequence)  # to satisfy type checking
-            return MultiVector.project(MultiVector.outer_product(*onto))
+
+            def is_multivector_sequence(
+                val: Sequence[object],
+            ) -> TypeIs[Sequence[MultiVector]]:
+                return all(isinstance(x, MultiVector) for x in val)
+
+            if is_multivector_sequence(onto):
+                return MultiVector.project(MultiVector.outer_product_of_vectors(*onto))
 
         def fn(value: MultiVector) -> MultiVector:
             if value.is_scalar():  # 2.9b
@@ -581,8 +596,8 @@ class MultiVector:
         return all(
             [
                 np.isclose(
-                    float(self.coefficient_of_blade.get(blade, 0)),  # type: ignore
-                    float(other.coefficient_of_blade.get(blade, 0)),  # type: ignore
+                    float(self.coefficient_of_blade.get(blade, 0)),
+                    float(other.coefficient_of_blade.get(blade, 0)),
                     rtol=1e-5,
                     atol=1e-5,
                 )

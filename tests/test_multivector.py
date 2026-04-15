@@ -414,8 +414,8 @@ def test_reflect() -> None:
 
 
 def test_normalize() -> None:
-    assert sym_vec2_1.normalize() == sym_vec2_1 * (abs(sym_vec2_1) ** (-1))  # type: ignore
-    assert sym_vec3_1.normalize() == sym_vec3_1 * (abs(sym_vec3_1) ** (-1))  # type: ignore
+    assert sym_vec2_1.normalize() == sym_vec2_1 * (abs(sym_vec2_1) ** (-1))
+    assert sym_vec3_1.normalize() == sym_vec3_1 * (abs(sym_vec3_1) ** (-1))
 
 
 def test_rotate() -> None:
