@@ -3,4 +3,5 @@
 ruff check . --fix
 ruff format --line-length=88
 
-ty check
+ty check /geometricalgebra/src
+ty check /geometricalgebra/tests
