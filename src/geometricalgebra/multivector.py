@@ -247,6 +247,10 @@ class MultiVector:
     def __abs__(self) -> numbers.Real | sympy.Expr:
         return self.magnitude()
 
+    def __iter__(self):
+        for key, value in self.coefficient_of_blade.items():
+            yield MultiVector(BladeCoef({key: value}))
+
     def magnitude(self) -> numbers.Real | sympy.Expr:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 13,
