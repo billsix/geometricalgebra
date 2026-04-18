@@ -15,6 +15,10 @@ GITCONFIG_FILE := $(HOME)/.gitconfig
 GITCONFIG_REAL_PATH := $(shell readlink -f $(GITCONFIG_FILE))
 GITCONFIG_MOUNT := $(shell if [ -f $(GITCONFIG_REAL_PATH) ]; then echo "-v $(GITCONFIG_REAL_PATH):/root/.gitconfig:Z" ; fi)
 
+GNUPG_FILE := $(HOME)/.gnupg
+GNUPG_REAL_PATH := $(shell readlink -f $(GNUPG_FILE))
+GNUPG_MOUNT := $(shell if [ -d $(GNUPG_REAL_PATH) ]; then echo "-v $(GNUPG_REAL_PATH):/root/.gnupg:Z" ; fi)
+
 
 
 FILES_TO_MOUNT = -v $(shell pwd):/geometricalgebra/:Z \
@@ -25,6 +29,7 @@ FILES_TO_MOUNT = -v $(shell pwd):/geometricalgebra/:Z \
 		-v ./entrypoint/format.sh:/format.sh:Z \
 		-v ./entrypoint/.bashrc:/root/.bashrc:Z \
                 $(TMUX_MOUNT) \
+                $(GNUPG_MOUNT) \
                 $(GITCONFIG_MOUNT)
 
 EXPOSE_PORT = -p 8888:8888

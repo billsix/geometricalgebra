@@ -26,6 +26,8 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
                    tmux \
                    uv \
                    ty ;  \
+    dnf install -y \
+                   pinentry; \
     emacs --batch --load /root/.emacs.d/install-melpa-packages.el && \
     echo "alias ls='ls --color=auto'" >> ~/.bashrc && \
     if [ "$USE_SPYDER" = "1" ]; then \
