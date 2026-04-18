@@ -29,7 +29,6 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     dnf install -y \
                    pinentry; \
     emacs --batch --load /root/.emacs.d/install-melpa-packages.el && \
-    echo "alias ls='ls --color=auto'" >> ~/.bashrc && \
     if [ "$USE_SPYDER" = "1" ]; then \
       dnf install -y   \
                    mesa-dri-drivers  \
@@ -49,6 +48,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     fi ; \
     echo "/usr/local/bin/jupyter.sh # on http://127.0.0.1:8888/lab" >> ~/.bash_history && \
     echo "emacs src/geometricalgebra/multivector.py tests/test_multivector.py &" >> ~/.bash_history && \
+    echo "source ~/.extrabashrc" >> ~/.bashrc && \
     uv pip install --system setuptools && \
     dnf install -y libatomic && uv pip install --system pyright && \
     uv pip install --system -r /requirements.txt && \

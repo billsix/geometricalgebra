@@ -27,7 +27,6 @@ FILES_TO_MOUNT = -v $(shell pwd):/geometricalgebra/:Z \
 		-v ./entrypoint/percentToIpynb.sh:/usr/local/bin/percentToIpynb.sh:Z \
 		-v ./entrypoint/spyder.sh:/usr/local/bin/spyder.sh:Z \
 		-v ./entrypoint/format.sh:/format.sh:Z \
-		-v ./entrypoint/.bashrc:/root/.bashrc:Z \
                 $(TMUX_MOUNT) \
                 $(GNUPG_MOUNT) \
                 $(GITCONFIG_MOUNT)
