@@ -248,8 +248,10 @@ class MultiVector:
         return self.magnitude()
 
     def __iter__(self):
-        for key, value in self.coefficient_of_blade.items():
-            yield MultiVector(BladeCoef({key: value}))
+        yield from (
+            MultiVector(BladeCoef({key: value}))
+            for key, value in self.coefficient_of_blade.items()
+        )
 
     def magnitude(self) -> numbers.Real | sympy.Expr:
         """
