@@ -11,6 +11,11 @@ TMUX_FILE := $(HOME)/.tmux.conf
 TMUX_REAL_PATH := $(shell readlink -f $(TMUX_FILE))
 TMUX_MOUNT := $(shell if [ -f $(TMUX_REAL_PATH) ]; then echo "-v $(TMUX_REAL_PATH):/root/.tmux.conf:Z" ; fi)
 
+GITCONFIG_FILE := $(HOME)/.gitconfig
+GITCONFIG_REAL_PATH := $(shell readlink -f $(GITCONFIG_FILE))
+GITCONFIG_MOUNT := $(shell if [ -f $(GITCONFIG_REAL_PATH) ]; then echo "-v $(GITCONFIG_REAL_PATH):/root/.gitconfig:Z" ; fi)
+
+
 
 FILES_TO_MOUNT = -v $(shell pwd):/geometricalgebra/:Z \
 		-v ./entrypoint/entrypoint.sh:/entrypoint.sh:Z \
@@ -19,7 +24,8 @@ FILES_TO_MOUNT = -v $(shell pwd):/geometricalgebra/:Z \
 		-v ./entrypoint/spyder.sh:/usr/local/bin/spyder.sh:Z \
 		-v ./entrypoint/format.sh:/format.sh:Z \
 		-v ./entrypoint/.bashrc:/root/.bashrc:Z \
-                $(TMUX_MOUNT)
+                $(TMUX_MOUNT) \
+                $(GITCONFIG_MOUNT)
 
 EXPOSE_PORT = -p 8888:8888
 
