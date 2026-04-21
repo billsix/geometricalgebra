@@ -59,15 +59,21 @@ class MultiVector:
 
     @staticmethod
     def from_scalar(scalar: int | float):
-        return MultiVector({tuple(): scalar})  # type: ignore
+        return MultiVector({tuple(): typing.cast(numbers.Real, scalar)})
 
     @staticmethod
     def from_sympy_expr(s: sympy.Expr):
-        return MultiVector({tuple(): s})  # type: ignore
+        return MultiVector({tuple(): typing.cast(numbers.Real, s)})
 
     @staticmethod
     def unit_pseudoscalar(g: int) -> "MultiVector":
-        return math.prod([MultiVector({(x,): 1}) for x in range(1, g + 1)], start=one)  # type: ignore
+        return math.prod(
+            [
+                MultiVector({(x,): typing.cast(numbers.Real, 1)})
+                for x in range(1, g + 1)
+            ],
+            start=one,
+        )
 
     @staticmethod
     def unit_pseudoscalar_squared(g: int) -> "MultiVector":
@@ -118,7 +124,9 @@ class MultiVector:
                             return decrease_grade(
                                 BladeDictionaryEntry(
                                     blade=(c, a, *rest),
-                                    coefficient=-(basis_blade.coefficient),  # type: ignore
+                                    coefficient=typing.cast(
+                                        numbers.Real, -(basis_blade.coefficient)
+                                    ),
                                 )
                             )
                         case (a, c, *rest) if a < c:
@@ -173,7 +181,7 @@ class MultiVector:
                             == decrease_grade(
                                 BladeDictionaryEntry(
                                     blade=(*basis_blade.blade, *missing_directions),
-                                    coefficient=1,  # type: ignore
+                                    coefficient=typing.cast(numbers.Real, 1),
                                 )
                             ).coefficient
                         )
@@ -185,7 +193,7 @@ class MultiVector:
                                 (basis_blade.blade[1],)
                                 + (basis_blade.blade[0],)
                                 + basis_blade.blade[2:],
-                                -(basis_blade.coefficient),  # type: ignore
+                                typing.cast(numbers.Real, -(basis_blade.coefficient)),
                             )
                         )
 
@@ -319,7 +327,11 @@ class MultiVector:
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 13,
         equation 1.44
         """
-        return (self * other).r_vector_part(0).coefficient_of_blade.get(tuple(), 0)  # type: ignore
+        return (
+            (self * other)
+            .r_vector_part(0)
+            .coefficient_of_blade.get(tuple(), typing.cast(numbers.Real, 0))
+        )
 
     def wedge(self, rhs: typing.Self) -> "MultiVector":
         return self.outer_product(rhs)
@@ -413,7 +425,9 @@ class MultiVector:
         )
 
     def scalar_part(self) -> numbers.Real:
-        return self.r_vector_part(0).coefficient_of_blade.get(tuple(), 0)  # type: ignore
+        return self.r_vector_part(0).coefficient_of_blade.get(
+            tuple(), typing.cast(numbers.Real, 0)
+        )
 
     def grades(self) -> list[int]:
         return list(set(len(blade) for blade in self.coefficient_of_blade.keys()))
@@ -620,16 +634,16 @@ class MultiVector:
         return "$" + ("0" if (self == zero) else " +  ".join(blades)) + "$"
 
 
-e_1: MultiVector = MultiVector({(1,): 1})  # type: ignore
-e_2: MultiVector = MultiVector({(2,): 1})  # type: ignore
-e_3: MultiVector = MultiVector({(3,): 1})  # type: ignore
-e_4: MultiVector = MultiVector({(4,): 1})  # type: ignore
-e_5: MultiVector = MultiVector({(5,): 1})  # type: ignore
-e_6: MultiVector = MultiVector({(6,): 1})  # type: ignore
-e_7: MultiVector = MultiVector({(7,): 1})  # type: ignore
-e_8: MultiVector = MultiVector({(8,): 1})  # type: ignore
-e_9: MultiVector = MultiVector({(9,): 1})  # type: ignore
-e_10: MultiVector = MultiVector({(10,): 1})  # type: ignore
+e_1: MultiVector = MultiVector({(1,): typing.cast(numbers.Real, 1)})
+e_2: MultiVector = MultiVector({(2,): typing.cast(numbers.Real, 1)})
+e_3: MultiVector = MultiVector({(3,): typing.cast(numbers.Real, 1)})
+e_4: MultiVector = MultiVector({(4,): typing.cast(numbers.Real, 1)})
+e_5: MultiVector = MultiVector({(5,): typing.cast(numbers.Real, 1)})
+e_6: MultiVector = MultiVector({(6,): typing.cast(numbers.Real, 1)})
+e_7: MultiVector = MultiVector({(7,): typing.cast(numbers.Real, 1)})
+e_8: MultiVector = MultiVector({(8,): typing.cast(numbers.Real, 1)})
+e_9: MultiVector = MultiVector({(9,): typing.cast(numbers.Real, 1)})
+e_10: MultiVector = MultiVector({(10,): typing.cast(numbers.Real, 1)})
 zero: MultiVector = MultiVector.from_scalar(0)
 one: MultiVector = MultiVector.from_scalar(1)
 
