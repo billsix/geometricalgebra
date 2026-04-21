@@ -36,6 +36,9 @@ class BladeDictionaryEntry(NamedTuple):
     blade: tuple[int, ...]
     coefficient: numbers.Real
 
+    def as_multivector(self):
+        return MultiVector(coefficient_of_blade=dict([(self.blade, self.coefficient)]))
+
 
 @dataclasses.dataclass
 class MultiVector:
@@ -186,48 +189,31 @@ class MultiVector:
                             )
                         )
 
-                def sum_dicts(dicts: list[BladeCoef]) -> BladeCoef:
-                    def sum_2_dicts(dict1: BladeCoef, dict2: BladeCoef) -> BladeCoef:
-                        return {
-                            blade: typing.cast(
-                                numbers.Real,
-                                (dict1.get(blade, 0) + dict2.get(blade, 0)),
+                return sum(
+                    [
+                        make_positive(
+                            decrease_grade(
+                                BladeDictionaryEntry(
+                                    blade=(
+                                        *blade_left,
+                                        *blade_right,
+                                    ),
+                                    coefficient=typing.cast(
+                                        numbers.Real,
+                                        scalar_left * scalar_right,
+                                    ),
+                                )
                             )
-                            for blade in dict1.keys() | dict2.keys()
-                        }
-
-                    return functools.reduce(sum_2_dicts, dicts, {})
-
-                return MultiVector(
-                    coefficient_of_blade=sum_dicts(
-                        [
-                            dict(
-                                [
-                                    make_positive(
-                                        decrease_grade(
-                                            BladeDictionaryEntry(
-                                                blade=(
-                                                    *blade_left,
-                                                    *blade_right,
-                                                ),
-                                                coefficient=typing.cast(
-                                                    numbers.Real,
-                                                    scalar_left * scalar_right,
-                                                ),
-                                            )
-                                        )
-                                    )
-                                ]
-                            )
-                            for (blade_left, scalar_left), (
-                                blade_right,
-                                scalar_right,
-                            ) in itertools.product(
-                                self.coefficient_of_blade.items(),
-                                rhs.coefficient_of_blade.items(),
-                            )
-                        ]
-                    )
+                        ).as_multivector()
+                        for (blade_left, scalar_left), (
+                            blade_right,
+                            scalar_right,
+                        ) in itertools.product(
+                            self.coefficient_of_blade.items(),
+                            rhs.coefficient_of_blade.items(),
+                        )
+                    ],
+                    start=zero,
                 )
 
     def __rmul__(self, lhs) -> "MultiVector":
