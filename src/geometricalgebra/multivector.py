@@ -97,108 +97,105 @@ class MultiVector:
         return self + -rhs
 
     def __mul__(self, rhs) -> "MultiVector":
-        match rhs:
-            case int() as n:
-                return self * MultiVector.from_scalar(n)
-            case float() as n:
-                return self * MultiVector.from_scalar(n)
-            case sympy.Expr() as s:
-                return self * MultiVector.from_sympy_expr(s)
-            case _:
 
-                def decrease_grade(
-                    basis_blade: BladeDictionaryEntry,
-                ) -> BladeDictionaryEntry:
-                    match basis_blade.blade:
-                        case ():
-                            return basis_blade
-                        case (a,):
-                            return basis_blade
-                        case (a, c, *rest) if a == c:
-                            return decrease_grade(
+        def mul() -> "MultiVector":
+            def decrease_grade(
+                basis_blade: BladeDictionaryEntry,
+            ) -> BladeDictionaryEntry:
+                match basis_blade.blade:
+                    case ():
+                        return basis_blade
+                    case (a,):
+                        return basis_blade
+                    case (a, c, *rest) if a == c:
+                        return decrease_grade(
+                            BladeDictionaryEntry(
+                                blade=(*rest,), coefficient=basis_blade.coefficient
+                            )
+                        )
+                    case (a, c, *rest) if a > c:
+                        return decrease_grade(
+                            BladeDictionaryEntry(
+                                blade=(c, a, *rest),
+                                coefficient=typing.cast(
+                                    numbers.Real, -(basis_blade.coefficient)
+                                ),
+                            )
+                        )
+                    case (a, c, *rest) if a < c:
+                        sortedBladeDictionyEntriy: BladeDictionaryEntry = (
+                            decrease_grade(
                                 BladeDictionaryEntry(
-                                    blade=(*rest,), coefficient=basis_blade.coefficient
+                                    blade=(c, *rest),
+                                    coefficient=basis_blade.coefficient,
                                 )
                             )
-                        case (a, c, *rest) if a > c:
-                            return decrease_grade(
-                                BladeDictionaryEntry(
-                                    blade=(c, a, *rest),
-                                    coefficient=typing.cast(
-                                        numbers.Real, -(basis_blade.coefficient)
-                                    ),
+                        )
+                        match sortedBladeDictionyEntriy.blade:
+                            case (b, *_) if a < b:
+                                return BladeDictionaryEntry(
+                                    blade=(a, *sortedBladeDictionyEntriy.blade),
+                                    coefficient=sortedBladeDictionyEntriy.coefficient,
                                 )
-                            )
-                        case (a, c, *rest) if a < c:
-                            sortedBladeDictionyEntriy: BladeDictionaryEntry = (
-                                decrease_grade(
+                            case _:
+                                return decrease_grade(
                                     BladeDictionaryEntry(
-                                        blade=(c, *rest),
-                                        coefficient=basis_blade.coefficient,
-                                    )
-                                )
-                            )
-                            match sortedBladeDictionyEntriy.blade:
-                                case (b, *_) if a < b:
-                                    return BladeDictionaryEntry(
                                         blade=(a, *sortedBladeDictionyEntriy.blade),
                                         coefficient=sortedBladeDictionyEntriy.coefficient,
                                     )
-                                case _:
-                                    return decrease_grade(
-                                        BladeDictionaryEntry(
-                                            blade=(a, *sortedBladeDictionyEntriy.blade),
-                                            coefficient=sortedBladeDictionyEntriy.coefficient,
-                                        )
-                                    )
-                        case _:
-                            raise ValueError(
-                                "This code should never be able to be excuted"
-                            )
-
-                # make order the absolute units in a way that would
-                # be considered positive in a full space.
-                # For instance, e_1 * e_3 should be reprented as a negative
-                # value, because e_1 * e_2 * e_3 = 1,
-                # therefore e_1 * e_3 * e_2 = -1,
-                def make_positive(
-                    basis_blade: BladeDictionaryEntry,
-                ) -> BladeDictionaryEntry:
-                    if len(basis_blade.blade) <= 1:
-                        return basis_blade
-                    else:
-                        missing_directions: tuple[int, ...] = tuple(
-                            sorted(
-                                list(
-                                    set(list(range(1, max(basis_blade.blade))))
-                                    - set(basis_blade.blade)
                                 )
+                    case _:
+                        raise ValueError("This code should never be able to be excuted")
+
+            # make order the absolute units in a way that would
+            # be considered positive in a full space.
+            # For instance, e_1 * e_3 should be reprented as a negative
+            # value, because e_1 * e_2 * e_3 = 1,
+            # therefore e_1 * e_3 * e_2 = -1,
+            def make_positive(
+                basis_blade: BladeDictionaryEntry,
+            ) -> BladeDictionaryEntry:
+                if len(basis_blade.blade) <= 1:
+                    return basis_blade
+                else:
+                    missing_directions: tuple[int, ...] = tuple(
+                        sorted(
+                            list(
+                                set(list(range(1, max(basis_blade.blade))))
+                                - set(basis_blade.blade)
                             )
                         )
+                    )
 
-                        has_positive_orientation: bool = (
-                            1
-                            == decrease_grade(
-                                BladeDictionaryEntry(
-                                    blade=(*basis_blade.blade, *missing_directions),
-                                    coefficient=typing.cast(numbers.Real, 1),
-                                )
-                            ).coefficient
-                        )
-
-                        return (
-                            basis_blade
-                            if has_positive_orientation
-                            else BladeDictionaryEntry(
-                                (basis_blade.blade[1],)
-                                + (basis_blade.blade[0],)
-                                + basis_blade.blade[2:],
-                                typing.cast(numbers.Real, -(basis_blade.coefficient)),
+                    has_positive_orientation: bool = (
+                        1
+                        == decrease_grade(
+                            BladeDictionaryEntry(
+                                blade=(*basis_blade.blade, *missing_directions),
+                                coefficient=typing.cast(numbers.Real, 1),
                             )
-                        )
+                        ).coefficient
+                    )
 
-                return sum(
-                    [
+                    return (
+                        basis_blade
+                        if has_positive_orientation
+                        else BladeDictionaryEntry(
+                            (basis_blade.blade[1],)
+                            + (basis_blade.blade[0],)
+                            + basis_blade.blade[2:],
+                            typing.cast(numbers.Real, -(basis_blade.coefficient)),
+                        )
+                    )
+
+            def blade_dictionary_entry_to_multivector(
+                b: BladeDictionaryEntry,
+            ) -> MultiVector:
+                return b.as_multivector()
+
+            return sum(
+                [
+                    blade_dictionary_entry_to_multivector(
                         make_positive(
                             decrease_grade(
                                 BladeDictionaryEntry(
@@ -212,17 +209,28 @@ class MultiVector:
                                     ),
                                 )
                             )
-                        ).as_multivector()
-                        for (blade_left, scalar_left), (
-                            blade_right,
-                            scalar_right,
-                        ) in itertools.product(
-                            self.coefficient_of_blade.items(),
-                            rhs.coefficient_of_blade.items(),
                         )
-                    ],
-                    start=zero,
-                )
+                    )
+                    for (blade_left, scalar_left), (
+                        blade_right,
+                        scalar_right,
+                    ) in itertools.product(
+                        self.coefficient_of_blade.items(),
+                        rhs.coefficient_of_blade.items(),
+                    )
+                ],
+                start=zero,
+            )
+
+        match rhs:
+            case int() as n:
+                return self * MultiVector.from_scalar(n)
+            case float() as n:
+                return self * MultiVector.from_scalar(n)
+            case sympy.Expr() as s:
+                return self * MultiVector.from_sympy_expr(s)
+            case _:
+                return mul()
 
     def __rmul__(self, lhs) -> "MultiVector":
         match lhs:
