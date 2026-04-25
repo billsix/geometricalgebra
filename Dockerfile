@@ -49,6 +49,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     echo "/usr/local/bin/jupyter.sh # on http://127.0.0.1:8888/lab" >> ~/.bash_history && \
     echo "emacs src/geometricalgebra/multivector.py tests/test_multivector.py &" >> ~/.bash_history && \
     echo "source ~/.extrabashrc" >> ~/.bashrc && \
+    echo "from geometricalgebra.multivector import *" >> ~/.python_history  && \
     uv pip install --system setuptools && \
     dnf install -y libatomic && uv pip install --system pyright && \
     uv pip install --system -r /requirements.txt && \
