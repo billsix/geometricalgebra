@@ -42,6 +42,10 @@ from geometricalgebra.multivector import (
     e_1,
     e_2,
     e_3,
+    e_4,
+    e_5,
+    e_6,
+    a_1,
     sym_vec2_1,
     sym_vec2_2,
     sym_vec3_1,
@@ -116,5 +120,19 @@ def gram_fe_to_mol_fe(gram_fe: float) -> MultiVector:
 gram_fe_to_mol_fe(gram_fe=95.8)
 
 # %%
+for x in MultiVector.bases(1):
+    display(Math(x._repr_latex_()))
+
+# %%
+for x in MultiVector.bases(2):
+    display(Math(x._repr_latex_()))
+
+# %%
+for x in MultiVector.bases(3):
+    display(Math(x._repr_latex_()))
+
+
+# %%
+a_1 * e_1 * e_2 * e_4
 
 # %%

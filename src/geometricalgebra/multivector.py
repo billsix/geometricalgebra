@@ -23,7 +23,8 @@ import math
 import numbers
 import typing
 from collections.abc import Sequence
-from typing import Callable, NamedTuple, TypeIs
+from itertools import chain, combinations
+from typing import Callable, Generator, NamedTuple, TypeIs
 
 import numpy as np
 import sympy
@@ -73,6 +74,28 @@ class MultiVector:
                 for x in range(1, g + 1)
             ],
             start=one,
+        )
+
+    @staticmethod
+    def bases(g: int) -> Generator["MultiVector"]:
+        def powerset(iterable: Sequence[int]) -> chain[tuple[int, ...]]:
+            s: list[int] = list(iterable)
+            # chain.from_iterable flattens the list of combinations
+            return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
+        def make_coefficients_one(mv: "MultiVector") -> "MultiVector":
+            for key in mv.coefficient_of_blade.keys():
+                mv.coefficient_of_blade[key] = typing.cast(numbers.Real, 1)
+            return mv
+
+        yield from (
+            make_coefficients_one(
+                math.prod(
+                    [MultiVector({(x,): typing.cast(numbers.Real, 1)}) for x in b],
+                    start=one,
+                )
+            )
+            for b in powerset(range(1, g + 1))
         )
 
     @staticmethod
