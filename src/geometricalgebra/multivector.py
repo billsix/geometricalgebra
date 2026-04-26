@@ -569,8 +569,8 @@ class MultiVector:
     def identity() -> MultiVectorFn:
         def i(value: MultiVector) -> MultiVector:
             return value
-        return i
 
+        return i
 
     @staticmethod
     def rotate(
@@ -658,11 +658,6 @@ sym_vec3_1: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
 sym_vec3_2: MultiVector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
 
 sym_vec_plane: MultiVector = sym_vec3_1.wedge(sym_vec3_2)
-
-
-
-
-
 
 
 # doc-region-begin begin define invertible function
@@ -1009,21 +1004,20 @@ def uniform_scale(m: float) -> InvertibleFunction:
     return InvertibleFunction(f, f_inv, tex_str, inv_str)
     # doc-region-end define uniform scale
 
+
 def scale_non_uniform_2d(m_x: float, m_y: float) -> InvertibleFunction:
     def f(vector: MultiVector) -> MultiVector:
-        return m_x * MultiVector.project(onto=e_1)(
-            vector
-        ) + m_y * MultiVector.project(onto=e_2)(vector)
+        return m_x * MultiVector.project(onto=e_1)(vector) + m_y * MultiVector.project(
+            onto=e_2
+        )(vector)
 
     def f_inv(vector: MultiVector) -> MultiVector:
         if m_x == 0.0 or m_y == 0.0:
-            raise ValueError(
-                "Note invertible.  Scaling factors cannot be zero."
-            )
+            raise ValueError("Note invertible.  Scaling factors cannot be zero.")
 
-        return (m_x) ** (-1) * MultiVector.project(onto=e_1)(vector) + (
-            m_y
-        ) ** (-1) * MultiVector.project(onto=e_2)(vector)
+        return (m_x) ** (-1) * MultiVector.project(onto=e_1)(vector) + (m_y) ** (
+            -1
+        ) * MultiVector.project(onto=e_2)(vector)
 
     return InvertibleFunction(
         f,
@@ -1054,9 +1048,9 @@ def rotate(angle_in_radians: float) -> InvertibleFunction:
     ) -> typing.Callable[[MultiVector], MultiVector]:
         def f(vector: MultiVector) -> MultiVector:
             parallel: MultiVector = math.cos(float(angle_in_radians)) * vector
-            perpendicular: MultiVector = math.sin(
-                float(angle_in_radians)
-            ) * perp(vector)
+            perpendicular: MultiVector = math.sin(float(angle_in_radians)) * perp(
+                vector
+            )
             return parallel + perpendicular
 
         return f
@@ -1071,12 +1065,8 @@ def rotate(angle_in_radians: float) -> InvertibleFunction:
 
 
 # doc-region-begin define rotate around
-def rotate_around(
-    angle_in_radians: float, center: MultiVector
-) -> InvertibleFunction:
-    return compose(
-        [translate(center), rotate(angle_in_radians), translate(-center)]
-    )
+def rotate_around(angle_in_radians: float, center: MultiVector) -> InvertibleFunction:
+    return compose([translate(center), rotate(angle_in_radians), translate(-center)])
     # doc-region-end define rotate around
 
 

@@ -30,18 +30,16 @@ from matplotlib_inline.backend_inline import set_matplotlib_formats
 
 from geometricalgebra.multivector import (
     MultiVector,
-    MultiVectorFn,
-    rotate_90_degrees,
-    identity,
-    zero,
     e_1,
     e_2,
+    identity,
+    rotate_90_degrees,
+    zero,
 )
 
 set_matplotlib_formats("svg")
 
 extraLinesMultiplier = 3
-
 
 
 def generategridlines(graphBounds, interval=1):
@@ -111,9 +109,7 @@ def create_basis(
     ycolor=(1.0, 0.0, 1.0),
 ):
     # plot transformed basis
-    for vecs, thickness in generategridlines(
-        graph_bounds, interval=gridline_interval
-    ):
+    for vecs, thickness in generategridlines(graph_bounds, interval=gridline_interval):
         plt.plot(
             [fn(vec).component(e_1) for vec in vecs],
             [fn(vec).component(e_2) for vec in vecs],
@@ -134,8 +130,7 @@ def create_unit_circle(
         for theta in np.arange(0.0, 2 * math.pi, theta_increment):
             yield (
                 [
-                    scale_radius
-                    * (math.cos(theta) * e_1 + math.sin(theta) * e_2),
+                    scale_radius * (math.cos(theta) * e_1 + math.sin(theta) * e_2),
                     scale_radius
                     * (
                         math.cos(theta + theta_increment) * e_1
@@ -187,9 +182,7 @@ def cosine(v1: MultiVector, v2: MultiVector) -> numbers.Real:
 
 
 def sine(v1: MultiVector, v2: MultiVector) -> numbers.Real:
-    return (
-        rotate_90_degrees()(v1).dot(v2) * (abs(v1 * v2) ** (-1))
-    ).scalar_part()
+    return (rotate_90_degrees()(v1).dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()
 
 
 def draw_isoceles_triangle(
@@ -204,8 +197,7 @@ def draw_isoceles_triangle(
         cosine(x_world_space, x_prime_direction_world_space),
     )
     label_offset = (
-        0.0 * x_prime_direction_world_space
-        + 0.20 * y_prime_direction_world_space
+        0.0 * x_prime_direction_world_space + 0.20 * y_prime_direction_world_space
     )
 
     vertices = [
@@ -268,8 +260,7 @@ def draw_second_right_triangle(
         cosine(x_world_space, x_prime_direction_world_space),
     )
     label_offset = (
-        0.0 * x_prime_direction_world_space
-        + 0.20 * y_prime_direction_world_space
+        0.0 * x_prime_direction_world_space + 0.20 * y_prime_direction_world_space
     )
 
     vertices = [
@@ -326,8 +317,7 @@ def draw_right_triangle(
         cosine(x_world_space, x_prime_direction_world_space),
     )
     label_offset = (
-        0.0 * x_prime_direction_world_space
-        + 0.20 * y_prime_direction_world_space
+        0.0 * x_prime_direction_world_space + 0.20 * y_prime_direction_world_space
     )
 
     vertices = [
@@ -384,8 +374,7 @@ def draw_ndc(
         cosine(x_world_space, x_prime_direction_world_space),
     )
     label_offset = (
-        0.0 * x_prime_direction_world_space
-        + 0.20 * y_prime_direction_world_space
+        0.0 * x_prime_direction_world_space + 0.20 * y_prime_direction_world_space
     )
 
     vertices = [
@@ -446,12 +435,10 @@ def draw_screen(
                 fn(v)
                 for v in [
                     (-1.0 + d_width * x) * e_1 + (-1.0 + d_height * y) * e_2,
-                    (-1.0 + d_width * (x + 1)) * e_1
-                    + (-1.0 + d_height * y) * e_2,
+                    (-1.0 + d_width * (x + 1)) * e_1 + (-1.0 + d_height * y) * e_2,
                     (-1.0 + d_width * (x + 1)) * e_1
                     + (-1.0 + d_height * (y + 1)) * e_2,
-                    (-1.0 + d_width * (x)) * e_1
-                    + (-1.0 + d_height * (y + 1)) * e_2,
+                    (-1.0 + d_width * (x)) * e_1 + (-1.0 + d_height * (y + 1)) * e_2,
                 ]
             ]
 

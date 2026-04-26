@@ -33,56 +33,45 @@
 
 
 # %%
-from jedi.inference.gradual.typing import Callable
 import itertools
 import math
-import warnings
 import typing
-import dataclasses
-import numbers
+import warnings
 
 import pandas as pd
+import sympy
 from IPython.display import Markdown, Math, display
 
-import sympy
-
 from geometricalgebra.multivector import (
+    InvertibleFunction,
     MultiVector,
     MultiVectorFn,
     a_1,
+    compose,
+    compose_intermediate_fns,
     e_1,
     e_2,
     e_3,
     e_4,
+    inverse,
     one,
+    rotate,
+    scale_non_uniform_2d,
     sym_vec2_1,
     sym_vec2_2,
     sym_vec3_1,
     sym_vec3_2,
-    InvertibleFunction,
     translate,
-    identity,
-    rotate,
-    rotate_90_degrees,
-    scale_non_uniform_2d,
-    compose,
-    inverse,
-    compose_intermediate_fns,
-    compose_intermediate_fns_and_fn,
 )
-
-import geometricalgebra.nbplotutils
 from geometricalgebra.nbplotutils import (
-    create_graphs,
     create_basis,
-    create_x_and_y,
+    create_graphs,
     create_unit_circle,
+    create_x_and_y,
     draw_isoceles_triangle,
     draw_right_triangle,
     draw_second_right_triangle,
-    )
-
-
+)
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)
@@ -269,7 +258,6 @@ show_mult(
 # %%
 
 
-
 T: typing.Callable[[MultiVector], MultiVectorFn] = translate
 S: typing.Callable[[float, float], MultiVectorFn] = scale_non_uniform_2d
 R: typing.Callable[[float], InvertibleFunction] = rotate
@@ -389,7 +377,7 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 fn = compose(
     [
         R(sympy.pi / 4),
-        T(2 * e_1 ),
+        T(2 * e_1),
     ]
 )
 with create_graphs() as axes:
