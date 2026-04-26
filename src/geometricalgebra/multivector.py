@@ -84,12 +84,18 @@ class MultiVector:
             return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
         yield from (
-                math.prod(
-                    [MultiVector({(x,): typing.cast(numbers.Real, 1)}) for x in b],
-                    start=one,
+            math.prod(
+                [MultiVector({(x,): typing.cast(numbers.Real, 1)}) for x in b],
+                start=one,
             )
             for b in powerset(range(1, g + 1))
         )
+
+    @staticmethod
+    def symbolic_multivector(grade: int, prefix: str) -> "MultiVector":
+        mv: list[MultiVector] = list(MultiVector.bases(grade))
+        symbols: list[sympy.symbol] = sympy.symbols(prefix + ":" + str(len(mv)))
+        return sum([s * blade for s, blade in zip(symbols, mv)], start=zero)
 
     @staticmethod
     def unit_pseudoscalar_squared(g: int) -> "MultiVector":
@@ -163,7 +169,6 @@ class MultiVector:
                     case _:
                         raise ValueError("This code should never be able to be excuted")
 
-
             def blade_dictionary_entry_to_multivector(
                 b: BladeDictionaryEntry,
             ) -> MultiVector:
@@ -172,17 +177,17 @@ class MultiVector:
             return sum(
                 [
                     blade_dictionary_entry_to_multivector(
-                            decrease_grade(
-                                BladeDictionaryEntry(
-                                    blade=(
-                                        *blade_left,
-                                        *blade_right,
-                                    ),
-                                    coefficient=typing.cast(
-                                        numbers.Real,
-                                        scalar_left * scalar_right,
-                                    ),
-                                )
+                        decrease_grade(
+                            BladeDictionaryEntry(
+                                blade=(
+                                    *blade_left,
+                                    *blade_right,
+                                ),
+                                coefficient=typing.cast(
+                                    numbers.Real,
+                                    scalar_left * scalar_right,
+                                ),
+                            )
                         )
                     )
                     for (blade_left, scalar_left), (
@@ -605,12 +610,20 @@ class MultiVector:
             else:
                 return sympy.latex(sympy.sympify(str(x)))
 
+        def sort_by_grade(a, b):
+            print(a)
+            print(b)
+            print(len(a) > len(b))
+            return len(a) > len(b)
+
         blades = [
             add_parens_or_dont(self.coefficient_of_blade[blade])
             + " ".join(map(lambda b: r"\mathbf{\vec{e}}_" + str(b), blade))
             if blade != tuple()
             else add_parens_or_dont(self.coefficient_of_blade[blade])
-            for blade in sorted(self.coefficient_of_blade.keys())
+            for blade in sorted(
+                self.coefficient_of_blade.keys(), key=lambda b: (len(b), str(b))
+            )
         ]
         # latex_string = r"$\frac{1}{2}$"
         return "$" + ("0" if (self == zero) else " +  ".join(blades)) + "$"

@@ -39,13 +39,11 @@ from IPython.display import Math
 
 from geometricalgebra.multivector import (
     MultiVector,
+    a_1,
     e_1,
     e_2,
     e_3,
     e_4,
-    e_5,
-    e_6,
-    a_1,
     sym_vec2_1,
     sym_vec2_2,
     sym_vec3_1,
@@ -124,12 +122,52 @@ for x in MultiVector.bases(1):
     display(Math(x._repr_latex_()))
 
 # %%
+MultiVector.symbolic_multivector(grade=1, prefix="a")
+
+# %%
 for x in MultiVector.bases(2):
     display(Math(x._repr_latex_()))
 
 # %%
+MultiVector.symbolic_multivector(grade=2, prefix="b")
+
+# %%
+MultiVector.symbolic_multivector(
+    grade=2, prefix="b"
+) * MultiVector.symbolic_multivector(grade=2, prefix="d")
+
+# %%
+MultiVector.symbolic_multivector(grade=2, prefix="c").r_vector_part(0)
+
+# %%
+MultiVector.symbolic_multivector(grade=2, prefix="c").r_vector_part(1)
+
+# %%
+MultiVector.symbolic_multivector(grade=2, prefix="c").r_vector_part(2)
+
+# %%
 for x in MultiVector.bases(3):
     display(Math(x._repr_latex_()))
+
+
+# %%
+MultiVector.symbolic_multivector(grade=3, prefix="c")
+
+
+# %%
+MultiVector.symbolic_multivector(grade=3, prefix="c").r_vector_part(0)
+
+
+# %%
+MultiVector.symbolic_multivector(grade=3, prefix="c").r_vector_part(1)
+
+
+# %%
+MultiVector.symbolic_multivector(grade=3, prefix="c").r_vector_part(2)
+
+
+# %%
+MultiVector.symbolic_multivector(grade=3, prefix="c").r_vector_part(3)
 
 
 # %%
