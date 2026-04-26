@@ -33,12 +33,18 @@
 
 
 # %%
+from jedi.inference.gradual.typing import Callable
 import itertools
 import math
 import warnings
+import typing
+import dataclasses
+import numbers
 
 import pandas as pd
 from IPython.display import Markdown, Math, display
+
+import sympy
 
 from geometricalgebra.multivector import (
     MultiVector,
@@ -53,7 +59,30 @@ from geometricalgebra.multivector import (
     sym_vec2_2,
     sym_vec3_1,
     sym_vec3_2,
+    InvertibleFunction,
+    translate,
+    identity,
+    rotate,
+    rotate_90_degrees,
+    scale_non_uniform_2d,
+    compose,
+    inverse,
+    compose_intermediate_fns,
+    compose_intermediate_fns_and_fn,
 )
+
+import geometricalgebra.nbplotutils
+from geometricalgebra.nbplotutils import (
+    create_graphs,
+    create_basis,
+    create_x_and_y,
+    create_unit_circle,
+    draw_isoceles_triangle,
+    draw_right_triangle,
+    draw_second_right_triangle,
+    )
+
+
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)
@@ -234,4 +263,187 @@ show_mult(
     MultiVector.symbolic_multivector(grade=9, prefix="b").r_vector_part(1),
 )
 
+# %%
+
+
+# %%
+
+
+
+T: typing.Callable[[MultiVector], MultiVectorFn] = translate
+S: typing.Callable[[float, float], MultiVectorFn] = scale_non_uniform_2d
+R: typing.Callable[[float], InvertibleFunction] = rotate
+# %%
+T(5 * e_1)
+
+# %%
+S(5, 6)
+
+# %%
+inverse(T(5 * e_1))
+
+# %%
+T(5 * e_1 + 6 * e_2)
+
+# %%
+T(5 * e_1 + 6 * e_2 + 7 * e_3)
+
+# %%
+inverse(T(5 * e_1 + 6 * e_2 + 7 * e_3))
+
+# %%
+R(sympy.pi / 2)
+
+# %%
+compose([R(sympy.pi / 2), T(5 * e_1 + 6 * e_2)])
+
+# %%
+inverse(compose([R(sympy.pi / 2), T(5 * e_1 + 6 * e_2)]))
+
+# %% [markdown]
+# Draw graph paper
+# ----------------
+#
+# Just draw graph paper, where one unit in the x direction is blue,
+# and one unit in the y direction is pink.  The graph paper corresponds
+# to the numbers on the left and on the bottom.
+#
+#
+
+# %%
+fn = R(math.radians(53.130102))
+with create_graphs(graph_bounds=(5, 5)) as axes:
+    create_basis(fn=fn)
+    create_x_and_y(fn=fn)
+    create_unit_circle(fn=fn)
+    axes.set_title(fn._repr_latex_())
+
+
+# %% [markdown]
+# Draw relative graph paper
+# -------------------------
+#
+# Draw two relative number lines, making a relative graph paper,
+# but keep the original coordinate system on the left and bottom.
+# Any point in the plane can be described using two different
+# graph papers.
+
+# %%
+fn = R(math.radians(53.130102))
+with create_graphs(graph_bounds=(5, 5)) as axes:
+    create_basis(fn=R(0.0))
+    create_x_and_y(fn=R(0.0))
+    create_basis(
+        fn=fn,
+        xcolor=(0, 1, 0),
+        ycolor=(1, 1, 0),
+    )
+    create_x_and_y(
+        fn=fn,
+        xcolor=(0, 1, 0),
+        ycolor=(1, 1, 0),
+    )
+    create_unit_circle(fn=fn)
+    axes.set_title(fn._repr_latex_())
+
+
+# %% [markdown]
+# Draw relative graph paper
+# -------------------------
+#
+# Draw two relative number lines, making a relative graph paper,
+# but keep the original coordinate system on the left and bottom.
+# Any point in the plane can be described using two different
+# graph papers.
+
+# %%
+fn = R(math.radians(53.130102))
+with create_graphs(graph_bounds=(5, 5)) as axes:
+    create_basis(fn=R(0.0))
+    create_x_and_y(fn=R(0.0))
+    create_basis(
+        fn=fn,
+        xcolor=(0, 1, 0),
+        ycolor=(1, 1, 0),
+    )
+    create_x_and_y(
+        fn=fn,
+        xcolor=(0, 1, 0),
+        ycolor=(1, 1, 0),
+    )
+    create_unit_circle(fn=fn)
+    draw_right_triangle()
+    draw_second_right_triangle()
+    axes.set_title(fn._repr_latex_())
+
+
+# %% [markdown]
+# Draw relative graph paper, defined by composed functions
+# --------------------------------------------------------
+#
+# Draw a translated and rotated graph paper.
+# You can read the sequence of composed functions
+# in the order that they are applied, or in reverse order
+
+# %%
+fn = compose(
+    [
+        R(sympy.pi / 4),
+        T(2 * e_1 ),
+    ]
+)
+with create_graphs() as axes:
+    create_basis(
+        fn=fn,
+    )
+    create_x_and_y(fn=fn)
+    create_unit_circle(fn=fn)
+    axes.set_title(fn._repr_latex_())
+
+# %% [markdown]
+# Composed functions, read bottom up
+# ----------------------------------
+#
+# The sequence of functions shown, where the translate
+# is applied first, and operations are relative to the
+# units on the left and bottom.
+
+# %%
+for f in compose_intermediate_fns([R(sympy.pi / 4), T(2 * e_1)]):
+    # TODO - figure out if I can render the latex as part of one markdown command,
+    # if I were to uncomment out this line and other markdown lines,
+    # the build of HTML would fail
+
+    with create_graphs() as axes:
+        create_basis(fn=f)
+        create_x_and_y(fn=f)
+        create_x_and_y()
+        draw_isoceles_triangle(fn=f)
+        create_unit_circle(fn=f)
+        create_unit_circle()
+        axes.set_title(f._repr_latex_())
+
+# %% [markdown]
+# Composed functions, read top down
+# ---------------------------------
+#
+# The sequence of functions shown, where we visualize
+# the rotate first, and then the translate relative to
+# that relative graph paper.
+#
+
+# %%
+for f in compose_intermediate_fns(
+    [
+        R(sympy.pi / 4),
+        T(2 * e_1),
+    ],
+    relative_basis=True,
+):
+    with create_graphs() as axes:
+        create_basis(fn=f)
+        create_x_and_y(fn=f)
+        draw_isoceles_triangle(fn=f)
+        create_unit_circle(fn=f)
+        axes.set_title(f._repr_latex_())
 # %%
