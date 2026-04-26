@@ -33,17 +33,22 @@
 
 
 # %%
+import itertools
+import math
 import warnings
 
-from IPython.display import Math
+import pandas as pd
+from IPython.display import Markdown, Math, display
 
 from geometricalgebra.multivector import (
     MultiVector,
+    MultiVectorFn,
     a_1,
     e_1,
     e_2,
     e_3,
     e_4,
+    one,
     sym_vec2_1,
     sym_vec2_2,
     sym_vec3_1,
@@ -55,14 +60,14 @@ warnings.filterwarnings("error", category=RuntimeWarning)
 
 # %%
 # faoeuaoue
-i = e_1 * e_2
-i
+i: MultiVector = e_1 * e_2
+i  # pyright: ignore[reportUnusedExpression]
 
 # %%
-i * i
+i * i  # pyright: ignore[reportUnusedExpression]
 
 # %%
-2 * e_1 + 3 * e_2 + 5 * e_1
+2 * e_1 + 3 * e_2 + 5 * e_1  # pyright: ignore[reportUnusedExpression]
 
 
 # %% [markdown]
@@ -72,16 +77,16 @@ i * i
 # Foo bar
 
 # %%
-sym_vec2_1
+sym_vec2_1  # pyright: ignore[reportUnusedExpression]
 
 # %%
-sym_vec2_2
+sym_vec2_2  # pyright: ignore[reportUnusedExpression]
 
 # %%
 Math("$($" + sym_vec2_1._repr_latex_() + "$)*($" + sym_vec2_2._repr_latex_() + "$)$")
 
 # %%
-sym_vec2_1 * sym_vec2_2
+sym_vec2_1 * sym_vec2_2  # pyright: ignore[reportUnusedExpression]
 
 # %%
 sym_vec2_1.dot(sym_vec2_2)
@@ -90,24 +95,24 @@ sym_vec2_1.dot(sym_vec2_2)
 sym_vec2_1.wedge(sym_vec2_2)
 
 # %%
-e1e2plane = MultiVector.project(onto=e_1 * e_2)
-e1e2plane(sym_vec3_1) ^ e1e2plane(sym_vec3_2)
+e1e2plane: MultiVectorFn = MultiVector.project(onto=e_1 * e_2)
+e1e2plane(sym_vec3_1) ^ e1e2plane(sym_vec3_2)  # pyright: ignore[reportUnusedExpression]
 
 # %%
-e2e3plane = MultiVector.project(onto=e_2 * e_3)
-e2e3plane(sym_vec3_1) ^ e2e3plane(sym_vec3_2)
+e2e3plane: MultiVectorFn = MultiVector.project(onto=e_2 * e_3)
+e2e3plane(sym_vec3_1) ^ e2e3plane(sym_vec3_2)  # pyright: ignore[reportUnusedExpression]
 
 # %%
-e1e3plane = MultiVector.project(onto=e_1 * e_3)
-e1e3plane(sym_vec3_1) ^ e1e3plane(sym_vec3_2)
+e1e3plane: MultiVectorFn = MultiVector.project(onto=e_1 * e_3)
+e1e3plane(sym_vec3_1) ^ e1e3plane(sym_vec3_2)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # ordering of the plane doesn't matter
-e3e1plane = MultiVector.project(onto=e_3 * e_1)
-e3e1plane(sym_vec3_1) ^ e1e3plane(sym_vec3_2)
+e3e1plane: MultiVectorFn = MultiVector.project(onto=e_3 * e_1)
+e3e1plane(sym_vec3_1) ^ e1e3plane(sym_vec3_2)  # pyright: ignore[reportUnusedExpression]
 
 # %%
-sym_vec3_1 * sym_vec3_2
+sym_vec3_1 * sym_vec3_2  # pyright: ignore[reportUnusedExpression]
 
 
 # %%
@@ -140,7 +145,7 @@ MultiVector.symbolic_multivector(grade=2, prefix="b")
 # %%
 MultiVector.symbolic_multivector(
     grade=2, prefix="b"
-) * MultiVector.symbolic_multivector(grade=2, prefix="d")
+) * MultiVector.symbolic_multivector(grade=2, prefix="d")  # pyright: ignore[reportUnusedExpression]
 
 # %%
 MultiVector.symbolic_multivector(grade=2, prefix="c").r_vector_part(0)
@@ -177,22 +182,56 @@ MultiVector.symbolic_multivector(grade=3, prefix="c").r_vector_part(3)
 
 
 # %%
-a_1 * e_1 * e_2 * e_4
+a_1 * e_1 * e_2 * e_4  # pyright: ignore[reportUnusedExpression]
 
 # %%
 asdf = MultiVector.symbolic_multivector(grade=3, prefix="e").r_vector_part(1)
 asdf2 = MultiVector.symbolic_multivector(grade=3, prefix="f").r_vector_part(1)
 asdf3 = asdf ^ asdf2
-asdf3
+asdf3  # pyright: ignore[reportUnusedExpression]
 
 
 # %%
 asdf3.dual(3)
 
 # %%
-asdf3.dot(asdf3.dual(3)) 
+asdf3.dot(asdf3.dual(3))
 
 # %%
-asdf3 * (asdf3.dual(3)) 
+asdf3 * (asdf3.dual(3))  # pyright: ignore[reportUnusedExpression]
+
+
+# %%
+def show_mult(a, b):
+    display(Markdown("**We want to evaluate**"))
+    # print the values as latex before they are multiplied
+    display(Math("$($" + a._repr_latex_() + "$)*($" + b._repr_latex_() + "$)$"))
+    display(Markdown("**Multivector Multiplication is distributive over additon**"))
+
+    data: list = list(itertools.product(a, b))
+    result = [sublist + tuple(math.prod(sublist, start=one)) for sublist in data]
+    df = pd.DataFrame(
+        result, columns=["Left Component * ", "Right Component", " = Product"]
+    )
+    # Convert to markdown string and display
+    df_latex = df.map(lambda x: x._repr_latex_() if hasattr(x, "_repr_latex_") else x)
+    display(Markdown(df_latex.to_markdown(index=False)))
+    display(Markdown("**Summing all the products up, we get**"))
+    display(Math("$" + (a * b)._repr_latex_() + "$"))
+
+
+# %%
+show_mult(sym_vec2_1, sym_vec2_2)
+
+
+# %%
+show_mult(sym_vec3_1, sym_vec3_2)
+
+
+# %%
+show_mult(
+    MultiVector.symbolic_multivector(grade=8, prefix="a").r_vector_part(1),
+    MultiVector.symbolic_multivector(grade=9, prefix="b").r_vector_part(1),
+)
 
 # %%
