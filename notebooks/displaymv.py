@@ -212,12 +212,6 @@ asdf3  # pyright: ignore[reportUnusedExpression]
 # %%
 asdf3.dual(3)
 
-# %%
-asdf3.dot(asdf3.dual(3))
-
-# %%
-asdf3 * (asdf3.dual(3))  # pyright: ignore[reportUnusedExpression]
-
 
 # %%
 def show_mult(a, b):
@@ -237,6 +231,15 @@ def show_mult(a, b):
     display(Markdown("**Summing all the products up, we get**"))
     display(Math("$" + (a * b)._repr_latex_() + "$"))
 
+
+# %%
+asdf3.dot(asdf3.dual(3))
+
+# %%
+show_mult(asdf3, asdf3.dual(3))
+
+# %%
+asdf3 * (asdf3.dual(3))  # pyright: ignore[reportUnusedExpression]
 
 # %%
 show_mult(sym_vec2_1, sym_vec2_2)
