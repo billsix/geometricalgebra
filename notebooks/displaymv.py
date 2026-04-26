@@ -81,7 +81,13 @@ sym_vec2_2
 Math("$($" + sym_vec2_1._repr_latex_() + "$)*($" + sym_vec2_2._repr_latex_() + "$)$")
 
 # %%
-sym_vec2_1 ^ sym_vec2_2
+sym_vec2_1 * sym_vec2_2
+
+# %%
+sym_vec2_1.dot(sym_vec2_2)
+
+# %%
+sym_vec2_1.wedge(sym_vec2_2)
 
 # %%
 e1e2plane = MultiVector.project(onto=e_1 * e_2)
@@ -172,5 +178,21 @@ MultiVector.symbolic_multivector(grade=3, prefix="c").r_vector_part(3)
 
 # %%
 a_1 * e_1 * e_2 * e_4
+
+# %%
+asdf = MultiVector.symbolic_multivector(grade=3, prefix="e").r_vector_part(1)
+asdf2 = MultiVector.symbolic_multivector(grade=3, prefix="f").r_vector_part(1)
+asdf3 = asdf ^ asdf2
+asdf3
+
+
+# %%
+asdf3.dual(3)
+
+# %%
+asdf3.dot(asdf3.dual(3)) 
+
+# %%
+asdf3 * (asdf3.dual(3)) 
 
 # %%
