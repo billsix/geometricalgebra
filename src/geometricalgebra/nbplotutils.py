@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2025 William Emerison Six
+# Copyright (c) 2018-2026 William Emerison Six
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,6 +17,7 @@
 
 
 import contextlib
+import itertools
 import math
 import numbers
 
@@ -24,7 +25,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import numpy as np
-from IPython.display import display
+import pandas as pd
+from IPython.display import Markdown, Math, display
 from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
 
@@ -33,6 +35,7 @@ from geometricalgebra.multivector import (
     e_1,
     e_2,
     identity,
+    one,
     rotate_90_degrees,
     zero,
 )
@@ -454,3 +457,21 @@ def draw_screen(
                 edgecolor="black",
             )
             axes.add_patch(square)
+
+
+def show_mult(a: MultiVector, b: MultiVector):
+    display(Markdown("**We want to evaluate**"))
+    # print the values as latex before they are multiplied
+    display(Math("$($" + a._repr_latex_() + "$)*($" + b._repr_latex_() + "$)$"))
+    display(Markdown("**Multivector Multiplication is distributive over additon**"))
+
+    data: list = list(itertools.product(a, b))
+    result = [sublist + tuple(math.prod(sublist, start=one)) for sublist in data]
+    df = pd.DataFrame(
+        result, columns=["Left Component * ", "Right Component", " = Product"]
+    )
+    # Convert to markdown string and display
+    df_latex = df.map(lambda x: x._repr_latex_() if hasattr(x, "_repr_latex_") else x)
+    display(Markdown(df_latex.to_markdown(index=False)))
+    display(Markdown("**Summing all the products up, we get**"))
+    display(Math("$" + (a * b)._repr_latex_() + "$"))

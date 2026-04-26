@@ -14,7 +14,7 @@
 
 # %%
 
-# Copyright (c) 2025 William Emerison Six
+# Copyright (c) 2025-2026 William Emerison Six
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -33,14 +33,12 @@
 
 
 # %%
-import itertools
 import math
 import typing
 import warnings
 
-import pandas as pd
 import sympy
-from IPython.display import Markdown, Math, display
+from IPython.display import Math, display
 
 from geometricalgebra.multivector import (
     InvertibleFunction,
@@ -54,7 +52,6 @@ from geometricalgebra.multivector import (
     e_3,
     e_4,
     inverse,
-    one,
     rotate,
     scale_non_uniform_2d,
     sym_vec2_1,
@@ -71,6 +68,7 @@ from geometricalgebra.nbplotutils import (
     draw_isoceles_triangle,
     draw_right_triangle,
     draw_second_right_triangle,
+    show_mult,
 )
 
 # turn warnings into exceptions
@@ -210,26 +208,13 @@ asdf3  # pyright: ignore[reportUnusedExpression]
 
 
 # %%
+asdf3 * asdf3
+
+# %%
 asdf3.dual(3)
 
 
 # %%
-def show_mult(a, b):
-    display(Markdown("**We want to evaluate**"))
-    # print the values as latex before they are multiplied
-    display(Math("$($" + a._repr_latex_() + "$)*($" + b._repr_latex_() + "$)$"))
-    display(Markdown("**Multivector Multiplication is distributive over additon**"))
-
-    data: list = list(itertools.product(a, b))
-    result = [sublist + tuple(math.prod(sublist, start=one)) for sublist in data]
-    df = pd.DataFrame(
-        result, columns=["Left Component * ", "Right Component", " = Product"]
-    )
-    # Convert to markdown string and display
-    df_latex = df.map(lambda x: x._repr_latex_() if hasattr(x, "_repr_latex_") else x)
-    display(Markdown(df_latex.to_markdown(index=False)))
-    display(Markdown("**Summing all the products up, we get**"))
-    display(Math("$" + (a * b)._repr_latex_() + "$"))
 
 
 # %%
