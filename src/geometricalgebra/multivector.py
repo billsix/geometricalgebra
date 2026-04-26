@@ -83,17 +83,10 @@ class MultiVector:
             # chain.from_iterable flattens the list of combinations
             return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
-        def make_coefficients_one(mv: "MultiVector") -> "MultiVector":
-            for key in mv.coefficient_of_blade.keys():
-                mv.coefficient_of_blade[key] = typing.cast(numbers.Real, 1)
-            return mv
-
         yield from (
-            make_coefficients_one(
                 math.prod(
                     [MultiVector({(x,): typing.cast(numbers.Real, 1)}) for x in b],
                     start=one,
-                )
             )
             for b in powerset(range(1, g + 1))
         )
@@ -170,46 +163,6 @@ class MultiVector:
                     case _:
                         raise ValueError("This code should never be able to be excuted")
 
-            # make order the absolute units in a way that would
-            # be considered positive in a full space.
-            # For instance, e_1 * e_3 should be reprented as a negative
-            # value, because e_1 * e_2 * e_3 = 1,
-            # therefore e_1 * e_3 * e_2 = -1,
-            def make_positive(
-                basis_blade: BladeDictionaryEntry,
-            ) -> BladeDictionaryEntry:
-                if len(basis_blade.blade) <= 1:
-                    return basis_blade
-                else:
-                    missing_directions: tuple[int, ...] = tuple(
-                        sorted(
-                            list(
-                                set(list(range(1, max(basis_blade.blade))))
-                                - set(basis_blade.blade)
-                            )
-                        )
-                    )
-
-                    has_positive_orientation: bool = (
-                        1
-                        == decrease_grade(
-                            BladeDictionaryEntry(
-                                blade=(*basis_blade.blade, *missing_directions),
-                                coefficient=typing.cast(numbers.Real, 1),
-                            )
-                        ).coefficient
-                    )
-
-                    return (
-                        basis_blade
-                        if has_positive_orientation
-                        else BladeDictionaryEntry(
-                            (basis_blade.blade[1],)
-                            + (basis_blade.blade[0],)
-                            + basis_blade.blade[2:],
-                            typing.cast(numbers.Real, -(basis_blade.coefficient)),
-                        )
-                    )
 
             def blade_dictionary_entry_to_multivector(
                 b: BladeDictionaryEntry,
@@ -219,7 +172,6 @@ class MultiVector:
             return sum(
                 [
                     blade_dictionary_entry_to_multivector(
-                        make_positive(
                             decrease_grade(
                                 BladeDictionaryEntry(
                                     blade=(
@@ -231,7 +183,6 @@ class MultiVector:
                                         scalar_left * scalar_right,
                                     ),
                                 )
-                            )
                         )
                     )
                     for (blade_left, scalar_left), (

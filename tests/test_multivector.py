@@ -89,16 +89,16 @@ def test_multivector_absolute_units() -> None:
     assert (b_2 * e_3) * (a_1 * e_2) == MultiVector({(2, 3): -a_1 * b_2})
 
     # 3D
-    assert (a_1 * e_3) * (b_2 * e_1) == MultiVector({(3, 1): a_1 * b_2})
-    assert (b_2 * e_1) * (a_1 * e_3) == MultiVector({(3, 1): -a_1 * b_2})
+    assert (a_1 * e_3) * (b_2 * e_1) == MultiVector({(1, 3): -a_1 * b_2})
+    assert (b_2 * e_1) * (a_1 * e_3) == MultiVector({(1, 3): a_1 * b_2})
 
     # 4D
     assert (a_1 * e_1) * (b_2 * e_4) == MultiVector({(1, 4): a_1 * b_2})
     assert (b_2 * e_4) * (a_1 * e_1) == MultiVector({(1, 4): -a_1 * b_2})
 
     # 4D
-    assert (a_1 * e_4) * (b_2 * e_2) == MultiVector({(4, 2): a_1 * b_2})
-    assert (b_2 * e_2) * (a_1 * e_4) == MultiVector({(4, 2): -a_1 * b_2})
+    assert (a_1 * e_4) * (b_2 * e_2) == MultiVector({(2, 4): -a_1 * b_2})
+    assert (b_2 * e_2) * (a_1 * e_4) == MultiVector({(2, 4): a_1 * b_2})
 
     # 4D
     assert (a_1 * e_3) * (b_2 * e_4) == MultiVector({(3, 4): a_1 * b_2})
@@ -106,13 +106,13 @@ def test_multivector_absolute_units() -> None:
 
     # 4D
     assert (a_3 * e_2) * (a_1 * e_3) * (b_2 * e_4) == MultiVector(
-        {(3, 2, 4): -a_3 * a_1 * b_2}
+        {(2, 3, 4): a_3 * a_1 * b_2}
     )
     assert (a_1 * e_3) * (a_3 * e_2) * (b_2 * e_4) == MultiVector(
-        {(3, 2, 4): a_3 * a_1 * b_2}
+        {(2, 3, 4): -a_3 * a_1 * b_2}
     )
     assert (a_1 * e_3) * (b_2 * e_4) * (a_3 * e_2) == MultiVector(
-        {(3, 2, 4): -a_3 * a_1 * b_2}
+        {(2, 3, 4): a_3 * a_1 * b_2}
     )
 
 
