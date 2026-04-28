@@ -18,6 +18,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
                    python3 \
                    python3-setuptools \
                    python3-sympy \
+                   python3-pandas \
                    python3-pytest \
                    python3-wheel \
                    ruff \
