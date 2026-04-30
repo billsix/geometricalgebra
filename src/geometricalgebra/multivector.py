@@ -22,9 +22,9 @@ import itertools
 import math
 import numbers
 import typing
-from collections.abc import Sequence
+from collections.abc import Callable, Generator, Sequence
 from itertools import chain, combinations
-from typing import Callable, Generator, NamedTuple, TypeIs
+from typing import NamedTuple, TypeIs
 
 import numpy as np
 import sympy
