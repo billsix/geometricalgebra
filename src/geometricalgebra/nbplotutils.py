@@ -270,7 +270,7 @@ def draw_second_right_triangle(
         fn(v)
         for v in [
             zero,
-            (-4.0) * e_1 + (0.0) * e_2,
+            (0) * e_1 + (3.0) * e_2,
             (-4.0) * e_1 + (3.0) * e_2,
         ]
     ]
@@ -292,7 +292,7 @@ def draw_second_right_triangle(
     )  # zorder ensures dots are on top
 
     # Label each vertex
-    labels = ["(0,0)", "(-4,0)", "(-4,3)"]
+    labels = ["(0,0)", "(0,3)", "(-4,3)"]
     for i, label in enumerate(labels):
         # Use plt.annotate to place the label near the point
         plt.annotate(
