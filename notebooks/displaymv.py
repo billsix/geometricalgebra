@@ -130,6 +130,15 @@ e3e1plane(sym_vec3_1) ^ e1e3plane(sym_vec3_2)  # pyright: ignore[reportUnusedExp
 # %%
 sym_vec3_1 * sym_vec3_2  # pyright: ignore[reportUnusedExpression]
 
+# %%
+sym_vec3_1.wedge(sym_vec3_2)
+
+# %%
+(sym_vec3_1.wedge(sym_vec3_2)).inverse()
+
+# %%
+show_mult((sym_vec3_1.wedge(sym_vec3_2)).inverse(), sym_vec3_1.wedge(sym_vec3_2)) 
+
 
 # %%
 def gram_fe_to_mol_fe(gram_fe: float) -> MultiVector:
@@ -219,6 +228,9 @@ asdf3.dual(3)
 
 # %%
 asdf3.dot(asdf3.dual(3))
+
+# %%
+show_mult(asdf3, asdf3.dual(3))
 
 # %%
 show_mult(asdf3, asdf3.dual(3))
