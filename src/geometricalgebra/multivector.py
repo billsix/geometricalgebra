@@ -233,7 +233,8 @@ class MultiVector:
             MultiVector(BladeCoef({key: self.coefficient_of_blade[key]}))
             for key in sorted(
                 self.coefficient_of_blade.keys(), key=lambda b: (len(b), str(b))
-            ))
+            )
+        )
 
     def magnitude(self) -> numbers.Real | sympy.Expr:
         """
@@ -427,17 +428,14 @@ class MultiVector:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 5,
         equation 1.19
-
-        to avoid using floats, I subtituted (-1)**(r*(r-1)/2) with an equivalent
-        expression
         """
 
         # supposedly, 1.19 works for simple r-vectors, but because of linearity
         # of the grade operator, it works for all multivectors
         return sum(
             [
-                MultiVector.unit_pseudoscalar_squared(g) * self.r_vector_part(g)
-                for g in self.grades()
+                ((-1) ** ((r * (r - 1)) // 2)) * self.r_vector_part(r)
+                for r in self.grades()
             ],
             start=zero,
         )
@@ -1038,7 +1036,7 @@ def rotate_90_degrees() -> InvertibleFunction:
     def f_inv(vector: MultiVector) -> MultiVector:
         return vector * rot_90.inverse()
 
-    return InvertibleFunction(f, f_inv, "R_{<xy90>}", "R_{<xy90>}^{-1}")
+    return InvertibleFunction(f, f_inv, "R_{xy90}", "R_{xy90}^{-1}")
 
 
 def rotate(angle_in_radians: float) -> InvertibleFunction:
