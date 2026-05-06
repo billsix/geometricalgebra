@@ -616,9 +616,6 @@ class MultiVector:
             else:
                 return sympy.latex(sympy.sympify(str(x)))
 
-        def sort_by_grade(a, b):
-            return len(a) > len(b)
-
         blades = [
             add_parens_or_dont(self.coefficient_of_blade[blade])
             + " ".join(map(lambda b: r"\mathbf{\vec{e}}_" + str(b), blade))
