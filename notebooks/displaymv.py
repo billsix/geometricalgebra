@@ -99,9 +99,6 @@ sym_vec2_1  # pyright: ignore[reportUnusedExpression]
 sym_vec2_2  # pyright: ignore[reportUnusedExpression]
 
 # %%
-Math("$($" + sym_vec2_1._repr_latex_() + "$)*($" + sym_vec2_2._repr_latex_() + "$)$")
-
-# %%
 sym_vec2_1 * sym_vec2_2  # pyright: ignore[reportUnusedExpression]
 
 # %%
@@ -187,6 +184,41 @@ for x in MultiVector.bases(3):
 
 
 # %%
+g2_1 = MultiVector.symbolic_multivector(grade=2, prefix="a")
+g2_1
+
+
+# %%
+g2_2 = MultiVector.symbolic_multivector(grade=2, prefix="b")
+g2_2
+
+
+# %%
+g2_3 = MultiVector.symbolic_multivector(grade=2, prefix="c")
+g2_3
+
+
+# %%
+show_mult(g2_1, g2_2)
+
+
+# %%
+show_mult(g2_1 * g2_2, g2_3)
+
+
+# %%
+show_mult(g2_2, g2_3)
+
+
+# %%
+show_mult(g2_1, g2_2 * g2_3)
+
+
+# %%
+((g2_1 * g2_2) * g2_3) -  (g2_1 * (g2_2 * g2_3))
+
+
+# %%
 MultiVector.symbolic_multivector(grade=3, prefix="c")
 
 
@@ -233,7 +265,7 @@ asdf3.dot(asdf3.dual(3))
 show_mult(asdf3, asdf3.dual(3))
 
 # %%
-show_mult(asdf3, asdf3.dual(3))
+show_mult(asdf3, asdf3.dual(3).inverse())
 
 # %%
 asdf3 * (asdf3.dual(3))  # pyright: ignore[reportUnusedExpression]

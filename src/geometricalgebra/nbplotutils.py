@@ -476,10 +476,13 @@ def show_mult(a: MultiVector, b: MultiVector):
     display(Markdown("**Multivector Multiplication is distributive over additon**"))
 
     data: list = list(itertools.product(a, b))
-    result = [sublist + tuple(math.prod(sublist, start=one)) for sublist in data]
+    result = [
+        (left, "*", right, "=", math.prod((left, right), start=one))
+        for left, right in data
+    ]
     df = pd.DataFrame(
         result,
-        columns=pd.Index(["Left Component * ", "Right Component", " = Product"]),
+        columns=pd.Index(["Left Component", "*", "Right Component", "=", "Product"]),
     )
     # Convert to markdown string and display
     df_latex = df.map(lambda x: x._repr_latex_() if hasattr(x, "_repr_latex_") else x)
