@@ -59,6 +59,8 @@ from geometricalgebra.multivector import (
     sym_vec3_1,
     sym_vec3_2,
     translate,
+    zero,
+    one
 )
 from geometricalgebra.nbplotutils import (
     create_basis,
@@ -466,4 +468,30 @@ for f in compose_intermediate_fns(
         draw_isoceles_triangle(fn=f)
         create_unit_circle(fn=f)
         axes.set_title(f._repr_latex_())
+# %%
+from geometricalgebra.nbplotutils import plot_multivector 
+
+# %%
+plot_multivector(MultiVector.symbolic_multivector(grade=8, prefix="a").r_vector_part(1))                                                       
+plot_multivector(2*one + 3*e_1 - 1.5*e_2 + 4*e_3 + 0.7*(e_1*e_2))   
+5
+
+# %%
+aoeu = 3*e_1 - 1.5*e_2   
+
+# %%
+plot_multivector(aoeu )   
+5
+
+# %%
+aoeu2 = 1.5*e_1 + 5*e_2   
+
+# %%
+plot_multivector(aoeu2)   
+5
+
+# %%
+plot_multivector(aoeu * aoeu2 ) 
+5
+
 # %%

@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker
 import numpy as np
 import pandas as pd
+import sympy
 from IPython.display import Markdown, Math, display
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -467,6 +468,104 @@ def draw_screen(
                 edgecolor="black",
             )
             axes.add_patch(square)
+
+
+def _blade_latex(blade: tuple[int, ...]) -> str:
+    if blade == ():
+        return "1"
+    return r"\,".join(r"\mathbf{\vec{e}}_{" + str(b) + "}" for b in blade)
+
+
+def _coef_as_float(coef) -> float | None:
+    try:
+        return float(coef)
+    except (TypeError, ValueError):
+        return None
+
+
+def plot_multivector(
+    mv: MultiVector,
+    x_range: tuple[float, float] | None = None,
+    title: str | None = None,
+    figsize: tuple[float, float] | None = None,
+    symbolic_range: float = 0.8,
+    random_seed: int | None = 0,
+):
+    """Plot each blade of ``mv`` on its own horizontal number line, stacked vertically.
+
+    Each row is one basis blade (sorted by grade, then by index). Numeric
+    coefficients appear as a dot at their value. Symbolic coefficients are
+    placed at a small random x in ``[-symbolic_range, symbolic_range]`` (so
+    rows don't all stack at zero); the latex of the symbol labels the dot.
+    ``random_seed`` defaults to 0 for reproducibility — pass ``None`` for
+    fresh randomness on every call.
+    """
+    blades = sorted(mv.coefficient_of_blade.keys(), key=lambda b: (len(b), b)) or [()]
+    n = len(blades)
+
+    rng = np.random.default_rng(random_seed)
+
+    coefs = [mv.coefficient_of_blade.get(b, 0) for b in blades]
+    xs: list[float] = []
+    for coef in coefs:
+        x = _coef_as_float(coef)
+        xs.append(
+            x if x is not None else float(rng.uniform(-symbolic_range, symbolic_range))
+        )
+
+    if x_range is not None:
+        xmin, xmax = x_range
+    else:
+        m = max(max(abs(x) for x in xs), 1.0)
+        xmin, xmax = -1.2 * m, 1.2 * m
+
+    fig, ax = plt.subplots(figsize=figsize or (8, max(2.0, 0.7 * n)))
+
+    for i, (blade, coef, x) in enumerate(zip(blades, coefs, xs)):
+        y = n - 1 - i  # top blade drawn first
+        ax.axhline(y, xmin=0.0, xmax=1.0, color="gray", linewidth=0.5, alpha=0.6)
+        ax.plot([0], [y], marker="|", color="black", markersize=14, zorder=2)
+
+        is_numeric = _coef_as_float(coef) is not None
+        ax.plot(
+            [x],
+            [y],
+            marker="o",
+            color="C0" if is_numeric else "C1",
+            markersize=10,
+            zorder=3,
+        )
+        label = f"{x:g}" if is_numeric else "$" + sympy.latex(coef) + "$"
+        ax.annotate(
+            label,
+            (x, y),
+            xytext=(0, 10),
+            textcoords="offset points",
+            ha="center",
+            fontsize=10,
+        )
+
+        ax.text(
+            xmin - 0.06 * (xmax - xmin),
+            y,
+            "$" + _blade_latex(blade) + "$",
+            ha="right",
+            va="center",
+            fontsize=12,
+        )
+
+    ax.set_xlim(xmin - 0.20 * (xmax - xmin), xmax + 0.05 * (xmax - xmin))
+    ax.set_ylim(-0.5, n - 0.5)
+    ax.set_yticks([])
+    for side in ("top", "right", "left"):
+        ax.spines[side].set_visible(False)
+
+    ax.set_title(title if title is not None else mv._repr_latex_())
+
+    plt.tight_layout()
+    display(fig)
+    plt.close(fig)
+    return fig
 
 
 def show_mult(a: MultiVector, b: MultiVector):
