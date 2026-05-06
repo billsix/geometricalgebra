@@ -230,9 +230,10 @@ class MultiVector:
 
     def __iter__(self):
         yield from (
-            MultiVector(BladeCoef({key: value}))
-            for key, value in self.coefficient_of_blade.items()
-        )
+            MultiVector(BladeCoef({key: self.coefficient_of_blade[key]}))
+            for key in sorted(
+                self.coefficient_of_blade.keys(), key=lambda b: (len(b), str(b))
+            ))
 
     def magnitude(self) -> numbers.Real | sympy.Expr:
         """
