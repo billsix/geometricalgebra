@@ -20,6 +20,7 @@ import contextlib
 import itertools
 import math
 import numbers
+from typing import cast
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -27,6 +28,8 @@ import matplotlib.ticker
 import numpy as np
 import pandas as pd
 from IPython.display import Markdown, Math, display
+from matplotlib.axes import Axes
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
 
@@ -41,6 +44,8 @@ from geometricalgebra.multivector import (
 )
 
 set_matplotlib_formats("svg")
+
+_IDENTITY = identity()
 
 extraLinesMultiplier = 3
 
@@ -75,7 +80,7 @@ def generategridlines(graphBounds, interval=1):
         )
 
 
-axes = None
+axes: Axes | None = None
 
 
 @contextlib.contextmanager
@@ -97,7 +102,7 @@ def create_graphs(graph_bounds=(3, 3), title=None, filename=None):
     axes.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
     axes.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
     fig.canvas.draw()
-    np.array(fig.canvas.renderer.buffer_rgba())
+    np.array(cast(FigureCanvasAgg, fig.canvas).renderer.buffer_rgba())
     display(fig)
     plt.close()
 
@@ -105,7 +110,7 @@ def create_graphs(graph_bounds=(3, 3), title=None, filename=None):
 
 
 def create_basis(
-    fn=identity(),
+    fn=_IDENTITY,
     graph_bounds=(10, 10),
     gridline_interval=1,
     xcolor=(0.0, 0.0, 1.0),
@@ -114,8 +119,8 @@ def create_basis(
     # plot transformed basis
     for vecs, thickness in generategridlines(graph_bounds, interval=gridline_interval):
         plt.plot(
-            [fn(vec).component(e_1) for vec in vecs],
-            [fn(vec).component(e_2) for vec in vecs],
+            [float(fn(vec).component(e_1)) for vec in vecs],
+            [float(fn(vec).component(e_2)) for vec in vecs],
             "-",
             lw=thickness,
             color=(0.1, 0.2, 0.5),
@@ -124,7 +129,7 @@ def create_basis(
 
 
 def create_unit_circle(
-    fn=identity(),
+    fn=_IDENTITY,
 ):
     def generate_circle():
         theta_increment: float = 0.01
@@ -145,8 +150,8 @@ def create_unit_circle(
     # plot transformed basis
     for vecs in generate_circle():
         plt.plot(
-            [fn(vec).component(e_1) for vec in vecs],
-            [fn(vec).component(e_2) for vec in vecs],
+            [float(fn(vec).component(e_1)) for vec in vecs],
+            [float(fn(vec).component(e_2)) for vec in vecs],
             "-",
             lw=1,
             color=(0.0, 0.0, 0.0),
@@ -155,15 +160,15 @@ def create_unit_circle(
 
 
 def create_x_and_y(
-    fn=identity(),
+    fn=_IDENTITY,
     xcolor=(0.0, 0.0, 1.0),
     ycolor=(1.0, 0.0, 1.0),
 ):
     # x axis
     x_axis = [zero, e_1]
     plt.plot(
-        [fn(vec).component(e_1) for vec in x_axis],
-        [fn(vec).component(e_2) for vec in x_axis],
+        [float(fn(vec).component(e_1)) for vec in x_axis],
+        [float(fn(vec).component(e_2)) for vec in x_axis],
         "-",
         lw=1.0,
         color=xcolor,
@@ -172,8 +177,8 @@ def create_x_and_y(
     # y axis
     y_axis = [zero, e_2]
     plt.plot(
-        [fn(vec).component(e_1) for vec in y_axis],
-        [fn(vec).component(e_2) for vec in y_axis],
+        [float(fn(vec).component(e_1)) for vec in y_axis],
+        [float(fn(vec).component(e_2)) for vec in y_axis],
         "-",
         lw=1.0,
         color=ycolor,
@@ -189,9 +194,10 @@ def sine(v1: MultiVector, v2: MultiVector) -> numbers.Real:
 
 
 def draw_isoceles_triangle(
-    fn=identity(),
+    fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
 ):
+    assert axes is not None, "call inside a create_graphs() block"
     x_prime_direction_world_space = fn(e_1) - fn(zero)
     x_world_space = e_1
     y_prime_direction_world_space = fn(e_2) - fn(zero)
@@ -252,9 +258,10 @@ def draw_isoceles_triangle(
 
 
 def draw_second_right_triangle(
-    fn=identity(),
+    fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
 ):
+    assert axes is not None, "call inside a create_graphs() block"
     x_prime_direction_world_space = fn(e_1) - fn(zero)
     x_world_space = e_1
     y_prime_direction_world_space = fn(e_2) - fn(zero)
@@ -309,9 +316,10 @@ def draw_second_right_triangle(
 
 
 def draw_right_triangle(
-    fn=identity(),
+    fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
 ):
+    assert axes is not None, "call inside a create_graphs() block"
     x_prime_direction_world_space = fn(e_1) - fn(zero)
     x_world_space = e_1
     y_prime_direction_world_space = fn(e_2) - fn(zero)
@@ -366,9 +374,10 @@ def draw_right_triangle(
 
 
 def draw_ndc(
-    fn=identity(),
+    fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
 ):
+    assert axes is not None, "call inside a create_graphs() block"
     x_prime_direction_world_space = fn(e_1) - fn(zero)
     x_world_space = e_1
     y_prime_direction_world_space = fn(e_2) - fn(zero)
@@ -427,9 +436,10 @@ def draw_ndc(
 def draw_screen(
     width,
     height,
-    fn=identity(),
+    fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
 ):
+    assert axes is not None, "call inside a create_graphs() block"
     d_width = 2.0 / width
     d_height = 2.0 / height
     for x in range(width):
@@ -468,7 +478,8 @@ def show_mult(a: MultiVector, b: MultiVector):
     data: list = list(itertools.product(a, b))
     result = [sublist + tuple(math.prod(sublist, start=one)) for sublist in data]
     df = pd.DataFrame(
-        result, columns=["Left Component * ", "Right Component", " = Product"]
+        result,
+        columns=pd.Index(["Left Component * ", "Right Component", " = Product"]),
     )
     # Convert to markdown string and display
     df_latex = df.map(lambda x: x._repr_latex_() if hasattr(x, "_repr_latex_") else x)

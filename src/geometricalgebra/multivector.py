@@ -94,7 +94,7 @@ class MultiVector:
     @staticmethod
     def symbolic_multivector(grade: int, prefix: str) -> "MultiVector":
         mv: list[MultiVector] = list(MultiVector.bases(grade))
-        symbols: list[sympy.symbol] = sympy.symbols(prefix + ":" + str(len(mv)))
+        symbols: list[sympy.Symbol] = sympy.symbols(prefix + ":" + str(len(mv)))
         return sum([s * blade for s, blade in zip(symbols, mv)], start=zero)
 
     @staticmethod
@@ -617,9 +617,6 @@ class MultiVector:
                 return sympy.latex(sympy.sympify(str(x)))
 
         def sort_by_grade(a, b):
-            print(a)
-            print(b)
-            print(len(a) > len(b))
             return len(a) > len(b)
 
         blades = [
@@ -702,13 +699,13 @@ class InvertibleFunction:
             >>> def f_inv(x):
             ...     return x - 2
             ...
-            >>> foo = InvertibleFunction(func=f, inverse=f_inv, latex_repr="", latex_repr_inv="")
-            >>> foo # doctest: +ELLIPSIS
-            InvertibleFunction(func=<...>, inverse=<...>, latex_repr=..., latex_repr_inv=...)
+            >>> foo = InvertibleFunction(f, f_inv, "", "")
+            >>> foo  # doctest: +ELLIPSIS
+            InvertibleFunction(...)
             >>> foo(5)
             7
-            >>> inverse(foo) # doctest: +ELLIPSIS
-            InvertibleFunction(func=<...>, inverse=<...>, latex_repr=..., latex_repr_inv=...)
+            >>> inverse(foo)  # doctest: +ELLIPSIS
+            InvertibleFunction(...)
             >>> inverse(foo)(foo(5))
             5
         """
@@ -736,7 +733,7 @@ class InvertibleFunction:
             >>> def f_inv(x):
             ...     return x - 2
             ...
-            >>> foo = InvertibleFunction(func=f, inverse=f_inv, latex_repr="", latex_repr_inv="")
+            >>> foo = InvertibleFunction(f, f_inv, "", "")
             >>> foo(5)
             7
             >>> (foo @ foo)(5)
@@ -775,13 +772,13 @@ def inverse(f: InvertibleFunction) -> InvertibleFunction:
         >>> def f_inv(x):
         ...     return x - 2
         ...
-        >>> foo = InvertibleFunction(func=f, inverse=f_inv, latex_repr="", latex_repr_inv="")
-        >>> foo # doctest: +ELLIPSIS
-        InvertibleFunction(func=<...>, inverse=<...>, latex_repr=..., latex_repr_inv=...)
+        >>> foo = InvertibleFunction(f, f_inv, "", "")
+        >>> foo  # doctest: +ELLIPSIS
+        InvertibleFunction(...)
         >>> foo(5)
         7
-        >>> inverse(foo) # doctest: +ELLIPSIS
-        InvertibleFunction(func=<...>, inverse=<...>, latex_repr=..., latex_repr_inv=...)
+        >>> inverse(foo)  # doctest: +ELLIPSIS
+        InvertibleFunction(...)
         >>> inverse(foo)(foo(5))
         5
     """
@@ -1079,5 +1076,5 @@ def is_counter_clockwise(v1: MultiVector, v2: MultiVector) -> bool:
 def is_clockwise(v1: MultiVector, v2: MultiVector) -> bool:
     assert MultiVector.project(onto=e_1 * e_2)(v1) == v1
     assert MultiVector.project(onto=e_1 * e_2)(v2) == v2
-    return float(inverse(rotate_90_degrees())(v1).cosine(v2)) > 0.000001  # type: ignore
+    return float(inverse(rotate_90_degrees())(v1).cosine(v2)) > 0.000001
     # doc-region-end clockwise

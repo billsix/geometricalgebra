@@ -8,5 +8,6 @@ jupytext==1.19.1
 mathjax==0.1.2
 matplotlib==3.10.8
 numpy==2.4.3
+pandas==2.3.3
 ruff==0.15.7
 sympy==1.14.0
