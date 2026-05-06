@@ -983,8 +983,8 @@ def translate(b: MultiVector) -> InvertibleFunction:
     def f_inv(vector: MultiVector) -> MultiVector:
         return vector - b
 
-    tex_str: str = f"T_{{<{b._repr_latex_()[1:-1]}>}}"
-    inv_str: str = f"T_{{<{(-b)._repr_latex_()[1:-1]}>}}"
+    tex_str: str = f"T_{{{b._repr_latex_()[1:-1]}}}"
+    inv_str: str = f"T_{{{(-b)._repr_latex_()[1:-1]}}}"
     return InvertibleFunction(f, f_inv, tex_str, inv_str)
     # doc-region-end define translate
 
@@ -1023,8 +1023,8 @@ def scale_non_uniform_2d(m_x: float, m_y: float) -> InvertibleFunction:
     return InvertibleFunction(
         f,
         f_inv,
-        f"S_{{<{m_x},{m_y}>}}",
-        f"S_{{<\\\frac{{1}}{{{m_x}}},\\\frac{{1}}{{{m_y}>}}",
+        f"S_{{{m_x},{m_y}}}",
+        f"S_{{\\\frac{{1}}{{{m_x}}},\\\frac{{1}}{{{m_y}}}",
     )
 
 
@@ -1059,8 +1059,8 @@ def rotate(angle_in_radians: float) -> InvertibleFunction:
     return InvertibleFunction(
         create_rotate_function(r90),
         create_rotate_function(inverse(r90)),
-        f"R_{{<{sympy.latex(angle_in_radians)}>}}",
-        f"R_{{<{sympy.latex(-angle_in_radians)}>}}",
+        f"R_{{{sympy.latex(angle_in_radians)}}}",
+        f"R_{{{sympy.latex(-angle_in_radians)}}}",
     )
     # doc-region-end define rotate
 
