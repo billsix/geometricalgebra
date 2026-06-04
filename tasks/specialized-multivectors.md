@@ -1,6 +1,6 @@
 # Specialized, performant MultiVector for 2D and 3D
 
-Status: **in progress** — Phases 0 & 1 done · Created 2026-06-04
+Status: **in progress** — Phases 0, 1 & 2 done · Created 2026-06-04
 
 ## Goal
 
@@ -186,6 +186,7 @@ Wall-clock per operation (averaged; Python 3.14, sympy 1.14):
    to `n`. Existing tests stay green untouched. **DONE — see "Phase 1 result" below.**
 2. **Codegen `G2`/`G3`** via `tools/gen_specialized.py` into a committed file. These classes have a
    closed-form `__mul__` and **no eager simplify** — they simplify lazily on display/equality.
+   **DONE — see "Phase 2 result" below.**
 3. **Conformance + equivalence tests** over `[Gn, G2, G3]`. `G2`/`G3` comparisons simplify before
    asserting (decision 4).
 4. **Benchmark `G2`/`G3` vs `Gn`**; record results here. Decide whether to make `e_1 * e_2` etc.
@@ -232,6 +233,55 @@ Note for Phase 2: the shared methods route construction through `to_blade_dict`/
 which is fine for correctness but is the slow general path. `G2`/`G3` should override the hot ones
 (`_geometric_product` is the main one) so they don't round-trip through the dict.
 
+## Module layout (2026-06-04, after Phase 2)
+
+Split one-class-per-file so a newcomer can import just the algebra they need
+(`from geometricalgebra.g2 import G2`). No import cycles: each module imports only "downward".
+
+- **`base.py`** — `AbstractMultiVector` (the abstract base) + `BladeCoef` / `MultiVectorFn`.
+- **`gn.py`** — `Gn` + `BladeDictionaryEntry` + the `e_1..e_10` / `zero` / `one` constants + the
+  `InvertibleFunction` / transform helpers + the `MultiVector = Gn` alias. Imports from `base`.
+- **`g1.py` / `g2.py` / `g3.py`** — one generated concrete class each (𝒢₁/𝒢₂/𝒢₃). Import from
+  `base` + `gn`. (`G1` added as the simplest teaching on-ramp.)
+- **`multivector.py`** — now a thin **umbrella facade** that re-exports everything previously
+  importable from it (via explicit imports + `__all__`), so existing
+  `from geometricalgebra.multivector import ...` keeps working. Nothing internal imports the facade,
+  so importing `gn`/`g1`/`g2`/`g3` directly never triggers a cycle.
+
+(There is no `specialized.py` — that name was replaced by the per-algebra modules.)
+
+## Phase 2 result (2026-06-04)
+
+- **`tools/gen_specialized.py`** generates **`g1.py` / `g2.py` / `g3.py`** (committed), one class
+  each. It builds two symbolic `Gn` multivectors, multiplies them with the
+  reference `Gn` product, runs `sympy.cse`, and emits each closed-form output component. Long sums
+  are wrapped term-by-term so the output stays under the 88-col limit and readable. The symbolic
+  operands are rendered straight back to attribute access (`self.e_1 * rhs.e_12`) via a
+  word-boundary regex, so there are **no pointless alias locals** in the generated product.
+- Each class is a `@dataclasses.dataclass(eq=False)` with named fields (`scalar`, `e_1`, …) and
+  implements the four primitives: `from_blade_dict`, `to_blade_dict`, a closed-form
+  `_geometric_product`, and a lazy-simplify `__eq__` (simplifies the per-blade difference; works
+  cross-representation via `to_blade_dict`). **No eager simplify** anywhere.
+- Cross-type guard: `G2 * <non-G2>` (or G3) coerces both operands to `Gn` and returns the general
+  result (per decision 3).
+- Everything else (`reverse`, `inverse`, `dual`, `inner/outer_product`, `project`, …) is inherited
+  from `AbstractMultiVector` and works on `G2`/`G3` unchanged, returning the specialized type.
+
+Verification: `ruff check` clean, `ruff format` clean, `ty check src` clean; the existing 23 `Gn`
+tests still pass. Correctness was spot-checked: `G2`/`G3` symbolic products equal the `Gn` product
+(via simplify), cross-type `==` works, pseudoscalar squares and reverse/inverse behave. **Formal
+conformance tests are Phase 3.**
+
+Preliminary benchmark (regenerate-and-time; full numbers in Phase 4):
+
+| Operation | `Gn` | `G2`/`G3` | speedup |
+|-----------|------|-----------|---------|
+| full 𝒢₃ symbolic product | 10,587 ms | **1.25 ms** | ~8,500× |
+| numeric 3D vector product | 3.47 ms | **0.52 ms** | ~6.7× |
+
+The symbolic win is enormous because `Gn` eagerly simplifies 128 intermediate constructions while
+`G3` is one closed-form pass with lazy simplify.
+
 ## Open questions (resolved 2026-06-04)
 
 - ~~Field names~~ → `scalar`, `e_1/e_2/e_3`, `e_12/e_13/e_23/e_123` (decision 2).
@@ -242,9 +292,52 @@ which is fine for correctness but is the slow general path. `G2`/`G3` should ove
 - ~~Generator home~~ → `tools/` (generated output committed under `src/geometricalgebra/`).
 
 Still to confirm during implementation:
-- Exact name/path of the generated module (e.g. `src/geometricalgebra/specialized.py`) and the
-  generator (`tools/gen_specialized.py`).
-- Names for the per-dimension basis constants (how to disambiguate 2D vs 3D `e_1`).
+- ~~Generated module / generator path~~ → one file per algebra (`g1.py`/`g2.py`/`g3.py`) generated
+  by `tools/gen_specialized.py` (done in Phase 2 + module split).
+
+## API topics to decide (Phase 3 / Phase 4)
+
+Public-API questions deferred from earlier phases. Resolve while writing the conformance tests
+(Phase 3) and the benchmark/finalize step (Phase 4); they don't block correctness.
+
+1. **Per-dimension basis constants & construction ergonomics** (decision 3, not yet built).
+   Today you build specialized values via `G2.from_blade_dict({(1,): 3, (2,): 4})`,
+   `G2.from_scalar(...)`, `G2.unit_pseudoscalar(2)`, or the raw dataclass `G2(scalar=…, e_1=…)`.
+   Proposal: have each module export its own basis constants so users can write
+   `from geometricalgebra.g2 import G2, e_1, e_2` then `3 * e_1 + 4 * e_2`. Putting the constants
+   in each algebra's module **naturally disambiguates 2D vs 3D `e_1`** (different modules). Open:
+   generate these constants from the same tool? include the pseudoscalar (`e_12`, `e_123`)? a
+   one-shot `basis()` helper returning all of them?
+
+2. **Dimension-fixed methods on specialized classes.** `G1`/`G2`/`G3` inherit dimension-taking
+   methods from the ABC: `unit_pseudoscalar(n)`, `bases(n)`, `symbolic_multivector(n, …)`, and
+   `dual(n)`. On a fixed-dimension class these are fragile/awkward (e.g. `G2.unit_pseudoscalar(3)`
+   would try to build a blade `G2` can't hold; `g2.dual(2)` makes you re-state the dimension).
+   Decide: override them on `G1/G2/G3` to fix `n` to the class's own dimension (so `g2.dual()` takes
+   no arg, `G2.unit_pseudoscalar()` returns `e_12`), or document them as `Gn`-only and raise on the
+   specialized classes.
+
+3. **Default return type / interop for low dimensions.** Should `Gn` expressions in 2D/3D
+   (e.g. `e_1 * e_2` built from the `gn` constants) return specialized `G2`/`G3` by default? (The
+   step-4 API question.) And confirm the public contract that mixing a specialized value with a
+   `Gn` value **coerces to `Gn`** (decision 3) — vs. raising. Cross-type equality already works via
+   the blade-dict interchange.
+
+4. **The `MultiVector` alias.** `MultiVector = Gn` is kept for back-compat. Decide whether docs/
+   examples should steer newcomers to `Gn`/`G2`/`G3` and treat `MultiVector` purely as a legacy
+   alias.
+
+5. **Equality with raw scalars.** `G2.from_scalar(5) == 5` currently returns `NotImplemented` →
+   `False` (eq is defined only against `AbstractMultiVector`). Decide whether a multivector should
+   compare equal to a bare `int`/`float`/sympy scalar, and whether `is_close` is the documented
+   float-tolerant comparison.
+
+6. **Display simplification.** Decision 1 said `G2`/`G3` should "simplify on display". Right now
+   `_repr_latex_` (inherited) renders raw, lazily-unsimplified coefficients (sympy still auto-
+   simplifies trivially). Decide whether to override display to fully simplify first.
+
+7. **Per-module `__all__` / public surface.** Decide the public names each of `gn.py`/`g1.py`/
+   `g2.py`/`g3.py` exports (class only? class + basis constants? + helpers?).
 
 ## Related
 
