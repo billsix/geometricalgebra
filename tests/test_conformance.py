@@ -1,0 +1,217 @@
+# Copyright (c) 2025-2026 William Emerison Six
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+
+"""Conformance suite: every concrete representation must agree with the general
+reference `Gn` on every operation.
+
+Inputs are built in `Gn`, converted to the implementation under test via the
+blade-dict interchange, and the result is compared back to the `Gn` result.
+Equality goes through the (simplify-aware) `__eq__`, so it is exact even though
+the specialized classes do not eagerly simplify.
+"""
+
+from itertools import chain, combinations
+
+import pytest
+import sympy
+
+from geometricalgebra.g1 import G1
+from geometricalgebra.g2 import G2
+from geometricalgebra.g3 import G3
+from geometricalgebra.gn import Gn
+
+SPECIALIZED = {1: G1, 2: G2, 3: G3}
+
+# Every (dimension, implementation) pair, including Gn itself as a sanity check.
+CASES = [(n, cls) for n in (1, 2, 3) for cls in (Gn, SPECIALIZED[n])]
+
+
+def to(cls, g: Gn):
+    """Convert a Gn multivector into representation ``cls``."""
+    return cls.from_blade_dict(g.to_blade_dict())
+
+
+def blades(n: int) -> list[tuple[int, ...]]:
+    idx = range(1, n + 1)
+    return list(chain.from_iterable(combinations(idx, r) for r in range(n + 1)))
+
+
+def full(n: int, base: int) -> Gn:
+    """A dense multivector with distinct nonzero integer coefficients on every blade."""
+    return Gn.from_blade_dict({b: base + i + 1 for i, b in enumerate(blades(n))})
+
+
+def vec(n: int, base: int) -> Gn:
+    """A grade-1 vector with distinct nonzero integer coefficients."""
+    return Gn.from_blade_dict({(i,): base + i for i in range(1, n + 1)})
+
+
+def scalar_eq(a, b) -> bool:
+    return sympy.simplify(sympy.sympify(a) - sympy.sympify(b)) == 0
+
+
+# --------------------------------------------------------------------------
+# the geometric product, derived directly from the symbolic Gn product
+# --------------------------------------------------------------------------
+@pytest.mark.parametrize("n,cls", [(1, G1), (2, G2)])
+def test_symbolic_product_matches_gn(n: int, cls) -> None:
+    a = Gn.symbolic_multivector(n, "a")
+    b = Gn.symbolic_multivector(n, "b")
+    assert to(cls, a) * to(cls, b) == a * b
+
+
+def test_symbolic_vector_product_3d() -> None:
+    # full symbolic 𝒢₃ product is intentionally slow on Gn; vectors stay cheap
+    a = Gn.symbolic_multivector(3, "a").r_vector_part(1)
+    b = Gn.symbolic_multivector(3, "b").r_vector_part(1)
+    assert to(G3, a) * to(G3, b) == a * b
+
+
+@pytest.mark.parametrize("n,cls", CASES)
+def test_geometric_product(n: int, cls) -> None:
+    a, b = full(n, 0), full(n, 10)
+    assert to(cls, a) * to(cls, b) == a * b
+
+
+# --------------------------------------------------------------------------
+# linear structure
+# --------------------------------------------------------------------------
+@pytest.mark.parametrize("n,cls", CASES)
+def test_add_sub_neg(n: int, cls) -> None:
+    a, b = full(n, 0), full(n, 10)
+    assert to(cls, a) + to(cls, b) == a + b
+    assert to(cls, a) - to(cls, b) == a - b
+    assert -to(cls, a) == -a
+
+
+@pytest.mark.parametrize("n,cls", CASES)
+def test_scalar_multiplication(n: int, cls) -> None:
+    a = full(n, 0)
+    assert 3 * to(cls, a) == 3 * a
+    assert to(cls, a) * 3 == a * 3
+
+
+# --------------------------------------------------------------------------
+# grade operations
+# --------------------------------------------------------------------------
+@pytest.mark.parametrize("n,cls", CASES)
+def test_r_vector_part_and_scalar_part(n: int, cls) -> None:
+    a = full(n, 0)
+    for r in range(n + 1):
+        assert to(cls, a).r_vector_part(r) == a.r_vector_part(r)
+    assert scalar_eq(to(cls, a).scalar_part(), a.scalar_part())
+    assert sorted(to(cls, a).grades()) == sorted(a.grades())
+
+
+@pytest.mark.parametrize("n,cls", CASES)
+def test_even_odd_part(n: int, cls) -> None:
+    a = full(n, 0)
+    assert to(cls, a).even_part() == a.even_part()
+    assert to(cls, a).odd_part() == a.odd_part()
+
+
+@pytest.mark.parametrize("n,cls", CASES)
+def test_reverse(n: int, cls) -> None:
+    a = full(n, 0)
+    assert to(cls, a).reverse() == a.reverse()
+
+
+@pytest.mark.parametrize("n,cls", CASES)
+def test_dual(n: int, cls) -> None:
+    a = full(n, 0)
+    assert to(cls, a).dual(n) == a.dual(n)
+
+
+# --------------------------------------------------------------------------
+# products / norms
+# --------------------------------------------------------------------------
+@pytest.mark.parametrize("n,cls", CASES)
+def test_inner_outer_product(n: int, cls) -> None:
+    a, b = full(n, 0), full(n, 10)
+    assert to(cls, a).inner_product(to(cls, b)) == a.inner_product(b)
+    assert to(cls, a).outer_product(to(cls, b)) == a.outer_product(b)
+
+
+@pytest.mark.parametrize("n,cls", CASES)
+def test_dot_wedge_vectors(n: int, cls) -> None:
+    a, b = vec(n, 0), vec(n, 10)
+    assert to(cls, a).dot(to(cls, b)) == a.dot(b)
+    assert to(cls, a).wedge(to(cls, b)) == a.wedge(b)
+    assert (to(cls, a) ^ to(cls, b)) == (a ^ b)
+
+
+@pytest.mark.parametrize("n,cls", CASES)
+def test_magnitude_squared_and_inverse(n: int, cls) -> None:
+    a = vec(n, 0)
+    assert scalar_eq(to(cls, a).magnitude_squared(), a.magnitude_squared())
+    assert to(cls, a).inverse() == a.inverse()
+
+
+# --------------------------------------------------------------------------
+# geometric transformations (defined on vectors)
+# --------------------------------------------------------------------------
+@pytest.mark.parametrize("n,cls", CASES)
+def test_project_reject(n: int, cls) -> None:
+    a, b = vec(n, 0), vec(n, 10)
+    assert cls.project(to(cls, b))(to(cls, a)) == Gn.project(b)(a)
+    assert cls.reject(to(cls, b))(to(cls, a)) == Gn.reject(b)(a)
+    # the parts reconstruct the original vector
+    parallel = cls.project(to(cls, b))(to(cls, a))
+    perp = cls.reject(to(cls, b))(to(cls, a))
+    assert parallel + perp == to(cls, a)
+
+
+@pytest.mark.parametrize("n,cls", CASES)
+def test_reflect(n: int, cls) -> None:
+    a, b = vec(n, 0), vec(n, 10)
+    assert cls.reflect(to(cls, b))(to(cls, a)) == Gn.reflect(b)(a)
+
+
+@pytest.mark.parametrize("n,cls", [(n, cls) for (n, cls) in CASES if n >= 2])
+def test_rotate(n: int, cls) -> None:
+    a = vec(n, 0)
+    e_1 = Gn.from_blade_dict({(1,): 1})
+    e_2 = Gn.from_blade_dict({(2,): 1})
+    got = cls.rotate(to(cls, e_1), to(cls, e_2))(to(cls, a))
+    assert got == Gn.rotate(e_1, e_2)(a)
+
+
+# --------------------------------------------------------------------------
+# representation invariants
+# --------------------------------------------------------------------------
+@pytest.mark.parametrize("n,cls", CASES)
+def test_result_type_is_preserved(n: int, cls) -> None:
+    a, b = full(n, 0), full(n, 10)
+    assert type(to(cls, a) * to(cls, b)) is cls
+    assert type(to(cls, a).reverse()) is cls
+    assert type(to(cls, a).dual(n)) is cls
+    assert type(to(cls, a) + to(cls, b)) is cls
+
+
+@pytest.mark.parametrize("n,cls", [(1, G1), (2, G2), (3, G3)])
+def test_mixing_with_gn_coerces_to_gn(n: int, cls) -> None:
+    a, b = full(n, 0), full(n, 10)
+    mixed = to(cls, a) * b  # specialized * Gn
+    assert isinstance(mixed, Gn)
+    assert mixed == a * b
+
+
+def test_is_close_numeric() -> None:
+    a = G2.from_blade_dict({(1,): 3.0, (2,): 4.0})
+    b = G2.from_blade_dict({(1,): 3.0 + 1e-9, (2,): 4.0})
+    assert a.is_close(b)
+    assert not a.is_close(G2.from_blade_dict({(1,): 3.5, (2,): 4.0}))

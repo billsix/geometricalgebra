@@ -1,6 +1,6 @@
 # Specialized, performant MultiVector for 2D and 3D
 
-Status: **in progress** — Phases 0, 1 & 2 done · Created 2026-06-04
+Status: **in progress** — Phases 0–3 done · Created 2026-06-04
 
 ## Goal
 
@@ -188,7 +188,7 @@ Wall-clock per operation (averaged; Python 3.14, sympy 1.14):
    closed-form `__mul__` and **no eager simplify** — they simplify lazily on display/equality.
    **DONE — see "Phase 2 result" below.**
 3. **Conformance + equivalence tests** over `[Gn, G2, G3]`. `G2`/`G3` comparisons simplify before
-   asserting (decision 4).
+   asserting (decision 4). **DONE — see "Phase 3 result" below.**
 4. **Benchmark `G2`/`G3` vs `Gn`**; record results here. Decide whether to make `e_1 * e_2` etc.
    return specialized types by default in low dimensions (API question — see open questions).
 5. **Update `CLAUDE.md`** to reflect the shipped result: the new `Gn`/`G2`/`G3` architecture and
@@ -294,6 +294,25 @@ The symbolic win is enormous because `Gn` eagerly simplifies 128 intermediate co
 Still to confirm during implementation:
 - ~~Generated module / generator path~~ → one file per algebra (`g1.py`/`g2.py`/`g3.py`) generated
   by `tools/gen_specialized.py` (done in Phase 2 + module split).
+
+## Phase 3 result (2026-06-04)
+
+- **`tests/test_conformance.py`** — a parametrized suite over `(dimension, implementation)` for
+  every `(n, cls)` in `{1: [Gn, G1], 2: [Gn, G2], 3: [Gn, G3]}` (Gn included as a baseline).
+  Inputs are built in `Gn`, converted to the implementation under test via `to(cls, g) =
+  cls.from_blade_dict(g.to_blade_dict())`, and the result compared back to the `Gn` result through
+  the simplify-aware `__eq__`.
+- Coverage: geometric product (numeric all-blades for every dim + **symbolic** full product for
+  n=1,2 and symbolic vector product for n=3, the "provably consistent" check), add/sub/neg, scalar
+  multiplication, `r_vector_part`/`scalar_part`/`grades`, even/odd part, reverse, dual, inner/outer
+  product, dot/wedge, `magnitude_squared`/inverse, project/reject (+ reconstruct), reflect, rotate
+  (n≥2), **result-type preservation** (`G2*G2` is `G2`, etc.), **cross-type coercion** (`G2 * Gn`
+  → `Gn`), and `is_close`.
+- Result: **89 conformance tests; full suite 112 passing in ~20 s.** `ruff` clean, `ty check src`
+  and `ty check tests` clean.
+- API note: the tests use the blade-dict interchange for construction, so **per-dimension basis
+  constants (API topic #1) were not needed and remain deferred**; the dimension-fixed-method
+  question (#2) likewise didn't block the tests (`dual(n)` is called with the right `n`).
 
 ## API topics to decide (Phase 3 / Phase 4)
 
