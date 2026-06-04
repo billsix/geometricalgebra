@@ -29,12 +29,16 @@ from itertools import chain, combinations
 import pytest
 import sympy
 
+import geometricalgebra.g1 as g1mod
+import geometricalgebra.g2 as g2mod
+import geometricalgebra.g3 as g3mod
 from geometricalgebra.g1 import G1
 from geometricalgebra.g2 import G2
 from geometricalgebra.g3 import G3
 from geometricalgebra.gn import Gn
 
 SPECIALIZED = {1: G1, 2: G2, 3: G3}
+MODULES = {1: g1mod, 2: g2mod, 3: g3mod}
 
 # Every (dimension, implementation) pair, including Gn itself as a sanity check.
 CASES = [(n, cls) for n in (1, 2, 3) for cls in (Gn, SPECIALIZED[n])]
@@ -48,6 +52,10 @@ def to(cls, g: Gn):
 def blades(n: int) -> list[tuple[int, ...]]:
     idx = range(1, n + 1)
     return list(chain.from_iterable(combinations(idx, r) for r in range(n + 1)))
+
+
+def field_name(b: tuple[int, ...]) -> str:
+    return "scalar" if b == () else "e_" + "".join(str(i) for i in b)
 
 
 def full(n: int, base: int) -> Gn:
@@ -208,6 +216,36 @@ def test_mixing_with_gn_coerces_to_gn(n: int, cls) -> None:
     mixed = to(cls, a) * b  # specialized * Gn
     assert isinstance(mixed, Gn)
     assert mixed == a * b
+
+
+@pytest.mark.parametrize("n,cls", [(1, G1), (2, G2), (3, G3)])
+def test_basis_constants(n: int, cls) -> None:
+    mod = MODULES[n]
+    assert type(mod.zero) is cls
+    assert type(mod.one) is cls
+    for b in blades(n):
+        if b == ():
+            continue
+        const = getattr(mod, field_name(b))
+        assert type(const) is cls
+        assert const == Gn.from_blade_dict({b: 1})
+    # building from the module's own constants stays in the specialized type
+    built = 3 * mod.one
+    for i, b in enumerate([x for x in blades(n) if len(x) == 1]):
+        built = built + (i + 2) * getattr(mod, field_name(b))
+    assert type(built) is cls
+
+
+@pytest.mark.parametrize("n,cls", [(1, G1), (2, G2), (3, G3)])
+def test_implicit_dimension_methods(n: int, cls) -> None:
+    a = full(n, 0)
+    # n defaults to the algebra's own dimension
+    assert to(cls, a).dual() == a.dual(n)
+    assert to(cls, a).dual() == to(cls, a).dual(n)
+    assert cls.unit_pseudoscalar() == Gn.unit_pseudoscalar(n)
+    assert cls.unit_pseudoscalar_squared() == Gn.unit_pseudoscalar_squared(n)
+    assert len(list(cls.bases())) == 2**n
+    assert type(cls.symbolic_multivector(prefix="z")) is cls
 
 
 def test_is_close_numeric() -> None:
