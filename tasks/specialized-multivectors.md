@@ -1,6 +1,6 @@
 # Specialized, performant MultiVector for 2D and 3D
 
-Status: **planned** (not started) · Created 2026-06-04
+Status: **in progress** — Phases 0 & 1 done · Created 2026-06-04
 
 ## Goal
 
@@ -183,7 +183,7 @@ Wall-clock per operation (averaged; Python 3.14, sympy 1.14):
 1. **Introduce the ABC + `Gn`.** Lift representation-independent methods, define the construction
    protocol and `to/from_blade_dict`; make the current dict class the concrete `Gn` subclass —
    **keeping its eager `__post_init__` simplify unchanged.** Rename the `grade`/`g` dimension param
-   to `n`. Existing tests stay green untouched.
+   to `n`. Existing tests stay green untouched. **DONE — see "Phase 1 result" below.**
 2. **Codegen `G2`/`G3`** via `tools/gen_specialized.py` into a committed file. These classes have a
    closed-form `__mul__` and **no eager simplify** — they simplify lazily on display/equality.
 3. **Conformance + equivalence tests** over `[Gn, G2, G3]`. `G2`/`G3` comparisons simplify before
@@ -198,6 +198,39 @@ Wall-clock per operation (averaged; Python 3.14, sympy 1.14):
 
 (Note: there is no longer a global "remove eager simplify" phase — eager simplify is a `Gn`
 property we keep; lazy simplify is a `G2`/`G3` property baked in at codegen.)
+
+## Phase 1 result (2026-06-04)
+
+Done in `src/geometricalgebra/multivector.py`:
+- New ABC **`AbstractMultiVector`** holds all representation-independent methods, written against a
+  tiny interchange protocol so subclasses only need to implement the primitives.
+- **Abstract primitives** a concrete representation must supply: `from_blade_dict` (classmethod),
+  `to_blade_dict`, `_geometric_product` (the multivector×multivector core), plus dataclass `__eq__`.
+  Everything else (`__add__`, `__mul__` scalar-dispatch, `r_vector_part`, `scalar_part`, `grades`,
+  `__iter__`, `reverse`, `inner/outer_product`, `dual`, `project/reject/reflect/rotate`,
+  `_repr_latex_`, `is_close`, …) is shared and constructs results via `type(self).from_blade_dict`
+  / `type(self).zero()` so it stays polymorphic.
+- **`Gn(AbstractMultiVector)`** is the concrete general representation (the old dict class), keeping
+  its eager `__post_init__` `sympy.simplify` unchanged.
+- **`MultiVector = Gn`** backward-compat alias (so `MultiVector({...})`, `MultiVector.unit_pseudoscalar`,
+  etc. keep working). `MultiVectorFn` now typed over `AbstractMultiVector`.
+- Renamed dimension param `grade`/`g` → `n` on `unit_pseudoscalar`, `bases`, `symbolic_multivector`,
+  `unit_pseudoscalar_squared`, `dual`.
+- Shared methods annotated `-> typing.Self` so a `Gn` op returns `Gn` (a few `typing.cast`s on
+  `sum()`/product results where the checker can't infer it).
+
+Verification: **23/23 tests pass**; `ruff check` clean; `ruff format` clean; **`ty check src` and
+`ty check tests` both pass** (baseline was 0 ty errors — parity preserved).
+
+Edits outside `multivector.py` (all annotation/rename only, no logic change):
+- `tests/test_multivector.py`: 2 lines `dual(g=…)` → `dual(n=…)` (the rename); 2 lines dropped a
+  now-inaccurate `: MultiVector` annotation on `project`/`reject` results (they're representation-
+  generic → `AbstractMultiVector`).
+- `notebooks/displaymv.py`: `symbolic_multivector(grade=…)` → `n=` (notebook, not under test).
+
+Note for Phase 2: the shared methods route construction through `to_blade_dict`/`from_blade_dict`,
+which is fine for correctness but is the slow general path. `G2`/`G3` should override the hot ones
+(`_geometric_product` is the main one) so they don't round-trip through the dict.
 
 ## Open questions (resolved 2026-06-04)
 

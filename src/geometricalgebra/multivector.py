@@ -16,6 +16,7 @@
 # Boston, MA 02111-1307, USA.
 
 
+import abc
 import dataclasses
 import functools
 import itertools
@@ -30,7 +31,7 @@ import numpy as np
 import sympy
 
 BladeCoef = dict[tuple[int, ...], numbers.Real]
-MultiVectorFn = Callable[["MultiVector"], "MultiVector"]
+MultiVectorFn = Callable[["AbstractMultiVector"], "AbstractMultiVector"]
 
 
 class BladeDictionaryEntry(NamedTuple):
@@ -38,46 +39,61 @@ class BladeDictionaryEntry(NamedTuple):
     coefficient: numbers.Real
 
     def as_multivector(self):
-        return MultiVector(coefficient_of_blade=dict([(self.blade, self.coefficient)]))
+        return Gn(coefficient_of_blade=dict([(self.blade, self.coefficient)]))
 
 
-@dataclasses.dataclass
-class MultiVector:
-    coefficient_of_blade: BladeCoef
+class AbstractMultiVector(abc.ABC):
+    """Abstract base class for an element (multivector) of a geometric algebra.
 
-    def __post_init__(self):
-        # simplify all coefficients
-        self.coefficient_of_blade = {
-            blade: sympy.simplify(self.coefficient_of_blade[blade])  # type: ignore
-            for blade in self.coefficient_of_blade.keys()
-        }
-        # prune zero coefficient_of_blade
-        self.coefficient_of_blade = {
-            blade: self.coefficient_of_blade[blade]
-            for blade in self.coefficient_of_blade.keys()
-            if self.coefficient_of_blade[blade] != 0
-        }
+    Concrete representations (Gn, and later G2/G3) implement a tiny interchange
+    protocol -- ``from_blade_dict`` / ``to_blade_dict`` -- plus the core
+    ``_geometric_product``.  Every representation-independent method here is
+    written against that protocol, constructing results of the caller's own
+    concrete type via ``type(self)``.  This is the abstraction boundary: only
+    methods that touch the raw representation are reimplemented per subclass.
+    """
 
-    @staticmethod
-    def from_scalar(scalar: int | float):
-        return MultiVector({tuple(): typing.cast(numbers.Real, scalar)})
+    # ------------------------------------------------------------------
+    # interchange protocol + construction (concrete subclasses implement
+    # from_blade_dict / to_blade_dict; the rest is shared)
+    # ------------------------------------------------------------------
+    @classmethod
+    @abc.abstractmethod
+    def from_blade_dict(cls, blade_coef) -> typing.Self:
+        """Build an instance of this representation from a blade->coef mapping."""
 
-    @staticmethod
-    def from_sympy_expr(s: sympy.Expr):
-        return MultiVector({tuple(): typing.cast(numbers.Real, s)})
+    @abc.abstractmethod
+    def to_blade_dict(self) -> BladeCoef:
+        """Return this multivector as a canonical blade -> coefficient mapping."""
 
-    @staticmethod
-    def unit_pseudoscalar(g: int) -> "MultiVector":
+    @classmethod
+    def from_scalar(cls, scalar: int | float) -> typing.Self:
+        return cls.from_blade_dict({tuple(): typing.cast(numbers.Real, scalar)})
+
+    @classmethod
+    def from_sympy_expr(cls, s: sympy.Expr) -> typing.Self:
+        return cls.from_blade_dict({tuple(): typing.cast(numbers.Real, s)})
+
+    @classmethod
+    def zero(cls) -> typing.Self:
+        return cls.from_scalar(0)
+
+    @classmethod
+    def one(cls) -> typing.Self:
+        return cls.from_scalar(1)
+
+    @classmethod
+    def unit_pseudoscalar(cls, n: int) -> typing.Self:
         return math.prod(
             [
-                MultiVector({(x,): typing.cast(numbers.Real, 1)})
-                for x in range(1, g + 1)
+                cls.from_blade_dict({(x,): typing.cast(numbers.Real, 1)})
+                for x in range(1, n + 1)
             ],
-            start=one,
+            start=cls.one(),
         )
 
-    @staticmethod
-    def bases(g: int) -> Generator["MultiVector"]:
+    @classmethod
+    def bases(cls, n: int) -> Generator[typing.Self]:
         def powerset(iterable: Sequence[int]) -> chain[tuple[int, ...]]:
             s: list[int] = list(iterable)
             # chain.from_iterable flattens the list of combinations
@@ -85,155 +101,80 @@ class MultiVector:
 
         yield from (
             math.prod(
-                [MultiVector({(x,): typing.cast(numbers.Real, 1)}) for x in b],
-                start=one,
+                [cls.from_blade_dict({(x,): typing.cast(numbers.Real, 1)}) for x in b],
+                start=cls.one(),
             )
-            for b in powerset(range(1, g + 1))
+            for b in powerset(range(1, n + 1))
         )
 
-    @staticmethod
-    def symbolic_multivector(grade: int, prefix: str) -> "MultiVector":
-        mv: list[MultiVector] = list(MultiVector.bases(grade))
+    @classmethod
+    def symbolic_multivector(cls, n: int, prefix: str) -> typing.Self:
+        mv: list[AbstractMultiVector] = list(cls.bases(n))
         symbols: list[sympy.Symbol] = sympy.symbols(prefix + ":" + str(len(mv)))
-        return sum([s * blade for s, blade in zip(symbols, mv)], start=zero)
+        return sum([s * blade for s, blade in zip(symbols, mv)], start=cls.zero())
 
-    @staticmethod
-    def unit_pseudoscalar_squared(g: int) -> "MultiVector":
-        unit_pseudoscalar: MultiVector = MultiVector.unit_pseudoscalar(g)
+    @classmethod
+    def unit_pseudoscalar_squared(cls, n: int) -> typing.Self:
+        unit_pseudoscalar: AbstractMultiVector = cls.unit_pseudoscalar(n)
         return unit_pseudoscalar * unit_pseudoscalar
 
-    def __add__(self, rhs) -> "MultiVector":
-        return MultiVector(
-            coefficient_of_blade={
-                blade: (
-                    self.coefficient_of_blade.get(blade, 0)
-                    + rhs.coefficient_of_blade.get(blade, 0)
-                )
-                for blade in (
-                    self.coefficient_of_blade.keys() | rhs.coefficient_of_blade.keys()
-                )
+    # ------------------------------------------------------------------
+    # core product: scalar dispatch is shared, the multivector*multivector
+    # case is the representation-specific primitive _geometric_product
+    # ------------------------------------------------------------------
+    @abc.abstractmethod
+    def _geometric_product(self, rhs: "AbstractMultiVector") -> typing.Self:
+        """The geometric product of two multivectors of this representation."""
+
+    def __mul__(self, rhs) -> typing.Self:
+        match rhs:
+            case int() as n:
+                return self._geometric_product(type(self).from_scalar(n))
+            case float() as n:
+                return self._geometric_product(type(self).from_scalar(n))
+            case sympy.Expr() as s:
+                return self._geometric_product(type(self).from_sympy_expr(s))
+            case _:
+                return self._geometric_product(rhs)
+
+    def __rmul__(self, lhs) -> typing.Self:
+        match lhs:
+            case int() as n:
+                return self._geometric_product(type(self).from_scalar(n))
+            case float() as n:
+                return self._geometric_product(type(self).from_scalar(n))
+            case sympy.Expr() as s:
+                return self._geometric_product(type(self).from_sympy_expr(s))
+            case _:
+                return typing.cast(typing.Self, -self._geometric_product(lhs))
+
+    # ------------------------------------------------------------------
+    # shared arithmetic, all built on the interchange + primitives
+    # ------------------------------------------------------------------
+    def __add__(self, rhs) -> typing.Self:
+        left: BladeCoef = self.to_blade_dict()
+        right: BladeCoef = rhs.to_blade_dict()
+        return type(self).from_blade_dict(
+            {
+                blade: (left.get(blade, 0) + right.get(blade, 0))
+                for blade in (left.keys() | right.keys())
             }
         )
 
-    def __sub__(self, rhs: typing.Self) -> "MultiVector":
+    def __sub__(self, rhs: typing.Self) -> typing.Self:
         return self + -rhs
 
-    def __mul__(self, rhs) -> "MultiVector":
-
-        def mul() -> "MultiVector":
-            def decrease_grade(
-                basis_blade: BladeDictionaryEntry,
-            ) -> BladeDictionaryEntry:
-                match basis_blade.blade:
-                    case ():
-                        return basis_blade
-                    case (a,):
-                        return basis_blade
-                    case (a, c, *rest) if a == c:
-                        return decrease_grade(
-                            BladeDictionaryEntry(
-                                blade=(*rest,), coefficient=basis_blade.coefficient
-                            )
-                        )
-                    case (a, c, *rest) if a > c:
-                        return decrease_grade(
-                            BladeDictionaryEntry(
-                                blade=(c, a, *rest),
-                                coefficient=typing.cast(
-                                    numbers.Real, -(basis_blade.coefficient)
-                                ),
-                            )
-                        )
-                    case (a, c, *rest) if a < c:
-                        sortedBladeDictionyEntriy: BladeDictionaryEntry = (
-                            decrease_grade(
-                                BladeDictionaryEntry(
-                                    blade=(c, *rest),
-                                    coefficient=basis_blade.coefficient,
-                                )
-                            )
-                        )
-                        match sortedBladeDictionyEntriy.blade:
-                            case (b, *_) if a < b:
-                                return BladeDictionaryEntry(
-                                    blade=(a, *sortedBladeDictionyEntriy.blade),
-                                    coefficient=sortedBladeDictionyEntriy.coefficient,
-                                )
-                            case _:
-                                return decrease_grade(
-                                    BladeDictionaryEntry(
-                                        blade=(a, *sortedBladeDictionyEntriy.blade),
-                                        coefficient=sortedBladeDictionyEntriy.coefficient,
-                                    )
-                                )
-                    case _:
-                        raise ValueError("This code should never be able to be excuted")
-
-            def blade_dictionary_entry_to_multivector(
-                b: BladeDictionaryEntry,
-            ) -> MultiVector:
-                return b.as_multivector()
-
-            return sum(
-                [
-                    blade_dictionary_entry_to_multivector(
-                        decrease_grade(
-                            BladeDictionaryEntry(
-                                blade=(
-                                    *blade_left,
-                                    *blade_right,
-                                ),
-                                coefficient=typing.cast(
-                                    numbers.Real,
-                                    scalar_left * scalar_right,
-                                ),
-                            )
-                        )
-                    )
-                    for (blade_left, scalar_left), (
-                        blade_right,
-                        scalar_right,
-                    ) in itertools.product(
-                        self.coefficient_of_blade.items(),
-                        rhs.coefficient_of_blade.items(),
-                    )
-                ],
-                start=zero,
-            )
-
-        match rhs:
-            case int() as n:
-                return self * MultiVector.from_scalar(n)
-            case float() as n:
-                return self * MultiVector.from_scalar(n)
-            case sympy.Expr() as s:
-                return self * MultiVector.from_sympy_expr(s)
-            case _:
-                return mul()
-
-    def __rmul__(self, lhs) -> "MultiVector":
-        match lhs:
-            case int() as n:
-                return self * MultiVector.from_scalar(n)
-            case float() as n:
-                return self * MultiVector.from_scalar(n)
-            case sympy.Expr() as s:
-                return self * MultiVector.from_sympy_expr(s)
-            case _:
-                return -self.__mul__(lhs)
-
-    def __neg__(self) -> "MultiVector":
+    def __neg__(self) -> typing.Self:
         return -1 * self
 
     def __abs__(self) -> numbers.Real | sympy.Expr:
         return self.magnitude()
 
     def __iter__(self):
+        d: BladeCoef = self.to_blade_dict()
         yield from (
-            MultiVector(BladeCoef({key: self.coefficient_of_blade[key]}))
-            for key in sorted(
-                self.coefficient_of_blade.keys(), key=lambda b: (len(b), str(b))
-            )
+            type(self).from_blade_dict({key: d[key]})
+            for key in sorted(d.keys(), key=lambda b: (len(b), str(b)))
         )
 
     def magnitude(self) -> numbers.Real | sympy.Expr:
@@ -246,22 +187,22 @@ class MultiVector:
     def magnitude_squared(self) -> numbers.Real:
         return self.reverse().scalar_product(self)
 
-    def normalize(self) -> "MultiVector":
+    def normalize(self) -> typing.Self:
         return self * (abs(self) ** (-1))
 
     def component(self, x: typing.Self) -> numbers.Real:
         # TODO - is this really how I should define it?
         return self.dot(x).scalar_part()
 
-    def inner_product(self, rhs: typing.Self) -> "MultiVector":
+    def inner_product(self, rhs: typing.Self) -> typing.Self:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 6,
         equation 1.21a, 1.21b, 1.21c
         """
 
         def inner_product_of_homogenous_multivectors(
-            lhs: "MultiVector", rhs: "MultiVector"
-        ) -> "MultiVector":
+            lhs: "AbstractMultiVector", rhs: "AbstractMultiVector"
+        ) -> "AbstractMultiVector":
             # # 1.21b
             left_grade: int = lhs.max_grade()
             right_grade: int = rhs.max_grade()
@@ -269,7 +210,7 @@ class MultiVector:
             assert rhs.is_homogeneous_of_grade_r(right_grade)
             return (lhs * rhs).r_vector_part(abs(left_grade - right_grade))
 
-        return sum(
+        inner: "AbstractMultiVector" = sum(
             [
                 inner_product_of_homogenous_multivectors(
                     self.r_vector_part(lg), rhs.r_vector_part(rg)
@@ -277,21 +218,22 @@ class MultiVector:
                 for lg, rg in itertools.product(self.grades(), rhs.grades())
                 if lg > 0 and rg > 0
             ],
-            start=zero,  # 1.21b
+            start=type(self).zero(),  # 1.21b
         )
+        return typing.cast(typing.Self, inner)
 
-    def dot(self, rhs: typing.Self) -> "MultiVector":
+    def dot(self, rhs: typing.Self) -> typing.Self:
         return self.inner_product(rhs)
 
-    def outer_product(self, rhs: typing.Self) -> "MultiVector":
+    def outer_product(self, rhs: typing.Self) -> typing.Self:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 6,
         equation 1.22a, 1.22b, 1.22c
         """
 
         def outer_product_of_homogenous_multivectors(
-            lhs: "MultiVector", rhs: "MultiVector"
-        ) -> "MultiVector":
+            lhs: "AbstractMultiVector", rhs: "AbstractMultiVector"
+        ) -> "AbstractMultiVector":
             # 1.22a
             left_grade: int = lhs.max_grade()
             right_grade: int = rhs.max_grade()
@@ -301,31 +243,28 @@ class MultiVector:
 
         # 1.22b
         # 1.22c, because unlike the inner_product, we keep grade 0s
-        return sum(
+        outer: "AbstractMultiVector" = sum(
             [
                 outer_product_of_homogenous_multivectors(
                     self.r_vector_part(lg), rhs.r_vector_part(rg)
                 )
                 for lg, rg in itertools.product(self.grades(), rhs.grades())
             ],
-            start=zero,
+            start=type(self).zero(),
         )
+        return typing.cast(typing.Self, outer)
 
     def scalar_product(self, other: typing.Self) -> numbers.Real:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 13,
         equation 1.44
         """
-        return (
-            (self * other)
-            .r_vector_part(0)
-            .coefficient_of_blade.get(tuple(), typing.cast(numbers.Real, 0))
-        )
+        return (self * other).scalar_part()
 
-    def wedge(self, rhs: typing.Self) -> "MultiVector":
+    def wedge(self, rhs: typing.Self) -> typing.Self:
         return self.outer_product(rhs)
 
-    def __xor__(self, other: typing.Self) -> "MultiVector":
+    def __xor__(self, other: typing.Self) -> typing.Self:
         """
         Python Syntax for the wedge function
 
@@ -334,16 +273,15 @@ class MultiVector:
         return self.wedge(other)
 
     @staticmethod
-    def outer_product_of_vectors(*vectors: "MultiVector") -> "MultiVector":
+    def outer_product_of_vectors(
+        *vectors: "AbstractMultiVector",
+    ) -> "AbstractMultiVector":
         return functools.reduce(lambda a, b: a ^ b, vectors)
 
-    def r_vector_part(self, r: int) -> "MultiVector":
-        return MultiVector(
-            coefficient_of_blade={
-                blade: self.coefficient_of_blade[blade]
-                for blade in self.coefficient_of_blade.keys()
-                if len(blade) == r
-            }
+    def r_vector_part(self, r: int) -> typing.Self:
+        d: BladeCoef = self.to_blade_dict()
+        return type(self).from_blade_dict(
+            {blade: d[blade] for blade in d.keys() if len(blade) == r}
         )
 
     def is_homogeneous_of_grade_r(self, r: int) -> bool:
@@ -392,7 +330,7 @@ class MultiVector:
                 atol=1e-5,
             )
             if float_close_to_zero
-            else (self.inner_product(other) == zero)
+            else (self.inner_product(other) == type(self).zero())
         )
 
     def is_parallel_to(
@@ -414,17 +352,15 @@ class MultiVector:
         )
 
     def scalar_part(self) -> numbers.Real:
-        return self.r_vector_part(0).coefficient_of_blade.get(
-            tuple(), typing.cast(numbers.Real, 0)
-        )
+        return self.to_blade_dict().get(tuple(), typing.cast(numbers.Real, 0))
 
     def grades(self) -> list[int]:
-        return list(set(len(blade) for blade in self.coefficient_of_blade.keys()))
+        return list(set(len(blade) for blade in self.to_blade_dict().keys()))
 
     def max_grade(self) -> int:
         return max(self.grades())
 
-    def reverse(self) -> "MultiVector":
+    def reverse(self) -> typing.Self:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 5,
         equation 1.19
@@ -437,10 +373,10 @@ class MultiVector:
                 ((-1) ** ((r * (r - 1)) // 2)) * self.r_vector_part(r)
                 for r in self.grades()
             ],
-            start=zero,
+            start=type(self).zero(),
         )
 
-    def inverse(self) -> "MultiVector":
+    def inverse(self) -> typing.Self:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18
 
@@ -448,30 +384,30 @@ class MultiVector:
         """
         return self.reverse() * (self.magnitude_squared() ** (-1))
 
-    def dual(self, g: int) -> "MultiVector":
-        return self * MultiVector.unit_pseudoscalar(g).inverse()
+    def dual(self, n: int) -> typing.Self:
+        return self * type(self).unit_pseudoscalar(n).inverse()
 
-    def even_part(self) -> "MultiVector":
+    def even_part(self) -> typing.Self:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
 
         """
         return sum(
             [self.r_vector_part(g) for g in self.grades() if g % 2 == 0],
-            start=zero,
+            start=type(self).zero(),
         )
 
-    def odd_part(self) -> "MultiVector":
+    def odd_part(self) -> typing.Self:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
 
         """
         return sum(
             [self.r_vector_part(g) for g in self.grades() if g % 2 == 1],
-            start=zero,
+            start=type(self).zero(),
         )
 
-    def cosine(self, other: "MultiVector") -> numbers.Real:
+    def cosine(self, other: "AbstractMultiVector") -> numbers.Real:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 14,
         equation 1.53b
@@ -484,9 +420,10 @@ class MultiVector:
             * typing.cast(numbers.Real, (abs(other) ** (-1))),
         )
 
-    @staticmethod
+    @classmethod
     def project(
-        onto: "MultiVector" | Sequence["MultiVector"],
+        cls,
+        onto: "AbstractMultiVector" | Sequence["AbstractMultiVector"],
     ) -> MultiVectorFn:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18,
@@ -496,13 +433,13 @@ class MultiVector:
 
             def is_multivector_sequence(
                 val: Sequence[object],
-            ) -> TypeIs[Sequence[MultiVector]]:
-                return all(isinstance(x, MultiVector) for x in val)
+            ) -> TypeIs[Sequence[AbstractMultiVector]]:
+                return all(isinstance(x, AbstractMultiVector) for x in val)
 
             if is_multivector_sequence(onto):
-                return MultiVector.project(MultiVector.outer_product_of_vectors(*onto))
+                return cls.project(cls.outer_product_of_vectors(*onto))
 
-        def fn(value: MultiVector) -> MultiVector:
+        def fn(value: AbstractMultiVector) -> AbstractMultiVector:
             if value.is_scalar():  # 2.9b
                 return value
             elif value.is_r_vector():  # 2.9c
@@ -512,52 +449,60 @@ class MultiVector:
 
         return fn
 
-    @staticmethod
+    @classmethod
     def reject(
-        away_from: "MultiVector" | Sequence["MultiVector"],
+        cls,
+        away_from: "AbstractMultiVector" | Sequence["AbstractMultiVector"],
     ) -> MultiVectorFn:
         """
         page 18
         """
 
-        def r(value: MultiVector) -> MultiVector:
+        def r(value: AbstractMultiVector) -> AbstractMultiVector:
             assert value.is_vector()  # TODO - can this be generalized?
-            assert isinstance(away_from, MultiVector)  # to satisfy type checking
+            assert isinstance(
+                away_from, AbstractMultiVector
+            )  # to satisfy type checking
             return (value.wedge(away_from)) * away_from.inverse()
 
         match away_from:
             case _ as sequence if isinstance(away_from, Sequence):
                 assert isinstance(sequence, Sequence)  # to satisfy type checking
-                return MultiVector.reject(MultiVector.outer_product(*sequence))
-            case MultiVector() as away_from_vector if away_from_vector.is_vector():
+                return cls.reject(cls.outer_product(*sequence))
+            case AbstractMultiVector() as away_from_vector if (
+                away_from_vector.is_vector()
+            ):
                 return r
-            case MultiVector() as away_from_bivector if (
+            case AbstractMultiVector() as away_from_bivector if (
                 away_from_bivector.is_bivector()
             ):
                 return r
             case _:
                 raise Exception("TODO - implement project for " + str(away_from))
 
-    @staticmethod
+    @classmethod
     def reflect(
-        across: "MultiVector" | Sequence["MultiVector"],
+        cls,
+        across: "AbstractMultiVector" | Sequence["AbstractMultiVector"],
     ) -> MultiVectorFn:
-        components_in_plane: MultiVectorFn = MultiVector.project(across)
-        components_exterior_to_plane: MultiVectorFn = MultiVector.reject(across)
+        components_in_plane: MultiVectorFn = cls.project(across)
+        components_exterior_to_plane: MultiVectorFn = cls.reject(across)
 
-        def r(value: MultiVector) -> MultiVector:
+        def r(value: AbstractMultiVector) -> AbstractMultiVector:
             assert value.is_vector()  # TODO - can this be generalized?
-            assert isinstance(across, MultiVector)  # to satisfy type checking
+            assert isinstance(across, AbstractMultiVector)  # to satisfy type checking
 
             return components_in_plane(value) - components_exterior_to_plane(value)
 
         match across:
             case _ as sequence if isinstance(across, Sequence):
                 assert isinstance(sequence, Sequence)  # to satisfy type checking
-                return MultiVector.reflect(MultiVector.outer_product(*sequence))
-            case MultiVector() as away_from_vector if away_from_vector.is_vector():
+                return cls.reflect(cls.outer_product(*sequence))
+            case AbstractMultiVector() as away_from_vector if (
+                away_from_vector.is_vector()
+            ):
                 return r
-            case MultiVector() as away_from_bivector if (
+            case AbstractMultiVector() as away_from_bivector if (
                 away_from_bivector.is_bivector()
             ):
                 return r
@@ -566,24 +511,25 @@ class MultiVector:
 
     @staticmethod
     def identity() -> MultiVectorFn:
-        def i(value: MultiVector) -> MultiVector:
+        def i(value: AbstractMultiVector) -> AbstractMultiVector:
             return value
 
         return i
 
-    @staticmethod
+    @classmethod
     def rotate(
-        from_vector: "MultiVector",
-        to_vector: "MultiVector",
+        cls,
+        from_vector: "AbstractMultiVector",
+        to_vector: "AbstractMultiVector",
     ) -> MultiVectorFn:
         assert from_vector.is_vector()
         assert to_vector.is_vector()
-        plane: MultiVector = from_vector ^ to_vector
+        plane: AbstractMultiVector = from_vector ^ to_vector
 
-        components_in_plane: MultiVectorFn = MultiVector.project(plane)
-        components_exterior_to_plane: MultiVectorFn = MultiVector.reject(plane)
+        components_in_plane: MultiVectorFn = cls.project(plane)
+        components_exterior_to_plane: MultiVectorFn = cls.reject(plane)
 
-        def r(value: MultiVector) -> MultiVector:
+        def r(value: AbstractMultiVector) -> AbstractMultiVector:
             assert value.is_vector()  # TODO - can this be generalized?
             return (
                 components_in_plane(value) * from_vector * to_vector
@@ -592,21 +538,23 @@ class MultiVector:
         return r
 
     def is_close(self, other: typing.Self) -> bool:
+        left: BladeCoef = self.to_blade_dict()
+        right: BladeCoef = other.to_blade_dict()
         return all(
             [
                 np.isclose(
-                    float(self.coefficient_of_blade.get(blade, 0)),
-                    float(other.coefficient_of_blade.get(blade, 0)),
+                    float(left.get(blade, 0)),
+                    float(right.get(blade, 0)),
                     rtol=1e-5,
                     atol=1e-5,
                 )
-                for blade in (
-                    self.coefficient_of_blade.keys() | other.coefficient_of_blade.keys()
-                )
+                for blade in (left.keys() | right.keys())
             ]
         )
 
     def _repr_latex_(self):
+        d: BladeCoef = self.to_blade_dict()
+
         def add_parens_or_dont(x):
             if isinstance(x, sympy.Expr):
                 if x.is_Add:
@@ -617,16 +565,141 @@ class MultiVector:
                 return sympy.latex(sympy.sympify(str(x)))
 
         blades = [
-            add_parens_or_dont(self.coefficient_of_blade[blade])
+            add_parens_or_dont(d[blade])
             + " ".join(map(lambda b: r"\mathbf{\vec{e}}_" + str(b), blade))
             if blade != tuple()
-            else add_parens_or_dont(self.coefficient_of_blade[blade])
-            for blade in sorted(
-                self.coefficient_of_blade.keys(), key=lambda b: (len(b), str(b))
-            )
+            else add_parens_or_dont(d[blade])
+            for blade in sorted(d.keys(), key=lambda b: (len(b), str(b)))
         ]
         # latex_string = r"$\frac{1}{2}$"
-        return "$" + ("0" if (self == zero) else " +  ".join(blades)) + "$"
+        return "$" + ("0" if (self == type(self).zero()) else " +  ".join(blades)) + "$"
+
+
+@dataclasses.dataclass
+class Gn(AbstractMultiVector):
+    """An element (multivector) of 𝒢ₙ, the geometric algebra of n-dimensional
+    Euclidean space ℝⁿ (Hestenes' notation).
+
+    𝒢ₙ has 2ⁿ basis blades.  This is the general, dimension-agnostic
+    representation, storing a dict from blade (a tuple of basis-vector indices,
+    e.g. ``(1, 2)`` ≙ e₁e₂) to coefficient.  G2 and G3 will be specialized,
+    faster representations of 𝒢₂ and 𝒢₃.
+
+    Terminology: 𝒢ₙ denotes the *algebra*; an instance of this class is an
+    *element of* 𝒢ₙ.  The class is named after its algebra as a shorthand.
+
+    This representation eagerly ``sympy.simplify``s every coefficient in
+    ``__post_init__``.  That is the dominant cost (profiling shows ~100%), and
+    it is kept here on purpose: Gn is allowed to be slow.  The specialized
+    G2/G3 simplify lazily instead.
+    """
+
+    coefficient_of_blade: BladeCoef
+
+    def __post_init__(self):
+        # simplify all coefficients
+        self.coefficient_of_blade = {
+            blade: sympy.simplify(self.coefficient_of_blade[blade])  # type: ignore
+            for blade in self.coefficient_of_blade.keys()
+        }
+        # prune zero coefficient_of_blade
+        self.coefficient_of_blade = {
+            blade: self.coefficient_of_blade[blade]
+            for blade in self.coefficient_of_blade.keys()
+            if self.coefficient_of_blade[blade] != 0
+        }
+
+    @classmethod
+    def from_blade_dict(cls, blade_coef) -> "Gn":
+        return cls(coefficient_of_blade=dict(blade_coef))
+
+    def to_blade_dict(self) -> BladeCoef:
+        return self.coefficient_of_blade
+
+    def _geometric_product(self, rhs: "AbstractMultiVector") -> typing.Self:
+        def decrease_grade(
+            basis_blade: BladeDictionaryEntry,
+        ) -> BladeDictionaryEntry:
+            match basis_blade.blade:
+                case ():
+                    return basis_blade
+                case (a,):
+                    return basis_blade
+                case (a, c, *rest) if a == c:
+                    return decrease_grade(
+                        BladeDictionaryEntry(
+                            blade=(*rest,), coefficient=basis_blade.coefficient
+                        )
+                    )
+                case (a, c, *rest) if a > c:
+                    return decrease_grade(
+                        BladeDictionaryEntry(
+                            blade=(c, a, *rest),
+                            coefficient=typing.cast(
+                                numbers.Real, -(basis_blade.coefficient)
+                            ),
+                        )
+                    )
+                case (a, c, *rest) if a < c:
+                    sortedBladeDictionyEntriy: BladeDictionaryEntry = decrease_grade(
+                        BladeDictionaryEntry(
+                            blade=(c, *rest),
+                            coefficient=basis_blade.coefficient,
+                        )
+                    )
+                    match sortedBladeDictionyEntriy.blade:
+                        case (b, *_) if a < b:
+                            return BladeDictionaryEntry(
+                                blade=(a, *sortedBladeDictionyEntriy.blade),
+                                coefficient=sortedBladeDictionyEntriy.coefficient,
+                            )
+                        case _:
+                            return decrease_grade(
+                                BladeDictionaryEntry(
+                                    blade=(a, *sortedBladeDictionyEntriy.blade),
+                                    coefficient=sortedBladeDictionyEntriy.coefficient,
+                                )
+                            )
+                case _:
+                    raise ValueError("This code should never be able to be excuted")
+
+        def blade_dictionary_entry_to_multivector(
+            b: BladeDictionaryEntry,
+        ) -> AbstractMultiVector:
+            return b.as_multivector()
+
+        product: "AbstractMultiVector" = sum(
+            [
+                blade_dictionary_entry_to_multivector(
+                    decrease_grade(
+                        BladeDictionaryEntry(
+                            blade=(
+                                *blade_left,
+                                *blade_right,
+                            ),
+                            coefficient=typing.cast(
+                                numbers.Real,
+                                scalar_left * scalar_right,
+                            ),
+                        )
+                    )
+                )
+                for (blade_left, scalar_left), (
+                    blade_right,
+                    scalar_right,
+                ) in itertools.product(
+                    self.coefficient_of_blade.items(),
+                    rhs.to_blade_dict().items(),
+                )
+            ],
+            start=type(self).zero(),
+        )
+        return typing.cast(typing.Self, product)
+
+
+# Backward-compatible alias: ``MultiVector`` is the general representation Gn.
+# (Gn is the canonical name; AbstractMultiVector is the shared base type.)
+MultiVector = Gn
 
 
 e_1: MultiVector = MultiVector({(1,): typing.cast(numbers.Real, 1)})
@@ -1000,17 +1073,21 @@ def uniform_scale(m: float) -> InvertibleFunction:
 
 def scale_non_uniform_2d(m_x: float, m_y: float) -> InvertibleFunction:
     def f(vector: MultiVector) -> MultiVector:
-        return m_x * MultiVector.project(onto=e_1)(vector) + m_y * MultiVector.project(
-            onto=e_2
-        )(vector)
+        return typing.cast(
+            MultiVector,
+            m_x * MultiVector.project(onto=e_1)(vector)
+            + m_y * MultiVector.project(onto=e_2)(vector),
+        )
 
     def f_inv(vector: MultiVector) -> MultiVector:
         if m_x == 0.0 or m_y == 0.0:
             raise ValueError("Note invertible.  Scaling factors cannot be zero.")
 
-        return (m_x) ** (-1) * MultiVector.project(onto=e_1)(vector) + (m_y) ** (
-            -1
-        ) * MultiVector.project(onto=e_2)(vector)
+        return typing.cast(
+            MultiVector,
+            (m_x) ** (-1) * MultiVector.project(onto=e_1)(vector)
+            + (m_y) ** (-1) * MultiVector.project(onto=e_2)(vector),
+        )
 
     return InvertibleFunction(
         f,

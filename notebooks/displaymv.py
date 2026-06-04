@@ -157,28 +157,28 @@ for x in MultiVector.bases(1):
     display(Math(x._repr_latex_()))
 
 # %%
-MultiVector.symbolic_multivector(grade=1, prefix="a")
+MultiVector.symbolic_multivector(n=1, prefix="a")
 
 # %%
 for x in MultiVector.bases(2):
     display(Math(x._repr_latex_()))
 
 # %%
-MultiVector.symbolic_multivector(grade=2, prefix="b")
+MultiVector.symbolic_multivector(n=2, prefix="b")
 
 # %%
 MultiVector.symbolic_multivector(
-    grade=2, prefix="b"
-) * MultiVector.symbolic_multivector(grade=2, prefix="d")  # pyright: ignore[reportUnusedExpression]
+    n=2, prefix="b"
+) * MultiVector.symbolic_multivector(n=2, prefix="d")  # pyright: ignore[reportUnusedExpression]
 
 # %%
-MultiVector.symbolic_multivector(grade=2, prefix="c").r_vector_part(0)
+MultiVector.symbolic_multivector(n=2, prefix="c").r_vector_part(0)
 
 # %%
-MultiVector.symbolic_multivector(grade=2, prefix="c").r_vector_part(1)
+MultiVector.symbolic_multivector(n=2, prefix="c").r_vector_part(1)
 
 # %%
-MultiVector.symbolic_multivector(grade=2, prefix="c").r_vector_part(2)
+MultiVector.symbolic_multivector(n=2, prefix="c").r_vector_part(2)
 
 # %%
 for x in MultiVector.bases(3):
@@ -186,17 +186,17 @@ for x in MultiVector.bases(3):
 
 
 # %%
-g2_1 = MultiVector.symbolic_multivector(grade=2, prefix="a")
+g2_1 = MultiVector.symbolic_multivector(n=2, prefix="a")
 g2_1
 
 
 # %%
-g2_2 = MultiVector.symbolic_multivector(grade=2, prefix="b")
+g2_2 = MultiVector.symbolic_multivector(n=2, prefix="b")
 g2_2
 
 
 # %%
-g2_3 = MultiVector.symbolic_multivector(grade=2, prefix="c")
+g2_3 = MultiVector.symbolic_multivector(n=2, prefix="c")
 g2_3
 
 
@@ -221,31 +221,31 @@ show_mult(g2_1, g2_2 * g2_3)
 
 
 # %%
-MultiVector.symbolic_multivector(grade=3, prefix="c")
+MultiVector.symbolic_multivector(n=3, prefix="c")
 
 
 # %%
-MultiVector.symbolic_multivector(grade=3, prefix="c").r_vector_part(0)
+MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(0)
 
 
 # %%
-MultiVector.symbolic_multivector(grade=3, prefix="c").r_vector_part(1)
+MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(1)
 
 
 # %%
-MultiVector.symbolic_multivector(grade=3, prefix="c").r_vector_part(2)
+MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(2)
 
 
 # %%
-MultiVector.symbolic_multivector(grade=3, prefix="c").r_vector_part(3)
+MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(3)
 
 
 # %%
 a_1 * e_1 * e_2 * e_4  # pyright: ignore[reportUnusedExpression]
 
 # %%
-asdf = MultiVector.symbolic_multivector(grade=3, prefix="e").r_vector_part(1)
-asdf2 = MultiVector.symbolic_multivector(grade=3, prefix="f").r_vector_part(1)
+asdf = MultiVector.symbolic_multivector(n=3, prefix="e").r_vector_part(1)
+asdf2 = MultiVector.symbolic_multivector(n=3, prefix="f").r_vector_part(1)
 asdf3 = asdf ^ asdf2
 asdf3  # pyright: ignore[reportUnusedExpression]
 
@@ -282,8 +282,8 @@ show_mult(sym_vec3_1, sym_vec3_2)
 
 # %%
 show_mult(
-    MultiVector.symbolic_multivector(grade=8, prefix="a").r_vector_part(1),
-    MultiVector.symbolic_multivector(grade=9, prefix="b").r_vector_part(1),
+    MultiVector.symbolic_multivector(n=8, prefix="a").r_vector_part(1),
+    MultiVector.symbolic_multivector(n=9, prefix="b").r_vector_part(1),
 )
 
 # %%
@@ -472,7 +472,7 @@ for f in compose_intermediate_fns(
 from geometricalgebra.nbplotutils import plot_multivector 
 
 # %%
-plot_multivector(MultiVector.symbolic_multivector(grade=8, prefix="a").r_vector_part(1))                                                       
+plot_multivector(MultiVector.symbolic_multivector(n=8, prefix="a").r_vector_part(1))                                                       
 plot_multivector(2*one + 3*e_1 - 1.5*e_2 + 4*e_3 + 0.7*(e_1*e_2))   
 5
 

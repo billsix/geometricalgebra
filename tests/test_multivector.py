@@ -174,12 +174,12 @@ def test_multivector_mult3d() -> None:
 
 
 def test_multivector_dual() -> None:
-    assert sym_vec2_1.dual(g=2) == sum(
+    assert sym_vec2_1.dual(n=2) == sum(
         [a_2 * e_1, -a_1 * e_2],
         start=zero,
     )
 
-    assert sym_vec3_1.dual(g=3) == sum(
+    assert sym_vec3_1.dual(n=3) == sum(
         [-a_3 * e_1 * e_2, -a_2 * e_3 * e_1, -a_1 * e_2 * e_3],
         start=zero,
     )
@@ -390,8 +390,8 @@ def test_project_and_reject() -> None:
     assert MultiVector.project(onto=2 * e_1)(a) == 3 * e_1
     assert MultiVector.reject(away_from=2 * e_1)(a) == 4 * e_2
 
-    parallel_to_vec1: MultiVector = MultiVector.project(onto=sym_vec2_1)(sym_vec2_2)
-    perp_to_vec1: MultiVector = MultiVector.reject(away_from=sym_vec2_1)(sym_vec2_2)
+    parallel_to_vec1 = MultiVector.project(onto=sym_vec2_1)(sym_vec2_2)
+    perp_to_vec1 = MultiVector.reject(away_from=sym_vec2_1)(sym_vec2_2)
     assert sym_vec2_2 == (parallel_to_vec1 + perp_to_vec1)
 
 
