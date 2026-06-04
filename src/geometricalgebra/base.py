@@ -74,12 +74,19 @@ class AbstractMultiVector(abc.ABC):
         return cls.from_scalar(1)
 
     @classmethod
+    def basis_vector(cls, i: int) -> typing.Self:
+        """The i-th basis vector e_i of this representation (1-indexed).
+
+        Part of the interchange protocol: lets representation-agnostic code
+        (e.g. the transform layer) obtain a basis vector of the *caller's* own
+        concrete type, so results stay in that type rather than coercing to Gn.
+        """
+        return cls.from_blade_dict({(i,): typing.cast(numbers.Real, 1)})
+
+    @classmethod
     def unit_pseudoscalar(cls, n: int) -> typing.Self:
         return math.prod(
-            [
-                cls.from_blade_dict({(x,): typing.cast(numbers.Real, 1)})
-                for x in range(1, n + 1)
-            ],
+            [cls.basis_vector(x) for x in range(1, n + 1)],
             start=cls.one(),
         )
 
@@ -92,7 +99,7 @@ class AbstractMultiVector(abc.ABC):
 
         yield from (
             math.prod(
-                [cls.from_blade_dict({(x,): typing.cast(numbers.Real, 1)}) for x in b],
+                [cls.basis_vector(x) for x in b],
                 start=cls.one(),
             )
             for b in powerset(range(1, n + 1))

@@ -52,6 +52,7 @@ from geometricalgebra.gn import (
     e_3,
     e_4,
     inverse,
+    one,
     rotate,
     scale_non_uniform_2d,
     sym_vec2_1,
@@ -59,8 +60,6 @@ from geometricalgebra.gn import (
     sym_vec3_1,
     sym_vec3_2,
     translate,
-    zero,
-    one,
 )
 from geometricalgebra.nbplotutils import (
     create_basis,
@@ -136,7 +135,7 @@ sym_vec3_1.wedge(sym_vec3_2)
 (sym_vec3_1.wedge(sym_vec3_2)).inverse()
 
 # %%
-show_mult((sym_vec3_1.wedge(sym_vec3_2)).inverse(), sym_vec3_1.wedge(sym_vec3_2)) 
+show_mult((sym_vec3_1.wedge(sym_vec3_2)).inverse(), sym_vec3_1.wedge(sym_vec3_2))
 
 
 # %%
@@ -167,9 +166,9 @@ for x in MultiVector.bases(2):
 MultiVector.symbolic_multivector(n=2, prefix="b")
 
 # %%
-MultiVector.symbolic_multivector(
-    n=2, prefix="b"
-) * MultiVector.symbolic_multivector(n=2, prefix="d")  # pyright: ignore[reportUnusedExpression]
+MultiVector.symbolic_multivector(n=2, prefix="b") * MultiVector.symbolic_multivector(
+    n=2, prefix="d"
+)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 MultiVector.symbolic_multivector(n=2, prefix="c").r_vector_part(0)
@@ -217,7 +216,7 @@ show_mult(g2_1, g2_2 * g2_3)
 
 
 # %%
-((g2_1 * g2_2) * g2_3) -  (g2_1 * (g2_2 * g2_3))
+((g2_1 * g2_2) * g2_3) - (g2_1 * (g2_2 * g2_3))
 
 
 # %%
@@ -469,29 +468,29 @@ for f in compose_intermediate_fns(
         create_unit_circle(fn=f)
         axes.set_title(f._repr_latex_())
 # %%
-from geometricalgebra.nbplotutils import plot_multivector 
+from geometricalgebra.nbplotutils import plot_multivector
 
 # %%
-plot_multivector(MultiVector.symbolic_multivector(n=8, prefix="a").r_vector_part(1))                                                       
-plot_multivector(2*one + 3*e_1 - 1.5*e_2 + 4*e_3 + 0.7*(e_1*e_2))   
+plot_multivector(MultiVector.symbolic_multivector(n=8, prefix="a").r_vector_part(1))
+plot_multivector(2 * one + 3 * e_1 - 1.5 * e_2 + 4 * e_3 + 0.7 * (e_1 * e_2))
 5
 
 # %%
-aoeu = 3*e_1 - 1.5*e_2   
+aoeu = 3 * e_1 - 1.5 * e_2
 
 # %%
-plot_multivector(aoeu )   
+plot_multivector(aoeu)
 5
 
 # %%
-aoeu2 = 1.5*e_1 + 5*e_2   
+aoeu2 = 1.5 * e_1 + 5 * e_2
 
 # %%
-plot_multivector(aoeu2)   
+plot_multivector(aoeu2)
 5
 
 # %%
-plot_multivector(aoeu * aoeu2 ) 
+plot_multivector(aoeu * aoeu2)
 5
 
 # %%
