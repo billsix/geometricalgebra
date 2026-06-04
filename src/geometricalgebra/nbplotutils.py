@@ -34,7 +34,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
 
-from geometricalgebra.multivector import (
+from geometricalgebra.gn import (
     MultiVector,
     e_1,
     e_2,

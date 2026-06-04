@@ -40,10 +40,10 @@ import warnings
 import sympy
 from IPython.display import Math, display
 
-from geometricalgebra.multivector import (
+from geometricalgebra.base import MultiVectorFn
+from geometricalgebra.gn import (
     InvertibleFunction,
     MultiVector,
-    MultiVectorFn,
     a_1,
     compose,
     compose_intermediate_fns,
@@ -60,7 +60,7 @@ from geometricalgebra.multivector import (
     sym_vec3_2,
     translate,
     zero,
-    one
+    one,
 )
 from geometricalgebra.nbplotutils import (
     create_basis,

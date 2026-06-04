@@ -18,9 +18,9 @@
 
 import itertools
 
-from geometricalgebra.multivector import (
+from geometricalgebra.base import MultiVectorFn
+from geometricalgebra.gn import (
     MultiVector,
-    MultiVectorFn,
     a_1,
     a_2,
     a_3,

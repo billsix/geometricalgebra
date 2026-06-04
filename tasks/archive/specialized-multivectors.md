@@ -1,6 +1,6 @@
 # Specialized, performant MultiVector for 2D and 3D
 
-Status: **in progress** — Phases 0–4 done · Created 2026-06-04
+Status: **COMPLETE** — Phases 0–5 done · Created 2026-06-04 · Archived 2026-06-04
 
 ## Goal
 
@@ -197,6 +197,8 @@ Wall-clock per operation (averaged; Python 3.14, sympy 1.14):
    rename, the `tools/` generator + committed generated module, and the before/after benchmark
    numbers. Reframe Assessment item #1 from "fix globally" to "intentionally scoped to `Gn`".
    Then **archive this task** (`tasks/archive/specialized-multivectors.md`).
+   **DONE — `CLAUDE.md` rewritten for the new layout/architecture/codegen/benchmarks; item #1
+   reframed as resolved-by-design; repo-hygiene note updated (README now exists). Task archived.**
 
 (Note: there is no longer a global "remove eager simplify" phase — eager simplify is a `Gn`
 property we keep; lazy simplify is a `G2`/`G3` property baked in at codegen.)

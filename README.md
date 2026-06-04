@@ -23,7 +23,6 @@ src/geometricalgebra/
   base.py          AbstractMultiVector (the abstract base) + type aliases
   gn.py            Gn (general 𝒢ₙ) + e_1.. constants + transforms + `MultiVector` alias
   g1.py g2.py g3.py   one specialized class each (generated)
-  multivector.py   backward-compat umbrella that re-exports the above
 ```
 
 Import just the algebra you need:
@@ -94,7 +93,7 @@ python tools/gen_specialized.py
 That's it — `from geometricalgebra.g4 import G4, e_1, e_2` now works. The
 docstring, the `DIMENSION`, the basis constants, and all the dimension-fixed
 methods (`dual()`, `unit_pseudoscalar()`, …) are generated automatically; you do
-**not** need to touch `base.py`, `gn.py`, or `multivector.py`.
+**not** need to touch `base.py` or `gn.py`.
 
 Optional: to include the new algebra in the conformance tests, add it to the
 `SPECIALIZED` map in `tests/test_conformance.py`:

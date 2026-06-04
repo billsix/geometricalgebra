@@ -41,7 +41,7 @@ import sympy
 # allow running from the repo root without installing the package
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from geometricalgebra.multivector import Gn  # noqa: E402
+from geometricalgebra.gn import Gn  # noqa: E402
 
 
 def out_path(filename: str) -> str:
