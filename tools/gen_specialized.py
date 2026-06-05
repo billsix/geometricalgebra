@@ -31,6 +31,7 @@ algebra changes:
     python tools/gen_specialized.py
 """
 
+import inspect
 import os
 import re
 import sys
@@ -41,7 +42,24 @@ import sympy
 # allow running from the repo root without installing the package
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+from geometricalgebra.base import AbstractMultiVector  # noqa: E402
 from geometricalgebra.gn import Gn  # noqa: E402
+
+
+def emit_docstring(lines, method_name, indent="        ") -> None:
+    """Copy ``AbstractMultiVector.<method_name>``'s docstring onto the generated
+    override, so the specialized classes carry the *same* Hestenes notation as the
+    shared base.  ``base.py`` is the single source of truth; this is a no-op when
+    the base method has no docstring (keeps pure-plumbing overrides clean).
+    """
+    member = getattr(AbstractMultiVector, method_name, None)
+    doc = inspect.getdoc(member) if member is not None else None
+    if not doc:
+        return
+    lines.append(f'{indent}"""')
+    for line in doc.splitlines():
+        lines.append(f"{indent}{line}".rstrip())
+    lines.append(f'{indent}"""')
 
 
 def out_path(filename: str) -> str:
@@ -217,6 +235,7 @@ def emit_bilinear(
     out_exprs = [sympy.sympify(rd.get(b, 0)) for b in blades]
     replacements, reduced = sympy.cse(out_exprs)
     ap(f"    def {method}(self, rhs) -> typing.Self:")
+    emit_docstring(lines, method)
     ap(f"        if not isinstance(rhs, {name}):")
     ap("            left = Gn.from_blade_dict(self.to_blade_dict())")
     ap("            right = Gn.from_blade_dict(rhs.to_blade_dict())")
@@ -265,6 +284,7 @@ def emit_structural(lines, name, blades, fields, n) -> None:
     ap("")
 
     ap("    def scalar_part(self) -> numbers.Real:")
+    emit_docstring(lines, "scalar_part")
     ap("        return self.scalar")
     ap("")
 
@@ -278,6 +298,7 @@ def emit_structural(lines, name, blades, fields, n) -> None:
     ap("")
 
     ap("    def r_vector_part(self, r: int) -> typing.Self:")
+    emit_docstring(lines, "r_vector_part")
     for g in range(n + 1):
         ap(f"        if r == {g}:")
         emit_construct_return(
@@ -287,6 +308,7 @@ def emit_structural(lines, name, blades, fields, n) -> None:
     ap("")
 
     ap("    def reverse(self) -> typing.Self:")
+    emit_docstring(lines, "reverse")
     rev_pairs = []
     for b in blades:
         f = field_name(b)
@@ -297,6 +319,7 @@ def emit_structural(lines, name, blades, fields, n) -> None:
     ap("")
 
     ap("    def even_part(self) -> typing.Self:")
+    emit_docstring(lines, "even_part")
     emit_construct_return(
         lines,
         name,
@@ -305,6 +328,7 @@ def emit_structural(lines, name, blades, fields, n) -> None:
     ap("")
 
     ap("    def odd_part(self) -> typing.Self:")
+    emit_docstring(lines, "odd_part")
     emit_construct_return(
         lines,
         name,
@@ -449,10 +473,12 @@ def generate_class(n: int, name: str) -> str:
     # dimension-fixed convenience overrides: n defaults to this algebra's
     # DIMENSION, but an explicit n is still accepted for compatibility.
     ap("    def dual(self, n: int | None = None) -> typing.Self:")
+    emit_docstring(lines, "dual")
     ap("        return super().dual(self.DIMENSION if n is None else n)")
     ap("")
     ap("    @classmethod")
     ap("    def unit_pseudoscalar(cls, n: int | None = None) -> typing.Self:")
+    emit_docstring(lines, "unit_pseudoscalar")
     ap("        return super().unit_pseudoscalar(cls.DIMENSION if n is None else n)")
     ap("")
     ap("    @classmethod")

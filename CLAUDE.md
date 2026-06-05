@@ -25,8 +25,12 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 - `tests/test_multivector.py` — original `Gn` tests; `tests/test_conformance.py` — parametrized
   conformance suite over `[Gn, G1, G2, G3]`. **118 tests total.**
 - `tools/gen_specialized.py` — the code generator; `tools/bench.py` — `Gn`-vs-specialized benchmark.
-- `entrypoint/` — container build/run scripts and **a large vendored Emacs `.emacs.d/elpa/` tree**
-  (hundreds of files, not project source — see "Known issues").
+- `entrypoint/` — container build/run scripts and **a large vendored Emacs `.emacs.d/elpa/` tree**.
+  **The vendored Emacs tree is intentional and off-limits.** It is committed on purpose so the author
+  has a reproducible, consistent Emacs environment in the container; do **not** read it, edit it,
+  reformat it, gitignore it, or factor it into any analysis. It is not project source and is none of
+  Claude's concern. (Tooling that walks the repo — e.g. `format.sh` — should be scoped away from it;
+  see Dev workflow.)
 
 ## Architecture
 
@@ -120,8 +124,11 @@ Open issues (most are in the shared/reference code, inherited from the original 
    Now documented (the classes are explicitly 𝒢ₙ over ℝⁿ), but still a hard limit.
 6. **Self-flagged uncertainty**: `inverse`, `is_parallel_to`, `component` carry "not sure if I'm
    doing this correctly" comments; not all verified against known results.
-7. **Repo hygiene**: the vendored `entrypoint/dotfiles/.emacs.d/elpa/` tree dwarfs the actual source;
-   `src/geometricalgebra/__pycache__/` is not in `.gitignore`. (A `README.md` now exists.)
+7. ~~Repo hygiene: `__pycache__/` not gitignored~~ — **resolved 2026-06-05**: Python artifacts
+   (`__pycache__/`, `*.py[cod]`, `.pytest_cache/`, `.ruff_cache/`, egg-info, build/dist) are now in
+   `.gitignore`. The vendored `entrypoint/dotfiles/.emacs.d/elpa/` tree still dwarfs the source but is
+   **intentional and off-limits** (see Module layout). `format.sh` still walks the whole repo, so it
+   reformats vendored/notebook files — scope it to `src tools tests` (open).
 8. **Minor**: typos (`excuted`, `sortedBladeDictionyEntriy` in `gn.py`'s `decrease_grade`; `Note
    invertible`); malformed `\\\frac` in `scale_non_uniform_2d` LaTeX; `_repr_latex_` round-trips
    coefficients through `sympy.sympify(str(x))` (fragile); test copy-paste bug — `i15` uses

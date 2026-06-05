@@ -87,6 +87,11 @@ class G1(AbstractMultiVector):
         )
 
     def _geometric_product(self, rhs) -> typing.Self:
+        """
+        Geometric product  A B  (juxtaposition) — the fundamental product of the
+        algebra, from which the inner product  A · B  and outer product  A ∧ B  are
+        derived.  This is the representation-specific primitive.
+        """
         if not isinstance(rhs, G1):
             left = Gn.from_blade_dict(self.to_blade_dict())
             right = Gn.from_blade_dict(rhs.to_blade_dict())
@@ -98,6 +103,13 @@ class G1(AbstractMultiVector):
         return typing.cast(typing.Self, result)
 
     def inner_product(self, rhs) -> typing.Self:
+        """
+        Inner (dot) product  A · B  — the lowest-grade part of the geometric
+        product, ⟨A B⟩_|r−s| summed over the homogeneous grade-r, grade-s parts.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 6,
+        equation 1.21a, 1.21b, 1.21c
+        """
         if not isinstance(rhs, G1):
             left = Gn.from_blade_dict(self.to_blade_dict())
             right = Gn.from_blade_dict(rhs.to_blade_dict())
@@ -109,6 +121,13 @@ class G1(AbstractMultiVector):
         return typing.cast(typing.Self, result)
 
     def outer_product(self, rhs) -> typing.Self:
+        """
+        Outer (wedge) product  A ∧ B  — the highest-grade part of the geometric
+        product, ⟨A B⟩_(r+s) summed over the homogeneous grade-r, grade-s parts.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 6,
+        equation 1.22a, 1.22b, 1.22c
+        """
         if not isinstance(rhs, G1):
             left = Gn.from_blade_dict(self.to_blade_dict())
             right = Gn.from_blade_dict(rhs.to_blade_dict())
@@ -149,6 +168,11 @@ class G1(AbstractMultiVector):
         return typing.cast(typing.Self, result)
 
     def scalar_part(self) -> numbers.Real:
+        """
+        Scalar part  ⟨A⟩  =  ⟨A⟩₀  — the grade-0 (scalar) component of A.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 4
+        """
         return self.scalar
 
     def grades(self) -> list[int]:
@@ -160,6 +184,11 @@ class G1(AbstractMultiVector):
         return present
 
     def r_vector_part(self, r: int) -> typing.Self:
+        """
+        Grade-r part  ⟨A⟩ᵣ  — the r-vector (grade-r) component of A.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 4
+        """
         if r == 0:
             result = G1(
                 scalar=self.scalar,
@@ -174,6 +203,13 @@ class G1(AbstractMultiVector):
         return typing.cast(typing.Self, result)
 
     def reverse(self) -> typing.Self:
+        """
+        Reverse  Ã  — reverses the order of the vector factors in each blade,
+        giving the grade-r part the sign (−1)^(r(r−1)/2).
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 5,
+        equation 1.19
+        """
         result = G1(
             scalar=self.scalar,
             e_1=self.e_1,
@@ -181,12 +217,22 @@ class G1(AbstractMultiVector):
         return typing.cast(typing.Self, result)
 
     def even_part(self) -> typing.Self:
+        """
+        Even part  A⁺  =  ⟨A⟩₀ + ⟨A⟩₂ + …  — the sum of the even-grade parts.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
+        """
         result = G1(
             scalar=self.scalar,
         )
         return typing.cast(typing.Self, result)
 
     def odd_part(self) -> typing.Self:
+        """
+        Odd part  A⁻  =  ⟨A⟩₁ + ⟨A⟩₃ + …  — the sum of the odd-grade parts.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
+        """
         result = G1(
             e_1=self.e_1,
         )
@@ -207,10 +253,18 @@ class G1(AbstractMultiVector):
             yield G1(e_1=self.e_1)
 
     def dual(self, n: int | None = None) -> typing.Self:
+        """
+        Dual  A*  =  A I⁻¹  — multiplication by the inverse unit pseudoscalar I,
+        mapping a grade-r part to grade n−r.
+        """
         return super().dual(self.DIMENSION if n is None else n)
 
     @classmethod
     def unit_pseudoscalar(cls, n: int | None = None) -> typing.Self:
+        """
+        Unit pseudoscalar  i  =  e₁ e₂ … e_n  — the highest-grade unit blade of
+        the n-dimensional algebra.
+        """
         return super().unit_pseudoscalar(cls.DIMENSION if n is None else n)
 
     @classmethod

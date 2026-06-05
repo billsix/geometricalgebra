@@ -1,9 +1,36 @@
 # Cleanups & repo hygiene (backlog)
 
-Status: **not started** · proposed 2026-06-04 · needs go-ahead per item
+Status: **mostly done** · proposed 2026-06-04 · worked 2026-06-05 · two items pending decision
 
 Non-correctness cleanups identified during the assessment (see `CLAUDE.md`). Low risk; grouped for
 one review.
+
+## Progress (2026-06-05)
+
+- **#1 doctests** — the broken `modelviewprojection`/`Vector2D` doctests were already gone (the
+  `transforms.py` refactor rewrote them to valid lambda examples). Nothing to fix. Repo has **no CI**;
+  remaining *option* is enabling `--doctest-modules` in `pytest.ini` so doctests actually run locally
+  — **not done, awaiting decision.**
+- **#2 typos / cosmetics** — DONE: `excuted`→`executed` and `sortedBladeDictionyEntriy`→
+  `sorted_blade_dictionary_entry` in `gn.py`; `_repr_latex_` no longer round-trips through
+  `sympy.sympify(str(x))` (now `sympy.latex(x)` directly — verified byte-identical output for numeric
+  and symbolic coeffs). The `"Note invertible"` message and malformed `\frac` were already fixed in
+  the refactor.
+- **#3 `.gitignore`** — DONE: added `__pycache__/`, `*.py[cod]`, `.pytest_cache/`, `.ruff_cache/`,
+  egg-info, build/dist, `.ipynb_checkpoints/`. (None were tracked; nothing committed affected.)
+- **#4 vendored Emacs tree** — **DECISION: keep it vendored** (author wants a reproducible Emacs
+  env). Recorded in `CLAUDE.md` (Module layout + known-issue 7) and memory as **off-limits** — never
+  read/edit/format/gitignore it. Remaining: whole-repo tooling still churns it (`ruff format .` hit
+  27 vendored files last task). Concrete fix = scope `format.sh` to `src tools tests` — **not done,
+  awaiting go-ahead** (it's the author's dev script).
+
+Verified after edits: `ruff check src tools tests`, `ty check src`, `python -m pytest -q` (118 passed).
+
+## Pending decisions
+
+- Enable `--doctest-modules` in `pytest.ini`? (no CI; runs doctests as part of local pytest)
+- Scope `entrypoint/format.sh` to `src tools tests` so it stops reformatting vendored Emacs +
+  notebook files?
 
 ## 1. Fix / rewrite the `InvertibleFunction` doctests (`gn.py`)
 

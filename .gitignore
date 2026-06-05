@@ -9,3 +9,13 @@ auto-save-list
 history
 recentf
 session.*
+
+# python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.ipynb_checkpoints/

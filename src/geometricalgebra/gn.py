@@ -124,27 +124,27 @@ class Gn(AbstractMultiVector):
                         )
                     )
                 case (a, c, *rest) if a < c:
-                    sortedBladeDictionyEntriy: BladeDictionaryEntry = decrease_grade(
+                    sorted_blade_dictionary_entry = decrease_grade(
                         BladeDictionaryEntry(
                             blade=(c, *rest),
                             coefficient=basis_blade.coefficient,
                         )
                     )
-                    match sortedBladeDictionyEntriy.blade:
+                    match sorted_blade_dictionary_entry.blade:
                         case (b, *_) if a < b:
                             return BladeDictionaryEntry(
-                                blade=(a, *sortedBladeDictionyEntriy.blade),
-                                coefficient=sortedBladeDictionyEntriy.coefficient,
+                                blade=(a, *sorted_blade_dictionary_entry.blade),
+                                coefficient=sorted_blade_dictionary_entry.coefficient,
                             )
                         case _:
                             return decrease_grade(
                                 BladeDictionaryEntry(
-                                    blade=(a, *sortedBladeDictionyEntriy.blade),
-                                    coefficient=sortedBladeDictionyEntriy.coefficient,
+                                    blade=(a, *sorted_blade_dictionary_entry.blade),
+                                    coefficient=sorted_blade_dictionary_entry.coefficient,
                                 )
                             )
                 case _:
-                    raise ValueError("This code should never be able to be excuted")
+                    raise ValueError("This code should never be able to be executed")
 
         def blade_dictionary_entry_to_multivector(
             b: BladeDictionaryEntry,
