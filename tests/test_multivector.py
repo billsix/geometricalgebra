@@ -342,7 +342,7 @@ def test_multivector_unit_pseudoscalar() -> None:
     assert i13 * i13 == one
     i14: MultiVector = MultiVector.unit_pseudoscalar(14)
     assert i14 * i14 == -one
-    i15: MultiVector = MultiVector.unit_pseudoscalar(14)
+    i15: MultiVector = MultiVector.unit_pseudoscalar(15)
     assert i15 * i15 == -one
 
 
@@ -390,6 +390,12 @@ def test_project_and_reject() -> None:
     assert MultiVector.project(onto=2 * e_1)(a) == 3 * e_1
     assert MultiVector.reject(away_from=2 * e_1)(a) == 4 * e_2
 
+    # 1-element sequence (regression: must use outer_product_of_vectors, not the
+    # instance method outer_product, which only happens to work for exactly 2
+    # elements -- a 1-element span used to raise TypeError on the missing rhs)
+    assert MultiVector.project(onto=[e_1])(a) == 3 * e_1
+    assert MultiVector.reject(away_from=[e_1])(a) == 4 * e_2
+
     parallel_to_vec1 = MultiVector.project(onto=sym_vec2_1)(sym_vec2_2)
     perp_to_vec1 = MultiVector.reject(away_from=sym_vec2_1)(sym_vec2_2)
     assert sym_vec2_2 == (parallel_to_vec1 + perp_to_vec1)
@@ -406,6 +412,10 @@ def test_reflect() -> None:
     # reflect across planes
     assert MultiVector.reflect(across=[e_1, e_2])(a) == 3 * e_1 + 4 * e_2 + -5 * e_3
     assert MultiVector.reflect(across=e_1 * e_2)(a) == 3 * e_1 + 4 * e_2 + -5 * e_3
+
+    # reflect across a 1-element span (regression: 1-element sequence must not
+    # crash -- same outer_product arity bug as project/reject)
+    assert MultiVector.reflect(across=[e_1])(a) == MultiVector.reflect(across=e_1)(a)
     assert MultiVector.reflect(across=e_1 ^ e_2)(a) == 3 * e_1 + 4 * e_2 + -5 * e_3
 
     assert MultiVector.reflect(across=[e_2, e_3])(a) == -3 * e_1 + 4 * e_2 + 5 * e_3

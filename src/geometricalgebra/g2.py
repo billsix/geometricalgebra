@@ -105,28 +105,28 @@ class G2(AbstractMultiVector):
             return typing.cast(typing.Self, left * right)
         result = G2(
             scalar=(
-                self.e_1 * rhs.e_1
-                - self.e_12 * rhs.e_12
+                self.scalar * rhs.scalar
+                + self.e_1 * rhs.e_1
                 + self.e_2 * rhs.e_2
-                + self.scalar * rhs.scalar
+                - self.e_12 * rhs.e_12
             ),
             e_1=(
-                self.e_1 * rhs.scalar
-                + self.e_12 * rhs.e_2
+                self.scalar * rhs.e_1
+                + self.e_1 * rhs.scalar
                 - self.e_2 * rhs.e_12
-                + self.scalar * rhs.e_1
+                + self.e_12 * rhs.e_2
             ),
             e_2=(
-                self.e_1 * rhs.e_12
-                - self.e_12 * rhs.e_1
+                self.scalar * rhs.e_2
+                + self.e_1 * rhs.e_12
                 + self.e_2 * rhs.scalar
-                + self.scalar * rhs.e_2
+                - self.e_12 * rhs.e_1
             ),
             e_12=(
-                self.e_1 * rhs.e_2
-                + self.e_12 * rhs.scalar
+                self.scalar * rhs.e_12
+                + self.e_1 * rhs.e_2
                 - self.e_2 * rhs.e_1
-                + self.scalar * rhs.e_12
+                + self.e_12 * rhs.scalar
             ),
         )
         return typing.cast(typing.Self, result)
@@ -144,8 +144,8 @@ class G2(AbstractMultiVector):
             right = Gn.from_blade_dict(rhs.to_blade_dict())
             return typing.cast(typing.Self, left.inner_product(right))
         result = G2(
-            scalar=self.e_1 * rhs.e_1 - self.e_12 * rhs.e_12 + self.e_2 * rhs.e_2,
-            e_1=self.e_12 * rhs.e_2 - self.e_2 * rhs.e_12,
+            scalar=self.e_1 * rhs.e_1 + self.e_2 * rhs.e_2 - self.e_12 * rhs.e_12,
+            e_1=-self.e_2 * rhs.e_12 + self.e_12 * rhs.e_2,
             e_2=self.e_1 * rhs.e_12 - self.e_12 * rhs.e_1,
             e_12=typing.cast(numbers.Real, 0),
         )
@@ -165,13 +165,13 @@ class G2(AbstractMultiVector):
             return typing.cast(typing.Self, left.outer_product(right))
         result = G2(
             scalar=self.scalar * rhs.scalar,
-            e_1=self.e_1 * rhs.scalar + self.scalar * rhs.e_1,
-            e_2=self.e_2 * rhs.scalar + self.scalar * rhs.e_2,
+            e_1=self.scalar * rhs.e_1 + self.e_1 * rhs.scalar,
+            e_2=self.scalar * rhs.e_2 + self.e_2 * rhs.scalar,
             e_12=(
-                self.e_1 * rhs.e_2
-                + self.e_12 * rhs.scalar
+                self.scalar * rhs.e_12
+                + self.e_1 * rhs.e_2
                 - self.e_2 * rhs.e_1
-                + self.scalar * rhs.e_12
+                + self.e_12 * rhs.scalar
             ),
         )
         return typing.cast(typing.Self, result)

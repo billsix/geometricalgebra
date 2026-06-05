@@ -19,6 +19,12 @@ where = ["src"]
 [tool.pytest]
 testpaths = ["tests"]
 
+[tool.ruff]
+# The intentionally-vendored Emacs tree under entrypoint/ (.emacs.d/elpa/) is
+# third-party code we must never reformat. Excluded here so both `ruff check` and
+# `ruff format` skip it, no matter how they're invoked (CLI, format.sh, editor).
+extend-exclude = ["entrypoint"]
+
 [tool.ruff.lint]
 select = [
        'F401', 'F811', 'E402', 'I001', 'TID252', "F841",

@@ -150,7 +150,11 @@ class AbstractMultiVector(abc.ABC):
             case sympy.Expr() as s:
                 return self._geometric_product(type(self).from_sympy_expr(s))
             case _:
-                return typing.cast(typing.Self, -self._geometric_product(lhs))
+                # multivector*multivector is handled by __mul__; any other left
+                # operand is unsupported -- defer so Python raises a clean
+                # TypeError (the previous `-self._geometric_product(lhs)` was dead
+                # and wrongly negated: the geometric product is not anticommutative).
+                return NotImplemented
 
     # ------------------------------------------------------------------
     # shared arithmetic, all built on the interchange + primitives
@@ -498,7 +502,7 @@ class AbstractMultiVector(abc.ABC):
         match away_from:
             case _ as sequence if isinstance(away_from, Sequence):
                 assert isinstance(sequence, Sequence)  # to satisfy type checking
-                return cls.reject(cls.outer_product(*sequence))
+                return cls.reject(cls.outer_product_of_vectors(*sequence))
             case AbstractMultiVector() as away_from_vector if (
                 away_from_vector.is_vector()
             ):
@@ -530,7 +534,7 @@ class AbstractMultiVector(abc.ABC):
         match across:
             case _ as sequence if isinstance(across, Sequence):
                 assert isinstance(sequence, Sequence)  # to satisfy type checking
-                return cls.reflect(cls.outer_product(*sequence))
+                return cls.reflect(cls.outer_product_of_vectors(*sequence))
             case AbstractMultiVector() as away_from_vector if (
                 away_from_vector.is_vector()
             ):

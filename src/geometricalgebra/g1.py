@@ -97,8 +97,8 @@ class G1(AbstractMultiVector):
             right = Gn.from_blade_dict(rhs.to_blade_dict())
             return typing.cast(typing.Self, left * right)
         result = G1(
-            scalar=self.e_1 * rhs.e_1 + self.scalar * rhs.scalar,
-            e_1=self.e_1 * rhs.scalar + self.scalar * rhs.e_1,
+            scalar=self.scalar * rhs.scalar + self.e_1 * rhs.e_1,
+            e_1=self.scalar * rhs.e_1 + self.e_1 * rhs.scalar,
         )
         return typing.cast(typing.Self, result)
 
@@ -134,7 +134,7 @@ class G1(AbstractMultiVector):
             return typing.cast(typing.Self, left.outer_product(right))
         result = G1(
             scalar=self.scalar * rhs.scalar,
-            e_1=self.e_1 * rhs.scalar + self.scalar * rhs.e_1,
+            e_1=self.scalar * rhs.e_1 + self.e_1 * rhs.scalar,
         )
         return typing.cast(typing.Self, result)
 

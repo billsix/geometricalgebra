@@ -34,6 +34,7 @@ algebra changes:
 import inspect
 import os
 import re
+import subprocess
 import sys
 from itertools import chain, combinations
 
@@ -82,36 +83,75 @@ def field_name(blade: tuple[int, ...]) -> str:
     return "e_" + "".join(str(i) for i in blade)
 
 
+def blade_of_field(field: str) -> tuple[int, ...]:
+    """Inverse of ``field_name``: 'scalar'->(), 'e_1'->(1,), 'e_12'->(1, 2).
+
+    Assumes single-digit basis indices (n < 10), which the field naming already
+    requires (``e_12`` is otherwise ambiguous).
+    """
+    if field == "scalar":
+        return ()
+    return tuple(int(c) for c in field[2:])
+
+
+def term_grade_key(term) -> tuple[int, tuple[int, ...], int, tuple[int, ...]]:
+    """Grade-ordering key for one additive term ``self.<L> * rhs.<R>``.
+
+    Orders by ``(grade(L), indices(L), grade(R), indices(R))`` so the generated
+    sums read scalar -> vector -> bivector -> ... (instead of sympy's roughly
+    lexicographic-by-name order, where e.g. ``e_12`` sorts before ``e_2``).  The
+    term is a product of one ``a_<field>`` (self) and one ``b_<field>`` (rhs)
+    symbol.  A term carrying neither (e.g. a future ``cse`` temporary -- the
+    products produce none today) sorts last.
+    """
+    sentinel = (99, ())
+    left = right = None
+    for sym in term.free_symbols:
+        if sym.name.startswith("a_"):
+            blade = blade_of_field(sym.name[2:])
+            left = (len(blade), blade)
+        elif sym.name.startswith("b_"):
+            blade = blade_of_field(sym.name[2:])
+            right = (len(blade), blade)
+    left = left if left is not None else sentinel
+    right = right if right is not None else sentinel
+    return (left[0], left[1], right[0], right[1])
+
+
 def format_assignment(lhs: str, expr, indent: str, render) -> list[str]:
     """Render ``<lhs>=<expr>,`` for a constructor kwarg, wrapping long sums.
 
+    Additive terms are ordered by grade (see ``term_grade_key``) for readability;
+    this only reorders the written source -- the computed value is unchanged.
     Short expressions stay on one line; long ones are split across lines one
     additive term at a time so no line exceeds the formatter's limit.  ``render``
     turns a sympy expression into source text (e.g. ``self.e_1 * rhs.e_2``).
     """
     expr = sympy.sympify(expr)
-    rendered = render(expr)
     if not expr.free_symbols:
         # a constant component (e.g. an identically-zero blade) -- cast to the
         # field type so the checker doesn't see a bare Literal.
-        rendered = f"typing.cast(numbers.Real, {rendered})"
-    inline = f"{indent}{lhs}={rendered},"
-    if len(inline) <= 88:
-        return [inline]
+        return [f"{indent}{lhs}=typing.cast(numbers.Real, {render(expr)}),"]
 
-    terms = expr.as_ordered_terms() if expr.is_Add else [expr]
-    cont = indent + "    "
-    lines = [f"{indent}{lhs}=("]
+    terms = (
+        sorted(expr.as_ordered_terms(), key=term_grade_key) if expr.is_Add else [expr]
+    )
+    fragments: list[str] = []
     for i, term in enumerate(terms):
         s = render(term)
         if i == 0:
-            lines.append(f"{cont}{s}")
+            fragments.append(s)
         elif s.startswith("-"):
-            lines.append(f"{cont}- {s[1:].lstrip()}")
+            fragments.append(f"- {s[1:].lstrip()}")
         else:
-            lines.append(f"{cont}+ {s}")
-    lines.append(f"{indent}),")
-    return lines
+            fragments.append(f"+ {s}")
+
+    inline = f"{indent}{lhs}={' '.join(fragments)},"
+    if len(inline) <= 88:
+        return [inline]
+
+    cont = indent + "    "
+    return [f"{indent}{lhs}=(", *(f"{cont}{frag}" for frag in fragments), f"{indent}),"]
 
 
 def blade_literal(blade: tuple[int, ...]) -> str:
@@ -562,7 +602,25 @@ from geometricalgebra.gn import Gn
 ALGEBRAS = [(1, "G1", "g1.py"), (2, "G2", "g2.py"), (3, "G3", "g3.py")]
 
 
+def ruff_format(paths: list[str]) -> None:
+    """Format the freshly written files with ruff so the committed output is
+    already formatted in one step (no separate format.sh pass needed, matching
+    its quote style / line wrapping).  Best-effort: if ruff isn't installed, warn
+    and leave the files raw rather than failing the generation.
+    """
+    try:
+        subprocess.run(["ruff", "check", "--fix", "--quiet", *paths], check=False)
+        subprocess.run(
+            ["ruff", "format", "--quiet", "--line-length=88", *paths], check=True
+        )
+    except FileNotFoundError:
+        sys.stdout.write("warning: ruff not found; generated files left unformatted\n")
+        return
+    sys.stdout.write("formatted with ruff\n")
+
+
 def main() -> None:
+    written: list[str] = []
     for n, name, filename in ALGEBRAS:
         source = "\n".join(
             [
@@ -577,7 +635,9 @@ def main() -> None:
         )
         with open(out_path(filename), "w") as f:
             f.write(source)
+        written.append(out_path(filename))
         sys.stdout.write(f"wrote {os.path.normpath(out_path(filename))}\n")
+    ruff_format(written)
 
 
 if __name__ == "__main__":

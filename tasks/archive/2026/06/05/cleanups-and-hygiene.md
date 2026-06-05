@@ -1,6 +1,7 @@
 # Cleanups & repo hygiene (backlog)
 
-Status: **mostly done** · proposed 2026-06-04 · worked 2026-06-05 · two items pending decision
+Status: **complete** · proposed 2026-06-04 · worked + finished 2026-06-05
+**Completed:** 2026-06-05
 
 Non-correctness cleanups identified during the assessment (see `CLAUDE.md`). Low risk; grouped for
 one review.
@@ -8,9 +9,9 @@ one review.
 ## Progress (2026-06-05)
 
 - **#1 doctests** — the broken `modelviewprojection`/`Vector2D` doctests were already gone (the
-  `transforms.py` refactor rewrote them to valid lambda examples). Nothing to fix. Repo has **no CI**;
-  remaining *option* is enabling `--doctest-modules` in `pytest.ini` so doctests actually run locally
-  — **not done, awaiting decision.**
+  `transforms.py` refactor rewrote them to valid lambda examples). Repo has **no CI**, but
+  `--doctest-modules` is now **ENABLED** in `pytest.ini` so the doctests run as part of local pytest
+  (see Resolved decisions).
 - **#2 typos / cosmetics** — DONE: `excuted`→`executed` and `sortedBladeDictionyEntriy`→
   `sorted_blade_dictionary_entry` in `gn.py`; `_repr_latex_` no longer round-trips through
   `sympy.sympify(str(x))` (now `sympy.latex(x)` directly — verified byte-identical output for numeric
@@ -20,17 +21,30 @@ one review.
   egg-info, build/dist, `.ipynb_checkpoints/`. (None were tracked; nothing committed affected.)
 - **#4 vendored Emacs tree** — **DECISION: keep it vendored** (author wants a reproducible Emacs
   env). Recorded in `CLAUDE.md` (Module layout + known-issue 7) and memory as **off-limits** — never
-  read/edit/format/gitignore it. Remaining: whole-repo tooling still churns it (`ruff format .` hit
-  27 vendored files last task). Concrete fix = scope `format.sh` to `src tools tests` — **not done,
-  awaiting go-ahead** (it's the author's dev script).
+  read/edit/format/gitignore it. Whole-repo tooling churn (`ruff format .` hit 27 vendored files last
+  task) is now **fixed** by excluding `entrypoint/` from ruff (see Resolved decisions).
 
-Verified after edits: `ruff check src tools tests`, `ty check src`, `python -m pytest -q` (118 passed).
+Verified after edits: `bash entrypoint/format.sh` (ruff + ty clean) and `python -m pytest -q`
+(124 passed: 118 tests + 6 doctests).
 
-## Pending decisions
+## Resolved decisions (2026-06-05)
 
-- Enable `--doctest-modules` in `pytest.ini`? (no CI; runs doctests as part of local pytest)
-- Scope `entrypoint/format.sh` to `src tools tests` so it stops reformatting vendored Emacs +
-  notebook files?
+- **Doctests: ENABLED.** `pytest.ini` now sets `testpaths = src tests` (so collection never walks
+  `entrypoint/` or `notebooks/`) and `addopts = --doctest-modules
+  --ignore=src/geometricalgebra/nbplotutils.py` (that module imports a matplotlib GUI backend that
+  fails headless and has no doctests). Bare `python -m pytest` → **124 passed**.
+- **format.sh: emacs tree excluded via config.** Added `extend-exclude = ["entrypoint"]` to
+  `pyproject.toml [tool.ruff]` — both `ruff check` and `ruff format` (and editor integrations) skip
+  the vendored tree no matter how invoked, more robust than a CLI flag (note: `ruff format` does
+  **not** accept `--extend-exclude` on the CLI, only `ruff check` does). `format.sh` stays plain
+  `ruff check . --fix` / `ruff format` with a pointer comment. Confirmed it no longer touches any
+  `entrypoint/` file.
+
+## Known remaining (out of scope, pre-existing)
+
+- `ruff check .` reports one `E402` in `notebooks/displaymv.py:471` — a mid-cell import, idiomatic for
+  a jupytext notebook, flagged before this work too. Left as-is; revisit only if we add per-file
+  ignores for notebooks.
 
 ## 1. Fix / rewrite the `InvertibleFunction` doctests (`gn.py`)
 

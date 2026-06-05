@@ -118,84 +118,84 @@ class G3(AbstractMultiVector):
             return typing.cast(typing.Self, left * right)
         result = G3(
             scalar=(
-                self.e_1 * rhs.e_1
-                - self.e_12 * rhs.e_12
-                - self.e_123 * rhs.e_123
-                - self.e_13 * rhs.e_13
+                self.scalar * rhs.scalar
+                + self.e_1 * rhs.e_1
                 + self.e_2 * rhs.e_2
-                - self.e_23 * rhs.e_23
                 + self.e_3 * rhs.e_3
-                + self.scalar * rhs.scalar
+                - self.e_12 * rhs.e_12
+                - self.e_13 * rhs.e_13
+                - self.e_23 * rhs.e_23
+                - self.e_123 * rhs.e_123
             ),
             e_1=(
-                self.e_1 * rhs.scalar
-                + self.e_12 * rhs.e_2
-                - self.e_123 * rhs.e_23
-                + self.e_13 * rhs.e_3
+                self.scalar * rhs.e_1
+                + self.e_1 * rhs.scalar
                 - self.e_2 * rhs.e_12
-                - self.e_23 * rhs.e_123
                 - self.e_3 * rhs.e_13
-                + self.scalar * rhs.e_1
+                + self.e_12 * rhs.e_2
+                + self.e_13 * rhs.e_3
+                - self.e_23 * rhs.e_123
+                - self.e_123 * rhs.e_23
             ),
             e_2=(
-                self.e_1 * rhs.e_12
-                - self.e_12 * rhs.e_1
-                + self.e_123 * rhs.e_13
-                + self.e_13 * rhs.e_123
+                self.scalar * rhs.e_2
+                + self.e_1 * rhs.e_12
                 + self.e_2 * rhs.scalar
-                + self.e_23 * rhs.e_3
                 - self.e_3 * rhs.e_23
-                + self.scalar * rhs.e_2
+                - self.e_12 * rhs.e_1
+                + self.e_13 * rhs.e_123
+                + self.e_23 * rhs.e_3
+                + self.e_123 * rhs.e_13
             ),
             e_3=(
-                self.e_1 * rhs.e_13
-                - self.e_12 * rhs.e_123
-                - self.e_123 * rhs.e_12
-                - self.e_13 * rhs.e_1
+                self.scalar * rhs.e_3
+                + self.e_1 * rhs.e_13
                 + self.e_2 * rhs.e_23
-                - self.e_23 * rhs.e_2
                 + self.e_3 * rhs.scalar
-                + self.scalar * rhs.e_3
+                - self.e_12 * rhs.e_123
+                - self.e_13 * rhs.e_1
+                - self.e_23 * rhs.e_2
+                - self.e_123 * rhs.e_12
             ),
             e_12=(
-                self.e_1 * rhs.e_2
-                + self.e_12 * rhs.scalar
-                + self.e_123 * rhs.e_3
-                - self.e_13 * rhs.e_23
+                self.scalar * rhs.e_12
+                + self.e_1 * rhs.e_2
                 - self.e_2 * rhs.e_1
-                + self.e_23 * rhs.e_13
                 + self.e_3 * rhs.e_123
-                + self.scalar * rhs.e_12
+                + self.e_12 * rhs.scalar
+                - self.e_13 * rhs.e_23
+                + self.e_23 * rhs.e_13
+                + self.e_123 * rhs.e_3
             ),
             e_13=(
-                self.e_1 * rhs.e_3
-                + self.e_12 * rhs.e_23
-                - self.e_123 * rhs.e_2
-                + self.e_13 * rhs.scalar
+                self.scalar * rhs.e_13
+                + self.e_1 * rhs.e_3
                 - self.e_2 * rhs.e_123
-                - self.e_23 * rhs.e_12
                 - self.e_3 * rhs.e_1
-                + self.scalar * rhs.e_13
+                + self.e_12 * rhs.e_23
+                + self.e_13 * rhs.scalar
+                - self.e_23 * rhs.e_12
+                - self.e_123 * rhs.e_2
             ),
             e_23=(
-                self.e_1 * rhs.e_123
-                - self.e_12 * rhs.e_13
-                + self.e_123 * rhs.e_1
-                + self.e_13 * rhs.e_12
+                self.scalar * rhs.e_23
+                + self.e_1 * rhs.e_123
                 + self.e_2 * rhs.e_3
-                + self.e_23 * rhs.scalar
                 - self.e_3 * rhs.e_2
-                + self.scalar * rhs.e_23
+                - self.e_12 * rhs.e_13
+                + self.e_13 * rhs.e_12
+                + self.e_23 * rhs.scalar
+                + self.e_123 * rhs.e_1
             ),
             e_123=(
-                self.e_1 * rhs.e_23
-                + self.e_12 * rhs.e_3
-                + self.e_123 * rhs.scalar
-                - self.e_13 * rhs.e_2
+                self.scalar * rhs.e_123
+                + self.e_1 * rhs.e_23
                 - self.e_2 * rhs.e_13
-                + self.e_23 * rhs.e_1
                 + self.e_3 * rhs.e_12
-                + self.scalar * rhs.e_123
+                + self.e_12 * rhs.e_3
+                - self.e_13 * rhs.e_2
+                + self.e_23 * rhs.e_1
+                + self.e_123 * rhs.scalar
             ),
         )
         return typing.cast(typing.Self, result)
@@ -215,39 +215,39 @@ class G3(AbstractMultiVector):
         result = G3(
             scalar=(
                 self.e_1 * rhs.e_1
-                - self.e_12 * rhs.e_12
-                - self.e_123 * rhs.e_123
-                - self.e_13 * rhs.e_13
                 + self.e_2 * rhs.e_2
-                - self.e_23 * rhs.e_23
                 + self.e_3 * rhs.e_3
+                - self.e_12 * rhs.e_12
+                - self.e_13 * rhs.e_13
+                - self.e_23 * rhs.e_23
+                - self.e_123 * rhs.e_123
             ),
             e_1=(
-                self.e_12 * rhs.e_2
-                - self.e_123 * rhs.e_23
-                + self.e_13 * rhs.e_3
-                - self.e_2 * rhs.e_12
-                - self.e_23 * rhs.e_123
+                -self.e_2 * rhs.e_12
                 - self.e_3 * rhs.e_13
+                + self.e_12 * rhs.e_2
+                + self.e_13 * rhs.e_3
+                - self.e_23 * rhs.e_123
+                - self.e_123 * rhs.e_23
             ),
             e_2=(
                 self.e_1 * rhs.e_12
+                - self.e_3 * rhs.e_23
                 - self.e_12 * rhs.e_1
-                + self.e_123 * rhs.e_13
                 + self.e_13 * rhs.e_123
                 + self.e_23 * rhs.e_3
-                - self.e_3 * rhs.e_23
+                + self.e_123 * rhs.e_13
             ),
             e_3=(
                 self.e_1 * rhs.e_13
-                - self.e_12 * rhs.e_123
-                - self.e_123 * rhs.e_12
-                - self.e_13 * rhs.e_1
                 + self.e_2 * rhs.e_23
+                - self.e_12 * rhs.e_123
+                - self.e_13 * rhs.e_1
                 - self.e_23 * rhs.e_2
+                - self.e_123 * rhs.e_12
             ),
-            e_12=self.e_123 * rhs.e_3 + self.e_3 * rhs.e_123,
-            e_13=-self.e_123 * rhs.e_2 - self.e_2 * rhs.e_123,
+            e_12=self.e_3 * rhs.e_123 + self.e_123 * rhs.e_3,
+            e_13=-self.e_2 * rhs.e_123 - self.e_123 * rhs.e_2,
             e_23=self.e_1 * rhs.e_123 + self.e_123 * rhs.e_1,
             e_123=typing.cast(numbers.Real, 0),
         )
@@ -267,36 +267,36 @@ class G3(AbstractMultiVector):
             return typing.cast(typing.Self, left.outer_product(right))
         result = G3(
             scalar=self.scalar * rhs.scalar,
-            e_1=self.e_1 * rhs.scalar + self.scalar * rhs.e_1,
-            e_2=self.e_2 * rhs.scalar + self.scalar * rhs.e_2,
-            e_3=self.e_3 * rhs.scalar + self.scalar * rhs.e_3,
+            e_1=self.scalar * rhs.e_1 + self.e_1 * rhs.scalar,
+            e_2=self.scalar * rhs.e_2 + self.e_2 * rhs.scalar,
+            e_3=self.scalar * rhs.e_3 + self.e_3 * rhs.scalar,
             e_12=(
-                self.e_1 * rhs.e_2
-                + self.e_12 * rhs.scalar
+                self.scalar * rhs.e_12
+                + self.e_1 * rhs.e_2
                 - self.e_2 * rhs.e_1
-                + self.scalar * rhs.e_12
+                + self.e_12 * rhs.scalar
             ),
             e_13=(
-                self.e_1 * rhs.e_3
-                + self.e_13 * rhs.scalar
+                self.scalar * rhs.e_13
+                + self.e_1 * rhs.e_3
                 - self.e_3 * rhs.e_1
-                + self.scalar * rhs.e_13
+                + self.e_13 * rhs.scalar
             ),
             e_23=(
-                self.e_2 * rhs.e_3
-                + self.e_23 * rhs.scalar
+                self.scalar * rhs.e_23
+                + self.e_2 * rhs.e_3
                 - self.e_3 * rhs.e_2
-                + self.scalar * rhs.e_23
+                + self.e_23 * rhs.scalar
             ),
             e_123=(
-                self.e_1 * rhs.e_23
-                + self.e_12 * rhs.e_3
-                + self.e_123 * rhs.scalar
-                - self.e_13 * rhs.e_2
+                self.scalar * rhs.e_123
+                + self.e_1 * rhs.e_23
                 - self.e_2 * rhs.e_13
-                + self.e_23 * rhs.e_1
                 + self.e_3 * rhs.e_12
-                + self.scalar * rhs.e_123
+                + self.e_12 * rhs.e_3
+                - self.e_13 * rhs.e_2
+                + self.e_23 * rhs.e_1
+                + self.e_123 * rhs.scalar
             ),
         )
         return typing.cast(typing.Self, result)
