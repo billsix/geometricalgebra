@@ -58,7 +58,7 @@ class BladeDictionaryEntry(NamedTuple):
         return Gn(coefficient_of_blade=dict([(self.blade, self.coefficient)]))
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(slots=True)
 class Gn(AbstractMultiVector):
     """An element (multivector) of 𝒢ₙ, the geometric algebra of n-dimensional
     Euclidean space ℝⁿ (Hestenes' notation).
@@ -104,9 +104,8 @@ class Gn(AbstractMultiVector):
             basis_blade: BladeDictionaryEntry,
         ) -> BladeDictionaryEntry:
             match basis_blade.blade:
-                case ():
-                    return basis_blade
-                case (a,):
+                case () | (_,):
+                    # a scalar or a single basis vector is already canonical
                     return basis_blade
                 case (a, c, *rest) if a == c:
                     return decrease_grade(

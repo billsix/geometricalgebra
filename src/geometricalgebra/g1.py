@@ -34,7 +34,7 @@ from geometricalgebra.base import AbstractMultiVector, BladeCoef
 from geometricalgebra.gn import Gn
 
 
-@dataclasses.dataclass(eq=False)
+@dataclasses.dataclass(eq=False, slots=True)
 class G1(AbstractMultiVector):
     """An element (multivector) of 𝒢₁, the geometric algebra of the Euclidean
     line ℝ¹ (Hestenes' notation) -- the simplest geometric algebra.
@@ -189,18 +189,20 @@ class G1(AbstractMultiVector):
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 4
         """
-        if r == 0:
-            result = G1(
-                scalar=self.scalar,
-            )
-            return typing.cast(typing.Self, result)
-        if r == 1:
-            result = G1(
-                e_1=self.e_1,
-            )
-            return typing.cast(typing.Self, result)
-        result = G1()
-        return typing.cast(typing.Self, result)
+        match r:
+            case 0:
+                result = G1(
+                    scalar=self.scalar,
+                )
+                return typing.cast(typing.Self, result)
+            case 1:
+                result = G1(
+                    e_1=self.e_1,
+                )
+                return typing.cast(typing.Self, result)
+            case _:
+                result = G1()
+                return typing.cast(typing.Self, result)
 
     def reverse(self) -> typing.Self:
         """

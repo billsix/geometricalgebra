@@ -339,12 +339,17 @@ def emit_structural(lines, name, blades, fields, n) -> None:
 
     ap("    def r_vector_part(self, r: int) -> typing.Self:")
     emit_docstring(lines, "r_vector_part")
+    ap("        match r:")
     for g in range(n + 1):
-        ap(f"        if r == {g}:")
+        ap(f"            case {g}:")
         emit_construct_return(
-            lines, name, [(f, f"self.{f}") for f in by_grade[g]], indent="            "
+            lines,
+            name,
+            [(f, f"self.{f}") for f in by_grade[g]],
+            indent="                ",
         )
-    emit_construct_return(lines, name, [])
+    ap("            case _:")
+    emit_construct_return(lines, name, [], indent="                ")
     ap("")
 
     ap("    def reverse(self) -> typing.Self:")
@@ -422,7 +427,7 @@ def generate_class(n: int, name: str) -> str:
     lines: list[str] = []
     ap = lines.append
 
-    ap("@dataclasses.dataclass(eq=False)")
+    ap("@dataclasses.dataclass(eq=False, slots=True)")
     ap(f"class {name}(AbstractMultiVector):")
     ap(f'    """{docstring_for(n)}"""')
     ap("")

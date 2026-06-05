@@ -34,7 +34,7 @@ from geometricalgebra.base import AbstractMultiVector, BladeCoef
 from geometricalgebra.gn import Gn
 
 
-@dataclasses.dataclass(eq=False)
+@dataclasses.dataclass(eq=False, slots=True)
 class G3(AbstractMultiVector):
     """An element (multivector) of 𝒢₃, the geometric algebra of 3D Euclidean
     space ℝ³ (Hestenes' "algebra of physical space"; the Pauli algebra).
@@ -374,32 +374,34 @@ class G3(AbstractMultiVector):
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 4
         """
-        if r == 0:
-            result = G3(
-                scalar=self.scalar,
-            )
-            return typing.cast(typing.Self, result)
-        if r == 1:
-            result = G3(
-                e_1=self.e_1,
-                e_2=self.e_2,
-                e_3=self.e_3,
-            )
-            return typing.cast(typing.Self, result)
-        if r == 2:
-            result = G3(
-                e_12=self.e_12,
-                e_13=self.e_13,
-                e_23=self.e_23,
-            )
-            return typing.cast(typing.Self, result)
-        if r == 3:
-            result = G3(
-                e_123=self.e_123,
-            )
-            return typing.cast(typing.Self, result)
-        result = G3()
-        return typing.cast(typing.Self, result)
+        match r:
+            case 0:
+                result = G3(
+                    scalar=self.scalar,
+                )
+                return typing.cast(typing.Self, result)
+            case 1:
+                result = G3(
+                    e_1=self.e_1,
+                    e_2=self.e_2,
+                    e_3=self.e_3,
+                )
+                return typing.cast(typing.Self, result)
+            case 2:
+                result = G3(
+                    e_12=self.e_12,
+                    e_13=self.e_13,
+                    e_23=self.e_23,
+                )
+                return typing.cast(typing.Self, result)
+            case 3:
+                result = G3(
+                    e_123=self.e_123,
+                )
+                return typing.cast(typing.Self, result)
+            case _:
+                result = G3()
+                return typing.cast(typing.Self, result)
 
     def reverse(self) -> typing.Self:
         """

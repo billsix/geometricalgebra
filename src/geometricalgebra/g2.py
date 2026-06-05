@@ -34,7 +34,7 @@ from geometricalgebra.base import AbstractMultiVector, BladeCoef
 from geometricalgebra.gn import Gn
 
 
-@dataclasses.dataclass(eq=False)
+@dataclasses.dataclass(eq=False, slots=True)
 class G2(AbstractMultiVector):
     """An element (multivector) of 𝒢₂, the geometric algebra of the Euclidean
     plane ℝ² (Hestenes' notation).
@@ -235,24 +235,26 @@ class G2(AbstractMultiVector):
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 4
         """
-        if r == 0:
-            result = G2(
-                scalar=self.scalar,
-            )
-            return typing.cast(typing.Self, result)
-        if r == 1:
-            result = G2(
-                e_1=self.e_1,
-                e_2=self.e_2,
-            )
-            return typing.cast(typing.Self, result)
-        if r == 2:
-            result = G2(
-                e_12=self.e_12,
-            )
-            return typing.cast(typing.Self, result)
-        result = G2()
-        return typing.cast(typing.Self, result)
+        match r:
+            case 0:
+                result = G2(
+                    scalar=self.scalar,
+                )
+                return typing.cast(typing.Self, result)
+            case 1:
+                result = G2(
+                    e_1=self.e_1,
+                    e_2=self.e_2,
+                )
+                return typing.cast(typing.Self, result)
+            case 2:
+                result = G2(
+                    e_12=self.e_12,
+                )
+                return typing.cast(typing.Self, result)
+            case _:
+                result = G2()
+                return typing.cast(typing.Self, result)
 
     def reverse(self) -> typing.Self:
         """

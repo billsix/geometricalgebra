@@ -44,6 +44,10 @@ class AbstractMultiVector(abc.ABC):
     methods that touch the raw representation are reimplemented per subclass.
     """
 
+    # No instance state of its own; empty slots so slotted subclasses (Gn,
+    # G1/G2/G3 with ``slots=True``) don't inherit a __dict__ from the base.
+    __slots__ = ()
+
     # ------------------------------------------------------------------
     # interchange protocol + construction (concrete subclasses implement
     # from_blade_dict / to_blade_dict; the rest is shared)
@@ -132,9 +136,7 @@ class AbstractMultiVector(abc.ABC):
 
     def __mul__(self, rhs) -> typing.Self:
         match rhs:
-            case int() as n:
-                return self._geometric_product(type(self).from_scalar(n))
-            case float() as n:
+            case int() | float() as n:
                 return self._geometric_product(type(self).from_scalar(n))
             case sympy.Expr() as s:
                 return self._geometric_product(type(self).from_sympy_expr(s))
@@ -143,9 +145,7 @@ class AbstractMultiVector(abc.ABC):
 
     def __rmul__(self, lhs) -> typing.Self:
         match lhs:
-            case int() as n:
-                return self._geometric_product(type(self).from_scalar(n))
-            case float() as n:
+            case int() | float() as n:
                 return self._geometric_product(type(self).from_scalar(n))
             case sympy.Expr() as s:
                 return self._geometric_product(type(self).from_sympy_expr(s))
@@ -453,7 +453,7 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def project(
         cls,
-        onto: "AbstractMultiVector" | Sequence["AbstractMultiVector"],
+        onto: "AbstractMultiVector | Sequence[AbstractMultiVector]",
     ) -> MultiVectorFn:
         """Projection  P_B(A)  =  (A · B) B⁻¹  — the component of A lying in the
         subspace represented by the blade B (``onto``).
@@ -484,7 +484,7 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def reject(
         cls,
-        away_from: "AbstractMultiVector" | Sequence["AbstractMultiVector"],
+        away_from: "AbstractMultiVector | Sequence[AbstractMultiVector]",
     ) -> MultiVectorFn:
         """Rejection  P_B^⊥(A)  =  (A ∧ B) B⁻¹  — the component of A orthogonal to
         the subspace represented by the blade B (``away_from``).
@@ -500,8 +500,7 @@ class AbstractMultiVector(abc.ABC):
             return (value.wedge(away_from)) * away_from.inverse()
 
         match away_from:
-            case _ as sequence if isinstance(away_from, Sequence):
-                assert isinstance(sequence, Sequence)  # to satisfy type checking
+            case [*sequence]:
                 return cls.reject(cls.outer_product_of_vectors(*sequence))
             case AbstractMultiVector() as away_from_vector if (
                 away_from_vector.is_vector()
@@ -517,7 +516,7 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def reflect(
         cls,
-        across: "AbstractMultiVector" | Sequence["AbstractMultiVector"],
+        across: "AbstractMultiVector | Sequence[AbstractMultiVector]",
     ) -> MultiVectorFn:
         """Reflection across the subspace (blade) ``across``  —  the projection
         minus the rejection,  P_B(A) − P_B^⊥(A).
@@ -532,8 +531,7 @@ class AbstractMultiVector(abc.ABC):
             return components_in_plane(value) - components_exterior_to_plane(value)
 
         match across:
-            case _ as sequence if isinstance(across, Sequence):
-                assert isinstance(sequence, Sequence)  # to satisfy type checking
+            case [*sequence]:
                 return cls.reflect(cls.outer_product_of_vectors(*sequence))
             case AbstractMultiVector() as away_from_vector if (
                 away_from_vector.is_vector()
