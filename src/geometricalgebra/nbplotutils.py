@@ -34,14 +34,11 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
 
-from geometricalgebra.multivector import (
+from geometricalgebra.base import AbstractMultiVector
+from geometricalgebra.gn import (
     MultiVector,
-    e_1,
-    e_2,
     identity,
-    one,
     rotate_90_degrees,
-    zero,
 )
 
 set_matplotlib_formats("svg")
@@ -51,7 +48,11 @@ _IDENTITY = identity()
 extraLinesMultiplier = 3
 
 
-def generategridlines(graphBounds, interval=1):
+def generategridlines(
+    graphBounds, interval=1, cls: type[AbstractMultiVector] = MultiVector
+):
+    ex = cls.basis_vector(1)
+    ey = cls.basis_vector(2)
     for x in range(
         -graphBounds[0] * extraLinesMultiplier,
         graphBounds[0] * extraLinesMultiplier,
@@ -60,8 +61,8 @@ def generategridlines(graphBounds, interval=1):
         thickness = 4 if np.isclose(x, 0.0) else 1
         yield (
             [
-                x * e_1 + (-graphBounds[1] * extraLinesMultiplier) * e_2,
-                x * e_1 + (graphBounds[1] * extraLinesMultiplier) * e_2,
+                x * ex + (-graphBounds[1] * extraLinesMultiplier) * ey,
+                x * ex + (graphBounds[1] * extraLinesMultiplier) * ey,
             ],
             thickness,
         )
@@ -74,8 +75,8 @@ def generategridlines(graphBounds, interval=1):
         thickness = 4 if np.isclose(y, 0.0) else 1
         yield (
             [
-                (-graphBounds[0] * extraLinesMultiplier) * e_1 + y * e_2,
-                (graphBounds[0] * extraLinesMultiplier) * e_1 + y * e_2,
+                (-graphBounds[0] * extraLinesMultiplier) * ex + y * ey,
+                (graphBounds[0] * extraLinesMultiplier) * ex + y * ey,
             ],
             thickness,
         )
@@ -116,12 +117,17 @@ def create_basis(
     gridline_interval=1,
     xcolor=(0.0, 0.0, 1.0),
     ycolor=(1.0, 0.0, 1.0),
+    cls: type[AbstractMultiVector] = MultiVector,
 ):
+    ex = cls.basis_vector(1)
+    ey = cls.basis_vector(2)
     # plot transformed basis
-    for vecs, thickness in generategridlines(graph_bounds, interval=gridline_interval):
+    for vecs, thickness in generategridlines(
+        graph_bounds, interval=gridline_interval, cls=cls
+    ):
         plt.plot(
-            [float(fn(vec).component(e_1)) for vec in vecs],
-            [float(fn(vec).component(e_2)) for vec in vecs],
+            [float(fn(vec).component(ex)) for vec in vecs],
+            [float(fn(vec).component(ey)) for vec in vecs],
             "-",
             lw=thickness,
             color=(0.1, 0.2, 0.5),
@@ -131,7 +137,11 @@ def create_basis(
 
 def create_unit_circle(
     fn=_IDENTITY,
+    cls: type[AbstractMultiVector] = MultiVector,
 ):
+    ex = cls.basis_vector(1)
+    ey = cls.basis_vector(2)
+
     def generate_circle():
         theta_increment: float = 0.01
         scale_radius: float = 1.0
@@ -139,11 +149,11 @@ def create_unit_circle(
         for theta in np.arange(0.0, 2 * math.pi, theta_increment):
             yield (
                 [
-                    scale_radius * (math.cos(theta) * e_1 + math.sin(theta) * e_2),
+                    scale_radius * (math.cos(theta) * ex + math.sin(theta) * ey),
                     scale_radius
                     * (
-                        math.cos(theta + theta_increment) * e_1
-                        + math.sin(theta + theta_increment) * e_2
+                        math.cos(theta + theta_increment) * ex
+                        + math.sin(theta + theta_increment) * ey
                     ),
                 ]
             )
@@ -151,8 +161,8 @@ def create_unit_circle(
     # plot transformed basis
     for vecs in generate_circle():
         plt.plot(
-            [float(fn(vec).component(e_1)) for vec in vecs],
-            [float(fn(vec).component(e_2)) for vec in vecs],
+            [float(fn(vec).component(ex)) for vec in vecs],
+            [float(fn(vec).component(ey)) for vec in vecs],
             "-",
             lw=1,
             color=(0.0, 0.0, 0.0),
@@ -164,44 +174,52 @@ def create_x_and_y(
     fn=_IDENTITY,
     xcolor=(0.0, 0.0, 1.0),
     ycolor=(1.0, 0.0, 1.0),
+    cls: type[AbstractMultiVector] = MultiVector,
 ):
+    ex = cls.basis_vector(1)
+    ey = cls.basis_vector(2)
+    origin = cls.zero()
     # x axis
-    x_axis = [zero, e_1]
+    x_axis = [origin, ex]
     plt.plot(
-        [float(fn(vec).component(e_1)) for vec in x_axis],
-        [float(fn(vec).component(e_2)) for vec in x_axis],
+        [float(fn(vec).component(ex)) for vec in x_axis],
+        [float(fn(vec).component(ey)) for vec in x_axis],
         "-",
         lw=1.0,
         color=xcolor,
     )
 
     # y axis
-    y_axis = [zero, e_2]
+    y_axis = [origin, ey]
     plt.plot(
-        [float(fn(vec).component(e_1)) for vec in y_axis],
-        [float(fn(vec).component(e_2)) for vec in y_axis],
+        [float(fn(vec).component(ex)) for vec in y_axis],
+        [float(fn(vec).component(ey)) for vec in y_axis],
         "-",
         lw=1.0,
         color=ycolor,
     )
 
 
-def cosine(v1: MultiVector, v2: MultiVector) -> numbers.Real:
+def cosine(v1: AbstractMultiVector, v2: AbstractMultiVector) -> numbers.Real:
     return (v1.dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()
 
 
-def sine(v1: MultiVector, v2: MultiVector) -> numbers.Real:
+def sine(v1: AbstractMultiVector, v2: AbstractMultiVector) -> numbers.Real:
     return (rotate_90_degrees()(v1).dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()
 
 
 def draw_isoceles_triangle(
     fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
+    cls: type[AbstractMultiVector] = MultiVector,
 ):
     assert axes is not None, "call inside a create_graphs() block"
-    x_prime_direction_world_space = fn(e_1) - fn(zero)
-    x_world_space = e_1
-    y_prime_direction_world_space = fn(e_2) - fn(zero)
+    ex = cls.basis_vector(1)
+    ey = cls.basis_vector(2)
+    origin = cls.zero()
+    x_prime_direction_world_space = fn(ex) - fn(origin)
+    x_world_space = ex
+    y_prime_direction_world_space = fn(ey) - fn(origin)
     angle_radians = math.atan2(
         sine(x_world_space, x_prime_direction_world_space),
         cosine(x_world_space, x_prime_direction_world_space),
@@ -213,14 +231,14 @@ def draw_isoceles_triangle(
     vertices = [
         fn(v)
         for v in [
-            zero,
-            e_1,
-            0.5 * e_1 + e_2,
+            origin,
+            ex,
+            0.5 * ex + ey,
         ]
     ]
 
     triangle = Polygon(
-        list(map(lambda mv: [mv.component(e_1), mv.component(e_2)], vertices)),
+        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices)),
         closed=True,
         facecolor="lightblue",
         edgecolor="black",
@@ -228,7 +246,7 @@ def draw_isoceles_triangle(
     axes.add_patch(triangle)
 
     vertices_as_np = np.array(
-        list(map(lambda mv: [mv.component(e_1), mv.component(e_2)], vertices))
+        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices))
     )
     # Plot dots at the vertices
     axes.scatter(
@@ -243,8 +261,8 @@ def draw_isoceles_triangle(
             label,
             xy=(vertices_as_np[i, 0], vertices_as_np[i, 1]),
             xytext=(
-                vertices_as_np[i, 0] + label_offset.component(e_1),
-                vertices_as_np[i, 1] + label_offset.component(e_2),
+                vertices_as_np[i, 0] + label_offset.component(ex),
+                vertices_as_np[i, 1] + label_offset.component(ey),
             ),
             rotation=math.degrees(angle_radians),
             rotation_mode="anchor",
@@ -261,11 +279,15 @@ def draw_isoceles_triangle(
 def draw_second_right_triangle(
     fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
+    cls: type[AbstractMultiVector] = MultiVector,
 ):
     assert axes is not None, "call inside a create_graphs() block"
-    x_prime_direction_world_space = fn(e_1) - fn(zero)
-    x_world_space = e_1
-    y_prime_direction_world_space = fn(e_2) - fn(zero)
+    ex = cls.basis_vector(1)
+    ey = cls.basis_vector(2)
+    origin = cls.zero()
+    x_prime_direction_world_space = fn(ex) - fn(origin)
+    x_world_space = ex
+    y_prime_direction_world_space = fn(ey) - fn(origin)
     angle_radians = math.atan2(
         sine(x_world_space, x_prime_direction_world_space),
         cosine(x_world_space, x_prime_direction_world_space),
@@ -277,14 +299,14 @@ def draw_second_right_triangle(
     vertices = [
         fn(v)
         for v in [
-            zero,
-            (0) * e_1 + (3.0) * e_2,
-            (-4.0) * e_1 + (3.0) * e_2,
+            origin,
+            (0) * ex + (3.0) * ey,
+            (-4.0) * ex + (3.0) * ey,
         ]
     ]
 
     triangle = Polygon(
-        list(map(lambda mv: [mv.component(e_1), mv.component(e_2)], vertices)),
+        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices)),
         closed=True,
         facecolor="lightblue",
         edgecolor="black",
@@ -292,7 +314,7 @@ def draw_second_right_triangle(
     axes.add_patch(triangle)
 
     vertices_as_np = np.array(
-        list(map(lambda mv: [mv.component(e_1), mv.component(e_2)], vertices))
+        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices))
     )
     # Plot dots at the vertices
     axes.scatter(
@@ -307,8 +329,8 @@ def draw_second_right_triangle(
             label,
             xy=(vertices_as_np[i, 0], vertices_as_np[i, 1]),
             xytext=(
-                vertices_as_np[i, 0] - label_offset.component(e_1),
-                vertices_as_np[i, 1] + label_offset.component(e_2),
+                vertices_as_np[i, 0] - label_offset.component(ex),
+                vertices_as_np[i, 1] + label_offset.component(ey),
             ),
             rotation=math.degrees(angle_radians),
             rotation_mode="anchor",
@@ -319,11 +341,15 @@ def draw_second_right_triangle(
 def draw_right_triangle(
     fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
+    cls: type[AbstractMultiVector] = MultiVector,
 ):
     assert axes is not None, "call inside a create_graphs() block"
-    x_prime_direction_world_space = fn(e_1) - fn(zero)
-    x_world_space = e_1
-    y_prime_direction_world_space = fn(e_2) - fn(zero)
+    ex = cls.basis_vector(1)
+    ey = cls.basis_vector(2)
+    origin = cls.zero()
+    x_prime_direction_world_space = fn(ex) - fn(origin)
+    x_world_space = ex
+    y_prime_direction_world_space = fn(ey) - fn(origin)
     angle_radians = math.atan2(
         sine(x_world_space, x_prime_direction_world_space),
         cosine(x_world_space, x_prime_direction_world_space),
@@ -335,14 +361,14 @@ def draw_right_triangle(
     vertices = [
         fn(v)
         for v in [
-            zero,
-            (3.0) * e_1 + (0.0) * e_2,
-            (3.0) * e_1 + (4.0) * e_2,
+            origin,
+            (3.0) * ex + (0.0) * ey,
+            (3.0) * ex + (4.0) * ey,
         ]
     ]
 
     triangle = Polygon(
-        list(map(lambda mv: [mv.component(e_1), mv.component(e_2)], vertices)),
+        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices)),
         closed=True,
         facecolor="lightblue",
         edgecolor="black",
@@ -350,7 +376,7 @@ def draw_right_triangle(
     axes.add_patch(triangle)
 
     vertices_as_np = np.array(
-        list(map(lambda mv: [mv.component(e_1), mv.component(e_2)], vertices))
+        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices))
     )
     # Plot dots at the vertices
     axes.scatter(
@@ -365,8 +391,8 @@ def draw_right_triangle(
             label,
             xy=(vertices_as_np[i, 0], vertices_as_np[i, 1]),
             xytext=(
-                vertices_as_np[i, 0] + label_offset.component(e_1),
-                vertices_as_np[i, 1] + label_offset.component(e_2),
+                vertices_as_np[i, 0] + label_offset.component(ex),
+                vertices_as_np[i, 1] + label_offset.component(ey),
             ),
             rotation=math.degrees(angle_radians),
             rotation_mode="anchor",
@@ -377,11 +403,15 @@ def draw_right_triangle(
 def draw_ndc(
     fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
+    cls: type[AbstractMultiVector] = MultiVector,
 ):
     assert axes is not None, "call inside a create_graphs() block"
-    x_prime_direction_world_space = fn(e_1) - fn(zero)
-    x_world_space = e_1
-    y_prime_direction_world_space = fn(e_2) - fn(zero)
+    ex = cls.basis_vector(1)
+    ey = cls.basis_vector(2)
+    origin = cls.zero()
+    x_prime_direction_world_space = fn(ex) - fn(origin)
+    x_world_space = ex
+    y_prime_direction_world_space = fn(ey) - fn(origin)
     angle_radians = math.atan2(
         sine(x_world_space, x_prime_direction_world_space),
         cosine(x_world_space, x_prime_direction_world_space),
@@ -393,16 +423,16 @@ def draw_ndc(
     vertices = [
         fn(v)
         for v in [
-            (-1.0) * e_1 + (-1.0) * e_2,
-            (1.0) * e_1 + (-1.0) * e_2,
-            (1.0) * e_1,
-            +(1.0) * e_2,
-            (-1.0) * e_1 + (1.0) * e_2,
+            (-1.0) * ex + (-1.0) * ey,
+            (1.0) * ex + (-1.0) * ey,
+            (1.0) * ex,
+            +(1.0) * ey,
+            (-1.0) * ex + (1.0) * ey,
         ]
     ]
 
     square = Polygon(
-        list(map(lambda mv: [mv.component(e_1), mv.component(e_2)], vertices)),
+        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices)),
         closed=True,
         fc="none",
         edgecolor="black",
@@ -410,7 +440,7 @@ def draw_ndc(
     axes.add_patch(square)
 
     vertices_as_np = np.array(
-        list(map(lambda mv: [mv.component(e_1), mv.component(e_2)], vertices))
+        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices))
     )
     # Plot dots at the vertices
     axes.scatter(
@@ -425,8 +455,8 @@ def draw_ndc(
             label,
             xy=(vertices_as_np[i, 0], vertices_as_np[i, 1]),
             xytext=(
-                vertices_as_np[i, 0] + label_offset.component(e_1),
-                vertices_as_np[i, 1] + label_offset.component(e_2),
+                vertices_as_np[i, 0] + label_offset.component(ex),
+                vertices_as_np[i, 1] + label_offset.component(ey),
             ),
             rotation=math.degrees(angle_radians),
             rotation_mode="anchor",
@@ -439,8 +469,11 @@ def draw_screen(
     height,
     fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
+    cls: type[AbstractMultiVector] = MultiVector,
 ):
     assert axes is not None, "call inside a create_graphs() block"
+    ex = cls.basis_vector(1)
+    ey = cls.basis_vector(2)
     d_width = 2.0 / width
     d_height = 2.0 / height
     for x in range(width):
@@ -448,18 +481,17 @@ def draw_screen(
             vertices = [
                 fn(v)
                 for v in [
-                    (-1.0 + d_width * x) * e_1 + (-1.0 + d_height * y) * e_2,
-                    (-1.0 + d_width * (x + 1)) * e_1 + (-1.0 + d_height * y) * e_2,
-                    (-1.0 + d_width * (x + 1)) * e_1
-                    + (-1.0 + d_height * (y + 1)) * e_2,
-                    (-1.0 + d_width * (x)) * e_1 + (-1.0 + d_height * (y + 1)) * e_2,
+                    (-1.0 + d_width * x) * ex + (-1.0 + d_height * y) * ey,
+                    (-1.0 + d_width * (x + 1)) * ex + (-1.0 + d_height * y) * ey,
+                    (-1.0 + d_width * (x + 1)) * ex + (-1.0 + d_height * (y + 1)) * ey,
+                    (-1.0 + d_width * (x)) * ex + (-1.0 + d_height * (y + 1)) * ey,
                 ]
             ]
 
             square = Polygon(
                 list(
                     map(
-                        lambda mv: [mv.component(e_1), mv.component(e_2)],
+                        lambda mv: [mv.component(ex), mv.component(ey)],
                         vertices,
                     )
                 ),
@@ -484,7 +516,7 @@ def _coef_as_float(coef) -> float | None:
 
 
 def plot_multivector(
-    mv: MultiVector,
+    mv: AbstractMultiVector,
     x_range: tuple[float, float] | None = None,
     title: str | None = None,
     figsize: tuple[float, float] | None = None,
@@ -493,6 +525,9 @@ def plot_multivector(
 ):
     """Plot each blade of ``mv`` on its own horizontal number line, stacked vertically.
 
+    Works on any ``AbstractMultiVector`` representation (``Gn``, ``G1``/``G2``/``G3``)
+    via the ``to_blade_dict()`` interchange protocol.
+
     Each row is one basis blade (sorted by grade, then by index). Numeric
     coefficients appear as a dot at their value. Symbolic coefficients are
     placed at a small random x in ``[-symbolic_range, symbolic_range]`` (so
@@ -500,12 +535,13 @@ def plot_multivector(
     ``random_seed`` defaults to 0 for reproducibility — pass ``None`` for
     fresh randomness on every call.
     """
-    blades = sorted(mv.coefficient_of_blade.keys(), key=lambda b: (len(b), b)) or [()]
+    blade_dict = mv.to_blade_dict()
+    blades = sorted(blade_dict.keys(), key=lambda b: (len(b), b)) or [()]
     n = len(blades)
 
     rng = np.random.default_rng(random_seed)
 
-    coefs = [mv.coefficient_of_blade.get(b, 0) for b in blades]
+    coefs = [blade_dict.get(b, 0) for b in blades]
     xs: list[float] = []
     for coef in coefs:
         x = _coef_as_float(coef)
@@ -568,17 +604,14 @@ def plot_multivector(
     return fig
 
 
-def show_mult(a: MultiVector, b: MultiVector):
+def show_mult(a: AbstractMultiVector, b: AbstractMultiVector):
     display(Markdown("**We want to evaluate**"))
     # print the values as latex before they are multiplied
     display(Math("$($" + a._repr_latex_() + "$)*($" + b._repr_latex_() + "$)$"))
     display(Markdown("**Multivector Multiplication is distributive over additon**"))
 
     data: list = list(itertools.product(a, b))
-    result = [
-        (left, "*", right, "=", math.prod((left, right), start=one))
-        for left, right in data
-    ]
+    result = [(left, "*", right, "=", left * right) for left, right in data]
     df = pd.DataFrame(
         result,
         columns=pd.Index(["Left Component", "*", "Right Component", "=", "Product"]),
