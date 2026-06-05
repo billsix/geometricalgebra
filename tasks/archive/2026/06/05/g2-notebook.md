@@ -1,6 +1,7 @@
 # G2 and G3 demo notebooks (mirroring displaymv.py)
 
-**Status:** in-progress
+**Status:** complete — user ran the notebook (2026-06-05) and confirmed it looks good
+**Completed:** 2026-06-05
 **Started:** 2026-06-04
 
 ## Goal
