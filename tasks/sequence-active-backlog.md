@@ -1,6 +1,6 @@
 # Sequence the active tasks/ backlog (dependencies + line-churn coordination)
 
-**Status:** proposed — needs go-ahead (this is a planning/decision task, not code)
+**Status:** in-progress — executing the decided order (gates resolved 2026-06-06)
 **Started:** 2026-06-06
 
 ## Goal
@@ -81,6 +81,27 @@ settle **before** #8 is switched on, or #8's first run will demand a regen commi
    type round-trips first, then #3 adds the planarity-guard tests on top.
 8. **#5** (display simplify) and **#7** (reject/reflect higher grade) — independent; schedule by
    appetite. #7 waits on the author's Hestenes re-read.
+
+## Decisions & progress (2026-06-06)
+
+Gates resolved; order locked. (Numbers below are the "active backlog" indices above.)
+
+- **Done — the two doc tasks** (`refresh-claudemd-known-issues`, `document-rotor-methods`): complete,
+  archived under `tasks/archive/2026/06/06/`.
+- **#4 codegen-checkin → Option 1 (keep generated code checked in).** Decided because the library is
+  *pedagogical* and a `pip install`ed student must be able to read the specialized closed forms;
+  runtime generation (option 2) produces no readable source. Archived. **This unblocks #8.**
+- **#6 future-annotations → do it; `base.py` complete.** `from __future__ import annotations` added,
+  forward-ref quotes dropped (alias stays quoted — runtime), 141 tests + `ty` clean. The `gn.py` +
+  generator portion is **folded into #1** (recorded in that task's notes). Archived.
+
+**Remaining order:** **#1 → #2 → #8 → #9 + #3 → #5 / #7.**
+
+Next up: **#1 `add-python-types`** (now also carrying the `gn.py` / generator future-annotations work).
+
+Answering this task's own meta-question: the sequence **stays here** as the living execution tracker
+(updated as tasks land), rather than being promoted into CLAUDE.md — it's working state, not a stable
+convention.
 
 ## Open questions
 

@@ -16,6 +16,8 @@
 # Boston, MA 02111-1307, USA.
 
 
+from __future__ import annotations
+
 import abc
 import functools
 import itertools
@@ -128,7 +130,7 @@ class AbstractMultiVector(abc.ABC):
     # case is the representation-specific primitive _geometric_product
     # ------------------------------------------------------------------
     @abc.abstractmethod
-    def _geometric_product(self, rhs: "AbstractMultiVector") -> typing.Self:
+    def _geometric_product(self, rhs: AbstractMultiVector) -> typing.Self:
         """Geometric product  A B  (juxtaposition) — the fundamental product of the
         algebra, from which the inner product  A · B  and outer product  A ∧ B  are
         derived.  This is the representation-specific primitive.
@@ -215,8 +217,8 @@ class AbstractMultiVector(abc.ABC):
         """
 
         def inner_product_of_homogenous_multivectors(
-            lhs: "AbstractMultiVector", rhs: "AbstractMultiVector"
-        ) -> "AbstractMultiVector":
+            lhs: AbstractMultiVector, rhs: AbstractMultiVector
+        ) -> AbstractMultiVector:
             # # 1.21b
             left_grade: int = lhs.max_grade()
             right_grade: int = rhs.max_grade()
@@ -224,7 +226,7 @@ class AbstractMultiVector(abc.ABC):
             assert rhs.is_homogeneous_of_grade_r(right_grade)
             return (lhs * rhs).r_vector_part(abs(left_grade - right_grade))
 
-        inner: "AbstractMultiVector" = sum(
+        inner: AbstractMultiVector = sum(
             [
                 inner_product_of_homogenous_multivectors(
                     self.r_vector_part(lg), rhs.r_vector_part(rg)
@@ -248,8 +250,8 @@ class AbstractMultiVector(abc.ABC):
         """
 
         def outer_product_of_homogenous_multivectors(
-            lhs: "AbstractMultiVector", rhs: "AbstractMultiVector"
-        ) -> "AbstractMultiVector":
+            lhs: AbstractMultiVector, rhs: AbstractMultiVector
+        ) -> AbstractMultiVector:
             # 1.22a
             left_grade: int = lhs.max_grade()
             right_grade: int = rhs.max_grade()
@@ -259,7 +261,7 @@ class AbstractMultiVector(abc.ABC):
 
         # 1.22b
         # 1.22c, because unlike the inner_product, we keep grade 0s
-        outer: "AbstractMultiVector" = sum(
+        outer: AbstractMultiVector = sum(
             [
                 outer_product_of_homogenous_multivectors(
                     self.r_vector_part(lg), rhs.r_vector_part(rg)
@@ -289,8 +291,8 @@ class AbstractMultiVector(abc.ABC):
 
     @staticmethod
     def outer_product_of_vectors(
-        *vectors: "AbstractMultiVector",
-    ) -> "AbstractMultiVector":
+        *vectors: AbstractMultiVector,
+    ) -> AbstractMultiVector:
         """Outer product of several vectors  a₁ ∧ a₂ ∧ … ∧ a_r  — a simple r-blade."""
         return functools.reduce(lambda a, b: a ^ b, vectors)
 
@@ -437,7 +439,7 @@ class AbstractMultiVector(abc.ABC):
             start=type(self).zero(),
         )
 
-    def cosine(self, other: "AbstractMultiVector") -> numbers.Real:
+    def cosine(self, other: AbstractMultiVector) -> numbers.Real:
         """Cosine of the angle between A and B  —  cos θ  =  (Ã ∗ B) / (|A| |B|).
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 14,
@@ -453,7 +455,7 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def project(
         cls,
-        onto: "AbstractMultiVector | Sequence[AbstractMultiVector]",
+        onto: AbstractMultiVector | Sequence[AbstractMultiVector],
     ) -> MultiVectorFn:
         """Projection  P_B(A)  =  (A · B) B⁻¹  — the component of A lying in the
         subspace represented by the blade B (``onto``).
@@ -484,7 +486,7 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def reject(
         cls,
-        away_from: "AbstractMultiVector | Sequence[AbstractMultiVector]",
+        away_from: AbstractMultiVector | Sequence[AbstractMultiVector],
     ) -> MultiVectorFn:
         """Rejection  P_B^⊥(A)  =  (A ∧ B) B⁻¹  — the component of A orthogonal to
         the subspace represented by the blade B (``away_from``).
@@ -516,7 +518,7 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def reflect(
         cls,
-        across: "AbstractMultiVector | Sequence[AbstractMultiVector]",
+        across: AbstractMultiVector | Sequence[AbstractMultiVector],
     ) -> MultiVectorFn:
         """Reflection across the subspace (blade) ``across``  —  the projection
         minus the rejection,  P_B(A) − P_B^⊥(A).
@@ -554,8 +556,8 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def rotate(
         cls,
-        from_vector: "AbstractMultiVector",
-        to_vector: "AbstractMultiVector",
+        from_vector: AbstractMultiVector,
+        to_vector: AbstractMultiVector,
     ) -> MultiVectorFn:
         """Rotate by the angle from ``from_vector`` to ``to_vector``, in their plane.
 
@@ -585,9 +587,9 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def rotor_from_vectors(
         cls,
-        from_vector: "AbstractMultiVector",
-        to_vector: "AbstractMultiVector",
-    ) -> "AbstractMultiVector":
+        from_vector: AbstractMultiVector,
+        to_vector: AbstractMultiVector,
+    ) -> AbstractMultiVector:
         """The rotor ``R = |from||to| + to from`` taking ``from`` toward ``to``.
 
         An (un-normalized) even multivector whose sandwich rotates: for any

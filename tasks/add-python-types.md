@@ -36,6 +36,14 @@ approved; keep `ty check src`/`tests` clean throughout.
 - Coordinate with `tasks/use-match-and-modern-python.md` (e.g. `X | None` syntax, `typing.Self`) so
   the two passes stay consistent and don't churn the same lines twice.
 - `ty` is the type checker of record (per CLAUDE.md "keep `ty check` clean").
+- **Folded in from `future-annotations-drop-forward-ref-quotes` (#6, base.py done 2026-06-06):** carry
+  the `from __future__ import annotations` treatment into `gn.py` and the generator here, since this
+  task already touches both. Add the import to `gn.py` (drop its `"AbstractMultiVector"` forward-ref
+  quotes — `Gn` is a `@dataclass(slots=True)`, so confirm nothing introspects `__annotations__` for
+  real types; the `__post_init__` only iterates the dict, so it's expected-safe), and have
+  `tools/gen_specialized.py` **emit** the import at the top of every generated `g*.py` for
+  consistency, then regenerate. The module-level `MultiVectorFn` alias stays quoted (runtime
+  assignment; PEP 563 doesn't apply).
 
 ## Open questions
 

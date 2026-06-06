@@ -1,6 +1,20 @@
 # Use `from __future__ import annotations` to drop forward-ref quotes
 
-**Status:** not started · proposed 2026-06-05 · needs go-ahead
+**Status:** complete (base.py) · 2026-06-06 · gn.py + generator deferred to #1
+**Completed:** 2026-06-06
+
+> **Completion note (2026-06-06):** applied to `base.py` only. Added `from __future__ import
+> annotations` and dropped the forward-ref quotes on all annotation-position `"AbstractMultiVector"`
+> (params, returns, the three `… | Sequence[…]` unions). The module-level alias
+> `MultiVectorFn = Callable[["AbstractMultiVector"], "AbstractMultiVector"]` **keeps its quotes** —
+> it's a runtime assignment evaluated before the class is defined, which PEP 563 doesn't affect
+> (a PEP 695 `type` statement could drop those too, but that's out of scope). `ty check src`/`tests`
+> clean, `ruff` clean, 141 tests pass.
+>
+> **`gn.py` + generated `g*.py` deferred** to `tasks/add-python-types.md` (#1): it already touches
+> `gn.py` and `tools/gen_specialized.py`, and `Gn` is a `@dataclass(slots=True)` (string field
+> annotations are fine for dataclasses, but the generator must emit the `__future__` import into every
+> `g*.py` for consistency, and that regen belongs with the #1 generator pass — not a standalone churn).
 
 ## Goal
 
