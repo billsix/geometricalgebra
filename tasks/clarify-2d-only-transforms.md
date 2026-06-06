@@ -25,6 +25,11 @@ The real hazard is correctness, not just naming: applying `rotate(θ)` to a G3/G
 component turns e₃ into the trivector e₁e₂e₃ (`v * e₁e₂`), so the result is mixed-grade, not a
 rotated vector.
 
+For a genuine any-plane rotation of a 3D vector, the right tool already exists — the general
+`AbstractMultiVector.rotate(from, to)` / `rotor_from_vectors(from, to)` on the algebra. This task is
+only about making the **planar** `transforms.py` factories fail loudly (or read unambiguously) rather
+than silently mis-transforming; it is not blocked on building a general rotation.
+
 **Why types can't fully solve this (user's own intuition, confirmed):** `Gn` is a single type
 spanning every dimension — there is no `n` in its type — so a type checker cannot distinguish a 2D
 `Gn` from a 3D `Gn`. Type-restricting `rotate` to `InvertibleFunction[G2]` would (a) defeat the

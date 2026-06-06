@@ -74,15 +74,27 @@ Mixing a specialized value with a `Gn` value coerces to `Gn`.
 **Terminology:** 𝒢ₙ denotes the *algebra*; an instance is an *element of* 𝒢ₙ. Classes are named
 after their algebra. The dimension parameter is `n` (it was once misleadingly called `grade`).
 
-**Transforms.** `InvertibleFunction` (in `gn.py`) wraps a function + inverse + LaTeX labels,
+**Transforms.** `InvertibleFunction` (in `transforms.py`, re-exported from `gn.py`) wraps a function + inverse + LaTeX labels,
 composable via `@`, with `translate` / `uniform_scale` / `rotate` / `rotate_around` factories. This
 layer is shared with the author's *modelviewprojection* book project. Jupyter display via
 `_repr_latex_`.
+
+**Rotations & rotors.** Two *general* (representation-agnostic) rotation methods live on
+`AbstractMultiVector` (`base.py`): `rotate(from_vector, to_vector)` returns a function that rotates a
+vector through the angle from `from`→`to` *in their plane* (in-plane part turned, perpendicular part
+left fixed) — equivalent to the rotor sandwich `R v R⁻¹`; and `rotor_from_vectors(from, to)` builds
+that rotor `R = |from||to| + to·from` (scalar + bivector, the even-subalgebra grade). These act in
+**any plane, any dimension/representation** and are distinct from the **planar 2D** factories in
+`transforms.py`. **Name collision worth knowing:** `transforms.rotate(angle_in_radians)` is a planar
+`InvertibleFunction` factory (e₁e₂ plane only), whereas `AbstractMultiVector.rotate(from, to)` is the
+general method on the algebra.
 
 ## Operators
 
 - `*` geometric product · `^` wedge (outer) product · `@` composition of `InvertibleFunction`s
 - `abs(mv)` → magnitude · inverse via `.inverse()`
+- rotations: general `AbstractMultiVector.rotate(from, to)` / `rotor_from_vectors(from, to)` (any
+  plane); planar 2D `transforms.rotate(angle)` / `rotate_90_degrees` / `rotate_around` (e₁e₂ only)
 
 ## Code generation
 
@@ -102,7 +114,9 @@ specialized classes never drifts from the shared base.
 
 ## Dev workflow
 
-- Tests: `python -m pytest -q` (`pytest.ini` sets `pythonpath = src`).
+- Tests: `python -m pytest -q` (`pytest.ini` sets `pythonpath = src`, `testpaths = src tests`, and
+  `addopts = --doctest-modules` so docstring examples run as tests — `nbplotutils.py` is `--ignore`d
+  because it imports a matplotlib GUI backend that fails headless).
 - Lint/format/typecheck: `entrypoint/format.sh` runs `ruff check --fix`, `ruff format`, `ty check`.
   Ruff rules in `pyproject.toml`. **`ty check src` and `ty check tests` are clean; keep them so.**
 - After editing the generator, regenerate (`python tools/gen_specialized.py`, which auto-formats its
@@ -118,7 +132,7 @@ weaken the reference, the specialized classes provide the speed: vs `Gn`, the ge
 ~15–35× faster numerically and **thousands of times** faster symbolically; `reverse` ~100–170×,
 `inner_product` ~40–60×. Run `python tools/bench.py` to reproduce.
 
-## Assessment / known issues (updated 2026-06-04)
+## Assessment / known issues (updated 2026-06-06)
 
 Strengths: faithful, legible translation of the textbook with equation citations; the dict-of-blades
 `Gn` works in any dimension; symbolic + numeric unified via sympy; strong conformance coverage; the
@@ -126,29 +140,16 @@ specialized classes give large speedups while staying provably consistent with `
 
 Open issues (most are in the shared/reference code, inherited from the original single file):
 
-1. ~~Eager-simplify performance~~ — **resolved by design**: intentionally scoped to `Gn` (accepted
-   slowness for the reference); `G1`/`G2`/`G3` are the fast, lazy-simplify path.
-2. **`InvertibleFunction` doctests are broken/misleading** (`gn.py`): they import from
-   `modelviewprojection.mathutils` (a different package) and show `Vector2D`/`Vector1D` returns that
-   don't exist here. Would fail under `--doctest-modules` (not enabled).
-3. **Latent bug in `reject`/`reflect` sequence handling** (`base.py`): both call
-   `cls.outer_product(*sequence)`, but `outer_product` is an instance method `(self, rhs)` — only
-   works for exactly 2 elements. `project` does it correctly via `outer_product_of_vectors`.
-4. **Suspicious `__rmul__` negation** (`base.py`): fall-through returns `-self._geometric_product(lhs)`;
-   the geometric product isn't anticommutative in general (likely dead code).
-5. **Fixed Euclidean signature**: eᵢeᵢ always reduces to +1. No spacetime/null/conformal signatures.
+1. **Fixed Euclidean signature**: eᵢeᵢ always reduces to +1. No spacetime/null/conformal signatures.
    Now documented (the classes are explicitly 𝒢ₙ over ℝⁿ), but still a hard limit.
-6. **Self-flagged uncertainty**: `inverse`, `is_parallel_to`, `component` carry "not sure if I'm
+2. **Self-flagged uncertainty**: `inverse`, `is_parallel_to`, `component` carry "not sure if I'm
    doing this correctly" comments; not all verified against known results.
-7. ~~Repo hygiene: `__pycache__/` not gitignored~~ — **resolved 2026-06-05**: Python artifacts
-   (`__pycache__/`, `*.py[cod]`, `.pytest_cache/`, `.ruff_cache/`, egg-info, build/dist) are now in
-   `.gitignore`. The vendored `entrypoint/dotfiles/.emacs.d/elpa/` tree still dwarfs the source but is
-   **intentional and off-limits** (see Module layout). `format.sh` still walks the whole repo, so it
-   reformats vendored/notebook files — scope it to `src tools tests` (open).
-8. **Minor**: typos (`excuted`, `sortedBladeDictionyEntriy` in `gn.py`'s `decrease_grade`; `Note
-   invertible`); malformed `\\\frac` in `scale_non_uniform_2d` LaTeX; `_repr_latex_` round-trips
-   coefficients through `sympy.sympify(str(x))` (fragile); test copy-paste bug — `i15` uses
-   `unit_pseudoscalar(14)` instead of 15 in `test_multivector.py`.
+3. **`ruff check` E402 in `notebooks/displaymv.py`**: the jupytext percent-format notebook has an
+   intentional mid-file `import` (a later cell), which trips `E402` (module-level import not at top).
+   `ruff check . --fix` can't auto-fix it, so `entrypoint/format.sh` reports one error on an otherwise
+   clean run. Fix with a per-file `E402` ignore for `notebooks/` in `pyproject.toml` (or a `# noqa`).
+   (The vendored Emacs tree is already excluded from ruff via `extend-exclude = ["entrypoint"]`, so
+   `format.sh` no longer churns it.)
 
 ## Future directions (not yet decided)
 

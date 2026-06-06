@@ -1,6 +1,7 @@
 # Refresh CLAUDE.md to match the current code (stale "Known issues" + nits)
 
-**Status:** proposed — needs go-ahead
+**Status:** complete
+**Completed:** 2026-06-06
 **Started:** 2026-06-06
 
 ## Goal

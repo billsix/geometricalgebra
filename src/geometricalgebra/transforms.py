@@ -31,9 +31,11 @@ representation, so it stays free of any single algebra.  ``gn.py`` re-exports
 these names for backward compatibility.
 
 The rotations (``rotate_90_degrees`` / ``rotate`` / ``rotate_around``) are
-**inherently planar (2D)** -- they act in the e_1 e_2 plane.  A general
-vector-to-vector rotation is a separate, future addition (see
-``AbstractMultiVector.rotate``).
+**inherently planar (2D)** -- they act in the e_1 e_2 plane.  The general
+vector-to-vector rotation (any plane, any representation) is
+``AbstractMultiVector.rotate``; the factories here are the planar 2D
+specialization.  (Note the name overlap: ``transforms.rotate`` takes an angle,
+``AbstractMultiVector.rotate`` takes a from/to vector pair.)
 """
 
 import dataclasses

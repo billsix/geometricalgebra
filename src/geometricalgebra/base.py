@@ -407,7 +407,7 @@ class AbstractMultiVector(abc.ABC):
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18
 
-        Note sure if I'm doing it correctly
+        Not sure if I'm doing it correctly
         """
         return self.reverse() * (self.magnitude_squared() ** (-1))
 
@@ -601,9 +601,7 @@ class AbstractMultiVector(abc.ABC):
         """
         assert from_vector.is_vector()
         assert to_vector.is_vector()
-        scale = typing.cast(
-            sympy.Expr, from_vector.magnitude() * to_vector.magnitude()
-        )
+        scale = typing.cast(sympy.Expr, from_vector.magnitude() * to_vector.magnitude())
         product = to_vector * from_vector  # scalar + bivector -- the rotor's grade
         return product + type(product).from_sympy_expr(scale)
 

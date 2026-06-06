@@ -1,7 +1,15 @@
 # Document the new rotor methods; reframe the "future rotation" wording
 
-**Status:** proposed — needs go-ahead
+**Status:** complete
+**Completed:** 2026-06-06
 **Started:** 2026-06-06
+
+> **Completion note:** done as described, with one correction — the "future rotation" wording the
+> plan attributed to `tasks/clarify-2d-only-transforms.md` was **not** present there (only in
+> `transforms.py`, now fixed). Instead of reversing nonexistent wording, added a cross-reference in
+> that task pointing users to the general `AbstractMultiVector.rotate` for true 3D rotation. No README
+> change: `test_rotate` already covers the general method across `[Gn, G1, G2, G3]` (conformance),
+> and README's existing rotor coverage isn't contradicted by the new CLAUDE.md text.
 
 ## Goal
 

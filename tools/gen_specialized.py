@@ -450,9 +450,7 @@ def registry_for_dim(n: int, full_name: str) -> list[TypeSpec]:
 def resolve(support, n: int, full_name: str) -> TypeSpec:
     """Smallest registered type covering ``support`` (the full G_n always does)."""
     want = set(support)
-    candidates = [
-        t for t in registry_for_dim(n, full_name) if want <= set(t.blades)
-    ]
+    candidates = [t for t in registry_for_dim(n, full_name) if want <= set(t.blades)]
     return min(
         candidates,
         key=lambda t: (len(t.blades), 0 if t.kind == "scalar" else 1, t.name),
@@ -832,27 +830,54 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> str:
 
     # the three bilinear products, each a match on the rhs type
     _emit_dispatch(
-        lines, spec, "_geometric_product", lambda a, b: a * b, n, full_name,
+        lines,
+        spec,
+        "_geometric_product",
+        lambda a, b: a * b,
+        n,
+        full_name,
         "left * right",
     )
     _emit_dispatch(
-        lines, spec, "outer_product", lambda a, b: a.outer_product(b), n, full_name,
+        lines,
+        spec,
+        "outer_product",
+        lambda a, b: a.outer_product(b),
+        n,
+        full_name,
         "left.outer_product(right)",
     )
     _emit_dispatch(
-        lines, spec, "inner_product", lambda a, b: a.inner_product(b), n, full_name,
+        lines,
+        spec,
+        "inner_product",
+        lambda a, b: a.inner_product(b),
+        n,
+        full_name,
         "left.inner_product(right)",
     )
 
     # linear ops also narrow to the tightest covering type (so e.g.
     # Scalar + Bivector2 -> Rotor2, and values build by linear combination)
     _emit_dispatch(
-        lines, spec, "__add__", lambda a, b: a + b, n, full_name,
-        "left + right", number_case=True,
+        lines,
+        spec,
+        "__add__",
+        lambda a, b: a + b,
+        n,
+        full_name,
+        "left + right",
+        number_case=True,
     )
     _emit_dispatch(
-        lines, spec, "__sub__", lambda a, b: a - b, n, full_name,
-        "left - right", number_case=True,
+        lines,
+        spec,
+        "__sub__",
+        lambda a, b: a - b,
+        n,
+        full_name,
+        "left - right",
+        number_case=True,
     )
     ap("    def __radd__(self, lhs) -> typing.Self:")
     ap("        return self.__add__(lhs)")
@@ -889,9 +914,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> str:
     ap("    def grades(self) -> list[int]:")
     ap("        present: list[int] = []")
     for g in sorted({len(b) for b in blades}):
-        cond = " or ".join(
-            f"self.{field_name(b)} != 0" for b in blades if len(b) == g
-        )
+        cond = " or ".join(f"self.{field_name(b)} != 0" for b in blades if len(b) == g)
         ap(f"        if {cond}:")
         ap(f"            present.append({g})")
     ap("        return present")
@@ -949,10 +972,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> str:
     _emit_unary_return(
         lines, "            ", *unary_result(spec, lambda a: a.dual(n), n, full_name)
     )
-    ap(
-        f"        return typing.cast(typing.Self, "
-        f"_coerce(self, {full_name}).dual(n))"
-    )
+    ap(f"        return typing.cast(typing.Self, _coerce(self, {full_name}).dual(n))")
 
     if spec.name.startswith("Rotor"):
         ap("")
