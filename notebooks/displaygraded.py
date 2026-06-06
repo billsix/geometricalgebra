@@ -157,7 +157,7 @@ kind(quarter.plane_of_rotation()), quarter.plane_of_rotation().to_blade_dict()
 
 # %%
 frm, to = e_1, e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
-R = Vector2.rotor_from_vectors(frm, to)
+R = Vector2.rotor_from_vectors(from_vector=frm, to_vector=to)
 kind(R), R.to_blade_dict()  # an (un-normalized) Rotor2
 
 # %% [markdown]
@@ -171,12 +171,15 @@ w = e_1
     ("R R~ (the scale)", (R * R.reverse()).to_blade_dict()),
     ("R w R~ (scaled)", (R * w * R.reverse()).to_blade_dict()),
     ("R w R^-1 (pure)", (R * w * R.inverse()).to_blade_dict()),
-    ("rotate(from,to)(w)", Vector2.rotate(frm, to)(w).to_blade_dict()),
+    (
+        "rotate(from,to)(w)",
+        Vector2.rotate(from_vector=frm, to_vector=to)(w).to_blade_dict(),
+    ),
 ]
 
 # %%
 # the rotor sandwich and rotate agree exactly
-R * w * R.inverse() == Vector2.rotate(frm, to)(w)
+R * w * R.inverse() == Vector2.rotate(from_vector=frm, to_vector=to)(w)
 
 # %% [markdown]
 # The grade product table, made visible

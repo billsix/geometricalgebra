@@ -238,8 +238,10 @@ def test_rotor_sandwich_equals_rotate_symbolic_2d():
     frm = a1 * gn.e_1 + a2 * gn.e_2
     to = b1 * gn.e_1 + b2 * gn.e_2
     w = w1 * gn.e_1 + w2 * gn.e_2
-    R = Gn.rotor_from_vectors(frm, to)
-    assert simplify_equal(R * w * R.inverse(), Gn.rotate(frm, to)(w))
+    R = Gn.rotor_from_vectors(from_vector=frm, to_vector=to)
+    assert simplify_equal(
+        R * w * R.inverse(), Gn.rotate(from_vector=frm, to_vector=to)(w)
+    )
 
 
 def test_rotor_sandwich_equals_rotate_3d():
@@ -248,30 +250,32 @@ def test_rotor_sandwich_equals_rotate_3d():
     frm = gn.e_1 + 2 * gn.e_2 + 3 * gn.e_3
     to = 4 * gn.e_1 + 5 * gn.e_2 + 6 * gn.e_3
     w = 7 * gn.e_1 + gn.e_2 + 2 * gn.e_3  # has both in-plane and perpendicular parts
-    R = Gn.rotor_from_vectors(frm, to)
-    assert simplify_equal(R * w * R.inverse(), Gn.rotate(frm, to)(w))
+    R = Gn.rotor_from_vectors(from_vector=frm, to_vector=to)
+    assert simplify_equal(
+        R * w * R.inverse(), Gn.rotate(from_vector=frm, to_vector=to)(w)
+    )
 
 
 def test_rotor_rotate_across_representations():
     # the same identity holds (by value) for Gn, G2 and G3; the rotor built from
     # vectors of a specialized type is a Rotor of that algebra
     f2, t2, w2 = Vector2.basis_vector(1), Vector2.basis_vector(2), 2 * E1 + E2
-    R2 = Vector2.rotor_from_vectors(f2, t2)
+    R2 = Vector2.rotor_from_vectors(from_vector=f2, to_vector=t2)
     assert type(R2) is Rotor2
-    assert R2 * w2 * R2.inverse() == Vector2.rotate(f2, t2)(w2)
+    assert R2 * w2 * R2.inverse() == Vector2.rotate(from_vector=f2, to_vector=t2)(w2)
 
     f3 = Vector3.basis_vector(1)
     t3 = Vector3.basis_vector(2)
     w3 = F1 + 3 * F3
-    R3 = Vector3.rotor_from_vectors(f3, t3)
+    R3 = Vector3.rotor_from_vectors(from_vector=f3, to_vector=t3)
     assert type(R3) is Rotor3
-    assert R3 * w3 * R3.inverse() == Vector3.rotate(f3, t3)(w3)
+    assert R3 * w3 * R3.inverse() == Vector3.rotate(from_vector=f3, to_vector=t3)(w3)
 
 
 def test_unnormalized_rotor_scales_then_normalizes():
     # the bare sandwich R v R~ scales by R.magnitude_squared(); inverse divides it out
     frm, to, w = E1, E2, E1  # 90 deg, e1 -> e2
-    R = Vector2.rotor_from_vectors(frm, to)
+    R = Vector2.rotor_from_vectors(from_vector=frm, to_vector=to)
     assert R * R.reverse() == 2 * gn.one  # |R|^2
     assert R * w * R.reverse() == 2 * gn.e_2  # scaled rotation
     assert R * w * R.inverse() == gn.e_2  # pure rotation

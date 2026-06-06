@@ -267,19 +267,23 @@ gram_fe_to_mol_fe(gram_fe=95.8)
 # **representation preserving**: applied to a `G2`, it returns a `G2`.  Each
 # factory builds an `InvertibleFunction` that renders its own LaTeX.
 #
-# Rotation in geometric algebra is the rotor sandwich `R v R~`.  We wrap it as an
-# `InvertibleFunction` here so it composes / inverts like the other transforms.
+# Rotation in geometric algebra is the rotor sandwich `R v R.inverse()`.  Here
+# `rotate(angle)` takes the unit vector `to` at `angle` from `e_1` and uses
+# `rotor_from_vectors` (the half-angle rotor carrying `e_1 -> to`), wrapped as an
+# `InvertibleFunction` so it composes / inverts like the other transforms.
 
 
 # %%
 def rotate(angle):
-    """Planar rotation by `angle` in the e_1 e_2 plane, as a composable
-    InvertibleFunction built from the rotor R = cos(a/2) - sin(a/2) e_12."""
-    half = angle / 2
-    R = sympy.cos(half) * one - sympy.sin(half) * e_12
+    """Planar rotation by `angle` (positive turns e_1 toward e_2), built the
+    geometric-algebra way: take the unit vector `to` at `angle` from e_1, form the
+    half-angle rotor carrying e_1 -> to with `rotor_from_vectors`, and sandwich it.
+    """
+    to = sympy.cos(angle) * e_1 + sympy.sin(angle) * e_2
+    R = G2.rotor_from_vectors(from_vector=e_1, to_vector=to)
     return InvertibleFunction(
-        lambda v: R * v * R.reverse(),
-        lambda v: R.reverse() * v * R,
+        lambda v: R * v * R.inverse(),
+        lambda v: R.inverse() * v * R,
         f"R_{{{sympy.latex(angle)}}}",
         f"R_{{{sympy.latex(-angle)}}}",
     )

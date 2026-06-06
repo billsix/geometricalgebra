@@ -194,8 +194,8 @@ def test_rotate(n: int, cls) -> None:
     a = vec(n, 0)
     e_1 = Gn.from_blade_dict({(1,): 1})
     e_2 = Gn.from_blade_dict({(2,): 1})
-    got = cls.rotate(to(cls, e_1), to(cls, e_2))(to(cls, a))
-    assert got == Gn.rotate(e_1, e_2)(a)
+    got = cls.rotate(from_vector=to(cls, e_1), to_vector=to(cls, e_2))(to(cls, a))
+    assert got == Gn.rotate(from_vector=e_1, to_vector=e_2)(a)
 
 
 # --------------------------------------------------------------------------

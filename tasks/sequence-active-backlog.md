@@ -120,9 +120,15 @@ Gates resolved; order locked. (Numbers below are the "active backlog" indices ab
   dimension-general transform layer; rewrote the two notebooks to use a local rotor-based `rotate`
   helper + `scale_non_uniform`. 161 tests. Archived.
 
-**Remaining order:** **#5 / #7.**  (doc tasks, #4, #6, #1, #2, #8, #9, #3 all complete.)
+- **`rotor-callers-keyword-args` → complete (2026-06-06).** Converted positional
+  `rotor_from_vectors(...)` / `rotate(...)` calls to keyword form (`from_vector=…, to_vector=…`)
+  across `test_graded.py`, `test_conformance.py`, and the three notebooks. No rename, no regen. 161
+  tests. Archived. (`create_rotor` rename declined — keyword calls give the readability.)
 
-Next up (independent, schedule by appetite):
+**Remaining order:** **#5 / #7.**  (doc tasks, #4, #6, #1, #2, #8, #9, #3, rotor-keyword-args
+all complete.)
+
+Then (independent, schedule by appetite):
 - **#5 `display-simplify`** — should G1/G2/G3 fully `sympy.simplify` their coefficients on display
   (`_repr_latex_`)? Needs a go/no-go (it's a "do we want this?" decision, plus a small generated-code
   change if yes).
