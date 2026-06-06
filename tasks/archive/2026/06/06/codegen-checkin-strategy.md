@@ -1,6 +1,7 @@
 # Decide: check in generated code, or build it / generate at runtime?
 
-Status: **open decision** · raised 2026-06-04 · needs a decision
+Status: **decided 2026-06-06 — Option 1 (keep checked-in)** · raised 2026-06-04
+**Completed:** 2026-06-06
 
 ## Background
 
@@ -29,8 +30,19 @@ Keep **option 1** (checked-in) + add the regen-diff guard. It's why ruff/ty coul
 files. Option 2 is the "Lispiest" and a legitimate Python idiom if you'd rather not check code in —
 the tradeoff is losing static analysis on the specialized classes.
 
-## Open question
+## Decision (2026-06-06)
 
-Stay with checked-in (and just add the CI guard), or switch to runtime generation (option 2)? If
-runtime, I can prototype `g2.py` as a dynamic builder so you can compare ergonomics/perf before
-committing to it.
+**Option 1 — keep the generated `g1/g2/g3.py` checked into the repo.**
+
+Rationale: this is a *pedagogical* library, and a `pip install`ed student must be able to read the
+specialized closed-form code in `site-packages`. Option 2 (runtime / on-import generation) produces
+**no readable source** — the methods are built dynamically at import, so neither the installed file
+nor `inspect.getsource` shows the math — and was ruled out on that basis. Option 3 (build-time)
+preserves pip-readability but buys nothing over option 1 on readability while adding a per-checkout
+regen step (editable installs / IDE / `ty` / CI don't see the files until generated) and a build hook
+to maintain — not worth it for a solo-maintained repo. Keeping the files in git also preserves
+repo-browse readability and keeps `ruff` / `ty` / IDE / debugger working on the specialized classes
+(the reason static analysis caught real bugs here).
+
+**Consequence:** `tasks/regen-diff-ci-guard.md` (#8) is unblocked — since the committed generated
+files must not drift from the generator, the regen-diff guard is the right next safety net.
