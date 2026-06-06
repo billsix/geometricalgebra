@@ -243,8 +243,15 @@ A unit rotor would give `R R̃ = 1` and exactly `R v R̃ == rotate(v)`. To get t
 
 - **Rotor:** `R = |from||to| + to·from` (the `to·from` ordering matters for direction; `|from||to|`
   is a single `sqrt`, so no nested radicals). This is the half-angle rotor, un-normalized.
-- **Identity:** `R v R̃ == (R R̃) · rotate(from, to)(v)` for a *general symbolic* vector `v` —
+- **Identity (normalized form — preferred):**
+  `(R v R̃) * R.magnitude_squared()**-1 == rotate(from, to)(v)`, equivalently
+  `R v R̃ == R.magnitude_squared() · rotate(v)`, for a *general symbolic* vector `v` —
   `sympy.simplify` reduces every blade of the difference to 0 (checked in 2D and 3D).
+  Dividing by the **scalar** `R.magnitude_squared()` (= `R R̃`, a single `sqrt`) removes the rotor's
+  scaling and keeps `|v|`. (Do *not* divide by the sandwich's own magnitude_squared — that yields the
+  geometric inverse `(R v R̃)⁻¹`; and `.normalize()` would force unit length, discarding `|v|`.
+  Normalizing `R` itself needs `sqrt(R R̃)` = a nested radical, which sympy chokes on — so divide the
+  result by the scalar instead.)
 - **`rotate` is normalized:** fix `AbstractMultiVector.rotate(from, to)` to normalize `from`/`to` so
   it is a pure rotation. (Keeping it un-normalized "works" only in 2D; in 3D the un-normalized
   `rotate` scales the *in-plane* part by `|from||to|` but leaves the *perpendicular* part alone — a
