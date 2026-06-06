@@ -520,8 +520,18 @@ class AbstractMultiVector(abc.ABC):
         from_vector: "AbstractMultiVector",
         to_vector: "AbstractMultiVector",
     ) -> MultiVectorFn:
+        """Rotate by the angle from ``from_vector`` to ``to_vector``, in their plane.
+
+        ``from_vector``/``to_vector`` are normalized first, so this is a *pure*
+        rotation (no scaling): the in-plane part of a value is turned through the
+        angle between them, the perpendicular part is left unchanged.  Equivalent
+        to the rotor sandwich ``R v R.inverse()`` with
+        ``R = rotor_from_vectors(from_vector, to_vector)``.
+        """
         assert from_vector.is_vector()
         assert to_vector.is_vector()
+        from_vector = from_vector.normalize()
+        to_vector = to_vector.normalize()
         plane: AbstractMultiVector = from_vector ^ to_vector
 
         components_in_plane: MultiVectorFn = cls.project(plane)
@@ -534,6 +544,31 @@ class AbstractMultiVector(abc.ABC):
             ) + components_exterior_to_plane(value)
 
         return r
+
+    @classmethod
+    def rotor_from_vectors(
+        cls,
+        from_vector: "AbstractMultiVector",
+        to_vector: "AbstractMultiVector",
+    ) -> "AbstractMultiVector":
+        """The rotor ``R = |from||to| + to from`` taking ``from`` toward ``to``.
+
+        An (un-normalized) even multivector whose sandwich rotates: for any
+        vector ``v``, ``R v R.inverse()`` equals ``rotate(from, to)(v)``.  ``R``
+        is the half-angle rotor; because it is not normalized, ``R v R.reverse()``
+        would also *scale* by ``R.magnitude_squared()`` -- using ``R.inverse()``
+        (= ``R.reverse() / |R|^2``) divides that out, leaving a pure rotation.
+
+        (Assumes ``from``/``to`` are not antiparallel; the construction
+        degenerates only on that measure-zero case.)
+        """
+        assert from_vector.is_vector()
+        assert to_vector.is_vector()
+        scale = typing.cast(
+            sympy.Expr, from_vector.magnitude() * to_vector.magnitude()
+        )
+        product = to_vector * from_vector  # scalar + bivector -- the rotor's grade
+        return product + type(product).from_sympy_expr(scale)
 
     def is_close(self, other: typing.Self) -> bool:
         left: BladeCoef = self.to_blade_dict()

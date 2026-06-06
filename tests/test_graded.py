@@ -206,3 +206,71 @@ def test_symbolic_product_matches_gn():
     got = (a1 * E1 + a2 * E2) * (b1 * E1 + b2 * E2)
     want = gn({(): a1 * b1 + a2 * b2, (1, 2): a1 * b2 - a2 * b1})
     assert got == want and type(got) is Rotor2
+
+
+# --- the rotor sandwich equals the rotate(from, to) method --------------------
+# R = rotor_from_vectors(from, to) = |from||to| + to*from ; for any vector v,
+#   R v R.inverse()  ==  rotate(from, to)(v)
+# (R.inverse() = R.reverse()/|R|^2 divides out the rotor's scaling, leaving a
+# pure rotation.)
+
+
+def simplify_equal(a, b) -> bool:
+    """True iff a and b are equal after simplifying each blade's difference.
+
+    Needed where the values carry ``sqrt`` magnitudes: ``Gn.__eq__`` compares
+    eager-simplified forms for identity, which can differ for equal expressions;
+    simplifying the *difference* to 0 is the robust check.
+    """
+    da, db = a.to_blade_dict(), b.to_blade_dict()
+    return all(
+        sympy.simplify(sympy.sympify(da.get(k, 0)) - sympy.sympify(db.get(k, 0))) == 0
+        for k in set(da) | set(db)
+    )
+
+
+def test_rotor_sandwich_equals_rotate_symbolic_2d():
+    # general symbolic vectors -- a real symbolic proof, not just sample points
+    a1, a2, b1, b2, w1, w2 = sympy.symbols(
+        "a1 a2 b1 b2 w1 w2", real=True, positive=True
+    )
+    frm = gn({(1,): a1, (2,): a2})
+    to = gn({(1,): b1, (2,): b2})
+    w = gn({(1,): w1, (2,): w2})
+    R = Gn.rotor_from_vectors(frm, to)
+    assert simplify_equal(R * w * R.inverse(), Gn.rotate(frm, to)(w))
+
+
+def test_rotor_sandwich_equals_rotate_3d():
+    # 3D, concrete vectors (full symbolic 3D simplify is slow for the suite);
+    # magnitudes are sqrt(...), so compare via simplify_equal
+    frm = gn({(1,): 1, (2,): 2, (3,): 3})
+    to = gn({(1,): 4, (2,): 5, (3,): 6})
+    w = gn({(1,): 7, (2,): 1, (3,): 2})  # has both in-plane and perpendicular parts
+    R = Gn.rotor_from_vectors(frm, to)
+    assert simplify_equal(R * w * R.inverse(), Gn.rotate(frm, to)(w))
+
+
+def test_rotor_rotate_across_representations():
+    # the same identity holds (by value) for Gn, G2 and G3; the rotor built from
+    # vectors of a specialized type is a Rotor of that algebra
+    f2, t2, w2 = Vector2.basis_vector(1), Vector2.basis_vector(2), 2 * E1 + E2
+    R2 = Vector2.rotor_from_vectors(f2, t2)
+    assert type(R2) is Rotor2
+    assert R2 * w2 * R2.inverse() == Vector2.rotate(f2, t2)(w2)
+
+    f3 = Vector3.basis_vector(1)
+    t3 = Vector3.basis_vector(2)
+    w3 = F1 + 3 * F3
+    R3 = Vector3.rotor_from_vectors(f3, t3)
+    assert type(R3) is Rotor3
+    assert R3 * w3 * R3.inverse() == Vector3.rotate(f3, t3)(w3)
+
+
+def test_unnormalized_rotor_scales_then_normalizes():
+    # the bare sandwich R v R~ scales by R.magnitude_squared(); inverse divides it out
+    frm, to, w = E1, E2, E1  # 90 deg, e1 -> e2
+    R = Vector2.rotor_from_vectors(frm, to)
+    assert R * R.reverse() == gn({(): 2})  # |R|^2
+    assert R * w * R.reverse() == gn({(2,): 2})  # scaled rotation
+    assert R * w * R.inverse() == gn({(2,): 1})  # pure rotation

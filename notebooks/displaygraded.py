@@ -147,6 +147,38 @@ kind(rotated), rotated.to_blade_dict()
 kind(quarter.plane_of_rotation()), quarter.plane_of_rotation().to_blade_dict()
 
 # %% [markdown]
+# Two ways to rotate are the same thing
+# -------------------------------------
+#
+# `AbstractMultiVector.rotate(from, to)` rotates a vector by `project`/`reject` +
+# the geometric product. The *rotor* way builds `R = rotor_from_vectors(from, to)`
+# = `|from||to| + to·from` and sandwiches: `R v R⁻¹`. They give the **same**
+# rotation — provably, even symbolically (see `tests/test_graded.py`).
+
+# %%
+frm, to = e_1, e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
+R = Vector2.rotor_from_vectors(frm, to)
+kind(R), R.to_blade_dict()  # an (un-normalized) Rotor2
+
+# %% [markdown]
+# Because `R` is not normalized, the bare sandwich `R v R̃` *scales* as well as
+# rotates — by `R.magnitude_squared()` (= `R R̃`). Using `R.inverse()` (which is
+# `R̃ / |R|²`) divides that out, leaving a pure rotation equal to `rotate`.
+
+# %%
+w = e_1
+[
+    ("R R~ (the scale)", (R * R.reverse()).to_blade_dict()),
+    ("R w R~ (scaled)", (R * w * R.reverse()).to_blade_dict()),
+    ("R w R^-1 (pure)", (R * w * R.inverse()).to_blade_dict()),
+    ("rotate(from,to)(w)", Vector2.rotate(frm, to)(w).to_blade_dict()),
+]
+
+# %%
+# the rotor sandwich and rotate agree exactly
+R * w * R.inverse() == Vector2.rotate(frm, to)(w)
+
+# %% [markdown]
 # The grade product table, made visible
 # -------------------------------------
 #

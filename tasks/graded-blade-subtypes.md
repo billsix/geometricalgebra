@@ -203,7 +203,12 @@ to prefer same-dimension over general `Gn` (currently it always goes to `Gn`).
       mid-Phase-3: **narrowing `+`/`-`** (so `Scalar + Bivector2 -> Rotor2`, and values build by
       linear combination) and a **`Rotor.plane_of_rotation()`** method. 131 tests, ruff + ty clean.
 - [ ] **Phase 4 — docs:** the type lattice + return-type table per dimension in `README`/`CLAUDE.md`.
-- [ ] **Phase 5 (proposed) — show `Rotor` sandwich ≡ the `rotate(from, to)` method.** See below.
+- [x] **Phase 5 — DONE (2026-06-06):** normalized `AbstractMultiVector.rotate(from, to)`; added
+      `AbstractMultiVector.rotor_from_vectors(from, to)` (= `|from||to| + to·from`); proved
+      `R v R.inverse() == rotate(from, to)(v)` symbolically in 2D and by value in 3D + across
+      `Gn`/`G2`/`G3` (`tests/test_graded.py`); notebook walkthrough in `displaygraded.py`. 135 tests,
+      ruff + ty clean. Used the project's `.inverse()` (= `reverse()/|R|²`), per the user, so the
+      sandwich is a pure rotation without manual scaling.
 
 ## Phase 5 plan (proposed 2026-06-06): rotor sandwich == rotate(from, to)
 
