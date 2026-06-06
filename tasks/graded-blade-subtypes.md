@@ -198,8 +198,51 @@ to prefer same-dimension over general `Gn` (currently it always goes to `Gn`).
 - [x] **Phase 1 — registry + closure policy decided** (2026-06-06): minimal registry + `G_n`
       fallback, dimension-suffixed names, dedicated `Scalar`. See "Phase 1 decisions" above.
 - [x] **Phase 2 — generator emits graded types (2026-06-06).** See "Phase 2 results" below.
-- [ ] **Phase 3 — narrow grade ops, then tests + notebook (detailed plan below).**
+- [x] **Phase 3 — DONE (2026-06-06):** grade ops narrowed; `tests/test_graded.py` (built from a
+      vector basis via linear combinations); `notebooks/displaygraded.py`; bench rows. Also landed
+      mid-Phase-3: **narrowing `+`/`-`** (so `Scalar + Bivector2 -> Rotor2`, and values build by
+      linear combination) and a **`Rotor.plane_of_rotation()`** method. 131 tests, ruff + ty clean.
 - [ ] **Phase 4 — docs:** the type lattice + return-type table per dimension in `README`/`CLAUDE.md`.
+- [ ] **Phase 5 (proposed) — show `Rotor` sandwich ≡ the `rotate(from, to)` method.** See below.
+
+## Phase 5 plan (proposed 2026-06-06): rotor sandwich == rotate(from, to)
+
+**Goal.** Demonstrate (symbolically, via sympy) that rotating with a `Rotor` (the sandwich
+`R v R~` shown in the notebooks) gives the *same* result as the existing
+`AbstractMultiVector.rotate(from_vector, to_vector)` classmethod (`base.py`), which rotates using
+`project` / `reject` / the geometric product (`(in_plane(v) * from * to) + exterior(v)`).
+
+**Construction (user's idea, validated below).** Build the rotor from the same `from`/`to`:
+1. Compute the **bisector** (half-angle direction) `m` of `from` and `to`.
+2. Build a rotor `R` from `from` and `m` (a product of two unit vectors `m̂ f̂`, separated by half
+   the `from→to` angle, so the sandwich rotates by the full angle).
+3. Assert `R v R~ == rotate(from, to)(v)` for a symbolic vector `v`, `sympy.simplify`-ing the
+   per-blade difference to 0.
+
+**Math check (answering "am I correct?"):**
+- **Bisector formula — correct.** `m = |to|·from + |from|·to` is, up to scale, `f̂ + t̂` (sum of the
+  unit vectors), which bisects the angle. Equivalent to normalizing each then adding.
+- **Antiparallel edge case — correct.** If `from` and `to` are opposite (θ = π), `f̂ + t̂ = 0`, so the
+  bisector vanishes and the plane `from ^ to = 0` is undefined → a 180° rotation needs a *chosen*
+  plane; handle separately. (The θ = 0 same-direction case is the identity rotor — also special.)
+- **Rotor from (from, bisector) — correct in principle.** Two unit vectors at angle φ multiply to a
+  rotor of angle 2φ under the sandwich; with `m` at θ/2 from `from`, the sandwich rotates by θ,
+  matching `rotate`. (Sign/orientation, i.e. `m̂ f̂` vs `f̂ m̂`, fixed empirically to match direction.)
+
+**Caveat to settle:** `rotate(from, to)` uses `from`/`to` *unscaled*, so for non-unit inputs the
+in-plane part is scaled by `|from||to|`. Use **unit** `from`/`to` (or normalize) for a clean
+equivalence; symbolic magnitudes are `sqrt(...)`, so angle-parameterized unit vectors
+(`from = cos α e_1 + sin α e_2`, etc.) keep the algebra polynomial and `simplify`-able.
+
+**Open questions (for the user):**
+- Confirm it's the **ABC `rotate(from_vector, to_vector)`** (project/reject/product), not the
+  `gn.py` angle-based `rotate(angle)` transform.
+- Symbolic inputs: **angle-parameterized unit vectors** (recommended, clean) vs. fully general
+  `from`/`to` with `sqrt` magnitudes?
+- Deliverable: a **notebook** cell set (extend `displaygraded.py`?), a **test** in `test_graded.py`
+  asserting symbolic equality, or **both**?
+- Dimensions: **2D and 3D** (rotate is general; rotor sandwich works in both)?
+- Need a `rotor_from_vectors(from, to)` helper (library, or local to the demo)? Where should it live?
 
 ## Phase 3 plan (detailed, 2026-06-06)
 

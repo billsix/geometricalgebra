@@ -97,14 +97,24 @@ class Scalar(AbstractMultiVector):
         return typing.cast(typing.Self, left.inner_product(right))
 
     def __add__(self, rhs) -> typing.Self:
+        if isinstance(rhs, (int, float, sympy.Expr)):
+            return typing.cast(
+                typing.Self, Scalar(scalar=typing.cast(numbers.Real, self.scalar + rhs))
+            )
         if isinstance(rhs, Scalar):
             return typing.cast(typing.Self, Scalar(scalar=self.scalar + rhs.scalar))
-        left = Gn.from_blade_dict(self.to_blade_dict())
-        right = Gn.from_blade_dict(rhs.to_blade_dict())
-        return typing.cast(typing.Self, left + right)
+        if isinstance(rhs, AbstractMultiVector):
+            return typing.cast(typing.Self, rhs + self)
+        return typing.cast(typing.Self, NotImplemented)
+
+    def __radd__(self, lhs) -> typing.Self:
+        return self.__add__(lhs)
 
     def __sub__(self, rhs) -> typing.Self:
         return self + (-1 * rhs)
+
+    def __rsub__(self, lhs) -> typing.Self:
+        return (-self) + lhs
 
     def __neg__(self) -> typing.Self:
         return typing.cast(

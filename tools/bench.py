@@ -26,11 +26,13 @@ import sys
 import time
 from itertools import chain, combinations
 
+import sympy
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from geometricalgebra.g1 import G1  # noqa: E402
-from geometricalgebra.g2 import G2  # noqa: E402
-from geometricalgebra.g3 import G3  # noqa: E402
+from geometricalgebra.g2 import G2, Vector2  # noqa: E402
+from geometricalgebra.g3 import G3, Vector3  # noqa: E402
 from geometricalgebra.gn import Gn  # noqa: E402
 
 SPECIALIZED = {1: G1, 2: G2, 3: G3}
@@ -108,6 +110,51 @@ def main() -> None:
             time_ms(lambda sa=sa, sb=sb: sa * sb, gn_reps),
             time_ms(lambda gsa=gsa, gsb=gsb: gsa * gsb, 50),
         )
+
+    # graded subtypes: a typed Vector*Vector computes only the needed components
+    # (scalar + bivector) -- vs the full G_n product and the general Gn.
+    sys.stdout.write("\n")
+    sys.stdout.write("graded subtype: vector * vector (-> rotor)\n")
+    sys.stdout.write("-" * 67 + "\n")
+    for n, vector_cls in ((2, Vector2), (3, Vector3)):
+        gva = Gn.from_blade_dict({(i,): i for i in range(1, n + 1)})
+        gvb = Gn.from_blade_dict({(i,): i + 1 for i in range(1, n + 1)})
+        va, vb = to(vector_cls, gva), to(vector_cls, gvb)
+        fa, fb = to(SPECIALIZED[n], gva), to(SPECIALIZED[n], gvb)
+        t_typed = time_ms(lambda va=va, vb=vb: va * vb, 5000)
+        t_full = time_ms(lambda fa=fa, fb=fb: fa * fb, 5000)
+        t_gn = time_ms(lambda a=gva, b=gvb: a * b, 200)
+        sys.stdout.write(
+            f"G{n} numeric : Vector {t_typed:8.4f} ms   full G{n} {t_full:8.4f} ms"
+            f"   Gn {t_gn:8.3f} ms  "
+            f"(typed {t_full / t_typed:.1f}x vs full, {t_gn / t_typed:.0f}x vs Gn)\n"
+        )
+        sa, sb = (
+            to(
+                vector_cls,
+                Gn.from_blade_dict(
+                    {(i,): sympy.Symbol(f"a{i}") for i in range(1, n + 1)}
+                ),
+            ),
+            to(
+                vector_cls,
+                Gn.from_blade_dict(
+                    {(i,): sympy.Symbol(f"b{i}") for i in range(1, n + 1)}
+                ),
+            ),
+        )
+        fsa = to(SPECIALIZED[n], widen_sym(sa))
+        fsb = to(SPECIALIZED[n], widen_sym(sb))
+        t_typed_s = time_ms(lambda sa=sa, sb=sb: sa * sb, 2000)
+        t_full_s = time_ms(lambda fsa=fsa, fsb=fsb: fsa * fsb, 2000)
+        sys.stdout.write(
+            f"G{n} symbolic: Vector {t_typed_s:8.4f} ms   full G{n} {t_full_s:8.4f} ms"
+            f"   (typed {t_full_s / t_typed_s:.1f}x vs full)\n"
+        )
+
+
+def widen_sym(x) -> Gn:
+    return Gn.from_blade_dict(x.to_blade_dict())
 
 
 if __name__ == "__main__":

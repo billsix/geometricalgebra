@@ -36,7 +36,7 @@ from geometricalgebra.scalar import Scalar
 
 
 def _coerce(x, cls):
-    """Coerce a scalar / any multivector to ``cls`` (the dimension's full type)."""
+    """Coerce a scalar or multivector to ``cls`` (the full type)."""
     if isinstance(x, AbstractMultiVector):
         return cls.from_blade_dict(x.to_blade_dict())
     if isinstance(x, sympy.Expr):
@@ -359,28 +359,58 @@ class Vector1(AbstractMultiVector):
                 return typing.cast(typing.Self, left.inner_product(right))
 
     def __add__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Vector1):
-            return typing.cast(
-                typing.Self,
-                Vector1(
-                    e_1=self.e_1 + rhs.e_1,
-                ),
-            )
-        left = _coerce(self, G1)
-        right = _coerce(rhs, G1)
-        return typing.cast(typing.Self, left + right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__add__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    G1(
+                        scalar=rhs.scalar,
+                        e_1=self.e_1,
+                    ),
+                )
+            case Vector1():
+                return typing.cast(
+                    typing.Self,
+                    Vector1(
+                        e_1=self.e_1 + rhs.e_1,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G1)
+                right = _coerce(rhs, G1)
+                return typing.cast(typing.Self, left + right)
 
     def __sub__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Vector1):
-            return typing.cast(
-                typing.Self,
-                Vector1(
-                    e_1=self.e_1 - rhs.e_1,
-                ),
-            )
-        left = _coerce(self, G1)
-        right = _coerce(rhs, G1)
-        return typing.cast(typing.Self, left - right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__sub__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    G1(
+                        scalar=typing.cast(numbers.Real, -rhs.scalar),
+                        e_1=self.e_1,
+                    ),
+                )
+            case Vector1():
+                return typing.cast(
+                    typing.Self,
+                    Vector1(
+                        e_1=self.e_1 - rhs.e_1,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G1)
+                right = _coerce(rhs, G1)
+                return typing.cast(typing.Self, left - right)
+
+    def __radd__(self, lhs) -> typing.Self:
+        return self.__add__(lhs)
+
+    def __rsub__(self, lhs) -> typing.Self:
+        return typing.cast(typing.Self, (-self).__add__(lhs))
 
     def __neg__(self) -> typing.Self:
         return typing.cast(

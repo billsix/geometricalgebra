@@ -36,7 +36,7 @@ from geometricalgebra.scalar import Scalar
 
 
 def _coerce(x, cls):
-    """Coerce a scalar / any multivector to ``cls`` (the dimension's full type)."""
+    """Coerce a scalar or multivector to ``cls`` (the full type)."""
     if isinstance(x, AbstractMultiVector):
         return cls.from_blade_dict(x.to_blade_dict())
     if isinstance(x, sympy.Expr):
@@ -723,32 +723,158 @@ class Vector3(AbstractMultiVector):
                 return typing.cast(typing.Self, left.inner_product(right))
 
     def __add__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Vector3):
-            return typing.cast(
-                typing.Self,
-                Vector3(
-                    e_1=self.e_1 + rhs.e_1,
-                    e_2=self.e_2 + rhs.e_2,
-                    e_3=self.e_3 + rhs.e_3,
-                ),
-            )
-        left = _coerce(self, G3)
-        right = _coerce(rhs, G3)
-        return typing.cast(typing.Self, left + right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__add__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=rhs.scalar,
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_3=self.e_3,
+                        e_12=typing.cast(numbers.Real, 0),
+                        e_13=typing.cast(numbers.Real, 0),
+                        e_23=typing.cast(numbers.Real, 0),
+                        e_123=typing.cast(numbers.Real, 0),
+                    ),
+                )
+            case Vector3():
+                return typing.cast(
+                    typing.Self,
+                    Vector3(
+                        e_1=self.e_1 + rhs.e_1,
+                        e_2=self.e_2 + rhs.e_2,
+                        e_3=self.e_3 + rhs.e_3,
+                    ),
+                )
+            case Bivector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_3=self.e_3,
+                        e_12=rhs.e_12,
+                        e_13=rhs.e_13,
+                        e_23=rhs.e_23,
+                        e_123=typing.cast(numbers.Real, 0),
+                    ),
+                )
+            case Trivector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_3=self.e_3,
+                        e_12=typing.cast(numbers.Real, 0),
+                        e_13=typing.cast(numbers.Real, 0),
+                        e_23=typing.cast(numbers.Real, 0),
+                        e_123=rhs.e_123,
+                    ),
+                )
+            case Rotor3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=rhs.scalar,
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_3=self.e_3,
+                        e_12=rhs.e_12,
+                        e_13=rhs.e_13,
+                        e_23=rhs.e_23,
+                        e_123=typing.cast(numbers.Real, 0),
+                    ),
+                )
+            case _:
+                left = _coerce(self, G3)
+                right = _coerce(rhs, G3)
+                return typing.cast(typing.Self, left + right)
 
     def __sub__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Vector3):
-            return typing.cast(
-                typing.Self,
-                Vector3(
-                    e_1=self.e_1 - rhs.e_1,
-                    e_2=self.e_2 - rhs.e_2,
-                    e_3=self.e_3 - rhs.e_3,
-                ),
-            )
-        left = _coerce(self, G3)
-        right = _coerce(rhs, G3)
-        return typing.cast(typing.Self, left - right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__sub__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, -rhs.scalar),
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_3=self.e_3,
+                        e_12=typing.cast(numbers.Real, 0),
+                        e_13=typing.cast(numbers.Real, 0),
+                        e_23=typing.cast(numbers.Real, 0),
+                        e_123=typing.cast(numbers.Real, 0),
+                    ),
+                )
+            case Vector3():
+                return typing.cast(
+                    typing.Self,
+                    Vector3(
+                        e_1=self.e_1 - rhs.e_1,
+                        e_2=self.e_2 - rhs.e_2,
+                        e_3=self.e_3 - rhs.e_3,
+                    ),
+                )
+            case Bivector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_3=self.e_3,
+                        e_12=typing.cast(numbers.Real, -rhs.e_12),
+                        e_13=typing.cast(numbers.Real, -rhs.e_13),
+                        e_23=typing.cast(numbers.Real, -rhs.e_23),
+                        e_123=typing.cast(numbers.Real, 0),
+                    ),
+                )
+            case Trivector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_3=self.e_3,
+                        e_12=typing.cast(numbers.Real, 0),
+                        e_13=typing.cast(numbers.Real, 0),
+                        e_23=typing.cast(numbers.Real, 0),
+                        e_123=typing.cast(numbers.Real, -rhs.e_123),
+                    ),
+                )
+            case Rotor3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, -rhs.scalar),
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_3=self.e_3,
+                        e_12=typing.cast(numbers.Real, -rhs.e_12),
+                        e_13=typing.cast(numbers.Real, -rhs.e_13),
+                        e_23=typing.cast(numbers.Real, -rhs.e_23),
+                        e_123=typing.cast(numbers.Real, 0),
+                    ),
+                )
+            case _:
+                left = _coerce(self, G3)
+                right = _coerce(rhs, G3)
+                return typing.cast(typing.Self, left - right)
+
+    def __radd__(self, lhs) -> typing.Self:
+        return self.__add__(lhs)
+
+    def __rsub__(self, lhs) -> typing.Self:
+        return typing.cast(typing.Self, (-self).__add__(lhs))
 
     def __neg__(self) -> typing.Self:
         return typing.cast(
@@ -1117,32 +1243,142 @@ class Bivector3(AbstractMultiVector):
                 return typing.cast(typing.Self, left.inner_product(right))
 
     def __add__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Bivector3):
-            return typing.cast(
-                typing.Self,
-                Bivector3(
-                    e_12=self.e_12 + rhs.e_12,
-                    e_13=self.e_13 + rhs.e_13,
-                    e_23=self.e_23 + rhs.e_23,
-                ),
-            )
-        left = _coerce(self, G3)
-        right = _coerce(rhs, G3)
-        return typing.cast(typing.Self, left + right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__add__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    Rotor3(
+                        scalar=rhs.scalar,
+                        e_12=self.e_12,
+                        e_13=self.e_13,
+                        e_23=self.e_23,
+                    ),
+                )
+            case Vector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=rhs.e_1,
+                        e_2=rhs.e_2,
+                        e_3=rhs.e_3,
+                        e_12=self.e_12,
+                        e_13=self.e_13,
+                        e_23=self.e_23,
+                        e_123=typing.cast(numbers.Real, 0),
+                    ),
+                )
+            case Bivector3():
+                return typing.cast(
+                    typing.Self,
+                    Bivector3(
+                        e_12=self.e_12 + rhs.e_12,
+                        e_13=self.e_13 + rhs.e_13,
+                        e_23=self.e_23 + rhs.e_23,
+                    ),
+                )
+            case Trivector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=typing.cast(numbers.Real, 0),
+                        e_2=typing.cast(numbers.Real, 0),
+                        e_3=typing.cast(numbers.Real, 0),
+                        e_12=self.e_12,
+                        e_13=self.e_13,
+                        e_23=self.e_23,
+                        e_123=rhs.e_123,
+                    ),
+                )
+            case Rotor3():
+                return typing.cast(
+                    typing.Self,
+                    Rotor3(
+                        scalar=rhs.scalar,
+                        e_12=self.e_12 + rhs.e_12,
+                        e_13=self.e_13 + rhs.e_13,
+                        e_23=self.e_23 + rhs.e_23,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G3)
+                right = _coerce(rhs, G3)
+                return typing.cast(typing.Self, left + right)
 
     def __sub__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Bivector3):
-            return typing.cast(
-                typing.Self,
-                Bivector3(
-                    e_12=self.e_12 - rhs.e_12,
-                    e_13=self.e_13 - rhs.e_13,
-                    e_23=self.e_23 - rhs.e_23,
-                ),
-            )
-        left = _coerce(self, G3)
-        right = _coerce(rhs, G3)
-        return typing.cast(typing.Self, left - right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__sub__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    Rotor3(
+                        scalar=typing.cast(numbers.Real, -rhs.scalar),
+                        e_12=self.e_12,
+                        e_13=self.e_13,
+                        e_23=self.e_23,
+                    ),
+                )
+            case Vector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=typing.cast(numbers.Real, -rhs.e_1),
+                        e_2=typing.cast(numbers.Real, -rhs.e_2),
+                        e_3=typing.cast(numbers.Real, -rhs.e_3),
+                        e_12=self.e_12,
+                        e_13=self.e_13,
+                        e_23=self.e_23,
+                        e_123=typing.cast(numbers.Real, 0),
+                    ),
+                )
+            case Bivector3():
+                return typing.cast(
+                    typing.Self,
+                    Bivector3(
+                        e_12=self.e_12 - rhs.e_12,
+                        e_13=self.e_13 - rhs.e_13,
+                        e_23=self.e_23 - rhs.e_23,
+                    ),
+                )
+            case Trivector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=typing.cast(numbers.Real, 0),
+                        e_2=typing.cast(numbers.Real, 0),
+                        e_3=typing.cast(numbers.Real, 0),
+                        e_12=self.e_12,
+                        e_13=self.e_13,
+                        e_23=self.e_23,
+                        e_123=typing.cast(numbers.Real, -rhs.e_123),
+                    ),
+                )
+            case Rotor3():
+                return typing.cast(
+                    typing.Self,
+                    Rotor3(
+                        scalar=typing.cast(numbers.Real, -rhs.scalar),
+                        e_12=self.e_12 - rhs.e_12,
+                        e_13=self.e_13 - rhs.e_13,
+                        e_23=self.e_23 - rhs.e_23,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G3)
+                right = _coerce(rhs, G3)
+                return typing.cast(typing.Self, left - right)
+
+    def __radd__(self, lhs) -> typing.Self:
+        return self.__add__(lhs)
+
+    def __rsub__(self, lhs) -> typing.Self:
+        return typing.cast(typing.Self, (-self).__add__(lhs))
 
     def __neg__(self) -> typing.Self:
         return typing.cast(
@@ -1455,28 +1691,154 @@ class Trivector3(AbstractMultiVector):
                 return typing.cast(typing.Self, left.inner_product(right))
 
     def __add__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Trivector3):
-            return typing.cast(
-                typing.Self,
-                Trivector3(
-                    e_123=self.e_123 + rhs.e_123,
-                ),
-            )
-        left = _coerce(self, G3)
-        right = _coerce(rhs, G3)
-        return typing.cast(typing.Self, left + right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__add__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=rhs.scalar,
+                        e_1=typing.cast(numbers.Real, 0),
+                        e_2=typing.cast(numbers.Real, 0),
+                        e_3=typing.cast(numbers.Real, 0),
+                        e_12=typing.cast(numbers.Real, 0),
+                        e_13=typing.cast(numbers.Real, 0),
+                        e_23=typing.cast(numbers.Real, 0),
+                        e_123=self.e_123,
+                    ),
+                )
+            case Vector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=rhs.e_1,
+                        e_2=rhs.e_2,
+                        e_3=rhs.e_3,
+                        e_12=typing.cast(numbers.Real, 0),
+                        e_13=typing.cast(numbers.Real, 0),
+                        e_23=typing.cast(numbers.Real, 0),
+                        e_123=self.e_123,
+                    ),
+                )
+            case Bivector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=typing.cast(numbers.Real, 0),
+                        e_2=typing.cast(numbers.Real, 0),
+                        e_3=typing.cast(numbers.Real, 0),
+                        e_12=rhs.e_12,
+                        e_13=rhs.e_13,
+                        e_23=rhs.e_23,
+                        e_123=self.e_123,
+                    ),
+                )
+            case Trivector3():
+                return typing.cast(
+                    typing.Self,
+                    Trivector3(
+                        e_123=self.e_123 + rhs.e_123,
+                    ),
+                )
+            case Rotor3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=rhs.scalar,
+                        e_1=typing.cast(numbers.Real, 0),
+                        e_2=typing.cast(numbers.Real, 0),
+                        e_3=typing.cast(numbers.Real, 0),
+                        e_12=rhs.e_12,
+                        e_13=rhs.e_13,
+                        e_23=rhs.e_23,
+                        e_123=self.e_123,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G3)
+                right = _coerce(rhs, G3)
+                return typing.cast(typing.Self, left + right)
 
     def __sub__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Trivector3):
-            return typing.cast(
-                typing.Self,
-                Trivector3(
-                    e_123=self.e_123 - rhs.e_123,
-                ),
-            )
-        left = _coerce(self, G3)
-        right = _coerce(rhs, G3)
-        return typing.cast(typing.Self, left - right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__sub__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, -rhs.scalar),
+                        e_1=typing.cast(numbers.Real, 0),
+                        e_2=typing.cast(numbers.Real, 0),
+                        e_3=typing.cast(numbers.Real, 0),
+                        e_12=typing.cast(numbers.Real, 0),
+                        e_13=typing.cast(numbers.Real, 0),
+                        e_23=typing.cast(numbers.Real, 0),
+                        e_123=self.e_123,
+                    ),
+                )
+            case Vector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=typing.cast(numbers.Real, -rhs.e_1),
+                        e_2=typing.cast(numbers.Real, -rhs.e_2),
+                        e_3=typing.cast(numbers.Real, -rhs.e_3),
+                        e_12=typing.cast(numbers.Real, 0),
+                        e_13=typing.cast(numbers.Real, 0),
+                        e_23=typing.cast(numbers.Real, 0),
+                        e_123=self.e_123,
+                    ),
+                )
+            case Bivector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=typing.cast(numbers.Real, 0),
+                        e_2=typing.cast(numbers.Real, 0),
+                        e_3=typing.cast(numbers.Real, 0),
+                        e_12=typing.cast(numbers.Real, -rhs.e_12),
+                        e_13=typing.cast(numbers.Real, -rhs.e_13),
+                        e_23=typing.cast(numbers.Real, -rhs.e_23),
+                        e_123=self.e_123,
+                    ),
+                )
+            case Trivector3():
+                return typing.cast(
+                    typing.Self,
+                    Trivector3(
+                        e_123=self.e_123 - rhs.e_123,
+                    ),
+                )
+            case Rotor3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=typing.cast(numbers.Real, -rhs.scalar),
+                        e_1=typing.cast(numbers.Real, 0),
+                        e_2=typing.cast(numbers.Real, 0),
+                        e_3=typing.cast(numbers.Real, 0),
+                        e_12=typing.cast(numbers.Real, -rhs.e_12),
+                        e_13=typing.cast(numbers.Real, -rhs.e_13),
+                        e_23=typing.cast(numbers.Real, -rhs.e_23),
+                        e_123=self.e_123,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G3)
+                right = _coerce(rhs, G3)
+                return typing.cast(typing.Self, left - right)
+
+    def __radd__(self, lhs) -> typing.Self:
+        return self.__add__(lhs)
+
+    def __rsub__(self, lhs) -> typing.Self:
+        return typing.cast(typing.Self, (-self).__add__(lhs))
 
     def __neg__(self) -> typing.Self:
         return typing.cast(
@@ -1877,34 +2239,144 @@ class Rotor3(AbstractMultiVector):
                 return typing.cast(typing.Self, left.inner_product(right))
 
     def __add__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Rotor3):
-            return typing.cast(
-                typing.Self,
-                Rotor3(
-                    scalar=self.scalar + rhs.scalar,
-                    e_12=self.e_12 + rhs.e_12,
-                    e_13=self.e_13 + rhs.e_13,
-                    e_23=self.e_23 + rhs.e_23,
-                ),
-            )
-        left = _coerce(self, G3)
-        right = _coerce(rhs, G3)
-        return typing.cast(typing.Self, left + right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__add__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    Rotor3(
+                        scalar=self.scalar + rhs.scalar,
+                        e_12=self.e_12,
+                        e_13=self.e_13,
+                        e_23=self.e_23,
+                    ),
+                )
+            case Vector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=self.scalar,
+                        e_1=rhs.e_1,
+                        e_2=rhs.e_2,
+                        e_3=rhs.e_3,
+                        e_12=self.e_12,
+                        e_13=self.e_13,
+                        e_23=self.e_23,
+                        e_123=typing.cast(numbers.Real, 0),
+                    ),
+                )
+            case Bivector3():
+                return typing.cast(
+                    typing.Self,
+                    Rotor3(
+                        scalar=self.scalar,
+                        e_12=self.e_12 + rhs.e_12,
+                        e_13=self.e_13 + rhs.e_13,
+                        e_23=self.e_23 + rhs.e_23,
+                    ),
+                )
+            case Trivector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=self.scalar,
+                        e_1=typing.cast(numbers.Real, 0),
+                        e_2=typing.cast(numbers.Real, 0),
+                        e_3=typing.cast(numbers.Real, 0),
+                        e_12=self.e_12,
+                        e_13=self.e_13,
+                        e_23=self.e_23,
+                        e_123=rhs.e_123,
+                    ),
+                )
+            case Rotor3():
+                return typing.cast(
+                    typing.Self,
+                    Rotor3(
+                        scalar=self.scalar + rhs.scalar,
+                        e_12=self.e_12 + rhs.e_12,
+                        e_13=self.e_13 + rhs.e_13,
+                        e_23=self.e_23 + rhs.e_23,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G3)
+                right = _coerce(rhs, G3)
+                return typing.cast(typing.Self, left + right)
 
     def __sub__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Rotor3):
-            return typing.cast(
-                typing.Self,
-                Rotor3(
-                    scalar=self.scalar - rhs.scalar,
-                    e_12=self.e_12 - rhs.e_12,
-                    e_13=self.e_13 - rhs.e_13,
-                    e_23=self.e_23 - rhs.e_23,
-                ),
-            )
-        left = _coerce(self, G3)
-        right = _coerce(rhs, G3)
-        return typing.cast(typing.Self, left - right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__sub__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    Rotor3(
+                        scalar=self.scalar - rhs.scalar,
+                        e_12=self.e_12,
+                        e_13=self.e_13,
+                        e_23=self.e_23,
+                    ),
+                )
+            case Vector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=self.scalar,
+                        e_1=typing.cast(numbers.Real, -rhs.e_1),
+                        e_2=typing.cast(numbers.Real, -rhs.e_2),
+                        e_3=typing.cast(numbers.Real, -rhs.e_3),
+                        e_12=self.e_12,
+                        e_13=self.e_13,
+                        e_23=self.e_23,
+                        e_123=typing.cast(numbers.Real, 0),
+                    ),
+                )
+            case Bivector3():
+                return typing.cast(
+                    typing.Self,
+                    Rotor3(
+                        scalar=self.scalar,
+                        e_12=self.e_12 - rhs.e_12,
+                        e_13=self.e_13 - rhs.e_13,
+                        e_23=self.e_23 - rhs.e_23,
+                    ),
+                )
+            case Trivector3():
+                return typing.cast(
+                    typing.Self,
+                    G3(
+                        scalar=self.scalar,
+                        e_1=typing.cast(numbers.Real, 0),
+                        e_2=typing.cast(numbers.Real, 0),
+                        e_3=typing.cast(numbers.Real, 0),
+                        e_12=self.e_12,
+                        e_13=self.e_13,
+                        e_23=self.e_23,
+                        e_123=typing.cast(numbers.Real, -rhs.e_123),
+                    ),
+                )
+            case Rotor3():
+                return typing.cast(
+                    typing.Self,
+                    Rotor3(
+                        scalar=self.scalar - rhs.scalar,
+                        e_12=self.e_12 - rhs.e_12,
+                        e_13=self.e_13 - rhs.e_13,
+                        e_23=self.e_23 - rhs.e_23,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G3)
+                right = _coerce(rhs, G3)
+                return typing.cast(typing.Self, left - right)
+
+    def __radd__(self, lhs) -> typing.Self:
+        return self.__add__(lhs)
+
+    def __rsub__(self, lhs) -> typing.Self:
+        return typing.cast(typing.Self, (-self).__add__(lhs))
 
     def __neg__(self) -> typing.Self:
         return typing.cast(
@@ -2027,6 +2499,16 @@ class Rotor3(AbstractMultiVector):
                 ),
             )
         return typing.cast(typing.Self, _coerce(self, G3).dual(n))
+
+    def plane_of_rotation(self) -> AbstractMultiVector:
+        """The unit bivector (2-blade) this rotor rotates in.
+
+        A rotor is ``cos(t/2) - sin(t/2) * B`` for a unit bivector B --
+        the oriented plane of rotation.  This returns B, the normalized
+        bivector part.  In 2D that 2-blade is also the pseudoscalar; in 3D
+        it is a bivector plane, not the trivector.  Undefined for the
+        identity rotor (no rotation)."""
+        return self.r_vector_part(2).normalize()
 
 
 zero: G3 = G3.from_scalar(0)

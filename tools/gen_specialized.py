@@ -379,7 +379,7 @@ def registry_for_dim(n: int, full_name: str) -> list[TypeSpec]:
 
 
 def resolve(support, n: int, full_name: str) -> TypeSpec:
-    """Smallest registered type whose blade-set ⊇ ``support`` (full G_n always covers)."""
+    """Smallest registered type covering ``support`` (the full G_n always does)."""
     want = set(support)
     candidates = [
         t for t in registry_for_dim(n, full_name) if want <= set(t.blades)
@@ -631,27 +631,47 @@ def _emit_scaled(ap, name, fields, scalar_expr, indent="        ") -> None:
     ap(f"{indent})")
 
 
-def _emit_dispatch(lines, t1, method, gn_op, n, full_name, fallback_op) -> None:
-    """Emit a bilinear method that matches on the rhs type (the grade product table)."""
+def _emit_result_block(lines, indent, rspec, out_exprs, render) -> None:
+    """Emit ``return cast(Self, ResultType(field=expr, ...))`` (cse-factored)."""
+    ap = lines.append
+    replacements, reduced = sympy.cse(out_exprs)
+    for tmp, expr in replacements:
+        ap(f"{indent}{render(tmp)} = {render(expr)}")
+    ap(f"{indent}return typing.cast(")
+    ap(f"{indent}    typing.Self,")
+    ap(f"{indent}    {rspec.name}(")
+    for field, expr in zip([field_name(b) for b in rspec.blades], reduced):
+        e = sympy.sympify(expr)
+        # a bare ``-self.x`` reads as _RealLike to the type checker, so cast it;
+        # bare/positive symbols and arithmetic sums are already Real.
+        if e.is_Mul and (-e).is_Symbol:
+            ap(f"{indent}        {field}=typing.cast(numbers.Real, {render(e)}),")
+        else:
+            lines.extend(format_assignment(field, expr, indent + "        ", render))
+    ap(f"{indent}    ),")
+    ap(f"{indent})")
+
+
+def _emit_dispatch(
+    lines, t1, method, gn_op, n, full_name, fallback_op, number_case=False
+) -> None:
+    """Emit a method that matches on the rhs type (the grade product/sum table).
+
+    Return type per branch comes from ``resolve`` (the tightest covering type);
+    ``number_case`` prepends a scalar-literal branch (used by + / -, which unlike
+    * have no separate scalar wrapper)."""
     ap = lines.append
     ap(f"    def {method}(self, rhs) -> typing.Self:")
     ap("        match rhs:")
+    if number_case:
+        ap("            case int() | float() | sympy.Expr():")
+        ap(f"                return self.{method}(")
+        ap("                    Scalar(scalar=typing.cast(numbers.Real, rhs))")
+        ap("                )")
     for t2 in [SCALAR, *graded_specs(n)]:
         rspec, out_exprs, render = product_result(t1, t2, gn_op, n, full_name)
         ap(f"            case {t2.name}():")
-        replacements, reduced = sympy.cse(out_exprs)
-        for tmp, expr in replacements:
-            ap(f"                {render(tmp)} = {render(expr)}")
-        ap("                return typing.cast(")
-        ap("                    typing.Self,")
-        ap(f"                    {rspec.name}(")
-        rfields = [field_name(b) for b in rspec.blades]
-        for field, expr in zip(rfields, reduced):
-            lines.extend(
-                format_assignment(field, expr, "                        ", render)
-            )
-        ap("                    ),")
-        ap("                )")
+        _emit_result_block(lines, "                ", rspec, out_exprs, render)
     ap("            case _:")
     ap(f"                left = _coerce(self, {full_name})")
     ap(f"                right = _coerce(rhs, {full_name})")
@@ -753,33 +773,21 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> str:
         "left.inner_product(right)",
     )
 
-    # linear ops: same-type stays in-type, cross-grade widens to the full G_n
-    ap("    def __add__(self, rhs) -> typing.Self:")
-    ap(f"        if isinstance(rhs, {spec.name}):")
-    ap("            return typing.cast(")
-    ap("                typing.Self,")
-    ap(f"                {spec.name}(")
-    for f in fields:
-        ap(f"                    {f}=self.{f} + rhs.{f},")
-    ap("                ),")
-    ap("            )")
-    ap(f"        left = _coerce(self, {full_name})")
-    ap(f"        right = _coerce(rhs, {full_name})")
-    ap("        return typing.cast(typing.Self, left + right)")
+    # linear ops also narrow to the tightest covering type (so e.g.
+    # Scalar + Bivector2 -> Rotor2, and values build by linear combination)
+    _emit_dispatch(
+        lines, spec, "__add__", lambda a, b: a + b, n, full_name,
+        "left + right", number_case=True,
+    )
+    _emit_dispatch(
+        lines, spec, "__sub__", lambda a, b: a - b, n, full_name,
+        "left - right", number_case=True,
+    )
+    ap("    def __radd__(self, lhs) -> typing.Self:")
+    ap("        return self.__add__(lhs)")
     ap("")
-
-    ap("    def __sub__(self, rhs) -> typing.Self:")
-    ap(f"        if isinstance(rhs, {spec.name}):")
-    ap("            return typing.cast(")
-    ap("                typing.Self,")
-    ap(f"                {spec.name}(")
-    for f in fields:
-        ap(f"                    {f}=self.{f} - rhs.{f},")
-    ap("                ),")
-    ap("            )")
-    ap(f"        left = _coerce(self, {full_name})")
-    ap(f"        right = _coerce(rhs, {full_name})")
-    ap("        return typing.cast(typing.Self, left - right)")
+    ap("    def __rsub__(self, lhs) -> typing.Self:")
+    ap("        return typing.cast(typing.Self, (-self).__add__(lhs))")
     ap("")
 
     ap("    def __neg__(self) -> typing.Self:")
@@ -875,6 +883,18 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> str:
         f"_coerce(self, {full_name}).dual(n))"
     )
 
+    if spec.name.startswith("Rotor"):
+        ap("")
+        ap("    def plane_of_rotation(self) -> AbstractMultiVector:")
+        ap('        """The unit bivector (2-blade) this rotor rotates in.')
+        ap("")
+        ap("        A rotor is ``cos(t/2) - sin(t/2) * B`` for a unit bivector B --")
+        ap("        the oriented plane of rotation.  This returns B, the normalized")
+        ap("        bivector part.  In 2D that 2-blade is also the pseudoscalar; in 3D")
+        ap("        it is a bivector plane, not the trivector.  Undefined for the")
+        ap('        identity rotor (no rotation)."""')
+        ap("        return self.r_vector_part(2).normalize()")
+
     return "\n".join(lines)
 
 
@@ -940,17 +960,28 @@ def generate_scalar() -> str:
     ap("        return typing.cast(typing.Self, left.inner_product(right))")
     ap("")
     ap("    def __add__(self, rhs) -> typing.Self:")
+    ap("        if isinstance(rhs, (int, float, sympy.Expr)):")
+    ap(
+        "            return typing.cast(typing.Self, "
+        "Scalar(scalar=typing.cast(numbers.Real, self.scalar + rhs)))"
+    )
     ap("        if isinstance(rhs, Scalar):")
     ap(
         "            return typing.cast(typing.Self, "
         "Scalar(scalar=self.scalar + rhs.scalar))"
     )
-    ap("        left = Gn.from_blade_dict(self.to_blade_dict())")
-    ap("        right = Gn.from_blade_dict(rhs.to_blade_dict())")
-    ap("        return typing.cast(typing.Self, left + right)")
+    ap("        if isinstance(rhs, AbstractMultiVector):")
+    ap("            return typing.cast(typing.Self, rhs + self)")
+    ap("        return typing.cast(typing.Self, NotImplemented)")
+    ap("")
+    ap("    def __radd__(self, lhs) -> typing.Self:")
+    ap("        return self.__add__(lhs)")
     ap("")
     ap("    def __sub__(self, rhs) -> typing.Self:")
     ap("        return self + (-1 * rhs)")
+    ap("")
+    ap("    def __rsub__(self, lhs) -> typing.Self:")
+    ap("        return (-self) + lhs")
     ap("")
     ap("    def __neg__(self) -> typing.Self:")
     ap(
@@ -1066,7 +1097,7 @@ from geometricalgebra.scalar import Scalar
 
 
 def _coerce(x, cls):
-    \"\"\"Coerce a scalar / any multivector to ``cls`` (the dimension's full type).\"\"\"
+    \"\"\"Coerce a scalar or multivector to ``cls`` (the full type).\"\"\"
     if isinstance(x, AbstractMultiVector):
         return cls.from_blade_dict(x.to_blade_dict())
     if isinstance(x, sympy.Expr):

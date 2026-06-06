@@ -36,7 +36,7 @@ from geometricalgebra.scalar import Scalar
 
 
 def _coerce(x, cls):
-    """Coerce a scalar / any multivector to ``cls`` (the dimension's full type)."""
+    """Coerce a scalar or multivector to ``cls`` (the full type)."""
     if isinstance(x, AbstractMultiVector):
         return cls.from_blade_dict(x.to_blade_dict())
     if isinstance(x, sympy.Expr):
@@ -482,30 +482,104 @@ class Vector2(AbstractMultiVector):
                 return typing.cast(typing.Self, left.inner_product(right))
 
     def __add__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Vector2):
-            return typing.cast(
-                typing.Self,
-                Vector2(
-                    e_1=self.e_1 + rhs.e_1,
-                    e_2=self.e_2 + rhs.e_2,
-                ),
-            )
-        left = _coerce(self, G2)
-        right = _coerce(rhs, G2)
-        return typing.cast(typing.Self, left + right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__add__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    G2(
+                        scalar=rhs.scalar,
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_12=typing.cast(numbers.Real, 0),
+                    ),
+                )
+            case Vector2():
+                return typing.cast(
+                    typing.Self,
+                    Vector2(
+                        e_1=self.e_1 + rhs.e_1,
+                        e_2=self.e_2 + rhs.e_2,
+                    ),
+                )
+            case Bivector2():
+                return typing.cast(
+                    typing.Self,
+                    G2(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_12=rhs.e_12,
+                    ),
+                )
+            case Rotor2():
+                return typing.cast(
+                    typing.Self,
+                    G2(
+                        scalar=rhs.scalar,
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_12=rhs.e_12,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G2)
+                right = _coerce(rhs, G2)
+                return typing.cast(typing.Self, left + right)
 
     def __sub__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Vector2):
-            return typing.cast(
-                typing.Self,
-                Vector2(
-                    e_1=self.e_1 - rhs.e_1,
-                    e_2=self.e_2 - rhs.e_2,
-                ),
-            )
-        left = _coerce(self, G2)
-        right = _coerce(rhs, G2)
-        return typing.cast(typing.Self, left - right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__sub__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    G2(
+                        scalar=typing.cast(numbers.Real, -rhs.scalar),
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_12=typing.cast(numbers.Real, 0),
+                    ),
+                )
+            case Vector2():
+                return typing.cast(
+                    typing.Self,
+                    Vector2(
+                        e_1=self.e_1 - rhs.e_1,
+                        e_2=self.e_2 - rhs.e_2,
+                    ),
+                )
+            case Bivector2():
+                return typing.cast(
+                    typing.Self,
+                    G2(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_12=typing.cast(numbers.Real, -rhs.e_12),
+                    ),
+                )
+            case Rotor2():
+                return typing.cast(
+                    typing.Self,
+                    G2(
+                        scalar=typing.cast(numbers.Real, -rhs.scalar),
+                        e_1=self.e_1,
+                        e_2=self.e_2,
+                        e_12=typing.cast(numbers.Real, -rhs.e_12),
+                    ),
+                )
+            case _:
+                left = _coerce(self, G2)
+                right = _coerce(rhs, G2)
+                return typing.cast(typing.Self, left - right)
+
+    def __radd__(self, lhs) -> typing.Self:
+        return self.__add__(lhs)
+
+    def __rsub__(self, lhs) -> typing.Self:
+        return typing.cast(typing.Self, (-self).__add__(lhs))
 
     def __neg__(self) -> typing.Self:
         return typing.cast(
@@ -768,28 +842,94 @@ class Bivector2(AbstractMultiVector):
                 return typing.cast(typing.Self, left.inner_product(right))
 
     def __add__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Bivector2):
-            return typing.cast(
-                typing.Self,
-                Bivector2(
-                    e_12=self.e_12 + rhs.e_12,
-                ),
-            )
-        left = _coerce(self, G2)
-        right = _coerce(rhs, G2)
-        return typing.cast(typing.Self, left + right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__add__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    Rotor2(
+                        scalar=rhs.scalar,
+                        e_12=self.e_12,
+                    ),
+                )
+            case Vector2():
+                return typing.cast(
+                    typing.Self,
+                    G2(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=rhs.e_1,
+                        e_2=rhs.e_2,
+                        e_12=self.e_12,
+                    ),
+                )
+            case Bivector2():
+                return typing.cast(
+                    typing.Self,
+                    Bivector2(
+                        e_12=self.e_12 + rhs.e_12,
+                    ),
+                )
+            case Rotor2():
+                return typing.cast(
+                    typing.Self,
+                    Rotor2(
+                        scalar=rhs.scalar,
+                        e_12=self.e_12 + rhs.e_12,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G2)
+                right = _coerce(rhs, G2)
+                return typing.cast(typing.Self, left + right)
 
     def __sub__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Bivector2):
-            return typing.cast(
-                typing.Self,
-                Bivector2(
-                    e_12=self.e_12 - rhs.e_12,
-                ),
-            )
-        left = _coerce(self, G2)
-        right = _coerce(rhs, G2)
-        return typing.cast(typing.Self, left - right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__sub__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    Rotor2(
+                        scalar=typing.cast(numbers.Real, -rhs.scalar),
+                        e_12=self.e_12,
+                    ),
+                )
+            case Vector2():
+                return typing.cast(
+                    typing.Self,
+                    G2(
+                        scalar=typing.cast(numbers.Real, 0),
+                        e_1=typing.cast(numbers.Real, -rhs.e_1),
+                        e_2=typing.cast(numbers.Real, -rhs.e_2),
+                        e_12=self.e_12,
+                    ),
+                )
+            case Bivector2():
+                return typing.cast(
+                    typing.Self,
+                    Bivector2(
+                        e_12=self.e_12 - rhs.e_12,
+                    ),
+                )
+            case Rotor2():
+                return typing.cast(
+                    typing.Self,
+                    Rotor2(
+                        scalar=typing.cast(numbers.Real, -rhs.scalar),
+                        e_12=self.e_12 - rhs.e_12,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G2)
+                right = _coerce(rhs, G2)
+                return typing.cast(typing.Self, left - right)
+
+    def __radd__(self, lhs) -> typing.Self:
+        return self.__add__(lhs)
+
+    def __rsub__(self, lhs) -> typing.Self:
+        return typing.cast(typing.Self, (-self).__add__(lhs))
 
     def __neg__(self) -> typing.Self:
         return typing.cast(
@@ -1060,30 +1200,96 @@ class Rotor2(AbstractMultiVector):
                 return typing.cast(typing.Self, left.inner_product(right))
 
     def __add__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Rotor2):
-            return typing.cast(
-                typing.Self,
-                Rotor2(
-                    scalar=self.scalar + rhs.scalar,
-                    e_12=self.e_12 + rhs.e_12,
-                ),
-            )
-        left = _coerce(self, G2)
-        right = _coerce(rhs, G2)
-        return typing.cast(typing.Self, left + right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__add__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    Rotor2(
+                        scalar=self.scalar + rhs.scalar,
+                        e_12=self.e_12,
+                    ),
+                )
+            case Vector2():
+                return typing.cast(
+                    typing.Self,
+                    G2(
+                        scalar=self.scalar,
+                        e_1=rhs.e_1,
+                        e_2=rhs.e_2,
+                        e_12=self.e_12,
+                    ),
+                )
+            case Bivector2():
+                return typing.cast(
+                    typing.Self,
+                    Rotor2(
+                        scalar=self.scalar,
+                        e_12=self.e_12 + rhs.e_12,
+                    ),
+                )
+            case Rotor2():
+                return typing.cast(
+                    typing.Self,
+                    Rotor2(
+                        scalar=self.scalar + rhs.scalar,
+                        e_12=self.e_12 + rhs.e_12,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G2)
+                right = _coerce(rhs, G2)
+                return typing.cast(typing.Self, left + right)
 
     def __sub__(self, rhs) -> typing.Self:
-        if isinstance(rhs, Rotor2):
-            return typing.cast(
-                typing.Self,
-                Rotor2(
-                    scalar=self.scalar - rhs.scalar,
-                    e_12=self.e_12 - rhs.e_12,
-                ),
-            )
-        left = _coerce(self, G2)
-        right = _coerce(rhs, G2)
-        return typing.cast(typing.Self, left - right)
+        match rhs:
+            case int() | float() | sympy.Expr():
+                return self.__sub__(Scalar(scalar=typing.cast(numbers.Real, rhs)))
+            case Scalar():
+                return typing.cast(
+                    typing.Self,
+                    Rotor2(
+                        scalar=self.scalar - rhs.scalar,
+                        e_12=self.e_12,
+                    ),
+                )
+            case Vector2():
+                return typing.cast(
+                    typing.Self,
+                    G2(
+                        scalar=self.scalar,
+                        e_1=typing.cast(numbers.Real, -rhs.e_1),
+                        e_2=typing.cast(numbers.Real, -rhs.e_2),
+                        e_12=self.e_12,
+                    ),
+                )
+            case Bivector2():
+                return typing.cast(
+                    typing.Self,
+                    Rotor2(
+                        scalar=self.scalar,
+                        e_12=self.e_12 - rhs.e_12,
+                    ),
+                )
+            case Rotor2():
+                return typing.cast(
+                    typing.Self,
+                    Rotor2(
+                        scalar=self.scalar - rhs.scalar,
+                        e_12=self.e_12 - rhs.e_12,
+                    ),
+                )
+            case _:
+                left = _coerce(self, G2)
+                right = _coerce(rhs, G2)
+                return typing.cast(typing.Self, left - right)
+
+    def __radd__(self, lhs) -> typing.Self:
+        return self.__add__(lhs)
+
+    def __rsub__(self, lhs) -> typing.Self:
+        return typing.cast(typing.Self, (-self).__add__(lhs))
 
     def __neg__(self) -> typing.Self:
         return typing.cast(
@@ -1179,6 +1385,16 @@ class Rotor2(AbstractMultiVector):
                 ),
             )
         return typing.cast(typing.Self, _coerce(self, G2).dual(n))
+
+    def plane_of_rotation(self) -> AbstractMultiVector:
+        """The unit bivector (2-blade) this rotor rotates in.
+
+        A rotor is ``cos(t/2) - sin(t/2) * B`` for a unit bivector B --
+        the oriented plane of rotation.  This returns B, the normalized
+        bivector part.  In 2D that 2-blade is also the pseudoscalar; in 3D
+        it is a bivector plane, not the trivector.  Undefined for the
+        identity rotor (no rotation)."""
+        return self.r_vector_part(2).normalize()
 
 
 zero: G2 = G2.from_scalar(0)
