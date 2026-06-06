@@ -148,12 +148,6 @@ Open issues (most are in the shared/reference code, inherited from the original 
    Now documented (the classes are explicitly 𝒢ₙ over ℝⁿ), but still a hard limit.
 2. **Self-flagged uncertainty**: `inverse`, `is_parallel_to`, `component` carry "not sure if I'm
    doing this correctly" comments; not all verified against known results.
-3. **`ruff check` E402 in `notebooks/displaymv.py`**: the jupytext percent-format notebook has an
-   intentional mid-file `import` (a later cell), which trips `E402` (module-level import not at top).
-   `ruff check . --fix` can't auto-fix it, so `entrypoint/format.sh` reports one error on an otherwise
-   clean run. Fix with a per-file `E402` ignore for `notebooks/` in `pyproject.toml` (or a `# noqa`).
-   (The vendored Emacs tree is already excluded from ruff via `extend-exclude = ["entrypoint"]`, so
-   `format.sh` no longer churns it.)
 
 ## Future directions (not yet decided)
 

@@ -68,6 +68,7 @@ from geometricalgebra.nbplotutils import (
     draw_isoceles_triangle,
     draw_right_triangle,
     draw_second_right_triangle,
+    plot_multivector,
     show_mult,
 )
 
@@ -481,9 +482,6 @@ for f in compose_intermediate_fns(
         draw_isoceles_triangle(fn=f)
         create_unit_circle(fn=f)
         axes.set_title(f._repr_latex_())
-# %%
-from geometricalgebra.nbplotutils import plot_multivector
-
 # %%
 plot_multivector(MultiVector.symbolic_multivector(n=8, prefix="a").r_vector_part(1))
 plot_multivector(2 * one + 3 * e_1 - 1.5 * e_2 + 4 * e_3 + 0.7 * (e_1 * e_2))
