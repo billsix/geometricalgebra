@@ -1,6 +1,7 @@
 # Sort generated product terms by grade
 
-**Status:** in-progress
+**Status:** complete
+**Completed:** 2026-06-05
 **Started:** 2026-06-04
 
 ## Goal
@@ -69,4 +70,27 @@ computed values (the conformance suite must still pass).
 - Should the same ordering also apply to the `_geometric_product` output (it uses the same
   `format_assignment`, so it would come along for free — presumably desired)?
 
-**Status: queued** — implementation deferred per request; decision above is settled.
+**Status: DONE (2026-06-05).** Implemented in `tools/gen_specialized.py`:
+- Added `blade_of_field` (inverse of `field_name`) and `term_grade_key` (sort key
+  `(grade(left), indices(left), grade(right), indices(right))`).
+- `format_assignment` now sorts `as_ordered_terms()` by that key for both the inline and wrapped
+  forms; constant/single-term components are unaffected. Temp-bearing terms (no `a_`/`b_` symbol)
+  sort last — none exist today.
+- Applies to `_geometric_product`, `inner_product`, `outer_product` (all share `format_assignment`),
+  so the desired scalar→vector→bivector ordering shows up everywhere.
+
+**Verification:**
+- Regenerated `g1/g2/g3.py`; diff is pure reordering (92 insertions / 92 deletions, no net change).
+- Generator is **idempotent** (a second regen produces byte-identical output).
+- `_repr_latex_` output is **byte-identical** before/after (LaTeX ordering is independent — it lives
+  in `base.py` and re-sorts blades itself; the user wanted LaTeX left as-is, and it is).
+- `ruff check`, `ty check src`, full suite (124 = 118 tests + 6 doctests) all green.
+
+**Follow-on (2026-06-05): generator now self-formats.** A slip surfaced this — regenerated `g*.py`
+must be ruff-formatted, but that was a separate manual step and two files once got committed raw.
+Fixed at the source: `tools/gen_specialized.py` `main()` now calls a `ruff_format` helper that runs
+`ruff check --fix` + `ruff format` on the files it writes (best-effort; warns if ruff is absent), so a
+regen is one self-contained, already-formatted step. `CLAUDE.md` (Code generation + Dev workflow)
+updated to say so, and to document the two generator-driven presentation behaviors (grade-ordered
+terms via `term_grade_key`; per-method docstrings copied from `base.py` via `inspect.getdoc`).
+**Whole thread complete.**

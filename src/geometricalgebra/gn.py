@@ -58,7 +58,7 @@ class BladeDictionaryEntry(NamedTuple):
         return Gn(coefficient_of_blade=dict([(self.blade, self.coefficient)]))
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(slots=True)
 class Gn(AbstractMultiVector):
     """An element (multivector) of 𝒢ₙ, the geometric algebra of n-dimensional
     Euclidean space ℝⁿ (Hestenes' notation).
@@ -104,9 +104,8 @@ class Gn(AbstractMultiVector):
             basis_blade: BladeDictionaryEntry,
         ) -> BladeDictionaryEntry:
             match basis_blade.blade:
-                case ():
-                    return basis_blade
-                case (a,):
+                case () | (_,):
+                    # a scalar or a single basis vector is already canonical
                     return basis_blade
                 case (a, c, *rest) if a == c:
                     return decrease_grade(
@@ -124,27 +123,27 @@ class Gn(AbstractMultiVector):
                         )
                     )
                 case (a, c, *rest) if a < c:
-                    sortedBladeDictionyEntriy: BladeDictionaryEntry = decrease_grade(
+                    sorted_blade_dictionary_entry = decrease_grade(
                         BladeDictionaryEntry(
                             blade=(c, *rest),
                             coefficient=basis_blade.coefficient,
                         )
                     )
-                    match sortedBladeDictionyEntriy.blade:
+                    match sorted_blade_dictionary_entry.blade:
                         case (b, *_) if a < b:
                             return BladeDictionaryEntry(
-                                blade=(a, *sortedBladeDictionyEntriy.blade),
-                                coefficient=sortedBladeDictionyEntriy.coefficient,
+                                blade=(a, *sorted_blade_dictionary_entry.blade),
+                                coefficient=sorted_blade_dictionary_entry.coefficient,
                             )
                         case _:
                             return decrease_grade(
                                 BladeDictionaryEntry(
-                                    blade=(a, *sortedBladeDictionyEntriy.blade),
-                                    coefficient=sortedBladeDictionyEntriy.coefficient,
+                                    blade=(a, *sorted_blade_dictionary_entry.blade),
+                                    coefficient=sorted_blade_dictionary_entry.coefficient,
                                 )
                             )
                 case _:
-                    raise ValueError("This code should never be able to be excuted")
+                    raise ValueError("This code should never be able to be executed")
 
         def blade_dictionary_entry_to_multivector(
             b: BladeDictionaryEntry,

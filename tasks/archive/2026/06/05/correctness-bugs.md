@@ -1,9 +1,31 @@
 # Correctness bug fixes (backlog)
 
-Status: **not started** · proposed 2026-06-04 · needs go-ahead per item
+Status: **complete** · proposed 2026-06-04 · fixed + committed 2026-06-05
+**Completed:** 2026-06-05
 
 Real correctness issues identified during the initial assessment (see `CLAUDE.md` "Assessment").
-They were reported, not fixed (never authorized). Each is small. Grouped here for one review.
+All three fixed and committed (user committed outside the container).
+
+## Done (2026-06-05)
+
+- **#1 reject/reflect sequence handling** — `base.py`: both now use
+  `cls.outer_product_of_vectors(*sequence)` instead of the instance method
+  `cls.outer_product(*sequence)` (which only worked for exactly 2 elements). Added 1-element-sequence
+  regressions to `test_project_and_reject` and `test_reflect` (1-element previously raised TypeError).
+- **#2 `__rmul__` negation** — `base.py`: the `case _:` fall-through now `return NotImplemented`
+  (was `-self._geometric_product(lhs)`). MV*MV is handled by `__mul__`; any other left operand now
+  raises a clean TypeError instead of silently negating. Confirmed nothing in the suite relied on it.
+- **#3 test copy-paste** — `tests/test_multivector.py`: `i15` now uses `unit_pseudoscalar(15)` (was
+  `14`), so grade 15 is actually exercised; assertion still holds (105 odd → squares to −1).
+
+Verified: ruff clean, `ty check src` clean (incl. `NotImplemented`), full suite **124 passed**.
+
+## Discovered, NOT in scope (follow-up candidate)
+
+Fixing #1 surfaced that `reject`/`reflect` only implement **vector and bivector** blades: a 3-element
+span reduces to a trivector, which falls through to their `case _:` `raise Exception("TODO -
+implement project for ...")`. So grade-3+ rejection/reflection is unimplemented. Separate gap from
+these bug fixes — worth its own task if wanted.
 
 ## 1. `reject` / `reflect` sequence handling (`base.py`)
 

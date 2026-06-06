@@ -44,6 +44,10 @@ class AbstractMultiVector(abc.ABC):
     methods that touch the raw representation are reimplemented per subclass.
     """
 
+    # No instance state of its own; empty slots so slotted subclasses (Gn,
+    # G1/G2/G3 with ``slots=True``) don't inherit a __dict__ from the base.
+    __slots__ = ()
+
     # ------------------------------------------------------------------
     # interchange protocol + construction (concrete subclasses implement
     # from_blade_dict / to_blade_dict; the rest is shared)
@@ -85,6 +89,9 @@ class AbstractMultiVector(abc.ABC):
 
     @classmethod
     def unit_pseudoscalar(cls, n: int) -> typing.Self:
+        """Unit pseudoscalar  i  =  e₁ e₂ … e_n  — the highest-grade unit blade of
+        the n-dimensional algebra.
+        """
         return math.prod(
             [cls.basis_vector(x) for x in range(1, n + 1)],
             start=cls.one(),
@@ -122,13 +129,14 @@ class AbstractMultiVector(abc.ABC):
     # ------------------------------------------------------------------
     @abc.abstractmethod
     def _geometric_product(self, rhs: "AbstractMultiVector") -> typing.Self:
-        """The geometric product of two multivectors of this representation."""
+        """Geometric product  A B  (juxtaposition) — the fundamental product of the
+        algebra, from which the inner product  A · B  and outer product  A ∧ B  are
+        derived.  This is the representation-specific primitive.
+        """
 
     def __mul__(self, rhs) -> typing.Self:
         match rhs:
-            case int() as n:
-                return self._geometric_product(type(self).from_scalar(n))
-            case float() as n:
+            case int() | float() as n:
                 return self._geometric_product(type(self).from_scalar(n))
             case sympy.Expr() as s:
                 return self._geometric_product(type(self).from_sympy_expr(s))
@@ -137,14 +145,16 @@ class AbstractMultiVector(abc.ABC):
 
     def __rmul__(self, lhs) -> typing.Self:
         match lhs:
-            case int() as n:
-                return self._geometric_product(type(self).from_scalar(n))
-            case float() as n:
+            case int() | float() as n:
                 return self._geometric_product(type(self).from_scalar(n))
             case sympy.Expr() as s:
                 return self._geometric_product(type(self).from_sympy_expr(s))
             case _:
-                return typing.cast(typing.Self, -self._geometric_product(lhs))
+                # multivector*multivector is handled by __mul__; any other left
+                # operand is unsupported -- defer so Python raises a clean
+                # TypeError (the previous `-self._geometric_product(lhs)` was dead
+                # and wrongly negated: the geometric product is not anticommutative).
+                return NotImplemented
 
     # ------------------------------------------------------------------
     # shared arithmetic, all built on the interchange + primitives
@@ -176,16 +186,20 @@ class AbstractMultiVector(abc.ABC):
         )
 
     def magnitude(self) -> numbers.Real | sympy.Expr:
-        """
+        """Magnitude  |A|  =  √(Ã ∗ A)  — the positive square root of the scalar
+        product of A with its reverse.
+
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 13,
         equation 1.49
         """
         return sympy.sqrt(self.magnitude_squared())
 
     def magnitude_squared(self) -> numbers.Real:
+        """Squared magnitude  |A|²  =  Ã ∗ A  =  ⟨Ã A⟩  (a scalar)."""
         return self.reverse().scalar_product(self)
 
     def normalize(self) -> typing.Self:
+        """Unit multivector  Â  =  A / |A|  — A rescaled to magnitude 1."""
         return self * (abs(self) ** (-1))
 
     def component(self, x: typing.Self) -> numbers.Real:
@@ -193,7 +207,9 @@ class AbstractMultiVector(abc.ABC):
         return self.dot(x).scalar_part()
 
     def inner_product(self, rhs: typing.Self) -> typing.Self:
-        """
+        """Inner (dot) product  A · B  — the lowest-grade part of the geometric
+        product, ⟨A B⟩_|r−s| summed over the homogeneous grade-r, grade-s parts.
+
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 6,
         equation 1.21a, 1.21b, 1.21c
         """
@@ -224,7 +240,9 @@ class AbstractMultiVector(abc.ABC):
         return self.inner_product(rhs)
 
     def outer_product(self, rhs: typing.Self) -> typing.Self:
-        """
+        """Outer (wedge) product  A ∧ B  — the highest-grade part of the geometric
+        product, ⟨A B⟩_(r+s) summed over the homogeneous grade-r, grade-s parts.
+
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 6,
         equation 1.22a, 1.22b, 1.22c
         """
@@ -253,30 +271,34 @@ class AbstractMultiVector(abc.ABC):
         return typing.cast(typing.Self, outer)
 
     def scalar_product(self, other: typing.Self) -> numbers.Real:
-        """
+        """Scalar product  A ∗ B  =  ⟨A B⟩  — the grade-0 (scalar) part of the
+        geometric product.
+
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 13,
         equation 1.44
         """
         return (self * other).scalar_part()
 
     def wedge(self, rhs: typing.Self) -> typing.Self:
+        """Outer (wedge) product  A ∧ B  (alias of ``outer_product``)."""
         return self.outer_product(rhs)
 
     def __xor__(self, other: typing.Self) -> typing.Self:
-        """
-        Python Syntax for the wedge function
-
-        a.wedge(b) = a^b
-        """
+        """Operator form of the outer product:  a ^ b  ==  a ∧ b  ==  a.wedge(b)."""
         return self.wedge(other)
 
     @staticmethod
     def outer_product_of_vectors(
         *vectors: "AbstractMultiVector",
     ) -> "AbstractMultiVector":
+        """Outer product of several vectors  a₁ ∧ a₂ ∧ … ∧ a_r  — a simple r-blade."""
         return functools.reduce(lambda a, b: a ^ b, vectors)
 
     def r_vector_part(self, r: int) -> typing.Self:
+        """Grade-r part  ⟨A⟩ᵣ  — the r-vector (grade-r) component of A.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 4
+        """
         d: BladeCoef = self.to_blade_dict()
         return type(self).from_blade_dict(
             {blade: d[blade] for blade in d.keys() if len(blade) == r}
@@ -350,6 +372,10 @@ class AbstractMultiVector(abc.ABC):
         )
 
     def scalar_part(self) -> numbers.Real:
+        """Scalar part  ⟨A⟩  =  ⟨A⟩₀  — the grade-0 (scalar) component of A.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 4
+        """
         return self.to_blade_dict().get(tuple(), typing.cast(numbers.Real, 0))
 
     def grades(self) -> list[int]:
@@ -359,7 +385,9 @@ class AbstractMultiVector(abc.ABC):
         return max(self.grades())
 
     def reverse(self) -> typing.Self:
-        """
+        """Reverse  Ã  — reverses the order of the vector factors in each blade,
+        giving the grade-r part the sign (−1)^(r(r−1)/2).
+
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 5,
         equation 1.19
         """
@@ -375,7 +403,8 @@ class AbstractMultiVector(abc.ABC):
         )
 
     def inverse(self) -> typing.Self:
-        """
+        """Inverse  A⁻¹  =  Ã / |A|²  — defined when |A|² ≠ 0.
+
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18
 
         Note sure if I'm doing it correctly
@@ -383,12 +412,15 @@ class AbstractMultiVector(abc.ABC):
         return self.reverse() * (self.magnitude_squared() ** (-1))
 
     def dual(self, n: int) -> typing.Self:
+        """Dual  A*  =  A I⁻¹  — multiplication by the inverse unit pseudoscalar I,
+        mapping a grade-r part to grade n−r.
+        """
         return self * type(self).unit_pseudoscalar(n).inverse()
 
     def even_part(self) -> typing.Self:
-        """
-        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
+        """Even part  A⁺  =  ⟨A⟩₀ + ⟨A⟩₂ + …  — the sum of the even-grade parts.
 
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
         """
         return sum(
             [self.r_vector_part(g) for g in self.grades() if g % 2 == 0],
@@ -396,9 +428,9 @@ class AbstractMultiVector(abc.ABC):
         )
 
     def odd_part(self) -> typing.Self:
-        """
-        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
+        """Odd part  A⁻  =  ⟨A⟩₁ + ⟨A⟩₃ + …  — the sum of the odd-grade parts.
 
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
         """
         return sum(
             [self.r_vector_part(g) for g in self.grades() if g % 2 == 1],
@@ -406,10 +438,10 @@ class AbstractMultiVector(abc.ABC):
         )
 
     def cosine(self, other: "AbstractMultiVector") -> numbers.Real:
-        """
+        """Cosine of the angle between A and B  —  cos θ  =  (Ã ∗ B) / (|A| |B|).
+
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 14,
         equation 1.53b
-
         """
         return typing.cast(
             numbers.Real,
@@ -421,9 +453,11 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def project(
         cls,
-        onto: "AbstractMultiVector" | Sequence["AbstractMultiVector"],
+        onto: "AbstractMultiVector | Sequence[AbstractMultiVector]",
     ) -> MultiVectorFn:
-        """
+        """Projection  P_B(A)  =  (A · B) B⁻¹  — the component of A lying in the
+        subspace represented by the blade B (``onto``).
+
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18,
         equations 2.9a, 2.9b, 2.9c
         """
@@ -450,10 +484,12 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def reject(
         cls,
-        away_from: "AbstractMultiVector" | Sequence["AbstractMultiVector"],
+        away_from: "AbstractMultiVector | Sequence[AbstractMultiVector]",
     ) -> MultiVectorFn:
-        """
-        page 18
+        """Rejection  P_B^⊥(A)  =  (A ∧ B) B⁻¹  — the component of A orthogonal to
+        the subspace represented by the blade B (``away_from``).
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18
         """
 
         def r(value: AbstractMultiVector) -> AbstractMultiVector:
@@ -464,9 +500,8 @@ class AbstractMultiVector(abc.ABC):
             return (value.wedge(away_from)) * away_from.inverse()
 
         match away_from:
-            case _ as sequence if isinstance(away_from, Sequence):
-                assert isinstance(sequence, Sequence)  # to satisfy type checking
-                return cls.reject(cls.outer_product(*sequence))
+            case [*sequence]:
+                return cls.reject(cls.outer_product_of_vectors(*sequence))
             case AbstractMultiVector() as away_from_vector if (
                 away_from_vector.is_vector()
             ):
@@ -481,8 +516,11 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def reflect(
         cls,
-        across: "AbstractMultiVector" | Sequence["AbstractMultiVector"],
+        across: "AbstractMultiVector | Sequence[AbstractMultiVector]",
     ) -> MultiVectorFn:
+        """Reflection across the subspace (blade) ``across``  —  the projection
+        minus the rejection,  P_B(A) − P_B^⊥(A).
+        """
         components_in_plane: MultiVectorFn = cls.project(across)
         components_exterior_to_plane: MultiVectorFn = cls.reject(across)
 
@@ -493,9 +531,8 @@ class AbstractMultiVector(abc.ABC):
             return components_in_plane(value) - components_exterior_to_plane(value)
 
         match across:
-            case _ as sequence if isinstance(across, Sequence):
-                assert isinstance(sequence, Sequence)  # to satisfy type checking
-                return cls.reflect(cls.outer_product(*sequence))
+            case [*sequence]:
+                return cls.reflect(cls.outer_product_of_vectors(*sequence))
             case AbstractMultiVector() as away_from_vector if (
                 away_from_vector.is_vector()
             ):
@@ -524,9 +561,9 @@ class AbstractMultiVector(abc.ABC):
 
         ``from_vector``/``to_vector`` are normalized first, so this is a *pure*
         rotation (no scaling): the in-plane part of a value is turned through the
-        angle between them, the perpendicular part is left unchanged.  Equivalent
-        to the rotor sandwich ``R v R.inverse()`` with
-        ``R = rotor_from_vectors(from_vector, to_vector)``.
+        angle between them (the plane ``from_vector ∧ to_vector`` they span), the
+        perpendicular part is left unchanged.  Equivalent to the rotor sandwich
+        ``R v R.inverse()`` with ``R = rotor_from_vectors(from_vector, to_vector)``.
         """
         assert from_vector.is_vector()
         assert to_vector.is_vector()
@@ -589,13 +626,12 @@ class AbstractMultiVector(abc.ABC):
         d: BladeCoef = self.to_blade_dict()
 
         def add_parens_or_dont(x):
-            if isinstance(x, sympy.Expr):
-                if x.is_Add:
-                    return "(" + sympy.latex(sympy.sympify(str(x))) + ")"
-                else:
-                    return sympy.latex(sympy.sympify(str(x)))
-            else:
-                return sympy.latex(sympy.sympify(str(x)))
+            # Parenthesize a sum so its terms bind to the blade; render the
+            # coefficient straight from the sympy/number object (no fragile
+            # sympify(str(x)) round-trip).
+            if isinstance(x, sympy.Expr) and x.is_Add:
+                return "(" + sympy.latex(x) + ")"
+            return sympy.latex(x)
 
         blades = [
             add_parens_or_dont(d[blade])

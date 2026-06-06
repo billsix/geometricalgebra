@@ -44,7 +44,7 @@ def _coerce(x, cls):
     return cls.from_scalar(x)
 
 
-@dataclasses.dataclass(eq=False)
+@dataclasses.dataclass(eq=False, slots=True)
 class G3(AbstractMultiVector):
     """An element (multivector) of 𝒢₃, the geometric algebra of 3D Euclidean
     space ℝ³ (Hestenes' "algebra of physical space"; the Pauli algebra).
@@ -117,95 +117,107 @@ class G3(AbstractMultiVector):
         )
 
     def _geometric_product(self, rhs) -> typing.Self:
+        """
+        Geometric product  A B  (juxtaposition) — the fundamental product of the
+        algebra, from which the inner product  A · B  and outer product  A ∧ B  are
+        derived.  This is the representation-specific primitive.
+        """
         if not isinstance(rhs, G3):
             left = Gn.from_blade_dict(self.to_blade_dict())
             right = Gn.from_blade_dict(rhs.to_blade_dict())
             return typing.cast(typing.Self, left * right)
         result = G3(
             scalar=(
-                self.e_1 * rhs.e_1
-                - self.e_12 * rhs.e_12
-                - self.e_123 * rhs.e_123
-                - self.e_13 * rhs.e_13
+                self.scalar * rhs.scalar
+                + self.e_1 * rhs.e_1
                 + self.e_2 * rhs.e_2
-                - self.e_23 * rhs.e_23
                 + self.e_3 * rhs.e_3
-                + self.scalar * rhs.scalar
+                - self.e_12 * rhs.e_12
+                - self.e_13 * rhs.e_13
+                - self.e_23 * rhs.e_23
+                - self.e_123 * rhs.e_123
             ),
             e_1=(
-                self.e_1 * rhs.scalar
-                + self.e_12 * rhs.e_2
-                - self.e_123 * rhs.e_23
-                + self.e_13 * rhs.e_3
+                self.scalar * rhs.e_1
+                + self.e_1 * rhs.scalar
                 - self.e_2 * rhs.e_12
-                - self.e_23 * rhs.e_123
                 - self.e_3 * rhs.e_13
-                + self.scalar * rhs.e_1
+                + self.e_12 * rhs.e_2
+                + self.e_13 * rhs.e_3
+                - self.e_23 * rhs.e_123
+                - self.e_123 * rhs.e_23
             ),
             e_2=(
-                self.e_1 * rhs.e_12
-                - self.e_12 * rhs.e_1
-                + self.e_123 * rhs.e_13
-                + self.e_13 * rhs.e_123
+                self.scalar * rhs.e_2
+                + self.e_1 * rhs.e_12
                 + self.e_2 * rhs.scalar
-                + self.e_23 * rhs.e_3
                 - self.e_3 * rhs.e_23
-                + self.scalar * rhs.e_2
+                - self.e_12 * rhs.e_1
+                + self.e_13 * rhs.e_123
+                + self.e_23 * rhs.e_3
+                + self.e_123 * rhs.e_13
             ),
             e_3=(
-                self.e_1 * rhs.e_13
-                - self.e_12 * rhs.e_123
-                - self.e_123 * rhs.e_12
-                - self.e_13 * rhs.e_1
+                self.scalar * rhs.e_3
+                + self.e_1 * rhs.e_13
                 + self.e_2 * rhs.e_23
-                - self.e_23 * rhs.e_2
                 + self.e_3 * rhs.scalar
-                + self.scalar * rhs.e_3
+                - self.e_12 * rhs.e_123
+                - self.e_13 * rhs.e_1
+                - self.e_23 * rhs.e_2
+                - self.e_123 * rhs.e_12
             ),
             e_12=(
-                self.e_1 * rhs.e_2
-                + self.e_12 * rhs.scalar
-                + self.e_123 * rhs.e_3
-                - self.e_13 * rhs.e_23
+                self.scalar * rhs.e_12
+                + self.e_1 * rhs.e_2
                 - self.e_2 * rhs.e_1
-                + self.e_23 * rhs.e_13
                 + self.e_3 * rhs.e_123
-                + self.scalar * rhs.e_12
+                + self.e_12 * rhs.scalar
+                - self.e_13 * rhs.e_23
+                + self.e_23 * rhs.e_13
+                + self.e_123 * rhs.e_3
             ),
             e_13=(
-                self.e_1 * rhs.e_3
-                + self.e_12 * rhs.e_23
-                - self.e_123 * rhs.e_2
-                + self.e_13 * rhs.scalar
+                self.scalar * rhs.e_13
+                + self.e_1 * rhs.e_3
                 - self.e_2 * rhs.e_123
-                - self.e_23 * rhs.e_12
                 - self.e_3 * rhs.e_1
-                + self.scalar * rhs.e_13
+                + self.e_12 * rhs.e_23
+                + self.e_13 * rhs.scalar
+                - self.e_23 * rhs.e_12
+                - self.e_123 * rhs.e_2
             ),
             e_23=(
-                self.e_1 * rhs.e_123
-                - self.e_12 * rhs.e_13
-                + self.e_123 * rhs.e_1
-                + self.e_13 * rhs.e_12
+                self.scalar * rhs.e_23
+                + self.e_1 * rhs.e_123
                 + self.e_2 * rhs.e_3
-                + self.e_23 * rhs.scalar
                 - self.e_3 * rhs.e_2
-                + self.scalar * rhs.e_23
+                - self.e_12 * rhs.e_13
+                + self.e_13 * rhs.e_12
+                + self.e_23 * rhs.scalar
+                + self.e_123 * rhs.e_1
             ),
             e_123=(
-                self.e_1 * rhs.e_23
-                + self.e_12 * rhs.e_3
-                + self.e_123 * rhs.scalar
-                - self.e_13 * rhs.e_2
+                self.scalar * rhs.e_123
+                + self.e_1 * rhs.e_23
                 - self.e_2 * rhs.e_13
-                + self.e_23 * rhs.e_1
                 + self.e_3 * rhs.e_12
-                + self.scalar * rhs.e_123
+                + self.e_12 * rhs.e_3
+                - self.e_13 * rhs.e_2
+                + self.e_23 * rhs.e_1
+                + self.e_123 * rhs.scalar
             ),
         )
         return typing.cast(typing.Self, result)
 
     def inner_product(self, rhs) -> typing.Self:
+        """
+        Inner (dot) product  A · B  — the lowest-grade part of the geometric
+        product, ⟨A B⟩_|r−s| summed over the homogeneous grade-r, grade-s parts.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 6,
+        equation 1.21a, 1.21b, 1.21c
+        """
         if not isinstance(rhs, G3):
             left = Gn.from_blade_dict(self.to_blade_dict())
             right = Gn.from_blade_dict(rhs.to_blade_dict())
@@ -213,81 +225,88 @@ class G3(AbstractMultiVector):
         result = G3(
             scalar=(
                 self.e_1 * rhs.e_1
-                - self.e_12 * rhs.e_12
-                - self.e_123 * rhs.e_123
-                - self.e_13 * rhs.e_13
                 + self.e_2 * rhs.e_2
-                - self.e_23 * rhs.e_23
                 + self.e_3 * rhs.e_3
+                - self.e_12 * rhs.e_12
+                - self.e_13 * rhs.e_13
+                - self.e_23 * rhs.e_23
+                - self.e_123 * rhs.e_123
             ),
             e_1=(
-                self.e_12 * rhs.e_2
-                - self.e_123 * rhs.e_23
-                + self.e_13 * rhs.e_3
-                - self.e_2 * rhs.e_12
-                - self.e_23 * rhs.e_123
+                -self.e_2 * rhs.e_12
                 - self.e_3 * rhs.e_13
+                + self.e_12 * rhs.e_2
+                + self.e_13 * rhs.e_3
+                - self.e_23 * rhs.e_123
+                - self.e_123 * rhs.e_23
             ),
             e_2=(
                 self.e_1 * rhs.e_12
+                - self.e_3 * rhs.e_23
                 - self.e_12 * rhs.e_1
-                + self.e_123 * rhs.e_13
                 + self.e_13 * rhs.e_123
                 + self.e_23 * rhs.e_3
-                - self.e_3 * rhs.e_23
+                + self.e_123 * rhs.e_13
             ),
             e_3=(
                 self.e_1 * rhs.e_13
-                - self.e_12 * rhs.e_123
-                - self.e_123 * rhs.e_12
-                - self.e_13 * rhs.e_1
                 + self.e_2 * rhs.e_23
+                - self.e_12 * rhs.e_123
+                - self.e_13 * rhs.e_1
                 - self.e_23 * rhs.e_2
+                - self.e_123 * rhs.e_12
             ),
-            e_12=self.e_123 * rhs.e_3 + self.e_3 * rhs.e_123,
-            e_13=-self.e_123 * rhs.e_2 - self.e_2 * rhs.e_123,
+            e_12=self.e_3 * rhs.e_123 + self.e_123 * rhs.e_3,
+            e_13=-self.e_2 * rhs.e_123 - self.e_123 * rhs.e_2,
             e_23=self.e_1 * rhs.e_123 + self.e_123 * rhs.e_1,
             e_123=typing.cast(numbers.Real, 0),
         )
         return typing.cast(typing.Self, result)
 
     def outer_product(self, rhs) -> typing.Self:
+        """
+        Outer (wedge) product  A ∧ B  — the highest-grade part of the geometric
+        product, ⟨A B⟩_(r+s) summed over the homogeneous grade-r, grade-s parts.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 6,
+        equation 1.22a, 1.22b, 1.22c
+        """
         if not isinstance(rhs, G3):
             left = Gn.from_blade_dict(self.to_blade_dict())
             right = Gn.from_blade_dict(rhs.to_blade_dict())
             return typing.cast(typing.Self, left.outer_product(right))
         result = G3(
             scalar=self.scalar * rhs.scalar,
-            e_1=self.e_1 * rhs.scalar + self.scalar * rhs.e_1,
-            e_2=self.e_2 * rhs.scalar + self.scalar * rhs.e_2,
-            e_3=self.e_3 * rhs.scalar + self.scalar * rhs.e_3,
+            e_1=self.scalar * rhs.e_1 + self.e_1 * rhs.scalar,
+            e_2=self.scalar * rhs.e_2 + self.e_2 * rhs.scalar,
+            e_3=self.scalar * rhs.e_3 + self.e_3 * rhs.scalar,
             e_12=(
-                self.e_1 * rhs.e_2
-                + self.e_12 * rhs.scalar
+                self.scalar * rhs.e_12
+                + self.e_1 * rhs.e_2
                 - self.e_2 * rhs.e_1
-                + self.scalar * rhs.e_12
+                + self.e_12 * rhs.scalar
             ),
             e_13=(
-                self.e_1 * rhs.e_3
-                + self.e_13 * rhs.scalar
+                self.scalar * rhs.e_13
+                + self.e_1 * rhs.e_3
                 - self.e_3 * rhs.e_1
-                + self.scalar * rhs.e_13
+                + self.e_13 * rhs.scalar
             ),
             e_23=(
-                self.e_2 * rhs.e_3
-                + self.e_23 * rhs.scalar
+                self.scalar * rhs.e_23
+                + self.e_2 * rhs.e_3
                 - self.e_3 * rhs.e_2
-                + self.scalar * rhs.e_23
+                + self.e_23 * rhs.scalar
             ),
             e_123=(
-                self.e_1 * rhs.e_23
-                + self.e_12 * rhs.e_3
-                + self.e_123 * rhs.scalar
-                - self.e_13 * rhs.e_2
+                self.scalar * rhs.e_123
+                + self.e_1 * rhs.e_23
                 - self.e_2 * rhs.e_13
-                + self.e_23 * rhs.e_1
                 + self.e_3 * rhs.e_12
-                + self.scalar * rhs.e_123
+                + self.e_12 * rhs.e_3
+                - self.e_13 * rhs.e_2
+                + self.e_23 * rhs.e_1
+                + self.e_123 * rhs.scalar
             ),
         )
         return typing.cast(typing.Self, result)
@@ -340,6 +359,11 @@ class G3(AbstractMultiVector):
         return typing.cast(typing.Self, result)
 
     def scalar_part(self) -> numbers.Real:
+        """
+        Scalar part  ⟨A⟩  =  ⟨A⟩₀  — the grade-0 (scalar) component of A.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 4
+        """
         return self.scalar
 
     def grades(self) -> list[int]:
@@ -355,34 +379,48 @@ class G3(AbstractMultiVector):
         return present
 
     def r_vector_part(self, r: int) -> typing.Self:
-        if r == 0:
-            result = G3(
-                scalar=self.scalar,
-            )
-            return typing.cast(typing.Self, result)
-        if r == 1:
-            result = G3(
-                e_1=self.e_1,
-                e_2=self.e_2,
-                e_3=self.e_3,
-            )
-            return typing.cast(typing.Self, result)
-        if r == 2:
-            result = G3(
-                e_12=self.e_12,
-                e_13=self.e_13,
-                e_23=self.e_23,
-            )
-            return typing.cast(typing.Self, result)
-        if r == 3:
-            result = G3(
-                e_123=self.e_123,
-            )
-            return typing.cast(typing.Self, result)
-        result = G3()
-        return typing.cast(typing.Self, result)
+        """
+        Grade-r part  ⟨A⟩ᵣ  — the r-vector (grade-r) component of A.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 4
+        """
+        match r:
+            case 0:
+                result = G3(
+                    scalar=self.scalar,
+                )
+                return typing.cast(typing.Self, result)
+            case 1:
+                result = G3(
+                    e_1=self.e_1,
+                    e_2=self.e_2,
+                    e_3=self.e_3,
+                )
+                return typing.cast(typing.Self, result)
+            case 2:
+                result = G3(
+                    e_12=self.e_12,
+                    e_13=self.e_13,
+                    e_23=self.e_23,
+                )
+                return typing.cast(typing.Self, result)
+            case 3:
+                result = G3(
+                    e_123=self.e_123,
+                )
+                return typing.cast(typing.Self, result)
+            case _:
+                result = G3()
+                return typing.cast(typing.Self, result)
 
     def reverse(self) -> typing.Self:
+        """
+        Reverse  Ã  — reverses the order of the vector factors in each blade,
+        giving the grade-r part the sign (−1)^(r(r−1)/2).
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 5,
+        equation 1.19
+        """
         result = G3(
             scalar=self.scalar,
             e_1=self.e_1,
@@ -396,6 +434,11 @@ class G3(AbstractMultiVector):
         return typing.cast(typing.Self, result)
 
     def even_part(self) -> typing.Self:
+        """
+        Even part  A⁺  =  ⟨A⟩₀ + ⟨A⟩₂ + …  — the sum of the even-grade parts.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
+        """
         result = G3(
             scalar=self.scalar,
             e_12=self.e_12,
@@ -405,6 +448,11 @@ class G3(AbstractMultiVector):
         return typing.cast(typing.Self, result)
 
     def odd_part(self) -> typing.Self:
+        """
+        Odd part  A⁻  =  ⟨A⟩₁ + ⟨A⟩₃ + …  — the sum of the odd-grade parts.
+
+        from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
+        """
         result = G3(
             e_1=self.e_1,
             e_2=self.e_2,
@@ -446,10 +494,18 @@ class G3(AbstractMultiVector):
             yield G3(e_123=self.e_123)
 
     def dual(self, n: int | None = None) -> typing.Self:
+        """
+        Dual  A*  =  A I⁻¹  — multiplication by the inverse unit pseudoscalar I,
+        mapping a grade-r part to grade n−r.
+        """
         return super().dual(self.DIMENSION if n is None else n)
 
     @classmethod
     def unit_pseudoscalar(cls, n: int | None = None) -> typing.Self:
+        """
+        Unit pseudoscalar  i  =  e₁ e₂ … e_n  — the highest-grade unit blade of
+        the n-dimensional algebra.
+        """
         return super().unit_pseudoscalar(cls.DIMENSION if n is None else n)
 
     @classmethod
@@ -2029,19 +2085,15 @@ class Rotor3(AbstractMultiVector):
                     typing.Self,
                     G3(
                         scalar=typing.cast(numbers.Real, 0),
-                        e_1=self.e_12 * rhs.e_2
-                        + self.e_13 * rhs.e_3
-                        + self.scalar * rhs.e_1,
-                        e_2=(
-                            -self.e_12 * rhs.e_1
-                            + self.e_23 * rhs.e_3
-                            + self.scalar * rhs.e_2
-                        ),
-                        e_3=(
-                            -self.e_13 * rhs.e_1
-                            - self.e_23 * rhs.e_2
-                            + self.scalar * rhs.e_3
-                        ),
+                        e_1=self.scalar * rhs.e_1
+                        + self.e_12 * rhs.e_2
+                        + self.e_13 * rhs.e_3,
+                        e_2=self.scalar * rhs.e_2
+                        - self.e_12 * rhs.e_1
+                        + self.e_23 * rhs.e_3,
+                        e_3=self.scalar * rhs.e_3
+                        - self.e_13 * rhs.e_1
+                        - self.e_23 * rhs.e_2,
                         e_12=typing.cast(numbers.Real, 0),
                         e_13=typing.cast(numbers.Real, 0),
                         e_23=typing.cast(numbers.Real, 0),
@@ -2060,19 +2112,19 @@ class Rotor3(AbstractMultiVector):
                             - self.e_23 * rhs.e_23
                         ),
                         e_12=(
-                            -self.e_13 * rhs.e_23
+                            self.scalar * rhs.e_12
+                            - self.e_13 * rhs.e_23
                             + self.e_23 * rhs.e_13
-                            + self.scalar * rhs.e_12
                         ),
                         e_13=(
-                            self.e_12 * rhs.e_23
+                            self.scalar * rhs.e_13
+                            + self.e_12 * rhs.e_23
                             - self.e_23 * rhs.e_12
-                            + self.scalar * rhs.e_13
                         ),
                         e_23=(
-                            -self.e_12 * rhs.e_13
+                            self.scalar * rhs.e_23
+                            - self.e_12 * rhs.e_13
                             + self.e_13 * rhs.e_12
-                            + self.scalar * rhs.e_23
                         ),
                     ),
                 )
@@ -2095,28 +2147,28 @@ class Rotor3(AbstractMultiVector):
                     typing.Self,
                     Rotor3(
                         scalar=(
-                            -self.e_12 * rhs.e_12
+                            self.scalar * rhs.scalar
+                            - self.e_12 * rhs.e_12
                             - self.e_13 * rhs.e_13
                             - self.e_23 * rhs.e_23
-                            + self.scalar * rhs.scalar
                         ),
                         e_12=(
-                            self.e_12 * rhs.scalar
+                            self.scalar * rhs.e_12
+                            + self.e_12 * rhs.scalar
                             - self.e_13 * rhs.e_23
                             + self.e_23 * rhs.e_13
-                            + self.scalar * rhs.e_12
                         ),
                         e_13=(
-                            self.e_12 * rhs.e_23
+                            self.scalar * rhs.e_13
+                            + self.e_12 * rhs.e_23
                             + self.e_13 * rhs.scalar
                             - self.e_23 * rhs.e_12
-                            + self.scalar * rhs.e_13
                         ),
                         e_23=(
-                            -self.e_12 * rhs.e_13
+                            self.scalar * rhs.e_23
+                            - self.e_12 * rhs.e_13
                             + self.e_13 * rhs.e_12
                             + self.e_23 * rhs.scalar
-                            + self.scalar * rhs.e_23
                         ),
                     ),
                 )
@@ -2174,9 +2226,9 @@ class Rotor3(AbstractMultiVector):
                     typing.Self,
                     Rotor3(
                         scalar=self.scalar * rhs.scalar,
-                        e_12=self.e_12 * rhs.scalar + self.scalar * rhs.e_12,
-                        e_13=self.e_13 * rhs.scalar + self.scalar * rhs.e_13,
-                        e_23=self.e_23 * rhs.scalar + self.scalar * rhs.e_23,
+                        e_12=self.scalar * rhs.e_12 + self.e_12 * rhs.scalar,
+                        e_13=self.scalar * rhs.e_13 + self.e_13 * rhs.scalar,
+                        e_23=self.scalar * rhs.e_23 + self.e_23 * rhs.scalar,
                     ),
                 )
             case _:

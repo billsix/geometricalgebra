@@ -1,6 +1,7 @@
 # Port the remaining 2D cells from displaymv.py into displayg2.py
 
-**Status:** Tier 1 + Tier 2 done — pending user review
+**Status:** complete
+**Completed:** 2026-06-05
 **Started:** 2026-06-04 · **Tier 1 + Tier 2 implemented:** 2026-06-04
 
 ## Goal

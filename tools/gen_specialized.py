@@ -31,8 +31,10 @@ algebra changes:
     python tools/gen_specialized.py
 """
 
+import inspect
 import os
 import re
+import subprocess
 import sys
 from collections import namedtuple
 from itertools import chain, combinations
@@ -42,7 +44,24 @@ import sympy
 # allow running from the repo root without installing the package
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+from geometricalgebra.base import AbstractMultiVector  # noqa: E402
 from geometricalgebra.gn import Gn  # noqa: E402
+
+
+def emit_docstring(lines, method_name, indent="        ") -> None:
+    """Copy ``AbstractMultiVector.<method_name>``'s docstring onto the generated
+    override, so the specialized classes carry the *same* Hestenes notation as the
+    shared base.  ``base.py`` is the single source of truth; this is a no-op when
+    the base method has no docstring (keeps pure-plumbing overrides clean).
+    """
+    member = getattr(AbstractMultiVector, method_name, None)
+    doc = inspect.getdoc(member) if member is not None else None
+    if not doc:
+        return
+    lines.append(f'{indent}"""')
+    for line in doc.splitlines():
+        lines.append(f"{indent}{line}".rstrip())
+    lines.append(f'{indent}"""')
 
 
 def out_path(filename: str) -> str:
@@ -65,36 +84,75 @@ def field_name(blade: tuple[int, ...]) -> str:
     return "e_" + "".join(str(i) for i in blade)
 
 
+def blade_of_field(field: str) -> tuple[int, ...]:
+    """Inverse of ``field_name``: 'scalar'->(), 'e_1'->(1,), 'e_12'->(1, 2).
+
+    Assumes single-digit basis indices (n < 10), which the field naming already
+    requires (``e_12`` is otherwise ambiguous).
+    """
+    if field == "scalar":
+        return ()
+    return tuple(int(c) for c in field[2:])
+
+
+def term_grade_key(term) -> tuple[int, tuple[int, ...], int, tuple[int, ...]]:
+    """Grade-ordering key for one additive term ``self.<L> * rhs.<R>``.
+
+    Orders by ``(grade(L), indices(L), grade(R), indices(R))`` so the generated
+    sums read scalar -> vector -> bivector -> ... (instead of sympy's roughly
+    lexicographic-by-name order, where e.g. ``e_12`` sorts before ``e_2``).  The
+    term is a product of one ``a_<field>`` (self) and one ``b_<field>`` (rhs)
+    symbol.  A term carrying neither (e.g. a future ``cse`` temporary -- the
+    products produce none today) sorts last.
+    """
+    sentinel = (99, ())
+    left = right = None
+    for sym in term.free_symbols:
+        if sym.name.startswith("a_"):
+            blade = blade_of_field(sym.name[2:])
+            left = (len(blade), blade)
+        elif sym.name.startswith("b_"):
+            blade = blade_of_field(sym.name[2:])
+            right = (len(blade), blade)
+    left = left if left is not None else sentinel
+    right = right if right is not None else sentinel
+    return (left[0], left[1], right[0], right[1])
+
+
 def format_assignment(lhs: str, expr, indent: str, render) -> list[str]:
     """Render ``<lhs>=<expr>,`` for a constructor kwarg, wrapping long sums.
 
+    Additive terms are ordered by grade (see ``term_grade_key``) for readability;
+    this only reorders the written source -- the computed value is unchanged.
     Short expressions stay on one line; long ones are split across lines one
     additive term at a time so no line exceeds the formatter's limit.  ``render``
     turns a sympy expression into source text (e.g. ``self.e_1 * rhs.e_2``).
     """
     expr = sympy.sympify(expr)
-    rendered = render(expr)
     if not expr.free_symbols:
         # a constant component (e.g. an identically-zero blade) -- cast to the
         # field type so the checker doesn't see a bare Literal.
-        rendered = f"typing.cast(numbers.Real, {rendered})"
-    inline = f"{indent}{lhs}={rendered},"
-    if len(inline) <= 88:
-        return [inline]
+        return [f"{indent}{lhs}=typing.cast(numbers.Real, {render(expr)}),"]
 
-    terms = expr.as_ordered_terms() if expr.is_Add else [expr]
-    cont = indent + "    "
-    lines = [f"{indent}{lhs}=("]
+    terms = (
+        sorted(expr.as_ordered_terms(), key=term_grade_key) if expr.is_Add else [expr]
+    )
+    fragments: list[str] = []
     for i, term in enumerate(terms):
         s = render(term)
         if i == 0:
-            lines.append(f"{cont}{s}")
+            fragments.append(s)
         elif s.startswith("-"):
-            lines.append(f"{cont}- {s[1:].lstrip()}")
+            fragments.append(f"- {s[1:].lstrip()}")
         else:
-            lines.append(f"{cont}+ {s}")
-    lines.append(f"{indent}),")
-    return lines
+            fragments.append(f"+ {s}")
+
+    inline = f"{indent}{lhs}={' '.join(fragments)},"
+    if len(inline) <= 88:
+        return [inline]
+
+    cont = indent + "    "
+    return [f"{indent}{lhs}=(", *(f"{cont}{frag}" for frag in fragments), f"{indent}),"]
 
 
 def blade_literal(blade: tuple[int, ...]) -> str:
@@ -218,6 +276,7 @@ def emit_bilinear(
     out_exprs = [sympy.sympify(rd.get(b, 0)) for b in blades]
     replacements, reduced = sympy.cse(out_exprs)
     ap(f"    def {method}(self, rhs) -> typing.Self:")
+    emit_docstring(lines, method)
     ap(f"        if not isinstance(rhs, {name}):")
     ap("            left = Gn.from_blade_dict(self.to_blade_dict())")
     ap("            right = Gn.from_blade_dict(rhs.to_blade_dict())")
@@ -266,6 +325,7 @@ def emit_structural(lines, name, blades, fields, n) -> None:
     ap("")
 
     ap("    def scalar_part(self) -> numbers.Real:")
+    emit_docstring(lines, "scalar_part")
     ap("        return self.scalar")
     ap("")
 
@@ -279,15 +339,22 @@ def emit_structural(lines, name, blades, fields, n) -> None:
     ap("")
 
     ap("    def r_vector_part(self, r: int) -> typing.Self:")
+    emit_docstring(lines, "r_vector_part")
+    ap("        match r:")
     for g in range(n + 1):
-        ap(f"        if r == {g}:")
+        ap(f"            case {g}:")
         emit_construct_return(
-            lines, name, [(f, f"self.{f}") for f in by_grade[g]], indent="            "
+            lines,
+            name,
+            [(f, f"self.{f}") for f in by_grade[g]],
+            indent="                ",
         )
-    emit_construct_return(lines, name, [])
+    ap("            case _:")
+    emit_construct_return(lines, name, [], indent="                ")
     ap("")
 
     ap("    def reverse(self) -> typing.Self:")
+    emit_docstring(lines, "reverse")
     rev_pairs = []
     for b in blades:
         f = field_name(b)
@@ -298,6 +365,7 @@ def emit_structural(lines, name, blades, fields, n) -> None:
     ap("")
 
     ap("    def even_part(self) -> typing.Self:")
+    emit_docstring(lines, "even_part")
     emit_construct_return(
         lines,
         name,
@@ -306,6 +374,7 @@ def emit_structural(lines, name, blades, fields, n) -> None:
     ap("")
 
     ap("    def odd_part(self) -> typing.Self:")
+    emit_docstring(lines, "odd_part")
     emit_construct_return(
         lines,
         name,
@@ -482,7 +551,7 @@ def generate_class(n: int, name: str) -> str:
     lines: list[str] = []
     ap = lines.append
 
-    ap("@dataclasses.dataclass(eq=False)")
+    ap("@dataclasses.dataclass(eq=False, slots=True)")
     ap(f"class {name}(AbstractMultiVector):")
     ap(f'    """{docstring_for(n)}"""')
     ap("")
@@ -573,10 +642,12 @@ def generate_class(n: int, name: str) -> str:
     # dimension-fixed convenience overrides: n defaults to this algebra's
     # DIMENSION, but an explicit n is still accepted for compatibility.
     ap("    def dual(self, n: int | None = None) -> typing.Self:")
+    emit_docstring(lines, "dual")
     ap("        return super().dual(self.DIMENSION if n is None else n)")
     ap("")
     ap("    @classmethod")
     ap("    def unit_pseudoscalar(cls, n: int | None = None) -> typing.Self:")
+    emit_docstring(lines, "unit_pseudoscalar")
     ap("        return super().unit_pseudoscalar(cls.DIMENSION if n is None else n)")
     ap("")
     ap("    @classmethod")
@@ -1143,13 +1214,32 @@ from geometricalgebra.gn import Gn
 ALGEBRAS = [(1, "G1", "g1.py"), (2, "G2", "g2.py"), (3, "G3", "g3.py")]
 
 
+def ruff_format(paths: list[str]) -> None:
+    """Format the freshly written files with ruff so the committed output is
+    already formatted in one step (no separate format.sh pass needed, matching
+    its quote style / line wrapping).  Best-effort: if ruff isn't installed, warn
+    and leave the files raw rather than failing the generation.
+    """
+    try:
+        subprocess.run(["ruff", "check", "--fix", "--quiet", *paths], check=False)
+        subprocess.run(
+            ["ruff", "format", "--quiet", "--line-length=88", *paths], check=True
+        )
+    except FileNotFoundError:
+        sys.stdout.write("warning: ruff not found; generated files left unformatted\n")
+        return
+    sys.stdout.write("formatted with ruff\n")
+
+
 def main() -> None:
+    written: list[str] = []
     # the shared Scalar module first (the graded types import it)
     scalar_source = "\n".join(
         [SCALAR_HEADER, "", generate_scalar(), "", "", '__all__ = ["Scalar"]', ""]
     )
     with open(out_path("scalar.py"), "w") as f:
         f.write(scalar_source)
+    written.append(out_path("scalar.py"))
     sys.stdout.write(f"wrote {os.path.normpath(out_path('scalar.py'))}\n")
 
     for n, name, filename in ALGEBRAS:
@@ -1160,7 +1250,9 @@ def main() -> None:
         source = "\n".join(parts)
         with open(out_path(filename), "w") as f:
             f.write(source)
+        written.append(out_path(filename))
         sys.stdout.write(f"wrote {os.path.normpath(out_path(filename))}\n")
+    ruff_format(written)
 
 
 if __name__ == "__main__":

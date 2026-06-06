@@ -1,6 +1,7 @@
 # Make the transforms (translate/rotate/scale/compose) work with G1/G2/G3
 
-**Status:** implementation complete — pending user review
+**Status:** complete
+**Completed:** 2026-06-05
 **Started:** 2026-06-04 · **Implemented:** 2026-06-04
 
 ## Goal
