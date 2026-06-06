@@ -75,7 +75,7 @@ Mixing a specialized value with a `Gn` value coerces to `Gn`.
 after their algebra. The dimension parameter is `n` (it was once misleadingly called `grade`).
 
 **Transforms.** `InvertibleFunction` (in `transforms.py`, re-exported from `gn.py`) wraps a function + inverse + LaTeX labels,
-composable via `@`, with `translate` / `uniform_scale` / `rotate` / `rotate_around` factories. This
+composable via `@`, with `translate` / `uniform_scale` / `scale_non_uniform` / `compose` factories. This
 layer is shared with the author's *modelviewprojection* book project. Jupyter display via
 `_repr_latex_`.
 
@@ -84,17 +84,15 @@ layer is shared with the author's *modelviewprojection* book project. Jupyter di
 vector through the angle from `from`→`to` *in their plane* (in-plane part turned, perpendicular part
 left fixed) — equivalent to the rotor sandwich `R v R⁻¹`; and `rotor_from_vectors(from, to)` builds
 that rotor `R = |from||to| + to·from` (scalar + bivector, the even-subalgebra grade). These act in
-**any plane, any dimension/representation** and are distinct from the **planar 2D** factories in
-`transforms.py`. **Name collision worth knowing:** `transforms.rotate(angle_in_radians)` is a planar
-`InvertibleFunction` factory (e₁e₂ plane only), whereas `AbstractMultiVector.rotate(from, to)` is the
-general method on the algebra.
+**any plane, any dimension/representation**. Rotation lives in the algebra itself — the transform
+layer (`transforms.py`) carries no rotation factory; use these rotor methods instead.
 
 ## Operators
 
 - `*` geometric product · `^` wedge (outer) product · `@` composition of `InvertibleFunction`s
 - `abs(mv)` → magnitude · inverse via `.inverse()`
-- rotations: general `AbstractMultiVector.rotate(from, to)` / `rotor_from_vectors(from, to)` (any
-  plane); planar 2D `transforms.rotate(angle)` / `rotate_90_degrees` / `rotate_around` (e₁e₂ only)
+- rotations: `AbstractMultiVector.rotate(from, to)` / `rotor_from_vectors(from, to)` (rotor methods,
+  any plane / representation)
 
 ## Code generation
 
