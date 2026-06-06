@@ -105,6 +105,13 @@ adds `src/` to its own path):
 python tools/gen_specialized.py
 ```
 
+To check that the committed modules haven't drifted from the generator (e.g. a
+hand-edit, or a generator change without a regen), run:
+
+```bash
+make check-generated   # regenerates, then `git diff --exit-code`s the g*.py / scalar.py
+```
+
 ### Adding a new algebra (worked example: `G4` for 𝒢₄)
 
 1. Open `tools/gen_specialized.py` and add one entry to the `ALGEBRAS` list:

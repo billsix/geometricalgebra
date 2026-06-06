@@ -121,6 +121,10 @@ specialized classes never drifts from the shared base.
   Ruff rules in `pyproject.toml`. **`ty check src` and `ty check tests` are clean; keep them so.**
 - After editing the generator, regenerate (`python tools/gen_specialized.py`, which auto-formats its
   output) and re-run the suite (the conformance tests guard correctness of the generated code).
+- Drift guard: `make check-generated` regenerates and `git diff --exit-code`s the committed
+  `g1/g2/g3.py` + `scalar.py`, failing if they've drifted from the generator (someone hand-edited a
+  generated file, or changed the generator without regenerating). It mutates the working tree and is
+  slow (~30s, 𝒢₃ dominates), so it's a make/CI target — **not** part of the default `pytest` run.
 - Containerized dev (podman): `make image` then `make shell`; Jupyter on port 8888.
 - Packaging: `pyproject.toml` (setuptools, `src/` layout, deps pinned in `requirements.txt`).
   License: GPL v2+.

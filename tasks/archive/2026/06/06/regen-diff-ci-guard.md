@@ -1,6 +1,17 @@
 # CI guard: committed generated code must match the generator
 
-Status: **ready to implement** · proposed 2026-06-04 · refreshed 2026-06-06 (now much simpler)
+Status: **complete 2026-06-06** · proposed 2026-06-04
+
+> **Completion note (2026-06-06).** Implemented as a **`make check-generated`** target (no CI config
+> exists in the repo, so the make target is the deliverable + the thing a future CI step would call).
+> It runs `python tools/gen_specialized.py` then `git diff --exit-code` over `scalar.py` +
+> `g1/g2/g3.py`, with a helpful error message on drift. Chose the make target over a pytest test
+> because the regen mutates the working tree and is ~30s (𝒢₃ dominates) — wrong for the default fast
+> `pytest`. Regenerates **all** algebras (the generator's `main()` writes them in one pass; no need to
+> exclude 𝒢₃). Verified both paths: clean tree → exit 0 (also confirms the committed files are in
+> sync); a simulated drift → `git diff --exit-code` exits 1 and the error block fires. Documented in
+> CLAUDE.md (Dev workflow) and README (Generating section). Resolves both open questions: make target
+> (not pytest/CI-only), and no 𝒢₃ exclusion needed.
 
 ## Current reality (2026-06-06) — why this is now easy
 

@@ -105,11 +105,20 @@ Gates resolved; order locked. (Numbers below are the "active backlog" indices ab
   blades); left `test_multivector.py` (circular product ground truth) and the dense `bench`/conformance
   dicts as-is. 141 tests pass. Archived.
 
-**Remaining order:** **#8 → #9 + #3 → #5 / #7.**  (doc tasks, #4, #6, #1, #2 all complete.)
+- **#8 regen-diff-ci-guard → complete (2026-06-06).** Added a `make check-generated` target
+  (regenerate, then `git diff --exit-code` the committed `g*.py` + `scalar.py`). Verified clean→exit 0
+  and drift→exit 1; documented in CLAUDE.md + README. Archived.
 
-Next up: **#8 `regen-diff-ci-guard`** — now unblocked by #4 (keep-checked-in). Add a
-`make check-generated` target / CI step that regenerates and `git diff --exit-code`s the committed
-`g1/g2/g3.py` + `scalar.py`, so they can't silently drift from the generator.
+**Remaining order:** **#9 + #3 → #5 / #7.**  (doc tasks, #4, #6, #1, #2, #8 all complete.)
+
+Next up: **#9 `transform-type-roundtrip-tests`** then **#3 `clarify-2d-only-transforms`** — they share
+the transform-layer fixtures: #9 adds "same representation in → same out" + value tests, then #3 adds
+the planar-guard (reject non-e₁e₂ input) on top.
+
+**Parallel investigation (not in the order above):** `build-time-codegen-dist` — revisit checking in
+generated code now that a `make` target can produce it; investigate build-time generation +
+`make dist` + `make shell`. Author-requested 2026-06-06; produce proposals, then decide. Pick up
+independently of the #9→#3→#5/#7 thread.
 
 Answering this task's own meta-question: the sequence **stays here** as the living execution tracker
 (updated as tasks land), rather than being promoted into CLAUDE.md — it's working state, not a stable

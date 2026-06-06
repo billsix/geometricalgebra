@@ -76,6 +76,18 @@ shell:  ## Get Shell into a ephermeral container made from the image
 
 
 
+.PHONY: check-generated
+check-generated: ## Verify committed g*.py / scalar.py are in sync with tools/gen_specialized.py
+	python tools/gen_specialized.py
+	@git diff --exit-code -- src/geometricalgebra/scalar.py src/geometricalgebra/g1.py src/geometricalgebra/g2.py src/geometricalgebra/g3.py || { \
+		echo ""; \
+		echo "ERROR: generated modules differ from tools/gen_specialized.py output."; \
+		echo "A g*.py / scalar.py was hand-edited, or the generator changed without a regen."; \
+		echo "Run 'python tools/gen_specialized.py' and commit the result."; \
+		exit 1; \
+	}
+
+
 .PHONY: help
 help:
 	@grep --extended-regexp '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
