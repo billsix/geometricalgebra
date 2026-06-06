@@ -198,9 +198,79 @@ to prefer same-dimension over general `Gn` (currently it always goes to `Gn`).
 - [x] **Phase 1 — registry + closure policy decided** (2026-06-06): minimal registry + `G_n`
       fallback, dimension-suffixed names, dedicated `Scalar`. See "Phase 1 decisions" above.
 - [x] **Phase 2 — generator emits graded types (2026-06-06).** See "Phase 2 results" below.
-- [ ] **Phase 3 — extend conformance + bench**, add a teaching notebook showing the grade
-      product table (`Vector2 * Vector2 -> Rotor2`, duals, etc.).
+- [ ] **Phase 3 — narrow grade ops, then tests + notebook (detailed plan below).**
 - [ ] **Phase 4 — docs:** the type lattice + return-type table per dimension in `README`/`CLAUDE.md`.
+
+## Phase 3 plan (detailed, 2026-06-06)
+
+### 3a. Narrow the grade-changing ops (prerequisite — do first)
+
+Today `dual` / `r_vector_part` / `even_part` / `odd_part` on a graded type defer to the full `G_n`
+and so return `G_n` (value-correct, typed too wide — e.g. `dual(Bivector3) -> G3` instead of
+`Vector3`). Fix by emitting them like the bilinear products: compute the symbolic result, take its
+**support**, `resolve()` the tightest type, emit a closed form constructing it. All four are special
+cases of machinery already in the generator:
+
+- `dual`: `a_mv.dual(n)` is a fixed unary product (`self * I⁻¹`); resolve its support.
+  → `dual(Bivector3) -> Vector3`, `dual(Vector3) -> Bivector3`, `dual(Scalar) -> Trivector3`, etc.
+- `r_vector_part(r)`: support = this type's grade-`r` blades → resolve (so `Rotor3.r_vector_part(2)
+  -> Bivector3`, `Rotor3.r_vector_part(0) -> Scalar`, `Vector3.r_vector_part(0) -> Scalar` (zero)).
+  Emit a per-`r` branch.
+- `even_part` / `odd_part`: support = even/odd-grade blades of this type → resolve (`Rotor_n` stays
+  `Rotor_n`; `Vector_n.even_part() -> Scalar` (zero)).
+
+Regenerate; the result types narrow. Keep the widen fallback only for genuinely mixed results.
+
+### 3b. Tests — new `tests/test_graded.py`
+
+Graded types can't represent arbitrary multivectors, so they don't fit `test_conformance.py`'s
+`[Gn, G1, G2, G3]` full-rep parametrization → a dedicated file. Coverage:
+
+- **Product table (value + type).** A parametrized list of `(T1, op, T2) -> ExpectedType` cases
+  (`Vector2 * Vector2 -> Rotor2`, `Vector2 ^ Vector2 -> Bivector2`, `Bivector2 * Bivector2 ->
+  Scalar`, `Vector3 * Trivector3 -> Bivector3`, `Vector3 * Bivector3 -> G3`, …). For each: assert
+  `type(result) is ExpectedType` **and** the value equals the same op done through `Gn` (widen both
+  operands to `Gn`, run the reference op, compare via `==`). The table doubles as documentation.
+- **Grade ops narrow (3a):** `type(Bivector3(...).dual()) is Vector3`, `Rotor3.r_vector_part(2) is
+  Bivector3`, etc., with value checks.
+- **Scalars:** `Scalar * X -> type(X)`; `3 * Vector2 -> Vector2`; `Bivector2*Bivector2 -> Scalar`.
+- **Widen fallback:** `Vector2 + Bivector2 -> G2`; `Vector2 * G2 -> G2`; cross-dim/foreign coerce.
+- **Cross-type `==`:** `Vector2(3,4) == G2(e_1=3,e_2=4) == Gn(...)`.
+- **Rotors as ℂ/ℍ:** `Rotor2` unit bivector squares to −1; `Rotor3` quaternion identities.
+- **Inherited ABC still works:** `magnitude`, `normalize`, `reverse`, `is_close` on graded values.
+- **Symbolic:** at least one symbolic product per dimension equals the `Gn` symbolic result.
+- Helper: a tiny `expected_type(support, n)` mirroring `resolve` so most cases are checked
+  structurally rather than by a brittle hand table (keep a few explicit ones as readable docs).
+
+### 3c. Notebook — new `notebooks/displaygraded.py`
+
+A teaching notebook whose star is **the operation decides the type** (printed via
+`type(x).__name__`), since that's the pedagogical payoff. Percent-format, GPL header, kernel
+`geometricalgebra`. Outline:
+
+1. Intro: grades vs. closed subalgebras; the registry per dimension.
+2. **2D:** build `Vector2`; `a * b` → show it's a `Rotor2` with `scalar = a·b`, `e_12 = a∧b`;
+   `a ^ b` → `Bivector2`; orthogonal vs. parallel vectors (type stays `Rotor2`, FP-proof);
+   `Bivector2 * Bivector2 -> Scalar`; `Rotor2` ≅ ℂ (`e_12² = −1`, rotor rotates a vector).
+3. **The grade product table** rendered from live calls (`type(...).__name__`) — the dispatch table
+   made visible.
+4. **3D:** `Vector3 * Vector3 -> Rotor3`; `Vector3 ^ Vector3 -> Bivector3`; **`dual(bivector) ->
+   Vector3`** (the cross-product connection, post-3a); `Rotor3` ≅ ℍ; mixed grade widening to `G3`.
+5. "Want a pure blade? use `^`" — the FP/typing note in prose.
+6. Interop: a graded value `== G2`/`Gn`; widen with arithmetic.
+
+(Leave `displayg2.py`/`displayg3.py` as-is; the graded story is cross-dimensional, so its own
+notebook is cleaner.)
+
+### 3d. (optional) bench rows
+
+Add `Vector2*Vector2` / `Vector3*Vector3` (typed) vs full `G_n` vs `Gn` to `tools/bench.py`, echoing
+the Phase 0 numbers from real generated code.
+
+### Sequencing & gates
+
+3a → regenerate → 3b (tests green, count rises from 118) → 3c (notebook executes, ruff clean) →
+optional 3d. Keep `ty check src/tests` + ruff clean at every step.
 
 ## Phase 2 results (2026-06-06)
 
