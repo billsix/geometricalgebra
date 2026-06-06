@@ -1,7 +1,26 @@
 # Build multivectors from basis vectors, not blade-dict literals
 
-**Status:** proposed — needs go-ahead
+**Status:** complete (test_graded.py) · others deliberately left
+**Completed:** 2026-06-06
 **Started:** 2026-06-06
+
+> **Completion note (2026-06-06).** Did **`tests/test_graded.py`** — the primary, high-value target.
+> Replaced the local `def gn(d)` dict→Gn helper with `import geometricalgebra.gn as gn` (module-
+> qualified style, as confirmed) and rewrote every `gn({...})` expected value as a basis combination:
+> `3 * gn.e_1 + 4 * gn.e_2`, blades via the wedge `(gn.e_1 ^ gn.e_2)` (always parenthesized — `^` has
+> low precedence in Python), scalars via `k * gn.one`. The expected values stay **general `Gn`
+> references** (so the cross-representation `typed == Gn` check is preserved), just readable. `ty`/`ruff`
+> clean on tests; 141 tests pass.
+>
+> **Deliberately left as dict literals** (the task's own "judgement per case" exceptions):
+> - **`tests/test_multivector.py`** — its `MultiVector({...})` are expected values *in geometric-product
+>   tests*. Rebuilding them from basis vectors uses a product/wedge (the wedge itself routes through the
+>   geometric product in the ABC), i.e. the operation under test — circular ground truth. Dict literals
+>   are the correct independent reference there.
+> - **`tools/bench.py`** and **`tests/test_conformance.py`** dense/generated dicts
+>   (`{b: base+i+1 for b in blades(n)}`, `{(i,): i for i in range(1, n+1)}`) read *worse* as basis
+>   combinations — these are the "dense full multivector" case to leave alone. The couple of trivial
+>   `Gn.from_blade_dict({(1,): 1})` spots in conformance are already clear; not worth the churn.
 
 ## Goal
 

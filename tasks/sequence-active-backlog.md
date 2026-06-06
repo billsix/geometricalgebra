@@ -100,10 +100,16 @@ Gates resolved; order locked. (Numbers below are the "active backlog" indices ab
   `g*.py` future-annotations (emitted into both headers). Regenerated; `ty`/`ruff`/141 tests clean.
   Archived.
 
-**Remaining order:** **#2 → #8 → #9 + #3 → #5 / #7.**  (doc tasks, #4, #6, #1 all complete.)
+- **#2 basis-vector-construction → complete (2026-06-06).** Rewrote `test_graded.py`'s `gn({...})`
+  expected values as module-qualified basis combinations (`3 * gn.e_1 + 4 * gn.e_2`, wedges for
+  blades); left `test_multivector.py` (circular product ground truth) and the dense `bench`/conformance
+  dicts as-is. 141 tests pass. Archived.
 
-Next up: **#2 `basis-vector-construction`** — rewrite test/bench blade-dict literals as readable basis
-combinations (module-qualified `gn.e_1` style). Pure test/tooling readability; no library-source change.
+**Remaining order:** **#8 → #9 + #3 → #5 / #7.**  (doc tasks, #4, #6, #1, #2 all complete.)
+
+Next up: **#8 `regen-diff-ci-guard`** — now unblocked by #4 (keep-checked-in). Add a
+`make check-generated` target / CI step that regenerates and `git diff --exit-code`s the committed
+`g1/g2/g3.py` + `scalar.py`, so they can't silently drift from the generator.
 
 Answering this task's own meta-question: the sequence **stays here** as the living execution tracker
 (updated as tasks land), rather than being promoted into CLAUDE.md — it's working state, not a stable
