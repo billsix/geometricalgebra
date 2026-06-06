@@ -71,10 +71,10 @@ from geometricalgebra.nbplotutils import (
     show_mult,
 )
 from geometricalgebra.transforms import (
+    InvertibleFunction,
     compose,
     compose_intermediate_fns,
     inverse,
-    rotate,
     scale_non_uniform,
     translate,
 )
@@ -263,15 +263,33 @@ gram_fe_to_mol_fe(gram_fe=95.8)
 # Transforms
 # ----------
 #
-# The transform layer (`translate`, `scale_non_uniform`, `rotate`, `compose`,
-# ...) is **representation preserving**: applied to a `G2`, it returns a `G2`.
-# Each factory builds an `InvertibleFunction` that renders its own LaTeX.
+# The transform layer (`translate`, `scale_non_uniform`, `compose`, ...) is
+# **representation preserving**: applied to a `G2`, it returns a `G2`.  Each
+# factory builds an `InvertibleFunction` that renders its own LaTeX.
+#
+# Rotation in geometric algebra is the rotor sandwich `R v R~`.  We wrap it as an
+# `InvertibleFunction` here so it composes / inverts like the other transforms.
+
+
+# %%
+def rotate(angle):
+    """Planar rotation by `angle` in the e_1 e_2 plane, as a composable
+    InvertibleFunction built from the rotor R = cos(a/2) - sin(a/2) e_12."""
+    half = angle / 2
+    R = sympy.cos(half) * one - sympy.sin(half) * e_12
+    return InvertibleFunction(
+        lambda v: R * v * R.reverse(),
+        lambda v: R.reverse() * v * R,
+        f"R_{{{sympy.latex(angle)}}}",
+        f"R_{{{sympy.latex(-angle)}}}",
+    )
+
 
 # %%
 translate(5 * e_1)
 
 # %%
-# `scale_non_uniform` is the n-D scale; `scale_non_uniform_2d` is the 2D alias
+# `scale_non_uniform` is the n-D scale (pass two factors for the 2D case)
 scale_non_uniform(5, 6)
 
 # %%

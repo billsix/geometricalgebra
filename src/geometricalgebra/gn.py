@@ -29,10 +29,10 @@ import sympy
 from geometricalgebra.base import AbstractMultiVector, BladeCoef
 
 # The representation-agnostic transform layer (InvertibleFunction, translate,
-# rotate, scale, compose, ...) lives in geometricalgebra.transforms; it derives
-# any basis it needs from the value's own type, so it preserves Gn / G1 / G2 /
-# G3 / ... .  Re-exported here for backward compatibility with existing imports
-# (`from geometricalgebra.gn import translate, rotate, ...`).
+# scale, compose, ...) lives in geometricalgebra.transforms; it derives any basis
+# it needs from the value's own type, so it preserves Gn / G1 / G2 / G3 / ... .
+# Re-exported here for backward compatibility with existing imports
+# (`from geometricalgebra.gn import translate, scale_non_uniform, ...`).
 from geometricalgebra.transforms import (  # noqa: F401
     InvertibleFunction,
     compose,
@@ -40,13 +40,7 @@ from geometricalgebra.transforms import (  # noqa: F401
     compose_intermediate_fns_and_fn,
     identity,
     inverse,
-    is_clockwise,
-    is_counter_clockwise,
-    rotate,
-    rotate_90_degrees,
-    rotate_around,
     scale_non_uniform,
-    scale_non_uniform_2d,
     translate,
     uniform_scale,
 )

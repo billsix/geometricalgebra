@@ -53,8 +53,7 @@ from geometricalgebra.gn import (
     e_4,
     inverse,
     one,
-    rotate,
-    scale_non_uniform_2d,
+    scale_non_uniform,
     sym_vec2_1,
     sym_vec2_2,
     sym_vec3_1,
@@ -291,8 +290,21 @@ show_mult(
 # %%
 
 
+def rotate(angle):
+    """Planar rotation by `angle` in the e_1 e_2 plane, as a composable
+    InvertibleFunction built from the rotor R = cos(a/2) - sin(a/2) e_1 e_2."""
+    half = angle / 2
+    rotor = sympy.cos(half) * one - sympy.sin(half) * (e_1 * e_2)
+    return InvertibleFunction(
+        lambda v: rotor * v * rotor.reverse(),
+        lambda v: rotor.reverse() * v * rotor,
+        f"R_{{{sympy.latex(angle)}}}",
+        f"R_{{{sympy.latex(-angle)}}}",
+    )
+
+
 T: typing.Callable[[MultiVector], MultiVectorFn] = translate
-S: typing.Callable[[float, float], MultiVectorFn] = scale_non_uniform_2d
+S: typing.Callable[[float, float], InvertibleFunction] = scale_non_uniform
 R: typing.Callable[[float], InvertibleFunction] = rotate
 # %%
 T(5 * e_1)

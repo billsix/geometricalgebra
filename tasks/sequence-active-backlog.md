@@ -109,11 +109,25 @@ Gates resolved; order locked. (Numbers below are the "active backlog" indices ab
   (regenerate, then `git diff --exit-code` the committed `g*.py` + `scalar.py`). Verified clean→exit 0
   and drift→exit 1; documented in CLAUDE.md + README. Archived.
 
-**Remaining order:** **#9 + #3 → #5 / #7.**  (doc tasks, #4, #6, #1, #2, #8 all complete.)
+- **#9 transform-type-roundtrip-tests → complete (2026-06-06).** New `tests/test_transforms.py` —
+  type round-trip (Gn/G1/G2/G3) + value / invertibility / error-path tests for the transform layer.
+  Archived.
 
-Next up: **#9 `transform-type-roundtrip-tests`** then **#3 `clarify-2d-only-transforms`** — they share
-the transform-layer fixtures: #9 adds "same representation in → same out" + value tests, then #3 adds
-the planar-guard (reject non-e₁e₂ input) on top.
+- **#3 clarify-2d-only-transforms → complete (2026-06-06), resolved by REMOVAL.** Author decided to
+  delete the planar 2D factories (`rotate`/`rotate_90_degrees`/`rotate_around`/`scale_non_uniform_2d` +
+  the unused `is_clockwise`/`is_counter_clockwise`) rather than guard them — they were
+  modelviewprojection artifacts and GA rotation is the rotor (`AbstractMultiVector.rotate`). Kept the
+  dimension-general transform layer; rewrote the two notebooks to use a local rotor-based `rotate`
+  helper + `scale_non_uniform`. 161 tests. Archived.
+
+**Remaining order:** **#5 / #7.**  (doc tasks, #4, #6, #1, #2, #8, #9, #3 all complete.)
+
+Next up (independent, schedule by appetite):
+- **#5 `display-simplify`** — should G1/G2/G3 fully `sympy.simplify` their coefficients on display
+  (`_repr_latex_`)? Needs a go/no-go (it's a "do we want this?" decision, plus a small generated-code
+  change if yes).
+- **#7 `generalize-reject-reflect-higher-grade`** — extend `reject`/`reflect` to grade-3+ blades; the
+  author wanted to re-read Hestenes p.18 first (a content gate, not a code dependency).
 
 **Parallel investigation (not in the order above):** `build-time-codegen-dist` — revisit checking in
 generated code now that a `make` target can produce it; investigate build-time generation +

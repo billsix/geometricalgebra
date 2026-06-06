@@ -1,7 +1,32 @@
 # Make the 2D-only transforms clearly 2D-only to users
 
-**Status:** not started · low priority
+**Status:** complete (resolved by **removal**, not a guard)
+**Completed:** 2026-06-06
 **Started:** 2026-06-05 (proposed)
+
+> **Outcome (2026-06-06): removed the planar transforms entirely** rather than guarding them.
+> The author observed these are modelviewprojection artifacts and that geometric-algebra rotation is
+> already covered by the rotor (`AbstractMultiVector.rotate(from, to)` / `rotor_from_vectors`), so the
+> planar 2D `transforms.py` factories carried no GA-pedagogy weight — and removing them moots the
+> whole "silently mis-transforms an e₃ vector" hazard this task was about.
+>
+> **Done:**
+> - `transforms.py`: deleted `rotate`, `rotate_90_degrees`, `rotate_around`, `scale_non_uniform_2d`,
+>   `is_clockwise`, `is_counter_clockwise` (the last two only called `rotate_90_degrees` and were
+>   unused); trimmed `__all__`; dropped the now-unused `math`/`sympy` imports; rewrote the module +
+>   `scale_non_uniform` docstrings. The **dimension-general** layer
+>   (`translate`/`uniform_scale`/`scale_non_uniform`/`compose`/`inverse`/`identity`/`InvertibleFunction`)
+>   is kept.
+> - `gn.py`: dropped the 5 re-exports + fixed the example comment.
+> - `nbplotutils.py`: `sine()` rewritten (`rotate_90_degrees()(v)` → `v * e₁₂` directly).
+> - `tests/test_transforms.py`: dropped the planar cases (dimension-general round-trip / scale-value /
+>   invertibility / error-path tests stay). Suite 161.
+> - **Notebooks** (`displayg2.py`, `displaymv.py`): `scale_non_uniform_2d` → `scale_non_uniform`
+>   (identical); `rotate(angle)` → a small **notebook-local** `InvertibleFunction` built on the GA
+>   rotor (`R = cos(a/2) − sin(a/2)·e₁e₂`, sandwich `R v R̃`) — verified it reproduces the old
+>   `rotate` exactly (`rotate(π/2)` of `3e₁+4e₂ → −4e₁+3e₂`, type-preserving, composes/inverts).
+>   `rotate_around` would inline as `compose([translate(c), rotate, translate(-c)])` (no notebook
+>   actually used it). Notebooks aren't run by the suite; the rotor helper was spot-checked directly.
 
 ## Goal
 

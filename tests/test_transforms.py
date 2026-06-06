@@ -22,13 +22,9 @@ need from the *type of the value* (``cls.basis_vector(i)``), so a G1/G2/G3/Gn
 value in yields the **same concrete type** out.  These tests pin that, plus a few
 known values, invertibility, and the non-invertible error paths.
 
-Rotations / 2-D scale are inherently planar (the e_1 e_2 plane), so their *values*
-are exercised only on planar (e_1, e_2) vectors and on the G2 / Gn / G3 reps.
 Equality on the specialized classes is simplify-aware, but these use numeric
 coefficients, so ``is_close`` (float-tolerant) is the right comparison.
 """
-
-import math
 
 import pytest
 
@@ -40,11 +36,7 @@ from geometricalgebra.transforms import (
     compose,
     identity,
     inverse,
-    rotate,
-    rotate_90_degrees,
-    rotate_around,
     scale_non_uniform,
-    scale_non_uniform_2d,
     translate,
     uniform_scale,
 )
@@ -60,8 +52,6 @@ def vec(cls, *coords):
 
 # (rep, a vector of that rep's natural dimension)
 DIM_GENERAL = [(Gn, (1, 2, 3)), (G1, (3,)), (G2, (3, 4)), (G3, (1, 2, 3))]
-# reps on which the planar (e_1 e_2) transforms preserve type
-PLANAR_REPS = [Gn, G2, G3]
 
 
 @pytest.mark.parametrize("cls", [Gn, G1, G2, G3])
@@ -90,29 +80,11 @@ def test_dimension_general_transforms_preserve_type(cls, coords):
         assert type(fn(v)) is cls
 
 
-@pytest.mark.parametrize("cls", PLANAR_REPS)
-def test_planar_transforms_preserve_type(cls):
-    v = vec(cls, 3, 4)  # lies in the e_1 e_2 plane
-    center = vec(cls, 1, 1)
-    fns = [
-        rotate_90_degrees(),
-        rotate(math.pi / 3),
-        rotate_around(math.pi / 4, center),
-        scale_non_uniform_2d(2.0, 3.0),
-    ]
-    for fn in fns:
-        assert type(fn(v)) is cls
-
-
 @pytest.mark.parametrize("cls", [Gn, G2, G3])
-def test_known_values(cls):
+def test_known_scale_values(cls):
     v = vec(cls, 3, 4)
-    # rotate 90 degrees in e_1 e_2:  3 e_1 + 4 e_2  ->  -4 e_1 + 3 e_2
-    assert rotate_90_degrees()(v).is_close(vec(cls, -4, 3))
-    # rotate(pi/2) (float trig) lands on the same result within tolerance
-    assert rotate(math.pi / 2)(v).is_close(vec(cls, -4, 3))
-    # non-uniform 2-D scale
-    assert scale_non_uniform_2d(2.0, 3.0)(vec(cls, 1, 1)).is_close(vec(cls, 2, 3))
+    # non-uniform scale: stretch e_1 by 2, e_2 by 3
+    assert scale_non_uniform(2.0, 3.0)(vec(cls, 1, 1)).is_close(vec(cls, 2, 3))
     # uniform scale
     assert uniform_scale(2.0)(v).is_close(vec(cls, 6, 8))
 

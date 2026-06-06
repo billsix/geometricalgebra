@@ -38,7 +38,6 @@ from geometricalgebra.base import AbstractMultiVector, BladeCoef
 from geometricalgebra.gn import (
     MultiVector,
     identity,
-    rotate_90_degrees,
 )
 
 set_matplotlib_formats("svg")
@@ -205,7 +204,9 @@ def cosine(v1: AbstractMultiVector, v2: AbstractMultiVector) -> numbers.Real:
 
 
 def sine(v1: AbstractMultiVector, v2: AbstractMultiVector) -> numbers.Real:
-    return (rotate_90_degrees()(v1).dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()
+    # rotate v1 by 90 degrees in the e_1 e_2 plane (v1 * e_1 e_2), then project on v2
+    rot90: AbstractMultiVector = v1 * type(v1).from_blade_dict({(1, 2): 1})
+    return (rot90.dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()
 
 
 def draw_isoceles_triangle(

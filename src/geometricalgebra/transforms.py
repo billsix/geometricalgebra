@@ -19,9 +19,9 @@
 
 ``InvertibleFunction`` wraps a function and its inverse (plus LaTeX labels) and
 composes via ``compose`` / ``@``.  The transform *factories* (``translate``,
-``uniform_scale``, ``scale_non_uniform``, ``rotate``, ...) are **representation
-preserving**: each derives any basis vectors it needs from the *type of the
-value it is applied to* (via the ``AbstractMultiVector`` interchange protocol --
+``uniform_scale``, ``scale_non_uniform``, ...) are **representation preserving**:
+each derives any basis vectors it needs from the *type of the value it is applied
+to* (via the ``AbstractMultiVector`` interchange protocol --
 ``type(vector).basis_vector(i)``), so a ``G2`` in yields a ``G2`` out, a ``Gn``
 in yields a ``Gn`` out, and so on.  Nothing here closes over a specific
 representation's basis constants.
@@ -30,19 +30,16 @@ This module imports only ``base`` (the abstract base), never a concrete
 representation, so it stays free of any single algebra.  ``gn.py`` re-exports
 these names for backward compatibility.
 
-The rotations (``rotate_90_degrees`` / ``rotate`` / ``rotate_around``) are
-**inherently planar (2D)** -- they act in the e_1 e_2 plane.  The general
-vector-to-vector rotation (any plane, any representation) is
-``AbstractMultiVector.rotate``; the factories here are the planar 2D
-specialization.  (Note the name overlap: ``transforms.rotate`` takes an angle,
-``AbstractMultiVector.rotate`` takes a from/to vector pair.)
+Rotation lives in the algebra itself, not here: use the rotor methods
+``AbstractMultiVector.rotate(from, to)`` / ``rotor_from_vectors(from, to)`` (the
+geometric-algebra way -- any plane, any representation).  The old planar 2D
+``rotate(angle)`` / ``rotate_90_degrees`` / ``rotate_around`` factories were
+removed (they acted only in the e_1 e_2 plane and silently mis-transformed a
+vector with an e_3+ component).
 """
 
 import dataclasses
-import math
 import typing
-
-import sympy
 
 from geometricalgebra.base import AbstractMultiVector, MultiVectorFn
 
@@ -277,7 +274,7 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
 
     Representation preserving: the basis vectors are taken from the type of the
     value being transformed, so a ``G2``/``G3``/``Gn`` value scales to its own
-    type.  ``scale_non_uniform_2d`` is the 2D special case.
+    type.  Pass two factors for the 2D case (``scale_non_uniform(m_x, m_y)``).
     """
 
     def f(vector: AbstractMultiVector) -> AbstractMultiVector:
@@ -308,71 +305,6 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
     return InvertibleFunction(f, f_inv, forward, inv)
 
 
-def scale_non_uniform_2d(m_x: float, m_y: float) -> InvertibleFunction:
-    """2D non-uniform scale (thin wrapper over the n-D ``scale_non_uniform``)."""
-    return scale_non_uniform(m_x, m_y)
-
-
-def rotate_90_degrees() -> InvertibleFunction:
-    """Rotate a vector 90 degrees in the e_1 e_2 plane (inherently 2D).
-
-    Representation preserving: the unit bivector e_1 e_2 is built from the type
-    of the value being rotated.
-    """
-
-    def f(vector: AbstractMultiVector) -> AbstractMultiVector:
-        rot_90: AbstractMultiVector = type(vector).from_blade_dict({(1, 2): 1})
-        return vector * rot_90
-
-    def f_inv(vector: AbstractMultiVector) -> AbstractMultiVector:
-        rot_90: AbstractMultiVector = type(vector).from_blade_dict({(1, 2): 1})
-        return vector * rot_90.inverse()
-
-    return InvertibleFunction(f, f_inv, "R_{xy90}", "R_{xy90}^{-1}")
-
-
-def rotate(angle_in_radians: float) -> InvertibleFunction:
-    """Rotate a vector by ``angle_in_radians`` in the e_1 e_2 plane (inherently 2D)."""
-    r90: InvertibleFunction = rotate_90_degrees()
-
-    def create_rotate_function(
-        perp: InvertibleFunction,
-    ) -> typing.Callable[[AbstractMultiVector], AbstractMultiVector]:
-        def f(vector: AbstractMultiVector) -> AbstractMultiVector:
-            parallel: AbstractMultiVector = math.cos(float(angle_in_radians)) * vector
-            perpendicular: AbstractMultiVector = math.sin(
-                float(angle_in_radians)
-            ) * perp(vector)
-            return parallel + perpendicular
-
-        return f
-
-    return InvertibleFunction(
-        create_rotate_function(r90),
-        create_rotate_function(inverse(r90)),
-        f"R_{{{sympy.latex(angle_in_radians)}}}",
-        f"R_{{{sympy.latex(-angle_in_radians)}}}",
-    )
-
-
-def rotate_around(
-    angle_in_radians: float, center: AbstractMultiVector
-) -> InvertibleFunction:
-    """Rotate by ``angle_in_radians`` about ``center`` in the e_1 e_2 plane (2D)."""
-    return compose([translate(center), rotate(angle_in_radians), translate(-center)])
-
-
-def is_counter_clockwise(v1: AbstractMultiVector, v2: AbstractMultiVector) -> bool:
-    return not is_clockwise(v1, v2)
-
-
-def is_clockwise(v1: AbstractMultiVector, v2: AbstractMultiVector) -> bool:
-    plane: AbstractMultiVector = type(v1).from_blade_dict({(1, 2): 1})
-    assert type(v1).project(onto=plane)(v1) == v1
-    assert type(v2).project(onto=plane)(v2) == v2
-    return float(inverse(rotate_90_degrees())(v1).cosine(v2)) > 0.000001
-
-
 __all__ = [
     "InvertibleFunction",
     "inverse",
@@ -383,11 +315,5 @@ __all__ = [
     "translate",
     "uniform_scale",
     "scale_non_uniform",
-    "scale_non_uniform_2d",
-    "rotate_90_degrees",
-    "rotate",
-    "rotate_around",
-    "is_clockwise",
-    "is_counter_clockwise",
     "MultiVectorFn",
 ]
