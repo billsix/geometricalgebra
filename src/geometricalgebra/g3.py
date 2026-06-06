@@ -797,18 +797,67 @@ class Vector3(AbstractMultiVector):
             yield Vector3(e_3=self.e_3)
 
     def even_part(self) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G3).even_part())
+        return typing.cast(
+            typing.Self,
+            Scalar(
+                scalar=typing.cast(numbers.Real, 0),
+            ),
+        )
 
     def odd_part(self) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G3).odd_part())
+        return typing.cast(
+            typing.Self,
+            Vector3(
+                e_1=self.e_1,
+                e_2=self.e_2,
+                e_3=self.e_3,
+            ),
+        )
 
     def r_vector_part(self, r: int) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G3).r_vector_part(r))
+        if r == 0:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=typing.cast(numbers.Real, 0),
+                ),
+            )
+        if r == 1:
+            return typing.cast(
+                typing.Self,
+                Vector3(
+                    e_1=self.e_1,
+                    e_2=self.e_2,
+                    e_3=self.e_3,
+                ),
+            )
+        if r == 2:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=typing.cast(numbers.Real, 0),
+                ),
+            )
+        if r == 3:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=typing.cast(numbers.Real, 0),
+                ),
+            )
+        return typing.cast(typing.Self, Scalar(scalar=typing.cast(numbers.Real, 0)))
 
     def dual(self, n: int | None = None) -> typing.Self:
-        return typing.cast(
-            typing.Self, _coerce(self, G3).dual(self.DIMENSION if n is None else n)
-        )
+        if n is None or n == 3:
+            return typing.cast(
+                typing.Self,
+                Bivector3(
+                    e_12=typing.cast(numbers.Real, -self.e_3),
+                    e_13=self.e_2,
+                    e_23=typing.cast(numbers.Real, -self.e_1),
+                ),
+            )
+        return typing.cast(typing.Self, _coerce(self, G3).dual(n))
 
 
 @dataclasses.dataclass(eq=False)
@@ -1142,18 +1191,67 @@ class Bivector3(AbstractMultiVector):
             yield Bivector3(e_23=self.e_23)
 
     def even_part(self) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G3).even_part())
+        return typing.cast(
+            typing.Self,
+            Bivector3(
+                e_12=self.e_12,
+                e_13=self.e_13,
+                e_23=self.e_23,
+            ),
+        )
 
     def odd_part(self) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G3).odd_part())
+        return typing.cast(
+            typing.Self,
+            Scalar(
+                scalar=typing.cast(numbers.Real, 0),
+            ),
+        )
 
     def r_vector_part(self, r: int) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G3).r_vector_part(r))
+        if r == 0:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=typing.cast(numbers.Real, 0),
+                ),
+            )
+        if r == 1:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=typing.cast(numbers.Real, 0),
+                ),
+            )
+        if r == 2:
+            return typing.cast(
+                typing.Self,
+                Bivector3(
+                    e_12=self.e_12,
+                    e_13=self.e_13,
+                    e_23=self.e_23,
+                ),
+            )
+        if r == 3:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=typing.cast(numbers.Real, 0),
+                ),
+            )
+        return typing.cast(typing.Self, Scalar(scalar=typing.cast(numbers.Real, 0)))
 
     def dual(self, n: int | None = None) -> typing.Self:
-        return typing.cast(
-            typing.Self, _coerce(self, G3).dual(self.DIMENSION if n is None else n)
-        )
+        if n is None or n == 3:
+            return typing.cast(
+                typing.Self,
+                Vector3(
+                    e_1=self.e_23,
+                    e_2=typing.cast(numbers.Real, -self.e_13),
+                    e_3=self.e_12,
+                ),
+            )
+        return typing.cast(typing.Self, _coerce(self, G3).dual(n))
 
 
 @dataclasses.dataclass(eq=False)
@@ -1417,18 +1515,61 @@ class Trivector3(AbstractMultiVector):
             yield Trivector3(e_123=self.e_123)
 
     def even_part(self) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G3).even_part())
+        return typing.cast(
+            typing.Self,
+            Scalar(
+                scalar=typing.cast(numbers.Real, 0),
+            ),
+        )
 
     def odd_part(self) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G3).odd_part())
+        return typing.cast(
+            typing.Self,
+            Trivector3(
+                e_123=self.e_123,
+            ),
+        )
 
     def r_vector_part(self, r: int) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G3).r_vector_part(r))
+        if r == 0:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=typing.cast(numbers.Real, 0),
+                ),
+            )
+        if r == 1:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=typing.cast(numbers.Real, 0),
+                ),
+            )
+        if r == 2:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=typing.cast(numbers.Real, 0),
+                ),
+            )
+        if r == 3:
+            return typing.cast(
+                typing.Self,
+                Trivector3(
+                    e_123=self.e_123,
+                ),
+            )
+        return typing.cast(typing.Self, Scalar(scalar=typing.cast(numbers.Real, 0)))
 
     def dual(self, n: int | None = None) -> typing.Self:
-        return typing.cast(
-            typing.Self, _coerce(self, G3).dual(self.DIMENSION if n is None else n)
-        )
+        if n is None or n == 3:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=self.e_123,
+                ),
+            )
+        return typing.cast(typing.Self, _coerce(self, G3).dual(n))
 
 
 @dataclasses.dataclass(eq=False)
@@ -1819,18 +1960,73 @@ class Rotor3(AbstractMultiVector):
             yield Rotor3(e_23=self.e_23)
 
     def even_part(self) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G3).even_part())
+        return typing.cast(
+            typing.Self,
+            Rotor3(
+                scalar=self.scalar,
+                e_12=self.e_12,
+                e_13=self.e_13,
+                e_23=self.e_23,
+            ),
+        )
 
     def odd_part(self) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G3).odd_part())
+        return typing.cast(
+            typing.Self,
+            Scalar(
+                scalar=typing.cast(numbers.Real, 0),
+            ),
+        )
 
     def r_vector_part(self, r: int) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G3).r_vector_part(r))
+        if r == 0:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=self.scalar,
+                ),
+            )
+        if r == 1:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=typing.cast(numbers.Real, 0),
+                ),
+            )
+        if r == 2:
+            return typing.cast(
+                typing.Self,
+                Bivector3(
+                    e_12=self.e_12,
+                    e_13=self.e_13,
+                    e_23=self.e_23,
+                ),
+            )
+        if r == 3:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=typing.cast(numbers.Real, 0),
+                ),
+            )
+        return typing.cast(typing.Self, Scalar(scalar=typing.cast(numbers.Real, 0)))
 
     def dual(self, n: int | None = None) -> typing.Self:
-        return typing.cast(
-            typing.Self, _coerce(self, G3).dual(self.DIMENSION if n is None else n)
-        )
+        if n is None or n == 3:
+            return typing.cast(
+                typing.Self,
+                G3(
+                    scalar=typing.cast(numbers.Real, 0),
+                    e_1=self.e_23,
+                    e_2=typing.cast(numbers.Real, -self.e_13),
+                    e_3=self.e_12,
+                    e_12=typing.cast(numbers.Real, 0),
+                    e_13=typing.cast(numbers.Real, 0),
+                    e_23=typing.cast(numbers.Real, 0),
+                    e_123=typing.cast(numbers.Real, -self.scalar),
+                ),
+            )
+        return typing.cast(typing.Self, _coerce(self, G3).dual(n))
 
 
 zero: G3 = G3.from_scalar(0)

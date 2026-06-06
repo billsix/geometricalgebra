@@ -420,6 +420,43 @@ def product_result(t1: TypeSpec, t2: TypeSpec, gn_op, n: int, full_name: str):
     return rspec, out_exprs, render
 
 
+def unary_result(t1: TypeSpec, gn_fn, n: int, full_name: str):
+    """(result_spec, output exprs, render) for a unary op (dual / grade projection)."""
+    a_syms = {b: sympy.Symbol("a_" + field_name(b)) for b in t1.blades}
+    result_mv = gn_fn(Gn.from_blade_dict(a_syms))
+    rd = result_mv.to_blade_dict()
+    support = [b for b in blades_for_dim(n) if sympy.sympify(rd.get(b, 0)) != 0]
+    rspec = resolve(support, n, full_name)
+    out_exprs = [sympy.sympify(rd.get(b, 0)) for b in rspec.blades]
+    render = _renamer(t1.blades, ())
+    return rspec, out_exprs, render
+
+
+def _emit_unary_return(lines, indent, rspec, out_exprs, render) -> None:
+    """Emit ``return cast(Self, ResultType(field=cast(Real, ±field), ...))``.
+
+    Unary results (dual / grade projection) are always ``±field`` or ``0``, so
+    each component is cast to ``numbers.Real`` (a bare ``-self.e_1`` is otherwise
+    inferred as ``_RealLike``, not ``Real``).
+    """
+    ap = lines.append
+    ap(f"{indent}return typing.cast(")
+    ap(f"{indent}    typing.Self,")
+    ap(f"{indent}    {rspec.name}(")
+    for field, expr in zip([field_name(b) for b in rspec.blades], out_exprs):
+        e = sympy.sympify(expr)
+        rendered = render(e)
+        # a bare field (``self.e_1``) is already Real -- casting it is redundant;
+        # constants and negations (``-self.e_1`` -> _RealLike) do need the cast.
+        if e.is_Symbol:
+            value = rendered
+        else:
+            value = f"typing.cast(numbers.Real, {rendered})"
+        ap(f"{indent}        {field}={value},")
+    ap(f"{indent}    ),")
+    ap(f"{indent})")
+
+
 def generate_class(n: int, name: str) -> str:
     blades = blades_for_dim(n)
     fields = [field_name(b) for b in blades]
@@ -801,26 +838,42 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> str:
         ap(f"            yield {spec.name}({f}=self.{f})")
     ap("")
 
-    # grade-changing / projection ops: defer to the full type (value-correct;
-    # the result simply widens rather than narrowing to another graded type)
-    for meth, args, call in (
-        ("even_part", "", "even_part()"),
-        ("odd_part", "", "odd_part()"),
-        ("r_vector_part", ", r: int", "r_vector_part(r)"),
-    ):
-        ap(f"    def {meth}(self{args}) -> typing.Self:")
-        ap(
-            f"        return typing.cast(typing.Self, "
-            f"_coerce(self, {full_name}).{call})"
-        )
-        ap("")
-    ap("    def dual(self, n: int | None = None) -> typing.Self:")
-    ap("        return typing.cast(")
-    ap(
-        f"            typing.Self, _coerce(self, {full_name}).dual("
-        "self.DIMENSION if n is None else n)"
+    # grade-changing / projection ops: narrow to the tightest covering type via
+    # resolve(), the same way the products do (e.g. dual(Bivector3) -> Vector3)
+    ap("    def even_part(self) -> typing.Self:")
+    _emit_unary_return(
+        lines, "        ", *unary_result(spec, lambda a: a.even_part(), n, full_name)
     )
-    ap("        )")
+    ap("")
+    ap("    def odd_part(self) -> typing.Self:")
+    _emit_unary_return(
+        lines, "        ", *unary_result(spec, lambda a: a.odd_part(), n, full_name)
+    )
+    ap("")
+    ap("    def r_vector_part(self, r: int) -> typing.Self:")
+    for r in range(n + 1):
+        ap(f"        if r == {r}:")
+        _emit_unary_return(
+            lines,
+            "            ",
+            *unary_result(spec, lambda a, r=r: a.r_vector_part(r), n, full_name),
+        )
+    ap(
+        "        return typing.cast(typing.Self, "
+        "Scalar(scalar=typing.cast(numbers.Real, 0)))"
+    )
+    ap("")
+    # dual is a fixed product with the pseudoscalar; closed-form for this type's
+    # own dimension, defer to the full type for an explicit foreign n
+    ap("    def dual(self, n: int | None = None) -> typing.Self:")
+    ap(f"        if n is None or n == {n}:")
+    _emit_unary_return(
+        lines, "            ", *unary_result(spec, lambda a: a.dual(n), n, full_name)
+    )
+    ap(
+        f"        return typing.cast(typing.Self, "
+        f"_coerce(self, {full_name}).dual(n))"
+    )
 
     return "\n".join(lines)
 

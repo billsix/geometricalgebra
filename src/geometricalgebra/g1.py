@@ -417,18 +417,47 @@ class Vector1(AbstractMultiVector):
             yield Vector1(e_1=self.e_1)
 
     def even_part(self) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G1).even_part())
+        return typing.cast(
+            typing.Self,
+            Scalar(
+                scalar=typing.cast(numbers.Real, 0),
+            ),
+        )
 
     def odd_part(self) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G1).odd_part())
+        return typing.cast(
+            typing.Self,
+            Vector1(
+                e_1=self.e_1,
+            ),
+        )
 
     def r_vector_part(self, r: int) -> typing.Self:
-        return typing.cast(typing.Self, _coerce(self, G1).r_vector_part(r))
+        if r == 0:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=typing.cast(numbers.Real, 0),
+                ),
+            )
+        if r == 1:
+            return typing.cast(
+                typing.Self,
+                Vector1(
+                    e_1=self.e_1,
+                ),
+            )
+        return typing.cast(typing.Self, Scalar(scalar=typing.cast(numbers.Real, 0)))
 
     def dual(self, n: int | None = None) -> typing.Self:
-        return typing.cast(
-            typing.Self, _coerce(self, G1).dual(self.DIMENSION if n is None else n)
-        )
+        if n is None or n == 1:
+            return typing.cast(
+                typing.Self,
+                Scalar(
+                    scalar=self.e_1,
+                ),
+            )
+        return typing.cast(typing.Self, _coerce(self, G1).dual(n))
 
 
 zero: G1 = G1.from_scalar(0)
