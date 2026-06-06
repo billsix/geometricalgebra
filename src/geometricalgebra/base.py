@@ -411,7 +411,11 @@ class AbstractMultiVector(abc.ABC):
 
         Not sure if I'm doing it correctly
         """
-        return self.reverse() * (self.magnitude_squared() ** (-1))
+        # sympify the magnitude before the reciprocal: for the specialized
+        # classes magnitude_squared() is a raw Python int, and ``int ** -1``
+        # silently degrades to a float -- sympify keeps it exact (Rational).
+        mag_sq = typing.cast(sympy.Expr, sympy.sympify(self.magnitude_squared()))
+        return self.reverse() * (mag_sq ** (-1))
 
     def dual(self, n: int) -> typing.Self:
         """Dual  A*  =  A I⁻¹  — multiplication by the inverse unit pseudoscalar I,

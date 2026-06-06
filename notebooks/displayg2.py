@@ -111,7 +111,10 @@ e_12 == e_1 * e_2
 2 * e_1 + 3 * e_2 + 5 * e_1  # pyright: ignore[reportUnusedExpression]
 
 # %%
-zero, one  # pyright: ignore[reportUnusedExpression]
+zero  # pyright: ignore[reportUnusedExpression]
+
+# %%
+one  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Symbolic vectors

@@ -48,12 +48,10 @@
 # operation dictates.
 
 # %%
-import itertools
-
 import sympy
-from IPython.display import Math, display
+from IPython.display import Markdown, Math, display
 
-from geometricalgebra.g2 import G2, Vector2
+from geometricalgebra.g2 import Vector2
 from geometricalgebra.g3 import Vector3
 from geometricalgebra.scalar import Scalar
 
@@ -61,6 +59,12 @@ from geometricalgebra.scalar import Scalar
 def kind(x):
     """The runtime type name -- this is the star of the notebook."""
     return type(x).__name__
+
+
+def show(*values):
+    """Display each value as 'Type:  <latex>' -- the type is the point here."""
+    for x in values:
+        display(Math(f"{kind(x)}:\\quad " + x._repr_latex_().strip("$")))
 
 
 # %% [markdown]
@@ -73,7 +77,7 @@ def kind(x):
 e_1, e_2 = Vector2.basis_vector(1), Vector2.basis_vector(2)
 a = 3 * e_1 + 4 * e_2
 b = 1 * e_1 + 2 * e_2
-kind(a), a.to_blade_dict()
+show(a)
 
 # %% [markdown]
 # The geometric product of two vectors
@@ -85,11 +89,11 @@ kind(a), a.to_blade_dict()
 # an element of the even subalgebra, i.e. a **rotor**.
 
 # %%
-kind(a * b), (a * b).to_blade_dict()
+show(a * b)
 
 # %%
 # the wedge alone is a Bivector2; the dot alone is a Scalar
-kind(a ^ b), kind(a.inner_product(b))
+show(a ^ b, a.inner_product(b))
 
 # %% [markdown]
 # Type follows the operation, not the value
@@ -100,10 +104,10 @@ kind(a ^ b), kind(a.inner_product(b))
 # Want the pure bivector? Use `^`.
 
 # %%
-kind(e_1 * e_2), (e_1 * e_2).to_blade_dict()
+show(e_1 * e_2)
 
 # %%
-kind(e_1 ^ e_2), (e_1 ^ e_2).to_blade_dict()
+show(e_1 ^ e_2)
 
 # %% [markdown]
 # Bivectors and the Scalar type
@@ -114,7 +118,7 @@ kind(e_1 ^ e_2), (e_1 ^ e_2).to_blade_dict()
 
 # %%
 i2 = e_1 ^ e_2  # the unit bivector
-kind(i2 * i2), (i2 * i2).to_blade_dict()
+show(i2 * i2)
 
 # %% [markdown]
 # Rotors are the complex numbers
@@ -125,16 +129,16 @@ kind(i2 * i2), (i2 * i2).to_blade_dict()
 
 # %%
 r = 2 + 3 * i2  # scalar + bivector  -> Rotor2
-kind(r), r.to_blade_dict()
+show(r)
 
 # %%
-kind(i2 * i2), i2 * i2  # == -1
+show(i2 * i2)  # == -1
 
 # %%
 # a rotor rotates a vector (here, a quarter turn of e_1)
 quarter = sympy.cos(sympy.pi / 4) - sympy.sin(sympy.pi / 4) * (e_1 * e_2)
 rotated = quarter * e_1 * quarter.reverse()
-kind(rotated), rotated.to_blade_dict()
+show(rotated)
 
 # %% [markdown]
 # A rotor's plane of rotation
@@ -144,7 +148,7 @@ kind(rotated), rotated.to_blade_dict()
 # — the normalized bivector part. In 2D that 2-blade is also the pseudoscalar.
 
 # %%
-kind(quarter.plane_of_rotation()), quarter.plane_of_rotation().to_blade_dict()
+show(quarter.plane_of_rotation())
 
 # %% [markdown]
 # Two ways to rotate are the same thing
@@ -158,7 +162,7 @@ kind(quarter.plane_of_rotation()), quarter.plane_of_rotation().to_blade_dict()
 # %%
 frm, to = e_1, e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
 R = Vector2.rotor_from_vectors(from_vector=frm, to_vector=to)
-kind(R), R.to_blade_dict()  # an (un-normalized) Rotor2
+show(R)  # an (un-normalized) Rotor2
 
 # %% [markdown]
 # Because `R` is not normalized, the bare sandwich `R v R̃` *scales* as well as
@@ -167,15 +171,13 @@ kind(R), R.to_blade_dict()  # an (un-normalized) Rotor2
 
 # %%
 w = e_1
-[
-    ("R R~ (the scale)", (R * R.reverse()).to_blade_dict()),
-    ("R w R~ (scaled)", (R * w * R.reverse()).to_blade_dict()),
-    ("R w R^-1 (pure)", (R * w * R.inverse()).to_blade_dict()),
-    (
-        "rotate(from,to)(w)",
-        Vector2.rotate(from_vector=frm, to_vector=to)(w).to_blade_dict(),
-    ),
-]
+for label, value in [
+    (r"R\,\tilde R", R * R.reverse()),
+    (r"R\,w\,\tilde R", R * w * R.reverse()),
+    (r"R\,w\,R^{-1}", R * w * R.inverse()),
+    (r"\mathrm{rotate}(w)", Vector2.rotate(from_vector=frm, to_vector=to)(w)),
+]:
+    display(Math(label + " = " + value._repr_latex_().strip("$")))
 
 # %%
 # the rotor sandwich and rotate agree exactly
@@ -195,11 +197,14 @@ named = [
     ("Bivector2", i2),
     ("Rotor2", r),
 ]
-# each row reads "lhs * rhs -> result type"
-[
-    f"{na:9} *  {nb:9} -> {kind(x * y)}"
-    for (na, x), (nb, y) in itertools.product(named, named)
+# the 𝒢₂ grade product table: (row) * (column) -> result type
+header = "| `*` | " + " | ".join(na for na, _ in named) + " |"
+sep = "| --- " * (len(named) + 1) + "|"
+rows = [
+    f"| **{na}** | " + " | ".join(kind(x * y) for _, y in named) + " |"
+    for na, x in named
 ]
+display(Markdown("\n".join([header, sep, *rows])))
 
 # %% [markdown]
 # Three dimensions
@@ -213,19 +218,19 @@ named = [
 f_1, f_2, f_3 = (Vector3.basis_vector(i) for i in (1, 2, 3))
 u = 1 * f_1 + 2 * f_2 + 3 * f_3
 v = 4 * f_1 + 5 * f_2 + 6 * f_3
-kind(u * v), kind(u ^ v)
+show(u * v, u ^ v)
 
 # %%
 # dual of a bivector (a plane) is the orthogonal vector -- like u x v
 biv = u ^ v
-kind(biv), kind(biv.dual())
+show(biv, biv.dual())
 
 # %%
-biv.dual().to_blade_dict()  # the components of u x v
+biv.dual()  # the components of u x v
 
 # %%
 # each unit bivector of G3 squares to -1 (the even subalgebra is the quaternions)
-[(kind((f_1 ^ f_2) * (f_1 ^ f_2)), ((f_1 ^ f_2) * (f_1 ^ f_2)).to_blade_dict())]
+show((f_1 ^ f_2) * (f_1 ^ f_2))
 
 # %% [markdown]
 # When a result spans grades no single type covers
@@ -246,11 +251,10 @@ kind(u * biv)
 # transparently (they share the blade-dict interchange protocol).
 
 # %%
-a == G2.from_blade_dict({(1,): 3, (2,): 4})
+a == 3 * e_1 + 4 * e_2
 
 # %%
 # display a few as latex
-for x in (a, a * b, a ^ b, r):
-    display(Math(f"{kind(x)}:\\quad " + x._repr_latex_().strip("$")))
+show(a, a * b, a ^ b, r)
 
 # %%

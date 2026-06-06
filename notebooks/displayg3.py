@@ -86,7 +86,15 @@ e_123 == e_1 * e_2 * e_3
 
 # %%
 # the three unit bivectors
-e_12, e_13, e_23  # pyright: ignore[reportUnusedExpression]
+e_12  # pyright: ignore[reportUnusedExpression]
+
+# %%
+# the three unit bivectors
+e_13  # pyright: ignore[reportUnusedExpression]
+
+# %%
+# the three unit bivectors
+e_23  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Linear combinations
@@ -96,7 +104,10 @@ e_12, e_13, e_23  # pyright: ignore[reportUnusedExpression]
 2 * e_1 + 3 * e_2 + 4 * e_3 + 5 * e_1  # pyright: ignore[reportUnusedExpression]
 
 # %%
-zero, one  # pyright: ignore[reportUnusedExpression]
+zero  # pyright: ignore[reportUnusedExpression]
+
+# %%
+one  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Symbolic vectors
@@ -201,6 +212,9 @@ biv  # pyright: ignore[reportUnusedExpression]
 
 # %%
 biv.dual()
+
+# %%
+biv * biv.dual()  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # a bivector squares to a (negative) scalar — it has a magnitude
