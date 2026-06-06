@@ -123,6 +123,57 @@ Vector3`).
    use `wedge` (defined to give grade r+s). The only float-sensitive step is explicit, opt-in
    narrowing (§D).
 
+## Phase 1 decisions (settled 2026-06-06)
+
+1. **Minimal registry + full-`G_n` fallback.** Register only the grade-pure types + the even/`Rotor`
+   type; any product whose support isn't covered by a registered type widens to that dimension's full
+   `G_n`. No `Odd`/`Paravector` types for now (Paravector stays deferred per `CLAUDE.md`).
+2. **Dimension-suffixed names** (`Vector2`, `Bivector3`, `Rotor3`, …), matching `G2`/`G3` and
+   collision-free when 2D and 3D families are imported together.
+3. **Dedicated `Scalar` type** for grade 0 (in addition to plain Python numbers, which still scale).
+   Pure-scalar product results narrow to `Scalar` rather than to `Rotor`.
+
+### The registry (final, per dimension)
+
+A single **shared `Scalar`** type `{()}` serves every dimension (a scalar is the same in all `G_n`;
+`Scalar * <anything>` just scales). Then:
+
+| Dim | Graded types (name → blade-set) | Full |
+|---|---|---|
+| 1D | `Vector1 {(1,)}` | `G1` |
+| 2D | `Vector2 {(1,),(2,)}`, `Bivector2 {(1,2)}`, `Rotor2 {(),(1,2)}` (≅ ℂ) | `G2` |
+| 3D | `Vector3 {(1,),(2,),(3,)}`, `Bivector3 {(1,2),(1,3),(2,3)}`, `Trivector3 {(1,2,3)}`, `Rotor3 {(),(1,2),(1,3),(2,3)}` (≅ ℍ) | `G3` |
+
+`Scalar` and the full `G_n` are both registry entries (grade-0-only and all-blades, respectively).
+
+### Return-type resolution (the closure rule, restated with these choices)
+
+Return type = the **smallest registered type whose blade-set ⊇ the symbolic support** of the result,
+searched within {`Scalar`} ∪ {that dimension's graded types} ∪ {full `G_n`}, falling back to full
+`G_n` when nothing smaller covers it. Worked 2D examples:
+
+- support `{()}` → `Scalar` (e.g. `Bivector2 * Bivector2`, `Vector2 · Vector2`)
+- support `{(1,),(2,)}` → `Vector2`
+- support `{(1,2)}` → `Bivector2` (e.g. `Vector2 ^ Vector2`)
+- support `{(),(1,2)}` → `Rotor2` (e.g. `Vector2 * Vector2`)
+- mixed `{(1,),(1,2)}` etc. → not covered → `G2`
+
+### Operations to emit per type
+
+- **Bilinear, closure-typed:** `_geometric_product`/`__mul__`, `outer_product`/`__xor__`,
+  `inner_product`. (Return type from the rule above.)
+- **Linear, in-type (widen on cross-grade):** `__add__`, `__sub__`, `__neg__`, scalar `*`.
+- **Unary, typed by op:** `reverse` (in-type), `dual` (grade-flipped → resolved type),
+  `r_vector_part`/grade projection (→ that grade's type or `Scalar`), `even_part`/`odd_part`.
+- **Other shared:** `__eq__` (simplify-aware over `to_blade_dict`, cross-type), `from_blade_dict`/
+  `to_blade_dict`, `magnitude`/`abs`/`normalize` (inherited from ABC), per-type basis constants.
+
+### Fallback target (Phase 0 lesson, now a rule)
+
+A graded type's foreign/uncovered-operand fallback widens **both** operands to the **same-dimension
+full `G_n`** (not general `Gn`). Open: also change the existing `G2`/`G3` foreign-operand coercion
+to prefer same-dimension over general `Gn` (currently it always goes to `Gn`).
+
 ## Risks / open questions
 
 - **Combinatorial size.** ~3–8 types/dim × several ops × T1×T2 dispatch. Generatable, but the file
@@ -141,10 +192,11 @@ Vector3`).
 ## Recommended staged plan
 
 - [x] **Phase 0 — 2D prototype (hand-written, not generated).** Done 2026-06-06 in
-      `tasks/prototypes/graded2d.py` (throwaway, not wired into the package). Implemented `Vector2`,
+      `tasks/prototypes/graded2d.py` (committed in `09fe2c7`, removed in `07028d0`; preserved in git history) (throwaway, not wired into the package). Implemented `Vector2`,
       `Bivector2`, `Rotor2` with `match`-based `*`/`^`/`+`, §B closure return types, widen-to-`G2`,
       and simplify-aware cross-type `__eq__`. See "Phase 0 results" below.
-- [ ] **Phase 1 — decide registry + closure policy** for 2D/3D from what Phase 0 teaches.
+- [x] **Phase 1 — registry + closure policy decided** (2026-06-06): minimal registry + `G_n`
+      fallback, dimension-suffixed names, dedicated `Scalar`. See "Phase 1 decisions" above.
 - [ ] **Phase 2 — generalize the generator.** Refactor `generate_class` to take a blade-set;
       add a `TYPES` registry; add support→closure return-type resolution; emit the T1×T2 dispatch
       ladders. Full `G_n` becomes a registry entry (all blades).
@@ -154,7 +206,7 @@ Vector3`).
 
 ## Phase 0 results (2026-06-06)
 
-Prototype: `tasks/prototypes/graded2d.py` (run `python tasks/prototypes/graded2d.py`).
+Prototype: `tasks/prototypes/graded2d.py` (committed in `09fe2c7`, removed in `07028d0`; preserved in git history) (run `python tasks/prototypes/graded2d.py`).
 
 **Ergonomics — good.** The `match`-on-rhs-type dispatch reads exactly as the grade product table; the
 module docstring is literally that table, and each `case` is one line with a "what grade does this
