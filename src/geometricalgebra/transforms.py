@@ -281,7 +281,7 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
     """
 
     def f(vector: AbstractMultiVector) -> AbstractMultiVector:
-        cls = type(vector)
+        cls: type[AbstractMultiVector] = type(vector)
         return sum(
             (
                 m * cls.project(onto=cls.basis_vector(i + 1))(vector)
@@ -294,7 +294,7 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
         if any(m == 0.0 for m in factors):
             raise ValueError("Not invertible.  Scaling factors cannot be zero.")
 
-        cls = type(vector)
+        cls: type[AbstractMultiVector] = type(vector)
         return sum(
             (
                 (1.0 / m) * cls.project(onto=cls.basis_vector(i + 1))(vector)
@@ -321,11 +321,11 @@ def rotate_90_degrees() -> InvertibleFunction:
     """
 
     def f(vector: AbstractMultiVector) -> AbstractMultiVector:
-        rot_90 = type(vector).from_blade_dict({(1, 2): 1})
+        rot_90: AbstractMultiVector = type(vector).from_blade_dict({(1, 2): 1})
         return vector * rot_90
 
     def f_inv(vector: AbstractMultiVector) -> AbstractMultiVector:
-        rot_90 = type(vector).from_blade_dict({(1, 2): 1})
+        rot_90: AbstractMultiVector = type(vector).from_blade_dict({(1, 2): 1})
         return vector * rot_90.inverse()
 
     return InvertibleFunction(f, f_inv, "R_{xy90}", "R_{xy90}^{-1}")
@@ -339,8 +339,10 @@ def rotate(angle_in_radians: float) -> InvertibleFunction:
         perp: InvertibleFunction,
     ) -> typing.Callable[[AbstractMultiVector], AbstractMultiVector]:
         def f(vector: AbstractMultiVector) -> AbstractMultiVector:
-            parallel = math.cos(float(angle_in_radians)) * vector
-            perpendicular = math.sin(float(angle_in_radians)) * perp(vector)
+            parallel: AbstractMultiVector = math.cos(float(angle_in_radians)) * vector
+            perpendicular: AbstractMultiVector = math.sin(
+                float(angle_in_radians)
+            ) * perp(vector)
             return parallel + perpendicular
 
         return f
@@ -365,7 +367,7 @@ def is_counter_clockwise(v1: AbstractMultiVector, v2: AbstractMultiVector) -> bo
 
 
 def is_clockwise(v1: AbstractMultiVector, v2: AbstractMultiVector) -> bool:
-    plane = type(v1).from_blade_dict({(1, 2): 1})
+    plane: AbstractMultiVector = type(v1).from_blade_dict({(1, 2): 1})
     assert type(v1).project(onto=plane)(v1) == v1
     assert type(v2).project(onto=plane)(v2) == v2
     return float(inverse(rotate_90_degrees())(v1).cosine(v2)) > 0.000001

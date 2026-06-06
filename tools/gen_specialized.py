@@ -44,7 +44,7 @@ import sympy
 # allow running from the repo root without installing the package
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from geometricalgebra.base import AbstractMultiVector  # noqa: E402
+from geometricalgebra.base import AbstractMultiVector, BladeCoef  # noqa: E402
 from geometricalgebra.gn import Gn  # noqa: E402
 
 
@@ -174,7 +174,7 @@ def _sup(k: int) -> str:
 
 def generic_docstring(n: int) -> str:
     """Standard class docstring for any dimension (fallback for unknown n)."""
-    bl = blades_for_dim(n)
+    bl: list[tuple[int, ...]] = blades_for_dim(n)
     grades = "\n".join(
         f"        {', '.join(field_name(b) for b in bl if len(b) == g)}  (grade {g})"
         for g in range(n + 1)
@@ -256,7 +256,7 @@ DOCSTRINGS = {
 def emit_construct_return(lines, name, pairs, indent="        ") -> None:
     """Emit ``result = name(field=expr, ...)`` then a Self-cast return."""
     ap = lines.append
-    ap(f"{indent}result = {name}(")
+    ap(f"{indent}result: {name} = {name}(")
     for field, expr in pairs:
         ap(f"{indent}    {field}={expr},")
     ap(f"{indent})")
@@ -272,18 +272,18 @@ def emit_bilinear(
     both operands are coerced to Gn and the general op is run (decision 3).
     """
     ap = lines.append
-    rd = result_mv.to_blade_dict()
+    rd: BladeCoef = result_mv.to_blade_dict()
     out_exprs = [sympy.sympify(rd.get(b, 0)) for b in blades]
     replacements, reduced = sympy.cse(out_exprs)
     ap(f"    def {method}(self, rhs) -> typing.Self:")
     emit_docstring(lines, method)
     ap(f"        if not isinstance(rhs, {name}):")
-    ap("            left = Gn.from_blade_dict(self.to_blade_dict())")
-    ap("            right = Gn.from_blade_dict(rhs.to_blade_dict())")
+    ap("            left: Gn = Gn.from_blade_dict(self.to_blade_dict())")
+    ap("            right: Gn = Gn.from_blade_dict(rhs.to_blade_dict())")
     ap(f"            return typing.cast(typing.Self, {cross})")
     for tmp, expr in replacements:
         ap(f"        {render(tmp)} = {render(expr)}")
-    ap(f"        result = {name}(")
+    ap(f"        result: {name} = {name}(")
     for field, expr in zip(fields, reduced):
         lines.extend(format_assignment(field, expr, "            ", render))
     ap("        )")
@@ -300,8 +300,8 @@ def emit_structural(lines, name, blades, fields, n) -> None:
     ap = lines.append
     by_grade = {g: [field_name(b) for b in blades if len(b) == g] for g in range(n + 1)}
     coerce = [
-        "            left = Gn.from_blade_dict(self.to_blade_dict())",
-        "            right = Gn.from_blade_dict(rhs.to_blade_dict())",
+        "            left: Gn = Gn.from_blade_dict(self.to_blade_dict())",
+        "            right: Gn = Gn.from_blade_dict(rhs.to_blade_dict())",
     ]
 
     ap("    def __add__(self, rhs) -> typing.Self:")
@@ -422,18 +422,18 @@ SCALAR = TypeSpec("Scalar", ((),), 0, "scalar")
 
 def graded_specs(n: int) -> list[TypeSpec]:
     """The graded (grade-pure + even/Rotor) types of 𝒢ₙ, per the Phase 1 registry."""
-    bl = blades_for_dim(n)
+    bl: list[tuple[int, ...]] = blades_for_dim(n)
 
     def by_grade(g: int) -> tuple:
         return tuple(b for b in bl if len(b) == g)
 
-    specs = [TypeSpec(f"Vector{n}", by_grade(1), n, "graded")]
+    specs: list[TypeSpec] = [TypeSpec(f"Vector{n}", by_grade(1), n, "graded")]
     if n >= 2:
         specs.append(TypeSpec(f"Bivector{n}", by_grade(2), n, "graded"))
     if n >= 3:
         specs.append(TypeSpec(f"Trivector{n}", by_grade(3), n, "graded"))
     if n >= 2:  # even subalgebra (Rotor); for n==1 the even part is just the scalar
-        even = tuple(b for b in bl if len(b) % 2 == 0)
+        even: tuple[tuple[int, ...], ...] = tuple(b for b in bl if len(b) % 2 == 0)
         specs.append(TypeSpec(f"Rotor{n}", even, n, "graded"))
     return specs
 
@@ -449,8 +449,10 @@ def registry_for_dim(n: int, full_name: str) -> list[TypeSpec]:
 
 def resolve(support, n: int, full_name: str) -> TypeSpec:
     """Smallest registered type covering ``support`` (the full G_n always does)."""
-    want = set(support)
-    candidates = [t for t in registry_for_dim(n, full_name) if want <= set(t.blades)]
+    want: set[tuple[int, ...]] = set(support)
+    candidates: list[TypeSpec] = [
+        t for t in registry_for_dim(n, full_name) if want <= set(t.blades)
+    ]
     return min(
         candidates,
         key=lambda t: (len(t.blades), 0 if t.kind == "scalar" else 1, t.name),
@@ -459,14 +461,16 @@ def resolve(support, n: int, full_name: str) -> TypeSpec:
 
 def _renamer(blades_self, blades_rhs):
     """A (render, ) pair mapping a_<field> -> self.<field>, b_<field> -> rhs.<field>."""
-    rename = {}
+    rename: dict[str, str] = {}
     for b in blades_self:
         rename["a_" + field_name(b)] = "self." + field_name(b)
     for b in blades_rhs:
         rename["b_" + field_name(b)] = "rhs." + field_name(b)
     if not rename:
         return lambda expr: sympy.sstr(sympy.sympify(expr))
-    token = re.compile(r"\b(" + "|".join(re.escape(k) for k in rename) + r")\b")
+    token: re.Pattern[str] = re.compile(
+        r"\b(" + "|".join(re.escape(k) for k in rename) + r")\b"
+    )
 
     def render(expr) -> str:
         return token.sub(lambda m: rename[m.group(1)], sympy.sstr(sympy.sympify(expr)))
@@ -476,25 +480,35 @@ def _renamer(blades_self, blades_rhs):
 
 def product_result(t1: TypeSpec, t2: TypeSpec, gn_op, n: int, full_name: str):
     """(result_spec, output exprs over result's blades, render) for t1 <op> t2."""
-    a_syms = {b: sympy.Symbol("a_" + field_name(b)) for b in t1.blades}
-    b_syms = {b: sympy.Symbol("b_" + field_name(b)) for b in t2.blades}
-    result_mv = gn_op(Gn.from_blade_dict(a_syms), Gn.from_blade_dict(b_syms))
-    rd = result_mv.to_blade_dict()
-    support = [b for b in blades_for_dim(n) if sympy.sympify(rd.get(b, 0)) != 0]
-    rspec = resolve(support, n, full_name)
-    out_exprs = [sympy.sympify(rd.get(b, 0)) for b in rspec.blades]
+    a_syms: dict[tuple[int, ...], sympy.Symbol] = {
+        b: sympy.Symbol("a_" + field_name(b)) for b in t1.blades
+    }
+    b_syms: dict[tuple[int, ...], sympy.Symbol] = {
+        b: sympy.Symbol("b_" + field_name(b)) for b in t2.blades
+    }
+    result_mv: Gn = gn_op(Gn.from_blade_dict(a_syms), Gn.from_blade_dict(b_syms))
+    rd: BladeCoef = result_mv.to_blade_dict()
+    support: list[tuple[int, ...]] = [
+        b for b in blades_for_dim(n) if sympy.sympify(rd.get(b, 0)) != 0
+    ]
+    rspec: TypeSpec = resolve(support, n, full_name)
+    out_exprs: list[sympy.Expr] = [sympy.sympify(rd.get(b, 0)) for b in rspec.blades]
     render = _renamer(t1.blades, t2.blades)
     return rspec, out_exprs, render
 
 
 def unary_result(t1: TypeSpec, gn_fn, n: int, full_name: str):
     """(result_spec, output exprs, render) for a unary op (dual / grade projection)."""
-    a_syms = {b: sympy.Symbol("a_" + field_name(b)) for b in t1.blades}
-    result_mv = gn_fn(Gn.from_blade_dict(a_syms))
-    rd = result_mv.to_blade_dict()
-    support = [b for b in blades_for_dim(n) if sympy.sympify(rd.get(b, 0)) != 0]
-    rspec = resolve(support, n, full_name)
-    out_exprs = [sympy.sympify(rd.get(b, 0)) for b in rspec.blades]
+    a_syms: dict[tuple[int, ...], sympy.Symbol] = {
+        b: sympy.Symbol("a_" + field_name(b)) for b in t1.blades
+    }
+    result_mv: Gn = gn_fn(Gn.from_blade_dict(a_syms))
+    rd: BladeCoef = result_mv.to_blade_dict()
+    support: list[tuple[int, ...]] = [
+        b for b in blades_for_dim(n) if sympy.sympify(rd.get(b, 0)) != 0
+    ]
+    rspec: TypeSpec = resolve(support, n, full_name)
+    out_exprs: list[sympy.Expr] = [sympy.sympify(rd.get(b, 0)) for b in rspec.blades]
     render = _renamer(t1.blades, ())
     return rspec, out_exprs, render
 
@@ -534,11 +548,13 @@ def generate_class(n: int, name: str) -> str:
     a_syms = {b: sympy.Symbol("a_" + field_name(b)) for b in blades}
     b_syms = {b: sympy.Symbol("b_" + field_name(b)) for b in blades}
 
-    rename = {}
+    rename: dict[str, str] = {}
     for b in blades:
         rename["a_" + field_name(b)] = "self." + field_name(b)
         rename["b_" + field_name(b)] = "rhs." + field_name(b)
-    token = re.compile(r"\b(" + "|".join(re.escape(k) for k in rename) + r")\b")
+    token: re.Pattern[str] = re.compile(
+        r"\b(" + "|".join(re.escape(k) for k in rename) + r")\b"
+    )
 
     def render(expr) -> str:
         return token.sub(lambda m: rename[m.group(1)], sympy.sstr(expr))
@@ -742,8 +758,8 @@ def _emit_dispatch(
         ap(f"            case {t2.name}():")
         _emit_result_block(lines, "                ", rspec, out_exprs, render)
     ap("            case _:")
-    ap(f"                left = _coerce(self, {full_name})")
-    ap(f"                right = _coerce(rhs, {full_name})")
+    ap(f"                left: {full_name} = _coerce(self, {full_name})")
+    ap(f"                right: {full_name} = _coerce(rhs, {full_name})")
     ap(f"                return typing.cast(typing.Self, {fallback_op})")
     ap("")
 
@@ -1046,8 +1062,8 @@ def generate_scalar() -> str:
     ap("        return self._geometric_product(rhs)")
     ap("")
     ap("    def inner_product(self, rhs) -> typing.Self:")
-    ap("        left = Gn.from_blade_dict(self.to_blade_dict())")
-    ap("        right = Gn.from_blade_dict(rhs.to_blade_dict())")
+    ap("        left: Gn = Gn.from_blade_dict(self.to_blade_dict())")
+    ap("        right: Gn = Gn.from_blade_dict(rhs.to_blade_dict())")
     ap("        return typing.cast(typing.Self, left.inner_product(right))")
     ap("")
     ap("    def __add__(self, rhs) -> typing.Self:")
@@ -1174,6 +1190,8 @@ def header(name: str, n: int) -> str:
 # dataclass whose geometric product is the closed form derived from the general
 # Gn symbolic product.
 
+from __future__ import annotations
+
 import dataclasses
 import numbers
 import typing
@@ -1218,6 +1236,8 @@ SCALAR_HEADER = """# Copyright (c) 2025-2026 William Emerison Six
 # Regenerate with:  python tools/gen_specialized.py
 #
 # Scalar: the shared grade-0 type used by the graded subtypes of every 𝒢ₙ.
+
+from __future__ import annotations
 
 import dataclasses
 import numbers

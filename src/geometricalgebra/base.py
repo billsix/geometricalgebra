@@ -604,7 +604,8 @@ class AbstractMultiVector(abc.ABC):
         assert from_vector.is_vector()
         assert to_vector.is_vector()
         scale = typing.cast(sympy.Expr, from_vector.magnitude() * to_vector.magnitude())
-        product = to_vector * from_vector  # scalar + bivector -- the rotor's grade
+        # scalar + bivector -- the rotor's grade
+        product: AbstractMultiVector = to_vector * from_vector
         return product + type(product).from_sympy_expr(scale)
 
     def is_close(self, other: typing.Self) -> bool:

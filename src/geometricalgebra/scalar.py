@@ -20,6 +20,8 @@
 #
 # Scalar: the shared grade-0 type used by the graded subtypes of every 𝒢ₙ.
 
+from __future__ import annotations
+
 import dataclasses
 import numbers
 import typing
@@ -92,8 +94,8 @@ class Scalar(AbstractMultiVector):
         return self._geometric_product(rhs)
 
     def inner_product(self, rhs) -> typing.Self:
-        left = Gn.from_blade_dict(self.to_blade_dict())
-        right = Gn.from_blade_dict(rhs.to_blade_dict())
+        left: Gn = Gn.from_blade_dict(self.to_blade_dict())
+        right: Gn = Gn.from_blade_dict(rhs.to_blade_dict())
         return typing.cast(typing.Self, left.inner_product(right))
 
     def __add__(self, rhs) -> typing.Self:

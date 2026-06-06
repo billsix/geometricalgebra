@@ -16,6 +16,8 @@
 # Boston, MA 02111-1307, USA.
 
 
+from __future__ import annotations
+
 import dataclasses
 import itertools
 import numbers
@@ -93,13 +95,13 @@ class Gn(AbstractMultiVector):
         }
 
     @classmethod
-    def from_blade_dict(cls, blade_coef) -> "Gn":
+    def from_blade_dict(cls, blade_coef) -> Gn:
         return cls(coefficient_of_blade=dict(blade_coef))
 
     def to_blade_dict(self) -> BladeCoef:
         return self.coefficient_of_blade
 
-    def _geometric_product(self, rhs: "AbstractMultiVector") -> typing.Self:
+    def _geometric_product(self, rhs: AbstractMultiVector) -> typing.Self:
         def decrease_grade(
             basis_blade: BladeDictionaryEntry,
         ) -> BladeDictionaryEntry:
@@ -150,7 +152,7 @@ class Gn(AbstractMultiVector):
         ) -> AbstractMultiVector:
             return b.as_multivector()
 
-        product: "AbstractMultiVector" = sum(
+        product: AbstractMultiVector = sum(
             [
                 blade_dictionary_entry_to_multivector(
                     decrease_grade(

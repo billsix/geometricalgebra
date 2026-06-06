@@ -34,7 +34,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
 
-from geometricalgebra.base import AbstractMultiVector
+from geometricalgebra.base import AbstractMultiVector, BladeCoef
 from geometricalgebra.gn import (
     MultiVector,
     identity,
@@ -535,16 +535,16 @@ def plot_multivector(
     ``random_seed`` defaults to 0 for reproducibility — pass ``None`` for
     fresh randomness on every call.
     """
-    blade_dict = mv.to_blade_dict()
+    blade_dict: BladeCoef = mv.to_blade_dict()
     blades = sorted(blade_dict.keys(), key=lambda b: (len(b), b)) or [()]
     n = len(blades)
 
-    rng = np.random.default_rng(random_seed)
+    rng: np.random.Generator = np.random.default_rng(random_seed)
 
     coefs = [blade_dict.get(b, 0) for b in blades]
     xs: list[float] = []
     for coef in coefs:
-        x = _coef_as_float(coef)
+        x: float | None = _coef_as_float(coef)
         xs.append(
             x if x is not None else float(rng.uniform(-symbolic_range, symbolic_range))
         )
@@ -612,12 +612,14 @@ def show_mult(a: AbstractMultiVector, b: AbstractMultiVector):
 
     data: list = list(itertools.product(a, b))
     result = [(left, "*", right, "=", left * right) for left, right in data]
-    df = pd.DataFrame(
+    df: pd.DataFrame = pd.DataFrame(
         result,
         columns=pd.Index(["Left Component", "*", "Right Component", "=", "Product"]),
     )
     # Convert to markdown string and display
-    df_latex = df.map(lambda x: x._repr_latex_() if hasattr(x, "_repr_latex_") else x)
+    df_latex: pd.DataFrame = df.map(
+        lambda x: x._repr_latex_() if hasattr(x, "_repr_latex_") else x
+    )
     display(Markdown(df_latex.to_markdown(index=False)))
     display(Markdown("**Summing all the products up, we get**"))
     display(Math("$" + (a * b)._repr_latex_() + "$"))
