@@ -34,6 +34,7 @@ algebra changes:
 import os
 import re
 import sys
+from collections import namedtuple
 from itertools import chain, combinations
 
 import sympy
@@ -333,6 +334,92 @@ def emit_structural(lines, name, blades, fields, n) -> None:
     ap("")
 
 
+# ==========================================================================
+# Graded subtypes (Phase 2): per-dimension type registry + closure resolution.
+#
+# A "type" is a class over a *subset* of blades.  TypeSpec.kind is one of
+# "scalar" (the shared grade-0 type), "graded" (Vector/Bivector/.../Rotor), or
+# "full" (the existing all-blades G_n).  The geometric/inner/outer product of two
+# typed operands is dispatched by a structural ``match`` on the rhs type; the
+# *return type* is decided here, symbolically, by ``resolve``: the smallest
+# registered type whose blade-set covers the support of the symbolic result.
+# ==========================================================================
+
+TypeSpec = namedtuple("TypeSpec", "name blades dim kind")
+
+# the shared grade-0 type (the same scalar lives in every dimension)
+SCALAR = TypeSpec("Scalar", ((),), 0, "scalar")
+
+
+def graded_specs(n: int) -> list[TypeSpec]:
+    """The graded (grade-pure + even/Rotor) types of 𝒢ₙ, per the Phase 1 registry."""
+    bl = blades_for_dim(n)
+
+    def by_grade(g: int) -> tuple:
+        return tuple(b for b in bl if len(b) == g)
+
+    specs = [TypeSpec(f"Vector{n}", by_grade(1), n, "graded")]
+    if n >= 2:
+        specs.append(TypeSpec(f"Bivector{n}", by_grade(2), n, "graded"))
+    if n >= 3:
+        specs.append(TypeSpec(f"Trivector{n}", by_grade(3), n, "graded"))
+    if n >= 2:  # even subalgebra (Rotor); for n==1 the even part is just the scalar
+        even = tuple(b for b in bl if len(b) % 2 == 0)
+        specs.append(TypeSpec(f"Rotor{n}", even, n, "graded"))
+    return specs
+
+
+def full_spec(n: int, full_name: str) -> TypeSpec:
+    return TypeSpec(full_name, tuple(blades_for_dim(n)), n, "full")
+
+
+def registry_for_dim(n: int, full_name: str) -> list[TypeSpec]:
+    """Scalar + graded types + the full G_n -- every type a result can resolve to."""
+    return [SCALAR, *graded_specs(n), full_spec(n, full_name)]
+
+
+def resolve(support, n: int, full_name: str) -> TypeSpec:
+    """Smallest registered type whose blade-set ⊇ ``support`` (full G_n always covers)."""
+    want = set(support)
+    candidates = [
+        t for t in registry_for_dim(n, full_name) if want <= set(t.blades)
+    ]
+    return min(
+        candidates,
+        key=lambda t: (len(t.blades), 0 if t.kind == "scalar" else 1, t.name),
+    )
+
+
+def _renamer(blades_self, blades_rhs):
+    """A (render, ) pair mapping a_<field> -> self.<field>, b_<field> -> rhs.<field>."""
+    rename = {}
+    for b in blades_self:
+        rename["a_" + field_name(b)] = "self." + field_name(b)
+    for b in blades_rhs:
+        rename["b_" + field_name(b)] = "rhs." + field_name(b)
+    if not rename:
+        return lambda expr: sympy.sstr(sympy.sympify(expr))
+    token = re.compile(r"\b(" + "|".join(re.escape(k) for k in rename) + r")\b")
+
+    def render(expr) -> str:
+        return token.sub(lambda m: rename[m.group(1)], sympy.sstr(sympy.sympify(expr)))
+
+    return render
+
+
+def product_result(t1: TypeSpec, t2: TypeSpec, gn_op, n: int, full_name: str):
+    """(result_spec, output exprs over result's blades, render) for t1 <op> t2."""
+    a_syms = {b: sympy.Symbol("a_" + field_name(b)) for b in t1.blades}
+    b_syms = {b: sympy.Symbol("b_" + field_name(b)) for b in t2.blades}
+    result_mv = gn_op(Gn.from_blade_dict(a_syms), Gn.from_blade_dict(b_syms))
+    rd = result_mv.to_blade_dict()
+    support = [b for b in blades_for_dim(n) if sympy.sympify(rd.get(b, 0)) != 0]
+    rspec = resolve(support, n, full_name)
+    out_exprs = [sympy.sympify(rd.get(b, 0)) for b in rspec.blades]
+    render = _renamer(t1.blades, t2.blades)
+    return rspec, out_exprs, render
+
+
 def generate_class(n: int, name: str) -> str:
     blades = blades_for_dim(n)
     fields = [field_name(b) for b in blades]
@@ -476,6 +563,396 @@ def generate_class(n: int, name: str) -> str:
     return "\n".join(lines)
 
 
+def _emit_eq(ap) -> None:
+    """The simplify-aware, cross-representation __eq__ (shared by every type)."""
+    ap("    def __eq__(self, other) -> bool:")
+    ap("        if not isinstance(other, AbstractMultiVector):")
+    ap("            return NotImplemented")
+    ap("        left = self.to_blade_dict()")
+    ap("        right = other.to_blade_dict()")
+    ap("        return all(")
+    ap("            sympy.simplify(")
+    ap(
+        "                sympy.sympify(left.get(blade, 0))"
+        " - sympy.sympify(right.get(blade, 0))"
+    )
+    ap("            )")
+    ap("            == 0")
+    ap("            for blade in (set(left.keys()) | set(right.keys()))")
+    ap("        )")
+    ap("")
+
+
+def _emit_scaled(ap, name, fields, scalar_expr, indent="        ") -> None:
+    """Emit ``return cast(Self, Name(field=cast(Real, <field>*scalar), ...))``."""
+    ap(f"{indent}return typing.cast(")
+    ap(f"{indent}    typing.Self,")
+    ap(f"{indent}    {name}(")
+    for f in fields:
+        ap(f"{indent}        {f}=typing.cast(numbers.Real, {scalar_expr(f)}),")
+    ap(f"{indent}    ),")
+    ap(f"{indent})")
+
+
+def _emit_dispatch(lines, t1, method, gn_op, n, full_name, fallback_op) -> None:
+    """Emit a bilinear method that matches on the rhs type (the grade product table)."""
+    ap = lines.append
+    ap(f"    def {method}(self, rhs) -> typing.Self:")
+    ap("        match rhs:")
+    for t2 in [SCALAR, *graded_specs(n)]:
+        rspec, out_exprs, render = product_result(t1, t2, gn_op, n, full_name)
+        ap(f"            case {t2.name}():")
+        replacements, reduced = sympy.cse(out_exprs)
+        for tmp, expr in replacements:
+            ap(f"                {render(tmp)} = {render(expr)}")
+        ap("                return typing.cast(")
+        ap("                    typing.Self,")
+        ap(f"                    {rspec.name}(")
+        rfields = [field_name(b) for b in rspec.blades]
+        for field, expr in zip(rfields, reduced):
+            lines.extend(
+                format_assignment(field, expr, "                        ", render)
+            )
+        ap("                    ),")
+        ap("                )")
+    ap("            case _:")
+    ap(f"                left = _coerce(self, {full_name})")
+    ap(f"                right = _coerce(rhs, {full_name})")
+    ap(f"                return typing.cast(typing.Self, {fallback_op})")
+    ap("")
+
+
+def graded_docstring(spec: TypeSpec) -> str:
+    grade_words = {0: "scalar", 1: "vector", 2: "bivector", 3: "trivector"}
+    fields = ", ".join(field_name(b) for b in spec.blades)
+    kind = (
+        "the even subalgebra (rotor / spinor)"
+        if spec.name.startswith("Rotor")
+        else "the grade-%d (%s) part"
+        % (len(spec.blades[0]), grade_words.get(len(spec.blades[0]), "k-vector"))
+        if len({len(b) for b in spec.blades}) == 1
+        else "a graded part"
+    )
+    return (
+        f"An element of {kind}\n"
+        f"    of 𝒢{_sub(spec.dim)}.  Stored as the named fields: {fields}.\n\n"
+        "    A graded subtype: products dispatch by operand type and return the\n"
+        "    grade-correct type (e.g. vector*vector -> the even/Rotor type).  "
+        "Results\n    that span grades no graded type covers widen to "
+        f"{full_name_for(spec.dim)}.\n    AUTO-GENERATED by tools/gen_specialized.py."
+    )
+
+
+def full_name_for(dim: int) -> str:
+    return f"G{dim}"
+
+
+def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> str:
+    blades = list(spec.blades)
+    fields = [field_name(b) for b in blades]
+    has_scalar = () in blades
+    lines: list[str] = []
+    ap = lines.append
+
+    ap("@dataclasses.dataclass(eq=False)")
+    ap(f"class {spec.name}(AbstractMultiVector):")
+    ap(f'    """{graded_docstring(spec)}"""')
+    ap("")
+    ap(f"    DIMENSION: typing.ClassVar[int] = {n}")
+    ap("")
+    for f in fields:
+        ap(f"    {f}: numbers.Real = typing.cast(numbers.Real, 0)")
+    ap("")
+
+    # from_blade_dict / to_blade_dict (only this type's blades)
+    ap("    @classmethod")
+    ap("    def from_blade_dict(cls, blade_coef) -> typing.Self:")
+    ap("        d = dict(blade_coef)")
+    ap("        return cls(")
+    for b in blades:
+        ap(
+            f"            {field_name(b)}=typing.cast("
+            f"numbers.Real, d.get({blade_literal(b)}, 0)),"
+        )
+    ap("        )")
+    ap("")
+    ap("    def to_blade_dict(self) -> BladeCoef:")
+    ap("        return {")
+    ap("            blade: coef")
+    ap("            for blade, coef in (")
+    for b in blades:
+        ap(f"                ({blade_literal(b)}, self.{field_name(b)}),")
+    ap("            )")
+    ap("            if coef != 0")
+    ap("        }")
+    ap("")
+
+    _emit_eq(ap)
+
+    # scalar-aware __mul__ / __rmul__ (the ABC versions would drop the scalar
+    # for a type with no scalar field, so they are overridden here)
+    ap("    def __mul__(self, rhs) -> typing.Self:")
+    ap("        if isinstance(rhs, (int, float, sympy.Expr)):")
+    _emit_scaled(ap, spec.name, fields, lambda f: f"self.{f} * rhs", "            ")
+    ap("        return self._geometric_product(rhs)")
+    ap("")
+    ap("    def __rmul__(self, lhs) -> typing.Self:")
+    ap("        if isinstance(lhs, (int, float, sympy.Expr)):")
+    _emit_scaled(ap, spec.name, fields, lambda f: f"lhs * self.{f}", "            ")
+    ap("        return self._geometric_product(lhs)")
+    ap("")
+
+    # the three bilinear products, each a match on the rhs type
+    _emit_dispatch(
+        lines, spec, "_geometric_product", lambda a, b: a * b, n, full_name,
+        "left * right",
+    )
+    _emit_dispatch(
+        lines, spec, "outer_product", lambda a, b: a.outer_product(b), n, full_name,
+        "left.outer_product(right)",
+    )
+    _emit_dispatch(
+        lines, spec, "inner_product", lambda a, b: a.inner_product(b), n, full_name,
+        "left.inner_product(right)",
+    )
+
+    # linear ops: same-type stays in-type, cross-grade widens to the full G_n
+    ap("    def __add__(self, rhs) -> typing.Self:")
+    ap(f"        if isinstance(rhs, {spec.name}):")
+    ap("            return typing.cast(")
+    ap("                typing.Self,")
+    ap(f"                {spec.name}(")
+    for f in fields:
+        ap(f"                    {f}=self.{f} + rhs.{f},")
+    ap("                ),")
+    ap("            )")
+    ap(f"        left = _coerce(self, {full_name})")
+    ap(f"        right = _coerce(rhs, {full_name})")
+    ap("        return typing.cast(typing.Self, left + right)")
+    ap("")
+
+    ap("    def __sub__(self, rhs) -> typing.Self:")
+    ap(f"        if isinstance(rhs, {spec.name}):")
+    ap("            return typing.cast(")
+    ap("                typing.Self,")
+    ap(f"                {spec.name}(")
+    for f in fields:
+        ap(f"                    {f}=self.{f} - rhs.{f},")
+    ap("                ),")
+    ap("            )")
+    ap(f"        left = _coerce(self, {full_name})")
+    ap(f"        right = _coerce(rhs, {full_name})")
+    ap("        return typing.cast(typing.Self, left - right)")
+    ap("")
+
+    ap("    def __neg__(self) -> typing.Self:")
+    _emit_scaled(ap, spec.name, fields, lambda f: f"-self.{f}")
+    ap("")
+
+    # reverse: sign (-1)**(k(k-1)/2) per blade; stays in this type
+    ap("    def reverse(self) -> typing.Self:")
+    ap("        return typing.cast(")
+    ap("            typing.Self,")
+    ap(f"            {spec.name}(")
+    for b in blades:
+        f = field_name(b)
+        sign = (-1) ** ((len(b) * (len(b) - 1)) // 2)
+        rhs_e = f"self.{f}" if sign == 1 else f"typing.cast(numbers.Real, -self.{f})"
+        ap(f"                {f}={rhs_e},")
+    ap("            ),")
+    ap("        )")
+    ap("")
+
+    ap("    def scalar_part(self) -> numbers.Real:")
+    if has_scalar:
+        ap("        return self.scalar")
+    else:
+        ap("        return typing.cast(numbers.Real, 0)")
+    ap("")
+
+    ap("    def grades(self) -> list[int]:")
+    ap("        present: list[int] = []")
+    for g in sorted({len(b) for b in blades}):
+        cond = " or ".join(
+            f"self.{field_name(b)} != 0" for b in blades if len(b) == g
+        )
+        ap(f"        if {cond}:")
+        ap(f"            present.append({g})")
+    ap("        return present")
+    ap("")
+
+    ap("    def is_close(self, other) -> bool:")
+    ap(f"        if not isinstance(other, {spec.name}):")
+    ap("            return super().is_close(other)")
+    ap("        return bool(")
+    for i, f in enumerate(fields):
+        prefix = "" if i == 0 else "and "
+        ap(
+            f"            {prefix}np.isclose("
+            f"float(self.{f}), float(other.{f}), rtol=1e-5, atol=1e-5)"
+        )
+    ap("        )")
+    ap("")
+
+    ap("    def __iter__(self):")
+    for b in blades:
+        f = field_name(b)
+        ap(f"        if self.{f} != 0:")
+        ap(f"            yield {spec.name}({f}=self.{f})")
+    ap("")
+
+    # grade-changing / projection ops: defer to the full type (value-correct;
+    # the result simply widens rather than narrowing to another graded type)
+    for meth, args, call in (
+        ("even_part", "", "even_part()"),
+        ("odd_part", "", "odd_part()"),
+        ("r_vector_part", ", r: int", "r_vector_part(r)"),
+    ):
+        ap(f"    def {meth}(self{args}) -> typing.Self:")
+        ap(
+            f"        return typing.cast(typing.Self, "
+            f"_coerce(self, {full_name}).{call})"
+        )
+        ap("")
+    ap("    def dual(self, n: int | None = None) -> typing.Self:")
+    ap("        return typing.cast(")
+    ap(
+        f"            typing.Self, _coerce(self, {full_name}).dual("
+        "self.DIMENSION if n is None else n)"
+    )
+    ap("        )")
+
+    return "\n".join(lines)
+
+
+def generate_scalar() -> str:
+    """The shared grade-0 ``Scalar`` type (dimension-agnostic)."""
+    lines: list[str] = []
+    ap = lines.append
+    ap("@dataclasses.dataclass(eq=False)")
+    ap("class Scalar(AbstractMultiVector):")
+    ap(
+        '    """The grade-0 type -- a scalar, shared across every 𝒢ₙ.\n\n'
+        "    ``Scalar * x`` scales ``x`` and returns x's type; pure-scalar product\n"
+        "    results (e.g. Bivector2 * Bivector2) land here.  AUTO-GENERATED by\n"
+        '    tools/gen_specialized.py."""'
+    )
+    ap("")
+    ap("    scalar: numbers.Real = typing.cast(numbers.Real, 0)")
+    ap("")
+    ap("    @classmethod")
+    ap("    def from_blade_dict(cls, blade_coef) -> typing.Self:")
+    ap("        d = dict(blade_coef)")
+    ap("        return cls(scalar=typing.cast(numbers.Real, d.get((), 0)))")
+    ap("")
+    ap("    def to_blade_dict(self) -> BladeCoef:")
+    ap("        return {(): self.scalar} if self.scalar != 0 else {}")
+    ap("")
+    _emit_eq(ap)
+    ap("    def __mul__(self, rhs) -> typing.Self:")
+    ap("        if isinstance(rhs, (int, float, sympy.Expr)):")
+    ap(
+        "            return typing.cast(typing.Self, "
+        "Scalar(scalar=typing.cast(numbers.Real, self.scalar * rhs)))"
+    )
+    ap("        return self._geometric_product(rhs)")
+    ap("")
+    ap("    def __rmul__(self, lhs) -> typing.Self:")
+    ap("        if isinstance(lhs, (int, float, sympy.Expr)):")
+    ap(
+        "            return typing.cast(typing.Self, "
+        "Scalar(scalar=typing.cast(numbers.Real, lhs * self.scalar)))"
+    )
+    ap("        return self._geometric_product(lhs)")
+    ap("")
+    ap("    def _geometric_product(self, rhs) -> typing.Self:")
+    ap("        if isinstance(rhs, Scalar):")
+    ap(
+        "            return typing.cast(typing.Self, "
+        "Scalar(scalar=typing.cast(numbers.Real, self.scalar * rhs.scalar)))"
+    )
+    ap("        if isinstance(rhs, AbstractMultiVector):")
+    ap("            return typing.cast(typing.Self, self.scalar * rhs)")
+    ap(
+        "        return typing.cast(typing.Self, "
+        "Scalar(scalar=typing.cast(numbers.Real, self.scalar * rhs)))"
+    )
+    ap("")
+    ap("    def outer_product(self, rhs) -> typing.Self:")
+    ap("        return self._geometric_product(rhs)")
+    ap("")
+    ap("    def inner_product(self, rhs) -> typing.Self:")
+    ap("        left = Gn.from_blade_dict(self.to_blade_dict())")
+    ap("        right = Gn.from_blade_dict(rhs.to_blade_dict())")
+    ap("        return typing.cast(typing.Self, left.inner_product(right))")
+    ap("")
+    ap("    def __add__(self, rhs) -> typing.Self:")
+    ap("        if isinstance(rhs, Scalar):")
+    ap(
+        "            return typing.cast(typing.Self, "
+        "Scalar(scalar=self.scalar + rhs.scalar))"
+    )
+    ap("        left = Gn.from_blade_dict(self.to_blade_dict())")
+    ap("        right = Gn.from_blade_dict(rhs.to_blade_dict())")
+    ap("        return typing.cast(typing.Self, left + right)")
+    ap("")
+    ap("    def __sub__(self, rhs) -> typing.Self:")
+    ap("        return self + (-1 * rhs)")
+    ap("")
+    ap("    def __neg__(self) -> typing.Self:")
+    ap(
+        "        return typing.cast(typing.Self, "
+        "Scalar(scalar=typing.cast(numbers.Real, -self.scalar)))"
+    )
+    ap("")
+    ap("    def reverse(self) -> typing.Self:")
+    ap("        return typing.cast(typing.Self, Scalar(scalar=self.scalar))")
+    ap("")
+    ap("    def scalar_part(self) -> numbers.Real:")
+    ap("        return self.scalar")
+    ap("")
+    ap("    def grades(self) -> list[int]:")
+    ap("        return [0] if self.scalar != 0 else []")
+    ap("")
+    ap("    def is_close(self, other) -> bool:")
+    ap("        if not isinstance(other, Scalar):")
+    ap("            return super().is_close(other)")
+    ap(
+        "        return bool(np.isclose("
+        "float(self.scalar), float(other.scalar), rtol=1e-5, atol=1e-5))"
+    )
+    ap("")
+    ap("    def __iter__(self):")
+    ap("        if self.scalar != 0:")
+    ap("            yield Scalar(scalar=self.scalar)")
+    ap("")
+    ap("    def even_part(self) -> typing.Self:")
+    ap("        return typing.cast(typing.Self, Scalar(scalar=self.scalar))")
+    ap("")
+    ap("    def odd_part(self) -> typing.Self:")
+    ap(
+        "        return typing.cast(typing.Self, "
+        "Scalar(scalar=typing.cast(numbers.Real, 0)))"
+    )
+    ap("")
+    ap("    def r_vector_part(self, r: int) -> typing.Self:")
+    ap("        if r == 0:")
+    ap("            return typing.cast(typing.Self, Scalar(scalar=self.scalar))")
+    ap(
+        "        return typing.cast(typing.Self, "
+        "Scalar(scalar=typing.cast(numbers.Real, 0)))"
+    )
+    ap("")
+    ap("    def dual(self, n: int | None = None) -> typing.Self:")
+    ap("        if n is None:")
+    ap('            raise ValueError("Scalar.dual needs an explicit dimension n")')
+    ap(
+        "        return typing.cast(typing.Self, "
+        "Gn.from_blade_dict(self.to_blade_dict()).dual(n))"
+    )
+    return "\n".join(lines)
+
+
 def generate_constants(n: int, name: str) -> str:
     """Module-level basis constants for one algebra, each of that algebra's type."""
     nonempty = [b for b in blades_for_dim(n) if b != ()]
@@ -489,7 +966,9 @@ def generate_constants(n: int, name: str) -> str:
             f"{name}.from_blade_dict({{{blade_literal(b)}: 1}})"
         )
     ap("")
-    exported = [repr(name), repr("zero"), repr("one")]
+    exported = [repr(name), repr("Scalar")]
+    exported += [repr(s.name) for s in graded_specs(n)]
+    exported += [repr("zero"), repr("one")]
     exported += [repr(field_name(b)) for b in nonempty]
     ap(f"__all__ = [{', '.join(exported)}]")
     return "\n".join(lines)
@@ -530,6 +1009,50 @@ import sympy
 
 from geometricalgebra.base import AbstractMultiVector, BladeCoef
 from geometricalgebra.gn import Gn
+from geometricalgebra.scalar import Scalar
+
+
+def _coerce(x, cls):
+    \"\"\"Coerce a scalar / any multivector to ``cls`` (the dimension's full type).\"\"\"
+    if isinstance(x, AbstractMultiVector):
+        return cls.from_blade_dict(x.to_blade_dict())
+    if isinstance(x, sympy.Expr):
+        return cls.from_sympy_expr(x)
+    return cls.from_scalar(x)
+"""
+
+
+SCALAR_HEADER = """# Copyright (c) 2025-2026 William Emerison Six
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+
+# AUTO-GENERATED by tools/gen_specialized.py -- do not edit by hand.
+# Regenerate with:  python tools/gen_specialized.py
+#
+# Scalar: the shared grade-0 type used by the graded subtypes of every 𝒢ₙ.
+
+import dataclasses
+import numbers
+import typing
+
+import numpy as np
+import sympy
+
+from geometricalgebra.base import AbstractMultiVector, BladeCoef
+from geometricalgebra.gn import Gn
 """
 
 
@@ -537,18 +1060,20 @@ ALGEBRAS = [(1, "G1", "g1.py"), (2, "G2", "g2.py"), (3, "G3", "g3.py")]
 
 
 def main() -> None:
+    # the shared Scalar module first (the graded types import it)
+    scalar_source = "\n".join(
+        [SCALAR_HEADER, "", generate_scalar(), "", "", '__all__ = ["Scalar"]', ""]
+    )
+    with open(out_path("scalar.py"), "w") as f:
+        f.write(scalar_source)
+    sys.stdout.write(f"wrote {os.path.normpath(out_path('scalar.py'))}\n")
+
     for n, name, filename in ALGEBRAS:
-        source = "\n".join(
-            [
-                header(name, n),
-                "",
-                generate_class(n, name),
-                "",
-                "",
-                generate_constants(n, name),
-                "",
-            ]
-        )
+        parts = [header(name, n), "", generate_class(n, name), ""]
+        for spec in graded_specs(n):
+            parts += ["", generate_graded_type(spec, n, name), ""]
+        parts += ["", generate_constants(n, name), ""]
+        source = "\n".join(parts)
         with open(out_path(filename), "w") as f:
             f.write(source)
         sys.stdout.write(f"wrote {os.path.normpath(out_path(filename))}\n")

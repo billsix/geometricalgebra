@@ -197,12 +197,36 @@ to prefer same-dimension over general `Gn` (currently it always goes to `Gn`).
       and simplify-aware cross-type `__eq__`. See "Phase 0 results" below.
 - [x] **Phase 1 — registry + closure policy decided** (2026-06-06): minimal registry + `G_n`
       fallback, dimension-suffixed names, dedicated `Scalar`. See "Phase 1 decisions" above.
-- [ ] **Phase 2 — generalize the generator.** Refactor `generate_class` to take a blade-set;
-      add a `TYPES` registry; add support→closure return-type resolution; emit the T1×T2 dispatch
-      ladders. Full `G_n` becomes a registry entry (all blades).
-- [ ] **Phase 3 — regenerate, extend conformance + bench**, add a teaching notebook showing the grade
+- [x] **Phase 2 — generator emits graded types (2026-06-06).** See "Phase 2 results" below.
+- [ ] **Phase 3 — extend conformance + bench**, add a teaching notebook showing the grade
       product table (`Vector2 * Vector2 -> Rotor2`, duals, etc.).
 - [ ] **Phase 4 — docs:** the type lattice + return-type table per dimension in `README`/`CLAUDE.md`.
+
+## Phase 2 results (2026-06-06)
+
+Implemented in `tools/gen_specialized.py` (additive — the existing full `G1/G2/G3` generation is
+untouched, so the package stayed green throughout):
+
+- **Registry + closure (`resolve`)**: `TypeSpec`, `graded_specs(n)`, `registry_for_dim`, and
+  `resolve(support)` → smallest covering type. Verified against the hand table
+  (`Vector2*Vector2→Rotor2`, `Bivector2*Bivector2→Scalar`, `Vector3*Bivector3→G3`, …).
+- **`generate_graded_type`**: emits each graded class with `match`-on-rhs-type dispatch for the three
+  bilinear products (return type from `resolve`), scalar-correct `__mul__`/`__rmul__`, widen-both
+  fallback via a module `_coerce(x, cls)`, in-type linear ops + `reverse`, and grade-changing ops
+  (`even_part`/`odd_part`/`r_vector_part`/`dual`) deferred to the full `G_n` (value-correct, widens).
+- **`generate_scalar`**: the shared dimension-agnostic `Scalar` in its own `src/geometricalgebra/
+  scalar.py`; `Scalar * x` scales `x` and returns x's type.
+- **Wiring**: each `g{1,2,3}.py` now contains the full `G_n` **plus** its graded types (`Vector_n`,
+  `Bivector_n`, `Trivector3`, `Rotor_n`), importing `Scalar`; `__all__` updated.
+
+**Validation:** 1D/2D/3D graded products match the `Gn` reference (incl. symbolic); FP-proof typing
+(orthogonal vectors still produce a `Rotor`); `Scalar` as a real result type (`Bivector2*Bivector2`,
+`Vector1*Vector1`, inner products); `Rotor` ≅ ℂ/ℍ checks; widen fallbacks land in `G_n`.
+**ruff + `ty check src` clean; 118 tests still pass** (full types unaffected).
+
+**Known v1 limitations (for Phase 3/later):** grade-changing ops widen to `G_n` instead of narrowing
+(e.g. `dual` of a `Bivector3` returns `G3`, not `Vector3`) — value-correct, just not tightly typed;
+graded types not yet in the conformance suite or bench; no teaching notebook/docs yet.
 
 ## Phase 0 results (2026-06-06)
 
