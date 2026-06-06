@@ -126,3 +126,13 @@ Open issues (most are in the shared/reference code, inherited from the original 
    invertible`); malformed `\\\frac` in `scale_non_uniform_2d` LaTeX; `_repr_latex_` round-trips
    coefficients through `sympy.sympify(str(x))` (fragile); test copy-paste bug — `i15` uses
    `unit_pseudoscalar(14)` instead of 15 in `test_multivector.py`.
+
+## Future directions (not yet decided)
+
+- **Graded / blade subtypes** (`Vector`, `Bivector`, `Trivector`, `Rotor`, ...): planned but not
+  built — see `tasks/graded-blade-subtypes.md` for the design and a staged plan.
+- **Paravectors** (scalar + vector; the Algebra-of-Physical-Space object that yields a Lorentzian
+  norm from Euclidean 𝒢₃): the author does **not yet know this area well enough** to commit to a
+  design. Noted here because **future work may use them** (e.g. as one of the graded subtypes, or as
+  a route to special-relativity demos within 𝒢₃). Revisit once the author has studied APS; until
+  then, do not implement paravector-specific machinery.
