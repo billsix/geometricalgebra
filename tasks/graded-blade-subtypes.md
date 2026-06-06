@@ -212,37 +212,59 @@ to prefer same-dimension over general `Gn` (currently it always goes to `Gn`).
 `AbstractMultiVector.rotate(from_vector, to_vector)` classmethod (`base.py`), which rotates using
 `project` / `reject` / the geometric product (`(in_plane(v) * from * to) + exterior(v)`).
 
-**Construction (user's idea, validated below).** Build the rotor from the same `from`/`to`:
-1. Compute the **bisector** (half-angle direction) `m` of `from` and `to`.
-2. Build a rotor `R` from `from` and `m` (a product of two unit vectors `m̂ f̂`, separated by half
-   the `from→to` angle, so the sandwich rotates by the full angle).
-3. Assert `R v R~ == rotate(from, to)(v)` for a symbolic vector `v`, `sympy.simplify`-ing the
-   per-blade difference to 0.
+### What `R v R̃ == (R R̃)·rotate(v)` means (plain English)
 
-**Math check (answering "am I correct?"):**
-- **Bisector formula — correct.** `m = |to|·from + |from|·to` is, up to scale, `f̂ + t̂` (sum of the
-  unit vectors), which bisects the angle. Equivalent to normalizing each then adding.
-- **Antiparallel edge case — correct.** If `from` and `to` are opposite (θ = π), `f̂ + t̂ = 0`, so the
-  bisector vanishes and the plane `from ^ to = 0` is undefined → a 180° rotation needs a *chosen*
-  plane; handle separately. (The θ = 0 same-direction case is the identity rotor — also special.)
-- **Rotor from (from, bisector) — correct in principle.** Two unit vectors at angle φ multiply to a
-  rotor of angle 2φ under the sandwich; with `m` at θ/2 from `from`, the sandwich rotates by θ,
-  matching `rotate`. (Sign/orientation, i.e. `m̂ f̂` vs `f̂ m̂`, fixed empirically to match direction.)
+Notation first: that lowercase **`v` is the vector being rotated** — *not* the meet/regressive
+operator (∨). The pieces:
 
-**Caveat to settle:** `rotate(from, to)` uses `from`/`to` *unscaled*, so for non-unit inputs the
-in-plane part is scaled by `|from||to|`. Use **unit** `from`/`to` (or normalize) for a clean
-equivalence; symbolic magnitudes are `sqrt(...)`, so angle-parameterized unit vectors
-(`from = cos α e_1 + sin α e_2`, etc.) keep the algebra polynomial and `simplify`-able.
+- **`R`** is a *rotor*: an even multivector (scalar + bivector) that encodes a rotation. We build it
+  from `from` and `to`.
+- **`R̃`** ("R-tilde") is the **reverse** of `R`: same scalar, negated bivector (like a quaternion /
+  complex conjugate). It's the "undo" twin of `R`.
+- **`R v R̃`** is the **sandwich product** `R · v · R̃` (rotor, then the vector, then the reversed
+  rotor). This is *the* standard geometric-algebra way to rotate a vector.
+- **`R R̃`** is the rotor times its own reverse — always a **plain number** (the rotor's squared
+  length, `|R|²`). For a *unit* rotor it equals 1.
+- **`rotate(v)`** is the user's `rotate(from, to)` applied to `v` (the clean, normalized rotation).
 
-**Open questions (for the user):**
-- Confirm it's the **ABC `rotate(from_vector, to_vector)`** (project/reject/product), not the
-  `gn.py` angle-based `rotate(angle)` transform.
-- Symbolic inputs: **angle-parameterized unit vectors** (recommended, clean) vs. fully general
-  `from`/`to` with `sqrt` magnitudes?
-- Deliverable: a **notebook** cell set (extend `displaygraded.py`?), a **test** in `test_graded.py`
-  asserting symbolic equality, or **both**?
-- Dimensions: **2D and 3D** (rotate is general; rotor sandwich works in both)?
-- Need a `rotor_from_vectors(from, to)` helper (library, or local to the demo)? Where should it live?
+So the line reads: **"sandwiching `v` between the rotor and its reverse gives the user's `rotate` of
+`v`, scaled up by the number `R R̃`."** The scaling is there only because we deliberately leave `R`
+**un-normalized** (to keep the symbolic algebra to a single square root rather than nested radicals).
+A unit rotor would give `R R̃ = 1` and exactly `R v R̃ == rotate(v)`. To get the pure rotation you
+**divide by `R R̃`** — that is the user's "scale it down later, or not."
+
+**Worked example (a 90° turn taking `e₁`→`e₂`):**
+- `from = e₁`, `to = e₂`  ⇒  `R = |from||to| + to·from = 1 + e₂e₁ = 1 − e₁₂`.
+- `R̃ = 1 + e₁₂`, so `R R̃ = (1 − e₁₂)(1 + e₁₂) = 1 − e₁₂² = 1 − (−1) = 2`.
+- Take `v = e₁`. Then `R v R̃ = 2·e₂`, while `rotate(v) = e₂`.
+- Indeed `2·e₂ = (R R̃)·rotate(v)` ✓. Divide by `R R̃ = 2` to recover the pure `e₂`.
+
+### Confirmed construction & approach (verified symbolically in 2D **and** 3D, 2026-06-06)
+
+- **Rotor:** `R = |from||to| + to·from` (the `to·from` ordering matters for direction; `|from||to|`
+  is a single `sqrt`, so no nested radicals). This is the half-angle rotor, un-normalized.
+- **Identity:** `R v R̃ == (R R̃) · rotate(from, to)(v)` for a *general symbolic* vector `v` —
+  `sympy.simplify` reduces every blade of the difference to 0 (checked in 2D and 3D).
+- **`rotate` is normalized:** fix `AbstractMultiVector.rotate(from, to)` to normalize `from`/`to` so
+  it is a pure rotation. (Keeping it un-normalized "works" only in 2D; in 3D the un-normalized
+  `rotate` scales the *in-plane* part by `|from||to|` but leaves the *perpendicular* part alone — a
+  non-uniform distortion no uniform rotor sandwich can equal. And it wouldn't avoid the `sqrt`
+  anyway, since the rotor still has `|from||to|`.)
+- **Antiparallel:** with general independent symbols you are automatically in the generic
+  (non-antiparallel) case; the identity holds and the construction only degenerates on the
+  measure-zero antiparallel locus. **Assume not antiparallel** (a comment, no special-casing).
+
+**Settled decisions (from the user):** it's the **ABC `rotate(from, to)`** (project/reject/product);
+**general symbolic vectors** (not unit, not angle-parameterized — feasible via the un-normalized
+rotor / scaled identity above); **both 2D and 3D**; **both a notebook demo and a test**; and a
+reusable **`rotor_from_vectors(from, to)`** helper.
+
+**Implementation steps (await user "go"):**
+1. Fix `AbstractMultiVector.rotate(from, to)` in `base.py` to normalize `from`/`to`.
+2. Add `rotor_from_vectors(from, to)` (location TBD — `base.py` classmethod, or `transforms.py`).
+3. `tests/test_graded.py`: assert `R v R̃ == (R R̃)·rotate(from,to)(v)` symbolically, 2D and 3D.
+4. `notebooks/displaygraded.py`: a cell set walking through the rotor build, the sandwich, the
+   `R R̃` scale, and dividing it out — with the worked example above.
 
 ## Phase 3 plan (detailed, 2026-06-06)
 
