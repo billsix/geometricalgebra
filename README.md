@@ -41,6 +41,48 @@ Each `g*` module exports its own basis constants (`zero`, `one`, `e_1`, …, and
 pseudoscalar `e_12` / `e_123`), each of that module's type — so `g2.e_1 * g2.e_2`
 is a `G2`, and 2D vs 3D `e_1` are simply in different modules.
 
+## Graded subtypes (Vector, Bivector, Rotor, …)
+
+Besides the full multivector classes, each algebra has **graded subtypes** that hold
+only one grade's components — the way mathematicians usually work:
+
+| dimension | graded types |
+| --- | --- |
+| shared | `Scalar` (grade 0) |
+| 𝒢₁ | `Vector1` |
+| 𝒢₂ | `Vector2`, `Bivector2`, `Rotor2` (the even subalgebra, ≅ ℂ) |
+| 𝒢₃ | `Vector3`, `Bivector3`, `Trivector3`, `Rotor3` (≅ the quaternions ℍ) |
+
+**The product decides the return type** — resolved when the classes are generated, so it
+never depends on (float-fuzzy) coefficient *values*:
+
+```python
+from geometricalgebra.g2 import Vector2
+
+e_1, e_2 = Vector2.basis_vector(1), Vector2.basis_vector(2)
+a, b = 3 * e_1 + 4 * e_2, 1 * e_1 + 2 * e_2
+
+type(a * b)               # Rotor2     (a·b scalar  +  a∧b bivector)
+type(a ^ b)               # Bivector2  (the wedge — ask for a blade with ^)
+type(a.inner_product(b))  # Scalar
+```
+
+Return-type table for the geometric product `*` (𝒢₂ shown):
+
+| `*` | Scalar | Vector2 | Bivector2 | Rotor2 |
+| --- | --- | --- | --- | --- |
+| **Scalar** | Scalar | Vector2 | Bivector2 | Rotor2 |
+| **Vector2** | Vector2 | Rotor2 | Vector2 | Vector2 |
+| **Bivector2** | Bivector2 | Vector2 | Scalar | Rotor2 |
+| **Rotor2** | Rotor2 | Vector2 | Rotor2 | Rotor2 |
+
+A result that spans grades no single type covers widens to the full `G_n`
+(e.g. `Vector3 * Bivector3 -> G3`). Build values by linear combination of the basis
+(`3*e_1 + 4*e_2`; a bivector via `e_1 ^ e_2`; a rotor via `scalar + bivector` — `+`/`-`
+also narrow to the tightest type). Rotors carry `plane_of_rotation()`, and
+`rotor_from_vectors(from, to)` builds the rotor whose sandwich `R v R.inverse()` equals
+`rotate(from, to)(v)`. A full walkthrough is in `notebooks/displaygraded.py`.
+
 ## Develop
 
 ```bash

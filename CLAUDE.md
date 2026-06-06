@@ -16,14 +16,23 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 - `src/geometricalgebra/base.py` — `AbstractMultiVector` (the abstract base) + the type aliases
   `BladeCoef`, `MultiVectorFn`. Imports nothing internal.
 - `src/geometricalgebra/gn.py` — `Gn`, the general dimension-agnostic representation, plus the
-  `e_1..e_10` / `zero` / `one` constants, the symbolic vectors (`sym_vec2_1`, …), the
-  `InvertibleFunction` + transform layer (`translate`/`rotate`/…), and the `MultiVector = Gn` alias.
-- `src/geometricalgebra/g1.py`, `g2.py`, `g3.py` — **generated** specialized classes `G1`/`G2`/`G3`
-  for 𝒢₁/𝒢₂/𝒢₃ (named-field dataclasses with closed-form operations). Do not edit by hand.
+  `e_1..e_10` / `zero` / `one` constants, the symbolic vectors (`sym_vec2_1`, …), and the
+  `MultiVector = Gn` alias. (The `InvertibleFunction` transform layer lives in `transforms.py`,
+  re-exported from here.)
+- `src/geometricalgebra/transforms.py` — the representation-agnostic transform layer
+  (`InvertibleFunction`, `translate`/`rotate`/`scale_non_uniform`/`compose`/…); derives any basis it
+  needs from the value's own type, so it preserves `Gn`/`G1`/`G2`/`G3`.
+- `src/geometricalgebra/g1.py`, `g2.py`, `g3.py` — **generated** modules. Each holds the full
+  specialized class `G1`/`G2`/`G3` **and** that algebra's **graded subtypes** (`Vector_n`,
+  `Bivector_n`, `Trivector3`, `Rotor_n`). Do not edit by hand.
+- `src/geometricalgebra/scalar.py` — **generated**: the shared grade-0 `Scalar` type used by the
+  graded subtypes of every 𝒢ₙ.
 - `src/geometricalgebra/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
-- `notebooks/displaymv.py` — jupytext (percent-format) demo notebook.
+- `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
+  `displaygraded.py` (graded subtypes) — jupytext (percent-format) demo notebooks.
 - `tests/test_multivector.py` — original `Gn` tests; `tests/test_conformance.py` — parametrized
-  conformance suite over `[Gn, G1, G2, G3]`. **118 tests total.**
+  conformance over `[Gn, G1, G2, G3]`; `tests/test_graded.py` — the graded-subtype suite (return
+  type + value per operation). **~141 tests** (incl. doctests via `--doctest-modules`).
 - `tools/gen_specialized.py` — the code generator; `tools/bench.py` — `Gn`-vs-specialized benchmark.
 - `entrypoint/` — container build/run scripts and **a large vendored Emacs `.emacs.d/elpa/` tree**.
   **The vendored Emacs tree is intentional and off-limits.** It is committed on purpose so the author
@@ -143,8 +152,12 @@ Open issues (most are in the shared/reference code, inherited from the original 
 
 ## Future directions (not yet decided)
 
-- **Graded / blade subtypes** (`Vector`, `Bivector`, `Trivector`, `Rotor`, ...): planned but not
-  built — see `tasks/graded-blade-subtypes.md` for the design and a staged plan.
+- ~~**Graded / blade subtypes**~~ — **built** (`Vector_n`/`Bivector_n`/`Trivector3`/`Rotor_n`/
+  `Scalar`). Emitted by `tools/gen_specialized.py` alongside the full classes; each bilinear product
+  is a `match` on the rhs type whose **return type is resolved at generation time** from the symbolic
+  result's grade support (smallest covering registered type, else widen to the full `G_n`) — so the
+  type follows the *operation*, never runtime float values. `+`/`-` narrow the same way. See the
+  README "Graded subtypes" section (with the return-type table) and `tasks/graded-blade-subtypes.md`.
 - **Paravectors** (scalar + vector; the Algebra-of-Physical-Space object that yields a Lorentzian
   norm from Euclidean 𝒢₃): the author does **not yet know this area well enough** to commit to a
   design. Noted here because **future work may use them** (e.g. as one of the graded subtypes, or as

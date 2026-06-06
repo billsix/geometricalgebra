@@ -1,6 +1,31 @@
 # CI guard: committed generated code must match the generator
 
-Status: **not started** · proposed 2026-06-04 · needs a go/no-go
+Status: **ready to implement** · proposed 2026-06-04 · refreshed 2026-06-06 (now much simpler)
+
+## Current reality (2026-06-06) — why this is now easy
+
+Two facts established since this was first proposed make the guard near-trivial:
+
+1. **The generator auto-formats its own output** — `main()` calls `ruff_format(written)` after writing
+   each file. A fresh `python tools/gen_specialized.py` is therefore **byte-identical** to the
+   committed files (no separate `ruff format` step to reconcile).
+2. **It is deterministic** — verified during the master↔abstractBaseClass merge: two consecutive runs
+   are byte-identical, and `git diff --exit-code -- src/geometricalgebra/g*.py scalar.py` is clean
+   after regenerating. (`term_grade_key` reads `term.free_symbols` — a set — but each term has
+   exactly one `a_`/`b_` symbol, so the key is stable regardless of iteration order.)
+
+So the classic form just works: **regenerate, then `git diff --exit-code`** over the generated files
+(`g1/g2/g3.py` **and** `scalar.py`).
+
+## Recommended shape
+
+- A **`make check-generated`** target (and/or CI step): `python tools/gen_specialized.py` then
+  `git diff --exit-code -- src/geometricalgebra/g1.py src/geometricalgebra/g2.py
+  src/geometricalgebra/g3.py src/geometricalgebra/scalar.py`. Mutates the working tree, so it belongs
+  in CI / a make target, **not** the default `pytest` run.
+- If a pytest test is wanted instead, mark it slow (`-m slow`) and have it regenerate into a **temp
+  dir** (or restore the tree afterward) so a normal `pytest` doesn't rewrite the repo. Generation is
+  ~30s total (𝒢₃ symbolic products dominate), which is why it shouldn't be in the fast path.
 
 ## Background
 
