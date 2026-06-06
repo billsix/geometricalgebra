@@ -1,6 +1,7 @@
 # Graded / blade subtypes for G1/G2/G3 (Vector, Bivector, Rotor, ...)
 
-**Status:** plan / design — needs go-ahead (recommend a 2D prototype first)
+**Status:** complete
+**Completed:** 2026-06-06
 **Started:** 2026-06-06
 
 ## Goal
@@ -202,7 +203,9 @@ to prefer same-dimension over general `Gn` (currently it always goes to `Gn`).
       vector basis via linear combinations); `notebooks/displaygraded.py`; bench rows. Also landed
       mid-Phase-3: **narrowing `+`/`-`** (so `Scalar + Bivector2 -> Rotor2`, and values build by
       linear combination) and a **`Rotor.plane_of_rotation()`** method. 131 tests, ruff + ty clean.
-- [ ] **Phase 4 — docs:** the type lattice + return-type table per dimension in `README`/`CLAUDE.md`.
+- [x] **Phase 4 — docs (2026-06-06):** added the "Graded subtypes" section + 𝒢₂ return-type table to
+      `README.md`, and updated `CLAUDE.md` (module layout, graded-subtype architecture note,
+      future-directions corrected from "not built" to "built").
 - [x] **Phase 5 — DONE (2026-06-06):** normalized `AbstractMultiVector.rotate(from, to)`; added
       `AbstractMultiVector.rotor_from_vectors(from, to)` (= `|from||to| + to·from`); proved
       `R v R.inverse() == rotate(from, to)(v)` symbolically in 2D and by value in 3D + across

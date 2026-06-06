@@ -1,7 +1,13 @@
 # Merge abstractBaseClass into master (regenerate generated code)
 
-**Status:** plan — needs go-ahead
+**Status:** complete
+**Completed:** 2026-06-06
 **Started:** 2026-06-06
+
+> Done: ported master into `abstractBaseClass` via `git merge master` (2 small conflicts —
+> `rotate` docstring, generator `main()` — resolved by combining both sides), regenerated the
+> generated files from the merged generator, verified (141 tests, ty + ruff clean, deterministic
+> regen, all notebooks run), then merged `abstractBaseClass` → `master` (fast-forward).
 
 ## Situation
 
