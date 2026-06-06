@@ -95,9 +95,15 @@ Gates resolved; order locked. (Numbers below are the "active backlog" indices ab
   forward-ref quotes dropped (alias stays quoted — runtime), 141 tests + `ty` clean. The `gn.py` +
   generator portion is **folded into #1** (recorded in that task's notes). Archived.
 
-**Remaining order:** **#1 → #2 → #8 → #9 + #3 → #5 / #7.**
+- **#1 add-python-types → complete (2026-06-06).** Light-touch local annotations across `base.py` /
+  `gn.py` / `transforms.py` / `nbplotutils.py` / the generator, plus the folded-in `gn.py` + generated
+  `g*.py` future-annotations (emitted into both headers). Regenerated; `ty`/`ruff`/141 tests clean.
+  Archived.
 
-Next up: **#1 `add-python-types`** (now also carrying the `gn.py` / generator future-annotations work).
+**Remaining order:** **#2 → #8 → #9 + #3 → #5 / #7.**  (doc tasks, #4, #6, #1 all complete.)
+
+Next up: **#2 `basis-vector-construction`** — rewrite test/bench blade-dict literals as readable basis
+combinations (module-qualified `gn.e_1` style). Pure test/tooling readability; no library-source change.
 
 Answering this task's own meta-question: the sequence **stays here** as the living execution tracker
 (updated as tasks land), rather than being promoted into CLAUDE.md — it's working state, not a stable

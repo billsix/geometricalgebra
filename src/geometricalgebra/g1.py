@@ -22,6 +22,8 @@
 # dataclass whose geometric product is the closed form derived from the general
 # Gn symbolic product.
 
+from __future__ import annotations
+
 import dataclasses
 import numbers
 import typing
@@ -103,10 +105,10 @@ class G1(AbstractMultiVector):
         derived.  This is the representation-specific primitive.
         """
         if not isinstance(rhs, G1):
-            left = Gn.from_blade_dict(self.to_blade_dict())
-            right = Gn.from_blade_dict(rhs.to_blade_dict())
+            left: Gn = Gn.from_blade_dict(self.to_blade_dict())
+            right: Gn = Gn.from_blade_dict(rhs.to_blade_dict())
             return typing.cast(typing.Self, left * right)
-        result = G1(
+        result: G1 = G1(
             scalar=self.scalar * rhs.scalar + self.e_1 * rhs.e_1,
             e_1=self.scalar * rhs.e_1 + self.e_1 * rhs.scalar,
         )
@@ -121,10 +123,10 @@ class G1(AbstractMultiVector):
         equation 1.21a, 1.21b, 1.21c
         """
         if not isinstance(rhs, G1):
-            left = Gn.from_blade_dict(self.to_blade_dict())
-            right = Gn.from_blade_dict(rhs.to_blade_dict())
+            left: Gn = Gn.from_blade_dict(self.to_blade_dict())
+            right: Gn = Gn.from_blade_dict(rhs.to_blade_dict())
             return typing.cast(typing.Self, left.inner_product(right))
-        result = G1(
+        result: G1 = G1(
             scalar=self.e_1 * rhs.e_1,
             e_1=typing.cast(numbers.Real, 0),
         )
@@ -139,10 +141,10 @@ class G1(AbstractMultiVector):
         equation 1.22a, 1.22b, 1.22c
         """
         if not isinstance(rhs, G1):
-            left = Gn.from_blade_dict(self.to_blade_dict())
-            right = Gn.from_blade_dict(rhs.to_blade_dict())
+            left: Gn = Gn.from_blade_dict(self.to_blade_dict())
+            right: Gn = Gn.from_blade_dict(rhs.to_blade_dict())
             return typing.cast(typing.Self, left.outer_product(right))
-        result = G1(
+        result: G1 = G1(
             scalar=self.scalar * rhs.scalar,
             e_1=self.scalar * rhs.e_1 + self.e_1 * rhs.scalar,
         )
@@ -150,10 +152,10 @@ class G1(AbstractMultiVector):
 
     def __add__(self, rhs) -> typing.Self:
         if not isinstance(rhs, G1):
-            left = Gn.from_blade_dict(self.to_blade_dict())
-            right = Gn.from_blade_dict(rhs.to_blade_dict())
+            left: Gn = Gn.from_blade_dict(self.to_blade_dict())
+            right: Gn = Gn.from_blade_dict(rhs.to_blade_dict())
             return typing.cast(typing.Self, left + right)
-        result = G1(
+        result: G1 = G1(
             scalar=self.scalar + rhs.scalar,
             e_1=self.e_1 + rhs.e_1,
         )
@@ -161,17 +163,17 @@ class G1(AbstractMultiVector):
 
     def __sub__(self, rhs) -> typing.Self:
         if not isinstance(rhs, G1):
-            left = Gn.from_blade_dict(self.to_blade_dict())
-            right = Gn.from_blade_dict(rhs.to_blade_dict())
+            left: Gn = Gn.from_blade_dict(self.to_blade_dict())
+            right: Gn = Gn.from_blade_dict(rhs.to_blade_dict())
             return typing.cast(typing.Self, left - right)
-        result = G1(
+        result: G1 = G1(
             scalar=self.scalar - rhs.scalar,
             e_1=self.e_1 - rhs.e_1,
         )
         return typing.cast(typing.Self, result)
 
     def __neg__(self) -> typing.Self:
-        result = G1(
+        result: G1 = G1(
             scalar=typing.cast(numbers.Real, -self.scalar),
             e_1=typing.cast(numbers.Real, -self.e_1),
         )
@@ -201,17 +203,17 @@ class G1(AbstractMultiVector):
         """
         match r:
             case 0:
-                result = G1(
+                result: G1 = G1(
                     scalar=self.scalar,
                 )
                 return typing.cast(typing.Self, result)
             case 1:
-                result = G1(
+                result: G1 = G1(
                     e_1=self.e_1,
                 )
                 return typing.cast(typing.Self, result)
             case _:
-                result = G1()
+                result: G1 = G1()
                 return typing.cast(typing.Self, result)
 
     def reverse(self) -> typing.Self:
@@ -222,7 +224,7 @@ class G1(AbstractMultiVector):
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 5,
         equation 1.19
         """
-        result = G1(
+        result: G1 = G1(
             scalar=self.scalar,
             e_1=self.e_1,
         )
@@ -234,7 +236,7 @@ class G1(AbstractMultiVector):
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
         """
-        result = G1(
+        result: G1 = G1(
             scalar=self.scalar,
         )
         return typing.cast(typing.Self, result)
@@ -245,7 +247,7 @@ class G1(AbstractMultiVector):
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
         """
-        result = G1(
+        result: G1 = G1(
             e_1=self.e_1,
         )
         return typing.cast(typing.Self, result)
@@ -368,8 +370,8 @@ class Vector1(AbstractMultiVector):
                     ),
                 )
             case _:
-                left = _coerce(self, G1)
-                right = _coerce(rhs, G1)
+                left: G1 = _coerce(self, G1)
+                right: G1 = _coerce(rhs, G1)
                 return typing.cast(typing.Self, left * right)
 
     def outer_product(self, rhs) -> typing.Self:
@@ -389,8 +391,8 @@ class Vector1(AbstractMultiVector):
                     ),
                 )
             case _:
-                left = _coerce(self, G1)
-                right = _coerce(rhs, G1)
+                left: G1 = _coerce(self, G1)
+                right: G1 = _coerce(rhs, G1)
                 return typing.cast(typing.Self, left.outer_product(right))
 
     def inner_product(self, rhs) -> typing.Self:
@@ -410,8 +412,8 @@ class Vector1(AbstractMultiVector):
                     ),
                 )
             case _:
-                left = _coerce(self, G1)
-                right = _coerce(rhs, G1)
+                left: G1 = _coerce(self, G1)
+                right: G1 = _coerce(rhs, G1)
                 return typing.cast(typing.Self, left.inner_product(right))
 
     def __add__(self, rhs) -> typing.Self:
@@ -434,8 +436,8 @@ class Vector1(AbstractMultiVector):
                     ),
                 )
             case _:
-                left = _coerce(self, G1)
-                right = _coerce(rhs, G1)
+                left: G1 = _coerce(self, G1)
+                right: G1 = _coerce(rhs, G1)
                 return typing.cast(typing.Self, left + right)
 
     def __sub__(self, rhs) -> typing.Self:
@@ -458,8 +460,8 @@ class Vector1(AbstractMultiVector):
                     ),
                 )
             case _:
-                left = _coerce(self, G1)
-                right = _coerce(rhs, G1)
+                left: G1 = _coerce(self, G1)
+                right: G1 = _coerce(rhs, G1)
                 return typing.cast(typing.Self, left - right)
 
     def __radd__(self, lhs) -> typing.Self:

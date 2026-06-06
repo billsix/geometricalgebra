@@ -1,7 +1,36 @@
 # Add Python type annotations to local variables (source + generator)
 
-**Status:** in-progress
+**Status:** complete
+**Completed:** 2026-06-06
 **Started:** 2026-06-05
+
+> **Completion note (2026-06-06).** Applied with the agreed light-touch policy (annotate NON-OBVIOUS
+> locals; skip obvious literals/counters/strings and unpacking). `ty check src`/`tests` clean,
+> `ruff check src tools tests` clean, generated files regenerated, 141 tests pass.
+>
+> - **base.py:** `product: AbstractMultiVector` (moved its inline comment above to stay ≤88).
+> - **gn.py:** the folded-in future-annotations — added `from __future__ import annotations`,
+>   unquoted `rhs`/`product`/`-> Gn`. Dropped the `sorted_blade_dictionary_entry` annotation (it
+>   forced the line to 89 chars for marginal value — the name is self-describing).
+> - **transforms.py:** `cls: type[AbstractMultiVector]` (×2), `rot_90`/`parallel`/`perpendicular`/
+>   `plane: AbstractMultiVector`.
+> - **nbplotutils.py:** representative subset — `blade_dict: BladeCoef`, `rng: np.random.Generator`,
+>   `x: float | None`, `df`/`df_latex: pd.DataFrame` (added `BladeCoef` import). **Skipped** the
+>   repeated `ex`/`ey`/`origin`/`vertices` boilerplate across the 5 near-identical `draw_*` demos, and
+>   the `blades`/`coefs` locals (static list-invariance / numeric-ABC errors under `ty`).
+> - **gen_specialized.py:** (a) **emitted** annotations into the generated `g*.py` — `result: <Class>`,
+>   `left`/`right: Gn`, and `left`/`right: <FullClass>` in the dispatch fallback — but **not** the
+>   `cse` temporaries (would stamp `: numbers.Real` on every arithmetic line). (b) Emitted
+>   `from __future__ import annotations` into every generated module (both `header()` and
+>   `SCALAR_HEADER`) for #6 consistency; the generated dataclasses still work (`DIMENSION` ClassVar
+>   detected from the string annotation — conformance suite confirms). (c) Annotated the generator's
+>   own core type-resolution locals (`graded_specs`/`resolve`/`product_result`/`unary_result`/
+>   `_renamer`: `specs`/`candidates`/`want`/`rd: BladeCoef`/`support`/`rspec: TypeSpec`/`out_exprs`/
+>   `a_syms`/`b_syms`/`result_mv: Gn`/`rename`/`token`), and added the `BladeCoef` import.
+>
+> **Deliberately scoped out** (low value / high churn, not worth the noise): the ~9 `ap = lines.append`
+> aliases, the many transient `str`/`int`/`list[str]` locals in the emit helpers, and the bulk of the
+> repetitive notebook-demo locals. The generated `cse` temporaries are intentionally left unannotated.
 
 ## Goal
 
