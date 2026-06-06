@@ -1,7 +1,26 @@
 # Unit tests: transforms are representation-preserving (type round-trip)
 
-**Status:** not started — needs go-ahead
+**Status:** complete
+**Completed:** 2026-06-06
 **Started:** 2026-06-04
+
+> **Completion note (2026-06-06).** Added **`tests/test_transforms.py`** (new file — transforms are
+> functions, not methods on the parametrized classes; reused the `[Gn, G1, G2, G3]` representation
+> approach). 23 tests, suite now 164. `ty check tests` + `ruff` clean. Covers:
+> - **Type round-trip** — dimension-general transforms (`translate`/`uniform_scale`/`scale_non_uniform`/
+>   `identity`/`compose`) preserve type on Gn/G1/G2/G3; planar transforms (`rotate`/`rotate_90_degrees`/
+>   `rotate_around`/`scale_non_uniform_2d`) preserve type on Gn/G2/G3.
+> - **Known values** — `rotate_90_degrees`/`rotate(pi/2)`: `3e₁+4e₂ → −4e₁+3e₂`; `scale_non_uniform_2d(2,3)`
+>   of `e₁+e₂ → 2e₁+3e₂`; `uniform_scale(2)`; `basis_vector(i)` is the i-th unit. (`is_close`, float-tolerant.)
+> - **n-D scale** — `scale_non_uniform(2,3,4)` on a 3-vector (Gn/G3) scales each axis, stays the type.
+> - **Invertibility** — `inverse(fn)(fn(v)) == v` for scale/translate/compose.
+> - **Error paths** — the *inverse* of `uniform_scale(0)` / `scale_non_uniform(…,0,…)` raises (the
+>   forward of a zero scale is valid; only the inverse is undefined).
+>
+> Resolved open questions: **new `test_transforms.py`** (not folded into conformance); **G1 included
+> for dimension-general only** (skipped planar rotations / 2-D scale for 1-D). Value tests for the
+> *planar* transforms use purely-e₁e₂ vectors (the #3 hazard — a G3/Gn vector with an e₃ part — is
+> what `clarify-2d-only-transforms` guards next).
 
 ## Goal
 
