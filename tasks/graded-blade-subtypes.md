@@ -140,10 +140,10 @@ Vector3`).
 
 ## Recommended staged plan
 
-- [ ] **Phase 0 — 2D prototype (hand-written, not generated).** Implement `Vector2`, `Bivector2`,
-      `Rotor2` by hand with a `match`-based `*`/`^`/`+`, the §B closure return types, and
-      widen-to-`G2`. Goal: feel the ergonomics, validate the dispatch reads well, confirm cross-type
-      `==` works, and **benchmark** `Vector2×Vector2` vs `G2` vs `Gn`. Cheap, reversible, decisive.
+- [x] **Phase 0 — 2D prototype (hand-written, not generated).** Done 2026-06-06 in
+      `tasks/prototypes/graded2d.py` (throwaway, not wired into the package). Implemented `Vector2`,
+      `Bivector2`, `Rotor2` with `match`-based `*`/`^`/`+`, §B closure return types, widen-to-`G2`,
+      and simplify-aware cross-type `__eq__`. See "Phase 0 results" below.
 - [ ] **Phase 1 — decide registry + closure policy** for 2D/3D from what Phase 0 teaches.
 - [ ] **Phase 2 — generalize the generator.** Refactor `generate_class` to take a blade-set;
       add a `TYPES` registry; add support→closure return-type resolution; emit the T1×T2 dispatch
@@ -152,9 +152,46 @@ Vector3`).
       product table (`Vector2 * Vector2 -> Rotor2`, duals, etc.).
 - [ ] **Phase 4 — docs:** the type lattice + return-type table per dimension in `README`/`CLAUDE.md`.
 
-## Recommendation
+## Phase 0 results (2026-06-06)
 
-Worth doing **for the pedagogy**, not the speed. But it's a sizable, combinatorial addition, so gate
-it on **Phase 0**: a throwaway 2D hand prototype that proves the dispatch reads well and the speedup
-is (or isn't) real before touching the generator. If Phase 0 underwhelms on both ergonomics and
-benchmark, stop there cheaply.
+Prototype: `tasks/prototypes/graded2d.py` (run `python tasks/prototypes/graded2d.py`).
+
+**Ergonomics — good.** The `match`-on-rhs-type dispatch reads exactly as the grade product table; the
+module docstring is literally that table, and each `case` is one line with a "what grade does this
+produce" comment. This is the pedagogical artifact we wanted.
+
+**Correctness / FP — confirmed.** Return type is decided by the operation, not by values:
+`Vector2(1,0) * Vector2(0,1)` is a `Rotor2` (its scalar part is exactly 0) — we never narrowed on a
+float. Cross-type `__eq__` against `G2`/`Gn` works (the simplify-aware compare over `to_blade_dict`).
+Symbolic coefficients work unchanged (lazy, no eager simplify). `Rotor2` is ℂ: `e_12² == -1`.
+
+**Speed — real but modest (this is the honest verdict).** Microseconds/op for `vector * vector`:
+
+| | numeric | symbolic |
+|---|---|---|
+| `Vector2` (typed) | **1.18** | **21.4** |
+| `G2` (full) | 3.12 (2.7×) | 83.2 (3.9×) |
+| `Gn` (general) | 968 (822×) | (orders slower) |
+
+So the typed path is ~2.7× faster than full `G2` numerically and ~3.9× symbolically (and both are
+already enormously faster than `Gn`). A real saving, but small next to the `Gn→G2` jump — consistent
+with the prediction that Python per-op overhead caps the win. **Pedagogy, not speed, is the
+justification.**
+
+**Design notes learned for the generator:**
+- The widen fallback must widen **both** graded operands to the dimension's full type. `G2.__add__`/
+  `__mul__` coerce a *foreign* `AbstractMultiVector` rhs all the way to general `Gn`, so
+  `Vector2.widen() + Bivector2(...)` lands in `Gn`, not `G2`. The generated graded types' fallback
+  should target the same-dimension full `G_n` (and arguably the existing `G2/G3` foreign-operand
+  coercion should prefer same-dimension over general `Gn`).
+- `Bivector2 * Bivector2 -> Rotor2` (a pure scalar with `e_12=0`): confirms the "smallest registered
+  type covering the support" rule, and the case for a dedicated `Scalar` type if we want it to narrow
+  further.
+
+## Recommendation (updated after Phase 0)
+
+**Ergonomically it's a win; the speed is a minor bonus, not the reason.** Decision for the human:
+proceed only if the *teaching value* justifies the combinatorial surface (a type lattice + dispatch
+table per dimension + generator work). If yes, go to Phase 1 (registry + closure policy) then Phase 2
+(generalize the generator). If the goal was speed, Phase 0 says it's not worth it — the specialized
+full classes already capture most of the win.
