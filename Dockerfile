@@ -29,7 +29,6 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
                    ty ;  \
     dnf install -y \
                    pinentry; \
-    emacs --batch --load /root/.emacs.d/install-melpa-packages.el && \
     if [ "$USE_SPYDER" = "1" ]; then \
       dnf install -y   \
                    mesa-dri-drivers  \
@@ -55,6 +54,23 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     dnf install -y libatomic && uv pip install --system pyright && \
     uv pip install --system -r /requirements.txt && \
     rm /requirements.txt
+
+# Copy the build-relevant project files (not the whole tree: the 31M vendored
+# Emacs elpa tree is already at /root, and .dockerignore is global so it can't be
+# excluded for just this COPY). Placed after the slow dnf/MELPA/requirements
+# layers so editing source doesn't re-run them. At runtime `make shell`'s bind
+# mount overlays /geometricalgebra with the live host tree, so this copy is only
+# used for the build below.
+COPY pyproject.toml setup.py requirements.txt README.md /geometricalgebra/
+COPY src   /geometricalgebra/src
+COPY tools /geometricalgebra/tools
+
+# Install the package + its "dev" extras (build, twine) from pyproject's own
+# [project.optional-dependencies] -- the single source of truth, no hardcoded
+# package list. Runtime deps are already installed above, so this mainly fetches
+# the dev tools; --no-build-isolation reuses the system setuptools/wheel/numpy/
+# sympy, and the setup.py build_py hook generates the algebras if missing.
+RUN cd /geometricalgebra && uv pip install --system --no-build-isolation ".[dev]"
 
 
 ENTRYPOINT ["/entrypoint.sh"]

@@ -91,6 +91,31 @@ python -m pytest            # run the test suite
 bash entrypoint/format.sh   # ruff check --fix, ruff format, ty check
 ```
 
+### Updating the vendored Emacs packages
+
+The Emacs packages are vendored in git under `entrypoint/dotfiles/.emacs.d/elpa`,
+but are **not** baked into the image (excluded via `.dockerignore`; the build no
+longer installs them). To refresh them to the latest from MELPA:
+
+```bash
+make update-emacs-packages   # rebuild image, wipe+reinstall elpa, strip *.elc, git add -f
+git commit                   # vendor the freshly staged tree
+```
+
+It rebuilds the image with `USE_EMACS=1`, runs Emacs in the container with the
+elpa tree bind-mounted read-write (so freshly installed packages land back on the
+host), removes compiled `*.elc`/`*.eln` artifacts (regenerated, machine-specific),
+and force-stages the tree with `git add -A -f` (the `-f` overrides the repo
+`.gitignore`'s `*.elc`/`*.eln`/… patterns so the full vendored tree is committed).
+Just review and `git commit`.
+
+To *use* the vendored packages in an interactive session, start the shell with
+`USE_EMACS=1` (the default is off), which bind-mounts the tree in:
+
+```bash
+make shell USE_EMACS=1
+```
+
 ## Generating the specialized classes
 
 `g1.py` / `g2.py` / `g3.py` / `scalar.py` are **generated** — do not edit them by

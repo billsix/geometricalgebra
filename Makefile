@@ -43,6 +43,10 @@ WAYLAND_FLAGS_FOR_CONTAINER = -e "WAYLAND_DISPLAY=${WAYLAND_DISPLAY}" \
                               -v "${XDG_RUNTIME_DIR}:${XDG_RUNTIME_DIR}"
 
 
+# USE_EMACS=1 bind-mounts the vendored host elpa tree into the container so an
+# interactive `make shell USE_EMACS=1` can *use* the vendored packages (:U chowns
+# it to the container user, :z relabels for SELinux). Default is off (no mount).
+# To *refresh* the vendored packages, use `make update-emacs-packages` below.
 ifeq ($(USE_EMACS), 1)
   ELPA_MOUNT= -v $(CURDIR)/entrypoint/dotfiles/.emacs.d/elpa:/root/.emacs.d/elpa:U,z
 else
@@ -73,6 +77,31 @@ shell:  ## Get Shell into a ephermeral container made from the image
                 $(ELPA_MOUNT) \
 		$(CONTAINER_NAME) \
 		/shell.sh
+
+
+# Refresh the vendored Emacs packages. Forces USE_EMACS=1 and rebuilds the image
+# first (so it doesn't matter whether the last `make image` set USE_EMACS). Then,
+# in the container, wipes the elpa tree and reinstalls from MELPA into the host's
+# bind-mounted entrypoint/dotfiles/.emacs.d/elpa (the current
+# install-melpa-packages.el is mounted read-only, so edits to it take effect
+# without a rebuild). Finally strips compiled *.elc/*.eln (regenerated,
+# machine-specific build artifacts) and force-stages the whole tree (git add -A
+# -f overrides .gitignore's *.elc/*.eln/... patterns) so the vendored tree is
+# ready to commit. Needs network access.
+.PHONY: update-emacs-packages
+update-emacs-packages: ## USE_EMACS=1: rebuild image, wipe+reinstall elpa, strip *.elc/*.eln, git add -f
+	$(MAKE) image USE_EMACS=1
+	$(CONTAINER_CMD) run --rm \
+		-v $(CURDIR)/entrypoint/dotfiles/.emacs.d/elpa:/root/.emacs.d/elpa:U,z \
+		-v $(CURDIR)/entrypoint/dotfiles/.emacs.d/install-melpa-packages.el:/root/.emacs.d/install-melpa-packages.el:ro,z \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'set -e; find /root/.emacs.d/elpa -mindepth 1 -delete; \
+		    emacs --batch --load /root/.emacs.d/install-melpa-packages.el'
+	cd $(CURDIR)/entrypoint/dotfiles/.emacs.d/elpa && \
+		find . \( -iname '*.elc' -o -iname '*.eln' \) -delete && \
+		git add -A -f .
+	@echo "Done: reinstalled packages, stripped *.elc/*.eln, staged elpa -- review and commit."
 
 
 
