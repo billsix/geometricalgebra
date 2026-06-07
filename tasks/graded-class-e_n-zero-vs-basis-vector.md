@@ -1,7 +1,32 @@
 # Why `Vector2.e_1` is `0` (not the basis vector) — and should it be?
 
-**Status:** Phase 1 **COMPLETE** (committed `6c88fae`) · Phase 2 **DONE** (awaiting author commit) ·
-Phase 3 pending go-ahead · started 2026-06-07
+**Status:** Phase 1 **COMPLETE** (committed `6c88fae`) · Phase 2 **DONE** · Phase 3 **DONE** —
+**all three phases finished** (awaiting author commit of Phases 2 & 3) · started 2026-06-07
+
+## Phase 3 — DONE 2026-06-07 (component is the blessed grade-general getter)
+
+`AbstractMultiVector.component(x)` was `self.dot(x).scalar_part()` with a "TODO - is this really how
+I should define it?" comment — correct for vectors but **sign-wrong for grade ≥ 2** (`e_12 · e_12 ==
+−1`). Fixed to the grade-general extraction `⟨A x̃⟩₀`:
+
+```python
+return (self * x.reverse()).scalar_part()
+```
+
+- One change in the **ABC** (`base.py`) — `component` is not overridden anywhere (verified), so it
+  covers `Gn`, `G1/G2/G3`, and every graded subtype. Added a real docstring (Hestenes-style: the
+  orthonormal-basis coefficient α_J = ⟨A ẽ_J⟩, reverse = inverse for unit Euclidean blades) and noted
+  `x` is expected to be a **unit** basis blade (the class constants / `gn.e_1` are exactly these);
+  pointed to `project` for the blade-valued part.
+- **Tests added** (component was previously untested — that's why the bug hid): `test_component` in
+  `test_conformance.py` (parametrized over `[Gn, G1, G2, G3]`, n=1..3) checks every blade's
+  coefficient incl. the grade-≥2 sign case and the reconstruction identity
+  `Σ_b component(b)·b == x`; `test_component_reads_coefficients` in `test_graded.py` covers the graded
+  subtypes (vector/bivector/trivector + a 3D bivector component). **170 tests pass** (+7), `ty` +
+  `ruff` clean.
+- Docs: CLAUDE.md known-issue #2 now lists only `inverse`/`is_parallel_to` (component resolved);
+  README quick-start shows `a.component(e_1)`; the Architecture/Phase-2 text already points users at
+  `component`/`project` as the way to read components.
 
 ## Phase 2 — DONE 2026-06-07 (e_n basis-vector class constants)
 
@@ -247,17 +272,15 @@ With the `e_n` names freed, define them as class-level constants of each class's
 `base.py:207` `component(x) = self.dot(x).scalar_part()` is correct for vectors but **sign-wrong for
 grade ≥ 2** (`e_12 · e_12 = −1`). Fix to the grade-general extraction `⟨A x̃⟩₀`.
 
-- [ ] `base.py`: `component(self, x) -> Real: return (self * x.reverse()).scalar_part()` (reverse =
-      inverse for unit Euclidean blades; robust for non-unit `x` too). Drop the "TODO - is this
-      really how I should define it?" comment. **One change in the ABC covers `Gn` and all
-      specialized classes** (none override `component` — verify via grep of the generator).
-- [ ] Add tests (currently `component` is **untested** — that's why the bug hid): scalar coefficient
-      of a vector along `e_1`, of a bivector along `e_12` (the sign case), and a round-trip
-      `sum(c.component(b)*b for b in basis) == c`. Parametrize over `[Gn, G1, G2, G3]` like
-      `test_conformance.py`, and add the graded-subtype cases in `test_graded.py`.
-- [ ] Update CLAUDE.md known-issue #2 (remove `component` from the "not sure" list once verified) and
-      document `component`/`project` as the public way to read components. README usage example.
-- [ ] Suite + guards + `ruff` + `ty` green. **Stop — author commits.**
+- [x] `base.py`: `component(self, x) -> Real: return (self * x.reverse()).scalar_part()`, with a real
+      docstring; documented as expecting a **unit** basis blade. Dropped the TODO comment. **One ABC
+      change covers `Gn` and all specialized/graded classes** (verified: no override anywhere).
+- [x] Added tests: `test_component` (parametrized `[Gn, G1, G2, G3]`, n=1..3) — every blade's
+      coefficient incl. the grade-≥2 sign case and the `Σ component(b)·b == x` reconstruction;
+      `test_component_reads_coefficients` (graded subtypes) in `test_graded.py`.
+- [x] CLAUDE.md known-issue #2 updated (component resolved); README quick-start shows
+      `a.component(e_1)`; Architecture text points at `component`/`project`.
+- [x] Suite (170) + `ruff` + `ty` green. **Stop — author commits.**
 
 ## Open questions for the author
 

@@ -35,6 +35,8 @@ a.magnitude_squared()   # 25  (a vector squared is its magnitude squared)
 a * a == G2.from_scalar(25)   # True
 e_1 * e_2               # the unit bivector e_12
 a.dual()                # the dual; n defaults to this algebra's dimension (2)
+a.component(e_1)        # 3   (the scalar coefficient along a unit blade; works
+                        #      for any grade, e.g. B.component(e_1 ^ e_2))
 ```
 
 Each `g*` module exports its own basis constants (`zero`, `one`, `e_1`, …, and the

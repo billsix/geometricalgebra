@@ -140,8 +140,8 @@ show(i2 * i2)  # == -1
 # quarter turn, built from the two vectors (no hand-rolled cos/sin needed)
 quarter = Vector2.rotor_from_vectors(
     from_vector=Vector2.e_1, to_vector=Vector2.e_2
-).normalize()
-rotated = quarter * Vector2.e_1 * quarter.reverse()
+)
+rotated = quarter * Vector2.e_1 * quarter.inverse()
 show(rotated)
 
 # %% [markdown]

@@ -205,8 +205,20 @@ class AbstractMultiVector(abc.ABC):
         return self * (abs(self) ** (-1))
 
     def component(self, x: typing.Self) -> numbers.Real:
-        # TODO - is this really how I should define it?
-        return self.dot(x).scalar_part()
+        """Scalar coefficient of this multivector along the unit blade ``x``.
+
+        For an orthonormal basis blade e_J (e.g. ``e_1`` or ``e_12``), the
+        coefficient α_J in  A = Σ_J α_J e_J  is the scalar part of  A ẽ_J ,
+        i.e. ⟨A x̃⟩₀ (ẽ_J = reverse(e_J) = e_J⁻¹ for a unit Euclidean blade,
+        since e_J ẽ_J = 1).  So ``v.component(e_1)`` reads off v's e_1 coefficient
+        and ``B.component(e_12)`` its e_12 coefficient (the reverse is what keeps
+        the sign right for grade ≥ 2, where e_12 e_12 = −1).
+
+        ``x`` is expected to be a unit basis blade — the named class constants
+        (``Vector2.e_1``, ``Bivector2.e_12``, …) or ``gn.e_1`` are exactly these.
+        For the blade-valued part instead of the scalar, see ``project``.
+        """
+        return (self * x.reverse()).scalar_part()
 
     def inner_product(self, rhs: typing.Self) -> typing.Self:
         """Inner (dot) product  A · B  — the lowest-grade part of the geometric

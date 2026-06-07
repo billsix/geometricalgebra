@@ -197,6 +197,22 @@ def test_rotate(n: int, cls) -> None:
     assert got == Gn.rotate(from_vector=gn.e_1, to_vector=gn.e_2)(a)
 
 
+@pytest.mark.parametrize("n,cls", CASES)
+def test_component(n: int, cls) -> None:
+    # component(blade) reads each coefficient back -- the reverse keeps the sign
+    # right for grade >= 2 (e.g. e_12 e_12 == -1) -- and summing component*blade
+    # over the basis reconstructs the value (the decomposition identity)
+    g = full(n, 0)
+    x = to(cls, g)
+    coefs = g.to_blade_dict()
+    recon = cls.zero()
+    for b in blades(n):
+        unit = cls.from_blade_dict({b: 1})
+        assert scalar_eq(x.component(unit), coefs.get(b, 0))
+        recon = recon + x.component(unit) * unit
+    assert recon == x
+
+
 # --------------------------------------------------------------------------
 # representation invariants
 # --------------------------------------------------------------------------

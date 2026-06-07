@@ -148,6 +148,17 @@ def test_basis_constant_instance_fallthrough():
     assert v.coeff_e_1 == 5 and v.coeff_e_2 == 2
 
 
+def test_component_reads_coefficients():
+    # component(blade) reads the scalar coefficient; the reverse in its definition
+    # keeps the sign right for grade >= 2 (e_12 * e_12 == -1)
+    v = 3 * Vector2.e_1 + 4 * Vector2.e_2
+    assert v.component(Vector2.e_1) == 3 and v.component(Vector2.e_2) == 4
+    assert (7 * Bivector2.e_12).component(Bivector2.e_12) == 7
+    assert (5 * Trivector3.e_123).component(Trivector3.e_123) == 5
+    b3 = 4 * Bivector3.e_12 + 5 * Bivector3.e_13 + 6 * Bivector3.e_23
+    assert b3.component(Bivector3.e_13) == 5
+
+
 def test_linear_combination_construction():
     # the basis builds each graded type by linear combination / wedge
     assert type(3 * Vector2.e_1 + 4 * Vector2.e_2) is Vector2

@@ -213,8 +213,10 @@ Open issues (most are in the shared/reference code, inherited from the original 
 
 1. **Fixed Euclidean signature**: eᵢeᵢ always reduces to +1. No spacetime/null/conformal signatures.
    Now documented (the classes are explicitly 𝒢ₙ over ℝⁿ), but still a hard limit.
-2. **Self-flagged uncertainty**: `inverse`, `is_parallel_to`, `component` carry "not sure if I'm
-   doing this correctly" comments; not all verified against known results.
+2. **Self-flagged uncertainty**: `inverse`, `is_parallel_to` carry "not sure if I'm doing this
+   correctly" comments; not all verified against known results. (`component` was resolved — it is now
+   `⟨A x̃⟩₀` = `(self * x.reverse()).scalar_part()`, correct for any grade and verified by
+   `test_component` over `[Gn, G1, G2, G3]` and the graded subtypes.)
 
 ## Future directions (not yet decided)
 
