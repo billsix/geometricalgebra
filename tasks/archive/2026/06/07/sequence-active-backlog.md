@@ -1,7 +1,11 @@
 # Sequence the active tasks/ backlog (dependencies + line-churn coordination)
 
-**Status:** in-progress — executing the decided order (gates resolved 2026-06-06)
+**Status:** complete — the sequenced backlog was executed; the items it coordinated are all done and
+archived. Remaining independent work (display-simplify, displaygraded-plots, reject/reflect higher
+grade, build-time-codegen-dist→done) lives in its own task docs. Archived as the coordination job is
+finished.
 **Started:** 2026-06-06
+**Completed:** 2026-06-07
 
 ## Goal
 

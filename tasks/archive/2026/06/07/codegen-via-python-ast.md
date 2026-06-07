@@ -1,12 +1,13 @@
 # Investigate rewriting the code generation to use the Python `ast` module
 
-**Status:** in-progress — **A committed; B committed; C done + verified** (whole generator now
-hand-built `ast` nodes; dead B helpers removed). All three alternatives exist as planned. Next: **author
-commits C, then reviews A / B / C and picks one via git history** (then post-pick cleanup: delete
-`tools/_ast_parity.py`, update CLAUDE.md "Code generation"). Acceptance (all levels, all met) =
-AST-equivalent (`ast.dump` per file) + 161 tests + deterministic; byte-stability run-to-run guarded by
+**Status:** complete — A/B/C all built and verified; **C chosen and committed** as the approach (the
+generator builds via hand-built `ast` nodes). Post-pick cleanup done: `tools/_ast_parity.py` deleted,
+CLAUDE.md "Code generation" refreshed. Structure follow-up tracked separately in
+`tasks/gen-specialized-structure-refactor.md` (also done bar optional #6). Acceptance met:
+AST-equivalent (`ast.dump` per file) + 161 tests + deterministic; run-to-run byte-stability guarded by
 `make check-generated`.
 **Started:** 2026-06-07
+**Completed:** 2026-06-07
 
 ---
 
