@@ -102,6 +102,24 @@ that rotor `R = |from||to| + to·from` (scalar + bivector, the even-subalgebra g
 **any plane, any dimension/representation**. Rotation lives in the algebra itself — the transform
 layer (`transforms.py`) carries no rotation factory; use these rotor methods instead.
 
+**Convention — express rotations as `rotate` / `rotor_from_vectors` (from/to), never hand-built.**
+When writing or reviewing examples, tests, notebooks, or docs, a rotation must read as an explicit
+`cls.rotate(from_vector=…, to_vector=…)(v)` or `cls.rotor_from_vectors(from_vector=…, to_vector=…)`
+(keyword args; add `.normalize()` for a unit rotor). **Do not** hand-build a rotor as a data value —
+e.g. a `G2`/`Rotor2` instance assigned from `cos(t/2) - sin(t/2)*(e_1*e_2)`. A rotor that "happens to
+be" the right data but is constructed by trigonometry is treated as a regression; the whole point of
+these methods is that a rotation reads as from→to, not as a derived multivector literal. (Fine:
+building a *target vector* at an angle, `to = cos(a)*e_1 + sin(a)*e_2`, then feeding it to
+`rotor_from_vectors`; and the rotor *definition* in `plane_of_rotation`'s docstring.)
+
+**Convention — no local aliases for values that have a direct name.** Don't bind locals like
+`E1 = Vector2.basis_vector(1)` / `I2 = E1 ^ E2` / `B12 = F1 ^ F2` / `I3 = (F1^F2)^F3` and then use
+`E1`/`I2`/`B12`/`I3`. Every basis blade is directly referenceable as a **class constant of its grade's
+type** — `Vector2.e_1`, `Bivector2.e_12`, `Trivector3.e_123`, `Vector3.e_3`, etc. (added in this
+project; see the class-constant note above). Reference those directly instead of aliasing them.
+Genuinely *derived* values with a semantic role (a specific test multivector, a `from`/`to`/`w`
+vector) keep their names; the rule targets pure renames of things that already have a canonical name.
+
 ## Operators
 
 - `*` geometric product · `^` wedge (outer) product · `@` composition of `InvertibleFunction`s
