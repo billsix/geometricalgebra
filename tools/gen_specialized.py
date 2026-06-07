@@ -31,11 +31,12 @@ algebra changes:
     python tools/gen_specialized.py
 """
 
+import ast
 import inspect
 import os
-import re
 import subprocess
 import sys
+import textwrap
 from collections import namedtuple
 from itertools import chain, combinations
 
@@ -47,21 +48,706 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from geometricalgebra.base import AbstractMultiVector, BladeCoef  # noqa: E402
 from geometricalgebra.gn import Gn  # noqa: E402
 
+# ==========================================================================
+# AST emission layer.  Code is assembled as Python `ast` nodes and rendered
+# with `ast.unparse`, rather than concatenated as raw strings.  Two helpers do
+# the heavy lifting:
+#   * `parse_stmts` / `parse_expr` -- "template-splice": parse a source snippet
+#     into nodes, the stdlib's nearest thing to a Lisp quasiquote.
+#   * `SymbolToAttr` -- rewrites the operand symbols sympy prints (``a_e_1``,
+#     ``b_e_12``) into attribute access (``self.e_1``, ``rhs.e_12``).  This is the
+#     AST-native replacement for the old regex-on-source rename.
+# `ast.unparse` output is canonical (no comments, its own wrapping); ruff then
+# formats it.  The file header (copyright + imports) stays raw text -- comments
+# cannot be represented in an AST.
+# ==========================================================================
 
-def emit_docstring(lines, method_name, indent="        ") -> None:
-    """Copy ``AbstractMultiVector.<method_name>``'s docstring onto the generated
-    override, so the specialized classes carry the *same* Hestenes notation as the
-    shared base.  ``base.py`` is the single source of truth; this is a no-op when
-    the base method has no docstring (keeps pure-plumbing overrides clean).
+
+def parse_stmts(src: str) -> list[ast.stmt]:
+    """Parse a source snippet into a list of statement nodes (template-splice)."""
+    return ast.parse(textwrap.dedent(src)).body
+
+
+def parse_expr(src: str) -> ast.expr:
+    """Parse a source snippet into a single expression node."""
+    return ast.parse(src, mode="eval").body
+
+
+def module_source(body: list[ast.stmt]) -> str:
+    """Render top-level statement nodes to source via `ast.unparse`."""
+    module = ast.Module(body=body, type_ignores=[])
+    return ast.unparse(ast.fix_missing_locations(module))
+
+
+class SymbolToAttr(ast.NodeTransformer):
+    """Rewrite operand-symbol ``Name`` nodes to attribute access.
+
+    ``rename`` maps a sympy symbol name (e.g. ``a_e_1``) to an ``(object, attr)``
+    pair (e.g. ``("self", "e_1")``).  Replaces the old word-boundary regex on
+    rendered source with a structural, correct-by-construction transform.
+    """
+
+    def __init__(self, rename: dict[str, tuple[str, str]]):
+        self.rename = rename
+
+    def visit_Name(self, node: ast.Name) -> ast.AST:
+        target = self.rename.get(node.id)
+        if target is None:
+            return node
+        obj, attr = target
+        return ast.Attribute(
+            value=ast.Name(id=obj, ctx=ast.Load()), attr=attr, ctx=ast.Load()
+        )
+
+
+def expr_to_ast(expr, rename: dict[str, tuple[str, str]]) -> ast.expr:
+    """sympy expression -> AST expression with operand symbols as attribute access."""
+    tree = parse_expr(sympy.sstr(expr))
+    return ast.fix_missing_locations(SymbolToAttr(rename).visit(tree))
+
+
+# ==========================================================================
+# C (hand-built nodes) layer.  Every class / method / statement / expression is
+# constructed as explicit `ast` nodes -- no source text for bodies.  These small
+# builders keep that tolerable (and, tellingly, start to resemble a quasiquote --
+# i.e. B).  The math still flows through `expr_to_ast`; the file header stays raw.
+# ==========================================================================
+
+_LOAD = ast.Load()
+_STORE = ast.Store()
+
+
+def nm(ident: str) -> ast.Name:
+    return ast.Name(id=ident, ctx=_LOAD)
+
+
+def dot(value, *parts: str) -> ast.expr:
+    node = value if isinstance(value, ast.AST) else nm(value)
+    for p in parts:
+        node = ast.Attribute(value=node, attr=p, ctx=_LOAD)
+    return node
+
+
+def lit(v) -> ast.Constant:
+    return ast.Constant(value=v)
+
+
+def call(func, args=(), **kwargs) -> ast.Call:
+    f = func if isinstance(func, ast.AST) else nm(func)
+    return ast.Call(
+        func=f,
+        args=list(args),
+        keywords=[ast.keyword(arg=k, value=v) for k, v in kwargs.items()],
+    )
+
+
+def cast(type_node, value) -> ast.Call:
+    return call(dot("typing", "cast"), [type_node, value])
+
+
+def cast_self(value) -> ast.Call:
+    return cast(dot("typing", "Self"), value)
+
+
+def cast_real(value) -> ast.Call:
+    return cast(dot("numbers", "Real"), value)
+
+
+def ret(value) -> ast.Return:
+    return ast.Return(value=value)
+
+
+def subscript(value, index) -> ast.Subscript:
+    return ast.Subscript(value=value, slice=index, ctx=_LOAD)
+
+
+def opt_int() -> ast.expr:
+    """The annotation ``int | None``."""
+    return ast.BinOp(left=nm("int"), op=ast.BitOr(), right=lit(None))
+
+
+def arg(name_, annotation=None) -> ast.arg:
+    return ast.arg(arg=name_, annotation=annotation)
+
+
+def fn(name_, body, params=None, defaults=(), decorators=(), returns=None):
+    """An ``ast.FunctionDef``; ``params`` are ``ast.arg`` (default ``[self]``)."""
+    params = [arg("self")] if params is None else params
+    arguments = ast.arguments(
+        posonlyargs=[],
+        args=params,
+        vararg=None,
+        kwonlyargs=[],
+        kw_defaults=[],
+        kwarg=None,
+        defaults=list(defaults),
+    )
+    return ast.FunctionDef(
+        name=name_,
+        args=arguments,
+        body=body,
+        decorator_list=list(decorators),
+        returns=returns,
+        type_params=[],
+    )
+
+
+def cls(name_, body, bases=("AbstractMultiVector",), decorators=()) -> ast.ClassDef:
+    return ast.ClassDef(
+        name=name_,
+        bases=[nm(b) for b in bases],
+        keywords=[],
+        body=body,
+        decorator_list=list(decorators),
+        type_params=[],
+    )
+
+
+def dataclass_decorator(**flags) -> ast.Call:
+    return ast.Call(
+        func=dot("dataclasses", "dataclass"),
+        args=[],
+        keywords=[ast.keyword(arg=k, value=lit(v)) for k, v in flags.items()],
+    )
+
+
+def ann_assign(target_name, annotation, value=None) -> ast.AnnAssign:
+    return ast.AnnAssign(
+        target=ast.Name(id=target_name, ctx=_STORE),
+        annotation=annotation,
+        value=value,
+        simple=1,
+    )
+
+
+def assign(target_name, value) -> ast.Assign:
+    return ast.Assign(targets=[ast.Name(id=target_name, ctx=_STORE)], value=value)
+
+
+def isinstance_(value, types) -> ast.Call:
+    type_node = (
+        ast.Tuple(elts=list(types), ctx=_LOAD)
+        if isinstance(types, (list, tuple))
+        else types
+    )
+    return call("isinstance", [value, type_node])
+
+
+def not_(node) -> ast.UnaryOp:
+    return ast.UnaryOp(op=ast.Not(), operand=node)
+
+
+def ne_zero(node) -> ast.Compare:
+    return ast.Compare(left=node, ops=[ast.NotEq()], comparators=[lit(0)])
+
+
+def construct(name_, pairs) -> ast.Call:
+    """``Name(field=value, ...)`` with keywords in the given order."""
+    return ast.Call(
+        func=nm(name_),
+        args=[],
+        keywords=[ast.keyword(arg=f, value=v) for f, v in pairs],
+    )
+
+
+def method_doc(method_name, indent="        ") -> list[ast.stmt]:
+    """The base method's docstring as a leading ``Expr(Constant)``, or ``[]``.
+
+    The Constant value reproduces what the string generator emitted (a leading
+    newline + ``indent``-prefixed lines), so the parsed AST matches for parity.
     """
     member = getattr(AbstractMultiVector, method_name, None)
     doc = inspect.getdoc(member) if member is not None else None
     if not doc:
-        return
-    lines.append(f'{indent}"""')
-    for line in doc.splitlines():
-        lines.append(f"{indent}{line}".rstrip())
-    lines.append(f'{indent}"""')
+        return []
+    body = "\n".join(f"{indent}{line}".rstrip() for line in doc.splitlines())
+    return [ast.Expr(value=lit(f"\n{body}\n{indent}"))]
+
+
+def class_doc(text: str) -> ast.Expr:
+    """A class docstring statement -- ``text`` used verbatim."""
+    return ast.Expr(value=lit(text))
+
+
+def coerce_pair_gn() -> list[ast.stmt]:
+    """The ``left/right: Gn = Gn.from_blade_dict(self/rhs.to_blade_dict())`` pair."""
+    return [
+        ann_assign(
+            "left",
+            nm("Gn"),
+            call(dot("Gn", "from_blade_dict"), [call(dot("self", "to_blade_dict"))]),
+        ),
+        ann_assign(
+            "right",
+            nm("Gn"),
+            call(dot("Gn", "from_blade_dict"), [call(dot("rhs", "to_blade_dict"))]),
+        ),
+    ]
+
+
+def eq_method() -> ast.FunctionDef:
+    """The shared simplify-aware, cross-representation ``__eq__`` as nodes."""
+    diff = ast.BinOp(
+        left=call(
+            dot("sympy", "sympify"), [call(dot("left", "get"), [nm("blade"), lit(0)])]
+        ),
+        op=ast.Sub(),
+        right=call(
+            dot("sympy", "sympify"), [call(dot("right", "get"), [nm("blade"), lit(0)])]
+        ),
+    )
+    gen = ast.GeneratorExp(
+        elt=ast.Compare(
+            left=call(dot("sympy", "simplify"), [diff]),
+            ops=[ast.Eq()],
+            comparators=[lit(0)],
+        ),
+        generators=[
+            ast.comprehension(
+                target=ast.Name("blade", _STORE),
+                iter=ast.BinOp(
+                    left=call("set", [call(dot("left", "keys"))]),
+                    op=ast.BitOr(),
+                    right=call("set", [call(dot("right", "keys"))]),
+                ),
+                ifs=[],
+                is_async=0,
+            )
+        ],
+    )
+    body = [
+        ast.If(
+            test=not_(isinstance_(nm("other"), nm("AbstractMultiVector"))),
+            body=[ret(nm("NotImplemented"))],
+            orelse=[],
+        ),
+        assign("left", call(dot("self", "to_blade_dict"))),
+        assign("right", call(dot("other", "to_blade_dict"))),
+        ret(call("all", [gen])),
+    ]
+    return fn("__eq__", body, params=[arg("self"), arg("other")], returns=nm("bool"))
+
+
+SCALAR_DOC = (
+    "The grade-0 type -- a scalar, shared across every 𝒢ₙ.\n"
+    "\n"
+    "    ``Scalar * x`` scales ``x`` and returns x's type; pure-scalar product\n"
+    "    results (e.g. Bivector2 * Bivector2) land here.  AUTO-GENERATED by\n"
+    "    tools/gen_specialized.py."
+)
+
+
+def generate_scalar() -> list[ast.stmt]:
+    """The shared grade-0 ``Scalar`` type, hand-built as `ast` nodes (level C)."""
+    selfsc = dot("self", "scalar")
+
+    def s(value):  # cast(typing.Self, Scalar(scalar=value))
+        return cast_self(construct("Scalar", [("scalar", value)]))
+
+    def sr(value):  # cast(typing.Self, Scalar(scalar=cast(numbers.Real, value)))
+        return s(cast_real(value))
+
+    def mul(a, b):
+        return ast.BinOp(left=a, op=ast.Mult(), right=b)
+
+    SELF = dot("typing", "Self")
+    REAL = dot("numbers", "Real")
+    numlike = [nm("int"), nm("float"), dot("sympy", "Expr")]
+
+    body = [
+        class_doc(SCALAR_DOC),
+        ann_assign("scalar", REAL, cast_real(lit(0))),
+        fn(
+            "from_blade_dict",
+            [
+                assign("d", call("dict", [nm("blade_coef")])),
+                ret(
+                    call(
+                        "cls",
+                        scalar=cast_real(call(dot("d", "get"), [lit(()), lit(0)])),
+                    )
+                ),
+            ],
+            params=[arg("cls"), arg("blade_coef")],
+            decorators=[nm("classmethod")],
+            returns=SELF,
+        ),
+        fn(
+            "to_blade_dict",
+            [
+                ret(
+                    ast.IfExp(
+                        test=ne_zero(selfsc),
+                        body=ast.Dict(keys=[lit(())], values=[selfsc]),
+                        orelse=ast.Dict(keys=[], values=[]),
+                    )
+                )
+            ],
+            returns=nm("BladeCoef"),
+        ),
+        eq_method(),
+        fn(
+            "__mul__",
+            [
+                ast.If(
+                    isinstance_(nm("rhs"), numlike),
+                    [ret(sr(mul(selfsc, nm("rhs"))))],
+                    [],
+                ),
+                ret(call(dot("self", "_geometric_product"), [nm("rhs")])),
+            ],
+            params=[arg("self"), arg("rhs")],
+            returns=SELF,
+        ),
+        fn(
+            "__rmul__",
+            [
+                ast.If(
+                    isinstance_(nm("lhs"), numlike),
+                    [ret(sr(mul(nm("lhs"), selfsc)))],
+                    [],
+                ),
+                ret(call(dot("self", "_geometric_product"), [nm("lhs")])),
+            ],
+            params=[arg("self"), arg("lhs")],
+            returns=SELF,
+        ),
+        fn(
+            "_geometric_product",
+            [
+                ast.If(
+                    isinstance_(nm("rhs"), nm("Scalar")),
+                    [ret(sr(mul(selfsc, dot("rhs", "scalar"))))],
+                    [],
+                ),
+                ast.If(
+                    isinstance_(nm("rhs"), nm("AbstractMultiVector")),
+                    [ret(cast_self(mul(selfsc, nm("rhs"))))],
+                    [],
+                ),
+                ret(sr(mul(selfsc, nm("rhs")))),
+            ],
+            params=[arg("self"), arg("rhs")],
+            returns=SELF,
+        ),
+        fn(
+            "outer_product",
+            [ret(call(dot("self", "_geometric_product"), [nm("rhs")]))],
+            params=[arg("self"), arg("rhs")],
+            returns=SELF,
+        ),
+        fn(
+            "inner_product",
+            coerce_pair_gn()
+            + [ret(cast_self(call(dot("left", "inner_product"), [nm("right")])))],
+            params=[arg("self"), arg("rhs")],
+            returns=SELF,
+        ),
+        fn(
+            "__add__",
+            [
+                ast.If(
+                    isinstance_(nm("rhs"), numlike),
+                    [ret(sr(ast.BinOp(selfsc, ast.Add(), nm("rhs"))))],
+                    [],
+                ),
+                ast.If(
+                    isinstance_(nm("rhs"), nm("Scalar")),
+                    [ret(s(ast.BinOp(selfsc, ast.Add(), dot("rhs", "scalar"))))],
+                    [],
+                ),
+                ast.If(
+                    isinstance_(nm("rhs"), nm("AbstractMultiVector")),
+                    [ret(cast_self(ast.BinOp(nm("rhs"), ast.Add(), nm("self"))))],
+                    [],
+                ),
+                ret(cast_self(nm("NotImplemented"))),
+            ],
+            params=[arg("self"), arg("rhs")],
+            returns=SELF,
+        ),
+        fn(
+            "__radd__",
+            [ret(call(dot("self", "__add__"), [nm("lhs")]))],
+            params=[arg("self"), arg("lhs")],
+            returns=SELF,
+        ),
+        fn(
+            "__sub__",
+            [
+                ret(
+                    ast.BinOp(
+                        nm("self"),
+                        ast.Add(),
+                        mul(ast.UnaryOp(ast.USub(), lit(1)), nm("rhs")),
+                    )
+                )
+            ],
+            params=[arg("self"), arg("rhs")],
+            returns=SELF,
+        ),
+        fn(
+            "__rsub__",
+            [ret(ast.BinOp(ast.UnaryOp(ast.USub(), nm("self")), ast.Add(), nm("lhs")))],
+            params=[arg("self"), arg("lhs")],
+            returns=SELF,
+        ),
+        fn("__neg__", [ret(sr(ast.UnaryOp(ast.USub(), selfsc)))], returns=SELF),
+        fn("reverse", [ret(s(selfsc))], returns=SELF),
+        fn("scalar_part", [ret(selfsc)], returns=REAL),
+        fn(
+            "grades",
+            [
+                ret(
+                    ast.IfExp(
+                        test=ne_zero(selfsc),
+                        body=ast.List(elts=[lit(0)], ctx=_LOAD),
+                        orelse=ast.List(elts=[], ctx=_LOAD),
+                    )
+                )
+            ],
+            returns=subscript(nm("list"), nm("int")),
+        ),
+        fn(
+            "is_close",
+            [
+                ast.If(
+                    not_(isinstance_(nm("other"), nm("Scalar"))),
+                    [ret(call(dot(call("super", []), "is_close"), [nm("other")]))],
+                    [],
+                ),
+                ret(
+                    call(
+                        "bool",
+                        [
+                            call(
+                                dot("np", "isclose"),
+                                [
+                                    call("float", [selfsc]),
+                                    call("float", [dot("other", "scalar")]),
+                                ],
+                                rtol=lit(1e-5),
+                                atol=lit(1e-5),
+                            )
+                        ],
+                    )
+                ),
+            ],
+            params=[arg("self"), arg("other")],
+            returns=nm("bool"),
+        ),
+        fn(
+            "__iter__",
+            [
+                ast.If(
+                    ne_zero(selfsc),
+                    [ast.Expr(ast.Yield(construct("Scalar", [("scalar", selfsc)])))],
+                    [],
+                )
+            ],
+        ),
+        fn("even_part", [ret(s(selfsc))], returns=SELF),
+        fn("odd_part", [ret(sr(lit(0)))], returns=SELF),
+        fn(
+            "r_vector_part",
+            [
+                ast.If(
+                    ast.Compare(nm("r"), [ast.Eq()], [lit(0)]),
+                    [ret(s(selfsc))],
+                    [],
+                ),
+                ret(sr(lit(0))),
+            ],
+            params=[arg("self"), arg("r", nm("int"))],
+            returns=SELF,
+        ),
+        fn(
+            "dual",
+            [
+                ast.If(
+                    ast.Compare(nm("n"), [ast.Is()], [lit(None)]),
+                    [
+                        ast.Raise(
+                            exc=call(
+                                "ValueError",
+                                [lit("Scalar.dual needs an explicit dimension n")],
+                            ),
+                            cause=None,
+                        )
+                    ],
+                    [],
+                ),
+                ret(
+                    cast_self(
+                        call(
+                            dot(
+                                call(
+                                    dot("Gn", "from_blade_dict"),
+                                    [call(dot("self", "to_blade_dict"))],
+                                ),
+                                "dual",
+                            ),
+                            [nm("n")],
+                        )
+                    )
+                ),
+            ],
+            params=[arg("self"), arg("n", opt_int())],
+            defaults=[lit(None)],
+            returns=SELF,
+        ),
+    ]
+    return [cls("Scalar", body, decorators=[dataclass_decorator(eq=False)])]
+
+
+def _is_neg_term(term, rename) -> bool:
+    return ast.unparse(expr_to_ast(term, rename)).lstrip().startswith("-")
+
+
+def summed_value(expr, rename) -> ast.expr:
+    """A constructor field value: grade-ordered sum of terms (≈ format_assignment).
+
+    Constants are cast to ``numbers.Real``; sums fold left-assoc as ``BinOp`` in
+    ``term_grade_key`` order, subtracting negative terms -- so the node tree matches
+    the string baseline's operand order.
+    """
+    expr = sympy.sympify(expr)
+    if not expr.free_symbols:
+        return cast_real(expr_to_ast(expr, rename))
+    terms = (
+        sorted(expr.as_ordered_terms(), key=term_grade_key) if expr.is_Add else [expr]
+    )
+    node = expr_to_ast(terms[0], rename)
+    for term in terms[1:]:
+        if _is_neg_term(term, rename):
+            node = ast.BinOp(left=node, op=ast.Sub(), right=expr_to_ast(-term, rename))
+        else:
+            node = ast.BinOp(left=node, op=ast.Add(), right=expr_to_ast(term, rename))
+    return node
+
+
+def result_value(expr, rename) -> ast.expr:
+    """Constructor field value for the graded dispatch (mirrors result_block)."""
+    e = sympy.sympify(expr)
+    if e.is_Mul and (-e).is_Symbol:
+        return cast_real(expr_to_ast(e, rename))
+    return summed_value(e, rename)
+
+
+def unary_value(expr, rename) -> ast.expr:
+    """Constructor field value for unary results (mirrors unary_return)."""
+    e = sympy.sympify(expr)
+    return expr_to_ast(e, rename) if e.is_Symbol else cast_real(expr_to_ast(e, rename))
+
+
+def rename_map(blades_self, blades_rhs) -> dict[str, tuple[str, str]]:
+    """Operand-symbol rename map for ``expr_to_ast`` (a_<f>->self, b_<f>->rhs)."""
+    r: dict[str, tuple[str, str]] = {}
+    for b in blades_self:
+        r["a_" + field_name(b)] = ("self", field_name(b))
+    for b in blades_rhs:
+        r["b_" + field_name(b)] = ("rhs", field_name(b))
+    return r
+
+
+def result_return(name_, pairs) -> list[ast.stmt]:
+    """``result: Name = Name(...); return cast(Self, result)`` as nodes."""
+    return [
+        ann_assign("result", nm(name_), construct(name_, pairs)),
+        ret(cast_self(nm("result"))),
+    ]
+
+
+def field_decls(blades) -> list[ast.stmt]:
+    """``<field>: numbers.Real = cast(numbers.Real, 0)`` per blade."""
+    return [
+        ann_assign(field_name(b), dot("numbers", "Real"), cast_real(lit(0)))
+        for b in blades
+    ]
+
+
+def dimension_decl(n) -> ast.stmt:
+    """``DIMENSION: typing.ClassVar[int] = <n>``."""
+    return ann_assign(
+        "DIMENSION", subscript(dot("typing", "ClassVar"), nm("int")), lit(n)
+    )
+
+
+def from_blade_dict_method(blades) -> ast.stmt:
+    """The ``from_blade_dict`` classmethod over the given blades."""
+    keywords = [
+        ast.keyword(
+            arg=field_name(b),
+            value=cast_real(call(dot("d", "get"), [lit(b), lit(0)])),
+        )
+        for b in blades
+    ]
+    body = [
+        assign("d", call("dict", [nm("blade_coef")])),
+        ret(ast.Call(func=nm("cls"), args=[], keywords=keywords)),
+    ]
+    return fn(
+        "from_blade_dict",
+        body,
+        params=[arg("cls"), arg("blade_coef")],
+        decorators=[nm("classmethod")],
+        returns=dot("typing", "Self"),
+    )
+
+
+def to_blade_dict_method(blades) -> ast.stmt:
+    """The ``to_blade_dict`` dict-comprehension method over the given blades."""
+    pairs_iter = ast.Tuple(
+        elts=[
+            ast.Tuple(elts=[lit(b), dot("self", field_name(b))], ctx=_LOAD)
+            for b in blades
+        ],
+        ctx=_LOAD,
+    )
+    comp = ast.comprehension(
+        target=ast.Tuple(
+            elts=[ast.Name("blade", _STORE), ast.Name("coef", _STORE)], ctx=_STORE
+        ),
+        iter=pairs_iter,
+        ifs=[ne_zero(nm("coef"))],
+        is_async=0,
+    )
+    dictcomp = ast.DictComp(key=nm("blade"), value=nm("coef"), generators=[comp])
+    return fn("to_blade_dict", [ret(dictcomp)], returns=nm("BladeCoef"))
+
+
+def bool_or(tests) -> ast.expr:
+    """``a or b or ...`` (a single test is returned bare, matching the string gen)."""
+    return tests[0] if len(tests) == 1 else ast.BoolOp(op=ast.Or(), values=tests)
+
+
+def bool_and(tests) -> ast.expr:
+    """``a and b and ...`` (a single test is returned bare)."""
+    return tests[0] if len(tests) == 1 else ast.BoolOp(op=ast.And(), values=tests)
+
+
+def isclose_call(field, other="other") -> ast.expr:
+    """``np.isclose(float(self.<f>), float(other.<f>), rtol=1e-5, atol=1e-5)``."""
+    return call(
+        dot("np", "isclose"),
+        [call("float", [dot("self", field)]), call("float", [dot(other, field)])],
+        rtol=lit(1e-5),
+        atol=lit(1e-5),
+    )
+
+
+def super_call(method, args) -> ast.expr:
+    """``super().<method>(<args>)``."""
+    return call(dot(call("super", []), method), args)
+
+
+def dim_or_n(owner="self") -> ast.expr:
+    """``<owner>.DIMENSION if n is None else n``."""
+    return ast.IfExp(
+        test=ast.Compare(nm("n"), [ast.Is()], [lit(None)]),
+        body=dot(owner, "DIMENSION"),
+        orelse=nm("n"),
+    )
 
 
 def out_path(filename: str) -> str:
@@ -117,51 +803,6 @@ def term_grade_key(term) -> tuple[int, tuple[int, ...], int, tuple[int, ...]]:
     left = left if left is not None else sentinel
     right = right if right is not None else sentinel
     return (left[0], left[1], right[0], right[1])
-
-
-def format_assignment(lhs: str, expr, indent: str, render) -> list[str]:
-    """Render ``<lhs>=<expr>,`` for a constructor kwarg, wrapping long sums.
-
-    Additive terms are ordered by grade (see ``term_grade_key``) for readability;
-    this only reorders the written source -- the computed value is unchanged.
-    Short expressions stay on one line; long ones are split across lines one
-    additive term at a time so no line exceeds the formatter's limit.  ``render``
-    turns a sympy expression into source text (e.g. ``self.e_1 * rhs.e_2``).
-    """
-    expr = sympy.sympify(expr)
-    if not expr.free_symbols:
-        # a constant component (e.g. an identically-zero blade) -- cast to the
-        # field type so the checker doesn't see a bare Literal.
-        return [f"{indent}{lhs}=typing.cast(numbers.Real, {render(expr)}),"]
-
-    terms = (
-        sorted(expr.as_ordered_terms(), key=term_grade_key) if expr.is_Add else [expr]
-    )
-    fragments: list[str] = []
-    for i, term in enumerate(terms):
-        s = render(term)
-        if i == 0:
-            fragments.append(s)
-        elif s.startswith("-"):
-            fragments.append(f"- {s[1:].lstrip()}")
-        else:
-            fragments.append(f"+ {s}")
-
-    inline = f"{indent}{lhs}={' '.join(fragments)},"
-    if len(inline) <= 88:
-        return [inline]
-
-    cont = indent + "    "
-    return [f"{indent}{lhs}=(", *(f"{cont}{frag}" for frag in fragments), f"{indent}),"]
-
-
-def blade_literal(blade: tuple[int, ...]) -> str:
-    """Python source for the blade tuple key, e.g. '()' or '(1,)' or '(1, 2)'."""
-    if blade == ():
-        return "()"
-    if len(blade) == 1:
-        return f"({blade[0]},)"
-    return "(" + ", ".join(str(i) for i in blade) + ")"
 
 
 def _sub(k: int) -> str:
@@ -253,156 +894,6 @@ DOCSTRINGS = {
 }
 
 
-def emit_construct_return(lines, name, pairs, indent="        ") -> None:
-    """Emit ``result = name(field=expr, ...)`` then a Self-cast return."""
-    ap = lines.append
-    ap(f"{indent}result: {name} = {name}(")
-    for field, expr in pairs:
-        ap(f"{indent}    {field}={expr},")
-    ap(f"{indent})")
-    ap(f"{indent}return typing.cast(typing.Self, result)")
-
-
-def emit_bilinear(
-    lines, name, method, cross, result_mv, blades, fields, render
-) -> None:
-    """Emit a closed-form bilinear method (product / inner / outer) from a Gn result.
-
-    ``cross`` is the expression used when ``rhs`` is some other representation:
-    both operands are coerced to Gn and the general op is run (decision 3).
-    """
-    ap = lines.append
-    rd: BladeCoef = result_mv.to_blade_dict()
-    out_exprs = [sympy.sympify(rd.get(b, 0)) for b in blades]
-    replacements, reduced = sympy.cse(out_exprs)
-    ap(f"    def {method}(self, rhs) -> typing.Self:")
-    emit_docstring(lines, method)
-    ap(f"        if not isinstance(rhs, {name}):")
-    ap("            left: Gn = Gn.from_blade_dict(self.to_blade_dict())")
-    ap("            right: Gn = Gn.from_blade_dict(rhs.to_blade_dict())")
-    ap(f"            return typing.cast(typing.Self, {cross})")
-    for tmp, expr in replacements:
-        ap(f"        {render(tmp)} = {render(expr)}")
-    ap(f"        result: {name} = {name}(")
-    for field, expr in zip(fields, reduced):
-        lines.extend(format_assignment(field, expr, "            ", render))
-    ap("        )")
-    ap("        return typing.cast(typing.Self, result)")
-    ap("")
-
-
-def emit_structural(lines, name, blades, fields, n) -> None:
-    """Emit the closed-form linear / grade / comparison methods.
-
-    These replace the AbstractMultiVector versions that route through the
-    to_blade_dict / from_blade_dict interchange.
-    """
-    ap = lines.append
-    by_grade = {g: [field_name(b) for b in blades if len(b) == g] for g in range(n + 1)}
-    coerce = [
-        "            left: Gn = Gn.from_blade_dict(self.to_blade_dict())",
-        "            right: Gn = Gn.from_blade_dict(rhs.to_blade_dict())",
-    ]
-
-    ap("    def __add__(self, rhs) -> typing.Self:")
-    ap(f"        if not isinstance(rhs, {name}):")
-    lines.extend(coerce)
-    ap("            return typing.cast(typing.Self, left + right)")
-    emit_construct_return(lines, name, [(f, f"self.{f} + rhs.{f}") for f in fields])
-    ap("")
-
-    ap("    def __sub__(self, rhs) -> typing.Self:")
-    ap(f"        if not isinstance(rhs, {name}):")
-    lines.extend(coerce)
-    ap("            return typing.cast(typing.Self, left - right)")
-    emit_construct_return(lines, name, [(f, f"self.{f} - rhs.{f}") for f in fields])
-    ap("")
-
-    ap("    def __neg__(self) -> typing.Self:")
-    emit_construct_return(
-        lines, name, [(f, f"typing.cast(numbers.Real, -self.{f})") for f in fields]
-    )
-    ap("")
-
-    ap("    def scalar_part(self) -> numbers.Real:")
-    emit_docstring(lines, "scalar_part")
-    ap("        return self.scalar")
-    ap("")
-
-    ap("    def grades(self) -> list[int]:")
-    ap("        present: list[int] = []")
-    for g in range(n + 1):
-        cond = " or ".join(f"self.{f} != 0" for f in by_grade[g])
-        ap(f"        if {cond}:")
-        ap(f"            present.append({g})")
-    ap("        return present")
-    ap("")
-
-    ap("    def r_vector_part(self, r: int) -> typing.Self:")
-    emit_docstring(lines, "r_vector_part")
-    ap("        match r:")
-    for g in range(n + 1):
-        ap(f"            case {g}:")
-        emit_construct_return(
-            lines,
-            name,
-            [(f, f"self.{f}") for f in by_grade[g]],
-            indent="                ",
-        )
-    ap("            case _:")
-    emit_construct_return(lines, name, [], indent="                ")
-    ap("")
-
-    ap("    def reverse(self) -> typing.Self:")
-    emit_docstring(lines, "reverse")
-    rev_pairs = []
-    for b in blades:
-        f = field_name(b)
-        sign = (-1) ** ((len(b) * (len(b) - 1)) // 2)
-        expr = f"self.{f}" if sign == 1 else f"typing.cast(numbers.Real, -self.{f})"
-        rev_pairs.append((f, expr))
-    emit_construct_return(lines, name, rev_pairs)
-    ap("")
-
-    ap("    def even_part(self) -> typing.Self:")
-    emit_docstring(lines, "even_part")
-    emit_construct_return(
-        lines,
-        name,
-        [(field_name(b), f"self.{field_name(b)}") for b in blades if len(b) % 2 == 0],
-    )
-    ap("")
-
-    ap("    def odd_part(self) -> typing.Self:")
-    emit_docstring(lines, "odd_part")
-    emit_construct_return(
-        lines,
-        name,
-        [(field_name(b), f"self.{field_name(b)}") for b in blades if len(b) % 2 == 1],
-    )
-    ap("")
-
-    ap("    def is_close(self, other) -> bool:")
-    ap(f"        if not isinstance(other, {name}):")
-    ap("            return super().is_close(other)")
-    ap("        return bool(")
-    for i, f in enumerate(fields):
-        prefix = "" if i == 0 else "and "
-        ap(
-            f"            {prefix}np.isclose("
-            f"float(self.{f}), float(other.{f}), rtol=1e-5, atol=1e-5)"
-        )
-    ap("        )")
-    ap("")
-
-    ap("    def __iter__(self):")
-    for b in blades:
-        f = field_name(b)
-        ap(f"        if self.{f} != 0:")
-        ap(f"            yield {name}({f}=self.{f})")
-    ap("")
-
-
 # ==========================================================================
 # Graded subtypes (Phase 2): per-dimension type registry + closure resolution.
 #
@@ -459,27 +950,8 @@ def resolve(support, n: int, full_name: str) -> TypeSpec:
     )
 
 
-def _renamer(blades_self, blades_rhs):
-    """A (render, ) pair mapping a_<field> -> self.<field>, b_<field> -> rhs.<field>."""
-    rename: dict[str, str] = {}
-    for b in blades_self:
-        rename["a_" + field_name(b)] = "self." + field_name(b)
-    for b in blades_rhs:
-        rename["b_" + field_name(b)] = "rhs." + field_name(b)
-    if not rename:
-        return lambda expr: sympy.sstr(sympy.sympify(expr))
-    token: re.Pattern[str] = re.compile(
-        r"\b(" + "|".join(re.escape(k) for k in rename) + r")\b"
-    )
-
-    def render(expr) -> str:
-        return token.sub(lambda m: rename[m.group(1)], sympy.sstr(sympy.sympify(expr)))
-
-    return render
-
-
 def product_result(t1: TypeSpec, t2: TypeSpec, gn_op, n: int, full_name: str):
-    """(result_spec, output exprs over result's blades, render) for t1 <op> t2."""
+    """(result_spec, output exprs over result's blades) for t1 <op> t2."""
     a_syms: dict[tuple[int, ...], sympy.Symbol] = {
         b: sympy.Symbol("a_" + field_name(b)) for b in t1.blades
     }
@@ -493,12 +965,11 @@ def product_result(t1: TypeSpec, t2: TypeSpec, gn_op, n: int, full_name: str):
     ]
     rspec: TypeSpec = resolve(support, n, full_name)
     out_exprs: list[sympy.Expr] = [sympy.sympify(rd.get(b, 0)) for b in rspec.blades]
-    render = _renamer(t1.blades, t2.blades)
-    return rspec, out_exprs, render
+    return rspec, out_exprs
 
 
 def unary_result(t1: TypeSpec, gn_fn, n: int, full_name: str):
-    """(result_spec, output exprs, render) for a unary op (dual / grade projection)."""
+    """(result_spec, output exprs) for a unary op (dual / grade projection)."""
     a_syms: dict[tuple[int, ...], sympy.Symbol] = {
         b: sympy.Symbol("a_" + field_name(b)) for b in t1.blades
     }
@@ -509,261 +980,246 @@ def unary_result(t1: TypeSpec, gn_fn, n: int, full_name: str):
     ]
     rspec: TypeSpec = resolve(support, n, full_name)
     out_exprs: list[sympy.Expr] = [sympy.sympify(rd.get(b, 0)) for b in rspec.blades]
-    render = _renamer(t1.blades, ())
-    return rspec, out_exprs, render
+    return rspec, out_exprs
 
 
-def _emit_unary_return(lines, indent, rspec, out_exprs, render) -> None:
-    """Emit ``return cast(Self, ResultType(field=cast(Real, ±field), ...))``.
-
-    Unary results (dual / grade projection) are always ``±field`` or ``0``, so
-    each component is cast to ``numbers.Real`` (a bare ``-self.e_1`` is otherwise
-    inferred as ``_RealLike``, not ``Real``).
-    """
-    ap = lines.append
-    ap(f"{indent}return typing.cast(")
-    ap(f"{indent}    typing.Self,")
-    ap(f"{indent}    {rspec.name}(")
-    for field, expr in zip([field_name(b) for b in rspec.blades], out_exprs):
-        e = sympy.sympify(expr)
-        rendered = render(e)
-        # a bare field (``self.e_1``) is already Real -- casting it is redundant;
-        # constants and negations (``-self.e_1`` -> _RealLike) do need the cast.
-        if e.is_Symbol:
-            value = rendered
-        else:
-            value = f"typing.cast(numbers.Real, {rendered})"
-        ap(f"{indent}        {field}={value},")
-    ap(f"{indent}    ),")
-    ap(f"{indent})")
-
-
-def generate_class(n: int, name: str) -> str:
+def generate_class(n: int, name: str) -> list[ast.stmt]:
+    """The full all-blades G_n class, hand-built as `ast` nodes (level C)."""
     blades = blades_for_dim(n)
     fields = [field_name(b) for b in blades]
+    rename = rename_map(blades, blades)
+    a_mv = Gn.from_blade_dict({b: sympy.Symbol("a_" + field_name(b)) for b in blades})
+    b_mv = Gn.from_blade_dict({b: sympy.Symbol("b_" + field_name(b)) for b in blades})
+    by_grade = {g: [b for b in blades if len(b) == g] for g in range(n + 1)}
+    SELF = dot("typing", "Self")
 
-    # symbolic operands for self/rhs; rendered straight back to attribute access
-    # (``a_e_1`` -> ``self.e_1``, ``b_e_12`` -> ``rhs.e_12``) so the generated
-    # product has no pointless alias locals.
-    a_syms = {b: sympy.Symbol("a_" + field_name(b)) for b in blades}
-    b_syms = {b: sympy.Symbol("b_" + field_name(b)) for b in blades}
+    def bilinear(method, cross_node, result_mv):
+        rd = result_mv.to_blade_dict()
+        replacements, reduced = sympy.cse([sympy.sympify(rd.get(b, 0)) for b in blades])
+        body = method_doc(method) + [
+            ast.If(
+                not_(isinstance_(nm("rhs"), nm(name))),
+                coerce_pair_gn() + [ret(cast_self(cross_node))],
+                [],
+            )
+        ]
+        body += [assign(str(t), expr_to_ast(e, rename)) for t, e in replacements]
+        pairs = [
+            (field_name(b), summed_value(e, rename)) for b, e in zip(blades, reduced)
+        ]
+        body += result_return(name, pairs)
+        return fn(method, body, params=[arg("self"), arg("rhs")], returns=SELF)
 
-    rename: dict[str, str] = {}
-    for b in blades:
-        rename["a_" + field_name(b)] = "self." + field_name(b)
-        rename["b_" + field_name(b)] = "rhs." + field_name(b)
-    token: re.Pattern[str] = re.compile(
-        r"\b(" + "|".join(re.escape(k) for k in rename) + r")\b"
-    )
-
-    def render(expr) -> str:
-        return token.sub(lambda m: rename[m.group(1)], sympy.sstr(expr))
-
-    a_mv = Gn.from_blade_dict(a_syms)
-    b_mv = Gn.from_blade_dict(b_syms)
-
-    lines: list[str] = []
-    ap = lines.append
-
-    ap("@dataclasses.dataclass(eq=False, slots=True)")
-    ap(f"class {name}(AbstractMultiVector):")
-    ap(f'    """{docstring_for(n)}"""')
-    ap("")
-    ap(f"    DIMENSION: typing.ClassVar[int] = {n}")
-    ap("")
-    for b in blades:
-        ap(f"    {field_name(b)}: numbers.Real = typing.cast(numbers.Real, 0)")
-    ap("")
-
-    # from_blade_dict
-    ap("    @classmethod")
-    ap("    def from_blade_dict(cls, blade_coef) -> typing.Self:")
-    ap("        d = dict(blade_coef)")
-    ap("        return cls(")
-    for b in blades:
-        ap(
-            f"            {field_name(b)}=typing.cast("
-            f"numbers.Real, d.get({blade_literal(b)}, 0)),"
+    def linear(method, op_cls, gn_op_cls):
+        return fn(
+            method,
+            [
+                ast.If(
+                    not_(isinstance_(nm("rhs"), nm(name))),
+                    coerce_pair_gn()
+                    + [ret(cast_self(ast.BinOp(nm("left"), gn_op_cls(), nm("right"))))],
+                    [],
+                ),
+                *result_return(
+                    name,
+                    [
+                        (f, ast.BinOp(dot("self", f), op_cls(), dot("rhs", f)))
+                        for f in fields
+                    ],
+                ),
+            ],
+            params=[arg("self"), arg("rhs")],
+            returns=SELF,
         )
-    ap("        )")
-    ap("")
 
-    # to_blade_dict
-    ap("    def to_blade_dict(self) -> BladeCoef:")
-    ap("        return {")
-    ap("            blade: coef")
-    ap("            for blade, coef in (")
+    grades_body: list[ast.stmt] = [
+        ann_assign("present", subscript(nm("list"), nm("int")), ast.List([], _LOAD))
+    ]
+    for g in range(n + 1):
+        grades_body.append(
+            ast.If(
+                bool_or([ne_zero(dot("self", field_name(b))) for b in by_grade[g]]),
+                [ast.Expr(call(dot("present", "append"), [lit(g)]))],
+                [],
+            )
+        )
+    grades_body.append(ret(nm("present")))
+
+    rvp_cases = [
+        ast.match_case(
+            pattern=ast.MatchValue(lit(g)),
+            body=result_return(
+                name, [(field_name(b), dot("self", field_name(b))) for b in by_grade[g]]
+            ),
+        )
+        for g in range(n + 1)
+    ]
+    rvp_cases.append(
+        ast.match_case(
+            pattern=ast.MatchAs(pattern=None, name=None), body=result_return(name, [])
+        )
+    )
+
+    rev_pairs = []
     for b in blades:
-        ap(f"                ({blade_literal(b)}, self.{field_name(b)}),")
-    ap("            )")
-    ap("            if coef != 0")
-    ap("        }")
-    ap("")
+        f = field_name(b)
+        sign = (-1) ** ((len(b) * (len(b) - 1)) // 2)
+        rev_pairs.append(
+            (
+                f,
+                dot("self", f)
+                if sign == 1
+                else cast_real(ast.UnaryOp(ast.USub(), dot("self", f))),
+            )
+        )
 
-    # __eq__ (simplify lazily, here -- works against any representation)
-    ap("    def __eq__(self, other) -> bool:")
-    ap("        if not isinstance(other, AbstractMultiVector):")
-    ap("            return NotImplemented")
-    ap("        left = self.to_blade_dict()")
-    ap("        right = other.to_blade_dict()")
-    ap("        return all(")
-    ap("            sympy.simplify(")
-    ap(
-        "                sympy.sympify(left.get(blade, 0))"
-        " - sympy.sympify(right.get(blade, 0))"
-    )
-    ap("            )")
-    ap("            == 0")
-    ap("            for blade in (set(left.keys()) | set(right.keys()))")
-    ap("        )")
-    ap("")
+    def grade_copy(parity):
+        return [
+            (field_name(b), dot("self", field_name(b)))
+            for b in blades
+            if len(b) % 2 == parity
+        ]
 
-    # closed-form bilinear products, each derived from the Gn reference op
-    emit_bilinear(
-        lines,
-        name,
-        "_geometric_product",
-        "left * right",
-        a_mv * b_mv,
-        blades,
-        fields,
-        render,
-    )
-    emit_bilinear(
-        lines,
-        name,
-        "inner_product",
-        "left.inner_product(right)",
-        a_mv.inner_product(b_mv),
-        blades,
-        fields,
-        render,
-    )
-    emit_bilinear(
-        lines,
-        name,
-        "outer_product",
-        "left.outer_product(right)",
-        a_mv.outer_product(b_mv),
-        blades,
-        fields,
-        render,
-    )
-
-    # closed-form linear / grade / comparison methods (no interchange round-trip)
-    emit_structural(lines, name, blades, fields, n)
-
-    # dimension-fixed convenience overrides: n defaults to this algebra's
-    # DIMENSION, but an explicit n is still accepted for compatibility.
-    ap("    def dual(self, n: int | None = None) -> typing.Self:")
-    emit_docstring(lines, "dual")
-    ap("        return super().dual(self.DIMENSION if n is None else n)")
-    ap("")
-    ap("    @classmethod")
-    ap("    def unit_pseudoscalar(cls, n: int | None = None) -> typing.Self:")
-    emit_docstring(lines, "unit_pseudoscalar")
-    ap("        return super().unit_pseudoscalar(cls.DIMENSION if n is None else n)")
-    ap("")
-    ap("    @classmethod")
-    ap("    def unit_pseudoscalar_squared(cls, n: int | None = None) -> typing.Self:")
-    ap("        return super().unit_pseudoscalar_squared(")
-    ap("            cls.DIMENSION if n is None else n")
-    ap("        )")
-    ap("")
-    ap("    @classmethod")
-    ap("    def bases(cls, n: int | None = None) -> Generator[typing.Self]:")
-    ap("        return super().bases(cls.DIMENSION if n is None else n)")
-    ap("")
-    ap("    @classmethod")
-    ap("    def symbolic_multivector(")
-    ap('        cls, n: int | None = None, prefix: str = "a"')
-    ap("    ) -> typing.Self:")
-    ap("        return super().symbolic_multivector(")
-    ap("            cls.DIMENSION if n is None else n, prefix")
-    ap("        )")
-
-    return "\n".join(lines)
-
-
-def _emit_eq(ap) -> None:
-    """The simplify-aware, cross-representation __eq__ (shared by every type)."""
-    ap("    def __eq__(self, other) -> bool:")
-    ap("        if not isinstance(other, AbstractMultiVector):")
-    ap("            return NotImplemented")
-    ap("        left = self.to_blade_dict()")
-    ap("        right = other.to_blade_dict()")
-    ap("        return all(")
-    ap("            sympy.simplify(")
-    ap(
-        "                sympy.sympify(left.get(blade, 0))"
-        " - sympy.sympify(right.get(blade, 0))"
-    )
-    ap("            )")
-    ap("            == 0")
-    ap("            for blade in (set(left.keys()) | set(right.keys()))")
-    ap("        )")
-    ap("")
-
-
-def _emit_scaled(ap, name, fields, scalar_expr, indent="        ") -> None:
-    """Emit ``return cast(Self, Name(field=cast(Real, <field>*scalar), ...))``."""
-    ap(f"{indent}return typing.cast(")
-    ap(f"{indent}    typing.Self,")
-    ap(f"{indent}    {name}(")
-    for f in fields:
-        ap(f"{indent}        {f}=typing.cast(numbers.Real, {scalar_expr(f)}),")
-    ap(f"{indent}    ),")
-    ap(f"{indent})")
-
-
-def _emit_result_block(lines, indent, rspec, out_exprs, render) -> None:
-    """Emit ``return cast(Self, ResultType(field=expr, ...))`` (cse-factored)."""
-    ap = lines.append
-    replacements, reduced = sympy.cse(out_exprs)
-    for tmp, expr in replacements:
-        ap(f"{indent}{render(tmp)} = {render(expr)}")
-    ap(f"{indent}return typing.cast(")
-    ap(f"{indent}    typing.Self,")
-    ap(f"{indent}    {rspec.name}(")
-    for field, expr in zip([field_name(b) for b in rspec.blades], reduced):
-        e = sympy.sympify(expr)
-        # a bare ``-self.x`` reads as _RealLike to the type checker, so cast it;
-        # bare/positive symbols and arithmetic sums are already Real.
-        if e.is_Mul and (-e).is_Symbol:
-            ap(f"{indent}        {field}=typing.cast(numbers.Real, {render(e)}),")
-        else:
-            lines.extend(format_assignment(field, expr, indent + "        ", render))
-    ap(f"{indent}    ),")
-    ap(f"{indent})")
-
-
-def _emit_dispatch(
-    lines, t1, method, gn_op, n, full_name, fallback_op, number_case=False
-) -> None:
-    """Emit a method that matches on the rhs type (the grade product/sum table).
-
-    Return type per branch comes from ``resolve`` (the tightest covering type);
-    ``number_case`` prepends a scalar-literal branch (used by + / -, which unlike
-    * have no separate scalar wrapper)."""
-    ap = lines.append
-    ap(f"    def {method}(self, rhs) -> typing.Self:")
-    ap("        match rhs:")
-    if number_case:
-        ap("            case int() | float() | sympy.Expr():")
-        ap(f"                return self.{method}(")
-        ap("                    Scalar(scalar=typing.cast(numbers.Real, rhs))")
-        ap("                )")
-    for t2 in [SCALAR, *graded_specs(n)]:
-        rspec, out_exprs, render = product_result(t1, t2, gn_op, n, full_name)
-        ap(f"            case {t2.name}():")
-        _emit_result_block(lines, "                ", rspec, out_exprs, render)
-    ap("            case _:")
-    ap(f"                left: {full_name} = _coerce(self, {full_name})")
-    ap(f"                right: {full_name} = _coerce(rhs, {full_name})")
-    ap(f"                return typing.cast(typing.Self, {fallback_op})")
-    ap("")
+    body = [
+        class_doc(docstring_for(n)),
+        dimension_decl(n),
+        *field_decls(blades),
+        from_blade_dict_method(blades),
+        to_blade_dict_method(blades),
+        eq_method(),
+        bilinear(
+            "_geometric_product",
+            ast.BinOp(nm("left"), ast.Mult(), nm("right")),
+            a_mv * b_mv,
+        ),
+        bilinear(
+            "inner_product",
+            call(dot("left", "inner_product"), [nm("right")]),
+            a_mv.inner_product(b_mv),
+        ),
+        bilinear(
+            "outer_product",
+            call(dot("left", "outer_product"), [nm("right")]),
+            a_mv.outer_product(b_mv),
+        ),
+        linear("__add__", ast.Add, ast.Add),
+        linear("__sub__", ast.Sub, ast.Sub),
+        fn(
+            "__neg__",
+            result_return(
+                name,
+                [
+                    (f, cast_real(ast.UnaryOp(ast.USub(), dot("self", f))))
+                    for f in fields
+                ],
+            ),
+            returns=SELF,
+        ),
+        fn(
+            "scalar_part",
+            method_doc("scalar_part") + [ret(dot("self", "scalar"))],
+            returns=dot("numbers", "Real"),
+        ),
+        fn("grades", grades_body, returns=subscript(nm("list"), nm("int"))),
+        fn(
+            "r_vector_part",
+            method_doc("r_vector_part") + [ast.Match(subject=nm("r"), cases=rvp_cases)],
+            params=[arg("self"), arg("r", nm("int"))],
+            returns=SELF,
+        ),
+        fn(
+            "reverse",
+            method_doc("reverse") + result_return(name, rev_pairs),
+            returns=SELF,
+        ),
+        fn(
+            "even_part",
+            method_doc("even_part") + result_return(name, grade_copy(0)),
+            returns=SELF,
+        ),
+        fn(
+            "odd_part",
+            method_doc("odd_part") + result_return(name, grade_copy(1)),
+            returns=SELF,
+        ),
+        fn(
+            "is_close",
+            [
+                ast.If(
+                    not_(isinstance_(nm("other"), nm(name))),
+                    [ret(super_call("is_close", [nm("other")]))],
+                    [],
+                ),
+                ret(call("bool", [bool_and([isclose_call(f) for f in fields])])),
+            ],
+            params=[arg("self"), arg("other")],
+            returns=nm("bool"),
+        ),
+        fn(
+            "__iter__",
+            [
+                ast.If(
+                    ne_zero(dot("self", field_name(b))),
+                    [
+                        ast.Expr(
+                            ast.Yield(
+                                construct(
+                                    name, [(field_name(b), dot("self", field_name(b)))]
+                                )
+                            )
+                        )
+                    ],
+                    [],
+                )
+                for b in blades
+            ],
+        ),
+        fn(
+            "dual",
+            method_doc("dual") + [ret(super_call("dual", [dim_or_n("self")]))],
+            params=[arg("self"), arg("n", opt_int())],
+            defaults=[lit(None)],
+            returns=SELF,
+        ),
+        fn(
+            "unit_pseudoscalar",
+            method_doc("unit_pseudoscalar")
+            + [ret(super_call("unit_pseudoscalar", [dim_or_n("cls")]))],
+            params=[arg("cls"), arg("n", opt_int())],
+            defaults=[lit(None)],
+            decorators=[nm("classmethod")],
+            returns=SELF,
+        ),
+        fn(
+            "unit_pseudoscalar_squared",
+            [ret(super_call("unit_pseudoscalar_squared", [dim_or_n("cls")]))],
+            params=[arg("cls"), arg("n", opt_int())],
+            defaults=[lit(None)],
+            decorators=[nm("classmethod")],
+            returns=SELF,
+        ),
+        fn(
+            "bases",
+            [ret(super_call("bases", [dim_or_n("cls")]))],
+            params=[arg("cls"), arg("n", opt_int())],
+            defaults=[lit(None)],
+            decorators=[nm("classmethod")],
+            returns=subscript(nm("Generator"), SELF),
+        ),
+        fn(
+            "symbolic_multivector",
+            [ret(super_call("symbolic_multivector", [dim_or_n("cls"), nm("prefix")]))],
+            params=[arg("cls"), arg("n", opt_int()), arg("prefix", nm("str"))],
+            defaults=[lit(None), lit("a")],
+            decorators=[nm("classmethod")],
+            returns=SELF,
+        ),
+    ]
+    return [cls(name, body, decorators=[dataclass_decorator(eq=False, slots=True)])]
 
 
+# The simplify-aware, cross-representation __eq__ (shared by every type), as a
+# source template at module indent.  Spliced into the class templates as $eq.
 def graded_docstring(spec: TypeSpec) -> str:
     grade_words = {0: "scalar", 1: "vector", 2: "bivector", 3: "trivector"}
     fields = ", ".join(field_name(b) for b in spec.blades)
@@ -789,380 +1245,401 @@ def full_name_for(dim: int) -> str:
     return f"G{dim}"
 
 
-def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> str:
+# --- C node builders for the graded subtypes ---
+
+
+def scaled_nodes(name_, fields, value_fn) -> ast.stmt:
+    """``return cast(Self, Name(field=cast(Real, value_fn(field)), ...))``."""
+    return ret(
+        cast_self(construct(name_, [(f, cast_real(value_fn(f))) for f in fields]))
+    )
+
+
+def result_block_nodes(rspec, out_exprs, rename) -> list[ast.stmt]:
+    """cse temps + ``return cast(Self, RType(...))`` (= result_block, as nodes)."""
+    replacements, reduced = sympy.cse(out_exprs)
+    stmts: list[ast.stmt] = [
+        assign(str(t), expr_to_ast(e, rename)) for t, e in replacements
+    ]
+    pairs = [
+        (field_name(b), result_value(e, rename)) for b, e in zip(rspec.blades, reduced)
+    ]
+    stmts.append(ret(cast_self(construct(rspec.name, pairs))))
+    return stmts
+
+
+def unary_nodes(rspec, out_exprs, rename) -> ast.stmt:
+    """``return cast(Self, RType(...))`` (= unary_return, as nodes)."""
+    pairs = [
+        (field_name(b), unary_value(e, rename)) for b, e in zip(rspec.blades, out_exprs)
+    ]
+    return ret(cast_self(construct(rspec.name, pairs)))
+
+
+def _match_class(cls_node) -> ast.MatchClass:
+    return ast.MatchClass(cls=cls_node, patterns=[], kwd_attrs=[], kwd_patterns=[])
+
+
+def dispatch_nodes(t1, method, gn_op, n, full_name, fallback_node, number_case=False):
+    """A method that ``match``es on the rhs type, as `ast` nodes (= dispatch_method)."""
+    cases: list[ast.match_case] = []
+    if number_case:
+        cases.append(
+            ast.match_case(
+                pattern=ast.MatchOr(
+                    patterns=[
+                        _match_class(nm("int")),
+                        _match_class(nm("float")),
+                        _match_class(dot("sympy", "Expr")),
+                    ]
+                ),
+                body=[
+                    ret(
+                        call(
+                            dot("self", method),
+                            [construct("Scalar", [("scalar", cast_real(nm("rhs")))])],
+                        )
+                    )
+                ],
+            )
+        )
+    for t2 in [SCALAR, *graded_specs(n)]:
+        rspec, out_exprs = product_result(t1, t2, gn_op, n, full_name)
+        cases.append(
+            ast.match_case(
+                pattern=_match_class(nm(t2.name)),
+                body=result_block_nodes(
+                    rspec, out_exprs, rename_map(t1.blades, t2.blades)
+                ),
+            )
+        )
+    cases.append(
+        ast.match_case(
+            pattern=ast.MatchAs(pattern=None, name=None),
+            body=[
+                ann_assign(
+                    "left", nm(full_name), call("_coerce", [nm("self"), nm(full_name)])
+                ),
+                ann_assign(
+                    "right", nm(full_name), call("_coerce", [nm("rhs"), nm(full_name)])
+                ),
+                ret(cast_self(fallback_node)),
+            ],
+        )
+    )
+    return fn(
+        method,
+        [ast.Match(subject=nm("rhs"), cases=cases)],
+        params=[arg("self"), arg("rhs")],
+        returns=dot("typing", "Self"),
+    )
+
+
+PLANE_DOC = (
+    "The unit bivector (2-blade) this rotor rotates in.\n"
+    "\n"
+    "        A rotor is ``cos(t/2) - sin(t/2) * B`` for a unit bivector B --\n"
+    "        the oriented plane of rotation.  This returns B, the normalized\n"
+    "        bivector part.  In 2D that 2-blade is also the pseudoscalar; in 3D\n"
+    "        it is a bivector plane, not the trivector.  Undefined for the\n"
+    "        identity rotor (no rotation)."
+)
+
+
+def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stmt]:
+    """A graded subtype (Vector/Bivector/Trivector/Rotor), as nodes (level C)."""
     blades = list(spec.blades)
     fields = [field_name(b) for b in blades]
     has_scalar = () in blades
-    lines: list[str] = []
-    ap = lines.append
+    unary_rename = rename_map(spec.blades, ())
+    numlike = [nm("int"), nm("float"), dot("sympy", "Expr")]
+    SELF = dot("typing", "Self")
 
-    ap("@dataclasses.dataclass(eq=False)")
-    ap(f"class {spec.name}(AbstractMultiVector):")
-    ap(f'    """{graded_docstring(spec)}"""')
-    ap("")
-    ap(f"    DIMENSION: typing.ClassVar[int] = {n}")
-    ap("")
-    for f in fields:
-        ap(f"    {f}: numbers.Real = typing.cast(numbers.Real, 0)")
-    ap("")
+    def unary_body(thunk) -> ast.stmt:
+        rspec, out_exprs = unary_result(spec, thunk, n, full_name)
+        return unary_nodes(rspec, out_exprs, unary_rename)
 
-    # from_blade_dict / to_blade_dict (only this type's blades)
-    ap("    @classmethod")
-    ap("    def from_blade_dict(cls, blade_coef) -> typing.Self:")
-    ap("        d = dict(blade_coef)")
-    ap("        return cls(")
-    for b in blades:
-        ap(
-            f"            {field_name(b)}=typing.cast("
-            f"numbers.Real, d.get({blade_literal(b)}, 0)),"
-        )
-    ap("        )")
-    ap("")
-    ap("    def to_blade_dict(self) -> BladeCoef:")
-    ap("        return {")
-    ap("            blade: coef")
-    ap("            for blade, coef in (")
-    for b in blades:
-        ap(f"                ({blade_literal(b)}, self.{field_name(b)}),")
-    ap("            )")
-    ap("            if coef != 0")
-    ap("        }")
-    ap("")
-
-    _emit_eq(ap)
-
-    # scalar-aware __mul__ / __rmul__ (the ABC versions would drop the scalar
-    # for a type with no scalar field, so they are overridden here)
-    ap("    def __mul__(self, rhs) -> typing.Self:")
-    ap("        if isinstance(rhs, (int, float, sympy.Expr)):")
-    _emit_scaled(ap, spec.name, fields, lambda f: f"self.{f} * rhs", "            ")
-    ap("        return self._geometric_product(rhs)")
-    ap("")
-    ap("    def __rmul__(self, lhs) -> typing.Self:")
-    ap("        if isinstance(lhs, (int, float, sympy.Expr)):")
-    _emit_scaled(ap, spec.name, fields, lambda f: f"lhs * self.{f}", "            ")
-    ap("        return self._geometric_product(lhs)")
-    ap("")
-
-    # the three bilinear products, each a match on the rhs type
-    _emit_dispatch(
-        lines,
-        spec,
-        "_geometric_product",
-        lambda a, b: a * b,
-        n,
-        full_name,
-        "left * right",
-    )
-    _emit_dispatch(
-        lines,
-        spec,
-        "outer_product",
-        lambda a, b: a.outer_product(b),
-        n,
-        full_name,
-        "left.outer_product(right)",
-    )
-    _emit_dispatch(
-        lines,
-        spec,
-        "inner_product",
-        lambda a, b: a.inner_product(b),
-        n,
-        full_name,
-        "left.inner_product(right)",
-    )
-
-    # linear ops also narrow to the tightest covering type (so e.g.
-    # Scalar + Bivector2 -> Rotor2, and values build by linear combination)
-    _emit_dispatch(
-        lines,
-        spec,
-        "__add__",
-        lambda a, b: a + b,
-        n,
-        full_name,
-        "left + right",
-        number_case=True,
-    )
-    _emit_dispatch(
-        lines,
-        spec,
-        "__sub__",
-        lambda a, b: a - b,
-        n,
-        full_name,
-        "left - right",
-        number_case=True,
-    )
-    ap("    def __radd__(self, lhs) -> typing.Self:")
-    ap("        return self.__add__(lhs)")
-    ap("")
-    ap("    def __rsub__(self, lhs) -> typing.Self:")
-    ap("        return typing.cast(typing.Self, (-self).__add__(lhs))")
-    ap("")
-
-    ap("    def __neg__(self) -> typing.Self:")
-    _emit_scaled(ap, spec.name, fields, lambda f: f"-self.{f}")
-    ap("")
-
-    # reverse: sign (-1)**(k(k-1)/2) per blade; stays in this type
-    ap("    def reverse(self) -> typing.Self:")
-    ap("        return typing.cast(")
-    ap("            typing.Self,")
-    ap(f"            {spec.name}(")
+    rev_pairs = []
     for b in blades:
         f = field_name(b)
         sign = (-1) ** ((len(b) * (len(b) - 1)) // 2)
-        rhs_e = f"self.{f}" if sign == 1 else f"typing.cast(numbers.Real, -self.{f})"
-        ap(f"                {f}={rhs_e},")
-    ap("            ),")
-    ap("        )")
-    ap("")
+        rev_pairs.append(
+            (
+                f,
+                dot("self", f)
+                if sign == 1
+                else cast_real(ast.UnaryOp(ast.USub(), dot("self", f))),
+            )
+        )
 
-    ap("    def scalar_part(self) -> numbers.Real:")
-    if has_scalar:
-        ap("        return self.scalar")
-    else:
-        ap("        return typing.cast(numbers.Real, 0)")
-    ap("")
-
-    ap("    def grades(self) -> list[int]:")
-    ap("        present: list[int] = []")
+    grades_body: list[ast.stmt] = [
+        ann_assign("present", subscript(nm("list"), nm("int")), ast.List([], _LOAD))
+    ]
     for g in sorted({len(b) for b in blades}):
-        cond = " or ".join(f"self.{field_name(b)} != 0" for b in blades if len(b) == g)
-        ap(f"        if {cond}:")
-        ap(f"            present.append({g})")
-    ap("        return present")
-    ap("")
-
-    ap("    def is_close(self, other) -> bool:")
-    ap(f"        if not isinstance(other, {spec.name}):")
-    ap("            return super().is_close(other)")
-    ap("        return bool(")
-    for i, f in enumerate(fields):
-        prefix = "" if i == 0 else "and "
-        ap(
-            f"            {prefix}np.isclose("
-            f"float(self.{f}), float(other.{f}), rtol=1e-5, atol=1e-5)"
+        grades_body.append(
+            ast.If(
+                bool_or(
+                    [ne_zero(dot("self", field_name(b))) for b in blades if len(b) == g]
+                ),
+                [ast.Expr(call(dot("present", "append"), [lit(g)]))],
+                [],
+            )
         )
-    ap("        )")
-    ap("")
+    grades_body.append(ret(nm("present")))
 
-    ap("    def __iter__(self):")
-    for b in blades:
-        f = field_name(b)
-        ap(f"        if self.{f} != 0:")
-        ap(f"            yield {spec.name}({f}=self.{f})")
-    ap("")
-
-    # grade-changing / projection ops: narrow to the tightest covering type via
-    # resolve(), the same way the products do (e.g. dual(Bivector3) -> Vector3)
-    ap("    def even_part(self) -> typing.Self:")
-    _emit_unary_return(
-        lines, "        ", *unary_result(spec, lambda a: a.even_part(), n, full_name)
-    )
-    ap("")
-    ap("    def odd_part(self) -> typing.Self:")
-    _emit_unary_return(
-        lines, "        ", *unary_result(spec, lambda a: a.odd_part(), n, full_name)
-    )
-    ap("")
-    ap("    def r_vector_part(self, r: int) -> typing.Self:")
-    for r in range(n + 1):
-        ap(f"        if r == {r}:")
-        _emit_unary_return(
-            lines,
-            "            ",
-            *unary_result(spec, lambda a, r=r: a.r_vector_part(r), n, full_name),
+    rvp_body: list[ast.stmt] = [
+        ast.If(
+            ast.Compare(nm("r"), [ast.Eq()], [lit(r)]),
+            [unary_body(lambda a, r=r: a.r_vector_part(r))],
+            [],
         )
-    ap(
-        "        return typing.cast(typing.Self, "
-        "Scalar(scalar=typing.cast(numbers.Real, 0)))"
+        for r in range(n + 1)
+    ]
+    rvp_body.append(
+        ret(cast_self(construct("Scalar", [("scalar", cast_real(lit(0)))])))
     )
-    ap("")
-    # dual is a fixed product with the pseudoscalar; closed-form for this type's
-    # own dimension, defer to the full type for an explicit foreign n
-    ap("    def dual(self, n: int | None = None) -> typing.Self:")
-    ap(f"        if n is None or n == {n}:")
-    _emit_unary_return(
-        lines, "            ", *unary_result(spec, lambda a: a.dual(n), n, full_name)
-    )
-    ap(f"        return typing.cast(typing.Self, _coerce(self, {full_name}).dual(n))")
 
+    body = [
+        class_doc(graded_docstring(spec)),
+        dimension_decl(n),
+        *field_decls(blades),
+        from_blade_dict_method(blades),
+        to_blade_dict_method(blades),
+        eq_method(),
+        # scalar-aware __mul__ / __rmul__ (the ABC versions would drop the scalar
+        # for a type with no scalar field, so they are overridden here)
+        fn(
+            "__mul__",
+            [
+                ast.If(
+                    isinstance_(nm("rhs"), numlike),
+                    [
+                        scaled_nodes(
+                            spec.name,
+                            fields,
+                            lambda f: ast.BinOp(dot("self", f), ast.Mult(), nm("rhs")),
+                        )
+                    ],
+                    [],
+                ),
+                ret(call(dot("self", "_geometric_product"), [nm("rhs")])),
+            ],
+            params=[arg("self"), arg("rhs")],
+            returns=SELF,
+        ),
+        fn(
+            "__rmul__",
+            [
+                ast.If(
+                    isinstance_(nm("lhs"), numlike),
+                    [
+                        scaled_nodes(
+                            spec.name,
+                            fields,
+                            lambda f: ast.BinOp(nm("lhs"), ast.Mult(), dot("self", f)),
+                        )
+                    ],
+                    [],
+                ),
+                ret(call(dot("self", "_geometric_product"), [nm("lhs")])),
+            ],
+            params=[arg("self"), arg("lhs")],
+            returns=SELF,
+        ),
+        # the three bilinear products + the two linear ops, each a match on rhs type
+        dispatch_nodes(
+            spec,
+            "_geometric_product",
+            lambda a, b: a * b,
+            n,
+            full_name,
+            ast.BinOp(nm("left"), ast.Mult(), nm("right")),
+        ),
+        dispatch_nodes(
+            spec,
+            "outer_product",
+            lambda a, b: a.outer_product(b),
+            n,
+            full_name,
+            call(dot("left", "outer_product"), [nm("right")]),
+        ),
+        dispatch_nodes(
+            spec,
+            "inner_product",
+            lambda a, b: a.inner_product(b),
+            n,
+            full_name,
+            call(dot("left", "inner_product"), [nm("right")]),
+        ),
+        dispatch_nodes(
+            spec,
+            "__add__",
+            lambda a, b: a + b,
+            n,
+            full_name,
+            ast.BinOp(nm("left"), ast.Add(), nm("right")),
+            number_case=True,
+        ),
+        dispatch_nodes(
+            spec,
+            "__sub__",
+            lambda a, b: a - b,
+            n,
+            full_name,
+            ast.BinOp(nm("left"), ast.Sub(), nm("right")),
+            number_case=True,
+        ),
+        fn(
+            "__radd__",
+            [ret(call(dot("self", "__add__"), [nm("lhs")]))],
+            params=[arg("self"), arg("lhs")],
+            returns=SELF,
+        ),
+        fn(
+            "__rsub__",
+            [
+                ret(
+                    cast_self(
+                        call(
+                            dot(ast.UnaryOp(ast.USub(), nm("self")), "__add__"),
+                            [nm("lhs")],
+                        )
+                    )
+                )
+            ],
+            params=[arg("self"), arg("lhs")],
+            returns=SELF,
+        ),
+        fn(
+            "__neg__",
+            [
+                scaled_nodes(
+                    spec.name, fields, lambda f: ast.UnaryOp(ast.USub(), dot("self", f))
+                )
+            ],
+            returns=SELF,
+        ),
+        fn("reverse", [ret(cast_self(construct(spec.name, rev_pairs)))], returns=SELF),
+        fn(
+            "scalar_part",
+            [ret(dot("self", "scalar") if has_scalar else cast_real(lit(0)))],
+            returns=dot("numbers", "Real"),
+        ),
+        fn("grades", grades_body, returns=subscript(nm("list"), nm("int"))),
+        fn(
+            "is_close",
+            [
+                ast.If(
+                    not_(isinstance_(nm("other"), nm(spec.name))),
+                    [ret(super_call("is_close", [nm("other")]))],
+                    [],
+                ),
+                ret(call("bool", [bool_and([isclose_call(f) for f in fields])])),
+            ],
+            params=[arg("self"), arg("other")],
+            returns=nm("bool"),
+        ),
+        fn(
+            "__iter__",
+            [
+                ast.If(
+                    ne_zero(dot("self", field_name(b))),
+                    [
+                        ast.Expr(
+                            ast.Yield(
+                                construct(
+                                    spec.name,
+                                    [(field_name(b), dot("self", field_name(b)))],
+                                )
+                            )
+                        )
+                    ],
+                    [],
+                )
+                for b in blades
+            ],
+        ),
+        fn("even_part", [unary_body(lambda a: a.even_part())], returns=SELF),
+        fn("odd_part", [unary_body(lambda a: a.odd_part())], returns=SELF),
+        fn(
+            "r_vector_part",
+            rvp_body,
+            params=[arg("self"), arg("r", nm("int"))],
+            returns=SELF,
+        ),
+        fn(
+            "dual",
+            [
+                ast.If(
+                    bool_or(
+                        [
+                            ast.Compare(nm("n"), [ast.Is()], [lit(None)]),
+                            ast.Compare(nm("n"), [ast.Eq()], [lit(n)]),
+                        ]
+                    ),
+                    [unary_body(lambda a: a.dual(n))],
+                    [],
+                ),
+                ret(
+                    cast_self(
+                        call(
+                            dot(call("_coerce", [nm("self"), nm(full_name)]), "dual"),
+                            [nm("n")],
+                        )
+                    )
+                ),
+            ],
+            params=[arg("self"), arg("n", opt_int())],
+            defaults=[lit(None)],
+            returns=SELF,
+        ),
+    ]
     if spec.name.startswith("Rotor"):
-        ap("")
-        ap("    def plane_of_rotation(self) -> AbstractMultiVector:")
-        ap('        """The unit bivector (2-blade) this rotor rotates in.')
-        ap("")
-        ap("        A rotor is ``cos(t/2) - sin(t/2) * B`` for a unit bivector B --")
-        ap("        the oriented plane of rotation.  This returns B, the normalized")
-        ap("        bivector part.  In 2D that 2-blade is also the pseudoscalar; in 3D")
-        ap("        it is a bivector plane, not the trivector.  Undefined for the")
-        ap('        identity rotor (no rotation)."""')
-        ap("        return self.r_vector_part(2).normalize()")
-
-    return "\n".join(lines)
-
-
-def generate_scalar() -> str:
-    """The shared grade-0 ``Scalar`` type (dimension-agnostic)."""
-    lines: list[str] = []
-    ap = lines.append
-    ap("@dataclasses.dataclass(eq=False)")
-    ap("class Scalar(AbstractMultiVector):")
-    ap(
-        '    """The grade-0 type -- a scalar, shared across every 𝒢ₙ.\n\n'
-        "    ``Scalar * x`` scales ``x`` and returns x's type; pure-scalar product\n"
-        "    results (e.g. Bivector2 * Bivector2) land here.  AUTO-GENERATED by\n"
-        '    tools/gen_specialized.py."""'
-    )
-    ap("")
-    ap("    scalar: numbers.Real = typing.cast(numbers.Real, 0)")
-    ap("")
-    ap("    @classmethod")
-    ap("    def from_blade_dict(cls, blade_coef) -> typing.Self:")
-    ap("        d = dict(blade_coef)")
-    ap("        return cls(scalar=typing.cast(numbers.Real, d.get((), 0)))")
-    ap("")
-    ap("    def to_blade_dict(self) -> BladeCoef:")
-    ap("        return {(): self.scalar} if self.scalar != 0 else {}")
-    ap("")
-    _emit_eq(ap)
-    ap("    def __mul__(self, rhs) -> typing.Self:")
-    ap("        if isinstance(rhs, (int, float, sympy.Expr)):")
-    ap(
-        "            return typing.cast(typing.Self, "
-        "Scalar(scalar=typing.cast(numbers.Real, self.scalar * rhs)))"
-    )
-    ap("        return self._geometric_product(rhs)")
-    ap("")
-    ap("    def __rmul__(self, lhs) -> typing.Self:")
-    ap("        if isinstance(lhs, (int, float, sympy.Expr)):")
-    ap(
-        "            return typing.cast(typing.Self, "
-        "Scalar(scalar=typing.cast(numbers.Real, lhs * self.scalar)))"
-    )
-    ap("        return self._geometric_product(lhs)")
-    ap("")
-    ap("    def _geometric_product(self, rhs) -> typing.Self:")
-    ap("        if isinstance(rhs, Scalar):")
-    ap(
-        "            return typing.cast(typing.Self, "
-        "Scalar(scalar=typing.cast(numbers.Real, self.scalar * rhs.scalar)))"
-    )
-    ap("        if isinstance(rhs, AbstractMultiVector):")
-    ap("            return typing.cast(typing.Self, self.scalar * rhs)")
-    ap(
-        "        return typing.cast(typing.Self, "
-        "Scalar(scalar=typing.cast(numbers.Real, self.scalar * rhs)))"
-    )
-    ap("")
-    ap("    def outer_product(self, rhs) -> typing.Self:")
-    ap("        return self._geometric_product(rhs)")
-    ap("")
-    ap("    def inner_product(self, rhs) -> typing.Self:")
-    ap("        left: Gn = Gn.from_blade_dict(self.to_blade_dict())")
-    ap("        right: Gn = Gn.from_blade_dict(rhs.to_blade_dict())")
-    ap("        return typing.cast(typing.Self, left.inner_product(right))")
-    ap("")
-    ap("    def __add__(self, rhs) -> typing.Self:")
-    ap("        if isinstance(rhs, (int, float, sympy.Expr)):")
-    ap(
-        "            return typing.cast(typing.Self, "
-        "Scalar(scalar=typing.cast(numbers.Real, self.scalar + rhs)))"
-    )
-    ap("        if isinstance(rhs, Scalar):")
-    ap(
-        "            return typing.cast(typing.Self, "
-        "Scalar(scalar=self.scalar + rhs.scalar))"
-    )
-    ap("        if isinstance(rhs, AbstractMultiVector):")
-    ap("            return typing.cast(typing.Self, rhs + self)")
-    ap("        return typing.cast(typing.Self, NotImplemented)")
-    ap("")
-    ap("    def __radd__(self, lhs) -> typing.Self:")
-    ap("        return self.__add__(lhs)")
-    ap("")
-    ap("    def __sub__(self, rhs) -> typing.Self:")
-    ap("        return self + (-1 * rhs)")
-    ap("")
-    ap("    def __rsub__(self, lhs) -> typing.Self:")
-    ap("        return (-self) + lhs")
-    ap("")
-    ap("    def __neg__(self) -> typing.Self:")
-    ap(
-        "        return typing.cast(typing.Self, "
-        "Scalar(scalar=typing.cast(numbers.Real, -self.scalar)))"
-    )
-    ap("")
-    ap("    def reverse(self) -> typing.Self:")
-    ap("        return typing.cast(typing.Self, Scalar(scalar=self.scalar))")
-    ap("")
-    ap("    def scalar_part(self) -> numbers.Real:")
-    ap("        return self.scalar")
-    ap("")
-    ap("    def grades(self) -> list[int]:")
-    ap("        return [0] if self.scalar != 0 else []")
-    ap("")
-    ap("    def is_close(self, other) -> bool:")
-    ap("        if not isinstance(other, Scalar):")
-    ap("            return super().is_close(other)")
-    ap(
-        "        return bool(np.isclose("
-        "float(self.scalar), float(other.scalar), rtol=1e-5, atol=1e-5))"
-    )
-    ap("")
-    ap("    def __iter__(self):")
-    ap("        if self.scalar != 0:")
-    ap("            yield Scalar(scalar=self.scalar)")
-    ap("")
-    ap("    def even_part(self) -> typing.Self:")
-    ap("        return typing.cast(typing.Self, Scalar(scalar=self.scalar))")
-    ap("")
-    ap("    def odd_part(self) -> typing.Self:")
-    ap(
-        "        return typing.cast(typing.Self, "
-        "Scalar(scalar=typing.cast(numbers.Real, 0)))"
-    )
-    ap("")
-    ap("    def r_vector_part(self, r: int) -> typing.Self:")
-    ap("        if r == 0:")
-    ap("            return typing.cast(typing.Self, Scalar(scalar=self.scalar))")
-    ap(
-        "        return typing.cast(typing.Self, "
-        "Scalar(scalar=typing.cast(numbers.Real, 0)))"
-    )
-    ap("")
-    ap("    def dual(self, n: int | None = None) -> typing.Self:")
-    ap("        if n is None:")
-    ap('            raise ValueError("Scalar.dual needs an explicit dimension n")')
-    ap(
-        "        return typing.cast(typing.Self, "
-        "Gn.from_blade_dict(self.to_blade_dict()).dual(n))"
-    )
-    return "\n".join(lines)
-
-
-def generate_constants(n: int, name: str) -> str:
-    """Module-level basis constants for one algebra, each of that algebra's type."""
-    nonempty = [b for b in blades_for_dim(n) if b != ()]
-    lines: list[str] = []
-    ap = lines.append
-    ap(f"zero: {name} = {name}.from_scalar(0)")
-    ap(f"one: {name} = {name}.from_scalar(1)")
-    for b in nonempty:
-        ap(
-            f"{field_name(b)}: {name} = "
-            f"{name}.from_blade_dict({{{blade_literal(b)}: 1}})"
+        body.append(
+            fn(
+                "plane_of_rotation",
+                [
+                    class_doc(PLANE_DOC),
+                    ret(
+                        call(
+                            dot(
+                                call(dot("self", "r_vector_part"), [lit(2)]),
+                                "normalize",
+                            ),
+                            [],
+                        )
+                    ),
+                ],
+                returns=nm("AbstractMultiVector"),
+            )
         )
-    ap("")
-    exported = [repr(name), repr("Scalar")]
-    exported += [repr(s.name) for s in graded_specs(n)]
-    exported += [repr("zero"), repr("one")]
-    exported += [repr(field_name(b)) for b in nonempty]
-    ap(f"__all__ = [{', '.join(exported)}]")
-    return "\n".join(lines)
+    return [cls(spec.name, body, decorators=[dataclass_decorator(eq=False)])]
+
+
+def generate_constants(n: int, name: str) -> list[ast.stmt]:
+    """Module-level basis constants for one algebra, hand-built as nodes (level C)."""
+    nonempty = [b for b in blades_for_dim(n) if b != ()]
+    nodes: list[ast.stmt] = [
+        ann_assign("zero", nm(name), call(dot(name, "from_scalar"), [lit(0)])),
+        ann_assign("one", nm(name), call(dot(name, "from_scalar"), [lit(1)])),
+    ]
+    for b in nonempty:
+        nodes.append(
+            ann_assign(
+                field_name(b),
+                nm(name),
+                call(
+                    dot(name, "from_blade_dict"),
+                    [ast.Dict(keys=[lit(b)], values=[lit(1)])],
+                ),
+            )
+        )
+    exported = [name, "Scalar", *(s.name for s in graded_specs(n)), "zero", "one"]
+    exported += [field_name(b) for b in nonempty]
+    nodes.append(
+        assign("__all__", ast.List(elts=[lit(s) for s in exported], ctx=_LOAD))
+    )
+    return nodes
 
 
 def header(name: str, n: int) -> str:
@@ -1282,21 +1759,26 @@ def ruff_format(paths: list[str]) -> None:
 
 def main() -> None:
     written: list[str] = []
+    # Each module's body is assembled as a list of `ast` statement nodes (the
+    # per-construct generators return source snippets that we parse into nodes via
+    # `parse_stmts`), then rendered with `ast.unparse` (module_source).  The file
+    # header -- copyright comment + imports -- stays raw text (comments can't live
+    # in an AST) and is prepended.
+
     # the shared Scalar module first (the graded types import it)
-    scalar_source = "\n".join(
-        [SCALAR_HEADER, "", generate_scalar(), "", "", '__all__ = ["Scalar"]', ""]
-    )
+    scalar_nodes = generate_scalar() + parse_stmts('__all__ = ["Scalar"]')
+    scalar_source = SCALAR_HEADER + "\n\n" + module_source(scalar_nodes) + "\n"
     with open(out_path("scalar.py"), "w") as f:
         f.write(scalar_source)
     written.append(out_path("scalar.py"))
     sys.stdout.write(f"wrote {os.path.normpath(out_path('scalar.py'))}\n")
 
     for n, name, filename in ALGEBRAS:
-        parts = [header(name, n), "", generate_class(n, name), ""]
+        nodes = generate_class(n, name)
         for spec in graded_specs(n):
-            parts += ["", generate_graded_type(spec, n, name), ""]
-        parts += ["", generate_constants(n, name), ""]
-        source = "\n".join(parts)
+            nodes += generate_graded_type(spec, n, name)
+        nodes += generate_constants(n, name)
+        source = header(name, n) + "\n\n" + module_source(nodes) + "\n"
         with open(out_path(filename), "w") as f:
             f.write(source)
         written.append(out_path(filename))
