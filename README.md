@@ -22,7 +22,7 @@ notation). This package gives you:
 src/geometricalgebra/
   base.py          AbstractMultiVector (the abstract base) + type aliases
   gn.py            Gn (general 𝒢ₙ) + e_1.. constants + transforms + `MultiVector` alias
-  g1.py g2.py g3.py   one specialized class each (generated)
+  g1.py g2.py g3.py   one specialized class each (generated, not in git -- run `make generate`)
 ```
 
 Import just the algebra you need:
@@ -93,24 +93,52 @@ bash entrypoint/format.sh   # ruff check --fix, ruff format, ty check
 
 ## Generating the specialized classes
 
-`g1.py` / `g2.py` / `g3.py` are **generated** — do not edit them by hand (they
-carry an `AUTO-GENERATED` header). The generator derives each closed-form
-geometric product (and other per-dimension code) from the general `Gn` symbolic
-product, runs `sympy.cse`, and writes one module per algebra.
+`g1.py` / `g2.py` / `g3.py` / `scalar.py` are **generated** — do not edit them by
+hand (they carry an `AUTO-GENERATED` header). The generator derives each
+closed-form geometric product (and other per-dimension code) from the general
+`Gn` symbolic product, runs `sympy.cse`, and writes one module per algebra.
 
-Regenerate the committed files at any time (run from the repo root — the script
-adds `src/` to its own path):
-
-```bash
-python tools/gen_specialized.py
-```
-
-To check that the committed modules haven't drifted from the generator (e.g. a
-hand-edit, or a generator change without a regen), run:
+**They are not checked into git.** Generate them into the working tree before
+running tests / your IDE / `bench` (run from the repo root — the script adds
+`src/` to its own path):
 
 ```bash
-make check-generated   # regenerates, then `git diff --exit-code`s the g*.py / scalar.py
+make generate          # = python tools/gen_specialized.py
 ```
+
+`make shell` does this automatically inside the container, and `make dist` bakes
+the generated code into the published sdist + wheel — so `pip install
+geometricalgebra` gives you the readable closed-form source with no generation
+step on your end. (See "Building & publishing" below.)
+
+To check the generator is deterministic (regenerates byte-identically), run:
+
+```bash
+make check-generated   # regenerates twice and compares the output
+```
+
+## Building & publishing
+
+The build/publish tools (`build`, `twine`) live in a `dev` extras group — install
+them once with:
+
+```bash
+pip install -e ".[dev]"        # or:  uv pip install -e ".[dev]"
+```
+
+Then:
+
+```bash
+make dist       # regenerate, then build sdist + wheel into dist/ (generated code baked in)
+make upload     # twine check + twine upload dist/* to PyPI (irreversible)
+make release    # like upload, but refuses unless you bumped `version` in pyproject.toml
+                # (guards against PyPI's permanent rejection of a re-used version), then git-tags it
+```
+
+`make dist` works on any platform with `python` + `sympy` + `build`; the wheel is
+pure-Python (`py3-none-any`), so the same artifact installs everywhere. Building
+relies on the `numpy`+`sympy` build-requires in `pyproject.toml` (the `setup.py`
+`build_py` hook runs the generator if the modules are missing).
 
 ### Adding a new algebra (worked example: `G4` for 𝒢₄)
 

@@ -1261,7 +1261,16 @@ def ruff_format(paths: list[str]) -> None:
     and leave the files raw rather than failing the generation.
     """
     try:
-        subprocess.run(["ruff", "check", "--fix", "--quiet", *paths], check=False)
+        # Best-effort lint-fix. Its stdout is suppressed: ``ruff check`` reports
+        # not-yet-fixable diagnostics (e.g. E501 long lines) that the following
+        # ``ruff format`` pass then resolves by wrapping -- printing them here is
+        # misleading noise. The real lint gate is format.sh / CI.
+        subprocess.run(
+            ["ruff", "check", "--fix", "--quiet", *paths],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         subprocess.run(
             ["ruff", "format", "--quiet", "--line-length=88", *paths], check=True
         )

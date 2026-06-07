@@ -3,16 +3,26 @@ name = "geometricalgebra"
 version = "0.0.1"
 authors = [{name="William Emerison Six", email="billsix@gmail.com"}]
 description = "Geometric Algebra"
+readme = "README.md"
 # Floor is 3.13: the code uses typing.TypeIs (added in 3.13). The dev container runs 3.14.
 requires-python = ">=3.13"
 
 dynamic = ['dependencies']
 
+# Tooling for building and publishing the package, not needed at runtime.
+# Install with:  pip install -e ".[dev]"   (or  uv pip install -e ".[dev]" )
+[project.optional-dependencies]
+dev = ["build", "twine"]
+
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 
+# numpy + sympy are *build* dependencies: the build_py hook in setup.py runs
+# tools/gen_specialized.py when the generated modules are absent, and that
+# generator imports geometricalgebra.base/gn (which need numpy + sympy). They are
+# unused when building from an sdist/wheel that already ships the generated code.
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools", "wheel", "numpy", "sympy"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]

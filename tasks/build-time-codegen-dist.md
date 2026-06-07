@@ -1,7 +1,8 @@
 # Reconsider checking in generated code: build-time generation + `make dist`
 
-**Status:** proposed — investigation/design; produce proposals, then a decision (do NOT implement yet)
+**Status:** complete — implemented 2026-06-07 (Option 3, build-time generation; files removed from git)
 **Started:** 2026-06-06
+**Completed:** 2026-06-07
 
 ## Goal
 
@@ -259,6 +260,48 @@ upload: dist          ## Validate and upload dist/* to PyPI (irreversible)
    author-invoked run — not part of `dist`.
 6. Repurpose/drop `make check-generated`; update CLAUDE.md ("Module layout", "Code generation", "Dev
    workflow") + README ("Generating", "Adding a new algebra") to the new model.
+
+## Implemented (2026-06-07)
+
+Decisions taken: **generate-if-missing** hook; **manual-bump + guard** `make release`. What changed:
+
+- **`.gitignore` + untrack.** Added `/src/geometricalgebra/{scalar,g1,g2,g3}.py`; `git rm --cached`
+  the four (still on disk, working tree unaffected).
+- **`entrypoint/shell.sh`** — runs `python tools/gen_specialized.py` before the editable install, so
+  `make shell` hands over a fully-generated tree.
+- **`setup.py`** — `build_py` subclass that runs the generator **if the modules are missing**, so
+  build-from-repo regenerates while build-from-sdist (ships them) is a no-op.
+- **`pyproject.toml`** — `[build-system].requires = ["setuptools","wheel","numpy","sympy"]`,
+  `readme = "README.md"`, and a `[project.optional-dependencies] dev = ["build","twine"]` extras group
+  (install with `pip install -e ".[dev]"`) so the publish tooling ships with the repo.
+- **`Makefile`** — `generate`, `dist` (`generate` → `python -m build`), `upload`, `release`
+  (version-tag guard), and `check-generated` **repurposed** to a determinism check (regen twice,
+  `cmp`).
+- **Docs** — CLAUDE.md (Module layout / Code generation / Dev workflow) + README (Generating + new
+  "Building & publishing" section) updated to the not-in-git model.
+
+**Corrections found while implementing (the proposal above was slightly off):**
+1. **Build-requires needs `numpy` *and* `sympy`, not just `sympy`.** The generator imports
+   `geometricalgebra.base`, which imports `numpy` — so a build env with only `sympy` fails
+   (`ModuleNotFoundError: numpy`). Fixed.
+2. **"sympy-free end users" was imprecise.** `numpy`/`sympy` are genuine *runtime* deps (in
+   `requirements.txt` → dynamic dependencies), so a `pip install` pulls them regardless. The accurate
+   claim: installing the **wheel** runs **no build step and no generator** (the `.py` are baked in and
+   readable); only an sdist build would touch the build-requires, and the pure-Python `py3-none-any`
+   wheel matches every platform so the sdist path is rarely hit.
+3. `tools/gen_specialized.py` is **not** shipped in the sdist (only the generated `.py` + `base`/`gn`
+   are). Harmless because the sdist always ships the generated files (hook no-ops). If a from-sdist
+   *regen* is ever wanted, add `tools/` via `MANIFEST.in`.
+
+**Verified:** `make generate` ✅ · `make check-generated` (determinism) ✅ · `make dist` → sdist+wheel
+both contain `scalar/g1/g2/g3.py` ✅ · `twine check` PASSED (clean, after adding `readme`) ✅ ·
+wheel installed in a clean venv imports `geometricalgebra.g2` and builds a `G2` ✅ · the `build_py`
+hook regenerates into the wheel when the tree has no generated files ✅ · full suite **161 passed**.
+
+**Not done (deliberately):** the `make shell` `podman run` still lacks `--cgroups=disabled` (needed
+only to run *nested* in the Claude sandbox; orthogonal to this task — propose separately before
+editing). No `git commit` (author commits). Optional `make upload-test` (TestPyPI) / automated
+version bump noted but not added.
 
 ## Notes
 

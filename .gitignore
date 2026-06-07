@@ -19,3 +19,11 @@ __pycache__/
 build/
 dist/
 .ipynb_checkpoints/
+
+# generated specialized algebras -- produced by tools/gen_specialized.py
+# (make generate / make shell / the setup.py build hook). Not tracked; baked
+# into the sdist + wheel at build time so a pip install is still readable.
+/src/geometricalgebra/scalar.py
+/src/geometricalgebra/g1.py
+/src/geometricalgebra/g2.py
+/src/geometricalgebra/g3.py

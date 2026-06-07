@@ -76,16 +76,50 @@ shell:  ## Get Shell into a ephermeral container made from the image
 
 
 
-.PHONY: check-generated
-check-generated: ## Verify committed g*.py / scalar.py are in sync with tools/gen_specialized.py
+GENERATED = src/geometricalgebra/scalar.py \
+            src/geometricalgebra/g1.py \
+            src/geometricalgebra/g2.py \
+            src/geometricalgebra/g3.py
+
+.PHONY: generate
+generate: ## Generate the specialized algebras (scalar/g1/g2/g3.py) -- needs sympy
 	python tools/gen_specialized.py
-	@git diff --exit-code -- src/geometricalgebra/scalar.py src/geometricalgebra/g1.py src/geometricalgebra/g2.py src/geometricalgebra/g3.py || { \
-		echo ""; \
-		echo "ERROR: generated modules differ from tools/gen_specialized.py output."; \
-		echo "A g*.py / scalar.py was hand-edited, or the generator changed without a regen."; \
-		echo "Run 'python tools/gen_specialized.py' and commit the result."; \
-		exit 1; \
-	}
+
+.PHONY: check-generated
+check-generated: ## Verify tools/gen_specialized.py is deterministic (regen twice, compare)
+	python tools/gen_specialized.py
+	@cp $(GENERATED) /tmp/
+	python tools/gen_specialized.py
+	@for f in $(GENERATED); do \
+		cmp -s "$$f" "/tmp/$$(basename $$f)" || { \
+			echo ""; \
+			echo "ERROR: tools/gen_specialized.py is non-deterministic ($$f differs between runs)."; \
+			exit 1; \
+		}; \
+	done
+	@rm -f $(addprefix /tmp/,$(notdir $(GENERATED)))
+	@echo "generator is deterministic"
+
+.PHONY: dist
+dist: generate ## Build sdist + wheel (generated modules baked in) into dist/
+	python -m build
+
+.PHONY: upload
+upload: dist ## Validate and upload dist/* to PyPI (irreversible)
+	twine check dist/*
+	twine upload dist/*
+
+VERSION := $(shell python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+
+.PHONY: release
+release: dist ## Tag + upload the current pyproject version (fails if already tagged)
+	@git rev-parse "v$(VERSION)" >/dev/null 2>&1 \
+		&& { echo "tag v$(VERSION) already exists -- bump version in pyproject.toml"; exit 1; } \
+		|| true
+	twine check dist/*
+	twine upload dist/*
+	git tag "v$(VERSION)"
+	@echo "Released $(VERSION). Push the tag with:  git push origin v$(VERSION)"
 
 
 .PHONY: help
