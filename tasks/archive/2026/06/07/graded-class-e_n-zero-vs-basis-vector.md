@@ -1,7 +1,8 @@
 # Why `Vector2.e_1` is `0` (not the basis vector) — and should it be?
 
-**Status:** Phase 1 **COMPLETE** (committed `6c88fae`) · Phase 2 **DONE** · Phase 3 **DONE** —
-**all three phases finished** (awaiting author commit of Phases 2 & 3) · started 2026-06-07
+**Status:** complete
+**Completed:** 2026-06-07
+(Phase 1 committed `6c88fae`; Phases 2 & 3 done — awaiting author commit. Started 2026-06-07.)
 
 ## Phase 3 — DONE 2026-06-07 (component is the blessed grade-general getter)
 

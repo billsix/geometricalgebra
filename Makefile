@@ -129,6 +129,18 @@ check-generated: ## Verify tools/gen_specialized.py is deterministic (regen twic
 	@rm -f $(addprefix /tmp/,$(notdir $(GENERATED)))
 	@echo "generator is deterministic"
 
+# Run the suite INSIDE the container (the image's pinned toolchain), like `dist`.
+# The generated g*.py/scalar.py are gitignored, so regenerate them first (into the
+# bind-mounted tree), then run pytest.  Exit 0 on success; on failure the inner
+# command's nonzero status propagates out (make reports it as a recipe failure).
+.PHONY: test
+test: ## Run the full test suite INSIDE the container; exit 0 on success, nonzero on failure
+	$(CONTAINER_CMD) run --rm \
+		-v $(CURDIR):/gacalc:Z \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'set -e; cd /gacalc; python tools/gen_specialized.py; python -m pytest'
+
 # Releases are split: the package is BUILT inside the container (the image's
 # pinned toolchain -- python, build, numpy/sympy), and the resulting sdist+wheel
 # land in $(DIST_DIR) on the host through a bind mount.  PUSHING to PyPI happens

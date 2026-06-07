@@ -180,9 +180,20 @@ specialized classes never drifts from the shared base.
 
 ## Dev workflow
 
-- Tests: `python -m pytest -q` (`pytest.ini` sets `pythonpath = src`, `testpaths = src tests`, and
-  `addopts = --doctest-modules` so docstring examples run as tests — `nbplotutils.py` is `--ignore`d
-  because it imports a matplotlib GUI backend that fails headless).
+- **Work happens in the container.** Almost every dev task runs inside the image's pinned toolchain,
+  either interactively via `make shell` or through a dedicated `make` target that wraps `podman run`:
+  `make test` (suite), `make dist` (build sdist+wheel), `make check-generated` (determinism). The
+  **only** steps that run on the **host** are the irreversible, credential-bearing ones —
+  `make upload` / `make release` push to PyPI with `twine`, and `git` commits/tags (the author's job,
+  outside the container). When adding a new dev task, prefer a containerized `make` target over a
+  "run it on your host" instruction.
+- Tests: **`make test`** runs the suite inside the container (regenerates the gitignored
+  `g*.py`/`scalar.py` first, then `pytest`); exit 0 on success, nonzero on failure (make reports a
+  recipe failure as exit 2, not pytest's exact code — the 0/nonzero contract is what CI needs). For a
+  quick host run instead, `python -m pytest -q` after a `make generate`. `pytest.ini` sets
+  `pythonpath = src`, `testpaths = src tests`, and `addopts = --doctest-modules` so docstring examples
+  run as tests — `nbplotutils.py` is `--ignore`d because it imports a matplotlib GUI backend that
+  fails headless.
 - Lint/format/typecheck: `entrypoint/format.sh` runs `ruff check --fix`, `ruff format`, `ty check`.
   Ruff rules in `pyproject.toml`. **`ty check src` and `ty check tests` are clean; keep them so.**
 - After editing the generator, regenerate (`python tools/gen_specialized.py`, which auto-formats its
