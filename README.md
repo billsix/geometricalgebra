@@ -59,13 +59,20 @@ never depends on (float-fuzzy) coefficient *values*:
 ```python
 from gacalc.g2 import Vector2
 
-e_1, e_2 = Vector2.basis_vector(1), Vector2.basis_vector(2)
-a, b = 3 * e_1 + 4 * e_2, 1 * e_1 + 2 * e_2
+a, b = 3 * Vector2.e_1 + 4 * Vector2.e_2, 1 * Vector2.e_1 + 2 * Vector2.e_2
 
 type(a * b)               # Rotor2     (a·b scalar  +  a∧b bivector)
 type(a ^ b)               # Bivector2  (the wedge — ask for a blade with ^)
 type(a.inner_product(b))  # Scalar
 ```
+
+Each class exposes its **basis blades as class constants of its own type** — `Vector2.e_1` /
+`Vector2.e_2` (vectors), `Bivector2.e_12`, `G3.e_123`, etc. — equivalent to `cls.basis_vector(n)` but
+named. They live on the class (`Vector2.e_1`); because the stored coefficient fields are named
+`coeff_e_1` … (not `e_1`), an *instance* `v.e_1` resolves to the same basis constant, while
+`v.coeff_e_1` is that component's value. Read a component back out with `v.component(Vector2.e_1)`.
+(`Gn`, being dimension-agnostic, has no fixed class constants — use the module-level `gn.e_1 …` or
+`Gn.basis_vector(n)`.)
 
 Return-type table for the geometric product `*` (𝒢₂ shown):
 

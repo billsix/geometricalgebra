@@ -32,6 +32,7 @@ import sympy
 import gacalc.g1 as g1mod
 import gacalc.g2 as g2mod
 import gacalc.g3 as g3mod
+import gacalc.gn as gn
 from gacalc.g1 import G1
 from gacalc.g2 import G2
 from gacalc.g3 import G3
@@ -192,10 +193,8 @@ def test_reflect(n: int, cls) -> None:
 @pytest.mark.parametrize("n,cls", [(n, cls) for (n, cls) in CASES if n >= 2])
 def test_rotate(n: int, cls) -> None:
     a = vec(n, 0)
-    e_1 = Gn.from_blade_dict({(1,): 1})
-    e_2 = Gn.from_blade_dict({(2,): 1})
-    got = cls.rotate(from_vector=to(cls, e_1), to_vector=to(cls, e_2))(to(cls, a))
-    assert got == Gn.rotate(from_vector=e_1, to_vector=e_2)(a)
+    got = cls.rotate(from_vector=to(cls, gn.e_1), to_vector=to(cls, gn.e_2))(to(cls, a))
+    assert got == Gn.rotate(from_vector=gn.e_1, to_vector=gn.e_2)(a)
 
 
 # --------------------------------------------------------------------------

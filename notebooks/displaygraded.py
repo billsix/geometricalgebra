@@ -48,7 +48,6 @@
 # operation dictates.
 
 # %%
-import sympy
 from IPython.display import Markdown, Math, display
 
 from gacalc.g2 import Vector2
@@ -72,11 +71,13 @@ def show(*values):
 # --------------
 #
 # Build a vector basis and combine it linearly. `3*e_1 + 4*e_2` is a `Vector2`.
+# Each class exposes its basis blades as named constants of its own type
+# (`Vector2.e_1` == `Vector2.basis_vector(1)`); reading a component back out is
+# `v.component(Vector2.e_1)`.
 
 # %%
-e_1, e_2 = Vector2.basis_vector(1), Vector2.basis_vector(2)
-a = 3 * e_1 + 4 * e_2
-b = 1 * e_1 + 2 * e_2
+a = 3 * Vector2.e_1 + 4 * Vector2.e_2
+b = 1 * Vector2.e_1 + 2 * Vector2.e_2
 show(a)
 
 # %% [markdown]
@@ -104,10 +105,10 @@ show(a ^ b, a.inner_product(b))
 # Want the pure bivector? Use `^`.
 
 # %%
-show(e_1 * e_2)
+show(Vector2.e_1 * Vector2.e_2)
 
 # %%
-show(e_1 ^ e_2)
+show(Vector2.e_1 ^ Vector2.e_2)
 
 # %% [markdown]
 # Bivectors and the Scalar type
@@ -117,7 +118,7 @@ show(e_1 ^ e_2)
 # dedicated `Scalar` type.
 
 # %%
-i2 = e_1 ^ e_2  # the unit bivector
+i2 = Vector2.e_1 ^ Vector2.e_2  # the unit bivector
 show(i2 * i2)
 
 # %% [markdown]
@@ -135,9 +136,12 @@ show(r)
 show(i2 * i2)  # == -1
 
 # %%
-# a rotor rotates a vector (here, a quarter turn of e_1)
-quarter = sympy.cos(sympy.pi / 4) - sympy.sin(sympy.pi / 4) * (e_1 * e_2)
-rotated = quarter * e_1 * quarter.reverse()
+# a rotor rotates a vector: the normalized rotor that turns e_1 -> e_2 is a
+# quarter turn, built from the two vectors (no hand-rolled cos/sin needed)
+quarter = Vector2.rotor_from_vectors(
+    from_vector=Vector2.e_1, to_vector=Vector2.e_2
+).normalize()
+rotated = quarter * Vector2.e_1 * quarter.reverse()
 show(rotated)
 
 # %% [markdown]
@@ -160,7 +164,7 @@ show(quarter.plane_of_rotation())
 # rotation — provably, even symbolically (see `tests/test_graded.py`).
 
 # %%
-frm, to = e_1, e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
+frm, to = Vector2.e_1, Vector2.e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
 R = Vector2.rotor_from_vectors(from_vector=frm, to_vector=to)
 show(R)  # an (un-normalized) Rotor2
 
@@ -170,7 +174,7 @@ show(R)  # an (un-normalized) Rotor2
 # `R̃ / |R|²`) divides that out, leaving a pure rotation equal to `rotate`.
 
 # %%
-w = e_1
+w = Vector2.e_1
 for label, value in [
     (r"R\,\tilde R", R * R.reverse()),
     (r"R\,w\,\tilde R", R * w * R.reverse()),
@@ -215,9 +219,8 @@ display(Markdown("\n".join([header, sep, *rows])))
 # form of the cross product.
 
 # %%
-f_1, f_2, f_3 = (Vector3.basis_vector(i) for i in (1, 2, 3))
-u = 1 * f_1 + 2 * f_2 + 3 * f_3
-v = 4 * f_1 + 5 * f_2 + 6 * f_3
+u = 1 * Vector3.e_1 + 2 * Vector3.e_2 + 3 * Vector3.e_3
+v = 4 * Vector3.e_1 + 5 * Vector3.e_2 + 6 * Vector3.e_3
 show(u * v, u ^ v)
 
 # %%
@@ -230,7 +233,7 @@ biv.dual()  # the components of u x v
 
 # %%
 # each unit bivector of G3 squares to -1 (the even subalgebra is the quaternions)
-show((f_1 ^ f_2) * (f_1 ^ f_2))
+show((Vector3.e_1 ^ Vector3.e_2) * (Vector3.e_1 ^ Vector3.e_2))
 
 # %% [markdown]
 # When a result spans grades no single type covers
@@ -251,7 +254,7 @@ kind(u * biv)
 # transparently (they share the blade-dict interchange protocol).
 
 # %%
-a == 3 * e_1 + 4 * e_2
+a == 3 * Vector2.e_1 + 4 * Vector2.e_2
 
 # %%
 # display a few as latex

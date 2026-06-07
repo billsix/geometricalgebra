@@ -1,8 +1,43 @@
 # Why `Vector2.e_1` is `0` (not the basis vector) — and should it be?
 
-**Status:** Phase 1 **done** (awaiting author commit) · Phases 2 & 3 pending go-ahead · started 2026-06-07
+**Status:** Phase 1 **COMPLETE** (committed `6c88fae`) · Phase 2 **DONE** (awaiting author commit) ·
+Phase 3 pending go-ahead · started 2026-06-07
 
-## Phase 1 — DONE 2026-06-07 (coeff_* field rename)
+## Phase 2 — DONE 2026-06-07 (e_n basis-vector class constants)
+
+`e_1`/`e_2`/`e_12`/`e_123`/… are now **class constants of each class's own type** on every generated
+class (`G1/G2/G3` and the graded subtypes). The original puzzle is resolved:
+`Vector2.e_1 == Vector2.basis_vector(1)`, and instance access `inst.e_1` falls through to the same
+constant (not shadowed, since the field is `coeff_e_1`). **163 tests pass (+2 new), `ty` + `ruff`
+clean, `make check-generated` deterministic.**
+
+Implementation (all in `tools/gen_specialized.py`):
+- Two new generator helpers: `basis_classvar_decls(name, blades)` emits `e_1: typing.ClassVar[Name]`
+  (annotation only) into the class body for each **nonempty** blade — ClassVar so it's excluded from
+  the dataclass fields/`__slots__` and so `ty` knows the attribute; `basis_constant_assignments(name,
+  blades)` emits `Name.e_1 = Name.from_blade_dict({(1,): 1})` **after** the class (a class can't
+  reference itself mid-definition).
+- Wired into both `generate_class` (full `G_n`, `slots=True`) and `generate_graded_type` (graded,
+  non-slots): ClassVar decls appended right after `class_header_stmts`; the post-class assignments
+  appended to each generator's returned node list. Verified the slots=True case works (probe + tests).
+- Scalar gets none (no nonempty blades). The scalar unit stays `from_scalar` / module-level `one`.
+
+Decisions:
+- **Per-type constants:** `Vector2.e_1` is a `Vector2`, `G2.e_1` is a `G2`, `Bivector2.e_12` a
+  `Bivector2`, etc. Each class gets a constant for each of *its* nonempty blades.
+- **Coexist with module-level constants:** the existing `gn.e_1`/`g2.e_1` module globals (G-typed)
+  are untouched; the new class constants are an additional, type-precise access path. No clash
+  (class namespace vs module namespace).
+- **`Gn` asymmetry (intentional):** `Gn` is dimension-agnostic, so it gets **no** class constants —
+  users use module-level `gn.e_1 …` or `Gn.basis_vector(n)`. Confirmed nothing assumed `Gn.e_1`.
+
+Docs updated: README "Graded subtypes" (uses `Vector2.e_1`, explains the class-constant /
+instance-fallthrough / `component` read-back model), CLAUDE.md "Architecture" (`coeff_*` fields +
+the class-constant mechanism + the `Gn` asymmetry), and `notebooks/displaygraded.py` (new idiom).
+New tests: `test_basis_blade_class_constants`, `test_basis_constant_instance_fallthrough`.
+
+
+## Phase 1 — COMPLETE 2026-06-07 (coeff_* field rename) — committed `6c88fae`
 
 Fields renamed `scalar/e_1/e_2/e_12/e_123` → `coeff_scalar/coeff_e_1/…` across **all** generated
 classes (`G1/G2/G3`, graded subtypes, `Scalar`). All in `tools/gen_specialized.py`; no hand-edits to
@@ -197,17 +232,14 @@ Fields become `coeff_scalar`, `coeff_e_1`, `coeff_e_2`, `coeff_e_12`, `coeff_e_1
 
 With the `e_n` names freed, define them as class-level constants of each class's own type.
 
-- [ ] Generator: emit, per generated class, class-level constants `e_1 = basis_vector(1)`, … and the
-      pseudoscalar (`e_12`/`e_123`) — each of that class's type. Decide placement (class body vs.
-      assigned just after the class) and that **both** `Cls.e_1` and `inst.e_1` resolve to it.
-- [ ] Reconcile with the **existing module-level constants** (`g2.e_1: G2 = …`, `gn.e_1`): decide
-      whether class constants on graded subtypes should be the graded type (e.g. `Vector2.e_1` is a
-      `Vector2`) — almost certainly yes — and ensure no name clash/confusion with the module-levels.
-- [ ] **`Gn` consistency:** `Gn` is dimension-agnostic and cannot carry a fixed `e_1..e_n` set, so it
-      keeps **only** the module-level `gn.e_1..e_10` constants. Document this asymmetry (specialized
-      classes gain class constants; `Gn` relies on module constants + `basis_vector(n)`). Confirm
-      nothing assumes `Gn.e_1` exists.
-- [ ] Update README/notebooks to show the new idiom (`Vector2.e_1`, `G3.e_123`). Suite + guards green.
+- [x] Generator: emit, per generated class, class-level constants `e_1 = basis_vector(1)`, … and the
+      pseudoscalar (`e_12`/`e_123`) — each of that class's type. **ClassVar decl in body + post-class
+      `Cls.e_1 = Cls.from_blade_dict(...)`**; both `Cls.e_1` and `inst.e_1` resolve to it.
+- [x] Reconcile with the **existing module-level constants** — class constants are per-type
+      (`Vector2.e_1` is a `Vector2`); module globals untouched; no clash.
+- [x] **`Gn` consistency:** no class constants on `Gn` (dimension-agnostic); documented; confirmed
+      nothing assumes `Gn.e_1`.
+- [x] Update README/notebooks to show the new idiom (`Vector2.e_1`, `G3.e_123`). Suite + guards green.
       **Stop — author commits.**
 
 ### Phase 3 — make `component` the correct, blessed getter (resolves known-issue #2)

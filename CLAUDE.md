@@ -66,14 +66,25 @@ dict[tuple[int,...], coef]`; works in any dimension. Its `__post_init__` **eager
 `sympy.simplify`s** every coefficient. That is the dominant cost (~100% of runtime, profiled), and
 it is kept **on purpose**: `Gn` is the slow-but-obviously-correct reference.
 
-**`G1`/`G2`/`G3` — specialized fast paths.** Named-field dataclasses (`scalar`, `e_1`, …, and the
-pseudoscalar `e_12`/`e_123`) whose `_geometric_product`, `inner_product`, `outer_product`, and the
-linear/grade ops (`__add__`, `reverse`, `r_vector_part`, `even_part`, …) are **closed-form code
-generated from the `Gn` symbolic ops** — so they are provably consistent with the reference. They do
-**not** eagerly simplify (lazy, on equality), and they carry `DIMENSION` so `dual()` /
-`unit_pseudoscalar()` default to the class's dimension. Each `g*` module also exports basis constants
-of its own type, so `from gacalc.g2 import G2, e_1, e_2` then `3*e_1 + 4*e_2` builds a `G2`.
-Mixing a specialized value with a `Gn` value coerces to `Gn`.
+**`G1`/`G2`/`G3` — specialized fast paths.** Named-field dataclasses whose **coefficient fields are
+`coeff_scalar`, `coeff_e_1`, … `coeff_e_12`/`coeff_e_123`** (the `coeff_` prefix frees the bare blade
+names `e_1` … to denote the basis-vector *constants* below) and whose `_geometric_product`,
+`inner_product`, `outer_product`, and the linear/grade ops (`__add__`, `reverse`, `r_vector_part`,
+`even_part`, …) are **closed-form code generated from the `Gn` symbolic ops** — so they are provably
+consistent with the reference. They do **not** eagerly simplify (lazy, on equality), and they carry
+`DIMENSION` so `dual()` / `unit_pseudoscalar()` default to the class's dimension.
+
+Two ways to name a basis blade: each `g*` module exports **module-level** constants of its own type
+(`from gacalc.g2 import G2, e_1, e_2` then `3*e_1 + 4*e_2` builds a `G2`); and each **class** exposes
+its own basis blades as **class constants of that class's type** (`Vector2.e_1`, `Bivector2.e_12`,
+`G3.e_123`) — equivalent to `cls.basis_vector(n)` but named. These are emitted by the generator as a
+`ClassVar` declaration in the class body plus a post-class `Cls.e_1 = Cls.from_blade_dict(...)`
+assignment (a class can't reference itself mid-definition). Because the stored field is `coeff_e_1`,
+**both `Cls.e_1` and `instance.e_1` resolve to that one constant** (no instance attribute shadows it),
+while `instance.coeff_e_1` is the component value; read a component back out with the grade-general
+`value.component(blade)`. `Gn` is dimension-agnostic so it has **no** class constants — use the
+module-level `gn.e_1 …` or `Gn.basis_vector(n)`. Mixing a specialized value with a `Gn` value coerces
+to `Gn`.
 
 **Terminology:** 𝒢ₙ denotes the *algebra*; an instance is an *element of* 𝒢ₙ. Classes are named
 after their algebra. The dimension parameter is `n` (it was once misleadingly called `grade`).

@@ -529,6 +529,41 @@ def field_decls(blades) -> list[ast.stmt]:
     ]
 
 
+def basis_classvar_decls(name: str, blades) -> list[ast.stmt]:
+    """``e_1: typing.ClassVar[Name]`` ... (annotation only) per nonempty blade.
+
+    Declares the basis-vector class constants so a type checker sees them; the
+    *values* are assigned after the class body (a class can't reference itself
+    while it is being defined -- see ``basis_constant_assignments``).  As a
+    ClassVar these are excluded from the dataclass fields / ``__slots__``.
+    """
+    return [
+        ann_assign(blade_label(b), subscript(dot("typing", "ClassVar"), nm(name)))
+        for b in blades
+        if b != ()
+    ]
+
+
+def basis_constant_assignments(name: str, blades) -> list[ast.stmt]:
+    """``Name.e_1 = Name.from_blade_dict({(1,): 1})`` ... per nonempty blade.
+
+    The basis-vector constants of the class's own type, assigned *after* the
+    class so it can reference itself.  Because ``e_1`` is not a (``coeff_``) field,
+    both ``Name.e_1`` and ``instance.e_1`` resolve to this one constant.
+    """
+    return [
+        ast.Assign(
+            targets=[ast.Attribute(value=nm(name), attr=blade_label(b), ctx=_STORE)],
+            value=call(
+                dot(name, "from_blade_dict"),
+                [ast.Dict(keys=[lit(b)], values=[lit(1)])],
+            ),
+        )
+        for b in blades
+        if b != ()
+    ]
+
+
 def from_blade_dict_method(blades) -> ast.FunctionDef:
     """The ``from_blade_dict`` classmethod over the given blades."""
     keywords = [
@@ -1135,6 +1170,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
 
     body = [
         *class_header_stmts(docstring_for(n), n, blades),
+        *basis_classvar_decls(name, blades),
         bilinear(
             "_geometric_product",
             ast.BinOp(nm("left"), ast.Mult(), nm("right")),
@@ -1236,7 +1272,10 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
             returns=SELF,
         ),
     ]
-    return [cls(name, body, decorators=[dataclass_decorator(eq=False, slots=True)])]
+    return [
+        cls(name, body, decorators=[dataclass_decorator(eq=False, slots=True)]),
+        *basis_constant_assignments(name, blades),
+    ]
 
 
 def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stmt]:
@@ -1277,6 +1316,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
 
     body = [
         *class_header_stmts(graded_docstring(spec), n, blades),
+        *basis_classvar_decls(spec.name, blades),
         # scalar-aware __mul__ / __rmul__ (the ABC versions would drop the scalar
         # for a type with no scalar field, so they are overridden here)
         fn(
@@ -1458,7 +1498,10 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 returns=nm("AbstractMultiVector"),
             )
         )
-    return [cls(spec.name, body, decorators=[dataclass_decorator(eq=False)])]
+    return [
+        cls(spec.name, body, decorators=[dataclass_decorator(eq=False)]),
+        *basis_constant_assignments(spec.name, blades),
+    ]
 
 
 def generate_constants(n: int, name: str) -> list[ast.stmt]:
