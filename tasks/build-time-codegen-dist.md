@@ -89,6 +89,177 @@ cleanly and documenting the non-container path.
   add the dist target)? — the minimal alternative if the "generate-before-dev" dependency feels worse
   than generated code in git.
 
+## Concrete Make-target design (added 2026-06-07, author-requested)
+
+This section answers the two concrete asks: (1) `make shell` should **generate the code before
+dropping the user into the shell**, and (2) there should be a target that produces a **PyPI-uploadable
+unit** with the generated code baked in (for users who aren't on Linux / don't use the container).
+Proposal only — nothing changed yet.
+
+### What the study established (facts the design rests on)
+
+- **The generator bootstraps from a fresh tree.** `tools/gen_specialized.py` imports only
+  `geometricalgebra.base` + `geometricalgebra.gn` (both hand-written, in git) via a `sys.path` insert;
+  it writes `scalar.py` first, then `g1/g2/g3.py` into `src/geometricalgebra/`. **No `__init__.py`
+  exists, and nothing imports the generated modules at package-import time** (`base.py`/`gn.py` don't
+  import them). So a tree with the generated files *deleted* can still run the generator — there is **no
+  chicken-and-egg**. (Tests, `tools/bench.py`, and `displayg2/g3/graded` notebooks *do* import the
+  generated modules, so they need generation to have run first — but the generator itself does not.)
+- **Build-time dependency is just `sympy`.** The generator imports `sympy`; `ruff` is **best-effort**
+  (it warns and emits unformatted files if ruff is missing — not a hard dep). `numpy` is imported only
+  by the *generated* modules at their runtime, not during generation.
+- **Idempotent + deterministic.** `make check-generated` already proves a regen is byte-identical
+  (verified clean this session). Cost: sub-second for 𝒢₁/𝒢₂, ~tens of seconds for 𝒢₃ (~30s total).
+- **The dev path is the container.** `make shell` → `podman run --entrypoint /bin/bash … /shell.sh`;
+  `shell.sh` does `cd /geometricalgebra && uv pip install --system --no-deps --no-index
+  --no-build-isolation -e . && exec bash`. The repo is bind-mounted, so anything written into
+  `src/geometricalgebra/` from inside the container lands in the host working tree (and stays gitignored).
+
+### Proposed targets
+
+**1. `make generate` — the single source of truth.**
+```make
+.PHONY: generate
+generate: ## Generate scalar.py / g1.py / g2.py / g3.py from tools/gen_specialized.py
+	python tools/gen_specialized.py
+```
+Everything else composes this. Idempotent; safe to call repeatedly. (Runs wherever `sympy` is present.)
+
+**2. `make shell` — generate inside the container, before the prompt.**
+The generation must happen *inside* the container (the host may lack `sympy`/the right Python), and the
+files must exist before the editable install and before the user starts typing. Put it in `shell.sh`,
+which already runs inside the container with all deps:
+```sh
+cd /geometricalgebra/
+python tools/gen_specialized.py          # <-- new: regenerate into the (gitignored) mounted tree
+uv pip install --system --no-deps --no-index --no-build-isolation -e .
+exec bash
+```
+Rationale for `shell.sh` over a setuptools build hook on the editable install: the editable install uses
+`--no-build-isolation --no-deps --no-index`, so relying on a custom `build_py` to fire during `-e .` is
+fragile; an explicit line is obvious and robust. ~30s on a cold shell; if that annoys, make it
+**generate-if-missing** (`[ -f src/geometricalgebra/g3.py ] || python tools/gen_specialized.py`) — but
+note that won't pick up generator edits, so prefer unconditional during active development.
+*(The `make shell` `podman run` also needs `--cgroups=disabled` to run nested in the sandbox — separate
+from this task; proposed but not yet applied to the Makefile.)*
+
+**3. `make dist` — the PyPI unit.**
+```make
+.PHONY: dist
+dist: generate          ## Build sdist + wheel (generated modules baked in) into dist/
+	python -m build
+```
+Depending on `generate` means the files exist in `src/` before `python -m build` runs, so setuptools'
+`packages.find` sweeps them into **both** the wheel and the sdist. Belt-and-suspenders with target 4.
+
+**4. setuptools build hook (`setup.py`) — make the artifacts self-sufficient.**
+Add a `build_py` subclass that **generates if the files are missing**, so:
+- *Building from the repo* (`make dist`, or `pip wheel .`) → generates (dev has `sympy`).
+- *Installing from a shipped sdist/wheel* → files already present → hook no-ops → **end user needs no
+  `sympy` and no generation step.** This is what makes the non-Linux / non-container `pip install` "just
+  work."
+```python
+from setuptools import setup
+from setuptools.command.build_py import build_py
+import subprocess, sys, pathlib
+
+GEN = ["scalar.py", "g1.py", "g2.py", "g3.py"]
+PKG = pathlib.Path("src/geometricalgebra")
+
+class build_py_with_codegen(build_py):
+    def run(self):
+        if not all((PKG / f).exists() for f in GEN):
+            subprocess.run([sys.executable, "tools/gen_specialized.py"], check=True)
+        super().run()
+
+if __name__ == "__main__":
+    setup(cmdclass={"build_py": build_py_with_codegen})
+```
+And add `sympy` to the **build** requires so build-from-repo has it:
+```toml
+[build-system]
+requires = ["setuptools", "wheel", "sympy"]
+```
+(Open choice: "generate if missing" vs "always generate". *If-missing* keeps install-from-sdist
+`sympy`-free and fast; *always* guarantees freshness but forces `sympy` at every build. Recommend
+if-missing, paired with `make generate`/`make dist` always regenerating explicitly for the dev/release
+path — so releases are always fresh, installs are always cheap.)
+
+**5. `.gitignore` + untrack.**
+```
+src/geometricalgebra/scalar.py
+src/geometricalgebra/g1.py
+src/geometricalgebra/g2.py
+src/geometricalgebra/g3.py
+```
+then `git rm --cached` the four files (one-time). Working tree keeps them; git stops tracking.
+
+**6. `make check-generated` (#8) — repurpose or drop.**
+Once the files aren't committed there's nothing to `git diff` against, so its drift-guard purpose is
+moot. Repurpose it as a **determinism check** (generate twice, assert byte-identical) to catch a
+non-deterministic generator, or delete it. (The sdist `MANIFEST`/`tox`-style "build is reproducible"
+check is the spiritual successor.)
+
+**7. `make upload` / `make release` — pushing to PyPI (kept *separate* from `dist`).**
+`make dist` only *builds* `dist/*.tar.gz` + `dist/*.whl`; it must **not** upload — publishing is
+irreversible and outward-facing, so it stays its own target you invoke deliberately:
+```make
+.PHONY: upload
+upload: dist          ## Validate and upload dist/* to PyPI (irreversible)
+	twine check dist/*
+	twine upload dist/*
+```
+- `twine check` validates the artifact metadata (long-description rendering, etc.) before the
+  irreversible push. Add `twine` to the dev/release tooling (it's not a runtime dep).
+- **Version bump is mandatory each release.** PyPI **permanently rejects re-uploading a version that
+  already exists** (even after a delete — the filename is burned). So cutting a release means bumping
+  `version = "0.0.1"` in `pyproject.toml` *before* `make dist`. Forgetting this is the #1 release
+  papercut, so guard it rather than rely on memory. Options:
+  - **Manual + guard (simplest):** bump `pyproject.toml` by hand; have `upload` refuse if the version
+    is already on PyPI. A lightweight check before `twine upload`:
+    ```make
+    VERSION := $(shell python -c "import tomllib;print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+    release: dist  ## Tag + upload the current pyproject version (fails if already released)
+    	@git rev-parse "v$(VERSION)" >/dev/null 2>&1 && { echo "tag v$(VERSION) exists — bump version in pyproject.toml"; exit 1; } || true
+    	twine check dist/*
+    	twine upload dist/*
+    	git tag "v$(VERSION)"
+    	@echo "Released $(VERSION). Push the tag:  git push origin v$(VERSION)"
+    ```
+    (The `git tag` doubles as the "have I already shipped this?" record and a release marker. Tagging is
+    a local op, so it's fine for the agent; the `git push` of the tag stays the author's call, per the
+    repo's "I commit/push, you don't" convention.)
+  - **Automated bump (optional):** a `make bump-patch` / `bump-minor` using `hatch version` or a
+    `sed`/`tomlkit` one-liner, if hand-editing gets tedious. Probably overkill for a solo
+    pre-1.0 project; note it and skip unless wanted.
+- **Dry-run path:** `twine upload --repository testpypi dist/*` to rehearse against TestPyPI before the
+  real index. Worth a `make upload-test` if the author wants to verify the end-to-end install once.
+
+### What this buys / costs (recap for the decision)
+
+- **Wins:** ~thousands of lines of generated code leave git history; diffs/reviews get clean; the
+  regen-drift bug class disappears (so #8 is unneeded); `make dist` gives an automake-style release;
+  `pip install` stays readable (Option 3, *not* runtime/on-import generation) and `sympy`-free for end
+  users (files shipped in the sdist/wheel).
+- **Costs:** a `build_py` hook to maintain; a hard "generate before tests/IDE/bench" step for any
+  non-container dev (mitigated: `make generate`, and `make shell` does it automatically); `sympy` added
+  to build requires; fresh clone / a future CI must `make generate` before `pytest`/`ty`/`ruff`.
+
+### Suggested order if approved (do NOT start without go-ahead)
+
+1. `.gitignore` + `git rm --cached` the four files.
+2. Add `make generate`; wire it into `shell.sh` (target 2).
+3. Add the `build_py` hook + `sympy` build-require (target 4); add `make dist` (target 3).
+4. Verify: `make dist` → inspect the sdist (`tar tzf dist/*.tar.gz | grep -E 'g[123]\.py|scalar\.py'`)
+   and wheel (`unzip -l dist/*.whl | grep …`) actually contain the generated `.py`. Then in a clean
+   venv with **no `sympy`**, `pip install dist/*.whl` and `import geometricalgebra.g2` — proves the
+   end-user path needs no generation.
+5. Add `make upload` / `make release` (target 7) with the version-already-shipped guard; optionally
+   rehearse once against TestPyPI (`make upload-test`). Leave the actual `twine upload` to a deliberate
+   author-invoked run — not part of `dist`.
+6. Repurpose/drop `make check-generated`; update CLAUDE.md ("Module layout", "Code generation", "Dev
+   workflow") + README ("Generating", "Adding a new algebra") to the new model.
+
 ## Notes
 
 - Parallel/independent investigation — **not** in the current execution order
