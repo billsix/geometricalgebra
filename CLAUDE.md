@@ -163,12 +163,15 @@ sub-second for 𝒢₁/𝒢₂, tens of seconds for 𝒢₃, minutes for 𝒢₄
   install, so the bind-mounted tree has real files for tests / `ty` / `ruff` / the IDE.
 - `make dist` builds the sdist + wheel **inside the container** (the image's pinned toolchain),
   regenerating first and writing artifacts to `./dist` on the host via a bind mount (container
-  `/output`); the generated `.py` are **baked in**, so a `pip install gacalc` is fully readable without
+  `/dist`); the generated `.py` are **baked in**, so a `pip install gacalc` is fully readable without
   the end user running the generator. A `build_py` hook in `setup.py` also regenerates *if missing*
   during any build (belt-and-suspenders; needs the `numpy`+`sympy` build-requires in `pyproject.toml`).
-  `make upload` / `make release` then push `./dist/*` to PyPI **from the host** with `twine` (the
-  irreversible, credential-bearing step stays outside the container); `release` refuses if a
-  `v<version>` tag already exists — bump `version` in `pyproject.toml` first. See README "Releasing".
+  `make upload` / `make release` then run `twine upload` of `./dist/*` **inside the container** too
+  (`twine` is baked into the image via the dev extras) — an interactive `-it` run with
+  `TWINE_USERNAME=__token__`, so you just paste your PyPI API token at the prompt; nothing
+  credential-bearing is stored in the image. The **only** host-side step is `git tag` in `release`
+  (git stays on the host). `release` refuses if a `v<version>` tag already exists — bump `version` in
+  `pyproject.toml` first. See "Releasing & PyPI auth" under Dev workflow.
 - A fresh non-container checkout must `make generate` once before `pytest` / `ty` / `ruff` / `bench`
   (those import the generated modules; the generator itself does not, so it always bootstraps).
 
@@ -182,10 +185,11 @@ specialized classes never drifts from the shared base.
 
 - **Work happens in the container.** Almost every dev task runs inside the image's pinned toolchain,
   either interactively via `make shell` or through a dedicated `make` target that wraps `podman run`:
-  `make test` (suite), `make dist` (build sdist+wheel), `make check-generated` (determinism). The
-  **only** steps that run on the **host** are the irreversible, credential-bearing ones —
-  `make upload` / `make release` push to PyPI with `twine`, and `git` commits/tags (the author's job,
-  outside the container). When adding a new dev task, prefer a containerized `make` target over a
+  `make test` (suite), `make dist` (build sdist+wheel), `make upload` (interactive `twine upload`),
+  `make check-generated` (determinism). Even the PyPI push runs in the container (`twine` is baked in;
+  `-it` + `TWINE_USERNAME=__token__` so you paste your token at the prompt). The **only** step that
+  runs on the **host** is `git` — `git tag` in `make release`, and commits (the author's job, outside
+  the container). When adding a new dev task, prefer a containerized `make` target over a
   "run it on your host" instruction.
 - Tests: **`make test`** runs the suite inside the container (regenerates the gitignored
   `g*.py`/`scalar.py` first, then `pytest`); exit 0 on success, nonzero on failure (make reports a
@@ -203,9 +207,27 @@ specialized classes never drifts from the shared base.
   `git diff`ed committed generated files — meaningless now that they aren't tracked.) It mutates the
   working tree and is slow (~30s, 𝒢₃ dominates), so it's a make/CI target — **not** part of the default
   `pytest` run.
-- Containerized dev (podman): `make image` then `make shell`; Jupyter on port 8888.
-- Packaging: `pyproject.toml` (setuptools, `src/` layout, deps pinned in `requirements.txt`).
-  License: GPL v2+.
+- Containerized dev (podman): `make image` then `make shell`; Jupyter on port 8888. Refresh the
+  vendored Emacs packages (maintainer-only, rarely) with `make update-emacs-packages` — full rationale
+  in `tasks/archive/2026/06/07/emacs-package-install-strategy.md`. (The vendored tree itself is
+  off-limits; see Module layout.)
+- Packaging: `pyproject.toml` (setuptools, `src/` layout). Runtime deps are **only**
+  `numpy` + `sympy` (`[project] dependencies`); everything else is an optional extra —
+  `notebooks` (matplotlib/ipython/pandas/jupytext), `jupyter` (JupyterLab env), `dev`
+  (build/twine/ruff). There is **no `requirements.txt`** — the Dockerfile installs
+  `".[dev,notebooks,jupyter]"` from these extras (the single source of truth), and
+  `ruff`/`ty` come from `dnf` in the image. License: GPL v2+.
+- Releasing & PyPI auth: `make dist` (build) → `make upload` (PyPI) / `make upload-test` (TestPyPI
+  rehearsal) → `make release` (build + upload, then host `git tag`). All run in the container; **bump
+  `version` in `pyproject.toml` first** — PyPI *and* TestPyPI permanently reject a re-used version.
+  Credentials (token auth; username is always `__token__`) resolve in order: a **`~/.pypirc`** mounted
+  read-only when present (`[pypi]`/`[testpypi]` sections), then **`export TWINE_PASSWORD=pypi-…`** on
+  the host (passed via `-e TWINE_PASSWORD`), then the interactive `-it` prompt. **A 403 is
+  account-side, not a Makefile bug** — most often an **unverified account email** (verify it before
+  any upload), a token for the wrong index (`pypi.org` and `test.pypi.org` are separate
+  accounts/tokens), or a **project-scoped token for a project that doesn't exist yet** (a new project
+  needs an **account-scoped** token; the first successful upload *creates* the project — you don't make
+  it on the website). Add `VERBOSE=1` (e.g. `make upload-test VERBOSE=1`) for twine's exact reason.
 
 ## Performance
 

@@ -19,6 +19,12 @@ GNUPG_FILE := $(HOME)/.gnupg
 GNUPG_REAL_PATH := $(shell readlink -f $(GNUPG_FILE))
 GNUPG_MOUNT := $(shell if [ -d $(GNUPG_REAL_PATH) ]; then echo "-v $(GNUPG_REAL_PATH):/root/.gnupg:Z" ; fi)
 
+# Mount ~/.pypirc (read-only) into the upload targets when it exists, so twine
+# reads your saved PyPI/TestPyPI tokens and uploads without prompting.
+PYPIRC_FILE := $(HOME)/.pypirc
+PYPIRC_REAL_PATH := $(shell readlink -f $(PYPIRC_FILE))
+PYPIRC_MOUNT := $(shell if [ -f $(PYPIRC_REAL_PATH) ]; then echo "-v $(PYPIRC_REAL_PATH):/root/.pypirc:ro,z" ; fi)
+
 
 
 FILES_TO_MOUNT = -v $(shell pwd):/gacalc/:Z \
@@ -141,39 +147,84 @@ test: ## Run the full test suite INSIDE the container; exit 0 on success, nonzer
 		$(CONTAINER_NAME) \
 		-c 'set -e; cd /gacalc; python tools/gen_specialized.py; python -m pytest'
 
-# Releases are split: the package is BUILT inside the container (the image's
-# pinned toolchain -- python, build, numpy/sympy), and the resulting sdist+wheel
-# land in $(DIST_DIR) on the host through a bind mount.  PUSHING to PyPI happens
-# OUTSIDE the container -- `twine` on the host, with your credentials -- since
-# uploading is irreversible and credential-bearing.  Needs the image built
-# (`make image`); the host needs `twine` for upload (e.g. `pipx install twine`).
+# Releasing runs inside the container (the image's pinned toolchain -- python,
+# build, and twine, all baked in via the dev extras).  `dist` builds the
+# sdist+wheel into $(DIST_DIR) on the host through a bind mount; `upload` runs
+# `twine upload` in an INTERACTIVE (-it) container.  Auth uses an API token
+# (TWINE_USERNAME=__token__), resolved in three ways, in order: (1) your
+# ~/.pypirc -- mounted read-only when present (PYPIRC_MOUNT), the no-fuss path;
+# (2) `export TWINE_PASSWORD=pypi-...` on the host (passed through via
+# `-e TWINE_PASSWORD`, the CI-standard way); (3) pasted at the prompt.  `upload`
+# uses the [pypi] section, `upload-test` the [testpypi] section (via `--repository
+# testpypi`).  Nothing credential-bearing is stored in the image.  The ONLY
+# host-side step is `git tag` in `release` -- git stays on the host, per the
+# author's workflow.  Needs the image built (`make image`).
+#
+# NB: a 403 from PyPI/TestPyPI is almost always account-side, not a Makefile bug
+# -- most often an UNVERIFIED account email (you must verify it before any upload)
+# or a token for the wrong index (pypi.org and test.pypi.org are separate
+# accounts/tokens).  Re-run the recipe's twine command with --verbose for the
+# server's exact reason.
 DIST_DIR ?= $(CURDIR)/dist
 VERSION := $(shell python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+
+# `make upload VERBOSE=1` (or upload-test / release) appends --verbose to twine,
+# which prints the full request/response -- use it to see the server's exact
+# reason for a 403.
+VERBOSE ?=
+TWINE_VERBOSE := $(if $(VERBOSE),--verbose)
 
 .PHONY: dist
 dist: ## Build sdist + wheel INSIDE the container -> $(DIST_DIR) on the host
 	mkdir -p $(DIST_DIR)
+	rm -f $(DIST_DIR)/*.whl $(DIST_DIR)/*.tar.gz   # drop stale builds so upload only sees this version
 	$(CONTAINER_CMD) run --rm \
 		-v $(CURDIR):/gacalc:Z \
-		-v $(DIST_DIR):/output:Z \
+		-v $(DIST_DIR):/dist:Z \
 		--entrypoint /bin/bash \
 		$(CONTAINER_NAME) \
 		-c 'set -e; cd /gacalc; \
 		    python tools/gen_specialized.py; \
-		    python -m build --no-isolation --outdir /output'
+		    python -m build --no-isolation --outdir /dist'
 
 .PHONY: upload
-upload: dist ## (host) twine check + upload $(DIST_DIR)/* to PyPI -- irreversible
-	twine check $(DIST_DIR)/*
-	twine upload $(DIST_DIR)/*
+upload: dist ## (container) twine check + interactive token upload of $(DIST_DIR)/* to PyPI
+	$(CONTAINER_CMD) run --rm -it \
+		-v $(DIST_DIR):/dist:Z \
+		$(PYPIRC_MOUNT) \
+		-e TWINE_USERNAME=__token__ \
+		-e TWINE_PASSWORD \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'twine check /dist/* && twine upload $(TWINE_VERBOSE) /dist/*'
+
+# Rehearse the whole build+upload flow against TestPyPI (a separate index with its
+# own account/token -- get a token at https://test.pypi.org/manage/account/token/).
+# --repository-url is passed explicitly so it needs no ~/.pypirc in the container.
+.PHONY: upload-test
+upload-test: dist ## (container) upload $(DIST_DIR)/* to TestPyPI to rehearse; -it, paste your TestPyPI token
+	$(CONTAINER_CMD) run --rm -it \
+		-v $(DIST_DIR):/dist:Z \
+		$(PYPIRC_MOUNT) \
+		-e TWINE_USERNAME=__token__ \
+		-e TWINE_PASSWORD \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'twine check /dist/* && twine upload $(TWINE_VERBOSE) --repository testpypi /dist/*'
 
 .PHONY: release
-release: dist ## Build (in container), then (host) tag + upload the pyproject version
+release: dist ## (host) version-tag guard + (container) upload + (host) git tag
 	@git rev-parse "v$(VERSION)" >/dev/null 2>&1 \
 		&& { echo "tag v$(VERSION) already exists -- bump version in pyproject.toml"; exit 1; } \
 		|| true
-	twine check $(DIST_DIR)/*
-	twine upload $(DIST_DIR)/*
+	$(CONTAINER_CMD) run --rm -it \
+		-v $(DIST_DIR):/dist:Z \
+		$(PYPIRC_MOUNT) \
+		-e TWINE_USERNAME=__token__ \
+		-e TWINE_PASSWORD \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'twine check /dist/* && twine upload $(TWINE_VERBOSE) /dist/*'
 	git tag "v$(VERSION)"
 	@echo "Released $(VERSION). Push the tag with:  git push origin v$(VERSION)"
 

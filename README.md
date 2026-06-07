@@ -25,6 +25,10 @@ src/gacalc/
   g1.py g2.py g3.py   one specialized class each (generated, not in git -- run `make generate`)
 ```
 
+> Installing from a git checkout (not from PyPI)? Run `make generate` once first —
+> the specialized `g*.py` modules aren't committed; they're generated from `Gn`
+> (and baked into the published wheel, so `pip install gacalc` needs no generator).
+
 Import just the algebra you need:
 
 ```python
@@ -92,93 +96,10 @@ also narrow to the tightest type). Rotors carry `plane_of_rotation()`, and
 `rotor_from_vectors(from, to)` builds the rotor whose sandwich `R v R.inverse()` equals
 `rotate(from, to)(v)`. A full walkthrough is in `notebooks/displaygraded.py`.
 
-## Develop
+## Adding a new algebra (worked example: `G4` for 𝒢₄)
 
-```bash
-pip install -e .            # or: pip install -r requirements.txt
-python -m pytest            # run the test suite
-bash entrypoint/format.sh   # ruff check --fix, ruff format, ty check
-```
-
-### Updating the vendored Emacs packages
-
-The Emacs packages are vendored in git under `entrypoint/dotfiles/.emacs.d/elpa`,
-but are **not** baked into the image (excluded via `.dockerignore`; the build no
-longer installs them). To refresh them to the latest from MELPA:
-
-```bash
-make update-emacs-packages   # rebuild image, wipe+reinstall elpa, strip *.elc, git add -f
-git commit                   # vendor the freshly staged tree
-```
-
-It rebuilds the image with `USE_EMACS=1`, runs Emacs in the container with the
-elpa tree bind-mounted read-write (so freshly installed packages land back on the
-host), removes compiled `*.elc`/`*.eln` artifacts (regenerated, machine-specific),
-and force-stages the tree with `git add -A -f` (the `-f` overrides the repo
-`.gitignore`'s `*.elc`/`*.eln`/… patterns so the full vendored tree is committed).
-Just review and `git commit`.
-
-To *use* the vendored packages in an interactive session, start the shell with
-`USE_EMACS=1` (the default is off), which bind-mounts the tree in:
-
-```bash
-make shell USE_EMACS=1
-```
-
-## Generating the specialized classes
-
-`g1.py` / `g2.py` / `g3.py` / `scalar.py` are **generated** — do not edit them by
-hand (they carry an `AUTO-GENERATED` header). The generator derives each
-closed-form geometric product (and other per-dimension code) from the general
-`Gn` symbolic product, runs `sympy.cse`, and writes one module per algebra.
-
-**They are not checked into git.** Generate them into the working tree before
-running tests / your IDE / `bench` (run from the repo root — the script adds
-`src/` to its own path):
-
-```bash
-make generate          # = python tools/gen_specialized.py
-```
-
-`make shell` does this automatically inside the container, and `make dist` bakes
-the generated code into the published sdist + wheel — so `pip install
-gacalc` gives you the readable closed-form source with no generation
-step on your end. (See "Building & publishing" below.)
-
-To check the generator is deterministic (regenerates byte-identically), run:
-
-```bash
-make check-generated   # regenerates twice and compares the output
-```
-
-## Building & publishing
-
-Releases are **built inside the container** (using the image's pinned toolchain —
-`python`, `build`, `numpy`/`sympy`) and **pushed from the host** (so the
-irreversible, credential-bearing upload stays under your control):
-
-```bash
-make dist       # BUILD inside the container -> sdist + wheel in ./dist on the host
-                #   (regenerates the closed forms, then `python -m build`; the dist
-                #    dir is bind-mounted as the container's /output)
-make upload     # (host) twine check + twine upload ./dist/* to PyPI  -- irreversible
-make release    # build (container) -> then (host) twine upload + git tag the version
-                #   refuses unless `version` in pyproject.toml is bumped (PyPI permanently
-                #   rejects a re-used version); push the tag with `git push origin vX.Y.Z`
-```
-
-The wheel is pure-Python (`py3-none-any`), so the same artifact installs
-everywhere, with the generated closed-form modules baked in (`pip install gacalc`
-needs no generator). Requirements:
-
-- **Build** needs the image: `make image` first. (`make dist` mounts the live
-  source and writes artifacts to `./dist`; override the location with
-  `make dist DIST_DIR=/path`.)
-- **Upload** runs on the host and needs `twine` there — e.g. `pipx install twine`
-  (or `pip install -e ".[dev]"`, which also pulls `build`). Authenticate with a
-  PyPI token (`TWINE_USERNAME=__token__`, `TWINE_PASSWORD=pypi-…`).
-
-### Adding a new algebra (worked example: `G4` for 𝒢₄)
+The specialized classes are generated from `Gn`, so adding a dimension is a
+one-line edit — no new math by hand.
 
 1. Open `tools/gen_specialized.py` and add one entry to the `ALGEBRAS` list:
 
@@ -192,30 +113,17 @@ needs no generator). Requirements:
    ```
 
 2. Regenerate. This writes `src/gacalc/g4.py` (and rewrites the others
-   identically):
+   identically); it auto-formats its own output:
 
    ```bash
-   python tools/gen_specialized.py
+   make generate          # = python tools/gen_specialized.py
    ```
 
-3. Tidy formatting (the repo pins these tools in `requirements.txt`):
-
-   ```bash
-   ruff check src/gacalc/g4.py --fix
-   ruff format --line-length=88 src/gacalc/g4.py
-   ```
-
-That's it — `from gacalc.g4 import G4, e_1, e_2` now works. The
-docstring, the `DIMENSION`, the basis constants, and all the dimension-fixed
-methods (`dual()`, `unit_pseudoscalar()`, …) are generated automatically; you do
-**not** need to touch `base.py` or `gn.py`.
-
-Optional: to include the new algebra in the conformance tests, add it to the
-`SPECIALIZED` map in `tests/test_conformance.py`:
-
-```python
-SPECIALIZED = {1: G1, 2: G2, 3: G3, 4: G4}
-```
+That's it — `from gacalc.g4 import G4, e_1, e_2` now works. The docstring, the
+`DIMENSION`, the basis constants, and all the dimension-fixed methods (`dual()`,
+`unit_pseudoscalar()`, …) are generated automatically; you do **not** touch
+`base.py` or `gn.py`. (Optional: add it to the `SPECIALIZED` map in
+`tests/test_conformance.py` to include it in the conformance suite.)
 
 > **Heads-up — generation cost grows fast.** The generator derives the closed
 > forms by running the *general* symbolic geometric, inner, and outer products in
@@ -230,47 +138,6 @@ SPECIALIZED = {1: G1, 2: G2, 3: G3, 4: G4}
 specialized geometric product is ~15–34× faster numerically and thousands of
 times faster symbolically (the general `Gn` eagerly `sympy.simplify`s every
 intermediate; the closed form does a single simplify-free pass).
-
-## Releasing
-
-Cutting a release **builds inside the container** (reproducible toolchain) and
-**pushes from the host** (the irreversible, credential-bearing step). End users
-then `pip install gacalc` and `import gacalc` — the generated closed-form modules
-are baked into the wheel, so they need no generator and no `sympy` at build time.
-
-One-time host setup:
-
-```bash
-pipx install twine                      # upload runs on the host
-export TWINE_USERNAME=__token__         # PyPI API token auth
-export TWINE_PASSWORD=pypi-XXXXXXXX...
-make image                              # the gacalc image must exist (builds the toolchain)
-```
-
-Each release:
-
-```bash
-# 1. bump the version (PyPI permanently rejects a re-used version) and commit
-$EDITOR pyproject.toml                  # e.g. version = "0.1.0"
-git commit -am "release 0.1.0"
-
-# 2. build + publish + tag, all via the Makefile
-make release                            # builds sdist+wheel in the container -> ./dist,
-                                        # then (host) twine check + upload, then git tag vX.Y.Z
-
-# 3. push the tag
-git push origin v0.1.0
-```
-
-Or do it in two explicit steps: `make dist` (container build → `./dist/`), inspect
-the artifacts, then `make upload` (host push). To rehearse without touching the
-real index, upload `./dist/*` to TestPyPI first
-(`twine upload --repository testpypi dist/*`).
-
-Notes:
-- `make dist` writes to `./dist` by default; override with `make dist DIST_DIR=/path`.
-- The wheel is `py3-none-any` (pure Python) — one artifact installs on every OS/Python ≥ 3.13.
-- `make release` aborts if a `vX.Y.Z` tag already exists, to stop accidental re-releases.
 
 ## License
 

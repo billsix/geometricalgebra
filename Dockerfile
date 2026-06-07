@@ -9,7 +9,6 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     dnf upgrade -y
 
 COPY entrypoint/dotfiles/ /root/
-COPY requirements.txt /requirements.txt
 
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
@@ -50,27 +49,25 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     echo "emacs src/gacalc/gn.py tests/test_multivector.py &" >> ~/.bash_history && \
     echo "source ~/.extrabashrc" >> ~/.bashrc && \
     echo "from gacalc.gn import *" >> ~/.python_history  && \
-    uv pip install --system setuptools && \
-    dnf install -y libatomic && uv pip install --system pyright && \
-    uv pip install --system -r /requirements.txt && \
-    rm /requirements.txt
+    uv pip install --system setuptools wheel numpy sympy && \
+    dnf install -y libatomic && uv pip install --system pyright
 
 # Copy the build-relevant project files (not the whole tree: the 31M vendored
 # Emacs elpa tree is already at /root, and .dockerignore is global so it can't be
-# excluded for just this COPY). Placed after the slow dnf/MELPA/requirements
-# layers so editing source doesn't re-run them. At runtime `make shell`'s bind
-# mount overlays /gacalc with the live host tree, so this copy is only
-# used for the build below.
-COPY pyproject.toml setup.py requirements.txt README.md /gacalc/
+# excluded for just this COPY). Placed after the slow dnf/MELPA layers so editing
+# source doesn't re-run them. At runtime `make shell`'s bind mount overlays
+# /gacalc with the live host tree, so this copy is only used for the build below.
+COPY pyproject.toml setup.py README.md /gacalc/
 COPY src   /gacalc/src
 COPY tools /gacalc/tools
 
-# Install the package + its "dev" extras (build, twine) from pyproject's own
-# [project.optional-dependencies] -- the single source of truth, no hardcoded
-# package list. Runtime deps are already installed above, so this mainly fetches
-# the dev tools; --no-build-isolation reuses the system setuptools/wheel/numpy/
-# sympy, and the setup.py build_py hook generates the algebras if missing.
-RUN cd /gacalc && uv pip install --system --no-build-isolation ".[dev]"
+# Install the package + ALL its optional extras from pyproject's own
+# [project.optional-dependencies] -- the single source of truth (no requirements.txt,
+# no hardcoded package list). Build prereqs (setuptools/wheel/numpy/sympy) are
+# installed above, so --no-build-isolation reuses them; the setup.py build_py hook
+# generates the algebras if missing. (This layer re-runs when src/ changes, so the
+# notebook/jupyter deps reinstall then -- uv's cache keeps that fast.)
+RUN cd /gacalc && uv pip install --system --no-build-isolation ".[dev,notebooks,jupyter]"
 
 
 ENTRYPOINT ["/entrypoint.sh"]
