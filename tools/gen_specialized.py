@@ -98,9 +98,7 @@ def expr_to_ast(expr, rename: dict[str, tuple[str, str]]) -> ast.expr:
 
 
 def out_path(filename: str) -> str:
-    return os.path.join(
-        os.path.dirname(__file__), "..", "src", "gacalc", filename
-    )
+    return os.path.join(os.path.dirname(__file__), "..", "src", "gacalc", filename)
 
 
 def blades_for_dim(n: int) -> list[tuple[int, ...]]:
@@ -110,22 +108,35 @@ def blades_for_dim(n: int) -> list[tuple[int, ...]]:
     return sorted(powerset, key=lambda b: (len(b), b))
 
 
-def field_name(blade: tuple[int, ...]) -> str:
-    """() -> 'scalar', (1,) -> 'e_1', (1, 2) -> 'e_12', (1, 2, 3) -> 'e_123'."""
+def blade_label(blade: tuple[int, ...]) -> str:
+    """The human/blade label: () -> 'scalar', (1,) -> 'e_1', (1, 2) -> 'e_12'.
+
+    Used for docstrings and the internal cse symbol names (``a_e_1``/``b_e_1``).
+    The dataclass *field* that stores a blade's coefficient is ``field_name`` (a
+    ``coeff_``-prefixed form), kept distinct so the basis-blade names ``e_1`` ...
+    stay free to denote the basis-vector constants on each class.
+    """
     if blade == ():
         return "scalar"
     return "e_" + "".join(str(i) for i in blade)
 
 
-def blade_of_field(field: str) -> tuple[int, ...]:
-    """Inverse of ``field_name``: 'scalar'->(), 'e_1'->(1,), 'e_12'->(1, 2).
+def field_name(blade: tuple[int, ...]) -> str:
+    """The dataclass field storing a blade's coefficient:
+    () -> 'coeff_scalar', (1,) -> 'coeff_e_1', (1, 2) -> 'coeff_e_12'.
+    """
+    return "coeff_" + blade_label(blade)
 
-    Assumes single-digit basis indices (n < 10), which the field naming already
+
+def blade_of_label(label: str) -> tuple[int, ...]:
+    """Inverse of ``blade_label``: 'scalar'->(), 'e_1'->(1,), 'e_12'->(1, 2).
+
+    Assumes single-digit basis indices (n < 10), which the naming already
     requires (``e_12`` is otherwise ambiguous).
     """
-    if field == "scalar":
+    if label == "scalar":
         return ()
-    return tuple(int(c) for c in field[2:])
+    return tuple(int(c) for c in label[2:])
 
 
 def term_grade_key(term) -> tuple[int, tuple[int, ...], int, tuple[int, ...]]:
@@ -134,7 +145,7 @@ def term_grade_key(term) -> tuple[int, tuple[int, ...], int, tuple[int, ...]]:
     Orders by ``(grade(L), indices(L), grade(R), indices(R))`` so the generated
     sums read scalar -> vector -> bivector -> ... (instead of sympy's roughly
     lexicographic-by-name order, where e.g. ``e_12`` sorts before ``e_2``).  The
-    term is a product of one ``a_<field>`` (self) and one ``b_<field>`` (rhs)
+    term is a product of one ``a_<label>`` (self) and one ``b_<label>`` (rhs)
     symbol.  A term carrying neither (e.g. a future ``cse`` temporary -- the
     products produce none today) sorts last.
     """
@@ -142,10 +153,10 @@ def term_grade_key(term) -> tuple[int, tuple[int, ...], int, tuple[int, ...]]:
     left = right = None
     for sym in term.free_symbols:
         if sym.name.startswith("a_"):
-            blade = blade_of_field(sym.name[2:])
+            blade = blade_of_label(sym.name[2:])
             left = (len(blade), blade)
         elif sym.name.startswith("b_"):
-            blade = blade_of_field(sym.name[2:])
+            blade = blade_of_label(sym.name[2:])
             right = (len(blade), blade)
     left = left if left is not None else sentinel
     right = right if right is not None else sentinel
@@ -169,15 +180,14 @@ def generic_docstring(n: int) -> str:
     """Standard class docstring for any dimension (fallback for unknown n)."""
     bl: list[tuple[int, ...]] = blades_for_dim(n)
     grades = "\n".join(
-        f"        {', '.join(field_name(b) for b in bl if len(b) == g)}  (grade {g})"
+        f"        {', '.join(blade_label(b) for b in bl if len(b) == g)}  (grade {g})"
         for g in range(n + 1)
     )
     return (
         f"An element (multivector) of 𝒢{_sub(n)}, the geometric algebra of\n"
         f"    {n}-dimensional Euclidean space ℝ{_sup(n)} (Hestenes' notation).\n"
         "\n"
-        f"    𝒢{_sub(n)} has 2{_sup(n)} = {2**n} basis blades,"
-        " stored as named fields:\n"
+        f"    𝒢{_sub(n)} has 2{_sup(n)} = {2**n} basis blades:\n"
         f"{grades}\n"
         "\n"
         f"    A specialized, performant representation of 𝒢{_sub(n)}; see Gn for the\n"
@@ -199,7 +209,7 @@ DOCSTRINGS = {
         "An element (multivector) of 𝒢₁, the geometric algebra of the Euclidean\n"
         "    line ℝ¹ (Hestenes' notation) -- the simplest geometric algebra.\n"
         "\n"
-        "    𝒢₁ has 2¹ = 2 basis blades, stored as named fields:\n"
+        "    𝒢₁ has 2¹ = 2 basis blades:\n"
         "        scalar          grade 0 (scalar)\n"
         "        e_1             grade 1 (the lone vector / pseudoscalar)\n"
         "\n"
@@ -214,7 +224,7 @@ DOCSTRINGS = {
         "An element (multivector) of 𝒢₂, the geometric algebra of the Euclidean\n"
         "    plane ℝ² (Hestenes' notation).\n"
         "\n"
-        "    𝒢₂ has 2² = 4 basis blades, stored as named fields:\n"
+        "    𝒢₂ has 2² = 4 basis blades:\n"
         "        scalar          grade 0 (scalar)\n"
         "        e_1, e_2        grade 1 (vectors)\n"
         "        e_12            grade 2 (bivector / pseudoscalar)\n"
@@ -230,7 +240,7 @@ DOCSTRINGS = {
         "An element (multivector) of 𝒢₃, the geometric algebra of 3D Euclidean\n"
         '    space ℝ³ (Hestenes\' "algebra of physical space"; the Pauli algebra).\n'
         "\n"
-        "    𝒢₃ has 2³ = 8 basis blades, stored as named fields:\n"
+        "    𝒢₃ has 2³ = 8 basis blades:\n"
         "        scalar                  grade 0 (scalar)\n"
         "        e_1, e_2, e_3           grade 1 (vectors)\n"
         "        e_12, e_13, e_23        grade 2 (bivectors)\n"
@@ -248,7 +258,7 @@ DOCSTRINGS = {
 
 def graded_docstring(spec: TypeSpec) -> str:
     grade_words = {0: "scalar", 1: "vector", 2: "bivector", 3: "trivector"}
-    fields = ", ".join(field_name(b) for b in spec.blades)
+    labels = ", ".join(blade_label(b) for b in spec.blades)
     kind = (
         "the even subalgebra (rotor / spinor)"
         if spec.name.startswith("Rotor")
@@ -259,7 +269,7 @@ def graded_docstring(spec: TypeSpec) -> str:
     )
     return (
         f"An element of {kind}\n"
-        f"    of 𝒢{_sub(spec.dim)}.  Stored as the named fields: {fields}.\n\n"
+        f"    of 𝒢{_sub(spec.dim)}.  Spanning the basis blades: {labels}.\n\n"
         "    A graded subtype: products dispatch by operand type and return the\n"
         "    grade-correct type (e.g. vector*vector -> the even/Rotor type).  "
         "Results\n    that span grades no graded type covers widen to "
@@ -360,10 +370,10 @@ def resolve(support, n: int, full_name: str) -> TypeSpec:
 def product_result(t1: TypeSpec, t2: TypeSpec, gn_op, n: int, full_name: str):
     """(result_spec, output exprs over result's blades) for t1 <op> t2."""
     a_syms: dict[tuple[int, ...], sympy.Symbol] = {
-        b: sympy.Symbol("a_" + field_name(b)) for b in t1.blades
+        b: sympy.Symbol("a_" + blade_label(b)) for b in t1.blades
     }
     b_syms: dict[tuple[int, ...], sympy.Symbol] = {
-        b: sympy.Symbol("b_" + field_name(b)) for b in t2.blades
+        b: sympy.Symbol("b_" + blade_label(b)) for b in t2.blades
     }
     result_mv: Gn = gn_op(Gn.from_blade_dict(a_syms), Gn.from_blade_dict(b_syms))
     rd: BladeCoef = result_mv.to_blade_dict()
@@ -378,7 +388,7 @@ def product_result(t1: TypeSpec, t2: TypeSpec, gn_op, n: int, full_name: str):
 def unary_result(t1: TypeSpec, gn_fn, n: int, full_name: str):
     """(result_spec, output exprs) for a unary op (dual / grade projection)."""
     a_syms: dict[tuple[int, ...], sympy.Symbol] = {
-        b: sympy.Symbol("a_" + field_name(b)) for b in t1.blades
+        b: sympy.Symbol("a_" + blade_label(b)) for b in t1.blades
     }
     result_mv: Gn = gn_fn(Gn.from_blade_dict(a_syms))
     rd: BladeCoef = result_mv.to_blade_dict()
@@ -439,9 +449,9 @@ def rename_map(blades_self, blades_rhs) -> dict[str, tuple[str, str]]:
     """Operand-symbol rename map for ``expr_to_ast`` (a_<f>->self, b_<f>->rhs)."""
     r: dict[str, tuple[str, str]] = {}
     for b in blades_self:
-        r["a_" + field_name(b)] = ("self", field_name(b))
+        r["a_" + blade_label(b)] = ("self", field_name(b))
     for b in blades_rhs:
-        r["b_" + field_name(b)] = ("rhs", field_name(b))
+        r["b_" + blade_label(b)] = ("rhs", field_name(b))
     return r
 
 
@@ -717,7 +727,11 @@ def dispatch_method(
                     ret(
                         call(
                             dot("self", method),
-                            [construct("Scalar", [("scalar", cast_real(nm("rhs")))])],
+                            [
+                                construct(
+                                    "Scalar", [(field_name(()), cast_real(nm("rhs")))]
+                                )
+                            ],
                         )
                     )
                 ],
@@ -762,12 +776,12 @@ def dispatch_method(
 
 def generate_scalar() -> list[ast.stmt]:
     """The shared grade-0 ``Scalar`` type, hand-built as `ast` nodes (level C)."""
-    selfsc = dot("self", "scalar")
+    selfsc = dot("self", field_name(()))
 
-    def s(value):  # cast(typing.Self, Scalar(scalar=value))
-        return cast_self(construct("Scalar", [("scalar", value)]))
+    def s(value):  # cast(typing.Self, Scalar(coeff_scalar=value))
+        return cast_self(construct("Scalar", [(field_name(()), value)]))
 
-    def sr(value):  # cast(typing.Self, Scalar(scalar=cast(numbers.Real, value)))
+    def sr(value):  # cast(typing.Self, Scalar(coeff_scalar=cast(numbers.Real, value)))
         return s(cast_real(value))
 
     def mul(a, b):
@@ -779,15 +793,23 @@ def generate_scalar() -> list[ast.stmt]:
 
     body = [
         class_doc_stmt(SCALAR_DOC),
-        ann_assign("scalar", REAL, cast_real(lit(0))),
+        ann_assign(field_name(()), REAL, cast_real(lit(0))),
         fn(
             "from_blade_dict",
             [
                 assign("d", call("dict", [nm("blade_coef")])),
                 ret(
-                    call(
-                        "cls",
-                        scalar=cast_real(call(dot("d", "get"), [lit(()), lit(0)])),
+                    ast.Call(
+                        func=nm("cls"),
+                        args=[],
+                        keywords=[
+                            ast.keyword(
+                                arg=field_name(()),
+                                value=cast_real(
+                                    call(dot("d", "get"), [lit(()), lit(0)])
+                                ),
+                            )
+                        ],
                     )
                 ),
             ],
@@ -840,7 +862,7 @@ def generate_scalar() -> list[ast.stmt]:
             [
                 ast.If(
                     isinstance_(nm("rhs"), nm("Scalar")),
-                    [ret(sr(mul(selfsc, dot("rhs", "scalar"))))],
+                    [ret(sr(mul(selfsc, dot("rhs", field_name(())))))],
                     [],
                 ),
                 ast.If(
@@ -876,7 +898,7 @@ def generate_scalar() -> list[ast.stmt]:
                 ),
                 ast.If(
                     isinstance_(nm("rhs"), nm("Scalar")),
-                    [ret(s(ast.BinOp(selfsc, ast.Add(), dot("rhs", "scalar"))))],
+                    [ret(s(ast.BinOp(selfsc, ast.Add(), dot("rhs", field_name(())))))],
                     [],
                 ),
                 ast.If(
@@ -947,7 +969,7 @@ def generate_scalar() -> list[ast.stmt]:
                                 dot("np", "isclose"),
                                 [
                                     call("float", [selfsc]),
-                                    call("float", [dot("other", "scalar")]),
+                                    call("float", [dot("other", field_name(()))]),
                                 ],
                                 rtol=lit(1e-5),
                                 atol=lit(1e-5),
@@ -964,7 +986,11 @@ def generate_scalar() -> list[ast.stmt]:
             [
                 ast.If(
                     ne_zero(selfsc),
-                    [ast.Expr(ast.Yield(construct("Scalar", [("scalar", selfsc)])))],
+                    [
+                        ast.Expr(
+                            ast.Yield(construct("Scalar", [(field_name(()), selfsc)]))
+                        )
+                    ],
                     [],
                 )
             ],
@@ -1028,8 +1054,8 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
     blades = blades_for_dim(n)
     fields = [field_name(b) for b in blades]
     rename = rename_map(blades, blades)
-    a_mv = Gn.from_blade_dict({b: sympy.Symbol("a_" + field_name(b)) for b in blades})
-    b_mv = Gn.from_blade_dict({b: sympy.Symbol("b_" + field_name(b)) for b in blades})
+    a_mv = Gn.from_blade_dict({b: sympy.Symbol("a_" + blade_label(b)) for b in blades})
+    b_mv = Gn.from_blade_dict({b: sympy.Symbol("b_" + blade_label(b)) for b in blades})
     by_grade = {g: [b for b in blades if len(b) == g] for g in range(n + 1)}
     SELF = dot("typing", "Self")
 
@@ -1139,7 +1165,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
         ),
         fn(
             "scalar_part",
-            method_doc_stmts("scalar_part") + [ret(dot("self", "scalar"))],
+            method_doc_stmts("scalar_part") + [ret(dot("self", field_name(())))],
             returns=dot("numbers", "Real"),
         ),
         grades_method(
@@ -1247,7 +1273,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         )
         for r in range(n + 1)
     ]
-    rvp_body.append(return_construct("Scalar", [("scalar", cast_real(lit(0)))]))
+    rvp_body.append(return_construct("Scalar", [(field_name(()), cast_real(lit(0)))]))
 
     body = [
         *class_header_stmts(graded_docstring(spec), n, blades),
@@ -1367,7 +1393,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         fn("reverse", [return_construct(spec.name, rev_pairs)], returns=SELF),
         fn(
             "scalar_part",
-            [ret(dot("self", "scalar") if has_scalar else cast_real(lit(0)))],
+            [ret(dot("self", field_name(())) if has_scalar else cast_real(lit(0)))],
             returns=dot("numbers", "Real"),
         ),
         grades_method(
@@ -1445,7 +1471,7 @@ def generate_constants(n: int, name: str) -> list[ast.stmt]:
     for b in nonempty:
         nodes.append(
             ann_assign(
-                field_name(b),
+                blade_label(b),
                 nm(name),
                 call(
                     dot(name, "from_blade_dict"),
@@ -1454,7 +1480,7 @@ def generate_constants(n: int, name: str) -> list[ast.stmt]:
             )
         )
     exported = [name, "Scalar", *(s.name for s in graded_specs(n)), "zero", "one"]
-    exported += [field_name(b) for b in nonempty]
+    exported += [blade_label(b) for b in nonempty]
     nodes.append(
         assign("__all__", ast.List(elts=[lit(s) for s in exported], ctx=_LOAD))
     )

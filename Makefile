@@ -129,24 +129,39 @@ check-generated: ## Verify tools/gen_specialized.py is deterministic (regen twic
 	@rm -f $(addprefix /tmp/,$(notdir $(GENERATED)))
 	@echo "generator is deterministic"
 
-.PHONY: dist
-dist: generate ## Build sdist + wheel (generated modules baked in) into dist/
-	python -m build
-
-.PHONY: upload
-upload: dist ## Validate and upload dist/* to PyPI (irreversible)
-	twine check dist/*
-	twine upload dist/*
-
+# Releases are split: the package is BUILT inside the container (the image's
+# pinned toolchain -- python, build, numpy/sympy), and the resulting sdist+wheel
+# land in $(DIST_DIR) on the host through a bind mount.  PUSHING to PyPI happens
+# OUTSIDE the container -- `twine` on the host, with your credentials -- since
+# uploading is irreversible and credential-bearing.  Needs the image built
+# (`make image`); the host needs `twine` for upload (e.g. `pipx install twine`).
+DIST_DIR ?= $(CURDIR)/dist
 VERSION := $(shell python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
 
+.PHONY: dist
+dist: ## Build sdist + wheel INSIDE the container -> $(DIST_DIR) on the host
+	mkdir -p $(DIST_DIR)
+	$(CONTAINER_CMD) run --rm \
+		-v $(CURDIR):/gacalc:Z \
+		-v $(DIST_DIR):/output:Z \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'set -e; cd /gacalc; \
+		    python tools/gen_specialized.py; \
+		    python -m build --no-isolation --outdir /output'
+
+.PHONY: upload
+upload: dist ## (host) twine check + upload $(DIST_DIR)/* to PyPI -- irreversible
+	twine check $(DIST_DIR)/*
+	twine upload $(DIST_DIR)/*
+
 .PHONY: release
-release: dist ## Tag + upload the current pyproject version (fails if already tagged)
+release: dist ## Build (in container), then (host) tag + upload the pyproject version
 	@git rev-parse "v$(VERSION)" >/dev/null 2>&1 \
 		&& { echo "tag v$(VERSION) already exists -- bump version in pyproject.toml"; exit 1; } \
 		|| true
-	twine check dist/*
-	twine upload dist/*
+	twine check $(DIST_DIR)/*
+	twine upload $(DIST_DIR)/*
 	git tag "v$(VERSION)"
 	@echo "Released $(VERSION). Push the tag with:  git push origin v$(VERSION)"
 

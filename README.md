@@ -144,26 +144,30 @@ make check-generated   # regenerates twice and compares the output
 
 ## Building & publishing
 
-The build/publish tools (`build`, `twine`) live in a `dev` extras group — install
-them once with:
+Releases are **built inside the container** (using the image's pinned toolchain —
+`python`, `build`, `numpy`/`sympy`) and **pushed from the host** (so the
+irreversible, credential-bearing upload stays under your control):
 
 ```bash
-pip install -e ".[dev]"        # or:  uv pip install -e ".[dev]"
+make dist       # BUILD inside the container -> sdist + wheel in ./dist on the host
+                #   (regenerates the closed forms, then `python -m build`; the dist
+                #    dir is bind-mounted as the container's /output)
+make upload     # (host) twine check + twine upload ./dist/* to PyPI  -- irreversible
+make release    # build (container) -> then (host) twine upload + git tag the version
+                #   refuses unless `version` in pyproject.toml is bumped (PyPI permanently
+                #   rejects a re-used version); push the tag with `git push origin vX.Y.Z`
 ```
 
-Then:
+The wheel is pure-Python (`py3-none-any`), so the same artifact installs
+everywhere, with the generated closed-form modules baked in (`pip install gacalc`
+needs no generator). Requirements:
 
-```bash
-make dist       # regenerate, then build sdist + wheel into dist/ (generated code baked in)
-make upload     # twine check + twine upload dist/* to PyPI (irreversible)
-make release    # like upload, but refuses unless you bumped `version` in pyproject.toml
-                # (guards against PyPI's permanent rejection of a re-used version), then git-tags it
-```
-
-`make dist` works on any platform with `python` + `sympy` + `build`; the wheel is
-pure-Python (`py3-none-any`), so the same artifact installs everywhere. Building
-relies on the `numpy`+`sympy` build-requires in `pyproject.toml` (the `setup.py`
-`build_py` hook runs the generator if the modules are missing).
+- **Build** needs the image: `make image` first. (`make dist` mounts the live
+  source and writes artifacts to `./dist`; override the location with
+  `make dist DIST_DIR=/path`.)
+- **Upload** runs on the host and needs `twine` there — e.g. `pipx install twine`
+  (or `pip install -e ".[dev]"`, which also pulls `build`). Authenticate with a
+  PyPI token (`TWINE_USERNAME=__token__`, `TWINE_PASSWORD=pypi-…`).
 
 ### Adding a new algebra (worked example: `G4` for 𝒢₄)
 
@@ -217,6 +221,47 @@ SPECIALIZED = {1: G1, 2: G2, 3: G3, 4: G4}
 specialized geometric product is ~15–34× faster numerically and thousands of
 times faster symbolically (the general `Gn` eagerly `sympy.simplify`s every
 intermediate; the closed form does a single simplify-free pass).
+
+## Releasing
+
+Cutting a release **builds inside the container** (reproducible toolchain) and
+**pushes from the host** (the irreversible, credential-bearing step). End users
+then `pip install gacalc` and `import gacalc` — the generated closed-form modules
+are baked into the wheel, so they need no generator and no `sympy` at build time.
+
+One-time host setup:
+
+```bash
+pipx install twine                      # upload runs on the host
+export TWINE_USERNAME=__token__         # PyPI API token auth
+export TWINE_PASSWORD=pypi-XXXXXXXX...
+make image                              # the gacalc image must exist (builds the toolchain)
+```
+
+Each release:
+
+```bash
+# 1. bump the version (PyPI permanently rejects a re-used version) and commit
+$EDITOR pyproject.toml                  # e.g. version = "0.1.0"
+git commit -am "release 0.1.0"
+
+# 2. build + publish + tag, all via the Makefile
+make release                            # builds sdist+wheel in the container -> ./dist,
+                                        # then (host) twine check + upload, then git tag vX.Y.Z
+
+# 3. push the tag
+git push origin v0.1.0
+```
+
+Or do it in two explicit steps: `make dist` (container build → `./dist/`), inspect
+the artifacts, then `make upload` (host push). To rehearse without touching the
+real index, upload `./dist/*` to TestPyPI first
+(`twine upload --repository testpypi dist/*`).
+
+Notes:
+- `make dist` writes to `./dist` by default; override with `make dist DIST_DIR=/path`.
+- The wheel is `py3-none-any` (pure Python) — one artifact installs on every OS/Python ≥ 3.13.
+- `make release` aborts if a `vX.Y.Z` tag already exists, to stop accidental re-releases.
 
 ## License
 
