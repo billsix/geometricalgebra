@@ -29,13 +29,13 @@ from itertools import chain, combinations
 import pytest
 import sympy
 
-import geometricalgebra.g1 as g1mod
-import geometricalgebra.g2 as g2mod
-import geometricalgebra.g3 as g3mod
-from geometricalgebra.g1 import G1
-from geometricalgebra.g2 import G2
-from geometricalgebra.g3 import G3
-from geometricalgebra.gn import Gn
+import gacalc.g1 as g1mod
+import gacalc.g2 as g2mod
+import gacalc.g3 as g3mod
+from gacalc.g1 import G1
+from gacalc.g2 import G2
+from gacalc.g3 import G3
+from gacalc.gn import Gn
 
 SPECIALIZED = {1: G1, 2: G2, 3: G3}
 MODULES = {1: g1mod, 2: g2mod, 3: g3mod}

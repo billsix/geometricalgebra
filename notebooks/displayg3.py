@@ -7,9 +7,9 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: geometricalgebra
+#     display_name: gacalc
 #     language: python
-#     name: geometricalgebra
+#     name: gacalc
 # ---
 
 # %%
@@ -50,7 +50,7 @@ import warnings
 
 from IPython.display import Math, display
 
-from geometricalgebra.g3 import (
+from gacalc.g3 import (
     G3,
     e_1,
     e_2,
@@ -62,7 +62,7 @@ from geometricalgebra.g3 import (
     one,
     zero,
 )
-from geometricalgebra.nbplotutils import plot_multivector, show_mult
+from gacalc.nbplotutils import plot_multivector, show_mult
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)

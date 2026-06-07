@@ -1,1 +1,1 @@
-exec spyder -p /geometricalgebra/
+exec spyder -p /gacalc/

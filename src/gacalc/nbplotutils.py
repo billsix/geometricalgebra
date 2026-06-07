@@ -34,8 +34,8 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
 
-from geometricalgebra.base import AbstractMultiVector, BladeCoef
-from geometricalgebra.gn import (
+from gacalc.base import AbstractMultiVector, BladeCoef
+from gacalc.gn import (
     MultiVector,
     identity,
 )

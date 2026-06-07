@@ -1,7 +1,7 @@
-cd /geometricalgebra
+cd /gacalc
 # in general this is super dangerous, but for our purposes,
 # it's fine
-python -m ipykernel install --user --name=geometricalgebra
+python -m ipykernel install --user --name=gacalc
 exec jupyter lab \
          --allow-root \
          --ip=0.0.0.0 \
@@ -10,4 +10,4 @@ exec jupyter lab \
          --ServerApp.password='' \
          --ServerApp.disable_check_xsrf=True \
          --no-browser \
-         --MultiKernelManager.default_kernel_name=geometricalgebra
+         --MultiKernelManager.default_kernel_name=gacalc

@@ -5,7 +5,7 @@ USE_EMACS ?= 0
 
 
 CONTAINER_CMD = podman
-CONTAINER_NAME = geometricalgebra
+CONTAINER_NAME = gacalc
 
 TMUX_FILE := $(HOME)/.tmux.conf
 TMUX_REAL_PATH := $(shell readlink -f $(TMUX_FILE))
@@ -21,7 +21,7 @@ GNUPG_MOUNT := $(shell if [ -d $(GNUPG_REAL_PATH) ]; then echo "-v $(GNUPG_REAL_
 
 
 
-FILES_TO_MOUNT = -v $(shell pwd):/geometricalgebra/:Z \
+FILES_TO_MOUNT = -v $(shell pwd):/gacalc/:Z \
 		-v ./entrypoint/entrypoint.sh:/entrypoint.sh:Z \
 		-v ./entrypoint/jupyter.sh:/usr/local/bin/jupyter.sh:Z \
 		-v ./entrypoint/percentToIpynb.sh:/usr/local/bin/percentToIpynb.sh:Z \
@@ -105,10 +105,10 @@ update-emacs-packages: ## USE_EMACS=1: rebuild image, wipe+reinstall elpa, strip
 
 
 
-GENERATED = src/geometricalgebra/scalar.py \
-            src/geometricalgebra/g1.py \
-            src/geometricalgebra/g2.py \
-            src/geometricalgebra/g3.py
+GENERATED = src/gacalc/scalar.py \
+            src/gacalc/g1.py \
+            src/gacalc/g2.py \
+            src/gacalc/g3.py
 
 .PHONY: generate
 generate: ## Generate the specialized algebras (scalar/g1/g2/g3.py) -- needs sympy

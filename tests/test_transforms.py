@@ -17,7 +17,7 @@
 
 """Transform-layer tests: representation-preserving (type round-trip) + values.
 
-The factories in ``geometricalgebra.transforms`` derive any basis vectors they
+The factories in ``gacalc.transforms`` derive any basis vectors they
 need from the *type of the value* (``cls.basis_vector(i)``), so a G1/G2/G3/Gn
 value in yields the **same concrete type** out.  These tests pin that, plus a few
 known values, invertibility, and the non-invertible error paths.
@@ -28,11 +28,11 @@ coefficients, so ``is_close`` (float-tolerant) is the right comparison.
 
 import pytest
 
-from geometricalgebra.g1 import G1
-from geometricalgebra.g2 import G2
-from geometricalgebra.g3 import G3
-from geometricalgebra.gn import Gn
-from geometricalgebra.transforms import (
+from gacalc.g1 import G1
+from gacalc.g2 import G2
+from gacalc.g3 import G3
+from gacalc.gn import Gn
+from gacalc.transforms import (
     compose,
     identity,
     inverse,

@@ -1,5 +1,5 @@
 [project]
-name = "geometricalgebra"
+name = "gacalc"
 version = "0.0.1"
 authors = [{name="William Emerison Six", email="billsix@gmail.com"}]
 description = "Geometric Algebra"
@@ -19,7 +19,7 @@ dependencies = {file = ["requirements.txt"]}
 
 # numpy + sympy are *build* dependencies: the build_py hook in setup.py runs
 # tools/gen_specialized.py when the generated modules are absent, and that
-# generator imports geometricalgebra.base/gn (which need numpy + sympy). They are
+# generator imports gacalc.base/gn (which need numpy + sympy). They are
 # unused when building from an sdist/wheel that already ships the generated code.
 [build-system]
 requires = ["setuptools", "wheel", "numpy", "sympy"]

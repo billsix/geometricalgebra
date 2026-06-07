@@ -1,4 +1,4 @@
-# geometricalgebra
+# gacalc
 
 A small, readable **Geometric (Clifford) Algebra** library in Python, built as a
 companion to Hestenes & Sobczyk, *Clifford Algebra to Geometric Calculus*. It
@@ -19,7 +19,7 @@ notation). This package gives you:
 ## Layout
 
 ```
-src/geometricalgebra/
+src/gacalc/
   base.py          AbstractMultiVector (the abstract base) + type aliases
   gn.py            Gn (general 𝒢ₙ) + e_1.. constants + transforms + `MultiVector` alias
   g1.py g2.py g3.py   one specialized class each (generated, not in git -- run `make generate`)
@@ -28,7 +28,7 @@ src/geometricalgebra/
 Import just the algebra you need:
 
 ```python
-from geometricalgebra.g2 import G2, e_1, e_2
+from gacalc.g2 import G2, e_1, e_2
 
 a = 3 * e_1 + 4 * e_2
 a.magnitude_squared()   # 25  (a vector squared is its magnitude squared)
@@ -57,7 +57,7 @@ only one grade's components — the way mathematicians usually work:
 never depends on (float-fuzzy) coefficient *values*:
 
 ```python
-from geometricalgebra.g2 import Vector2
+from gacalc.g2 import Vector2
 
 e_1, e_2 = Vector2.basis_vector(1), Vector2.basis_vector(2)
 a, b = 3 * e_1 + 4 * e_2, 1 * e_1 + 2 * e_2
@@ -133,7 +133,7 @@ make generate          # = python tools/gen_specialized.py
 
 `make shell` does this automatically inside the container, and `make dist` bakes
 the generated code into the published sdist + wheel — so `pip install
-geometricalgebra` gives you the readable closed-form source with no generation
+gacalc` gives you the readable closed-form source with no generation
 step on your end. (See "Building & publishing" below.)
 
 To check the generator is deterministic (regenerates byte-identically), run:
@@ -178,7 +178,7 @@ relies on the `numpy`+`sympy` build-requires in `pyproject.toml` (the `setup.py`
    ]
    ```
 
-2. Regenerate. This writes `src/geometricalgebra/g4.py` (and rewrites the others
+2. Regenerate. This writes `src/gacalc/g4.py` (and rewrites the others
    identically):
 
    ```bash
@@ -188,11 +188,11 @@ relies on the `numpy`+`sympy` build-requires in `pyproject.toml` (the `setup.py`
 3. Tidy formatting (the repo pins these tools in `requirements.txt`):
 
    ```bash
-   ruff check src/geometricalgebra/g4.py --fix
-   ruff format --line-length=88 src/geometricalgebra/g4.py
+   ruff check src/gacalc/g4.py --fix
+   ruff format --line-length=88 src/gacalc/g4.py
    ```
 
-That's it — `from geometricalgebra.g4 import G4, e_1, e_2` now works. The
+That's it — `from gacalc.g4 import G4, e_1, e_2` now works. The
 docstring, the `DIMENSION`, the basis constants, and all the dimension-fixed
 methods (`dual()`, `unit_pseudoscalar()`, …) are generated automatically; you do
 **not** need to touch `base.py` or `gn.py`.

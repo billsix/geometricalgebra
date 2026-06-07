@@ -12,7 +12,7 @@ from setuptools.command.build_py import build_py
 #   * building from a shipped sdist/wheel -- which already contains them -- is a
 #     no-op needing no sympy, keeping end-user installs fast and readable.
 GENERATED = ["scalar.py", "g1.py", "g2.py", "g3.py"]
-PKG_DIR = pathlib.Path(__file__).parent / "src" / "geometricalgebra"
+PKG_DIR = pathlib.Path(__file__).parent / "src" / "gacalc"
 GENERATOR = pathlib.Path(__file__).parent / "tools" / "gen_specialized.py"
 
 

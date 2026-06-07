@@ -1,6 +1,6 @@
 #!/bin/env bash
 
-cd /geometricalgebra/
+cd /gacalc/
 
 source /venv/bin/activate
 cd notebooks

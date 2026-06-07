@@ -25,7 +25,7 @@ sub-expressions are factored out with ``sympy.cse``.
 
 Each algebra is written to its own committed module -- ``g1.py``, ``g2.py``,
 ``g3.py`` -- so a newcomer can import just the one they need
-(``from geometricalgebra.g2 import G2``).  Re-run this script by hand when the
+(``from gacalc.g2 import G2``).  Re-run this script by hand when the
 algebra changes:
 
     python tools/gen_specialized.py
@@ -78,8 +78,8 @@ from astbuild import (  # noqa: E402
     subscript,
 )
 
-from geometricalgebra.base import AbstractMultiVector, BladeCoef  # noqa: E402
-from geometricalgebra.gn import Gn  # noqa: E402
+from gacalc.base import AbstractMultiVector, BladeCoef  # noqa: E402
+from gacalc.gn import Gn  # noqa: E402
 
 # ==========================================================================
 # sympy -> ast bridge
@@ -99,7 +99,7 @@ def expr_to_ast(expr, rename: dict[str, tuple[str, str]]) -> ast.expr:
 
 def out_path(filename: str) -> str:
     return os.path.join(
-        os.path.dirname(__file__), "..", "src", "geometricalgebra", filename
+        os.path.dirname(__file__), "..", "src", "gacalc", filename
     )
 
 
@@ -1501,9 +1501,9 @@ from collections.abc import Generator
 import numpy as np
 import sympy
 
-from geometricalgebra.base import AbstractMultiVector, BladeCoef
-from geometricalgebra.gn import Gn
-from geometricalgebra.scalar import Scalar
+from gacalc.base import AbstractMultiVector, BladeCoef
+from gacalc.gn import Gn
+from gacalc.scalar import Scalar
 
 
 def _coerce(x, cls):
@@ -1547,8 +1547,8 @@ import typing
 import numpy as np
 import sympy
 
-from geometricalgebra.base import AbstractMultiVector, BladeCoef
-from geometricalgebra.gn import Gn
+from gacalc.base import AbstractMultiVector, BladeCoef
+from gacalc.gn import Gn
 """
 
 ALGEBRAS = [(1, "G1", "g1.py"), (2, "G2", "g2.py"), (3, "G3", "g3.py")]

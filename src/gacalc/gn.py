@@ -26,14 +26,14 @@ from typing import NamedTuple
 
 import sympy
 
-from geometricalgebra.base import AbstractMultiVector, BladeCoef
+from gacalc.base import AbstractMultiVector, BladeCoef
 
 # The representation-agnostic transform layer (InvertibleFunction, translate,
-# scale, compose, ...) lives in geometricalgebra.transforms; it derives any basis
+# scale, compose, ...) lives in gacalc.transforms; it derives any basis
 # it needs from the value's own type, so it preserves Gn / G1 / G2 / G3 / ... .
 # Re-exported here for backward compatibility with existing imports
-# (`from geometricalgebra.gn import translate, scale_non_uniform, ...`).
-from geometricalgebra.transforms import (  # noqa: F401
+# (`from gacalc.gn import translate, scale_non_uniform, ...`).
+from gacalc.transforms import (  # noqa: F401
     InvertibleFunction,
     compose,
     compose_intermediate_fns,

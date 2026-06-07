@@ -18,8 +18,8 @@
 
 import itertools
 
-from geometricalgebra.base import MultiVectorFn
-from geometricalgebra.gn import (
+from gacalc.base import MultiVectorFn
+from gacalc.gn import (
     MultiVector,
     a_1,
     a_2,

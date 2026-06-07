@@ -7,9 +7,9 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: geometricalgebra
+#     display_name: gacalc
 #     language: python
-#     name: geometricalgebra
+#     name: gacalc
 # ---
 
 # %%
@@ -51,9 +51,9 @@
 import sympy
 from IPython.display import Markdown, Math, display
 
-from geometricalgebra.g2 import Vector2
-from geometricalgebra.g3 import Vector3
-from geometricalgebra.scalar import Scalar
+from gacalc.g2 import Vector2
+from gacalc.g3 import Vector3
+from gacalc.scalar import Scalar
 
 
 def kind(x):

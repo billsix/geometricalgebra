@@ -31,12 +31,12 @@ annotation (scaling goes through ``__rmul__``, which casts internally).
 
 import sympy
 
-import geometricalgebra.gn as gn
-from geometricalgebra.g1 import Vector1
-from geometricalgebra.g2 import G2, Bivector2, Rotor2, Vector2
-from geometricalgebra.g3 import G3, Bivector3, Rotor3, Trivector3, Vector3
-from geometricalgebra.gn import Gn
-from geometricalgebra.scalar import Scalar
+import gacalc.gn as gn
+from gacalc.g1 import Vector1
+from gacalc.g2 import G2, Bivector2, Rotor2, Vector2
+from gacalc.g3 import G3, Bivector3, Rotor3, Trivector3, Vector3
+from gacalc.gn import Gn
+from gacalc.scalar import Scalar
 
 # --- a vector basis per dimension; everything else is built from it -----------
 U1 = Vector1.basis_vector(1)

@@ -30,10 +30,10 @@ import sympy
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from geometricalgebra.g1 import G1  # noqa: E402
-from geometricalgebra.g2 import G2, Vector2  # noqa: E402
-from geometricalgebra.g3 import G3, Vector3  # noqa: E402
-from geometricalgebra.gn import Gn  # noqa: E402
+from gacalc.g1 import G1  # noqa: E402
+from gacalc.g2 import G2, Vector2  # noqa: E402
+from gacalc.g3 import G3, Vector3  # noqa: E402
+from gacalc.gn import Gn  # noqa: E402
 
 SPECIALIZED = {1: G1, 2: G2, 3: G3}
 

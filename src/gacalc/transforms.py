@@ -41,7 +41,7 @@ vector with an e_3+ component).
 import dataclasses
 import typing
 
-from geometricalgebra.base import AbstractMultiVector, MultiVectorFn
+from gacalc.base import AbstractMultiVector, MultiVectorFn
 
 
 @dataclasses.dataclass
@@ -64,7 +64,7 @@ class InvertibleFunction:
         """Execute the wrapped function on ``x`` (result has the same type as ``x``).
 
         Example:
-            >>> from geometricalgebra.transforms import InvertibleFunction, inverse
+            >>> from gacalc.transforms import InvertibleFunction, inverse
             >>> foo = InvertibleFunction(lambda x: 2 + x, lambda x: x - 2, "", "")
             >>> foo  # doctest: +ELLIPSIS
             InvertibleFunction(...)
@@ -79,7 +79,7 @@ class InvertibleFunction:
         """Override ``@`` for function composition (``self`` after ``f2``).
 
         Example:
-            >>> from geometricalgebra.transforms import InvertibleFunction, inverse
+            >>> from gacalc.transforms import InvertibleFunction, inverse
             >>> foo = InvertibleFunction(lambda x: 2 + x, lambda x: x - 2, "", "")
             >>> (foo @ foo)(5)
             9
@@ -101,7 +101,7 @@ def inverse(f: InvertibleFunction) -> InvertibleFunction:
     """Get the inverse of the ``InvertibleFunction``.
 
     Example:
-        >>> from geometricalgebra.transforms import InvertibleFunction, inverse
+        >>> from gacalc.transforms import InvertibleFunction, inverse
         >>> foo = InvertibleFunction(lambda x: 2 + x, lambda x: x - 2, "", "")
         >>> inverse(foo)(foo(5))
         5
@@ -119,7 +119,7 @@ def compose(
     applied first.
 
     Example:
-        >>> from geometricalgebra.transforms import compose, InvertibleFunction
+        >>> from gacalc.transforms import compose, InvertibleFunction
         >>> add2 = InvertibleFunction(lambda x: x + 2, lambda x: x - 2, "", "")
         >>> scale3 = InvertibleFunction(lambda x: x * 3, lambda x: x / 3, "", "")
         >>> fn = compose([scale3, add2])   # scale3(add2(x)) = 3 * (x + 2)
@@ -162,7 +162,7 @@ def compose_intermediate_fns(
     """Like ``compose``, but returns each of the partial compositions.
 
     Example:
-        >>> from geometricalgebra.transforms import (
+        >>> from gacalc.transforms import (
         ...     compose_intermediate_fns,
         ...     InvertibleFunction,
         ... )
@@ -205,7 +205,7 @@ def compose_intermediate_fns_and_fn(
     """Like ``compose_intermediate_fns``, paired with the function applied at each step.
 
     Example:
-        >>> from geometricalgebra.transforms import (
+        >>> from gacalc.transforms import (
         ...     compose_intermediate_fns_and_fn,
         ...     InvertibleFunction,
         ... )

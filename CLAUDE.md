@@ -1,4 +1,4 @@
-# geometricalgebra
+# gacalc
 
 A from-scratch **Geometric (Clifford) Algebra** library in Python, written as a faithful,
 pedagogical implementation of Hestenes & Sobczyk, *Clifford Algebra to Geometric Calculus*.
@@ -13,23 +13,23 @@ contributor/architecture overview.
 
 The library is split one-concept-per-file so a newcomer can import just the algebra they need:
 
-- `src/geometricalgebra/base.py` — `AbstractMultiVector` (the abstract base) + the type aliases
+- `src/gacalc/base.py` — `AbstractMultiVector` (the abstract base) + the type aliases
   `BladeCoef`, `MultiVectorFn`. Imports nothing internal.
-- `src/geometricalgebra/gn.py` — `Gn`, the general dimension-agnostic representation, plus the
+- `src/gacalc/gn.py` — `Gn`, the general dimension-agnostic representation, plus the
   `e_1..e_10` / `zero` / `one` constants, the symbolic vectors (`sym_vec2_1`, …), and the
   `MultiVector = Gn` alias. (The `InvertibleFunction` transform layer lives in `transforms.py`,
   re-exported from here.)
-- `src/geometricalgebra/transforms.py` — the representation-agnostic transform layer
+- `src/gacalc/transforms.py` — the representation-agnostic transform layer
   (`InvertibleFunction`, `translate`/`rotate`/`scale_non_uniform`/`compose`/…); derives any basis it
   needs from the value's own type, so it preserves `Gn`/`G1`/`G2`/`G3`.
-- `src/geometricalgebra/g1.py`, `g2.py`, `g3.py` — **generated** modules, **not tracked in git**
+- `src/gacalc/g1.py`, `g2.py`, `g3.py` — **generated** modules, **not tracked in git**
   (gitignored). Each holds the full specialized class `G1`/`G2`/`G3` **and** that algebra's **graded
   subtypes** (`Vector_n`, `Bivector_n`, `Trivector3`, `Rotor_n`). Do not edit by hand. They are
   produced into the working tree by `make generate` / `make shell` and baked into the sdist+wheel at
   build time (see Code generation / Dev workflow).
-- `src/geometricalgebra/scalar.py` — **generated** (also gitignored): the shared grade-0 `Scalar` type
+- `src/gacalc/scalar.py` — **generated** (also gitignored): the shared grade-0 `Scalar` type
   used by the graded subtypes of every 𝒢ₙ.
-- `src/geometricalgebra/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
+- `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
   `displaygraded.py` (graded subtypes) — jupytext (percent-format) demo notebooks.
 - `tests/test_multivector.py` — original `Gn` tests; `tests/test_conformance.py` — parametrized
@@ -72,7 +72,7 @@ linear/grade ops (`__add__`, `reverse`, `r_vector_part`, `even_part`, …) are *
 generated from the `Gn` symbolic ops** — so they are provably consistent with the reference. They do
 **not** eagerly simplify (lazy, on equality), and they carry `DIMENSION` so `dual()` /
 `unit_pseudoscalar()` default to the class's dimension. Each `g*` module also exports basis constants
-of its own type, so `from geometricalgebra.g2 import G2, e_1, e_2` then `3*e_1 + 4*e_2` builds a `G2`.
+of its own type, so `from gacalc.g2 import G2, e_1, e_2` then `3*e_1 + 4*e_2` builds a `G2`.
 Mixing a specialized value with a `Gn` value coerces to `Gn`.
 
 **Terminology:** 𝒢ₙ denotes the *algebra*; an instance is an *element of* 𝒢ₙ. Classes are named

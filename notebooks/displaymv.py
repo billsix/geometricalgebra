@@ -7,9 +7,9 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: geometricalgebra
+#     display_name: gacalc
 #     language: python
-#     name: geometricalgebra
+#     name: gacalc
 # ---
 
 # %%
@@ -40,8 +40,8 @@ import warnings
 import sympy
 from IPython.display import Math, display
 
-from geometricalgebra.base import MultiVectorFn
-from geometricalgebra.gn import (
+from gacalc.base import MultiVectorFn
+from gacalc.gn import (
     InvertibleFunction,
     MultiVector,
     a_1,
@@ -60,7 +60,7 @@ from geometricalgebra.gn import (
     sym_vec3_2,
     translate,
 )
-from geometricalgebra.nbplotutils import (
+from gacalc.nbplotutils import (
     create_basis,
     create_graphs,
     create_unit_circle,
