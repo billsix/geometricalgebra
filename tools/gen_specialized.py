@@ -1498,6 +1498,20 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 returns=nm("AbstractMultiVector"),
             )
         )
+        # Versor conjugation  R x R^-1  -- the rotor sandwich, GRADE-PRESERVING:
+        # the derived closed form's support is exactly x's grades (the would-be
+        # higher grades cancel symbolically), so each operand returns its own
+        # type (Vector->Vector, Bivector->Bivector, ...) with no projection.
+        body.append(
+            dispatch_method(
+                spec,
+                "sandwich",
+                lambda r, x: r * x * r.inverse(),
+                n,
+                full_name,
+                call(dot("left", "sandwich"), [nm("right")]),
+            )
+        )
     return [
         cls(spec.name, body, decorators=[dataclass_decorator(eq=False)]),
         *basis_constant_assignments(spec.name, blades),

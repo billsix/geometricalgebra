@@ -1,6 +1,22 @@
 # Generalize the derived sandwich to other grades (Rotor·Bivector → Bivector, …)
 
-Status: **future work — not started** · proposed 2026-06-08 · deferred
+Status: **partly DONE** 2026-06-08 · the Rotor-versor family landed; reflections + higher-dims remain
+
+**Update:** the implementation (`tasks/derived-sandwich-operation.md`) generated
+the **whole `Rotor` conjugation family** via `dispatch_method`, not just
+`Rotor·Vector` — so `Rotor3.sandwich(Bivector3) → Bivector3`,
+`Rotor3.sandwich(Trivector3) → Trivector3` (pseudoscalar invariance),
+`Rotor3.sandwich(Rotor3) → Rotor3`, etc. are **already done and tested**. What
+remains genuinely future:
+
+- **Vector-as-versor reflections** (`v X v⁻¹`, an improper versor) — orientation
+  / sign conventions to settle. Not generated (only the even `Rotor` class gets a
+  `sandwich`).
+- **Higher dimensions** (𝒢₄+) once those algebras are generated.
+
+The original notes below are superseded for the Rotor-grade cases.
+
+---
 
 ## Background
 
