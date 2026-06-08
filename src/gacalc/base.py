@@ -34,6 +34,10 @@ import sympy
 BladeCoef = dict[tuple[int, ...], numbers.Real]
 MultiVectorFn = Callable[["AbstractMultiVector"], "AbstractMultiVector"]
 
+#: Type variable for the operand of a versor sandwich -- the result has the
+#: operand's own type (see ``AbstractMultiVector.sandwich``).
+_OperandT = typing.TypeVar("_OperandT", bound="AbstractMultiVector")
+
 
 class AbstractMultiVector(abc.ABC):
     """Abstract base class for an element (multivector) of a geometric algebra.
@@ -623,6 +627,27 @@ class AbstractMultiVector(abc.ABC):
         # scalar + bivector -- the rotor's grade
         product: AbstractMultiVector = to_vector * from_vector
         return product + type(product).from_sympy_expr(scale)
+
+    def sandwich(self, x: _OperandT) -> _OperandT:
+        r"""Versor conjugation  :math:`R\,x\,R^{-1}`  — apply the versor ``self``
+        to ``x``, returning a value of ``x``'s own type.
+
+        For a *versor* ``R`` (a geometric product of invertible vectors — every
+        invertible even element of 𝒢₂/𝒢₃ is one, up to scale), the conjugation
+        ``R x R⁻¹`` is **grade-preserving**: a vector goes to a vector, a
+        bivector to a bivector, and so on.  The raw product
+        ``self * x * self.inverse()`` may *structurally* widen (e.g.
+        ``Rotor3 * Vector3`` carries a trivector when ``x`` is off the rotor's
+        plane), but for a versor those extra grades are zero, so the result is
+        rebuilt as ``type(x)`` — whose ``from_blade_dict`` keeps only ``x``'s
+        blades.  ``zero`` conjugates to ``zero`` (no ``is_vector`` assertion,
+        unlike the projection-based ``rotate``).
+
+        ``self`` is assumed to be a versor; for a non-versor even element in
+        dimension ≥ 4 the conjugation is not grade-preserving and this is lossy.
+        """
+        conjugated: AbstractMultiVector = self * x * self.inverse()
+        return type(x).from_blade_dict(conjugated.to_blade_dict())
 
     def is_close(self, other: typing.Self) -> bool:
         left: BladeCoef = self.to_blade_dict()

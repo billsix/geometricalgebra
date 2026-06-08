@@ -35,12 +35,14 @@ from gacalc.base import AbstractMultiVector, BladeCoef
 # (`from gacalc.gn import translate, scale_non_uniform, ...`).
 from gacalc.transforms import (  # noqa: F401
     InvertibleFunction,
+    Linearity,
     compose,
     compose_intermediate_fns,
     compose_intermediate_fns_and_fn,
     identity,
     inverse,
     scale_non_uniform,
+    to_matrix,
     translate,
     uniform_scale,
 )

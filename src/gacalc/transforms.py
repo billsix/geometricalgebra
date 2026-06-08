@@ -36,31 +36,77 @@ geometric-algebra way -- any plane, any representation).  The old planar 2D
 ``rotate(angle)`` / ``rotate_90_degrees`` / ``rotate_around`` factories were
 removed (they acted only in the e_1 e_2 plane and silently mis-transformed a
 vector with an e_3+ component).
+
+This module also carries an *animation* layer (``InvertibleFunction.at`` /
+``steps`` plus the ``interpolate`` / ``components`` fields, ported from the
+author's *modelviewprojection* book), a linear / affine / non-linear
+classification (:class:`Linearity`, joined by ``compose``), and
+:func:`to_matrix` (the homogeneous matrix of a linear/affine function).
 """
 
 import dataclasses
 import typing
+from enum import IntEnum
+
+import numpy as np
+import sympy
 
 from gacalc.base import AbstractMultiVector, MultiVectorFn
 
 
-@dataclasses.dataclass
-class InvertibleFunction:
-    """Wraps a function and its inverse function.
+class Linearity(IntEnum):
+    """How structured a transform is, as a total order ``LINEAR < AFFINE <
+    NONLINEAR``.  Int-backed so the *join* (the class of a composite) is just
+    ``max(...)``: a composite is as general as its most-general part.
 
-    The function takes a value and returns a value of the same type.
+    * ``LINEAR``    -- fixes the origin, ``f(x) = A x`` (rotations, scales).
+    * ``AFFINE``    -- linear + a translation, ``f(x) = A x + b``.
+    * ``NONLINEAR`` -- anything else (e.g. a perspective divide).  Also the
+      conservative default for a hand-built function with no declared class.
     """
 
-    func: typing.Callable[
-        [AbstractMultiVector], AbstractMultiVector
-    ]  #: The wrapped function
-    inverse: typing.Callable[
-        [AbstractMultiVector], AbstractMultiVector
-    ]  #: The inverse of the wrapped function
+    LINEAR = 0
+    AFFINE = 1
+    NONLINEAR = 2
+
+
+#: Type variable for the value an ``InvertibleFunction`` transforms.  Bound to
+#: ``AbstractMultiVector`` so ``InvertibleFunction[Vector2]`` /
+#: ``InvertibleFunction[Vector3]`` / ``InvertibleFunction[Gn]`` are all valid and
+#: the wrapped function takes and returns that one type.
+V = typing.TypeVar("V", bound=AbstractMultiVector)
+
+
+@dataclasses.dataclass
+class InvertibleFunction(typing.Generic[V]):
+    """Wraps a function and its inverse function.
+
+    The function takes a value of type ``V`` and returns a value of the same
+    type ``V``.
+    """
+
+    func: typing.Callable[[V], V]  #: The wrapped function
+    inverse: typing.Callable[[V], V]  #: The inverse of the wrapped function
     latex_repr: str  #: The LaTeX representation of the function
     latex_repr_inv: str  #: The LaTeX representation of the inverse function
 
-    def __call__(self, x: AbstractMultiVector) -> AbstractMultiVector:
+    #: Optional interpolation law: maps ``t`` in ``[0, 1]`` to the
+    #: partially-applied function, with ``at(0)`` the identity and ``at(1)``
+    #: this function.  Bound by the transform primitives (translate, scale,
+    #: ...); left ``None`` for composites and hand-built functions.
+    interpolate: typing.Optional[typing.Callable[[float], "InvertibleFunction[V]"]] = (
+        None
+    )
+    #: For composites built by :func:`compose`: the constituent functions, in
+    #: application order.  Lets interpolation and iteration recurse into the
+    #: parts *without* a stored law (see :meth:`at` and :meth:`steps`).
+    components: typing.Optional[list["InvertibleFunction[V]"]] = None
+    #: linear / affine / non-linear classification (see :class:`Linearity`).
+    #: Defaults to the conservative ``NONLINEAR``; the factories set the real
+    #: class and :func:`compose` joins (``max``) its parts.
+    linearity: Linearity = Linearity.NONLINEAR
+
+    def __call__(self, x: V) -> V:
         """Execute the wrapped function on ``x`` (result has the same type as ``x``).
 
         Example:
@@ -75,7 +121,7 @@ class InvertibleFunction:
         """
         return self.func(x)
 
-    def __matmul__(self, f2: "InvertibleFunction") -> "InvertibleFunction":
+    def __matmul__(self, f2: "InvertibleFunction[V]") -> "InvertibleFunction[V]":
         """Override ``@`` for function composition (``self`` after ``f2``).
 
         Example:
@@ -90,14 +136,65 @@ class InvertibleFunction:
         """
         return compose([self, f2])
 
-    def __rmatmul__(self, f2: "InvertibleFunction") -> "InvertibleFunction":
+    def __rmatmul__(self, f2: "InvertibleFunction[V]") -> "InvertibleFunction[V]":
         return f2 @ self
 
     def _repr_latex_(self):
         return "$" + self.latex_repr + "$"
 
+    def at(self, t: float) -> "InvertibleFunction[V]":
+        """The function interpolated at parameter ``t`` in ``[0, 1]``, where
+        ``at(0)`` is the identity and ``at(1)`` is the function itself.
 
-def inverse(f: InvertibleFunction) -> InvertibleFunction:
+        Resolution order: a primitive carries an :attr:`interpolate` law -> use
+        it; a composite (from :func:`compose`) has no law -> recurse into its
+        :attr:`components`, interpolating each and re-composing; otherwise (a
+        hand-built function with neither) -> a step: the identity until
+        ``t >= 1``, then the function itself.
+
+        Example:
+            >>> from gacalc.transforms import translate, compose, uniform_scale
+            >>> from gacalc.g3 import Vector3
+            >>> T = translate(10 * Vector3.e_1)
+            >>> T.at(0.0)(Vector3.zero()).is_close(Vector3.zero())
+            True
+            >>> T.at(0.5)(Vector3.zero()).is_close(5 * Vector3.e_1)
+            True
+            >>> T.at(1.0)(Vector3.zero()).is_close(10 * Vector3.e_1)
+            True
+            >>> # a composite interpolates by recursing into its components
+            >>> c = compose([translate(4 * Vector3.e_1), uniform_scale(3.0)])
+            >>> c.at(1.0)(Vector3.e_1).is_close(c(Vector3.e_1))
+            True
+        """
+        if self.interpolate is not None:
+            return self.interpolate(t)
+        if self.components is not None:
+            return compose([c.at(t) for c in self.components])
+        return self if t >= 1.0 else identity()
+
+    def steps(self) -> "typing.Iterator[InvertibleFunction[V]]":
+        """Yield the leaf primitives in application order, flattening nested
+        compositions.  A primitive yields itself; a composite yields its
+        components' leaves recursively.
+
+        Example:
+            >>> from gacalc.transforms import compose, translate, uniform_scale
+            >>> from gacalc.g3 import Vector3
+            >>> f = compose([translate(Vector3.e_1), uniform_scale(2.0)])
+            >>> len(list(f.steps()))
+            2
+            >>> len(list(translate(Vector3.e_1).steps()))
+            1
+        """
+        if self.components is None:
+            yield self
+        else:
+            for c in self.components:
+                yield from c.steps()
+
+
+def inverse(f: InvertibleFunction[V]) -> InvertibleFunction[V]:
     """Get the inverse of the ``InvertibleFunction``.
 
     Example:
@@ -106,12 +203,24 @@ def inverse(f: InvertibleFunction) -> InvertibleFunction:
         >>> inverse(foo)(foo(5))
         5
     """
-    return InvertibleFunction(f.inverse, f.func, f.latex_repr_inv, f.latex_repr)
+    f_inverse = InvertibleFunction(
+        f.inverse, f.func, f.latex_repr_inv, f.latex_repr, linearity=f.linearity
+    )
+    # Make inverse commute with at():  inverse(f).at(t) == inverse(f.at(t)) for
+    # all t.  A primitive carries its law (inverted); a composite carries its
+    # components reversed and each inverted -- the inverse-of-a-composition rule
+    # -- so interpolation/iteration recurse correctly through an inverse.
+    if f.interpolate is not None:
+        law = f.interpolate  # bind the narrowed (non-None) law for the closure
+        f_inverse.interpolate = lambda t: inverse(law(t))
+    if f.components is not None:
+        f_inverse.components = [inverse(c) for c in reversed(f.components)]
+    return f_inverse
 
 
 def compose(
-    functions: list[InvertibleFunction],
-) -> InvertibleFunction:
+    functions: list[InvertibleFunction[V]],
+) -> InvertibleFunction[V]:
     r"""Compose a sequence of functions.
 
     For two functions :math:`f` and :math:`g`, ``compose([f, g])`` is
@@ -153,12 +262,19 @@ def compose(
         else:
             inv_str = inverse(f).latex_repr + r" \circ " + inv_str
 
-    return InvertibleFunction(composed_fn, inv_composed_fn, tex_str, inv_str)
+    return InvertibleFunction(
+        composed_fn,
+        inv_composed_fn,
+        tex_str,
+        inv_str,
+        components=list(functions),
+        linearity=max((fn.linearity for fn in functions), default=Linearity.LINEAR),
+    )
 
 
 def compose_intermediate_fns(
-    functions: list[InvertibleFunction], relative_basis: bool = False
-) -> typing.Iterable[InvertibleFunction]:
+    functions: list[InvertibleFunction[V]], relative_basis: bool = False
+) -> typing.Iterable[InvertibleFunction[V]]:
     """Like ``compose``, but returns each of the partial compositions.
 
     Example:
@@ -179,7 +295,7 @@ def compose_intermediate_fns(
         >>> [fns[0](1), fns[1](1), fns[2](1)]
         [1, 3, 7]
     """
-    functions_with_identity_fn: list[InvertibleFunction] = (
+    functions_with_identity_fn: list[InvertibleFunction[V]] = (
         [identity()] + functions if relative_basis else functions + [identity()]
     )
 
@@ -200,8 +316,8 @@ def compose_intermediate_fns(
 
 
 def compose_intermediate_fns_and_fn(
-    functions: list[InvertibleFunction], relative_basis: bool = False
-) -> list[tuple[InvertibleFunction, InvertibleFunction]]:
+    functions: list[InvertibleFunction[V]], relative_basis: bool = False
+) -> list[tuple[InvertibleFunction[V], InvertibleFunction[V]]]:
     """Like ``compose_intermediate_fns``, paired with the function applied at each step.
 
     Example:
@@ -235,21 +351,92 @@ def identity() -> InvertibleFunction:
     def f_inv(vector: AbstractMultiVector) -> AbstractMultiVector:
         return vector
 
-    return InvertibleFunction(f, f_inv, "I", "I")
+    return InvertibleFunction(
+        f,
+        f_inv,
+        "I",
+        "I",
+        interpolate=lambda t: identity(),
+        linearity=Linearity.LINEAR,
+    )
 
 
-def translate(b: AbstractMultiVector) -> InvertibleFunction:
+def translate(b: V) -> InvertibleFunction[V]:
     """Translate by ``b``.  The result has the same representation as ``b``."""
 
-    def f(vector: AbstractMultiVector) -> AbstractMultiVector:
+    def f(vector: V) -> V:
         return vector + b
 
-    def f_inv(vector: AbstractMultiVector) -> AbstractMultiVector:
+    def f_inv(vector: V) -> V:
         return vector - b
 
     tex_str: str = f"T_{{{b._repr_latex_()[1:-1]}}}"
     inv_str: str = f"T_{{{(-b)._repr_latex_()[1:-1]}}}"
-    return InvertibleFunction(f, f_inv, tex_str, inv_str)
+    return InvertibleFunction(
+        f,
+        f_inv,
+        tex_str,
+        inv_str,
+        interpolate=lambda t: translate(b * t),
+        linearity=Linearity.AFFINE,
+    )
+
+
+def rotor_rotation(
+    from_vector: V,
+    to_vector: V,
+    *,
+    latex_repr: str = "R",
+    latex_repr_inv: str = "R^{-1}",
+    interpolate: typing.Optional[
+        typing.Callable[[float], "InvertibleFunction[V]"]
+    ] = None,
+) -> InvertibleFunction[V]:
+    r"""A rotation packaged as an :class:`InvertibleFunction`, built from the
+    **rotor** ``R = rotor_from_vectors(from, to)``.
+
+    The forward is the versor sandwich ``R v R^-1``; the inverse is ``R^-1 v R``
+    (see ``AbstractMultiVector.sandwich``).  Both return ``v``'s own type.
+    ``linearity`` is ``LINEAR`` (a rotation fixes the origin), and it handles
+    ``zero`` for free.  This is the *rotor* formulation of a rotation; the
+    *projection* formulation lives at ``AbstractMultiVector.rotate(from, to)``.
+
+    ``latex_repr`` / ``interpolate`` let a caller (e.g. an angle-parameterized
+    rotation) label the function and supply an interpolation law that from/to
+    vectors alone can't express.
+
+    Example:
+        >>> import math
+        >>> from gacalc.transforms import rotor_rotation
+        >>> from gacalc.g3 import Vector3
+        >>> to = math.cos(1.0) * Vector3.e_1 + math.sin(1.0) * Vector3.e_2
+        >>> R = rotor_rotation(Vector3.e_1, to)
+        >>> R.linearity.name
+        'LINEAR'
+        >>> R(Vector3.zero()).is_close(Vector3.zero())   # no crash on zero
+        True
+        >>> R.inverse(R(Vector3.e_1)).is_close(Vector3.e_1)
+        True
+    """
+    rotor = type(from_vector).rotor_from_vectors(
+        from_vector=from_vector, to_vector=to_vector
+    )
+    rotor_inv = rotor.inverse()
+
+    def forward(v: V) -> V:
+        return rotor.sandwich(v)
+
+    def backward(v: V) -> V:
+        return rotor_inv.sandwich(v)
+
+    return InvertibleFunction(
+        forward,
+        backward,
+        latex_repr,
+        latex_repr_inv,
+        interpolate=interpolate,
+        linearity=Linearity.LINEAR,
+    )
 
 
 def uniform_scale(m: float) -> InvertibleFunction:
@@ -266,7 +453,15 @@ def uniform_scale(m: float) -> InvertibleFunction:
 
     tex_str: str = f"S_{{{m}}}"
     inv_str: str = f"S_{{{-m}}}"
-    return InvertibleFunction(f, f_inv, tex_str, inv_str)
+    # linear interpolation 1 -> m, so at(0) is the identity scale
+    return InvertibleFunction(
+        f,
+        f_inv,
+        tex_str,
+        inv_str,
+        interpolate=lambda t: uniform_scale(1.0 + (m - 1.0) * t),
+        linearity=Linearity.LINEAR,
+    )
 
 
 def scale_non_uniform(*factors: float) -> InvertibleFunction:
@@ -302,18 +497,114 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
 
     forward = "S_{" + ",".join(str(m) for m in factors) + "}"
     inv = "S_{" + ",".join(rf"\frac{{1}}{{{m}}}" for m in factors) + "}"
-    return InvertibleFunction(f, f_inv, forward, inv)
+    return InvertibleFunction(
+        f,
+        f_inv,
+        forward,
+        inv,
+        interpolate=lambda t: scale_non_uniform(
+            *[1.0 + (m - 1.0) * t for m in factors]
+        ),
+        linearity=Linearity.LINEAR,
+    )
+
+
+def to_matrix(
+    fn: InvertibleFunction,
+    cls: type[AbstractMultiVector],
+    n: typing.Optional[int] = None,
+    *,
+    backend: str = "numpy",
+):
+    r"""The homogeneous ``(n+1) x (n+1)`` matrix of a linear or affine ``fn``.
+
+    Always homogeneous (4x4 for 3D), even for a purely linear map -- a linear
+    map simply gets a zero translation column.  That is what graphics wants:
+    one uniform matrix shape for the whole stack.
+
+    Built by probing the basis and the origin (representation-agnostic, via the
+    ``AbstractMultiVector`` protocol)::
+
+        column i (i < n) = fn(e_i) - fn(0)   # the linear part
+        last column      = fn(0)             # translation (zero when linear)
+        last row         = (0, ..., 0, 1)
+
+    The translation lands in the **last column** (column-vector / premultiply
+    convention), matching mvp's ``pyMatrixStack``.
+
+    ``cls`` is the representation to probe in (``G2`` / ``G3`` / ``Gn`` / ...).
+    ``n`` is taken from ``cls.DIMENSION`` for the specialized classes; pass it
+    explicitly for the dimension-agnostic ``Gn``.
+
+    ``backend="numpy"`` (default) returns an ``np.float32`` array for GL;
+    ``backend="sympy"`` returns an exact ``sympy.Matrix`` (stays symbolic for a
+    symbolic ``fn``).
+
+    Raises ``ValueError`` if ``fn`` is non-linear: its projective part (e.g. a
+    perspective divide) is not recoverable by probing points in R^n.
+
+    Example:
+        >>> from gacalc.transforms import translate, uniform_scale, to_matrix
+        >>> from gacalc.g3 import Vector3
+        >>> T = translate(2 * Vector3.e_1 + 3 * Vector3.e_2 + 4 * Vector3.e_3)
+        >>> M = to_matrix(T, Vector3)
+        >>> M.shape
+        (4, 4)
+        >>> [float(M[i, 3]) for i in range(4)]   # translation in the last column
+        [2.0, 3.0, 4.0, 1.0]
+        >>> # a linear map (scale) -> 4x4 with a ZERO translation column
+        >>> S = to_matrix(uniform_scale(2.0), Vector3)
+        >>> [float(S[i, 3]) for i in range(4)]
+        [0.0, 0.0, 0.0, 1.0]
+        >>> [float(S[i, i]) for i in range(4)]
+        [2.0, 2.0, 2.0, 1.0]
+    """
+    if fn.linearity == Linearity.NONLINEAR:
+        raise ValueError(
+            "to_matrix is defined for linear/affine functions only; this one "
+            "is non-linear (e.g. a perspective divide) -- its projective "
+            "matrix cannot be recovered by probing points in R^n."
+        )
+    if n is None:
+        n = getattr(cls, "DIMENSION", None)
+        if n is None:
+            raise ValueError(
+                "n could not be inferred (Gn has no fixed DIMENSION); pass n "
+                "explicitly, e.g. to_matrix(fn, Gn, n=3)."
+            )
+
+    f0 = fn(cls.zero())  # image of the origin -> the translation
+    # image of each basis vector minus the origin image -> the linear part
+    linear_cols = [fn(cls.basis_vector(i + 1)) - f0 for i in range(n)]
+
+    def coord(v: AbstractMultiVector, j: int):
+        # the e_{j+1} coefficient of v (grade-general; works for Gn/G2/G3/...)
+        return v.component(cls.basis_vector(j + 1))
+
+    rows = []
+    for j in range(n):
+        rows.append([coord(linear_cols[i], j) for i in range(n)] + [coord(f0, j)])
+    rows.append([0] * n + [1])  # homogeneous last row (0, ..., 0, 1)
+
+    if backend == "sympy":
+        return sympy.Matrix(rows)
+    if backend == "numpy":
+        return np.array([[float(x) for x in row] for row in rows], dtype=np.float32)
+    raise ValueError(f"unknown backend {backend!r}; use 'numpy' or 'sympy'.")
 
 
 __all__ = [
     "InvertibleFunction",
+    "Linearity",
     "inverse",
     "compose",
     "compose_intermediate_fns",
     "compose_intermediate_fns_and_fn",
     "identity",
     "translate",
+    "rotor_rotation",
     "uniform_scale",
     "scale_non_uniform",
+    "to_matrix",
     "MultiVectorFn",
 ]

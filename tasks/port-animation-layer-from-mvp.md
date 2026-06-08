@@ -1,6 +1,16 @@
 # Port the InvertibleFunction animation layer from mvp into gacalc
 
-Status: **not started** · proposed 2026-06-07 · needs a go/no-go
+Status: **CODE LANDED** 2026-06-08 (working tree, version still 0.0.3) · pending wheel build + mvp consumption
+
+**Landed:** `interpolate`/`components` fields + `at()`/`steps()` methods on
+`InvertibleFunction`, factories attach laws, `compose` stores `components`,
+`inverse` commutes with `at` — all **in `transforms.py`** (module-shape decided:
+on the class, replicating mvp, *not* a separate module). Tests in
+`tests/test_transforms.py` (ported mvp interpolation suite + new). `ty`/`ruff`
+clean, full suite green (200). **Also restored** `InvertibleFunction` as
+`Generic[V]` (bound to `AbstractMultiVector`) — it was generic in mvp but gacalc's
+plainer version wasn't; type-preserving ops (`__call__`/`at`/`steps`/`@`/`inverse`/
+`compose`/`translate`/`compose_intermediate_fns`) are parameterized.
 
 ## Background
 

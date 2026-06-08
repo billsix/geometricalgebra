@@ -1,6 +1,12 @@
 # Tag InvertibleFunctions as linear / affine / non-linear
 
-Status: **not started** · proposed 2026-06-07 · needs a go/no-go
+Status: **CODE LANDED** 2026-06-08 (working tree, version still 0.0.3) · pending wheel build + mvp consumption
+
+**Landed:** `Linearity(IntEnum)` (LINEAR<AFFINE<NONLINEAR) + a `linearity` field on
+`InvertibleFunction` in `transforms.py`; factories tag themselves (scales/identity
+LINEAR, translate AFFINE), `compose` = `max`(join), `inverse` copies, hand-built
+defaults to NONLINEAR. Tests in `tests/test_transforms.py`. `ty`/`ruff` clean,
+suite green (200).
 
 ## Goal
 

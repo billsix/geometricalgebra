@@ -1,6 +1,13 @@
 # Convert an InvertibleFunction to its matrix
 
-Status: **not started** · proposed 2026-06-07 · needs a go/no-go
+Status: **CODE LANDED** 2026-06-08 (working tree, version still 0.0.3) · pending wheel build + mvp consumption
+
+**Landed:** `to_matrix(fn, cls, n=None, *, backend="numpy")` in `transforms.py` —
+always homogeneous (n+1)×(n+1) via basis+origin probing; linear ⇒ zero
+translation column; translation in the last column (matches `pyMatrixStack`);
+`backend="numpy"` (float32, default) / `backend="sympy"` (exact); raises on
+NONLINEAR; `Gn` needs explicit `n`. Tests in `tests/test_transforms.py`.
+`ty`/`ruff` clean, suite green (200).
 
 ## Goal
 
