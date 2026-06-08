@@ -1,6 +1,10 @@
 # Tag InvertibleFunctions as linear / affine / non-linear
 
-Status: **CODE LANDED** 2026-06-08 (working tree, version still 0.0.3) · pending wheel build + mvp consumption
+**Status:** complete
+**Completed:** 2026-06-08
+(Code landed in gacalc and **consumed by mvp** — `mathutils` re-exports `Linearity`
+and its rebuilt transforms carry the tag; confirmed working on mvp 2026-06-08.
+Only the formal PyPI wheel release remains — Bill's separate, out-of-container step.)
 
 **Landed:** `Linearity(IntEnum)` (LINEAR<AFFINE<NONLINEAR) + a `linearity` field on
 `InvertibleFunction` in `transforms.py`; factories tag themselves (scales/identity

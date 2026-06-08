@@ -1,6 +1,10 @@
 # Port the InvertibleFunction animation layer from mvp into gacalc
 
-Status: **CODE LANDED** 2026-06-08 (working tree, version still 0.0.3) · pending wheel build + mvp consumption
+**Status:** complete
+**Completed:** 2026-06-08
+(Code landed in gacalc and **consumed by mvp** — the rebuilt rotations carry their
+interpolation laws via `interpolate=`, driving `at()`/`steps()`; confirmed working
+on mvp 2026-06-08. Only the formal PyPI wheel release remains — Bill's separate step.)
 
 **Landed:** `interpolate`/`components` fields + `at()`/`steps()` methods on
 `InvertibleFunction`, factories attach laws, `compose` stores `components`,

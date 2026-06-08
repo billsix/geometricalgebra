@@ -1,6 +1,10 @@
 # Convert an InvertibleFunction to its matrix
 
-Status: **CODE LANDED** 2026-06-08 (working tree, version still 0.0.3) · pending wheel build + mvp consumption
+**Status:** complete
+**Completed:** 2026-06-08
+(Code landed in gacalc and **consumed by mvp** — `mathutils` imports `to_matrix`
+and `test_mathutils` ties `rotate_z` to it; confirmed working on mvp 2026-06-08.
+Only the formal PyPI wheel release remains — Bill's separate, out-of-container step.)
 
 **Landed:** `to_matrix(fn, cls, n=None, *, backend="numpy")` in `transforms.py` —
 always homogeneous (n+1)×(n+1) via basis+origin probing; linear ⇒ zero

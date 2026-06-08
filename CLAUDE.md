@@ -110,6 +110,13 @@ that rotor `R = |from||to| + to·from` (scalar + bivector, the even-subalgebra g
 **any plane, any dimension/representation**. Rotation lives in the algebra itself — the transform
 layer (`transforms.py`) carries no rotation factory; use these rotor methods instead.
 
+`base.rotate` is *projection-based* (it splits the operand into in-plane + perpendicular parts) — it
+returns the operand's type via a runtime grade projection. The generated `Rotor` classes additionally
+carry a **closed-form, type-correct `sandwich(x)`** (`R x R⁻¹`, derived symbolically by the generator,
+no projection): grade-preserving, so `Rotor3.sandwich(Vector3) → Vector3`, `…(Bivector3) →
+Bivector3`, etc. `rotate` keeps the projection formula for teaching both; the rotor sandwich is the
+fast path mvp's rotations run on. (Both agree — see `notebooks/displayrotations.py`.)
+
 **Convention — express rotations as `rotate` / `rotor_from_vectors` (from/to), never hand-built.**
 When writing or reviewing examples, tests, notebooks, or docs, a rotation must read as an explicit
 `cls.rotate(from_vector=…, to_vector=…)(v)` or `cls.rotor_from_vectors(from_vector=…, to_vector=…)`
@@ -204,10 +211,15 @@ specialized classes never drifts from the shared base.
   recipe failure as exit 2, not pytest's exact code — the 0/nonzero contract is what CI needs). For a
   quick host run instead, `python -m pytest -q` after a `make generate`. `pytest.ini` sets
   `pythonpath = src`, `testpaths = src tests`, and `addopts = --doctest-modules` so docstring examples
-  run as tests — `nbplotutils.py` is `--ignore`d because it imports a matplotlib GUI backend that
-  fails headless.
+  run as tests. `nbplotutils.py` is collected (its module-load `set_matplotlib_formats` is now guarded
+  by `if get_ipython() is not None:`, so it imports headless) — meaning the suite now imports
+  `matplotlib`, so run it with the `notebooks` extra installed (the container has it).
 - Lint/format/typecheck: `entrypoint/format.sh` runs `ruff check --fix`, `ruff format`, `ty check`.
-  Ruff rules in `pyproject.toml`. **`ty check src` and `ty check tests` are clean; keep them so.**
+  Ruff rules in `pyproject.toml`. **`ty check src` and `ty check tests` are clean; keep them so** —
+  with one documented carve-out: `ty.toml` has a scoped `[[overrides]]` disabling only
+  `unsupported-operator` + `invalid-method-override` on the generated `g2.py`/`g3.py` (false positives
+  from the rotor `sandwich`'s `numbers.Real` arithmetic; every other rule still checks those files).
+  Removing that override is tracked in `tasks/restore-ty-on-generated-sandwich.md`.
 - After editing the generator, regenerate (`python tools/gen_specialized.py`, which auto-formats its
   output) and re-run the suite (the conformance tests guard correctness of the generated code).
 - Determinism guard: `make check-generated` regenerates **twice** and asserts the output is

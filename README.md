@@ -80,6 +80,10 @@ named. They live on the class (`Vector2.e_1`); because the stored coefficient fi
 (`Gn`, being dimension-agnostic, has no fixed class constants — use the module-level `gn.e_1 …` or
 `Gn.basis_vector(n)`.)
 
+Iterating a value yields its **coefficient values** in blade order — so `list(v)` / `tuple(v)` /
+`np.array([list(v), …])` give the components (a vector reads as its coordinate tuple). To decompose
+into one single-blade multivector per term instead, iterate `v.to_blade_dict()`.
+
 Return-type table for the geometric product `*` (𝒢₂ shown):
 
 | `*` | Scalar | Vector2 | Bivector2 | Rotor2 |
