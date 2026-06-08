@@ -636,25 +636,19 @@ def is_close_method(name_, fields) -> ast.FunctionDef:
     )
 
 
-def iter_method(name_, blades) -> ast.FunctionDef:
-    """``__iter__``: yield a one-blade instance per nonzero field."""
+def iter_method(blades) -> ast.FunctionDef:
+    """``__iter__``: yield the component VALUES, one per field, in blade order.
+
+    A value (vector, rotor, full multivector, ...) reads as the numbers it holds,
+    so ``list(v)`` / ``tuple(v)`` / ``np.array([list(v), ...])`` give the
+    coefficients -- not one single-blade multivector per term.  All fields are
+    yielded (dense, fixed length), so e.g. ``list(Vector2(3, 0)) == [3, 0]``.
+    """
     return fn(
         "__iter__",
         [
-            ast.If(
-                ne_zero(dot("self", field_name(b))),
-                [
-                    ast.Expr(
-                        ast.Yield(
-                            construct(
-                                name_, [(field_name(b), dot("self", field_name(b)))]
-                            )
-                        )
-                    )
-                ],
-                [],
-            )
-            for b in blades
+            *method_doc_stmts("__iter__"),
+            *[ast.Expr(ast.Yield(dot("self", field_name(b)))) for b in blades],
         ],
     )
 
@@ -1230,7 +1224,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
             returns=SELF,
         ),
         is_close_method(name, fields),
-        iter_method(name, blades),
+        iter_method(blades),
         fn(
             "dual",
             method_doc_stmts("dual") + [ret(super_call("dual", [dim_or_n("self")]))],
@@ -1443,7 +1437,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             ]
         ),
         is_close_method(spec.name, fields),
-        iter_method(spec.name, blades),
+        iter_method(blades),
         fn("even_part", [unary_body(lambda a: a.even_part())], returns=SELF),
         fn("odd_part", [unary_body(lambda a: a.odd_part())], returns=SELF),
         fn(

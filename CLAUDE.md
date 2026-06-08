@@ -86,6 +86,14 @@ while `instance.coeff_e_1` is the component value; read a component back out wit
 module-level `gn.e_1 …` or `Gn.basis_vector(n)`. Mixing a specialized value with a `Gn` value coerces
 to `Gn`.
 
+**Iteration yields coefficient values, not blade terms.** `iter(value)` / `list(value)` /
+`tuple(value)` / `np.array([list(v), …])` yield the coefficient *values* in blade order — so a vector
+reads as its coordinate tuple and feeds numpy/plotting directly. This is the generated `__iter__` on
+every specialized class (all fields, dense) and `AbstractMultiVector.__iter__` on `Gn` (its present
+blades). To decompose a value into one single-blade multivector per term instead (e.g. for a
+component-by-component product breakdown), iterate `to_blade_dict()` — which is what
+`nbplotutils.show_mult` (via its `_blade_terms` helper) does.
+
 **Terminology:** 𝒢ₙ denotes the *algebra*; an instance is an *element of* 𝒢ₙ. Classes are named
 after their algebra. The dimension parameter is `n` (it was once misleadingly called `grade`).
 

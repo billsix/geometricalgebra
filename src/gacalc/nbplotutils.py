@@ -610,13 +610,25 @@ def plot_multivector(
     return fig
 
 
+def _blade_terms(mv: AbstractMultiVector) -> list:
+    """The single-blade multivectors that sum to ``mv`` (its product-table terms).
+
+    ``__iter__`` now yields a multivector's coefficient *values*, so the
+    component-by-component product breakdown decomposes via ``to_blade_dict``.
+    """
+    return [
+        type(mv).from_blade_dict({blade: coef})
+        for blade, coef in mv.to_blade_dict().items()
+    ]
+
+
 def show_mult(a: AbstractMultiVector, b: AbstractMultiVector):
     display(Markdown("**We want to evaluate**"))
     # print the values as latex before they are multiplied
     display(Math("$($" + a._repr_latex_() + "$)*($" + b._repr_latex_() + "$)$"))
     display(Markdown("**Multivector Multiplication is distributive over additon**"))
 
-    data: list = list(itertools.product(a, b))
+    data: list = list(itertools.product(_blade_terms(a), _blade_terms(b)))
     result = [(left, "*", right, "=", left * right) for left, right in data]
     df: pd.DataFrame = pd.DataFrame(
         result,

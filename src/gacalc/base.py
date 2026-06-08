@@ -185,11 +185,15 @@ class AbstractMultiVector(abc.ABC):
         return self.magnitude()
 
     def __iter__(self):
+        """Iterate the coefficient values in blade order (a value/coordinate tuple).
+
+        ``list(v)`` / ``tuple(v)`` / ``np.array([list(v), ...])`` give the numeric
+        components, so a multivector reads as the numbers it holds.  To decompose
+        into one single-blade multivector per term instead, iterate
+        ``to_blade_dict()``.
+        """
         d: BladeCoef = self.to_blade_dict()
-        yield from (
-            type(self).from_blade_dict({key: d[key]})
-            for key in sorted(d.keys(), key=lambda b: (len(b), str(b)))
-        )
+        yield from (d[key] for key in sorted(d.keys(), key=lambda b: (len(b), str(b))))
 
     def magnitude(self) -> numbers.Real | sympy.Expr:
         """Magnitude  |A|  =  √(Ã ∗ A)  — the positive square root of the scalar
