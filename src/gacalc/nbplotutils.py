@@ -28,6 +28,7 @@ import matplotlib.ticker
 import numpy as np
 import pandas as pd
 import sympy
+from IPython import get_ipython
 from IPython.display import Markdown, Math, display
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -40,7 +41,11 @@ from gacalc.gn import (
     identity,
 )
 
-set_matplotlib_formats("svg")
+# The inline SVG backend is only meaningful inside an IPython/Jupyter session;
+# guarding it lets this module import headless (under pytest, or a plain script)
+# instead of raising when there is no shell to enable a GUI for.
+if get_ipython() is not None:
+    set_matplotlib_formats("svg")
 
 _IDENTITY = identity()
 
