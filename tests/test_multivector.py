@@ -278,7 +278,7 @@ def test_multivector_cosine() -> None:
 
     # print(sym_vec2_1.cosine(sym_vec2_2) * abs(sym_vec2_1) * abs(sym_vec2_2))
     assert MultiVector.from_scalar(
-        sym_vec2_1.cosine(sym_vec2_2) * abs(sym_vec2_1) * abs(sym_vec2_2)  # type: ignore
+        sym_vec2_1.cosine(sym_vec2_2) * abs(sym_vec2_1) * abs(sym_vec2_2)
     ) == sym_vec2_1.dot(sym_vec2_2)
 
 

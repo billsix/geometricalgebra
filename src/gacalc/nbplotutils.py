@@ -19,7 +19,6 @@
 import contextlib
 import itertools
 import math
-import numbers
 from typing import cast
 
 import matplotlib
@@ -35,7 +34,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
 
-from gacalc.base import AbstractMultiVector, BladeCoef
+from gacalc.base import AbstractMultiVector, BladeCoef, Coef
 from gacalc.gn import (
     MultiVector,
     identity,
@@ -204,11 +203,11 @@ def create_x_and_y(
     )
 
 
-def cosine(v1: AbstractMultiVector, v2: AbstractMultiVector) -> numbers.Real:
+def cosine(v1: AbstractMultiVector, v2: AbstractMultiVector) -> Coef:
     return (v1.dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()
 
 
-def sine(v1: AbstractMultiVector, v2: AbstractMultiVector) -> numbers.Real:
+def sine(v1: AbstractMultiVector, v2: AbstractMultiVector) -> Coef:
     # rotate v1 by 90 degrees in the e_1 e_2 plane (v1 * e_1 e_2), then project on v2
     rot90: AbstractMultiVector = v1 * type(v1).from_blade_dict({(1, 2): 1})
     return (rot90.dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()

@@ -74,6 +74,16 @@ names `e_1` … to denote the basis-vector *constants* below) and whose `_geomet
 consistent with the reference. They do **not** eagerly simplify (lazy, on equality), and they carry
 `DIMENSION` so `dual()` / `unit_pseudoscalar()` default to the class's dimension.
 
+**Coefficient type — `Coef = int | float | sympy.Expr`** (defined in `base.py`; `BladeCoef` is
+`dict[tuple[int, ...], Coef]`). A multivector coefficient is a plain Python number or a sympy
+expression. This is the **concrete** union, deliberately *not* the `numbers.Real` ABC: ty turns
+`numbers.Real` arithmetic into `_ComplexLike` and then rejects `+`/`/`/`**` on it, which is what used
+to force the `ty.toml` override on the generated rotor sandwich (whose closed form divides by `|R|²`
+and squares coefficients). The generated `coeff_*` fields and the scalar-returning methods
+(`scalar_part`, `scalar_product`, `component`, `magnitude`, `magnitude_squared`, `cosine`) are all
+typed `Coef`. The generator's `cast_coef` (in `tools/astbuild.py`) skips the cast for a bare or
+negated field (already `Coef`) and only wraps genuinely compound expressions.
+
 Two ways to name a basis blade: each `g*` module exports **module-level** constants of its own type
 (`from gacalc.g2 import G2, e_1, e_2` then `3*e_1 + 4*e_2` builds a `G2`); and each **class** exposes
 its own basis blades as **class constants of that class's type** (`Vector2.e_1`, `Bivector2.e_12`,
@@ -215,11 +225,12 @@ specialized classes never drifts from the shared base.
   by `if get_ipython() is not None:`, so it imports headless) — meaning the suite now imports
   `matplotlib`, so run it with the `notebooks` extra installed (the container has it).
 - Lint/format/typecheck: `entrypoint/format.sh` runs `ruff check --fix`, `ruff format`, `ty check`.
-  Ruff rules in `pyproject.toml`. **`ty check src` and `ty check tests` are clean; keep them so** —
-  with one documented carve-out: `ty.toml` has a scoped `[[overrides]]` disabling only
-  `unsupported-operator` + `invalid-method-override` on the generated `g2.py`/`g3.py` (false positives
-  from the rotor `sandwich`'s `numbers.Real` arithmetic; every other rule still checks those files).
-  Removing that override is tracked in `tasks/restore-ty-on-generated-sandwich.md`.
+  Ruff rules in `pyproject.toml`. **`ty check src` and `ty check tests` are fully clean with no
+  `ty.toml` / override** — every rule checks every file. (There used to be a scoped override disabling
+  `unsupported-operator` + `invalid-method-override` on the generated rotor `sandwich`; both were
+  resolved by typing coefficients as the concrete `Coef = int | float | sympy.Expr` alias rather than
+  the `numbers.Real` ABC — see the coefficient-type note under Architecture — and by emitting
+  `sandwich` as a Liskov-compatible override returning the operand type `_OperandT`.)
 - After editing the generator, regenerate (`python tools/gen_specialized.py`, which auto-formats its
   output) and re-run the suite (the conformance tests guard correctness of the generated code).
 - Determinism guard: `make check-generated` regenerates **twice** and asserts the output is

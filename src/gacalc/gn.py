@@ -20,13 +20,12 @@ from __future__ import annotations
 
 import dataclasses
 import itertools
-import numbers
 import typing
 from typing import NamedTuple
 
 import sympy
 
-from gacalc.base import AbstractMultiVector, BladeCoef
+from gacalc.base import AbstractMultiVector, BladeCoef, Coef
 
 # The representation-agnostic transform layer (InvertibleFunction, translate,
 # scale, compose, ...) lives in gacalc.transforms; it derives any basis
@@ -50,7 +49,7 @@ from gacalc.transforms import (  # noqa: F401
 
 class BladeDictionaryEntry(NamedTuple):
     blade: tuple[int, ...]
-    coefficient: numbers.Real
+    coefficient: Coef
 
     def as_multivector(self):
         return Gn(coefficient_of_blade=dict([(self.blade, self.coefficient)]))
@@ -115,9 +114,7 @@ class Gn(AbstractMultiVector):
                     return decrease_grade(
                         BladeDictionaryEntry(
                             blade=(c, a, *rest),
-                            coefficient=typing.cast(
-                                numbers.Real, -(basis_blade.coefficient)
-                            ),
+                            coefficient=-(basis_blade.coefficient),
                         )
                     )
                 case (a, c, *rest) if a < c:
@@ -157,10 +154,7 @@ class Gn(AbstractMultiVector):
                                 *blade_left,
                                 *blade_right,
                             ),
-                            coefficient=typing.cast(
-                                numbers.Real,
-                                scalar_left * scalar_right,
-                            ),
+                            coefficient=scalar_left * scalar_right,
                         )
                     )
                 )
@@ -182,16 +176,16 @@ class Gn(AbstractMultiVector):
 MultiVector = Gn
 
 
-e_1: MultiVector = MultiVector({(1,): typing.cast(numbers.Real, 1)})
-e_2: MultiVector = MultiVector({(2,): typing.cast(numbers.Real, 1)})
-e_3: MultiVector = MultiVector({(3,): typing.cast(numbers.Real, 1)})
-e_4: MultiVector = MultiVector({(4,): typing.cast(numbers.Real, 1)})
-e_5: MultiVector = MultiVector({(5,): typing.cast(numbers.Real, 1)})
-e_6: MultiVector = MultiVector({(6,): typing.cast(numbers.Real, 1)})
-e_7: MultiVector = MultiVector({(7,): typing.cast(numbers.Real, 1)})
-e_8: MultiVector = MultiVector({(8,): typing.cast(numbers.Real, 1)})
-e_9: MultiVector = MultiVector({(9,): typing.cast(numbers.Real, 1)})
-e_10: MultiVector = MultiVector({(10,): typing.cast(numbers.Real, 1)})
+e_1: MultiVector = MultiVector({(1,): 1})
+e_2: MultiVector = MultiVector({(2,): 1})
+e_3: MultiVector = MultiVector({(3,): 1})
+e_4: MultiVector = MultiVector({(4,): 1})
+e_5: MultiVector = MultiVector({(5,): 1})
+e_6: MultiVector = MultiVector({(6,): 1})
+e_7: MultiVector = MultiVector({(7,): 1})
+e_8: MultiVector = MultiVector({(8,): 1})
+e_9: MultiVector = MultiVector({(9,): 1})
+e_10: MultiVector = MultiVector({(10,): 1})
 zero: MultiVector = MultiVector.from_scalar(0)
 one: MultiVector = MultiVector.from_scalar(1)
 

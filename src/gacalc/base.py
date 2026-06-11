@@ -22,7 +22,6 @@ import abc
 import functools
 import itertools
 import math
-import numbers
 import typing
 from collections.abc import Callable, Generator, Sequence
 from itertools import chain, combinations
@@ -31,7 +30,12 @@ from typing import TypeIs
 import numpy as np
 import sympy
 
-BladeCoef = dict[tuple[int, ...], numbers.Real]
+# A multivector coefficient: a plain Python number or a sympy expression
+# (symbolic mode).  Concrete `int | float | sympy.Expr` rather than the
+# `numbers.Real` ABC -- ty turns `numbers.Real` arithmetic into `_ComplexLike`
+# and then rejects `+`/`/`/`**` on it, which broke the generated rotor sandwich.
+Coef = int | float | sympy.Expr
+BladeCoef = dict[tuple[int, ...], Coef]
 MultiVectorFn = Callable[["AbstractMultiVector"], "AbstractMultiVector"]
 
 #: Type variable for the operand of a versor sandwich -- the result has the
@@ -69,11 +73,11 @@ class AbstractMultiVector(abc.ABC):
 
     @classmethod
     def from_scalar(cls, scalar: int | float) -> typing.Self:
-        return cls.from_blade_dict({tuple(): typing.cast(numbers.Real, scalar)})
+        return cls.from_blade_dict({tuple(): scalar})
 
     @classmethod
-    def from_sympy_expr(cls, s: sympy.Expr) -> typing.Self:
-        return cls.from_blade_dict({tuple(): typing.cast(numbers.Real, s)})
+    def from_sympy_expr(cls, s: Coef) -> typing.Self:
+        return cls.from_blade_dict({tuple(): s})
 
     @classmethod
     def zero(cls) -> typing.Self:
@@ -91,7 +95,7 @@ class AbstractMultiVector(abc.ABC):
         (e.g. the transform layer) obtain a basis vector of the *caller's* own
         concrete type, so results stay in that type rather than coercing to Gn.
         """
-        return cls.from_blade_dict({(i,): typing.cast(numbers.Real, 1)})
+        return cls.from_blade_dict({(i,): 1})
 
     @classmethod
     def unit_pseudoscalar(cls, n: int) -> typing.Self:
@@ -181,7 +185,7 @@ class AbstractMultiVector(abc.ABC):
     def __neg__(self) -> typing.Self:
         return -1 * self
 
-    def __abs__(self) -> numbers.Real | sympy.Expr:
+    def __abs__(self) -> Coef:
         return self.magnitude()
 
     def __iter__(self):
@@ -195,7 +199,7 @@ class AbstractMultiVector(abc.ABC):
         d: BladeCoef = self.to_blade_dict()
         yield from (d[key] for key in sorted(d.keys(), key=lambda b: (len(b), str(b))))
 
-    def magnitude(self) -> numbers.Real | sympy.Expr:
+    def magnitude(self) -> Coef:
         """Magnitude  |A|  =  √(Ã ∗ A)  — the positive square root of the scalar
         product of A with its reverse.
 
@@ -204,7 +208,7 @@ class AbstractMultiVector(abc.ABC):
         """
         return sympy.sqrt(self.magnitude_squared())
 
-    def magnitude_squared(self) -> numbers.Real:
+    def magnitude_squared(self) -> Coef:
         """Squared magnitude  |A|²  =  Ã ∗ A  =  ⟨Ã A⟩  (a scalar)."""
         return self.reverse().scalar_product(self)
 
@@ -212,7 +216,7 @@ class AbstractMultiVector(abc.ABC):
         """Unit multivector  Â  =  A / |A|  — A rescaled to magnitude 1."""
         return self * (abs(self) ** (-1))
 
-    def component(self, x: typing.Self) -> numbers.Real:
+    def component(self, x: typing.Self) -> Coef:
         """Scalar coefficient of this multivector along the unit blade ``x``.
 
         For an orthonormal basis blade e_J (e.g. ``e_1`` or ``e_12``), the
@@ -292,7 +296,7 @@ class AbstractMultiVector(abc.ABC):
         )
         return typing.cast(typing.Self, outer)
 
-    def scalar_product(self, other: typing.Self) -> numbers.Real:
+    def scalar_product(self, other: typing.Self) -> Coef:
         """Scalar product  A ∗ B  =  ⟨A B⟩  — the grade-0 (scalar) part of the
         geometric product.
 
@@ -393,12 +397,12 @@ class AbstractMultiVector(abc.ABC):
             else (self.cosine(other) == 1)
         )
 
-    def scalar_part(self) -> numbers.Real:
+    def scalar_part(self) -> Coef:
         """Scalar part  ⟨A⟩  =  ⟨A⟩₀  — the grade-0 (scalar) component of A.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 4
         """
-        return self.to_blade_dict().get(tuple(), typing.cast(numbers.Real, 0))
+        return self.to_blade_dict().get(tuple(), 0)
 
     def grades(self) -> list[int]:
         return list(set(len(blade) for blade in self.to_blade_dict().keys()))
@@ -434,7 +438,7 @@ class AbstractMultiVector(abc.ABC):
         # sympify the magnitude before the reciprocal: for the specialized
         # classes magnitude_squared() is a raw Python int, and ``int ** -1``
         # silently degrades to a float -- sympify keeps it exact (Rational).
-        mag_sq = typing.cast(sympy.Expr, sympy.sympify(self.magnitude_squared()))
+        mag_sq = sympy.sympify(self.magnitude_squared())
         return self.reverse() * (mag_sq ** (-1))
 
     def dual(self, n: int) -> typing.Self:
@@ -463,17 +467,16 @@ class AbstractMultiVector(abc.ABC):
             start=type(self).zero(),
         )
 
-    def cosine(self, other: AbstractMultiVector) -> numbers.Real:
+    def cosine(self, other: AbstractMultiVector) -> Coef:
         """Cosine of the angle between A and B  —  cos θ  =  (Ã ∗ B) / (|A| |B|).
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 14,
         equation 1.53b
         """
-        return typing.cast(
-            numbers.Real,
+        return (
             self.reverse().scalar_product(other)
-            * typing.cast(numbers.Real, abs(self) ** (-1))
-            * typing.cast(numbers.Real, (abs(other) ** (-1))),
+            * (abs(self) ** (-1))
+            * (abs(other) ** (-1))
         )
 
     @classmethod
@@ -627,7 +630,13 @@ class AbstractMultiVector(abc.ABC):
         """
         assert from_vector.is_vector()
         assert to_vector.is_vector()
-        scale = typing.cast(sympy.Expr, from_vector.magnitude() * to_vector.magnitude())
+        # |from||to| -- the rotor's scalar part, making it the half-angle rotor.
+        # Kept as the *product of two magnitudes* (two simple sqrts), NOT
+        # |to from| = sqrt(|to|^2 |from|^2): the latter is mathematically equal
+        # but sympy leaves it as a nested radical it cannot simplify through the
+        # sandwich, breaking the symbolic R v R^-1 == rotate identity.  No cast
+        # needed now that magnitude() is typed Coef (int | float | sympy.Expr).
+        scale = from_vector.magnitude() * to_vector.magnitude()
         # scalar + bivector -- the rotor's grade
         product: AbstractMultiVector = to_vector * from_vector
         return product + type(product).from_sympy_expr(scale)

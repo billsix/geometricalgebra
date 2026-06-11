@@ -1,6 +1,47 @@
 # Restore strict ty on the generated sandwich (remove the scoped override)
 
-Status: **investigation — not started** · proposed 2026-06-08
+Status: **COMPLETE 2026-06-11** · proposed 2026-06-08
+
+> **Done (2026-06-11). The `ty.toml` override is DELETED; `ty check src tests` is fully clean,
+> every rule on every file.** 207 tests pass, ruff clean, regen byte-identical.
+>
+> Both false positives traced to one root cause and one signature mismatch:
+>
+> 1. **`unsupported-operator` → fixed by the coefficient type.** Replaced the `numbers.Real` ABC with
+>    a concrete alias **`Coef = int | float | sympy.Expr`** (in `base.py`; `BladeCoef` now
+>    `dict[..., Coef]`). ty turns `numbers.Real` arithmetic into `_ComplexLike` and rejects `+`/`/`/`**`
+>    on it — the concrete union types cleanly (verified by probe before committing to it). Threaded
+>    through `base.py` (all scalar-returning methods: `scalar_part`/`scalar_product`/`component`/
+>    `magnitude`/`magnitude_squared`/`cosine`), `gn.py`, `nbplotutils.py`, and the generator (field
+>    annotations + `cast_real`→**`cast_coef`**, which now also *skips* the cast for bare/negated fields
+>    that are already `Coef`, so no `redundant-cast` warnings). The widening also let several
+>    hand-written casts in `base.py` (`inverse`, `cosine`, `from_*`) drop entirely.
+>    - Bill's note re `magnitude_squared`: signature widened as asked (to `Coef`). The concrete
+>      `int | float | sympy.Expr` was required over `numbers.Real | sympy.Expr` — the latter keeps the
+>      poisonous `numbers.Real` arm, so the generated arithmetic still failed (probe-confirmed).
+> 2. **`invalid-method-override` → fixed by typing `sandwich` as the operand.** The generator emitted
+>    `def sandwich(self, rhs) -> typing.Self`, which mismatched base's `sandwich(self, x: _OperandT) ->
+>    _OperandT` on the param name (Liskov keyword arg) *and* mistyped the result (a rotor's sandwich of
+>    a vector is a vector, not the rotor — the old `cast(Self, …)` was a lie). `dispatch_method` now
+>    takes `param_name`/`return_type`/`cast`; the sandwich passes `x` / `_OperandT` / `cast_operand`, so
+>    it is a Liskov-compatible override **and** genuinely typed as the operand. `_OperandT` imported
+>    into the generated `g2.py`/`g3.py` headers (conditionally, n≥2).
+>
+> **Side finding (caught by `test_rotor_sandwich_equals_rotate_symbolic_2d`):** Bill's idea to compute
+> the rotor scalar as `product.magnitude()` is mathematically identical to `|from||to|` but sympy
+> renders it as the nested radical `sqrt((a·b)² + (a∧b)²)` and **cannot `simplify` it through the
+> sandwich**, breaking the symbolic `R v R⁻¹ == rotate` identity. Kept the two-magnitude form
+> `from.magnitude() * to.magnitude()` (two simple sqrts) — which, thanks to the `Coef` widening, no
+> longer needs its old `typing.cast(sympy.Expr, …)` either. So `rotor_from_vectors` got cleaner without
+> changing the symbolic form the tests rely on.
+>
+> Files: `base.py`, `gn.py`, `nbplotutils.py`, `tests/test_multivector.py` (dropped a now-unused
+> `# type: ignore`), `tools/gen_specialized.py`, `tools/astbuild.py`; `ty.toml` deleted; CLAUDE.md
+> refreshed (Dev workflow + a new "Coefficient type" note under Architecture). Generated `g*.py`
+> regenerated (gitignored).
+
+---
+_Original investigation plan below._
 
 ## Goal
 

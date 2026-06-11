@@ -21,8 +21,8 @@
 A small DSL for building syntax-tree nodes (``nm``/``dot``/``call``/``cast``/``fn``/
 ``cls``/``ann_assign``/...) and rendering them with ``ast.unparse`` (``module_source``).
 Knows nothing about geometric algebra -- it only knows the conventions of the code
-this generator emits (e.g. ``cast_self``/``cast_real`` wrap ``typing.cast`` to
-``typing.Self``/``numbers.Real``).  Used by tools/gen_specialized.py.
+this generator emits (e.g. ``cast_self``/``cast_coef`` wrap ``typing.cast`` to
+``typing.Self``/``Coef`` (the coefficient type)).  Used by tools/gen_specialized.py.
 """
 
 from __future__ import annotations
@@ -99,8 +99,25 @@ def cast_self(value) -> ast.Call:
     return cast(dot("typing", "Self"), value)
 
 
-def cast_real(value) -> ast.Call:
-    return cast(dot("numbers", "Real"), value)
+def cast_operand(value) -> ast.Call:
+    # cast to the sandwich operand TypeVar ``_OperandT`` (imported from base) --
+    # a versor conjugation returns the *operand's* own type, not ``Self``.
+    return cast(nm("_OperandT"), value)
+
+
+def cast_coef(value) -> ast.expr:
+    # A bare field (``self.coeff_x``) or a negated field (``-self.coeff_x``) is
+    # already of type ``Coef``, so casting it is redundant (ty warns).  Only wrap
+    # genuinely compound expressions (sums, products, ``d.get(...)``, literals).
+    if isinstance(value, (ast.Name, ast.Attribute)):
+        return value
+    if (
+        isinstance(value, ast.UnaryOp)
+        and isinstance(value.op, ast.USub)
+        and isinstance(value.operand, (ast.Name, ast.Attribute))
+    ):
+        return value
+    return cast(nm("Coef"), value)
 
 
 def ret(value) -> ast.Return:
