@@ -138,9 +138,7 @@ show(i2 * i2)  # == -1
 # %%
 # a rotor rotates a vector: the normalized rotor that turns e_1 -> e_2 is a
 # quarter turn, built from the two vectors (no hand-rolled cos/sin needed)
-quarter = Vector2.rotor_from_vectors(
-    from_vector=Vector2.e_1, to_vector=Vector2.e_2
-)
+quarter = Vector2.rotor_from_vectors(from_vector=Vector2.e_1, to_vector=Vector2.e_2)
 rotated = quarter * Vector2.e_1 * quarter.inverse()
 show(rotated)
 

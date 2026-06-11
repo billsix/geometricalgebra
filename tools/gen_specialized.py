@@ -524,10 +524,7 @@ def dimension_decl(n) -> ast.stmt:
 
 def field_decls(blades) -> list[ast.stmt]:
     """``<field>: Coef = cast(Coef, 0)`` per blade."""
-    return [
-        ann_assign(field_name(b), nm("Coef"), cast_coef(lit(0)))
-        for b in blades
-    ]
+    return [ann_assign(field_name(b), nm("Coef"), cast_coef(lit(0))) for b in blades]
 
 
 def basis_classvar_decls(name: str, blades) -> list[ast.stmt]:
