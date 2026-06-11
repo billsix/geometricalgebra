@@ -148,15 +148,14 @@ def test_basis_constant_instance_fallthrough():
     assert v.coeff_e_1 == 5 and v.coeff_e_2 == 2
 
 
-def test_component_reads_coefficients():
-    # component(blade) reads the scalar coefficient; the reverse in its definition
-    # keeps the sign right for grade >= 2 (e_12 * e_12 == -1)
+def test_coefficient_readback():
+    # coefficient(blade) reads the stored coefficient on a blade, any grade
     v = 3 * Vector2.e_1 + 4 * Vector2.e_2
-    assert v.component(Vector2.e_1) == 3 and v.component(Vector2.e_2) == 4
-    assert (7 * Bivector2.e_12).component(Bivector2.e_12) == 7
-    assert (5 * Trivector3.e_123).component(Trivector3.e_123) == 5
+    assert v.coefficient(Vector2.e_1) == 3 and v.coefficient(Vector2.e_2) == 4
+    assert (7 * Bivector2.e_12).coefficient(Bivector2.e_12) == 7
+    assert (5 * Trivector3.e_123).coefficient(Trivector3.e_123) == 5
     b3 = 4 * Bivector3.e_12 + 5 * Bivector3.e_13 + 6 * Bivector3.e_23
-    assert b3.component(Bivector3.e_13) == 5
+    assert b3.coefficient(Bivector3.e_13) == 5
 
 
 def test_linear_combination_construction():
@@ -360,3 +359,18 @@ def test_unnormalized_rotor_scales_then_normalizes():
     assert R * R.reverse() == 2 * gn.one  # |R|^2
     assert R * w * R.reverse() == 2 * gn.e_2  # scaled rotation
     assert R * w * R.inverse() == gn.e_2  # pure rotation
+
+
+def test_project_vector_onto_bivector_trivector_subtypes() -> None:
+    # Vector2 onto the 2D bivector -> itself (the bivector spans the whole plane)
+    v2 = 3 * Vector2.e_1 + 4 * Vector2.e_2
+    proj2 = Vector2.project(onto=Bivector2.e_12)(v2)
+    assert proj2 == v2 and type(proj2) is Vector2
+    # Vector3 onto a bivector plane -> the in-plane part, AS a Vector3: project is
+    # grade-preserving, so it narrows back to the input's type (no widening to G3).
+    e1, e3 = Vector3.e_1, Vector3.e_3
+    proj3 = Vector3.project(onto=Bivector3.e_12)(e1 + e3)
+    assert proj3 == e1 and type(proj3) is Vector3
+    assert Vector3.project(onto=Bivector3.e_12)(e3) == Vector3.zero()
+    # Vector3 onto the trivector (all of 3-space) -> itself
+    assert Vector3.project(onto=Trivector3.e_123)(e1 + e3) == e1 + e3

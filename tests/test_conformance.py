@@ -198,18 +198,17 @@ def test_rotate(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_component(n: int, cls) -> None:
-    # component(blade) reads each coefficient back -- the reverse keeps the sign
-    # right for grade >= 2 (e.g. e_12 e_12 == -1) -- and summing component*blade
-    # over the basis reconstructs the value (the decomposition identity)
+def test_coefficient_readback(n: int, cls) -> None:
+    # coefficient(blade) reads each blade's stored coefficient, and summing
+    # coefficient * blade over the basis reconstructs the value (decomposition)
     g = full(n, 0)
     x = to(cls, g)
     coefs = g.to_blade_dict()
     recon = cls.zero()
     for b in blades(n):
         unit = cls.from_blade_dict({b: 1})
-        assert scalar_eq(x.component(unit), coefs.get(b, 0))
-        recon = recon + x.component(unit) * unit
+        assert scalar_eq(x.coefficient(unit), coefs.get(b, 0))
+        recon = recon + x.coefficient(unit) * unit
     assert recon == x
 
 
@@ -268,3 +267,64 @@ def test_is_close_numeric() -> None:
     b = G2.from_blade_dict({(1,): 3.0 + 1e-9, (2,): 4.0})
     assert a.is_close(b)
     assert not a.is_close(G2.from_blade_dict({(1,): 3.5, (2,): 4.0}))
+
+
+@pytest.mark.parametrize("cls", [G1, G2, G3])
+def test_simplified_and_expanded_form(cls) -> None:
+    # On the lazy (specialized/graded) classes, expanded()/simplified() change the
+    # coefficient *form*: distribute, and collapse to lowest terms.  (Gn eager-
+    # simplifies in __post_init__, so it re-canonicalizes -- value test below.)
+    a, b, t = sympy.symbols("a b t")
+    v = cls.from_blade_dict({(1,): (a + b) ** 2})
+    assert v.expanded().to_blade_dict()[(1,)] == a**2 + 2 * a * b + b**2
+    w = cls.from_blade_dict({(1,): sympy.sin(t) ** 2 + sympy.cos(t) ** 2})
+    assert w.simplified().to_blade_dict()[(1,)] == 1
+
+
+def _same_value(x, y) -> bool:
+    # Value equality independent of coefficient *form* (Gn's __eq__ is structural,
+    # so (a+b)**2 vs a**2+2ab+b**2 would compare unequal there).
+    dx, dy = x.to_blade_dict(), y.to_blade_dict()
+    return all(
+        sympy.simplify(dx.get(k, 0) - dy.get(k, 0)) == 0 for k in set(dx) | set(dy)
+    )
+
+
+@pytest.mark.parametrize("n,cls", CASES)
+def test_simplified_and_expanded_preserve_value(n: int, cls) -> None:
+    # Same value on every representation -- only the coefficient form may change.
+    a, b, t = sympy.symbols("a b t")
+    v = cls.from_blade_dict({(1,): (a + b) ** 2})
+    assert _same_value(v.expanded(), v)
+    assert _same_value(v.simplified(), v)
+    w = cls.from_blade_dict({(1,): sympy.sin(t) ** 2 + sympy.cos(t) ** 2})
+    assert _same_value(w.simplified(), w)
+    assert w.simplified().to_blade_dict()[(1,)] == 1
+
+
+def test_project_vector_onto_bivector_2d() -> None:
+    # the bivector e_12 spans the whole plane, so any 2D vector projects to itself
+    v = 3 * G2.basis_vector(1) + 4 * G2.basis_vector(2)
+    assert G2.project(onto=G2.e_12)(v) == v
+    # Gn reference: same result onto the e_1 e_2 bivector
+    gv = 3 * gn.e_1 + 4 * gn.e_2
+    assert Gn.project(onto=gn.e_1 * gn.e_2)(gv) == gv
+
+
+def test_project_vector_onto_bivector_and_trivector_3d() -> None:
+    e1, e2, e3 = (G3.basis_vector(i) for i in (1, 2, 3))
+    # onto the e_12 plane: keep the in-plane part, drop the perpendicular e_3
+    assert G3.project(onto=G3.e_12)(e1 + e3) == e1
+    assert G3.project(onto=G3.e_12)(e3) == G3.zero()
+    # onto the trivector e_123 (all of 3-space): a vector projects to itself
+    assert G3.project(onto=G3.e_123)(e1 + e3) == e1 + e3
+
+
+def test_repr_latex_shows_simplified() -> None:
+    # the lazy classes don't eager-simplify, but the display (_repr_latex_) renders
+    # the simplified coefficient (sin^2 + cos^2 -> 1), not the raw stored form
+    t = sympy.symbols("t")
+    v = G2.from_blade_dict({(1,): sympy.sin(t) ** 2 + sympy.cos(t) ** 2})
+    assert "sin" in str(v.to_blade_dict()[(1,)])  # stored coefficient is still raw
+    latex = v._repr_latex_()
+    assert "sin" not in latex and "cos" not in latex  # displayed form is simplified

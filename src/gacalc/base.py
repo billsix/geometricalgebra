@@ -43,6 +43,33 @@ MultiVectorFn = Callable[["AbstractMultiVector"], "AbstractMultiVector"]
 _OperandT = typing.TypeVar("_OperandT", bound="AbstractMultiVector")
 
 
+def blade_dict_latex(d: BladeCoef) -> str:
+    """Render a blade -> coefficient dict as a LaTeX string (the body of
+    ``_repr_latex_``, factored out so callers can render a chosen *view*).
+
+    Blades are grade-ordered (``(len, indices)``); a sum coefficient is
+    parenthesized; an empty dict renders as ``0``.  ``_repr_latex_`` passes the
+    *simplified* dict (display-simplify); ``nbplotutils.show_mult`` passes the
+    *expanded* dict, so distribution is visible there without that simplify.
+    """
+
+    def add_parens_or_dont(x):
+        # Parenthesize a sum so its terms bind to the blade; render straight from
+        # the sympy/number object (no fragile sympify(str(x)) round-trip).
+        if isinstance(x, sympy.Expr) and x.is_Add:
+            return "(" + sympy.latex(x) + ")"
+        return sympy.latex(x)
+
+    blades = [
+        add_parens_or_dont(d[blade])
+        + " ".join(map(lambda b: r"\mathbf{\vec{e}}_" + str(b), blade))
+        if blade != tuple()
+        else add_parens_or_dont(d[blade])
+        for blade in sorted(d.keys(), key=lambda b: (len(b), b))
+    ]
+    return "$" + ("0" if not d else " +  ".join(blades)) + "$"
+
+
 class AbstractMultiVector(abc.ABC):
     """Abstract base class for an element (multivector) of a geometric algebra.
 
@@ -197,7 +224,7 @@ class AbstractMultiVector(abc.ABC):
         ``to_blade_dict()``.
         """
         d: BladeCoef = self.to_blade_dict()
-        yield from (d[key] for key in sorted(d.keys(), key=lambda b: (len(b), str(b))))
+        yield from (d[key] for key in sorted(d.keys(), key=lambda b: (len(b), b)))
 
     def magnitude(self) -> Coef:
         """Magnitude  |A|  =  √(Ã ∗ A)  — the positive square root of the scalar
@@ -216,21 +243,55 @@ class AbstractMultiVector(abc.ABC):
         """Unit multivector  Â  =  A / |A|  — A rescaled to magnitude 1."""
         return self * (abs(self) ** (-1))
 
-    def component(self, x: typing.Self) -> Coef:
-        """Scalar coefficient of this multivector along the unit blade ``x``.
+    def coefficient(self, blade: typing.Self) -> Coef:
+        """The coefficient this multivector stores on the unit basis ``blade``.
 
-        For an orthonormal basis blade e_J (e.g. ``e_1`` or ``e_12``), the
-        coefficient α_J in  A = Σ_J α_J e_J  is the scalar part of  A ẽ_J ,
-        i.e. ⟨A x̃⟩₀ (ẽ_J = reverse(e_J) = e_J⁻¹ for a unit Euclidean blade,
-        since e_J ẽ_J = 1).  So ``v.component(e_1)`` reads off v's e_1 coefficient
-        and ``B.component(e_12)`` its e_12 coefficient (the reverse is what keeps
-        the sign right for grade ≥ 2, where e_12 e_12 = −1).
+        A thin reader convenience: it reads the stored value straight from the
+        blade-dict interchange — no geometric product — and is correct for any
+        grade.  ``blade`` is a unit basis blade: a class constant like
+        ``Vector2.e_1`` / ``Bivector2.e_12`` / ``G3.e_123``, or a module constant
+        like ``gn.e_1``.  (Not from Hestenes/Sobczyk — a convenience over
+        ``to_blade_dict()``.  For the scalar part or a whole grade, use
+        ``scalar_part`` / ``r_vector_part``.)
 
-        ``x`` is expected to be a unit basis blade — the named class constants
-        (``Vector2.e_1``, ``Bivector2.e_12``, …) or ``gn.e_1`` are exactly these.
-        For the blade-valued part instead of the scalar, see ``project``.
+        >>> from gacalc.g2 import Vector2
+        >>> (3 * Vector2.e_1 + 4 * Vector2.e_2).coefficient(Vector2.e_1)
+        3
         """
-        return (self * x.reverse()).scalar_part()
+        (key,) = blade.to_blade_dict()  # the single blade of a unit basis blade
+        return self.to_blade_dict().get(key, 0)
+
+    def _map_coefficients(self, op: Callable[[Coef], Coef]) -> typing.Self:
+        """Return a new multivector with ``op`` applied to each coefficient.
+
+        The same value, with its blade coefficients transformed (e.g. by a sympy
+        rewrite).  Works on any representation via the blade-dict interchange, so
+        ``Gn``/``G1``/``G2``/``G3`` and the graded subtypes all inherit it.
+        """
+        return type(self).from_blade_dict(
+            {blade: op(coef) for blade, coef in self.to_blade_dict().items()}
+        )
+
+    def simplified(self) -> typing.Self:
+        """The same multivector with every coefficient ``sympy.simplify``'d.
+
+        The specialized/graded classes don't eager-simplify (the lazy policy), so a
+        symbolic result can carry uncombined or uncancelled coefficients — e.g. a
+        bivector times its dual whose terms should cancel.  ``simplified()`` returns
+        an equal value with each coefficient in lowest terms, for display/inspection;
+        the stored fields are untouched.  (``Gn`` already eager-simplifies, so this
+        is a no-op there.)
+        """
+        return self._map_coefficients(lambda c: sympy.simplify(c))  # type: ignore
+
+    def expanded(self) -> typing.Self:
+        """The same multivector with every coefficient ``sympy.expand``'d.
+
+        Distributes products over sums in each coefficient — the fully *distributed*
+        form (e.g. for showing that the geometric product is distributive).  Equal in
+        value; only the coefficient form changes.
+        """
+        return self._map_coefficients(lambda c: sympy.expand(c))
 
     def inner_product(self, rhs: typing.Self) -> typing.Self:
         """Inner (dot) product  A · B  — the lowest-grade part of the geometric
@@ -504,7 +565,17 @@ class AbstractMultiVector(abc.ABC):
             if value.is_scalar():  # 2.9b
                 return value
             elif value.is_r_vector():  # 2.9c
-                return (value.dot(onto)) * onto.inverse()
+                projected = (value.dot(onto)) * onto.inverse()
+                # P_B(A) preserves A's grade r, so the result is a grade-r blade.
+                # The generic product type can widen (e.g. Vector3 * Bivector3 ->
+                # G3, since vector * bivector *could* carry a grade-3 part -- which
+                # is identically zero for a projection): keep grade r and stay in
+                # A's own type.
+                grades = list(value.grades())
+                r = max(grades) if grades else 0
+                return type(value).from_blade_dict(
+                    projected.r_vector_part(r).to_blade_dict()
+                )
             else:
                 return (value.dot(onto)).dot(onto.inverse())  # 2.9a
 
@@ -718,22 +789,9 @@ class AbstractMultiVector(abc.ABC):
         )
 
     def _repr_latex_(self):
-        d: BladeCoef = self.to_blade_dict()
-
-        def add_parens_or_dont(x):
-            # Parenthesize a sum so its terms bind to the blade; render the
-            # coefficient straight from the sympy/number object (no fragile
-            # sympify(str(x)) round-trip).
-            if isinstance(x, sympy.Expr) and x.is_Add:
-                return "(" + sympy.latex(x) + ")"
-            return sympy.latex(x)
-
-        blades = [
-            add_parens_or_dont(d[blade])
-            + " ".join(map(lambda b: r"\mathbf{\vec{e}}_" + str(b), blade))
-            if blade != tuple()
-            else add_parens_or_dont(d[blade])
-            for blade in sorted(d.keys(), key=lambda b: (len(b), str(b)))
-        ]
-        # latex_string = r"$\frac{1}{2}$"
-        return "$" + ("0" if (self == type(self).zero()) else " +  ".join(blades)) + "$"
+        # Display the simplified view: the lazy classes (G1/G2/G3, graded subtypes)
+        # don't eager-simplify, so a raw coefficient may not be in lowest terms
+        # (e.g. a bivector times its dual whose terms should cancel).  Simplifying
+        # only the rendered form leaves the stored fields untouched.  (`Gn` already
+        # eager-simplifies, so this is a cheap no-op there; display is not hot.)
+        return blade_dict_latex(self.simplified().to_blade_dict())

@@ -39,8 +39,9 @@ a.magnitude_squared()   # 25  (a vector squared is its magnitude squared)
 a * a == G2.from_scalar(25)   # True
 e_1 * e_2               # the unit bivector e_12
 a.dual()                # the dual; n defaults to this algebra's dimension (2)
-a.component(e_1)        # 3   (the scalar coefficient along a unit blade; works
-                        #      for any grade, e.g. B.component(e_1 ^ e_2))
+a.coefficient(e_1)      # 3   (the stored coefficient on a unit blade — a thin
+                        #      reader over to_blade_dict; any grade, e.g.
+                        #      B.coefficient(e_1 ^ e_2))
 ```
 
 Each `g*` module exports its own basis constants (`zero`, `one`, `e_1`, …, and the
@@ -76,7 +77,8 @@ Each class exposes its **basis blades as class constants of its own type** — `
 `Vector2.e_2` (vectors), `Bivector2.e_12`, `G3.e_123`, etc. — equivalent to `cls.basis_vector(n)` but
 named. They live on the class (`Vector2.e_1`); because the stored coefficient fields are named
 `coeff_e_1` … (not `e_1`), an *instance* `v.e_1` resolves to the same basis constant, while
-`v.coeff_e_1` is that component's value. Read a component back out with `v.component(Vector2.e_1)`.
+`v.coeff_e_1` is that component's value. Read a coefficient back out with
+`v.coefficient(Vector2.e_1)` (a thin reader over `to_blade_dict()`).
 (`Gn`, being dimension-agnostic, has no fixed class constants — use the module-level `gn.e_1 …` or
 `Gn.basis_vector(n)`.)
 
@@ -99,6 +101,10 @@ A result that spans grades no single type covers widens to the full `G_n`
 also narrow to the tightest type). Rotors carry `plane_of_rotation()`, and
 `rotor_from_vectors(from, to)` builds the rotor whose sandwich `R v R.inverse()` equals
 `rotate(from, to)(v)`. A full walkthrough is in `notebooks/displaygraded.py`.
+
+Because the specialized/graded classes don't eagerly simplify, a symbolic result can carry
+un-reduced coefficients (e.g. terms that should cancel). `v.simplified()` / `v.expanded()` return
+the same value with each coefficient `sympy.simplify`'d / `sympy.expand`'d for a clean view.
 
 ## Adding a new algebra (worked example: `G4` for 𝒢₄)
 

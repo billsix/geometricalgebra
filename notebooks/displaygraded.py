@@ -48,6 +48,7 @@
 # operation dictates.
 
 # %%
+import sympy
 from IPython.display import Markdown, Math, display
 
 from gacalc.g2 import Vector2
@@ -72,8 +73,8 @@ def show(*values):
 #
 # Build a vector basis and combine it linearly. `3*e_1 + 4*e_2` is a `Vector2`.
 # Each class exposes its basis blades as named constants of its own type
-# (`Vector2.e_1` == `Vector2.basis_vector(1)`); reading a component back out is
-# `v.component(Vector2.e_1)`.
+# (`Vector2.e_1` == `Vector2.basis_vector(1)`); reading a coefficient back out is
+# `v.coefficient(Vector2.e_1)` (a thin reader over `to_blade_dict()`).
 
 # %%
 a = 3 * Vector2.e_1 + 4 * Vector2.e_2
@@ -232,6 +233,20 @@ biv.dual()  # the components of u x v
 # %%
 # each unit bivector of G3 squares to -1 (the even subalgebra is the quaternions)
 show((Vector3.e_1 ^ Vector3.e_2) * (Vector3.e_1 ^ Vector3.e_2))
+
+# %% [markdown]
+# A bivector times its **own dual** collapses to the pseudoscalar scaled by
+# `|B|²`:  `B (B*) = |B|² I`.  For a *unit* bivector that is just the pseudoscalar
+# `I = e₁e₂e₃`.  The lazy `Bivector3` stores the raw `cos²t + sin²t` coefficient;
+# only the **display** simplifies it — so the cancellation shows.
+
+# %%
+t = sympy.symbols("t")
+B = sympy.cos(t) * (Vector3.e_1 ^ Vector3.e_2) + sympy.sin(t) * (
+    Vector3.e_1 ^ Vector3.e_3
+)
+# B * B.dual() stores (cos^2 t + sin^2 t)·e_123 but displays as the trivector e_123
+show(B, B.dual(), B * B.dual())
 
 # %% [markdown]
 # When a result spans grades no single type covers

@@ -573,23 +573,28 @@ def to_matrix(
                 "explicitly, e.g. to_matrix(fn, Gn, n=3)."
             )
 
-    f0 = fn(cls.zero())  # image of the origin -> the translation
-    # image of each basis vector minus the origin image -> the linear part
-    linear_cols = [fn(cls.basis_vector(i + 1)) - f0 for i in range(n)]
+    origin = fn(cls.zero())  # image of the origin -> the last (translation) column
+    # images of the unit directions -> the first columns (the linear part)
+    directions = [fn(cls.basis_vector(i + 1)) - origin for i in range(n)]
 
-    def coord(v: AbstractMultiVector, j: int):
-        # the e_{j+1} coefficient of v (grade-general; works for Gn/G2/G3/...)
-        return v.component(cls.basis_vector(j + 1))
+    def coords(v: AbstractMultiVector, bottom: int) -> list:
+        # one full column: the n coordinates of v -- read straight from its
+        # blade-dict (the coefficient each representation already stores; no
+        # product to compute, no dependence on component/scalar_product) -- plus
+        # the column's bottom entry (0 for a direction column, 1 for translation).
+        d = v.to_blade_dict()
+        return [d.get((j + 1,), 0) for j in range(n)] + [bottom]
 
-    rows = []
-    for j in range(n):
-        rows.append([coord(linear_cols[i], j) for i in range(n)] + [coord(f0, j)])
-    rows.append([0] * n + [1])  # homogeneous last row (0, ..., 0, 1)
+    # the matrix's columns: each unit-direction image (bottom 0), then the origin
+    # (translation, bottom 1).
+    columns = [coords(d, 0) for d in directions] + [coords(origin, 1)]
 
     if backend == "sympy":
-        return sympy.Matrix(rows)
+        return sympy.Matrix.hstack(*(sympy.Matrix(c) for c in columns))
     if backend == "numpy":
-        return np.array([[float(x) for x in row] for row in rows], dtype=np.float32)
+        return np.column_stack(
+            [np.array([float(x) for x in c], dtype=np.float32) for c in columns]
+        )
     raise ValueError(f"unknown backend {backend!r}; use 'numpy' or 'sympy'.")
 
 
