@@ -617,13 +617,53 @@ class AbstractMultiVector(abc.ABC):
         from_vector: AbstractMultiVector,
         to_vector: AbstractMultiVector,
     ) -> AbstractMultiVector:
-        """The rotor ``R = |from||to| + to from`` taking ``from`` toward ``to``.
+        r"""The rotor ``R`` taking ``from_vector`` toward ``to_vector``, built from
+        the angle bisector.  (Geometric products are juxtaposition, as elsewhere;
+        ``A B`` is *not* an inner product.)
 
-        An (un-normalized) even multivector whose sandwich rotates: for any
-        vector ``v``, ``R v R.inverse()`` equals ``rotate(from, to)(v)``.  ``R``
-        is the half-angle rotor; because it is not normalized, ``R v R.reverse()``
-        would also *scale* by ``R.magnitude_squared()`` -- using ``R.inverse()``
-        (= ``R.reverse() / |R|^2``) divides that out, leaving a pure rotation.
+        Derivation (write ``a = from_vector``, ``b = to_vector``).  Scale each
+        input by the *other's* length and add -- this is the half-angle, or
+        angle-bisector, vector::
+
+            h  =  |b| a  +  |a| b
+
+        Both ``|b| a`` and ``|a| b`` have length ``|a||b|``, so their sum ``h``
+        bisects the a->b angle -- it sits the same angle θ/2 from each of ``a``
+        and ``b`` (drawn with ``h`` straight up, ``a`` and ``b`` mirror-imaged;
+        their lengths may differ, only the directions matter here)::
+
+                            ^   h = |b| a + |a| b
+            b = to  \       |       / a = from
+                     \      |      /
+                      \     |     /
+                       \θ/2 |θ/2 /
+                        \   |   /
+                         \  |  /
+                          \ | /
+                           \|/
+                            O
+
+        A rotor is the geometric product of two vectors separated by *half* the
+        target angle -- so the rotor is the bisector times the from-vector::
+
+            h a  =  (|b| a + |a| b) a
+                 =  |b| (a a)  +  |a| (b a)        # a a = |a|^2  (a scalar)
+                 =  |b| |a|^2  +  |a| (b a)
+                 =  |a| ( |a||b|  +  b a )
+                 =  |a| R
+
+        so  R = b a + |a||b| = h a / |a|  -- the leading ``|a|`` is just a
+        positive scale that cancels in the sandwich.  And because
+        ``|a||b| = |b a|`` (the magnitude of a product of two vectors is the
+        product of their magnitudes), this is the compact ``product + |product|``
+        form built below -- but that form hides the bisector ``h`` it came from.
+
+        ``R`` is thus the (un-normalized) even multivector ``|a||b| + b a``
+        (scalar + bivector): a vector ``v`` rotates by ``R v R.inverse()``, which
+        equals ``rotate(from, to)(v)``.  Because ``R`` is un-normalized, the bare
+        ``R v R.reverse()`` would also *scale* by ``R.magnitude_squared()``;
+        ``R.inverse()`` (= ``R.reverse() / |R|^2``) divides that out, leaving a
+        pure rotation.
 
         (Assumes ``from``/``to`` are not antiparallel; the construction
         degenerates only on that measure-zero case.)
