@@ -34,7 +34,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
 
-from gacalc.base import AbstractMultiVector, BladeCoef, Coef
+from gacalc.base import BladeCoef, Coef, MultiVectorBase, blade_dict_latex
 from gacalc.gn import (
     MultiVector,
     identity,
@@ -48,11 +48,21 @@ if get_ipython() is not None:
 
 _IDENTITY = identity()
 
+
+def _coord(mv: MultiVectorBase, blade: tuple[int, ...]) -> Coef:
+    """The coefficient ``mv`` stores on ``blade`` (e.g. (1,) for e_1, (2,) for e_2).
+
+    Reads the value straight from the blade-dict interchange -- the coefficient
+    each representation already holds -- rather than recomputing it.
+    """
+    return mv.to_blade_dict().get(blade, 0)
+
+
 extraLinesMultiplier = 3
 
 
 def generategridlines(
-    graphBounds, interval=1, cls: type[AbstractMultiVector] = MultiVector
+    graphBounds, interval=1, cls: type[MultiVectorBase] = MultiVector
 ):
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
@@ -120,17 +130,15 @@ def create_basis(
     gridline_interval=1,
     xcolor=(0.0, 0.0, 1.0),
     ycolor=(1.0, 0.0, 1.0),
-    cls: type[AbstractMultiVector] = MultiVector,
+    cls: type[MultiVectorBase] = MultiVector,
 ):
-    ex = cls.basis_vector(1)
-    ey = cls.basis_vector(2)
     # plot transformed basis
     for vecs, thickness in generategridlines(
         graph_bounds, interval=gridline_interval, cls=cls
     ):
         plt.plot(
-            [float(fn(vec).component(ex)) for vec in vecs],
-            [float(fn(vec).component(ey)) for vec in vecs],
+            [float(_coord(fn(vec), (1,))) for vec in vecs],
+            [float(_coord(fn(vec), (2,))) for vec in vecs],
             "-",
             lw=thickness,
             color=(0.1, 0.2, 0.5),
@@ -140,7 +148,7 @@ def create_basis(
 
 def create_unit_circle(
     fn=_IDENTITY,
-    cls: type[AbstractMultiVector] = MultiVector,
+    cls: type[MultiVectorBase] = MultiVector,
 ):
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
@@ -164,8 +172,8 @@ def create_unit_circle(
     # plot transformed basis
     for vecs in generate_circle():
         plt.plot(
-            [float(fn(vec).component(ex)) for vec in vecs],
-            [float(fn(vec).component(ey)) for vec in vecs],
+            [float(_coord(fn(vec), (1,))) for vec in vecs],
+            [float(_coord(fn(vec), (2,))) for vec in vecs],
             "-",
             lw=1,
             color=(0.0, 0.0, 0.0),
@@ -177,7 +185,7 @@ def create_x_and_y(
     fn=_IDENTITY,
     xcolor=(0.0, 0.0, 1.0),
     ycolor=(1.0, 0.0, 1.0),
-    cls: type[AbstractMultiVector] = MultiVector,
+    cls: type[MultiVectorBase] = MultiVector,
 ):
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
@@ -185,8 +193,8 @@ def create_x_and_y(
     # x axis
     x_axis = [origin, ex]
     plt.plot(
-        [float(fn(vec).component(ex)) for vec in x_axis],
-        [float(fn(vec).component(ey)) for vec in x_axis],
+        [float(_coord(fn(vec), (1,))) for vec in x_axis],
+        [float(_coord(fn(vec), (2,))) for vec in x_axis],
         "-",
         lw=1.0,
         color=xcolor,
@@ -195,28 +203,28 @@ def create_x_and_y(
     # y axis
     y_axis = [origin, ey]
     plt.plot(
-        [float(fn(vec).component(ex)) for vec in y_axis],
-        [float(fn(vec).component(ey)) for vec in y_axis],
+        [float(_coord(fn(vec), (1,))) for vec in y_axis],
+        [float(_coord(fn(vec), (2,))) for vec in y_axis],
         "-",
         lw=1.0,
         color=ycolor,
     )
 
 
-def cosine(v1: AbstractMultiVector, v2: AbstractMultiVector) -> Coef:
+def cosine(v1: MultiVectorBase, v2: MultiVectorBase) -> Coef:
     return (v1.dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()
 
 
-def sine(v1: AbstractMultiVector, v2: AbstractMultiVector) -> Coef:
+def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Coef:
     # rotate v1 by 90 degrees in the e_1 e_2 plane (v1 * e_1 e_2), then project on v2
-    rot90: AbstractMultiVector = v1 * type(v1).from_blade_dict({(1, 2): 1})
+    rot90: MultiVectorBase = v1 * type(v1).from_blade_dict({(1, 2): 1})
     return (rot90.dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()
 
 
 def draw_isoceles_triangle(
     fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
-    cls: type[AbstractMultiVector] = MultiVector,
+    cls: type[MultiVectorBase] = MultiVector,
 ):
     assert axes is not None, "call inside a create_graphs() block"
     ex = cls.basis_vector(1)
@@ -243,7 +251,9 @@ def draw_isoceles_triangle(
     ]
 
     triangle = Polygon(
-        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices)),
+        list(
+            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
+        ),
         closed=True,
         facecolor="lightblue",
         edgecolor="black",
@@ -251,7 +261,9 @@ def draw_isoceles_triangle(
     axes.add_patch(triangle)
 
     vertices_as_np = np.array(
-        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices))
+        list(
+            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
+        )
     )
     # Plot dots at the vertices
     axes.scatter(
@@ -266,8 +278,8 @@ def draw_isoceles_triangle(
             label,
             xy=(vertices_as_np[i, 0], vertices_as_np[i, 1]),
             xytext=(
-                vertices_as_np[i, 0] + label_offset.component(ex),
-                vertices_as_np[i, 1] + label_offset.component(ey),
+                vertices_as_np[i, 0] + _coord(label_offset, (1,)),
+                vertices_as_np[i, 1] + _coord(label_offset, (2,)),
             ),
             rotation=math.degrees(angle_radians),
             rotation_mode="anchor",
@@ -284,7 +296,7 @@ def draw_isoceles_triangle(
 def draw_second_right_triangle(
     fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
-    cls: type[AbstractMultiVector] = MultiVector,
+    cls: type[MultiVectorBase] = MultiVector,
 ):
     assert axes is not None, "call inside a create_graphs() block"
     ex = cls.basis_vector(1)
@@ -311,7 +323,9 @@ def draw_second_right_triangle(
     ]
 
     triangle = Polygon(
-        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices)),
+        list(
+            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
+        ),
         closed=True,
         facecolor="lightblue",
         edgecolor="black",
@@ -319,7 +333,9 @@ def draw_second_right_triangle(
     axes.add_patch(triangle)
 
     vertices_as_np = np.array(
-        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices))
+        list(
+            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
+        )
     )
     # Plot dots at the vertices
     axes.scatter(
@@ -334,8 +350,8 @@ def draw_second_right_triangle(
             label,
             xy=(vertices_as_np[i, 0], vertices_as_np[i, 1]),
             xytext=(
-                vertices_as_np[i, 0] - label_offset.component(ex),
-                vertices_as_np[i, 1] + label_offset.component(ey),
+                vertices_as_np[i, 0] - _coord(label_offset, (1,)),
+                vertices_as_np[i, 1] + _coord(label_offset, (2,)),
             ),
             rotation=math.degrees(angle_radians),
             rotation_mode="anchor",
@@ -346,7 +362,7 @@ def draw_second_right_triangle(
 def draw_right_triangle(
     fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
-    cls: type[AbstractMultiVector] = MultiVector,
+    cls: type[MultiVectorBase] = MultiVector,
 ):
     assert axes is not None, "call inside a create_graphs() block"
     ex = cls.basis_vector(1)
@@ -373,7 +389,9 @@ def draw_right_triangle(
     ]
 
     triangle = Polygon(
-        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices)),
+        list(
+            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
+        ),
         closed=True,
         facecolor="lightblue",
         edgecolor="black",
@@ -381,7 +399,9 @@ def draw_right_triangle(
     axes.add_patch(triangle)
 
     vertices_as_np = np.array(
-        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices))
+        list(
+            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
+        )
     )
     # Plot dots at the vertices
     axes.scatter(
@@ -396,8 +416,8 @@ def draw_right_triangle(
             label,
             xy=(vertices_as_np[i, 0], vertices_as_np[i, 1]),
             xytext=(
-                vertices_as_np[i, 0] + label_offset.component(ex),
-                vertices_as_np[i, 1] + label_offset.component(ey),
+                vertices_as_np[i, 0] + _coord(label_offset, (1,)),
+                vertices_as_np[i, 1] + _coord(label_offset, (2,)),
             ),
             rotation=math.degrees(angle_radians),
             rotation_mode="anchor",
@@ -408,7 +428,7 @@ def draw_right_triangle(
 def draw_ndc(
     fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
-    cls: type[AbstractMultiVector] = MultiVector,
+    cls: type[MultiVectorBase] = MultiVector,
 ):
     assert axes is not None, "call inside a create_graphs() block"
     ex = cls.basis_vector(1)
@@ -437,7 +457,9 @@ def draw_ndc(
     ]
 
     square = Polygon(
-        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices)),
+        list(
+            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
+        ),
         closed=True,
         fc="none",
         edgecolor="black",
@@ -445,7 +467,9 @@ def draw_ndc(
     axes.add_patch(square)
 
     vertices_as_np = np.array(
-        list(map(lambda mv: [mv.component(ex), mv.component(ey)], vertices))
+        list(
+            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
+        )
     )
     # Plot dots at the vertices
     axes.scatter(
@@ -460,8 +484,8 @@ def draw_ndc(
             label,
             xy=(vertices_as_np[i, 0], vertices_as_np[i, 1]),
             xytext=(
-                vertices_as_np[i, 0] + label_offset.component(ex),
-                vertices_as_np[i, 1] + label_offset.component(ey),
+                vertices_as_np[i, 0] + _coord(label_offset, (1,)),
+                vertices_as_np[i, 1] + _coord(label_offset, (2,)),
             ),
             rotation=math.degrees(angle_radians),
             rotation_mode="anchor",
@@ -474,7 +498,7 @@ def draw_screen(
     height,
     fn=_IDENTITY,
     color=(0.0, 0.0, 1.0),
-    cls: type[AbstractMultiVector] = MultiVector,
+    cls: type[MultiVectorBase] = MultiVector,
 ):
     assert axes is not None, "call inside a create_graphs() block"
     ex = cls.basis_vector(1)
@@ -496,7 +520,7 @@ def draw_screen(
             square = Polygon(
                 list(
                     map(
-                        lambda mv: [mv.component(ex), mv.component(ey)],
+                        lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))],
                         vertices,
                     )
                 ),
@@ -521,7 +545,7 @@ def _coef_as_float(coef) -> float | None:
 
 
 def plot_multivector(
-    mv: AbstractMultiVector,
+    mv: MultiVectorBase,
     x_range: tuple[float, float] | None = None,
     title: str | None = None,
     figsize: tuple[float, float] | None = None,
@@ -530,7 +554,7 @@ def plot_multivector(
 ):
     """Plot each blade of ``mv`` on its own horizontal number line, stacked vertically.
 
-    Works on any ``AbstractMultiVector`` representation (``Gn``, ``G1``/``G2``/``G3``)
+    Works on any ``MultiVectorBase`` representation (``Gn``, ``G1``/``G2``/``G3``)
     via the ``to_blade_dict()`` interchange protocol.
 
     Each row is one basis blade (sorted by grade, then by index). Numeric
@@ -609,7 +633,7 @@ def plot_multivector(
     return fig
 
 
-def _blade_terms(mv: AbstractMultiVector) -> list:
+def _blade_terms(mv: MultiVectorBase) -> list:
     """The single-blade multivectors that sum to ``mv`` (its product-table terms).
 
     ``__iter__`` now yields a multivector's coefficient *values*, so the
@@ -617,11 +641,13 @@ def _blade_terms(mv: AbstractMultiVector) -> list:
     """
     return [
         type(mv).from_blade_dict({blade: coef})
-        for blade, coef in mv.to_blade_dict().items()
+        for blade, coef in sorted(
+            mv.to_blade_dict().items(), key=lambda item: (len(item[0]), item[0])
+        )
     ]
 
 
-def show_mult(a: AbstractMultiVector, b: AbstractMultiVector):
+def show_mult(a: MultiVectorBase, b: MultiVectorBase):
     display(Markdown("**We want to evaluate**"))
     # print the values as latex before they are multiplied
     display(Math("$($" + a._repr_latex_() + "$)*($" + b._repr_latex_() + "$)$"))
@@ -635,8 +661,10 @@ def show_mult(a: AbstractMultiVector, b: AbstractMultiVector):
     )
     # Convert to markdown string and display
     df_latex: pd.DataFrame = df.map(
-        lambda x: x._repr_latex_() if hasattr(x, "_repr_latex_") else x
+        lambda x: blade_dict_latex(x.expanded().to_blade_dict())
+        if hasattr(x, "expanded")
+        else x
     )
     display(Markdown(df_latex.to_markdown(index=False)))
     display(Markdown("**Summing all the products up, we get**"))
-    display(Math("$" + (a * b)._repr_latex_() + "$"))
+    display(Math("$" + blade_dict_latex((a * b).expanded().to_blade_dict()) + "$"))

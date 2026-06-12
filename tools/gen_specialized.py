@@ -79,7 +79,7 @@ from astbuild import (  # noqa: E402
     subscript,
 )
 
-from gacalc.base import AbstractMultiVector, BladeCoef  # noqa: E402
+from gacalc.base import MultiVectorBase, BladeCoef  # noqa: E402
 from gacalc.gn import Gn  # noqa: E402
 
 # ==========================================================================
@@ -307,7 +307,7 @@ def method_doc_stmts(method_name, indent="        ") -> list[ast.stmt]:
     The Constant value reproduces what the string generator emitted (a leading
     newline + ``indent``-prefixed lines), so the parsed AST matches for parity.
     """
-    member = getattr(AbstractMultiVector, method_name, None)
+    member = getattr(MultiVectorBase, method_name, None)
     doc = inspect.getdoc(member) if member is not None else None
     if not doc:
         return []
@@ -504,7 +504,7 @@ def eq_method() -> ast.FunctionDef:
     )
     body = [
         ast.If(
-            test=not_(isinstance_(nm("other"), nm("AbstractMultiVector"))),
+            test=not_(isinstance_(nm("other"), nm("MultiVectorBase"))),
             body=[ret(nm("NotImplemented"))],
             orelse=[],
         ),
@@ -757,7 +757,7 @@ def dispatch_method(
     Defaults emit ``def <method>(self, rhs) -> typing.Self`` casting each case to
     ``Self`` (the products).  The rotor sandwich overrides ``param_name='x'``,
     ``return_type=_OperandT``, ``cast=cast_operand`` so it is a Liskov-compatible
-    override of ``AbstractMultiVector.sandwich(self, x: _OperandT) -> _OperandT``
+    override of ``MultiVectorBase.sandwich(self, x: _OperandT) -> _OperandT``
     and is typed as the operand, not ``Self``.
     """
     cases: list[ast.match_case] = []
@@ -917,7 +917,7 @@ def generate_scalar() -> list[ast.stmt]:
                     [],
                 ),
                 ast.If(
-                    isinstance_(nm("rhs"), nm("AbstractMultiVector")),
+                    isinstance_(nm("rhs"), nm("MultiVectorBase")),
                     [ret(cast_self(mul(selfsc, nm("rhs"))))],
                     [],
                 ),
@@ -953,7 +953,7 @@ def generate_scalar() -> list[ast.stmt]:
                     [],
                 ),
                 ast.If(
-                    isinstance_(nm("rhs"), nm("AbstractMultiVector")),
+                    isinstance_(nm("rhs"), nm("MultiVectorBase")),
                     [ret(cast_self(ast.BinOp(nm("rhs"), ast.Add(), nm("self"))))],
                     [],
                 ),
@@ -1511,7 +1511,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                         )
                     ),
                 ],
-                returns=nm("AbstractMultiVector"),
+                returns=nm("MultiVectorBase"),
             )
         )
         # Versor conjugation  R x R^-1  -- the rotor sandwich, GRADE-PRESERVING:
@@ -1606,14 +1606,14 @@ from collections.abc import Generator
 import numpy as np
 import sympy
 
-from gacalc.base import AbstractMultiVector, BladeCoef, Coef{operand_import}
+from gacalc.base import MultiVectorBase, BladeCoef, Coef{operand_import}
 from gacalc.gn import Gn
 from gacalc.scalar import Scalar
 
 
 def _coerce(x, cls):
     \"\"\"Coerce a scalar or multivector to ``cls`` (the full type).\"\"\"
-    if isinstance(x, AbstractMultiVector):
+    if isinstance(x, MultiVectorBase):
         return cls.from_blade_dict(x.to_blade_dict())
     if isinstance(x, sympy.Expr):
         return cls.from_sympy_expr(x)
@@ -1651,7 +1651,7 @@ import typing
 import numpy as np
 import sympy
 
-from gacalc.base import AbstractMultiVector, BladeCoef, Coef
+from gacalc.base import MultiVectorBase, BladeCoef, Coef
 from gacalc.gn import Gn
 """
 

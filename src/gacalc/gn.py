@@ -25,7 +25,7 @@ from typing import NamedTuple
 
 import sympy
 
-from gacalc.base import AbstractMultiVector, BladeCoef, Coef
+from gacalc.base import BladeCoef, Coef, MultiVectorBase
 
 # The representation-agnostic transform layer (InvertibleFunction, translate,
 # scale, compose, ...) lives in gacalc.transforms; it derives any basis
@@ -56,7 +56,7 @@ class BladeDictionaryEntry(NamedTuple):
 
 
 @dataclasses.dataclass(slots=True)
-class Gn(AbstractMultiVector):
+class Gn(MultiVectorBase):
     """An element (multivector) of 𝒢ₙ, the geometric algebra of n-dimensional
     Euclidean space ℝⁿ (Hestenes' notation).
 
@@ -96,7 +96,7 @@ class Gn(AbstractMultiVector):
     def to_blade_dict(self) -> BladeCoef:
         return self.coefficient_of_blade
 
-    def _geometric_product(self, rhs: AbstractMultiVector) -> typing.Self:
+    def _geometric_product(self, rhs: MultiVectorBase) -> typing.Self:
         def decrease_grade(
             basis_blade: BladeDictionaryEntry,
         ) -> BladeDictionaryEntry:
@@ -142,10 +142,10 @@ class Gn(AbstractMultiVector):
 
         def blade_dictionary_entry_to_multivector(
             b: BladeDictionaryEntry,
-        ) -> AbstractMultiVector:
+        ) -> MultiVectorBase:
             return b.as_multivector()
 
-        product: AbstractMultiVector = sum(
+        product: MultiVectorBase = sum(
             [
                 blade_dictionary_entry_to_multivector(
                     decrease_grade(
@@ -172,7 +172,7 @@ class Gn(AbstractMultiVector):
 
 
 # Backward-compatible alias: ``MultiVector`` is the general representation Gn.
-# (Gn is the canonical name; AbstractMultiVector is the shared base type.)
+# (Gn is the canonical name; MultiVectorBase is the shared base type.)
 MultiVector = Gn
 
 

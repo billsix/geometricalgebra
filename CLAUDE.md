@@ -13,7 +13,7 @@ contributor/architecture overview.
 
 The library is split one-concept-per-file so a newcomer can import just the algebra they need:
 
-- `src/gacalc/base.py` — `AbstractMultiVector` (the abstract base) + the type aliases
+- `src/gacalc/base.py` — `MultiVectorBase` (the abstract base) + the type aliases
   `BladeCoef`, `MultiVectorFn`. Imports nothing internal.
 - `src/gacalc/gn.py` — `Gn`, the general dimension-agnostic representation, plus the
   `e_1..e_10` / `zero` / `one` constants, the symbolic vectors (`sym_vec2_1`, …), and the
@@ -47,7 +47,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 
 ## Architecture
 
-**Abstract base + interchange protocol.** `AbstractMultiVector` (in `base.py`) holds every
+**Abstract base + interchange protocol.** `MultiVectorBase` (in `base.py`) holds every
 representation-independent method, written against a tiny interchange protocol so a concrete
 representation only implements the primitives. The boundary is *"touches the raw representation"*,
 not *"transitively uses the product"* — e.g. `inner_product`/`reverse`/`project` live in the ABC and
@@ -74,6 +74,18 @@ names `e_1` … to denote the basis-vector *constants* below) and whose `_geomet
 consistent with the reference. They do **not** eagerly simplify (lazy, on equality), and they carry
 `DIMENSION` so `dual()` / `unit_pseudoscalar()` default to the class's dimension.
 
+**Coefficient-view helpers (`base.py`).** `simplified()` / `expanded()` return the same multivector
+with each coefficient `sympy.simplify`'d / `sympy.expand`'d — for the lazy classes, whose raw
+coefficients aren't reduced (e.g. a bivector times its dual whose terms should cancel, or a fully
+distributed product). They're on `MultiVectorBase` (work on every representation via the
+`_map_coefficients` interchange helper); `Gn` already eager-simplifies, so `simplified()` is a no-op
+there. Reading a single coefficient back out: `value.coefficient(blade)` (e.g.
+`v.coefficient(Vector2.e_1)`, `B.coefficient(Bivector2.e_12)`) — a thin reader that just looks the
+value up in `to_blade_dict()` (no product computed, correct for any grade). The old `component`
+method, which *computed* `⟨A x̃⟩` to recover a number the object already stores, was retired in its
+favour; `scalar_product` remains, but it is the scalar product `⟨A B⟩`, **not** a coefficient reader
+(it's sign-flipped vs the stored coefficient for grade ≥2).
+
 **Coefficient type — `Coef = int | float | sympy.Expr`** (defined in `base.py`; `BladeCoef` is
 `dict[tuple[int, ...], Coef]`). A multivector coefficient is a plain Python number or a sympy
 expression. This is the **concrete** union, deliberately *not* the `numbers.Real` ABC: ty turns
@@ -91,15 +103,15 @@ its own basis blades as **class constants of that class's type** (`Vector2.e_1`,
 `ClassVar` declaration in the class body plus a post-class `Cls.e_1 = Cls.from_blade_dict(...)`
 assignment (a class can't reference itself mid-definition). Because the stored field is `coeff_e_1`,
 **both `Cls.e_1` and `instance.e_1` resolve to that one constant** (no instance attribute shadows it),
-while `instance.coeff_e_1` is the component value; read a component back out with the grade-general
-`value.component(blade)`. `Gn` is dimension-agnostic so it has **no** class constants — use the
+while `instance.coeff_e_1` is the component value; read a coefficient back out with
+`value.coefficient(Vector2.e_1)` (thin reader over `to_blade_dict()`). `Gn` is dimension-agnostic so it has **no** class constants — use the
 module-level `gn.e_1 …` or `Gn.basis_vector(n)`. Mixing a specialized value with a `Gn` value coerces
 to `Gn`.
 
 **Iteration yields coefficient values, not blade terms.** `iter(value)` / `list(value)` /
 `tuple(value)` / `np.array([list(v), …])` yield the coefficient *values* in blade order — so a vector
 reads as its coordinate tuple and feeds numpy/plotting directly. This is the generated `__iter__` on
-every specialized class (all fields, dense) and `AbstractMultiVector.__iter__` on `Gn` (its present
+every specialized class (all fields, dense) and `MultiVectorBase.__iter__` on `Gn` (its present
 blades). To decompose a value into one single-blade multivector per term instead (e.g. for a
 component-by-component product breakdown), iterate `to_blade_dict()` — which is what
 `nbplotutils.show_mult` (via its `_blade_terms` helper) does.
@@ -113,7 +125,7 @@ layer is shared with the author's *modelviewprojection* book project. Jupyter di
 `_repr_latex_`.
 
 **Rotations & rotors.** Two *general* (representation-agnostic) rotation methods live on
-`AbstractMultiVector` (`base.py`): `rotate(from_vector, to_vector)` returns a function that rotates a
+`MultiVectorBase` (`base.py`): `rotate(from_vector, to_vector)` returns a function that rotates a
 vector through the angle from `from`→`to` *in their plane* (in-plane part turned, perpendicular part
 left fixed) — equivalent to the rotor sandwich `R v R⁻¹`; and `rotor_from_vectors(from, to)` builds
 that rotor `R = |from||to| + to·from` (scalar + bivector, the even-subalgebra grade). These act in
@@ -126,6 +138,14 @@ carry a **closed-form, type-correct `sandwich(x)`** (`R x R⁻¹`, derived symbo
 no projection): grade-preserving, so `Rotor3.sandwich(Vector3) → Vector3`, `…(Bivector3) →
 Bivector3`, etc. `rotate` keeps the projection formula for teaching both; the rotor sandwich is the
 fast path mvp's rotations run on. (Both agree — see `notebooks/displayrotations.py`.)
+
+**`project`/`reject` are grade-preserving and stay in the operand's type.** `P_B(A) = (A·B)B⁻¹`
+preserves A's grade, so for a homogeneous input the result is the same grade — `base.project`'s
+`is_r_vector` branch narrows the result to that grade and rebuilds it as `type(A)`. Without that,
+projecting a `Vector3` onto a `Bivector3` would *widen* to `G3` (the geometric product `Vector3 *
+Bivector3⁻¹` types as the odd part `{1,3}` even though the grade-3 part is identically zero for a
+projection); the narrowing keeps `Vector3.project(onto=Bivector3) → Vector3`. (Same spirit as the
+rotor sandwich's grade projection.)
 
 **Convention — express rotations as `rotate` / `rotor_from_vectors` (from/to), never hand-built.**
 When writing or reviewing examples, tests, notebooks, or docs, a rotation must read as an explicit
@@ -149,7 +169,7 @@ vector) keep their names; the rule targets pure renames of things that already h
 
 - `*` geometric product · `^` wedge (outer) product · `@` composition of `InvertibleFunction`s
 - `abs(mv)` → magnitude · inverse via `.inverse()`
-- rotations: `AbstractMultiVector.rotate(from, to)` / `rotor_from_vectors(from, to)` (rotor methods,
+- rotations: `MultiVectorBase.rotate(from, to)` / `rotor_from_vectors(from, to)` (rotor methods,
   any plane / representation)
 
 ## Code generation
@@ -203,7 +223,7 @@ sub-second for 𝒢₁/𝒢₂, tens of seconds for 𝒢₃, minutes for 𝒢₄
 Two presentation details, both driven from the generator so they stay consistent across algebras:
 the additive terms in each generated component are **ordered by grade** (scalar → vector → bivector
 → …) via `term_grade_key`; and each generated method's docstring is **copied from the matching
-`AbstractMultiVector` method** (`base.py`) via `inspect.getdoc`, so the Hestenes notation on the
+`MultiVectorBase` method** (`base.py`) via `inspect.getdoc`, so the Hestenes notation on the
 specialized classes never drifts from the shared base.
 
 ## Dev workflow
@@ -278,9 +298,9 @@ Open issues (most are in the shared/reference code, inherited from the original 
 1. **Fixed Euclidean signature**: eᵢeᵢ always reduces to +1. No spacetime/null/conformal signatures.
    Now documented (the classes are explicitly 𝒢ₙ over ℝⁿ), but still a hard limit.
 2. **Self-flagged uncertainty**: `inverse`, `is_parallel_to` carry "not sure if I'm doing this
-   correctly" comments; not all verified against known results. (`component` was resolved — it is now
-   `⟨A x̃⟩₀` = `(self * x.reverse()).scalar_part()`, correct for any grade and verified by
-   `test_component` over `[Gn, G1, G2, G3]` and the graded subtypes.)
+   correctly" comments; not all verified against known results. (Coefficient read-back is no longer a
+   concern — `component` was replaced by `coefficient(blade)`, a thin reader over `to_blade_dict()`
+   that's correct for any grade; covered by `test_coefficient_readback`.)
 
 ## Future directions (not yet decided)
 

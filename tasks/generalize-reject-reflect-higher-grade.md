@@ -4,7 +4,7 @@
 
 ## Goal
 
-`AbstractMultiVector.reject` and `.reflect` (in `base.py`) currently only implement the case where the
+`MultiVectorBase.reject` and `.reflect` (in `base.py`) currently only implement the case where the
 blade argument is a **vector or a bivector**. Any higher-grade blade falls through their `match` to
 `case _: raise Exception("TODO - implement project for ...")`. This surfaced while fixing the
 sequence-arity bug (see `tasks/archive/2026/06/05/correctness-bugs.md`): a 3-element span

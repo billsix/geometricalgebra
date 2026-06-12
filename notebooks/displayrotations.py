@@ -39,7 +39,7 @@
 #
 # * the **rotor sandwich**  $R\,v\,R^{-1}$, where $R$ is the rotor that carries
 #   one vector toward another, and
-# * the **projection formula** (`AbstractMultiVector.rotate`): turn the part of
+# * the **projection formula** (`MultiVectorBase.rotate`): turn the part of
 #   $v$ that lies in the plane of rotation, and leave the perpendicular part fixed.
 #
 # This notebook shows that the two agree -- *symbolically*, for an arbitrary
