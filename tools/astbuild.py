@@ -159,7 +159,7 @@ def fn(name_, body, params=None, defaults=(), decorators=(), returns=None):
     )
 
 
-def cls(name_, body, bases=("AbstractMultiVector",), decorators=()) -> ast.ClassDef:
+def cls(name_, body, bases=("MultiVectorBase",), decorators=()) -> ast.ClassDef:
     return ast.ClassDef(
         name=name_,
         bases=[nm(b) for b in bases],

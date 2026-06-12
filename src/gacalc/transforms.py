@@ -21,7 +21,7 @@
 composes via ``compose`` / ``@``.  The transform *factories* (``translate``,
 ``uniform_scale``, ``scale_non_uniform``, ...) are **representation preserving**:
 each derives any basis vectors it needs from the *type of the value it is applied
-to* (via the ``AbstractMultiVector`` interchange protocol --
+to* (via the ``MultiVectorBase`` interchange protocol --
 ``type(vector).basis_vector(i)``), so a ``G2`` in yields a ``G2`` out, a ``Gn``
 in yields a ``Gn`` out, and so on.  Nothing here closes over a specific
 representation's basis constants.
@@ -31,7 +31,7 @@ representation, so it stays free of any single algebra.  ``gn.py`` re-exports
 these names for backward compatibility.
 
 Rotation lives in the algebra itself, not here: use the rotor methods
-``AbstractMultiVector.rotate(from, to)`` / ``rotor_from_vectors(from, to)`` (the
+``MultiVectorBase.rotate(from, to)`` / ``rotor_from_vectors(from, to)`` (the
 geometric-algebra way -- any plane, any representation).  The old planar 2D
 ``rotate(angle)`` / ``rotate_90_degrees`` / ``rotate_around`` factories were
 removed (they acted only in the e_1 e_2 plane and silently mis-transformed a
@@ -51,7 +51,7 @@ from enum import IntEnum
 import numpy as np
 import sympy
 
-from gacalc.base import AbstractMultiVector, MultiVectorFn
+from gacalc.base import MultiVectorBase, MultiVectorFn
 
 
 class Linearity(IntEnum):
@@ -71,10 +71,10 @@ class Linearity(IntEnum):
 
 
 #: Type variable for the value an ``InvertibleFunction`` transforms.  Bound to
-#: ``AbstractMultiVector`` so ``InvertibleFunction[Vector2]`` /
+#: ``MultiVectorBase`` so ``InvertibleFunction[Vector2]`` /
 #: ``InvertibleFunction[Vector3]`` / ``InvertibleFunction[Gn]`` are all valid and
 #: the wrapped function takes and returns that one type.
-V = typing.TypeVar("V", bound=AbstractMultiVector)
+V = typing.TypeVar("V", bound=MultiVectorBase)
 
 
 @dataclasses.dataclass
@@ -345,10 +345,10 @@ def compose_intermediate_fns_and_fn(
 
 
 def identity() -> InvertibleFunction:
-    def f(vector: AbstractMultiVector) -> AbstractMultiVector:
+    def f(vector: MultiVectorBase) -> MultiVectorBase:
         return vector
 
-    def f_inv(vector: AbstractMultiVector) -> AbstractMultiVector:
+    def f_inv(vector: MultiVectorBase) -> MultiVectorBase:
         return vector
 
     return InvertibleFunction(
@@ -396,10 +396,10 @@ def rotor_rotation(
     **rotor** ``R = rotor_from_vectors(from, to)``.
 
     The forward is the versor sandwich ``R v R^-1``; the inverse is ``R^-1 v R``
-    (see ``AbstractMultiVector.sandwich``).  Both return ``v``'s own type.
+    (see ``MultiVectorBase.sandwich``).  Both return ``v``'s own type.
     ``linearity`` is ``LINEAR`` (a rotation fixes the origin), and it handles
     ``zero`` for free.  This is the *rotor* formulation of a rotation; the
-    *projection* formulation lives at ``AbstractMultiVector.rotate(from, to)``.
+    *projection* formulation lives at ``MultiVectorBase.rotate(from, to)``.
 
     ``latex_repr`` / ``interpolate`` let a caller (e.g. an angle-parameterized
     rotation) label the function and supply an interpolation law that from/to
@@ -442,10 +442,10 @@ def rotor_rotation(
 def uniform_scale(m: float) -> InvertibleFunction:
     """Scale uniformly by ``m`` (representation preserving -- just ``vector * m``)."""
 
-    def f(vector: AbstractMultiVector) -> AbstractMultiVector:
+    def f(vector: MultiVectorBase) -> MultiVectorBase:
         return vector * m
 
-    def f_inv(vector: AbstractMultiVector) -> AbstractMultiVector:
+    def f_inv(vector: MultiVectorBase) -> MultiVectorBase:
         if m == 0.0:
             raise ValueError("Not invertible.  Scaling factor cannot be zero.")
 
@@ -472,8 +472,8 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
     type.  Pass two factors for the 2D case (``scale_non_uniform(m_x, m_y)``).
     """
 
-    def f(vector: AbstractMultiVector) -> AbstractMultiVector:
-        cls: type[AbstractMultiVector] = type(vector)
+    def f(vector: MultiVectorBase) -> MultiVectorBase:
+        cls: type[MultiVectorBase] = type(vector)
         return sum(
             (
                 m * cls.project(onto=cls.basis_vector(i + 1))(vector)
@@ -482,11 +482,11 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
             start=cls.zero(),
         )
 
-    def f_inv(vector: AbstractMultiVector) -> AbstractMultiVector:
+    def f_inv(vector: MultiVectorBase) -> MultiVectorBase:
         if any(m == 0.0 for m in factors):
             raise ValueError("Not invertible.  Scaling factors cannot be zero.")
 
-        cls: type[AbstractMultiVector] = type(vector)
+        cls: type[MultiVectorBase] = type(vector)
         return sum(
             (
                 (1.0 / m) * cls.project(onto=cls.basis_vector(i + 1))(vector)
@@ -511,7 +511,7 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
 
 def to_matrix(
     fn: InvertibleFunction,
-    cls: type[AbstractMultiVector],
+    cls: type[MultiVectorBase],
     n: typing.Optional[int] = None,
     *,
     backend: str = "numpy",
@@ -523,7 +523,7 @@ def to_matrix(
     one uniform matrix shape for the whole stack.
 
     Built by probing the basis and the origin (representation-agnostic, via the
-    ``AbstractMultiVector`` protocol)::
+    ``MultiVectorBase`` protocol)::
 
         column i (i < n) = fn(e_i) - fn(0)   # the linear part
         last column      = fn(0)             # translation (zero when linear)
@@ -577,7 +577,7 @@ def to_matrix(
     # images of the unit directions -> the first columns (the linear part)
     directions = [fn(cls.basis_vector(i + 1)) - origin for i in range(n)]
 
-    def coords(v: AbstractMultiVector, bottom: int) -> list:
+    def coords(v: MultiVectorBase, bottom: int) -> list:
         # one full column: the n coordinates of v -- read straight from its
         # blade-dict (the coefficient each representation already stores; no
         # product to compute, no dependence on component/scalar_product) -- plus

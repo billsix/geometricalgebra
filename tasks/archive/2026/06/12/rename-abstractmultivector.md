@@ -1,6 +1,29 @@
 # Rename AbstractMultiVector -> MultiVectorBase
 
-Status: **proposed — needs go-ahead** · 2026-06-11 (Bill)
+Status: **DONE** · 2026-06-12 (hard rename, option a — no alias)
+
+## What was done (2026-06-12)
+
+- **Hard rename** (option a) — no deprecated alias; repo is solo/pre-1.0.
+- Swept the bare token `AbstractMultiVector → MultiVectorBase` across all 8
+  hand-written files (115 occurrences): `base.py` (51, incl. the `_OperandT`
+  bound), `transforms.py` (24), `nbplotutils.py` (21), `gn.py` (6),
+  `tools/gen_specialized.py` (10), `tools/astbuild.py` (1), and the two notebook
+  prose references (`displayrotations.py`, `displaygraded.py`). The change is in the
+  **generator**, not the generated output — `make generate` re-emitted
+  `g1/g2/g3.py` + `scalar.py` with the new name (the 15 generated occurrences).
+- Docs updated to match: `README.md` (1) + `CLAUDE.md` (7).
+- **Import sorting:** the rename reordered `from gacalc.base import ...` (M now sorts
+  after B/C); `ruff --fix` resorted the 2 affected source imports, and the generator
+  post-formats its own output so a fresh `make generate` stays ruff-clean.
+- **Left as historical record:** archived task docs under `tasks/archive/` (they
+  genuinely referred to the old name at the time). The two *live* forward-looking
+  task docs (`generalize-sandwich-other-grades`, `generalize-reject-reflect-higher-grade`)
+  were updated to the new name.
+- **Verify:** `ty` clean · `ruff` clean (after a fresh generate) · determinism
+  (`gen_specialized.py` twice → identical) · **221 passed** · notebooks
+  `displaygraded`/`displayrotations` execute headless. Unrelated aliases untouched
+  (`MultiVector = Gn`, `MultiVectorFn`).
 
 ## Goal
 

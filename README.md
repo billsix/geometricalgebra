@@ -20,7 +20,7 @@ notation). This package gives you:
 
 ```
 src/gacalc/
-  base.py          AbstractMultiVector (the abstract base) + type aliases
+  base.py          MultiVectorBase (the abstract base) + type aliases
   gn.py            Gn (general 𝒢ₙ) + e_1.. constants + transforms + `MultiVector` alias
   g1.py g2.py g3.py   one specialized class each (generated, not in git -- run `make generate`)
 ```

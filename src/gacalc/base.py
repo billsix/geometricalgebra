@@ -36,11 +36,11 @@ import sympy
 # and then rejects `+`/`/`/`**` on it, which broke the generated rotor sandwich.
 Coef = int | float | sympy.Expr
 BladeCoef = dict[tuple[int, ...], Coef]
-MultiVectorFn = Callable[["AbstractMultiVector"], "AbstractMultiVector"]
+MultiVectorFn = Callable[["MultiVectorBase"], "MultiVectorBase"]
 
 #: Type variable for the operand of a versor sandwich -- the result has the
-#: operand's own type (see ``AbstractMultiVector.sandwich``).
-_OperandT = typing.TypeVar("_OperandT", bound="AbstractMultiVector")
+#: operand's own type (see ``MultiVectorBase.sandwich``).
+_OperandT = typing.TypeVar("_OperandT", bound="MultiVectorBase")
 
 
 def blade_dict_latex(d: BladeCoef) -> str:
@@ -70,7 +70,7 @@ def blade_dict_latex(d: BladeCoef) -> str:
     return "$" + ("0" if not d else " +  ".join(blades)) + "$"
 
 
-class AbstractMultiVector(abc.ABC):
+class MultiVectorBase(abc.ABC):
     """Abstract base class for an element (multivector) of a geometric algebra.
 
     Concrete representations (Gn, and later G2/G3) implement a tiny interchange
@@ -151,13 +151,13 @@ class AbstractMultiVector(abc.ABC):
 
     @classmethod
     def symbolic_multivector(cls, n: int, prefix: str) -> typing.Self:
-        mv: list[AbstractMultiVector] = list(cls.bases(n))
+        mv: list[MultiVectorBase] = list(cls.bases(n))
         symbols: list[sympy.Symbol] = sympy.symbols(prefix + ":" + str(len(mv)))
         return sum([s * blade for s, blade in zip(symbols, mv)], start=cls.zero())
 
     @classmethod
     def unit_pseudoscalar_squared(cls, n: int) -> typing.Self:
-        unit_pseudoscalar: AbstractMultiVector = cls.unit_pseudoscalar(n)
+        unit_pseudoscalar: MultiVectorBase = cls.unit_pseudoscalar(n)
         return unit_pseudoscalar * unit_pseudoscalar
 
     # ------------------------------------------------------------------
@@ -165,7 +165,7 @@ class AbstractMultiVector(abc.ABC):
     # case is the representation-specific primitive _geometric_product
     # ------------------------------------------------------------------
     @abc.abstractmethod
-    def _geometric_product(self, rhs: AbstractMultiVector) -> typing.Self:
+    def _geometric_product(self, rhs: MultiVectorBase) -> typing.Self:
         """Geometric product  A B  (juxtaposition) — the fundamental product of the
         algebra, from which the inner product  A · B  and outer product  A ∧ B  are
         derived.  This is the representation-specific primitive.
@@ -302,8 +302,8 @@ class AbstractMultiVector(abc.ABC):
         """
 
         def inner_product_of_homogenous_multivectors(
-            lhs: AbstractMultiVector, rhs: AbstractMultiVector
-        ) -> AbstractMultiVector:
+            lhs: MultiVectorBase, rhs: MultiVectorBase
+        ) -> MultiVectorBase:
             # # 1.21b
             left_grade: int = lhs.max_grade()
             right_grade: int = rhs.max_grade()
@@ -311,7 +311,7 @@ class AbstractMultiVector(abc.ABC):
             assert rhs.is_homogeneous_of_grade_r(right_grade)
             return (lhs * rhs).r_vector_part(abs(left_grade - right_grade))
 
-        inner: AbstractMultiVector = sum(
+        inner: MultiVectorBase = sum(
             [
                 inner_product_of_homogenous_multivectors(
                     self.r_vector_part(lg), rhs.r_vector_part(rg)
@@ -335,8 +335,8 @@ class AbstractMultiVector(abc.ABC):
         """
 
         def outer_product_of_homogenous_multivectors(
-            lhs: AbstractMultiVector, rhs: AbstractMultiVector
-        ) -> AbstractMultiVector:
+            lhs: MultiVectorBase, rhs: MultiVectorBase
+        ) -> MultiVectorBase:
             # 1.22a
             left_grade: int = lhs.max_grade()
             right_grade: int = rhs.max_grade()
@@ -346,7 +346,7 @@ class AbstractMultiVector(abc.ABC):
 
         # 1.22b
         # 1.22c, because unlike the inner_product, we keep grade 0s
-        outer: AbstractMultiVector = sum(
+        outer: MultiVectorBase = sum(
             [
                 outer_product_of_homogenous_multivectors(
                     self.r_vector_part(lg), rhs.r_vector_part(rg)
@@ -376,8 +376,8 @@ class AbstractMultiVector(abc.ABC):
 
     @staticmethod
     def outer_product_of_vectors(
-        *vectors: AbstractMultiVector,
-    ) -> AbstractMultiVector:
+        *vectors: MultiVectorBase,
+    ) -> MultiVectorBase:
         """Outer product of several vectors  a₁ ∧ a₂ ∧ … ∧ a_r  — a simple r-blade."""
         return functools.reduce(lambda a, b: a ^ b, vectors)
 
@@ -528,7 +528,7 @@ class AbstractMultiVector(abc.ABC):
             start=type(self).zero(),
         )
 
-    def cosine(self, other: AbstractMultiVector) -> Coef:
+    def cosine(self, other: MultiVectorBase) -> Coef:
         """Cosine of the angle between A and B  —  cos θ  =  (Ã ∗ B) / (|A| |B|).
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 14,
@@ -543,7 +543,7 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def project(
         cls,
-        onto: AbstractMultiVector | Sequence[AbstractMultiVector],
+        onto: MultiVectorBase | Sequence[MultiVectorBase],
     ) -> MultiVectorFn:
         """Projection  P_B(A)  =  (A · B) B⁻¹  — the component of A lying in the
         subspace represented by the blade B (``onto``).
@@ -555,13 +555,13 @@ class AbstractMultiVector(abc.ABC):
 
             def is_multivector_sequence(
                 val: Sequence[object],
-            ) -> TypeIs[Sequence[AbstractMultiVector]]:
-                return all(isinstance(x, AbstractMultiVector) for x in val)
+            ) -> TypeIs[Sequence[MultiVectorBase]]:
+                return all(isinstance(x, MultiVectorBase) for x in val)
 
             if is_multivector_sequence(onto):
                 return cls.project(cls.outer_product_of_vectors(*onto))
 
-        def fn(value: AbstractMultiVector) -> AbstractMultiVector:
+        def fn(value: MultiVectorBase) -> MultiVectorBase:
             if value.is_scalar():  # 2.9b
                 return value
             elif value.is_r_vector():  # 2.9c
@@ -584,7 +584,7 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def reject(
         cls,
-        away_from: AbstractMultiVector | Sequence[AbstractMultiVector],
+        away_from: MultiVectorBase | Sequence[MultiVectorBase],
     ) -> MultiVectorFn:
         """Rejection  P_B^⊥(A)  =  (A ∧ B) B⁻¹  — the component of A orthogonal to
         the subspace represented by the blade B (``away_from``).
@@ -592,21 +592,21 @@ class AbstractMultiVector(abc.ABC):
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18
         """
 
-        def r(value: AbstractMultiVector) -> AbstractMultiVector:
+        def r(value: MultiVectorBase) -> MultiVectorBase:
             assert value.is_vector()  # TODO - can this be generalized?
             assert isinstance(
-                away_from, AbstractMultiVector
+                away_from, MultiVectorBase
             )  # to satisfy type checking
             return (value.wedge(away_from)) * away_from.inverse()
 
         match away_from:
             case [*sequence]:
                 return cls.reject(cls.outer_product_of_vectors(*sequence))
-            case AbstractMultiVector() as away_from_vector if (
+            case MultiVectorBase() as away_from_vector if (
                 away_from_vector.is_vector()
             ):
                 return r
-            case AbstractMultiVector() as away_from_bivector if (
+            case MultiVectorBase() as away_from_bivector if (
                 away_from_bivector.is_bivector()
             ):
                 return r
@@ -616,7 +616,7 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def reflect(
         cls,
-        across: AbstractMultiVector | Sequence[AbstractMultiVector],
+        across: MultiVectorBase | Sequence[MultiVectorBase],
     ) -> MultiVectorFn:
         """Reflection across the subspace (blade) ``across``  —  the projection
         minus the rejection,  P_B(A) − P_B^⊥(A).
@@ -624,20 +624,20 @@ class AbstractMultiVector(abc.ABC):
         components_in_plane: MultiVectorFn = cls.project(across)
         components_exterior_to_plane: MultiVectorFn = cls.reject(across)
 
-        def r(value: AbstractMultiVector) -> AbstractMultiVector:
+        def r(value: MultiVectorBase) -> MultiVectorBase:
             assert value.is_vector()  # TODO - can this be generalized?
-            assert isinstance(across, AbstractMultiVector)  # to satisfy type checking
+            assert isinstance(across, MultiVectorBase)  # to satisfy type checking
 
             return components_in_plane(value) - components_exterior_to_plane(value)
 
         match across:
             case [*sequence]:
                 return cls.reflect(cls.outer_product_of_vectors(*sequence))
-            case AbstractMultiVector() as away_from_vector if (
+            case MultiVectorBase() as away_from_vector if (
                 away_from_vector.is_vector()
             ):
                 return r
-            case AbstractMultiVector() as away_from_bivector if (
+            case MultiVectorBase() as away_from_bivector if (
                 away_from_bivector.is_bivector()
             ):
                 return r
@@ -646,7 +646,7 @@ class AbstractMultiVector(abc.ABC):
 
     @staticmethod
     def identity() -> MultiVectorFn:
-        def i(value: AbstractMultiVector) -> AbstractMultiVector:
+        def i(value: MultiVectorBase) -> MultiVectorBase:
             return value
 
         return i
@@ -654,8 +654,8 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def rotate(
         cls,
-        from_vector: AbstractMultiVector,
-        to_vector: AbstractMultiVector,
+        from_vector: MultiVectorBase,
+        to_vector: MultiVectorBase,
     ) -> MultiVectorFn:
         """Rotate by the angle from ``from_vector`` to ``to_vector``, in their plane.
 
@@ -669,12 +669,12 @@ class AbstractMultiVector(abc.ABC):
         assert to_vector.is_vector()
         from_vector = from_vector.normalize()
         to_vector = to_vector.normalize()
-        plane: AbstractMultiVector = from_vector ^ to_vector
+        plane: MultiVectorBase = from_vector ^ to_vector
 
         components_in_plane: MultiVectorFn = cls.project(plane)
         components_exterior_to_plane: MultiVectorFn = cls.reject(plane)
 
-        def r(value: AbstractMultiVector) -> AbstractMultiVector:
+        def r(value: MultiVectorBase) -> MultiVectorBase:
             assert value.is_vector()  # TODO - can this be generalized?
             return (
                 components_in_plane(value) * from_vector * to_vector
@@ -685,9 +685,9 @@ class AbstractMultiVector(abc.ABC):
     @classmethod
     def rotor_from_vectors(
         cls,
-        from_vector: AbstractMultiVector,
-        to_vector: AbstractMultiVector,
-    ) -> AbstractMultiVector:
+        from_vector: MultiVectorBase,
+        to_vector: MultiVectorBase,
+    ) -> MultiVectorBase:
         r"""The rotor ``R`` taking ``from_vector`` toward ``to_vector``, built from
         the angle bisector.  (Geometric products are juxtaposition, as elsewhere;
         ``A B`` is *not* an inner product.)
@@ -749,7 +749,7 @@ class AbstractMultiVector(abc.ABC):
         # needed now that magnitude() is typed Coef (int | float | sympy.Expr).
         scale = from_vector.magnitude() * to_vector.magnitude()
         # scalar + bivector -- the rotor's grade
-        product: AbstractMultiVector = to_vector * from_vector
+        product: MultiVectorBase = to_vector * from_vector
         return product + type(product).from_sympy_expr(scale)
 
     def sandwich(self, x: _OperandT) -> _OperandT:
@@ -770,7 +770,7 @@ class AbstractMultiVector(abc.ABC):
         ``self`` is assumed to be a versor; for a non-versor even element in
         dimension ≥ 4 the conjugation is not grade-preserving and this is lossy.
         """
-        conjugated: AbstractMultiVector = self * x * self.inverse()
+        conjugated: MultiVectorBase = self * x * self.inverse()
         return type(x).from_blade_dict(conjugated.to_blade_dict())
 
     def is_close(self, other: typing.Self) -> bool:

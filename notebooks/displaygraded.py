@@ -157,7 +157,7 @@ show(quarter.plane_of_rotation())
 # Two ways to rotate are the same thing
 # -------------------------------------
 #
-# `AbstractMultiVector.rotate(from, to)` rotates a vector by `project`/`reject` +
+# `MultiVectorBase.rotate(from, to)` rotates a vector by `project`/`reject` +
 # the geometric product. The *rotor* way builds `R = rotor_from_vectors(from, to)`
 # = `|from||to| + to·from` and sandwiches: `R v R⁻¹`. They give the **same**
 # rotation — provably, even symbolically (see `tests/test_graded.py`).

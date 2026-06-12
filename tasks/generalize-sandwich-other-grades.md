@@ -58,7 +58,7 @@ teaching example), so the generator surface grows only where it's exercised.
 
 - Main task: `tasks/derived-sandwich-operation.md`
 - Complementary type work: `tasks/model-odd-graded-type.md`
-- The generic fallback already covers all grades: `AbstractMultiVector.sandwich`
+- The generic fallback already covers all grades: `MultiVectorBase.sandwich`
   in `base.py` (runtime `type(x)` projection). This future work is about
   *type-correct closed forms* for the specialized classes, not new capability.
 ```

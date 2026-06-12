@@ -13,7 +13,7 @@ contributor/architecture overview.
 
 The library is split one-concept-per-file so a newcomer can import just the algebra they need:
 
-- `src/gacalc/base.py` — `AbstractMultiVector` (the abstract base) + the type aliases
+- `src/gacalc/base.py` — `MultiVectorBase` (the abstract base) + the type aliases
   `BladeCoef`, `MultiVectorFn`. Imports nothing internal.
 - `src/gacalc/gn.py` — `Gn`, the general dimension-agnostic representation, plus the
   `e_1..e_10` / `zero` / `one` constants, the symbolic vectors (`sym_vec2_1`, …), and the
@@ -47,7 +47,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 
 ## Architecture
 
-**Abstract base + interchange protocol.** `AbstractMultiVector` (in `base.py`) holds every
+**Abstract base + interchange protocol.** `MultiVectorBase` (in `base.py`) holds every
 representation-independent method, written against a tiny interchange protocol so a concrete
 representation only implements the primitives. The boundary is *"touches the raw representation"*,
 not *"transitively uses the product"* — e.g. `inner_product`/`reverse`/`project` live in the ABC and
@@ -77,7 +77,7 @@ consistent with the reference. They do **not** eagerly simplify (lazy, on equali
 **Coefficient-view helpers (`base.py`).** `simplified()` / `expanded()` return the same multivector
 with each coefficient `sympy.simplify`'d / `sympy.expand`'d — for the lazy classes, whose raw
 coefficients aren't reduced (e.g. a bivector times its dual whose terms should cancel, or a fully
-distributed product). They're on `AbstractMultiVector` (work on every representation via the
+distributed product). They're on `MultiVectorBase` (work on every representation via the
 `_map_coefficients` interchange helper); `Gn` already eager-simplifies, so `simplified()` is a no-op
 there. Reading a single coefficient back out: `value.coefficient(blade)` (e.g.
 `v.coefficient(Vector2.e_1)`, `B.coefficient(Bivector2.e_12)`) — a thin reader that just looks the
@@ -111,7 +111,7 @@ to `Gn`.
 **Iteration yields coefficient values, not blade terms.** `iter(value)` / `list(value)` /
 `tuple(value)` / `np.array([list(v), …])` yield the coefficient *values* in blade order — so a vector
 reads as its coordinate tuple and feeds numpy/plotting directly. This is the generated `__iter__` on
-every specialized class (all fields, dense) and `AbstractMultiVector.__iter__` on `Gn` (its present
+every specialized class (all fields, dense) and `MultiVectorBase.__iter__` on `Gn` (its present
 blades). To decompose a value into one single-blade multivector per term instead (e.g. for a
 component-by-component product breakdown), iterate `to_blade_dict()` — which is what
 `nbplotutils.show_mult` (via its `_blade_terms` helper) does.
@@ -125,7 +125,7 @@ layer is shared with the author's *modelviewprojection* book project. Jupyter di
 `_repr_latex_`.
 
 **Rotations & rotors.** Two *general* (representation-agnostic) rotation methods live on
-`AbstractMultiVector` (`base.py`): `rotate(from_vector, to_vector)` returns a function that rotates a
+`MultiVectorBase` (`base.py`): `rotate(from_vector, to_vector)` returns a function that rotates a
 vector through the angle from `from`→`to` *in their plane* (in-plane part turned, perpendicular part
 left fixed) — equivalent to the rotor sandwich `R v R⁻¹`; and `rotor_from_vectors(from, to)` builds
 that rotor `R = |from||to| + to·from` (scalar + bivector, the even-subalgebra grade). These act in
@@ -169,7 +169,7 @@ vector) keep their names; the rule targets pure renames of things that already h
 
 - `*` geometric product · `^` wedge (outer) product · `@` composition of `InvertibleFunction`s
 - `abs(mv)` → magnitude · inverse via `.inverse()`
-- rotations: `AbstractMultiVector.rotate(from, to)` / `rotor_from_vectors(from, to)` (rotor methods,
+- rotations: `MultiVectorBase.rotate(from, to)` / `rotor_from_vectors(from, to)` (rotor methods,
   any plane / representation)
 
 ## Code generation
@@ -223,7 +223,7 @@ sub-second for 𝒢₁/𝒢₂, tens of seconds for 𝒢₃, minutes for 𝒢₄
 Two presentation details, both driven from the generator so they stay consistent across algebras:
 the additive terms in each generated component are **ordered by grade** (scalar → vector → bivector
 → …) via `term_grade_key`; and each generated method's docstring is **copied from the matching
-`AbstractMultiVector` method** (`base.py`) via `inspect.getdoc`, so the Hestenes notation on the
+`MultiVectorBase` method** (`base.py`) via `inspect.getdoc`, so the Hestenes notation on the
 specialized classes never drifts from the shared base.
 
 ## Dev workflow
