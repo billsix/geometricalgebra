@@ -103,7 +103,7 @@ class MultiVectorBase(abc.ABC):
         return cls.from_blade_dict({tuple(): scalar})
 
     @classmethod
-    def from_sympy_expr(cls, s: Coef) -> typing.Self:
+    def from_coef(cls, s: Coef) -> typing.Self:
         return cls.from_blade_dict({tuple(): s})
 
     @classmethod
@@ -176,7 +176,7 @@ class MultiVectorBase(abc.ABC):
             case int() | float() as n:
                 return self._geometric_product(type(self).from_scalar(n))
             case sympy.Expr() as s:
-                return self._geometric_product(type(self).from_sympy_expr(s))
+                return self._geometric_product(type(self).from_coef(s))
             case _:
                 return self._geometric_product(rhs)
 
@@ -185,7 +185,7 @@ class MultiVectorBase(abc.ABC):
             case int() | float() as n:
                 return self._geometric_product(type(self).from_scalar(n))
             case sympy.Expr() as s:
-                return self._geometric_product(type(self).from_sympy_expr(s))
+                return self._geometric_product(type(self).from_coef(s))
             case _:
                 # multivector*multivector is handled by __mul__; any other left
                 # operand is unsupported -- defer so Python raises a clean
@@ -766,7 +766,7 @@ class MultiVectorBase(abc.ABC):
         scale = from_vector.magnitude() * to_vector.magnitude()
         # scalar + bivector -- the rotor's grade
         product: MultiVectorBase = to_vector * from_vector
-        return product + type(product).from_sympy_expr(scale)
+        return product + type(product).from_coef(scale)
 
     def sandwich(self, x: _OperandT) -> _OperandT:
         r"""Versor conjugation  :math:`R\,x\,R^{-1}`  — apply the versor ``self``
