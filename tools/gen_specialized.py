@@ -1616,7 +1616,7 @@ def _coerce(x, cls):
     if isinstance(x, MultiVectorBase):
         return cls.from_blade_dict(x.to_blade_dict())
     if isinstance(x, sympy.Expr):
-        return cls.from_sympy_expr(x)
+        return cls.from_coef(x)
     return cls.from_scalar(x)
 """
 

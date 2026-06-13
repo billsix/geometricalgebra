@@ -1,7 +1,23 @@
 # Why is multiplying magnitudes cast to a sympy expression instead of Coef?
 
-**Status:** proposed — not started
+**Status:** complete
+**Completed:** 2026-06-13
 **Created:** 2026-06-13
+
+## Outcome
+
+Resolved in two parts:
+- **Functional** (via `[[magnitude-numeric-for-numeric-input]]`): `magnitude()`
+  and `inverse()` now keep numeric `float` input numeric, so "multiplying
+  magnitudes" (`abs(a)*abs(b)` in `rotor_from_vectors`, and `cosine()`) no longer
+  produces sympy for numeric input; `int` stays exact (`Rational`), symbolic stays
+  symbolic. The `base.py:502` `sympify` was replaced by that numeric/exact split.
+- **Cosmetic** (here): the rotor scalar was built via `from_sympy_expr(scale)`,
+  a misleadingly-named constructor that *looked* like a sympy cast but is just
+  `from_blade_dict({(): s})`. Renamed **`from_sympy_expr` → `from_coef`** (def +
+  callers in `base.py`, and the `_coerce` template in `tools/gen_specialized.py`);
+  regenerated `g*.py`. Verified: full suite 225 passed; generator output
+  byte-deterministic; no `from_sympy_expr` left anywhere.
 
 ## Goal
 
