@@ -232,8 +232,20 @@ class MultiVectorBase(abc.ABC):
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 13,
         equation 1.49
+
+        Float input stays a float: ``sympy.sqrt`` always returns a ``sympy.Expr``
+        (e.g. ``sqrt(2.0)`` -> ``1.41421356237310`` as a ``sympy.Float``), which
+        would leak symbolic objects into purely numeric pipelines (and, downstream,
+        produce ``numpy`` ``dtype=object`` arrays).  When ``|A|²`` is a Python
+        ``float`` (already inexact) we therefore take ``math.sqrt`` and return a
+        ``float``.  An ``int`` |A|² keeps ``sympy.sqrt`` so exactness is preserved
+        (``sqrt(25) == 5`` exactly, and a unit blade normalizes to ``Rational``s,
+        not floats); symbolic coefficients also stay symbolic.
         """
-        return sympy.sqrt(self.magnitude_squared())
+        magnitude_squared = self.magnitude_squared()
+        if isinstance(magnitude_squared, float):
+            return math.sqrt(magnitude_squared)
+        return sympy.sqrt(magnitude_squared)
 
     def magnitude_squared(self) -> Coef:
         """Squared magnitude  |A|²  =  Ã ∗ A  =  ⟨Ã A⟩  (a scalar)."""
@@ -496,10 +508,14 @@ class MultiVectorBase(abc.ABC):
 
         Not sure if I'm doing it correctly
         """
-        # sympify the magnitude before the reciprocal: for the specialized
-        # classes magnitude_squared() is a raw Python int, and ``int ** -1``
-        # silently degrades to a float -- sympify keeps it exact (Rational).
-        mag_sq = sympy.sympify(self.magnitude_squared())
+        # Keep numeric input numeric: a ``float`` |A|² stays a float so the
+        # reciprocal doesn't leak sympy into numeric pipelines.  For an ``int``
+        # (e.g. a unit blade, |A|² == 1) sympify first, so ``int ** -1`` keeps the
+        # exact Rational instead of silently degrading to a float; symbolic |A|²
+        # stays symbolic.  (Mirrors the numeric/symbolic split in ``magnitude``.)
+        mag_sq = self.magnitude_squared()
+        if not isinstance(mag_sq, float):
+            mag_sq = sympy.sympify(mag_sq)
         return self.reverse() * (mag_sq ** (-1))
 
     def dual(self, n: int) -> typing.Self:

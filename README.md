@@ -3,7 +3,9 @@
 A small, readable **Geometric (Clifford) Algebra** library in Python, built as a
 companion to Hestenes & Sobczyk, *Clifford Algebra to Geometric Calculus*. It
 runs both **numerically and fully symbolically** (coefficients may be plain
-numbers or `sympy` expressions).
+numbers or `sympy` expressions) — and numeric stays numeric: a `float` vector's
+`magnitude()` is a Python `float`, not a sympy object, while `int` and symbolic
+inputs stay exact.
 
 The algebra of *n*-dimensional Euclidean space is written 𝒢ₙ (Hestenes'
 notation). This package gives you:
