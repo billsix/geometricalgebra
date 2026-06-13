@@ -1,7 +1,37 @@
 # magnitude() should return a Python number for numeric input (don't poison numeric pipelines)
 
-**Status:** proposed — not started
+**Status:** DONE — implemented + verified (full suite 225 passed)
 **Created:** 2026-06-13
+**Completed:** 2026-06-13
+
+## Outcome
+
+Fixed in `src/gacalc/base.py` (both inherited `MultiVectorBase` methods — no
+generator change needed, `magnitude`/`inverse` are not emitted per-class):
+
+- **`magnitude()`** — when `|A|²` is a Python `float` (already inexact), use
+  `math.sqrt` and return a `float`; an `int` `|A|²` keeps `sympy.sqrt` (so
+  `sqrt(25)==5` exactly and a unit blade normalizes to `Rational`s, not floats);
+  symbolic stays symbolic.
+- **`inverse()`** — the reciprocal `Ã / |A|²` no longer force-`sympify`s a `float`
+  `|A|²` (that was poisoning the numeric inverse path, which the focus walk uses
+  *against the arrows*). `float` → numeric reciprocal; `int` → `Rational` (exact,
+  as before); symbolic → symbolic.
+
+Verified: `abs(float_vector)` is a Python `float`; `rotor_rotation` of float
+vectors stays `float` **forward and inverse**; `abs(symbolic)` is still a
+`sympy.Expr`; `3e₁+4e₂` still gives `|A|=5` and `normalize → 3/5, 4/5`. Regression
+test added: `tests/test_numeric_magnitude.py` (4 cases). One pre-existing test
+(`test_graded.py::test_inherited_abc_methods`) initially broke when the first cut
+also downcast `int`; corrected to float-only, and it passes again.
+
+**Note:** mvp keeps its own float-coercion boundary guard regardless (per the
+decision in the archived `mvpviz-focus-failure` task) — this gacalc fix is the
+defense-in-depth at the source, not a replacement.
+
+---
+
+## Original plan (kept for reference)
 
 ## Goal
 

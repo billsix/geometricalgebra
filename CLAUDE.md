@@ -96,6 +96,16 @@ and squares coefficients). The generated `coeff_*` fields and the scalar-returni
 typed `Coef`. The generator's `cast_coef` (in `tools/astbuild.py`) skips the cast for a bare or
 negated field (already `Coef`) and only wraps genuinely compound expressions.
 
+`magnitude()` and `inverse()` **preserve numeric input.** When `|A|²` is a Python
+`float` (already inexact) they return a `float` — `math.sqrt` / a plain float
+reciprocal — rather than promoting to sympy; an unconditional `sympy.sqrt` /
+`sympify` would otherwise turn a purely numeric pipeline symbolic (and downstream
+make a `numpy` matrix `dtype=object`, which is how it surfaced — a consumer's
+`np.linalg.inv` failing). An `int` `|A|²` still routes through sympy so exactness
+holds (`sqrt(25) == 5`; a unit blade normalizes to `Rational`s, not floats), and
+symbolic coefficients stay symbolic. **Don't reintroduce an unconditional
+`sympy.sqrt` / `sympify` on these paths** (covered by `tests/test_numeric_magnitude.py`).
+
 Two ways to name a basis blade: each `g*` module exports **module-level** constants of its own type
 (`from gacalc.g2 import G2, e_1, e_2` then `3*e_1 + 4*e_2` builds a `G2`); and each **class** exposes
 its own basis blades as **class constants of that class's type** (`Vector2.e_1`, `Bivector2.e_12`,
