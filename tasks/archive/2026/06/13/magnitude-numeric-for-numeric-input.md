@@ -1,8 +1,8 @@
 # magnitude() should return a Python number for numeric input (don't poison numeric pipelines)
 
-**Status:** DONE — implemented + verified (full suite 225 passed)
-**Created:** 2026-06-13
+**Status:** complete (implemented + verified — full suite 225 passed)
 **Completed:** 2026-06-13
+**Created:** 2026-06-13
 
 ## Outcome
 
