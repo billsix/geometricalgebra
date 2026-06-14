@@ -661,9 +661,11 @@ def show_mult(a: MultiVectorBase, b: MultiVectorBase):
     )
     # Convert to markdown string and display
     df_latex: pd.DataFrame = df.map(
-        lambda x: blade_dict_latex(x.expanded().to_blade_dict())
-        if hasattr(x, "expanded")
-        else x
+        lambda x: (
+            blade_dict_latex(x.expanded().to_blade_dict())
+            if hasattr(x, "expanded")
+            else x
+        )
     )
     display(Markdown(df_latex.to_markdown(index=False)))
     display(Markdown("**Summing all the products up, we get**"))

@@ -610,17 +610,13 @@ class MultiVectorBase(abc.ABC):
 
         def r(value: MultiVectorBase) -> MultiVectorBase:
             assert value.is_vector()  # TODO - can this be generalized?
-            assert isinstance(
-                away_from, MultiVectorBase
-            )  # to satisfy type checking
+            assert isinstance(away_from, MultiVectorBase)  # to satisfy type checking
             return (value.wedge(away_from)) * away_from.inverse()
 
         match away_from:
             case [*sequence]:
                 return cls.reject(cls.outer_product_of_vectors(*sequence))
-            case MultiVectorBase() as away_from_vector if (
-                away_from_vector.is_vector()
-            ):
+            case MultiVectorBase() as away_from_vector if away_from_vector.is_vector():
                 return r
             case MultiVectorBase() as away_from_bivector if (
                 away_from_bivector.is_bivector()
@@ -649,9 +645,7 @@ class MultiVectorBase(abc.ABC):
         match across:
             case [*sequence]:
                 return cls.reflect(cls.outer_product_of_vectors(*sequence))
-            case MultiVectorBase() as away_from_vector if (
-                away_from_vector.is_vector()
-            ):
+            case MultiVectorBase() as away_from_vector if away_from_vector.is_vector():
                 return r
             case MultiVectorBase() as away_from_bivector if (
                 away_from_bivector.is_bivector()

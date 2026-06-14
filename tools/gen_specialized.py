@@ -79,7 +79,7 @@ from astbuild import (  # noqa: E402
     subscript,
 )
 
-from gacalc.base import MultiVectorBase, BladeCoef  # noqa: E402
+from gacalc.base import BladeCoef, MultiVectorBase  # noqa: E402
 from gacalc.gn import Gn  # noqa: E402
 
 # ==========================================================================
