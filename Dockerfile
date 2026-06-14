@@ -25,7 +25,8 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
                    emacs-pgtk \
                    tmux \
                    uv \
-                   ty ;  \
+                   ty \
+                   which ;  \
     dnf install -y \
                    pinentry; \
     if [ "$USE_SPYDER" = "1" ]; then \
@@ -49,8 +50,11 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     echo "emacs src/gacalc/gn.py tests/test_multivector.py &" >> ~/.bash_history && \
     echo "source ~/.extrabashrc" >> ~/.bashrc && \
     echo "from gacalc.gn import *" >> ~/.python_history  && \
-    uv pip install --system setuptools wheel numpy sympy && \
-    dnf install -y libatomic && uv pip install --system pyright
+    python3 -m venv --system-site-packages /venv/ && \
+    export VIRTUAL_ENV_DISABLE_PROMPT=1 && \
+    source /venv/bin/activate && \
+    uv pip install --python $(which python) setuptools wheel numpy sympy && \
+    dnf install -y libatomic && uv pip install --python $(which python) pyright
 
 # Copy the build-relevant project files (not the whole tree: the 31M vendored
 # Emacs elpa tree is already at /root, and .dockerignore is global so it can't be
@@ -67,7 +71,8 @@ COPY tools /gacalc/tools
 # installed above, so --no-build-isolation reuses them; the setup.py build_py hook
 # generates the algebras if missing. (This layer re-runs when src/ changes, so the
 # notebook/jupyter deps reinstall then -- uv's cache keeps that fast.)
-RUN cd /gacalc && uv pip install --system --no-build-isolation ".[dev,notebooks,jupyter]"
+RUN export VIRTUAL_ENV_DISABLE_PROMPT=1 && source /venv/bin/activate && \
+    cd /gacalc && uv pip install --python $(which python) --no-build-isolation ".[dev,notebooks,jupyter]"
 
 
 ENTRYPOINT ["/entrypoint.sh"]

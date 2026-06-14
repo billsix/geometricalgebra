@@ -1,7 +1,6 @@
 #!/bin/env bash
 
-cd /gacalc/
-
+export VIRTUAL_ENV_DISABLE_PROMPT=1
 source /venv/bin/activate
-cd notebooks
+cd /gacalc/notebooks
 jupytext --to ipynb displaymv.py

@@ -94,7 +94,7 @@ format: image ## (container) regenerate, then ruff + ty over the source (entrypo
 		--entrypoint /bin/bash \
 		$(FILES_TO_MOUNT) \
 		$(CONTAINER_NAME) \
-		-c 'set -e; cd /gacalc; python tools/gen_specialized.py; bash /format.sh'
+		-c 'set -e; source /venv/bin/activate; cd /gacalc; python tools/gen_specialized.py; bash /format.sh'
 
 
 # Refresh the vendored Emacs packages. Forces USE_EMACS=1 and rebuilds the image
@@ -157,7 +157,7 @@ test: ## Run the full test suite INSIDE the container; exit 0 on success, nonzer
 		-v $(CURDIR):/gacalc:Z \
 		--entrypoint /bin/bash \
 		$(CONTAINER_NAME) \
-		-c 'set -e; cd /gacalc; python tools/gen_specialized.py; python -m pytest'
+		-c 'set -e; source /venv/bin/activate; cd /gacalc; python tools/gen_specialized.py; python -m pytest'
 
 # Releasing runs inside the container (the image's pinned toolchain -- python,
 # build, and twine, all baked in via the dev extras).  `dist` builds the
@@ -195,7 +195,7 @@ dist: ## Build sdist + wheel INSIDE the container -> $(DIST_DIR) on the host
 		-v $(DIST_DIR):/dist:Z \
 		--entrypoint /bin/bash \
 		$(CONTAINER_NAME) \
-		-c 'set -e; cd /gacalc; \
+		-c 'set -e; source /venv/bin/activate; cd /gacalc; \
 		    python tools/gen_specialized.py; \
 		    python -m build --no-isolation --outdir /dist'
 

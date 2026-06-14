@@ -1,3 +1,5 @@
+export VIRTUAL_ENV_DISABLE_PROMPT=1
+source /venv/bin/activate
 cd /gacalc
 # in general this is super dangerous, but for our purposes,
 # it's fine
