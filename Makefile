@@ -85,6 +85,18 @@ shell:  ## Get Shell into a ephermeral container made from the image
 		/shell.sh
 
 
+# Run ruff + ty over the source INSIDE the container (the image's pinned toolchain).
+# The g*.py/scalar.py are gitignored, so regenerate them first (so ty can resolve
+# them), then run entrypoint/format.sh (ruff check --fix, ruff format, ty check).
+.PHONY: format
+format: image ## (container) regenerate, then ruff + ty over the source (entrypoint/format.sh)
+	$(CONTAINER_CMD) run --rm \
+		--entrypoint /bin/bash \
+		$(FILES_TO_MOUNT) \
+		$(CONTAINER_NAME) \
+		-c 'set -e; cd /gacalc; python tools/gen_specialized.py; bash /format.sh'
+
+
 # Refresh the vendored Emacs packages. Forces USE_EMACS=1 and rebuilds the image
 # first (so it doesn't matter whether the last `make image` set USE_EMACS). Then,
 # in the container, wipes the elpa tree and reinstalls from MELPA into the host's
