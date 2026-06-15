@@ -281,6 +281,26 @@ def test_simplified_and_expanded_form(cls) -> None:
     assert w.simplified().to_blade_dict()[(1,)] == 1
 
 
+def test_expand_numerators_dict_for_display() -> None:
+    # nbplotutils._expand_numerators_dict (used by show_mult): expand each
+    # coefficient's NUMERATOR, keep its denominator factored, and -- crucially --
+    # do NOT rebuild the multivector, so the distributed form survives Gn's eager
+    # __post_init__ simplify (which would otherwise re-factor it, e.g. back to
+    # a0*(b0 + c0) -- the regression this fixed).
+    from gacalc.nbplotutils import _expand_numerators_dict
+
+    a, b, c = sympy.symbols("a b c")
+    # survives Gn eager-simplify: a factored product is distributed for display
+    v = Gn.from_blade_dict({(1,): a * (b + c)})
+    assert _expand_numerators_dict(v)[(1,)] == a * b + a * c
+    # numerator expanded, radical denominator left factored (not rationalized)
+    den = sympy.sqrt(a**2 + b**2)
+    w = Gn.from_blade_dict({(1,): (a + b) ** 2 / den})
+    num, d = sympy.fraction(sympy.together(_expand_numerators_dict(w)[(1,)]))
+    assert num == a**2 + 2 * a * b + b**2
+    assert d == den
+
+
 def _same_value(x, y) -> bool:
     # Value equality independent of coefficient *form* (Gn's __eq__ is structural,
     # so (a+b)**2 vs a**2+2ab+b**2 would compare unequal there).

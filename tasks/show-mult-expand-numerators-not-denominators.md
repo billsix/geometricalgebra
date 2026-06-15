@@ -1,6 +1,34 @@
 # show_mult: expand numerators but not denominators
 
-**Status:** proposed — needs go-ahead (investigation). 2026-06-14, Bill.
+**Status:** complete (2026-06-15). Implemented **Option 1**: added
+`MultiVectorBase.expanded_numerators()` in `src/gacalc/base.py` (mirrors `expanded()`
+via `_map_coefficients`, using `n,d = fraction(together(c)); expand(n)/d`), switched
+both `show_mult` calls in `nbplotutils.py` to it, and added
+`test_expanded_numerators_keeps_denominator` (parametrized `[G1,G2,G3]`) in
+`tests/test_conformance.py`. Verified on `Gn` + standalone sympy: numerator
+distributed, radical/`1/c` denominator kept factored (not rationalized/denested),
+plain-polynomial coefficients == `expanded()`. The parametrized lazy-class test runs
+under `make test` (needs `make generate` first). Note: `together` combines a blade's
+same-denominator term-sum into one fraction (more readable here; only affects the
+final-sum line, since per-term cells are single products).
+
+**Follow-up (2026-06-15): the ABC method alone wasn't enough for `displaymv.py`
+(which uses `Gn`).** `expanded_numerators()` rebuilds via `from_blade_dict`, and
+`Gn.__post_init__` eager-`sympy.simplify`s — which **re-factors** the just-distributed
+numerator back into `a0*(b0*c0 + …)` (same gotcha the old `.expanded()` had on `Gn`;
+that's why these helpers' test is `[G1,G2,G3]`, not `Gn`). So `show_mult` now expands
+at the **blade-dict level** via a new `nbplotutils._expand_numerators_dict(mv)` that
+maps expand-numerator over `to_blade_dict()` *without* rebuilding the multivector —
+so the distributed form survives on every representation incl. `Gn`. Verified:
+`show_mult(g2_1, g2_2*g2_3)` on `Gn` now has 0 un-distributed product cells.
+
+**Cleanup (2026-06-15): removed the now-dead ABC method.** Since `show_mult` uses the
+dict-level helper, the `MultiVectorBase.expanded_numerators()` method (Option 1) had
+no production caller and silently re-canonicalized on `Gn` — so it was removed from
+`base.py`, and its conformance test was re-pointed at `_expand_numerators_dict`
+(`test_expand_numerators_dict_for_display`, which also locks in the `Gn`-survival
+regression). Net implementation = `nbplotutils._expand_numerators_dict` + the two
+`show_mult` call sites only.
 
 ## Why
 

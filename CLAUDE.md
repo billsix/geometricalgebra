@@ -79,7 +79,13 @@ with each coefficient `sympy.simplify`'d / `sympy.expand`'d — for the lazy cla
 coefficients aren't reduced (e.g. a bivector times its dual whose terms should cancel, or a fully
 distributed product). They're on `MultiVectorBase` (work on every representation via the
 `_map_coefficients` interchange helper); `Gn` already eager-simplifies, so `simplified()` is a no-op
-there. Reading a single coefficient back out: `value.coefficient(blade)` (e.g.
+there. **Caveat — these can't force a coefficient *form* on `Gn`:** because they rebuild via
+`from_blade_dict`, `Gn.__post_init__` re-runs `sympy.simplify` and re-canonicalizes the result (e.g. a
+just-`expanded()` numerator gets re-factored back to `a0*(b0 + c0)`). So for a **display** form that
+must hold regardless of representation, transform the **blade dict directly** without rebuilding the
+multivector — see `nbplotutils._expand_numerators_dict` (used by `show_mult` to expand numerators but
+keep denominators factored, surviving `Gn`'s eager simplify). Reading a single coefficient back out:
+`value.coefficient(blade)` (e.g.
 `v.coefficient(Vector2.e_1)`, `B.coefficient(Bivector2.e_12)`) — a thin reader that just looks the
 value up in `to_blade_dict()` (no product computed, correct for any grade). The old `component`
 method, which *computed* `⟨A x̃⟩` to recover a number the object already stores, was retired in its

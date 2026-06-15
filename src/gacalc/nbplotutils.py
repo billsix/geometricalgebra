@@ -647,6 +647,23 @@ def _blade_terms(mv: MultiVectorBase) -> list:
     ]
 
 
+def _expand_numerators_dict(mv: MultiVectorBase) -> dict:
+    """``mv``'s blade dict with each coefficient's NUMERATOR expanded and its
+    denominator left factored — for display.
+
+    Crucially this does NOT rebuild the multivector: it expands the raw
+    ``to_blade_dict()`` coefficients in place.  That matters for the eager-simplifying
+    ``Gn`` (`displaymv.py`), whose ``from_blade_dict`` re-runs ``sympy.simplify`` and
+    would re-factor the just-distributed numerator (e.g. back to ``a0*(b0*c0 + ...)``).
+    Expanding the dict directly keeps the distributed form on every representation.
+    """
+    out: dict = {}
+    for blade, coef in mv.to_blade_dict().items():
+        numerator, denominator = sympy.fraction(sympy.together(coef))
+        out[blade] = sympy.expand(numerator) / denominator
+    return out
+
+
 def show_mult(a: MultiVectorBase, b: MultiVectorBase):
     display(Markdown("**We want to evaluate**"))
     # print the values as latex before they are multiplied
@@ -662,11 +679,11 @@ def show_mult(a: MultiVectorBase, b: MultiVectorBase):
     # Convert to markdown string and display
     df_latex: pd.DataFrame = df.map(
         lambda x: (
-            blade_dict_latex(x.expanded().to_blade_dict())
-            if hasattr(x, "expanded")
+            blade_dict_latex(_expand_numerators_dict(x))
+            if hasattr(x, "to_blade_dict")
             else x
         )
     )
     display(Markdown(df_latex.to_markdown(index=False)))
     display(Markdown("**Summing all the products up, we get**"))
-    display(Math("$" + blade_dict_latex((a * b).expanded().to_blade_dict()) + "$"))
+    display(Math("$" + blade_dict_latex(_expand_numerators_dict(a * b)) + "$"))
