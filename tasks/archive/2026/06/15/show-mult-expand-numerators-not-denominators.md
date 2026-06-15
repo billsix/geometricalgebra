@@ -1,16 +1,21 @@
 # show_mult: expand numerators but not denominators
 
-**Status:** complete (2026-06-15). Implemented **Option 1**: added
-`MultiVectorBase.expanded_numerators()` in `src/gacalc/base.py` (mirrors `expanded()`
-via `_map_coefficients`, using `n,d = fraction(together(c)); expand(n)/d`), switched
-both `show_mult` calls in `nbplotutils.py` to it, and added
-`test_expanded_numerators_keeps_denominator` (parametrized `[G1,G2,G3]`) in
-`tests/test_conformance.py`. Verified on `Gn` + standalone sympy: numerator
-distributed, radical/`1/c` denominator kept factored (not rationalized/denested),
-plain-polynomial coefficients == `expanded()`. The parametrized lazy-class test runs
-under `make test` (needs `make generate` first). Note: `together` combines a blade's
-same-denominator term-sum into one fraction (more readable here; only affects the
-final-sum line, since per-term cells are single products).
+**Status:** complete
+**Completed:** 2026-06-15
+
+**Final implementation:** a display-level helper `nbplotutils._expand_numerators_dict(mv)`
+(expand each coefficient's numerator via `n,d = fraction(together(c)); expand(n)/d`, keep
+the denominator factored) that `show_mult` uses for both the per-term table and the summed
+product. It transforms the blade dict **directly (no multivector rebuild)**, so the
+distributed form survives `Gn`'s eager `__post_init__` simplify — `show_mult(g2_1,
+g2_2*g2_3)` on `Gn` now has 0 un-distributed cells. Test:
+`test_expand_numerators_dict_for_display` in `tests/test_conformance.py` (runs under
+`make test`). An initially-tried ABC `MultiVectorBase.expanded_numerators()` (Option 1)
+was added then **removed as dead** once the dict-level approach was needed for `Gn` — see
+Follow-up / Cleanup below for the full journey and the `Gn` gotcha (also captured in
+CLAUDE.md's Coefficient-view-helpers note). Caveat: `together` combines a blade's
+same-denominator term-sum into one fraction (more readable; only affects the final-sum
+line, since per-term cells are single products).
 
 **Follow-up (2026-06-15): the ABC method alone wasn't enough for `displaymv.py`
 (which uses `Gn`).** `expanded_numerators()` rebuilds via `from_blade_dict`, and
