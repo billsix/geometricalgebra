@@ -27,3 +27,6 @@ dist/
 /src/gacalc/g1.py
 /src/gacalc/g2.py
 /src/gacalc/g3.py
+
+# exported OCI image tars (make image-export) — large, never commit
+gacalc-*.tar
