@@ -34,7 +34,9 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `displaygraded.py` (graded subtypes) — jupytext (percent-format) demo notebooks.
 - `tests/test_multivector.py` — original `Gn` tests; `tests/test_conformance.py` — parametrized
   conformance over `[Gn, G1, G2, G3]`; `tests/test_graded.py` — the graded-subtype suite (return
-  type + value per operation). **~141 tests** (incl. doctests via `--doctest-modules`).
+  type + value per operation); `tests/test_generator.py` — unit tests for the *generator's own*
+  logic (blade naming, the type registry / `resolve`, `product_result`/`unary_result` result-type
+  resolution, astbuild DSL invariants). **~246 tests** (incl. doctests via `--doctest-modules`).
 - `tools/gen_specialized.py` — the code generator (builds each module as Python `ast` nodes, rendered
   with `ast.unparse`); `tools/astbuild.py` — its domain-agnostic node-builder DSL; `tools/bench.py` —
   `Gn`-vs-specialized benchmark.
@@ -72,7 +74,10 @@ names `e_1` … to denote the basis-vector *constants* below) and whose `_geomet
 `inner_product`, `outer_product`, and the linear/grade ops (`__add__`, `reverse`, `r_vector_part`,
 `even_part`, …) are **closed-form code generated from the `Gn` symbolic ops** — so they are provably
 consistent with the reference. They do **not** eagerly simplify (lazy, on equality), and they carry
-`DIMENSION` so `dual()` / `unit_pseudoscalar()` default to the class's dimension.
+`DIMENSION` so `dual()` / `unit_pseudoscalar()` default to the class's dimension. **Every generated
+value type is `@dataclass(slots=True)`** — the full `G1`/`G2`/`G3`, the graded subtypes
+(`Vector_n`/`Bivector_n`/`Trivector3`/`Rotor_n`), and the shared `Scalar` — so instances carry no
+per-instance `__dict__` (the base `MultiVectorBase` declares empty `__slots__` for this).
 
 **Coefficient-view helpers (`base.py`).** `simplified()` / `expanded()` return the same multivector
 with each coefficient `sympy.simplify`'d / `sympy.expand`'d — for the lazy classes, whose raw
@@ -261,8 +266,12 @@ specialized classes never drifts from the shared base.
   by `if get_ipython() is not None:`, so it imports headless) — meaning the suite now imports
   `matplotlib`, so run it with the `notebooks` extra installed (the container has it).
 - Lint/format/typecheck: `entrypoint/format.sh` runs `ruff check --fix`, `ruff format`, `ty check`.
-  Ruff rules in `pyproject.toml`. **`ty check src` and `ty check tests` are fully clean with no
-  `ty.toml` / override** — every rule checks every file. (There used to be a scoped override disabling
+  Ruff rules in `pyproject.toml`. **`ty check src`, `ty check tests`, and `ty check tools` are all
+  fully clean.** The only ty config is `[tool.ty.environment] extra-paths = ["tools"]` in
+  `pyproject.toml` — so the generator modules (`astbuild`/`gen_specialized`) resolve when checking
+  `tests/test_generator.py`, which adds `tools/` to `sys.path` at runtime. That is module-resolution
+  config, **not** a rule override: every rule still checks every file. (There used to be a scoped
+  override disabling
   `unsupported-operator` + `invalid-method-override` on the generated rotor `sandwich`; both were
   resolved by typing coefficients as the concrete `Coef = int | float | sympy.Expr` alias rather than
   the `numbers.Real` ABC — see the coefficient-type note under Architecture — and by emitting
