@@ -182,7 +182,7 @@ def test_unary_result_dual_of_vector3_is_bivector3():
 
 
 def test_module_source_roundtrip():
-    src = astbuild.module_source([ast.Expr(astbuild.dot("self", "e_1"))])
+    src = astbuild.module_source([ast.Expr(astbuild.attribute("self", "e_1"))])
     assert src == "self.e_1"
 
 
@@ -194,13 +194,13 @@ def test_symbol_to_attr_rewrites_operand_symbols():
 
 
 def test_cast_coef_skips_bare_and_negated_fields():
-    bare = astbuild.dot("self", "coeff_e_1")
+    bare = astbuild.attribute("self", "coeff_e_1")
     assert astbuild.cast_coef(bare) is bare
-    negated = ast.UnaryOp(ast.USub(), astbuild.dot("self", "coeff_e_1"))
+    negated = ast.UnaryOp(ast.USub(), astbuild.attribute("self", "coeff_e_1"))
     assert astbuild.cast_coef(negated) is negated
 
 
 def test_cast_coef_wraps_compound_expression():
-    compound = ast.BinOp(astbuild.nm("a"), ast.Add(), astbuild.nm("b"))
+    compound = ast.BinOp(astbuild.name_ref("a"), ast.Add(), astbuild.name_ref("b"))
     wrapped = astbuild.cast_coef(compound)
     assert ast.unparse(wrapped) == "typing.cast(Coef, a + b)"
