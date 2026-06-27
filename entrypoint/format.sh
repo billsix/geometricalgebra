@@ -13,3 +13,4 @@ ruff format --line-length=88
 
 ty check /gacalc/src
 ty check /gacalc/tests
+ty check /gacalc/tools

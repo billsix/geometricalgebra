@@ -21,15 +21,19 @@
 python tools/bench.py
 """
 
+from __future__ import annotations
+
 import os
 import sys
 import time
+from collections.abc import Callable
 from itertools import chain, combinations
 
 import sympy
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+from gacalc.base import MultiVectorBase  # noqa: E402
 from gacalc.g1 import G1  # noqa: E402
 from gacalc.g2 import G2, Vector2  # noqa: E402
 from gacalc.g3 import G3, Vector3  # noqa: E402
@@ -47,11 +51,11 @@ def num_full(n: int, base: int) -> Gn:
     return Gn.from_blade_dict({b: base + i + 1 for i, b in enumerate(blades(n))})
 
 
-def to(cls, g: Gn):
+def to(cls: type[MultiVectorBase], g: Gn) -> MultiVectorBase:
     return cls.from_blade_dict(g.to_blade_dict())
 
 
-def time_ms(fn, reps: int) -> float:
+def time_ms(fn: Callable[[], object], reps: int) -> float:
     fn()  # warm up
     t0 = time.perf_counter()
     for _ in range(reps):
@@ -153,7 +157,7 @@ def main() -> None:
         )
 
 
-def widen_sym(x) -> Gn:
+def widen_sym(x: MultiVectorBase) -> Gn:
     return Gn.from_blade_dict(x.to_blade_dict())
 
 

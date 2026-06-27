@@ -53,6 +53,7 @@ from IPython.display import Math, display
 
 from gacalc.g2 import (
     G2,
+    Vector2,
     e_1,
     e_2,
     e_12,
@@ -468,5 +469,95 @@ for f in compose_intermediate_fns(
         draw_isoceles_triangle(fn=f, cls=G2)
         create_unit_circle(fn=f, cls=G2)
         axes.set_title(f._repr_latex_())
+
+# %% [markdown]
+# The wedge magnitude: $|a \wedge b| = |a|\,|b|\,\sin\theta$
+# =========================================================
+#
+# For two general vectors $a = a_1 e_1 + a_2 e_2$ and $b = b_1 e_1 + b_2 e_2$ in
+# 𝒢₂, the magnitude of the wedge is $|a||b|\sin\theta$. We derive it from the
+# identity
+#
+# $$|a|^2|b|^2 = |a|^2|b|^2\,(\cos^2\theta + \sin^2\theta)$$
+#
+# together with the definition of the dot product $a\cdot b = |a||b|\cos\theta$.
+# (Symbols are declared **real** so that $\sqrt{x^2}=|x|$ behaves.)
+
+# %%
+a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
+a = a_1 * Vector2.e_1 + a_2 * Vector2.e_2
+b = b_1 * Vector2.e_1 + b_2 * Vector2.e_2
+
+# %% [markdown]
+# The dot product is a scalar, the wedge is a bivector:
+
+# %%
+a.inner_product(b)
+
+# %%
+a ^ b
+
+# %% [markdown]
+# **The Lagrange step.** Distributing $|a|^2|b|^2(\cos^2\theta + \sin^2\theta)$
+# into $(a\cdot b)^2 + |a\wedge b|^2$ gives
+#
+# $$|a|^2|b|^2 - (a\cdot b)^2 = |a\wedge b|^2 .$$
+#
+# Symbolically the residual collapses to $0$:
+
+# %%
+dot = a.inner_product(b).scalar_part()
+lagrange_residual = sympy.simplify(
+    a.magnitude_squared() * b.magnitude_squared() - dot**2 - (a ^ b).magnitude_squared()
+)
+lagrange_residual
+
+# %%
+assert lagrange_residual == 0
+
+# %% [markdown]
+# **From the squared form to the magnitude.** With
+# $\cos\theta = a\cdot b / (|a||b|)$ and $\sin\theta = \sqrt{1-\cos^2\theta}\ge 0$
+# (taking $\theta\in[0,\pi]$),
+#
+# $$|a||b|\sin\theta = \sqrt{|a|^2|b|^2 - (a\cdot b)^2}.$$
+#
+# sympy leaves this as the square root of a *sum*; **factoring the radicand**
+# exposes the perfect square $(a_1 b_2 - a_2 b_1)^2$, whose root is $|a\wedge b|$.
+
+# %%
+cos = a.cosine(b)
+sin = sympy.sqrt(1 - cos**2)  # sinθ ≥ 0 for θ in [0, π]
+wedge_magnitude_from_sin = sympy.sqrt(
+    sympy.factor(sympy.simplify((a.magnitude() * b.magnitude() * sin) ** 2))
+)
+wedge_magnitude_from_sin
+
+# %%
+(a ^ b).magnitude()
+
+# %%
+assert sympy.simplify(wedge_magnitude_from_sin - (a ^ b).magnitude()) == 0
+
+# %% [markdown]
+# **Why this matters for rotors.** The geometric product
+# $a b = a\cdot b + a\wedge b$ splits into orthogonal grades, so
+#
+# $$|ab|^2 = (a\cdot b)^2 + |a\wedge b|^2
+#          = |a|^2|b|^2(\cos^2\theta + \sin^2\theta) = |a|^2|b|^2 ,$$
+#
+# i.e. $|ab| = |a||b|$. A rotor built from $a$ and $b$ can therefore take the
+# magnitude of the *product* directly instead of multiplying the two magnitudes:
+
+# %%
+a * b
+
+# %%
+assert (
+    sympy.simplify(
+        (a * b).magnitude_squared() - a.magnitude_squared() * b.magnitude_squared()
+    )
+    == 0
+)
 
 # %%

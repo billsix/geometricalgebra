@@ -50,3 +50,11 @@ select = [
        "E", "F", "I"
        ]
 ignore = []
+
+[tool.ty.environment]
+# tools/ (the code generator + its astbuild DSL) is a real source directory but
+# not a package on the default path. Declare it so `ty check tests` resolves the
+# `import astbuild` / `import gen_specialized` in tests/test_generator.py (which
+# add tools/ to sys.path at runtime). This is module-resolution config, not a
+# diagnostic override -- every rule still checks every file.
+extra-paths = ["tools"]

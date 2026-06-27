@@ -28,6 +28,8 @@ this generator emits (e.g. ``cast_self``/``cast_coef`` wrap ``typing.cast`` to
 from __future__ import annotations
 
 import ast
+import typing
+from collections.abc import Iterable, Sequence
 
 
 def parse_expr(src: str) -> ast.expr:
@@ -71,18 +73,25 @@ def nm(ident: str) -> ast.Name:
     return ast.Name(id=ident, ctx=_LOAD)
 
 
-def dot(value, *parts: str) -> ast.expr:
+def dot(value: ast.expr | str, *parts: str) -> ast.expr:
     node = value if isinstance(value, ast.AST) else nm(value)
     for p in parts:
         node = ast.Attribute(value=node, attr=p, ctx=_LOAD)
     return node
 
 
-def lit(v) -> ast.Constant:
-    return ast.Constant(value=v)
+def lit(v: object) -> ast.Constant:
+    # ast.Constant accepts any literal value, including the blade tuples used as
+    # dict keys (e.g. ``lit(())``), which typeshed's narrower value type omits;
+    # cast at the boundary.
+    return ast.Constant(value=typing.cast(typing.Any, v))
 
 
-def call(func, args=(), **kwargs) -> ast.Call:
+def call(
+    func: ast.expr | str,
+    args: Iterable[ast.expr] = (),
+    **kwargs: ast.expr,
+) -> ast.Call:
     f = func if isinstance(func, ast.AST) else nm(func)
     return ast.Call(
         func=f,
@@ -91,21 +100,21 @@ def call(func, args=(), **kwargs) -> ast.Call:
     )
 
 
-def cast(type_node, value) -> ast.Call:
+def cast(type_node: ast.expr, value: ast.expr) -> ast.Call:
     return call(dot("typing", "cast"), [type_node, value])
 
 
-def cast_self(value) -> ast.Call:
+def cast_self(value: ast.expr) -> ast.Call:
     return cast(dot("typing", "Self"), value)
 
 
-def cast_operand(value) -> ast.Call:
+def cast_operand(value: ast.expr) -> ast.Call:
     # cast to the sandwich operand TypeVar ``_OperandT`` (imported from base) --
     # a versor conjugation returns the *operand's* own type, not ``Self``.
     return cast(nm("_OperandT"), value)
 
 
-def cast_coef(value) -> ast.expr:
+def cast_coef(value: ast.expr) -> ast.expr:
     # A bare field (``self.coeff_x``) or a negated field (``-self.coeff_x``) is
     # already of type ``Coef``, so casting it is redundant (ty warns).  Only wrap
     # genuinely compound expressions (sums, products, ``d.get(...)``, literals).
@@ -120,11 +129,11 @@ def cast_coef(value) -> ast.expr:
     return cast(nm("Coef"), value)
 
 
-def ret(value) -> ast.Return:
+def ret(value: ast.expr | None) -> ast.Return:
     return ast.Return(value=value)
 
 
-def subscript(value, index) -> ast.Subscript:
+def subscript(value: ast.expr, index: ast.expr) -> ast.Subscript:
     return ast.Subscript(value=value, slice=index, ctx=_LOAD)
 
 
@@ -133,11 +142,18 @@ def opt_int() -> ast.expr:
     return ast.BinOp(left=nm("int"), op=ast.BitOr(), right=lit(None))
 
 
-def arg(name_, annotation=None) -> ast.arg:
+def arg(name_: str, annotation: ast.expr | None = None) -> ast.arg:
     return ast.arg(arg=name_, annotation=annotation)
 
 
-def fn(name_, body, params=None, defaults=(), decorators=(), returns=None):
+def fn(
+    name_: str,
+    body: Sequence[ast.stmt],
+    params: list[ast.arg] | None = None,
+    defaults: Sequence[ast.expr] = (),
+    decorators: Sequence[ast.expr] = (),
+    returns: ast.expr | None = None,
+) -> ast.FunctionDef:
     """An ``ast.FunctionDef``; ``params`` are ``ast.arg`` (default ``[self]``)."""
     params = [arg("self")] if params is None else params
     arguments = ast.arguments(
@@ -152,25 +168,30 @@ def fn(name_, body, params=None, defaults=(), decorators=(), returns=None):
     return ast.FunctionDef(
         name=name_,
         args=arguments,
-        body=body,
+        body=list(body),
         decorator_list=list(decorators),
         returns=returns,
         type_params=[],
     )
 
 
-def cls(name_, body, bases=("MultiVectorBase",), decorators=()) -> ast.ClassDef:
+def cls(
+    name_: str,
+    body: Sequence[ast.stmt],
+    bases: Sequence[str] = ("MultiVectorBase",),
+    decorators: Sequence[ast.expr] = (),
+) -> ast.ClassDef:
     return ast.ClassDef(
         name=name_,
         bases=[nm(b) for b in bases],
         keywords=[],
-        body=body,
+        body=list(body),
         decorator_list=list(decorators),
         type_params=[],
     )
 
 
-def dataclass_decorator(**flags) -> ast.Call:
+def dataclass_decorator(**flags: bool) -> ast.Call:
     return ast.Call(
         func=dot("dataclasses", "dataclass"),
         args=[],
@@ -178,7 +199,9 @@ def dataclass_decorator(**flags) -> ast.Call:
     )
 
 
-def ann_assign(target_name, annotation, value=None) -> ast.AnnAssign:
+def ann_assign(
+    target_name: str, annotation: ast.expr, value: ast.expr | None = None
+) -> ast.AnnAssign:
     return ast.AnnAssign(
         target=ast.Name(id=target_name, ctx=_STORE),
         annotation=annotation,
@@ -187,28 +210,26 @@ def ann_assign(target_name, annotation, value=None) -> ast.AnnAssign:
     )
 
 
-def assign(target_name, value) -> ast.Assign:
+def assign(target_name: str, value: ast.expr) -> ast.Assign:
     return ast.Assign(targets=[ast.Name(id=target_name, ctx=_STORE)], value=value)
 
 
-def isinstance_(value, types) -> ast.Call:
+def isinstance_(value: ast.expr, types: list[ast.expr] | ast.expr) -> ast.Call:
     type_node = (
-        ast.Tuple(elts=list(types), ctx=_LOAD)
-        if isinstance(types, (list, tuple))
-        else types
+        ast.Tuple(elts=list(types), ctx=_LOAD) if isinstance(types, list) else types
     )
     return call("isinstance", [value, type_node])
 
 
-def not_(node) -> ast.UnaryOp:
+def not_(node: ast.expr) -> ast.UnaryOp:
     return ast.UnaryOp(op=ast.Not(), operand=node)
 
 
-def ne_zero(node) -> ast.Compare:
+def ne_zero(node: ast.expr) -> ast.Compare:
     return ast.Compare(left=node, ops=[ast.NotEq()], comparators=[lit(0)])
 
 
-def construct(name_, pairs) -> ast.Call:
+def construct(name_: str, pairs: Iterable[tuple[str, ast.expr]]) -> ast.Call:
     """``Name(field=value, ...)`` with keywords in the given order."""
     return ast.Call(
         func=nm(name_),
@@ -217,16 +238,16 @@ def construct(name_, pairs) -> ast.Call:
     )
 
 
-def return_construct(name_, pairs) -> ast.stmt:
+def return_construct(name_: str, pairs: Iterable[tuple[str, ast.expr]]) -> ast.stmt:
     """``return cast(Self, Name(field=value, ...))`` (the no-local return idiom)."""
     return ret(cast_self(construct(name_, pairs)))
 
 
-def bool_or(tests) -> ast.expr:
+def bool_or(tests: Sequence[ast.expr]) -> ast.expr:
     """``a or b or ...`` (a single test is returned bare, matching the string gen)."""
-    return tests[0] if len(tests) == 1 else ast.BoolOp(op=ast.Or(), values=tests)
+    return tests[0] if len(tests) == 1 else ast.BoolOp(op=ast.Or(), values=list(tests))
 
 
-def bool_and(tests) -> ast.expr:
+def bool_and(tests: Sequence[ast.expr]) -> ast.expr:
     """``a and b and ...`` (a single test is returned bare)."""
-    return tests[0] if len(tests) == 1 else ast.BoolOp(op=ast.And(), values=tests)
+    return tests[0] if len(tests) == 1 else ast.BoolOp(op=ast.And(), values=list(tests))

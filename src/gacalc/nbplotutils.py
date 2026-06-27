@@ -19,6 +19,7 @@
 import contextlib
 import itertools
 import math
+from collections.abc import Generator
 from typing import cast
 
 import matplotlib
@@ -31,11 +32,13 @@ from IPython import get_ipython
 from IPython.display import Markdown, Math, display
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure
 from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
 
 from gacalc.base import BladeCoef, Coef, MultiVectorBase, blade_dict_latex
 from gacalc.gn import (
+    InvertibleFunction,
     MultiVector,
     identity,
 )
@@ -62,8 +65,10 @@ extraLinesMultiplier = 3
 
 
 def generategridlines(
-    graphBounds, interval=1, cls: type[MultiVectorBase] = MultiVector
-):
+    graphBounds: tuple[int, int],
+    interval: int = 1,
+    cls: type[MultiVectorBase] = MultiVector,
+) -> Generator[tuple[list[MultiVectorBase], int], None, None]:
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
     for x in range(
@@ -99,7 +104,11 @@ axes: Axes | None = None
 
 
 @contextlib.contextmanager
-def create_graphs(graph_bounds=(3, 3), title=None, filename=None):
+def create_graphs(
+    graph_bounds: tuple[int, int] = (3, 3),
+    title: str | None = None,
+    filename: str | None = None,
+) -> Generator[Axes, None, Figure]:
     global axes
     fig, axes = plt.subplots(figsize=graph_bounds)
     axes.set_xlim((-graph_bounds[0], graph_bounds[0]))
@@ -125,13 +134,13 @@ def create_graphs(graph_bounds=(3, 3), title=None, filename=None):
 
 
 def create_basis(
-    fn=_IDENTITY,
-    graph_bounds=(10, 10),
-    gridline_interval=1,
-    xcolor=(0.0, 0.0, 1.0),
-    ycolor=(1.0, 0.0, 1.0),
+    fn: InvertibleFunction = _IDENTITY,
+    graph_bounds: tuple[int, int] = (10, 10),
+    gridline_interval: int = 1,
+    xcolor: tuple[float, float, float] = (0.0, 0.0, 1.0),
+    ycolor: tuple[float, float, float] = (1.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
-):
+) -> None:
     # plot transformed basis
     for vecs, thickness in generategridlines(
         graph_bounds, interval=gridline_interval, cls=cls
@@ -147,13 +156,13 @@ def create_basis(
 
 
 def create_unit_circle(
-    fn=_IDENTITY,
+    fn: InvertibleFunction = _IDENTITY,
     cls: type[MultiVectorBase] = MultiVector,
-):
+) -> None:
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
 
-    def generate_circle():
+    def generate_circle() -> Generator[list[MultiVectorBase], None, None]:
         theta_increment: float = 0.01
         scale_radius: float = 1.0
 
@@ -182,11 +191,11 @@ def create_unit_circle(
 
 
 def create_x_and_y(
-    fn=_IDENTITY,
-    xcolor=(0.0, 0.0, 1.0),
-    ycolor=(1.0, 0.0, 1.0),
+    fn: InvertibleFunction = _IDENTITY,
+    xcolor: tuple[float, float, float] = (0.0, 0.0, 1.0),
+    ycolor: tuple[float, float, float] = (1.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
-):
+) -> None:
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
     origin = cls.zero()
@@ -222,10 +231,10 @@ def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Coef:
 
 
 def draw_isoceles_triangle(
-    fn=_IDENTITY,
-    color=(0.0, 0.0, 1.0),
+    fn: InvertibleFunction = _IDENTITY,
+    color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
-):
+) -> None:
     assert axes is not None, "call inside a create_graphs() block"
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
@@ -294,10 +303,10 @@ def draw_isoceles_triangle(
 
 
 def draw_second_right_triangle(
-    fn=_IDENTITY,
-    color=(0.0, 0.0, 1.0),
+    fn: InvertibleFunction = _IDENTITY,
+    color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
-):
+) -> None:
     assert axes is not None, "call inside a create_graphs() block"
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
@@ -360,10 +369,10 @@ def draw_second_right_triangle(
 
 
 def draw_right_triangle(
-    fn=_IDENTITY,
-    color=(0.0, 0.0, 1.0),
+    fn: InvertibleFunction = _IDENTITY,
+    color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
-):
+) -> None:
     assert axes is not None, "call inside a create_graphs() block"
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
@@ -426,10 +435,10 @@ def draw_right_triangle(
 
 
 def draw_ndc(
-    fn=_IDENTITY,
-    color=(0.0, 0.0, 1.0),
+    fn: InvertibleFunction = _IDENTITY,
+    color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
-):
+) -> None:
     assert axes is not None, "call inside a create_graphs() block"
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
@@ -494,12 +503,12 @@ def draw_ndc(
 
 
 def draw_screen(
-    width,
-    height,
-    fn=_IDENTITY,
-    color=(0.0, 0.0, 1.0),
+    width: int,
+    height: int,
+    fn: InvertibleFunction = _IDENTITY,
+    color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
-):
+) -> None:
     assert axes is not None, "call inside a create_graphs() block"
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
@@ -537,7 +546,7 @@ def _blade_latex(blade: tuple[int, ...]) -> str:
     return r"\,".join(r"\mathbf{\vec{e}}_{" + str(b) + "}" for b in blade)
 
 
-def _coef_as_float(coef) -> float | None:
+def _coef_as_float(coef: Coef) -> float | None:
     try:
         return float(coef)
     except (TypeError, ValueError):
@@ -551,7 +560,7 @@ def plot_multivector(
     figsize: tuple[float, float] | None = None,
     symbolic_range: float = 0.8,
     random_seed: int | None = 0,
-):
+) -> Figure:
     """Plot each blade of ``mv`` on its own horizontal number line, stacked vertically.
 
     Works on any ``MultiVectorBase`` representation (``Gn``, ``G1``/``G2``/``G3``)
@@ -664,7 +673,7 @@ def _expand_numerators_dict(mv: MultiVectorBase) -> dict:
     return out
 
 
-def show_mult(a: MultiVectorBase, b: MultiVectorBase):
+def show_mult(a: MultiVectorBase, b: MultiVectorBase) -> None:
     display(Markdown("**We want to evaluate**"))
     # print the values as latex before they are multiplied
     display(Math("$($" + a._repr_latex_() + "$)*($" + b._repr_latex_() + "$)$"))

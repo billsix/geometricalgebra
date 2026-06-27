@@ -48,10 +48,12 @@
 # %%
 import warnings
 
+import sympy
 from IPython.display import Math, display
 
 from gacalc.g3 import (
     G3,
+    Vector3,
     e_1,
     e_2,
     e_3,
@@ -268,5 +270,81 @@ plot_multivector(v)
 
 # %%
 plot_multivector(u * v)
+
+# %% [markdown]
+# The wedge magnitude: $|a \wedge b| = |a|\,|b|\,\sin\theta$ (in 𝒢₃)
+# ================================================================
+#
+# The 𝒢₂ derivation carries over: two vectors always span a single 2-plane, so
+# $|a\wedge b| = |a||b|\sin\theta$ holds in 𝒢₃ too. The only difference is that
+# $a\wedge b$ is now a **three-component** bivector, and the Lagrange identity is
+# a *sum* of squares
+#
+# $$|a|^2|b|^2 - (a\cdot b)^2
+#   = (a_1b_2-a_2b_1)^2 + (a_1b_3-a_3b_1)^2 + (a_2b_3-a_3b_2)^2 = |a\wedge b|^2 .$$
+#
+# Symbols are declared **real** so that $\sqrt{x^2}=|x|$ behaves.
+
+# %%
+a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3", real=True)
+a = a_1 * Vector3.e_1 + a_2 * Vector3.e_2 + a_3 * Vector3.e_3
+b = b_1 * Vector3.e_1 + b_2 * Vector3.e_2 + b_3 * Vector3.e_3
+
+# %% [markdown]
+# The dot product (a scalar) and the wedge (a three-component bivector):
+
+# %%
+a.inner_product(b)
+
+# %%
+a ^ b
+
+# %% [markdown]
+# **The Lagrange step.** The residual collapses to $0$ symbolically:
+
+# %%
+dot = a.inner_product(b).scalar_part()
+lagrange_residual = sympy.simplify(
+    a.magnitude_squared() * b.magnitude_squared() - dot**2 - (a ^ b).magnitude_squared()
+)
+lagrange_residual
+
+# %%
+assert lagrange_residual == 0
+
+# %% [markdown]
+# **From the squared form to the magnitude.** With
+# $\cos\theta = a\cdot b/(|a||b|)$ and $\sin\theta = \sqrt{1-\cos^2\theta}\ge 0$,
+# both $|a\wedge b|$ and $|a||b|\sin\theta$ are the square root of the *same* sum
+# of squares. So, unlike the 𝒢₂ case (a single perfect square needing `factor`),
+# sympy closes the difference directly:
+
+# %%
+cos = a.cosine(b)
+sin = sympy.sqrt(1 - cos**2)  # sinθ ≥ 0 for θ in [0, π]
+wedge_magnitude_from_sin = a.magnitude() * b.magnitude() * sin
+wedge_magnitude_from_sin
+
+# %%
+(a ^ b).magnitude()
+
+# %%
+assert sympy.simplify(wedge_magnitude_from_sin - (a ^ b).magnitude()) == 0
+
+# %% [markdown]
+# **Rotor capstone.** As in 𝒢₂, $ab = a\cdot b + a\wedge b$ splits into
+# orthogonal grades, so $|ab|^2 = (a\cdot b)^2 + |a\wedge b|^2 = |a|^2|b|^2$ and
+# $|ab| = |a||b|$. Here $ab$ is a `Rotor3` (scalar + bivector):
+
+# %%
+a * b
+
+# %%
+assert (
+    sympy.simplify(
+        (a * b).magnitude_squared() - a.magnitude_squared() * b.magnitude_squared()
+    )
+    == 0
+)
 
 # %%

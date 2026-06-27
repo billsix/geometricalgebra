@@ -757,6 +757,9 @@ class MultiVectorBase(abc.ABC):
         # but sympy leaves it as a nested radical it cannot simplify through the
         # sandwich, breaking the symbolic R v R^-1 == rotate identity.  No cast
         # needed now that magnitude() is typed Coef (int | float | sympy.Expr).
+        # (Why the two are equal -- |ab| = |a||b| via |a^b| = |a||b|sin θ -- is
+        # demonstrated in notebooks/displayg2.py and displayg3.py; that the
+        # |to from| form regresses this identity was re-confirmed empirically.)
         scale = from_vector.magnitude() * to_vector.magnitude()
         # scalar + bivector -- the rotor's grade
         product: MultiVectorBase = to_vector * from_vector

@@ -1,7 +1,33 @@
 # Prove |ab| = |a||b| (any dimension) and use it to simplify the rotor's product magnitude
 
-**Status:** proposed — not started
+**Status:** resolved (2026-06-27) — proof demonstrated in the notebooks; the rotor `abs(from*to)`
+change is **determined won't-do** (confirmed symbolic regression). Ready to archive.
 **Created:** 2026-06-13
+**Resolved:** 2026-06-27
+
+## Resolution (2026-06-27)
+
+Handled together with `tasks/wedge-magnitude-sin-notebook.md` (the notebook-first sibling of this task)
+— see its Phase 1–3 results for the worked detail. Summary:
+
+- **The proof is demonstrated** (`|ab| = |a||b|` via `|a∧b| = |a||b| sin θ` and the Lagrange identity)
+  symbolically, for general vectors, in **`notebooks/displayg2.py`** (𝒢₂) and **`notebooks/displayg3.py`**
+  (𝒢₃), with self-checking `assert` cells. The "two vectors span a 2-plane" argument generalizes to any
+  𝒢ₙ; a formal arbitrary-`n` proof was **not** pursued as a separate artifact (the 2D/3D demonstrations
+  + the 2-plane argument were judged sufficient).
+- **The rotor application is won't-do.** Switching `rotor_from_vectors` to `abs(from*to)` was
+  **re-confirmed to regress the symbolic `R v R⁻¹ == rotate` identity**: `abs(from*to) = √(|a|²|b|²)` is
+  a nested radical sympy cannot simplify through the sandwich (sandwich residual stays a large
+  irreducible expression, numerically ~1e-138). The current `abs(from)*abs(to)` form is correct and is
+  the symbolically-tractable one. `rotor_from_vectors` lives only in `base.py` (not generated); its
+  comment there now points at the notebook proof.
+
+Net: the **type-cleanliness motivation no longer applies** (`magnitude()` is already typed `Coef`, so
+`abs(from)*abs(to)` type-checks fine), and the **`abs(from*to)` rewrite is actively harmful**. Nothing
+to change in code beyond the comment pointer already added. The original task body below is kept for
+provenance.
+
+---
 
 ## Goal
 
