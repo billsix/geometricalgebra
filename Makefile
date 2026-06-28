@@ -85,6 +85,19 @@ shell:  ## Get Shell into a ephermeral container made from the image
 		/shell.sh
 
 
+.PHONY: jupyter
+jupyter: image ## Launch JupyterLab (gacalc kernel) on http://127.0.0.1:8888/lab
+	$(CONTAINER_CMD) run -it --rm \
+		--entrypoint /bin/bash \
+		$(FILES_TO_MOUNT) \
+		$(X_FLAGS_FOR_CONTAINER) \
+		$(WAYLAND_FLAGS_FOR_CONTAINER) \
+		$(EXPOSE_PORT) \
+                $(ELPA_MOUNT) \
+		$(CONTAINER_NAME) \
+		/usr/local/bin/jupyter.sh
+
+
 # Run ruff + ty over the source INSIDE the container (the image's pinned toolchain).
 # The g*.py/scalar.py are gitignored, so regenerate them first (so ty can resolve
 # them), then run entrypoint/format.sh (ruff check --fix, ruff format, ty check).
