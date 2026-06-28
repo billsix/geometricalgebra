@@ -56,6 +56,38 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     uv pip install --python $(which python) setuptools wheel numpy sympy && \
     dnf install -y libatomic && uv pip install --python $(which python) pyright
 
+# Notebook "Export to PDF": nbconvert's PDF path renders the notebook through
+# pandoc -> XeLaTeX, so the image needs pandoc plus a XeLaTeX toolchain with the
+# packages nbconvert's default LaTeX template pulls in. This set was verified end
+# to end against a math-heavy notebook (`jupyter nbconvert --to pdf --execute`):
+# the recommended font/latex collections cover most of it, and the named helper
+# packages (adjustbox/tcolorbox/ucs/soul/ulem/titling/enumitem/rsfs/mathrsfs via
+# jknapltx/...) are the template's specific dependencies. Installed
+# unconditionally, alongside the always-present jupyter stack above.
+RUN --mount=type=cache,target=/var/cache/libdnf5 \
+    --mount=type=cache,target=/var/lib/dnf \
+    dnf install -y \
+                   pandoc \
+                   texlive-xetex \
+                   texlive-collection-fontsrecommended \
+                   texlive-collection-latexrecommended \
+                   texlive-adjustbox \
+                   texlive-tcolorbox \
+                   texlive-collectbox \
+                   texlive-ucs \
+                   texlive-titling \
+                   texlive-enumitem \
+                   texlive-rsfs \
+                   texlive-jknapltx \
+                   texlive-upquote \
+                   texlive-ulem \
+                   texlive-soul \
+                   texlive-eurosym \
+                   texlive-pgf \
+                   texlive-environ \
+                   texlive-trimspaces \
+                   texlive-parskip
+
 # Copy the build-relevant project files (not the whole tree: the 31M vendored
 # Emacs elpa tree is already at /root, and .dockerignore is global so it can't be
 # excluded for just this COPY). Placed after the slow dnf/MELPA layers so editing
