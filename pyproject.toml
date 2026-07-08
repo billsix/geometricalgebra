@@ -4,6 +4,10 @@ version = "0.0.5"
 authors = [{name="William Emerison Six", email="billsix@gmail.com"}]
 description = "Geometric Algebra"
 readme = "README.md"
+# PEP 639 SPDX expression; LGPL-2.1-only matches modelviewprojection's
+# pgzero_gl shim, whose Vector2 work-alike subclasses gacalc.g2.Vector2.
+license = "LGPL-2.1-only"
+license-files = ["LICENSE"]
 # Floor is 3.13: the code uses typing.TypeIs (added in 3.13). The dev container runs 3.14.
 requires-python = ">=3.13"
 

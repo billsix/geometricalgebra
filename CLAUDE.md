@@ -292,7 +292,7 @@ specialized classes never drifts from the shared base.
   `notebooks` (matplotlib/ipython/pandas/jupytext), `jupyter` (JupyterLab env), `dev`
   (build/twine/ruff). There is **no `requirements.txt`** — the Dockerfile installs
   `".[dev,notebooks,jupyter]"` from these extras (the single source of truth), and
-  `ruff`/`ty` come from `dnf` in the image. License: GPL v2+.
+  `ruff`/`ty` come from `dnf` in the image. License: LGPL-2.1-only.
 - Releasing & PyPI auth: `make dist` (build) → `make upload` (PyPI) / `make upload-test` (TestPyPI
   rehearsal) → `make release` (build + upload, then host `git tag`). All run in the container; **bump
   `version` in `pyproject.toml` first** — PyPI *and* TestPyPI permanently reject a re-used version.

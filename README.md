@@ -153,4 +153,4 @@ intermediate; the closed form does a single simplify-free pass).
 
 ## License
 
-GPL v2 or later. See `LICENSE`.
+LGPL v2.1 (SPDX: `LGPL-2.1-only`). See `LICENSE`.
