@@ -66,6 +66,7 @@ from astbuild import (  # noqa: E402
     class_def,
     constant,
     construct,
+    construct_type_self,
     dataclass_decorator,
     function_def,
     isinstance_,
@@ -740,11 +741,14 @@ def grades_method(grade_groups: Sequence[tuple[int, list[str]]]) -> ast.Function
 def result_stmts(
     type_name: str, pairs: Iterable[tuple[str, ast.expr]]
 ) -> list[ast.stmt]:
-    """``result: Name = Name(...); return cast(Self, result)`` as nodes."""
-    return [
-        ann_assign("result", name_ref(type_name), construct(type_name, pairs)),
-        return_stmt(cast_self(name_ref("result"))),
-    ]
+    """``return type(self)(...)`` as nodes.
+
+    Every caller passes the OWNING class as ``type_name`` (same-type results:
+    the linear ops, reverse, grade parts), so construction goes through
+    ``type(self)`` and subclasses get their own type back; no cast needed
+    (``type(self)`` is ``type[Self]``).  ``type_name`` is kept for the
+    call-site's readability/assertions."""
+    return [return_stmt(construct_type_self(pairs))]
 
 
 def isclose_call(field: str, other: str = "other") -> ast.expr:
@@ -777,9 +781,12 @@ def dim_or_n(owner: str = "self") -> ast.expr:
 def scaled_stmt(
     type_name: str, fields: Sequence[str], value_fn: Callable[[str], ast.expr]
 ) -> ast.stmt:
-    """``return cast(Self, Name(field=cast(Real, value_fn(field)), ...))``."""
+    """``return type(self)(field=cast(Real, value_fn(field)), ...)``.
+
+    Same-type scalar scaling (mul/rmul/neg) -- subclass-preserving, see
+    result_stmts."""
     return return_stmt(
-        cast_self(construct(type_name, [(f, cast_coef(value_fn(f))) for f in fields]))
+        construct_type_self([(f, cast_coef(value_fn(f))) for f in fields])
     )
 
 
@@ -788,11 +795,16 @@ def result_block_stmts(
     out_exprs: Sequence[sympy.Expr],
     rename: dict[str, tuple[str, str]],
     cast: Callable[[ast.expr], ast.Call] = cast_self,
+    owner: str | None = None,
 ) -> list[ast.stmt]:
     """cse temps + ``return cast(<T>, RType(...))`` (= result_block, as nodes).
 
     ``cast`` defaults to ``cast_self``; the rotor sandwich passes ``cast_operand``
     so the return is typed as the operand (``_OperandT``), not ``Self``.
+    When ``owner`` equals the result type (a same-type product, e.g.
+    Rotor2 * Rotor2 -> Rotor2), construct via ``type(self)`` so subclasses
+    are preserved; widening/grade-changing results keep the concrete class
+    (a Vector2 subclass has no say over a Rotor2 result).
     """
     replacements, reduced = sympy.cse(out_exprs)
     stmts: list[ast.stmt] = [
@@ -802,7 +814,10 @@ def result_block_stmts(
         (field_name(b), result_value(e, rename))
         for b, e in zip(result_spec.blades, reduced)
     ]
-    stmts.append(return_stmt(cast(construct(result_spec.name, pairs))))
+    if owner is not None and owner == result_spec.name and cast is cast_self:
+        stmts.append(return_stmt(construct_type_self(pairs)))
+    else:
+        stmts.append(return_stmt(cast(construct(result_spec.name, pairs))))
     return stmts
 
 
@@ -810,12 +825,18 @@ def unary_stmt(
     result_spec: TypeSpec,
     out_exprs: Sequence[sympy.Expr],
     rename: dict[str, tuple[str, str]],
+    owner: str | None = None,
 ) -> ast.stmt:
-    """``return cast(Self, RType(...))`` (= unary_return, as nodes)."""
+    """``return cast(Self, RType(...))`` (= unary_return, as nodes).
+
+    Same-type results (``owner == result``) construct via ``type(self)``,
+    preserving subclasses."""
     pairs = [
         (field_name(b), unary_value(e, rename))
         for b, e in zip(result_spec.blades, out_exprs)
     ]
+    if owner is not None and owner == result_spec.name:
+        return return_stmt(construct_type_self(pairs))
     return return_stmt(cast_self(construct(result_spec.name, pairs)))
 
 
@@ -882,6 +903,7 @@ def dispatch_method(
                     out_exprs,
                     rename_map(self_spec.blades, rhs_spec.blades, param_name),
                     cast,
+                    owner=self_spec.name,
                 ),
             )
         )
@@ -922,8 +944,8 @@ def generate_scalar() -> list[ast.stmt]:
 
     def scalar_const(
         value: ast.expr,
-    ) -> ast.expr:  # cast(typing.Self, Scalar(coeff_scalar=value))
-        return cast_self(construct("Scalar", [(field_name(()), value)]))
+    ) -> ast.expr:  # type(self)(coeff_scalar=value) -- subclass-preserving
+        return construct_type_self([(field_name(()), value)])
 
     def scalar_const_coef(
         value: ast.expr,
@@ -1537,7 +1559,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
 
     def unary_body(gn_unary: Callable[[Gn], Gn]) -> ast.stmt:
         result_spec, out_exprs = unary_result(spec, gn_unary, n, full_name)
-        return unary_stmt(result_spec, out_exprs, unary_rename)
+        return unary_stmt(result_spec, out_exprs, unary_rename, owner=spec.name)
 
     rev_pairs = []
     for b in blades:
@@ -1561,7 +1583,9 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         for r in range(n + 1)
     ]
     rvp_body.append(
-        return_construct("Scalar", [(field_name(()), cast_coef(constant(0)))])
+        return_construct(
+            "Scalar", [(field_name(()), cast_coef(constant(0)))], owner=spec.name
+        )
     )
 
     body = [
@@ -1692,7 +1716,11 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             ],
             returns=SELF,
         ),
-        function_def("reverse", [return_construct(spec.name, rev_pairs)], returns=SELF),
+        function_def(
+            "reverse",
+            [return_construct(spec.name, rev_pairs, owner=spec.name)],
+            returns=SELF,
+        ),
         function_def(
             "scalar_part",
             [

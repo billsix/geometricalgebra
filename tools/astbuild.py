@@ -238,8 +238,26 @@ def construct(name_: str, pairs: Iterable[tuple[str, ast.expr]]) -> ast.Call:
     )
 
 
-def return_construct(name_: str, pairs: Iterable[tuple[str, ast.expr]]) -> ast.stmt:
-    """``return cast(Self, Name(field=value, ...))`` (the no-local return idiom)."""
+def construct_type_self(pairs: Iterable[tuple[str, ast.expr]]) -> ast.Call:
+    """``type(self)(field=value, ...)`` -- subclass-preserving construction."""
+    return ast.Call(
+        func=call("type", [name_ref("self")]),
+        args=[],
+        keywords=[ast.keyword(arg=f, value=v) for f, v in pairs],
+    )
+
+
+def return_construct(
+    name_: str, pairs: Iterable[tuple[str, ast.expr]], owner: str | None = None
+) -> ast.stmt:
+    """``return cast(Self, Name(field=value, ...))`` (the no-local return idiom).
+
+    When ``owner`` names the class being generated and the result type equals
+    it, emit ``return type(self)(...)`` instead so subclasses get their own
+    type back from same-type operations (no cast needed: ``type(self)`` is
+    ``type[Self]``)."""
+    if owner is not None and owner == name_:
+        return return_stmt(construct_type_self(pairs))
     return return_stmt(cast_self(construct(name_, pairs)))
 
 

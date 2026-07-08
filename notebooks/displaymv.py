@@ -115,7 +115,9 @@ e_2 * e_1  # -> -e_12     (same thing, opposite sign — Rule 2)  # pyright: ign
 # `2x + 3y + 5x`.
 
 # %%
-2 * e_1 + 3 * e_2 + 5 * e_1  # -> 7*e_1 + 3*e_2  # pyright: ignore[reportUnusedExpression]
+(
+    2 * e_1 + 3 * e_2 + 5 * e_1
+)  # -> 7*e_1 + 3*e_2  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Putting the rules together
@@ -221,7 +223,9 @@ i * i  # -> -1     (so e_1*e_2 behaves like the imaginary unit)  # pyright: igno
 # > `  = -6 e_12`
 
 # %%
-(2 * e_1) * (3 * e_3) * (4 * e_3) * (5 * e_1)  # -> 120  # pyright: ignore[reportUnusedExpression]
+(2 * e_1) * (3 * e_3) * (4 * e_3) * (
+    5 * e_1
+)  # -> 120  # pyright: ignore[reportUnusedExpression]
 
 # %%
 (2 * e_2) * (3 * e_1)  # -> -6*e_12  # pyright: ignore[reportUnusedExpression]
@@ -264,7 +268,9 @@ i * i  # -> -1     (so e_1*e_2 behaves like the imaginary unit)  # pyright: igno
 e_1 * (e_3 * (e_3 * e_1))  # right-to-left  # pyright: ignore[reportUnusedExpression]
 
 # %%
-e_1 * ((e_3 * e_3) * e_1)  # middle-pair first (what we did by hand)  # pyright: ignore[reportUnusedExpression]
+e_1 * (
+    (e_3 * e_3) * e_1
+)  # middle-pair first (what we did by hand)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # They all agree. That is **associativity**: for a product of several things, *how you
