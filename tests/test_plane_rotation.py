@@ -1,0 +1,180 @@
+# Copyright (c) 2026 William Emerison Six
+# SPDX-License-Identifier: LGPL-2.1-only
+#
+# This library is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License, version
+# 2.1, as published by the Free Software Foundation.
+#
+# This library is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License (the LICENSE file in this repository)
+# for more details.
+
+"""plane_rotation: plane established once from two vectors, any angle after.
+
+Covers the design recorded in
+tasks/upgrade-rotation-and-ctc-vector-mapping.md (Task 1): grade-1
+verification, the wedge-is-zero (parallel) error, from-a-toward-b
+orientation, perpendicular-part fixedness, representation and subclass
+preservation, inversion, interpolation, symbolic angles, and agreement
+with the from/to rotor formulation.
+"""
+
+import math
+
+import pytest
+import sympy
+
+from gacalc.g2 import G2, Bivector2, Vector2
+from gacalc.g3 import Vector3
+from gacalc.gn import Gn, plane_rotation
+from gacalc.transforms import Linearity, inverse, rotor_rotation
+
+E1 = Vector2.e_1
+E2 = Vector2.e_2
+
+
+def test_rotates_a_toward_b() -> None:
+    # positive theta turns from a toward b: 90 degrees sends e_1 to e_2.
+    f = plane_rotation(E1, E2)(math.radians(90))
+    assert f(E1).is_close(E2)
+    # ...and argument order flips the direction.
+    g = plane_rotation(E2, E1)(math.radians(90))
+    assert g(E1).is_close(-E2)
+
+
+def test_angle_values_match_trig() -> None:
+    turn = plane_rotation(E1, E2)
+    for deg in (0, 30, 90, 120, 180, 240, -90):
+        t = math.radians(deg)
+        got = turn(t)(Vector2(coeff_e_1=1.0, coeff_e_2=0.0))
+        want = Vector2(coeff_e_1=math.cos(t), coeff_e_2=math.sin(t))
+        assert got.is_close(want), deg
+
+
+def test_plane_vectors_need_not_be_unit_or_orthogonal() -> None:
+    # only the plane (and its orientation) matters; the wedge is normalized.
+    a = Vector2(coeff_e_1=3.0, coeff_e_2=0.0)
+    b = Vector2(coeff_e_1=1.0, coeff_e_2=2.0)  # oriented like e_1 ^ e_2
+    f = plane_rotation(a, b)(math.radians(90))
+    assert f(E1).is_close(E2)
+
+
+def test_perpendicular_part_fixed_in_g3() -> None:
+    f = plane_rotation(Vector3.e_1, Vector3.e_2)(math.radians(37))
+    assert f(Vector3.e_3).is_close(Vector3.e_3)
+    # a mixed vector: in-plane part turns, e_3 part rides along.
+    v = Vector3(coeff_e_1=1.0, coeff_e_2=0.0, coeff_e_3=5.0)
+    got = f(v)
+    t = math.radians(37)
+    assert got.is_close(
+        Vector3(coeff_e_1=math.cos(t), coeff_e_2=math.sin(t), coeff_e_3=5.0)
+    )
+
+
+def test_representation_preserved() -> None:
+    f2 = plane_rotation(E1, E2)(1.0)
+    assert type(f2(E1)) is Vector2
+    fn = plane_rotation(Gn.basis_vector(1), Gn.basis_vector(2))(1.0)
+    assert type(fn(Gn.basis_vector(1))) is Gn
+    f3 = plane_rotation(Vector3.e_2, Vector3.e_3)(1.0)
+    assert type(f3(Vector3.e_2)) is Vector3
+
+
+def test_subclass_preserved() -> None:
+    class MyV2(Vector2):
+        pass
+
+    f = plane_rotation(E1, E2)(math.radians(90))
+    v = MyV2(coeff_e_1=1.0, coeff_e_2=0.0)
+    assert type(f(v)) is MyV2
+
+
+def test_zero_rotates_to_zero() -> None:
+    f = plane_rotation(E1, E2)(1.0)
+    assert f(Vector2.zero()).is_close(Vector2.zero())
+
+
+def test_inverse_and_composition() -> None:
+    turn = plane_rotation(E1, E2)
+    f = turn(0.7)
+    v = Vector2(coeff_e_1=2.0, coeff_e_2=-1.0)
+    assert inverse(f)(f(v)).is_close(v)
+    assert f.linearity is Linearity.LINEAR
+    # rotations in one plane add their angles.
+    assert (turn(0.3) @ turn(0.4))(v).is_close(f(v))
+
+
+def test_interpolation() -> None:
+    turn = plane_rotation(E1, E2)
+    f = turn(math.radians(90))
+    assert f.at(0.0)(E1).is_close(E1)
+    assert f.at(0.5)(E1).is_close(turn(math.radians(45))(E1))
+    assert f.at(1.0)(E1).is_close(f(E1))
+
+
+def test_symbolic_theta() -> None:
+    theta = sympy.Symbol("theta", real=True)
+    f = plane_rotation(E1, E2)(theta)
+    got = f(E1).simplified()
+    want = {(1,): sympy.cos(theta), (2,): sympy.sin(theta)}
+    for blade, expr in want.items():
+        assert sympy.simplify(got.to_blade_dict()[blade] - expr) == 0
+
+
+def test_agrees_with_from_to_rotor_formulation() -> None:
+    # rotating BY the angle between from and to, in their plane, is the
+    # same rotation rotor_rotation performs.
+    t = math.radians(40)
+    to = math.cos(t) * E1 + math.sin(t) * E2
+    v = Vector2(coeff_e_1=1.0, coeff_e_2=3.0)
+    assert plane_rotation(E1, E2)(t)(v).is_close(rotor_rotation(E1, to)(v))
+
+
+def test_numeric_theta_stays_numeric() -> None:
+    # the sympy-leak regression (2026-07-09): the int-coefficient basis
+    # constants make the unit bivector sympy-exact; a numeric theta must
+    # nonetheless yield float rotors and float rotated coefficients, or
+    # every downstream game/demo operation drops into sympy object math.
+    f = plane_rotation(E1, E2)(math.radians(120))
+    got = f(Vector2(coeff_e_1=1.0, coeff_e_2=0.0))
+    assert type(got.coeff_e_1) is float
+    assert type(got.coeff_e_2) is float
+
+
+def test_symbolic_theta_stays_exact() -> None:
+    # ...while a symbolic theta keeps the exact plane: cos(theta), not
+    # 1.0*cos(theta).
+    theta = sympy.Symbol("theta", real=True)
+    got = plane_rotation(E1, E2)(theta)(Vector2(coeff_e_1=1, coeff_e_2=0)).simplified()
+    assert got.to_blade_dict() == {
+        (1,): sympy.cos(theta),
+        (2,): sympy.sin(theta),
+    }
+
+
+def test_latex_label_hooks() -> None:
+    turn = plane_rotation(
+        E1,
+        E2,
+        latex_repr=lambda t: f"RZ_{{<{t}>}}",
+        latex_repr_inv=lambda t: f"RZ_{{<{t}>}}^{{-1}}",
+    )
+    f = turn(1.5)
+    assert f.latex_repr == "RZ_{<1.5>}"
+    assert f.latex_repr_inv == "RZ_{<1.5>}^{-1}"
+
+
+def test_non_vector_operands_rejected() -> None:
+    with pytest.raises(TypeError, match="grade-1"):
+        plane_rotation(Bivector2.e_12, E2)
+    with pytest.raises(TypeError, match="grade-1"):
+        plane_rotation(E1, G2(coeff_scalar=1.0, coeff_e_1=1.0))
+
+
+def test_parallel_vectors_rejected() -> None:
+    with pytest.raises(ValueError, match="parallel"):
+        plane_rotation(E1, 3 * E1)
+    with pytest.raises(ValueError, match="parallel"):
+        plane_rotation(E1, -E1)

@@ -193,6 +193,12 @@ class MultiVectorBase(abc.ABC):
     # shared arithmetic, all built on the interchange + primitives
     # ------------------------------------------------------------------
     def __add__(self, rhs) -> typing.Self:
+        # A bare number is the scalar (grade-0) part -- the generated
+        # specialized classes already accept ``mv + 2``; the shared base
+        # matches them so e.g. ``bivector * (-s) + c`` builds a rotor in
+        # every representation.
+        if isinstance(rhs, (int, float, sympy.Expr)):
+            rhs = type(self).from_blade_dict({(): rhs})
         left: BladeCoef = self.to_blade_dict()
         right: BladeCoef = rhs.to_blade_dict()
         return type(self).from_blade_dict(
@@ -202,11 +208,24 @@ class MultiVectorBase(abc.ABC):
             }
         )
 
+    def __radd__(self, lhs) -> typing.Self:
+        # addition commutes; gives ``2 + mv`` for free.
+        return self.__add__(lhs)
+
     def __sub__(self, rhs: typing.Self) -> typing.Self:
         return self + -rhs
 
     def __neg__(self) -> typing.Self:
         return -1 * self
+
+    def __truediv__(self, rhs) -> typing.Self:
+        """Quotient  A / B  =  A B⁻¹  — division IS multiplication by the
+        inverse (right division: order matters in a non-commutative algebra).
+        A bare number's inverse is its reciprocal, so ``v / s`` divides every
+        coefficient."""
+        if isinstance(rhs, (int, float, sympy.Expr)):
+            return self * (1 / rhs)
+        return self * rhs.inverse()
 
     def __abs__(self) -> Coef:
         return self.magnitude()

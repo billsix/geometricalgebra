@@ -62,6 +62,7 @@ from astbuild import (  # noqa: E402
     class_def,
     constant,
     construct,
+    construct_type_of,
     construct_type_self,
     dataclass_decorator,
     function_def,
@@ -469,6 +470,63 @@ def unary_value(expr: sympy.Expr, rename: dict[str, tuple[str, str]]) -> ast.exp
 # ==========================================================================
 
 
+#: coordinate-accessor names, by basis index: x = e_1, y = e_2, z = e_3.
+AXIS_NAMES = ("x", "y", "z")
+
+
+def coordinate_property_defs(spec: TypeSpec) -> list[ast.stmt]:
+    """``x``/``y``/``z`` read-write properties on grade-1 (vector) types.
+
+    A vector's coordinates ARE its basis coefficients; these are ergonomic
+    views over ``coeff_e_1``/``coeff_e_2``/``coeff_e_3`` for consumers that
+    speak coordinates (the Code-the-Classics games mutate ``v.x`` per frame).
+    Only grade-1 types get them -- ``x`` on a rotor or a full multivector
+    would suggest a coordinate tuple it doesn't have."""
+    if any(len(b) != 1 for b in spec.blades):
+        return []
+    defs: list[ast.stmt] = []
+    for blade in spec.blades:
+        axis = AXIS_NAMES[blade[0] - 1]
+        field = field_name(blade)
+        defs.append(
+            function_def(
+                axis,
+                [
+                    ast.Expr(
+                        ast.Constant(
+                            f"The {axis} coordinate -- the ``{field}``"
+                            " basis coefficient, readable and writable."
+                        )
+                    ),
+                    return_stmt(attribute("self", field)),
+                ],
+                decorators=[name_ref("property")],
+                returns=name_ref("Coef"),
+            )
+        )
+        defs.append(
+            function_def(
+                axis,
+                [
+                    ast.Assign(
+                        targets=[
+                            ast.Attribute(
+                                value=name_ref("self"),
+                                attr=field,
+                                ctx=ast.Store(),
+                            )
+                        ],
+                        value=name_ref("value"),
+                    )
+                ],
+                params=[argument("self"), argument("value", name_ref("Coef"))],
+                decorators=[attribute(axis, "setter")],
+                returns=constant(None),
+            )
+        )
+    return defs
+
+
 def rename_map(
     blades_self: Sequence[tuple[int, ...]],
     blades_rhs: Sequence[tuple[int, ...]],
@@ -792,6 +850,7 @@ def result_block_stmts(
     rename: dict[str, tuple[str, str]],
     cast: Callable[[ast.expr], ast.Call] = cast_self,
     owner: str | None = None,
+    via_var: str | None = None,
 ) -> list[ast.stmt]:
     """cse temps + ``return cast(<T>, RType(...))`` (= result_block, as nodes).
 
@@ -801,6 +860,11 @@ def result_block_stmts(
     Rotor2 * Rotor2 -> Rotor2), construct via ``type(self)`` so subclasses
     are preserved; widening/grade-changing results keep the concrete class
     (a Vector2 subclass has no say over a Rotor2 result).
+    ``via_var`` names an operand variable to construct through instead --
+    ``cast(<T>, type(<via_var>)(...))``: the sandwich is grade-preserving
+    (every arm's result type IS the operand's type, which base.sandwich
+    documents as "returns a value of x's own type"), so its arms build via
+    ``type(x)`` and an operand subclass keeps its type.
     """
     replacements, reduced = sympy.cse(out_exprs)
     stmts: list[ast.stmt] = [
@@ -810,7 +874,9 @@ def result_block_stmts(
         (field_name(b), result_value(e, rename))
         for b, e in zip(result_spec.blades, reduced)
     ]
-    if owner is not None and owner == result_spec.name and cast is cast_self:
+    if via_var is not None:
+        stmts.append(return_stmt(cast(construct_type_of(via_var, pairs))))
+    elif owner is not None and owner == result_spec.name and cast is cast_self:
         stmts.append(return_stmt(construct_type_self(pairs)))
     else:
         stmts.append(return_stmt(cast(construct(result_spec.name, pairs))))
@@ -900,6 +966,9 @@ def dispatch_method(
                     rename_map(self_spec.blades, rhs_spec.blades, param_name),
                     cast,
                     owner=self_spec.name,
+                    # the sandwich (cast_operand) is grade-preserving:
+                    # construct via type(<operand>) so subclasses survive.
+                    via_var=param_name if cast is cast_operand else None,
                 ),
             )
         )
@@ -1735,6 +1804,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             ]
         ),
         is_close_method(spec.name, fields),
+        *coordinate_property_defs(spec),
         iter_method(blades),
         function_def("even_part", [unary_body(lambda a: a.even_part())], returns=SELF),
         function_def("odd_part", [unary_body(lambda a: a.odd_part())], returns=SELF),

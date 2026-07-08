@@ -100,6 +100,14 @@ def test_scalar_subclass_preserved() -> None:
     assert type(s.even_part()) is MyScalar
 
 
+def test_sandwich_returns_operand_subclass() -> None:
+    # base.sandwich documents "returns a value of x's own type"; the
+    # generated closed-form Rotor sandwich honors that for subclasses too.
+    r = Rotor2(coeff_scalar=1.0, coeff_e_12=0.0)
+    v = MyV2(coeff_e_1=1.0, coeff_e_2=2.0)
+    assert type(r.sandwich(v)) is MyV2
+
+
 def test_values_unchanged_by_construction_path() -> None:
     a, b = MyV2(coeff_e_1=1.0, coeff_e_2=2.0), MyV2(coeff_e_1=3.0, coeff_e_2=4.0)
     plain = Vector2(coeff_e_1=1.0, coeff_e_2=2.0) + Vector2(

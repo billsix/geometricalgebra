@@ -20,7 +20,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `MultiVector = Gn` alias. (The `InvertibleFunction` transform layer lives in `transforms.py`,
   re-exported from here.)
 - `src/gacalc/transforms.py` — the representation-agnostic transform layer
-  (`InvertibleFunction`, `translate`/`rotate`/`scale_non_uniform`/`compose`/…); derives any basis it
+  (`InvertibleFunction`, `translate`/`scale_non_uniform`/`compose`/…, plus the rotation factories
+  `rotor_rotation(from, to)` and `plane_rotation(a, b)`); derives any basis it
   needs from the value's own type, so it preserves `Gn`/`G1`/`G2`/`G3`.
 - `src/gacalc/g1.py`, `g2.py`, `g3.py` — **generated** modules, **not tracked in git**
   (gitignored). Each holds the full specialized class `G1`/`G2`/`G3` **and** that algebra's **graded
@@ -153,6 +154,17 @@ that rotor `R = |from||to| + to·from` (scalar + bivector, the even-subalgebra g
 **any plane, any dimension/representation**. Rotation lives in the algebra itself — the transform
 layer (`transforms.py`) carries no rotation factory; use these rotor methods instead.
 
+**`plane_rotation(a, b)` (transforms.py, 2026-07-08) separates the plane from the angle** — the
+concern `rotate(from, to)` conflates (its angle is locked to the two vectors, which is what mvp's
+animation/interpolation fought). `a`/`b` are verified grade-1 and only *define the plane*: their
+normalized wedge is the plane's unit bivector `i` (`a ∧ b == 0`, i.e. parallel vectors, is an error —
+the wedge-is-zero test IS the linear-dependence test). It returns *angle → `InvertibleFunction`*:
+`f = plane_rotation(e_1, e_2)` once, then `f(θ)` for any θ builds the half-angle rotor
+`R = cos(θ/2) − sin(θ/2)·i` and sandwiches. Positive θ turns from `a` toward `b`; the inverse is
+`f(−θ)`; `f(θ).at(t)` interpolates as `f(t·θ)`; symbolic θ stays symbolic, float θ stays numeric.
+This is the sanctioned "rotate by an angle in a plane" API — the half-angle trig lives *inside* the
+library, so user code never hand-builds a rotor.
+
 `base.rotate` is *projection-based* (it splits the operand into in-plane + perpendicular parts) — it
 returns the operand's type via a runtime grade projection. The generated `Rotor` classes additionally
 carry a **closed-form, type-correct `sandwich(x)`** (`R x R⁻¹`, derived symbolically by the generator,
@@ -168,7 +180,8 @@ Bivector3⁻¹` types as the odd part `{1,3}` even though the grade-3 part is id
 projection); the narrowing keeps `Vector3.project(onto=Bivector3) → Vector3`. (Same spirit as the
 rotor sandwich's grade projection.)
 
-**Convention — express rotations as `rotate` / `rotor_from_vectors` (from/to), never hand-built.**
+**Convention — express rotations as `plane_rotation` (plane + angle) or `rotate` /
+`rotor_from_vectors` (from/to), never hand-built.**
 When writing or reviewing examples, tests, notebooks, or docs, a rotation must read as an explicit
 `cls.rotate(from_vector=…, to_vector=…)(v)` or `cls.rotor_from_vectors(from_vector=…, to_vector=…)`
 (keyword args; add `.normalize()` for a unit rotor). **Do not** hand-build a rotor as a data value —

@@ -26,12 +26,19 @@ This module imports only ``base`` (the abstract base), never a concrete
 representation, so it stays free of any single algebra.  ``gn.py`` re-exports
 these names for backward compatibility.
 
-Rotation lives in the algebra itself, not here: use the rotor methods
-``MultiVectorBase.rotate(from, to)`` / ``rotor_from_vectors(from, to)`` (the
-geometric-algebra way -- any plane, any representation).  The old planar 2D
+Rotation is *derived from* the algebra, and packaged here two ways:
+:func:`rotor_rotation` wraps the from-vector/to-vector rotor sandwich (one
+fixed rotation), and :func:`plane_rotation` separates the two concerns the
+from/to form conflates -- it takes two vectors that *define a plane* (their
+normalized wedge is the plane's unit bivector ``i``) and returns a function
+of the angle, so one plane established once yields any rotation angle on
+demand (and interpolation for free).  The raw rotor methods
+``MultiVectorBase.rotate(from, to)`` / ``rotor_from_vectors(from, to)``
+remain the algebra-level primitives.  (The very old planar 2D
 ``rotate(angle)`` / ``rotate_90_degrees`` / ``rotate_around`` factories were
-removed (they acted only in the e_1 e_2 plane and silently mis-transformed a
-vector with an e_3+ component).
+removed long before: they acted only in the e_1 e_2 plane and silently
+mis-transformed a vector with an e_3+ component -- ``plane_rotation`` is the
+plane-explicit replacement.)
 
 This module also carries an *animation* layer (``InvertibleFunction.at`` /
 ``steps`` plus the ``interpolate`` / ``components`` fields, ported from the
@@ -41,13 +48,14 @@ classification (:class:`Linearity`, joined by ``compose``), and
 """
 
 import dataclasses
+import math
 import typing
 from enum import IntEnum
 
 import numpy as np
 import sympy
 
-from gacalc.base import MultiVectorBase, MultiVectorFn
+from gacalc.base import Coef, MultiVectorBase, MultiVectorFn
 
 
 class Linearity(IntEnum):
@@ -433,6 +441,134 @@ def rotor_rotation(
         interpolate=interpolate,
         linearity=Linearity.LINEAR,
     )
+
+
+def plane_rotation(
+    a: V,
+    b: V,
+    *,
+    latex_repr: typing.Callable[[Coef], str] | None = None,
+    latex_repr_inv: typing.Callable[[Coef], str] | None = None,
+) -> typing.Callable[[Coef], InvertibleFunction[V]]:
+    r"""Establish a plane of rotation from two vectors; get back *angle ->
+    rotation*.
+
+    The from/to rotor form (:func:`rotor_rotation`,
+    ``MultiVectorBase.rotate``) conflates two concerns: choosing the *plane*
+    and choosing the *angle* (locked to the angle between the two vectors).
+    This factory separates them.  ``a`` and ``b``'s only job is to define the
+    plane: their wedge ``a ^ b`` is a simple bivector, and normalizing it
+    gives the plane's unit bivector ``i`` (the "imaginary unit" of that
+    plane: ``i * i == -1``).  The returned function takes an angle ``theta``
+    and packages the rotation as an :class:`InvertibleFunction` whose forward
+    is the half-angle rotor sandwich
+
+    .. math:: R \, v \, \tilde{R}, \qquad
+              R = \cos(\theta/2) - \sin(\theta/2)\, i
+
+    and whose inverse is the same with ``-theta``.  Positive ``theta`` turns
+    **from a toward b** (the wedge's orientation), so argument order is
+    meaningful.  The perpendicular part of the operand is left fixed, in any
+    dimension and any representation; the operand keeps its own type.
+    Because the angle is a free parameter, interpolation falls out:
+    ``rotation(theta).at(t)`` is ``rotation(t * theta)``.
+
+    ``a`` and ``b`` must be (nonzero, non-parallel) *vectors*: a zero wedge
+    means the two vectors span no plane -- the wedge-is-zero test IS the
+    linear-dependence test.  A symbolic ``theta`` (a sympy expression) stays
+    symbolic; a ``float`` theta stays numeric (see the coercion note in the
+    body).  ``latex_repr`` / ``latex_repr_inv`` optionally map ``theta`` to
+    the label of the returned function (a facade can brand its rotations,
+    e.g. mvp's ``RX_{<theta>}``); the default is ``R_{theta}``.
+
+    Example:
+        >>> import math
+        >>> from gacalc.transforms import plane_rotation
+        >>> from gacalc.g3 import Vector3
+        >>> turn = plane_rotation(Vector3.e_1, Vector3.e_2)
+        >>> f = turn(math.radians(90))
+        >>> f(Vector3.e_1).is_close(Vector3.e_2)          # e_1 -> e_2
+        True
+        >>> f(Vector3.e_3).is_close(Vector3.e_3)          # perpendicular fixed
+        True
+        >>> f.inverse(f(Vector3.e_1)).is_close(Vector3.e_1)
+        True
+        >>> f.at(0.5)(Vector3.e_1).is_close(               # interpolation
+        ...     turn(math.radians(45))(Vector3.e_1))
+        True
+    """
+    if not (a.is_vector() and b.is_vector()):
+        raise TypeError(
+            "plane_rotation takes two vectors (grade-1); "
+            f"got grades {a.grades()} and {b.grades()}"
+        )
+    plane = a.outer_product(b)
+    if plane == type(plane).zero():
+        raise ValueError(
+            "the two vectors are parallel (their wedge is zero): "
+            "they span no plane of rotation"
+        )
+    i = plane.normalize()
+
+    # Numeric-preservation guard (base.py's contract: a purely numeric
+    # pipeline stays numeric).  Basis constants carry exact ``int``
+    # coefficients, and normalize routes an int magnitude through sympy for
+    # exactness -- so the unit bivector of e.g. ``e_1 ^ e_2`` comes back
+    # with sympy Rational/One coefficients.  Left alone, every rotor built
+    # from it mixes float trig with sympy numbers (``float * One`` is a
+    # ``sympy.Float``), and the sandwich hands back vectors with sympy
+    # coefficients -- silently turning ALL downstream game/demo arithmetic
+    # into sympy object math (measured 2026-07-09: ~6x per add, and it
+    # spreads to everything the rotated vector later touches).  So keep TWO
+    # copies of the unit bivector: the exact one, and -- when every
+    # coefficient is a numeric value (no free symbols) -- a float-coerced
+    # one.  ``rotation`` picks per theta: numeric theta gets the float
+    # plane (float rotors, float results); a symbolic theta keeps the
+    # exact plane so notebook output stays ``cos(theta)``, not
+    # ``1.0*cos(theta)``.  A genuinely symbolic plane never coerces.
+    i_coefs = i.to_blade_dict()
+    i_numeric: V | None = None
+    if all(
+        isinstance(c, (int, float)) or bool(getattr(c, "is_number", False))
+        for c in i_coefs.values()
+    ):
+        i_numeric = type(i).from_blade_dict({b: float(c) for b, c in i_coefs.items()})
+
+    def rotation(theta: Coef) -> InvertibleFunction[V]:
+        # sympy trig for a symbolic angle, math trig for a numeric one --
+        # keep a purely numeric pipeline numeric (see the magnitude() /
+        # inverse() convention in base.py).
+        if isinstance(theta, sympy.Expr):
+            cos_half = sympy.cos(theta / 2)
+            sin_half = sympy.sin(theta / 2)
+            plane_i = i
+        else:
+            cos_half = math.cos(theta / 2)
+            sin_half = math.sin(theta / 2)
+            # numeric theta: use the float-coerced plane (see above)
+            plane_i = i_numeric if i_numeric is not None else i
+        rotor = plane_i * (-sin_half) + cos_half
+
+        def forward(v: V) -> V:
+            return rotor.sandwich(v)
+
+        def backward(v: V) -> V:
+            # the rotor is unit, so the inverse rotor is its reverse
+            # (= the -theta rotor).
+            return rotor.reverse().sandwich(v)
+
+        return InvertibleFunction(
+            forward,
+            backward,
+            latex_repr=latex_repr(theta) if latex_repr else f"R_{{{theta}}}",
+            latex_repr_inv=latex_repr_inv(theta)
+            if latex_repr_inv
+            else f"R_{{-({theta})}}",
+            interpolate=lambda t: rotation(theta * t),
+            linearity=Linearity.LINEAR,
+        )
+
+    return rotation
 
 
 def uniform_scale(m: float) -> InvertibleFunction:

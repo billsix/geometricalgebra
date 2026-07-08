@@ -234,13 +234,18 @@ def construct(name_: str, pairs: Iterable[tuple[str, ast.expr]]) -> ast.Call:
     )
 
 
-def construct_type_self(pairs: Iterable[tuple[str, ast.expr]]) -> ast.Call:
-    """``type(self)(field=value, ...)`` -- subclass-preserving construction."""
+def construct_type_of(var: str, pairs: Iterable[tuple[str, ast.expr]]) -> ast.Call:
+    """``type(<var>)(field=value, ...)`` -- subclass-preserving construction."""
     return ast.Call(
-        func=call("type", [name_ref("self")]),
+        func=call("type", [name_ref(var)]),
         args=[],
         keywords=[ast.keyword(arg=f, value=v) for f, v in pairs],
     )
+
+
+def construct_type_self(pairs: Iterable[tuple[str, ast.expr]]) -> ast.Call:
+    """``type(self)(field=value, ...)`` -- subclass-preserving construction."""
+    return construct_type_of("self", pairs)
 
 
 def return_construct(
