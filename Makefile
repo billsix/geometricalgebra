@@ -221,7 +221,7 @@ upload: dist ## (container) twine check + interactive token upload of $(DIST_DIR
 		-e TWINE_PASSWORD \
 		--entrypoint /bin/bash \
 		$(CONTAINER_NAME) \
-		-c 'twine check /dist/* && twine upload $(TWINE_VERBOSE) /dist/*'
+		-c 'source /venv/bin/activate; twine check /dist/* && twine upload $(TWINE_VERBOSE) /dist/*'
 
 # Rehearse the whole build+upload flow against TestPyPI (a separate index with its
 # own account/token -- get a token at https://test.pypi.org/manage/account/token/).
@@ -235,7 +235,7 @@ upload-test: dist ## (container) upload $(DIST_DIR)/* to TestPyPI to rehearse; -
 		-e TWINE_PASSWORD \
 		--entrypoint /bin/bash \
 		$(CONTAINER_NAME) \
-		-c 'twine check /dist/* && twine upload $(TWINE_VERBOSE) --repository testpypi /dist/*'
+		-c 'source /venv/bin/activate; twine check /dist/* && twine upload $(TWINE_VERBOSE) --repository testpypi /dist/*'
 
 .PHONY: release
 release: dist ## (host) version-tag guard + (container) upload + (host) git tag
@@ -249,7 +249,7 @@ release: dist ## (host) version-tag guard + (container) upload + (host) git tag
 		-e TWINE_PASSWORD \
 		--entrypoint /bin/bash \
 		$(CONTAINER_NAME) \
-		-c 'twine check /dist/* && twine upload $(TWINE_VERBOSE) /dist/*'
+		-c 'source /venv/bin/activate; twine check /dist/* && twine upload $(TWINE_VERBOSE) /dist/*'
 	git tag "v$(VERSION)"
 	@echo "Released $(VERSION). Push the tag with:  git push origin v$(VERSION)"
 
