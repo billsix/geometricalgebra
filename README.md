@@ -102,7 +102,11 @@ A result that spans grades no single type covers widens to the full `G_n`
 (`3*e_1 + 4*e_2`; a bivector via `e_1 ^ e_2`; a rotor via `scalar + bivector` — `+`/`-`
 also narrow to the tightest type). Rotors carry `plane_of_rotation()`, and
 `rotor_from_vectors(from, to)` builds the rotor whose sandwich `R v R.inverse()` equals
-`rotate(from, to)(v)`. A full walkthrough is in `notebooks/displaygraded.py`.
+`rotate(from, to)(v)`. To separate the plane from the angle, `plane_rotation(a, b)`
+(new in 0.0.8) wedge-normalizes the two vectors into a unit bivector once and returns
+a factory: each `θ` yields an `InvertibleFunction` doing the half-angle rotor sandwich
+(numeric `θ` stays float — no sympy in the result). A full walkthrough is in
+`notebooks/displaygraded.py`.
 
 Because the specialized/graded classes don't eagerly simplify, a symbolic result can carry
 un-reduced coefficients (e.g. terms that should cancel). `v.simplified()` / `v.expanded()` return
