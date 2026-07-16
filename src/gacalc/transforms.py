@@ -442,8 +442,6 @@ def rotor_rotation(
     from_vector: V,
     to_vector: V,
     *,
-    latex_repr: str = "R",
-    latex_repr_inv: str = "R^{-1}",
     interpolate: typing.Optional[
         typing.Callable[[float], "InvertibleFunction[V]"]
     ] = None,
@@ -457,9 +455,9 @@ def rotor_rotation(
     ``zero`` for free.  This is the *rotor* formulation of a rotation; the
     *projection* formulation lives at :func:`projection_rotation`.
 
-    ``latex_repr`` / ``interpolate`` let a caller (e.g. an angle-parameterized
-    rotation) label the function and supply an interpolation law that from/to
-    vectors alone can't express.
+    Its LaTeX label is fixed as ``R`` / ``R^{-1}`` (the rotor and its inverse).
+    ``interpolate`` lets a caller (e.g. an angle-parameterized rotation) supply
+    an interpolation law that from/to vectors alone can't express.
 
     Example:
         >>> import math
@@ -488,8 +486,8 @@ def rotor_rotation(
     return InvertibleFunction(
         forward,
         backward,
-        latex_repr,
-        latex_repr_inv,
+        "R",
+        "R^{-1}",
         interpolate=interpolate,
         linearity=Linearity.LINEAR,
     )

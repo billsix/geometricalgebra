@@ -1,6 +1,7 @@
 # Drop the unused `latex_repr` args from `rotor_rotation` (inline the known string)
 
-**Status:** proposed — needs go-ahead
+**Status:** complete
+**Completed:** 2026-07-16
 **Created:** 2026-07-16
 
 ## Goal
@@ -26,15 +27,20 @@ used feature (a facade branding per-axis rotations) — leave them.
 
 ## Plan
 
-- [ ] Remove `latex_repr` / `latex_repr_inv` params from `rotor_rotation`'s signature.
-- [ ] In the `InvertibleFunction(...)` construction (transforms.py ~L488–495), pass the
-      literals `"R"` and `"R^{-1}"` directly.
-- [ ] Update the docstring line "``latex_repr`` / ``interpolate`` let a caller ... label the
-      function ..." — drop the `latex_repr` half (keep the `interpolate` note).
-- [ ] Grep-confirm no caller passes `latex_repr=`/`latex_repr_inv=` to `rotor_rotation`
-      (gacalc: `tests/test_transforms.py`, `tests/test_numeric_magnitude.py`; and mvp) — verified
-      none do at task-creation time, re-verify before editing.
-- [ ] Run `make test` (or host `pytest -q` after `make generate`) + `ruff`/`ty` clean.
+- [x] Removed `latex_repr` / `latex_repr_inv` params from `rotor_rotation`'s signature (now
+      `from_vector, to_vector, *, interpolate`).
+- [x] `InvertibleFunction(...)` construction passes the literals `"R"` / `"R^{-1}"` directly.
+- [x] Updated the docstring — states the label is fixed as `R` / `R^{-1}`, keeps the `interpolate`
+      note.
+- [x] Re-verified no caller passes `latex_repr=`/`latex_repr_inv=` (gacalc + mvp both clean; mvp
+      never calls `rotor_rotation` at all).
+- [x] `pytest -q` → **281 passed**; `ruff`/`ty` clean. Confirmed `latex_repr == "R"`,
+      `latex_repr_inv == "R^{-1}"` still render at runtime.
+
+## Outcome
+
+`interpolate` left in place per scope (its own open question below, untouched). No generated
+code, no mvp change.
 
 ## Notes / decisions
 
