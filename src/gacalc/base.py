@@ -692,8 +692,6 @@ class MultiVectorBase(abc.ABC):
         """
         assert from_vector.is_vector()
         assert to_vector.is_vector()
-        from_vector = from_vector.normalize()
-        to_vector = to_vector.normalize()
         plane: MultiVectorBase = from_vector ^ to_vector
 
         components_in_plane: MultiVectorFn = cls.project(plane)
@@ -702,7 +700,9 @@ class MultiVectorBase(abc.ABC):
         def r(value: MultiVectorBase) -> MultiVectorBase:
             assert value.is_vector()  # TODO - can this be generalized?
             return (
-                components_in_plane(value) * from_vector * to_vector
+                components_in_plane(value)
+                * (from_vector * (abs(from_vector) ** (-1)))
+                * (to_vector * (abs(to_vector) ** (-1)))
             ) + components_exterior_to_plane(value)
 
         return r
