@@ -144,7 +144,13 @@ after their algebra. The dimension parameter is `n` (it was once misleadingly ca
 **Transforms.** `InvertibleFunction` (in `transforms.py`, re-exported from `gn.py`) wraps a function + inverse + LaTeX labels,
 composable via `@`, with `translate` / `uniform_scale` / `scale_non_uniform` / `compose` factories. This
 layer is shared with the author's *modelviewprojection* book project. Jupyter display via
-`_repr_latex_`.
+`_repr_latex_`. The algebra-derived functions (`project` / `reject` / `reflect` / `projection_rotation`)
+return a *bare* `MultiVectorFn` with no label; **`labeled(fn, latex_repr, *, inverse=None, ...)`** wraps one
+on demand so it carries a LaTeX label and joins a `@`/`compose` pipeline — with no `inverse`, it's treated
+as non-invertible and its inverse slot raises **`NotInvertibleError`** if a pipeline containing it is
+inverted. This overloads `InvertibleFunction` for two consumers with different needs (mvp's Cayley-graph
+engine *requires* invertibility; display pipelines don't) — the interface reassessment is
+`tasks/reassess-composable-function-interface.md`.
 
 **Rotations & rotors.** The rotor *builder* lives on `MultiVectorBase` (`base.py`):
 `rotor_from_vectors(from, to)` builds the rotor `R = |from||to| + to·from` (scalar + bivector, the
