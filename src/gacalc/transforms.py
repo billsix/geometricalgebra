@@ -503,8 +503,8 @@ def projection_rotation(
         assert value.is_vector()  # TODO - can this be generalized?
         return (
             components_in_plane(value)
-            * (from_vector * (abs(from_vector) ** (-1)))
-            * (to_vector * (abs(to_vector) ** (-1)))
+            * from_vector.normalize()
+            * to_vector.normalize()
         ) + components_exterior_to_plane(value)
 
     return r
