@@ -1,7 +1,18 @@
 # Relocate `rotate` to transforms.py and rename the three rotation functions
 
-**Status:** proposed — needs go-ahead
+**Status:** complete
+**Completed:** 2026-07-16
 **Started:** 2026-07-16
+
+## Decisions (Bill, 2026-07-16)
+
+1. **Hard-remove** `rotate` from the class API (no deprecation shim). Update mvp
+   accordingly — **but** mvp turns out not to reference gacalc's `rotate` classmethod
+   at all: `/foo/opt/modelviewprojection` only imports `plane_rotation` (kept unchanged)
+   and defines its *own* `Vertex.rotate` / `mplt.rotate` / local `rotate = plane_rotation(...)`.
+   So **mvp needs no edit**; verified by grep (no `rotor_rotation`, no `.rotate(from_vector=…)`).
+2. **Option A** naming: `rotate` → `projection_rotation`; keep `rotor_rotation`, `plane_rotation`.
+3. `rotor_from_vectors` **stays** on `MultiVectorBase` (it builds a value, not a transform).
 
 ## Goal
 
@@ -29,29 +40,33 @@ value) and is out of scope for the rename except where prose references it.
 
 ## Plan
 
-- [ ] Move `rotate` from `MultiVectorBase` (`base.py`) to a free function in
-      `transforms.py`. Body currently calls `cls.project(plane)` / `cls.reject(plane)` /
-      `cls.identity`; as a free function it derives the type from the operand's own
-      type (`type(from_vector).project(...)`), exactly as `rotor_rotation` /
-      `plane_rotation` already do — so it stays representation-agnostic (`Gn`/`G1`/`G2`/`G3`).
-- [ ] Re-export from `gn.py` (which already re-exports `plane_rotation`, `rotor_rotation`)
-      so `from gacalc.gn import <name>` keeps working; add to `transforms.__all__`.
-- [ ] Decide final names (see **Naming** below) and apply.
-- [ ] Update tests: `tests/test_multivector.py` (6 `MultiVector.rotate` calls, ~L430–456),
-      `tests/test_conformance.py` (L192–193, `cls.rotate` / `Gn.rotate`),
-      `tests/test_graded.py` (L317, 329, 339, 346, `*.rotate`), `tests/test_transforms.py`
-      (L416–421, `test_rotor_rotation_matches_projection_rotate` + `G3.rotate`),
-      `tests/test_numeric_magnitude.py` (imports `rotor_rotation`).
-- [ ] Update notebooks: `notebooks/displayrotations.py` (L38, 95, 98, 132 — `Gn.rotate`),
-      `notebooks/displaygraded.py` (L169, 177 — `Vector2.rotate`).
-- [ ] Update docs/prose: `CLAUDE.md` (the "base.rotate is projection-based" paragraph and
-      the two **Convention** paragraphs that mandate `cls.rotate(from_vector=…, to_vector=…)(v)`),
-      `README.md` (the graded-subtypes section mentioning `rotate(from, to)`), and the
-      `transforms.py` module docstring (L30–40) + the cross-references inside
-      `rotor_rotation` / `plane_rotation` docstrings that point at `MultiVectorBase.rotate`.
-- [ ] `make generate` is **not** needed — `rotate` is hand-written in `base.py`, not generated.
-      But regenerate + `make test` to confirm nothing downstream broke, and re-run
-      `entrypoint/format.sh` (ruff + ty) which must stay clean.
+- [x] Moved `rotate` from `MultiVectorBase` (`base.py`) to a free function
+      `projection_rotation` in `transforms.py`. It derives the type from the operand's own
+      type (`representation = type(from_vector); representation.project(...)`), exactly as
+      `rotor_rotation` / `plane_rotation` do — stays representation-agnostic. Added a doctest.
+- [x] Re-exported `projection_rotation` from `gn.py`; added to `transforms.__all__`.
+- [x] Applied **Option A** naming (`rotate` → `projection_rotation`; others kept).
+- [x] Updated tests: `tests/test_multivector.py` (6 calls + import), `tests/test_conformance.py`
+      (both calls + import), `tests/test_graded.py` (4 calls + header comment + import),
+      `tests/test_transforms.py` (`G3.rotate` call + import). `tests/test_numeric_magnitude.py`
+      needed no change (it only ever used `rotor_rotation`, unchanged).
+- [x] Updated notebooks: `notebooks/displayrotations.py`, `notebooks/displaygraded.py`.
+- [x] Updated docs/prose: `CLAUDE.md` (Rotations&rotors, plane_rotation, projection-based,
+      both Convention paragraphs, Operators), `README.md`, `transforms.py` module docstring +
+      the `rotor_rotation` / `plane_rotation` cross-refs, and the three `rotate` mentions in
+      `base.rotor_from_vectors`' docstring/comments.
+- [x] No `make generate` needed — `rotate` was hand-written, never generated (confirmed: the
+      generator has zero references and `g2.py`/`g3.py` never emitted `def rotate`; it was
+      only *inherited* from `MultiVectorBase`). Suite: **281 passed** (incl. new doctest).
+      ruff + ty clean on all touched files (pre-existing E501s in the untouched, in-progress
+      `notebooks/displaymv.py` are not mine).
+
+## Verification
+
+- `python -m pytest -q` → **281 passed** (doctests included).
+- `ruff check` + `ruff format --check` + `ty check` clean on every touched file.
+- Not run: the containerized `make test` gate (nested podman) — pure-Python change, no
+  generated-code or flag-gated path touched, so the host suite fully exercises it.
 
 ## Naming — analysis and suggested replacements
 

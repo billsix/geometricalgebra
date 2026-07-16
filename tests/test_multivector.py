@@ -28,6 +28,7 @@ from gacalc.gn import (
     e_3,
     e_4,
     one,
+    projection_rotation,
     sym_vec2_1,
     sym_vec2_2,
     sym_vec3_1,
@@ -429,30 +430,30 @@ def test_rotate() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2 + 5 * e_3
     # rotate across e_1 e_2 plane
     assert (
-        MultiVector.rotate(from_vector=e_1, to_vector=e_2)(a)
+        projection_rotation(from_vector=e_1, to_vector=e_2)(a)
         == -4 * e_1 + 3 * e_2 + 5 * e_3
     )
     assert (
-        MultiVector.rotate(from_vector=e_2, to_vector=e_1)(a)
+        projection_rotation(from_vector=e_2, to_vector=e_1)(a)
         == 4 * e_1 - 3 * e_2 + 5 * e_3
     )
     # rotate across e_2 e_3 plane
     b: MultiVector = 5 * e_1 + 3 * e_2 + 4 * e_3
     assert (
-        MultiVector.rotate(from_vector=e_2, to_vector=e_3)(b)
+        projection_rotation(from_vector=e_2, to_vector=e_3)(b)
         == 5 * e_1 + -4 * e_2 + 3 * e_3
     )
     assert (
-        MultiVector.rotate(from_vector=e_3, to_vector=e_2)(b)
+        projection_rotation(from_vector=e_3, to_vector=e_2)(b)
         == 5 * e_1 + 4 * e_2 - 3 * e_3
     )
     # rotate across e_3 e_1 plane
     c: MultiVector = 4 * e_1 + 5 * e_2 + 3 * e_3
     assert (
-        MultiVector.rotate(from_vector=e_3, to_vector=e_1)(c)
+        projection_rotation(from_vector=e_3, to_vector=e_1)(c)
         == 3 * e_1 + 5 * e_2 + -4 * e_3
     )
     assert (
-        MultiVector.rotate(from_vector=e_1, to_vector=e_3)(c)
+        projection_rotation(from_vector=e_1, to_vector=e_3)(c)
         == -3 * e_1 + 5 * e_2 + 4 * e_3
     )

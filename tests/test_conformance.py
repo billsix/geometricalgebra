@@ -33,6 +33,7 @@ from gacalc.g1 import G1
 from gacalc.g2 import G2
 from gacalc.g3 import G3
 from gacalc.gn import Gn
+from gacalc.transforms import projection_rotation
 
 SPECIALIZED = {1: G1, 2: G2, 3: G3}
 MODULES = {1: g1mod, 2: g2mod, 3: g3mod}
@@ -189,8 +190,10 @@ def test_reflect(n: int, cls) -> None:
 @pytest.mark.parametrize("n,cls", [(n, cls) for (n, cls) in CASES if n >= 2])
 def test_rotate(n: int, cls) -> None:
     a = vec(n, 0)
-    got = cls.rotate(from_vector=to(cls, gn.e_1), to_vector=to(cls, gn.e_2))(to(cls, a))
-    assert got == Gn.rotate(from_vector=gn.e_1, to_vector=gn.e_2)(a)
+    got = projection_rotation(from_vector=to(cls, gn.e_1), to_vector=to(cls, gn.e_2))(
+        to(cls, a)
+    )
+    assert got == projection_rotation(from_vector=gn.e_1, to_vector=gn.e_2)(a)
 
 
 @pytest.mark.parametrize("n,cls", CASES)

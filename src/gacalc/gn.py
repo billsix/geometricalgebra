@@ -37,6 +37,7 @@ from gacalc.transforms import (  # noqa: F401
     identity,
     inverse,
     plane_rotation,
+    projection_rotation,
     scale_non_uniform,
     to_matrix,
     translate,

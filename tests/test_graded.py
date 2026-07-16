@@ -33,6 +33,7 @@ from gacalc.g2 import G2, Bivector2, Rotor2, Vector2
 from gacalc.g3 import G3, Bivector3, Rotor3, Trivector3, Vector3
 from gacalc.gn import Gn
 from gacalc.scalar import Scalar
+from gacalc.transforms import projection_rotation
 
 
 def widen(x) -> Gn:
@@ -283,9 +284,9 @@ def test_symbolic_product_matches_gn():
     assert got == want and type(got) is Rotor2
 
 
-# --- the rotor sandwich equals the rotate(from, to) method --------------------
+# --- the rotor sandwich equals projection_rotation(from, to) ------------------
 # R = rotor_from_vectors(from, to) = |from||to| + to*from ; for any vector v,
-#   R v R.inverse()  ==  rotate(from, to)(v)
+#   R v R.inverse()  ==  projection_rotation(from, to)(v)
 # (R.inverse() = R.reverse()/|R|^2 divides out the rotor's scaling, leaving a
 # pure rotation.)
 
@@ -314,7 +315,7 @@ def test_rotor_sandwich_equals_rotate_symbolic_2d():
     w = w1 * gn.e_1 + w2 * gn.e_2
     R = Gn.rotor_from_vectors(from_vector=frm, to_vector=to)
     assert simplify_equal(
-        R * w * R.inverse(), Gn.rotate(from_vector=frm, to_vector=to)(w)
+        R * w * R.inverse(), projection_rotation(from_vector=frm, to_vector=to)(w)
     )
 
 
@@ -326,7 +327,7 @@ def test_rotor_sandwich_equals_rotate_3d():
     w = 7 * gn.e_1 + gn.e_2 + 2 * gn.e_3  # has both in-plane and perpendicular parts
     R = Gn.rotor_from_vectors(from_vector=frm, to_vector=to)
     assert simplify_equal(
-        R * w * R.inverse(), Gn.rotate(from_vector=frm, to_vector=to)(w)
+        R * w * R.inverse(), projection_rotation(from_vector=frm, to_vector=to)(w)
     )
 
 
@@ -336,14 +337,14 @@ def test_rotor_rotate_across_representations():
     w2 = 2 * Vector2.e_1 + Vector2.e_2
     R2 = Vector2.rotor_from_vectors(from_vector=Vector2.e_1, to_vector=Vector2.e_2)
     assert type(R2) is Rotor2
-    assert R2 * w2 * R2.inverse() == Vector2.rotate(
+    assert R2 * w2 * R2.inverse() == projection_rotation(
         from_vector=Vector2.e_1, to_vector=Vector2.e_2
     )(w2)
 
     w3 = Vector3.e_1 + 3 * Vector3.e_3
     R3 = Vector3.rotor_from_vectors(from_vector=Vector3.e_1, to_vector=Vector3.e_2)
     assert type(R3) is Rotor3
-    assert R3 * w3 * R3.inverse() == Vector3.rotate(
+    assert R3 * w3 * R3.inverse() == projection_rotation(
         from_vector=Vector3.e_1, to_vector=Vector3.e_2
     )(w3)
 

@@ -677,37 +677,6 @@ class MultiVectorBase(abc.ABC):
         return i
 
     @classmethod
-    def rotate(
-        cls,
-        from_vector: MultiVectorBase,
-        to_vector: MultiVectorBase,
-    ) -> MultiVectorFn:
-        """Rotate by the angle from ``from_vector`` to ``to_vector``, in their plane.
-
-        ``from_vector``/``to_vector`` are normalized first, so this is a *pure*
-        rotation (no scaling): the in-plane part of a value is turned through the
-        angle between them (the plane ``from_vector ∧ to_vector`` they span), the
-        perpendicular part is left unchanged.  Equivalent to the rotor sandwich
-        ``R v R.inverse()`` with ``R = rotor_from_vectors(from_vector, to_vector)``.
-        """
-        assert from_vector.is_vector()
-        assert to_vector.is_vector()
-        plane: MultiVectorBase = from_vector ^ to_vector
-
-        components_in_plane: MultiVectorFn = cls.project(plane)
-        components_exterior_to_plane: MultiVectorFn = cls.reject(plane)
-
-        def r(value: MultiVectorBase) -> MultiVectorBase:
-            assert value.is_vector()  # TODO - can this be generalized?
-            return (
-                components_in_plane(value)
-                * (from_vector * (abs(from_vector) ** (-1)))
-                * (to_vector * (abs(to_vector) ** (-1)))
-            ) + components_exterior_to_plane(value)
-
-        return r
-
-    @classmethod
     def rotor_from_vectors(
         cls,
         from_vector: MultiVectorBase,
@@ -756,7 +725,8 @@ class MultiVectorBase(abc.ABC):
 
         ``R`` is thus the (un-normalized) even multivector ``|a||b| + b a``
         (scalar + bivector): a vector ``v`` rotates by ``R v R.inverse()``, which
-        equals ``rotate(from, to)(v)``.  Because ``R`` is un-normalized, the bare
+        equals ``projection_rotation(from, to)(v)`` (in ``transforms``).  Because
+        ``R`` is un-normalized, the bare
         ``R v R.reverse()`` would also *scale* by ``R.magnitude_squared()``;
         ``R.inverse()`` (= ``R.reverse() / |R|^2``) divides that out, leaving a
         pure rotation.
@@ -770,7 +740,8 @@ class MultiVectorBase(abc.ABC):
         # Kept as the *product of two magnitudes* (two simple sqrts), NOT
         # |to from| = sqrt(|to|^2 |from|^2): the latter is mathematically equal
         # but sympy leaves it as a nested radical it cannot simplify through the
-        # sandwich, breaking the symbolic R v R^-1 == rotate identity.  No cast
+        # sandwich, breaking the symbolic R v R^-1 == projection_rotation
+        # identity.  No cast
         # needed now that magnitude() is typed Coef (int | float | sympy.Expr).
         # (Why the two are equal -- |ab| = |a||b| via |a^b| = |a||b|sin θ -- is
         # demonstrated in notebooks/displayg2.py and displayg3.py; that the
@@ -793,7 +764,7 @@ class MultiVectorBase(abc.ABC):
         plane), but for a versor those extra grades are zero, so the result is
         rebuilt as ``type(x)`` — whose ``from_blade_dict`` keeps only ``x``'s
         blades.  ``zero`` conjugates to ``zero`` (no ``is_vector`` assertion,
-        unlike the projection-based ``rotate``).
+        unlike the projection-based ``projection_rotation``).
 
         ``self`` is assumed to be a versor; for a non-versor even element in
         dimension ≥ 4 the conjugation is not grade-preserving and this is lossy.

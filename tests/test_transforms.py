@@ -38,6 +38,7 @@ from gacalc.transforms import (
     compose,
     identity,
     inverse,
+    projection_rotation,
     rotor_rotation,
     scale_non_uniform,
     to_matrix,
@@ -418,7 +419,7 @@ def test_rotor_rotation_matches_projection_rotate():
     # including the perpendicular axis being fixed
     to = _to3(0.7)
     rotor_fn = rotor_rotation(G3.basis_vector(1), to)
-    proj_fn = G3.rotate(from_vector=G3.basis_vector(1), to_vector=to)
+    proj_fn = projection_rotation(from_vector=G3.basis_vector(1), to_vector=to)
     for v in (
         G3.basis_vector(1),
         G3.basis_vector(2),

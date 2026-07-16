@@ -50,6 +50,7 @@ from IPython.display import Markdown, Math, display
 from gacalc.g2 import Vector2
 from gacalc.g3 import Vector3
 from gacalc.scalar import Scalar
+from gacalc.transforms import projection_rotation
 
 
 def kind(x):
@@ -153,7 +154,7 @@ show(quarter.plane_of_rotation())
 # Two ways to rotate are the same thing
 # -------------------------------------
 #
-# `MultiVectorBase.rotate(from, to)` rotates a vector by `project`/`reject` +
+# `projection_rotation(from, to)` rotates a vector by `project`/`reject` +
 # the geometric product. The *rotor* way builds `R = rotor_from_vectors(from, to)`
 # = `|from||to| + to·from` and sandwiches: `R v R⁻¹`. They give the **same**
 # rotation — provably, even symbolically (see `tests/test_graded.py`).
@@ -166,7 +167,7 @@ show(R)  # an (un-normalized) Rotor2
 # %% [markdown]
 # Because `R` is not normalized, the bare sandwich `R v R̃` *scales* as well as
 # rotates — by `R.magnitude_squared()` (= `R R̃`). Using `R.inverse()` (which is
-# `R̃ / |R|²`) divides that out, leaving a pure rotation equal to `rotate`.
+# `R̃ / |R|²`) divides that out, leaving a pure rotation equal to `projection_rotation`.
 
 # %%
 w = Vector2.e_1
@@ -174,13 +175,16 @@ for label, value in [
     (r"R\,\tilde R", R * R.reverse()),
     (r"R\,w\,\tilde R", R * w * R.reverse()),
     (r"R\,w\,R^{-1}", R * w * R.inverse()),
-    (r"\mathrm{rotate}(w)", Vector2.rotate(from_vector=frm, to_vector=to)(w)),
+    (
+        r"\mathrm{projection\_rotation}(w)",
+        projection_rotation(from_vector=frm, to_vector=to)(w),
+    ),
 ]:
     display(Math(label + " = " + value._repr_latex_().strip("$")))
 
 # %%
-# the rotor sandwich and rotate agree exactly
-R * w * R.inverse() == Vector2.rotate(from_vector=frm, to_vector=to)(w)
+# the rotor sandwich and projection_rotation agree exactly
+R * w * R.inverse() == projection_rotation(from_vector=frm, to_vector=to)(w)
 
 # %% [markdown]
 # The grade product table, made visible

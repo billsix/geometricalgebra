@@ -35,8 +35,8 @@
 #
 # * the **rotor sandwich**  $R\,v\,R^{-1}$, where $R$ is the rotor that carries
 #   one vector toward another, and
-# * the **projection formula** (`MultiVectorBase.rotate`): turn the part of
-#   $v$ that lies in the plane of rotation, and leave the perpendicular part fixed.
+# * the **projection formula** (`transforms.projection_rotation`): turn the part
+#   of $v$ that lies in the plane of rotation, and leave the perpendicular part fixed.
 #
 # This notebook shows that the two agree -- *symbolically*, for an arbitrary
 # vector $v$ and an arbitrary angle $\theta$ -- in $\mathcal{G}_2$ and
@@ -45,7 +45,7 @@
 # %%
 import sympy
 
-from gacalc.gn import Gn, e_1, e_2, e_3
+from gacalc.gn import Gn, e_1, e_2, e_3, projection_rotation
 from gacalc.nbplotutils import show_mult
 
 
@@ -92,10 +92,10 @@ sandwich_2d = R * v_2d * R.inverse()
 simplified(sandwich_2d)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
-# The projection formula `Gn.rotate(from, to)` applied to the same $v$:
+# The projection formula `projection_rotation(from, to)` applied to the same $v$:
 
 # %%
-projection_2d = Gn.rotate(from_vector=a, to_vector=b)(v_2d)
+projection_2d = projection_rotation(from_vector=a, to_vector=b)(v_2d)
 simplified(projection_2d)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -129,7 +129,7 @@ simplified(sandwich_3d)  # pyright: ignore[reportUnusedExpression]
 # The projection formula on the same $v$:
 
 # %%
-projection_3d = Gn.rotate(from_vector=a, to_vector=b)(v_3d)
+projection_3d = projection_rotation(from_vector=a, to_vector=b)(v_3d)
 simplified(projection_3d)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]

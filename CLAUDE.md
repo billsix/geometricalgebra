@@ -146,16 +146,20 @@ composable via `@`, with `translate` / `uniform_scale` / `scale_non_uniform` / `
 layer is shared with the author's *modelviewprojection* book project. Jupyter display via
 `_repr_latex_`.
 
-**Rotations & rotors.** Two *general* (representation-agnostic) rotation methods live on
-`MultiVectorBase` (`base.py`): `rotate(from_vector, to_vector)` returns a function that rotates a
-vector through the angle from `from`→`to` *in their plane* (in-plane part turned, perpendicular part
-left fixed) — equivalent to the rotor sandwich `R v R⁻¹`; and `rotor_from_vectors(from, to)` builds
-that rotor `R = |from||to| + to·from` (scalar + bivector, the even-subalgebra grade). These act in
-**any plane, any dimension/representation**. Rotation lives in the algebra itself — the transform
-layer (`transforms.py`) carries no rotation factory; use these rotor methods instead.
+**Rotations & rotors.** The rotor *builder* lives on `MultiVectorBase` (`base.py`):
+`rotor_from_vectors(from, to)` builds the rotor `R = |from||to| + to·from` (scalar + bivector, the
+even-subalgebra grade), acting in **any plane, any dimension/representation**. The rotation
+*factories* are representation-agnostic **free functions in `transforms.py`** (each derives its basis
+from the operand's own type): `projection_rotation(from, to)` returns a function that rotates a vector
+through the angle from `from`→`to` *in their plane* (in-plane part turned, perpendicular part left
+fixed — the projection formula, equivalent to the rotor sandwich `R v R⁻¹`); `rotor_rotation(from, to)`
+packages the same rotation as the rotor sandwich; and `plane_rotation(a, b)` separates plane from
+angle (see below). (`projection_rotation` was moved off `MultiVectorBase` — where it was the `rotate`
+classmethod — and renamed 2026-07-16, so all three rotation factories live together; `rotor_from_vectors`
+stays on the base as it builds a *value*, not a transform.)
 
 **`plane_rotation(a, b)` (transforms.py, 2026-07-08) separates the plane from the angle** — the
-concern `rotate(from, to)` conflates (its angle is locked to the two vectors, which is what mvp's
+concern `projection_rotation(from, to)` / `rotor_rotation(from, to)` conflates (its angle is locked to the two vectors, which is what mvp's
 animation/interpolation fought). `a`/`b` are verified grade-1 and only *define the plane*: their
 normalized wedge is the plane's unit bivector `i` (`a ∧ b == 0`, i.e. parallel vectors, is an error —
 the wedge-is-zero test IS the linear-dependence test). It returns *angle → `InvertibleFunction`*:
@@ -165,12 +169,13 @@ the wedge-is-zero test IS the linear-dependence test). It returns *angle → `In
 This is the sanctioned "rotate by an angle in a plane" API — the half-angle trig lives *inside* the
 library, so user code never hand-builds a rotor.
 
-`base.rotate` is *projection-based* (it splits the operand into in-plane + perpendicular parts) — it
-returns the operand's type via a runtime grade projection. The generated `Rotor` classes additionally
-carry a **closed-form, type-correct `sandwich(x)`** (`R x R⁻¹`, derived symbolically by the generator,
-no projection): grade-preserving, so `Rotor3.sandwich(Vector3) → Vector3`, `…(Bivector3) →
-Bivector3`, etc. `rotate` keeps the projection formula for teaching both; the rotor sandwich is the
-fast path mvp's rotations run on. (Both agree — see `notebooks/displayrotations.py`.)
+`transforms.projection_rotation` is *projection-based* (it splits the operand into in-plane +
+perpendicular parts) — it returns the operand's type via a runtime grade projection. The generated
+`Rotor` classes additionally carry a **closed-form, type-correct `sandwich(x)`** (`R x R⁻¹`, derived
+symbolically by the generator, no projection): grade-preserving, so `Rotor3.sandwich(Vector3) →
+Vector3`, `…(Bivector3) → Bivector3`, etc. `projection_rotation` keeps the projection formula for
+teaching both; the rotor sandwich is the fast path mvp's rotations run on. (Both agree — see
+`notebooks/displayrotations.py`.)
 
 **`project`/`reject` are grade-preserving and stay in the operand's type.** `P_B(A) = (A·B)B⁻¹`
 preserves A's grade, so for a homogeneous input the result is the same grade — `base.project`'s
@@ -180,10 +185,11 @@ Bivector3⁻¹` types as the odd part `{1,3}` even though the grade-3 part is id
 projection); the narrowing keeps `Vector3.project(onto=Bivector3) → Vector3`. (Same spirit as the
 rotor sandwich's grade projection.)
 
-**Convention — express rotations as `plane_rotation` (plane + angle) or `rotate` /
-`rotor_from_vectors` (from/to), never hand-built.**
+**Convention — express rotations as `plane_rotation` (plane + angle) or `projection_rotation` /
+`rotor_rotation` / `rotor_from_vectors` (from/to), never hand-built.**
 When writing or reviewing examples, tests, notebooks, or docs, a rotation must read as an explicit
-`cls.rotate(from_vector=…, to_vector=…)(v)` or `cls.rotor_from_vectors(from_vector=…, to_vector=…)`
+`projection_rotation(from_vector=…, to_vector=…)(v)` (or `rotor_rotation(…)`) or
+`cls.rotor_from_vectors(from_vector=…, to_vector=…)`
 (keyword args; add `.normalize()` for a unit rotor). **Do not** hand-build a rotor as a data value —
 e.g. a `G2`/`Rotor2` instance assigned from `cos(t/2) - sin(t/2)*(e_1*e_2)`. A rotor that "happens to
 be" the right data but is constructed by trigonometry is treated as a regression; the whole point of
@@ -203,8 +209,9 @@ vector) keep their names; the rule targets pure renames of things that already h
 
 - `*` geometric product · `^` wedge (outer) product · `@` composition of `InvertibleFunction`s
 - `abs(mv)` → magnitude · inverse via `.inverse()`
-- rotations: `MultiVectorBase.rotate(from, to)` / `rotor_from_vectors(from, to)` (rotor methods,
-  any plane / representation)
+- rotations: `transforms.projection_rotation(from, to)` / `rotor_rotation(from, to)` /
+  `plane_rotation(a, b)` (free-function factories); `MultiVectorBase.rotor_from_vectors(from, to)`
+  (the rotor builder) — any plane / representation
 
 ## Code generation
 

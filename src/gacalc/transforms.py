@@ -26,15 +26,17 @@ This module imports only ``base`` (the abstract base), never a concrete
 representation, so it stays free of any single algebra.  ``gn.py`` re-exports
 these names for backward compatibility.
 
-Rotation is *derived from* the algebra, and packaged here two ways:
-:func:`rotor_rotation` wraps the from-vector/to-vector rotor sandwich (one
-fixed rotation), and :func:`plane_rotation` separates the two concerns the
-from/to form conflates -- it takes two vectors that *define a plane* (their
-normalized wedge is the plane's unit bivector ``i``) and returns a function
-of the angle, so one plane established once yields any rotation angle on
-demand (and interpolation for free).  The raw rotor methods
-``MultiVectorBase.rotate(from, to)`` / ``rotor_from_vectors(from, to)``
-remain the algebra-level primitives.  (The very old planar 2D
+Rotation is *derived from* the algebra, and packaged here three ways, all
+free functions:  :func:`projection_rotation` is the from-vector/to-vector
+*projection* formula (split the operand into in-plane + perpendicular parts,
+turn the in-plane part), kept for teaching;  :func:`rotor_rotation` wraps the
+same from/to rotation as a *rotor* sandwich (one fixed rotation);  and
+:func:`plane_rotation` separates the two concerns the from/to form conflates
+-- it takes two vectors that *define a plane* (their normalized wedge is the
+plane's unit bivector ``i``) and returns a function of the angle, so one plane
+established once yields any rotation angle on demand (and interpolation for
+free).  The rotor *builder* ``MultiVectorBase.rotor_from_vectors(from, to)``
+remains the algebra-level primitive.  (The very old planar 2D
 ``rotate(angle)`` / ``rotate_90_degrees`` / ``rotate_around`` factories were
 removed long before: they acted only in the e_1 e_2 plane and silently
 mis-transformed a vector with an e_3+ component -- ``plane_rotation`` is the
@@ -386,6 +388,56 @@ def translate(b: V) -> InvertibleFunction[V]:
     )
 
 
+def projection_rotation(
+    from_vector: V,
+    to_vector: V,
+) -> MultiVectorFn:
+    r"""A rotation built by the **projection** formula: split the operand into its
+    part *in* the ``from_vector ^ to_vector`` plane and its part perpendicular to
+    it, turn the in-plane part through the angle from ``from_vector`` to
+    ``to_vector``, and leave the perpendicular part fixed.
+
+    Each of ``from_vector`` / ``to_vector`` is divided by its own magnitude
+    *inside* the turn (not normalized up front), so their lengths cancel and this
+    is a *pure* rotation (no scaling) whatever the inputs' magnitudes.  It is the
+    projection formulation of the same rotation
+    that :func:`rotor_rotation` produces via the rotor sandwich
+    ``R v R.inverse()`` (``R = rotor_from_vectors(from_vector, to_vector)``); both
+    agree.  This form is kept for teaching -- it makes the in-plane / perpendicular
+    split explicit -- while ``rotor_rotation`` is the faster, more general path.
+    Like every factory here it is representation-agnostic: the operand's own type
+    supplies the basis, so a ``G2`` in yields a ``G2`` out, ``Gn`` yields ``Gn``.
+
+    Example:
+        >>> import math
+        >>> from gacalc.transforms import projection_rotation
+        >>> from gacalc.g3 import Vector3
+        >>> to = math.cos(1.0) * Vector3.e_1 + math.sin(1.0) * Vector3.e_2
+        >>> f = projection_rotation(Vector3.e_1, to)
+        >>> f(Vector3.e_1).is_close(to)              # from -> to
+        True
+        >>> f(Vector3.e_3).is_close(Vector3.e_3)     # perpendicular fixed
+        True
+    """
+    assert from_vector.is_vector()
+    assert to_vector.is_vector()
+    plane: MultiVectorBase = from_vector ^ to_vector
+    representation = type(from_vector)
+
+    components_in_plane: MultiVectorFn = representation.project(plane)
+    components_exterior_to_plane: MultiVectorFn = representation.reject(plane)
+
+    def r(value: MultiVectorBase) -> MultiVectorBase:
+        assert value.is_vector()  # TODO - can this be generalized?
+        return (
+            components_in_plane(value)
+            * (from_vector * (abs(from_vector) ** (-1)))
+            * (to_vector * (abs(to_vector) ** (-1)))
+        ) + components_exterior_to_plane(value)
+
+    return r
+
+
 def rotor_rotation(
     from_vector: V,
     to_vector: V,
@@ -403,7 +455,7 @@ def rotor_rotation(
     (see ``MultiVectorBase.sandwich``).  Both return ``v``'s own type.
     ``linearity`` is ``LINEAR`` (a rotation fixes the origin), and it handles
     ``zero`` for free.  This is the *rotor* formulation of a rotation; the
-    *projection* formulation lives at ``MultiVectorBase.rotate(from, to)``.
+    *projection* formulation lives at :func:`projection_rotation`.
 
     ``latex_repr`` / ``interpolate`` let a caller (e.g. an angle-parameterized
     rotation) label the function and supply an interpolation law that from/to
@@ -454,7 +506,7 @@ def plane_rotation(
     rotation*.
 
     The from/to rotor form (:func:`rotor_rotation`,
-    ``MultiVectorBase.rotate``) conflates two concerns: choosing the *plane*
+    :func:`projection_rotation`) conflates two concerns: choosing the *plane*
     and choosing the *angle* (locked to the angle between the two vectors).
     This factory separates them.  ``a`` and ``b``'s only job is to define the
     plane: their wedge ``a ^ b`` is a simple bivector, and normalizing it
@@ -739,6 +791,7 @@ __all__ = [
     "compose_intermediate_fns_and_fn",
     "identity",
     "translate",
+    "projection_rotation",
     "rotor_rotation",
     "uniform_scale",
     "scale_non_uniform",
