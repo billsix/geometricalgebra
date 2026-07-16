@@ -76,6 +76,12 @@ class Linearity(IntEnum):
     NONLINEAR = 2
 
 
+class NotInvertibleError(Exception):
+    """Raised when the inverse of a non-invertible :func:`labeled` function is
+    applied — e.g. inverting a :func:`compose` pipeline that contains a
+    projection or rejection, which discard information and have no inverse."""
+
+
 #: Type variable for the value an ``InvertibleFunction`` transforms.  Bound to
 #: ``MultiVectorBase`` so ``InvertibleFunction[Vector2]`` /
 #: ``InvertibleFunction[Vector3]`` / ``InvertibleFunction[Gn]`` are all valid and
@@ -364,6 +370,72 @@ def identity() -> InvertibleFunction:
         "I",
         interpolate=lambda t: identity(),
         linearity=Linearity.LINEAR,
+    )
+
+
+def labeled(
+    func: typing.Callable[[V], V],
+    latex_repr: str,
+    *,
+    latex_repr_inv: typing.Optional[str] = None,
+    linearity: Linearity = Linearity.NONLINEAR,
+    inverse: typing.Optional[typing.Callable[[V], V]] = None,
+) -> InvertibleFunction[V]:
+    r"""Attach a LaTeX label to a plain function so it can join a ``@`` /
+    :func:`compose` display pipeline.
+
+    The algebra-derived functions ``project`` / ``reject`` / ``reflect`` /
+    ``identity`` (on :class:`~gacalc.base.MultiVectorBase`) and
+    :func:`projection_rotation` return a *bare* callable with no label, so they
+    can't take part in the LaTeX-rendering compose pipeline the way the transform
+    factories (``translate``, ``uniform_scale``, ...) do.  ``labeled`` wraps such
+    a function **on demand** — opt-in at the call site — giving it a
+    ``latex_repr`` and making it composable, *without* changing what those
+    functions return by default.
+
+    Invertibility stays honest.  A genuinely invertible function may pass its
+    ``inverse`` (e.g. a reflection is its own inverse).  When ``inverse`` is
+    omitted the function is treated as **not invertible** — the correct model for
+    a projection or rejection, which discard information — and its inverse slot is
+    a stub that raises :class:`NotInvertibleError` if a pipeline containing it is
+    ever inverted and applied.  ``latex_repr_inv`` defaults to
+    ``latex_repr + "^{-1}"``.
+
+    Example:
+        >>> from gacalc.transforms import labeled, translate, inverse, Linearity
+        >>> from gacalc.transforms import NotInvertibleError
+        >>> from gacalc.g3 import Vector3
+        >>> B = Vector3.e_1 ^ Vector3.e_2
+        >>> P = labeled(Vector3.project(B), "P_{B}", linearity=Linearity.LINEAR)
+        >>> P._repr_latex_()
+        '$P_{B}$'
+        >>> P(Vector3.e_1 + Vector3.e_3).is_close(Vector3.e_1)   # onto the e1-e2 plane
+        True
+        >>> (P @ translate(Vector3.e_3)).latex_repr             # doctest: +ELLIPSIS
+        'P_{B} \\circ T_{...}'
+        >>> try:                                                # not invertible
+        ...     inverse(P)(Vector3.e_1)
+        ... except NotInvertibleError:
+        ...     print("raised")
+        raised
+    """
+    if latex_repr_inv is None:
+        latex_repr_inv = latex_repr + "^{-1}"
+
+    if inverse is None:
+
+        def inverse(_value: V) -> V:
+            raise NotInvertibleError(
+                f"the labeled function {latex_repr!r} is not invertible; "
+                "a pipeline containing it cannot be inverted"
+            )
+
+    return InvertibleFunction(
+        func,
+        inverse,
+        latex_repr,
+        latex_repr_inv,
+        linearity=linearity,
     )
 
 
@@ -783,6 +855,8 @@ def to_matrix(
 __all__ = [
     "InvertibleFunction",
     "Linearity",
+    "NotInvertibleError",
+    "labeled",
     "inverse",
     "compose",
     "compose_intermediate_fns",

@@ -35,9 +35,11 @@ from gacalc.gn import Gn
 from gacalc.transforms import (
     InvertibleFunction,
     Linearity,
+    NotInvertibleError,
     compose,
     identity,
     inverse,
+    labeled,
     projection_rotation,
     rotor_rotation,
     scale_non_uniform,
@@ -427,3 +429,56 @@ def test_rotor_rotation_matches_projection_rotate():
         vec(G3, 2, -1, 3),
     ):
         assert rotor_fn(v).is_close(proj_fn(v))
+
+
+# --- labeled: opt-in LaTeX label so bare functions join the compose pipeline ---
+
+
+def _plane_e12():
+    return Vector3.e_1 ^ Vector3.e_2
+
+
+def test_labeled_carries_label_and_applies():
+    P = labeled(Vector3.project(_plane_e12()), "P_{B}", linearity=Linearity.LINEAR)
+    assert P.latex_repr == "P_{B}"
+    assert P._repr_latex_() == "$P_{B}$"
+    assert P.linearity is Linearity.LINEAR
+    # projects onto the e1-e2 plane: the e3 component is dropped
+    assert P(Vector3.e_1 + Vector3.e_3).is_close(Vector3.e_1)
+
+
+def test_labeled_composes_into_pipeline_latex():
+    # project()/reflect() return the type-erased MultiVectorFn, so labelled
+    # algebra functions are InvertibleFunction[MultiVectorBase] and compose with
+    # one another cleanly. (Mixing one with a concretely-typed factory like
+    # translate works at runtime but not under the invariant generic -- see the
+    # reassess-composable-function-interface task.)
+    P = labeled(Vector3.project(_plane_e12()), "P_{B}")
+    M = labeled(Vector3.reflect(_plane_e12()), "M_{B}")
+    pipe = P @ M
+    # the whole pipeline renders as one combined LaTeX expression
+    assert pipe.latex_repr == "P_{B} \\circ M_{B}"
+    # applies M (reflect across the plane) first, then P (project onto it):
+    # e_1 + e_3  --reflect-->  e_1 - e_3  --project-->  e_1
+    assert pipe(Vector3.e_1 + Vector3.e_3).is_close(Vector3.e_1)
+
+
+def test_labeled_defaults_to_not_invertible():
+    P = labeled(Vector3.project(_plane_e12()), "P_{B}")
+    M = labeled(Vector3.reflect(_plane_e12()), "M_{B}")
+    assert P.latex_repr_inv == "P_{B}^{-1}"  # default label
+    # inverting a projection is meaningless -> a clear error when applied
+    with pytest.raises(NotInvertibleError):
+        inverse(P)(Vector3.e_1)
+    # inverting a whole pipeline that contains it errors too
+    with pytest.raises(NotInvertibleError):
+        inverse(P @ M)(Vector3.e_1)
+
+
+def test_labeled_with_real_inverse_roundtrips():
+    # a reflection is an involution -- pass it as its own inverse, and it inverts
+    reflect_fn = Vector3.reflect(_plane_e12())
+    M = labeled(reflect_fn, "M_{B}", inverse=reflect_fn, linearity=Linearity.LINEAR)
+    assert M.latex_repr_inv == "M_{B}^{-1}"
+    v = Vector3.e_1 + Vector3.e_3
+    assert inverse(M)(M(v)).is_close(v)

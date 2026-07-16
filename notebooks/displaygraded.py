@@ -50,7 +50,13 @@ from IPython.display import Markdown, Math, display
 from gacalc.g2 import Vector2
 from gacalc.g3 import Vector3
 from gacalc.scalar import Scalar
-from gacalc.transforms import projection_rotation
+from gacalc.transforms import (
+    Linearity,
+    inverse,
+    labeled,
+    projection_rotation,
+    translate,
+)
 
 
 def kind(x):
@@ -272,5 +278,39 @@ a == 3 * Vector2.e_1 + 4 * Vector2.e_2
 # %%
 # display a few as latex
 show(a, a * b, a ^ b, r)
+
+# %% [markdown]
+# Labelling a projection so it composes in a pipeline
+# ---------------------------------------------------
+#
+# `project` / `reject` / `reflect` return a *bare* function with no LaTeX label,
+# so on their own they can't join a `@` / `compose` display pipeline the way the
+# transform factories (`translate`, `uniform_scale`, …) do. Wrap one with
+# `labeled(fn, "P_{B}")` — opt-in at the call site — to give it a label and make
+# it composable, without changing what `project` returns by default.
+
+# %%
+B3 = Vector3.e_1 ^ Vector3.e_2  # the e_1 e_2 plane
+P = labeled(Vector3.project(B3), "P_{B}", linearity=Linearity.LINEAR)
+P  # renders as its label  # pyright: ignore[reportUnusedExpression]
+
+# %%
+# compose the labelled projection with a translate: the pipeline renders as one
+# LaTeX expression, and applies translate-then-project to a vector.
+pipe = P @ translate(Vector3.e_3)
+display(Math(pipe.latex_repr))
+show(pipe(Vector3.e_1 + Vector3.e_2))
+
+# %% [markdown]
+# A projection is **not invertible**, and `labeled` doesn't pretend otherwise —
+# inverting a pipeline that contains it raises `NotInvertibleError`. A
+# *reflection*, by contrast, is its own inverse (an involution): hand `labeled`
+# that inverse and it round-trips.
+
+# %%
+reflect_e12 = Vector3.reflect(B3)
+M = labeled(reflect_e12, "M_{B}", inverse=reflect_e12, linearity=Linearity.LINEAR)
+w = Vector3.e_1 + Vector3.e_3
+show(M(w), inverse(M)(M(w)))  # reflected, then reflected back == w
 
 # %%

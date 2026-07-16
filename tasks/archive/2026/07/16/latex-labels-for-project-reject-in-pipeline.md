@@ -1,7 +1,23 @@
 # Give `project`/`reject`/`reflect` (and `projection_rotation`) LaTeX labels so they compose in the pipeline
 
-**Status:** proposed — needs go-ahead
+**Status:** complete
+**Completed:** 2026-07-16
 **Created:** 2026-07-16
+
+## Outcome (2026-07-16) — Option 4 shipped
+
+- `transforms.labeled(func, latex_repr, *, latex_repr_inv=None, linearity=NONLINEAR, inverse=None)`
+  added, plus `NotInvertibleError`; both in `transforms.__all__`, `labeled` re-exported from `gn.py`.
+- Compose detail: chose **(a)** — `labeled` returns an `InvertibleFunction` whose default `inverse`
+  is a raising stub (`NotInvertibleError`); a real inverse can be passed (e.g. a reflection is its
+  own inverse). `project`/`reject`/`reflect`/`identity`/`projection_rotation` **unchanged** (still
+  bare `MultiVectorFn`). Doctest on `labeled` + 4 tests in `tests/test_transforms.py`. Demo section
+  in `notebooks/displaygraded.py`. Suite **286 passed**, ruff/ty clean.
+- **Surfaced limitation (feeds the follow-up task):** a labelled projection is
+  `InvertibleFunction[MultiVectorBase]` (project's return is type-erased), which won't `@`-unify
+  with a concretely-typed factory (`translate(Vector3…)` → `InvertibleFunction[Vector3]`) under the
+  invariant generic — runtime is fine, static types aren't. Captured in
+  `tasks/reassess-composable-function-interface.md`.
 
 ## Goal
 
