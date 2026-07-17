@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.1
+#       jupytext_version: 1.19.4
 #   kernelspec:
 #     display_name: gacalc
 #     language: python
@@ -47,6 +47,7 @@ import sympy
 
 from gacalc.gn import Gn, e_1, e_2, e_3, projection_rotation
 from gacalc.nbplotutils import show_mult
+from gacalc.transforms import ComposableFunction
 
 
 def simplified(mv: Gn) -> Gn:
@@ -160,3 +161,73 @@ show_mult(R3, v_3d)
 
 # %%
 show_mult(R3 * v_3d, R3.inverse())
+
+# %% [markdown]
+# The cross product, derived as a composed pipeline
+# =================================================
+#
+# The cross product $a \times b$ is the vector perpendicular to both $a$ and $b$,
+# with length $|a||b|\sin\theta$. We can *build* it out of nothing but
+# `projection_rotation` and `project`, composed — no cross-product formula needed.
+#
+# Take two **symbolic** 3D vectors (the grade-1 part of a symbolic multivector):
+
+# %%
+a = Gn.symbolic_multivector(3, "a").r_vector_part(1)
+b = Gn.symbolic_multivector(3, "b").r_vector_part(1)
+
+# %%
+a
+
+# %%
+b
+
+# %% [markdown]
+# Now compose four steps. Read them in **order of application** (which is
+# right-to-left in the `@` chain — the last one written is applied first):
+#
+# 1. **rotate $a \to e_1$** — spin space so $a$ lies along $e_1$.
+# 2. **project onto the $e_2 e_3$ plane** — drop the part along $a$ (now $e_1$),
+#    keeping only the component of $b$ *perpendicular* to $a$.
+# 3. **rotate $e_2 \to e_3$** — a quarter turn *in that perpendicular plane*: this
+#    is the $90^\circ$ turn that makes a cross product a cross product.
+# 4. **rotate $e_1 \to a$** — undo step 1, carrying the result back to the
+#    original frame.
+#
+# Every rotation here is a *pure* `projection_rotation` (magnitude-preserving), and
+# the projection only drops a component (no scaling) — so the pipeline never
+# multiplies in the $|a|$ that a real cross product carries. The result is
+# therefore $a \times b$ **divided by $|a|$**.
+
+# %%
+# label convention: subscript = "from", superscript = "to"
+align = ComposableFunction(
+    projection_rotation(from_vector=a, to_vector=e_1), r"R_{a}^{e_1}"
+)
+perp = ComposableFunction(Gn.project(e_2 ^ e_3), r"P_{e_{23}}")
+turn = ComposableFunction(
+    projection_rotation(from_vector=e_2, to_vector=e_3), r"R_{e_2}^{e_3}"
+)
+unalign = ComposableFunction(
+    projection_rotation(from_vector=e_1, to_vector=a), r"R_{e_1}^{a}"
+)
+
+cross_over_norm_a = unalign @ turn @ perp @ align
+# the whole pipeline, rendered as one LaTeX expression
+cross_over_norm_a  # pyright: ignore[reportUnusedExpression]
+
+# %% [markdown]
+# Apply it to $b$. Out come the cross-product components
+# $(a_2 b_3 - a_3 b_2,\; a_3 b_1 - a_1 b_3,\; a_1 b_2 - a_2 b_1)$ — each divided by
+# $|a| = \sqrt{a_1^2 + a_2^2 + a_3^2}$:
+
+# %%
+result = cross_over_norm_a(b)
+result  # pyright: ignore[reportUnusedExpression]
+
+# %% [markdown]
+# Confirm it: multiplying back by $|a|$ recovers the cross product exactly, which
+# in geometric algebra is the dual of the wedge, $a \times b = (a \wedge b)^{*}$:
+
+# %%
+(result * abs(a)).simplified() == (a ^ b).dual(n=3)
