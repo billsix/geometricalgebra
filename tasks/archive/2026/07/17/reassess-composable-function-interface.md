@@ -1,6 +1,8 @@
 # Reassess the composable-function interface now that non-invertible functions exist
 
-**Status:** core landed 2026-07-17 (gacalc 0.0.9); two follow-ups still open (module naming, animation-layer placement)
+**Status:** complete
+**Completed:** 2026-07-17
+Core landed in gacalc 0.0.9 (2026-07-17); two non-blocking follow-ups spun off to `tasks/composable-function-followups.md`.
 **Created:** 2026-07-16
 
 ## Implemented (2026-07-17) — core hierarchy + `labeled` removal
@@ -173,34 +175,6 @@ resolving in the same pass since it's the same "what should the composable type 
   `linearity`, not invertibility — a data point that "linear/affine" and "invertible" are already
   orthogonal axes, supporting a capability-based design.
 
-## Follow-up (Bill, 2026-07-17)
+## Follow-ups (spun off)
 
-- **Reassess the `functions` vs `transforms` module names from a newcomer's view.** The
-  leaf-vs-consumer split is an *internal* layering concern; a newcomer just wants good names and
-  shouldn't need to know about leaves/import-acyclicity to find things. Since `transforms`
-  re-exports everything from `functions` (`ComposableFunction`, `InvertibleFunction`, `labeled`,
-  `compose`, …), a user can already `from gacalc.transforms import …` and never touch `functions`.
-  Assess: (a) is "transforms" still the right public name, or should the public surface be renamed
-  (e.g. `functions`/`morphisms`/`maps` as the user-facing module, with the GA-specific *factories*
-  under a clearer name)?; (b) should `functions` be treated as private/internal (underscore-prefixed
-  or just "don't import directly — use `transforms`") so there's **one** obvious public entry point?
-  Goal: a newcomer sees good names and one place to import from, with the leaf split invisible.
-
-- ~~**Investigate removing `labeled` entirely.**~~ **DONE 2026-07-17** — removed. No caller needed
-  it (mvp never used it); the gacalc tests + `displaygraded` notebook now construct
-  `ComposableFunction(fn, latex, …)` / `InvertibleFunction(func=…, latex_repr=…, inverse=…,
-  latex_repr_inv=…)` directly. The two `labeled` overloads went away with it.
-
-## Open questions (remaining)
-
-*Resolved:* hierarchy vs. flag → **hierarchy** (see Decisions); housing → **Option A leaf module**;
-erasure → **`Self` typing**.
-
-- **Naming.** `ComposableFunction` is the working name (vs `LabeledFunction` / `Transform` /
-  `DisplayableFunction`) — confirm before implementing, since it's the public type name.
-- Should the animation layer (`interpolate`/`components`/`at`/`steps`) sit on the base
-  `ComposableFunction` (interpolating a projection for display is reasonable) or only on
-  `InvertibleFunction`? (Lean: base — it's display, not inversion.)
-- Migration sequencing so mvp's Cayley engine + demos never break mid-flight (add the leaf +
-  re-exports first, retype `base`, migrate consumers, then land the version bumps together).
-- Resolve the generic-variance/erasure wart here, or split it into its own task?
+Two non-blocking items were deferred out of this work into `tasks/composable-function-followups.md`: (1) reassess the `functions` vs `transforms` module names from a newcomer's view, and (2) decide whether the animation layer (`at`/`steps`) sits on the base `ComposableFunction` or only on `InvertibleFunction`. The `labeled`-removal follow-up was completed in this same effort.
