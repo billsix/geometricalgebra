@@ -36,7 +36,6 @@ from gacalc.transforms import (  # noqa: F401
     compose_intermediate_fns_and_fn,
     identity,
     inverse,
-    labeled,
     plane_rotation,
     projection_rotation,
     scale_non_uniform,

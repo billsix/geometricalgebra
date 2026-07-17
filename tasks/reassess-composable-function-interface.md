@@ -1,7 +1,74 @@
 # Reassess the composable-function interface now that non-invertible functions exist
 
-**Status:** proposed — needs go-ahead (research + suggestions; nothing implemented)
+**Status:** core landed 2026-07-17 (gacalc 0.0.9); two follow-ups still open (module naming, animation-layer placement)
 **Created:** 2026-07-16
+
+## Implemented (2026-07-17) — core hierarchy + `labeled` removal
+
+- New leaf `src/gacalc/functions.py` (unbounded `TypeVar`): `ComposableFunction` base +
+  `InvertibleFunction` subtype, `Linearity`, `NotInvertibleError`, `compose`/`inverse`/`identity`.
+  `base.py` imports it; `transforms.py` keeps the GA-specific factories + `to_matrix` and re-exports
+  the `functions` names for back-compat. Layering rule relaxed + documented in `CLAUDE.md`.
+- `project`/`reject` return `ComposableFunction`; `reflect`/`identity` return `InvertibleFunction`
+  (auto-derived labels `P_{…}` / `P^{\perp}_{…}` / `\mathrm{refl}_{…}` / `I`). `compose` returns
+  `InvertibleFunction` iff all parts are (overloads); `inverse()` raises `NotInvertibleError` on a
+  non-invertible. `InvertibleFunction` constructor reordered to keyword-friendly
+  `(func, latex_repr, inverse, latex_repr_inv, *, linearity/interpolate/components)`.
+- **`Self` typing was decided *against*** (reversed the 2026-07-17 morning decision): returns are
+  typed at `MultiVectorBase`, keeping `base` cast-free; a caller wanting the concrete parameter casts
+  at the use site. Net: 0 casts in the core, ~0 in real callers (measured). See the "why did this
+  cost so much" discussion — the cost was the invertible/composable *distinction*, not the module split.
+- **`labeled` removed** — callers construct `ComposableFunction`/`InvertibleFunction` directly.
+- **mvp**: 2 constructor sites (`perspective`/`ortho` in `mathutils.py`) → keyword args; `requirements.txt`
+  pin `gacalc>=0.0.9`. Verified against new gacalc by host smoke test (perspective round-trips,
+  `plane_rotation` works). Full mvp *container* gate needs gacalc 0.0.9 published to PyPI first.
+- Gates: gacalc containerized `make test` **285 passed** (fresh generation, pinned toolchain); host
+  ty + ruff clean.
+
+## Decisions (Bill, 2026-07-17)
+
+## Decisions (Bill, 2026-07-17)
+
+- **`project` / `reject` / `reflect` will return the new `ComposableFunction` type** (not a bare
+  `MultiVectorFn`). This commits to the *hierarchy* design below — a base `ComposableFunction`
+  (compose + LaTeX label, no inverse) with `InvertibleFunction` as its invertible subtype — over
+  the lighter one-type-plus-`Invertibility`-flag alternative.
+- Cross-repo breakage is acceptable: this may be an **API-breaking** change to gacalc, pushed with
+  a version bump, and mvp's dependency bumped to match. So enforce the Cayley invariant properly
+  rather than trade it away to avoid churn.
+- **Housing — Option A (new leaf module), confirmed.** The function-composition abstraction moves
+  into a **new domain-agnostic leaf module** (`src/gacalc/functions.py`): `ComposableFunction` (base:
+  call + `latex_repr` + `@`/`compose` + `linearity` + `at`/`steps`, **no** inverse),
+  `InvertibleFunction(ComposableFunction)` (+ `inverse` + `latex_repr_inv`), `Linearity`,
+  `NotInvertibleError`, `compose`, `inverse`, `identity`, `labeled`. `base.py` imports this leaf so
+  `project`/`reject`/`reflect` can return `ComposableFunction`. `transforms.py` keeps only the
+  GA-specific factories (`translate` / `uniform_scale` / `scale_non_uniform` / `projection_rotation` /
+  `rotor_rotation` / `plane_rotation` / `to_matrix`) and **re-exports** the moved names, so
+  `from gacalc.transforms import InvertibleFunction` and `gn.py`'s re-exports keep working unchanged.
+    - **Critical constraint that makes A acyclic:** `functions.py` must import **nothing internal**
+      (it must NOT import `base`, or the cycle returns). So `ComposableFunction`'s `TypeVar` is
+      **unbounded** (`V = TypeVar("V")`), not bound to `MultiVectorBase`. That's the whole cost of A;
+      it's fine, the abstraction is genuinely domain-agnostic (its doctest runs on plain `int`s).
+    - This chooses A over B2 (whole hierarchy defined *in* `base`, keeping the `MultiVectorBase`
+      bound) for separation of concerns: `base` stays the multivector contract; the generic
+      function algebra is its own file. The layering rule is relaxed + documented (see CLAUDE.md
+      module-layout note, updated 2026-07-17) rather than silently broken.
+- **Kill the erasure via `Self`.** Type the algebra methods `-> ComposableFunction[Self]` (instead of
+  the erased `-> MultiVectorFn`), so `Vector3.project(B)` is `ComposableFunction[Vector3]` and mixed
+  pipelines (`P @ translate(Vector3.e_3)`) type-check with no casts. `Generic[V]` stays **invariant**
+  (correct for a func+inverse holder); removing the erasure is the fix, not fighting variance. This
+  folds the "secondary issue" into this task — do not split it out.
+
+## Landing plan (once implementation starts)
+
+1. Add `src/gacalc/functions.py` (leaf, unbounded `TypeVar`) with the full hierarchy; move the
+   classes/helpers out of `transforms.py`; have `transforms.py` import + re-export them for compat.
+2. `base.py` imports from `functions`; retype `project`/`reject`/`reflect`/`identity` to return
+   `ComposableFunction[Self]` / `InvertibleFunction[Self]`; auto-derive their labels
+   (`P_{B}` / `P^{\perp}_{B}` / `\mathrm{refl}_{B}`) from the argument's own `latex_repr`.
+3. Keep Cayley `Step.fn`/`Edge` typed `InvertibleFunction` → projection-as-edge is a compile error.
+4. Update tests/notebooks (the `labeled` tests can drop their two-erased-functions workaround once
+   `project` is concretely typed); bump gacalc version; bump mvp's dependency.
 
 ## Goal
 
@@ -106,12 +173,34 @@ resolving in the same pass since it's the same "what should the composable type 
   `linearity`, not invertibility — a data point that "linear/affine" and "invertible" are already
   orthogonal axes, supporting a capability-based design.
 
-## Open questions
+## Follow-up (Bill, 2026-07-17)
 
-- Hierarchy (base `ComposableFunction` + `InvertibleFunction` subtype) vs. one-type-plus-
-  `Invertibility`-flag? (Lean: hierarchy — it makes "projection as a Cayley edge" a type error.)
-- Should the animation layer and `to_matrix` sit on the base or the invertible layer?
-- Naming: `ComposableFunction` / `LabeledFunction` / `Transform` / `DisplayableFunction`?
-- How to sequence the cross-repo change so mvp's Cayley engine + demos never break mid-migration
-  (add the base type and widen signatures first, migrate consumers, then narrow)?
+- **Reassess the `functions` vs `transforms` module names from a newcomer's view.** The
+  leaf-vs-consumer split is an *internal* layering concern; a newcomer just wants good names and
+  shouldn't need to know about leaves/import-acyclicity to find things. Since `transforms`
+  re-exports everything from `functions` (`ComposableFunction`, `InvertibleFunction`, `labeled`,
+  `compose`, …), a user can already `from gacalc.transforms import …` and never touch `functions`.
+  Assess: (a) is "transforms" still the right public name, or should the public surface be renamed
+  (e.g. `functions`/`morphisms`/`maps` as the user-facing module, with the GA-specific *factories*
+  under a clearer name)?; (b) should `functions` be treated as private/internal (underscore-prefixed
+  or just "don't import directly — use `transforms`") so there's **one** obvious public entry point?
+  Goal: a newcomer sees good names and one place to import from, with the leaf split invisible.
+
+- ~~**Investigate removing `labeled` entirely.**~~ **DONE 2026-07-17** — removed. No caller needed
+  it (mvp never used it); the gacalc tests + `displaygraded` notebook now construct
+  `ComposableFunction(fn, latex, …)` / `InvertibleFunction(func=…, latex_repr=…, inverse=…,
+  latex_repr_inv=…)` directly. The two `labeled` overloads went away with it.
+
+## Open questions (remaining)
+
+*Resolved:* hierarchy vs. flag → **hierarchy** (see Decisions); housing → **Option A leaf module**;
+erasure → **`Self` typing**.
+
+- **Naming.** `ComposableFunction` is the working name (vs `LabeledFunction` / `Transform` /
+  `DisplayableFunction`) — confirm before implementing, since it's the public type name.
+- Should the animation layer (`interpolate`/`components`/`at`/`steps`) sit on the base
+  `ComposableFunction` (interpolating a projection for display is reasonable) or only on
+  `InvertibleFunction`? (Lean: base — it's display, not inversion.)
+- Migration sequencing so mvp's Cayley engine + demos never break mid-flight (add the leaf +
+  re-exports first, retype `base`, migrate consumers, then land the version bumps together).
 - Resolve the generic-variance/erasure wart here, or split it into its own task?

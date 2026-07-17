@@ -13,16 +13,22 @@ contributor/architecture overview.
 
 The library is split one-concept-per-file so a newcomer can import just the algebra they need:
 
+- `src/gacalc/functions.py` — the **leaf** composable-function layer: `ComposableFunction` (compose
+  + LaTeX label, no inverse) + its subtype `InvertibleFunction` (+ inverse), `Linearity`,
+  `NotInvertibleError`, `compose`/`inverse`/`identity`. **Imports nothing internal** (unbounded
+  `TypeVar`); this is what `base` is allowed to import (see the **Layering** note below).
 - `src/gacalc/base.py` — `MultiVectorBase` (the abstract base) + the type aliases
-  `BladeCoef`, `MultiVectorFn`. Imports nothing internal.
+  `BladeCoef`, `MultiVectorFn`. Imports only the `functions` leaf (so `project`/`reject`/`reflect`
+  return `ComposableFunction`/`InvertibleFunction`); see the **Layering** note below.
 - `src/gacalc/gn.py` — `Gn`, the general dimension-agnostic representation, plus the
   `e_1..e_10` / `zero` / `one` constants, the symbolic vectors (`sym_vec2_1`, …), and the
-  `MultiVector = Gn` alias. (The `InvertibleFunction` transform layer lives in `transforms.py`,
-  re-exported from here.)
-- `src/gacalc/transforms.py` — the representation-agnostic transform layer
-  (`InvertibleFunction`, `translate`/`scale_non_uniform`/`compose`/…, plus the rotation factories
-  `rotor_rotation(from, to)` and `plane_rotation(a, b)`); derives any basis it
-  needs from the value's own type, so it preserves `Gn`/`G1`/`G2`/`G3`.
+  `MultiVector = Gn` alias. (Re-exports the transform layer, which itself re-exports `functions`.)
+- `src/gacalc/transforms.py` — the representation-agnostic transform *factory* layer
+  (`translate`/`uniform_scale`/`scale_non_uniform`/`to_matrix`, plus the rotation factories
+  `projection_rotation` / `rotor_rotation(from, to)` / `plane_rotation(a, b)`); derives any basis it
+  needs from the value's own type, so it preserves `Gn`/`G1`/`G2`/`G3`. **Re-exports** the
+  `functions` names (`ComposableFunction`, `InvertibleFunction`, `compose`, `inverse`, …) so
+  `from gacalc.transforms import InvertibleFunction` and `gn.py` keep working.
 - `src/gacalc/g1.py`, `g2.py`, `g3.py` — **generated** modules, **not tracked in git**
   (gitignored). Each holds the full specialized class `G1`/`G2`/`G3` **and** that algebra's **graded
   subtypes** (`Vector_n`, `Bivector_n`, `Trivector3`, `Rotor_n`). Do not edit by hand. They are
@@ -47,6 +53,20 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   reformat it, gitignore it, or factor it into any analysis. It is not project source and is none of
   Claude's concern. (Tooling that walks the repo — e.g. `format.sh` — should be scoped away from it;
   see Dev workflow.)
+
+**Layering (invariant + relaxation, 2026-07-17).** The core dependency graph is **acyclic** — that
+is the actual invariant that "`base.py` imports nothing internal" was a proxy for. `base.py` may
+import **leaf modules** (modules that import *nothing* internal), but never anything at or above its
+layer. A module qualifies as a base-importable leaf only if it: (1) **imports nothing internal**
+(keeps the graph acyclic); (2) is **representation-agnostic** (no dependency on `gn`/`g1`/`g2`/`g3`);
+(3) is **cheap to import** (no numpy; sympy is already a `base` dep). This documents *why* base may
+import such a module and bounds what future additions are allowed, so "leaf" never becomes a loophole
+for pulling arbitrary code under `base`. **The first (and only) such leaf is `functions.py`** (landed
+2026-07-17): the domain-agnostic function-composition abstraction (`ComposableFunction` base +
+`InvertibleFunction` subtype, `Linearity`, `NotInvertibleError`, `compose`/`inverse`/`identity`), so
+`base`'s `project`/`reject`/`reflect` return `ComposableFunction`/`InvertibleFunction`. Constraint (1)
+is *why* that module's `TypeVar` is **unbounded** rather than bound to `MultiVectorBase` — binding it
+would force `functions.py` to import `base` and reintroduce the cycle.
 
 ## Architecture
 
@@ -141,16 +161,25 @@ component-by-component product breakdown), iterate `to_blade_dict()` — which i
 **Terminology:** 𝒢ₙ denotes the *algebra*; an instance is an *element of* 𝒢ₙ. Classes are named
 after their algebra. The dimension parameter is `n` (it was once misleadingly called `grade`).
 
-**Transforms.** `InvertibleFunction` (in `transforms.py`, re-exported from `gn.py`) wraps a function + inverse + LaTeX labels,
-composable via `@`, with `translate` / `uniform_scale` / `scale_non_uniform` / `compose` factories. This
-layer is shared with the author's *modelviewprojection* book project. Jupyter display via
-`_repr_latex_`. The algebra-derived functions (`project` / `reject` / `reflect` / `projection_rotation`)
-return a *bare* `MultiVectorFn` with no label; **`labeled(fn, latex_repr, *, inverse=None, ...)`** wraps one
-on demand so it carries a LaTeX label and joins a `@`/`compose` pipeline — with no `inverse`, it's treated
-as non-invertible and its inverse slot raises **`NotInvertibleError`** if a pipeline containing it is
-inverted. This overloads `InvertibleFunction` for two consumers with different needs (mvp's Cayley-graph
-engine *requires* invertibility; display pipelines don't) — the interface reassessment is
-`tasks/reassess-composable-function-interface.md`.
+**Transforms & the composable-function hierarchy.** The function abstraction (in `functions.py`,
+re-exported from `transforms.py` + `gn.py`) is split by *capability*: **`ComposableFunction`** wraps a
+function + LaTeX label, composable via `@` / `compose` (+ a `Linearity` class and the `at`/`steps`
+animation layer), and **`InvertibleFunction(ComposableFunction)`** adds an `inverse` (+
+`latex_repr_inv`). This split exists because the layer serves two consumers with different needs:
+mvp's Cayley-graph engine *requires* invertibility (it walks edges backward via `inverse`), while
+display/compose pipelines don't. So a non-invertible function simply *is* a `ComposableFunction`, not
+an `InvertibleFunction` — a projection-as-Cayley-edge is a **type** error, not a runtime surprise.
+`project` / `reject` return `ComposableFunction` (a projection discards information — not invertible);
+`reflect` returns `InvertibleFunction` (an involution, its own inverse); `identity`/`translate`/scales/
+rotations are `InvertibleFunction`. **`compose` returns an `InvertibleFunction` iff every part is
+invertible** (else `ComposableFunction`); `inverse()` raises **`NotInvertibleError`** on a
+non-invertible input (the runtime backstop when the type distinction is bypassed). To label a bare
+callable, **construct the type directly** (`ComposableFunction(fn, "P_{B}")` /
+`InvertibleFunction(func=…, latex_repr=…, inverse=…, latex_repr_inv=…)`) — there is no `labeled`
+helper. `project`/`reject`/`reflect` return types are typed at `MultiVectorBase` (not `Self`): a
+caller wanting the concrete parameter (`ComposableFunction[Vector3]`) casts at the use site. This
+layer is shared with *modelviewprojection*; Jupyter display via `_repr_latex_`. Follow-ups
+(module naming, animation-layer placement) live in `tasks/reassess-composable-function-interface.md`.
 
 **Rotations & rotors.** The rotor *builder* lives on `MultiVectorBase` (`base.py`):
 `rotor_from_vectors(from, to)` builds the rotor `R = |from||to| + to·from` (scalar + bivector, the

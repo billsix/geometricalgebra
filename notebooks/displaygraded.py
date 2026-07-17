@@ -51,9 +51,8 @@ from gacalc.g2 import Vector2
 from gacalc.g3 import Vector3
 from gacalc.scalar import Scalar
 from gacalc.transforms import (
-    Linearity,
+    ComposableFunction,
     inverse,
-    labeled,
     projection_rotation,
     translate,
 )
@@ -280,36 +279,37 @@ a == 3 * Vector2.e_1 + 4 * Vector2.e_2
 show(a, a * b, a ^ b, r)
 
 # %% [markdown]
-# Labelling a projection so it composes in a pipeline
-# ---------------------------------------------------
+# Projections and reflections compose in a pipeline
+# -------------------------------------------------
 #
-# `project` / `reject` / `reflect` return a *bare* function with no LaTeX label,
-# so on their own they can't join a `@` / `compose` display pipeline the way the
-# transform factories (`translate`, `uniform_scale`, …) do. Wrap one with
-# `labeled(fn, "P_{B}")` — opt-in at the call site — to give it a label and make
-# it composable, without changing what `project` returns by default.
+# `project` / `reject` / `reflect` return a **labelled, composable** function —
+# `project` / `reject` a `ComposableFunction` (no inverse; a projection discards
+# information), and `reflect` an `InvertibleFunction` (an involution, its own
+# inverse). So they drop straight into a `@` / `compose` display pipeline next to
+# the transform factories (`translate`, `uniform_scale`, …).
 
 # %%
 B3 = Vector3.e_1 ^ Vector3.e_2  # the e_1 e_2 plane
-P = labeled(Vector3.project(B3), "P_{B}", linearity=Linearity.LINEAR)
-P  # renders as its label  # pyright: ignore[reportUnusedExpression]
+P = Vector3.project(B3)  # a ComposableFunction, already labelled from B3
+display(Math(P.latex_repr))
+# projects onto the plane
+P(Vector3.e_1 + Vector3.e_3)  # pyright: ignore[reportUnusedExpression]
 
 # %%
-# compose the labelled projection with a translate: the pipeline renders as one
-# LaTeX expression, and applies translate-then-project to a vector.
-pipe = P @ translate(Vector3.e_3)
+# compose the projection with a translate: the pipeline renders as one LaTeX
+# expression, and applies translate-then-project to a vector. (Wrap in a
+# ComposableFunction to give it a tidy custom label for the display.)
+pipe = ComposableFunction(P, "P_{B}") @ translate(Vector3.e_3)
 display(Math(pipe.latex_repr))
 show(pipe(Vector3.e_1 + Vector3.e_2))
 
 # %% [markdown]
-# A projection is **not invertible**, and `labeled` doesn't pretend otherwise —
-# inverting a pipeline that contains it raises `NotInvertibleError`. A
-# *reflection*, by contrast, is its own inverse (an involution): hand `labeled`
-# that inverse and it round-trips.
+# A projection is **not invertible** — inverting a pipeline that contains it
+# raises `NotInvertibleError`. A *reflection*, by contrast, is its own inverse (an
+# involution): `reflect` returns an `InvertibleFunction`, so it round-trips.
 
 # %%
-reflect_e12 = Vector3.reflect(B3)
-M = labeled(reflect_e12, "M_{B}", inverse=reflect_e12, linearity=Linearity.LINEAR)
+M = Vector3.reflect(B3)  # an InvertibleFunction (its own inverse)
 w = Vector3.e_1 + Vector3.e_3
 show(M(w), inverse(M)(M(w)))  # reflected, then reflected back == w
 

@@ -23,6 +23,7 @@ coefficients, so ``is_close`` (float-tolerant) is the right comparison.
 """
 
 import math
+import typing
 
 import numpy as np
 import pytest
@@ -33,13 +34,13 @@ from gacalc.g2 import G2, Vector2
 from gacalc.g3 import G3, Vector3
 from gacalc.gn import Gn
 from gacalc.transforms import (
+    ComposableFunction,
     InvertibleFunction,
     Linearity,
     NotInvertibleError,
     compose,
     identity,
     inverse,
-    labeled,
     projection_rotation,
     rotor_rotation,
     scale_non_uniform,
@@ -213,7 +214,7 @@ def test_against_arrow_inverse_matches_negated_param():
 def test_at_default_is_step_for_handbuilt_function():
     # neither a law nor components -> identity until t>=1, then itself.
     f = InvertibleFunction(
-        lambda v: v + G3.basis_vector(1), lambda v: v - G3.basis_vector(1), "", ""
+        lambda v: v + G3.basis_vector(1), "", lambda v: v - G3.basis_vector(1), ""
     )
     o = G3.zero()
     assert f.at(0.5)(o).is_close(o)  # step: identity
@@ -273,7 +274,7 @@ def test_compose_linearity_is_the_join():
     # affine ∘ affine -> affine
     assert compose([translate(b), translate(-b)]).linearity is Linearity.AFFINE
     # anything with a non-linear part -> non-linear
-    raw = InvertibleFunction(lambda v: v, lambda v: v, "", "")  # defaults NONLINEAR
+    raw = InvertibleFunction(lambda v: v, "", lambda v: v, "")  # defaults NONLINEAR
     assert compose([uniform_scale(2.0), raw]).linearity is Linearity.NONLINEAR
 
 
@@ -283,7 +284,7 @@ def test_inverse_copies_linearity():
 
 
 def test_handbuilt_defaults_to_nonlinear():
-    raw = InvertibleFunction(lambda v: v, lambda v: v, "", "")
+    raw = InvertibleFunction(lambda v: v, "", lambda v: v, "")
     assert raw.linearity is Linearity.NONLINEAR
 
 
@@ -342,7 +343,7 @@ def test_to_matrix_inverse_is_matrix_inverse():
 def test_to_matrix_nonlinear_raises():
     # the guard is tag-driven: this hand-built fn is actually identity, but it
     # is tagged NONLINEAR (the conservative default), so to_matrix refuses.
-    raw = InvertibleFunction(lambda v: v, lambda v: v, "", "")
+    raw = InvertibleFunction(lambda v: v, "", lambda v: v, "")
     with pytest.raises(ValueError):
         to_matrix(raw, G3)
 
@@ -431,15 +432,19 @@ def test_rotor_rotation_matches_projection_rotate():
         assert rotor_fn(v).is_close(proj_fn(v))
 
 
-# --- labeled: opt-in LaTeX label so bare functions join the compose pipeline ---
+# --- constructing ComposableFunction / InvertibleFunction directly to label a
+# --- bare callable so it joins a compose pipeline (the type is chosen by which
+# --- constructor you call: no inverse -> ComposableFunction; inverse -> Invertible)
 
 
 def _plane_e12():
     return Vector3.e_1 ^ Vector3.e_2
 
 
-def test_labeled_carries_label_and_applies():
-    P = labeled(Vector3.project(_plane_e12()), "P_{B}", linearity=Linearity.LINEAR)
+def test_composable_function_carries_label_and_applies():
+    P = ComposableFunction(
+        Vector3.project(_plane_e12()), "P_{B}", linearity=Linearity.LINEAR
+    )
     assert P.latex_repr == "P_{B}"
     assert P._repr_latex_() == "$P_{B}$"
     assert P.linearity is Linearity.LINEAR
@@ -447,14 +452,13 @@ def test_labeled_carries_label_and_applies():
     assert P(Vector3.e_1 + Vector3.e_3).is_close(Vector3.e_1)
 
 
-def test_labeled_composes_into_pipeline_latex():
-    # project()/reflect() return the type-erased MultiVectorFn, so labelled
-    # algebra functions are InvertibleFunction[MultiVectorBase] and compose with
-    # one another cleanly. (Mixing one with a concretely-typed factory like
-    # translate works at runtime but not under the invariant generic -- see the
-    # reassess-composable-function-interface task.)
-    P = labeled(Vector3.project(_plane_e12()), "P_{B}")
-    M = labeled(Vector3.reflect(_plane_e12()), "M_{B}")
+def test_composable_functions_compose_into_pipeline_latex():
+    # project()/reflect() are typed at MultiVectorBase, so wrapping them gives
+    # ComposableFunction[MultiVectorBase]s that compose with one another cleanly.
+    # (Mixing one with a concretely-typed factory like translate works at runtime
+    # but not under the invariant generic -- see the composable-function task.)
+    P = ComposableFunction(Vector3.project(_plane_e12()), "P_{B}")
+    M = ComposableFunction(Vector3.reflect(_plane_e12()), "M_{B}")
     pipe = P @ M
     # the whole pipeline renders as one combined LaTeX expression
     assert pipe.latex_repr == "P_{B} \\circ M_{B}"
@@ -463,22 +467,31 @@ def test_labeled_composes_into_pipeline_latex():
     assert pipe(Vector3.e_1 + Vector3.e_3).is_close(Vector3.e_1)
 
 
-def test_labeled_defaults_to_not_invertible():
-    P = labeled(Vector3.project(_plane_e12()), "P_{B}")
-    M = labeled(Vector3.reflect(_plane_e12()), "M_{B}")
-    assert P.latex_repr_inv == "P_{B}^{-1}"  # default label
-    # inverting a projection is meaningless -> a clear error when applied
+def test_composable_function_is_not_invertible():
+    P = ComposableFunction(Vector3.project(_plane_e12()), "P_{B}")
+    M = ComposableFunction(Vector3.reflect(_plane_e12()), "M_{B}")
+    # a ComposableFunction has no inverse capability
+    assert isinstance(P, ComposableFunction) and not isinstance(P, InvertibleFunction)
+    # inverting a projection is meaningless -> a clear error. (cast: we are
+    # deliberately feeding a non-invertible in to prove the runtime guard fires.)
     with pytest.raises(NotInvertibleError):
-        inverse(P)(Vector3.e_1)
+        inverse(typing.cast(InvertibleFunction, P))
     # inverting a whole pipeline that contains it errors too
     with pytest.raises(NotInvertibleError):
-        inverse(P @ M)(Vector3.e_1)
+        inverse(typing.cast(InvertibleFunction, P @ M))
 
 
-def test_labeled_with_real_inverse_roundtrips():
-    # a reflection is an involution -- pass it as its own inverse, and it inverts
+def test_invertible_function_with_real_inverse_roundtrips():
+    # a reflection is an involution -- construct an InvertibleFunction with it as
+    # its own inverse, and it inverts.
     reflect_fn = Vector3.reflect(_plane_e12())
-    M = labeled(reflect_fn, "M_{B}", inverse=reflect_fn, linearity=Linearity.LINEAR)
+    M = InvertibleFunction(
+        func=reflect_fn,
+        latex_repr="M_{B}",
+        inverse=reflect_fn,
+        latex_repr_inv="M_{B}^{-1}",
+        linearity=Linearity.LINEAR,
+    )
     assert M.latex_repr_inv == "M_{B}^{-1}"
     v = Vector3.e_1 + Vector3.e_3
     assert inverse(M)(M(v)).is_close(v)

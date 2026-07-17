@@ -26,6 +26,8 @@ from typing import TypeIs
 import numpy as np
 import sympy
 
+from gacalc.functions import ComposableFunction, InvertibleFunction, Linearity
+
 # A multivector coefficient: a plain Python number or a sympy expression
 # (symbolic mode).  Concrete `int | float | sympy.Expr` rather than the
 # `numbers.Real` ABC -- ty turns `numbers.Real` arithmetic into `_ComplexLike`
@@ -575,9 +577,15 @@ class MultiVectorBase(abc.ABC):
     def project(
         cls,
         onto: MultiVectorBase | Sequence[MultiVectorBase],
-    ) -> MultiVectorFn:
+    ) -> ComposableFunction[MultiVectorBase]:
         """Projection  P_B(A)  =  (A · B) B⁻¹  — the component of A lying in the
         subspace represented by the blade B (``onto``).
+
+        A projection discards the rejected part, so it is **not invertible**: this
+        returns a :class:`~gacalc.functions.ComposableFunction` (labelled, composable
+        into a pipeline) — not an ``InvertibleFunction``.  The return is typed at
+        ``MultiVectorBase`` (the closure acts generically); a caller wanting the
+        concrete type (``ComposableFunction[Vector3]``) can cast at the use site.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18,
         equations 2.9a, 2.9b, 2.9c
@@ -610,15 +618,22 @@ class MultiVectorBase(abc.ABC):
             else:
                 return (value.dot(onto)).dot(onto.inverse())  # 2.9a
 
-        return fn
+        return ComposableFunction(
+            fn,
+            latex_repr="P_{" + onto._repr_latex_().strip("$") + "}",
+            linearity=Linearity.LINEAR,
+        )
 
     @classmethod
     def reject(
         cls,
         away_from: MultiVectorBase | Sequence[MultiVectorBase],
-    ) -> MultiVectorFn:
+    ) -> ComposableFunction[MultiVectorBase]:
         """Rejection  P_B^⊥(A)  =  (A ∧ B) B⁻¹  — the component of A orthogonal to
         the subspace represented by the blade B (``away_from``).
+
+        Like :meth:`project`, a rejection discards information and is **not
+        invertible**: it returns a :class:`~gacalc.functions.ComposableFunction`.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18
         """
@@ -628,15 +643,22 @@ class MultiVectorBase(abc.ABC):
             assert isinstance(away_from, MultiVectorBase)  # to satisfy type checking
             return (value.wedge(away_from)) * away_from.inverse()
 
+        def rejection(blade: MultiVectorBase) -> ComposableFunction[MultiVectorBase]:
+            return ComposableFunction(
+                r,
+                latex_repr="P^{\\perp}_{" + blade._repr_latex_().strip("$") + "}",
+                linearity=Linearity.LINEAR,
+            )
+
         match away_from:
             case [*sequence]:
                 return cls.reject(cls.outer_product_of_vectors(*sequence))
             case MultiVectorBase() as away_from_vector if away_from_vector.is_vector():
-                return r
+                return rejection(away_from_vector)
             case MultiVectorBase() as away_from_bivector if (
                 away_from_bivector.is_bivector()
             ):
-                return r
+                return rejection(away_from_bivector)
             case _:
                 raise Exception("TODO - implement project for " + str(away_from))
 
@@ -644,12 +666,16 @@ class MultiVectorBase(abc.ABC):
     def reflect(
         cls,
         across: MultiVectorBase | Sequence[MultiVectorBase],
-    ) -> MultiVectorFn:
+    ) -> InvertibleFunction[MultiVectorBase]:
         """Reflection across the subspace (blade) ``across``  —  the projection
         minus the rejection,  P_B(A) − P_B^⊥(A).
+
+        A reflection is an **involution** (reflecting twice is the identity), so
+        unlike :meth:`project` / :meth:`reject` it *is* invertible: this returns an
+        :class:`~gacalc.functions.InvertibleFunction` whose inverse is itself.
         """
-        components_in_plane: MultiVectorFn = cls.project(across)
-        components_exterior_to_plane: MultiVectorFn = cls.reject(across)
+        components_in_plane = cls.project(across)
+        components_exterior_to_plane = cls.reject(across)
 
         def r(value: MultiVectorBase) -> MultiVectorBase:
             assert value.is_vector()  # TODO - can this be generalized?
@@ -657,24 +683,41 @@ class MultiVectorBase(abc.ABC):
 
             return components_in_plane(value) - components_exterior_to_plane(value)
 
+        def reflection(blade: MultiVectorBase) -> InvertibleFunction[MultiVectorBase]:
+            label = "\\mathrm{refl}_{" + blade._repr_latex_().strip("$") + "}"
+            # an involution: r is its own inverse, same label for both directions.
+            return InvertibleFunction(
+                func=r,
+                latex_repr=label,
+                inverse=r,
+                latex_repr_inv=label,
+                linearity=Linearity.LINEAR,
+            )
+
         match across:
             case [*sequence]:
                 return cls.reflect(cls.outer_product_of_vectors(*sequence))
-            case MultiVectorBase() as away_from_vector if away_from_vector.is_vector():
-                return r
-            case MultiVectorBase() as away_from_bivector if (
-                away_from_bivector.is_bivector()
-            ):
-                return r
+            case MultiVectorBase() as across_vector if across_vector.is_vector():
+                return reflection(across_vector)
+            case MultiVectorBase() as across_bivector if across_bivector.is_bivector():
+                return reflection(across_bivector)
             case _:
                 raise Exception("TODO - implement project for " + str(across))
 
     @staticmethod
-    def identity() -> MultiVectorFn:
+    def identity() -> InvertibleFunction[MultiVectorBase]:
+        """The identity transform — its own inverse, ``LINEAR``, labelled ``I``."""
+
         def i(value: MultiVectorBase) -> MultiVectorBase:
             return value
 
-        return i
+        return InvertibleFunction(
+            func=i,
+            latex_repr="I",
+            inverse=i,
+            latex_repr_inv="I",
+            linearity=Linearity.LINEAR,
+        )
 
     @classmethod
     def rotor_from_vectors(

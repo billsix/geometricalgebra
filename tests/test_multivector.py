@@ -14,7 +14,6 @@
 
 import itertools
 
-from gacalc.base import MultiVectorFn
 from gacalc.gn import (
     MultiVector,
     a_1,
@@ -136,7 +135,7 @@ def test_multivector_mult() -> None:
 
 def test_multivector_mult3d() -> None:
     def planewise_wedge(plane, vec1, vec2):
-        proj: MultiVectorFn = MultiVector.project(plane)
+        proj = MultiVector.project(plane)
         return proj(vec1).wedge(proj(vec2))
 
     assert (sym_vec3_1 * sym_vec3_2) == (
