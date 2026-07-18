@@ -33,7 +33,10 @@ from gacalc.functions import ComposableFunction, InvertibleFunction, Linearity
 # `numbers.Real` ABC -- ty turns `numbers.Real` arithmetic into `_ComplexLike`
 # and then rejects `+`/`/`/`**` on it, which broke the generated rotor sandwich.
 Coef = int | float | sympy.Expr
-BladeCoef = dict[tuple[int, ...], Coef]
+#: A basis blade: a tuple of basis-vector indices, e.g. ``(1, 2)`` ≙ e₁e₂ (``()`` is
+#: the scalar blade).  The key type of the ``BladeCoef`` interchange dict.
+Blade = tuple[int, ...]
+BladeCoef = dict[Blade, Coef]
 MultiVectorFn = Callable[["MultiVectorBase"], "MultiVectorBase"]
 
 #: Type variable for the operand of a versor sandwich -- the result has the
@@ -58,7 +61,7 @@ def blade_dict_latex(d: BladeCoef) -> str:
             return "(" + sympy.latex(x) + ")"
         return sympy.latex(x)
 
-    blades = [
+    blades: list[str] = [
         add_parens_or_dont(d[blade])
         + " ".join(map(lambda b: r"\mathbf{\vec{e}}_" + str(b), blade))
         if blade != tuple()
@@ -89,7 +92,7 @@ class MultiVectorBase(abc.ABC):
     # ------------------------------------------------------------------
     @classmethod
     @abc.abstractmethod
-    def from_blade_dict(cls, blade_coef: Mapping[tuple[int, ...], Coef]) -> typing.Self:
+    def from_blade_dict(cls, blade_coef: Mapping[Blade, Coef]) -> typing.Self:
         """Build an instance of this representation from a blade->coef mapping."""
 
     @abc.abstractmethod
@@ -134,7 +137,7 @@ class MultiVectorBase(abc.ABC):
 
     @classmethod
     def bases(cls, n: int) -> Generator[typing.Self]:
-        def powerset(iterable: Sequence[int]) -> chain[tuple[int, ...]]:
+        def powerset(iterable: Sequence[int]) -> chain[Blade]:
             s: list[int] = list(iterable)
             # chain.from_iterable flattens the list of combinations
             return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
@@ -265,7 +268,7 @@ class MultiVectorBase(abc.ABC):
         (``sqrt(25) == 5`` exactly, and a unit blade normalizes to ``Rational``s,
         not floats); symbolic coefficients also stay symbolic.
         """
-        magnitude_squared = self.magnitude_squared()
+        magnitude_squared: Coef = self.magnitude_squared()
         if isinstance(magnitude_squared, float):
             return math.sqrt(magnitude_squared)
         return sympy.sqrt(magnitude_squared)
@@ -536,7 +539,7 @@ class MultiVectorBase(abc.ABC):
         # (e.g. a unit blade, |A|² == 1) sympify first, so ``int ** -1`` keeps the
         # exact Rational instead of silently degrading to a float; symbolic |A|²
         # stays symbolic.  (Mirrors the numeric/symbolic split in ``magnitude``.)
-        mag_sq = self.magnitude_squared()
+        mag_sq: Coef = self.magnitude_squared()
         if not isinstance(mag_sq, float):
             mag_sq = sympy.sympify(mag_sq)
         return self.reverse() * (mag_sq ** (-1))
@@ -610,14 +613,14 @@ class MultiVectorBase(abc.ABC):
             if value.is_scalar():  # 2.9b
                 return value
             elif value.is_r_vector():  # 2.9c
-                projected = (value.dot(onto)) * onto.inverse()
+                projected: MultiVectorBase = (value.dot(onto)) * onto.inverse()
                 # P_B(A) preserves A's grade r, so the result is a grade-r blade.
                 # The generic product type can widen (e.g. Vector3 * Bivector3 ->
                 # G3, since vector * bivector *could* carry a grade-3 part -- which
                 # is identically zero for a projection): keep grade r and stay in
                 # A's own type.
-                grades = list(value.grades())
-                r = max(grades) if grades else 0
+                grades: list[int] = list(value.grades())
+                r: int = max(grades) if grades else 0
                 return type(value).from_blade_dict(
                     projected.r_vector_part(r).to_blade_dict()
                 )
@@ -680,8 +683,10 @@ class MultiVectorBase(abc.ABC):
         unlike :meth:`project` / :meth:`reject` it *is* invertible: this returns an
         :class:`~gacalc.functions.InvertibleFunction` whose inverse is itself.
         """
-        components_in_plane = cls.project(across)
-        components_exterior_to_plane = cls.reject(across)
+        components_in_plane: ComposableFunction[MultiVectorBase] = cls.project(across)
+        components_exterior_to_plane: ComposableFunction[MultiVectorBase] = cls.reject(
+            across
+        )
 
         def r(value: MultiVectorBase) -> MultiVectorBase:
             assert value.is_vector()  # TODO - can this be generalized?
@@ -690,7 +695,7 @@ class MultiVectorBase(abc.ABC):
             return components_in_plane(value) - components_exterior_to_plane(value)
 
         def reflection(blade: MultiVectorBase) -> InvertibleFunction[MultiVectorBase]:
-            label = "\\mathrm{refl}_{" + blade._repr_latex_().strip("$") + "}"
+            label: str = "\\mathrm{refl}_{" + blade._repr_latex_().strip("$") + "}"
             # an involution: r is its own inverse, same label for both directions.
             return InvertibleFunction(
                 func=r,
@@ -795,7 +800,7 @@ class MultiVectorBase(abc.ABC):
         # (Why the two are equal -- |ab| = |a||b| via |a^b| = |a||b|sin θ -- is
         # demonstrated in notebooks/displayg2.py and displayg3.py; that the
         # |to from| form regresses this identity was re-confirmed empirically.)
-        scale = from_vector.magnitude() * to_vector.magnitude()
+        scale: Coef = from_vector.magnitude() * to_vector.magnitude()
         # scalar + bivector -- the rotor's grade
         product: MultiVectorBase = to_vector * from_vector
         return product + type(product).from_coef(scale)

@@ -35,7 +35,7 @@ def parse_expr(src: str) -> ast.expr:
 
 def module_source(body: list[ast.stmt]) -> str:
     """Render top-level statement nodes to source via `ast.unparse`."""
-    module = ast.Module(body=body, type_ignores=[])
+    module: ast.Module = ast.Module(body=body, type_ignores=[])
     return ast.unparse(ast.fix_missing_locations(module))
 
 
@@ -51,9 +51,11 @@ class SymbolToAttr(ast.NodeTransformer):
         self.rename = rename
 
     def visit_Name(self, node: ast.Name) -> ast.AST:
-        target = self.rename.get(node.id)
+        target: tuple[str, str] | None = self.rename.get(node.id)
         if target is None:
             return node
+        obj: str
+        attr: str
         obj, attr = target
         # An empty ``attr`` means "bind the symbol to the bare name ``obj``" (not
         # ``obj.attr``) -- used for the number-operand fast path, where a bare
@@ -75,7 +77,7 @@ def name_ref(ident: str) -> ast.Name:
 
 
 def attribute(value: ast.expr | str, *parts: str) -> ast.expr:
-    node = value if isinstance(value, ast.AST) else name_ref(value)
+    node: ast.expr = value if isinstance(value, ast.AST) else name_ref(value)
     for p in parts:
         node = ast.Attribute(value=node, attr=p, ctx=_LOAD)
     return node
@@ -93,7 +95,7 @@ def call(
     args: Iterable[ast.expr] = (),
     **kwargs: ast.expr,
 ) -> ast.Call:
-    f = func if isinstance(func, ast.AST) else name_ref(func)
+    f: ast.expr = func if isinstance(func, ast.AST) else name_ref(func)
     return ast.Call(
         func=f,
         args=list(args),
@@ -157,7 +159,7 @@ def function_def(
 ) -> ast.FunctionDef:
     """An ``ast.FunctionDef``; ``params`` are ``ast.arg`` (default ``[self]``)."""
     params = [argument("self")] if params is None else params
-    arguments = ast.arguments(
+    arguments: ast.arguments = ast.arguments(
         posonlyargs=[],
         args=params,
         vararg=None,
@@ -216,7 +218,7 @@ def assign(target_name: str, value: ast.expr) -> ast.Assign:
 
 
 def isinstance_(value: ast.expr, types: list[ast.expr] | ast.expr) -> ast.Call:
-    type_node = (
+    type_node: ast.expr = (
         ast.Tuple(elts=list(types), ctx=_LOAD) if isinstance(types, list) else types
     )
     return call("isinstance", [value, type_node])

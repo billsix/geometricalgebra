@@ -99,10 +99,12 @@ e_1 * e_1  # -> 1     (Rule 1)  # pyright: ignore[reportUnusedExpression]
 # simplify it to a number, but we can always reorder it at the cost of a minus sign.
 
 # %%
-e_1 * e_2  # -> e_12     (a new "plane" object)  # pyright: ignore[reportUnusedExpression]
+# e_1 * e_2 -> e_12 (a new "plane" object)
+e_1 * e_2  # pyright: ignore[reportUnusedExpression]
 
 # %%
-e_2 * e_1  # -> -e_12     (same thing, opposite sign — Rule 2)  # pyright: ignore[reportUnusedExpression]
+# e_2 * e_1 -> -e_12 (same thing, opposite sign -- Rule 2)
+e_2 * e_1  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # **Rule 3 — distribute and collect, and numbers slide freely.** Ordinary numbers
@@ -144,7 +146,8 @@ v * v  # -> 25 = 3^2 + 4^2  # pyright: ignore[reportUnusedExpression]
 
 # %%
 i: MultiVector = e_1 * e_2
-i * i  # -> -1     (so e_1*e_2 behaves like the imaginary unit)  # pyright: ignore[reportUnusedExpression]
+# i * i -> -1 (so e_1*e_2 behaves like the imaginary unit)
+i * i  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # The same rules, written as math
@@ -158,9 +161,11 @@ i * i  # -> -1     (so e_1*e_2 behaves like the imaginary unit)  # pyright: igno
 #
 # > `e_i e_i = 1`  — each basis vector squares to `1`.  **(R1)**
 # >
-# > `e_i e_j = - e_j e_i`  (for `i ≠ j`)  — swapping two *different* ones flips the sign.  **(R2)**
+# > `e_i e_j = - e_j e_i`  (for `i ≠ j`)  — swapping two *different* ones
+# > flips the sign.  **(R2)**
 #
-# Everything else is bookkeeping. Any product of basis vectors `e_{i_1} e_{i_2} ... e_{i_k}`
+# Everything else is bookkeeping. Any product of basis vectors
+# `e_{i_1} e_{i_2} ... e_{i_k}`
 # is brought to **standard form** — indices in increasing order, with no repeats — using
 # just two moves:
 #
@@ -195,7 +200,8 @@ i * i  # -> -1     (so e_1*e_2 behaves like the imaginary unit)  # pyright: igno
 # multiply?
 #
 # The happy answer: **numbers are ordinary numbers.** They commute with everything
-# (`3*e_1 = e_1*3`) and they multiply among themselves the usual way. So the recipe grows
+# (`3*e_1 = e_1*3`) and they multiply among themselves the usual way. So
+# the recipe grows
 # just one opening step:
 #
 # 1. **Scalars first.** Sweep every numeric factor to the front and multiply them
@@ -432,33 +438,33 @@ MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(3)
 a_1 * e_1 * e_2 * e_4  # pyright: ignore[reportUnusedExpression]
 
 # %%
-asdf = MultiVector.symbolic_multivector(n=3, prefix="e").r_vector_part(1)
-asdf2 = MultiVector.symbolic_multivector(n=3, prefix="f").r_vector_part(1)
-asdf3 = asdf ^ asdf2
-asdf3  # pyright: ignore[reportUnusedExpression]
+vec_a: MultiVector = MultiVector.symbolic_multivector(n=3, prefix="e").r_vector_part(1)
+vec_b: MultiVector = MultiVector.symbolic_multivector(n=3, prefix="f").r_vector_part(1)
+biv: MultiVector = vec_a ^ vec_b
+biv  # pyright: ignore[reportUnusedExpression]
 
 
 # %%
-asdf3 * asdf3
+biv * biv
 
 # %%
-asdf3.dual(3)
-
-
-# %%
+biv.dual(3)
 
 
 # %%
-asdf3.dot(asdf3.dual(3))
+
 
 # %%
-show_mult(asdf3, asdf3.dual(3))
+biv.dot(biv.dual(3))
 
 # %%
-show_mult(asdf3, asdf3.dual(3).inverse())
+show_mult(biv, biv.dual(3))
 
 # %%
-asdf3 * (asdf3.dual(3))  # pyright: ignore[reportUnusedExpression]
+show_mult(biv, biv.dual(3).inverse())
+
+# %%
+biv * (biv.dual(3))  # pyright: ignore[reportUnusedExpression]
 
 # %%
 show_mult(sym_vec2_1, sym_vec2_2)
@@ -668,21 +674,21 @@ plot_multivector(2 * one + 3 * e_1 - 1.5 * e_2 + 4 * e_3 + 0.7 * (e_1 * e_2))
 5
 
 # %%
-aoeu = 3 * e_1 - 1.5 * e_2
+p: MultiVector = 3 * e_1 - 1.5 * e_2
 
 # %%
-plot_multivector(aoeu)
+plot_multivector(p)
 5
 
 # %%
-aoeu2 = 1.5 * e_1 + 5 * e_2
+q: MultiVector = 1.5 * e_1 + 5 * e_2
 
 # %%
-plot_multivector(aoeu2)
+plot_multivector(q)
 5
 
 # %%
-plot_multivector(aoeu * aoeu2)
+plot_multivector(p * q)
 5
 
 # %%

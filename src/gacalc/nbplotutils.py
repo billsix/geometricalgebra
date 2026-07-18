@@ -57,40 +57,40 @@ def _coord(mv: MultiVectorBase, blade: tuple[int, ...]) -> Coef:
     return mv.to_blade_dict().get(blade, 0)
 
 
-extraLinesMultiplier = 3
+extra_lines_multiplier: int = 3
 
 
 def generategridlines(
-    graphBounds: tuple[int, int],
+    graph_bounds: tuple[int, int],
     interval: int = 1,
     cls: type[MultiVectorBase] = MultiVector,
 ) -> Generator[tuple[list[MultiVectorBase], int], None, None]:
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
     for x in range(
-        -graphBounds[0] * extraLinesMultiplier,
-        graphBounds[0] * extraLinesMultiplier,
+        -graph_bounds[0] * extra_lines_multiplier,
+        graph_bounds[0] * extra_lines_multiplier,
         interval,
     ):
         thickness = 4 if np.isclose(x, 0.0) else 1
         yield (
             [
-                x * ex + (-graphBounds[1] * extraLinesMultiplier) * ey,
-                x * ex + (graphBounds[1] * extraLinesMultiplier) * ey,
+                x * ex + (-graph_bounds[1] * extra_lines_multiplier) * ey,
+                x * ex + (graph_bounds[1] * extra_lines_multiplier) * ey,
             ],
             thickness,
         )
 
     for y in range(
-        -graphBounds[1] * extraLinesMultiplier,
-        graphBounds[1] * extraLinesMultiplier,
+        -graph_bounds[1] * extra_lines_multiplier,
+        graph_bounds[1] * extra_lines_multiplier,
         interval,
     ):
         thickness = 4 if np.isclose(y, 0.0) else 1
         yield (
             [
-                (-graphBounds[0] * extraLinesMultiplier) * ex + y * ey,
-                (graphBounds[0] * extraLinesMultiplier) * ex + y * ey,
+                (-graph_bounds[0] * extra_lines_multiplier) * ex + y * ey,
+                (graph_bounds[0] * extra_lines_multiplier) * ex + y * ey,
             ],
             thickness,
         )

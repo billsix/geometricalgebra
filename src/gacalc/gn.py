@@ -22,7 +22,7 @@ from typing import NamedTuple
 
 import sympy
 
-from gacalc.base import BladeCoef, Coef, MultiVectorBase
+from gacalc.base import Blade, BladeCoef, Coef, MultiVectorBase
 
 # The representation-agnostic transform layer (InvertibleFunction, translate,
 # scale, compose, ...) lives in gacalc.transforms; it derives any basis
@@ -47,7 +47,7 @@ from gacalc.transforms import (  # noqa: F401
 
 
 class BladeDictionaryEntry(NamedTuple):
-    blade: tuple[int, ...]
+    blade: Blade
     coefficient: Coef
 
     def as_multivector(self) -> Gn:
@@ -89,7 +89,7 @@ class Gn(MultiVectorBase):
         }
 
     @classmethod
-    def from_blade_dict(cls, blade_coef: Mapping[tuple[int, ...], Coef]) -> Gn:
+    def from_blade_dict(cls, blade_coef: Mapping[Blade, Coef]) -> Gn:
         return cls(coefficient_of_blade=dict(blade_coef))
 
     def to_blade_dict(self) -> BladeCoef:
@@ -117,10 +117,12 @@ class Gn(MultiVectorBase):
                         )
                     )
                 case (a, c, *rest) if a < c:
-                    sorted_blade_dictionary_entry = decrease_grade(
-                        BladeDictionaryEntry(
-                            blade=(c, *rest),
-                            coefficient=basis_blade.coefficient,
+                    sorted_blade_dictionary_entry: BladeDictionaryEntry = (
+                        decrease_grade(
+                            BladeDictionaryEntry(
+                                blade=(c, *rest),
+                                coefficient=basis_blade.coefficient,
+                            )
                         )
                     )
                     match sorted_blade_dictionary_entry.blade:
@@ -188,6 +190,12 @@ e_10: MultiVector = MultiVector({(10,): 1})
 zero: MultiVector = MultiVector.from_scalar(0)
 one: MultiVector = MultiVector.from_scalar(1)
 
+a_1: sympy.Symbol
+a_2: sympy.Symbol
+a_3: sympy.Symbol
+b_1: sympy.Symbol
+b_2: sympy.Symbol
+b_3: sympy.Symbol
 a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3")
 
 sym_vec2_1: MultiVector = a_1 * e_1 + a_2 * e_2

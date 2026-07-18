@@ -155,6 +155,14 @@ specialized geometric product is ~15–34× faster numerically and thousands of
 times faster symbolically (the general `Gn` eagerly `sympy.simplify`s every
 intermediate; the closed form does a single simplify-free pass).
 
+## Contributing
+
+Coding standards (naming, idioms, the mutate-vs-return rule, type-annotation policy,
+function shape) live in **`CLAUDE.md` › "Coding standard (Python)"** — the canonical
+source. Most of PEP 8 is enforced mechanically by `ruff` (see `pyproject.toml`); that
+section covers the judgment calls ruff can't. Run `make format` (ruff + ty) and
+`make test` before sending a change.
+
 ## License
 
 LGPL v2.1 (SPDX: `LGPL-2.1-only`). See `LICENSE`.

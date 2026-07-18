@@ -84,13 +84,13 @@ class ComposableFunction(typing.Generic[V]):
     #: Optional interpolation law: maps ``t`` in ``[0, 1]`` to the
     #: partially-applied function, with ``at(0)`` the identity and ``at(1)``
     #: this function.  Bound by the transform primitives; ``None`` otherwise.
-    interpolate: typing.Optional[typing.Callable[[float], "ComposableFunction[V]"]] = (
+    interpolate: typing.Callable[[float], "ComposableFunction[V]"] | None = (
         dataclasses.field(default=None, kw_only=True)
     )
     #: For composites built by :func:`compose`: the constituent functions, in
     #: application order (lets :meth:`at` / :meth:`steps` recurse).
-    components: typing.Optional[typing.Sequence["ComposableFunction[V]"]] = (
-        dataclasses.field(default=None, kw_only=True)
+    components: typing.Sequence["ComposableFunction[V]"] | None = dataclasses.field(
+        default=None, kw_only=True
     )
     #: linear / affine / non-linear classification (see :class:`Linearity`).
     linearity: Linearity = dataclasses.field(default=Linearity.NONLINEAR, kw_only=True)
@@ -211,7 +211,7 @@ def inverse(f: InvertibleFunction[V]) -> InvertibleFunction[V]:
             f"{getattr(f, 'latex_repr', f)!r} is not invertible; it has no inverse "
             "(a bare ComposableFunction, or a pipeline containing one)"
         )
-    f_inverse = InvertibleFunction(
+    f_inverse: InvertibleFunction[V] = InvertibleFunction(
         func=f.inverse,
         latex_repr=f.latex_repr_inv,
         inverse=f.func,
@@ -260,19 +260,23 @@ def compose(
         >>> inverse(fn)(9)
         1.0
     """
-    fns = list(functions)
+    fns: list[ComposableFunction[V]] = list(functions)
 
     def composed_fn(x: V) -> V:
+        f: ComposableFunction[V]
         for f in reversed(fns):
             x = f(x)
         return x
 
     tex_str: str = ""
+    f: ComposableFunction[V]
     for f in reversed(fns):
         tex_str = f.latex_repr if not tex_str else f.latex_repr + r" \circ " + tex_str
-    linearity = max((f.linearity for f in fns), default=Linearity.LINEAR)
+    linearity: Linearity = max((f.linearity for f in fns), default=Linearity.LINEAR)
 
-    inv_fns = [f for f in fns if isinstance(f, InvertibleFunction)]
+    inv_fns: list[InvertibleFunction[V]] = [
+        f for f in fns if isinstance(f, InvertibleFunction)
+    ]
     if len(inv_fns) != len(fns):
         # some part has no inverse -> the whole composite has none
         return ComposableFunction(
@@ -280,13 +284,15 @@ def compose(
         )
 
     def inv_composed_fn(x: V) -> V:
+        f: InvertibleFunction[V]
         for f in inv_fns:
             x = inverse(f)(x)
         return x
 
     inv_str: str = ""
-    for f in inv_fns:
-        step = inverse(f).latex_repr
+    invertible_fn: InvertibleFunction[V]
+    for invertible_fn in inv_fns:
+        step: str = inverse(invertible_fn).latex_repr
         inv_str = step if not inv_str else step + r" \circ " + inv_str
 
     return InvertibleFunction(

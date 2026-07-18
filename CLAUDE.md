@@ -18,7 +18,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `NotInvertibleError`, `compose`/`inverse`/`identity`. **Imports nothing internal** (unbounded
   `TypeVar`); this is what `base` is allowed to import (see the **Layering** note below).
 - `src/gacalc/base.py` — `MultiVectorBase` (the abstract base) + the type aliases
-  `BladeCoef`, `MultiVectorFn`. Imports only the `functions` leaf (so `project`/`reject`/`reflect`
+  `Blade`, `BladeCoef`, `MultiVectorFn`. Imports only the `functions` leaf (so `project`/`reject`/`reflect`
   return `ComposableFunction`/`InvertibleFunction`); see the **Layering** note below.
 - `src/gacalc/gn.py` — `Gn`, the general dimension-agnostic representation, plus the
   `e_1..e_10` / `zero` / `one` constants, the symbolic vectors (`sym_vec2_1`, …), and the
@@ -118,8 +118,10 @@ method, which *computed* `⟨A x̃⟩` to recover a number the object already st
 favour; `scalar_product` remains, but it is the scalar product `⟨A B⟩`, **not** a coefficient reader
 (it's sign-flipped vs the stored coefficient for grade ≥2).
 
-**Coefficient type — `Coef = int | float | sympy.Expr`** (defined in `base.py`; `BladeCoef` is
-`dict[tuple[int, ...], Coef]`). A multivector coefficient is a plain Python number or a sympy
+**Coefficient type — `Coef = int | float | sympy.Expr`** (defined in `base.py`, alongside the
+domain aliases `Blade = tuple[int, ...]` — a blade's basis-vector indices — and `BladeCoef =
+dict[Blade, Coef]`; all three are threaded through the code the way `Coef` is). A multivector
+coefficient is a plain Python number or a sympy
 expression. This is the **concrete** union, deliberately *not* the `numbers.Real` ABC: ty turns
 `numbers.Real` arithmetic into `_ComplexLike` and then rejects `+`/`/`/`**` on it, which is what used
 to force the `ty.toml` override on the generated rotor sandwich (whose closed form divides by `|R|²`
@@ -301,6 +303,104 @@ the additive terms in each generated component are **ordered by grade** (scalar 
 → …) via `term_grade_key`; and each generated method's docstring is **copied from the matching
 `MultiVectorBase` method** (`base.py`) via `inspect.getdoc`, so the Hestenes notation on the
 specialized classes never drifts from the shared base.
+
+## Coding standard (Python)
+
+Written for both humans and AI agents: each rule is a statement + a one-line reason.
+**The standard is split in two** — (a) what **ruff already enforces mechanically**
+(don't hand-review or re-prose these; if `make format` is green they're done), and
+(b) the **judgment calls ruff can't check** (spend attention here). Canonical home is
+this file; `README.md` just points here.
+
+**(a) Enforced by ruff** — the `[tool.ruff.lint] select` in `pyproject.toml`
+(the whole `E`, `F`, `I` categories + named rules) already gives: PEP 8
+layout/whitespace/blank-lines (`E`), the Pyflakes correctness tier (`F` —
+unused/undefined/logic bugs, incl. the `== None`→`is None` / `== True` / bare-`except`
+idioms E711/E712/E722), import sorting (`I`), modern unions `X | Y` (UP007/UP035),
+no mutable/callable default args (B006/B008), no unused loop var (B007), absolute
+imports (TID252), no stray `print` (T201), non-crypto `random` / `shell=True`
+(S311/S602), **and naming (the `N` / pep8-naming family)**. Treat a green ruff as
+authority on all of these.
+
+**(b) Judgment calls** — prose, because ruff can't check them:
+
+- **Naming grammar** (`N` enforces the *casing*; these are the parts it can't):
+  snake_case values/functions, CapWords classes/type-vars, exceptions end in `Error`,
+  UPPER_SNAKE constants, `_internal` (prefer one underscore over `__mangled`),
+  `trailing_` only to dodge a keyword. **Verbs for functions, nouns for values;**
+  boolean predicates `is_`/`has_`/`should_`. Descriptive over terse; short names only
+  in tight scopes (loop index, `except … as e`, `with open() as f`, math). No
+  redundant suffixes (`names` not `name_list`; `name_by_id` not `id_to_name_dict`),
+  no letter-deleting abbreviations. **A local bound to a class/type object is named
+  `cls`** (mirrors the classmethod first arg — e.g. `cls = type(vector)`), never a
+  synonym like `representation`/`klass`. (Domain: the dimension is `n`, never `grade`.)
+- **Prefer expressions; obey the mutate-vs-return rule.** Value-returning forms
+  (`sorted(xs)`, `reversed(xs)`, a comprehension, `s | {x}`) return a NEW value;
+  in-place methods (`list.sort/append/extend`, `set.add`, `dict.update`, …) mutate and
+  return `None`. So `top = names.sort()` is a bug, and you must never chain a mutator.
+  Command–Query Separation: a function either *does* (side effect, returns `None`) or
+  *computes* (value, no side effect) — not both.
+- **Idioms** (the full checklist; the ones ruff already enforces are marked): EAFP
+  over LBYL; truthiness for emptiness `if not seq:` (but compare ints to `0`
+  explicitly); `is`/`is not` for `None`/singletons *(ruff)*; `isinstance` over
+  `type(x) == T` *(ruff)*; `enumerate`/`zip` over `range(len(...))`; comprehensions
+  over trivial map/filter+loop (keep them simple); f-strings over `%`/`.format`; `with`
+  for resources; `dict.get`/`defaultdict`/`setdefault`; iterable unpacking
+  (`first, *rest = xs`); no mutable/callable defaults *(ruff)*; `pathlib` over
+  `os.path`; keyword args at call sites for meaning; flat over nested; no bare
+  `except` *(ruff)*; no stray `print` *(ruff)*; consistent returns (if any branch
+  returns a value, all do).
+- **Type annotations — annotate generously.** Signatures (params + returns) are the
+  contract → always. **Locals: as much as reasonable — prefer a declared type over
+  none, including in library code** (`r: Rotor2 = a * b`); skip only where it would
+  be pure noise (`n = 3`), and **when in doubt, annotate.** **Loop/unpack targets**
+  can't be annotated inline — declare the type on the line *above* (`blade:
+  tuple[int, ...]` / `coef: Coef` above `for blade, coef in mv.to_blade_dict().items():`;
+  a bare `x: sympy.Symbol` per name above a `symbols(...)` unpack). Two limits: it
+  does **not** reach a *comprehension*/genexpr loop var (separate scope — stays
+  inferred), and if a name would be reused across loops of different (sub)types,
+  **give each loop its own distinctly-named, typed variable** (don't reuse one name
+  for two types — e.g. `composable_fn: ComposableFunction` in one loop,
+  `invertible_fn: InvertibleFunction` in the next). **Don't fight the
+  checker:** a locally-correct annotation that forces edits to unrelated logic or
+  breaks flow-narrowing isn't worth it — leave it inferred and say why (e.g.
+  `MultiVectorBase.__iter__`). Read-only container params take the covariant supertype
+  (`Mapping`/`Sequence`), not invariant `dict`/`list`. Polymorphic values take the
+  abstract base (`MultiVectorBase`), never a runtime-picked concrete. (Teaching
+  notebooks especially: name + type the GA values.)
+- **Inline a value used exactly once** — unless the name documents an otherwise-opaque
+  expression. This **takes precedence over "annotate generously"**: don't create or
+  keep a single-use local just to give it a type — inline it (e.g. pass the f-string
+  straight to `latex_repr=`). Generous typing applies to the locals that *survive* —
+  reused, hoisted out of a closure so it's computed once, or named to clarify an
+  opaque expression. (Same spirit as: no local aliases for a value that already has a
+  canonical name — reference `Vector2.e_1` / `Bivector2.e_12` directly, never
+  `E1 = Vector2.basis_vector(1)`.)
+- **Function shape: inner-fn first, guards/dispatch below** (preferred for *new*
+  code; don't churn existing early-return code, and a cheap top-of-function `raise`
+  on a nonsensical arg is fine). The core logic is a nested function defined first;
+  preconditions/dispatch come after and call it:
+  ```python
+  # prefer this shape ...
+  def reject(cls, away_from):
+      def r(value):          # the core operation, up top
+          return value.wedge(away_from) * away_from.inverse()
+      match away_from:       # preconditions / dispatch below, calling in
+          case [*seq]: ...
+          case MultiVectorBase() if away_from.is_vector(): return rejection(r)
+          case _: raise ...
+  # ... over top-of-function guard clauses that push the main logic down.
+  ```
+  Precedent already in the tree: `Gn._geometric_product`'s `decrease_grade`,
+  `compose`'s `composed_fn`, `base.project/reject/reflect`, `to_matrix`'s `coords`.
+- **Rotations** read as `plane_rotation` / `projection_rotation` / `rotor_rotation` /
+  `rotor_from_vectors` (keyword args), never a hand-built rotor literal — full detail
+  under **Architecture › Rotations & rotors**.
+- **Numeric preservation** — don't promote a `float` pipeline to sympy: `magnitude`/
+  `inverse` keep float-in → float-out; `int` routes through sympy for exactness;
+  symbolic stays symbolic (see **Architecture** + `tests/test_numeric_magnitude.py`).
+- **Comments explain *why*, inline at the point they apply** — not a trailing notes
+  block.
 
 ## Dev workflow
 

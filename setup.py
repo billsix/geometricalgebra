@@ -16,7 +16,7 @@ PKG_DIR: pathlib.Path = pathlib.Path(__file__).parent / "src" / "gacalc"
 GENERATOR: pathlib.Path = pathlib.Path(__file__).parent / "tools" / "gen_specialized.py"
 
 
-class build_py_with_codegen(build_py):
+class BuildPyWithCodegen(build_py):
     """Run the code generator before copying package sources, unless the
     generated modules are already present (e.g. shipped inside an sdist)."""
 
@@ -27,4 +27,4 @@ class build_py_with_codegen(build_py):
 
 
 if __name__ == "__main__":
-    setup(cmdclass={"build_py": build_py_with_codegen})
+    setup(cmdclass={"build_py": BuildPyWithCodegen})

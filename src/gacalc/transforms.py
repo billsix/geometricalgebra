@@ -55,7 +55,7 @@ import typing
 import numpy as np
 import sympy
 
-from gacalc.base import Coef, MultiVectorBase, MultiVectorFn
+from gacalc.base import BladeCoef, Coef, MultiVectorBase, MultiVectorFn
 from gacalc.functions import (
     ComposableFunction,
     InvertibleFunction,
@@ -153,13 +153,11 @@ def translate(b: V) -> InvertibleFunction[V]:
     def f_inv(vector: V) -> V:
         return vector - b
 
-    tex_str: str = f"T_{{{b._repr_latex_()[1:-1]}}}"
-    inv_str: str = f"T_{{{(-b)._repr_latex_()[1:-1]}}}"
     return InvertibleFunction(
         func=f,
-        latex_repr=tex_str,
+        latex_repr=f"T_{{{b._repr_latex_()[1:-1]}}}",
         inverse=f_inv,
-        latex_repr_inv=inv_str,
+        latex_repr_inv=f"T_{{{(-b)._repr_latex_()[1:-1]}}}",
         interpolate=lambda t: translate(b * t),
         linearity=Linearity.AFFINE,
     )
@@ -199,10 +197,10 @@ def projection_rotation(
     assert from_vector.is_vector()
     assert to_vector.is_vector()
     plane: MultiVectorBase = from_vector ^ to_vector
-    representation = type(from_vector)
+    cls: type[V] = type(from_vector)
 
-    components_in_plane = representation.project(plane)
-    components_exterior_to_plane = representation.reject(plane)
+    components_in_plane: ComposableFunction = cls.project(plane)
+    components_exterior_to_plane: ComposableFunction = cls.reject(plane)
 
     def r(value: MultiVectorBase) -> MultiVectorBase:
         assert value.is_vector()  # TODO - can this be generalized?
@@ -217,9 +215,7 @@ def rotor_rotation(
     from_vector: V,
     to_vector: V,
     *,
-    interpolate: typing.Optional[
-        typing.Callable[[float], "InvertibleFunction[V]"]
-    ] = None,
+    interpolate: typing.Callable[[float], "InvertibleFunction[V]"] | None = None,
 ) -> InvertibleFunction[V]:
     r"""A rotation packaged as an :class:`InvertibleFunction`, built from the
     **rotor** ``R = rotor_from_vectors(from, to)``.
@@ -247,10 +243,10 @@ def rotor_rotation(
         >>> R.inverse(R(Vector3.e_1)).is_close(Vector3.e_1)
         True
     """
-    rotor = type(from_vector).rotor_from_vectors(
+    rotor: MultiVectorBase = type(from_vector).rotor_from_vectors(
         from_vector=from_vector, to_vector=to_vector
     )
-    rotor_inv = rotor.inverse()
+    rotor_inv: MultiVectorBase = rotor.inverse()
 
     def forward(v: V) -> V:
         return rotor.sandwich(v)
@@ -327,13 +323,13 @@ def plane_rotation(
             "plane_rotation takes two vectors (grade-1); "
             f"got grades {a.grades()} and {b.grades()}"
         )
-    plane = a.outer_product(b)
+    plane: MultiVectorBase = a.outer_product(b)
     if plane == type(plane).zero():
         raise ValueError(
             "the two vectors are parallel (their wedge is zero): "
             "they span no plane of rotation"
         )
-    i = plane.normalize()
+    i: MultiVectorBase = plane.normalize()
 
     # Numeric-preservation guard (base.py's contract: a purely numeric
     # pipeline stays numeric).  Basis constants carry exact ``int``
@@ -351,7 +347,7 @@ def plane_rotation(
     # plane (float rotors, float results); a symbolic theta keeps the
     # exact plane so notebook output stays ``cos(theta)``, not
     # ``1.0*cos(theta)``.  A genuinely symbolic plane never coerces.
-    i_coefs = i.to_blade_dict()
+    i_coefs: BladeCoef = i.to_blade_dict()
     i_numeric: V | None = None
     if all(
         isinstance(c, (int, float)) or bool(getattr(c, "is_number", False))
@@ -363,6 +359,9 @@ def plane_rotation(
         # sympy trig for a symbolic angle, math trig for a numeric one --
         # keep a purely numeric pipeline numeric (see the magnitude() /
         # inverse() convention in base.py).
+        cos_half: Coef
+        sin_half: Coef
+        plane_i: MultiVectorBase
         if isinstance(theta, sympy.Expr):
             cos_half = sympy.cos(theta / 2)
             sin_half = sympy.sin(theta / 2)
@@ -372,7 +371,7 @@ def plane_rotation(
             sin_half = math.sin(theta / 2)
             # numeric theta: use the float-coerced plane (see above)
             plane_i = i_numeric if i_numeric is not None else i
-        rotor = plane_i * (-sin_half) + cos_half
+        rotor: MultiVectorBase = plane_i * (-sin_half) + cos_half
 
         def forward(v: V) -> V:
             return rotor.sandwich(v)
@@ -408,14 +407,12 @@ def uniform_scale(m: float) -> InvertibleFunction:
 
         return vector * (1.0 / m)
 
-    tex_str: str = f"S_{{{m}}}"
-    inv_str: str = f"S_{{{-m}}}"
     # linear interpolation 1 -> m, so at(0) is the identity scale
     return InvertibleFunction(
         func=f,
-        latex_repr=tex_str,
+        latex_repr=f"S_{{{m}}}",
         inverse=f_inv,
-        latex_repr_inv=inv_str,
+        latex_repr_inv=f"S_{{{-m}}}",
         interpolate=lambda t: uniform_scale(1.0 + (m - 1.0) * t),
         linearity=Linearity.LINEAR,
     )
@@ -452,13 +449,11 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
             start=cls.zero(),
         )
 
-    forward = "S_{" + ",".join(str(m) for m in factors) + "}"
-    inv = "S_{" + ",".join(rf"\frac{{1}}{{{m}}}" for m in factors) + "}"
     return InvertibleFunction(
         func=f,
-        latex_repr=forward,
+        latex_repr="S_{" + ",".join(str(m) for m in factors) + "}",
         inverse=f_inv,
-        latex_repr_inv=inv,
+        latex_repr_inv="S_{" + ",".join(rf"\frac{{1}}{{{m}}}" for m in factors) + "}",
         interpolate=lambda t: scale_non_uniform(
             *[1.0 + (m - 1.0) * t for m in factors]
         ),
@@ -469,7 +464,7 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
 def to_matrix(
     fn: InvertibleFunction,
     cls: type[MultiVectorBase],
-    n: typing.Optional[int] = None,
+    n: int | None = None,
     *,
     backend: str = "numpy",
 ) -> "np.ndarray | sympy.Matrix":
@@ -530,21 +525,23 @@ def to_matrix(
                 "explicitly, e.g. to_matrix(fn, Gn, n=3)."
             )
 
-    origin = fn(cls.zero())  # image of the origin -> the last (translation) column
+    origin: MultiVectorBase = fn(cls.zero())  # image of the origin -> translation col
     # images of the unit directions -> the first columns (the linear part)
-    directions = [fn(cls.basis_vector(i + 1)) - origin for i in range(n)]
+    directions: list[MultiVectorBase] = [
+        fn(cls.basis_vector(i + 1)) - origin for i in range(n)
+    ]
 
-    def coords(v: MultiVectorBase, bottom: int) -> list:
+    def coords(v: MultiVectorBase, bottom: int) -> list[Coef]:
         # one full column: the n coordinates of v -- read straight from its
         # blade-dict (the coefficient each representation already stores; no
         # product to compute, no dependence on component/scalar_product) -- plus
         # the column's bottom entry (0 for a direction column, 1 for translation).
-        d = v.to_blade_dict()
+        d: BladeCoef = v.to_blade_dict()
         return [d.get((j + 1,), 0) for j in range(n)] + [bottom]
 
     # the matrix's columns: each unit-direction image (bottom 0), then the origin
     # (translation, bottom 1).
-    columns = [coords(d, 0) for d in directions] + [coords(origin, 1)]
+    columns: list[list[Coef]] = [coords(d, 0) for d in directions] + [coords(origin, 1)]
 
     if backend == "sympy":
         return sympy.Matrix.hstack(*(sympy.Matrix(c) for c in columns))

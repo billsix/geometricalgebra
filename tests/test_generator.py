@@ -47,7 +47,9 @@ def test_blade_label_special_cases() -> None:
 
 
 def test_blade_label_roundtrips_over_all_blades() -> None:
+    n: int
     for n in (1, 2, 3):
+        blade: gen.Blade
         for blade in gen.blades_for_dim(n):
             assert gen.blade_of_label(gen.blade_label(blade)) == blade
 
@@ -78,7 +80,7 @@ def test_blades_for_dim_canonical_order() -> None:
 
 
 def test_blades_for_dim_is_grade_then_index() -> None:
-    blades = gen.blades_for_dim(3)
+    blades: list[gen.Blade] = gen.blades_for_dim(3)
     assert blades == sorted(blades, key=lambda b: (len(b), b))
     assert len(blades) == 2**3
 
@@ -89,15 +91,21 @@ def test_blades_for_dim_is_grade_then_index() -> None:
 
 
 def test_term_grade_key_orders_lower_grade_first() -> None:
-    key_vec = gen.term_grade_key(sympy.Symbol("a_e_2"))  # grade 1
-    key_biv = gen.term_grade_key(sympy.Symbol("a_e_12"))  # grade 2
+    key_vec: tuple[int, gen.Blade, int, gen.Blade] = gen.term_grade_key(
+        sympy.Symbol("a_e_2")
+    )  # grade 1
+    key_biv: tuple[int, gen.Blade, int, gen.Blade] = gen.term_grade_key(
+        sympy.Symbol("a_e_12")
+    )  # grade 2
     assert key_vec < key_biv
     assert key_vec[0] == 1 and key_biv[0] == 2
 
 
 def test_term_grade_key_uses_both_operands() -> None:
     # a product of one self (a_) and one rhs (b_) symbol keys on both grades
-    key = gen.term_grade_key(sympy.Symbol("a_e_1") * sympy.Symbol("b_e_2"))
+    key: tuple[int, gen.Blade, int, gen.Blade] = gen.term_grade_key(
+        sympy.Symbol("a_e_1") * sympy.Symbol("b_e_2")
+    )
     assert key == (1, (1,), 1, (2,))
 
 
@@ -119,7 +127,7 @@ def test_subscript_superscript() -> None:
 
 
 def test_registry_for_dim_lists_graded_then_full() -> None:
-    names = [s.name for s in gen.registry_for_dim(2, "G2")]
+    names: list[str] = [s.name for s in gen.registry_for_dim(2, "G2")]
     assert names == ["Scalar", "Vector2", "Bivector2", "Rotor2", "G2"]
 
 
@@ -141,18 +149,22 @@ def test_resolve_widens_to_full_when_no_graded_type_covers() -> None:
 
 
 def _spec(n: int, name: str) -> gen.TypeSpec:
-    by_name = {s.name: s for s in [gen.full_spec(n, f"G{n}"), *gen.graded_specs(n)]}
+    by_name: dict[str, gen.TypeSpec] = {
+        s.name: s for s in [gen.full_spec(n, f"G{n}"), *gen.graded_specs(n)]
+    }
     return by_name[name]
 
 
 def test_product_result_geometric_vector_times_vector_is_rotor() -> None:
-    v2 = _spec(2, "Vector2")
+    v2: gen.TypeSpec = _spec(2, "Vector2")
+    result_spec: gen.TypeSpec
     result_spec, _ = gen.product_result(v2, v2, lambda a, b: a * b, 2, "G2")
     assert result_spec.name == "Rotor2"
 
 
 def test_product_result_outer_vector_wedge_vector_is_bivector() -> None:
-    v2 = _spec(2, "Vector2")
+    v2: gen.TypeSpec = _spec(2, "Vector2")
+    result_spec: gen.TypeSpec
     result_spec, _ = gen.product_result(
         v2, v2, lambda a, b: a.outer_product(b), 2, "G2"
     )
@@ -160,19 +172,22 @@ def test_product_result_outer_vector_wedge_vector_is_bivector() -> None:
 
 
 def test_product_result_bivector_times_bivector_is_scalar() -> None:
-    b2 = _spec(2, "Bivector2")
+    b2: gen.TypeSpec = _spec(2, "Bivector2")
+    result_spec: gen.TypeSpec
     result_spec, _ = gen.product_result(b2, b2, lambda a, b: a * b, 2, "G2")
     assert result_spec.name == "Scalar"
 
 
 def test_unary_result_reverse_preserves_grade() -> None:
-    v2 = _spec(2, "Vector2")
+    v2: gen.TypeSpec = _spec(2, "Vector2")
+    result_spec: gen.TypeSpec
     result_spec, _ = gen.unary_result(v2, lambda a: a.reverse(), 2, "G2")
     assert result_spec.name == "Vector2"
 
 
 def test_unary_result_dual_of_vector3_is_bivector3() -> None:
-    v3 = _spec(3, "Vector3")
+    v3: gen.TypeSpec = _spec(3, "Vector3")
+    result_spec: gen.TypeSpec
     result_spec, _ = gen.unary_result(v3, lambda a: a.dual(3), 3, "G3")
     assert result_spec.name == "Bivector3"
 
@@ -183,25 +198,32 @@ def test_unary_result_dual_of_vector3_is_bivector3() -> None:
 
 
 def test_module_source_roundtrip() -> None:
-    src = astbuild.module_source([ast.Expr(astbuild.attribute("self", "e_1"))])
+    src: str = astbuild.module_source([ast.Expr(astbuild.attribute("self", "e_1"))])
     assert src == "self.e_1"
 
 
 def test_symbol_to_attr_rewrites_operand_symbols() -> None:
-    tree = astbuild.parse_expr("a_e_1 + b_e_2")
-    rename = {"a_e_1": ("self", "e_1"), "b_e_2": ("rhs", "e_2")}
-    out = ast.fix_missing_locations(astbuild.SymbolToAttr(rename).visit(tree))
+    tree: ast.expr = astbuild.parse_expr("a_e_1 + b_e_2")
+    rename: dict[str, tuple[str, str]] = {
+        "a_e_1": ("self", "e_1"),
+        "b_e_2": ("rhs", "e_2"),
+    }
+    out: ast.AST = ast.fix_missing_locations(astbuild.SymbolToAttr(rename).visit(tree))
     assert ast.unparse(out) == "self.e_1 + rhs.e_2"
 
 
 def test_cast_coef_skips_bare_and_negated_fields() -> None:
-    bare = astbuild.attribute("self", "coeff_e_1")
+    bare: ast.expr = astbuild.attribute("self", "coeff_e_1")
     assert astbuild.cast_coef(bare) is bare
-    negated = ast.UnaryOp(ast.USub(), astbuild.attribute("self", "coeff_e_1"))
+    negated: ast.UnaryOp = ast.UnaryOp(
+        ast.USub(), astbuild.attribute("self", "coeff_e_1")
+    )
     assert astbuild.cast_coef(negated) is negated
 
 
 def test_cast_coef_wraps_compound_expression() -> None:
-    compound = ast.BinOp(astbuild.name_ref("a"), ast.Add(), astbuild.name_ref("b"))
-    wrapped = astbuild.cast_coef(compound)
+    compound: ast.BinOp = ast.BinOp(
+        astbuild.name_ref("a"), ast.Add(), astbuild.name_ref("b")
+    )
+    wrapped: ast.expr = astbuild.cast_coef(compound)
     assert ast.unparse(wrapped) == "typing.cast(Coef, a + b)"

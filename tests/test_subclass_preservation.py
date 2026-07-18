@@ -49,8 +49,8 @@ class MyScalar(Scalar):
 
 
 def test_same_type_linear_ops_preserve_subclass() -> None:
-    a = MyV2(coeff_e_1=1.0, coeff_e_2=2.0)
-    b = MyV2(coeff_e_1=3.0, coeff_e_2=4.0)
+    a: MyV2 = MyV2(coeff_e_1=1.0, coeff_e_2=2.0)
+    b: MyV2 = MyV2(coeff_e_1=3.0, coeff_e_2=4.0)
     assert type(a + b) is MyV2
     assert type(a - b) is MyV2
     assert type(-a) is MyV2
@@ -61,22 +61,22 @@ def test_same_type_linear_ops_preserve_subclass() -> None:
 
 
 def test_mixed_operand_uses_left_type() -> None:
-    sub = MyV2(coeff_e_1=1.0, coeff_e_2=0.0)
-    base = Vector2(coeff_e_1=0.0, coeff_e_2=1.0)
+    sub: MyV2 = MyV2(coeff_e_1=1.0, coeff_e_2=0.0)
+    base: Vector2 = Vector2(coeff_e_1=0.0, coeff_e_2=1.0)
     assert type(sub + base) is MyV2
 
 
 def test_grade_changing_results_stay_registered_types() -> None:
-    a = MyV2(coeff_e_1=1.0, coeff_e_2=0.0)
-    b = MyV2(coeff_e_1=0.0, coeff_e_2=1.0)
+    a: MyV2 = MyV2(coeff_e_1=1.0, coeff_e_2=0.0)
+    b: MyV2 = MyV2(coeff_e_1=0.0, coeff_e_2=1.0)
     assert type(a * b) is Rotor2  # geometric product widens
     assert type(a ^ b) is Bivector2  # wedge changes grade
     assert type(a + Rotor2(coeff_scalar=1.0, coeff_e_12=0.0)) is G2
 
 
 def test_full_class_subclass_preserved() -> None:
-    p = MyG2(coeff_scalar=1.0, coeff_e_1=2.0)
-    q = MyG2(coeff_e_2=3.0, coeff_e_12=4.0)
+    p: MyG2 = MyG2(coeff_scalar=1.0, coeff_e_1=2.0)
+    q: MyG2 = MyG2(coeff_e_2=3.0, coeff_e_12=4.0)
     assert type(p + q) is MyG2
     assert type(p - q) is MyG2
     assert type(-p) is MyG2
@@ -85,14 +85,14 @@ def test_full_class_subclass_preserved() -> None:
 
 
 def test_g3_subclass_preserved() -> None:
-    a = MyV3(coeff_e_1=1.0)
-    b = MyV3(coeff_e_2=1.0)
+    a: MyV3 = MyV3(coeff_e_1=1.0)
+    b: MyV3 = MyV3(coeff_e_2=1.0)
     assert type(a + b) is MyV3
     assert type(a * 2.0) is MyV3
 
 
 def test_scalar_subclass_preserved() -> None:
-    s = MyScalar(coeff_scalar=2.0)
+    s: MyScalar = MyScalar(coeff_scalar=2.0)
     assert type(s * 3) is MyScalar
     assert type(3 * s) is MyScalar
     assert type(s + 1) is MyScalar
@@ -104,14 +104,16 @@ def test_scalar_subclass_preserved() -> None:
 def test_sandwich_returns_operand_subclass() -> None:
     # base.sandwich documents "returns a value of x's own type"; the
     # generated closed-form Rotor sandwich honors that for subclasses too.
-    r = Rotor2(coeff_scalar=1.0, coeff_e_12=0.0)
-    v = MyV2(coeff_e_1=1.0, coeff_e_2=2.0)
+    r: Rotor2 = Rotor2(coeff_scalar=1.0, coeff_e_12=0.0)
+    v: MyV2 = MyV2(coeff_e_1=1.0, coeff_e_2=2.0)
     assert type(r.sandwich(v)) is MyV2
 
 
 def test_values_unchanged_by_construction_path() -> None:
+    a: MyV2
+    b: MyV2
     a, b = MyV2(coeff_e_1=1.0, coeff_e_2=2.0), MyV2(coeff_e_1=3.0, coeff_e_2=4.0)
-    plain = Vector2(coeff_e_1=1.0, coeff_e_2=2.0) + Vector2(
+    plain: Vector2 = Vector2(coeff_e_1=1.0, coeff_e_2=2.0) + Vector2(
         coeff_e_1=3.0, coeff_e_2=4.0
     )
     assert (a + b).to_blade_dict() == plain.to_blade_dict()

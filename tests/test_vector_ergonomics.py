@@ -22,6 +22,7 @@ See tasks/upgrade-rotation-and-ctc-vector-mapping.md (Task 2).
 import pytest
 import sympy
 
+from gacalc.base import Coef, MultiVectorBase
 from gacalc.g2 import G2, Bivector2, Rotor2, Vector2
 from gacalc.g3 import G3, Vector3
 from gacalc.gn import Gn
@@ -29,14 +30,14 @@ from gacalc.scalar import Scalar
 
 
 def test_coordinate_read() -> None:
-    v = Vector2(3.0, 4.0)
+    v: Vector2 = Vector2(3.0, 4.0)
     assert (v.x, v.y) == (3.0, 4.0)
-    w = Vector3(1.0, 2.0, 3.0)
+    w: Vector3 = Vector3(1.0, 2.0, 3.0)
     assert (w.x, w.y, w.z) == (1.0, 2.0, 3.0)
 
 
 def test_coordinate_write() -> None:
-    v = Vector2(3.0, 4.0)
+    v: Vector2 = Vector2(3.0, 4.0)
     v.x = 9.0
     v.y += 1.0
     assert (v.coeff_e_1, v.coeff_e_2) == (9.0, 5.0)
@@ -46,6 +47,7 @@ def test_coordinate_write() -> None:
 def test_coordinates_only_on_grade_1() -> None:
     # x on a rotor / bivector / full multivector would suggest a coordinate
     # tuple those types don't have.
+    value: MultiVectorBase
     for value in (
         Rotor2(coeff_scalar=1.0, coeff_e_12=0.0),
         Bivector2.e_12,
@@ -70,21 +72,21 @@ def test_scalar_division() -> None:
 
 
 def test_division_matches_scaling() -> None:
-    v = Vector2(3.0, 4.0)
+    v: Vector2 = Vector2(3.0, 4.0)
     assert (v / 2).is_close(v * 0.5)
 
 
 def test_symbolic_division() -> None:
-    s = sympy.Symbol("s", positive=True)
-    v = Vector2(coeff_e_1=s, coeff_e_2=2 * s)
-    got = (v / s).simplified()
+    s: Coef = sympy.Symbol("s", positive=True)
+    v: Vector2 = Vector2(coeff_e_1=s, coeff_e_2=2 * s)
+    got: MultiVectorBase = (v / s).simplified()
     assert got.to_blade_dict() == {(1,): 1, (2,): 2}
 
 
 def test_division_is_multiplication_by_inverse() -> None:
     # the GA quotient: (a b) / b recovers a for an invertible b.
-    a = Vector2(3.0, 4.0)
-    b = Vector2(1.0, 2.0)
+    a: Vector2 = Vector2(3.0, 4.0)
+    b: Vector2 = Vector2(1.0, 2.0)
     assert ((a * b) / b).is_close(a)
     assert (a / b).is_close(a * b.inverse())
     # v / v is 1 (a vector times its own inverse) -- as a Rotor2, the

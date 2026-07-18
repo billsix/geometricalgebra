@@ -36,6 +36,7 @@ from gacalc.gn import (
     sym_vec_plane,
     zero,
 )
+from gacalc.transforms import ComposableFunction
 
 
 def test_multivector_add() -> None:
@@ -138,7 +139,7 @@ def test_multivector_mult3d() -> None:
     def planewise_wedge(
         plane: MultiVectorBase, vec1: MultiVectorBase, vec2: MultiVectorBase
     ) -> MultiVectorBase:
-        proj = MultiVector.project(plane)
+        proj: ComposableFunction = MultiVector.project(plane)
         return proj(vec1).wedge(proj(vec2))
 
     assert (sym_vec3_1 * sym_vec3_2) == (
@@ -395,8 +396,8 @@ def test_project_and_reject() -> None:
     assert MultiVector.project(onto=[e_1])(a) == 3 * e_1
     assert MultiVector.reject(away_from=[e_1])(a) == 4 * e_2
 
-    parallel_to_vec1 = MultiVector.project(onto=sym_vec2_1)(sym_vec2_2)
-    perp_to_vec1 = MultiVector.reject(away_from=sym_vec2_1)(sym_vec2_2)
+    parallel_to_vec1: MultiVectorBase = MultiVector.project(onto=sym_vec2_1)(sym_vec2_2)
+    perp_to_vec1: MultiVectorBase = MultiVector.reject(away_from=sym_vec2_1)(sym_vec2_2)
     assert sym_vec2_2 == (parallel_to_vec1 + perp_to_vec1)
 
 
