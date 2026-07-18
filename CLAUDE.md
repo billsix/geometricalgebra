@@ -100,6 +100,20 @@ value type is `@dataclass(slots=True)`** — the full `G1`/`G2`/`G3`, the graded
 (`Vector_n`/`Bivector_n`/`Trivector3`/`Rotor_n`), and the shared `Scalar` — so instances carry no
 per-instance `__dict__` (the base `MultiVectorBase` declares empty `__slots__` for this).
 
+**Generated value types are MUTABLE — `slots=True`, but deliberately not `frozen`.** A
+coefficient field can be reassigned in place (`v.coeff_e_1 = …`, and via the ergonomic
+accessors `vec.x = -vec.x`), and downstream code relies on that: *modelviewprojection*'s
+Code-the-Classics ports mutate vectors in place throughout (`self.dir.x = -self.dir.x`,
+`self.vpos.y = …`), and its book text teaches the idiom. So **do not add `frozen=True` to
+the generator** as a tidying-up — it is a breaking change for consumers, not a hardening.
+Two consequences for callers, worth knowing because they cost a downstream debugging
+session (2026-07-18, mvp's `beatstreets`): a multivector held in a **shared** location —
+a module-level constant, a class attribute, a mutable default argument — is one object
+aliased by every reader, so store a **copy** (`Vector2(*v)`) rather than the reference
+when the value will be mutated; and the class constants (`Vector2.e_1`, `Bivector2.e_12`,
+…) are ordinary instances of these mutable types, so treat them as read-only and never
+mutate a basis constant in place.
+
 **Coefficient-view helpers (`base.py`).** `simplified()` / `expanded()` return the same multivector
 with each coefficient `sympy.simplify`'d / `sympy.expand`'d — for the lazy classes, whose raw
 coefficients aren't reduced (e.g. a bivector times its dual whose terms should cancel, or a fully
@@ -376,23 +390,48 @@ authority on all of these.
   opaque expression. (Same spirit as: no local aliases for a value that already has a
   canonical name — reference `Vector2.e_1` / `Bivector2.e_12` directly, never
   `E1 = Vector2.basis_vector(1)`.)
-- **Function shape: inner-fn first, guards/dispatch below** (preferred for *new*
-  code; don't churn existing early-return code, and a cheap top-of-function `raise`
-  on a nonsensical arg is fine). The core logic is a nested function defined first;
-  preconditions/dispatch come after and call it:
+- **What earns an extraction: duplication, or naming a phase — not reshaping control
+  flow.** Settled 2026-07-18 from what Bill accepted and declined:
+  - **Module-level** when more than one caller needs it. `nbplotutils._to_xy` replaced
+    the same 79-char lambda written out **9 times across 5 functions**;
+    `_draw_labelled_triangle` replaced three 58-line, 91-93%-identical `draw_*_triangle`
+    helpers with one function plus three ~10-line callers (**net -75 lines**, all
+    rendered figures verified pixel-identical). A private nested helper in each of the
+    five would have been five copies — worse than the duplication it "fixed".
+  - **Nested** when the extracted part **closes over the enclosing parameters** and names
+    a distinct phase of the algorithm. `base.reject`'s `r`/`rejection` close over
+    `away_from`; mvp's `_route` splits into `breadth_first_parents` / `walk_back`, both
+    over `a` and `b`.
+  - **Neither** — leave it alone — when the helper would be used exactly once and exists
+    only to reshape control flow or avoid mutating a local. That is the "inline a value
+    used exactly once" rule applied to functions, and a proposed rewrite of
+    `functions.inverse` along those lines was **declined** for it.
+
+  **"Inner-fn first, guards below" is a consequence of the above, not the goal.** When an
+  extraction is earned, the guards naturally end up at the bottom calling into it — as in
+  `base.reject`:
   ```python
-  # prefer this shape ...
   def reject(cls, away_from):
-      def r(value):          # the core operation, up top
+      def r(value):              # the core operation, up top
           return value.wedge(away_from) * away_from.inverse()
-      match away_from:       # preconditions / dispatch below, calling in
-          case [*seq]: ...
-          case MultiVectorBase() if away_from.is_vector(): return rejection(r)
+
+      def rejection(blade):      # wraps it with its LaTeX label
+          return ComposableFunction(r, latex_repr=..., linearity=Linearity.LINEAR)
+
+      match away_from:           # preconditions / dispatch below, calling in
+          case [*sequence]: return cls.reject(cls.outer_product_of_vectors(*sequence))
+          case MultiVectorBase() as vector if vector.is_vector(): return rejection(vector)
           case _: raise ...
-  # ... over top-of-function guard clauses that push the main logic down.
   ```
-  Precedent already in the tree: `Gn._geometric_product`'s `decrease_grade`,
-  `compose`'s `composed_fn`, `base.project/reject/reflect`, `to_matrix`'s `coords`.
+  Don't chase the shape for its own sake, and **don't churn existing early-return code**;
+  a cheap top-of-function `raise` on a nonsensical arg is always fine. A related lesson
+  from the same session: an error is best raised by the code that *discovers* it —
+  `_route`'s "no path" moved into the search itself, which is what let its tail collapse
+  to one line.
+  Precedent in the tree: `Gn._geometric_product`'s `decrease_grade`, `compose`'s
+  `composed_fn`, `base.reject` / `reflect`. **`base.project` is the one deviation**
+  (dispatch above its `def fn`), left as-is under don't-churn — don't read it as the
+  pattern.
 - **Rotations** read as `plane_rotation` / `projection_rotation` / `rotor_rotation` /
   `rotor_from_vectors` (keyword args), never a hand-built rotor literal — full detail
   under **Architecture › Rotations & rotors**.
@@ -400,7 +439,49 @@ authority on all of these.
   `inverse` keep float-in → float-out; `int` routes through sympy for exactness;
   symbolic stays symbolic (see **Architecture** + `tests/test_numeric_magnitude.py`).
 - **Comments explain *why*, inline at the point they apply** — not a trailing notes
-  block.
+  block. **Never leave a comment line holding a single word or a sentence fragment** —
+  when a line runs long, reflow the whole paragraph, not the offending line.
+- **An externally-defined name overrides the naming rules.** Where a name is dictated
+  from outside — a protocol/dunder the interpreter or a library looks up, a superclass
+  method being overridden — match it **exactly**; renaming unbinds it. In this repo that
+  covers `_repr_latex_` (Jupyter looks up that exact name to render a multivector),
+  `__post_init__` / `__eq__` / `__iter__` / `__matmul__`, and the interchange primitives
+  a concrete representation must supply (`from_blade_dict` / `to_blade_dict` /
+  `_geometric_product`) — those are fixed by `MultiVectorBase`, not by taste. A linter
+  flagging one is the linter being wrong: suppress it as narrowly as possible with the
+  reason written at the site. The exemption covers only the fixed name — parameters and
+  locals inside still follow house style.
+- **`m` and `b` are a deliberate, protected exception to "descriptive over terse."**
+  `translate(b=...)` and `uniform_scale(m=...)` are named for `f(x) = m*x + b` — `b` the
+  intercept (shift), `m` the slope (stretch) — so a student meets the transforms through
+  an equation they already know. **Do not "improve" them to `offset` / `factor`**, and
+  call them by keyword in teaching code (notebooks, docstrings) so the link is visible at
+  the point of use. Rotation has no `m*x + b` counterpart, which is why it is introduced
+  separately. (ruff is fine with both: `N803` only requires lowercase.)
+- **Prefer `match` + `case _` over an open-ended `if`/`elif` chain, for exhaustiveness.**
+  A chain with no final `else` can fall through silently and the hole is invisible; a
+  `match` makes the default a branch you must look at. **Always write the `case _`** —
+  a `match` without one has the same hole. It may raise, return a documented fallback, or
+  be an explicit no-op with a comment. Already the shape here: `Gn._geometric_product`'s
+  `decrease_grade`, `base.reject` / `reflect`. **Caveat:** `match` earns its keep on
+  *structural* patterns; one whose every case is a boolean guard is an `if`/`elif` in
+  different syntax, justified only by the exhaustiveness argument — don't convert every
+  two-branch conditional.
+- **Use modern Python, and flag it proactively.** `requires-python = ">=3.13"`, and
+  **compatibility with older Pythons is explicitly not a concern** — so prefer the
+  current-language solution over the historical one, and **when a newer feature would
+  solve a problem in code you're already touching, say so** rather than silently
+  preserving the old form. `match` (structural pattern matching) is the house favourite
+  and is already load-bearing here — `Gn._geometric_product`'s `decrease_grade`,
+  `base.reject`/`reflect` — and a `case _:` is the right way to make a fall-through
+  explicit instead of letting a dispatch chain silently do nothing. Also in scope when
+  it fits: `X | Y` unions and builtin generics over `typing.Optional`/`Union`/`Dict`;
+  PEP 695 `type` aliases and `class C[T]:` / `def f[T]()` in place of explicit
+  `TypeVar`s (note the constraint in **Layering**: `functions.py`'s type parameter must
+  stay *unbounded*, whatever syntax expresses it); `Self`; `@override`; `typing.TypeIs`
+  (already used in `base.project`); `enum.StrEnum`; `dataclass(slots=True, kw_only=True)`
+  — `slots=True` is already standard on every generated value type. Don't force one in
+  where it reads worse; the point is to stop *defaulting* to the old spelling.
 
 ## Dev workflow
 

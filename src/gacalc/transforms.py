@@ -145,7 +145,14 @@ def compose_intermediate_fns_and_fn(
 
 
 def translate(b: V) -> InvertibleFunction[V]:
-    """Translate by ``b``.  The result has the same representation as ``b``."""
+    """Translate by ``b``.  The result has the same representation as ``b``.
+
+    The parameter is named ``b`` on purpose: in ``f(x) = m*x + b`` it is the
+    **intercept** -- the part that shifts without stretching.  Call it by name
+    (``translate(b=3 * e_1)``) in teaching code, so the line-equation link is
+    visible where the transform is used.  See also :func:`uniform_scale` for the
+    ``m`` half.
+    """
 
     def f(vector: V) -> V:
         return vector + b
@@ -396,7 +403,14 @@ def plane_rotation(
 
 
 def uniform_scale(m: float) -> InvertibleFunction:
-    """Scale uniformly by ``m`` (representation preserving -- just ``vector * m``)."""
+    """Scale uniformly by ``m`` (representation preserving -- just ``vector * m``).
+
+    The parameter is named ``m`` on purpose: in ``f(x) = m*x + b`` it is the
+    **slope** -- the part that stretches without shifting.  Call it by name
+    (``uniform_scale(m=2.0)``) in teaching code.  See also :func:`translate` for
+    the ``b`` half.  (Rotation has no counterpart in ``m*x + b``, which is
+    exactly why it is introduced separately.)
+    """
 
     def f(vector: MultiVectorBase) -> MultiVectorBase:
         return vector * m

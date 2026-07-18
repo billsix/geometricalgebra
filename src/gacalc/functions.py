@@ -192,6 +192,30 @@ class InvertibleFunction(ComposableFunction[V]):
         itself invertible, so callers can keep inverting without a cast."""
         return typing.cast("InvertibleFunction[V]", super().at(t))
 
+    @typing.overload
+    def __matmul__(self, f2: "InvertibleFunction[V]") -> "InvertibleFunction[V]": ...
+    @typing.overload
+    def __matmul__(self, f2: "ComposableFunction[V]") -> "ComposableFunction[V]": ...
+    def __matmul__(self, f2: "ComposableFunction[V]") -> "ComposableFunction[V]":
+        """Compose — same narrowing as :meth:`at`, and the operator form of what
+        :func:`compose` already promises via *its* overloads: invertible @
+        invertible is invertible.  Without this, ``a @ b`` on two
+        ``InvertibleFunction``s typed as a bare ``ComposableFunction``, so
+        assigning it to an ``InvertibleFunction`` was a type error even though
+        the value returned at runtime *is* invertible (``__matmul__`` delegates
+        to ``compose``, which resolves invertibility from the parts).  Composing
+        with a non-invertible function still yields a ``ComposableFunction``.
+
+        Example:
+            >>> from gacalc.functions import InvertibleFunction, inverse
+            >>> foo = InvertibleFunction(lambda x: 2 + x, "", lambda x: x - 2, "")
+            >>> isinstance(foo @ foo, InvertibleFunction)
+            True
+            >>> inverse(foo @ foo)(9)
+            5
+        """
+        return super().__matmul__(f2)
+
 
 def inverse(f: InvertibleFunction[V]) -> InvertibleFunction[V]:
     """Get the inverse of an :class:`InvertibleFunction`.

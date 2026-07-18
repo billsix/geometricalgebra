@@ -283,26 +283,26 @@ rotate = plane_rotation(Vector2.e_1, Vector2.e_2)
 
 
 # %%
-translate(5 * e_1)
+translate(b=5 * e_1)
 
 # %%
 # `scale_non_uniform` is the n-D scale (pass two factors for the 2D case)
 scale_non_uniform(5, 6)
 
 # %%
-inverse(translate(5 * e_1))
+inverse(translate(b=5 * e_1))
 
 # %%
-translate(5 * e_1 + 6 * e_2)
+translate(b=5 * e_1 + 6 * e_2)
 
 # %%
 rotate(sympy.pi / 2)
 
 # %%
-compose([rotate(sympy.pi / 2), translate(5 * e_1 + 6 * e_2)])
+compose([rotate(sympy.pi / 2), translate(b=5 * e_1 + 6 * e_2)])
 
 # %%
-inverse(compose([rotate(sympy.pi / 2), translate(5 * e_1 + 6 * e_2)]))
+inverse(compose([rotate(sympy.pi / 2), translate(b=5 * e_1 + 6 * e_2)]))
 
 # %% [markdown]
 # Applying transforms to a `G2` vector
@@ -329,7 +329,7 @@ scale_non_uniform(2, 3)(w)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # compose: translate first, then rotate (read right-to-left)
-compose([rotate(sympy.pi / 2), translate(5 * e_1)])(w)  # pyright: ignore[reportUnusedExpression]
+compose([rotate(sympy.pi / 2), translate(b=5 * e_1)])(w)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # a transform and its inverse round-trip back to the original vector
@@ -410,7 +410,7 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 fn = compose(
     [
         rotate(sympy.pi / 4),
-        translate(2 * e_1),
+        translate(b=2 * e_1),
     ]
 )
 with create_graphs() as axes:
@@ -427,7 +427,7 @@ with create_graphs() as axes:
 # the units on the left and bottom.
 
 # %%
-for f in compose_intermediate_fns([rotate(sympy.pi / 4), translate(2 * e_1)]):
+for f in compose_intermediate_fns([rotate(sympy.pi / 4), translate(b=2 * e_1)]):
     with create_graphs() as axes:
         create_basis(fn=f, cls=G2)
         create_x_and_y(fn=f, cls=G2)
@@ -448,7 +448,7 @@ for f in compose_intermediate_fns([rotate(sympy.pi / 4), translate(2 * e_1)]):
 for f in compose_intermediate_fns(
     [
         rotate(sympy.pi / 4),
-        translate(2 * e_1),
+        translate(b=2 * e_1),
     ],
     relative_basis=True,
 ):

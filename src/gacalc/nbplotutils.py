@@ -15,7 +15,7 @@
 import contextlib
 import itertools
 import math
-from collections.abc import Generator
+from collections.abc import Generator, Sequence
 from typing import cast
 
 import matplotlib
@@ -55,6 +55,16 @@ def _coord(mv: MultiVectorBase, blade: tuple[int, ...]) -> Coef:
     each representation already holds -- rather than recomputing it.
     """
     return mv.to_blade_dict().get(blade, 0)
+
+
+def _to_xy(mv: MultiVectorBase) -> list[float]:
+    """``mv``'s (e_1, e_2) coefficients as a plain ``[x, y]`` for matplotlib.
+
+    Was written inline as ``lambda mv: [float(_coord(mv, (1,))), float(_coord(mv,
+    (2,)))]`` in nine places across five ``draw_*`` helpers.  It lives at module
+    scope rather than inside each of them because all five need it.
+    """
+    return [float(_coord(mv, (1,))), float(_coord(mv, (2,)))]
 
 
 extra_lines_multiplier: int = 3
@@ -226,11 +236,22 @@ def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Coef:
     return (rot90.dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()
 
 
-def draw_isoceles_triangle(
+def _draw_labelled_triangle(
+    vertex_coefficients: Sequence[tuple[float, float]],
+    labels: Sequence[str],
     fn: InvertibleFunction = _IDENTITY,
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
+    label_offset_x_sign: float = 1.0,
 ) -> None:
+    """Draw a filled, vertex-labelled triangle under the transform ``fn``.
+
+    The three ``draw_*_triangle`` helpers below were 58-line near-duplicates
+    (91-93% identical); the only things that varied were the two non-origin
+    vertices, the label strings, and which way the labels are nudged in x.
+    ``vertex_coefficients`` gives each vertex as ``(a, b)`` meaning
+    ``a * e_1 + b * e_2``.
+    """
     assert axes is not None, "call inside a create_graphs() block"
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
@@ -246,44 +267,30 @@ def draw_isoceles_triangle(
         0.0 * x_prime_direction_world_space + 0.20 * y_prime_direction_world_space
     )
 
-    vertices = [
-        fn(v)
-        for v in [
-            origin,
-            ex,
-            0.5 * ex + ey,
-        ]
-    ]
+    vertices = [fn(a * ex + b * ey) for a, b in vertex_coefficients]
 
     triangle = Polygon(
-        list(
-            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
-        ),
+        list(map(_to_xy, vertices)),
         closed=True,
         facecolor="lightblue",
         edgecolor="black",
     )
     axes.add_patch(triangle)
 
-    vertices_as_np = np.array(
-        list(
-            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
-        )
-    )
+    vertices_as_np = np.array(list(map(_to_xy, vertices)))
     # Plot dots at the vertices
     axes.scatter(
         vertices_as_np[:, 0], vertices_as_np[:, 1], color="red", s=5, zorder=5
     )  # zorder ensures dots are on top
 
     # Label each vertex
-    labels = ["A", "B", "C"]
     for i, label in enumerate(labels):
         # Use plt.annotate to place the label near the point
         plt.annotate(
             label,
             xy=(vertices_as_np[i, 0], vertices_as_np[i, 1]),
             xytext=(
-                vertices_as_np[i, 0] + _coord(label_offset, (1,)),
+                vertices_as_np[i, 0] + label_offset_x_sign * _coord(label_offset, (1,)),
                 vertices_as_np[i, 1] + _coord(label_offset, (2,)),
             ),
             rotation=math.degrees(angle_radians),
@@ -292,10 +299,15 @@ def draw_isoceles_triangle(
         )
 
 
-#         # Annotate with a 45-degree rotation
-# ax.annotate('Rotated Annotation', xy=(0.5, 0.5), xytext=(0.7, 0.3),
-#             arrowprops=dict(facecolor='black', shrink=0.05),
-#             rotation=45)
+def draw_isoceles_triangle(
+    fn: InvertibleFunction = _IDENTITY,
+    color: tuple[float, float, float] = (0.0, 0.0, 1.0),
+    cls: type[MultiVectorBase] = MultiVector,
+) -> None:
+    """An isoceles triangle with vertices labelled A, B, C."""
+    _draw_labelled_triangle(
+        [(0.0, 0.0), (1.0, 0.0), (0.5, 1.0)], ["A", "B", "C"], fn, color, cls
+    )
 
 
 def draw_second_right_triangle(
@@ -303,65 +315,15 @@ def draw_second_right_triangle(
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
-    assert axes is not None, "call inside a create_graphs() block"
-    ex = cls.basis_vector(1)
-    ey = cls.basis_vector(2)
-    origin = cls.zero()
-    x_prime_direction_world_space = fn(ex) - fn(origin)
-    x_world_space = ex
-    y_prime_direction_world_space = fn(ey) - fn(origin)
-    angle_radians = math.atan2(
-        sine(x_world_space, x_prime_direction_world_space),
-        cosine(x_world_space, x_prime_direction_world_space),
+    """A 3-4-5 right triangle in the second quadrant, labelled by coordinate."""
+    _draw_labelled_triangle(
+        [(0.0, 0.0), (0.0, 3.0), (-4.0, 3.0)],
+        ["(0,0)", "(0,3)", "(-4,3)"],
+        fn,
+        color,
+        cls,
+        label_offset_x_sign=-1.0,
     )
-    label_offset = (
-        0.0 * x_prime_direction_world_space + 0.20 * y_prime_direction_world_space
-    )
-
-    vertices = [
-        fn(v)
-        for v in [
-            origin,
-            (0) * ex + (3.0) * ey,
-            (-4.0) * ex + (3.0) * ey,
-        ]
-    ]
-
-    triangle = Polygon(
-        list(
-            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
-        ),
-        closed=True,
-        facecolor="lightblue",
-        edgecolor="black",
-    )
-    axes.add_patch(triangle)
-
-    vertices_as_np = np.array(
-        list(
-            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
-        )
-    )
-    # Plot dots at the vertices
-    axes.scatter(
-        vertices_as_np[:, 0], vertices_as_np[:, 1], color="red", s=5, zorder=5
-    )  # zorder ensures dots are on top
-
-    # Label each vertex
-    labels = ["(0,0)", "(0,3)", "(-4,3)"]
-    for i, label in enumerate(labels):
-        # Use plt.annotate to place the label near the point
-        plt.annotate(
-            label,
-            xy=(vertices_as_np[i, 0], vertices_as_np[i, 1]),
-            xytext=(
-                vertices_as_np[i, 0] - _coord(label_offset, (1,)),
-                vertices_as_np[i, 1] + _coord(label_offset, (2,)),
-            ),
-            rotation=math.degrees(angle_radians),
-            rotation_mode="anchor",
-            zorder=6,
-        )
 
 
 def draw_right_triangle(
@@ -369,65 +331,20 @@ def draw_right_triangle(
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
-    assert axes is not None, "call inside a create_graphs() block"
-    ex = cls.basis_vector(1)
-    ey = cls.basis_vector(2)
-    origin = cls.zero()
-    x_prime_direction_world_space = fn(ex) - fn(origin)
-    x_world_space = ex
-    y_prime_direction_world_space = fn(ey) - fn(origin)
-    angle_radians = math.atan2(
-        sine(x_world_space, x_prime_direction_world_space),
-        cosine(x_world_space, x_prime_direction_world_space),
-    )
-    label_offset = (
-        0.0 * x_prime_direction_world_space + 0.20 * y_prime_direction_world_space
+    """A 3-4-5 right triangle in the first quadrant, labelled by coordinate."""
+    _draw_labelled_triangle(
+        [(0.0, 0.0), (3.0, 0.0), (3.0, 4.0)],
+        ["(0,0)", "(3,0)", "(3,4)"],
+        fn,
+        color,
+        cls,
     )
 
-    vertices = [
-        fn(v)
-        for v in [
-            origin,
-            (3.0) * ex + (0.0) * ey,
-            (3.0) * ex + (4.0) * ey,
-        ]
-    ]
 
-    triangle = Polygon(
-        list(
-            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
-        ),
-        closed=True,
-        facecolor="lightblue",
-        edgecolor="black",
-    )
-    axes.add_patch(triangle)
-
-    vertices_as_np = np.array(
-        list(
-            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
-        )
-    )
-    # Plot dots at the vertices
-    axes.scatter(
-        vertices_as_np[:, 0], vertices_as_np[:, 1], color="red", s=5, zorder=5
-    )  # zorder ensures dots are on top
-
-    # Label each vertex
-    labels = ["(0,0)", "(3,0)", "(3,4)"]
-    for i, label in enumerate(labels):
-        # Use plt.annotate to place the label near the point
-        plt.annotate(
-            label,
-            xy=(vertices_as_np[i, 0], vertices_as_np[i, 1]),
-            xytext=(
-                vertices_as_np[i, 0] + _coord(label_offset, (1,)),
-                vertices_as_np[i, 1] + _coord(label_offset, (2,)),
-            ),
-            rotation=math.degrees(angle_radians),
-            rotation_mode="anchor",
-            zorder=6,
-        )
+#         # Annotate with a 45-degree rotation
+# ax.annotate('Rotated Annotation', xy=(0.5, 0.5), xytext=(0.7, 0.3),
+#             arrowprops=dict(facecolor='black', shrink=0.05),
+#             rotation=45)
 
 
 def draw_ndc(
@@ -462,20 +379,14 @@ def draw_ndc(
     ]
 
     square = Polygon(
-        list(
-            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
-        ),
+        list(map(_to_xy, vertices)),
         closed=True,
         fc="none",
         edgecolor="black",
     )
     axes.add_patch(square)
 
-    vertices_as_np = np.array(
-        list(
-            map(lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))], vertices)
-        )
-    )
+    vertices_as_np = np.array(list(map(_to_xy, vertices)))
     # Plot dots at the vertices
     axes.scatter(
         vertices_as_np[:, 0], vertices_as_np[:, 1], color="red", s=5, zorder=5
@@ -525,7 +436,7 @@ def draw_screen(
             square = Polygon(
                 list(
                     map(
-                        lambda mv: [float(_coord(mv, (1,))), float(_coord(mv, (2,)))],
+                        _to_xy,
                         vertices,
                     )
                 ),

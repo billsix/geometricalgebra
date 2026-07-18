@@ -305,7 +305,7 @@ P(Vector3.e_1 + Vector3.e_3)  # pyright: ignore[reportUnusedExpression]
 # compose the projection with a translate: the pipeline renders as one LaTeX
 # expression, and applies translate-then-project to a vector. (Wrap in a
 # ComposableFunction to give it a tidy custom label for the display.)
-pipe: ComposableFunction = ComposableFunction(P, "P_{B}") @ translate(Vector3.e_3)
+pipe: ComposableFunction = ComposableFunction(P, "P_{B}") @ translate(b=Vector3.e_3)
 display(Math(pipe.latex_repr))
 show(pipe(Vector3.e_1 + Vector3.e_2))
 
