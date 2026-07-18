@@ -1,6 +1,6 @@
 # Generalize the derived sandwich to other grades (Rotor·Bivector → Bivector, …)
 
-Status: **partly DONE** 2026-06-08 · the Rotor-versor family landed; reflections + higher-dims remain
+**Status:** **partly DONE** 2026-06-08 · the Rotor-versor family landed; reflections + higher-dims remain
 
 **Update:** the implementation (`tasks/derived-sandwich-operation.md`) generated
 the **whole `Rotor` conjugation family** via `dispatch_method`, not just

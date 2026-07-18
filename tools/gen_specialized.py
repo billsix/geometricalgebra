@@ -49,7 +49,7 @@ from astbuild import (  # noqa: E402
     _LOAD,
     _STORE,
     SymbolToAttr,
-    ann_assign,
+    annotated_assign,
     argument,
     assign,
     attribute,
@@ -560,7 +560,7 @@ def rename_map(
 def coerce_pair_gn() -> list[ast.stmt]:
     """The ``left/right: Gn = Gn.from_blade_dict(self/rhs.to_blade_dict())`` pair."""
     return [
-        ann_assign(
+        annotated_assign(
             "left",
             name_ref("Gn"),
             call(
@@ -568,7 +568,7 @@ def coerce_pair_gn() -> list[ast.stmt]:
                 [call(attribute("self", "to_blade_dict"))],
             ),
         ),
-        ann_assign(
+        annotated_assign(
             "right",
             name_ref("Gn"),
             call(
@@ -617,10 +617,10 @@ def eq_method() -> ast.FunctionDef:
             body=[return_stmt(name_ref("NotImplemented"))],
             orelse=[],
         ),
-        ann_assign(
+        annotated_assign(
             "left", name_ref("BladeCoef"), call(attribute("self", "to_blade_dict"))
         ),
-        ann_assign(
+        annotated_assign(
             "right", name_ref("BladeCoef"), call(attribute("other", "to_blade_dict"))
         ),
         return_stmt(call("all", [gen])),
@@ -635,7 +635,7 @@ def eq_method() -> ast.FunctionDef:
 
 def dimension_decl(n: int) -> ast.stmt:
     """``DIMENSION: typing.ClassVar[int] = <n>``."""
-    return ann_assign(
+    return annotated_assign(
         "DIMENSION",
         subscript(attribute("typing", "ClassVar"), name_ref("int")),
         constant(n),
@@ -645,7 +645,7 @@ def dimension_decl(n: int) -> ast.stmt:
 def field_decls(blades: Sequence[Blade]) -> list[ast.stmt]:
     """``<field>: Coef = cast(Coef, 0)`` per blade."""
     return [
-        ann_assign(field_name(b), name_ref("Coef"), cast_coef(constant(0)))
+        annotated_assign(field_name(b), name_ref("Coef"), cast_coef(constant(0)))
         for b in blades
     ]
 
@@ -659,7 +659,7 @@ def basis_classvar_decls(name: str, blades: Sequence[Blade]) -> list[ast.stmt]:
     ClassVar these are excluded from the dataclass fields / ``__slots__``.
     """
     return [
-        ann_assign(
+        annotated_assign(
             blade_label(b), subscript(attribute("typing", "ClassVar"), name_ref(name))
         )
         for b in blades
@@ -699,7 +699,9 @@ def from_blade_dict_method(blades: Sequence[Blade]) -> ast.FunctionDef:
         for b in blades
     ]
     body: list[ast.stmt] = [
-        ann_assign("d", name_ref("BladeCoef"), call("dict", [name_ref("blade_coef")])),
+        annotated_assign(
+            "d", name_ref("BladeCoef"), call("dict", [name_ref("blade_coef")])
+        ),
         return_stmt(ast.Call(func=name_ref("cls"), args=[], keywords=keywords)),
     ]
     return function_def(
@@ -788,7 +790,7 @@ def grades_method(grade_groups: Sequence[tuple[int, list[str]]]) -> ast.Function
     ``grade_groups`` is an ordered list of ``(grade, [field names])``.
     """
     body: list[ast.stmt] = [
-        ann_assign(
+        annotated_assign(
             "present", subscript(name_ref("list"), name_ref("int")), ast.List([], _LOAD)
         )
     ]
@@ -884,7 +886,7 @@ def result_block_stmts(
     """
     replacements, reduced = sympy.cse(out_exprs)
     stmts: list[ast.stmt] = [
-        ann_assign(str(t), name_ref("Coef"), expr_to_ast(e, rename))
+        annotated_assign(str(t), name_ref("Coef"), expr_to_ast(e, rename))
         for t, e in replacements
     ]
     pairs: list[tuple[str, ast.expr]] = [
@@ -999,12 +1001,12 @@ def dispatch_method(
         ast.match_case(
             pattern=ast.MatchAs(pattern=None, name=None),
             body=[
-                ann_assign(
+                annotated_assign(
                     "left",
                     name_ref(full_name),
                     call("_coerce", [name_ref("self"), name_ref(full_name)]),
                 ),
-                ann_assign(
+                annotated_assign(
                     "right",
                     name_ref(full_name),
                     call("_coerce", [name_ref(param_name), name_ref(full_name)]),
@@ -1085,7 +1087,7 @@ def generate_scalar() -> list[ast.stmt]:
 
     body: list[ast.stmt] = [
         class_doc_stmt(SCALAR_DOC),
-        ann_assign(field_name(()), coef_ann, cast_coef(constant(0))),
+        annotated_assign(field_name(()), coef_ann, cast_coef(constant(0))),
         function_def(
             "from_blade_dict",
             [
@@ -1990,17 +1992,17 @@ def generate_constants(n: int, name: str) -> list[ast.stmt]:
     """Module-level basis constants for one algebra, hand-built as nodes (level C)."""
     nonempty: list[Blade] = [b for b in blades_for_dim(n) if b != ()]
     nodes: list[ast.stmt] = [
-        ann_assign(
+        annotated_assign(
             "zero", name_ref(name), call(attribute(name, "from_scalar"), [constant(0)])
         ),
-        ann_assign(
+        annotated_assign(
             "one", name_ref(name), call(attribute(name, "from_scalar"), [constant(1)])
         ),
     ]
     b: Blade
     for b in nonempty:
         nodes.append(
-            ann_assign(
+            annotated_assign(
                 blade_label(b),
                 name_ref(name),
                 call(

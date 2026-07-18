@@ -1,6 +1,11 @@
 # Make the `f(x) = m·x + b` connection explicit at call sites
 
-**Status:** proposed — needs go-ahead
+**Status:** **teaching-facing conversion DONE 2026-07-18.** Docstrings for
+`translate`/`uniform_scale` now state the `f(x) = m*x + b` link; call sites converted in
+gacalc `notebooks/` (19) and mvp `demos`/`notebooksrc`/`assignments` (139) plus 8 inline
+`book/docs/*.rst` examples. Library internals deliberately left positional per Bill's
+scope call. The `m`/`b` exception is recorded in both repos' `CLAUDE.md` so a future
+naming pass does not "fix" it to `offset`/`factor`.
 **Created:** 2026-07-18
 **Requested by:** Bill, 2026-07-18 — "I want to make a connection to `f(x) = m*x + b`,
 and for the callers of translate and uniform scale to call them using the named

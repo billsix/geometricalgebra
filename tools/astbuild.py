@@ -15,7 +15,8 @@
 """Generic Python-`ast` construction helpers for the code generator.
 
 A small DSL for building syntax-tree nodes (``nm``/``dot``/``call``/``cast``/``fn``/
-``cls``/``ann_assign``/...) and rendering them with ``ast.unparse`` (``module_source``).
+``cls``/``annotated_assign``/...) and rendering them with ``ast.unparse``
+(``module_source``).
 Knows nothing about geometric algebra -- it only knows the conventions of the code
 this generator emits (e.g. ``cast_self``/``cast_coef`` wrap ``typing.cast`` to
 ``typing.Self``/``Coef`` (the coefficient type)).  Used by tools/gen_specialized.py.
@@ -202,7 +203,7 @@ def dataclass_decorator(**flags: bool) -> ast.Call:
     )
 
 
-def ann_assign(
+def annotated_assign(
     target_name: str, annotation: ast.expr, value: ast.expr | None = None
 ) -> ast.AnnAssign:
     return ast.AnnAssign(

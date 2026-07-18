@@ -1,6 +1,6 @@
 # Model the odd graded type (Vector·Bivector → {grade 1, grade 3}) in 𝒢₃
 
-Status: **plan — not started** · proposed 2026-06-08 · needs a go/no-go
+**Status:** **plan — not started** · proposed 2026-06-08 · needs a go/no-go
 
 ## The gap (confirmed)
 
