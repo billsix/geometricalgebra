@@ -115,15 +115,15 @@ one  # pyright: ignore[reportUnusedExpression]
 # `r_vector_part(1)` keeps only the grade-1 (vector) part.
 
 # %%
-a = G3.symbolic_multivector(prefix="a")
+a: G3 = G3.symbolic_multivector(prefix="a")
 a  # pyright: ignore[reportUnusedExpression]
 
 # %%
-a_vec = G3.symbolic_multivector(prefix="a").r_vector_part(1)
+a_vec: G3 = G3.symbolic_multivector(prefix="a").r_vector_part(1)
 a_vec  # pyright: ignore[reportUnusedExpression]
 
 # %%
-b_vec = G3.symbolic_multivector(prefix="b").r_vector_part(1)
+b_vec: G3 = G3.symbolic_multivector(prefix="b").r_vector_part(1)
 b_vec  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -155,8 +155,8 @@ a_vec.dot(b_vec) + a_vec.wedge(b_vec) == a_vec * b_vec
 # ---------------------------
 
 # %%
-g3_1 = G3.symbolic_multivector(prefix="a")
-g3_2 = G3.symbolic_multivector(prefix="b")
+g3_1: G3 = G3.symbolic_multivector(prefix="a")
+g3_2: G3 = G3.symbolic_multivector(prefix="b")
 show_mult(g3_1, g3_2)
 
 # %% [markdown]
@@ -164,7 +164,7 @@ show_mult(g3_1, g3_2)
 # -------------
 
 # %%
-g3_3 = G3.symbolic_multivector(prefix="c")
+g3_3: G3 = G3.symbolic_multivector(prefix="c")
 ((g3_1 * g3_2) * g3_3) - (g3_1 * (g3_2 * g3_3))
 
 # %% [markdown]
@@ -174,7 +174,7 @@ g3_3 = G3.symbolic_multivector(prefix="c")
 # 𝒢₃ has grades 0–3: scalar, vector, bivector, trivector.
 
 # %%
-c = G3.symbolic_multivector(prefix="c")
+c: G3 = G3.symbolic_multivector(prefix="c")
 c.r_vector_part(0)
 
 # %%
@@ -205,7 +205,7 @@ for x in G3.bases():
 # $a\wedge b$ and its dual; the dual is parallel to $a\times b$.
 
 # %%
-biv = a_vec ^ b_vec
+biv: G3 = a_vec ^ b_vec
 biv  # pyright: ignore[reportUnusedExpression]
 
 # %%
@@ -223,7 +223,7 @@ biv * biv  # pyright: ignore[reportUnusedExpression]
 # ---------------------------------------------
 
 # %%
-m = 1 * e_1 + 2 * e_2 + 2 * e_3
+m: G3 = 1 * e_1 + 2 * e_2 + 2 * e_3
 m.magnitude()
 
 # %%
@@ -257,11 +257,11 @@ m.dual()
 plot_multivector(2 * one + 3 * e_1 - 1.5 * e_2 + 4 * e_3 + 0.7 * (e_1 * e_2))
 
 # %%
-u = 3 * e_1 - 1.5 * e_2 + 2 * e_3
+u: G3 = 3 * e_1 - 1.5 * e_2 + 2 * e_3
 plot_multivector(u)
 
 # %%
-v = 1.5 * e_1 + 5 * e_2 - e_3
+v: G3 = 1.5 * e_1 + 5 * e_2 - e_3
 plot_multivector(v)
 
 # %%
@@ -283,8 +283,8 @@ plot_multivector(u * v)
 
 # %%
 a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3", real=True)
-a = a_1 * Vector3.e_1 + a_2 * Vector3.e_2 + a_3 * Vector3.e_3
-b = b_1 * Vector3.e_1 + b_2 * Vector3.e_2 + b_3 * Vector3.e_3
+a: Vector3 = a_1 * Vector3.e_1 + a_2 * Vector3.e_2 + a_3 * Vector3.e_3
+b: Vector3 = b_1 * Vector3.e_1 + b_2 * Vector3.e_2 + b_3 * Vector3.e_3
 
 # %% [markdown]
 # The dot product (a scalar) and the wedge (a three-component bivector):

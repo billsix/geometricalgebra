@@ -31,8 +31,8 @@ from gacalc.g3 import Vector3
 from gacalc.gn import Gn, plane_rotation
 from gacalc.transforms import Linearity, inverse, rotor_rotation
 
-E1 = Vector2.e_1
-E2 = Vector2.e_2
+E1: Vector2 = Vector2.e_1
+E2: Vector2 = Vector2.e_2
 
 
 def test_rotates_a_toward_b() -> None:

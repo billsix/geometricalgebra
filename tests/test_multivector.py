@@ -14,6 +14,7 @@
 
 import itertools
 
+from gacalc.base import MultiVectorBase
 from gacalc.gn import (
     MultiVector,
     a_1,
@@ -134,7 +135,9 @@ def test_multivector_mult() -> None:
 
 
 def test_multivector_mult3d() -> None:
-    def planewise_wedge(plane, vec1, vec2):
+    def planewise_wedge(
+        plane: MultiVectorBase, vec1: MultiVectorBase, vec2: MultiVectorBase
+    ) -> MultiVectorBase:
         proj = MultiVector.project(plane)
         return proj(vec1).wedge(proj(vec2))
 

@@ -11,16 +11,16 @@ from setuptools.command.build_py import build_py
 #   * building from the repo (make dist / pip wheel .) produces them, while
 #   * building from a shipped sdist/wheel -- which already contains them -- is a
 #     no-op needing no sympy, keeping end-user installs fast and readable.
-GENERATED = ["scalar.py", "g1.py", "g2.py", "g3.py"]
-PKG_DIR = pathlib.Path(__file__).parent / "src" / "gacalc"
-GENERATOR = pathlib.Path(__file__).parent / "tools" / "gen_specialized.py"
+GENERATED: list[str] = ["scalar.py", "g1.py", "g2.py", "g3.py"]
+PKG_DIR: pathlib.Path = pathlib.Path(__file__).parent / "src" / "gacalc"
+GENERATOR: pathlib.Path = pathlib.Path(__file__).parent / "tools" / "gen_specialized.py"
 
 
 class build_py_with_codegen(build_py):
     """Run the code generator before copying package sources, unless the
     generated modules are already present (e.g. shipped inside an sdist)."""
 
-    def run(self):
+    def run(self) -> None:
         if not all((PKG_DIR / name).exists() for name in GENERATED):
             subprocess.run([sys.executable, str(GENERATOR)], check=True)
         super().run()

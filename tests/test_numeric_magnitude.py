@@ -26,20 +26,20 @@ from gacalc.gn import sym_vec3_1
 from gacalc.transforms import inverse, rotor_rotation
 
 
-def test_magnitude_of_float_vector_is_python_float():
+def test_magnitude_of_float_vector_is_python_float() -> None:
     v = Vector3(coeff_e_1=3.0, coeff_e_2=4.0, coeff_e_3=0.0)
     assert type(v.magnitude()) is float
     assert type(abs(v)) is float
     assert v.magnitude() == 5.0
 
 
-def test_inverse_of_float_vector_stays_float():
+def test_inverse_of_float_vector_stays_float() -> None:
     v = Vector3(coeff_e_1=2.0, coeff_e_2=0.0, coeff_e_3=0.0)
     inv = v.inverse()
     assert type(inv.coeff_e_1) is float
 
 
-def test_rotor_rotation_of_float_vectors_stays_float_forward_and_inverse():
+def test_rotor_rotation_of_float_vectors_stays_float_forward_and_inverse() -> None:
     # the focus path walks transforms *against the arrows* (inverse), so both
     # directions must stay numeric.
     v = Vector3(coeff_e_1=1.0, coeff_e_2=0.0, coeff_e_3=0.0)
@@ -51,6 +51,6 @@ def test_rotor_rotation_of_float_vectors_stays_float_forward_and_inverse():
         assert type(rotated.coeff_e_3) is float
 
 
-def test_symbolic_magnitude_stays_symbolic():
+def test_symbolic_magnitude_stays_symbolic() -> None:
     # symbolic coefficients must still go through sympy.sqrt.
     assert isinstance(abs(sym_vec3_1), sympy.Expr)

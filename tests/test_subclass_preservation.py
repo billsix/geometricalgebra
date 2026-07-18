@@ -22,6 +22,7 @@ the registered concrete type: the subclass has no say over a different
 grade's class.
 """
 
+from gacalc.base import Coef
 from gacalc.g2 import G2, Bivector2, Rotor2, Vector2
 from gacalc.g3 import Vector3
 from gacalc.scalar import Scalar
@@ -31,7 +32,7 @@ class MyV2(Vector2):
     """A downstream subclass adding non-algebra API (like the pygame shim)."""
 
     @property
-    def x(self):
+    def x(self) -> Coef:
         return self.coeff_e_1
 
 

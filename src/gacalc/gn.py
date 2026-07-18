@@ -17,6 +17,7 @@ from __future__ import annotations
 import dataclasses
 import itertools
 import typing
+from collections.abc import Mapping
 from typing import NamedTuple
 
 import sympy
@@ -49,7 +50,7 @@ class BladeDictionaryEntry(NamedTuple):
     blade: tuple[int, ...]
     coefficient: Coef
 
-    def as_multivector(self):
+    def as_multivector(self) -> Gn:
         return Gn(coefficient_of_blade=dict([(self.blade, self.coefficient)]))
 
 
@@ -74,7 +75,7 @@ class Gn(MultiVectorBase):
 
     coefficient_of_blade: BladeCoef
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         # simplify all coefficients
         self.coefficient_of_blade = {
             blade: sympy.simplify(self.coefficient_of_blade[blade])  # type: ignore
@@ -88,7 +89,7 @@ class Gn(MultiVectorBase):
         }
 
     @classmethod
-    def from_blade_dict(cls, blade_coef) -> Gn:
+    def from_blade_dict(cls, blade_coef: Mapping[tuple[int, ...], Coef]) -> Gn:
         return cls(coefficient_of_blade=dict(blade_coef))
 
     def to_blade_dict(self) -> BladeCoef:

@@ -47,23 +47,25 @@
 import sympy
 from IPython.display import Markdown, Math, display
 
-from gacalc.g2 import Vector2
-from gacalc.g3 import Vector3
+from gacalc.base import MultiVectorBase
+from gacalc.g2 import Bivector2, Rotor2, Vector2
+from gacalc.g3 import Bivector3, Vector3
 from gacalc.scalar import Scalar
 from gacalc.transforms import (
     ComposableFunction,
+    InvertibleFunction,
     inverse,
     projection_rotation,
     translate,
 )
 
 
-def kind(x):
+def kind(x: MultiVectorBase) -> str:
     """The runtime type name -- this is the star of the notebook."""
     return type(x).__name__
 
 
-def show(*values):
+def show(*values: MultiVectorBase) -> None:
     """Display each value as 'Type:  <latex>' -- the type is the point here."""
     for x in values:
         display(Math(f"{kind(x)}:\\quad " + x._repr_latex_().strip("$")))
@@ -79,8 +81,8 @@ def show(*values):
 # `v.coefficient(Vector2.e_1)` (a thin reader over `to_blade_dict()`).
 
 # %%
-a = 3 * Vector2.e_1 + 4 * Vector2.e_2
-b = 1 * Vector2.e_1 + 2 * Vector2.e_2
+a: Vector2 = 3 * Vector2.e_1 + 4 * Vector2.e_2
+b: Vector2 = 1 * Vector2.e_1 + 2 * Vector2.e_2
 show(a)
 
 # %% [markdown]
@@ -121,7 +123,7 @@ show(Vector2.e_1 ^ Vector2.e_2)
 # dedicated `Scalar` type.
 
 # %%
-i2 = Vector2.e_1 ^ Vector2.e_2  # the unit bivector
+i2: Bivector2 = Vector2.e_1 ^ Vector2.e_2  # the unit bivector
 show(i2 * i2)
 
 # %% [markdown]
@@ -132,7 +134,7 @@ show(i2 * i2)
 # narrows to `Rotor2`), and the unit bivector squares to −1.
 
 # %%
-r = 2 + 3 * i2  # scalar + bivector  -> Rotor2
+r: Rotor2 = 2 + 3 * i2  # scalar + bivector  -> Rotor2
 show(r)
 
 # %%
@@ -141,8 +143,10 @@ show(i2 * i2)  # == -1
 # %%
 # a rotor rotates a vector: the normalized rotor that turns e_1 -> e_2 is a
 # quarter turn, built from the two vectors (no hand-rolled cos/sin needed)
-quarter = Vector2.rotor_from_vectors(from_vector=Vector2.e_1, to_vector=Vector2.e_2)
-rotated = quarter * Vector2.e_1 * quarter.inverse()
+quarter: Rotor2 = Vector2.rotor_from_vectors(
+    from_vector=Vector2.e_1, to_vector=Vector2.e_2
+)
+rotated: Vector2 = quarter * Vector2.e_1 * quarter.inverse()
 show(rotated)
 
 # %% [markdown]
@@ -166,7 +170,7 @@ show(quarter.plane_of_rotation())
 
 # %%
 frm, to = Vector2.e_1, Vector2.e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
-R = Vector2.rotor_from_vectors(from_vector=frm, to_vector=to)
+R: Rotor2 = Vector2.rotor_from_vectors(from_vector=frm, to_vector=to)
 show(R)  # an (un-normalized) Rotor2
 
 # %% [markdown]
@@ -223,13 +227,13 @@ display(Markdown("\n".join([header, sep, *rows])))
 # form of the cross product.
 
 # %%
-u = 1 * Vector3.e_1 + 2 * Vector3.e_2 + 3 * Vector3.e_3
-v = 4 * Vector3.e_1 + 5 * Vector3.e_2 + 6 * Vector3.e_3
+u: Vector3 = 1 * Vector3.e_1 + 2 * Vector3.e_2 + 3 * Vector3.e_3
+v: Vector3 = 4 * Vector3.e_1 + 5 * Vector3.e_2 + 6 * Vector3.e_3
 show(u * v, u ^ v)
 
 # %%
 # dual of a bivector (a plane) is the orthogonal vector -- like u x v
-biv = u ^ v
+biv: Bivector3 = u ^ v
 show(biv, biv.dual())
 
 # %%
@@ -247,7 +251,7 @@ show((Vector3.e_1 ^ Vector3.e_2) * (Vector3.e_1 ^ Vector3.e_2))
 
 # %%
 t = sympy.symbols("t")
-B = sympy.cos(t) * (Vector3.e_1 ^ Vector3.e_2) + sympy.sin(t) * (
+B: Bivector3 = sympy.cos(t) * (Vector3.e_1 ^ Vector3.e_2) + sympy.sin(t) * (
     Vector3.e_1 ^ Vector3.e_3
 )
 # B * B.dual() stores (cos^2 t + sin^2 t)·e_123 but displays as the trivector e_123
@@ -289,8 +293,10 @@ show(a, a * b, a ^ b, r)
 # the transform factories (`translate`, `uniform_scale`, …).
 
 # %%
-B3 = Vector3.e_1 ^ Vector3.e_2  # the e_1 e_2 plane
-P = Vector3.project(B3)  # a ComposableFunction, already labelled from B3
+B3: Bivector3 = Vector3.e_1 ^ Vector3.e_2  # the e_1 e_2 plane
+P: ComposableFunction = Vector3.project(
+    B3
+)  # a ComposableFunction, already labelled from B3
 display(Math(P.latex_repr))
 # projects onto the plane
 P(Vector3.e_1 + Vector3.e_3)  # pyright: ignore[reportUnusedExpression]
@@ -299,7 +305,7 @@ P(Vector3.e_1 + Vector3.e_3)  # pyright: ignore[reportUnusedExpression]
 # compose the projection with a translate: the pipeline renders as one LaTeX
 # expression, and applies translate-then-project to a vector. (Wrap in a
 # ComposableFunction to give it a tidy custom label for the display.)
-pipe = ComposableFunction(P, "P_{B}") @ translate(Vector3.e_3)
+pipe: ComposableFunction = ComposableFunction(P, "P_{B}") @ translate(Vector3.e_3)
 display(Math(pipe.latex_repr))
 show(pipe(Vector3.e_1 + Vector3.e_2))
 
@@ -309,8 +315,8 @@ show(pipe(Vector3.e_1 + Vector3.e_2))
 # involution): `reflect` returns an `InvertibleFunction`, so it round-trips.
 
 # %%
-M = Vector3.reflect(B3)  # an InvertibleFunction (its own inverse)
-w = Vector3.e_1 + Vector3.e_3
+M: InvertibleFunction = Vector3.reflect(B3)  # an InvertibleFunction (its own inverse)
+w: Vector3 = Vector3.e_1 + Vector3.e_3
 show(M(w), inverse(M)(M(w)))  # reflected, then reflected back == w
 
 # %%

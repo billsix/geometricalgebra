@@ -29,6 +29,7 @@ import numpy as np
 import pytest
 import sympy
 
+from gacalc.base import MultiVectorBase
 from gacalc.g1 import G1
 from gacalc.g2 import G2, Vector2
 from gacalc.g3 import G3, Vector3
@@ -50,7 +51,7 @@ from gacalc.transforms import (
 )
 
 
-def vec(cls, *coords):
+def vec(cls: type[MultiVectorBase], *coords: float) -> MultiVectorBase:
     """Build a vector of representation ``cls`` from its e_1.. components."""
     return sum(
         (c * cls.basis_vector(i + 1) for i, c in enumerate(coords)),
@@ -63,19 +64,21 @@ DIM_GENERAL = [(Gn, (1, 2, 3)), (G1, (3,)), (G2, (3, 4)), (G3, (1, 2, 3))]
 
 
 @pytest.mark.parametrize("cls", [Gn, G1, G2, G3])
-def test_basis_vector_e1_is_unit(cls):
+def test_basis_vector_e1_is_unit(cls) -> None:
     assert cls.basis_vector(1) == cls.from_blade_dict({(1,): 1})
 
 
 @pytest.mark.parametrize("cls", [Gn, G2, G3])
-def test_basis_vector_e2_is_unit(cls):
+def test_basis_vector_e2_is_unit(cls) -> None:
     assert cls.basis_vector(2) == cls.from_blade_dict({(2,): 1})
 
 
 @pytest.mark.parametrize("cls,coords", DIM_GENERAL)
-def test_dimension_general_transforms_preserve_type(cls, coords):
-    v = vec(cls, *coords)
-    b = vec(cls, *coords)  # translate target must be the same representation
+def test_dimension_general_transforms_preserve_type(cls, coords) -> None:
+    v: MultiVectorBase = vec(cls, *coords)
+    b: MultiVectorBase = vec(
+        cls, *coords
+    )  # translate target must be the same representation
     factors = tuple(range(2, 2 + len(coords)))  # (2,) / (2,3) / (2,3,4)
     fns = [
         translate(b),
@@ -89,15 +92,15 @@ def test_dimension_general_transforms_preserve_type(cls, coords):
 
 
 @pytest.mark.parametrize("cls", [Gn, G2, G3])
-def test_known_scale_values(cls):
-    v = vec(cls, 3, 4)
+def test_known_scale_values(cls) -> None:
+    v: MultiVectorBase = vec(cls, 3, 4)
     # non-uniform scale: stretch e_1 by 2, e_2 by 3
     assert scale_non_uniform(2.0, 3.0)(vec(cls, 1, 1)).is_close(vec(cls, 2, 3))
     # uniform scale
     assert uniform_scale(2.0)(v).is_close(vec(cls, 6, 8))
 
 
-def test_nd_scale_preserves_type_and_value():
+def test_nd_scale_preserves_type_and_value() -> None:
     for cls in (Gn, G3):
         v = vec(cls, 1, 1, 1)
         scaled = scale_non_uniform(2.0, 3.0, 4.0)(v)
@@ -106,8 +109,8 @@ def test_nd_scale_preserves_type_and_value():
 
 
 @pytest.mark.parametrize("cls,coords", DIM_GENERAL)
-def test_invertibility(cls, coords):
-    v = vec(cls, *coords)
+def test_invertibility(cls, coords) -> None:
+    v: MultiVectorBase = vec(cls, *coords)
     factors = tuple(range(2, 2 + len(coords)))
     for fn in [
         uniform_scale(2.0),
@@ -119,7 +122,7 @@ def test_invertibility(cls, coords):
     assert inverse(c)(c(v)).is_close(v)
 
 
-def test_non_invertible_scales_raise():
+def test_non_invertible_scales_raise() -> None:
     v = vec(Gn, 1, 1)
     # the forward of a zero scale is fine; the *inverse* is undefined and raises
     with pytest.raises(ValueError):
@@ -137,7 +140,7 @@ def test_non_invertible_scales_raise():
 # ---------------------------------------------------------------------------
 
 
-def test_interpolate_translate_endpoints_and_midpoint():
+def test_interpolate_translate_endpoints_and_midpoint() -> None:
     b = vec(G3, 10, -20, 4)
     T = translate(b)
     o = G3.zero()
@@ -146,7 +149,7 @@ def test_interpolate_translate_endpoints_and_midpoint():
     assert T.at(1.0)(o).is_close(b)  # full
 
 
-def test_interpolate_uniform_scale_is_linear_1_to_m():
+def test_interpolate_uniform_scale_is_linear_1_to_m() -> None:
     # linear law 1 -> m: at(0.5) of scale-by-5 is scale-by-3.
     S = uniform_scale(5.0)
     v = vec(G3, 2, 0, 0)
@@ -155,7 +158,7 @@ def test_interpolate_uniform_scale_is_linear_1_to_m():
     assert S.at(1.0)(v).is_close(vec(G3, 10, 0, 0))  # *5
 
 
-def test_interpolate_scale_non_uniform_per_factor():
+def test_interpolate_scale_non_uniform_per_factor() -> None:
     f = scale_non_uniform(3.0, 5.0, 7.0)
     v = vec(G3, 1, 1, 1)
     assert f.at(0.0)(v).is_close(vec(G3, 1, 1, 1))  # all *1
@@ -163,14 +166,14 @@ def test_interpolate_scale_non_uniform_per_factor():
     assert f.at(1.0)(v).is_close(vec(G3, 3, 5, 7))  # full
 
 
-def test_interpolate_identity_is_identity_at_all_t():
+def test_interpolate_identity_is_identity_at_all_t() -> None:
     ident = identity()
     v = vec(G3, 1, 2, 3)
     for t in (0.0, 0.5, 1.0):
         assert ident.at(t)(v).is_close(v)
 
 
-def test_interpolate_composite_recurses_into_components():
+def test_interpolate_composite_recurses_into_components() -> None:
     c = compose([translate(vec(G3, 4, 0, 0)), uniform_scale(3.0)])
     p = vec(G3, 1, 0, 0)
     assert c.at(0.0)(p).is_close(p)  # identity
@@ -178,16 +181,16 @@ def test_interpolate_composite_recurses_into_components():
 
 
 @pytest.mark.parametrize("cls,coords", DIM_GENERAL)
-def test_interpolate_preserves_representation_at_every_t(cls, coords):
+def test_interpolate_preserves_representation_at_every_t(cls, coords) -> None:
     # the type round-trip must hold at every interpolation parameter, not just
     # the endpoints.
     f = compose([translate(vec(cls, *coords)), uniform_scale(2.0)])
-    v = vec(cls, *coords)
+    v: MultiVectorBase = vec(cls, *coords)
     for t in (0.0, 0.25, 0.5, 0.75, 1.0):
         assert type(f.at(t)(v)) is cls
 
 
-def test_interpolate_preserves_invertibility_at_every_t():
+def test_interpolate_preserves_invertibility_at_every_t() -> None:
     f = compose(
         [
             translate(vec(G3, 1, 2, 3)),
@@ -201,7 +204,7 @@ def test_interpolate_preserves_invertibility_at_every_t():
         assert inverse(ft)(ft(p)).is_close(p)
 
 
-def test_against_arrow_inverse_matches_negated_param():
+def test_against_arrow_inverse_matches_negated_param() -> None:
     # animating an against-the-arrow edge as inverse(edge.at(t)) must equal the
     # forward edge run with a negated parameter.
     b = vec(G3, 4, -2, 1)
@@ -211,7 +214,7 @@ def test_against_arrow_inverse_matches_negated_param():
         assert inverse(T.at(t))(p).is_close(translate(-b * t)(p))
 
 
-def test_at_default_is_step_for_handbuilt_function():
+def test_at_default_is_step_for_handbuilt_function() -> None:
     # neither a law nor components -> identity until t>=1, then itself.
     f = InvertibleFunction(
         lambda v: v + G3.basis_vector(1), "", lambda v: v - G3.basis_vector(1), ""
@@ -221,7 +224,7 @@ def test_at_default_is_step_for_handbuilt_function():
     assert f.at(1.0)(o).is_close(G3.basis_vector(1))  # step: full
 
 
-def test_inverse_commutes_with_at_for_primitive_and_composite():
+def test_inverse_commutes_with_at_for_primitive_and_composite() -> None:
     # the case that matters: inverse(f).at(t) must equal inverse(f.at(t)) at
     # EVERY t, so an against-arrow composite edge animates smoothly, not as a
     # step.
@@ -243,7 +246,7 @@ def test_inverse_commutes_with_at_for_primitive_and_composite():
     assert len(list(inverse(f).steps())) == 3
 
 
-def test_steps_flattens_nested_composites():
+def test_steps_flattens_nested_composites() -> None:
     inner = compose([translate(vec(G3, 1, 0, 0)), uniform_scale(2.0)])
     outer = compose([scale_non_uniform(2.0, 3.0, 4.0), inner])
     assert len(list(outer.steps())) == 3  # scale + (translate, scale)
@@ -256,14 +259,14 @@ def test_steps_flattens_nested_composites():
 # ---------------------------------------------------------------------------
 
 
-def test_factory_linearity_tags():
+def test_factory_linearity_tags() -> None:
     assert identity().linearity is Linearity.LINEAR
     assert uniform_scale(2.0).linearity is Linearity.LINEAR
     assert scale_non_uniform(2.0, 3.0).linearity is Linearity.LINEAR
     assert translate(vec(G3, 1, 2, 3)).linearity is Linearity.AFFINE
 
 
-def test_compose_linearity_is_the_join():
+def test_compose_linearity_is_the_join() -> None:
     b = vec(G3, 1, 2, 3)
     # linear ∘ linear -> linear
     lin = compose([uniform_scale(2.0), scale_non_uniform(2.0, 3.0, 4.0)])
@@ -278,17 +281,17 @@ def test_compose_linearity_is_the_join():
     assert compose([uniform_scale(2.0), raw]).linearity is Linearity.NONLINEAR
 
 
-def test_inverse_copies_linearity():
+def test_inverse_copies_linearity() -> None:
     assert inverse(translate(vec(G3, 1, 2, 3))).linearity is Linearity.AFFINE
     assert inverse(uniform_scale(2.0)).linearity is Linearity.LINEAR
 
 
-def test_handbuilt_defaults_to_nonlinear():
+def test_handbuilt_defaults_to_nonlinear() -> None:
     raw = InvertibleFunction(lambda v: v, "", lambda v: v, "")
     assert raw.linearity is Linearity.NONLINEAR
 
 
-def test_linearity_is_a_total_order():
+def test_linearity_is_a_total_order() -> None:
     assert Linearity.LINEAR < Linearity.AFFINE < Linearity.NONLINEAR
     assert max(Linearity.LINEAR, Linearity.AFFINE) is Linearity.AFFINE
     assert max(Linearity.AFFINE, Linearity.NONLINEAR) is Linearity.NONLINEAR
@@ -301,7 +304,7 @@ def test_linearity_is_a_total_order():
 # ---------------------------------------------------------------------------
 
 
-def test_to_matrix_translate_puts_b_in_last_column():
+def test_to_matrix_translate_puts_b_in_last_column() -> None:
     for cls, n in ((G3, None), (Gn, 3)):
         M = to_matrix(translate(vec(cls, 2, 3, 4)), cls, n)
         assert M.shape == (4, 4)
@@ -312,7 +315,7 @@ def test_to_matrix_translate_puts_b_in_last_column():
         assert np.allclose(M[3, :], [0, 0, 0, 1])
 
 
-def test_to_matrix_linear_has_zero_translation_column():
+def test_to_matrix_linear_has_zero_translation_column() -> None:
     # the headline requirement: a linear 3D map is still 4x4, translation zero.
     M = to_matrix(uniform_scale(2.0), G3)
     assert M.shape == (4, 4)
@@ -320,12 +323,12 @@ def test_to_matrix_linear_has_zero_translation_column():
     assert np.allclose(M[:3, 3], [0, 0, 0])  # zero translation column
 
 
-def test_to_matrix_scale_non_uniform_is_diagonal():
+def test_to_matrix_scale_non_uniform_is_diagonal() -> None:
     M = to_matrix(scale_non_uniform(2.0, 3.0, 4.0), G3)
     assert np.allclose(M, np.diag([2.0, 3.0, 4.0, 1.0]))
 
 
-def test_to_matrix_compose_is_matrix_product():
+def test_to_matrix_compose_is_matrix_product() -> None:
     f = uniform_scale(2.0)
     g = translate(vec(G3, 1, 2, 3))
     composed = to_matrix(compose([f, g]), G3)
@@ -333,14 +336,14 @@ def test_to_matrix_compose_is_matrix_product():
     assert np.allclose(composed, product)
 
 
-def test_to_matrix_inverse_is_matrix_inverse():
+def test_to_matrix_inverse_is_matrix_inverse() -> None:
     for fn in (translate(vec(G3, 1, 2, 3)), uniform_scale(2.0)):
         M = to_matrix(fn, G3)
         Minv = to_matrix(inverse(fn), G3)
         assert np.allclose(Minv, np.linalg.inv(M))
 
 
-def test_to_matrix_nonlinear_raises():
+def test_to_matrix_nonlinear_raises() -> None:
     # the guard is tag-driven: this hand-built fn is actually identity, but it
     # is tagged NONLINEAR (the conservative default), so to_matrix refuses.
     raw = InvertibleFunction(lambda v: v, "", lambda v: v, "")
@@ -348,14 +351,14 @@ def test_to_matrix_nonlinear_raises():
         to_matrix(raw, G3)
 
 
-def test_to_matrix_gn_requires_explicit_n():
+def test_to_matrix_gn_requires_explicit_n() -> None:
     T = translate(vec(Gn, 1, 2, 3))
     with pytest.raises(ValueError):
         to_matrix(T, Gn)  # Gn has no DIMENSION to infer
     assert to_matrix(T, Gn, n=3).shape == (4, 4)  # explicit n is fine
 
 
-def test_to_matrix_sympy_backend_is_exact():
+def test_to_matrix_sympy_backend_is_exact() -> None:
     M = to_matrix(translate(vec(G3, 2, 3, 4)), G3, backend="sympy")
     assert isinstance(M, sympy.Matrix)
     assert M.shape == (4, 4)
@@ -369,7 +372,7 @@ def test_to_matrix_sympy_backend_is_exact():
 # ---------------------------------------------------------------------------
 
 
-def test_sandwich_rotates_and_preserves_type_3d():
+def test_sandwich_rotates_and_preserves_type_3d() -> None:
     # quarter turn in the e_2-e_3 plane: e_2 -> e_3 (use the graded Vector3 so
     # the type round-trip can be checked)
     R = Vector3.rotor_from_vectors(from_vector=Vector3.e_2, to_vector=Vector3.e_3)
@@ -382,25 +385,25 @@ def test_sandwich_rotates_and_preserves_type_3d():
     assert axis.is_close(Vector3.e_1)
 
 
-def test_sandwich_2d_stays_vector2():
+def test_sandwich_2d_stays_vector2() -> None:
     R = Vector2.rotor_from_vectors(from_vector=Vector2.e_1, to_vector=Vector2.e_2)
     out = R.sandwich(Vector2.e_1)
     assert type(out) is Vector2
     assert out.is_close(Vector2.e_2)
 
 
-def test_sandwich_of_zero_is_zero():
+def test_sandwich_of_zero_is_zero() -> None:
     R = Vector3.rotor_from_vectors(from_vector=Vector3.e_2, to_vector=Vector3.e_3)
     out = R.sandwich(Vector3.zero())
     assert type(out) is Vector3
     assert out.is_close(Vector3.zero())
 
 
-def _to3(angle):
+def _to3(angle: float) -> MultiVectorBase:
     return math.cos(angle) * G3.basis_vector(1) + math.sin(angle) * G3.basis_vector(2)
 
 
-def test_rotor_rotation_is_linear_and_round_trips():
+def test_rotor_rotation_is_linear_and_round_trips() -> None:
     R = rotor_rotation(G3.basis_vector(1), _to3(0.7))
     assert R.linearity is Linearity.LINEAR
     for v in (
@@ -412,12 +415,12 @@ def test_rotor_rotation_is_linear_and_round_trips():
         assert R.inverse(R(v)).is_close(v)
 
 
-def test_rotor_rotation_handles_zero():
+def test_rotor_rotation_handles_zero() -> None:
     R = rotor_rotation(G3.basis_vector(1), _to3(0.7))
     assert R(G3.zero()).is_close(G3.zero())
 
 
-def test_rotor_rotation_matches_projection_rotate():
+def test_rotor_rotation_matches_projection_rotate() -> None:
     # the two formulations of a rotation agree (rotor sandwich vs projection),
     # including the perpendicular axis being fixed
     to = _to3(0.7)
@@ -437,11 +440,11 @@ def test_rotor_rotation_matches_projection_rotate():
 # --- constructor you call: no inverse -> ComposableFunction; inverse -> Invertible)
 
 
-def _plane_e12():
+def _plane_e12() -> MultiVectorBase:
     return Vector3.e_1 ^ Vector3.e_2
 
 
-def test_composable_function_carries_label_and_applies():
+def test_composable_function_carries_label_and_applies() -> None:
     P = ComposableFunction(
         Vector3.project(_plane_e12()), "P_{B}", linearity=Linearity.LINEAR
     )
@@ -452,7 +455,7 @@ def test_composable_function_carries_label_and_applies():
     assert P(Vector3.e_1 + Vector3.e_3).is_close(Vector3.e_1)
 
 
-def test_composable_functions_compose_into_pipeline_latex():
+def test_composable_functions_compose_into_pipeline_latex() -> None:
     # project()/reflect() are typed at MultiVectorBase, so wrapping them gives
     # ComposableFunction[MultiVectorBase]s that compose with one another cleanly.
     # (Mixing one with a concretely-typed factory like translate works at runtime
@@ -467,7 +470,7 @@ def test_composable_functions_compose_into_pipeline_latex():
     assert pipe(Vector3.e_1 + Vector3.e_3).is_close(Vector3.e_1)
 
 
-def test_composable_function_is_not_invertible():
+def test_composable_function_is_not_invertible() -> None:
     P = ComposableFunction(Vector3.project(_plane_e12()), "P_{B}")
     M = ComposableFunction(Vector3.reflect(_plane_e12()), "M_{B}")
     # a ComposableFunction has no inverse capability
@@ -481,7 +484,7 @@ def test_composable_function_is_not_invertible():
         inverse(typing.cast(InvertibleFunction, P @ M))
 
 
-def test_invertible_function_with_real_inverse_roundtrips():
+def test_invertible_function_with_real_inverse_roundtrips() -> None:
     # a reflection is an involution -- construct an InvertibleFunction with it as
     # its own inverse, and it inverts.
     reflect_fn = Vector3.reflect(_plane_e12())

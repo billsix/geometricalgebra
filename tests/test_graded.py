@@ -28,6 +28,7 @@ annotation (scaling goes through ``__rmul__``, which casts internally).
 import sympy
 
 import gacalc.gn as gn
+from gacalc.base import MultiVectorBase
 from gacalc.g1 import Vector1
 from gacalc.g2 import G2, Bivector2, Rotor2, Vector2
 from gacalc.g3 import G3, Bivector3, Rotor3, Trivector3, Vector3
@@ -36,7 +37,7 @@ from gacalc.scalar import Scalar
 from gacalc.transforms import projection_rotation
 
 
-def widen(x) -> Gn:
+def widen(x: MultiVectorBase) -> Gn:
     return Gn.from_blade_dict(x.to_blade_dict())
 
 
@@ -109,7 +110,7 @@ PRODUCT_TABLE = [
 ]
 
 
-def test_product_table():
+def test_product_table() -> None:
     for a, opname, b, expected in PRODUCT_TABLE:
         typed_op, gn_op = OPS[opname]
         result = typed_op(a, b)
@@ -120,7 +121,7 @@ def test_product_table():
         assert result == gn_op(widen(a), widen(b)), f"value mismatch for {label}"
 
 
-def test_basis_blade_class_constants():
+def test_basis_blade_class_constants() -> None:
     # each class exposes its basis blades as class constants of its own type,
     # equal to basis_vector(n) for the vector blades
     assert type(Vector2.e_1) is Vector2 and Vector2.e_1 == Vector2.basis_vector(1)
@@ -136,7 +137,7 @@ def test_basis_blade_class_constants():
     )
 
 
-def test_basis_constant_instance_fallthrough():
+def test_basis_constant_instance_fallthrough() -> None:
     # the stored field is coeff_e_1, so e_1 is NOT shadowed per-instance: both
     # the class and any instance see the same basis-vector constant, while
     # coeff_e_1 carries the component value
@@ -145,7 +146,7 @@ def test_basis_constant_instance_fallthrough():
     assert v.coeff_e_1 == 5 and v.coeff_e_2 == 2
 
 
-def test_coefficient_readback():
+def test_coefficient_readback() -> None:
     # coefficient(blade) reads the stored coefficient on a blade, any grade
     v = 3 * Vector2.e_1 + 4 * Vector2.e_2
     assert v.coefficient(Vector2.e_1) == 3 and v.coefficient(Vector2.e_2) == 4
@@ -155,7 +156,7 @@ def test_coefficient_readback():
     assert b3.coefficient(Bivector3.e_13) == 5
 
 
-def test_linear_combination_construction():
+def test_linear_combination_construction() -> None:
     # the basis builds each graded type by linear combination / wedge
     assert type(3 * Vector2.e_1 + 4 * Vector2.e_2) is Vector2
     assert (3 * Vector2.e_1 + 4 * Vector2.e_2) == 3 * gn.e_1 + 4 * gn.e_2
@@ -173,7 +174,7 @@ def test_linear_combination_construction():
     ) is Rotor2
 
 
-def test_type_is_operation_driven_not_value_driven():
+def test_type_is_operation_driven_not_value_driven() -> None:
     # orthogonal vectors: the scalar (dot) part is exactly 0, but the type stays
     # Rotor2 -- we never narrow by inspecting a (possibly float-fuzzy) value.
     r = Vector2.e_1 * Vector2.e_2
@@ -182,7 +183,7 @@ def test_type_is_operation_driven_not_value_driven():
     assert type(Vector2.e_1 ^ Vector2.e_2) is Bivector2
 
 
-def test_dual_narrows():
+def test_dual_narrows() -> None:
     cases = [
         (
             3 * Vector2.e_1 + 4 * Vector2.e_2,
@@ -205,7 +206,7 @@ def test_dual_narrows():
         assert d == widen(val).dual(val.DIMENSION)
 
 
-def test_grade_projection_narrows():
+def test_grade_projection_narrows() -> None:
     r = 1 + Bivector3.e_12 + 2 * Bivector3.e_13 + 3 * Bivector3.e_23  # a Rotor3
     assert type(r.r_vector_part(0)) is Scalar
     assert type(r.r_vector_part(2)) is Bivector3
@@ -216,7 +217,7 @@ def test_grade_projection_narrows():
     assert type((Vector3.e_1 + Vector3.e_2).even_part()) is Scalar
 
 
-def test_plane_of_rotation():
+def test_plane_of_rotation() -> None:
     # the rotor that turns e1 -> e2 rotates in the e1-e2 plane
     r2 = Vector2.rotor_from_vectors(from_vector=Vector2.e_1, to_vector=Vector2.e_2)
     assert type(r2) is Rotor2
@@ -227,7 +228,7 @@ def test_plane_of_rotation():
     assert type(plane) is Bivector3 and plane == -(gn.e_1 ^ gn.e_2)
 
 
-def test_scalar_type():
+def test_scalar_type() -> None:
     s5 = Scalar.from_scalar(5)
     v = 3 * Vector2.e_1 + 4 * Vector2.e_2
     assert type(s5 * v) is Vector2 and s5 * v == 15 * gn.e_1 + 20 * gn.e_2
@@ -238,7 +239,7 @@ def test_scalar_type():
     )  # a pure-scalar product result lands in Scalar
 
 
-def test_widen_fallback():
+def test_widen_fallback() -> None:
     # a sum with no covering graded type widens to the dimension's full type
     s = (3 * Vector2.e_1 + 4 * Vector2.e_2) + 7 * Bivector2.e_12
     assert type(s) is G2 and s == 3 * gn.e_1 + 4 * gn.e_2 + 7 * (gn.e_1 ^ gn.e_2)
@@ -247,18 +248,18 @@ def test_widen_fallback():
     )
 
 
-def test_cross_type_equality():
+def test_cross_type_equality() -> None:
     assert (3 * Vector2.e_1 + 4 * Vector2.e_2) == 3 * gn.e_1 + 4 * gn.e_2
     assert (3 * Vector2.e_1 + 4 * Vector2.e_2) == G2.from_blade_dict({(1,): 3, (2,): 4})
     assert Bivector3.e_12 == gn.e_1 ^ gn.e_2
 
 
-def test_rotor_is_complex_2d():
+def test_rotor_is_complex_2d() -> None:
     # the even subalgebra of G2 is the complex numbers: e_12^2 == -1
     assert Bivector2.e_12 * Bivector2.e_12 == -gn.one
 
 
-def test_rotor_is_quaternion_3d():
+def test_rotor_is_quaternion_3d() -> None:
     # each unit bivector squares to -1 (the even subalgebra of G3 is the quaternions).
     # bivector*bivector is *typed* Rotor3 (generally scalar+bivector) -- here the
     # value is a pure scalar, but the type follows the operation, not the value.
@@ -267,7 +268,7 @@ def test_rotor_is_quaternion_3d():
         assert type(sq) is Rotor3 and sq == -gn.one
 
 
-def test_inherited_abc_methods():
+def test_inherited_abc_methods() -> None:
     v = 3 * Vector2.e_1 + 4 * Vector2.e_2
     assert v.magnitude() == 5
     assert (
@@ -277,7 +278,7 @@ def test_inherited_abc_methods():
     assert (Vector3.e_1 + 2 * Vector3.e_2 + 2 * Vector3.e_3).magnitude() == 3
 
 
-def test_symbolic_product_matches_gn():
+def test_symbolic_product_matches_gn() -> None:
     a1, a2, b1, b2 = sympy.symbols("a1 a2 b1 b2")
     got = (a1 * Vector2.e_1 + a2 * Vector2.e_2) * (b1 * Vector2.e_1 + b2 * Vector2.e_2)
     want = (a1 * b1 + a2 * b2) * gn.one + (a1 * b2 - a2 * b1) * (gn.e_1 ^ gn.e_2)
@@ -291,7 +292,7 @@ def test_symbolic_product_matches_gn():
 # pure rotation.)
 
 
-def simplify_equal(a, b) -> bool:
+def simplify_equal(a: MultiVectorBase, b: MultiVectorBase) -> bool:
     """True iff a and b are equal after simplifying each blade's difference.
 
     Needed where the values carry ``sqrt`` magnitudes: ``Gn.__eq__`` compares
@@ -305,7 +306,7 @@ def simplify_equal(a, b) -> bool:
     )
 
 
-def test_rotor_sandwich_equals_rotate_symbolic_2d():
+def test_rotor_sandwich_equals_rotate_symbolic_2d() -> None:
     # general symbolic vectors -- a real symbolic proof, not just sample points
     a1, a2, b1, b2, w1, w2 = sympy.symbols(
         "a1 a2 b1 b2 w1 w2", real=True, positive=True
@@ -319,7 +320,7 @@ def test_rotor_sandwich_equals_rotate_symbolic_2d():
     )
 
 
-def test_rotor_sandwich_equals_rotate_3d():
+def test_rotor_sandwich_equals_rotate_3d() -> None:
     # 3D, concrete vectors (full symbolic 3D simplify is slow for the suite);
     # magnitudes are sqrt(...), so compare via simplify_equal
     frm = gn.e_1 + 2 * gn.e_2 + 3 * gn.e_3
@@ -331,7 +332,7 @@ def test_rotor_sandwich_equals_rotate_3d():
     )
 
 
-def test_rotor_rotate_across_representations():
+def test_rotor_rotate_across_representations() -> None:
     # the same identity holds (by value) for Gn, G2 and G3; the rotor built from
     # vectors of a specialized type is a Rotor of that algebra
     w2 = 2 * Vector2.e_1 + Vector2.e_2
@@ -349,7 +350,7 @@ def test_rotor_rotate_across_representations():
     )(w3)
 
 
-def test_unnormalized_rotor_scales_then_normalizes():
+def test_unnormalized_rotor_scales_then_normalizes() -> None:
     # the bare sandwich R v R~ scales by R.magnitude_squared(); inverse divides it out
     frm, to, w = Vector2.e_1, Vector2.e_2, Vector2.e_1  # 90 deg, e1 -> e2
     R = Vector2.rotor_from_vectors(from_vector=frm, to_vector=to)

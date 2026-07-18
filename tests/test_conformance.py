@@ -29,6 +29,7 @@ import gacalc.g1 as g1mod
 import gacalc.g2 as g2mod
 import gacalc.g3 as g3mod
 import gacalc.gn as gn
+from gacalc.base import Coef, MultiVectorBase
 from gacalc.g1 import G1
 from gacalc.g2 import G2
 from gacalc.g3 import G3
@@ -42,8 +43,15 @@ MODULES = {1: g1mod, 2: g2mod, 3: g3mod}
 CASES = [(n, cls) for n in (1, 2, 3) for cls in (Gn, SPECIALIZED[n])]
 
 
-def to(cls, g: Gn):
-    """Convert a Gn multivector into representation ``cls``."""
+def to(cls: type[MultiVectorBase], g: Gn):
+    """Convert a Gn multivector into representation ``cls``.
+
+    Deliberately unannotated return: callers invoke dimension-defaulting methods
+    like ``dual()`` / ``unit_pseudoscalar()`` on the result, which only the
+    concrete specialized classes provide (the abstract ``MultiVectorBase`` requires
+    an explicit ``n``).  Leaving the return inferred keeps that gradual, matching
+    the parametrized ``cls`` params these tests also leave unannotated.
+    """
     return cls.from_blade_dict(g.to_blade_dict())
 
 
@@ -66,7 +74,7 @@ def vec(n: int, base: int) -> Gn:
     return Gn.from_blade_dict({(i,): base + i for i in range(1, n + 1)})
 
 
-def scalar_eq(a, b) -> bool:
+def scalar_eq(a: Coef, b: Coef) -> bool:
     return sympy.simplify(sympy.sympify(a) - sympy.sympify(b)) == 0
 
 
@@ -176,8 +184,8 @@ def test_project_reject(n: int, cls) -> None:
     assert cls.project(to(cls, b))(to(cls, a)) == Gn.project(b)(a)
     assert cls.reject(to(cls, b))(to(cls, a)) == Gn.reject(b)(a)
     # the parts reconstruct the original vector
-    parallel = cls.project(to(cls, b))(to(cls, a))
-    perp = cls.reject(to(cls, b))(to(cls, a))
+    parallel: MultiVectorBase = cls.project(to(cls, b))(to(cls, a))
+    perp: MultiVectorBase = cls.reject(to(cls, b))(to(cls, a))
     assert parallel + perp == to(cls, a)
 
 
@@ -201,11 +209,11 @@ def test_coefficient_readback(n: int, cls) -> None:
     # coefficient(blade) reads each blade's stored coefficient, and summing
     # coefficient * blade over the basis reconstructs the value (decomposition)
     g = full(n, 0)
-    x = to(cls, g)
+    x: MultiVectorBase = to(cls, g)
     coefs = g.to_blade_dict()
-    recon = cls.zero()
+    recon: MultiVectorBase = cls.zero()
     for b in blades(n):
-        unit = cls.from_blade_dict({b: 1})
+        unit: MultiVectorBase = cls.from_blade_dict({b: 1})
         assert scalar_eq(x.coefficient(unit), coefs.get(b, 0))
         recon = recon + x.coefficient(unit) * unit
     assert recon == x
@@ -300,12 +308,13 @@ def test_expand_numerators_dict_for_display() -> None:
     assert d == den
 
 
-def _same_value(x, y) -> bool:
+def _same_value(x: MultiVectorBase, y: MultiVectorBase) -> bool:
     # Value equality independent of coefficient *form* (Gn's __eq__ is structural,
     # so (a+b)**2 vs a**2+2ab+b**2 would compare unequal there).
     dx, dy = x.to_blade_dict(), y.to_blade_dict()
     return all(
-        sympy.simplify(dx.get(k, 0) - dy.get(k, 0)) == 0 for k in set(dx) | set(dy)
+        sympy.simplify(sympy.sympify(dx.get(k, 0)) - sympy.sympify(dy.get(k, 0))) == 0
+        for k in set(dx) | set(dy)
     )
 
 

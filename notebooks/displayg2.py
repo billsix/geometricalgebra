@@ -121,15 +121,15 @@ one  # pyright: ignore[reportUnusedExpression]
 # of `sympy` symbols; `r_vector_part(1)` keeps only the grade-1 (vector) part.
 
 # %%
-a = G2.symbolic_multivector(prefix="a")
+a: G2 = G2.symbolic_multivector(prefix="a")
 a  # pyright: ignore[reportUnusedExpression]
 
 # %%
-a_vec = G2.symbolic_multivector(prefix="a").r_vector_part(1)
+a_vec: G2 = G2.symbolic_multivector(prefix="a").r_vector_part(1)
 a_vec  # pyright: ignore[reportUnusedExpression]
 
 # %%
-b_vec = G2.symbolic_multivector(prefix="b").r_vector_part(1)
+b_vec: G2 = G2.symbolic_multivector(prefix="b").r_vector_part(1)
 b_vec  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -165,8 +165,8 @@ a_vec.dot(b_vec) + a_vec.wedge(b_vec) == a_vec * b_vec
 # `show_mult` expands the product of two general multivectors term by term.
 
 # %%
-g2_1 = G2.symbolic_multivector(prefix="a")
-g2_2 = G2.symbolic_multivector(prefix="b")
+g2_1: G2 = G2.symbolic_multivector(prefix="a")
+g2_2: G2 = G2.symbolic_multivector(prefix="b")
 show_mult(g2_1, g2_2)
 
 # %% [markdown]
@@ -177,7 +177,7 @@ show_mult(g2_1, g2_2)
 # their difference is zero.
 
 # %%
-g2_3 = G2.symbolic_multivector(prefix="c")
+g2_3: G2 = G2.symbolic_multivector(prefix="c")
 ((g2_1 * g2_2) * g2_3) - (g2_1 * (g2_2 * g2_3))
 
 # %% [markdown]
@@ -188,7 +188,7 @@ g2_3 = G2.symbolic_multivector(prefix="c")
 # bivectors (2).
 
 # %%
-c = G2.symbolic_multivector(prefix="c")
+c: G2 = G2.symbolic_multivector(prefix="c")
 c.r_vector_part(0)
 
 # %%
@@ -216,7 +216,7 @@ for x in G2.bases():
 # each blade; the dual multiplies by the inverse pseudoscalar.
 
 # %%
-m = 3 * e_1 + 4 * e_2
+m: G2 = 3 * e_1 + 4 * e_2
 m.magnitude()
 
 # %%
@@ -274,7 +274,7 @@ gram_fe_to_mol_fe(gram_fe=95.8)
 
 
 # %%
-def rotate(angle):
+def rotate(angle: float | sympy.Expr) -> InvertibleFunction:
     """Planar rotation by `angle` (positive turns e_1 toward e_2), built the
     geometric-algebra way: take the unit vector `to` at `angle` from e_1, form the
     half-angle rotor carrying e_1 -> to with `rotor_from_vectors`, and sandwich it.
@@ -319,7 +319,7 @@ inverse(compose([rotate(sympy.pi / 2), translate(5 * e_1 + 6 * e_2)]))
 # through a transform yields a `G2` vector (not a coerced general `Gn`).
 
 # %%
-w = 3 * e_1 + 4 * e_2
+w: G2 = 3 * e_1 + 4 * e_2
 w  # pyright: ignore[reportUnusedExpression]
 
 # %%
@@ -353,11 +353,11 @@ inverse(rotate(sympy.pi / 2))(rotate(sympy.pi / 2)(w)) == w
 plot_multivector(2 * one + 3 * e_1 - 1.5 * e_2 + 0.7 * (e_1 * e_2))
 
 # %%
-u = 3 * e_1 - 1.5 * e_2
+u: G2 = 3 * e_1 - 1.5 * e_2
 plot_multivector(u)
 
 # %%
-v = 1.5 * e_1 + 5 * e_2
+v: G2 = 1.5 * e_1 + 5 * e_2
 plot_multivector(v)
 
 # %%
@@ -481,8 +481,8 @@ for f in compose_intermediate_fns(
 
 # %%
 a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
-a = a_1 * Vector2.e_1 + a_2 * Vector2.e_2
-b = b_1 * Vector2.e_1 + b_2 * Vector2.e_2
+a: Vector2 = a_1 * Vector2.e_1 + a_2 * Vector2.e_2
+b: Vector2 = b_1 * Vector2.e_1 + b_2 * Vector2.e_2
 
 # %% [markdown]
 # The dot product is a scalar, the wedge is a bivector:

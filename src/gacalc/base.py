@@ -19,7 +19,7 @@ import functools
 import itertools
 import math
 import typing
-from collections.abc import Callable, Generator, Sequence
+from collections.abc import Callable, Generator, Mapping, Sequence
 from itertools import chain, combinations
 from typing import TypeIs
 
@@ -51,7 +51,7 @@ def blade_dict_latex(d: BladeCoef) -> str:
     *expanded* dict, so distribution is visible there without that simplify.
     """
 
-    def add_parens_or_dont(x):
+    def add_parens_or_dont(x: Coef) -> str:
         # Parenthesize a sum so its terms bind to the blade; render straight from
         # the sympy/number object (no fragile sympify(str(x)) round-trip).
         if isinstance(x, sympy.Expr) and x.is_Add:
@@ -89,7 +89,7 @@ class MultiVectorBase(abc.ABC):
     # ------------------------------------------------------------------
     @classmethod
     @abc.abstractmethod
-    def from_blade_dict(cls, blade_coef) -> typing.Self:
+    def from_blade_dict(cls, blade_coef: Mapping[tuple[int, ...], Coef]) -> typing.Self:
         """Build an instance of this representation from a blade->coef mapping."""
 
     @abc.abstractmethod
@@ -169,7 +169,7 @@ class MultiVectorBase(abc.ABC):
         derived.  This is the representation-specific primitive.
         """
 
-    def __mul__(self, rhs) -> typing.Self:
+    def __mul__(self, rhs: MultiVectorBase | Coef) -> typing.Self:
         match rhs:
             case int() | float() as n:
                 return self._geometric_product(type(self).from_scalar(n))
@@ -178,7 +178,7 @@ class MultiVectorBase(abc.ABC):
             case _:
                 return self._geometric_product(rhs)
 
-    def __rmul__(self, lhs) -> typing.Self:
+    def __rmul__(self, lhs: MultiVectorBase | Coef) -> typing.Self:
         match lhs:
             case int() | float() as n:
                 return self._geometric_product(type(self).from_scalar(n))
@@ -194,7 +194,7 @@ class MultiVectorBase(abc.ABC):
     # ------------------------------------------------------------------
     # shared arithmetic, all built on the interchange + primitives
     # ------------------------------------------------------------------
-    def __add__(self, rhs) -> typing.Self:
+    def __add__(self, rhs: MultiVectorBase | Coef) -> typing.Self:
         # A bare number is the scalar (grade-0) part -- the generated
         # specialized classes already accept ``mv + 2``; the shared base
         # matches them so e.g. ``bivector * (-s) + c`` builds a rotor in
@@ -210,7 +210,7 @@ class MultiVectorBase(abc.ABC):
             }
         )
 
-    def __radd__(self, lhs) -> typing.Self:
+    def __radd__(self, lhs: MultiVectorBase | Coef) -> typing.Self:
         # addition commutes; gives ``2 + mv`` for free.
         return self.__add__(lhs)
 
@@ -220,7 +220,7 @@ class MultiVectorBase(abc.ABC):
     def __neg__(self) -> typing.Self:
         return -1 * self
 
-    def __truediv__(self, rhs) -> typing.Self:
+    def __truediv__(self, rhs: MultiVectorBase | Coef) -> typing.Self:
         """Quotient  A / B  =  A B⁻¹  — division IS multiplication by the
         inverse (right division: order matters in a non-commutative algebra).
         A bare number's inverse is its reciprocal, so ``v / s`` divides every
@@ -233,6 +233,12 @@ class MultiVectorBase(abc.ABC):
         return self.magnitude()
 
     def __iter__(self):
+        # Return intentionally left unannotated: typing it ``Generator[Coef]``
+        # makes ty treat a MultiVectorBase as a destructurable iterable, so the
+        # ``case [*sequence]:`` patterns in project/reject/reflect then also match
+        # a lone multivector and widen the bound element type -- a false positive
+        # (at runtime a multivector is not a Sequence).  The docstring already
+        # documents that iteration yields the coefficient values.
         """Iterate the coefficient values in blade order (a value/coordinate tuple).
 
         ``list(v)`` / ``tuple(v)`` / ``np.array([list(v), ...])`` give the numeric
@@ -830,7 +836,7 @@ class MultiVectorBase(abc.ABC):
             ]
         )
 
-    def _repr_latex_(self):
+    def _repr_latex_(self) -> str:
         # Display the simplified view: the lazy classes (G1/G2/G3, graded subtypes)
         # don't eager-simplify, so a raw coefficient may not be in lowest terms
         # (e.g. a bivector times its dual whose terms should cancel).  Simplifying

@@ -472,7 +472,7 @@ def to_matrix(
     n: typing.Optional[int] = None,
     *,
     backend: str = "numpy",
-):
+) -> "np.ndarray | sympy.Matrix":
     r"""The homogeneous ``(n+1) x (n+1)`` matrix of a linear or affine ``fn``.
 
     Always homogeneous (4x4 for 3D), even for a purely linear map -- a linear

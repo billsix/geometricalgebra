@@ -70,8 +70,8 @@ theta = sympy.symbols("theta", real=True)
 
 # the rotation carries e_1 toward the unit vector at angle theta in the e_1-e_2
 # plane; the same rotation is used in 2D and 3D below
-a = e_1
-b = sympy.cos(theta) * e_1 + sympy.sin(theta) * e_2
+a: Gn = e_1
+b: Gn = sympy.cos(theta) * e_1 + sympy.sin(theta) * e_2
 
 # %% [markdown]
 # $\mathcal{G}_2$ -- the plane
@@ -81,22 +81,22 @@ b = sympy.cos(theta) * e_1 + sympy.sin(theta) * e_2
 
 # %%
 v1, v2 = sympy.symbols("v1 v2", real=True)
-v_2d = v1 * e_1 + v2 * e_2
+v_2d: Gn = v1 * e_1 + v2 * e_2
 
-R = Gn.rotor_from_vectors(from_vector=a, to_vector=b)
+R: Gn = Gn.rotor_from_vectors(from_vector=a, to_vector=b)
 
 # %% [markdown]
 # The rotor sandwich $R\,v\,R^{-1}$ (simplified for display):
 
 # %%
-sandwich_2d = R * v_2d * R.inverse()
+sandwich_2d: Gn = R * v_2d * R.inverse()
 simplified(sandwich_2d)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # The projection formula `projection_rotation(from, to)` applied to the same $v$:
 
 # %%
-projection_2d = projection_rotation(from_vector=a, to_vector=b)(v_2d)
+projection_2d: Gn = projection_rotation(from_vector=a, to_vector=b)(v_2d)
 simplified(projection_2d)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -115,22 +115,22 @@ sandwich_2d - projection_2d  # pyright: ignore[reportUnusedExpression]
 
 # %%
 v1, v2, v3 = sympy.symbols("v1 v2 v3", real=True)
-v_3d = v1 * e_1 + v2 * e_2 + v3 * e_3
+v_3d: Gn = v1 * e_1 + v2 * e_2 + v3 * e_3
 
-R3 = Gn.rotor_from_vectors(from_vector=a, to_vector=b)
+R3: Gn = Gn.rotor_from_vectors(from_vector=a, to_vector=b)
 
 # %% [markdown]
 # The rotor sandwich (note the $e_3$ part rides through unchanged):
 
 # %%
-sandwich_3d = R3 * v_3d * R3.inverse()
+sandwich_3d: Gn = R3 * v_3d * R3.inverse()
 simplified(sandwich_3d)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # The projection formula on the same $v$:
 
 # %%
-projection_3d = projection_rotation(from_vector=a, to_vector=b)(v_3d)
+projection_3d: Gn = projection_rotation(from_vector=a, to_vector=b)(v_3d)
 simplified(projection_3d)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -173,8 +173,8 @@ show_mult(R3 * v_3d, R3.inverse())
 # Take two **symbolic** 3D vectors (the grade-1 part of a symbolic multivector):
 
 # %%
-a = Gn.symbolic_multivector(3, "a").r_vector_part(1)
-b = Gn.symbolic_multivector(3, "b").r_vector_part(1)
+a: Gn = Gn.symbolic_multivector(3, "a").r_vector_part(1)
+b: Gn = Gn.symbolic_multivector(3, "b").r_vector_part(1)
 
 # %%
 a
@@ -201,18 +201,18 @@ b
 
 # %%
 # label convention: subscript = "from", superscript = "to"
-align = ComposableFunction(
+align: ComposableFunction = ComposableFunction(
     projection_rotation(from_vector=a, to_vector=e_1), r"R_{a}^{e_1}"
 )
-perp = ComposableFunction(Gn.project(e_2 ^ e_3), r"P_{e_{23}}")
-turn = ComposableFunction(
+perp: ComposableFunction = ComposableFunction(Gn.project(e_2 ^ e_3), r"P_{e_{23}}")
+turn: ComposableFunction = ComposableFunction(
     projection_rotation(from_vector=e_2, to_vector=e_3), r"R_{e_2}^{e_3}"
 )
-unalign = ComposableFunction(
+unalign: ComposableFunction = ComposableFunction(
     projection_rotation(from_vector=e_1, to_vector=a), r"R_{e_1}^{a}"
 )
 
-cross_over_norm_a = unalign @ turn @ perp @ align
+cross_over_norm_a: ComposableFunction = unalign @ turn @ perp @ align
 # the whole pipeline, rendered as one LaTeX expression
 cross_over_norm_a  # pyright: ignore[reportUnusedExpression]
 
@@ -222,7 +222,7 @@ cross_over_norm_a  # pyright: ignore[reportUnusedExpression]
 # $|a| = \sqrt{a_1^2 + a_2^2 + a_3^2}$:
 
 # %%
-result = cross_over_norm_a(b)
+result: Gn = cross_over_norm_a(b)
 result  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]

@@ -35,11 +35,11 @@ from gacalc.g2 import G2, Vector2  # noqa: E402
 from gacalc.g3 import G3, Vector3  # noqa: E402
 from gacalc.gn import Gn  # noqa: E402
 
-SPECIALIZED = {1: G1, 2: G2, 3: G3}
+SPECIALIZED: dict[int, type[MultiVectorBase]] = {1: G1, 2: G2, 3: G3}
 
 
 def blades(n: int) -> list[tuple[int, ...]]:
-    idx = range(1, n + 1)
+    idx: range = range(1, n + 1)
     return list(chain.from_iterable(combinations(idx, r) for r in range(n + 1)))
 
 
@@ -53,14 +53,14 @@ def to(cls: type[MultiVectorBase], g: Gn) -> MultiVectorBase:
 
 def time_ms(fn: Callable[[], object], reps: int) -> float:
     fn()  # warm up
-    t0 = time.perf_counter()
+    t0: float = time.perf_counter()
     for _ in range(reps):
         fn()
     return (time.perf_counter() - t0) / reps * 1000.0
 
 
 def report(label: str, gn_ms: float, sp_ms: float) -> None:
-    speedup = gn_ms / sp_ms if sp_ms else float("inf")
+    speedup: float = gn_ms / sp_ms if sp_ms else float("inf")
     sys.stdout.write(f"{label:32s} {gn_ms:11.3f} {sp_ms:11.3f} {speedup:10.1f}x\n")
 
 
@@ -71,7 +71,7 @@ def main() -> None:
     sys.stdout.write("-" * 67 + "\n")
 
     for n in (1, 2, 3):
-        cls = SPECIALIZED[n]
+        cls: type[MultiVectorBase] = SPECIALIZED[n]
         a, b = num_full(n, 0), num_full(n, 10)
         ga, gb = to(cls, a), to(cls, b)
 
@@ -100,11 +100,14 @@ def main() -> None:
 
     # symbolic full product -- the headline case
     for n in (1, 2, 3):
-        cls = SPECIALIZED[n]
+        cls: type[MultiVectorBase] = SPECIALIZED[n]
+        # sa/sb are reused with a different type in the graded-subtype loop
+        # below, so they stay unannotated -- flow inference narrows each use
+        # (a fixed declared type here can't cover both Gn and the later value).
         sa = Gn.symbolic_multivector(n, "a")
         sb = Gn.symbolic_multivector(n, "b")
         gsa, gsb = to(cls, sa), to(cls, sb)
-        gn_reps = 1 if n == 3 else 5
+        gn_reps: int = 1 if n == 3 else 5
         report(
             f"G{n} symbolic full product",
             time_ms(lambda sa=sa, sb=sb: sa * sb, gn_reps),
@@ -117,13 +120,13 @@ def main() -> None:
     sys.stdout.write("graded subtype: vector * vector (-> rotor)\n")
     sys.stdout.write("-" * 67 + "\n")
     for n, vector_cls in ((2, Vector2), (3, Vector3)):
-        gva = Gn.from_blade_dict({(i,): i for i in range(1, n + 1)})
-        gvb = Gn.from_blade_dict({(i,): i + 1 for i in range(1, n + 1)})
+        gva: Gn = Gn.from_blade_dict({(i,): i for i in range(1, n + 1)})
+        gvb: Gn = Gn.from_blade_dict({(i,): i + 1 for i in range(1, n + 1)})
         va, vb = to(vector_cls, gva), to(vector_cls, gvb)
         fa, fb = to(SPECIALIZED[n], gva), to(SPECIALIZED[n], gvb)
-        t_typed = time_ms(lambda va=va, vb=vb: va * vb, 5000)
-        t_full = time_ms(lambda fa=fa, fb=fb: fa * fb, 5000)
-        t_gn = time_ms(lambda a=gva, b=gvb: a * b, 200)
+        t_typed: float = time_ms(lambda va=va, vb=vb: va * vb, 5000)
+        t_full: float = time_ms(lambda fa=fa, fb=fb: fa * fb, 5000)
+        t_gn: float = time_ms(lambda a=gva, b=gvb: a * b, 200)
         sys.stdout.write(
             f"G{n} numeric : Vector {t_typed:8.4f} ms   full G{n} {t_full:8.4f} ms"
             f"   Gn {t_gn:8.3f} ms  "
@@ -143,10 +146,10 @@ def main() -> None:
                 ),
             ),
         )
-        fsa = to(SPECIALIZED[n], widen_sym(sa))
-        fsb = to(SPECIALIZED[n], widen_sym(sb))
-        t_typed_s = time_ms(lambda sa=sa, sb=sb: sa * sb, 2000)
-        t_full_s = time_ms(lambda fsa=fsa, fsb=fsb: fsa * fsb, 2000)
+        fsa: MultiVectorBase = to(SPECIALIZED[n], widen_sym(sa))
+        fsb: MultiVectorBase = to(SPECIALIZED[n], widen_sym(sb))
+        t_typed_s: float = time_ms(lambda sa=sa, sb=sb: sa * sb, 2000)
+        t_full_s: float = time_ms(lambda fsa=fsa, fsb=fsb: fsa * fsb, 2000)
         sys.stdout.write(
             f"G{n} symbolic: Vector {t_typed_s:8.4f} ms   full G{n} {t_full_s:8.4f} ms"
             f"   (typed {t_full_s / t_typed_s:.1f}x vs full)\n"

@@ -373,17 +373,17 @@ for x in MultiVector.bases(3):
 
 
 # %%
-g2_1 = MultiVector.symbolic_multivector(n=2, prefix="a")
+g2_1: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="a")
 g2_1
 
 
 # %%
-g2_2 = MultiVector.symbolic_multivector(n=2, prefix="b")
+g2_2: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="b")
 g2_2
 
 
 # %%
-g2_3 = MultiVector.symbolic_multivector(n=2, prefix="c")
+g2_3: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="c")
 g2_3
 
 
@@ -479,7 +479,7 @@ show_mult(
 # %%
 
 
-def rotate(angle):
+def rotate(angle: float | sympy.Expr) -> InvertibleFunction:
     """Planar rotation by `angle` (positive turns e_1 toward e_2), built the
     geometric-algebra way: take the unit vector `to` at `angle` from e_1, form the
     half-angle rotor carrying e_1 -> to with `rotor_from_vectors`, and sandwich it.

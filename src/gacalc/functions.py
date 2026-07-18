@@ -124,7 +124,7 @@ class ComposableFunction(typing.Generic[V]):
     def __rmatmul__(self, f2: "ComposableFunction[V]") -> "ComposableFunction[V]":
         return f2 @ self
 
-    def _repr_latex_(self):
+    def _repr_latex_(self) -> str:
         return "$" + self.latex_repr + "$"
 
     def at(self, t: float) -> "ComposableFunction[V]":
@@ -239,7 +239,9 @@ def inverse(f: InvertibleFunction[V]) -> InvertibleFunction[V]:
 def compose(functions: "list[InvertibleFunction[V]]") -> "InvertibleFunction[V]": ...
 @typing.overload
 def compose(functions: "list[ComposableFunction[V]]") -> "ComposableFunction[V]": ...
-def compose(functions):
+def compose(
+    functions: "list[ComposableFunction[V]]",
+) -> "ComposableFunction[V]":
     r"""Compose a sequence of functions.
 
     For two functions :math:`f` and :math:`g`, ``compose([f, g])`` is
@@ -260,7 +262,7 @@ def compose(functions):
     """
     fns = list(functions)
 
-    def composed_fn(x):
+    def composed_fn(x: V) -> V:
         for f in reversed(fns):
             x = f(x)
         return x
@@ -277,7 +279,7 @@ def compose(functions):
             composed_fn, tex_str, components=list(fns), linearity=linearity
         )
 
-    def inv_composed_fn(x):
+    def inv_composed_fn(x: V) -> V:
         for f in inv_fns:
             x = inverse(f)(x)
         return x
