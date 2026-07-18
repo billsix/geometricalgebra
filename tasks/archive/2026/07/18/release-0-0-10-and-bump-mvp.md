@@ -1,12 +1,15 @@
 # Cut gacalc 0.0.10 and bump mvp to it
 
-**Status:** **in progress 2026-07-18** — Bill is cutting the release. History squashed
-(17 commits -> 2). Pre-flight verified: 286 tests pass, ruff/ty clean on src+tests+tools,
-generator output byte-identical across two runs, no public API removed or added. **One
-breaking change to note in the release:** `nbplotutils.generategridlines`'s first
-parameter was renamed `graphBounds` -> `graph_bounds` by the naming pass; every caller in
-both repos is positional, and mvp has its own copy of that function, so nothing breaks in
-practice. Version chosen: **0.0.10** (Bill: "nobody but me uses this library right now").
+**Status:** **COMPLETE 2026-07-18.** gacalc **0.0.10** released (tagged `v0.0.10`,
+pushed, live on PyPI) and modelviewprojection bumped to `gacalc>=0.0.10` with its image
+rebuilt.
+
+**Outcome — the demos needed no edits, as predicted.** mvp's `make format` went from
+**15 diagnostics to 10**: the 4 `ComposableFunction` -> `InvertibleFunction` errors in
+`demo06`/`demo07` cleared entirely upstream, and a 5th (`to_matrix` at
+`modelview2d.py:159`) cleared as a side effect. All 10 remaining are the glfw/PyOpenGL
+stub class, deliberately left (Bill: "leave them") -- so `make format` still exits 1 by
+design. See mvp's `tasks/make-format-gate-is-red.md`.
 **Created:** 2026-07-18
 
 ## Why
