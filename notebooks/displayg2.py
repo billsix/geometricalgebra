@@ -68,10 +68,10 @@ from gacalc.nbplotutils import (
     show_mult,
 )
 from gacalc.transforms import (
-    InvertibleFunction,
     compose,
     compose_intermediate_fns,
     inverse,
+    plane_rotation,
     scale_non_uniform,
     translate,
 )
@@ -267,26 +267,19 @@ gram_fe_to_mol_fe(gram_fe=95.8)
 # **representation preserving**: applied to a `G2`, it returns a `G2`.  Each
 # factory builds an `InvertibleFunction` that renders its own LaTeX.
 #
-# Rotation in geometric algebra is the rotor sandwich `R v R.inverse()`.  Here
-# `rotate(angle)` takes the unit vector `to` at `angle` from `e_1` and uses
-# `rotor_from_vectors` (the half-angle rotor carrying `e_1 -> to`), wrapped as an
-# `InvertibleFunction` so it composes / inverts like the other transforms.
+# Rotation in geometric algebra is the rotor sandwich `R v R.inverse()`, and
+# `plane_rotation(a, b)` packages it: it wedge-normalizes the two vectors `a`, `b`
+# into the unit bivector of their plane once, then returns an
+# `angle -> InvertibleFunction` factory (the half-angle rotor is built inside the
+# library -- no hand-rolled cos/sin).  So `rotate = plane_rotation(Vector2.e_1,
+# Vector2.e_2)` rotates in the `e_1 e_2` plane (positive `angle` turns `e_1` toward
+# `e_2`); each `rotate(angle)` is an `InvertibleFunction` that renders its own LaTeX,
+# composes / inverts like the other transforms, and -- via the rotor sandwich --
+# preserves the type of whatever it rotates (a `G2` stays a `G2`).
 
 
 # %%
-def rotate(angle: float | sympy.Expr) -> InvertibleFunction:
-    """Planar rotation by `angle` (positive turns e_1 toward e_2), built the
-    geometric-algebra way: take the unit vector `to` at `angle` from e_1, form the
-    half-angle rotor carrying e_1 -> to with `rotor_from_vectors`, and sandwich it.
-    """
-    to = sympy.cos(angle) * e_1 + sympy.sin(angle) * e_2
-    R = G2.rotor_from_vectors(from_vector=e_1, to_vector=to)
-    return InvertibleFunction(
-        lambda v: R * v * R.inverse(),
-        lambda v: R.inverse() * v * R,
-        f"R_{{{sympy.latex(angle)}}}",
-        f"R_{{{sympy.latex(-angle)}}}",
-    )
+rotate = plane_rotation(Vector2.e_1, Vector2.e_2)
 
 
 # %%

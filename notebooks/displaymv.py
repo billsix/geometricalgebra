@@ -49,6 +49,7 @@ from gacalc.gn import (
     e_4,
     inverse,
     one,
+    plane_rotation,
     scale_non_uniform,
     sym_vec2_1,
     sym_vec2_2,
@@ -479,19 +480,10 @@ show_mult(
 # %%
 
 
-def rotate(angle: float | sympy.Expr) -> InvertibleFunction:
-    """Planar rotation by `angle` (positive turns e_1 toward e_2), built the
-    geometric-algebra way: take the unit vector `to` at `angle` from e_1, form the
-    half-angle rotor carrying e_1 -> to with `rotor_from_vectors`, and sandwich it.
-    """
-    to = sympy.cos(angle) * e_1 + sympy.sin(angle) * e_2
-    R = MultiVector.rotor_from_vectors(from_vector=e_1, to_vector=to)
-    return InvertibleFunction(
-        lambda v: R * v * R.inverse(),
-        lambda v: R.inverse() * v * R,
-        f"R_{{{sympy.latex(angle)}}}",
-        f"R_{{{sympy.latex(-angle)}}}",
-    )
+# rotate(angle): rotation in the e_1 e_2 plane (positive angle turns e_1 -> e_2).
+# plane_rotation builds the half-angle rotor + sandwich internally and returns a
+# properly-labelled InvertibleFunction -- no hand-built rotor, and it renders LaTeX.
+rotate = plane_rotation(e_1, e_2)
 
 
 T: typing.Callable[[MultiVector], MultiVectorFn] = translate
