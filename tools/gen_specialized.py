@@ -929,6 +929,15 @@ def dispatch_method(
     """
     cases: list[ast.match_case] = []
     if number_case:
+        # #3: a bare number is the grade-0 (scalar) operand.  Emit the SAME result
+        # as the ``Scalar`` arm below, but reading ``rhs`` directly rather than
+        # ``rhs.coeff_scalar`` (an empty rename ``attr`` renders as the bare name) --
+        # so there is no intermediate ``Scalar`` object and no re-dispatch.
+        num_spec, num_exprs = product_result(
+            self_spec, SCALAR, gn_product, n, full_name
+        )
+        num_rename = rename_map(self_spec.blades, SCALAR.blades, param_name)
+        num_rename["b_" + blade_label(())] = (param_name, "")
         cases.append(
             ast.match_case(
                 pattern=ast.MatchOr(
@@ -938,19 +947,9 @@ def dispatch_method(
                         _match_class(attribute("sympy", "Expr")),
                     ]
                 ),
-                body=[
-                    return_stmt(
-                        call(
-                            attribute("self", method),
-                            [
-                                construct(
-                                    "Scalar",
-                                    [(field_name(()), cast_coef(name_ref(param_name)))],
-                                )
-                            ],
-                        )
-                    )
-                ],
+                body=result_block_stmts(
+                    num_spec, num_exprs, num_rename, cast, owner=self_spec.name
+                ),
             )
         )
     for rhs_spec in [SCALAR, *graded_specs(n)]:
@@ -990,9 +989,39 @@ def dispatch_method(
             ],
         )
     )
+    body_stmts: list[ast.stmt] = []
+    # #1: exact-type early-out.  The dominant operand (measured across the CtC + mvp
+    # workloads) is the SAME concrete type as ``self``; a single ``type(x) is T``
+    # identity check reaches the closed form without walking the ``match`` ladder.
+    # A *subtype* (for which ``type(x) is T`` is False) still falls through to the
+    # ``case T()`` arm below, so subclass preservation is unchanged.  Only for the
+    # Self-returning ops -- NOT the operand-typed sandwich (cast_operand), where the
+    # same-type operand is rare so the extra check would not pay for itself.
+    if cast is cast_self:
+        st_spec, st_exprs = product_result(
+            self_spec, self_spec, gn_product, n, full_name
+        )
+        body_stmts.append(
+            ast.If(
+                ast.Compare(
+                    call("type", [name_ref(param_name)]),
+                    [ast.Is()],
+                    [name_ref(self_spec.name)],
+                ),
+                result_block_stmts(
+                    st_spec,
+                    st_exprs,
+                    rename_map(self_spec.blades, self_spec.blades, param_name),
+                    cast,
+                    owner=self_spec.name,
+                ),
+                [],
+            )
+        )
+    body_stmts.append(ast.Match(subject=name_ref(param_name), cases=cases))
     return function_def(
         method,
-        [ast.Match(subject=name_ref(param_name), cases=cases)],
+        body_stmts,
         params=[argument("self"), argument(param_name, param_annotation)],
         returns=return_type if return_type is not None else attribute("typing", "Self"),
     )
@@ -1622,6 +1651,16 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
     numlike = [name_ref("int"), name_ref("float"), attribute("sympy", "Expr")]
     SELF = attribute("typing", "Self")
 
+    # #4: closed-form magnitude_squared = |A|^2 = <~A A> (a scalar), derived
+    # symbolically exactly as the base method computes it -- self.reverse() then
+    # scalar_product -- but collapsed to direct field arithmetic (e.g. e_1**2 +
+    # e_2**2 for a vector).  The inherited base magnitude()/normalize()/__abs__()
+    # call this via self, so they too stop round-tripping through
+    # to_blade_dict()/from_blade_dict().  base.py is untouched (still the reference).
+    msq_symbols = {b: sympy.Symbol("a_" + blade_label(b)) for b in spec.blades}
+    msq_sym = Gn.from_blade_dict(msq_symbols)
+    msq_expr = sympy.sympify(msq_sym.reverse().scalar_product(msq_sym))
+
     def unary_body(gn_unary: Callable[[Gn], Gn]) -> ast.stmt:
         result_spec, out_exprs = unary_result(spec, gn_unary, n, full_name)
         return unary_stmt(result_spec, out_exprs, unary_rename, owner=spec.name)
@@ -1795,6 +1834,12 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                     else cast_coef(constant(0))
                 )
             ],
+            returns=name_ref("Coef"),
+        ),
+        function_def(
+            "magnitude_squared",
+            method_doc_stmts("magnitude_squared")
+            + [return_stmt(cast_coef(expr_to_ast(msq_expr, unary_rename)))],
             returns=name_ref("Coef"),
         ),
         grades_method(
