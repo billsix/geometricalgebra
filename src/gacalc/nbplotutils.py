@@ -393,7 +393,7 @@ def draw_ndc(
     )  # zorder ensures dots are on top
 
     # Label each vertex
-    labels = ["(-1,-1)", "(-1,1)", "(1,1)", "(-1,1)"]
+    labels = ["(-1,-1)", "(1,-1)", "(1,1)", "(-1,1)"]
     for i, label in enumerate(labels):
         # Use plt.annotate to place the label near the point
         plt.annotate(
