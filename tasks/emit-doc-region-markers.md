@@ -93,14 +93,75 @@ docstring. That is also exactly where the book needs it (the split exists to ski
 docstring), so the constraint and the requirement agree. The regex above matches both
 quote styles anyway, as a safety net.
 
-## Naming
+## Naming standard — SHA1 slugs (Bill, 2026-07-19: "I literally don't care about the
+names other than them being very highly likely unique")
 
-Marker names become anchors in mvp's `.rst`, so they are a **cross-repo contract** — a
-rename silently empties a book listing (that is the bug that created the consumer task).
-Needs a convention decided up front, e.g.
-`doc-region-begin g2 vector2 class` / `doc-region-end g2 vector2 magnitude signature`.
-Must be unique within a file: Sphinx matches the **first** occurrence of the anchor text,
-so a marker name that is a prefix of another can silently select the wrong region.
+### Why a hash, and not a hierarchical slug
+
+Marker names are anchors in mvp's `.rst`, so they are a **cross-repo contract**: a rename
+silently empties a book listing.
+
+**Sphinx matches the first line *containing* the anchor text, so one anchor being a
+*prefix* of another silently selects the wrong region.** Demonstrated with a real Sphinx
+build 2026-07-19 — asking for `doc-region-begin gacalc-g2-vector2-magnitude` rendered the
+contents of `…-magnitude-signature`, **with no warning**. A hierarchical slug scheme
+*reintroduces* the collision it was meant to prevent, since every parent name is a prefix
+of its children.
+
+**A fixed-length hex slug cannot be a prefix of another fixed-length hex slug.** The
+collision class is eliminated by construction rather than by discipline.
+
+### The standard
+
+**The anchor is a 12-hex SHA1 of the region's IDENTITY, with human-readable text trailing
+on the same line:**
+
+```python
+# doc-region-begin 2a54c6adf844  gacalc g2 Vector2.magnitude sig
+def magnitude(self): ...
+# doc-region-end 2a54c6adf844  gacalc g2 Vector2.magnitude sig
+```
+
+where the hash is `sha1("gacalc:g2:Vector2.magnitude:sig")[:12]`, over
+`<project>:<module>:<qualified-name>:<role>`, roles being
+`classdef` / `classvar` / `instancevar` / `sig` / `body`.
+
+**The book anchors on the hash alone; the trailing text is for humans and may be reworded
+freely without breaking anything** — verified with a real Sphinx build (`:start-after:
+doc-region-begin 3260dee29d77` selected the right region with the descriptive text
+present).
+
+**Identity hash, NOT content hash — this is the key choice.** Hashing the region's
+*content* would change the anchor on every code edit, breaking the book on every commit.
+Hashing its *identity* keeps the anchor stable across edits; it changes only when the thing
+is genuinely renamed or moved, which is exactly when the book *should* be forced to look.
+
+### Content SHA1 — a separate job: drift detection
+
+A **content** SHA1 is still valuable, for the different question "did the code inside this
+region change?" — the cross-repo drift that a pinned version is supposed to prevent.
+Keep it **out of the source** (self-referential, and churns every edit) and in a
+**lockfile** in mvp, `anchor -> sha1(region content)`, verified by the anchor checker.
+Prototyped over the 12 real regions in mvp's `mathutils.py`; e.g.
+
+```
+45989ca00f45   64 lines  define ortho
+386ed9fc0889   87 lines  define perspective
+```
+
+A changed hash means the printed listing changed — reviewed and re-locked deliberately,
+like any lockfile bump.
+
+### The checker still earns its keep
+
+Hashes make collisions vanishingly unlikely, not impossible, and nothing stops a
+hand-written marker being mistyped. The checker in
+`tasks/dangling-book-code-includes.md` must assert:
+
+1. every anchor referenced by the book **resolves** in its target file;
+2. no anchor in a target file is a **prefix** of another (cheap, and catches a hand-rolled
+   marker that ignores this standard);
+3. each region's **content hash** matches the lockfile.
 
 ## Verification
 
