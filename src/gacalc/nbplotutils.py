@@ -13,6 +13,7 @@
 
 
 import contextlib
+import contextvars
 import itertools
 import math
 from collections.abc import Generator, Sequence
@@ -106,7 +107,30 @@ def generategridlines(
         )
 
 
-axes: Axes | None = None
+#: The axes established by the enclosing ``create_graphs()`` block.
+#:
+#: A :class:`contextvars.ContextVar` rather than a plain module global for two
+#: reasons.  ``set()`` returns a token and ``reset(token)`` restores the
+#: *previous* value, so nested ``create_graphs()`` blocks no longer clobber each
+#: other (a bare global left the outer block with ``None``).  And an unset
+#: ContextVar raises at the point of use, which is how ``_current_axes()`` can
+#: report the real mistake instead of an ``AttributeError`` further downstream.
+_axes: contextvars.ContextVar[Axes] = contextvars.ContextVar("axes")
+
+
+def _current_axes() -> Axes:
+    """The axes of the enclosing ``create_graphs()`` block.
+
+    Raises :class:`RuntimeError` naming the actual mistake if there is no such
+    block -- this replaced scattered ``assert axes is not None`` checks.
+    """
+    try:
+        return _axes.get()
+    except LookupError:
+        raise RuntimeError(
+            "no active figure -- call this inside a "
+            "`with create_graphs():` block"
+        ) from None
 
 
 @contextlib.contextmanager
@@ -115,14 +139,17 @@ def create_graphs(
     title: str | None = None,
     filename: str | None = None,
 ) -> Generator[Axes, None, Figure]:
-    global axes
     fig, axes = plt.subplots(figsize=graph_bounds)
+    token = _axes.set(axes)
     axes.set_xlim((-graph_bounds[0], graph_bounds[0]))
     axes.set_ylim((-graph_bounds[1], graph_bounds[1]))
 
     plt.tight_layout()
 
-    yield axes
+    try:
+        yield axes
+    finally:
+        _axes.reset(token)
 
     fig.patch.set_edgecolor("black")
     fig.patch.set_linewidth(2)
@@ -252,7 +279,7 @@ def _draw_labelled_triangle(
     ``vertex_coefficients`` gives each vertex as ``(a, b)`` meaning
     ``a * e_1 + b * e_2``.
     """
-    assert axes is not None, "call inside a create_graphs() block"
+    axes = _current_axes()
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
     origin = cls.zero()
@@ -352,7 +379,7 @@ def draw_ndc(
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
-    assert axes is not None, "call inside a create_graphs() block"
+    axes = _current_axes()
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
     origin = cls.zero()
@@ -416,7 +443,7 @@ def draw_screen(
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
-    assert axes is not None, "call inside a create_graphs() block"
+    axes = _current_axes()
     ex = cls.basis_vector(1)
     ey = cls.basis_vector(2)
     d_width = 2.0 / width

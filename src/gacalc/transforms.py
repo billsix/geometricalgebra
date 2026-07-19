@@ -496,7 +496,7 @@ def to_matrix(
         last row         = (0, ..., 0, 1)
 
     The translation lands in the **last column** (column-vector / premultiply
-    convention), matching mvp's ``pyMatrixStack``.
+    convention), matching mvp's ``matrix_stack``.
 
     ``cls`` is the representation to probe in (``G2`` / ``G3`` / ``Gn`` / ...).
     ``n`` is taken from ``cls.DIMENSION`` for the specialized classes; pass it
