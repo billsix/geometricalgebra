@@ -63,15 +63,66 @@ def marker(text: str) -> ast.Expr:
     return ast.Expr(ast.Constant(_MARKER_OPEN + text + _MARKER_CLOSE))
 
 
-def inject_region_markers(body: list[ast.stmt]) -> list[ast.stmt]:
-    """Wrap each top-level class, and each method within it, in doc-region markers.
+def _is_classvar(annotation: ast.expr) -> bool:
+    """True if a field annotation is ``typing.ClassVar[...]`` (not an instance var)."""
+    if not isinstance(annotation, ast.Subscript):
+        return False
+    head: ast.expr = annotation.value
+    name: str | None = (
+        head.attr
+        if isinstance(head, ast.Attribute)
+        else head.id
+        if isinstance(head, ast.Name)
+        else None
+    )
+    return name == "ClassVar"
 
-    Class region ``<name> class``; method region ``<name> <method> method``.  The
-    trailing keyword keeps names **prefix-free** (Sphinx matches the first line
-    *containing* the anchor, so ``... magnitude`` would otherwise also match
-    ``... magnitude_squared``).  The begin/end markers are siblings *around* the
-    node -- before the ``class``/``def`` line and after the block -- so a copied
-    docstring (which must stay first inside the block) is unaffected.
+
+def _method_label(class_name: str, method: ast.FunctionDef, seen: set[str]) -> str:
+    """A unique, prefix-free region label for a method.
+
+    ``<class> <method> method`` normally, but a property **setter** / **deleter**
+    shares the getter's name, so it takes an ``<method> setter`` / ``deleter``
+    qualifier; any remaining duplicate gets a numeric one.  The qualifier goes
+    *before* the trailing ``method`` keyword so names stay prefix-free (``x
+    setter method`` does not contain ``x method``).  ``seen`` is mutated to track
+    the labels already used in this class.
+    """
+    decorator: ast.expr
+    accessor: str = ""
+    for decorator in method.decorator_list:
+        if isinstance(decorator, ast.Attribute) and decorator.attr in (
+            "setter",
+            "deleter",
+        ):
+            accessor = " " + decorator.attr
+    core: str = f"{method.name}{accessor}"
+    label: str = f"{class_name} {core} method"
+    suffix: int = 2
+    while label in seen:
+        label = f"{class_name} {core} {suffix} method"
+        suffix += 1
+    seen.add(label)
+    return label
+
+
+def inject_region_markers(body: list[ast.stmt]) -> list[ast.stmt]:
+    """Wrap each top-level class -- and, within it, its declaration, its instance
+    variables, and each method -- in doc-region markers.
+
+    Regions per class ``C``: ``C class`` (the whole class), ``C declaration`` (the
+    ``class`` line, ending before the docstring), ``C instance variables`` (the
+    dataclass fields), and ``C <method> method`` for each method.  The trailing
+    keyword keeps names **prefix-free** (Sphinx matches the first line *containing*
+    the anchor, so ``... magnitude`` would otherwise also match
+    ``... magnitude_squared``).
+
+    Most markers are AST siblings placed *around* a node, so a copied docstring
+    (which must stay first inside a block, or ``ast.unparse`` renders it as an
+    ugly escaped string) is untouched.  The one exception is the ``declaration``
+    *end*, which must land after the ``class`` line but before the docstring;
+    emitting it here would displace the docstring, so it is inserted at the text
+    level in :func:`module_source` instead.
     """
     out: list[ast.stmt] = []
     node: ast.stmt
@@ -79,32 +130,85 @@ def inject_region_markers(body: list[ast.stmt]) -> list[ast.stmt]:
         if not isinstance(node, ast.ClassDef):
             out.append(node)
             continue
-        wrapped_methods: list[ast.stmt] = []
+        field_indices: list[int] = [
+            i
+            for i, m in enumerate(node.body)
+            if isinstance(m, ast.AnnAssign) and not _is_classvar(m.annotation)
+        ]
+        first_field: int | None = field_indices[0] if field_indices else None
+        last_field: int | None = field_indices[-1] if field_indices else None
+        new_body: list[ast.stmt] = []
+        seen_labels: set[str] = set()
+        i: int
         member: ast.stmt
-        for member in node.body:
+        for i, member in enumerate(node.body):
+            if i == first_field:
+                new_body.append(
+                    marker(f"doc-region-begin {node.name} instance variables")
+                )
             if isinstance(member, ast.FunctionDef):
-                label: str = f"{node.name} {member.name} method"
-                wrapped_methods.append(marker(f"doc-region-begin {label}"))
-                wrapped_methods.append(member)
-                wrapped_methods.append(marker(f"doc-region-end {label}"))
+                label: str = _method_label(node.name, member, seen_labels)
+                new_body.append(marker(f"doc-region-begin {label}"))
+                new_body.append(member)
+                new_body.append(marker(f"doc-region-end {label}"))
             else:
-                wrapped_methods.append(member)
-        node.body = wrapped_methods
+                new_body.append(member)
+            if i == last_field:
+                new_body.append(
+                    marker(f"doc-region-end {node.name} instance variables")
+                )
+        node.body = new_body
         out.append(marker(f"doc-region-begin {node.name} class"))
+        # declaration BEGIN here; its END is inserted after the class line by
+        # module_source (see the docstring above for why not here).
+        out.append(marker(f"doc-region-begin {node.name} declaration"))
         out.append(node)
         out.append(marker(f"doc-region-end {node.name} class"))
     return out
 
 
+def _insert_declaration_ends(src: str) -> str:
+    """Place each ``doc-region-end <C> declaration`` right after ``C``'s ``class`` line.
+
+    The declaration region's end must fall between the ``class`` line and the
+    docstring; doing that in the AST would bump the docstring out of first
+    position (rendering it as an escaped one-liner), so it is done here in text.
+    Keyed off the ``doc-region-begin <C> declaration`` comment already emitted
+    just above each class.
+    """
+    lines: list[str] = src.split("\n")
+    out_lines: list[str] = []
+    pending: str | None = None  # class name whose `class` line we're waiting for
+    begin_re: typing.Final = re.compile(
+        r"^\s*# doc-region-begin (?P<name>\S+) declaration$"
+    )
+    line: str
+    for line in lines:
+        out_lines.append(line)
+        begin = begin_re.match(line)
+        if begin is not None:
+            pending = begin.group("name")
+            continue
+        if pending is not None and re.match(
+            rf"^(?P<indent>\s*)class {re.escape(pending)}\b.*:\s*$", line
+        ):
+            indent: str = line[: len(line) - len(line.lstrip())]
+            out_lines.append(f"{indent}    # doc-region-end {pending} declaration")
+            pending = None
+    return "\n".join(out_lines)
+
+
 def module_source(body: list[ast.stmt]) -> str:
     """Render top-level statement nodes to source via `ast.unparse`.
 
-    Any ``marker`` sentinels are rewritten to ``# doc-region-...`` comments (a
-    no-op when there are none).
+    Any ``marker`` sentinels are rewritten to ``# doc-region-...`` comments, and
+    each class's ``declaration`` region is closed after its ``class`` line (both
+    a no-op when there are no markers).
     """
     module: ast.Module = ast.Module(body=body, type_ignores=[])
     rendered: str = ast.unparse(ast.fix_missing_locations(module))
-    return _MARKER_RE.sub(r"\g<indent># \g<text>", rendered)
+    commented: str = _MARKER_RE.sub(r"\g<indent># \g<text>", rendered)
+    return _insert_declaration_ends(commented)
 
 
 class SymbolToAttr(ast.NodeTransformer):

@@ -16,11 +16,25 @@ low-risk (a single AST post-pass, no surgical per-member injection), it annotate
 everything so the coming white/black-box reassessment has real regions to include, and it
 does not require deciding per-method granularity now.
 
-## Naming scheme (descriptive, unique, prefix-free by construction)
+## Region kinds (Bill added declaration + instance vars 2026-07-20)
 
-- Class region: ``<ClassName> class`` (e.g. ``Vector2 class``, ``G2 class``,
-  ``Scalar class``).
-- Method region: ``<ClassName> <methodName> method`` (e.g. ``Vector2 __add__ method``).
+Per class ``C``: ``C class`` (whole class), ``C declaration`` (the ``class`` line,
+ending before the docstring), ``C instance variables`` (the dataclass fields), and
+``C <method> method`` per method.
+
+- Property getter/setter share a name, so a setter/deleter takes a qualifier:
+  ``Vector2 x method`` (getter) vs ``Vector2 x setter method`` (setter). Any further
+  duplicate gets a numeric qualifier -- placed *before* ``method`` so names stay
+  prefix-free. (This case exposed a gap: an exact-duplicate name is invisible to a
+  set-based prefix check; the generated output is now verified for exact duplicates too.)
+- **Instance vars** are the non-``ClassVar`` ``AnnAssign`` fields (``coeff_*``); the
+  ``DIMENSION``/basis ``ClassVar`` declarations are correctly excluded.
+- **The declaration END is inserted in TEXT, not the AST.** Putting it before the
+  docstring at the AST level bumps the docstring out of first position, and
+  ``ast.unparse`` then renders it as an ugly escaped one-liner (ruff does not fix this).
+  So ``module_source`` inserts ``# doc-region-end C declaration`` after the ``class C``
+  line in the rendered text -- docstrings stay triple-quoted (verified: all classes'
+  docstrings intact).
 
 The trailing ``class`` / ``method`` keyword is load-bearing: it makes the names
 **prefix-free**, which is required because Sphinx matches the first line *containing* the
@@ -53,6 +67,14 @@ first position becomes the docstring); the wrap inserts the begin-marker before 
 3. Full suite + `ty` + `ruff` clean.
 4. Regenerated `g1/g2/g3/scalar.py` differ from the shipped release *only* by the new
    marker comments.
+
+## Follow-up found: mvp's checker misses EXACT duplicates
+
+`modelviewprojection/tools/check_doc_regions.py` detects *prefix* collisions but dedupes
+names into a set first, so two regions with the *same* name in one file slip through
+(that is how the ``x`` getter/setter dup was almost missed here). When mvp's book starts
+including from gacalc, that checker should also flag exact duplicates. Noted, not yet done
+(mvp-side).
 
 ## What this does NOT mark
 
