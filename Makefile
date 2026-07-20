@@ -145,6 +145,11 @@ GENERATED = src/gacalc/scalar.py \
 generate: ## Generate the specialized algebras (scalar/g1/g2/g3.py) -- needs sympy
 	python tools/gen_specialized.py
 
+.PHONY: check-regions
+check-regions: ## Verify doc-region markers are unique/prefix-free/balanced (regen first)
+	python tools/gen_specialized.py
+	python tools/check_doc_regions.py
+
 .PHONY: check-generated
 check-generated: ## Verify tools/gen_specialized.py is deterministic (regen twice, compare)
 	python tools/gen_specialized.py

@@ -68,13 +68,22 @@ first position becomes the docstring); the wrap inserts the begin-marker before 
 4. Regenerated `g1/g2/g3/scalar.py` differ from the shipped release *only* by the new
    marker comments.
 
-## Follow-up found: mvp's checker misses EXACT duplicates
+## Checkers (both done 2026-07-20)
 
-`modelviewprojection/tools/check_doc_regions.py` detects *prefix* collisions but dedupes
-names into a set first, so two regions with the *same* name in one file slip through
-(that is how the ``x`` getter/setter dup was almost missed here). When mvp's book starts
-including from gacalc, that checker should also flag exact duplicates. Noted, not yet done
-(mvp-side).
+- **gacalc: new `tools/check_doc_regions.py` + `make check-regions`.** Regenerates, then
+  verifies every `src/gacalc/*.py` marker set is (1) free of exact duplicates, (2)
+  prefix-free, (3) balanced begin/end -- per file, per begin/end kind. Exit 1 on any.
+  Verified against all three synthetic failure modes; current tree passes. Host target
+  (needs sympy), matching `generate` / `check-generated`.
+- **mvp: `check_doc_regions.py` now also catches EXACT duplicates**, not just prefixes
+  (it deduped into a set, which is how the ``x`` getter/setter dup was nearly missed). Fix
+  also required anchoring the marker regex to the **comment form** (`#\s*doc-region-...`):
+  without it the checker matched the `doc-region-begin` string inside its *own* regex
+  literals and false-flagged itself. mvp now reports 0 collisions (the 2 false positives
+  gone), 42 unresolved (unchanged).
+
+Both use the comment-form regex; a bare `doc-region-begin` in a string/docstring no longer
+counts.
 
 ## What this does NOT mark
 
