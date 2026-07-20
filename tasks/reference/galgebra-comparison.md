@@ -1,11 +1,11 @@
 # galgebra vs gacalc — feature gap analysis (research, for prioritization)
 
-**Status:** COMPLETE (overnight research, 2026-07-20). **Read-only research task** — no
-gacalc code was changed. Deliverable is *this document*: a catalog of what the mature
-`galgebra` library does that gacalc does not, so Bill can prioritize later. Method: read all
-~8,850 lines of galgebra 0.6.0 source (5 parallel readers), cross-checked against the wider
-GA field via web research, diffed against gacalc's real current surface (read from source,
-not memory).
+**Reference document** — a standing map of what the mature `galgebra` library does that
+gacalc does not, kept for prioritizing gacalc's roadmap. Not a task: nothing here is "to
+do." **Update it in place** as either library moves or as items get promoted into real
+`tasks/`. Last researched 2026-07-20 against galgebra 0.6.0. Method: read all ~8,850 lines of
+galgebra 0.6.0 source, cross-checked against the wider GA field, and diffed against gacalc's
+real current surface (read from source, not memory).
 
 ---
 
@@ -48,20 +48,21 @@ the code-generated fast paths, the from→to rotation API, and equation-cited fi
 
 ## What this is
 
-Bill is reading ~5 books on geometric algebra and has limited time; this task front-loads
+Bill is reading ~5 books on geometric algebra and has limited time; this note front-loads
 the "what does a mature GA library actually contain" research. We read the **full source of
 `galgebra` 0.6.0** (the well-known symbolic GA library for SymPy — `pygae/galgebra`, orig.
 Alan Bromborsky) and cross-referenced it against gacalc's current capabilities and against
 the wider GA literature, then wrote up the differences organized for triage.
 
-## Assumptions made (Bill was asleep; veto any of these)
+## Scope & assumptions
 
 1. **"galgebra" = `pygae/galgebra` 0.6.0** — the symbolic-GA-for-SymPy package on PyPI /
    GitHub. Pulled its sdist and read every module. (There is no other well-known Python
    library by that name.)
-2. **Deliverable = a prioritization reference**, not an implementation plan and not any code
-   change. Nothing here is "do it"; it is "here is the map." Concrete follow-up tasks, if
-   any, get spun out later per `/findings-to-tasks`.
+2. **This is a prioritization reference** (lives in `tasks/reference/`), not an
+   implementation plan and not any code change. Nothing here is "do it"; it is "here is the
+   map." Concrete follow-up work gets spun out into real `tasks/` docs later per
+   `/findings-to-tasks`, and this note is updated in place as that happens.
 3. **Scope of "different" = capability & design gaps that matter for a GA library**, focused
    on *what galgebra can do that gacalc can't* (since galgebra is far more mature). Where
    gacalc is deliberately different-by-design (pedagogical, provably-correct reference +
