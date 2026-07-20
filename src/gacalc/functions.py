@@ -69,8 +69,10 @@ class NotInvertibleError(Exception):
     is bypassed."""
 
 
+# doc-region-begin composable function class signature
 @dataclasses.dataclass
 class ComposableFunction(typing.Generic[V]):
+    # doc-region-end composable function class signature
     """A composable, LaTeX-labelled function ``V -> V`` with **no** inverse.
 
     Compose with ``@`` / :func:`compose`, render with ``_repr_latex_``,
@@ -79,6 +81,7 @@ class ComposableFunction(typing.Generic[V]):
     (e.g. a labelled ``project`` / ``reject``) is exactly this base type.
     """
 
+    # doc-region-begin composable function members
     func: typing.Callable[[V], V]  #: The wrapped function
     latex_repr: str  #: The LaTeX representation of the function
     #: Optional interpolation law: maps ``t`` in ``[0, 1]`` to the
@@ -94,8 +97,11 @@ class ComposableFunction(typing.Generic[V]):
     )
     #: linear / affine / non-linear classification (see :class:`Linearity`).
     linearity: Linearity = dataclasses.field(default=Linearity.NONLINEAR, kw_only=True)
+    # doc-region-end composable function members
 
+    # doc-region-begin composable function call signature
     def __call__(self, x: V) -> V:
+        # doc-region-end composable function call signature
         """Execute the wrapped function on ``x`` (result has the same type as ``x``).
 
         Example:
@@ -104,9 +110,13 @@ class ComposableFunction(typing.Generic[V]):
             >>> double(5)
             10
         """
+        # doc-region-begin composable function call body
         return self.func(x)
+        # doc-region-end composable function call body
 
+    # doc-region-begin composable function compose signature
     def __matmul__(self, f2: "ComposableFunction[V]") -> "ComposableFunction[V]":
+        # doc-region-end composable function compose signature
         """Override ``@`` for function composition (``self`` after ``f2``).
 
         Example:
@@ -119,7 +129,9 @@ class ComposableFunction(typing.Generic[V]):
             >>> (foo @ inverse(foo))(5)
             5
         """
+        # doc-region-begin composable function compose body
         return compose([self, f2])
+        # doc-region-end composable function compose body
 
     def __rmatmul__(self, f2: "ComposableFunction[V]") -> "ComposableFunction[V]":
         return f2 @ self
@@ -169,8 +181,10 @@ class ComposableFunction(typing.Generic[V]):
                 yield from c.steps()
 
 
+# doc-region-begin invertible function class signature
 @dataclasses.dataclass
 class InvertibleFunction(ComposableFunction[V]):
+    # doc-region-end invertible function class signature
     """A :class:`ComposableFunction` that also carries an ``inverse``.
 
     Same interface as the base (compose, label, ``at`` / ``steps``), plus a real
@@ -183,8 +197,10 @@ class InvertibleFunction(ComposableFunction[V]):
     ``linearity`` / ``interpolate`` / ``components`` keyword-only.
     """
 
+    # doc-region-begin invertible function members
     inverse: typing.Callable[[V], V]  #: The inverse of the wrapped function
     latex_repr_inv: str  #: The LaTeX representation of the inverse
+    # doc-region-end invertible function members
 
     def at(self, t: float) -> "InvertibleFunction[V]":
         """Interpolate — narrower return than the base: an invertible function's
@@ -217,7 +233,9 @@ class InvertibleFunction(ComposableFunction[V]):
         return super().__matmul__(f2)
 
 
+# doc-region-begin inverse signature
 def inverse(f: InvertibleFunction[V]) -> InvertibleFunction[V]:
+    # doc-region-end inverse signature
     """Get the inverse of an :class:`InvertibleFunction`.
 
     Raises :class:`NotInvertibleError` if ``f`` is a bare
@@ -230,6 +248,7 @@ def inverse(f: InvertibleFunction[V]) -> InvertibleFunction[V]:
         >>> inverse(foo)(foo(5))
         5
     """
+    # doc-region-begin inverse body
     if not isinstance(f, InvertibleFunction):
         raise NotInvertibleError(
             f"{getattr(f, 'latex_repr', f)!r} is not invertible; it has no inverse "
@@ -257,6 +276,7 @@ def inverse(f: InvertibleFunction[V]) -> InvertibleFunction[V]:
             for c in reversed(f.components)
         ]
     return f_inverse
+    # doc-region-end inverse body
 
 
 @typing.overload

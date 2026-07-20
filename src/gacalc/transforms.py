@@ -144,7 +144,9 @@ def compose_intermediate_fns_and_fn(
     )
 
 
+# doc-region-begin translate signature
 def translate(b: V) -> InvertibleFunction[V]:
+    # doc-region-end translate signature
     """Translate by ``b``.  The result has the same representation as ``b``.
 
     The parameter is named ``b`` on purpose: in ``f(x) = m*x + b`` it is the
@@ -154,6 +156,7 @@ def translate(b: V) -> InvertibleFunction[V]:
     ``m`` half.
     """
 
+    # doc-region-begin translate body
     def f(vector: V) -> V:
         return vector + b
 
@@ -168,6 +171,7 @@ def translate(b: V) -> InvertibleFunction[V]:
         interpolate=lambda t: translate(b * t),
         linearity=Linearity.AFFINE,
     )
+    # doc-region-end translate body
 
 
 def projection_rotation(
@@ -402,7 +406,9 @@ def plane_rotation(
     return rotation
 
 
+# doc-region-begin uniform scale signature
 def uniform_scale(m: float) -> InvertibleFunction:
+    # doc-region-end uniform scale signature
     """Scale uniformly by ``m`` (representation preserving -- just ``vector * m``).
 
     The parameter is named ``m`` on purpose: in ``f(x) = m*x + b`` it is the
@@ -412,6 +418,7 @@ def uniform_scale(m: float) -> InvertibleFunction:
     exactly why it is introduced separately.)
     """
 
+    # doc-region-begin uniform scale body
     def f(vector: MultiVectorBase) -> MultiVectorBase:
         return vector * m
 
@@ -430,9 +437,12 @@ def uniform_scale(m: float) -> InvertibleFunction:
         interpolate=lambda t: uniform_scale(1.0 + (m - 1.0) * t),
         linearity=Linearity.LINEAR,
     )
+    # doc-region-end uniform scale body
 
 
+# doc-region-begin scale non-uniform signature
 def scale_non_uniform(*factors: float) -> InvertibleFunction:
+    # doc-region-end scale non-uniform signature
     """Scale axis ``i`` by ``factors[i]`` (1-indexed e_1, e_2, ...), in any dimension.
 
     Representation preserving: the basis vectors are taken from the type of the
@@ -440,6 +450,7 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
     type.  Pass two factors for the 2D case (``scale_non_uniform(m_x, m_y)``).
     """
 
+    # doc-region-begin scale non-uniform body
     def f(vector: MultiVectorBase) -> MultiVectorBase:
         cls: type[MultiVectorBase] = type(vector)
         return sum(
@@ -473,6 +484,7 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
         ),
         linearity=Linearity.LINEAR,
     )
+    # doc-region-end scale non-uniform body
 
 
 def to_matrix(

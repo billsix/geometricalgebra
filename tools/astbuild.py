@@ -25,8 +25,27 @@ this generator emits (e.g. ``cast_self``/``cast_coef`` wrap ``typing.cast`` to
 from __future__ import annotations
 
 import ast
+import re
 import typing
 from collections.abc import Iterable, Sequence
+
+# A comment cannot exist in a Python AST, so a doc-region marker is emitted as a
+# sentinel *string-literal statement* and rewritten to a ``# comment`` in the
+# rendered source (see ``marker`` / ``module_source``).  The delimiters are
+# chosen to never occur in real generated code.
+_MARKER_OPEN: str = "@@doc-region@@"
+_MARKER_CLOSE: str = "@@/doc-region@@"
+# Matches the sentinel however ``ast.unparse`` quoted it (bare '...' or, in
+# docstring position, triple-quoted), capturing the marker text.
+_MARKER_RE: typing.Final = re.compile(
+    r"^(?P<indent>[ \t]*)"
+    r"""(?:'''|\"\"\"|'|\")"""
+    + re.escape(_MARKER_OPEN)
+    + r"(?P<text>.*?)"
+    + re.escape(_MARKER_CLOSE)
+    + r"""(?:'''|\"\"\"|'|\")$""",
+    re.MULTILINE,
+)
 
 
 def parse_expr(src: str) -> ast.expr:
@@ -34,10 +53,58 @@ def parse_expr(src: str) -> ast.expr:
     return ast.parse(src, mode="eval").body
 
 
+def marker(text: str) -> ast.Expr:
+    """A ``doc-region`` marker as a sentinel statement (rendered to a comment).
+
+    Emitted as a bare string-literal ``ast.Expr`` so it survives ``ast.unparse``
+    at the correct indentation; ``module_source`` rewrites it to
+    ``# <text>``.  ``text`` is e.g. ``"doc-region-begin Vector2 class"``.
+    """
+    return ast.Expr(ast.Constant(_MARKER_OPEN + text + _MARKER_CLOSE))
+
+
+def inject_region_markers(body: list[ast.stmt]) -> list[ast.stmt]:
+    """Wrap each top-level class, and each method within it, in doc-region markers.
+
+    Class region ``<name> class``; method region ``<name> <method> method``.  The
+    trailing keyword keeps names **prefix-free** (Sphinx matches the first line
+    *containing* the anchor, so ``... magnitude`` would otherwise also match
+    ``... magnitude_squared``).  The begin/end markers are siblings *around* the
+    node -- before the ``class``/``def`` line and after the block -- so a copied
+    docstring (which must stay first inside the block) is unaffected.
+    """
+    out: list[ast.stmt] = []
+    node: ast.stmt
+    for node in body:
+        if not isinstance(node, ast.ClassDef):
+            out.append(node)
+            continue
+        wrapped_methods: list[ast.stmt] = []
+        member: ast.stmt
+        for member in node.body:
+            if isinstance(member, ast.FunctionDef):
+                label: str = f"{node.name} {member.name} method"
+                wrapped_methods.append(marker(f"doc-region-begin {label}"))
+                wrapped_methods.append(member)
+                wrapped_methods.append(marker(f"doc-region-end {label}"))
+            else:
+                wrapped_methods.append(member)
+        node.body = wrapped_methods
+        out.append(marker(f"doc-region-begin {node.name} class"))
+        out.append(node)
+        out.append(marker(f"doc-region-end {node.name} class"))
+    return out
+
+
 def module_source(body: list[ast.stmt]) -> str:
-    """Render top-level statement nodes to source via `ast.unparse`."""
+    """Render top-level statement nodes to source via `ast.unparse`.
+
+    Any ``marker`` sentinels are rewritten to ``# doc-region-...`` comments (a
+    no-op when there are none).
+    """
     module: ast.Module = ast.Module(body=body, type_ignores=[])
-    return ast.unparse(ast.fix_missing_locations(module))
+    rendered: str = ast.unparse(ast.fix_missing_locations(module))
+    return _MARKER_RE.sub(r"\g<indent># \g<text>", rendered)
 
 
 class SymbolToAttr(ast.NodeTransformer):

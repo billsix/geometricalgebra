@@ -66,6 +66,7 @@ from astbuild import (  # noqa: E402
     construct_type_self,
     dataclass_decorator,
     function_def,
+    inject_region_markers,
     isinstance_,
     module_source,
     name_ref,
@@ -2148,7 +2149,8 @@ def main() -> None:
     scalar_nodes: list[ast.stmt] = generate_scalar() + [
         assign("__all__", ast.List(elts=[constant("Scalar")], ctx=_LOAD))
     ]
-    scalar_source: str = SCALAR_HEADER + "\n\n" + module_source(scalar_nodes) + "\n"
+    scalar_body: str = module_source(inject_region_markers(scalar_nodes))
+    scalar_source: str = SCALAR_HEADER + "\n\n" + scalar_body + "\n"
     with open(out_path("scalar.py"), "w") as f:
         f.write(scalar_source)
     written.append(out_path("scalar.py"))
@@ -2163,7 +2165,8 @@ def main() -> None:
         for spec in graded_specs(n):
             nodes += generate_graded_type(spec, n, name)
         nodes += generate_constants(n, name)
-        source: str = header(name, n) + "\n\n" + module_source(nodes) + "\n"
+        module_body: str = module_source(inject_region_markers(nodes))
+        source: str = header(name, n) + "\n\n" + module_body + "\n"
         with open(out_path(filename), "w") as f:
             f.write(source)
         written.append(out_path(filename))
