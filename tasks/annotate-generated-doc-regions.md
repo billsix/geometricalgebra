@@ -85,6 +85,13 @@ first position becomes the docstring); the wrap inserts the begin-marker before 
 Both use the comment-form regex; a bare `doc-region-begin` in a string/docstring no longer
 counts.
 
+**Future (Bill, 2026-07-20 -- not yet evaluated): wire gacalc's `check-regions` into
+`make test`** (or the generator's own `test_generator.py`), so marker sanity is enforced
+on every suite run rather than only when the standalone target is invoked. Bill has not
+decided whether/how; deferred. NOTE: if it becomes a dependency of `make test`, it stops
+being a directly-invoked target and its `##` help line should be removed then (see the
+Makefile-`##` convention -- only user-invoked targets carry `##`).
+
 ## What this does NOT mark
 
 Basis-constant assignments (``Cls.e_1 = Cls.from_blade_dict(...)``) are emitted as
