@@ -318,6 +318,29 @@ the additive terms in each generated component are **ordered by grade** (scalar 
 `MultiVectorBase` method** (`base.py`) via `inspect.getdoc`, so the Hestenes notation on the
 specialized classes never drifts from the shared base.
 
+**doc-region markers (for downstream books, added 2026-07-20).** The source carries
+`# doc-region-begin <name>` / `# doc-region-end <name>` comment markers so a Sphinx book (the
+author's *modelviewprojection*) can `literalinclude` slices of gacalc. **Hand-written** modules
+carry them as ordinary comments — `functions.py` (`ComposableFunction`/`__call__`/`__matmul__`,
+`InvertibleFunction`, `inverse`) and `transforms.py` (`translate`/`uniform_scale`/`scale_non_uniform`),
+each split into a `... signature` region (the `def` line) and a `... body` region (after the
+docstring), so the book can show a signature without the docstring. **Generated** modules
+(`g1`/`g2`/`g3`/`scalar.py`) get their markers from the generator: `astbuild.inject_region_markers`
+walks the built AST and wraps each class and each method — regions `<Class> class` /
+`<Class> declaration` / `<Class> instance variables` / `<Class> <method> method`. Because a comment
+cannot live in an AST, markers are emitted as sentinel string-literal statements and rewritten to
+`# ` comments by `astbuild.module_source` (the `declaration` end is placed by a text pass, so it
+lands after the `class` line without displacing the docstring). **Naming is descriptive and
+prefix-free by construction** — the trailing `class`/`method`/`signature`/`body` keyword is
+load-bearing, because Sphinx matches the first line *containing* the anchor text (so
+`Vector2 magnitude` would otherwise also match `Vector2 magnitude_squared`). A property setter/deleter
+takes a `... setter`/`... deleter` qualifier so it doesn't collide with the getter. **NOT SHA1** —
+descriptive names, verified unique. **`make check-regions`** (`tools/check_doc_regions.py`)
+regenerates then asserts every `src/gacalc/*.py` marker set is free of exact duplicates and prefix
+collisions and is balanced; run it after touching markers or the generator. Basis-constant
+assignments (`Cls.e_1 = …`, post-class) are deliberately **not** marked. See
+`tasks/annotate-generated-doc-regions.md`.
+
 ## Coding standard (Python)
 
 Written for both humans and AI agents: each rule is a statement + a one-line reason.
