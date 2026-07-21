@@ -78,6 +78,23 @@ def _is_classvar(annotation: ast.expr) -> bool:
     return name == "ClassVar"
 
 
+def _is_overload(node: ast.stmt) -> bool:
+    """True if ``node`` is a ``@typing.overload`` (or bare ``@overload``) stub.
+
+    Overload stubs share the implementation's method name, so marking them would
+    emit duplicate ``<Class> <method> method`` regions; they are left unmarked and
+    only the implementation carries the method's doc-region."""
+    if not isinstance(node, ast.FunctionDef):
+        return False
+    decorator: ast.expr
+    for decorator in node.decorator_list:
+        if isinstance(decorator, ast.Attribute) and decorator.attr == "overload":
+            return True
+        if isinstance(decorator, ast.Name) and decorator.id == "overload":
+            return True
+    return False
+
+
 def _method_label(class_name: str, method: ast.FunctionDef, seen: set[str]) -> str:
     """A unique, prefix-free region label for a method.
 
@@ -146,12 +163,13 @@ def inject_region_markers(body: list[ast.stmt]) -> list[ast.stmt]:
                 new_body.append(
                     marker(f"doc-region-begin {node.name} instance variables")
                 )
-            if isinstance(member, ast.FunctionDef):
+            if isinstance(member, ast.FunctionDef) and not _is_overload(member):
                 label: str = _method_label(node.name, member, seen_labels)
                 new_body.append(marker(f"doc-region-begin {label}"))
                 new_body.append(member)
                 new_body.append(marker(f"doc-region-end {label}"))
             else:
+                # non-methods and @overload stubs: emitted without a region
                 new_body.append(member)
             if i == last_field:
                 new_body.append(

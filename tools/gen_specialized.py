@@ -1056,6 +1056,61 @@ def dispatch_method(
     )
 
 
+def _number_union() -> ast.expr:
+    """The annotation ``int | float | sympy.Expr`` (a scalar Coef operand)."""
+    return ast.BinOp(
+        ast.BinOp(name_ref("int"), ast.BitOr(), name_ref("float")),
+        ast.BitOr(),
+        attribute("sympy", "Expr"),
+    )
+
+
+def product_overload_stubs(
+    method: str,
+    self_spec: TypeSpec,
+    gn_product: Callable[[Gn, Gn], Gn],
+    n: int,
+    full_name: str,
+    param_name: str = "rhs",
+    number_case: bool = False,
+) -> list[ast.stmt]:
+    """``@typing.overload`` signatures for a bilinear-product method -- one per rhs
+    type, each returning the **resolved concrete type** (e.g. ``Vector2 * Vector2``
+    -> ``Rotor2``).  So the operator/method types precisely at a known-type call
+    site instead of the imprecise, unsound ``-> Self``.  Emitted just before the
+    implementation (which does the real dispatch and stays ``-> Self``).
+
+    The final ``MultiVectorBase`` catch-all covers ``Gn`` / the full class / any
+    other operand, which the impl coerces to ``G_n``; ``number_case`` adds a scalar
+    (``int | float | sympy.Expr``) overload that scales, returning ``Self``'s type.
+    """
+
+    def stub(param_ann: ast.expr, ret: ast.expr) -> ast.stmt:
+        return function_def(
+            method,
+            [ast.Expr(constant(...))],
+            params=[argument("self"), argument(param_name, param_ann)],
+            decorators=[attribute("typing", "overload")],
+            returns=ret,
+        )
+
+    stubs: list[ast.stmt] = []
+    if number_case:
+        # A bare number is a grade-0 (Scalar) operand: for ``*`` this scales (result
+        # = Self), for ``+``/``-`` it adds a scalar (e.g. Bivector2 + scalar ->
+        # Rotor2).  Both fall out of ``product_result(self, Scalar)``.
+        num_spec: TypeSpec
+        num_spec, _ = product_result(self_spec, SCALAR, gn_product, n, full_name)
+        stubs.append(stub(_number_union(), name_ref(num_spec.name)))
+    rhs_spec: TypeSpec
+    for rhs_spec in [SCALAR, *graded_specs(n)]:
+        result_spec: TypeSpec
+        result_spec, _ = product_result(self_spec, rhs_spec, gn_product, n, full_name)
+        stubs.append(stub(name_ref(rhs_spec.name), name_ref(result_spec.name)))
+    stubs.append(stub(name_ref("MultiVectorBase"), name_ref(full_name)))
+    return stubs
+
+
 # ==========================================================================
 # The four generators (one per emitted construct)
 # ==========================================================================
@@ -1696,6 +1751,22 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         attribute("sympy", "Expr"),
     ]
     self_ann: ast.expr = attribute("typing", "Self")
+    # The *implementation* return type of an overloaded product/sum method.  Its
+    # overloads return the resolved concrete types (Rotor2, Bivector2, ...), which
+    # are NOT subtypes of one another nor of the full class G_n (all are siblings
+    # under MultiVectorBase) -- so the impl's own return must be their one common
+    # supertype, ``MultiVectorBase``, to stay consistent with its overloads (and
+    # honest: the old ``-> Self`` claimed Vector2 while returning a Rotor2).
+    mvb_ann: ast.expr = name_ref("MultiVectorBase")
+    # ``self +/- scalar`` result type (e.g. Bivector2 + scalar -> Rotor2).  Used to
+    # type __radd__/__rsub__, whose left operand is always a bare number, so their
+    # return narrows by grade just like __add__'s scalar arm.  ``a - self`` and
+    # ``self + a`` span the same grades ({0} plus self's), so one spec serves both.
+    add_scalar_spec: TypeSpec
+    add_scalar_spec, _ = product_result(
+        spec, SCALAR, lambda a, b: a + b, n, full_name
+    )
+    radd_ann: ast.expr = name_ref(add_scalar_spec.name)
 
     # #4: closed-form magnitude_squared = |A|^2 = <~A A> (a scalar), derived
     # symbolically exactly as the base method computes it -- self.reverse() then
@@ -1745,7 +1816,13 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         *class_header_stmts(graded_docstring(spec), n, blades),
         *basis_classvar_decls(spec.name, blades),
         # scalar-aware __mul__ / __rmul__ (the ABC versions would drop the scalar
-        # for a type with no scalar field, so they are overridden here)
+        # for a type with no scalar field, so they are overridden here).  The
+        # @overload stubs give the operator its precise result type per rhs (e.g.
+        # Vector2 * Vector2 -> Rotor2) -- sound, since the impl returns exactly that
+        # runtime type; the operator's old blanket -> Self was an unsound cast.
+        *product_overload_stubs(
+            "__mul__", spec, lambda a, b: a * b, n, full_name, number_case=True
+        ),
         function_def(
             "__mul__",
             [
@@ -1767,7 +1844,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 ),
             ],
             params=[argument("self"), argument("rhs")],
-            returns=self_ann,
+            returns=mvb_ann,
         ),
         function_def(
             "__rmul__",
@@ -1801,6 +1878,9 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             full_name,
             ast.BinOp(name_ref("left"), ast.Mult(), name_ref("right")),
         ),
+        *product_overload_stubs(
+            "outer_product", spec, lambda a, b: a.outer_product(b), n, full_name
+        ),
         dispatch_method(
             spec,
             "outer_product",
@@ -1808,6 +1888,30 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             n,
             full_name,
             call(attribute("left", "outer_product"), [name_ref("right")]),
+            return_type=mvb_ann,
+        ),
+        # ``a ^ b`` (the wedge operator): base ``__xor__`` returns Self, so override
+        # here with the same precise overloads as outer_product, delegating to it.
+        *product_overload_stubs(
+            "__xor__",
+            spec,
+            lambda a, b: a.outer_product(b),
+            n,
+            full_name,
+            param_name="other",
+        ),
+        function_def(
+            "__xor__",
+            [
+                return_stmt(
+                    call(attribute("self", "outer_product"), [name_ref("other")])
+                )
+            ],
+            params=[argument("self"), argument("other")],
+            returns=mvb_ann,
+        ),
+        *product_overload_stubs(
+            "inner_product", spec, lambda a, b: a.inner_product(b), n, full_name
         ),
         dispatch_method(
             spec,
@@ -1816,6 +1920,12 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             n,
             full_name,
             call(attribute("left", "inner_product"), [name_ref("right")]),
+            return_type=mvb_ann,
+        ),
+        # +/- also narrow by grade: scalar + bivector -> Rotor2, etc.  Overload them
+        # too so a mixed-grade sum types precisely instead of -> Self.
+        *product_overload_stubs(
+            "__add__", spec, lambda a, b: a + b, n, full_name, number_case=True
         ),
         dispatch_method(
             spec,
@@ -1825,6 +1935,10 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             full_name,
             ast.BinOp(name_ref("left"), ast.Add(), name_ref("right")),
             number_case=True,
+            return_type=mvb_ann,
+        ),
+        *product_overload_stubs(
+            "__sub__", spec, lambda a, b: a - b, n, full_name, number_case=True
         ),
         dispatch_method(
             spec,
@@ -1834,29 +1948,30 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             full_name,
             ast.BinOp(name_ref("left"), ast.Sub(), name_ref("right")),
             number_case=True,
+            return_type=mvb_ann,
         ),
         function_def(
             "__radd__",
+            # __add__ is overloaded, so its scalar arm already returns the narrowed
+            # type (e.g. Bivector2 + scalar -> Rotor2); just forward.
             [return_stmt(call(attribute("self", "__add__"), [name_ref("lhs")]))],
-            params=[argument("self"), argument("lhs")],
-            returns=self_ann,
+            params=[argument("self"), argument("lhs", _number_union())],
+            returns=radd_ann,
         ),
         function_def(
             "__rsub__",
             [
                 return_stmt(
-                    cast_self(
-                        call(
-                            attribute(
-                                ast.UnaryOp(ast.USub(), name_ref("self")), "__add__"
-                            ),
-                            [name_ref("lhs")],
-                        )
+                    call(
+                        attribute(
+                            ast.UnaryOp(ast.USub(), name_ref("self")), "__add__"
+                        ),
+                        [name_ref("lhs")],
                     )
                 )
             ],
-            params=[argument("self"), argument("lhs")],
-            returns=self_ann,
+            params=[argument("self"), argument("lhs", _number_union())],
+            returns=radd_ann,
         ),
         function_def(
             "__neg__",
