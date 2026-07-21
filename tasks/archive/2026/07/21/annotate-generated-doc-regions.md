@@ -1,6 +1,9 @@
 # Emit doc-region markers around every generated class and method
 
-**Status:** in progress — **decided 2026-07-20, hand-written cluster already done.**
+**Status:** **DONE 2026-07-20.** Generated + hand-written doc-region markers implemented
+(`astbuild.inject_region_markers`, `gen_specialized`, `tools/check_doc_regions.py`,
+`make check-regions`); gate green. Separate, deferred (Bill's call, not part of this task):
+whether to wire `check-regions` into `make test`.
 
 **Created:** 2026-07-20
 **Part of:** the gacalc-markers effort (was `tasks/emit-doc-region-markers.md`); this is

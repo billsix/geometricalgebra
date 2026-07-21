@@ -1,7 +1,9 @@
 # Emit `doc-region` markers, so modelviewprojection's book can include gacalc source
 
-**Status:** proposed — **needs a go-ahead.** Design prototyped and verified 2026-07-19;
-nothing implemented.
+**Status:** **DONE 2026-07-20 — superseded.** Implemented as two halves, both complete: the
+generated-modules half (see companion `annotate-generated-doc-regions.md`, archived
+alongside this one) and the hand-written half (`functions.py`/`transforms.py`). Markers are
+live and `make check-regions` is green.
 
 **Created:** 2026-07-19
 **Requested by:** Bill, 2026-07-19
