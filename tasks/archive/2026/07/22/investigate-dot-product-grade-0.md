@@ -1,8 +1,34 @@
 # Investigate the grade-0 discrepancy in dot-product / contraction definitions
 
-**Status:** proposed — needs go-ahead. Created 2026-07-22. Spun off from
-`add-left-right-contraction.md`; findings land in
+**Status:** resolved
+**Completed:** 2026-07-22
+Created 2026-07-22. Spun off from `add-left-right-contraction.md`; findings live in
 `tasks/reference/contraction-and-dot-definitions.md`.
+
+## Resolution
+
+The investigation was carried out as part of implementing the contractions (by reading galgebra
+0.6.0 source), and its conclusions are recorded in
+`tasks/reference/contraction-and-dot-definitions.md`:
+
+1. **Contraction grade-0 behaviour is unambiguous** — Taylor p.103 and galgebra agree the
+   contractions **include** grade 0. galgebra makes it explicit in code: its
+   `_LeftContractFunction`/`_RightContractFunction` have no grade-0 guard, whereas
+   `_HestenesDotFunction` does (`if grade1==0 or grade2==0: return None`). Implemented exactly so.
+2. **gacalc's stance is decided and shipped** — `inner_product` stays the Hestenes dot
+   (grade-0-excluded); the contractions include grade 0. Both conventions coexist, matching galgebra.
+3. **No separate grade-0-including "dot" op** — galgebra has none and nothing needs one; the
+   contractions cover the grade-0-inclusive case.
+
+**One residual, deliberately not pursued (needs Taylor's text, which the author has and the agent
+does not):** whether Taylor calls grade 0 part of the *plain dot* product (not just the
+contractions). galgebra keeps the plain dot grade-0-*excluded* (Hestenes), and gacalc follows
+Hestenes for `inner_product`, so this is a Taylor-vs-Hestenes textual curiosity that changes **no
+gacalc code**. Archived as resolved on that basis.
+
+---
+
+## Original investigation notes (below, for reference)
 
 ## The question
 
