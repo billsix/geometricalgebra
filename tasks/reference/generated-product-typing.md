@@ -7,7 +7,9 @@ type-precise products/sums work — `tasks/archive/2026/07/21/typed-product-help
 
 ## The design
 
-Each generated graded type (`Vector2`/`Bivector2`/`Rotor2`/`Scalar`, and the 𝒢₃ set) carries
+Each generated graded type (`Scalar2`/`Vector2`/`Bivector2`/`Rotor2`, and the 𝒢₃ set — the grade-0
+`ScalarN` is per-algebra since the 2026-07-22 split, so grade-0 results below read `Scalar2`/`Scalar3`
+by algebra where this doc's older examples say bare `Scalar`) carries
 `@typing.overload` signatures on its product/sum methods, so a known-type call site gets the
 **exact** result type:
 
@@ -36,6 +38,16 @@ Each generated graded type (`Vector2`/`Bivector2`/`Rotor2`/`Scalar`, and the �
   `parity_part` helper; the `gn_unary` param on `unary_result`/`unary_body`/`parity_part` is
   `Callable[[Gn], MultiVectorBase]` so it accepts the now-`MultiVectorBase`-returning
   `even_part`/`odd_part` (Gn-returning ops like `dual` still fit by covariance).
+- `dual` (2026-07-22, closes the unary-op family) — same "retype `base.dual` off `-> Self` to
+  `-> MultiVectorBase`, graded override narrows to the resolved grade-(n−r) type" pattern as even/odd
+  (`Bivector3.dual -> Vector3`, `Trivector3.dual -> Scalar3`, `Rotor3.dual -> G3` — odd {1,3} widens
+  honestly). Two twists: (1) `dual` keeps the `n` (dimension) param, so a fixed-dimension type
+  **raises on a mismatched `n`** rather than falling back to `G_n` (the old `_coerce(self, G_n).dual(n)`
+  branch is gone — a `dim_mismatch_guard` helper); the full class `G_n` keeps `-> Self`. (2) The
+  grade-0 `Scalar` had to become **per-algebra** (`Scalar1`/`Scalar2`/`Scalar3`, one per `gN.py`, no
+  shared `scalar.py`) for `ScalarN.dual()` to name the same-module pseudoscalar without a circular
+  import — see `tasks/archive/2026/07/22/per-algebra-scalar-types.md`. Emitted via a `dual_method` helper (graded) and a
+  parametrized `generate_scalar(n, name, full_name)`.
 - The **implementations keep the inline `match`** — runtime is unchanged; the overloads only supply
   static types. Each overloaded impl returns **`-> MultiVectorBase`** (not `-> Self`), and because
   of that its arms construct the result with **no cast** (`return Rotor2(...)`) — the old
@@ -45,9 +57,9 @@ Each generated graded type (`Vector2`/`Bivector2`/`Rotor2`/`Scalar`, and the �
   (`G2 * G2 → G2`), and its arms keep the `Self` cast (legitimately: `-> Self` return).
 
 Precision (guarded by `typing.assert_type` in `tests/test_operator_typing.py`, so a regression
-fails `ty check tests`): `v2 * v2 → Rotor2`, `v2 ^ v2 → Bivector2`, `.inner_product → Scalar`,
+fails `ty check tests`): `v2 * v2 → Rotor2`, `v2 ^ v2 → Bivector2`, `.inner_product → Scalar2`,
 `v2 * 3 → Vector2`, `2 + 3*i2 → Rotor2`, `rotor2.r_vector_part(2) → Bivector2`,
-`v2.r_vector_part(0) → Scalar`; 𝒢₃ likewise. Runtime was always correct — this was a
+`v2.r_vector_part(0) → Scalar2`; 𝒢₃ likewise (grade-0 → `Scalar3`). Runtime was always correct — this was a
 static-typing fix, replacing an unsound `typing.cast(typing.Self, Rotor2(...))`.
 
 ## Why this design (decisions & rejected alternatives)
@@ -113,4 +125,4 @@ static-typing fix, replacing an unsound `typing.cast(typing.Self, Rotor2(...))`.
 - `ScalarN` as a product **lhs** needs the per-algebra `ScalarN` (in `gN.py`) to adopt the
   resolve-and-construct discipline (its `_geometric_product` still coerces a general-multivector rhs
   via `cast(Self, coeff * rhs)`). `ScalarN` works fine as an **rhs**. (As of the per-algebra-scalar
-  split, `ScalarN.dual()` *is* precise — see `tasks/per-algebra-scalar-types.md`.)
+  split, `ScalarN.dual()` *is* precise — see `tasks/archive/2026/07/22/per-algebra-scalar-types.md`.)

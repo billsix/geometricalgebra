@@ -1,6 +1,8 @@
 # Precise `dual()` return type — drop the last unsound `Self` cast on a generated unary op
 
-**Status:** code complete — **release pending Bill's go-ahead** (see "On completion" below).
+**Status:** complete
+**Completed:** 2026-07-22 (code + all gates; the batched 0.0.13 **release is Bill's** and remains
+tracked on the work stack — see "On completion — release" below).
 Created 2026-07-22. The last member of the typing-cleanup family
 (`tasks/archive/2026/07/22/retype-even-odd-part-off-self.md`, `.../overload-r-vector-part.md`,
 `.../overloads-and-drop-cast-on-product-primitives.md`): `dual` is the one remaining generated op

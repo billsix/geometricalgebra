@@ -1,7 +1,8 @@
 # Per-algebra `Scalar1`/`Scalar2`/`Scalar3` types — precise `ScalarN.dual()`
 
-**Status:** code complete — **release pending** (batched with `tasks/precise-dual-typing.md`; Bill
-runs `make release` after, his call). Created 2026-07-22. Follow-on to `tasks/precise-dual-typing.md`:
+**Status:** complete
+**Completed:** 2026-07-22 (code + all gates; the 0.0.13 **release is Bill's**, batched with the
+dual-typing change and tracked on the work stack). Created 2026-07-22. Follow-on to `tasks/archive/2026/07/22/precise-dual-typing.md`:
 that task made every *fixed-dimension* dual precise but left `Scalar.dual() -> MultiVectorBase`
 because the single **shared** `Scalar` didn't know its dimension. This task split `Scalar` into one
 type per algebra so `ScalarN.dual()` is precise (the original Goal).
@@ -94,11 +95,11 @@ suite + `check-regions` + determinism green; runtime values unchanged.
 
 ## Release
 
-Batched with `tasks/precise-dual-typing.md` — Bill bumps 0.0.12 → 0.0.13 and runs `make release`
+Batched with `tasks/archive/2026/07/22/precise-dual-typing.md` — Bill bumps 0.0.12 → 0.0.13 and runs `make release`
 *after* this work lands (his call, 2026-07-22). See the work stack.
 
 ## Relationships
 
-- `tasks/precise-dual-typing.md` (parent; the shared-Scalar limitation this removes).
+- `tasks/archive/2026/07/22/precise-dual-typing.md` (parent; the shared-Scalar limitation this removes).
 - `tasks/reference/generated-product-typing.md` (the precise-typing design this extends).
 - `tasks/model-odd-graded-type.md` (unrelated, but the same "add a graded type" shape).

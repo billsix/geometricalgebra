@@ -37,7 +37,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   Code generation / Dev workflow). **The grade-0 `Scalar_n` is per-algebra** (there is no shared
   `scalar.py`): it lives in its own algebra's module so `Scalar_n.dual()` names that algebra's
   pseudoscalar (`Scalar3.dual() → Trivector3`) with no cross-module import — see the graded-subtype
-  note under Future directions and `tasks/per-algebra-scalar-types.md`.
+  note under Future directions and `tasks/archive/2026/07/22/per-algebra-scalar-types.md`.
 - `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
   `displaygraded.py` (graded subtypes) — jupytext (percent-format) demo notebooks.
@@ -597,7 +597,7 @@ Open issues (most are in the shared/reference code, inherited from the original 
 - ~~**Graded / blade subtypes**~~ — **built** (`Scalar_n`/`Vector_n`/`Bivector_n`/`Trivector3`/
   `Rotor_n`). The grade-0 `Scalar_n` is **per-algebra** (`Scalar1`/`Scalar2`/`Scalar3`, one per
   module — no shared `scalar.py`) so its dual is precise (`Scalar3.dual() → Trivector3`); see
-  `tasks/per-algebra-scalar-types.md`. Emitted by `tools/gen_specialized.py` alongside the full
+  `tasks/archive/2026/07/22/per-algebra-scalar-types.md`. Emitted by `tools/gen_specialized.py` alongside the full
   classes; each bilinear product
   is a `match` on the rhs type whose **return type is resolved at generation time** from the symbolic
   result's grade support (smallest covering registered type, else widen to the full `G_n`) — so the
