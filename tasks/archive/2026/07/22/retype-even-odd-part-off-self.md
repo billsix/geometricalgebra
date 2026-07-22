@@ -1,8 +1,38 @@
 # Precise `even_part`/`odd_part` — retype off `-> Self` so the graded override can narrow
 
-**Status:** proposed — needs go-ahead. Created 2026-07-22. (Follow-up spun from
-`overloads-and-drop-cast-on-product-primitives`. Bigger than the `r_vector_part` follow-up — it
-needs a `base.py` change, so it's its own task.)
+**Status:** complete
+**Completed:** 2026-07-22
+Created 2026-07-22. (Follow-up spun from `overloads-and-drop-cast-on-product-primitives`; the last
+of the three, and the only one needing a `base.py` change.) All gates green (287 tests incl. 2 new
+even/odd guards, `ty` src/tests/tools clean, ruff clean, `check-regions` clean, deterministic;
+runtime values/types unchanged — a pure static-typing fix).
+
+## Outcome (what shipped)
+
+- **`base.py`**: `even_part`/`odd_part` retyped `-> typing.Self` → `-> MultiVectorBase` (bodies
+  untouched). This is the floor that lets a graded override *narrow* the return.
+- **Generator (`generate_graded_type`)**: a new `parity_part` helper emits each graded
+  `even_part`/`odd_part` **declaring its resolved return type** (`unary_result`-computed) with **no
+  overloads** (there's no argument to key a `Literal` on) and **no cast** — e.g. `Vector2.even_part
+  -> Scalar`, `Vector2.odd_part -> Vector2`, `Bivector3.odd_part -> Scalar`, `Rotor2.even_part ->
+  Rotor2`. The old unsound `cast(typing.Self, Scalar(0))` is gone from every graded arm.
+- **Full class `G1`/`G2`/`G3`** unchanged (`even_part`/`odd_part` stay `-> Self` = `G_n`, a valid
+  narrowing of the broadened base). **`Scalar`** unchanged (`-> Self`, already correct).
+- **Generator plumbing**: broadened `gn_unary` param on `unary_result`/`unary_body`/`parity_part`
+  from `Callable[[Gn], Gn]` to `Callable[[Gn], MultiVectorBase]` (`even_part` now returns
+  `MultiVectorBase`; `Gn`-returning ops like `dual` still fit by covariance), and `result_mv: Gn`
+  → `MultiVectorBase` in `unary_result`.
+- Static guard added to `tests/test_operator_typing.py` (`assert_type`).
+
+**Resolved the open `Gn` decision → let `Gn` inherit the `-> MultiVectorBase` floor (no override).**
+Checked every `even_part`/`odd_part` call site (`tests/`, `notebooks/`, `src/`): all use the result
+only through base operations (`==`, `+`) or runtime `type(...)` checks — **nothing depends on
+`Gn.even_part()` statically being `Gn`**. So an override would be pure ceremony; instead **`gn.py`
+is untouched and no new cast is introduced anywhere** — the cleanest realization of the goal (the
+task was to *remove* unsound casts, not trade them). The only effect is `Gn.even_part()` /
+`odd_part()` now declare the honest `MultiVectorBase` (runtime still builds a `Gn`).
+
+## Original plan (below, for reference)
 
 ## Goal
 

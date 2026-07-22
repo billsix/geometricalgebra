@@ -25,6 +25,33 @@ Each algebra is written to its own committed module -- ``g1.py``, ``g2.py``,
 algebra changes:
 
     python tools/gen_specialized.py
+
+Naming conventions (internal to this generator -- these abbreviations never
+appear in the generated output or public API).
+
+``_ann`` suffix -- an ``ast`` node used as a type *annotation* (the module is
+built as AST, so a type like ``typing.Self`` is a node, not a string):
+
+  - ``self_ann``   -> ``typing.Self``
+  - ``mvb_ann``    -> ``MultiVectorBase``
+  - ``coef_ann``   -> ``Coef``
+  - ``param_ann``  -> a method parameter's annotation
+  - ``radd_ann``   -> the ``__radd__`` return annotation
+
+``_spec`` suffix -- a ``TypeSpec`` (see the "type system" section): the resolved
+multivector type of an operand or a result:
+
+  - ``self_spec`` / ``lhs_spec`` / ``rhs_spec`` / ``operand_spec``  -> operands
+  - ``result_spec`` / ``num_spec`` / ``add_scalar_spec``           -> results
+
+``mvb`` -- ``MultiVectorBase``, the abstract base class.
+
+``rvp`` -- ``r_vector_part`` (the grade-r part, ⟨A⟩ᵣ):
+
+  - ``rvp_cases``            -> the full class's ``match r:``
+  - ``rvp_body``            -> the graded classes' ``if r == …:`` chain
+  - ``rvp_overload_stub(s)`` -> its ``@overload`` signatures
+  - ``rvp_spec``            -> a grade's resolved part type
 """
 
 from __future__ import annotations
@@ -420,15 +447,19 @@ def product_result(
 
 def unary_result(
     operand_spec: TypeSpec,
-    gn_unary: Callable[[Gn], Gn],
+    gn_unary: Callable[[Gn], MultiVectorBase],
     n: int,
     full_name: str,
 ) -> tuple[TypeSpec, list[sympy.Expr]]:
-    """(result_spec, output exprs) for a unary op (dual / grade projection)."""
+    """(result_spec, output exprs) for a unary op (dual / grade projection).
+
+    ``gn_unary``'s return is ``MultiVectorBase`` (not ``Gn``) so it also accepts
+    ``even_part``/``odd_part``, which base now types ``-> MultiVectorBase``;
+    ``Gn``-returning ops (``dual``, grade projection) still fit by covariance."""
     operand_symbols: dict[Blade, sympy.Symbol] = {
         b: sympy.Symbol("a_" + blade_label(b)) for b in operand_spec.blades
     }
-    result_mv: Gn = gn_unary(Gn.from_blade_dict(operand_symbols))
+    result_mv: MultiVectorBase = gn_unary(Gn.from_blade_dict(operand_symbols))
     result_coeffs: BladeCoef = result_mv.to_blade_dict()
     support: list[Blade] = [
         b for b in blades_for_dim(n) if sympy.sympify(result_coeffs.get(b, 0)) != 0
@@ -842,15 +873,6 @@ def super_call(method: str, args: list[ast.expr]) -> ast.expr:
     return call(attribute(call("super", []), method), args)
 
 
-def dim_or_n(owner: str = "self") -> ast.expr:
-    """``<owner>.DIMENSION if n is None else n``."""
-    return ast.IfExp(
-        test=ast.Compare(name_ref("n"), [ast.Is()], [constant(None)]),
-        body=attribute(owner, "DIMENSION"),
-        orelse=name_ref("n"),
-    )
-
-
 def scaled_stmt(
     type_name: str, fields: Sequence[str], value_fn: Callable[[str], ast.expr]
 ) -> ast.stmt:
@@ -920,11 +942,15 @@ def unary_stmt(
     out_exprs: Sequence[sympy.Expr],
     rename: dict[str, tuple[str, str]],
     owner: str | None = None,
+    cast: Callable[[ast.expr], ast.expr] = cast_self,
 ) -> ast.stmt:
     """``return cast(Self, RType(...))`` (= unary_return, as nodes).
 
     Same-type results (``owner == result``) construct via ``type(self)``,
-    preserving subclasses."""
+    preserving subclasses.  ``cast`` wraps a *different*-type result; it
+    defaults to ``cast_self`` (the ``-> Self`` methods).  Pass an identity to
+    emit the concrete type directly when the method returns ``MultiVectorBase``
+    (r_vector_part's overloaded impl), so no unsound ``Self`` cast is generated."""
     pairs: list[tuple[str, ast.expr]] = [
         (field_name(b), unary_value(e, rename))
         for b, e in zip(result_spec.blades, out_exprs)
@@ -934,7 +960,7 @@ def unary_stmt(
         if result_spec.kind != "full":
             return return_stmt(construct(result_spec.name, pairs))
         return return_stmt(construct_type_self(pairs))
-    return return_stmt(cast_self(construct(result_spec.name, pairs)))
+    return return_stmt(cast(construct(result_spec.name, pairs)))
 
 
 def _match_class(class_expr: ast.expr) -> ast.MatchClass:
@@ -1645,6 +1671,175 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
             if len(b) % 2 == parity
         ]
 
+    def default_dim_test() -> ast.expr:
+        # ``n is None or n == <DIMENSION>`` -- the guard under which the
+        # gen-time-known value applies.  ``n`` is retained only because the
+        # base methods are n-required (Liskov); a non-default ``n`` (never used
+        # for a fixed-dimension class in practice) falls back to super().
+        return bool_or(
+            [
+                ast.Compare(name_ref("n"), [ast.Is()], [constant(None)]),
+                ast.Compare(name_ref("n"), [ast.Eq()], [constant(n)]),
+            ]
+        )
+
+    def const_mv(one_blade: Blade | None, value: int = 1) -> ast.Call:
+        # ``cls(field=..., ...)`` with ``one_blade``'s field = ``value`` and the
+        # rest 0 -- built via ``cls`` so a subclass gets its own type back.
+        return construct(
+            "cls",
+            [
+                (field_name(b), constant(value if b == one_blade else 0))
+                for b in blades
+            ],
+        )
+
+    def dimension_known_methods() -> list[ast.stmt]:
+        # The dimension is fixed at generation time, so dual / unit_pseudoscalar
+        # / its square / bases / symbolic_multivector emit the closed form or
+        # constant directly instead of running base's general n-parametrized
+        # algorithm (products of basis vectors, powersets).
+        dual_coeffs: BladeCoef = a_mv.dual(n).to_blade_dict()
+        top_blade: Blade = blades[-1]
+        pseudoscalar: Gn = Gn.from_blade_dict({top_blade: 1})
+        i_squared: int = int(
+            sympy.sympify((pseudoscalar * pseudoscalar).to_blade_dict().get((), 0))
+        )
+        return [
+            function_def(
+                "dual",
+                method_doc_stmts("dual")
+                + [
+                    ast.If(
+                        default_dim_test(),
+                        result_stmts(
+                            name,
+                            [
+                                (
+                                    field_name(b),
+                                    summed_value(
+                                        sympy.sympify(dual_coeffs.get(b, 0)), rename
+                                    ),
+                                )
+                                for b in blades
+                            ],
+                        ),
+                        [],
+                    ),
+                    return_stmt(super_call("dual", [name_ref("n")])),
+                ],
+                params=[argument("self"), argument("n", opt_int())],
+                defaults=[constant(None)],
+                returns=self_ann,
+            ),
+            function_def(
+                "unit_pseudoscalar",
+                method_doc_stmts("unit_pseudoscalar")
+                + [
+                    ast.If(
+                        default_dim_test(),
+                        [return_stmt(const_mv(top_blade))],
+                        [],
+                    ),
+                    return_stmt(super_call("unit_pseudoscalar", [name_ref("n")])),
+                ],
+                params=[argument("cls"), argument("n", opt_int())],
+                defaults=[constant(None)],
+                decorators=[name_ref("classmethod")],
+                returns=self_ann,
+            ),
+            function_def(
+                "unit_pseudoscalar_squared",
+                [
+                    ast.If(
+                        default_dim_test(),
+                        [return_stmt(const_mv((), value=i_squared))],
+                        [],
+                    ),
+                    return_stmt(
+                        super_call("unit_pseudoscalar_squared", [name_ref("n")])
+                    ),
+                ],
+                params=[argument("cls"), argument("n", opt_int())],
+                defaults=[constant(None)],
+                decorators=[name_ref("classmethod")],
+                returns=self_ann,
+            ),
+            function_def(
+                "bases",
+                [
+                    ast.If(
+                        default_dim_test(),
+                        [
+                            ast.Expr(
+                                ast.YieldFrom(
+                                    ast.List(
+                                        elts=[const_mv(b) for b in blades],
+                                        ctx=ast.Load(),
+                                    )
+                                )
+                            )
+                        ],
+                        [
+                            ast.Expr(
+                                ast.YieldFrom(super_call("bases", [name_ref("n")]))
+                            )
+                        ],
+                    ),
+                ],
+                params=[argument("cls"), argument("n", opt_int())],
+                defaults=[constant(None)],
+                decorators=[name_ref("classmethod")],
+                returns=subscript(name_ref("Generator"), self_ann),
+            ),
+            function_def(
+                "symbolic_multivector",
+                [
+                    ast.If(
+                        default_dim_test(),
+                        [
+                            return_stmt(
+                                construct(
+                                    "cls",
+                                    [
+                                        (
+                                            field_name(b),
+                                            call(
+                                                attribute("sympy", "Symbol"),
+                                                [
+                                                    ast.BinOp(
+                                                        name_ref("prefix"),
+                                                        ast.Add(),
+                                                        constant(str(i)),
+                                                    )
+                                                ],
+                                            ),
+                                        )
+                                        for i, b in enumerate(blades)
+                                    ],
+                                )
+                            )
+                        ],
+                        [],
+                    ),
+                    return_stmt(
+                        super_call(
+                            "symbolic_multivector",
+                            [name_ref("n"), name_ref("prefix")],
+                        )
+                    ),
+                ],
+                params=[
+                    argument("cls"),
+                    argument("n", opt_int()),
+                    argument("prefix", name_ref("str")),
+                ],
+                defaults=[constant(None), constant("a")],
+                decorators=[name_ref("classmethod")],
+                returns=self_ann,
+            ),
+        ]
+
     body: list[ast.stmt] = [
         *class_header_stmts(docstring_for(n), n, blades),
         *basis_classvar_decls(name, blades),
@@ -1709,57 +1904,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
         ),
         is_close_method(name, fields),
         iter_method(blades),
-        function_def(
-            "dual",
-            method_doc_stmts("dual")
-            + [return_stmt(super_call("dual", [dim_or_n("self")]))],
-            params=[argument("self"), argument("n", opt_int())],
-            defaults=[constant(None)],
-            returns=self_ann,
-        ),
-        function_def(
-            "unit_pseudoscalar",
-            method_doc_stmts("unit_pseudoscalar")
-            + [return_stmt(super_call("unit_pseudoscalar", [dim_or_n("cls")]))],
-            params=[argument("cls"), argument("n", opt_int())],
-            defaults=[constant(None)],
-            decorators=[name_ref("classmethod")],
-            returns=self_ann,
-        ),
-        function_def(
-            "unit_pseudoscalar_squared",
-            [return_stmt(super_call("unit_pseudoscalar_squared", [dim_or_n("cls")]))],
-            params=[argument("cls"), argument("n", opt_int())],
-            defaults=[constant(None)],
-            decorators=[name_ref("classmethod")],
-            returns=self_ann,
-        ),
-        function_def(
-            "bases",
-            [return_stmt(super_call("bases", [dim_or_n("cls")]))],
-            params=[argument("cls"), argument("n", opt_int())],
-            defaults=[constant(None)],
-            decorators=[name_ref("classmethod")],
-            returns=subscript(name_ref("Generator"), self_ann),
-        ),
-        function_def(
-            "symbolic_multivector",
-            [
-                return_stmt(
-                    super_call(
-                        "symbolic_multivector", [dim_or_n("cls"), name_ref("prefix")]
-                    )
-                )
-            ],
-            params=[
-                argument("cls"),
-                argument("n", opt_int()),
-                argument("prefix", name_ref("str")),
-            ],
-            defaults=[constant(None), constant("a")],
-            decorators=[name_ref("classmethod")],
-            returns=self_ann,
-        ),
+        *dimension_known_methods(),
     ]
     return [
         class_def(name, body, decorators=[dataclass_decorator(eq=False, slots=True)]),
@@ -1808,9 +1953,28 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
     msq_sym: Gn = Gn.from_blade_dict(msq_symbols)
     msq_expr: sympy.Expr = sympy.sympify(msq_sym.reverse().scalar_product(msq_sym))
 
-    def unary_body(gn_unary: Callable[[Gn], Gn]) -> ast.stmt:
+    def unary_body(
+        gn_unary: Callable[[Gn], MultiVectorBase],
+        cast: Callable[[ast.expr], ast.expr] = cast_self,
+    ) -> ast.stmt:
         result_spec, out_exprs = unary_result(spec, gn_unary, n, full_name)
-        return unary_stmt(result_spec, out_exprs, unary_rename, owner=spec.name)
+        return unary_stmt(
+            result_spec, out_exprs, unary_rename, owner=spec.name, cast=cast
+        )
+
+    def parity_part(
+        method: str, gn_unary: Callable[[Gn], MultiVectorBase]
+    ) -> ast.FunctionDef:
+        # even_part/odd_part have no argument to overload on, so the override
+        # simply *declares* its resolved return type (e.g. Vector2.even_part ->
+        # Scalar) -- a valid narrowing of base's MultiVectorBase.  The impl
+        # constructs that type directly (identity cast -> no unsound Self cast).
+        result_spec, _ = unary_result(spec, gn_unary, n, full_name)
+        return function_def(
+            method,
+            [unary_body(gn_unary, cast=lambda node: node)],
+            returns=name_ref(result_spec.name),
+        )
 
     rev_pairs: list[tuple[str, ast.expr]] = []
     b: Blade
@@ -1826,18 +1990,45 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             )
         )
 
+    # r_vector_part: an @overload per grade maps ``r: Literal[<grade>]`` to the
+    # resolved grade-r-part type (present grade -> that grade's type, e.g.
+    # Rotor2 grade 2 -> Bivector2; absent grade -> Scalar, the returned zero), so
+    # a literal-``r`` call types precisely.  The impl returns MultiVectorBase and
+    # constructs each branch's concrete type directly -- no unsound ``Self`` cast.
+    def rvp_overload_stub(param_ann: ast.expr, ret: ast.expr) -> ast.stmt:
+        return function_def(
+            "r_vector_part",
+            [ast.Expr(constant(...))],
+            params=[argument("self"), argument("r", param_ann)],
+            decorators=[attribute("typing", "overload")],
+            returns=ret,
+        )
+
+    rvp_overload_stubs: list[ast.stmt] = []
+    for r in range(n + 1):
+        rvp_spec: TypeSpec
+        rvp_spec, _ = unary_result(
+            spec, lambda a, r=r: a.r_vector_part(r), n, full_name
+        )
+        rvp_overload_stubs.append(
+            rvp_overload_stub(
+                subscript(attribute("typing", "Literal"), constant(r)),
+                name_ref(rvp_spec.name),
+            )
+        )
+    # a non-literal ``r: int`` can select any grade part -> MultiVectorBase
+    rvp_overload_stubs.append(rvp_overload_stub(name_ref("int"), mvb_ann))
+
     rvp_body: list[ast.stmt] = [
         ast.If(
             ast.Compare(name_ref("r"), [ast.Eq()], [constant(r)]),
-            [unary_body(lambda a, r=r: a.r_vector_part(r))],
+            [unary_body(lambda a, r=r: a.r_vector_part(r), cast=lambda node: node)],
             [],
         )
         for r in range(n + 1)
     ]
     rvp_body.append(
-        return_construct(
-            "Scalar", [(field_name(()), cast_coef(constant(0)))], owner=spec.name
-        )
+        return_stmt(construct("Scalar", [(field_name(()), cast_coef(constant(0)))]))
     )
 
     body: list[ast.stmt] = [
@@ -2050,17 +2241,14 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         is_close_method(spec.name, fields),
         *coordinate_property_defs(spec),
         iter_method(blades),
-        function_def(
-            "even_part", [unary_body(lambda a: a.even_part())], returns=self_ann
-        ),
-        function_def(
-            "odd_part", [unary_body(lambda a: a.odd_part())], returns=self_ann
-        ),
+        parity_part("even_part", lambda a: a.even_part()),
+        parity_part("odd_part", lambda a: a.odd_part()),
+        *rvp_overload_stubs,
         function_def(
             "r_vector_part",
             rvp_body,
             params=[argument("self"), argument("r", name_ref("int"))],
-            returns=self_ann,
+            returns=mvb_ann,
         ),
         function_def(
             "dual",

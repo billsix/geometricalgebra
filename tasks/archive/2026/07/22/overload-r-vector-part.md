@@ -1,8 +1,33 @@
 # Precise `r_vector_part` via `Literal[grade]` overloads (drop the `Scalar(0)` cast)
 
-**Status:** proposed — needs go-ahead. Created 2026-07-22. (Follow-up spun from
-`overloads-and-drop-cast-on-product-primitives`, which cleaned the *product* arms; this does the
-same for the one remaining graded op that has an argument to overload on.)
+**Status:** complete
+**Completed:** 2026-07-22
+Created 2026-07-22. (Follow-up spun from `overloads-and-drop-cast-on-product-primitives`, which
+cleaned the *product* arms; this does the same for the one remaining graded op that has an argument
+to overload on.) All gates green (285 tests incl. 2 new `r_vector_part` guards, `ty` src/tests/tools
+clean, ruff clean, `check-regions` clean, deterministic; runtime values unchanged).
+
+## Outcome (what shipped)
+
+Only the **graded** classes changed (`generate_graded_type`); the full class `G_n`'s
+`r_vector_part` stays `-> Self` (returns `type(self)`, already correct — same call as the products).
+
+- **`@typing.overload` per grade** `0..DIMENSION`: `r: Literal[<grade>]` → the grade-r part type
+  resolved from `unary_result` (present grade → that grade's type, e.g. `Rotor2` grade 2 →
+  `Bivector2`, `Vector2` grade 1 → `Vector2`; absent grade → `Scalar`, the returned zero), plus a
+  non-literal `r: int` → `MultiVectorBase` catch-all.
+- **Impl broadened to `-> MultiVectorBase`** and **every unsound `cast(typing.Self, …)` dropped** —
+  each `if r == …:` arm now returns its concrete type directly (`return Bivector2(...)` /
+  `return Scalar(coeff_scalar=cast(Coef, 0))`), sound because each is a subtype of the declared
+  `MultiVectorBase`.
+- Mechanism: added a `cast` callback to `unary_stmt`/(local) `unary_body` — default `cast_self`
+  (the `-> Self` unary ops unchanged), identity for the broadened `r_vector_part` arms; the trailing
+  fallthrough emits a plain `Scalar` instead of `return_construct(..., owner=…)`.
+- Guard added to `tests/test_operator_typing.py` (`assert_type` — a regression fails `ty check
+  tests`). Also documented the generator's `_ann`/`_spec`/`mvb`/`rvp` naming conventions in
+  `gen_specialized.py`'s module docstring (Bill asked, 2026-07-22).
+
+## Original plan (below, for reference)
 
 ## Goal
 

@@ -229,6 +229,21 @@ class `RType(…)` when the owner is a **final** graded type (`result_spec.kind 
 `type(self)(…)` for the subclassable full `G_n`; `type(<via_var>)(…)` for the grade-preserving
 sandwich (build via the operand's type); otherwise `cast(<T>, RType(…))`.
 
+**Dimension-known methods (`dimension_known_methods` in `generate_class`).** Five methods whose
+result is *entirely* fixed once the dimension is chosen are emitted as the closed form / constant
+rather than delegating to base's general `n`-parametrized runtime algorithm: `dual`,
+`unit_pseudoscalar`, `unit_pseudoscalar_squared`, `bases`, `symbolic_multivector`. Each is computed
+at generation time from `Gn` (`unit_pseudoscalar_squared`'s `±1` sign by actually squaring the
+pseudoscalar; `dual` via the `unary_result`/`summed_value` machinery) and emitted **only on the
+full class `G_n`** — the graded subtypes don't carry them (`dual` excepted, which they had already,
+guarded the same way), since the pseudoscalar/basis span the whole algebra and don't fit one graded
+type. **The `n` parameter is kept** (`n: int | None = None`): dropping it would be an invalid
+Liskov override of the `n`-required base (`Gn` is dimension-agnostic), which `ty` rejects. So each
+body is guarded `if n is None or n == <DIMENSION>: <known>` with a `super()` fallback for a
+non-default `n` (the rare, off-dimension call like `G2.bases(1)`), preserving prior semantics
+exactly. Constructs via `cls(…)` (subclass-preserving, fresh instance — not the shared basis
+constant). This retired the `dim_or_n` helper.
+
 ---
 
 ## 4. `dispatch_method` — the match-on-rhs table

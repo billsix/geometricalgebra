@@ -2,7 +2,7 @@
 
 **Reference document** — the design and *rationale* for the precise `@typing.overload` typing on
 the generated graded types' products/sums (so `v2 * v2 : Rotor2`, not `Vector2`). Not a task;
-update in place if the generator's product typing changes. Last updated 2026-07-21. Origin: the
+update in place if the generator's product typing changes. Last updated 2026-07-22. Origin: the
 type-precise products/sums work — `tasks/archive/2026/07/21/typed-product-helper-functions.md`.
 
 ## The design
@@ -19,6 +19,23 @@ Each generated graded type (`Vector2`/`Bivector2`/`Rotor2`/`Scalar`, and the �
   2026-07-22 follow-up so a direct caller also gets the precise type.)
 - `__radd__` / `__rsub__` (number on the **left**, `2 + 3*i2`) are typed directly to the resolved
   `self ± scalar` type — no overloads, since their left operand is always a bare number.
+- `r_vector_part` (2026-07-22 follow-up) — same technique, but keyed on an **int literal** rather
+  than an operand type: one `@overload` per grade `r: Literal[<0..DIMENSION>]` → that grade's
+  resolved part type (present grade → its type, e.g. `Rotor2.r_vector_part(Literal[2]) ->
+  Bivector2`; absent grade → `Scalar`, the returned zero), plus an `r: int -> MultiVectorBase`
+  catch-all. Impl broadened to `-> MultiVectorBase`, unsound `Self` casts dropped (each `if r ==
+  …:` arm returns its concrete type). Mechanism: a `cast` callback on `unary_stmt`/`unary_body`
+  (default `cast_self`; identity for these broadened arms).
+- `even_part` / `odd_part` (2026-07-22 follow-up) — **no argument to overload on**, so instead of
+  `@overload`s the graded override just *declares* its resolved return type directly (`Vector2.even_part
+  -> Scalar`, `Bivector3.odd_part -> Scalar`, `Rotor2.even_part -> Rotor2`), with no cast. That
+  required retyping **`base.even_part`/`odd_part` from `-> Self` to `-> MultiVectorBase`** (a
+  `-> Self` base can't be overridden by `-> Scalar`); the full class `G_n` keeps `-> Self` (a valid
+  narrowing), and **`Gn` inherits the `-> MultiVectorBase` floor** (no override — nothing depended on
+  `Gn.even_part()` statically being `Gn`, so no ceremony/cast was added). Emitted via the generator's
+  `parity_part` helper; the `gn_unary` param on `unary_result`/`unary_body`/`parity_part` is
+  `Callable[[Gn], MultiVectorBase]` so it accepts the now-`MultiVectorBase`-returning
+  `even_part`/`odd_part` (Gn-returning ops like `dual` still fit by covariance).
 - The **implementations keep the inline `match`** — runtime is unchanged; the overloads only supply
   static types. Each overloaded impl returns **`-> MultiVectorBase`** (not `-> Self`), and because
   of that its arms construct the result with **no cast** (`return Rotor2(...)`) — the old
@@ -29,7 +46,8 @@ Each generated graded type (`Vector2`/`Bivector2`/`Rotor2`/`Scalar`, and the �
 
 Precision (guarded by `typing.assert_type` in `tests/test_operator_typing.py`, so a regression
 fails `ty check tests`): `v2 * v2 → Rotor2`, `v2 ^ v2 → Bivector2`, `.inner_product → Scalar`,
-`v2 * 3 → Vector2`, `2 + 3*i2 → Rotor2`; 𝒢₃ likewise. Runtime was always correct — this was a
+`v2 * 3 → Vector2`, `2 + 3*i2 → Rotor2`, `rotor2.r_vector_part(2) → Bivector2`,
+`v2.r_vector_part(0) → Scalar`; 𝒢₃ likewise. Runtime was always correct — this was a
 static-typing fix, replacing an unsound `typing.cast(typing.Self, Rotor2(...))`.
 
 ## Why this design (decisions & rejected alternatives)

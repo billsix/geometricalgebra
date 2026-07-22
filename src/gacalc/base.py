@@ -550,7 +550,12 @@ class MultiVectorBase(abc.ABC):
         """
         return self * type(self).unit_pseudoscalar(n).inverse()
 
-    def even_part(self) -> typing.Self:
+    # even_part/odd_part return MultiVectorBase (not Self): the even/odd part of a
+    # single-grade type is a *different* grade (e.g. a vector's even part is the
+    # scalar 0), so the generated graded overrides narrow the return to that
+    # resolved type (Vector2.even_part -> Scalar) -- an override that -> Self
+    # would forbid.  Gn/the full class G_n stay their own type via their overrides.
+    def even_part(self) -> MultiVectorBase:
         """Even part  A⁺  =  ⟨A⟩₀ + ⟨A⟩₂ + …  — the sum of the even-grade parts.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
@@ -560,7 +565,7 @@ class MultiVectorBase(abc.ABC):
             start=type(self).zero(),
         )
 
-    def odd_part(self) -> typing.Self:
+    def odd_part(self) -> MultiVectorBase:
         """Odd part  A⁻  =  ⟨A⟩₁ + ⟨A⟩₃ + …  — the sum of the odd-grade parts.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 8
