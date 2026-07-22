@@ -143,8 +143,17 @@ rewritten to `# comments` in the rendered text.
   `ClassDef` it wraps the class and, inside it, its declaration, its instance variables, and each
   method:
   - `<Class> class` around the whole class; `<Class> declaration` around the `class` line;
-    `<Class> instance variables` around the dataclass fields (the `AnnAssign`s that are **not**
-    `ClassVar` — `_is_classvar` filters those out); `<Class> <method> method` around each method.
+    `<Class> cls variables` around the `ClassVar` declarations (`DIMENSION` + the `e_*` basis
+    constants — the `AnnAssign`s that **are** `ClassVar`, `classvar_indices`); `<Class> instance
+    variables` around the dataclass fields (the `AnnAssign`s that are **not** `ClassVar` —
+    `field_indices`, filtered by `_is_classvar`); `<Class> <method> method` around each method.
+  - **Why `cls variables`, not `class variables`:** `<Class> class` is already a region, and
+    `check-regions` forbids a name that string-prefixes another (`"G2 class variables"` starts with
+    `"G2 class"`). `cls variables` reads as "class variables" (`cls` = the class), parallels
+    `instance variables`, and doesn't prefix `<Class> class`. For the region to be one contiguous
+    block, `class_header_stmts` emits `basis_classvar_decls` **right after `DIMENSION`** (before the
+    `coeff_*` fields) — the `e_*` are annotation-only ClassVars, so this reorder is cosmetic
+    (`Scalar` has no ClassVars, so no `cls variables` region).
   - Most markers are AST **siblings** placed around a node, so a copied docstring (which must stay
     first in its block or `ast.unparse` renders it as an ugly escaped one-liner) is untouched.
   - `_method_label(class_name, method, seen)` builds a **unique, prefix-free** label. A property

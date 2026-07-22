@@ -770,11 +770,20 @@ def to_blade_dict_method(blades: Sequence[Blade]) -> ast.FunctionDef:
     )
 
 
-def class_header_stmts(doc: str, n: int, blades: Sequence[Blade]) -> list[ast.stmt]:
-    """The common class prefix: docstring, DIMENSION, fields, interchange, __eq__."""
+def class_header_stmts(
+    doc: str, n: int, name: str, blades: Sequence[Blade]
+) -> list[ast.stmt]:
+    """The common class prefix: docstring, the class variables (DIMENSION + basis
+    constants), the instance-variable fields, interchange, __eq__.
+
+    DIMENSION and the ``e_*`` basis-constant ClassVars are emitted contiguously
+    (before the ``coeff_*`` fields) so ``inject_region_markers`` can wrap them in
+    one ``<Class> cls variables`` region, mirroring ``<Class> instance variables``.
+    """
     return [
         class_doc_stmt(doc),
         dimension_decl(n),
+        *basis_classvar_decls(name, blades),
         *field_decls(blades),
         from_blade_dict_method(blades),
         to_blade_dict_method(blades),
@@ -1841,8 +1850,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
         ]
 
     body: list[ast.stmt] = [
-        *class_header_stmts(docstring_for(n), n, blades),
-        *basis_classvar_decls(name, blades),
+        *class_header_stmts(docstring_for(n), n, name, blades),
         bilinear(
             "_geometric_product",
             ast.BinOp(name_ref("left"), ast.Mult(), name_ref("right")),
@@ -2032,8 +2040,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
     )
 
     body: list[ast.stmt] = [
-        *class_header_stmts(graded_docstring(spec), n, blades),
-        *basis_classvar_decls(spec.name, blades),
+        *class_header_stmts(graded_docstring(spec), n, spec.name, blades),
         # scalar-aware __mul__ / __rmul__ (the ABC versions would drop the scalar
         # for a type with no scalar field, so they are overridden here).  The
         # @overload stubs give the operator its precise result type per rhs (e.g.

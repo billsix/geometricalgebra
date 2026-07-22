@@ -327,7 +327,9 @@ each split into a `... signature` region (the `def` line) and a `... body` regio
 docstring), so the book can show a signature without the docstring. **Generated** modules
 (`g1`/`g2`/`g3`/`scalar.py`) get their markers from the generator: `astbuild.inject_region_markers`
 walks the built AST and wraps each class and each method — regions `<Class> class` /
-`<Class> declaration` / `<Class> instance variables` / `<Class> <method> method`. Because a comment
+`<Class> declaration` / `<Class> cls variables` (the `ClassVar`s: `DIMENSION` + basis constants) /
+`<Class> instance variables` / `<Class> <method> method`. (`cls variables`, not `class variables`,
+so it doesn't prefix the `<Class> class` region.) Because a comment
 cannot live in an AST, markers are emitted as sentinel string-literal statements and rewritten to
 `# ` comments by `astbuild.module_source` (the `declaration` end is placed by a text pass, so it
 lands after the `class` line without displacing the docstring). **Naming is descriptive and

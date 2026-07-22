@@ -128,11 +128,13 @@ def inject_region_markers(body: list[ast.stmt]) -> list[ast.stmt]:
     variables, and each method -- in doc-region markers.
 
     Regions per class ``C``: ``C class`` (the whole class), ``C declaration`` (the
-    ``class`` line, ending before the docstring), ``C instance variables`` (the
-    dataclass fields), and ``C <method> method`` for each method.  The trailing
-    keyword keeps names **prefix-free** (Sphinx matches the first line *containing*
-    the anchor, so ``... magnitude`` would otherwise also match
-    ``... magnitude_squared``).
+    ``class`` line, ending before the docstring), ``C cls variables`` (the
+    ClassVar declarations -- DIMENSION + basis constants), ``C instance
+    variables`` (the dataclass fields), and ``C <method> method`` for each method.
+    The trailing keyword keeps names **prefix-free** (Sphinx matches the first
+    line *containing* the anchor, so ``... magnitude`` would otherwise also match
+    ``... magnitude_squared``; and ``cls variables`` rather than ``class
+    variables`` so it does not prefix ``C class``).
 
     Most markers are AST siblings placed *around* a node, so a copied docstring
     (which must stay first inside a block, or ``ast.unparse`` renders it as an
@@ -152,13 +154,29 @@ def inject_region_markers(body: list[ast.stmt]) -> list[ast.stmt]:
             for i, m in enumerate(node.body)
             if isinstance(m, ast.AnnAssign) and not _is_classvar(m.annotation)
         ]
+        # ClassVar declarations (DIMENSION + the e_* basis constants), emitted
+        # contiguously by class_header_stmts, get a ``<C> cls variables`` region
+        # -- the class-level analogue of ``instance variables``.  ("cls
+        # variables", not "class variables": the latter would string-prefix the
+        # existing ``<C> class`` region, which check-regions forbids.)
+        classvar_indices: list[int] = [
+            i
+            for i, m in enumerate(node.body)
+            if isinstance(m, ast.AnnAssign) and _is_classvar(m.annotation)
+        ]
         first_field: int | None = field_indices[0] if field_indices else None
         last_field: int | None = field_indices[-1] if field_indices else None
+        first_classvar: int | None = classvar_indices[0] if classvar_indices else None
+        last_classvar: int | None = classvar_indices[-1] if classvar_indices else None
         new_body: list[ast.stmt] = []
         seen_labels: set[str] = set()
         i: int
         member: ast.stmt
         for i, member in enumerate(node.body):
+            if i == first_classvar:
+                new_body.append(
+                    marker(f"doc-region-begin {node.name} cls variables")
+                )
             if i == first_field:
                 new_body.append(
                     marker(f"doc-region-begin {node.name} instance variables")
@@ -171,6 +189,10 @@ def inject_region_markers(body: list[ast.stmt]) -> list[ast.stmt]:
             else:
                 # non-methods and @overload stubs: emitted without a region
                 new_body.append(member)
+            if i == last_classvar:
+                new_body.append(
+                    marker(f"doc-region-end {node.name} cls variables")
+                )
             if i == last_field:
                 new_body.append(
                     marker(f"doc-region-end {node.name} instance variables")
