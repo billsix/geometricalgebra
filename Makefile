@@ -99,7 +99,7 @@ jupyter: image ## Launch JupyterLab (gacalc kernel) on http://127.0.0.1:8888/lab
 
 
 # Run ruff + ty over the source INSIDE the container (the image's pinned toolchain).
-# The g*.py/scalar.py are gitignored, so regenerate them first (so ty can resolve
+# The g*.py are gitignored, so regenerate them first (so ty can resolve
 # them), then run entrypoint/format.sh (ruff check --fix, ruff format, ty check).
 .PHONY: format
 format: image ## (container) regenerate, then ruff + ty over the source (entrypoint/format.sh)
@@ -136,8 +136,7 @@ update-emacs-packages: ## USE_EMACS=1: rebuild image, wipe+reinstall elpa, strip
 
 
 
-GENERATED = src/gacalc/scalar.py \
-            src/gacalc/g1.py \
+GENERATED = src/gacalc/g1.py \
             src/gacalc/g2.py \
             src/gacalc/g3.py
 
@@ -166,7 +165,7 @@ check-generated: ## Verify tools/gen_specialized.py is deterministic (regen twic
 	@echo "generator is deterministic"
 
 # Run the suite INSIDE the container (the image's pinned toolchain), like `dist`.
-# The generated g*.py/scalar.py are gitignored, so regenerate them first (into the
+# The generated g*.py are gitignored, so regenerate them first (into the
 # bind-mounted tree), then run pytest.  Exit 0 on success; on failure the inner
 # command's nonzero status propagates out (make reports it as a recipe failure).
 .PHONY: test

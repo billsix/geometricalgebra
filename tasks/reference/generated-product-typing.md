@@ -110,5 +110,7 @@ static-typing fix, replacing an unsound `typing.cast(typing.Self, Rotor2(...))`.
 
 - `wedge` / `dot` **aliases** still return `-> Self` — only `*`/`^`/`outer_product`/
   `inner_product` were overloaded. Secondary; overload them the same way if wanted.
-- `Scalar` as a product **lhs** needs `scalar.py` to adopt the resolve-and-construct discipline
-  (it coerces identically-zero results to `Gn`). `Scalar` works fine as an **rhs**.
+- `ScalarN` as a product **lhs** needs the per-algebra `ScalarN` (in `gN.py`) to adopt the
+  resolve-and-construct discipline (its `_geometric_product` still coerces a general-multivector rhs
+  via `cast(Self, coeff * rhs)`). `ScalarN` works fine as an **rhs**. (As of the per-algebra-scalar
+  split, `ScalarN.dual()` *is* precise — see `tasks/per-algebra-scalar-types.md`.)

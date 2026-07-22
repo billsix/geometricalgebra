@@ -36,7 +36,8 @@ is about *named operations*. The design step is deciding the split.
       decides what the labels attach to.
 - [ ] **Vector-calc subclass.** Design a 3D subclass exposing `cross(a, b)`. In GA
       the cross product is the dual of the wedge: `a × b = -I₃ (a∧b)` — reuse
-      gacalc's existing `dual()` (`scalar.py:173`) and **verify the sign
+      gacalc's existing `dual()` (`base.py`, precise per-grade on the generated
+      types — e.g. `Bivector3.dual() -> Vector3`) and **verify the sign
       convention**. Consider dot (already `scalar_product`), the scalar triple
       product, and whether grad/div/curl are in scope.
 - [ ] **Subclass vs. generated rep.** `g3` is code-generated (`tools/gen_specialized.py`).

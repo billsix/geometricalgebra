@@ -23,7 +23,6 @@ dist/
 # generated specialized algebras -- produced by tools/gen_specialized.py
 # (make generate / make shell / the setup.py build hook). Not tracked; baked
 # into the sdist + wheel at build time so a pip install is still readable.
-/src/gacalc/scalar.py
 /src/gacalc/g1.py
 /src/gacalc/g2.py
 /src/gacalc/g3.py

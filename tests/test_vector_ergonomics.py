@@ -23,10 +23,9 @@ import pytest
 import sympy
 
 from gacalc.base import Coef, MultiVectorBase
-from gacalc.g2 import G2, Bivector2, Rotor2, Vector2
+from gacalc.g2 import G2, Bivector2, Rotor2, Scalar2, Vector2
 from gacalc.g3 import G3, Vector3
 from gacalc.gn import Gn
-from gacalc.scalar import Scalar
 
 
 def test_coordinate_read() -> None:
@@ -52,7 +51,7 @@ def test_coordinates_only_on_grade_1() -> None:
         Rotor2(coeff_scalar=1.0, coeff_e_12=0.0),
         Bivector2.e_12,
         G2(coeff_scalar=1.0),
-        Scalar(coeff_scalar=1.0),
+        Scalar2(coeff_scalar=1.0),
     ):
         assert not hasattr(value, "x")
 
@@ -65,7 +64,7 @@ def test_scalar_division() -> None:
         (1,): 2.0,
     }
     assert (G3.from_scalar(6) / 2).scalar_part() == 3
-    assert (Scalar(coeff_scalar=6.0) / 2).coeff_scalar == 3.0
+    assert (Scalar2(coeff_scalar=6.0) / 2).coeff_scalar == 3.0
     assert (Gn.from_blade_dict({(1,): 3.0}) / 2).is_close(
         Gn.from_blade_dict({(1,): 1.5})
     )

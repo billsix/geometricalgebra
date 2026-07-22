@@ -13,7 +13,7 @@
 
 """Graded subtype suite.
 
-The graded types (Vector_n, Bivector_n, Trivector3, Rotor_n, Scalar) dispatch a
+The graded types (Vector_n, Bivector_n, Trivector3, Rotor_n, Scalar_n) dispatch a
 product by the operand types and return the *grade-correct* type, decided
 symbolically at generation time (so it never depends on runtime float values).
 Each case asserts both the **return type** and that the **value** equals the same
@@ -31,11 +31,10 @@ import sympy
 
 import gacalc.gn as gn
 from gacalc.base import BladeCoef, MultiVectorBase
-from gacalc.g1 import Vector1
-from gacalc.g2 import G2, Bivector2, Rotor2, Vector2
-from gacalc.g3 import G3, Bivector3, Rotor3, Trivector3, Vector3
+from gacalc.g1 import Scalar1, Vector1
+from gacalc.g2 import G2, Bivector2, Rotor2, Scalar2, Vector2
+from gacalc.g3 import G3, Bivector3, Rotor3, Scalar3, Trivector3, Vector3
 from gacalc.gn import Gn
-from gacalc.scalar import Scalar
 from gacalc.transforms import projection_rotation
 
 
@@ -53,14 +52,14 @@ OPS = {
 # (lhs, op, rhs, expected return type) -- this table *is* the grade product table.
 PRODUCT_TABLE = [
     # 1D
-    (3 * Vector1.e_1, "*", 2 * Vector1.e_1, Scalar),
+    (3 * Vector1.e_1, "*", 2 * Vector1.e_1, Scalar1),
     # 2D -- vectors, bivector (5 * the unit bivector), rotor (scalar + bivector)
     (3 * Vector2.e_1 + 4 * Vector2.e_2, "*", Vector2.e_1 + 2 * Vector2.e_2, Rotor2),
     (3 * Vector2.e_1 + 4 * Vector2.e_2, "^", Vector2.e_1 + 2 * Vector2.e_2, Bivector2),
-    (3 * Vector2.e_1 + 4 * Vector2.e_2, ".", Vector2.e_1 + 2 * Vector2.e_2, Scalar),
+    (3 * Vector2.e_1 + 4 * Vector2.e_2, ".", Vector2.e_1 + 2 * Vector2.e_2, Scalar2),
     (3 * Vector2.e_1 + 4 * Vector2.e_2, "*", 5 * Bivector2.e_12, Vector2),
     (5 * Bivector2.e_12, "*", 3 * Vector2.e_1 + 4 * Vector2.e_2, Vector2),
-    (2 * Bivector2.e_12, "*", 3 * Bivector2.e_12, Scalar),
+    (2 * Bivector2.e_12, "*", 3 * Bivector2.e_12, Scalar2),
     (2 + 3 * Bivector2.e_12, "*", 1 + Bivector2.e_12, Rotor2),
     (2 + 3 * Bivector2.e_12, "*", 3 * Vector2.e_1 + 4 * Vector2.e_2, Vector2),
     (3 * Vector2.e_1 + 4 * Vector2.e_2, "*", 2 + 3 * Bivector2.e_12, Vector2),
@@ -82,7 +81,7 @@ PRODUCT_TABLE = [
         Vector3.e_1 + 2 * Vector3.e_2 + 3 * Vector3.e_3,
         ".",
         4 * Vector3.e_1 + 5 * Vector3.e_2 + 6 * Vector3.e_3,
-        Scalar,
+        Scalar3,
     ),
     (
         Bivector3.e_12 + 2 * Bivector3.e_13 + 3 * Bivector3.e_23,
@@ -96,7 +95,7 @@ PRODUCT_TABLE = [
         2 * Trivector3.e_123,
         Bivector3,
     ),
-    (2 * Trivector3.e_123, "*", 3 * Trivector3.e_123, Scalar),
+    (2 * Trivector3.e_123, "*", 3 * Trivector3.e_123, Scalar3),
     (
         1 + Bivector3.e_12 + Bivector3.e_13 + Bivector3.e_23,
         "*",
@@ -199,7 +198,7 @@ def test_dual_narrows() -> None:
             3 * Vector2.e_1 + 4 * Vector2.e_2,
             Vector2,
         ),  # 2D: vectors are the self-dual grade
-        (5 * Bivector2.e_12, Scalar),  # 2D: grade 2 -> grade 0
+        (5 * Bivector2.e_12, Scalar2),  # 2D: grade 2 -> grade 0
         (
             Vector3.e_1 + 2 * Vector3.e_2 + 3 * Vector3.e_3,
             Bivector3,
@@ -222,13 +221,13 @@ def test_grade_projection_narrows() -> None:
     r: MultiVectorBase = (
         1 + Bivector3.e_12 + 2 * Bivector3.e_13 + 3 * Bivector3.e_23
     )  # a Rotor3
-    assert type(r.r_vector_part(0)) is Scalar
+    assert type(r.r_vector_part(0)) is Scalar3
     assert type(r.r_vector_part(2)) is Bivector3
     assert type(r.even_part()) is Rotor3
     assert r.r_vector_part(2) == widen(r).r_vector_part(2)
     # a grade absent from the type projects to the zero scalar
-    assert type((Vector3.e_1 + Vector3.e_2).r_vector_part(0)) is Scalar
-    assert type((Vector3.e_1 + Vector3.e_2).even_part()) is Scalar
+    assert type((Vector3.e_1 + Vector3.e_2).r_vector_part(0)) is Scalar3
+    assert type((Vector3.e_1 + Vector3.e_2).even_part()) is Scalar3
 
 
 def test_plane_of_rotation() -> None:
@@ -247,14 +246,14 @@ def test_plane_of_rotation() -> None:
 
 
 def test_scalar_type() -> None:
-    s5: Scalar = Scalar.from_scalar(5)
+    s5: Scalar2 = Scalar2.from_scalar(5)
     v: Vector2 = 3 * Vector2.e_1 + 4 * Vector2.e_2
     assert type(s5 * v) is Vector2 and s5 * v == 15 * gn.e_1 + 20 * gn.e_2
     assert type(3 * v) is Vector2 and 3 * v == 9 * gn.e_1 + 12 * gn.e_2
     assert type(v * 2) is Vector2
     assert (
-        type(Bivector2.e_12 * Bivector2.e_12) is Scalar
-    )  # a pure-scalar product result lands in Scalar
+        type(Bivector2.e_12 * Bivector2.e_12) is Scalar2
+    )  # a pure-scalar product result lands in Scalar2
 
 
 def test_widen_fallback() -> None:

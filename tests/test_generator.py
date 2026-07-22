@@ -128,11 +128,11 @@ def test_subscript_superscript() -> None:
 
 def test_registry_for_dim_lists_graded_then_full() -> None:
     names: list[str] = [s.name for s in gen.registry_for_dim(2, "G2")]
-    assert names == ["Scalar", "Vector2", "Bivector2", "Rotor2", "G2"]
+    assert names == ["Scalar2", "Vector2", "Bivector2", "Rotor2", "G2"]
 
 
 def test_resolve_smallest_covering_type() -> None:
-    assert gen.resolve([()], 2, "G2").name == "Scalar"
+    assert gen.resolve([()], 2, "G2").name == "Scalar2"
     assert gen.resolve([(1,), (2,)], 2, "G2").name == "Vector2"
     assert gen.resolve([(1, 2)], 2, "G2").name == "Bivector2"
     assert gen.resolve([(), (1, 2)], 2, "G2").name == "Rotor2"
@@ -175,7 +175,7 @@ def test_product_result_bivector_times_bivector_is_scalar() -> None:
     b2: gen.TypeSpec = _spec(2, "Bivector2")
     result_spec: gen.TypeSpec
     result_spec, _ = gen.product_result(b2, b2, lambda a, b: a * b, 2, "G2")
-    assert result_spec.name == "Scalar"
+    assert result_spec.name == "Scalar2"
 
 
 def test_unary_result_reverse_preserves_grade() -> None:

@@ -15,7 +15,7 @@
 """Verify gacalc's ``doc-region`` markers are safe to include from a book.
 
 gacalc's source (hand-written ``functions.py`` / ``transforms.py`` and the
-generated ``g1``/``g2``/``g3``/``scalar.py``) carries ``# doc-region-begin
+generated ``g1``/``g2``/``g3``) carries ``# doc-region-begin
 <name>`` / ``# doc-region-end <name>`` markers so *modelviewprojection*'s book
 can ``literalinclude`` slices of it.  A Sphinx ``:start-after:`` /
 ``:end-before:`` query fails **silently** if the anchors are not well-formed, so

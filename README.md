@@ -57,10 +57,13 @@ only one grade's components — the way mathematicians usually work:
 
 | dimension | graded types |
 | --- | --- |
-| shared | `Scalar` (grade 0) |
-| 𝒢₁ | `Vector1` |
-| 𝒢₂ | `Vector2`, `Bivector2`, `Rotor2` (the even subalgebra, ≅ ℂ) |
-| 𝒢₃ | `Vector3`, `Bivector3`, `Trivector3`, `Rotor3` (≅ the quaternions ℍ) |
+| 𝒢₁ | `Scalar1`, `Vector1` |
+| 𝒢₂ | `Scalar2`, `Vector2`, `Bivector2`, `Rotor2` (the even subalgebra, ≅ ℂ) |
+| 𝒢₃ | `Scalar3`, `Vector3`, `Bivector3`, `Trivector3`, `Rotor3` (≅ the quaternions ℍ) |
+
+The grade-0 `ScalarN` is **per algebra** (not one shared type), so its dual is precise:
+`Scalar1.dual() → Vector1`, `Scalar2.dual() → Bivector2`, `Scalar3.dual() → Trivector3`
+(grade 0 → the pseudoscalar).
 
 **The product decides the return type** — resolved when the classes are generated, so it
 never depends on (float-fuzzy) coefficient *values*. It is also **precise for a type checker**,
@@ -75,7 +78,7 @@ a, b = 3 * Vector2.e_1 + 4 * Vector2.e_2, 1 * Vector2.e_1 + 2 * Vector2.e_2
 
 type(a * b)               # Rotor2     (a·b scalar  +  a∧b bivector)
 type(a ^ b)               # Bivector2  (the wedge — ask for a blade with ^)
-type(a.inner_product(b))  # Scalar
+type(a.inner_product(b))  # Scalar2
 type(a < (a ^ b))         # Vector2   left contraction  a ⌋ B  (grade m−k; a.left_contraction(B))
 type((a ^ b) > a)         # Vector2   right contraction B ⌊ a  (grade k−m; B.right_contraction(a))
 ```
@@ -99,11 +102,11 @@ into one single-blade multivector per term instead, iterate `v.to_blade_dict()`.
 
 Return-type table for the geometric product `*` (𝒢₂ shown):
 
-| `*` | Scalar | Vector2 | Bivector2 | Rotor2 |
+| `*` | Scalar2 | Vector2 | Bivector2 | Rotor2 |
 | --- | --- | --- | --- | --- |
-| **Scalar** | Scalar | Vector2 | Bivector2 | Rotor2 |
+| **Scalar2** | Scalar2 | Vector2 | Bivector2 | Rotor2 |
 | **Vector2** | Vector2 | Rotor2 | Vector2 | Vector2 |
-| **Bivector2** | Bivector2 | Vector2 | Scalar | Rotor2 |
+| **Bivector2** | Bivector2 | Vector2 | Scalar2 | Rotor2 |
 | **Rotor2** | Rotor2 | Vector2 | Rotor2 | Rotor2 |
 
 A result that spans grades no single type covers widens to the full `G_n`

@@ -33,7 +33,7 @@
 #
 # Mathematicians rarely carry a full multivector; they work with *vectors*,
 # *bivectors*, *rotors*, and so on. This library has those as first-class types
-# (`Vector2`, `Bivector2`, `Rotor2`, `Scalar`, ...), and **the product decides the
+# (`Vector2`, `Bivector2`, `Rotor2`, `Scalar2`, ...), and **the product decides the
 # return type**: two vectors multiply to a *rotor* (scalar + bivector), their
 # wedge is a *bivector*, and so on.
 #
@@ -48,9 +48,8 @@ import sympy
 from IPython.display import Markdown, Math, display
 
 from gacalc.base import MultiVectorBase
-from gacalc.g2 import Bivector2, Rotor2, Vector2
+from gacalc.g2 import Bivector2, Rotor2, Scalar2, Vector2
 from gacalc.g3 import Bivector3, Vector3
-from gacalc.scalar import Scalar
 from gacalc.transforms import (
     ComposableFunction,
     InvertibleFunction,
@@ -98,7 +97,7 @@ show(a)
 show(a * b)
 
 # %%
-# the wedge alone is a Bivector2; the dot alone is a Scalar
+# the wedge alone is a Bivector2; the dot alone is a Scalar2
 show(a ^ b, a.inner_product(b))
 
 # %% [markdown]
@@ -116,11 +115,11 @@ show(Vector2.e_1 * Vector2.e_2)
 show(Vector2.e_1 ^ Vector2.e_2)
 
 # %% [markdown]
-# Bivectors and the Scalar type
+# Bivectors and the Scalar2 type
 # -----------------------------
 #
 # In 𝒢₂ a bivector squares to a scalar — so `Bivector2 * Bivector2` lands in the
-# dedicated `Scalar` type.
+# dedicated `Scalar2` type.
 
 # %%
 i2: Bivector2 = Vector2.e_1 ^ Vector2.e_2  # the unit bivector
@@ -204,7 +203,7 @@ R * w * R.inverse() == projection_rotation(from_vector=frm, to_vector=to)(w)
 
 # %%
 named = [
-    ("Scalar", Scalar.from_scalar(5)),
+    ("Scalar2", Scalar2.from_scalar(5)),
     ("Vector2", a),
     ("Bivector2", i2),
     ("Rotor2", r),

@@ -31,8 +31,9 @@ notation) — use it as the style reference. This task is about *completeness*,
 
 ## Plan
 
-- [ ] **Audit coverage.** Walk `src/gacalc/` — `base.py`, `scalar.py`, `g1.py`,
-      `g2.py`, `g3.py`, `gn.py`, `transforms.py`, `nbplotutils.py` — and list what
+- [ ] **Audit coverage.** Walk `src/gacalc/` — `base.py`, `g1.py`,
+      `g2.py`, `g3.py` (each now also holds its per-algebra `ScalarN`; no `scalar.py`),
+      `gn.py`, `transforms.py`, `nbplotutils.py` — and list what
       lacks docstrings or has thin ones. `base.py` is strong; the generated reps
       and `transforms.py` are likely where gaps are.
 - [ ] **Decide the Sphinx story.** No `docs/`/`conf.py` exists today. Either (a)

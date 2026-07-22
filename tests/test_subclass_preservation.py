@@ -14,7 +14,7 @@
 """Subclassing policy for the generated types.
 
 The graded value types (``Vector1/2/3``, ``Bivector2/3``, ``Trivector3``,
-``Rotor2/3``) and the shared ``Scalar`` are **`@typing.final`** -- they are leaf
+``Rotor2/3``) and the per-algebra ``ScalarN`` are **`@typing.final`** -- they are leaf
 value types and must not be subclassed.  This is a static guarantee: `ty` rejects
 any subclass with ``error[subclass-of-final-class]`` (see tools/gen_specialized.py).
 Because they are final, the generated code may treat ``type(self)`` as the exact
@@ -25,13 +25,14 @@ The **full classes ``G1``/``G2``/``G3`` stay subclassable** -- the general
 construct via ``type(self)``, so a subclass gets its own type back from arithmetic.
 """
 
-from gacalc.g1 import Vector1
-from gacalc.g2 import G2, Bivector2, Rotor2, Vector2
-from gacalc.g3 import Bivector3, Rotor3, Trivector3, Vector3
-from gacalc.scalar import Scalar
+from gacalc.g1 import Scalar1, Vector1
+from gacalc.g2 import G2, Bivector2, Rotor2, Scalar2, Vector2
+from gacalc.g3 import Bivector3, Rotor3, Scalar3, Trivector3, Vector3
 
 _FINAL_TYPES: list[type] = [
-    Scalar,
+    Scalar1,
+    Scalar2,
+    Scalar3,
     Vector1,
     Vector2,
     Bivector2,

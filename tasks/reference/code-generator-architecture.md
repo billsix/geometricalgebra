@@ -21,12 +21,13 @@ The whole generator is three files under `tools/`:
 
 The golden rule from `CLAUDE.md`, restated because it dominates everything below: **a correct
 generator change appears in `git diff` as a `tools/` diff and *nothing* under `src/gacalc/`.** The
-four outputs — `src/gacalc/scalar.py`, `g1.py`, `g2.py`, `g3.py` — are gitignored build artifacts.
+three outputs — `src/gacalc/g1.py`, `g2.py`, `g3.py` — are gitignored build artifacts (each
+self-contained: its own `ScalarN` + graded types + full `G_n`; there is no shared `scalar.py`).
 Never hand-edit them; regenerate and read them on disk.
 
 ---
 
-## 1. The pipeline — `main()` → four `.py` files
+## 1. The pipeline — `main()` → three `.py` files
 
 `main()` (`gen_specialized.py:2256`) is the driver. Each module is a **list of `ast` statement
 nodes** built directly by the per-construct generators, then rendered to source text with
@@ -40,23 +41,28 @@ builders, e.g. "= result_block, as nodes", are vestiges of that migration).
 raw text header  +  "\n\n"  +  module_source(inject_region_markers(nodes))  +  "\n"
 ```
 
-- The **header** is a raw f-string (`header(name, n)` at `:2149`, `SCALAR_HEADER` at `:2197`): the
-  LGPL copyright block, the `AUTO-GENERATED … do not edit` banner, `from __future__`, the imports,
-  and the module-level `_coerce()` helper. `header()` conditionally appends `, _OperandT` to the
+- The **header** is a raw f-string (`header(name, n)`): the LGPL copyright block, the
+  `AUTO-GENERATED … do not edit` banner, `from __future__`, the imports, and the module-level
+  `_coerce()` helper. (There is no longer a separate `SCALAR_HEADER` — `ScalarN` is emitted into each
+  `gN.py`, not its own module.) `header()` conditionally appends `, _OperandT` to the
   `gacalc.base` import only for `n >= 2` (the sandwich TypeVar is used only by `Rotor_n`, which
   doesn't exist in 𝒢₁ — importing it there would be an unused-import `F401`).
 - The **body** is the node list, `ast.unparse`'d.
 
-**Emission order** (matters: later types reference earlier ones):
+**Emission order** — everything for one algebra goes into its one self-contained module. For each
+`(n, name, filename)` in `ALGEBRAS` (currently `[(1,"G1","g1.py"), (2,"G2","g2.py"),
+(3,"G3","g3.py")]`), `main()` concatenates, in order (later types reference earlier ones by name, but
+`from __future__ import annotations` makes return annotations lazy, so the order is for readability,
+not correctness):
 
-1. `scalar.py` first — `generate_scalar()` + an `__all__ = ["Scalar"]` assign. The graded types of
-   every algebra import `Scalar`, so it must exist first.
-2. For each `(n, name, filename)` in `ALGEBRAS` (`:2227`, currently `[(1,"G1","g1.py"),
-   (2,"G2","g2.py"), (3,"G3","g3.py")]`):
-   - `generate_class(n, name)` — the full all-blades `G_n` class + its post-class basis-constant
-     assignments.
-   - `generate_graded_type(spec, n, name)` for each `spec in graded_specs(n)` — the graded subtypes.
-   - `generate_constants(n, name)` — the module-level `zero`/`one`/`e_1…` constants and `__all__`.
+1. `generate_scalar(n, f"Scalar{n}", name)` — the per-algebra grade-0 `ScalarN`. Its `dual` names the
+   same-module pseudoscalar (`Scalar3.dual -> Trivector3`), which is *why* it lives here and not in a
+   shared module (a shared `scalar.py` importing `Trivector3` from `g3` would be a circular import).
+2. `generate_class(n, name)` — the full all-blades `G_n` class + its post-class basis-constant
+   assignments.
+3. `generate_graded_type(spec, n, name)` for each `spec in graded_specs(n)` — the graded subtypes.
+4. `generate_constants(n, name)` — the module-level `zero`/`one`/`e_1…` constants and `__all__`
+   (which includes `ScalarN`).
 
 **Where ruff runs.** After all files are written, `main()` calls `ruff_format(written)` (`:2230`),
 which runs `ruff check --fix --quiet` then `ruff format --quiet --line-length=88` on the freshly

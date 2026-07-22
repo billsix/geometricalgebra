@@ -11,7 +11,7 @@ from setuptools.command.build_py import build_py
 #   * building from the repo (make dist / pip wheel .) produces them, while
 #   * building from a shipped sdist/wheel -- which already contains them -- is a
 #     no-op needing no sympy, keeping end-user installs fast and readable.
-GENERATED: list[str] = ["scalar.py", "g1.py", "g2.py", "g3.py"]
+GENERATED: list[str] = ["g1.py", "g2.py", "g3.py"]
 PKG_DIR: pathlib.Path = pathlib.Path(__file__).parent / "src" / "gacalc"
 GENERATOR: pathlib.Path = pathlib.Path(__file__).parent / "tools" / "gen_specialized.py"
 
