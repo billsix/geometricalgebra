@@ -412,6 +412,59 @@ class MultiVectorBase(abc.ABC):
         """Operator form of the outer product:  a ^ b  ==  a ∧ b  ==  a.wedge(b)."""
         return self.wedge(other)
 
+    def left_contraction(self, rhs: typing.Self) -> typing.Self:
+        """Left contraction  A ⌋ B  — for homogeneous grade-k (left) and grade-m
+        (right) parts, the grade-(m−k) part of the geometric product ⟨A_k B_m⟩_(m−k),
+        summed bilinearly; zero whenever m − k < 0.
+
+        from M.D. Taylor, An Introduction to Geometric Algebra and Geometric
+        Calculus, 2021, page 103.  (galgebra 0.6.0 agrees: its
+        _LeftContractFunction keeps grade grade2 − grade1.)
+
+        Grade-0 caveat: UNLIKE the Hestenes dot product (``inner_product``), the
+        loop over source components INCLUDES grade 0 — Taylor (and galgebra's
+        contraction) do; Hestenes' dot is undefined for scalars.  Taylor also calls
+        grade 0 part of the plain dot product, which conflicts with Hestenes; this
+        discrepancy may warrant further investigation (see
+        tasks/investigate-dot-product-grade-0.md).
+        """
+        return sum(
+            [
+                (self.r_vector_part(k) * rhs.r_vector_part(m)).r_vector_part(m - k)
+                for k, m in itertools.product(self.grades(), rhs.grades())
+            ],
+            start=type(self).zero(),
+        )
+
+    def right_contraction(self, rhs: typing.Self) -> typing.Self:
+        """Right contraction  A ⌊ B  — for homogeneous grade-k (left) and grade-m
+        (right) parts, the grade-(k−m) part of the geometric product ⟨A_k B_m⟩_(k−m),
+        summed bilinearly; zero whenever k − m < 0.
+
+        from M.D. Taylor, An Introduction to Geometric Algebra and Geometric
+        Calculus, 2021, page 103.  (galgebra 0.6.0 agrees: its
+        _RightContractFunction keeps grade grade1 − grade2.)
+
+        Grade-0 caveat: like the left contraction, the loop INCLUDES grade 0,
+        unlike the Hestenes dot (``inner_product``) — see ``left_contraction`` and
+        tasks/investigate-dot-product-grade-0.md.
+        """
+        return sum(
+            [
+                (self.r_vector_part(k) * rhs.r_vector_part(m)).r_vector_part(k - m)
+                for k, m in itertools.product(self.grades(), rhs.grades())
+            ],
+            start=type(self).zero(),
+        )
+
+    def __lt__(self, other: typing.Self) -> typing.Self:
+        """Operator form of the left contraction:  a < b  ==  a.left_contraction(b)."""
+        return self.left_contraction(other)
+
+    def __gt__(self, other: typing.Self) -> typing.Self:
+        """Operator form of the right contraction: a > b == a.right_contraction(b)."""
+        return self.right_contraction(other)
+
     @staticmethod
     def outer_product_of_vectors(
         *vectors: MultiVectorBase,

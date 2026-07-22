@@ -25,7 +25,7 @@ synthesis, not from any doc):
 | # | Gap | Size | Needs signatures first? | Why it's worth it |
 |---|---|---|---|---|
 | 1 | **exp / log of rotors & multivectors** | small, self-contained | no | "rotor = exp(bivector)" is a core teaching moment; enables interpolation. Best near-term win. (Finding 2B) |
-| 2 | **Left/right contractions + commutator/anticommutator + grade-involution + Clifford conjugation** | small, several one-liners | no | Table-stakes operations every GA text uses; gacalc collapses all inner products into one. Cheap. (Finding 2A) |
+| 2 | **~~Left/right contractions~~ (DONE 2026-07-22) + commutator/anticommutator + grade-involution + Clifford conjugation** | small, several one-liners | no | Table-stakes operations every GA text uses; gacalc collapses all inner products into one. Cheap. (Finding 2A) |
 | 3 | **Reciprocal frames** | small–medium | no | Independently useful *and* the prerequisite for geometric calculus. Build regardless. (Finding 1, 5) |
 | 4 | **Outermorphisms / general linear transforms** (`Lt`: det/adjoint/trace as pseudoscalar/blade operations) | medium, self-contained | **no** — works on Euclidean G3 | Beautiful teaching topic ("det = how a map scales the pseudoscalar"); generalizes gacalc's versor-only transforms. The best "big" step that *doesn't* need signatures. (Finding 3b) |
 | 5 | **General-multivector inverse** (Hitzer closed-form n<6 / Shirokov) | small–medium | no | Correctness/coverage: gacalc's `inverse()` only handles blade/versor cases; a general multivector can silently fail. (Finding 2B) |
@@ -150,10 +150,12 @@ This is the "cheap wins" bucket. galgebra's `Mv` delegates product *definitions*
 **Present in galgebra, absent in gacalc — grouped by how cheap/relevant they are:**
 
 **A. Cheap & Euclidean-safe (no signature dependency, high pedagogical value):**
-- **Left / right contraction** (`A < B`, `A > B`) as distinct named ops, and the **Hestenes
-  inner (`|`) vs contraction** distinction. gacalc collapses everything into one
-  `inner_product`. This is the single biggest *operation* gap — the contractions are the
-  modern (Dorst) preferred inner products and every serious GA text uses them.
+- ~~**Left / right contraction** (`A < B`, `A > B`) as distinct named ops~~ — **DONE 2026-07-22.**
+  `left_contraction`/`right_contraction` + the `<` / `>` operators (base + generated fast paths with
+  precise overloads), per Taylor 2021 p.103; see `tasks/reference/contraction-and-dot-definitions.md`.
+  The **Hestenes inner (`|`) vs contraction** distinction is now real: `inner_product` stays the
+  Hestenes dot (grade-0-excluded), the contractions include grade 0 (the open grade-0 wrinkle is
+  tracked in `tasks/investigate-dot-product-grade-0.md`).
 - **Commutator** `½(AB−BA)` and **anticommutator** `½(AB+BA)` — one-liners; the commutator
   is how bivectors generate rotations, so it's genuinely pedagogical.
 - **Grade involution / main involution** (`g_invol`, negate odd grades) and **Clifford
@@ -337,7 +339,7 @@ applied world:
 | symbolic **and** numeric in one library | differentiator | ● (real strength — kingdon's headline feature) |
 | code-generated fast paths | scaling | ● (pedagogical miniature of versor/gafro/Gaalop) |
 | arbitrary signature (p,q,r) incl. degenerate | **table stakes** | ○ |
-| left/right contractions as distinct operators | table stakes | ○ |
+| left/right contractions as distinct operators | table stakes | ● (done 2026-07-22, `< `/`>`) |
 | exp/log of rotors & multivectors | table stakes (for motion) | ○ |
 | outermorphisms / general linear transforms | table stakes (for a "linear algebra" GA lib) | ○ |
 | reciprocal frames | table stakes | ○ |

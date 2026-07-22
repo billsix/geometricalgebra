@@ -169,6 +169,18 @@ def test_inner_outer_product(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
+def test_left_right_contraction(n: int, cls) -> None:
+    a: Gn
+    b: Gn
+    a, b = full(n, 0), full(n, 10)
+    assert to(cls, a).left_contraction(to(cls, b)) == a.left_contraction(b)
+    assert to(cls, a).right_contraction(to(cls, b)) == a.right_contraction(b)
+    # the ``<`` / ``>`` operators delegate to the named methods
+    assert (to(cls, a) < to(cls, b)) == a.left_contraction(b)
+    assert (to(cls, a) > to(cls, b)) == a.right_contraction(b)
+
+
+@pytest.mark.parametrize("n,cls", CASES)
 def test_dot_wedge_vectors(n: int, cls) -> None:
     a: Gn
     b: Gn

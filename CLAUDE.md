@@ -259,6 +259,9 @@ vector) keep their names; the rule targets pure renames of things that already h
 ## Operators
 
 - `*` geometric product · `^` wedge (outer) product · `@` composition of `InvertibleFunction`s
+- `<` left contraction (`a.left_contraction(b)`) · `>` right contraction (`a.right_contraction(b)`)
+  — Taylor 2021 p.103; grade `m−k` / `k−m`, and **include grade 0** unlike the Hestenes `inner_product`
+  (see `tasks/reference/contraction-and-dot-definitions.md`)
 - `abs(mv)` → magnitude · inverse via `.inverse()`
 - rotations: `transforms.projection_rotation(from, to)` / `rotor_rotation(from, to)` /
   `plane_rotation(a, b)` (free-function factories); `MultiVectorBase.rotor_from_vectors(from, to)`

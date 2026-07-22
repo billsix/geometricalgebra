@@ -1866,6 +1866,16 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
             call(attribute("left", "outer_product"), [name_ref("right")]),
             a_mv.outer_product(b_mv),
         ),
+        bilinear(
+            "left_contraction",
+            call(attribute("left", "left_contraction"), [name_ref("right")]),
+            a_mv.left_contraction(b_mv),
+        ),
+        bilinear(
+            "right_contraction",
+            call(attribute("left", "right_contraction"), [name_ref("right")]),
+            a_mv.right_contraction(b_mv),
+        ),
         linear("__add__", ast.Add, ast.Add),
         linear("__sub__", ast.Sub, ast.Sub),
         function_def(
@@ -2154,6 +2164,73 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             full_name,
             call(attribute("left", "inner_product"), [name_ref("right")]),
             return_type=mvb_ann,
+        ),
+        # left/right contraction (Taylor p.103): grade-changing bilinear ops, so
+        # they get the same precise overloads + fast dispatch as the products, and
+        # the ``<`` / ``>`` operators delegate to them (as ``^`` does to wedge).
+        *product_overload_stubs(
+            "left_contraction", spec, lambda a, b: a.left_contraction(b), n, full_name
+        ),
+        dispatch_method(
+            spec,
+            "left_contraction",
+            lambda a, b: a.left_contraction(b),
+            n,
+            full_name,
+            call(attribute("left", "left_contraction"), [name_ref("right")]),
+            return_type=mvb_ann,
+        ),
+        *product_overload_stubs(
+            "__lt__",
+            spec,
+            lambda a, b: a.left_contraction(b),
+            n,
+            full_name,
+            param_name="other",
+        ),
+        function_def(
+            "__lt__",
+            [
+                return_stmt(
+                    call(attribute("self", "left_contraction"), [name_ref("other")])
+                )
+            ],
+            params=[argument("self"), argument("other")],
+            returns=mvb_ann,
+        ),
+        *product_overload_stubs(
+            "right_contraction",
+            spec,
+            lambda a, b: a.right_contraction(b),
+            n,
+            full_name,
+        ),
+        dispatch_method(
+            spec,
+            "right_contraction",
+            lambda a, b: a.right_contraction(b),
+            n,
+            full_name,
+            call(attribute("left", "right_contraction"), [name_ref("right")]),
+            return_type=mvb_ann,
+        ),
+        *product_overload_stubs(
+            "__gt__",
+            spec,
+            lambda a, b: a.right_contraction(b),
+            n,
+            full_name,
+            param_name="other",
+        ),
+        function_def(
+            "__gt__",
+            [
+                return_stmt(
+                    call(attribute("self", "right_contraction"), [name_ref("other")])
+                )
+            ],
+            params=[argument("self"), argument("other")],
+            returns=mvb_ann,
         ),
         # +/- also narrow by grade: scalar + bivector -> Rotor2, etc.  Overload them
         # too so a mixed-grade sum types precisely instead of -> Self.

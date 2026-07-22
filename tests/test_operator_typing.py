@@ -85,6 +85,36 @@ def test_even_odd_part_runtime_types() -> None:
     assert type((3 * Vector2.e_1).even_part()) is Scalar  # vector has no even part
 
 
+def test_contraction_static_types() -> None:
+    # left/right contraction resolve their grade like the other products:
+    # left keeps grade m-k (right-left), right keeps k-m; a negative grade -> Scalar.
+    a: Vector2 = Vector2.e_1
+    i2: Bivector2 = Vector2.e_1 ^ Vector2.e_2
+    typing.assert_type(a.left_contraction(a), Scalar)  # vector ⌋ vector = dot (grade 0)
+    typing.assert_type(a.left_contraction(i2), Vector2)  # vector ⌋ bivector (grade 1)
+    typing.assert_type(i2.left_contraction(a), Scalar)  # bivector ⌋ vector -> 0
+    typing.assert_type(i2.right_contraction(a), Vector2)  # bivector ⌊ vector (grade 1)
+    typing.assert_type(a.right_contraction(i2), Scalar)  # vector ⌊ bivector -> 0
+    # the < / > operators carry the same precise overloads
+    typing.assert_type(a < a, Scalar)
+    typing.assert_type(a < i2, Vector2)
+    typing.assert_type(i2 > a, Vector2)
+
+
+def test_contraction_runtime_types_and_values() -> None:
+    a: Vector2 = 3 * Vector2.e_1 + 4 * Vector2.e_2
+    i2: Bivector2 = 5 * (Vector2.e_1 ^ Vector2.e_2)
+    # vector ⌋ vector is the dot product: 3*3 + 4*4 = 25
+    assert type(a.left_contraction(a)) is Scalar
+    assert a.left_contraction(a).coeff_scalar == 25
+    assert (a < a).coeff_scalar == 25  # operator agrees
+    # e_1 ⌋ (5 e_12) = 5 e_2 ;  contraction asymmetry: (5 e_12) ⌋ e_1 == 0
+    assert type(Vector2.e_1.left_contraction(i2)) is Vector2
+    assert Vector2.e_1.left_contraction(i2).coeff_e_2 == 5
+    assert type(i2.left_contraction(Vector2.e_1)) is Scalar  # grade -1 -> Scalar(0)
+    assert (i2 > Vector2.e_1).coeff_e_2 == -5  # bivector ⌊ vector = -5 e_2
+
+
 def test_operator_runtime_types_and_values() -> None:
     a: Vector2 = 3 * Vector2.e_1 + 4 * Vector2.e_2
     b: Vector2 = Vector2.e_1 + 2 * Vector2.e_2

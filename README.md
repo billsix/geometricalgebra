@@ -76,7 +76,13 @@ a, b = 3 * Vector2.e_1 + 4 * Vector2.e_2, 1 * Vector2.e_1 + 2 * Vector2.e_2
 type(a * b)               # Rotor2     (a·b scalar  +  a∧b bivector)
 type(a ^ b)               # Bivector2  (the wedge — ask for a blade with ^)
 type(a.inner_product(b))  # Scalar
+type(a < (a ^ b))         # Vector2   left contraction  a ⌋ B  (grade m−k; a.left_contraction(B))
+type((a ^ b) > a)         # Vector2   right contraction B ⌊ a  (grade k−m; B.right_contraction(a))
 ```
+
+The contractions follow M.D. Taylor, *An Introduction to Geometric Algebra and Geometric Calculus*
+(2021), p. 103; unlike the Hestenes `inner_product`/`dot` they **include grade 0** (a scalar has a
+contraction but no Hestenes dot).
 
 Each class exposes its **basis blades as class constants of its own type** — `Vector2.e_1` /
 `Vector2.e_2` (vectors), `Bivector2.e_12`, `G3.e_123`, etc. — equivalent to `cls.basis_vector(n)` but

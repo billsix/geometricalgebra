@@ -1,11 +1,38 @@
 # Add left & right contraction (named methods + `<` / `>` operators)
 
-**Status:** proposed — needs go-ahead (spec only; implementation deliberately deferred — see note).
+**Status:** complete
+**Completed:** 2026-07-22
 Created 2026-07-22. Promotes Finding 2A of `tasks/reference/galgebra-comparison.md` (the single
 biggest *operation* gap). Domain detail lives in `tasks/reference/contraction-and-dot-definitions.md`.
+All gates green (295 tests incl. 8 new contraction tests, `ty` src/tests/tools clean, ruff clean,
+`check-regions` clean, deterministic; generated-vs-`Gn` parity verified over 200 random cases).
 
-> **Not yet implemented** — Bill was mid history-rewrite/push when this was written, so no tracked
-> source was touched (a `git reset --hard` would discard uncommitted edits). Implement after the push.
+## Outcome (what shipped)
+
+- **`base.py`** — `left_contraction`/`right_contraction` (bilinear sum, grade `m−k` / `k−m` via
+  `r_vector_part`, **no grade-0 filter**), and `__lt__`/`__gt__` delegating to them. Docstrings cite
+  Taylor 2021 p.103 + galgebra and carry the grade-0 caveat + pointer to the investigation. (No
+  `cast` needed — the `r_vector_part` chain already types as `Self`, so `return sum(...)` directly.)
+- **Generator (per Bill: "add these to the generators too")** — the full class `G_n` gets
+  `bilinear` closed forms for both; the graded types get the **same `product_overload_stubs` +
+  `dispatch_method` treatment as `inner_product`/`outer_product`** (precise per-rhs overloads, fast
+  closed-form dispatch), plus `__lt__`/`__gt__` operators overloaded and delegating (mirroring
+  `__xor__`). So `Vector2.left_contraction(Bivector2) -> Vector2`, `Vector2 < Vector2 -> Scalar`,
+  etc., are precise for `ty`.
+- **Tests** — `test_conformance.py::test_left_right_contraction` (parity over `[Gn,G1,G2,G3]`,
+  methods + operators); `test_operator_typing.py` static `assert_type` + runtime known-value tests.
+- **Docs** — `README` + `CLAUDE.md` operator lists (`<` / `>`); `galgebra-comparison.md` Finding 2A
+  marked done; `contraction-and-dot-definitions.md` status updated.
+
+**`__lt__`/`__gt__` returning a multivector (not `bool`)** is intentional and matches galgebra
+(`Mv.__lt__`/`__gt__`); `ty` accepts it, and nothing sorts multivectors (dataclass `eq=False`, no
+`order=`), so no comparison semantics were broken.
+
+Open question 1 resolved: names are `left_contraction`/`right_contraction` (Bill's pick).
+
+---
+
+## Original plan (below, for reference)
 
 ## Goal
 
