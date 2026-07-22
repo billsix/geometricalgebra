@@ -1,6 +1,35 @@
 # Overloads on `_geometric_product`, and drop the unsound Self cast in the product arms
 
-**Status:** proposed — needs go-ahead. Created 2026-07-21. (Bill's batch items 7, 8 — merged.)
+**Status:** complete
+**Completed:** 2026-07-22
+All gates green (283 tests, `ty` src/tests/tools clean, ruff clean, `check-regions` clean,
+deterministic; runtime product values unchanged). Created 2026-07-21. (Bill's batch items 7, 8 —
+merged.)
+
+## Outcome (2026-07-22)
+
+- **`_geometric_product` overloaded + returns `MultiVectorBase`** (like `__mul__`/`outer`/`inner`/
+  `add`/`sub`): added `product_overload_stubs("_geometric_product", …)` and `return_type=mvb_ann`
+  to its `dispatch_method` call. Verified `a._geometric_product(b)` now reveals as `Rotor2`.
+- **Dropped the unsound `Self` cast** from the grade-changing arms: `result_block_stmts`' else
+  branch now emits `return Rotor2(...)` (no cast); and `dispatch_method`'s `case _:` Gn-fallback
+  drops the cast for the overloaded products/sums (`return_type is not None and cast is cast_self`)
+  — the full class (`-> Self`) and the sandwich (`cast_operand`) keep theirs.
+- Result: **all product/sum methods on the graded types are cast-free.** In `g2.py`, Vector2 went
+  10→5 `cast(typing.Self`; the remaining 5 are `even_part`/`r_vector_part` (unary grade ops) and
+  `dual` (dimension method) — **out of scope for a *products* task** (see the follow-ups).
+- Runtime unchanged (impl `match` bodies untouched); the full class `G_n` untouched.
+
+**Files:** `tools/gen_specialized.py` (overload `_geometric_product`; drop the cast in
+`result_block_stmts` else + the `dispatch_method` fallback).
+
+## Follow-ups (the remaining graded `Self` casts) — spun into their own task docs
+
+- **`r_vector_part`** → `tasks/overload-r-vector-part.md` (same overload technique, keyed on
+  `r: Literal[<grade>]`; impl `-> MultiVectorBase`, drop the `Scalar(0)` cast; no base change).
+- **`even_part` / `odd_part`** → `tasks/retype-even-odd-part-off-self.md` (needs re-typing
+  `base.even_part`/`odd_part` off `-> Self` — no argument to overload on).
+- **`dual`** → owned by `generated-dimension-known-methods` (items 4/5/11).
 
 ## Goal
 

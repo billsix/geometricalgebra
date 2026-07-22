@@ -94,13 +94,6 @@ def test_division_is_multiplication_by_inverse() -> None:
     assert (a / a).is_close(Rotor2(coeff_scalar=1.0, coeff_e_12=0.0))
 
 
-def test_division_preserves_subclass() -> None:
-    class MyV2(Vector2):
-        pass
-
-    assert type(MyV2(2.0, 4.0) / 2) is MyV2
-
-
 def test_zero_division_raises() -> None:
     with pytest.raises(ZeroDivisionError):
         Vector2(1.0, 2.0) / 0

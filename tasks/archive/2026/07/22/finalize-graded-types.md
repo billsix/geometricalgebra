@@ -1,7 +1,39 @@
 # Make the graded types `@typing.final`, then emit the concrete class (not `type(self)`)
 
-**Status:** proposed — needs go-ahead. Created 2026-07-21. (Bill's batch item 9, resolved
-direction 2026-07-21 — supersedes the earlier `concrete-type-vs-type-self.md`.)
+**Status:** complete
+**Completed:** 2026-07-22
+Both phases landed; all gates green (283 tests, `ty` src/tests/tools clean, ruff clean,
+`check-regions` clean, deterministic). Created 2026-07-21. (Bill's batch item 9, resolved
+direction — supersedes the earlier `concrete-type-vs-type-self.md`.)
+
+## Outcome (2026-07-21)
+
+- **Phase 1 — `@typing.final` on the graded value types + `Scalar`** (not on `G1`/`G2`/`G3`).
+  Generator: added `attribute("typing", "final")` to the graded/`Scalar` class decorators.
+  Verified: `ty` reports `error[subclass-of-final-class]` on any subclass; `Vector2.__final__ is
+  True`, `G2.__final__` is unset. This *also* makes `type(self)` statically precise on the graded
+  types (a final class has no subtypes), which is the typing half of item 9 for free.
+- **Phase 2 — emit the concrete class instead of `type(self)`** in the graded/`Scalar` same-type
+  constructions (item 9's literal ask). Keyed on `result_spec.kind != "full"` in
+  `result_block_stmts`/`unary_stmt`; `scaled_stmt` (graded-only) and `generate_scalar`'s
+  `scalar_const` emit the concrete class directly; `return_construct` gained a `final` flag for
+  graded `reverse`. Result: **Vector2 body has 0 `type(self)`** (all concrete, e.g.
+  `return Vector2(...)`), **G2 keeps 13** (`type(self)`, subclassable). `ty` accepts the concrete
+  `return` under `-> typing.Self` precisely *because* the class is final.
+- **Full classes `G1`/`G2`/`G3` unchanged** — still subclassable, still `type(self)` (the
+  extension point; open question 1 answered "keep them open").
+- **`tests/test_subclass_preservation.py` reworked** — graded-type subclasses removed (now
+  illegal); added a finality assertion (`_FINAL_TYPES` all `__final__`; `G2` not); kept the
+  full-class (`MyG2`) subclass-preservation + mixed-operand tests. Also removed the two graded
+  subclass tests in `test_plane_rotation.py` / `test_vector_ergonomics.py`.
+
+**Files:** `tools/gen_specialized.py`, `tools/astbuild.py` (return_construct `final` param),
+`tests/test_subclass_preservation.py` (reworked), `tests/test_plane_rotation.py` /
+`tests/test_vector_ergonomics.py` (dropped a subclass test each).
+
+**Enforcement chosen:** `@typing.final` (ty-only), per open question 2 — no runtime
+`__init_subclass__`. Runtime subclassing still *executes* (Python has no runtime `final`), but
+`ty` (the gate) rejects it.
 
 ## Decision (Bill, 2026-07-21)
 

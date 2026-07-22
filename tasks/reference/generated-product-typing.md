@@ -11,17 +11,21 @@ Each generated graded type (`Vector2`/`Bivector2`/`Rotor2`/`Scalar`, and the �
 `@typing.overload` signatures on its product/sum methods, so a known-type call site gets the
 **exact** result type:
 
-- `__mul__` (`*`), `__xor__` (`^`), `outer_product`, `inner_product`, `__add__`, `__sub__` — one
-  `@overload` per rhs type returning the **resolved concrete type** (e.g. `Vector2 * Vector2 ->
-  Rotor2`, `Vector2 ^ Vector2 -> Bivector2`, `Bivector2 + scalar -> Rotor2`), plus a scalar/number
-  overload and a `MultiVectorBase` catch-all (→ the full class `G_n`).
+- `__mul__` (`*`), `__xor__` (`^`), `outer_product`, `inner_product`, `_geometric_product`,
+  `__add__`, `__sub__` — one `@overload` per rhs type returning the **resolved concrete type**
+  (e.g. `Vector2 * Vector2 -> Rotor2`, `Vector2 ^ Vector2 -> Bivector2`, `Bivector2 + scalar ->
+  Rotor2`), plus a scalar/number overload and a `MultiVectorBase` catch-all (→ the full class
+  `G_n`). (`_geometric_product` — the primitive `__mul__` delegates to — was overloaded in a
+  2026-07-22 follow-up so a direct caller also gets the precise type.)
 - `__radd__` / `__rsub__` (number on the **left**, `2 + 3*i2`) are typed directly to the resolved
   `self ± scalar` type — no overloads, since their left operand is always a bare number.
-- The **implementations are the original inline `match`** — runtime is unchanged; the overloads
-  only supply static types.
-- Each overloaded impl returns **`-> MultiVectorBase`** (not `-> Self`).
+- The **implementations keep the inline `match`** — runtime is unchanged; the overloads only supply
+  static types. Each overloaded impl returns **`-> MultiVectorBase`** (not `-> Self`), and because
+  of that its arms construct the result with **no cast** (`return Rotor2(...)`) — the old
+  `cast(typing.Self, Rotor2(...))` was unsound and is gone from every product/sum arm (the
+  grade-changing arms *and* the `case _:` Gn-fallback; 2026-07-22 follow-up).
 - The full class `G_n` is **not** overloaded — its products stay `-> Self`, already correct
-  (`G2 * G2 → G2`).
+  (`G2 * G2 → G2`), and its arms keep the `Self` cast (legitimately: `-> Self` return).
 
 Precision (guarded by `typing.assert_type` in `tests/test_operator_typing.py`, so a regression
 fails `ty check tests`): `v2 * v2 → Rotor2`, `v2 ^ v2 → Bivector2`, `.inner_product → Scalar`,

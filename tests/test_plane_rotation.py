@@ -90,15 +90,6 @@ def test_representation_preserved() -> None:
     assert type(f3(Vector3.e_2)) is Vector3
 
 
-def test_subclass_preserved() -> None:
-    class MyV2(Vector2):
-        pass
-
-    f: InvertibleFunction = plane_rotation(E1, E2)(math.radians(90))
-    v: MyV2 = MyV2(coeff_e_1=1.0, coeff_e_2=0.0)
-    assert type(f(v)) is MyV2
-
-
 def test_zero_rotates_to_zero() -> None:
     f: InvertibleFunction = plane_rotation(E1, E2)(1.0)
     assert f(Vector2.zero()).is_close(Vector2.zero())

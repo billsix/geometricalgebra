@@ -94,14 +94,23 @@ GA layer never touches `ast.*` constructors for the common cases.
 - `dataclass_decorator(**flags)` → `@dataclasses.dataclass(eq=False, slots=True)` (the flags passed
   by the callers).
 
-**Construction helpers** (the subclass-preservation story lives here):
+**Construction helpers** (the subclass story lives here — see the finality note below):
 
-- `construct(name, pairs)` → `Name(field=value, …)` — construct a *named* class.
-- `construct_type_of(var, pairs)` → `type(var)(field=value, …)` — subclass-preserving.
-- `construct_type_self(pairs)` → `type(self)(…)` — the common case; a subclass gets its own type back
-  from same-type operations.
-- `return_construct(name, pairs, owner)` → `return cast(Self, Name(…))`, **but** if `owner == name`
-  emits `return type(self)(…)` instead (no cast needed — `type(self)` is `type[Self]`).
+- `construct(name, pairs)` → `Name(field=value, …)` — construct a *named* class. Used for the
+  **graded value types**, which are `@typing.final` (not subclassable), so their same-type results
+  emit the concrete class directly (e.g. `return Vector2(…)`).
+- `construct_type_of(var, pairs)` → `type(var)(field=value, …)` — build via an operand's runtime
+  type; used only by the rotor `sandwich`, which is polymorphic over its operand.
+- `construct_type_self(pairs)` → `type(self)(…)` — used for the **full class `G_n`**, which *stays
+  subclassable* (a subclass gets its own type back from same-type ops).
+- `return_construct(name, pairs, owner, final)` → `return cast(Self, Name(…))`, **but** if
+  `owner == name` (a same-type op) it emits the class directly: `return Name(…)` when `final=True`
+  (the graded types), else `return type(self)(…)` (the subclassable full class).
+
+**Finality (2026-07-21):** the graded value types (`Vector*`/`Bivector*`/`Trivector3`/`Rotor*`)
+and `Scalar` are `@typing.final`; only `G1`/`G2`/`G3` remain subclassable. So same-type
+constructions branch on `result_spec.kind != "full"` — final → concrete class, full → `type(self)`.
+See `tasks/reference/design-decisions.md` (the "Same-type generated ops" entry).
 
 **The three casts** — this is *the* convention `astbuild` encodes about the emitted code:
 
@@ -215,9 +224,10 @@ each into a constructor field value:
   temps (visible in the sandwich output).
 
 `result_block_stmts` also decides *how to construct* the result, via `owner`/`via_var`/`cast`:
-`type(self)(…)` when the result type equals the owner and cast is `cast_self` (same-type,
-subclass-preserving); `type(<via_var>)(…)` for the grade-preserving sandwich (build via the
-operand's type); otherwise `cast(<T>, RType(…))`.
+for a same-type result (result type equals the owner, cast is `cast_self`) it emits the concrete
+class `RType(…)` when the owner is a **final** graded type (`result_spec.kind != "full"`) and
+`type(self)(…)` for the subclassable full `G_n`; `type(<via_var>)(…)` for the grade-preserving
+sandwich (build via the operand's type); otherwise `cast(<T>, RType(…))`.
 
 ---
 

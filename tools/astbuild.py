@@ -446,15 +446,21 @@ def construct_type_self(pairs: Iterable[tuple[str, ast.expr]]) -> ast.Call:
 
 
 def return_construct(
-    name_: str, pairs: Iterable[tuple[str, ast.expr]], owner: str | None = None
+    name_: str,
+    pairs: Iterable[tuple[str, ast.expr]],
+    owner: str | None = None,
+    final: bool = False,
 ) -> ast.stmt:
     """``return cast(Self, Name(field=value, ...))`` (the no-local return idiom).
 
     When ``owner`` names the class being generated and the result type equals
-    it, emit ``return type(self)(...)`` instead so subclasses get their own
-    type back from same-type operations (no cast needed: ``type(self)`` is
-    ``type[Self]``)."""
+    it (a same-type op), emit the class directly: ``return Name(...)`` when the
+    class is ``final`` (not subclassable — the concrete class is exact), else
+    ``return type(self)(...)`` so a subclass gets its own type back (no cast
+    needed either way: for a same-type result the value already is that type)."""
     if owner is not None and owner == name_:
+        if final:
+            return return_stmt(construct(name_, pairs))
         return return_stmt(construct_type_self(pairs))
     return return_stmt(cast_self(construct(name_, pairs)))
 

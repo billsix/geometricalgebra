@@ -854,12 +854,14 @@ def dim_or_n(owner: str = "self") -> ast.expr:
 def scaled_stmt(
     type_name: str, fields: Sequence[str], value_fn: Callable[[str], ast.expr]
 ) -> ast.stmt:
-    """``return type(self)(field=cast(Real, value_fn(field)), ...)``.
+    """``return <TypeName>(field=cast(Real, value_fn(field)), ...)``.
 
-    Same-type scalar scaling (mul/rmul/neg) -- subclass-preserving, see
-    result_stmts."""
+    Same-type scalar scaling (mul/rmul/neg) on a graded value type.  Those types
+    are ``@typing.final`` (not subclassable), so the concrete class is emitted
+    directly.  (This helper is only used by the graded generator; the full G_n
+    class scales via ``result_stmts``, which keeps ``type(self)``.)"""
     return return_stmt(
-        construct_type_self([(f, cast_coef(value_fn(f))) for f in fields])
+        construct(type_name, [(f, cast_coef(value_fn(f))) for f in fields])
     )
 
 
@@ -897,9 +899,19 @@ def result_block_stmts(
     if via_var is not None:
         stmts.append(return_stmt(cast(construct_type_of(via_var, pairs))))
     elif owner is not None and owner == result_spec.name and cast is cast_self:
-        stmts.append(return_stmt(construct_type_self(pairs)))
+        # Same-type result. A final (graded/scalar) type can't be subclassed, so
+        # emit the concrete class directly (``type(self)`` is statically that class
+        # anyway); the subclassable full G_n keeps ``type(self)`` so a subclass gets
+        # its own type back.
+        if result_spec.kind != "full":
+            stmts.append(return_stmt(construct(result_spec.name, pairs)))
+        else:
+            stmts.append(return_stmt(construct_type_self(pairs)))
     else:
-        stmts.append(return_stmt(cast(construct(result_spec.name, pairs))))
+        # grade-changing arm (graded types only -- the full G_n's products are all
+        # same-type).  These methods return MultiVectorBase, so emit the concrete
+        # result type with NO cast; the old cast(Self, Rotor2(...)) was unsound.
+        stmts.append(return_stmt(construct(result_spec.name, pairs)))
     return stmts
 
 
@@ -918,6 +930,9 @@ def unary_stmt(
         for b, e in zip(result_spec.blades, out_exprs)
     ]
     if owner is not None and owner == result_spec.name:
+        # final -> concrete class; full G_n keeps type(self) (as in result_block_stmts)
+        if result_spec.kind != "full":
+            return return_stmt(construct(result_spec.name, pairs))
         return return_stmt(construct_type_self(pairs))
     return return_stmt(cast_self(construct(result_spec.name, pairs)))
 
@@ -1012,7 +1027,15 @@ def dispatch_method(
                     name_ref(full_name),
                     call("_coerce", [name_ref(param_name), name_ref(full_name)]),
                 ),
-                return_stmt(cast(fallback_node)),
+                # The Gn-coerce fallback returns a G_n.  The overloaded graded
+                # products/sums (return_type set, cast_self) return MultiVectorBase,
+                # so no cast is needed; the full class (return_type None -> Self) and
+                # the sandwich (cast_operand) still cast.
+                return_stmt(
+                    fallback_node
+                    if return_type is not None and cast is cast_self
+                    else cast(fallback_node)
+                ),
             ],
         )
     )
@@ -1122,8 +1145,8 @@ def generate_scalar() -> list[ast.stmt]:
 
     def scalar_const(
         value: ast.expr,
-    ) -> ast.expr:  # type(self)(coeff_scalar=value) -- subclass-preserving
-        return construct_type_self([(field_name(()), value)])
+    ) -> ast.expr:  # Scalar(coeff_scalar=value) -- Scalar is @final, so concrete
+        return construct("Scalar", [(field_name(()), value)])
 
     def scalar_const_coef(
         value: ast.expr,
@@ -1498,7 +1521,12 @@ def generate_scalar() -> list[ast.stmt]:
     ]
     return [
         class_def(
-            "Scalar", body, decorators=[dataclass_decorator(eq=False, slots=True)]
+            "Scalar",
+            body,
+            decorators=[
+                attribute("typing", "final"),
+                dataclass_decorator(eq=False, slots=True),
+            ],
         )
     ]
 
@@ -1869,7 +1897,13 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             params=[argument("self"), argument("lhs")],
             returns=self_ann,
         ),
-        # the three bilinear products + the two linear ops, each a match on rhs type
+        # the three bilinear products + the two linear ops, each a match on rhs type.
+        # _geometric_product is overloaded like the public products and returns
+        # MultiVectorBase, so a direct caller gets the precise type and its arms
+        # need no cast (the old cast(Self, Rotor2(...)) was unsound).
+        *product_overload_stubs(
+            "_geometric_product", spec, lambda a, b: a * b, n, full_name
+        ),
         dispatch_method(
             spec,
             "_geometric_product",
@@ -1877,6 +1911,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             n,
             full_name,
             ast.BinOp(name_ref("left"), ast.Mult(), name_ref("right")),
+            return_type=mvb_ann,
         ),
         *product_overload_stubs(
             "outer_product", spec, lambda a, b: a.outer_product(b), n, full_name
@@ -1986,7 +2021,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         ),
         function_def(
             "reverse",
-            [return_construct(spec.name, rev_pairs, owner=spec.name)],
+            [return_construct(spec.name, rev_pairs, owner=spec.name, final=True)],
             returns=self_ann,
         ),
         function_def(
@@ -2098,7 +2133,12 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         )
     return [
         class_def(
-            spec.name, body, decorators=[dataclass_decorator(eq=False, slots=True)]
+            spec.name,
+            body,
+            decorators=[
+                attribute("typing", "final"),
+                dataclass_decorator(eq=False, slots=True),
+            ],
         ),
         *basis_constant_assignments(spec.name, blades),
     ]
