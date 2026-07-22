@@ -63,7 +63,10 @@ only one grade's components — the way mathematicians usually work:
 | 𝒢₃ | `Vector3`, `Bivector3`, `Trivector3`, `Rotor3` (≅ the quaternions ℍ) |
 
 **The product decides the return type** — resolved when the classes are generated, so it
-never depends on (float-fuzzy) coefficient *values*:
+never depends on (float-fuzzy) coefficient *values*. It is also **precise for a type checker**,
+not just at runtime: the operators and products carry `@typing.overload` signatures, so a
+static checker knows `a * b` is a `Rotor2` and `a ^ b` a `Bivector2` (and `2 + 3*(a^b)` a
+`Rotor2`) — the `type(...)` calls below print the same types the checker infers:
 
 ```python
 from gacalc.g2 import Vector2

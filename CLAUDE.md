@@ -592,8 +592,12 @@ Open issues (most are in the shared/reference code, inherited from the original 
   `Scalar`). Emitted by `tools/gen_specialized.py` alongside the full classes; each bilinear product
   is a `match` on the rhs type whose **return type is resolved at generation time** from the symbolic
   result's grade support (smallest covering registered type, else widen to the full `G_n`) — so the
-  type follows the *operation*, never runtime float values. `+`/`-` narrow the same way. See the
-  README "Graded subtypes" section (with the return-type table) and `tasks/graded-blade-subtypes.md`.
+  type follows the *operation*, never runtime float values. `+`/`-` narrow the same way. The
+  operators/products (`*`/`^`/`outer_product`/`inner_product`/`+`/`-`) also carry `@typing.overload`
+  signatures, so these types are **precise for a type checker**, not just at runtime (e.g. `a * b`
+  is a `Rotor2` statically) — design + rationale in
+  `tasks/reference/generated-product-typing.md`. See also the README "Graded subtypes" section (with
+  the return-type table) and `tasks/archive/2026/06/06/graded-blade-subtypes.md` (the original build).
 - **Paravectors** (scalar + vector; the Algebra-of-Physical-Space object that yields a Lorentzian
   norm from Euclidean 𝒢₃): the author does **not yet know this area well enough** to commit to a
   design. Noted here because **future work may use them** (e.g. as one of the graded subtypes, or as
