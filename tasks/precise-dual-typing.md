@@ -75,6 +75,20 @@ Regenerate; `ty` src/tests/tools clean; `reveal_type` precise (`Bivector3.dual()
 `assert_type` guards to `tests/test_operator_typing.py`; suite/regions/determinism green; runtime
 values unchanged (pure static-typing fix).
 
+## On completion — release (mvp is waiting on it)
+
+**This is a downstream-visible typing change, so completing the code is not the end.** mvp's dual
+coefficient cleanup (`modelviewprojection` `tasks/dual-coefficient-cleanup.md`) is **gated on a
+released gacalc carrying this** — mvp consumes gacalc only from **PyPI** (the `gacalc==` wheel pin in
+`requirements.txt` *and* the sdist the `Dockerfile` `ARG GACALC_VERSION` fetches from the PyPI JSON
+API), not from GitHub. So on completion:
+
+1. Bump `version` in `pyproject.toml` (0.0.12 → **0.0.13**).
+2. `make release` — builds + `twine upload` to **PyPI** (in-container), then the host `git tag`; and
+   push to **GitHub**. Both PyPI and GitHub must carry 0.0.13 (PyPI is what actually unblocks mvp;
+   GitHub keeps the source in sync).
+3. Then mvp bumps its pin to 0.0.13 and runs its `tasks/dual-coefficient-cleanup.md`.
+
 ## Relationships
 
 - Same family/rationale as `tasks/reference/generated-product-typing.md`; the archived
