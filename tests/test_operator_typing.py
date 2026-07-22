@@ -11,8 +11,10 @@ pytest.  See ``tasks/typed-product-helper-functions.md``.
 
 import typing
 
+import pytest
+
 from gacalc.g2 import Bivector2, Rotor2, Vector2
-from gacalc.g3 import Bivector3, Rotor3, Vector3
+from gacalc.g3 import G3, Bivector3, Rotor3, Trivector3, Vector3
 from gacalc.scalar import Scalar
 
 
@@ -113,6 +115,42 @@ def test_contraction_runtime_types_and_values() -> None:
     assert Vector2.e_1.left_contraction(i2).coeff_e_2 == 5
     assert type(i2.left_contraction(Vector2.e_1)) is Scalar  # grade -1 -> Scalar(0)
     assert (i2 > Vector2.e_1).coeff_e_2 == -5  # bivector ⌊ vector = -5 e_2
+
+
+def test_dual_narrows_by_grade() -> None:
+    # dual has no argument to overload on (its grade n−r is fixed by the operand
+    # grade + dimension), so like even/odd_part the graded override *declares*
+    # the resolved grade type -- no unsound Self cast.
+    v3: Vector3 = 3.0 * Vector3.e_1
+    typing.assert_type(v3.dual(), Bivector3)  # grade 1 -> grade 2 in 3D
+    i3: Bivector3 = 5.0 * Bivector3.e_23
+    typing.assert_type(i3.dual(), Vector3)  # grade 2 -> grade 1 in 3D
+    t3: Trivector3 = 7.0 * Trivector3.e_123
+    typing.assert_type(t3.dual(), Scalar)  # grade 3 -> grade 0
+    r3: Rotor3 = 1 + 2.0 * Bivector3.e_12
+    typing.assert_type(r3.dual(), G3)  # {0,2} -> {3,1} = odd, no covering type
+
+    # 2D duals: grade n−r with n=2.
+    v2: Vector2 = 3 * Vector2.e_1
+    typing.assert_type(v2.dual(), Vector2)  # grade 1 -> grade 1
+    i2: Bivector2 = 5 * Bivector2.e_12
+    typing.assert_type(i2.dual(), Scalar)  # grade 2 -> grade 0
+    rotor2: Rotor2 = 1 + 2 * Bivector2.e_12
+    typing.assert_type(rotor2.dual(), Rotor2)  # {0,2} -> {2,0} = {0,2}
+
+
+def test_dual_runtime_types_and_values() -> None:
+    # e_23* = e_1 (Bivector3.dual really returns a Vector3 -- the whole point).
+    n: Vector3 = Bivector3.e_23.dual()
+    assert type(n) is Vector3
+    assert n.coeff_e_1 == 1
+    assert type(Trivector3.e_123.dual()) is Scalar
+    assert Trivector3.e_123.dual().coeff_scalar == 1
+    assert type(Bivector2.e_12.dual()) is Scalar
+    # a fixed-dimension type's dual is at its own dimension: a mismatched n raises.
+    with pytest.raises(ValueError, match="fixed at dimension 3"):
+        Bivector3.e_23.dual(2)
+    Bivector3.e_23.dual(3)  # the dimension itself is fine
 
 
 def test_operator_runtime_types_and_values() -> None:

@@ -882,6 +882,33 @@ def super_call(method: str, args: list[ast.expr]) -> ast.expr:
     return call(attribute(call("super", []), method), args)
 
 
+def dim_mismatch_guard(cls_name: str, dim: int) -> ast.stmt:
+    """``if n is not None and n != <dim>: raise ValueError(...)``.
+
+    A fixed-dimension type's dual is intrinsically at its own dimension (grade
+    r -> n−r), so a mismatched ``n`` is an error -- there is no cross-dimension
+    fallback.  ``n`` is retained (optional) only for Liskov compat with the
+    n-required base signature and to keep the no-arg call (``x.dual()``)."""
+    return ast.If(
+        bool_and(
+            [
+                ast.Compare(name_ref("n"), [ast.IsNot()], [constant(None)]),
+                ast.Compare(name_ref("n"), [ast.NotEq()], [constant(dim)]),
+            ]
+        ),
+        [
+            ast.Raise(
+                exc=call(
+                    "ValueError",
+                    [constant(f"{cls_name}.dual is fixed at dimension {dim}")],
+                ),
+                cause=None,
+            )
+        ],
+        [],
+    )
+
+
 def scaled_stmt(
     type_name: str, fields: Sequence[str], value_fn: Callable[[str], ast.expr]
 ) -> ast.stmt:
@@ -1518,6 +1545,11 @@ def generate_scalar() -> list[ast.stmt]:
             params=[argument("self"), argument("r", name_ref("int"))],
             returns=self_ann,
         ),
+        # Scalar is the grade-0 type shared across EVERY 𝒢ₙ, so it does not know
+        # its own dimension -- its dual depends on n (Vector1 in 𝒢₁, Bivector2 in
+        # 𝒢₂, Trivector3 in 𝒢₃).  So unlike the fixed-dimension graded types it
+        # cannot drop the explicit ``n`` nor narrow its return: it requires ``n``
+        # and returns MultiVectorBase (honest -- no unsound Self cast).
         function_def(
             "dual",
             [
@@ -1535,23 +1567,21 @@ def generate_scalar() -> list[ast.stmt]:
                     [],
                 ),
                 return_stmt(
-                    cast_self(
-                        call(
-                            attribute(
-                                call(
-                                    attribute("Gn", "from_blade_dict"),
-                                    [call(attribute("self", "to_blade_dict"))],
-                                ),
-                                "dual",
+                    call(
+                        attribute(
+                            call(
+                                attribute("Gn", "from_blade_dict"),
+                                [call(attribute("self", "to_blade_dict"))],
                             ),
-                            [name_ref("n")],
-                        )
+                            "dual",
+                        ),
+                        [name_ref("n")],
                     )
                 ),
             ],
             params=[argument("self"), argument("n", opt_int())],
             defaults=[constant(None)],
-            returns=self_ann,
+            returns=name_ref("MultiVectorBase"),
         ),
     ]
     return [
@@ -1719,23 +1749,19 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
                 "dual",
                 method_doc_stmts("dual")
                 + [
-                    ast.If(
-                        default_dim_test(),
-                        result_stmts(
-                            name,
-                            [
-                                (
-                                    field_name(b),
-                                    summed_value(
-                                        sympy.sympify(dual_coeffs.get(b, 0)), rename
-                                    ),
-                                )
-                                for b in blades
-                            ],
-                        ),
-                        [],
+                    dim_mismatch_guard(name, n),
+                    *result_stmts(
+                        name,
+                        [
+                            (
+                                field_name(b),
+                                summed_value(
+                                    sympy.sympify(dual_coeffs.get(b, 0)), rename
+                                ),
+                            )
+                            for b in blades
+                        ],
                     ),
-                    return_stmt(super_call("dual", [name_ref("n")])),
                 ],
                 params=[argument("self"), argument("n", opt_int())],
                 defaults=[constant(None)],
@@ -1991,6 +2017,23 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         return function_def(
             method,
             [unary_body(gn_unary, cast=lambda node: node)],
+            returns=name_ref(result_spec.name),
+        )
+
+    def dual_method() -> ast.FunctionDef:
+        # Like parity_part (declare the resolved grade-(n−r) type, construct it
+        # directly, no unsound Self cast), but dual keeps the ``n`` param.  It is
+        # dimension-fixed, so a non-DIMENSION ``n`` raises rather than falling
+        # back to G_n (dropping the old ``_coerce(self, G_n).dual(n)`` branch).
+        result_spec, _ = unary_result(spec, lambda a: a.dual(n), n, full_name)
+        return function_def(
+            "dual",
+            [
+                dim_mismatch_guard(spec.name, n),
+                unary_body(lambda a: a.dual(n), cast=lambda node: node),
+            ],
+            params=[argument("self"), argument("n", opt_int())],
+            defaults=[constant(None)],
             returns=name_ref(result_spec.name),
         )
 
@@ -2334,37 +2377,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             params=[argument("self"), argument("r", name_ref("int"))],
             returns=mvb_ann,
         ),
-        function_def(
-            "dual",
-            [
-                ast.If(
-                    bool_or(
-                        [
-                            ast.Compare(name_ref("n"), [ast.Is()], [constant(None)]),
-                            ast.Compare(name_ref("n"), [ast.Eq()], [constant(n)]),
-                        ]
-                    ),
-                    [unary_body(lambda a: a.dual(n))],
-                    [],
-                ),
-                return_stmt(
-                    cast_self(
-                        call(
-                            attribute(
-                                call(
-                                    "_coerce", [name_ref("self"), name_ref(full_name)]
-                                ),
-                                "dual",
-                            ),
-                            [name_ref("n")],
-                        )
-                    )
-                ),
-            ],
-            params=[argument("self"), argument("n", opt_int())],
-            defaults=[constant(None)],
-            returns=self_ann,
-        ),
+        dual_method(),
     ]
     if spec.name.startswith("Rotor"):
         body.append(

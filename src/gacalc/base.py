@@ -597,7 +597,12 @@ class MultiVectorBase(abc.ABC):
             mag_sq = sympy.sympify(mag_sq)
         return self.reverse() * (mag_sq ** (-1))
 
-    def dual(self, n: int) -> typing.Self:
+    # dual returns MultiVectorBase (not Self) for the same reason as even_part/
+    # odd_part below: it maps grade r -> grade n−r, a *different* grade, so a
+    # fixed-dimension graded override narrows the return to the resolved type
+    # (Bivector3.dual -> Vector3) -- an override that -> Self would forbid.  The
+    # full class G_n keeps -> Self (all grades); Gn inherits this base.
+    def dual(self, n: int) -> MultiVectorBase:
         """Dual  A*  =  A I⁻¹  — multiplication by the inverse unit pseudoscalar I,
         mapping a grade-r part to grade n−r.
         """

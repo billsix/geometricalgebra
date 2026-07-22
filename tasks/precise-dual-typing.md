@@ -1,9 +1,42 @@
 # Precise `dual()` return type — drop the last unsound `Self` cast on a generated unary op
 
-**Status:** proposed — needs go-ahead. Created 2026-07-22. The last member of the typing-cleanup
-family (`tasks/archive/2026/07/22/retype-even-odd-part-off-self.md`,
-`.../overload-r-vector-part.md`, `.../overloads-and-drop-cast-on-product-primitives.md`): `dual` is
-the one remaining generated op still declared `-> Self` with an unsound cast.
+**Status:** code complete — **release pending Bill's go-ahead** (see "On completion" below).
+Created 2026-07-22. The last member of the typing-cleanup family
+(`tasks/archive/2026/07/22/retype-even-odd-part-off-self.md`, `.../overload-r-vector-part.md`,
+`.../overloads-and-drop-cast-on-product-primitives.md`): `dual` is the one remaining generated op
+still declared `-> Self` with an unsound cast.
+
+## Outcome (what shipped — code, 2026-07-22)
+
+Chose **Option 1** (drop the non-default-`n` fallback), **raising on a mismatched `n`** (the
+loud-on-invalid variant, per the repo's total-dispatch preference — no existing caller passes a
+non-dimension `n`, so nothing broke). All gates green: **297 tests** (incl. 2 new dual guards in
+`tests/test_operator_typing.py`), `ty check` src/tests/tools clean, `ruff check` clean,
+`check-regions` clean, generator deterministic; runtime values unchanged (pure static-typing fix).
+
+- **`base.py`**: `dual` retyped `-> typing.Self` → `-> MultiVectorBase` (body untouched) — the floor
+  that lets fixed-dimension overrides narrow.
+- **Generator (`tools/gen_specialized.py`)**: new module-level `dim_mismatch_guard(cls, dim)` helper
+  (`if n is not None and n != DIM: raise ValueError`); a `dual_method()` in `generate_graded_type`
+  mirroring `parity_part` (declares the `unary_result`-resolved grade type, constructs it directly,
+  **no cast**) but keeping the `n` param + guard; the full-class `G_n.dual` in
+  `dimension_known_methods` drops its `super().dual(n)` fallback for the same guard (keeps `-> Self`).
+- **Result types**: `Vector3.dual() -> Bivector3`, `Bivector3.dual() -> Vector3`,
+  `Trivector3.dual() -> Scalar`, `Rotor3.dual() -> G3` (odd {1,3}, no covering type — honest widen),
+  `Vector2.dual() -> Vector2`, `Bivector2.dual() -> Scalar`, `Rotor2.dual() -> Rotor2`,
+  `Vector1.dual() -> Scalar`, `G1/G2/G3.dual() -> Self`. Every unsound `cast(typing.Self, …)` on
+  `dual` is gone.
+
+**Deviation from the original Goal — `Scalar.dual()` cannot narrow (and stays `n`-required).** The
+Goal below listed `Scalar.dual() -> Trivector3`, but `Scalar` is the **single grade-0 type shared
+across every 𝒢ₙ** (`scalar.py`, imported by `g1`/`g2`/`g3`), so it does *not* know its own dimension:
+its dual is `Vector1` in 𝒢₁, `Bivector2` in 𝒢₂, `Trivector3` in 𝒢₃ — no single precise return type
+exists. So `Scalar.dual` **keeps requiring an explicit `n`** and is retyped `-> MultiVectorBase`
+(dropping its own unsound `cast(Self, …)` — the honest floor). The reverse, `Trivector3.dual() ->
+Scalar`, *is* precise (Trivector3 is fixed-dimension) and shipped. `Gn` inherits the base floor (no
+override — same as the even/odd sibling; no call site needs it statically precise).
+
+## Original plan (below, for reference)
 
 ## Goal
 
