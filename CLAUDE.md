@@ -98,9 +98,13 @@ names `e_1` … to denote the basis-vector *constants* below) and whose `_geomet
 `even_part`, …) are **closed-form code generated from the `Gn` symbolic ops** — so they are provably
 consistent with the reference. They do **not** eagerly simplify (lazy, on equality), and they carry
 `DIMENSION` so `dual()` / `unit_pseudoscalar()` default to the class's dimension. **Every generated
-value type is `@dataclass(slots=True)`** — the full `G1`/`G2`/`G3` and the graded subtypes
-(`Scalar_n`/`Vector_n`/`Bivector_n`/`Trivector3`/`Rotor_n`) — so instances carry no
-per-instance `__dict__` (the base `MultiVectorBase` declares empty `__slots__` for this).
+value type is `@typing.final` and `@dataclass(frozen=True, slots=True)`** — the full `G1`/`G2`/`G3`
+and the graded subtypes (`Scalar_n`/`Vector_n`/`Bivector_n`/`Trivector3`/`Rotor_n`). `slots=True` →
+no per-instance `__dict__` (the base `MultiVectorBase` declares empty `__slots__` for this);
+`@typing.final` → **none is subclassable**, so the generated methods construct the concrete class
+directly (never `type(self)`) — nothing subclasses them, and the general dimension-agnostic
+representation is `Gn` in `gn.py` (see `tasks/reference/design-decisions.md`). Immutability (`frozen`)
+is detailed next.
 
 **Generated value types are FROZEN (immutable) — `@dataclass(frozen=True, slots=True)`**
 (changed 2026-07-23; they used to be mutable). Coefficient fields cannot be reassigned:
