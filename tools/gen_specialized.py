@@ -1220,6 +1220,11 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
 
     self_ann: ast.expr = attribute("typing", "Self")
     coef_ann: ast.expr = name_ref("Coef")
+    # The *implementation* return type of an overloaded product/sum method: its
+    # per-rhs overloads return the resolved concrete types (Vector2, Bivector2,
+    # ...), siblings under MultiVectorBase, so the impl's own return must be their
+    # common supertype -- exactly as the graded types do (see generate_graded_type).
+    mvb_ann: ast.expr = name_ref("MultiVectorBase")
     number_types: list[ast.expr] = [
         name_ref("int"),
         name_ref("float"),
@@ -1280,6 +1285,20 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             returns=name_ref("BladeCoef"),
         ),
         eq_method(),
+        # The products/sums are the same machinery the graded types use
+        # (product_overload_stubs + dispatch_method): per-rhs @overloads for a
+        # precise static type (Scalar2 * Vector2 -> Vector2, Scalar2 + Bivector2 ->
+        # Rotor2, ...), an impl that constructs the resolved concrete type, and a
+        # ``case _`` that coerces a foreign/Gn operand to G_n.  This replaces the
+        # old bespoke bodies whose ``cast(Self, coeff * rhs)`` mis-claimed Scalar_n.
+        *product_overload_stubs(
+            "__mul__",
+            scalar_spec(n),
+            lambda a, b: a * b,
+            n,
+            full_name,
+            number_case=True,
+        ),
         function_def(
             "__mul__",
             [
@@ -1299,7 +1318,7 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
                 ),
             ],
             params=[argument("self"), argument("rhs")],
-            returns=self_ann,
+            returns=mvb_ann,
         ),
         function_def(
             "__rmul__",
@@ -1322,105 +1341,58 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             params=[argument("self"), argument("lhs")],
             returns=self_ann,
         ),
-        function_def(
+        *product_overload_stubs(
+            "_geometric_product", scalar_spec(n), lambda a, b: a * b, n, full_name
+        ),
+        dispatch_method(
+            scalar_spec(n),
             "_geometric_product",
-            [
-                ast.If(
-                    isinstance_(name_ref("rhs"), name_ref(name)),
-                    [
-                        return_stmt(
-                            scalar_const_coef(
-                                mul_expr(
-                                    self_scalar_field, attribute("rhs", field_name(()))
-                                )
-                            )
-                        )
-                    ],
-                    [],
-                ),
-                ast.If(
-                    isinstance_(name_ref("rhs"), name_ref("MultiVectorBase")),
-                    [
-                        return_stmt(
-                            cast_self(mul_expr(self_scalar_field, name_ref("rhs")))
-                        )
-                    ],
-                    [],
-                ),
-                return_stmt(
-                    scalar_const_coef(mul_expr(self_scalar_field, name_ref("rhs")))
-                ),
-            ],
-            params=[argument("self"), argument("rhs")],
-            returns=self_ann,
+            lambda a, b: a * b,
+            n,
+            full_name,
+            ast.BinOp(name_ref("left"), ast.Mult(), name_ref("right")),
+            return_type=mvb_ann,
         ),
-        function_def(
+        *product_overload_stubs(
+            "outer_product", scalar_spec(n), lambda a, b: a.outer_product(b), n, full_name
+        ),
+        dispatch_method(
+            scalar_spec(n),
             "outer_product",
-            [
-                return_stmt(
-                    call(attribute("self", "_geometric_product"), [name_ref("rhs")])
-                )
-            ],
-            params=[argument("self"), argument("rhs")],
-            returns=self_ann,
+            lambda a, b: a.outer_product(b),
+            n,
+            full_name,
+            call(attribute("left", "outer_product"), [name_ref("right")]),
+            return_type=mvb_ann,
         ),
-        function_def(
+        # inner_product: scalar . X == 0 under the Hestenes dot (grade 0 excluded),
+        # so every overload resolves to Scalar_n (the zero) and the impl builds it.
+        *product_overload_stubs(
+            "inner_product", scalar_spec(n), lambda a, b: a.inner_product(b), n, full_name
+        ),
+        dispatch_method(
+            scalar_spec(n),
             "inner_product",
-            coerce_pair_gn()
-            + [
-                return_stmt(
-                    cast_self(
-                        call(attribute("left", "inner_product"), [name_ref("right")])
-                    )
-                )
-            ],
-            params=[argument("self"), argument("rhs")],
-            returns=self_ann,
+            lambda a, b: a.inner_product(b),
+            n,
+            full_name,
+            call(attribute("left", "inner_product"), [name_ref("right")]),
+            return_type=mvb_ann,
         ),
-        function_def(
+        # +/- narrow by grade too: Scalar2 + Vector2 -> G2, Scalar2 + Bivector2 ->
+        # Rotor2, etc.  Same overloads + dispatch as the graded types.
+        *product_overload_stubs(
+            "__add__", scalar_spec(n), lambda a, b: a + b, n, full_name, number_case=True
+        ),
+        dispatch_method(
+            scalar_spec(n),
             "__add__",
-            [
-                ast.If(
-                    isinstance_(name_ref("rhs"), number_types),
-                    [
-                        return_stmt(
-                            scalar_const_coef(
-                                ast.BinOp(self_scalar_field, ast.Add(), name_ref("rhs"))
-                            )
-                        )
-                    ],
-                    [],
-                ),
-                ast.If(
-                    isinstance_(name_ref("rhs"), name_ref(name)),
-                    [
-                        return_stmt(
-                            scalar_const(
-                                ast.BinOp(
-                                    self_scalar_field,
-                                    ast.Add(),
-                                    attribute("rhs", field_name(())),
-                                )
-                            )
-                        )
-                    ],
-                    [],
-                ),
-                ast.If(
-                    isinstance_(name_ref("rhs"), name_ref("MultiVectorBase")),
-                    [
-                        return_stmt(
-                            cast_self(
-                                ast.BinOp(name_ref("rhs"), ast.Add(), name_ref("self"))
-                            )
-                        )
-                    ],
-                    [],
-                ),
-                return_stmt(cast_self(name_ref("NotImplemented"))),
-            ],
-            params=[argument("self"), argument("rhs")],
-            returns=self_ann,
+            lambda a, b: a + b,
+            n,
+            full_name,
+            ast.BinOp(name_ref("left"), ast.Add(), name_ref("right")),
+            number_case=True,
+            return_type=mvb_ann,
         ),
         function_def(
             "__radd__",
@@ -1428,19 +1400,18 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             params=[argument("self"), argument("lhs")],
             returns=self_ann,
         ),
-        function_def(
+        *product_overload_stubs(
+            "__sub__", scalar_spec(n), lambda a, b: a - b, n, full_name, number_case=True
+        ),
+        dispatch_method(
+            scalar_spec(n),
             "__sub__",
-            [
-                return_stmt(
-                    ast.BinOp(
-                        name_ref("self"),
-                        ast.Add(),
-                        mul_expr(ast.UnaryOp(ast.USub(), constant(1)), name_ref("rhs")),
-                    )
-                )
-            ],
-            params=[argument("self"), argument("rhs")],
-            returns=self_ann,
+            lambda a, b: a - b,
+            n,
+            full_name,
+            ast.BinOp(name_ref("left"), ast.Sub(), name_ref("right")),
+            number_case=True,
+            return_type=mvb_ann,
         ),
         function_def(
             "__rsub__",

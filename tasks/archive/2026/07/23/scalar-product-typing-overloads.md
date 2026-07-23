@@ -1,6 +1,35 @@
 # Give the generated `ScalarN` classes the `@typing.overload` product signatures
 
-**Status:** proposed — needs go-ahead. Created 2026-07-23 (Bill).
+**Status:** complete
+**Completed:** 2026-07-23
+
+## Done
+
+Routed `generate_scalar`'s arithmetic through the **same `product_overload_stubs` +
+`dispatch_method`** the graded generator uses, replacing the bespoke hand-built
+`__mul__`/`_geometric_product`/`outer_product`/`inner_product`/`__add__`/`__sub__` (which returned
+`-> Self` with an unsound `cast(Self, coeff * rhs)` on the general arm). Result: `Scalar2 * Vector2 →
+Vector2`, `Scalar2 * Bivector2 → Bivector2`, `Scalar3 * Trivector3 → Trivector3`, `Scalar2 + Bivector2
+→ Rotor2`, `Scalar2 + Vector2 → G2`, `Scalar2.inner_product(X) → Scalar2` — precise for `ty`. The impls
+return `-> MultiVectorBase`, construct the resolved concrete type per rhs, and the `case _` **coerces a
+foreign/`Gn` operand to `G_n`** (so `Scalar2 * Gn → G2`, matching the catch-all — the old body returned
+a bare `Gn`). Reflected ops (`__rmul__`/`__radd__`/`__rsub__`) left as-is (that's the separate
+reflected-operator task). Verified the approach with a `dispatch_method`-on-`scalar_spec` spike before
+writing.
+
+**Design + rationale harvested to `tasks/reference/generated-product-typing.md`** (the "ScalarN as a
+product lhs" section), including the one remaining gap: **ScalarN contractions** (`<`/`>`) are still
+inherited from `base` (`-> Self`) and mistype — noted there as an optional follow-up, out of this
+task's product/sum scope.
+
+**Gates:** ruff clean · ty src/tests/tools clean · full suite 297 + operator-typing 13 pass (new
+`test_scalar_lhs_static_types` / `…_runtime_types_and_values` guard the static + runtime types) ·
+doc-regions clean (overload stubs correctly skipped) · generation deterministic. Runtime
+value-identical (conformance green). Change is generator-only (`tools/gen_specialized.py`); the
+regenerated `g*.py` are gitignored.
+
+## Original task
+
 
 ## Goal
 

@@ -14,7 +14,7 @@ import typing
 import pytest
 
 from gacalc.g1 import Scalar1, Vector1
-from gacalc.g2 import Bivector2, Rotor2, Scalar2, Vector2
+from gacalc.g2 import G2, Bivector2, Rotor2, Scalar2, Vector2
 from gacalc.g3 import G3, Bivector3, Rotor3, Scalar3, Trivector3, Vector3
 
 
@@ -30,6 +30,38 @@ def test_operator_static_types() -> None:
     v: Vector3 = Vector3.e_2
     typing.assert_type(u * v, Rotor3)
     typing.assert_type(u ^ v, Bivector3)
+
+
+def test_scalar_lhs_static_types() -> None:
+    # ScalarN as a product/sum lhs is now precise too (was cast to ScalarN): the
+    # products scale, so they stay in the rhs's type; +/- narrow by grade.
+    s: Scalar2 = Scalar2(coeff_scalar=3.0)
+    v: Vector2 = Vector2.e_1
+    typing.assert_type(s * v, Vector2)  # scalar * vector -> vector (scaling)
+    typing.assert_type(s * Bivector2.e_12, Bivector2)
+    typing.assert_type(s.outer_product(v), Vector2)
+    typing.assert_type(s.inner_product(v), Scalar2)  # scalar . X == 0 (grade 0)
+    typing.assert_type(s * 3, Scalar2)  # scalar * number -> scalar
+    typing.assert_type(s * s, Scalar2)
+    typing.assert_type(s + v, G2)  # {0} + {1} -> full G2
+    typing.assert_type(s + Bivector2.e_12, Rotor2)  # {0} + {2} -> Rotor2
+    typing.assert_type(s - v, G2)
+    typing.assert_type(s + s, Scalar2)  # same grade stays Scalar2
+    typing.assert_type(s + 2, Scalar2)  # scalar + number -> scalar
+    s3: Scalar3 = Scalar3(coeff_scalar=2.0)
+    typing.assert_type(s3 * Trivector3.e_123, Trivector3)
+
+
+def test_scalar_lhs_runtime_types_and_values() -> None:
+    s: Scalar2 = Scalar2(coeff_scalar=3.0)
+    v: Vector2 = Vector2(1.0, 2.0)
+    assert type(s * v) is Vector2  # scaling preserves the concrete type
+    assert (s * v).is_close(Vector2(3.0, 6.0))
+    assert type(s.inner_product(v)) is Scalar2  # scalar . vector == 0
+    assert s.inner_product(v).is_close(Scalar2(coeff_scalar=0.0))
+    assert type(s + Bivector2.e_12) is Rotor2  # {0} + {2}
+    assert (s + Bivector2.e_12).is_close(Rotor2(coeff_scalar=3.0, coeff_e_12=1.0))
+    assert type(s + v) is G2  # {0} + {1} widens to the full class
 
 
 def test_add_sub_narrow_by_grade() -> None:

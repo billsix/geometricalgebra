@@ -2,7 +2,7 @@
 
 **Reference document** — the design and *rationale* for the precise `@typing.overload` typing on
 the generated graded types' products/sums (so `v2 * v2 : Rotor2`, not `Vector2`). Not a task;
-update in place if the generator's product typing changes. Last updated 2026-07-22. Origin: the
+update in place if the generator's product typing changes. Last updated 2026-07-23. Origin: the
 type-precise products/sums work — `tasks/archive/2026/07/21/typed-product-helper-functions.md`.
 
 ## The design
@@ -118,11 +118,31 @@ static-typing fix, replacing an unsound `typing.cast(typing.Self, Rotor2(...))`.
   (`Rotor3.sandwich(x) -> type(x)`, `Vector3.inner_product(Bivector3) -> Vector3`,
   `Vector3 ^ Bivector3 -> Trivector3`). Left at `-> G3`; see `tasks/model-odd-graded-type.md`.
 
+## `ScalarN` as a product lhs (done 2026-07-23)
+
+`Scalar1`/`Scalar2`/`Scalar3` now carry the same overloads as the other graded types — so
+`Scalar2 * Vector2 → Vector2`, `Scalar2 * Bivector2 → Bivector2`, `Scalar3 * Trivector3 →
+Trivector3`, `Scalar2 + Bivector2 → Rotor2`, `Scalar2 + Vector2 → G2`, and `Scalar2.inner_product(X)
+→ Scalar2` (scalar·X ≡ 0 under the Hestenes dot). **How:** `generate_scalar`'s bespoke hand-built
+`__mul__` / `_geometric_product` / `outer_product` / `inner_product` / `__add__` / `__sub__` bodies
+(which returned `-> Self` with an unsound `cast(Self, coeff * rhs)` on the general arm) were replaced
+by the **same `product_overload_stubs(...)` + `dispatch_method(...)`** the graded generator uses —
+so ScalarN is no longer a special case. The impls return `-> MultiVectorBase`, construct the resolved
+concrete type per rhs, and the `case _` **coerces a foreign/`Gn` operand to `G_n`** (the old
+hand-built body returned a bare `Gn` for a `Gn` rhs — now `Scalar2 * Gn → G2`, matching the
+catch-all overload). Runtime is value-identical (conformance green); the changed return *types*
+(`inner_product` now builds `Scalar2(0)` not a coerced `Gn`; `+`/`-` coerce to `G2`) are covered by
+`assert_type` + runtime guards in `tests/test_operator_typing.py`
+(`test_scalar_lhs_static_types` / `…_runtime_types_and_values`). The **reflected** ops
+(`__rmul__`/`__radd__`/`__rsub__`) were left as-is — their overloads are the separate
+`tasks/reflected-operator-typing-overloads.md`. See
+`tasks/archive/2026/07/23/scalar-product-typing-overloads.md`.
+
 ## Not yet done (see the archived task's follow-ups)
 
 - `wedge` / `dot` **aliases** still return `-> Self` — only `*`/`^`/`outer_product`/
   `inner_product` were overloaded. Secondary; overload them the same way if wanted.
-- `ScalarN` as a product **lhs** needs the per-algebra `ScalarN` (in `gN.py`) to adopt the
-  resolve-and-construct discipline (its `_geometric_product` still coerces a general-multivector rhs
-  via `cast(Self, coeff * rhs)`). `ScalarN` works fine as an **rhs**. (As of the per-algebra-scalar
-  split, `ScalarN.dual()` *is* precise — see `tasks/archive/2026/07/22/per-algebra-scalar-types.md`.)
+- **`ScalarN` contractions** (`left_contraction`/`right_contraction`/`<`/`>`) are still **inherited
+  from `base`** (typed `-> Self`), so e.g. `Scalar2 < Vector2` mistypes as `Scalar2` (runtime widens).
+  Out of scope for the products task; give ScalarN its own `dispatch_method` contractions the same way
+  if wanted (a small, mechanical addition now that its arithmetic is dispatch-based).
