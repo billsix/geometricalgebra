@@ -1,8 +1,43 @@
 # Investigate making the full classes `G1`/`G2`/`G3` `@typing.final` and dropping `type(self)`
 
-**Status:** proposed — needs go-ahead. Created 2026-07-23 (Bill). Bill's preference: **make them final
-if nothing needs to subclass them**, and drop the `type(self)` machinery in the generated full-class
-methods — mirroring what was already done for the graded types.
+**Status:** complete
+**Completed:** 2026-07-23
+
+## Done
+
+**Blocker checked first (it was the whole question): nothing subclasses `G_n`.** A repo-wide + mvp
+search found the *only* subclass anywhere was `class MyG2(G2)` inside
+`tests/test_subclass_preservation.py` — the test asserting subclassing was *possible*; mvp never even
+references `G1/G2/G3` (it uses the graded types directly). So `@typing.final` is safe.
+
+Changes (generator-only, `tools/gen_specialized.py`):
+- Added `@typing.final` to the full class decorator (`generate_class`).
+- `result_stmts` (full-class-only — all callers are in `generate_class`) now constructs the concrete
+  class (`G2(...)`) instead of `construct_type_self` (`type(self)(...)`). Result: **zero `type(self)`
+  in the generated full class** (`grep -c` → 0). `-> Self` still holds (Self ≡ `G_n` for a final class).
+- Collapsed the now-dead `result_spec.kind != "full"` branches in `result_block_stmts` / `unary_stmt`
+  (only reachable via `dispatch_method`, which the full class doesn't use).
+- Dropped the unused `construct_type_self` import; kept it as a general astbuild primitive (via
+  `return_construct(..., final=False)`) in case a non-final generated type is ever added.
+- **`base.py` untouched** — `MultiVectorBase`'s `type(self).zero()`/`from_blade_dict()` is
+  cross-*representation* polymorphism (`Gn` + all specialized types), not subclass preservation; out of
+  scope as the task noted. `Gn` (gn.py) also untouched.
+
+Test (`tests/test_subclass_preservation.py`): flipped `test_full_classes_are_not_final` →
+`test_all_generated_types_are_final` (now includes `G1`/`G2`/`G3`); replaced the `MyG2` subclass +
+its preservation tests with `test_full_class_products_construct_concretely` (arithmetic returns exactly
+`G2`); rewrote the module docstring. Confirmed `ty` rejects `class X(G2)` with
+`error[subclass-of-final-class]`.
+
+Rationale harvested to `tasks/reference/design-decisions.md` ("Same-type generated ops" entry) and
+`tasks/reference/code-generator-architecture.md` (construction helpers + finality note).
+
+**Gates:** ruff clean · ty src/tests/tools clean · full suite 299 pass · doc-regions clean ·
+generation deterministic. Runtime value-identical (no real code subclassed `G_n`, so `type(self)`
+always was `G_n`). Generator-only change; regenerated `g*.py` are gitignored.
+
+## Original task
+
 
 ## Goal
 

@@ -90,7 +90,6 @@ from astbuild import (  # noqa: E402
     constant,
     construct,
     construct_type_of,
-    construct_type_self,
     dataclass_decorator,
     function_def,
     inject_region_markers,
@@ -846,14 +845,13 @@ def grades_method(grade_groups: Sequence[tuple[int, list[str]]]) -> ast.Function
 def result_stmts(
     type_name: str, pairs: Iterable[tuple[str, ast.expr]]
 ) -> list[ast.stmt]:
-    """``return type(self)(...)`` as nodes.
+    """``return <TypeName>(...)`` as nodes.
 
-    Every caller passes the OWNING class as ``type_name`` (same-type results:
-    the linear ops, reverse, grade parts), so construction goes through
-    ``type(self)`` and subclasses get their own type back; no cast needed
-    (``type(self)`` is ``type[Self]``).  ``type_name`` is kept for the
-    call-site's readability/assertions."""
-    return [return_stmt(construct_type_self(pairs))]
+    Only the full class ``G_n`` uses this (its same-type results: the linear ops,
+    reverse, grade parts).  ``G_n`` is ``@typing.final``, so it constructs the
+    concrete class directly -- the same as the graded/scalar types -- and its
+    ``-> Self`` still holds (``Self`` is exactly ``G_n`` for a final class)."""
+    return [return_stmt(construct(type_name, pairs))]
 
 
 def isclose_call(field: str, other: str = "other") -> ast.expr:
@@ -949,14 +947,10 @@ def result_block_stmts(
     if via_var is not None:
         stmts.append(return_stmt(cast(construct_type_of(via_var, pairs))))
     elif owner is not None and owner == result_spec.name and cast is cast_self:
-        # Same-type result. A final (graded/scalar) type can't be subclassed, so
-        # emit the concrete class directly (``type(self)`` is statically that class
-        # anyway); the subclassable full G_n keeps ``type(self)`` so a subclass gets
-        # its own type back.
-        if result_spec.kind != "full":
-            stmts.append(return_stmt(construct(result_spec.name, pairs)))
-        else:
-            stmts.append(return_stmt(construct_type_self(pairs)))
+        # Same-type result. Every value type is now @typing.final (graded, scalar,
+        # AND the full G_n), so construct the concrete class directly -- there is no
+        # subclass whose type must be preserved via type(self).
+        stmts.append(return_stmt(construct(result_spec.name, pairs)))
     else:
         # grade-changing arm (graded types only -- the full G_n's products are all
         # same-type).  These methods return MultiVectorBase, so emit the concrete
@@ -984,10 +978,8 @@ def unary_stmt(
         for b, e in zip(result_spec.blades, out_exprs)
     ]
     if owner is not None and owner == result_spec.name:
-        # final -> concrete class; full G_n keeps type(self) (as in result_block_stmts)
-        if result_spec.kind != "full":
-            return return_stmt(construct(result_spec.name, pairs))
-        return return_stmt(construct_type_self(pairs))
+        # same-type result -> the concrete (now-final) class, no type(self) needed
+        return return_stmt(construct(result_spec.name, pairs))
     return return_stmt(cast(construct(result_spec.name, pairs)))
 
 
@@ -1354,7 +1346,11 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             return_type=mvb_ann,
         ),
         *product_overload_stubs(
-            "outer_product", scalar_spec(n), lambda a, b: a.outer_product(b), n, full_name
+            "outer_product",
+            scalar_spec(n),
+            lambda a, b: a.outer_product(b),
+            n,
+            full_name,
         ),
         dispatch_method(
             scalar_spec(n),
@@ -1368,7 +1364,11 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
         # inner_product: scalar . X == 0 under the Hestenes dot (grade 0 excluded),
         # so every overload resolves to Scalar_n (the zero) and the impl builds it.
         *product_overload_stubs(
-            "inner_product", scalar_spec(n), lambda a, b: a.inner_product(b), n, full_name
+            "inner_product",
+            scalar_spec(n),
+            lambda a, b: a.inner_product(b),
+            n,
+            full_name,
         ),
         dispatch_method(
             scalar_spec(n),
@@ -1382,7 +1382,12 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
         # +/- narrow by grade too: Scalar2 + Vector2 -> G2, Scalar2 + Bivector2 ->
         # Rotor2, etc.  Same overloads + dispatch as the graded types.
         *product_overload_stubs(
-            "__add__", scalar_spec(n), lambda a, b: a + b, n, full_name, number_case=True
+            "__add__",
+            scalar_spec(n),
+            lambda a, b: a + b,
+            n,
+            full_name,
+            number_case=True,
         ),
         dispatch_method(
             scalar_spec(n),
@@ -1401,7 +1406,12 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             returns=self_ann,
         ),
         *product_overload_stubs(
-            "__sub__", scalar_spec(n), lambda a, b: a - b, n, full_name, number_case=True
+            "__sub__",
+            scalar_spec(n),
+            lambda a, b: a - b,
+            n,
+            full_name,
+            number_case=True,
         ),
         dispatch_method(
             scalar_spec(n),
@@ -1917,7 +1927,14 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
         class_def(
             name,
             body,
-            decorators=[dataclass_decorator(eq=False, slots=True, frozen=True)],
+            # @typing.final: nothing subclasses the full G_n (the graded types are
+            # the value types; the general representation is Gn in gn.py), so it is
+            # a leaf like the graded/scalar types -- which lets its methods construct
+            # the concrete class directly instead of through type(self).
+            decorators=[
+                attribute("typing", "final"),
+                dataclass_decorator(eq=False, slots=True, frozen=True),
+            ],
         ),
         *basis_constant_assignments(name, blades),
     ]

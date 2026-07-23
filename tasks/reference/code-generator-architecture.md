@@ -103,20 +103,25 @@ GA layer never touches `ast.*` constructors for the common cases.
 **Construction helpers** (the subclass story lives here — see the finality note below):
 
 - `construct(name, pairs)` → `Name(field=value, …)` — construct a *named* class. Used for the
-  **graded value types**, which are `@typing.final` (not subclassable), so their same-type results
-  emit the concrete class directly (e.g. `return Vector2(…)`).
+  same-type results of **every** value type — all are `@typing.final` (not subclassable), so they emit
+  the concrete class directly (e.g. `return Vector2(…)`, `return G2(…)`).
 - `construct_type_of(var, pairs)` → `type(var)(field=value, …)` — build via an operand's runtime
   type; used only by the rotor `sandwich`, which is polymorphic over its operand.
-- `construct_type_self(pairs)` → `type(self)(…)` — used for the **full class `G_n`**, which *stays
-  subclassable* (a subclass gets its own type back from same-type ops).
+- `construct_type_self(pairs)` → `type(self)(…)` — a general astbuild primitive (via
+  `return_construct(..., final=False)`), **no longer used by the generator** since every value type is
+  final; kept as a DSL capability should a non-final generated type ever be added.
 - `return_construct(name, pairs, owner, final)` → `return cast(Self, Name(…))`, **but** if
   `owner == name` (a same-type op) it emits the class directly: `return Name(…)` when `final=True`
-  (the graded types), else `return type(self)(…)` (the subclassable full class).
+  (every current caller), else `return type(self)(…)`.
 
-**Finality (2026-07-21):** the graded value types (`Vector*`/`Bivector*`/`Trivector3`/`Rotor*`)
-and `Scalar` are `@typing.final`; only `G1`/`G2`/`G3` remain subclassable. So same-type
-constructions branch on `result_spec.kind != "full"` — final → concrete class, full → `type(self)`.
-See `tasks/reference/design-decisions.md` (the "Same-type generated ops" entry).
+**Finality (graded 2026-07-21, full `G_n` 2026-07-23):** *every* generated value type is
+`@typing.final` — the graded value types (`Vector*`/`Bivector*`/`Trivector3`/`Rotor*`), `ScalarN`,
+**and the full classes `G1`/`G2`/`G3`**. So same-type constructions always emit the concrete class;
+the old `result_spec.kind != "full"` branch (final → concrete, full → `type(self)`) was **collapsed**,
+and the generated full class carries **no `type(self)`** at all. Nothing subclasses `G_n` (the graded
+types are the value types; the dimension-agnostic `Gn` in `gn.py` is the general representation), so
+the former "extension point" was unused. See `tasks/reference/design-decisions.md` (the "Same-type
+generated ops" entry) and `tasks/archive/2026/07/23/investigate-final-full-classes.md`.
 
 **The three casts** — this is *the* convention `astbuild` encodes about the emitted code:
 
@@ -240,9 +245,9 @@ each into a constructor field value:
 
 `result_block_stmts` also decides *how to construct* the result, via `owner`/`via_var`/`cast`:
 for a same-type result (result type equals the owner, cast is `cast_self`) it emits the concrete
-class `RType(…)` when the owner is a **final** graded type (`result_spec.kind != "full"`) and
-`type(self)(…)` for the subclassable full `G_n`; `type(<via_var>)(…)` for the grade-preserving
-sandwich (build via the operand's type); otherwise `cast(<T>, RType(…))`.
+class `RType(…)` — every value type is `@typing.final`, so there is no `type(self)` branch;
+`type(<via_var>)(…)` for the grade-preserving sandwich (build via the operand's type); otherwise
+`cast(<T>, RType(…))`.
 
 **Dimension-known methods (`dimension_known_methods` in `generate_class`).** Five methods whose
 result is *entirely* fixed once the dimension is chosen are emitted as the closed form / constant
