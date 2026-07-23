@@ -12,6 +12,7 @@ pytest.  See ``tasks/typed-product-helper-functions.md``.
 import typing
 
 import pytest
+import sympy
 
 from gacalc.g1 import Scalar1, Vector1
 from gacalc.g2 import G2, Bivector2, Rotor2, Scalar2, Vector2
@@ -73,6 +74,48 @@ def test_add_sub_narrow_by_grade() -> None:
     typing.assert_type(i2 - 2, Rotor2)  # __add__ (subtract a scalar)
     typing.assert_type(2 - i2, Rotor2)  # __rsub__
     typing.assert_type(i2 + i2, Bivector2)  # same grade stays Bivector2
+
+
+def test_reflected_operators_are_precise_for_numbers() -> None:
+    # __rmul__/__radd__/__rsub__ fire ONLY with a number on the left: every gacalc
+    # multivector-on-the-left is handled by that operand's own forward op (never
+    # NotImplemented), so a multivector never reaches the reflected op.  For that
+    # sole number-left case the single-signature typing is already precise -- no
+    # @overload needed.  (See the archived reflected-operator-typing-overloads task.)
+    v: Vector2 = Vector2.e_1
+    i2: Bivector2 = Vector2.e_1 ^ Vector2.e_2
+    r2: Rotor2 = Vector2.e_1 * Vector2.e_2
+    s2: Scalar2 = Scalar2(coeff_scalar=3.0)
+    # __rmul__: number * multivector scales -> the multivector's own type
+    typing.assert_type(2 * v, Vector2)
+    typing.assert_type(2.0 * i2, Bivector2)
+    typing.assert_type(2 * r2, Rotor2)
+    typing.assert_type(2 * s2, Scalar2)
+    # __radd__/__rsub__: narrow by grade, either operand order
+    typing.assert_type(2 + v, G2)  # {0} + {1} -> full G2
+    typing.assert_type(2 - v, G2)
+    typing.assert_type(2 + s2, Scalar2)  # scalar + number -> scalar
+    typing.assert_type(2 - s2, Scalar2)
+    v3: Vector3 = Vector3.e_1
+    typing.assert_type(2 * v3, Vector3)
+
+
+def test_reflected_operators_runtime_including_symbolic_left() -> None:
+    # Runtime confirms the reflected ops fire (and are correct) with a number left,
+    # INCLUDING a sympy symbol -- for which the STATIC type is `Unknown`, not because
+    # gacalc's __rmul__ is imprecise but because `sympy.Expr.__mul__` intercepts the
+    # dispatch in the checker's view (returning Unknown) so the checker never consults
+    # __rmul__.  At runtime sympy returns NotImplemented, so __rmul__ correctly fires.
+    # Overloading gacalc's reflected ops cannot fix the static gap; it is a sympy-stub
+    # limitation.
+    v: Vector2 = Vector2.e_1
+    assert type(2 * v) is Vector2
+    assert (2 * v).is_close(Vector2(2.0, 0.0))
+    assert type(2 + Bivector2.e_12) is Rotor2
+    t: sympy.Expr = sympy.Symbol("t")
+    assert type(t * v) is Vector2  # runtime is correct though ty infers Unknown
+    assert (t * v).to_blade_dict() == {(1,): t}
+    assert type(t + Bivector2.e_12) is Rotor2
 
 
 def test_r_vector_part_narrows_by_grade() -> None:

@@ -21,6 +21,19 @@ by algebra where this doc's older examples say bare `Scalar`) carries
   2026-07-22 follow-up so a direct caller also gets the precise type.)
 - `__radd__` / `__rsub__` (number on the **left**, `2 + 3*i2`) are typed directly to the resolved
   `self ± scalar` type — no overloads, since their left operand is always a bare number.
+  **Reflected ops need no overloads (investigated & confirmed 2026-07-23).** The "left is always a
+  number" premise was verified by tracing: `__rmul__`/`__radd__`/`__rsub__` fire *only* with a number
+  on the left, because every gacalc multivector-on-the-left is handled by that operand's own forward
+  op (which never returns `NotImplemented`), so a multivector never reaches the reflected op. For that
+  sole number-left case the single-signature typing is already precise (`2 * v → Vector2`,
+  `2 + i2 → Rotor2`, `2 - v → G2`, `2 * Scalar2 → Scalar2`). **The one imprecision is a `sympy.Expr`
+  on the left** (`t * v`): `ty` infers `Unknown` — but that is a **sympy operator-stub limitation, not
+  a gacalc gap**, and **overloads cannot fix it**: `sympy.Expr.__mul__(Vector2)` "handles" the op in
+  the checker's view (returns `Unknown`), so the checker never consults gacalc's `__rmul__` at all. At
+  runtime sympy returns `NotImplemented`, so `__rmul__` fires and the value is correct (`Vector2`).
+  Guarded by `test_reflected_operators_are_precise_for_numbers` /
+  `…_runtime_including_symbolic_left` in `tests/test_operator_typing.py`; see
+  `tasks/archive/2026/07/23/reflected-operator-typing-overloads.md`.
 - `r_vector_part` (2026-07-22 follow-up) — same technique, but keyed on an **int literal** rather
   than an operand type: one `@overload` per grade `r: Literal[<0..DIMENSION>]` → that grade's
   resolved part type (present grade → its type, e.g. `Rotor2.r_vector_part(Literal[2]) ->

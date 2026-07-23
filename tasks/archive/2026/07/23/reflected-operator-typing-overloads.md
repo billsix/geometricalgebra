@@ -1,6 +1,34 @@
 # Investigate why `__radd__`/`__rmul__`/`__rsub__` lack `@typing.overload`s (static + generated)
 
-**Status:** proposed — needs go-ahead. Created 2026-07-23 (Bill).
+**Status:** complete (investigation — no code change warranted)
+**Completed:** 2026-07-23
+
+## Conclusion: no overloads needed
+
+The "left operand is always a bare number" premise **holds** (verified by tracing: `__rmul__`/
+`__radd__`/`__rsub__` fire only with a number left — every gacalc multivector-on-the-left is handled
+by that operand's own forward op, which never returns `NotImplemented`, so a multivector never reaches
+the reflected op). For that sole number-left case the current single-signature typing is **already
+correct and precise** — `2 * v → Vector2`, `2.0 * i2 → Bivector2`, `2 + i2 → Rotor2`, `2 - v → G2`,
+`2 * Scalar2 → Scalar2` (10 `assert_type`s pass). This is the task's outcome (2): **document, no code
+change.**
+
+The **one imprecision** is a `sympy.Expr` on the left (`t * v` → `Unknown` under `ty`), and it is a
+**sympy operator-stub limitation, not a gacalc gap**: `sympy.Expr.__mul__(Vector2)` "handles" the op
+in the checker's view (returns `Unknown`), so the checker never consults gacalc's `__rmul__` — meaning
+**overloading the reflected ops could not fix it**. At runtime sympy returns `NotImplemented`, so
+`__rmul__` fires and the result is correct (`Vector2`, confirmed).
+
+Applies identically to the hand-built `Scalar` reflected ops and the generated graded ones.
+
+**Deliverable:** `tests/test_operator_typing.py` gains
+`test_reflected_operators_are_precise_for_numbers` (static `int`/`float` precision) and
+`test_reflected_operators_runtime_including_symbolic_left` (runtime correctness incl. the symbolic
+case). Finding harvested to `tasks/reference/generated-product-typing.md`. No generator change —
+`git status` shows only the test file. Gates: ruff/ty src+tests+tools clean; full suite 301 pass.
+
+## Original task
+
 
 ## Goal
 
