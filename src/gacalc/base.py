@@ -428,13 +428,27 @@ class MultiVectorBase(abc.ABC):
         discrepancy may warrant further investigation (see
         tasks/investigate-dot-product-grade-0.md).
         """
-        return sum(
+
+        def left_contraction_of_homogenous_multivectors(
+            lhs: MultiVectorBase, rhs: MultiVectorBase
+        ) -> MultiVectorBase:
+            left_grade: int = lhs.max_grade()
+            right_grade: int = rhs.max_grade()
+            assert lhs.is_homogeneous_of_grade_r(left_grade)
+            assert rhs.is_homogeneous_of_grade_r(right_grade)
+            # grade m − k; r_vector_part of a negative grade is zero
+            return (lhs * rhs).r_vector_part(right_grade - left_grade)
+
+        contraction: MultiVectorBase = sum(
             [
-                (self.r_vector_part(k) * rhs.r_vector_part(m)).r_vector_part(m - k)
-                for k, m in itertools.product(self.grades(), rhs.grades())
+                left_contraction_of_homogenous_multivectors(
+                    self.r_vector_part(lg), rhs.r_vector_part(rg)
+                )
+                for lg, rg in itertools.product(self.grades(), rhs.grades())
             ],
             start=type(self).zero(),
         )
+        return typing.cast(typing.Self, contraction)
 
     def right_contraction(self, rhs: typing.Self) -> typing.Self:
         """Right contraction  A ⌊ B  — for homogeneous grade-k (left) and grade-m
@@ -449,13 +463,27 @@ class MultiVectorBase(abc.ABC):
         unlike the Hestenes dot (``inner_product``) — see ``left_contraction`` and
         tasks/investigate-dot-product-grade-0.md.
         """
-        return sum(
+
+        def right_contraction_of_homogenous_multivectors(
+            lhs: MultiVectorBase, rhs: MultiVectorBase
+        ) -> MultiVectorBase:
+            left_grade: int = lhs.max_grade()
+            right_grade: int = rhs.max_grade()
+            assert lhs.is_homogeneous_of_grade_r(left_grade)
+            assert rhs.is_homogeneous_of_grade_r(right_grade)
+            # grade k − m; r_vector_part of a negative grade is zero
+            return (lhs * rhs).r_vector_part(left_grade - right_grade)
+
+        contraction: MultiVectorBase = sum(
             [
-                (self.r_vector_part(k) * rhs.r_vector_part(m)).r_vector_part(k - m)
-                for k, m in itertools.product(self.grades(), rhs.grades())
+                right_contraction_of_homogenous_multivectors(
+                    self.r_vector_part(lg), rhs.r_vector_part(rg)
+                )
+                for lg, rg in itertools.product(self.grades(), rhs.grades())
             ],
             start=type(self).zero(),
         )
+        return typing.cast(typing.Self, contraction)
 
     def __lt__(self, other: typing.Self) -> typing.Self:
         """Operator form of the left contraction:  a < b  ==  a.left_contraction(b)."""

@@ -1,6 +1,38 @@
 # Rewrite `left_contraction`/`right_contraction` like `inner_product`/`outer_product` (nested fn + assert)
 
-**Status:** proposed — needs go-ahead. Created 2026-07-23 (Bill).
+**Status:** complete
+**Completed:** 2026-07-23
+
+## Done
+
+Both `left_contraction` (`base.py:415`) and `right_contraction` (`:439`) now mirror
+`inner_product`/`outer_product` exactly: a nested `*_of_homogenous_multivectors(lhs, rhs)`
+helper (matching the sibling misspelling) that reads `left_grade`/`right_grade` via
+`max_grade()`, asserts each operand `is_homogeneous_of_grade_r(...)`, and returns
+`(lhs * rhs).r_vector_part(right_grade - left_grade)` (left) / `(left_grade - right_grade)`
+(right) — with a comment noting `r_vector_part` of a negative grade is zero. The bilinear
+`sum` over `itertools.product(self.grades(), rhs.grades())` and the `typing.cast(typing.Self, …)`
+match inner/outer too. **Grade-0 inclusion preserved** — no `if lg > 0 and rg > 0` filter, per
+Taylor (see `tasks/reference/contraction-and-dot-definitions.md`). Base-only; the generated
+closed-form contractions were out of scope and untouched. Gates: ruff clean, ty src clean,
+full suite 297 passed. Runtime identical (pure refactor).
+
+### Generated classes verified unaffected
+
+`G1`/`G2`/`G3` (and their graded subtypes) **do** carry their own closed-form
+`left_contraction`/`right_contraction` (`__lt__`/`__gt__`), and the generator *derives* them by
+**running** `a.left_contraction(b)` / `a.right_contraction(b)` symbolically at generation time
+(`tools/gen_specialized.py:1889`, `:2213`), so the refactored base methods execute inside the
+generator. Because the refactor is behavior-preserving — and the `left_/right_contraction`
+docstrings (copied to the generated methods via `inspect.getdoc`) were not touched — the emitted
+code doesn't move. **Proven, not assumed:** snapshotted the on-disk `g1/g2/g3.py` (generated from
+the *old* base.py), regenerated with the *new* base.py (generator `tools/` unchanged this turn, so
+base.py was the only variable), and diffed — **all three byte-identical**. The only change that
+lands is `M src/gacalc/base.py`; the generated `.py` are gitignored artifacts and show nothing in
+`git diff`.
+
+## Original task
+
 
 ## Goal
 
