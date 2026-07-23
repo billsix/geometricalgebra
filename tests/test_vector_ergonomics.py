@@ -13,11 +13,14 @@
 
 """Vector ergonomics added for coordinate-speaking consumers (mvp / ctc).
 
-x/y/z read-write coordinate properties on the grade-1 types, and the
-quotient ``A / B = A B**-1`` (division IS multiplication by the inverse --
-Bill's definition, 2026-07-09; a bare number's inverse is its reciprocal).
+x/y/z read-only coordinate properties on the grade-1 types (the value types are
+frozen/immutable), and the quotient ``A / B = A B**-1`` (division IS
+multiplication by the inverse -- Bill's definition, 2026-07-09; a bare number's
+inverse is its reciprocal).
 See tasks/upgrade-rotation-and-ctc-vector-mapping.md (Task 2).
 """
+
+import dataclasses
 
 import pytest
 import sympy
@@ -35,10 +38,19 @@ def test_coordinate_read() -> None:
     assert (w.x, w.y, w.z) == (1.0, 2.0, 3.0)
 
 
-def test_coordinate_write() -> None:
+def test_frozen_immutable_rebind_not_mutate() -> None:
+    # The generated value types are @dataclass(frozen=True): immutable.  A direct
+    # field write raises FrozenInstanceError cleanly.
     v: Vector2 = Vector2(3.0, 4.0)
-    v.x = 9.0
-    v.y += 1.0
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        v.coeff_e_1 = 9.0  # ty: ignore[invalid-assignment]
+    # The x/y/z coordinate properties are read-only; assigning is rejected.  (With
+    # frozen+slots a *property* write surfaces a Python-internals TypeError rather
+    # than FrozenInstanceError -- it is still blocked; see the frozen task doc.)
+    with pytest.raises((dataclasses.FrozenInstanceError, TypeError, AttributeError)):
+        v.x = 9.0  # ty: ignore[invalid-assignment]
+    # "Changing a coordinate" means rebinding a new vector, not mutating in place.
+    v = Vector2(9.0, v.y + 1.0)
     assert (v.coeff_e_1, v.coeff_e_2) == (9.0, 5.0)
     assert list(v) == [9.0, 5.0]
 

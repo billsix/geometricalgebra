@@ -102,19 +102,23 @@ value type is `@dataclass(slots=True)`** — the full `G1`/`G2`/`G3` and the gra
 (`Scalar_n`/`Vector_n`/`Bivector_n`/`Trivector3`/`Rotor_n`) — so instances carry no
 per-instance `__dict__` (the base `MultiVectorBase` declares empty `__slots__` for this).
 
-**Generated value types are MUTABLE — `slots=True`, but deliberately not `frozen`.** A
-coefficient field can be reassigned in place (`v.coeff_e_1 = …`, and via the ergonomic
-accessors `vec.x = -vec.x`), and downstream code relies on that: *modelviewprojection*'s
-Code-the-Classics ports mutate vectors in place throughout (`self.dir.x = -self.dir.x`,
-`self.vpos.y = …`), and its book text teaches the idiom. So **do not add `frozen=True` to
-the generator** as a tidying-up — it is a breaking change for consumers, not a hardening.
-Two consequences for callers, worth knowing because they cost a downstream debugging
-session (2026-07-18, mvp's `beatstreets`): a multivector held in a **shared** location —
-a module-level constant, a class attribute, a mutable default argument — is one object
-aliased by every reader, so store a **copy** (`Vector2(*v)`) rather than the reference
-when the value will be mutated; and the class constants (`Vector2.e_1`, `Bivector2.e_12`,
-…) are ordinary instances of these mutable types, so treat them as read-only and never
-mutate a basis constant in place.
+**Generated value types are FROZEN (immutable) — `@dataclass(frozen=True, slots=True)`**
+(changed 2026-07-23; they used to be mutable). Coefficient fields cannot be reassigned:
+"changing a coordinate" means **rebinding** a new vector (`v = Vector2(-v.x, v.y)`), not
+`v.x = …`. The `x`/`y`/`z` coordinate properties are **read-only** getters. Immutability
+**removes the aliasing footguns** the old mutable types had — a multivector in a shared
+location (module constant, class attribute, mutable default arg) is no longer a hazard, and
+the basis constants (`Vector2.e_1`, …) can't be mutated by accident. **Breaking change for
+consumers that mutated in place:** *modelviewprojection*'s Code-the-Classics ports did this
+throughout (`self.dir.x = -self.dir.x`, `self.vpos.y = …`) and must convert to rebinding —
+gated on a gacalc release (see the mvp task and gacalc `tasks/model-*`/the frozen task).
+
+**Caveat — the frozen+slots property-write error is a Python quirk.** A **field** write
+(`v.coeff_e_1 = …`) raises a clean `FrozenInstanceError`; a **property** write (`v.x = …`)
+surfaces a confusing `TypeError: super(type, obj)…` (a Python 3.14 frozen+slots+property
+internals interaction). It is still *blocked* — just an ugly message. Dropping `slots` gives
+clean errors but loses the `__dict__`-free memory benefit; `slots` was kept deliberately.
+See `tasks/archive/2026/07/23/investigate-frozen-generated-classes.md`.
 
 **Coefficient-view helpers (`base.py`).** `simplified()` / `expanded()` return the same multivector
 with each coefficient `sympy.simplify`'d / `sympy.expand`'d — for the lazy classes, whose raw

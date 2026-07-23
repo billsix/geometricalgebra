@@ -532,13 +532,15 @@ AXIS_NAMES = ("x", "y", "z")
 
 
 def coordinate_property_defs(spec: TypeSpec) -> list[ast.stmt]:
-    """``x``/``y``/``z`` read-write properties on grade-1 (vector) types.
+    """``x``/``y``/``z`` read-only properties on grade-1 (vector) types.
 
     A vector's coordinates ARE its basis coefficients; these are ergonomic
     views over ``coeff_e_1``/``coeff_e_2``/``coeff_e_3`` for consumers that
-    speak coordinates (the Code-the-Classics games mutate ``v.x`` per frame).
-    Only grade-1 types get them -- ``x`` on a rotor or a full multivector
-    would suggest a coordinate tuple it doesn't have."""
+    speak coordinates.  **Read-only**: the value types are ``frozen`` (immutable),
+    so "changing a coordinate" means rebinding a new vector
+    (``v = Vector2(-v.x, v.y)``), not ``v.x = …``.  Only grade-1 types get them --
+    ``x`` on a rotor or a full multivector would suggest a coordinate tuple it
+    doesn't have."""
     if any(len(b) != 1 for b in spec.blades):
         return []
     defs: list[ast.stmt] = []
@@ -553,33 +555,13 @@ def coordinate_property_defs(spec: TypeSpec) -> list[ast.stmt]:
                     ast.Expr(
                         ast.Constant(
                             f"The {axis} coordinate -- the ``{field}``"
-                            " basis coefficient (read/write)."
+                            " basis coefficient (read-only; the type is frozen)."
                         )
                     ),
                     return_stmt(attribute("self", field)),
                 ],
                 decorators=[name_ref("property")],
                 returns=name_ref("Coef"),
-            )
-        )
-        defs.append(
-            function_def(
-                axis,
-                [
-                    ast.Assign(
-                        targets=[
-                            ast.Attribute(
-                                value=name_ref("self"),
-                                attr=field,
-                                ctx=ast.Store(),
-                            )
-                        ],
-                        value=name_ref("value"),
-                    )
-                ],
-                params=[argument("self"), argument("value", name_ref("Coef"))],
-                decorators=[attribute(axis, "setter")],
-                returns=constant(None),
             )
         )
     return defs
@@ -1600,7 +1582,7 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             body,
             decorators=[
                 attribute("typing", "final"),
-                dataclass_decorator(eq=False, slots=True),
+                dataclass_decorator(eq=False, slots=True, frozen=True),
             ],
         )
     ]
@@ -1961,7 +1943,11 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
         *dimension_known_methods(),
     ]
     return [
-        class_def(name, body, decorators=[dataclass_decorator(eq=False, slots=True)]),
+        class_def(
+            name,
+            body,
+            decorators=[dataclass_decorator(eq=False, slots=True, frozen=True)],
+        ),
         *basis_constant_assignments(name, blades),
     ]
 
@@ -2434,7 +2420,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             body,
             decorators=[
                 attribute("typing", "final"),
-                dataclass_decorator(eq=False, slots=True),
+                dataclass_decorator(eq=False, slots=True, frozen=True),
             ],
         ),
         *basis_constant_assignments(spec.name, blades),
