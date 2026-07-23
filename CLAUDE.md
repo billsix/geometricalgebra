@@ -205,7 +205,9 @@ callable, **construct the type directly** (`ComposableFunction(fn, "P_{B}")` /
 helper. `project`/`reject`/`reflect` return types are typed at `MultiVectorBase` (not `Self`): a
 caller wanting the concrete parameter (`ComposableFunction[Vector3]`) casts at the use site. This
 layer is shared with *modelviewprojection*; Jupyter display via `_repr_latex_`. Follow-ups
-(module naming, animation-layer placement) live in `tasks/reassess-composable-function-interface.md`.
+(module naming, animation-layer placement) live in `tasks/composable-function-followups.md`; the
+refactor that produced them is archived at
+`tasks/archive/2026/07/17/reassess-composable-function-interface.md`.
 
 **Rotations & rotors.** The rotor *builder* lives on `MultiVectorBase` (`base.py`):
 `rotor_from_vectors(from, to)` builds the rotor `R = |from||to| + to·from` (scalar + bivector, the
@@ -353,7 +355,8 @@ descriptive names, verified unique. **`make check-regions`** (`tools/check_doc_r
 regenerates then asserts every `src/gacalc/*.py` marker set is free of exact duplicates and prefix
 collisions and is balanced; run it after touching markers or the generator. Basis-constant
 assignments (`Cls.e_1 = …`, post-class) are deliberately **not** marked. See
-`tasks/annotate-generated-doc-regions.md`.
+`tasks/archive/2026/07/21/annotate-generated-doc-regions.md` (and the rationale digest in
+`tasks/reference/design-decisions.md` › "Marker names are descriptive and prefix-free").
 
 ## Coding standard (Python)
 

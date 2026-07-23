@@ -154,8 +154,9 @@ This is the "cheap wins" bucket. galgebra's `Mv` delegates product *definitions*
   `left_contraction`/`right_contraction` + the `<` / `>` operators (base + generated fast paths with
   precise overloads), per Taylor 2021 p.103; see `tasks/reference/contraction-and-dot-definitions.md`.
   The **Hestenes inner (`|`) vs contraction** distinction is now real: `inner_product` stays the
-  Hestenes dot (grade-0-excluded), the contractions include grade 0 (the open grade-0 wrinkle is
-  tracked in `tasks/investigate-dot-product-grade-0.md`).
+  Hestenes dot (grade-0-excluded), the contractions include grade 0 (the grade-0 wrinkle was
+  settled 2026-07-22 — Hestenes for `inner_product`, no second dot:
+  `tasks/archive/2026/07/22/investigate-dot-product-grade-0.md`).
 - **Commutator** `½(AB−BA)` and **anticommutator** `½(AB+BA)` — one-liners; the commutator
   is how bivectors generate rotations, so it's genuinely pedagogical.
 - **Grade involution / main involution** (`g_invol`, negate odd grades) and **Clifford

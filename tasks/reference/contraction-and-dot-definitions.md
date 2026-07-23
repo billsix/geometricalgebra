@@ -4,7 +4,8 @@
 contraction, scalar product) and how the sources differ on **grade 0**. Consult before touching or
 extending gacalc's inner products. Not a task. Created 2026-07-22 (from reading Taylor 2021 p. 103,
 Hestenes & Sobczyk, and galgebra 0.6.0 source). Related: `galgebra-comparison.md` (Finding 2A),
-`tasks/add-left-right-contraction.md`, `tasks/investigate-dot-product-grade-0.md`.
+`tasks/archive/2026/07/22/add-left-right-contraction.md`,
+`tasks/archive/2026/07/22/investigate-dot-product-grade-0.md`.
 
 ## The operations, by which grade of the geometric product they keep
 
@@ -45,10 +46,12 @@ the plain dot. So once gacalc has contractions, `a.inner_product(s)` (scalar `s`
 `a.left_contraction(s)` will **not** match — that's expected, not a bug.
 
 A separate, softer discrepancy: Taylor reportedly also calls grade 0 part of the plain *dot*
-product, which conflicts with Hestenes ("dot undefined for scalars"). gacalc keeps the Hestenes
-convention for `inner_product`. Whether that plain-dot difference matters (or wants a second,
-grade-0-including "dot") is **open** — tracked in `tasks/investigate-dot-product-grade-0.md`. It does
-**not** block implementing the contractions (their grade-0 behaviour is unambiguous across sources).
+product, which conflicts with Hestenes ("dot undefined for scalars"). **Settled 2026-07-22:** gacalc
+keeps the Hestenes convention for `inner_product` and adds **no** second grade-0-including "dot" —
+galgebra has none either, and the contractions already cover the grade-0-inclusive case. The one
+residual is a Taylor-vs-Hestenes *textual* question (does Taylor's own text extend the plain dot to
+grade 0?) that needs Taylor's book to settle and **changes no gacalc code**.
+(`tasks/archive/2026/07/22/investigate-dot-product-grade-0.md`)
 
 ## gacalc status
 
@@ -59,4 +62,6 @@ grade-0-including "dot") is **open** — tracked in `tasks/investigate-dot-produ
   Vector2`, `Vector2 < Vector2 -> Scalar`, etc.). Grade `m−k` (left) / `k−m` (right), grade 0
   included; the impl is `base.left_contraction`/`right_contraction`, a bilinear sum with **no**
   grade-0 filter (contrast `inner_product`'s `if lg>0 and rg>0`).
-- Open: the plain-dot grade-0 question (`tasks/investigate-dot-product-grade-0.md`).
+- Settled, nothing open: the plain-dot grade-0 question resolved 2026-07-22 in favour of Hestenes,
+  with no second dot operation
+  (`tasks/archive/2026/07/22/investigate-dot-product-grade-0.md`).

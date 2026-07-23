@@ -2,7 +2,7 @@
 
 **Status:** **partly DONE** 2026-06-08 · the Rotor-versor family landed; reflections + higher-dims remain
 
-**Update:** the implementation (`tasks/derived-sandwich-operation.md`) generated
+**Update:** the implementation (`tasks/archive/2026/06/08/derived-sandwich-operation.md`) generated
 the **whole `Rotor` conjugation family** via `dispatch_method`, not just
 `Rotor·Vector` — so `Rotor3.sandwich(Bivector3) → Bivector3`,
 `Rotor3.sandwich(Trivector3) → Trivector3` (pseudoscalar invariance),
@@ -20,7 +20,7 @@ The original notes below are superseded for the Rotor-grade cases.
 
 ## Background
 
-`tasks/derived-sandwich-operation.md` adds a generated, type-correct sandwich for
+`tasks/archive/2026/06/08/derived-sandwich-operation.md` adds a generated, type-correct sandwich for
 **`Rotor·Vector → Vector`** only (what rotations need). But the versor
 conjugation `R X R⁻¹` is **grade-preserving for any `X`** (when `R` is a versor):
 a bivector rotates to a bivector, a trivector to a trivector, and a general
@@ -56,7 +56,7 @@ teaching example), so the generator surface grows only where it's exercised.
 
 ## Pointers
 
-- Main task: `tasks/derived-sandwich-operation.md`
+- Main task: `tasks/archive/2026/06/08/derived-sandwich-operation.md`
 - Complementary type work: `tasks/model-odd-graded-type.md`
 - The generic fallback already covers all grades: `MultiVectorBase.sandwich`
   in `base.py` (runtime `type(x)` projection). This future work is about

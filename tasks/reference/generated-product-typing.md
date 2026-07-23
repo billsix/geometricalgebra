@@ -115,16 +115,17 @@ static-typing fix, replacing an unsound `typing.cast(typing.Self, Rotor2(...))`.
 ## Related facts
 
 - **Checker: `ty` for both gacalc and mvp.** gacalc's gate is `ty`; mvp's `format.sh` gate is
-  `ty` too. **pyright** only appears in mvp's emacs LSP (being removed — mvp
-  `tasks/switch-typechecker-pyright-to-ty.md`), so it never reaches either gate. A one-off pyright
-  check surfaced `reportInconsistentOverload` (the impl's `-> Self` inconsistent with its
+  `ty` too. **pyright** only appears in mvp's emacs LSP (being removed —
+  `tasks/switch-typechecker-pyright-to-ty.md` in `github.com/billsix/modelviewprojection`),
+  so it never reaches either gate. A one-off pyright check surfaced `reportInconsistentOverload` (the impl's `-> Self` inconsistent with its
   overloads) — that is what motivated the `-> MultiVectorBase` broadening (an honesty improvement
   even for `ty`, which is lenient about it). pyright would also flag `reportOverlappingOverload`
   on the catch-all overlapping the specific overloads; **not chased**, since we are `ty`-only.
 - **What precise types unlock for consumers:** direct `.coeff_e_12` field access instead of the
   base `.coefficient(blade)` reader — the reader was the workaround forced by the old mistype
-  (`.coeff_e_12` was type-rejected on a mis-typed `Vector2`). See mvp
-  `tasks/precise-product-types-coefficient-cleanup.md`.
+  (`.coeff_e_12` was type-rejected on a mis-typed `Vector2`). See
+  `tasks/archive/2026/07/22/precise-product-types-coefficient-cleanup.md` in
+  `github.com/billsix/modelviewprojection`.
 - **The odd-type gap is not a prerequisite.** In 𝒢₃ only the *raw full geometric product* of an
   odd-producing pair (e.g. `Rotor3 * Vector3`, `Vector3 * Bivector3`) widens to `G3` for lack of a
   registered `{1,3}` type; the operations actually reached for are already precise
@@ -148,7 +149,7 @@ catch-all overload). Runtime is value-identical (conformance green); the changed
 `assert_type` + runtime guards in `tests/test_operator_typing.py`
 (`test_scalar_lhs_static_types` / `…_runtime_types_and_values`). The **reflected** ops
 (`__rmul__`/`__radd__`/`__rsub__`) were left as-is — their overloads are the separate
-`tasks/reflected-operator-typing-overloads.md`. See
+`tasks/archive/2026/07/23/reflected-operator-typing-overloads.md`. See
 `tasks/archive/2026/07/23/scalar-product-typing-overloads.md`.
 
 ## Not yet done (see the archived task's follow-ups)
