@@ -16,7 +16,7 @@ with `e₂e₁` — it equals `−e₁e₂` (swapping adjacent basis vectors fli
 sign). So a user might reasonably think
 
 ```python
-Gn.from_blade_dict({(2, 1): 5})     # "5·e₂e₁, i.e. −5·e₁e₂"?
+Gn.from_blade_dict({(2, 1): 5})  # "5·e₂e₁, i.e. −5·e₁e₂"?
 ```
 
 means `−5·e₁e₂`. **It does not.** No representation performs that sign flip;
