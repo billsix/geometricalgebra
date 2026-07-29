@@ -33,8 +33,9 @@ precondition at `BladeCoef` and deliberately NOT test-frozen (the behaviors are
 accidents). If wanted, a follow-up could make `from_blade_dict` either **(a)
 raise** on non-canonical keys or **(b) canonicalize** them (sort + sign flip +
 merge duplicates); (a) is cheaper and catches bugs, (b) is friendlier input
-handling. **Promoted to `tasks/validate-blade-dict-keys.md`** (with a plain-terms
-explanation of what canonical keys are), awaiting Bill's (a)/(b) decision.
+handling. **Promoted, decided (a) raise, and DONE same day** — see
+`tasks/archive/2026/07/29/validate-blade-dict-keys.md` (includes a plain-terms
+explanation of what canonical keys are).
 
 ## Goal
 

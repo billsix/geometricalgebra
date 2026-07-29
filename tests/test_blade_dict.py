@@ -113,7 +113,9 @@ def test_canonical_keys_are_sorted_index_tuples() -> None:
     # basis-vector indices (the writer-side precondition, held by construction)
     for cls in (Gn, G2, G3):
         n: int = 3 if cls in (Gn, G3) else 2
-        dense: MultiVectorBase = sum((i + 1) * b for i, b in enumerate(cls.bases(n)))
+        dense: MultiVectorBase = sum(
+            ((i + 1) * b for i, b in enumerate(cls.bases(n))), start=cls.zero()
+        )
         blade: Blade
         for blade in (dense * dense).to_blade_dict():
             assert list(blade) == sorted(set(blade))

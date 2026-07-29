@@ -1,8 +1,29 @@
 # Validate (or canonicalize) blade-dict keys in `from_blade_dict`
 
-**Status:** proposed — needs a decision from Bill between options (a) and (b)
-below. Spun off from `tasks/archive/2026/07/29/blade-dict-tests-and-comments.md`
+**Status:** DONE 2026-07-29 — Bill chose **(a) raise**; implemented and
+gate-verified (`make test` 312 passed, `check-generated`, `check-regions`,
+`format` all green); archived. Spun off from
+`tasks/archive/2026/07/29/blade-dict-tests-and-comments.md`
 (found while pinning the interchange contract, 2026-07-29).
+
+## Outcome
+
+One shared validator, `_require_canonical_blades(blade_coef)` in `base.py`
+(same shared-home pattern as `_coerce`), called by every representation's
+`from_blade_dict`: `Gn`'s directly, the generated classes' via an emitted call
+(`tools/gen_specialized.py`, `from_blade_dict_method`) with the helper added to
+the generated modules' base import. A non-canonical key now raises
+`ValueError` naming the offending key and explaining the fix (sorted key,
+sign folded into the coefficient; repeated index contracts). Canonical-but-
+foreign keys still silently drop in graded types — that contract is unchanged.
+Docs updated: the `BladeCoef` block and the abstract `from_blade_dict`
+docstring in `base.py` now state the raise (no more "undefined behavior");
+`tests/test_blade_dict.py` gained `test_non_canonical_keys_raise` (both
+divergent silent behaviors described below are now historical) and its module
+docstring was updated. Suite: 312.
+
+*(The sections below are the original investigation — the "what actually
+happens today" behaviors are the PRE-fix ones, kept for the record.)*
 
 ## What "canonical key" means (plain terms, worked example)
 

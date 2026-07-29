@@ -251,10 +251,10 @@ def test_exp_narrows_bivector_to_rotor() -> None:
     # (cos^2 + sin^2 = 1) without normalizing.
     r2: Rotor2 = Bivector2.e_12.exp()
     assert type(r2) is Rotor2
-    assert sympy.simplify(r2.magnitude_squared()) == 1
+    assert sympy.simplify(sympy.sympify(r2.magnitude_squared())) == 1
     r3: Rotor3 = (Vector3.e_1 ^ Vector3.e_2).exp()
     assert type(r3) is Rotor3
-    assert sympy.simplify(r3.magnitude_squared()) == 1
+    assert sympy.simplify(sympy.sympify(r3.magnitude_squared())) == 1
 
 
 def test_scalar_type() -> None:

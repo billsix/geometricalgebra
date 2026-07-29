@@ -8,9 +8,16 @@ source /venv/bin/activate
 # The intentionally-vendored Emacs tree under entrypoint/ is excluded from both
 # commands via `extend-exclude` in pyproject.toml [tool.ruff], so this formats the
 # real project source without churning third-party files.
-ruff check . --fix
-ruff format --line-length=88
+#
+# Every step runs (one pass reports all the red), but the script exits nonzero
+# if ANY step failed -- otherwise `make format` reports only the LAST command's
+# status, and a `ty check` failure in an earlier step is silently masked (this
+# actually happened: 3 ty errors sailed through a green gate, 2026-07-29).
+status=0
+ruff check . --fix || status=1
+ruff format --line-length=88 || status=1
 
-ty check /gacalc/src
-ty check /gacalc/tests
-ty check /gacalc/tools
+ty check /gacalc/src || status=1
+ty check /gacalc/tests || status=1
+ty check /gacalc/tools || status=1
+exit $status
