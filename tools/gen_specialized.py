@@ -726,6 +726,10 @@ def from_blade_dict_method(blades: Sequence[Blade]) -> ast.FunctionDef:
         annotated_assign(
             "d", name_ref("BladeCoef"), call("dict", [name_ref("blade_coef")])
         ),
+        # loud rejection of a non-canonical key (base's shared validator) --
+        # canonical-but-foreign keys still fall through the ``d.get``s below
+        # (the documented graded silent-drop)
+        ast.Expr(value=call("_require_canonical_blades", [name_ref("d")])),
         return_stmt(ast.Call(func=name_ref("cls"), args=[], keywords=keywords)),
     ]
     return function_def(
@@ -2509,7 +2513,7 @@ def generate_constants(n: int, name: str) -> list[ast.stmt]:
 def header(name: str, n: int) -> str:
     # _OperandT (the sandwich operand TypeVar) is only used by the Rotor class,
     # which exists for n >= 2; importing it for G1 would be unused (F401).
-    operand_import = ", _OperandT" if n >= 2 else ""
+    operand_import = "\n    _OperandT," if n >= 2 else ""
     return f"""# Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #
@@ -2539,7 +2543,13 @@ from collections.abc import Generator
 import numpy as np
 import sympy
 
-from gacalc.base import MultiVectorBase, BladeCoef, Coef, _coerce{operand_import}
+from gacalc.base import (
+    MultiVectorBase,
+    BladeCoef,
+    Coef,
+    _coerce,
+    _require_canonical_blades,{operand_import}
+)
 from gacalc.gn import Gn
 """
 

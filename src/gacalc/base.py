@@ -42,9 +42,9 @@ Blade = tuple[int, ...]
 #: module routes through it.  The contract (pinned by tests/test_blade_dict.py):
 #:
 #: - **Keys are canonical**: strictly increasing index tuples; ``()`` is the
-#:   scalar blade.  Writers MUST pass canonical keys -- a non-canonical key
-#:   (``(2, 1)``, duplicates) is undefined behavior, not a signed permutation
-#:   (``Gn`` would store it raw, the specialized classes silently drop it).
+#:   scalar blade.  ``from_blade_dict`` (every representation, via
+#:   ``_require_canonical_blades``) raises ``ValueError`` on a non-canonical
+#:   key (``(2, 1)``, duplicates) -- it is NOT read as a signed permutation.
 #: - **Readers omit exact-zero coefficients** and a missing blade reads as 0
 #:   (``.get(blade, 0)``).  The eager/lazy split shows here: ``Gn`` simplifies
 #:   a hidden zero away; the lazy classes prune only a structural ``0``.
@@ -112,7 +112,11 @@ class MultiVectorBase(abc.ABC):
     @classmethod
     @abc.abstractmethod
     def from_blade_dict(cls, blade_coef: Mapping[Blade, Coef]) -> typing.Self:
-        """Build an instance of this representation from a blade->coef mapping."""
+        """Build an instance of this representation from a blade->coef mapping.
+
+        Raises ``ValueError`` on a non-canonical blade key (indices must be
+        strictly increasing -- see ``BladeCoef`` / ``_require_canonical_blades``).
+        """
 
     @abc.abstractmethod
     def to_blade_dict(self) -> BladeCoef:
@@ -1048,3 +1052,26 @@ def _coerce(x: MultiVectorBase | Coef, cls: type[MultiVectorBase]) -> MultiVecto
     if isinstance(x, sympy.Expr):
         return cls.from_coef(x)
     return cls.from_scalar(x)
+
+
+def _require_canonical_blades(blade_coef: Mapping[Blade, Coef]) -> None:
+    """Raise ``ValueError`` on a non-canonical blade key (see ``BladeCoef``).
+
+    A canonical key's indices are strictly increasing (``(1, 2)``, never
+    ``(2, 1)`` or ``(1, 1)``).  ``e₂e₁`` is a legal algebra *element* but not
+    a legal *key*: it equals ``−e₁e₂``, so it belongs under the sorted key
+    with the sign folded into the coefficient (and a repeated index contracts
+    away entirely, ``eᵢeᵢ = 1``).  Shared by every representation's
+    ``from_blade_dict`` (the generated modules import it), replacing two old
+    *silent* failure modes -- ``Gn`` storing the bad key raw, the specialized
+    classes dropping it -- with one loud error (decision (a) of
+    tasks/validate-blade-dict-keys.md, 2026-07-29).
+    """
+    for blade in blade_coef:
+        if any(a >= b for a, b in zip(blade, blade[1:])):
+            raise ValueError(
+                f"blade key {blade!r} is not canonical: indices must be "
+                "strictly increasing -- e.g. e2 e1 = -e1 e2 belongs under "
+                "key (1, 2) with a negated coefficient, and a repeated "
+                "index contracts (e_i e_i = 1)"
+            )

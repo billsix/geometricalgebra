@@ -22,7 +22,13 @@ from typing import NamedTuple
 
 import sympy
 
-from gacalc.base import Blade, BladeCoef, Coef, MultiVectorBase
+from gacalc.base import (
+    Blade,
+    BladeCoef,
+    Coef,
+    MultiVectorBase,
+    _require_canonical_blades,
+)
 
 # The representation-agnostic transform layer (InvertibleFunction, translate,
 # scale, compose, ...) lives in gacalc.transforms; it derives any basis
@@ -90,6 +96,7 @@ class Gn(MultiVectorBase):
 
     @classmethod
     def from_blade_dict(cls, blade_coef: Mapping[Blade, Coef]) -> Gn:
+        _require_canonical_blades(blade_coef)
         return cls(coefficient_of_blade=dict(blade_coef))
 
     def to_blade_dict(self) -> BladeCoef:

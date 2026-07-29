@@ -29,12 +29,15 @@ to and from ``BladeCoef`` (``dict[Blade, Coef]``), and all shared arithmetic in
 - coefficient types survive the round trip (float stays float in the lazy
   classes; ``Gn``'s eager simplify normalizes numbers to sympy).
 
-The canonical-key *precondition* (writers must pass sorted, duplicate-free
-tuples; violation is undefined) is documented at ``BladeCoef`` in ``base.py``,
-deliberately not test-frozen: the divergent garbage behaviors (``Gn`` stores a
-``(2, 1)`` key raw; ``G2`` drops it) are accidents, not contract.
+Non-canonical keys (unsorted or repeated indices) are rejected loudly:
+``from_blade_dict`` raises ``ValueError`` in every representation (decision (a)
+of the validate-blade-dict-keys task, 2026-07-29 — replacing two divergent
+*silent* failure modes: ``Gn`` used to store a ``(2, 1)`` key raw, ``G2`` used
+to drop it).  ``(2, 1)`` is deliberately NOT read as the signed permutation
+``-e1e2``.
 """
 
+import pytest
 import sympy
 
 from gacalc.base import Blade, BladeCoef, MultiVectorBase
@@ -149,6 +152,16 @@ def test_graded_from_blade_dict_keeps_only_own_blades() -> None:
         (): 7,
         (1, 2): 3,
     }
+
+
+def test_non_canonical_keys_raise() -> None:
+    # every representation rejects an unsorted or repeated-index key loudly;
+    # (2, 1) is NOT read as the signed permutation -e1e2
+    for cls in (Gn, G2, Bivector2):
+        with pytest.raises(ValueError, match="not canonical"):
+            cls.from_blade_dict({(2, 1): 5})
+        with pytest.raises(ValueError, match="not canonical"):
+            cls.from_blade_dict({(1, 1): 5})
 
 
 def test_coef_types_survive_lazy_roundtrip() -> None:
