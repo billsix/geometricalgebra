@@ -51,6 +51,12 @@ by algebra where this doc's older examples say bare `Scalar`) carries
   `parity_part` helper; the `gn_unary` param on `unary_result`/`unary_body`/`parity_part` is
   `Callable[[Gn], MultiVectorBase]` so it accepts the now-`MultiVectorBase`-returning
   `even_part`/`odd_part` (Gn-returning ops like `dual` still fit by covariance).
+- `exp` (2026-07-29) — a thin cast-and-delegate narrowing override on `Bivector_n` only:
+  `Bivector_n.exp() -> Rotor_n` (the exponential map onto the rotors). Unlike the products, the
+  body is NOT a generated closed form (transcendental — the cse machinery is polynomial); it
+  delegates to the shared `MultiVectorBase.exp`, whose dispatching-add construction already
+  produces a `Rotor_n` at runtime. `Vector_n`/`Trivector3` get no override (scalar+vector /
+  scalar+trivector have no covering graded type — they widen honestly to `G_n`).
 - `dual` (2026-07-22, closes the unary-op family) — same "retype `base.dual` off `-> Self` to
   `-> MultiVectorBase`, graded override narrows to the resolved grade-(n−r) type" pattern as even/odd
   (`Bivector3.dual -> Vector3`, `Trivector3.dual -> Scalar3`, `Rotor3.dual -> G3` — odd {1,3} widens

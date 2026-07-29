@@ -1,6 +1,6 @@
 # gacalc design decisions (digest)
 
-**Reference document** — a distilled index of the durable design decisions and their rationale, pulled from the archived task docs so they're not lost in the don't-trawl archive. Not a task; update in place. Last updated 2026-07-21.
+**Reference document** — a distilled index of the durable design decisions and their rationale, pulled from the archived task docs so they're not lost in the don't-trawl archive. Not a task; update in place. Last updated 2026-07-29.
 
 Each entry: **what** was decided · *why* (the surprising/re-litigable part) · the archived task where it was decided. CLAUDE.md is the "what is true now"; this is the "why, and where it was settled." Paths are repo-relative under `tasks/archive/`.
 

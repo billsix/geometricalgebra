@@ -45,7 +45,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   conformance over `[Gn, G1, G2, G3]`; `tests/test_graded.py` — the graded-subtype suite (return
   type + value per operation); `tests/test_generator.py` — unit tests for the *generator's own*
   logic (blade naming, the type registry / `resolve`, `product_result`/`unary_result` result-type
-  resolution, astbuild DSL invariants). **~246 tests** (incl. doctests via `--doctest-modules`).
+  resolution, astbuild DSL invariants). **~300 tests** (incl. doctests via `--doctest-modules`).
 - `tools/gen_specialized.py` — the code generator (builds each module as Python `ast` nodes, rendered
   with `ast.unparse`); `tools/astbuild.py` — its domain-agnostic node-builder DSL; `tools/bench.py` —
   `Gn`-vs-specialized benchmark.

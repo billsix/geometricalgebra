@@ -127,8 +127,14 @@ also narrow to the tightest type). Rotors carry `plane_of_rotation()`, and
 `projection_rotation(from, to)(v)` (a free function in `gacalc.transforms`). To separate the plane from the angle, `plane_rotation(a, b)`
 (new in 0.0.8) wedge-normalizes the two vectors into a unit bivector once and returns
 a factory: each `θ` yields an `InvertibleFunction` doing the half-angle rotor sandwich
-(numeric `θ` stays float — no sympy in the result). A full walkthrough is in
-`notebooks/displaygraded.py`.
+(numeric `θ` stays float — no sympy in the result). Rotors can also be built the
+exp-map way the textbooks write them: `exp` of a bivector *is* a rotor —
+`B.exp()` returns a `Rotor2`/`Rotor3` (unit by construction), and
+`exp(-(θ/2) * i)` for a unit bivector `i` equals `plane_rotation`'s half-angle
+rotor (`exp` of a vector is hyperbolic, `cosh + sinh`; defined whenever `A²` is
+a scalar). A full walkthrough is in
+`notebooks/displaygraded.py`; the exp-map section lives in
+`notebooks/displayrotations.py`.
 
 Because the specialized/graded classes don't eagerly simplify, a symbolic result can carry
 un-reduced coefficients (e.g. terms that should cancel). `v.simplified()` / `v.expanded()` return
