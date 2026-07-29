@@ -17,8 +17,11 @@ Representation agreement lives in test_conformance (``test_exp``); the graded
 return type in test_graded (``test_exp_narrows_bivector_to_rotor``).  This file
 holds the properties: the trig/hyperbolic split by grade, the
 numeric-preservation contract, inverse-by-negation, the scalar-square guard,
-and agreement with ``plane_rotation``'s hand-built half-angle rotor -- the
-equality that gates the plane-rotation-via-exp follow-up task.
+and agreement with ``plane_rotation``'s hand-built half-angle rotor.  The
+agreement tests are permanent guards: ``plane_rotation`` keeps its hand-built
+rotor ON PURPOSE (a swap onto exp was measured and rejected -- see
+tasks/reference/design-decisions.md), and these equalities are what let the
+two constructions evolve without drifting apart.
 """
 
 import pytest
@@ -98,8 +101,8 @@ def test_exp_agrees_with_plane_rotation_symbolic() -> None:
     # purpose: exp computes |A| = sqrt(theta**2)/2, which collapses to
     # theta/2 only under a sign assumption -- for an unrestricted (complex)
     # symbol the exp-built rotor keeps the sqrt and is NOT syntactically
-    # cos(theta/2).  This is the documented gate for the
-    # plane-rotation-via-exp follow-up task (tasks/plane-rotation-via-exp.md).
+    # cos(theta/2).  (That limitation is WHY plane_rotation keeps its
+    # hand-built rotor -- see tasks/reference/design-decisions.md.)
     theta: sympy.Symbol = sympy.Symbol("theta", positive=True)
     f = plane_rotation(Vector2.e_1, Vector2.e_2)(theta)
     i: Bivector2 = (Vector2.e_1 ^ Vector2.e_2).normalize()

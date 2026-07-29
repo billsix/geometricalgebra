@@ -24,7 +24,7 @@ Gates: `make test` (304 passed), `make check-generated`, `make check-regions`,
 Durable rationale harvested to `tasks/reference/design-decisions.md` › "exp()
 dispatches by grade structure" and "`plane_rotation` builds its rotor by
 hand-written trig ON PURPOSE". The follow-up swap investigation concluded
-**against** the swap — see `tasks/plane-rotation-via-exp.md`.
+**against** the swap — see `tasks/archive/2026/07/29/plane-rotation-via-exp.md` (dropped).
 
 ---
 
@@ -40,7 +40,7 @@ generated `g2.py`/`g3.py` / `tools/gen_specialized.py`.
 ## Decisions (Bill, 2026-07-29)
 
 1. **`exp` lands standalone; the `plane_rotation` rewrite is a separate
-   follow-up** — see `tasks/plane-rotation-via-exp.md`. The two stay
+   follow-up** — see `tasks/archive/2026/07/29/plane-rotation-via-exp.md` (dropped). The two stay
    verified-equal by test in this task; the internals swap happens there.
 2. **The generator emits typed narrowing overrides in the same change**
    (`Bivector_n.exp() -> Rotor_n`), per the repo's typing standard
@@ -123,7 +123,7 @@ real citation (H&S introduce exp in their spinor/rotation material) or omit.
   `θ/2 = atan2(|⟨R⟩₂|, ⟨R⟩₀)`, `log R = (θ/2)·plane_of_rotation()` — and
   exp+log give slerp; note for a future task).
 - General-multivector `exp` beyond scalar-square inputs.
-- The `plane_rotation` internals swap → `tasks/plane-rotation-via-exp.md`.
+- The `plane_rotation` internals swap → `tasks/archive/2026/07/29/plane-rotation-via-exp.md` (dropped).
 
 ## Gates
 

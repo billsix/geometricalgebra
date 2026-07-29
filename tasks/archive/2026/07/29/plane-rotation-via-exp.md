@@ -1,10 +1,12 @@
 # Rewrite `plane_rotation`'s rotor construction on top of `exp()`
 
-**Status:** investigated 2026-07-29 — **recommend DROP; awaiting Bill's
-decision.** The swap was measured against this task's own constraints and
-violates two of them (evidence below). (Split out per Bill's decision
-2026-07-29: `exp` landed standalone first; this swap was to be its own
-change.)
+**Status:** DROPPED 2026-07-29 (Bill's explicit say-so) — kept as an
+investigation record, not deleted. The swap was measured against this task's
+own constraints and violates two of them (evidence below); `plane_rotation`
+keeps its hand-built rotor deliberately. Durable rationale:
+`tasks/reference/design-decisions.md` › "`plane_rotation` builds its rotor by
+hand-written trig ON PURPOSE". (Split out per Bill's decision 2026-07-29:
+`exp` landed standalone first; this swap was to be its own change.)
 
 ## Findings (2026-07-29, measured in the container against the landed `exp`)
 
