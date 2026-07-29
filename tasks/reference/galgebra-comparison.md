@@ -24,7 +24,7 @@ synthesis, not from any doc):
 
 | # | Gap | Size | Needs signatures first? | Why it's worth it |
 |---|---|---|---|---|
-| 1 | **exp / log of rotors & multivectors** | small, self-contained | no | "rotor = exp(bivector)" is a core teaching moment; enables interpolation. Best near-term win. (Finding 2B) |
+| 1 | **exp / log of rotors & multivectors** — *the `exp` half is promoted to `tasks/exp-for-rotors.md` (design settled 2026-07-29; follow-up: `tasks/plane-rotation-via-exp.md`); `log` stays unpromoted* | small, self-contained | no | "rotor = exp(bivector)" is a core teaching moment; enables interpolation. Best near-term win. (Finding 2B) |
 | 2 | **~~Left/right contractions~~ (DONE 2026-07-22) + commutator/anticommutator + grade-involution + Clifford conjugation** | small, several one-liners | no | Table-stakes operations every GA text uses; gacalc collapses all inner products into one. Cheap. (Finding 2A) |
 | 3 | **Reciprocal frames** | small–medium | no | Independently useful *and* the prerequisite for geometric calculus. Build regardless. (Finding 1, 5) |
 | 4 | **Outermorphisms / general linear transforms** (`Lt`: det/adjoint/trace as pseudoscalar/blade operations) | medium, self-contained | **no** — works on Euclidean G3 | Beautiful teaching topic ("det = how a map scales the pseudoscalar"); generalizes gacalc's versor-only transforms. The best "big" step that *doesn't* need signatures. (Finding 3b) |

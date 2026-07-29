@@ -105,7 +105,8 @@ COPY tools /gacalc/tools
 # notebook/jupyter deps reinstall then -- uv's cache keeps that fast.)
 RUN export VIRTUAL_ENV_DISABLE_PROMPT=1 && source /venv/bin/activate && \
     cd /gacalc && uv pip install --python $(which python) --no-build-isolation ".[dev,notebooks,jupyter]" && \
-    jupytext-config set-default-viewer python
+    jupytext-config set-default-viewer python && \
+    jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
 
 
 ENTRYPOINT ["/entrypoint.sh"]
