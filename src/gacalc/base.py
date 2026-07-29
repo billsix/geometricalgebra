@@ -36,6 +36,22 @@ Coef = int | float | sympy.Expr
 #: A basis blade: a tuple of basis-vector indices, e.g. ``(1, 2)`` ≙ e₁e₂ (``()`` is
 #: the scalar blade).  The key type of the ``BladeCoef`` interchange dict.
 Blade = tuple[int, ...]
+#: THE interchange format of the library.  Every representation (``Gn``,
+#: ``G1``/``G2``/``G3``, the graded subtypes) converts to and from this dict via
+#: ``to_blade_dict``/``from_blade_dict``, and all shared arithmetic in this
+#: module routes through it.  The contract (pinned by tests/test_blade_dict.py):
+#:
+#: - **Keys are canonical**: strictly increasing index tuples; ``()`` is the
+#:   scalar blade.  Writers MUST pass canonical keys -- a non-canonical key
+#:   (``(2, 1)``, duplicates) is undefined behavior, not a signed permutation
+#:   (``Gn`` would store it raw, the specialized classes silently drop it).
+#: - **Readers omit exact-zero coefficients** and a missing blade reads as 0
+#:   (``.get(blade, 0)``).  The eager/lazy split shows here: ``Gn`` simplifies
+#:   a hidden zero away; the lazy classes prune only a structural ``0``.
+#: - **A graded type's ``from_blade_dict`` keeps ONLY its own blades** --
+#:   foreign keys are silently dropped, so a result carrying a new grade must
+#:   be built via dispatching arithmetic (``Bivector + scalar -> Rotor``),
+#:   never via ``from_blade_dict`` on the operand's type (see ``exp``).
 BladeCoef = dict[Blade, Coef]
 MultiVectorFn = Callable[["MultiVectorBase"], "MultiVectorBase"]
 
@@ -76,7 +92,10 @@ class MultiVectorBase(abc.ABC):
 
     Concrete representations (Gn, and later G2/G3) implement a tiny interchange
     protocol -- ``from_blade_dict`` / ``to_blade_dict`` -- plus the core
-    ``_geometric_product``.  Every representation-independent method here is
+    ``_geometric_product``.  The blade dict (``BladeCoef``, documented at its
+    definition above) is **the canonical interchange representation**: every
+    type converts through it, and all the shared arithmetic below routes
+    through it.  Every representation-independent method here is
     written against that protocol, constructing results of the caller's own
     concrete type via ``type(self)``.  This is the abstraction boundary: only
     methods that touch the raw representation are reimplemented per subclass.

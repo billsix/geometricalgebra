@@ -27,6 +27,11 @@ src/gacalc/
   g1.py g2.py g3.py   one specialized class each (generated, not in git -- run `make generate`)
 ```
 
+All representations interoperate through one interchange format: the **blade
+coefficient dictionary** (`{(1, 2): 4}` means `4·e₁e₂`; `()` keys the scalar),
+read/written by `to_blade_dict()` / `from_blade_dict()`. Its full contract is
+documented at `BladeCoef` in `base.py`.
+
 > Installing from a git checkout (not from PyPI)? Run `make generate` once first —
 > the specialized `g*.py` modules aren't committed; they're generated from `Gn`
 > (and baked into the published wheel, so `pip install gacalc` needs no generator).
