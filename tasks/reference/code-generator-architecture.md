@@ -42,8 +42,9 @@ raw text header  +  "\n\n"  +  module_source(inject_region_markers(nodes))  +  "
 ```
 
 - The **header** is a raw f-string (`header(name, n)`): the LGPL copyright block, the
-  `AUTO-GENERATED … do not edit` banner, `from __future__`, the imports, and the module-level
-  `_coerce()` helper. (There is no longer a separate `SCALAR_HEADER` — `ScalarN` is emitted into each
+  `AUTO-GENERATED … do not edit` banner, `from __future__`, and the imports — including
+  `_coerce`, which since 2026-07-29 is defined once in `base.py` and imported (it used to be
+  pasted into each module). (There is no longer a separate `SCALAR_HEADER` — `ScalarN` is emitted into each
   `gN.py`, not its own module.) `header()` conditionally appends `, _OperandT` to the
   `gacalc.base` import only for `n >= 2` (the sandwich TypeVar is used only by `Rotor_n`, which
   doesn't exist in 𝒢₁ — importing it there would be an unused-import `F401`).
@@ -278,14 +279,18 @@ Structure of the emitted method:
 1. **Exact-type early-out** (only when `cast is cast_self`, i.e. the `Self`-returning ops — *not* the
    sandwich): a leading `if type(rhs) is <SelfType>:` returning the same-type closed form directly,
    skipping the `match` ladder. The dominant operand across the Code-the-Classics + mvp workloads is
-   the *same concrete type* as `self`, so this identity check is the hot path. A **subtype** (for
-   which `type(x) is T` is False) still falls through to the `case T()` arm, so subclass
-   preservation is unchanged. Skipped for the sandwich because a same-type operand is rare there.
+   the *same concrete type* as `self`, so this identity check is the hot path. Since 2026-07-29 it
+   **fully replaces** the same-type `case T()` arm (the loop skips emitting it): the classes are
+   `@typing.final`, so nothing legal is isinstance-T without being exactly T — the arm was dead code
+   repeating the closed form. A finality-violating runtime subclass falls to `case _:` and widens
+   via `_coerce` (correct, just not narrow). Skipped for the sandwich because a same-type operand is
+   rare there — so the sandwich's `match` DOES keep its same-type arm.
 2. **`number_case`** (optional): a leading `case int() | float() | sympy.Expr():` treating a bare
    number as the grade-0 operand. It emits the *same* result as the `Scalar` arm but reads `rhs`
    directly (the empty-`attr` rename trick) rather than `rhs.coeff_scalar` — no intermediate
    `Scalar` object, no re-dispatch. Used by `__add__`/`__sub__` (and `__mul__` scales separately).
-3. **One `case <T>():` per `[SCALAR, *graded_specs(n)]`** — the graded product/sum table. Each arm's
+3. **One `case <T>():` per `[SCALAR, *graded_specs(n)]`** (minus the same-type arm for the
+   `Self`-returning ops — the early-out in 1 covers it) — the graded product/sum table. Each arm's
    body is `result_block_stmts(result_spec, out_exprs, rename_map(...), cast, owner=self.name,
    via_var=param_name if cast is cast_operand else None)`.
 4. **The fallback `case _:`** — coerce both operands to the full `G_n` via the module-level

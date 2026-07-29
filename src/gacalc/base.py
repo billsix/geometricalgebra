@@ -1013,3 +1013,19 @@ class MultiVectorBase(abc.ABC):
         # only the rendered form leaves the stored fields untouched.  (`Gn` already
         # eager-simplifies, so this is a cheap no-op there; display is not hot.)
         return blade_dict_latex(self.simplified().to_blade_dict())
+
+
+def _coerce(x: MultiVectorBase | Coef, cls: type[MultiVectorBase]) -> MultiVectorBase:
+    """Coerce a scalar or multivector to ``cls`` (the full type).
+
+    The shared widen helper for the generated dispatch methods' ``case _:``
+    fallback arms (g1/g2/g3 import it): an operand no closed-form arm matched
+    is rebuilt in the algebra's full class via the blade-dict interchange, and
+    a bare number/``sympy.Expr`` becomes the scalar part.  (One definition
+    here rather than a copy per generated module.)
+    """
+    if isinstance(x, MultiVectorBase):
+        return cls.from_blade_dict(x.to_blade_dict())
+    if isinstance(x, sympy.Expr):
+        return cls.from_coef(x)
+    return cls.from_scalar(x)

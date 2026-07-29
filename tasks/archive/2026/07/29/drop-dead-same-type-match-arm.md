@@ -1,6 +1,8 @@
 # Drop the dead same-type `case` arm from generated dispatch methods
 
-**Status:** proposed — needs go-ahead to implement (investigated 2026-07-29)
+**Status:** DONE 2026-07-29 — implemented and gate-verified (`make test` 302 passed, `check-generated`, `check-regions`, `format` all green); archived.
+
+**Outcome:** Landed exactly as planned: `dispatch_method` skips the same-type `case` arm when `cast is cast_self` (the early-out's own flag); rationale written at the skip site and in the early-out comment. Verified in the regenerated diff: every Self-returning dispatch lost exactly its same-type arm; `sandwich` kept its arm; `@overload` stubs untouched; full classes unaffected (different emitter). Stale descriptions in `tasks/reference/code-generator-architecture.md` (header-emitted `_coerce`; "falls through to the `case T()` arm") were corrected in the same change.
 
 ## The duplication (verified in generated source)
 
@@ -64,5 +66,5 @@ gate on the same `cast is cast_self` flag that already gates the early-out.
 
 ## Related
 
-`tasks/extract-generated-coerce.md` — the other generator-output cleanup
+`tasks/archive/2026/07/29/extract-generated-coerce.md` — the other generator-output cleanup (also DONE)
 (shared `_coerce`); independent changes, but naturally reviewed together.

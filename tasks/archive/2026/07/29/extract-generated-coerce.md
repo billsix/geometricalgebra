@@ -1,6 +1,8 @@
 # Extract the generated `_coerce` helper to `base.py`
 
-**Status:** proposed — needs go-ahead to implement (investigated 2026-07-29)
+**Status:** DONE 2026-07-29 — implemented and gate-verified (`make test` 302 passed, `check-generated`, `check-regions`, `format` all green); archived.
+
+**Outcome:** Landed exactly as planned: `_coerce` moved verbatim to `base.py` (docstring extended to say it is the shared widen-fallback helper the generated modules import), header template emits the import instead of the definition. Stale descriptions in `tasks/reference/code-generator-architecture.md` (header-emitted `_coerce`; "falls through to the `case T()` arm") were corrected in the same change.
 
 ## Facts (verified)
 

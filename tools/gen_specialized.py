@@ -1040,6 +1040,14 @@ def dispatch_method(
         )
     rhs_spec: TypeSpec
     for rhs_spec in [scalar_spec(n), *graded_specs(n)]:
+        # The same-type arm is NOT emitted when the exact-type early-out (#1
+        # below, cast_self only) already covers it: the classes are
+        # @typing.final, so no legal subtype can reach a ``case T()`` the
+        # ``type(x) is T`` check missed -- the arm would be dead code repeating
+        # the closed form.  A finality-violating runtime subclass falls to
+        # ``case _`` and widens via ``_coerce`` -- correct, just not narrow.
+        if cast is cast_self and rhs_spec == self_spec:
+            continue
         result_spec: TypeSpec
         out_exprs: list[sympy.Expr]
         result_spec, out_exprs = product_result(
@@ -1090,10 +1098,11 @@ def dispatch_method(
     # #1: exact-type early-out.  The dominant operand (measured across the CtC + mvp
     # workloads) is the SAME concrete type as ``self``; a single ``type(x) is T``
     # identity check reaches the closed form without walking the ``match`` ladder.
-    # A *subtype* (for which ``type(x) is T`` is False) still falls through to the
-    # ``case T()`` arm below, so subclass preservation is unchanged.  Only for the
-    # Self-returning ops -- NOT the operand-typed sandwich (cast_operand), where the
-    # same-type operand is rare so the extra check would not pay for itself.
+    # It fully replaces the same-type ``case T()`` arm (skipped in the loop above):
+    # the classes are @typing.final, so nothing legal can be isinstance-T without
+    # being exactly T.  Only for the Self-returning ops -- NOT the operand-typed
+    # sandwich (cast_operand), where the same-type operand is rare so the extra
+    # check would not pay for itself (its match keeps the same-type arm).
     if cast is cast_self:
         st_spec: TypeSpec
         st_exprs: list[sympy.Expr]
@@ -2530,17 +2539,8 @@ from collections.abc import Generator
 import numpy as np
 import sympy
 
-from gacalc.base import MultiVectorBase, BladeCoef, Coef{operand_import}
+from gacalc.base import MultiVectorBase, BladeCoef, Coef, _coerce{operand_import}
 from gacalc.gn import Gn
-
-
-def _coerce(x: MultiVectorBase | Coef, cls: type[MultiVectorBase]) -> MultiVectorBase:
-    \"\"\"Coerce a scalar or multivector to ``cls`` (the full type).\"\"\"
-    if isinstance(x, MultiVectorBase):
-        return cls.from_blade_dict(x.to_blade_dict())
-    if isinstance(x, sympy.Expr):
-        return cls.from_coef(x)
-    return cls.from_scalar(x)
 """
 
 
