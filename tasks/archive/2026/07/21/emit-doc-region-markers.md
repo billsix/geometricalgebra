@@ -66,11 +66,14 @@ indents the statement correctly wherever it sits, so nesting inside classes and 
 handled for free.
 
 ```python
-def marker(text):                       # in astbuild
+def marker(text):  # in astbuild
     return ast.Expr(ast.Constant(f"@@{text}@@"))
 
+
 # after module_source(...):
-src = re.sub(r"""^(\s*)(?:'|\"\"\")@@(.*?)@@(?:'|\"\"\")$""", r"\1# \2", src, flags=re.M)
+src = re.sub(
+    r"""^(\s*)(?:'|\"\"\")@@(.*?)@@(?:'|\"\"\")$""", r"\1# \2", src, flags=re.M
+)
 ```
 
 Verified output:
@@ -79,7 +82,7 @@ Verified output:
 def magnitude(self):
     """The magnitude |A|.
 
-Copied from MultiVectorBase."""
+    Copied from MultiVectorBase."""
     # doc-region-end magnitude signature
     return x
     # doc-region-end magnitude body
@@ -121,6 +124,8 @@ on the same line:**
 ```python
 # doc-region-begin 2a54c6adf844  gacalc g2 Vector2.magnitude sig
 def magnitude(self): ...
+
+
 # doc-region-end 2a54c6adf844  gacalc g2 Vector2.magnitude sig
 ```
 

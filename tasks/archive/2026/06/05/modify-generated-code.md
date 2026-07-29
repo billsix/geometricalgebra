@@ -13,23 +13,27 @@ roughly lexicographic by symbol name and reads oddly (e.g. `e_12` sorts before `
 the `scalar` component currently generates:
 
 ```python
-scalar=(
-    self.e_1 * rhs.e_1
-    - self.e_12 * rhs.e_12
-    + self.e_2 * rhs.e_2
-    + self.scalar * rhs.scalar
-),
+scalar = (
+    (
+        self.e_1 * rhs.e_1
+        - self.e_12 * rhs.e_12
+        + self.e_2 * rhs.e_2
+        + self.scalar * rhs.scalar
+    ),
+)
 ```
 
 and we'd prefer grade-ordered:
 
 ```python
-scalar=(
-    self.scalar * rhs.scalar      # grade 0
-    + self.e_1 * rhs.e_1          # grade 1
-    + self.e_2 * rhs.e_2
-    - self.e_12 * rhs.e_12        # grade 2
-),
+scalar = (
+    (
+        self.scalar * rhs.scalar  # grade 0
+        + self.e_1 * rhs.e_1  # grade 1
+        + self.e_2 * rhs.e_2
+        - self.e_12 * rhs.e_12  # grade 2
+    ),
+)
 ```
 
 This is purely a readability/presentation change to the generated source — it must not alter the

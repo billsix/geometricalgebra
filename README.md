@@ -37,13 +37,13 @@ Import just the algebra you need:
 from gacalc.g2 import G2, e_1, e_2
 
 a = 3 * e_1 + 4 * e_2
-a.magnitude_squared()   # 25  (a vector squared is its magnitude squared)
-a * a == G2.from_scalar(25)   # True
-e_1 * e_2               # the unit bivector e_12
-a.dual()                # the dual; n defaults to this algebra's dimension (2)
-a.coefficient(e_1)      # 3   (the stored coefficient on a unit blade — a thin
-                        #      reader over to_blade_dict; any grade, e.g.
-                        #      B.coefficient(e_1 ^ e_2))
+a.magnitude_squared()  # 25  (a vector squared is its magnitude squared)
+a * a == G2.from_scalar(25)  # True
+e_1 * e_2  # the unit bivector e_12
+a.dual()  # the dual; n defaults to this algebra's dimension (2)
+a.coefficient(e_1)  # 3   (the stored coefficient on a unit blade — a thin
+#      reader over to_blade_dict; any grade, e.g.
+#      B.coefficient(e_1 ^ e_2))
 ```
 
 Each `g*` module exports its own basis constants (`zero`, `one`, `e_1`, …, and the
@@ -76,11 +76,15 @@ from gacalc.g2 import Vector2
 
 a, b = 3 * Vector2.e_1 + 4 * Vector2.e_2, 1 * Vector2.e_1 + 2 * Vector2.e_2
 
-type(a * b)               # Rotor2     (a·b scalar  +  a∧b bivector)
-type(a ^ b)               # Bivector2  (the wedge — ask for a blade with ^)
+type(a * b)  # Rotor2     (a·b scalar  +  a∧b bivector)
+type(a ^ b)  # Bivector2  (the wedge — ask for a blade with ^)
 type(a.inner_product(b))  # Scalar2
-type(a < (a ^ b))         # Vector2   left contraction  a ⌋ B  (grade m−k; a.left_contraction(B))
-type((a ^ b) > a)         # Vector2   right contraction B ⌊ a  (grade k−m; B.right_contraction(a))
+type(
+    a < (a ^ b)
+)  # Vector2   left contraction  a ⌋ B  (grade m−k; a.left_contraction(B))
+type(
+    (a ^ b) > a
+)  # Vector2   right contraction B ⌊ a  (grade k−m; B.right_contraction(a))
 ```
 
 The contractions follow M.D. Taylor, *An Introduction to Geometric Algebra and Geometric Calculus*
@@ -142,7 +146,7 @@ one-line edit — no new math by hand.
        (1, "G1", "g1.py"),
        (2, "G2", "g2.py"),
        (3, "G3", "g3.py"),
-       (4, "G4", "g4.py"),   # <-- (dimension, class name, output file)
+       (4, "G4", "g4.py"),  # <-- (dimension, class name, output file)
    ]
    ```
 

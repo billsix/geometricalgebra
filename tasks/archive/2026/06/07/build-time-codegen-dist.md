@@ -167,11 +167,13 @@ import subprocess, sys, pathlib
 GEN = ["scalar.py", "g1.py", "g2.py", "g3.py"]
 PKG = pathlib.Path("src/geometricalgebra")
 
+
 class build_py_with_codegen(build_py):
     def run(self):
         if not all((PKG / f).exists() for f in GEN):
             subprocess.run([sys.executable, "tools/gen_specialized.py"], check=True)
         super().run()
+
 
 if __name__ == "__main__":
     setup(cmdclass={"build_py": build_py_with_codegen})

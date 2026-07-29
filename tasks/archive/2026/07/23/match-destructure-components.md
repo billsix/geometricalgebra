@@ -43,8 +43,11 @@ rhs's coefficient fields by attribute in the arm body:
 ```python
 match rhs:
     case Vector2():
-        return Rotor2(coeff_scalar=self.coeff_e_1 * rhs.coeff_e_1 + self.coeff_e_2 * rhs.coeff_e_2,
-                      coeff_e_12=self.coeff_e_1 * rhs.coeff_e_2 - self.coeff_e_2 * rhs.coeff_e_1)
+        return Rotor2(
+            coeff_scalar=self.coeff_e_1 * rhs.coeff_e_1
+            + self.coeff_e_2 * rhs.coeff_e_2,
+            coeff_e_12=self.coeff_e_1 * rhs.coeff_e_2 - self.coeff_e_2 * rhs.coeff_e_1,
+        )
 ```
 
 (The generator builds these via `dispatch_method` / `_match_class`, which emits a **class pattern with
@@ -54,8 +57,10 @@ no sub-patterns** — `tools/gen_specialized.py:1012-1016`, `:1075`.) Investigat
 ```python
 match rhs:
     case Vector2(coeff_e_1=b1, coeff_e_2=b2):
-        return Rotor2(coeff_scalar=self.coeff_e_1 * b1 + self.coeff_e_2 * b2,
-                      coeff_e_12=self.coeff_e_1 * b2 - self.coeff_e_2 * b1)
+        return Rotor2(
+            coeff_scalar=self.coeff_e_1 * b1 + self.coeff_e_2 * b2,
+            coeff_e_12=self.coeff_e_1 * b2 - self.coeff_e_2 * b1,
+        )
 ```
 
 so the arm reads in terms of `b1`/`b2` instead of `rhs.coeff_e_1`/`rhs.coeff_e_2`.

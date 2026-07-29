@@ -53,7 +53,7 @@ output** (column convention, translation last, homogeneous row):
 # each linear column: the basis image's coords + 0 in the homogeneous row
 cols = [[coord(lc, j) for j in range(n)] + [0] for lc in linear_cols]
 trans_col = [coord(f0, j) for j in range(n)] + [1]
-columns = cols + [trans_col]                         # n linear cols + translation col
+columns = cols + [trans_col]  # n linear cols + translation col
 # sympy: Matrix.hstack(*[Matrix(c) for c in columns]); numpy: np.array(columns).T
 ```
 

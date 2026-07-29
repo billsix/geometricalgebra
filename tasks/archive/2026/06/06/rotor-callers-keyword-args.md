@@ -17,7 +17,7 @@ and `rotate(from_vector, to_vector)`. The only problem is that some **call sites
 positionally**, which hides which argument is the "from" and which is the "to":
 
 ```python
-R = MultiVector.rotor_from_vectors(e_1, to)          # which is which?
+R = MultiVector.rotor_from_vectors(e_1, to)  # which is which?
 ```
 
 Fix: call them with **keyword arguments**, so the geometry reads off the call:

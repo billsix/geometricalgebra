@@ -51,8 +51,9 @@ the **numerator expanded but the denominator left factored**.
 
 ```python
 df_latex = df.map(
-    lambda x: blade_dict_latex(x.expanded().to_blade_dict())
-              if hasattr(x, "expanded") else x
+    lambda x: (
+        blade_dict_latex(x.expanded().to_blade_dict()) if hasattr(x, "expanded") else x
+    )
 )
 ...
 display(Math("$" + blade_dict_latex((a * b).expanded().to_blade_dict()) + "$"))
@@ -68,9 +69,11 @@ Per-coefficient "expand the numerator, keep the denominator":
 
 ```python
 import sympy
+
+
 def _expand_numer(c):
-    n, d = sympy.fraction(sympy.together(c))   # split into num / den
-    return sympy.expand(n) / d                  # expand only the numerator
+    n, d = sympy.fraction(sympy.together(c))  # split into num / den
+    return sympy.expand(n) / d  # expand only the numerator
 ```
 
 Options for wiring it in:

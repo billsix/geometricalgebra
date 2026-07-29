@@ -52,12 +52,20 @@ All of these are emitted as overrides that forward to `super()` with the fixed d
 ```python
 def dual(self, n: int | None = None) -> typing.Self:
     return super().dual(self.DIMENSION if n is None else n)
+
+
 def unit_pseudoscalar(cls, n: int | None = None) -> typing.Self:
     return super().unit_pseudoscalar(cls.DIMENSION if n is None else n)
+
+
 def unit_pseudoscalar_squared(cls, n: int | None = None) -> typing.Self:
     return super().unit_pseudoscalar_squared(cls.DIMENSION if n is None else n)
+
+
 def bases(cls, n: int | None = None) -> Generator[typing.Self]:
     return super().bases(cls.DIMENSION if n is None else n)
+
+
 def symbolic_multivector(cls, n=None, prefix=...) -> typing.Self:
     return super().symbolic_multivector(cls.DIMENSION if n is None else n, prefix)
 ```

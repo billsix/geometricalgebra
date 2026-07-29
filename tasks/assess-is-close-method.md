@@ -14,8 +14,14 @@ with a field-wise `np.isclose` fast path and fall back to `super().is_close` for
 ```python
 def is_close(self, other):
     left, right = self.to_blade_dict(), other.to_blade_dict()
-    return all([np.isclose(float(left.get(b,0)), float(right.get(b,0)),
-                           rtol=1e-5, atol=1e-5) for b in left.keys() | right.keys()])
+    return all(
+        [
+            np.isclose(
+                float(left.get(b, 0)), float(right.get(b, 0)), rtol=1e-5, atol=1e-5
+            )
+            for b in left.keys() | right.keys()
+        ]
+    )
 ```
 
 The intent is sound and the union-with-0 handling is correct.

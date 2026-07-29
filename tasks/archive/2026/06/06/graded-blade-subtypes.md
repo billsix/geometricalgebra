@@ -89,10 +89,14 @@ product table — e.g.:
 ```python
 def __mul__(self, rhs):
     match rhs:
-        case Vector3():    ...   # -> Rotor3   (scalar + bivector)
-        case Bivector3():  ...   # -> Odd3 / G3
-        case Trivector3(): ...   # -> Bivector3 (a dual)
-        case _:            ...   # coerce to Gn
+        case Vector3():
+            ...  # -> Rotor3   (scalar + bivector)
+        case Bivector3():
+            ...  # -> Odd3 / G3
+        case Trivector3():
+            ...  # -> Bivector3 (a dual)
+        case _:
+            ...  # coerce to Gn
 ```
 
 Binary ops need genuine double dispatch; the generator emits the T1×T2 table (no runtime

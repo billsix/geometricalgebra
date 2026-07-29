@@ -387,7 +387,12 @@ or the generator.
 **Add a new algebra (𝒢₄).** One-line edit: append to `ALGEBRAS` (`gen_specialized.py:2227`):
 
 ```python
-ALGEBRAS = [(1, "G1", "g1.py"), (2, "G2", "g2.py"), (3, "G3", "g3.py"), (4, "G4", "g4.py")]
+ALGEBRAS = [
+    (1, "G1", "g1.py"),
+    (2, "G2", "g2.py"),
+    (3, "G3", "g3.py"),
+    (4, "G4", "g4.py"),
+]
 ```
 
 Then `make generate`. Everything else is derived: `blades_for_dim(4)` yields the 2⁴=16 blades,

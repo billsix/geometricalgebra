@@ -46,16 +46,31 @@ def inner_product_of_homogenous_multivectors(lhs, rhs) -> MultiVectorBase:
     assert lhs.is_homogeneous_of_grade_r(left_grade)
     assert rhs.is_homogeneous_of_grade_r(right_grade)
     return (lhs * rhs).r_vector_part(abs(left_grade - right_grade))
-inner = sum([inner_product_of_homogenous_multivectors(self.r_vector_part(lg), rhs.r_vector_part(rg))
-             for lg, rg in itertools.product(self.grades(), rhs.grades()) if lg > 0 and rg > 0], ...)
+
+
+inner = sum(
+    [
+        inner_product_of_homogenous_multivectors(
+            self.r_vector_part(lg), rhs.r_vector_part(rg)
+        )
+        for lg, rg in itertools.product(self.grades(), rhs.grades())
+        if lg > 0 and rg > 0
+    ],
+    ...,
+)
 ```
 
 The two newer contractions `left_contraction`/`right_contraction` (`base.py:415`, `:439`) are instead
 a **flat** sum-comprehension with **no nested helper and no assert**:
 
 ```python
-return sum([(self.r_vector_part(k) * rhs.r_vector_part(m)).r_vector_part(m - k)
-            for k, m in itertools.product(self.grades(), rhs.grades())], start=type(self).zero())
+return sum(
+    [
+        (self.r_vector_part(k) * rhs.r_vector_part(m)).r_vector_part(m - k)
+        for k, m in itertools.product(self.grades(), rhs.grades())
+    ],
+    start=type(self).zero(),
+)
 ```
 
 **Bill's belief:** the same homogeneous-grade `assert` applies to the contractions too, and they
