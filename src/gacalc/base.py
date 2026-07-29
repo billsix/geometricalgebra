@@ -917,6 +917,80 @@ class MultiVectorBase(abc.ABC):
         conjugated: MultiVectorBase = self * x * self.inverse()
         return type(x).from_blade_dict(conjugated.to_blade_dict())
 
+    def exp(self) -> MultiVectorBase:
+        r"""Exponential  e^A  =  Σ Aᵏ/k!  — defined here when A² is a scalar:
+        for a scalar, or for a simple (homogeneous) blade, where the Euclidean
+        signature closes the series in one trig identity.
+
+        For a grade-r blade,  A² = (−1)^(r(r−1)/2) |A|²  — the *sign of the
+        square is decided by the grade*, never by inspecting a (possibly
+        symbolic) coefficient, so no branch hint is ever needed (galgebra's
+        ``hint`` parameter exists only for signatures this library doesn't
+        have).  The series then sums to:
+
+        * scalar ``s``                              →  e^s
+        * A² < 0  (a bivector; the 𝒢₃ pseudoscalar) →  cos|A| + sin|A| Â
+        * A² > 0  (a vector)                        →  cosh|A| + sinh|A| Â
+
+        The bivector case is the **exponential map onto the rotors**: for a
+        unit bivector ``i`` (an oriented plane),  ``exp(−(θ/2) i)``  is exactly
+        the half-angle rotor that ``transforms.plane_rotation`` builds — "a
+        rotor is the exponential of a bivector" — and it is automatically unit
+        (cos² + sin² = 1).  Raises ``ValueError`` when A² is not a scalar
+        (e.g. a rotor, or a non-simple bivector of 𝒢ₙ for n ≥ 4).
+
+        Follows the numeric-preservation convention of ``magnitude`` /
+        ``inverse``: float coefficients use ``math`` trig and stay float; int
+        coefficients go through sympy exactly; symbolic stays symbolic.
+
+        The result is built with *dispatching arithmetic* (``A·k + c``), never
+        ``from_blade_dict``, so a graded operand returns the resolved type
+        that can hold the scalar part (Bivector → Rotor; a Bivector cannot
+        represent its own exponential).
+
+        >>> import sympy
+        >>> from gacalc.g2 import Bivector2, Rotor2
+        >>> (0 * Bivector2.e_12).exp()
+        Rotor2(coeff_scalar=1, coeff_e_12=0)
+        >>> (0 * Bivector2.e_12).exp() == Rotor2(coeff_scalar=1)
+        True
+        >>> Bivector2.e_12.exp()
+        Rotor2(coeff_scalar=cos(1), coeff_e_12=sin(1))
+        >>> Bivector2.e_12.exp() == Rotor2.e_12 * sympy.sin(1) + sympy.cos(1)
+        True
+        >>> theta = sympy.Symbol("theta", positive=True)
+        >>> (Bivector2.e_12 * (-theta / 2)).exp()  # the half-angle rotor
+        Rotor2(coeff_scalar=cos(theta/2), coeff_e_12=-sin(theta/2))
+        >>> R = (Bivector2.e_12 * (-theta / 2)).exp()
+        >>> R == Rotor2.e_12 * -sympy.sin(theta / 2) + sympy.cos(theta / 2)
+        True
+        """
+        if self.is_scalar():
+            s: Coef = self.scalar_part()
+            exp_s: Coef = math.exp(s) if isinstance(s, float) else sympy.exp(s)
+            # zero() + exp_s routes through the dispatching add (see docstring)
+            return type(self).zero() + exp_s
+        if not self.is_r_vector() or not (self * self).is_scalar():
+            raise ValueError(
+                "exp is defined when A**2 is a scalar: a scalar or a simple "
+                f"(homogeneous) blade; got grades {sorted(self.grades())}"
+            )
+        theta: Coef = self.magnitude()
+        numeric: bool = isinstance(theta, float)
+        r: int = self.max_grade()
+        match (-1) ** ((r * (r - 1)) // 2):
+            case -1:
+                cos_t: Coef = math.cos(theta) if numeric else sympy.cos(theta)
+                sin_t: Coef = math.sin(theta) if numeric else sympy.sin(theta)
+                #   Â sin|A| + cos|A|   with   Â = A / |A|
+                return self * (sin_t / theta) + cos_t
+            case 1:
+                cosh_t: Coef = math.cosh(theta) if numeric else sympy.cosh(theta)
+                sinh_t: Coef = math.sinh(theta) if numeric else sympy.sinh(theta)
+                return self * (sinh_t / theta) + cosh_t
+            case _:
+                raise AssertionError("(-1)**k is 1 or -1; unreachable")
+
     def is_close(self, other: typing.Self) -> bool:
         left: BladeCoef = self.to_blade_dict()
         right: BladeCoef = other.to_blade_dict()

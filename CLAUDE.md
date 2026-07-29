@@ -278,6 +278,12 @@ vector) keep their names; the rule targets pure renames of things that already h
 - rotations: `transforms.projection_rotation(from, to)` / `rotor_rotation(from, to)` /
   `plane_rotation(a, b)` (free-function factories); `MultiVectorBase.rotor_from_vectors(from, to)`
   (the rotor builder) — any plane / representation
+- `mv.exp()` — exponential map, defined when `A²` is scalar (a scalar or simple blade):
+  trig for a bivector / the 𝒢₃ pseudoscalar (**exp of a bivector IS a rotor** —
+  `Bivector_n.exp() -> Rotor_n`, unit by construction), hyperbolic for a vector.  Dispatches
+  by *grade* (Euclidean makes the sign structural — no galgebra-style `hint`); built via
+  dispatching arithmetic, never `from_blade_dict`.  NOTE: `plane_rotation` deliberately does
+  NOT use it (see `tasks/reference/design-decisions.md`)
 
 ## Code generation
 
@@ -452,16 +458,19 @@ authority on all of these.
   `base.reject`:
   ```python
   def reject(cls, away_from):
-      def r(value):              # the core operation, up top
+      def r(value):  # the core operation, up top
           return value.wedge(away_from) * away_from.inverse()
 
-      def rejection(blade):      # wraps it with its LaTeX label
+      def rejection(blade):  # wraps it with its LaTeX label
           return ComposableFunction(r, latex_repr=..., linearity=Linearity.LINEAR)
 
-      match away_from:           # preconditions / dispatch below, calling in
-          case [*sequence]: return cls.reject(cls.outer_product_of_vectors(*sequence))
-          case MultiVectorBase() as vector if vector.is_vector(): return rejection(vector)
-          case _: raise ...
+      match away_from:  # preconditions / dispatch below, calling in
+          case [*sequence]:
+              return cls.reject(cls.outer_product_of_vectors(*sequence))
+          case MultiVectorBase() as vector if vector.is_vector():
+              return rejection(vector)
+          case _:
+              raise ...
   ```
   Don't chase the shape for its own sake, and **don't churn existing early-return code**;
   a cheap top-of-function `raise` on a nonsensical arg is always fine. A related lesson

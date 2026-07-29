@@ -245,6 +245,18 @@ def test_plane_of_rotation() -> None:
     assert type(plane) is Bivector3 and plane == -(gn.e_1 ^ gn.e_2)
 
 
+def test_exp_narrows_bivector_to_rotor() -> None:
+    # the exponential map onto the rotors: exp of a bivector IS a rotor, and
+    # the generated narrowing override types it that way.  It comes out unit
+    # (cos^2 + sin^2 = 1) without normalizing.
+    r2: Rotor2 = Bivector2.e_12.exp()
+    assert type(r2) is Rotor2
+    assert sympy.simplify(r2.magnitude_squared()) == 1
+    r3: Rotor3 = (Vector3.e_1 ^ Vector3.e_2).exp()
+    assert type(r3) is Rotor3
+    assert sympy.simplify(r3.magnitude_squared()) == 1
+
+
 def test_scalar_type() -> None:
     s5: Scalar2 = Scalar2.from_scalar(5)
     v: Vector2 = 3 * Vector2.e_1 + 4 * Vector2.e_2

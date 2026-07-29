@@ -1,8 +1,49 @@
 # Rewrite `plane_rotation`'s rotor construction on top of `exp()`
 
-**Status:** proposed — follow-up to `tasks/exp-for-rotors.md`; **blocked until
-that task lands.** (Split out deliberately per Bill's decision 2026-07-29:
-`exp` lands standalone first, this swap is its own change.)
+**Status:** investigated 2026-07-29 — **recommend DROP; awaiting Bill's
+decision.** The swap was measured against this task's own constraints and
+violates two of them (evidence below). (Split out per Bill's decision
+2026-07-29: `exp` landed standalone first; this swap was to be its own
+change.)
+
+## Findings (2026-07-29, measured in the container against the landed `exp`)
+
+The naive swap — `rotor = (plane_i * (-theta / 2)).exp()` — fails:
+
+1. **Constraint 1 (float reproduction): FAILS.** Sweeping 10,000 angles,
+   **1,096** produced rotors that are not byte-identical to the hand-built
+   `cos(θ/2) − sin(θ/2)·i` (worst delta 1.1e-16, i.e. 1 ulp). Cause: `exp`
+   computes `|A| = math.sqrt((θ/2)²)`, and `sqrt(x²)` is not exactly `|x|`
+   for ~11% of doubles.
+2. **Constraint 2 (symbolic rendered form): FAILS.** For θ declared merely
+   `real=True` (what `notebooks/displayrotations.py` and mvp's symbolic use
+   look like), the exp-built rotor renders as `cos(Abs(theta)/2)` /
+   `-theta*sin(Abs(theta)/2)/Abs(theta)`; a no-assumptions symbol is worse
+   (`sqrt(theta**2)` everywhere). Only a `positive=True` symbol collapses to
+   the clean `cos(theta/2)` form.
+
+**Why, and why it isn't fixable inside `exp`:** `plane_rotation` writes the
+closed form using two facts `exp` cannot know — the bivector it built is
+*unit* (so `|−(θ/2)i| = |θ|/2` needs no sqrt), and the half-angle's sign
+cancels by trig parity (cos even, sin·Â odd). `exp` computes `|A|` blindly,
+as it must for arbitrary input. The hand-built form is therefore not a
+"hand-built rotor" convention violation but the *better implementation*;
+the "never hand-build a rotor" rule targets user code, and the rotor
+*definition* inside the library was already its documented exemption.
+
+**What guards equivalence instead:** the two agreement tests landed by
+the exp task (archived: `tasks/archive/2026/07/29/exp-for-rotors.md`)
+(`tests/test_exp.py::test_exp_agrees_with_plane_rotation_
+{numeric,symbolic}`) pin `exp((−θ/2)i)` ≡ the `plane_rotation` rotor
+(is_close for floats; exact form for a positive symbol), so a future
+regression in either construction fails the suite.
+
+**Recommendation: drop this task** (keep `plane_rotation` as-is), recording
+the reason here. Needs Bill's explicit say-so to drop.
+
+---
+
+*Original goal and constraints, kept for the record:*
 
 ## Goal
 

@@ -174,9 +174,7 @@ def inject_region_markers(body: list[ast.stmt]) -> list[ast.stmt]:
         member: ast.stmt
         for i, member in enumerate(node.body):
             if i == first_classvar:
-                new_body.append(
-                    marker(f"doc-region-begin {node.name} cls variables")
-                )
+                new_body.append(marker(f"doc-region-begin {node.name} cls variables"))
             if i == first_field:
                 new_body.append(
                     marker(f"doc-region-begin {node.name} instance variables")
@@ -190,9 +188,7 @@ def inject_region_markers(body: list[ast.stmt]) -> list[ast.stmt]:
                 # non-methods and @overload stubs: emitted without a region
                 new_body.append(member)
             if i == last_classvar:
-                new_body.append(
-                    marker(f"doc-region-end {node.name} cls variables")
-                )
+                new_body.append(marker(f"doc-region-end {node.name} cls variables"))
             if i == last_field:
                 new_body.append(
                     marker(f"doc-region-end {node.name} instance variables")

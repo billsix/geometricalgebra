@@ -45,9 +45,10 @@
 # %%
 import sympy
 
+from gacalc.g2 import Bivector2, Rotor2, Vector2
 from gacalc.gn import Gn, e_1, e_2, e_3, projection_rotation
 from gacalc.nbplotutils import show_mult
-from gacalc.transforms import ComposableFunction
+from gacalc.transforms import ComposableFunction, plane_rotation
 
 
 def simplified(mv: Gn) -> Gn:
@@ -231,3 +232,36 @@ result  # pyright: ignore[reportUnusedExpression]
 
 # %%
 (result * abs(a)).simplified() == (a ^ b).dual(n=3)
+
+# %% [markdown]
+# A rotor is the exponential of a bivector
+# ========================================
+#
+# There is a third way to write the same rotation: the **exponential map**.
+# A unit bivector $i$ squares to $-1$, so the power series
+# $e^{A} = \sum A^k / k!$ closes into trig — for the scaled plane
+# $A = -(\theta/2)\, i$ it sums to exactly the half-angle rotor:
+#
+# $$ e^{-(\theta/2)\, i} \;=\; \cos(\theta/2) \;-\; \sin(\theta/2)\, i $$
+#
+# The angle here is declared *positive*: `exp` computes $|A| = \sqrt{\theta^2}/2$,
+# which collapses to $\theta/2$ only once sympy knows the sign.
+
+# %%
+phi = sympy.symbols("phi", positive=True)
+
+i: Bivector2 = Bivector2.e_12
+R_exp: Rotor2 = (i * (-phi / 2)).exp()
+R_exp  # pyright: ignore[reportUnusedExpression]
+
+# %% [markdown]
+# Note the *type*: exponentiating a `Bivector2` lands in `Rotor2` — the
+# exponential map carries the plane onto the rotor group, and the graded types
+# say so.  The rotor is automatically unit ($\cos^2 + \sin^2 = 1$), and its
+# sandwich agrees with the rotation `plane_rotation` builds from the same
+# plane and angle:
+
+# %%
+f = plane_rotation(Vector2.e_1, Vector2.e_2)(phi)
+v_exp: Vector2 = v1 * Vector2.e_1 + v2 * Vector2.e_2
+R_exp.sandwich(v_exp) == f(v_exp)

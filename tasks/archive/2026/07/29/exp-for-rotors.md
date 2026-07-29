@@ -1,7 +1,34 @@
 # `exp()` — the exponential map, so `exp(bivector)` is a rotor
 
-**Status:** design settled 2026-07-29 (Bill's decisions recorded below) — ready
-to implement on go-ahead.
+**Status:** DONE 2026-07-29 — implemented, all four gates green, archived.
+
+## Outcome
+
+Landed as designed: `MultiVectorBase.exp()` in `base.py` (grade-structural
+dispatch, no `hint`; dispatching-add construction; numeric preservation;
+doctests showing both the returned values and the equalities), generated
+narrowing overrides `Bivector_n.exp() -> Rotor_n` in
+`tools/gen_specialized.py`, tests in `test_conformance.py::test_exp`,
+`test_graded.py::test_exp_narrows_bivector_to_rotor`, and `tests/test_exp.py`
+(properties + the two plane_rotation agreement gates), plus an exp-map section
+in `notebooks/displayrotations.py`.
+
+**Bonus fix uncovered en route:** the generated full classes' `__add__` /
+`__sub__` crashed on a bare number/`sympy.Expr` (`G2.from_scalar(1) + 2` →
+AttributeError), violating `MultiVectorBase.__add__`'s documented contract;
+the `linear` emitter now normalizes a Coef rhs via `from_coef` first.
+
+Gates: `make test` (304 passed), `make check-generated`, `make check-regions`,
+`make format` (ruff + ty clean) — all PASSED 2026-07-29.
+
+Durable rationale harvested to `tasks/reference/design-decisions.md` › "exp()
+dispatches by grade structure" and "`plane_rotation` builds its rotor by
+hand-written trig ON PURPOSE". The follow-up swap investigation concluded
+**against** the swap — see `tasks/plane-rotation-via-exp.md`.
+
+---
+
+*Original design record below.*
 
 Promoted from **row 1 of the gap analysis** in
 `tasks/reference/galgebra-comparison.md` ("exp / log of rotors & multivectors",

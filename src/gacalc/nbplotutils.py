@@ -128,8 +128,7 @@ def _current_axes() -> Axes:
         return _axes.get()
     except LookupError:
         raise RuntimeError(
-            "no active figure -- call this inside a "
-            "`with create_graphs():` block"
+            "no active figure -- call this inside a `with create_graphs():` block"
         ) from None
 
 
