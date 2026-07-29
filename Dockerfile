@@ -104,7 +104,8 @@ COPY tools /gacalc/tools
 # generates the algebras if missing. (This layer re-runs when src/ changes, so the
 # notebook/jupyter deps reinstall then -- uv's cache keeps that fast.)
 RUN export VIRTUAL_ENV_DISABLE_PROMPT=1 && source /venv/bin/activate && \
-    cd /gacalc && uv pip install --python $(which python) --no-build-isolation ".[dev,notebooks,jupyter]"
+    cd /gacalc && uv pip install --python $(which python) --no-build-isolation ".[dev,notebooks,jupyter]" && \
+    jupytext-config set-default-viewer python
 
 
 ENTRYPOINT ["/entrypoint.sh"]
