@@ -130,7 +130,7 @@ Consequences galgebra gets "for free" from the general metric, all **absent in g
   - **PGA** = a degenerate metric (`g=[0,1,1,1]`); galgebra even flags a null pseudoscalar
     (`sing_flg`) instead of erroring.
   gacalc's hardcoded `+1` blocks **all three** — this is gacalc's own Open Issue #1, and
-  it is the single change that would unlock the most.
+  it is the single change that would open up the most.
 - **Dual with metric + convention:** `Ga.dual_mode()` offers 8 sign conventions and
   computes `I² = (−1)^{n(n−1)/2}·det(g)`. gacalc has a fixed Euclidean `dual()` only.
 
@@ -158,7 +158,7 @@ This is the "cheap wins" bucket. galgebra's `Mv` delegates product *definitions*
   settled 2026-07-22 — Hestenes for `inner_product`, no second dot:
   `tasks/archive/2026/07/22/investigate-dot-product-grade-0.md`).
 - **Commutator** `½(AB−BA)` and **anticommutator** `½(AB+BA)` — one-liners; the commutator
-  is how bivectors generate rotations, so it's genuinely pedagogical.
+  is how bivectors generate rotations, so it teaches something real.
 - **Grade involution / main involution** (`g_invol`, negate odd grades) and **Clifford
   conjugation** (`ccon` = reverse ∘ grade-involution). gacalc has `reverse` but not these
   two of the three standard involutions.
@@ -186,7 +186,7 @@ This is the "cheap wins" bucket. galgebra's `Mv` delegates product *definitions*
 
 **C. Symbolic-ergonomics helpers (gacalc is sympy-based, so these are natural):**
 - **`Mv.subs(...)`** — symbolic substitution per coefficient (gacalc has none; you'd rebuild
-  by hand). Genuinely missing given gacalc's symbolic focus.
+  by hand). A real gap, given gacalc's symbolic focus.
 - **`trigsimp()`** and **`func(fct)`** (apply an arbitrary fn to each coefficient — gacalc
   has a *private* `_map_coefficients` but exposes no public `func`). gacalc already has
   `simplified()`/`expanded()`.
@@ -228,7 +228,7 @@ product* yields divergence and curl at once — is spelled by choice of product:
 - divergence: `ga.grad | F`   · curl: `ga.grad ^ F`   · Laplacian: `ga.grad * ga.grad`
 - directional derivative a·∇: `(a | ga.grad) * F`; derivative w.r.t. a multivector variable:
   `ga.make_grad(a)`
-- left- vs right-acting operators (`ga.grad` / `ga.rgrad`, the `cmpflg`) — a genuinely
+- left- vs right-acting operators (`ga.grad` / `ga.rgrad`, the `cmpflg`) — a purely
   GA-specific concern (∇ on the left vs right of a product differs) with no scalar-calculus
   counterpart.
 Fields are multivectors whose coefficients are **sympy functions of the coords**, so
@@ -264,7 +264,7 @@ what makes these **coordinate-free and blade-aware**:
 **Sequencing note for Bill:** 3b (outermorphism/`Lt`) is buildable on a *Euclidean* algebra
 and does **not** strictly require lifting the signature — an outermorphism over `G3` with
 det/adjoint/trace is a self-contained, high-value addition and arguably the best "big" next
-step. 3a (∇) genuinely needs coordinates + reciprocal frame first, so it's downstream of
+step. 3a (∇) needs coordinates + reciprocal frame first, so it's downstream of
 Finding 1's machinery even if you stay Euclidean.
 
 ## Finding 4 — Presentation, packaging & maturity (mostly not algebra — read for what's worth copying)

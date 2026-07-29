@@ -7,7 +7,7 @@ the **whole `Rotor` conjugation family** via `dispatch_method`, not just
 `Rotor·Vector` — so `Rotor3.sandwich(Bivector3) → Bivector3`,
 `Rotor3.sandwich(Trivector3) → Trivector3` (pseudoscalar invariance),
 `Rotor3.sandwich(Rotor3) → Rotor3`, etc. are **already done and tested**. What
-remains genuinely future:
+remains really is future work:
 
 - **Vector-as-versor reflections** (`v X v⁻¹`, an improper versor) — orientation
   / sign conventions to settle. Not generated (only the even `Rotor` class gets a

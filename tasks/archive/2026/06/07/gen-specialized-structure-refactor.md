@@ -58,7 +58,7 @@ Builder-naming convention settled so a name predicts its return type:
   (asserting every node is covered, so nothing was dropped). Pure movement — output unchanged.
 - **#3 — extracted the `generate_class` / `generate_graded_type` duplication** into
   `class_header(doc, n, blades)`, `is_close_method(name, fields)`, `iter_method(name, blades)`,
-  `grades_method(grade_groups)`. Both generators now call them; the parts that genuinely differ
+  `grades_method(grade_groups)`. Both generators now call them; the parts that actually differ
   (products / dispatch) stand out.
 - **#4 — added `return_construct(name, pairs)`** for the direct `return cast(Self, Name(...))` idiom and
   used it (graded `reverse`, the `r_vector_part` fallthrough, …). The with-a-`result`-local variant
@@ -149,7 +149,7 @@ The reading order is jumbled — note where `generate_scalar` and the helper gro
    - `iter_method(name, blades)` — identical (per-blade `if self.f != 0: yield Name(f=self.f)`).
    - `grades_method(grade_groups)` — same shape; the *grade set* differs (`generate_class` covers
      grades `0..n`, graded covers only present grades), so pass the grouping in.
-   This shortens both generators and makes the part that genuinely differs (the products / dispatch)
+   This shortens both generators and makes the part that differs (the products / dispatch)
    stand out. NB: `reverse` differs in output (full class emits a `result =` local; graded returns the
    `cast` directly) — keep two variants or parametrize, don't force-merge.
 
@@ -184,7 +184,7 @@ The reading order is jumbled — note where `generate_scalar` and the helper gro
 ### Explicitly NOT changing
 
 - The value-policy split (`summed_value`/`result_value`/`unary_value`) — it faithfully mirrors three
-  genuinely-different cast/term-order policies from the original; merging would lose fidelity (and break
+  different cast/term-order policies from the original; merging would lose fidelity (and break
   byte-identity).
 - `expr_to_ast` + `SymbolToAttr` — clean as is.
 - The `TypeSpec`/`resolve` registry — solid domain logic, untouched by the rewrite.

@@ -37,7 +37,7 @@
 # return type**: two vectors multiply to a *rotor* (scalar + bivector), their
 # wedge is a *bivector*, and so on.
 #
-# Crucially the return type is decided by the *operation*, derived symbolically
+# The return type is decided by the *operation*, derived symbolically
 # when the classes are generated — never by inspecting (possibly float-fuzzy)
 # coefficients. So if you want a pure blade you *ask* for it (with `^`), and a
 # product that happens to come out with a zero component still has the type its

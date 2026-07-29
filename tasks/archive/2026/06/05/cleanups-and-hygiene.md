@@ -35,7 +35,7 @@ Verified after edits: `bash entrypoint/format.sh` (ruff + ty clean) and `python 
   fails headless and has no doctests). Bare `python -m pytest` → **124 passed**.
 - **format.sh: emacs tree excluded via config.** Added `extend-exclude = ["entrypoint"]` to
   `pyproject.toml [tool.ruff]` — both `ruff check` and `ruff format` (and editor integrations) skip
-  the vendored tree no matter how invoked, more robust than a CLI flag (note: `ruff format` does
+  the vendored tree no matter how invoked — a CLI flag covers only one entry point (note: `ruff format` does
   **not** accept `--extend-exclude` on the CLI, only `ruff check` does). `format.sh` stays plain
   `ruff check . --fix` / `ruff format` with a pointer comment. Confirmed it no longer touches any
   `entrypoint/` file.

@@ -91,7 +91,7 @@ cells, anything using `e_3`/`e_4`.
 ## Open questions
 
 - **Do Tier 2 at all?** Given the plots look identical in `Gn` vs `G2`, is the purity worth
-  generalizing ~6 helper functions? (Tier 1 alone already showcases `G2` transforms.) My lean: do
+  generalizing ~6 helper functions? (Tier 1 alone already exercises `G2` transforms.) My lean: do
   Tier 1 now; treat Tier 2 as optional/later.
 - If Tier 2: parameterize helpers by a `cls` argument, by explicit basis vectors, or by reading the
   type off the passed `fn`'s output? (Leaning: an optional `cls`/`basis` kwarg defaulting to `Gn`.)

@@ -328,7 +328,7 @@ def cast_operand(value: ast.expr) -> ast.Call:
 def cast_coef(value: ast.expr) -> ast.expr:
     # A bare field (``self.coeff_x``) or a negated field (``-self.coeff_x``) is
     # already of type ``Coef``, so casting it is redundant (ty warns).  Only wrap
-    # genuinely compound expressions (sums, products, ``d.get(...)``, literals).
+    # compound expressions (sums, products, ``d.get(...)``, literals).
     if isinstance(value, (ast.Name, ast.Attribute)):
         return value
     if (

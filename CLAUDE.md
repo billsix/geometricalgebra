@@ -152,7 +152,7 @@ to force the `ty.toml` override on the generated rotor sandwich (whose closed fo
 and squares coefficients). The generated `coeff_*` fields and the scalar-returning methods
 (`scalar_part`, `scalar_product`, `component`, `magnitude`, `magnitude_squared`, `cosine`) are all
 typed `Coef`. The generator's `cast_coef` (in `tools/astbuild.py`) skips the cast for a bare or
-negated field (already `Coef`) and only wraps genuinely compound expressions.
+negated field (already `Coef`) and only wraps compound expressions.
 
 `magnitude()` and `inverse()` **preserve numeric input.** When `|A|²` is a Python
 `float` (already inexact) they return a `float` — `math.sqrt` / a plain float
@@ -265,7 +265,7 @@ building a *target vector* at an angle, `to = cos(a)*e_1 + sin(a)*e_2`, then fee
 `E1`/`I2`/`B12`/`I3`. Every basis blade is directly referenceable as a **class constant of its grade's
 type** — `Vector2.e_1`, `Bivector2.e_12`, `Trivector3.e_123`, `Vector3.e_3`, etc. (added in this
 project; see the class-constant note above). Reference those directly instead of aliasing them.
-Genuinely *derived* values with a semantic role (a specific test multivector, a `from`/`to`/`w`
+*Derived* values with a semantic role (a specific test multivector, a `from`/`to`/`w`
 vector) keep their names; the rule targets pure renames of things that already have a canonical name.
 
 ## Operators
@@ -521,7 +521,7 @@ authority on all of these.
   current-language solution over the historical one, and **when a newer feature would
   solve a problem in code you're already touching, say so** rather than silently
   preserving the old form. `match` (structural pattern matching) is the house favourite
-  and is already load-bearing here — `Gn._geometric_product`'s `decrease_grade`,
+  and is already in live use here — `Gn._geometric_product`'s `decrease_grade`,
   `base.reject`/`reflect` — and a `case _:` is the right way to make a fall-through
   explicit instead of letting a dispatch chain silently do nothing. Also in scope when
   it fits: `X | Y` unions and builtin generics over `typing.Optional`/`Union`/`Dict`;

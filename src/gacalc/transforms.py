@@ -357,7 +357,7 @@ def plane_rotation(
     # one.  ``rotation`` picks per theta: numeric theta gets the float
     # plane (float rotors, float results); a symbolic theta keeps the
     # exact plane so notebook output stays ``cos(theta)``, not
-    # ``1.0*cos(theta)``.  A genuinely symbolic plane never coerces.
+    # ``1.0*cos(theta)``.  A purely symbolic plane never coerces.
     i_coefs: BladeCoef = i.to_blade_dict()
     i_numeric: V | None = None
     if all(

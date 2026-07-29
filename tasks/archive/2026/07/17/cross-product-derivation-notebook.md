@@ -8,7 +8,7 @@
 
 Add a cell to one of the gacalc notebooks that *builds* the 3D cross product out of
 nothing but `projection_rotation` and `project`, composed — no cross-product formula
-hand-written — starting from two symbolic 3D vectors, to showcase the composable-function
+hand-written — starting from two symbolic 3D vectors, to demonstrate the composable-function
 layer (`ComposableFunction` / `@`) shipped in gacalc 0.0.9.
 
 ## What was done

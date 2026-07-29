@@ -29,7 +29,7 @@ It **imports nothing internal** -- that is what keeps the package's core
 dependency graph acyclic and lets ``base.py`` import it (so ``project`` /
 ``reject`` can return a ``ComposableFunction``).  Consequently its type variable
 ``V`` is **unbounded** (binding it to ``MultiVectorBase`` would force this module
-to import ``base`` and reintroduce a cycle); the abstraction is genuinely
+to import ``base`` and reintroduce a cycle); the abstraction is
 domain-agnostic anyway (the doctests below run it on plain ``int``s).  See the
 "Layering" note in ``CLAUDE.md``.
 """

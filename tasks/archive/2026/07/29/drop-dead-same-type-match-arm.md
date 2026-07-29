@@ -47,7 +47,7 @@ gate on the same `cast is cast_self` flag that already gates the early-out.
   hoist the case arm first — that trades a measured decision for an
   unmeasured one).
 - `sandwich` keeps its same-type arm: it has no early-out (`cast_operand`;
-  same-type operand rare there), so the arm is load-bearing.
+  same-type operand rare there), so the arm does real work.
 - Safety net for a `@final`-violating runtime subclass: it falls to
   `case _:` → `_coerce` to `G_n` — numerically **correct**, just widened
   instead of narrowly typed. Say exactly that in the emitted early-out

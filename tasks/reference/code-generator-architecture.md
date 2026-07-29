@@ -131,7 +131,7 @@ generated ops" entry) and `tasks/archive/2026/07/23/investigate-final-full-class
   *operand's* type, not `Self`.
 - `cast_coef(v)` → `typing.cast(Coef, v)`, **except** it returns `v` unwrapped when `v` is a bare
   field (`ast.Name`/`ast.Attribute`, e.g. `self.coeff_x`) or a negated field (`-self.coeff_x`) —
-  those are already `Coef`, and casting them makes ty warn about a redundant cast. Only genuinely
+  those are already `Coef`, and casting them makes ty warn about a redundant cast. Only
   compound expressions (sums, products, `d.get(...)`, literals) get wrapped. This is why the
   generated code has `typing.cast(Coef, …)` on some fields but bare `self.coeff_e_1` on others.
 
@@ -367,7 +367,7 @@ to `# doc-region-…` comments by `module_source` (with the `declaration` end pl
 `_insert_declaration_ends` text pass). `@overload` stubs are deliberately **unmarked** (`_is_overload`)
 so they don't duplicate the implementation's `<Class> <method> method` region. Basis-constant
 assignments (`Cls.e_1 = …`, post-class) are also unmarked. Names are **descriptive and prefix-free
-by construction** — NOT SHA1 — with the trailing keyword load-bearing (Sphinx matches the first line
+by construction** — NOT SHA1 — with the trailing keyword required (Sphinx matches the first line
 *containing* the anchor, so `Vector2 magnitude` would otherwise also match `magnitude_squared`).
 
 **`check_doc_regions.py` / `make check-regions`** — regenerates first (the outputs are gitignored),

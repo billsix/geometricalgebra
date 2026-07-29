@@ -7,8 +7,8 @@
 ## Goal
 
 Create **two** new jupytext (percent-format) demo notebooks under `notebooks/` — one for the
-**specialized `G2` class** (𝒢₂) and one for **`G3`** (𝒢₃) — that showcase the specialized classes
-the way `notebooks/displaymv.py` showcases the general `MultiVector`/`Gn`. Each notebook reproduces
+**specialized `G2` class** (𝒢₂) and one for **`G3`** (𝒢₃) — that demonstrate the specialized classes
+the way `notebooks/displaymv.py` demonstrates the general `MultiVector`/`Gn`. Each notebook reproduces
 as much of `displaymv.py` as is meaningful in its dimension — basic products, dot/wedge, symbolic
 vectors, `r_vector_part`, duals, and (where applicable) the `InvertibleFunction` transforms and the
 `nbplotutils` plots — but built on `G2`/`G3` and their own basis constants (e.g.

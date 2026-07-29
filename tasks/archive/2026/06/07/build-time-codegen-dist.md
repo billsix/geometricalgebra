@@ -29,7 +29,7 @@ files on disk. Three things have changed:
    step can be made invisible — the container entrypoint can regenerate before the shell starts.
 3. **The author wants an `automake`-style `make dist`** to build the package for PyPI.
 
-Crucially, the **hard constraint from #4 still holds and is still satisfied**: a `pip install`ed
+The **hard constraint from #4 still holds and is still satisfied**: a `pip install`ed
 student must be able to **read the specialized closed-form source**. Build-time generation (#4's
 Option 3) bakes the generated `.py` into the wheel/sdist, so the installed package is fully readable —
 which is exactly why Option 3 stayed on the table while Option 2 (runtime / on-import generation, which
@@ -138,7 +138,7 @@ exec bash
 ```
 Rationale for `shell.sh` over a setuptools build hook on the editable install: the editable install uses
 `--no-build-isolation --no-deps --no-index`, so relying on a custom `build_py` to fire during `-e .` is
-fragile; an explicit line is obvious and robust. ~30s on a cold shell; if that annoys, make it
+fragile; an explicit line is obvious and hard to break. ~30s on a cold shell; if that annoys, make it
 **generate-if-missing** (`[ -f src/geometricalgebra/g3.py ] || python tools/gen_specialized.py`) — but
 note that won't pick up generator edits, so prefer unconditional during active development.
 *(The `make shell` `podman run` also needs `--cgroups=disabled` to run nested in the sandbox — separate

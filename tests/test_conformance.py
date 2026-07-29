@@ -341,8 +341,8 @@ def test_simplified_and_expanded_form(cls) -> None:
 
 def test_expand_numerators_dict_for_display() -> None:
     # nbplotutils._expand_numerators_dict (used by show_mult): expand each
-    # coefficient's NUMERATOR, keep its denominator factored, and -- crucially --
-    # do NOT rebuild the multivector, so the distributed form survives Gn's eager
+    # coefficient's NUMERATOR, keep its denominator factored, and do NOT
+    # rebuild the multivector, so the distributed form survives Gn's eager
     # __post_init__ simplify (which would otherwise re-factor it, e.g. back to
     # a0*(b0 + c0) -- the regression this fixed).
     from gacalc.nbplotutils import _expand_numerators_dict

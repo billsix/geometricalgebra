@@ -593,7 +593,7 @@ def _expand_numerators_dict(mv: MultiVectorBase) -> dict:
     """``mv``'s blade dict with each coefficient's NUMERATOR expanded and its
     denominator left factored — for display.
 
-    Crucially this does NOT rebuild the multivector: it expands the raw
+    This deliberately does NOT rebuild the multivector: it expands the raw
     ``to_blade_dict()`` coefficients in place.  That matters for the eager-simplifying
     ``Gn`` (`displaymv.py`), whose ``from_blade_dict`` re-runs ``sympy.simplify`` and
     would re-factor the just-distributed numerator (e.g. back to ``a0*(b0*c0 + ...)``).

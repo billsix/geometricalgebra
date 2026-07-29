@@ -333,7 +333,7 @@ def simplify_equal(a: MultiVectorBase, b: MultiVectorBase) -> bool:
 
     Needed where the values carry ``sqrt`` magnitudes: ``Gn.__eq__`` compares
     eager-simplified forms for identity, which can differ for equal expressions;
-    simplifying the *difference* to 0 is the robust check.
+    simplifying the *difference* to 0 is the reliable check.
     """
     da: BladeCoef
     db: BladeCoef

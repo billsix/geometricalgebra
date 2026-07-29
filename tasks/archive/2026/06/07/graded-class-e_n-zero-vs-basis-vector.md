@@ -137,7 +137,7 @@ returns.
 - [ ] `make generate` (or `python tools/gen_specialized.py`) to materialize `g2.py` etc.
 - [ ] Reproduce the shell session; confirm `e_1` is the dataclass field default.
 - [ ] Study mechanism + search for any reliance on the current behavior (codegen, tests, base ops).
-- [ ] Write up: is the current behavior load-bearing? Recommendation.
+- [ ] Write up: does anything rely on the current behavior? Recommendation.
 - [ ] **Stop for go-ahead** before changing any source/generator.
 
 ## Findings
@@ -157,7 +157,7 @@ So `e_1` is the **per-component coefficient field**, and on an *instance* it hol
 value. Class access reads the field default:
 
 ```
-instance  Vector2(e_1=5, e_2=2).e_1  →  5      # the COEFFICIENT (correct, load-bearing)
+instance  Vector2(e_1=5, e_2=2).e_1  →  5      # the COEFFICIENT (correct, relied upon)
 class     Vector2.e_1                 →  0      # the field default leaking through the class object
 ```
 

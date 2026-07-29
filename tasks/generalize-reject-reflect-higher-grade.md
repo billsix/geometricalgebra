@@ -31,7 +31,7 @@ of **any grade** (at least up to the pseudoscalar of `Gn`/`G3`).
 - [ ] Re-read p. 18 (eq 2.9) and confirm the projection/rejection split holds for an arbitrary blade B.
 - [ ] In `reject`: replace the `is_vector()` / `is_bivector()` arms with a single arm accepting any
       homogeneous blade (e.g. `away_from.is_r_vector()`), keeping the `(value.wedge(B)) * B.inverse()`
-      body. Drop the `case _:` TODO (or keep it only for genuinely non-blade inputs).
+      body. Drop the `case _:` TODO (or keep it only for non-blade inputs).
 - [ ] `reflect` is built as `project - reject`, so it should generalize for free once `reject` does —
       verify, don't assume.
 - [ ] Decide whether `assert value.is_vector()` inside the inner functions can be relaxed (does the

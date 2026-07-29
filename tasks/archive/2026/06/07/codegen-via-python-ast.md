@@ -393,7 +393,7 @@ tree state, not by stacking diffs.
 - **Parity reference durability:** the harness compares against `/tmp/ast-ref` (ephemeral). If the
   session restarts before C is done, regenerate it from the saved `/tmp/ast-ref/gen_specialized_STRING.py`
   (the original string generator) — or from the committed A state (`git show A:…` is moot since g*.py
-  are gitignored, so use the saved string generator). Worth noting since C still needs it.
+  are gitignored, so use the saved string generator). C still needs it.
 
 ## Notes / cross-refs
 
