@@ -158,11 +158,34 @@ catch-all overload). Runtime is value-identical (conformance green); the changed
 `tasks/archive/2026/07/23/reflected-operator-typing-overloads.md`. See
 `tasks/archive/2026/07/23/scalar-product-typing-overloads.md`.
 
-## Not yet done (see the archived task's follow-ups)
+## Aliases & ScalarN contractions (done 2026-08-02)
 
-- `wedge` / `dot` **aliases** still return `-> Self` — only `*`/`^`/`outer_product`/
-  `inner_product` were overloaded. Secondary; overload them the same way if wanted.
-- **`ScalarN` contractions** (`left_contraction`/`right_contraction`/`<`/`>`) are still **inherited
-  from `base`** (typed `-> Self`), so e.g. `Scalar2 < Vector2` mistypes as `Scalar2` (runtime widens).
-  Out of scope for the products task; give ScalarN its own `dispatch_method` contractions the same way
-  if wanted (a small, mechanical addition now that its arithmetic is dispatch-based).
+The two remaining gaps below are now closed. A new generator helper
+**`alias_dispatch(alias, target, …)`** (`tools/gen_specialized.py`) emits the
+precise `@overload` stubs (resolved the same as `target`) plus a one-line impl
+that *delegates* to `target` and returns `MultiVectorBase` — for the
+methods/operators that are *defined as* a delegation of a dispatched product. The
+graded generator's inline `__xor__`/`__lt__`/`__gt__` blocks were refactored onto
+it (AST-identical output — verified) and it now also emits the additions:
+
+- **`wedge` / `dot` aliases** — were inherited from `base` as `-> Self`, so
+  `Vector2.wedge(Vector2)` mistyped as `Vector2` (want `Bivector2`) and
+  `.dot` as `Vector2` (want `Scalar2`). Now overridden on **every** graded type
+  (Vector/Bivector/Trivector/Rotor **and** ScalarN): `wedge → outer_product`,
+  `dot → inner_product`, typed precisely.
+- **`ScalarN` operators** — `generate_scalar` emitted **none** of
+  `__xor__`/`__lt__`/`__gt__`/`wedge`/`dot` and no contraction dispatch, so all
+  were inherited `-> Self` (`Scalar2 < Vector2` mistyped as `Scalar2`; `Scalar2 ^
+  Vector2` as `Scalar2 | Vector2`). ScalarN now carries `left_contraction` /
+  `right_contraction` as full `dispatch_method`s and `__xor__` / `wedge` / `dot` /
+  `__lt__` / `__gt__` as `alias_dispatch` — matching the other graded types.
+  (`__xor__` was not in the original "not yet done" list but was the same gap,
+  fixed for consistency.)
+
+Now precise (guarded by `assert_type` in `tests/test_operator_typing.py`
+`test_alias_and_scalar_contraction_static_types` + a runtime companion):
+`v.wedge(v) → Bivector2`, `v.dot(v) → Scalar2`, `s ^ v → Vector2`,
+`s.wedge(v) → Vector2`, `s.dot(v) → Scalar2`, `s < v → Vector2`,
+`s > v → Scalar2`; 𝒢₃ likewise. Runtime was always correct (conformance green) —
+a static-typing fix. The full class `G_n` keeps its inherited `-> Self` aliases,
+already correct (`G2.wedge(G2) → G2`).

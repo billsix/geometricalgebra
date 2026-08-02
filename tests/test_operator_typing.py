@@ -65,6 +65,46 @@ def test_scalar_lhs_runtime_types_and_values() -> None:
     assert type(s + v) is G2  # {0} + {1} widens to the full class
 
 
+def test_alias_and_scalar_contraction_static_types() -> None:
+    # wedge / dot are precise aliases of outer_product / inner_product (they were
+    # inherited from base as -> Self); now overridden on every graded type.
+    a: Vector2 = Vector2.e_1
+    b: Vector2 = Vector2.e_2
+    typing.assert_type(a.wedge(b), Bivector2)  # was Vector2
+    typing.assert_type(a.dot(b), Scalar2)  # was Vector2
+    u: Vector3 = Vector3.e_1
+    typing.assert_type(u.wedge(Vector3.e_2), Bivector3)
+    typing.assert_type(u.dot(Vector3.e_2), Scalar3)
+    # ScalarN now overrides ^, wedge, dot, <, >, left/right_contraction too (all
+    # were inherited from base as -> Self).
+    s: Scalar2 = Scalar2(coeff_scalar=3.0)
+    v: Vector2 = Vector2.e_1
+    typing.assert_type(s ^ v, Vector2)  # scalar ^ vector -> vector (scaling)
+    typing.assert_type(s.wedge(v), Vector2)
+    typing.assert_type(s.dot(v), Scalar2)  # scalar . X == 0 (grade 0)
+    typing.assert_type(s < v, Vector2)  # left contraction: grade 1 - 0 = 1
+    typing.assert_type(s.left_contraction(v), Vector2)
+    typing.assert_type(s > v, Scalar2)  # right contraction: grade 0 - 1 < 0 -> 0
+    typing.assert_type(s.right_contraction(v), Scalar2)
+
+
+def test_alias_and_scalar_contraction_runtime() -> None:
+    a: Vector2 = Vector2.e_1
+    b: Vector2 = Vector2.e_2
+    assert type(a.wedge(b)) is Bivector2
+    assert a.wedge(b).is_close(a.outer_product(b))
+    assert type(a.dot(b)) is Scalar2
+    assert a.dot(b).is_close(a.inner_product(b))
+    s: Scalar2 = Scalar2(coeff_scalar=3.0)
+    v: Vector2 = Vector2(1.0, 2.0)
+    assert type(s ^ v) is Vector2  # scaling preserves the rhs type
+    assert (s ^ v).is_close(Vector2(3.0, 6.0))
+    assert type(s < v) is Vector2  # scalar left-contraction == scaling
+    assert (s < v).is_close(Vector2(3.0, 6.0))
+    assert type(s > v) is Scalar2  # scalar right-contraction of a vector == 0
+    assert (s > v).is_close(Scalar2(coeff_scalar=0.0))
+
+
 def test_add_sub_narrow_by_grade() -> None:
     # scalar + bivector spans grades {0, 2} -> the even/Rotor type, in either
     # order (__add__ / __radd__) and for subtraction (__sub__ / __rsub__).

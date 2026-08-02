@@ -1196,6 +1196,43 @@ def product_overload_stubs(
     return stubs
 
 
+def alias_dispatch(
+    alias: str,
+    target: str,
+    self_spec: TypeSpec,
+    gn_product: Callable[[Gn, Gn], Gn],
+    n: int,
+    full_name: str,
+    param_name: str = "rhs",
+) -> list[ast.stmt]:
+    """A precise-typed **alias**: ``@overload`` stubs (resolved per rhs, the same
+    as ``target``'s) plus a one-line impl that delegates to ``target`` and returns
+    ``MultiVectorBase``.
+
+    For the methods/operators that are *defined as* a delegation of a dispatched
+    product -- ``wedge``/``__xor__`` -> ``outer_product``, ``dot`` ->
+    ``inner_product``, ``__lt__`` -> ``left_contraction``, ``__gt__`` ->
+    ``right_contraction`` -- so the alias types as precisely as the method it
+    forwards to instead of inheriting the base's imprecise ``-> Self``.  The body
+    is a delegation (not a duplicated ``match``): the target already dispatches.
+    """
+    return [
+        *product_overload_stubs(
+            alias, self_spec, gn_product, n, full_name, param_name=param_name
+        ),
+        function_def(
+            alias,
+            [
+                return_stmt(
+                    call(attribute("self", target), [name_ref(param_name)])
+                )
+            ],
+            params=[argument("self"), argument(param_name)],
+            returns=name_ref("MultiVectorBase"),
+        ),
+    ]
+
+
 # ==========================================================================
 # The four generators (one per emitted construct)
 # ==========================================================================
@@ -1375,6 +1412,25 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             call(attribute("left", "outer_product"), [name_ref("right")]),
             return_type=mvb_ann,
         ),
+        # ``a ^ b`` (wedge operator) and the ``wedge`` alias -> outer_product
+        # (base returns Self; ScalarN did not override either until now).
+        *alias_dispatch(
+            "__xor__",
+            "outer_product",
+            scalar_spec(n),
+            lambda a, b: a.outer_product(b),
+            n,
+            full_name,
+            param_name="other",
+        ),
+        *alias_dispatch(
+            "wedge",
+            "outer_product",
+            scalar_spec(n),
+            lambda a, b: a.outer_product(b),
+            n,
+            full_name,
+        ),
         # inner_product: scalar . X == 0 under the Hestenes dot (grade 0 excluded),
         # so every overload resolves to Scalar_n (the zero) and the impl builds it.
         *product_overload_stubs(
@@ -1392,6 +1448,68 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             full_name,
             call(attribute("left", "inner_product"), [name_ref("right")]),
             return_type=mvb_ann,
+        ),
+        # ``dot`` is the ``inner_product`` alias (base returns Self).
+        *alias_dispatch(
+            "dot",
+            "inner_product",
+            scalar_spec(n),
+            lambda a, b: a.inner_product(b),
+            n,
+            full_name,
+        ),
+        # left/right contraction (Taylor p.103) + the ``<`` / ``>`` operators that
+        # delegate to them -- same overloads + dispatch as the graded types, so
+        # ``Scalar2 < Vector2`` types precisely instead of the inherited -> Self.
+        *product_overload_stubs(
+            "left_contraction",
+            scalar_spec(n),
+            lambda a, b: a.left_contraction(b),
+            n,
+            full_name,
+        ),
+        dispatch_method(
+            scalar_spec(n),
+            "left_contraction",
+            lambda a, b: a.left_contraction(b),
+            n,
+            full_name,
+            call(attribute("left", "left_contraction"), [name_ref("right")]),
+            return_type=mvb_ann,
+        ),
+        *alias_dispatch(
+            "__lt__",
+            "left_contraction",
+            scalar_spec(n),
+            lambda a, b: a.left_contraction(b),
+            n,
+            full_name,
+            param_name="other",
+        ),
+        *product_overload_stubs(
+            "right_contraction",
+            scalar_spec(n),
+            lambda a, b: a.right_contraction(b),
+            n,
+            full_name,
+        ),
+        dispatch_method(
+            scalar_spec(n),
+            "right_contraction",
+            lambda a, b: a.right_contraction(b),
+            n,
+            full_name,
+            call(attribute("left", "right_contraction"), [name_ref("right")]),
+            return_type=mvb_ann,
+        ),
+        *alias_dispatch(
+            "__gt__",
+            "right_contraction",
+            scalar_spec(n),
+            lambda a, b: a.right_contraction(b),
+            n,
+            full_name,
+            param_name="other",
         ),
         # +/- narrow by grade too: Scalar2 + Vector2 -> G2, Scalar2 + Bivector2 ->
         # Rotor2, etc.  Same overloads + dispatch as the graded types.
@@ -2189,25 +2307,24 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             call(attribute("left", "outer_product"), [name_ref("right")]),
             return_type=mvb_ann,
         ),
-        # ``a ^ b`` (the wedge operator): base ``__xor__`` returns Self, so override
-        # here with the same precise overloads as outer_product, delegating to it.
-        *product_overload_stubs(
+        # ``a ^ b`` (the wedge operator) and the ``wedge`` alias both delegate to
+        # outer_product; give them its precise overloads (base returns Self).
+        *alias_dispatch(
             "__xor__",
+            "outer_product",
             spec,
             lambda a, b: a.outer_product(b),
             n,
             full_name,
             param_name="other",
         ),
-        function_def(
-            "__xor__",
-            [
-                return_stmt(
-                    call(attribute("self", "outer_product"), [name_ref("other")])
-                )
-            ],
-            params=[argument("self"), argument("other")],
-            returns=mvb_ann,
+        *alias_dispatch(
+            "wedge",
+            "outer_product",
+            spec,
+            lambda a, b: a.outer_product(b),
+            n,
+            full_name,
         ),
         *product_overload_stubs(
             "inner_product", spec, lambda a, b: a.inner_product(b), n, full_name
@@ -2220,6 +2337,15 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             full_name,
             call(attribute("left", "inner_product"), [name_ref("right")]),
             return_type=mvb_ann,
+        ),
+        # ``dot`` is the ``inner_product`` alias (base returns Self).
+        *alias_dispatch(
+            "dot",
+            "inner_product",
+            spec,
+            lambda a, b: a.inner_product(b),
+            n,
+            full_name,
         ),
         # left/right contraction (Taylor p.103): grade-changing bilinear ops, so
         # they get the same precise overloads + fast dispatch as the products, and
@@ -2236,23 +2362,14 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             call(attribute("left", "left_contraction"), [name_ref("right")]),
             return_type=mvb_ann,
         ),
-        *product_overload_stubs(
+        *alias_dispatch(
             "__lt__",
+            "left_contraction",
             spec,
             lambda a, b: a.left_contraction(b),
             n,
             full_name,
             param_name="other",
-        ),
-        function_def(
-            "__lt__",
-            [
-                return_stmt(
-                    call(attribute("self", "left_contraction"), [name_ref("other")])
-                )
-            ],
-            params=[argument("self"), argument("other")],
-            returns=mvb_ann,
         ),
         *product_overload_stubs(
             "right_contraction",
@@ -2270,23 +2387,14 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             call(attribute("left", "right_contraction"), [name_ref("right")]),
             return_type=mvb_ann,
         ),
-        *product_overload_stubs(
+        *alias_dispatch(
             "__gt__",
+            "right_contraction",
             spec,
             lambda a, b: a.right_contraction(b),
             n,
             full_name,
             param_name="other",
-        ),
-        function_def(
-            "__gt__",
-            [
-                return_stmt(
-                    call(attribute("self", "right_contraction"), [name_ref("other")])
-                )
-            ],
-            params=[argument("self"), argument("other")],
-            returns=mvb_ann,
         ),
         # +/- also narrow by grade: scalar + bivector -> Rotor2, etc.  Overload them
         # too so a mixed-grade sum types precisely instead of -> Self.
