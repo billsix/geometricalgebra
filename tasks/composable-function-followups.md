@@ -1,6 +1,8 @@
 # Composable-function layer — follow-ups (naming + animation-layer placement)
 
 **Status:** proposed — not started (spun off from the completed composable-function refactor, 2026-07-17)
+**Priority:** 6
+**Difficulty:** 4
 **Created:** 2026-07-17
 
 ## Context

@@ -1,6 +1,8 @@
 # Generalize reject / reflect to higher-grade blades (grade 3+)
 
 **Status:** not started · proposed 2026-06-05 · needs go-ahead (user wants to re-read Hestenes first)
+**Priority:** 5
+**Difficulty:** 4
 
 ## Goal
 

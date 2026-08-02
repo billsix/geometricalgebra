@@ -1,6 +1,8 @@
 # Add missing docstrings to base/gn, and ensure the generator copies all of them
 
 **Status:** proposed — needs go-ahead. Created 2026-07-21. (Bill's batch item 11-second.)
+**Priority:** 6
+**Difficulty:** 5
 
 ## Goal
 

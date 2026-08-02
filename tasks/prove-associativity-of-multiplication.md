@@ -1,6 +1,8 @@
 # Prove associativity of the geometric product from its definition
 
 **Status:** in-progress
+**Priority:** 3
+**Difficulty:** 2
 **Started:** 2026-07-01
 
 ## Goal

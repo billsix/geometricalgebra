@@ -1,6 +1,8 @@
 # Redo `exp()` from scratch, book-referenced — and add a rotor-builder `i(a, b)`
 
 **Status:** proposed — **investigation first, needs go-ahead before any code change**.
+**Priority:** 3
+**Difficulty:** 7
 Created 2026-08-01 (Bill). This is a deliberate **redo** of already-landed work:
 Bill has read the current `exp()` implementation, does not understand it, does not
 like it, and wants it rebuilt from a foundation he can check against books.

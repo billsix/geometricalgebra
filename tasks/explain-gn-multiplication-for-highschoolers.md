@@ -1,6 +1,8 @@
 # Explain Gn multiplication rules for high schoolers
 
 **Status:** in-progress
+**Priority:** 3
+**Difficulty:** 3
 **Started:** 2026-07-01
 
 ## Goal

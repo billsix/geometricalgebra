@@ -1,6 +1,8 @@
 # Add matplotlib plots to displaygraded.py — show the geometry, not just the values
 
 **Status:** proposed — needs go-ahead
+**Priority:** 5
+**Difficulty:** 4
 **Started:** 2026-06-06
 
 ## Goal

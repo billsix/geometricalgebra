@@ -1,6 +1,8 @@
 # Define a `frame` (a set/basis of vectors) as a first-class concept
 
 **Status:** proposed — needs a **representation decision from Bill** before implementation (see below).
+**Priority:** 4
+**Difficulty:** 7
 Created 2026-07-22. Prerequisite for reciprocal frames / outermorphisms / geometric calculus — see
 `tasks/reference/galgebra-comparison.md` (Findings 1, 3b, 5).
 

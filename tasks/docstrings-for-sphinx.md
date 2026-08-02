@@ -1,6 +1,8 @@
 # Add docstrings everywhere, rendered well by Sphinx
 
 **Status:** proposed — not started
+**Priority:** 5
+**Difficulty:** 6
 **Created:** 2026-06-13
 
 ## Goal

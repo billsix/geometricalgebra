@@ -1,6 +1,8 @@
 # Import epix-mirror at container build time for plot generation
 
 **Status:** proposed — not started (blocked on the repo URL — see Open questions)
+**Priority:** 7
+**Difficulty:** 6
 **Created:** 2026-06-13
 
 ## Goal

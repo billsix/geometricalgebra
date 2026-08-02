@@ -1,6 +1,8 @@
 # Customizable blade symbols (G3 i/j/k), or a vector-calculus subclass (cross product, …)
 
 **Status:** proposed — not started
+**Priority:** 5
+**Difficulty:** 6
 **Created:** 2026-06-13
 
 ## Goal
