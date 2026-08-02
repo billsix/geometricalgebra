@@ -77,14 +77,14 @@ def test_scalar_division() -> None:
     }
     assert (G3.from_scalar(6) / 2).scalar_part() == 3
     assert (Scalar2(coeff_scalar=6.0) / 2).coeff_scalar == 3.0
-    assert (Gn.from_blade_dict({(1,): 3.0}) / 2).is_close(
-        Gn.from_blade_dict({(1,): 1.5})
+    assert (Gn.from_blade_dict({(1,): 3.0}) / 2).isclose(
+        Gn.from_blade_dict({(1,): 1.5}), rel_tol=1e-5, abs_tol=1e-5
     )
 
 
 def test_division_matches_scaling() -> None:
     v: Vector2 = Vector2(3.0, 4.0)
-    assert (v / 2).is_close(v * 0.5)
+    assert (v / 2).isclose(v * 0.5, rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_symbolic_division() -> None:
@@ -98,11 +98,13 @@ def test_division_is_multiplication_by_inverse() -> None:
     # the GA quotient: (a b) / b recovers a for an invertible b.
     a: Vector2 = Vector2(3.0, 4.0)
     b: Vector2 = Vector2(1.0, 2.0)
-    assert ((a * b) / b).is_close(a)
-    assert (a / b).is_close(a * b.inverse())
+    assert ((a * b) / b).isclose(a, rel_tol=1e-5, abs_tol=1e-5)
+    assert (a / b).isclose(a * b.inverse(), rel_tol=1e-5, abs_tol=1e-5)
     # v / v is 1 (a vector times its own inverse) -- as a Rotor2, the
     # smallest registered type covering the geometric product's grades.
-    assert (a / a).is_close(Rotor2(coeff_scalar=1.0, coeff_e_12=0.0))
+    assert (a / a).isclose(
+        Rotor2(coeff_scalar=1.0, coeff_e_12=0.0), rel_tol=1e-5, abs_tol=1e-5
+    )
 
 
 def test_zero_division_raises() -> None:

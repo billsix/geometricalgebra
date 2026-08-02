@@ -1014,19 +1014,33 @@ class MultiVectorBase(abc.ABC):
             case _:
                 raise AssertionError("(-1)**k is 1 or -1; unreachable")
 
-    def is_close(self, other: typing.Self) -> bool:
+    def isclose(
+        self, other: typing.Self, rel_tol: float = 0.0, abs_tol: float = 0.0
+    ) -> bool:
+        """Approximate **floating-point** equality, blade by blade: the symmetric
+        PEP 485 / ``math.isclose`` test
+        ``abs(a - b) <= max(rel_tol * max(|a|, |b|), abs_tol)`` over the union of
+        present blades (a blade absent on one side counts as ``0``).
+
+        Floating-point only.  A symbolic (non-numeric) coefficient raises a
+        ``TypeError`` -- use ``==`` for exact/symbolic equality.  **Both
+        tolerances default to ``0.0``**, so with no arguments this is *exact*
+        equality; a caller states the tolerance it wants (``rel_tol`` for the
+        general case, ``abs_tol`` for values near zero -- a rotated basis
+        vector's off-axis components, a product that cancels to 0, ...).  Every
+        in-tree caller passes ``rel_tol=1e-5, abs_tol=1e-5``.
+        """
         left: BladeCoef = self.to_blade_dict()
         right: BladeCoef = other.to_blade_dict()
+        # ``blade`` is a genexpr var (separate scope) so it stays inferred.
         return all(
-            [
-                np.isclose(
-                    float(left.get(blade, 0)),
-                    float(right.get(blade, 0)),
-                    rtol=1e-5,
-                    atol=1e-5,
-                )
-                for blade in (left.keys() | right.keys())
-            ]
+            math.isclose(
+                _require_float(left.get(blade, 0)),
+                _require_float(right.get(blade, 0)),
+                rel_tol=rel_tol,
+                abs_tol=abs_tol,
+            )
+            for blade in (left.keys() | right.keys())
         )
 
     def _repr_latex_(self) -> str:
@@ -1036,6 +1050,25 @@ class MultiVectorBase(abc.ABC):
         # only the rendered form leaves the stored fields untouched.  (`Gn` already
         # eager-simplifies, so this is a cheap no-op there; display is not hot.)
         return blade_dict_latex(self.simplified().to_blade_dict())
+
+
+def _require_float(coef: Coef) -> float:
+    """A coefficient as a ``float`` for ``isclose``; raise a clear
+    error on a symbolic (non-numeric) coefficient.
+
+    ``isclose`` is floating-point only, so a coefficient carrying a
+    free symbol (``x``, ``2*t``, ...) has no meaningful float value.  Numeric
+    sympy (``Integer``/``Rational``/``Float``/``sqrt(2)``) is ``float``-able and
+    passes through; only a genuinely symbolic expression raises -- and it raises
+    *here*, with a message that names the value, instead of the opaque
+    ``TypeError`` a bare ``float(expr)`` would throw.
+    """
+    if isinstance(coef, sympy.Expr) and not coef.is_number:
+        raise TypeError(
+            "isclose is floating-point only; got the symbolic "
+            f"coefficient {coef!r} -- use == for exact/symbolic equality"
+        )
+    return float(coef)
 
 
 def _coerce(x: MultiVectorBase | Coef, cls: type[MultiVectorBase]) -> MultiVectorBase:

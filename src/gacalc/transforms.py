@@ -200,9 +200,9 @@ def projection_rotation(
         >>> from gacalc.g3 import Vector3
         >>> to = math.cos(1.0) * Vector3.e_1 + math.sin(1.0) * Vector3.e_2
         >>> f = projection_rotation(Vector3.e_1, to)
-        >>> f(Vector3.e_1).is_close(to)              # from -> to
+        >>> f(Vector3.e_1).isclose(to, rel_tol=1e-5, abs_tol=1e-5)  # from -> to
         True
-        >>> f(Vector3.e_3).is_close(Vector3.e_3)     # perpendicular fixed
+        >>> f(Vector3.e_3).isclose(Vector3.e_3, rel_tol=1e-5, abs_tol=1e-5)
         True
     """
     assert from_vector.is_vector()
@@ -249,9 +249,9 @@ def rotor_rotation(
         >>> R = rotor_rotation(Vector3.e_1, to)
         >>> R.linearity.name
         'LINEAR'
-        >>> R(Vector3.zero()).is_close(Vector3.zero())   # no crash on zero
+        >>> R(Vector3.zero()).isclose(Vector3.zero(), rel_tol=1e-5, abs_tol=1e-5)
         True
-        >>> R.inverse(R(Vector3.e_1)).is_close(Vector3.e_1)
+        >>> R.inverse(R(Vector3.e_1)).isclose(Vector3.e_1, rel_tol=1e-5, abs_tol=1e-5)
         True
     """
     rotor: MultiVectorBase = type(from_vector).rotor_from_vectors(
@@ -319,14 +319,14 @@ def plane_rotation(
         >>> from gacalc.g3 import Vector3
         >>> turn = plane_rotation(Vector3.e_1, Vector3.e_2)
         >>> f = turn(math.radians(90))
-        >>> f(Vector3.e_1).is_close(Vector3.e_2)          # e_1 -> e_2
+        >>> f(Vector3.e_1).isclose(Vector3.e_2, rel_tol=1e-5, abs_tol=1e-5)
         True
-        >>> f(Vector3.e_3).is_close(Vector3.e_3)          # perpendicular fixed
+        >>> f(Vector3.e_3).isclose(Vector3.e_3, rel_tol=1e-5, abs_tol=1e-5)
         True
-        >>> f.inverse(f(Vector3.e_1)).is_close(Vector3.e_1)
+        >>> f.inverse(f(Vector3.e_1)).isclose(Vector3.e_1, rel_tol=1e-5, abs_tol=1e-5)
         True
-        >>> f.at(0.5)(Vector3.e_1).is_close(               # interpolation
-        ...     turn(math.radians(45))(Vector3.e_1))
+        >>> f.at(0.5)(Vector3.e_1).isclose(               # interpolation
+        ...     turn(math.radians(45))(Vector3.e_1), rel_tol=1e-5, abs_tol=1e-5)
         True
     """
     if not (a.is_vector() and b.is_vector()):

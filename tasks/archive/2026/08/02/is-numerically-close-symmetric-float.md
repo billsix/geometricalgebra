@@ -1,7 +1,40 @@
-# Assess `is_close` — what it's for, whether it's effective, alternatives
+# `is_close` → `isclose` — symmetric, float-only
 
-**Status:** proposed — needs go-ahead (analysis below; the *changes* need a yes). Created
-2026-07-21. (Bill's batch item 3 — a study, not yet a change.)
+**Status:** DONE 2026-08-02. Work record; the durable rationale + the standard-
+practice research live in `tasks/reference/approximate-float-equality.md`.
+Created 2026-07-21 (started as an "assess is_close" study; the original study is
+kept below for history).
+
+## Outcome (2026-08-02, Bill's decisions)
+
+Reworked the approximate-equality predicate and **renamed** it `is_close` →
+**`isclose`** (signals float-only). Final shape:
+
+- **Symmetric** — per-blade **`math.isclose`** (PEP 485,
+  `abs(a-b) <= max(rel_tol*max(|a|,|b|), abs_tol)`) instead of the old asymmetric
+  `np.isclose`. `numpy` is no longer imported by the generated modules.
+- **`abs_tol` defaults to `0.0`** (matching `math.isclose`); **all ~72 current
+  callers updated to pass `abs_tol=1e-5`** explicitly (Bill's call: honest default,
+  near-zero tolerance visible at each call site). `rel_tol` defaults to `1e-5`
+  (looser than stdlib's `1e-9`, to absorb geometric-op float error).
+- **Floating-point only** — a symbolic (free-symbol) coefficient now raises a clear
+  `TypeError` via the new `_require_float` helper in `base.py`, instead of the
+  opaque bare-`float()` crash. Pure-number sympy still passes. Use `==` for
+  exact/symbolic.
+- Earlier this session (a)+(b): genexpr + tolerance params — subsumed into the
+  above (params are now `rel_tol`/`abs_tol`, matching `math.isclose`).
+
+Touched: `base.py` (`isclose` + `_require_float`),
+`tools/gen_specialized.py` (`is_close_method`, `generate_scalar`, `isclose_call`,
+generated header imports), all callers in `src/gacalc/{functions,transforms}.py`
+doctests and 6 test files, and new `tests/test_isclose.py`.
+
+Gates: ruff + ty (src/tests/tools) clean; **336 tests pass**; deterministic;
+doc-region markers OK.
+
+---
+
+*Original study (2026-07-21) below.*
 
 ## What `is_close` is trying to do
 

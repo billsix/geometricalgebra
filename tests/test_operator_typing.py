@@ -57,11 +57,15 @@ def test_scalar_lhs_runtime_types_and_values() -> None:
     s: Scalar2 = Scalar2(coeff_scalar=3.0)
     v: Vector2 = Vector2(1.0, 2.0)
     assert type(s * v) is Vector2  # scaling preserves the concrete type
-    assert (s * v).is_close(Vector2(3.0, 6.0))
+    assert (s * v).isclose(Vector2(3.0, 6.0), rel_tol=1e-5, abs_tol=1e-5)
     assert type(s.inner_product(v)) is Scalar2  # scalar . vector == 0
-    assert s.inner_product(v).is_close(Scalar2(coeff_scalar=0.0))
+    assert s.inner_product(v).isclose(
+        Scalar2(coeff_scalar=0.0), rel_tol=1e-5, abs_tol=1e-5
+    )
     assert type(s + Bivector2.e_12) is Rotor2  # {0} + {2}
-    assert (s + Bivector2.e_12).is_close(Rotor2(coeff_scalar=3.0, coeff_e_12=1.0))
+    assert (s + Bivector2.e_12).isclose(
+        Rotor2(coeff_scalar=3.0, coeff_e_12=1.0), rel_tol=1e-5, abs_tol=1e-5
+    )
     assert type(s + v) is G2  # {0} + {1} widens to the full class
 
 
@@ -92,17 +96,17 @@ def test_alias_and_scalar_contraction_runtime() -> None:
     a: Vector2 = Vector2.e_1
     b: Vector2 = Vector2.e_2
     assert type(a.wedge(b)) is Bivector2
-    assert a.wedge(b).is_close(a.outer_product(b))
+    assert a.wedge(b).isclose(a.outer_product(b), rel_tol=1e-5, abs_tol=1e-5)
     assert type(a.dot(b)) is Scalar2
-    assert a.dot(b).is_close(a.inner_product(b))
+    assert a.dot(b).isclose(a.inner_product(b), rel_tol=1e-5, abs_tol=1e-5)
     s: Scalar2 = Scalar2(coeff_scalar=3.0)
     v: Vector2 = Vector2(1.0, 2.0)
     assert type(s ^ v) is Vector2  # scaling preserves the rhs type
-    assert (s ^ v).is_close(Vector2(3.0, 6.0))
+    assert (s ^ v).isclose(Vector2(3.0, 6.0), rel_tol=1e-5, abs_tol=1e-5)
     assert type(s < v) is Vector2  # scalar left-contraction == scaling
-    assert (s < v).is_close(Vector2(3.0, 6.0))
+    assert (s < v).isclose(Vector2(3.0, 6.0), rel_tol=1e-5, abs_tol=1e-5)
     assert type(s > v) is Scalar2  # scalar right-contraction of a vector == 0
-    assert (s > v).is_close(Scalar2(coeff_scalar=0.0))
+    assert (s > v).isclose(Scalar2(coeff_scalar=0.0), rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_add_sub_narrow_by_grade() -> None:
@@ -150,7 +154,7 @@ def test_reflected_operators_runtime_including_symbolic_left() -> None:
     # limitation.
     v: Vector2 = Vector2.e_1
     assert type(2 * v) is Vector2
-    assert (2 * v).is_close(Vector2(2.0, 0.0))
+    assert (2 * v).isclose(Vector2(2.0, 0.0), rel_tol=1e-5, abs_tol=1e-5)
     assert type(2 + Bivector2.e_12) is Rotor2
     t: sympy.Expr = sympy.Symbol("t")
     assert type(t * v) is Vector2  # runtime is correct though ty infers Unknown

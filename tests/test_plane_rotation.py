@@ -45,10 +45,10 @@ E2: Vector2 = Vector2.e_2
 def test_rotates_a_toward_b() -> None:
     # positive theta turns from a toward b: 90 degrees sends e_1 to e_2.
     f: InvertibleFunction = plane_rotation(E1, E2)(math.radians(90))
-    assert f(E1).is_close(E2)
+    assert f(E1).isclose(E2, rel_tol=1e-5, abs_tol=1e-5)
     # ...and argument order flips the direction.
     g: InvertibleFunction = plane_rotation(E2, E1)(math.radians(90))
-    assert g(E1).is_close(-E2)
+    assert g(E1).isclose(-E2, rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_angle_values_match_trig() -> None:
@@ -58,7 +58,7 @@ def test_angle_values_match_trig() -> None:
         t: float = math.radians(deg)
         got: MultiVectorBase = turn(t)(Vector2(coeff_e_1=1.0, coeff_e_2=0.0))
         want: MultiVectorBase = Vector2(coeff_e_1=math.cos(t), coeff_e_2=math.sin(t))
-        assert got.is_close(want), deg
+        assert got.isclose(want, rel_tol=1e-5, abs_tol=1e-5), deg
 
 
 def test_plane_vectors_need_not_be_unit_or_orthogonal() -> None:
@@ -66,18 +66,19 @@ def test_plane_vectors_need_not_be_unit_or_orthogonal() -> None:
     a: Vector2 = Vector2(coeff_e_1=3.0, coeff_e_2=0.0)
     b: Vector2 = Vector2(coeff_e_1=1.0, coeff_e_2=2.0)  # oriented like e_1 ^ e_2
     f: InvertibleFunction = plane_rotation(a, b)(math.radians(90))
-    assert f(E1).is_close(E2)
+    assert f(E1).isclose(E2, rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_perpendicular_part_fixed_in_g3() -> None:
     f: InvertibleFunction = plane_rotation(Vector3.e_1, Vector3.e_2)(math.radians(37))
-    assert f(Vector3.e_3).is_close(Vector3.e_3)
+    assert f(Vector3.e_3).isclose(Vector3.e_3, rel_tol=1e-5, abs_tol=1e-5)
     # a mixed vector: in-plane part turns, e_3 part rides along.
     v: Vector3 = Vector3(coeff_e_1=1.0, coeff_e_2=0.0, coeff_e_3=5.0)
     got: MultiVectorBase = f(v)
     t: float = math.radians(37)
-    assert got.is_close(
-        Vector3(coeff_e_1=math.cos(t), coeff_e_2=math.sin(t), coeff_e_3=5.0)
+    assert got.isclose(
+        Vector3(coeff_e_1=math.cos(t), coeff_e_2=math.sin(t), coeff_e_3=5.0),
+        rel_tol=1e-5, abs_tol=1e-5,
     )
 
 
@@ -92,25 +93,25 @@ def test_representation_preserved() -> None:
 
 def test_zero_rotates_to_zero() -> None:
     f: InvertibleFunction = plane_rotation(E1, E2)(1.0)
-    assert f(Vector2.zero()).is_close(Vector2.zero())
+    assert f(Vector2.zero()).isclose(Vector2.zero(), rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_inverse_and_composition() -> None:
     turn: typing.Callable[[Coef], InvertibleFunction] = plane_rotation(E1, E2)
     f: InvertibleFunction = turn(0.7)
     v: Vector2 = Vector2(coeff_e_1=2.0, coeff_e_2=-1.0)
-    assert inverse(f)(f(v)).is_close(v)
+    assert inverse(f)(f(v)).isclose(v, rel_tol=1e-5, abs_tol=1e-5)
     assert f.linearity is Linearity.LINEAR
     # rotations in one plane add their angles.
-    assert (turn(0.3) @ turn(0.4))(v).is_close(f(v))
+    assert (turn(0.3) @ turn(0.4))(v).isclose(f(v), rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_interpolation() -> None:
     turn: typing.Callable[[Coef], InvertibleFunction] = plane_rotation(E1, E2)
     f: InvertibleFunction = turn(math.radians(90))
-    assert f.at(0.0)(E1).is_close(E1)
-    assert f.at(0.5)(E1).is_close(turn(math.radians(45))(E1))
-    assert f.at(1.0)(E1).is_close(f(E1))
+    assert f.at(0.0)(E1).isclose(E1, rel_tol=1e-5, abs_tol=1e-5)
+    assert f.at(0.5)(E1).isclose(turn(math.radians(45))(E1), rel_tol=1e-5, abs_tol=1e-5)
+    assert f.at(1.0)(E1).isclose(f(E1), rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_symbolic_theta() -> None:
@@ -138,7 +139,9 @@ def test_agrees_with_from_to_rotor_formulation() -> None:
     t: float = math.radians(40)
     to: Vector2 = math.cos(t) * E1 + math.sin(t) * E2
     v: Vector2 = Vector2(coeff_e_1=1.0, coeff_e_2=3.0)
-    assert plane_rotation(E1, E2)(t)(v).is_close(rotor_rotation(E1, to)(v))
+    assert plane_rotation(E1, E2)(t)(v).isclose(
+        rotor_rotation(E1, to)(v), rel_tol=1e-5, abs_tol=1e-5
+    )
 
 
 def test_numeric_theta_stays_numeric() -> None:

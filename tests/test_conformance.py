@@ -318,8 +318,10 @@ def test_implicit_dimension_methods(n: int, cls) -> None:
 def test_is_close_numeric() -> None:
     a: G2 = G2.from_blade_dict({(1,): 3.0, (2,): 4.0})
     b: G2 = G2.from_blade_dict({(1,): 3.0 + 1e-9, (2,): 4.0})
-    assert a.is_close(b)
-    assert not a.is_close(G2.from_blade_dict({(1,): 3.5, (2,): 4.0}))
+    assert a.isclose(b, rel_tol=1e-5, abs_tol=1e-5)
+    assert not a.isclose(
+        G2.from_blade_dict({(1,): 3.5, (2,): 4.0}), rel_tol=1e-5, abs_tol=1e-5
+    )
 
 
 @pytest.mark.parametrize("cls", [G1, G2, G3])

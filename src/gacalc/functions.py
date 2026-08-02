@@ -153,7 +153,8 @@ class ComposableFunction(typing.Generic[V]):
             >>> from gacalc.transforms import translate, compose, uniform_scale
             >>> from gacalc.g3 import Vector3
             >>> T = translate(10 * Vector3.e_1)
-            >>> T.at(0.5)(Vector3.zero()).is_close(5 * Vector3.e_1)
+            >>> got = T.at(0.5)(Vector3.zero())
+            >>> got.isclose(5 * Vector3.e_1, rel_tol=1e-5, abs_tol=1e-5)
             True
         """
         if self.interpolate is not None:

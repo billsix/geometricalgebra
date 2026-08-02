@@ -93,7 +93,7 @@ def test_exp_agrees_with_plane_rotation_numeric() -> None:
     i: Bivector3 = (Vector3.e_1 ^ Vector3.e_2).normalize()
     r: Rotor3 = (i * (-theta / 2)).exp()
     v: Vector3 = 3 * Vector3.e_1 + 4 * Vector3.e_2 + 5 * Vector3.e_3
-    assert r.sandwich(v).is_close(f(v))
+    assert r.sandwich(v).isclose(f(v), rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_exp_agrees_with_plane_rotation_symbolic() -> None:

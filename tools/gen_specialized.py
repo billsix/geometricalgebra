@@ -788,18 +788,41 @@ def class_header_stmts(
 
 
 def is_close_method(type_name: str, fields: Sequence[str]) -> ast.FunctionDef:
-    """``is_close``: defer to the ABC for a foreign type, else np.isclose per field."""
+    """``isclose``: defer to the ABC for a foreign type, else the
+    symmetric ``math.isclose`` per field.
+
+    Carries the same ``rel_tol``/``abs_tol`` params as
+    ``MultiVectorBase.isclose`` and threads them to both the
+    ``super()`` fallback and each per-field comparison.
+    """
     return function_def(
-        "is_close",
+        "isclose",
         [
             ast.If(
                 not_(isinstance_(name_ref("other"), name_ref(type_name))),
-                [return_stmt(super_call("is_close", [name_ref("other")]))],
+                [
+                    return_stmt(
+                        super_call(
+                            "isclose",
+                            [
+                                name_ref("other"),
+                                name_ref("rel_tol"),
+                                name_ref("abs_tol"),
+                            ],
+                        )
+                    )
+                ],
                 [],
             ),
             return_stmt(call("bool", [bool_and([isclose_call(f) for f in fields])])),
         ],
-        params=[argument("self"), argument("other")],
+        params=[
+            argument("self"),
+            argument("other"),
+            argument("rel_tol"),
+            argument("abs_tol"),
+        ],
+        defaults=[constant(0.0), constant(0.0)],
         returns=name_ref("bool"),
     )
 
@@ -860,15 +883,18 @@ def result_stmts(
 
 
 def isclose_call(field: str, other: str = "other") -> ast.expr:
-    """``np.isclose(float(self.<f>), float(other.<f>), rtol=1e-5, atol=1e-5)``."""
+    """``math.isclose(_require_float(self.<f>), _require_float(other.<f>),
+    rel_tol=rel_tol, abs_tol=abs_tol)`` -- the symmetric per-field test, reading
+    the enclosing ``isclose``'s ``rel_tol``/``abs_tol`` params and
+    raising a clear error on a symbolic field via ``_require_float``."""
     return call(
-        attribute("np", "isclose"),
+        attribute("math", "isclose"),
         [
-            call("float", [attribute("self", field)]),
-            call("float", [attribute(other, field)]),
+            call("_require_float", [attribute("self", field)]),
+            call("_require_float", [attribute(other, field)]),
         ],
-        rtol=constant(1e-5),
-        atol=constant(1e-5),
+        rel_tol=name_ref("rel_tol"),
+        abs_tol=name_ref("abs_tol"),
     )
 
 
@@ -1596,15 +1622,21 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             returns=subscript(name_ref("list"), name_ref("int")),
         ),
         function_def(
-            "is_close",
+            "isclose",
             [
                 ast.If(
                     not_(isinstance_(name_ref("other"), name_ref(name))),
                     [
                         return_stmt(
                             call(
-                                attribute(call("super", []), "is_close"),
-                                [name_ref("other")],
+                                attribute(
+                                    call("super", []), "isclose"
+                                ),
+                                [
+                                    name_ref("other"),
+                                    name_ref("rel_tol"),
+                                    name_ref("abs_tol"),
+                                ],
                             )
                         )
                     ],
@@ -1615,19 +1647,28 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
                         "bool",
                         [
                             call(
-                                attribute("np", "isclose"),
+                                attribute("math", "isclose"),
                                 [
-                                    call("float", [self_scalar_field]),
-                                    call("float", [attribute("other", field_name(()))]),
+                                    call("_require_float", [self_scalar_field]),
+                                    call(
+                                        "_require_float",
+                                        [attribute("other", field_name(()))],
+                                    ),
                                 ],
-                                rtol=constant(1e-5),
-                                atol=constant(1e-5),
+                                rel_tol=name_ref("rel_tol"),
+                                abs_tol=name_ref("abs_tol"),
                             )
                         ],
                     )
                 ),
             ],
-            params=[argument("self"), argument("other")],
+            params=[
+                argument("self"),
+                argument("other"),
+                argument("rel_tol"),
+                argument("abs_tol"),
+            ],
+            defaults=[constant(0.0), constant(0.0)],
             returns=name_ref("bool"),
         ),
         function_def(
@@ -2645,6 +2686,7 @@ def header(name: str, n: int) -> str:
 from __future__ import annotations
 
 import dataclasses
+import math
 import typing
 from collections.abc import Generator
 
@@ -2656,7 +2698,8 @@ from gacalc.base import (
     BladeCoef,
     Coef,
     _coerce,
-    _require_canonical_blades,{operand_import}
+    _require_canonical_blades,
+    _require_float,{operand_import}
 )
 from gacalc.gn import Gn
 """
