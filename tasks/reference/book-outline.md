@@ -1,0 +1,202 @@
+# "Plotting On Crappy Graph Paper" — book outline & writing guide
+
+**What this is:** the content structure for gacalc's book — the chapter/section flow
+and the pedagogical principles that govern the writing. A **living reference doc**,
+separate from `book-and-docs-pipeline.md` (the build mechanics). The book is written
+**outline-first**: this doc is the skeleton; prose, graphs, and notebooks fill in later,
+and sections may be written **out of order** (section 3 before section 1 is fine), with
+**blank placeholder documents** standing in until then.
+
+**Status:** first synthesis of Bill's semi-ordered ideas (2026-08-02). The
+rotate → geometric-product → projection → reflection spine and the 2D-then-3D split are
+Bill's **explicit** ordering. Placement of everything else (sets, number-lines, relative
+graph paper, orthogonal, the dual, the formal-algebra definition) is **my inferred
+grouping — open for Bill to reorder.** Bill's raw ideas are preserved verbatim in the
+appendix.
+
+## Pedagogical principles (the through-line — these govern every section)
+
+- **Grab attention first, then keep them engaged.** Open with something exciting; order
+  topics to *sustain* excitement, not to be logically tidy. Engagement drives the
+  sequence — this is the top priority for the whole book.
+- **Relate everything to what they already know** — geometry, Algebra 2, precalculus.
+  Reference OpenStax proofs/definitions. New objects are introduced as *names for things
+  they have already seen implicitly*.
+- **Coordinate-free is the destination; coordinates are scaffolding.** The goal is
+  students *using* coordinate-free representations. But **for teaching and proofs we
+  reduce to coordinates.** Structurally: main documents highlight the coordinate-free
+  *uses*; *proofs* live in separate `.rst` documents; *coordinate calculations* live in
+  notebooks.
+- **Canonical form over decimals.** `1 + √2` is the answer. Decimal approximation is
+  outside scope — a waste of attention that focuses on the wrong thing; if one is ever
+  needed, let the computer/calculator produce it. Say this early (a candidate for an
+  early linked `.rst`).
+- **θ is a property, not an unknown to solve for.** We *show* θ but rarely compute it;
+  there's little iteration here, unlike plotting. Emphasize we're describing structure,
+  not crunching numbers.
+
+## Structural conventions
+
+- **Two halves: 2D first, 3D second.** The entire first half stays in 2D; 3D is the
+  second half (fleshed out much later).
+- **Three media, interwoven:** prose (narrative), graphs/pictures (intuition), and
+  notebooks (the coordinate calculations, defined later and referenced from the prose).
+- **Proofs → separate `.rst`; uses → main docs; calculations → notebooks.**
+- **Important-early content can be hoisted:** if something matters early but breaks the
+  flow, give it its own `.rst` and link it early.
+- **Write out of order; use placeholders.** This outline is the fixed structure; blank
+  placeholder `.rst`/notebooks stand in for unwritten sections so any section can be
+  drafted first.
+
+## Part I — Two dimensions (first half)
+
+*The E→F spine (rotate → geometric product → projection → reflection) is Bill's explicit
+order. Sections A–D and G–I placement is inferred — reorder freely.*
+
+**A. Hook & framing (grab attention)**
+- Open with exciting pictures: **rotation, projection, reflection** — what the book will
+  let them do.
+- State the **canonical-form-over-decimals** stance up front (candidate for an early
+  linked `.rst`).
+
+**B. 1D warm-up — `m·x + b`**
+- One dimension first: `m·x + b`, **input value on the left, output value on the right**,
+  on **overlaid graph paper**, with vectors **showing implicitly what's happening**.
+
+**C. Review of familiar math (relate to what they know)**
+- Multiplication across the number types they grew up with — integers, signed integers,
+  fractions, exponents — as a warm-up to "multiplication can mean different things."
+- Geometry / precalc / Algebra 2 examples with several constants. **Define sine and
+  cosine from geometry**, then how precalc extends them. Projection can be previewed
+  here. Reference OpenStax.
+- **Sets and their notation** — integers, fractions, etc.; what the notation means.
+
+**D. Vectors as relative number lines, and relative graph paper**
+- A **vector is a relative number line** — draw it graphically as a number line.
+- **Two vectors make relative graph paper** (kept at 90° for most of the book). Plot on
+  it; give coordinates for both. Discuss the **natural basis**. Its real-world purpose,
+  concisely: a **ruler only has meaning relative to something else** — maybe a picture of
+  a ruler at an angle.
+- **Vector addition** — pictures, in 2D only to start.
+
+**E. Rotate → the geometric product → its action** *(Bill's explicit spine)*
+- **Define rotate like MVP:** not by an angle, but **from the direction of vec 1 to
+  vec 2**, and **magnitudes don't matter**.
+- **From rotate, define the geometric product.** Show that a product of **three
+  factors** stays ordinary — you never have to form a fraction, because you *order* the
+  operations so the division resolves cleanly.
+  **Cracker example (Bill):** a 6-pack costs 5¢, so one cracker is `5/6` of a cent — but
+  pennies aren't divisible, and none of that matters if you're buying 12. Keep `6` and
+  `5` whole and compute `12 · 6⁻¹ · 5`: `12 · 6⁻¹` resolves to `2`, then `· 5 = 10¢` — no
+  `5/6` ever appears. The same discipline (keep things exact; order the multiplications
+  so they resolve) carries into the geometric product. Ties back to
+  **canonical-form-over-decimals** above.
+- Show the **geometric product produces a description of a rotation — an action**, not
+  just a number.
+- After the **precalculus-level proof of rotate** (which is what defined the geometric
+  product), **redefine rotate in terms of the geometric product** where reasonable — OK
+  to reduce to coordinates for this.
+
+**F. Projection and reflection (built on rotate)** *(explicit: after E)*
+- **Projection:** rotate, then take the components. Show **in coordinates** that the
+  geometric-product implementation is equivalent.
+- **Reflection:** same treatment.
+
+**G. More 2D structure** *(placement inferred)*
+- **Orthogonal** — define it, related to angles; relate to what they know.
+- **The dual.**
+
+**H. The formal algebra — "the boring work" (after attention is grabbed)** *(Bill:
+explicitly after the hook)*
+- Define the algebra properly. Look at how **geometry textbooks** define things.
+  **Explain G2.** Explain that the basis blades are **constants**. Rules for
+  **addition, subtraction, multiplication**. Explain **resolving** — how `e₁ e₂` resolve
+  when we plot. Show a picture of **how geometry denoted the same idea implicitly in
+  notation**, whereas now we have **a mathematical object that names direction
+  explicitly** (no longer implicit in the notation we interpret to plot).
+
+**I. An interactive, calculator-like tool**
+- Build something they can see that **works like their graphing calculator**, showing
+  each of **vector addition, rotate, translate**.
+- Reinforce: **θ is shown but not solved for**; we don't iterate much, unlike plotting.
+
+## Part II — Three dimensions (second half)
+
+*To be fleshed out much later — Bill flagged this as under-developed for now.*
+- Ideally **restart from the geometric product**, and show how **projection and
+  rejection** work in 3D.
+
+## Appendix — Bill's ideas, as given (verbatim, not re-ordered)
+
+Preserved so nothing is lost in the synthesis above. Lightly numbered for reference only.
+
+1. Start with one dimension, MX + B, input value on the left, output value on the right.
+   Overlaid graph paper, with vectors showing implicitly what's happening.
+2. Start with something that gets them excited. Pictures of rotation, projection, and
+   reflection.
+3. Show how multiplication when we were kids was for integers, signed integers,
+   fractions, exponents or whatever they are called.
+4. Start with review of geometry, precalc, algebra 2 examples of multiple constants.
+   Define sine and cosine from geometry, how it's extended in precalc. Can talk about
+   projection here. Reference openstax proofs or definitions.
+5. Make sure the reference doc emphasizes that I want to get their attention, and that
+   the flow of topics should keep them engaged and excited. If something's important to
+   say early, you can always put it in a different Sphinx rst document, and just link it
+   early on.
+6. Mention about how they may be used to reducing to decimal. Approximations, but we are
+   going to be doing that here. 1 + sqrt of 2 Is the canonical form, if we ever need a
+   decimal approximation, we can do it, but we'll let the computer or calculator do it
+   for us. That is outside the scope, and a waste of our time, but more important like,
+   would have us focusing on the wrong thing.
+7. Introduce and explained the notion of sets, and do it free. Integers, fractions, etc,
+   And put the notation means.
+8. Define rotate like MVP.
+9. From that, define the geometric product. Show that 3 multiplications are normal, like
+   do it with integers without ever making fractions.
+10. Show that the geometric product produces a description of a rotation, producing an
+    action.
+11. Draw pictures of vector addition, but start with them just in 2D.
+12. Make a that they can see, that works like their graphing calculator would, and show
+    each one as vector addition, rotate, translate.
+13. After the precalculus level proof of rotate, which we define the geometric product,
+    redefine If reasonable, rotate in terms of the geometric product. It's okay to reduce
+    the coordinates. Put in the task document that our goal is to get them to be using
+    coordinate free representations, but for our proofs, and for teaching, we reduced to
+    coordinates. Perhaps, the proofs should be in separate restructured text documents,
+    and the main documents highlight the uses, and the coordinate calculations are
+    notebooks.
+14. 2 d define rotate not of angle, but from direction of vec 1 to vec 2, and that the
+    magnitude don't matter.
+15. After this stuff is done, to define projection, do the rotate, and then take the
+    components. Show using coordinates that the geometric product implementation is
+    equivalent.
+16. Same thing for reflect.
+17. At some point, talk about the dual.
+18. An important structure for this book, is that we start off doing everything in 2D.
+    That will be the first half of the book. The second half will be 3d.
+19. Define the word orthogonal. Related to angles. Remember, most of what I'm trying in
+    this book is to relate it to things they are know.
+20. Mention that vectors are relative number lines. Show them graphically as a number
+    line.
+21. Mention 2 vectors make relative graph paper (keep them 90 for most of the book).
+    Show plotting on relative graph paper. Have coordinates for both. Discuss natural
+    basis. Concisely describe its purpose in the real world, but mention about a ruler
+    only has use relative to something else. Maybe draw picture of a ruler at an angle.
+22. At some point, after the student's attention is grabbed, we're going to do the boring
+    work of defining the algebra. Look in geometry textbooks to see how they define
+    things. Explain G2. Explain how they are constants. Explain the rules for addition,
+    explain the rules for subtraction, explain the rules from multiplication. Explain
+    about resolving, and how e1 e2 resolve when we plot. Show picture of how the same
+    idea was denoted in geometry, but we now have a mathematical object to define
+    direction, instead of it being implicit in the notation, which we would interpret to
+    plot.
+23. I'm going to have to flush out 3D much better, but not for a while. But ideally I
+    would like to start with the geometric project [product] again, and show the
+    projection and rejection work.
+24. The document will provide the structure, and I'm happy to work on section 3 before
+    section 1, for example, but to put in blank documents as placeholders. Also this book
+    will be a combination of prose, graphs, and referencing notebooks that are defined
+    later.
+25. At some point, mention about how we're not iterating over much, unlike plotting.
+    Mention about how we show theta, but we don't really need to calculate it, it's a
+    property, not something to solve for.
