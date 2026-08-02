@@ -572,6 +572,11 @@ authority on all of these.
   vendored Emacs packages (maintainer-only, rarely) with `make update-emacs-packages` — full rationale
   in `tasks/archive/2026/06/07/emacs-package-install-strategy.md`. (The vendored tree itself is
   off-limits; see Module layout.)
+- Book: **`make docs`** builds the Sphinx book (`book/docs/`, "Plotting On Crappy Graph Paper") to
+  **HTML + PDF** into `output/gacalc/` — needs an image built with `BUILD_DOCS=1` (the default). It is
+  an empty-but-building skeleton with an autodoc `api.rst` (no hand-written chapters yet). How it
+  builds and why (lualatex for Unicode docstrings, no EPUB/inlinetex, the `texlive-luahbtex` gotcha):
+  `tasks/reference/book-and-docs-pipeline.md`.
 - Packaging: `pyproject.toml` (setuptools, `src/` layout). Runtime deps are **only**
   `numpy` + `sympy` (`[project] dependencies`); everything else is an optional extra —
   `notebooks` (matplotlib/ipython/pandas/jupytext), `jupyter` (JupyterLab env), `dev`
