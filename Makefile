@@ -2,6 +2,10 @@
 
 USE_SPYDER ?= 0
 USE_EMACS ?= 0
+# Build the Sphinx-book toolchain into the image by default (the Dockerfile
+# defaults this to 0, so a bare `podman build` stays lean). Set BUILD_DOCS=0 for
+# a quicker image if you don't need `make docs`.
+BUILD_DOCS ?= 1
 
 
 CONTAINER_CMD = podman
@@ -67,6 +71,7 @@ image: ## Build the OCI image
 	$(CONTAINER_CMD) build -t $(CONTAINER_NAME) \
                          --build-arg USE_SPYDER=$(USE_SPYDER) \
                          --build-arg USE_EMACS=$(USE_EMACS) \
+                         --build-arg BUILD_DOCS=$(BUILD_DOCS) \
                          $(ELPA_MOUNT) \
                          .
 
@@ -108,6 +113,26 @@ format: image ## (container) regenerate, then ruff + ty over the source (entrypo
 		$(FILES_TO_MOUNT) \
 		$(CONTAINER_NAME) \
 		-c 'set -e; source /venv/bin/activate; cd /gacalc; python tools/gen_specialized.py; bash /format.sh'
+
+
+# Build the Sphinx book (HTML + PDF) INSIDE the container and copy it to the
+# bind-mounted ./output/. Needs an image built with BUILD_DOCS=1 (the default).
+# entrypoint/docs.sh generates the algebras + editable-installs so autodoc can
+# import gacalc, then runs the book build.
+.PHONY: docs
+docs: image ## (container) build the book -> HTML + PDF into ./output/gacalc/
+	$(CONTAINER_CMD) run --rm \
+		--entrypoint /bin/bash \
+		$(FILES_TO_MOUNT) \
+		-v ./entrypoint/docs.sh:/docs.sh:Z \
+		-v ./output/:/output/:Z \
+		$(CONTAINER_NAME) \
+		/docs.sh
+
+
+.PHONY: clean
+clean: ## Remove the built book (output/ contents and book/docs/_build/)
+	rm -rf output/* book/docs/_build
 
 
 # Refresh the vendored Emacs packages. Forces USE_EMACS=1 and rebuilds the image

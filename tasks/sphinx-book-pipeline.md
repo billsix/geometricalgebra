@@ -1,134 +1,129 @@
 # Stand up a Sphinx book pipeline for gacalc (HTML + PDF)
 
-**Status:** proposed — decisions settled; **awaiting Bill's go-ahead to execute**.
+**Status:** work done and **verified in the sandbox** (HTML + PDF both build from the
+empty+autodoc skeleton). Remaining verification is the container gate
+(`make image BUILD_DOCS=1 && make docs`). Awaiting Bill's commit of the work; then
+Bill will say "archive" and the temporary scaffold gets torn down.
 **Priority:** 4
 **Difficulty:** 4
 **Created:** 2026-08-02 (Bill)
 
 ## Goal
 
-Give geometricalgebra (gacalc) a Sphinx-based book that builds to **HTML and PDF**
-(no EPUB), the way `github.com/billsix/modelviewprojection` (mvp) does. The
-Dockerfile, Makefile, and entrypoint must support building it. **No hand-written
-book content yet** — the deliverable is a skeleton that builds: `sphinx-quickstart`
-output, configured to resemble mvp, plus an **autodoc `api.rst`** so the build has
-gacalc's own docstrings in it for context.
+Give gacalc a Sphinx book that builds to **HTML and PDF** (no EPUB), the way
+`github.com/billsix/modelviewprojection` (mvp) does, with Dockerfile/Makefile/
+entrypoint support. **No hand-written content yet** — the deliverable is a skeleton
+that builds, plus an **autodoc `api.rst`** so the empty book already shows gacalc's
+own docstrings for context.
 
-Book identity (Bill): project **"Plotting On Crappy Graph Paper"**, author
-**William Emerison Six**, version **0.0.1**.
+Book identity: project **"Plotting On Crappy Graph Paper"**, author **William
+Emerison Six**, version **0.0.1**.
 
-## Ownership & workflow (Bill, 2026-08-02)
+## Ownership & workflow (Bill)
 
-1. **Now:** Claude updates this task doc. **Bill commits it.**
-2. **Then:** Bill gives the go-ahead. **Claude does the work; Bill commits it.**
-3. **At archive time:** Bill says "archive." Claude then:
-   - looks through the scaffold folder (`tools/scaffold-book/`) for the temporary work;
-   - checks whether anything in there actually deserves **extracting into `tools/`**
-     as durable;
-   - **flags any files in that folder that don't look like they belong to this task**
-     and tells Bill;
-   - **deletes the temporary work.** Bill commits the deletion.
+1. Claude updates this task doc; **Bill commits it.**
+2. Bill gives the go-ahead; **Claude does the work; Bill commits it.** ← we are here
+   (work done, awaiting commit).
+3. At archive time Bill says "archive." Then Claude tears down the temporary scaffold
+   as a **spot-check** (see below).
 
 Claude stages, never commits (per "Git: I commit, you don't — but you DO stage").
 
+### The temporary scaffold and its teardown (standard `tasks/adhoc/` convention)
+
+The reproducible "how we stood this up" steps live as shell scripts under
+**`tasks/adhoc/sphinx-book-pipeline/`** — the standard ad-hoc-script convention
+(`~/.claude/CLAUDE.md` › "Ad-hoc scripts"), NOT `tools/` (durable tooling only). Keeping
+them in `tasks/adhoc/<slug>/` means `git log -- tasks/` shows their whole life and
+`/archive-task` step 10 tears them down as a spot-check:
+
+- At archive, `git rm` the specific files we know about
+  (`tasks/adhoc/sphinx-book-pipeline/01-quickstart.sh`, `02-configure.sh`);
+- then the folder **should be empty**. If anything is left over, that's something we
+  didn't account for — **flag it to Bill**, don't just delete it.
+- Empty folder = clean teardown. Also check whether anything in there deserved
+  **extracting into `tools/`** as durable first (for this task: nothing does).
+
+**What is NOT scripted:** the permanent build-file edits (Dockerfile, Makefile,
+`.gitignore`, `entrypoint/docs.sh`). Scripting those with sed would only duplicate
+content that's committed in the files themselves. Only the *generative* setup is
+scripted: `sphinx-quickstart`, the `conf.py` config, and the `output/.gitkeep`
+placeholder.
+
 ## Settled decisions
 
-1. **No `texExpToPng` / no `inlinetex`, and no EPUB.** Use standard Sphinx math:
-   `sphinx.ext.mathjax` renders math in **HTML**, native LaTeX renders it in **PDF** —
-   the setup mvp used before commit `e682de30` ("inline latex in sphinx, for embedding
-   in epub"). inlinetex existed *only* to fix EPUB math; dropping EPUB removes the
-   entire reason for it. (mvp reference config: `git show e682de30~1:book/docs/conf.py`
-   in `github.com/billsix/modelviewprojection`.)
-2. **Keep `nbsphinx` + `myst_nb` exactly as mvp has them** (both enabled). Known
-   footgun from mvp's `tasks/reference/notebook-sphinx-integration.md`: both register
-   `.ipynb` and `myst_nb` wins the handler — Bill hasn't hit an issue, so keep it.
-3. **Autodoc now** (`api.rst` pulling gacalc's docstrings) — gives the empty book real
-   context. **Caveat, and the one reason we keep lualatex:** gacalc's docstrings are
-   heavily non-ASCII (`√ ≙ e₁ ∧ · ∗ Ã ⁻¹ ²`, confirmed across `base.py`, `gn.py`,
-   `g1/2/3.py`, `functions.py`). Autodoc puts those characters into the LaTeX build, and
-   **pdflatex aborts on them** — so PDF uses `latex_engine = "lualatex"` (+
-   `latex_use_xindy = False`), matching current mvp. This is about literal Unicode in
-   docstrings, NOT about math rendering (mathjax/native-LaTeX handle the math fine).
+1. **No `texExpToPng`/`inlinetex`, no EPUB.** Standard Sphinx math:
+   `sphinx.ext.mathjax` for HTML, native LaTeX for PDF — mvp's setup before commit
+   `e682de30` ("inline latex in sphinx, for embedding in epub"). inlinetex existed
+   only for EPUB math; dropping EPUB removes the reason for it.
+2. **`nbsphinx` + `myst_nb` kept as mvp has them** (both enabled).
+3. **Autodoc now** (`api.rst` over `gacalc.base`/`functions`/`transforms`).
+   **lualatex is kept for PDF and this is why:** gacalc's docstrings are Unicode-heavy
+   (`√ ∧ · ² ⁻¹ Ã e₁`), autodoc puts those characters into the LaTeX build, and
+   pdflatex aborts on them. **Verified:** the PDF built with lualatex and every one of
+   those characters rendered — pdflatex would have died on the first. (This is about
+   literal Unicode in docstrings, not math rendering.)
 
-**Extension set** (final): `sphinx.ext.autodoc`, `sphinx.ext.napoleon`,
-`sphinx.ext.viewcode`, `sphinx.ext.mathjax`, `sphinx.ext.imgconverter`, `nbsphinx`,
-`myst_nb`. **Excluded** (content-dependent, add later if needed): `inlinetex`,
-`sphinxcontrib.bibtex` (no `references.bib` yet).
+**Extension set (final):** autodoc, napoleon, viewcode, mathjax, imgconverter,
+nbsphinx, myst_nb. Excluded (add later with content): inlinetex, sphinxcontrib.bibtex.
 
-## Package handling (Bill: "dnf install them, you're in a container")
+## What was built
 
-The extras needed to *build* the docs are `dnf install`ed **into this sandbox** during
-the work (so Claude can scaffold + smoke-test here) **and added to
-`/foo/opt/runClaudeInContainer`'s Dockerfile** so they're baked into the sandbox image
-for later sessions. Candidate list (verify exact Fedora-44 names when installing):
-`python3-furo`, `python3-nbsphinx`, `myst-nb`, `latexmk`,
-`texlive-luahbtex`/`texlive-fontspec`/`texlive-gnu-freefont` (lualatex fonts).
-`sphinx-quickstart`/`sphinx-build`/`lualatex` are already present in the sandbox;
-`latexmk` and furo are not.
+**Permanent (kept; hand-edited, committed as-is):**
+- `book/docs/` — `conf.py`, `index.rst`, `api.rst`, `Makefile` (stock quickstart —
+  deliberately NOT mvp's, whose aspell catch-all hangs a TTY-less build),
+  `_static/custom.css`. (These are *generated by* the scaffold scripts; they are the
+  kept output.)
+- `Dockerfile` — `ARG BUILD_DOCS=0` + a gated block installing the book toolchain.
+- `Makefile` — `BUILD_DOCS ?= 1`, `--build-arg BUILD_DOCS`, `docs` target (builds
+  HTML+PDF into `./output/gacalc/`), `clean` target.
+- `entrypoint/docs.sh` — in-container build: generate algebras + editable-install
+  (so autodoc can import gacalc) → `make html` → `make latexpdf` → copy to `/output`.
+- `.gitignore` — ignore `book/docs/_build/` and `output/*` (keep `output/.gitkeep`).
+- `output/.gitkeep`.
 
-These are the sandbox-side tools. The **gacalc image** gets the same toolchain via the
-Dockerfile `BUILD_DOCS` block below — that is the permanent, committed dependency.
+**Temporary (deleted at archive):**
+- `tasks/adhoc/sphinx-book-pipeline/01-quickstart.sh` — runs `sphinx-quickstart`.
+- `tasks/adhoc/sphinx-book-pipeline/02-configure.sh` — configures `conf.py`, writes
+  `index.rst`/`api.rst`/`custom.css`, creates `output/.gitkeep`.
 
-## Tooling reality (checked 2026-08-02)
+## Packages (Bill: "dnf install them, you're in a container, add them to
+runClaudeInContainer")
 
-- **Sandbox:** `sphinx-quickstart`, `sphinx-build`, `lualatex` present; `latexmk`
-  absent; furo/nbsphinx/myst-nb not installed. So scaffold + an **HTML smoke build** run
-  here after the dnf installs; the **full PDF** build is confirmed in the gacalc
-  container (nested with `--cgroups=disabled`) or by Bill.
-- **gacalc today:** no `book/` or `docs/`. Dockerfile has **no `BUILD_DOCS` arg**, no
-  sphinx/furo, but already installs a `texlive-xetex` + collections block (for nbconvert
-  notebook→PDF) — audit and reuse the overlap. Makefile `.DEFAULT_GOAL := help`;
-  `FILES_TO_MOUNT` has **no output mount**; no docs target. `entrypoint/entrypoint.sh`
-  just activates the venv and execs bash.
+Installed into **this sandbox** and added to **`/foo/opt/runClaudeInContainer`'s
+Dockerfile** (alphabetically, per that repo's sorted-list convention) so later
+sessions have them. The gacalc image gets the same set via its `BUILD_DOCS` block.
+Verified package names (a wrong one breaks the build):
+- HTML: `python3-sphinx` (present), `python3-furo`, `python3-nbsphinx`, `myst-nb`.
+- PDF: `latexmk`; **`texlive-luahbtex`** (this provides the `lualatex` binary — NOT
+  `texlive-luatex`), `texlive-luatex85`, `texlive-lualatex-math`, `texlive-fontspec`,
+  `texlive-gnu-freefont`; and the Sphinx-LaTeX support set `texlive-fncychap`,
+  `-wrapfig`, `-capt-of`, `-needspace`, `-tabulary`, `-framed`, `-titlesec`,
+  `-varwidth`, `-fancyhdr`, `-multirow`, `-threeparttable`, `-eqparbox`, plus the
+  `collection-latexrecommended`/`-fontsrecommended` collections.
 
-## Plan
+## Verified vs pending
 
-### Phase 1 — scaffold (temporary scripts under `tools/scaffold-book/`)
+- **HTML build:** ✓ in sandbox (`sphinx-build -b html`, exit 0).
+- **PDF build:** ✓ in sandbox (`sphinx-build -M latexpdf`, 205 KB PDF via lualatex).
+- **Container gate (pending):** `make image BUILD_DOCS=1 && make docs` — the real
+  end-to-end gate (slow: big texlive install). Recommend Bill runs it, or nested with
+  `--cgroups=disabled`.
 
-1. `01-quickstart.sh` (flat layout like mvp — source and `_build` in one dir):
-   ```sh
-   sphinx-quickstart book/docs -q --no-sep --makefile --no-batchfile \
-       -p "Plotting On Crappy Graph Paper" -a "William Emerison Six" \
-       -v 0.0.1 -r 0.0.1 -l en
-   ```
-2. `02-configure.sh` — `sed`/heredoc edits to the generated `conf.py`:
-   `html_theme = "furo"`; the extension set above; `latex_engine = "lualatex"` +
-   `latex_use_xindy = False` + a `latex_elements["preamble"]` (image placement/width,
-   as mvp); `autodoc_default_options`; `mathjax3_config`; `exclude_patterns`. Write
-   `book/docs/_static/custom.css`. Add an `api.rst` with `automodule` over the gacalc
-   package and reference it from `index.rst`.
-   - **Do NOT copy mvp's `book/docs/Makefile`** — its `%: Makefile spellcheck`
-     catch-all runs `aspell` interactively and hangs any TTY-less build. Keep the stock
-     quickstart Makefile.
-3. Stage the two scripts + generated `book/docs/`. Bill commits.
+## Flagged content issues (NOT fixed — Bill's call, out of this task's scope)
 
-### Phase 2 — permanent build wiring (kept)
+These are gacalc *content*, surfaced by autodoc; the pipeline builds regardless.
+1. **`|A|` in docstrings** → RST reads `|A|` as its `|substitution|` syntax, so
+   `magnitude`/`inverse`/`cosine`/`normalize`/`rotor_from_vectors` autodoc with
+   "Undefined substitution" warnings (12 total). Fix later by escaping (`\|A\|`) or
+   using math/code roles in those docstrings.
+2. **`ₙ` (U+2099, subscript-n) missing from GNU FreeSerif** → that one glyph drops
+   from the PDF. Fix later via a font with U+2099 coverage, or avoid `ₙ` in
+   docstrings. (All other Unicode rendered fine.)
 
-4. **Dockerfile:** add `ARG BUILD_DOCS=0`; under it `dnf install` sphinx + furo +
-   nbsphinx + myst-nb + texlive/lualatex/fontspec/gnu-freefont + latexmk, reusing the
-   existing texlive block where it overlaps.
-5. **Makefile:** `BUILD_DOCS ?= 1`; pass `--build-arg BUILD_DOCS=$(BUILD_DOCS)` in
-   `image`; add `-v ./output/:/output/:Z` to `FILES_TO_MOUNT`; add a `docs`/`html`
-   target (container run → **html + pdf** → `output/`) and a `clean` target.
-6. **Docs build script** (`entrypoint/docs.sh` or a make recipe): `sphinx-build -M html`
-   then `-M latexpdf`; copy artifacts to `/output/gacalc/`; `touch .nojekyll`. **No epub
-   target.**
+## Notes
 
-### Phase 3 — verify + teardown
-
-7. HTML smoke build in the sandbox; full **html + pdf** build in the gacalc image
-   (`BUILD_DOCS=1`, nested or Bill). Confirm both are produced from the empty+autodoc
-   skeleton. **Caveat:** `latexmk` is absent in the sandbox, so the sandbox verifies
-   HTML only — the PDF gate is the container build.
-8. Teardown happens at **archive time** (see Ownership & workflow): scan
-   `tools/scaffold-book/`, extract anything durable into `tools/`, flag strays, delete
-   the temporary work. Bill commits.
-
-## Notes / conventions in play
-
-- Book at `book/docs/`, `output/` bind-mount — both mirror mvp. (Say if you'd prefer
-  `docs/`.)
-- gacalc's git remote is the self-hosted box; refer to sibling repos by GitHub URL in
-  committed docs (mvp = `github.com/billsix/modelviewprojection`).
-- Nested container builds need `--cgroups=disabled` (Bill pre-authorized for that
-  transient flag only).
+- Book at `book/docs/`, `output/` bind-mount — mirror mvp.
+- Refer to sibling repos by GitHub URL in committed docs (mvp =
+  `github.com/billsix/modelviewprojection`).
+- Nested builds need `--cgroups=disabled`.

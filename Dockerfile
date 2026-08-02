@@ -2,6 +2,9 @@ FROM registry.fedoraproject.org/fedora:44
 
 ARG USE_SPYDER=0
 ARG USE_EMACS=0
+# BUILD_DOCS defaults to 0 here so a bare `podman build` stays lean; the Makefile
+# passes BUILD_DOCS=1 so `make image` builds the Sphinx-book toolchain in.
+ARG BUILD_DOCS=0
 
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
@@ -87,6 +90,42 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
                    texlive-environ \
                    texlive-trimspaces \
                    texlive-parskip
+
+# Sphinx book toolchain (`make docs` -> HTML + PDF). Gated behind BUILD_DOCS so a
+# bare `podman build` stays lean; `make image` sets BUILD_DOCS=1. The PDF is built
+# with LuaLaTeX (conf.py sets latex_engine=lualatex) because gacalc's docstrings
+# carry Unicode math (√ ∧ · e₁ ...) that pdfLaTeX cannot typeset: texlive-luahbtex
+# provides the `lualatex` binary, fontspec + gnu-freefont its fonts. The texlive-*
+# helper packages are the ones Sphinx's generated LaTeX \usepackage's -- verified
+# by building this book end to end. The recommended latex/font *collections* are
+# already installed just above (for nbconvert), so this block only adds the rest.
+RUN --mount=type=cache,target=/var/cache/libdnf5 \
+    --mount=type=cache,target=/var/lib/dnf \
+    if [ "$BUILD_DOCS" = "1" ]; then \
+      dnf install -y \
+                   python3-sphinx \
+                   python3-furo \
+                   python3-nbsphinx \
+                   myst-nb \
+                   latexmk \
+                   texlive-luahbtex \
+                   texlive-luatex85 \
+                   texlive-lualatex-math \
+                   texlive-fontspec \
+                   texlive-gnu-freefont \
+                   texlive-fncychap \
+                   texlive-wrapfig \
+                   texlive-capt-of \
+                   texlive-needspace \
+                   texlive-tabulary \
+                   texlive-framed \
+                   texlive-titlesec \
+                   texlive-varwidth \
+                   texlive-fancyhdr \
+                   texlive-multirow \
+                   texlive-threeparttable \
+                   texlive-eqparbox ; \
+    fi
 
 # Copy the build-relevant project files (not the whole tree: the 31M vendored
 # Emacs elpa tree is already at /root, and .dockerignore is global so it can't be

@@ -29,3 +29,9 @@ dist/
 
 # exported OCI image tars (make image-export) — large, never commit
 gacalc-*.tar
+
+# sphinx book (make docs): the build tree is regenerated, and output/ holds the
+# copied-out HTML/PDF. Neither is tracked; keep the output/ dir itself via .gitkeep.
+/book/docs/_build/
+/output/*
+!/output/.gitkeep
