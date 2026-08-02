@@ -18,6 +18,13 @@ cd /gacalc
 python tools/gen_specialized.py
 uv pip install --python "$(which python)" --no-deps --no-index --no-build-isolation -e .
 
+# Convert the book's percent-format notebooks (book/docs/notebooks/*.py) to
+# .ipynb so myst_nb can execute and render them. The .py are the tracked source;
+# the .ipynb are build artifacts (gitignored).
+for f in book/docs/notebooks/*.py; do
+    jupytext --to ipynb "$f"
+done
+
 # Build the two formats. `make html` / `make latexpdf` use book/docs/Makefile,
 # which just calls sphinx-build. The PDF goes through LuaLaTeX (set in conf.py).
 cd book/docs

@@ -35,3 +35,6 @@ gacalc-*.tar
 /book/docs/_build/
 /output/*
 !/output/.gitkeep
+# book notebooks: the percent-format .py sources are tracked; the .ipynb are
+# generated from them at build time (docs.sh / jupytext), so ignore those.
+/book/docs/notebooks/*.ipynb
