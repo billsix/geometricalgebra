@@ -7,6 +7,12 @@ separate from `book-and-docs-pipeline.md` (the build mechanics). The book is wri
 and sections may be written **out of order** (section 3 before section 1 is fine), with
 **blank placeholder documents** standing in until then.
 
+**Companion:** `tasks/reference/openstax-math-pedagogy.md` is the evidence base for the
+principles below — how four OpenStax math books handle explanation, worked examples,
+exercise structure, repetition, the settled-result/black-box grammar, and print-and-draw.
+Consult it when writing a section; its §10–11 translate the survey into concrete
+recommendations for this book (including a rebuilt "dot product" section).
+
 **Status:** first synthesis of Bill's semi-ordered ideas (2026-08-02). The
 rotate → geometric-product → projection → reflection spine and the 2D-then-3D split are
 Bill's **explicit** ordering. Placement of everything else (sets, number-lines, relative

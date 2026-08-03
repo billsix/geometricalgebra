@@ -1,10 +1,10 @@
 # OpenStax math pedagogy survey (for the GA book)
 
-**Status:** done — deliverable at `tasks/reference/openstax-math-pedagogy.md`
+**Status:** complete — deliverable at `tasks/reference/openstax-math-pedagogy.md`
+**Completed:** 2026-08-03
 **Priority:** 3
 **Difficulty:** 5
 **Started:** 2026-08-03
-**Finished:** 2026-08-03
 
 ## Goal
 
