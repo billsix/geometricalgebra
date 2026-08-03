@@ -9,17 +9,25 @@ doesn't need.
 ## What exists
 
 - **`book/docs/`** — the Sphinx source: `conf.py`, `index.rst`, `api.rst`,
-  `_static/custom.css`, and the stock quickstart `Makefile`. **No hand-written book
-  content yet** — the only content is an autodoc `api.rst` over `gacalc.base` /
-  `functions` / `transforms`, so the empty book already shows real docstrings.
+  `_static/custom.css`, and the stock quickstart `Makefile`. The **outline skeleton is
+  scaffolded** (2026-08-03): one `.rst` prose page per section + `api.rst` (autodoc over
+  `gacalc.base`/`functions`/`transforms`), and **percent-format notebook stubs** under
+  `book/docs/notebooks/*.py`. Structure and the prose-vs-notebook split live in
+  `book-outline.md`; content fills in later.
 - Builds to **HTML and PDF** (no EPUB).
 
 ## How it builds
 
 - **`make docs`** (Makefile) → runs the container → **`entrypoint/docs.sh`**, which:
   generates the gitignored `g*.py` and editable-installs gacalc (so autodoc can
-  `import gacalc`), then `make html` + `make latexpdf` in `book/docs/`, then copies
-  the result to the bind-mounted **`output/gacalc/`** (+ `.nojekyll`).
+  `import gacalc`); **converts the book's percent notebooks
+  `book/docs/notebooks/*.py` → `.ipynb` via jupytext** (so myst_nb executes them);
+  then `make html` + `make latexpdf` in `book/docs/`, then copies the result to the
+  bind-mounted **`output/gacalc/`** (+ `.nojekyll`).
+- **Book notebooks:** the percent-format `.py` are the tracked source; the `.ipynb` are
+  build artifacts (gitignored, regenerated each build). A notebook is a sub-page of its
+  prose page (`.. toctree:: notebooks/<name>`); label a heading with MyST `(label)=` to
+  `:ref:` a subsection from elsewhere (auto heading-anchors are off by design).
 - **`BUILD_DOCS`** gates the toolchain: Dockerfile `ARG BUILD_DOCS=0` (bare build stays
   lean), Makefile `BUILD_DOCS ?= 1` (so `make image` builds it in). The gated
   Dockerfile block installs the Sphinx + LaTeX packages (list below).
