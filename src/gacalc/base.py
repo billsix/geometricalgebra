@@ -764,7 +764,16 @@ class MultiVectorBase(abc.ABC):
         def r(value: MultiVectorBase) -> MultiVectorBase:
             assert value.is_vector()  # TODO - can this be generalized?
             assert isinstance(away_from, MultiVectorBase)  # to satisfy type checking
-            return (value.wedge(away_from)) * away_from.inverse()
+            rejected: MultiVectorBase = (value.wedge(away_from)) * away_from.inverse()
+            # Rejection of a vector is a vector, but the raw product widens the
+            # container in 3D+ (e.g. Vector3 wedge Vector3 -> Bivector3, times a
+            # vector inverse -> the odd part G3 with an identically-zero grade-3
+            # term).  Narrow back to the operand's grade and rebuild as its type --
+            # the same grade-preservation base.project does -- so reject stays in
+            # the operand's type (Vector3, not G3) as documented.
+            return type(value).from_blade_dict(
+                rejected.r_vector_part(1).to_blade_dict()
+            )
 
         def rejection(blade: MultiVectorBase) -> ComposableFunction[MultiVectorBase]:
             return ComposableFunction(

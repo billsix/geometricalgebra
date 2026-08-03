@@ -32,10 +32,13 @@ vectors (float-tolerant ``isclose``).  See
 """
 
 import random
+import typing
 
 import pytest
 
 from gacalc.base import MultiVectorBase
+from gacalc.g2 import Vector2
+from gacalc.g3 import Vector3
 from gacalc.gn import (
     Gn,
     e_1,
@@ -105,3 +108,27 @@ def test_projection_rejection_split_numeric(dim: int) -> None:
         assert (a_perp * b).isclose(a.wedge(b), rel_tol=tol, abs_tol=tol)
         assert (a_par + a_perp).isclose(a, rel_tol=tol, abs_tol=tol)
         assert (a_par * b + a_perp * b).isclose(a * b, rel_tol=tol, abs_tol=tol)
+
+
+def test_graded_vector_factories_type_precisely() -> None:
+    """On the graded ``Vector_n`` types, project/reject/reflect of a vector across
+    a vector stay the concrete vector type -- not the base ``MultiVectorBase`` the
+    general ``Gn`` path (above) returns.  ``typing.assert_type`` makes this a
+    static check: a regression in the generated overloads fails ``ty check tests``.
+    (Runtime is unchanged; ``assert_type`` is a runtime no-op, so the ``isinstance``
+    lines below are what this test asserts when executed.)
+    """
+    v2a: Vector2 = 2 * Vector2.e_1 + 3 * Vector2.e_2
+    v2b: Vector2 = Vector2.e_1 + Vector2.e_2
+    typing.assert_type(Vector2.project(onto=v2b)(v2a), Vector2)
+    typing.assert_type(Vector2.reject(away_from=v2b)(v2a), Vector2)
+    typing.assert_type(Vector2.reflect(across=v2b)(v2a), Vector2)
+
+    v3a: Vector3 = Vector3.e_1 + 2 * Vector3.e_2 + 3 * Vector3.e_3
+    v3b: Vector3 = Vector3.e_1 + Vector3.e_2
+    typing.assert_type(Vector3.project(onto=v3b)(v3a), Vector3)
+    typing.assert_type(Vector3.reject(away_from=v3b)(v3a), Vector3)
+    typing.assert_type(Vector3.reflect(across=v3b)(v3a), Vector3)
+
+    assert isinstance(Vector2.reject(away_from=v2b)(v2a), Vector2)
+    assert isinstance(Vector3.reflect(across=v3b)(v3a), Vector3)

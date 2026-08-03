@@ -1259,6 +1259,60 @@ def alias_dispatch(
     ]
 
 
+def transform_factory_overrides(
+    self_spec: TypeSpec, method: str, param_name: str, wrapper: str
+) -> list[ast.stmt]:
+    """Precise-typed override of a grade-preserving transform-*factory* classmethod
+    (``project`` / ``reject`` / ``reflect``) on a **vector** graded type.
+
+    ``base`` types these ``-> ComposableFunction[MultiVectorBase]`` (project/reject)
+    / ``InvertibleFunction[MultiVectorBase]`` (reflect) -- imprecise, because the
+    returned function's grade-preservation is invisible to the type.  For a *vector
+    across a vector* the result is a vector, so the factory applied to a
+    ``Vector_n`` yields a ``Vector_n``.  Emit two ``@overload`` stubs -- the precise
+    ``<param>: Vector_n -> wrapper[Vector_n]`` and the ``MultiVectorBase |
+    Sequence[MultiVectorBase]`` catch-all (higher-grade blades stay
+    ``MultiVectorBase`` -- the separate generalize task) -- plus a one-line impl
+    that delegates to ``super().<method>`` (runtime unchanged; base does the real
+    work).  ``wrapper`` is ``ComposableFunction`` for project/reject,
+    ``InvertibleFunction`` for the involutive reflect.
+    """
+    vec: str = self_spec.name  # Vector1 / Vector2 / Vector3
+    catch_all_param: ast.expr = ast.BinOp(
+        name_ref("MultiVectorBase"),
+        ast.BitOr(),
+        subscript(name_ref("Sequence"), name_ref("MultiVectorBase")),
+    )
+
+    def stub(param_ann: ast.expr, ret: ast.expr) -> ast.stmt:
+        return function_def(
+            method,
+            [ast.Expr(constant(...))],
+            params=[argument("cls"), argument(param_name, param_ann)],
+            decorators=[attribute("typing", "overload"), name_ref("classmethod")],
+            returns=ret,
+        )
+
+    return [
+        stub(name_ref(vec), subscript(name_ref(wrapper), name_ref(vec))),
+        stub(
+            catch_all_param,
+            subscript(name_ref(wrapper), name_ref("MultiVectorBase")),
+        ),
+        function_def(
+            method,
+            [
+                return_stmt(
+                    call(attribute(call("super"), method), [name_ref(param_name)])
+                )
+            ],
+            params=[argument("cls"), argument(param_name)],
+            decorators=[name_ref("classmethod")],
+            returns=subscript(name_ref(wrapper), name_ref("MultiVectorBase")),
+        ),
+    ]
+
+
 # ==========================================================================
 # The four generators (one per emitted construct)
 # ==========================================================================
@@ -2604,6 +2658,22 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 param_annotation=name_ref("_OperandT"),
             )
         )
+    if spec.name.startswith("Vector"):
+        # project/reject/reflect of a vector across a vector are grade-preserving
+        # (the result is a vector), so narrow the base's MultiVectorBase-typed
+        # factory classmethods to the precise vector type here.  reflect is an
+        # involution -> InvertibleFunction; project/reject -> ComposableFunction.
+        body.extend(
+            transform_factory_overrides(spec, "project", "onto", "ComposableFunction")
+        )
+        body.extend(
+            transform_factory_overrides(
+                spec, "reject", "away_from", "ComposableFunction"
+            )
+        )
+        body.extend(
+            transform_factory_overrides(spec, "reflect", "across", "InvertibleFunction")
+        )
     return [
         class_def(
             spec.name,
@@ -2688,12 +2758,14 @@ from __future__ import annotations
 import dataclasses
 import math
 import typing
-from collections.abc import Generator
+from collections.abc import Generator, Sequence
 
 import numpy as np
 import sympy
 
 from gacalc.base import (
+    ComposableFunction,
+    InvertibleFunction,
     MultiVectorBase,
     BladeCoef,
     Coef,

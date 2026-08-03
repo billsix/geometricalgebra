@@ -189,3 +189,37 @@ Now precise (guarded by `assert_type` in `tests/test_operator_typing.py`
 `s > v → Scalar2`; 𝒢₃ likewise. Runtime was always correct (conformance green) —
 a static-typing fix. The full class `G_n` keeps its inherited `-> Self` aliases,
 already correct (`G2.wedge(G2) → G2`).
+
+## Remaining candidates for the same treatment (analysis 2026-08-03)
+
+A survey of `base.py`'s return annotations for methods still returning the abstract type where
+a concrete one is statically knowable. Full analysis + rationale in
+`tasks/precise-typing-remaining-methods.md`.
+
+- **`project` / `reject` / `reflect` — DONE 2026-08-03.** The function-returning family were
+  `ComposableFunction[MultiVectorBase]` / `InvertibleFunction[MultiVectorBase]`; now, on the
+  **vector** graded types, `Vector_n.project(onto=Vector_n)` (and `reject`/`reflect`) resolve to
+  `ComposableFunction[Vector_n]` / `InvertibleFunction[Vector_n]` (`reflect` uses
+  `InvertibleFunction`, being an involution), with the `MultiVectorBase | Sequence[…]` catch-all
+  kept for higher-grade blades (the separate `tasks/generalize-reject-reflect-higher-grade.md`).
+  Mechanism: a new generator helper **`transform_factory_overrides(spec, method, param, wrapper)`**
+  emits two `@typing.overload @classmethod` stubs (precise + catch-all) plus a one-line
+  `return super().<method>(...)` impl (runtime unchanged — base does the work), injected only on
+  vector specs (`spec.name.startswith("Vector")`), exactly like the `exp`-on-Bivector /
+  `sandwich`-on-Rotor grade-specific injections. **`base.py` needed no signature change** (inside
+  base, `cls` is generic `Self`). **One soundness fix in `base.py`:** `base.reject` was NOT
+  narrowing its result to the operand grade (in 3D it returned the raw `G3` container — grade-1
+  data, higher coeffs identically zero), so a `Vector3` overload would have been unsound;
+  `reject`'s inner `r` now narrows to grade via
+  `type(value).from_blade_dict(rejected.r_vector_part(1)…)`, mirroring `project` and matching the
+  CLAUDE.md Architecture claim ("project/reject are grade-preserving"). Guarded by `assert_type`
+  (`Vector2`/`Vector3.project`/`reject`/`reflect → Vector_n`, 2D+3D). Origin: Bill noticing
+  `proj_b(a)` of a vector is a `Vector2`, not `MultiVectorBase`.
+- **`rotor_from_vectors`** — `-> MultiVectorBase`, but always builds scalar + bivector = a rotor,
+  so `Vector_n.rotor_from_vectors → Rotor_n` (mirrors `Bivector_n.exp() → Rotor_n`). Follow-up.
+- **`identity`** — `InvertibleFunction[MultiVectorBase]`; could be generic `InvertibleFunction[T]`.
+  Minor.
+- **Not this mechanism:** `transforms.projection_rotation`/`rotor_rotation`/`plane_rotation` are
+  free functions (generics, not graded overloads); the `-> Self` grade-preservers
+  (`reverse`/`normalize`/`simplified`/`expanded`/`inverse`) are already precise on the `@final`
+  types; `outer_product_of_vectors` genuinely widens (variadic grade).

@@ -47,7 +47,6 @@ import warnings
 import sympy
 from IPython.display import Math, display
 
-from gacalc.base import MultiVectorBase
 from gacalc.g2 import (
     G2,
     Vector2,
@@ -580,18 +579,18 @@ b: Vector2 = Vector2.e_1 + Vector2.e_2
 b  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
-# The projection and the rejection of `a` relative to `b`. (Their type is
-# resolved as the abstract base, but at runtime each is a `Vector2` -- the
-# display below shows it renders as an ordinary plane vector.) Notice their
+# The projection and the rejection of `a` relative to `b`. Projecting or
+# rejecting a vector across a vector stays a `Vector2` -- the type reflects that,
+# so `a_par` / `a_perp` are `Vector2`, not the abstract base. Notice their
 # coordinates are *fractions* -- awkward-looking vectors -- yet each one's
 # product with `b` collapses to a clean value.
 
 # %%
-a_par: MultiVectorBase = Vector2.project(onto=b)(a)
+a_par: Vector2 = Vector2.project(onto=b)(a)
 a_par  # pyright: ignore[reportUnusedExpression]
 
 # %%
-a_perp: MultiVectorBase = Vector2.reject(away_from=b)(a)
+a_perp: Vector2 = Vector2.reject(away_from=b)(a)
 a_perp  # pyright: ignore[reportUnusedExpression]
 
 # %%
