@@ -14,7 +14,11 @@ export VIRTUAL_ENV_DISABLE_PROMPT=1
 source /venv/bin/activate
 cd /gacalc
 
-# Make the package importable for autodoc.
+# Make the package importable for autodoc AND for the notebook kernels. The book's
+# notebooks carry a jupytext ``kernelspec: python3`` header, so their .ipynb request
+# the image's venv ``python3`` kernel -- which, with this editable install, imports
+# gacalc. (Without the header they'd request no kernel and myst_nb would fall back to
+# a python that can't see the venv's gacalc.)
 python tools/gen_specialized.py
 uv pip install --python "$(which python)" --no-deps --no-index --no-build-isolation -e .
 

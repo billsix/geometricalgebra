@@ -99,14 +99,25 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
 # helper packages are the ones Sphinx's generated LaTeX \usepackage's -- verified
 # by building this book end to end. The recommended latex/font *collections* are
 # already installed just above (for nbconvert), so this block only adds the rest.
+#
+# Sphinx and the doc extensions install into the VENV (uv pip), NOT via dnf, so
+# `sphinx-build` runs as /venv/bin/python. This is load-bearing for the book's
+# executable notebooks: myst_nb launches its Jupyter kernel from sphinx's OWN
+# sys.prefix, so a venv sphinx selects the venv `python3` kernel -- which, via
+# docs.sh's editable install, imports gacalc. A *system* sphinx (dnf) runs as
+# /usr/bin/python3 and selects the system kernel, which CANNOT import gacalc, so
+# every notebook importing gacalc fails silently. This is how modelviewprojection
+# does it (docs toolchain in the venv). Only the LaTeX packages stay in dnf.
+#
+# ImageMagick provides `convert`, which sphinx.ext.imgconverter uses to turn the
+# book's .svg figures into PDF for the LaTeX build. It used to arrive as a
+# transitive dependency of python3-sphinx; now that sphinx is a venv (pip) package,
+# it must be requested explicitly.
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     if [ "$BUILD_DOCS" = "1" ]; then \
       dnf install -y \
-                   python3-sphinx \
-                   python3-furo \
-                   python3-nbsphinx \
-                   myst-nb \
+                   ImageMagick \
                    latexmk \
                    texlive-luahbtex \
                    texlive-luatex85 \
@@ -125,6 +136,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
                    texlive-multirow \
                    texlive-threeparttable \
                    texlive-eqparbox ; \
+      uv pip install --python /venv/bin/python sphinx furo nbsphinx myst-nb ; \
     fi
 
 # Copy the build-relevant project files (not the whole tree: the 31M vendored

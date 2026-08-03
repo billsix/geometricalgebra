@@ -33,6 +33,46 @@ doesn't need.
   Dockerfile block installs the Sphinx + LaTeX packages (list below).
 - **`make clean`** removes `output/*` and `book/docs/_build`.
 
+## Executable notebooks: the Sphinx-in-venv requirement (hard-won, 2026-08-03)
+
+The book's notebooks `import gacalc`, and myst_nb runs them in a Jupyter kernel. For
+that kernel to import gacalc, **three things must line up** — each was a real failure
+while standing this up, and the symptom is silent (myst_nb does NOT fail the build on a
+cell error, so `make docs` exits 0 with empty notebook pages and `ModuleNotFoundError`
+only in `_build/html/reports/notebooks/*.err.log`):
+
+1. **Sphinx lives in the VENV, not system — this is the load-bearing one.** myst_nb
+   launches its kernel from **Sphinx's own `sys.prefix`**. So `sphinx-build` must run as
+   `/venv/bin/python` (`sys.prefix=/venv`) → myst_nb picks the venv `python3` kernel,
+   which has the editable-installed gacalc. If Sphinx is a **system (dnf)** package,
+   `sphinx-build` runs as `/usr/bin/python3` → the *system* `python3` kernel → gacalc
+   not importable → every notebook fails. The Dockerfile therefore installs
+   **sphinx/furo/nbsphinx/myst-nb into the venv** (`uv pip install --python
+   /venv/bin/python`), NOT via dnf. (This is exactly how modelviewprojection does it;
+   gacalc originally used dnf sphinx and every notebook silently failed.)
+2. **The notebook sources declare the kernel.** Each `book/docs/notebooks/*.py` carries
+   a jupytext header (`kernelspec: name: python3`) so the converted `.ipynb` requests
+   `python3`, matching mvp. Belt-and-suspenders with (1).
+3. **`docs.sh` generates `g*.py` and editable-installs gacalc into the venv** before the
+   build, so the kernel resolves gacalc to `/gacalc/src` with the generated modules
+   present.
+
+**Debugging aids** (these cost hours): add `import sys; print(sys.executable)` as a
+notebook cell and build — `/venv/bin/python` = correct, `/usr/bin/python3` = the
+system-sphinx bug. **`jupyter execute` resolves kernels DIFFERENTLY from myst_nb** —
+always test with a real minimal `sphinx-build`, never `jupyter execute`. Check
+`which sphinx-build` in the image: `/venv/bin/...` = good, `/usr/bin/...` = the bug.
+
+## SVG figures in the PDF need ImageMagick
+
+`sphinx.ext.imgconverter` shells out to **`convert` (ImageMagick)** to turn the rotation
+`.svg` figures into PDF for the LaTeX build. **ImageMagick must be dnf-installed** in the
+BUILD_DOCS block — it used to arrive transitively with the system `python3-sphinx`, so
+when Sphinx moved to the venv (above), ImageMagick had to be requested explicitly, or
+the PDF build dies with `LaTeX Error: Unknown graphics extension: .svg`. Note: a
+`imgconverter_converters` setting in `conf.py` is **not** respected — the default
+`convert` is what runs, so the fix is the package, not config.
+
 ## conf.py essentials
 
 - Theme **furo**; `html_css_files = ["custom.css"]`.

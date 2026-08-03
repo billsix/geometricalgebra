@@ -28,8 +28,3 @@ later, and sections may be written out of order.
    three-dimensions
    projection-rejection-3d
    api
-
-.. toctree::
-   :hidden:
-
-   proof-rotate
