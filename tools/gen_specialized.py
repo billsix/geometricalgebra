@@ -1248,11 +1248,7 @@ def alias_dispatch(
         ),
         function_def(
             alias,
-            [
-                return_stmt(
-                    call(attribute("self", target), [name_ref(param_name)])
-                )
-            ],
+            [return_stmt(call(attribute("self", target), [name_ref(param_name)]))],
             params=[argument("self"), argument(param_name)],
             returns=name_ref("MultiVectorBase"),
         ),
@@ -1683,9 +1679,7 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
                     [
                         return_stmt(
                             call(
-                                attribute(
-                                    call("super", []), "isclose"
-                                ),
+                                attribute(call("super", []), "isclose"),
                                 [
                                     name_ref("other"),
                                     name_ref("rel_tol"),

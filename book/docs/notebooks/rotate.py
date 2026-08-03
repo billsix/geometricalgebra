@@ -15,6 +15,7 @@
 
 # %%
 import sympy
+
 from gacalc.g2 import Vector2
 from gacalc.transforms import plane_rotation
 

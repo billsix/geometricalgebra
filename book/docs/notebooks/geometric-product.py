@@ -15,7 +15,8 @@
 
 # %%
 import sympy
-from gacalc.g2 import Vector2, Bivector2
+
+from gacalc.g2 import Bivector2, Vector2
 from gacalc.transforms import plane_rotation
 
 theta = sympy.Symbol("theta", real=True)

@@ -78,7 +78,8 @@ def test_perpendicular_part_fixed_in_g3() -> None:
     t: float = math.radians(37)
     assert got.isclose(
         Vector3(coeff_e_1=math.cos(t), coeff_e_2=math.sin(t), coeff_e_3=5.0),
-        rel_tol=1e-5, abs_tol=1e-5,
+        rel_tol=1e-5,
+        abs_tol=1e-5,
     )
 
 

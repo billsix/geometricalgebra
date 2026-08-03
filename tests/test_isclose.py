@@ -17,9 +17,7 @@ def test_symmetric() -> None:
     b: Vector2 = Vector2(1.0 + 1e-7, 2.0)
     assert a.isclose(b, rel_tol=1e-5)
     # order-independent, unlike the old np.isclose (b-as-reference) behaviour
-    assert a.isclose(b, rel_tol=1e-5) == b.isclose(
-        a, rel_tol=1e-5
-    )
+    assert a.isclose(b, rel_tol=1e-5) == b.isclose(a, rel_tol=1e-5)
 
 
 def test_abs_tol_needed_for_near_zero() -> None:
@@ -53,8 +51,6 @@ def test_numeric_sympy_passes() -> None:
 
 def test_gn_matches_specialized() -> None:
     g: Gn = Gn.from_blade_dict({(1,): 1.0, (2,): 2.0})
-    assert g.isclose(
-        Gn.from_blade_dict({(1,): 1.0 + 1e-8, (2,): 2.0}), abs_tol=1e-5
-    )
+    assert g.isclose(Gn.from_blade_dict({(1,): 1.0 + 1e-8, (2,): 2.0}), abs_tol=1e-5)
     v: Vector2 = Vector2(1.0, 2.0)
     assert v.isclose(Vector2(1.0 + 1e-8, 2.0), abs_tol=1e-5)
