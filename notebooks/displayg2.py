@@ -47,6 +47,7 @@ import warnings
 import sympy
 from IPython.display import Math, display
 
+from gacalc.base import MultiVectorBase
 from gacalc.g2 import (
     G2,
     Vector2,
@@ -549,6 +550,103 @@ assert (
     == 0
 )
 
+# %% [markdown]
+# Dot and wedge are the parallel and perpendicular parts of the product
+# =====================================================================
+#
+# Split `a` **relative to `b`** into the part lying **along** `b` (its
+# projection $a_\parallel = \operatorname{proj}_b(a)$) and the part
+# **perpendicular** to `b` (its rejection $a_\perp = \operatorname{rej}_b(a)$),
+# so that $a = a_\parallel + a_\perp$. Multiplying each part by `b` isolates one
+# half of the geometric product:
+#
+# $$ a_\parallel\, b = a\cdot b \qquad\qquad a_\perp\, b = a\wedge b $$
+#
+# The wedge term drops out of $a_\parallel b$ because $a_\parallel$ is parallel
+# to `b` (parallel vectors span no area, so their wedge is zero); the dot term
+# drops out of $a_\perp b$ because $a_\perp$ is perpendicular to `b` (their dot
+# is zero). Below we pick concrete vectors and **read the coordinates off both
+# sides** — they are the same number. The two-line proof (and its symbolic
+# verification) is in `tasks/reference/dot-wedge-projection-rejection.md`.
+
 # %%
+# Concrete vectors in the plane. b points along the 45° diagonal -- not on an
+# axis -- to show the identity does not depend on a convenient choice of b.
+a: Vector2 = 2 * Vector2.e_1 + 3 * Vector2.e_2
+a  # pyright: ignore[reportUnusedExpression]
+
+# %%
+b: Vector2 = Vector2.e_1 + Vector2.e_2
+b  # pyright: ignore[reportUnusedExpression]
+
+# %% [markdown]
+# The projection and the rejection of `a` relative to `b`. (Their type is
+# resolved as the abstract base, but at runtime each is a `Vector2` -- the
+# display below shows it renders as an ordinary plane vector.) Notice their
+# coordinates are *fractions* -- awkward-looking vectors -- yet each one's
+# product with `b` collapses to a clean value.
+
+# %%
+a_par: MultiVectorBase = Vector2.project(onto=b)(a)
+a_par  # pyright: ignore[reportUnusedExpression]
+
+# %%
+a_perp: MultiVectorBase = Vector2.reject(away_from=b)(a)
+a_perp  # pyright: ignore[reportUnusedExpression]
+
+# %%
+# The two parts add back up to a.
+a_par + a_perp == a
+
+# %% [markdown]
+# **The projection times `b` is the dot product.** Read the coordinate off each
+# side: both are the scalar `5`.
+
+# %%
+a_par * b  # pyright: ignore[reportUnusedExpression]
+
+# %%
+a.dot(b)
+
+# %%
+a_par * b == a.dot(b)
+
+# %% [markdown]
+# `show_mult` expands the product term by term, so you can watch the two
+# `e_12` (bivector) contributions cancel and leave only the scalar:
+
+# %%
+show_mult(a_par, b)
+
+# %% [markdown]
+# **The rejection times `b` is the wedge product.** Both sides are the bivector
+# $-1\,e_{12}$ -- again, the same single coordinate.
+
+# %%
+a_perp * b  # pyright: ignore[reportUnusedExpression]
+
+# %%
+a.wedge(b)
+
+# %%
+a_perp * b == a.wedge(b)
+
+# %% [markdown]
+# Here it is the two scalar contributions that cancel, leaving only the
+# bivector:
+
+# %%
+show_mult(a_perp, b)
+
+# %% [markdown]
+# **Putting it back together.** Adding the two products reconstructs the full
+# geometric product $ab = a\cdot b + a\wedge b$: the parallel/perpendicular
+# split of `a` *is* the scalar/bivector split of `ab`.
+
+# %%
+a_par * b + a_perp * b == a * b
+
+# %%
+a * b  # pyright: ignore[reportUnusedExpression]
 
 # %%

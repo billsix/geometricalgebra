@@ -481,8 +481,10 @@ is the answer to your dot-product worry. For every GA operator:
    This is the structural cure for students fixating on mechanics: the mechanics are visibly
    *optional* and *below* the boxed result they feed.
 
-**(3) Make [[verify-dot-wedge-as-projection-rejection-products]] the worked archetype of the
-climb.** That result — split `a` relative to `b`, and the geometric product of the projection
+**(3) Make [[dot-wedge-projection-rejection]] the worked archetype of the
+climb.** (Proved and verified 2026-08-03; the work record is archived at
+`tasks/archive/2026/08/03/verify-dot-wedge-as-projection-rejection-products.md`.) That
+result — split `a` relative to `b`, and the geometric product of the projection
 is the dot product while the geometric product of the rejection is the wedge — is the perfect
 first demonstration of the box/unbox grammar:
    - **Box:** "Dot and wedge are the parallel and perpendicular parts of the geometric
@@ -542,7 +544,7 @@ named as the trap:
 2. **Concept-first statement, boxed:** *Definition — the dot product `a·b` is the scalar part
    of the geometric product; geometrically, it is the signed length of the projection of `a`
    onto `b`, times `|b|`.* Stated in words and symbols.
-3. **The climb, boxed as a theorem** (this is [[verify-dot-wedge-as-projection-rejection-products]]):
+3. **The climb, boxed as a theorem** (this is [[dot-wedge-projection-rejection]]):
    *`a·b` is the geometric product of `a`'s projection onto `b` with `b`; `a∧b` is the
    geometric product of `a`'s rejection with `b`.*
 4. **Unboxed, skippable proof:** the two-line parallel/perpendicular argument, plus a gacalc
