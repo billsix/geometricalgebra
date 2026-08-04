@@ -2682,24 +2682,39 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
 
 
 def generate_constants(n: int, name: str) -> list[ast.stmt]:
-    """Module-level basis constants for one algebra, hand-built as nodes (level C)."""
+    """Module-level basis constants for one algebra, hand-built as nodes (level C).
+
+    Each constant is emitted at its **resolved graded type** -- the smallest
+    registered type covering its blade (``zero``/``one`` -> ``Scalar_n``, a lone
+    vector blade -> ``Vector_n``, ``e_12`` -> ``Bivector_n``, the pseudoscalar ->
+    the top-grade type), not the full class ``G_n``.  So ``3 * e_1 + 4 * e_2``
+    stays a ``Vector2`` (matching the printed ``3e₁ + 4e₂``), while a general
+    multivector is still reachable via the full class's own constant ``G_n.e_1``
+    or a direct ``G_n(...)`` / ``Gn`` construction.  ``gn.py`` is generated
+    separately and keeps its ``Gn`` constants (it has no graded subtypes)."""
     nonempty: list[Blade] = [b for b in blades_for_dim(n) if b != ()]
+    scalar_name: str = scalar_spec(n).name
     nodes: list[ast.stmt] = [
         annotated_assign(
-            "zero", name_ref(name), call(attribute(name, "from_scalar"), [constant(0)])
+            "zero",
+            name_ref(scalar_name),
+            call(attribute(scalar_name, "from_scalar"), [constant(0)]),
         ),
         annotated_assign(
-            "one", name_ref(name), call(attribute(name, "from_scalar"), [constant(1)])
+            "one",
+            name_ref(scalar_name),
+            call(attribute(scalar_name, "from_scalar"), [constant(1)]),
         ),
     ]
     b: Blade
     for b in nonempty:
+        graded_name: str = resolve([b], n, name).name
         nodes.append(
             annotated_assign(
                 blade_label(b),
-                name_ref(name),
+                name_ref(graded_name),
                 call(
-                    attribute(name, "from_blade_dict"),
+                    attribute(graded_name, "from_blade_dict"),
                     [ast.Dict(keys=[constant(b)], values=[constant(1)])],
                 ),
             )

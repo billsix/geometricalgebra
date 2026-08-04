@@ -47,15 +47,7 @@ import warnings
 import sympy
 from IPython.display import Math, display
 
-from gacalc.g2 import (
-    G2,
-    Vector2,
-    e_1,
-    e_2,
-    e_12,
-    one,
-    zero,
-)
+from gacalc.g2 import G2, Vector2
 from gacalc.nbplotutils import (
     create_basis,
     create_graphs,
@@ -88,7 +80,7 @@ warnings.filterwarnings("error", category=RuntimeWarning)
 # unit *i*, and the even subalgebra {scalar, `e_12`} is isomorphic to ℂ.
 
 # %%
-i: G2 = e_1 * e_2
+i: G2 = G2.e_1 * G2.e_2
 i  # pyright: ignore[reportUnusedExpression]
 
 # %%
@@ -96,7 +88,7 @@ i * i  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # e_12 is the same value as e_1 * e_2
-e_12 == e_1 * e_2
+G2.e_12 == G2.e_1 * G2.e_2
 
 # %% [markdown]
 # Linear combinations
@@ -105,13 +97,13 @@ e_12 == e_1 * e_2
 # `G2` values add and scale like vectors; like terms collect automatically.
 
 # %%
-2 * e_1 + 3 * e_2 + 5 * e_1  # pyright: ignore[reportUnusedExpression]
+2 * G2.e_1 + 3 * G2.e_2 + 5 * G2.e_1  # pyright: ignore[reportUnusedExpression]
 
 # %%
-zero  # pyright: ignore[reportUnusedExpression]
+G2.from_scalar(0)  # pyright: ignore[reportUnusedExpression]
 
 # %%
-one  # pyright: ignore[reportUnusedExpression]
+G2.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Symbolic vectors
@@ -216,7 +208,7 @@ for x in G2.bases():
 # each blade; the dual multiplies by the inverse pseudoscalar.
 
 # %%
-m: G2 = 3 * e_1 + 4 * e_2
+m: G2 = 3 * G2.e_1 + 4 * G2.e_2
 m.magnitude()
 
 # %%
@@ -229,7 +221,7 @@ m.normalize()
 m.inverse()
 
 # %%
-m * m.inverse() == one
+m * m.inverse() == G2.from_scalar(1)
 
 # %%
 # reverse of the bivector negates it
@@ -250,8 +242,8 @@ m.dual()
 
 # %%
 def gram_fe_to_mol_fe(gram_fe: float) -> G2:
-    unit_gram_fe: G2 = e_1
-    unit_mol_fe: G2 = e_2
+    unit_gram_fe: G2 = G2.e_1
+    unit_mol_fe: G2 = G2.e_2
 
     ratio: G2 = (55.85 * unit_gram_fe).inverse() * (1 * unit_mol_fe)
     return gram_fe * unit_gram_fe * ratio
@@ -283,26 +275,26 @@ rotate = plane_rotation(Vector2.e_1, Vector2.e_2)
 
 
 # %%
-translate(b=5 * e_1)
+translate(b=5 * G2.e_1)
 
 # %%
 # `scale_non_uniform` is the n-D scale (pass two factors for the 2D case)
 scale_non_uniform(5, 6)
 
 # %%
-inverse(translate(b=5 * e_1))
+inverse(translate(b=5 * G2.e_1))
 
 # %%
-translate(b=5 * e_1 + 6 * e_2)
+translate(b=5 * G2.e_1 + 6 * G2.e_2)
 
 # %%
 rotate(sympy.pi / 2)
 
 # %%
-compose([rotate(sympy.pi / 2), translate(b=5 * e_1 + 6 * e_2)])
+compose([rotate(sympy.pi / 2), translate(b=5 * G2.e_1 + 6 * G2.e_2)])
 
 # %%
-inverse(compose([rotate(sympy.pi / 2), translate(b=5 * e_1 + 6 * e_2)]))
+inverse(compose([rotate(sympy.pi / 2), translate(b=5 * G2.e_1 + 6 * G2.e_2)]))
 
 # %% [markdown]
 # Applying transforms to a `G2` vector
@@ -312,7 +304,7 @@ inverse(compose([rotate(sympy.pi / 2), translate(b=5 * e_1 + 6 * e_2)]))
 # through a transform yields a `G2` vector (not a coerced general `Gn`).
 
 # %%
-w: G2 = 3 * e_1 + 4 * e_2
+w: G2 = 3 * G2.e_1 + 4 * G2.e_2
 w  # pyright: ignore[reportUnusedExpression]
 
 # %%
@@ -329,7 +321,7 @@ scale_non_uniform(2, 3)(w)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # compose: translate first, then rotate (read right-to-left)
-compose([rotate(sympy.pi / 2), translate(b=5 * e_1)])(w)  # pyright: ignore[reportUnusedExpression]
+compose([rotate(sympy.pi / 2), translate(b=5 * G2.e_1)])(w)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # a transform and its inverse round-trip back to the original vector
@@ -343,14 +335,16 @@ inverse(rotate(sympy.pi / 2))(rotate(sympy.pi / 2)(w)) == w
 # accepts any representation — here, `G2` values.
 
 # %%
-plot_multivector(2 * one + 3 * e_1 - 1.5 * e_2 + 0.7 * (e_1 * e_2))
+plot_multivector(
+    2 * G2.from_scalar(1) + 3 * G2.e_1 - 1.5 * G2.e_2 + 0.7 * (G2.e_1 * G2.e_2)
+)
 
 # %%
-u: G2 = 3 * e_1 - 1.5 * e_2
+u: G2 = 3 * G2.e_1 - 1.5 * G2.e_2
 plot_multivector(u)
 
 # %%
-v: G2 = 1.5 * e_1 + 5 * e_2
+v: G2 = 1.5 * G2.e_1 + 5 * G2.e_2
 plot_multivector(v)
 
 # %%
@@ -410,7 +404,7 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 fn = compose(
     [
         rotate(sympy.pi / 4),
-        translate(b=2 * e_1),
+        translate(b=2 * G2.e_1),
     ]
 )
 with create_graphs() as axes:
@@ -427,7 +421,7 @@ with create_graphs() as axes:
 # the units on the left and bottom.
 
 # %%
-for f in compose_intermediate_fns([rotate(sympy.pi / 4), translate(b=2 * e_1)]):
+for f in compose_intermediate_fns([rotate(sympy.pi / 4), translate(b=2 * G2.e_1)]):
     with create_graphs() as axes:
         create_basis(fn=f, cls=G2)
         create_x_and_y(fn=f, cls=G2)
@@ -448,7 +442,7 @@ for f in compose_intermediate_fns([rotate(sympy.pi / 4), translate(b=2 * e_1)]):
 for f in compose_intermediate_fns(
     [
         rotate(sympy.pi / 4),
-        translate(b=2 * e_1),
+        translate(b=2 * G2.e_1),
     ],
     relative_basis=True,
 ):

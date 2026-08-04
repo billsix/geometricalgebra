@@ -164,17 +164,26 @@ holds (`sqrt(25) == 5`; a unit blade normalizes to `Rational`s, not floats), and
 symbolic coefficients stay symbolic. **Don't reintroduce an unconditional
 `sympy.sqrt` / `sympify` on these paths** (covered by `tests/test_numeric_magnitude.py`).
 
-Two ways to name a basis blade: each `g*` module exports **module-level** constants of its own type
-(`from gacalc.g2 import G2, e_1, e_2` then `3*e_1 + 4*e_2` builds a `G2`); and each **class** exposes
-its own basis blades as **class constants of that class's type** (`Vector2.e_1`, `Bivector2.e_12`,
-`G3.e_123`) — equivalent to `cls.basis_vector(n)` but named. These are emitted by the generator as a
-`ClassVar` declaration in the class body plus a post-class `Cls.e_1 = Cls.from_blade_dict(...)`
-assignment (a class can't reference itself mid-definition). Because the stored field is `coeff_e_1`,
-**both `Cls.e_1` and `instance.e_1` resolve to that one constant** (no instance attribute shadows it),
-while `instance.coeff_e_1` is the component value; read a coefficient back out with
-`value.coefficient(Vector2.e_1)` (thin reader over `to_blade_dict()`). `Gn` is dimension-agnostic so it has **no** class constants — use the
-module-level `gn.e_1 …` or `Gn.basis_vector(n)`. Mixing a specialized value with a `Gn` value coerces
-to `Gn`.
+Two ways to name a basis blade: each `g1`/`g2`/`g3` module exports **module-level** constants at
+their **graded** type (`from gacalc.g2 import e_1, e_2` then `3*e_1 + 4*e_2` is a **`Vector2`**, `e_12`
+is a `Bivector2`, `zero`/`one` are `Scalar_n`) — so concise unqualified code keeps the precise graded
+type and matches the printed math (`3e₁ + 4e₂`); and each **class** exposes its own basis blades as
+**class constants of that class's type** (`Vector2.e_1`, `Bivector2.e_12`, `G3.e_123`, and the full
+class's own `G2.e_1`/`G3.e_123`) — equivalent to `cls.basis_vector(n)` but named. **To build a general
+`G_n` concisely, use the full class's own constant** (`G2.e_1`, so `3*G2.e_1 + 4*G2.e_2` is a `G2`) or
+`G2(...)` / `Gn`; the module constants are no longer the full class. (Reversed 2026-08-04 — module
+constants used to be the full `G_n`; the only code encoding that was one conformance test
+(`test_basis_constants`, updated to assert the graded type) and the two full-class notebooks (migrated
+to `G2.e_1`/`G3.e_1`). See `tasks/graded-typed-module-basis-constants.md`.) The class constants are emitted by
+the generator as a `ClassVar` declaration in the class body plus a post-class `Cls.e_1 =
+Cls.from_blade_dict(...)` assignment (a class can't reference itself mid-definition); the module
+constants are emitted by `generate_constants` at each blade's `resolve`d graded type. Because the
+stored field is `coeff_e_1`, **both `Cls.e_1` and `instance.e_1` resolve to that one constant** (no
+instance attribute shadows it), while `instance.coeff_e_1` is the component value; read a coefficient
+back out with `value.coefficient(Vector2.e_1)` (thin reader over `to_blade_dict()`). `Gn` is
+dimension-agnostic so it has **no** class constants and **no** graded subtypes — its module-level
+`gn.e_1 …` stay `Gn` (`MultiVector`); or use `Gn.basis_vector(n)`. Mixing a specialized value with a
+`Gn` value coerces to `Gn`.
 
 **Iteration yields coefficient values, not blade terms.** `iter(value)` / `list(value)` /
 `tuple(value)` / `np.array([list(v), …])` yield the coefficient *values* in blade order — so a vector

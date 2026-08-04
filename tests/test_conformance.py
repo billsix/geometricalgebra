@@ -285,22 +285,37 @@ def test_mixing_with_gn_coerces_to_gn(n: int, cls) -> None:
 
 @pytest.mark.parametrize("n,cls", [(1, G1), (2, G2), (3, G3)])
 def test_basis_constants(n: int, cls) -> None:
+    # Module constants carry the GRADED type of their blade (reversed 2026-08-04:
+    # they used to be the full class cls) -- zero/one -> Scalar_n, a vector blade
+    # -> Vector_n, e_12 -> Bivector_n, e_123 -> Trivector3.  See
+    # tasks/graded-typed-module-basis-constants.md.
     mod: ModuleType = MODULES[n]
-    assert type(mod.zero) is cls
-    assert type(mod.one) is cls
+    grade_prefix: dict[int, str] = {0: "Scalar", 1: "Vector", 2: "Bivector", 3: "Trivector"}
+
+    def graded_type(grade: int) -> type:
+        return getattr(mod, f"{grade_prefix[grade]}{n}")
+
+    assert type(mod.zero) is graded_type(0)
+    assert type(mod.one) is graded_type(0)
     b: Blade
     for b in blades(n):
         if b == ():
             continue
         const: MultiVectorBase = getattr(mod, field_name(b))
-        assert type(const) is cls
+        assert type(const) is graded_type(len(b))
         assert const == Gn.from_blade_dict({b: 1})
-    # building from the module's own constants stays in the specialized type
-    built: MultiVectorBase = 3 * mod.one
-    i: int
-    for i, b in enumerate([x for x in blades(n) if len(x) == 1]):
-        built = built + (i + 2) * getattr(mod, field_name(b))
-    assert type(built) is cls
+    # Summing same-grade module constants stays in that grade's graded type;
+    # adding a scalar spans grades (no covering graded type) so it widens to the
+    # algebra's full class cls.
+    grade1: list[Blade] = [x for x in blades(n) if len(x) == 1]
+    coeffs: dict[Blade, int] = {b: i + 2 for i, b in enumerate(grade1)}
+    first: Blade = grade1[0]
+    vector_sum: MultiVectorBase = coeffs[first] * getattr(mod, field_name(first))
+    for b in grade1[1:]:
+        vector_sum = vector_sum + coeffs[b] * getattr(mod, field_name(b))
+    assert type(vector_sum) is graded_type(1)
+    assert vector_sum == Gn.from_blade_dict(coeffs)
+    assert type(3 * mod.one + vector_sum) is cls
 
 
 @pytest.mark.parametrize("n,cls", [(1, G1), (2, G2), (3, G3)])

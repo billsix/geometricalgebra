@@ -47,19 +47,7 @@ import warnings
 import sympy
 from IPython.display import Math, display
 
-from gacalc.g3 import (
-    G3,
-    Vector3,
-    e_1,
-    e_2,
-    e_3,
-    e_12,
-    e_13,
-    e_23,
-    e_123,
-    one,
-    zero,
-)
+from gacalc.g3 import G3, Vector3
 from gacalc.nbplotutils import plot_multivector, show_mult
 
 # turn warnings into exceptions
@@ -73,39 +61,39 @@ warnings.filterwarnings("error", category=RuntimeWarning)
 # pseudoscalar of 𝒢₃. Like the bivector in 𝒢₂, it squares to −1.
 
 # %%
-pseudoscalar: G3 = e_1 * e_2 * e_3
+pseudoscalar: G3 = G3.e_1 * G3.e_2 * G3.e_3
 pseudoscalar  # pyright: ignore[reportUnusedExpression]
 
 # %%
 pseudoscalar * pseudoscalar  # pyright: ignore[reportUnusedExpression]
 
 # %%
-e_123 == e_1 * e_2 * e_3
+G3.e_123 == G3.e_1 * G3.e_2 * G3.e_3
 
 # %%
 # the three unit bivectors
-e_12  # pyright: ignore[reportUnusedExpression]
+G3.e_12  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # the three unit bivectors
-e_13  # pyright: ignore[reportUnusedExpression]
+G3.e_13  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # the three unit bivectors
-e_23  # pyright: ignore[reportUnusedExpression]
+G3.e_23  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Linear combinations
 # -------------------
 
 # %%
-2 * e_1 + 3 * e_2 + 4 * e_3 + 5 * e_1  # pyright: ignore[reportUnusedExpression]
+2 * G3.e_1 + 3 * G3.e_2 + 4 * G3.e_3 + 5 * G3.e_1  # pyright: ignore[reportUnusedExpression]
 
 # %%
-zero  # pyright: ignore[reportUnusedExpression]
+G3.from_scalar(0)  # pyright: ignore[reportUnusedExpression]
 
 # %%
-one  # pyright: ignore[reportUnusedExpression]
+G3.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Symbolic vectors
@@ -223,7 +211,7 @@ biv * biv  # pyright: ignore[reportUnusedExpression]
 # ---------------------------------------------
 
 # %%
-m: G3 = 1 * e_1 + 2 * e_2 + 2 * e_3
+m: G3 = 1 * G3.e_1 + 2 * G3.e_2 + 2 * G3.e_3
 m.magnitude()
 
 # %%
@@ -236,7 +224,7 @@ m.normalize()
 m.inverse()
 
 # %%
-m * m.inverse() == one
+m * m.inverse() == G3.from_scalar(1)
 
 # %%
 # reverse of the pseudoscalar
@@ -254,14 +242,20 @@ m.dual()
 # accepts any representation — here, `G3` values.
 
 # %%
-plot_multivector(2 * one + 3 * e_1 - 1.5 * e_2 + 4 * e_3 + 0.7 * (e_1 * e_2))
+plot_multivector(
+    2 * G3.from_scalar(1)
+    + 3 * G3.e_1
+    - 1.5 * G3.e_2
+    + 4 * G3.e_3
+    + 0.7 * (G3.e_1 * G3.e_2)
+)
 
 # %%
-u: G3 = 3 * e_1 - 1.5 * e_2 + 2 * e_3
+u: G3 = 3 * G3.e_1 - 1.5 * G3.e_2 + 2 * G3.e_3
 plot_multivector(u)
 
 # %%
-v: G3 = 1.5 * e_1 + 5 * e_2 - e_3
+v: G3 = 1.5 * G3.e_1 + 5 * G3.e_2 - G3.e_3
 plot_multivector(v)
 
 # %%
