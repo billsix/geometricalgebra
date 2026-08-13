@@ -13,30 +13,22 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
 
 COPY entrypoint/dotfiles/ /root/
 
+# System-package installation lives in per-group scripts (entrypoint/0N-install-*.sh),
+# host-runnable with no container runtime; the scripts take no options -- WHICH optional
+# groups run is decided here by the ARG `if` blocks. base + notebook-tex are always
+# installed; spyder/docs are flag-gated. The dnf cache mount + keepcache stay in the
+# Dockerfile (build plumbing); `dnf upgrade` ran in the earlier layer above. Config that
+# writes container paths (spyder.ini, the venv pip installs) also stays in the Dockerfile.
+COPY entrypoint/01-install-base.sh \
+     entrypoint/02-install-spyder.sh \
+     entrypoint/03-install-notebook-tex.sh \
+     entrypoint/04-install-docs.sh /usr/local/bin/
+
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
-    dnf install -y \
-                   emacs \
-                   python3 \
-                   python3-setuptools \
-                   python3-sympy \
-                   python3-pandas \
-                   python3-pytest \
-                   python3-wheel \
-                   ruff \
-                   emacs-gtk+x11 \
-                   emacs-pgtk \
-                   tmux \
-                   uv \
-                   ty \
-                   which ;  \
-    dnf install -y \
-                   pinentry; \
+    /usr/local/bin/01-install-base.sh ; \
     if [ "$USE_SPYDER" = "1" ]; then \
-      dnf install -y   \
-                   mesa-dri-drivers  \
-                   mesa-libGLU-devel && \
-      dnf install -y python3-spyder && \
+      /usr/local/bin/02-install-spyder.sh && \
       mkdir -p ~/.config/spyder-py3/config && \
       echo "[editor]" >> ~/.config/spyder-py3/config/spyder.ini && \
       echo "font/family = Source Code Pro" >> ~/.config/spyder-py3/config/spyder.ini && \
@@ -57,7 +49,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     export VIRTUAL_ENV_DISABLE_PROMPT=1 && \
     source /venv/bin/activate && \
     uv pip install --python $(which python) setuptools wheel numpy sympy && \
-    dnf install -y libatomic && uv pip install --python $(which python) pyright
+    uv pip install --python $(which python) pyright
 
 # Notebook "Export to PDF": nbconvert's PDF path renders the notebook through
 # pandoc -> XeLaTeX, so the image needs pandoc plus a XeLaTeX toolchain with the
@@ -69,27 +61,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
 # unconditionally, alongside the always-present jupyter stack above.
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
-    dnf install -y \
-                   pandoc \
-                   texlive-xetex \
-                   texlive-collection-fontsrecommended \
-                   texlive-collection-latexrecommended \
-                   texlive-adjustbox \
-                   texlive-tcolorbox \
-                   texlive-collectbox \
-                   texlive-ucs \
-                   texlive-titling \
-                   texlive-enumitem \
-                   texlive-rsfs \
-                   texlive-jknapltx \
-                   texlive-upquote \
-                   texlive-ulem \
-                   texlive-soul \
-                   texlive-eurosym \
-                   texlive-pgf \
-                   texlive-environ \
-                   texlive-trimspaces \
-                   texlive-parskip
+    /usr/local/bin/03-install-notebook-tex.sh
 
 # Sphinx book toolchain (`make docs` -> HTML + PDF). Gated behind BUILD_DOCS so a
 # bare `podman build` stays lean; `make image` sets BUILD_DOCS=1. The PDF is built
@@ -116,26 +88,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     if [ "$BUILD_DOCS" = "1" ]; then \
-      dnf install -y \
-                   ImageMagick \
-                   latexmk \
-                   texlive-luahbtex \
-                   texlive-luatex85 \
-                   texlive-lualatex-math \
-                   texlive-fontspec \
-                   texlive-gnu-freefont \
-                   texlive-fncychap \
-                   texlive-wrapfig \
-                   texlive-capt-of \
-                   texlive-needspace \
-                   texlive-tabulary \
-                   texlive-framed \
-                   texlive-titlesec \
-                   texlive-varwidth \
-                   texlive-fancyhdr \
-                   texlive-multirow \
-                   texlive-threeparttable \
-                   texlive-eqparbox ; \
+      /usr/local/bin/04-install-docs.sh ; \
       uv pip install --python /venv/bin/python sphinx furo nbsphinx myst-nb ; \
     fi
 
