@@ -33,7 +33,7 @@
 #
 # Mathematicians rarely carry a full multivector; they work with *vectors*,
 # *bivectors*, *rotors*, and so on. This library has those as first-class types
-# (`Vector2`, `Bivector2`, `Rotor2`, `Scalar2`, ...), and **the product decides the
+# (`g2.Vector`, `g2.Bivector`, `g2.Rotor`, `g2.Scalar`, ...), and **the product decides the
 # return type**: two vectors multiply to a *rotor* (scalar + bivector), their
 # wedge is a *bivector*, and so on.
 #
@@ -48,8 +48,8 @@ import sympy
 from IPython.display import Markdown, Math, display
 
 from gacalc.base import MultiVectorBase
-from gacalc.g2 import Bivector2, Rotor2, Scalar2, Vector2, e_1, e_2
-from gacalc.g3 import Bivector3, Vector3
+import gacalc.g2 as g2
+import gacalc.g3 as g3
 from gacalc.transforms import (
     ComposableFunction,
     InvertibleFunction,
@@ -74,17 +74,17 @@ def show(*values: MultiVectorBase) -> None:
 # A vector basis
 # --------------
 #
-# Build a vector basis and combine it linearly: `3*e_1 + 4*e_2` is a `Vector2`,
+# Build a vector basis and combine it linearly: `3*g2.e_1 + 4*g2.e_2` is a `g2.Vector`,
 # so the code reads like the printed math. Each `g2`/`g3` module exports its basis
-# blades at **module scope, already graded** — `from gacalc.g2 import e_1, e_2`
-# yields `Vector2` constants — so the vectors are written unqualified below. (The
-# same blades are also class constants, `Vector2.e_1 == Vector2.basis_vector(1)`,
-# and reading a coefficient back out is `v.coefficient(Vector2.e_1)`, a thin reader
+# blades at **module scope, already graded** — `from gacalc.g2 import g2.e_1, g2.e_2`
+# yields `g2.Vector` constants — so the vectors are written unqualified below. (The
+# same blades are also class constants, `g2.Vector.g2.e_1 == g2.Vector.basis_vector(1)`,
+# and reading a coefficient back out is `v.coefficient(g2.Vector.g2.e_1)`, a thin reader
 # over `to_blade_dict()`.)
 
 # %%
-a: Vector2 = 3 * e_1 + 4 * e_2
-b: Vector2 = 1 * e_1 + 2 * e_2
+a: g2.Vector = 3 * g2.e_1 + 4 * g2.e_2
+b: g2.Vector = 1 * g2.e_1 + 2 * g2.e_2
 show(a)
 
 # %% [markdown]
@@ -100,32 +100,32 @@ show(a)
 show(a * b)
 
 # %%
-# the wedge alone is a Bivector2; the dot alone is a Scalar2
+# the wedge alone is a g2.Bivector; the dot alone is a g2.Scalar
 show(a ^ b, a.inner_product(b))
 
 # %% [markdown]
 # Type follows the operation, not the value
 # -----------------------------------------
 #
-# Orthogonal vectors have a zero dot product, but `e_1 * e_2` is still a `Rotor2`
+# Orthogonal vectors have a zero dot product, but `g2.e_1 * g2.e_2` is still a `g2.Rotor`
 # (its scalar field just happens to be 0) — we never narrow by looking at a value.
 # Want the pure bivector? Use `^`.
 
 # %%
-show(e_1 * e_2)
+show(g2.e_1 * g2.e_2)
 
 # %%
-show(e_1 ^ e_2)
+show(g2.e_1 ^ g2.e_2)
 
 # %% [markdown]
-# Bivectors and the Scalar2 type
+# Bivectors and the g2.Scalar type
 # -----------------------------
 #
-# In 𝒢₂ a bivector squares to a scalar — so `Bivector2 * Bivector2` lands in the
-# dedicated `Scalar2` type.
+# In 𝒢₂ a bivector squares to a scalar — so `g2.Bivector * g2.Bivector` lands in the
+# dedicated `g2.Scalar` type.
 
 # %%
-i2: Bivector2 = e_1 ^ e_2  # the unit bivector
+i2: g2.Bivector = g2.e_1 ^ g2.e_2  # the unit bivector
 show(i2 * i2)
 
 # %% [markdown]
@@ -133,20 +133,20 @@ show(i2 * i2)
 # ------------------------------
 #
 # The even subalgebra of 𝒢₂ is ℂ. Build a rotor as `scalar + bivector` (the `+`
-# narrows to `Rotor2`), and the unit bivector squares to −1.
+# narrows to `g2.Rotor`), and the unit bivector squares to −1.
 
 # %%
-r: Rotor2 = 2 + 3 * i2  # scalar + bivector  -> Rotor2
+r: g2.Rotor = 2 + 3 * i2  # scalar + bivector  -> g2.Rotor
 show(r)
 
 # %%
 show(i2 * i2)  # == -1
 
 # %%
-# a rotor rotates a vector: the normalized rotor that turns e_1 -> e_2 is a
+# a rotor rotates a vector: the normalized rotor that turns g2.e_1 -> g2.e_2 is a
 # quarter turn, built from the two vectors (no hand-rolled cos/sin needed)
-quarter: Rotor2 = Vector2.rotor_from_vectors(from_vector=e_1, to_vector=e_2)
-rotated: Vector2 = quarter * e_1 * quarter.inverse()
+quarter: g2.Rotor = g2.Vector.rotor_from_vectors(from_vector=g2.e_1, to_vector=g2.e_2)
+rotated: g2.Vector = quarter * g2.e_1 * quarter.inverse()
 show(rotated)
 
 # %% [markdown]
@@ -169,9 +169,9 @@ show(quarter.plane_of_rotation())
 # rotation — provably, even symbolically (see `tests/test_graded.py`).
 
 # %%
-frm, to = e_1, e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
-R: Rotor2 = Vector2.rotor_from_vectors(from_vector=frm, to_vector=to)
-show(R)  # an (un-normalized) Rotor2
+frm, to = g2.e_1, g2.e_2  # rotate by the g2.e_1 -> g2.e_2 angle (a quarter turn)
+R: g2.Rotor = g2.Vector.rotor_from_vectors(from_vector=frm, to_vector=to)
+show(R)  # an (un-normalized) g2.Rotor
 
 # %% [markdown]
 # Because `R` is not normalized, the bare sandwich `R v R̃` *scales* as well as
@@ -179,7 +179,7 @@ show(R)  # an (un-normalized) Rotor2
 # `R̃ / |R|²`) divides that out, leaving a pure rotation equal to `projection_rotation`.
 
 # %%
-w = e_1
+w = g2.e_1
 for label, value in [
     (r"R\,\tilde R", R * R.reverse()),
     (r"R\,w\,\tilde R", R * w * R.reverse()),
@@ -204,10 +204,10 @@ R * w * R.inverse() == projection_rotation(from_vector=frm, to_vector=to)(w)
 
 # %%
 named = [
-    ("Scalar2", Scalar2.from_scalar(5)),
-    ("Vector2", a),
-    ("Bivector2", i2),
-    ("Rotor2", r),
+    ("g2.Scalar", g2.Scalar.from_scalar(5)),
+    ("g2.Vector", a),
+    ("g2.Bivector", i2),
+    ("g2.Rotor", r),
 ]
 # the 𝒢₂ grade product table: (row) * (column) -> result type
 header = "| `*` | " + " | ".join(na for na, _ in named) + " |"
@@ -226,38 +226,38 @@ display(Markdown("\n".join([header, sep, *rows])))
 # bivectors, and the **dual of a bivector is a vector** — the geometric-algebra
 # form of the cross product.
 #
-# The 𝒢₃ basis is written qualified as `Vector3.e_1` … here: this file already
-# imported the bare `e_1`/`e_2` from `gacalc.g2`, and a name binds to one algebra
-# at a time. In a 𝒢₃-only notebook you would `from gacalc.g3 import e_1, e_2, e_3`
+# The 𝒢₃ basis is written qualified as `g3.Vector.g2.e_1` … here: this file already
+# imported the bare `g2.e_1`/`g2.e_2` from `gacalc.g2`, and a name binds to one algebra
+# at a time. In a 𝒢₃-only notebook you would `from gacalc.g3 import g2.e_1, g2.e_2, e_3`
 # and write them unqualified just the same.
 
 # %%
-u: Vector3 = 1 * Vector3.e_1 + 2 * Vector3.e_2 + 3 * Vector3.e_3
-v: Vector3 = 4 * Vector3.e_1 + 5 * Vector3.e_2 + 6 * Vector3.e_3
+u: g3.Vector = 1 * g3.Vector.g2.e_1 + 2 * g3.Vector.g2.e_2 + 3 * g3.Vector.e_3
+v: g3.Vector = 4 * g3.Vector.g2.e_1 + 5 * g3.Vector.g2.e_2 + 6 * g3.Vector.e_3
 show(u * v, u ^ v)
 
 # %%
 # dual of a bivector (a plane) is the orthogonal vector -- like u x v
-biv: Bivector3 = u ^ v
+biv: g3.Bivector = u ^ v
 show(biv, biv.dual())
 
 # %%
 biv.dual()  # the components of u x v
 
 # %%
-# each unit bivector of G3 squares to -1 (the even subalgebra is the quaternions)
-show((Vector3.e_1 ^ Vector3.e_2) * (Vector3.e_1 ^ Vector3.e_2))
+# each unit bivector of g3.G squares to -1 (the even subalgebra is the quaternions)
+show((g3.Vector.g2.e_1 ^ g3.Vector.g2.e_2) * (g3.Vector.g2.e_1 ^ g3.Vector.g2.e_2))
 
 # %% [markdown]
 # A bivector times its **own dual** collapses to the pseudoscalar scaled by
 # `|B|²`:  `B (B*) = |B|² I`.  For a *unit* bivector that is just the pseudoscalar
-# `I = e₁e₂e₃`.  The lazy `Bivector3` stores the raw `cos²t + sin²t` coefficient;
+# `I = e₁e₂e₃`.  The lazy `g3.Bivector` stores the raw `cos²t + sin²t` coefficient;
 # only the **display** simplifies it — so the cancellation shows.
 
 # %%
 t = sympy.symbols("t")
-B: Bivector3 = sympy.cos(t) * (Vector3.e_1 ^ Vector3.e_2) + sympy.sin(t) * (
-    Vector3.e_1 ^ Vector3.e_3
+B: g3.Bivector = sympy.cos(t) * (g3.Vector.g2.e_1 ^ g3.Vector.g2.e_2) + sympy.sin(t) * (
+    g3.Vector.g2.e_1 ^ g3.Vector.e_3
 )
 # B * B.dual() stores (cos^2 t + sin^2 t)·e_123 but displays as the trivector e_123
 show(B, B.dual(), B * B.dual())
@@ -267,7 +267,7 @@ show(B, B.dual(), B * B.dual())
 # ------------------------------------------------
 #
 # `vector * bivector` in 𝒢₃ is generally vector + trivector — no graded type
-# holds that, so it **widens to the full `G3`**. Nothing is lost; the type is
+# holds that, so it **widens to the full `g3.G`**. Nothing is lost; the type is
 # just the smallest that fits.
 
 # %%
@@ -281,7 +281,7 @@ kind(u * biv)
 # transparently (they share the blade-dict interchange protocol).
 
 # %%
-a == 3 * e_1 + 4 * e_2
+a == 3 * g2.e_1 + 4 * g2.e_2
 
 # %%
 # display a few as latex
@@ -298,21 +298,21 @@ show(a, a * b, a ^ b, r)
 # the transform factories (`translate`, `uniform_scale`, …).
 
 # %%
-B3: Bivector3 = Vector3.e_1 ^ Vector3.e_2  # the e_1 e_2 plane
-P: ComposableFunction = Vector3.project(
+B3: g3.Bivector = g3.Vector.g2.e_1 ^ g3.Vector.g2.e_2  # the g2.e_1 g2.e_2 plane
+P: ComposableFunction = g3.Vector.project(
     B3
 )  # a ComposableFunction, already labelled from B3
 display(Math(P.latex_repr))
 # projects onto the plane
-P(Vector3.e_1 + Vector3.e_3)  # pyright: ignore[reportUnusedExpression]
+P(g3.Vector.g2.e_1 + g3.Vector.e_3)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # compose the projection with a translate: the pipeline renders as one LaTeX
 # expression, and applies translate-then-project to a vector. (Wrap in a
 # ComposableFunction to give it a tidy custom label for the display.)
-pipe: ComposableFunction = ComposableFunction(P, "P_{B}") @ translate(b=Vector3.e_3)
+pipe: ComposableFunction = ComposableFunction(P, "P_{B}") @ translate(b=g3.Vector.e_3)
 display(Math(pipe.latex_repr))
-show(pipe(Vector3.e_1 + Vector3.e_2))
+show(pipe(g3.Vector.g2.e_1 + g3.Vector.g2.e_2))
 
 # %% [markdown]
 # A projection is **not invertible** — inverting a pipeline that contains it
@@ -320,8 +320,8 @@ show(pipe(Vector3.e_1 + Vector3.e_2))
 # involution): `reflect` returns an `InvertibleFunction`, so it round-trips.
 
 # %%
-M: InvertibleFunction = Vector3.reflect(B3)  # an InvertibleFunction (its own inverse)
-w: Vector3 = Vector3.e_1 + Vector3.e_3
+M: InvertibleFunction = g3.Vector.reflect(B3)  # an InvertibleFunction (its own inverse)
+w: g3.Vector = g3.Vector.g2.e_1 + g3.Vector.e_3
 show(M(w), inverse(M)(M(w)))  # reflected, then reflected back == w
 
 # %%

@@ -1,6 +1,18 @@
 # Drop the dimension suffix from generated types (Vector2 → Vector, G2 → G, …)
 
-**Status:** proposed — needs go-ahead (API-breaking; coordinate with a gacalc release + mvp)
+**Status:** COMPLETED 2026-08-13 (gacalc side) — generator renamed (unsuffixed `Vector`/
+`Bivector`/`Trivector`/`Rotor`/`Scalar`/`G`; `Gn` unchanged), module-qualified `__repr__` on
+`base`, reorder bundled in, test suite + `bench.py` module-qualified (via
+`tasks/adhoc/drop-graded-type-dimension-suffixes/codemod.py`), src doctests fixed, prose swept
+across src + docs (`prose_codemod.py`), notebooks module-qualified, version bumped to **0.0.16**
+with a CHANGELOG entry. All gates green (ruff, ty, 348 tests, determinism); no leftover
+suffixed names. **Remaining (not gacalc):** the release itself (`make release` / `git tag` —
+Bill's), and mvp adoption (`modelviewprojection/tasks/adopt-unsuffixed-gacalc-graded-types.md`,
+gated on the release).
+
+Lesson (per the adhoc-history discussion): the prose codemod needed a **second pass** for
+single- vs double-backtick markdown enumerations (`` `G`/`G`/`G` `` collapse) — the first pass
+only handled double-backtick (rst/py-docstring) style.
 **Priority:** 4
 **Difficulty:** 4
 **Created:** 2026-08-13

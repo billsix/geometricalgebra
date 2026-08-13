@@ -11,7 +11,16 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
-_Nothing yet._
+### Breaking
+- **All generated types lost their dimension suffix; the module now carries the
+  dimension.** `Vector2`/`Vector3` → `Vector`, and likewise `Bivector`/`Trivector`/
+  `Rotor`/`Scalar`; the full class `G2`/`G3` → `G`. Import module-qualified —
+  `import gacalc.g2 as g2` then `g2.Vector`, `g2.G` (or `from gacalc.g2 import Vector`
+  in single-dimension code). `Gn` (the dimension-agnostic reference in `gacalc.gn`) is
+  **unchanged**. Reprs are now module-qualified (`g2.Vector(coeff_e_1=3, coeff_e_2=4)`)
+  so a value's dimension stays visible despite the shorter class name. Migrate a
+  multi-dimension consumer by module-qualifying its imports (do **not** alias
+  `Vector as Vector2` — that re-adds the suffix).
 
 ## [0.0.15] — 2026-08-03
 

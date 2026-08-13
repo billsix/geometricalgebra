@@ -32,7 +32,7 @@ from gacalc.base import (
 
 # The representation-agnostic transform layer (InvertibleFunction, translate,
 # scale, compose, ...) lives in gacalc.transforms; it derives any basis
-# it needs from the value's own type, so it preserves Gn / G1 / G2 / G3 / ... .
+# it needs from the value's own type, so it preserves Gn / G / ... .
 # Re-exported here for backward compatibility with existing imports
 # (`from gacalc.gn import translate, scale_non_uniform, ...`).
 from gacalc.transforms import (  # noqa: F401
@@ -67,7 +67,7 @@ class Gn(MultiVectorBase):
 
     𝒢ₙ has 2ⁿ basis blades.  This is the general, dimension-agnostic
     representation, storing a dict from blade (a tuple of basis-vector indices,
-    e.g. ``(1, 2)`` ≙ e₁e₂) to coefficient.  G2 and G3 will be specialized,
+    e.g. ``(1, 2)`` ≙ e₁e₂) to coefficient.  G and G will be specialized,
     faster representations of 𝒢₂ and 𝒢₃.
 
     Terminology: 𝒢ₙ denotes the *algebra*; an instance of this class is an
@@ -76,7 +76,7 @@ class Gn(MultiVectorBase):
     This representation eagerly ``sympy.simplify``s every coefficient in
     ``__post_init__``.  That is the dominant cost (profiling shows ~100%), and
     it is kept here on purpose: Gn is allowed to be slow.  The specialized
-    G2/G3 simplify lazily instead.
+    G simplify lazily instead.
 
     Gn is also what the code generator *runs on sympy symbols* (not numbers) to
     derive those specialized closed forms -- so the fast paths are provably

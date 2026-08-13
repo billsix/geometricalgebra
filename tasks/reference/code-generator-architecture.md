@@ -1,7 +1,7 @@
 # The gacalc code generator
 
-**Reference document** — the deep contributor map for how the specialized (`G1`/`G2`/`G3`) and
-graded (`Vector_n`/`Bivector_n`/`Trivector3`/`Rotor_n`/`Scalar`) modules are produced from the `Gn`
+**Reference document** — the deep contributor map for how the specialized (`G`) and
+graded (`Vector_n`/`Bivector_n`/`Trivector`/`Rotor_n`/`Scalar`) modules are produced from the `Gn`
 reference. Not a task; update in place if the generator changes. Last updated 2026-07-21.
 
 Read this alongside — do not duplicate — the **"Code generation"** and **"doc-region markers"**
@@ -56,14 +56,14 @@ raw text header  +  "\n\n"  +  module_source(inject_region_markers(nodes))  +  "
 - The **body** is the node list, `ast.unparse`'d.
 
 **Emission order** — everything for one algebra goes into its one self-contained module. For each
-`(n, name, filename)` in `ALGEBRAS` (currently `[(1,"G1","g1.py"), (2,"G2","g2.py"),
-(3,"G3","g3.py")]`), `main()` concatenates, in order (later types reference earlier ones by name, but
+`(n, name, filename)` in `ALGEBRAS` (currently `[(1,"G","g1.py"), (2,"G","g2.py"),
+(3,"G","g3.py")]`), `main()` concatenates, in order (later types reference earlier ones by name, but
 `from __future__ import annotations` makes return annotations lazy, so the order is for readability,
 not correctness):
 
 1. `generate_scalar(n, f"Scalar{n}", name)` — the per-algebra grade-0 `ScalarN`. Its `dual` names the
-   same-module pseudoscalar (`Scalar3.dual -> Trivector3`), which is *why* it lives here and not in a
-   shared module (a shared `scalar.py` importing `Trivector3` from `g3` would be a circular import).
+   same-module pseudoscalar (`Scalar.dual -> Trivector`), which is *why* it lives here and not in a
+   shared module (a shared `scalar.py` importing `Trivector` from `g3` would be a circular import).
 2. `generate_class(n, name)` — the full all-blades `G_n` class + its post-class basis-constant
    assignments.
 3. `generate_graded_type(spec, n, name)` for each `spec in graded_specs(n)` — the graded subtypes.
@@ -110,7 +110,7 @@ GA layer never touches `ast.*` constructors for the common cases.
 
 - `construct(name, pairs)` → `Name(field=value, …)` — construct a *named* class. Used for the
   same-type results of **every** value type — all are `@typing.final` (not subclassable), so they emit
-  the concrete class directly (e.g. `return Vector2(…)`, `return G2(…)`).
+  the concrete class directly (e.g. `return Vector(…)`, `return G(…)`).
 - `construct_type_of(var, pairs)` → `type(var)(field=value, …)` — build via an operand's runtime
   type; used only by the rotor `sandwich`, which is polymorphic over its operand.
 - `construct_type_self(pairs)` → `type(self)(…)` — a general astbuild primitive (via
@@ -121,8 +121,8 @@ GA layer never touches `ast.*` constructors for the common cases.
   (every current caller), else `return type(self)(…)`.
 
 **Finality (graded 2026-07-21, full `G_n` 2026-07-23):** *every* generated value type is
-`@typing.final` — the graded value types (`Vector*`/`Bivector*`/`Trivector3`/`Rotor*`), `ScalarN`,
-**and the full classes `G1`/`G2`/`G3`**. So same-type constructions always emit the concrete class;
+`@typing.final` — the graded value types (`Vector*`/`Bivector*`/`Trivector`/`Rotor*`), `ScalarN`,
+**and the full classes `G`**. So same-type constructions always emit the concrete class;
 the old `result_spec.kind != "full"` branch (final → concrete, full → `type(self)`) was **collapsed**,
 and the generated full class carries **no `type(self)`** at all. Nothing subclasses `G_n` (the graded
 types are the value types; the dimension-agnostic `Gn` in `gn.py` is the general representation), so
@@ -165,8 +165,8 @@ rewritten to `# comments` in the rendered text.
     variables` around the dataclass fields (the `AnnAssign`s that are **not** `ClassVar` —
     `field_indices`, filtered by `_is_classvar`); `<Class> <method> method` around each method.
   - **Why `cls variables`, not `class variables`:** `<Class> class` is already a region, and
-    `check-regions` forbids a name that string-prefixes another (`"G2 class variables"` starts with
-    `"G2 class"`). `cls variables` reads as "class variables" (`cls` = the class), parallels
+    `check-regions` forbids a name that string-prefixes another (`"G class variables"` starts with
+    `"G class"`). `cls variables` reads as "class variables" (`cls` = the class), parallels
     `instance variables`, and doesn't prefix `<Class> class`. For the region to be one contiguous
     block, `class_header_stmts` emits `basis_classvar_decls` **right after `DIMENSION`** (before the
     `coeff_*` fields) — the `e_*` are annotation-only ClassVars, so this reorder is cosmetic
@@ -197,7 +197,7 @@ See §6 for what these markers are *for* and what `check-regions` verifies. The 
 ## 3. The type system inside the generator
 
 The generator resolves every result type **at generation time from the symbolic result's grade
-support** — never from runtime float values. This is what makes `Vector2 * Vector2 : Rotor2` a
+support** — never from runtime float values. This is what makes `Vector * Vector : Rotor` a
 *compile-time* fact.
 
 **`TypeSpec`** (`:341`) — a `NamedTuple(name, blades, dim, kind)`. `blades` is a tuple of blades
@@ -207,7 +207,7 @@ support** — never from runtime float values. This is what makes `Vector2 * Vec
 
 - `SCALAR = TypeSpec("Scalar", ((),), 0, "scalar")` (`:351`) — the shared grade-0 type.
 - `graded_specs(n)` (`:354`) — `Vector{n}`, then `Bivector{n}` (n≥2), `Trivector{n}` (n≥3), and the
-  even-subalgebra `Rotor{n}` (n≥2; for n==1 the even part is just the scalar, so no Rotor1).
+  even-subalgebra `Rotor{n}` (n≥2; for n==1 the even part is just the scalar, so no Rotor).
 - `full_spec(n, full_name)` (`:372`) — the all-blades `G_n`.
 - `registry_for_dim(n, full_name)` = `[SCALAR, *graded_specs(n), full_spec(...)]`.
 
@@ -266,7 +266,7 @@ guarded the same way), since the pseudoscalar/basis span the whole algebra and d
 type. **The `n` parameter is kept** (`n: int | None = None`): dropping it would be an invalid
 Liskov override of the `n`-required base (`Gn` is dimension-agnostic), which `ty` rejects. So each
 body is guarded `if n is None or n == <DIMENSION>: <known>` with a `super()` fallback for a
-non-default `n` (the rare, off-dimension call like `G2.bases(1)`), preserving prior semantics
+non-default `n` (the rare, off-dimension call like `G.bases(1)`), preserving prior semantics
 exactly. Constructs via `cls(…)` (subclass-preserving, fresh instance — not the shared basis
 constant). This retired the `dim_or_n` helper.
 
@@ -318,7 +318,7 @@ cast=cast_operand, param_annotation=_OperandT)`. It's a Liskov-compatible overri
 `MultiVectorBase.sandwich(self, x: _OperandT) -> _OperandT`. Grade-preserving: the derived closed
 form's support is exactly `x`'s grades (the would-be higher grades cancel symbolically), so each arm
 builds via `type(x)(…)` and an operand subclass keeps its own type. The generated output shows
-`case Vector2(): … return typing.cast(_OperandT, type(x)(coeff_e_1=…, coeff_e_2=…))` with `x0/x1/x2`
+`case Vector(): … return typing.cast(_OperandT, type(x)(coeff_e_1=…, coeff_e_2=…))` with `x0/x1/x2`
 cse temps.
 
 The full `G_n` class (`generate_class`) does **not** use `dispatch_method` — it's dense over all
@@ -332,12 +332,12 @@ specifically the *graded* dispatch table.
 
 `product_overload_stubs` (`:1068`) emits the `@typing.overload` signatures placed *just before* an
 overloaded product/sum method. Each overload returns the **resolved concrete type** so a known-type
-call site types precisely (`Vector2 * Vector2 -> Rotor2`) instead of the imprecise, unsound
+call site types precisely (`Vector * Vector -> Rotor`) instead of the imprecise, unsound
 `-> Self`. One stub per rhs type:
 
 - `number_case` (optional): an `int | float | sympy.Expr` overload → `product_result(self,
   SCALAR)`'s type (for `*` this scales to `Self`'s type; for `+`/`-` a scalar can narrow, e.g.
-  `Bivector2 + scalar -> Rotor2`).
+  `Bivector + scalar -> Rotor`).
 - one per `[SCALAR, *graded_specs(n)]` → each's `product_result`-resolved return type.
 - a final `MultiVectorBase` catch-all → the full `G_n` (covers `Gn` / the full class / any other
   operand, which the impl coerces).
@@ -346,10 +346,10 @@ Each stub is a `def <method>(self, <param>) -> <ret>: ...` with `@typing.overloa
 just `...` (`ast.Expr(constant(...))`).
 
 **The impl returns `-> MultiVectorBase`, not `-> Self`.** The overloads return sibling types
-(`Rotor2`, `Bivector2`, …) that are **not** subtypes of one another nor of `G_n` — all are siblings
+(`Rotor`, `Bivector`, …) that are **not** subtypes of one another nor of `G_n` — all are siblings
 under `MultiVectorBase` — so the implementation's own return annotation must be their one common
 supertype, `MultiVectorBase`, to be consistent with (and honest about) its overloads. The old
-blanket `-> Self` *claimed* `Vector2` while returning a `Rotor2`; that was the unsound cast this
+blanket `-> Self` *claimed* `Vector` while returning a `Rotor`; that was the unsound cast this
 feature fixed. In `generate_graded_type` you can see the pairing: `*product_overload_stubs("__mul__",
 …)` immediately followed by the `__mul__` impl (`returns=mvb_ann`) and the `dispatch_method(…,
 "_geometric_product", …)` it delegates to. The `@overload` stubs are skipped by the doc-region
@@ -373,7 +373,7 @@ to `# doc-region-…` comments by `module_source` (with the `declaration` end pl
 so they don't duplicate the implementation's `<Class> <method> method` region. Basis-constant
 assignments (`Cls.e_1 = …`, post-class) are also unmarked. Names are **descriptive and prefix-free
 by construction** — NOT SHA1 — with the trailing keyword required (Sphinx matches the first line
-*containing* the anchor, so `Vector2 magnitude` would otherwise also match `magnitude_squared`).
+*containing* the anchor, so `Vector magnitude` would otherwise also match `magnitude_squared`).
 
 **`check_doc_regions.py` / `make check-regions`** — regenerates first (the outputs are gitignored),
 then over every `src/gacalc/*.py` asserts three failure modes, **loud (exit 1), per file**, checked
@@ -398,9 +398,9 @@ or the generator.
 
 ```python
 ALGEBRAS = [
-    (1, "G1", "g1.py"),
-    (2, "G2", "g2.py"),
-    (3, "G3", "g3.py"),
+    (1, "G", "g1.py"),
+    (2, "G", "g2.py"),
+    (3, "G", "g3.py"),
     (4, "G4", "g4.py"),
 ]
 ```
@@ -410,7 +410,7 @@ Then `make generate`. Everything else is derived: `blades_for_dim(4)` yields the
 you extend `graded_specs` — it currently stops at trivector), the products/overloads/markers all fall
 out. The worked `G4` example is in `README.md`. Downstream, code that enumerates the specialized
 algebras must add `G4` to keep it covered — notably `tests/test_conformance.py` (its
-`SPECIALIZED = {1: G1, 2: G2, 3: G3}` map and the `CASES` parametrization, which import
+`SPECIALIZED = {1: G, 2: G, 3: G}` map and the `CASES` parametrization, which import
 `from gacalc.g4 import G4` directly). `gn.py` does **not** import the specialized modules, so nothing
 is needed there.
 

@@ -31,9 +31,9 @@
 # 𝒢₂ — the geometric algebra of the Euclidean plane
 # ==================================================
 #
-# This notebook demonstrates the **specialized `G2` class** (𝒢₂), the
+# This notebook demonstrates the **specialized `g2.G` class** (𝒢₂), the
 # fast, named-field representation of the geometric algebra of ℝ². It mirrors
-# `displaymv.py` (which uses the general `Gn`), but every value here is a `G2`:
+# `displaymv.py` (which uses the general `Gn`), but every value here is a `g2.G`:
 # its closed-form geometric product is code-generated from `Gn`, so it is
 # provably consistent with the reference while being much faster.
 #
@@ -47,7 +47,7 @@ import warnings
 import sympy
 from IPython.display import Math, display
 
-from gacalc.g2 import G2, Vector2
+import gacalc.g2 as g2
 from gacalc.nbplotutils import (
     create_basis,
     create_graphs,
@@ -80,7 +80,7 @@ warnings.filterwarnings("error", category=RuntimeWarning)
 # unit *i*, and the even subalgebra {scalar, `e_12`} is isomorphic to ℂ.
 
 # %%
-i: G2 = G2.e_1 * G2.e_2
+i: g2.G = g2.G.e_1 * g2.G.e_2
 i  # pyright: ignore[reportUnusedExpression]
 
 # %%
@@ -88,40 +88,40 @@ i * i  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # e_12 is the same value as e_1 * e_2
-G2.e_12 == G2.e_1 * G2.e_2
+g2.G.e_12 == g2.G.e_1 * g2.G.e_2
 
 # %% [markdown]
 # Linear combinations
 # -------------------
 #
-# `G2` values add and scale like vectors; like terms collect automatically.
+# `g2.G` values add and scale like vectors; like terms collect automatically.
 
 # %%
-2 * G2.e_1 + 3 * G2.e_2 + 5 * G2.e_1  # pyright: ignore[reportUnusedExpression]
+2 * g2.G.e_1 + 3 * g2.G.e_2 + 5 * g2.G.e_1  # pyright: ignore[reportUnusedExpression]
 
 # %%
-G2.from_scalar(0)  # pyright: ignore[reportUnusedExpression]
+g2.G.from_scalar(0)  # pyright: ignore[reportUnusedExpression]
 
 # %%
-G2.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
+g2.G.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Symbolic vectors
 # ----------------
 #
-# `G2` works symbolically too. `symbolic_multivector` builds a full multivector
+# `g2.G` works symbolically too. `symbolic_multivector` builds a full multivector
 # of `sympy` symbols; `r_vector_part(1)` keeps only the grade-1 (vector) part.
 
 # %%
-a: G2 = G2.symbolic_multivector(prefix="a")
+a: g2.G = g2.G.symbolic_multivector(prefix="a")
 a  # pyright: ignore[reportUnusedExpression]
 
 # %%
-a_vec: G2 = G2.symbolic_multivector(prefix="a").r_vector_part(1)
+a_vec: g2.G = g2.G.symbolic_multivector(prefix="a").r_vector_part(1)
 a_vec  # pyright: ignore[reportUnusedExpression]
 
 # %%
-b_vec: G2 = G2.symbolic_multivector(prefix="b").r_vector_part(1)
+b_vec: g2.G = g2.G.symbolic_multivector(prefix="b").r_vector_part(1)
 b_vec  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -157,8 +157,8 @@ a_vec.dot(b_vec) + a_vec.wedge(b_vec) == a_vec * b_vec
 # `show_mult` expands the product of two general multivectors term by term.
 
 # %%
-g2_1: G2 = G2.symbolic_multivector(prefix="a")
-g2_2: G2 = G2.symbolic_multivector(prefix="b")
+g2_1: g2.G = g2.G.symbolic_multivector(prefix="a")
+g2_2: g2.G = g2.G.symbolic_multivector(prefix="b")
 show_mult(g2_1, g2_2)
 
 # %% [markdown]
@@ -169,7 +169,7 @@ show_mult(g2_1, g2_2)
 # their difference is zero.
 
 # %%
-g2_3: G2 = G2.symbolic_multivector(prefix="c")
+g2_3: g2.G = g2.G.symbolic_multivector(prefix="c")
 ((g2_1 * g2_2) * g2_3) - (g2_1 * (g2_2 * g2_3))
 
 # %% [markdown]
@@ -180,7 +180,7 @@ g2_3: G2 = G2.symbolic_multivector(prefix="c")
 # bivectors (2).
 
 # %%
-c: G2 = G2.symbolic_multivector(prefix="c")
+c: g2.G = g2.G.symbolic_multivector(prefix="c")
 c.r_vector_part(0)
 
 # %%
@@ -196,7 +196,7 @@ c.r_vector_part(2)
 # All 2² = 4 basis blades, in grade order.
 
 # %%
-for x in G2.bases():
+for x in g2.G.bases():
     display(Math(x._repr_latex_()))
 
 # %% [markdown]
@@ -208,7 +208,7 @@ for x in G2.bases():
 # each blade; the dual multiplies by the inverse pseudoscalar.
 
 # %%
-m: G2 = 3 * G2.e_1 + 4 * G2.e_2
+m: g2.G = 3 * g2.G.e_1 + 4 * g2.G.e_2
 m.magnitude()
 
 # %%
@@ -221,7 +221,7 @@ m.normalize()
 m.inverse()
 
 # %%
-m * m.inverse() == G2.from_scalar(1)
+m * m.inverse() == g2.G.from_scalar(1)
 
 # %%
 # reverse of the bivector negates it
@@ -237,15 +237,15 @@ m.dual()
 #
 # Treating "grams of Fe" as the e_1 axis and "moles of Fe" as the e_2 axis, a
 # conversion factor is just the geometric product with a ratio built from the
-# two units' inverses. Everything stays a `G2`.
+# two units' inverses. Everything stays a `g2.G`.
 
 
 # %%
-def gram_fe_to_mol_fe(gram_fe: float) -> G2:
-    unit_gram_fe: G2 = G2.e_1
-    unit_mol_fe: G2 = G2.e_2
+def gram_fe_to_mol_fe(gram_fe: float) -> g2.G:
+    unit_gram_fe: g2.G = g2.G.e_1
+    unit_mol_fe: g2.G = g2.G.e_2
 
-    ratio: G2 = (55.85 * unit_gram_fe).inverse() * (1 * unit_mol_fe)
+    ratio: g2.G = (55.85 * unit_gram_fe).inverse() * (1 * unit_mol_fe)
     return gram_fe * unit_gram_fe * ratio
 
 
@@ -256,55 +256,55 @@ gram_fe_to_mol_fe(gram_fe=95.8)
 # ----------
 #
 # The transform layer (`translate`, `scale_non_uniform`, `compose`, ...) is
-# **representation preserving**: applied to a `G2`, it returns a `G2`.  Each
+# **representation preserving**: applied to a `g2.G`, it returns a `g2.G`.  Each
 # factory builds an `InvertibleFunction` that renders its own LaTeX.
 #
 # Rotation in geometric algebra is the rotor sandwich `R v R.inverse()`, and
 # `plane_rotation(a, b)` packages it: it wedge-normalizes the two vectors `a`, `b`
 # into the unit bivector of their plane once, then returns an
 # `angle -> InvertibleFunction` factory (the half-angle rotor is built inside the
-# library -- no hand-rolled cos/sin).  So `rotate = plane_rotation(Vector2.e_1,
-# Vector2.e_2)` rotates in the `e_1 e_2` plane (positive `angle` turns `e_1` toward
+# library -- no hand-rolled cos/sin).  So `rotate = plane_rotation(g2.Vector.e_1,
+# g2.Vector.e_2)` rotates in the `e_1 e_2` plane (positive `angle` turns `e_1` toward
 # `e_2`); each `rotate(angle)` is an `InvertibleFunction` that renders its own LaTeX,
 # composes / inverts like the other transforms, and -- via the rotor sandwich --
-# preserves the type of whatever it rotates (a `G2` stays a `G2`).
+# preserves the type of whatever it rotates (a `g2.G` stays a `g2.G`).
 
 
 # %%
-rotate = plane_rotation(Vector2.e_1, Vector2.e_2)
+rotate = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)
 
 
 # %%
-translate(b=5 * G2.e_1)
+translate(b=5 * g2.G.e_1)
 
 # %%
 # `scale_non_uniform` is the n-D scale (pass two factors for the 2D case)
 scale_non_uniform(5, 6)
 
 # %%
-inverse(translate(b=5 * G2.e_1))
+inverse(translate(b=5 * g2.G.e_1))
 
 # %%
-translate(b=5 * G2.e_1 + 6 * G2.e_2)
+translate(b=5 * g2.G.e_1 + 6 * g2.G.e_2)
 
 # %%
 rotate(sympy.pi / 2)
 
 # %%
-compose([rotate(sympy.pi / 2), translate(b=5 * G2.e_1 + 6 * G2.e_2)])
+compose([rotate(sympy.pi / 2), translate(b=5 * g2.G.e_1 + 6 * g2.G.e_2)])
 
 # %%
-inverse(compose([rotate(sympy.pi / 2), translate(b=5 * G2.e_1 + 6 * G2.e_2)]))
+inverse(compose([rotate(sympy.pi / 2), translate(b=5 * g2.G.e_1 + 6 * g2.G.e_2)]))
 
 # %% [markdown]
-# Applying transforms to a `G2` vector
+# Applying transforms to a `g2.G` vector
 # ------------------------------------
 #
-# This is what the representation-preserving work buys us: feeding a `G2` vector
-# through a transform yields a `G2` vector (not a coerced general `Gn`).
+# This is what the representation-preserving work buys us: feeding a `g2.G` vector
+# through a transform yields a `g2.G` vector (not a coerced general `Gn`).
 
 # %%
-w: G2 = 3 * G2.e_1 + 4 * G2.e_2
+w: g2.G = 3 * g2.G.e_1 + 4 * g2.G.e_2
 w  # pyright: ignore[reportUnusedExpression]
 
 # %%
@@ -312,7 +312,7 @@ w  # pyright: ignore[reportUnusedExpression]
 rotate(sympy.pi / 2)(w)  # pyright: ignore[reportUnusedExpression]
 
 # %%
-# the result is still a G2, not a Gn
+# the result is still a g2.G, not a Gn
 type(rotate(sympy.pi / 2)(w)).__name__
 
 # %%
@@ -321,7 +321,7 @@ scale_non_uniform(2, 3)(w)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # compose: translate first, then rotate (read right-to-left)
-compose([rotate(sympy.pi / 2), translate(b=5 * G2.e_1)])(w)  # pyright: ignore[reportUnusedExpression]
+compose([rotate(sympy.pi / 2), translate(b=5 * g2.G.e_1)])(w)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # a transform and its inverse round-trip back to the original vector
@@ -332,19 +332,19 @@ inverse(rotate(sympy.pi / 2))(rotate(sympy.pi / 2)(w)) == w
 # ----------------------
 #
 # `plot_multivector` draws each blade's coefficient on its own number line. It
-# accepts any representation — here, `G2` values.
+# accepts any representation — here, `g2.G` values.
 
 # %%
 plot_multivector(
-    2 * G2.from_scalar(1) + 3 * G2.e_1 - 1.5 * G2.e_2 + 0.7 * (G2.e_1 * G2.e_2)
+    2 * g2.G.from_scalar(1) + 3 * g2.G.e_1 - 1.5 * g2.G.e_2 + 0.7 * (g2.G.e_1 * g2.G.e_2)
 )
 
 # %%
-u: G2 = 3 * G2.e_1 - 1.5 * G2.e_2
+u: g2.G = 3 * g2.G.e_1 - 1.5 * g2.G.e_2
 plot_multivector(u)
 
 # %%
-v: G2 = 1.5 * G2.e_1 + 5 * G2.e_2
+v: g2.G = 1.5 * g2.G.e_1 + 5 * g2.G.e_2
 plot_multivector(v)
 
 # %%
@@ -355,9 +355,9 @@ plot_multivector(u * v)
 # -----------------------------------------
 #
 # The graph-paper helpers draw a transformed coordinate system. Passing
-# `cls=G2` makes them sample entirely in `G2` (rather than the general `Gn`):
-# the grid, axes, and unit circle are built from `G2` basis vectors and pushed
-# through a `G2`-valued transform.
+# `cls=g2.G` makes them sample entirely in `g2.G` (rather than the general `Gn`):
+# the grid, axes, and unit circle are built from `g2.G` basis vectors and pushed
+# through a `g2.G`-valued transform.
 
 # %% [markdown]
 # Draw graph paper
@@ -369,9 +369,9 @@ plot_multivector(u * v)
 # %%
 fn = rotate(math.radians(53.130102))
 with create_graphs(graph_bounds=(5, 5)) as axes:
-    create_basis(fn=fn, cls=G2)
-    create_x_and_y(fn=fn, cls=G2)
-    create_unit_circle(fn=fn, cls=G2)
+    create_basis(fn=fn, cls=g2.G)
+    create_x_and_y(fn=fn, cls=g2.G)
+    create_unit_circle(fn=fn, cls=g2.G)
     axes.set_title(fn._repr_latex_())
 
 # %% [markdown]
@@ -384,13 +384,13 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 # %%
 fn = rotate(math.radians(53.130102))
 with create_graphs(graph_bounds=(5, 5)) as axes:
-    create_basis(fn=rotate(0.0), cls=G2)
-    create_x_and_y(fn=rotate(0.0), cls=G2)
-    create_basis(fn=fn, xcolor=(0, 1, 0), ycolor=(1, 1, 0), cls=G2)
-    create_x_and_y(fn=fn, xcolor=(0, 1, 0), ycolor=(1, 1, 0), cls=G2)
-    create_unit_circle(fn=fn, cls=G2)
-    draw_right_triangle(cls=G2)
-    draw_second_right_triangle(cls=G2)
+    create_basis(fn=rotate(0.0), cls=g2.G)
+    create_x_and_y(fn=rotate(0.0), cls=g2.G)
+    create_basis(fn=fn, xcolor=(0, 1, 0), ycolor=(1, 1, 0), cls=g2.G)
+    create_x_and_y(fn=fn, xcolor=(0, 1, 0), ycolor=(1, 1, 0), cls=g2.G)
+    create_unit_circle(fn=fn, cls=g2.G)
+    draw_right_triangle(cls=g2.G)
+    draw_second_right_triangle(cls=g2.G)
     axes.set_title(fn._repr_latex_())
 
 # %% [markdown]
@@ -404,13 +404,13 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 fn = compose(
     [
         rotate(sympy.pi / 4),
-        translate(b=2 * G2.e_1),
+        translate(b=2 * g2.G.e_1),
     ]
 )
 with create_graphs() as axes:
-    create_basis(fn=fn, cls=G2)
-    create_x_and_y(fn=fn, cls=G2)
-    create_unit_circle(fn=fn, cls=G2)
+    create_basis(fn=fn, cls=g2.G)
+    create_x_and_y(fn=fn, cls=g2.G)
+    create_unit_circle(fn=fn, cls=g2.G)
     axes.set_title(fn._repr_latex_())
 
 # %% [markdown]
@@ -421,14 +421,14 @@ with create_graphs() as axes:
 # the units on the left and bottom.
 
 # %%
-for f in compose_intermediate_fns([rotate(sympy.pi / 4), translate(b=2 * G2.e_1)]):
+for f in compose_intermediate_fns([rotate(sympy.pi / 4), translate(b=2 * g2.G.e_1)]):
     with create_graphs() as axes:
-        create_basis(fn=f, cls=G2)
-        create_x_and_y(fn=f, cls=G2)
-        create_x_and_y(cls=G2)
-        draw_isoceles_triangle(fn=f, cls=G2)
-        create_unit_circle(fn=f, cls=G2)
-        create_unit_circle(cls=G2)
+        create_basis(fn=f, cls=g2.G)
+        create_x_and_y(fn=f, cls=g2.G)
+        create_x_and_y(cls=g2.G)
+        draw_isoceles_triangle(fn=f, cls=g2.G)
+        create_unit_circle(fn=f, cls=g2.G)
+        create_unit_circle(cls=g2.G)
         axes.set_title(f._repr_latex_())
 
 # %% [markdown]
@@ -442,15 +442,15 @@ for f in compose_intermediate_fns([rotate(sympy.pi / 4), translate(b=2 * G2.e_1)
 for f in compose_intermediate_fns(
     [
         rotate(sympy.pi / 4),
-        translate(b=2 * G2.e_1),
+        translate(b=2 * g2.G.e_1),
     ],
     relative_basis=True,
 ):
     with create_graphs() as axes:
-        create_basis(fn=f, cls=G2)
-        create_x_and_y(fn=f, cls=G2)
-        draw_isoceles_triangle(fn=f, cls=G2)
-        create_unit_circle(fn=f, cls=G2)
+        create_basis(fn=f, cls=g2.G)
+        create_x_and_y(fn=f, cls=g2.G)
+        draw_isoceles_triangle(fn=f, cls=g2.G)
+        create_unit_circle(fn=f, cls=g2.G)
         axes.set_title(f._repr_latex_())
 
 # %% [markdown]
@@ -468,8 +468,8 @@ for f in compose_intermediate_fns(
 
 # %%
 a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
-a: Vector2 = a_1 * Vector2.e_1 + a_2 * Vector2.e_2
-b: Vector2 = b_1 * Vector2.e_1 + b_2 * Vector2.e_2
+a: g2.Vector = a_1 * g2.Vector.e_1 + a_2 * g2.Vector.e_2
+b: g2.Vector = b_1 * g2.Vector.e_1 + b_2 * g2.Vector.e_2
 
 # %% [markdown]
 # The dot product is a scalar, the wedge is a bivector:
@@ -565,26 +565,26 @@ assert (
 # %%
 # Concrete vectors in the plane. b points along the 45° diagonal -- not on an
 # axis -- to show the identity does not depend on a convenient choice of b.
-a: Vector2 = 2 * Vector2.e_1 + 3 * Vector2.e_2
+a: g2.Vector = 2 * g2.Vector.e_1 + 3 * g2.Vector.e_2
 a  # pyright: ignore[reportUnusedExpression]
 
 # %%
-b: Vector2 = Vector2.e_1 + Vector2.e_2
+b: g2.Vector = g2.Vector.e_1 + g2.Vector.e_2
 b  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # The projection and the rejection of `a` relative to `b`. Projecting or
-# rejecting a vector across a vector stays a `Vector2` -- the type reflects that,
-# so `a_par` / `a_perp` are `Vector2`, not the abstract base. Notice their
+# rejecting a vector across a vector stays a `g2.Vector` -- the type reflects that,
+# so `a_par` / `a_perp` are `g2.Vector`, not the abstract base. Notice their
 # coordinates are *fractions* -- awkward-looking vectors -- yet each one's
 # product with `b` collapses to a clean value.
 
 # %%
-a_par: Vector2 = Vector2.project(onto=b)(a)
+a_par: g2.Vector = g2.Vector.project(onto=b)(a)
 a_par  # pyright: ignore[reportUnusedExpression]
 
 # %%
-a_perp: Vector2 = Vector2.reject(away_from=b)(a)
+a_perp: g2.Vector = g2.Vector.reject(away_from=b)(a)
 a_perp  # pyright: ignore[reportUnusedExpression]
 
 # %%

@@ -27,15 +27,15 @@ two constructions evolve without drifting apart.
 import pytest
 import sympy
 
-from gacalc.g2 import Bivector2, Rotor2, Vector2
-from gacalc.g3 import Bivector3, Rotor3, Trivector3, Vector3
+import gacalc.g2 as g2
+import gacalc.g3 as g3
 from gacalc.gn import Gn
 from gacalc.transforms import plane_rotation
 
 
 def test_exp_of_zero_is_one() -> None:
-    r: Rotor2 = (0 * Bivector2.e_12).exp()
-    assert r == Rotor2(coeff_scalar=1)
+    r: g2.Rotor = (0 * g2.Bivector.e_12).exp()
+    assert r == g2.Rotor(coeff_scalar=1)
 
 
 def test_exp_scalar() -> None:
@@ -46,37 +46,37 @@ def test_exp_scalar() -> None:
 def test_exp_float_stays_float() -> None:
     # the numeric-preservation contract (as magnitude/inverse): float
     # coefficients in, float coefficients out -- no sympy leak.
-    r: Rotor2 = (0.75 * Bivector2.e_12).exp()
+    r: g2.Rotor = (0.75 * g2.Bivector.e_12).exp()
     assert all(isinstance(coef, float) for coef in r.to_blade_dict().values())
     assert float(r.magnitude()) == pytest.approx(1.0)
 
 
 def test_exp_int_stays_exact() -> None:
-    assert Bivector2.e_12.exp() == Rotor2.e_12 * sympy.sin(1) + sympy.cos(1)
+    assert g2.Bivector.e_12.exp() == g2.Rotor.e_12 * sympy.sin(1) + sympy.cos(1)
 
 
 def test_exp_vector_is_hyperbolic() -> None:
     # a vector squares to +|v|^2, so the series sums to cosh + sinh
-    v: Vector2 = 2 * Vector2.e_1
-    assert v.exp() == Vector2.e_1 * sympy.sinh(2) + sympy.cosh(2)
+    v: g2.Vector = 2 * g2.Vector.e_1
+    assert v.exp() == g2.Vector.e_1 * sympy.sinh(2) + sympy.cosh(2)
 
 
 def test_exp_trivector_is_trig() -> None:
-    # the G3 pseudoscalar squares to -1, so it exponentiates like a bivector
-    # (scalar + trivector has no covering graded type, so the result is a G3)
-    t: Trivector3 = Trivector3.e_123 * 2
-    assert t.exp() == Trivector3.e_123 * sympy.sin(2) + sympy.cos(2)
+    # the g3.G pseudoscalar squares to -1, so it exponentiates like a bivector
+    # (scalar + trivector has no covering graded type, so the result is a g3.G)
+    t: g3.Trivector = g3.Trivector.e_123 * 2
+    assert t.exp() == g3.Trivector.e_123 * sympy.sin(2) + sympy.cos(2)
 
 
 def test_exp_inverse_is_exp_of_negation() -> None:
-    b: Bivector2 = Bivector2.e_12 * sympy.Rational(1, 3)
+    b: g2.Bivector = g2.Bivector.e_12 * sympy.Rational(1, 3)
     assert b.exp().inverse() == (-b).exp()
 
 
 def test_exp_rejects_non_scalar_square() -> None:
     # a rotor (scalar + bivector) has a non-scalar square
     with pytest.raises(ValueError):
-        (Rotor2.e_12 + 1).exp()
+        (g2.Rotor.e_12 + 1).exp()
     # a NON-SIMPLE homogeneous bivector (dim >= 4, Gn only): e12 + e34
     # squares to -2 + 2 e1234, not a scalar -- the guard must catch it even
     # though the operand is homogeneous of grade 2.
@@ -89,10 +89,10 @@ def test_exp_rejects_non_scalar_square() -> None:
 def test_exp_agrees_with_plane_rotation_numeric() -> None:
     # exp((-theta/2) i) IS plane_rotation's half-angle rotor -- numeric theta
     theta: float = 1.234
-    f = plane_rotation(Vector3.e_1, Vector3.e_2)(theta)
-    i: Bivector3 = (Vector3.e_1 ^ Vector3.e_2).normalize()
-    r: Rotor3 = (i * (-theta / 2)).exp()
-    v: Vector3 = 3 * Vector3.e_1 + 4 * Vector3.e_2 + 5 * Vector3.e_3
+    f = plane_rotation(g3.Vector.e_1, g3.Vector.e_2)(theta)
+    i: g3.Bivector = (g3.Vector.e_1 ^ g3.Vector.e_2).normalize()
+    r: g3.Rotor = (i * (-theta / 2)).exp()
+    v: g3.Vector = 3 * g3.Vector.e_1 + 4 * g3.Vector.e_2 + 5 * g3.Vector.e_3
     assert r.sandwich(v).isclose(f(v), rel_tol=1e-5, abs_tol=1e-5)
 
 
@@ -104,14 +104,14 @@ def test_exp_agrees_with_plane_rotation_symbolic() -> None:
     # cos(theta/2).  (That limitation is WHY plane_rotation keeps its
     # hand-built rotor -- see tasks/reference/design-decisions.md.)
     theta: sympy.Symbol = sympy.Symbol("theta", positive=True)
-    f = plane_rotation(Vector2.e_1, Vector2.e_2)(theta)
-    i: Bivector2 = (Vector2.e_1 ^ Vector2.e_2).normalize()
-    r: Rotor2 = (i * (-theta / 2)).exp()
+    f = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)(theta)
+    i: g2.Bivector = (g2.Vector.e_1 ^ g2.Vector.e_2).normalize()
+    r: g2.Rotor = (i * (-theta / 2)).exp()
     # identical coefficient FORM, not merely simplify-equal: the follow-up
     # swap must not change what a notebook renders.
-    assert r == Rotor2.e_12 * -sympy.sin(theta / 2) + sympy.cos(theta / 2)
+    assert r == g2.Rotor.e_12 * -sympy.sin(theta / 2) + sympy.cos(theta / 2)
     x: sympy.Symbol
     y: sympy.Symbol
     x, y = sympy.symbols("x y")
-    v: Vector2 = Vector2.e_1 * x + Vector2.e_2 * y
+    v: g2.Vector = g2.Vector.e_1 * x + g2.Vector.e_2 * y
     assert r.sandwich(v) == f(v)

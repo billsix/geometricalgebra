@@ -77,7 +77,7 @@ def marker(text: str) -> ast.Expr:
 
     Emitted as a bare string-literal ``ast.Expr`` so it survives ``ast.unparse``
     at the correct indentation; ``module_source`` rewrites it to
-    ``# <text>``.  ``text`` is e.g. ``"doc-region-begin Vector2 class"``.
+    ``# <text>``.  ``text`` is e.g. ``"doc-region-begin Vector class"``.
     """
     return ast.Expr(ast.Constant(_MARKER_OPEN + text + _MARKER_CLOSE))
 

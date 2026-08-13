@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import abc
+import dataclasses
 import functools
 import itertools
 import math
@@ -37,7 +38,7 @@ Coef = int | float | sympy.Expr
 #: the scalar blade).  The key type of the ``BladeCoef`` interchange dict.
 Blade = tuple[int, ...]
 #: THE interchange format of the library.  Every representation (``Gn``,
-#: ``G1``/``G2``/``G3``, the graded subtypes) converts to and from this dict via
+#: ``G``, the graded subtypes) converts to and from this dict via
 #: ``to_blade_dict``/``from_blade_dict``, and all shared arithmetic in this
 #: module routes through it.  The contract (pinned by tests/test_blade_dict.py):
 #:
@@ -90,7 +91,7 @@ def blade_dict_latex(d: BladeCoef) -> str:
 class MultiVectorBase(abc.ABC):
     """Abstract base class for an element (multivector) of a geometric algebra.
 
-    Concrete representations (Gn, and later G2/G3) implement a tiny interchange
+    Concrete representations (Gn, and later G) implement a tiny interchange
     protocol -- ``from_blade_dict`` / ``to_blade_dict`` -- plus the core
     ``_geometric_product``.  The blade dict (``BladeCoef``, documented at its
     definition above) is **the canonical interchange representation**: every
@@ -102,7 +103,7 @@ class MultiVectorBase(abc.ABC):
     """
 
     # No instance state of its own; empty slots so slotted subclasses (Gn,
-    # G1/G2/G3 with ``slots=True``) don't inherit a __dict__ from the base.
+    # G with ``slots=True``) don't inherit a __dict__ from the base.
     __slots__ = ()
 
     # ------------------------------------------------------------------
@@ -310,13 +311,13 @@ class MultiVectorBase(abc.ABC):
         A thin reader convenience: it reads the stored value straight from the
         blade-dict interchange — no geometric product — and is correct for any
         grade.  ``blade`` is a unit basis blade: a class constant like
-        ``Vector2.e_1`` / ``Bivector2.e_12`` / ``G3.e_123``, or a module constant
+        ``g2.Vector.e_1`` / ``g2.Bivector.e_12`` / ``g3.G.e_123``, or a module constant
         like ``gn.e_1``.  (Not from Hestenes/Sobczyk — a convenience over
         ``to_blade_dict()``.  For the scalar part or a whole grade, use
         ``scalar_part`` / ``r_vector_part``.)
 
-        >>> from gacalc.g2 import Vector2
-        >>> (3 * Vector2.e_1 + 4 * Vector2.e_2).coefficient(Vector2.e_1)
+        >>> from gacalc.g2 import Vector
+        >>> (3 * Vector.e_1 + 4 * Vector.e_2).coefficient(Vector.e_1)
         3
         """
         (key,) = blade.to_blade_dict()  # the single blade of a unit basis blade
@@ -327,7 +328,7 @@ class MultiVectorBase(abc.ABC):
 
         The same value, with its blade coefficients transformed (e.g. by a sympy
         rewrite).  Works on any representation via the blade-dict interchange, so
-        ``Gn``/``G1``/``G2``/``G3`` and the graded subtypes all inherit it.
+        ``Gn``/``G`` and the graded subtypes all inherit it.
         """
         return type(self).from_blade_dict(
             {blade: op(coef) for blade, coef in self.to_blade_dict().items()}
@@ -651,7 +652,7 @@ class MultiVectorBase(abc.ABC):
     # dual returns MultiVectorBase (not Self) for the same reason as even_part/
     # odd_part below: it maps grade r -> grade n−r, a *different* grade, so a
     # fixed-dimension graded override narrows the return to the resolved type
-    # (Bivector3.dual -> Vector3) -- an override that -> Self would forbid.  The
+    # (Bivector.dual -> Vector) -- an override that -> Self would forbid.  The
     # full class G_n keeps -> Self (all grades); Gn inherits this base.
     def dual(self, n: int) -> MultiVectorBase:
         """Dual  A*  =  A I⁻¹  — multiplication by the inverse unit pseudoscalar I,
@@ -662,7 +663,7 @@ class MultiVectorBase(abc.ABC):
     # even_part/odd_part return MultiVectorBase (not Self): the even/odd part of a
     # single-grade type is a *different* grade (e.g. a vector's even part is the
     # scalar 0), so the generated graded overrides narrow the return to that
-    # resolved type (Vector2.even_part -> Scalar) -- an override that -> Self
+    # resolved type (Vector.even_part -> Scalar) -- an override that -> Self
     # would forbid.  Gn/the full class G_n stay their own type via their overrides.
     def even_part(self) -> MultiVectorBase:
         """Even part  A⁺  =  ⟨A⟩₀ + ⟨A⟩₂ + …  — the sum of the even-grade parts.
@@ -708,7 +709,7 @@ class MultiVectorBase(abc.ABC):
         returns a :class:`~gacalc.functions.ComposableFunction` (labelled, composable
         into a pipeline) — not an ``InvertibleFunction``.  The return is typed at
         ``MultiVectorBase`` (the closure acts generically); a caller wanting the
-        concrete type (``ComposableFunction[Vector3]``) can cast at the use site.
+        concrete type (``ComposableFunction[Vector]``) can cast at the use site.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18,
         equations 2.9a, 2.9b, 2.9c
@@ -729,8 +730,8 @@ class MultiVectorBase(abc.ABC):
             elif value.is_r_vector():  # 2.9c
                 projected: MultiVectorBase = (value.dot(onto)) * onto.inverse()
                 # P_B(A) preserves A's grade r, so the result is a grade-r blade.
-                # The generic product type can widen (e.g. Vector3 * Bivector3 ->
-                # G3, since vector * bivector *could* carry a grade-3 part -- which
+                # The generic product type can widen (e.g. Vector * Bivector ->
+                # G, since vector * bivector *could* carry a grade-3 part -- which
                 # is identically zero for a projection): keep grade r and stay in
                 # A's own type.
                 grades: list[int] = list(value.grades())
@@ -766,11 +767,11 @@ class MultiVectorBase(abc.ABC):
             assert isinstance(away_from, MultiVectorBase)  # to satisfy type checking
             rejected: MultiVectorBase = (value.wedge(away_from)) * away_from.inverse()
             # Rejection of a vector is a vector, but the raw product widens the
-            # container in 3D+ (e.g. Vector3 wedge Vector3 -> Bivector3, times a
-            # vector inverse -> the odd part G3 with an identically-zero grade-3
+            # container in 3D+ (e.g. Vector wedge Vector -> Bivector, times a
+            # vector inverse -> the odd part G with an identically-zero grade-3
             # term).  Narrow back to the operand's grade and rebuild as its type --
             # the same grade-preservation base.project does -- so reject stays in
-            # the operand's type (Vector3, not G3) as documented.
+            # the operand's type (Vector, not G) as documented.
             return type(value).from_blade_dict(
                 rejected.r_vector_part(1).to_blade_dict()
             )
@@ -937,7 +938,7 @@ class MultiVectorBase(abc.ABC):
         ``R x R⁻¹`` is **grade-preserving**: a vector goes to a vector, a
         bivector to a bivector, and so on.  The raw product
         ``self * x * self.inverse()`` may *structurally* widen (e.g.
-        ``Rotor3 * Vector3`` carries a trivector when ``x`` is off the rotor's
+        ``Rotor * Vector`` carries a trivector when ``x`` is off the rotor's
         plane), but for a versor those extra grades are zero, so the result is
         rebuilt as ``type(x)`` — whose ``from_blade_dict`` keeps only ``x``'s
         blades.  ``zero`` conjugates to ``zero`` (no ``is_vector`` assertion,
@@ -981,20 +982,20 @@ class MultiVectorBase(abc.ABC):
         represent its own exponential).
 
         >>> import sympy
-        >>> from gacalc.g2 import Bivector2, Rotor2
-        >>> (0 * Bivector2.e_12).exp()
-        Rotor2(coeff_scalar=1, coeff_e_12=0)
-        >>> (0 * Bivector2.e_12).exp() == Rotor2(coeff_scalar=1)
+        >>> from gacalc.g2 import Bivector, Rotor
+        >>> (0 * Bivector.e_12).exp()
+        g2.Rotor(coeff_scalar=1, coeff_e_12=0)
+        >>> (0 * Bivector.e_12).exp() == Rotor(coeff_scalar=1)
         True
-        >>> Bivector2.e_12.exp()
-        Rotor2(coeff_scalar=cos(1), coeff_e_12=sin(1))
-        >>> Bivector2.e_12.exp() == Rotor2.e_12 * sympy.sin(1) + sympy.cos(1)
+        >>> Bivector.e_12.exp()
+        g2.Rotor(coeff_scalar=cos(1), coeff_e_12=sin(1))
+        >>> Bivector.e_12.exp() == Rotor.e_12 * sympy.sin(1) + sympy.cos(1)
         True
         >>> theta = sympy.Symbol("theta", positive=True)
-        >>> (Bivector2.e_12 * (-theta / 2)).exp()  # the half-angle rotor
-        Rotor2(coeff_scalar=cos(theta/2), coeff_e_12=-sin(theta/2))
-        >>> R = (Bivector2.e_12 * (-theta / 2)).exp()
-        >>> R == Rotor2.e_12 * -sympy.sin(theta / 2) + sympy.cos(theta / 2)
+        >>> (Bivector.e_12 * (-theta / 2)).exp()  # the half-angle rotor
+        g2.Rotor(coeff_scalar=cos(theta/2), coeff_e_12=-sin(theta/2))
+        >>> R = (Bivector.e_12 * (-theta / 2)).exp()
+        >>> R == Rotor.e_12 * -sympy.sin(theta / 2) + sympy.cos(theta / 2)
         True
         """
         if self.is_scalar():
@@ -1052,8 +1053,26 @@ class MultiVectorBase(abc.ABC):
             for blade in (left.keys() | right.keys())
         )
 
+    def __repr__(self) -> str:
+        """A module-qualified repr, e.g. ``g2.Vector(coeff_e_1=1.5, coeff_e_2=2.0)``.
+
+        The generated value types are ``@dataclass(repr=False)`` and inherit this,
+        so the module short name (``g1``/``g2``/``g3``) carries the algebra's
+        dimension that the unsuffixed class name (``Vector``, ``Rotor``, ``G``) no
+        longer does. (``Gn`` keeps its own dataclass repr — it isn't renamed.)
+        Assumes the concrete type is a dataclass, which every representation is.
+        """
+        module: str = type(self).__module__.rsplit(".", 1)[-1]
+        # every concrete representation is a dataclass; base itself is abstract, so
+        # cast past dataclasses.fields' DataclassInstance bound.
+        instance: typing.Any = self
+        fields: str = ", ".join(
+            f"{f.name}={getattr(self, f.name)!r}" for f in dataclasses.fields(instance)
+        )
+        return f"{module}.{type(self).__name__}({fields})"
+
     def _repr_latex_(self) -> str:
-        # Display the simplified view: the lazy classes (G1/G2/G3, graded subtypes)
+        # Display the simplified view: the lazy classes (G, graded subtypes)
         # don't eager-simplify, so a raw coefficient may not be in lowest terms
         # (e.g. a bivector times its dual whose terms should cancel).  Simplifying
         # only the rendered form leaves the stored fields untouched.  (`Gn` already

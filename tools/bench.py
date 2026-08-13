@@ -12,7 +12,7 @@
 # Lesser General Public License (the LICENSE file in this repository)
 # for more details.
 
-"""Benchmark the general Gn representation against the specialized G1/G2/G3.
+"""Benchmark the general Gn representation against the specialized g1.G/g2.G/g3.G.
 
 python tools/bench.py
 """
@@ -29,13 +29,13 @@ import sympy
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+import gacalc.g1 as g1
+import gacalc.g2 as g2
+import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase  # noqa: E402
-from gacalc.g1 import G1  # noqa: E402
-from gacalc.g2 import G2, Vector2  # noqa: E402
-from gacalc.g3 import G3, Vector3  # noqa: E402
 from gacalc.gn import Gn  # noqa: E402
 
-SPECIALIZED: dict[int, type[MultiVectorBase]] = {1: G1, 2: G2, 3: G3}
+SPECIALIZED: dict[int, type[MultiVectorBase]] = {1: g1.G, 2: g2.G, 3: g3.G}
 
 
 def blades(n: int) -> list[tuple[int, ...]]:
@@ -119,7 +119,7 @@ def main() -> None:
     sys.stdout.write("\n")
     sys.stdout.write("graded subtype: vector * vector (-> rotor)\n")
     sys.stdout.write("-" * 67 + "\n")
-    for n, vector_cls in ((2, Vector2), (3, Vector3)):
+    for n, vector_cls in ((2, g2.Vector), (3, g3.Vector)):
         gva: Gn = Gn.from_blade_dict({(i,): i for i in range(1, n + 1)})
         gvb: Gn = Gn.from_blade_dict({(i,): i + 1 for i in range(1, n + 1)})
         va, vb = to(vector_cls, gva), to(vector_cls, gvb)

@@ -18,7 +18,7 @@ composes via ``compose`` / ``@``.  The transform *factories* (``translate``,
 ``uniform_scale``, ``scale_non_uniform``, ...) are **representation preserving**:
 each derives any basis vectors it needs from the *type of the value it is applied
 to* (via the ``MultiVectorBase`` interchange protocol --
-``type(vector).basis_vector(i)``), so a ``G2`` in yields a ``G2`` out, a ``Gn``
+``type(vector).basis_vector(i)``), so a ``G`` in yields a ``G`` out, a ``Gn``
 in yields a ``Gn`` out, and so on.  Nothing here closes over a specific
 representation's basis constants.
 
@@ -192,17 +192,17 @@ def projection_rotation(
     agree.  This form is kept for teaching -- it makes the in-plane / perpendicular
     split explicit -- while ``rotor_rotation`` is the faster, more general path.
     Like every factory here it is representation-agnostic: the operand's own type
-    supplies the basis, so a ``G2`` in yields a ``G2`` out, ``Gn`` yields ``Gn``.
+    supplies the basis, so a ``G`` in yields a ``G`` out, ``Gn`` yields ``Gn``.
 
     Example:
         >>> import math
         >>> from gacalc.transforms import projection_rotation
-        >>> from gacalc.g3 import Vector3
-        >>> to = math.cos(1.0) * Vector3.e_1 + math.sin(1.0) * Vector3.e_2
-        >>> f = projection_rotation(Vector3.e_1, to)
-        >>> f(Vector3.e_1).isclose(to, rel_tol=1e-5, abs_tol=1e-5)  # from -> to
+        >>> from gacalc.g3 import Vector
+        >>> to = math.cos(1.0) * Vector.e_1 + math.sin(1.0) * Vector.e_2
+        >>> f = projection_rotation(Vector.e_1, to)
+        >>> f(Vector.e_1).isclose(to, rel_tol=1e-5, abs_tol=1e-5)  # from -> to
         True
-        >>> f(Vector3.e_3).isclose(Vector3.e_3, rel_tol=1e-5, abs_tol=1e-5)
+        >>> f(Vector.e_3).isclose(Vector.e_3, rel_tol=1e-5, abs_tol=1e-5)
         True
     """
     assert from_vector.is_vector()
@@ -244,14 +244,14 @@ def rotor_rotation(
     Example:
         >>> import math
         >>> from gacalc.transforms import rotor_rotation
-        >>> from gacalc.g3 import Vector3
-        >>> to = math.cos(1.0) * Vector3.e_1 + math.sin(1.0) * Vector3.e_2
-        >>> R = rotor_rotation(Vector3.e_1, to)
+        >>> from gacalc.g3 import Vector
+        >>> to = math.cos(1.0) * Vector.e_1 + math.sin(1.0) * Vector.e_2
+        >>> R = rotor_rotation(Vector.e_1, to)
         >>> R.linearity.name
         'LINEAR'
-        >>> R(Vector3.zero()).isclose(Vector3.zero(), rel_tol=1e-5, abs_tol=1e-5)
+        >>> R(Vector.zero()).isclose(Vector.zero(), rel_tol=1e-5, abs_tol=1e-5)
         True
-        >>> R.inverse(R(Vector3.e_1)).isclose(Vector3.e_1, rel_tol=1e-5, abs_tol=1e-5)
+        >>> R.inverse(R(Vector.e_1)).isclose(Vector.e_1, rel_tol=1e-5, abs_tol=1e-5)
         True
     """
     rotor: MultiVectorBase = type(from_vector).rotor_from_vectors(
@@ -316,17 +316,17 @@ def plane_rotation(
     Example:
         >>> import math
         >>> from gacalc.transforms import plane_rotation
-        >>> from gacalc.g3 import Vector3
-        >>> turn = plane_rotation(Vector3.e_1, Vector3.e_2)
+        >>> from gacalc.g3 import Vector
+        >>> turn = plane_rotation(Vector.e_1, Vector.e_2)
         >>> f = turn(math.radians(90))
-        >>> f(Vector3.e_1).isclose(Vector3.e_2, rel_tol=1e-5, abs_tol=1e-5)
+        >>> f(Vector.e_1).isclose(Vector.e_2, rel_tol=1e-5, abs_tol=1e-5)
         True
-        >>> f(Vector3.e_3).isclose(Vector3.e_3, rel_tol=1e-5, abs_tol=1e-5)
+        >>> f(Vector.e_3).isclose(Vector.e_3, rel_tol=1e-5, abs_tol=1e-5)
         True
-        >>> f.inverse(f(Vector3.e_1)).isclose(Vector3.e_1, rel_tol=1e-5, abs_tol=1e-5)
+        >>> f.inverse(f(Vector.e_1)).isclose(Vector.e_1, rel_tol=1e-5, abs_tol=1e-5)
         True
-        >>> f.at(0.5)(Vector3.e_1).isclose(               # interpolation
-        ...     turn(math.radians(45))(Vector3.e_1), rel_tol=1e-5, abs_tol=1e-5)
+        >>> f.at(0.5)(Vector.e_1).isclose(               # interpolation
+        ...     turn(math.radians(45))(Vector.e_1), rel_tol=1e-5, abs_tol=1e-5)
         True
     """
     if not (a.is_vector() and b.is_vector()):
@@ -446,7 +446,7 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
     """Scale axis ``i`` by ``factors[i]`` (1-indexed e_1, e_2, ...), in any dimension.
 
     Representation preserving: the basis vectors are taken from the type of the
-    value being transformed, so a ``G2``/``G3``/``Gn`` value scales to its own
+    value being transformed, so a ``G``/``Gn`` value scales to its own
     type.  Pass two factors for the 2D case (``scale_non_uniform(m_x, m_y)``).
     """
 
@@ -510,7 +510,7 @@ def to_matrix(
     The translation lands in the **last column** (column-vector / premultiply
     convention), matching mvp's ``matrix_stack``.
 
-    ``cls`` is the representation to probe in (``G2`` / ``G3`` / ``Gn`` / ...).
+    ``cls`` is the representation to probe in (``G`` / ``Gn`` / ...).
     ``n`` is taken from ``cls.DIMENSION`` for the specialized classes; pass it
     explicitly for the dimension-agnostic ``Gn``.
 
@@ -523,15 +523,15 @@ def to_matrix(
 
     Example:
         >>> from gacalc.transforms import translate, uniform_scale, to_matrix
-        >>> from gacalc.g3 import Vector3
-        >>> T = translate(2 * Vector3.e_1 + 3 * Vector3.e_2 + 4 * Vector3.e_3)
-        >>> M = to_matrix(T, Vector3)
+        >>> from gacalc.g3 import Vector
+        >>> T = translate(2 * Vector.e_1 + 3 * Vector.e_2 + 4 * Vector.e_3)
+        >>> M = to_matrix(T, Vector)
         >>> M.shape
         (4, 4)
         >>> [float(M[i, 3]) for i in range(4)]   # translation in the last column
         [2.0, 3.0, 4.0, 1.0]
         >>> # a linear map (scale) -> 4x4 with a ZERO translation column
-        >>> S = to_matrix(uniform_scale(2.0), Vector3)
+        >>> S = to_matrix(uniform_scale(2.0), Vector)
         >>> [float(S[i, 3]) for i in range(4)]
         [0.0, 0.0, 0.0, 1.0]
         >>> [float(S[i, i]) for i in range(4)]

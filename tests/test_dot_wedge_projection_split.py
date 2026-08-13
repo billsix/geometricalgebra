@@ -36,9 +36,9 @@ import typing
 
 import pytest
 
+import gacalc.g2 as g2
+import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase
-from gacalc.g2 import Vector2
-from gacalc.g3 import Vector3
 from gacalc.gn import (
     Gn,
     e_1,
@@ -118,17 +118,17 @@ def test_graded_vector_factories_type_precisely() -> None:
     (Runtime is unchanged; ``assert_type`` is a runtime no-op, so the ``isinstance``
     lines below are what this test asserts when executed.)
     """
-    v2a: Vector2 = 2 * Vector2.e_1 + 3 * Vector2.e_2
-    v2b: Vector2 = Vector2.e_1 + Vector2.e_2
-    typing.assert_type(Vector2.project(onto=v2b)(v2a), Vector2)
-    typing.assert_type(Vector2.reject(away_from=v2b)(v2a), Vector2)
-    typing.assert_type(Vector2.reflect(across=v2b)(v2a), Vector2)
+    v2a: g2.Vector = 2 * g2.Vector.e_1 + 3 * g2.Vector.e_2
+    v2b: g2.Vector = g2.Vector.e_1 + g2.Vector.e_2
+    typing.assert_type(g2.Vector.project(onto=v2b)(v2a), g2.Vector)
+    typing.assert_type(g2.Vector.reject(away_from=v2b)(v2a), g2.Vector)
+    typing.assert_type(g2.Vector.reflect(across=v2b)(v2a), g2.Vector)
 
-    v3a: Vector3 = Vector3.e_1 + 2 * Vector3.e_2 + 3 * Vector3.e_3
-    v3b: Vector3 = Vector3.e_1 + Vector3.e_2
-    typing.assert_type(Vector3.project(onto=v3b)(v3a), Vector3)
-    typing.assert_type(Vector3.reject(away_from=v3b)(v3a), Vector3)
-    typing.assert_type(Vector3.reflect(across=v3b)(v3a), Vector3)
+    v3a: g3.Vector = g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3
+    v3b: g3.Vector = g3.Vector.e_1 + g3.Vector.e_2
+    typing.assert_type(g3.Vector.project(onto=v3b)(v3a), g3.Vector)
+    typing.assert_type(g3.Vector.reject(away_from=v3b)(v3a), g3.Vector)
+    typing.assert_type(g3.Vector.reflect(across=v3b)(v3a), g3.Vector)
 
-    assert isinstance(Vector2.reject(away_from=v2b)(v2a), Vector2)
-    assert isinstance(Vector3.reflect(across=v3b)(v3a), Vector3)
+    assert isinstance(g2.Vector.reject(away_from=v2b)(v2a), g2.Vector)
+    assert isinstance(g3.Vector.reflect(across=v3b)(v3a), g3.Vector)

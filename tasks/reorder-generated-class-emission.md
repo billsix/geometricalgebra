@@ -1,6 +1,8 @@
 # Reorder generated-class emission: full G_n, then ScalarN, then the graded types
 
-**Status:** proposed — needs go-ahead
+**Status:** COMPLETED 2026-08-13 — done as part of (bundled into) the suffix-drop rename
+(`drop-graded-type-dimension-suffixes.md`), since both edit `main()` + the name functions.
+Emission order is now: full `G` → `Scalar` → graded types → module constants. Verified green.
 **Priority:** 6
 **Difficulty:** 1
 **Created:** 2026-08-13

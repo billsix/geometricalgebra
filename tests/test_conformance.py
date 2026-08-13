@@ -26,19 +26,16 @@ from types import ModuleType
 import pytest
 import sympy
 
-import gacalc.g1 as g1mod
-import gacalc.g2 as g2mod
-import gacalc.g3 as g3mod
+import gacalc.g1 as g1
+import gacalc.g2 as g2
+import gacalc.g3 as g3
 import gacalc.gn as gn
 from gacalc.base import Blade, BladeCoef, Coef, MultiVectorBase
-from gacalc.g1 import G1
-from gacalc.g2 import G2
-from gacalc.g3 import G3
 from gacalc.gn import Gn
 from gacalc.transforms import projection_rotation
 
-SPECIALIZED = {1: G1, 2: G2, 3: G3}
-MODULES = {1: g1mod, 2: g2mod, 3: g3mod}
+SPECIALIZED = {1: g1.G, 2: g2.G, 3: g3.G}
+MODULES = {1: g1, 2: g2, 3: g3}
 
 # Every (dimension, implementation) pair, including Gn itself as a sanity check.
 CASES = [(n, cls) for n in (1, 2, 3) for cls in (Gn, SPECIALIZED[n])]
@@ -82,7 +79,7 @@ def scalar_eq(a: Coef, b: Coef) -> bool:
 # --------------------------------------------------------------------------
 # the geometric product, derived directly from the symbolic Gn product
 # --------------------------------------------------------------------------
-@pytest.mark.parametrize("n,cls", [(1, G1), (2, G2)])
+@pytest.mark.parametrize("n,cls", [(1, g1.G), (2, g2.G)])
 def test_symbolic_product_matches_gn(n: int, cls) -> None:
     a: Gn = Gn.symbolic_multivector(n, "a")
     b: Gn = Gn.symbolic_multivector(n, "b")
@@ -93,7 +90,7 @@ def test_symbolic_vector_product_3d() -> None:
     # full symbolic 𝒢₃ product is intentionally slow on Gn; vectors stay cheap
     a: Gn = Gn.symbolic_multivector(3, "a").r_vector_part(1)
     b: Gn = Gn.symbolic_multivector(3, "b").r_vector_part(1)
-    assert to(G3, a) * to(G3, b) == a * b
+    assert to(g3.G, a) * to(g3.G, b) == a * b
 
 
 @pytest.mark.parametrize("n,cls", CASES)
@@ -273,7 +270,7 @@ def test_result_type_is_preserved(n: int, cls) -> None:
     assert type(to(cls, a) + to(cls, b)) is cls
 
 
-@pytest.mark.parametrize("n,cls", [(1, G1), (2, G2), (3, G3)])
+@pytest.mark.parametrize("n,cls", [(1, g1.G), (2, g2.G), (3, g3.G)])
 def test_mixing_with_gn_coerces_to_gn(n: int, cls) -> None:
     a: Gn
     b: Gn
@@ -283,17 +280,22 @@ def test_mixing_with_gn_coerces_to_gn(n: int, cls) -> None:
     assert mixed == a * b
 
 
-@pytest.mark.parametrize("n,cls", [(1, G1), (2, G2), (3, G3)])
+@pytest.mark.parametrize("n,cls", [(1, g1.G), (2, g2.G), (3, g3.G)])
 def test_basis_constants(n: int, cls) -> None:
     # Module constants carry the GRADED type of their blade (reversed 2026-08-04:
     # they used to be the full class cls) -- zero/one -> Scalar_n, a vector blade
-    # -> Vector_n, e_12 -> Bivector_n, e_123 -> Trivector3.  See
+    # -> Vector_n, e_12 -> Bivector_n, e_123 -> g3.Trivector.  See
     # tasks/graded-typed-module-basis-constants.md.
     mod: ModuleType = MODULES[n]
-    grade_prefix: dict[int, str] = {0: "Scalar", 1: "Vector", 2: "Bivector", 3: "Trivector"}
+    grade_prefix: dict[int, str] = {
+        0: "Scalar",
+        1: "Vector",
+        2: "Bivector",
+        3: "Trivector",
+    }
 
     def graded_type(grade: int) -> type:
-        return getattr(mod, f"{grade_prefix[grade]}{n}")
+        return getattr(mod, grade_prefix[grade])
 
     assert type(mod.zero) is graded_type(0)
     assert type(mod.one) is graded_type(0)
@@ -318,7 +320,7 @@ def test_basis_constants(n: int, cls) -> None:
     assert type(3 * mod.one + vector_sum) is cls
 
 
-@pytest.mark.parametrize("n,cls", [(1, G1), (2, G2), (3, G3)])
+@pytest.mark.parametrize("n,cls", [(1, g1.G), (2, g2.G), (3, g3.G)])
 def test_implicit_dimension_methods(n: int, cls) -> None:
     a: Gn = full(n, 0)
     # n defaults to the algebra's own dimension
@@ -331,15 +333,15 @@ def test_implicit_dimension_methods(n: int, cls) -> None:
 
 
 def test_is_close_numeric() -> None:
-    a: G2 = G2.from_blade_dict({(1,): 3.0, (2,): 4.0})
-    b: G2 = G2.from_blade_dict({(1,): 3.0 + 1e-9, (2,): 4.0})
+    a: g2.G = g2.G.from_blade_dict({(1,): 3.0, (2,): 4.0})
+    b: g2.G = g2.G.from_blade_dict({(1,): 3.0 + 1e-9, (2,): 4.0})
     assert a.isclose(b, rel_tol=1e-5, abs_tol=1e-5)
     assert not a.isclose(
-        G2.from_blade_dict({(1,): 3.5, (2,): 4.0}), rel_tol=1e-5, abs_tol=1e-5
+        g2.G.from_blade_dict({(1,): 3.5, (2,): 4.0}), rel_tol=1e-5, abs_tol=1e-5
     )
 
 
-@pytest.mark.parametrize("cls", [G1, G2, G3])
+@pytest.mark.parametrize("cls", [g1.G, g2.G, g3.G])
 def test_simplified_and_expanded_form(cls) -> None:
     # On the lazy (specialized/graded) classes, expanded()/simplified() change the
     # coefficient *form*: distribute, and collapse to lowest terms.  (Gn eager-
@@ -412,30 +414,30 @@ def test_simplified_and_expanded_preserve_value(n: int, cls) -> None:
 
 def test_project_vector_onto_bivector_2d() -> None:
     # the bivector e_12 spans the whole plane, so any 2D vector projects to itself
-    v: G2 = 3 * G2.basis_vector(1) + 4 * G2.basis_vector(2)
-    assert G2.project(onto=G2.e_12)(v) == v
+    v: g2.G = 3 * g2.G.basis_vector(1) + 4 * g2.G.basis_vector(2)
+    assert g2.G.project(onto=g2.G.e_12)(v) == v
     # Gn reference: same result onto the e_1 e_2 bivector
     gv: Gn = 3 * gn.e_1 + 4 * gn.e_2
     assert Gn.project(onto=gn.e_1 * gn.e_2)(gv) == gv
 
 
 def test_project_vector_onto_bivector_and_trivector_3d() -> None:
-    e1: G3
-    e2: G3
-    e3: G3
-    e1, e2, e3 = (G3.basis_vector(i) for i in (1, 2, 3))
+    e1: g3.G
+    e2: g3.G
+    e3: g3.G
+    e1, e2, e3 = (g3.G.basis_vector(i) for i in (1, 2, 3))
     # onto the e_12 plane: keep the in-plane part, drop the perpendicular e_3
-    assert G3.project(onto=G3.e_12)(e1 + e3) == e1
-    assert G3.project(onto=G3.e_12)(e3) == G3.zero()
+    assert g3.G.project(onto=g3.G.e_12)(e1 + e3) == e1
+    assert g3.G.project(onto=g3.G.e_12)(e3) == g3.G.zero()
     # onto the trivector e_123 (all of 3-space): a vector projects to itself
-    assert G3.project(onto=G3.e_123)(e1 + e3) == e1 + e3
+    assert g3.G.project(onto=g3.G.e_123)(e1 + e3) == e1 + e3
 
 
 def test_repr_latex_shows_simplified() -> None:
     # the lazy classes don't eager-simplify, but the display (_repr_latex_) renders
     # the simplified coefficient (sin^2 + cos^2 -> 1), not the raw stored form
     t: sympy.Symbol = sympy.symbols("t")
-    v: G2 = G2.from_blade_dict({(1,): sympy.sin(t) ** 2 + sympy.cos(t) ** 2})
+    v: g2.G = g2.G.from_blade_dict({(1,): sympy.sin(t) ** 2 + sympy.cos(t) ** 2})
     assert "sin" in str(v.to_blade_dict()[(1,)])  # stored coefficient is still raw
     latex: str = v._repr_latex_()
     assert "sin" not in latex and "cos" not in latex  # displayed form is simplified

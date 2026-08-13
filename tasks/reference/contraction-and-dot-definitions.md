@@ -58,8 +58,8 @@ grade 0?) that needs Taylor's book to settle and **changes no gacalc code**.
 - Has: `outer_product`/`wedge`/`^`, `inner_product`/`dot` (Hestenes, grade-0-excluded),
   `scalar_product`, and (2026-07-22) **`left_contraction`/`right_contraction` + the `<` / `>`
   operators** — on `MultiVectorBase` (the general path) and with generated closed-form fast paths +
-  precise `@overload` typing on the specialized classes (`Vector2.left_contraction(Bivector2) ->
-  Vector2`, `Vector2 < Vector2 -> Scalar`, etc.). Grade `m−k` (left) / `k−m` (right), grade 0
+  precise `@overload` typing on the specialized classes (`Vector.left_contraction(Bivector) ->
+  Vector`, `Vector < Vector -> Scalar`, etc.). Grade `m−k` (left) / `k−m` (right), grade 0
   included; the impl is `base.left_contraction`/`right_contraction`, a bilinear sum with **no**
   grade-0 filter (contrast `inner_product`'s `if lg>0 and rg>0`).
 - Settled, nothing open: the plain-dot grade-0 question resolved 2026-07-22 in favour of Hestenes,

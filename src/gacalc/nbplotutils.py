@@ -496,7 +496,7 @@ def plot_multivector(
 ) -> Figure:
     """Plot each blade of ``mv`` on its own horizontal number line, stacked vertically.
 
-    Works on any ``MultiVectorBase`` representation (``Gn``, ``G1``/``G2``/``G3``)
+    Works on any ``MultiVectorBase`` representation (``Gn``, ``G``)
     via the ``to_blade_dict()`` interchange protocol.
 
     Each row is one basis blade (sorted by grade, then by index). Numeric

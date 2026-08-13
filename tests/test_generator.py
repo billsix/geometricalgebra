@@ -127,20 +127,20 @@ def test_subscript_superscript() -> None:
 
 
 def test_registry_for_dim_lists_graded_then_full() -> None:
-    names: list[str] = [s.name for s in gen.registry_for_dim(2, "G2")]
-    assert names == ["Scalar2", "Vector2", "Bivector2", "Rotor2", "G2"]
+    names: list[str] = [s.name for s in gen.registry_for_dim(2, "G")]
+    assert names == ["Scalar", "Vector", "Bivector", "Rotor", "G"]
 
 
 def test_resolve_smallest_covering_type() -> None:
-    assert gen.resolve([()], 2, "G2").name == "Scalar2"
-    assert gen.resolve([(1,), (2,)], 2, "G2").name == "Vector2"
-    assert gen.resolve([(1, 2)], 2, "G2").name == "Bivector2"
-    assert gen.resolve([(), (1, 2)], 2, "G2").name == "Rotor2"
+    assert gen.resolve([()], 2, "G").name == "Scalar"
+    assert gen.resolve([(1,), (2,)], 2, "G").name == "Vector"
+    assert gen.resolve([(1, 2)], 2, "G").name == "Bivector"
+    assert gen.resolve([(), (1, 2)], 2, "G").name == "Rotor"
 
 
 def test_resolve_widens_to_full_when_no_graded_type_covers() -> None:
     # a vector + bivector support spans no single graded type -> the full G_n
-    assert gen.resolve([(1,), (1, 2)], 2, "G2").name == "G2"
+    assert gen.resolve([(1,), (1, 2)], 2, "G").name == "G"
 
 
 # --------------------------------------------------------------------------
@@ -150,46 +150,44 @@ def test_resolve_widens_to_full_when_no_graded_type_covers() -> None:
 
 def _spec(n: int, name: str) -> gen.TypeSpec:
     by_name: dict[str, gen.TypeSpec] = {
-        s.name: s for s in [gen.full_spec(n, f"G{n}"), *gen.graded_specs(n)]
+        s.name: s for s in [gen.full_spec(n, "G"), *gen.graded_specs(n)]
     }
     return by_name[name]
 
 
 def test_product_result_geometric_vector_times_vector_is_rotor() -> None:
-    v2: gen.TypeSpec = _spec(2, "Vector2")
+    v2: gen.TypeSpec = _spec(2, "Vector")
     result_spec: gen.TypeSpec
-    result_spec, _ = gen.product_result(v2, v2, lambda a, b: a * b, 2, "G2")
-    assert result_spec.name == "Rotor2"
+    result_spec, _ = gen.product_result(v2, v2, lambda a, b: a * b, 2, "G")
+    assert result_spec.name == "Rotor"
 
 
 def test_product_result_outer_vector_wedge_vector_is_bivector() -> None:
-    v2: gen.TypeSpec = _spec(2, "Vector2")
+    v2: gen.TypeSpec = _spec(2, "Vector")
     result_spec: gen.TypeSpec
-    result_spec, _ = gen.product_result(
-        v2, v2, lambda a, b: a.outer_product(b), 2, "G2"
-    )
-    assert result_spec.name == "Bivector2"
+    result_spec, _ = gen.product_result(v2, v2, lambda a, b: a.outer_product(b), 2, "G")
+    assert result_spec.name == "Bivector"
 
 
 def test_product_result_bivector_times_bivector_is_scalar() -> None:
-    b2: gen.TypeSpec = _spec(2, "Bivector2")
+    b2: gen.TypeSpec = _spec(2, "Bivector")
     result_spec: gen.TypeSpec
-    result_spec, _ = gen.product_result(b2, b2, lambda a, b: a * b, 2, "G2")
-    assert result_spec.name == "Scalar2"
+    result_spec, _ = gen.product_result(b2, b2, lambda a, b: a * b, 2, "G")
+    assert result_spec.name == "Scalar"
 
 
 def test_unary_result_reverse_preserves_grade() -> None:
-    v2: gen.TypeSpec = _spec(2, "Vector2")
+    v2: gen.TypeSpec = _spec(2, "Vector")
     result_spec: gen.TypeSpec
-    result_spec, _ = gen.unary_result(v2, lambda a: a.reverse(), 2, "G2")
-    assert result_spec.name == "Vector2"
+    result_spec, _ = gen.unary_result(v2, lambda a: a.reverse(), 2, "G")
+    assert result_spec.name == "Vector"
 
 
 def test_unary_result_dual_of_vector3_is_bivector3() -> None:
-    v3: gen.TypeSpec = _spec(3, "Vector3")
+    v3: gen.TypeSpec = _spec(3, "Vector")
     result_spec: gen.TypeSpec
-    result_spec, _ = gen.unary_result(v3, lambda a: a.dual(3), 3, "G3")
-    assert result_spec.name == "Bivector3"
+    result_spec, _ = gen.unary_result(v3, lambda a: a.dual(3), 3, "G")
+    assert result_spec.name == "Bivector"
 
 
 # --------------------------------------------------------------------------

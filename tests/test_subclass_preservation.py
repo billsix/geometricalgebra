@@ -14,36 +14,36 @@
 """Subclassing policy for the generated types.
 
 **Every generated value type is `@typing.final`** (not subclassable): the graded
-value types (``Vector1/2/3``, ``Bivector2/3``, ``Trivector3``, ``Rotor2/3``), the
-per-algebra ``ScalarN``, **and the full classes ``G1``/``G2``/``G3``**.  Nothing
+value types (``Vector`` / ``Bivector`` / ``Trivector`` / ``Rotor`` per module), the
+per-algebra ``Scalar``, **and the full class ``G``**.  Nothing
 subclasses ``G_n`` (the graded types are the value types; the general
 dimension-agnostic representation is ``Gn`` in ``gn.py``, a separate class), so the
 former "extension point" was unused -- making ``G_n`` final too lets the generated
 code construct the concrete class directly everywhere instead of through
 ``type(self)``.  This is a static guarantee: ``ty`` rejects any subclass with
-``error[subclass-of-final-class]`` -- e.g. ``class X(G2): ...`` is a type error (the
+``error[subclass-of-final-class]`` -- e.g. ``class X(g2.G): ...`` is a type error (the
 finality is emitted by ``tools/gen_specialized.py``).
 """
 
-from gacalc.g1 import G1, Scalar1, Vector1
-from gacalc.g2 import G2, Bivector2, Rotor2, Scalar2, Vector2
-from gacalc.g3 import G3, Bivector3, Rotor3, Scalar3, Trivector3, Vector3
+import gacalc.g1 as g1
+import gacalc.g2 as g2
+import gacalc.g3 as g3
 
 _FINAL_TYPES: list[type] = [
-    Scalar1,
-    Scalar2,
-    Scalar3,
-    Vector1,
-    Vector2,
-    Bivector2,
-    Rotor2,
-    Vector3,
-    Bivector3,
-    Trivector3,
-    Rotor3,
-    G1,
-    G2,
-    G3,
+    g1.Scalar,
+    g2.Scalar,
+    g3.Scalar,
+    g1.Vector,
+    g2.Vector,
+    g2.Bivector,
+    g2.Rotor,
+    g3.Vector,
+    g3.Bivector,
+    g3.Trivector,
+    g3.Rotor,
+    g1.G,
+    g2.G,
+    g3.G,
 ]
 
 
@@ -60,11 +60,11 @@ def test_all_generated_types_are_final() -> None:
 def test_full_class_products_construct_concretely() -> None:
     # G_n arithmetic returns exactly G_n (no type(self) indirection to preserve a
     # subclass, since there are none).
-    p: G2 = G2(coeff_scalar=1.0, coeff_e_1=2.0)
-    q: G2 = G2(coeff_e_2=3.0, coeff_e_12=4.0)
-    assert type(p + q) is G2
-    assert type(p - q) is G2
-    assert type(-p) is G2
-    assert type(p * 2) is G2
-    assert type(p.reverse()) is G2
-    assert type(p * q) is G2  # full-class product is same-type
+    p: g2.G = g2.G(coeff_scalar=1.0, coeff_e_1=2.0)
+    q: g2.G = g2.G(coeff_e_2=3.0, coeff_e_12=4.0)
+    assert type(p + q) is g2.G
+    assert type(p - q) is g2.G
+    assert type(-p) is g2.G
+    assert type(p * 2) is g2.G
+    assert type(p.reverse()) is g2.G
+    assert type(p * q) is g2.G  # full-class product is same-type

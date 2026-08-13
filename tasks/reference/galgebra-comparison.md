@@ -27,7 +27,7 @@ synthesis, not from any doc):
 | 1 | **exp / log of rotors & multivectors** — *the `exp` half is **DONE 2026-07-29** (`MultiVectorBase.exp`, `Bivector_n.exp() -> Rotor_n`; work record `tasks/archive/2026/07/29/exp-for-rotors.md`, rationale in `design-decisions.md`); `log` stays unpromoted* | ~~small, self-contained~~ | no | "rotor = exp(bivector)" is a core teaching moment; enables interpolation. ~~Best near-term win.~~ (Finding 2B) |
 | 2 | **~~Left/right contractions~~ (DONE 2026-07-22) + commutator/anticommutator + grade-involution + Clifford conjugation** | small, several one-liners | no | Table-stakes operations every GA text uses; gacalc collapses all inner products into one. Cheap. (Finding 2A) |
 | 3 | **Reciprocal frames** | small–medium | no | Independently useful *and* the prerequisite for geometric calculus. Build regardless. (Finding 1, 5) |
-| 4 | **Outermorphisms / general linear transforms** (`Lt`: det/adjoint/trace as pseudoscalar/blade operations) | medium, self-contained | **no** — works on Euclidean G3 | Beautiful teaching topic ("det = how a map scales the pseudoscalar"); generalizes gacalc's versor-only transforms. The best "big" step that *doesn't* need signatures. (Finding 3b) |
+| 4 | **Outermorphisms / general linear transforms** (`Lt`: det/adjoint/trace as pseudoscalar/blade operations) | medium, self-contained | **no** — works on Euclidean G | Beautiful teaching topic ("det = how a map scales the pseudoscalar"); generalizes gacalc's versor-only transforms. The best "big" step that *doesn't* need signatures. (Finding 3b) |
 | 5 | **General-multivector inverse** (Hitzer closed-form n<6 / Shirokov) | small–medium | no | Correctness/coverage: gacalc's `inverse()` only handles blade/versor cases; a general multivector can silently fail. (Finding 2B) |
 | 6 | **Symbolic ergonomics**: `Mv.subs`, `trigsimp`, public `func`, `Fmt(1|2|3)` display | small | no | On-brand for a symbolic pedagogical lib; `Fmt` (per-grade/per-blade LaTeX layout) is the single most transferable presentation idea. (Findings 2C, 4) |
 | 7 | **Arbitrary metric signature (p,q,r)** | **large, architectural** | — (this IS it) | The root gap. Turns "Clifford arithmetic in ℝⁿ" into "a GA library." Decide scope: a signature *flag* (diagonal ±1, unlocks STA — moderate) vs a full *metric tensor* (unlocks CGA/curvilinear/manifolds — large). (Findings 1, 5) |
@@ -262,7 +262,7 @@ what makes these **coordinate-free and blade-aware**:
 `det(f)`, the adjoint, eigenblades, or the action of a general linear map on a bivector.
 
 **Sequencing note for Bill:** 3b (outermorphism/`Lt`) is buildable on a *Euclidean* algebra
-and does **not** strictly require lifting the signature — an outermorphism over `G3` with
+and does **not** strictly require lifting the signature — an outermorphism over `G` with
 det/adjoint/trace is a self-contained, high-value addition and arguably the best "big" next
 step. 3a (∇) needs coordinates + reciprocal frame first, so it's downstream of
 Finding 1's machinery even if you stay Euclidean.
@@ -318,7 +318,7 @@ STA/CGA/PGA literature; Hestenes & Sobczyk) so we're not just chasing one librar
 The verdict: **galgebra's big gaps are the field's gaps too** — they're what separates a
 *geometry/physics* GA library from a *Clifford-arithmetic* one.
 
-**The one root fact:** almost every applied GA beyond textbook G2/G3 lives in a **non-
+**The one root fact:** almost every applied GA beyond textbook G lives in a **non-
 Euclidean or degenerate metric**, so `eᵢ²=+1` hardcoded locks gacalc out of the entire
 applied world:
 - **STA** (relativity, Maxwell as `∇F=J`, Dirac) = Cl(1,3), needs **negative** squares.

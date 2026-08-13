@@ -134,7 +134,7 @@ order. Sections A–D and G–I placement is inferred — reorder freely.*
 **H. The formal algebra — "the boring work" (after attention is grabbed)** *(Bill:
 explicitly after the hook)*
 - Define the algebra properly. Look at how **geometry textbooks** define things.
-  **Explain G2.** Explain that the basis blades are **constants**. Rules for
+  **Explain G.** Explain that the basis blades are **constants**. Rules for
   **addition, subtraction, multiplication**. Explain **resolving** — how `e₁ e₂` resolve
   when we plot. Show a picture of **how geometry denoted the same idea implicitly in
   notation**, whereas now we have **a mathematical object that names direction
@@ -209,7 +209,7 @@ Preserved so nothing is lost in the synthesis above. Lightly numbered for refere
     only has use relative to something else. Maybe draw picture of a ruler at an angle.
 22. At some point, after the student's attention is grabbed, we're going to do the boring
     work of defining the algebra. Look in geometry textbooks to see how they define
-    things. Explain G2. Explain how they are constants. Explain the rules for addition,
+    things. Explain G. Explain how they are constants. Explain the rules for addition,
     explain the rules for subtraction, explain the rules from multiplication. Explain
     about resolving, and how e1 e2 resolve when we plot. Show picture of how the same
     idea was denoted in geometry, but we now have a mathematical object to define

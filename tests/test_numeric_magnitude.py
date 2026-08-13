@@ -21,30 +21,30 @@ symbolic inputs keep exactness. See tasks/magnitude-numeric-for-numeric-input.md
 
 import sympy
 
+import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase
-from gacalc.g3 import Vector3
 from gacalc.gn import sym_vec3_1
 from gacalc.transforms import InvertibleFunction, inverse, rotor_rotation
 
 
 def test_magnitude_of_float_vector_is_python_float() -> None:
-    v: Vector3 = Vector3(coeff_e_1=3.0, coeff_e_2=4.0, coeff_e_3=0.0)
+    v: g3.Vector = g3.Vector(coeff_e_1=3.0, coeff_e_2=4.0, coeff_e_3=0.0)
     assert type(v.magnitude()) is float
     assert type(abs(v)) is float
     assert v.magnitude() == 5.0
 
 
 def test_inverse_of_float_vector_stays_float() -> None:
-    v: Vector3 = Vector3(coeff_e_1=2.0, coeff_e_2=0.0, coeff_e_3=0.0)
-    inv: Vector3 = v.inverse()
+    v: g3.Vector = g3.Vector(coeff_e_1=2.0, coeff_e_2=0.0, coeff_e_3=0.0)
+    inv: g3.Vector = v.inverse()
     assert type(inv.coeff_e_1) is float
 
 
 def test_rotor_rotation_of_float_vectors_stays_float_forward_and_inverse() -> None:
     # the focus path walks transforms *against the arrows* (inverse), so both
     # directions must stay numeric.
-    v: Vector3 = Vector3(coeff_e_1=1.0, coeff_e_2=0.0, coeff_e_3=0.0)
-    to: Vector3 = Vector3(coeff_e_1=0.0, coeff_e_2=1.0, coeff_e_3=0.0)
+    v: g3.Vector = g3.Vector(coeff_e_1=1.0, coeff_e_2=0.0, coeff_e_3=0.0)
+    to: g3.Vector = g3.Vector(coeff_e_1=0.0, coeff_e_2=1.0, coeff_e_3=0.0)
     f: InvertibleFunction = rotor_rotation(v, to)
     rotated: MultiVectorBase
     for rotated in (f(v), inverse(f)(v)):

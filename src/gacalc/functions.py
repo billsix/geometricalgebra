@@ -151,10 +151,10 @@ class ComposableFunction(typing.Generic[V]):
 
         Example:
             >>> from gacalc.transforms import translate, compose, uniform_scale
-            >>> from gacalc.g3 import Vector3
-            >>> T = translate(10 * Vector3.e_1)
-            >>> got = T.at(0.5)(Vector3.zero())
-            >>> got.isclose(5 * Vector3.e_1, rel_tol=1e-5, abs_tol=1e-5)
+            >>> from gacalc.g3 import Vector
+            >>> T = translate(10 * Vector.e_1)
+            >>> got = T.at(0.5)(Vector.zero())
+            >>> got.isclose(5 * Vector.e_1, rel_tol=1e-5, abs_tol=1e-5)
             True
         """
         if self.interpolate is not None:
@@ -170,8 +170,8 @@ class ComposableFunction(typing.Generic[V]):
 
         Example:
             >>> from gacalc.transforms import compose, translate, uniform_scale
-            >>> from gacalc.g3 import Vector3
-            >>> f = compose([translate(Vector3.e_1), uniform_scale(2.0)])
+            >>> from gacalc.g3 import Vector
+            >>> f = compose([translate(Vector.e_1), uniform_scale(2.0)])
             >>> len(list(f.steps()))
             2
         """

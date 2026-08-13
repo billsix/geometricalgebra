@@ -45,7 +45,7 @@
 # %%
 import sympy
 
-from gacalc.g2 import Bivector2, Rotor2, Vector2
+import gacalc.g2 as g2
 from gacalc.gn import Gn, e_1, e_2, e_3, projection_rotation
 from gacalc.nbplotutils import show_mult
 from gacalc.transforms import ComposableFunction, plane_rotation
@@ -250,18 +250,18 @@ result  # pyright: ignore[reportUnusedExpression]
 # %%
 phi = sympy.symbols("phi", positive=True)
 
-i: Bivector2 = Bivector2.e_12
-R_exp: Rotor2 = (i * (-phi / 2)).exp()
+i: g2.Bivector = g2.Bivector.e_12
+R_exp: g2.Rotor = (i * (-phi / 2)).exp()
 R_exp  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
-# Note the *type*: exponentiating a `Bivector2` lands in `Rotor2` — the
+# Note the *type*: exponentiating a `g2.Bivector` lands in `g2.Rotor` — the
 # exponential map carries the plane onto the rotor group, and the graded types
 # say so.  The rotor is automatically unit ($\cos^2 + \sin^2 = 1$), and its
 # sandwich agrees with the rotation `plane_rotation` builds from the same
 # plane and angle:
 
 # %%
-f = plane_rotation(Vector2.e_1, Vector2.e_2)(phi)
-v_exp: Vector2 = v1 * Vector2.e_1 + v2 * Vector2.e_2
+f = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)(phi)
+v_exp: g2.Vector = v1 * g2.Vector.e_1 + v2 * g2.Vector.e_2
 R_exp.sandwich(v_exp) == f(v_exp)

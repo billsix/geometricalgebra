@@ -31,9 +31,9 @@
 # 𝒢₃ — the geometric algebra of three-dimensional space
 # =====================================================
 #
-# This notebook demonstrates the **specialized `G3` class** (𝒢₃), the fast,
+# This notebook demonstrates the **specialized `g3.G` class** (𝒢₃), the fast,
 # named-field representation of the geometric algebra of ℝ³. It mirrors
-# `displaymv.py` (which uses the general `Gn`), but every value here is a `G3`:
+# `displaymv.py` (which uses the general `Gn`), but every value here is a `g3.G`:
 # its closed-form geometric product is code-generated from `Gn`, so it is
 # provably consistent with the reference while being much faster.
 #
@@ -47,7 +47,7 @@ import warnings
 import sympy
 from IPython.display import Math, display
 
-from gacalc.g3 import G3, Vector3
+import gacalc.g3 as g3
 from gacalc.nbplotutils import plot_multivector, show_mult
 
 # turn warnings into exceptions
@@ -61,39 +61,39 @@ warnings.filterwarnings("error", category=RuntimeWarning)
 # pseudoscalar of 𝒢₃. Like the bivector in 𝒢₂, it squares to −1.
 
 # %%
-pseudoscalar: G3 = G3.e_1 * G3.e_2 * G3.e_3
+pseudoscalar: g3.G = g3.G.e_1 * g3.G.e_2 * g3.G.e_3
 pseudoscalar  # pyright: ignore[reportUnusedExpression]
 
 # %%
 pseudoscalar * pseudoscalar  # pyright: ignore[reportUnusedExpression]
 
 # %%
-G3.e_123 == G3.e_1 * G3.e_2 * G3.e_3
+g3.G.e_123 == g3.G.e_1 * g3.G.e_2 * g3.G.e_3
 
 # %%
 # the three unit bivectors
-G3.e_12  # pyright: ignore[reportUnusedExpression]
+g3.G.e_12  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # the three unit bivectors
-G3.e_13  # pyright: ignore[reportUnusedExpression]
+g3.G.e_13  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # the three unit bivectors
-G3.e_23  # pyright: ignore[reportUnusedExpression]
+g3.G.e_23  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Linear combinations
 # -------------------
 
 # %%
-2 * G3.e_1 + 3 * G3.e_2 + 4 * G3.e_3 + 5 * G3.e_1  # pyright: ignore[reportUnusedExpression]
+2 * g3.G.e_1 + 3 * g3.G.e_2 + 4 * g3.G.e_3 + 5 * g3.G.e_1  # pyright: ignore[reportUnusedExpression]
 
 # %%
-G3.from_scalar(0)  # pyright: ignore[reportUnusedExpression]
+g3.G.from_scalar(0)  # pyright: ignore[reportUnusedExpression]
 
 # %%
-G3.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
+g3.G.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Symbolic vectors
@@ -103,15 +103,15 @@ G3.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
 # `r_vector_part(1)` keeps only the grade-1 (vector) part.
 
 # %%
-a: G3 = G3.symbolic_multivector(prefix="a")
+a: g3.G = g3.G.symbolic_multivector(prefix="a")
 a  # pyright: ignore[reportUnusedExpression]
 
 # %%
-a_vec: G3 = G3.symbolic_multivector(prefix="a").r_vector_part(1)
+a_vec: g3.G = g3.G.symbolic_multivector(prefix="a").r_vector_part(1)
 a_vec  # pyright: ignore[reportUnusedExpression]
 
 # %%
-b_vec: G3 = G3.symbolic_multivector(prefix="b").r_vector_part(1)
+b_vec: g3.G = g3.G.symbolic_multivector(prefix="b").r_vector_part(1)
 b_vec  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -143,8 +143,8 @@ a_vec.dot(b_vec) + a_vec.wedge(b_vec) == a_vec * b_vec
 # ---------------------------
 
 # %%
-g3_1: G3 = G3.symbolic_multivector(prefix="a")
-g3_2: G3 = G3.symbolic_multivector(prefix="b")
+g3_1: g3.G = g3.G.symbolic_multivector(prefix="a")
+g3_2: g3.G = g3.G.symbolic_multivector(prefix="b")
 show_mult(g3_1, g3_2)
 
 # %% [markdown]
@@ -152,7 +152,7 @@ show_mult(g3_1, g3_2)
 # -------------
 
 # %%
-g3_3: G3 = G3.symbolic_multivector(prefix="c")
+g3_3: g3.G = g3.G.symbolic_multivector(prefix="c")
 ((g3_1 * g3_2) * g3_3) - (g3_1 * (g3_2 * g3_3))
 
 # %% [markdown]
@@ -162,7 +162,7 @@ g3_3: G3 = G3.symbolic_multivector(prefix="c")
 # 𝒢₃ has grades 0–3: scalar, vector, bivector, trivector.
 
 # %%
-c: G3 = G3.symbolic_multivector(prefix="c")
+c: g3.G = g3.G.symbolic_multivector(prefix="c")
 c.r_vector_part(0)
 
 # %%
@@ -181,7 +181,7 @@ c.r_vector_part(3)
 # All 2³ = 8 basis blades, in grade order.
 
 # %%
-for x in G3.bases():
+for x in g3.G.bases():
     display(Math(x._repr_latex_()))
 
 # %% [markdown]
@@ -193,7 +193,7 @@ for x in G3.bases():
 # $a\wedge b$ and its dual; the dual is parallel to $a\times b$.
 
 # %%
-biv: G3 = a_vec ^ b_vec
+biv: g3.G = a_vec ^ b_vec
 biv  # pyright: ignore[reportUnusedExpression]
 
 # %%
@@ -211,7 +211,7 @@ biv * biv  # pyright: ignore[reportUnusedExpression]
 # ---------------------------------------------
 
 # %%
-m: G3 = 1 * G3.e_1 + 2 * G3.e_2 + 2 * G3.e_3
+m: g3.G = 1 * g3.G.e_1 + 2 * g3.G.e_2 + 2 * g3.G.e_3
 m.magnitude()
 
 # %%
@@ -224,7 +224,7 @@ m.normalize()
 m.inverse()
 
 # %%
-m * m.inverse() == G3.from_scalar(1)
+m * m.inverse() == g3.G.from_scalar(1)
 
 # %%
 # reverse of the pseudoscalar
@@ -239,23 +239,23 @@ m.dual()
 # ----------------------
 #
 # `plot_multivector` draws each blade's coefficient on its own number line. It
-# accepts any representation — here, `G3` values.
+# accepts any representation — here, `g3.G` values.
 
 # %%
 plot_multivector(
-    2 * G3.from_scalar(1)
-    + 3 * G3.e_1
-    - 1.5 * G3.e_2
-    + 4 * G3.e_3
-    + 0.7 * (G3.e_1 * G3.e_2)
+    2 * g3.G.from_scalar(1)
+    + 3 * g3.G.e_1
+    - 1.5 * g3.G.e_2
+    + 4 * g3.G.e_3
+    + 0.7 * (g3.G.e_1 * g3.G.e_2)
 )
 
 # %%
-u: G3 = 3 * G3.e_1 - 1.5 * G3.e_2 + 2 * G3.e_3
+u: g3.G = 3 * g3.G.e_1 - 1.5 * g3.G.e_2 + 2 * g3.G.e_3
 plot_multivector(u)
 
 # %%
-v: G3 = 1.5 * G3.e_1 + 5 * G3.e_2 - G3.e_3
+v: g3.G = 1.5 * g3.G.e_1 + 5 * g3.G.e_2 - g3.G.e_3
 plot_multivector(v)
 
 # %%
@@ -277,8 +277,8 @@ plot_multivector(u * v)
 
 # %%
 a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3", real=True)
-a: Vector3 = a_1 * Vector3.e_1 + a_2 * Vector3.e_2 + a_3 * Vector3.e_3
-b: Vector3 = b_1 * Vector3.e_1 + b_2 * Vector3.e_2 + b_3 * Vector3.e_3
+a: g3.Vector = a_1 * g3.Vector.e_1 + a_2 * g3.Vector.e_2 + a_3 * g3.Vector.e_3
+b: g3.Vector = b_1 * g3.Vector.e_1 + b_2 * g3.Vector.e_2 + b_3 * g3.Vector.e_3
 
 # %% [markdown]
 # The dot product (a scalar) and the wedge (a three-component bivector):
@@ -324,7 +324,7 @@ assert sympy.simplify(wedge_magnitude_from_sin - (a ^ b).magnitude()) == 0
 # %% [markdown]
 # **Rotor capstone.** As in 𝒢₂, $ab = a\cdot b + a\wedge b$ splits into
 # orthogonal grades, so $|ab|^2 = (a\cdot b)^2 + |a\wedge b|^2 = |a|^2|b|^2$ and
-# $|ab| = |a||b|$. Here $ab$ is a `Rotor3` (scalar + bivector):
+# $|ab| = |a||b|$. Here $ab$ is a `g3.Rotor` (scalar + bivector):
 
 # %%
 a * b

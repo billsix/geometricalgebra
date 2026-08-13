@@ -11,7 +11,7 @@ CLAUDE.md's "Architecture" (the interchange protocol) and `design-decisions.md`.
 ## What it is, and why it matters
 
 A multivector has several *representations* — `Gn` (the general dict-of-blades reference),
-the specialized `G1`/`G2`/`G3`, and the graded subtypes (`Vector2`, `Bivector3`, `Rotor2`,
+the specialized `G`, and the graded subtypes (`Vector`, `Bivector`, `Rotor`,
 `ScalarN`, ...). They all interoperate through **one** shared format:
 
     Blade      = tuple[int, ...]        # basis-vector indices; () is the scalar blade
@@ -20,7 +20,7 @@ the specialized `G1`/`G2`/`G3`, and the graded subtypes (`Vector2`, `Bivector3`,
 
 Two methods are the whole protocol: `to_blade_dict()` (this value → the dict) and the
 `from_blade_dict()` classmethod (the dict → this representation). Mixing two representations
-(a `Vector2` and a `Gn`) works because both pass through the dict, and every
+(a `Vector` and a `Gn`) works because both pass through the dict, and every
 representation-independent method in `base.py` is written against it.
 
 ## The contract
@@ -32,7 +32,7 @@ A key's basis-vector indices must be **strictly increasing**: `(1, 2)`, never `(
 `_require_canonical_blades` validator and **raises `ValueError`** on a bad key:
 
     >>> Gn.from_blade_dict({(2, 1): 1})     # ValueError
-    >>> G2.from_blade_dict({(2, 1): 1})     # ValueError  (specialized classes too)
+    >>> G.from_blade_dict({(2, 1): 1})     # ValueError  (specialized classes too)
     >>> Gn.from_blade_dict({(1, 1): 1})     # ValueError  (repeated index)
 
 `e₂e₁` is a legal algebra *element* — it just isn't a legal *key*: it equals `−e₁e₂`, so it
@@ -62,7 +62,7 @@ un-reduced coefficient until asked:
     >>> t = sympy.Symbol("t")
     >>> Gn.from_blade_dict({(): cos(t)**2 + sin(t)**2 - 1}).to_blade_dict()
     {}                                     # eager: simplified to 0, pruned
-    >>> G2.from_blade_dict({(): cos(t)**2 + sin(t)**2 - 1}).coeff_scalar
+    >>> G.from_blade_dict({(): cos(t)**2 + sin(t)**2 - 1}).coeff_scalar
     sin(t)**2 + cos(t)**2 - 1              # lazy: kept un-reduced
     >>> _.simplified().to_blade_dict()
     {}                                     # simplify on demand
@@ -76,7 +76,7 @@ though their raw dicts differ.
 A graded subtype's `from_blade_dict` keeps only the blades that type carries; **foreign keys
 are silently dropped** (they pass canonical validation — they just aren't this type's blades):
 
-    >>> Vector2.from_blade_dict({(1,): 3, (2,): 4, (): 9, (1, 2): 5}).to_blade_dict()
+    >>> Vector.from_blade_dict({(1,): 3, (2,): 4, (): 9, (1, 2): 5}).to_blade_dict()
     {(1,): 3, (2,): 4}                     # the scalar and e₁₂ are dropped
 
 Consequence — the trap: a result that carries a **new grade** must be built via
