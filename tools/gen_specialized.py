@@ -12,17 +12,102 @@
 # Lesser General Public License (the LICENSE file in this repository)
 # for more details.
 
-"""Generate the specialized G1 / G2 / G3 multivector classes.
+"""Generate the specialized G1 / G2 / G3 multivector classes from ``Gn``.
 
-These are named-field dataclasses for 𝒢₁, 𝒢₂ and 𝒢₃ whose ``_geometric_product``
-is the closed-form product, derived *from the general Gn symbolic product* so the
-fast path is provably consistent with the reference implementation.  Common
-sub-expressions are factored out with ``sympy.cse``.
+Read this first to understand how the generator works; the deep, file-by-file
+map is ``tasks/reference/code-generator-architecture.md``.
 
-Each algebra is written to its own committed module -- ``g1.py``, ``g2.py``,
-``g3.py`` -- so a newcomer can import just the one they need
-(``from gacalc.g2 import G2``).  Re-run this script by hand when the
-algebra changes:
+The one idea to hold onto
+=========================
+
+``Gn`` (``gacalc/gn.py``) is the slow-but-obviously-correct reference: a
+multivector as a plain ``dict`` from blade to coefficient, whose product is
+textbook bubble-sort-and-cancel, eagerly ``sympy.simplify``-ing every
+coefficient.  It is never optimized -- it is the oracle.
+
+The specialized classes (``G1``/``G2``/``G3`` and the graded subtypes
+``Vector2``/``Bivector2``/``Rotor2``/...) are fast because their arithmetic is
+pre-computed closed-form code.  The trick is where that code comes from:
+
+    We do NOT parse Gn's source and we do NOT macro-expand it.  We *run* Gn --
+    once, on sympy SYMBOLS instead of numbers -- and keep the formula that falls
+    out.  Compiling that formula into a concrete method is the whole generator.
+
+That is partial evaluation / symbolic execution (the same idea as a tracing
+JIT): running the reference on placeholder inputs specializes it into compiled
+code.  Because the formula came straight out of running the reference, the
+generated fast path cannot disagree with it -- that is what "provably consistent
+with Gn" means, and why a graded product's result *type* is decided at
+generation time from the symbolic result, never from a runtime float.
+
+The pipeline
+============
+
+::
+
+    Gn  --  the reference (dict-of-blades, eager sympy.simplify, slow)
+     |
+     |   feed it SYMBOLS, not numbers:
+     |      a = Gn({(1,): a_e_1, (2,): a_e_2})
+     |      b = Gn({(1,): b_e_1, (2,): b_e_2})
+     v
+    run Gn's REAL product  a * b   (the unchanged reference code)
+     |
+     v
+    a Gn whose coefficients are now FORMULAS (sympy exprs):
+       {():    a_e_1*b_e_1 + a_e_2*b_e_2,      <- scalar part
+        (1,2): a_e_1*b_e_2 - a_e_2*b_e_1}      <- bivector part
+     |
+     |   resolve() the nonzero blades -> a result type
+     |             (scalar + bivector  =>  Rotor2)
+     |   sympy.cse() to factor; rewrite  a_e_1 -> self.coeff_e_1
+     v
+    Python AST nodes  --ast.unparse-->  Vector2._geometric_product source
+     |
+     v
+    g2.py   (a gitignored build artifact -- never hand-edited)
+
+The middle step, run live so you can see the formula the generator captures
+(read out by key: the union-of-blades dict has no guaranteed order):
+
+    >>> import sympy
+    >>> from gacalc.gn import Gn
+    >>> a = Gn.from_blade_dict(
+    ...     {(1,): sympy.Symbol("a_e_1"), (2,): sympy.Symbol("a_e_2")})
+    >>> b = Gn.from_blade_dict(
+    ...     {(1,): sympy.Symbol("b_e_1"), (2,): sympy.Symbol("b_e_2")})
+    >>> d = (a * b).to_blade_dict()
+    >>> d[()]                      # scalar part
+    a_e_1*b_e_1 + a_e_2*b_e_2
+    >>> d[(1, 2)]                  # bivector part
+    a_e_1*b_e_2 - a_e_2*b_e_1
+
+The product of two general 2-D vectors has a scalar part and a bivector part and
+nothing else, so ``resolve`` picks the smallest registered type covering those
+two blades -- the even subalgebra ``Rotor2`` -- which is why ``Vector2 *
+Vector2`` is typed and built as a ``Rotor2``.
+
+The three files
+===============
+
+- ``tools/gen_specialized.py`` (this file) -- the geometric-algebra layer: the
+  type registry + ``resolve``, ``product_result`` (build symbolic operands, run
+  the real Gn op, read off the formula), and one builder per emitted construct
+  (``generate_scalar`` / ``generate_class`` / ``generate_graded_type`` /
+  ``generate_constants``).  ``main()`` writes the three self-contained modules
+  so a reader can import just the one they need (``from gacalc.g2 import G2``).
+- ``tools/astbuild.py`` -- a domain-agnostic node-builder DSL over ``ast``,
+  knowing nothing about geometric algebra: it turns the pieces above into AST
+  nodes and renders them with ``ast.unparse`` (there is no string-template layer
+  -- the AST is the intermediate form).  It also holds the doc-region markers.
+- ``tools/check_doc_regions.py`` -- a standalone verifier for those markers.
+
+Golden rule: a correct generator change appears in ``git diff`` as a ``tools/``
+diff and NOTHING under ``src/gacalc/`` (the ``g*.py`` are gitignored build
+artifacts).  To study the output, run this script and read the real
+``src/gacalc/g2.py`` on disk -- never edit it, never reason from memory about it.
+
+Re-run this script by hand when the algebra changes:
 
     python tools/gen_specialized.py
 
@@ -1805,6 +1890,9 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
     self_ann: ast.expr = attribute("typing", "Self")
 
     def bilinear(method: str, cross_node: ast.expr, result_mv: Gn) -> ast.FunctionDef:
+        """A dense full-class product method (geometric/inner/outer/contraction):
+        the closed form over ALL blades (cse'd), with an isinstance guard that
+        coerces a foreign rhs to ``Gn`` and delegates via ``cross_node``."""
         result_coeffs: BladeCoef = result_mv.to_blade_dict()
         replacements, reduced = sympy.cse(
             [sympy.sympify(result_coeffs.get(b, 0)) for b in blades]
@@ -1828,6 +1916,9 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
     def linear(
         method: str, op_cls: type[ast.operator], gn_op_cls: type[ast.operator]
     ) -> ast.FunctionDef:
+        """A full-class linear op (``__add__`` / ``__sub__``): normalize a bare
+        number to the scalar part, coerce a foreign rhs through ``Gn``, else
+        combine the fields pairwise with ``op_cls``."""
         return function_def(
             method,
             [
@@ -2816,6 +2907,14 @@ def ruff_format(paths: list[str]) -> None:
 
 
 def main() -> None:
+    """Generate every algebra in ``ALGEBRAS`` into ``src/gacalc/gN.py``.
+
+    For each ``(n, name, filename)``: build the module body as ``ast`` nodes
+    (``ScalarN``, then the full ``G_n``, then the graded types, then the module
+    constants), wrap it in doc-region markers, render to text with the raw header
+    prepended, write the file; finally ruff-format all of them.  See the module
+    docstring for the pipeline this drives.
+    """
     written: list[str] = []
     # Each module's body is a list of `ast` statement nodes (the per-construct
     # generators build them directly), rendered to source with `ast.unparse`

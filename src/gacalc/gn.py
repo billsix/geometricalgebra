@@ -77,6 +77,11 @@ class Gn(MultiVectorBase):
     ``__post_init__``.  That is the dominant cost (profiling shows ~100%), and
     it is kept here on purpose: Gn is allowed to be slow.  The specialized
     G2/G3 simplify lazily instead.
+
+    Gn is also what the code generator *runs on sympy symbols* (not numbers) to
+    derive those specialized closed forms -- so the fast paths are provably
+    consistent with this reference.  See the module docstring of
+    ``tools/gen_specialized.py`` for that pipeline.
     """
 
     coefficient_of_blade: BladeCoef

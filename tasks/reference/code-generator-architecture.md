@@ -9,6 +9,11 @@ sections of the repo `CLAUDE.md` (the *what* and the golden rules) and the sibli
 `tasks/reference/generated-product-typing.md` (the deep *rationale* for the `@typing.overload`
 precise-typing feature). This doc is the *how the machinery is wired* map.
 
+**New to the generator? Start with the narrative overview in the module docstring of
+`tools/gen_specialized.py`** — the flow of ideas (`Gn` run on symbols → the captured formula →
+compiled code), an ASCII pipeline diagram, and a live, doctest'd worked trace. That is the
+human-readable front door; this doc is the dense, random-access map you graduate to.
+
 The whole generator is three files under `tools/`:
 
 - `tools/gen_specialized.py` — the domain layer: GA knowledge, the type registry, the symbolic→AST

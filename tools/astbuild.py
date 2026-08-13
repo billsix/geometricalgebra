@@ -12,14 +12,33 @@
 # Lesser General Public License (the LICENSE file in this repository)
 # for more details.
 
-"""Generic Python-`ast` construction helpers for the code generator.
+"""The node-builder DSL the generator emits code *through* -- and nothing else.
 
-A small DSL for building syntax-tree nodes (``nm``/``dot``/``call``/``cast``/``fn``/
-``cls``/``annotated_assign``/...) and rendering them with ``ast.unparse``
-(``module_source``).
-Knows nothing about geometric algebra -- it only knows the conventions of the code
-this generator emits (e.g. ``cast_self``/``cast_coef`` wrap ``typing.cast`` to
-``typing.Self``/``Coef`` (the coefficient type)).  Used by tools/gen_specialized.py.
+``tools/gen_specialized.py`` decides *what* geometric-algebra code to emit; this
+module is *how* it gets written down.  Every helper returns a Python ``ast`` node
+(``name_ref`` / ``attribute`` / ``call`` / ``function_def`` / ``class_def`` /
+``annotated_assign`` / ...); the generator assembles a list of them, and
+``module_source`` renders the whole module to text with ``ast.unparse``.
+
+**Why an AST instead of concatenating strings.** The output is real Python, so
+``ast.unparse`` cannot emit syntactically invalid code, and operand symbols are
+rewritten *structurally* (``SymbolToAttr``: ``a_e_1`` -> ``self.coeff_e_1``)
+rather than by a fragile regex over rendered text.  The AST is the intermediate
+form; there is no string-template layer.
+
+This module knows **nothing about geometric algebra** -- only the conventions of
+the code the generator emits: the three casts (``cast_self`` -> ``typing.Self``,
+``cast_operand`` -> ``_OperandT``, ``cast_coef`` -> ``Coef``, the last skipping
+the cast for a bare/negated field that is already ``Coef``), and the doc-region
+markers below.
+
+**The doc-region markers.** A comment cannot live in an AST, so a marker is
+emitted as a sentinel string-literal statement (``marker``) and rewritten to a
+``# doc-region-...`` comment in the rendered text (``module_source``);
+``inject_region_markers`` wraps each class and method so a downstream Sphinx book
+can ``literalinclude`` slices of the generated source.  Full machinery:
+``tasks/reference/code-generator-architecture.md`` §2; the pipeline this feeds is
+in the module docstring of ``gen_specialized.py``.
 """
 
 from __future__ import annotations
