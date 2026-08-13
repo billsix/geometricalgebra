@@ -124,6 +124,12 @@ internals interaction). It is still *blocked* — just an ugly message. Dropping
 clean errors but loses the `__dict__`-free memory benefit; `slots` was kept deliberately.
 See `tasks/archive/2026/07/23/investigate-frozen-generated-classes.md`.
 
+**Caveat — frozen does NOT make them hashable.** The hand-written `__eq__` (emitted with
+`eq=False`) leaves `__hash__ = None`, so `Vector2`/`Rotor2`/… are **unhashable** — not
+usable as a dict key or set member — and a value-hash is impossible anyway, since
+coefficients may be `sympy.Expr`/`float`. (The frozen work's original "usable as a dict
+key" motivation was retracted.) Use `to_blade_dict()` items if you need to key on a value.
+
 **Coefficient-view helpers (`base.py`).** `simplified()` / `expanded()` return the same multivector
 with each coefficient `sympy.simplify`'d / `sympy.expand`'d — for the lazy classes, whose raw
 coefficients aren't reduced (e.g. a bivector times its dual whose terms should cancel, or a fully
@@ -283,7 +289,9 @@ vector) keep their names; the rule targets pure renames of things that already h
 - `<` left contraction (`a.left_contraction(b)`) · `>` right contraction (`a.right_contraction(b)`)
   — Taylor 2021 p.103; grade `m−k` / `k−m`, and **include grade 0** unlike the Hestenes `inner_product`
   (see `tasks/reference/contraction-and-dot-definitions.md`)
-- `abs(mv)` → magnitude · inverse via `.inverse()`
+- `abs(mv)` → magnitude · inverse via `.inverse()` · `A / B` quotient
+  (`= A * B.inverse()`; a bare number's inverse is its reciprocal, so `v / s` divides
+  every coefficient)
 - rotations: `transforms.projection_rotation(from, to)` / `rotor_rotation(from, to)` /
   `plane_rotation(a, b)` (free-function factories); `MultiVectorBase.rotor_from_vectors(from, to)`
   (the rotor builder) — any plane / representation

@@ -1,6 +1,7 @@
 # Document `A / B` (`__truediv__`) and frozen-types-aren't-hashable
 
-**Status:** proposed — needs go-ahead
+**Status:** COMPLETED 2026-08-13 — both facts added (verified against source); ready to
+commit, then archive.
 **Priority:** 4
 **Difficulty:** 2
 **Created:** 2026-08-13
@@ -14,13 +15,14 @@ safe edits; verify against current source before writing.
 
 ## Items
 
-- [ ] **`A / B` (`__truediv__`) is missing from CLAUDE.md's Operators list.** It is
+- [x] **`A / B` (`__truediv__`) added to CLAUDE.md's Operators list.** (Was missing.) It is
       implemented on `MultiVectorBase` (`base.py`) with a docstring — `A / B = A *
       B.inverse()`; a bare number's inverse is its reciprocal, so `v / s` divides every
       coefficient — but the CLAUDE.md "Operators" bullet list omits `/`. Add it.
       *Source:* `tasks/archive/2026/07/09/upgrade-rotation-and-ctc-vector-mapping.md`.
       *Home:* CLAUDE.md › Operators.
-- [ ] **Frozen generated value types are NOT hashable** — corrects the natural "frozen
+- [x] **Frozen generated value types are NOT hashable** — added to CLAUDE.md's frozen
+      caveat and the design-decisions frozen entry. Corrects the natural "frozen
       dataclass ⇒ hashable ⇒ usable as a dict key / set member" assumption. The custom
       `__eq__` (`eq=False` + hand-written) forces `__hash__ = None`, and a value-hash is
       impossible regardless because coefficients may be `sympy.Expr`/`float`. Add one
