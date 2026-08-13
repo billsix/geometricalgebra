@@ -1,6 +1,8 @@
 # Reference doc: the blade-dict interchange contract
 
-**Status:** proposed — needs go-ahead
+**Status:** COMPLETED 2026-08-13 — created `tasks/reference/blade-dict-interchange.md`
+(contract verified empirically against `base.py`), cross-linked from CLAUDE.md and
+design-decisions.md; ready to commit, then archive.
 **Priority:** 4
 **Difficulty:** 3
 **Created:** 2026-08-13

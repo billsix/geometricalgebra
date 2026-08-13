@@ -152,7 +152,9 @@ favour; `scalar_product` remains, but it is the scalar product `⟨A B⟩`, **no
 domain aliases `Blade = tuple[int, ...]` — a blade's basis-vector indices — and `BladeCoef =
 dict[Blade, Coef]`; all three are threaded through the code the way `Coef` is). A multivector
 coefficient is a plain Python number or a sympy
-expression. This is the **concrete** union, deliberately *not* the `numbers.Real` ABC: ty turns
+expression. The full **blade-dict interchange contract** — canonical keys and the
+`ValueError` on a non-canonical one, zero-omission, the eager/lazy hidden-zero split, and the
+graded silent-drop ("exp() trap") — is in `tasks/reference/blade-dict-interchange.md`. This is the **concrete** union, deliberately *not* the `numbers.Real` ABC: ty turns
 `numbers.Real` arithmetic into `_ComplexLike` and then rejects `+`/`/`/`**` on it, which is what used
 to force the `ty.toml` override on the generated rotor sandwich (whose closed form divides by `|R|²`
 and squares coefficients). The generated `coeff_*` fields and the scalar-returning methods
