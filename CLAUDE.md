@@ -570,6 +570,10 @@ authority on all of these.
   by `if get_ipython() is not None:`, so it imports headless) — meaning the suite now imports
   `matplotlib`, so run it with the `notebooks` extra installed (the container has it).
 - Lint/format/typecheck: `entrypoint/format.sh` runs `ruff check --fix`, `ruff format`, `ty check`.
+  The vendored Emacs tree under `entrypoint/` is excluded via `extend-exclude` in
+  `pyproject.toml [tool.ruff]`, **not** a CLI flag — `ruff format` does **not** accept
+  `--extend-exclude` (only `ruff check` does), so config is the one place both tools honor
+  it. Don't "fix" `format.sh` to pass the flag; it would silently reformat the vendored tree.
   Ruff rules in `pyproject.toml`. **`ty check src`, `ty check tests`, and `ty check tools` are all
   fully clean.** The only ty config is `[tool.ty.environment] extra-paths = ["tools"]` in
   `pyproject.toml` — so the generator modules (`astbuild`/`gen_specialized`) resolve when checking
@@ -587,10 +591,21 @@ authority on all of these.
   `git diff`ed committed generated files — meaningless now that they aren't tracked.) It mutates the
   working tree and is slow (~30s, 𝒢₃ dominates), so it's a make/CI target — **not** part of the default
   `pytest` run.
-- Containerized dev (podman): `make image` then `make shell`; Jupyter on port 8888. Refresh the
+- Containerized dev (podman): `make image` then `make shell`; Jupyter on port 8888. The image
+  bakes two JupyterLab settings: `jupytext-config set-default-viewer python` (a single click
+  opens `py:percent` files as notebooks — the trade-off is `.py` no longer opens as plain
+  text) and `jupyter labextension disable @jupyterlab/apputils-extension:announcements` (kills
+  the "Jupyter news" prompt; locked at sys-prefix so it can't be re-enabled). Refresh the
   vendored Emacs packages (maintainer-only, rarely) with `make update-emacs-packages` — full rationale
   in `tasks/archive/2026/06/07/emacs-package-install-strategy.md`. (The vendored tree itself is
   off-limits; see Module layout.)
+- Verifying a notebook/plot change is behaviour-preserving: call `savefig` **inside** the
+  `with create_graphs(...) as ax:` block. `create_graphs` (`nbplotutils.py`) is a context
+  manager that `display(fig)`s and then `plt.close()`s on exit, so saving *after* the block
+  captures a **blank** canvas — and blank-vs-blank compares equal, making a "pixel-identical"
+  claim vacuous. Sanity-check the baseline is non-blank first, and reconstruct the "before"
+  via `git stash`/`git show`, never a hand-edited copy (the cross-project "derive the before
+  mechanically" rule). See `tasks/archive/2026/07/19/dedup-draw-ndc-plot-helper.md`.
 - Book: **`make docs`** builds the Sphinx book (`book/docs/`, "Plotting On Crappy Graph Paper") to
   **HTML + PDF** into `output/gacalc/` — needs an image built with `BUILD_DOCS=1` (the default). It is
   an empty-but-building skeleton with an autodoc `api.rst` (no hand-written chapters yet). How it

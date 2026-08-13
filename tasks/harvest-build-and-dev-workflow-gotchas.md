@@ -1,6 +1,13 @@
 # Harvest build & dev-workflow gotchas into CLAUDE.md / book pipeline
 
-**Status:** proposed — needs go-ahead
+**Status:** COMPLETED 2026-08-13 — five items applied (each verified against source first):
+book GFDL-1.3 license + notebook-PDF (XeLaTeX / `texlive-soul`) → `book-and-docs-pipeline.md`;
+the `ruff format --extend-exclude` CLI gotcha, the baked Jupyter settings, and the
+`savefig`-inside-`create_graphs()` pixel-verification footgun → CLAUDE.md dev-workflow. The
+optional numpy freshness nit was **skipped**: `g2.py` indeed has no numpy import (ruff strips
+the header's now-unused one), but numpy is still a genuine runtime dep via
+`base.py`/`transforms.py`, so CLAUDE.md's framing isn't actually behind. Ready to commit,
+then archive.
 **Priority:** 5
 **Difficulty:** 2
 **Created:** 2026-08-13

@@ -15,6 +15,10 @@ doesn't need.
   `book/docs/notebooks/*.py`. Structure and the prose-vs-notebook split live in
   `book-outline.md`; content fills in later.
 - Builds to **HTML and PDF** (no EPUB).
+- **Licensing:** the book *prose* is **GFDL-1.3** (GNU Free Documentation License,
+  Version 1.3 — matching mvp's book), declared in a header on each ported `.rst`
+  (`rotate.rst`, `proof-rotate.rst`, `geometric-product.rst`, …). This is distinct from
+  gacalc's **LGPL-2.1-only** *code*. Source: `tasks/archive/2026/08/03/port-rotation-explanation-from-mvp.md`.
 
 ## How it builds
 
@@ -72,6 +76,19 @@ when Sphinx moved to the venv (above), ImageMagick had to be requested explicitl
 the PDF build dies with `LaTeX Error: Unknown graphics extension: .svg`. Note: a
 `imgconverter_converters` setting in `conf.py` is **not** respected — the default
 `convert` is what runs, so the fix is the package, not config.
+
+## Notebook PDF export (nbconvert — separate from the Sphinx PDF)
+
+Jupyter's "Save and Export As → PDF" (nbconvert) is a **different** pipeline from the Sphinx
+book above, and its toolchain is installed **unconditionally** (not gated by `BUILD_DOCS`) by
+`entrypoint/03-install-notebook-tex.sh`:
+
+- **XeLaTeX**, chosen over the WebPDF route — WebPDF needs Chromium, which the image doesn't
+  ship.
+- **`texlive-soul`** (`soul.sty`) — nbconvert's default LaTeX template needs it, and it is
+  **not** pulled in by the recommended TeX Live collections, so it must be requested
+  explicitly (a non-obvious gotcha found empirically). Source:
+  `tasks/archive/2026/06/28/notebook-pdf-export.md`.
 
 ## conf.py essentials
 
