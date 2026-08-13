@@ -1,6 +1,9 @@
 # Minor doc / notebook-convention nits (low priority — mostly optional)
 
-**Status:** proposed — low priority, mostly skippable (filed so the findings aren't lost)
+**Status:** ARCHIVED 2026-08-13 — not pursued. These P8 nits were judged low-value and set
+aside (Bill, 2026-08-13); archived to keep the active backlog clean, with the items preserved
+here for reference. Reopen a focused task if any becomes relevant. (Note: the
+`from_sympy_expr → from_coef` item is a historical fact already true in the code, not a to-do.)
 **Priority:** 8
 **Difficulty:** 2
 **Created:** 2026-08-13
