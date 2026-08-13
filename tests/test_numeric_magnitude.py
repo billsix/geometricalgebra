@@ -19,6 +19,7 @@ coefficients (which would become numpy ``dtype=object`` arrays). ``int`` and
 symbolic inputs keep exactness. See tasks/magnitude-numeric-for-numeric-input.md.
 """
 
+import pytest
 import sympy
 
 import gacalc.g3 as g3
@@ -56,3 +57,20 @@ def test_rotor_rotation_of_float_vectors_stays_float_forward_and_inverse() -> No
 def test_symbolic_magnitude_stays_symbolic() -> None:
     # symbolic coefficients must still go through sympy.sqrt.
     assert isinstance(abs(sym_vec3_1), sympy.Expr)
+
+
+def test_normalize_and_inverse_of_zero_raise_for_every_coefficient_kind() -> None:
+    # A zero-magnitude multivector can't be normalized or inverted. Guard added
+    # 2026-08-13: a float zero already raised, but an int/symbolic zero used to
+    # return nan-poisoned coefficients (sympy 0 ** -1 -> zoo, 0 * zoo -> nan).
+    # Now every coefficient kind raises loudly.
+    zero_float: g3.Vector = g3.Vector(coeff_e_1=0.0, coeff_e_2=0.0, coeff_e_3=0.0)
+    zero_int: g3.Vector = g3.Vector(coeff_e_1=0, coeff_e_2=0, coeff_e_3=0)
+    z: g3.Vector
+    for z in (zero_float, zero_int):
+        with pytest.raises(ZeroDivisionError):
+            z.normalize()
+        with pytest.raises(ZeroDivisionError):
+            z.inverse()
+    # regression: a non-zero symbolic vector must NOT trip the guard.
+    assert sym_vec3_1.inverse() is not None

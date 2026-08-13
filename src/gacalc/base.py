@@ -302,7 +302,15 @@ class MultiVectorBase(abc.ABC):
         return self.reverse().scalar_product(self)
 
     def normalize(self) -> typing.Self:
-        """Unit multivector  Â  =  A / |A|  — A rescaled to magnitude 1."""
+        """Unit multivector  Â  =  A / |A|  — A rescaled to magnitude 1.
+
+        Raises ``ZeroDivisionError`` if ``A`` has zero magnitude (e.g. the zero
+        vector), for **any** coefficient kind. A float-zero already raised; without
+        this guard an int/symbolic zero silently returned a ``nan``-poisoned value
+        (sympy ``0 ** -1`` → ``zoo``, ``0 * zoo`` → ``nan``).
+        """
+        if self.magnitude_squared() == 0:
+            raise ZeroDivisionError("cannot normalize a zero-magnitude multivector")
         return self * (abs(self) ** (-1))
 
     def coefficient(self, blade: typing.Self) -> Coef:
@@ -647,6 +655,8 @@ class MultiVectorBase(abc.ABC):
         mag_sq: Coef = self.magnitude_squared()
         if not isinstance(mag_sq, float):
             mag_sq = sympy.sympify(mag_sq)
+        if mag_sq == 0:
+            raise ZeroDivisionError("cannot invert a zero-magnitude multivector")
         return self.reverse() * (mag_sq ** (-1))
 
     # dual returns MultiVectorBase (not Self) for the same reason as even_part/

@@ -11,6 +11,10 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.0.16] — 2026-08-13
+
 ### Breaking
 - **All generated types lost their dimension suffix; the module now carries the
   dimension.** `Vector2`/`Vector3` → `Vector`, and likewise `Bivector`/`Trivector`/
@@ -21,6 +25,12 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   so a value's dimension stays visible despite the shorter class name. Migrate a
   multi-dimension consumer by module-qualifying its imports (do **not** alias
   `Vector as Vector2` — that re-adds the suffix).
+
+### Fixed
+- **`normalize()` / `inverse()` of a zero-magnitude multivector now raise
+  `ZeroDivisionError` for every coefficient kind.** Previously a float zero raised,
+  but an int/symbolic zero silently returned `nan`-poisoned coefficients (sympy
+  `0 ** -1` → `zoo`, `0 * zoo` → `nan`).
 
 ## [0.0.15] — 2026-08-03
 
