@@ -1,6 +1,9 @@
 # Narrate the code generator in its own docstrings (co-located story)
 
-**Status:** in-progress — started 2026-08-13
+**Status:** COMPLETED 2026-08-13 — narrative + docstrings landed and committed; archived.
+The durable knowledge lives in the code (the `tools/gen_specialized.py` / `astbuild.py`
+module docstrings) cross-linked with `tasks/reference/code-generator-architecture.md`, so
+this archives as a lean work record with nothing extra to harvest.
 **Priority:** 3
 **Difficulty:** 3
 **Created:** 2026-08-13
@@ -74,8 +77,7 @@ you graduate *from*. The two cross-link each other.
 
 - [x] One `gn.py` line noting it's the object the generator runs on symbols —
       added to the `Gn` class docstring, cross-linked to the generator's pipeline.
-- [ ] Bill to review the voice/depth across the set (tone approved on the first
-      slice, 2026-08-13), then commit and archive this task.
+- [x] Bill reviewed the voice/depth and committed the set (2026-08-13); task archived.
 
 ## Gotchas (verified while doing the first slice)
 
