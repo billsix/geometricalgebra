@@ -1,6 +1,13 @@
 # Harvest archived API/design rationale into the live docs
 
-**Status:** proposed — needs go-ahead
+**Status:** COMPLETED 2026-08-13 — all six items applied (each verified against source first).
+Five went to `design-decisions.md` (to_matrix backends/convention; declined vector-API
+additions; `__matmul__` overloads + rejected generic-bound; rotation-normalize + sandwich-
+scaling rationale; the animation-layer `at`/`inverse` invariant); one to CLAUDE.md (x/y/z
+coordinate props are grade-1-only). **Correction found while verifying:** the archived "no
+zero-safe normalize → raises" claim is only half true — a *float*-zero vector raises
+`ZeroDivisionError`, but an *int/symbolic*-zero vector yields silent `nan` (sympy `0**-1 →
+zoo`); documented accurately rather than repeated. Ready to commit, then archive.
 **Priority:** 5
 **Difficulty:** 3
 **Created:** 2026-08-13

@@ -109,7 +109,10 @@ is detailed next.
 **Generated value types are FROZEN (immutable) — `@dataclass(frozen=True, slots=True)`**
 (changed 2026-07-23; they used to be mutable). Coefficient fields cannot be reassigned:
 "changing a coordinate" means **rebinding** a new vector (`v = Vector2(-v.x, v.y)`), not
-`v.x = …`. The `x`/`y`/`z` coordinate properties are **read-only** getters. Immutability
+`v.x = …`. The `x`/`y`/`z` coordinate properties are **read-only** getters, and exist **only
+on the grade-1 (vector) types** (`Vector1`/`Vector2`/`Vector3`) — not on rotors, bivectors,
+or the full `G_n` (a vector's coordinates *are* its basis coefficients; `x` on a rotor would
+imply a coordinate tuple it doesn't have). Immutability
 **removes the aliasing footguns** the old mutable types had — a multivector in a shared
 location (module constant, class attribute, mutable default arg) is no longer a hazard, and
 the basis constants (`Vector2.e_1`, …) can't be mutated by accident. **Breaking change for
