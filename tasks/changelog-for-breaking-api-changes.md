@@ -1,6 +1,13 @@
 # Add a changelog / release notes flagging breaking API changes
 
-**Status:** proposed — needs go-ahead
+**Status:** COMPLETED 2026-08-13 — created `CHANGELOG.md` (Keep-a-Changelog style, breaking-
+change focused) with the two verified recent breaking releases retro-filled (0.0.15
+`is_close`→`isclose` + tolerance default + graded module constants; 0.0.14 frozen types) and an
+`[Unreleased]` scaffold where the coming 0.0.16 rename entry will go. Versions verified against
+the git tags. **Deferred (optional, out of scope here):** (a) a README pointer to the changelog;
+(b) wiring the `make release` flow to remind bumping the changelog alongside `pyproject.toml`
+version — that changes the release flow, so it needs its own decision. Ready to commit, then
+archive.
 **Priority:** 4
 **Difficulty:** 2
 
