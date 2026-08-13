@@ -1,6 +1,11 @@
 # `normalize()` of an int/symbolic-zero vector returns silent `nan` (should raise)
 
-**Status:** proposed — needs go-ahead
+**Status:** COMPLETED 2026-08-13 — implemented **option 1 (raise uniformly)**: `normalize()`
+and `inverse()` now raise `ZeroDivisionError` when `magnitude_squared` is zero, for every
+coefficient kind (float already raised; int/symbolic used to return silent `nan`). Guard in
+`base.py`, regression + guard test in `tests/test_numeric_magnitude.py`, CHANGELOG entry under
+0.0.16 (Fixed). Folded into the 0.0.16 breaking release. Verified: 349 tests + ruff + ty green,
+in-sandbox AND in the pinned container.
 **Priority:** 6
 **Difficulty:** 3
 **Created:** 2026-08-13
