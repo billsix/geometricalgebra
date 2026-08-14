@@ -1,6 +1,7 @@
 # Explain Gn multiplication rules for high schoolers
 
-**Status:** in-progress
+**Status:** DONE — content written + headless-verified 2026-08-14 (Bill also eyeballed it in
+the browser). Ready to archive.
 **Priority:** 3
 **Difficulty:** 3
 **Started:** 2026-07-01
@@ -23,7 +24,16 @@ existing style, ideally with small worked examples that run in the notebook.
 - [x] Draft the plain-language multiplication-rules section (blades, the 3 rules, canonicalization)
 - [x] Add small worked examples that execute against `Gn` (outputs verified in a REPL first)
 - [x] Verify the notebook still parses (`py_compile` OK, jupytext cell markers intact)
-- [ ] Render in Jupyter to eyeball the LaTeX/markdown (needs `make shell` / notebooks extra — not done headless)
+- [x] Render in Jupyter to eyeball the LaTeX/markdown — done **headless** 2026-08-14:
+  jupytext → `jupyter nbconvert --to html --execute` (Agg backend, local gacalc via
+  `PYTHONPATH=src`). All 12 worked examples re-verified against a `Gn` REPL and match
+  (`e_1*e_1→1`, `e_1*e_2→e_12`, `(3e_1+4e_2)²→25`, `(e_1e_2)²→-1`, `(2e_1)(3e_3)(4e_3)(5e_1)→120`,
+  all three parenthesizations of `e_1e_3e_3e_1→1`, …); every code-cell output renders as valid
+  LaTeX; no cell raised. **Gotcha:** a *full* `displaymv.py` execute times out (>300 s) on the
+  pre-existing `show_mult(symbolic_multivector(n=8), symbolic_multivector(n=9))` cell (2⁸×2⁹
+  symbolic blades) — unrelated to this task; render the added-sections slice (head -289) to
+  verify this content. **Minor, not this task's concern:** gacalc's repr shows a leading
+  coefficient `1`, so `e_1*e_2` renders as `1e₁e₂` where the prose says "e_12".
 
 ## Notes / decisions
 
