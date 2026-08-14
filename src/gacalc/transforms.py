@@ -334,6 +334,11 @@ def plane_rotation(
             "plane_rotation takes two vectors (grade-1); "
             f"got grades {a.grades()} and {b.grades()}"
         )
+    # a ∧ b -- the same plane `bivector_from_vectors`/`i` build; kept inline here
+    # (not via `type(a).bivector_from_vectors`) so the result stays the precise
+    # generic type `V` rather than the base's `MultiVectorBase` (which the
+    # downstream numeric-preservation code relies on).  Reuse waits on
+    # bivector_from_vectors gaining a precise per-type return (precise-typing task).
     plane: MultiVectorBase = a.outer_product(b)
     if plane == type(plane).zero():
         raise ValueError(

@@ -939,6 +939,30 @@ class MultiVectorBase(abc.ABC):
         product: MultiVectorBase = to_vector * from_vector
         return product + type(product).from_coef(scale)
 
+    @classmethod
+    def bivector_from_vectors(
+        cls,
+        a: MultiVectorBase,
+        b: MultiVectorBase,
+    ) -> MultiVectorBase:
+        r"""The bivector ``a`` ∧ ``b`` -- the oriented plane the two vectors span.
+
+        Its magnitude is the area of the parallelogram on ``a`` and ``b``.  Its
+        *normalized* form is the plane's **unit bivector** ``i`` (with
+        ``i * i == -1``), built by the ``i(a, b)`` classmethod on the concrete
+        classes (Gn, G2, G3, Vector).  Parallel vectors span no plane, so their
+        wedge is the **zero** bivector -- this builder does not raise on that;
+        the ``i`` builder does, when it normalizes.  Companion to
+        :meth:`rotor_from_vectors` (which builds the *rotor* from two vectors;
+        this builds the *plane*).
+        """
+        if not (a.is_vector() and b.is_vector()):
+            raise TypeError(
+                "bivector_from_vectors takes two vectors (grade-1); "
+                f"got grades {a.grades()} and {b.grades()}"
+            )
+        return a.outer_product(b)
+
     def sandwich(self, x: _OperandT) -> _OperandT:
         r"""Versor conjugation  :math:`R\,x\,R^{-1}`  — apply the versor ``self``
         to ``x``, returning a value of ``x``'s own type.

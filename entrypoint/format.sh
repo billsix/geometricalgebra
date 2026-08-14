@@ -3,7 +3,7 @@
 # Activate the venv so ty/ruff resolve deps from it (the venv is
 # --system-site-packages, so it also sees the dnf-installed base packages).
 export VIRTUAL_ENV_DISABLE_PROMPT=1
-source /venv/bin/activate
+[ -f /venv/bin/activate ] && source /venv/bin/activate
 
 # The intentionally-vendored Emacs tree under entrypoint/ is excluded from both
 # commands via `extend-exclude` in pyproject.toml [tool.ruff], so this formats the
@@ -17,7 +17,7 @@ status=0
 ruff check . --fix || status=1
 ruff format --line-length=88 || status=1
 
-ty check /gacalc/src || status=1
-ty check /gacalc/tests || status=1
-ty check /gacalc/tools || status=1
+ty check src || status=1
+ty check tests || status=1
+ty check tools || status=1
 exit $status

@@ -448,6 +448,73 @@ def class_doc_stmt(text: str) -> ast.Expr:
     return ast.Expr(value=constant(text))
 
 
+# The unit-bivector plane helpers: `i(a, b)` (classmethod, on Gn/G2/G3/Vector,
+# building the plane from two vectors) and `.i()` (instance, on Bivector/Rotor,
+# getting a value's own plane).  `i(a, b)` normalizes `bivector_from_vectors`
+# (on MultiVectorBase); `.i()` normalizes the value's grade-2 part.  Both return
+# a BIVECTOR (the unit plane, i*i == -1), never a rotor.
+I_FROM_VEC_DOC = (
+    "The unit bivector ``i`` of the plane spanned by vectors ``a``, ``b``\n"
+    "        (``i * i == -1``) -- the normalized wedge ``a`` ∧ ``b``.\n"
+    "\n"
+    "        ``= bivector_from_vectors(a, b).normalize()``.  Raises if ``a`` and\n"
+    "        ``b`` are parallel (their wedge is the zero bivector).  This is the\n"
+    "        plane you feed a rotor builder / ``exp`` -- a bivector, not a rotor."
+)
+
+I_DOC = (
+    "The unit bivector ``i`` of this value's plane (``i * i == -1``).\n"
+    "\n"
+    "        The normalized grade-2 (plane) part -- for a rotor\n"
+    "        ``cos(t/2) - sin(t/2) * i`` this returns ``i``; for a bivector it is\n"
+    "        the bivector normalized.  A bivector, never a rotor.  Undefined\n"
+    "        (raises) for a zero bivector part."
+)
+
+
+def i_classmethod() -> ast.FunctionDef:
+    """Emit the ``i(a, b)`` classmethod (unit bivector of the plane two vectors
+    span) for the full classes + Vector: normalize ``bivector_from_vectors``."""
+    return function_def(
+        "i",
+        [
+            class_doc_stmt(I_FROM_VEC_DOC),
+            return_stmt(
+                call(
+                    attribute(
+                        call(
+                            attribute("cls", "bivector_from_vectors"),
+                            [name_ref("a"), name_ref("b")],
+                        ),
+                        "normalize",
+                    ),
+                    [],
+                )
+            ),
+        ],
+        params=[
+            argument("cls"),
+            argument("a", name_ref("MultiVectorBase")),
+            argument("b", name_ref("MultiVectorBase")),
+        ],
+        returns=name_ref("MultiVectorBase"),
+        decorators=[name_ref("classmethod")],
+    )
+
+
+def i_extractor(inner_method: str) -> ast.FunctionDef:
+    """Emit the ``.i()`` instance method (a value's own unit plane) via
+    ``inner_method`` (``normalize`` on Bivector, ``plane_of_rotation`` on Rotor)."""
+    return function_def(
+        "i",
+        [
+            class_doc_stmt(I_DOC),
+            return_stmt(call(attribute("self", inner_method), [])),
+        ],
+        returns=name_ref("MultiVectorBase"),
+    )
+
+
 # ==========================================================================
 # Type registry + grade-resolution + symbolic op results
 # ==========================================================================
@@ -2247,6 +2314,8 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
         is_close_method(name, fields),
         iter_method(blades),
         *dimension_known_methods(),
+        # i(a, b): the unit bivector of the plane two vectors span (classmethod).
+        i_classmethod(),
     ]
     return [
         class_def(
@@ -2706,6 +2775,8 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 returns=name_ref("Rotor"),
             )
         )
+        # .i(): the bivector's unit plane -- itself, normalized.
+        body.append(i_extractor("normalize"))
     if spec.name.startswith("Rotor"):
         body.append(
             function_def(
@@ -2743,6 +2814,8 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 param_annotation=name_ref("_OperandT"),
             )
         )
+        # .i(): the rotor's unit plane of rotation (alias of plane_of_rotation).
+        body.append(i_extractor("plane_of_rotation"))
     if spec.name.startswith("Vector"):
         # project/reject/reflect of a vector across a vector are grade-preserving
         # (the result is a vector), so narrow the base's MultiVectorBase-typed
@@ -2759,6 +2832,8 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         body.extend(
             transform_factory_overrides(spec, "reflect", "across", "InvertibleFunction")
         )
+        # i(a, b): the unit bivector of the plane two vectors span (classmethod).
+        body.append(i_classmethod())
     return [
         class_def(
             spec.name,

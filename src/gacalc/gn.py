@@ -104,6 +104,18 @@ class Gn(MultiVectorBase):
         _require_canonical_blades(blade_coef)
         return cls(coefficient_of_blade=dict(blade_coef))
 
+    @classmethod
+    def i(cls, a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
+        r"""The **unit bivector** ``i`` of the plane spanned by vectors ``a``,
+        ``b`` (``i * i == -1``) -- the normalized wedge ``a`` ∧ ``b``.
+
+        ``= bivector_from_vectors(a, b).normalize()``.  Raises if ``a`` and ``b``
+        are parallel (their wedge is the zero bivector, which cannot be
+        normalized).  This is the plane you feed a rotor builder / ``exp`` to
+        rotate in -- it is a bivector, never a rotor.
+        """
+        return cls.bivector_from_vectors(a, b).normalize()
+
     def to_blade_dict(self) -> BladeCoef:
         return self.coefficient_of_blade
 

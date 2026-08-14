@@ -1,6 +1,15 @@
 # Redo `exp()` from scratch, book-referenced — and add a rotor-builder `i(a, b)`
 
-**Status:** proposed — **investigation first, needs go-ahead before any code change**.
+**Status:** in progress. **Subtask 1 DONE (2026-08-14):** `bivector_from_vectors` (on
+`MultiVectorBase`), `i(a, b)` classmethod (Gn/G2/G3/Vector), and `.i()` instance method
+(Bivector/Rotor) implemented + verified — ruff/ty clean, 9 new tests + 358 total pass,
+generator deterministic, doc-regions OK (`tests/test_unit_bivector_i.py`; generator emit in
+`tools/gen_specialized.py` `i_classmethod`/`i_extractor`). All return a bivector; `Vector.i`
+even narrows to `Bivector` at runtime. **Deferred:** `plane_rotation` reuse of
+`bivector_from_vectors` — it returns the imprecise `MultiVectorBase`, which would drop
+`plane_rotation`'s generic `V` return typing; waits on `bivector_from_vectors` gaining a precise
+per-type return (precise-typing task). **Subtasks 2 (rotor-from-`i`) + 3 (exp redo) remain —
+still investigation-first, no code until go-ahead** on those.
 **Priority:** 3
 **Difficulty:** 7
 Created 2026-08-01 (Bill). This is a deliberate **redo** of already-landed work:
@@ -117,7 +126,7 @@ Bill wants to add a function called **`i`** that:
 - Keep the four gates green throughout: `make test`, `make check-generated`,
   `make check-regions`, `make format` (ruff + ty).
 
-## Investigation findings (2026-08-14 — research pass; still needs Bill's decisions)
+## Investigation findings (2026-08-14 — research pass; still needs the maintainer's decisions)
 
 All code anchors verified against the working tree; book section numbers verified against source
 TOCs/PDFs except two flagged below.
@@ -165,6 +174,79 @@ bivector**, not a rotor. (2) **Angle-free** — a unit bivector carries no angle
 site as `exp(-（θ/2)*i)`. (3) **Share** — extract from `plane_rotation`, don't duplicate. (4) **Drop**
 the hyperbolic vector case. (5) Cite **Dorst §7.4** + Macdonald survey Eq (2.3)/(2.4). These are
 recommendations from the research pass — **Bill decides** (he's reading books in parallel).
+
+## Refined plan — start with `i` (William Emerison Six <billsix@gmail.com>, 2026-08-14)
+
+Bill's direction after the findings: build this in subtasks, starting with `i` alone; **name it
+`i`** (his call — `i` *is* the mathematical name for the unit bivector, so he accepts the terse
+one-letter name over the research's `bivector_from_vectors`; this overrides that rec). Get `i`
+working, then update this task and move to the next subtask.
+
+**Subtask 1 (do first) — LAYERED (William Emerison Six <billsix@gmail.com>, refined 2026-08-14): `bivector_from_vectors` + `i`.**
+The maintainer's call, and it's the right one (agreed): a descriptive builder makes the *raw* bivector, and
+`i` normalizes it — better than a pass-through alias, because the two names then serve two genuinely
+different things, it lands the parallel-vectors guard in one sensible place, and it keeps the
+descriptive name the research wanted *alongside* the terse mathematical `i`. Full math + rationale +
+book citations live in the reference doc **`tasks/reference/unit-bivector-and-rotors.md`**.
+
+- **`bivector_from_vectors(a, b)` → the (un-normalized) bivector `a ∧ b`** — the oriented plane the
+  two vectors span (magnitude = the parallelogram's area). A **classmethod on the base**,
+  paralleling `rotor_from_vectors` (`base.py:867`, also a `@classmethod` using `cls`): validate
+  grade-1, return `a.outer_product(b)`. Does **not** guard parallel — the wedge of parallel vectors
+  is legitimately the *zero* bivector.
+- **`i(a, b)` → the UNIT bivector of that plane (`i² = −1`)** = `bivector_from_vectors(a, b).normalize()`.
+  The parallel guard lands **here** (normalizing the zero bivector raises — gacalc 0.0.16 raises
+  `ZeroDivisionError`). One place for the wedge, one place for the guard.
+- **`.i()` → get the unit plane out of a value**, an **instance method on the graded `Bivector`
+  and `Rotor` types**. Rotor already has it as **`plane_of_rotation()`** (`g2.py:3211` /
+  `g3.py:5192`, `r_vector_part(2).normalize()`) — expose as `.i()` (alias/rename); `Bivector.i()`
+  = `self.normalize()`.
+- **`plane_rotation` (`transforms.py:337-343`) refactors to reuse these** — it currently inlines
+  exactly `a.outer_product(b)` + parallel guard + `.normalize()`, so it should call the new
+  `bivector_from_vectors` / `i`, leaving one implementation.
+
+**Placement — avoids the classmethod-vs-instance `i` name clash.** The full types (`Gn`/`G2`/`G3`)
+and graded types (`Bivector`/`Rotor`) are **siblings, not parent/child** (all `@typing.final`
+subclasses of `MultiVectorBase`), so: `bivector_from_vectors` on the **base** (like
+`rotor_from_vectors` — harmless to inherit); the **classmethod `i(a, b)` on the full classes**; the
+**instance `.i()` on the graded `Bivector`/`Rotor`**. Two rules: (1) keep `i(a,b)` **off**
+`MultiVectorBase` (else the graded `.i()` shadows the inherited classmethod); (2) don't add `.i()`
+to the full `G` classes. (The earlier "`i` collides with `identity()`'s inner `i`" flag is a
+non-issue — that `i` is a *local* function inside `identity()` at `base.py:856`, not a class
+member.)
+
+**Decided (William Emerison Six <billsix@gmail.com>, 2026-08-14):**
+- **`i` — and `bivector_from_vectors` and `.i()` — return a BIVECTOR, never a rotor** (settles open
+  question #1). `i` is the unit *bivector* (the plane), which is what you feed `exp` to get a rotor;
+  a rotor-returning `i` would contradict the `i`=unit-bivector notation and duplicate
+  `rotor_from_vectors`.
+- **`i(a, b)` classmethod is on `Gn`, `G2`, `G3`, AND `Vector`;** `.i()` stays on the graded
+  `Bivector`/`Rotor` **only**. `Gn` gets the classmethod (not `.i()` — a class can't hold both the
+  `i(a,b)` classmethod and the `.i()` instance method); get the plane out of a general `Gn` bivector
+  value with `.normalize()`, which `.i()` is just the named shortcut for.
+
+**Subtask 2 (LATER — ideas only, do not solve now).** A rotor from `i` + an angle via the
+half-angle approach ("for a given `i`, make a rotor by firstly making a half angle … using the
+half-angle approach we did earlier"). **This already exists inside `plane_rotation`** — it builds
+`R = cos(θ/2) − sin(θ/2)·i` from the plane `i` and angle θ (`transforms.py`). So this subtask is
+*exposing that builder to take an explicit `(i, θ)`* — e.g. a `rotor_in_plane(i, θ)`, or letting
+`i` feed the book form `exp(−(θ/2)·i)` once `exp` is redone. Decide later whether it's a new public
+builder or `plane_rotation` re-expressed on top of `i`.
+
+**The direct construction is confirmed** (William Emerison Six <billsix@gmail.com>, 2026-08-14):
+once `i` exists the rotor is trivial — `R = cos(θ/2) − sin(θ/2)·i`, automatically **unit** because
+`cos² + sin² = 1` (`R R̃ = c² + s² = 1` for `R = c + s·i`). The `1/√2`-scalar-and-coefficient idea
+is exactly the **θ = 90°** case (`c = s = 1/√2 ⇒ θ/2 = 45°`, and `½ + ½ = 1`). Any `(c, s)` with
+`c² + s² = 1` is a unit rotor turning by `θ = 2·atan2(s, c)`. Full derivation + the sign/orientation
+note: `tasks/reference/unit-bivector-and-rotors.md` §3.
+
+**Subtask 3 (LATER).** The `exp()` redo itself (drop the hyperbolic vector case, cite Dorst §7.4),
+per the findings above. Not until subtasks 1–2 are settled and Bill has done his book reading.
+
+**Upshot of relating this to the code:** the plane-builder, the plane-extractor, and the
+half-angle rotor Bill described **all already exist inside `plane_rotation` / `plane_of_rotation`**
+— this work is mostly *exposing and naming them as `i`*, plus the `exp` cleanup, not new
+mathematics.
 
 ## Open questions (for Bill)
 
