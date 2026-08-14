@@ -117,6 +117,55 @@ Bill wants to add a function called **`i`** that:
 - Keep the four gates green throughout: `make test`, `make check-generated`,
   `make check-regions`, `make format` (ruff + ty).
 
+## Investigation findings (2026-08-14 — research pass; still needs Bill's decisions)
+
+All code anchors verified against the working tree; book section numbers verified against source
+TOCs/PDFs except two flagged below.
+
+- **galgebra confirmed.** `Mv.exp` (`/foo/opt/galgebra/galgebra/mv.py:1218-1270`) is the power
+  series split by the sign of `A²`: `cosh(n)+sinh(n)·Â` for `A²>0`, `cos(n)+sin(n)·Â` for `A²<0`,
+  `hint='+'/'-'` only for the **symbolic-undecidable** case (which gacalc doesn't have — Euclidean
+  makes the sign structural by grade). It **cites no book**, and galgebra has **no** unit-bivector-
+  from-two-vectors builder (only `rotate_multivector(itheta)`, which takes a bivector the *user*
+  supplies). So gacalc's `cosh/sinh` grade-1 branch mirrors galgebra's `A²>0` branch — Bill's read
+  is right.
+- **`i(a,b) = normalize(a∧b)` is a unit bivector with `i²=-1`** (any Euclidean 2-blade: factor
+  `B=|B|e₁e₂` orthonormal → `B²=-|B|²`; equivalently the grade-r formula `A²=(-1)^{r(r-1)/2}|A|²` at
+  `r=2`). So `i` acts like the imaginary unit and `exp(-（θ/2)i)=cos(θ/2)-sin(θ/2)i` is the half-angle
+  rotor. **A unit bivector is NOT a rotor** — the object `exp` consumes to make a rotor is the
+  *bivector*; Bill's "unit Rotor2 … for use with exp" conflated the two.
+- **`i(a,b)` already exists — unexposed — inside `plane_rotation`** (`transforms.py:337-343`):
+  `plane = a.outer_product(b); … ; i = plane.normalize()`, with the grade-1 checks and the
+  parallel-vectors guard. The local variable is even named `i`. `rotor_from_vectors` (`base.py:868`)
+  is a **different** object (a rotor `|a||b|+b·a`, angle locked to a↔b), so it is *not* "most of what
+  `i` is". Recommend extracting the plane-builder as a **public classmethod on `base.py` beside
+  `rotor_from_vectors`**, which `plane_rotation` then calls (house "extract when >1 caller" rule; no
+  duplicated parallel-guard).
+- **Naming:** don't call it `i` — one-letter name (violates house style), collides with the
+  unit-bivector-in-docstrings convention AND with `identity()`'s inner `i` (`base.py:856`), and
+  would mislead if it returned a rotor. Recommend **`bivector_from_vectors(a, b)`** (mirrors
+  `rotor_from_vectors`); keep `i` as the *value* name in docstrings.
+- **Book citations (checkable):** primary = **Dorst, Fontijne & Mann, *GA for Computer Science*
+  §7.4** ("Exponential Representation of Rotors"; §7.4.1 rotors as exp of 2-blades, §7.4.3 exp of
+  bivectors, §7.4.2 the trig/hyperbolic split) — its structure *is* gacalc's `exp`. Free secondary =
+  **Macdonald, *Survey of GA & GC*, Eq. (2.3)/(2.4)** (`R = e^{-iθ/2}`, unit bivector `i`). Doran &
+  Lasenby ~§2.7 and Hestenes & Sobczyk: covered but **exact eq/page not pinned — don't invent** (H&S
+  page was never found, consistent with the archived task).
+- **The vector/hyperbolic `exp` branch → recommend DROP.** The `cosh/sinh` formula *is* book-backed
+  (Dorst §7.4.2; Macdonald survey §4.1) — but **only for Minkowski boosts** (spacetime bivectors,
+  `A²=+1` in a Lorentzian metric). No standard text treats "`exp` of a *Euclidean vector*" as
+  meaningful; gacalc's grade-1 branch applies the boost formula to a Euclidean vector only because it
+  *happens* to have positive square, with **no Euclidean geometric interpretation**. Dropping it
+  restricts `exp` to the one clean idea "rotor = exp(bivector)", matches Bill's distrust, and is the
+  branch that came from galgebra without a book. (Keep-option: leave it only with a docstring saying
+  it's the boost formula, no Euclidean meaning, cite Dorst §7.4.2. Agent's vote, and mine: drop.)
+
+**Recommendations on the 5 open questions:** (1) `i`/`bivector_from_vectors` returns a **unit
+bivector**, not a rotor. (2) **Angle-free** — a unit bivector carries no angle; θ enters at the call
+site as `exp(-（θ/2)*i)`. (3) **Share** — extract from `plane_rotation`, don't duplicate. (4) **Drop**
+the hyperbolic vector case. (5) Cite **Dorst §7.4** + Macdonald survey Eq (2.3)/(2.4). These are
+recommendations from the research pass — **Bill decides** (he's reading books in parallel).
+
 ## Open questions (for Bill)
 
 1. **`i(a, b)` return type:** unit **bivector** (the oriented plane, for feeding
