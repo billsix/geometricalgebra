@@ -5,11 +5,19 @@
 (Bivector/Rotor) implemented + verified — ruff/ty clean, 9 new tests + 358 total pass,
 generator deterministic, doc-regions OK (`tests/test_unit_bivector_i.py`; generator emit in
 `tools/gen_specialized.py` `i_classmethod`/`i_extractor`). All return a bivector; `Vector.i`
-even narrows to `Bivector` at runtime. **Deferred:** `plane_rotation` reuse of
-`bivector_from_vectors` — it returns the imprecise `MultiVectorBase`, which would drop
-`plane_rotation`'s generic `V` return typing; waits on `bivector_from_vectors` gaining a precise
-per-type return (precise-typing task). **Subtasks 2 (rotor-from-`i`) + 3 (exp redo) remain —
-still investigation-first, no code until go-ahead** on those.
+even narrows to `Bivector` at runtime. **Subtasks 4 (precise `i` typing + call-site audit) + 5
+(explicit parallel-vector guard) DONE 2026-08-14** — `i` / `bivector_from_vectors` / `.i()` /
+`plane_of_rotation` narrow to `Bivector_n` (and `rotor_from_vectors → Rotor_n`), done in the
+precise-typing task ([[precise-typing-remaining-methods]]); `i` now raises an explicit `ValueError`
+on parallel vectors. ty clean, 358 tests, deterministic, regions OK — container gate (ruff 0.16.3 +
+ty + pytest) also green. **Note (corrected 2026-08-14):** the earlier "deferred: `plane_rotation`
+reuse of `bivector_from_vectors`" is **not** unblocked by this — `plane_rotation` is generic over
+`V`, so a classmethod returning concrete `Bivector` would widen `V`; it stays inline (see subtask 2).
+**Subtask 2 (rotor-from-`i`) — FULLY SPEC'D & READY (2026-08-14):** `bivector_rotation(i)` free
+factory in `transforms.py`, curried `f(θ) → InvertibleFunction` sandwich, direct `cos(θ/2) −
+sin(θ/2)·i` (not via `exp`), normalize `i` internally after a grade-2 check; then rewrite
+`plane_rotation` onto it (coefficient-identical, numeric-preservation carried over). Awaiting
+go-ahead to code. **Subtask 3 (exp slim-down) — direction settled, gated on Bill's book reading.**
 **Priority:** 3
 **Difficulty:** 7
 Created 2026-08-01 (Bill). This is a deliberate **redo** of already-landed work:
@@ -225,13 +233,44 @@ member.)
   `i(a,b)` classmethod and the `.i()` instance method); get the plane out of a general `Gn` bivector
   value with `.normalize()`, which `.i()` is just the named shortcut for.
 
-**Subtask 2 (LATER — ideas only, do not solve now).** A rotor from `i` + an angle via the
-half-angle approach ("for a given `i`, make a rotor by firstly making a half angle … using the
-half-angle approach we did earlier"). **This already exists inside `plane_rotation`** — it builds
-`R = cos(θ/2) − sin(θ/2)·i` from the plane `i` and angle θ (`transforms.py`). So this subtask is
-*exposing that builder to take an explicit `(i, θ)`* — e.g. a `rotor_in_plane(i, θ)`, or letting
-`i` feed the book form `exp(−(θ/2)·i)` once `exp` is redone. Decide later whether it's a new public
-builder or `plane_rotation` re-expressed on top of `i`.
+**Subtask 2 — DIRECTION SETTLED (William Emerison Six <billsix@gmail.com>, 2026-08-14; still no
+code until go-ahead).** A rotation builder that takes a **unit bivector `i`** (instead of two
+vectors) and returns a **θ-parametrized sandwich**, exactly mirroring `plane_rotation`'s curried
+shape: `f = rotate_in(i)` once, then `f(θ)` builds `R = cos(θ/2) − sin(θ/2)·i` and returns the
+sandwich `x ↦ R x R⁻¹` (an `InvertibleFunction`, like `plane_rotation`). This is Bill's idea —
+"something like `plane_rotation`, just taking `i` as the parameter instead of two vectors." (Naming
+TBD — e.g. `rotate_in` / `rotation_in_plane`; it's the `i`-first sibling of `plane_rotation`.)
+
+- **Build the rotor the DIRECT way — `cos(θ/2) − sin(θ/2)·i` — NOT via `exp(−(θ/2)·i)`.** This is
+  the crux, and it's why the codebase already keeps `plane_rotation` off `exp`: `exp` works through
+  the magnitude `|−(θ/2)·i| = sqrt(θ²)/2`, which only collapses to `θ/2` under a positivity
+  assumption on θ, so for an unrestricted **symbolic** θ, `exp` yields `cos(√(θ²)/2) − …` — not
+  syntactically `cos(θ/2)`, a symbolic-render regression. The direct half-angle form never computes
+  a magnitude, so it stays clean. (Documented in `test_exp.py` + `tasks/reference/design-decisions.md`.)
+- **`plane_rotation(a, b)` then rewrites in terms of THIS builder** — `plane_rotation(a, b) =
+  rotate_in(i(a, b))` — real dedup, symbolic form preserved. **Do NOT rewrite `plane_rotation` onto
+  `exp()` itself** (that's the regression above). The builder and `exp` stay two parallel routes to
+  a rotor that agree numerically; the builder is the clean route for "explicit angle in a known
+  plane", `exp` is the general primitive for "exponentiate an arbitrary bivector."
+- **Scope is Euclidean 𝒢ₙ only** (early Hestenes — no conformal / projective / spacetime), which is
+  already the project's hard signature constraint. Nothing here needs a non-Euclidean metric.
+- **Docs (Bill reserves the right to add later, not now):** when this lands, mention the `i`-first
+  rotation builder and the "rotor = exp(bivector)" story in `README.md` and `CLAUDE.md` (alongside
+  the existing rotations/rotors convention). Deferred to Bill's discretion.
+
+**Decided (William Emerison Six <billsix@gmail.com>, 2026-08-14):**
+- **Name: `bivector_rotation(i)`** — the `i`-first free-function factory, fitting the existing
+  `plane_rotation` / `projection_rotation` / `rotor_rotation` family in `transforms.py`. Reads as
+  "rotation in the plane of this bivector."
+- **Normalize `i` internally** (agreed — Bill: "especially given that floating point may be in
+  play"). A bivector meant to be unit but drifted by float rounding would otherwise silently scale
+  the rotation angle; normalizing is a clean no-op when `i` is already unit (exact → identity; float
+  → ~identity). **Validate grade-2 first** (`i.is_bivector()`, else `TypeError`), then normalize —
+  same shape as `plane_rotation` validating grade-1 inputs.
+- **Assumes a *simple* (blade) bivector** — the plane interpretation requires `i² = −1`, true for
+  every 𝒢₂/𝒢₃ bivector. A *non-simple* bivector (only possible in 𝒢₄₊, e.g. `e₁₂ + e₃₄`) has
+  `i² ≠ −1` and no single plane; that's **out of scope** here (early-Hestenes Euclidean, and the
+  generated algebras are g1/g2/g3). Note it; don't guard it now unless 𝒢₄ lands.
 
 **The direct construction is confirmed** (William Emerison Six <billsix@gmail.com>, 2026-08-14):
 once `i` exists the rotor is trivial — `R = cos(θ/2) − sin(θ/2)·i`, automatically **unit** because
@@ -240,8 +279,92 @@ is exactly the **θ = 90°** case (`c = s = 1/√2 ⇒ θ/2 = 45°`, and `½ + �
 `c² + s² = 1` is a unit rotor turning by `θ = 2·atan2(s, c)`. Full derivation + the sign/orientation
 note: `tasks/reference/unit-bivector-and-rotors.md` §3.
 
-**Subtask 3 (LATER).** The `exp()` redo itself (drop the hyperbolic vector case, cite Dorst §7.4),
-per the findings above. Not until subtasks 1–2 are settled and Bill has done his book reading.
+**Subtask 3 (LATER — direction firming up).** The `exp()` redo itself. Not until Bill has done his
+book reading, but the shape is agreed:
+
+- **Slim, don't delete.** Bill raised deleting `exp` entirely ("I don't understand it"). Decision:
+  **keep `exp`, but strip it to ONLY the bivector case** — `exp(bivector) = cos|B| + sin|B|·B̂ → a
+  rotor`. That removes the distrusted code, makes the implementation legible (the current opacity is
+  the generic grade-dispatch, not the bivector math), and keeps "rotor = exp(bivector)", the one
+  identity the rotation work leans on. Full deletion would force hand-inlined trig at every rotor
+  site and throw away a standard GA operation.
+- **Drop the vector/hyperbolic (`sinh`/`cosh`) branch** — reinforced by the **Euclidean-only scope**:
+  that branch is the Minkowski *boost* formula (Dorst §7.4.2), meaningful only in a Lorentzian
+  metric. In early-Hestenes Euclidean 𝒢ₙ it has no geometric interpretation, so dropping it is
+  correctness for the project's scope, not just cleanup. Tighten `exp`'s `ValueError` domain to
+  scalar + bivector/pseudoscalar; update tests + docstring.
+- **Cite Dorst §7.4** (+ Macdonald survey), pending whatever text Bill settles on from his reading.
+
+**Subtask 4 — DONE 2026-08-14 (William Emerison Six <billsix@gmail.com>): precise return typing for
+`i` / `.i()` + call-site audit.** Implemented in the precise-typing task
+([[precise-typing-remaining-methods]], Tier 2) since it's the same mechanism: `i` /
+`bivector_from_vectors` / `.i()` / `plane_of_rotation` now narrow to `Bivector_n`, and
+`rotor_from_vectors` to `Rotor_n`, via two new generator helpers
+(`classmethod_narrowing_overloads` + `inherited_classmethod_narrowing`), gated on n≥2. `test_exp.py`'s
+two hand-rolled `(e_1 ^ e_2).normalize()` sites are rewritten to `Vector.i(e_1, e_2)`.
+**Correction to the original plan below: this does NOT unblock `plane_rotation` reuse** —
+`plane_rotation` is a free function generic over `V`, so a classmethod returning the concrete
+`Bivector` would widen `V`; it stays inline (and has its own numeric-preservation reason). The
+narrowing helps only concrete-typed call sites. Original investigation notes retained below.
+
+**Subtask 5 — DONE 2026-08-14: explicit parallel-vector guard in `i`.** `i(a, b)` (both the generated
+classmethods and hand-written `Gn.i`) now raises `ValueError("the two vectors are parallel (their
+wedge is zero): they span no plane of rotation")` — matching `plane_rotation` — instead of leaking
+`normalize`'s `ZeroDivisionError`. Guard lives in `i`, not `bivector_from_vectors` (which legitimately
+returns the zero bivector). `test_i_of_parallel_vectors_raises` updated to expect `ValueError`.
+
+---
+
+_Original subtask-4 investigation notes (kept for the record):_ The shipped subtask 1 emits **both** the
+`i(a, b)` classmethod and the `.i()` instance method returning **`MultiVectorBase`** — the imprecise
+base type (generator `i_classmethod` / `i_extractor`, `tools/gen_specialized.py:475,505`; e.g.
+`g3.py:842` `def i(cls, a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase`, `g2.py:530`, and
+the `.i()` at `g2.py:2557`/`g3.py:3488`). But `i` **always yields a grade-2 unit bivector**, so the
+precise return is knowable per type and should be resolved at generation time (the same way the
+generated products narrow via the type registry / `resolve`):
+
+- `Gn.i(a, b)` → `Gn` is already correct (dimension-agnostic, no graded subtypes).
+- `G2.i` / `G3.i` / `Vector.i` → could narrow to that algebra's **`Bivector`** type.
+- `.i()` on `Bivector` → `Bivector` (really `Self`); on `Rotor` → that algebra's `Bivector`.
+- The params `a`, `b` are also typed `MultiVectorBase`; whether to tighten them to grade-1 `Vector`
+  is part of this.
+
+**This is the same imprecision that blocks reuse elsewhere.** `plane_rotation`
+(`transforms.py:337-348`) deliberately keeps its wedge **inline** (`a.outer_product(b)` + parallel
+guard + `.normalize()`) *instead of* calling `bivector_from_vectors` / `i`, with a comment saying so:
+routing through the base helper would widen the precise generic `V` to `MultiVectorBase` and break the
+downstream numeric-preservation code. So **couple this to the precise-typing task**
+(`precise-typing-remaining-methods.md`) — if `bivector_from_vectors` / `i` gain a precise per-type
+return, the typing here **and** the deferred `plane_rotation` reuse (noted under subtask 1) unlock
+together.
+
+Then **audit the codebase for hand-rolled unit bivectors that should call `i` instead** (found in the
+research pass, anchors verified against the tree 2026-08-14):
+
+- `transforms.plane_rotation` (`transforms.py:348`, `i = plane.normalize()`) — the canonical case;
+  blocked on the typing above (has its own numeric-preservation reason too — re-read that block).
+- `tests/test_exp.py:93` (`i: g3.Bivector = (g3.Vector.e_1 ^ g3.Vector.e_2).normalize()`) and `:108`
+  (the g2 twin) — these hand-build exactly the unit bivector `i` now names; rewrite as
+  `g3.Vector.i(e_1, e_2)` **once the return type is precise** (so the `g3.Bivector` annotation still
+  holds without a cast).
+- Re-sweep the notebooks (`displayrotations.py` exp-map section) when doing this — the 2026-08-14
+  grep found only prose/comments there, no code site, but recheck after any `exp` redo (subtask 3).
+
+_Original subtask-5 design note (implemented as summarized above):_ Today `i(a, b)` guards parallel
+vectors only **implicitly**: the
+wedge of parallel vectors is the zero bivector, and normalizing zero raises a low-level
+**`ZeroDivisionError`** (gacalc 0.0.16) — `test_i_of_parallel_vectors_raises`
+(`tests/test_unit_bivector_i.py:68`) pins exactly that exception. Meanwhile `plane_rotation` raises an
+explicit, readable **`ValueError`**: *"the two vectors are parallel (their wedge is zero): they span
+no plane of rotation"* (`transforms.py:344-347`). The two entry points to the same math disagree.
+
+Make `i`'s guard **explicit and consistent with `plane_rotation`** — detect the zero wedge and raise
+the same meaningful `ValueError`, instead of leaking `ZeroDivisionError`. The guard belongs in **`i`**,
+**not** `bivector_from_vectors` — the design (subtask 1) is that `bivector_from_vectors` legitimately
+returns the *zero* bivector for parallel inputs (the wedge really is zero), and only the
+*normalization* step (`i`) is undefined there. Update `test_i_of_parallel_vectors_raises` (change the
+expected exception) and the `i` docstring. Bonus: once `plane_rotation` is refactored onto `i`
+(subtask 4), this removes the duplicated guard, leaving one implementation and one message.
 
 **Upshot of relating this to the code:** the plane-builder, the plane-extractor, and the
 half-angle rotor Bill described **all already exist inside `plane_rotation` / `plane_of_rotation`**
@@ -264,3 +387,10 @@ mathematics.
 5. **Which book(s)** are the reference for the redo (Hestenes & Sobczyk section?
    another text)? Bill is researching this in parallel — align before writing
    code.
+6. **(Subtask 4) Precise `i` typing:** ✅ RESOLVED/DONE 2026-08-14 — narrowed to
+   `Bivector_n` (`Gn.i → Gn` unchanged) in the precise-typing task. Params kept as
+   `MultiVectorBase` on the impl with a precise `Vector` `@overload` (that's what makes
+   the narrowing sound). Correction: it did **not** unblock `plane_rotation` reuse (generic
+   over `V`); only concrete call sites.
+7. **(Subtask 5) Parallel guard:** ✅ RESOLVED/DONE 2026-08-14 — `i` now raises the same
+   `ValueError` as `plane_rotation`; guard lives in `i`.

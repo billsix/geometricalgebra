@@ -109,12 +109,19 @@ class Gn(MultiVectorBase):
         r"""The **unit bivector** ``i`` of the plane spanned by vectors ``a``,
         ``b`` (``i * i == -1``) -- the normalized wedge ``a`` ∧ ``b``.
 
-        ``= bivector_from_vectors(a, b).normalize()``.  Raises if ``a`` and ``b``
-        are parallel (their wedge is the zero bivector, which cannot be
-        normalized).  This is the plane you feed a rotor builder / ``exp`` to
-        rotate in -- it is a bivector, never a rotor.
+        ``= bivector_from_vectors(a, b).normalize()``.  Raises ``ValueError`` if
+        ``a`` and ``b`` are parallel (their wedge is the zero bivector, which spans
+        no plane), rather than leaking ``normalize``'s low-level
+        ``ZeroDivisionError``.  This is the plane you feed a rotor builder /
+        ``exp`` to rotate in -- it is a bivector, never a rotor.
         """
-        return cls.bivector_from_vectors(a, b).normalize()
+        plane: MultiVectorBase = cls.bivector_from_vectors(a, b)
+        if plane == type(plane).zero():
+            raise ValueError(
+                "the two vectors are parallel (their wedge is zero): "
+                "they span no plane of rotation"
+            )
+        return plane.normalize()
 
     def to_blade_dict(self) -> BladeCoef:
         return self.coefficient_of_blade

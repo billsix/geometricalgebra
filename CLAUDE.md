@@ -304,8 +304,11 @@ vector) keep their names; the rule targets pure renames of things that already h
   area bivector); `cls.i(a, b)` normalizes it to the plane's **unit** bivector (`i² = −1`) — a
   classmethod on the full types (`Gn`/`G`/`Vector`); `.i()` (no args) gets a value's own unit plane
   (`Bivector.i()` = normalize, `Rotor.i()` = plane of rotation) — an instance method on the graded
-  types. **All return a BIVECTOR, never a rotor.** Math + design (and why the classmethod/instance
-  split): `tasks/reference/unit-bivector-and-rotors.md`
+  types. **All return a BIVECTOR, never a rotor** — and on the specialized types they are
+  **type-precise** (`Vector_n.i(a, b) -> Bivector_n`, `.i() -> Bivector_n`; 𝒢ₙ stays
+  `MultiVectorBase`). `i` **raises `ValueError` on parallel vectors** (zero wedge → no plane),
+  not `normalize`'s low-level `ZeroDivisionError` — same guard/message as `plane_rotation`. Math
+  + design (and why the classmethod/instance split): `tasks/reference/unit-bivector-and-rotors.md`
 - `mv.exp()` — exponential map, defined when `A²` is scalar (a scalar or simple blade):
   trig for a bivector / the 𝒢₃ pseudoscalar (**exp of a bivector IS a rotor** —
   `Bivector_n.exp() -> Rotor_n`, unit by construction), hyperbolic for a vector.  Dispatches

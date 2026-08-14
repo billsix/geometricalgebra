@@ -472,25 +472,97 @@ I_DOC = (
 )
 
 
-def i_classmethod() -> ast.FunctionDef:
+# Two parallel vectors span no plane: their wedge is the *zero* bivector, which
+# has no unit direction.  ``i`` raises this explicitly rather than leaking
+# ``normalize``'s low-level ``ZeroDivisionError`` -- the same guard and message
+# ``transforms.plane_rotation`` uses, so the two entry points agree.
+PARALLEL_VECTORS_MSG: str = (
+    "the two vectors are parallel (their wedge is zero): they span no plane of rotation"
+)
+
+
+def classmethod_narrowing_overloads(
+    method: str, param_names: list[str], precise_ret: str
+) -> list[ast.stmt]:
+    """Precise + catch-all ``@overload`` stubs for a value-returning classmethod
+    whose result is a *fixed grade*: applied to this algebra's ``Vector`` args it
+    returns ``precise_ret`` (``bivector_from_vectors``/``i`` -> ``Bivector``,
+    ``rotor_from_vectors`` -> ``Rotor``); the ``MultiVectorBase`` catch-all keeps
+    the base's imprecise type for any other input.  Discriminating on the ``Vector``
+    param type is what makes the narrowing sound -- the wedge / rotor of two
+    same-algebra vectors is that algebra's ``Bivector`` / ``Rotor`` at runtime.
+    Only meaningful where ``precise_ret`` exists (n>=2 -- 𝒢₁ has no bivector), so
+    the caller passes it only then."""
+
+    def stub(param_type: str, ret: str) -> ast.stmt:
+        return function_def(
+            method,
+            [ast.Expr(constant(...))],
+            params=[argument("cls")]
+            + [argument(p, name_ref(param_type)) for p in param_names],
+            decorators=[attribute("typing", "overload"), name_ref("classmethod")],
+            returns=name_ref(ret),
+        )
+
+    return [stub("Vector", precise_ret), stub("MultiVectorBase", "MultiVectorBase")]
+
+
+def inherited_classmethod_narrowing(
+    method: str, param_names: list[str], precise_ret: str
+) -> list[ast.stmt]:
+    """Narrowing override of an *inherited* base classmethod
+    (``bivector_from_vectors`` / ``rotor_from_vectors``): base types it
+    ``-> MultiVectorBase``, but applied to this algebra's vectors it always yields
+    ``precise_ret``.  Emit the precise + catch-all ``@overload`` stubs plus a thin
+    impl that delegates to ``super()`` -- runtime is unchanged; base does the work,
+    only the static return type is narrowed (same shape as
+    ``transform_factory_overrides``)."""
+    return [
+        *classmethod_narrowing_overloads(method, param_names, precise_ret),
+        function_def(
+            method,
+            [return_stmt(super_call(method, [name_ref(p) for p in param_names]))],
+            params=[argument("cls")] + [argument(p) for p in param_names],
+            decorators=[name_ref("classmethod")],
+            returns=name_ref("MultiVectorBase"),
+        ),
+    ]
+
+
+def i_classmethod(precise_ret: str | None = None) -> list[ast.stmt]:
     """Emit the ``i(a, b)`` classmethod (unit bivector of the plane two vectors
-    span) for the full classes + Vector: normalize ``bivector_from_vectors``."""
-    return function_def(
+    span) for the full classes + Vector: normalize ``bivector_from_vectors``,
+    raising a clear ``ValueError`` (``PARALLEL_VECTORS_MSG``) on parallel vectors
+    instead of leaking ``normalize``'s ``ZeroDivisionError``.  When ``precise_ret``
+    is given (n>=2) prepend the narrowing ``@overload`` stubs so
+    ``Vector.i(a, b) -> Bivector``; 𝒢₁ (no bivector) passes ``None`` and stays
+    ``-> MultiVectorBase``."""
+    impl: ast.stmt = function_def(
         "i",
         [
             class_doc_stmt(I_FROM_VEC_DOC),
-            return_stmt(
+            assign(
+                "plane",
                 call(
-                    attribute(
-                        call(
-                            attribute("cls", "bivector_from_vectors"),
-                            [name_ref("a"), name_ref("b")],
-                        ),
-                        "normalize",
-                    ),
-                    [],
-                )
+                    attribute("cls", "bivector_from_vectors"),
+                    [name_ref("a"), name_ref("b")],
+                ),
             ),
+            ast.If(
+                ast.Compare(
+                    name_ref("plane"),
+                    [ast.Eq()],
+                    [call(attribute(call("type", [name_ref("plane")]), "zero"), [])],
+                ),
+                [
+                    ast.Raise(
+                        exc=call("ValueError", [constant(PARALLEL_VECTORS_MSG)]),
+                        cause=None,
+                    )
+                ],
+                [],
+            ),
+            return_stmt(call(attribute("plane", "normalize"), [])),
         ],
         params=[
             argument("cls"),
@@ -500,18 +572,24 @@ def i_classmethod() -> ast.FunctionDef:
         returns=name_ref("MultiVectorBase"),
         decorators=[name_ref("classmethod")],
     )
+    if precise_ret is None:
+        return [impl]
+    return [*classmethod_narrowing_overloads("i", ["a", "b"], precise_ret), impl]
 
 
-def i_extractor(inner_method: str) -> ast.FunctionDef:
+def i_extractor(inner_method: str, precise_ret: str) -> ast.FunctionDef:
     """Emit the ``.i()`` instance method (a value's own unit plane) via
-    ``inner_method`` (``normalize`` on Bivector, ``plane_of_rotation`` on Rotor)."""
+    ``inner_method`` (``normalize`` on Bivector, ``plane_of_rotation`` on Rotor).
+    Returns ``precise_ret`` -- always this algebra's ``Bivector`` (a value's unit
+    plane is grade 2); both callers (Bivector, Rotor) exist only for n>=2, so the
+    ``Bivector`` type is present."""
     return function_def(
         "i",
         [
             class_doc_stmt(I_DOC),
             return_stmt(call(attribute("self", inner_method), [])),
         ],
-        returns=name_ref("MultiVectorBase"),
+        returns=name_ref(precise_ret),
     )
 
 
@@ -2314,8 +2392,9 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
         is_close_method(name, fields),
         iter_method(blades),
         *dimension_known_methods(),
-        # i(a, b): the unit bivector of the plane two vectors span (classmethod).
-        i_classmethod(),
+        # i(a, b): the unit bivector of the plane two vectors span (classmethod);
+        # narrowed to Bivector where one exists (n>=2), MultiVectorBase in 𝒢₁.
+        *i_classmethod("Bivector" if n >= 2 else None),
     ]
     return [
         class_def(
@@ -2775,8 +2854,8 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 returns=name_ref("Rotor"),
             )
         )
-        # .i(): the bivector's unit plane -- itself, normalized.
-        body.append(i_extractor("normalize"))
+        # .i(): the bivector's unit plane -- itself, normalized (-> Bivector).
+        body.append(i_extractor("normalize", "Bivector"))
     if spec.name.startswith("Rotor"):
         body.append(
             function_def(
@@ -2793,7 +2872,9 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                         )
                     ),
                 ],
-                returns=name_ref("MultiVectorBase"),
+                # grade-2 part normalized: r_vector_part(2) -> Bivector (Literal
+                # overload), normalize -> Self, so the unit plane is a Bivector.
+                returns=name_ref("Bivector"),
             )
         )
         # Versor conjugation  R x R^-1  -- the rotor sandwich, GRADE-PRESERVING:
@@ -2814,8 +2895,9 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 param_annotation=name_ref("_OperandT"),
             )
         )
-        # .i(): the rotor's unit plane of rotation (alias of plane_of_rotation).
-        body.append(i_extractor("plane_of_rotation"))
+        # .i(): the rotor's unit plane of rotation (alias of plane_of_rotation);
+        # -> Bivector.
+        body.append(i_extractor("plane_of_rotation", "Bivector"))
     if spec.name.startswith("Vector"):
         # project/reject/reflect of a vector across a vector are grade-preserving
         # (the result is a vector), so narrow the base's MultiVectorBase-typed
@@ -2833,7 +2915,25 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             transform_factory_overrides(spec, "reflect", "across", "InvertibleFunction")
         )
         # i(a, b): the unit bivector of the plane two vectors span (classmethod).
-        body.append(i_classmethod())
+        # Narrow it, plus the two inherited from-vectors builders, to this
+        # algebra's fixed-grade result -- but only where that grade exists (n>=2;
+        # 𝒢₁ has no bivector/rotor, so they stay MultiVectorBase there).
+        precise_bivector: str | None = "Bivector" if n >= 2 else None
+        body.extend(i_classmethod(precise_bivector))
+        if n >= 2:
+            # bivector_from_vectors(a, b) -> Bivector, rotor_from_vectors(from, to)
+            # -> Rotor: base types both -> MultiVectorBase, but the wedge / rotor
+            # of two same-algebra vectors is that algebra's Bivector / Rotor.
+            body.extend(
+                inherited_classmethod_narrowing(
+                    "bivector_from_vectors", ["a", "b"], "Bivector"
+                )
+            )
+            body.extend(
+                inherited_classmethod_narrowing(
+                    "rotor_from_vectors", ["from_vector", "to_vector"], "Rotor"
+                )
+            )
     return [
         class_def(
             spec.name,

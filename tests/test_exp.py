@@ -90,7 +90,7 @@ def test_exp_agrees_with_plane_rotation_numeric() -> None:
     # exp((-theta/2) i) IS plane_rotation's half-angle rotor -- numeric theta
     theta: float = 1.234
     f = plane_rotation(g3.Vector.e_1, g3.Vector.e_2)(theta)
-    i: g3.Bivector = (g3.Vector.e_1 ^ g3.Vector.e_2).normalize()
+    i: g3.Bivector = g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
     r: g3.Rotor = (i * (-theta / 2)).exp()
     v: g3.Vector = 3 * g3.Vector.e_1 + 4 * g3.Vector.e_2 + 5 * g3.Vector.e_3
     assert r.sandwich(v).isclose(f(v), rel_tol=1e-5, abs_tol=1e-5)
@@ -105,7 +105,7 @@ def test_exp_agrees_with_plane_rotation_symbolic() -> None:
     # hand-built rotor -- see tasks/reference/design-decisions.md.)
     theta: sympy.Symbol = sympy.Symbol("theta", positive=True)
     f = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)(theta)
-    i: g2.Bivector = (g2.Vector.e_1 ^ g2.Vector.e_2).normalize()
+    i: g2.Bivector = g2.Vector.i(g2.Vector.e_1, g2.Vector.e_2)
     r: g2.Rotor = (i * (-theta / 2)).exp()
     # identical coefficient FORM, not merely simplify-equal: the follow-up
     # swap must not change what a notebook renders.

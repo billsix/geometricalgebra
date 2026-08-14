@@ -2,8 +2,14 @@
 
 **Status:** in-progress (2026-08-03) — **project/reject/reflect DONE** (type-precise on the
 vector types via a new `transform_factory_overrides` generator helper, plus a `base.reject`
-grade-narrowing soundness fix). `rotor_from_vectors` + `identity` + the `inverse` spot-check
-remain as follow-ups.
+grade-narrowing soundness fix). **Tier 2 DONE 2026-08-14** (William Emerison Six
+<billsix@gmail.com>): `rotor_from_vectors → Rotor_n`, plus `bivector_from_vectors` / `i` /
+`.i()` / `plane_of_rotation → Bivector_n` (folded in from the `i` work in
+[[redo-exp-book-referenced]] — same mechanism), and the `inverse` `-> Self` spot-check
+(confirmed sound: returns the concrete type, not `Gn`). Generic helpers
+`classmethod_narrowing_overloads` / `inherited_classmethod_narrowing` in `gen_specialized.py`;
+ty clean (src/tests/tools), 358 tests, generator deterministic, doc-regions OK. Only `identity`
+(optional, low value) remains.
 **Priority:** 4
 **Difficulty:** 4
 
@@ -37,7 +43,24 @@ mechanism (a graded override / overload resolving the concrete type for the prov
 - **`rotor_from_vectors`** (`base.py:848`) → `MultiVectorBase`. Always builds
   `R = |from||to| + to·from` = scalar + bivector = a **rotor**, so per algebra
   `Vector2.rotor_from_vectors(from, to) → Rotor2`, `Vector3 → Rotor3`. Clean candidate
-  (mirrors `Bivector_n.exp() → Rotor_n`, already done).
+  (mirrors `Bivector_n.exp() → Rotor_n`, already done). **DONE 2026-08-14** via
+  `inherited_classmethod_narrowing` on the graded `Vector` (n≥2).
+- **`bivector_from_vectors`** (`base.py:943`) → `MultiVectorBase`. Always the wedge
+  `a ∧ b` = a **bivector**, so `Vector_n.bivector_from_vectors(a, b) → Bivector_n`. **DONE
+  2026-08-14** (same helper). Its normalizing sibling **`i(a, b)`** (emitted, not inherited)
+  → `Bivector_n` via `classmethod_narrowing_overloads`, and the instance
+  **`.i()`** / **`plane_of_rotation`** → `Bivector_n`. All landed with the `i` work in
+  [[redo-exp-book-referenced]]; the generic narrowing helpers were added here.
+  - **Why the classmethod narrowing is sound:** the precise `@overload` discriminates on
+    the `Vector` param type — the wedge/rotor of two *same-algebra* vectors is that algebra's
+    `Bivector`/`Rotor` at runtime (verified: `type(Vector.i(...)).__name__ == "Bivector"`,
+    etc.); any other input falls to the `MultiVectorBase` catch-all. 𝒢₁ has no bivector/rotor,
+    so the narrowing is gated on n≥2 (𝒢₁ stays `MultiVectorBase`).
+  - **Note — this does NOT unblock `plane_rotation` reuse.** `transforms.plane_rotation` is a
+    **free function generic over `V`** (the operand type), so a classmethod returning the
+    concrete `Bivector` would still widen `V`. It stays inline (also for its own
+    numeric-preservation reason). The narrowing only helps *concrete-typed* call sites (e.g.
+    `tests/test_exp.py`, rewritten to `g3.Vector.i(...)` 2026-08-14).
 - **`identity`** (`base.py:833`) → `InvertibleFunction[MultiVectorBase]`. Minor — could be a
   generic `InvertibleFunction[T]` so the operand type is preserved. Low value (identity rarely
   needs the concrete type); listed for completeness.
@@ -76,9 +99,12 @@ mechanism (a graded override / overload resolving the concrete type for the prov
       `base.reject` didn't narrow to the operand grade (returned raw `G3` in 3D), which would
       make the `Vector3` overload unsound — now narrows like `project`. assert_type-locked;
       `ty` clean (src/tests/tools); 347 tests pass; generator deterministic; doc-regions clean.
-- [ ] rotor_from_vectors → Rotor_n (follow-up).
+- [x] rotor_from_vectors → Rotor_n; bivector_from_vectors / i / .i() / plane_of_rotation →
+      Bivector_n (2026-08-14, `classmethod_narrowing_overloads` +
+      `inherited_classmethod_narrowing`; folded in the `i` work from [[redo-exp-book-referenced]]).
 - [ ] identity → generic InvertibleFunction[T] (optional, low value).
-- [ ] Spot-check `inverse`'s `-> Self` is sound (returns the concrete type at runtime).
+- [x] Spot-check `inverse`'s `-> Self` is sound — confirmed: Vector/Rotor/Bivector `.inverse()`
+      returns the concrete type, not `Gn` (rebuilt via `type(self).from_blade_dict`).
 - [x] Update [[generated-product-typing]]'s design section (done — records the mechanism + the
       base.reject fix).
 

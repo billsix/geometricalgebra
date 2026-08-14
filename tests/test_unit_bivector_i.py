@@ -67,8 +67,9 @@ def test_vector_i_is_precisely_typed_as_a_bivector() -> None:
 
 
 def test_i_of_parallel_vectors_raises() -> None:
-    # i normalizes the wedge, so parallel vectors (zero wedge) can't be normalized.
-    with pytest.raises(ZeroDivisionError):
+    # Parallel vectors span no plane (zero wedge); i raises an explicit ValueError
+    # rather than leaking normalize's low-level ZeroDivisionError.
+    with pytest.raises(ValueError, match="parallel"):
         Gn.i(e_1, 2 * e_1)
 
 
