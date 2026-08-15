@@ -13,11 +13,11 @@
 
 """bivector_rotation: the bivector-first (`i`-first) sibling of plane_rotation.
 
-Covers subtask 2 of tasks/archive/2026/08/15/redo-exp-book-referenced.md: take the plane's
-bivector directly, normalize it internally, and return angle -> half-angle
-rotor sandwich.  Checks agreement with plane_rotation on the same plane, the
-internal normalization (a non-unit bivector rotates by the right angle),
-grade-2 / zero validation, orientation, perpendicular-part fixedness,
+Covers subtask 2 of tasks/archive/2026/08/15/redo-exp-book-referenced.md: take
+the plane's bivector directly, normalize it internally, and return angle ->
+half-angle rotor sandwich.  Checks agreement with plane_rotation on the same
+plane, the internal normalization (a non-unit bivector rotates by the right
+angle), grade-2 / zero validation, orientation, perpendicular-part fixedness,
 inversion, interpolation, and that a symbolic angle keeps the clean
 cos(theta/2) form (the reason it is built directly, not via exp).
 """

@@ -88,6 +88,46 @@ def blade_dict_latex(d: BladeCoef) -> str:
     return "$" + ("0" if not d else " +  ".join(blades)) + "$"
 
 
+def pseudoscalar_squared_sign(r: int) -> int:
+    """The sign (``+1`` / ``−1``) of a grade-``r`` blade's square in Euclidean 𝒢ₙ.
+
+    A grade-``r`` blade ``A`` satisfies ``A² = (−1)^(r(r−1)/2) · |A|²``; this is
+    that sign factor — equivalently the reversion sign for grade ``r``, and the
+    sign of the ``r``-dimensional unit pseudoscalar squared. Named so ``reverse`` /
+    ``exp`` (and the generator's emitted ``reverse``) read as what they mean.
+
+    **Implemented the slow, obviously-correct way (Phase 1):** it *actually squares*
+    the ``r``-dimensional unit pseudoscalar and reads the sign, rather than asserting
+    the closed form ``(−1)^(r(r−1)/2)``. The squaring needs a full-algebra
+    representation (a graded type can't build the grade-1 vectors the pseudoscalar
+    is made of — it would silently return 0), so it uses ``Gn``, the reference
+    algebra, via a **deliberate function-local import** (``Gn`` is a higher layer;
+    the deferred import keeps the module graph acyclic). Cost falls only on the two
+    *non-generated* runtime callers, ``Gn.reverse`` and ``exp`` — the generated
+    ``reverse`` bakes this value as a compile-time constant, so it pays nothing.
+
+    **This is undoable and will be optimized:** the follow-up
+    ``tasks/prove-blade-square-sign-equals-pseudoscalar-squared.md`` proves the
+    closed form equals this, then substitutes ``return (-1) ** ((r * (r - 1)) // 2)``
+    back in and removes the ``Gn`` import — reverting to the fast form once it's
+    proven equivalent.
+    """
+    # Deferred import: Gn is a higher layer, so this stays out of the module-level
+    # graph.  Removed in the Phase-2 optimization (see the docstring).
+    from gacalc.gn import Gn
+
+    return int(Gn.unit_pseudoscalar_squared(r).scalar_part())
+
+
+def pseudoscalar_squared_is_positive(r: int) -> bool:
+    """Whether a grade-``r`` blade squares to a *positive* scalar (``A² > 0``).
+
+    ``pseudoscalar_squared_sign(r) == 1``.  ``exp`` uses it to reject the
+    positive-square (vector) case, which has no Euclidean exponential.
+    """
+    return pseudoscalar_squared_sign(r) == 1
+
+
 class MultiVectorBase(abc.ABC):
     """Abstract base class for an element (multivector) of a geometric algebra.
 
@@ -634,7 +674,7 @@ class MultiVectorBase(abc.ABC):
         # of the grade operator, it works for all multivectors
         return sum(
             [
-                ((-1) ** ((r * (r - 1)) // 2)) * self.r_vector_part(r)
+                pseudoscalar_squared_sign(r) * self.r_vector_part(r)
                 for r in self.grades()
             ],
             start=type(self).zero(),
@@ -1053,7 +1093,7 @@ class MultiVectorBase(abc.ABC):
                 f"(homogeneous) blade; got grades {sorted(self.grades())}"
             )
         r: int = self.max_grade()
-        if (-1) ** ((r * (r - 1)) // 2) != -1:
+        if pseudoscalar_squared_is_positive(r):
             # A**2 > 0 (a vector, or any positive-square blade): the series
             # would sum to the hyperbolic cosh|A| + sinh|A| Â -- the Minkowski
             # boost, meaningful only in a spacetime metric this Euclidean

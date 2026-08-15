@@ -190,7 +190,12 @@ from astbuild import (  # noqa: E402
     subscript,
 )
 
-from gacalc.base import Blade, BladeCoef, MultiVectorBase  # noqa: E402
+from gacalc.base import (  # noqa: E402
+    Blade,
+    BladeCoef,
+    MultiVectorBase,
+    pseudoscalar_squared_sign,
+)
 from gacalc.gn import Gn  # noqa: E402
 
 # ==========================================================================
@@ -2143,7 +2148,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
     b: Blade
     for b in blades:
         f: str = field_name(b)
-        sign: int = (-1) ** ((len(b) * (len(b) - 1)) // 2)
+        sign: int = pseudoscalar_squared_sign(len(b))
         rev_pairs.append(
             (
                 f,
@@ -2498,7 +2503,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
     b: Blade
     for b in blades:
         f: str = field_name(b)
-        sign: int = (-1) ** ((len(b) * (len(b) - 1)) // 2)
+        sign: int = pseudoscalar_squared_sign(len(b))
         rev_pairs.append(
             (
                 f,

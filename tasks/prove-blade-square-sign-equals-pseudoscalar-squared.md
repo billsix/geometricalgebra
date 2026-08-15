@@ -1,52 +1,59 @@
-# Prove `(-1)^(r(r-1)/2)` == unit-pseudoscalar-squared sign, then substitute it out
+# Prove the closed form == the pseudoscalar squaring, then optimize the helper to it
 
-**Status:** proposed — **gated on** [[name-blade-square-sign]] (Phase 1) landing first. Created
-2026-08-15 (William Emerison Six <billsix@gmail.com>).
+**Status:** proposed — needs go-ahead. **Phase 1 (`tasks/archive/2026/08/15/name-blade-square-sign.md`)
+is DONE** — the named helper computes the sign the slow, obviously-correct way (actually squaring the
+unit pseudoscalar). This task is the **optimization**: prove the closed form `(-1)^(r(r-1)/2)` is
+equivalent, then substitute it back in. Created 2026-08-15 (William Emerison Six <billsix@gmail.com>).
 **Priority:** 6
 **Difficulty:** 3
 
-## Goal
+## Direction (corrected 2026-08-15)
 
-Bill's conjecture: the sign `(-1)^(r(r-1)/2)` used in `reverse()`/`exp()` (see the Phase-1 task
-[[name-blade-square-sign]]) **equals the sign of the `r`-dimensional unit pseudoscalar squared**.
-This task (the "later task") is to (1) **prove** that, then (2) **substitute** the closed-form
-exponent for a computation off the real pseudoscalar, so the code stands on the algebra rather
-than a magic formula.
+Phase 1 put the **obviously-correct** implementation in first: `pseudoscalar_squared_sign(r)` in
+`base.py` returns `int(Gn.unit_pseudoscalar_squared(r).scalar_part())` — it *actually squares* the
+`r`-dimensional unit pseudoscalar (in `Gn`, via a deferred import, since only a full algebra can
+build it). This task proves the closed form equals that and swaps the closed form in as the
+**optimized** version — the "make it correct, then make it fast" order.
 
-## Why this is tractable — the method already exists
+## Goal — prove, then optimize (and it's fully reversible)
 
-`MultiVectorBase.unit_pseudoscalar_squared(cls, n)` is **already implemented**
-(`src/gacalc/base.py:184`): it returns `unit_pseudoscalar(n) * unit_pseudoscalar(n)` — the actual
-±1 (as a multivector). So the substitution target already exists; this task connects the Phase-1
-name to it.
+1. **Prove the equivalence.** For the `r`-dimensional unit pseudoscalar `I_r = e_1 e_2 … e_r`,
+   `I_r² = (−1)^(r(r−1)/2)` (Euclidean): reversing `I_r` costs `r(r−1)/2` adjacent transpositions,
+   each `e_i e_j → −e_j e_i`, and each `e_i² = +1`. Land it as a **test** asserting, over `r = 0..N`,
+   `Gn.unit_pseudoscalar_squared(r).scalar_part() == (−1)^(r(r−1)/2)` — the durable proof. (Phase 1
+   already spot-checked r=0..6; this makes it a permanent gate.)
+2. **Substitute the optimized form.** Reimplement the helper body back to
+   `return (-1) ** ((r * (r - 1)) // 2)` and **remove the deferred `from gacalc.gn import Gn`** — so
+   the runtime callers (`Gn.reverse()`, `exp()`) go from squaring-a-pseudoscalar to O(1), and the
+   `base → gn` coupling (introduced only for Phase 1's correctness) disappears. The call sites and
+   the helper's *name/signature* do not change — only its body.
+3. **Verify byte-identical behavior** (the `reverse`/`exp` suites are the guard; `pseudoscalar_squared_sign`
+   returns the same `±1` for every `r`) + determinism + container gate.
 
-The identity to prove: for the `r`-dimensional unit pseudoscalar `I_r = e_1 e_2 … e_r`,
-`I_r² = (−1)^(r(r−1)/2)` (Euclidean). Equivalently, a grade-`r` blade squares with that same sign
-(`A² = (−1)^(r(r−1)/2)|A|²`) — which is exactly what `reverse()`/`exp()` rely on.
+## Scope — what actually gets faster (the maintainer's gen-time-constant point)
 
-**Substitution scope (from the Phase-1 scan):** the sign is computed by formula at **4 sites** —
-`base.py` `reverse()` + `exp()` (runtime) and `tools/gen_specialized.py:2146,2501` (the generator's
-`reverse` emitters) — while `unit_pseudoscalar_squared` has **no internal caller** today. Once
-Phase 1 routes all 4 through the named helper(s), this task swaps that single implementation to
-compute off `unit_pseudoscalar_squared`, and every site benefits at once.
+The sign is used at 4 sites, but they don't all pay at runtime:
 
-## Plan
+- **Generated `reverse()` (both emitters in `tools/gen_specialized.py`)** — the generator evaluates
+  the helper at **code-gen time** and bakes a `±1` **constant** into the emitted code. So the
+  generated classes cost **nothing** at runtime *regardless* of the helper's body; this substitution
+  doesn't change their generated output at all (same constant, just computed by formula instead of by
+  squaring at gen-time).
+- **`Gn.reverse()` and `exp()`** (non-generated, runtime) — these are the *only* callers that
+  actually run the helper per call. They are where Phase 1's squaring is slow and where this
+  optimization pays off.
 
-1. **Prove the equivalence.** A short derivation (I_r reversal moves `r(r−1)/2` transpositions,
-   each e_i e_j → −e_j e_i; each e_i²=+1) plus a **test** asserting, over `r = 0..N`,
-   `unit_pseudoscalar_squared(r) == (−1)^(r(r−1)/2)` (as a scalar). The test is the durable proof.
-2. **Substitute.** Reimplement the Phase-1 helper(s) so `pseudoscalar_squared_is_positive(r)`
-   (and any signed-value sibling) computes from `unit_pseudoscalar_squared` rather than the
-   exponent, and remove the `(-1) ** ((r * (r - 1)) // 2)` formula from `reverse()`/`exp()`.
-3. Verify byte-identical behavior (the `reverse`/`exp` suites are the guard) + container gate.
+## Undo / reversibility
+
+This is a clean two-way swap of one function body (Phase 1 ↔ Phase 2): slow squaring ↔ closed form.
+Either direction is a one-function edit plus a re-run of the gates; nothing else moves. Git history
+(the Phase-1 commit and this one) records both forms.
 
 ## Open questions (for Bill)
 
-1. **Performance/clarity tradeoff.** The exponent is O(1); `unit_pseudoscalar_squared(r)` builds
-   and multiplies an actual pseudoscalar (more work, and `reverse()` runs per grade in a hot
-   path). Options: substitute everywhere (clarity), keep the fast formula in `reverse()` but
-   substitute in the (rare) `exp` guard, or memoize `unit_pseudoscalar_squared(r)` by `r`. Which
-   do you want? Recommendation: substitute in `exp` (cold path) for sure; for `reverse` (hot),
-   memoize or keep the formula — decide once the numbers are in.
-2. Should the proof live as a test only, or also as a written note in
-   `tasks/reference/` (a short "why the reversion sign is the pseudoscalar square")?
+1. **How far to optimize.** Substitute the closed form **everywhere** (simplest, and the proof makes
+   it safe), or keep the pseudoscalar squaring somewhere as a living cross-check? Recommendation:
+   substitute everywhere; the permanent equivalence test from step 1 *is* the cross-check.
+2. Should the proof also live as a written note in `tasks/reference/` (a short "why the reversion
+   sign is the pseudoscalar square"), or is the test enough? Recommendation: a 3-line reference note
+   plus the test.

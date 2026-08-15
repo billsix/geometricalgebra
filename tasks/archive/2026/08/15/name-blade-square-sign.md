@@ -1,9 +1,26 @@
-# Name the `(-1)**(r(r-1)/2)` blade-square sign (Phase 1: name it; don't substitute yet)
+# Name the blade-square sign, implemented the slow/obvious way (Phase 1)
 
-**Status:** proposed — **decisions made 2026-08-15 (William Emerison Six <billsix@gmail.com>),
-awaiting go-ahead to execute.** Name = `pseudoscalar_squared_is_positive`; scope = **both** call
-sites (predicate + signed value). Bill will do task 2 (this one) after committing these doc
-updates outside the container.
+**Status:** DONE 2026-08-15 (William Emerison Six <billsix@gmail.com>). **Corrected direction
+(maintainer, 2026-08-15):** Phase 1 implements the sign the **slow, obviously-correct way** — it
+*actually squares* the unit pseudoscalar — and the follow-up
+`tasks/prove-blade-square-sign-equals-pseudoscalar-squared.md` proves the closed form
+`(-1)^(r(r-1)/2)` is an equivalent optimization and substitutes it back in. (An earlier commit had
+these reversed — fast formula first; `ac4ebfe` "…Im about to update it" was that checkpoint.)
+
+Two module-level helpers in `base.py` — `pseudoscalar_squared_sign(r) -> int` (returns
+`int(Gn.unit_pseudoscalar_squared(r).scalar_part())`, via a **deferred `from gacalc.gn import Gn`**
+so the module graph stays acyclic — `Gn` is the only representation that can build the pseudoscalar;
+a graded type silently returns 0) and `pseudoscalar_squared_is_positive(r) -> bool` (built on it) —
+back the named uses at **all 4 sites**: `reverse()` and `exp()` (runtime) and both generator
+`reverse` emitters (`tools/gen_specialized.py`).
+
+**Cost is contained (the maintainer's gen-time-constant point):** the generator evaluates the helper
+at **code-gen time** and bakes a `±1` **constant** into each generated `reverse()`, so the generated
+classes pay **nothing** at runtime. Only the two non-generated runtime callers — `Gn.reverse()` (the
+hand-written reference) and `exp()` (a base method) — do the squaring live. Generated output is
+byte-identical to the fast version (same constants; determinism holds); 367 tests, ty clean, ruff
+clean, doc-regions OK, container gate green. **Undoable:** the follow-up reverts the helper body to
+`return (-1) ** ((r * (r - 1)) // 2)` and drops the `Gn` import.
 **Priority:** 5
 **Difficulty:** 2
 
