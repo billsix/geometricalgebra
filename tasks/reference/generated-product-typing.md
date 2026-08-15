@@ -216,7 +216,18 @@ a concrete one is statically knowable. Full analysis + rationale in
   (`Vector`/`Vector.project`/`reject`/`reflect → Vector_n`, 2D+3D). Origin: Bill noticing
   `proj_b(a)` of a vector is a `Vector`, not `MultiVectorBase`.
 - **`rotor_from_vectors`** — `-> MultiVectorBase`, but always builds scalar + bivector = a rotor,
-  so `Vector_n.rotor_from_vectors → Rotor_n` (mirrors `Bivector_n.exp() → Rotor_n`). Follow-up.
+  so `Vector_n.rotor_from_vectors → Rotor_n` (mirrors `Bivector_n.exp() → Rotor_n`). **DONE
+  2026-08-15**, with the plane helpers: **`bivector_from_vectors` / `i` → `Bivector_n`** and
+  **`.i()` / `plane_of_rotation` → `Bivector_n`** (all narrow to the algebra's grade-2 type; gated
+  on n≥2, since 𝒢₁ has no bivector/rotor). Two new generator helpers do it:
+  **`classmethod_narrowing_overloads`** (precise + `MultiVectorBase` catch-all `@overload`s that
+  discriminate on the `Vector` param type — sound because the wedge/rotor of two *same-algebra*
+  vectors is that algebra's `Bivector`/`Rotor` at runtime) and **`inherited_classmethod_narrowing`**
+  (those stubs + a `super()`-delegating impl, for the base-inherited `bivector_from_vectors` /
+  `rotor_from_vectors`). The `inverse` `-> Self` spot-check also landed (confirmed it returns the
+  concrete type, not `Gn`). Caveat: this does **not** help `transforms.plane_rotation` (generic over
+  `V` — a concrete-returning classmethod would widen it); the `i`-first `bivector_rotation` builder
+  is operand-agnostic for the same reason — see `design-decisions.md`.
 - **`identity`** — `InvertibleFunction[MultiVectorBase]`; could be generic `InvertibleFunction[T]`.
   Minor.
 - **Not this mechanism:** `transforms.projection_rotation`/`rotor_rotation`/`plane_rotation` are
