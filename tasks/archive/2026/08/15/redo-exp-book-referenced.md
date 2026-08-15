@@ -13,11 +13,19 @@ on parallel vectors. ty clean, 358 tests, deterministic, regions OK — containe
 ty + pytest) also green. **Note (corrected 2026-08-14):** the earlier "deferred: `plane_rotation`
 reuse of `bivector_from_vectors`" is **not** unblocked by this — `plane_rotation` is generic over
 `V`, so a classmethod returning concrete `Bivector` would widen `V`; it stays inline (see subtask 2).
-**Subtask 2 (rotor-from-`i`) — FULLY SPEC'D & READY (2026-08-14):** `bivector_rotation(i)` free
-factory in `transforms.py`, curried `f(θ) → InvertibleFunction` sandwich, direct `cos(θ/2) −
-sin(θ/2)·i` (not via `exp`), normalize `i` internally after a grade-2 check; then rewrite
-`plane_rotation` onto it (coefficient-identical, numeric-preservation carried over). Awaiting
-go-ahead to code. **Subtask 3 (exp slim-down) — direction settled, gated on Bill's book reading.**
+**Subtask 2 (rotor-from-`i`) — DONE 2026-08-15:** `bivector_rotation(i)` shipped in `transforms.py`
+(direct `cos(θ/2) − sin(θ/2)·i`, normalize-internally after grade-2 check, operand-agnostic
+`InvertibleFunction[MultiVectorBase]`); `plane_rotation` rewritten onto a shared private rotor factory
+(coefficient-identical, `V` typing preserved). 8 new tests, container gate green.
+**Subtask 3 (exp slim-down) — DONE 2026-08-15:** the `A² > 0` (vector) hyperbolic branch removed; a
+vector's `exp` raises; only scalar + `A² < 0` (rotor) remain, cited Dorst §7.4. 367 pass, ty clean,
+container gate green.
+
+**ALL SUBTASKS DONE.** Remaining loose ends before archiving: (1) the exp docstring **citation is
+provisional** pending Bill's own book reading (one-line swap if he lands elsewhere); (2) `README.md`
+/ `CLAUDE.md` mention of `bivector_rotation` deferred to Bill (the exp CLAUDE.md bullet was already
+correctness-fixed). Once Bill confirms the citation, harvest the durable design rationale into
+`tasks/reference/` and archive.
 **Priority:** 3
 **Difficulty:** 7
 Created 2026-08-01 (Bill). This is a deliberate **redo** of already-landed work:
@@ -233,8 +241,27 @@ member.)
   `i(a,b)` classmethod and the `.i()` instance method); get the plane out of a general `Gn` bivector
   value with `.normalize()`, which `.i()` is just the named shortcut for.
 
-**Subtask 2 — DIRECTION SETTLED (William Emerison Six <billsix@gmail.com>, 2026-08-14; still no
-code until go-ahead).** A rotation builder that takes a **unit bivector `i`** (instead of two
+**Subtask 2 — DONE 2026-08-15 (William Emerison Six <billsix@gmail.com>).** `bivector_rotation(i)`
+shipped in `transforms.py` (exported there + re-exported from `gn.py`); 8 new tests
+(`tests/test_bivector_rotation.py`) + the docstring doctest, 367 total pass; ruff + ty clean; **container
+gate green** (ruff 0.16.3, ty, pytest). Implementation notes vs the plan below:
+- **Shared private `_unit_bivector_rotor_factory(i)`** holds the half-angle rotor construction +
+  numeric-preservation; **both** `bivector_rotation` and `plane_rotation` call it. `plane_rotation`
+  is rewritten onto **this shared factory**, not by literally calling `bivector_rotation` — because
+  `bivector_rotation` returns `InvertibleFunction[MultiVectorBase]` (operand-agnostic; see next),
+  and delegating to it would **regress** `plane_rotation`'s precise `InvertibleFunction[V]` return (a
+  breaking change for mvp, which relies on `Vector3 → Vector3`). The shared factory gives the real
+  dedup (the subtle numeric-preservation lives in one place) while each keeps its own typed closure.
+- **`bivector_rotation` is operand-agnostic (`InvertibleFunction[MultiVectorBase]`)** — unlike
+  `plane_rotation`, which ties the operand type to the input vectors, there's nothing in `i` alone to
+  infer the operand type from (you rotate *vectors* with a *bivector* plane — different types). Making
+  it generic over `i`'s type would wrongly force you to rotate bivectors. Runtime still preserves the
+  operand's concrete type via the grade-preserving sandwich; only the static type is widened.
+- Coefficient-identical `plane_rotation` confirmed: the pinned exact-form test
+  (`test_exp_agrees_with_plane_rotation_symbolic`) + `test_plane_rotation.py` still pass unchanged.
+- **`README.md` / `CLAUDE.md` mention deferred to Bill** (he reserved the right to add later).
+
+_Original direction notes (2026-08-14):_ A rotation builder that takes a **unit bivector `i`** (instead of two
 vectors) and returns a **θ-parametrized sandwich**, exactly mirroring `plane_rotation`'s curried
 shape: `f = rotate_in(i)` once, then `f(θ)` builds `R = cos(θ/2) − sin(θ/2)·i` and returns the
 sandwich `x ↦ R x R⁻¹` (an `InvertibleFunction`, like `plane_rotation`). This is Bill's idea —
@@ -279,8 +306,24 @@ is exactly the **θ = 90°** case (`c = s = 1/√2 ⇒ θ/2 = 45°`, and `½ + �
 `c² + s² = 1` is a unit rotor turning by `θ = 2·atan2(s, c)`. Full derivation + the sign/orientation
 note: `tasks/reference/unit-bivector-and-rotors.md` §3.
 
-**Subtask 3 (LATER — direction firming up).** The `exp()` redo itself. Not until Bill has done his
-book reading, but the shape is agreed:
+**Subtask 3 — DONE 2026-08-15 (William Emerison Six <billsix@gmail.com>): the `exp()` slim-down.**
+`MultiVectorBase.exp` (`base.py`) now handles only the scalar and negative-square (`A² < 0`) cases —
+`cos|A| + sin|A|·Â`, the rotor case. The positive-square (`A² > 0`, vector) branch — the
+galgebra-derived `cosh/sinh` — was **removed**; a vector's `exp` now raises `ValueError`. The `match`
+collapsed to a single guarded return (no more grade-sign dispatch), so the implementation is legible.
+`Bivector_n.exp() → Rotor_n` (generated override) and `Trivector.exp` (𝒢₃ pseudoscalar, `A² < 0`)
+still work. Tests updated: `test_exp_of_a_vector_is_rejected` (was `..._is_hyperbolic`), conformance
+`test_exp` (vector now rejected across all representations), module docstrings; docstring cites Dorst,
+Fontijne & Mann §7.4. ty clean, 367 pass, container gate green. Docs reconciled: `CLAUDE.md` exp
+bullet + `tasks/reference/design-decisions.md` line 93 (both said "hyperbolic for a vector" — now
+corrected).
+
+**CITATION IS PROVISIONAL — pending Bill's book reading.** The code change (the drop) is settled and
+done; the docstring/CLAUDE.md cite **Dorst §7.4** (the research recommendation). If Bill's reading
+lands on a different anchor (a specific Hestenes & Sobczyk page), it's a one-line docstring swap — the
+implementation does not change.
+
+_Original direction notes (2026-08-14):_ The `exp()` redo itself. The shape agreed:
 
 - **Slim, don't delete.** Bill raised deleting `exp` entirely ("I don't understand it"). Decision:
   **keep `exp`, but strip it to ONLY the bivector case** — `exp(bivector) = cos|B| + sin|B|·B̂ → a

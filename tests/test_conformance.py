@@ -229,12 +229,16 @@ def test_rotate(n: int, cls) -> None:
 
 @pytest.mark.parametrize("n,cls", CASES)
 def test_exp(n: int, cls) -> None:
-    # exp is defined for a scalar and any simple blade; every representation
-    # must agree with Gn on each kind it can hold.
+    # exp is defined for a scalar and any negative-square blade (bivector /
+    # pseudoscalar); every representation must agree with Gn on each kind it can
+    # hold, and reject a vector (A**2 > 0) the same way.
     s: Gn = Gn.from_scalar(2)
     assert to(cls, s).exp() == s.exp()
     v: Gn = vec(n, 0)
-    assert to(cls, v).exp() == v.exp()
+    with pytest.raises(ValueError):
+        v.exp()
+    with pytest.raises(ValueError):
+        to(cls, v).exp()
     if n >= 2:
         b: Gn = vec(n, 0) ^ vec(n, 10)
         assert to(cls, b).exp() == b.exp()

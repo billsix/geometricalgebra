@@ -5,7 +5,7 @@ vector types via a new `transform_factory_overrides` generator helper, plus a `b
 grade-narrowing soundness fix). **Tier 2 DONE 2026-08-14** (William Emerison Six
 <billsix@gmail.com>): `rotor_from_vectors → Rotor_n`, plus `bivector_from_vectors` / `i` /
 `.i()` / `plane_of_rotation → Bivector_n` (folded in from the `i` work in
-[[redo-exp-book-referenced]] — same mechanism), and the `inverse` `-> Self` spot-check
+`tasks/archive/2026/08/15/redo-exp-book-referenced.md` — same mechanism), and the `inverse` `-> Self` spot-check
 (confirmed sound: returns the concrete type, not `Gn`). Generic helpers
 `classmethod_narrowing_overloads` / `inherited_classmethod_narrowing` in `gen_specialized.py`;
 ty clean (src/tests/tools), 358 tests, generator deterministic, doc-regions OK. Only `identity`
@@ -50,7 +50,7 @@ mechanism (a graded override / overload resolving the concrete type for the prov
   2026-08-14** (same helper). Its normalizing sibling **`i(a, b)`** (emitted, not inherited)
   → `Bivector_n` via `classmethod_narrowing_overloads`, and the instance
   **`.i()`** / **`plane_of_rotation`** → `Bivector_n`. All landed with the `i` work in
-  [[redo-exp-book-referenced]]; the generic narrowing helpers were added here.
+  `tasks/archive/2026/08/15/redo-exp-book-referenced.md`; the generic narrowing helpers were added here.
   - **Why the classmethod narrowing is sound:** the precise `@overload` discriminates on
     the `Vector` param type — the wedge/rotor of two *same-algebra* vectors is that algebra's
     `Bivector`/`Rotor` at runtime (verified: `type(Vector.i(...)).__name__ == "Bivector"`,
@@ -101,7 +101,7 @@ mechanism (a graded override / overload resolving the concrete type for the prov
       `ty` clean (src/tests/tools); 347 tests pass; generator deterministic; doc-regions clean.
 - [x] rotor_from_vectors → Rotor_n; bivector_from_vectors / i / .i() / plane_of_rotation →
       Bivector_n (2026-08-14, `classmethod_narrowing_overloads` +
-      `inherited_classmethod_narrowing`; folded in the `i` work from [[redo-exp-book-referenced]]).
+      `inherited_classmethod_narrowing`; folded in the `i` work from `tasks/archive/2026/08/15/redo-exp-book-referenced.md`).
 - [ ] identity → generic InvertibleFunction[T] (optional, low value).
 - [x] Spot-check `inverse`'s `-> Self` is sound — confirmed: Vector/Rotor/Bivector `.inverse()`
       returns the concrete type, not `Gn` (rebuilt via `type(self).from_blade_dict`).

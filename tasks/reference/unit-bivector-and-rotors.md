@@ -4,7 +4,7 @@
 bivector `i` of a plane, the `bivector_from_vectors` / `i` builders, the `.i()` extractor, and the
 `rotor = exp(bivector)` relationship. Durable domain + design notes; **update in place**, not
 archived. Last updated 2026-08-14. Spawned from the task
-`tasks/redo-exp-book-referenced.md` (the `exp()` redo + `i` work); this doc holds the *why*, the
+`tasks/archive/2026/08/15/redo-exp-book-referenced.md` (the `exp()` redo + `i` work); this doc holds the *why*, the
 task holds the *work*.
 
 **Citations are the open half of this doc.** The maintainer (William Emerison Six <billsix@gmail.com>) is verifying the rotor/exp material against books
@@ -142,7 +142,7 @@ and in the relevant docstring, and flip its box to ✅.**
 
 ## Related
 
-- `tasks/redo-exp-book-referenced.md` — the work (subtasks, status, open questions).
+- `tasks/archive/2026/08/15/redo-exp-book-referenced.md` — the work (subtasks, status, open questions).
 - `tasks/reference/galgebra-comparison.md` — galgebra vs gacalc (records that galgebra has no
   plane/rotor-from-vectors builder).
 - `tasks/reference/generated-product-typing.md` — how graded overrides like `.i()` / `plane_of_rotation`

@@ -38,6 +38,7 @@ from gacalc.base import (
 from gacalc.transforms import (  # noqa: F401
     InvertibleFunction,
     Linearity,
+    bivector_rotation,
     compose,
     compose_intermediate_fns,
     compose_intermediate_fns_and_fn,

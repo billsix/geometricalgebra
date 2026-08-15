@@ -275,6 +275,143 @@ def rotor_rotation(
     )
 
 
+def _unit_bivector_rotor_factory(
+    i: MultiVectorBase,
+) -> typing.Callable[[Coef], MultiVectorBase]:
+    """Given a **unit** bivector ``i`` (``i * i == -1``), return *angle -> the
+    half-angle rotor* ``R = cos(theta/2) - sin(theta/2) * i``.
+
+    Shared by :func:`bivector_rotation` and :func:`plane_rotation`, so the
+    half-angle rotor construction -- and its numeric-preservation dance -- live
+    in exactly one place.  Built directly, never via ``exp``: ``exp`` works
+    through the magnitude ``|-(theta/2) * i| = sqrt(theta**2)/2``, which only
+    collapses to ``theta/2`` under a positivity assumption, so a symbolic
+    ``theta`` would render ``cos(sqrt(theta**2)/2)`` instead of ``cos(theta/2)``.
+
+    Numeric preservation (base.py's contract: a purely numeric pipeline stays
+    numeric).  Normalizing an exact unit bivector (e.g. ``e_1 ^ e_2``) yields
+    sympy ``Rational``/``One`` coefficients, and ``float * One`` is a
+    ``sympy.Float`` -- so a float-trig rotor built on the exact plane would
+    silently turn ALL downstream arithmetic into sympy object math (measured
+    2026-07-09: ~6x per add, and it spreads to everything the rotated value
+    later touches).  So keep TWO copies of the plane: the exact one, and -- when
+    every coefficient is a plain number (no free symbols) -- a float-coerced
+    one.  A numeric ``theta`` uses the float plane (float rotor, float results);
+    a symbolic ``theta`` keeps the exact plane so notebook output stays
+    ``cos(theta)``, not ``1.0*cos(theta)``.  A purely symbolic plane never
+    coerces.  ``i`` is assumed already unit -- callers normalize before calling.
+    """
+    i_coefs: BladeCoef = i.to_blade_dict()
+    i_numeric: MultiVectorBase | None = None
+    if all(
+        isinstance(c, (int, float)) or bool(getattr(c, "is_number", False))
+        for c in i_coefs.values()
+    ):
+        i_numeric = type(i).from_blade_dict(
+            {blade: float(c) for blade, c in i_coefs.items()}
+        )
+
+    def rotor_for(theta: Coef) -> MultiVectorBase:
+        # sympy trig for a symbolic angle, math trig for a numeric one -- keep a
+        # purely numeric pipeline numeric (magnitude()/inverse() convention).
+        cos_half: Coef
+        sin_half: Coef
+        plane_i: MultiVectorBase
+        if isinstance(theta, sympy.Expr):
+            cos_half = sympy.cos(theta / 2)
+            sin_half = sympy.sin(theta / 2)
+            plane_i = i
+        else:
+            cos_half = math.cos(theta / 2)
+            sin_half = math.sin(theta / 2)
+            # numeric theta: use the float-coerced plane (see above)
+            plane_i = i_numeric if i_numeric is not None else i
+        return plane_i * (-sin_half) + cos_half
+
+    return rotor_for
+
+
+def bivector_rotation(
+    i: MultiVectorBase,
+    *,
+    latex_repr: typing.Callable[[Coef], str] | None = None,
+    latex_repr_inv: typing.Callable[[Coef], str] | None = None,
+) -> typing.Callable[[Coef], InvertibleFunction[MultiVectorBase]]:
+    r"""Establish a plane of rotation from a **bivector**; get back *angle ->
+    rotation*.
+
+    The bivector-first sibling of :func:`plane_rotation`: instead of two vectors
+    whose wedge defines the plane, take the plane's bivector ``i`` directly (from
+    ``Vector.i(a, b)``, a value's ``.i()``, or any grade-2 element).  ``i`` is
+    **normalized internally** to the unit bivector (``i * i == -1``), so a
+    bivector that has drifted off unit length (floating point) or is simply
+    unnormalized still yields the correct angle.  It must be a *bivector* (grade
+    2) -- and a *simple* one (``i * i == -1``, true of every 𝒢₂/𝒢₃ bivector); a
+    non-simple bivector (only possible in 𝒢₄+, e.g. ``e_1 e_2 + e_3 e_4``) spans
+    no single plane and is out of scope.
+
+    The returned function takes an angle ``theta`` and packages the rotation as
+    an :class:`InvertibleFunction` whose forward is the half-angle rotor sandwich
+
+    .. math:: R \, v \, \tilde{R}, \qquad
+              R = \cos(\theta/2) - \sin(\theta/2)\, i
+
+    and whose inverse is the same with ``-theta``;  ``rotation(theta).at(t)`` is
+    ``rotation(t * theta)`` (interpolation).  Positive ``theta`` turns in ``i``'s
+    orientation.  The operand keeps its own type at runtime (the rotor sandwich
+    is grade-preserving); the *static* operand type is ``MultiVectorBase``,
+    because -- unlike :func:`plane_rotation`, which ties it to the input vectors
+    -- there is nothing here to infer the operand type from.  A symbolic
+    ``theta`` stays symbolic; a ``float`` theta stays numeric.
+
+    Example:
+        >>> import math
+        >>> from gacalc.transforms import bivector_rotation
+        >>> from gacalc.g3 import Vector
+        >>> turn = bivector_rotation(Vector.i(Vector.e_1, Vector.e_2))
+        >>> f = turn(math.radians(90))
+        >>> f(Vector.e_1).isclose(Vector.e_2, rel_tol=1e-5, abs_tol=1e-5)
+        True
+        >>> f(Vector.e_3).isclose(Vector.e_3, rel_tol=1e-5, abs_tol=1e-5)
+        True
+        >>> f.inverse(f(Vector.e_1)).isclose(Vector.e_1, rel_tol=1e-5, abs_tol=1e-5)
+        True
+    """
+    if i == type(i).zero():
+        raise ValueError("the bivector is zero: it spans no plane of rotation")
+    if not i.is_bivector():
+        raise TypeError(
+            f"bivector_rotation takes a bivector (grade-2); got grades {i.grades()}"
+        )
+    rotor_for: typing.Callable[[Coef], MultiVectorBase] = _unit_bivector_rotor_factory(
+        i.normalize()
+    )
+
+    def rotation(theta: Coef) -> InvertibleFunction[MultiVectorBase]:
+        rotor: MultiVectorBase = rotor_for(theta)
+
+        def forward(v: MultiVectorBase) -> MultiVectorBase:
+            return rotor.sandwich(v)
+
+        def backward(v: MultiVectorBase) -> MultiVectorBase:
+            # the rotor is unit, so the inverse rotor is its reverse
+            # (= the -theta rotor).
+            return rotor.reverse().sandwich(v)
+
+        return InvertibleFunction(
+            func=forward,
+            inverse=backward,
+            latex_repr=latex_repr(theta) if latex_repr else f"R_{{{theta}}}",
+            latex_repr_inv=latex_repr_inv(theta)
+            if latex_repr_inv
+            else f"R_{{-({theta})}}",
+            interpolate=lambda t: rotation(theta * t),
+            linearity=Linearity.LINEAR,
+        )
+
+    return rotation
+
+
 def plane_rotation(
     a: V,
     b: V,
@@ -334,60 +471,24 @@ def plane_rotation(
             "plane_rotation takes two vectors (grade-1); "
             f"got grades {a.grades()} and {b.grades()}"
         )
-    # a ∧ b -- the same plane `bivector_from_vectors`/`i` build; kept inline here
-    # (not via `type(a).bivector_from_vectors`) so the result stays the precise
-    # generic type `V` rather than the base's `MultiVectorBase` (which the
-    # downstream numeric-preservation code relies on).  Reuse waits on
-    # bivector_from_vectors gaining a precise per-type return (precise-typing task).
     plane: MultiVectorBase = a.outer_product(b)
     if plane == type(plane).zero():
         raise ValueError(
             "the two vectors are parallel (their wedge is zero): "
             "they span no plane of rotation"
         )
-    i: MultiVectorBase = plane.normalize()
-
-    # Numeric-preservation guard (base.py's contract: a purely numeric
-    # pipeline stays numeric).  Basis constants carry exact ``int``
-    # coefficients, and normalize routes an int magnitude through sympy for
-    # exactness -- so the unit bivector of e.g. ``e_1 ^ e_2`` comes back
-    # with sympy Rational/One coefficients.  Left alone, every rotor built
-    # from it mixes float trig with sympy numbers (``float * One`` is a
-    # ``sympy.Float``), and the sandwich hands back vectors with sympy
-    # coefficients -- silently turning ALL downstream game/demo arithmetic
-    # into sympy object math (measured 2026-07-09: ~6x per add, and it
-    # spreads to everything the rotated vector later touches).  So keep TWO
-    # copies of the unit bivector: the exact one, and -- when every
-    # coefficient is a numeric value (no free symbols) -- a float-coerced
-    # one.  ``rotation`` picks per theta: numeric theta gets the float
-    # plane (float rotors, float results); a symbolic theta keeps the
-    # exact plane so notebook output stays ``cos(theta)``, not
-    # ``1.0*cos(theta)``.  A purely symbolic plane never coerces.
-    i_coefs: BladeCoef = i.to_blade_dict()
-    i_numeric: V | None = None
-    if all(
-        isinstance(c, (int, float)) or bool(getattr(c, "is_number", False))
-        for c in i_coefs.values()
-    ):
-        i_numeric = type(i).from_blade_dict({b: float(c) for b, c in i_coefs.items()})
+    # The plane's unit bivector feeds the shared half-angle rotor factory (the
+    # same one :func:`bivector_rotation` uses) -- the direct, non-exp
+    # cos(theta/2)/sin(theta/2) construction and the numeric-preservation live
+    # there.  Kept separate from ``bivector_rotation`` (rather than delegating to
+    # it) so this factory preserves the precise operand type ``V``: rotating a
+    # ``Vector3`` returns a ``Vector3``, not a ``MultiVectorBase``.
+    rotor_for: typing.Callable[[Coef], MultiVectorBase] = _unit_bivector_rotor_factory(
+        plane.normalize()
+    )
 
     def rotation(theta: Coef) -> InvertibleFunction[V]:
-        # sympy trig for a symbolic angle, math trig for a numeric one --
-        # keep a purely numeric pipeline numeric (see the magnitude() /
-        # inverse() convention in base.py).
-        cos_half: Coef
-        sin_half: Coef
-        plane_i: MultiVectorBase
-        if isinstance(theta, sympy.Expr):
-            cos_half = sympy.cos(theta / 2)
-            sin_half = sympy.sin(theta / 2)
-            plane_i = i
-        else:
-            cos_half = math.cos(theta / 2)
-            sin_half = math.sin(theta / 2)
-            # numeric theta: use the float-coerced plane (see above)
-            plane_i = i_numeric if i_numeric is not None else i
-        rotor: MultiVectorBase = plane_i * (-sin_half) + cos_half
+        rotor: MultiVectorBase = rotor_for(theta)
 
         def forward(v: V) -> V:
             return rotor.sandwich(v)
@@ -597,6 +698,7 @@ __all__ = [
     "projection_rotation",
     "rotor_rotation",
     "plane_rotation",
+    "bivector_rotation",
     "uniform_scale",
     "scale_non_uniform",
     "to_matrix",

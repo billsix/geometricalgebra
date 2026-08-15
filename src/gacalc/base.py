@@ -997,14 +997,24 @@ class MultiVectorBase(abc.ABC):
 
         * scalar ``s``                              →  e^s
         * A² < 0  (a bivector; the 𝒢₃ pseudoscalar) →  cos|A| + sin|A| Â
-        * A² > 0  (a vector)                        →  cosh|A| + sinh|A| Â
 
-        The bivector case is the **exponential map onto the rotors**: for a
-        unit bivector ``i`` (an oriented plane),  ``exp(−(θ/2) i)``  is exactly
-        the half-angle rotor that ``transforms.plane_rotation`` builds — "a
-        rotor is the exponential of a bivector" — and it is automatically unit
-        (cos² + sin² = 1).  Raises ``ValueError`` when A² is not a scalar
-        (e.g. a rotor, or a non-simple bivector of 𝒢ₙ for n ≥ 4).
+        This is the **exponential map onto the rotors** (Dorst, Fontijne &
+        Mann, *Geometric Algebra for Computer Science*, §7.4): for a unit
+        bivector ``i`` (an oriented plane),  ``exp(−(θ/2) i)``  is exactly the
+        half-angle rotor that ``transforms.plane_rotation`` /
+        ``transforms.bivector_rotation`` build — "a rotor is the exponential of
+        a bivector" — and it is automatically unit (cos² + sin² = 1).
+
+        Defined **only** for the scalar and negative-square (A² < 0) cases;
+        raises ``ValueError`` otherwise.  That covers A² not scalar at all (a
+        rotor, or a non-simple bivector of 𝒢ₙ for n ≥ 4) and — deliberately —
+        A² > 0 (a **vector**).  A positive-square blade would exponentiate by
+        the hyperbolic ``cosh|A| + sinh|A| Â``, which is a *Minkowski boost*: it
+        has no meaning in this Euclidean library (early Hestenes; no
+        conformal / projective / spacetime signature), so ``exp`` rejects it
+        rather than silently applying a spacetime formula to a Euclidean vector.
+        (An earlier version returned the hyperbolic form for vectors; it was
+        lifted from galgebra with no Euclidean justification and was removed.)
 
         Follows the numeric-preservation convention of ``magnitude`` /
         ``inverse``: float coefficients use ``math`` trig and stay float; int
@@ -1042,21 +1052,26 @@ class MultiVectorBase(abc.ABC):
                 "exp is defined when A**2 is a scalar: a scalar or a simple "
                 f"(homogeneous) blade; got grades {sorted(self.grades())}"
             )
+        r: int = self.max_grade()
+        if (-1) ** ((r * (r - 1)) // 2) != -1:
+            # A**2 > 0 (a vector, or any positive-square blade): the series
+            # would sum to the hyperbolic cosh|A| + sinh|A| Â -- the Minkowski
+            # boost, meaningful only in a spacetime metric this Euclidean
+            # library does not have.  Rejected rather than silently applied
+            # (see the docstring); exp needs A**2 < 0.
+            raise ValueError(
+                f"exp is not defined for a grade-{r} blade: its square is "
+                "positive (A**2 > 0, the hyperbolic/boost case), which has no "
+                "Euclidean meaning; exp needs A**2 < 0 (a bivector or the 𝒢₃ "
+                f"pseudoscalar). got grades {sorted(self.grades())}"
+            )
+        # the one remaining case: A**2 < 0 (bivector / pseudoscalar) -> a rotor.
         theta: Coef = self.magnitude()
         numeric: bool = isinstance(theta, float)
-        r: int = self.max_grade()
-        match (-1) ** ((r * (r - 1)) // 2):
-            case -1:
-                cos_t: Coef = math.cos(theta) if numeric else sympy.cos(theta)
-                sin_t: Coef = math.sin(theta) if numeric else sympy.sin(theta)
-                #   Â sin|A| + cos|A|   with   Â = A / |A|
-                return self * (sin_t / theta) + cos_t
-            case 1:
-                cosh_t: Coef = math.cosh(theta) if numeric else sympy.cosh(theta)
-                sinh_t: Coef = math.sinh(theta) if numeric else sympy.sinh(theta)
-                return self * (sinh_t / theta) + cosh_t
-            case _:
-                raise AssertionError("(-1)**k is 1 or -1; unreachable")
+        cos_t: Coef = math.cos(theta) if numeric else sympy.cos(theta)
+        sin_t: Coef = math.sin(theta) if numeric else sympy.sin(theta)
+        #   Â sin|A| + cos|A|   with   Â = A / |A|
+        return self * (sin_t / theta) + cos_t
 
     def isclose(
         self, other: typing.Self, rel_tol: float = 0.0, abs_tol: float = 0.0

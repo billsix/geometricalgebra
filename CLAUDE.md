@@ -309,12 +309,15 @@ vector) keep their names; the rule targets pure renames of things that already h
   `MultiVectorBase`). `i` **raises `ValueError` on parallel vectors** (zero wedge → no plane),
   not `normalize`'s low-level `ZeroDivisionError` — same guard/message as `plane_rotation`. Math
   + design (and why the classmethod/instance split): `tasks/reference/unit-bivector-and-rotors.md`
-- `mv.exp()` — exponential map, defined when `A²` is scalar (a scalar or simple blade):
-  trig for a bivector / the 𝒢₃ pseudoscalar (**exp of a bivector IS a rotor** —
-  `Bivector_n.exp() -> Rotor_n`, unit by construction), hyperbolic for a vector.  Dispatches
-  by *grade* (Euclidean makes the sign structural — no galgebra-style `hint`); built via
-  dispatching arithmetic, never `from_blade_dict`.  NOTE: `plane_rotation` deliberately does
-  NOT use it (see `tasks/reference/design-decisions.md`)
+- `mv.exp()` — exponential map, defined for a scalar or a **negative-square** blade
+  (`A² < 0`: a bivector / the 𝒢₃ pseudoscalar): `cos|A| + sin|A|·Â` — **exp of a bivector IS
+  a rotor** (`Bivector_n.exp() -> Rotor_n`, unit by construction; Dorst, Fontijne & Mann §7.4).
+  A **vector** (`A² > 0`) is **rejected** with `ValueError` — its hyperbolic `cosh/sinh` form is
+  a Minkowski boost with no meaning in this Euclidean library, so the old galgebra-derived vector
+  branch was removed (see `tasks/archive/2026/08/15/redo-exp-book-referenced.md`). Dispatches by *grade* (Euclidean
+  makes the sign structural — no galgebra-style `hint`); built via dispatching arithmetic, never
+  `from_blade_dict`. NOTE: `plane_rotation` deliberately does NOT use it (see
+  `tasks/reference/design-decisions.md`)
 
 ## Code generation
 

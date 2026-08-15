@@ -6,8 +6,8 @@
 
 ## Goal
 
-Now that the plane helpers ship (subtask 1 of `redo-exp-book-referenced.md`, committed
-2026-08-14) — `cls.bivector_from_vectors(a, b)` (raw wedge `a ∧ b`), `cls.i(a, b)`
+Now that the plane helpers ship (subtask 1 of
+`tasks/archive/2026/08/15/redo-exp-book-referenced.md`, committed 2026-08-14) — `cls.bivector_from_vectors(a, b)` (raw wedge `a ∧ b`), `cls.i(a, b)`
 (the plane's **unit** bivector, `i² = −1`), and `.i()` (a value's own unit plane) —
 adopt them in the notebooks and tests **where a plane or unit bivector is currently
 built by hand** (`a ^ b`, `(a ^ b).normalize()`, `a.wedge(b)` used as "the plane the

@@ -15,8 +15,9 @@
 
 Representation agreement lives in test_conformance (``test_exp``); the graded
 return type in test_graded (``test_exp_narrows_bivector_to_rotor``).  This file
-holds the properties: the trig/hyperbolic split by grade, the
-numeric-preservation contract, inverse-by-negation, the scalar-square guard,
+holds the properties: the rotor (trig) case and the rejection of the
+positive-square (vector) case, the numeric-preservation contract,
+inverse-by-negation, the scalar-square guard,
 and agreement with ``plane_rotation``'s hand-built half-angle rotor.  The
 agreement tests are permanent guards: ``plane_rotation`` keeps its hand-built
 rotor ON PURPOSE (a swap onto exp was measured and rejected -- see
@@ -55,10 +56,14 @@ def test_exp_int_stays_exact() -> None:
     assert g2.Bivector.e_12.exp() == g2.Rotor.e_12 * sympy.sin(1) + sympy.cos(1)
 
 
-def test_exp_vector_is_hyperbolic() -> None:
-    # a vector squares to +|v|^2, so the series sums to cosh + sinh
+def test_exp_of_a_vector_is_rejected() -> None:
+    # a vector squares to +|v|^2 (A**2 > 0): the series would sum to the
+    # hyperbolic cosh + sinh -- a Minkowski boost with no Euclidean meaning, so
+    # exp rejects it rather than silently applying a spacetime formula.  (An
+    # earlier version returned the hyperbolic form; it was removed.)
     v: g2.Vector = 2 * g2.Vector.e_1
-    assert v.exp() == g2.Vector.e_1 * sympy.sinh(2) + sympy.cosh(2)
+    with pytest.raises(ValueError, match="A\\*\\*2 < 0"):
+        v.exp()
 
 
 def test_exp_trivector_is_trig() -> None:
