@@ -19,6 +19,7 @@ later, and sections may be written out of order.
    vector-addition
    rotate
    geometric-product
+   blade-square-sign
    projection
    reflection
    orthogonal

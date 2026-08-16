@@ -96,27 +96,26 @@ def pseudoscalar_squared_sign(r: int) -> int:
     sign of the ``r``-dimensional unit pseudoscalar squared. Named so ``reverse`` /
     ``exp`` (and the generator's emitted ``reverse``) read as what they mean.
 
-    **Implemented the slow, obviously-correct way (Phase 1):** it *actually squares*
-    the ``r``-dimensional unit pseudoscalar and reads the sign, rather than asserting
-    the closed form ``(−1)^(r(r−1)/2)``. The squaring needs a full-algebra
-    representation (a graded type can't build the grade-1 vectors the pseudoscalar
-    is made of — it would silently return 0), so it uses ``Gn``, the reference
-    algebra, via a **deliberate function-local import** (``Gn`` is a higher layer;
-    the deferred import keeps the module graph acyclic). Cost falls only on the two
-    *non-generated* runtime callers, ``Gn.reverse`` and ``exp`` — the generated
-    ``reverse`` bakes this value as a compile-time constant, so it pays nothing.
-
-    **This is undoable and will be optimized:** the follow-up
-    ``tasks/prove-blade-square-sign-equals-pseudoscalar-squared.md`` proves the
-    closed form equals this, then substitutes ``return (-1) ** ((r * (r - 1)) // 2)``
-    back in and removes the ``Gn`` import — reverting to the fast form once it's
-    proven equivalent.
+    Uses the closed form ``(−1)^(r(r−1)/2)``, proven equal to actually squaring the
+    ``r``-dimensional unit pseudoscalar. For a hand-counted proof (grades 1–5,
+    move-by-move) see ``tasks/reference/pseudoscalar-square-sign.md``; the
+    equivalence is gated permanently by ``tests/test_pseudoscalar_square_sign.py``.
+    Cost falls only on the two *non-generated* runtime callers, ``Gn.reverse`` and
+    ``exp`` — the generator bakes this value as a compile-time constant into each
+    generated ``reverse``, so the specialized classes pay nothing.
     """
-    # Deferred import: Gn is a higher layer, so this stays out of the module-level
-    # graph.  Removed in the Phase-2 optimization (see the docstring).
-    from gacalc.gn import Gn
-
-    return int(Gn.unit_pseudoscalar_squared(r).scalar_part())
+    # Proven equal to squaring the unit pseudoscalar the slow, obviously-correct way
+    # — the SAME calculation, kept here as a comment so it reads as a proof for a
+    # student.  Phase 1 (2026-08-15) computed exactly this value like so, which
+    # needed a deferred ``from gacalc.gn import Gn`` (a graded type can't build the
+    # grade-1 vectors the pseudoscalar is made of, so only the full algebra Gn can):
+    #
+    #     from gacalc.gn import Gn
+    #     return int(Gn.unit_pseudoscalar_squared(r).scalar_part())
+    #
+    # The closed form drops that base→gn coupling and is O(1).  The reversion swap
+    # count for a grade-r blade is the triangular number r(r−1)/2 (see the proof).
+    return (-1) ** ((r * (r - 1)) // 2)
 
 
 def pseudoscalar_squared_is_positive(r: int) -> bool:

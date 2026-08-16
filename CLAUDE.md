@@ -623,8 +623,10 @@ authority on all of these.
   mechanically" rule). See `tasks/archive/2026/07/19/dedup-draw-ndc-plot-helper.md`.
 - Book: **`make docs`** builds the Sphinx book (`book/docs/`, "Plotting On Crappy Graph Paper") to
   **HTML + PDF** into `output/gacalc/` — needs an image built with `BUILD_DOCS=1` (the default). It is
-  an empty-but-building skeleton with an autodoc `api.rst` (no hand-written chapters yet). How it
-  builds and why (lualatex for Unicode docstrings, no EPUB/inlinetex, the `texlive-luahbtex` gotcha):
+  written **outline-first**: a ~22-chapter toctree of mostly placeholder stubs, with some chapters
+  partly written (e.g. `geometric-product`, `rotate`) plus jupytext notebooks and an autodoc
+  `api.rst`. Content structure + writing guide: `tasks/reference/book-outline.md`; build mechanics and
+  why (lualatex for Unicode docstrings, no EPUB/inlinetex, the `texlive-luahbtex` gotcha):
   `tasks/reference/book-and-docs-pipeline.md`.
 - Packaging: `pyproject.toml` (setuptools, `src/` layout). Runtime deps are **only**
   `numpy` + `sympy` (`[project] dependencies`); everything else is an optional extra —
