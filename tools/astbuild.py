@@ -356,6 +356,18 @@ def cast_coef(value: ast.expr) -> ast.expr:
         and isinstance(value.operand, (ast.Name, ast.Attribute))
     ):
         return value
+    # A single power of a bare field by a constant exponent (``self.coeff_e_123
+    # ** 2`` -- a single-blade type's ``magnitude_squared``): ``Coef ** int`` is
+    # already ``Coef``, so the cast is redundant (ty warns).  Only the single-term
+    # case -- a SUM of powers (a multi-blade magnitude_squared) still needs the
+    # cast, since ty can't narrow the sympy sum back to ``Coef``.
+    if (
+        isinstance(value, ast.BinOp)
+        and isinstance(value.op, ast.Pow)
+        and isinstance(value.left, (ast.Name, ast.Attribute))
+        and isinstance(value.right, ast.Constant)
+    ):
+        return value
     return cast(name_ref("Coef"), value)
 
 

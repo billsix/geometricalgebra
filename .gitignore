@@ -23,9 +23,9 @@ dist/
 # generated specialized algebras -- produced by tools/gen_specialized.py
 # (make generate / make shell / the setup.py build hook). Not tracked; baked
 # into the sdist + wheel at build time so a pip install is still readable.
-/src/gacalc/g1.py
-/src/gacalc/g2.py
-/src/gacalc/g3.py
+# The g[0-9]* glob covers every dimension (g1..g3 by default, g4/g5 release-only,
+# any future gN) while NOT matching the tracked, hand-written gn.py ('n' ∉ [0-9]).
+/src/gacalc/g[0-9]*.py
 
 # exported OCI image tars (make image-export) — large, never commit
 gacalc-*.tar

@@ -623,6 +623,31 @@ def scalar_spec(n: int) -> TypeSpec:
     return TypeSpec("Scalar", ((),), n, "scalar")
 
 
+# Class name for each grade-pure blade type.  The three entrenched low-grade
+# names, then a number-word ``<N>Vector`` scheme that scales without a lookup
+# anyone has to recall (gacalc's basis constants stop at ``e_10``, so grade 10 is
+# the ceiling; ``grade_name`` falls back to ``KVector{k}`` beyond the table).
+GRADE_NAMES: dict[int, str] = {
+    0: "Scalar",
+    1: "Vector",
+    2: "Bivector",
+    3: "Trivector",
+    4: "FourVector",
+    5: "FiveVector",
+    6: "SixVector",
+    7: "SevenVector",
+    8: "EightVector",
+    9: "NineVector",
+    10: "TenVector",
+}
+
+
+def grade_name(k: int) -> str:
+    """Class name for the grade-``k`` pure blade type (``Scalar``, ``Vector``,
+    ``Bivector``, ``Trivector``, ``FourVector`` …).  See ``GRADE_NAMES``."""
+    return GRADE_NAMES.get(k, f"KVector{k}")
+
+
 def graded_specs(n: int) -> list[TypeSpec]:
     """The graded (grade-pure + even/Rotor) types of 𝒢ₙ, per the Phase 1 registry."""
     blades: list[Blade] = blades_for_dim(n)
@@ -630,11 +655,12 @@ def graded_specs(n: int) -> list[TypeSpec]:
     def blades_of_grade(grade: int) -> tuple[Blade, ...]:
         return tuple(b for b in blades if len(b) == grade)
 
-    specs: list[TypeSpec] = [TypeSpec("Vector", blades_of_grade(1), n, "graded")]
-    if n >= 2:
-        specs.append(TypeSpec("Bivector", blades_of_grade(2), n, "graded"))
-    if n >= 3:
-        specs.append(TypeSpec("Trivector", blades_of_grade(3), n, "graded"))
+    # One grade-pure type per grade 1..n (Vector, Bivector, …, grade_name(n) = the
+    # pseudoscalar); grade 0 (Scalar) is emitted separately by generate_scalar.
+    specs: list[TypeSpec] = [
+        TypeSpec(grade_name(grade), blades_of_grade(grade), n, "graded")
+        for grade in range(1, n + 1)
+    ]
     if n >= 2:  # even subalgebra (Rotor); for n==1 the even part is just the scalar
         even: tuple[Blade, ...] = tuple(b for b in blades if len(b) % 2 == 0)
         specs.append(TypeSpec("Rotor", even, n, "graded"))
@@ -781,6 +807,11 @@ def coordinate_property_defs(spec: TypeSpec) -> list[ast.stmt]:
     defs: list[ast.stmt] = []
     blade: Blade
     for blade in spec.blades:
+        if blade[0] - 1 >= len(AXIS_NAMES):
+            # e_4 and beyond have no conventional axis letter (x/y/z only) -- a
+            # grade-1 value in 𝒢₄₊ reaches those coordinates via ``coeff_e_4`` /
+            # ``.coefficient(...)``, not a letter property.
+            continue
         axis: str = AXIS_NAMES[blade[0] - 1]
         field: str = field_name(blade)
         defs.append(
@@ -953,7 +984,12 @@ def from_blade_dict_method(blades: Sequence[Blade]) -> ast.FunctionDef:
     keywords: list[ast.keyword] = [
         ast.keyword(
             arg=field_name(b),
-            value=cast_coef(call(attribute("d", "get"), [constant(b), constant(0)])),
+            # No ``cast(Coef, ...)`` here: ``d`` is a ``BladeCoef`` (= dict[Blade,
+            # Coef]) and the default is ``0`` (an int, ⊆ Coef), so ``d.get(b, 0)``
+            # is already ``Coef``.  Casting is redundant -- and ty flags it as such
+            # on the large generated modules (harmless warning, but it fails the
+            # ``ty check`` gate once g4/g5 are generated).
+            value=call(attribute("d", "get"), [constant(b), constant(0)]),
         )
         for b in blades
     ]
@@ -1486,24 +1522,32 @@ def alias_dispatch(
 
 
 def transform_factory_overrides(
-    self_spec: TypeSpec, method: str, param_name: str, wrapper: str
+    self_spec: TypeSpec,
+    onto_types: Sequence[tuple[int, str]],
+    method: str,
+    param_name: str,
+    wrapper: str,
+    max_onto_grade: int,
 ) -> list[ast.stmt]:
     """Precise-typed override of a grade-preserving transform-*factory* classmethod
     (``project`` / ``reject`` / ``reflect``) on a **vector** graded type.
 
     ``base`` types these ``-> ComposableFunction[MultiVectorBase]`` (project/reject)
     / ``InvertibleFunction[MultiVectorBase]`` (reflect) -- imprecise, because the
-    returned function's grade-preservation is invisible to the type.  For a *vector
-    across a vector* the result is a vector, so the factory applied to a
-    ``Vector_n`` yields a ``Vector_n``.  Emit two ``@overload`` stubs -- the precise
-    ``<param>: Vector_n -> wrapper[Vector_n]`` and the ``MultiVectorBase |
-    Sequence[MultiVectorBase]`` catch-all (higher-grade blades stay
-    ``MultiVectorBase`` -- the separate generalize task) -- plus a one-line impl
-    that delegates to ``super().<method>`` (runtime unchanged; base does the real
-    work).  ``wrapper`` is ``ComposableFunction`` for project/reject,
-    ``InvertibleFunction`` for the involutive reflect.
+    returned function's grade-preservation is invisible to the type.  A *vector*
+    projected/rejected/reflected onto a **blade of any grade** stays a vector, so
+    the factory applied to a ``Vector_n`` yields a ``Vector_n``.  Emit one precise
+    ``@overload`` stub per grade-pure blade type in ``onto_types`` whose grade the
+    method's runtime supports (``max_onto_grade`` -- all grades for ``project``;
+    only <= 2, i.e. up to ``Bivector``, for ``reject``/``reflect`` until the
+    higher-grade runtime lands, see ``generalize-reject-reflect-higher-grade``),
+    each ``<param>: <BladeType> -> wrapper[Vector_n]``, then the ``MultiVectorBase |
+    Sequence[MultiVectorBase]`` catch-all, then a one-line impl that delegates to
+    ``super().<method>`` (runtime unchanged; base does the real work).  ``wrapper``
+    is ``ComposableFunction`` for project/reject, ``InvertibleFunction`` for the
+    involutive reflect.
     """
-    vec: str = self_spec.name  # Vector
+    vec: str = self_spec.name  # the value type these factories act on (Vector)
     catch_all_param: ast.expr = ast.BinOp(
         name_ref("MultiVectorBase"),
         ast.BitOr(),
@@ -1519,8 +1563,13 @@ def transform_factory_overrides(
             returns=ret,
         )
 
+    precise_stubs: list[ast.stmt] = [
+        stub(name_ref(blade_type), subscript(name_ref(wrapper), name_ref(vec)))
+        for grade, blade_type in onto_types
+        if grade <= max_onto_grade
+    ]
     return [
-        stub(name_ref(vec), subscript(name_ref(wrapper), name_ref(vec))),
+        *precise_stubs,
         stub(
             catch_all_param,
             subscript(name_ref(wrapper), name_ref("MultiVectorBase")),
@@ -1534,7 +1583,16 @@ def transform_factory_overrides(
             ],
             params=[argument("cls"), argument(param_name)],
             decorators=[name_ref("classmethod")],
-            returns=subscript(name_ref(wrapper), name_ref("MultiVectorBase")),
+            # Impl return is ``wrapper[Any]``, not ``wrapper[MultiVectorBase]``:
+            # ``ComposableFunction``/``InvertibleFunction`` are INVARIANT in their
+            # type param (``func: Callable[[V], V]`` uses V as input AND output), so
+            # a precise overload return ``wrapper[Vector]`` is NOT assignable to
+            # ``wrapper[MultiVectorBase]`` -- ty (correctly) rejects that as an
+            # invalid overload.  ``wrapper[Any]`` is the gradual impl type every
+            # overload return IS assignable to; the impl is never called directly
+            # (only the overloads are), so ``Any`` here is harmless and callers
+            # still get the precise ``wrapper[Vector]``.
+            returns=subscript(name_ref(wrapper), attribute("typing", "Any")),
         ),
     ]
 
@@ -1567,7 +1625,12 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
     def mul_expr(a: ast.expr, b: ast.expr) -> ast.BinOp:
         return ast.BinOp(left=a, op=ast.Mult(), right=b)
 
-    self_ann: ast.expr = attribute("typing", "Self")
+    # @final ScalarN: annotate the concrete class, not ``typing.Self``.  ty does
+    # not reliably collapse ``Self`` to the class even under ``@final`` on a large
+    # module, so ``return Scalar(...)`` against ``-> typing.Self`` is (wrongly, but
+    # unavoidably) flagged there; ``-> Scalar`` matches exactly and is a valid
+    # override of base's ``-> Self`` (for the receiver, Self ≡ the class).
+    self_ann: ast.expr = name_ref(name)
     coef_ann: ast.expr = name_ref("Coef")
     # The *implementation* return type of an overloaded product/sum method: its
     # per-rhs overloads return the resolved concrete types (Vector, Bivector,
@@ -2032,7 +2095,11 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
     by_grade: dict[int, list[Blade]] = {
         g: [b for b in blades if len(b) == g] for g in range(n + 1)
     }
-    self_ann: ast.expr = attribute("typing", "Self")
+    # @final full class G: annotate the concrete class, not ``typing.Self`` (see
+    # the ScalarN note).  ``return G(...)`` matches ``-> G`` exactly, and the
+    # coerce-foreign-rhs branch's ``cast(Self, Gn*Gn)`` still matches since
+    # ``Self <: G``.
+    self_ann: ast.expr = name_ref(name)
 
     def bilinear(method: str, cross_node: ast.expr, result_mv: Gn) -> ast.FunctionDef:
         """A dense full-class product method (geometric/inner/outer/contraction):
@@ -2424,7 +2491,9 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         name_ref("float"),
         attribute("sympy", "Expr"),
     ]
-    self_ann: ast.expr = attribute("typing", "Self")
+    # @final graded type: annotate the concrete class, not ``typing.Self`` (see the
+    # ScalarN / full-class notes) -- e.g. ``Vector.reverse -> Vector``.
+    self_ann: ast.expr = name_ref(spec.name)
     # The *implementation* return type of an overloaded product/sum method.  Its
     # overloads return the resolved concrete types (Rotor, Bivector, ...), which
     # are NOT subtypes of one another nor of the full class G_n (all are siblings
@@ -2900,20 +2969,33 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         # -> Bivector.
         body.append(i_extractor("plane_of_rotation", "Bivector"))
     if spec.name.startswith("Vector"):
-        # project/reject/reflect of a vector across a vector are grade-preserving
-        # (the result is a vector), so narrow the base's MultiVectorBase-typed
-        # factory classmethods to the precise vector type here.  reflect is an
-        # involution -> InvertibleFunction; project/reject -> ComposableFunction.
-        body.extend(
-            transform_factory_overrides(spec, "project", "onto", "ComposableFunction")
-        )
+        # project/reject/reflect of a vector onto a blade are grade-preserving (the
+        # result is a vector), so narrow the base's MultiVectorBase-typed factory
+        # classmethods to the precise vector type -- one @overload per grade-pure
+        # blade type the method's runtime supports.  project works onto ANY blade
+        # grade; reject/reflect only up to a bivector today (grade 3+ raises at
+        # runtime -- see generalize-reject-reflect-higher-grade), so they cap at
+        # grade 2.  reflect is an involution -> InvertibleFunction; project/reject
+        # -> ComposableFunction.
+        onto_types: list[tuple[int, str]] = [
+            (len(bs.blades[0]), bs.name)
+            for bs in graded_specs(n)
+            if len({len(b) for b in bs.blades}) == 1  # grade-pure (excludes Rotor)
+        ]
         body.extend(
             transform_factory_overrides(
-                spec, "reject", "away_from", "ComposableFunction"
+                spec, onto_types, "project", "onto", "ComposableFunction", n
             )
         )
         body.extend(
-            transform_factory_overrides(spec, "reflect", "across", "InvertibleFunction")
+            transform_factory_overrides(
+                spec, onto_types, "reject", "away_from", "ComposableFunction", 2
+            )
+        )
+        body.extend(
+            transform_factory_overrides(
+                spec, onto_types, "reflect", "across", "InvertibleFunction", 2
+            )
         )
         # i(a, b): the unit bivector of the plane two vectors span (classmethod).
         # Narrow it, plus the two inherited from-vectors builders, to this
@@ -3053,7 +3135,33 @@ from gacalc.gn import Gn
 """
 
 
-ALGEBRAS = [(1, "G", "g1.py"), (2, "G", "g2.py"), (3, "G", "g3.py")]
+# Every algebra the generator knows how to emit.  Which of these are actually
+# generated on a given run is chosen by the ``GACALC_DIMS`` env var (below), so
+# the expensive high dimensions are NOT built on every ``make shell``.
+ALL_ALGEBRAS = [
+    (1, "G", "g1.py"),
+    (2, "G", "g2.py"),
+    (3, "G", "g3.py"),
+    (4, "G", "g4.py"),
+    (5, "G", "g5.py"),
+]
+
+
+def selected_dims() -> set[int]:
+    """Dimensions to generate this run, from ``GACALC_DIMS`` (default ``1,2,3``).
+
+    Generation cost grows superlinearly (𝒢₃ ≈ 23 s, 𝒢₄ ≈ 5 min, 𝒢₅ ≈ 87 min --
+    see ``tasks/reference/generated-algebra-generation-cost.md``), so 𝒢₄/𝒢₅ are
+    **release-only**: dev (``make shell`` / ``make generate``) uses the default and
+    builds only g1--g3, while ``make dist`` / ``make release`` set
+    ``GACALC_DIMS=1,2,3,4,5`` so g4/g5 are generated once at publish and baked into
+    the sdist/wheel.  ``make generate-all`` / ``make test-all-dims`` opt in locally.
+    """
+    raw: str = os.environ.get("GACALC_DIMS", "1,2,3")
+    return {int(part) for part in raw.split(",") if part.strip()}
+
+
+ALGEBRAS = [entry for entry in ALL_ALGEBRAS if entry[0] in selected_dims()]
 
 
 def ruff_format(paths: list[str]) -> None:

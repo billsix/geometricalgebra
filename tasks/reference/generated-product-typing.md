@@ -2,7 +2,7 @@
 
 **Reference document** — the design and *rationale* for the precise `@typing.overload` typing on
 the generated graded types' products/sums (so `v2 * v2 : Rotor`, not `Vector`). Not a task;
-update in place if the generator's product typing changes. Last updated 2026-07-23. Origin: the
+update in place if the generator's product typing changes. Last updated 2026-08-22. Origin: the
 type-precise products/sums work — `tasks/archive/2026/07/21/typed-product-helper-functions.md`.
 
 ## The design
@@ -72,8 +72,9 @@ by algebra where this doc's older examples say bare `Scalar`) carries
   of that its arms construct the result with **no cast** (`return Rotor(...)`) — the old
   `cast(typing.Self, Rotor(...))` was unsound and is gone from every product/sum arm (the
   grade-changing arms *and* the `case _:` Gn-fallback; 2026-07-22 follow-up).
-- The full class `G_n` is **not** overloaded — its products stay `-> Self`, already correct
-  (`G * G → G`), and its arms keep the `Self` cast (legitimately: `-> Self` return).
+- The full class `G_n` is **not** overloaded — its products return the concrete `-> G` (a `@final`
+  class; changed from `-> typing.Self` 2026-08-22, see the high-dim ty section below), already
+  correct (`G * G → G`), and its coerce-branch keeps a `cast(Self, …)` (fine: `Self <: G`).
 
 Precision (guarded by `typing.assert_type` in `tests/test_operator_typing.py`, so a regression
 fails `ty check tests`): `v2 * v2 → Rotor`, `v2 ^ v2 → Bivector`, `.inner_product → Scalar`,
@@ -196,14 +197,21 @@ A survey of `base.py`'s return annotations for methods still returning the abstr
 a concrete one is statically knowable. Full analysis + rationale in
 `tasks/precise-typing-remaining-methods.md`.
 
-- **`project` / `reject` / `reflect` — DONE 2026-08-03.** The function-returning family were
-  `ComposableFunction[MultiVectorBase]` / `InvertibleFunction[MultiVectorBase]`; now, on the
-  **vector** graded types, `Vector_n.project(onto=Vector_n)` (and `reject`/`reflect`) resolve to
+- **`project` / `reject` / `reflect` — DONE 2026-08-03, extended to any blade grade 2026-08-22.**
+  The function-returning family were `ComposableFunction[MultiVectorBase]` /
+  `InvertibleFunction[MultiVectorBase]`; now, on the **vector** graded types, they resolve to
   `ComposableFunction[Vector_n]` / `InvertibleFunction[Vector_n]` (`reflect` uses
-  `InvertibleFunction`, being an involution), with the `MultiVectorBase | Sequence[…]` catch-all
-  kept for higher-grade blades (the separate `tasks/generalize-reject-reflect-higher-grade.md`).
-  Mechanism: a new generator helper **`transform_factory_overrides(spec, method, param, wrapper)`**
-  emits two `@typing.overload @classmethod` stubs (precise + catch-all) plus a one-line
+  `InvertibleFunction`, being an involution) when projecting/rejecting/reflecting onto a
+  **grade-pure blade of any supported grade** — because a *vector* onto a blade stays a vector.
+  `project` emits a precise overload for **every** grade-pure blade type (Vector, Bivector,
+  Trivector, FourVector, … up to the algebra's pseudoscalar); `reject`/`reflect` emit them only
+  **up to Bivector** (grade 3+ still raises at runtime — the separate
+  `tasks/generalize-reject-reflect-higher-grade.md`), with the `MultiVectorBase | Sequence[…]`
+  catch-all after. So in 𝒢₃, `Vector.project(onto=Bivector)(v)` / `onto=Trivector` are statically
+  `Vector` (verified via `ty reveal_type`), not `MultiVectorBase`.
+  Mechanism: the generator helper **`transform_factory_overrides(self_spec, onto_types, method,
+  param_name, wrapper, max_onto_grade)`** emits one `@typing.overload @classmethod` stub per
+  grade-pure blade type with `grade <= max_onto_grade`, then the catch-all, then a one-line
   `return super().<method>(...)` impl (runtime unchanged — base does the work), injected only on
   vector specs (`spec.name.startswith("Vector")`), exactly like the `exp`-on-Bivector /
   `sandwich`-on-Rotor grade-specific injections. **`base.py` needed no signature change** (inside
@@ -234,3 +242,44 @@ a concrete one is statically knowable. Full analysis + rationale in
   free functions (generics, not graded overloads); the `-> Self` grade-preservers
   (`reverse`/`normalize`/`simplified`/`expanded`/`inverse`) are already precise on the `@final`
   types; `outer_product_of_vectors` genuinely widens (variadic grade).
+
+## High-dimension ty findings (g4/g5) — why generated typing must be verified in full context
+
+Generating 𝒢₄/𝒢₅ for the first time (2026-08-22) surfaced **179 ty diagnostics in g4, zero in
+g1–g3** — but the flagged code was *byte-identical* to g1–g3. Root cause: **ty's checking is
+incomplete at smaller module scale** and only catches several genuinely-imprecise (but latent)
+patterns once the module is ~3× larger (g4 = 529 KB vs g3 = 166 KB). g3 "passing" was ty missing
+them, not the code being sound. All were fixed with real changes (no suppressions); each also made
+g1–g3 more sound. Work record + full tally: `tasks/generator-ty-clean-high-dim.md`.
+
+**Durable rules that came out of it:**
+
+- **`@final` generated types must annotate returns with the CONCRETE class name, not `typing.Self`,
+  wherever the body constructs concretely** (`return G(...)`). ty does not reliably collapse `Self`
+  to the class even under `@final` on a large module, so `return G(...)` vs `-> typing.Self` is
+  flagged. `-> G` matches exactly, and a `cast(Self, …)` branch still matches (`Self <: G`). Applied
+  via `self_ann = name_ref(<class>)` in all three generators (scalar/full/graded). (This *finishes*
+  the concrete-construction work of `investigate-final-full-classes`.)
+- **You cannot covariantly narrow an INVARIANT generic in an overload.** `ComposableFunction`/
+  `InvertibleFunction` are invariant (`func: Callable[[V], V]` uses V as input *and* output), so a
+  precise overload `-> ComposableFunction[Vector]` is NOT assignable to an impl `->
+  ComposableFunction[MultiVectorBase]` (unlike the product overloads, whose concrete multivector
+  returns *are* covariant subtypes of `MultiVectorBase`). Fix: the overloaded impl returns the
+  **gradual** `wrapper[Any]` (impl is never called directly; overloads keep the precise type).
+- **`_coerce` is generic** `_coerce[T: MultiVectorBase](x, cls: type[T]) -> T` (was
+  `-> MultiVectorBase`), so `_coerce(self, G)` returns `G`.
+- **`base.__radd__` param is `Coef`, not `MultiVectorBase | Coef`** — `__radd__` only ever receives a
+  bare number (a multivector left operand uses its own `__add__`), which also matches the generated
+  override (Liskov-clean).
+- **`cast_coef` skips a bare field, a negated field, AND a single `field ** constant`** — all are
+  already `Coef`; casting warns (`redundant-cast`). Multi-term sympy *sums* still cast.
+
+**Verification method (important): ty and ruff both respect `.gitignore`, and the generated
+`g*.py` are gitignored, so the dev gate `ty check src` / `ruff check src` SKIP every generated
+module** — they only check the hand-written code. To check generated-module typing you must pass the
+files **explicitly and together** (full context):
+`ty check src/gacalc/g1.py … g5.py gn.py base.py functions.py transforms.py nbplotutils.py`. A
+**single-file** `ty check src/gacalc/g3.py` is NOT valid — it gives ~119 *isolation* false positives
+(unresolved cross-module types). This full-context check is what should be wired into the opt-in
+full-dim gate (`make test-all-dims`), since the dev gate cannot see generated-module regressions.
+`.gitignore` uses the glob `/src/gacalc/g[0-9]*.py` (covers g1..g10+, spares the tracked `gn.py`).

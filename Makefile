@@ -165,9 +165,26 @@ GENERATED = src/gacalc/g1.py \
             src/gacalc/g2.py \
             src/gacalc/g3.py
 
+# g4/g5 are expensive (g4 ~5 min, g5 ~87 min) so they are release-only: dev
+# generates only g1--g3, while `dist`/`release` and the opt-in targets below set
+# GACALC_DIMS to the full set.  See tasks/reference/generated-algebra-generation-cost.md.
+ALL_DIMS := 1,2,3,4,5
+
 .PHONY: generate
-generate: ## Generate the specialized algebras (scalar/g1/g2/g3.py) -- needs sympy
+generate: ## Generate the specialized algebras (g1/g2/g3.py -- the dev default) -- needs sympy
 	python tools/gen_specialized.py
+
+.PHONY: generate-all
+generate-all: ## Generate ALL algebras incl. g4/g5 (SLOW: g5 ~87 min) -- release/CI
+	GACALC_DIMS=$(ALL_DIMS) python tools/gen_specialized.py
+
+.PHONY: test-all-dims
+test-all-dims: ## (container) full-dim gate: generate g1..g5 then run the suite (SLOW ~1.5h)
+	$(CONTAINER_CMD) run --rm \
+		-v $(CURDIR):/gacalc:Z \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'set -e; source /venv/bin/activate; cd /gacalc; GACALC_DIMS=$(ALL_DIMS) python tools/gen_specialized.py; python -m pytest'
 
 .PHONY: check-regions
 check-regions: ## Verify doc-region markers are unique/prefix-free/balanced (regen first)
@@ -238,7 +255,7 @@ dist: ## Build sdist + wheel INSIDE the container -> $(DIST_DIR) on the host
 		--entrypoint /bin/bash \
 		$(CONTAINER_NAME) \
 		-c 'set -e; source /venv/bin/activate; cd /gacalc; \
-		    python tools/gen_specialized.py; \
+		    GACALC_DIMS=$(ALL_DIMS) python tools/gen_specialized.py; \
 		    python -m build --no-isolation --outdir /dist'
 
 .PHONY: upload

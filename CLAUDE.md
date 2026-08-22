@@ -29,12 +29,19 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   needs from the value's own type, so it preserves `Gn`/`G`. **Re-exports** the
   `functions` names (`ComposableFunction`, `InvertibleFunction`, `compose`, `inverse`, …) so
   `from gacalc.transforms import InvertibleFunction` and `gn.py` keep working.
-- `src/gacalc/g1.py`, `g2.py`, `g3.py` — **generated** modules, **not tracked in git**
+- `src/gacalc/g1.py`, `g2.py`, `g3.py` (and, **release-only**, `g4.py`/`g5.py`) — **generated**
+  modules, **not tracked in git**
   (gitignored). Each is **self-contained**, holding the full specialized class `G` **and**
   that algebra's **graded subtypes** — its grade-0 `Scalar_n` (`Scalar`),
-  `Vector_n`, `Bivector_n`, `Trivector`, `Rotor_n`. Do not edit by hand. They are produced into the
+  `Vector_n`, `Bivector_n`, `Trivector`, `Rotor_n` (and one grade-pure type per grade up to the
+  pseudoscalar: 𝒢₄ adds `FourVector`, 𝒢₅ adds `FiveVector`, … named by the `grade_name(k)` helper —
+  the number-word `<N>Vector` scheme). Do not edit by hand. They are produced into the
   working tree by `make generate` / `make shell` and baked into the sdist+wheel at build time (see
-  Code generation / Dev workflow). **The grade-0 `Scalar_n` is per-algebra** (there is no shared
+  Code generation / Dev workflow). **Which dimensions are generated is chosen by the `GACALC_DIMS`
+  env var** (default `1,2,3`): dev builds only g1–g3, while `make dist`/`make release` set
+  `GACALC_DIMS=1,2,3,4,5` so the costly `g4`/`g5` (~5 min / ~87 min) are generated **once at
+  publish** and baked in — never on a `make shell`. See
+  `tasks/reference/generated-algebra-generation-cost.md`. **The grade-0 `Scalar_n` is per-algebra** (there is no shared
   `scalar.py`): it lives in its own algebra's module so `Scalar_n.dual()` names that algebra's
   pseudoscalar (`Scalar.dual() → Trivector`) with no cross-module import — see the graded-subtype
   note under Future directions and `tasks/archive/2026/07/22/per-algebra-scalar-types.md`.
@@ -345,18 +352,25 @@ imports is the only raw text, since comments can't live in an AST). They are **n
 generate them with
 `make generate` (or `python tools/gen_specialized.py` directly, run from the repo root; it adds `src/`
 to its own path). It **formats its own output** (runs `ruff` on the files it writes), so a regen needs
-no separate format pass. **Adding a new algebra is a one-line edit** to the `ALGEBRAS` list — see the
-worked `G4` example in `README.md`. Generation cost grows fast (it runs `Gn`'s symbolic ops):
-sub-second for 𝒢₁/𝒢₂, tens of seconds for 𝒢₃, minutes for 𝒢₄.
+no separate format pass. **Adding a brand-new algebra is a one-line edit** to the `ALL_ALGEBRAS` list;
+**which declared dims are actually generated is chosen by the `GACALC_DIMS` env var** (default
+`1,2,3`) — see `README.md` "Generating the algebras". Generation cost grows superlinearly and the
+factor accelerates: sub-second 𝒢₁/𝒢₂, ~23 s 𝒢₃, ~5 min 𝒢₄, ~87 min 𝒢₅ — which is why 𝒢₄/𝒢₅ are
+release-only (`tasks/reference/generated-algebra-generation-cost.md`).
 
 **Where generation happens (the files are gitignored, so something must produce them):**
 - `make shell` runs the generator inside the container (`entrypoint/shell.sh`) before the editable
-  install, so the bind-mounted tree has real files for tests / `ty` / `ruff` / the IDE.
+  install, so the bind-mounted tree has real files for tests / `ty` / `ruff` / the IDE. **Dev default:
+  g1–g3 only** (`GACALC_DIMS` unset); g4/g5 are not built here.
 - `make dist` builds the sdist + wheel **inside the container** (the image's pinned toolchain),
-  regenerating first and writing artifacts to `./dist` on the host via a bind mount (container
+  regenerating first **with `GACALC_DIMS=1,2,3,4,5`** (so g4/g5 are generated once at publish) and
+  writing artifacts to `./dist` on the host via a bind mount (container
   `/dist`); the generated `.py` are **baked in**, so a `pip install gacalc` is fully readable without
-  the end user running the generator. A `build_py` hook in `setup.py` also regenerates *if missing*
-  during any build (belt-and-suspenders; needs the `numpy`+`sympy` build-requires in `pyproject.toml`).
+  the end user running the generator (and `g4`/`g5` ship without anyone paying their ~5 min / ~87 min
+  cost). A `build_py` hook in `setup.py` also regenerates *if missing* during any build — its
+  if-missing list is `[g1,g2,g3]`, so a git-checkout build does **not** silently pay the g4/g5 cost;
+  needs the `numpy`+`sympy` build-requires in `pyproject.toml`. The opt-in `make generate-all` /
+  `make test-all-dims` build/exercise the full set locally (the full-dim gate).
   `make upload` / `make release` then run `twine upload` of `./dist/*` **inside the container** too
   (`twine` is baked into the image via the dev extras) — an interactive `-it` run with
   `TWINE_USERNAME=__token__`, so you just paste your PyPI API token at the prompt; nothing
@@ -599,6 +613,28 @@ authority on all of these.
   resolved by typing coefficients as the concrete `Coef = int | float | sympy.Expr` alias rather than
   the `numbers.Real` ABC — see the coefficient-type note under Architecture — and by emitting
   `sandwich` as a Liskov-compatible override returning the operand type `_OperandT`.)
+  **Caveat: ty AND ruff both respect `.gitignore`, and the generated `g*.py` are gitignored, so the
+  dev gate (`ty check src` / `ruff check src` / `ruff format`) SKIPS every generated module** —
+  "fully clean" above covers only the hand-written code. **Why the generated code isn't run through
+  the gate's formatter or type checker (on purpose):**
+  - **Formatter:** it's already formatted — the *generator itself* runs `ruff format` + `ruff check
+    --fix` on each file as it writes it (`ruff_format` in `gen_specialized.py`), so the output is
+    always formatted regardless of the gate; re-formatting it in `format.sh` would be redundant. It
+    also carries *accepted, cosmetic* `E501` long lines the formatter can't fix — auto-generated
+    docstrings like the `"Spanning the basis blades: …"` line, which grows with dimension — that
+    would otherwise fail `ruff check`; gitignore keeps them out of the gate. The files are build
+    artifacts (deterministic, regenerated each build, baked into the sdist/wheel, never committed),
+    so the gate treating them as "not source to police" is the intended split.
+  - **Type checker:** the generated code's *type* correctness is guaranteed upstream, not by
+    per-file gating — the generator (`tools/`) and `base.py` that produce/back it ARE gate-checked,
+    the conformance suite verifies runtime behaviour, and the generated typing is verified by an
+    *explicit, full-context* ty run (below). Gating it per-file in `format.sh` also can't work:
+    the files are gitignored/regenerated, and a **single-file** `ty check src/gacalc/g3.py` is NOT
+    valid — it gives ≈119 *isolation* false positives (unresolved cross-module types).
+  - **To actually check the generated modules' typing**, pass them explicitly AND together (full
+    context): `ty check src/gacalc/g1.py … g5.py gn.py base.py functions.py transforms.py`. This is
+    what `make test-all-dims` should run; the g4/g5 ty-cleanup that made all five clean is in
+    `tasks/reference/generated-product-typing.md` › "High-dimension ty findings".
 - After editing the generator, regenerate (`python tools/gen_specialized.py`, which auto-formats its
   output) and re-run the suite (the conformance tests guard correctness of the generated code).
 - Determinism guard: `make check-generated` regenerates **twice** and asserts the output is

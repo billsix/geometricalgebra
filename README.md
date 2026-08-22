@@ -65,6 +65,12 @@ only one grade's components — the way mathematicians usually work:
 | 𝒢₁ | `Scalar`, `Vector` |
 | 𝒢₂ | `Scalar`, `Vector`, `Bivector`, `Rotor` (the even subalgebra, ≅ ℂ) |
 | 𝒢₃ | `Scalar`, `Vector`, `Bivector`, `Trivector`, `Rotor` (≅ the quaternions ℍ) |
+| 𝒢₄ | … `Trivector`, **`FourVector`** (the pseudoscalar), `Rotor` |
+| 𝒢₅ | … `FourVector`, **`FiveVector`** (the pseudoscalar), `Rotor` |
+
+There is **one grade-pure type per grade up to the pseudoscalar**, named by the `grade_name(k)`
+scheme — `Scalar`/`Vector`/`Bivector`/`Trivector` for grades 0–3, then the number-word
+`FourVector`, `FiveVector`, … (`𝒢₄`/`𝒢₅` are release-only; see "Generating the algebras").
 
 The grade-0 `ScalarN` is **per algebra** (not one shared type), so its dual is precise:
 `Scalar.dual() → Vector`, `Scalar.dual() → Bivector`, `Scalar.dual() → Trivector`
@@ -145,41 +151,48 @@ Because the specialized/graded classes don't eagerly simplify, a symbolic result
 un-reduced coefficients (e.g. terms that should cancel). `v.simplified()` / `v.expanded()` return
 the same value with each coefficient `sympy.simplify`'d / `sympy.expand`'d for a clean view.
 
-## Adding a new algebra (worked example: `g4` for 𝒢₄)
+## Generating the algebras (and which ones ship)
 
-The specialized classes are generated from `Gn`, so adding a dimension is a
-one-line edit — no new math by hand.
+The specialized classes are generated from `Gn` — no new math by hand. `𝒢₁`–`𝒢₅`
+are already declared in `ALL_ALGEBRAS` in `tools/gen_specialized.py`; **which are
+generated on a given run is chosen by the `GACALC_DIMS` env var** (default
+`1,2,3`), because generation cost grows fast (below).
 
-1. Open `tools/gen_specialized.py` and add one entry to the `ALGEBRAS` list:
+```bash
+make generate          # dev default: g1/g2/g3 only (~23 s)
+make generate-all      # ALL dims incl. g4/g5  (SLOW — g5 ~87 min)
+GACALC_DIMS=1,2,3,4 python tools/gen_specialized.py   # a custom subset
+```
 
-   ```python
-   ALGEBRAS = [
-       (1, "G", "g1.py"),
-       (2, "G", "g2.py"),
-       (3, "G", "g3.py"),
-       (4, "G", "g4.py"),  # <-- (dimension, class name (always "G"), output module)
-   ]
-   ```
+**𝒢₄ and 𝒢₅ are release-only.** `make shell` / `make generate` build only g1–g3, so
+dev never pays their cost; `make dist` / `make release` set `GACALC_DIMS=1,2,3,4,5`
+so g4/g5 are generated **once at publish** and baked into the sdist/wheel — a
+`pip install gacalc` then gives you `from gacalc.g4 import G, e_1, e_2` with no
+generation needed. To exercise the full set locally (e.g. before a release), use
+`make test-all-dims` (the full-dim gate) — it generates g1–g5 and runs the suite.
 
-2. Regenerate. This writes `src/gacalc/g4.py` (and rewrites the others
-   identically); it auto-formats its own output:
+To add a **brand-new** dimension (say `𝒢₆`), append one entry to `ALL_ALGEBRAS`:
 
-   ```bash
-   make generate          # = python tools/gen_specialized.py
-   ```
+```python
+ALL_ALGEBRAS = [
+    (1, "G", "g1.py"),
+    ...
+    (6, "G", "g6.py"),  # <-- (dimension, class name (always "G"), output module)
+]
+```
 
-That's it — `from gacalc.g4 import G, e_1, e_2` now works. The docstring, the
-`DIMENSION`, the basis constants, and all the dimension-fixed methods (`dual()`,
-`unit_pseudoscalar()`, …) are generated automatically; you do **not** touch
-`base.py` or `gn.py`. (Optional: add it to the `SPECIALIZED` map in
-`tests/test_conformance.py` to include it in the conformance suite.)
+then generate it with `GACALC_DIMS=…,6`. The docstring, `DIMENSION`, basis
+constants, and all dimension-fixed methods (`dual()`, `unit_pseudoscalar()`, …) are
+generated automatically; you do **not** touch `base.py` or `gn.py`. The conformance
+suite (`tests/test_conformance.py`) picks up any of `g4`/`g5` that are present
+automatically.
 
-> **Heads-up — generation cost grows fast.** The generator derives the closed
-> forms by running the *general* symbolic geometric, inner, and outer products in
-> `Gn`, which has 2ⁿ basis blades, 4ⁿ term pairs, and eagerly simplifies. 𝒢₁/𝒢₂
-> generate in well under a second; 𝒢₃ takes tens of seconds; 𝒢₄ takes a few
-> minutes; higher dimensions longer still. This cost is paid once, at generation
-> time — the generated code itself is fast.
+> **Heads-up — generation cost grows superlinearly, and the factor accelerates.**
+> The generator runs the *general* symbolic geometric/inner/outer products in `Gn`
+> (2ⁿ basis blades, 4ⁿ term pairs, eager `simplify`). Measured: 𝒢₁/𝒢₂ < 1 s, 𝒢₃
+> ≈ 23 s, 𝒢₄ ≈ 5 min, **𝒢₅ ≈ 87 min** (𝒢₆ would be many hours). This cost is paid
+> once, at generation time — the generated code itself is fast. Details:
+> `tasks/reference/generated-algebra-generation-cost.md`.
 
 ## Benchmarks
 

@@ -82,6 +82,71 @@ to lock in the higher-grade cases.
       identity) for the higher-grade case.
 - [ ] `ruff` + `ty check src` + full suite green.
 
+## Reference research (2026-08-22) — galgebra + the literature
+
+The maintainer's memory was right on both counts: **projection is defined for r-vectors / blades**
+(and general multivectors), and the *"go re-read Hestenes"* uncertainty is specifically about
+**mixed-grade multivector values**, not the homogeneous-higher-grade case.
+
+**galgebra** (`github.com/pygae/galgebra`, local checkout `/mnt/sda1/galgebra/galgebra/mv.py`) is the
+concrete precedent:
+
+- **`project_in_blade(self, blade)` (`mv.py:435`)** projects a **general multivector** `self` onto
+  any **blade** (any grade): `return (self < blade) * blade_inv` where `blade_inv =
+  blade.rev() / blade.qform()`. It uses the **left contraction `<`**, *not* the Hestenes inner
+  product. Guard: `blade.is_blade()` and non-null (`qform != 0`); **no restriction that `self` be a
+  vector or homogeneous** — mixed grade is fine, because the contraction is linear over grades.
+- **`reflect_in_blade(self, blade)` (`mv.py:414`)** reflects a general multivector by
+  **grade-decomposing `self`** and applying the graded sandwich per grade: for blade grade `s` and
+  value grade `r`, `(-1)^{s(r+1)} · blade · ⟨A⟩_r · blade⁻¹`. It is **not** built as
+  `project − reject`.
+- **galgebra has no `rejection` method** — only projection and reflection. gacalc's `reject` is its
+  own; the rejection `(A ∧ B) B⁻¹` is the complementary part and generalizes the same way
+  (contraction/wedge onto an invertible blade).
+
+**Literature:** "Generalized Projection Operators in Geometric Algebra" (arXiv `math/0104159`) gives a
+versor-form projection `P_A(X) = ½(X − Ā X A†)` valid for *all* multivectors; standard references
+(Dorst/Fontijne/Mann, *GA for Computer Science*) define projection/rejection of a blade onto a blade
+via the **contraction**. Consensus: the general operator is well-defined; the clean building block is
+the **contraction**, which gacalc already has (`left_contraction` / `<`, see
+`tasks/reference/contraction-and-dot-definitions.md`).
+
+### Design decisions this raises (settle before implementing)
+
+1. **Product choice: Hestenes dot vs left contraction.** gacalc's `project.fn` uses `value.dot(onto)`
+   (Hestenes inner product), which has the grade-0 quirk and is awkward for scalars/mixed grades.
+   galgebra deliberately uses the **left contraction**. For a robust higher/mixed-grade generalization,
+   consider switching `project` (and `reject`) to `<` / `wedge` onto an invertible blade — gacalc
+   already has both operators. This is the substantive part of the "re-read Hestenes" question.
+2. **`reflect` = `project − reject`, or the graded sandwich?** gacalc builds `reflect` as
+   `project − reject`; galgebra uses the per-grade sandwich `(-1)^{s(r+1)} B⟨A⟩_r B⁻¹`. These agree
+   for a vector across a vector — **verify (don't assume) they agree for general grades**, and if not,
+   adopt the graded sandwich (which is the canonical definition).
+3. **Blade vs merely-homogeneous guard.** galgebra guards on `is_blade()` (an actual outer product of
+   vectors, so invertible), stronger than gacalc's `is_r_vector()` (homogeneous). In 4D+, a
+   homogeneous element need not be a blade (e.g. `e_12 + e_34`) and may not be invertible. Decide
+   whether the guard should be `is_r_vector` (matches current) or a real blade/invertibility check.
+
+## Related "vectors-only, generalize later" markers (same theme — fold in or spin off)
+
+Beyond `reject`/`reflect`, several methods carry the same `assert …is_vector()` + "probably defined
+more generally later in the book" TODO. They belong to this generalization effort (working tree is
+otherwise clean — nothing uncommitted was added):
+
+- **`base.is_orthogonal_to` (`base.py:609`)** and **`base.is_parallel_to` (`base.py:633`)** — both
+  `assert self.is_vector()` / `assert other.is_vector()` with a `# TODO - defined for vectors only …`
+  comment; `is_parallel_to` also carries a `not sure if I'm doing this correctly` note (already listed
+  under CLAUDE.md "Assessment / known issues #2"). Orthogonality/parallelism generalize to blades
+  (via inner product / wedge being zero).
+- **`transforms.projection_rotation`'s inner `r` (`transforms.py:217`)** — `assert value.is_vector()
+  # TODO - can this be generalized?`. It's downstream of `reject` (uses `cls.reject(plane)`), so it is
+  unblocked once `reject` accepts a general value.
+
+Decision needed: extend this task's scope to cover these (they're the same "vectors-only → r-vector/
+blade" change), or spin off a sibling task for the predicate methods. Recommendation: keep
+`is_orthogonal_to`/`is_parallel_to` here (same fix shape), and treat `projection_rotation` as a
+verify-after step once `reject` generalizes.
+
 ## Notes
 
 - The 2-element (bivector) and 1-element (vector) cases already work and are covered by
@@ -90,6 +155,12 @@ to lock in the higher-grade cases.
 
 ## Open questions
 
-- Should projection/rejection be defined for a general *multivector* value, or only vector values?
-  (Current asserts restrict to vectors; the book may define it more broadly.)
+- **Homogeneous r-vector value: no book re-read needed** — galgebra + the literature confirm
+  projection/rejection onto any blade is standard for a homogeneous value. The genuinely uncertain
+  case the maintainer wanted to re-read Hestenes for is the **mixed-grade multivector value** — and
+  galgebra shows even that is well-defined via the contraction + grade decomposition. Confirm gacalc
+  wants to support mixed-grade values (recommended: yes, matching galgebra), or restrict to
+  homogeneous blades for now.
+- Product choice, reflect definition, and blade-vs-homogeneous guard — see the three design decisions
+  above.
 - Is there an upper-grade limit worth enforcing, or does it just work up to the pseudoscalar?

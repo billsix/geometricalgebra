@@ -20,6 +20,7 @@ Equality goes through the (simplify-aware) `__eq__`, so it is exact even though
 the specialized classes do not eagerly simplify.
 """
 
+import importlib
 from itertools import chain, combinations
 from types import ModuleType
 
@@ -34,11 +35,21 @@ from gacalc.base import Blade, BladeCoef, Coef, MultiVectorBase
 from gacalc.gn import Gn
 from gacalc.transforms import projection_rotation
 
-SPECIALIZED = {1: g1.G, 2: g2.G, 3: g3.G}
-MODULES = {1: g1, 2: g2, 3: g3}
+# g1--g3 are always generated (the dev default); g4/g5 are release-only and exist
+# only when generated with GACALC_DIMS=1,2,3,4,5 (make generate-all / dist / the
+# full-dim gate).  Include whichever specialized modules are present, so the
+# default suite covers g1--g3 and the full-dim gate additionally covers g4/g5.
+MODULES: dict[int, ModuleType] = {1: g1, 2: g2, 3: g3}
+for _n in (4, 5):
+    try:
+        MODULES[_n] = importlib.import_module(f"gacalc.g{_n}")
+    except ModuleNotFoundError:
+        pass
+
+SPECIALIZED = {n: mod.G for n, mod in MODULES.items()}
 
 # Every (dimension, implementation) pair, including Gn itself as a sanity check.
-CASES = [(n, cls) for n in (1, 2, 3) for cls in (Gn, SPECIALIZED[n])]
+CASES = [(n, cls) for n in sorted(MODULES) for cls in (Gn, SPECIALIZED[n])]
 
 
 def to(cls: type[MultiVectorBase], g: Gn):

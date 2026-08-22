@@ -276,8 +276,14 @@ class MultiVectorBase(abc.ABC):
             }
         )
 
-    def __radd__(self, lhs: MultiVectorBase | Coef) -> typing.Self:
-        # addition commutes; gives ``2 + mv`` for free.
+    def __radd__(self, lhs: Coef) -> typing.Self:
+        # addition commutes; gives ``2 + mv`` for free.  ``lhs`` is a bare number,
+        # never a multivector: Python only calls ``__radd__`` when the left operand
+        # (here a non-multivector) has no ``__add__`` for us -- a multivector left
+        # operand uses its own ``__add__``.  Typing it ``Coef`` (not
+        # ``MultiVectorBase | Coef``) also matches the generated specialized
+        # ``__radd__`` (whose ``lhs`` is a number union), so the override is
+        # Liskov-clean at every dimension.
         return self.__add__(lhs)
 
     def __sub__(self, rhs: typing.Self) -> typing.Self:
@@ -1187,7 +1193,7 @@ def _require_float(coef: Coef) -> float:
     return float(coef)
 
 
-def _coerce(x: MultiVectorBase | Coef, cls: type[MultiVectorBase]) -> MultiVectorBase:
+def _coerce[T: MultiVectorBase](x: MultiVectorBase | Coef, cls: type[T]) -> T:
     """Coerce a scalar or multivector to ``cls`` (the full type).
 
     The shared widen helper for the generated dispatch methods' ``case _:``

@@ -56,12 +56,14 @@ raw text header  +  "\n\n"  +  module_source(inject_region_markers(nodes))  +  "
 - The **body** is the node list, `ast.unparse`'d.
 
 **Emission order** — everything for one algebra goes into its one self-contained module. For each
-`(n, name, filename)` in `ALGEBRAS` (currently `[(1,"G","g1.py"), (2,"G","g2.py"),
-(3,"G","g3.py")]`), `main()` concatenates, in order (later types reference earlier ones by name, but
-`from __future__ import annotations` makes return annotations lazy, so the order is for readability,
-not correctness):
+`(n, name, filename)` in `ALGEBRAS` — the subset of `ALL_ALGEBRAS` (`[(1,"G","g1.py") …
+(5,"G","g5.py")]`) selected by the **`GACALC_DIMS`** env var (default `1,2,3`; `make dist`/`release`
+set `1,2,3,4,5`, since **g4/g5 are release-only** — generation is superlinear, ~5 min for g4 and
+~87 min for g5, see `generated-algebra-generation-cost.md`) — `main()` concatenates, in order (later
+types reference earlier ones by name, but `from __future__ import annotations` makes return
+annotations lazy, so the order is for readability, not correctness):
 
-1. `generate_scalar(n, f"Scalar{n}", name)` — the per-algebra grade-0 `ScalarN`. Its `dual` names the
+1. `generate_scalar(n, "Scalar", name)` — the per-algebra grade-0 `Scalar`. Its `dual` names the
    same-module pseudoscalar (`Scalar.dual -> Trivector`), which is *why* it lives here and not in a
    shared module (a shared `scalar.py` importing `Trivector` from `g3` would be a circular import).
 2. `generate_class(n, name)` — the full all-blades `G_n` class + its post-class basis-constant
@@ -206,8 +208,11 @@ support** — never from runtime float values. This is what makes `Vector * Vect
 **The registry** — every type a result can resolve to, for a given dimension:
 
 - `SCALAR = TypeSpec("Scalar", ((),), 0, "scalar")` (`:351`) — the shared grade-0 type.
-- `graded_specs(n)` (`:354`) — `Vector{n}`, then `Bivector{n}` (n≥2), `Trivector{n}` (n≥3), and the
-  even-subalgebra `Rotor{n}` (n≥2; for n==1 the even part is just the scalar, so no Rotor).
+- `graded_specs(n)` — **one grade-pure type per grade 1..n**, named by `grade_name(k)` (`Vector`,
+  `Bivector`, `Trivector`, `FourVector`, `FiveVector`, … up to the pseudoscalar — the number-word
+  `<N>Vector` scheme, fallback `KVector{k}`), plus the even-subalgebra `Rotor` (n≥2; for n==1 the
+  even part is just the scalar, so no Rotor). (Generalized from the old hand-listed Vector/Bivector/
+  Trivector 2026-08-22, so 𝒢₄ gets `FourVector`, 𝒢₅ `FiveVector`, etc.)
 - `full_spec(n, full_name)` (`:372`) — the all-blades `G_n`.
 - `registry_for_dim(n, full_name)` = `[SCALAR, *graded_specs(n), full_spec(...)]`.
 
@@ -406,25 +411,25 @@ or the generator.
 
 ## 7. How to change it
 
-**Add a new algebra (𝒢₄).** One-line edit: append to `ALGEBRAS` (`gen_specialized.py:2227`):
+**Generate an already-declared algebra (𝒢₄/𝒢₅).** They're already in `ALL_ALGEBRAS`; just select
+them with the env var — `GACALC_DIMS=1,2,3,4 python tools/gen_specialized.py` (or `make generate-all`
+for g1–g5, `make test-all-dims` for the full-dim gate). The default (`make generate`/`make shell`)
+builds only g1–g3; `make dist`/`make release` set `GACALC_DIMS=1,2,3,4,5` so g4/g5 bake into the
+sdist/wheel. Everything is derived: `blades_for_dim(4)`=16 blades, `graded_specs(4)` yields
+`Vector`/`Bivector`/`Trivector`/**`FourVector`**/`Rotor`, products/overloads/markers fall out.
+`tests/test_conformance.py` imports g4/g5 **conditionally** (try/except) and extends `CASES` over
+whichever are present, so it needs no edit. `gn.py` never imports the specialized modules.
 
-```python
-ALGEBRAS = [
-    (1, "G", "g1.py"),
-    (2, "G", "g2.py"),
-    (3, "G", "g3.py"),
-    (4, "G4", "g4.py"),
-]
-```
+**Add a brand-NEW dimension (𝒢₆).** Append one entry to `ALL_ALGEBRAS` (`class name always "G"`,
+e.g. `(6, "G", "g6.py")`), then select it via `GACALC_DIMS=…,6`. `grade_name(6)` already yields
+`SixVector`.
 
-Then `make generate`. Everything else is derived: `blades_for_dim(4)` yields the 2⁴=16 blades,
-`graded_specs(4)` yields `Vector4`/`Bivector4`/`Trivector4`/`Rotor4` (plus a grade-4 quadvector if
-you extend `graded_specs` — it currently stops at trivector), the products/overloads/markers all fall
-out. The worked `G4` example is in `README.md`. Downstream, code that enumerates the specialized
-algebras must add `G4` to keep it covered — notably `tests/test_conformance.py` (its
-`SPECIALIZED = {1: G, 2: G, 3: G}` map and the `CASES` parametrization, which import
-`from gacalc.g4 import G4` directly). `gn.py` does **not** import the specialized modules, so nothing
-is needed there.
+> **Watch the grade-≤3 assumptions when going past 𝒢₃.** Generating 𝒢₄ the first time hit two:
+> `coordinate_property_defs`' `AXIS_NAMES = ("x","y","z")` (only grade-1 `Vector` gets `x`/`y`/`z`;
+> `e_4`+ have no letter — fixed to skip past `len(AXIS_NAMES)`), and a wave of ty diagnostics ty only
+> surfaces on the larger module — all real imprecisions, now fixed (see
+> `generated-product-typing.md` › "High-dimension ty findings" and
+> `tasks/archive/2026/08/23/generator-ty-clean-high-dim.md`).
 
 **Any other change goes in `tools/`** — never in `src/gacalc/`. The recipe (also in `CLAUDE.md`):
 
