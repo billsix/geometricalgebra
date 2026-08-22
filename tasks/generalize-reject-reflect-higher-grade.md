@@ -24,9 +24,48 @@ of **any grade** (at least up to the pseudoscalar of `Gn`/`G3`).
   These don't depend on `grade(B)`. `project` already works for any homogeneous blade (its
   `is_r_vector()` branch handles grade r), so it likely needs no change. The restriction lives only
   in `reject`/`reflect`'s `match` arms.
+- **Restated 2026-08-22 (William Emerison Six <billsix@gmail.com>):** *"project and reject in G3 and
+  above should be able to project onto a bivector, or any r-vector type — look at base."* Two axes,
+  both to be covered here: (a) the blade argument (`onto`/`away_from`) may be any r-vector, not just
+  vector/bivector — this is the `match`-arm restriction above; and (b) the **value** being
+  projected/rejected may itself be any r-vector, not only a grade-1 vector. Today `reject`'s inner
+  `r()` and `reflect`'s inner `r()` both `assert value.is_vector()` and narrow via
+  `r_vector_part(1)` — that grade-1 hardcoding is the (b) restriction (`base.py` ~lines 814-826,
+  864-868). `project`'s `fn` already handles a general r-vector value (it computes
+  `r = max(grades)` and narrows to that grade), so (b) is mostly a `reject`/`reflect` gap.
 - **To confirm while reading p. 18:** that the `(a∧B)B⁻¹` rejection is valid for an r-blade B of any
   grade, and whether the value being projected/rejected must itself be a vector (current code
   `assert value.is_vector()`) or can be generalized.
+
+## Current behaviour, exercised in G3 (2026-08-22, after `make generate`)
+
+Concrete evidence of exactly what works and what fails today (`value` = the thing being
+transformed; `blade` = the `onto`/`away_from`/`across` argument):
+
+| call | result |
+|------|--------|
+| `project(onto=vector/bivector/trivector)(vector)` | ✓ correct |
+| `project(onto=vector)(bivector)`, `project(onto=bivector)(bivector)` | ✓ correct (cross-checked vs `Gn`: `project(e_12)(e_12+e_23) → e_12`) |
+| `reject(away=vector)(vector)`, `reject(away=bivector)(vector)` | ✓ correct |
+| **`reject(away=trivector)(vector)`** | ✗ `Exception: TODO - implement project for …` — no trivector `match` arm |
+| **`reject(away=vector)(bivector)`** | ✗ `AssertionError` — inner `r()` asserts `value.is_vector()` |
+| `reflect(...)` | mirrors `reject` (built as `project − reject`): trivector `across` raises, bivector `value` asserts |
+
+**Conclusion — `project` is already done; the gaps are entirely in `reject`/`reflect`:**
+
+- **Axis (a), blade grade** — `reject`/`reflect`'s `match` (`base.py` ~835-845, ~881-889) has arms
+  only for `is_vector()` / `is_bivector()`; a trivector (or any grade ≥3) `away_from`/`across` falls
+  to `case _: raise`. `project` has no such restriction (its `fn` uses `onto.inverse()` for any
+  blade).
+- **Axis (b), value grade** — `reject`'s inner `r()` (`base.py` ~814-826) and `reflect`'s inner
+  `r()` (~864-868) both `assert value.is_vector()` and narrow via `r_vector_part(1)`, so a bivector
+  (or higher) **value** raises. `project`'s `fn` already handles a general r-vector value (computes
+  `r = max(grades)` and narrows to that grade — verified correct vs `Gn`).
+
+So the work is: generalize `reject`'s `match` to any homogeneous blade **and** replace its inner
+`is_vector()`/`r_vector_part(1)` hardcoding with the value's own grade (mirroring what `project.fn`
+already does); `reflect` then follows for free. No `project` code change — only new `project` tests
+to lock in the higher-grade cases.
 
 ## Plan (to validate against the book)
 

@@ -1139,19 +1139,14 @@ def super_call(method: str, args: list[ast.expr]) -> ast.expr:
 
 
 def dim_mismatch_guard(cls_name: str, dim: int) -> ast.stmt:
-    """``if n is not None and n != <dim>: raise ValueError(...)``.
+    """``if n != <dim>: raise ValueError(...)``.
 
     A fixed-dimension type's dual is intrinsically at its own dimension (grade
     r -> n−r), so a mismatched ``n`` is an error -- there is no cross-dimension
-    fallback.  ``n`` is retained (optional) only for Liskov compat with the
-    n-required base signature and to keep the no-arg call (``x.dual()``)."""
+    fallback.  ``n`` defaults to this algebra's dimension (so ``x.dual()`` just
+    works); passing anything else is the error this guards."""
     return ast.If(
-        bool_and(
-            [
-                ast.Compare(name_ref("n"), [ast.IsNot()], [constant(None)]),
-                ast.Compare(name_ref("n"), [ast.NotEq()], [constant(dim)]),
-            ]
-        ),
+        ast.Compare(name_ref("n"), [ast.NotEq()], [constant(dim)]),
         [
             ast.Raise(
                 exc=call(
@@ -2006,8 +2001,8 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
                     cast=lambda node: node,
                 ),
             ],
-            params=[argument("self"), argument("n", opt_int())],
-            defaults=[constant(None)],
+            params=[argument("self"), argument("n", name_ref("int"))],
+            defaults=[constant(n)],
             returns=name_ref(dual_spec.name),
         ),
     ]
@@ -2215,8 +2210,8 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
                         ],
                     ),
                 ],
-                params=[argument("self"), argument("n", opt_int())],
-                defaults=[constant(None)],
+                params=[argument("self"), argument("n", name_ref("int"))],
+                defaults=[constant(n)],
                 returns=self_ann,
             ),
             function_def(
@@ -2484,9 +2479,10 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
 
     def dual_method() -> ast.FunctionDef:
         # Like parity_part (declare the resolved grade-(n−r) type, construct it
-        # directly, no unsound Self cast), but dual keeps the ``n`` param.  It is
-        # dimension-fixed, so a non-DIMENSION ``n`` raises rather than falling
-        # back to G_n (dropping the old ``_coerce(self, G_n).dual(n)`` branch).
+        # directly, no unsound Self cast), but dual keeps the ``n`` param, which
+        # DEFAULTS to this algebra's dimension (g2 -> 2, g3 -> 3), so ``x.dual()``
+        # just works.  It is dimension-fixed, so any OTHER ``n`` raises rather than
+        # falling back to G_n (dropping the old ``_coerce(self, G_n).dual(n)`` branch).
         result_spec, _ = unary_result(spec, lambda a: a.dual(n), n, full_name)
         return function_def(
             "dual",
@@ -2494,8 +2490,8 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 dim_mismatch_guard(spec.name, n),
                 unary_body(lambda a: a.dual(n), cast=lambda node: node),
             ],
-            params=[argument("self"), argument("n", opt_int())],
-            defaults=[constant(None)],
+            params=[argument("self"), argument("n", name_ref("int"))],
+            defaults=[constant(n)],
             returns=name_ref(result_spec.name),
         )
 

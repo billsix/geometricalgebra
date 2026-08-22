@@ -263,12 +263,24 @@ at generation time from `Gn` (`unit_pseudoscalar_squared`'s `±1` sign by actual
 pseudoscalar; `dual` via the `unary_result`/`summed_value` machinery) and emitted **only on the
 full class `G_n`** — the graded subtypes don't carry them (`dual` excepted, which they had already,
 guarded the same way), since the pseudoscalar/basis span the whole algebra and don't fit one graded
-type. **The `n` parameter is kept** (`n: int | None = None`): dropping it would be an invalid
-Liskov override of the `n`-required base (`Gn` is dimension-agnostic), which `ty` rejects. So each
-body is guarded `if n is None or n == <DIMENSION>: <known>` with a `super()` fallback for a
-non-default `n` (the rare, off-dimension call like `G.bases(1)`), preserving prior semantics
-exactly. Constructs via `cls(…)` (subclass-preserving, fresh instance — not the shared basis
-constant). This retired the `dim_or_n` helper.
+type. **The `n` parameter is kept** on all of them: dropping it would be an invalid Liskov override
+of the `n`-required base (`Gn` is dimension-agnostic), which `ty` rejects. Two different guard
+shapes, by whether an off-dimension call is meaningful:
+
+- **`dual` is dimension-*fixed* and takes `n: int = <DIMENSION>`** (g2 → 2, g3 → 3, never `None` or
+  0), guarded `if n != <DIMENSION>: raise ValueError(...)` (`dim_mismatch_guard`). Its dimension is
+  intrinsic (grade r → n−r for *this* algebra's pseudoscalar), so an off-dimension `n` is an error,
+  not a delegation — there is no `super()` fallback, and `x.dual()` just works because the default
+  *is* the dimension. (Changed 2026-08-22 from `n: int | None = None`; behaviour was already
+  correct, but a `None`/absent default made no sense for an intrinsically-dimensioned op —
+  `tasks/archive/2026/08/22/generated-dual-default-dimension.md`.)
+- **`unit_pseudoscalar`, `unit_pseudoscalar_squared`, `bases`, `symbolic_multivector` keep
+  `n: int | None = None`** with a real cross-dimension meaning: guarded `if n is None or n ==
+  <DIMENSION>: <known>` and a `super()` fallback for a non-default `n` (the rare, off-dimension call
+  like `G.bases(1)`), preserving prior semantics exactly.
+
+All construct via `cls(…)` (subclass-preserving, fresh instance — not the shared basis constant).
+This retired the `dim_or_n` helper.
 
 ---
 
