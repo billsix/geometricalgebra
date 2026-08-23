@@ -48,6 +48,7 @@ import sympy
 from IPython.display import Math, display
 
 import gacalc.g3 as g3
+from gacalc.measure import area, signed_volume, volume
 from gacalc.nbplotutils import plot_multivector, show_mult
 
 # turn warnings into exceptions
@@ -137,6 +138,65 @@ a_vec ^ b_vec  # pyright: ignore[reportUnusedExpression]
 
 # %%
 a_vec.dot(b_vec) + a_vec.wedge(b_vec) == a_vec * b_vec
+
+# %% [markdown]
+# The wedge magnitudes are area and volume — `area`, `volume`, `signed_volume`
+# ---------------------------------------------------------------------------
+#
+# In 𝒢₃ the magnitudes of the wedges are the high-school measures: $|a \wedge b|$
+# is the **area** of the parallelogram on `a`, `b`, and $|a \wedge b \wedge c|$ is
+# the **volume** of the parallelepiped on `a`, `b`, `c`. `gacalc.measure` names
+# them (the general k-dimensional version is the *content*, Williamson & Trotter
+# p. 308).
+
+# %%
+# area of the parallelogram on the two vectors: |a ∧ b|
+area(a_vec, b_vec)  # pyright: ignore[reportUnusedExpression]
+
+# %% [markdown]
+# **`area` is unsigned — switching the two vectors changes nothing:**
+
+# %%
+area(a_vec, b_vec) == area(b_vec, a_vec)
+
+# %% [markdown]
+# There is **no signed area in 𝒢₃**: two vectors span only a plane (`k = 2 < 3`),
+# so the orientation is the whole bivector `a ∧ b`, not a scalar `±`. A *signed*
+# scalar needs the vectors to span the full space (`k = n`) — in 𝒢₃ that means
+# **three** vectors, giving a signed **volume**. (`signed_area(a, b)` is defined
+# only in 𝒢₂; calling it here would raise.)
+
+# %%
+# a third vector, so we have a full 3-vector frame spanning 𝒢₃
+c_vec: g3.G = g3.G.symbolic_multivector(prefix="c").r_vector_part(1)
+c_vec  # pyright: ignore[reportUnusedExpression]
+
+# %% [markdown]
+# **`volume(a, b, c)`** is the parallelepiped volume $|a \wedge b \wedge c|$:
+
+# %%
+volume(a_vec, b_vec, c_vec)  # pyright: ignore[reportUnusedExpression]
+
+# %% [markdown]
+# **`signed_volume` keeps the orientation — it is the 3×3 determinant — and
+# switching the first two vectors flips its sign**, while the unsigned `volume`
+# above is its absolute value:
+
+# %%
+signed_volume(a_vec, b_vec, c_vec)  # pyright: ignore[reportUnusedExpression]
+
+# %%
+signed_volume(b_vec, a_vec, c_vec)  # pyright: ignore[reportUnusedExpression]
+
+# %% [markdown]
+# The two are negatives of each other. (The 3×3 determinant and its negation are
+# mathematically equal but not *structurally* identical, so we ask sympy to
+# simplify their sum to `0` rather than comparing with `==`.)
+
+# %%
+sympy.simplify(
+    signed_volume(b_vec, a_vec, c_vec) + signed_volume(a_vec, b_vec, c_vec)
+) == 0
 
 # %% [markdown]
 # Distributing a full product

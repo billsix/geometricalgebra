@@ -257,6 +257,9 @@ def cosine(v1: MultiVectorBase, v2: MultiVectorBase) -> Coef:
 
 
 def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Coef:
+    # v1, v2 must be VECTORS: the ``abs(v1 * v2)`` below is used as |v1||v2|, which
+    # holds only for vectors (|ab| = |a||b| when a, b are vectors).
+    assert v1.is_vector() and v2.is_vector()
     # rotate v1 by 90 degrees in the e_1 e_2 plane (v1 * e_1 e_2), then project on v2
     rot90: MultiVectorBase = v1 * type(v1).from_blade_dict({(1, 2): 1})
     return (rot90.dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()

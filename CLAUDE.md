@@ -29,6 +29,18 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   needs from the value's own type, so it preserves `Gn`/`G`. **Re-exports** the
   `functions` names (`ComposableFunction`, `InvertibleFunction`, `compose`, `inverse`, …) so
   `from gacalc.transforms import InvertibleFunction` and `gn.py` keep working.
+- `src/gacalc/frame.py` — **frames** (a linearly independent set of vectors, Hestenes & Sobczyk p. 27):
+  `are_linearly_independent` / `is_frame` (the wedge-nonzero test) and two orthogonalizations kept
+  side by side for teaching — `make_orthogonal_frame` (rejection / Gram–Schmidt) and
+  `make_orthogonal_frame_hestenes` (the closed-form blade product `c_k = Ã_{k-1} A_k`), proven equal up
+  to a positive scalar per vector. Representation-agnostic free functions over `MultiVectorBase`; see
+  `tasks/define-frame.md`.
+- `src/gacalc/measure.py` — the named **measures** (Williamson & Trotter *Multivariable Mathematics*,
+  1979): `area`/`volume`/`content` (unsigned `|wedge|`) + `content_by_rejection` (∏ rejected heights,
+  the teaching pair), and the **signed** determinant `signed_area`/`signed_volume`/`signed_content` for
+  the full-space `k = n` case. Free functions over `MultiVectorBase`; the fixed-arity ones also exist as
+  thin pass-through **methods** on `MultiVectorBase` (`v.area(w)`) for discoverability. See
+  `tasks/reference/content-area-volume.md`.
 - `src/gacalc/g1.py`, `g2.py`, `g3.py` (and, **release-only**, `g4.py`/`g5.py`) — **generated**
   modules, **not tracked in git**
   (gitignored). Each is **self-contained**, holding the full specialized class `G` **and**
@@ -181,6 +193,12 @@ make a `numpy` matrix `dtype=object`, which is how it surfaced — a consumer's
 holds (`sqrt(25) == 5`; a unit blade normalizes to `Rational`s, not floats), and
 symbolic coefficients stay symbolic. **Don't reintroduce an unconditional
 `sympy.sqrt` / `sympify` on these paths** (covered by `tests/test_numeric_magnitude.py`).
+
+**Build vectors from the basis constants, not the raw constructor.** In code, tests, doctests, and
+examples write `2*e_1 + e_2` (or `2*g2.e_1 + g2.e_2` when qualified), **not**
+`Vector(coeff_e_1=2, coeff_e_2=1)`. The `coeff_`-keyword constructor is for internal/generated code;
+teaching-facing and test code composes the named basis constants — it reads as the math (`2e₁ + e₂`),
+survives grade/coordinate changes, and keeps the precise graded type. (Bill, 2026-08-23.)
 
 Two ways to name a basis blade: each `g1`/`g2`/`g3` module exports **module-level** constants at
 their **graded** type (`from gacalc.g2 import e_1, e_2` then `3*e_1 + 4*e_2` is a **`Vector`**, `e_12`

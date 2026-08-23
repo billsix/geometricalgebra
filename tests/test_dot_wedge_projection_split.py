@@ -25,9 +25,10 @@ geometric product ``a b = a·b + a∧b``:
     a_par  b = a·b       (the wedge term vanishes: a_par ∥ b)
     a_perp b = a∧b       (the dot term vanishes:   a_perp ⊥ b)
 
-Verified here **symbolically** over general 2D and 3D vectors (exact ``==`` on
-the eager-simplifying ``Gn`` reference), and **numerically** over random
-vectors (float-tolerant ``isclose``).  See
+The symbolic tests are written **explicitly** -- general vectors spelled out as
+``a = a_1 e_1 + a_2 e_2``, with the dot product and the wedge asserted against
+their exact formulas (so each test reads like the math) -- plus a **numeric**
+check over random vectors (float-tolerant ``isclose``).  See
 ``tasks/reference/dot-wedge-projection-rejection.md`` for the hand proof.
 """
 
@@ -35,54 +36,67 @@ import random
 import typing
 
 import pytest
+import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase
-from gacalc.gn import (
-    Gn,
-    e_1,
-    e_2,
-    e_3,
-    sym_vec2_1,
-    sym_vec2_2,
-    sym_vec3_1,
-    sym_vec3_2,
-)
-
-SYMBOLIC_VECTOR_PAIRS: list[tuple[Gn, Gn]] = [
-    (sym_vec2_1, sym_vec2_2),  # general 2D vectors a = a1 e1 + a2 e2, etc.
-    (sym_vec3_1, sym_vec3_2),  # general 3D vectors
-]
+from gacalc.gn import Gn, e_1, e_2, e_3
 
 
-@pytest.mark.parametrize(("a", "b"), SYMBOLIC_VECTOR_PAIRS)
-def test_projection_product_is_dot_symbolic(a: Gn, b: Gn) -> None:
-    a_par: MultiVectorBase = Gn.project(onto=b)(a)
-    assert a_par * b == a.dot(b)
+def test_geometric_product_splits_into_dot_and_wedge_2d() -> None:
+    """``ab = a·b + a∧b`` for general 2D vectors -- both parts read off explicitly."""
+    a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
+    a: Gn = a_1 * e_1 + a_2 * e_2
+    b: Gn = b_1 * e_1 + b_2 * e_2
+    # the dot product is the symmetric scalar part:
+    assert a.dot(b).scalar_part() == a_1 * b_1 + a_2 * b_2
+    # the wedge is the antisymmetric bivector part:
+    assert a.wedge(b) == (a_1 * b_2 - a_2 * b_1) * (e_1 ^ e_2)
+    # together they are the whole geometric product:
+    assert a * b == a.dot(b) + a.wedge(b)
 
 
-@pytest.mark.parametrize(("a", "b"), SYMBOLIC_VECTOR_PAIRS)
-def test_rejection_product_is_wedge_symbolic(a: Gn, b: Gn) -> None:
-    a_perp: MultiVectorBase = Gn.reject(away_from=b)(a)
-    assert a_perp * b == a.wedge(b)
+def test_geometric_product_splits_into_dot_and_wedge_3d() -> None:
+    """``ab = a·b + a∧b`` for general 3D vectors -- the wedge now has three
+    bivector components, one per pair of axes."""
+    a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3")
+    a: Gn = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+    b: Gn = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
+    assert a.dot(b).scalar_part() == a_1 * b_1 + a_2 * b_2 + a_3 * b_3
+    assert a.wedge(b) == (
+        (a_1 * b_2 - a_2 * b_1) * (e_1 ^ e_2)
+        + (a_1 * b_3 - a_3 * b_1) * (e_1 ^ e_3)
+        + (a_2 * b_3 - a_3 * b_2) * (e_2 ^ e_3)
+    )
+    assert a * b == a.dot(b) + a.wedge(b)
 
 
-@pytest.mark.parametrize(("a", "b"), SYMBOLIC_VECTOR_PAIRS)
-def test_split_reconstructs_the_vector_symbolic(a: Gn, b: Gn) -> None:
+def test_projection_and_rejection_split_the_product_2d() -> None:
+    """Split ``a`` relative to ``b`` into the part parallel to ``b``
+    (``a_par = proj_b(a)``) and the part perpendicular (``a_perp = rej_b(a)``).
+    Multiplying each by ``b`` isolates one face of the product: ``a_par b = a·b``
+    (parallel, so no wedge), ``a_perp b = a∧b`` (perpendicular, so no dot)."""
+    a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
+    a: Gn = a_1 * e_1 + a_2 * e_2
+    b: Gn = b_1 * e_1 + b_2 * e_2
+    a_par: MultiVectorBase = Gn.project(onto=b)(a)  # part of a along b
+    a_perp: MultiVectorBase = Gn.reject(away_from=b)(a)  # part of a perp to b
+    assert a_par + a_perp == a  # the two parts reconstruct a
+    assert a_par * b == a.dot(b)  # parallel part times b is the dot
+    assert a_perp * b == a.wedge(b)  # perpendicular part times b is the wedge
+
+
+def test_projection_and_rejection_split_the_product_3d() -> None:
+    """The same projection/rejection split, over general 3D vectors."""
+    a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3")
+    a: Gn = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+    b: Gn = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
     a_par: MultiVectorBase = Gn.project(onto=b)(a)
     a_perp: MultiVectorBase = Gn.reject(away_from=b)(a)
     assert a_par + a_perp == a
-
-
-@pytest.mark.parametrize(("a", "b"), SYMBOLIC_VECTOR_PAIRS)
-def test_products_sum_to_geometric_product_symbolic(a: Gn, b: Gn) -> None:
-    a_par: MultiVectorBase = Gn.project(onto=b)(a)
-    a_perp: MultiVectorBase = Gn.reject(away_from=b)(a)
-    ab: Gn = a * b  # the full geometric product being decomposed
-    # a_par b + a_perp b == a·b + a∧b == a b
-    assert a_par * b + a_perp * b == ab
-    assert ab == a.dot(b) + a.wedge(b)
+    assert a_par * b == a.dot(b)
+    assert a_perp * b == a.wedge(b)
 
 
 def _random_vector(dim: int) -> Gn:

@@ -48,6 +48,8 @@ import sympy
 from IPython.display import Math, display
 
 import gacalc.g2 as g2
+from gacalc.base import Coef
+from gacalc.measure import area, signed_area
 from gacalc.nbplotutils import (
     create_basis,
     create_graphs,
@@ -60,6 +62,7 @@ from gacalc.nbplotutils import (
     show_mult,
 )
 from gacalc.transforms import (
+    InvertibleFunction,
     compose,
     compose_intermediate_fns,
     inverse,
@@ -336,7 +339,10 @@ inverse(rotate(sympy.pi / 2))(rotate(sympy.pi / 2)(w)) == w
 
 # %%
 plot_multivector(
-    2 * g2.G.from_scalar(1) + 3 * g2.G.e_1 - 1.5 * g2.G.e_2 + 0.7 * (g2.G.e_1 * g2.G.e_2)
+    2 * g2.G.from_scalar(1)
+    + 3 * g2.G.e_1
+    - 1.5 * g2.G.e_2
+    + 0.7 * (g2.G.e_1 * g2.G.e_2)
 )
 
 # %%
@@ -367,7 +373,7 @@ plot_multivector(u * v)
 # graph paper corresponds to the numbers on the left and on the bottom.
 
 # %%
-fn = rotate(math.radians(53.130102))
+fn: InvertibleFunction = rotate(math.radians(53.130102))
 with create_graphs(graph_bounds=(5, 5)) as axes:
     create_basis(fn=fn, cls=g2.G)
     create_x_and_y(fn=fn, cls=g2.G)
@@ -382,7 +388,7 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 # system (blue/pink). Any point can be described in either graph paper.
 
 # %%
-fn = rotate(math.radians(53.130102))
+fn: InvertibleFunction = rotate(math.radians(53.130102))
 with create_graphs(graph_bounds=(5, 5)) as axes:
     create_basis(fn=rotate(0.0), cls=g2.G)
     create_x_and_y(fn=rotate(0.0), cls=g2.G)
@@ -401,7 +407,7 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 # order applied, or in reverse.
 
 # %%
-fn = compose(
+fn: InvertibleFunction = compose(
     [
         rotate(sympy.pi / 4),
         translate(b=2 * g2.G.e_1),
@@ -489,8 +495,8 @@ a ^ b
 # Symbolically the residual collapses to $0$:
 
 # %%
-dot = a.inner_product(b).scalar_part()
-lagrange_residual = sympy.simplify(
+dot: Coef = a.inner_product(b).scalar_part()
+lagrange_residual: Coef = sympy.simplify(
     a.magnitude_squared() * b.magnitude_squared() - dot**2 - (a ^ b).magnitude_squared()
 )
 lagrange_residual
@@ -509,9 +515,9 @@ assert lagrange_residual == 0
 # exposes the perfect square $(a_1 b_2 - a_2 b_1)^2$, whose root is $|a\wedge b|$.
 
 # %%
-cos = a.cosine(b)
-sin = sympy.sqrt(1 - cos**2)  # sinθ ≥ 0 for θ in [0, π]
-wedge_magnitude_from_sin = sympy.sqrt(
+cos: Coef = a.cosine(b)
+sin: Coef = sympy.sqrt(1 - cos**2)  # sinθ ≥ 0 for θ in [0, π]
+wedge_magnitude_from_sin: Coef = sympy.sqrt(
     sympy.factor(sympy.simplify((a.magnitude() * b.magnitude() * sin) ** 2))
 )
 wedge_magnitude_from_sin
@@ -542,6 +548,52 @@ assert (
     )
     == 0
 )
+
+# %% [markdown]
+# The wedge magnitude *is* an area — `area(a, b)`
+# -----------------------------------------------
+#
+# $|a \wedge b| = |a||b|\sin\theta$ is exactly the **area of the parallelogram**
+# spanned by `a` and `b` — the high-school area, generalized by geometric algebra
+# (Williamson & Trotter call the k-dimensional version the *content*).
+# `gacalc.measure.area(a, b)` names it:
+
+# %%
+area(a, b)  # pyright: ignore[reportUnusedExpression]
+
+# %% [markdown]
+# **`area` is unsigned, so the order of the two sides does not matter** — it is a
+# magnitude, $|a \wedge b| = |b \wedge a|$. Swapping `a` and `b` leaves it
+# unchanged:
+
+# %%
+area(b, a)  # pyright: ignore[reportUnusedExpression]
+
+# %%
+area(a, b) == area(b, a)
+
+# %% [markdown]
+# **`signed_area` keeps the orientation — it is the 2-D determinant**
+# $a_1 b_2 - a_2 b_1$, and **swapping the two vectors flips its sign** (a
+# right-handed pair reads positive, a left-handed one negative). The unsigned
+# `area` above is exactly its absolute value.
+
+# %%
+signed_area(a, b)  # pyright: ignore[reportUnusedExpression]
+
+# %%
+signed_area(b, a)  # pyright: ignore[reportUnusedExpression]
+
+# %% [markdown]
+# So switching the order of the first two arguments **negates `signed_area` but
+# leaves `area` unchanged** — that swap is precisely how you tell the signed
+# measure from the unsigned one:
+
+# %%
+signed_area(b, a) == -signed_area(a, b)
+
+# %%
+area(a, b) == abs(signed_area(a, b))
 
 # %% [markdown]
 # Dot and wedge are the parallel and perpendicular parts of the product

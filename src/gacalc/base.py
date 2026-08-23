@@ -894,6 +894,56 @@ class MultiVectorBase(abc.ABC):
             case _:
                 raise Exception("TODO - implement project for " + str(across))
 
+    # -- named measures (pass-through sugar for gacalc.measure; see that module) ----
+    # These delegate to the free functions in ``gacalc.measure`` so the high-school
+    # measures are discoverable on a vector (``v.area(w)``).  Deferred imports keep the
+    # module graph acyclic (``measure`` imports ``base``).  Only the fixed-arity ones
+    # are methods; ``content`` takes a sequence and stays a free function.
+
+    def area(self, other: MultiVectorBase) -> Coef:
+        """The area of the parallelogram on ``self`` and ``other`` -- the method form
+        of :func:`gacalc.measure.area` (``= |a ∧ b|``).
+
+        >>> from gacalc.g2 import e_1, e_2
+        >>> (3 * e_1).area(2 * e_2)
+        6
+        >>> (3 * e_1).area(2 * e_2) == (2 * e_2).area(3 * e_1)  # unsigned
+        True
+        """
+        from gacalc import measure
+
+        return measure.area(self, other)
+
+    def volume(self, b: MultiVectorBase, c: MultiVectorBase) -> Coef:
+        """The volume of the parallelepiped on ``self``, ``b``, ``c`` -- the method
+        form of :func:`gacalc.measure.volume`."""
+        from gacalc import measure
+
+        return measure.volume(self, b, c)
+
+    def signed_area(self, other: MultiVectorBase) -> Coef:
+        """The signed (oriented) area of ``self`` and ``other`` -- the method form of
+        :func:`gacalc.measure.signed_area` (the 2-D determinant; needs 2-D vectors).
+
+        >>> from gacalc.g2 import e_1, e_2
+        >>> a = 2 * e_1 + e_2
+        >>> b = e_1 + 3 * e_2
+        >>> a.signed_area(b)
+        5
+        >>> b.signed_area(a)
+        -5
+        """
+        from gacalc import measure
+
+        return measure.signed_area(self, other)
+
+    def signed_volume(self, b: MultiVectorBase, c: MultiVectorBase) -> Coef:
+        """The signed (oriented) volume of ``self``, ``b``, ``c`` -- the method form
+        of :func:`gacalc.measure.signed_volume` (3-D determinant; needs 3-D vectors)."""
+        from gacalc import measure
+
+        return measure.signed_volume(self, b, c)
+
     @staticmethod
     def identity() -> InvertibleFunction[MultiVectorBase]:
         """The identity transform — its own inverse, ``LINEAR``, labelled ``I``."""
