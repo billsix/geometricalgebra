@@ -18,8 +18,8 @@ style reference (module/class/method docstrings with Hestenes notation); this ta
 
 ## What changed since this was written (read first)
 
-- **A Sphinx build now exists.** gacalc stood up `book/docs/` ("Plotting On Crappy Graph
-  Paper", HTML+PDF) on 2026-08-02, with an autodoc `api.rst` over `gacalc.base`,
+- **A Sphinx build now exists.** gacalc stood up `book/docs/` ("Geometry 2",
+  HTML+PDF) on 2026-08-02, with an autodoc `api.rst` over `gacalc.base`,
   `gacalc.functions`, `gacalc.transforms`. The old open question "stand up Sphinx now or
   later?" is **answered — it exists.** Build mechanics: `tasks/reference/book-and-docs-pipeline.md`.
 - **Two sibling tasks now own slices of "docstrings," so this one is scoped around them:**

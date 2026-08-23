@@ -1,6 +1,6 @@
 # The gacalc Sphinx book — build pipeline & decisions
 
-**What this is:** how gacalc's Sphinx book ("Plotting On Crappy Graph Paper") is
+**What this is:** how gacalc's Sphinx book ("Geometry 2") is
 built, and the decisions/gotchas behind it. Stood up 2026-08-02 as an empty-but-
 building skeleton (work record: `tasks/archive/2026/08/02/sphinx-book-pipeline.md`).
 Modelled on `github.com/billsix/modelviewprojection`'s book, minus the parts gacalc

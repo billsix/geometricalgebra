@@ -1,5 +1,5 @@
-Plotting On Crappy Graph Paper
-==============================
+Geometry 2
+==========
 
 The gacalc book. This is the skeleton — prose, graphs, and notebooks fill in
 later, and sections may be written out of order.

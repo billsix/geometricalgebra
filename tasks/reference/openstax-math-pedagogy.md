@@ -1,4 +1,4 @@
-# OpenStax math pedagogy — a survey for "Plotting On Crappy Graph Paper"
+# OpenStax math pedagogy — a survey for "Geometry 2"
 
 **Created:** 2026-08-03 (work record: [[openstax-math-pedagogy-survey]])
 **What this is:** how four OpenStax math books actually teach — explanation, worked
@@ -405,7 +405,7 @@ a *finished* picture; it almost never supplies a **blank grid, blank number line
 un-annotated construction figure** for the student to draw *on*. Algebra 1's report flagged
 this as its single biggest shortfall (`\square` fill-in box appears in exactly 1 file).
 
-**For a book literally titled "Plotting On Crappy Graph Paper," this gap is the opportunity.**
+**For a book built around relative graph paper, this gap is the opportunity.**
 Ship blank coordinate grids, blank/relative graph paper, blank number lines, dot/iso paper,
 and un-annotated labeled-diagram templates as first-class printable elements — the thing every
 OpenStax book gestures at but none provides.
@@ -439,7 +439,7 @@ between altitudes on purpose:
 
 ### 9. Where the GA book stands today (from the code survey)
 
-- The book *"Plotting On Crappy Graph Paper"* (`book/docs/`, Sphinx) is **~85% placeholder**.
+- The book *"Geometry 2"* (`book/docs/`, Sphinx) is **~85% placeholder**.
   Only three prose chapters are written: `rotate.rst`, `geometric-product.rst`,
   `proof-rotate.rst`. The mature teaching prose currently lives in the *standalone*
   `notebooks/display*.py`, aimed at a library-demo audience, not the print student.

@@ -657,7 +657,7 @@ authority on all of these.
   claim vacuous. Sanity-check the baseline is non-blank first, and reconstruct the "before"
   via `git stash`/`git show`, never a hand-edited copy (the cross-project "derive the before
   mechanically" rule). See `tasks/archive/2026/07/19/dedup-draw-ndc-plot-helper.md`.
-- Book: **`make docs`** builds the Sphinx book (`book/docs/`, "Plotting On Crappy Graph Paper") to
+- Book: **`make docs`** builds the Sphinx book (`book/docs/`, "Geometry 2") to
   **HTML + PDF** into `output/gacalc/` — needs an image built with `BUILD_DOCS=1` (the default). It is
   written **outline-first**: a ~22-chapter toctree of mostly placeholder stubs, with some chapters
   partly written (e.g. `geometric-product`, `rotate`) plus jupytext notebooks and an autodoc

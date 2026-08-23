@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "Plotting On Crappy Graph Paper"
+project = "Geometry 2"
 copyright = "2026, William Emerison Six"
 author = "William Emerison Six"
 

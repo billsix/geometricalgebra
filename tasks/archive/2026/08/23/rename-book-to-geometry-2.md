@@ -1,6 +1,8 @@
 # Rename the book from "Plotting On Crappy Graph Paper" to "Geometry 2"
 
-**Status:** proposed — needs go-ahead. Created 2026-08-16 (William Emerison Six <billsix@gmail.com>).
+**Status:** complete
+**Completed:** 2026-08-23 (William Emerison Six <billsix@gmail.com>). Renamed to "Geometry 2";
+old name dropped entirely (Q1 → option (a), Bill's call 2026-08-23). Q2 (extra front-matter) skipped.
 **Priority:** 4
 **Difficulty:** 2
 
@@ -38,13 +40,21 @@ says "this is the next course after the geometry you took."
 
 ## Plan
 
-- [ ] Change `conf.py` `project` (and any other title-bearing setting found there) to "Geometry 2".
-- [ ] Change `index.rst` H1 **and fix the underline length**.
-- [ ] Update the live references above (CLAUDE.md, the three `tasks/reference/` docs, the active task
-      doc); reword the graph-paper pun in `openstax-math-pedagogy.md:408` rather than blind-substitute.
-- [ ] Rebuild to verify: `make docs` (container) — or a host `sphinx-build` with notebooks disabled —
-      and confirm the new title shows in the HTML header and the rst still builds warning-free for the
-      landing page.
+- [x] Change `conf.py` `project` to "Geometry 2" (line 9; it was the only title-bearing setting —
+      no `html_title`/`latex_documents`/`html_short_title`, so the LaTeX title derives from `project`).
+- [x] Change `index.rst` H1 to "Geometry 2" and shrink the underline to 10 `=` (verified title==underline).
+- [x] Update the live references: `CLAUDE.md:660`, `tasks/reference/book-and-docs-pipeline.md:3`,
+      `tasks/reference/book-outline.md:1`, `tasks/reference/openstax-math-pedagogy.md:1,442`, and
+      `tasks/docstrings-for-sphinx.md:21` (this last one was not in the original grep list but named the
+      title). Reworded the pun at `openstax-math-pedagogy.md:408` to "For a book built around relative
+      graph paper, this gap is the opportunity." — keeps the point (the book's conceit is graph paper)
+      without the dead title-joke. `prove-blade-square-sign-…md:65` no longer names the title (drifted);
+      nothing to change there. Left `tasks/archive/2026/08/02/sphinx-book-pipeline.md` historical.
+      Left the many *"relative graph paper"* mentions in notebooks/chapters alone — that's the
+      pedagogical concept, not the title.
+- [ ] Rebuild verify with `make docs` NOT run (containerized/heavy; nbsphinx executes notebooks). The
+      one build-breaking risk — the rst underline — was verified by length match instead. Worth a
+      `make docs` sanity pass next time the book is built anyway.
 
 ## Open questions
 

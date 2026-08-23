@@ -1,4 +1,4 @@
-# "Plotting On Crappy Graph Paper" — book outline & writing guide
+# "Geometry 2" — book outline & writing guide
 
 **What this is:** the content structure for gacalc's book — the chapter/section flow
 and the pedagogical principles that govern the writing. A **living reference doc**,
