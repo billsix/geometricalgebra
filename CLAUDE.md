@@ -312,6 +312,14 @@ type** — `Vector.e_1`, `Bivector.e_12`, `Trivector.e_123`, `Vector.e_3`, etc. 
 project; see the class-constant note above). Reference those directly instead of aliasing them.
 *Derived* values with a semantic role (a specific test multivector, a `from`/`to`/`w`
 vector) keep their names; the rule targets pure renames of things that already have a canonical name.
+**Carve-out — the full-`G` demo notebooks may alias the full-class basis constants to bare
+names.** `notebooks/displayg2.py` / `displayg3.py` demonstrate the full specialized `G` class (every
+value is a `G`), and unlike the graded types there is **no** bare module-level name for the full-`G`
+constants — the module's `from gacalc.g2 import e_1` gives the *graded* `Vector`, not `G.e_1`. So those
+two notebooks define local `e_1: G = G.e_1`, … (up to the pseudoscalar) in their setup cell, purely to
+buy the concision the graded notebooks get for free, and then write `2*e_1 + 3*e_2` (a `G`). This is
+the **only** sanctioned use of this shape — don't "fix" it back to `G.e_1`, and don't extend it to
+other files or to values that already have a bare name.
 
 ## Operators
 

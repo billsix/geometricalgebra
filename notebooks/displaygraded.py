@@ -33,9 +33,9 @@
 #
 # Mathematicians rarely carry a full multivector; they work with *vectors*,
 # *bivectors*, *rotors*, and so on. This library has those as first-class types
-# (`g2.Vector`, `g2.Bivector`, `g2.Rotor`, `g2.Scalar`, ...), and **the product decides the
-# return type**: two vectors multiply to a *rotor* (scalar + bivector), their
-# wedge is a *bivector*, and so on.
+# (`g2.Vector`, `g2.Bivector`, `g2.Rotor`, `g2.Scalar`, ...), and **the product
+# decides the return type**: two vectors multiply to a *rotor* (scalar +
+# bivector), their wedge is a *bivector*, and so on.
 #
 # The return type is decided by the *operation*, derived symbolically
 # when the classes are generated — never by inspecting (possibly float-fuzzy)
@@ -47,9 +47,10 @@
 import sympy
 from IPython.display import Markdown, Math, display
 
-from gacalc.base import MultiVectorBase
 import gacalc.g2 as g2
 import gacalc.g3 as g3
+from gacalc.base import MultiVectorBase
+from gacalc.g2 import e_1, e_2
 from gacalc.transforms import (
     ComposableFunction,
     InvertibleFunction,
@@ -74,17 +75,17 @@ def show(*values: MultiVectorBase) -> None:
 # A vector basis
 # --------------
 #
-# Build a vector basis and combine it linearly: `3*g2.e_1 + 4*g2.e_2` is a `g2.Vector`,
+# Build a vector basis and combine it linearly: `3*e_1 + 4*e_2` is a `g2.Vector`,
 # so the code reads like the printed math. Each `g2`/`g3` module exports its basis
-# blades at **module scope, already graded** — `from gacalc.g2 import g2.e_1, g2.e_2`
+# blades at **module scope, already graded** — `from gacalc.g2 import e_1, e_2`
 # yields `g2.Vector` constants — so the vectors are written unqualified below. (The
-# same blades are also class constants, `g2.Vector.g2.e_1 == g2.Vector.basis_vector(1)`,
-# and reading a coefficient back out is `v.coefficient(g2.Vector.g2.e_1)`, a thin reader
+# same blades are also class constants, `g2.Vector.e_1 == g2.Vector.basis_vector(1)`,
+# and reading a coefficient back out is `v.coefficient(g2.Vector.e_1)`, a thin reader
 # over `to_blade_dict()`.)
 
 # %%
-a: g2.Vector = 3 * g2.e_1 + 4 * g2.e_2
-b: g2.Vector = 1 * g2.e_1 + 2 * g2.e_2
+a: g2.Vector = 3 * e_1 + 4 * e_2
+b: g2.Vector = 1 * e_1 + 2 * e_2
 show(a)
 
 # %% [markdown]
@@ -107,15 +108,15 @@ show(a ^ b, a.inner_product(b))
 # Type follows the operation, not the value
 # -----------------------------------------
 #
-# Orthogonal vectors have a zero dot product, but `g2.e_1 * g2.e_2` is still a `g2.Rotor`
+# Orthogonal vectors have a zero dot product, but `e_1 * e_2` is still a `g2.Rotor`
 # (its scalar field just happens to be 0) — we never narrow by looking at a value.
 # Want the pure bivector? Use `^`.
 
 # %%
-show(g2.e_1 * g2.e_2)
+show(e_1 * e_2)
 
 # %%
-show(g2.e_1 ^ g2.e_2)
+show(e_1 ^ e_2)
 
 # %% [markdown]
 # Bivectors and the g2.Scalar type
@@ -125,7 +126,7 @@ show(g2.e_1 ^ g2.e_2)
 # dedicated `g2.Scalar` type.
 
 # %%
-i2: g2.Bivector = g2.e_1 ^ g2.e_2  # the unit bivector
+i2: g2.Bivector = e_1 ^ e_2  # the unit bivector
 show(i2 * i2)
 
 # %% [markdown]
@@ -143,10 +144,10 @@ show(r)
 show(i2 * i2)  # == -1
 
 # %%
-# a rotor rotates a vector: the normalized rotor that turns g2.e_1 -> g2.e_2 is a
+# a rotor rotates a vector: the normalized rotor that turns e_1 -> e_2 is a
 # quarter turn, built from the two vectors (no hand-rolled cos/sin needed)
-quarter: g2.Rotor = g2.Vector.rotor_from_vectors(from_vector=g2.e_1, to_vector=g2.e_2)
-rotated: g2.Vector = quarter * g2.e_1 * quarter.inverse()
+quarter: g2.Rotor = g2.Vector.rotor_from_vectors(from_vector=e_1, to_vector=e_2)
+rotated: g2.Vector = quarter * e_1 * quarter.inverse()
 show(rotated)
 
 # %% [markdown]
@@ -169,7 +170,7 @@ show(quarter.plane_of_rotation())
 # rotation — provably, even symbolically (see `tests/test_graded.py`).
 
 # %%
-frm, to = g2.e_1, g2.e_2  # rotate by the g2.e_1 -> g2.e_2 angle (a quarter turn)
+frm, to = e_1, e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
 R: g2.Rotor = g2.Vector.rotor_from_vectors(from_vector=frm, to_vector=to)
 show(R)  # an (un-normalized) g2.Rotor
 
@@ -179,7 +180,7 @@ show(R)  # an (un-normalized) g2.Rotor
 # `R̃ / |R|²`) divides that out, leaving a pure rotation equal to `projection_rotation`.
 
 # %%
-w = g2.e_1
+w = e_1
 for label, value in [
     (r"R\,\tilde R", R * R.reverse()),
     (r"R\,w\,\tilde R", R * w * R.reverse()),
@@ -226,14 +227,14 @@ display(Markdown("\n".join([header, sep, *rows])))
 # bivectors, and the **dual of a bivector is a vector** — the geometric-algebra
 # form of the cross product.
 #
-# The 𝒢₃ basis is written qualified as `g3.Vector.g2.e_1` … here: this file already
-# imported the bare `g2.e_1`/`g2.e_2` from `gacalc.g2`, and a name binds to one algebra
-# at a time. In a 𝒢₃-only notebook you would `from gacalc.g3 import g2.e_1, g2.e_2, e_3`
+# The 𝒢₃ basis is written qualified as `g3.Vector.e_1` … here: this file already
+# imported the bare `e_1`/`e_2` from `gacalc.g2`, and a name binds to one algebra
+# at a time. In a 𝒢₃-only notebook you would `from gacalc.g3 import e_1, e_2, e_3`
 # and write them unqualified just the same.
 
 # %%
-u: g3.Vector = 1 * g3.Vector.g2.e_1 + 2 * g3.Vector.g2.e_2 + 3 * g3.Vector.e_3
-v: g3.Vector = 4 * g3.Vector.g2.e_1 + 5 * g3.Vector.g2.e_2 + 6 * g3.Vector.e_3
+u: g3.Vector = 1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3
+v: g3.Vector = 4 * g3.Vector.e_1 + 5 * g3.Vector.e_2 + 6 * g3.Vector.e_3
 show(u * v, u ^ v)
 
 # %%
@@ -246,7 +247,7 @@ biv.dual()  # the components of u x v
 
 # %%
 # each unit bivector of g3.G squares to -1 (the even subalgebra is the quaternions)
-show((g3.Vector.g2.e_1 ^ g3.Vector.g2.e_2) * (g3.Vector.g2.e_1 ^ g3.Vector.g2.e_2))
+show((g3.Vector.e_1 ^ g3.Vector.e_2) * (g3.Vector.e_1 ^ g3.Vector.e_2))
 
 # %% [markdown]
 # A bivector times its **own dual** collapses to the pseudoscalar scaled by
@@ -256,8 +257,8 @@ show((g3.Vector.g2.e_1 ^ g3.Vector.g2.e_2) * (g3.Vector.g2.e_1 ^ g3.Vector.g2.e_
 
 # %%
 t = sympy.symbols("t")
-B: g3.Bivector = sympy.cos(t) * (g3.Vector.g2.e_1 ^ g3.Vector.g2.e_2) + sympy.sin(t) * (
-    g3.Vector.g2.e_1 ^ g3.Vector.e_3
+B: g3.Bivector = sympy.cos(t) * (g3.Vector.e_1 ^ g3.Vector.e_2) + sympy.sin(t) * (
+    g3.Vector.e_1 ^ g3.Vector.e_3
 )
 # B * B.dual() stores (cos^2 t + sin^2 t)·e_123 but displays as the trivector e_123
 show(B, B.dual(), B * B.dual())
@@ -281,7 +282,7 @@ kind(u * biv)
 # transparently (they share the blade-dict interchange protocol).
 
 # %%
-a == 3 * g2.e_1 + 4 * g2.e_2
+a == 3 * e_1 + 4 * e_2
 
 # %%
 # display a few as latex
@@ -298,13 +299,13 @@ show(a, a * b, a ^ b, r)
 # the transform factories (`translate`, `uniform_scale`, …).
 
 # %%
-B3: g3.Bivector = g3.Vector.g2.e_1 ^ g3.Vector.g2.e_2  # the g2.e_1 g2.e_2 plane
+B3: g3.Bivector = g3.Vector.e_1 ^ g3.Vector.e_2  # the e_1 e_2 plane
 P: ComposableFunction = g3.Vector.project(
     B3
 )  # a ComposableFunction, already labelled from B3
 display(Math(P.latex_repr))
 # projects onto the plane
-P(g3.Vector.g2.e_1 + g3.Vector.e_3)  # pyright: ignore[reportUnusedExpression]
+P(g3.Vector.e_1 + g3.Vector.e_3)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # compose the projection with a translate: the pipeline renders as one LaTeX
@@ -312,7 +313,7 @@ P(g3.Vector.g2.e_1 + g3.Vector.e_3)  # pyright: ignore[reportUnusedExpression]
 # ComposableFunction to give it a tidy custom label for the display.)
 pipe: ComposableFunction = ComposableFunction(P, "P_{B}") @ translate(b=g3.Vector.e_3)
 display(Math(pipe.latex_repr))
-show(pipe(g3.Vector.g2.e_1 + g3.Vector.g2.e_2))
+show(pipe(g3.Vector.e_1 + g3.Vector.e_2))
 
 # %% [markdown]
 # A projection is **not invertible** — inverting a pipeline that contains it
@@ -321,7 +322,7 @@ show(pipe(g3.Vector.g2.e_1 + g3.Vector.g2.e_2))
 
 # %%
 M: InvertibleFunction = g3.Vector.reflect(B3)  # an InvertibleFunction (its own inverse)
-w: g3.Vector = g3.Vector.g2.e_1 + g3.Vector.e_3
+w: g3.Vector = g3.Vector.e_1 + g3.Vector.e_3
 show(M(w), inverse(M)(M(w)))  # reflected, then reflected back == w
 
 # %%

@@ -47,12 +47,23 @@ import warnings
 import sympy
 from IPython.display import Math, display
 
-import gacalc.g3 as g3
+from gacalc.g3 import G, Vector
 from gacalc.measure import area, signed_volume, volume
 from gacalc.nbplotutils import plot_multivector, show_mult
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)
+
+# Bare names for the full-G basis constants, so the code reads like the math.
+# These are the FULL 𝒢₃ constants (e_1 here is G.e_1) -- not the graded Vector
+# that `from gacalc.g3 import e_1` gives; every value in this notebook is a G.
+e_1: G = G.e_1
+e_2: G = G.e_2
+e_3: G = G.e_3
+e_12: G = G.e_12
+e_13: G = G.e_13
+e_23: G = G.e_23
+e_123: G = G.e_123
 
 # %% [markdown]
 # Basis blades and the pseudoscalar
@@ -62,39 +73,39 @@ warnings.filterwarnings("error", category=RuntimeWarning)
 # pseudoscalar of 𝒢₃. Like the bivector in 𝒢₂, it squares to −1.
 
 # %%
-pseudoscalar: g3.G = g3.G.e_1 * g3.G.e_2 * g3.G.e_3
+pseudoscalar: G = e_1 * e_2 * e_3
 pseudoscalar  # pyright: ignore[reportUnusedExpression]
 
 # %%
 pseudoscalar * pseudoscalar  # pyright: ignore[reportUnusedExpression]
 
 # %%
-g3.G.e_123 == g3.G.e_1 * g3.G.e_2 * g3.G.e_3
+e_123 == e_1 * e_2 * e_3
 
 # %%
 # the three unit bivectors
-g3.G.e_12  # pyright: ignore[reportUnusedExpression]
+e_12  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # the three unit bivectors
-g3.G.e_13  # pyright: ignore[reportUnusedExpression]
+e_13  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # the three unit bivectors
-g3.G.e_23  # pyright: ignore[reportUnusedExpression]
+e_23  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Linear combinations
 # -------------------
 
 # %%
-2 * g3.G.e_1 + 3 * g3.G.e_2 + 4 * g3.G.e_3 + 5 * g3.G.e_1  # pyright: ignore[reportUnusedExpression]
+2 * e_1 + 3 * e_2 + 4 * e_3 + 5 * e_1  # pyright: ignore[reportUnusedExpression]
 
 # %%
-g3.G.from_scalar(0)  # pyright: ignore[reportUnusedExpression]
+G.from_scalar(0)  # pyright: ignore[reportUnusedExpression]
 
 # %%
-g3.G.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
+G.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Symbolic vectors
@@ -104,15 +115,15 @@ g3.G.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
 # `r_vector_part(1)` keeps only the grade-1 (vector) part.
 
 # %%
-a: g3.G = g3.G.symbolic_multivector(prefix="a")
+a: G = G.symbolic_multivector(prefix="a")
 a  # pyright: ignore[reportUnusedExpression]
 
 # %%
-a_vec: g3.G = g3.G.symbolic_multivector(prefix="a").r_vector_part(1)
+a_vec: G = G.symbolic_multivector(prefix="a").r_vector_part(1)
 a_vec  # pyright: ignore[reportUnusedExpression]
 
 # %%
-b_vec: g3.G = g3.G.symbolic_multivector(prefix="b").r_vector_part(1)
+b_vec: G = G.symbolic_multivector(prefix="b").r_vector_part(1)
 b_vec  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -168,7 +179,7 @@ area(a_vec, b_vec) == area(b_vec, a_vec)
 
 # %%
 # a third vector, so we have a full 3-vector frame spanning 𝒢₃
-c_vec: g3.G = g3.G.symbolic_multivector(prefix="c").r_vector_part(1)
+c_vec: G = G.symbolic_multivector(prefix="c").r_vector_part(1)
 c_vec  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -203,8 +214,8 @@ sympy.simplify(
 # ---------------------------
 
 # %%
-g3_1: g3.G = g3.G.symbolic_multivector(prefix="a")
-g3_2: g3.G = g3.G.symbolic_multivector(prefix="b")
+g3_1: G = G.symbolic_multivector(prefix="a")
+g3_2: G = G.symbolic_multivector(prefix="b")
 show_mult(g3_1, g3_2)
 
 # %% [markdown]
@@ -212,7 +223,7 @@ show_mult(g3_1, g3_2)
 # -------------
 
 # %%
-g3_3: g3.G = g3.G.symbolic_multivector(prefix="c")
+g3_3: G = G.symbolic_multivector(prefix="c")
 ((g3_1 * g3_2) * g3_3) - (g3_1 * (g3_2 * g3_3))
 
 # %% [markdown]
@@ -222,7 +233,7 @@ g3_3: g3.G = g3.G.symbolic_multivector(prefix="c")
 # 𝒢₃ has grades 0–3: scalar, vector, bivector, trivector.
 
 # %%
-c: g3.G = g3.G.symbolic_multivector(prefix="c")
+c: G = G.symbolic_multivector(prefix="c")
 c.r_vector_part(0)
 
 # %%
@@ -241,7 +252,7 @@ c.r_vector_part(3)
 # All 2³ = 8 basis blades, in grade order.
 
 # %%
-for x in g3.G.bases():
+for x in G.bases():
     display(Math(x._repr_latex_()))
 
 # %% [markdown]
@@ -253,7 +264,7 @@ for x in g3.G.bases():
 # $a\wedge b$ and its dual; the dual is parallel to $a\times b$.
 
 # %%
-biv: g3.G = a_vec ^ b_vec
+biv: G = a_vec ^ b_vec
 biv  # pyright: ignore[reportUnusedExpression]
 
 # %%
@@ -271,7 +282,7 @@ biv * biv  # pyright: ignore[reportUnusedExpression]
 # ---------------------------------------------
 
 # %%
-m: g3.G = 1 * g3.G.e_1 + 2 * g3.G.e_2 + 2 * g3.G.e_3
+m: G = 1 * e_1 + 2 * e_2 + 2 * e_3
 m.magnitude()
 
 # %%
@@ -284,7 +295,7 @@ m.normalize()
 m.inverse()
 
 # %%
-m * m.inverse() == g3.G.from_scalar(1)
+m * m.inverse() == G.from_scalar(1)
 
 # %%
 # reverse of the pseudoscalar
@@ -303,19 +314,15 @@ m.dual()
 
 # %%
 plot_multivector(
-    2 * g3.G.from_scalar(1)
-    + 3 * g3.G.e_1
-    - 1.5 * g3.G.e_2
-    + 4 * g3.G.e_3
-    + 0.7 * (g3.G.e_1 * g3.G.e_2)
+    2 * G.from_scalar(1) + 3 * e_1 - 1.5 * e_2 + 4 * e_3 + 0.7 * (e_1 * e_2)
 )
 
 # %%
-u: g3.G = 3 * g3.G.e_1 - 1.5 * g3.G.e_2 + 2 * g3.G.e_3
+u: G = 3 * e_1 - 1.5 * e_2 + 2 * e_3
 plot_multivector(u)
 
 # %%
-v: g3.G = 1.5 * g3.G.e_1 + 5 * g3.G.e_2 - g3.G.e_3
+v: G = 1.5 * e_1 + 5 * e_2 - e_3
 plot_multivector(v)
 
 # %%
@@ -337,8 +344,8 @@ plot_multivector(u * v)
 
 # %%
 a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3", real=True)
-a: g3.Vector = a_1 * g3.Vector.e_1 + a_2 * g3.Vector.e_2 + a_3 * g3.Vector.e_3
-b: g3.Vector = b_1 * g3.Vector.e_1 + b_2 * g3.Vector.e_2 + b_3 * g3.Vector.e_3
+a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2 + a_3 * Vector.e_3
+b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2 + b_3 * Vector.e_3
 
 # %% [markdown]
 # The dot product (a scalar) and the wedge (a three-component bivector):
