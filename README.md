@@ -52,8 +52,12 @@ a.coefficient(e_1)  # 3   (the stored coefficient on a unit blade — a thin
 ```
 
 Each `g*` module exports its own basis constants (`zero`, `one`, `e_1`, …, and the
-pseudoscalar `e_12` / `e_123`), each of that module's type — so `g2.e_1 * g2.e_2`
-is a `G`, and 2D vs 3D `e_1` are simply in different modules.
+pseudoscalar `e_12` / `e_123`) **at their graded type** — `g2.e_1` is a `Vector`,
+`g2.e_12` a `Bivector`, `zero` / `one` a `Scalar` — so unqualified code keeps the
+precise graded type (`3*e_1 + 4*e_2` is a `Vector`, and `g2.e_1 * g2.e_2` is a
+`Rotor` valued as the unit bivector `e_12`). To build the full `G` concisely, use
+the class's own constant instead (`G.e_1`, so `3*G.e_1 + 4*G.e_2` is a `G`). 2D vs
+3D `e_1` are simply in different modules.
 
 ## Graded subtypes (Vector, Bivector, Rotor, …)
 
@@ -130,8 +134,9 @@ Return-type table for the geometric product `*` (𝒢₂ shown):
 | **Bivector** | Bivector | Vector | Scalar | Rotor |
 | **Rotor** | Rotor | Vector | Rotor | Rotor |
 
-A result that spans grades no single type covers widens to the full `G_n`
-(e.g. `Vector * Bivector -> G`). Build values by linear combination of the basis
+A result that spans grades no single type covers widens to the full `G_n` — this
+doesn't arise in the 𝒢₂ table above (every product is covered), but in 𝒢₃ a
+`Vector * Bivector` spans grades 1 and 3, so it widens to `G`. Build values by linear combination of the basis
 (`3*e_1 + 4*e_2`; a bivector via `e_1 ^ e_2`; a rotor via `scalar + bivector` — `+`/`-`
 also narrow to the tightest type). Rotors carry `plane_of_rotation()`, and
 `rotor_from_vectors(from, to)` builds the rotor whose sandwich `R v R.inverse()` equals
@@ -142,8 +147,8 @@ a factory: each `θ` yields an `InvertibleFunction` doing the half-angle rotor s
 exp-map way the textbooks write them: `exp` of a bivector *is* a rotor —
 `B.exp()` returns a `Rotor` (unit by construction), and
 `exp(-(θ/2) * i)` for a unit bivector `i` equals `plane_rotation`'s half-angle
-rotor (`exp` of a vector is hyperbolic, `cosh + sinh`; defined whenever `A²` is
-a scalar). A full walkthrough is in
+rotor (`exp` is defined only when `A² < 0` — a bivector or the 𝒢₃ pseudoscalar;
+a vector, whose square is positive, raises `ValueError`). A full walkthrough is in
 `notebooks/displaygraded.py`; the exp-map section lives in
 `notebooks/displayrotations.py`.
 
