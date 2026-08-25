@@ -1,8 +1,12 @@
 # Explicit-inputs rewrite of the remaining symbolic tests + plot-helper cleanup
 
-**Status:** in-progress — **`test_multivector.py` DONE and `nbplotutils.sine` resolved 2026-08-24**
-(William Emerison Six <billsix@gmail.com>). Remaining: `test_numeric_magnitude.py` (minor) and the
-`nbplotutils.cosine` removal.
+**Status:** DONE 2026-08-25. Both remainders finished: `test_numeric_magnitude.py` now inlines its two
+`sym_vec3_1` uses as explicit `g3.Vector` symbolic vectors (dropped the `gn` import), and the redundant
+`nbplotutils.cosine(v1, v2)` free function was removed — its two call sites now use the `v1.cosine(v2)`
+method (verified numerically equal, 11/15). `nbplotutils.sine` kept as-is per the 2026-08-24 decision.
+Verified: full suite 405 passed, ruff + ty clean, `displayrotations`/`displayg2` (the `create_x_and_y`
+sine/cosine path) execute headless. (Earlier: `test_multivector.py` DONE + `nbplotutils.sine` resolved
+2026-08-24.)
 **Priority:** 5
 **Difficulty:** 4
 

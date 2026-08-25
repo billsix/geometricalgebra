@@ -1,6 +1,11 @@
 # Prove associativity of the geometric product from its definition
 
-**Status:** in-progress
+**Status:** DONE 2026-08-25 — the proof is complete and now lives as a living reference doc:
+**`tasks/reference/geometric-product-associativity.md`** (code anchors re-verified against `gn.py`,
+line numbers corrected from the stale :103/:148 to :131/:130; the symbolic 𝒢₃ `(AB)C == A(BC)` check
+re-run True). The optional `displaymv.py` demo cell already exists (`:405`). Open question (discharge
+(B) in-repo vs cite as premise) resolved as **premise for now**. This doc is the work record; the
+reference doc is canonical.
 **Priority:** 3
 **Difficulty:** 2
 **Started:** 2026-07-01
