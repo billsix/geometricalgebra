@@ -8,8 +8,9 @@ grade-narrowing soundness fix). **Tier 2 DONE 2026-08-14** (William Emerison Six
 `tasks/archive/2026/08/15/redo-exp-book-referenced.md` — same mechanism), and the `inverse` `-> Self` spot-check
 (confirmed sound: returns the concrete type, not `Gn`). Generic helpers
 `classmethod_narrowing_overloads` / `inherited_classmethod_narrowing` in `gen_specialized.py`;
-ty clean (src/tests/tools), 358 tests, generator deterministic, doc-regions OK. Only `identity`
-(optional, low value) remains.
+ty clean (src/tests/tools), 358 tests, generator deterministic, doc-regions OK. Remaining:
+`identity` (optional, low value) and **Tier 3 — the project/reject/reflect pass-through instance
+methods** (added to scope 2026-08-25, Bill — see below).
 **Priority:** 4
 **Difficulty:** 4
 
@@ -65,6 +66,18 @@ mechanism (a graded override / overload resolving the concrete type for the prov
   generic `InvertibleFunction[T]` so the operand type is preserved. Low value (identity rarely
   needs the concrete type); listed for completeness.
 
+**Tier 3 — project/reject/reflect pass-through instance methods (added 2026-08-25, Bill).** Design
++ rationale + call-site sweep live in [[passthrough-project-reject-methods]]; that work was folded
+into this task so the pass-throughs are typed precisely from the start rather than shipped at
+`MultiVectorBase` and revised. Add on `MultiVectorBase` (delegating to `type(self).project/reject/
+reflect`): **`projected_onto(onto)`**, **`rejected_from(away_from)`**, **`reflected_in(across)`** —
+value-returning sugar for `factory(arg)(self)`, keeping the factories unchanged. Then give them the
+same precise graded returns as their factories — the *instance-method* analog of the Tier-1
+overloads (`Vector.rejected_from(b) → Vector` for a vector arg, `MultiVectorBase` catch-all
+otherwise), reusing the established overload machinery. Same correctness bound as Tier 1
+(vector-onto/across-vector only; higher grades stay the catch-all). Also do the call-site sweep from
+the spec doc (convert one-shot applications like `frame.py:120`; leave factory-reuse sites alone).
+
 **Different mechanism (not per-type overloads) — note, don't force:**
 
 - `transforms.projection_rotation` / `rotor_rotation` / `plane_rotation` are **free functions**
@@ -103,6 +116,9 @@ mechanism (a graded override / overload resolving the concrete type for the prov
       Bivector_n (2026-08-14, `classmethod_narrowing_overloads` +
       `inherited_classmethod_narrowing`; folded in the `i` work from `tasks/archive/2026/08/15/redo-exp-book-referenced.md`).
 - [ ] identity → generic InvertibleFunction[T] (optional, low value).
+- [ ] Tier 3: add `projected_onto`/`rejected_from`/`reflected_in` pass-throughs on
+      `MultiVectorBase`, precisely typed via instance-method overloads on the graded types; convert
+      the one-shot call sites. Spec: [[passthrough-project-reject-methods]].
 - [x] Spot-check `inverse`'s `-> Self` is sound — confirmed: Vector/Rotor/Bivector `.inverse()`
       returns the concrete type, not `Gn` (rebuilt via `type(self).from_blade_dict`).
 - [x] Update [[generated-product-typing]]'s design section (done — records the mechanism + the
