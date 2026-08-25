@@ -307,6 +307,31 @@ def test_cross_type_equality() -> None:
     assert g3.Bivector.e_12 == gn.e_1 ^ gn.e_2
 
 
+def test_same_type_eq_fast_path_stays_simplify_aware() -> None:
+    # __eq__ takes a field-wise fast path when `type(self) is type(other)`.  It must
+    # remain simplify-aware (NOT a structural `==`): the lazy classes store
+    # coefficients unreduced, so two same-type values holding mathematically-equal
+    # but differently-written symbolic coefficients must still compare EQUAL.
+    # (x + 1)**2 vs x**2 + 2*x + 1 is the canonical trap this guards.
+    x: sympy.Symbol = sympy.symbols("x")
+
+    # a fielded type (Vector) -- exercises the class_header_stmts eq_method path
+    a: g2.Vector = (x + 1) ** 2 * g2.Vector.e_1 + g2.Vector.e_2
+    b: g2.Vector = (x**2 + 2 * x + 1) * g2.Vector.e_1 + g2.Vector.e_2
+    assert type(a) is type(b)  # same concrete type -> the fast path fires
+    assert a.coeff_e_1 != b.coeff_e_1  # stored unsimplified, structurally different
+    assert a == b  # ...yet mathematically equal: the fast path must simplify per field
+    # and it must still distinguish genuinely different values (coefficient off by 1)
+    assert a != (x**2 + 2 * x + 2) * g2.Vector.e_1 + g2.Vector.e_2
+
+    # the single-field Scalar type is emitted by a *different* generator path
+    # (generate_scalar) -- cover it too
+    s1: g2.Scalar = g2.Scalar.from_blade_dict({(): (x + 1) ** 2})
+    s2: g2.Scalar = g2.Scalar.from_blade_dict({(): x**2 + 2 * x + 1})
+    assert type(s1) is type(s2) and s1.coeff_scalar != s2.coeff_scalar
+    assert s1 == s2
+
+
 def test_rotor_is_complex_2d() -> None:
     # the even subalgebra of g2.G is the complex numbers: e_12^2 == -1
     assert g2.Bivector.e_12 * g2.Bivector.e_12 == -gn.one

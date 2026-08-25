@@ -1,6 +1,36 @@
 # Generated `__eq__` — same-type field comparison instead of always via blade dict
 
-**Status:** proposed — needs go-ahead
+**Status:** DONE 2026-08-25 (William Emerison Six <billsix@gmail.com>) — see Outcome.
+
+## Outcome (2026-08-25)
+
+Implemented in `tools/gen_specialized.py` (`eq_method` now takes `fields`; wired at both call sites —
+`class_header_stmts` for the full `G` + graded types, and `generate_scalar` for the per-algebra
+`Scalar`). Regenerated (g1–g3), full suite **405 passed** incl. the new regression test
+`tests/test_graded.py::test_same_type_eq_fast_path_stays_simplify_aware`; generator **byte-identical
+across regen**.
+
+**Decision 2 was REVERSED by measurement.** The plain simplify-per-field version (what Decision 2 said
+to ship) was benchmarked to *regress*: **2.3× slower** for a low-grade value held in the full `G`
+(sparse), because dense per-field `simplify(0-0)` runs on the zero fields the *sparse* blade-dict path
+skips — sympy dominates, and the fast path did more of it. Bill's insight closed it: **sympy dominates
+only because the old `__eq__` forces every field through `sympify`+`simplify`, even plain int/float** —
+the numeric case (the specialized classes' whole point) should use a native `==`. So the fast path emits
+the **cheap-structural-first shortcut** (Decision 2's own deferred follow-up, now justified): per field
+`self.coeff_X == other.coeff_X` **or** `simplify(sympify(l)-sympify(r)) == 0` — native `==` first
+(exact + instant for numeric and same-form symbolic), simplify only on a structural mismatch.
+
+- **Bench:** numeric same-type `==` **0.34 µs** vs ~18.5 µs all-sympy (~54×) and 5.7 µs sparse-dict
+  fallback (~17×); symbolic different-form unchanged (~1.2 ms) and still correct.
+- **Floats stay EXACT** (`0.1+0.2 != 0.3`) — a native `==`, **not** tolerance. Tolerance is `isclose`'s
+  job (which the generator already emits on every type + `MultiVectorBase.isclose`; confirmed, no gap).
+  A tolerant `==` would also not be transitive.
+- Semantics unchanged from the old all-sympy `__eq__`; the blade-dict path remains the cross-type /
+  cross-representation fallback.
+
+Original plan/decisions below (Decision 2 superseded as noted).
+
+**Status (original):** proposed — needs go-ahead
 **Priority:** 5
 **Difficulty:** 4
 **Created:** 2026-08-24 (William Emerison Six <billsix@gmail.com>)

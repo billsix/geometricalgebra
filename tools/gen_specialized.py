@@ -869,8 +869,59 @@ def coerce_pair_gn() -> list[ast.stmt]:
     ]
 
 
-def eq_method() -> ast.FunctionDef:
-    """The shared simplify-aware, cross-representation ``__eq__`` as nodes."""
+def eq_method(fields: Sequence[str]) -> ast.FunctionDef:
+    """The generated simplify-aware ``__eq__`` as nodes.
+
+    Two paths.  A **same-type fast path** (``type(self) is type(other)``) compares
+    the coefficient fields directly, skipping the blade-dict construction and
+    key-set union -- pure overhead when the fields already line up one-to-one.  It
+    tries a native ``==`` per field first -- exact and instant for numeric ``Coef``
+    (a numeric multivector never touches sympy) and for structurally-identical
+    symbolic coefficients -- and falls through to
+    ``simplify(sympify(l) - sympify(r)) == 0`` only on a structural mismatch, so
+    structurally-different but mathematically-equal symbolic coefficients (e.g.
+    ``(x + 1)**2`` vs ``x**2 + 2*x + 1``) still compare equal.  Float ``==`` stays
+    EXACT on purpose (``0.1 + 0.2 != 0.3``); tolerance is ``isclose``'s job, not
+    ``==``'s (and a tolerant ``==`` would not even be transitive).  The blade-dict
+    generator is the **fallback** for the cross-type / cross-representation cases
+    (``Vector == G``, specialized ``== Gn``).  ``type(self) is type(other)`` (exact
+    identity, not ``isinstance``) is safe because every generated type is
+    ``@typing.final``.
+    """
+
+    def field_equal(field: str) -> ast.expr:
+        """``self.<field> == other.<field> or simplify(sympify(l) - sympify(r)) == 0``.
+
+        Native ``==`` first (exact + instant for numeric/same-form coefficients);
+        the simplify check runs only on a structural mismatch (the symbolic
+        differently-written-but-equal case). Float ``==`` stays exact -- ``isclose``
+        owns tolerance.
+        """
+        structural_eq: ast.expr = ast.Compare(
+            left=attribute("self", field),
+            ops=[ast.Eq()],
+            comparators=[attribute("other", field)],
+        )
+        simplify_eq: ast.expr = ast.Compare(
+            left=call(
+                attribute("sympy", "simplify"),
+                [
+                    ast.BinOp(
+                        left=call(
+                            attribute("sympy", "sympify"), [attribute("self", field)]
+                        ),
+                        op=ast.Sub(),
+                        right=call(
+                            attribute("sympy", "sympify"), [attribute("other", field)]
+                        ),
+                    )
+                ],
+            ),
+            ops=[ast.Eq()],
+            comparators=[constant(0)],
+        )
+        return ast.BoolOp(op=ast.Or(), values=[structural_eq, simplify_eq])
+
     diff: ast.BinOp = ast.BinOp(
         left=call(
             attribute("sympy", "sympify"),
@@ -905,6 +956,30 @@ def eq_method() -> ast.FunctionDef:
         ast.If(
             test=not_(isinstance_(name_ref("other"), name_ref("MultiVectorBase"))),
             body=[return_stmt(name_ref("NotImplemented"))],
+            orelse=[],
+        ),
+        # Same-type fast path: fields line up one-to-one, so compare them directly
+        # and skip the blade-dict interchange + key-union below.  ``all([...])`` (a
+        # list, not a chained ``and``) reads consistently across dimensions -- tidy
+        # for 𝒢₅'s 32-field ``G``.
+        ast.If(
+            test=ast.Compare(
+                left=call("type", [name_ref("self")]),
+                ops=[ast.Is()],
+                comparators=[call("type", [name_ref("other")])],
+            ),
+            body=[
+                return_stmt(
+                    call(
+                        "all",
+                        [
+                            ast.List(
+                                elts=[field_equal(f) for f in fields], ctx=ast.Load()
+                            )
+                        ],
+                    )
+                )
+            ],
             orelse=[],
         ),
         annotated_assign(
@@ -1054,7 +1129,7 @@ def class_header_stmts(
         *field_decls(blades),
         from_blade_dict_method(blades),
         to_blade_dict_method(blades),
-        eq_method(),
+        eq_method([field_name(b) for b in blades]),
     ]
 
 
@@ -1696,7 +1771,7 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             ],
             returns=name_ref("BladeCoef"),
         ),
-        eq_method(),
+        eq_method([field_name(())]),
         # The products/sums are the same machinery the graded types use
         # (product_overload_stubs + dispatch_method): per-rhs @overloads for a
         # precise static type (Scalar * Vector -> Vector, Scalar + Bivector ->
