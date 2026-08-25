@@ -252,10 +252,6 @@ def create_x_and_y(
     )
 
 
-def cosine(v1: MultiVectorBase, v2: MultiVectorBase) -> Coef:
-    return (v1.dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()
-
-
 def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Coef:
     # v1, v2 must be VECTORS: the ``abs(v1 * v2)`` below is used as |v1||v2|, which
     # holds only for vectors (|ab| = |a||b| when a, b are vectors).
@@ -290,7 +286,7 @@ def _draw_labelled_triangle(
     y_prime_direction_world_space = fn(ey) - fn(origin)
     angle_radians = math.atan2(
         sine(x_world_space, x_prime_direction_world_space),
-        cosine(x_world_space, x_prime_direction_world_space),
+        x_world_space.cosine(x_prime_direction_world_space),
     )
     label_offset = (
         0.0 * x_prime_direction_world_space + 0.20 * y_prime_direction_world_space
@@ -390,7 +386,7 @@ def draw_ndc(
     y_prime_direction_world_space = fn(ey) - fn(origin)
     angle_radians = math.atan2(
         sine(x_world_space, x_prime_direction_world_space),
-        cosine(x_world_space, x_prime_direction_world_space),
+        x_world_space.cosine(x_prime_direction_world_space),
     )
     label_offset = (
         0.0 * x_prime_direction_world_space + 0.20 * y_prime_direction_world_space

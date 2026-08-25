@@ -24,7 +24,6 @@ import sympy
 
 import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase
-from gacalc.gn import sym_vec3_1
 from gacalc.transforms import InvertibleFunction, inverse, rotor_rotation
 
 
@@ -56,7 +55,12 @@ def test_rotor_rotation_of_float_vectors_stays_float_forward_and_inverse() -> No
 
 def test_symbolic_magnitude_stays_symbolic() -> None:
     # symbolic coefficients must still go through sympy.sqrt.
-    assert isinstance(abs(sym_vec3_1), sympy.Expr)
+    a_1: sympy.Symbol
+    a_2: sympy.Symbol
+    a_3: sympy.Symbol
+    a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
+    v: g3.Vector = a_1 * g3.Vector.e_1 + a_2 * g3.Vector.e_2 + a_3 * g3.Vector.e_3
+    assert isinstance(abs(v), sympy.Expr)
 
 
 def test_normalize_and_inverse_of_zero_raise_for_every_coefficient_kind() -> None:
@@ -73,4 +77,11 @@ def test_normalize_and_inverse_of_zero_raise_for_every_coefficient_kind() -> Non
         with pytest.raises(ZeroDivisionError):
             z.inverse()
     # regression: a non-zero symbolic vector must NOT trip the guard.
-    assert sym_vec3_1.inverse() is not None
+    a_1: sympy.Symbol
+    a_2: sympy.Symbol
+    a_3: sympy.Symbol
+    a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
+    symbolic: g3.Vector = (
+        a_1 * g3.Vector.e_1 + a_2 * g3.Vector.e_2 + a_3 * g3.Vector.e_3
+    )
+    assert symbolic.inverse() is not None
