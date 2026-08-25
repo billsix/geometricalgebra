@@ -1,8 +1,31 @@
 # Read the pseudoscalar coefficient via `unit_pseudoscalar`, not a hand-built blade
 
-**Status:** proposed — needs go-ahead. Created 2026-08-25 (William Emerison Six <billsix@gmail.com>)
+**Status:** DONE 2026-08-25 (William Emerison Six <billsix@gmail.com>) — see Outcome.
 **Priority:** 4
 **Difficulty:** 1
+
+## Outcome (2026-08-25)
+
+Implemented in `signed_content` (`src/gacalc/measure.py`), 405 tests green, ty clean. **The naive
+swap I first proposed (`representation.unit_pseudoscalar(dimension)`) was WRONG** and is the
+finding worth keeping: `unit_pseudoscalar` builds `e₁…e_n` by multiplying **grade-1 basis vectors
+through grade-0/1 intermediates** (`math.prod([basis_vector(x) …], start=cls.one())`), so it only
+works on a **full representation** — a graded type (the wedge of two 2D vectors is a `Bivector`)
+can't hold those intermediates and returns an empty value, `ValueError: not enough values to
+unpack` out of `coefficient`. Fix: build the pseudoscalar on **`Gn`** (which holds every grade) and
+let `coefficient` do a pure blade-key lookup on the (possibly graded) wedge:
+
+```python
+from gacalc.gn import Gn  # lazy import (mirrors base.py's lazy `from gacalc import measure`)
+wedge: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(*vectors)
+return wedge.coefficient(Gn.unit_pseudoscalar(dimension))
+```
+
+Type-clean because `wedge` is statically `MultiVectorBase`, so the `coefficient(blade: Self)` param
+accepts any `MultiVectorBase` (incl. `Gn`); behaviour-identical (`coefficient` reads only the blade
+key, returns `0` on a dependent set). The manual `tuple(range(1, dimension + 1))` and its
+duplicated pseudoscalar-blade knowledge are gone; the construction now lives only in
+`unit_pseudoscalar`. Lesson recorded inline as a code comment at the call site.
 
 ## Goal
 

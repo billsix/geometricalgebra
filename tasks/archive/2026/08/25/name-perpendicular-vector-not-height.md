@@ -1,6 +1,9 @@
 # Rename the `height` loop variable to name the *vector*, not its magnitude
 
-**Status:** proposed — needs go-ahead. Created 2026-08-25 (William Emerison Six <billsix@gmail.com>)
+**Status:** DONE 2026-08-25 (William Emerison Six <billsix@gmail.com>) — renamed the
+`content_by_rejection` loop var `height` → `perpendicular_vector` (with the
+`perpendicular_vector: MultiVectorBase` declaration above the loop, per the loop-target-annotation
+rule); `.magnitude()` is the height. 405 tests green, ty clean.
 **Priority:** 4
 **Difficulty:** 1
 

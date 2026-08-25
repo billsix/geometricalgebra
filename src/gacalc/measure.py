@@ -38,6 +38,7 @@ These are representation-agnostic free functions over
 
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 
 from gacalc.base import Coef, MultiVectorBase
@@ -112,10 +113,13 @@ def content_by_rejection(vectors: Sequence[MultiVectorBase]) -> Coef:
             :func:`~gacalc.frame.make_orthogonal_frame`).
     """
     _require_vectors(vectors)
-    result: Coef = 1
-    for height in make_orthogonal_frame(vectors):
-        result = result * height.magnitude()
-    return result
+    return math.prod(
+        (
+            perpendicular_vector.magnitude()
+            for perpendicular_vector in make_orthogonal_frame(vectors)
+        ),
+        start=1,
+    )
 
 
 def area(a: MultiVectorBase, b: MultiVectorBase) -> Coef:
@@ -184,9 +188,14 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Coef:
     # When k = n the wedge is a single top-grade blade c·I_n, and gacalc's unit
     # pseudoscalar is +e_(1,…,n); so c -- the signed content, relative to the standard
     # orientation -- is the coefficient of that blade (0 if the set is dependent).
+    # unit_pseudoscalar builds e₁…e_n by multiplying grade-1 basis vectors through
+    # grade-0/1 intermediates, so it needs a full representation (Gn) -- a graded type
+    # (e.g. Bivector) can't hold them.  coefficient() reads only its blade key, so
+    # passing the Gn pseudoscalar to the (possibly graded) wedge is a pure lookup.
+    from gacalc.gn import Gn
+
     wedge: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(*vectors)
-    pseudoscalar_blade: tuple[int, ...] = tuple(range(1, dimension + 1))
-    return wedge.to_blade_dict().get(pseudoscalar_blade, 0)
+    return wedge.coefficient(Gn.unit_pseudoscalar(dimension))
 
 
 def signed_area(a: MultiVectorBase, b: MultiVectorBase) -> Coef:

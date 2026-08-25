@@ -474,6 +474,20 @@ authority on all of these.
   return `None`. So `top = names.sort()` is a bug, and you must never chain a mutator.
   Command–Query Separation: a function either *does* (side effect, returns `None`) or
   *computes* (value, no side effect) — not both.
+- **Reduce with `sum` / `math.prod`, not a hand-rolled accumulator loop**, when a loop's
+  only job is to fold an iterable under `+` or `*`. The builtin names the operation and
+  can't get the accumulator wiring wrong, and it reads as one expression. Pass the
+  **correct identity** as `start`: `sum(xs)` (implicit `start=0`), `math.prod(xs,
+  start=1)`; for a non-numeric accumuland pass the type's identity explicitly
+  (`math.prod(blades, start=cls.one())`, `sum(mvs, start=cls.zero())`), as
+  `base.unit_pseudoscalar` / `symbolic_multivector` already do. An `int` identity keeps a
+  float/sympy pipeline intact (`1 * 2.0 == 2.0`). Worked example —
+  `measure.content_by_rejection` went from `result = 1; for pv in
+  make_orthogonal_frame(vectors): result = result * pv.magnitude()` to `math.prod((pv.magnitude()
+  for pv in make_orthogonal_frame(vectors)), start=1)`. **Only when the loop is a pure
+  fold:** keep the explicit loop if the body also has side effects, an early exit, or more
+  than one accumulator, or if there is no clean identity element. (Same spirit: `any` /
+  `all` / `min` / `max`, and `functools.reduce` for other associative folds.)
 - **Idioms** (the full checklist; the ones ruff already enforces are marked): EAFP
   over LBYL; truthiness for emptiness `if not seq:` (but compare ints to `0`
   explicitly); `is`/`is not` for `None`/singletons *(ruff)*; `isinstance` over
