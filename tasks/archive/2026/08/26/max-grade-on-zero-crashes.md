@@ -1,8 +1,26 @@
 # `max_grade()` (and the grade predicates) crash on the zero multivector
 
-**Status:** proposed — needs go-ahead. Created 2026-08-26 (William Emerison Six <billsix@gmail.com>)
+**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — see Outcome.
 **Priority:** 4
 **Difficulty:** 2
+
+## Outcome (2026-08-26)
+
+Fixed in `src/gacalc/base.py`, 410 tests green (1 new), ruff + ty clean. Two small edits, the
+**every-grade** convention (Bill's decision):
+
+- `max_grade()` → `max(self.grades(), default=0)` (no more `max([])` crash on zero).
+- `is_homogeneous_of_grade_r(r)` → `not grades or (max(grades) == r and self.is_r_vector())`, so the
+  zero multivector is homogeneous of every grade.
+
+Result (verified across `Gn`, a graded `Vector`, the full `G`, and another graded type): `max_grade
+== 0` and `is_scalar == is_vector == is_bivector == is_trivector == is_r_vector == True` on zero,
+consistent with the pre-existing `is_scalar(zero) == True`; products with a zero operand still return
+zero (unchanged). Consumer win: `content([Gn.zero()])` now returns `0` instead of crashing, and an
+all-zero `signed_content` now raises via its own clean `k != n` guard (`n = 0`) rather than the
+`is_vector` crash — the archived signed-content task's all-zero test stays green.
+
+New regression test: `tests/test_multivector.py::test_zero_multivector_is_homogeneous_of_every_grade`.
 
 ## The bug
 

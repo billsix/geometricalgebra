@@ -590,8 +590,12 @@ class MultiVectorBase(abc.ABC):
     def is_homogeneous_of_grade_r(self, r: int) -> bool:
         """
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 4
+
+        The zero multivector has no present blades, so it is trivially homogeneous of
+        EVERY grade -- consistent with ``is_scalar(zero) == True``.
         """
-        return self.max_grade() == r and self.is_r_vector()
+        grades: list[int] = self.grades()
+        return not grades or (max(grades) == r and self.is_r_vector())
 
     def is_scalar(self) -> bool:
         """ """
@@ -665,7 +669,10 @@ class MultiVectorBase(abc.ABC):
         return list(set(len(blade) for blade in self.to_blade_dict().keys()))
 
     def max_grade(self) -> int:
-        return max(self.grades())
+        # The zero multivector has no present blades; its max grade is 0 (it is
+        # homogeneous of every grade -- see is_homogeneous_of_grade_r) rather than a
+        # crash on max([]).
+        return max(self.grades(), default=0)
 
     def reverse(self) -> typing.Self:
         """Reverse  Ã  — reverses the order of the vector factors in each blade,

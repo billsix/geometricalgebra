@@ -14,6 +14,8 @@
 
 import itertools
 
+import gacalc.g2 as g2
+import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase
 from gacalc.gn import (
     MultiVector,
@@ -239,6 +241,24 @@ def test_is_bivector() -> None:
     b: MultiVector = 0 * e_1 + 1 * e_2
     assert not (a * b).is_bivector()
     assert (a.wedge(b)).is_bivector()
+
+
+def test_zero_multivector_is_homogeneous_of_every_grade() -> None:
+    """The zero multivector has no present blades, so it is trivially homogeneous of
+    EVERY grade -- consistent with ``is_scalar(zero) == True``.  The grade predicates
+    must return that, not crash on ``max([])``.  Regression for the max_grade()-on-zero
+    bug (across representations: general Gn, a graded type, and the full G)."""
+    z: MultiVectorBase
+    for z in (zero, g2.Vector.zero(), g2.G.zero(), g3.Bivector.zero()):
+        assert z.max_grade() == 0
+        assert z.is_scalar()
+        assert z.is_vector()
+        assert z.is_bivector()
+        assert z.is_trivector()
+        assert z.is_r_vector()
+        assert z.is_homogeneous_of_grade_r(0)
+        assert z.is_homogeneous_of_grade_r(1)
+        assert z.is_homogeneous_of_grade_r(2)
 
 
 def test_even_part_odd_part() -> None:
