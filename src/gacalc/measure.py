@@ -57,6 +57,23 @@ def _require_vectors(vectors: Sequence[MultiVectorBase]) -> None:
             )
 
 
+def _max_basis_index(vectors: Sequence[MultiVectorBase]) -> int:
+    """The largest basis-vector index appearing in ``vectors`` (``0`` if all zero).
+
+    For the dimension-agnostic ``Gn`` this is the dimension of the smallest coordinate
+    space containing the vectors -- the ``n`` a signed (oriented) ``n``-volume lives in.
+    """
+    return max(
+        (
+            index
+            for vector in vectors
+            for blade in vector.to_blade_dict()
+            for index in blade
+        ),
+        default=0,
+    )
+
+
 def content(vectors: Sequence[MultiVectorBase]) -> Coef:
     """The k-dimensional **content** of the parallelotope on ``vectors`` -- the
     high-school length/area/volume generalized (Williamson & Trotter p. 308).
@@ -149,53 +166,71 @@ def volume(a: MultiVectorBase, b: MultiVectorBase, c: MultiVectorBase) -> Coef:
 
 
 def signed_content(vectors: Sequence[MultiVectorBase]) -> Coef:
-    """The **signed** (oriented) content -- the determinant -- defined only when the
-    vectors span the full space (``k = n``).
+    """The **signed** (oriented) content -- the determinant -- of ``n`` vectors that
+    span the full ``n``-dimensional space.
 
-    When ``k = n`` the wedge is a multiple of the unit pseudoscalar,
-    ``a_1 ∧ … ∧ a_n = (signed content) · I_n``; this returns that scalar.  It is the
-    **determinant** of the vectors' coordinates, so it carries the **orientation** --
-    the sign flips when two vectors are swapped -- and ``abs(signed_content) ==
-    content`` (the unsigned magnitude).  :func:`signed_area` / :func:`signed_volume`
-    are the k = 2 / k = 3 aliases.
+    The wedge of ``n`` spanning vectors is a multiple of the unit pseudoscalar,
+    ``a_1 ∧ … ∧ a_n = c · I_n``; this returns that scalar ``c`` -- the **determinant**
+    of the vectors' coordinates.  It carries the **orientation** (the sign flips when
+    two vectors are swapped) and ``abs(signed_content) == content`` (the unsigned
+    magnitude).  :func:`signed_area` / :func:`signed_volume` are the ``k = 2`` /
+    ``k = 3`` aliases.
 
-    For ``k < n`` (e.g. the *area* of two vectors in 3-space) there is **no scalar
-    sign** -- the orientation is the wedge bivector's attitude, not a ``±`` -- so this
-    raises; use :func:`content` there.  Needs a fixed-dimension type (``g2``/``g3``);
-    the general ``Gn`` has no ``DIMENSION`` (no notion of "full space"), so it raises
-    too.  A dependent full set gives ``0`` (a flat parallelotope), like
-    :func:`content`.
+    Works for **any** representation, including the dimension-agnostic ``Gn``.  The
+    ambient dimension ``n`` comes from:
+
+    - a **fixed-dimension** type's own ``DIMENSION`` (``g2`` -> 2, ``g3`` -> 3); or
+    - for ``Gn``, the **largest basis index** the vectors use -- the smallest coordinate
+      space containing them.
+
+    Signed content is a scalar only for **exactly ``n`` vectors** (``k = n``).  The
+    implementation is the pseudoscalar **dual** of the wedge:
+    ``dual(a_1 ∧ … ∧ a_k, n)`` is a *scalar* iff the wedge is top-grade, i.e. iff the
+    vectors span the full space, so a scalar result *is* that proof.  A dependent set of
+    the right count (``k = n`` but parallel/coplanar) wedges to ``0`` and returns ``0``
+    -- a flat parallelotope, like :func:`content`.
+
+    The **wrong count** has no scalar sign and raises: too few (``k < n`` -- e.g. the
+    *area* of two vectors in 3-space, whose orientation is a bivector's attitude, not a
+    ``±``) or too many (``k > n``, over-determined).  Use :func:`content` (unsigned)
+    there.
+
+    Examples:
+        >>> import gacalc.gn as gn  # signed content works on the general Gn now
+        >>> signed_content([gn.e_1, gn.e_2])          # oriented unit square
+        1
+        >>> signed_content([gn.e_2, gn.e_1])          # swap flips the sign
+        -1
 
     Raises:
-        ValueError: on an empty sequence, a non-vector member, a type with no fixed
-            ``DIMENSION`` (e.g. ``Gn``), or when ``len(vectors) != DIMENSION``
-            (``k < n``, where no scalar sign exists).
+        ValueError: on an empty sequence or a non-vector member (via
+            :func:`_require_vectors`), or when ``len(vectors) != n`` -- the wrong number
+            of vectors to span the space (too few, or too many / over-determined).
     """
     _require_vectors(vectors)
     representation = type(vectors[0])
     dimension: int | None = getattr(representation, "DIMENSION", None)
-    if dimension is None:
+    # A fixed type declares the ambient dimension (and its dual is locked to it); the
+    # dimension-agnostic Gn takes the smallest space containing the vectors.
+    n: int = dimension if dimension is not None else _max_basis_index(vectors)
+    if len(vectors) != n:
         raise ValueError(
-            "signed content needs a fixed-dimension type (e.g. g2/g3); the general Gn "
-            "has no DIMENSION, so 'full space' -- and thus the sign -- is undefined"
+            "signed content is the oriented n-volume: it needs exactly n vectors "
+            f"to span the n-dimensional space (k = n); got k = {len(vectors)}, "
+            f"n = {n}. Use content() (unsigned) for k != n."
         )
-    if len(vectors) != dimension:
-        raise ValueError(
-            "signed content is only defined when the vectors span the full space "
-            f"(k = n = {dimension}); got {len(vectors)}. Use content() (unsigned) for "
-            "k < n, where the orientation is a blade, not a scalar sign."
-        )
-    # When k = n the wedge is a single top-grade blade c·I_n, and gacalc's unit
-    # pseudoscalar is +e_(1,…,n); so c -- the signed content, relative to the standard
-    # orientation -- is the coefficient of that blade (0 if the set is dependent).
-    # unit_pseudoscalar builds e₁…e_n by multiplying grade-1 basis vectors through
-    # grade-0/1 intermediates, so it needs a full representation (Gn) -- a graded type
-    # (e.g. Bivector) can't hold them.  coefficient() reads only its blade key, so
-    # passing the Gn pseudoscalar to the (possibly graded) wedge is a pure lookup.
-    from gacalc.gn import Gn
-
+    # k = n: the wedge is c·I_n (or 0 when the vectors are dependent), so its dual by
+    # I_n is the scalar c -- the signed content.  A non-scalar dual would mean the
+    # vectors don't span the full space; is_scalar() states that invariant (it holds
+    # for k = n, and is correct on the zero/degenerate case, where max_grade() raises).
     wedge: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(*vectors)
-    return wedge.coefficient(Gn.unit_pseudoscalar(dimension))
+    oriented: MultiVectorBase = wedge.dual(n)
+    if not oriented.is_scalar():
+        raise ValueError(
+            "signed content is a scalar only when the vectors span the full "
+            f"space; got a grade-{oriented.max_grade()} orientation."
+        )
+    return oriented.scalar_part()
 
 
 def signed_area(a: MultiVectorBase, b: MultiVectorBase) -> Coef:

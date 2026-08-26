@@ -1,8 +1,28 @@
 # Define `signed_content` on `Gn` (and simplify its guards) via the dual-is-scalar test
 
-**Status:** proposed — needs go-ahead. Created 2026-08-26 (William Emerison Six <billsix@gmail.com>)
+**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — see Outcome.
 **Priority:** 4
 **Difficulty:** 3
+
+## Outcome (2026-08-26)
+
+Implemented in `signed_content` (`src/gacalc/measure.py`); **409 tests green** (4 new), ruff + ty
+clean (src and tests). `signed_content` now works on `Gn` (`n = max basis index`) as well as the
+fixed types (`n = DIMENSION`), requires **exactly `k = n`** (else raises — too few or over-determined),
+and returns the pseudoscalar **dual**'s scalar part (`0` for a right-count degenerate/parallel set).
+
+- **No `Gn` import needed** — `wedge.dual(n)` self-dispatches (Gn wedge → `Gn.unit_pseudoscalar`;
+  graded wedge → its own, locked to `DIMENSION`), so the old lazy `from gacalc.gn import Gn` is gone.
+- Added the private `_max_basis_index(vectors)` helper (`default=0` for all-zero).
+- New tests: `Gn` full-space (numeric, matches g2/g3), the symbolic 2×2 determinant, parallel/coplanar
+  `k=n` → `0`, and the raise cases (too-few, over-determined, all-zero). Replaced the obsolete
+  `test_signed_content_needs_full_space_and_fixed_dimension` (which asserted the old "Gn raises").
+- **Discovered a pre-existing fragility (NOT fixed here, flagged):** `max_grade()` does `max([])`
+  and **raises on a zero multivector**, so `is_vector()` / `is_homogeneous_of_grade_r()` crash on
+  `Gn.zero()` — which is why an all-zero input raises inside `_require_vectors` (a `ValueError`, so
+  it still matches decision 2's "raise", and the test is robust to a future fix). A clean
+  `max_grade()`/`is_vector()`-on-zero would be a small separate `base.py` task; kept out of scope to
+  avoid a signed-content task turning into a grade-methods refactor.
 
 ## Goal
 

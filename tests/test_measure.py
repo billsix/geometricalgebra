@@ -202,15 +202,42 @@ def test_signed_content_dependent_full_set_is_zero() -> None:
     assert signed_area(p, 4 * g2.e_1 + 2 * g2.e_2) == 0  # parallel
 
 
-def test_signed_content_needs_full_space_and_fixed_dimension() -> None:
-    # k < n: two vectors in 3-space have no scalar sign (orientation is a bivector).
-    x = g3.e_1
-    y = g3.e_2
+def test_signed_content_wrong_count_raises() -> None:
+    # k < n on a fixed type: two vectors in 3-space have no scalar sign (a bivector).
     with pytest.raises(ValueError):
-        signed_content([x, y])
-    # Gn has no fixed DIMENSION, so "full space" -- and the sign -- is undefined.
+        signed_content([g3.e_1, g3.e_2])
+    # Gn, too few: 2 vectors reaching index 3 -> n=3, k != n.
     with pytest.raises(ValueError):
-        signed_content([e_1, e_2])
+        signed_content([e_1, e_3])
+    # Gn, over-determined: 2 vectors reaching only index 1 -> n=1, k=2 != n.
+    with pytest.raises(ValueError):
+        signed_content([e_1, 2 * e_1])
+    # all-zero -> no space to span -> raises.
+    with pytest.raises(ValueError):
+        signed_content([Gn.zero(), Gn.zero()])
+
+
+def test_signed_content_on_gn_full_space() -> None:
+    # Gn now supports signed content when the vectors span their own space (k = n),
+    # matching the fixed-dimension g2/g3 result exactly.
+    assert signed_content([e_1, e_2]) == 1  # oriented unit square
+    assert signed_content([e_2, e_1]) == -1  # swap flips the orientation
+    assert signed_content([e_1, e_2, e_3]) == 1  # oriented unit cube
+    assert signed_content([2 * e_1 + e_2, e_1 + 3 * e_2]) == 5  # the 2x2 determinant
+    assert signed_content([e_1, e_2]) == signed_content([g2.e_1, g2.e_2])
+
+
+def test_signed_content_on_gn_symbolic_is_the_determinant() -> None:
+    a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
+    a = a_1 * e_1 + a_2 * e_2
+    b = b_1 * e_1 + b_2 * e_2
+    assert signed_content([a, b]) == a_1 * b_2 - a_2 * b_1
+
+
+def test_signed_content_parallel_full_count_is_zero() -> None:
+    # k = n but linearly dependent (parallel / coplanar) -> flat -> 0.
+    assert signed_content([e_1 + e_2, 2 * e_1 + 2 * e_2]) == 0  # parallel, k=n=2
+    assert signed_content([e_1, e_3, e_1 + e_3]) == 0  # coplanar, k=n=3
 
 
 # --- pass-through methods on the base (discoverability sugar) ----------------
