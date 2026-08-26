@@ -37,6 +37,7 @@ import typing
 
 import pytest
 import sympy
+from _helpers import random_vector
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
@@ -99,23 +100,13 @@ def test_projection_and_rejection_split_the_product_3d() -> None:
     assert a_perp * b == a.wedge(b)
 
 
-def _random_vector(dim: int) -> Gn:
-    # random is fine here: these are test vectors, not cryptographic material.
-    basis: list[Gn] = [e_1, e_2, e_3][:dim]
-    v: Gn = Gn.zero()
-    basis_vector: Gn
-    for basis_vector in basis:
-        v = v + random.uniform(-5.0, 5.0) * basis_vector  # noqa: S311
-    return v
-
-
 @pytest.mark.parametrize("dim", [2, 3])
 def test_projection_rejection_split_numeric(dim: int) -> None:
     random.seed(20260803)
     tol: float = 1e-9
     for _ in range(100):
-        a: Gn = _random_vector(dim)
-        b: Gn = _random_vector(dim)
+        a: Gn = random_vector(dim)
+        b: Gn = random_vector(dim)
         a_par: MultiVectorBase = Gn.project(onto=b)(a)
         a_perp: MultiVectorBase = Gn.reject(away_from=b)(a)
         assert (a_par * b).isclose(a.dot(b), rel_tol=tol, abs_tol=tol)

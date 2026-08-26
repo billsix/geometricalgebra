@@ -1,8 +1,26 @@
 # Use `sum` for the hand-rolled fold loops in tests
 
-**Status:** proposed — needs go-ahead. Created 2026-08-26 (William Emerison Six <billsix@gmail.com>)
+**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — see Outcome.
 **Priority:** 5
 **Difficulty:** 2
+
+## Outcome (2026-08-26)
+
+Done, 405 tests green, ruff + ty clean (src and tests). Both folds converted:
+- `_random_vector` in `test_measure.py` / `test_frame.py` / `test_dot_wedge_projection_split.py` →
+  `sum((random.uniform(-5.0, 5.0) * basis_vector for basis_vector in basis), start=Gn.zero())`; the
+  `basis_vector: Gn` annotation dropped, the `# noqa: S311` moved onto the genexpr line.
+- `test_conformance.py` `vector_sum` → `sum((coeffs[b] * getattr(mod, field_name(b)) for b in
+  grade1), start=graded_type(1).zero())`; the now-unused `first` local removed.
+- **One extra fix needed:** the `start=graded_type(1).zero()` tripped ty — the nested
+  `graded_type` helper was annotated `-> type` (bare), which has no `.zero()`. Tightened it to
+  `-> type[MultiVectorBase]` (honest: it returns graded classes, all `MultiVectorBase` subclasses),
+  which is also a small typing improvement to the helper.
+- `recon` (test_conformance.py) left as-is per plan (assert side effect in the loop body).
+- Optional `_random_vector` dedup into a shared helper: **also DONE 2026-08-26** (follow-up) —
+  extracted to `tests/_helpers.py` as `random_vector(dim)`, imported by the three test files (`from
+  _helpers import random_vector`); ty resolves the sibling import with no `pyproject.toml` change,
+  ruff + ty clean, 405 tests green.
 
 ## Goal
 

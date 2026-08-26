@@ -26,6 +26,7 @@ from collections.abc import Sequence
 
 import pytest
 import sympy
+from _helpers import random_vector
 
 from gacalc.base import MultiVectorBase
 from gacalc.frame import (
@@ -45,17 +46,6 @@ from gacalc.gn import (
     sym_vec3_2,
 )
 from gacalc.measure import content
-
-
-def _random_vector(dim: int) -> Gn:
-    # random is fine here: these are test vectors, not cryptographic material.
-    basis: list[Gn] = [e_1, e_2, e_3][:dim]
-    v: Gn = Gn.zero()
-    basis_vector: Gn
-    for basis_vector in basis:
-        v = v + random.uniform(-5.0, 5.0) * basis_vector  # noqa: S311
-    return v
-
 
 # --- is_frame / are_linearly_independent -----------------------------------
 
@@ -135,7 +125,7 @@ def test_orthogonal_frame_3d_concrete() -> None:
 def test_orthogonal_frame_orthogonal_numeric_3d() -> None:
     random.seed(20260823)
     for _ in range(100):
-        vectors: list[Gn] = [_random_vector(3) for _ in range(3)]
+        vectors: list[Gn] = [random_vector(3) for _ in range(3)]
         # three random vectors are independent with probability 1
         assert is_frame(vectors, float_close_to_zero=True)
         frame: list = make_orthogonal_frame(vectors)
@@ -208,7 +198,7 @@ def test_hestenes_equals_rejection_numeric() -> None:
     random.seed(20260823)
     for dim in (2, 3):
         for _ in range(50):
-            vectors: list[Gn] = [_random_vector(dim) for _ in range(dim)]
+            vectors: list[Gn] = [random_vector(dim) for _ in range(dim)]
             rejection: list[MultiVectorBase] = make_orthogonal_frame(vectors)
             hestenes: list[MultiVectorBase] = make_orthogonal_frame_hestenes(vectors)
             for k in range(1, dim + 1):

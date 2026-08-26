@@ -309,7 +309,7 @@ def test_basis_constants(n: int, cls) -> None:
         3: "Trivector",
     }
 
-    def graded_type(grade: int) -> type:
+    def graded_type(grade: int) -> type[MultiVectorBase]:
         return getattr(mod, grade_prefix[grade])
 
     assert type(mod.zero) is graded_type(0)
@@ -326,10 +326,10 @@ def test_basis_constants(n: int, cls) -> None:
     # algebra's full class cls.
     grade1: list[Blade] = [x for x in blades(n) if len(x) == 1]
     coeffs: dict[Blade, int] = {b: i + 2 for i, b in enumerate(grade1)}
-    first: Blade = grade1[0]
-    vector_sum: MultiVectorBase = coeffs[first] * getattr(mod, field_name(first))
-    for b in grade1[1:]:
-        vector_sum = vector_sum + coeffs[b] * getattr(mod, field_name(b))
+    vector_sum: MultiVectorBase = sum(
+        (coeffs[b] * getattr(mod, field_name(b)) for b in grade1),
+        start=graded_type(1).zero(),
+    )
     assert type(vector_sum) is graded_type(1)
     assert vector_sum == Gn.from_blade_dict(coeffs)
     assert type(3 * mod.one + vector_sum) is cls

@@ -30,6 +30,7 @@ import random
 
 import pytest
 import sympy
+from _helpers import random_vector
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
@@ -48,17 +49,6 @@ from gacalc.measure import (
     signed_volume,
     volume,
 )
-
-
-def _random_vector(dim: int) -> Gn:
-    # random is fine here: these are test vectors, not cryptographic material.
-    basis: list[Gn] = [e_1, e_2, e_3][:dim]
-    v: Gn = Gn.zero()
-    basis_vector: Gn
-    for basis_vector in basis:
-        v = v + random.uniform(-5.0, 5.0) * basis_vector  # noqa: S311
-    return v
-
 
 # --- basic values ----------------------------------------------------------
 
@@ -170,7 +160,7 @@ def test_content_equals_content_by_rejection_numeric() -> None:
     random.seed(20260823)
     for dim in (2, 3):
         for _ in range(100):
-            vectors: list[Gn] = [_random_vector(dim) for _ in range(dim)]
+            vectors: list[Gn] = [random_vector(dim) for _ in range(dim)]
             assert math.isclose(
                 float(content(vectors)),
                 float(content_by_rejection(vectors)),
