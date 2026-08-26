@@ -223,6 +223,17 @@ a concrete one is statically knowable. Full analysis + rationale in
   CLAUDE.md Architecture claim ("project/reject are grade-preserving"). Guarded by `assert_type`
   (`Vector`/`Vector.project`/`reject`/`reflect → Vector_n`, 2D+3D). Origin: Bill noticing
   `proj_b(a)` of a vector is a `Vector`, not `MultiVectorBase`.
+- **The project/reject/reflect *pass-through* instance methods (2026-08-26)** —
+  `projected_onto(onto)` / `rejected_away_from(away_from)` / `reflected_across(across)` on
+  `MultiVectorBase`, value-returning sugar for `factory(arg)(self)` (the factories stay for
+  compose/label/pipeline). Same precision via the **instance-method analog**
+  **`passthrough_method_overrides(self_spec, onto_types, method, param_name, max_onto_grade)`**: one
+  `@typing.overload` per grade-pure blade type up to the same caps (project any grade; reject/reflect
+  ≤ Bivector), then the `MultiVectorBase` catch-all, then a `return super().<method>(...)` impl —
+  `self` not `cls`, and the return is the plain **value** type (`Vector_n` / `MultiVectorBase`), NOT a
+  `ComposableFunction` wrapper, so the impl returns `MultiVectorBase` directly (no invariance issue,
+  unlike the factory case's `wrapper[Any]` impl). Names mirror each factory's keyword; guarded by
+  `assert_type`. — `tasks/archive/2026/08/26/precise-typing-remaining-methods.md`.
 - **`rotor_from_vectors`** — `-> MultiVectorBase`, but always builds scalar + bivector = a rotor,
   so `Vector_n.rotor_from_vectors → Rotor_n` (mirrors `Bivector_n.exp() → Rotor_n`). **DONE
   2026-08-15**, with the plane helpers: **`bivector_from_vectors` / `i` → `Bivector_n`** and

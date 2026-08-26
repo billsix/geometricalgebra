@@ -67,10 +67,17 @@ as `∏ |heights|`, or **both with an equivalence test** is the open implementat
 **signed** content — `signed_content`/`signed_area`/`signed_volume` — but only when the vectors span
 the full space (`k = n`): then `a_1∧…∧a_n = (signed content)·I_n`, and the signed content is that
 scalar — the **determinant**, which flips sign when two vectors swap, with `abs(signed) == unsigned`.
-For `k < n` (e.g. the area of two vectors in 3-space) the orientation is the wedge *bivector's*
-attitude, not a scalar ±, so there is no signed scalar and it raises; likewise for the dimensionless
-`Gn`. This is the high-school "signed area = `ad − bc`" / right-hand-rule orientation — kept general
-functions unsigned so they still work for any `k ≤ n`, with the sign added only where it exists.
+The wrong count has no signed scalar and raises: **too few** (`k < n`, e.g. the area of two vectors
+in 3-space, whose orientation is the wedge *bivector's* attitude, not a scalar ±) or **too many**
+(over-determined). This is the high-school "signed area = `ad − bc`" / right-hand-rule orientation —
+the unsigned functions stay usable for any `k ≤ n`, with the sign added only where it exists.
+
+**Works on any representation, including the dimension-agnostic `Gn`** (updated 2026-08-26): the
+implementation is the pseudoscalar **dual** of the wedge — `dual(a_1∧…∧a_k, n)` is a *scalar* iff
+`k = n` (a right-count degenerate/parallel set → `0`) — so the ambient dimension `n` is all it needs.
+A fixed type supplies `n` from its `DIMENSION`; `Gn` infers `n` from the **largest basis index** the
+vectors use (the smallest coordinate space containing them). See
+`tasks/archive/2026/08/26/signed-content-on-gn-via-dual.md`.
 
 ## How they're exposed (free functions + a little method sugar)
 

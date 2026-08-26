@@ -261,7 +261,12 @@ non-invertible input (the runtime backstop when the type distinction is bypassed
 callable, **construct the type directly** (`ComposableFunction(fn, "P_{B}")` /
 `InvertibleFunction(func=…, latex_repr=…, inverse=…, latex_repr_inv=…)`) — there is no `labeled`
 helper. `project`/`reject`/`reflect` return types are typed at `MultiVectorBase` (not `Self`): a
-caller wanting the concrete parameter (`ComposableFunction[Vector]`) casts at the use site. This
+caller wanting the concrete parameter (`ComposableFunction[Vector]`) casts at the use site. **For the
+one-shot "apply to this value" case, `MultiVectorBase` also has value-returning pass-through methods
+`projected_onto(onto)` / `rejected_away_from(away_from)` / `reflected_across(across)`** (sugar for
+`type(self).project/reject/reflect(arg)(self)`; the factories stay for compose/label/pipeline) — the
+generated vector types narrow their return to the concrete `Vector_n` (see
+`tasks/reference/generated-product-typing.md`). This
 layer is shared with *modelviewprojection*; Jupyter display via `_repr_latex_`. Follow-ups
 (module naming, animation-layer placement) live in `tasks/composable-function-followups.md`; the
 refactor that produced them is archived at
