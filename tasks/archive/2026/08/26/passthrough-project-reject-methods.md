@@ -1,10 +1,11 @@
 # Thin pass-through instance methods for project / reject (apply-to-this-value sugar)
 
-**Status:** spec — approved in principle; **implementation folded into
-[[precise-typing-remaining-methods]]** (Bill, 2026-08-25), so the pass-throughs are *born* precisely
-typed rather than shipped at `MultiVectorBase` and re-touched. This doc holds the design (rationale,
-names, boundary, call-site sweep); that task owns the code. Created 2026-08-25 (William Emerison Six
-<billsix@gmail.com>)
+**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — this spec's
+implementation shipped in [[precise-typing-remaining-methods]] (Tier 3); see its Outcome. The
+methods landed as `projected_onto` / **`rejected_away_from`** / **`reflected_across`** — the latter
+two renamed from this doc's original `rejected_from` / `reflected_in` (they dropped the factory's
+`away_from` / `across` keyword and "rejected from" misread as "excluded from"). This doc remains the
+design record (rationale, boundary, call-site sweep).
 **Priority:** 4
 **Difficulty:** 2
 
