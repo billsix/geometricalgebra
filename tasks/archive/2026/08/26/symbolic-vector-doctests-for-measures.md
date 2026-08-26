@@ -1,8 +1,27 @@
 # Add symbolic-vector doctests (show the full 2D/3D formula), alongside the numeric ones
 
-**Status:** proposed — needs go-ahead. Created 2026-08-25 (William Emerison Six <billsix@gmail.com>)
+**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — see Outcome.
 **Priority:** 4
 **Difficulty:** 3
+
+## Outcome (2026-08-26)
+
+Added symbolic-vector doctests **alongside** the numeric ones in `src/gacalc/measure.py`, each showing
+the general formula:
+- **`signed_area`** → `a_1*b_2 - a_2*b_1` (the clean 2×2 determinant — the showcase);
+- **`signed_volume`** → `c_1*(a_2*b_3 - a_3*b_2) - c_2*(a_1*b_3 - a_3*b_1) + c_3*(a_1*b_2 - a_2*b_1)`
+  (the 3×3 determinant, cofactor expansion);
+- **`area`** and **`content`** → `sqrt((a_1*b_2 - a_2*b_1)**2)` (the magnitude of the determinant).
+
+**Skipped, deliberately:** `volume` (its symbolic output is 94 cols — exceeds the 88 limit, no clean
+wrap); `signed_content` (a 2D symbolic case duplicates `signed_area`'s); `content_by_rejection` (per
+the decision — its existing concrete `== content` doctest already shows the identity; the raw
+symbolic form is unreadable and `simplify` doesn't tame it — covered by
+`tests/test_measure.py::test_content_two_ways_both_give_the_determinant_symbolic`).
+
+Outputs captured by running (doctests are exact). **Verified in BOTH host and the container gate**
+(the symbolic output matches the container's sympy): ruff + `ty check src` clean, host suite **411**,
+and `make test`-parity measure doctests green in the nested `gacalc` image.
 
 ## Goal
 

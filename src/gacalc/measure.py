@@ -97,6 +97,13 @@ def content(vectors: Sequence[MultiVectorBase]) -> Coef:
         >>> content([1 * e_1, 2 * e_1])      # dependent -> flat
         0
 
+        General symbolic vectors show the formula — the magnitude of the determinant:
+
+        >>> import sympy
+        >>> a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
+        >>> content([a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2])
+        sqrt((a_1*b_2 - a_2*b_1)**2)
+
     Raises:
         ValueError: on an empty sequence, or any non-vector (grade != 1) member.
     """
@@ -150,6 +157,13 @@ def area(a: MultiVectorBase, b: MultiVectorBase) -> Coef:
         6
         >>> area(3 * e_1, 2 * e_2) == area(2 * e_2, 3 * e_1)  # unsigned: order-free
         True
+
+        General symbolic vectors show the formula — the magnitude of the determinant:
+
+        >>> import sympy
+        >>> a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
+        >>> area(a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2)
+        sqrt((a_1*b_2 - a_2*b_1)**2)
     """
     return content([a, b])
 
@@ -247,6 +261,13 @@ def signed_area(a: MultiVectorBase, b: MultiVectorBase) -> Coef:
         5
         >>> signed_area(b, a)      # swapping the two flips the orientation
         -5
+
+        General symbolic vectors show it *is* the 2x2 determinant:
+
+        >>> import sympy
+        >>> a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
+        >>> signed_area(a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2)
+        a_1*b_2 - a_2*b_1
     """
     return signed_content([a, b])
 
@@ -261,5 +282,17 @@ def signed_volume(a: MultiVectorBase, b: MultiVectorBase, c: MultiVectorBase) ->
         1
         >>> signed_volume(1 * e_3, 1 * e_2, 1 * e_1)      # left-handed after the swap
         -1
+
+        General symbolic vectors show it *is* the 3x3 determinant (cofactor expansion):
+
+        >>> import sympy
+        >>> a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
+        >>> b_1, b_2, b_3 = sympy.symbols("b_1 b_2 b_3")
+        >>> c_1, c_2, c_3 = sympy.symbols("c_1 c_2 c_3")
+        >>> a = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+        >>> b = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
+        >>> c = c_1 * e_1 + c_2 * e_2 + c_3 * e_3
+        >>> signed_volume(a, b, c)
+        c_1*(a_2*b_3 - a_3*b_2) - c_2*(a_1*b_3 - a_3*b_1) + c_3*(a_1*b_2 - a_2*b_1)
     """
     return signed_content([a, b, c])
