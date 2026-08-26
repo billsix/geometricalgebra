@@ -57,68 +57,68 @@ PRODUCT_TABLE = [
     (
         3 * g2.Vector.e_1 + 4 * g2.Vector.e_2,
         "*",
-        g2.Vector.e_1 + 2 * g2.Vector.e_2,
+        1 * g2.Vector.e_1 + 2 * g2.Vector.e_2,
         g2.Rotor,
     ),
     (
         3 * g2.Vector.e_1 + 4 * g2.Vector.e_2,
         "^",
-        g2.Vector.e_1 + 2 * g2.Vector.e_2,
+        1 * g2.Vector.e_1 + 2 * g2.Vector.e_2,
         g2.Bivector,
     ),
     (
         3 * g2.Vector.e_1 + 4 * g2.Vector.e_2,
         ".",
-        g2.Vector.e_1 + 2 * g2.Vector.e_2,
+        1 * g2.Vector.e_1 + 2 * g2.Vector.e_2,
         g2.Scalar,
     ),
     (3 * g2.Vector.e_1 + 4 * g2.Vector.e_2, "*", 5 * g2.Bivector.e_12, g2.Vector),
     (5 * g2.Bivector.e_12, "*", 3 * g2.Vector.e_1 + 4 * g2.Vector.e_2, g2.Vector),
     (2 * g2.Bivector.e_12, "*", 3 * g2.Bivector.e_12, g2.Scalar),
-    (2 + 3 * g2.Bivector.e_12, "*", 1 + g2.Bivector.e_12, g2.Rotor),
+    (2 + 3 * g2.Bivector.e_12, "*", 1 + 1 * g2.Bivector.e_12, g2.Rotor),
     (2 + 3 * g2.Bivector.e_12, "*", 3 * g2.Vector.e_1 + 4 * g2.Vector.e_2, g2.Vector),
     (3 * g2.Vector.e_1 + 4 * g2.Vector.e_2, "*", 2 + 3 * g2.Bivector.e_12, g2.Vector),
-    (2 * g2.Bivector.e_12, "*", 1 + g2.Bivector.e_12, g2.Rotor),
+    (2 * g2.Bivector.e_12, "*", 1 + 1 * g2.Bivector.e_12, g2.Rotor),
     # 3D
     (
-        g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
+        1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
         "*",
         4 * g3.Vector.e_1 + 5 * g3.Vector.e_2 + 6 * g3.Vector.e_3,
         g3.Rotor,
     ),
     (
-        g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
+        1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
         "^",
         4 * g3.Vector.e_1 + 5 * g3.Vector.e_2 + 6 * g3.Vector.e_3,
         g3.Bivector,
     ),
     (
-        g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
+        1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
         ".",
         4 * g3.Vector.e_1 + 5 * g3.Vector.e_2 + 6 * g3.Vector.e_3,
         g3.Scalar,
     ),
     (
-        g3.Bivector.e_12 + 2 * g3.Bivector.e_13 + 3 * g3.Bivector.e_23,
+        1 * g3.Bivector.e_12 + 2 * g3.Bivector.e_13 + 3 * g3.Bivector.e_23,
         "*",
         4 * g3.Bivector.e_12 + 5 * g3.Bivector.e_13 + 6 * g3.Bivector.e_23,
         g3.Rotor,
     ),
     (
-        g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
+        1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
         "*",
         2 * g3.Trivector.e_123,
         g3.Bivector,
     ),
     (2 * g3.Trivector.e_123, "*", 3 * g3.Trivector.e_123, g3.Scalar),
     (
-        1 + g3.Bivector.e_12 + g3.Bivector.e_13 + g3.Bivector.e_23,
+        1 + 1 * g3.Bivector.e_12 + 1 * g3.Bivector.e_13 + 1 * g3.Bivector.e_23,
         "*",
-        2 + g3.Bivector.e_12,
+        2 + 1 * g3.Bivector.e_12,
         g3.Rotor,
     ),
     (
-        g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
+        1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
         "*",
         4 * g3.Bivector.e_12 + 5 * g3.Bivector.e_13 + 6 * g3.Bivector.e_23,
         g3.G,
@@ -193,12 +193,12 @@ def test_linear_combination_construction() -> None:
         2 + 3 * g2.Bivector.e_12
     ) == 2 * gn.one + 3 * (gn.e_1 ^ gn.e_2)
     assert (
-        type(2 + g3.Bivector.e_12) is g3.Rotor
+        type(2 + 1 * g3.Bivector.e_12) is g3.Rotor
     )  # scalar + bivector narrows to the rotor type
     assert type((g3.Vector.e_1 ^ g3.Vector.e_2) ^ g3.Vector.e_3) is g3.Trivector
     # reflected ops work too
-    assert (5 - g2.Bivector.e_12) == 5 * gn.one - (gn.e_1 ^ gn.e_2) and type(
-        5 - g2.Bivector.e_12
+    assert (5 - 1 * g2.Bivector.e_12) == 5 * gn.one - (gn.e_1 ^ gn.e_2) and type(
+        5 - 1 * g2.Bivector.e_12
     ) is g2.Rotor
 
 
@@ -221,11 +221,12 @@ def test_dual_narrows() -> None:
         ),  # 2D: vectors are the self-dual grade
         (5 * g2.Bivector.e_12, g2.Scalar),  # 2D: grade 2 -> grade 0
         (
-            g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
+            1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
             g3.Bivector,
         ),  # 3D: vector -> bivector
         (
-            (g3.Vector.e_1 + 2 * g3.Vector.e_2) ^ (3 * g3.Vector.e_1 + g3.Vector.e_3),
+            (1 * g3.Vector.e_1 + 2 * g3.Vector.e_2)
+            ^ (3 * g3.Vector.e_1 + 1 * g3.Vector.e_3),
             g3.Vector,
         ),  # 3D: bivector -> vector
     ]
@@ -240,15 +241,15 @@ def test_dual_narrows() -> None:
 
 def test_grade_projection_narrows() -> None:
     r: MultiVectorBase = (
-        1 + g3.Bivector.e_12 + 2 * g3.Bivector.e_13 + 3 * g3.Bivector.e_23
+        1 + 1 * g3.Bivector.e_12 + 2 * g3.Bivector.e_13 + 3 * g3.Bivector.e_23
     )  # a g3.Rotor
     assert type(r.r_vector_part(0)) is g3.Scalar
     assert type(r.r_vector_part(2)) is g3.Bivector
     assert type(r.even_part()) is g3.Rotor
     assert r.r_vector_part(2) == widen(r).r_vector_part(2)
     # a grade absent from the type projects to the zero scalar
-    assert type((g3.Vector.e_1 + g3.Vector.e_2).r_vector_part(0)) is g3.Scalar
-    assert type((g3.Vector.e_1 + g3.Vector.e_2).even_part()) is g3.Scalar
+    assert type((1 * g3.Vector.e_1 + 1 * g3.Vector.e_2).r_vector_part(0)) is g3.Scalar
+    assert type((1 * g3.Vector.e_1 + 1 * g3.Vector.e_2).even_part()) is g3.Scalar
 
 
 def test_plane_of_rotation() -> None:
@@ -316,13 +317,13 @@ def test_same_type_eq_fast_path_stays_simplify_aware() -> None:
     x: sympy.Symbol = sympy.symbols("x")
 
     # a fielded type (Vector) -- exercises the class_header_stmts eq_method path
-    a: g2.Vector = (x + 1) ** 2 * g2.Vector.e_1 + g2.Vector.e_2
-    b: g2.Vector = (x**2 + 2 * x + 1) * g2.Vector.e_1 + g2.Vector.e_2
+    a: g2.Vector = (x + 1) ** 2 * g2.Vector.e_1 + 1 * g2.Vector.e_2
+    b: g2.Vector = (x**2 + 2 * x + 1) * g2.Vector.e_1 + 1 * g2.Vector.e_2
     assert type(a) is type(b)  # same concrete type -> the fast path fires
     assert a.coeff_e_1 != b.coeff_e_1  # stored unsimplified, structurally different
     assert a == b  # ...yet mathematically equal: the fast path must simplify per field
     # and it must still distinguish genuinely different values (coefficient off by 1)
-    assert a != (x**2 + 2 * x + 2) * g2.Vector.e_1 + g2.Vector.e_2
+    assert a != (x**2 + 2 * x + 2) * g2.Vector.e_1 + 1 * g2.Vector.e_2
 
     # the single-field Scalar type is emitted by a *different* generator path
     # (generate_scalar) -- cover it too
@@ -342,7 +343,7 @@ def test_rotor_is_quaternion_3d() -> None:
     # bivector*bivector is *typed* g3.Rotor (generally scalar+bivector) -- here the
     # value is a pure scalar, but the type follows the operation, not the value.
     plane: g3.Bivector
-    for plane in (g3.Bivector.e_12, g3.Bivector.e_13, g3.Bivector.e_23):
+    for plane in (1 * g3.Bivector.e_12, 1 * g3.Bivector.e_13, 1 * g3.Bivector.e_23):
         sq: MultiVectorBase = plane * plane
         assert type(sq) is g3.Rotor and sq == -gn.one
 
@@ -354,7 +355,7 @@ def test_inherited_abc_methods() -> None:
         v.normalize() == sympy.Rational(3, 5) * gn.e_1 + sympy.Rational(4, 5) * gn.e_2
     )
     assert (5 * g2.Bivector.e_12).reverse() == -5 * (gn.e_1 ^ gn.e_2)
-    assert (g3.Vector.e_1 + 2 * g3.Vector.e_2 + 2 * g3.Vector.e_3).magnitude() == 3
+    assert (1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 2 * g3.Vector.e_3).magnitude() == 3
 
 
 def test_symbolic_product_matches_gn() -> None:
@@ -416,9 +417,9 @@ def test_rotor_sandwich_equals_rotate_symbolic_2d() -> None:
 def test_rotor_sandwich_equals_rotate_3d() -> None:
     # 3D, concrete vectors (full symbolic 3D simplify is slow for the suite);
     # magnitudes are sqrt(...), so compare via simplify_equal
-    frm: Gn = gn.e_1 + 2 * gn.e_2 + 3 * gn.e_3
+    frm: Gn = 1 * gn.e_1 + 2 * gn.e_2 + 3 * gn.e_3
     to: Gn = 4 * gn.e_1 + 5 * gn.e_2 + 6 * gn.e_3
-    w: Gn = 7 * gn.e_1 + gn.e_2 + 2 * gn.e_3  # in-plane and perpendicular parts
+    w: Gn = 7 * gn.e_1 + 1 * gn.e_2 + 2 * gn.e_3  # in-plane and perpendicular parts
     r: MultiVectorBase = Gn.rotor_from_vectors(from_vector=frm, to_vector=to)
     assert simplify_equal(
         r * w * r.inverse(), projection_rotation(from_vector=frm, to_vector=to)(w)
@@ -428,7 +429,7 @@ def test_rotor_sandwich_equals_rotate_3d() -> None:
 def test_rotor_rotate_across_representations() -> None:
     # the same identity holds (by value) for Gn, g2.G and g3.G; the rotor built from
     # vectors of a specialized type is a Rotor of that algebra
-    w2: g2.Vector = 2 * g2.Vector.e_1 + g2.Vector.e_2
+    w2: g2.Vector = 2 * g2.Vector.e_1 + 1 * g2.Vector.e_2
     r2: MultiVectorBase = g2.Vector.rotor_from_vectors(
         from_vector=g2.Vector.e_1, to_vector=g2.Vector.e_2
     )
@@ -437,7 +438,7 @@ def test_rotor_rotate_across_representations() -> None:
         from_vector=g2.Vector.e_1, to_vector=g2.Vector.e_2
     )(w2)
 
-    w3: g3.Vector = g3.Vector.e_1 + 3 * g3.Vector.e_3
+    w3: g3.Vector = 1 * g3.Vector.e_1 + 3 * g3.Vector.e_3
     r3: MultiVectorBase = g3.Vector.rotor_from_vectors(
         from_vector=g3.Vector.e_1, to_vector=g3.Vector.e_2
     )
@@ -452,7 +453,11 @@ def test_unnormalized_rotor_scales_then_normalizes() -> None:
     frm: g2.Vector
     to: g2.Vector
     w: g2.Vector
-    frm, to, w = g2.Vector.e_1, g2.Vector.e_2, g2.Vector.e_1  # 90 deg, e1 -> e2
+    frm, to, w = (
+        1 * g2.Vector.e_1,
+        1 * g2.Vector.e_2,
+        1 * g2.Vector.e_1,
+    )  # 90 deg, e1 -> e2
     r: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=frm, to_vector=to)
     assert r * r.reverse() == 2 * gn.one  # |R|^2
     assert r * w * r.reverse() == 2 * gn.e_2  # scaled rotation
@@ -468,7 +473,7 @@ def test_project_vector_onto_bivector_trivector_subtypes() -> None:
     # grade-preserving, so it narrows back to the input's type (no widening to g3.G).
     e1: g3.Vector
     e3: g3.Vector
-    e1, e3 = g3.Vector.e_1, g3.Vector.e_3
+    e1, e3 = 1 * g3.Vector.e_1, 1 * g3.Vector.e_3
     proj3: MultiVectorBase = g3.Vector.project(onto=g3.Bivector.e_12)(e1 + e3)
     assert proj3 == e1 and type(proj3) is g3.Vector
     assert g3.Vector.project(onto=g3.Bivector.e_12)(e3) == g3.Vector.zero()

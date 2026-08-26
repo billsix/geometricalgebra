@@ -55,16 +55,16 @@ def test_multivector_subtract() -> None:
 
 def test_multivector_absolute_units() -> None:
     # test addition
-    assert (e_1 + e_2) == (e_2 + e_1)
+    assert (1 * e_1 + 1 * e_2) == (1 * e_2 + 1 * e_1)
 
     # test scalar multiplication
-    assert (e_1 * 2) == (e_1 + e_1)
-    assert (2 * e_1) == (e_1 + e_1)
-    assert (e_2 * 2) == (e_2 + e_2)
-    assert (2 * e_2) == (e_2 + e_2)
+    assert (e_1 * 2) == (1 * e_1 + 1 * e_1)
+    assert (2 * e_1) == (1 * e_1 + 1 * e_1)
+    assert (e_2 * 2) == (1 * e_2 + 1 * e_2)
+    assert (2 * e_2) == (1 * e_2 + 1 * e_2)
 
     # test addition on relative units
-    assert ((e_1 + e_2) * 2) == ((e_1 + e_2) + (e_1 + e_2))
+    assert ((1 * e_1 + 1 * e_2) * 2) == ((1 * e_1 + 1 * e_2) + (1 * e_1 + 1 * e_2))
 
     # test permutations
     assert (e_1 * e_2 * e_3).magnitude_squared() == 1
@@ -162,7 +162,9 @@ def test_multivector_mult3d() -> None:
             u.dot(v),
             *[
                 planewise_wedge(plane=axis_1.wedge(axis_2), vec1=u, vec2=v)
-                for axis_1, axis_2 in itertools.combinations([e_1, e_2, e_3], 2)
+                for axis_1, axis_2 in itertools.combinations(
+                    [1 * e_1, 1 * e_2, 1 * e_3], 2
+                )
             ],
         ],
         start=zero,
@@ -170,7 +172,7 @@ def test_multivector_mult3d() -> None:
     assert u.wedge(v) == sum(
         [
             planewise_wedge(plane=axis_1 * axis_2, vec1=u, vec2=v)
-            for axis_1, axis_2 in itertools.combinations([e_1, e_2, e_3], 2)
+            for axis_1, axis_2 in itertools.combinations([1 * e_1, 1 * e_2, 1 * e_3], 2)
         ],
         start=zero,
     )
@@ -408,8 +410,8 @@ def test_project_and_reject() -> None:
     assert MultiVector.project(onto=e_1)(a) == 3 * e_1
     assert MultiVector.reject(away_from=e_1)(a) == 4 * e_2
 
-    assert MultiVector.project(onto=[e_1, e_2])(a) == a
-    assert MultiVector.reject(away_from=[e_1, e_2])(a) == zero
+    assert MultiVector.project(onto=[1 * e_1, 1 * e_2])(a) == a
+    assert MultiVector.reject(away_from=[1 * e_1, 1 * e_2])(a) == zero
 
     assert MultiVector.project(onto=e_1)(2 * a) == 6 * e_1
     assert MultiVector.reject(away_from=e_1)(2 * a) == 8 * e_2
@@ -420,8 +422,8 @@ def test_project_and_reject() -> None:
     # 1-element sequence (regression: must use outer_product_of_vectors, not the
     # instance method outer_product, which only happens to work for exactly 2
     # elements -- a 1-element span used to raise TypeError on the missing rhs)
-    assert MultiVector.project(onto=[e_1])(a) == 3 * e_1
-    assert MultiVector.reject(away_from=[e_1])(a) == 4 * e_2
+    assert MultiVector.project(onto=[1 * e_1])(a) == 3 * e_1
+    assert MultiVector.reject(away_from=[1 * e_1])(a) == 4 * e_2
 
     # for general 2D vectors, projecting v onto u and rejecting v from u split v
     # into its parallel and perpendicular parts, which sum back to v:
@@ -441,17 +443,31 @@ def test_reflect() -> None:
     assert MultiVector.reflect(across=e_3)(a) == -3 * e_1 + -4 * e_2 + 5 * e_3
 
     # reflect across planes
-    assert MultiVector.reflect(across=[e_1, e_2])(a) == 3 * e_1 + 4 * e_2 + -5 * e_3
+    assert (
+        MultiVector.reflect(across=[1 * e_1, 1 * e_2])(a)
+        == 3 * e_1 + 4 * e_2 + -5 * e_3
+    )
     assert MultiVector.reflect(across=e_1 * e_2)(a) == 3 * e_1 + 4 * e_2 + -5 * e_3
 
     # reflect across a 1-element span (regression: 1-element sequence must not
     # crash -- same outer_product arity bug as project/reject)
-    assert MultiVector.reflect(across=[e_1])(a) == MultiVector.reflect(across=e_1)(a)
+    assert MultiVector.reflect(across=[1 * e_1])(a) == MultiVector.reflect(across=e_1)(
+        a
+    )
     assert MultiVector.reflect(across=e_1 ^ e_2)(a) == 3 * e_1 + 4 * e_2 + -5 * e_3
 
-    assert MultiVector.reflect(across=[e_2, e_3])(a) == -3 * e_1 + 4 * e_2 + 5 * e_3
-    assert MultiVector.reflect(across=[e_3, e_1])(a) == 3 * e_1 + -4 * e_2 + 5 * e_3
-    assert MultiVector.reflect(across=[e_1, e_3])(a) == 3 * e_1 + -4 * e_2 + 5 * e_3
+    assert (
+        MultiVector.reflect(across=[1 * e_2, 1 * e_3])(a)
+        == -3 * e_1 + 4 * e_2 + 5 * e_3
+    )
+    assert (
+        MultiVector.reflect(across=[1 * e_3, 1 * e_1])(a)
+        == 3 * e_1 + -4 * e_2 + 5 * e_3
+    )
+    assert (
+        MultiVector.reflect(across=[1 * e_1, 1 * e_3])(a)
+        == 3 * e_1 + -4 * e_2 + 5 * e_3
+    )
 
 
 def test_normalize() -> None:

@@ -1,8 +1,48 @@
 # Make implicit unit coefficients explicit in basis-blade sums (`e_1` → `1 * e_1`)
 
-**Status:** proposed — needs go-ahead. Created 2026-08-26 (William Emerison Six <billsix@gmail.com>)
+**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — see Outcome.
 **Priority:** 5
 **Difficulty:** 4
+
+## Outcome (2026-08-26)
+
+Done, Bill liked it, CLAUDE.md updated. The final rule (broader than the original decision 3, after
+Bill flagged the list-element inconsistency): **make the implicit `1` explicit wherever a bare blade
+is a coordinate vector** — (a) sum terms, (b) list/tuple elements, and (c) the vector args of the
+measure calls `area`/`volume`/`signed_area`/`signed_volume`; a blade used as a **direction** stays
+bare (`cls.i(e_1, e_2)`, `plane_rotation(…)`, `rotor_from_vectors(…)`, `project(onto=e_1)`,
+`coefficient(e_1)`). Applied by the AST codemod
+`tasks/adhoc/explicit-unit-coefficients/add_explicit_unit_coefficients.py` (span-based text
+insertion; also rewrites single-line `>>>` doctests). Totals across three passes: ~235 unit
+coefficients made explicit across `tests/`, `notebooks/`, and `src/gacalc/` docstrings. **410 tests
+green (behaviour unchanged — `1 * e_1 == e_1`), ruff + ty clean, codemod idempotent** (second run a
+no-op). `book/` (textbook LaTeX math, not gacalc code — out of scope) and `README.md` (already
+explicit) needed nothing. CLAUDE.md's "Build vectors from the basis constants" convention now states
+all three rules and the direction-stays-bare carve-out.
+
+**Codemod disposition (for /archive-task):** it is a **one-shot** conversion — the codebase is
+converted and new code follows the convention by hand — so at archive it can be `git rm`'d (history
+keeps it). It could instead be **promoted** to `tools/` as a re-runnable normalizer/checker if Bill
+wants an ongoing gate; left under `tasks/adhoc/` for now, Bill to decide.
+
+## Progress (Phase 1, 2026-08-26)
+
+**Phase 1 done — `tests/` + `notebooks/`:** 127 unit coefficients made explicit across 12 files, via
+the AST codemod `tasks/adhoc/explicit-unit-coefficients/add_explicit_unit_coefficients.py` (span-based
+text insertion, so all formatting/comments are preserved). Verified: **410 tests pass (behaviour
+unchanged — `1 * e_1 == e_1`)**, ruff + ty clean, and a **second codemod run is a no-op** (idempotent,
+as required). Standalone blades (list elements like `[e_1, e_2]`, `project(onto=e_1)`) correctly left
+bare; negatives handled (`a - e_2` → `a - 1 * e_2`, `-e_1 + …` → `-1 * e_1 + …`).
+
+**Deferred, pending Bill liking the look** (the hard/risky surface — kept out of Phase 1 on purpose):
+- **`src/gacalc/*.py` docstrings / doctests** — the codemod parses code, not the `>>>` lines inside
+  string literals; rewriting those safely needs a doctest-aware pass (and `base.py` docstrings flow to
+  the generated modules via `inspect.getdoc`, so fix them at the `base.py` source).
+- **`book/` and `README.md`** — RST/prose code blocks, not AST-parseable; a targeted pass.
+
+**Next steps:** (1) Bill reviews the Phase 1 diff. (2) If liked → do Phase 2 and update CLAUDE.md's
+"Build vectors from the basis constants" convention (change its `2*e_1 + e_2` model to `2 * e_1 +
+1 * e_2`). If not → revert Phase 1 (`git checkout tests notebooks`) and drop the task.
 
 ## Goal
 

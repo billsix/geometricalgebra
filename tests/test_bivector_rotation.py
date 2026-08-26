@@ -57,13 +57,13 @@ def test_normalizes_the_bivector_internally() -> None:
     i = g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
     unit_result = bivector_rotation(i)(math.radians(30))
     scaled_result = bivector_rotation(5 * i)(math.radians(30))
-    v = 2 * g3.Vector.e_1 + g3.Vector.e_3
+    v = 2 * g3.Vector.e_1 + 1 * g3.Vector.e_3
     assert scaled_result(v).isclose(unit_result(v), **_TOL)
 
 
 def test_inverse_undoes_the_rotation() -> None:
     f = bivector_rotation(g3.Vector.i(g3.Vector.e_1, g3.Vector.e_3))(1.1)
-    v = 7 * g3.Vector.e_1 + 2 * g3.Vector.e_2 - g3.Vector.e_3
+    v = 7 * g3.Vector.e_1 + 2 * g3.Vector.e_2 - 1 * g3.Vector.e_3
     assert f.inverse(f(v)).isclose(v, rel_tol=1e-6, abs_tol=1e-6)
 
 
@@ -71,7 +71,7 @@ def test_interpolation_is_a_fraction_of_the_angle() -> None:
     turn = bivector_rotation(g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2))
     half = turn(math.radians(80)).at(0.5)
     direct = turn(math.radians(40))
-    v = g3.Vector.e_1 + g3.Vector.e_2 + g3.Vector.e_3
+    v = 1 * g3.Vector.e_1 + 1 * g3.Vector.e_2 + 1 * g3.Vector.e_3
     assert half(v).isclose(direct(v), **_TOL)
 
 

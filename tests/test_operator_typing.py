@@ -45,7 +45,7 @@ def test_scalar_lhs_static_types() -> None:
     typing.assert_type(s * 3, g2.Scalar)  # scalar * number -> scalar
     typing.assert_type(s * s, g2.Scalar)
     typing.assert_type(s + v, g2.G)  # {0} + {1} -> full g2.G
-    typing.assert_type(s + g2.Bivector.e_12, g2.Rotor)  # {0} + {2} -> g2.Rotor
+    typing.assert_type(s + 1 * g2.Bivector.e_12, g2.Rotor)  # {0} + {2} -> g2.Rotor
     typing.assert_type(s - v, g2.G)
     typing.assert_type(s + s, g2.Scalar)  # same grade stays g2.Scalar
     typing.assert_type(s + 2, g2.Scalar)  # scalar + number -> scalar
@@ -62,8 +62,8 @@ def test_scalar_lhs_runtime_types_and_values() -> None:
     assert s.inner_product(v).isclose(
         g2.Scalar(coeff_scalar=0.0), rel_tol=1e-5, abs_tol=1e-5
     )
-    assert type(s + g2.Bivector.e_12) is g2.Rotor  # {0} + {2}
-    assert (s + g2.Bivector.e_12).isclose(
+    assert type(s + 1 * g2.Bivector.e_12) is g2.Rotor  # {0} + {2}
+    assert (s + 1 * g2.Bivector.e_12).isclose(
         g2.Rotor(coeff_scalar=3.0, coeff_e_12=1.0), rel_tol=1e-5, abs_tol=1e-5
     )
     assert type(s + v) is g2.G  # {0} + {1} widens to the full class
@@ -155,11 +155,11 @@ def test_reflected_operators_runtime_including_symbolic_left() -> None:
     v: g2.Vector = g2.Vector.e_1
     assert type(2 * v) is g2.Vector
     assert (2 * v).isclose(g2.Vector(2.0, 0.0), rel_tol=1e-5, abs_tol=1e-5)
-    assert type(2 + g2.Bivector.e_12) is g2.Rotor
+    assert type(2 + 1 * g2.Bivector.e_12) is g2.Rotor
     t: sympy.Expr = sympy.Symbol("t")
     assert type(t * v) is g2.Vector  # runtime is correct though ty infers Unknown
     assert (t * v).to_blade_dict() == {(1,): t}
-    assert type(t + g2.Bivector.e_12) is g2.Rotor
+    assert type(t + 1 * g2.Bivector.e_12) is g2.Rotor
 
 
 def test_r_vector_part_narrows_by_grade() -> None:
@@ -286,7 +286,7 @@ def test_dual_runtime_types_and_values() -> None:
 
 def test_operator_runtime_types_and_values() -> None:
     a: g2.Vector = 3 * g2.Vector.e_1 + 4 * g2.Vector.e_2
-    b: g2.Vector = g2.Vector.e_1 + 2 * g2.Vector.e_2
+    b: g2.Vector = 1 * g2.Vector.e_1 + 2 * g2.Vector.e_2
     # the runtime type has always been correct; here we pin it next to the static one
     assert type(a * b) is g2.Rotor
     assert type(a ^ b) is g2.Bivector

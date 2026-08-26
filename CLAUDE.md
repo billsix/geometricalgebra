@@ -194,11 +194,24 @@ holds (`sqrt(25) == 5`; a unit blade normalizes to `Rational`s, not floats), and
 symbolic coefficients stay symbolic. **Don't reintroduce an unconditional
 `sympy.sqrt` / `sympify` on these paths** (covered by `tests/test_numeric_magnitude.py`).
 
-**Build vectors from the basis constants, not the raw constructor.** In code, tests, doctests, and
-examples write `2*e_1 + e_2` (or `2*g2.e_1 + g2.e_2` when qualified), **not**
-`Vector(coeff_e_1=2, coeff_e_2=1)`. The `coeff_`-keyword constructor is for internal/generated code;
-teaching-facing and test code composes the named basis constants — it reads as the math (`2e₁ + e₂`),
-survives grade/coordinate changes, and keeps the precise graded type. (Bill, 2026-08-23.)
+**Build vectors from the basis constants, not the raw constructor, and write every unit coefficient
+explicitly.** In code, tests, doctests, and examples write `2 * e_1 + 1 * e_2` (or `2 * g2.e_1 + 1 *
+g2.e_2` when qualified) — **not** `Vector(coeff_e_1=2, coeff_e_2=1)`, and **not** the bare `2 * e_1 +
+e_2`. Two rules:
+
+- **Compose the named basis constants**, not the `coeff_`-keyword constructor (that is for
+  internal/generated code) — it reads as the math (`2e₁ + e₂`), survives grade/coordinate changes,
+  and keeps the precise graded type. (Bill, 2026-08-23.)
+- **Make the implicit `1` explicit** wherever a bare basis blade denotes a **coordinate vector**, so
+  each reads as `coefficient * basis` — a student sees every coordinate the same way. This covers
+  three places: (a) every **term of a multi-term sum** — `1 * e_1 + 3 * e_2` (not `e_1 + 3 * e_2`),
+  `1 * e_1 + 1 * e_2` (not `e_1 + e_2`), `2 * e_1 - 1 * e_2` (not `2 * e_1 - e_2`); (b) every **element
+  of a list/tuple** of vectors — `content([1 * e_1, 1 * e_1 + 1 * e_2])` (not `[e_1, …]`); (c) the
+  **coordinate-vector arguments of the measure functions** `area` / `volume` / `signed_area` /
+  `signed_volume` — `volume(2 * e_1, 1 * e_2, 3 * e_3)`. **A blade used as a *direction* stays bare** —
+  the plane/axis args of `cls.i(e_1, e_2)`, `plane_rotation(e_1, e_2)`, `rotor_from_vectors(…)`, and
+  the blade args of `project(onto=e_1)` / `coefficient(e_1)`: there a `1 *` is noise, not a
+  coordinate. (Bill, 2026-08-26.)
 
 Two ways to name a basis blade: each `g1`/`g2`/`g3` module exports **module-level** constants at
 their **graded** type (`from gacalc.g2 import e_1, e_2` then `3*e_1 + 4*e_2` is a **`Vector`**, `e_12`

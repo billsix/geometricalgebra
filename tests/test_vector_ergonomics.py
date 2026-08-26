@@ -61,7 +61,7 @@ def test_coordinates_only_on_grade_1() -> None:
     value: MultiVectorBase
     for value in (
         g2.Rotor(coeff_scalar=1.0, coeff_e_12=0.0),
-        g2.Bivector.e_12,
+        1 * g2.Bivector.e_12,
         g2.G(coeff_scalar=1.0),
         g2.Scalar(coeff_scalar=1.0),
     ):

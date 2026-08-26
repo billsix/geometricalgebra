@@ -322,7 +322,7 @@ u: G = 3 * e_1 - 1.5 * e_2 + 2 * e_3
 plot_multivector(u)
 
 # %%
-v: G = 1.5 * e_1 + 5 * e_2 - e_3
+v: G = 1.5 * e_1 + 5 * e_2 - 1 * e_3
 plot_multivector(v)
 
 # %%

@@ -124,13 +124,13 @@ def test_graded_vector_factories_type_precisely() -> None:
     lines below are what this test asserts when executed.)
     """
     v2a: g2.Vector = 2 * g2.Vector.e_1 + 3 * g2.Vector.e_2
-    v2b: g2.Vector = g2.Vector.e_1 + g2.Vector.e_2
+    v2b: g2.Vector = 1 * g2.Vector.e_1 + 1 * g2.Vector.e_2
     typing.assert_type(g2.Vector.project(onto=v2b)(v2a), g2.Vector)
     typing.assert_type(g2.Vector.reject(away_from=v2b)(v2a), g2.Vector)
     typing.assert_type(g2.Vector.reflect(across=v2b)(v2a), g2.Vector)
 
-    v3a: g3.Vector = g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3
-    v3b: g3.Vector = g3.Vector.e_1 + g3.Vector.e_2
+    v3a: g3.Vector = 1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3
+    v3b: g3.Vector = 1 * g3.Vector.e_1 + 1 * g3.Vector.e_2
     typing.assert_type(g3.Vector.project(onto=v3b)(v3a), g3.Vector)
     typing.assert_type(g3.Vector.reject(away_from=v3b)(v3a), g3.Vector)
     typing.assert_type(g3.Vector.reflect(across=v3b)(v3a), g3.Vector)

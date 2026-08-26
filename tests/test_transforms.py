@@ -504,7 +504,7 @@ def test_composable_function_carries_label_and_applies() -> None:
     assert p._repr_latex_() == "$P_{B}$"
     assert p.linearity is Linearity.LINEAR
     # projects onto the e1-e2 plane: the e3 component is dropped
-    assert p(g3.Vector.e_1 + g3.Vector.e_3).isclose(
+    assert p(1 * g3.Vector.e_1 + 1 * g3.Vector.e_3).isclose(
         g3.Vector.e_1, rel_tol=1e-5, abs_tol=1e-5
     )
 
@@ -521,7 +521,7 @@ def test_composable_functions_compose_into_pipeline_latex() -> None:
     assert pipe.latex_repr == "P_{B} \\circ M_{B}"
     # applies M (reflect across the plane) first, then P (project onto it):
     # e_1 + e_3  --reflect-->  e_1 - e_3  --project-->  e_1
-    assert pipe(g3.Vector.e_1 + g3.Vector.e_3).isclose(
+    assert pipe(1 * g3.Vector.e_1 + 1 * g3.Vector.e_3).isclose(
         g3.Vector.e_1, rel_tol=1e-5, abs_tol=1e-5
     )
 
@@ -552,5 +552,5 @@ def test_invertible_function_with_real_inverse_roundtrips() -> None:
         linearity=Linearity.LINEAR,
     )
     assert m.latex_repr_inv == "M_{B}^{-1}"
-    v: g3.Vector = g3.Vector.e_1 + g3.Vector.e_3
+    v: g3.Vector = 1 * g3.Vector.e_1 + 1 * g3.Vector.e_3
     assert inverse(m)(m(v)).isclose(v, rel_tol=1e-5, abs_tol=1e-5)

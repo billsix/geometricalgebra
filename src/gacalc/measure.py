@@ -90,11 +90,11 @@ def content(vectors: Sequence[MultiVectorBase]) -> Coef:
 
     Examples:
         >>> from gacalc.g2 import e_1, e_2
-        >>> content([e_1, e_2])          # the unit square
+        >>> content([1 * e_1, 1 * e_2])          # the unit square
         1
-        >>> content([e_1, e_1 + e_2])    # sheared: same base and height
+        >>> content([1 * e_1, 1 * e_1 + 1 * e_2])    # sheared: same base and height
         1
-        >>> content([e_1, 2 * e_1])      # dependent -> flat
+        >>> content([1 * e_1, 2 * e_1])      # dependent -> flat
         0
 
     Raises:
@@ -121,7 +121,8 @@ def content_by_rejection(vectors: Sequence[MultiVectorBase]) -> Coef:
 
     Examples:
         >>> from gacalc.g2 import e_1, e_2
-        >>> content_by_rejection([e_1, e_1 + e_2]) == content([e_1, e_1 + e_2])
+        >>> vectors = [1 * e_1, 1 * e_1 + 1 * e_2]
+        >>> content_by_rejection(vectors) == content(vectors)
         True
 
     Raises:
@@ -159,7 +160,7 @@ def volume(a: MultiVectorBase, b: MultiVectorBase, c: MultiVectorBase) -> Coef:
 
     Examples:
         >>> from gacalc.g3 import e_1, e_2, e_3
-        >>> volume(2 * e_1, e_2, 3 * e_3)
+        >>> volume(2 * e_1, 1 * e_2, 3 * e_3)
         6
     """
     return content([a, b, c])
@@ -197,9 +198,9 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Coef:
 
     Examples:
         >>> import gacalc.gn as gn  # signed content works on the general Gn now
-        >>> signed_content([gn.e_1, gn.e_2])          # oriented unit square
+        >>> signed_content([1 * gn.e_1, 1 * gn.e_2])          # oriented unit square
         1
-        >>> signed_content([gn.e_2, gn.e_1])          # swap flips the sign
+        >>> signed_content([1 * gn.e_2, 1 * gn.e_1])          # swap flips the sign
         -1
 
     Raises:
@@ -240,8 +241,8 @@ def signed_area(a: MultiVectorBase, b: MultiVectorBase) -> Coef:
 
     Examples:
         >>> from gacalc.g2 import e_1, e_2
-        >>> a = 2 * e_1 + e_2
-        >>> b = e_1 + 3 * e_2
+        >>> a = 2 * e_1 + 1 * e_2
+        >>> b = 1 * e_1 + 3 * e_2
         >>> signed_area(a, b)      # determinant 2*3 - 1*1
         5
         >>> signed_area(b, a)      # swapping the two flips the orientation
@@ -256,9 +257,9 @@ def signed_volume(a: MultiVectorBase, b: MultiVectorBase, c: MultiVectorBase) ->
 
     Examples:
         >>> from gacalc.g3 import e_1, e_2, e_3
-        >>> signed_volume(e_1, e_2, e_3)      # right-handed
+        >>> signed_volume(1 * e_1, 1 * e_2, 1 * e_3)      # right-handed
         1
-        >>> signed_volume(e_3, e_2, e_1)      # left-handed after the swap
+        >>> signed_volume(1 * e_3, 1 * e_2, 1 * e_1)      # left-handed after the swap
         -1
     """
     return signed_content([a, b, c])

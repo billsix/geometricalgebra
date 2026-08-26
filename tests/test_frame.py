@@ -52,21 +52,25 @@ from gacalc.measure import content
 
 def test_is_frame_is_are_linearly_independent() -> None:
     """``is_frame`` is a pass-through to ``are_linearly_independent``."""
-    assert is_frame([e_1, e_2]) == are_linearly_independent([e_1, e_2])
-    assert is_frame([e_1, 2 * e_1]) == are_linearly_independent([e_1, 2 * e_1])
+    assert is_frame([1 * e_1, 1 * e_2]) == are_linearly_independent([1 * e_1, 1 * e_2])
+    assert is_frame([1 * e_1, 2 * e_1]) == are_linearly_independent([1 * e_1, 2 * e_1])
 
 
 def test_independent_sets_are_frames() -> None:
-    assert is_frame([e_1])  # a single nonzero vector
-    assert is_frame([e_1, e_2])  # 2D basis
-    assert is_frame([e_1, e_2, e_3])  # 3D basis
-    assert is_frame([e_1 + e_2, e_2])  # oblique 2D frame (not orthogonal)
+    assert is_frame([1 * e_1])  # a single nonzero vector
+    assert is_frame([1 * e_1, 1 * e_2])  # 2D basis
+    assert is_frame([1 * e_1, 1 * e_2, 1 * e_3])  # 3D basis
+    assert is_frame([1 * e_1 + 1 * e_2, 1 * e_2])  # oblique 2D frame (not orthogonal)
 
 
 def test_dependent_sets_are_not_frames() -> None:
-    assert not is_frame([e_1, 2 * e_1])  # parallel
-    assert not is_frame([e_1, e_2, e_1 + e_2])  # third in the span of the first two
-    assert not is_frame([e_1, e_2, e_3, e_1])  # a repeat -> 4 vectors in 3D
+    assert not is_frame([1 * e_1, 2 * e_1])  # parallel
+    assert not is_frame(
+        [1 * e_1, 1 * e_2, 1 * e_1 + 1 * e_2]
+    )  # third in the span of the first two
+    assert not is_frame(
+        [1 * e_1, 1 * e_2, 1 * e_3, 1 * e_1]
+    )  # a repeat -> 4 vectors in 3D
 
 
 def test_empty_is_not_a_frame() -> None:
@@ -81,15 +85,15 @@ def test_symbolic_general_vectors_are_a_frame() -> None:
 def test_non_vector_input_raises() -> None:
     """A frame is a set of *vectors*; a bivector member is a category error."""
     with pytest.raises(ValueError):
-        is_frame([e_1, e_1 ^ e_2])  # e_1 ∧ e_2 is a bivector
+        is_frame([1 * e_1, e_1 ^ e_2])  # e_1 ∧ e_2 is a bivector
 
 
 # --- make_orthogonal_frame -------------------------------------------------
 
 
 def test_orthogonal_frame_keeps_first_vector() -> None:
-    a: Gn = e_1 + e_2
-    frame: list = make_orthogonal_frame([a, e_2])
+    a: Gn = 1 * e_1 + 1 * e_2
+    frame: list = make_orthogonal_frame([a, 1 * e_2])
     assert frame[0] == a
 
 
@@ -110,9 +114,9 @@ def test_orthogonal_frame_2d_symbolic() -> None:
 def test_orthogonal_frame_3d_concrete() -> None:
     """Orthogonalize a concrete oblique 3D frame, so every value is a readable
     number: keep the first, make each next orthogonal to all the earlier ones."""
-    a: Gn = e_1 + e_2
-    b: Gn = e_2 + e_3
-    c: Gn = e_1 + e_3
+    a: Gn = 1 * e_1 + 1 * e_2
+    b: Gn = 1 * e_2 + 1 * e_3
+    c: Gn = 1 * e_1 + 1 * e_3
 
     w: list[MultiVectorBase] = make_orthogonal_frame([a, b, c])
     assert w[0] == a
@@ -137,9 +141,9 @@ def test_orthogonal_frame_orthogonal_numeric_3d() -> None:
 
 def test_make_orthogonal_frame_raises_on_dependent() -> None:
     with pytest.raises(ValueError):
-        make_orthogonal_frame([e_1, 2 * e_1])
+        make_orthogonal_frame([1 * e_1, 2 * e_1])
     with pytest.raises(ValueError):
-        make_orthogonal_frame([e_1, e_2, e_1 + e_2])
+        make_orthogonal_frame([1 * e_1, 1 * e_2, 1 * e_1 + 1 * e_2])
 
 
 # --- equivalence with Hestenes' p. 27 orthogonalization (Part 1c) -----------
@@ -182,9 +186,9 @@ def test_hestenes_equals_rejection_2d_symbolic() -> None:
 def test_hestenes_equals_rejection_3d_concrete() -> None:
     """On a concrete oblique 3D frame -- so every value is a readable number --
     ``c_k == |A_{k-1}|² · w_k`` for each k."""
-    a: Gn = e_1 + e_2
-    b: Gn = e_2 + e_3
-    c: Gn = e_1 + e_3
+    a: Gn = 1 * e_1 + 1 * e_2
+    b: Gn = 1 * e_2 + 1 * e_3
+    c: Gn = 1 * e_1 + 1 * e_3
 
     w: list[MultiVectorBase] = make_orthogonal_frame([a, b, c])
     h: list[MultiVectorBase] = make_orthogonal_frame_hestenes([a, b, c])

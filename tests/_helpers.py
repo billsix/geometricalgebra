@@ -12,7 +12,7 @@ def random_vector(dim: int) -> Gn:
     these are test vectors, not cryptographic material.  Seed ``random`` in the
     caller for reproducibility.
     """
-    basis: list[Gn] = [e_1, e_2, e_3][:dim]
+    basis: list[Gn] = [1 * e_1, 1 * e_2, 1 * e_3][:dim]
     return sum(
         (random.uniform(-5.0, 5.0) * basis_vector for basis_vector in basis),  # noqa: S311
         start=Gn.zero(),

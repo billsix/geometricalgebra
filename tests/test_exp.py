@@ -81,7 +81,7 @@ def test_exp_inverse_is_exp_of_negation() -> None:
 def test_exp_rejects_non_scalar_square() -> None:
     # a rotor (scalar + bivector) has a non-scalar square
     with pytest.raises(ValueError):
-        (g2.Rotor.e_12 + 1).exp()
+        (1 * g2.Rotor.e_12 + 1).exp()
     # a NON-SIMPLE homogeneous bivector (dim >= 4, Gn only): e12 + e34
     # squares to -2 + 2 e1234, not a scalar -- the guard must catch it even
     # though the operand is homogeneous of grade 2.

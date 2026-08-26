@@ -54,32 +54,34 @@ from gacalc.measure import (
 
 
 def test_unit_measures() -> None:
-    assert content([e_1]) == 1  # length
-    assert area(e_1, e_2) == 1  # unit square
-    assert volume(e_1, e_2, e_3) == 1  # unit cube
+    assert content([1 * e_1]) == 1  # length
+    assert area(1 * e_1, 1 * e_2) == 1  # unit square
+    assert volume(1 * e_1, 1 * e_2, 1 * e_3) == 1  # unit cube
 
 
 def test_area_is_wedge_magnitude_oblique() -> None:
     # (e_1 + e_2) ∧ e_2 = e_1 ∧ e_2, so the parallelogram area is 1.
-    assert area(e_1 + e_2, e_2) == 1
+    assert area(1 * e_1 + 1 * e_2, 1 * e_2) == 1
     # |a||b| sin θ: a = e_1, b = e_1 + e_2 -> 1 · √2 · sin45° = 1.
-    assert area(e_1, e_1 + e_2) == 1
+    assert area(1 * e_1, 1 * e_1 + 1 * e_2) == 1
 
 
 def test_area_volume_are_content_aliases() -> None:
-    a, b, c = e_1 + e_2, e_2 + e_3, e_1 + e_3
+    a, b, c = 1 * e_1 + 1 * e_2, 1 * e_2 + 1 * e_3, 1 * e_1 + 1 * e_3
     assert area(a, b) == content([a, b])
     assert volume(a, b, c) == content([a, b, c])
 
 
 def test_content_of_dependent_set_is_zero() -> None:
-    assert content([e_1, 2 * e_1]) == 0  # parallel -> zero area
-    assert content([e_1, e_2, e_1 + e_2]) == 0  # coplanar -> zero volume
+    assert content([1 * e_1, 2 * e_1]) == 0  # parallel -> zero area
+    assert (
+        content([1 * e_1, 1 * e_2, 1 * e_1 + 1 * e_2]) == 0
+    )  # coplanar -> zero volume
 
 
 def test_non_vector_and_empty_raise() -> None:
     with pytest.raises(ValueError):
-        content([e_1, e_1 ^ e_2])  # a bivector is not a vector
+        content([1 * e_1, e_1 ^ e_2])  # a bivector is not a vector
     with pytest.raises(ValueError):
         content([])
 
@@ -171,9 +173,9 @@ def test_content_equals_content_by_rejection_numeric() -> None:
 
 def test_content_by_rejection_requires_a_frame() -> None:
     # dependent set: content is 0, but the height construction has no parallelotope.
-    assert content([e_1, 2 * e_1]) == 0
+    assert content([1 * e_1, 2 * e_1]) == 0
     with pytest.raises(ValueError):
-        content_by_rejection([e_1, 2 * e_1])
+        content_by_rejection([1 * e_1, 2 * e_1])
 
 
 # --- signed (oriented) content, k = n --------------------------------------
@@ -181,8 +183,8 @@ def test_content_by_rejection_requires_a_frame() -> None:
 
 def test_signed_area_is_the_2d_determinant() -> None:
     # (2 e_1 + e_2) and (e_1 + 3 e_2): det = 2·3 − 1·1 = 5.
-    p = 2 * g2.e_1 + g2.e_2
-    q = g2.e_1 + 3 * g2.e_2
+    p = 2 * g2.e_1 + 1 * g2.e_2
+    q = 1 * g2.e_1 + 3 * g2.e_2
     assert signed_area(p, q) == 5
     assert signed_area(q, p) == -5  # swap flips orientation
     assert abs(signed_area(p, q)) == content([p, q])  # |signed| == unsigned
@@ -198,20 +200,20 @@ def test_signed_volume_is_the_3d_determinant() -> None:
 
 
 def test_signed_content_dependent_full_set_is_zero() -> None:
-    p = 2 * g2.e_1 + g2.e_2
+    p = 2 * g2.e_1 + 1 * g2.e_2
     assert signed_area(p, 4 * g2.e_1 + 2 * g2.e_2) == 0  # parallel
 
 
 def test_signed_content_wrong_count_raises() -> None:
     # k < n on a fixed type: two vectors in 3-space have no scalar sign (a bivector).
     with pytest.raises(ValueError):
-        signed_content([g3.e_1, g3.e_2])
+        signed_content([1 * g3.e_1, 1 * g3.e_2])
     # Gn, too few: 2 vectors reaching index 3 -> n=3, k != n.
     with pytest.raises(ValueError):
-        signed_content([e_1, e_3])
+        signed_content([1 * e_1, 1 * e_3])
     # Gn, over-determined: 2 vectors reaching only index 1 -> n=1, k=2 != n.
     with pytest.raises(ValueError):
-        signed_content([e_1, 2 * e_1])
+        signed_content([1 * e_1, 2 * e_1])
     # all-zero -> no space to span -> raises.
     with pytest.raises(ValueError):
         signed_content([Gn.zero(), Gn.zero()])
@@ -220,11 +222,15 @@ def test_signed_content_wrong_count_raises() -> None:
 def test_signed_content_on_gn_full_space() -> None:
     # Gn now supports signed content when the vectors span their own space (k = n),
     # matching the fixed-dimension g2/g3 result exactly.
-    assert signed_content([e_1, e_2]) == 1  # oriented unit square
-    assert signed_content([e_2, e_1]) == -1  # swap flips the orientation
-    assert signed_content([e_1, e_2, e_3]) == 1  # oriented unit cube
-    assert signed_content([2 * e_1 + e_2, e_1 + 3 * e_2]) == 5  # the 2x2 determinant
-    assert signed_content([e_1, e_2]) == signed_content([g2.e_1, g2.e_2])
+    assert signed_content([1 * e_1, 1 * e_2]) == 1  # oriented unit square
+    assert signed_content([1 * e_2, 1 * e_1]) == -1  # swap flips the orientation
+    assert signed_content([1 * e_1, 1 * e_2, 1 * e_3]) == 1  # oriented unit cube
+    assert (
+        signed_content([2 * e_1 + 1 * e_2, 1 * e_1 + 3 * e_2]) == 5
+    )  # the 2x2 determinant
+    assert signed_content([1 * e_1, 1 * e_2]) == signed_content(
+        [1 * g2.e_1, 1 * g2.e_2]
+    )
 
 
 def test_signed_content_on_gn_symbolic_is_the_determinant() -> None:
@@ -236,8 +242,10 @@ def test_signed_content_on_gn_symbolic_is_the_determinant() -> None:
 
 def test_signed_content_parallel_full_count_is_zero() -> None:
     # k = n but linearly dependent (parallel / coplanar) -> flat -> 0.
-    assert signed_content([e_1 + e_2, 2 * e_1 + 2 * e_2]) == 0  # parallel, k=n=2
-    assert signed_content([e_1, e_3, e_1 + e_3]) == 0  # coplanar, k=n=3
+    assert (
+        signed_content([1 * e_1 + 1 * e_2, 2 * e_1 + 2 * e_2]) == 0
+    )  # parallel, k=n=2
+    assert signed_content([1 * e_1, 1 * e_3, 1 * e_1 + 1 * e_3]) == 0  # coplanar, k=n=3
 
 
 # --- pass-through methods on the base (discoverability sugar) ----------------
@@ -246,8 +254,8 @@ def test_signed_content_parallel_full_count_is_zero() -> None:
 def test_measure_methods_delegate_to_free_functions() -> None:
     """``v.area(w)`` etc. are inherited on every vector type and match the free
     functions they delegate to."""
-    a = 2 * g2.e_1 + g2.e_2
-    b = g2.e_1 + 3 * g2.e_2
+    a = 2 * g2.e_1 + 1 * g2.e_2
+    b = 1 * g2.e_1 + 3 * g2.e_2
     assert a.area(b) == area(a, b)
     assert a.signed_area(b) == signed_area(a, b)
     x = g3.e_1

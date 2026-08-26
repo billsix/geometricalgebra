@@ -170,7 +170,7 @@ show(quarter.plane_of_rotation())
 # rotation — provably, even symbolically (see `tests/test_graded.py`).
 
 # %%
-frm, to = e_1, e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
+frm, to = 1 * e_1, 1 * e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
 R: g2.Rotor = g2.Vector.rotor_from_vectors(from_vector=frm, to_vector=to)
 show(R)  # an (un-normalized) g2.Rotor
 
@@ -305,7 +305,7 @@ P: ComposableFunction = g3.Vector.project(
 )  # a ComposableFunction, already labelled from B3
 display(Math(P.latex_repr))
 # projects onto the plane
-P(g3.Vector.e_1 + g3.Vector.e_3)  # pyright: ignore[reportUnusedExpression]
+P(1 * g3.Vector.e_1 + 1 * g3.Vector.e_3)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # compose the projection with a translate: the pipeline renders as one LaTeX
@@ -313,7 +313,7 @@ P(g3.Vector.e_1 + g3.Vector.e_3)  # pyright: ignore[reportUnusedExpression]
 # ComposableFunction to give it a tidy custom label for the display.)
 pipe: ComposableFunction = ComposableFunction(P, "P_{B}") @ translate(b=g3.Vector.e_3)
 display(Math(pipe.latex_repr))
-show(pipe(g3.Vector.e_1 + g3.Vector.e_2))
+show(pipe(1 * g3.Vector.e_1 + 1 * g3.Vector.e_2))
 
 # %% [markdown]
 # A projection is **not invertible** — inverting a pipeline that contains it
@@ -322,7 +322,7 @@ show(pipe(g3.Vector.e_1 + g3.Vector.e_2))
 
 # %%
 M: InvertibleFunction = g3.Vector.reflect(B3)  # an InvertibleFunction (its own inverse)
-w: g3.Vector = g3.Vector.e_1 + g3.Vector.e_3
+w: g3.Vector = 1 * g3.Vector.e_1 + 1 * g3.Vector.e_3
 show(M(w), inverse(M)(M(w)))  # reflected, then reflected back == w
 
 # %%

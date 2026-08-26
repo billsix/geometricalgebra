@@ -933,8 +933,8 @@ class MultiVectorBase(abc.ABC):
         :func:`gacalc.measure.signed_area` (the 2-D determinant; needs 2-D vectors).
 
         >>> from gacalc.g2 import e_1, e_2
-        >>> a = 2 * e_1 + e_2
-        >>> b = e_1 + 3 * e_2
+        >>> a = 2 * e_1 + 1 * e_2
+        >>> b = 1 * e_1 + 3 * e_2
         >>> a.signed_area(b)
         5
         >>> b.signed_area(a)

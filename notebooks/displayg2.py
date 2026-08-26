@@ -623,7 +623,7 @@ a: Vector = 2 * Vector.e_1 + 3 * Vector.e_2
 a  # pyright: ignore[reportUnusedExpression]
 
 # %%
-b: Vector = Vector.e_1 + Vector.e_2
+b: Vector = 1 * Vector.e_1 + 1 * Vector.e_2
 b  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
