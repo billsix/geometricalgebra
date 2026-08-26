@@ -1672,6 +1672,66 @@ def transform_factory_overrides(
     ]
 
 
+def passthrough_method_overrides(
+    self_spec: TypeSpec,
+    onto_types: Sequence[tuple[int, str]],
+    method: str,
+    param_name: str,
+    max_onto_grade: int,
+) -> list[ast.stmt]:
+    """Precise-typed override of a project/reject/reflect PASS-THROUGH *instance*
+    method (``projected_onto`` / ``rejected_away_from`` / ``reflected_across``) on a
+    vector graded type.
+
+    ``base`` types these ``-> MultiVectorBase`` (the factory's own imprecision); but a
+    *vector* projected/rejected/reflected onto a blade stays a vector, so on a
+    ``Vector_n`` the result is a ``Vector_n``.  The instance-method analog of
+    :func:`transform_factory_overrides`: one precise ``@overload`` per grade-pure blade
+    type the method's runtime supports (``max_onto_grade``), then the ``MultiVectorBase
+    | Sequence[MultiVectorBase]`` catch-all, then a one-line impl delegating to
+    ``super()`` (runtime unchanged; base does the real work).  The return is the plain
+    *value* type (``Vector_n`` / ``MultiVectorBase``), NOT a ``ComposableFunction``
+    wrapper -- so, unlike the factory case, the impl can return ``MultiVectorBase``
+    directly (no invariance issue: ``Vector_n`` is assignable to it).
+    """
+    vec: str = self_spec.name
+    catch_all_param: ast.expr = ast.BinOp(
+        name_ref("MultiVectorBase"),
+        ast.BitOr(),
+        subscript(name_ref("Sequence"), name_ref("MultiVectorBase")),
+    )
+
+    def stub(param_ann: ast.expr, ret: ast.expr) -> ast.stmt:
+        return function_def(
+            method,
+            [ast.Expr(constant(...))],
+            params=[argument("self"), argument(param_name, param_ann)],
+            decorators=[attribute("typing", "overload")],
+            returns=ret,
+        )
+
+    precise_stubs: list[ast.stmt] = [
+        stub(name_ref(blade_type), name_ref(vec))
+        for grade, blade_type in onto_types
+        if grade <= max_onto_grade
+    ]
+    return [
+        *precise_stubs,
+        stub(catch_all_param, name_ref("MultiVectorBase")),
+        function_def(
+            method,
+            [
+                return_stmt(
+                    call(attribute(call("super"), method), [name_ref(param_name)])
+                )
+            ],
+            params=[argument("self"), argument(param_name)],
+            decorators=[],
+            returns=name_ref("MultiVectorBase"),
+        ),
+    ]
+
+
 # ==========================================================================
 # The four generators (one per emitted construct)
 # ==========================================================================
@@ -3070,6 +3130,23 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         body.extend(
             transform_factory_overrides(
                 spec, onto_types, "reflect", "across", "InvertibleFunction", 2
+            )
+        )
+        # The value-returning pass-through instance methods (base delegates them to
+        # the factories above): narrow their -> MultiVectorBase to the concrete vector
+        # type, same grade caps as the factories (project any grade; reject/reflect
+        # <= bivector).
+        body.extend(
+            passthrough_method_overrides(spec, onto_types, "projected_onto", "onto", n)
+        )
+        body.extend(
+            passthrough_method_overrides(
+                spec, onto_types, "rejected_away_from", "away_from", 2
+            )
+        )
+        body.extend(
+            passthrough_method_overrides(
+                spec, onto_types, "reflected_across", "across", 2
             )
         )
         # i(a, b): the unit bivector of the plane two vectors span (classmethod).

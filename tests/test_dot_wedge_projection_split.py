@@ -137,3 +137,28 @@ def test_graded_vector_factories_type_precisely() -> None:
 
     assert isinstance(g2.Vector.reject(away_from=v2b)(v2a), g2.Vector)
     assert isinstance(g3.Vector.reflect(across=v3b)(v3a), g3.Vector)
+
+
+def test_passthrough_methods_type_precisely() -> None:
+    """The ``projected_onto`` / ``rejected_away_from`` / ``reflected_across``
+    pass-through instance methods (sugar for applying the factory to a value) narrow to
+    the concrete vector type on the graded ``Vector_n`` types, like their factories, and
+    equal the factory form at runtime."""
+    v2a: g2.Vector = 2 * g2.Vector.e_1 + 3 * g2.Vector.e_2
+    v2b: g2.Vector = 1 * g2.Vector.e_1 + 1 * g2.Vector.e_2
+    typing.assert_type(v2a.projected_onto(v2b), g2.Vector)
+    typing.assert_type(v2a.rejected_away_from(v2b), g2.Vector)
+    typing.assert_type(v2a.reflected_across(v2b), g2.Vector)
+
+    v3a: g3.Vector = 1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3
+    v3b: g3.Vector = 1 * g3.Vector.e_1 + 1 * g3.Vector.e_2
+    typing.assert_type(v3a.projected_onto(v3b), g3.Vector)
+    typing.assert_type(v3a.rejected_away_from(v3b), g3.Vector)
+    typing.assert_type(v3a.reflected_across(v3b), g3.Vector)
+
+    # runtime: the pass-through is the factory applied to the value.
+    assert v2a.projected_onto(v2b) == g2.Vector.project(onto=v2b)(v2a)
+    assert v2a.rejected_away_from(v2b) == g2.Vector.reject(away_from=v2b)(v2a)
+    assert v2a.reflected_across(v2b) == g2.Vector.reflect(across=v2b)(v2a)
+    assert isinstance(v2a.rejected_away_from(v2b), g2.Vector)
+    assert isinstance(v3a.reflected_across(v3b), g3.Vector)

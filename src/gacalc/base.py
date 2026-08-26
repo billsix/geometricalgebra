@@ -901,6 +901,35 @@ class MultiVectorBase(abc.ABC):
             case _:
                 raise Exception("TODO - implement project for " + str(across))
 
+    # -- project/reject/reflect pass-through sugar (apply the factory to this value) --
+    # ``project``/``reject``/``reflect`` are *factories* returning a function; these
+    # apply that function to ``self`` in one call, so ``v.rejected_away_from(b)`` reads
+    # better than ``type(v).reject(away_from=b)(v)`` at a one-shot call site.  The
+    # factories stay for compose/label/pipeline/Cayley uses.  Typed ``->
+    # MultiVectorBase`` here; the generated vector types narrow the return to the
+    # concrete vector type (grade-preserving) via @overload -- see
+    # tools/gen_specialized.py ``passthrough_method_overrides``.
+    def projected_onto(
+        self, onto: MultiVectorBase | Sequence[MultiVectorBase]
+    ) -> MultiVectorBase:
+        """Project this value onto the blade ``onto`` — sugar for
+        ``project(onto)(self)`` (see :meth:`project`)."""
+        return type(self).project(onto)(self)
+
+    def rejected_away_from(
+        self, away_from: MultiVectorBase | Sequence[MultiVectorBase]
+    ) -> MultiVectorBase:
+        """Reject this value from the blade ``away_from`` — sugar for
+        ``reject(away_from)(self)`` (see :meth:`reject`)."""
+        return type(self).reject(away_from)(self)
+
+    def reflected_across(
+        self, across: MultiVectorBase | Sequence[MultiVectorBase]
+    ) -> MultiVectorBase:
+        """Reflect this value across the blade ``across`` — sugar for
+        ``reflect(across)(self)`` (see :meth:`reflect`)."""
+        return type(self).reflect(across)(self)
+
     # -- named measures (pass-through sugar for gacalc.measure; see that module) ----
     # These delegate to the free functions in ``gacalc.measure`` so the high-school
     # measures are discoverable on a vector (``v.area(w)``).  Deferred imports keep the

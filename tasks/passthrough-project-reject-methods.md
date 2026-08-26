@@ -10,11 +10,11 @@ names, boundary, call-site sweep); that task owns the code. Created 2026-08-25 (
 
 ## Decisions (Bill, 2026-08-25)
 
-- **Names: `projected_onto` / `rejected_from` / `reflected_in`** (past-participle, value-returning).
-  Include `reflected_in` for symmetry with the factory trio.
+- **Names: `projected_onto` / `rejected_away_from` / `reflected_across`** (past-participle, value-returning).
+  Include `reflected_across` for symmetry with the factory trio.
 - **Do the work during [[precise-typing-remaining-methods]], not as a standalone ship.** Add the
   base pass-throughs **and** their precise graded return typing together there (same overload
-  machinery that task already built for the `project`/`reject` factories) — so `Vector.rejected_from(b)`
+  machinery that task already built for the `project`/`reject` factories) — so `Vector.rejected_away_from(b)`
   is a `Vector` statically from day one, no interim `-> MultiVectorBase` version to revise.
 - **`content_by_rejection`** unrelated (that's the doctest task); ignore here.
 
@@ -34,17 +34,17 @@ for v in vectors:
 return orthogonal
 ```
 
-A pass-through instance method makes the inner line `w = w.rejected_from(prior)`. Three reasons
+A pass-through instance method makes the inner line `w = w.rejected_away_from(prior)`. Three reasons
 it's the right call, not just nicer:
 
 1. **Established precedent in this very codebase.** CLAUDE.md (Architecture › measures): the
    fixed-arity measures "also exist as thin pass-through **methods** on `MultiVectorBase`
-   (`v.area(w)`) **for discoverability**." A `v.rejected_from(b)` pass-through is the same move for
+   (`v.area(w)`) **for discoverability**." A `v.rejected_away_from(b)` pass-through is the same move for
    projection/rejection.
 2. **Many call sites are immediate applications**, not factory reuse. `grep` shows the
    `Cls.project(onto=b)(a)` / `Cls.reject(away_from=b)(a)` shape throughout `tests/` and
    `notebooks/` (e.g. `notebooks/displayg2.py:637` `a_par = Vector.project(onto=b)(a)`), plus
-   `frame.py:120`. All of these read better as `a.projected_onto(b)` / `a.rejected_from(b)`.
+   `frame.py:120`. All of these read better as `a.projected_onto(b)` / `a.rejected_away_from(b)`.
 3. **Zero cost to the existing design** — see the boundary below.
 
 ## The change
@@ -57,12 +57,12 @@ def projected_onto(self, onto: MultiVectorBase | Sequence[MultiVectorBase]) -> M
     """Apply the projection P_onto to this value (sugar for project(onto)(self))."""
     return type(self).project(onto)(self)
 
-def rejected_from(self, away_from: MultiVectorBase | Sequence[MultiVectorBase]) -> MultiVectorBase:
+def rejected_away_from(self, away_from: MultiVectorBase | Sequence[MultiVectorBase]) -> MultiVectorBase:
     """Apply the rejection away from `away_from` to this value."""
     return type(self).reject(away_from)(self)
 
 # optional, for symmetry:
-def reflected_in(self, across: MultiVectorBase | Sequence[MultiVectorBase]) -> MultiVectorBase:
+def reflected_across(self, across: MultiVectorBase | Sequence[MultiVectorBase]) -> MultiVectorBase:
     return type(self).reflect(across)(self)
 ```
 
@@ -102,7 +102,7 @@ Open questions all resolved — see **Decisions** above.
 
 ## Verify
 
-- `make test` green (add a couple of pass-through tests: `v.rejected_from(b) == reject(b)(v)`, and a
+- `make test` green (add a couple of pass-through tests: `v.rejected_away_from(b) == reject(b)(v)`, and a
   graded-type identity so the concrete return type is exercised).
 - `make format` clean (`ruff` + `ty check src`).
 

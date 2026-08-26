@@ -117,7 +117,7 @@ def make_orthogonal_frame(
     for v in vectors:
         w: MultiVectorBase = v
         for prior in orthogonal:
-            w = type(w).reject(away_from=prior)(w)
+            w = w.rejected_away_from(prior)
         orthogonal.append(w)
     return orthogonal
 
