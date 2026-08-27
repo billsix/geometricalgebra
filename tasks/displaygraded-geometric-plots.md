@@ -79,3 +79,25 @@ infrastructure in `nbplotutils.py` (`create_graphs`, `create_basis`, `draw_*`, `
   `mplot3d` and more fiddling. Could be a fast-follow.
 - **Bivector rendering:** parallelogram + orientation arc (concrete, ties to "signed area") vs a
   simpler arc-only glyph. Pick during implementation.
+
+## Folded-in ideas (2026-08-27, William Emerison Six <billsix@gmail.com>) — two batch-triage bullets map here
+
+Two maintainer bullets were triaged into this task because it already owns the notebook plotting:
+
+- **Bullet: *"Matplotlib print vectors 2d and 3d, put in the notebooks."*** — this is concept 1 (2D
+  vector arrows) plus the 3D vector case. **The 3D half is genuinely new infrastructure** — all current
+  plotting (`src/gacalc/nbplotutils.py`: `plot_multivector:495`, `create_graphs:143`, `_to_xy:68`) is
+  **2D only**; there is no 3D helper yet (concept 6 above already flagged `mplot3d`). See the existing
+  "include the 3D plots?" open question — this bullet raises its priority.
+- **Bullet: *"2D Plot things like scalar vector multiplication. Plot things like vector vector
+  multiplication."*** — vector·vector is already covered (concept 2: `a*b = a·b + a∧b`, dot = projection
+  length, wedge = parallelogram area). **Scalar·vector scaling is the net-new add** (an arrow and its
+  scaled image). `nbplotutils.show_mult` (`src/gacalc/nbplotutils.py:615`) already renders a
+  multiplication *table* (values, not geometry) — decide whether to add a geometry panel there or keep
+  these as standalone plots (Q below).
+
+**New open questions (block these additions):**
+- **Is 3D plotting in scope now** (this bullet asks for it explicitly), or still deferred as the
+  "fast-follow" the 3D §/concept-6 question already contemplates? 3D may motivate
+  `epix-plot-integration.md`.
+- **Scalar·vector** — extend `show_mult` with a geometry panel, or a standalone scaling plot?

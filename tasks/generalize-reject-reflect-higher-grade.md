@@ -164,3 +164,21 @@ verify-after step once `reject` generalizes.
 - Product choice, reflect definition, and blade-vs-homogeneous guard — see the three design decisions
   above.
 - Is there an upper-grade limit worth enforcing, or does it just work up to the pseudoscalar?
+
+## Folded-in idea (2026-08-27, William Emerison Six <billsix@gmail.com>) — projections line→line / line→plane / plane→plane
+
+A batch triage mapped this maintainer bullet here (same grade-general project/reject code):
+*"In generated types, make projections from line to line, line to plane, plane to plane. Check
+symbolically. Make examples in graded notebook."* Here "line"/"plane" mean **origin-through** blades
+(grade-1 subspace / grade-2 subspace) — so plane→plane is exactly the grade-2-onto-grade-2 case this
+task targets (`MultiVectorBase.project` at `src/gacalc/base.py:763` is already grade-general; the
+restriction is in `reject`/`reflect`). The symbolic-check + graded-notebook demonstration could live
+here or in `displaygraded-geometric-plots.md`.
+
+**New open question (blocks this addition):** confirm "line"/"plane" here mean **origin-through**
+subspaces (grade-1/grade-2) — distinct from the *affine/offset* flats in
+`affine-flats-lines-planes-from-points.md`, so the two tasks don't collide — and whether the symbolic
+checks + graded-notebook demos are tracked here or split into a notebook task.
+
+*(Because this addition carries an unanswered question, treat the "projections" framing as blocked on the
+above before implementing, independent of the base grade-generalization that was already proposed.)*
