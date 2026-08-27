@@ -138,7 +138,7 @@ def test_multivector_mult3d() -> None:
     def planewise_wedge(
         plane: MultiVectorBase, vec1: MultiVectorBase, vec2: MultiVectorBase
     ) -> MultiVectorBase:
-        proj: ComposableFunction = MultiVector.project(plane)
+        proj: ComposableFunction[MultiVectorBase] = MultiVector.project(plane)
         return proj(vec1).wedge(proj(vec2))
 
     # general 3D vectors:

@@ -17,7 +17,7 @@ import contextvars
 import itertools
 import math
 from collections.abc import Generator, Sequence
-from typing import cast
+from typing import Any, cast
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -46,6 +46,13 @@ from gacalc.gn import (
 if get_ipython() is not None:
     set_matplotlib_formats("svg")
 
+# These plotting helpers accept an ``InvertibleFunction`` over ANY multivector
+# representation (``Gn``, ``g3.Vector``, …) and apply it internally to
+# ``MultiVectorBase`` values, so the ``fn`` param is typed ``InvertibleFunction[Any]``:
+# ``InvertibleFunction`` is INVARIANT, so a fixed ``[MultiVectorBase]`` would reject the
+# concrete-typed transforms callers pass, while a bound TypeVar would reject the
+# internal application to ``MultiVectorBase``.  ``Any`` is gradually compatible both
+# ways.
 _IDENTITY = identity()
 
 
@@ -166,7 +173,7 @@ def create_graphs(
 
 
 def create_basis(
-    fn: InvertibleFunction = _IDENTITY,
+    fn: InvertibleFunction[Any] = _IDENTITY,
     graph_bounds: tuple[int, int] = (10, 10),
     gridline_interval: int = 1,
     xcolor: tuple[float, float, float] = (0.0, 0.0, 1.0),
@@ -188,7 +195,7 @@ def create_basis(
 
 
 def create_unit_circle(
-    fn: InvertibleFunction = _IDENTITY,
+    fn: InvertibleFunction[Any] = _IDENTITY,
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
     ex = cls.basis_vector(1)
@@ -223,7 +230,7 @@ def create_unit_circle(
 
 
 def create_x_and_y(
-    fn: InvertibleFunction = _IDENTITY,
+    fn: InvertibleFunction[Any] = _IDENTITY,
     xcolor: tuple[float, float, float] = (0.0, 0.0, 1.0),
     ycolor: tuple[float, float, float] = (1.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
@@ -264,7 +271,7 @@ def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Coef:
 def _draw_labelled_triangle(
     vertex_coefficients: Sequence[tuple[float, float]],
     labels: Sequence[str],
-    fn: InvertibleFunction = _IDENTITY,
+    fn: InvertibleFunction[Any] = _IDENTITY,
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
     label_offset_x_sign: float = 1.0,
@@ -325,7 +332,7 @@ def _draw_labelled_triangle(
 
 
 def draw_isoceles_triangle(
-    fn: InvertibleFunction = _IDENTITY,
+    fn: InvertibleFunction[Any] = _IDENTITY,
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
@@ -336,7 +343,7 @@ def draw_isoceles_triangle(
 
 
 def draw_second_right_triangle(
-    fn: InvertibleFunction = _IDENTITY,
+    fn: InvertibleFunction[Any] = _IDENTITY,
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
@@ -352,7 +359,7 @@ def draw_second_right_triangle(
 
 
 def draw_right_triangle(
-    fn: InvertibleFunction = _IDENTITY,
+    fn: InvertibleFunction[Any] = _IDENTITY,
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
@@ -373,7 +380,7 @@ def draw_right_triangle(
 
 
 def draw_ndc(
-    fn: InvertibleFunction = _IDENTITY,
+    fn: InvertibleFunction[Any] = _IDENTITY,
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
@@ -437,7 +444,7 @@ def draw_ndc(
 def draw_screen(
     width: int,
     height: int,
-    fn: InvertibleFunction = _IDENTITY,
+    fn: InvertibleFunction[Any] = _IDENTITY,
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:

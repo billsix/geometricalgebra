@@ -534,6 +534,21 @@ authority on all of these.
   (`Mapping`/`Sequence`), not invariant `dict`/`list`. Polymorphic values take the
   abstract base (`MultiVectorBase`), never a runtime-picked concrete. (Teaching
   notebooks especially: name + type the GA values.)
+- **Parameterize generic types — never a bare generic in an annotation.** Write
+  `ComposableFunction[MultiVectorBase]` / `InvertibleFunction[g3.Vector]`, not a bare
+  `ComposableFunction` / `InvertibleFunction` (a bare generic silently degrades its parameter to
+  implicit `Any`). These two are **invariant** with an **unbounded** `V` (`functions.py` must not
+  import `base`), so the parameter must match the value's *exact* `V` — `InvertibleFunction[g3.Vector]`
+  for a `plane_rotation` of `g3.Vector`s, `[MultiVectorBase]` for the representation-agnostic
+  transforms (`translate(b: V) -> InvertibleFunction[V]` gives whatever concrete `V` the value has);
+  **never blanket `[MultiVectorBase]`** — `ty check` proves each one. **A *polymorphic* param that
+  accepts *any* transform and applies it to `MultiVectorBase` internally** (e.g. `nbplotutils`'s
+  plotting `fn`) is **`InvertibleFunction[Any]`** — invariance makes a fixed `[MultiVectorBase]`
+  reject the concrete-typed transforms callers pass, and a bound TypeVar reject the internal
+  base-application; `Any` is the only thing compatible both ways. Exceptions that stay bare: a
+  runtime `isinstance(f, InvertibleFunction)` (can't take a subscripted generic), and `MultiVectorFn`
+  (a concrete `Callable` alias, not a generic). **Notebooks aren't in the `ty` gate — verify their
+  generics with `pyright` in the container** (`make image` ships it), where host `ty` can't reach.
 - **Inline a value used exactly once** — unless the name documents an otherwise-opaque
   expression. This **takes precedence over "annotate generously"**: don't create or
   keep a single-use local just to give it a type — inline it (e.g. pass the f-string

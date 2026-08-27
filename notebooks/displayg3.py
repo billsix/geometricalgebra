@@ -43,6 +43,7 @@
 
 # %%
 import warnings
+from typing import cast
 
 import sympy
 from IPython.display import Math, display
@@ -115,8 +116,8 @@ G.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
 # `r_vector_part(1)` keeps only the grade-1 (vector) part.
 
 # %%
-a: G = G.symbolic_multivector(prefix="a")
-a  # pyright: ignore[reportUnusedExpression]
+a_full: G = G.symbolic_multivector(prefix="a")
+a_full  # pyright: ignore[reportUnusedExpression]
 
 # %%
 a_vec: G = G.symbolic_multivector(prefix="a").r_vector_part(1)
@@ -206,7 +207,12 @@ signed_volume(b_vec, a_vec, c_vec)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 sympy.simplify(
-    signed_volume(b_vec, a_vec, c_vec) + signed_volume(a_vec, b_vec, c_vec)
+    # signed_volume() returns Coef (int | float | Expr); cast to Expr for
+    # sympy.simplify, whose stub wants a Basic.
+    cast(
+        sympy.Expr,
+        signed_volume(b_vec, a_vec, c_vec) + signed_volume(a_vec, b_vec, c_vec),
+    )
 ) == 0
 
 # %% [markdown]
@@ -362,7 +368,12 @@ a ^ b
 # %%
 dot = a.inner_product(b).scalar_part()
 lagrange_residual = sympy.simplify(
-    a.magnitude_squared() * b.magnitude_squared() - dot**2 - (a ^ b).magnitude_squared()
+    cast(
+        sympy.Expr,
+        a.magnitude_squared() * b.magnitude_squared()
+        - dot**2
+        - (a ^ b).magnitude_squared(),
+    )
 )
 lagrange_residual
 
@@ -399,7 +410,10 @@ a * b
 # %%
 assert (
     sympy.simplify(
-        (a * b).magnitude_squared() - a.magnitude_squared() * b.magnitude_squared()
+        cast(
+            sympy.Expr,
+            (a * b).magnitude_squared() - a.magnitude_squared() * b.magnitude_squared(),
+        )
     )
     == 0
 )

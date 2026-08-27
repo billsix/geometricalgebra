@@ -180,7 +180,7 @@ show(R)  # an (un-normalized) g2.Rotor
 # `R̃ / |R|²`) divides that out, leaving a pure rotation equal to `projection_rotation`.
 
 # %%
-w = e_1
+w: g2.Vector = e_1
 for label, value in [
     (r"R\,\tilde R", R * R.reverse()),
     (r"R\,w\,\tilde R", R * w * R.reverse()),
@@ -257,9 +257,9 @@ show((g3.Vector.e_1 ^ g3.Vector.e_2) * (g3.Vector.e_1 ^ g3.Vector.e_2))
 
 # %%
 t = sympy.symbols("t")
-B: g3.Bivector = sympy.cos(t) * (g3.Vector.e_1 ^ g3.Vector.e_2) + sympy.sin(t) * (
+B: g3.Bivector = (g3.Vector.e_1 ^ g3.Vector.e_2) * sympy.cos(t) + (
     g3.Vector.e_1 ^ g3.Vector.e_3
-)
+) * sympy.sin(t)
 # B * B.dual() stores (cos^2 t + sin^2 t)·e_123 but displays as the trivector e_123
 show(B, B.dual(), B * B.dual())
 
@@ -300,7 +300,7 @@ show(a, a * b, a ^ b, r)
 
 # %%
 B3: g3.Bivector = g3.Vector.e_1 ^ g3.Vector.e_2  # the e_1 e_2 plane
-P: ComposableFunction = g3.Vector.project(
+P: ComposableFunction[g3.Vector] = g3.Vector.project(
     B3
 )  # a ComposableFunction, already labelled from B3
 display(Math(P.latex_repr))
@@ -311,7 +311,9 @@ P(1 * g3.Vector.e_1 + 1 * g3.Vector.e_3)  # pyright: ignore[reportUnusedExpressi
 # compose the projection with a translate: the pipeline renders as one LaTeX
 # expression, and applies translate-then-project to a vector. (Wrap in a
 # ComposableFunction to give it a tidy custom label for the display.)
-pipe: ComposableFunction = ComposableFunction(P, "P_{B}") @ translate(b=g3.Vector.e_3)
+pipe: ComposableFunction[g3.Vector] = ComposableFunction(P, "P_{B}") @ translate(
+    b=g3.Vector.e_3
+)
 display(Math(pipe.latex_repr))
 show(pipe(1 * g3.Vector.e_1 + 1 * g3.Vector.e_2))
 
@@ -321,8 +323,10 @@ show(pipe(1 * g3.Vector.e_1 + 1 * g3.Vector.e_2))
 # involution): `reflect` returns an `InvertibleFunction`, so it round-trips.
 
 # %%
-M: InvertibleFunction = g3.Vector.reflect(B3)  # an InvertibleFunction (its own inverse)
-w: g3.Vector = 1 * g3.Vector.e_1 + 1 * g3.Vector.e_3
-show(M(w), inverse(M)(M(w)))  # reflected, then reflected back == w
+M: InvertibleFunction[g3.Vector] = g3.Vector.reflect(
+    B3
+)  # an InvertibleFunction (its own inverse)
+w3: g3.Vector = 1 * g3.Vector.e_1 + 1 * g3.Vector.e_3
+show(M(w3), inverse(M)(M(w3)))  # reflected, then reflected back == w3
 
 # %%

@@ -1,8 +1,48 @@
 # Use `bivector_from_vectors` / `i` in the notebooks and unit tests
 
-**Status:** proposed — needs go-ahead
-**Priority:** 5
+**Status:** proposed — **BLOCKED on a small prerequisite** (narrow `bivector_from_vectors` / `i` for
+`Gn`; see Finding). Not cleanly actionable until that lands.
+**Priority:** 6
 **Difficulty:** 3
+
+## Finding (2026-08-27) — the adoption downgrades typing for `Gn`, so it needs a prerequisite
+
+Attempted the adoption; **reverted, no changes kept.** Verified every candidate site:
+
+- **Most `^` / `.wedge()` uses are teaching the wedge** (asserting its graded type/value, displaying
+  the geometric/outer product, the Lagrange-identity / plane-decomposition cells). The task already
+  says to keep those — correct, they stay.
+- **The genuine "plane/bivector as a means to an end" sites are all in `Gn` / `MultiVector` context:**
+  `notebooks/displaymv.py:443` (`biv = vec_a ^ vec_b`, then used across ~8 downstream cells —
+  `biv*biv`, `biv.dual(3)`, `biv.dot(biv.dual(3))`, …) and `tests/test_conformance.py:254`
+  (`b = vec(n,0) ^ vec(n,10)`, a bivector fed to `exp`). These are the only real scaffolding uses.
+
+**The blocker (root cause):** **`Gn.bivector_from_vectors` / `Gn.i` return `MultiVectorBase`, not
+`Gn`** — only the *generated graded* `Vector_n` types got the narrowing overload (Tier 2 of the
+archived `precise-typing-remaining-methods.md`, via `classmethod_narrowing_overloads` /
+`inherited_classmethod_narrowing`). `Gn` (hand-written in `gn.py`) never got it. So adopting the
+helper at those sites **downgrades the type**: the wedge `^` gives a precise `Gn`, the helper widens
+to `MultiVectorBase`, and e.g. `b: Gn = Gn.bivector_from_vectors(...)` is a hard **ty error**
+(`invalid-assignment: MultiVectorBase is not assignable to Gn`, verified) — and the notebook
+`biv: MultiVector = …` fails pyright the same way.
+
+Meanwhile the *graded-Vector* contexts where the helper **is** precise (`→ Bivector_n`) have **no**
+hand-built planes: `displayg2`/`displayg3` operate on the full `G`, and the graded tests use
+`gn.e_1 ^ gn.e_2` as **expected-value** assertions (wedge-as-subject, keep). So there is currently no
+site where adoption is both meaningful and non-regressive.
+
+**The prerequisite (small):** narrow `bivector_from_vectors` / `i` for **`Gn`** itself — a
+hand-written override in `gn.py` typing `Gn.bivector_from_vectors(a, b) -> Gn` and `Gn.i(a, b) -> Gn`
+(the wedge, and its normalization, of two `Gn` vectors *is* a `Gn`, so `-> Self` is sound; `i` also
+raises on parallel vectors, unchanged). That mirrors the Tier-2 graded narrowing, which simply never
+covered the non-generated `Gn`. Once `Gn` narrows too, the `displaymv.py:443` / `test_conformance:254`
+adoptions are clean (no typing downgrade), and this task can proceed. **Definitional equality is
+confirmed** (`Gn.bivector_from_vectors(a, b) == a ^ b`), so the runtime/display is unchanged either
+way — this is purely a typing gate.
+
+**Recommendation:** do the `Gn`-narrowing prerequisite first (its own small task), then this one. If
+that's declined, this task should be **closed** — there are no clean adoption sites at present.
+(Priority dropped 5 → 6 to reflect the block.)
 
 ## Goal
 

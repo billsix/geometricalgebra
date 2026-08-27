@@ -210,8 +210,10 @@ def projection_rotation(
     plane: MultiVectorBase = from_vector ^ to_vector
     cls: type[V] = type(from_vector)
 
-    components_in_plane: ComposableFunction = cls.project(plane)
-    components_exterior_to_plane: ComposableFunction = cls.reject(plane)
+    components_in_plane: ComposableFunction[MultiVectorBase] = cls.project(plane)
+    components_exterior_to_plane: ComposableFunction[MultiVectorBase] = cls.reject(
+        plane
+    )
 
     def r(value: MultiVectorBase) -> MultiVectorBase:
         assert value.is_vector()  # TODO - can this be generalized?
@@ -513,7 +515,7 @@ def plane_rotation(
 
 
 # doc-region-begin uniform scale signature
-def uniform_scale(m: float) -> InvertibleFunction:
+def uniform_scale(m: float) -> InvertibleFunction[MultiVectorBase]:
     # doc-region-end uniform scale signature
     """Scale uniformly by ``m`` (representation preserving -- just ``vector * m``).
 
@@ -547,7 +549,7 @@ def uniform_scale(m: float) -> InvertibleFunction:
 
 
 # doc-region-begin scale non-uniform signature
-def scale_non_uniform(*factors: float) -> InvertibleFunction:
+def scale_non_uniform(*factors: float) -> InvertibleFunction[MultiVectorBase]:
     # doc-region-end scale non-uniform signature
     """Scale axis ``i`` by ``factors[i]`` (1-indexed e_1, e_2, ...), in any dimension.
 
@@ -594,7 +596,7 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction:
 
 
 def to_matrix(
-    fn: InvertibleFunction,
+    fn: InvertibleFunction[MultiVectorBase],
     cls: type[MultiVectorBase],
     n: int | None = None,
     *,

@@ -45,7 +45,7 @@ def test_rotor_rotation_of_float_vectors_stays_float_forward_and_inverse() -> No
     # directions must stay numeric.
     v: g3.Vector = g3.Vector(coeff_e_1=1.0, coeff_e_2=0.0, coeff_e_3=0.0)
     to: g3.Vector = g3.Vector(coeff_e_1=0.0, coeff_e_2=1.0, coeff_e_3=0.0)
-    f: InvertibleFunction = rotor_rotation(v, to)
+    f: InvertibleFunction[g3.Vector] = rotor_rotation(v, to)
     rotated: MultiVectorBase
     for rotated in (f(v), inverse(f)(v)):
         assert type(rotated.coeff_e_1) is float

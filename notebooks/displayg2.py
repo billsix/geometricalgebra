@@ -43,6 +43,8 @@
 # %%
 import math
 import warnings
+from collections.abc import Callable
+from typing import cast
 
 import sympy
 from IPython.display import Math, display
@@ -123,8 +125,8 @@ G.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
 # of `sympy` symbols; `r_vector_part(1)` keeps only the grade-1 (vector) part.
 
 # %%
-a: G = G.symbolic_multivector(prefix="a")
-a  # pyright: ignore[reportUnusedExpression]
+a_full: G = G.symbolic_multivector(prefix="a")
+a_full  # pyright: ignore[reportUnusedExpression]
 
 # %%
 a_vec: G = G.symbolic_multivector(prefix="a").r_vector_part(1)
@@ -273,15 +275,15 @@ gram_fe_to_mol_fe(gram_fe=95.8)
 # `plane_rotation(a, b)` packages it: it wedge-normalizes the two vectors `a`, `b`
 # into the unit bivector of their plane once, then returns an
 # `angle -> InvertibleFunction` factory (the half-angle rotor is built inside the
-# library -- no hand-rolled cos/sin).  So `rotate = plane_rotation(g2.Vector.e_1,
-# g2.Vector.e_2)` rotates in the `e_1 e_2` plane (positive `angle` turns `e_1` toward
+# library -- no hand-rolled cos/sin).  So `rotate = plane_rotation(e_1, e_2)`
+# rotates in the `e_1 e_2` plane (positive `angle` turns `e_1` toward
 # `e_2`); each `rotate(angle)` is an `InvertibleFunction` that renders its own LaTeX,
 # composes / inverts like the other transforms, and -- via the rotor sandwich --
 # preserves the type of whatever it rotates (a `g2.G` stays a `g2.G`).
 
 
 # %%
-rotate = plane_rotation(Vector.e_1, Vector.e_2)
+rotate: Callable[[Coef], InvertibleFunction[G]] = plane_rotation(e_1, e_2)
 
 
 # %%
@@ -375,7 +377,7 @@ plot_multivector(u * v)
 # graph paper corresponds to the numbers on the left and on the bottom.
 
 # %%
-fn: InvertibleFunction = rotate(math.radians(53.130102))
+fn: InvertibleFunction[G] = rotate(math.radians(53.130102))
 with create_graphs(graph_bounds=(5, 5)) as axes:
     create_basis(fn=fn, cls=G)
     create_x_and_y(fn=fn, cls=G)
@@ -390,7 +392,7 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 # system (blue/pink). Any point can be described in either graph paper.
 
 # %%
-fn: InvertibleFunction = rotate(math.radians(53.130102))
+fn: InvertibleFunction[G] = rotate(math.radians(53.130102))
 with create_graphs(graph_bounds=(5, 5)) as axes:
     create_basis(fn=rotate(0.0), cls=G)
     create_x_and_y(fn=rotate(0.0), cls=G)
@@ -409,7 +411,7 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 # order applied, or in reverse.
 
 # %%
-fn: InvertibleFunction = compose(
+fn: InvertibleFunction[G] = compose(
     [
         rotate(sympy.pi / 4),
         translate(b=2 * e_1),
@@ -499,7 +501,14 @@ a ^ b
 # %%
 dot: Coef = a.inner_product(b).scalar_part()
 lagrange_residual: Coef = sympy.simplify(
-    a.magnitude_squared() * b.magnitude_squared() - dot**2 - (a ^ b).magnitude_squared()
+    # magnitude_squared() etc. are typed Coef (int | float | Expr); cast to Expr
+    # for sympy.simplify, whose stub wants a Basic.
+    cast(
+        sympy.Expr,
+        a.magnitude_squared() * b.magnitude_squared()
+        - dot**2
+        - (a ^ b).magnitude_squared(),
+    )
 )
 lagrange_residual
 
@@ -546,7 +555,10 @@ a * b
 # %%
 assert (
     sympy.simplify(
-        (a * b).magnitude_squared() - a.magnitude_squared() * b.magnitude_squared()
+        cast(
+            sympy.Expr,
+            (a * b).magnitude_squared() - a.magnitude_squared() * b.magnitude_squared(),
+        )
     )
     == 0
 )

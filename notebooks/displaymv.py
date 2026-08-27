@@ -36,7 +36,7 @@ import warnings
 import sympy
 from IPython.display import Math, display
 
-from gacalc.base import MultiVectorFn
+from gacalc.base import Coef, MultiVectorBase, MultiVectorFn
 from gacalc.gn import (
     InvertibleFunction,
     MultiVector,
@@ -455,7 +455,9 @@ biv.dual(3)
 
 
 # %%
-biv.dot(biv.dual(3))
+# dual() is typed MultiVectorBase by design (grade-changing); cast back to the
+# concrete type so dot()'s same-type parameter accepts it.
+biv.dot(typing.cast(MultiVector, biv.dual(3)))
 
 # %%
 show_mult(biv, biv.dual(3))
@@ -489,12 +491,16 @@ show_mult(
 # rotate(angle): rotation in the e_1 e_2 plane (positive angle turns e_1 -> e_2).
 # plane_rotation builds the half-angle rotor + sandwich internally and returns a
 # properly-labelled InvertibleFunction -- no hand-built rotor, and it renders LaTeX.
-rotate = plane_rotation(e_1, e_2)
+rotate: typing.Callable[[Coef], InvertibleFunction[MultiVector]] = plane_rotation(
+    e_1, e_2
+)
 
 
-T: typing.Callable[[MultiVector], MultiVectorFn] = translate
-S: typing.Callable[[float, float], InvertibleFunction] = scale_non_uniform
-R: typing.Callable[[float], InvertibleFunction] = rotate
+T: typing.Callable[[MultiVector], InvertibleFunction[MultiVector]] = translate
+S: typing.Callable[[float, float], InvertibleFunction[MultiVectorBase]] = (
+    scale_non_uniform
+)
+R: typing.Callable[[float], InvertibleFunction[MultiVector]] = rotate
 # %%
 T(5 * e_1)
 

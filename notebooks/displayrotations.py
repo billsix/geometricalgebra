@@ -43,12 +43,15 @@
 # $\mathcal{G}_3$, using the general `Gn` representation.
 
 # %%
+from typing import cast
+
 import sympy
 
 import gacalc.g2 as g2
+from gacalc.base import MultiVectorBase
 from gacalc.gn import Gn, e_1, e_2, e_3, projection_rotation
 from gacalc.nbplotutils import show_mult
-from gacalc.transforms import ComposableFunction, plane_rotation
+from gacalc.transforms import ComposableFunction, InvertibleFunction, plane_rotation
 
 
 def simplified(mv: Gn) -> Gn:
@@ -72,7 +75,8 @@ theta = sympy.symbols("theta", real=True)
 # the rotation carries e_1 toward the unit vector at angle theta in the e_1-e_2
 # plane; the same rotation is used in 2D and 3D below
 a: Gn = e_1
-b: Gn = sympy.cos(theta) * e_1 + sympy.sin(theta) * e_2
+# multivector-first so Gn.__mul__ (-> Gn) is used, not sympy's Expr.__mul__
+b: Gn = e_1 * sympy.cos(theta) + e_2 * sympy.sin(theta)
 
 # %% [markdown]
 # $\mathcal{G}_2$ -- the plane
@@ -84,7 +88,9 @@ b: Gn = sympy.cos(theta) * e_1 + sympy.sin(theta) * e_2
 v1, v2 = sympy.symbols("v1 v2", real=True)
 v_2d: Gn = v1 * e_1 + v2 * e_2
 
-R: Gn = Gn.rotor_from_vectors(from_vector=a, to_vector=b)
+# rotor_from_vectors / projection_rotation are typed MultiVectorBase by design
+# (representation-agnostic); cast back to the concrete Gn we fed them.
+R: Gn = cast(Gn, Gn.rotor_from_vectors(from_vector=a, to_vector=b))
 
 # %% [markdown]
 # The rotor sandwich $R\,v\,R^{-1}$ (simplified for display):
@@ -97,7 +103,7 @@ simplified(sandwich_2d)  # pyright: ignore[reportUnusedExpression]
 # The projection formula `projection_rotation(from, to)` applied to the same $v$:
 
 # %%
-projection_2d: Gn = projection_rotation(from_vector=a, to_vector=b)(v_2d)
+projection_2d: Gn = cast(Gn, projection_rotation(from_vector=a, to_vector=b)(v_2d))
 simplified(projection_2d)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -118,7 +124,7 @@ sandwich_2d - projection_2d  # pyright: ignore[reportUnusedExpression]
 v1, v2, v3 = sympy.symbols("v1 v2 v3", real=True)
 v_3d: Gn = v1 * e_1 + v2 * e_2 + v3 * e_3
 
-R3: Gn = Gn.rotor_from_vectors(from_vector=a, to_vector=b)
+R3: Gn = cast(Gn, Gn.rotor_from_vectors(from_vector=a, to_vector=b))
 
 # %% [markdown]
 # The rotor sandwich (note the $e_3$ part rides through unchanged):
@@ -131,7 +137,7 @@ simplified(sandwich_3d)  # pyright: ignore[reportUnusedExpression]
 # The projection formula on the same $v$:
 
 # %%
-projection_3d: Gn = projection_rotation(from_vector=a, to_vector=b)(v_3d)
+projection_3d: Gn = cast(Gn, projection_rotation(from_vector=a, to_vector=b)(v_3d))
 simplified(projection_3d)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -202,18 +208,20 @@ b
 
 # %%
 # label convention: subscript = "from", superscript = "to"
-align: ComposableFunction = ComposableFunction(
+align: ComposableFunction[MultiVectorBase] = ComposableFunction(
     projection_rotation(from_vector=a, to_vector=e_1), r"R_{a}^{e_1}"
 )
-perp: ComposableFunction = ComposableFunction(Gn.project(e_2 ^ e_3), r"P_{e_{23}}")
-turn: ComposableFunction = ComposableFunction(
+perp: ComposableFunction[MultiVectorBase] = ComposableFunction(
+    Gn.project(e_2 ^ e_3), r"P_{e_{23}}"
+)
+turn: ComposableFunction[MultiVectorBase] = ComposableFunction(
     projection_rotation(from_vector=e_2, to_vector=e_3), r"R_{e_2}^{e_3}"
 )
-unalign: ComposableFunction = ComposableFunction(
+unalign: ComposableFunction[MultiVectorBase] = ComposableFunction(
     projection_rotation(from_vector=e_1, to_vector=a), r"R_{e_1}^{a}"
 )
 
-cross_over_norm_a: ComposableFunction = unalign @ turn @ perp @ align
+cross_over_norm_a: ComposableFunction[MultiVectorBase] = unalign @ turn @ perp @ align
 # the whole pipeline, rendered as one LaTeX expression
 cross_over_norm_a  # pyright: ignore[reportUnusedExpression]
 
@@ -223,7 +231,7 @@ cross_over_norm_a  # pyright: ignore[reportUnusedExpression]
 # $|a| = \sqrt{a_1^2 + a_2^2 + a_3^2}$:
 
 # %%
-result: Gn = cross_over_norm_a(b)
+result: Gn = cast(Gn, cross_over_norm_a(b))
 result  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -262,6 +270,6 @@ R_exp  # pyright: ignore[reportUnusedExpression]
 # plane and angle:
 
 # %%
-f = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)(phi)
+f: InvertibleFunction[g2.Vector] = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)(phi)
 v_exp: g2.Vector = v1 * g2.Vector.e_1 + v2 * g2.Vector.e_2
 R_exp.sandwich(v_exp) == f(v_exp)
