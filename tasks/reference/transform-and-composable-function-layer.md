@@ -58,3 +58,6 @@ lays out the exact public API surface it would rename/relocate.
 - `tasks/reference/generated-product-typing.md` — how the generated types type their products/sums
   (the values these functions transform).
 - `tasks/reference/unit-bivector-and-rotors.md` — the rotor math behind the rotation factories.
+- `tasks/reference/composable-function-algebraic-identity.md` — the *math names* for this layer
+  (endomorphism monoid / automorphism group, the free-word `components` pattern, the
+  Cayley-vs-Schreier/groupoid story) and the library comparison behind keeping this shape.

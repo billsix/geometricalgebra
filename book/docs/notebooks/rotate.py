@@ -16,11 +16,11 @@
 # %%
 import sympy
 
-from gacalc.g2 import Vector2
+from gacalc.g2 import Vector
 from gacalc.transforms import plane_rotation
 
 # A rotation in the e_1 -> e_2 plane (counterclockwise).
-rotate = plane_rotation(Vector2.e_1, Vector2.e_2)
+rotate = plane_rotation(Vector.e_1, Vector.e_2)
 
 # Rotate e_1 by 90 degrees: it should become e_2.
-rotate(sympy.pi / 2)(Vector2.e_1).simplified()
+rotate(sympy.pi / 2)(Vector.e_1).simplified()

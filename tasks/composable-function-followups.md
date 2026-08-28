@@ -30,8 +30,12 @@ Assess:
   "don't import directly — use `transforms`") so there's **one** obvious public entry point?
 
 Goal: a newcomer sees good names and one place to import from, with the leaf split invisible.
-(`ComposableFunction` itself is the working type name — vs `LabeledFunction` / `Transform` /
-`DisplayableFunction`; confirm it too, since it's now the public type name.)
+
+**Type names: SETTLED** (William Emerison Six <billsix@gmail.com>, 2026-08-28) —
+`ComposableFunction` / `InvertibleFunction` stay (pedagogy over vocabulary; the math names —
+endomorphism / automorphism — are documented as "also known as" in the docstrings and in
+`tasks/reference/composable-function-algebraic-identity.md`). Only the *module*-name questions
+(a)/(b) above remain open in this item.
 
 ## 2. Where does the animation layer sit — base or invertible subtype?
 

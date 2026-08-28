@@ -25,6 +25,30 @@ This module holds the function-composition abstraction, split by *capability*:
   for; a non-invertible function simply is not one, which is a *type* error at
   that boundary rather than a runtime surprise.
 
+**Algebraic identity** (the standard math names for this structure; depth in
+``tasks/reference/composable-function-algebraic-identity.md`` in the repo):
+
+* A ``ComposableFunction[V]`` is a self-map ``V -> V`` -- an **endomorphism**;
+  under composition, with :func:`identity` as the unit, they form the
+  *endomorphism monoid* End(V).
+* An ``InvertibleFunction[V]`` is an invertible endomorphism -- an
+  **automorphism**; the invertibles form the *automorphism group* Aut(V), the
+  group of units inside End(V).  The subclass relation *is* "Aut(V) sits
+  inside End(V)".
+* :func:`compose` keeps the generator sequence (``components``) -- the element
+  as a **word in its generators** -- and ``steps`` / ``latex_repr`` / ``at`` /
+  :func:`inverse` are each interpretations of that word (the free-structure
+  pattern; inversion reverses the word and inverts each letter).
+* :meth:`ComposableFunction.at` is a **one-parameter subgroup** (flow):
+  ``at(0)`` is the identity, ``at(1)`` the function, and interpolation
+  commutes with inversion.
+* The :class:`Linearity` lattice mirrors the subgroup chain
+  GL(V) < Aff(V) < (all bijections).
+
+The working names are kept on purpose: they say what a student can *do* with
+the value (compose it; invert it), where "endomorphism" / "automorphism" would
+demand vocabulary before intuition.
+
 It **imports nothing internal** -- that is what keeps the package's core
 dependency graph acyclic and lets ``base.py`` import it (so ``project`` /
 ``reject`` can return a ``ComposableFunction``).  Consequently its type variable
@@ -79,6 +103,13 @@ class ComposableFunction(typing.Generic[V]):
     interpolate with :meth:`at`, flatten with :meth:`steps`.  ``InvertibleFunction``
     extends this with an inverse; anything that only needs "compose + label"
     (e.g. a labelled ``project`` / ``reject``) is exactly this base type.
+
+    Also known as: an **endomorphism** of ``V`` (a self-map ``V -> V``); under
+    composition these form the endomorphism monoid End(V).  ``project`` /
+    ``reject`` are its idempotent elements (p after p = p) -- the literal
+    linear-algebra *projections*, which is why they cannot be
+    ``InvertibleFunction``\\ s.  See the module docstring's "Algebraic
+    identity" note.
     """
 
     # doc-region-begin composable function members
@@ -191,6 +222,11 @@ class InvertibleFunction(ComposableFunction[V]):
     Same interface as the base (compose, label, ``at`` / ``steps``), plus a real
     inverse -- so it is the type to require where a function must be reversible
     (a Cayley-graph edge walked backward, an animation played in reverse).
+
+    Also known as: an **automorphism** of ``V`` (an invertible endomorphism);
+    under composition these form the automorphism group Aut(V), the group of
+    units inside End(V) -- the subclass relation is exactly that inclusion.
+    See the module docstring's "Algebraic identity" note.
 
     Note the constructor is keyword-friendliest as
     ``InvertibleFunction(func=..., latex_repr=..., inverse=..., latex_repr_inv=...)``;
