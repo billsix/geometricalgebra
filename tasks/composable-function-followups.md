@@ -4,6 +4,9 @@
 **Priority:** 6
 **Difficulty:** 4
 **Created:** 2026-07-17
+**See:** `tasks/reference/transform-and-composable-function-layer.md` (added 2026-08-27) — a current-state
+map of the exact public API surface (`functions.py`/`transforms.py`) this naming/placement reassessment
+would rename or relocate. Read it first.
 
 ## Context
 
