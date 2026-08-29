@@ -110,3 +110,10 @@ myst_enable_extensions = ["colon_fence", "dollarmath"]
 
 # If a notebook page is slow to run, allow up to ten minutes for it.
 nb_execution_timeout = 600
+
+# Fail the build if a notebook raises during execution, instead of the myst-nb
+# default of rendering the traceback into the page as a mere warning (which let
+# two notebooks with stale imports ship broken -- see
+# tasks/archive/2026/08/29/fix-broken-book-notebooks-vector2-rename.md). With
+# docs.sh's `set -eu`, a non-zero sphinx-build now aborts `make docs`.
+nb_execution_raise_on_error = True

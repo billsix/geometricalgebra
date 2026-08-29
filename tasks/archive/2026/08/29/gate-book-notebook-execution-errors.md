@@ -1,6 +1,11 @@
 # Make the book build fail when a book notebook errors (execution gate)
 
-**Status:** proposed — needs go-ahead.
+**Status:** DONE 2026-08-29 — wired and verified. `nb_execution_raise_on_error = True` added to
+`book/docs/conf.py`; the existing `docs.sh` `set -eu` propagates the failure (no docs.sh change
+needed). Both halves of the gate proven via nested `make docs` (`--cgroups=disabled`):
+**positive** — clean build (all 14 notebooks) exits **0**; **negative** — a deliberately broken import
+in `rotate.py` made myst-nb raise `ExecutionError`, `make html` failed with `Error 2`, and the build
+exited **2** (the break was reverted). Ready to archive.
 **Priority:** 5
 **Difficulty:** 2
 **Created:** 2026-08-28 (William Emerison Six <billsix@gmail.com>) — spun out of
