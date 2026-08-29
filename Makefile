@@ -11,6 +11,15 @@ BUILD_DOCS ?= 1
 CONTAINER_CMD = podman
 CONTAINER_NAME = gacalc
 
+# Extra flags for every container `run`. Auto-set when running nested inside a
+# runClaudeInContainer/runCrushInContainer sandbox (which exports NESTED_PODMAN=1,
+# making --cgroups=disabled apply so podman-in-podman works); empty — and
+# byte-identical behavior — on a normal host. Overridable:
+#   make test PODMAN_RUN_FLAGS='--cgroups=disabled --network=host'
+# On `run` lines only, never `build` (podman build rejects --cgroups). Convention:
+# runClaudeInContainer tasks/reference/nested-podman-design.md.
+PODMAN_RUN_FLAGS ?= $(if $(filter 1,$(NESTED_PODMAN)),--cgroups=disabled)
+
 TMUX_FILE := $(HOME)/.tmux.conf
 TMUX_REAL_PATH := $(shell readlink -f $(TMUX_FILE))
 TMUX_MOUNT := $(shell if [ -f $(TMUX_REAL_PATH) ]; then echo "-v $(TMUX_REAL_PATH):/root/.tmux.conf:Z" ; fi)
@@ -97,17 +106,17 @@ SHELL_EXEC_ARGS = -c 'cd $(REPO_MOUNT) && $(if $(CMD),$(CMD),exec bash $(SCRIPT)
 
 .PHONY: shell
 shell:  ## Get Shell into a ephermeral container made from the image
-	$(CONTAINER_CMD) run -it --rm $(SHELL_RUN_FLAGS) $(CONTAINER_NAME) /shell.sh
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) -it --rm $(SHELL_RUN_FLAGS) $(CONTAINER_NAME) /shell.sh
 
 .PHONY: shell-exec
 shell-exec: ## Run a script/command in the container env (no TTY): make shell-exec SCRIPT=path | CMD='...'
 	@[ -n "$(SCRIPT)$(CMD)" ] || { echo 'usage: make shell-exec SCRIPT=<repo-relative path> | CMD="..."'; exit 2; }
-	$(CONTAINER_CMD) run --rm $(SHELL_RUN_FLAGS) $(CONTAINER_NAME) /shell.sh $(SHELL_EXEC_ARGS)
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm $(SHELL_RUN_FLAGS) $(CONTAINER_NAME) /shell.sh $(SHELL_EXEC_ARGS)
 
 
 .PHONY: jupyter
 jupyter: image ## Launch JupyterLab (gacalc kernel) on http://127.0.0.1:8888/lab
-	$(CONTAINER_CMD) run -it --rm \
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) -it --rm \
 		--entrypoint /bin/bash \
 		$(FILES_TO_MOUNT) \
 		$(X_FLAGS_FOR_CONTAINER) \
@@ -123,7 +132,7 @@ jupyter: image ## Launch JupyterLab (gacalc kernel) on http://127.0.0.1:8888/lab
 # them), then run entrypoint/format.sh (ruff check --fix, ruff format, ty check).
 .PHONY: format
 format: image ## (container) regenerate, then ruff + ty over the source (entrypoint/format.sh)
-	$(CONTAINER_CMD) run --rm \
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
 		--entrypoint /bin/bash \
 		$(FILES_TO_MOUNT) \
 		$(CONTAINER_NAME) \
@@ -136,7 +145,7 @@ format: image ## (container) regenerate, then ruff + ty over the source (entrypo
 # import gacalc, then runs the book build.
 .PHONY: docs
 docs: image ## (container) build the book -> HTML + PDF into ./output/gacalc/
-	$(CONTAINER_CMD) run --rm \
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
 		--entrypoint /bin/bash \
 		$(FILES_TO_MOUNT) \
 		-v ./entrypoint/docs.sh:/docs.sh:Z \
@@ -162,7 +171,7 @@ clean: ## Remove the built book (output/ contents and book/docs/_build/)
 .PHONY: update-emacs-packages
 update-emacs-packages: ## USE_EMACS=1: rebuild image, wipe+reinstall elpa, strip *.elc/*.eln, git add -f
 	$(MAKE) image USE_EMACS=1
-	$(CONTAINER_CMD) run --rm \
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
 		-v $(CURDIR)/entrypoint/dotfiles/.emacs.d/elpa:/root/.emacs.d/elpa:U,z \
 		-v $(CURDIR)/entrypoint/dotfiles/.emacs.d/install-melpa-packages.el:/root/.emacs.d/install-melpa-packages.el:ro,z \
 		--entrypoint /bin/bash \
@@ -195,7 +204,7 @@ generate-all: ## Generate ALL algebras incl. g4/g5 (SLOW: g5 ~87 min) -- release
 
 .PHONY: test-all-dims
 test-all-dims: ## (container) full-dim gate: generate g1..g5 then run the suite (SLOW ~1.5h)
-	$(CONTAINER_CMD) run --rm \
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
 		-v $(CURDIR):/gacalc:Z \
 		--entrypoint /bin/bash \
 		$(CONTAINER_NAME) \
@@ -227,7 +236,7 @@ check-generated: ## Verify tools/gen_specialized.py is deterministic (regen twic
 # command's nonzero status propagates out (make reports it as a recipe failure).
 .PHONY: test
 test: ## Run the full test suite INSIDE the container; exit 0 on success, nonzero on failure
-	$(CONTAINER_CMD) run --rm \
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
 		-v $(CURDIR):/gacalc:Z \
 		--entrypoint /bin/bash \
 		$(CONTAINER_NAME) \
@@ -264,7 +273,7 @@ TWINE_VERBOSE := $(if $(VERBOSE),--verbose)
 dist: ## Build sdist + wheel INSIDE the container -> $(DIST_DIR) on the host
 	mkdir -p $(DIST_DIR)
 	rm -f $(DIST_DIR)/*.whl $(DIST_DIR)/*.tar.gz   # drop stale builds so upload only sees this version
-	$(CONTAINER_CMD) run --rm \
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
 		-v $(CURDIR):/gacalc:Z \
 		-v $(DIST_DIR):/dist:Z \
 		--entrypoint /bin/bash \
@@ -275,7 +284,7 @@ dist: ## Build sdist + wheel INSIDE the container -> $(DIST_DIR) on the host
 
 .PHONY: upload
 upload: dist ## (container) twine check + interactive token upload of $(DIST_DIR)/* to PyPI
-	$(CONTAINER_CMD) run --rm -it \
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm -it \
 		-v $(DIST_DIR):/dist:Z \
 		$(PYPIRC_MOUNT) \
 		-e TWINE_USERNAME=__token__ \
@@ -289,7 +298,7 @@ upload: dist ## (container) twine check + interactive token upload of $(DIST_DIR
 # --repository-url is passed explicitly so it needs no ~/.pypirc in the container.
 .PHONY: upload-test
 upload-test: dist ## (container) upload $(DIST_DIR)/* to TestPyPI to rehearse; -it, paste your TestPyPI token
-	$(CONTAINER_CMD) run --rm -it \
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm -it \
 		-v $(DIST_DIR):/dist:Z \
 		$(PYPIRC_MOUNT) \
 		-e TWINE_USERNAME=__token__ \
@@ -303,7 +312,7 @@ release: dist ## (host) version-tag guard + (container) upload + (host) git tag
 	@git rev-parse "v$(VERSION)" >/dev/null 2>&1 \
 		&& { echo "tag v$(VERSION) already exists -- bump version in pyproject.toml"; exit 1; } \
 		|| true
-	$(CONTAINER_CMD) run --rm -it \
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm -it \
 		-v $(DIST_DIR):/dist:Z \
 		$(PYPIRC_MOUNT) \
 		-e TWINE_USERNAME=__token__ \
