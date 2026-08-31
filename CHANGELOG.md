@@ -11,6 +11,10 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.0.18] — 2026-08-31
+
 ### Added
 - **The cross product.** New `gacalc.vectorcalc` module with `cross(a, b)` — the dual
   of the wedge, `(a ∧ b) I₃⁻¹` — for 3-D vectors (`g3` or `Gn` with basis indices ≤ 3);

@@ -1,6 +1,6 @@
 # Release gacalc 0.0.18 (cross product + blade display symbols)
 
-**Status:** ready — agent prep done 2026-08-31; awaiting the maintainer's commit + `make release`
+**Status:** DONE — released 2026-08-31: 0.0.18 wheel+sdist verified on PyPI, host tag v0.0.18 pushed, changelog promoted. Archived same day.
 **Priority:** 2
 **Difficulty:** 2
 **Created:** 2026-08-31 (William Emerison Six <billsix@gmail.com> approved the plan)

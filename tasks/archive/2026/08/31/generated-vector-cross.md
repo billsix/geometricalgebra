@@ -15,7 +15,7 @@ generator-derived closed form (`a₂b₃ − a₃b₂`, …) with a precise
 get the right static type with no casts — plus a `MultiVectorBase` catch-all whose
 impl falls back to `MultiVectorBase.cross` (the `[[custom-symbols-and-vector-calc]]`
 pass-through → `vectorcalc.cross`), which handles `Gn` mixing and raises the guard
-errors. Done means reviewed and released in 0.0.18 (`tasks/release-0.0.18.md`).
+errors. Done means reviewed and released in 0.0.18 (`tasks/archive/2026/08/31/release-0.0.18.md`).
 
 ## Context
 
