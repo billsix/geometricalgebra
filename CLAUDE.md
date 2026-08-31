@@ -48,7 +48,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   generated `Vector` additionally carries a **closed-form `cross` typed `Vector -> Vector`** (see
   Code generation). Deliberately NO `dot`/triple-product aliases — dot is `scalar_product`, the
   scalar triple product is `measure.signed_volume` (identity gated in `tests/test_vectorcalc.py`);
-  grad/div/curl are out of scope (`tasks/custom-symbols-and-vector-calc.md`).
+  grad/div/curl are out of scope (`tasks/archive/2026/08/31/custom-symbols-and-vector-calc.md`).
 - `src/gacalc/g1.py`, `g2.py`, `g3.py` (and, **release-only**, `g4.py`/`g5.py`) — **generated**
   modules, **not tracked in git**
   (gitignored). Each is **self-contained**, holding the full specialized class `G` **and**
@@ -820,7 +820,7 @@ Open issues (most are in the shared/reference code, inherited from the original 
   is a `Rotor` statically, `v2 < i2` is a `Vector`) — design + rationale in
   `tasks/reference/generated-product-typing.md`. 𝒢₃'s `Vector` also carries a generated
   closed-form `cross` (`Vector -> Vector` overload, non-vector operands falling back to
-  `MultiVectorBase.cross`; 2026-08-31, `tasks/generated-vector-cross.md`). See also the README
+  `MultiVectorBase.cross`; 2026-08-31, `tasks/archive/2026/08/31/generated-vector-cross.md`). See also the README
   "Graded subtypes" section (with
   the return-type table) and `tasks/archive/2026/06/06/graded-blade-subtypes.md` (the original build).
 - **Paravectors** (scalar + vector; the Algebra-of-Physical-Space object that yields a Lorentzian

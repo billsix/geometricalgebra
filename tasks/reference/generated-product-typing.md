@@ -316,4 +316,4 @@ vector-only product. `g1`/`g2` `Vector` get no override (no cross outside 𝒢�
 base pass-through, which raises at runtime. Proven by
 `tests/test_vectorcalc.py::test_generated_closed_form_matches_definition`: symbolic identity
 against both the free function and the `Gn` reference (an oracle sharing no generated code), plus
-runtime type and the cyclic identities. — `tasks/generated-vector-cross.md`
+runtime type and the cyclic identities. — `tasks/archive/2026/08/31/generated-vector-cross.md`

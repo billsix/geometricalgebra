@@ -1,6 +1,6 @@
 # Generated closed-form `g3.Vector.cross` (type-precise `Vector -> Vector`)
 
-**Status:** IMPLEMENTED 2026-08-31 — pending maintainer review; ships in 0.0.18
+**Status:** DONE — implemented, verified, and archived 2026-08-31; ships in 0.0.18
 **Priority:** 3
 **Difficulty:** 4
 **Created:** 2026-08-31 (spun out of `[[custom-symbols-and-vector-calc]]`, where it

@@ -1,6 +1,7 @@
 # Customizable blade display symbols (G3 i/j/k) + a vector-calculus `cross`
 
-**Status:** proposed — design settled with the maintainer 2026-08-31; needs go-ahead to implement
+**Status:** DONE — implemented, verified (containerized gate, ruff/ty, pyright), and archived
+2026-08-31; ships in 0.0.18 (`tasks/release-0.0.18.md`)
 **Priority:** 5
 **Difficulty:** 4 (revised down from 6 on 2026-08-31: the design questions are resolved and the
 remaining work is localized — two render functions, one free function, tests)
