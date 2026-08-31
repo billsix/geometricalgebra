@@ -294,3 +294,26 @@ files **explicitly and together** (full context):
 (unresolved cross-module types). This full-context check is what should be wired into the opt-in
 full-dim gate (`make test-all-dims`), since the dev gate cannot see generated-module regressions.
 `.gitignore` uses the glob `/src/gacalc/g[0-9]*.py` (covers g1..g10+, spares the tracked `gn.py`).
+
+## The generated `Vector.cross` — a single-arm product override (2026-08-31)
+
+𝒢₃'s `Vector` carries a generated `cross` — the one product emitted for a **single rhs type**
+rather than the full type table, because the cross product is vector×vector only. Shape (in the
+`if n == 3:` block of the Vector section of the graded-class builder):
+
+- two `@typing.overload` stubs — `(other: Vector) -> Vector` (the precise one mvp needs: without
+  it, `find_normal -> g3.Vector` would need a cast around the base pass-through) and
+  `(other: MultiVectorBase) -> MultiVectorBase` (the catch-all);
+- an impl typed `MultiVectorBase -> MultiVectorBase` (Liskov-compatible with
+  `MultiVectorBase.cross`) whose body is the exact-type early-out (`type(other) is Vector` — sound
+  because the classes are `@typing.final`) returning the **closed form** derived by
+  `product_result(spec, spec, lambda a, b: a.outer_product(b).dual(3), …)` — the textbook
+  `(a₂b₃ − a₃b₂, a₃b₁ − a₁b₃, a₁b₂ − a₂b₁)` — with every other operand delegated to
+  `MultiVectorBase.cross(self, other)` (the vectorcalc free function: `Gn` mixing, guard errors).
+
+`dispatch_method` was NOT used — it emits one closed-form arm per rhs type, wrong for a
+vector-only product. `g1`/`g2` `Vector` get no override (no cross outside 𝒢₃); they inherit the
+base pass-through, which raises at runtime. Proven by
+`tests/test_vectorcalc.py::test_generated_closed_form_matches_definition`: symbolic identity
+against both the free function and the `Gn` reference (an oracle sharing no generated code), plus
+runtime type and the cyclic identities. — `tasks/generated-vector-cross.md`

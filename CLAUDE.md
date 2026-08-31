@@ -41,6 +41,14 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   the full-space `k = n` case. Free functions over `MultiVectorBase`; the fixed-arity ones also exist as
   thin pass-through **methods** on `MultiVectorBase` (`v.area(w)`) for discoverability. See
   `tasks/reference/content-area-volume.md`.
+- `src/gacalc/vectorcalc.py` — **vector calculus in 𝒢₃** (added 2026-08-31): `cross(a, b)`, the
+  cross product as the **dual of the wedge** `(a ∧ b) I₃⁻¹`, for 3-D vectors only (`g3`, or `Gn`
+  with basis indices ≤ 3; anything else raises `ValueError`). Free function over `MultiVectorBase`
+  + a `MultiVectorBase.cross(other)` pass-through method (the `v.area(w)` precedent); 𝒢₃'s
+  generated `Vector` additionally carries a **closed-form `cross` typed `Vector -> Vector`** (see
+  Code generation). Deliberately NO `dot`/triple-product aliases — dot is `scalar_product`, the
+  scalar triple product is `measure.signed_volume` (identity gated in `tests/test_vectorcalc.py`);
+  grad/div/curl are out of scope (`tasks/custom-symbols-and-vector-calc.md`).
 - `src/gacalc/g1.py`, `g2.py`, `g3.py` (and, **release-only**, `g4.py`/`g5.py`) — **generated**
   modules, **not tracked in git**
   (gitignored). Each is **self-contained**, holding the full specialized class `G` **and**
@@ -59,12 +67,16 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   note under Future directions and `tasks/archive/2026/07/22/per-algebra-scalar-types.md`.
 - `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
-  `displaygraded.py` (graded subtypes) — jupytext (percent-format) demo notebooks.
+  `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`)
+  — jupytext (percent-format) demo notebooks.
 - `tests/test_multivector.py` — original `Gn` tests; `tests/test_conformance.py` — parametrized
   conformance over `[Gn, G]`; `tests/test_graded.py` — the graded-subtype suite (return
   type + value per operation); `tests/test_generator.py` — unit tests for the *generator's own*
   logic (blade naming, the type registry / `resolve`, `product_result`/`unary_result` result-type
-  resolution, astbuild DSL invariants). **~300 tests** (incl. doctests via `--doctest-modules`).
+  resolution, astbuild DSL invariants); `tests/test_vectorcalc.py` — the cross product (sign
+  convention, numpy parity, the `Gn` oracle, the triple-product identity);
+  `tests/test_blade_symbols.py` — the display-symbol map. **~440 tests** (incl. doctests via
+  `--doctest-modules`).
 - `tools/gen_specialized.py` — the code generator (builds each module as Python `ast` nodes, rendered
   with `ast.unparse`); `tools/astbuild.py` — its domain-agnostic node-builder DSL; `tools/bench.py` —
   `Gn`-vs-specialized benchmark.
@@ -169,6 +181,17 @@ value up in `to_blade_dict()` (no product computed, correct for any grade). The 
 method, which *computed* `⟨A x̃⟩` to recover a number the object already stores, was retired in its
 favour; `scalar_product` remains, but it is the scalar product `⟨A B⟩`, **not** a coefficient reader
 (it's sign-flipped vs the stored coefficient for grade ≥2).
+
+**Custom blade display symbols (`base.py`, 2026-08-31) — LaTeX display only.**
+`set_blade_symbols({(1,): r"\mathbf{i}", …})` in a notebook setup cell makes every later LaTeX
+display (cell output, `show_mult`, plot labels) render mapped blades under custom names — the
+calc-3 i/j/k case; pair it with plain input aliases `i, j, k = e_1, e_2, e_3` (no library support
+needed, and sanctioned in `displayvectorcalc.py` despite the no-aliases rule). Layered design:
+`blade_latex(blade, symbols)` / `blade_dict_latex(d, symbols)` are the **pure** layer (tests use
+it); one **module-global** map is consulted when `symbols` is absent — a global on purpose,
+because Jupyter invokes `_repr_latex_()` with no arguments, so cell output can only honor state
+the method can reach. Rename-only with canonical keys (validated); the blade-tuple interchange
+format and `__repr__` never change. `set_blade_symbols({})` resets.
 
 **Coefficient type — `Coef = int | float | sympy.Expr`** (defined in `base.py`, alongside the
 domain aliases `Blade = tuple[int, ...]` — a blade's basis-vector indices — and `BladeCoef =
@@ -351,6 +374,10 @@ other files or to values that already have a bare name.
 - rotations: `transforms.projection_rotation(from, to)` / `rotor_rotation(from, to)` /
   `plane_rotation(a, b)` (free-function factories); `MultiVectorBase.rotor_from_vectors(from, to)`
   (the rotor builder) — any plane / representation
+- cross product (𝒢₃ only): `vectorcalc.cross(a, b)` = `(a ∧ b) I₃⁻¹` (the dual of the wedge;
+  standard right-handed sign — `e₁ × e₂ = e₃`) / `a.cross(b)` (method form; on 𝒢₃'s generated
+  `Vector` it is a **closed form typed `Vector -> Vector`**). Dot = `scalar_product`; scalar
+  triple product = `measure.signed_volume` — no aliases (see `vectorcalc.py`'s module docstring)
 - plane helpers: `cls.bivector_from_vectors(a, b)` builds the raw wedge `a ∧ b` (the un-normalized
   area bivector); `cls.i(a, b)` normalizes it to the plane's **unit** bivector (`i² = −1`) — a
   classmethod on the full types (`Gn`/`G`/`Vector`); `.i()` (no args) gets a value's own unit plane
@@ -791,7 +818,10 @@ Open issues (most are in the shared/reference code, inherited from the original 
   `<`/`>`/`+`/`-`, and `r_vector_part` via `Literal[grade]` overloads) also carry `@typing.overload`
   signatures, so these types are **precise for a type checker**, not just at runtime (e.g. `a * b`
   is a `Rotor` statically, `v2 < i2` is a `Vector`) — design + rationale in
-  `tasks/reference/generated-product-typing.md`. See also the README "Graded subtypes" section (with
+  `tasks/reference/generated-product-typing.md`. 𝒢₃'s `Vector` also carries a generated
+  closed-form `cross` (`Vector -> Vector` overload, non-vector operands falling back to
+  `MultiVectorBase.cross`; 2026-08-31, `tasks/generated-vector-cross.md`). See also the README
+  "Graded subtypes" section (with
   the return-type table) and `tasks/archive/2026/06/06/graded-blade-subtypes.md` (the original build).
 - **Paravectors** (scalar + vector; the Algebra-of-Physical-Space object that yields a Lorentzian
   norm from Euclidean 𝒢₃): the author does **not yet know this area well enough** to commit to a

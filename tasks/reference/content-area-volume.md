@@ -93,3 +93,6 @@ inherited by every vector type, *not* generated per-algebra). `content` / `conte
 - `tasks/area-volume-content.md` — the task that defines `area`/`volume`/`content` and sweeps the
   codebase/book for wedge-magnitude sites to rename in these terms.
 - `tasks/define-frame.md` — the frame orthogonalization whose `∏ |w_j|` *is* W&T's recursive volume.
+- `src/gacalc/vectorcalc.py` (2026-08-31) — `signed_volume(a, b, c)` **is** the scalar triple
+  product `a · (b × c)`; the identity against `cross` is gated by
+  `tests/test_vectorcalc.py::test_scalar_triple_product_is_signed_volume`.

@@ -22,9 +22,13 @@ notation). This package gives you:
 
 ```
 src/gacalc/
-  base.py          MultiVectorBase (the abstract base) + type aliases
+  base.py          MultiVectorBase (the abstract base) + type aliases + display symbols
   gn.py            Gn (general 𝒢ₙ) + e_1.. constants + transforms + `MultiVector` alias
   g1.py g2.py g3.py   one specialized class each (generated, not in git -- run `make generate`)
+  frame.py         frames + Gram–Schmidt / Hestenes orthogonalization
+  measure.py       area / volume / content, signed and unsigned
+  vectorcalc.py    the cross product (the dual of the wedge, 𝒢₃)
+  transforms.py    translate / scale / rotation factories (composable, invertible)
 ```
 
 All representations interoperate through one interchange format: the **blade
@@ -151,6 +155,25 @@ rotor (`exp` is defined only when `A² < 0` — a bivector or the 𝒢₃ pseudo
 a vector, whose square is positive, raises `ValueError`). A full walkthrough is in
 `notebooks/displaygraded.py`; the exp-map section lives in
 `notebooks/displayrotations.py`.
+
+**The cross product** (𝒢₃, new in 0.0.18) is the dual of the wedge — `a × b = (a ∧ b) I₃⁻¹`,
+standard right-handed sign:
+
+```python
+from gacalc.g3 import e_1, e_2, e_3
+from gacalc.vectorcalc import cross
+
+cross(1 * e_1, 1 * e_2) == 1 * e_3  # True; method form: (1 * e_1).cross(1 * e_2)
+```
+
+On `g3.Vector` the method is a generated closed form typed `Vector -> Vector`. Dot and the
+scalar triple product need no new names: dot is `scalar_product`, and `a · (b × c)` is
+`measure.signed_volume(a, b, c)`.
+
+**Custom blade display symbols** (0.0.18): in a notebook setup cell,
+`set_blade_symbols({(1,): r"\mathbf{i}", (2,): r"\mathbf{j}", (3,): r"\mathbf{k}"})` renders
+every later LaTeX display with i/j/k instead of e₁/e₂/e₃ (display only — values and `repr`
+unchanged; pass `{}` to reset). Demo: `notebooks/displayvectorcalc.py`.
 
 Because the specialized/graded classes don't eagerly simplify, a symbolic result can carry
 un-reduced coefficients (e.g. terms that should cancel). `v.simplified()` / `v.expanded()` return
