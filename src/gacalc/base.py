@@ -61,7 +61,69 @@ MultiVectorFn = Callable[["MultiVectorBase"], "MultiVectorBase"]
 _OperandT = typing.TypeVar("_OperandT", bound="MultiVectorBase")
 
 
-def blade_dict_latex(d: BladeCoef) -> str:
+#: Session-wide blade *display* symbols (blade tuple -> LaTeX string), consulted
+#: by ``blade_latex``/``blade_dict_latex`` when no explicit ``symbols`` argument
+#: is passed.  Empty by default (standard e-notation).  A module global on
+#: purpose: Jupyter invokes ``_repr_latex_()`` with **no arguments**, so plain
+#: cell-output rendering can only honor a customization through state the method
+#: can reach -- set it once in a notebook setup cell via ``set_blade_symbols``.
+#: One map per kernel/process, applying to every algebra at once.  Display only:
+#: the blade-tuple interchange format and ``__repr__`` never change.
+_blade_display_symbols: dict[Blade, str] = {}
+
+
+def set_blade_symbols(symbols: Mapping[Blade, str]) -> None:
+    r"""Set the session-wide blade **display** symbols -- LaTeX rendering only.
+
+    Meant for a notebook setup cell: every later LaTeX display (a value evaluated
+    in a cell, ``show_mult``, plot labels) renders a mapped blade under its custom
+    name.  E.g. the calc-3 unit vectors -- often paired with the plain-Python
+    input aliases ``i, j, k = e_1, e_2, e_3``, which need no library support:
+
+    >>> from gacalc.gn import e_1, e_2
+    >>> set_blade_symbols({(1,): r"\mathbf{i}", (2,): r"\mathbf{j}"})
+    >>> (2 * e_1 + 3 * e_2)._repr_latex_()
+    '$2\\mathbf{i} +  3\\mathbf{j}$'
+    >>> set_blade_symbols({})  # reset to the default e-notation
+    >>> (2 * e_1 + 3 * e_2)._repr_latex_()
+    '$2\\mathbf{\\vec{e}}_{1} +  3\\mathbf{\\vec{e}}_{2}$'
+
+    Pass ``{}`` to reset.  Keys are canonical blade tuples (strictly increasing
+    indices, validated); values are LaTeX.  Rename-only -- a symbol cannot carry
+    a sign or reorder indices, and the stored value is untouched (tests pin the
+    behavior via the pure ``symbols`` parameter of :func:`blade_dict_latex`,
+    which bypasses this session map).
+    """
+    _require_canonical_blades(symbols)
+    _blade_display_symbols.clear()
+    _blade_display_symbols.update(symbols)
+
+
+def blade_latex(blade: Blade, symbols: Mapping[Blade, str] | None = None) -> str:
+    r"""Render one basis blade as LaTeX: its custom symbol when ``blade`` has one,
+    else ``\mathbf{\vec{e}}_{b}`` per index (``()``, the scalar blade, is ``1``).
+
+    ``symbols`` maps blade tuples to LaTeX strings; ``None`` (the default)
+    consults the session-wide map set by :func:`set_blade_symbols`.
+
+    >>> blade_latex((1,), symbols={(1,): r"\mathbf{i}"})
+    '\\mathbf{i}'
+    >>> blade_latex((1, 2), symbols={})
+    '\\mathbf{\\vec{e}}_{1} \\mathbf{\\vec{e}}_{2}'
+    >>> blade_latex((), symbols={})
+    '1'
+    """
+    if symbols is None:
+        symbols = _blade_display_symbols
+    custom: str | None = symbols.get(blade)
+    if custom is not None:
+        return custom
+    if blade == ():
+        return "1"
+    return " ".join(r"\mathbf{\vec{e}}_{" + str(b) + "}" for b in blade)
+
+
+def blade_dict_latex(d: BladeCoef, symbols: Mapping[Blade, str] | None = None) -> str:
     """Render a blade -> coefficient dict as a LaTeX string (the body of
     ``_repr_latex_``, factored out so callers can render a chosen *view*).
 
@@ -69,6 +131,9 @@ def blade_dict_latex(d: BladeCoef) -> str:
     parenthesized; an empty dict renders as ``0``.  ``_repr_latex_`` passes the
     *simplified* dict (display-simplify); ``nbplotutils.show_mult`` passes the
     *expanded* dict, so distribution is visible there without that simplify.
+
+    Each blade renders via :func:`blade_latex`, so ``symbols`` (or, by default,
+    the session map set by :func:`set_blade_symbols`) applies here too.
     """
 
     def add_parens_or_dont(x: Coef) -> str:
@@ -79,8 +144,7 @@ def blade_dict_latex(d: BladeCoef) -> str:
         return sympy.latex(x)
 
     blades: list[str] = [
-        add_parens_or_dont(d[blade])
-        + " ".join(map(lambda b: r"\mathbf{\vec{e}}_" + str(b), blade))
+        add_parens_or_dont(d[blade]) + blade_latex(blade, symbols)
         if blade != tuple()
         else add_parens_or_dont(d[blade])
         for blade in sorted(d.keys(), key=lambda b: (len(b), b))
@@ -980,6 +1044,20 @@ class MultiVectorBase(abc.ABC):
 
         return measure.signed_volume(self, b, c)
 
+    # -- vector calculus (pass-through sugar for gacalc.vectorcalc) -----------------
+
+    def cross(self, other: MultiVectorBase) -> MultiVectorBase:
+        """The cross product ``self × other`` -- the method form of
+        :func:`gacalc.vectorcalc.cross` (``= (self ∧ other) I₃⁻¹``; 3-D vectors).
+
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> (1 * e_1).cross(1 * e_2) == 1 * e_3
+        True
+        """
+        from gacalc import vectorcalc
+
+        return vectorcalc.cross(self, other)
+
     @staticmethod
     def identity() -> InvertibleFunction[MultiVectorBase]:
         """The identity transform — its own inverse, ``LINEAR``, labelled ``I``."""
@@ -1295,8 +1373,10 @@ def _coerce[T: MultiVectorBase](x: MultiVectorBase | Coef, cls: type[T]) -> T:
     return cls.from_scalar(x)
 
 
-def _require_canonical_blades(blade_coef: Mapping[Blade, Coef]) -> None:
+def _require_canonical_blades(blade_coef: Mapping[Blade, object]) -> None:
     """Raise ``ValueError`` on a non-canonical blade key (see ``BladeCoef``).
+    Only the keys are read, so any blade-keyed mapping qualifies (a ``BladeCoef``,
+    or ``set_blade_symbols``'s blade -> LaTeX-string map).
 
     A canonical key's indices are strictly increasing (``(1, 2)``, never
     ``(2, 1)`` or ``(1, 1)``).  ``e₂e₁`` is a legal algebra *element* but not

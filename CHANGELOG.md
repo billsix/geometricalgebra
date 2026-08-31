@@ -11,7 +11,52 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+- **The cross product.** New `gacalc.vectorcalc` module with `cross(a, b)` — the dual
+  of the wedge, `(a ∧ b) I₃⁻¹` — for 3-D vectors (`g3` or `Gn` with basis indices ≤ 3);
+  a `MultiVectorBase.cross(other)` pass-through method; and a **generated closed-form
+  `g3.Vector.cross`** typed precisely (`Vector -> Vector` overload). Dot and the scalar
+  triple product intentionally get no aliases — they are `scalar_product` and
+  `measure.signed_volume` (the identity `a · (b × c) = signed_volume(a, b, c)` is
+  gated by tests).
+- **Custom blade display symbols** (LaTeX display only): `set_blade_symbols({(1,):
+  r"\mathbf{i}", ...})` in a notebook setup cell makes every later display render
+  mapped blades under custom names (e.g. calc-3 **i**/**j**/**k**); `blade_latex` and a
+  `symbols` parameter on `blade_dict_latex` are the pure layer underneath. The
+  blade-tuple interchange format and `__repr__` are untouched. New demo notebook
+  `notebooks/displayvectorcalc.py`.
+
+### Changed
+- Cosmetic rendering unification (`blade_dict_latex` and the plot labels now share one
+  blade renderer): basis subscripts are braced (`\mathbf{\vec{e}}_{1}` — renders
+  identically), and plot blade labels dropped their `\,` thin-space join.
+
+## [0.0.17] — 2026-08-23
+
+*(Retro-filled 2026-08-31 — this release originally shipped without a changelog
+entry; reconstructed from `git log v0.0.16..v0.0.17`.)*
+
+### Breaking
+- **`exp()` of a vector now raises `ValueError`.** The old galgebra-derived
+  hyperbolic (`cosh/sinh`) vector branch was removed — it is a Minkowski boost with
+  no meaning in this Euclidean library. `exp` remains defined for scalars and
+  negative-square blades, and **exp of a bivector is now typed as a `Rotor`**
+  (`Bivector.exp() -> Rotor`).
+- **The generated `dual()` is dimension-locked.** On `g1`/`g2`/`g3` types, `dual(n)`
+  now defaults to the algebra's own dimension and **raises on any other `n`** (it
+  previously coerced through the full class). `Gn.dual(n)` is unchanged.
+
+### Added
+- `gacalc.frame` — frames (linear independence via the wedge test): `is_frame`,
+  `make_orthogonal_frame`, `make_orthogonal_frame_hestenes`.
+- `gacalc.measure` — named measures: `content` / `content_by_rejection` / `area` /
+  `volume` and the signed determinants `signed_content` / `signed_area` /
+  `signed_volume`, plus pass-through methods on vectors (`v.area(w)`).
+- Unit-bivector plane helpers: `cls.i(a, b)` (the plane of two vectors) and `.i()`
+  (a bivector/rotor's own unit plane); rotation transforms gained LaTeX label
+  customization (`latex_repr=` on `plane_rotation`).
+- `g4`/`g5` are generated at release time (`GACALC_DIMS=1,2,3,4,5` in `make dist`)
+  and ship in the wheel.
 
 ## [0.0.16] — 2026-08-13
 

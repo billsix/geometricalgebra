@@ -33,7 +33,13 @@ from matplotlib.figure import Figure
 from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
 
-from gacalc.base import BladeCoef, Coef, MultiVectorBase, blade_dict_latex
+from gacalc.base import (
+    BladeCoef,
+    Coef,
+    MultiVectorBase,
+    blade_dict_latex,
+    blade_latex,
+)
 from gacalc.gn import (
     InvertibleFunction,
     MultiVector,
@@ -479,12 +485,6 @@ def draw_screen(
             axes.add_patch(square)
 
 
-def _blade_latex(blade: tuple[int, ...]) -> str:
-    if blade == ():
-        return "1"
-    return r"\,".join(r"\mathbf{\vec{e}}_{" + str(b) + "}" for b in blade)
-
-
 def _coef_as_float(coef: Coef) -> float | None:
     try:
         return float(coef)
@@ -561,7 +561,7 @@ def plot_multivector(
         ax.text(
             xmin - 0.06 * (xmax - xmin),
             y,
-            "$" + _blade_latex(blade) + "$",
+            "$" + blade_latex(blade) + "$",
             ha="right",
             va="center",
             fontsize=12,

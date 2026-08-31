@@ -148,7 +148,7 @@ import subprocess
 import sys
 from collections.abc import Callable, Iterable, Sequence
 from itertools import chain, combinations
-from typing import NamedTuple
+from typing import NamedTuple, cast
 
 import sympy
 
@@ -3167,6 +3167,76 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             body.extend(
                 inherited_classmethod_narrowing(
                     "rotor_from_vectors", ["from_vector", "to_vector"], "Rotor"
+                )
+            )
+        if n == 3:
+            # cross(a, b) = (a ∧ b) I₃⁻¹ -- 𝒢₃ only (only there is the dual of a
+            # bivector a vector).  A narrowing override of the base pass-through
+            # (which delegates to vectorcalc.cross): the same-algebra Vector arm
+            # gets the derived closed form (no runtime wedge/dual objects); every
+            # other operand falls back to MultiVectorBase.cross, which handles Gn
+            # mixing and raises vectorcalc's guard errors.  Typed like the
+            # products: a precise Vector -> Vector overload plus a MultiVectorBase
+            # catch-all over a MultiVectorBase-typed impl (Liskov-compatible).
+            cross_spec: TypeSpec
+            cross_exprs: list[sympy.Expr]
+            cross_spec, cross_exprs = product_result(
+                spec,
+                spec,
+                # dual() is typed MultiVectorBase on base; on a Gn operand it is a
+                # Gn at runtime, which product_result's signature wants.
+                lambda a, b: cast(Gn, a.outer_product(b).dual(3)),
+                n,
+                full_name,
+            )
+            cross_rename: dict[str, tuple[str, str]] = rename_map(
+                spec.blades, spec.blades, "other"
+            )
+
+            def cross_stub(param_ann: ast.expr, ret: ast.expr) -> ast.stmt:
+                return function_def(
+                    "cross",
+                    [ast.Expr(constant(...))],
+                    params=[argument("self"), argument("other", param_ann)],
+                    decorators=[attribute("typing", "overload")],
+                    returns=ret,
+                )
+
+            body.append(cross_stub(name_ref(spec.name), name_ref(cross_spec.name)))
+            body.append(
+                cross_stub(name_ref("MultiVectorBase"), name_ref("MultiVectorBase"))
+            )
+            body.append(
+                function_def(
+                    "cross",
+                    method_doc_stmts("cross")
+                    + [
+                        # exact-type early-out, same idiom as the products: the
+                        # classes are @typing.final, so `type(other) is Vector`
+                        # is the whole same-algebra test.
+                        ast.If(
+                            test=ast.Compare(
+                                call("type", [name_ref("other")]),
+                                [ast.Is()],
+                                [name_ref(spec.name)],
+                            ),
+                            body=result_block_stmts(
+                                cross_spec, cross_exprs, cross_rename, owner=spec.name
+                            ),
+                            orelse=[],
+                        ),
+                        return_stmt(
+                            call(
+                                attribute("MultiVectorBase", "cross"),
+                                [name_ref("self"), name_ref("other")],
+                            )
+                        ),
+                    ],
+                    params=[
+                        argument("self"),
+                        argument("other", name_ref("MultiVectorBase")),
+                    ],
+                    returns=name_ref("MultiVectorBase"),
                 )
             )
     return [
