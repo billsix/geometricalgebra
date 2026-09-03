@@ -138,17 +138,37 @@ scalar·rejection); `==` returns False while the eager-simplifying subtraction r
 (The general `==`-based symbolic tests elsewhere in the suite work only because both sides come from
 the *same* construction; cross-construction equality needs the subtraction form.)
 
-**TODO — make the symbolic tests fully general (Bill, 2026-08-23).** The symbolic tests for **both**
-the **Hestenes method** (`make_orthogonal_frame_hestenes`) and the **rejection method**
-(`make_orthogonal_frame`, and the base `reject` it uses) should be driven by **fully-general symbolic
-vectors** — Bill's preferred style, `a_1*e_1 + a_2*e_2`, `b_1*e_1 + b_2*e_2`, … (exactly gn's
-`sym_vec2_1`/`sym_vec2_2` = `a_1 e_1 + a_2 e_2` / `b_1 e_1 + b_2 e_2`; for 3D, `sym_vec3_1`/`sym_vec3_2`
-plus a **third** general `c_1 e_1 + c_2 e_2 + c_3 e_3`, so a full 3-vector 3D frame is exercised, not
-just a 2-vector one). Current state: the 2D equivalence test already uses `sym_vec2_*`; the 3D
-equivalence test uses `sym_vec3_1`/`sym_vec3_2` + a hand-made `v3`; and
-`test_orthogonal_frame_is_a_frame_and_orthogonal_symbolic` only orthogonalizes **two** general 3D
-vectors (not a full 3-frame). Rework these so every symbolic case is a general symbolic frame of the
-full dimension, built in the `symbol * basis` form.
+**TODO — make the symbolic tests fully general (Bill, 2026-08-23) — DONE 2026-09-02
+(William Emerison Six <billsix@gmail.com>).** The symbolic tests for **both** orthogonalizations now
+run on fully-general `symbol * basis` frames of the full dimension:
+
+- **2D** — `test_orthogonal_frame_2d_symbolic` and `test_hestenes_equals_rejection_2d_symbolic` now
+  use gn's module constants `sym_vec2_1` / `sym_vec2_2` directly (they were re-declaring local
+  `a_*`/`b_*` symbols).
+- **3D** — added `test_orthogonal_frame_3d_symbolic` (first-kept + all-pairs-orthogonal + `is_frame`,
+  exact symbolic) and `test_hestenes_equals_rejection_3d_symbolic` (`c_k == |A_{k-1}|² · w_k` for
+  k = 1,2,3, exact via the eager-simplifying `(c_k − |A_{k-1}|² w_k) == zero` subtraction) on a
+  **complete 3-vector** frame: `sym_vec3_1`, `sym_vec3_2`, and a third general
+  `sym_vec3_3 = c_1 e_1 + c_2 e_2 + c_3 e_3`. The concrete readable-number 3D tests are kept
+  alongside (the symbolic + concrete teaching pair).
+
+Gate: `tests/test_frame.py` 14 → 16 tests; full suite **441 passed**; ruff + `ruff format --check`
++ `ty check tests` clean (host run; the containerized `make test` gate not run this session).
+
+**Decisions made — open to change (William Emerison Six <billsix@gmail.com>, 2026-09-02):**
+1. The third 3D vector is defined **test-local** (`sym_vec3_3` in `test_frame.py`), NOT added to
+   `gn.py`'s public surface. Promote it to `gn.py` alongside `sym_vec3_1`/`sym_vec3_2` if it should be
+   reusable in notebooks / other tests.
+2. Kept the concrete readable-number 3D tests rather than replacing them with the symbolic ones.
+3. **Cost note:** the two symbolic 3D tests add ~40 s to the suite (the ~9 s rejection-frame build
+   over 9 free symbols dominates — gacalc's slow-but-exact `Gn` path). Trim if that's too much for
+   `make test`.
+
+(The TODO's original "current state" description named tests — e.g.
+`test_orthogonal_frame_is_a_frame_and_orthogonal_symbolic`, a 3D equivalence test with a hand-made
+`v3` — that no longer existed in `test_frame.py`; the file had been reworked so its 3D tests were
+concrete. The intent — every symbolic case a general full-dimension frame — was applied to the file
+as it actually stood.)
 
 **Proof plan (when Bill greenlights writing the prose):** (i) the formal argument above, tightened — justify
 `A_k = A_{k-1} v_k^⊥` (wedge-with-a-blade keeps the orthogonal part; geometric = wedge there) and that
