@@ -844,9 +844,9 @@ Open issues (most are in the shared/reference code, inherited from the original 
   is a `match` on the rhs type whose **return type is resolved at generation time** from the symbolic
   result's grade support (smallest covering registered type, else widen to the full `G_n`) — so the
   type follows the *operation*, never runtime float values (**decided 2026-09-05**: this principle
-  stays — the value-dependent-narrowing alternative was rejected; the one remaining 𝒢₃ gap, the odd
-  part `{1,3}`, will be named **`Odd_3`** with an *opt-in* grade query + cast for narrowing, not a
-  value-dependent return type — `tasks/archive/2026/09/05/model-odd-graded-type.md`,
+  stays — the value-dependent-narrowing alternative was rejected; the last 𝒢₃ gap, the odd
+  part `{1,3}`, was closed by **`Odd_3`** (built + archived this session) — an *opt-in* grade query +
+  cast for narrowing, not a value-dependent return type — `tasks/archive/2026/09/05/model-odd-graded-type.md`,
   `tasks/reference/graded-subspaces-vs-subalgebras.md`). `+`/`-` narrow the same way. The
   operators/products (`*`/`^`/`outer_product`/`inner_product`/`left_contraction`/`right_contraction`/
   `<`/`>`/`+`/`-`, and `r_vector_part` via `Literal[grade]` overloads) also carry `@typing.overload`
