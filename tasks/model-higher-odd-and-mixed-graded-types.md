@@ -3,7 +3,7 @@
 **Status:** proposed — needs go-ahead (spun off 2026-09-05 from the 𝒢₃ `Odd_3` work)
 **Priority:** 7
 **Difficulty:** 5
-**Part of / follows:** `tasks/model-odd-graded-type.md` (the 𝒢₃ `Odd_3` precedent — DONE 2026-09-05)
+**Part of / follows:** `tasks/archive/2026/09/05/model-odd-graded-type.md` (the 𝒢₃ `Odd_3` precedent — DONE 2026-09-05)
 
 ## BLUF
 
@@ -17,7 +17,7 @@ domain study.
 
 ## Context — read first
 
-- **The 𝒢₃ precedent (mirror this):** `tasks/model-odd-graded-type.md` registered `Odd_3 = {1,3}` with
+- **The 𝒢₃ precedent (mirror this):** `tasks/archive/2026/09/05/model-odd-graded-type.md` registered `Odd_3 = {1,3}` with
   **one gated block in `graded_specs(n)`** (`tools/gen_specialized.py`, currently `if n == 3:`,
   blades `len(b) in (1,3)`, name `"Odd_3"`) plus a name-prefixed `to_vector`/`to_trivector` cast
   injection in `generate_graded_type`. Everything else (resolve / product overloads / class emission)
@@ -31,7 +31,7 @@ domain study.
   **full context** (`ty check src/gacalc/g1.py … g5.py gn.py base.py functions.py transforms.py`
   together), not per-file, and not trusting a green g3-only run. See
   `tasks/reference/generated-product-typing.md` › "High-dimension ty findings" and
-  `tasks/adhoc/model-odd-graded-type/verify.sh` for the full-context ty line to extend.
+  `CLAUDE.md` › Dev workflow (the `ty check src/gacalc/g1.py … transforms.py` full-context line) to extend.
 - **g4/g5 are release-only** (`GACALC_DIMS=1,2,3` in dev; 1,2,3,4,5 at `make dist`/`release`;
   ~5 min / ~87 min to generate) — see `tasks/reference/generated-algebra-generation-cost.md`. So this
   work is verified via the opt-in `make generate-all` / `make test-all-dims`, not the default gate.

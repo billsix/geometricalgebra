@@ -49,7 +49,7 @@ almost nothing else is.
   `·`, and `reverse`, which preserves grade), but **NOT closed under the geometric product**:
   **odd × odd = even**. E.g. in 𝒢₃, an `Odd_3` value (a vector + a trivector) times another `Odd_3`
   lands in `{0, 2}` = `Rotor_3` — *outside* `Odd_3`. So `𝒢⁻` is a subspace, not a subalgebra. This is
-  the type we call `Odd_3` (see `tasks/model-odd-graded-type.md`).
+  the type we call `Odd_3` (see `tasks/archive/2026/09/05/model-odd-graded-type.md`).
 
 The odd part is not structureless, though — it is a **bimodule over the even subalgebra**:
 `even × odd → odd` and `odd × even → odd`, so `Rotor_n · Odd_n ⊆ Odd_n` on both sides. The clean way
@@ -99,7 +99,7 @@ products leave it.
 
 ## Related
 
-- `tasks/model-odd-graded-type.md` — the task that registers `Odd_3 = {1,3}` and (Option B) adds a
+- `tasks/archive/2026/09/05/model-odd-graded-type.md` — the task that registers `Odd_3 = {1,3}` and (Option B) adds a
   grade query + cast so an `Odd_3` value can be narrowed to `Vector`/`Trivector` when a grade
   vanishes.
 - `tasks/reference/generated-product-typing.md` — how the generator resolves a product's return type

@@ -149,7 +149,7 @@ static-typing fix, replacing an unsound `typing.cast(typing.Self, Rotor(...))`.
   sandwich `R v R⁻¹` (types as `Odd_3`, so "it's a vector" == `simplify(coeff_e_123) == 0` — see
   `design-decisions.md` › the sandwich note, and `tests/test_odd3.py`). Wiring: one gated block in
   `graded_specs` (`gen_specialized.py`, `n == 3`) + a name-prefixed `to_vector`/`to_trivector`
-  injection. Work: `tasks/model-odd-graded-type.md`; subspace rationale:
+  injection. Work: `tasks/archive/2026/09/05/model-odd-graded-type.md`; subspace rationale:
   `tasks/reference/graded-subspaces-vs-subalgebras.md`.
 
 ## `ScalarN` as a product lhs (done 2026-07-23)

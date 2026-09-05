@@ -35,7 +35,7 @@ definition, so the hard gate is: **regenerate before/after and prove the `g*.py`
   discipline; an empty diff IS the proof.
 - **The full gate** after any change: `make test` (441 tests) + `make format` (ruff + `ty`). The
   generated-module ty check needs the full-context form (the dev gate skips gitignored g*.py) — see
-  `tasks/adhoc/model-odd-graded-type/verify.sh` for the exact `ty check <all modules together>` line.
+  `CLAUDE.md` › Dev workflow for the exact `ty check src/gacalc/g1.py … transforms.py` full-context line.
 
 ## THE RULES (draft — refine while doing the pilot; this text is what goes into `CLAUDE.md`)
 
