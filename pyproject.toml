@@ -44,7 +44,9 @@ testpaths = ["tests"]
 # The intentionally-vendored Emacs tree under entrypoint/ (.emacs.d/elpa/) is
 # third-party code we must never reformat. Excluded here so both `ruff check` and
 # `ruff format` skip it, no matter how they're invoked (CLI, format.sh, editor).
-extend-exclude = ["entrypoint"]
+# tasks/adhoc/ holds transient, task-scoped audit scripts (removed/promoted at
+# archive), not maintained source -- not policed by the gate.
+extend-exclude = ["entrypoint", "tasks/adhoc"]
 
 [tool.ruff.lint]
 select = [

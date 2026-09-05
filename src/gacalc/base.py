@@ -1185,8 +1185,9 @@ class MultiVectorBase(abc.ABC):
         rotor's plane — in 𝒢₃ that is the named ``Odd_3`` type, elsewhere it
         widens to the full ``G_n``), but for a versor those extra grades are
         zero, so the result is rebuilt as ``type(x)`` — whose ``from_blade_dict``
-        keeps only ``x``'s blades.  ``zero`` conjugates to ``zero`` (no ``is_vector`` assertion,
-        unlike the projection-based ``projection_rotation``).
+        keeps only ``x``'s blades.  ``zero`` conjugates to ``zero`` (no
+        ``is_vector`` assertion, unlike the projection-based
+        ``projection_rotation``).
 
         ``self`` is assumed to be a versor; for a non-versor even element in
         dimension ≥ 4 the conjugation is not grade-preserving and this is lossy.

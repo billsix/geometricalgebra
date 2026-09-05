@@ -3,11 +3,11 @@
 ``typing.assert_type`` pins the STATIC types (checked by ``ty`` -- a regression fails
 ``ty check tests``); the runtime types/values are checked with plain asserts.
 
-The three geometric cases are built the **dual-of-wedge** way: for a plane ``B = a ^ b``,
-``(a ^ b).dual()`` is a vector **perpendicular** to the plane (the cross-product
-direction), ``a`` is **in** the plane, and ``a + perp`` **mixes** both -- so ``B * <that>``
-lands in grade 1, grade 3, or {1,3} respectively.  Background:
-``tasks/reference/graded-subspaces-vs-subalgebras.md``, ``tasks/model-odd-graded-type.md``.
+The three geometric cases are built the **dual-of-wedge** way: for a plane
+``B = a ^ b``, ``(a ^ b).dual()`` is a vector **perpendicular** to the plane (the
+cross-product direction), ``a`` is **in** the plane, and ``a + perp`` **mixes** both
+-- so ``B * <that>`` lands in grade 1, grade 3, or {1,3} respectively.  Background:
+``tasks/reference/graded-subspaces-vs-subalgebras.md``.
 """
 
 import typing
@@ -51,7 +51,9 @@ def test_cast_in_plane_is_vector() -> None:
     v = r.to_vector()
     assert type(v) is g3.Vector
     assert (v.coeff_e_1, v.coeff_e_2, v.coeff_e_3) == (
-        r.coeff_e_1, r.coeff_e_2, r.coeff_e_3,
+        r.coeff_e_1,
+        r.coeff_e_2,
+        r.coeff_e_3,
     )
     with pytest.raises(ValueError):
         r.to_trivector()

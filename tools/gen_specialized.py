@@ -3158,8 +3158,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                                         "ValueError",
                                         [
                                             constant(
-                                                f"Odd_3 is not a {target}: "
-                                                f"its {why}."
+                                                f"Odd_3 is not a {target}: its {why}."
                                             )
                                         ],
                                     ),

@@ -310,7 +310,7 @@ kind((plane * perp).to_trivector())  # the perpendicular case -> g3.Trivector
 try:
     in_plane.to_trivector()
 except ValueError as error:
-    print(error)
+    display(Markdown(f"raises `ValueError`: {error}"))
 
 # %% [markdown]
 # Interop

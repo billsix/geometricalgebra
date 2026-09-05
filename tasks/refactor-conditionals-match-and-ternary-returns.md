@@ -89,11 +89,14 @@ clean `match` after you **extract a literal-matchable discriminant first** (and 
 duplicated setup):
 ```python
 kind, _, label = name.partition("_")
-blade = blade_of_label(label)           # was duplicated in both arms
+blade = blade_of_label(label)  # was duplicated in both arms
 match kind:
-    case "a": ...
-    case "b": ...
-    case _:   raise ValueError(f"unexpected operand symbol {name!r}")
+    case "a":
+        ...
+    case "b":
+        ...
+    case _:
+        raise ValueError(f"unexpected operand symbol {name!r}")
 ```
 The `case _: raise` documents the invariant ("only a_/b_ exist") even though it can't fire — the
 "always write the default branch" rule paying off. (See Case 1.)
