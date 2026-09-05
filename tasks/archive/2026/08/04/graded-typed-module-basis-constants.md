@@ -222,19 +222,33 @@ for products):
 ```python
 def generate_constants(n: int, name: str) -> list[ast.stmt]:
     nonempty = [b for b in blades_for_dim(n) if b != ()]
-    scalar_name = scalar_spec(n).name          # Scalar_n
+    scalar_name = scalar_spec(n).name  # Scalar_n
     nodes = [
-        annotated_assign("zero", name_ref(scalar_name),
-                         call(attribute(scalar_name, "from_scalar"), [constant(0)])),
-        annotated_assign("one",  name_ref(scalar_name),
-                         call(attribute(scalar_name, "from_scalar"), [constant(1)])),
+        annotated_assign(
+            "zero",
+            name_ref(scalar_name),
+            call(attribute(scalar_name, "from_scalar"), [constant(0)]),
+        ),
+        annotated_assign(
+            "one",
+            name_ref(scalar_name),
+            call(attribute(scalar_name, "from_scalar"), [constant(1)]),
+        ),
     ]
     for b in nonempty:
-        graded = resolve([b], n, name).name    # (1,)->Vector_n, (1,2)->Bivector_n, (1,2,3)->Trivector3
-        nodes.append(annotated_assign(
-            blade_label(b), name_ref(graded),
-            call(attribute(graded, "from_blade_dict"),
-                 [ast.Dict(keys=[constant(b)], values=[constant(1)])])))
+        graded = resolve(
+            [b], n, name
+        ).name  # (1,)->Vector_n, (1,2)->Bivector_n, (1,2,3)->Trivector3
+        nodes.append(
+            annotated_assign(
+                blade_label(b),
+                name_ref(graded),
+                call(
+                    attribute(graded, "from_blade_dict"),
+                    [ast.Dict(keys=[constant(b)], values=[constant(1)])],
+                ),
+            )
+        )
     # __all__ unchanged (same names; graded type names already exported)
     ...
 ```

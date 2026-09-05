@@ -1180,11 +1180,12 @@ class MultiVectorBase(abc.ABC):
         invertible even element of 𝒢₂/𝒢₃ is one, up to scale), the conjugation
         ``R x R⁻¹`` is **grade-preserving**: a vector goes to a vector, a
         bivector to a bivector, and so on.  The raw product
-        ``self * x * self.inverse()`` may *structurally* widen (e.g.
-        ``Rotor * Vector`` carries a trivector when ``x`` is off the rotor's
-        plane), but for a versor those extra grades are zero, so the result is
-        rebuilt as ``type(x)`` — whose ``from_blade_dict`` keeps only ``x``'s
-        blades.  ``zero`` conjugates to ``zero`` (no ``is_vector`` assertion,
+        ``self * x * self.inverse()`` carries the higher grade *structurally*
+        (e.g. ``Rotor * Vector`` carries a trivector when ``x`` is off the
+        rotor's plane — in 𝒢₃ that is the named ``Odd_3`` type, elsewhere it
+        widens to the full ``G_n``), but for a versor those extra grades are
+        zero, so the result is rebuilt as ``type(x)`` — whose ``from_blade_dict``
+        keeps only ``x``'s blades.  ``zero`` conjugates to ``zero`` (no ``is_vector`` assertion,
         unlike the projection-based ``projection_rotation``).
 
         ``self`` is assumed to be a versor; for a non-versor even element in

@@ -55,7 +55,10 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   that algebra's **graded subtypes** — its grade-0 `Scalar_n` (`Scalar`),
   `Vector_n`, `Bivector_n`, `Trivector`, `Rotor_n` (and one grade-pure type per grade up to the
   pseudoscalar: 𝒢₄ adds `FourVector`, 𝒢₅ adds `FiveVector`, … named by the `grade_name(k)` helper —
-  the number-word `<N>Vector` scheme). Do not edit by hand. They are produced into the
+  the number-word `<N>Vector` scheme). **𝒢₃ additionally has `Odd_3`** — the odd part `{1,3}`, the
+  mirror of `Rotor`'s even part `{0,2}` (so `Vector*Bivector` etc. return a named type, not `G3`); a
+  graded *subspace*, not a subalgebra, with an opt-in `to_vector()`/`to_trivector()` cast (see
+  `tasks/reference/graded-subspaces-vs-subalgebras.md`). Do not edit by hand. They are produced into the
   working tree by `make generate` / `make shell` and baked into the sdist+wheel at build time (see
   Code generation / Dev workflow). **Which dimensions are generated is chosen by the `GACALC_DIMS`
   env var** (default `1,2,3`): dev builds only g1–g3, while `make dist`/`make release` set
@@ -813,7 +816,11 @@ Open issues (most are in the shared/reference code, inherited from the original 
   classes; each bilinear product
   is a `match` on the rhs type whose **return type is resolved at generation time** from the symbolic
   result's grade support (smallest covering registered type, else widen to the full `G_n`) — so the
-  type follows the *operation*, never runtime float values. `+`/`-` narrow the same way. The
+  type follows the *operation*, never runtime float values (**decided 2026-09-05**: this principle
+  stays — the value-dependent-narrowing alternative was rejected; the one remaining 𝒢₃ gap, the odd
+  part `{1,3}`, will be named **`Odd_3`** with an *opt-in* grade query + cast for narrowing, not a
+  value-dependent return type — `tasks/archive/2026/09/05/model-odd-graded-type.md`,
+  `tasks/reference/graded-subspaces-vs-subalgebras.md`). `+`/`-` narrow the same way. The
   operators/products (`*`/`^`/`outer_product`/`inner_product`/`left_contraction`/`right_contraction`/
   `<`/`>`/`+`/`-`, and `r_vector_part` via `Literal[grade]` overloads) also carry `@typing.overload`
   signatures, so these types are **precise for a type checker**, not just at runtime (e.g. `a * b`

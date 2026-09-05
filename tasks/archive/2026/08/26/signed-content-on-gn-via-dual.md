@@ -35,7 +35,9 @@ dimension: int | None = getattr(representation, "DIMENSION", None)
 if dimension is None:
     raise ValueError("signed content needs a fixed-dimension type (e.g. g2/g3); ...")
 if len(vectors) != dimension:
-    raise ValueError("signed content is only defined when the vectors span the full space ...")
+    raise ValueError(
+        "signed content is only defined when the vectors span the full space ..."
+    )
 ...
 wedge = MultiVectorBase.outer_product_of_vectors(*vectors)
 return wedge.coefficient(Gn.unit_pseudoscalar(dimension))

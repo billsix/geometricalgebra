@@ -664,6 +664,15 @@ def graded_specs(n: int) -> list[TypeSpec]:
     if n >= 2:  # even subalgebra (Rotor); for n==1 the even part is just the scalar
         even: tuple[Blade, ...] = tuple(b for b in blades if len(b) % 2 == 0)
         specs.append(TypeSpec("Rotor", even, n, "graded"))
+    if n == 3:
+        # The odd part {1,3} of 𝒢₃ -- the mirror of Rotor (the even part {0,2}), but a
+        # *subspace*, NOT a subalgebra: odd * odd = even, so Odd_3 * Odd_3 -> Rotor,
+        # landing outside Odd_3 (fine -- Vector/Bivector/Trivector aren't closed either;
+        # see tasks/reference/graded-subspaces-vs-subalgebras.md).  Gated to n == 3 so
+        # the literal name stays honest; the general higher-dim odd/mixed types are a
+        # follow-up (tasks/model-odd-graded-type.md).
+        odd_1_3: tuple[Blade, ...] = tuple(b for b in blades if len(b) in (1, 3))
+        specs.append(TypeSpec("Odd_3", odd_1_3, n, "graded"))
     return specs
 
 
@@ -3103,6 +3112,68 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         # .i(): the rotor's unit plane of rotation (alias of plane_of_rotation);
         # -> Bivector.
         body.append(i_extractor("plane_of_rotation", "Bivector"))
+    if spec.name == "Odd_3":
+        # The "cast" half of the opt-in query+cast: an Odd_3 value (grades {1,3}) is
+        # a Vector when its grade-3 part vanishes and a Trivector when its grade-1
+        # part vanishes.  The product return type stays Odd_3 (operation-based -- see
+        # tasks/reference/generated-product-typing.md); these narrow explicitly,
+        # raising if the discarded grade is nonzero.  The "query" half is the
+        # inherited is_vector()/is_trivector()/grades().
+        for cast_name, pred, target, pairs, why in (
+            (
+                "to_vector",
+                "is_vector",
+                "Vector",
+                [
+                    ("coeff_e_1", attribute("self", "coeff_e_1")),
+                    ("coeff_e_2", attribute("self", "coeff_e_2")),
+                    ("coeff_e_3", attribute("self", "coeff_e_3")),
+                ],
+                "grade-3 (e_123) part is nonzero",
+            ),
+            (
+                "to_trivector",
+                "is_trivector",
+                "Trivector",
+                [("coeff_e_123", attribute("self", "coeff_e_123"))],
+                "grade-1 (vector) part is nonzero",
+            ),
+        ):
+            body.append(
+                function_def(
+                    cast_name,
+                    [
+                        class_doc_stmt(
+                            f"Narrow this ``Odd_3`` to ``{target}`` -- raises "
+                            f"``ValueError`` if the {why}."
+                        ),
+                        ast.If(
+                            test=ast.UnaryOp(
+                                op=ast.Not(),
+                                operand=call(attribute("self", pred), []),
+                            ),
+                            body=[
+                                ast.Raise(
+                                    exc=call(
+                                        "ValueError",
+                                        [
+                                            constant(
+                                                f"Odd_3 is not a {target}: "
+                                                f"its {why}."
+                                            )
+                                        ],
+                                    ),
+                                    cause=None,
+                                )
+                            ],
+                            orelse=[],
+                        ),
+                        return_stmt(construct(target, pairs)),
+                    ],
+                    params=[argument("self")],
+                    returns=name_ref(target),
+                )
+            )
     if spec.name.startswith("Vector"):
         # project/reject/reflect of a vector onto a blade are grade-preserving (the
         # result is a vector), so narrow the base's MultiVectorBase-typed factory

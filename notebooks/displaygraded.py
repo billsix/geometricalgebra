@@ -264,15 +264,53 @@ B: g3.Bivector = (g3.Vector.e_1 ^ g3.Vector.e_2) * sympy.cos(t) + (
 show(B, B.dual(), B * B.dual())
 
 # %% [markdown]
-# When a result spans grades no single type covers
-# ------------------------------------------------
+# The odd part {1,3}: `g3.Odd_3`
+# -----------------------------
 #
-# `vector * bivector` in 𝒢₃ is generally vector + trivector — no graded type
-# holds that, so it **widens to the full `g3.G`**. Nothing is lost; the type is
-# just the smallest that fits.
+# `vector * bivector` in 𝒢₃ is generally **vector + trivector** — grades {1,3}, the
+# **odd part** of 𝒢₃. That is the mirror of the even part {0,2} = `g3.Rotor`, and it
+# has its own named type, **`g3.Odd_3`** (before it was registered, this widened to
+# the full `g3.G`). It is a graded *subspace*, **not** a subalgebra: odd·odd = even,
+# so `Odd_3 * Odd_3` is a `Rotor` — see
+# `tasks/reference/graded-subspaces-vs-subalgebras.md`.
 
 # %%
-kind(u * biv)
+kind(u * biv)  # g3.Odd_3 (was g3.G)
+
+# %% [markdown]
+# The three geometric cases. For a plane `B = a ^ b`, the product `B * v` is grade 1
+# when `v` is **in** the plane, grade 3 when `v` is **perpendicular** to it (the dual
+# of the wedge points that way), and both when `v` mixes them — but the *type* is
+# always `Odd_3` (it follows the operation, not the runtime coefficients).
+
+# %%
+a3: g3.Vector = 1 * g3.Vector.e_1 + 2 * g3.Vector.e_2
+b3: g3.Vector = 3 * g3.Vector.e_1 + 1 * g3.Vector.e_2 + 1 * g3.Vector.e_3
+plane: g3.Bivector = a3 ^ b3
+perp: g3.Vector = (a3 ^ b3).dual()  # perpendicular to the plane (dual of the wedge)
+show(plane * a3, plane * perp, plane * (a3 + perp))  # all g3.Odd_3: {1}, {3}, {1,3}
+
+# %% [markdown]
+# Query and cast. The **query** is the inherited `grades()` / `is_vector()` /
+# `is_trivector()`; the **cast** `to_vector()` / `to_trivector()` narrows an `Odd_3`
+# to the concrete type, raising if the grade it would discard is nonzero.
+
+# %%
+in_plane = plane * a3
+kind(in_plane.to_vector())  # -> g3.Vector (its grade-3 part is zero)
+
+# %%
+show(in_plane.to_vector())  # the narrowed g3.Vector value
+
+# %%
+kind((plane * perp).to_trivector())  # the perpendicular case -> g3.Trivector
+
+# %%
+# casting to the wrong type raises (the grade it would discard is nonzero):
+try:
+    in_plane.to_trivector()
+except ValueError as error:
+    print(error)
 
 # %% [markdown]
 # Interop

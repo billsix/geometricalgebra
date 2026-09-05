@@ -121,8 +121,8 @@ PRODUCT_TABLE = [
         1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
         "*",
         4 * g3.Bivector.e_12 + 5 * g3.Bivector.e_13 + 6 * g3.Bivector.e_23,
-        g3.G,
-    ),  # mixed -> widen
+        g3.Odd_3,
+    ),  # Vector * Bivector spans the odd part {1,3} -> Odd_3 (was G3 before it existed)
 ]
 
 

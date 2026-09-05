@@ -1,6 +1,6 @@
 # Type the transform factories/`compose`/`to_matrix` to bind the caller's precise `V` (ty invariance)
 
-**Status:** proposed — needs go-ahead (filed 2026-09-05 from a downstream consumer's ty sweep)
+**Status:** IMPLEMENTED 2026-09-05 (staged, awaiting maintainer release as 0.0.19). ty-clean + 441 tests pass; mvp usage pattern verified to typecheck against the fixed code.
 **Priority:** 3
 **Difficulty:** 5
 
@@ -62,3 +62,36 @@ acceptance test).
 ## Related
 
 - Downstream driver: `github.com/billsix/modelviewprojection` `tasks/ty-0072-strictness-sweep.md`.
+
+## Implementation (2026-09-05) — done, verified, awaiting release
+
+Changed `src/gacalc/transforms.py` (staged):
+
+- **`uniform_scale(m: float) -> InvertibleFunction[V]`** and
+  **`scale_non_uniform(*factors) -> InvertibleFunction[V]`** — was `[MultiVectorBase]`. The
+  return-only `V` (bound `MultiVectorBase`) is inferred from the **caller's annotation** (verified:
+  ty 0.0.74 does return-only-typevar inference from the assignment target, and it stays sound — a
+  wrong target still errors). The pedagogically-central `f`/`f_inv` bodies are unchanged; a single
+  `typing.cast(InvertibleFunction[V], ...)` at the wrapper return bridges the gap ty can't see
+  through the grade-general scalar product (`vector * m` types as `MultiVectorBase`, unlike
+  `translate`'s type-preserving `vector + b`). **Note:** this cast shows in any downstream book
+  region that `literalinclude`s the `uniform scale body` / `scale non-uniform body` markers.
+- **`to_matrix(fn: InvertibleFunction[typing.Any], cls: type[MultiVectorBase], ...)`** — was
+  `fn: InvertibleFunction[MultiVectorBase]`. Chose **`[Any]`** (not `[V]` bound from `cls`) per
+  gacalc's own convention ("a param that accepts any transform and applies it internally is
+  `InvertibleFunction[Any]`"): it accepts mvp's concrete `[Vector]` fns AND gacalc's own
+  representation-agnostic `[MultiVectorBase]` test fns, so **no test changes were needed**. (A
+  first attempt with `cls: type[V]` bound `V` too tightly and broke `test_transforms.py`.)
+
+**Verification:** `ty check src/tests/tools` clean; `make test` **441 passed**; a throwaway file
+importing the real `gacalc.g2`/`g3` and exercising all three mvp patterns reported **0 diagnostics**.
+(The `make format` gate shows one **pre-existing, unrelated** E501 in
+`tasks/adhoc/drop-graded-type-dimension-suffixes/codemod.py:23` — not touched here.)
+
+**Rotation factories NOT changed** — mvp's failing sites don't use gacalc's rotation factories
+directly (mvp wraps them in its own concretely-typed `rotate_*`), so they aren't needed for the
+unblock. Threading `V` through `bivector_rotation`/`plane_rotation`/`rotor_rotation` is a possible
+follow-up for completeness, not required.
+
+**Next:** maintainer bumps `version` to 0.0.19 and releases; then mvp bumps its pin
+(`requirements.txt` + Dockerfile `ARG GACALC_VERSION`) and its 36 remaining ty errors clear.

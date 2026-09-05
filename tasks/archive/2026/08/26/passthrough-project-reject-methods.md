@@ -30,7 +30,7 @@ orthogonal: list[MultiVectorBase] = []
 for v in vectors:
     w: MultiVectorBase = v
     for prior in orthogonal:
-        w = type(w).reject(away_from=prior)(w)   # <- the noise
+        w = type(w).reject(away_from=prior)(w)  # <- the noise
     orthogonal.append(w)
 return orthogonal
 ```
@@ -54,16 +54,24 @@ Add thin, value-returning pass-throughs on **`MultiVectorBase`** (`base.py`) —
 inherited by `Gn` and every generated type, **no generator changes**:
 
 ```python
-def projected_onto(self, onto: MultiVectorBase | Sequence[MultiVectorBase]) -> MultiVectorBase:
+def projected_onto(
+    self, onto: MultiVectorBase | Sequence[MultiVectorBase]
+) -> MultiVectorBase:
     """Apply the projection P_onto to this value (sugar for project(onto)(self))."""
     return type(self).project(onto)(self)
 
-def rejected_away_from(self, away_from: MultiVectorBase | Sequence[MultiVectorBase]) -> MultiVectorBase:
+
+def rejected_away_from(
+    self, away_from: MultiVectorBase | Sequence[MultiVectorBase]
+) -> MultiVectorBase:
     """Apply the rejection away from `away_from` to this value."""
     return type(self).reject(away_from)(self)
 
+
 # optional, for symmetry:
-def reflected_across(self, across: MultiVectorBase | Sequence[MultiVectorBase]) -> MultiVectorBase:
+def reflected_across(
+    self, across: MultiVectorBase | Sequence[MultiVectorBase]
+) -> MultiVectorBase:
     return type(self).reflect(across)(self)
 ```
 

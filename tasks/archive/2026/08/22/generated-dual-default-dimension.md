@@ -19,10 +19,12 @@ The **generated** fixed-dimension types (`tools/gen_specialized.py` → `dual_me
 with `dim_mismatch_guard` ~line 1141) emit, for `G3`'s types:
 
 ```python
-def dual(self, n: int | None = None) -> Vector:      # on Bivector
+def dual(self, n: int | None = None) -> Vector:  # on Bivector
     if n is not None and n != 3:
         raise ValueError("Bivector.dual is fixed at dimension 3")
-    return Vector(coeff_e_1=self.coeff_e_23, coeff_e_2=-self.coeff_e_13, coeff_e_3=self.coeff_e_12)
+    return Vector(
+        coeff_e_1=self.coeff_e_23, coeff_e_2=-self.coeff_e_13, coeff_e_3=self.coeff_e_12
+    )
 ```
 
 So the default argument is `None`, and the guard treats `None` as "use my own dimension". The
@@ -39,7 +41,7 @@ class's own dimension (the grade of that algebra's pseudoscalar — 3 for `G3`) 
 self-documenting, instead of the opaque `None`:
 
 ```python
-def dual(self, n: int = 3) -> Vector:                # default is the dimension, not None
+def dual(self, n: int = 3) -> Vector:  # default is the dimension, not None
     if n != 3:
         raise ValueError("Bivector.dual is fixed at dimension 3")
     ...

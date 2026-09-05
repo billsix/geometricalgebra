@@ -72,7 +72,7 @@ only one grade's components — the way mathematicians usually work:
 | --- | --- |
 | 𝒢₁ | `Scalar`, `Vector` |
 | 𝒢₂ | `Scalar`, `Vector`, `Bivector`, `Rotor` (the even subalgebra, ≅ ℂ) |
-| 𝒢₃ | `Scalar`, `Vector`, `Bivector`, `Trivector`, `Rotor` (≅ the quaternions ℍ) |
+| 𝒢₃ | `Scalar`, `Vector`, `Bivector`, `Trivector`, `Rotor` (even part {0,2}, ≅ ℍ), `Odd_3` (odd part {1,3}) |
 | 𝒢₄ | … `Trivector`, **`FourVector`** (the pseudoscalar), `Rotor` |
 | 𝒢₅ | … `FourVector`, **`FiveVector`** (the pseudoscalar), `Rotor` |
 
@@ -204,8 +204,7 @@ To add a **brand-new** dimension (say `𝒢₆`), append one entry to `ALL_ALGEB
 ```python
 ALL_ALGEBRAS = [
     (1, "G", "g1.py"),
-    ...
-    (6, "G", "g6.py"),  # <-- (dimension, class name (always "G"), output module)
+    ...(6, "G", "g6.py"),  # <-- (dimension, class name (always "G"), output module)
 ]
 ```
 
