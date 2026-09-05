@@ -515,7 +515,7 @@ def plane_rotation(
 
 
 # doc-region-begin uniform scale signature
-def uniform_scale(m: float) -> InvertibleFunction[MultiVectorBase]:
+def uniform_scale(m: float) -> InvertibleFunction[V]:
     # doc-region-end uniform scale signature
     """Scale uniformly by ``m`` (representation preserving -- just ``vector * m``).
 
@@ -536,20 +536,26 @@ def uniform_scale(m: float) -> InvertibleFunction[MultiVectorBase]:
 
         return vector * (1.0 / m)
 
-    # linear interpolation 1 -> m, so at(0) is the identity scale
-    return InvertibleFunction(
-        func=f,
-        latex_repr=f"S_{{{m}}}",
-        inverse=f_inv,
-        latex_repr_inv=f"S_{{{-m}}}",
-        interpolate=lambda t: uniform_scale(1.0 + (m - 1.0) * t),
-        linearity=Linearity.LINEAR,
+    # linear interpolation 1 -> m, so at(0) is the identity scale.
+    # Representation-preserving (scales the value in place), so the result
+    # carries the caller's concrete V; cast because ty can't see that through
+    # the grade-general scalar product.
+    return typing.cast(
+        InvertibleFunction[V],
+        InvertibleFunction(
+            func=f,
+            latex_repr=f"S_{{{m}}}",
+            inverse=f_inv,
+            latex_repr_inv=f"S_{{{-m}}}",
+            interpolate=lambda t: uniform_scale(1.0 + (m - 1.0) * t),
+            linearity=Linearity.LINEAR,
+        ),
     )
     # doc-region-end uniform scale body
 
 
 # doc-region-begin scale non-uniform signature
-def scale_non_uniform(*factors: float) -> InvertibleFunction[MultiVectorBase]:
+def scale_non_uniform(*factors: float) -> InvertibleFunction[V]:
     # doc-region-end scale non-uniform signature
     """Scale axis ``i`` by ``factors[i]`` (1-indexed e_1, e_2, ...), in any dimension.
 
@@ -582,21 +588,28 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction[MultiVectorBase]:
             start=cls.zero(),
         )
 
-    return InvertibleFunction(
-        func=f,
-        latex_repr="S_{" + ",".join(str(m) for m in factors) + "}",
-        inverse=f_inv,
-        latex_repr_inv="S_{" + ",".join(rf"\frac{{1}}{{{m}}}" for m in factors) + "}",
-        interpolate=lambda t: scale_non_uniform(
-            *[1.0 + (m - 1.0) * t for m in factors]
+    # Representation-preserving (see uniform_scale); cast so the result carries
+    # the caller's concrete V past the grade-general product.
+    return typing.cast(
+        InvertibleFunction[V],
+        InvertibleFunction(
+            func=f,
+            latex_repr="S_{" + ",".join(str(m) for m in factors) + "}",
+            inverse=f_inv,
+            latex_repr_inv="S_{"
+            + ",".join(rf"\frac{{1}}{{{m}}}" for m in factors)
+            + "}",
+            interpolate=lambda t: scale_non_uniform(
+                *[1.0 + (m - 1.0) * t for m in factors]
+            ),
+            linearity=Linearity.LINEAR,
         ),
-        linearity=Linearity.LINEAR,
     )
     # doc-region-end scale non-uniform body
 
 
 def to_matrix(
-    fn: InvertibleFunction[MultiVectorBase],
+    fn: InvertibleFunction[typing.Any],
     cls: type[MultiVectorBase],
     n: int | None = None,
     *,

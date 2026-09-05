@@ -16,7 +16,10 @@ unpack` out of `coefficient`. Fix: build the pseudoscalar on **`Gn`** (which hol
 let `coefficient` do a pure blade-key lookup on the (possibly graded) wedge:
 
 ```python
-from gacalc.gn import Gn  # lazy import (mirrors base.py's lazy `from gacalc import measure`)
+from gacalc.gn import (
+    Gn,
+)  # lazy import (mirrors base.py's lazy `from gacalc import measure`)
+
 wedge: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(*vectors)
 return wedge.coefficient(Gn.unit_pseudoscalar(dimension))
 ```

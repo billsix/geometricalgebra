@@ -88,10 +88,12 @@ simplify-awareness.
    fields (see decision 1):
    ```python
    if type(self) is type(other):
-       return all([
-           sympy.simplify(sympify(self.coeff_e_1) - sympify(other.coeff_e_1)) == 0,
-           ...,  # one per field
-       ])
+       return all(
+           [
+               sympy.simplify(sympify(self.coeff_e_1) - sympify(other.coeff_e_1)) == 0,
+               ...,  # one per field
+           ]
+       )
    ```
    Use `type(self) is type(other)` (exact identity — every generated type is
    `@typing.final`, so no subclassing to worry about).

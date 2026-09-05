@@ -32,6 +32,7 @@ New regression test: `tests/test_multivector.py::test_zero_multivector_is_homoge
 def grades(self) -> list[int]:
     return list(set(len(blade) for blade in self.to_blade_dict().keys()))  # [] for zero
 
+
 def max_grade(self) -> int:
     return max(self.grades())  # max([]) -> ValueError on zero
 ```
