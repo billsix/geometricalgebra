@@ -1,23 +1,79 @@
 # Refactor conditionals: `match` / ternary-return / dedup / phase-extraction — rules + a project sweep
 
-**Status:** proposed — rules drafted with maintainer 2026-09-05; Cases 1 & 2 decided, Case 3 is
-prototype-and-show; needs go-ahead to execute (William Emerison Six <billsix@gmail.com>)
+**Status:** COMPLETE 2026-09-05 — pilot + project-wide sweep done, Rules A–E codified, real
+containerized gate (`make test` + `make format`, nested) green, generated `g*.py` byte-identical.
+Durable rationale harvested to `tasks/reference/conditional-refactoring-rules.md`.
+(William Emerison Six <billsix@gmail.com>)
 **Priority:** 5
 **Difficulty:** 4
 
+## Progress log (2026-09-05)
+
+- **Case 1** (`term_grade_key` `a_`/`b_` dispatch) — applied (Rules D+B): hoisted the duplicated
+  `blade`, `match kind:` on the `partition("_")` discriminant with a `case _: raise`.
+- **Case 2** (`result_block_stmts` `via_var`/`owner`/`else` chain) — merged the two byte-identical
+  arms (Rule B), deleting the dead `owner ... and cast is cast_self` test. **Sibling `unary_stmt`
+  `:1364` left as-is** — a *live* cast/no-cast distinction, not a vestigial split.
+- **Case 3** (`generate_graded_type` per-grade special-cases) — **maintainer verdict: KEEP, in the
+  PURE-RETURN form.** Each phase (`bivector_extras`/`rotor_extras`/`odd3_extras`/`vector_extras`)
+  returns `list[ast.stmt]`, read-not-write over the enclosing scope; dispatch is `match spec.name:`
+  with `body += …_extras()`. The mutate-via-closure prototype was rejected (hidden side effect on a
+  shared list). Rule E's long-body verdict is **confirmed**.
+- **Rule A** — `blade_label` (Rule A's own motivating example) + inverse `blade_of_label` → ternary.
+- **Pilot catalog complete.** No further changes in `gen_specialized.py`/`astbuild.py`: the rest are
+  guard-continues, error early-exits (don't churn), comprehension filters, ternary-conditions, and
+  two-branch value builds that read fine (`summed_value`'s Sub/Add loop, `doc_stmts`' `if not doc`
+  guard, and `i_classmethod`'s would-be ternary — *left for length here, then converted in the
+  Completion pass after the make-format policy change*).
+- **Project-wide sweep (step 7, first pass)** over the hand-written `src/`+`tools/`: **one structural
+  win — `transforms.to_matrix`'s `backend` string dispatch → `match` (Rule C)**, replacing the
+  open-ended `if "sympy"/"numpy": return` chain + trailing `raise` with a `case _: raise`. Leave-alones
+  recorded: `base.project`'s inner `fn` (boolean-guard 3-way = Rule C anti-pattern, and maps to
+  Hestenes 2.9a/b/c), `transforms.rotor_for` (two-branch `isinstance`, multi-statement arms),
+  `functions.steps` (generator), `nbplotutils` x_range (multi-statement else). No candidates in
+  `tests/`/`notebooks/`. (This first pass was NOT exhaustive on Rule A — see Completion pass.)
+- **All generated `g1/g2/g3.py` byte-identical** at every step; `ruff check` + `ty check tools` clean.
+- **Open questions resolved:** (1) Case 3 = keep (pure-return); (2) worked examples → reference doc
+  (`tasks/reference/conditional-refactoring-rules.md`).
+- **Related task spawned:** `tasks/add-more-type-annotations.md` (type-annotation audit — maintainer
+  request, separate thread).
+
+### Completion pass — finishing the Rule-A sweep exhaustively
+
+The first project-wide pass had only spot-checked Rule-A ternaries, so a follow-up AST scan swept
+*every* guard-return pair across `src/`+`tools/`. The maintainer also settled a policy that unblocked
+most of them: line length is `make format`'s job, not a design input (recorded in `CLAUDE.md` ›
+"(a)" › "Line length is the formatter's job" and Rule A's text). The ~9 sites first left *only*
+because the one-liner would exceed 88 cols became wrapped ternaries: `base.blade_latex`, `base.__truediv__`,
+`base.magnitude`, `base.add_parens_or_dont`, `frame.is_frame`, `gen_specialized.i_classmethod`,
+`gen_specialized.result_value`, `gen_specialized.unary_stmt`, `astbuild.visit_Name`. Plus
+`base._coerce` → a 3-way `match` (Rule C, type dispatch). Genuine leave-alones confirmed:
+`ComposableFunction.at` (3-outcome cascade), `astbuild.cast_coef` (3-guard cascade). All gated green
+(449 tests, ty, ruff, g*.py byte-identical). Reference doc updated to match.
+
 ## BLUF
 
-Improve control-flow readability in `tools/gen_specialized.py` first (the pilot), **derive a small set
-of when-to-apply rules from doing it, codify them in `CLAUDE.md`, then apply project-wide** — all at
-discretion, never churning code that's already clear. Four distinct moves came out of the maintainer
-discussion (they are NOT all "if→match"): **(A)** collapse simple guard+fallthrough to a **ternary
-return**; **(B)** **merge duplicate branches** before restructuring; **(C)** use **`match`** when the
-*pattern* does structural work; **(D)** turn a boolean/prefix check into a `match` by first extracting
-a **literal-matchable discriminant**; **(E)** extract **long** dispatch branch-bodies into **named
-nested functions** so the dispatch reads as one unit. A generator refactor is behavior-preserving by
-definition, so the hard gate is: **regenerate before/after and prove the `g*.py` are byte-identical.**
+Improved control-flow readability in `tools/gen_specialized.py` (the pilot), then **derived a small
+set of when-to-apply rules from doing it, codified them in `CLAUDE.md`, and applied them
+project-wide** — all at discretion, never churning code that was already clear. Five distinct moves
+came out of the maintainer discussion (NOT all "if→match"): **(A)** collapse a simple
+guard+fallthrough to a **ternary return**; **(B)** **merge duplicate branches** before restructuring;
+**(C)** use **`match`** when the *pattern* does structural work; **(D)** turn a boolean/prefix check
+into a `match` by first extracting a **literal-matchable discriminant**; **(E)** extract **long**
+dispatch branch-bodies into **named nested functions** so the dispatch reads as one unit. Because a
+generator refactor is behavior-preserving by definition, the hard gate was to **regenerate
+before/after and prove the `g*.py` byte-identical** — which held at every step. The rules now live in
+`CLAUDE.md` and `tasks/reference/conditional-refactoring-rules.md`; what happened is in the Progress
+log and Completion pass above.
 
-## Context — read first (this is cold-start; assume none of the discussion is in memory)
+---
+
+*Everything below is the **original task plan**, written in the imperative at task creation and kept
+verbatim as the historical record of what was intended. The retrospective — what was actually done
+and decided — is the Progress log and Completion pass above; the durable rules are in
+`tasks/reference/conditional-refactoring-rules.md`.*
+
+## Context — the cold-start orientation (as originally written; assume none of the discussion is in memory)
 
 - **This refines, doesn't replace, existing `CLAUDE.md` conventions.** Under "(b) Judgment calls" the
   repo already says: **"Prefer expressions"**; **"Prefer `match` + `case _` over an open-ended
@@ -232,10 +288,10 @@ Rule-E situation.
 - Project-wide sweep applied with discretion; per-batch gate green; a short report of bulk changes +
   notable leave-alones.
 
-## Open questions
+## Open questions — both RESOLVED 2026-09-05
 
-1. **Case 3 go/no-go** — pending the prototype (step 3). If the extracted-and-dispatched version reads
-   better, Rule E's long-body verdict is confirmed and Case 3 lands; if not, Case 3 stays inline and
-   Rule E is scoped to "consider, don't mandate."
-2. **Worked examples: inline in `CLAUDE.md` vs a `tasks/reference/` note** — keep `CLAUDE.md` lean;
-   decide once the rule text's length is known.
+1. ~~**Case 3 go/no-go**~~ — **RESOLVED: land it, pure-return form.** The extracted-and-dispatched
+   version read better ("I love it"); Rule E's long-body verdict is confirmed.
+2. ~~**Worked examples: inline in `CLAUDE.md` vs a `tasks/reference/` note**~~ — **RESOLVED:
+   reference note** (`tasks/reference/conditional-refactoring-rules.md`); `CLAUDE.md` carries only the
+   lean Rules A–E bullet pointing at it.

@@ -690,13 +690,15 @@ def to_matrix(
     # (translation, bottom 1).
     columns: list[list[Coef]] = [coords(d, 0) for d in directions] + [coords(origin, 1)]
 
-    if backend == "sympy":
-        return sympy.Matrix.hstack(*(sympy.Matrix(c) for c in columns))
-    if backend == "numpy":
-        return np.column_stack(
-            [np.array([float(x) for x in c], dtype=np.float32) for c in columns]
-        )
-    raise ValueError(f"unknown backend {backend!r}; use 'numpy' or 'sympy'.")
+    match backend:
+        case "sympy":
+            return sympy.Matrix.hstack(*(sympy.Matrix(c) for c in columns))
+        case "numpy":
+            return np.column_stack(
+                [np.array([float(x) for x in c], dtype=np.float32) for c in columns]
+            )
+        case _:
+            raise ValueError(f"unknown backend {backend!r}; use 'numpy' or 'sympy'.")
 
 
 __all__ = [

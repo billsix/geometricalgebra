@@ -504,6 +504,16 @@ imports (TID252), no stray `print` (T201), non-crypto `random` / `shell=True`
 (S311/S602), **and naming (the `N` / pep8-naming family)**. Treat a green ruff as
 authority on all of these.
 
+**Line length is the formatter's job, NOT a design input (Bill, 2026-09-05).** `ruff
+format` (via `make format`, which the maintainer runs) wraps long lines mechanically, so
+**never factor the 88-column limit into how you write or refactor code.** Write the
+*clearer* form and let the formatter wrap it — in particular, do **not** reject a ternary,
+a `match` arm, or a call because the one-liner would exceed 88 cols; that concern is
+handled downstream. (This retires the earlier "≤88 cols" clause in Rule A below: length is
+never the reason to leave a conditional un-refactored — only *readability* and *outcome
+shape* are.) The rare genuinely-unwrappable case (an aligned literal, a URL) still gets a
+scoped `# noqa: E501`, as always.
+
 **(b) Judgment calls** — prose, because ruff can't check them:
 
 - **Naming grammar** (`N` enforces the *casing*; these are the parts it can't):
@@ -667,6 +677,23 @@ authority on all of these.
   *structural* patterns; one whose every case is a boolean guard is an `if`/`elif` in
   different syntax, justified only by the exhaustiveness argument — don't convert every
   two-branch conditional.
+- **Refactoring a conditional — vary the mechanism (Rules A–E).** Before touching one, ask
+  in order: **(A) ternary** — collapse a guard-*value*-return + fall-through-return to
+  `X if cond else Y` when both outcomes are single expressions (not multi-statement, no side
+  effect between guard and return), there are exactly two outcomes, and it reads at least as
+  clearly (length is NOT a criterion — `make format` wraps a long ternary; NOT a
+  top-of-function early-exit guard `if bad: raise`/`return None`/`continue` — that's the
+  sanctioned cheap guard, don't churn it); **(B) dedup** identical branches first (watch for *vestigial* splits kept apart
+  only by comments — but verify byte-identical, a `cast`/no-`cast` difference is a live
+  distinction, not dead weight); **(C) `match`** when the *pattern* does structural work
+  (type/shape/literal/binding) — strip the guards, keep the patterns: if they still
+  dispatch → `match`, if all `case _` → `if`/`elif`; **(D)** turn a boolean/prefix check
+  matchable by extracting a **literal discriminant** first (`kind, _, label =
+  name.partition("_")` then `match kind:` with a `case _: raise` documenting the invariant);
+  **(E)** extract a **long** dispatch's branch-bodies into **named nested functions** that
+  **return** their nodes (read the enclosing scope freely, never mutate it) so the dispatch
+  is a *table of contents* not interleaved chapters — the memorable framing. Worked
+  before/after examples + the leave-alones: `tasks/reference/conditional-refactoring-rules.md`.
 - **Use modern Python, and flag it proactively.** `requires-python = ">=3.13"`, and
   **compatibility with older Pythons is explicitly not a concern** — so prefer the
   current-language solution over the historical one, and **when a newer feature would

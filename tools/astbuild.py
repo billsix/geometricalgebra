@@ -287,10 +287,12 @@ class SymbolToAttr(ast.NodeTransformer):
         # An empty ``attr`` means "bind the symbol to the bare name ``obj``" (not
         # ``obj.attr``) -- used for the number-operand fast path, where a bare
         # scalar ``rhs`` stands in for what would be ``rhs.coeff_scalar``.
-        if not attr:
-            return ast.Name(id=obj, ctx=ast.Load())
-        return ast.Attribute(
-            value=ast.Name(id=obj, ctx=ast.Load()), attr=attr, ctx=ast.Load()
+        return (
+            ast.Name(id=obj, ctx=ast.Load())
+            if not attr
+            else ast.Attribute(
+                value=ast.Name(id=obj, ctx=ast.Load()), attr=attr, ctx=ast.Load()
+            )
         )
 
 

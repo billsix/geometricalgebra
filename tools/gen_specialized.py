@@ -233,9 +233,7 @@ def blade_label(blade: Blade) -> str:
     ``coeff_``-prefixed form), kept distinct so the basis-blade names ``e_1`` ...
     stay free to denote the basis-vector constants on each class.
     """
-    if blade == ():
-        return "scalar"
-    return "e_" + "".join(str(i) for i in blade)
+    return "scalar" if blade == () else "e_" + "".join(str(i) for i in blade)
 
 
 def field_name(blade: Blade) -> str:
@@ -251,9 +249,7 @@ def blade_of_label(label: str) -> Blade:
     Assumes single-digit basis indices (n < 10), which the naming already
     requires (``e_12`` is otherwise ambiguous).
     """
-    if label == "scalar":
-        return ()
-    return tuple(int(c) for c in label[2:])
+    return () if label == "scalar" else tuple(int(c) for c in label[2:])
 
 
 def term_grade_key(
@@ -273,12 +269,15 @@ def term_grade_key(
     for sym in term.free_symbols:
         if not isinstance(sym, sympy.Symbol):
             continue
-        if sym.name.startswith("a_"):
-            blade = blade_of_label(sym.name[2:])
-            left = (len(blade), blade)
-        elif sym.name.startswith("b_"):
-            blade = blade_of_label(sym.name[2:])
-            right = (len(blade), blade)
+        kind, _, label = sym.name.partition("_")
+        blade = blade_of_label(label)
+        match kind:
+            case "a":
+                left = (len(blade), blade)
+            case "b":
+                right = (len(blade), blade)
+            case _:
+                raise ValueError(f"unexpected operand symbol {sym.name!r}")
     left = left if left is not None else sentinel
     right = right if right is not None else sentinel
     return (left[0], left[1], right[0], right[1])
@@ -577,9 +576,11 @@ def i_classmethod(precise_ret: str | None = None) -> list[ast.stmt]:
         returns=name_ref("MultiVectorBase"),
         decorators=[name_ref("classmethod")],
     )
-    if precise_ret is None:
-        return [impl]
-    return [*classmethod_narrowing_overloads("i", ["a", "b"], precise_ret), impl]
+    return (
+        [impl]
+        if precise_ret is None
+        else [*classmethod_narrowing_overloads("i", ["a", "b"], precise_ret), impl]
+    )
 
 
 def i_extractor(inner_method: str, precise_ret: str) -> ast.FunctionDef:
@@ -781,9 +782,11 @@ def summed_value(expr: sympy.Expr, rename: dict[str, tuple[str, str]]) -> ast.ex
 def result_value(expr: sympy.Expr, rename: dict[str, tuple[str, str]]) -> ast.expr:
     """Constructor field value for the graded dispatch (mirrors result_block)."""
     e: sympy.Expr = sympy.sympify(expr)
-    if e.is_Mul and (-e).is_Symbol:
-        return cast_coef(expr_to_ast(e, rename))
-    return summed_value(e, rename)
+    return (
+        cast_coef(expr_to_ast(e, rename))
+        if e.is_Mul and (-e).is_Symbol
+        else summed_value(e, rename)
+    )
 
 
 def unary_value(expr: sympy.Expr, rename: dict[str, tuple[str, str]]) -> ast.expr:
@@ -1327,15 +1330,12 @@ def result_block_stmts(
     ]
     if via_var is not None:
         stmts.append(return_stmt(cast(construct_type_of(via_var, pairs))))
-    elif owner is not None and owner == result_spec.name and cast is cast_self:
-        # Same-type result. Every value type is now @typing.final (graded, scalar,
-        # AND the full G_n), so construct the concrete class directly -- there is no
-        # subclass whose type must be preserved via type(self).
-        stmts.append(return_stmt(construct(result_spec.name, pairs)))
     else:
-        # grade-changing arm (graded types only -- the full G_n's products are all
-        # same-type).  These methods return MultiVectorBase, so emit the concrete
-        # result type with NO cast; the old cast(Self, Rotor(...)) was unsound.
+        # Same-type OR grade-changing: both construct the concrete @typing.final
+        # result type directly.  Same-type has no subclass to preserve via
+        # type(self); grade-changing returns MultiVectorBase, so no cast (the old
+        # cast(Self, Rotor(...)) was unsound).  Every value type -- graded, scalar,
+        # and the full G_n -- is now final, so the two arms coincide.
         stmts.append(return_stmt(construct(result_spec.name, pairs)))
     return stmts
 
@@ -1358,10 +1358,13 @@ def unary_stmt(
         (field_name(b), unary_value(e, rename))
         for b, e in zip(result_spec.blades, out_exprs)
     ]
-    if owner is not None and owner == result_spec.name:
-        # same-type result -> the concrete (now-final) class, no type(self) needed
-        return return_stmt(construct(result_spec.name, pairs))
-    return return_stmt(cast(construct(result_spec.name, pairs)))
+    # same-type result (owner == result) -> the concrete (now-final) class directly,
+    # no type(self) needed; any other result wraps with cast.
+    return (
+        return_stmt(construct(result_spec.name, pairs))
+        if owner is not None and owner == result_spec.name
+        else return_stmt(cast(construct(result_spec.name, pairs)))
+    )
 
 
 def _match_class(class_expr: ast.expr) -> ast.MatchClass:
@@ -3040,14 +3043,16 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         ),
         dual_method(),
     ]
-    if spec.name.startswith("Bivector"):
+
+    def bivector_extras() -> list[ast.stmt]:
+        extras: list[ast.stmt] = []
         # exp of a bivector is a rotor -- the exponential map onto the even
         # subalgebra.  A thin narrowing override (like ``dual``): the closed
         # form is transcendental, so the body delegates to the shared
         # ``MultiVectorBase.exp`` and only narrows the static return type to
         # this algebra's Rotor (which the dispatching-add construction already
         # produces at runtime).
-        body.append(
+        extras.append(
             function_def(
                 "exp",
                 method_doc_stmts("exp")
@@ -3069,9 +3074,12 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             )
         )
         # .i(): the bivector's unit plane -- itself, normalized (-> Bivector).
-        body.append(i_extractor("normalize", "Bivector"))
-    if spec.name.startswith("Rotor"):
-        body.append(
+        extras.append(i_extractor("normalize", "Bivector"))
+        return extras
+
+    def rotor_extras() -> list[ast.stmt]:
+        extras: list[ast.stmt] = []
+        extras.append(
             function_def(
                 "plane_of_rotation",
                 [
@@ -3095,7 +3103,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         # the derived closed form's support is exactly x's grades (the would-be
         # higher grades cancel symbolically), so each operand returns its own
         # type (Vector->Vector, Bivector->Bivector, ...) with no projection.
-        body.append(
+        extras.append(
             dispatch_method(
                 spec,
                 "sandwich",
@@ -3111,8 +3119,11 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         )
         # .i(): the rotor's unit plane of rotation (alias of plane_of_rotation);
         # -> Bivector.
-        body.append(i_extractor("plane_of_rotation", "Bivector"))
-    if spec.name == "Odd_3":
+        extras.append(i_extractor("plane_of_rotation", "Bivector"))
+        return extras
+
+    def odd3_extras() -> list[ast.stmt]:
+        extras: list[ast.stmt] = []
         # The "cast" half of the opt-in query+cast: an Odd_3 value (grades {1,3}) is
         # a Vector when its grade-3 part vanishes and a Trivector when its grade-1
         # part vanishes.  The product return type stays Odd_3 (operation-based -- see
@@ -3139,7 +3150,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 "grade-1 (vector) part is nonzero",
             ),
         ):
-            body.append(
+            extras.append(
                 function_def(
                     cast_name,
                     [
@@ -3173,7 +3184,10 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                     returns=name_ref(target),
                 )
             )
-    if spec.name.startswith("Vector"):
+        return extras
+
+    def vector_extras() -> list[ast.stmt]:
+        extras: list[ast.stmt] = []
         # project/reject/reflect of a vector onto a blade are grade-preserving (the
         # result is a vector), so narrow the base's MultiVectorBase-typed factory
         # classmethods to the precise vector type -- one @overload per grade-pure
@@ -3187,17 +3201,17 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             for bs in graded_specs(n)
             if len({len(b) for b in bs.blades}) == 1  # grade-pure (excludes Rotor)
         ]
-        body.extend(
+        extras.extend(
             transform_factory_overrides(
                 spec, onto_types, "project", "onto", "ComposableFunction", n
             )
         )
-        body.extend(
+        extras.extend(
             transform_factory_overrides(
                 spec, onto_types, "reject", "away_from", "ComposableFunction", 2
             )
         )
-        body.extend(
+        extras.extend(
             transform_factory_overrides(
                 spec, onto_types, "reflect", "across", "InvertibleFunction", 2
             )
@@ -3206,15 +3220,15 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         # the factories above): narrow their -> MultiVectorBase to the concrete vector
         # type, same grade caps as the factories (project any grade; reject/reflect
         # <= bivector).
-        body.extend(
+        extras.extend(
             passthrough_method_overrides(spec, onto_types, "projected_onto", "onto", n)
         )
-        body.extend(
+        extras.extend(
             passthrough_method_overrides(
                 spec, onto_types, "rejected_away_from", "away_from", 2
             )
         )
-        body.extend(
+        extras.extend(
             passthrough_method_overrides(
                 spec, onto_types, "reflected_across", "across", 2
             )
@@ -3224,17 +3238,17 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         # algebra's fixed-grade result -- but only where that grade exists (n>=2;
         # 𝒢₁ has no bivector/rotor, so they stay MultiVectorBase there).
         precise_bivector: str | None = "Bivector" if n >= 2 else None
-        body.extend(i_classmethod(precise_bivector))
+        extras.extend(i_classmethod(precise_bivector))
         if n >= 2:
             # bivector_from_vectors(a, b) -> Bivector, rotor_from_vectors(from, to)
             # -> Rotor: base types both -> MultiVectorBase, but the wedge / rotor
             # of two same-algebra vectors is that algebra's Bivector / Rotor.
-            body.extend(
+            extras.extend(
                 inherited_classmethod_narrowing(
                     "bivector_from_vectors", ["a", "b"], "Bivector"
                 )
             )
-            body.extend(
+            extras.extend(
                 inherited_classmethod_narrowing(
                     "rotor_from_vectors", ["from_vector", "to_vector"], "Rotor"
                 )
@@ -3272,11 +3286,11 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                     returns=ret,
                 )
 
-            body.append(cross_stub(name_ref(spec.name), name_ref(cross_spec.name)))
-            body.append(
+            extras.append(cross_stub(name_ref(spec.name), name_ref(cross_spec.name)))
+            extras.append(
                 cross_stub(name_ref("MultiVectorBase"), name_ref("MultiVectorBase"))
             )
-            body.append(
+            extras.append(
                 function_def(
                     "cross",
                     method_doc_stmts("cross")
@@ -3309,6 +3323,23 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                     returns=name_ref("MultiVectorBase"),
                 )
             )
+        return extras
+
+    # Per-type extras: each grade's special methods, built above as a named phase
+    # that RETURNS its statements (reading the enclosing scope but never mutating it),
+    # appended here so the whole decision reads as one unit.
+    match spec.name:
+        case "Bivector":
+            body += bivector_extras()
+        case "Rotor":
+            body += rotor_extras()
+        case "Odd_3":
+            body += odd3_extras()
+        case "Vector":
+            body += vector_extras()
+        case _:
+            # grade-pure types with no extras (Trivector, Scalar, higher KVectors)
+            pass
     return [
         class_def(
             spec.name,

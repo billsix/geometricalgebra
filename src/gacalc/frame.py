@@ -62,9 +62,11 @@ def are_linearly_independent(
                 "a frame is a set of vectors (grade 1); got a non-vector: " + repr(v)
             )
     blade: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(*vectors)
-    if float_close_to_zero:
-        return not bool(np.isclose(float(blade.magnitude()), 0.0, rtol=1e-5, atol=1e-5))
-    return blade != type(blade).zero()
+    return (
+        not bool(np.isclose(float(blade.magnitude()), 0.0, rtol=1e-5, atol=1e-5))
+        if float_close_to_zero
+        else blade != type(blade).zero()
+    )
 
 
 def is_frame(

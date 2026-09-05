@@ -118,9 +118,11 @@ def blade_latex(blade: Blade, symbols: Mapping[Blade, str] | None = None) -> str
     custom: str | None = symbols.get(blade)
     if custom is not None:
         return custom
-    if blade == ():
-        return "1"
-    return " ".join(r"\mathbf{\vec{e}}_{" + str(b) + "}" for b in blade)
+    return (
+        "1"
+        if blade == ()
+        else " ".join(r"\mathbf{\vec{e}}_{" + str(b) + "}" for b in blade)
+    )
 
 
 def blade_dict_latex(d: BladeCoef, symbols: Mapping[Blade, str] | None = None) -> str:
@@ -139,9 +141,11 @@ def blade_dict_latex(d: BladeCoef, symbols: Mapping[Blade, str] | None = None) -
     def add_parens_or_dont(x: Coef) -> str:
         # Parenthesize a sum so its terms bind to the blade; render straight from
         # the sympy/number object (no fragile sympify(str(x)) round-trip).
-        if isinstance(x, sympy.Expr) and x.is_Add:
-            return "(" + sympy.latex(x) + ")"
-        return sympy.latex(x)
+        return (
+            "(" + sympy.latex(x) + ")"
+            if isinstance(x, sympy.Expr) and x.is_Add
+            else sympy.latex(x)
+        )
 
     blades: list[str] = [
         add_parens_or_dont(d[blade]) + blade_latex(blade, symbols)
@@ -361,9 +365,11 @@ class MultiVectorBase(abc.ABC):
         inverse (right division: order matters in a non-commutative algebra).
         A bare number's inverse is its reciprocal, so ``v / s`` divides every
         coefficient."""
-        if isinstance(rhs, (int, float, sympy.Expr)):
-            return self * (1 / rhs)
-        return self * rhs.inverse()
+        return (
+            self * (1 / rhs)
+            if isinstance(rhs, (int, float, sympy.Expr))
+            else self * rhs.inverse()
+        )
 
     def __abs__(self) -> Coef:
         return self.magnitude()
@@ -402,9 +408,11 @@ class MultiVectorBase(abc.ABC):
         not floats); symbolic coefficients also stay symbolic.
         """
         magnitude_squared: Coef = self.magnitude_squared()
-        if isinstance(magnitude_squared, float):
-            return math.sqrt(magnitude_squared)
-        return sympy.sqrt(magnitude_squared)
+        return (
+            math.sqrt(magnitude_squared)
+            if isinstance(magnitude_squared, float)
+            else sympy.sqrt(magnitude_squared)
+        )
 
     def magnitude_squared(self) -> Coef:
         """Squared magnitude  |A|²  =  Ã ∗ A  =  ⟨Ã A⟩  (a scalar)."""
@@ -1368,11 +1376,13 @@ def _coerce[T: MultiVectorBase](x: MultiVectorBase | Coef, cls: type[T]) -> T:
     a bare number/``sympy.Expr`` becomes the scalar part.  (One definition
     here rather than a copy per generated module.)
     """
-    if isinstance(x, MultiVectorBase):
-        return cls.from_blade_dict(x.to_blade_dict())
-    if isinstance(x, sympy.Expr):
-        return cls.from_coef(x)
-    return cls.from_scalar(x)
+    match x:
+        case MultiVectorBase():
+            return cls.from_blade_dict(x.to_blade_dict())
+        case sympy.Expr():
+            return cls.from_coef(x)
+        case _:
+            return cls.from_scalar(x)
 
 
 def _require_canonical_blades(blade_coef: Mapping[Blade, object]) -> None:
