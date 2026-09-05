@@ -1,6 +1,6 @@
 [project]
 name = "gacalc"
-version = "0.0.18"
+version = "0.0.19"
 authors = [{name="William Emerison Six", email="billsix@gmail.com"}]
 description = "Geometric Algebra"
 readme = "README.md"
