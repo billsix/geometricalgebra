@@ -24,7 +24,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `e_1..e_10` / `zero` / `one` constants, the symbolic vectors (`sym_vec2_1`, …), and the
   `MultiVector = Gn` alias. (Re-exports the transform layer, which itself re-exports `functions`.)
 - `src/gacalc/transforms.py` — the representation-agnostic transform *factory* layer
-  (`translate`/`uniform_scale`/`scale_non_uniform`/`to_matrix`, plus the rotation factories
+  (`translate`/`uniform_scale`/`scale_non_uniform`/`to_matrix`/`to_matrix_template` + `MatrixTemplate`, plus the rotation factories
   `projection_rotation` / `rotor_rotation(from, to)` / `plane_rotation(a, b)`); derives any basis it
   needs from the value's own type, so it preserves `Gn`/`G`. **Re-exports** the
   `functions` names (`ComposableFunction`, `InvertibleFunction`, `compose`, `inverse`, …) so
@@ -114,6 +114,10 @@ for pulling arbitrary code under `base`. **The first (and only) such leaf is `fu
 `base`'s `project`/`reject`/`reflect` return `ComposableFunction`/`InvertibleFunction`. Constraint (1)
 is *why* that module's `TypeVar` is **unbounded** rather than bound to `MultiVectorBase` — binding it
 would force `functions.py` to import `base` and reintroduce the cycle.
+The one deliberate reach *up* from that leaf (2026-09-06): `ComposableFunction.to_matrix` /
+`.to_matrix_template`, the method forms of the `transforms.py` matrix functions, import `gacalc.transforms`
+**inside the method body** (annotations via `typing.TYPE_CHECKING`), so the load-time graph is unchanged.
+Keep it that way — never promote those to module-level imports.
 
 ## Architecture
 
@@ -255,7 +259,9 @@ their **graded** type (`from gacalc.g2 import e_1, e_2` then `3*e_1 + 4*e_2` is 
 is a `Bivector`, `zero`/`one` are `Scalar_n`) — so concise unqualified code keeps the precise graded
 type and matches the printed math (`3e₁ + 4e₂`); and each **class** exposes its own basis blades as
 **class constants of that class's type** (`Vector.e_1`, `Bivector.e_12`, `G.e_123`, and the full
-class's own `G.e_1`/`G.e_123`) — equivalent to `cls.basis_vector(n)` but named. **To build a general
+class's own `G.e_1`/`G.e_123`) — equivalent to `cls.basis_vector(n)` but named. **Convention (maintainer, 2026-09-06): in tests, examples, notebooks and docs use the named
+constant (`e_1`, `g3.e_3`, `Vector.e_1`, `gn.e_2`), never `cls.basis_vector(i)` when a constant exists;
+`basis_vector(i)` is for representation-agnostic library code where `cls` is a parameter (`to_matrix`).** **To build a general
 `G_n` concisely, use the full class's own constant** (`G.e_1`, so `3*G.e_1 + 4*G.e_2` is a `G`) or
 `G(...)` / `Gn`; the module constants are no longer the full class. (Reversed 2026-08-04 — module
 constants used to be the full `G_n`; the only code encoding that was one conformance test
@@ -285,7 +291,11 @@ after their algebra. The dimension parameter is `n` (it was once misleadingly ca
 **Transforms & the composable-function hierarchy.** The function abstraction (in `functions.py`,
 re-exported from `transforms.py` + `gn.py`) is split by *capability*: **`ComposableFunction`** wraps a
 function + LaTeX label, composable via `@` / `compose` (+ a `Linearity` class and the `at`/`steps`
-animation layer), and **`InvertibleFunction(ComposableFunction)`** adds an `inverse` (+
+animation layer) — **house style (maintainer, 2026-09-06): `f @ g` when the whole chain fits on one
+line (80/88 columns); `compose([f, g, ...])` — same order, `f` after `g`, last applied first — the
+moment it would wrap, because the formatter turns a wrapped `@` chain into dangling operators while a
+list gets one function per line. Never leave a multi-line `@` composition (numpy's matrix `@` is
+unaffected)** —, and **`InvertibleFunction(ComposableFunction)`** adds an `inverse` (+
 `latex_repr_inv`). This split exists because the layer serves two consumers with different needs:
 mvp's Cayley-graph engine *requires* invertibility (it walks edges backward via `inverse`), while
 display/compose pipelines don't. So a non-invertible function simply *is* a `ComposableFunction`, not

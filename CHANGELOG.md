@@ -11,9 +11,12 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.0.20] — 2026-09-06
+
 ### Added
-- **`rotate_90_degrees` — the 𝒢₂ quarter turn, in two forms** (additive; the next release is
-  a MINOR bump). `g2.Vector.rotate_90_degrees()` (generated, closed form, `Vector -> Vector`)
+- **`rotate_90_degrees` — the 𝒢₂ quarter turn, in two forms** (additive; a PATCH bump). `g2.Vector.rotate_90_degrees()` (generated, closed form, `Vector -> Vector`)
   and the module-level `g2.rotate_90_degrees()` factory returning an `InvertibleFunction[Vector]`
   (composes: four turns are the identity; inverts to the −90° turn; `at(t)` interpolates through
   `plane_rotation(e_1, e_2)(t·π/2)`). Both ARE `v * e_12` — multiplication by the unit
@@ -21,6 +24,22 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   𝒢₂ only (`g1`/`g3` deliberately have neither), and the factory rejects anything but a `g2.Vector`
   with `TypeError`. `g2.py` now imports `gacalc.transforms` (for the interpolation law; acyclic).
   Design record: `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`.
+- **Compile-once matrix templates: `to_matrix_template(fn, cls, params, n=None)` and
+  `MatrixTemplate`** (`gacalc.transforms`; additive). Compiles a linear/affine function built over
+  sympy symbols into a template whose `fill(*numbers)` returns the homogeneous `np.float32` matrix by
+  copying constants and assigning the parameter entries — no basis probing per call (the per-sprite
+  model matrix of a game renderer is the motivating case). Entries that are expressions in the
+  parameters (a symbolic rotation angle's `cos`/`sin`) are evaluated per fill through one lambdified
+  call. Works in 𝒢₂ (3×3), 𝒢₃ (4×4) and `Gn` with explicit `n`, linear or affine. Also **method forms
+  on `ComposableFunction`** (inherited by `InvertibleFunction`): `fn.to_matrix(cls, n=None, *,
+  backend=...)` and `fn.to_matrix_template(cls, params, n=None)`. Record:
+  `tasks/archive/2026/09/06/matrix-template-compile-once.md`.
+
+### Changed
+- `to_matrix`'s `fn` parameter is now typed `ComposableFunction[Any]` (was
+  `InvertibleFunction[Any]`) — a widening, no call changes: a matrix needs only the forward map and
+  the `linearity` tag, both on the base type. A hand-built linear `ComposableFunction` is now
+  matrix-able.
 
 ## [0.0.19] — 2026-09-05
 

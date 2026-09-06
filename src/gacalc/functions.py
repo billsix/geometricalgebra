@@ -62,6 +62,17 @@ import dataclasses
 import typing
 from enum import IntEnum
 
+if typing.TYPE_CHECKING:
+    # Type-only names for the to_matrix / to_matrix_template method forms.  A
+    # runtime import of these would make this leaf module depend on base and
+    # transforms (which depend on IT); under TYPE_CHECKING the load-time graph
+    # stays acyclic and the methods import lazily inside their bodies.
+    import numpy as np
+    import sympy
+
+    from gacalc.base import MultiVectorBase
+    from gacalc.transforms import MatrixTemplate
+
 #: Unbounded type variable for the value a function transforms.  Unbounded on
 #: purpose: this module must not import ``base`` (see the module docstring), so
 #: ``V`` cannot be bound to ``MultiVectorBase``.
@@ -193,6 +204,50 @@ class ComposableFunction(typing.Generic[V]):
         if self.components is not None:
             return compose([c.at(t) for c in self.components])
         return self if t >= 1.0 else identity()
+
+    def to_matrix(
+        self,
+        cls: "type[MultiVectorBase]",
+        n: int | None = None,
+        *,
+        backend: str = "numpy",
+    ) -> "np.ndarray | sympy.Matrix":
+        """Method form of :func:`gacalc.transforms.to_matrix`: this (linear or
+        affine) function as a homogeneous ``(n+1) x (n+1)`` matrix, probed in
+        the representation ``cls``.  See that function for the conventions
+        (translation in the last column; ``backend="sympy"`` stays symbolic).
+        """
+        # Imported here, not at module level: this module is an import-free
+        # leaf (see the module docstring) and transforms builds ON it; the
+        # lazy import keeps the load-time graph acyclic.
+        from gacalc.transforms import to_matrix
+
+        return to_matrix(self, cls, n, backend=backend)
+
+    def to_matrix_template(
+        self,
+        cls: "type[MultiVectorBase]",
+        params: "typing.Sequence[sympy.Symbol]",
+        n: int | None = None,
+    ) -> "MatrixTemplate":
+        """Method form of :func:`gacalc.transforms.to_matrix_template`: compile
+        this function, built over the sympy symbols ``params``, into a
+        :class:`~gacalc.transforms.MatrixTemplate` whose ``fill(*numbers)`` is a
+        few array assignments per call.  See that function for the details.
+
+        Example:
+            >>> import sympy
+            >>> from gacalc.g2 import Vector
+            >>> from gacalc.transforms import translate
+            >>> TX, TY = sympy.symbols("tx ty")
+            >>> move = translate(b=TX * Vector.e_1 + TY * Vector.e_2)
+            >>> T = move.to_matrix_template(Vector, (TX, TY))
+            >>> [float(x) for x in T.fill(3.0, 4.0)[:, 2]]   # 3 x 3; last column
+            [3.0, 4.0, 1.0]
+        """
+        from gacalc.transforms import to_matrix_template  # lazy, as in to_matrix
+
+        return to_matrix_template(self, cls, params, n)
 
     def steps(self) -> "typing.Iterator[ComposableFunction[V]]":
         """Yield the leaf primitives in application order, flattening nested

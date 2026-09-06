@@ -1,7 +1,7 @@
 # Add a g2 `rotate_90_degrees` — a 90° turn in the e₁e₂ plane (= × pseudoscalar)
 
 **Status:** done — implemented 2026-09-06 (Fable session), gates green, awaiting the maintainer's
-release (the next version is a MINOR bump; the entry sits in `CHANGELOG.md` `[Unreleased]`).
+release (0.0.20, a PATCH bump — additive; changelog entry under `## [0.0.20]`).
 **Priority:** 7
 **Difficulty:** 3
 

@@ -170,14 +170,16 @@ On `g3.Vector` the method is a generated closed form typed `Vector -> Vector`. D
 scalar triple product need no new names: dot is `scalar_product`, and `a · (b × c)` is
 `measure.signed_volume(a, b, c)`.
 
-**The quarter turn** (𝒢₂, unreleased) is multiplication by the unit pseudoscalar — in 2-D,
+**The quarter turn** (𝒢₂, 0.0.20) is multiplication by the unit pseudoscalar — in 2-D,
 `v * e_12` rotates `v` by +90° (e₁ toward e₂), `(x, y) -> (-y, x)`, exactly:
 
 ```python
 from gacalc.g2 import e_1, e_2, e_12, rotate_90_degrees
 
-turn = rotate_90_degrees()                      # an InvertibleFunction[Vector]
-turn(3 * e_1 + 4 * e_2) == -4 * e_1 + 3 * e_2  # True — and == (3 * e_1 + 4 * e_2) * e_12
+turn = rotate_90_degrees()  # an InvertibleFunction[Vector]
+turn(
+    3 * e_1 + 4 * e_2
+) == -4 * e_1 + 3 * e_2  # True — and == (3 * e_1 + 4 * e_2) * e_12
 (turn @ turn @ turn @ turn)(1 * e_1) == 1 * e_1  # True; turn.inverse is the -90° turn
 ```
 
@@ -185,6 +187,31 @@ Method form: `(3 * e_1 + 4 * e_2).rotate_90_degrees()`, a generated closed form 
 `Vector -> Vector`. 𝒢₂ only — in 3-D the same product would turn an e₃ component into a trivector,
 so there is deliberately no general-dimension version; `plane_rotation` is the any-angle,
 any-plane tool.
+
+**Compile-once matrix templates** (0.0.20): build a transform over sympy symbols once, then
+get its homogeneous `np.float32` matrix per call by filling in numbers — a copy plus a few
+assignments, no basis probing. A game's per-sprite model matrix is the motivating case:
+
+```python
+import sympy
+from gacalc.g3 import Vector
+from gacalc.transforms import compose, scale_non_uniform, translate
+
+TX, TY, W, H = sympy.symbols("tx ty w h")
+MODEL = compose(
+    [
+        translate(b=TX * Vector.e_1 + TY * Vector.e_2),
+        scale_non_uniform(W, H, 1),
+    ]
+).to_matrix_template(Vector, (TX, TY, W, H))
+m = MODEL.fill(
+    100.0, 50.0, 32.0, 16.0
+)  # per draw: a 4x4, translation in the last column
+```
+
+Works in 𝒢₂ (3×3) and 𝒢₃ (4×4), linear or affine; a symbolic rotation angle is fine too (its
+`cos`/`sin` entries are evaluated per fill through one lambdified call). Free-function form:
+`to_matrix_template(fn, cls, params)`; `fn.to_matrix(cls)` is the method form of `to_matrix`.
 
 **Custom blade display symbols** (0.0.18): in a notebook setup cell,
 `set_blade_symbols({(1,): r"\mathbf{i}", (2,): r"\mathbf{j}", (3,): r"\mathbf{k}"})` renders

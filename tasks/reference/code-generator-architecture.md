@@ -52,7 +52,12 @@ raw text header  +  "\n\n"  +  module_source(inject_region_markers(nodes))  +  "
   pasted into each module). (There is no longer a separate `SCALAR_HEADER` — `ScalarN` is emitted into each
   `gN.py`, not its own module.) `header()` conditionally appends `, _OperandT` to the
   `gacalc.base` import only for `n >= 2` (the sandwich TypeVar is used only by `Rotor_n`, which
-  doesn't exist in 𝒢₁ — importing it there would be an unused-import `F401`).
+  doesn't exist in 𝒢₁ — importing it there would be an unused-import `F401`). Likewise, for
+  `n == 2` only, it adds `from gacalc.functions import Linearity` and `from gacalc.transforms
+  import plane_rotation` — used by the 𝒢₂ `rotate_90_degrees()` factory (`generate_quarter_turn`,
+  emitted between the graded types and the constants; its `Vector` method comes from the
+  `n == 2` arm of `vector_extras`, beside the `n == 3` `cross` arm). `transforms` never imports a
+  generated module, so `g2.py` importing it is acyclic (2026-09-06).
 - The **body** is the node list, `ast.unparse`'d.
 
 **Emission order** — everything for one algebra goes into its one self-contained module. For each

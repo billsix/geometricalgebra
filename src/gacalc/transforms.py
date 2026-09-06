@@ -49,6 +49,7 @@ classification (:class:`Linearity`, joined by ``compose``), and
 :func:`to_matrix` (the homogeneous matrix of a linear/affine function).
 """
 
+import dataclasses
 import math
 import typing
 
@@ -609,7 +610,7 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction[V]:
 
 
 def to_matrix(
-    fn: InvertibleFunction[typing.Any],
+    fn: ComposableFunction[typing.Any],
     cls: type[MultiVectorBase],
     n: int | None = None,
     *,
@@ -701,6 +702,183 @@ def to_matrix(
             raise ValueError(f"unknown backend {backend!r}; use 'numpy' or 'sympy'.")
 
 
+# doc-region-begin matrix template class
+@dataclasses.dataclass(frozen=True, slots=True)
+class MatrixTemplate:
+    """A homogeneous matrix compiled **once** from a transform built over sympy
+    symbols, then filled **per call** with numbers -- the compile-once /
+    fill-per-frame pattern.  Build one with :func:`to_matrix_template` (or the
+    method form ``fn.to_matrix_template(cls, params)``); never by hand.
+
+    Every entry of the symbolic matrix is classified at compile time by its
+    ``free_symbols`` into one of three kinds:
+
+    * a **constant** -- no symbols; stored, as a float, in :attr:`constants`
+      (the matrix with every varying entry zeroed);
+    * a **slot** -- an entry that *is* one of the parameters; recorded as
+      ``(row, col, k)`` in :attr:`slots`, so :meth:`fill` just copies its
+      ``k``-th argument into place (no arithmetic at all);
+    * an **expression** -- anything else over the parameters (``cos(theta)``,
+      ``2/w``, ...); its cell is in :attr:`expression_cells` and the expression
+      in :attr:`expressions`, and all of them are evaluated per fill through
+      ONE ``sympy.lambdify`` of the whole list (:attr:`evaluate_expressions`).
+
+    So a template whose varying entries are all bare symbols -- a game's model
+    matrix ``translate(tx e_1 + ty e_2) @ scale_non_uniform(w, h, 1)`` -- never
+    touches sympy in :meth:`fill`: a ``copy`` plus a few assignments.  A template
+    with a symbolic rotation angle pays one lambdified call on top.
+    """
+
+    #: the parameters, in :meth:`fill`'s argument order
+    params: tuple[sympy.Symbol, ...]
+    #: the ``(n+1) x (n+1)`` ``np.float32`` matrix with every varying entry zeroed
+    constants: np.ndarray
+    #: ``(row, col, k)`` for each entry that is exactly parameter ``k``
+    slots: tuple[tuple[int, int, int], ...]
+    #: ``(row, col)`` for each entry that is a compound expression, in the order
+    #: :attr:`expressions` / :attr:`evaluate_expressions` produce them
+    expression_cells: tuple[tuple[int, int], ...]
+    #: the compound entries themselves (kept exactly as ``to_matrix`` built them)
+    expressions: tuple[sympy.Expr, ...]
+    #: ``sympy.lambdify(params, expressions)``; ``None`` when there are none
+    evaluate_expressions: typing.Callable[..., typing.Sequence[float]] | None
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+        """The matrix shape, ``(n+1, n+1)``."""
+        return self.constants.shape
+
+    # doc-region-begin matrix template fill
+    def fill(self, *values: float) -> np.ndarray:
+        """The matrix for these parameter values (one per :attr:`params`, in
+        order): a fresh ``np.float32`` array, translation in the last column.
+        """
+        if len(values) != len(self.params):
+            raise TypeError(
+                f"fill() takes {len(self.params)} values "
+                f"({', '.join(str(p) for p in self.params)}); got {len(values)}"
+            )
+        m: np.ndarray = self.constants.copy()
+        for row, col, k in self.slots:
+            m[row, col] = values[k]
+        if self.evaluate_expressions is not None:
+            for (row, col), x in zip(
+                self.expression_cells, self.evaluate_expressions(*values)
+            ):
+                m[row, col] = x
+        return m
+
+    # doc-region-end matrix template fill
+
+    def __call__(self, *values: float) -> np.ndarray:
+        """Same as :meth:`fill`."""
+        return self.fill(*values)
+
+
+# doc-region-end matrix template class
+
+
+# doc-region-begin to matrix template function
+def to_matrix_template(
+    fn: ComposableFunction[typing.Any],
+    cls: type[MultiVectorBase],
+    params: typing.Sequence[sympy.Symbol],
+    n: int | None = None,
+) -> MatrixTemplate:
+    r"""Compile a linear or affine ``fn``, built over the sympy symbols
+    ``params``, into a :class:`MatrixTemplate` -- ``to_matrix(fn, cls,
+    backend="sympy")`` read off once, so that ``template.fill(*numbers)`` is a
+    few array assignments instead of a fresh probe of the basis (roughly a
+    thousand times cheaper per call; the per-sprite model matrix of a 2-D game
+    is the motivating case).
+
+    Works in any dimension ``to_matrix`` does: 𝒢₂ gives a ``3 x 3`` (linear or
+    affine -- the shape is always homogeneous, a linear map just has a zero
+    translation column), 𝒢₃ a ``4 x 4``, ``Gn`` with ``n`` passed explicitly an
+    ``(n+1) x (n+1)``.  Entries may be bare parameters (a translation
+    coordinate, a scale factor -- filled by plain assignment) or expressions in
+    them (a symbolic rotation angle yields ``cos``/``sin`` entries -- evaluated
+    per fill through one lambdified call); see :class:`MatrixTemplate`.
+
+    ``params`` fixes :meth:`MatrixTemplate.fill`'s argument order.  Every symbol
+    the matrix depends on must be listed (``ValueError`` otherwise, naming the
+    stray symbol); a listed symbol the matrix does not use is simply ignored.
+    Raises ``ValueError`` for a non-linear ``fn``, like ``to_matrix``.
+
+    Example (a sprite's model matrix: scale the unit quad to ``w x h``, then
+    move it to ``(tx, ty)`` -- translation as a linear combination of basis
+    vectors, every coefficient explicit):
+
+        >>> import sympy
+        >>> from gacalc.g3 import Vector
+        >>> from gacalc.transforms import compose, scale_non_uniform, translate
+        >>> from gacalc.transforms import to_matrix_template
+        >>> TX, TY, W, H = sympy.symbols("tx ty w h")
+        >>> MODEL = to_matrix_template(
+        ...     compose(
+        ...         [
+        ...             translate(b=TX * Vector.e_1 + TY * Vector.e_2),
+        ...             scale_non_uniform(W, H, 1),
+        ...         ]
+        ...     ),
+        ...     Vector,
+        ...     (TX, TY, W, H),
+        ... )
+        >>> MODEL.shape, len(MODEL.slots), MODEL.expressions
+        ((4, 4), 4, ())
+        >>> m = MODEL.fill(100.0, 50.0, 32.0, 16.0)   # per draw
+        >>> [float(x) for x in m[:, 3]]               # translation, last column
+        [100.0, 50.0, 0.0, 1.0]
+        >>> [float(m[i, i]) for i in range(4)]
+        [32.0, 16.0, 1.0, 1.0]
+    """
+    # doc-region-end to matrix template function
+    symbols: tuple[sympy.Symbol, ...] = tuple(params)
+    if len(set(symbols)) != len(symbols):
+        raise ValueError(f"params has a repeated symbol: {symbols}")
+    matrix = to_matrix(fn, cls, n, backend="sympy")
+    assert isinstance(matrix, sympy.Matrix)  # the sympy backend's return
+    size: int = matrix.rows
+    constants: np.ndarray = np.zeros((size, size), dtype=np.float32)
+    slots: list[tuple[int, int, int]] = []
+    cells: list[tuple[int, int]] = []
+    expressions: list[sympy.Expr] = []
+    row: int
+    col: int
+    for row in range(size):
+        for col in range(size):
+            entry: sympy.Expr = sympy.sympify(matrix[row, col])
+            free: set[sympy.Basic] = entry.free_symbols
+            stray: set[sympy.Basic] = free - set(symbols)
+            if stray:
+                raise ValueError(
+                    f"matrix entry ({row}, {col}) = {entry} depends on "
+                    f"{sorted(map(str, stray))}, not among params "
+                    f"{tuple(map(str, symbols))}; every symbol the transform "
+                    "was built over must be a parameter"
+                )
+            if not free:
+                constants[row, col] = float(entry)
+            elif entry.is_Symbol:
+                slots.append(
+                    (row, col, symbols.index(typing.cast(sympy.Symbol, entry)))
+                )
+            else:
+                cells.append((row, col))
+                expressions.append(entry)
+    evaluate: typing.Callable[..., typing.Sequence[float]] | None = (
+        sympy.lambdify(symbols, expressions, "math") if expressions else None
+    )
+    return MatrixTemplate(
+        params=symbols,
+        constants=constants,
+        slots=tuple(slots),
+        expression_cells=tuple(cells),
+        expressions=tuple(expressions),
+        evaluate_expressions=evaluate,
+    )
+
+
 __all__ = [
     "ComposableFunction",
     "InvertibleFunction",
@@ -719,5 +897,7 @@ __all__ = [
     "uniform_scale",
     "scale_non_uniform",
     "to_matrix",
+    "MatrixTemplate",
+    "to_matrix_template",
     "MultiVectorFn",
 ]

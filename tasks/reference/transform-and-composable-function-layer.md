@@ -50,9 +50,39 @@ These return `InvertibleFunction`s and are **representation-preserving** — the
 Renders a function as a **homogeneous `(n+1)×(n+1)` matrix**, with numpy/sympy backends. A NONLINEAR
 function raises (per its `Linearity` tag); a `Gn` value needs its `n` supplied explicitly (unlike
 `G2`/`G3`, whose dimension is fixed). Since 0.0.19 its `fn` parameter is `InvertibleFunction[typing.Any]`
-(accepts concrete `[Vector]` functions and representation-agnostic ones alike). Over sympy symbols the
-sympy backend yields a *template* — modelviewprojection compiles that once and fills it per sprite; making
-that a library feature is `tasks/matrix-template-compile-once.md` (proposed).
+(accepts concrete `[Vector]` functions and representation-agnostic ones alike; since 2026-09-06 typed
+`ComposableFunction[typing.Any]` — a matrix needs only the forward map and the `linearity` tag).
+
+### `to_matrix_template` / `MatrixTemplate` (`transforms.py`, right after `to_matrix`; 2026-09-06)
+The compile-once / fill-per-frame pattern modelviewprojection's renderers had hand-copied ten times,
+lifted into the library. `to_matrix_template(fn, cls, params, n=None)` runs `to_matrix(...,
+backend="sympy")` once over a function built over the sympy symbols `params` and classifies every entry:
+**constant** (stored in `constants`, an `np.float32` matrix with the varying entries zeroed), **slot**
+(an entry that *is* parameter `k`: `(row, col, k)`, filled by plain assignment), or **expression**
+(anything else, e.g. `cos(theta)`: all such entries go through ONE `sympy.lambdify` per fill). So the
+model matrix `translate(tx e_1 + ty e_2) @ scale_non_uniform(w, h, 1)` fills without touching sympy
+(a copy + four assignments), while a template with a symbolic rotation angle pays one lambdified call.
+`fill(*values)` (also `__call__`) returns a fresh `(n+1)×(n+1)` `np.float32`, translation in the last
+column, bit-identical to `to_matrix(backend="numpy")` of the numeric transform when every varying entry
+is a slot (gated in `tests/test_matrix_template.py`, 24 tests: 𝒢₂ and 𝒢₃, linear and affine, `Gn`, the
+method forms, the error paths). Design choices and the record:
+`tasks/archive/2026/09/06/matrix-template-compile-once.md`.
+
+**Method forms on `ComposableFunction`** (inherited by `InvertibleFunction`): `fn.to_matrix(cls, n=None,
+*, backend="numpy")` and `fn.to_matrix_template(cls, params, n=None)` — thin delegations that import
+`gacalc.transforms` *inside the method body*. See the layering note below.
+
+## `@` vs `compose([...])` — a formatting rule, not a semantic one (2026-09-06)
+
+`f @ g` and `compose([f, g])` are the same object: `__matmul__` is "`self` after `f2`", and
+`compose` applies the *last* listed function first (`compose([f, g])(x) == f(g(x))`), so a chain
+`a @ b @ c` is `compose([a, b, c])` verbatim — never reverse the list. The maintainer's rule: use `@`
+when the expression fits on one line; the moment it would wrap, use `compose([...])` so each function
+sits on its own line (ruff/black render a wrapped `@` chain as a dangling operator with the right-hand
+call's arguments exploded, which is what this avoids). Applied 2026-09-06 across gacalc (README, the
+`to_matrix_template` doctest, `notebooks/displaygraded.py`, `tests/test_matrix_template.py`) and
+modelviewprojection (ten game engines, `demo07`); numpy matrix products written with `@` are not
+compositions and were left alone.
 
 ## Layering invariant
 
@@ -61,6 +91,13 @@ re-exports `functions.py` and builds the concrete factories on top. Nothing impo
 `transforms` from `functions`, and `transforms` never imports a generated module — which is what lets
 a generated module import `transforms` (`g2.py` does, for `rotate_90_degrees`'s interpolation law)
 without a cycle.
+
+The one deliberate exception (2026-09-06): the `to_matrix` / `to_matrix_template` **method forms** on
+`ComposableFunction` reach *up* into `transforms` — but only through a **function-local import** (plus
+`typing.TYPE_CHECKING`-guarded imports for their annotations), so at module-load time `functions.py`
+still imports nothing from gacalc and the graph stays acyclic. The maintainer asked for the matrix
+work to be reachable as a method on the function type; this is the cheapest shape that honours both
+that and the leaf rule. Do not promote those imports to module level.
 
 ## Follow-on
 

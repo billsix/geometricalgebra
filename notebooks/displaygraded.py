@@ -54,6 +54,7 @@ from gacalc.g2 import e_1, e_2
 from gacalc.transforms import (
     ComposableFunction,
     InvertibleFunction,
+    compose,
     inverse,
     projection_rotation,
     translate,
@@ -349,8 +350,8 @@ P(1 * g3.Vector.e_1 + 1 * g3.Vector.e_3)  # pyright: ignore[reportUnusedExpressi
 # compose the projection with a translate: the pipeline renders as one LaTeX
 # expression, and applies translate-then-project to a vector. (Wrap in a
 # ComposableFunction to give it a tidy custom label for the display.)
-pipe: ComposableFunction[g3.Vector] = ComposableFunction(P, "P_{B}") @ translate(
-    b=g3.Vector.e_3
+pipe: ComposableFunction[g3.Vector] = compose(
+    [ComposableFunction(P, "P_{B}"), translate(b=g3.Vector.e_3)]
 )
 display(Math(pipe.latex_repr))
 show(pipe(1 * g3.Vector.e_1 + 1 * g3.Vector.e_2))
