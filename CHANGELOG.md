@@ -11,7 +11,28 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+- **`rotate_90_degrees` — the 𝒢₂ quarter turn, in two forms** (additive; the next release is
+  a MINOR bump). `g2.Vector.rotate_90_degrees()` (generated, closed form, `Vector -> Vector`)
+  and the module-level `g2.rotate_90_degrees()` factory returning an `InvertibleFunction[Vector]`
+  (composes: four turns are the identity; inverts to the −90° turn; `at(t)` interpolates through
+  `plane_rotation(e_1, e_2)(t·π/2)`). Both ARE `v * e_12` — multiplication by the unit
+  pseudoscalar, `(x, y) -> (-y, x)`, exact on integer and symbolic coefficients (no `cos`/`sin`).
+  𝒢₂ only (`g1`/`g3` deliberately have neither), and the factory rejects anything but a `g2.Vector`
+  with `TypeError`. `g2.py` now imports `gacalc.transforms` (for the interpolation law; acyclic).
+  Design record: `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`.
+
+## [0.0.19] — 2026-09-05
+
+### Changed
+- **Typing precision for the scalar transform factories and `to_matrix`** (no runtime change).
+  `uniform_scale(m)` and `scale_non_uniform(*factors)` now return `InvertibleFunction[V]` (was
+  `[MultiVectorBase]`), so a caller annotating `InvertibleFunction[g3.Vector]` type-checks under
+  ty ≥ 0.0.72's invariance enforcement; `to_matrix` takes `InvertibleFunction[typing.Any]` (was
+  `[MultiVectorBase]`) so concrete and representation-agnostic functions both pass. Not breaking:
+  every previously valid call still checks; a `typing.cast` at the two factories' return is now
+  visible in any book region that `literalinclude`s their bodies. Driven by modelviewprojection's
+  ty sweep; record: `tasks/archive/2026/09/06/ty-invariance-transform-factories-bind-v.md`.
 
 ## [0.0.18] — 2026-08-31
 

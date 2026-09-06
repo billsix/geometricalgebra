@@ -27,24 +27,40 @@ These return `InvertibleFunction`s and are **representation-preserving** — the
 `type(vector).basis_vector(i)` (module docstring `transforms.py:14-27`), so the same factory works across
 `G2`/`G3`/`Gn`:
 - **`translate(b)`** (`transforms.py:148`), **`uniform_scale(m)`** (`:518`), **`scale_non_uniform(*factors)`**
-  (`:552`).
+  (`:558`). Since 0.0.19 the two scalar factories return `InvertibleFunction[V]`, the `V` inferred from the
+  caller's annotation (a `typing.cast` at their return bridges what ty cannot see through the grade-general
+  scalar product) — so `f: InvertibleFunction[g3.Vector] = uniform_scale(2.0)` type-checks under ty's
+  invariance enforcement (`tasks/archive/2026/09/06/ty-invariance-transform-factories-bind-v.md`).
 
 ### Rotation factories (the trio + shared rotor factory)
 - **`projection_rotation`** (`transforms.py:177`), **`rotor_rotation`** (`:227`), **`plane_rotation`**
   (`:417`), **`bivector_rotation`** (`:336`) — different *specifications* of a rotation, all funnelling
   through the shared **`_unit_bivector_rotor_factory`** (`:280`, used as the default `rotor_for` at
   `:388,:488`). (The naming distinguishes the rotation *spec* from its rotor *formulation*.)
+- **`g2.rotate_90_degrees()`** (2026-09-06) — the one rotation factory that lives in a *generated*
+  module, not `transforms.py`, because it is 𝒢₂-only: the quarter turn is `v * e_12` in closed form
+  (exact; no rotor), wrapped as an `InvertibleFunction[Vector]` with `linearity=LINEAR`, a `TypeError`
+  guard on non-`g2.Vector` input, and an `interpolate` law of `plane_rotation(e_1, e_2)(t·π/2)` that
+  returns the exact turn at `t >= 1`. This is why `g2.py` imports `gacalc.transforms` — allowed by the
+  layering invariant below (`transforms` depends only on `base`/`functions`, never on a generated
+  module). Emitter: `generate_quarter_turn` in `tools/gen_specialized.py`; design record
+  `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`.
 
-### `to_matrix` (`transforms.py:598`)
+### `to_matrix` (`transforms.py:611`)
 Renders a function as a **homogeneous `(n+1)×(n+1)` matrix**, with numpy/sympy backends. A NONLINEAR
 function raises (per its `Linearity` tag); a `Gn` value needs its `n` supplied explicitly (unlike
-`G2`/`G3`, whose dimension is fixed).
+`G2`/`G3`, whose dimension is fixed). Since 0.0.19 its `fn` parameter is `InvertibleFunction[typing.Any]`
+(accepts concrete `[Vector]` functions and representation-agnostic ones alike). Over sympy symbols the
+sympy backend yields a *template* — modelviewprojection compiles that once and fills it per sprite; making
+that a library feature is `tasks/matrix-template-compile-once.md` (proposed).
 
 ## Layering invariant
 
 `functions.py` is an acyclic **leaf** (unbounded `TypeVar`, no gacalc imports); `transforms.py`
 re-exports `functions.py` and builds the concrete factories on top. Nothing imports "up" into
-`transforms` from `functions`.
+`transforms` from `functions`, and `transforms` never imports a generated module — which is what lets
+a generated module import `transforms` (`g2.py` does, for `rotate_90_degrees`'s interpolation law)
+without a cycle.
 
 ## Follow-on
 

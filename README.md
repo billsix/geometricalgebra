@@ -170,6 +170,22 @@ On `g3.Vector` the method is a generated closed form typed `Vector -> Vector`. D
 scalar triple product need no new names: dot is `scalar_product`, and `a · (b × c)` is
 `measure.signed_volume(a, b, c)`.
 
+**The quarter turn** (𝒢₂, unreleased) is multiplication by the unit pseudoscalar — in 2-D,
+`v * e_12` rotates `v` by +90° (e₁ toward e₂), `(x, y) -> (-y, x)`, exactly:
+
+```python
+from gacalc.g2 import e_1, e_2, e_12, rotate_90_degrees
+
+turn = rotate_90_degrees()                      # an InvertibleFunction[Vector]
+turn(3 * e_1 + 4 * e_2) == -4 * e_1 + 3 * e_2  # True — and == (3 * e_1 + 4 * e_2) * e_12
+(turn @ turn @ turn @ turn)(1 * e_1) == 1 * e_1  # True; turn.inverse is the -90° turn
+```
+
+Method form: `(3 * e_1 + 4 * e_2).rotate_90_degrees()`, a generated closed form typed
+`Vector -> Vector`. 𝒢₂ only — in 3-D the same product would turn an e₃ component into a trivector,
+so there is deliberately no general-dimension version; `plane_rotation` is the any-angle,
+any-plane tool.
+
 **Custom blade display symbols** (0.0.18): in a notebook setup cell,
 `set_blade_symbols({(1,): r"\mathbf{i}", (2,): r"\mathbf{j}", (3,): r"\mathbf{k}"})` renders
 every later LaTeX display with i/j/k instead of e₁/e₂/e₃ (display only — values and `repr`

@@ -1,6 +1,6 @@
 # Type the transform factories/`compose`/`to_matrix` to bind the caller's precise `V` (ty invariance)
 
-**Status:** IMPLEMENTED 2026-09-05 (staged, awaiting maintainer release as 0.0.19). ty-clean + 441 tests pass; mvp usage pattern verified to typecheck against the fixed code.
+**Status:** DONE + ARCHIVED 2026-09-06 — implemented 2026-09-05 (ty-clean, 441 tests), released by the maintainer as **gacalc 0.0.19** the same day (PyPI 2026-09-05; the `v0.0.19` tag was not yet created in this checkout when archived), and confirmed downstream on 2026-09-06: modelviewprojection pinned 0.0.19 and its 36 invariance errors cleared (`make format` green) — its `tasks/archive/2026/09/06/ty-0072-strictness-sweep.md`.
 **Priority:** 3
 **Difficulty:** 5
 
@@ -63,7 +63,7 @@ acceptance test).
 
 - Downstream driver: `github.com/billsix/modelviewprojection` `tasks/ty-0072-strictness-sweep.md`.
 
-## Implementation (2026-09-05) — done, verified, awaiting release
+## Implementation (2026-09-05)
 
 Changed `src/gacalc/transforms.py` (staged):
 
@@ -93,5 +93,6 @@ directly (mvp wraps them in its own concretely-typed `rotate_*`), so they aren't
 unblock. Threading `V` through `bivector_rotation`/`plane_rotation`/`rotor_rotation` is a possible
 follow-up for completeness, not required.
 
-**Next:** maintainer bumps `version` to 0.0.19 and releases; then mvp bumps its pin
-(`requirements.txt` + Dockerfile `ARG GACALC_VERSION`) and its 36 remaining ty errors clear.
+**Release and downstream (2026-09-05/06):** the maintainer bumped `version` to 0.0.19 and released; mvp
+bumped its pin (`requirements.txt` + Dockerfile `ARG GACALC_VERSION`), rebuilt its image, and its 36
+remaining ty errors cleared with no code change beyond two now-unused `# ty: ignore`s.

@@ -49,6 +49,17 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   Code generation). Deliberately NO `dot`/triple-product aliases — dot is `scalar_product`, the
   scalar triple product is `measure.signed_volume` (identity gated in `tests/test_vectorcalc.py`);
   grad/div/curl are out of scope (`tasks/archive/2026/08/31/custom-symbols-and-vector-calc.md`).
+- **The 𝒢₂ quarter turn** (added 2026-09-06, generated into `g2.py` only): `Vector.rotate_90_degrees()`
+  (closed form, `Vector -> Vector`) and the module-level `rotate_90_degrees()` factory returning an
+  `InvertibleFunction[Vector]`. Both ARE `v * e_12` — multiplication by the unit pseudoscalar,
+  `(x, y) -> (-y, x)`, exact (no `cos`/`sin`; ints stay ints, symbols stay symbolic). 𝒢₂-only on
+  purpose: in 𝒢₃+ the same product sends an e₃ component to a trivector, the footgun that got the old
+  general-dimension `rotate_90_degrees` removed from `transforms.py`. The factory guards with
+  `TypeError` on anything but a `g2.Vector`; `g2.py` imports `gacalc.transforms` for its `at(t)` law
+  (`plane_rotation(e_1, e_2)(t·π/2)`, exact turn at `t >= 1`) — acyclic, since `transforms` imports
+  only `base`/`functions`. Emitted by `generate_quarter_turn` + the `n == 2` arm of `vector_extras`
+  in `tools/gen_specialized.py` (the 𝒢₃ `cross` precedent); tests `tests/test_rotate_90_degrees.py`;
+  design record `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`.
 - `src/gacalc/g1.py`, `g2.py`, `g3.py` (and, **release-only**, `g4.py`/`g5.py`) — **generated**
   modules, **not tracked in git**
   (gitignored). Each is **self-contained**, holding the full specialized class `G` **and**
@@ -337,8 +348,15 @@ Bivector⁻¹` types as the odd part `{1,3}` even though the grade-3 part is ide
 projection); the narrowing keeps `Vector.project(onto=Bivector) → Vector`. (Same spirit as the
 rotor sandwich's grade projection.)
 
+**The 𝒢₂ quarter turn is the one *exact* rotation (2026-09-06):** `g2.rotate_90_degrees()` (an
+`InvertibleFunction[Vector]`) and `g2.Vector.rotate_90_degrees()` are `v * e_12` in closed form —
+a fixed +90° turn is the pseudoscalar product, not "an angle that happens to be π/2" through the
+trig rotor, so it stays exact on ints and symbols. Use it (not `plane_rotation(e_1, e_2)(math.pi/2)`)
+whenever a 2-D rotation is a multiple of 90°; it composes and inverts like any transform.
+
 **Convention — express rotations as `plane_rotation` (plane + angle) or `projection_rotation` /
-`rotor_rotation` / `rotor_from_vectors` (from/to), never hand-built.**
+`rotor_rotation` / `rotor_from_vectors` (from/to), or the 𝒢₂ `rotate_90_degrees` for quarter turns,
+never hand-built.**
 When writing or reviewing examples, tests, notebooks, or docs, a rotation must read as an explicit
 `projection_rotation(from_vector=…, to_vector=…)(v)` (or `rotor_rotation(…)`) or
 `cls.rotor_from_vectors(from_vector=…, to_vector=…)`
@@ -381,6 +399,9 @@ other files or to values that already have a bare name.
   standard right-handed sign — `e₁ × e₂ = e₃`) / `a.cross(b)` (method form; on 𝒢₃'s generated
   `Vector` it is a **closed form typed `Vector -> Vector`**). Dot = `scalar_product`; scalar
   triple product = `measure.signed_volume` — no aliases (see `vectorcalc.py`'s module docstring)
+- quarter turn (𝒢₂ only): `g2.Vector.rotate_90_degrees()` / the `g2.rotate_90_degrees()`
+  `InvertibleFunction` factory — `= v * e_12` (multiplication by the unit pseudoscalar, +90° e₁→e₂,
+  exact); the inverse is the −90° turn `v * -e_12`
 - plane helpers: `cls.bivector_from_vectors(a, b)` builds the raw wedge `a ∧ b` (the un-normalized
   area bivector); `cls.i(a, b)` normalizes it to the plane's **unit** bivector (`i² = −1`) — a
   classmethod on the full types (`Gn`/`G`/`Vector`); `.i()` (no args) gets a value's own unit plane
@@ -854,7 +875,10 @@ Open issues (most are in the shared/reference code, inherited from the original 
   is a `Rotor` statically, `v2 < i2` is a `Vector`) — design + rationale in
   `tasks/reference/generated-product-typing.md`. 𝒢₃'s `Vector` also carries a generated
   closed-form `cross` (`Vector -> Vector` overload, non-vector operands falling back to
-  `MultiVectorBase.cross`; 2026-08-31, `tasks/archive/2026/08/31/generated-vector-cross.md`). See also the README
+  `MultiVectorBase.cross`; 2026-08-31, `tasks/archive/2026/08/31/generated-vector-cross.md`), and 𝒢₂'s
+  `Vector` a generated closed-form `rotate_90_degrees` (`= v * e_12`) plus the module-level
+  `rotate_90_degrees()` factory (`generate_quarter_turn`; 2026-09-06,
+  `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`). See also the README
   "Graded subtypes" section (with
   the return-type table) and `tasks/archive/2026/06/06/graded-blade-subtypes.md` (the original build).
 - **Paravectors** (scalar + vector; the Algebra-of-Physical-Space object that yields a Lorentzian

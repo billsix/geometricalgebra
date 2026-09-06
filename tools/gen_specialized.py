@@ -179,6 +179,7 @@ from astbuild import (  # noqa: E402
     function_def,
     inject_region_markers,
     isinstance_,
+    marker,
     module_source,
     name_ref,
     ne_zero,
@@ -451,6 +452,53 @@ def class_doc_stmt(text: str) -> ast.Expr:
     """A class docstring statement -- ``text`` used verbatim."""
     return ast.Expr(value=constant(text))
 
+
+# The 𝒢₂ quarter turn.  Two forms share one closed form: the generated
+# ``Vector.rotate_90_degrees()`` method (ROTATE_90_METHOD_DOC, 8-space method
+# indent) and the module-level ``rotate_90_degrees()`` InvertibleFunction
+# factory (ROTATE_90_FACTORY_DOC, 4-space function indent).  Both docstrings
+# teach the identity the name stands for: in 𝒢₂ a quarter turn IS
+# multiplication by the unit pseudoscalar e_12.
+ROTATE_90_METHOD_DOC = (
+    "Rotate this vector a quarter turn (+90°, e₁ toward e₂) in the e₁e₂ plane.\n"
+    "\n"
+    "        In 𝒢₂ a quarter turn IS multiplication by the unit pseudoscalar:\n"
+    "        ``v.rotate_90_degrees() == v * e_12``, i.e. ``(x, y) -> (-y, x)``.\n"
+    "        The body is that product's closed form, so the turn is exact (no\n"
+    "        ``cos``/``sin``); ``plane_rotation(e_1, e_2)(theta)`` remains the\n"
+    "        general-angle rotor.  Four turns are the identity; the -90° turn\n"
+    "        (``v * -e_12``) is the inverse of the module-level\n"
+    "        ``rotate_90_degrees()`` function, which wraps this method as an\n"
+    "        ``InvertibleFunction``.  𝒢₂ only: in higher dimensions ``v * e_12``\n"
+    "        sends an e₃ component to a trivector, which is why there is no\n"
+    "        general-dimension version."
+)
+
+ROTATE_90_FACTORY_DOC = (
+    "Rotate a 𝒢₂ vector a quarter turn (+90°, e₁ toward e₂), packaged as an\n"
+    "    :class:`InvertibleFunction` -- so it composes (``f @ f`` is the half\n"
+    "    turn; four turns are the identity) and inverts (the -90° turn,\n"
+    "    ``v * -e_12``).\n"
+    "\n"
+    "    ``rotate_90_degrees()(v) == v * e_12``: in 𝒢₂ a quarter turn is\n"
+    "    multiplication by the unit pseudoscalar, ``(x, y) -> (-y, x)``, exact\n"
+    "    (no ``cos``/``sin``) -- the same closed form as\n"
+    "    :meth:`Vector.rotate_90_degrees`.  ``at(t)`` interpolates through\n"
+    "    ``plane_rotation(e_1, e_2)(t * pi / 2)`` and is the exact turn at\n"
+    "    ``t >= 1``.  Takes a grade-1 ``Vector`` only (``TypeError`` for any\n"
+    "    other type); 𝒢₂ only, since in higher dimensions ``v * e_12`` sends an\n"
+    "    e₃ component to a trivector.\n"
+    "\n"
+    "    Example:\n"
+    "        >>> from gacalc.g2 import e_1, e_2, e_12, rotate_90_degrees\n"
+    "        >>> turn = rotate_90_degrees()\n"
+    "        >>> turn(3 * e_1 + 4 * e_2) == -4 * e_1 + 3 * e_2\n"
+    "        True\n"
+    "        >>> turn(3 * e_1 + 4 * e_2) == (3 * e_1 + 4 * e_2) * e_12\n"
+    "        True\n"
+    "        >>> (turn @ turn @ turn @ turn)(3 * e_1 + 4 * e_2) == 3 * e_1 + 4 * e_2\n"
+    "        True"
+)
 
 # The unit-bivector plane helpers: `i(a, b)` (classmethod, on Gn/G2/G3/Vector,
 # building the plane from two vectors) and `.i()` (instance, on Bivector/Rotor,
@@ -3253,6 +3301,37 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                     "rotor_from_vectors", ["from_vector", "to_vector"], "Rotor"
                 )
             )
+        if n == 2:
+            # rotate_90_degrees() = v * e_12 -- 𝒢₂ only.  There the e₁e₂ plane is
+            # the whole space, so right-multiplying by the unit pseudoscalar is a
+            # pure quarter turn; in 𝒢₃+ the same product sends an e₃ component to
+            # a trivector -- the footgun that got the old general-dimension
+            # version removed (transforms.py, module docstring).  Emitted as the
+            # derived closed form of that product (unary_result over symbolic
+            # coefficients, like cross), so the turn is exact: no rotor, no
+            # cos/sin.  Vector -> Vector; the module-level rotate_90_degrees()
+            # factory (generate_quarter_turn) wraps it as an InvertibleFunction.
+            turn_spec: TypeSpec
+            turn_exprs: list[sympy.Expr]
+            turn_spec, turn_exprs = unary_result(
+                spec,
+                lambda a: a * Gn.from_blade_dict({(1, 2): 1}),
+                n,
+                full_name,
+            )
+            extras.append(
+                function_def(
+                    "rotate_90_degrees",
+                    [class_doc_stmt(ROTATE_90_METHOD_DOC)]
+                    + result_block_stmts(
+                        turn_spec,
+                        turn_exprs,
+                        rename_map(spec.blades, []),
+                        owner=spec.name,
+                    ),
+                    returns=name_ref(turn_spec.name),
+                )
+            )
         if n == 3:
             # cross(a, b) = (a ∧ b) I₃⁻¹ -- 𝒢₃ only (only there is the dual of a
             # bivector a vector).  A narrowing override of the base pass-through
@@ -3353,6 +3432,142 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
     ]
 
 
+def generate_quarter_turn(name: str) -> list[ast.stmt]:
+    """The module-level ``rotate_90_degrees()`` factory -- 𝒢₂ only (level C).
+
+    Emits::
+
+        def rotate_90_degrees() -> InvertibleFunction[Vector]:
+            def forward(vector: Vector) -> Vector:   # guard + the method
+            def backward(vector: Vector) -> Vector:  # guard + closed form of v * -e_12
+            def interpolate(t: float) -> ComposableFunction[Vector]:
+                # plane_rotation(e_1, e_2)(t * pi / 2); the exact turn at t >= 1
+            return InvertibleFunction(func=forward, inverse=backward, ...,
+                                      linearity=Linearity.LINEAR)
+
+    Both nested functions reject anything that is not exactly a ``Vector`` with a
+    ``TypeError`` (the classes are ``@typing.final``, so ``type(x) is Vector`` is
+    the whole test), matching ``plane_rotation``'s grade check.  The inverse's
+    body is derived like the method's -- ``unary_result`` over ``v * -e_12`` --
+    not hand-written, so the two closed forms cannot drift apart.  The whole
+    function and its body carry ``rotate_90_degrees factory`` / ``... body``
+    doc-region markers for a book to ``literalinclude``.
+    """
+    vspec: TypeSpec = resolve([(1,), (2,)], 2, name)
+    vec: str = vspec.name
+
+    def guard() -> ast.stmt:
+        return ast.If(
+            ast.Compare(
+                call("type", [name_ref("vector")]), [ast.IsNot()], [name_ref(vec)]
+            ),
+            [
+                ast.Raise(
+                    exc=call(
+                        "TypeError",
+                        [
+                            ast.BinOp(
+                                constant(
+                                    "rotate_90_degrees takes a grade-1 "
+                                    f"{vec} of 𝒢₂; got "
+                                ),
+                                ast.Add(),
+                                attribute(
+                                    call("type", [name_ref("vector")]), "__name__"
+                                ),
+                            )
+                        ],
+                    ),
+                    cause=None,
+                )
+            ],
+            [],
+        )
+
+    inv_spec: TypeSpec
+    inv_exprs: list[sympy.Expr]
+    inv_spec, inv_exprs = unary_result(
+        vspec, lambda a: a * Gn.from_blade_dict({(1, 2): -1}), 2, name
+    )
+    inv_rename: dict[str, tuple[str, str]] = {
+        "a_" + blade_label(b): ("vector", field_name(b)) for b in vspec.blades
+    }
+    forward: ast.stmt = function_def(
+        "forward",
+        [guard(), return_stmt(call(attribute("vector", "rotate_90_degrees")))],
+        params=[argument("vector", name_ref(vec))],
+        returns=name_ref(vec),
+    )
+    backward: ast.stmt = function_def(
+        "backward",
+        [guard()] + result_block_stmts(inv_spec, inv_exprs, inv_rename, owner=vec),
+        params=[argument("vector", name_ref(vec))],
+        returns=name_ref(vec),
+    )
+    interpolate: ast.stmt = function_def(
+        "interpolate",
+        [
+            ast.If(
+                ast.Compare(name_ref("t"), [ast.GtE()], [constant(1.0)]),
+                [return_stmt(call("rotate_90_degrees"))],
+                [],
+            ),
+            return_stmt(
+                call(
+                    call("plane_rotation", [name_ref("e_1"), name_ref("e_2")]),
+                    [
+                        ast.BinOp(
+                            ast.BinOp(
+                                name_ref("t"), ast.Mult(), attribute("math", "pi")
+                            ),
+                            ast.Div(),
+                            constant(2),
+                        )
+                    ],
+                )
+            ),
+        ],
+        params=[argument("t", name_ref("float"))],
+        returns=subscript(name_ref("ComposableFunction"), name_ref(vec)),
+    )
+    body: list[ast.stmt] = [
+        class_doc_stmt(ROTATE_90_FACTORY_DOC),
+        marker("doc-region-begin rotate_90_degrees body"),
+        forward,
+        backward,
+        interpolate,
+        # ast.Call by hand: astbuild.call's own first parameter is named
+        # ``func``, which collides with InvertibleFunction's ``func=`` keyword.
+        return_stmt(
+            ast.Call(
+                func=name_ref("InvertibleFunction"),
+                args=[],
+                keywords=[
+                    ast.keyword(arg="func", value=name_ref("forward")),
+                    ast.keyword(arg="latex_repr", value=constant(r"R_{\pi/2}")),
+                    ast.keyword(arg="inverse", value=name_ref("backward")),
+                    ast.keyword(arg="latex_repr_inv", value=constant(r"R_{-\pi/2}")),
+                    ast.keyword(arg="interpolate", value=name_ref("interpolate")),
+                    ast.keyword(
+                        arg="linearity", value=attribute("Linearity", "LINEAR")
+                    ),
+                ],
+            )
+        ),
+        marker("doc-region-end rotate_90_degrees body"),
+    ]
+    return [
+        marker("doc-region-begin rotate_90_degrees factory"),
+        function_def(
+            "rotate_90_degrees",
+            body,
+            params=[],
+            returns=subscript(name_ref("InvertibleFunction"), name_ref(vec)),
+        ),
+        marker("doc-region-end rotate_90_degrees factory"),
+    ]
+
+
 def generate_constants(n: int, name: str) -> list[ast.stmt]:
     """Module-level basis constants for one algebra, hand-built as nodes (level C).
 
@@ -3399,6 +3614,9 @@ def generate_constants(n: int, name: str) -> list[ast.stmt]:
         "one",
     ]
     exported += [blade_label(b) for b in nonempty]
+    if n == 2:
+        # the 𝒢₂-only InvertibleFunction factory (generate_quarter_turn)
+        exported.append("rotate_90_degrees")
     nodes.append(
         assign("__all__", ast.List(elts=[constant(s) for s in exported], ctx=_LOAD))
     )
@@ -3414,6 +3632,14 @@ def header(name: str, n: int) -> str:
     # _OperandT (the sandwich operand TypeVar) is only used by the Rotor class,
     # which exists for n >= 2; importing it for G would be unused (F401).
     operand_import = "\n    _OperandT," if n >= 2 else ""
+    # The 𝒢₂ rotate_90_degrees() factory (generate_quarter_turn) needs Linearity
+    # and plane_rotation (for its interpolation law); importing them elsewhere
+    # would be unused (F401).  transforms imports only base/functions, so g2
+    # importing it is acyclic.
+    functions_import = "from gacalc.functions import Linearity\n" if n == 2 else ""
+    transforms_import = (
+        "from gacalc.transforms import plane_rotation\n" if n == 2 else ""
+    )
     return f"""# Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #
@@ -3454,8 +3680,8 @@ from gacalc.base import (
     _require_canonical_blades,
     _require_float,{operand_import}
 )
-from gacalc.gn import Gn
-"""
+{functions_import}from gacalc.gn import Gn
+{transforms_import}"""
 
 
 # Every algebra the generator knows how to emit.  Which of these are actually
@@ -3543,6 +3769,8 @@ def main() -> None:
         spec: TypeSpec
         for spec in graded_specs(n):
             nodes += generate_graded_type(spec, n, name)
+        if n == 2:
+            nodes += generate_quarter_turn(name)
         nodes += generate_constants(n, name)
         module_body: str = module_source(inject_region_markers(nodes))
         source: str = header(name, n) + "\n\n" + module_body + "\n"
