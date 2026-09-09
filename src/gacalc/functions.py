@@ -264,6 +264,7 @@ class ComposableFunction(typing.Generic[V]):
         if self.components is None:
             yield self
         else:
+            c: ComposableFunction[V]
             for c in self.components:
                 yield from c.steps()
 
@@ -358,7 +359,10 @@ def inverse(f: InvertibleFunction[V]) -> InvertibleFunction[V]:
     # components reversed and each inverted -- the inverse-of-a-composition rule
     # -- so interpolation/iteration recurse correctly through an inverse.
     if f.interpolate is not None:
-        law = f.interpolate  # bind the narrowed (non-None) law for the closure
+        # The annotation IS the narrowing: `interpolate` is declared
+        # `... | None`, and binding it to a non-optional local is what lets the
+        # closure below call it without re-checking for None on every call.
+        law: typing.Callable[[float], ComposableFunction[V]] = f.interpolate
         f_inverse.interpolate = lambda t: inverse(
             typing.cast("InvertibleFunction[V]", law(t))
         )

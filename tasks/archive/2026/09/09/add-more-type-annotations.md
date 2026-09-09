@@ -1,12 +1,61 @@
 # Type-annotation audit: sweep all Python, list where types should be added
 
-**Status:** READY — scoped 2026-09-05, NOT started; awaiting an explicit go-ahead to run the sweep.
-Parameters settled by the maintainer: **apply, don't just list**; **scope = all four dirs** —
-`src/` + `tools/` + `tests/` + `notebooks/` (NOT `tasks/`); **both add missing AND tighten** loose
-annotations ("everything you can find"). Execute directly, gated per batch, once told to go.
-(William Emerison Six <billsix@gmail.com>)
+**Status:** **DONE 2026-09-09.** Applied across all four in-scope directories at the
+maintainer's go-ahead. `src/`, `tools/`, `tests/` and `notebooks/` now have **zero**
+unannotated signatures, locals or loop targets that are not a deliberate, in-code-reasoned
+exemption; the 29 remaining audit rows are catalogued in
+`tasks/reference/type-annotation-exemptions.md`, and the auditor itself was promoted to
+`tools/check_annotations.py` so the check can be re-run. Gates green: `make format`, `make test`,
+`make check-generated`, `make check-regions`, and `pyright notebooks` in-container went
+from 1 pre-existing error to **0**. See "What the sweep found" below.
 **Priority:** 4
 **Difficulty:** 5
+
+
+## What the sweep found (2026-09-09)
+
+Counts from an AST auditor written for the job. Start: 359 rows. End: **29**, every one an
+exemption. The auditor was **promoted** rather than deleted at archive time
+(`tools/check_annotations.py`): it is a checker one would re-run against future changes,
+and the reference doc was otherwise reduced to describing how to rebuild it. It is
+informational only — not wired into any `make` gate, which is the maintainer's call.
+
+| Kind | Start | Fixed | Left | The remainder |
+|---|---|---|---|---|
+| Missing param | 32 | 31 | 1 | one dimension-defaulting test |
+| Missing return | 4 | 2 | 2 | `base.__iter__`, `test_conformance.to` |
+| Invariant container param | 17 | 15 | 3 | two out-params, one the stdlib pins |
+| Unannotated local | 224 | 221 | 3 | three that lose information when declared |
+| Unannotated loop target | 73 | 72 | 1 | derived from one of those three |
+| `Any` in an annotation | 9 | 0 | 9 | the documented polymorphic-transform case |
+
+Aliases, `TypeVar`s, `Enum` members and `_` discards were reclassified out of the count as
+not being annotation candidates at all.
+
+### Things worth knowing next time
+
+- **Two documented "we don't annotate these" claims were broader than the facts.** The
+  parametrized `cls` params in `tests/test_conformance.py` were said to be deliberately
+  inferred; annotating all 22 produced errors in exactly *one* test, so 21 are now typed
+  and the stale claim is corrected in place. Test the blocker before designing around it.
+- **`ty` does not see the notebooks**, and that gap hid real errors: the first notebook
+  pass was ruff-clean and `ty`-clean while introducing **22 pyright errors** (a wrong
+  `MultiVectorFn` alias, and `InvertibleFunction[Vector]` where `[G]` was meant). Only the
+  in-container `pyright notebooks` run caught them. **Always take a baseline first** — the
+  count is meaningless without one; here the baseline was 1, so 23 was a regression, not a
+  discovery.
+- **The transform generics are invariant**, so there is no blanket annotation: each site
+  takes the exact representation it is built over, and `compose` yields `ComposableFunction`
+  rather than `InvertibleFunction` wherever a part has no inverse. The checker identified
+  which, per site — guessing wasted a pass.
+- **Every "don't fight the checker" exemption traces to one root cause**: the abstract
+  `MultiVectorBase` is *less capable* than its concrete subclasses, because the
+  dimension-defaulting overrides drop a required `n`. Recognizing that turns four separate
+  puzzles into one.
+- **One convention was applied rather than the opt-out honoured**: `tools/bench.py`'s
+  `sa`/`sb` carried a written note that they were reused at a different type and so had to
+  stay inferred. `CLAUDE.md`'s rule for exactly that is to split them into distinctly-named
+  typed variables, which is what happened; verified by running the benchmark.
 
 ## BLUF
 

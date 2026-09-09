@@ -601,7 +601,12 @@ scoped `# noqa: E501`, as always.
   `invertible_fn: InvertibleFunction` in the next). **Don't fight the
   checker:** a locally-correct annotation that forces edits to unrelated logic or
   breaks flow-narrowing isn't worth it — leave it inferred and say why (e.g.
-  `MultiVectorBase.__iter__`). Read-only container params take the covariant supertype
+  `MultiVectorBase.__iter__`). **The repo-wide sweep landed 2026-09-09**, so every
+  unannotated site that remains is a deliberate exemption — all of them catalogued,
+  with their reasons, in `tasks/reference/type-annotation-exemptions.md`. Read that
+  before "fixing" one, and re-run **`python tools/check_annotations.py`** (informational,
+  not a gate) after reshaping hand-written Python — a row it reports that is *not* in that
+  doc is a genuine gap. Read-only container params take the covariant supertype
   (`Mapping`/`Sequence`), not invariant `dict`/`list`. Polymorphic values take the
   abstract base (`MultiVectorBase`), never a runtime-picked concrete. (Teaching
   notebooks especially: name + type the GA values.)
@@ -759,7 +764,10 @@ scoped `# noqa: E501`, as always.
   run as tests. `nbplotutils.py` is collected (its module-load `set_matplotlib_formats` is now guarded
   by `if get_ipython() is not None:`, so it imports headless) — meaning the suite now imports
   `matplotlib`, so run it with the `notebooks` extra installed (the container has it).
-- Lint/format/typecheck: `entrypoint/format.sh` runs `ruff check --fix`, `ruff format`, `ty check`.
+- Lint/format/typecheck: `entrypoint/format.sh` runs `ruff check --fix`, `ruff format`, `ty check`,
+  and `tools/check_changelog.py` (the version <-> changelog guard: fails when `pyproject.toml`'s
+  version has no `## [<version>]` heading in `CHANGELOG.md`, so a version bump can't ship with its
+  changelog promotion forgotten; `make check-changelog` runs it alone on the host).
   The vendored Emacs tree under `entrypoint/` is excluded via `extend-exclude` in
   `pyproject.toml [tool.ruff]`, **not** a CLI flag — `ruff format` does **not** accept
   `--extend-exclude` (only `ruff check` does), so config is the one place both tools honor

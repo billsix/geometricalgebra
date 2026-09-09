@@ -70,7 +70,7 @@ def simplified(mv: Gn) -> Gn:
 
 
 # the angle of rotation, fully symbolic
-theta = sympy.symbols("theta", real=True)
+theta: sympy.Symbol = sympy.symbols("theta", real=True)
 
 # the rotation carries e_1 toward the unit vector at angle theta in the e_1-e_2
 # plane; the same rotation is used in 2D and 3D below
@@ -256,7 +256,7 @@ result  # pyright: ignore[reportUnusedExpression]
 # which collapses to $\theta/2$ only once sympy knows the sign.
 
 # %%
-phi = sympy.symbols("phi", positive=True)
+phi: sympy.Symbol = sympy.symbols("phi", positive=True)
 
 i: g2.Bivector = g2.Bivector.e_12
 R_exp: g2.Rotor = (i * (-phi / 2)).exp()

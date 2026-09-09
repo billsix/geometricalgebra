@@ -19,16 +19,18 @@ from pathlib import Path
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser()
+    ap: argparse.ArgumentParser = argparse.ArgumentParser()
     ap.add_argument("--pyproject", default="pyproject.toml")
     ap.add_argument("--changelog", default="CHANGELOG.md")
-    args = ap.parse_args()
-    m = re.search(r'^version\s*=\s*"([^"]+)"', Path(args.pyproject).read_text(), re.M)
+    args: argparse.Namespace = ap.parse_args()
+    m: re.Match[str] | None = re.search(
+        r'^version\s*=\s*"([^"]+)"', Path(args.pyproject).read_text(), re.M
+    )
     if not m:
         print(f'{args.pyproject}: no `version = "..."` line found', file=sys.stderr)  # noqa: T201
         return 1
-    version = m.group(1)
-    text = Path(args.changelog).read_text()
+    version: str = m.group(1)
+    text: str = Path(args.changelog).read_text()
     if re.search(rf"^## \[{re.escape(version)}\]", text, re.M):
         return 0
     print(  # noqa: T201 -- the diagnostic is the tool's output

@@ -60,21 +60,28 @@ def vec(cls: type[MultiVectorBase], *coords: float) -> MultiVectorBase:
 
 
 # (rep, a vector of that rep's natural dimension)
-DIM_GENERAL = [(Gn, (1, 2, 3)), (g1.G, (3,)), (g2.G, (3, 4)), (g3.G, (1, 2, 3))]
+DIM_GENERAL: list[tuple[type[MultiVectorBase], tuple[int, ...]]] = [
+    (Gn, (1, 2, 3)),
+    (g1.G, (3,)),
+    (g2.G, (3, 4)),
+    (g3.G, (1, 2, 3)),
+]
 
 
 @pytest.mark.parametrize("cls", [Gn, g1.G, g2.G, g3.G])
-def test_basis_vector_e1_is_unit(cls) -> None:
+def test_basis_vector_e1_is_unit(cls: type[MultiVectorBase]) -> None:
     assert cls.basis_vector(1) == cls.from_blade_dict({(1,): 1})
 
 
 @pytest.mark.parametrize("cls", [Gn, g2.G, g3.G])
-def test_basis_vector_e2_is_unit(cls) -> None:
+def test_basis_vector_e2_is_unit(cls: type[MultiVectorBase]) -> None:
     assert cls.basis_vector(2) == cls.from_blade_dict({(2,): 1})
 
 
 @pytest.mark.parametrize("cls,coords", DIM_GENERAL)
-def test_dimension_general_transforms_preserve_type(cls, coords) -> None:
+def test_dimension_general_transforms_preserve_type(
+    cls: type[MultiVectorBase], coords: tuple[int, ...]
+) -> None:
     v: MultiVectorBase = vec(cls, *coords)
     b: MultiVectorBase = vec(
         cls, *coords
@@ -94,7 +101,7 @@ def test_dimension_general_transforms_preserve_type(cls, coords) -> None:
 
 
 @pytest.mark.parametrize("cls", [Gn, g2.G, g3.G])
-def test_known_scale_values(cls) -> None:
+def test_known_scale_values(cls: type[MultiVectorBase]) -> None:
     v: MultiVectorBase = vec(cls, 3, 4)
     # non-uniform scale: stretch e_1 by 2, e_2 by 3
     assert scale_non_uniform(2.0, 3.0)(vec(cls, 1, 1)).isclose(
@@ -114,7 +121,7 @@ def test_nd_scale_preserves_type_and_value() -> None:
 
 
 @pytest.mark.parametrize("cls,coords", DIM_GENERAL)
-def test_invertibility(cls, coords) -> None:
+def test_invertibility(cls: type[MultiVectorBase], coords: tuple[int, ...]) -> None:
     v: MultiVectorBase = vec(cls, *coords)
     factors: tuple[int, ...] = tuple(range(2, 2 + len(coords)))
     fn: InvertibleFunction[MultiVectorBase]
@@ -200,7 +207,9 @@ def test_interpolate_composite_recurses_into_components() -> None:
 
 
 @pytest.mark.parametrize("cls,coords", DIM_GENERAL)
-def test_interpolate_preserves_representation_at_every_t(cls, coords) -> None:
+def test_interpolate_preserves_representation_at_every_t(
+    cls: type[MultiVectorBase], coords: tuple[int, ...]
+) -> None:
     # the type round-trip must hold at every interpolation parameter, not just
     # the endpoints.
     f: InvertibleFunction[MultiVectorBase] = compose(

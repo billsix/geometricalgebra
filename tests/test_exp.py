@@ -30,6 +30,7 @@ import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
+from gacalc.functions import InvertibleFunction
 from gacalc.gn import Gn
 from gacalc.transforms import plane_rotation
 
@@ -94,7 +95,9 @@ def test_exp_rejects_non_scalar_square() -> None:
 def test_exp_agrees_with_plane_rotation_numeric() -> None:
     # exp((-theta/2) i) IS plane_rotation's half-angle rotor -- numeric theta
     theta: float = 1.234
-    f = plane_rotation(g3.Vector.e_1, g3.Vector.e_2)(theta)
+    f: InvertibleFunction[g3.Vector] = plane_rotation(g3.Vector.e_1, g3.Vector.e_2)(
+        theta
+    )
     i: g3.Bivector = g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
     r: g3.Rotor = (i * (-theta / 2)).exp()
     v: g3.Vector = 3 * g3.Vector.e_1 + 4 * g3.Vector.e_2 + 5 * g3.Vector.e_3
@@ -109,7 +112,9 @@ def test_exp_agrees_with_plane_rotation_symbolic() -> None:
     # cos(theta/2).  (That limitation is WHY plane_rotation keeps its
     # hand-built rotor -- see tasks/reference/design-decisions.md.)
     theta: sympy.Symbol = sympy.Symbol("theta", positive=True)
-    f = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)(theta)
+    f: InvertibleFunction[g2.Vector] = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)(
+        theta
+    )
     i: g2.Bivector = g2.Vector.i(g2.Vector.e_1, g2.Vector.e_2)
     r: g2.Rotor = (i * (-theta / 2)).exp()
     # identical coefficient FORM, not merely simplify-equal: the follow-up

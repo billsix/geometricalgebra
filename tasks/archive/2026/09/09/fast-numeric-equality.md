@@ -1,6 +1,6 @@
 # Fast path for numeric `__eq__`: don't call `sympy.simplify` when both coefficients are plain numbers
 
-**Status:** READY — filed 2026-09-06 by Fable from a modelviewprojection profile; anchors, test plan and acceptance below verified the same day. William Emerison Six <billsix@gmail.com> said "don't start it yet" — not started.
+**Status:** **DONE 2026-09-09.** Implemented as `base._coef_eq` — one hand-written predicate the generated `__eq__` calls from both its same-type and blade-dict paths, rather than the inline `isinstance` guard the plan sketched (both call sites needed the rule, so it belongs in `base.py`, not emitted twice as AST). Measured 48 µs → **0.391 µs** (~123×) on `Vector(3.0, 4.0) == Vector(1.5, -2.0)`, beating the "well under 1 µs" bar. Three tests added to `tests/test_multivector.py` (simplify patched to raise, int/float by value, `(x+1)**2` still equals `x**2+2*x+1`). Gates green: `make format`, `make test` (564 passed), `check-generated`, `check-regions`. Changelog entry under `[Unreleased]` — **not** 0.0.20 as this doc originally said, since 0.0.20 was tagged 2026-09-06 before the fix. Rationale harvested to `tasks/reference/symbolic-equality.md`.
 **Priority:** 4
 **Difficulty:** 2
 **Related:** `tasks/consolidate-symbolic-equality-predicate.md` (the symbolic half; this task is about the numeric case that never needed sympy), `tasks/reference/symbolic-equality.md`.

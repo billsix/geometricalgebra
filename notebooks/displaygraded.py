@@ -182,6 +182,8 @@ show(R)  # an (un-normalized) g2.Rotor
 
 # %%
 w: g2.Vector = e_1
+label: str
+value: MultiVectorBase
 for label, value in [
     (r"R\,\tilde R", R * R.reverse()),
     (r"R\,w\,\tilde R", R * w * R.reverse()),
@@ -205,16 +207,16 @@ R * w * R.inverse() == projection_rotation(from_vector=frm, to_vector=to)(w)
 # 𝒢₂ grade product table.
 
 # %%
-named = [
+named: list[tuple[str, MultiVectorBase]] = [
     ("g2.Scalar", g2.Scalar.from_scalar(5)),
     ("g2.Vector", a),
     ("g2.Bivector", i2),
     ("g2.Rotor", r),
 ]
 # the 𝒢₂ grade product table: (row) * (column) -> result type
-header = "| `*` | " + " | ".join(na for na, _ in named) + " |"
-sep = "| --- " * (len(named) + 1) + "|"
-rows = [
+header: str = "| `*` | " + " | ".join(na for na, _ in named) + " |"
+sep: str = "| --- " * (len(named) + 1) + "|"
+rows: list[str] = [
     f"| **{na}** | " + " | ".join(kind(x * y) for _, y in named) + " |"
     for na, x in named
 ]
@@ -257,7 +259,7 @@ show((g3.Vector.e_1 ^ g3.Vector.e_2) * (g3.Vector.e_1 ^ g3.Vector.e_2))
 # only the **display** simplifies it — so the cancellation shows.
 
 # %%
-t = sympy.symbols("t")
+t: sympy.Symbol = sympy.symbols("t")
 B: g3.Bivector = (g3.Vector.e_1 ^ g3.Vector.e_2) * sympy.cos(t) + (
     g3.Vector.e_1 ^ g3.Vector.e_3
 ) * sympy.sin(t)
@@ -297,7 +299,7 @@ show(plane * a3, plane * perp, plane * (a3 + perp))  # all g3.Odd_3: {1}, {3}, {
 # to the concrete type, raising if the grade it would discard is nonzero.
 
 # %%
-in_plane = plane * a3
+in_plane: g3.Odd_3 = plane * a3
 kind(in_plane.to_vector())  # -> g3.Vector (its grade-3 part is zero)
 
 # %%

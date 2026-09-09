@@ -49,6 +49,7 @@ def _require_vectors(vectors: Sequence[MultiVectorBase]) -> None:
     """Raise unless ``vectors`` is a non-empty sequence of grade-1 vectors."""
     if len(vectors) == 0:
         raise ValueError("area/volume/content need at least one vector")
+    v: MultiVectorBase
     for v in vectors:
         if not v.is_vector():
             raise ValueError(
@@ -223,7 +224,7 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Coef:
             of vectors to span the space (too few, or too many / over-determined).
     """
     _require_vectors(vectors)
-    representation = type(vectors[0])
+    representation: type[MultiVectorBase] = type(vectors[0])
     dimension: int | None = getattr(representation, "DIMENSION", None)
     # A fixed type declares the ambient dimension (and its dual is locked to it); the
     # dimension-agnostic Gn takes the smallest space containing the vectors.

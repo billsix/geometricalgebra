@@ -1,6 +1,6 @@
 # Wire `tools/check_changelog.py` into the gate (version ↔ changelog consistency)
 
-**Status:** proposed — the script is written and verified (2026-09-06, Fable, at the maintainer's "go, do all three"); the gate wiring is the maintainer's to approve. William Emerison Six <billsix@gmail.com>.
+**Status:** **DONE 2026-09-09** — wired into both places the task proposed: `entrypoint/format.sh` (the real gate) and a host-side `make check-changelog` target, plus the gate line in `CLAUDE.md`. Verified passing on the current tree (0.0.20) and failing with a clear message on a changelog copy with that heading removed; `make format` green in-container. Rationale lives in `tasks/reference/design-decisions.md`.
 **Priority:** 4
 **Difficulty:** 1
 

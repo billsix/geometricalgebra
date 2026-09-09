@@ -13,6 +13,9 @@
 
 
 import itertools
+import unittest.mock
+
+import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
@@ -510,3 +513,46 @@ def test_rotate() -> None:
         projection_rotation(from_vector=e_1, to_vector=e_3)(c)
         == -3 * e_1 + 5 * e_2 + 4 * e_3
     )
+
+
+def test_numeric_equality_never_calls_simplify() -> None:
+    """Two differing plain-number multivectors compare unequal without sympy.
+
+    ``simplify`` cannot turn two unequal numbers into equal ones, so the symbolic
+    branch has nothing to contribute in the all-numeric case -- it only cost time
+    (48 us per comparison before ``base._coef_eq``; see its docstring).  Patching
+    ``sympy.simplify`` to explode is the honest assertion: it proves the branch is
+    not merely fast but never entered.
+    """
+    a: g2.Vector = g2.Vector(3.0, 4.0)
+    b: g2.Vector = g2.Vector(1.5, -2.0)
+    with unittest.mock.patch(
+        "sympy.simplify", side_effect=AssertionError("simplify called on numerics")
+    ):
+        assert a != b
+        assert a == g2.Vector(3.0, 4.0)
+        # Comparing across representations takes the blade-dict fallback,
+        # which shares the same ``_coef_eq``.
+        assert a != g2.G.from_blade_dict(b.to_blade_dict())
+        assert a == g2.G.from_blade_dict(a.to_blade_dict())
+
+
+def test_numeric_equality_compares_by_value_across_int_and_float() -> None:
+    """``1`` and ``1.0`` are the same coefficient -- the fast path must not
+    distinguish them by type."""
+    assert g2.Vector(1, 0) == g2.Vector(1.0, 0)
+    assert g2.Vector(0, 2) != g2.Vector(0, 2.5)
+
+
+def test_symbolic_equality_still_simplifies() -> None:
+    """Structurally-different but mathematically-equal symbolic coefficients still
+    compare equal -- the numeric fast path must not short-circuit them away.
+
+    This is the case the sympy branch exists for; the limits of what ``simplify``
+    can prove are catalogued in ``tasks/reference/symbolic-equality.md``.
+    """
+    x: sympy.Symbol = sympy.Symbol("x")
+    assert g2.Vector((x + 1) ** 2, 0) == g2.Vector(x**2 + 2 * x + 1, 0)
+    assert g2.Vector(x, 0) != g2.Vector(x + 1, 0)
+    # A symbolic coefficient paired with a numeric one still reaches sympy.
+    assert g2.Vector(sympy.sympify(2), 0) == g2.Vector(2.0, 0)

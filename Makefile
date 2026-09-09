@@ -215,6 +215,10 @@ check-regions: ## Verify doc-region markers are unique/prefix-free/balanced (reg
 	python tools/gen_specialized.py
 	python tools/check_doc_regions.py
 
+.PHONY: check-changelog
+check-changelog: ## Verify CHANGELOG.md has a heading for pyproject.toml's version
+	python tools/check_changelog.py
+
 .PHONY: check-generated
 check-generated: ## Verify tools/gen_specialized.py is deterministic (regen twice, compare)
 	python tools/gen_specialized.py

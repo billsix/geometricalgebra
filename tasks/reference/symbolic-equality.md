@@ -18,17 +18,25 @@ Use symbolic `==` for symbolic values; `isclose` for floats.
 ## How `==` is defined — the generated `__eq__`
 
 The specialized/graded classes (`g1`/`g2`/`g3`, generated build artifacts) get a **generated
-`__eq__`**, emitted as AST nodes by `tools/gen_specialized.py:873-923` (`__eq__` registered at
-`:994`). Per coefficient field it emits:
+`__eq__`**, emitted as AST nodes by `tools/gen_specialized.py` (`eq_method`). Per coefficient field
+it emits a call to one shared, hand-written predicate:
 
 ```
-self.<field> == other.<field>  or  simplify(sympify(l) - sympify(r)) == 0
+_coef_eq(self.<field>, other.<field>)
 ```
 
-- a **structural fast path** — plain Python `==` on the field — that short-circuits, so the expensive
-  symbolic check runs **only on a structural mismatch** (`gen_specialized.py:881,893,896`; built as
-  `ast.BoolOp(Or, [structural_eq, simplify_eq])`, `:923`);
-- the **symbolic check** — `sympy.simplify(sympy.sympify(l) - sympy.sympify(r)) == 0` (`:905-923`).
+**`base._coef_eq` (`src/gacalc/base.py`) is where the rule lives** — the generator emits only the
+call, at both of its comparison sites (the same-type field path and the cross-type blade-dict
+fallback), so there is a single implementation rather than two hunks of equivalent AST. Three
+steps, in order:
+
+- a **structural fast path** — plain Python `==` — which short-circuits to `True`;
+- a **numeric short-circuit**: if *neither* side is a `sympy.Basic`, return `False` immediately.
+  `simplify` can never turn two unequal numbers into equal ones, so once `==` has said no, the
+  answer for plain numbers is already known and the symbolic step can only burn time (2026-09-09;
+  before this, a *differing* numeric comparison cost 48 µs — see Cost below);
+- the **symbolic check** — `sympy.simplify(sympy.sympify(l) - sympy.sympify(r)) == 0` — reached only
+  when at least one coefficient is symbolic.
 
 **Why the simplify is needed (not just `==`):** the specialized/graded classes follow a **lazy
 policy — they do NOT eager-simplify** coefficients (`base.py:393`; `.simplified()` at `base.py:391`
@@ -43,8 +51,13 @@ notes a raw coefficient "may not be in lowest terms"). A bare `==` would report 
 - **Possible false negatives:** `sympy.simplify` is a **heuristic**, not a decision procedure — it can
   fail to prove that a genuinely-zero difference is zero (e.g. a nested radical it "cannot simplify
   through," called out at `base.py:1061`). So `==` can under-report equality on hard symbolic forms.
-- **Cost:** `simplify` is expensive; the structural fast path exists precisely to avoid calling it when
-  the fields already match.
+- **Cost:** `simplify` is expensive, and it is the reason both fast paths above exist. Measured
+  2026-09-06 from a modelviewprojection profile (gacalc 0.0.19, Python 3.14): a *differing* numeric
+  comparison, `g2.Vector(3.0, 4.0) == g2.Vector(1.5, -2.0)`, cost **48 µs** against 0.018 µs for the
+  equivalent tuple comparison, and was 71 ms of a 173 ms game profile over 1189 calls. The numeric
+  short-circuit brought that to **~0.4 µs** (~123×) with no change in results. The lesson worth
+  keeping: a structural fast path guarded only on *equality* still leaves the *inequality* case
+  paying full symbolic price, which is the case a game actually hits every frame.
 
 ## Test helpers that reuse the pattern (currently duplicated)
 
@@ -55,9 +68,15 @@ Tests compare multivectors **blade-dict-wise** with the same idiom, each rolled 
   (`:419`), e.g. `test_rotor_sandwich_equals_rotate_*`.
 - Inline one-offs: `tests/test_conformance.py:87`, `tests/test_measure.py:139-140`.
 
-There is **no public `MultiVectorBase.symbolically_equal` method** — the `simplify(a−b)==0` logic lives
-in the generated `__eq__` and is re-implemented ad hoc in each test helper. That duplication is the
-actionable gap (see follow-on).
+There is **no public `MultiVectorBase.symbolically_equal` method** — the `simplify(a−b)==0` logic is
+re-implemented ad hoc in each test helper. That duplication is the actionable gap (see follow-on).
+
+**What changed 2026-09-09:** the per-*coefficient* half of that logic is no longer duplicated — it is
+`base._coef_eq`, one hand-written function the generated `__eq__` calls from both of its paths. The
+test helpers above still roll their own, and they compare whole multivectors blade-dict-wise rather
+than coefficient-wise, so the gap is unchanged in substance; but a consolidated public predicate now
+has an obvious implementation to delegate to (`_coef_eq` per blade over the key union) instead of
+re-deriving the rule. That is a fact for the follow-on task to use, not a decision it forecloses.
 
 ## Follow-on
 

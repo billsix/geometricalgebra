@@ -35,7 +35,7 @@ Durable rationale harvested to `tasks/reference/conditional-refactoring-rules.md
 - **All generated `g1/g2/g3.py` byte-identical** at every step; `ruff check` + `ty check tools` clean.
 - **Open questions resolved:** (1) Case 3 = keep (pure-return); (2) worked examples → reference doc
   (`tasks/reference/conditional-refactoring-rules.md`).
-- **Related task spawned:** `tasks/add-more-type-annotations.md` (type-annotation audit — maintainer
+- **Related task spawned:** `tasks/archive/2026/09/09/add-more-type-annotations.md` (done 2026-09-09) (type-annotation audit — maintainer
   request, separate thread).
 
 ### Completion pass — finishing the Rule-A sweep exhaustively

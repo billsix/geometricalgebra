@@ -1348,6 +1348,34 @@ class MultiVectorBase(abc.ABC):
         return blade_dict_latex(self.simplified().to_blade_dict())
 
 
+def _coef_eq(left: Coef, right: Coef) -> bool:
+    """Coefficient equality: exact for plain numbers, ``simplify``-backed for symbols.
+
+    Native ``==`` settles *both* plain-number outcomes on its own -- equal numbers
+    are equal, and ``simplify`` can never turn two *unequal* numbers into equal
+    ones -- so when neither side is symbolic the answer is already known and the
+    sympy branch is pure cost.  That cost is not small: a differing numeric
+    comparison (``Vector(3.0, 4.0) == Vector(1.5, -2.0)``) measured 48 us against
+    0.018 us for the equivalent tuple comparison, and dominated a
+    modelviewprojection game profile (2026-09-06).
+
+    sympy is therefore reached only when at least one side is a symbolic
+    expression, where structurally-different-but-equal forms (``(x + 1)**2`` vs
+    ``x**2 + 2*x + 1``) must still compare equal.  Float ``==`` stays EXACT on
+    purpose (``0.1 + 0.2 != 0.3``); tolerance is ``isclose``'s job, not ``==``'s.
+
+    Shared by every generated ``__eq__`` -- the same-type field comparison and the
+    cross-type blade-dict fallback both call it (``tools/gen_specialized.py``,
+    ``eq_method``), so the rule lives in one hand-written, gate-checked place
+    rather than being emitted twice as inline AST.
+    """
+    if left == right:
+        return True
+    if not (isinstance(left, sympy.Basic) or isinstance(right, sympy.Basic)):
+        return False
+    return bool(sympy.simplify(sympy.sympify(left) - sympy.sympify(right)) == 0)
+
+
 def _require_float(coef: Coef) -> float:
     """A coefficient as a ``float`` for ``isclose``; raise a clear
     error on a symbolic (non-numeric) coefficient.
@@ -1400,6 +1428,7 @@ def _require_canonical_blades(blade_coef: Mapping[Blade, object]) -> None:
     classes dropping it -- with one loud error (decision (a) of
     tasks/validate-blade-dict-keys.md, 2026-07-29).
     """
+    blade: Blade
     for blade in blade_coef:
         if any(a >= b for a, b in zip(blade, blade[1:])):
             raise ValueError(

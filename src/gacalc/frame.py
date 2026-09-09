@@ -56,6 +56,7 @@ def are_linearly_independent(
     """
     if len(vectors) == 0:
         return False
+    v: MultiVectorBase
     for v in vectors:
         if not v.is_vector():
             raise ValueError(
@@ -116,6 +117,8 @@ def make_orthogonal_frame(
             "vectors: a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
         )
     orthogonal: list[MultiVectorBase] = []
+    v: MultiVectorBase
+    prior: MultiVectorBase
     for v in vectors:
         w: MultiVectorBase = v
         for prior in orthogonal:
@@ -161,6 +164,7 @@ def make_orthogonal_frame_hestenes(
             "vectors: a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
         )
     orthogonal: list[MultiVectorBase] = []
+    k: int
     for k in range(1, len(vectors) + 1):
         if k == 1:
             orthogonal.append(vectors[0])  # c_1 = reverse(A_0=1) A_1 = v_1

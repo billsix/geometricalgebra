@@ -208,6 +208,7 @@ c.r_vector_part(2)
 # All 2² = 4 basis blades, in grade order.
 
 # %%
+x: G
 for x in G.bases():
     display(Math(x._repr_latex_()))
 
@@ -431,6 +432,7 @@ with create_graphs() as axes:
 # the units on the left and bottom.
 
 # %%
+f: InvertibleFunction[G]
 for f in compose_intermediate_fns([rotate(sympy.pi / 4), translate(b=2 * e_1)]):
     with create_graphs() as axes:
         create_basis(fn=f, cls=G)
@@ -449,6 +451,7 @@ for f in compose_intermediate_fns([rotate(sympy.pi / 4), translate(b=2 * e_1)]):
 # graph paper.
 
 # %%
+f: InvertibleFunction[G]
 for f in compose_intermediate_fns(
     [
         rotate(sympy.pi / 4),

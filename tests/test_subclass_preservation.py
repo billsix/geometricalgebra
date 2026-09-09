@@ -28,8 +28,9 @@ finality is emitted by ``tools/gen_specialized.py``).
 import gacalc.g1 as g1
 import gacalc.g2 as g2
 import gacalc.g3 as g3
+from gacalc.base import MultiVectorBase
 
-_FINAL_TYPES: list[type] = [
+_FINAL_TYPES: list[type[MultiVectorBase]] = [
     g1.Scalar,
     g2.Scalar,
     g3.Scalar,
@@ -51,6 +52,7 @@ def test_all_generated_types_are_final() -> None:
     # ``@typing.final`` sets ``__final__ = True`` (Python 3.11+); ty additionally
     # rejects any subclass at check time.  A downstream consumer uses these types
     # directly (not by subclassing) -- see modelviewprojection.
+    value_type: type[MultiVectorBase]
     for value_type in _FINAL_TYPES:
         assert getattr(value_type, "__final__", False), (
             f"{value_type.__name__} should be @typing.final"

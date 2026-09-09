@@ -105,6 +105,7 @@ def test_arithmetic_through_interchange_agrees() -> None:
 
 
 def test_scalar_blade_is_the_empty_tuple() -> None:
+    cls: type[MultiVectorBase]
     for cls in (Gn, g1.G, g2.G, g3.G):
         assert cls.from_scalar(7).to_blade_dict() == {(): 7}
         assert cls.from_blade_dict({(): 7}).scalar_part() == 7
@@ -113,6 +114,7 @@ def test_scalar_blade_is_the_empty_tuple() -> None:
 def test_canonical_keys_are_sorted_index_tuples() -> None:
     # every key any representation ever EMITS is a strictly increasing tuple of
     # basis-vector indices (the writer-side precondition, held by construction)
+    cls: type[MultiVectorBase]
     for cls in (Gn, g2.G, g3.G):
         n: int = 3 if cls in (Gn, g3.G) else 2
         dense: MultiVectorBase = sum(
@@ -125,6 +127,7 @@ def test_canonical_keys_are_sorted_index_tuples() -> None:
 
 def test_zero_coefficients_omitted_missing_reads_zero() -> None:
     # readers omit exact zeros; a missing blade reads as 0
+    cls: type[MultiVectorBase]
     for cls in (Gn, g2.G):
         x: MultiVectorBase = cls.from_blade_dict({(1,): 0, (2,): 3})
         assert x.to_blade_dict() == {(2,): 3}
@@ -163,6 +166,7 @@ def test_graded_from_blade_dict_keeps_only_own_blades() -> None:
 def test_non_canonical_keys_raise() -> None:
     # every representation rejects an unsorted or repeated-index key loudly;
     # (2, 1) is NOT read as the signed permutation -e1e2
+    cls: type[MultiVectorBase]
     for cls in (Gn, g2.G, g2.Bivector):
         with pytest.raises(ValueError, match="not canonical"):
             cls.from_blade_dict({(2, 1): 5})

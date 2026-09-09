@@ -30,7 +30,7 @@ import sympy
 import gacalc.g1 as g1
 import gacalc.g2 as g2
 import gacalc.g3 as g3
-from gacalc.functions import Linearity, inverse
+from gacalc.functions import InvertibleFunction, Linearity, inverse
 from gacalc.g2 import Vector, e_1, e_2, e_12, rotate_90_degrees
 from gacalc.transforms import plane_rotation
 
@@ -56,7 +56,7 @@ def test_method_is_exact_on_symbolic_coefficients() -> None:
 
 
 def test_direction_is_e1_toward_e2() -> None:
-    turn = rotate_90_degrees()
+    turn: InvertibleFunction[Vector] = rotate_90_degrees()
     assert turn(1 * e_1) == 1 * e_2
     assert turn(1 * e_2) == -1 * e_1
     # the same positive sense as the general-angle rotor at theta = pi/2
@@ -66,14 +66,14 @@ def test_direction_is_e1_toward_e2() -> None:
 
 
 def test_factory_agrees_with_method_and_product() -> None:
-    turn = rotate_90_degrees()
+    turn: InvertibleFunction[Vector] = rotate_90_degrees()
     assert turn(V) == V.rotate_90_degrees()
     assert turn(V) == V * e_12
     assert turn(V) == -4 * e_1 + 3 * e_2
 
 
 def test_inverse_is_the_minus_90_turn() -> None:
-    turn = rotate_90_degrees()
+    turn: InvertibleFunction[Vector] = rotate_90_degrees()
     assert turn.inverse(V) == V * -e_12
     assert turn.inverse(V) == Vector(coeff_e_1=4, coeff_e_2=-3)
     assert turn.inverse(turn(V)) == V
@@ -82,7 +82,7 @@ def test_inverse_is_the_minus_90_turn() -> None:
 
 
 def test_composition_two_turns_is_a_half_turn_four_are_the_identity() -> None:
-    turn = rotate_90_degrees()
+    turn: InvertibleFunction[Vector] = rotate_90_degrees()
     assert (turn @ turn)(V) == -V
     assert (turn @ turn @ turn @ turn)(V) == V
     # three turns forward equals one turn back
@@ -90,26 +90,26 @@ def test_composition_two_turns_is_a_half_turn_four_are_the_identity() -> None:
 
 
 def test_interpolation_law() -> None:
-    turn = rotate_90_degrees()
+    turn: InvertibleFunction[Vector] = rotate_90_degrees()
     # the endpoints: the identity at 0, the exact turn at 1
     assert turn.at(0)(V).isclose(V, rel_tol=1e-12, abs_tol=1e-12)
     assert turn.at(1)(V) == turn(V)
     assert isinstance(turn.at(1)(V).coeff_e_1, int)
     # midway is the general-angle rotor at pi/4
     half: g2.MultiVectorBase = turn.at(0.5)(1 * e_1)
-    expected = math.cos(math.pi / 4) * e_1 + math.sin(math.pi / 4) * e_2
+    expected: Vector = math.cos(math.pi / 4) * e_1 + math.sin(math.pi / 4) * e_2
     assert half.isclose(expected, rel_tol=1e-12, abs_tol=1e-12)
 
 
 def test_metadata() -> None:
-    turn = rotate_90_degrees()
+    turn: InvertibleFunction[Vector] = rotate_90_degrees()
     assert turn.linearity is Linearity.LINEAR
     assert turn.latex_repr == r"R_{\pi/2}"
     assert turn.latex_repr_inv == r"R_{-\pi/2}"
 
 
 def test_rejects_anything_but_a_g2_vector() -> None:
-    turn = rotate_90_degrees()
+    turn: InvertibleFunction[Vector] = rotate_90_degrees()
     with pytest.raises(TypeError, match="grade-1 Vector"):
         turn(e_12)  # ty: ignore[invalid-argument-type]
     with pytest.raises(TypeError, match="grade-1 Vector"):

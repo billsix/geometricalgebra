@@ -50,6 +50,7 @@ def test_bivector_from_vectors_rejects_non_vectors() -> None:
 
 def test_i_is_a_unit_bivector_squaring_to_minus_one() -> None:
     # on Gn, on a full class (G), and on the graded Vector type.
+    i: MultiVectorBase
     for i in (
         Gn.i(3 * e_1, 4 * e_2),
         g3.G.i(g3.G.e_1, g3.G.e_3),

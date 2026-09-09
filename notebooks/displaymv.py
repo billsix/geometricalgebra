@@ -36,7 +36,7 @@ import warnings
 import sympy
 from IPython.display import Math, display
 
-from gacalc.base import Coef, MultiVectorBase, MultiVectorFn
+from gacalc.base import Coef, MultiVectorFn
 from gacalc.gn import (
     InvertibleFunction,
     MultiVector,
@@ -347,6 +347,7 @@ def gram_fe_to_mol_fe(gram_fe: float) -> MultiVector:
 gram_fe_to_mol_fe(gram_fe=95.8)
 
 # %%
+x: MultiVector
 for x in MultiVector.bases(1):
     display(Math(x._repr_latex_()))
 
@@ -354,6 +355,7 @@ for x in MultiVector.bases(1):
 MultiVector.symbolic_multivector(n=1, prefix="a")
 
 # %%
+x: MultiVector
 for x in MultiVector.bases(2):
     display(Math(x._repr_latex_()))
 
@@ -375,6 +377,7 @@ MultiVector.symbolic_multivector(n=2, prefix="c").r_vector_part(1)
 MultiVector.symbolic_multivector(n=2, prefix="c").r_vector_part(2)
 
 # %%
+x: MultiVector
 for x in MultiVector.bases(3):
     display(Math(x._repr_latex_()))
 
@@ -497,9 +500,13 @@ rotate: typing.Callable[[Coef], InvertibleFunction[MultiVector]] = plane_rotatio
 
 
 T: typing.Callable[[MultiVector], InvertibleFunction[MultiVector]] = translate
-S: typing.Callable[[float, float], InvertibleFunction[MultiVectorBase]] = (
-    scale_non_uniform
-)
+# `scale_non_uniform` is variadic (`*factors: float`) and generic in the
+# representation; the old `Callable[[float, float], InvertibleFunction[
+# MultiVectorBase]]` described neither, and pyright rejected it.  `...` for the
+# variadic parameters, and `[Any]` for the representation -- the documented form
+# for a transform that is polymorphic in the value it acts on, since the generic
+# is invariant and an unsolved `V` cannot be pinned to one concrete type here.
+S: typing.Callable[..., InvertibleFunction[typing.Any]] = scale_non_uniform
 R: typing.Callable[[float], InvertibleFunction[MultiVector]] = rotate
 # %%
 T(5 * e_1)
@@ -539,7 +546,7 @@ inverse(compose([R(sympy.pi / 2), T(5 * e_1 + 6 * e_2)]))
 #
 
 # %%
-fn = R(math.radians(53.130102))
+fn: InvertibleFunction[MultiVector] = R(math.radians(53.130102))
 with create_graphs(graph_bounds=(5, 5)) as axes:
     create_basis(fn=fn)
     create_x_and_y(fn=fn)
@@ -557,7 +564,7 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 # graph papers.
 
 # %%
-fn = R(math.radians(53.130102))
+fn: InvertibleFunction[MultiVector] = R(math.radians(53.130102))
 with create_graphs(graph_bounds=(5, 5)) as axes:
     create_basis(fn=R(0.0))
     create_x_and_y(fn=R(0.0))
@@ -585,7 +592,7 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 # graph papers.
 
 # %%
-fn = R(math.radians(53.130102))
+fn: InvertibleFunction[MultiVector] = R(math.radians(53.130102))
 with create_graphs(graph_bounds=(5, 5)) as axes:
     create_basis(fn=R(0.0))
     create_x_and_y(fn=R(0.0))
@@ -614,7 +621,7 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 # in the order that they are applied, or in reverse order
 
 # %%
-fn = compose(
+fn: InvertibleFunction[MultiVector] = compose(
     [
         R(sympy.pi / 4),
         T(2 * e_1),
@@ -637,6 +644,7 @@ with create_graphs() as axes:
 # units on the left and bottom.
 
 # %%
+f: InvertibleFunction[MultiVector]
 for f in compose_intermediate_fns([R(sympy.pi / 4), T(2 * e_1)]):
     # TODO - figure out if I can render the latex as part of one markdown command,
     # if I were to uncomment out this line and other markdown lines,
@@ -661,6 +669,7 @@ for f in compose_intermediate_fns([R(sympy.pi / 4), T(2 * e_1)]):
 #
 
 # %%
+f: InvertibleFunction[MultiVector]
 for f in compose_intermediate_fns(
     [
         R(sympy.pi / 4),

@@ -46,7 +46,7 @@ from __future__ import annotations
 import ast
 import re
 import typing
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 
 # A comment cannot exist in a Python AST, so a doc-region marker is emitted as a
 # sentinel *string-literal statement* and rewritten to a ``# comment`` in the
@@ -142,7 +142,7 @@ def _method_label(class_name: str, method: ast.FunctionDef, seen: set[str]) -> s
     return label
 
 
-def inject_region_markers(body: list[ast.stmt]) -> list[ast.stmt]:
+def inject_region_markers(body: Sequence[ast.stmt]) -> list[ast.stmt]:
     """Wrap each top-level class -- and, within it, its declaration, its instance
     variables, and each method -- in doc-region markers.
 
@@ -240,7 +240,7 @@ def _insert_declaration_ends(src: str) -> str:
     line: str
     for line in lines:
         out_lines.append(line)
-        begin = begin_re.match(line)
+        begin: re.Match[str] | None = begin_re.match(line)
         if begin is not None:
             pending = begin.group("name")
             continue
@@ -255,6 +255,11 @@ def _insert_declaration_ends(src: str) -> str:
 
 def module_source(body: list[ast.stmt]) -> str:
     """Render top-level statement nodes to source via `ast.unparse`.
+
+    ``body`` stays the invariant ``list[ast.stmt]`` -- read-only here, so
+    ``Sequence`` would be the house style, but it is handed straight to
+    ``ast.Module(body=...)``, whose own stdlib signature demands ``list[stmt]``.
+    Widening it here would only move the error one line down.
 
     Any ``marker`` sentinels are rewritten to ``# doc-region-...`` comments, and
     each class's ``declaration`` region is closed after its ``class`` line (both
@@ -274,8 +279,8 @@ class SymbolToAttr(ast.NodeTransformer):
     rendered source with a structural, correct-by-construction transform.
     """
 
-    def __init__(self, rename: dict[str, tuple[str, str]]):
-        self.rename = rename
+    def __init__(self, rename: Mapping[str, tuple[str, str]]) -> None:
+        self.rename: Mapping[str, tuple[str, str]] = rename
 
     def visit_Name(self, node: ast.Name) -> ast.AST:
         target: tuple[str, str] | None = self.rename.get(node.id)
@@ -307,6 +312,7 @@ def name_ref(ident: str) -> ast.Name:
 
 def attribute(value: ast.expr | str, *parts: str) -> ast.expr:
     node: ast.expr = value if isinstance(value, ast.AST) else name_ref(value)
+    p: str
     for p in parts:
         node = ast.Attribute(value=node, attr=p, ctx=_LOAD)
     return node

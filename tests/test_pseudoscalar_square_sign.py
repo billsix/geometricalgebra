@@ -16,7 +16,7 @@ from gacalc.gn import Gn
 
 # Well past the 𝒢₃ the library ships, and well past one full period-4 cycle of
 # the +,-,-,+ sign pattern, so a mis-stated exponent can't hide.
-MAX_GRADE = 12
+MAX_GRADE: int = 12
 
 
 def closed_form_sign(r: int) -> int:
@@ -49,5 +49,7 @@ def test_helper_agrees_with_independent_squaring() -> None:
 def test_hand_counted_grades_one_through_five() -> None:
     """The five cases worked out by hand in the reference doc: +, -, -, +, +."""
     expected_by_grade: dict[int, int] = {1: +1, 2: -1, 3: -1, 4: +1, 5: +1}
+    r: int
+    expected: int
     for r, expected in expected_by_grade.items():
         assert int(Gn.unit_pseudoscalar_squared(r).scalar_part()) == expected

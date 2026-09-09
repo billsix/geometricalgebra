@@ -20,4 +20,8 @@ ruff format --line-length=88 || status=1
 ty check src || status=1
 ty check tests || status=1
 ty check tools || status=1
+
+# Version <-> changelog consistency: fails when pyproject.toml's version has no
+# heading in CHANGELOG.md (0.0.19 shipped unlogged that way, 2026-09-05).
+python tools/check_changelog.py || status=1
 exit $status

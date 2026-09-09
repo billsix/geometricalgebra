@@ -11,7 +11,22 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
-_Nothing yet._
+### Fixed
+- **Numeric `==` no longer calls `sympy.simplify`.** Comparing two multivectors whose
+  coefficients are plain numbers now short-circuits on the native `==` in both outcomes;
+  sympy is reached only when a coefficient is symbolic. `simplify` can never make two
+  unequal numbers equal, so this is a pure speedup with **no change in results** —
+  symbolic equality, including structurally-different-but-equal forms, is unchanged.
+  A differing `g2.Vector` comparison drops from ~48 µs to ~0.4 µs. The rule now lives in
+  one place, `base._coef_eq`, shared by the generated same-type and blade-dict paths.
+
+### Changed
+- **Read-only container parameters widened to their covariant supertypes.**
+  `transforms.compose_intermediate_fns` and `compose_intermediate_fns_and_fn` now take
+  `Sequence[InvertibleFunction[V]]` rather than `list[...]`, so any sequence is accepted.
+  Purely permissive — existing calls passing a list are unaffected. Part of the repo-wide
+  type-annotation sweep, whose deliberate exemptions are recorded in
+  `tasks/reference/type-annotation-exemptions.md`.
 
 ## [0.0.20] — 2026-09-06
 
