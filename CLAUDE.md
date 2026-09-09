@@ -759,7 +759,10 @@ scoped `# noqa: E501`, as always.
   run as tests. `nbplotutils.py` is collected (its module-load `set_matplotlib_formats` is now guarded
   by `if get_ipython() is not None:`, so it imports headless) — meaning the suite now imports
   `matplotlib`, so run it with the `notebooks` extra installed (the container has it).
-- Lint/format/typecheck: `entrypoint/format.sh` runs `ruff check --fix`, `ruff format`, `ty check`.
+- Lint/format/typecheck: `entrypoint/format.sh` runs `ruff check --fix`, `ruff format`, `ty check`,
+  and `tools/check_changelog.py` (the version <-> changelog guard: fails when `pyproject.toml`'s
+  version has no `## [<version>]` heading in `CHANGELOG.md`, so a version bump can't ship with its
+  changelog promotion forgotten; `make check-changelog` runs it alone on the host).
   The vendored Emacs tree under `entrypoint/` is excluded via `extend-exclude` in
   `pyproject.toml [tool.ruff]`, **not** a CLI flag — `ruff format` does **not** accept
   `--extend-exclude` (only `ruff check` does), so config is the one place both tools honor
