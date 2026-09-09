@@ -8,6 +8,14 @@
 (`tasks/reference/symbolic-equality.md`); this is the actionable follow-on.
 **Recheck:** Q1 is answered (maintainer-gated; `/recheck-blocked` surfaces it).
 
+
+**Update 2026-09-09 (does not unblock this task; Q1 is still open):** the per-coefficient rule now
+lives in one place — `base._coef_eq` in `src/gacalc/base.py`, added by
+`tasks/archive/2026/09/09/fast-numeric-equality.md`. The generated `__eq__` calls it from both its
+same-type and blade-dict paths. Whatever this task decides for Q1, the public predicate should
+delegate to `_coef_eq` per blade rather than re-implement `simplify(a − b) == 0`; that removes the
+"which of the three copies is canonical" part of the problem, leaving Q1's API question untouched.
+
 ## Goal
 
 Maintainer's idea, verbatim: *"Understand sympy equal better, expand on tests, figure out if I can use
