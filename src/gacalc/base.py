@@ -1428,6 +1428,7 @@ def _require_canonical_blades(blade_coef: Mapping[Blade, object]) -> None:
     classes dropping it -- with one loud error (decision (a) of
     tasks/validate-blade-dict-keys.md, 2026-07-29).
     """
+    blade: Blade
     for blade in blade_coef:
         if any(a >= b for a, b in zip(blade, blade[1:])):
             raise ValueError(

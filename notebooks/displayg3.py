@@ -48,6 +48,7 @@ from typing import cast
 import sympy
 from IPython.display import Math, display
 
+from gacalc.base import Coef
 from gacalc.g3 import G, Vector
 from gacalc.measure import area, signed_volume, volume
 from gacalc.nbplotutils import plot_multivector, show_mult
@@ -258,6 +259,7 @@ c.r_vector_part(3)
 # All 2³ = 8 basis blades, in grade order.
 
 # %%
+x: G
 for x in G.bases():
     display(Math(x._repr_latex_()))
 
@@ -366,8 +368,8 @@ a ^ b
 # **The Lagrange step.** The residual collapses to $0$ symbolically:
 
 # %%
-dot = a.inner_product(b).scalar_part()
-lagrange_residual = sympy.simplify(
+dot: Coef = a.inner_product(b).scalar_part()
+lagrange_residual: sympy.Expr = sympy.simplify(
     cast(
         sympy.Expr,
         a.magnitude_squared() * b.magnitude_squared()
@@ -388,9 +390,9 @@ assert lagrange_residual == 0
 # sympy closes the difference directly:
 
 # %%
-cos = a.cosine(b)
-sin = sympy.sqrt(1 - cos**2)  # sinθ ≥ 0 for θ in [0, π]
-wedge_magnitude_from_sin = a.magnitude() * b.magnitude() * sin
+cos: Coef = a.cosine(b)
+sin: sympy.Expr = sympy.sqrt(1 - cos**2)  # sinθ ≥ 0 for θ in [0, π]
+wedge_magnitude_from_sin: Coef = a.magnitude() * b.magnitude() * sin
 wedge_magnitude_from_sin
 
 # %%

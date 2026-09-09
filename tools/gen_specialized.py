@@ -146,7 +146,7 @@ import inspect
 import os
 import subprocess
 import sys
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from itertools import chain, combinations
 from typing import NamedTuple, cast
 
@@ -204,9 +204,9 @@ from gacalc.gn import Gn  # noqa: E402
 # ==========================================================================
 
 
-def expr_to_ast(expr: sympy.Expr, rename: dict[str, tuple[str, str]]) -> ast.expr:
+def expr_to_ast(expr: sympy.Expr, rename: Mapping[str, tuple[str, str]]) -> ast.expr:
     """sympy expression -> AST expression with operand symbols as attribute access."""
-    tree = parse_expr(sympy.sstr(expr))
+    tree: ast.expr = parse_expr(sympy.sstr(expr))
     return ast.fix_missing_locations(SymbolToAttr(rename).visit(tree))
 
 
@@ -221,8 +221,10 @@ def out_path(filename: str) -> str:
 
 def blades_for_dim(n: int) -> list[Blade]:
     """All 2**n basis blades of 𝒢ₙ in canonical (grade, then index) order."""
-    idx = list(range(1, n + 1))
-    powerset = chain.from_iterable(combinations(idx, r) for r in range(n + 1))
+    idx: list[int] = list(range(1, n + 1))
+    powerset: Iterable[Blade] = chain.from_iterable(
+        combinations(idx, r) for r in range(n + 1)
+    )
     return sorted(powerset, key=lambda b: (len(b), b))
 
 
@@ -265,13 +267,17 @@ def term_grade_key(
     symbol.  A term carrying neither (e.g. a future ``cse`` temporary -- the
     products produce none today) sorts last.
     """
-    sentinel = (99, ())
-    left = right = None
+    sentinel: tuple[int, Blade] = (99, ())
+    left: tuple[int, Blade] | None = None
+    right: tuple[int, Blade] | None = None
+    sym: sympy.Basic
     for sym in term.free_symbols:
         if not isinstance(sym, sympy.Symbol):
             continue
+        kind: str
+        label: str
         kind, _, label = sym.name.partition("_")
-        blade = blade_of_label(label)
+        blade: Blade = blade_of_label(label)
         match kind:
             case "a":
                 left = (len(blade), blade)
@@ -329,7 +335,7 @@ def docstring_for(n: int) -> str:
     return DOCSTRINGS.get(n, generic_docstring(n))
 
 
-DOCSTRINGS = {
+DOCSTRINGS: dict[int, str] = {
     1: (
         "An element (multivector) of 𝒢₁, the geometric algebra of the Euclidean\n"
         "    line ℝ¹ (Hestenes' notation) -- the simplest geometric algebra.\n"
@@ -423,7 +429,7 @@ def scalar_doc(n: int) -> str:
     )
 
 
-PLANE_DOC = (
+PLANE_DOC: str = (
     "The unit bivector (2-blade) this rotor rotates in.\n"
     "\n"
     "        A rotor is ``cos(t/2) - sin(t/2) * B`` for a unit bivector B --\n"
@@ -459,7 +465,7 @@ def class_doc_stmt(text: str) -> ast.Expr:
 # factory (ROTATE_90_FACTORY_DOC, 4-space function indent).  Both docstrings
 # teach the identity the name stands for: in 𝒢₂ a quarter turn IS
 # multiplication by the unit pseudoscalar e_12.
-ROTATE_90_METHOD_DOC = (
+ROTATE_90_METHOD_DOC: str = (
     "Rotate this vector a quarter turn (+90°, e₁ toward e₂) in the e₁e₂ plane.\n"
     "\n"
     "        In 𝒢₂ a quarter turn IS multiplication by the unit pseudoscalar:\n"
@@ -474,7 +480,7 @@ ROTATE_90_METHOD_DOC = (
     "        general-dimension version."
 )
 
-ROTATE_90_FACTORY_DOC = (
+ROTATE_90_FACTORY_DOC: str = (
     "Rotate a 𝒢₂ vector a quarter turn (+90°, e₁ toward e₂), packaged as an\n"
     "    :class:`InvertibleFunction` -- so it composes (``f @ f`` is the half\n"
     "    turn; four turns are the identity) and inverts (the -90° turn,\n"
@@ -505,7 +511,7 @@ ROTATE_90_FACTORY_DOC = (
 # getting a value's own plane).  `i(a, b)` normalizes `bivector_from_vectors`
 # (on MultiVectorBase); `.i()` normalizes the value's grade-2 part.  Both return
 # a BIVECTOR (the unit plane, i*i == -1), never a rotor.
-I_FROM_VEC_DOC = (
+I_FROM_VEC_DOC: str = (
     "The unit bivector ``i`` of the plane spanned by vectors ``a``, ``b``\n"
     "        (``i * i == -1``) -- the normalized wedge ``a`` ∧ ``b``.\n"
     "\n"
@@ -514,7 +520,7 @@ I_FROM_VEC_DOC = (
     "        plane you feed a rotor builder / ``exp`` -- a bivector, not a rotor."
 )
 
-I_DOC = (
+I_DOC: str = (
     "The unit bivector ``i`` of this value's plane (``i * i == -1``).\n"
     "\n"
     "        The normalized grade-2 (plane) part -- for a rotor\n"
@@ -534,7 +540,7 @@ PARALLEL_VECTORS_MSG: str = (
 
 
 def classmethod_narrowing_overloads(
-    method: str, param_names: list[str], precise_ret: str
+    method: str, param_names: Sequence[str], precise_ret: str
 ) -> list[ast.stmt]:
     """Precise + catch-all ``@overload`` stubs for a value-returning classmethod
     whose result is a *fixed grade*: applied to this algebra's ``Vector`` args it
@@ -560,7 +566,7 @@ def classmethod_narrowing_overloads(
 
 
 def inherited_classmethod_narrowing(
-    method: str, param_names: list[str], precise_ret: str
+    method: str, param_names: Sequence[str], precise_ret: str
 ) -> list[ast.stmt]:
     """Narrowing override of an *inherited* base classmethod
     (``bivector_from_vectors`` / ``rotor_from_vectors``): base types it
@@ -800,11 +806,11 @@ def unary_result(
     return result_spec, out_exprs
 
 
-def _is_neg_term(term: sympy.Expr, rename: dict[str, tuple[str, str]]) -> bool:
+def _is_neg_term(term: sympy.Expr, rename: Mapping[str, tuple[str, str]]) -> bool:
     return ast.unparse(expr_to_ast(term, rename)).lstrip().startswith("-")
 
 
-def summed_value(expr: sympy.Expr, rename: dict[str, tuple[str, str]]) -> ast.expr:
+def summed_value(expr: sympy.Expr, rename: Mapping[str, tuple[str, str]]) -> ast.expr:
     """A constructor field value: grade-ordered sum of terms (≈ format_assignment).
 
     Constants are cast to ``Coef``; sums fold left-assoc as ``BinOp`` in
@@ -827,7 +833,7 @@ def summed_value(expr: sympy.Expr, rename: dict[str, tuple[str, str]]) -> ast.ex
     return node
 
 
-def result_value(expr: sympy.Expr, rename: dict[str, tuple[str, str]]) -> ast.expr:
+def result_value(expr: sympy.Expr, rename: Mapping[str, tuple[str, str]]) -> ast.expr:
     """Constructor field value for the graded dispatch (mirrors result_block)."""
     e: sympy.Expr = sympy.sympify(expr)
     return (
@@ -837,7 +843,7 @@ def result_value(expr: sympy.Expr, rename: dict[str, tuple[str, str]]) -> ast.ex
     )
 
 
-def unary_value(expr: sympy.Expr, rename: dict[str, tuple[str, str]]) -> ast.expr:
+def unary_value(expr: sympy.Expr, rename: Mapping[str, tuple[str, str]]) -> ast.expr:
     """Constructor field value for unary results (mirrors unary_return)."""
     e: sympy.Expr = sympy.sympify(expr)
     return expr_to_ast(e, rename) if e.is_Symbol else cast_coef(expr_to_ast(e, rename))
@@ -849,7 +855,7 @@ def unary_value(expr: sympy.Expr, rename: dict[str, tuple[str, str]]) -> ast.exp
 
 
 #: coordinate-accessor names, by basis index: x = e_1, y = e_2, z = e_3.
-AXIS_NAMES = ("x", "y", "z")
+AXIS_NAMES: tuple[str, ...] = ("x", "y", "z")
 
 
 def coordinate_property_defs(spec: TypeSpec) -> list[ast.stmt]:
@@ -1273,7 +1279,7 @@ def isclose_call(field: str, other: str = "other") -> ast.expr:
     )
 
 
-def super_call(method: str, args: list[ast.expr]) -> ast.expr:
+def super_call(method: str, args: Sequence[ast.expr]) -> ast.expr:
     """``super().<method>(<args>)``."""
     return call(attribute(call("super", []), method), args)
 
@@ -1317,7 +1323,7 @@ def scaled_stmt(
 def result_block_stmts(
     result_spec: TypeSpec,
     out_exprs: Sequence[sympy.Expr],
-    rename: dict[str, tuple[str, str]],
+    rename: Mapping[str, tuple[str, str]],
     cast: Callable[[ast.expr], ast.Call] = cast_self,
     owner: str | None = None,
     via_var: str | None = None,
@@ -1360,7 +1366,7 @@ def result_block_stmts(
 def unary_stmt(
     result_spec: TypeSpec,
     out_exprs: Sequence[sympy.Expr],
-    rename: dict[str, tuple[str, str]],
+    rename: Mapping[str, tuple[str, str]],
     owner: str | None = None,
     cast: Callable[[ast.expr], ast.expr] = cast_self,
 ) -> ast.stmt:
@@ -1420,7 +1426,7 @@ def dispatch_method(
         num_spec, num_exprs = product_result(
             self_spec, scalar_spec(n), gn_product, n, full_name
         )
-        num_rename: dict[str, tuple[str, str]] = rename_map(
+        num_rename: Mapping[str, tuple[str, str]] = rename_map(
             self_spec.blades, scalar_spec(n).blades, param_name
         )
         num_rename["b_" + blade_label(())] = (param_name, "")
@@ -1815,7 +1821,7 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
     dual_spec, dual_exprs = unary_result(
         scalar_spec(n), lambda a: a.dual(n), n, full_name
     )
-    dual_rename: dict[str, tuple[str, str]] = rename_map(scalar_spec(n).blades, ())
+    dual_rename: Mapping[str, tuple[str, str]] = rename_map(scalar_spec(n).blades, ())
 
     body: list[ast.stmt] = [
         class_doc_stmt(scalar_doc(n)),
@@ -2249,7 +2255,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
     """The full all-blades G_n class, hand-built as `ast` nodes (level C)."""
     blades: list[Blade] = blades_for_dim(n)
     fields: list[str] = [field_name(b) for b in blades]
-    rename: dict[str, tuple[str, str]] = rename_map(blades, blades)
+    rename: Mapping[str, tuple[str, str]] = rename_map(blades, blades)
     a_mv: Gn = Gn.from_blade_dict(
         {b: sympy.Symbol("a_" + blade_label(b)) for b in blades}
     )
@@ -2649,7 +2655,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
     blades: list[Blade] = list(spec.blades)
     fields: list[str] = [field_name(b) for b in blades]
     has_scalar: bool = () in blades
-    unary_rename: dict[str, tuple[str, str]] = rename_map(spec.blades, ())
+    unary_rename: Mapping[str, tuple[str, str]] = rename_map(spec.blades, ())
     numlike: list[ast.expr] = [
         name_ref("int"),
         name_ref("float"),
@@ -3147,6 +3153,11 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         # tasks/reference/generated-product-typing.md); these narrow explicitly,
         # raising if the discarded grade is nonzero.  The "query" half is the
         # inherited is_vector()/is_trivector()/grades().
+        cast_name: str
+        pred: str
+        target: str
+        pairs: Sequence[tuple[str, ast.expr]]
+        why: str
         for cast_name, pred, target, pairs, why in (
             (
                 "to_vector",
@@ -3321,7 +3332,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 n,
                 full_name,
             )
-            cross_rename: dict[str, tuple[str, str]] = rename_map(
+            cross_rename: Mapping[str, tuple[str, str]] = rename_map(
                 spec.blades, spec.blades, "other"
             )
 
@@ -3458,7 +3469,7 @@ def generate_quarter_turn(name: str) -> list[ast.stmt]:
     inv_spec, inv_exprs = unary_result(
         vspec, lambda a: a * Gn.from_blade_dict({(1, 2): -1}), 2, name
     )
-    inv_rename: dict[str, tuple[str, str]] = {
+    inv_rename: Mapping[str, tuple[str, str]] = {
         "a_" + blade_label(b): ("vector", field_name(b)) for b in vspec.blades
     }
     forward: ast.stmt = function_def(
@@ -3600,13 +3611,13 @@ def generate_constants(n: int, name: str) -> list[ast.stmt]:
 def header(name: str, n: int) -> str:
     # _OperandT (the sandwich operand TypeVar) is only used by the Rotor class,
     # which exists for n >= 2; importing it for G would be unused (F401).
-    operand_import = "\n    _OperandT," if n >= 2 else ""
+    operand_import: str = "\n    _OperandT," if n >= 2 else ""
     # The 𝒢₂ rotate_90_degrees() factory (generate_quarter_turn) needs Linearity
     # and plane_rotation (for its interpolation law); importing them elsewhere
     # would be unused (F401).  transforms imports only base/functions, so g2
     # importing it is acyclic.
-    functions_import = "from gacalc.functions import Linearity\n" if n == 2 else ""
-    transforms_import = (
+    functions_import: str = "from gacalc.functions import Linearity\n" if n == 2 else ""
+    transforms_import: str = (
         "from gacalc.transforms import plane_rotation\n" if n == 2 else ""
     )
     return f"""# Copyright (c) 2025-2026 William Emerison Six
@@ -3657,7 +3668,7 @@ from gacalc.base import (
 # Every algebra the generator knows how to emit.  Which of these are actually
 # generated on a given run is chosen by the ``GACALC_DIMS`` env var (below), so
 # the expensive high dimensions are NOT built on every ``make shell``.
-ALL_ALGEBRAS = [
+ALL_ALGEBRAS: list[tuple[int, str, str]] = [
     (1, "G", "g1.py"),
     (2, "G", "g2.py"),
     (3, "G", "g3.py"),
@@ -3680,10 +3691,12 @@ def selected_dims() -> set[int]:
     return {int(part) for part in raw.split(",") if part.strip()}
 
 
-ALGEBRAS = [entry for entry in ALL_ALGEBRAS if entry[0] in selected_dims()]
+ALGEBRAS: list[tuple[int, str, str]] = [
+    entry for entry in ALL_ALGEBRAS if entry[0] in selected_dims()
+]
 
 
-def ruff_format(paths: list[str]) -> None:
+def ruff_format(paths: Sequence[str]) -> None:
     """Format the freshly written files with ruff so the committed output is
     already formatted in one step (no separate format.sh pass needed, matching
     its quote style / line wrapping).  Best-effort: if ruff isn't installed, warn

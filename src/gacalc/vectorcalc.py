@@ -73,6 +73,7 @@ def cross(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
             representation other than 3-D, or a ``Gn`` vector with a basis
             index above 3.
     """
+    operand: MultiVectorBase
     for operand in (a, b):
         if not operand.is_vector():
             raise ValueError(

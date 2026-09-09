@@ -40,16 +40,19 @@ from gacalc.transforms import projection_rotation
 # full-dim gate).  Include whichever specialized modules are present, so the
 # default suite covers g1--g3 and the full-dim gate additionally covers g4/g5.
 MODULES: dict[int, ModuleType] = {1: g1, 2: g2, 3: g3}
+_n: int
 for _n in (4, 5):
     try:
         MODULES[_n] = importlib.import_module(f"gacalc.g{_n}")
     except ModuleNotFoundError:
         pass
 
-SPECIALIZED = {n: mod.G for n, mod in MODULES.items()}
+SPECIALIZED: dict[int, type[MultiVectorBase]] = {n: mod.G for n, mod in MODULES.items()}
 
 # Every (dimension, implementation) pair, including Gn itself as a sanity check.
-CASES = [(n, cls) for n in sorted(MODULES) for cls in (Gn, SPECIALIZED[n])]
+CASES: list[tuple[int, type[MultiVectorBase]]] = [
+    (n, cls) for n in sorted(MODULES) for cls in (Gn, SPECIALIZED[n])
+]
 
 
 def to(cls: type[MultiVectorBase], g: Gn):
@@ -58,8 +61,13 @@ def to(cls: type[MultiVectorBase], g: Gn):
     Deliberately unannotated return: callers invoke dimension-defaulting methods
     like ``dual()`` / ``unit_pseudoscalar()`` on the result, which only the
     concrete specialized classes provide (the abstract ``MultiVectorBase`` requires
-    an explicit ``n``).  Leaving the return inferred keeps that gradual, matching
-    the parametrized ``cls`` params these tests also leave unannotated.
+    an explicit ``n``), so declaring ``-> MultiVectorBase`` would report
+    missing-argument on those calls.
+
+    Narrowed 2026-09-09: this used to say it matched "the parametrized ``cls``
+    params these tests also leave unannotated", but that was broader than the
+    facts.  Every parametrized ``cls`` here is now ``type[MultiVectorBase]``
+    except ``test_implicit_dimension_methods``, which documents its own reason.
     """
     return cls.from_blade_dict(g.to_blade_dict())
 
@@ -91,7 +99,7 @@ def scalar_eq(a: Coef, b: Coef) -> bool:
 # the geometric product, derived directly from the symbolic Gn product
 # --------------------------------------------------------------------------
 @pytest.mark.parametrize("n,cls", [(1, g1.G), (2, g2.G)])
-def test_symbolic_product_matches_gn(n: int, cls) -> None:
+def test_symbolic_product_matches_gn(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn = Gn.symbolic_multivector(n, "a")
     b: Gn = Gn.symbolic_multivector(n, "b")
     assert to(cls, a) * to(cls, b) == a * b
@@ -105,7 +113,7 @@ def test_symbolic_vector_product_3d() -> None:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_geometric_product(n: int, cls) -> None:
+def test_geometric_product(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn
     b: Gn
     a, b = full(n, 0), full(n, 10)
@@ -116,7 +124,7 @@ def test_geometric_product(n: int, cls) -> None:
 # linear structure
 # --------------------------------------------------------------------------
 @pytest.mark.parametrize("n,cls", CASES)
-def test_add_sub_neg(n: int, cls) -> None:
+def test_add_sub_neg(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn
     b: Gn
     a, b = full(n, 0), full(n, 10)
@@ -126,7 +134,7 @@ def test_add_sub_neg(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_scalar_multiplication(n: int, cls) -> None:
+def test_scalar_multiplication(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn = full(n, 0)
     assert 3 * to(cls, a) == 3 * a
     assert to(cls, a) * 3 == a * 3
@@ -136,7 +144,7 @@ def test_scalar_multiplication(n: int, cls) -> None:
 # grade operations
 # --------------------------------------------------------------------------
 @pytest.mark.parametrize("n,cls", CASES)
-def test_r_vector_part_and_scalar_part(n: int, cls) -> None:
+def test_r_vector_part_and_scalar_part(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn = full(n, 0)
     r: int
     for r in range(n + 1):
@@ -146,20 +154,20 @@ def test_r_vector_part_and_scalar_part(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_even_odd_part(n: int, cls) -> None:
+def test_even_odd_part(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn = full(n, 0)
     assert to(cls, a).even_part() == a.even_part()
     assert to(cls, a).odd_part() == a.odd_part()
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_reverse(n: int, cls) -> None:
+def test_reverse(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn = full(n, 0)
     assert to(cls, a).reverse() == a.reverse()
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_dual(n: int, cls) -> None:
+def test_dual(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn = full(n, 0)
     assert to(cls, a).dual(n) == a.dual(n)
 
@@ -168,7 +176,7 @@ def test_dual(n: int, cls) -> None:
 # products / norms
 # --------------------------------------------------------------------------
 @pytest.mark.parametrize("n,cls", CASES)
-def test_inner_outer_product(n: int, cls) -> None:
+def test_inner_outer_product(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn
     b: Gn
     a, b = full(n, 0), full(n, 10)
@@ -177,7 +185,7 @@ def test_inner_outer_product(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_left_right_contraction(n: int, cls) -> None:
+def test_left_right_contraction(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn
     b: Gn
     a, b = full(n, 0), full(n, 10)
@@ -189,7 +197,7 @@ def test_left_right_contraction(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_dot_wedge_vectors(n: int, cls) -> None:
+def test_dot_wedge_vectors(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn
     b: Gn
     a, b = vec(n, 0), vec(n, 10)
@@ -199,7 +207,7 @@ def test_dot_wedge_vectors(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_magnitude_squared_and_inverse(n: int, cls) -> None:
+def test_magnitude_squared_and_inverse(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn = vec(n, 0)
     assert scalar_eq(to(cls, a).magnitude_squared(), a.magnitude_squared())
     assert to(cls, a).inverse() == a.inverse()
@@ -209,7 +217,7 @@ def test_magnitude_squared_and_inverse(n: int, cls) -> None:
 # geometric transformations (defined on vectors)
 # --------------------------------------------------------------------------
 @pytest.mark.parametrize("n,cls", CASES)
-def test_project_reject(n: int, cls) -> None:
+def test_project_reject(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn
     b: Gn
     a, b = vec(n, 0), vec(n, 10)
@@ -222,7 +230,7 @@ def test_project_reject(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_reflect(n: int, cls) -> None:
+def test_reflect(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn
     b: Gn
     a, b = vec(n, 0), vec(n, 10)
@@ -230,7 +238,7 @@ def test_reflect(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", [(n, cls) for (n, cls) in CASES if n >= 2])
-def test_rotate(n: int, cls) -> None:
+def test_rotate(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn = vec(n, 0)
     got: MultiVectorBase = projection_rotation(
         from_vector=to(cls, gn.e_1), to_vector=to(cls, gn.e_2)
@@ -239,7 +247,7 @@ def test_rotate(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_exp(n: int, cls) -> None:
+def test_exp(n: int, cls: type[MultiVectorBase]) -> None:
     # exp is defined for a scalar and any negative-square blade (bivector /
     # pseudoscalar); every representation must agree with Gn on each kind it can
     # hold, and reject a vector (A**2 > 0) the same way.
@@ -256,7 +264,7 @@ def test_exp(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_coefficient_readback(n: int, cls) -> None:
+def test_coefficient_readback(n: int, cls: type[MultiVectorBase]) -> None:
     # coefficient(blade) reads each blade's stored coefficient, and summing
     # coefficient * blade over the basis reconstructs the value (decomposition)
     g: Gn = full(n, 0)
@@ -275,7 +283,7 @@ def test_coefficient_readback(n: int, cls) -> None:
 # representation invariants
 # --------------------------------------------------------------------------
 @pytest.mark.parametrize("n,cls", CASES)
-def test_result_type_is_preserved(n: int, cls) -> None:
+def test_result_type_is_preserved(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn
     b: Gn
     a, b = full(n, 0), full(n, 10)
@@ -286,7 +294,7 @@ def test_result_type_is_preserved(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", [(1, g1.G), (2, g2.G), (3, g3.G)])
-def test_mixing_with_gn_coerces_to_gn(n: int, cls) -> None:
+def test_mixing_with_gn_coerces_to_gn(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn
     b: Gn
     a, b = full(n, 0), full(n, 10)
@@ -296,7 +304,7 @@ def test_mixing_with_gn_coerces_to_gn(n: int, cls) -> None:
 
 
 @pytest.mark.parametrize("n,cls", [(1, g1.G), (2, g2.G), (3, g3.G)])
-def test_basis_constants(n: int, cls) -> None:
+def test_basis_constants(n: int, cls: type[MultiVectorBase]) -> None:
     # Module constants carry the GRADED type of their blade (reversed 2026-08-04:
     # they used to be the full class cls) -- zero/one -> Scalar_n, a vector blade
     # -> Vector_n, e_12 -> Bivector_n, e_123 -> g3.Trivector.  See
@@ -337,6 +345,17 @@ def test_basis_constants(n: int, cls) -> None:
 
 @pytest.mark.parametrize("n,cls", [(1, g1.G), (2, g2.G), (3, g3.G)])
 def test_implicit_dimension_methods(n: int, cls) -> None:
+    """``cls`` is deliberately left inferred -- the ONLY parametrized ``cls`` in
+    this file that is.
+
+    This test exists to exercise the dimension-*defaulting* classmethods, which
+    only the concrete specialized classes provide: on the abstract
+    ``MultiVectorBase`` the ``n`` parameter of ``unit_pseudoscalar`` / ``bases`` /
+    ``symbolic_multivector`` is required, so declaring
+    ``cls: type[MultiVectorBase]`` makes ty (correctly) report four
+    missing-argument errors on the very calls under test.  Annotating it would
+    mean asserting a type that cannot express the behaviour being verified.
+    """
     a: Gn = full(n, 0)
     # n defaults to the algebra's own dimension
     assert to(cls, a).dual() == a.dual(n)
@@ -357,7 +376,7 @@ def test_is_close_numeric() -> None:
 
 
 @pytest.mark.parametrize("cls", [g1.G, g2.G, g3.G])
-def test_simplified_and_expanded_form(cls) -> None:
+def test_simplified_and_expanded_form(cls: type[MultiVectorBase]) -> None:
     # On the lazy (specialized/graded) classes, expanded()/simplified() change the
     # coefficient *form*: distribute, and collapse to lowest terms.  (Gn eager-
     # simplifies in __post_init__, so it re-canonicalizes -- value test below.)
@@ -411,7 +430,9 @@ def _same_value(x: MultiVectorBase, y: MultiVectorBase) -> bool:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
-def test_simplified_and_expanded_preserve_value(n: int, cls) -> None:
+def test_simplified_and_expanded_preserve_value(
+    n: int, cls: type[MultiVectorBase]
+) -> None:
     # Same value on every representation -- only the coefficient form may change.
     a: sympy.Symbol
     b: sympy.Symbol

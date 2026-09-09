@@ -28,7 +28,7 @@ import pytest
 import sympy
 from _helpers import random_vector
 
-from gacalc.base import MultiVectorBase
+from gacalc.base import Coef, MultiVectorBase
 from gacalc.frame import (
     are_linearly_independent,
     is_frame,
@@ -123,6 +123,8 @@ def test_orthogonal_frame_3d_concrete() -> None:
     w: list[MultiVectorBase] = make_orthogonal_frame([a, b, c])
     assert w[0] == a
     assert is_frame(w)
+    i: int
+    j: int
     for i in range(3):
         for j in range(i + 1, 3):
             assert w[i].is_orthogonal_to(w[j])
@@ -138,6 +140,8 @@ def test_orthogonal_frame_3d_symbolic() -> None:
     w: list[MultiVectorBase] = make_orthogonal_frame(frame)
     assert w[0] == sym_vec3_1  # first vector unchanged
     assert is_frame(w)  # still a frame (spans 3-space)
+    i: int
+    j: int
     for i in range(3):
         for j in range(i + 1, 3):
             assert w[i].is_orthogonal_to(w[j])  # exact symbolic orthogonality
@@ -151,6 +155,8 @@ def test_orthogonal_frame_orthogonal_numeric_3d() -> None:
         assert is_frame(vectors, float_close_to_zero=True)
         frame: list = make_orthogonal_frame(vectors)
         assert is_frame(frame, float_close_to_zero=True)
+        i: int
+        j: int
         for i in range(3):
             for j in range(i + 1, 3):
                 assert frame[i].is_orthogonal_to(frame[j], float_close_to_zero=True)
@@ -174,7 +180,7 @@ def test_make_orthogonal_frame_raises_on_dependent() -> None:
 # |A_{k-1}|² v_k^⊥``.  See ``tasks/define-frame.md`` Part 1c.
 
 
-def _prev_blade_magnitude_squared(vectors: Sequence[MultiVectorBase], k: int):
+def _prev_blade_magnitude_squared(vectors: Sequence[MultiVectorBase], k: int) -> Coef:
     """The positive scalar factor ``|A_{k-1}|²`` -- i.e. ``content(v_1..v_{k-1})²``
     (with ``A_0 = 1`` -> ``1``)."""
     if k == 1:
@@ -229,6 +235,7 @@ def test_hestenes_equals_rejection_3d_symbolic() -> None:
 def test_hestenes_equals_rejection_numeric() -> None:
     """``c_k`` (Hestenes) == ``|A_{k-1}|² · w_k`` (rejection) on random 2D/3D frames."""
     random.seed(20260823)
+    dim: int
     for dim in (2, 3):
         for _ in range(50):
             vectors: list[Gn] = [random_vector(dim) for _ in range(dim)]

@@ -26,6 +26,7 @@ annotation (scaling goes through ``__rmul__``, which casts internally).
 """
 
 import typing
+from collections.abc import Callable
 
 import sympy
 
@@ -43,14 +44,22 @@ def widen(x: MultiVectorBase) -> Gn:
 
 
 # typed op, and the matching reference op on Gn
-OPS = {
+OPS: dict[
+    str,
+    tuple[
+        Callable[[MultiVectorBase, MultiVectorBase], MultiVectorBase],
+        Callable[[MultiVectorBase, MultiVectorBase], MultiVectorBase],
+    ],
+] = {
     "*": (lambda a, b: a * b, lambda a, b: a * b),
     "^": (lambda a, b: a ^ b, lambda a, b: a.outer_product(b)),
     ".": (lambda a, b: a.inner_product(b), lambda a, b: a.inner_product(b)),
 }
 
 # (lhs, op, rhs, expected return type) -- this table *is* the grade product table.
-PRODUCT_TABLE = [
+PRODUCT_TABLE: list[
+    tuple[MultiVectorBase, str, MultiVectorBase, type[MultiVectorBase]]
+] = [
     # 1D
     (3 * g1.Vector.e_1, "*", 2 * g1.Vector.e_1, g1.Scalar),
     # 2D -- vectors, bivector (5 * the unit bivector), rotor (scalar + bivector)

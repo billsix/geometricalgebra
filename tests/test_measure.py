@@ -34,6 +34,7 @@ from _helpers import random_vector
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
+from gacalc.base import MultiVectorBase
 from gacalc.gn import (
     Gn,
     e_1,
@@ -146,20 +147,21 @@ def test_area_of_two_vectors_in_3d_is_the_gram_determinant() -> None:
     **Gram determinant** ``|a|²|b|² − (a·b)²``.  (The ``k < n`` generalization of
     ``signed_area``'s 2x2 determinant; and ``area(_A3, _B3)`` literally returns the
     sqrt of those three minors.)"""
-    minors_squared = (
+    minors_squared: sympy.Expr = (
         (_a1 * _b2 - _a2 * _b1) ** 2
         + (_a1 * _b3 - _a3 * _b1) ** 2
         + (_a2 * _b3 - _a3 * _b2) ** 2
     )
-    gram_determinant = (_a1**2 + _a2**2 + _a3**2) * (_b1**2 + _b2**2 + _b3**2) - (
-        _a1 * _b1 + _a2 * _b2 + _a3 * _b3
-    ) ** 2
+    gram_determinant: sympy.Expr = (_a1**2 + _a2**2 + _a3**2) * (
+        _b1**2 + _b2**2 + _b3**2
+    ) - (_a1 * _b1 + _a2 * _b2 + _a3 * _b3) ** 2
     assert sympy.expand(area(_A3, _B3) ** 2) == sympy.expand(minors_squared)
     assert sympy.expand(area(_A3, _B3) ** 2) == sympy.expand(gram_determinant)
 
 
 def test_content_equals_content_by_rejection_numeric() -> None:
     random.seed(20260823)
+    dim: int
     for dim in (2, 3):
         for _ in range(100):
             vectors: list[Gn] = [random_vector(dim) for _ in range(dim)]
@@ -183,24 +185,24 @@ def test_content_by_rejection_requires_a_frame() -> None:
 
 def test_signed_area_is_the_2d_determinant() -> None:
     # (2 e_1 + e_2) and (e_1 + 3 e_2): det = 2·3 − 1·1 = 5.
-    p = 2 * g2.e_1 + 1 * g2.e_2
-    q = 1 * g2.e_1 + 3 * g2.e_2
+    p: MultiVectorBase = 2 * g2.e_1 + 1 * g2.e_2
+    q: MultiVectorBase = 1 * g2.e_1 + 3 * g2.e_2
     assert signed_area(p, q) == 5
     assert signed_area(q, p) == -5  # swap flips orientation
     assert abs(signed_area(p, q)) == content([p, q])  # |signed| == unsigned
 
 
 def test_signed_volume_is_the_3d_determinant() -> None:
-    x = g3.e_1
-    y = g3.e_2
-    z = g3.e_3
+    x: MultiVectorBase = g3.e_1
+    y: MultiVectorBase = g3.e_2
+    z: MultiVectorBase = g3.e_3
     assert signed_volume(x, y, z) == 1  # right-handed
     assert signed_volume(z, y, x) == -1  # swap flips
     assert abs(signed_volume(x, y, z)) == content([x, y, z])
 
 
 def test_signed_content_dependent_full_set_is_zero() -> None:
-    p = 2 * g2.e_1 + 1 * g2.e_2
+    p: MultiVectorBase = 2 * g2.e_1 + 1 * g2.e_2
     assert signed_area(p, 4 * g2.e_1 + 2 * g2.e_2) == 0  # parallel
 
 
@@ -235,8 +237,8 @@ def test_signed_content_on_gn_full_space() -> None:
 
 def test_signed_content_on_gn_symbolic_is_the_determinant() -> None:
     a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
-    a = a_1 * e_1 + a_2 * e_2
-    b = b_1 * e_1 + b_2 * e_2
+    a: MultiVectorBase = a_1 * e_1 + a_2 * e_2
+    b: MultiVectorBase = b_1 * e_1 + b_2 * e_2
     assert signed_content([a, b]) == a_1 * b_2 - a_2 * b_1
 
 
@@ -254,12 +256,12 @@ def test_signed_content_parallel_full_count_is_zero() -> None:
 def test_measure_methods_delegate_to_free_functions() -> None:
     """``v.area(w)`` etc. are inherited on every vector type and match the free
     functions they delegate to."""
-    a = 2 * g2.e_1 + 1 * g2.e_2
-    b = 1 * g2.e_1 + 3 * g2.e_2
+    a: MultiVectorBase = 2 * g2.e_1 + 1 * g2.e_2
+    b: MultiVectorBase = 1 * g2.e_1 + 3 * g2.e_2
     assert a.area(b) == area(a, b)
     assert a.signed_area(b) == signed_area(a, b)
-    x = g3.e_1
-    y = g3.e_2
-    z = g3.e_3
+    x: MultiVectorBase = g3.e_1
+    y: MultiVectorBase = g3.e_2
+    z: MultiVectorBase = g3.e_3
     assert x.volume(y, z) == volume(x, y, z)
     assert x.signed_volume(y, z) == signed_volume(x, y, z)

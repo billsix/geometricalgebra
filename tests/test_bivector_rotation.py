@@ -23,12 +23,15 @@ cos(theta/2) form (the reason it is built directly, not via exp).
 """
 
 import math
+from collections.abc import Callable
 
 import pytest
 import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
+from gacalc.base import Coef, MultiVectorBase
+from gacalc.functions import InvertibleFunction
 from gacalc.transforms import bivector_rotation, plane_rotation
 
 _TOL: dict[str, float] = {"rel_tol": 1e-9, "abs_tol": 1e-9}
@@ -36,16 +39,22 @@ _TOL: dict[str, float] = {"rel_tol": 1e-9, "abs_tol": 1e-9}
 
 def test_agrees_with_plane_rotation_on_the_same_plane() -> None:
     # bivector_rotation(i(a, b)) is the same rotation as plane_rotation(a, b).
-    i = g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
-    by_bivector = bivector_rotation(i)(math.radians(50))
-    by_vectors = plane_rotation(g3.Vector.e_1, g3.Vector.e_2)(math.radians(50))
-    v = 3 * g3.Vector.e_1 + 4 * g3.Vector.e_2 + 5 * g3.Vector.e_3
+    i: g3.Bivector = g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
+    by_bivector: InvertibleFunction[MultiVectorBase] = bivector_rotation(i)(
+        math.radians(50)
+    )
+    by_vectors: InvertibleFunction[g3.Vector] = plane_rotation(
+        g3.Vector.e_1, g3.Vector.e_2
+    )(math.radians(50))
+    v: MultiVectorBase = 3 * g3.Vector.e_1 + 4 * g3.Vector.e_2 + 5 * g3.Vector.e_3
     assert by_bivector(v).isclose(by_vectors(v), **_TOL)
 
 
 def test_quarter_turn_maps_e1_to_e2_and_fixes_perpendicular() -> None:
-    turn = bivector_rotation(g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2))
-    quarter = turn(math.radians(90))
+    turn: Callable[[Coef], InvertibleFunction[MultiVectorBase]] = bivector_rotation(
+        g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
+    )
+    quarter: InvertibleFunction[MultiVectorBase] = turn(math.radians(90))
     assert quarter(g3.Vector.e_1).isclose(g3.Vector.e_2, rel_tol=1e-6, abs_tol=1e-6)
     # e_3 is perpendicular to the e_1 e_2 plane -> left fixed.
     assert quarter(g3.Vector.e_3).isclose(g3.Vector.e_3, rel_tol=1e-6, abs_tol=1e-6)
@@ -54,24 +63,32 @@ def test_quarter_turn_maps_e1_to_e2_and_fixes_perpendicular() -> None:
 def test_normalizes_the_bivector_internally() -> None:
     # A bivector scaled off unit length must still rotate by the given angle:
     # the builder normalizes it, so the magnitude does not leak into the angle.
-    i = g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
-    unit_result = bivector_rotation(i)(math.radians(30))
-    scaled_result = bivector_rotation(5 * i)(math.radians(30))
-    v = 2 * g3.Vector.e_1 + 1 * g3.Vector.e_3
+    i: g3.Bivector = g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
+    unit_result: InvertibleFunction[MultiVectorBase] = bivector_rotation(i)(
+        math.radians(30)
+    )
+    scaled_result: InvertibleFunction[MultiVectorBase] = bivector_rotation(5 * i)(
+        math.radians(30)
+    )
+    v: MultiVectorBase = 2 * g3.Vector.e_1 + 1 * g3.Vector.e_3
     assert scaled_result(v).isclose(unit_result(v), **_TOL)
 
 
 def test_inverse_undoes_the_rotation() -> None:
-    f = bivector_rotation(g3.Vector.i(g3.Vector.e_1, g3.Vector.e_3))(1.1)
-    v = 7 * g3.Vector.e_1 + 2 * g3.Vector.e_2 - 1 * g3.Vector.e_3
+    f: InvertibleFunction[MultiVectorBase] = bivector_rotation(
+        g3.Vector.i(g3.Vector.e_1, g3.Vector.e_3)
+    )(1.1)
+    v: MultiVectorBase = 7 * g3.Vector.e_1 + 2 * g3.Vector.e_2 - 1 * g3.Vector.e_3
     assert f.inverse(f(v)).isclose(v, rel_tol=1e-6, abs_tol=1e-6)
 
 
 def test_interpolation_is_a_fraction_of_the_angle() -> None:
-    turn = bivector_rotation(g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2))
-    half = turn(math.radians(80)).at(0.5)
-    direct = turn(math.radians(40))
-    v = 1 * g3.Vector.e_1 + 1 * g3.Vector.e_2 + 1 * g3.Vector.e_3
+    turn: Callable[[Coef], InvertibleFunction[MultiVectorBase]] = bivector_rotation(
+        g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
+    )
+    half: InvertibleFunction[MultiVectorBase] = turn(math.radians(80)).at(0.5)
+    direct: InvertibleFunction[MultiVectorBase] = turn(math.radians(40))
+    v: MultiVectorBase = 1 * g3.Vector.e_1 + 1 * g3.Vector.e_2 + 1 * g3.Vector.e_3
     assert half(v).isclose(direct(v), **_TOL)
 
 
@@ -80,11 +97,13 @@ def test_symbolic_angle_keeps_clean_half_angle_form() -> None:
     # NOT via exp: a symbolic angle must render cos(theta/2), never
     # cos(sqrt(theta**2)/2).  Same guarantee plane_rotation gives.
     theta: sympy.Symbol = sympy.Symbol("theta", positive=True)
-    i = g2.Vector.i(g2.Vector.e_1, g2.Vector.e_2)
-    rotor = bivector_rotation(i)(theta)
+    i: g2.Bivector = g2.Vector.i(g2.Vector.e_1, g2.Vector.e_2)
+    rotor: InvertibleFunction[MultiVectorBase] = bivector_rotation(i)(theta)
     # apply to e_1 and read the coefficient forms back
-    rotated = rotor(g2.Vector.e_1)
-    expected = sympy.cos(theta) * g2.Vector.e_1 + sympy.sin(theta) * g2.Vector.e_2
+    rotated: MultiVectorBase = rotor(g2.Vector.e_1)
+    expected: MultiVectorBase = (
+        sympy.cos(theta) * g2.Vector.e_1 + sympy.sin(theta) * g2.Vector.e_2
+    )
     assert rotated == expected
 
 

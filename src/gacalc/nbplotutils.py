@@ -34,6 +34,7 @@ from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
 
 from gacalc.base import (
+    Blade,
     BladeCoef,
     Coef,
     MultiVectorBase,
@@ -89,14 +90,15 @@ def generategridlines(
     interval: int = 1,
     cls: type[MultiVectorBase] = MultiVector,
 ) -> Generator[tuple[list[MultiVectorBase], int], None, None]:
-    ex = cls.basis_vector(1)
-    ey = cls.basis_vector(2)
+    ex: MultiVectorBase = cls.basis_vector(1)
+    ey: MultiVectorBase = cls.basis_vector(2)
+    x: int
     for x in range(
         -graph_bounds[0] * extra_lines_multiplier,
         graph_bounds[0] * extra_lines_multiplier,
         interval,
     ):
-        thickness = 4 if np.isclose(x, 0.0) else 1
+        thickness: int = 4 if np.isclose(x, 0.0) else 1
         yield (
             [
                 x * ex + (-graph_bounds[1] * extra_lines_multiplier) * ey,
@@ -105,12 +107,13 @@ def generategridlines(
             thickness,
         )
 
+    y: int
     for y in range(
         -graph_bounds[1] * extra_lines_multiplier,
         graph_bounds[1] * extra_lines_multiplier,
         interval,
     ):
-        thickness = 4 if np.isclose(y, 0.0) else 1
+        thickness: int = 4 if np.isclose(y, 0.0) else 1
         yield (
             [
                 (-graph_bounds[0] * extra_lines_multiplier) * ex + y * ey,
@@ -152,7 +155,7 @@ def create_graphs(
     filename: str | None = None,
 ) -> Generator[Axes, None, Figure]:
     fig, axes = plt.subplots(figsize=graph_bounds)
-    token = _axes.set(axes)
+    token: contextvars.Token[Axes] = _axes.set(axes)
     axes.set_xlim((-graph_bounds[0], graph_bounds[0]))
     axes.set_ylim((-graph_bounds[1], graph_bounds[1]))
 
@@ -187,6 +190,8 @@ def create_basis(
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
     # plot transformed basis
+    vecs: list[MultiVectorBase]
+    thickness: int
     for vecs, thickness in generategridlines(
         graph_bounds, interval=gridline_interval, cls=cls
     ):
@@ -204,13 +209,14 @@ def create_unit_circle(
     fn: InvertibleFunction[Any] = _IDENTITY,
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
-    ex = cls.basis_vector(1)
-    ey = cls.basis_vector(2)
+    ex: MultiVectorBase = cls.basis_vector(1)
+    ey: MultiVectorBase = cls.basis_vector(2)
 
     def generate_circle() -> Generator[list[MultiVectorBase], None, None]:
         theta_increment: float = 0.01
         scale_radius: float = 1.0
 
+        theta: float
         for theta in np.arange(0.0, 2 * math.pi, theta_increment):
             yield (
                 [
@@ -224,6 +230,7 @@ def create_unit_circle(
             )
 
     # plot transformed basis
+    vecs: list[MultiVectorBase]
     for vecs in generate_circle():
         plt.plot(
             [float(_coord(fn(vec), (1,))) for vec in vecs],
@@ -241,11 +248,11 @@ def create_x_and_y(
     ycolor: tuple[float, float, float] = (1.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
-    ex = cls.basis_vector(1)
-    ey = cls.basis_vector(2)
-    origin = cls.zero()
+    ex: MultiVectorBase = cls.basis_vector(1)
+    ey: MultiVectorBase = cls.basis_vector(2)
+    origin: MultiVectorBase = cls.zero()
     # x axis
-    x_axis = [origin, ex]
+    x_axis: list[MultiVectorBase] = [origin, ex]
     plt.plot(
         [float(_coord(fn(vec), (1,))) for vec in x_axis],
         [float(_coord(fn(vec), (2,))) for vec in x_axis],
@@ -255,7 +262,7 @@ def create_x_and_y(
     )
 
     # y axis
-    y_axis = [origin, ey]
+    y_axis: list[MultiVectorBase] = [origin, ey]
     plt.plot(
         [float(_coord(fn(vec), (1,))) for vec in y_axis],
         [float(_coord(fn(vec), (2,))) for vec in y_axis],
@@ -290,24 +297,26 @@ def _draw_labelled_triangle(
     ``vertex_coefficients`` gives each vertex as ``(a, b)`` meaning
     ``a * e_1 + b * e_2``.
     """
-    axes = _current_axes()
-    ex = cls.basis_vector(1)
-    ey = cls.basis_vector(2)
-    origin = cls.zero()
-    x_prime_direction_world_space = fn(ex) - fn(origin)
-    x_world_space = ex
-    y_prime_direction_world_space = fn(ey) - fn(origin)
-    angle_radians = math.atan2(
-        sine(x_world_space, x_prime_direction_world_space),
-        x_world_space.cosine(x_prime_direction_world_space),
+    axes: Axes = _current_axes()
+    ex: MultiVectorBase = cls.basis_vector(1)
+    ey: MultiVectorBase = cls.basis_vector(2)
+    origin: MultiVectorBase = cls.zero()
+    x_prime_direction_world_space: MultiVectorBase = fn(ex) - fn(origin)
+    x_world_space: MultiVectorBase = ex
+    y_prime_direction_world_space: MultiVectorBase = fn(ey) - fn(origin)
+    angle_radians: float = math.atan2(
+        float(sine(x_world_space, x_prime_direction_world_space)),
+        float(x_world_space.cosine(x_prime_direction_world_space)),
     )
-    label_offset = (
+    label_offset: MultiVectorBase = (
         0.0 * x_prime_direction_world_space + 0.20 * y_prime_direction_world_space
     )
 
-    vertices = [fn(a * ex + b * ey) for a, b in vertex_coefficients]
+    vertices: list[MultiVectorBase] = [
+        fn(a * ex + b * ey) for a, b in vertex_coefficients
+    ]
 
-    triangle = Polygon(
+    triangle: Polygon = Polygon(
         list(map(_to_xy, vertices)),
         closed=True,
         facecolor="lightblue",
@@ -315,13 +324,15 @@ def _draw_labelled_triangle(
     )
     axes.add_patch(triangle)
 
-    vertices_as_np = np.array(list(map(_to_xy, vertices)))
+    vertices_as_np: np.ndarray = np.array(list(map(_to_xy, vertices)))
     # Plot dots at the vertices
     axes.scatter(
         vertices_as_np[:, 0], vertices_as_np[:, 1], color="red", s=5, zorder=5
     )  # zorder ensures dots are on top
 
     # Label each vertex
+    i: int
+    label: str
     for i, label in enumerate(labels):
         # Use plt.annotate to place the label near the point
         plt.annotate(
@@ -390,22 +401,22 @@ def draw_ndc(
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
-    axes = _current_axes()
-    ex = cls.basis_vector(1)
-    ey = cls.basis_vector(2)
-    origin = cls.zero()
-    x_prime_direction_world_space = fn(ex) - fn(origin)
-    x_world_space = ex
-    y_prime_direction_world_space = fn(ey) - fn(origin)
-    angle_radians = math.atan2(
-        sine(x_world_space, x_prime_direction_world_space),
-        x_world_space.cosine(x_prime_direction_world_space),
+    axes: Axes = _current_axes()
+    ex: MultiVectorBase = cls.basis_vector(1)
+    ey: MultiVectorBase = cls.basis_vector(2)
+    origin: MultiVectorBase = cls.zero()
+    x_prime_direction_world_space: MultiVectorBase = fn(ex) - fn(origin)
+    x_world_space: MultiVectorBase = ex
+    y_prime_direction_world_space: MultiVectorBase = fn(ey) - fn(origin)
+    angle_radians: float = math.atan2(
+        float(sine(x_world_space, x_prime_direction_world_space)),
+        float(x_world_space.cosine(x_prime_direction_world_space)),
     )
-    label_offset = (
+    label_offset: MultiVectorBase = (
         0.0 * x_prime_direction_world_space + 0.20 * y_prime_direction_world_space
     )
 
-    vertices = [
+    vertices: list[MultiVectorBase] = [
         fn(v)
         for v in [
             (-1.0) * ex + (-1.0) * ey,
@@ -416,7 +427,7 @@ def draw_ndc(
         ]
     ]
 
-    square = Polygon(
+    square: Polygon = Polygon(
         list(map(_to_xy, vertices)),
         closed=True,
         fc="none",
@@ -424,7 +435,7 @@ def draw_ndc(
     )
     axes.add_patch(square)
 
-    vertices_as_np = np.array(list(map(_to_xy, vertices)))
+    vertices_as_np: np.ndarray = np.array(list(map(_to_xy, vertices)))
     # Plot dots at the vertices
     axes.scatter(
         vertices_as_np[:, 0], vertices_as_np[:, 1], color="red", s=5, zorder=5
@@ -432,6 +443,8 @@ def draw_ndc(
 
     # Label each vertex
     labels = ["(-1,-1)", "(1,-1)", "(1,1)", "(-1,1)"]
+    i: int
+    label: str
     for i, label in enumerate(labels):
         # Use plt.annotate to place the label near the point
         plt.annotate(
@@ -454,14 +467,16 @@ def draw_screen(
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
-    axes = _current_axes()
-    ex = cls.basis_vector(1)
-    ey = cls.basis_vector(2)
-    d_width = 2.0 / width
-    d_height = 2.0 / height
+    axes: Axes = _current_axes()
+    ex: MultiVectorBase = cls.basis_vector(1)
+    ey: MultiVectorBase = cls.basis_vector(2)
+    d_width: float = 2.0 / width
+    d_height: float = 2.0 / height
+    x: int
+    y: int
     for x in range(width):
         for y in range(height):
-            vertices = [
+            vertices: list[MultiVectorBase] = [
                 fn(v)
                 for v in [
                     (-1.0 + d_width * x) * ex + (-1.0 + d_height * y) * ey,
@@ -471,7 +486,7 @@ def draw_screen(
                 ]
             ]
 
-            square = Polygon(
+            square: Polygon = Polygon(
                 list(
                     map(
                         _to_xy,
@@ -513,12 +528,12 @@ def plot_multivector(
     fresh randomness on every call.
     """
     blade_dict: BladeCoef = mv.to_blade_dict()
-    blades = sorted(blade_dict.keys(), key=lambda b: (len(b), b)) or [()]
-    n = len(blades)
+    blades: list[Blade] = sorted(blade_dict.keys(), key=lambda b: (len(b), b)) or [()]
+    n: int = len(blades)
 
     rng: np.random.Generator = np.random.default_rng(random_seed)
 
-    coefs = [blade_dict.get(b, 0) for b in blades]
+    coefs: list[Coef] = [blade_dict.get(b, 0) for b in blades]
     xs: list[float] = []
     for coef in coefs:
         x: float | None = _coef_as_float(coef)
@@ -529,17 +544,19 @@ def plot_multivector(
     if x_range is not None:
         xmin, xmax = x_range
     else:
-        m = max(max(abs(x) for x in xs), 1.0)
+        m: float = max(max(abs(x) for x in xs), 1.0)
         xmin, xmax = -1.2 * m, 1.2 * m
 
     fig, ax = plt.subplots(figsize=figsize or (8, max(2.0, 0.7 * n)))
 
+    blade: Blade
+    coef: Coef
     for i, (blade, coef, x) in enumerate(zip(blades, coefs, xs)):
-        y = n - 1 - i  # top blade drawn first
+        y: int = n - 1 - i  # top blade drawn first
         ax.axhline(y, xmin=0.0, xmax=1.0, color="gray", linewidth=0.5, alpha=0.6)
         ax.plot([0], [y], marker="|", color="black", markersize=14, zorder=2)
 
-        is_numeric = _coef_as_float(coef) is not None
+        is_numeric: bool = _coef_as_float(coef) is not None
         ax.plot(
             [x],
             [y],
@@ -548,7 +565,7 @@ def plot_multivector(
             markersize=10,
             zorder=3,
         )
-        label = f"{x:g}" if is_numeric else "$" + sympy.latex(coef) + "$"
+        label: str = f"{x:g}" if is_numeric else "$" + sympy.latex(coef) + "$"
         ax.annotate(
             label,
             (x, y),
@@ -570,6 +587,7 @@ def plot_multivector(
     ax.set_xlim(xmin - 0.20 * (xmax - xmin), xmax + 0.05 * (xmax - xmin))
     ax.set_ylim(-0.5, n - 0.5)
     ax.set_yticks([])
+    side: str
     for side in ("top", "right", "left"):
         ax.spines[side].set_visible(False)
 
@@ -619,7 +637,9 @@ def show_mult(a: MultiVectorBase, b: MultiVectorBase) -> None:
     display(Markdown("**Multivector Multiplication is distributive over additon**"))
 
     data: list = list(itertools.product(_blade_terms(a), _blade_terms(b)))
-    result = [(left, "*", right, "=", left * right) for left, right in data]
+    result: list[tuple[object, str, object, str, object]] = [
+        (left, "*", right, "=", left * right) for left, right in data
+    ]
     df: pd.DataFrame = pd.DataFrame(
         result,
         columns=pd.Index(["Left Component", "*", "Right Component", "=", "Product"]),

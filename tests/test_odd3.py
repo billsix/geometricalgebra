@@ -45,10 +45,10 @@ def test_odd3_product_types_runtime() -> None:
 
 
 def test_cast_in_plane_is_vector() -> None:
-    r = _B * _in_plane
+    r: g3.Odd_3 = _B * _in_plane
     assert type(r) is g3.Odd_3 and r.grades() == [1]
     typing.assert_type(r.to_vector(), g3.Vector)
-    v = r.to_vector()
+    v: g3.Vector = r.to_vector()
     assert type(v) is g3.Vector
     assert (v.coeff_e_1, v.coeff_e_2, v.coeff_e_3) == (
         r.coeff_e_1,
@@ -60,10 +60,10 @@ def test_cast_in_plane_is_vector() -> None:
 
 
 def test_cast_perpendicular_is_trivector() -> None:
-    r = _B * _perp
+    r: g3.Odd_3 = _B * _perp
     assert type(r) is g3.Odd_3 and r.grades() == [3]
     typing.assert_type(r.to_trivector(), g3.Trivector)
-    t = r.to_trivector()
+    t: g3.Trivector = r.to_trivector()
     assert type(t) is g3.Trivector
     assert t.coeff_e_123 == r.coeff_e_123
     with pytest.raises(ValueError):
@@ -71,7 +71,7 @@ def test_cast_perpendicular_is_trivector() -> None:
 
 
 def test_cast_mixed_raises_both() -> None:
-    r = _B * _mixed
+    r: g3.Odd_3 = _B * _mixed
     assert type(r) is g3.Odd_3 and r.grades() == [1, 3]
     with pytest.raises(ValueError):
         r.to_vector()
@@ -107,7 +107,12 @@ def test_sandwich_grade_preservation_is_one_coefficient() -> None:
     a, b, c, d = sympy.symbols("a b c d", real=True)
     x, y, z = sympy.symbols("x y z", real=True)
     rotor = a + b * g3.Bivector.e_12 + c * g3.Bivector.e_13 + d * g3.Bivector.e_23
-    v = x * g3.Vector.e_1 + y * g3.Vector.e_2 + z * g3.Vector.e_3
+    v: g3.Vector = x * g3.Vector.e_1 + y * g3.Vector.e_2 + z * g3.Vector.e_3
+    # Left inferred: declaring `g3.Odd_3` is correct at runtime (the next line
+    # asserts exactly that), but it widens `coeff_e_123` to the full
+    # `Coef = int | float | sympy.Expr`, and sympy's stubs have no
+    # `simplify` overload taking a bare int/float -- so the annotation would
+    # fail the line below without making anything clearer.
     conjugated = rotor * v * rotor.inverse()
     assert type(conjugated) is g3.Odd_3  # a named type now, not G3
     assert sympy.simplify(conjugated.coeff_e_123) == 0  # grade-3 vanishes -> a vector

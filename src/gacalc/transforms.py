@@ -52,6 +52,7 @@ classification (:class:`Linearity`, joined by ``compose``), and
 import dataclasses
 import math
 import typing
+from collections.abc import Sequence
 
 import numpy as np
 import sympy
@@ -74,7 +75,7 @@ V = typing.TypeVar("V", bound=MultiVectorBase)
 
 
 def compose_intermediate_fns(
-    functions: list[InvertibleFunction[V]], relative_basis: bool = False
+    functions: Sequence[InvertibleFunction[V]], relative_basis: bool = False
 ) -> typing.Iterable[InvertibleFunction[V]]:
     """Like ``compose``, but returns each of the partial compositions.
 
@@ -96,8 +97,11 @@ def compose_intermediate_fns(
         >>> [fns[0](1), fns[1](1), fns[2](1)]
         [1, 3, 7]
     """
+    # Unpacking rather than ``+``: ``functions`` is a read-only Sequence (any
+    # sequence of transforms is acceptable here), and ``list + Sequence`` is not a
+    # supported operation -- ``[a, *b]`` is, and builds the same list.
     functions_with_identity_fn: list[InvertibleFunction[V]] = (
-        [identity()] + functions if relative_basis else functions + [identity()]
+        [identity(), *functions] if relative_basis else [*functions, identity()]
     )
 
     return [
@@ -117,7 +121,7 @@ def compose_intermediate_fns(
 
 
 def compose_intermediate_fns_and_fn(
-    functions: list[InvertibleFunction[V]], relative_basis: bool = False
+    functions: Sequence[InvertibleFunction[V]], relative_basis: bool = False
 ) -> list[tuple[InvertibleFunction[V], InvertibleFunction[V]]]:
     """Like ``compose_intermediate_fns``, paired with the function applied at each step.
 
@@ -138,9 +142,9 @@ def compose_intermediate_fns_and_fn(
     return list(
         zip(
             compose_intermediate_fns(functions, relative_basis=relative_basis),
-            [identity()] + functions
+            [identity(), *functions]
             if relative_basis
-            else reversed([identity()] + functions),
+            else reversed([identity(), *functions]),
         )
     )
 
@@ -759,9 +763,13 @@ class MatrixTemplate:
                 f"({', '.join(str(p) for p in self.params)}); got {len(values)}"
             )
         m: np.ndarray = self.constants.copy()
+        row: int
+        col: int
+        k: int
         for row, col, k in self.slots:
             m[row, col] = values[k]
         if self.evaluate_expressions is not None:
+            x: float
             for (row, col), x in zip(
                 self.expression_cells, self.evaluate_expressions(*values)
             ):
@@ -836,7 +844,7 @@ def to_matrix_template(
     symbols: tuple[sympy.Symbol, ...] = tuple(params)
     if len(set(symbols)) != len(symbols):
         raise ValueError(f"params has a repeated symbol: {symbols}")
-    matrix = to_matrix(fn, cls, n, backend="sympy")
+    matrix: sympy.Matrix | np.ndarray = to_matrix(fn, cls, n, backend="sympy")
     assert isinstance(matrix, sympy.Matrix)  # the sympy backend's return
     size: int = matrix.rows
     constants: np.ndarray = np.zeros((size, size), dtype=np.float32)
