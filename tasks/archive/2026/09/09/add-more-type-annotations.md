@@ -3,8 +3,9 @@
 **Status:** **DONE 2026-09-09.** Applied across all four in-scope directories at the
 maintainer's go-ahead. `src/`, `tools/`, `tests/` and `notebooks/` now have **zero**
 unannotated signatures, locals or loop targets that are not a deliberate, in-code-reasoned
-exemption; the 24 remaining audit rows are catalogued in
-`tasks/reference/type-annotation-exemptions.md`. Gates green: `make format`, `make test`,
+exemption; the 29 remaining audit rows are catalogued in
+`tasks/reference/type-annotation-exemptions.md`, and the auditor itself was promoted to
+`tools/check_annotations.py` so the check can be re-run. Gates green: `make format`, `make test`,
 `make check-generated`, `make check-regions`, and `pyright notebooks` in-container went
 from 1 pre-existing error to **0**. See "What the sweep found" below.
 **Priority:** 4
@@ -13,15 +14,17 @@ from 1 pre-existing error to **0**. See "What the sweep found" below.
 
 ## What the sweep found (2026-09-09)
 
-Counts from an AST auditor written for the job (`tasks/adhoc/add-more-type-annotations/`,
-removed at archive time per the one-shot rule; its logic is described in the reference
-doc). Start: 359 rows. End: 24, every one an exemption.
+Counts from an AST auditor written for the job. Start: 359 rows. End: **29**, every one an
+exemption. The auditor was **promoted** rather than deleted at archive time
+(`tools/check_annotations.py`): it is a checker one would re-run against future changes,
+and the reference doc was otherwise reduced to describing how to rebuild it. It is
+informational only — not wired into any `make` gate, which is the maintainer's call.
 
 | Kind | Start | Fixed | Left | The remainder |
 |---|---|---|---|---|
 | Missing param | 32 | 31 | 1 | one dimension-defaulting test |
 | Missing return | 4 | 2 | 2 | `base.__iter__`, `test_conformance.to` |
-| Invariant container param | 17 | 15 | 2 | an out-param, and one the stdlib pins |
+| Invariant container param | 17 | 15 | 3 | two out-params, one the stdlib pins |
 | Unannotated local | 224 | 221 | 3 | three that lose information when declared |
 | Unannotated loop target | 73 | 72 | 1 | derived from one of those three |
 | `Any` in an annotation | 9 | 0 | 9 | the documented polymorphic-transform case |

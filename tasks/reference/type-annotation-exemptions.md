@@ -14,16 +14,23 @@ forces edits to unrelated logic, or breaks flow-narrowing, is not worth it.
 
 ## How to see the current state
 
-`tasks/adhoc/` scripts are removed at archive time, so the auditor that produced these
-counts is in the work commit's history rather than the tree. To regenerate the list, walk
-the four directories with `ast` looking for: `def`s without a return annotation, params
-without one, assignments to a bare name, `for`-targets, bare generics, `Any`, and
-invariant `dict`/`list`/`set` params. Exclude the generated `src/gacalc/g*.py` (the
-generator owns their annotations — fix `tools/gen_specialized.py`, never the output), type
-aliases, `Enum` members, and `_` discards.
+**`python tools/check_annotations.py`** — the auditor built for the sweep, promoted out of
+`tasks/adhoc/` because it answers "has coverage regressed?" on any future change. It walks
+`src/`, `tools/`, `tests/` and `notebooks/` with `ast` reporting: `def`s without a return
+annotation, params without one, assignments to a bare name, `for`-targets, bare generics,
+`Any`, and invariant `dict`/`list`/`set` params. It excludes the generated
+`src/gacalc/g*.py` (the generator owns their annotations — fix
+`tools/gen_specialized.py`, never the output), and classifies type aliases, `Enum` members
+and `_` discards out of the count, since annotating one of those changes what it means.
 
-As of 2026-09-09 that walk returns **24 rows, all of them listed below**: 9 `Any`,
-7 aliases, 3 enum members, 3 locals, 2 returns, 2 invariant params, 1 param, 1 loop target.
+`--full` prints every row, `--kind` and `--path` narrow it.
+
+**It is informational, not a gate**, and deliberately not wired into `make` — deciding
+whether a row is an exemption needs a human. Wiring it in is the maintainer's call.
+
+As of 2026-09-09 it reports **29 rows in 10 files, all of them listed below**: 9 `Any`,
+7 aliases, 3 enum members, 3 invariant params, 3 locals, 2 returns, 1 param, 1 loop target.
+Anything *not* on this list is a genuine gap: annotate it, or add it here with its reason.
 
 ## The exemptions
 
@@ -66,13 +73,15 @@ test.
 `cls` params were all deliberately unannotated. That was never measured. Annotating all 22
 of them produced errors in exactly one test; the other 21 are now typed.
 
-### 4. Two container params that must stay invariant
+### 4. Three container params that must stay invariant
 
 - **`astbuild._method_label(seen: set[str])`** — an *out*-parameter (`seen.add(label)`),
   not a read-only container, so the covariant `AbstractSet` would be wrong.
 - **`astbuild.module_source(body: list[ast.stmt])`** — read-only here, so house style
   wants `Sequence`, but it is handed straight to `ast.Module(body=...)`, whose stdlib
   signature demands an invariant `list[stmt]`. Widening moves the error one line down.
+- **`check_annotations.check_function(out: list[Finding])`** — the auditor's own
+  accumulator, appended to. Same out-parameter case as `_method_label`.
 
 ### 5. Three locals whose declared type would lose information
 

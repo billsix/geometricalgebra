@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
-"""Catalog every place a type annotation is missing or loose, for the sweep in
-``tasks/add-more-type-annotations.md``.
+"""Report every place a type annotation is missing or loose.
+
+**When to run it:** after adding or reshaping hand-written Python, to check that
+the repo-wide annotation coverage has not regressed.  As of 2026-09-09 the tree
+is at a known-good floor of **24 rows, every one a deliberate exemption** listed
+in ``tasks/reference/type-annotation-exemptions.md``.  A row that is not in that
+list is a genuine gap -- annotate it, or add it to the list with its reason.
+
+Informational, not a gate: judging whether a row is an exemption needs a human,
+so this reports and never fails the build.  Wiring it into ``make`` would need
+the maintainer's go-ahead and a decision about what "clean" means.
 
 Walks the hand-written Python in ``src/``, ``tools/``, ``tests/`` and
 ``notebooks/`` with the ``ast`` module and reports, per file:
@@ -25,9 +34,10 @@ are excluded; so is anything ``.gitignore``d.
 
 Run from anywhere::
 
-    python tasks/adhoc/add-more-type-annotations/audit_annotations.py            # summary
-    python tasks/adhoc/add-more-type-annotations/audit_annotations.py --full     # every row
-    python tasks/adhoc/add-more-type-annotations/audit_annotations.py --kind RET # one kind
+    python tools/check_annotations.py             # summary counts by kind and file
+    python tools/check_annotations.py --full      # every row
+    python tools/check_annotations.py --kind RET  # one kind
+    python tools/check_annotations.py --path src  # one part of the tree
 """
 
 from __future__ import annotations
@@ -39,13 +49,13 @@ import re
 import sys
 from collections.abc import Iterator
 
-# tasks/adhoc/<slug>/ -> repo root
-REPO: pathlib.Path = pathlib.Path(__file__).resolve().parents[3]
+# tools/ -> repo root
+REPO: pathlib.Path = pathlib.Path(__file__).resolve().parents[1]
 
 SCOPE_DIRS: tuple[str, ...] = ("src", "tools", "tests", "notebooks")
 
 # Build artifacts: the generator owns their annotations (fix tools/, never these).
-GENERATED = re.compile(r"^src/gacalc/g\d+\.py$")
+GENERATED: re.Pattern[str] = re.compile(r"^src/gacalc/g\d+\.py$")
 
 # Generic classes whose bare use degrades a parameter to implicit Any.  Bare
 # ``MultiVectorFn`` and the isinstance-check sites are documented exceptions in
@@ -60,7 +70,9 @@ INVARIANT_CONTAINERS: frozenset[str] = frozenset({"dict", "list", "set"})
 class Finding:
     """One catalog row: where, what kind, and the name it concerns."""
 
-    def __init__(self, path: str, line: int, kind: str, name: str, detail: str = ""):
+    def __init__(
+        self, path: str, line: int, kind: str, name: str, detail: str = ""
+    ) -> None:
         self.path: str = path
         self.line: int = line
         self.kind: str = kind
@@ -74,10 +86,12 @@ class Finding:
 
 def in_scope() -> Iterator[pathlib.Path]:
     """Every hand-written .py file under the four in-scope directories."""
+    d: str
     for d in SCOPE_DIRS:
         root: pathlib.Path = REPO / d
         if not root.is_dir():
             continue
+        p: pathlib.Path
         for p in sorted(root.rglob("*.py")):
             rel: str = p.relative_to(REPO).as_posix()
             if GENERATED.match(rel):
@@ -102,7 +116,7 @@ def is_bare_generic(node: ast.expr | None) -> str | None:
 def check_function(
     fn: ast.FunctionDef | ast.AsyncFunctionDef,
     rel: str,
-    out: list[Finding],
+    out: list[Finding],  # an OUT-parameter (appended to), so not widened to Sequence
     is_method: bool = False,
 ) -> None:
     """Return + parameter annotations for one ``def``.
@@ -114,7 +128,9 @@ def check_function(
         out.append(Finding(rel, fn.lineno, "RET", fn.name))
 
     args: ast.arguments = fn.args
-    positional = list(args.posonlyargs) + list(args.args) + list(args.kwonlyargs)
+    positional: list[ast.arg] = (
+        list(args.posonlyargs) + list(args.args) + list(args.kwonlyargs)
+    )
     # `cls` is only the conventional unannotated receiver on a @classmethod; as a
     # plain parameter name it is ordinary (pytest's `parametrize("cls", ...)` uses
     # it heavily), so keying off the decorator rather than the name avoids
@@ -125,6 +141,8 @@ def check_function(
     receiver: str | None = (
         "cls" if "classmethod" in decorators else ("self" if is_method else None)
     )
+    i: int
+    a: ast.arg
     for i, a in enumerate(positional):
         # The receiver is conventionally unannotated -- only as the FIRST
         # positional parameter, so a stray later `self` still gets reported.
@@ -154,9 +172,12 @@ def check_function(
         if "Any" in annotation_names(a.annotation):
             out.append(Finding(rel, a.lineno, "ANY", f"{fn.name}({a.arg})"))
 
-    for a in (args.vararg, args.kwarg):
-        if a is not None and a.annotation is None:
-            out.append(Finding(rel, a.lineno, "PARAM", f"{fn.name}(*/**{a.arg})"))
+    vararg: ast.arg | None
+    for vararg in (args.vararg, args.kwarg):
+        if vararg is not None and vararg.annotation is None:
+            out.append(
+                Finding(rel, vararg.lineno, "PARAM", f"{fn.name}(*/**{vararg.arg})")
+            )
 
     if fn.returns is not None and "Any" in annotation_names(fn.returns):
         out.append(Finding(rel, fn.lineno, "ANY", f"{fn.name}() -> Any"))
@@ -174,7 +195,9 @@ def is_type_definition(value: ast.expr) -> bool:
     """
     if isinstance(value, ast.Call):
         fn: ast.expr = value.func
-        target: str = fn.attr if isinstance(fn, ast.Attribute) else getattr(fn, "id", "")
+        target: str = (
+            fn.attr if isinstance(fn, ast.Attribute) else getattr(fn, "id", "")
+        )
         return target in {"TypeVar", "NewType", "ParamSpec", "TypeAliasType"}
     if isinstance(value, ast.BinOp) and isinstance(value.op, ast.BitOr):
         return True
@@ -272,10 +295,8 @@ def check_file(path: pathlib.Path) -> list[Finding]:
                 if isinstance(node.target, ast.Tuple)
                 else []
             )
-            names = [
-                t.id
-                for t in targets
-                if t.id not in annotated and t.id.strip("_") != ""
+            names: list[str] = [
+                t.id for t in targets if t.id not in annotated and t.id.strip("_") != ""
             ]
             if names:
                 out.append(Finding(rel, node.lineno, "LOOP", ", ".join(names)))
@@ -283,13 +304,16 @@ def check_file(path: pathlib.Path) -> list[Finding]:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--full", action="store_true", help="print every row, not a summary")
+    ap: argparse.ArgumentParser = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument(
+        "--full", action="store_true", help="print every row, not a summary"
+    )
     ap.add_argument("--kind", help="restrict to one kind (RET, PARAM, LOCAL, ...)")
     ap.add_argument("--path", help="restrict to paths containing this substring")
     args = ap.parse_args()
 
     findings: list[Finding] = []
+    p: pathlib.Path
     for p in in_scope():
         findings.extend(check_file(p))
 
@@ -300,22 +324,39 @@ def main() -> int:
 
     by_kind: dict[str, int] = {}
     by_file: dict[str, int] = {}
+    f: Finding
     for f in findings:
         by_kind[f.kind] = by_kind.get(f.kind, 0) + 1
         by_file[f.path] = by_file.get(f.path, 0) + 1
 
     if args.full:
         for f in findings:
-            print(f)
-        print()
+            print(  # noqa: T201 -- the report is the tool's output
+                f
+            )  # noqa: T201
+        print(  # noqa: T201 -- the report is the tool's output
+        )
 
-    print("by kind:")
+    print(  # noqa: T201 -- the report is the tool's output
+        "by kind:"
+    )
+    k: str
+    n: int
     for k, n in sorted(by_kind.items(), key=lambda kv: -kv[1]):
-        print(f"  {k:<6} {n:>5}")
-    print("\nby file (top 25):")
+        print(  # noqa: T201 -- the report is the tool's output
+            f"  {k:<6} {n:>5}"
+        )
+    print(  # noqa: T201 -- the report is the tool's output
+        "\nby file (top 25):"
+    )
+    path: str
     for path, n in sorted(by_file.items(), key=lambda kv: -kv[1])[:25]:
-        print(f"  {n:>5}  {path}")
-    print(f"\ntotal: {len(findings)} findings in {len(by_file)} files")
+        print(  # noqa: T201 -- the report is the tool's output
+            f"  {n:>5}  {path}"
+        )
+    print(  # noqa: T201 -- the report is the tool's output
+        f"\ntotal: {len(findings)} findings in {len(by_file)} files"
+    )
     return 0
 
 

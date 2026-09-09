@@ -604,7 +604,9 @@ scoped `# noqa: E501`, as always.
   `MultiVectorBase.__iter__`). **The repo-wide sweep landed 2026-09-09**, so every
   unannotated site that remains is a deliberate exemption — all of them catalogued,
   with their reasons, in `tasks/reference/type-annotation-exemptions.md`. Read that
-  before "fixing" one. Read-only container params take the covariant supertype
+  before "fixing" one, and re-run **`python tools/check_annotations.py`** (informational,
+  not a gate) after reshaping hand-written Python — a row it reports that is *not* in that
+  doc is a genuine gap. Read-only container params take the covariant supertype
   (`Mapping`/`Sequence`), not invariant `dict`/`list`. Polymorphic values take the
   abstract base (`MultiVectorBase`), never a runtime-picked concrete. (Teaching
   notebooks especially: name + type the GA values.)
