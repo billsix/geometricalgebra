@@ -935,14 +935,14 @@ def eq_method(fields: Sequence[str]) -> ast.FunctionDef:
     Two paths.  A **same-type fast path** (``type(self) is type(other)``) compares
     the coefficient fields directly, skipping the blade-dict construction and
     key-set union -- pure overhead when the fields already line up one-to-one.  It
-    tries a native ``==`` per field first -- exact and instant for numeric ``Coef``
-    (a numeric multivector never touches sympy) and for structurally-identical
-    symbolic coefficients -- and falls through to
-    ``simplify(sympify(l) - sympify(r)) == 0`` only on a structural mismatch, so
-    structurally-different but mathematically-equal symbolic coefficients (e.g.
-    ``(x + 1)**2`` vs ``x**2 + 2*x + 1``) still compare equal.  Float ``==`` stays
-    EXACT on purpose (``0.1 + 0.2 != 0.3``); tolerance is ``isclose``'s job, not
-    ``==``'s (and a tolerant ``==`` would not even be transitive).  The blade-dict
+    defers each field to ``base._coef_eq``, which tries a native ``==`` first and
+    reaches ``simplify(sympify(l) - sympify(r)) == 0`` **only when a side is
+    symbolic** -- so structurally-different but mathematically-equal symbolic
+    coefficients (``(x + 1)**2`` vs ``x**2 + 2*x + 1``) still compare equal, while a
+    numeric multivector never touches sympy at all, whether its coefficients match
+    or differ.  Float ``==`` stays EXACT on purpose (``0.1 + 0.2 != 0.3``);
+    tolerance is ``isclose``'s job, not ``==``'s (and a tolerant ``==`` would not
+    even be transitive).  The blade-dict
     generator is the **fallback** for the cross-type / cross-representation cases
     (``Vector == G``, specialized ``== Gn``).  ``type(self) is type(other)`` (exact
     identity, not ``isinstance``) is safe because every generated type is
@@ -950,54 +950,23 @@ def eq_method(fields: Sequence[str]) -> ast.FunctionDef:
     """
 
     def field_equal(field: str) -> ast.expr:
-        """``self.<field> == other.<field> or simplify(sympify(l) - sympify(r)) == 0``.
+        """``_coef_eq(self.<field>, other.<field>)``.
 
-        Native ``==`` first (exact + instant for numeric/same-form coefficients);
-        the simplify check runs only on a structural mismatch (the symbolic
-        differently-written-but-equal case). Float ``==`` stays exact -- ``isclose``
-        owns tolerance.
+        The rule itself lives in the hand-written ``base._coef_eq`` (native ``==``
+        first, sympy only when a side is symbolic) so both this same-type path and
+        the blade-dict fallback below share one implementation.
         """
-        structural_eq: ast.expr = ast.Compare(
-            left=attribute("self", field),
-            ops=[ast.Eq()],
-            comparators=[attribute("other", field)],
+        return call(
+            name_ref("_coef_eq"), [attribute("self", field), attribute("other", field)]
         )
-        simplify_eq: ast.expr = ast.Compare(
-            left=call(
-                attribute("sympy", "simplify"),
-                [
-                    ast.BinOp(
-                        left=call(
-                            attribute("sympy", "sympify"), [attribute("self", field)]
-                        ),
-                        op=ast.Sub(),
-                        right=call(
-                            attribute("sympy", "sympify"), [attribute("other", field)]
-                        ),
-                    )
-                ],
-            ),
-            ops=[ast.Eq()],
-            comparators=[constant(0)],
-        )
-        return ast.BoolOp(op=ast.Or(), values=[structural_eq, simplify_eq])
 
-    diff: ast.BinOp = ast.BinOp(
-        left=call(
-            attribute("sympy", "sympify"),
-            [call(attribute("left", "get"), [name_ref("blade"), constant(0)])],
-        ),
-        op=ast.Sub(),
-        right=call(
-            attribute("sympy", "sympify"),
-            [call(attribute("right", "get"), [name_ref("blade"), constant(0)])],
-        ),
-    )
     gen: ast.GeneratorExp = ast.GeneratorExp(
-        elt=ast.Compare(
-            left=call(attribute("sympy", "simplify"), [diff]),
-            ops=[ast.Eq()],
-            comparators=[constant(0)],
+        elt=call(
+            name_ref("_coef_eq"),
+            [
+                call(attribute("left", "get"), [name_ref("blade"), constant(0)]),
+                call(attribute("right", "get"), [name_ref("blade"), constant(0)]),
+            ],
         ),
         generators=[
             ast.comprehension(
@@ -3676,6 +3645,7 @@ from gacalc.base import (
     MultiVectorBase,
     BladeCoef,
     Coef,
+    _coef_eq,
     _coerce,
     _require_canonical_blades,
     _require_float,{operand_import}
