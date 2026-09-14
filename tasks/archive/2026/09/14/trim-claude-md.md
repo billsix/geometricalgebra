@@ -1,6 +1,6 @@
 # Trim geometricalgebra's CLAUDE.md (74,732 B ≈ 18.7K tok, loaded every session)
 
-**Status:** Done — trimmed 2026-09-13 (pending archive after the work commit)
+**Status:** Done — trimmed 2026-09-13 (archived 2026-09-14)
 **Priority:** 2
 **Difficulty:** 3
 
