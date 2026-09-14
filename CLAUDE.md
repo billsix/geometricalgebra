@@ -7,900 +7,282 @@ Many methods cite the page/equation number they implement. The same code runs bo
 
 The algebra of *n*-dimensional Euclidean space is written 𝒢ₙ (Hestenes' notation). User-facing
 docs live in `README.md` (quick-start + how to generate a new algebra); this file is the
-contributor/architecture overview.
+contributor/architecture overview. Design rationale, deep mechanics, and history live in
+`tasks/reference/` (read on demand); this file stays lean and points there.
 
 ## Module layout
 
 The library is split one-concept-per-file so a newcomer can import just the algebra they need:
 
-- `src/gacalc/functions.py` — the **leaf** composable-function layer: `ComposableFunction` (compose
-  + LaTeX label, no inverse) + its subtype `InvertibleFunction` (+ inverse), `Linearity`,
-  `NotInvertibleError`, `compose`/`inverse`/`identity`. **Imports nothing internal** (unbounded
-  `TypeVar`); this is what `base` is allowed to import (see the **Layering** note below).
-- `src/gacalc/base.py` — `MultiVectorBase` (the abstract base) + the type aliases
-  `Blade`, `BladeCoef`, `MultiVectorFn`. Imports only the `functions` leaf (so `project`/`reject`/`reflect`
-  return `ComposableFunction`/`InvertibleFunction`); see the **Layering** note below.
+- `src/gacalc/functions.py` — the **leaf** composable-function layer: `ComposableFunction`
+  (compose + LaTeX label, no inverse) + its subtype `InvertibleFunction` (+ inverse),
+  `Linearity`, `NotInvertibleError`, `compose`/`inverse`/`identity`. **Imports nothing internal**
+  (unbounded `TypeVar`) — the one module `base` is allowed to import.
+- `src/gacalc/base.py` — `MultiVectorBase` (the abstract base) + the type aliases `Blade`,
+  `BladeCoef`, `MultiVectorFn`. Imports only the `functions` leaf.
 - `src/gacalc/gn.py` — `Gn`, the general dimension-agnostic representation, plus the
   `e_1..e_10` / `zero` / `one` constants, the symbolic vectors (`sym_vec2_1`, …), and the
-  `MultiVector = Gn` alias. (Re-exports the transform layer, which itself re-exports `functions`.)
+  `MultiVector = Gn` alias.
 - `src/gacalc/transforms.py` — the representation-agnostic transform *factory* layer
-  (`translate`/`uniform_scale`/`scale_non_uniform`/`to_matrix`/`to_matrix_template` + `MatrixTemplate`, plus the rotation factories
-  `projection_rotation` / `rotor_rotation(from, to)` / `plane_rotation(a, b)`); derives any basis it
-  needs from the value's own type, so it preserves `Gn`/`G`. **Re-exports** the
-  `functions` names (`ComposableFunction`, `InvertibleFunction`, `compose`, `inverse`, …) so
-  `from gacalc.transforms import InvertibleFunction` and `gn.py` keep working.
-- `src/gacalc/frame.py` — **frames** (a linearly independent set of vectors, Hestenes & Sobczyk p. 27):
-  `are_linearly_independent` / `is_frame` (the wedge-nonzero test) and two orthogonalizations kept
-  side by side for teaching — `make_orthogonal_frame` (rejection / Gram–Schmidt) and
-  `make_orthogonal_frame_hestenes` (the closed-form blade product `c_k = Ã_{k-1} A_k`), proven equal up
-  to a positive scalar per vector. Representation-agnostic free functions over `MultiVectorBase`; see
-  `tasks/define-frame.md`.
-- `src/gacalc/measure.py` — the named **measures** (Williamson & Trotter *Multivariable Mathematics*,
-  1979): `area`/`volume`/`content` (unsigned `|wedge|`) + `content_by_rejection` (∏ rejected heights,
-  the teaching pair), and the **signed** determinant `signed_area`/`signed_volume`/`signed_content` for
-  the full-space `k = n` case. Free functions over `MultiVectorBase`; the fixed-arity ones also exist as
-  thin pass-through **methods** on `MultiVectorBase` (`v.area(w)`) for discoverability. See
-  `tasks/reference/content-area-volume.md`.
-- `src/gacalc/vectorcalc.py` — **vector calculus in 𝒢₃** (added 2026-08-31): `cross(a, b)`, the
-  cross product as the **dual of the wedge** `(a ∧ b) I₃⁻¹`, for 3-D vectors only (`g3`, or `Gn`
-  with basis indices ≤ 3; anything else raises `ValueError`). Free function over `MultiVectorBase`
-  + a `MultiVectorBase.cross(other)` pass-through method (the `v.area(w)` precedent); 𝒢₃'s
-  generated `Vector` additionally carries a **closed-form `cross` typed `Vector -> Vector`** (see
-  Code generation). Deliberately NO `dot`/triple-product aliases — dot is `scalar_product`, the
-  scalar triple product is `measure.signed_volume` (identity gated in `tests/test_vectorcalc.py`);
-  grad/div/curl are out of scope (`tasks/archive/2026/08/31/custom-symbols-and-vector-calc.md`).
-- **The 𝒢₂ quarter turn** (added 2026-09-06, generated into `g2.py` only): `Vector.rotate_90_degrees()`
-  (closed form, `Vector -> Vector`) and the module-level `rotate_90_degrees()` factory returning an
-  `InvertibleFunction[Vector]`. Both ARE `v * e_12` — multiplication by the unit pseudoscalar,
-  `(x, y) -> (-y, x)`, exact (no `cos`/`sin`; ints stay ints, symbols stay symbolic). 𝒢₂-only on
-  purpose: in 𝒢₃+ the same product sends an e₃ component to a trivector, the footgun that got the old
-  general-dimension `rotate_90_degrees` removed from `transforms.py`. The factory guards with
-  `TypeError` on anything but a `g2.Vector`; `g2.py` imports `gacalc.transforms` for its `at(t)` law
-  (`plane_rotation(e_1, e_2)(t·π/2)`, exact turn at `t >= 1`) — acyclic, since `transforms` imports
-  only `base`/`functions`. Emitted by `generate_quarter_turn` + the `n == 2` arm of `vector_extras`
-  in `tools/gen_specialized.py` (the 𝒢₃ `cross` precedent); tests `tests/test_rotate_90_degrees.py`;
-  design record `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`.
-- `src/gacalc/g1.py`, `g2.py`, `g3.py` (and, **release-only**, `g4.py`/`g5.py`) — **generated**
-  modules, **not tracked in git**
-  (gitignored). Each is **self-contained**, holding the full specialized class `G` **and**
-  that algebra's **graded subtypes** — its grade-0 `Scalar_n` (`Scalar`),
-  `Vector_n`, `Bivector_n`, `Trivector`, `Rotor_n` (and one grade-pure type per grade up to the
-  pseudoscalar: 𝒢₄ adds `FourVector`, 𝒢₅ adds `FiveVector`, … named by the `grade_name(k)` helper —
-  the number-word `<N>Vector` scheme). **𝒢₃ additionally has `Odd_3`** — the odd part `{1,3}`, the
-  mirror of `Rotor`'s even part `{0,2}` (so `Vector*Bivector` etc. return a named type, not `G3`); a
-  graded *subspace*, not a subalgebra, with an opt-in `to_vector()`/`to_trivector()` cast (see
-  `tasks/reference/graded-subspaces-vs-subalgebras.md`). Do not edit by hand. They are produced into the
-  working tree by `make generate` / `make shell` and baked into the sdist+wheel at build time (see
-  Code generation / Dev workflow). **Which dimensions are generated is chosen by the `GACALC_DIMS`
-  env var** (default `1,2,3`): dev builds only g1–g3, while `make dist`/`make release` set
-  `GACALC_DIMS=1,2,3,4,5` so the costly `g4`/`g5` (~5 min / ~87 min) are generated **once at
-  publish** and baked in — never on a `make shell`. See
-  `tasks/reference/generated-algebra-generation-cost.md`. **The grade-0 `Scalar_n` is per-algebra** (there is no shared
-  `scalar.py`): it lives in its own algebra's module so `Scalar_n.dual()` names that algebra's
-  pseudoscalar (`Scalar.dual() → Trivector`) with no cross-module import — see the graded-subtype
-  note under Future directions and `tasks/archive/2026/07/22/per-algebra-scalar-types.md`.
+  (`translate`/`uniform_scale`/`scale_non_uniform`/`to_matrix`/`to_matrix_template` +
+  `MatrixTemplate`, plus the rotation factories `projection_rotation`/`rotor_rotation`/
+  `plane_rotation`); derives any basis from the value's own type, so it preserves `Gn`/`G`.
+  **Re-exports** the `functions` names.
+- `src/gacalc/frame.py` — **frames** (H&S p. 27): `are_linearly_independent`/`is_frame` +
+  two orthogonalizations kept side by side for teaching (`make_orthogonal_frame` /
+  `make_orthogonal_frame_hestenes`, proven equal up to a positive scalar). See `tasks/define-frame.md`.
+- `src/gacalc/measure.py` — the named **measures** (Williamson & Trotter 1979):
+  `area`/`volume`/`content` (+ `content_by_rejection`) and the **signed** determinants
+  `signed_area`/`signed_volume`/`signed_content` (full-space `k = n`); free functions over
+  `MultiVectorBase` + thin pass-through methods (`v.area(w)`). See `tasks/reference/content-area-volume.md`.
+- `src/gacalc/vectorcalc.py` — **vector calculus in 𝒢₃**: `cross(a, b) = (a ∧ b) I₃⁻¹`, the
+  dual of the wedge, 𝒢₃ only. Free function + `MultiVectorBase.cross` method; 𝒢₃'s generated
+  `Vector` carries a closed-form `cross` typed `Vector -> Vector`. Deliberately NO dot/triple
+  aliases (dot = `scalar_product`, triple = `measure.signed_volume`); grad/div/curl out of scope.
+- **The 𝒢₂ quarter turn** (generated into `g2.py` only): `Vector.rotate_90_degrees()` + the
+  module-level `rotate_90_degrees()` factory — both `= v * e_12` (the unit pseudoscalar,
+  `(x, y) -> (-y, x)`), exact, 𝒢₂-only. Rationale: `tasks/reference/design-decisions.md`,
+  `transform-and-composable-function-layer.md`; `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`.
+- `src/gacalc/g1.py`, `g2.py`, `g3.py` (and, **release-only**, `g4.py`/`g5.py`) — **generated**,
+  **gitignored**, self-contained modules holding the full specialized class `G` **and** that
+  algebra's graded subtypes (`Scalar_n`/`Vector_n`/`Bivector_n`/`Trivector`/`Rotor_n`, one
+  grade-pure type per grade up to the pseudoscalar; 𝒢₃ additionally has `Odd_3`, the odd part
+  `{1,3}`). Do not edit by hand — regenerated by `make generate`/`make shell` and baked into the
+  sdist+wheel. Which dims are generated is set by **`GACALC_DIMS`** (default `1,2,3`; `make
+  dist`/`release` set `1,2,3,4,5`). See `tasks/reference/code-generator-architecture.md`,
+  `graded-subspaces-vs-subalgebras.md`, `generated-algebra-generation-cost.md`.
 - `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
   `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`)
   — jupytext (percent-format) demo notebooks.
-- `tests/test_multivector.py` — original `Gn` tests; `tests/test_conformance.py` — parametrized
-  conformance over `[Gn, G]`; `tests/test_graded.py` — the graded-subtype suite (return
-  type + value per operation); `tests/test_generator.py` — unit tests for the *generator's own*
-  logic (blade naming, the type registry / `resolve`, `product_result`/`unary_result` result-type
-  resolution, astbuild DSL invariants); `tests/test_vectorcalc.py` — the cross product (sign
-  convention, numpy parity, the `Gn` oracle, the triple-product identity);
-  `tests/test_blade_symbols.py` — the display-symbol map. **~440 tests** (incl. doctests via
-  `--doctest-modules`).
-- `tools/gen_specialized.py` — the code generator (builds each module as Python `ast` nodes, rendered
-  with `ast.unparse`); `tools/astbuild.py` — its domain-agnostic node-builder DSL; `tools/bench.py` —
-  `Gn`-vs-specialized benchmark.
+- `tests/` — `test_multivector.py` (`Gn`), `test_conformance.py` (parametrized over `[Gn, G]`),
+  `test_graded.py` (graded subtypes), `test_generator.py` (the generator's own logic),
+  `test_vectorcalc.py` (cross product), `test_blade_symbols.py` (display-symbol map), and more.
+  **~440 tests** (incl. doctests via `--doctest-modules`).
+- `tools/gen_specialized.py` — the code generator (builds each module as Python `ast` nodes,
+  rendered with `ast.unparse`); `tools/astbuild.py` — its domain-agnostic node-builder DSL;
+  `tools/bench.py` — `Gn`-vs-specialized benchmark.
 - `entrypoint/` — container build/run scripts and **a large vendored Emacs `.emacs.d/elpa/` tree**.
-  **The vendored Emacs tree is intentional and off-limits.** It is committed on purpose so the author
-  has a reproducible, consistent Emacs environment in the container; do **not** read it, edit it,
-  reformat it, gitignore it, or factor it into any analysis. It is not project source and is none of
-  Claude's concern. (Tooling that walks the repo — e.g. `format.sh` — should be scoped away from it;
-  see Dev workflow.)
+  **The vendored Emacs tree is intentional and off-limits.** It is committed on purpose so the
+  author has a reproducible Emacs environment; do **not** read, edit, reformat, gitignore, or
+  factor it into any analysis. Tooling that walks the repo (e.g. `format.sh`) is scoped away
+  from it (see Dev workflow).
 
-**Layering (invariant + relaxation, 2026-07-17).** The core dependency graph is **acyclic** — that
-is the actual invariant that "`base.py` imports nothing internal" was a proxy for. `base.py` may
-import **leaf modules** (modules that import *nothing* internal), but never anything at or above its
-layer. A module qualifies as a base-importable leaf only if it: (1) **imports nothing internal**
-(keeps the graph acyclic); (2) is **representation-agnostic** (no dependency on `gn`/`g1`/`g2`/`g3`);
-(3) is **cheap to import** (no numpy; sympy is already a `base` dep). This documents *why* base may
-import such a module and bounds what future additions are allowed, so "leaf" never becomes a loophole
-for pulling arbitrary code under `base`. **The first (and only) such leaf is `functions.py`** (landed
-2026-07-17): the domain-agnostic function-composition abstraction (`ComposableFunction` base +
-`InvertibleFunction` subtype, `Linearity`, `NotInvertibleError`, `compose`/`inverse`/`identity`), so
-`base`'s `project`/`reject`/`reflect` return `ComposableFunction`/`InvertibleFunction`. Constraint (1)
-is *why* that module's `TypeVar` is **unbounded** rather than bound to `MultiVectorBase` — binding it
-would force `functions.py` to import `base` and reintroduce the cycle.
-The one deliberate reach *up* from that leaf (2026-09-06): `ComposableFunction.to_matrix` /
-`.to_matrix_template`, the method forms of the `transforms.py` matrix functions, import `gacalc.transforms`
-**inside the method body** (annotations via `typing.TYPE_CHECKING`), so the load-time graph is unchanged.
-Keep it that way — never promote those to module-level imports.
+**Layering (acyclic invariant).** `base.py` may import a *leaf* — a module that imports nothing
+internal, is representation-agnostic, and is cheap to import — but nothing at or above its layer;
+the only such leaf is `functions.py` (whose `TypeVar` is **unbounded** precisely to keep it
+importable by `base` without a cycle). The one deliberate reach *up*: `ComposableFunction.to_matrix`
+/ `.to_matrix_template` import `gacalc.transforms` **inside the method body** — never promote those
+to module-level imports. Full rationale: `tasks/reference/design-decisions.md`,
+`transform-and-composable-function-layer.md`.
 
 ## Architecture
 
 **Abstract base + interchange protocol.** `MultiVectorBase` (in `base.py`) holds every
 representation-independent method, written against a tiny interchange protocol so a concrete
-representation only implements the primitives. The boundary is *"touches the raw representation"*,
-not *"transitively uses the product"* — e.g. `inner_product`/`reverse`/`project` live in the ABC and
-call `self * other`, dispatched to the concrete type.
+representation only implements the primitives. The boundary is *"touches the raw representation,"*
+not *"transitively uses the product"* — e.g. `inner_product`/`reverse`/`project` live in the ABC
+and call `self * other`, dispatched to the concrete type.
 
 - **Primitives** a concrete class must supply: `from_blade_dict` (classmethod), `to_blade_dict`,
-  `_geometric_product`, and `__eq__`. Shared methods build results via `type(self).from_blade_dict()`
-  / `type(self).zero()` so they stay polymorphic.
-- A *blade* is a tuple of basis-vector indices, e.g. `(1, 2)` ≙ e₁e₂. The geometric product
-  canonicalizes concatenated blades via the recursive `decrease_grade` helper (structural `match`):
-  bubble-sort adjacent indices with a sign flip, annihilate repeats (eᵢeᵢ = 1 — **Euclidean
-  signature is hardcoded**).
+  `_geometric_product`, and `__eq__`. Shared methods build results via
+  `type(self).from_blade_dict()` / `type(self).zero()` so they stay polymorphic.
+- A *blade* is a tuple of basis-vector indices, e.g. `(1, 2)` ≙ e₁e₂; **Euclidean signature is
+  hardcoded** (eᵢeᵢ = 1). Full blade-dict contract — canonical keys and the `ValueError` on a
+  non-canonical one, zero-omission, the eager/lazy hidden-zero split, and the graded silent-drop
+  ("exp() trap") — is in `tasks/reference/blade-dict-interchange.md`.
+- `Gn` (`gn.py`) is the slow-but-obviously-correct reference (eager `sympy.simplify`); `G`
+  (`g*.py`) are the fast, lazy, code-generated specialized classes, provably consistent with `Gn`.
+  Every generated value type is `@typing.final` + `@dataclass(frozen=True, slots=True)`
+  (immutable — "changing a coordinate" means rebinding, `v = Vector(-v.x, v.y)`). Coefficient
+  type is `Coef = int | float | sympy.Expr` (a concrete union, deliberately not `numbers.Real`).
+- **Iteration yields coefficient VALUES in blade order** — `list(v)` is a vector's coordinate
+  tuple and feeds numpy/plotting directly; to decompose into single-blade terms iterate
+  `to_blade_dict()`. Read one coefficient with `value.coefficient(blade)` (a thin `to_blade_dict()`
+  lookup — `scalar_product` is the scalar product `⟨A B⟩`, sign-flipped vs the stored coefficient
+  for grade ≥2, NOT a coefficient reader).
 
-**`Gn` — the general reference.** A `@dataclass` wrapping `coefficient_of_blade:
-dict[tuple[int,...], coef]`; works in any dimension. Its `__post_init__` **eagerly
-`sympy.simplify`s** every coefficient. That is the dominant cost (~100% of runtime, profiled), and
-it is kept **on purpose**: `Gn` is the slow-but-obviously-correct reference.
+**Conventions the agent must obey while writing code (rationale in the reference docs):**
 
-**`G` — specialized fast paths.** Named-field dataclasses whose **coefficient fields are
-`coeff_scalar`, `coeff_e_1`, … `coeff_e_12`/`coeff_e_123`** (the `coeff_` prefix frees the bare blade
-names `e_1` … to denote the basis-vector *constants* below) and whose `_geometric_product`,
-`inner_product`, `outer_product`, and the linear/grade ops (`__add__`, `reverse`, `r_vector_part`,
-`even_part`, …) are **closed-form code generated from the `Gn` symbolic ops** — so they are provably
-consistent with the reference. They do **not** eagerly simplify (lazy, on equality), and they carry
-`DIMENSION` so `dual()` / `unit_pseudoscalar()` default to the class's dimension. **Every generated
-value type is `@typing.final` and `@dataclass(frozen=True, slots=True)`** — the full `G`
-and the graded subtypes (`Scalar_n`/`Vector_n`/`Bivector_n`/`Trivector`/`Rotor_n`). `slots=True` →
-no per-instance `__dict__` (the base `MultiVectorBase` declares empty `__slots__` for this);
-`@typing.final` → **none is subclassable**, so the generated methods construct the concrete class
-directly (never `type(self)`) — nothing subclasses them, and the general dimension-agnostic
-representation is `Gn` in `gn.py` (see `tasks/reference/design-decisions.md`). Immutability (`frozen`)
-is detailed next.
+- **Build vectors from the basis constants, and write every unit coefficient explicitly** —
+  `2 * e_1 + 1 * e_2` (or `2 * g2.e_1 + 1 * g2.e_2`), **not** `Vector(coeff_e_1=2, coeff_e_2=1)`
+  and **not** `2 * e_1 + e_2`. Make the implicit `1` explicit wherever a bare blade denotes a
+  **coordinate vector** (every term of a sum, every element of a vector list, the coordinate args
+  of `area`/`volume`/`signed_*`). A blade used as a **direction** stays bare — the plane/axis args
+  of `cls.i(e_1, e_2)`, `plane_rotation(e_1, e_2)`, `rotor_from_vectors(…)`, `project(onto=e_1)`,
+  `coefficient(e_1)`.
+- **Use the predefined basis constant** (`e_1`, `g3.e_3`, `Vector.e_1`, `gn.e_2`) in
+  tests/examples/notebooks/docs — never `cls.basis_vector(i)` when a constant exists
+  (`basis_vector` is for representation-agnostic library code where `cls` is a parameter).
+  Module-level constants are the *graded* type (`from gacalc.g2 import e_1` is a `Vector`); a class
+  exposes its own basis blades at that class's type (`Vector.e_1`, `G.e_1`); `Gn` has none.
+- **No local aliases** for a value that already has a canonical name (reference `Vector.e_1` /
+  `Bivector.e_12` directly, never `E1 = Vector.basis_vector(1)`). Carve-out: the full-`G` demo
+  notebooks (`displayg2`/`displayg3`) may alias full-class constants to bare names.
+- **Express rotations via the factories, never hand-built** — `plane_rotation(a, b)(θ)` (plane +
+  angle), `projection_rotation`/`rotor_rotation`/`rotor_from_vectors` (from/to, keyword args), or
+  the 𝒢₂ `rotate_90_degrees()` for quarter turns. A rotor built by trigonometry as a data literal
+  is treated as a regression.
+- **`magnitude`/`inverse` preserve numeric input** — float-in → float-out; int routes through
+  sympy for exactness; symbolic stays symbolic. Don't reintroduce an unconditional
+  `sympy.sqrt`/`sympify` (guarded by `tests/test_numeric_magnitude.py`).
+- **Terminology:** 𝒢ₙ denotes the *algebra*; an instance is an *element of* 𝒢ₙ; classes are named
+  after their algebra; the dimension parameter is `n` (never `grade`).
 
-**Generated value types are FROZEN (immutable) — `@dataclass(frozen=True, slots=True)`**
-(changed 2026-07-23; they used to be mutable). Coefficient fields cannot be reassigned:
-"changing a coordinate" means **rebinding** a new vector (`v = Vector(-v.x, v.y)`), not
-`v.x = …`. The `x`/`y`/`z` coordinate properties are **read-only** getters, and exist **only
-on the grade-1 (vector) types** (`Vector`) — not on rotors, bivectors,
-or the full `G_n` (a vector's coordinates *are* its basis coefficients; `x` on a rotor would
-imply a coordinate tuple it doesn't have). Immutability
-**removes the aliasing footguns** the old mutable types had — a multivector in a shared
-location (module constant, class attribute, mutable default arg) is no longer a hazard, and
-the basis constants (`Vector.e_1`, …) can't be mutated by accident. **Breaking change for
-consumers that mutated in place:** *modelviewprojection*'s Code-the-Classics ports did this
-throughout (`self.dir.x = -self.dir.x`, `self.vpos.y = …`) and must convert to rebinding —
-gated on a gacalc release (see the mvp task and gacalc `tasks/model-*`/the frozen task).
+Deep mechanics + every "Caveat —" block (frozen+slots property-write quirk, frozen≠hashable,
+coefficient-view re-simplify on `Gn`, custom blade display symbols, `Coef` vs `numbers.Real`, the
+composable-function hierarchy, rotations/rotors + the rotor sandwich derivation, `plane_rotation`,
+`to_matrix`/`to_matrix_template`, project/reject grade-narrowing) live in:
 
-**Caveat — the frozen+slots property-write error is a Python quirk.** A **field** write
-(`v.coeff_e_1 = …`) raises a clean `FrozenInstanceError`; a **property** write (`v.x = …`)
-surfaces a confusing `TypeError: super(type, obj)…` (a Python 3.14 frozen+slots+property
-internals interaction). It is still *blocked* — just an ugly message. Dropping `slots` gives
-clean errors but loses the `__dict__`-free memory benefit; `slots` was kept deliberately.
-See `tasks/archive/2026/07/23/investigate-frozen-generated-classes.md`.
-
-**Caveat — frozen does NOT make them hashable.** The hand-written `__eq__` (emitted with
-`eq=False`) leaves `__hash__ = None`, so `Vector`/`Rotor`/… are **unhashable** — not
-usable as a dict key or set member — and a value-hash is impossible anyway, since
-coefficients may be `sympy.Expr`/`float`. (The frozen work's original "usable as a dict
-key" motivation was retracted.) Use `to_blade_dict()` items if you need to key on a value.
-
-**Coefficient-view helpers (`base.py`).** `simplified()` / `expanded()` return the same multivector
-with each coefficient `sympy.simplify`'d / `sympy.expand`'d — for the lazy classes, whose raw
-coefficients aren't reduced (e.g. a bivector times its dual whose terms should cancel, or a fully
-distributed product). They're on `MultiVectorBase` (work on every representation via the
-`_map_coefficients` interchange helper); `Gn` already eager-simplifies, so `simplified()` is a no-op
-there. **Caveat — these can't force a coefficient *form* on `Gn`:** because they rebuild via
-`from_blade_dict`, `Gn.__post_init__` re-runs `sympy.simplify` and re-canonicalizes the result (e.g. a
-just-`expanded()` numerator gets re-factored back to `a0*(b0 + c0)`). So for a **display** form that
-must hold regardless of representation, transform the **blade dict directly** without rebuilding the
-multivector — see `nbplotutils._expand_numerators_dict` (used by `show_mult` to expand numerators but
-keep denominators factored, surviving `Gn`'s eager simplify). Reading a single coefficient back out:
-`value.coefficient(blade)` (e.g.
-`v.coefficient(Vector.e_1)`, `B.coefficient(Bivector.e_12)`) — a thin reader that just looks the
-value up in `to_blade_dict()` (no product computed, correct for any grade). The old `component`
-method, which *computed* `⟨A x̃⟩` to recover a number the object already stores, was retired in its
-favour; `scalar_product` remains, but it is the scalar product `⟨A B⟩`, **not** a coefficient reader
-(it's sign-flipped vs the stored coefficient for grade ≥2).
-
-**Custom blade display symbols (`base.py`, 2026-08-31) — LaTeX display only.**
-`set_blade_symbols({(1,): r"\mathbf{i}", …})` in a notebook setup cell makes every later LaTeX
-display (cell output, `show_mult`, plot labels) render mapped blades under custom names — the
-calc-3 i/j/k case; pair it with plain input aliases `i, j, k = e_1, e_2, e_3` (no library support
-needed, and sanctioned in `displayvectorcalc.py` despite the no-aliases rule). Layered design:
-`blade_latex(blade, symbols)` / `blade_dict_latex(d, symbols)` are the **pure** layer (tests use
-it); one **module-global** map is consulted when `symbols` is absent — a global on purpose,
-because Jupyter invokes `_repr_latex_()` with no arguments, so cell output can only honor state
-the method can reach. Rename-only with canonical keys (validated); the blade-tuple interchange
-format and `__repr__` never change. `set_blade_symbols({})` resets.
-
-**Coefficient type — `Coef = int | float | sympy.Expr`** (defined in `base.py`, alongside the
-domain aliases `Blade = tuple[int, ...]` — a blade's basis-vector indices — and `BladeCoef =
-dict[Blade, Coef]`; all three are threaded through the code the way `Coef` is). A multivector
-coefficient is a plain Python number or a sympy
-expression. The full **blade-dict interchange contract** — canonical keys and the
-`ValueError` on a non-canonical one, zero-omission, the eager/lazy hidden-zero split, and the
-graded silent-drop ("exp() trap") — is in `tasks/reference/blade-dict-interchange.md`. This is the **concrete** union, deliberately *not* the `numbers.Real` ABC: ty turns
-`numbers.Real` arithmetic into `_ComplexLike` and then rejects `+`/`/`/`**` on it, which is what used
-to force the `ty.toml` override on the generated rotor sandwich (whose closed form divides by `|R|²`
-and squares coefficients). The generated `coeff_*` fields and the scalar-returning methods
-(`scalar_part`, `scalar_product`, `component`, `magnitude`, `magnitude_squared`, `cosine`) are all
-typed `Coef`. The generator's `cast_coef` (in `tools/astbuild.py`) skips the cast for a bare or
-negated field (already `Coef`) and only wraps compound expressions.
-
-`magnitude()` and `inverse()` **preserve numeric input.** When `|A|²` is a Python
-`float` (already inexact) they return a `float` — `math.sqrt` / a plain float
-reciprocal — rather than promoting to sympy; an unconditional `sympy.sqrt` /
-`sympify` would otherwise turn a purely numeric pipeline symbolic (and downstream
-make a `numpy` matrix `dtype=object`, which is how it surfaced — a consumer's
-`np.linalg.inv` failing). An `int` `|A|²` still routes through sympy so exactness
-holds (`sqrt(25) == 5`; a unit blade normalizes to `Rational`s, not floats), and
-symbolic coefficients stay symbolic. **Don't reintroduce an unconditional
-`sympy.sqrt` / `sympify` on these paths** (covered by `tests/test_numeric_magnitude.py`).
-
-**Build vectors from the basis constants, not the raw constructor, and write every unit coefficient
-explicitly.** In code, tests, doctests, and examples write `2 * e_1 + 1 * e_2` (or `2 * g2.e_1 + 1 *
-g2.e_2` when qualified) — **not** `Vector(coeff_e_1=2, coeff_e_2=1)`, and **not** the bare `2 * e_1 +
-e_2`. Two rules:
-
-- **Compose the named basis constants**, not the `coeff_`-keyword constructor (that is for
-  internal/generated code) — it reads as the math (`2e₁ + e₂`), survives grade/coordinate changes,
-  and keeps the precise graded type. (Bill, 2026-08-23.)
-- **Make the implicit `1` explicit** wherever a bare basis blade denotes a **coordinate vector**, so
-  each reads as `coefficient * basis` — a student sees every coordinate the same way. This covers
-  three places: (a) every **term of a multi-term sum** — `1 * e_1 + 3 * e_2` (not `e_1 + 3 * e_2`),
-  `1 * e_1 + 1 * e_2` (not `e_1 + e_2`), `2 * e_1 - 1 * e_2` (not `2 * e_1 - e_2`); (b) every **element
-  of a list/tuple** of vectors — `content([1 * e_1, 1 * e_1 + 1 * e_2])` (not `[e_1, …]`); (c) the
-  **coordinate-vector arguments of the measure functions** `area` / `volume` / `signed_area` /
-  `signed_volume` — `volume(2 * e_1, 1 * e_2, 3 * e_3)`. **A blade used as a *direction* stays bare** —
-  the plane/axis args of `cls.i(e_1, e_2)`, `plane_rotation(e_1, e_2)`, `rotor_from_vectors(…)`, and
-  the blade args of `project(onto=e_1)` / `coefficient(e_1)`: there a `1 *` is noise, not a
-  coordinate. (Bill, 2026-08-26.)
-
-Two ways to name a basis blade: each `g1`/`g2`/`g3` module exports **module-level** constants at
-their **graded** type (`from gacalc.g2 import e_1, e_2` then `3*e_1 + 4*e_2` is a **`Vector`**, `e_12`
-is a `Bivector`, `zero`/`one` are `Scalar_n`) — so concise unqualified code keeps the precise graded
-type and matches the printed math (`3e₁ + 4e₂`); and each **class** exposes its own basis blades as
-**class constants of that class's type** (`Vector.e_1`, `Bivector.e_12`, `G.e_123`, and the full
-class's own `G.e_1`/`G.e_123`) — equivalent to `cls.basis_vector(n)` but named. **Convention (maintainer, 2026-09-06): in tests, examples, notebooks and docs use the named
-constant (`e_1`, `g3.e_3`, `Vector.e_1`, `gn.e_2`), never `cls.basis_vector(i)` when a constant exists;
-`basis_vector(i)` is for representation-agnostic library code where `cls` is a parameter (`to_matrix`).** **To build a general
-`G_n` concisely, use the full class's own constant** (`G.e_1`, so `3*G.e_1 + 4*G.e_2` is a `G`) or
-`G(...)` / `Gn`; the module constants are no longer the full class. (Reversed 2026-08-04 — module
-constants used to be the full `G_n`; the only code encoding that was one conformance test
-(`test_basis_constants`, updated to assert the graded type) and the two full-class notebooks (migrated
-to `G.e_1`/`G.e_1`). See `tasks/graded-typed-module-basis-constants.md`.) The class constants are emitted by
-the generator as a `ClassVar` declaration in the class body plus a post-class `Cls.e_1 =
-Cls.from_blade_dict(...)` assignment (a class can't reference itself mid-definition); the module
-constants are emitted by `generate_constants` at each blade's `resolve`d graded type. Because the
-stored field is `coeff_e_1`, **both `Cls.e_1` and `instance.e_1` resolve to that one constant** (no
-instance attribute shadows it), while `instance.coeff_e_1` is the component value; read a coefficient
-back out with `value.coefficient(Vector.e_1)` (thin reader over `to_blade_dict()`). `Gn` is
-dimension-agnostic so it has **no** class constants and **no** graded subtypes — its module-level
-`gn.e_1 …` stay `Gn` (`MultiVector`); or use `Gn.basis_vector(n)`. Mixing a specialized value with a
-`Gn` value coerces to `Gn`.
-
-**Iteration yields coefficient values, not blade terms.** `iter(value)` / `list(value)` /
-`tuple(value)` / `np.array([list(v), …])` yield the coefficient *values* in blade order — so a vector
-reads as its coordinate tuple and feeds numpy/plotting directly. This is the generated `__iter__` on
-every specialized class (all fields, dense) and `MultiVectorBase.__iter__` on `Gn` (its present
-blades). To decompose a value into one single-blade multivector per term instead (e.g. for a
-component-by-component product breakdown), iterate `to_blade_dict()` — which is what
-`nbplotutils.show_mult` (via its `_blade_terms` helper) does.
-
-**Terminology:** 𝒢ₙ denotes the *algebra*; an instance is an *element of* 𝒢ₙ. Classes are named
-after their algebra. The dimension parameter is `n` (it was once misleadingly called `grade`).
-
-**Transforms & the composable-function hierarchy.** The function abstraction (in `functions.py`,
-re-exported from `transforms.py` + `gn.py`) is split by *capability*: **`ComposableFunction`** wraps a
-function + LaTeX label, composable via `@` / `compose` (+ a `Linearity` class and the `at`/`steps`
-animation layer) — **house style (maintainer, 2026-09-06): `f @ g` when the whole chain fits on one
-line (80/88 columns); `compose([f, g, ...])` — same order, `f` after `g`, last applied first — the
-moment it would wrap, because the formatter turns a wrapped `@` chain into dangling operators while a
-list gets one function per line. Never leave a multi-line `@` composition (numpy's matrix `@` is
-unaffected)** —, and **`InvertibleFunction(ComposableFunction)`** adds an `inverse` (+
-`latex_repr_inv`). This split exists because the layer serves two consumers with different needs:
-mvp's Cayley-graph engine *requires* invertibility (it walks edges backward via `inverse`), while
-display/compose pipelines don't. So a non-invertible function simply *is* a `ComposableFunction`, not
-an `InvertibleFunction` — a projection-as-Cayley-edge is a **type** error, not a runtime surprise.
-`project` / `reject` return `ComposableFunction` (a projection discards information — not invertible);
-`reflect` returns `InvertibleFunction` (an involution, its own inverse); `identity`/`translate`/scales/
-rotations are `InvertibleFunction`. **`compose` returns an `InvertibleFunction` iff every part is
-invertible** (else `ComposableFunction`); `inverse()` raises **`NotInvertibleError`** on a
-non-invertible input (the runtime backstop when the type distinction is bypassed). To label a bare
-callable, **construct the type directly** (`ComposableFunction(fn, "P_{B}")` /
-`InvertibleFunction(func=…, latex_repr=…, inverse=…, latex_repr_inv=…)`) — there is no `labeled`
-helper. `project`/`reject`/`reflect` return types are typed at `MultiVectorBase` (not `Self`): a
-caller wanting the concrete parameter (`ComposableFunction[Vector]`) casts at the use site. **For the
-one-shot "apply to this value" case, `MultiVectorBase` also has value-returning pass-through methods
-`projected_onto(onto)` / `rejected_away_from(away_from)` / `reflected_across(across)`** (sugar for
-`type(self).project/reject/reflect(arg)(self)`; the factories stay for compose/label/pipeline) — the
-generated vector types narrow their return to the concrete `Vector_n` (see
-`tasks/reference/generated-product-typing.md`). This
-layer is shared with *modelviewprojection*; Jupyter display via `_repr_latex_`. Follow-ups
-(module naming, animation-layer placement) live in `tasks/composable-function-followups.md`; the
-refactor that produced them is archived at
-`tasks/archive/2026/07/17/reassess-composable-function-interface.md`.
-
-**Rotations & rotors.** The rotor *builder* lives on `MultiVectorBase` (`base.py`):
-`rotor_from_vectors(from, to)` builds the rotor `R = |from||to| + to·from` (scalar + bivector, the
-even-subalgebra grade), acting in **any plane, any dimension/representation**. The rotation
-*factories* are representation-agnostic **free functions in `transforms.py`** (each derives its basis
-from the operand's own type): `projection_rotation(from, to)` returns a function that rotates a vector
-through the angle from `from`→`to` *in their plane* (in-plane part turned, perpendicular part left
-fixed — the projection formula, equivalent to the rotor sandwich `R v R⁻¹`); `rotor_rotation(from, to)`
-packages the same rotation as the rotor sandwich; and `plane_rotation(a, b)` separates plane from
-angle (see below). (`projection_rotation` was moved off `MultiVectorBase` — where it was the `rotate`
-classmethod — and renamed 2026-07-16, so all three rotation factories live together; `rotor_from_vectors`
-stays on the base as it builds a *value*, not a transform.)
-
-**`plane_rotation(a, b)` (transforms.py, 2026-07-08) separates the plane from the angle** — the
-concern `projection_rotation(from, to)` / `rotor_rotation(from, to)` conflates (its angle is locked to the two vectors, which is what mvp's
-animation/interpolation fought). `a`/`b` are verified grade-1 and only *define the plane*: their
-normalized wedge is the plane's unit bivector `i` (`a ∧ b == 0`, i.e. parallel vectors, is an error —
-the wedge-is-zero test IS the linear-dependence test). It returns *angle → `InvertibleFunction`*:
-`f = plane_rotation(e_1, e_2)` once, then `f(θ)` for any θ builds the half-angle rotor
-`R = cos(θ/2) − sin(θ/2)·i` and sandwiches. Positive θ turns from `a` toward `b`; the inverse is
-`f(−θ)`; `f(θ).at(t)` interpolates as `f(t·θ)`; symbolic θ stays symbolic, float θ stays numeric.
-This is the sanctioned "rotate by an angle in a plane" API — the half-angle trig lives *inside* the
-library, so user code never hand-builds a rotor.
-
-`transforms.projection_rotation` is *projection-based* (it splits the operand into in-plane +
-perpendicular parts) — it returns the operand's type via a runtime grade projection. The generated
-`Rotor` classes additionally carry a **closed-form, type-correct `sandwich(x)`** (`R x R⁻¹`, derived
-symbolically by the generator, no projection): grade-preserving, so `Rotor.sandwich(Vector) →
-Vector`, `…(Bivector) → Bivector`, etc. `projection_rotation` keeps the projection formula for
-teaching both; the rotor sandwich is the fast path mvp's rotations run on. (Both agree — see
-`notebooks/displayrotations.py`.)
-
-**`project`/`reject` are grade-preserving and stay in the operand's type.** `P_B(A) = (A·B)B⁻¹`
-preserves A's grade, so for a homogeneous input the result is the same grade — `base.project`'s
-`is_r_vector` branch narrows the result to that grade and rebuilds it as `type(A)`. Without that,
-projecting a `Vector` onto a `Bivector` would *widen* to `G` (the geometric product `Vector *
-Bivector⁻¹` types as the odd part `{1,3}` even though the grade-3 part is identically zero for a
-projection); the narrowing keeps `Vector.project(onto=Bivector) → Vector`. (Same spirit as the
-rotor sandwich's grade projection.)
-
-**The 𝒢₂ quarter turn is the one *exact* rotation (2026-09-06):** `g2.rotate_90_degrees()` (an
-`InvertibleFunction[Vector]`) and `g2.Vector.rotate_90_degrees()` are `v * e_12` in closed form —
-a fixed +90° turn is the pseudoscalar product, not "an angle that happens to be π/2" through the
-trig rotor, so it stays exact on ints and symbols. Use it (not `plane_rotation(e_1, e_2)(math.pi/2)`)
-whenever a 2-D rotation is a multiple of 90°; it composes and inverts like any transform.
-
-**Convention — express rotations as `plane_rotation` (plane + angle) or `projection_rotation` /
-`rotor_rotation` / `rotor_from_vectors` (from/to), or the 𝒢₂ `rotate_90_degrees` for quarter turns,
-never hand-built.**
-When writing or reviewing examples, tests, notebooks, or docs, a rotation must read as an explicit
-`projection_rotation(from_vector=…, to_vector=…)(v)` (or `rotor_rotation(…)`) or
-`cls.rotor_from_vectors(from_vector=…, to_vector=…)`
-(keyword args; add `.normalize()` for a unit rotor). **Do not** hand-build a rotor as a data value —
-e.g. a `G`/`Rotor` instance assigned from `cos(t/2) - sin(t/2)*(e_1*e_2)`. A rotor that "happens to
-be" the right data but is constructed by trigonometry is treated as a regression; the whole point of
-these methods is that a rotation reads as from→to, not as a derived multivector literal. (Fine:
-building a *target vector* at an angle, `to = cos(a)*e_1 + sin(a)*e_2`, then feeding it to
-`rotor_from_vectors`; and the rotor *definition* in `plane_of_rotation`'s docstring.)
-
-**Convention — no local aliases for values that have a direct name.** Don't bind locals like
-`E1 = Vector.basis_vector(1)` / `I2 = E1 ^ E2` / `B12 = F1 ^ F2` / `I3 = (F1^F2)^F3` and then use
-`E1`/`I2`/`B12`/`I3`. Every basis blade is directly referenceable as a **class constant of its grade's
-type** — `Vector.e_1`, `Bivector.e_12`, `Trivector.e_123`, `Vector.e_3`, etc. (added in this
-project; see the class-constant note above). Reference those directly instead of aliasing them.
-*Derived* values with a semantic role (a specific test multivector, a `from`/`to`/`w`
-vector) keep their names; the rule targets pure renames of things that already have a canonical name.
-**Carve-out — the full-`G` demo notebooks may alias the full-class basis constants to bare
-names.** `notebooks/displayg2.py` / `displayg3.py` demonstrate the full specialized `G` class (every
-value is a `G`), and unlike the graded types there is **no** bare module-level name for the full-`G`
-constants — the module's `from gacalc.g2 import e_1` gives the *graded* `Vector`, not `G.e_1`. So those
-two notebooks define local `e_1: G = G.e_1`, … (up to the pseudoscalar) in their setup cell, purely to
-buy the concision the graded notebooks get for free, and then write `2*e_1 + 3*e_2` (a `G`). This is
-the **only** sanctioned use of this shape — don't "fix" it back to `G.e_1`, and don't extend it to
-other files or to values that already have a bare name.
+- `tasks/reference/design-decisions.md` — frozen/immutability, `Gn`/`G`, coefficient type,
+  magnitude preservation, custom blade symbols, coefficient views, terminology, `exp`.
+- `tasks/reference/transform-and-composable-function-layer.md` — the composable-function
+  hierarchy, the rotation factories/rotors, `to_matrix`/`to_matrix_template`, the quarter turn.
+- `tasks/reference/unit-bivector-and-rotors.md` — the unit bivector `i`/plane and the rotor math.
+- `tasks/reference/blade-dict-interchange.md` — iteration/coefficient readback + the interchange contract.
+- `tasks/reference/generated-product-typing.md` — project/reject grade-narrowing + precise product typing.
 
 ## Operators
 
 - `*` geometric product · `^` wedge (outer) product · `@` composition of `InvertibleFunction`s
+  (use `@` when the chain fits one line, `compose([...])` when it would wrap — see the transform
+  layer reference; numpy's matrix `@` is unaffected)
 - `<` left contraction (`a.left_contraction(b)`) · `>` right contraction (`a.right_contraction(b)`)
-  — Taylor 2021 p.103; grade `m−k` / `k−m`, and **include grade 0** unlike the Hestenes `inner_product`
-  (see `tasks/reference/contraction-and-dot-definitions.md`)
-- `abs(mv)` → magnitude · inverse via `.inverse()` · `A / B` quotient
-  (`= A * B.inverse()`; a bare number's inverse is its reciprocal, so `v / s` divides
-  every coefficient)
+  — Taylor 2021 p.103; grade `m−k` / `k−m`, and **include grade 0** unlike the Hestenes
+  `inner_product` (see `tasks/reference/contraction-and-dot-definitions.md`)
+- `abs(mv)` → magnitude · inverse via `.inverse()` · `A / B` quotient (`= A * B.inverse()`;
+  a bare number's inverse is its reciprocal, so `v / s` divides every coefficient)
 - rotations: `transforms.projection_rotation(from, to)` / `rotor_rotation(from, to)` /
   `plane_rotation(a, b)` (free-function factories); `MultiVectorBase.rotor_from_vectors(from, to)`
   (the rotor builder) — any plane / representation
 - cross product (𝒢₃ only): `vectorcalc.cross(a, b)` = `(a ∧ b) I₃⁻¹` (the dual of the wedge;
-  standard right-handed sign — `e₁ × e₂ = e₃`) / `a.cross(b)` (method form; on 𝒢₃'s generated
-  `Vector` it is a **closed form typed `Vector -> Vector`**). Dot = `scalar_product`; scalar
-  triple product = `measure.signed_volume` — no aliases (see `vectorcalc.py`'s module docstring)
+  right-handed, `e₁ × e₂ = e₃`) / `a.cross(b)` (on 𝒢₃'s generated `Vector` a closed form typed
+  `Vector -> Vector`). Dot = `scalar_product`; scalar triple product = `measure.signed_volume` — no aliases
 - quarter turn (𝒢₂ only): `g2.Vector.rotate_90_degrees()` / the `g2.rotate_90_degrees()`
-  `InvertibleFunction` factory — `= v * e_12` (multiplication by the unit pseudoscalar, +90° e₁→e₂,
-  exact); the inverse is the −90° turn `v * -e_12`
-- plane helpers: `cls.bivector_from_vectors(a, b)` builds the raw wedge `a ∧ b` (the un-normalized
-  area bivector); `cls.i(a, b)` normalizes it to the plane's **unit** bivector (`i² = −1`) — a
-  classmethod on the full types (`Gn`/`G`/`Vector`); `.i()` (no args) gets a value's own unit plane
-  (`Bivector.i()` = normalize, `Rotor.i()` = plane of rotation) — an instance method on the graded
-  types. **All return a BIVECTOR, never a rotor** — and on the specialized types they are
-  **type-precise** (`Vector_n.i(a, b) -> Bivector_n`, `.i() -> Bivector_n`; 𝒢ₙ stays
-  `MultiVectorBase`). `i` **raises `ValueError` on parallel vectors** (zero wedge → no plane),
-  not `normalize`'s low-level `ZeroDivisionError` — same guard/message as `plane_rotation`. Math
-  + design (and why the classmethod/instance split): `tasks/reference/unit-bivector-and-rotors.md`
-- `mv.exp()` — exponential map, defined for a scalar or a **negative-square** blade
-  (`A² < 0`: a bivector / the 𝒢₃ pseudoscalar): `cos|A| + sin|A|·Â` — **exp of a bivector IS
-  a rotor** (`Bivector_n.exp() -> Rotor_n`, unit by construction; Dorst, Fontijne & Mann §7.4).
-  A **vector** (`A² > 0`) is **rejected** with `ValueError` — its hyperbolic `cosh/sinh` form is
-  a Minkowski boost with no meaning in this Euclidean library, so the old galgebra-derived vector
-  branch was removed (see `tasks/archive/2026/08/15/redo-exp-book-referenced.md`). Dispatches by *grade* (Euclidean
-  makes the sign structural — no galgebra-style `hint`); built via dispatching arithmetic, never
-  `from_blade_dict`. NOTE: `plane_rotation` deliberately does NOT use it (see
-  `tasks/reference/design-decisions.md`)
+  `InvertibleFunction` factory — `= v * e_12` (+90° e₁→e₂, exact); the inverse is `v * -e_12`
+- plane helpers: `cls.bivector_from_vectors(a, b)` builds the raw wedge `a ∧ b`; `cls.i(a, b)`
+  normalizes it to the plane's **unit** bivector (`i² = −1`) — a classmethod on the full types;
+  `.i()` (no args) gets a value's own unit plane (`Bivector.i()` = normalize, `Rotor.i()` = plane
+  of rotation) — an instance method on the graded types. **All return a BIVECTOR, never a rotor**,
+  and are type-precise on the specialized types. `i` **raises `ValueError` on parallel vectors**.
+  Math + the classmethod/instance split: `tasks/reference/unit-bivector-and-rotors.md`
+- `mv.exp()` — exponential map, defined for a scalar or a **negative-square** blade (`A² < 0`:
+  a bivector / the 𝒢₃ pseudoscalar): `cos|A| + sin|A|·Â` — **exp of a bivector IS a rotor**
+  (`Bivector_n.exp() -> Rotor_n`). A **vector** (`A² > 0`) is **rejected** with `ValueError` (the
+  hyperbolic Minkowski-boost branch was removed — meaningless in this Euclidean library). See
+  `tasks/reference/design-decisions.md`, `unit-bivector-and-rotors.md`.
 
 ## Code generation
 
-**Investigating a question about the generated code? Generate first, study the real files, then fix
-the generator — never reason from memory or hand-edit the output.** Because `g1.py`/`g2.py`/`g3.py` are gitignored, they may be absent or stale in the working tree. Whenever a question is
-about the *generated* code (a value/type/attribute on `G` or a graded subtype, why some
-output looks the way it does, etc.): (1) run `make generate` to materialize the current files; (2)
-read/poke the actual generated source (and a REPL repro) to understand the behavior; (3) only then
-plan and make the change **in `tools/gen_specialized.py` (or `tools/astbuild.py`)** and regenerate —
-the generated `.py` are build artifacts, so editing them by hand is always wrong and will be
-overwritten.
+**Generate first, study the real files, then fix the generator — never reason from memory or
+hand-edit the output.** Because `g1.py`/`g2.py`/`g3.py` are gitignored, they may be absent or
+stale. For any question about the *generated* code: (1) `make generate` to materialize the files;
+(2) read the actual generated source (and a REPL repro); (3) only then change
+`tools/gen_specialized.py` (or `tools/astbuild.py`) and regenerate. The generated `.py` are build
+artifacts — hand-editing them is always wrong and will be overwritten.
 
 **Consequence for review: a correct generator change shows up in `git diff` as a `tools/` diff and
-*nothing* under `src/gacalc/`.** The regenerated `g1.py`/`g2.py`/`g3.py` are gitignored
-(`.gitignore`), so they change on disk but never appear in `git status`/`git diff`. A thin diff
-touching only `tools/gen_specialized.py` is the *expected, healthy* shape of such a change — not a
-sign the work was skipped. To see the actual emitted code, open the files in `src/gacalc/` directly
-(they exist on disk after `make generate`), don't look in git.
+*nothing* under `src/gacalc/`.** The regenerated modules are gitignored, so they change on disk but
+never in `git status`/`git diff` — a thin `tools/`-only diff is the *expected, healthy* shape, not
+a sign work was skipped. To see the emitted code, open `src/gacalc/` on disk after `make generate`,
+not git.
 
-`g1.py`/`g2.py`/`g3.py` are generated by `tools/gen_specialized.py`, which derives
-each closed form by running the general symbolic geometric/inner/outer products in `Gn`, factoring with
-`sympy.cse`. It **builds each module as Python `ast` nodes** — using the domain-agnostic node-builder
-DSL in `tools/astbuild.py` — and renders them with `ast.unparse` (the file header of copyright +
-imports is the only raw text, since comments can't live in an AST). They are **not checked into git** —
-generate them with
-`make generate` (or `python tools/gen_specialized.py` directly, run from the repo root; it adds `src/`
-to its own path). It **formats its own output** (runs `ruff` on the files it writes), so a regen needs
-no separate format pass. **Adding a brand-new algebra is a one-line edit** to the `ALL_ALGEBRAS` list;
-**which declared dims are actually generated is chosen by the `GACALC_DIMS` env var** (default
-`1,2,3`) — see `README.md` "Generating the algebras". Generation cost grows superlinearly and the
-factor accelerates: sub-second 𝒢₁/𝒢₂, ~23 s 𝒢₃, ~5 min 𝒢₄, ~87 min 𝒢₅ — which is why 𝒢₄/𝒢₅ are
-release-only (`tasks/reference/generated-algebra-generation-cost.md`).
-
-**Where generation happens (the files are gitignored, so something must produce them):**
-- `make shell` runs the generator inside the container (`entrypoint/shell.sh`) before the editable
-  install, so the bind-mounted tree has real files for tests / `ty` / `ruff` / the IDE. **Dev default:
-  g1–g3 only** (`GACALC_DIMS` unset); g4/g5 are not built here.
-- `make dist` builds the sdist + wheel **inside the container** (the image's pinned toolchain),
-  regenerating first **with `GACALC_DIMS=1,2,3,4,5`** (so g4/g5 are generated once at publish) and
-  writing artifacts to `./dist` on the host via a bind mount (container
-  `/dist`); the generated `.py` are **baked in**, so a `pip install gacalc` is fully readable without
-  the end user running the generator (and `g4`/`g5` ship without anyone paying their ~5 min / ~87 min
-  cost). A `build_py` hook in `setup.py` also regenerates *if missing* during any build — its
-  if-missing list is `[g1,g2,g3]`, so a git-checkout build does **not** silently pay the g4/g5 cost;
-  needs the `numpy`+`sympy` build-requires in `pyproject.toml`. The opt-in `make generate-all` /
-  `make test-all-dims` build/exercise the full set locally (the full-dim gate).
-  `make upload` / `make release` then run `twine upload` of `./dist/*` **inside the container** too
-  (`twine` is baked into the image via the dev extras) — an interactive `-it` run with
-  `TWINE_USERNAME=__token__`, so you just paste your PyPI API token at the prompt; nothing
-  credential-bearing is stored in the image. The **only** host-side step is `git tag` in `release`
-  (git stays on the host). `release` refuses if a `v<version>` tag already exists — bump `version` in
-  `pyproject.toml` first. See "Releasing & PyPI auth" under Dev workflow.
-- A fresh non-container checkout must `make generate` once before `pytest` / `ty` / `ruff` / `bench`
-  (those import the generated modules; the generator itself does not, so it always bootstraps).
-
-Two presentation details, both driven from the generator so they stay consistent across algebras:
-the additive terms in each generated component are **ordered by grade** (scalar → vector → bivector
-→ …) via `term_grade_key`; and each generated method's docstring is **copied from the matching
-`MultiVectorBase` method** (`base.py`) via `inspect.getdoc`, so the Hestenes notation on the
-specialized classes never drifts from the shared base.
-
-**doc-region markers (for downstream books, added 2026-07-20).** The source carries
-`# doc-region-begin <name>` / `# doc-region-end <name>` comment markers so a Sphinx book (the
-author's *modelviewprojection*) can `literalinclude` slices of gacalc. **Hand-written** modules
-carry them as ordinary comments — `functions.py` (`ComposableFunction`/`__call__`/`__matmul__`,
-`InvertibleFunction`, `inverse`) and `transforms.py` (`translate`/`uniform_scale`/`scale_non_uniform`),
-each split into a `... signature` region (the `def` line) and a `... body` region (after the
-docstring), so the book can show a signature without the docstring. **Generated** modules
-(`g1`/`g2`/`g3`) get their markers from the generator: `astbuild.inject_region_markers`
-walks the built AST and wraps each class and each method — regions `<Class> class` /
-`<Class> declaration` / `<Class> cls variables` (the `ClassVar`s: `DIMENSION` + basis constants) /
-`<Class> instance variables` / `<Class> <method> method`. (`cls variables`, not `class variables`,
-so it doesn't prefix the `<Class> class` region.) Because a comment
-cannot live in an AST, markers are emitted as sentinel string-literal statements and rewritten to
-`# ` comments by `astbuild.module_source` (the `declaration` end is placed by a text pass, so it
-lands after the `class` line without displacing the docstring). **Naming is descriptive and
-prefix-free by construction** — the trailing `class`/`method`/`signature`/`body` keyword is
-load-bearing, because Sphinx matches the first line *containing* the anchor text (so
-`Vector magnitude` would otherwise also match `Vector magnitude_squared`). A property setter/deleter
-takes a `... setter`/`... deleter` qualifier so it doesn't collide with the getter. **NOT SHA1** —
-descriptive names, verified unique. **`make check-regions`** (`tools/check_doc_regions.py`)
-regenerates then asserts every `src/gacalc/*.py` marker set is free of exact duplicates and prefix
-collisions and is balanced; run it after touching markers or the generator. Basis-constant
-assignments (`Cls.e_1 = …`, post-class) are deliberately **not** marked. See
-`tasks/archive/2026/07/21/annotate-generated-doc-regions.md` (and the rationale digest in
-`tasks/reference/design-decisions.md` › "Marker names are descriptive and prefix-free").
+The AST/`astbuild`/`cse` mechanics, the type registry + `resolve`/`product_result`, the
+doc-region-marker machinery and its prefix-free naming, where generation happens (dev vs `make
+dist`/`release`, the `GACALC_DIMS` env var, the wheel bake), and how to change/extend it live in
+`tasks/reference/code-generator-architecture.md` (the how-it's-wired map) and
+`generated-product-typing.md` (the precise-typing rationale). Cost + why g4/g5 are release-only:
+`generated-algebra-generation-cost.md`. Run **`make check-regions`** after touching markers or the generator.
 
 ## Coding standard (Python)
 
-Written for both humans and AI agents: each rule is a statement + a one-line reason.
-**The standard is split in two** — (a) what **ruff already enforces mechanically**
-(don't hand-review or re-prose these; if `make format` is green they're done), and
-(b) the **judgment calls ruff can't check** (spend attention here). Canonical home is
-this file; `README.md` just points here.
+**The full standard lives in the shared cross-project doc
+`runClaudeInContainer/tasks/reference/python-coding-standard.md`** (canonical:
+github.com/billsix/runClaudeInContainer) — the (a) ruff-enforces-mechanically / (b) judgment-calls
+split, naming grammar, expressions/CQS, `sum`/`math.prod` folds, the idioms checklist,
+type-annotation policy, generics parameterization, inline-once, the extraction rules, comments, the
+conditional Rules A–E, and the modern-Python list. Read it before reshaping Python. A green
+`make format` is authority for everything ruff checks.
 
-**(a) Enforced by ruff** — the `[tool.ruff.lint] select` in `pyproject.toml`
-(the whole `E`, `F`, `I` categories + named rules) already gives: PEP 8
-layout/whitespace/blank-lines (`E`), the Pyflakes correctness tier (`F` —
-unused/undefined/logic bugs, incl. the `== None`→`is None` / `== True` / bare-`except`
-idioms E711/E712/E722), import sorting (`I`), modern unions `X | Y` (UP007/UP035),
-no mutable/callable default args (B006/B008), no unused loop var (B007), absolute
-imports (TID252), no stray `print` (T201), non-crypto `random` / `shell=True`
-(S311/S602), **and naming (the `N` / pep8-naming family)**. Treat a green ruff as
-authority on all of these.
+Repo-specific invariants the agent must obey (rationale in the shared doc + the docs named):
 
-**Line length is the formatter's job, NOT a design input (Bill, 2026-09-05).** `ruff
-format` (via `make format`, which the maintainer runs) wraps long lines mechanically, so
-**never factor the 88-column limit into how you write or refactor code.** Write the
-*clearer* form and let the formatter wrap it — in particular, do **not** reject a ternary,
-a `match` arm, or a call because the one-liner would exceed 88 cols; that concern is
-handled downstream. (This retires the earlier "≤88 cols" clause in Rule A below: length is
-never the reason to leave a conditional un-refactored — only *readability* and *outcome
-shape* are.) The rare genuinely-unwrappable case (an aligned literal, a URL) still gets a
-scoped `# noqa: E501`, as always.
-
-**(b) Judgment calls** — prose, because ruff can't check them:
-
-- **Naming grammar** (`N` enforces the *casing*; these are the parts it can't):
-  snake_case values/functions, CapWords classes/type-vars, exceptions end in `Error`,
-  UPPER_SNAKE constants, `_internal` (prefer one underscore over `__mangled`),
-  `trailing_` only to dodge a keyword. **Verbs for functions, nouns for values;**
-  boolean predicates `is_`/`has_`/`should_`. Descriptive over terse; short names only
-  in tight scopes (loop index, `except … as e`, `with open() as f`, math). No
-  redundant suffixes (`names` not `name_list`; `name_by_id` not `id_to_name_dict`),
-  no letter-deleting abbreviations. **A local bound to a class/type object is named
-  `cls`** (mirrors the classmethod first arg — e.g. `cls = type(vector)`), never a
-  synonym like `representation`/`klass`. (Domain: the dimension is `n`, never `grade`.)
-- **Prefer expressions; obey the mutate-vs-return rule.** Value-returning forms
-  (`sorted(xs)`, `reversed(xs)`, a comprehension, `s | {x}`) return a NEW value;
-  in-place methods (`list.sort/append/extend`, `set.add`, `dict.update`, …) mutate and
-  return `None`. So `top = names.sort()` is a bug, and you must never chain a mutator.
-  Command–Query Separation: a function either *does* (side effect, returns `None`) or
-  *computes* (value, no side effect) — not both.
-- **Reduce with `sum` / `math.prod`, not a hand-rolled accumulator loop**, when a loop's
-  only job is to fold an iterable under `+` or `*`. The builtin names the operation and
-  can't get the accumulator wiring wrong, and it reads as one expression. Pass the
-  **correct identity** as `start`: `sum(xs)` (implicit `start=0`), `math.prod(xs,
-  start=1)`; for a non-numeric accumuland pass the type's identity explicitly
-  (`math.prod(blades, start=cls.one())`, `sum(mvs, start=cls.zero())`), as
-  `base.unit_pseudoscalar` / `symbolic_multivector` already do. An `int` identity keeps a
-  float/sympy pipeline intact (`1 * 2.0 == 2.0`). Worked example —
-  `measure.content_by_rejection` went from `result = 1; for pv in
-  make_orthogonal_frame(vectors): result = result * pv.magnitude()` to `math.prod((pv.magnitude()
-  for pv in make_orthogonal_frame(vectors)), start=1)`. **Only when the loop is a pure
-  fold:** keep the explicit loop if the body also has side effects, an early exit, or more
-  than one accumulator, or if there is no clean identity element. (Same spirit: `any` /
-  `all` / `min` / `max`, and `functools.reduce` for other associative folds.)
-- **Idioms** (the full checklist; the ones ruff already enforces are marked): EAFP
-  over LBYL; truthiness for emptiness `if not seq:` (but compare ints to `0`
-  explicitly); `is`/`is not` for `None`/singletons *(ruff)*; `isinstance` over
-  `type(x) == T` *(ruff)*; `enumerate`/`zip` over `range(len(...))`; comprehensions
-  over trivial map/filter+loop (keep them simple); f-strings over `%`/`.format`; `with`
-  for resources; `dict.get`/`defaultdict`/`setdefault`; iterable unpacking
-  (`first, *rest = xs`); no mutable/callable defaults *(ruff)*; `pathlib` over
-  `os.path`; keyword args at call sites for meaning; flat over nested; no bare
-  `except` *(ruff)*; no stray `print` *(ruff)*; consistent returns (if any branch
-  returns a value, all do).
-- **Type annotations — annotate generously.** Signatures (params + returns) are the
-  contract → always. **Locals: as much as reasonable — prefer a declared type over
-  none, including in library code** (`r: Rotor = a * b`); skip only where it would
-  be pure noise (`n = 3`), and **when in doubt, annotate.** **Loop/unpack targets**
-  can't be annotated inline — declare the type on the line *above* (`blade:
-  tuple[int, ...]` / `coef: Coef` above `for blade, coef in mv.to_blade_dict().items():`;
-  a bare `x: sympy.Symbol` per name above a `symbols(...)` unpack). Two limits: it
-  does **not** reach a *comprehension*/genexpr loop var (separate scope — stays
-  inferred), and if a name would be reused across loops of different (sub)types,
-  **give each loop its own distinctly-named, typed variable** (don't reuse one name
-  for two types — e.g. `composable_fn: ComposableFunction` in one loop,
-  `invertible_fn: InvertibleFunction` in the next). **Don't fight the
-  checker:** a locally-correct annotation that forces edits to unrelated logic or
-  breaks flow-narrowing isn't worth it — leave it inferred and say why (e.g.
-  `MultiVectorBase.__iter__`). **The repo-wide sweep landed 2026-09-09**, so every
-  unannotated site that remains is a deliberate exemption — all of them catalogued,
-  with their reasons, in `tasks/reference/type-annotation-exemptions.md`. Read that
-  before "fixing" one, and re-run **`python tools/check_annotations.py`** (informational,
-  not a gate) after reshaping hand-written Python — a row it reports that is *not* in that
-  doc is a genuine gap. Read-only container params take the covariant supertype
-  (`Mapping`/`Sequence`), not invariant `dict`/`list`. Polymorphic values take the
-  abstract base (`MultiVectorBase`), never a runtime-picked concrete. (Teaching
-  notebooks especially: name + type the GA values.)
-- **Parameterize generic types — never a bare generic in an annotation.** Write
-  `ComposableFunction[MultiVectorBase]` / `InvertibleFunction[g3.Vector]`, not a bare
-  `ComposableFunction` / `InvertibleFunction` (a bare generic silently degrades its parameter to
-  implicit `Any`). These two are **invariant** with an **unbounded** `V` (`functions.py` must not
-  import `base`), so the parameter must match the value's *exact* `V` — `InvertibleFunction[g3.Vector]`
-  for a `plane_rotation` of `g3.Vector`s, `[MultiVectorBase]` for the representation-agnostic
-  transforms (`translate(b: V) -> InvertibleFunction[V]` gives whatever concrete `V` the value has);
-  **never blanket `[MultiVectorBase]`** — `ty check` proves each one. **A *polymorphic* param that
-  accepts *any* transform and applies it to `MultiVectorBase` internally** (e.g. `nbplotutils`'s
-  plotting `fn`) is **`InvertibleFunction[Any]`** — invariance makes a fixed `[MultiVectorBase]`
-  reject the concrete-typed transforms callers pass, and a bound TypeVar reject the internal
-  base-application; `Any` is the only thing compatible both ways. Exceptions that stay bare: a
-  runtime `isinstance(f, InvertibleFunction)` (can't take a subscripted generic), and `MultiVectorFn`
-  (a concrete `Callable` alias, not a generic). **Notebooks aren't in the `ty` gate — verify their
-  generics with `pyright` in the container** (`make image` ships it), where host `ty` can't reach.
-- **Inline a value used exactly once** — unless the name documents an otherwise-opaque
-  expression. This **takes precedence over "annotate generously"**: don't create or
-  keep a single-use local just to give it a type — inline it (e.g. pass the f-string
-  straight to `latex_repr=`). Generous typing applies to the locals that *survive* —
-  reused, hoisted out of a closure so it's computed once, or named to clarify an
-  opaque expression. (Same spirit as: no local aliases for a value that already has a
-  canonical name — reference `Vector.e_1` / `Bivector.e_12` directly, never
-  `E1 = Vector.basis_vector(1)`.)
-- **What earns an extraction: duplication, or naming a phase — not reshaping control
-  flow.** Settled 2026-07-18 from what Bill accepted and declined:
-  - **Module-level** when more than one caller needs it. `nbplotutils._to_xy` replaced
-    the same 79-char lambda written out **9 times across 5 functions**;
-    `_draw_labelled_triangle` replaced three 58-line, 91-93%-identical `draw_*_triangle`
-    helpers with one function plus three ~10-line callers (**net -75 lines**, all
-    rendered figures verified pixel-identical). A private nested helper in each of the
-    five would have been five copies — worse than the duplication it "fixed".
-  - **Nested** when the extracted part **closes over the enclosing parameters** and names
-    a distinct phase of the algorithm. `base.reject`'s `r`/`rejection` close over
-    `away_from`; mvp's `_route` splits into `breadth_first_parents` / `walk_back`, both
-    over `a` and `b`.
-  - **Neither** — leave it alone — when the helper would be used exactly once and exists
-    only to reshape control flow or avoid mutating a local. That is the "inline a value
-    used exactly once" rule applied to functions, and a proposed rewrite of
-    `functions.inverse` along those lines was **declined** for it.
-
-  **"Inner-fn first, guards below" is a consequence of the above, not the goal.** When an
-  extraction is earned, the guards naturally end up at the bottom calling into it — as in
-  `base.reject`:
-  ```python
-  def reject(cls, away_from):
-      def r(value):  # the core operation, up top
-          return value.wedge(away_from) * away_from.inverse()
-
-      def rejection(blade):  # wraps it with its LaTeX label
-          return ComposableFunction(r, latex_repr=..., linearity=Linearity.LINEAR)
-
-      match away_from:  # preconditions / dispatch below, calling in
-          case [*sequence]:
-              return cls.reject(cls.outer_product_of_vectors(*sequence))
-          case MultiVectorBase() as vector if vector.is_vector():
-              return rejection(vector)
-          case _:
-              raise ...
-  ```
-  Don't chase the shape for its own sake, and **don't churn existing early-return code**;
-  a cheap top-of-function `raise` on a nonsensical arg is always fine. A related lesson
-  from the same session: an error is best raised by the code that *discovers* it —
-  `_route`'s "no path" moved into the search itself, which is what let its tail collapse
-  to one line.
-  Precedent in the tree: `Gn._geometric_product`'s `decrease_grade`, `compose`'s
-  `composed_fn`, `base.reject` / `reflect`. **`base.project` is the one deviation**
-  (dispatch above its `def fn`), left as-is under don't-churn — don't read it as the
-  pattern.
-- **Rotations** read as `plane_rotation` / `projection_rotation` / `rotor_rotation` /
-  `rotor_from_vectors` (keyword args), never a hand-built rotor literal — full detail
-  under **Architecture › Rotations & rotors**.
-- **Numeric preservation** — don't promote a `float` pipeline to sympy: `magnitude`/
-  `inverse` keep float-in → float-out; `int` routes through sympy for exactness;
-  symbolic stays symbolic (see **Architecture** + `tests/test_numeric_magnitude.py`).
-- **Comments explain *why*, inline at the point they apply** — not a trailing notes
-  block. **Never leave a comment line holding a single word or a sentence fragment** —
-  when a line runs long, reflow the whole paragraph, not the offending line.
-- **An externally-defined name overrides the naming rules.** Where a name is dictated
-  from outside — a protocol/dunder the interpreter or a library looks up, a superclass
-  method being overridden — match it **exactly**; renaming unbinds it. In this repo that
-  covers `_repr_latex_` (Jupyter looks up that exact name to render a multivector),
-  `__post_init__` / `__eq__` / `__iter__` / `__matmul__`, and the interchange primitives
-  a concrete representation must supply (`from_blade_dict` / `to_blade_dict` /
-  `_geometric_product`) — those are fixed by `MultiVectorBase`, not by taste. A linter
-  flagging one is the linter being wrong: suppress it as narrowly as possible with the
-  reason written at the site. The exemption covers only the fixed name — parameters and
-  locals inside still follow house style.
-- **`m` and `b` are a deliberate, protected exception to "descriptive over terse."**
-  `translate(b=...)` and `uniform_scale(m=...)` are named for `f(x) = m*x + b` — `b` the
-  intercept (shift), `m` the slope (stretch) — so a student meets the transforms through
-  an equation they already know. **Do not "improve" them to `offset` / `factor`**, and
-  call them by keyword in teaching code (notebooks, docstrings) so the link is visible at
-  the point of use. Rotation has no `m*x + b` counterpart, which is why it is introduced
-  separately. (ruff is fine with both: `N803` only requires lowercase.)
-- **Prefer `match` + `case _` over an open-ended `if`/`elif` chain, for exhaustiveness.**
-  A chain with no final `else` can fall through silently and the hole is invisible; a
-  `match` makes the default a branch you must look at. **Always write the `case _`** —
-  a `match` without one has the same hole. It may raise, return a documented fallback, or
-  be an explicit no-op with a comment. Already the shape here: `Gn._geometric_product`'s
-  `decrease_grade`, `base.reject` / `reflect`. **Caveat:** `match` earns its keep on
-  *structural* patterns; one whose every case is a boolean guard is an `if`/`elif` in
-  different syntax, justified only by the exhaustiveness argument — don't convert every
-  two-branch conditional.
-- **Refactoring a conditional — vary the mechanism (Rules A–E).** Before touching one, ask
-  in order: **(A) ternary** — collapse a guard-*value*-return + fall-through-return to
-  `X if cond else Y` when both outcomes are single expressions (not multi-statement, no side
-  effect between guard and return), there are exactly two outcomes, and it reads at least as
-  clearly (length is NOT a criterion — `make format` wraps a long ternary; NOT a
-  top-of-function early-exit guard `if bad: raise`/`return None`/`continue` — that's the
-  sanctioned cheap guard, don't churn it); **(B) dedup** identical branches first (watch for *vestigial* splits kept apart
-  only by comments — but verify byte-identical, a `cast`/no-`cast` difference is a live
-  distinction, not dead weight); **(C) `match`** when the *pattern* does structural work
-  (type/shape/literal/binding) — strip the guards, keep the patterns: if they still
-  dispatch → `match`, if all `case _` → `if`/`elif`; **(D)** turn a boolean/prefix check
-  matchable by extracting a **literal discriminant** first (`kind, _, label =
-  name.partition("_")` then `match kind:` with a `case _: raise` documenting the invariant);
-  **(E)** extract a **long** dispatch's branch-bodies into **named nested functions** that
-  **return** their nodes (read the enclosing scope freely, never mutate it) so the dispatch
-  is a *table of contents* not interleaved chapters — the memorable framing. Worked
-  before/after examples + the leave-alones: `tasks/reference/conditional-refactoring-rules.md`.
-- **Use modern Python, and flag it proactively.** `requires-python = ">=3.13"`, and
-  **compatibility with older Pythons is explicitly not a concern** — so prefer the
-  current-language solution over the historical one, and **when a newer feature would
-  solve a problem in code you're already touching, say so** rather than silently
-  preserving the old form. `match` (structural pattern matching) is the house favourite
-  and is already in live use here — `Gn._geometric_product`'s `decrease_grade`,
-  `base.reject`/`reflect` — and a `case _:` is the right way to make a fall-through
-  explicit instead of letting a dispatch chain silently do nothing. Also in scope when
-  it fits: `X | Y` unions and builtin generics over `typing.Optional`/`Union`/`Dict`;
-  PEP 695 `type` aliases and `class C[T]:` / `def f[T]()` in place of explicit
-  `TypeVar`s (note the constraint in **Layering**: `functions.py`'s type parameter must
-  stay *unbounded*, whatever syntax expresses it); `Self`; `@override`; `typing.TypeIs`
-  (already used in `base.project`); `enum.StrEnum`; `dataclass(slots=True, kw_only=True)`
-  — `slots=True` is already standard on every generated value type. Don't force one in
-  where it reads worse; the point is to stop *defaulting* to the old spelling.
+- **Line length is the formatter's job, NOT a design input** — write the clearer form and let
+  `ruff format` wrap it; never reject a ternary/`match` arm/call for exceeding 88 cols.
+- **`m` and `b` are protected terse names** — `translate(b=…)` / `uniform_scale(m=…)` are named
+  for `f(x) = m·x + b`; do **not** "improve" them to `offset`/`factor`, and call them by keyword
+  in teaching code.
+- **An externally-defined name overrides the naming rules** — `_repr_latex_` (Jupyter looks it
+  up), `__post_init__`/`__eq__`/`__iter__`/`__matmul__`, and the interchange primitives
+  (`from_blade_dict`/`to_blade_dict`/`_geometric_product`, fixed by `MultiVectorBase`); match them
+  exactly and suppress a linter narrowly with the reason at the site.
+- **A local bound to a class/type object is named `cls`** (e.g. `cls = type(vector)`), never
+  `representation`/`klass`. **The dimension is `n`, never `grade`.**
+- Conditional refactoring worked examples: `tasks/reference/conditional-refactoring-rules.md`.
+  Type-annotation exemptions catalogue: `tasks/reference/type-annotation-exemptions.md` (re-run
+  `python tools/check_annotations.py` after reshaping hand-written Python — a row it reports that
+  is not in that doc is a genuine gap).
 
 ## Dev workflow
 
-- **Work happens in the container.** Almost every dev task runs inside the image's pinned toolchain,
-  either interactively via `make shell` or through a dedicated `make` target that wraps `podman run`:
-  `make test` (suite), `make dist` (build sdist+wheel), `make upload` (interactive `twine upload`),
-  `make check-generated` (determinism). Even the PyPI push runs in the container (`twine` is baked in;
-  `-it` + `TWINE_USERNAME=__token__` so you paste your token at the prompt). The **only** step that
-  runs on the **host** is `git` — `git tag` in `make release`, and commits (the author's job, outside
-  the container). When adding a new dev task, prefer a containerized `make` target over a
-  "run it on your host" instruction.
-- Tests: **`make test`** runs the suite inside the container (regenerates the gitignored
-  `g*.py` first, then `pytest`); exit 0 on success, nonzero on failure (make reports a
-  recipe failure as exit 2, not pytest's exact code — the 0/nonzero contract is what CI needs). For a
-  quick host run instead, `python -m pytest -q` after a `make generate`. `pytest.ini` sets
-  `pythonpath = src`, `testpaths = src tests`, and `addopts = --doctest-modules` so docstring examples
-  run as tests. `nbplotutils.py` is collected (its module-load `set_matplotlib_formats` is now guarded
-  by `if get_ipython() is not None:`, so it imports headless) — meaning the suite now imports
-  `matplotlib`, so run it with the `notebooks` extra installed (the container has it).
-- Lint/format/typecheck: `entrypoint/format.sh` runs `ruff check --fix`, `ruff format`, `ty check`,
-  and `tools/check_changelog.py` (the version <-> changelog guard: fails when `pyproject.toml`'s
-  version has no `## [<version>]` heading in `CHANGELOG.md`, so a version bump can't ship with its
-  changelog promotion forgotten; `make check-changelog` runs it alone on the host).
-  The vendored Emacs tree under `entrypoint/` is excluded via `extend-exclude` in
-  `pyproject.toml [tool.ruff]`, **not** a CLI flag — `ruff format` does **not** accept
-  `--extend-exclude` (only `ruff check` does), so config is the one place both tools honor
-  it. Don't "fix" `format.sh` to pass the flag; it would silently reformat the vendored tree.
-  Ruff rules in `pyproject.toml`. **`ty check src`, `ty check tests`, and `ty check tools` are all
-  fully clean.** The only ty config is `[tool.ty.environment] extra-paths = ["tools"]` in
-  `pyproject.toml` — so the generator modules (`astbuild`/`gen_specialized`) resolve when checking
-  `tests/test_generator.py`, which adds `tools/` to `sys.path` at runtime. That is module-resolution
-  config, **not** a rule override: every rule still checks every file. (There used to be a scoped
-  override disabling
-  `unsupported-operator` + `invalid-method-override` on the generated rotor `sandwich`; both were
-  resolved by typing coefficients as the concrete `Coef = int | float | sympy.Expr` alias rather than
-  the `numbers.Real` ABC — see the coefficient-type note under Architecture — and by emitting
-  `sandwich` as a Liskov-compatible override returning the operand type `_OperandT`.)
-  **Caveat: ty AND ruff both respect `.gitignore`, and the generated `g*.py` are gitignored, so the
-  dev gate (`ty check src` / `ruff check src` / `ruff format`) SKIPS every generated module** —
-  "fully clean" above covers only the hand-written code. **Why the generated code isn't run through
-  the gate's formatter or type checker (on purpose):**
-  - **Formatter:** it's already formatted — the *generator itself* runs `ruff format` + `ruff check
-    --fix` on each file as it writes it (`ruff_format` in `gen_specialized.py`), so the output is
-    always formatted regardless of the gate; re-formatting it in `format.sh` would be redundant. It
-    also carries *accepted, cosmetic* `E501` long lines the formatter can't fix — auto-generated
-    docstrings like the `"Spanning the basis blades: …"` line, which grows with dimension — that
-    would otherwise fail `ruff check`; gitignore keeps them out of the gate. The files are build
-    artifacts (deterministic, regenerated each build, baked into the sdist/wheel, never committed),
-    so the gate treating them as "not source to police" is the intended split.
-  - **Type checker:** the generated code's *type* correctness is guaranteed upstream, not by
-    per-file gating — the generator (`tools/`) and `base.py` that produce/back it ARE gate-checked,
-    the conformance suite verifies runtime behaviour, and the generated typing is verified by an
-    *explicit, full-context* ty run (below). Gating it per-file in `format.sh` also can't work:
-    the files are gitignored/regenerated, and a **single-file** `ty check src/gacalc/g3.py` is NOT
-    valid — it gives ≈119 *isolation* false positives (unresolved cross-module types).
-  - **To actually check the generated modules' typing**, pass them explicitly AND together (full
-    context): `ty check src/gacalc/g1.py … g5.py gn.py base.py functions.py transforms.py`. This is
-    what `make test-all-dims` should run; the g4/g5 ty-cleanup that made all five clean is in
-    `tasks/reference/generated-product-typing.md` › "High-dimension ty findings".
-- After editing the generator, regenerate (`python tools/gen_specialized.py`, which auto-formats its
-  output) and re-run the suite (the conformance tests guard correctness of the generated code).
-- Determinism guard: `make check-generated` regenerates **twice** and asserts the output is
-  byte-identical, catching a non-deterministic generator. (It replaced the old drift guard, which
-  `git diff`ed committed generated files — meaningless now that they aren't tracked.) It mutates the
-  working tree and is slow (~30s, 𝒢₃ dominates), so it's a make/CI target — **not** part of the default
-  `pytest` run.
-- Containerized dev (podman): `make image` then `make shell`; Jupyter on port 8888. The image
-  bakes two JupyterLab settings: `jupytext-config set-default-viewer python` (a single click
-  opens `py:percent` files as notebooks — the trade-off is `.py` no longer opens as plain
-  text) and `jupyter labextension disable @jupyterlab/apputils-extension:announcements` (kills
-  the "Jupyter news" prompt; locked at sys-prefix so it can't be re-enabled). Refresh the
-  vendored Emacs packages (maintainer-only, rarely) with `make update-emacs-packages` — full rationale
-  in `tasks/archive/2026/06/07/emacs-package-install-strategy.md`. (The vendored tree itself is
-  off-limits; see Module layout.)
-- Verifying a notebook/plot change is behaviour-preserving: call `savefig` **inside** the
-  `with create_graphs(...) as ax:` block. `create_graphs` (`nbplotutils.py`) is a context
-  manager that `display(fig)`s and then `plt.close()`s on exit, so saving *after* the block
-  captures a **blank** canvas — and blank-vs-blank compares equal, making a "pixel-identical"
-  claim vacuous. Sanity-check the baseline is non-blank first, and reconstruct the "before"
-  via `git stash`/`git show`, never a hand-edited copy (the cross-project "derive the before
-  mechanically" rule). See `tasks/archive/2026/07/19/dedup-draw-ndc-plot-helper.md`.
-- Book: **`make docs`** builds the Sphinx book (`book/docs/`, "Geometry 2") to
-  **HTML + PDF** into `output/gacalc/` — needs an image built with `BUILD_DOCS=1` (the default). It is
-  written **outline-first**: a ~22-chapter toctree of mostly placeholder stubs, with some chapters
-  partly written (e.g. `geometric-product`, `rotate`) plus jupytext notebooks and an autodoc
-  `api.rst`. Content structure + writing guide: `tasks/reference/book-outline.md`; build mechanics and
-  why (lualatex for Unicode docstrings, no EPUB/inlinetex, the `texlive-luahbtex` gotcha):
-  `tasks/reference/book-and-docs-pipeline.md`.
-- Packaging: `pyproject.toml` (setuptools, `src/` layout). Runtime deps are **only**
-  `numpy` + `sympy` (`[project] dependencies`); everything else is an optional extra —
-  `notebooks` (matplotlib/ipython/pandas/jupytext), `jupyter` (JupyterLab env), `dev`
-  (build/twine/ruff). There is **no `requirements.txt`** — the Dockerfile installs
-  `".[dev,notebooks,jupyter]"` from these extras (the single source of truth), and
-  `ruff`/`ty` come from `dnf` in the image. License: LGPL-2.1-only.
-- Releasing & PyPI auth: `make dist` (build) → `make upload` (PyPI) / `make upload-test` (TestPyPI
-  rehearsal) → `make release` (build + upload, then host `git tag`). All run in the container; **bump
-  `version` in `pyproject.toml` first** — PyPI *and* TestPyPI permanently reject a re-used version.
-  Credentials (token auth; username is always `__token__`) resolve in order: a **`~/.pypirc`** mounted
-  read-only when present (`[pypi]`/`[testpypi]` sections), then **`export TWINE_PASSWORD=pypi-…`** on
-  the host (passed via `-e TWINE_PASSWORD`), then the interactive `-it` prompt. **A 403 is
-  account-side, not a Makefile bug** — most often an **unverified account email** (verify it before
-  any upload), a token for the wrong index (`pypi.org` and `test.pypi.org` are separate
-  accounts/tokens), or a **project-scoped token for a project that doesn't exist yet** (a new project
-  needs an **account-scoped** token; the first successful upload *creates* the project — you don't make
-  it on the website). Add `VERBOSE=1` (e.g. `make upload-test VERBOSE=1`) for twine's exact reason.
+**Work happens in the container** (the image's pinned toolchain), interactively via `make shell`
+or a dedicated `make` target wrapping `podman run`. The only step that runs on the **host** is
+`git` (commits are the author's job, outside the container). Prefer a containerized `make` target
+over a "run it on your host" instruction.
+
+- **`make test`** — regenerates the gitignored `g*.py`, then runs `pytest` inside the container
+  (exit 0/nonzero contract; ~440 tests; `pytest.ini` sets `pythonpath = src`, `testpaths = src
+  tests`, `addopts = --doctest-modules` so docstrings run as tests). Quick host run:
+  `python -m pytest -q` after `make generate`.
+- **`entrypoint/format.sh`** (via `make format`, the real gate) — `ruff check --fix`,
+  `ruff format`, `ty check` (`src`/`tests`/`tools`, all clean), and `tools/check_changelog.py`
+  (the version↔changelog guard). `make check-changelog` runs that guard alone on the host. The
+  vendored Emacs tree is excluded via `extend-exclude` in `pyproject.toml [tool.ruff]`, **not** a
+  CLI flag (`ruff format` rejects `--extend-exclude`) — don't "fix" `format.sh` to pass it.
+- **`make check-generated`** — regenerates twice, asserts byte-identical (determinism guard; ~30s,
+  make/CI target, not part of the default `pytest`).
+- **`make generate`** / **`make generate-all`** (g1–g5) / **`make test-all-dims`** (the full-dim +
+  full-context ty gate).
+- **`make image`** then **`make shell`** — containerized dev; Jupyter on port 8888.
+  **`make update-emacs-packages`** — refresh the vendored Emacs packages (maintainer-only, rarely).
+- **`make docs`** — builds the Sphinx book ("Geometry 2", `book/docs/`) to HTML + PDF into
+  `output/gacalc/` (needs an image built with `BUILD_DOCS=1`, the default).
+- **`make dist`** (build sdist+wheel, `GACALC_DIMS=1,2,3,4,5`) → **`make upload`** /
+  **`make upload-test`** (interactive `twine`) → **`make release`** (build + upload + host
+  `git tag`). Bump `version` in `pyproject.toml` first — PyPI/TestPyPI permanently reject a
+  re-used version, and `release` refuses if a `v<version>` tag exists.
+- Packaging: `pyproject.toml` (setuptools, `src/` layout); runtime deps are **only** `numpy` +
+  `sympy`; extras `notebooks`/`jupyter`/`dev`; there is **no `requirements.txt`**. License LGPL-2.1-only.
+
+Rationale (why the dev gate skips the generated code + how to actually type-check it in full
+context, the PyPI-403 catalogue + credential resolution order, the JupyterLab bakes, the
+savefig-inside-`with` verification lesson): `tasks/reference/design-decisions.md` › "Packaging &
+dev workflow" and `generated-product-typing.md` › "High-dimension ty findings". The book build's
+lualatex/no-EPUB/`texlive-luahbtex` details and content guide: `tasks/reference/book-and-docs-pipeline.md`,
+`book-outline.md`.
 
 ## Performance
 
-Profiling showed eager `sympy.simplify` in `Gn.__post_init__` is ~100% of `Gn`'s cost. Rather than
-weaken the reference, the specialized classes provide the speed: vs `Gn`, the geometric product is
-~15–35× faster numerically and **thousands of times** faster symbolically; `reverse` ~100–170×,
-`inner_product` ~40–60×. Run `python tools/bench.py` to reproduce.
+Specialized classes are ~15–35× faster than `Gn` numerically and **thousands×** symbolically
+(`reverse` ~100–170×, `inner_product` ~40–60×) — `Gn`'s eager `sympy.simplify` is ~100% of its
+cost and is kept slow-but-correct on purpose (it's the oracle). Run `python tools/bench.py`; detail
+in `tasks/reference/design-decisions.md`.
 
-## Assessment / known issues (updated 2026-06-06)
+## Assessment / known issues
 
-Strengths: faithful, legible translation of the textbook with equation citations; the dict-of-blades
-`Gn` works in any dimension; symbolic + numeric unified via sympy; strong conformance coverage; the
-specialized classes give large speedups while staying provably consistent with `Gn`.
+Open issues (genuinely open; resolution history lives in git + archived task docs):
 
-Open issues (most are in the shared/reference code, inherited from the original single file):
-
-1. **Fixed Euclidean signature**: eᵢeᵢ always reduces to +1. No spacetime/null/conformal signatures.
-   Now documented (the classes are explicitly 𝒢ₙ over ℝⁿ), but still a hard limit.
+1. **Fixed Euclidean signature**: eᵢeᵢ always reduces to +1. No spacetime/null/conformal
+   signatures — a hard limit (the classes are explicitly 𝒢ₙ over ℝⁿ).
 2. **Self-flagged uncertainty**: `inverse`, `is_parallel_to` carry "not sure if I'm doing this
-   correctly" comments; not all verified against known results. (Coefficient read-back is no longer a
-   concern — `component` was replaced by `coefficient(blade)`, a thin reader over `to_blade_dict()`
-   that's correct for any grade; covered by `test_coefficient_readback`.)
+   correctly" comments; not all verified against known results.
 
 ## Future directions (not yet decided)
 
-- ~~**Graded / blade subtypes**~~ — **built** (`Scalar_n`/`Vector_n`/`Bivector_n`/`Trivector`/
-  `Rotor_n`). The grade-0 `Scalar_n` is **per-algebra** (`Scalar`, one per
-  module — no shared `scalar.py`) so its dual is precise (`Scalar.dual() → Trivector`); see
-  `tasks/archive/2026/07/22/per-algebra-scalar-types.md`. Emitted by `tools/gen_specialized.py` alongside the full
-  classes; each bilinear product
-  is a `match` on the rhs type whose **return type is resolved at generation time** from the symbolic
-  result's grade support (smallest covering registered type, else widen to the full `G_n`) — so the
-  type follows the *operation*, never runtime float values (**decided 2026-09-05**: this principle
-  stays — the value-dependent-narrowing alternative was rejected; the last 𝒢₃ gap, the odd
-  part `{1,3}`, was closed by **`Odd_3`** (built + archived this session) — an *opt-in* grade query +
-  cast for narrowing, not a value-dependent return type — `tasks/archive/2026/09/05/model-odd-graded-type.md`,
-  `tasks/reference/graded-subspaces-vs-subalgebras.md`). `+`/`-` narrow the same way. The
-  operators/products (`*`/`^`/`outer_product`/`inner_product`/`left_contraction`/`right_contraction`/
-  `<`/`>`/`+`/`-`, and `r_vector_part` via `Literal[grade]` overloads) also carry `@typing.overload`
-  signatures, so these types are **precise for a type checker**, not just at runtime (e.g. `a * b`
-  is a `Rotor` statically, `v2 < i2` is a `Vector`) — design + rationale in
-  `tasks/reference/generated-product-typing.md`. 𝒢₃'s `Vector` also carries a generated
-  closed-form `cross` (`Vector -> Vector` overload, non-vector operands falling back to
-  `MultiVectorBase.cross`; 2026-08-31, `tasks/archive/2026/08/31/generated-vector-cross.md`), and 𝒢₂'s
-  `Vector` a generated closed-form `rotate_90_degrees` (`= v * e_12`) plus the module-level
-  `rotate_90_degrees()` factory (`generate_quarter_turn`; 2026-09-06,
-  `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`). See also the README
-  "Graded subtypes" section (with
-  the return-type table) and `tasks/archive/2026/06/06/graded-blade-subtypes.md` (the original build).
+- **Graded / blade subtypes** — **built** (`Scalar_n`/`Vector_n`/`Bivector_n`/`Trivector`/
+  `Rotor_n`, plus `Odd_3` in 𝒢₃, 𝒢₃'s generated `Vector.cross`, and 𝒢₂'s generated
+  `rotate_90_degrees`). Products/sums carry `@typing.overload` signatures so the types are precise
+  for a type checker, not just at runtime. Design + history: `tasks/reference/generated-product-typing.md`,
+  `graded-subspaces-vs-subalgebras.md`, `design-decisions.md`, and the README "Graded subtypes" section.
 - **Paravectors** (scalar + vector; the Algebra-of-Physical-Space object that yields a Lorentzian
   norm from Euclidean 𝒢₃): the author does **not yet know this area well enough** to commit to a
-  design. Noted here because **future work may use them** (e.g. as one of the graded subtypes, or as
-  a route to special-relativity demos within 𝒢₃). Revisit once the author has studied APS; until
-  then, do not implement paravector-specific machinery.
+  design. Noted because future work may use them; do not implement paravector-specific machinery until then.

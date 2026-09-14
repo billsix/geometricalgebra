@@ -145,3 +145,18 @@ the book directly.
 2. **`ₙ` (U+2099) is missing from GNU FreeSerif** → that one glyph drops from the PDF.
    Fix via a font with U+2099 coverage, or avoid `ₙ` in docstrings. All other Unicode
    renders.
+
+## JupyterLab settings baked into the image (harvested from CLAUDE.md, 2026-09-13)
+
+`make image` then `make shell`; Jupyter on port 8888. The image bakes two JupyterLab
+settings:
+
+- `jupytext-config set-default-viewer python` — a single click opens `py:percent` files as
+  notebooks (the trade-off is `.py` no longer opens as plain text).
+- `jupyter labextension disable @jupyterlab/apputils-extension:announcements` — kills the
+  "Jupyter news" prompt; locked at sys-prefix so it can't be re-enabled.
+
+Refresh the vendored Emacs packages (maintainer-only, rarely) with
+`make update-emacs-packages` — full rationale in
+`tasks/archive/2026/06/07/emacs-package-install-strategy.md`. (The vendored tree itself is
+off-limits.)
