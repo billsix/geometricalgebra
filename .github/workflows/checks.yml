@@ -1,0 +1,32 @@
+# Check-only CI, on every push + PR.
+#
+# Governing principle (see the maintainer's container-template convention): CI is
+# a THIN WRAPPER over the make/Dockerfile system. Each job is just `checkout` ->
+# `make <target>`; all logic lives in the Makefile, so the same command runs
+# locally. CONTAINER_CMD auto-detects podman->docker, so the identical target
+# runs on the ubuntu-latest runner (Docker) and on the maintainer's podman host.
+#
+# These jobs NEVER modify the repo: `make check-format` runs the formatter inside
+# the disposable runner and then FAILS on any `git diff` (no commit/push), and
+# `make test` is read-only. checkout is pinned @v5 (Node 24; @v4 is Node 20,
+# which GitHub is deprecating).
+name: checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: make check-format
+        run: make check-format BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: make test
+        run: make test BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0

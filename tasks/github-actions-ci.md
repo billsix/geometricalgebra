@@ -1,16 +1,39 @@
 # GitHub Actions: check CI (phase 1), then releases (phase 2)
 
-**Status:** proposed — needs go-ahead
+**Status:** Phase 1 IMPLEMENTED 2026-09-18 (`make check-format` + `.github/workflows/checks.yml`,
+two jobs: `format` + `test`). Phase 2 (PyPI publish on tag) is proposed — needs the maintainer's
+PyPI-CI decision (see below). Staged for the maintainer to commit.
 **Priority:** 5
 **Difficulty:** 4
 **Started:** 2026-09-17 (William Emerison Six <billsix@gmail.com>)
-**Needs:** the maintainer's answers to the Open questions below (runner environment; container
-registry).
 
-Replicated from the modelviewprojection CI task
-(`github.com/billsix/modelviewprojection`, `tasks/github-actions-format-ci.md`), adapted to
-geometricalgebra's nature as a **PyPI-published library** (mvp is a private book/app). The
-governing principle below is the same and is the point of the task.
+Replicated from the modelviewprojection CI work
+(`github.com/billsix/modelviewprojection`, `tasks/github-actions-format-ci.md`), applying what that
+session learned, adapted to geometricalgebra's nature as a **PyPI-published library** (mvp is a
+private book/app). The governing principle below is the same.
+
+## Applied from the mvp session (2026-09-18)
+
+- **`checkout@v5`** (Node 24) from the start — mvp hit the Node 20 deprecation warning with `@v4`.
+- **Added a `make check-format` target** (`= make format` + `git diff --exit-code`), mirroring mvp,
+  so the format gate is one command. gacalc's `make format` regenerates the gitignored `g*.py`, runs
+  ruff (`--line-length=88`, not mvp's 80) + `ty` + `check_changelog`; the generated modules are
+  gitignored so they don't trip the diff.
+- **`checks.yml` = two check-only jobs**, `format` (`make check-format`) and `test` (`make test`),
+  on push + PR, `checkout` → `make <target>`, lean flags (`BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0`).
+  Both are container-run thin wrappers; neither commits/reformats the repo.
+- **`check-generated` and `check-regions` were NOT added to CI** (unlike the format/test pair): both
+  run `python tools/gen_specialized.py` on the **host** (they need sympy on the runner, which a bare
+  ubuntu runner lacks). To CI them, they'd have to be containerized first (run via the image). Left
+  as a deferred enhancement — flag Q2.
+- **Bake-source (mvp's headline change) is largely already done here:** gacalc's Dockerfile already
+  `COPY`s `src`/`tools`/`pyproject` into `/gacalc` and installs at build, so a gacalc image already
+  carries its source. gacalc also does **not push a container image** (no `image-push`; it publishes
+  to **PyPI**), so "a pulled image runs standalone" is not a current gacalc goal — the bake-source
+  refinement mostly does not apply.
+- **gacalc has its own annotation checker** (`tools/check_annotations.py`, an exemptions-catalogue
+  check — different from mvp's `check_local_annotations.py`). Not wired into CI here; `make format`'s
+  `ty` covers type-checking. Could be added later if wanted.
 
 ## Goal
 
@@ -65,34 +88,40 @@ geometricalgebra is already built for this — nearly every CI step is an existi
 
 ## Plan (phased)
 
-- [ ] **Phase 1 (this task):** add a **`make check-format`** target (= `make format` +
-      `git diff --exit-code`) and a check workflow that is just `checkout` → `make check-format`
-      (and, per the maintainer's call, optionally `make test` / `make check-regions` /
-      `make check-generated` / `make check-changelog` as further `checkout` → `make <target>`
-      jobs). All fail-logic lives in the make targets, so each is one command locally.
-- [ ] **Document the principle (end of Phase 1):** capture "CI is a thin wrapper over the
-      make/Dockerfile system; every workflow is `checkout` → `make <target>`; all logic lives in
-      make targets that run locally" as a durable convention — a concise rule in `CLAUDE.md`, or a
-      `tasks/reference/` doc if it needs the fuller rationale/examples. (This is the same
-      documentation step the mvp task carries; the principle should not stay buried in a task doc.)
-- [ ] **Line item → spawn a NEW task (Phase 2)** once Phase 1 lands: on **tagged releases**,
-      publish to **PyPI** (the existing `release`/`upload` path, or its non-interactive CI
-      equivalent using a token secret) **and** optionally push a container image to a registry
-      (ghcr.io) **and** attach release artifacts (the `dist` sdist/wheel + the `docs` HTML/PDF
-      book) — each as the `make` target the workflow calls (`make dist`, `make docs`,
-      `make image-export`/push), not inline YAML. Reconcile with the version-tag guard already in
-      `make release`.
+- [x] **Phase 1 (DONE 2026-09-18):** added `make check-format` and `.github/workflows/checks.yml`
+      (jobs `format` + `test`, `checkout@v5`, lean flags). All fail-logic in the make targets;
+      verified locally (the same commands CI runs).
+- [x] **Document the principle:** added a "## Continuous integration" section to `CLAUDE.md`
+      (CI is a thin wrapper over the make/Dockerfile system).
+- [ ] **Phase 2 — PyPI publish on tag (needs the maintainer's decision + one-time setup).** On a
+      `v*` tag, build + publish to **PyPI**. gacalc already has a working **manual** path
+      (`make dist` → `make upload` → `make release`, interactive twine + host `git tag`), so
+      automating it is a real choice, not a gap. Recommended CI approach: **PyPI Trusted Publishing
+      (OIDC)** — no token secret in the repo; you configure a "trusted publisher" on PyPI once
+      (project → Publishing → add the repo + `release.yml`), then a `release.yml` on the `v*` tag
+      runs `make dist` and publishes via `pypa/gh-action-pypi-publish`. Attach the `dist` sdist/wheel
+      (and optionally the `docs` HTML/PDF) to a GitHub Release. **Not implemented here** because it
+      needs your PyPI-side config and I can't test a real publish; deciding "keep manual `make
+      release`" is also legitimate. (gacalc does not push a container image, so no ghcr step —
+      unlike mvp.) Reuse the version-tag guard already in `make release`.
 
 ## Open questions
 
-1. **Check workflow's runner environment** — the checks need the container image (the make targets
-   build/run it). Which runner environment should the Action use (build the image in-workflow from
-   the committed Dockerfile — simplest, fully self-contained — vs pull a prebuilt one)?
-2. **Scope of the phase-1 check job** — format-check only, or also `test` / `check-regions` /
-   `check-generated` / `check-changelog` on every PR? (`test-all-dims` is too slow for per-PR;
-   nightly/manual if wanted.)
-3. **Container registry** — ghcr.io for the image artifact in phase 2? (PyPI is the package
-   registry either way.)
+1. ~~Runner environment~~ **RESOLVED:** `ubuntu-latest`, image built in-workflow from the committed
+   Dockerfile (self-contained), lean flags. `CONTAINER_CMD` auto-detects podman→docker.
+2. **Add `check-generated` / `check-regions` to CI?** Not included yet — both run
+   `python tools/gen_specialized.py` on the **host**, which a bare ubuntu runner can't (no sympy).
+   To CI them they must be containerized (run via `make shell-exec`/the image). Worth doing for the
+   determinism guard (`check-generated`) especially. `check-changelog` already runs inside the
+   `format` job (it's in `format.sh`). `test-all-dims` stays manual/nightly (too slow per-PR).
+3. **Phase 2 PyPI automation** — go with Trusted Publishing (OIDC, no secret; needs one-time PyPI
+   config) on a `v*` tag, or keep the manual `make release`? (No ghcr step — gacalc doesn't push an
+   image.) See the Plan.
+
+## Verified locally (2026-09-18)
+- `make check-format BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0` → exit 0 (regenerate + ruff + ty +
+  changelog + clean `git diff`).
+- `make test BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0` → **490 passed**.
 
 ## See also
 

@@ -260,6 +260,18 @@ dev workflow" and `generated-product-typing.md` › "High-dimension ty findings"
 lualatex/no-EPUB/`texlive-luahbtex` details and content guide: `tasks/reference/book-and-docs-pipeline.md`,
 `book-outline.md`.
 
+## Continuous integration
+
+CI (`.github/workflows/`) is a **thin wrapper over the make/Dockerfile system**: each job is
+`checkout` → `make <target>`, all logic in make targets, so the same command runs locally
+(`CONTAINER_CMD` auto-detects podman→docker; runners are `ubuntu-latest`). `checks.yml` runs on
+every push + PR as two check-only jobs — **`format`** (`make check-format` = `make format` then
+`git diff --exit-code`; runs the formatter in the disposable runner and fails on a diff, never
+commits) and **`test`** (`make test`). If CI needs a step, add it as a `make` target first
+(runnable locally), never inline YAML. Pin actions at Node 24 (`actions/checkout@v5`; `@v4` is the
+deprecated Node 20). Releases are **manual** for now (`make dist`/`upload`/`release` → PyPI); a
+tag-triggered PyPI publish (Trusted Publishing) is proposed in `tasks/github-actions-ci.md`.
+
 ## Performance
 
 Specialized classes are ~15–35× faster than `Gn` numerically and **thousands×** symbolically

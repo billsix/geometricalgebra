@@ -138,6 +138,16 @@ format: image ## (container) regenerate, then ruff + ty over the source (entrypo
 		$(CONTAINER_NAME) \
 		-c 'set -e; source /venv/bin/activate; cd /gacalc; python tools/gen_specialized.py; bash /format.sh'
 
+# CI check: run `format` (regenerate + ruff --fix/format + ty + changelog check),
+# then fail if it changed any TRACKED file -- i.e. the code was not already
+# formatted.  The generated modules are gitignored, so they don't trip the diff.
+# One make target = the whole format gate, so CI is a thin wrapper (checkout ->
+# `make check-format`) and it reproduces exactly what CI does locally.  Run lean:
+# `make check-format BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0`.
+.PHONY: check-format
+check-format: format ## (CI) run format, then fail if it changed any tracked file
+	git diff --exit-code
+
 
 # Build the Sphinx book (HTML + PDF) INSIDE the container and copy it to the
 # bind-mounted ./output/. Needs an image built with BUILD_DOCS=1 (the default).
