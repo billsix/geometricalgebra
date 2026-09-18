@@ -279,6 +279,11 @@ source. Most of PEP 8 is enforced mechanically by `ruff` (see `pyproject.toml`);
 section covers the judgment calls ruff can't. Run `make format` (ruff + ty) and
 `make test` before sending a change.
 
+GitHub Actions runs the same gates on every push and PR (`.github/workflows/checks.yml`,
+two check-only jobs: `make check-format` and `make test`). CI is a thin wrapper — each
+job is `checkout` → `make <target>` — so what CI runs is exactly what you run locally.
+Releases are manual (`make dist` → `make upload`/`make release` to PyPI).
+
 ## License
 
 LGPL v2.1 (SPDX: `LGPL-2.1-only`). See `LICENSE`.
