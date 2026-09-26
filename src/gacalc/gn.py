@@ -58,7 +58,11 @@ class BladeDictionaryEntry(NamedTuple):
     coefficient: Coef
 
     def as_multivector(self) -> Gn:
-        """Promote this single (blade, coefficient) pair to a one-term ``Gn``."""
+        """Promote this single (blade, coefficient) pair to a one-term ``Gn``.
+
+        Returns:
+            Gn: a ``Gn`` carrying just this blade's coefficient.
+        """
         return Gn(coefficient_of_blade=dict([(self.blade, self.coefficient)]))
 
 
@@ -114,6 +118,15 @@ class Gn(MultiVectorBase):
 
         The interchange constructor (see ``MultiVectorBase.from_blade_dict``).
         ``Gn`` keeps every blade given; non-canonical keys raise ``ValueError``.
+
+        Args:
+            blade_coef: a canonical blade -> coefficient mapping.
+
+        Returns:
+            Gn: a ``Gn`` holding those coefficients.
+
+        Raises:
+            ValueError: on a non-canonical blade key.
         """
         _require_canonical_blades(blade_coef)
         return cls(coefficient_of_blade=dict(blade_coef))
@@ -128,6 +141,18 @@ class Gn(MultiVectorBase):
         no plane), rather than leaking ``normalize``'s low-level
         ``ZeroDivisionError``.  This is the plane you feed a rotor builder /
         ``exp`` to rotate in -- it is a bivector, never a rotor.
+
+        Args:
+            a: the first vector spanning the plane.
+            b: the second vector spanning the plane.
+
+        Returns:
+            MultiVectorBase: the unit bivector ``i`` of the a∧b plane
+            (``i * i == -1``).
+
+        Raises:
+            ValueError: if ``a`` and ``b`` are parallel (their wedge is zero, so
+                they span no plane).
         """
         plane: MultiVectorBase = cls.bivector_from_vectors(a, b)
         if plane == type(plane).zero():
@@ -140,6 +165,9 @@ class Gn(MultiVectorBase):
     def to_blade_dict(self) -> BladeCoef:
         """Return the canonical blade → coefficient mapping (``Gn`` stores exactly
         this, so it is returned directly, not rebuilt).
+
+        Returns:
+            BladeCoef: the stored blade -> coefficient dict.
         """
         return self.coefficient_of_blade
 
@@ -151,6 +179,13 @@ class Gn(MultiVectorBase):
         indices annihilate via eᵢeᵢ = +1, out-of-order indices swap with a sign),
         summing coefficient products over all pairs.  Correct-by-construction and
         slow — the oracle the specialized closed forms are checked against.
+
+        Args:
+            rhs: the right operand (any multivector, via the blade-dict
+                interchange).
+
+        Returns:
+            Self: the geometric product ``self * rhs`` as a ``Gn``.
         """
 
         def decrease_grade(

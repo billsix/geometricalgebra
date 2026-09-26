@@ -22,6 +22,17 @@ Every method of every generated class carries a docstring:
   from `MultiVectorBase`/`Gn`.
 - `@typing.overload` **stubs are left bare** (`...`): overloads never render in autodoc
   (the implementation's docstring is used) and a docstring on a stub is noise.
+- **Format: Google / napoleon** (as of 2026-09-26). Both the copied base docstrings and every
+  `CUSTOM_METHOD_DOCS` entry / `_*_doc` callable carry the full field set —
+  `Args:`/`Returns:`/`Raises:`/`Yields:` with any doctest under an `Example:` header — mirroring
+  the hand-written `base.py`/`gn.py`. When adding or editing an entry, keep that shape.
+  `Args:` names must match the emitted signature (`rhs`/`other`/`lhs`/`r`/`n`/`blade_coef`/
+  `onto`/`away_from`/`across`/`a`,`b`/`from_vector`,`to_vector`/`x`); put a type token in
+  `Returns:` only for grade-preserving ops (add/sub/neg/reverse of a closed-grade role) and use
+  prose for grade-changing ones (products/`dual`/`exp`) whose type varies by dimension. These
+  entries are read as source + run as `--doctest-modules`, NOT autodoc-rendered, so a bare
+  re-exported type name in `Returns:` is fine here (unlike `base.py`, where it must be qualified —
+  see `book-and-docs-pipeline.md`).
 
 ## Why this exists (and what it is NOT for)
 

@@ -58,7 +58,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 - `tests/` — `test_multivector.py` (`Gn`), `test_conformance.py` (parametrized over `[Gn, G]`),
   `test_graded.py` (graded subtypes), `test_generator.py` (the generator's own logic),
   `test_vectorcalc.py` (cross product), `test_blade_symbols.py` (display-symbol map), and more.
-  **~440 tests** (incl. doctests via `--doctest-modules`).
+  **~650 tests** (incl. doctests via `--doctest-modules`).
 - `tools/gen_specialized.py` — the code generator (builds each module as Python `ast` nodes,
   rendered with `ast.unparse`); `tools/astbuild.py` — its domain-agnostic node-builder DSL;
   `tools/bench.py` — `Gn`-vs-specialized benchmark.
@@ -232,7 +232,7 @@ or a dedicated `make` target wrapping `podman run`. The only step that runs on t
 over a "run it on your host" instruction.
 
 - **`make test`** — regenerates the gitignored `g*.py`, then runs `pytest` inside the container
-  (exit 0/nonzero contract; ~440 tests; `pytest.ini` sets `pythonpath = src`, `testpaths = src
+  (exit 0/nonzero contract; ~650 tests; `pytest.ini` sets `pythonpath = src`, `testpaths = src
   tests`, `addopts = --doctest-modules` so docstrings run as tests). Quick host run:
   `python -m pytest -q` after `make generate`.
 - **`entrypoint/format.sh`** (via `make format`, the real gate) — `ruff check --fix`,

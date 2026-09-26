@@ -69,6 +69,13 @@ autodoc_default_options = {
     "exclude-members": "__weakref__",
 }
 
+# Do NOT render type annotations in the signatures. autodoc otherwise turns every
+# annotation into a cross-reference (`V` the TypeVar, re-exported classes, ...),
+# and the ones with no documented target become ~169 "undefined Hyper reference"
+# warnings in the PDF. The docstrings themselves carry the types in their Google
+# ``Args:`` / ``Returns:`` sections (as prose), which is where a reader wants them.
+autodoc_typehints = "none"
+
 # Tell MathJax which delimiters mean "this is math":
 #   $...$  and  \(...\)   for math inside a sentence
 #   $$...$$ and \[...\]   for a centered equation on its own line
@@ -102,6 +109,18 @@ latex_elements = {
 \def\fps@figure{H}
 \setkeys{Gin}{width=0.5\textwidth}
 \makeatother
+% FreeSerif (Sphinx's lualatex default main font) HAS the script-G 𝒢 (U+1D4A2)
+% the book's 𝒢ₙ notation needs, but LACKS the subscript-n ₙ (U+2099) -- lualatex
+% logs "Missing character: ... ₙ" and it drops from the PDF. Rather than swap the
+% whole font (and risk losing 𝒢), add a luaotfload *fallback*: any glyph FreeSerif
+% is missing is drawn from DejaVu Sans (installed in the image; full sub/superscript
+% coverage). Referenced by FILE so it needs no luaotfload name database. This runs
+% in the preamble, AFTER Sphinx's fontpkg has loaded fontspec and chosen FreeSerif,
+% and just re-sets the three families with the fallback attached.
+\directlua{luaotfload.add_fallback("gacalcfallback", {"file:DejaVuSans.ttf:mode=harf;"})}
+\setmainfont{FreeSerif}[RawFeature={fallback=gacalcfallback}]
+\setsansfont{FreeSans}[RawFeature={fallback=gacalcfallback}]
+\setmonofont{FreeMono}[RawFeature={fallback=gacalcfallback}]
 """,
 }
 
