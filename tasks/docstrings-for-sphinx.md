@@ -98,8 +98,8 @@ All resolved (William Emerison Six <billsix@gmail.com>, 2026-09-26) — none ope
 ## See also
 
 - `tasks/narrate-code-generator-in-docstrings.md` — the generator's own narrative (tools/).
-- `tasks/generate-missing-docstrings.md` — **COMPLETE** — authored base/gn docstrings + made
-  the generator emit one per generated method.
+- `tasks/archive/2026/09/26/generate-missing-docstrings.md` — **COMPLETE + archived** —
+  authored base/gn docstrings + made the generator emit one per generated method.
 - `tasks/reference/generated-docstrings.md` — the generated-docstring mechanism, the doctest
   conventions (explicit unit coefficients, typed comparisons, annotations-not-assertions) this
   sweep should also follow, and the gotchas.

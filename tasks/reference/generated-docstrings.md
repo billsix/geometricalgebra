@@ -6,7 +6,7 @@ generated docstrings are produced, or before adding/altering the specialized wor
 Author: William Emerison Six <billsix@gmail.com>, 2026-09-26.
 
 Companion: `tasks/reference/code-generator-architecture.md` (how the generator is wired),
-`tasks/generate-missing-docstrings.md` (the task that produced this).
+`tasks/archive/2026/09/26/generate-missing-docstrings.md` (the task that produced this).
 
 ## What is true now
 

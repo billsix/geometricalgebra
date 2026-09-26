@@ -192,7 +192,9 @@ doc-region-marker machinery and its prefix-free naming, where generation happens
 dist`/`release`, the `GACALC_DIMS` env var, the wheel bake), and how to change/extend it live in
 `tasks/reference/code-generator-architecture.md` (the how-it's-wired map) and
 `generated-product-typing.md` (the precise-typing rationale). Cost + why g4/g5 are release-only:
-`generated-algebra-generation-cost.md`. Run **`make check-regions`** after touching markers or the generator.
+`generated-algebra-generation-cost.md`. How every generated method gets a docstring (the
+`inject_method_docstrings` pass + the grade-specialized `CUSTOM_METHOD_DOCS` table for g1–g3):
+`generated-docstrings.md`. Run **`make check-regions`** after touching markers or the generator.
 
 ## Coding standard (Python)
 
