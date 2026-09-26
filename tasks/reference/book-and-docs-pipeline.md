@@ -144,8 +144,9 @@ the book directly.
 
 ## Autodoc rendering warnings — RESOLVED 2026-09-26
 
-The follow-ups that were open here are fixed (details in `tasks/docstrings-for-sphinx.md`;
-the cross-project recipe in the shared `sphinx-book-conventions.md`):
+The follow-ups that were open here are fixed (work record: the archived
+`docstrings-for-sphinx` task; the cross-project recipe in the shared
+`sphinx-book-conventions.md`):
 
 1. **`|A|`-style RST warnings** — there were far fewer than the ~12 predicted (most `|A|` are
    already inside `` `` `` code-spans or `::` literal blocks, which RST doesn't parse). The
@@ -154,11 +155,44 @@ the cross-project recipe in the shared `sphinx-book-conventions.md`):
    were wrapped in the `` `` `` code-role. `make docs` → **0** substitution warnings.
 2. **`ₙ` (U+2099) missing from FreeSerif** — a luaotfload fallback to DejaVu Sans (by file)
    supplies it, FreeSerif kept as main (it has 𝒢). **0** `Missing character`.
-3. **Undefined hyperrefs 169 → ~7** — `autodoc_typehints = "none"` + `api.rst` now `automodule`s
-   every package module; the residual ~7 are a latexmk convergence tail (labels are in `.aux`).
+3. **Undefined hyperrefs 169 → 0** — `autodoc_typehints = "none"` + `api.rst` now `automodule`s
+   every package module. (Earlier notes said "~7 residual"; a converged build measures **0**.)
+4. **Full Google/napoleon docstrings across the hand-written AND generated API** (done 2026-09-26):
+   every `MultiVectorBase` method, the `gn.py` methods, the public module-level functions, AND the
+   ~185 grade-specialized generated docstrings (`CUSTOM_METHOD_DOCS` + the 7 `_*_doc` callables in
+   `tools/gen_specialized.py`) now carry `Args:`/`Returns:`/`Raises:`/`Yields:` with any doctest
+   under `Example:`. With `autodoc_typehints = "none"`, the `Returns:` prose IS the rendered type
+   info. Only base/gn/functions/transforms/measure/vectorcalc/frame are autodoc-rendered (api.rst);
+   g1/g2/g3 are read as source + run as `--doctest-modules`, not rendered.
 
-Still cosmetic (left as-is): ~42 `Font shape ... scit undefined` warnings (FreeSerif lacks the
-small-caps-italic shape; LaTeX auto-substitutes — no content lost).
+**Gotcha — re-exported names need a qualified type in `Returns:`.** `ComposableFunction` and
+`InvertibleFunction` are defined in `gacalc.functions` and **re-exported** by `gacalc.transforms`;
+`api.rst` automodules both, so a *bare* `ComposableFunction`/`InvertibleFunction` type token in a
+napoleon `Returns:` field resolves to two targets → `WARNING: more than one target found for
+cross-reference` (Sphinx `[ref.python]`). Fix: write the **canonical** `gacalc.functions.<Name>` in
+those `Returns:` tokens (in `base.py`'s `project`/`reject`/`reflect`/`identity`). Bare is fine
+inside the generated `g*` docstrings (not autodoc-rendered).
+
+**Warning-measurement recipes** (the log accumulates EVERY latexmk pass, so naive greps over- or
+under-count): substitution `grep -ic 'start-string without end-string\|undefined substitution'`;
+missing glyph `grep -c 'no ₙ\|Missing character'`; ambiguous xref `grep -c 'more than one target
+found for cross-reference'`; undefined hyperrefs `grep -oE "Hyper reference .api:[^' ]+" | sort -u |
+wc -l` (a plain `grep -c 'undefined'` UNDERCOUNTS — LaTeX wraps the word to the next line).
+
+Still cosmetic (left as-is): ~28–42 `Font shape ... scit undefined` warnings (FreeSerif lacks the
+small-caps-italic shape; LaTeX auto-substitutes — no content lost), plus benign Jupyter-kernel TCP
+notices and `picte`/`ellipse` rounded-box package notices. Verified 2026-09-26: `make docs` in the
+`BUILD_DOCS` image → exit 0, 102-page `geometry2.pdf`, 0 substitution / 0 missing-glyph / 0
+undefined-hyperref / 0 ambiguous-xref; the ~14 remaining warnings are all in this benign set.
+
+## conf.py E501 exemption
+
+`book/docs/conf.py`'s only over-88 line is inside the `r"""..."""` `latex_elements["preamble"]`
+string (the `\directlua{luaotfload.add_fallback(...)}` line, 89 cols). An inline `# noqa: E501` is
+impossible there — it would inject text into the LaTeX preamble and break lualatex — so it is
+exempted via `pyproject.toml` `[tool.ruff.lint.per-file-ignores]` `"book/docs/conf.py" = ["E501"]`
+(same class as the `tools/gen_specialized.py` exemption: un-reflowable string-literal content).
+`ruff check .` passes repo-wide.
 
 ## JupyterLab settings baked into the image (harvested from CLAUDE.md, 2026-09-13)
 

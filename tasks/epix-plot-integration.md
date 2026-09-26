@@ -11,8 +11,8 @@ At **container build time**, pull in Bill's **epix-mirror** code from GitHub and
 build/install it into the gacalc image, so it's available as a plot-generation
 tool. The plots are for the project's visual material — the **notebooks** and any
 **book** — and the integration should work whether docs are built with **Sphinx**
-or via a **LaTeX port** (gacalc has no Sphinx setup yet; see
-`tasks/docstrings-for-sphinx.md`).
+or via a **LaTeX port** (gacalc's Sphinx book is described in
+`tasks/reference/book-and-docs-pipeline.md`).
 
 (epix-mirror is Bill's mirror of ePiX, a C++ library that produces precise
 mathematical figures with LaTeX-quality output. A copy is also mounted locally at
@@ -50,8 +50,8 @@ mathematical figures with LaTeX-quality output. A copy is also mounted locally a
 - This is a **permanent** build-file change (a real plot dependency the image
   should carry), so per the cross-project build-file conventions it needs Bill's
   go-ahead before it lands in the committed `Dockerfile` (this task records intent).
-- gacalc has no Sphinx docs build yet (docs live in `README.md`); a LaTeX port /
-  Sphinx setup is contemplated in `tasks/docstrings-for-sphinx.md`.
+- gacalc has a Sphinx book ("Geometry 2") built with `make docs`; its pipeline is
+  documented in `tasks/reference/book-and-docs-pipeline.md`.
 
 ## Open questions
 
