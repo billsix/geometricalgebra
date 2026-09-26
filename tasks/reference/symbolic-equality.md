@@ -45,6 +45,33 @@ coefficients in *different forms* — `2*x` vs `x + x`, or unreduced `sqrt` expr
 notes a raw coefficient "may not be in lowest terms"). A bare `==` would report those unequal; the
 `simplify(a − b) == 0` check is what makes equality correct.
 
+## Gotcha: a multivector never `==` a bare Python number
+
+`==` compares two multivectors; it does **not** lift a bare Python number. The generated
+`__eq__` guards `if not isinstance(other, MultiVectorBase): return NotImplemented` (e.g.
+`src/gacalc/g2.py`), and `int`/`float`/`sympy.Expr` have no reflected `__eq__` that would
+accept a multivector, so Python falls back to identity and the result is **`False`** —
+even when the multivector *is* that number:
+
+```
+>>> from gacalc import g2
+>>> g2.Scalar.from_scalar(-1) == -1          # False -- NOT lifted
+False
+>>> g2.Scalar.from_scalar(-1) == g2.Scalar.from_scalar(-1)   # compare typed values
+True
+```
+
+**This is asymmetric with arithmetic**, which *does* lift a bare number (`__add__`/`__mul__`
+route it through `from_blade_dict`/`from_scalar`), so `scalar + 1` and `bivector * 2` work
+fine — only `==` refuses. The footgun: a grade-0 *result* compared to `0`/`1` with `==` is
+silently `False` even when it holds that value (`some_scalar_result == 0` misfires).
+
+Practical rule, and the one the generated **doctests** follow: compare a multivector result
+to a **correctly-typed** value — `== Scalar.from_scalar(-1)`, `== Vector.e_3`,
+`== Rotor.from_scalar(1)` — never to a bare number. When you want the *number*, pull it out
+first (`.scalar_part()`, `.coefficient(blade)`, `.magnitude_squared()` return a plain `Coef`)
+and compare that: `mv.scalar_part() == 0` is fine, `mv == 0` is not.
+
 ## Limits — what `simplify(a − b) == 0` can and can't do
 
 - **No false positives:** if `simplify` reduces the difference to `0`, the values *are* equal.

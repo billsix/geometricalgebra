@@ -1,13 +1,17 @@
 # Add docstrings everywhere, rendered well by the book's autodoc
 
-**Status:** proposed — open (rescoped 2026-08-13)
+**Status:** proposed — open (rescoped 2026-08-13; re-narrowed 2026-09-26)
 **Priority:** 5
 **Difficulty:** 6
 **Created:** 2026-06-13
-**Updated:** 2026-08-13 — rescoped. The Sphinx book now exists (`book/docs/`, stood up
-2026-08-02), so this is no longer "should we stand up Sphinx?" but "complete/normalize the
-package's docstrings so the book's autodoc renders everything well," coordinated with two
-sibling docstring tasks (below) so it doesn't overlap them.
+**Updated:** 2026-09-26 — re-narrowed after `generate-missing-docstrings.md` completed. That
+sibling authored full docstrings on **every `base.py`/`gn.py` method** (and made the generator
+emit one on every generated method), so this task's `base.py` / `gn.py` **coverage** is now
+done. What remains here: the **hand-written modules not yet swept** (`transforms.py`,
+`nbplotutils.py`, `functions.py`, `tools/` helpers), the two **autodoc rendering fixes** below,
+and — if wanted — a **napoleon-Google consistency pass** over the now-complete-but-freeform
+`base.py`/`gn.py` docstrings (they were written in freeform Hestenes prose, not Google sections).
+Earlier history: rescoped 2026-08-13 once the Sphinx book existed (`book/docs/`, 2026-08-02).
 
 ## Goal
 
@@ -25,11 +29,15 @@ style reference (module/class/method docstrings with Hestenes notation); this ta
 - **Two sibling tasks now own slices of "docstrings," so this one is scoped around them:**
   - `narrate-code-generator-in-docstrings.md` owns the **generator's narrative** (the story
     in `tools/gen_specialized.py` / `astbuild.py`). Not this task.
-  - `generate-missing-docstrings.md` owns authoring the **generated classes' method
-    docstrings** (via `base.py`/`gn.py` + the `inspect.getdoc` copy path). Not this task.
-  - **This task owns the rest:** the completeness/consistency sweep across the hand-written
-    modules the book's autodoc renders — `transforms.py`, `nbplotutils.py`, `gn.py`,
-    `functions.py` — plus `base.py` polish, and the autodoc-surfaced rendering fixes below.
+  - `generate-missing-docstrings.md` — **COMPLETE (2026-09-26).** It authored full docstrings
+    on every `base.py`/`gn.py` method and made the generator emit one on every generated method
+    (see `tasks/reference/generated-docstrings.md`). So `base.py`/`gn.py` **coverage is done**;
+    what it did NOT do is normalize their freeform-Hestenes docstrings to napoleon Google style.
+  - **This task now owns:** (1) the completeness sweep across the still-unswept hand-written
+    modules the book's autodoc renders — `transforms.py`, `nbplotutils.py`, `functions.py`
+    (+ `tools/` helpers not owned by the narrative task); (2) the autodoc rendering fixes below;
+    (3) optionally, a napoleon-Google **consistency** pass over the now-complete-but-freeform
+    `base.py`/`gn.py` docstrings. `base.py`/`gn.py` *coverage* is no longer in scope.
 
 ## Constraints specific to gacalc (read before editing)
 
@@ -50,10 +58,13 @@ style reference (module/class/method docstrings with Hestenes notation); this ta
 
 ## Plan
 
-- [ ] **Audit coverage** across the hand-written modules — `transforms.py`, `nbplotutils.py`,
-      `gn.py`, `functions.py`, `base.py`, plus the `tools/` helpers not owned by the narrative
-      task (scope = all of them, decided 2026-09-26) — and list what lacks a docstring or has a
-      thin one. (`base.py` is strong; `transforms.py` / `nbplotutils.py` are the likely gaps.)
+- [ ] **Audit coverage** across the still-unswept hand-written modules — `transforms.py`,
+      `nbplotutils.py`, `functions.py`, plus the `tools/` helpers not owned by the narrative
+      task — and list what lacks a docstring or has a thin one. (`base.py`/`gn.py` are already
+      100% covered by `generate-missing-docstrings.md`; `transforms.py` / `nbplotutils.py` are
+      the likely gaps.)
+- [ ] **(optional) napoleon-Google consistency pass** over `base.py`/`gn.py` — they are fully
+      covered but in freeform Hestenes prose, not Google sections; normalize if the book wants it.
 - [ ] **Fix the autodoc-surfaced rendering issues** already found while standing up the book
       (from `book-and-docs-pipeline.md` "Open follow-ups"):
       - `|A|` in docstrings renders as RST `|substitution|` → ~12 "undefined substitution"
@@ -87,6 +98,10 @@ All resolved (William Emerison Six <billsix@gmail.com>, 2026-09-26) — none ope
 ## See also
 
 - `tasks/narrate-code-generator-in-docstrings.md` — the generator's own narrative (tools/).
-- `tasks/generate-missing-docstrings.md` — authoring the generated classes' docstrings.
+- `tasks/generate-missing-docstrings.md` — **COMPLETE** — authored base/gn docstrings + made
+  the generator emit one per generated method.
+- `tasks/reference/generated-docstrings.md` — the generated-docstring mechanism, the doctest
+  conventions (explicit unit coefficients, typed comparisons, annotations-not-assertions) this
+  sweep should also follow, and the gotchas.
 - `tasks/reference/book-and-docs-pipeline.md` — the Sphinx build + the autodoc follow-ups
   folded into the Plan above.

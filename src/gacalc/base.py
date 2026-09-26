@@ -232,18 +232,27 @@ class MultiVectorBase(abc.ABC):
 
     @classmethod
     def from_scalar(cls, scalar: int | float) -> typing.Self:
+        """The scalar (grade-0) multivector  ⟨A⟩₀ = scalar  — every other blade zero.
+
+        For a symbolic coefficient use ``from_coef``; this takes a plain number.
+        """
         return cls.from_blade_dict({tuple(): scalar})
 
     @classmethod
     def from_coef(cls, s: Coef) -> typing.Self:
+        """The scalar (grade-0) multivector whose coefficient is ``s`` — like
+        ``from_scalar`` but also accepts a symbolic ``sympy.Expr`` coefficient.
+        """
         return cls.from_blade_dict({tuple(): s})
 
     @classmethod
     def zero(cls) -> typing.Self:
+        """The additive identity  0  — every blade coefficient zero."""
         return cls.from_scalar(0)
 
     @classmethod
     def one(cls) -> typing.Self:
+        """The multiplicative identity  1  — the unit scalar (grade-0)."""
         return cls.from_scalar(1)
 
     @classmethod
@@ -268,6 +277,11 @@ class MultiVectorBase(abc.ABC):
 
     @classmethod
     def bases(cls, n: int) -> Generator[typing.Self]:
+        """Yield the  2ⁿ  basis blades of 𝒢ₙ, one multivector each, from the scalar
+        1 through the pseudoscalar e₁e₂…e_n (the powerset of {e₁, …, e_n}, ordered
+        by grade).  This is the linear basis every multivector is a sum over.
+        """
+
         def powerset(iterable: Sequence[int]) -> chain[Blade]:
             s: list[int] = list(iterable)
             # chain.from_iterable flattens the list of combinations
@@ -283,12 +297,22 @@ class MultiVectorBase(abc.ABC):
 
     @classmethod
     def symbolic_multivector(cls, n: int, prefix: str) -> typing.Self:
+        """A general multivector of 𝒢ₙ with a distinct symbolic coefficient on every
+        basis blade — ``prefix0``·1 + ``prefix1``·e₁ + … over all  2ⁿ  blades.
+
+        The workhorse for proving an identity symbolically: build one of these,
+        run the operation, and check the result simplifies to the expected form.
+        """
         mv: list[MultiVectorBase] = list(cls.bases(n))
         symbols: list[sympy.Symbol] = sympy.symbols(prefix + ":" + str(len(mv)))
         return sum([s * blade for s, blade in zip(symbols, mv)], start=cls.zero())
 
     @classmethod
     def unit_pseudoscalar_squared(cls, n: int) -> typing.Self:
+        """The square of the unit pseudoscalar,  i²  — the scalar  (−1)^(n(n−1)/2)  in
+        Euclidean 𝒢ₙ (see ``tasks/reference/pseudoscalar-square-sign.md``); ±1, and
+        the sign that decides whether i is a "complex/quaternionic" imaginary.
+        """
         unit_pseudoscalar: MultiVectorBase = cls.unit_pseudoscalar(n)
         return unit_pseudoscalar * unit_pseudoscalar
 
@@ -304,6 +328,10 @@ class MultiVectorBase(abc.ABC):
         """
 
     def __mul__(self, rhs: MultiVectorBase | Coef) -> typing.Self:
+        """Geometric product  A B  (``*``).  A bare number on the right is lifted to a
+        scalar first, so ``A * 2`` scales; otherwise this is the full product of the
+        algebra, dispatched to the representation's ``_geometric_product``.
+        """
         match rhs:
             case int() | float() as n:
                 return self._geometric_product(type(self).from_scalar(n))
@@ -313,6 +341,10 @@ class MultiVectorBase(abc.ABC):
                 return self._geometric_product(rhs)
 
     def __rmul__(self, lhs: MultiVectorBase | Coef) -> typing.Self:
+        """Reflected geometric product  (number) A  — gives ``2 * A`` for a bare number
+        on the left.  A multivector left operand is handled by its own ``__mul__``; any
+        other left type returns ``NotImplemented`` so Python raises ``TypeError``.
+        """
         match lhs:
             case int() | float() as n:
                 return self._geometric_product(type(self).from_scalar(n))
@@ -329,6 +361,10 @@ class MultiVectorBase(abc.ABC):
     # shared arithmetic, all built on the interchange + primitives
     # ------------------------------------------------------------------
     def __add__(self, rhs: MultiVectorBase | Coef) -> typing.Self:
+        """Sum  A + B  — coefficient-wise over the union of both multivectors' blades.
+        A bare number adds to the scalar (grade-0) part, so ``bivector + c`` builds
+        the rotor  c + B  in every representation.
+        """
         # A bare number is the scalar (grade-0) part -- the generated
         # specialized classes already accept ``mv + 2``; the shared base
         # matches them so e.g. ``bivector * (-s) + c`` builds a rotor in
@@ -345,6 +381,10 @@ class MultiVectorBase(abc.ABC):
         )
 
     def __radd__(self, lhs: Coef) -> typing.Self:
+        """Reflected sum  (number) + A  — addition commutes, so this gives ``2 + A``
+        for free.  ``lhs`` is always a bare number (a multivector left operand uses
+        its own ``__add__``).
+        """
         # addition commutes; gives ``2 + mv`` for free.  ``lhs`` is a bare number,
         # never a multivector: Python only calls ``__radd__`` when the left operand
         # (here a non-multivector) has no ``__add__`` for us -- a multivector left
@@ -355,9 +395,11 @@ class MultiVectorBase(abc.ABC):
         return self.__add__(lhs)
 
     def __sub__(self, rhs: typing.Self) -> typing.Self:
+        """Difference  A − B  =  A + (−B)."""
         return self + -rhs
 
     def __neg__(self) -> typing.Self:
+        """Negation  −A — every coefficient sign-flipped (scalar factor −1)."""
         return -1 * self
 
     def __truediv__(self, rhs: MultiVectorBase | Coef) -> typing.Self:
@@ -372,6 +414,7 @@ class MultiVectorBase(abc.ABC):
         )
 
     def __abs__(self) -> Coef:
+        """Magnitude  \\|A\\|  =  ``abs(A)``  — the norm √⟨A A˜⟩; see ``magnitude``."""
         return self.magnitude()
 
     def __iter__(self):
@@ -511,6 +554,12 @@ class MultiVectorBase(abc.ABC):
         return typing.cast(typing.Self, inner)
 
     def dot(self, rhs: typing.Self) -> typing.Self:
+        """Inner (dot) product  A · B  — a spelling of ``inner_product``.
+
+        This is the Hestenes inner product, which EXCLUDES grade 0 (so it differs
+        from the grade-0-including left/right contractions on scalar operands); see
+        ``tasks/reference/contraction-and-dot-definitions.md``.
+        """
         return self.inner_product(rhs)
 
     def outer_product(self, rhs: typing.Self) -> typing.Self:
@@ -680,12 +729,15 @@ class MultiVectorBase(abc.ABC):
         return self == self.r_vector_part(self.max_grade())
 
     def is_vector(self) -> bool:
+        """True iff A is homogeneous of grade 1 (a vector); ``zero`` qualifies."""
         return self.is_homogeneous_of_grade_r(r=1)
 
     def is_bivector(self) -> bool:
+        """True iff A is homogeneous of grade 2 (a bivector); ``zero`` qualifies."""
         return self.is_homogeneous_of_grade_r(r=2)
 
     def is_trivector(self) -> bool:
+        """True iff A is homogeneous of grade 3 (a trivector); ``zero`` qualifies."""
         return self.is_homogeneous_of_grade_r(r=3)
 
     def is_orthogonal_to(
@@ -738,9 +790,13 @@ class MultiVectorBase(abc.ABC):
         return self.to_blade_dict().get(tuple(), 0)
 
     def grades(self) -> list[int]:
+        """The distinct grades present in A — the set of blade lengths that carry a
+        nonzero coefficient (e.g. a rotor gives ``[0, 2]``).  Empty for ``zero``.
+        """
         return list(set(len(blade) for blade in self.to_blade_dict().keys()))
 
     def max_grade(self) -> int:
+        """The highest grade present in A (its top blade's grade); 0 for ``zero``."""
         # The zero multivector has no present blades; its max grade is 0 (it is
         # homogeneous of every grade -- see is_homogeneous_of_grade_r) rather than a
         # crash on max([]).
@@ -1340,6 +1396,11 @@ class MultiVectorBase(abc.ABC):
         return f"{module}.{type(self).__name__}({fields})"
 
     def _repr_latex_(self) -> str:
+        """Render A as LaTeX for Jupyter's rich display (the name Jupyter looks up).
+
+        Shows the simplified view so the lazy classes don't display un-reduced
+        coefficients; the stored fields are left untouched.
+        """
         # Display the simplified view: the lazy classes (G, graded subtypes)
         # don't eager-simplify, so a raw coefficient may not be in lowest terms
         # (e.g. a bivector times its dual whose terms should cancel).  Simplifying
