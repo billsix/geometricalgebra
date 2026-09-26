@@ -3,7 +3,7 @@
 **Status:** proposed — needs go-ahead
 **Priority:** 7
 **Difficulty:** 6
-**Created:** 2026-09-26 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-09-26 **Updated:** 2026-09-26 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
@@ -30,6 +30,25 @@ terminology map), because "why is the constructor `from_real` but the method sti
 - Rough scale: ~713 textual occurrences of "scalar" across `src`/`tools`/`tests`/
   `notebooks`/`README`, but the *public API surface* that would actually change is small
   (a handful of names); the bulk is the generator, tests, and established GA terms.
+
+## Deviation from Hestenes — and why the Real/Scalar distinction is right in Python (Bill, 2026-09-26)
+
+**This project deliberately distinguishes a plain real number from a grade-0 multivector; Hestenes
+does not — and that difference is a consequence of paper vs. Python, not a disagreement with the
+math.** On paper Hestenes treats the real number `5` and the grade-0 multivector `5` as the same
+object: `5` and `5 + 1·e₁` are both just multivectors with real coefficients, and nothing in the
+notation forces a type boundary. In Python there IS a boundary the paper never had: the real number
+`5` is a Python `int` / `float` / `sympy.Expr` — it is **not** an instance of `MultiVectorBase` or
+any generated class, and (by the symbolic-equality contract) a multivector is never `==` a bare
+number. So "a real number" and "a grade-0 element of 𝒢ₙ" are genuinely different Python types with
+different behavior, even though they denote the same mathematical thing.
+
+That makes naming the *real number* explicitly — rather than calling it "scalar", which in GA is the
+grade-0 *element* — a useful, honest distinction FOR THIS IMPLEMENTATION: it tells the reader which
+side of the Python type boundary a value is on. **It must be documented as a deliberate deviation
+from Hestenes, with this reasoning**, in the eventual reference doc (`scalar-vs-real-naming.md`): we
+are not renaming because Hestenes is wrong, but because Python's type system draws a line his paper
+did not need.
 
 ## The three senses of "scalar" (the marked-up inventory)
 
@@ -153,11 +172,44 @@ Mechanical, but large and must stay in lockstep with (A).
    type but not `Coef`, or vice-versa, re-introduces the split we're trying to remove. My
    lean: if `Scalar`→`Real`, also `Coef`→`Real`; if we keep `Scalar`, keep `Coef`.
 
+## Recommendation — reals cross the boundary, algebra elements stay inside (Bill, 2026-09-26)
+
+A concrete answer to the "(A′) what returns a real?" question — *should the extraction/measurement
+methods keep returning `Coef` (a plain real), or return a grade-0 multivector wrapping it?*
+
+- **Keep every extraction/measurement returning a plain real (`Coef`).** `scalar_part()`,
+  `coefficient(blade)`, `magnitude()` / `magnitude_squared()` / `__abs__()`, `scalar_product()`,
+  `cosine()`, and iteration (`list(v)`) genuinely yield real numbers, and returning a Python real is
+  what makes them usable: `mag < 1.0`, `math.sqrt`, numpy arrays, plotting, and crucially
+  `scalar_part() == 0` all work on a real but **not** on a grade-0 multivector — the `mv == bare
+  number` footgun (see `symbolic-equality.md`) would make `== 0` / `== 1` silently `False`. Wrapping
+  these in a `Scalar` would force a `.scalar_part()` unwrap at every call site and re-introduce that
+  footgun. **Do not switch these to return multivectors.**
+- **Algebra operations that happen to land in grade 0 stay typed algebra elements.** `A * B`,
+  `A ^ B`, projections, `exp`, … already return the resolved type (a grade-0 result is a `Scalar`),
+  which is right: they operate *within* the algebra. The boundary is clean — **a real goes IN via
+  `from_real` and comes OUT via an explicit extraction; algebra elements never silently decay to bare
+  numbers except through a named extraction.** `scalar_product` (= ⟨A B⟩) is an extraction and rightly
+  returns a real even though `A*B` (grade 0) returns a `Scalar` — that asymmetry is the boundary
+  working as intended, not an inconsistency to "fix".
+- **Naming collision this resolves (refines Q1/Q5).** "Real" can name only ONE of {the Python real
+  coefficient type `Coef`, the grade-0 element class `Scalar`} — a type alias `Real = int | float |
+  sympy.Expr` and a class `Real` cannot coexist. The deviation above says which: the *Python real
+  number* is `Real`; the grade-0 *algebra element* is a multivector. So the recommendation is
+  **`Coef` → `Real`** (the number type reads as ℝ — what you put in via `from_real` and get out via
+  extractions) and **KEEP the grade-0 class as `Scalar`** (it is an element of the algebra,
+  deliberately distinct from a Python real). `from_scalar(scalar: int | float)` →
+  `from_real(real: Real)` then reads correctly ("lift a real into the algebra"). **This inverts the
+  task's original headline lean** (`Scalar` → `Real` class rename): the name "Real" belongs on
+  `Coef`, not on the grade-0 class — precisely because the whole point is that a Python real is *not*
+  a multivector.
+
 ## If we proceed
 
 - Write a reference doc `tasks/reference/scalar-vs-real-naming.md` (decision record + the
-  definitive KEEP-vs-RENAME map from (A)/(B) above, so the "real type / scalar part"
-  split is explained once and not re-litigated).
+  definitive KEEP-vs-RENAME map from (A)/(B) above + **the deviation-from-Hestenes reasoning**
+  (paper treats real 5 ≡ grade-0 5; Python's type system does not), so the "real type / scalar
+  part" split is explained once and not re-litigated).
 - Do the rename as a generator-first change (the `Scalar`/`coeff_scalar` names are emitted
   by `tools/gen_specialized.py`; see `tasks/reference/code-generator-architecture.md`),
   then tests/notebooks/README, then the `CHANGELOG` + version bump.

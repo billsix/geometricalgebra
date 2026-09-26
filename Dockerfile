@@ -112,5 +112,12 @@ RUN export VIRTUAL_ENV_DISABLE_PROMPT=1 && source /venv/bin/activate && \
     jupytext-config set-default-viewer python && \
     jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
 
+# Lean 4 (theorem prover) via elan — host-runnable script, curl-installed; bakes the
+# stable toolchain so an exported image has Lean offline. Late layer (after the Python
+# build) so editing src/ doesn't re-run it.
+COPY entrypoint/install-lean.sh /usr/local/bin/
+RUN /usr/local/bin/install-lean.sh
+ENV PATH="/root/.elan/bin:${PATH}"
+
 
 ENTRYPOINT ["/entrypoint.sh"]
