@@ -109,7 +109,7 @@ shell:  ## Get Shell into a ephermeral container made from the image
 	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) -it --rm $(SHELL_RUN_FLAGS) $(CONTAINER_NAME) /shell.sh
 
 .PHONY: shell-exec
-shell-exec: ## Run a script/command in the container env (no TTY): make shell-exec SCRIPT=path | CMD='...'
+shell-exec: image ## Run a script/command in the container env (no TTY): make shell-exec SCRIPT=path | CMD='...'
 	@[ -n "$(SCRIPT)$(CMD)" ] || { echo 'usage: make shell-exec SCRIPT=<repo-relative path> | CMD="..."'; exit 2; }
 	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm $(SHELL_RUN_FLAGS) $(CONTAINER_NAME) /shell.sh $(SHELL_EXEC_ARGS)
 
@@ -220,36 +220,40 @@ test-all-dims: ## (container) full-dim gate: generate g1..g5 then run the suite 
 		$(CONTAINER_NAME) \
 		-c 'set -e; source /venv/bin/activate; cd /gacalc; GACALC_DIMS=$(ALL_DIMS) python tools/gen_specialized.py; python -m pytest'
 
+# Run INSIDE the container (like `test`): both steps need sympy to regenerate the
+# g*.py, which a bare CI runner lacks -- so `image` is a prerequisite and the work
+# happens in the image's pinned toolchain. Reproducible locally via nested podman.
 .PHONY: check-regions
-check-regions: ## Verify doc-region markers are unique/prefix-free/balanced (regen first)
-	python tools/gen_specialized.py
-	python tools/check_doc_regions.py
+check-regions: image ## (container) verify doc-region markers are unique/prefix-free/balanced (regen first)
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
+		-v $(CURDIR):/gacalc:Z \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'set -e; source /venv/bin/activate; cd /gacalc; python tools/gen_specialized.py; python tools/check_doc_regions.py'
 
 .PHONY: check-changelog
 check-changelog: ## Verify CHANGELOG.md has a heading for pyproject.toml's version
 	python tools/check_changelog.py
 
+# Run INSIDE the container (like `test`): regenerating the g*.py needs sympy, absent
+# on a bare CI runner -- hence the `image` prerequisite. The regen-twice + cmp loop
+# runs as one in-container command (state must persist across the two generations);
+# it lives on a single physical line because make would treat a `\`-continuation
+# inside the single-quoted `-c '...'` as a literal backslash.
 .PHONY: check-generated
-check-generated: ## Verify tools/gen_specialized.py is deterministic (regen twice, compare)
-	python tools/gen_specialized.py
-	@cp $(GENERATED) /tmp/
-	python tools/gen_specialized.py
-	@for f in $(GENERATED); do \
-		cmp -s "$$f" "/tmp/$$(basename $$f)" || { \
-			echo ""; \
-			echo "ERROR: tools/gen_specialized.py is non-deterministic ($$f differs between runs)."; \
-			exit 1; \
-		}; \
-	done
-	@rm -f $(addprefix /tmp/,$(notdir $(GENERATED)))
-	@echo "generator is deterministic"
+check-generated: image ## (container) verify tools/gen_specialized.py is deterministic (regen twice, compare)
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
+		-v $(CURDIR):/gacalc:Z \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'set -e; source /venv/bin/activate; cd /gacalc; python tools/gen_specialized.py; mkdir -p /tmp/gen0; cp $(GENERATED) /tmp/gen0/; python tools/gen_specialized.py; for f in $(GENERATED); do cmp -s "$$f" "/tmp/gen0/$$(basename "$$f")" || { echo "ERROR: tools/gen_specialized.py is non-deterministic ($$f differs between runs)."; exit 1; }; done; echo "generator is deterministic"'
 
 # Run the suite INSIDE the container (the image's pinned toolchain), like `dist`.
 # The generated g*.py are gitignored, so regenerate them first (into the
 # bind-mounted tree), then run pytest.  Exit 0 on success; on failure the inner
 # command's nonzero status propagates out (make reports it as a recipe failure).
 .PHONY: test
-test: ## Run the full test suite INSIDE the container; exit 0 on success, nonzero on failure
+test: image ## Run the full test suite INSIDE the container; exit 0 on success, nonzero on failure
 	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
 		-v $(CURDIR):/gacalc:Z \
 		--entrypoint /bin/bash \
@@ -284,7 +288,7 @@ VERBOSE ?=
 TWINE_VERBOSE := $(if $(VERBOSE),--verbose)
 
 .PHONY: dist
-dist: ## Build sdist + wheel INSIDE the container -> $(DIST_DIR) on the host
+dist: image ## Build sdist + wheel INSIDE the container -> $(DIST_DIR) on the host
 	mkdir -p $(DIST_DIR)
 	rm -f $(DIST_DIR)/*.whl $(DIST_DIR)/*.tar.gz   # drop stale builds so upload only sees this version
 	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \

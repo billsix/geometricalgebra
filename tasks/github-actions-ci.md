@@ -1,8 +1,13 @@
 # GitHub Actions: check CI (phase 1), then releases (phase 2)
 
-**Status:** Phase 1 IMPLEMENTED 2026-09-18 (`make check-format` + `.github/workflows/checks.yml`,
-two jobs: `format` + `test`). Phase 2 (PyPI publish on tag) is proposed — needs the maintainer's
-PyPI-CI decision (see below). Staged for the maintainer to commit.
+**Status:** Phase 1 COMPLETE. 2026-09-18 initial (`make check-format` + `.github/workflows/checks.yml`).
+**2026-09-26:** (a) CI fix — the `test` job failed on a fresh runner (`Error 125`, tried to pull
+`gacalc:latest`) because `make test` lacked an `image` prereq; fixed (`test: image`, plus
+`shell-exec: image` / `dist: image` for consistency). (b) Q2 done — containerized `check-generated`
+and `check-regions` (they need sympy, absent on a bare runner) and added a third CI job `generated`
+running both. Now four check jobs: `format`, `test`, `generated` (×2 steps). (c) Phase 2 (PyPI
+publish on tag, old Q3) spun off to `tasks/github-actions-pypi-publish-on-tag.md`. Staged for the
+maintainer to commit.
 **Priority:** 5
 **Difficulty:** 4
 **Started:** 2026-09-17 (William Emerison Six <billsix@gmail.com>)
@@ -22,10 +27,13 @@ private book/app). The governing principle below is the same.
 - **`checks.yml` = two check-only jobs**, `format` (`make check-format`) and `test` (`make test`),
   on push + PR, `checkout` → `make <target>`, lean flags (`BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0`).
   Both are container-run thin wrappers; neither commits/reformats the repo.
-- **`check-generated` and `check-regions` were NOT added to CI** (unlike the format/test pair): both
-  run `python tools/gen_specialized.py` on the **host** (they need sympy on the runner, which a bare
-  ubuntu runner lacks). To CI them, they'd have to be containerized first (run via the image). Left
-  as a deferred enhancement — flag Q2.
+- **`check-generated` and `check-regions` — added to CI 2026-09-26 (Q2 resolved).** They ran bare
+  `python tools/gen_specialized.py` on the **host** (sympy, which a bare ubuntu runner lacks), so they
+  were first **containerized** — both now `: image` and run the regen+check inside the image via
+  `podman run` (mirroring `test`'s minimal invocation, NOT `shell-exec`, whose `SHELL_RUN_FLAGS`
+  carry X11/Wayland/port passthrough unsuitable for a headless runner). A third `checks.yml` job
+  `generated` runs `make check-generated` then `make check-regions` (one job, two steps: the second's
+  `image` prereq hits the build-layer cache). Both verified green locally 2026-09-26.
 - **Bake-source (mvp's headline change) is largely already done here:** gacalc's Dockerfile already
   `COPY`s `src`/`tools`/`pyproject` into `/gacalc` and installs at build, so a gacalc image already
   carries its source. gacalc also does **not push a container image** (no `image-push`; it publishes
@@ -93,35 +101,43 @@ geometricalgebra is already built for this — nearly every CI step is an existi
       verified locally (the same commands CI runs).
 - [x] **Document the principle:** added a "## Continuous integration" section to `CLAUDE.md`
       (CI is a thin wrapper over the make/Dockerfile system).
-- [ ] **Phase 2 — PyPI publish on tag (needs the maintainer's decision + one-time setup).** On a
-      `v*` tag, build + publish to **PyPI**. gacalc already has a working **manual** path
-      (`make dist` → `make upload` → `make release`, interactive twine + host `git tag`), so
-      automating it is a real choice, not a gap. Recommended CI approach: **PyPI Trusted Publishing
-      (OIDC)** — no token secret in the repo; you configure a "trusted publisher" on PyPI once
-      (project → Publishing → add the repo + `release.yml`), then a `release.yml` on the `v*` tag
-      runs `make dist` and publishes via `pypa/gh-action-pypi-publish`. Attach the `dist` sdist/wheel
-      (and optionally the `docs` HTML/PDF) to a GitHub Release. **Not implemented here** because it
-      needs your PyPI-side config and I can't test a real publish; deciding "keep manual `make
-      release`" is also legitimate. (gacalc does not push a container image, so no ghcr step —
-      unlike mvp.) Reuse the version-tag guard already in `make release`.
+- [x] **CI fix + Q2 (DONE 2026-09-26):** `test: image` (the missing prereq that broke the first real
+      CI run), plus `shell-exec: image` / `dist: image` for consistency; containerized
+      `check-generated` / `check-regions` and added the `generated` CI job. See Status.
+- [→] **Phase 2 — PyPI publish on tag: SPUN OFF** to `tasks/github-actions-pypi-publish-on-tag.md`
+      (needs a maintainer decision + one-time PyPI Trusted-Publishing config). See that task.
 
 ## Open questions
 
 1. ~~Runner environment~~ **RESOLVED:** `ubuntu-latest`, image built in-workflow from the committed
    Dockerfile (self-contained), lean flags. `CONTAINER_CMD` auto-detects podman→docker.
-2. **Add `check-generated` / `check-regions` to CI?** Not included yet — both run
-   `python tools/gen_specialized.py` on the **host**, which a bare ubuntu runner can't (no sympy).
-   To CI them they must be containerized (run via `make shell-exec`/the image). Worth doing for the
-   determinism guard (`check-generated`) especially. `check-changelog` already runs inside the
-   `format` job (it's in `format.sh`). `test-all-dims` stays manual/nightly (too slow per-PR).
-3. **Phase 2 PyPI automation** — go with Trusted Publishing (OIDC, no secret; needs one-time PyPI
-   config) on a `v*` tag, or keep the manual `make release`? (No ghcr step — gacalc doesn't push an
-   image.) See the Plan.
+2. ~~Add `check-generated` / `check-regions` to CI?~~ **RESOLVED 2026-09-26:** yes — both
+   containerized (`: image`, run via the image) and added as the `generated` CI job. `check-changelog`
+   already runs inside the `format` job (it's in `format.sh`); `test-all-dims` stays manual/nightly
+   (too slow per-PR).
+3. ~~Phase 2 PyPI automation~~ **SPUN OFF 2026-09-26** to
+   `tasks/github-actions-pypi-publish-on-tag.md` — the Trusted-Publishing-vs-manual decision lives
+   there now.
+
+## Phase-1 CI fix (2026-09-26, William Emerison Six <billsix@gmail.com>)
+
+The first real CI run failed the `test` job with `Error 125`: `docker/podman run ... gacalc` tried
+to **pull** `gacalc:latest` from a registry (access denied / 404). Root cause: `make test` had **no
+`image` prerequisite**, unlike every other containerized target (`format: image`, `docs: image`,
+`jupyter: image`). On the maintainer's host `make test` worked because an image already existed from
+a prior `make image`/`make all`; on a fresh runner nothing built it. **Why "verified locally" below
+didn't catch it:** the local 490-passed run reused a pre-built host image, so the missing prereq was
+invisible until a clean-checkout runner.
+
+Fix (`Makefile`): `test: image`, and — same latent drift, not the cause of this failure —
+`shell-exec: image` (matches the conformance spec) and `dist: image` (matches its own "Needs the
+image built" comment). Verified `make -n test` now emits `podman build -t gacalc` before the `run`.
 
 ## Verified locally (2026-09-18)
 - `make check-format BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0` → exit 0 (regenerate + ruff + ty +
   changelog + clean `git diff`).
-- `make test BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0` → **490 passed**.
+- `make test BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0` → **490 passed** (note: reused a pre-built host
+  image — see the Phase-1 CI fix above).
 
 ## See also
 
