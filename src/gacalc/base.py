@@ -407,15 +407,18 @@ class MultiVectorBase(abc.ABC):
 
     @classmethod
     def unit_pseudoscalar_squared(cls, n: int) -> typing.Self:
-        """The square of the unit pseudoscalar,  i²  — the scalar  (−1)^(n(n−1)/2)  in
-        Euclidean 𝒢ₙ (see ``tasks/reference/pseudoscalar-square-sign.md``); ±1, and
-        the sign that decides whether i is a "complex/quaternionic" imaginary.
+        """The square of the unit pseudoscalar,  i²  — the scalar
+        :func:`~gacalc.base.pseudoscalar_squared_sign` (of the dimension ``n``;
+        ``= (−1)^(n(n−1)/2)``) in Euclidean 𝒢ₙ (see
+        ``tasks/reference/pseudoscalar-square-sign.md``); ±1, and the sign that
+        decides whether i is a "complex/quaternionic" imaginary.
 
         Args:
             n: the dimension of the algebra.
 
         Returns:
-            Self: the scalar multivector i² = (−1)^(n(n−1)/2) (±1).
+            Self: the scalar multivector ``i²`` whose value is
+            :func:`~gacalc.base.pseudoscalar_squared_sign` (``±1``).
         """
         unit_pseudoscalar: MultiVectorBase = cls.unit_pseudoscalar(n)
         return unit_pseudoscalar * unit_pseudoscalar
@@ -1158,13 +1161,16 @@ class MultiVectorBase(abc.ABC):
 
     def reverse(self) -> typing.Self:
         """Reverse  Ã  — reverses the order of the vector factors in each blade,
-        giving the grade-r part the sign (−1)^(r(r−1)/2).
+        giving the grade-``r`` part the reversion sign
+        :func:`~gacalc.base.pseudoscalar_squared_sign` (of the grade ``r``;
+        ``= (−1)^(r(r−1)/2)``).
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 5,
         equation 1.19
 
         Returns:
-            Self: the reverse ``Ã`` (each grade-r part signed by (−1)^(r(r−1)/2)).
+            Self: the reverse ``Ã`` (each grade-``r`` part scaled by
+            :func:`~gacalc.base.pseudoscalar_squared_sign`).
         """
 
         # supposedly, 1.19 works for simple r-vectors, but because of linearity
@@ -1771,7 +1777,8 @@ class MultiVectorBase(abc.ABC):
         for a scalar, or for a simple (homogeneous) blade, where the Euclidean
         signature closes the series in one trig identity.
 
-        For a grade-r blade,  A² = (−1)^(r(r−1)/2) ``|A|²``  — the *sign of the
+        For a grade-``r`` blade,  ``A² = pseudoscalar_squared_sign(r) · |A|²``
+        (:func:`~gacalc.base.pseudoscalar_squared_sign`) — the *sign of the
         square is decided by the grade*, never by inspecting a (possibly
         symbolic) coefficient, so no branch hint is ever needed (galgebra's
         ``hint`` parameter exists only for signatures this library doesn't
@@ -1790,7 +1797,9 @@ class MultiVectorBase(abc.ABC):
         Defined **only** for the scalar and negative-square (A² < 0) cases;
         raises ``ValueError`` otherwise.  That covers A² not scalar at all (a
         rotor, or a non-simple bivector of 𝒢ₙ for n ≥ 4) and — deliberately —
-        A² > 0 (a **vector**).  A positive-square blade would exponentiate by
+        A² > 0 (a **vector**, the case
+        :func:`~gacalc.base.pseudoscalar_squared_is_positive` guards).  A
+        positive-square blade would exponentiate by
         the hyperbolic ``cosh|A| + sinh|A| Â``, which is a *Minkowski boost*: it
         has no meaning in this Euclidean library (early Hestenes; no
         conformal / projective / spacetime signature), so ``exp`` rejects it
