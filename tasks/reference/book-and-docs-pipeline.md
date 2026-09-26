@@ -185,6 +185,19 @@ notices and `picte`/`ellipse` rounded-box package notices. Verified 2026-09-26: 
 `BUILD_DOCS` image → exit 0, 102-page `geometry2.pdf`, 0 substitution / 0 missing-glyph / 0
 undefined-hyperref / 0 ambiguous-xref; the ~14 remaining warnings are all in this benign set.
 
+## Linking API names from docstrings (clickable cross-references)
+
+To make a docstring name another API symbol as a **clickable hyperlink** in the HTML book, use a
+Sphinx domain cross-reference role, not bare text: `` :func:`~gacalc.base.pseudoscalar_squared_sign` ``
+(functions), `` :class:`~gacalc.functions.ComposableFunction` `` (classes), `:meth:`/`:attr:` for
+members. The leading **`~`** shows only the last component as the link text. It resolves **iff the
+target is autodoc'd** — i.e. its module is `automodule`d in `api.rst` (base/gn/functions/transforms/
+measure/vectorcalc/frame are; g1/g2/g3 are NOT). Prefer these over restating a formula/type when the
+goal is to send the reader to the canonical definition (e.g. `reverse`/`exp`/`unit_pseudoscalar_squared`
+link `pseudoscalar_squared_sign` rather than spelling out `(−1)^(r(r−1)/2)`). Two gotchas already
+recorded: qualify a **re-exported** name (below) to avoid ambiguity, and remember these roles show as
+literal text (not links) in the **generated `g*` copies**, which aren't autodoc-rendered.
+
 ## conf.py E501 exemption
 
 `book/docs/conf.py`'s only over-88 line is inside the `r"""..."""` `latex_elements["preamble"]`

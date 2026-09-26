@@ -1,6 +1,6 @@
 # Docstrings: name the helper, not the bare `(−1)^(r(r−1)/2)` formula
 
-**Status:** proposed — needs go-ahead (Bill, 2026-09-26)
+**Status:** DONE 2026-09-26 (branch `unitPseudoscalarReferences`; maintainer merges). See Outcome.
 **Priority:** 6 **Difficulty:** 3 **Created:** 2026-09-26 **Updated:** 2026-09-26
 (William Emerison Six <billsix@gmail.com>)
 
@@ -9,10 +9,12 @@
 Several `base.py` docstrings state the grade-`r` reversion / blade-square sign as the raw formula
 `(−1)^(r(r−1)/2)`. The maintainer wants programmers to learn and use the **function that implements
 it** instead — `base.pseudoscalar_squared_sign(r)` (and `pseudoscalar_squared_is_positive(r)`) — so
-the docstrings should name that function rather than (or alongside) the bare formula. "Done" = the
-prose docstrings that carry the formula cross-reference the helper by name, the formula survives only
-where it is genuinely the *definition*, all gates stay green, and the change propagates correctly to
-the generated `g*` modules.
+the docstrings should name that function instead of the bare formula. **Decided (2026-09-26): the
+reference is a Sphinx `:func:` cross-reference so it renders as a clickable hyperlink in the HTML
+book.** "Done" = the prose docstrings that carry the formula reference the helper via
+`` :func:`~gacalc.base.pseudoscalar_squared_sign` `` (hyperlinked, resolves with 0 warnings), the
+formula survives only where it is genuinely the *definition* (the helper's own docstring), all gates
+stay green, and the change propagates correctly to the generated `g*` modules.
 
 ## Context (cold-start)
 
@@ -66,28 +68,60 @@ All in `src/gacalc/base.py`; line numbers are approximate (docstrings shift):
   `pseudoscalar_squared_sign(len(b))` (it does not call the helper at runtime) — a docs-only change
   here does not touch that.
 
-## Approach / open question
+## Approach (DECIDED 2026-09-26)
 
-The one real decision: **replace** the formula with the function name, or **name the function AND
-keep the formula** (e.g. "the reversion sign `pseudoscalar_squared_sign(r)` = `(−1)^(r(r−1)/2)`")?
-Naming-only best serves "programmers use the function"; keeping both preserves the math for a reader
-skimming the docstring without chasing the helper. Recommendation: **name the helper first, keep a
-terse ` = (−1)^(r(r−1)/2)` gloss** in `reverse`/`exp` (one place each), and let
-`pseudoscalar_squared_sign`'s own docstring carry the full definition + proof pointer.
+Reference **`pseudoscalar_squared_sign(r)`** as the primary way the docstrings talk about this sign,
+and render it as a **Sphinx cross-reference (a clickable hyperlink in the HTML book)**, not bare
+text. The full definition + closed form + proof pointer stay in `pseudoscalar_squared_sign`'s own
+docstring (the link target); a terse ` = (−1)^(r(r−1)/2)` gloss beside the reference is at the
+author's discretion (keep it where the math reads better; don't duplicate the whole derivation).
+
+**How to make it a hyperlink (Sphinx `:func:` role):**
+- Write **`` :func:`~gacalc.base.pseudoscalar_squared_sign` ``** in the docstring prose. Sphinx's
+  Python domain renders it as a link to that function's autodoc entry; the leading **`~`** shows
+  just `pseudoscalar_squared_sign()` as the link text (drop it to show the full dotted path).
+- It **resolves** because `book/docs/api.rst` already `automodule`s `gacalc.base`, so the
+  module-level function `pseudoscalar_squared_sign` gets an autodoc target. (Same pattern the
+  existing base docstrings use for `:class:`~gacalc.functions.ComposableFunction``.)
+- Works in napoleon field prose too (inside `Returns:`/`Args:` text), so the `reverse` `Returns:`
+  line can carry the link.
+- **Caveat — the generated `g*` copies:** these base docstrings are copied into `g1/g2/g3/g4/g5`
+  (methods without a `CUSTOM_METHOD_DOCS` entry) and those modules are **not** autodoc-rendered, so
+  there the `:func:` markup shows as literal-ish text to a source reader and runs fine under
+  `--doctest-modules` (no `>>>`). That is acceptable — the rendered book (base) hyperlinks; the g*
+  copy is source-only. (If a plain-text look in g* is later preferred, that's a separate call.)
+- **`unit_pseudoscalar_squared`'s** own docstring may also `:func:`-link `pseudoscalar_squared_sign`
+  as the scalar value it equals; `pseudoscalar_squared_sign`'s docstring does not self-link.
 
 ## Verification (docstrings are Google/napoleon; g* are doctest-run)
 
 - Regenerate + `PYTHONPATH=src pytest --doctest-modules src/gacalc/base.py src/gacalc/gn.py
   src/gacalc/g1.py g2.py g3.py`; `make test` (649) + `make check-generated` (determinism).
-- `make docs` stays exit 0 / 0 substitution warnings (naming a Python function in prose adds no RST
-  substitution; write `:func:`~gacalc.base.pseudoscalar_squared_sign`` if a rendered cross-ref is
-  wanted, but confirm it resolves — `base` is autodoc'd in `api.rst`).
+- `make docs` stays exit 0, **0** substitution warnings, and — the point of this task — **0**
+  undefined-hyperref / ambiguous-cross-ref warnings for the new `:func:` links, AND the link
+  actually renders clickable in `_build/html` (spot-check the rendered `reverse`/`exp` pages).
 - `ruff check .` clean (base.py is E501-gated ≤ 88).
 
-## Open questions
+## Outcome (2026-09-26)
 
-1. Replace the `(−1)^(r(r−1)/2)` formula with the helper name, or keep both (name + terse formula
-   gloss)? (Recommendation above: name first, keep a one-place gloss.)
+Implemented in `src/gacalc/base.py` (committed `ccd68d8`): `reverse`, `exp`, and
+`unit_pseudoscalar_squared` now reference **`` :func:`~gacalc.base.pseudoscalar_squared_sign` ``**
+instead of stating the bare `(−1)^(r(r−1)/2)` formula; `exp` also links
+`` :func:`~gacalc.base.pseudoscalar_squared_is_positive` `` in its positive-square rejection branch.
+The formula survives only in `pseudoscalar_squared_sign`'s own docstring (the link target). The
+stale verbatim quote in `generated-docstrings.md` was updated to match.
+
+**Verified:** `make docs` exit 0 — 0 substitution / undefined-hyperref / ambiguous-xref warnings,
+and the roles render as **clickable hyperlinks** (7 in-page `href="#gacalc.base.pseudoscalar_squared_sign"`
+in `api.html`, incl. inside the `reverse` entry; 3 for `pseudoscalar_squared_is_positive`).
+`make test` / host `pytest` **649 passed**, 170 doctests pass, generator deterministic (g3
+byte-identical), `ruff check .` clean. The `:func:`-hyperlink technique is harvested into
+`tasks/reference/book-and-docs-pipeline.md`.
+
+## Resolved decisions
+
+- **Reference the helper as a hyperlinked `:func:` cross-reference** (Bill, 2026-09-26) — see
+  Approach + Outcome. No open questions remained.
 
 ## See also
 

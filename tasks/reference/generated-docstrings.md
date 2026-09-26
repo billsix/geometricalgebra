@@ -40,8 +40,8 @@ Every method of every generated class carries a docstring:
 **already inherits** the base docstring in rendered autodoc (Sphinx uses `inspect.getdoc`).
 So this work is **not** fixing broken rendered docs. Its payoff is:
 
-1. **Grade-specific pedagogy.** The generic base text ("reverse gives grade-r the sign
-   (−1)^(r(r−1)/2)") is abstract; a student reading `g2.py`'s `Bivector.reverse` is far
+1. **Grade-specific pedagogy.** The generic base text (reverse gives grade-r the reversion
+   sign `pseudoscalar_squared_sign(r)`) is abstract; a student reading `g2.py`'s `Bivector.reverse` is far
    better served by "a bivector reverses to its negative, `B̃ = −B`". The library is a
    teaching implementation (Hestenes & Sobczyk), and the specialized types g1/g2/g3 are
    where students meet concrete algebras.
