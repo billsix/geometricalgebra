@@ -1,13 +1,16 @@
 # GitHub Actions: check CI (phase 1), then releases (phase 2)
 
-**Status:** Phase 1 COMPLETE. 2026-09-18 initial (`make check-format` + `.github/workflows/checks.yml`).
+**Status:** complete
+**Completed:** 2026-09-26
+Phase 1 done: 2026-09-18 initial (`make check-format` + `.github/workflows/checks.yml`).
 **2026-09-26:** (a) CI fix — the `test` job failed on a fresh runner (`Error 125`, tried to pull
 `gacalc:latest`) because `make test` lacked an `image` prereq; fixed (`test: image`, plus
 `shell-exec: image` / `dist: image` for consistency). (b) Q2 done — containerized `check-generated`
 and `check-regions` (they need sympy, absent on a bare runner) and added a third CI job `generated`
-running both. Now four check jobs: `format`, `test`, `generated` (×2 steps). (c) Phase 2 (PyPI
-publish on tag, old Q3) spun off to `tasks/github-actions-pypi-publish-on-tag.md`. Staged for the
-maintainer to commit.
+running both. Now three check jobs: `format`, `test`, `generated` (the last with two steps). (c)
+Phase 2 (PyPI publish on tag, old Q3) spun off to `tasks/github-actions-pypi-publish-on-tag.md`.
+The durable CI rules (thin-wrapper principle, the `: image` prereq, why headless checks avoid
+`shell-exec`) live in `CLAUDE.md` › "Continuous integration".
 **Priority:** 5
 **Difficulty:** 4
 **Started:** 2026-09-17 (William Emerison Six <billsix@gmail.com>)
