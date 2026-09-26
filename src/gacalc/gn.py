@@ -58,6 +58,7 @@ class BladeDictionaryEntry(NamedTuple):
     coefficient: Coef
 
     def as_multivector(self) -> Gn:
+        """Promote this single (blade, coefficient) pair to a one-term ``Gn``."""
         return Gn(coefficient_of_blade=dict([(self.blade, self.coefficient)]))
 
 
@@ -88,6 +89,13 @@ class Gn(MultiVectorBase):
     coefficient_of_blade: BladeCoef
 
     def __post_init__(self) -> None:
+        """Normalize the stored coefficients: eagerly ``sympy.simplify`` every one
+        and drop any that reduce to exact zero.
+
+        This eager simplify is ``Gn``'s dominant cost and is deliberate — it keeps
+        ``Gn`` the slow-but-obviously-correct oracle (the specialized ``G`` classes
+        simplify lazily instead).
+        """
         # simplify all coefficients
         self.coefficient_of_blade = {
             blade: sympy.simplify(self.coefficient_of_blade[blade])  # type: ignore
@@ -102,6 +110,11 @@ class Gn(MultiVectorBase):
 
     @classmethod
     def from_blade_dict(cls, blade_coef: Mapping[Blade, Coef]) -> Gn:
+        """Build a ``Gn`` from a canonical blade → coefficient mapping.
+
+        The interchange constructor (see ``MultiVectorBase.from_blade_dict``).
+        ``Gn`` keeps every blade given; non-canonical keys raise ``ValueError``.
+        """
         _require_canonical_blades(blade_coef)
         return cls(coefficient_of_blade=dict(blade_coef))
 
@@ -125,9 +138,21 @@ class Gn(MultiVectorBase):
         return plane.normalize()
 
     def to_blade_dict(self) -> BladeCoef:
+        """Return the canonical blade → coefficient mapping (``Gn`` stores exactly
+        this, so it is returned directly, not rebuilt).
+        """
         return self.coefficient_of_blade
 
     def _geometric_product(self, rhs: MultiVectorBase) -> typing.Self:
+        """Reference geometric product  A B  for ``Gn``.
+
+        For each pair of blades it concatenates their index sequences and reduces
+        the result to a signed canonical blade (``decrease_grade``: adjacent equal
+        indices annihilate via eᵢeᵢ = +1, out-of-order indices swap with a sign),
+        summing coefficient products over all pairs.  Correct-by-construction and
+        slow — the oracle the specialized closed forms are checked against.
+        """
+
         def decrease_grade(
             basis_blade: BladeDictionaryEntry,
         ) -> BladeDictionaryEntry:

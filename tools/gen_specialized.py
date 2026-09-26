@@ -440,23 +440,945 @@ PLANE_DOC: str = (
 )
 
 
-def method_doc_stmts(method_name: str, indent: str = "        ") -> list[ast.stmt]:
-    """The base method's docstring as a leading ``Expr(Constant)``, or ``[]``.
+def doc_expr(doc: str, indent: str = "        ") -> ast.Expr:
+    """A docstring statement for ``doc``, re-indented to ``indent`` per line.
 
     The Constant value reproduces what the string generator emitted (a leading
-    newline + ``indent``-prefixed lines), so the parsed AST matches for parity.
+    newline + ``indent``-prefixed lines), so the parsed AST matches for parity
+    and ``ast.unparse`` renders a properly-indented triple-quoted docstring.
     """
+    body: str = "\n".join(f"{indent}{line}".rstrip() for line in doc.splitlines())
+    return ast.Expr(value=constant(f"\n{body}\n{indent}"))
+
+
+def method_doc_stmts(method_name: str, indent: str = "        ") -> list[ast.stmt]:
+    """The base method's docstring as a leading ``Expr(Constant)``, or ``[]``."""
     member: object | None = getattr(MultiVectorBase, method_name, None)
     doc: str | None = inspect.getdoc(member) if member is not None else None
     if not doc:
         return []
-    body: str = "\n".join(f"{indent}{line}".rstrip() for line in doc.splitlines())
-    return [ast.Expr(value=constant(f"\n{body}\n{indent}"))]
+    return [doc_expr(doc, indent)]
 
 
 def class_doc_stmt(text: str) -> ast.Expr:
     """A class docstring statement -- ``text`` used verbatim."""
     return ast.Expr(value=constant(text))
+
+
+# --------------------------------------------------------------------------
+# Method docstrings on the generated classes
+# --------------------------------------------------------------------------
+# Every generated method should carry a docstring so the class is
+# self-documenting on disk (autodoc also inherits the base docstring via
+# ``inspect.getdoc``, but the generated source itself would otherwise be bare).
+# Policy, applied by ``inject_method_docstrings`` after each class is built:
+#
+#   * ``@overload`` stubs are left bare (``...``): they never render (autodoc
+#     uses the implementation) and a docstring there is noise.
+#   * For the dev dimensions (1--3) a method may get a *specialized*, grade-aware
+#     docstring from ``CUSTOM_METHOD_DOCS`` below -- keyed by (role, method),
+#     with ``role`` the class's grade identity ("scalar"/"vector"/"bivector"/
+#     "trivector"/"rotor"/"odd"/"full") or "*" for every role.  These are the
+#     docstrings worth writing by hand because grade narrows the behaviour
+#     (reversing a vector is a no-op; a bivector reverses to its negative; ...).
+#   * Otherwise -- and always for dims >= 4 (release-only, niche) -- the method
+#     copies the *generic* base docstring (``MultiVectorBase``/``Gn``), the same
+#     text ``inspect.getdoc`` would surface anyway.  A method with no such
+#     counterpart and no custom entry is left bare.
+#
+# The table is a plain dict (deterministic lookup), so ``make check-generated``
+# still sees byte-identical output across two runs.
+_CUSTOM_DOC_DIMS: frozenset[int] = frozenset({1, 2, 3})
+
+# A custom-docstring entry: literal text, or a ``(role, n) -> str`` callable for
+# grade-/dimension-aware wording (so one function serves every role and the doctest
+# example fits the algebra it lands in).
+DocEntry = str | Callable[[str, int], str]
+
+
+def _bivector_dual_doc(role: str, n: int) -> str:
+    """Grade-2 ``dual`` -- dimension-dependent (𝒢₂: bivector→scalar; 𝒢₃:
+    bivector→the vector normal to its plane)."""
+    if n == 2:
+        return (
+            "Dual  B* = B / i  in 𝒢₂: the dual of a bivector is a scalar (the\n"
+            "bivector IS the pseudoscalar here, so its dual is a plain number).\n"
+            "\n"
+            ">>> (1 * Bivector.e_12).dual() == Scalar.from_scalar(1)\n"
+            "True"
+        )
+    return (
+        "Dual  B* = B / i  in 𝒢₃: the dual of a bivector is the VECTOR normal to\n"
+        "its plane -- the e₁e₂ plane duals to e₃.\n"
+        "\n"
+        ">>> (1 * Bivector.e_12).dual() == 1 * Vector.e_3\n"
+        "True"
+    )
+
+
+def _vector_dual_doc(role: str, n: int) -> str:
+    """Grade-1 ``dual`` -- dimension-dependent (𝒢₁: →scalar; 𝒢₂: →the
+    perpendicular vector, a 90° turn; 𝒢₃: →the plane ⟂ to the vector)."""
+    if n == 1:
+        return (
+            "Dual of a vector in 𝒢₁ is a scalar.\n"
+            "\n"
+            ">>> (1 * Vector.e_1).dual() == Scalar.from_scalar(1)\n"
+            "True"
+        )
+    if n == 2:
+        return (
+            "Dual of a vector in 𝒢₂ is the perpendicular vector -- dualizing is a\n"
+            "quarter turn:  e₁ → −e₂.\n"
+            "\n"
+            ">>> (1 * Vector.e_1).dual() == -1 * Vector.e_2\n"
+            "True"
+        )
+    return (
+        "Dual of a vector in 𝒢₃ is the BIVECTOR of the plane perpendicular to it\n"
+        "(its normal plane):  e₁ → −e₂e₃.\n"
+        "\n"
+        ">>> (1 * Vector.e_1).dual() == -1 * Bivector.e_23\n"
+        "True"
+    )
+
+
+def _vector_outer_doc(role: str, n: int) -> str:
+    """Grade-1 ∧ grade-1 -- 0 in 𝒢₁ (all vectors parallel), else the bivector
+    spanning the two vectors."""
+    if n == 1:
+        return (
+            "Outer (wedge) product.  In 𝒢₁ any two vectors are parallel, so their\n"
+            "wedge is 0.\n"
+            "\n"
+            ">>> (1 * Vector.e_1) ^ (1 * Vector.e_1) == Scalar.zero()\n"
+            "True"
+        )
+    return (
+        "Outer (wedge) product of two vectors: the BIVECTOR they span -- the\n"
+        "oriented area of their parallelogram.  a ∧ a = 0 (parallel).\n"
+        "\n"
+        ">>> (1 * Vector.e_1) ^ (1 * Vector.e_2) == 1 * Bivector.e_12\n"
+        "True"
+    )
+
+
+def _vector_i_doc(role: str, n: int) -> str:
+    """Grade-1 ``i`` classmethod -- needs a 2-D plane, so 𝒢₁ has no example."""
+    if n == 1:
+        return (
+            "The unit bivector î (î² = −1) of the plane of two vectors; a\n"
+            "classmethod.  𝒢₁ is 1-dimensional, so it has no such plane."
+        )
+    return (
+        "The unit bivector of the plane of two vectors (î² = −1); a classmethod.\n"
+        "\n"
+        ">>> Vector.i(Vector.e_1, Vector.e_2) == 1 * Bivector.e_12\n"
+        "True"
+    )
+
+
+def _vector_proj_doc(role: str, n: int) -> str:
+    """Grade-1 ``projected_onto`` -- the parallel component."""
+    if n == 1:
+        return (
+            "The component of this vector ALONG another (the parallel part).\n"
+            "\n"
+            ">>> (3 * Vector.e_1).projected_onto(Vector.e_1) == 3 * Vector.e_1\n"
+            "True"
+        )
+    return (
+        "The component of this vector ALONG another (the parallel part).\n"
+        "\n"
+        ">>> (1 * Vector.e_1 + 1 * Vector.e_2).projected_onto(Vector.e_1) == Vector.e_1\n"
+        "True"
+    )
+
+
+def _vector_rej_doc(role: str, n: int) -> str:
+    """Grade-1 ``rejected_away_from`` -- the perpendicular component."""
+    if n == 1:
+        return (
+            "The component of this vector PERPENDICULAR to another (the\n"
+            "rejection).  In 𝒢₁ every vector is parallel, so the rejection is 0.\n"
+            "\n"
+            ">>> (3 * Vector.e_1).rejected_away_from(Vector.e_1) == Vector.zero()\n"
+            "True"
+        )
+    return (
+        "The component of this vector PERPENDICULAR to another (the rejection).\n"
+        "\n"
+        ">>> (1 * Vector.e_1 + 1 * Vector.e_2).rejected_away_from(Vector.e_1) == Vector.e_2\n"
+        "True"
+    )
+
+
+def _scalar_dual_doc(role: str, n: int) -> str:
+    """Grade-0 ``dual`` -- a scalar duals to the top-grade blade (× the
+    pseudoscalar): a vector in 𝒢₁, a bivector in 𝒢₂, a trivector in 𝒢₃."""
+    top: str = {
+        1: "1 * Vector.e_1",
+        2: "-1 * Bivector.e_12",
+        3: "-1 * Trivector.e_123",
+    }[n]
+    kind: str = {1: "vector", 2: "bivector", 3: "trivector"}[n]
+    return (
+        f"Dual  s* = s / i  in 𝒢{_subscript(n)}: a scalar duals to the top-grade\n"
+        f"blade (the {kind}), i.e. the scalar times the pseudoscalar.\n"
+        "\n"
+        f">>> Scalar.from_scalar(1).dual() == {top}\n"
+        "True"
+    )
+
+
+# role, method -> a DocEntry.  A ``role|method`` key wins over the role-agnostic
+# ``*|method``; both are consulted by ``custom_method_doc``.
+CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
+    # ``__eq__`` is dataclass/representation-specific, so it has no hand-written
+    # base counterpart -- give it a one-liner rather than copying object's.
+    "*|__eq__": (
+        "Equality  A == B.  Exact for plain-number coefficients; symbolic\n"
+        "coefficients compare via ``sympy.simplify`` (see ``base._coef_eq``)."
+    ),
+    # Reflected subtraction: ``number - A``.  Generated-only (the base has
+    # ``__sub__`` but no ``__rsub__``), so there is nothing to copy.
+    "*|__rsub__": "Reflected difference  (number) - A  =  -A + number.",
+    # ``reverse`` -- the flagship grade-specialized docstrings: reversion is the
+    # identity on grades 0/1 and a sign flip on grades 2/3, so the generic base
+    # text ("sign (−1)^(r(r−1)/2)") is far less useful than the per-grade fact.
+    "scalar|reverse": (
+        "Reverse  Ã  of a scalar is the scalar unchanged (grade 0 is fixed by\n"
+        "reversion)."
+    ),
+    "vector|reverse": (
+        "Reverse  Ã  of a vector is the vector itself: reversing a single vector\n"
+        "factor is a no-op (the grade-1 reversion sign is +1).\n"
+        "\n"
+        ">>> v: Vector = 3 * Vector.e_1\n"
+        ">>> v.reverse() == v\n"
+        "True"
+    ),
+    "bivector|reverse": (
+        "Reverse  B̃  of a bivector negates it,  B̃ = −B  (the grade-2 reversion\n"
+        "sign is −1).  This sign flip is what makes a rotor's reverse invert it.\n"
+        "\n"
+        ">>> (1 * Bivector.e_12).reverse() == -1 * Bivector.e_12\n"
+        "True"
+    ),
+    "trivector|reverse": (
+        "Reverse of a trivector negates it (the grade-3 reversion sign is −1).\n"
+        "\n"
+        ">>> (1 * Trivector.e_123).reverse() == -1 * Trivector.e_123\n"
+        "True"
+    ),
+    "rotor|reverse": (
+        "Reverse  R̃  of a rotor keeps the scalar part and negates the bivector\n"
+        "part.  For a unit rotor  R̃  is its inverse, so  R R̃ = 1  -- reversing a\n"
+        "rotor undoes its rotation.\n"
+        "\n"
+        ">>> R: Rotor = (1 * Bivector.e_12).exp()\n"
+        ">>> R * R.reverse() == Rotor.from_scalar(1)\n"
+        "True"
+    ),
+    "odd|reverse": (
+        "Reverse of an odd multivector (grades {1, 3} in 𝒢₃): the vector (grade-1)\n"
+        "part is unchanged and the trivector (grade-3) part is negated."
+    ),
+    # ------------------------------------------------------------------
+    # Bivector (grade 2) -- the oriented plane element; squares to −1, so it
+    # is the imaginary that generates rotations.  Present in 𝒢₂ and 𝒢₃.
+    # ------------------------------------------------------------------
+    "bivector|__add__": (
+        "Sum of two bivectors, added plane-component by plane-component; the\n"
+        "result is again a bivector (grade 2 is closed under addition).\n"
+        "\n"
+        ">>> 1 * Bivector.e_12 + 1 * Bivector.e_12 == 2 * Bivector.e_12\n"
+        "True"
+    ),
+    "bivector|__sub__": "Difference of two bivectors, component-wise (still a bivector).",
+    "bivector|__neg__": (
+        "Negation -- reverses the orientation of the plane (every component\n"
+        "sign-flipped).\n"
+        "\n"
+        ">>> -(2 * Bivector.e_12) == -2 * Bivector.e_12\n"
+        "True"
+    ),
+    "bivector|__mul__": (
+        "Geometric product.  A unit bivector squares to −1, so a bivector behaves\n"
+        "like the imaginary  i  -- this is what lets it generate rotations.\n"
+        "\n"
+        ">>> (1 * Bivector.e_12) * (1 * Bivector.e_12) == Scalar.from_scalar(-1)\n"
+        "True"
+    ),
+    "bivector|_geometric_product": (
+        "The geometric-product primitive (use the ``*`` operator).  A unit\n"
+        "bivector squares to −1."
+    ),
+    "bivector|dot": (
+        "Inner product of two bivectors -- a scalar.  For a unit bivector,\n"
+        "B · B = −1 (the dot carries the same −1 as the square).\n"
+        "\n"
+        ">>> (1 * Bivector.e_12).dot(1 * Bivector.e_12) == Scalar.from_scalar(-1)\n"
+        "True"
+    ),
+    "bivector|inner_product": (
+        "Inner product of two bivectors -- a scalar; B · B = −1 for a unit\n"
+        "bivector.  A spelling of ``dot``."
+    ),
+    "bivector|left_contraction": (
+        "Left contraction  B ⌋ C  (the ``<`` operator).  For two unit bivectors\n"
+        "in the same plane it is the scalar −1.\n"
+        "\n"
+        ">>> (1 * Bivector.e_12).left_contraction(1 * Bivector.e_12) == Scalar.from_scalar(-1)\n"
+        "True"
+    ),
+    "bivector|right_contraction": (
+        "Right contraction  B ⌊ C  (the ``>`` operator); grade |C|−|B|."
+    ),
+    "bivector|outer_product": (
+        "Outer (wedge) product.  A bivector wedged with another bivector is 0 --\n"
+        "grade 2 + 2 = 4 exceeds the dimension of 𝒢₂/𝒢₃.\n"
+        "\n"
+        ">>> (1 * Bivector.e_12) ^ (1 * Bivector.e_12) == Scalar.zero()\n"
+        "True"
+    ),
+    "bivector|wedge": "Outer (wedge) product; a bivector ∧ a bivector is 0 in 𝒢₂/𝒢₃.",
+    "bivector|__xor__": "Outer (wedge) product operator ``^``; see ``wedge``.",
+    "bivector|dual": _bivector_dual_doc,
+    "bivector|even_part": (
+        "A bivector has even grade (2), so its even part is the whole thing.\n"
+        "\n"
+        ">>> (2 * Bivector.e_12).even_part() == 2 * Bivector.e_12\n"
+        "True"
+    ),
+    "bivector|odd_part": (
+        "A bivector has no odd-grade part, so its odd part is 0.\n"
+        "\n"
+        ">>> (2 * Bivector.e_12).odd_part() == Scalar.zero()\n"
+        "True"
+    ),
+    "bivector|scalar_part": (
+        "The scalar (grade-0) part of a bivector is 0.\n"
+        "\n"
+        ">>> (2 * Bivector.e_12).scalar_part()\n"
+        "0"
+    ),
+    "bivector|r_vector_part": (
+        "The grade-r part.  A bivector is pure grade 2, so r=2 gives it back and\n"
+        "every other grade is 0.\n"
+        "\n"
+        ">>> (2 * Bivector.e_12).r_vector_part(2) == 2 * Bivector.e_12\n"
+        "True"
+    ),
+    "bivector|grades": (
+        "A nonzero bivector is homogeneous of grade 2.\n"
+        "\n"
+        ">>> (2 * Bivector.e_12).grades()\n"
+        "[2]"
+    ),
+    "bivector|magnitude_squared": (
+        "Squared magnitude  |B|²  -- the sum of squared plane components.\n"
+        "\n"
+        ">>> (2 * Bivector.e_12).magnitude_squared()\n"
+        "4"
+    ),
+    "bivector|exp": (
+        "Exponential of a bivector IS a rotor:  exp(B) = cos|B| + sin|B| B̂.\n"
+        "The zero bivector exponentiates to the identity rotor 1.\n"
+        "\n"
+        ">>> (0 * Bivector.e_12).exp() == Rotor.from_scalar(1)\n"
+        "True"
+    ),
+    "bivector|i": (
+        "The unit bivector  î = B / |B|  of this plane (î² = −1); already unit for\n"
+        "a basis blade like e₁e₂.  This is the plane you feed a rotor / ``exp``.\n"
+        "\n"
+        ">>> (1 * Bivector.e_12).i() == 1 * Bivector.e_12\n"
+        "True"
+    ),
+    "bivector|__iter__": (
+        "Iterating a bivector yields its plane-component values in blade order\n"
+        "(one value in 𝒢₂; the e₁e₂, e₁e₃, e₂e₃ components in 𝒢₃)."
+    ),
+    "bivector|isclose": "Numeric near-equality of two bivectors, component-wise (see the base ``isclose``).",
+    "bivector|from_blade_dict": "Build a bivector from a blade→coefficient dict (only grade-2 blades kept).",
+    "bivector|to_blade_dict": "This bivector as a blade→coefficient dict (grade-2 blades only).",
+    "bivector|__lt__": "Left contraction operator ``<``; see ``left_contraction``.",
+    "bivector|__gt__": "Right contraction operator ``>``; see ``right_contraction``.",
+    "bivector|__radd__": "Reflected sum  (number) + B  -- builds the rotor  number + B.",
+    "bivector|__rmul__": "Reflected product  (number) * B  -- scales the bivector.",
+    # ------------------------------------------------------------------
+    # Scalar (grade 0) -- a plain number living in the algebra.  Present in
+    # every dimension.
+    # ------------------------------------------------------------------
+    "scalar|__add__": (
+        "Sum of two scalars -- ordinary addition (still a scalar).\n"
+        "\n"
+        ">>> Scalar.from_scalar(2) + Scalar.from_scalar(3) == Scalar.from_scalar(5)\n"
+        "True"
+    ),
+    "scalar|__sub__": "Difference of two scalars -- ordinary subtraction.",
+    "scalar|__neg__": (
+        "Negation -- ordinary sign change.\n"
+        "\n"
+        ">>> -Scalar.from_scalar(3) == Scalar.from_scalar(-3)\n"
+        "True"
+    ),
+    "scalar|__mul__": (
+        "Geometric product of two scalars -- ordinary multiplication (the scalar\n"
+        "is the centre of the algebra: it commutes with everything).\n"
+        "\n"
+        ">>> Scalar.from_scalar(2) * Scalar.from_scalar(3) == Scalar.from_scalar(6)\n"
+        "True"
+    ),
+    "scalar|_geometric_product": "The geometric-product primitive -- for scalars, plain multiplication.",
+    "scalar|dot": (
+        "Inner (dot) product.  The Hestenes dot EXCLUDES grade 0, so the dot of\n"
+        "two scalars is 0 (use ``*`` to multiply scalars).\n"
+        "\n"
+        ">>> Scalar.from_scalar(2).dot(Scalar.from_scalar(3)) == Scalar.zero()\n"
+        "True"
+    ),
+    "scalar|inner_product": "Hestenes inner product; excludes grade 0, so it is 0 on scalars (see ``dot``).",
+    "scalar|outer_product": (
+        "Outer (wedge) product.  A scalar wedges by ordinary multiplication (it\n"
+        "adds no grade), so s ∧ t = s·t.\n"
+        "\n"
+        ">>> Scalar.from_scalar(2).wedge(Scalar.from_scalar(3)) == Scalar.from_scalar(6)\n"
+        "True"
+    ),
+    "scalar|wedge": "Outer product; a scalar adds no grade, so s ∧ t is ordinary multiplication.",
+    "scalar|__xor__": "Outer (wedge) product operator ``^``; on scalars it is multiplication.",
+    "scalar|left_contraction": "Left contraction  s ⌋ x  -- a scalar contracts as plain scalar multiplication.",
+    "scalar|right_contraction": "Right contraction  x ⌊ s  -- plain scalar multiplication.",
+    "scalar|dual": _scalar_dual_doc,
+    "scalar|even_part": (
+        "A scalar is even (grade 0), so its even part is itself.\n"
+        "\n"
+        ">>> Scalar.from_scalar(3).even_part() == Scalar.from_scalar(3)\n"
+        "True"
+    ),
+    "scalar|odd_part": (
+        "A scalar has no odd part, so it is 0.\n"
+        "\n"
+        ">>> Scalar.from_scalar(3).odd_part() == Scalar.zero()\n"
+        "True"
+    ),
+    "scalar|scalar_part": (
+        "The scalar part of a scalar is its own value (a plain number).\n"
+        "\n"
+        ">>> Scalar.from_scalar(3).scalar_part()\n"
+        "3"
+    ),
+    "scalar|r_vector_part": (
+        "The grade-r part.  A scalar is pure grade 0, so r=0 gives it back and any\n"
+        "other grade is 0.\n"
+        "\n"
+        ">>> Scalar.from_scalar(3).r_vector_part(0) == Scalar.from_scalar(3)\n"
+        "True"
+    ),
+    "scalar|grades": (
+        "A nonzero scalar is homogeneous of grade 0.\n"
+        "\n"
+        ">>> Scalar.from_scalar(3).grades()\n"
+        "[0]"
+    ),
+    "scalar|__iter__": "Iterating a scalar yields its single grade-0 component.",
+    "scalar|isclose": "Numeric near-equality of two scalars (see the base ``isclose``).",
+    "scalar|from_blade_dict": "Build a scalar from a blade→coefficient dict (only the grade-0 blade kept).",
+    "scalar|to_blade_dict": "This scalar as a blade→coefficient dict (the scalar blade only).",
+    "scalar|__lt__": "Left contraction operator ``<``; see ``left_contraction``.",
+    "scalar|__gt__": "Right contraction operator ``>``; see ``right_contraction``.",
+    "scalar|__radd__": "Reflected sum  (number) + s  -- ordinary addition.",
+    "scalar|__rmul__": "Reflected product  (number) * s  -- ordinary multiplication.",
+    # ------------------------------------------------------------------
+    # Vector (grade 1) -- the arrow students already know.  Present in every
+    # dimension; the multi-component examples are dimension-aware.
+    # ------------------------------------------------------------------
+    "vector|__add__": (
+        "Sum of two vectors -- added coordinate-wise, the usual tip-to-tail\n"
+        "addition (still a vector).\n"
+        "\n"
+        ">>> 1 * Vector.e_1 + 1 * Vector.e_1 == 2 * Vector.e_1\n"
+        "True"
+    ),
+    "vector|__sub__": "Difference of two vectors, coordinate-wise (still a vector).",
+    "vector|__neg__": (
+        "Negation -- the arrow reversed (every coordinate sign-flipped).\n"
+        "\n"
+        ">>> -(2 * Vector.e_1) == -2 * Vector.e_1\n"
+        "True"
+    ),
+    "vector|__mul__": (
+        "Geometric product of two vectors  a b = a·b + a∧b  -- a scalar (their\n"
+        "dot) plus a bivector (their wedge).  A unit vector squares to 1.\n"
+        "\n"
+        ">>> (1 * Vector.e_1) * (1 * Vector.e_1) == Scalar.from_scalar(1)\n"
+        "True"
+    ),
+    "vector|_geometric_product": (
+        "The geometric-product primitive (use ``*``):  a b = a·b + a∧b."
+    ),
+    "vector|dot": (
+        "Inner (dot) product of two vectors -- the scalar  a·b = |a||b|cos θ.\n"
+        "A unit vector dotted with itself is 1; perpendicular vectors give 0.\n"
+        "\n"
+        ">>> (1 * Vector.e_1).dot(1 * Vector.e_1) == Scalar.from_scalar(1)\n"
+        "True"
+    ),
+    "vector|inner_product": "The dot product of two vectors,  a·b = |a||b|cos θ (see ``dot``).",
+    "vector|outer_product": _vector_outer_doc,
+    "vector|wedge": _vector_outer_doc,
+    "vector|__xor__": "Outer (wedge) product operator ``^`` -- the bivector two vectors span.",
+    "vector|left_contraction": "Left contraction  a ⌋ B  (the ``<`` operator); lowers B's grade by 1.",
+    "vector|right_contraction": "Right contraction  a ⌊ b  (the ``>`` operator); for two vectors, the dot.",
+    "vector|dual": _vector_dual_doc,
+    "vector|even_part": (
+        "A vector has odd grade (1), so it has NO even part.\n"
+        "\n"
+        ">>> (2 * Vector.e_1).even_part() == Scalar.zero()\n"
+        "True"
+    ),
+    "vector|odd_part": (
+        "A vector is odd (grade 1), so its odd part is the whole thing.\n"
+        "\n"
+        ">>> (2 * Vector.e_1).odd_part() == 2 * Vector.e_1\n"
+        "True"
+    ),
+    "vector|scalar_part": (
+        "The scalar (grade-0) part of a vector is 0.\n"
+        "\n"
+        ">>> (2 * Vector.e_1).scalar_part()\n"
+        "0"
+    ),
+    "vector|r_vector_part": (
+        "The grade-r part.  A vector is pure grade 1, so r=1 gives it back and any\n"
+        "other grade is 0.\n"
+        "\n"
+        ">>> (2 * Vector.e_1).r_vector_part(1) == 2 * Vector.e_1\n"
+        "True"
+    ),
+    "vector|grades": (
+        "A nonzero vector is homogeneous of grade 1.\n"
+        "\n"
+        ">>> (2 * Vector.e_1).grades()\n"
+        "[1]"
+    ),
+    "vector|magnitude_squared": (
+        "Squared length  |a|² = a·a  -- the sum of squared coordinates.\n"
+        "\n"
+        ">>> (3 * Vector.e_1).magnitude_squared()\n"
+        "9"
+    ),
+    "vector|i": _vector_i_doc,
+    "vector|bivector_from_vectors": (
+        "The (unnormalized) bivector  a ∧ b  spanning two vectors -- their\n"
+        "oriented area; a classmethod.  Normalize with ``i`` for a unit plane."
+    ),
+    "vector|rotor_from_vectors": (
+        "The rotor that rotates ``a`` to ``b`` in the a-b plane (a classmethod);\n"
+        "apply it with ``sandwich``.  Express rotations via factories, not by hand."
+    ),
+    "vector|cross": (
+        "Cross product (𝒢₃ only)  a × b = (a ∧ b) I₃⁻¹ -- the vector dual of the\n"
+        "wedge, right-handed:  e₁ × e₂ = e₃.\n"
+        "\n"
+        ">>> (1 * Vector.e_1).cross(1 * Vector.e_2) == 1 * Vector.e_3\n"
+        "True"
+    ),
+    "vector|rotate_90_degrees": (
+        "Quarter turn (𝒢₂ only), +90° from e₁ toward e₂:  (x, y) → (−y, x).  This\n"
+        "is exactly multiplication by the unit pseudoscalar e₁e₂.\n"
+        "\n"
+        ">>> (1 * Vector.e_1).rotate_90_degrees() == 1 * Vector.e_2\n"
+        "True"
+    ),
+    "vector|projected_onto": _vector_proj_doc,
+    "vector|rejected_away_from": _vector_rej_doc,
+    "vector|reflected_across": (
+        "This vector reflected across the line of another vector (the ``reflect``\n"
+        "classmethod's ergonomic form)."
+    ),
+    "vector|project": "Classmethod form of the projection; see ``projected_onto``.",
+    "vector|reject": "Classmethod form of the rejection; see ``rejected_away_from``.",
+    "vector|reflect": "Classmethod form of the reflection; see ``reflected_across``.",
+    "vector|__iter__": (
+        "Iterating a vector yields its coordinate values in order -- ``list(v)``\n"
+        "is the coordinate tuple that feeds numpy / plotting."
+    ),
+    "vector|isclose": "Numeric near-equality of two vectors, coordinate-wise (see the base ``isclose``).",
+    "vector|from_blade_dict": "Build a vector from a blade→coefficient dict (only grade-1 blades kept).",
+    "vector|to_blade_dict": "This vector as a blade→coefficient dict (grade-1 blades only).",
+    "vector|__lt__": "Left contraction operator ``<``; see ``left_contraction``.",
+    "vector|__gt__": "Right contraction operator ``>``; see ``right_contraction``.",
+    "vector|__radd__": "Reflected sum  (number) + a  -- adds a scalar part, giving a mixed multivector.",
+    "vector|__rmul__": "Reflected product  (number) * a  -- scales the vector.",
+    # ------------------------------------------------------------------
+    # Trivector (grade 3) -- the oriented VOLUME element and the pseudoscalar
+    # of 𝒢₃.  Only exists in 𝒢₃.
+    # ------------------------------------------------------------------
+    "trivector|__add__": (
+        "Sum of two trivectors -- added component-wise (still a trivector; 𝒢₃ has\n"
+        "a single grade-3 blade e₁e₂e₃).\n"
+        "\n"
+        ">>> 1 * Trivector.e_123 + 1 * Trivector.e_123 == 2 * Trivector.e_123\n"
+        "True"
+    ),
+    "trivector|__sub__": "Difference of two trivectors, component-wise.",
+    "trivector|__neg__": (
+        "Negation -- reverses the orientation of the volume.\n"
+        "\n"
+        ">>> -(2 * Trivector.e_123) == -2 * Trivector.e_123\n"
+        "True"
+    ),
+    "trivector|__mul__": (
+        "Geometric product.  The 𝒢₃ pseudoscalar squares to −1 and commutes with\n"
+        "everything (it is the imaginary of 3-D space).\n"
+        "\n"
+        ">>> (1 * Trivector.e_123) * (1 * Trivector.e_123) == Scalar.from_scalar(-1)\n"
+        "True"
+    ),
+    "trivector|_geometric_product": "The geometric-product primitive (use ``*``); the pseudoscalar squares to −1.",
+    "trivector|dot": (
+        "Inner product with another trivector -- a scalar; for the unit\n"
+        "pseudoscalar it is −1.\n"
+        "\n"
+        ">>> (1 * Trivector.e_123).dot(1 * Trivector.e_123) == Scalar.from_scalar(-1)\n"
+        "True"
+    ),
+    "trivector|inner_product": "Inner product of trivectors -- a scalar (−1 for the unit pseudoscalar); see ``dot``.",
+    "trivector|left_contraction": "Left contraction (the ``<`` operator); lowers grade.",
+    "trivector|right_contraction": "Right contraction (the ``>`` operator); lowers grade.",
+    "trivector|outer_product": (
+        "Outer product.  A trivector wedged with anything of grade ≥ 1 is 0 --\n"
+        "grade 3 is already the top of 𝒢₃.\n"
+        "\n"
+        ">>> (1 * Trivector.e_123) ^ (1 * Trivector.e_123) == Scalar.zero()\n"
+        "True"
+    ),
+    "trivector|wedge": "Outer product; a trivector ∧ (grade ≥ 1) is 0 (grade 3 is the top of 𝒢₃).",
+    "trivector|__xor__": "Outer (wedge) product operator ``^``; see ``wedge``.",
+    "trivector|dual": (
+        "Dual in 𝒢₃: the trivector (pseudoscalar) duals to a scalar.\n"
+        "\n"
+        ">>> (1 * Trivector.e_123).dual() == Scalar.from_scalar(1)\n"
+        "True"
+    ),
+    "trivector|even_part": (
+        "A trivector has odd grade (3), so it has no even part.\n"
+        "\n"
+        ">>> (2 * Trivector.e_123).even_part() == Scalar.zero()\n"
+        "True"
+    ),
+    "trivector|odd_part": (
+        "A trivector is odd (grade 3), so its odd part is the whole thing.\n"
+        "\n"
+        ">>> (2 * Trivector.e_123).odd_part() == 2 * Trivector.e_123\n"
+        "True"
+    ),
+    "trivector|scalar_part": (
+        "The scalar (grade-0) part of a trivector is 0.\n"
+        "\n"
+        ">>> (2 * Trivector.e_123).scalar_part()\n"
+        "0"
+    ),
+    "trivector|r_vector_part": (
+        "The grade-r part.  A trivector is pure grade 3, so r=3 gives it back and\n"
+        "any other grade is 0.\n"
+        "\n"
+        ">>> (2 * Trivector.e_123).r_vector_part(3) == 2 * Trivector.e_123\n"
+        "True"
+    ),
+    "trivector|grades": (
+        "A nonzero trivector is homogeneous of grade 3.\n"
+        "\n"
+        ">>> (2 * Trivector.e_123).grades()\n"
+        "[3]"
+    ),
+    "trivector|magnitude_squared": (
+        "Squared magnitude  |T|²  -- the square of the single e₁e₂e₃ component.\n"
+        "\n"
+        ">>> (2 * Trivector.e_123).magnitude_squared()\n"
+        "4"
+    ),
+    "trivector|__iter__": "Iterating a trivector yields its single grade-3 component value.",
+    "trivector|isclose": "Numeric near-equality of two trivectors (see the base ``isclose``).",
+    "trivector|from_blade_dict": "Build a trivector from a blade→coefficient dict (grade-3 blade only).",
+    "trivector|to_blade_dict": "This trivector as a blade→coefficient dict (grade-3 blade only).",
+    "trivector|__lt__": "Left contraction operator ``<``; see ``left_contraction``.",
+    "trivector|__gt__": "Right contraction operator ``>``; see ``right_contraction``.",
+    "trivector|__radd__": "Reflected sum  (number) + T  -- adds a scalar part.",
+    "trivector|__rmul__": "Reflected product  (number) * T  -- scales the trivector.",
+    # ------------------------------------------------------------------
+    # Rotor (the even subalgebra {0, 2}) -- what actually rotates.  A rotor is
+    # a scalar + a bivector; apply it with ``sandwich``.  Present in 𝒢₂/𝒢₃.
+    # ------------------------------------------------------------------
+    "rotor|__add__": (
+        "Adds two rotors component-wise.  Note this is NOT how you compose\n"
+        "rotations -- use the geometric product ``*`` for that.\n"
+        "\n"
+        ">>> Rotor.from_scalar(1) + Rotor.from_scalar(2) == Rotor.from_scalar(3)\n"
+        "True"
+    ),
+    "rotor|__sub__": "Difference of two rotors, component-wise.",
+    "rotor|__neg__": "Negation -- flips both the scalar and bivector parts.",
+    "rotor|__mul__": (
+        "Geometric product of two rotors COMPOSES their rotations.  A rotor times\n"
+        "its own reverse is the identity rotor (the reverse is the inverse).\n"
+        "\n"
+        ">>> R: Rotor = (1 * Bivector.e_12).exp()\n"
+        ">>> R * R.reverse() == Rotor.from_scalar(1)\n"
+        "True"
+    ),
+    "rotor|_geometric_product": "The geometric-product primitive (use ``*``); composes two rotations.",
+    "rotor|sandwich": (
+        "Apply this rotor to a value:  R x R̃  (the sandwich) -- this is how a\n"
+        "rotor actually rotates.  The identity rotor leaves x unchanged.\n"
+        "\n"
+        ">>> Rotor.from_scalar(1).sandwich(1 * Vector.e_1) == 1 * Vector.e_1\n"
+        "True"
+    ),
+    "rotor|plane_of_rotation": (
+        "The bivector plane this rotor rotates in.\n"
+        "\n"
+        ">>> R: Rotor = 1 + 1 * Rotor.e_12\n"
+        ">>> R.plane_of_rotation() == 1 * Bivector.e_12\n"
+        "True"
+    ),
+    "rotor|grades": (
+        "A rotor is even: a scalar (grade 0) plus a bivector (grade 2).\n"
+        "\n"
+        ">>> (1 + 1 * Rotor.e_12).grades()\n"
+        "[0, 2]"
+    ),
+    "rotor|even_part": (
+        "A rotor is entirely even, so its even part is itself.\n"
+        "\n"
+        ">>> R: Rotor = 1 + 1 * Rotor.e_12\n"
+        ">>> R.even_part() == R\n"
+        "True"
+    ),
+    "rotor|odd_part": (
+        "A rotor has no odd part, so it is 0.\n"
+        "\n"
+        ">>> (1 + 1 * Rotor.e_12).odd_part() == Scalar.zero()\n"
+        "True"
+    ),
+    "rotor|scalar_part": (
+        "The scalar (grade-0) part of a rotor -- cos(θ/2) for a rotation by θ.\n"
+        "\n"
+        ">>> (1 + 1 * Rotor.e_12).scalar_part()\n"
+        "1"
+    ),
+    "rotor|r_vector_part": (
+        "Extract a grade.  A rotor has a grade-0 and a grade-2 part.\n"
+        "\n"
+        ">>> (1 + 1 * Rotor.e_12).r_vector_part(0) == Scalar.from_scalar(1)\n"
+        "True"
+    ),
+    "rotor|magnitude_squared": (
+        "Squared magnitude  |R|² = scalar² + |bivector|²; a rotation rotor is unit.\n"
+        "\n"
+        ">>> (1 + 1 * Rotor.e_12).magnitude_squared()\n"
+        "2"
+    ),
+    "rotor|dot": "Inner product of two rotors -- a scalar.",
+    "rotor|inner_product": "Inner product of two rotors -- a scalar (see ``dot``).",
+    "rotor|left_contraction": "Left contraction (the ``<`` operator).",
+    "rotor|right_contraction": "Right contraction (the ``>`` operator).",
+    "rotor|outer_product": "Outer (wedge) product.",
+    "rotor|wedge": "Outer (wedge) product.",
+    "rotor|__xor__": "Outer (wedge) product operator ``^``.",
+    "rotor|dual": "Dual  R* = R / i (a rotor is even, so its dual is even too).",
+    "rotor|__iter__": "Iterating a rotor yields its component values (scalar then bivector parts).",
+    "rotor|isclose": "Numeric near-equality of two rotors (see the base ``isclose``).",
+    "rotor|from_blade_dict": "Build a rotor from a blade→coefficient dict (grade-0 and grade-2 blades kept).",
+    "rotor|to_blade_dict": "This rotor as a blade→coefficient dict (scalar + bivector blades).",
+    "rotor|__lt__": "Left contraction operator ``<``; see ``left_contraction``.",
+    "rotor|__gt__": "Right contraction operator ``>``; see ``right_contraction``.",
+    "rotor|__radd__": "Reflected sum  (number) + R  -- adds to the rotor's scalar part.",
+    "rotor|__rmul__": "Reflected product  (number) * R  -- scales the rotor.",
+    # ------------------------------------------------------------------
+    # Odd_3 (the odd part {1, 3} of 𝒢₃) -- vectors + trivectors.  A subspace
+    # but NOT a subalgebra: odd × odd = even, so a product lands in Rotor.
+    # ------------------------------------------------------------------
+    "odd|__add__": (
+        "Sum of two odd multivectors, component-wise (grades {1, 3} stay {1, 3}).\n"
+        "\n"
+        ">>> 1 * Odd_3.e_1 + 1 * Odd_3.e_1 == 2 * Odd_3.e_1\n"
+        "True"
+    ),
+    "odd|__sub__": "Difference of two odd multivectors, component-wise.",
+    "odd|__neg__": "Negation -- every component sign-flipped.",
+    "odd|__mul__": (
+        "Geometric product.  The product of two ODD multivectors is EVEN (a\n"
+        "rotor): odd × odd = even, so Odd_3 is a subspace but NOT a subalgebra.\n"
+        "\n"
+        ">>> product: Rotor = (1 * Odd_3.e_1) * (1 * Odd_3.e_1)\n"
+        ">>> product == Rotor.from_scalar(1)\n"
+        "True"
+    ),
+    "odd|_geometric_product": "The geometric-product primitive (use ``*``); odd × odd is even.",
+    "odd|to_vector": (
+        "The grade-1 (vector) part, as a ``Vector`` -- raises if the grade-3 part\n"
+        "is nonzero.\n"
+        "\n"
+        ">>> (1 * Odd_3.e_1).to_vector() == 1 * Vector.e_1\n"
+        "True"
+    ),
+    "odd|to_trivector": (
+        "The grade-3 (trivector) part, as a ``Trivector`` -- raises if the grade-1\n"
+        "part is nonzero.\n"
+        "\n"
+        ">>> (1 * Odd_3.e_123).to_trivector() == 1 * Trivector.e_123\n"
+        "True"
+    ),
+    "odd|grades": (
+        "An odd multivector of 𝒢₃ carries grades 1 and/or 3.\n"
+        "\n"
+        ">>> (1 * Odd_3.e_1 + 1 * Odd_3.e_123).grades()\n"
+        "[1, 3]"
+    ),
+    "odd|even_part": (
+        "An odd multivector has no even part, so it is 0.\n"
+        "\n"
+        ">>> (1 * Odd_3.e_1 + 1 * Odd_3.e_123).even_part() == Scalar.zero()\n"
+        "True"
+    ),
+    "odd|odd_part": (
+        "An odd multivector is entirely odd, so its odd part is itself.\n"
+        "\n"
+        ">>> O: Odd_3 = 1 * Odd_3.e_1 + 1 * Odd_3.e_123\n"
+        ">>> O.odd_part() == O\n"
+        "True"
+    ),
+    "odd|r_vector_part": (
+        "Extract a grade.  Grade 1 gives the vector part (as a ``Vector``); grade\n"
+        "3 gives the trivector part.\n"
+        "\n"
+        ">>> (1 * Odd_3.e_1 + 1 * Odd_3.e_123).r_vector_part(1) == 1 * Vector.e_1\n"
+        "True"
+    ),
+    "odd|scalar_part": (
+        "The scalar (grade-0) part of an odd multivector is 0.\n"
+        "\n"
+        ">>> (1 * Odd_3.e_1 + 1 * Odd_3.e_123).scalar_part()\n"
+        "0"
+    ),
+    "odd|magnitude_squared": (
+        "Squared magnitude  |O|²  -- the sum of squared components.\n"
+        "\n"
+        ">>> (1 * Odd_3.e_1 + 1 * Odd_3.e_123).magnitude_squared()\n"
+        "2"
+    ),
+    "odd|dot": "Inner product of two odd multivectors -- a scalar.",
+    "odd|inner_product": "Inner product of two odd multivectors -- a scalar (see ``dot``).",
+    "odd|left_contraction": "Left contraction (the ``<`` operator).",
+    "odd|right_contraction": "Right contraction (the ``>`` operator).",
+    "odd|outer_product": "Outer (wedge) product.",
+    "odd|wedge": "Outer (wedge) product.",
+    "odd|__xor__": "Outer (wedge) product operator ``^``.",
+    "odd|dual": "Dual  O* = O / i -- maps the odd part to the even part (a rotor).",
+    "odd|__iter__": "Iterating an odd multivector yields its component values (grade-1 then grade-3).",
+    "odd|isclose": "Numeric near-equality of two odd multivectors (see the base ``isclose``).",
+    "odd|from_blade_dict": "Build an odd multivector from a blade→coefficient dict (grade-1 and grade-3 blades).",
+    "odd|to_blade_dict": "This odd multivector as a blade→coefficient dict (grade-1 and grade-3 blades).",
+    "odd|__lt__": "Left contraction operator ``<``; see ``left_contraction``.",
+    "odd|__gt__": "Right contraction operator ``>``; see ``right_contraction``.",
+    "odd|__radd__": "Reflected sum  (number) + O -- adds a scalar part (giving a mixed multivector).",
+    "odd|__rmul__": "Reflected product  (number) * O -- scales the odd multivector.",
+}
+
+
+def _role_for_class(class_name: str, full_name: str) -> str:
+    """The grade identity used to key ``CUSTOM_METHOD_DOCS`` for ``class_name``."""
+    if class_name == full_name:
+        return "full"
+    known: dict[str, str] = {
+        "Scalar": "scalar",
+        "Vector": "vector",
+        "Bivector": "bivector",
+        "Trivector": "trivector",
+        "Rotor": "rotor",
+        "Odd_3": "odd",
+    }
+    return known.get(class_name, "generic")
+
+
+def _own_docstring(method: str) -> str | None:
+    """The docstring ``method`` defines on ``MultiVectorBase`` or ``Gn``.
+
+    Only a docstring actually written on one of those classes -- never one an
+    ``object`` dunder (``__eq__`` etc.) is inherited by accident.
+    """
+    src: type
+    for src in (MultiVectorBase, Gn):
+        if method in vars(src):
+            doc: str | None = inspect.getdoc(getattr(src, method))
+            if doc:
+                return doc
+    return None
+
+
+def custom_method_doc(role: str, method: str, n: int) -> str | None:
+    """A specialized ``CUSTOM_METHOD_DOCS`` entry for ``method`` on a ``role`` class
+    of 𝒢ₙ, or ``None`` if there is none (or n is a generic-only dimension).
+
+    An entry is either literal text or a ``(role, n) -> str`` callable (so one
+    function can serve a shared method across every role with a role-appropriate
+    example).  A ``role|method`` key wins over the role-agnostic ``*|method``.
+    """
+    if n not in _CUSTOM_DOC_DIMS:
+        return None
+    entry: DocEntry | None = CUSTOM_METHOD_DOCS.get(
+        f"{role}|{method}"
+    ) or CUSTOM_METHOD_DOCS.get(f"*|{method}")
+    if isinstance(entry, str):
+        return entry
+    if entry is not None:
+        return entry(role, n)
+    return None
+
+
+def _set_method_docstring(func: ast.FunctionDef, text: str) -> None:
+    """Set ``func``'s docstring to ``text``, replacing any existing one."""
+    expr: ast.Expr = doc_expr(text)
+    if ast.get_docstring(func) is not None:
+        func.body[0] = expr
+    else:
+        func.body.insert(0, expr)
+
+
+def inject_method_docstrings(nodes: Sequence[ast.stmt], n: int, full_name: str) -> None:
+    """Give every method of every generated class a docstring.
+
+    Mutates the class ``ast`` nodes in place.  ``@overload`` stubs are left bare
+    (they never render).  Otherwise: a specialized ``CUSTOM_METHOD_DOCS`` entry
+    *overrides* whatever the builder emitted (so g1--g3 get grade-aware text),
+    and a method with neither a custom entry nor an existing docstring falls back
+    to the copied generic base docstring.
+    """
+    node: ast.stmt
+    for node in nodes:
+        if not isinstance(node, ast.ClassDef):
+            continue
+        role: str = _role_for_class(node.name, full_name)
+        item: ast.stmt
+        for item in node.body:
+            if not isinstance(item, ast.FunctionDef):
+                continue
+            decorators: set[str | None] = {
+                getattr(d, "attr", getattr(d, "id", None)) for d in item.decorator_list
+            }
+            if "overload" in decorators:
+                continue
+            custom: str | None = custom_method_doc(role, item.name, n)
+            if custom is not None:
+                _set_method_docstring(item, custom)
+            elif ast.get_docstring(item) is None:
+                base: str | None = _own_docstring(item.name)
+                if base:
+                    item.body.insert(0, doc_expr(base))
 
 
 # The 𝒢₂ quarter turn.  Two forms share one closed form: the generated
@@ -3755,6 +4677,10 @@ def main() -> None:
         if n == 2:
             nodes += generate_quarter_turn(name)
         nodes += generate_constants(n, name)
+        # Fill in a docstring on every generated method that lacks one (see
+        # CUSTOM_METHOD_DOCS): specialized text for g1--g3, copied base docstrings
+        # otherwise.  Runs before marker injection / rendering.
+        inject_method_docstrings(nodes, n, name)
         module_body: str = module_source(inject_region_markers(nodes))
         source: str = header(name, n) + "\n\n" + module_body + "\n"
         with open(out_path(filename), "w") as f:

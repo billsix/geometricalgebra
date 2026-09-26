@@ -57,6 +57,15 @@ select = [
        ]
 ignore = []
 
+[tool.ruff.lint.per-file-ignores]
+# tools/gen_specialized.py is a code generator whose CUSTOM_METHOD_DOCS table and doc
+# helpers are dominated by docstring-content string literals (specialized prose + doctests
+# for the generated classes) that `ruff format` cannot reflow.  Enforcing E501 there would
+# force awkward mid-prose splits in teaching text and is not meaningful for it -- the
+# generator's actual code is still wrapped by `ruff format`, and the generated modules are
+# gitignored (not line-length-gated).  See tasks/reference/generated-docstrings.md.
+"tools/gen_specialized.py" = ["E501"]
+
 [tool.ty.environment]
 # tools/ (the code generator + its astbuild DSL) is a real source directory but
 # not a package on the default path. Declare it so `ty check tests` resolves the

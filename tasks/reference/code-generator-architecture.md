@@ -456,3 +456,8 @@ which is why it's a make/CI target and *not* part of the default `pytest` run. I
 **Determinism is a hard requirement.** `sympy.cse` and dict iteration must produce byte-identical
 output across runs, or `check-generated` fails. `main()` writes files in a fixed order and the
 builders iterate blades in canonical `blades_for_dim` order precisely to keep it deterministic.
+
+**Docstrings on the generated methods** are a separate generator sub-system: a post-build pass
+(`inject_method_docstrings`) plus the grade-specialized `CUSTOM_METHOD_DOCS` table gives every
+generated method a docstring (specialized text + doctests for g1–g3, copied base docstrings
+otherwise). Its own reference: `tasks/reference/generated-docstrings.md`.
