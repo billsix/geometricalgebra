@@ -50,10 +50,10 @@ style reference (module/class/method docstrings with Hestenes notation); this ta
 
 ## Plan
 
-- [ ] **Audit coverage** across the autodoc-rendered hand-written modules —
-      `transforms.py`, `nbplotutils.py`, `gn.py`, `functions.py`, `base.py` — and list what
-      lacks a docstring or has a thin one. (`base.py` is strong; `transforms.py` /
-      `nbplotutils.py` are the likely gaps.)
+- [ ] **Audit coverage** across the hand-written modules — `transforms.py`, `nbplotutils.py`,
+      `gn.py`, `functions.py`, `base.py`, plus the `tools/` helpers not owned by the narrative
+      task (scope = all of them, decided 2026-09-26) — and list what lacks a docstring or has a
+      thin one. (`base.py` is strong; `transforms.py` / `nbplotutils.py` are the likely gaps.)
 - [ ] **Fix the autodoc-surfaced rendering issues** already found while standing up the book
       (from `book-and-docs-pipeline.md` "Open follow-ups"):
       - `|A|` in docstrings renders as RST `|substitution|` → ~12 "undefined substitution"
@@ -61,17 +61,19 @@ style reference (module/class/method docstrings with Hestenes notation); this ta
         (`\|A\|`) or use math/code roles.
       - `ₙ` (U+2099) is missing from GNU FreeSerif → that glyph drops from the PDF. Avoid
         `ₙ` in docstrings, or supply a font with coverage.
-- [ ] **Pick the docstring style** — napoleon Google *or* NumPy — and apply it consistently
-      with `base.py` (open question below).
+- [ ] **Apply napoleon Google style** consistently with `base.py` (decided — see Open questions).
 - [ ] **Keep doctests green** — run `pytest` (includes `--doctest-modules`) in the container.
 
 ## Open questions
 
-1. **napoleon style: Google or NumPy?** Confirm before the sweep — it sets the shape of
-   every docstring touched.
-2. **Scope of the sweep:** the autodoc-rendered core only (`base`/`functions`/`transforms`
-   + `gn`), or also `nbplotutils.py` and the `tools/` helpers not covered by the narrative
-   task?
+All resolved (William Emerison Six <billsix@gmail.com>, 2026-09-26) — none open; the older
+"stand up Sphinx now or later?" question is also moot (the book exists, see above).
+
+1. ~~**napoleon style: Google or NumPy?**~~ **RESOLVED — Google.** Use napoleon Google style
+   throughout, consistent with `base.py`.
+2. ~~**Scope of the sweep:**~~ **RESOLVED — all of them.** The sweep covers the autodoc core
+   (`base`/`functions`/`transforms`/`gn`) *and* `nbplotutils.py` *and* the `tools/` helpers not
+   owned by the narrative task.
 
 ## Notes / decisions
 

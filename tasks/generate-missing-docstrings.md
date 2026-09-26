@@ -41,10 +41,12 @@ docstrings in base and gn").
 
 ## Open questions
 
-1. For generated methods with **no base counterpart to copy** (the `@overload` stubs, the
-   scalar-aware `__mul__`/`__radd__` wrappers) — leave them docstring-less, or emit a generated
-   one-liner? (My lean: leave the `@overload` stubs bare; give the real wrappers a one-liner if
-   base has nothing.)
+All resolved (William Emerison Six <billsix@gmail.com>, 2026-09-26) — none open.
+
+1. ~~For generated methods with **no base counterpart to copy**~~ **RESOLVED — emit a generated
+   one-liner.** Give generated methods that have no `MultiVectorBase` docstring to copy (the
+   `@overload` stubs, the scalar-aware `__mul__`/`__radd__` wrappers) a sensible generated
+   one-liner rather than leaving them docstring-less.
 
 ## Relationships
 
