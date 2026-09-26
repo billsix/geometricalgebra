@@ -8,8 +8,10 @@
 #
 # These jobs NEVER modify the repo: `make check-format` runs the formatter inside
 # the disposable runner and then FAILS on any `git diff` (no commit/push), and
-# `make test` is read-only. checkout is pinned @v5 (Node 24; @v4 is Node 20,
-# which GitHub is deprecating).
+# `make test` / `make check-generated` / `make check-regions` are read-only. The
+# generator checks regenerate the gitignored g*.py inside the image (they need
+# sympy, absent on a bare runner) and never touch a tracked file. checkout is
+# pinned @v5 (Node 24; @v4 is Node 20, which GitHub is deprecating).
 name: checks
 
 on:
@@ -30,3 +32,16 @@ jobs:
       - uses: actions/checkout@v5
       - name: make test
         run: make test BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0
+
+  # The two generator gates: the codegen is deterministic (regen twice, compare)
+  # and the doc-region markers are well-formed. Both regenerate the g*.py inside
+  # the image, so they need `make ... : image` (a bare runner has no sympy). One
+  # job, two steps -- the second step's `image` prereq hits the build-layer cache.
+  generated:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: make check-generated
+        run: make check-generated BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0
+      - name: make check-regions
+        run: make check-regions BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0

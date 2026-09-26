@@ -265,12 +265,24 @@ lualatex/no-EPUB/`texlive-luahbtex` details and content guide: `tasks/reference/
 CI (`.github/workflows/`) is a **thin wrapper over the make/Dockerfile system**: each job is
 `checkout` → `make <target>`, all logic in make targets, so the same command runs locally
 (`CONTAINER_CMD` auto-detects podman→docker; runners are `ubuntu-latest`). `checks.yml` runs on
-every push + PR as two check-only jobs — **`format`** (`make check-format` = `make format` then
+every push + PR as three check-only jobs — **`format`** (`make check-format` = `make format` then
 `git diff --exit-code`; runs the formatter in the disposable runner and fails on a diff, never
-commits) and **`test`** (`make test`). If CI needs a step, add it as a `make` target first
-(runnable locally), never inline YAML. Pin actions at Node 24 (`actions/checkout@v5`; `@v4` is the
-deprecated Node 20). Releases are **manual** for now (`make dist`/`upload`/`release` → PyPI); a
-tag-triggered PyPI publish (Trusted Publishing) is proposed in `tasks/github-actions-ci.md`.
+commits), **`test`** (`make test`), and **`generated`** (`make check-generated` then
+`make check-regions` — the codegen-determinism + doc-region gates). If CI needs a step, add it as a
+`make` target first (runnable locally), never inline YAML. Pin actions at Node 24
+(`actions/checkout@v5`; `@v4` is the deprecated Node 20). Releases are **manual** for now
+(`make dist`/`upload`/`release` → PyPI); a tag-triggered PyPI publish (Trusted Publishing) is
+proposed in `tasks/github-actions-pypi-publish-on-tag.md`.
+
+**Every containerized target a CI job runs needs `: image` as a prerequisite** — a fresh runner has
+no image, so a target that only does `podman run … gacalc` tries to *pull* `gacalc:latest` and dies
+(`Error 125`; the bug that broke the first `test` run). It's invisible locally, where an image
+already exists from a prior `make image`. **A CI-facing check target hand-rolls a MINIMAL `podman run`
+(`-v $(CURDIR):/gacalc:Z --entrypoint /bin/bash`, like `test`), NOT `make shell-exec`** — `shell-exec`
+runs through `SHELL_RUN_FLAGS`, which carries `shell`'s GUI/dev passthrough (`X_FLAGS_FOR_CONTAINER`
+with the `/tmp/.X11-unix` bind, Wayland, `EXPOSE_PORT`, `ELPA_MOUNT`) plus `shell.sh`'s editable
+reinstall — all irrelevant and fragile on a headless runner. `shell-exec` is for interactive/dev
+batch use; headless CI gates use the minimal invocation.
 
 ## Performance
 
