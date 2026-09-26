@@ -176,9 +176,15 @@ class ComposableFunction(typing.Generic[V]):
         # doc-region-end composable function compose body
 
     def __rmatmul__(self, f2: "ComposableFunction[V]") -> "ComposableFunction[V]":
+        """Reflected ``@`` — composition when this function is the right operand;
+        defers to the left operand's own composition (see ``__matmul__``).
+        """
         return f2 @ self
 
     def _repr_latex_(self) -> str:
+        """Render this function's LaTeX label as inline math for Jupyter's rich
+        display (the name Jupyter looks up).
+        """
         return "$" + self.latex_repr + "$"
 
     def at(self, t: float) -> "ComposableFunction[V]":

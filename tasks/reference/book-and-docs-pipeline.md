@@ -11,7 +11,9 @@ doesn't need.
 - **`book/docs/`** — the Sphinx source: `conf.py`, `index.rst`, `api.rst`,
   `_static/custom.css`, and the stock quickstart `Makefile`. The **outline skeleton is
   scaffolded** (2026-08-03): one `.rst` prose page per section + `api.rst` (autodoc over
-  `gacalc.base`/`functions`/`transforms`), and **percent-format notebook stubs** under
+  every package module — `gacalc.base`/`gn`/`functions`/`transforms`/`measure`/`vectorcalc`/
+  `frame`; expanded from the original three 2026-09-26 so cross-refs resolve), and
+  **percent-format notebook stubs** under
   `book/docs/notebooks/*.py`. Structure and the prose-vs-notebook split live in
   `book-outline.md`; content fills in later.
 - Builds to **HTML and PDF** (no EPUB).
@@ -95,10 +97,13 @@ book above, and its toolchain is installed **unconditionally** (not gated by `BU
 - Theme **furo**; `html_css_files = ["custom.css"]`.
 - Extensions: `autodoc`, `napoleon`, `viewcode`, `mathjax`, `imgconverter`,
   `nbsphinx`, `myst_nb`.
-- **`latex_engine = "lualatex"`** + `latex_use_xindy = False`; a small
-  `latex_elements["preamble"]` for figure placement/width.
+- **`latex_engine = "lualatex"`** + `latex_use_xindy = False`; `latex_elements["preamble"]`
+  for figure placement/width **and a luaotfload fallback to DejaVu Sans (referenced by file)
+  for glyphs FreeSerif lacks — notably `ₙ` (U+2099)**.
 - `autodoc_default_options` (members, bysource, the `__init__`/`__call__`/operator
-  special-members), `mathjax3_config` (`$…$`/`$$…$$` delimiters).
+  special-members), **`autodoc_typehints = "none"`** (annotations are NOT rendered as cross-refs
+  — the types live in the Google `Args:`/`Returns:` prose — which keeps unresolved-reference
+  warnings out of the PDF), `mathjax3_config` (`$…$`/`$$…$$` delimiters).
 
 ## Decisions & rationale
 
@@ -137,14 +142,23 @@ book above, and its toolchain is installed **unconditionally** (not gated by `BU
 nbconvert.) The same set was added to `runClaudeInContainer` so the sandbox can build
 the book directly.
 
-## Open follow-ups (gacalc docstring polish, surfaced by autodoc — not pipeline bugs)
+## Autodoc rendering warnings — RESOLVED 2026-09-26
 
-1. **`|A|` in docstrings** reads as RST's `|substitution|` syntax → 12 "undefined
-   substitution" warnings on `magnitude`/`inverse`/`cosine`/`normalize`/
-   `rotor_from_vectors`. Fix by escaping (`\|A\|`) or using math/code roles.
-2. **`ₙ` (U+2099) is missing from GNU FreeSerif** → that one glyph drops from the PDF.
-   Fix via a font with U+2099 coverage, or avoid `ₙ` in docstrings. All other Unicode
-   renders.
+The follow-ups that were open here are fixed (details in `tasks/docstrings-for-sphinx.md`;
+the cross-project recipe in the shared `sphinx-book-conventions.md`):
+
+1. **`|A|`-style RST warnings** — there were far fewer than the ~12 predicted (most `|A|` are
+   already inside `` `` `` code-spans or `::` literal blocks, which RST doesn't parse). The
+   genuinely-bare `|`/`` ` `` tokens (in `magnitude`/`magnitude_squared`/`inverse`/`cosine`/`exp`/
+   `normalize`, one `rotor_from_vectors` prose line, a stray `` ``Rational``s ``, and `measure.py`)
+   were wrapped in the `` `` `` code-role. `make docs` → **0** substitution warnings.
+2. **`ₙ` (U+2099) missing from FreeSerif** — a luaotfload fallback to DejaVu Sans (by file)
+   supplies it, FreeSerif kept as main (it has 𝒢). **0** `Missing character`.
+3. **Undefined hyperrefs 169 → ~7** — `autodoc_typehints = "none"` + `api.rst` now `automodule`s
+   every package module; the residual ~7 are a latexmk convergence tail (labels are in `.aux`).
+
+Still cosmetic (left as-is): ~42 `Font shape ... scit undefined` warnings (FreeSerif lacks the
+small-caps-italic shape; LaTeX auto-substitutes — no content lost).
 
 ## JupyterLab settings baked into the image (harvested from CLAUDE.md, 2026-09-13)
 

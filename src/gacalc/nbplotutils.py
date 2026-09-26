@@ -11,6 +11,17 @@
 # Lesser General Public License (the LICENSE file in this repository)
 # for more details.
 
+"""matplotlib/LaTeX plotting helpers for the demo notebooks — 2-D pictures of
+multivectors and of transforms acting on them.
+
+The ``create_*`` / ``draw_*`` helpers draw inside a ``with create_graphs():``
+block (which sets up a square figure and renders it on exit).  Each takes an
+``InvertibleFunction`` transform (default: the identity) and applies it to the
+geometry it draws, so the same call shows a shape before or after a transform.
+Everything is representation-agnostic — it works on any ``MultiVectorBase``
+(``Gn``, ``g3.Vector``, …) via the blade-dict interchange.
+"""
+
 
 import contextlib
 import contextvars
@@ -90,6 +101,13 @@ def generategridlines(
     interval: int = 1,
     cls: type[MultiVectorBase] = MultiVector,
 ) -> Generator[tuple[list[MultiVectorBase], int], None, None]:
+    """Yield the world-space grid lines of a ``graph_bounds``-sized plane.
+
+    Each item is ``([start, end], thickness)`` — the two endpoint multivectors of
+    one line and its line width (the x = 0 and y = 0 axes get a thick line, the
+    rest thin).  ``create_basis`` maps these through a transform to draw a
+    transformed grid.
+    """
     ex: MultiVectorBase = cls.basis_vector(1)
     ey: MultiVectorBase = cls.basis_vector(2)
     x: int
@@ -154,6 +172,13 @@ def create_graphs(
     title: str | None = None,
     filename: str | None = None,
 ) -> Generator[Axes, None, Figure]:
+    """Context manager that sets up a square matplotlib figure for the drawing
+    helpers to plot into, and renders + displays it on exit.
+
+    Yields the axes (also published for ``draw_*`` via a ``ContextVar``, so those
+    helpers need no explicit axes argument). Nestable — nested blocks restore the
+    enclosing axes rather than clobbering it.
+    """
     fig, axes = plt.subplots(figsize=graph_bounds)
     token: contextvars.Token[Axes] = _axes.set(axes)
     axes.set_xlim((-graph_bounds[0], graph_bounds[0]))
@@ -189,6 +214,9 @@ def create_basis(
     ycolor: tuple[float, float, float] = (1.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
+    """Draw the coordinate grid as faint lines — its image under ``fn`` (identity
+    by default), so a transform shows as a deformed grid.
+    """
     # plot transformed basis
     vecs: list[MultiVectorBase]
     thickness: int
@@ -209,6 +237,9 @@ def create_unit_circle(
     fn: InvertibleFunction[Any] = _IDENTITY,
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
+    """Draw the unit circle — its image under ``fn`` (identity by default), so a
+    transform shows as the circle deformed into its image (e.g. an ellipse).
+    """
     ex: MultiVectorBase = cls.basis_vector(1)
     ey: MultiVectorBase = cls.basis_vector(2)
 
@@ -248,6 +279,10 @@ def create_x_and_y(
     ycolor: tuple[float, float, float] = (1.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
+    """Draw the x and y axes as coloured segments from the origin to e₁ and e₂ —
+    their image under ``fn`` (identity by default), so a transform shows where the
+    basis vectors land.
+    """
     ex: MultiVectorBase = cls.basis_vector(1)
     ey: MultiVectorBase = cls.basis_vector(2)
     origin: MultiVectorBase = cls.zero()
@@ -273,6 +308,10 @@ def create_x_and_y(
 
 
 def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Coef:
+    """sin of the angle between two **vectors** — ``v1`` turned 90° in the e₁e₂
+    plane, projected onto ``v2``, over ``|v1||v2|``.  The sine companion to
+    ``MultiVectorBase.cosine``; vectors only (it uses ``|ab| = |a||b|``).
+    """
     # v1, v2 must be VECTORS: the ``abs(v1 * v2)`` below is used as |v1||v2|, which
     # holds only for vectors (|ab| = |a||b| when a, b are vectors).
     assert v1.is_vector() and v2.is_vector()
@@ -401,6 +440,9 @@ def draw_ndc(
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
+    """Draw the normalized-device-coordinate square [−1, 1]² with labelled corners
+    — its image under ``fn`` (identity by default).
+    """
     axes: Axes = _current_axes()
     ex: MultiVectorBase = cls.basis_vector(1)
     ey: MultiVectorBase = cls.basis_vector(2)
@@ -467,6 +509,10 @@ def draw_screen(
     color: tuple[float, float, float] = (0.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
+    """Draw a ``width`` × ``height`` grid of pixel cells tiling the NDC square
+    [−1, 1]² — their image under ``fn`` (identity by default), i.e. the screen
+    raster and how a transform warps it.
+    """
     axes: Axes = _current_axes()
     ex: MultiVectorBase = cls.basis_vector(1)
     ey: MultiVectorBase = cls.basis_vector(2)
@@ -501,6 +547,7 @@ def draw_screen(
 
 
 def _coef_as_float(coef: Coef) -> float | None:
+    """``coef`` as a ``float``, or ``None`` when it is symbolic (not convertible)."""
     try:
         return float(coef)
     except (TypeError, ValueError):
@@ -631,6 +678,11 @@ def _expand_numerators_dict(mv: MultiVectorBase) -> dict:
 
 
 def show_mult(a: MultiVectorBase, b: MultiVectorBase) -> None:
+    """Display (in a notebook) the full distributive expansion of the geometric
+    product ``a * b``: a table of every blade-term × blade-term product, then the
+    summed result, rendered as LaTeX.  A teaching aid for *why* the product is
+    what it is.
+    """
     display(Markdown("**We want to evaluate**"))
     # print the values as latex before they are multiplied
     display(Math("$($" + a._repr_latex_() + "$)*($" + b._repr_latex_() + "$)$"))

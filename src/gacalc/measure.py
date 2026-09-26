@@ -22,7 +22,7 @@ parallelogram area (``|a||b| sin θ``) on **pp. 144-145**. See
 to frames.
 
 ``content`` is the **unsigned scalar magnitude** of the wedge, computable two equal
-ways -- both kept for teaching (:func:`content` and :func:`content_by_rejection`):
+ways -- both kept for teaching (:func:`content` and :func:`content_by_rejection`)::
 
     content([a_1, …, a_k]) = |a_1 ∧ … ∧ a_k|   (magnitude of the wedge blade)
                            = ∏_j |h_j|           (product of rejected heights, p. 146)
