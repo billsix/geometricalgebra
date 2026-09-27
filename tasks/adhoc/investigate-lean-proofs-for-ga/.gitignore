@@ -1,0 +1,4 @@
+# Throwaway Mathlib build state for the phase-2 learning spike (multi-GB .lake
+# cache + downloaded deps). Never commit it; the learning is captured in
+# tasks/reference/lean-for-gacalc.md and the generator script is committed.
+mathlib-spike/

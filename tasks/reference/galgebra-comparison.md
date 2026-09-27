@@ -24,7 +24,7 @@ synthesis, not from any doc):
 
 | # | Gap | Size | Needs signatures first? | Why it's worth it |
 |---|---|---|---|---|
-| 1 | **exp / log of rotors & multivectors** — *the `exp` half is **DONE 2026-07-29** (`MultiVectorBase.exp`, `Bivector_n.exp() -> Rotor_n`; work record `tasks/archive/2026/07/29/exp-for-rotors.md`, rationale in `design-decisions.md`); `log` stays unpromoted* | ~~small, self-contained~~ | no | "rotor = exp(bivector)" is a core teaching moment; enables interpolation. ~~Best near-term win.~~ (Finding 2B) |
+| 1 | **exp / log of versors & multivectors** — *the `exp` half is **DONE 2026-07-29** (`MultiVectorBase.exp`, `Bivector_n.exp() -> Versor_n`; work record `tasks/archive/2026/07/29/exp-for-rotors.md`, rationale in `design-decisions.md`); `log` stays unpromoted* | ~~small, self-contained~~ | no | "rotor = exp(bivector)" is a core teaching moment; enables interpolation. ~~Best near-term win.~~ (Finding 2B) |
 | 2 | **~~Left/right contractions~~ (DONE 2026-07-22) + commutator/anticommutator + grade-involution + Clifford conjugation** | small, several one-liners | no | Table-stakes operations every GA text uses; gacalc collapses all inner products into one. Cheap. (Finding 2A) |
 | 3 | **Reciprocal frames** | small–medium | no | Independently useful *and* the prerequisite for geometric calculus. Build regardless. (Finding 1, 5) |
 | 4 | **Outermorphisms / general linear transforms** (`Lt`: det/adjoint/trace as pseudoscalar/blade operations) | medium, self-contained | **no** — works on Euclidean G | Beautiful teaching topic ("det = how a map scales the pseudoscalar"); generalizes gacalc's versor-only transforms. The best "big" step that *doesn't* need signatures. (Finding 3b) |
@@ -176,7 +176,7 @@ This is the "cheap wins" bucket. galgebra's `Mv` delegates product *definitions*
 **B. Medium, high-value, some are real algorithms:**
 - **Multivector `exp()`** (only when `A²` is scalar: trig if `A²<0`, hyperbolic if `A²>0`).
   This is galgebra's *primary rotor/versor constructor* — `(B/2).exp()` for a bivector `B`
-  gives a rotor. gacalc builds rotors only from from/to vectors or plane+angle and has **no
+  gives a rotor. gacalc builds versors only from from/to vectors or plane+angle and has **no
   `exp` at all**. Adding `exp` would let gacalc express rotors the exp-map way the books do.
 - **General-multivector inverses**: `shirokov_inverse` (works for *any* multivector,
   iterative — arXiv 2005.04015) and `hitzer_inverse` (closed form for n<6). gacalc's
@@ -204,8 +204,8 @@ multivector** (galgebra uses trig only *inside* `exp`).
 
 **Things gacalc has that galgebra lacks a named analog for** (don't lose these — they're
 gacalc's pedagogical identity): `outer_product_of_vectors`, and the from→to rotation
-factories `rotor_from_vectors`/`plane_rotation`/`projection_rotation` (galgebra only builds
-rotors via bivector `exp` or products of vectors), plus the composable-function/transform
+factories `versor_from_vectors`/`plane_rotation`/`projection_rotation` (galgebra only builds
+versors via bivector `exp` or products of vectors), plus the composable-function/transform
 layer.
 
 ## Finding 3 — The two biggest gaps: geometric calculus, and linear transforms/outermorphisms
@@ -254,8 +254,8 @@ what makes these **coordinate-free and blade-aware**:
   (`+`,`-`,`*`=composition).
 - **Versor-based `Lt`**: from a versor V the map is the grade-involute sandwich
   `x ↦ V̂ x V⁻¹` (covers rotations *and* reflections), immediately compiled to the same
-  `lt_dict` outermorphism — one interface unifying rotors/reflections with general matrix
-  maps. This is the general superset of gacalc's bespoke `Rotor.sandwich`/`plane_rotation`.
+  `lt_dict` outermorphism — one interface unifying versors/reflections with general matrix
+  maps. This is the general superset of gacalc's bespoke `Versor.sandwich`/`plane_rotation`.
 - **`Mlt`** — multilinear functions / **tensors** `F(v₁,…,vᵣ)`, with `.pdiff`/`.contract`/
   `.cderiv` (covariant derivative) built on `ga.grad`. gacalc has no tensor abstraction.
 
@@ -344,7 +344,7 @@ applied world:
 | code-generated fast paths | scaling | ● (pedagogical miniature of versor/gafro/Gaalop) |
 | arbitrary signature (p,q,r) incl. degenerate | **table stakes** | ○ |
 | left/right contractions as distinct operators | table stakes | ● (done 2026-07-22, `< `/`>`) |
-| exp/log of rotors & multivectors | table stakes (for motion) | ○ |
+| exp/log of versors & multivectors | table stakes (for motion) | ○ |
 | outermorphisms / general linear transforms | table stakes (for a "linear algebra" GA lib) | ○ |
 | reciprocal frames | table stakes | ○ |
 | meet/join/incidence | table stakes (for geometry) | ○ |

@@ -59,11 +59,11 @@ Each `g*` module exports its own basis constants (`zero`, `one`, `e_1`, …, and
 pseudoscalar `e_12` / `e_123`) **at their graded type** — `g2.e_1` is a `Vector`,
 `g2.e_12` a `Bivector`, `zero` / `one` a `Scalar` — so unqualified code keeps the
 precise graded type (`3*e_1 + 4*e_2` is a `Vector`, and `g2.e_1 * g2.e_2` is a
-`Rotor` valued as the unit bivector `e_12`). To build the full `G` concisely, use
+`Versor` valued as the unit bivector `e_12`). To build the full `G` concisely, use
 the class's own constant instead (`G.e_1`, so `3*G.e_1 + 4*G.e_2` is a `G`). 2D vs
 3D `e_1` are simply in different modules.
 
-## Graded subtypes (Vector, Bivector, Rotor, …)
+## Graded subtypes (Vector, Bivector, Versor, …)
 
 Besides the full multivector classes, each algebra has **graded subtypes** that hold
 only one grade's components — the way mathematicians usually work:
@@ -71,10 +71,10 @@ only one grade's components — the way mathematicians usually work:
 | dimension | graded types |
 | --- | --- |
 | 𝒢₁ | `Scalar`, `Vector` |
-| 𝒢₂ | `Scalar`, `Vector`, `Bivector`, `Rotor` (the even subalgebra, ≅ ℂ) |
-| 𝒢₃ | `Scalar`, `Vector`, `Bivector`, `Trivector`, `Rotor` (even part {0,2}, ≅ ℍ), `Odd_3` (odd part {1,3}) |
-| 𝒢₄ | … `Trivector`, **`FourVector`** (the pseudoscalar), `Rotor` |
-| 𝒢₅ | … `FourVector`, **`FiveVector`** (the pseudoscalar), `Rotor` |
+| 𝒢₂ | `Scalar`, `Vector`, `Bivector`, `Versor` (the even subalgebra, ≅ ℂ) |
+| 𝒢₃ | `Scalar`, `Vector`, `Bivector`, `Trivector`, `Versor` (even part {0,2}, ≅ ℍ), `Odd_3` (odd part {1,3}) |
+| 𝒢₄ | … `Trivector`, **`FourVector`** (the pseudoscalar), `Versor` |
+| 𝒢₅ | … `FourVector`, **`FiveVector`** (the pseudoscalar), `Versor` |
 
 There is **one grade-pure type per grade up to the pseudoscalar**, named by the `grade_name(k)`
 scheme — `Scalar`/`Vector`/`Bivector`/`Trivector` for grades 0–3, then the number-word
@@ -87,15 +87,15 @@ The grade-0 `ScalarN` is **per algebra** (not one shared type), so its dual is p
 **The product decides the return type** — resolved when the classes are generated, so it
 never depends on (float-fuzzy) coefficient *values*. It is also **precise for a type checker**,
 not just at runtime: the operators and products carry `@typing.overload` signatures, so a
-static checker knows `a * b` is a `Rotor` and `a ^ b` a `Bivector` (and `2 + 3*(a^b)` a
-`Rotor`) — the `type(...)` calls below print the same types the checker infers:
+static checker knows `a * b` is a `Versor` and `a ^ b` a `Bivector` (and `2 + 3*(a^b)` a
+`Versor`) — the `type(...)` calls below print the same types the checker infers:
 
 ```python
 from gacalc.g2 import Vector
 
 a, b = 3 * Vector.e_1 + 4 * Vector.e_2, 1 * Vector.e_1 + 2 * Vector.e_2
 
-type(a * b)  # Rotor     (a·b scalar  +  a∧b bivector)
+type(a * b)  # Versor     (a·b scalar  +  a∧b bivector)
 type(a ^ b)  # Bivector  (the wedge — ask for a blade with ^)
 type(a.inner_product(b))  # Scalar
 type(
@@ -131,25 +131,25 @@ into one single-blade multivector per term instead, iterate `v.to_blade_dict()`.
 
 Return-type table for the geometric product `*` (𝒢₂ shown):
 
-| `*` | Scalar | Vector | Bivector | Rotor |
+| `*` | Scalar | Vector | Bivector | Versor |
 | --- | --- | --- | --- | --- |
-| **Scalar** | Scalar | Vector | Bivector | Rotor |
-| **Vector** | Vector | Rotor | Vector | Vector |
-| **Bivector** | Bivector | Vector | Scalar | Rotor |
-| **Rotor** | Rotor | Vector | Rotor | Rotor |
+| **Scalar** | Scalar | Vector | Bivector | Versor |
+| **Vector** | Vector | Versor | Vector | Vector |
+| **Bivector** | Bivector | Vector | Scalar | Versor |
+| **Versor** | Versor | Vector | Versor | Versor |
 
 A result that spans grades no single type covers widens to the full `G_n` — this
 doesn't arise in the 𝒢₂ table above (every product is covered), but in 𝒢₃ a
 `Vector * Bivector` spans grades 1 and 3, so it widens to `G`. Build values by linear combination of the basis
-(`3*e_1 + 4*e_2`; a bivector via `e_1 ^ e_2`; a rotor via `scalar + bivector` — `+`/`-`
-also narrow to the tightest type). Rotors carry `plane_of_rotation()`, and
-`rotor_from_vectors(from, to)` builds the rotor whose sandwich `R v R.inverse()` equals
+(`3*e_1 + 4*e_2`; a bivector via `e_1 ^ e_2`; a versor via `scalar + bivector` — `+`/`-`
+also narrow to the tightest type). Versors carry `plane_of_rotation()`, and
+`versor_from_vectors(from, to)` builds the versor whose sandwich `R v R.inverse()` equals
 `projection_rotation(from, to)(v)` (a free function in `gacalc.transforms`). To separate the plane from the angle, `plane_rotation(a, b)`
 (new in 0.0.8) wedge-normalizes the two vectors into a unit bivector once and returns
 a factory: each `θ` yields an `InvertibleFunction` doing the half-angle rotor sandwich
-(numeric `θ` stays float — no sympy in the result). Rotors can also be built the
+(numeric `θ` stays float — no sympy in the result). Versors can also be built the
 exp-map way the textbooks write them: `exp` of a bivector *is* a rotor —
-`B.exp()` returns a `Rotor` (unit by construction), and
+`B.exp()` returns a `Versor` (unit by construction), and
 `exp(-(θ/2) * i)` for a unit bivector `i` equals `plane_rotation`'s half-angle
 rotor (`exp` is defined only when `A² < 0` — a bivector or the 𝒢₃ pseudoscalar;
 a vector, whose square is positive, raises `ValueError`). A full walkthrough is in

@@ -67,11 +67,11 @@ SAMPLES: list[tuple[type[MultiVectorBase], BladeCoef]] = [
     (g2.Scalar, {(): 5}),
     (g2.Vector, {(1,): 2, (2,): 3}),
     (g2.Bivector, {(1, 2): 4}),
-    (g2.Rotor, {(): 1, (1, 2): 4}),
+    (g2.Versor, {(): 1, (1, 2): 4}),
     (g3.Vector, {(1,): 2, (2,): 3, (3,): 4}),
     (g3.Bivector, {(1, 2): 5, (1, 3): 6, (2, 3): 7}),
     (g3.Trivector, {(1, 2, 3): 8}),
-    (g3.Rotor, {(): 1, (1, 2): 5, (1, 3): 6, (2, 3): 7}),
+    (g3.Versor, {(): 1, (1, 2): 5, (1, 3): 6, (2, 3): 7}),
 ]
 
 
@@ -150,14 +150,14 @@ def test_hidden_zero_eager_vs_lazy() -> None:
 def test_graded_from_blade_dict_keeps_only_own_blades() -> None:
     # A graded type's from_blade_dict reads ONLY its own blade keys; anything
     # else is silently dropped.  This is why results carrying a new grade must
-    # be built via dispatching arithmetic (e.g. Bivector + scalar -> Rotor),
+    # be built via dispatching arithmetic (e.g. Bivector + scalar -> Versor),
     # never by from_blade_dict on the operand's type -- the trap exp() documents.
     assert g2.Bivector.from_blade_dict({(): 7, (1, 2): 3}).to_blade_dict() == {
         (1, 2): 3
     }
     assert g3.Vector.from_blade_dict({(1,): 1, (1, 2): 9}).to_blade_dict() == {(1,): 1}
-    # the Rotor spans scalar + bivectors, so both survive there
-    assert g2.Rotor.from_blade_dict({(): 7, (1, 2): 3}).to_blade_dict() == {
+    # the Versor spans scalar + bivectors, so both survive there
+    assert g2.Versor.from_blade_dict({(): 7, (1, 2): 3}).to_blade_dict() == {
         (): 7,
         (1, 2): 3,
     }

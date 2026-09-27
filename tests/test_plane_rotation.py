@@ -18,7 +18,7 @@ tasks/upgrade-rotation-and-ctc-vector-mapping.md (Task 1): grade-1
 verification, the wedge-is-zero (parallel) error, from-a-toward-b
 orientation, perpendicular-part fixedness, representation and subclass
 preservation, inversion, interpolation, symbolic angles, and agreement
-with the from/to rotor formulation.
+with the from/to versor formulation.
 """
 
 import math
@@ -35,7 +35,7 @@ from gacalc.transforms import (
     InvertibleFunction,
     Linearity,
     inverse,
-    rotor_rotation,
+    versor_rotation,
 )
 
 E1: g2.Vector = g2.Vector.e_1
@@ -148,12 +148,12 @@ def test_symbolic_theta() -> None:
 
 def test_agrees_with_from_to_rotor_formulation() -> None:
     # rotating BY the angle between from and to, in their plane, is the
-    # same rotation rotor_rotation performs.
+    # same rotation versor_rotation performs.
     t: float = math.radians(40)
     to: g2.Vector = math.cos(t) * E1 + math.sin(t) * E2
     v: g2.Vector = g2.Vector(coeff_e_1=1.0, coeff_e_2=3.0)
     assert plane_rotation(E1, E2)(t)(v).isclose(
-        rotor_rotation(E1, to)(v), rel_tol=1e-5, abs_tol=1e-5
+        versor_rotation(E1, to)(v), rel_tol=1e-5, abs_tol=1e-5
     )
 
 

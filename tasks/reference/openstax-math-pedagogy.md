@@ -492,7 +492,7 @@ first demonstration of the box/unbox grammar:
    - **Unboxed proof:** the two-line argument (parallel ⇒ zero wedge; perpendicular ⇒ zero
      dot), verified symbolically in gacalc.
    - **Reuse:** from then on, treat `ab = a·b + a∧b` as the settled decomposition and build
-     projection/reflection/rotors on top without reopening it.
+     projection/reflection/versors on top without reopening it.
    Write it once, box it, and every later chapter cites it. This single example teaches the
    *method* of black-boxing as much as the fact.
 
@@ -553,7 +553,7 @@ named as the trap:
 5. **How-To + Example + Try-It:** "How to compute a dot product from components," an example
    run step-by-step in two-column form, a Try-It with answer.
 6. **Black-box from here on:** the rest of the book writes `a·b` and `ab = a·b + a∧b` as
-   settled, never reopening the component grind. Projection, reflection, and rotors are built
+   settled, never reopening the component grind. Projection, reflection, and versors are built
    *on top of* the boxed identity.
 
 The point the student should leave with is not the component formula; it is that the dot

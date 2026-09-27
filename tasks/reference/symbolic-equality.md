@@ -68,7 +68,7 @@ silently `False` even when it holds that value (`some_scalar_result == 0` misfir
 
 Practical rule, and the one the generated **doctests** follow: compare a multivector result
 to a **correctly-typed** value — `== Scalar.from_scalar(-1)`, `== Vector.e_3`,
-`== Rotor.from_scalar(1)` — never to a bare number. When you want the *number*, pull it out
+`== Versor.from_scalar(1)` — never to a bare number. When you want the *number*, pull it out
 first (`.scalar_part()`, `.coefficient(blade)`, `.magnitude_squared()` return a plain `Coef`)
 and compare that: `mv.scalar_part() == 0` is fine, `mv == 0` is not.
 
@@ -92,7 +92,7 @@ Tests compare multivectors **blade-dict-wise** with the same idiom, each rolled 
 - `tests/test_conformance.py:401` `_same_value(x, y)` — per-blade
   `simplify(sympify(dx[k]) − sympify(dy[k])) == 0` over `to_blade_dict()` (`:408`).
 - `tests/test_graded.py:381` `simplify_equal(a, b)` — same (`:392`), used where magnitudes are `sqrt(...)`
-  (`:419`), e.g. `test_rotor_sandwich_equals_rotate_*`.
+  (`:419`), e.g. `test_versor_sandwich_equals_rotate_*`.
 - Inline one-offs: `tests/test_conformance.py:87`, `tests/test_measure.py:139-140`.
 
 There is **no public `MultiVectorBase.symbolically_equal` method** — the `simplify(a−b)==0` logic is

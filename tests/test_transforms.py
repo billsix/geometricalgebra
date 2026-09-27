@@ -43,11 +43,11 @@ from gacalc.transforms import (
     identity,
     inverse,
     projection_rotation,
-    rotor_rotation,
     scale_non_uniform,
     to_matrix,
     translate,
     uniform_scale,
+    versor_rotation,
 )
 
 
@@ -429,14 +429,14 @@ def test_to_matrix_sympy_backend_is_exact() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Versor sandwich (base.sandwich) + rotor_rotation (the InvertibleFunction).
+# Versor sandwich (base.sandwich) + versor_rotation (the InvertibleFunction).
 # ---------------------------------------------------------------------------
 
 
 def test_sandwich_rotates_and_preserves_type_3d() -> None:
     # quarter turn in the e_2-e_3 plane: e_2 -> e_3 (use the graded g3.Vector so
     # the type round-trip can be checked)
-    r: MultiVectorBase = g3.Vector.rotor_from_vectors(
+    r: MultiVectorBase = g3.Vector.versor_from_vectors(
         from_vector=g3.Vector.e_2, to_vector=g3.Vector.e_3
     )
     out: g3.Vector = r.sandwich(g3.Vector.e_2)
@@ -449,7 +449,7 @@ def test_sandwich_rotates_and_preserves_type_3d() -> None:
 
 
 def test_sandwich_2d_stays_vector2() -> None:
-    r: MultiVectorBase = g2.Vector.rotor_from_vectors(
+    r: MultiVectorBase = g2.Vector.versor_from_vectors(
         from_vector=g2.Vector.e_1, to_vector=g2.Vector.e_2
     )
     out: g2.Vector = r.sandwich(g2.Vector.e_1)
@@ -458,7 +458,7 @@ def test_sandwich_2d_stays_vector2() -> None:
 
 
 def test_sandwich_of_zero_is_zero() -> None:
-    r: MultiVectorBase = g3.Vector.rotor_from_vectors(
+    r: MultiVectorBase = g3.Vector.versor_from_vectors(
         from_vector=g3.Vector.e_2, to_vector=g3.Vector.e_3
     )
     out: g3.Vector = r.sandwich(g3.Vector.zero())
@@ -473,7 +473,7 @@ def _to3(angle: float) -> MultiVectorBase:
 
 
 def test_rotor_rotation_is_linear_and_round_trips() -> None:
-    r: InvertibleFunction[MultiVectorBase] = rotor_rotation(
+    r: InvertibleFunction[MultiVectorBase] = versor_rotation(
         g3.G.basis_vector(1), _to3(0.7)
     )
     assert r.linearity is Linearity.LINEAR
@@ -488,17 +488,17 @@ def test_rotor_rotation_is_linear_and_round_trips() -> None:
 
 
 def test_rotor_rotation_handles_zero() -> None:
-    r: InvertibleFunction[MultiVectorBase] = rotor_rotation(
+    r: InvertibleFunction[MultiVectorBase] = versor_rotation(
         g3.G.basis_vector(1), _to3(0.7)
     )
     assert r(g3.G.zero()).isclose(g3.G.zero(), rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_rotor_rotation_matches_projection_rotate() -> None:
-    # the two formulations of a rotation agree (rotor sandwich vs projection),
+    # the two formulations of a rotation agree (versor sandwich vs projection),
     # including the perpendicular axis being fixed
     to: MultiVectorBase = _to3(0.7)
-    rotor_fn: InvertibleFunction[MultiVectorBase] = rotor_rotation(
+    rotor_fn: InvertibleFunction[MultiVectorBase] = versor_rotation(
         g3.G.basis_vector(1), to
     )
     proj_fn: MultiVectorFn = projection_rotation(

@@ -32,9 +32,9 @@
 # ==============================================
 #
 # Mathematicians rarely carry a full multivector; they work with *vectors*,
-# *bivectors*, *rotors*, and so on. This library has those as first-class types
-# (`g2.Vector`, `g2.Bivector`, `g2.Rotor`, `g2.Scalar`, ...), and **the product
-# decides the return type**: two vectors multiply to a *rotor* (scalar +
+# *bivectors*, *versors*, and so on. This library has those as first-class types
+# (`g2.Vector`, `g2.Bivector`, `g2.Versor`, `g2.Scalar`, ...), and **the product
+# decides the return type**: two vectors multiply to a *versor* (scalar +
 # bivector), their wedge is a *bivector*, and so on.
 #
 # The return type is decided by the *operation*, derived symbolically
@@ -96,7 +96,7 @@ show(a)
 # $$ ab = a\cdot b + a\wedge b $$
 #
 # The scalar part is the dot product, the bivector part is the wedge — together
-# an element of the even subalgebra, i.e. a **rotor**.
+# an element of the even subalgebra, i.e. a **versor**.
 
 # %%
 show(a * b)
@@ -109,7 +109,7 @@ show(a ^ b, a.inner_product(b))
 # Type follows the operation, not the value
 # -----------------------------------------
 #
-# Orthogonal vectors have a zero dot product, but `e_1 * e_2` is still a `g2.Rotor`
+# Orthogonal vectors have a zero dot product, but `e_1 * e_2` is still a `g2.Versor`
 # (its scalar field just happens to be 0) — we never narrow by looking at a value.
 # Want the pure bivector? Use `^`.
 
@@ -131,31 +131,31 @@ i2: g2.Bivector = e_1 ^ e_2  # the unit bivector
 show(i2 * i2)
 
 # %% [markdown]
-# Rotors are the complex numbers
+# Versors are the complex numbers
 # ------------------------------
 #
-# The even subalgebra of 𝒢₂ is ℂ. Build a rotor as `scalar + bivector` (the `+`
-# narrows to `g2.Rotor`), and the unit bivector squares to −1.
+# The even subalgebra of 𝒢₂ is ℂ. Build a versor as `scalar + bivector` (the `+`
+# narrows to `g2.Versor`), and the unit bivector squares to −1.
 
 # %%
-r: g2.Rotor = 2 + 3 * i2  # scalar + bivector  -> g2.Rotor
+r: g2.Versor = 2 + 3 * i2  # scalar + bivector  -> g2.Versor
 show(r)
 
 # %%
 show(i2 * i2)  # == -1
 
 # %%
-# a rotor rotates a vector: the normalized rotor that turns e_1 -> e_2 is a
+# a versor rotates a vector: the versor that turns e_1 -> e_2 is a
 # quarter turn, built from the two vectors (no hand-rolled cos/sin needed)
-quarter: g2.Rotor = g2.Vector.rotor_from_vectors(from_vector=e_1, to_vector=e_2)
+quarter: g2.Versor = g2.Vector.versor_from_vectors(from_vector=e_1, to_vector=e_2)
 rotated: g2.Vector = quarter * e_1 * quarter.inverse()
 show(rotated)
 
 # %% [markdown]
-# A rotor's plane of rotation
+# A versor's plane of rotation
 # ---------------------------
 #
-# `plane_of_rotation()` returns the unit bivector (a 2-blade) the rotor turns in
+# `plane_of_rotation()` returns the unit bivector (a 2-blade) the versor turns in
 # — the normalized bivector part. In 2D that 2-blade is also the pseudoscalar.
 
 # %%
@@ -166,14 +166,14 @@ show(quarter.plane_of_rotation())
 # -------------------------------------
 #
 # `projection_rotation(from, to)` rotates a vector by `project`/`reject` +
-# the geometric product. The *rotor* way builds `R = rotor_from_vectors(from, to)`
+# the geometric product. The *versor* way builds `R = versor_from_vectors(from, to)`
 # = `|from||to| + to·from` and sandwiches: `R v R⁻¹`. They give the **same**
 # rotation — provably, even symbolically (see `tests/test_graded.py`).
 
 # %%
 frm, to = 1 * e_1, 1 * e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
-R: g2.Rotor = g2.Vector.rotor_from_vectors(from_vector=frm, to_vector=to)
-show(R)  # an (un-normalized) g2.Rotor
+R: g2.Versor = g2.Vector.versor_from_vectors(from_vector=frm, to_vector=to)
+show(R)  # an (un-normalized) g2.Versor
 
 # %% [markdown]
 # Because `R` is not normalized, the bare sandwich `R v R̃` *scales* as well as
@@ -196,7 +196,7 @@ for label, value in [
     display(Math(label + " = " + value._repr_latex_().strip("$")))
 
 # %%
-# the rotor sandwich and projection_rotation agree exactly
+# the versor sandwich and projection_rotation agree exactly
 R * w * R.inverse() == projection_rotation(from_vector=frm, to_vector=to)(w)
 
 # %% [markdown]
@@ -211,7 +211,7 @@ named: list[tuple[str, MultiVectorBase]] = [
     ("g2.Scalar", g2.Scalar.from_scalar(5)),
     ("g2.Vector", a),
     ("g2.Bivector", i2),
-    ("g2.Rotor", r),
+    ("g2.Versor", r),
 ]
 # the 𝒢₂ grade product table: (row) * (column) -> result type
 header: str = "| `*` | " + " | ".join(na for na, _ in named) + " |"
@@ -226,7 +226,7 @@ display(Markdown("\n".join([header, sep, *rows])))
 # Three dimensions
 # ----------------
 #
-# The same story in 𝒢₃: vectors multiply to rotors (quaternions), wedge to
+# The same story in 𝒢₃: vectors multiply to versors (quaternions), wedge to
 # bivectors, and the **dual of a bivector is a vector** — the geometric-algebra
 # form of the cross product.
 #
@@ -271,10 +271,10 @@ show(B, B.dual(), B * B.dual())
 # -----------------------------
 #
 # `vector * bivector` in 𝒢₃ is generally **vector + trivector** — grades {1,3}, the
-# **odd part** of 𝒢₃. That is the mirror of the even part {0,2} = `g3.Rotor`, and it
+# **odd part** of 𝒢₃. That is the mirror of the even part {0,2} = `g3.Versor`, and it
 # has its own named type, **`g3.Odd_3`** (before it was registered, this widened to
 # the full `g3.G`). It is a graded *subspace*, **not** a subalgebra: odd·odd = even,
-# so `Odd_3 * Odd_3` is a `Rotor` — see
+# so `Odd_3 * Odd_3` is a `Versor` — see
 # `tasks/reference/graded-subspaces-vs-subalgebras.md`.
 
 # %%

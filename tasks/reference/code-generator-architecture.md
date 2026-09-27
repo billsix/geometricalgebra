@@ -1,7 +1,7 @@
 # The gacalc code generator
 
 **Reference document** — the deep contributor map for how the specialized (`G`) and
-graded (`Vector_n`/`Bivector_n`/`Trivector`/`Rotor_n`/`Scalar`) modules are produced from the `Gn`
+graded (`Vector_n`/`Bivector_n`/`Trivector`/`Versor_n`/`Scalar`) modules are produced from the `Gn`
 reference. Not a task; update in place if the generator changes. Last updated 2026-07-21.
 
 Read this alongside — do not duplicate — the **"Code generation"** and **"doc-region markers"**
@@ -51,7 +51,7 @@ raw text header  +  "\n\n"  +  module_source(inject_region_markers(nodes))  +  "
   `_coerce`, which since 2026-07-29 is defined once in `base.py` and imported (it used to be
   pasted into each module). (There is no longer a separate `SCALAR_HEADER` — `ScalarN` is emitted into each
   `gN.py`, not its own module.) `header()` conditionally appends `, _OperandT` to the
-  `gacalc.base` import only for `n >= 2` (the sandwich TypeVar is used only by `Rotor_n`, which
+  `gacalc.base` import only for `n >= 2` (the sandwich TypeVar is used only by `Versor_n`, which
   doesn't exist in 𝒢₁ — importing it there would be an unused-import `F401`). Likewise, for
   `n == 2` only, it adds `from gacalc.functions import Linearity` and `from gacalc.transforms
   import plane_rotation` — used by the 𝒢₂ `rotate_90_degrees()` factory (`generate_quarter_turn`,
@@ -119,7 +119,7 @@ GA layer never touches `ast.*` constructors for the common cases.
   same-type results of **every** value type — all are `@typing.final` (not subclassable), so they emit
   the concrete class directly (e.g. `return Vector(…)`, `return G(…)`).
 - `construct_type_of(var, pairs)` → `type(var)(field=value, …)` — build via an operand's runtime
-  type; used only by the rotor `sandwich`, which is polymorphic over its operand.
+  type; used only by the versor `sandwich`, which is polymorphic over its operand.
 - `construct_type_self(pairs)` → `type(self)(…)` — a general astbuild primitive (via
   `return_construct(..., final=False)`), **no longer used by the generator** since every value type is
   final; kept as a DSL capability should a non-final generated type ever be added.
@@ -128,7 +128,7 @@ GA layer never touches `ast.*` constructors for the common cases.
   (every current caller), else `return type(self)(…)`.
 
 **Finality (graded 2026-07-21, full `G_n` 2026-07-23):** *every* generated value type is
-`@typing.final` — the graded value types (`Vector*`/`Bivector*`/`Trivector`/`Rotor*`), `ScalarN`,
+`@typing.final` — the graded value types (`Vector*`/`Bivector*`/`Trivector`/`Versor*`), `ScalarN`,
 **and the full classes `G`**. So same-type constructions always emit the concrete class;
 the old `result_spec.kind != "full"` branch (final → concrete, full → `type(self)`) was **collapsed**,
 and the generated full class carries **no `type(self)`** at all. Nothing subclasses `G_n` (the graded
@@ -139,7 +139,7 @@ generated ops" entry) and `tasks/archive/2026/07/23/investigate-final-full-class
 **The three casts** — this is *the* convention `astbuild` encodes about the emitted code:
 
 - `cast_self(v)` → `typing.cast(typing.Self, v)`.
-- `cast_operand(v)` → `typing.cast(_OperandT, v)` — for the rotor sandwich, which returns the
+- `cast_operand(v)` → `typing.cast(_OperandT, v)` — for the versor sandwich, which returns the
   *operand's* type, not `Self`.
 - `cast_coef(v)` → `typing.cast(Coef, v)`, **except** it returns `v` unwrapped when `v` is a bare
   field (`ast.Name`/`ast.Attribute`, e.g. `self.coeff_x`) or a negated field (`-self.coeff_x`) —
@@ -204,7 +204,7 @@ See §6 for what these markers are *for* and what `check-regions` verifies. The 
 ## 3. The type system inside the generator
 
 The generator resolves every result type **at generation time from the symbolic result's grade
-support** — never from runtime float values. This is what makes `Vector * Vector : Rotor` a
+support** — never from runtime float values. This is what makes `Vector * Vector : Versor` a
 *compile-time* fact.
 
 **`TypeSpec`** (`:341`) — a `NamedTuple(name, blades, dim, kind)`. `blades` is a tuple of blades
@@ -215,8 +215,8 @@ support** — never from runtime float values. This is what makes `Vector * Vect
 - `SCALAR = TypeSpec("Scalar", ((),), 0, "scalar")` (`:351`) — the shared grade-0 type.
 - `graded_specs(n)` — **one grade-pure type per grade 1..n**, named by `grade_name(k)` (`Vector`,
   `Bivector`, `Trivector`, `FourVector`, `FiveVector`, … up to the pseudoscalar — the number-word
-  `<N>Vector` scheme, fallback `KVector{k}`), plus the even-subalgebra `Rotor` (n≥2; for n==1 the
-  even part is just the scalar, so no Rotor). (Generalized from the old hand-listed Vector/Bivector/
+  `<N>Vector` scheme, fallback `KVector{k}`), plus the even-subalgebra `Versor` (n≥2; for n==1 the
+  even part is just the scalar, so no Versor). (Generalized from the old hand-listed Vector/Bivector/
   Trivector 2026-08-22, so 𝒢₄ gets `FourVector`, 𝒢₅ `FiveVector`, etc.)
 - `full_spec(n, full_name)` (`:372`) — the all-blades `G_n`.
 - `registry_for_dim(n, full_name)` = `[SCALAR, *graded_specs(n), full_spec(...)]`.
@@ -297,7 +297,7 @@ This retired the `dim_or_n` helper.
 ## 4. `dispatch_method` — the match-on-rhs table
 
 `dispatch_method` (`:929`) builds the bilinear products (`_geometric_product`, `inner_product`,
-`outer_product`), the linear ops (`__add__`/`__sub__`), and the rotor `sandwich` on the graded
+`outer_product`), the linear ops (`__add__`/`__sub__`), and the versor `sandwich` on the graded
 types. It emits a method that `match`es on the operand's runtime type — one `case` per registered
 type — each case's body produced by `result_block_stmts` with the `product_result`-resolved type.
 
@@ -334,7 +334,7 @@ Structure of the emitted method:
 - `param_annotation` — `_OperandT` for the sandwich param.
 - `number_case` — adds arm #2.
 
-**The sandwich** (`generate_graded_type`, `:2085`, Rotor types only): `dispatch_method(spec,
+**The sandwich** (`generate_graded_type`, `:2085`, Versor types only): `dispatch_method(spec,
 "sandwich", lambda r, x: r * x * r.inverse(), …, param_name="x", return_type=_OperandT,
 cast=cast_operand, param_annotation=_OperandT)`. It's a Liskov-compatible override of
 `MultiVectorBase.sandwich(self, x: _OperandT) -> _OperandT`. Grade-preserving: the derived closed
@@ -354,12 +354,12 @@ specifically the *graded* dispatch table.
 
 `product_overload_stubs` (`:1068`) emits the `@typing.overload` signatures placed *just before* an
 overloaded product/sum method. Each overload returns the **resolved concrete type** so a known-type
-call site types precisely (`Vector * Vector -> Rotor`) instead of the imprecise, unsound
+call site types precisely (`Vector * Vector -> Versor`) instead of the imprecise, unsound
 `-> Self`. One stub per rhs type:
 
 - `number_case` (optional): an `int | float | sympy.Expr` overload → `product_result(self,
   SCALAR)`'s type (for `*` this scales to `Self`'s type; for `+`/`-` a scalar can narrow, e.g.
-  `Bivector + scalar -> Rotor`).
+  `Bivector + scalar -> Versor`).
 - one per `[SCALAR, *graded_specs(n)]` → each's `product_result`-resolved return type.
 - a final `MultiVectorBase` catch-all → the full `G_n` (covers `Gn` / the full class / any other
   operand, which the impl coerces).
@@ -368,10 +368,10 @@ Each stub is a `def <method>(self, <param>) -> <ret>: ...` with `@typing.overloa
 just `...` (`ast.Expr(constant(...))`).
 
 **The impl returns `-> MultiVectorBase`, not `-> Self`.** The overloads return sibling types
-(`Rotor`, `Bivector`, …) that are **not** subtypes of one another nor of `G_n` — all are siblings
+(`Versor`, `Bivector`, …) that are **not** subtypes of one another nor of `G_n` — all are siblings
 under `MultiVectorBase` — so the implementation's own return annotation must be their one common
 supertype, `MultiVectorBase`, to be consistent with (and honest about) its overloads. The old
-blanket `-> Self` *claimed* `Vector` while returning a `Rotor`; that was the unsound cast this
+blanket `-> Self` *claimed* `Vector` while returning a `Versor`; that was the unsound cast this
 feature fixed. In `generate_graded_type` you can see the pairing: `*product_overload_stubs("__mul__",
 …)` immediately followed by the `__mul__` impl (`returns=mvb_ann`) and the `dispatch_method(…,
 "_geometric_product", …)` it delegates to. The `@overload` stubs are skipped by the doc-region
@@ -421,7 +421,7 @@ them with the env var — `GACALC_DIMS=1,2,3,4 python tools/gen_specialized.py` 
 for g1–g5, `make test-all-dims` for the full-dim gate). The default (`make generate`/`make shell`)
 builds only g1–g3; `make dist`/`make release` set `GACALC_DIMS=1,2,3,4,5` so g4/g5 bake into the
 sdist/wheel. Everything is derived: `blades_for_dim(4)`=16 blades, `graded_specs(4)` yields
-`Vector`/`Bivector`/`Trivector`/**`FourVector`**/`Rotor`, products/overloads/markers fall out.
+`Vector`/`Bivector`/`Trivector`/**`FourVector`**/`Versor`, products/overloads/markers fall out.
 `tests/test_conformance.py` imports g4/g5 **conditionally** (try/except) and extends `CASES` over
 whichever are present, so it needs no edit. `gn.py` never imports the specialized modules.
 

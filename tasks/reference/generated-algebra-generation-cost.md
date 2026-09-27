@@ -44,7 +44,7 @@ Known and fixed / to-check:
   with no axis letter → `IndexError`. Fix (2026-08-22): skip the letter property for `e_4`+; those
   coordinates are reached via `coeff_e_4` / `.coefficient(...)`. Only grades 1–3 get `x`/`y`/`z`.
 - **TO CHECK when actually adding g4/g5:** any *other* hard-coded grade-≤3 spot — the graded-type
-  registry only defines up to `Trivector` + `Rotor` (`graded_specs`, `:626`), so grade-4/5 blades
+  registry only defines up to `Trivector` + `Versor` (`graded_specs`, `:626`), so grade-4/5 blades
   currently widen to the full `G`; dual/product result resolution, the `i`/`plane_of_rotation`
   extractors, and dispatch tables should be re-verified against real generated g4/g5 output.
 

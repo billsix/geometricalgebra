@@ -128,14 +128,14 @@ def test_subscript_superscript() -> None:
 
 def test_registry_for_dim_lists_graded_then_full() -> None:
     names: list[str] = [s.name for s in gen.registry_for_dim(2, "G")]
-    assert names == ["Scalar", "Vector", "Bivector", "Rotor", "G"]
+    assert names == ["Scalar", "Vector", "Bivector", "Versor", "G"]
 
 
 def test_resolve_smallest_covering_type() -> None:
     assert gen.resolve([()], 2, "G").name == "Scalar"
     assert gen.resolve([(1,), (2,)], 2, "G").name == "Vector"
     assert gen.resolve([(1, 2)], 2, "G").name == "Bivector"
-    assert gen.resolve([(), (1, 2)], 2, "G").name == "Rotor"
+    assert gen.resolve([(), (1, 2)], 2, "G").name == "Versor"
 
 
 def test_resolve_widens_to_full_when_no_graded_type_covers() -> None:
@@ -159,7 +159,7 @@ def test_product_result_geometric_vector_times_vector_is_rotor() -> None:
     v2: gen.TypeSpec = _spec(2, "Vector")
     result_spec: gen.TypeSpec
     result_spec, _ = gen.product_result(v2, v2, lambda a, b: a * b, 2, "G")
-    assert result_spec.name == "Rotor"
+    assert result_spec.name == "Versor"
 
 
 def test_product_result_outer_vector_wedge_vector_is_bivector() -> None:

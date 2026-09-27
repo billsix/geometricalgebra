@@ -9,6 +9,11 @@
 #
 # Host-runnable: on a bare Fedora host, run this, then add ~/.elan/bin to PATH.
 set -e
+# git is required by `lake` to fetch dependencies (Mathlib is a git dependency:
+# `lake new … math` / `lake exe cache get` clone github.com/leanprover-community/
+# mathlib4). This container otherwise ships no git on purpose (git is a host-side
+# concern here), so the Lean feature must add it itself. dnf-guarded for a bare host.
+if command -v dnf >/dev/null 2>&1; then dnf install -y git; fi
 curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
 export PATH="$HOME/.elan/bin:$PATH"
 elan default stable

@@ -7,7 +7,7 @@ old `is_close`; work record in `tasks/archive/.../is-numerically-close-*.md`).
 
 ## The problem
 
-Exact `==` is wrong for computed floats — geometric products, rotor sandwiches,
+Exact `==` is wrong for computed floats — geometric products, versor sandwiches,
 and inverses never land on the exact expected value, they land ~1 ULP away. Every
 numerics library ships an "are these close enough?" predicate for this. gacalc's is
 `isclose`.

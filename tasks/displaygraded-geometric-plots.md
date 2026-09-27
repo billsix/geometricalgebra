@@ -29,7 +29,7 @@ infrastructure in `nbplotutils.py` (`create_graphs`, `create_basis`, `draw_*`, `
    `a * b = a·b + a∧b` (the dot = projection length, the wedge = area).
 3. **A rotor rotating a vector** (`quarter * e_1 * quarter.reverse()`): `e_1` and its rotated image
    (a quarter turn), with the swept arc.
-4. **The un-normalized rotor sandwich** (the cell that compares `R w R̃` vs `R w R⁻¹` vs `rotate(w)`):
+4. **The un-normalized versor sandwich** (the cell that compares `R w R̃` vs `R w R⁻¹` vs `rotate(w)`):
    overlay `w = e_1`, the **scaled** result `R w R̃ = 2 e_2` (a longer arrow), the **pure** result
    `R w R⁻¹ = e_2`, and `rotate(w) = e_2`. The picture *is* the lesson: the bare sandwich scales,
    `R⁻¹` divides it out, and the pure result coincides with `rotate`. **Highest-value plot.**

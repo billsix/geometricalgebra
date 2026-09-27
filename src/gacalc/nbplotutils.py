@@ -22,7 +22,6 @@ Everything is representation-agnostic — it works on any ``MultiVectorBase``
 (``Gn``, ``g3.Vector``, …) via the blade-dict interchange.
 """
 
-
 import contextlib
 import contextvars
 import itertools

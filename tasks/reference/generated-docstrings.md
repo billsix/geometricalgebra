@@ -13,7 +13,7 @@ Companion: `tasks/reference/code-generator-architecture.md` (how the generator i
 Every method of every generated class carries a docstring:
 
 - The **full class `G`** and the **graded subtypes** (`Scalar`/`Vector`/`Bivector`/
-  `Trivector`/`Rotor`/`Odd_3`) each get a docstring on every emitted method.
+  `Trivector`/`Versor`/`Odd_3`) each get a docstring on every emitted method.
 - For the **dev dimensions g1–g3**, most graded methods carry a **specialized,
   grade-aware** docstring, often with an executable doctest (e.g. `Bivector.reverse`
   documents `B̃ = −B`; `Vector.reverse` documents that reversing a vector is a no-op).
@@ -56,7 +56,7 @@ All of it lives in the `Method docstrings on the generated classes` section of
 `tools/gen_specialized.py`:
 
 - **`CUSTOM_METHOD_DOCS`** — a dict keyed `"<role>|<method>"`, where `role` is a class's
-  grade identity (`scalar`/`vector`/`bivector`/`trivector`/`rotor`/`odd`/`full`) or `*`
+  grade identity (`scalar`/`vector`/`bivector`/`trivector`/`versor`/`odd`/`full`) or `*`
   (applies to every role). A more specific `role|method` key wins over `*|method`.
 - A value (`DocEntry`) is either literal text **or** a `(role, n) -> str` callable, so one
   function can serve a method across every role and emit a **dimension-appropriate**
@@ -83,20 +83,20 @@ regenerate and verify (below). No other generator code needs to change.
   `1 * Bivector.e_12 + 1 * Bivector.e_12 == 2 * Bivector.e_12`. This applies to sum terms,
   product operands, method subjects/arguments, and RHS values. A blade used as a
   **direction** stays bare — the plane args of `Vector.i(Vector.e_1, Vector.e_2)`, the
-  `onto` arg of `projected_onto`/`rejected_away_from`, `plane_rotation`/`rotor_from_vectors`
+  `onto` arg of `projected_onto`/`rejected_away_from`, `plane_rotation`/`versor_from_vectors`
   args, `coefficient(e_1)`.
 - **Typed comparisons, never bare numbers.** A multivector result compared with `==` to a
   Python `int` is `False` (`Bivector.e_12 * Bivector.e_12 == -1` is `False`). Compare to the
   correctly-typed value: `... == Scalar.from_scalar(-1)`, `... == Vector.e_3`,
-  `... == Rotor.from_scalar(1)`. Methods that return a *coefficient* (`scalar_part`,
+  `... == Versor.from_scalar(1)`. Methods that return a *coefficient* (`scalar_part`,
   `magnitude_squared`) do return a plain number, so those doctests show the number.
 - **Type annotations are for readability, not assertions.** A local in a doctest is
-  annotated to *show the reader* the type — `R: Rotor = (1 * Bivector.e_12).exp()` — which
+  annotated to *show the reader* the type — `R: Versor = (1 * Bivector.e_12).exp()` — which
   also teaches that "exp of a bivector is a rotor". Doctests do **not** assert types
   (`type(x).__name__ == '...'`); **type-narrowing is tested in the unit tests** via
   `typing.assert_type` (ty-checked) and runtime `type(...) is ...` — see
   `tests/test_operator_typing.py`, `tests/test_odd3.py`, `tests/test_exp.py`. Those already
-  cover the facts the specialized docstrings illustrate (exp→Rotor, odd×odd→Rotor, the
+  cover the facts the specialized docstrings illustrate (exp→Versor, odd×odd→Versor, the
   product/dual grade maps); keep them in sync there, not in doctests.
 - **Dimension validity.** A `role|method` entry applies to every dim that role exists in.
   `Vector`/`Scalar` exist in g1 (which has only `e_1` / no plane), so their doctests must be

@@ -28,12 +28,12 @@
 # for more details.
 
 # %% [markdown]
-# Rotations two ways: the rotor sandwich vs the projection formula
+# Rotations two ways: the versor sandwich vs the projection formula
 # ================================================================
 #
 # A rotation can be written two equivalent ways in geometric algebra:
 #
-# * the **rotor sandwich**  $R\,v\,R^{-1}$, where $R$ is the rotor that carries
+# * the **versor sandwich**  $R\,v\,R^{-1}$, where $R$ is the versor that carries
 #   one vector toward another, and
 # * the **projection formula** (`transforms.projection_rotation`): turn the part
 #   of $v$ that lies in the plane of rotation, and leave the perpendicular part fixed.
@@ -57,7 +57,7 @@ from gacalc.transforms import ComposableFunction, InvertibleFunction, plane_rota
 def simplified(mv: Gn) -> Gn:
     """A copy of ``mv`` with each coefficient simplified for display.
 
-    ``rotor_from_vectors`` builds an *un-normalized* rotor, so the raw sandwich
+    ``versor_from_vectors`` builds an *un-normalized* versor, so the raw sandwich
     coefficients carry a ``/ |R|^2`` factor; ``expand_trig`` then ``simplify``
     reduces them to the familiar ``v1*cos - v2*sin`` form.
     """
@@ -88,12 +88,12 @@ b: Gn = e_1 * sympy.cos(theta) + e_2 * sympy.sin(theta)
 v1, v2 = sympy.symbols("v1 v2", real=True)
 v_2d: Gn = v1 * e_1 + v2 * e_2
 
-# rotor_from_vectors / projection_rotation are typed MultiVectorBase by design
+# versor_from_vectors / projection_rotation are typed MultiVectorBase by design
 # (representation-agnostic); cast back to the concrete Gn we fed them.
-R: Gn = cast(Gn, Gn.rotor_from_vectors(from_vector=a, to_vector=b))
+R: Gn = cast(Gn, Gn.versor_from_vectors(from_vector=a, to_vector=b))
 
 # %% [markdown]
-# The rotor sandwich $R\,v\,R^{-1}$ (simplified for display):
+# The versor sandwich $R\,v\,R^{-1}$ (simplified for display):
 
 # %%
 sandwich_2d: Gn = R * v_2d * R.inverse()
@@ -124,10 +124,10 @@ sandwich_2d - projection_2d  # pyright: ignore[reportUnusedExpression]
 v1, v2, v3 = sympy.symbols("v1 v2 v3", real=True)
 v_3d: Gn = v1 * e_1 + v2 * e_2 + v3 * e_3
 
-R3: Gn = cast(Gn, Gn.rotor_from_vectors(from_vector=a, to_vector=b))
+R3: Gn = cast(Gn, Gn.versor_from_vectors(from_vector=a, to_vector=b))
 
 # %% [markdown]
-# The rotor sandwich (note the $e_3$ part rides through unchanged):
+# The versor sandwich (note the $e_3$ part rides through unchanged):
 
 # %%
 sandwich_3d: Gn = R3 * v_3d * R3.inverse()
@@ -155,7 +155,7 @@ sandwich_3d - projection_3d  # pyright: ignore[reportUnusedExpression]
 # same way you can watch associativity term by term.  The thing to notice in
 # $\mathcal{G}_3$: $R\,v$ carries a **trivector** ($e_1 e_2 e_3$) as well as a
 # vector, and the second product makes that trivector **cancel**, leaving a pure
-# vector -- which is *why* a rotor sandwich of a vector is always a vector.
+# vector -- which is *why* a versor sandwich of a vector is always a vector.
 
 # %% [markdown]
 # **Step 1 --- $R\,v$** (a vector *and* a trivector):
@@ -259,11 +259,11 @@ result  # pyright: ignore[reportUnusedExpression]
 phi: sympy.Symbol = sympy.symbols("phi", positive=True)
 
 i: g2.Bivector = g2.Bivector.e_12
-R_exp: g2.Rotor = (i * (-phi / 2)).exp()
+R_exp: g2.Versor = (i * (-phi / 2)).exp()
 R_exp  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
-# Note the *type*: exponentiating a `g2.Bivector` lands in `g2.Rotor` — the
+# Note the *type*: exponentiating a `g2.Bivector` lands in `g2.Versor` — the
 # exponential map carries the plane onto the rotor group, and the graded types
 # say so.  The rotor is automatically unit ($\cos^2 + \sin^2 = 1$), and its
 # sandwich agrees with the rotation `plane_rotation` builds from the same

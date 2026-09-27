@@ -58,7 +58,7 @@ point a `literalinclude` at it.
 **prefix** of another in the same file, and on an unbalanced pair. The `cls variables` region already
 exists and covers the `ClassVar` *declarations* of the same names, so a new region must not collide
 with it and must not prefix it. A name like `Vector basis constants` is free of both today — but
-verify per algebra, since `G` / `Vector` / `Bivector` / `Rotor` / `Odd_3` all get constants and the
+verify per algebra, since `G` / `Vector` / `Bivector` / `Versor` / `Odd_3` all get constants and the
 check is per file.
 
 One region per class (all of that class's assignments in one block) is the natural grain — the book

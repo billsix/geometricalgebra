@@ -45,7 +45,7 @@ grade 5 at n=5). Design decisions to settle:
 
 1. **Naming + reconciling `Odd_3`.** The literal name `Odd_3` was chosen so it stayed honest under the
    `n == 3` gate. Generalizing needs a per-dimension name — either `f"Odd_{n}"` (so 𝒢₄ gets `Odd_4`,
-   𝒢₅ `Odd_5`) or a bare per-module `Odd` (matching how `Rotor`/`Trivector` are unqualified per
+   𝒢₅ `Odd_5`) or a bare per-module `Odd` (matching how `Versor`/`Trivector` are unqualified per
    module). **Reconcile with the shipped `Odd_3`:** rename it to fit the scheme (a breaking change —
    changelog + mvp coordination) or keep `Odd_3` as a special case. Recommend deciding the scheme
    first, then either renaming `Odd_3 → Odd` (cleanest long-term) or documenting the exception.

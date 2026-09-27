@@ -11,7 +11,7 @@ CLAUDE.md's "Architecture" (the interchange protocol) and `design-decisions.md`.
 ## What it is, and why it matters
 
 A multivector has several *representations* — `Gn` (the general dict-of-blades reference),
-the specialized `G`, and the graded subtypes (`Vector`, `Bivector`, `Rotor`,
+the specialized `G`, and the graded subtypes (`Vector`, `Bivector`, `Versor`,
 `ScalarN`, ...). They all interoperate through **one** shared format:
 
     Blade      = tuple[int, ...]        # basis-vector indices; () is the scalar blade
@@ -81,10 +81,10 @@ are silently dropped** (they pass canonical validation — they just aren't this
 
 Consequence — the trap: a result that carries a **new grade** must be built via
 **dispatching arithmetic**, never via `from_blade_dict` on the operand's own type. A
-`Bivector` whose exponential is a `Rotor` (scalar + bivector) cannot be built as
+`Bivector` whose exponential is a `Versor` (scalar + bivector) cannot be built as
 `Bivector.from_blade_dict({…scalar…, …bivector…})` — the scalar part would be dropped; it
 must be built with `+` / `*`, which dispatches to the type that can hold the result
-(`Bivector + scalar → Rotor`). This is exactly why `MultiVectorBase.exp` builds its result
+(`Bivector + scalar → Versor`). This is exactly why `MultiVectorBase.exp` builds its result
 with a dispatching `+`, not `from_blade_dict` (see its docstring).
 
 ## Where it lives

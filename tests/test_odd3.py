@@ -30,18 +30,18 @@ def test_odd3_product_types_static() -> None:
     # Vector * Bivector spans the odd part {1,3} -> Odd_3 (was G3 before Odd_3 existed).
     typing.assert_type(g3.Vector.e_1 * g3.Bivector.e_12, g3.Odd_3)
     typing.assert_type(g3.Bivector.e_12 * g3.Vector.e_1, g3.Odd_3)
-    rotor: g3.Rotor = g3.Vector.e_1 * g3.Vector.e_2
-    typing.assert_type(rotor * g3.Vector.e_1, g3.Odd_3)
-    typing.assert_type(rotor * g3.Trivector.e_123, g3.Odd_3)
-    # odd * odd = even -> Rotor: Odd_3 is a SUBSPACE, not a subalgebra.
+    versor: g3.Versor = g3.Vector.e_1 * g3.Vector.e_2
+    typing.assert_type(versor * g3.Vector.e_1, g3.Odd_3)
+    typing.assert_type(versor * g3.Trivector.e_123, g3.Odd_3)
+    # odd * odd = even -> Versor: Odd_3 is a SUBSPACE, not a subalgebra.
     odd: g3.Odd_3 = g3.Bivector.e_12 * g3.Vector.e_1
-    typing.assert_type(odd * odd, g3.Rotor)
+    typing.assert_type(odd * odd, g3.Versor)
 
 
 def test_odd3_product_types_runtime() -> None:
     assert type(g3.Vector.e_1 * g3.Bivector.e_12) is g3.Odd_3
     odd = g3.Bivector.e_12 * g3.Vector.e_1
-    assert type(odd * odd) is g3.Rotor  # odd * odd = even
+    assert type(odd * odd) is g3.Versor  # odd * odd = even
 
 
 def test_cast_in_plane_is_vector() -> None:
@@ -90,29 +90,29 @@ def test_query_predicates() -> None:
 
 
 def test_sandwich_result_is_odd3_static() -> None:
-    # The rotor sandwich R v R⁻¹ as PLAIN products (not the derived sandwich() op)
-    # types as Odd_3: Rotor*Vector = Odd_3, then Odd_3*Rotor = Odd_3.
-    rotor: g3.Rotor = g3.Vector.e_1 * g3.Vector.e_2
-    typing.assert_type(rotor * g3.Vector.e_1 * rotor.inverse(), g3.Odd_3)
+    # The versor sandwich R v R⁻¹ as PLAIN products (not the derived sandwich() op)
+    # types as Odd_3: Versor*Vector = Odd_3, then Odd_3*Versor = Odd_3.
+    versor: g3.Versor = g3.Vector.e_1 * g3.Vector.e_2
+    typing.assert_type(versor * g3.Vector.e_1 * versor.inverse(), g3.Odd_3)
 
 
 def test_sandwich_grade_preservation_is_one_coefficient() -> None:
-    """Odd_3 makes rotor-sandwich grade-preservation a ONE-coefficient proof.
+    """Odd_3 makes versor-sandwich grade-preservation a ONE-coefficient proof.
 
     ``R v R⁻¹`` (as plain products) types as ``Odd_3`` -- support {1,3} -- so proving
     it is a vector reduces to showing its single grade-3 coefficient vanishes, rather
     than clearing the several non-grade-1 parts of the old ``G3`` form.  It holds for a
-    GENERAL symbolic rotor, not just a unit one (the versor is grade-preserving).
+    GENERAL symbolic versor, not just a unit one (the versor is grade-preserving).
     """
     a, b, c, d = sympy.symbols("a b c d", real=True)
     x, y, z = sympy.symbols("x y z", real=True)
-    rotor = a + b * g3.Bivector.e_12 + c * g3.Bivector.e_13 + d * g3.Bivector.e_23
+    versor = a + b * g3.Bivector.e_12 + c * g3.Bivector.e_13 + d * g3.Bivector.e_23
     v: g3.Vector = x * g3.Vector.e_1 + y * g3.Vector.e_2 + z * g3.Vector.e_3
     # Left inferred: declaring `g3.Odd_3` is correct at runtime (the next line
     # asserts exactly that), but it widens `coeff_e_123` to the full
     # `Coef = int | float | sympy.Expr`, and sympy's stubs have no
     # `simplify` overload taking a bare int/float -- so the annotation would
     # fail the line below without making anything clearer.
-    conjugated = rotor * v * rotor.inverse()
+    conjugated = versor * v * versor.inverse()
     assert type(conjugated) is g3.Odd_3  # a named type now, not G3
     assert sympy.simplify(conjugated.coeff_e_123) == 0  # grade-3 vanishes -> a vector

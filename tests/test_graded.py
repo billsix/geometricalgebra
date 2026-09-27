@@ -20,7 +20,7 @@ Each case asserts both the **return type** and that the **value** equals the sam
 operation done through the general reference ``Gn``.
 
 Values are built the geometric-algebra way -- linear combinations of a vector
-basis, wedges for blades, ``scalar + bivector`` for rotors -- which exercises the
+basis, wedges for blades, ``scalar + bivector`` for versors -- which exercises the
 narrowing ``+``/``*``/``^`` and stays clear of the ``numbers.Real`` field
 annotation (scaling goes through ``__rmul__``, which casts internally).
 """
@@ -62,12 +62,12 @@ PRODUCT_TABLE: list[
 ] = [
     # 1D
     (3 * g1.Vector.e_1, "*", 2 * g1.Vector.e_1, g1.Scalar),
-    # 2D -- vectors, bivector (5 * the unit bivector), rotor (scalar + bivector)
+    # 2D -- vectors, bivector (5 * the unit bivector), versor (scalar + bivector)
     (
         3 * g2.Vector.e_1 + 4 * g2.Vector.e_2,
         "*",
         1 * g2.Vector.e_1 + 2 * g2.Vector.e_2,
-        g2.Rotor,
+        g2.Versor,
     ),
     (
         3 * g2.Vector.e_1 + 4 * g2.Vector.e_2,
@@ -84,16 +84,16 @@ PRODUCT_TABLE: list[
     (3 * g2.Vector.e_1 + 4 * g2.Vector.e_2, "*", 5 * g2.Bivector.e_12, g2.Vector),
     (5 * g2.Bivector.e_12, "*", 3 * g2.Vector.e_1 + 4 * g2.Vector.e_2, g2.Vector),
     (2 * g2.Bivector.e_12, "*", 3 * g2.Bivector.e_12, g2.Scalar),
-    (2 + 3 * g2.Bivector.e_12, "*", 1 + 1 * g2.Bivector.e_12, g2.Rotor),
+    (2 + 3 * g2.Bivector.e_12, "*", 1 + 1 * g2.Bivector.e_12, g2.Versor),
     (2 + 3 * g2.Bivector.e_12, "*", 3 * g2.Vector.e_1 + 4 * g2.Vector.e_2, g2.Vector),
     (3 * g2.Vector.e_1 + 4 * g2.Vector.e_2, "*", 2 + 3 * g2.Bivector.e_12, g2.Vector),
-    (2 * g2.Bivector.e_12, "*", 1 + 1 * g2.Bivector.e_12, g2.Rotor),
+    (2 * g2.Bivector.e_12, "*", 1 + 1 * g2.Bivector.e_12, g2.Versor),
     # 3D
     (
         1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
         "*",
         4 * g3.Vector.e_1 + 5 * g3.Vector.e_2 + 6 * g3.Vector.e_3,
-        g3.Rotor,
+        g3.Versor,
     ),
     (
         1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
@@ -111,7 +111,7 @@ PRODUCT_TABLE: list[
         1 * g3.Bivector.e_12 + 2 * g3.Bivector.e_13 + 3 * g3.Bivector.e_23,
         "*",
         4 * g3.Bivector.e_12 + 5 * g3.Bivector.e_13 + 6 * g3.Bivector.e_23,
-        g3.Rotor,
+        g3.Versor,
     ),
     (
         1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
@@ -124,7 +124,7 @@ PRODUCT_TABLE: list[
         1 + 1 * g3.Bivector.e_12 + 1 * g3.Bivector.e_13 + 1 * g3.Bivector.e_23,
         "*",
         2 + 1 * g3.Bivector.e_12,
-        g3.Rotor,
+        g3.Versor,
     ),
     (
         1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3,
@@ -198,24 +198,24 @@ def test_linear_combination_construction() -> None:
     assert type(3 * g2.Vector.e_1 + 4 * g2.Vector.e_2) is g2.Vector
     assert (3 * g2.Vector.e_1 + 4 * g2.Vector.e_2) == 3 * gn.e_1 + 4 * gn.e_2
     assert type(g2.Vector.e_1 ^ g2.Vector.e_2) is g2.Bivector
-    assert type(2 + 3 * g2.Bivector.e_12) is g2.Rotor and (
+    assert type(2 + 3 * g2.Bivector.e_12) is g2.Versor and (
         2 + 3 * g2.Bivector.e_12
     ) == 2 * gn.one + 3 * (gn.e_1 ^ gn.e_2)
     assert (
-        type(2 + 1 * g3.Bivector.e_12) is g3.Rotor
-    )  # scalar + bivector narrows to the rotor type
+        type(2 + 1 * g3.Bivector.e_12) is g3.Versor
+    )  # scalar + bivector narrows to the versor type
     assert type((g3.Vector.e_1 ^ g3.Vector.e_2) ^ g3.Vector.e_3) is g3.Trivector
     # reflected ops work too
     assert (5 - 1 * g2.Bivector.e_12) == 5 * gn.one - (gn.e_1 ^ gn.e_2) and type(
         5 - 1 * g2.Bivector.e_12
-    ) is g2.Rotor
+    ) is g2.Versor
 
 
 def test_type_is_operation_driven_not_value_driven() -> None:
     # orthogonal vectors: the scalar (dot) part is exactly 0, but the type stays
-    # g2.Rotor -- we never narrow by inspecting a (possibly float-fuzzy) value.
+    # g2.Versor -- we never narrow by inspecting a (possibly float-fuzzy) value.
     r: MultiVectorBase = g2.Vector.e_1 * g2.Vector.e_2
-    assert type(r) is g2.Rotor and r == gn.e_1 ^ gn.e_2
+    assert type(r) is g2.Versor and r == gn.e_1 ^ gn.e_2
     # a pure blade is got by *asking* for it (wedge), never by luck of the values
     assert type(g2.Vector.e_1 ^ g2.Vector.e_2) is g2.Bivector
 
@@ -251,10 +251,10 @@ def test_dual_narrows() -> None:
 def test_grade_projection_narrows() -> None:
     r: MultiVectorBase = (
         1 + 1 * g3.Bivector.e_12 + 2 * g3.Bivector.e_13 + 3 * g3.Bivector.e_23
-    )  # a g3.Rotor
+    )  # a g3.Versor
     assert type(r.r_vector_part(0)) is g3.Scalar
     assert type(r.r_vector_part(2)) is g3.Bivector
-    assert type(r.even_part()) is g3.Rotor
+    assert type(r.even_part()) is g3.Versor
     assert r.r_vector_part(2) == widen(r).r_vector_part(2)
     # a grade absent from the type projects to the zero scalar
     assert type((1 * g3.Vector.e_1 + 1 * g3.Vector.e_2).r_vector_part(0)) is g3.Scalar
@@ -262,16 +262,16 @@ def test_grade_projection_narrows() -> None:
 
 
 def test_plane_of_rotation() -> None:
-    # the rotor that turns e1 -> e2 rotates in the e1-e2 plane
-    r2: MultiVectorBase = g2.Vector.rotor_from_vectors(
+    # the versor that turns e1 -> e2 rotates in the e1-e2 plane
+    r2: MultiVectorBase = g2.Vector.versor_from_vectors(
         from_vector=g2.Vector.e_1, to_vector=g2.Vector.e_2
     )
-    assert type(r2) is g2.Rotor
+    assert type(r2) is g2.Versor
     assert r2.plane_of_rotation() == -(gn.e_1 ^ gn.e_2)  # the (oriented) unit plane
-    r3: MultiVectorBase = g3.Vector.rotor_from_vectors(
+    r3: MultiVectorBase = g3.Vector.versor_from_vectors(
         from_vector=g3.Vector.e_1, to_vector=g3.Vector.e_2
     )
-    assert type(r3) is g3.Rotor
+    assert type(r3) is g3.Versor
     plane: MultiVectorBase = r3.plane_of_rotation()
     assert type(plane) is g3.Bivector and plane == -(gn.e_1 ^ gn.e_2)
 
@@ -280,11 +280,11 @@ def test_exp_narrows_bivector_to_rotor() -> None:
     # the exponential map onto the rotors: exp of a bivector IS a rotor, and
     # the generated narrowing override types it that way.  It comes out unit
     # (cos^2 + sin^2 = 1) without normalizing.
-    r2: g2.Rotor = g2.Bivector.e_12.exp()
-    assert type(r2) is g2.Rotor
+    r2: g2.Versor = g2.Bivector.e_12.exp()
+    assert type(r2) is g2.Versor
     assert sympy.simplify(sympy.sympify(r2.magnitude_squared())) == 1
-    r3: g3.Rotor = (g3.Vector.e_1 ^ g3.Vector.e_2).exp()
-    assert type(r3) is g3.Rotor
+    r3: g3.Versor = (g3.Vector.e_1 ^ g3.Vector.e_2).exp()
+    assert type(r3) is g3.Versor
     assert sympy.simplify(sympy.sympify(r3.magnitude_squared())) == 1
 
 
@@ -349,12 +349,12 @@ def test_rotor_is_complex_2d() -> None:
 
 def test_rotor_is_quaternion_3d() -> None:
     # each unit bivector squares to -1 (the even subalgebra of g3.G is the quaternions).
-    # bivector*bivector is *typed* g3.Rotor (generally scalar+bivector) -- here the
+    # bivector*bivector is *typed* g3.Versor (generally scalar+bivector) -- here the
     # value is a pure scalar, but the type follows the operation, not the value.
     plane: g3.Bivector
     for plane in (1 * g3.Bivector.e_12, 1 * g3.Bivector.e_13, 1 * g3.Bivector.e_23):
         sq: MultiVectorBase = plane * plane
-        assert type(sq) is g3.Rotor and sq == -gn.one
+        assert type(sq) is g3.Versor and sq == -gn.one
 
 
 def test_inherited_abc_methods() -> None:
@@ -377,13 +377,13 @@ def test_symbolic_product_matches_gn() -> None:
         b1 * g2.Vector.e_1 + b2 * g2.Vector.e_2
     )
     want: Gn = (a1 * b1 + a2 * b2) * gn.one + (a1 * b2 - a2 * b1) * (gn.e_1 ^ gn.e_2)
-    assert got == want and type(got) is g2.Rotor
+    assert got == want and type(got) is g2.Versor
 
 
-# --- the rotor sandwich equals projection_rotation(from, to) ------------------
-# R = rotor_from_vectors(from, to) = |from||to| + to*from ; for any vector v,
+# --- the versor sandwich equals projection_rotation(from, to) ------------------
+# R = versor_from_vectors(from, to) = |from||to| + to*from ; for any vector v,
 #   R v R.inverse()  ==  projection_rotation(from, to)(v)
-# (R.inverse() = R.reverse()/|R|^2 divides out the rotor's scaling, leaving a
+# (R.inverse() = R.reverse()/|R|^2 divides out the versor's scaling, leaving a
 # pure rotation.)
 
 
@@ -417,7 +417,7 @@ def test_rotor_sandwich_equals_rotate_symbolic_2d() -> None:
     frm: Gn = a1 * gn.e_1 + a2 * gn.e_2
     to: Gn = b1 * gn.e_1 + b2 * gn.e_2
     w: Gn = w1 * gn.e_1 + w2 * gn.e_2
-    r: MultiVectorBase = Gn.rotor_from_vectors(from_vector=frm, to_vector=to)
+    r: MultiVectorBase = Gn.versor_from_vectors(from_vector=frm, to_vector=to)
     assert simplify_equal(
         r * w * r.inverse(), projection_rotation(from_vector=frm, to_vector=to)(w)
     )
@@ -429,29 +429,29 @@ def test_rotor_sandwich_equals_rotate_3d() -> None:
     frm: Gn = 1 * gn.e_1 + 2 * gn.e_2 + 3 * gn.e_3
     to: Gn = 4 * gn.e_1 + 5 * gn.e_2 + 6 * gn.e_3
     w: Gn = 7 * gn.e_1 + 1 * gn.e_2 + 2 * gn.e_3  # in-plane and perpendicular parts
-    r: MultiVectorBase = Gn.rotor_from_vectors(from_vector=frm, to_vector=to)
+    r: MultiVectorBase = Gn.versor_from_vectors(from_vector=frm, to_vector=to)
     assert simplify_equal(
         r * w * r.inverse(), projection_rotation(from_vector=frm, to_vector=to)(w)
     )
 
 
 def test_rotor_rotate_across_representations() -> None:
-    # the same identity holds (by value) for Gn, g2.G and g3.G; the rotor built from
-    # vectors of a specialized type is a Rotor of that algebra
+    # the same identity holds (by value) for Gn, g2.G and g3.G; the versor built from
+    # vectors of a specialized type is a Versor of that algebra
     w2: g2.Vector = 2 * g2.Vector.e_1 + 1 * g2.Vector.e_2
-    r2: MultiVectorBase = g2.Vector.rotor_from_vectors(
+    r2: MultiVectorBase = g2.Vector.versor_from_vectors(
         from_vector=g2.Vector.e_1, to_vector=g2.Vector.e_2
     )
-    assert type(r2) is g2.Rotor
+    assert type(r2) is g2.Versor
     assert r2 * w2 * r2.inverse() == projection_rotation(
         from_vector=g2.Vector.e_1, to_vector=g2.Vector.e_2
     )(w2)
 
     w3: g3.Vector = 1 * g3.Vector.e_1 + 3 * g3.Vector.e_3
-    r3: MultiVectorBase = g3.Vector.rotor_from_vectors(
+    r3: MultiVectorBase = g3.Vector.versor_from_vectors(
         from_vector=g3.Vector.e_1, to_vector=g3.Vector.e_2
     )
-    assert type(r3) is g3.Rotor
+    assert type(r3) is g3.Versor
     assert r3 * w3 * r3.inverse() == projection_rotation(
         from_vector=g3.Vector.e_1, to_vector=g3.Vector.e_2
     )(w3)
@@ -467,7 +467,7 @@ def test_unnormalized_rotor_scales_then_normalizes() -> None:
         1 * g2.Vector.e_2,
         1 * g2.Vector.e_1,
     )  # 90 deg, e1 -> e2
-    r: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=frm, to_vector=to)
+    r: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=frm, to_vector=to)
     assert r * r.reverse() == 2 * gn.one  # |R|^2
     assert r * w * r.reverse() == 2 * gn.e_2  # scaled rotation
     assert r * w * r.inverse() == gn.e_2  # pure rotation

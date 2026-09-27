@@ -33,7 +33,7 @@ These return `InvertibleFunction`s and are **representation-preserving** — the
   invariance enforcement (`tasks/archive/2026/09/06/ty-invariance-transform-factories-bind-v.md`).
 
 ### Rotation factories (the trio + shared rotor factory)
-- **`projection_rotation`** (`transforms.py:177`), **`rotor_rotation`** (`:227`), **`plane_rotation`**
+- **`projection_rotation`** (`transforms.py:177`), **`versor_rotation`** (`:227`), **`plane_rotation`**
   (`:417`), **`bivector_rotation`** (`:336`) — different *specifications* of a rotation, all funnelling
   through the shared **`_unit_bivector_rotor_factory`** (`:280`, used as the default `rotor_for` at
   `:388,:488`). (The naming distinguishes the rotation *spec* from its rotor *formulation*.)

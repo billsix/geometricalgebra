@@ -108,11 +108,44 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
       uv pip install --python /venv/bin/python sphinx furo nbsphinx myst-nb ; \
     fi
 
+# Lean 4 (theorem prover) via elan — host-runnable script, curl-installed; bakes the
+# stable toolchain so an exported image has Lean offline. Gated behind USE_LEAN: the
+# Lean toolchain is a large download not needed by `make test`, so a lean nested image
+# skips it. The PATH entry is harmless when the dir is absent, so it stays unconditional.
+#
+# CACHE ORDERING: this block (Lean toolchain + the multi-GB Mathlib bake below) is
+# entirely independent of the project source -- it needs only install-lean.sh and
+# proofs/'s dep-defining files, NOT src/ or tools/. It is therefore placed BEFORE
+# `COPY src`/`COPY tools` (which change on every code edit): editing src/ or tools/
+# only rebusts the cheap COPY + editable-install layers at the end, and NEVER this
+# large Lean/Mathlib bake. (Previously this block sat after COPY src, so every code
+# change re-baked Mathlib -- minutes-long. Moved 2026-09-28.)
+COPY entrypoint/install-lean.sh /usr/local/bin/
+RUN if [ "$USE_LEAN" = "1" ]; then /usr/local/bin/install-lean.sh ; fi
+ENV PATH="/root/.elan/bin:${PATH}"
+
+# Bake Mathlib into the image (a committed layer OUTSIDE the bind-mounted repo) so
+# `make lean` runs OFFLINE -- the "deps fetched at build, offline thereafter" rule.
+# Only proofs/'s dep-defining files are staged here (NOT the .lean sources), so
+# editing a proof doesn't rebust this layer -- and, being before COPY src (see the
+# CACHE ORDERING note above), editing src/ doesn't either. `lake exe cache get`
+# clones the pinned Mathlib and downloads its prebuilt oleans into
+# /opt/gacalc-proofs/.lake; proofs/check.sh copies that into the (mounted, gitignored)
+# proofs/.lake at runtime -- the bind-mount would otherwise shadow a baked
+# proofs/.lake. Gated on USE_LEAN (adds several GB, so only Lean images pay it). git
+# (needed to clone Mathlib) is installed by install-lean.sh above.
+COPY proofs/lakefile.toml proofs/lean-toolchain proofs/lake-manifest.json /opt/gacalc-proofs/
+RUN if [ "$USE_LEAN" = "1" ]; then \
+      cd /opt/gacalc-proofs && touch GacalcProofs.lean && lake exe cache get ; \
+    fi
+
 # Copy the build-relevant project files (not the whole tree: the 31M vendored
 # Emacs elpa tree is already at /root, and .dockerignore is global so it can't be
-# excluded for just this COPY). Placed after the slow dnf/MELPA layers so editing
-# source doesn't re-run them. At runtime `make shell`'s bind mount overlays
-# /gacalc with the live host tree, so this copy is only used for the build below.
+# excluded for just this COPY). Placed LAST, after every slow source-independent
+# layer (dnf/MELPA/TeX + the Lean/Mathlib bake above), so editing source rebusts
+# only this COPY and the editable install below -- nothing expensive. At runtime
+# `make shell`'s bind mount overlays /gacalc with the live host tree, so this copy
+# is only used for the build below.
 COPY pyproject.toml setup.py README.md /gacalc/
 COPY src   /gacalc/src
 COPY tools /gacalc/tools
@@ -127,15 +160,5 @@ RUN export VIRTUAL_ENV_DISABLE_PROMPT=1 && source /venv/bin/activate && \
     cd /gacalc && uv pip install --python $(which python) --no-build-isolation ".[dev,notebooks,jupyter]" && \
     jupytext-config set-default-viewer python && \
     jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
-
-# Lean 4 (theorem prover) via elan — host-runnable script, curl-installed; bakes the
-# stable toolchain so an exported image has Lean offline. Late layer (after the Python
-# build) so editing src/ doesn't re-run it. Gated behind USE_LEAN: the Lean toolchain
-# is a large download not needed by `make test`, so a lean nested image skips it. The
-# PATH entry is harmless when the dir is absent, so it stays unconditional.
-COPY entrypoint/install-lean.sh /usr/local/bin/
-RUN if [ "$USE_LEAN" = "1" ]; then /usr/local/bin/install-lean.sh ; fi
-ENV PATH="/root/.elan/bin:${PATH}"
-
 
 ENTRYPOINT ["/entrypoint.sh"]

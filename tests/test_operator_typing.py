@@ -2,7 +2,7 @@
 
 The geometric/outer/inner products and their operators used to be declared
 ``-> typing.Self`` and cast, so ``v2 * v2`` mistyped as ``g2.Vector`` though it is a
-``g2.Rotor`` at runtime.  ``@typing.overload`` signatures now give the true type.
+``g2.Versor`` at runtime.  ``@typing.overload`` signatures now give the true type.
 
 ``typing.assert_type`` guards the STATIC types (checked by ``ty`` -- a regression
 makes ``ty check tests`` fail); the runtime block guards values/runtime types under
@@ -22,14 +22,14 @@ import gacalc.g3 as g3
 def test_operator_static_types() -> None:
     a: g2.Vector = g2.Vector.e_1
     b: g2.Vector = g2.Vector.e_2
-    typing.assert_type(a * b, g2.Rotor)  # geometric: was g2.Vector, now honest
+    typing.assert_type(a * b, g2.Versor)  # geometric: was g2.Vector, now honest
     typing.assert_type(a ^ b, g2.Bivector)  # wedge operator
     typing.assert_type(a.outer_product(b), g2.Bivector)
     typing.assert_type(a.inner_product(b), g2.Scalar)
     typing.assert_type(a * 3, g2.Vector)  # scalar scaling preserves the type
     u: g3.Vector = g3.Vector.e_1
     v: g3.Vector = g3.Vector.e_2
-    typing.assert_type(u * v, g3.Rotor)
+    typing.assert_type(u * v, g3.Versor)
     typing.assert_type(u ^ v, g3.Bivector)
 
 
@@ -45,7 +45,7 @@ def test_scalar_lhs_static_types() -> None:
     typing.assert_type(s * 3, g2.Scalar)  # scalar * number -> scalar
     typing.assert_type(s * s, g2.Scalar)
     typing.assert_type(s + v, g2.G)  # {0} + {1} -> full g2.G
-    typing.assert_type(s + 1 * g2.Bivector.e_12, g2.Rotor)  # {0} + {2} -> g2.Rotor
+    typing.assert_type(s + 1 * g2.Bivector.e_12, g2.Versor)  # {0} + {2} -> g2.Versor
     typing.assert_type(s - v, g2.G)
     typing.assert_type(s + s, g2.Scalar)  # same grade stays g2.Scalar
     typing.assert_type(s + 2, g2.Scalar)  # scalar + number -> scalar
@@ -62,9 +62,9 @@ def test_scalar_lhs_runtime_types_and_values() -> None:
     assert s.inner_product(v).isclose(
         g2.Scalar(coeff_scalar=0.0), rel_tol=1e-5, abs_tol=1e-5
     )
-    assert type(s + 1 * g2.Bivector.e_12) is g2.Rotor  # {0} + {2}
+    assert type(s + 1 * g2.Bivector.e_12) is g2.Versor  # {0} + {2}
     assert (s + 1 * g2.Bivector.e_12).isclose(
-        g2.Rotor(coeff_scalar=3.0, coeff_e_12=1.0), rel_tol=1e-5, abs_tol=1e-5
+        g2.Versor(coeff_scalar=3.0, coeff_e_12=1.0), rel_tol=1e-5, abs_tol=1e-5
     )
     assert type(s + v) is g2.G  # {0} + {1} widens to the full class
 
@@ -110,13 +110,13 @@ def test_alias_and_scalar_contraction_runtime() -> None:
 
 
 def test_add_sub_narrow_by_grade() -> None:
-    # scalar + bivector spans grades {0, 2} -> the even/Rotor type, in either
+    # scalar + bivector spans grades {0, 2} -> the even/Versor type, in either
     # order (__add__ / __radd__) and for subtraction (__sub__ / __rsub__).
     i2: g2.Bivector = g2.Vector.e_1 ^ g2.Vector.e_2
-    typing.assert_type(3 * i2 + 2, g2.Rotor)  # __add__ scalar arm
-    typing.assert_type(2 + 3 * i2, g2.Rotor)  # __radd__ (number on the left)
-    typing.assert_type(i2 - 2, g2.Rotor)  # __add__ (subtract a scalar)
-    typing.assert_type(2 - i2, g2.Rotor)  # __rsub__
+    typing.assert_type(3 * i2 + 2, g2.Versor)  # __add__ scalar arm
+    typing.assert_type(2 + 3 * i2, g2.Versor)  # __radd__ (number on the left)
+    typing.assert_type(i2 - 2, g2.Versor)  # __add__ (subtract a scalar)
+    typing.assert_type(2 - i2, g2.Versor)  # __rsub__
     typing.assert_type(i2 + i2, g2.Bivector)  # same grade stays g2.Bivector
 
 
@@ -128,12 +128,12 @@ def test_reflected_operators_are_precise_for_numbers() -> None:
     # @overload needed.  (See the archived reflected-operator-typing-overloads task.)
     v: g2.Vector = g2.Vector.e_1
     i2: g2.Bivector = g2.Vector.e_1 ^ g2.Vector.e_2
-    r2: g2.Rotor = g2.Vector.e_1 * g2.Vector.e_2
+    r2: g2.Versor = g2.Vector.e_1 * g2.Vector.e_2
     s2: g2.Scalar = g2.Scalar(coeff_scalar=3.0)
     # __rmul__: number * multivector scales -> the multivector's own type
     typing.assert_type(2 * v, g2.Vector)
     typing.assert_type(2.0 * i2, g2.Bivector)
-    typing.assert_type(2 * r2, g2.Rotor)
+    typing.assert_type(2 * r2, g2.Versor)
     typing.assert_type(2 * s2, g2.Scalar)
     # __radd__/__rsub__: narrow by grade, either operand order
     typing.assert_type(2 + v, g2.G)  # {0} + {1} -> full g2.G
@@ -155,11 +155,11 @@ def test_reflected_operators_runtime_including_symbolic_left() -> None:
     v: g2.Vector = g2.Vector.e_1
     assert type(2 * v) is g2.Vector
     assert (2 * v).isclose(g2.Vector(2.0, 0.0), rel_tol=1e-5, abs_tol=1e-5)
-    assert type(2 + 1 * g2.Bivector.e_12) is g2.Rotor
+    assert type(2 + 1 * g2.Bivector.e_12) is g2.Versor
     t: sympy.Expr = sympy.Symbol("t")
     assert type(t * v) is g2.Vector  # runtime is correct though ty infers Unknown
     assert (t * v).to_blade_dict() == {(1,): t}
-    assert type(t + 1 * g2.Bivector.e_12) is g2.Rotor
+    assert type(t + 1 * g2.Bivector.e_12) is g2.Versor
 
 
 def test_r_vector_part_narrows_by_grade() -> None:
@@ -169,21 +169,21 @@ def test_r_vector_part_narrows_by_grade() -> None:
     typing.assert_type(v.r_vector_part(1), g2.Vector)  # present grade -> itself
     typing.assert_type(v.r_vector_part(0), g2.Scalar)  # absent grade -> g2.Scalar(0)
     typing.assert_type(v.r_vector_part(2), g2.Scalar)
-    rotor: g2.Rotor = g2.Vector.e_1 * g2.Vector.e_2  # grades {0, 2}
-    typing.assert_type(rotor.r_vector_part(0), g2.Scalar)  # scalar part
-    typing.assert_type(rotor.r_vector_part(2), g2.Bivector)  # bivector part
+    versor: g2.Versor = g2.Vector.e_1 * g2.Vector.e_2  # grades {0, 2}
+    typing.assert_type(versor.r_vector_part(0), g2.Scalar)  # scalar part
+    typing.assert_type(versor.r_vector_part(2), g2.Bivector)  # bivector part
     typing.assert_type(
-        rotor.r_vector_part(1), g2.Scalar
+        versor.r_vector_part(1), g2.Scalar
     )  # absent grade -> g2.Scalar(0)
 
 
 def test_r_vector_part_runtime_types_and_values() -> None:
-    rotor: g2.Rotor = 5 * g2.Vector.e_1 * g2.Vector.e_2 + 7  # 7 + 5 e_12
-    assert type(rotor.r_vector_part(2)) is g2.Bivector
-    assert rotor.r_vector_part(2).coeff_e_12 == 5
-    assert type(rotor.r_vector_part(0)) is g2.Scalar
-    assert rotor.r_vector_part(0).coeff_scalar == 7
-    assert type(rotor.r_vector_part(1)) is g2.Scalar  # absent grade -> zero g2.Scalar
+    versor: g2.Versor = 5 * g2.Vector.e_1 * g2.Vector.e_2 + 7  # 7 + 5 e_12
+    assert type(versor.r_vector_part(2)) is g2.Bivector
+    assert versor.r_vector_part(2).coeff_e_12 == 5
+    assert type(versor.r_vector_part(0)) is g2.Scalar
+    assert versor.r_vector_part(0).coeff_scalar == 7
+    assert type(versor.r_vector_part(1)) is g2.Scalar  # absent grade -> zero g2.Scalar
 
 
 def test_even_odd_part_narrow_to_resolved_grade() -> None:
@@ -195,9 +195,9 @@ def test_even_odd_part_narrow_to_resolved_grade() -> None:
     i2: g2.Bivector = g2.Vector.e_1 ^ g2.Vector.e_2
     typing.assert_type(i2.even_part(), g2.Bivector)  # a bivector is purely even
     typing.assert_type(i2.odd_part(), g2.Scalar)
-    rotor: g2.Rotor = g2.Vector.e_1 * g2.Vector.e_2
-    typing.assert_type(rotor.even_part(), g2.Rotor)  # grades {0, 2} are both even
-    typing.assert_type(rotor.odd_part(), g2.Scalar)
+    versor: g2.Versor = g2.Vector.e_1 * g2.Vector.e_2
+    typing.assert_type(versor.even_part(), g2.Versor)  # grades {0, 2} are both even
+    typing.assert_type(versor.odd_part(), g2.Scalar)
 
 
 def test_even_odd_part_runtime_types() -> None:
@@ -252,7 +252,7 @@ def test_dual_narrows_by_grade() -> None:
     typing.assert_type(i3.dual(), g3.Vector)  # grade 2 -> grade 1 in 3D
     t3: g3.Trivector = 7.0 * g3.Trivector.e_123
     typing.assert_type(t3.dual(), g3.Scalar)  # grade 3 -> grade 0
-    r3: g3.Rotor = 1 + 2.0 * g3.Bivector.e_12
+    r3: g3.Versor = 1 + 2.0 * g3.Bivector.e_12
     typing.assert_type(r3.dual(), g3.Odd_3)  # {0,2} -> {1,3} = the odd part, now Odd_3
 
     # 2D duals: grade n−r with n=2.
@@ -260,8 +260,8 @@ def test_dual_narrows_by_grade() -> None:
     typing.assert_type(v2.dual(), g2.Vector)  # grade 1 -> grade 1
     i2: g2.Bivector = 5 * g2.Bivector.e_12
     typing.assert_type(i2.dual(), g2.Scalar)  # grade 2 -> grade 0
-    rotor2: g2.Rotor = 1 + 2 * g2.Bivector.e_12
-    typing.assert_type(rotor2.dual(), g2.Rotor)  # {0,2} -> {2,0} = {0,2}
+    rotor2: g2.Versor = 1 + 2 * g2.Bivector.e_12
+    typing.assert_type(rotor2.dual(), g2.Versor)  # {0,2} -> {2,0} = {0,2}
 
     # per-algebra scalar duals: grade 0 -> that algebra's pseudoscalar (the whole
     # point of the per-algebra ScalarN split -- a shared Scalar couldn't type these).
@@ -288,13 +288,13 @@ def test_operator_runtime_types_and_values() -> None:
     a: g2.Vector = 3 * g2.Vector.e_1 + 4 * g2.Vector.e_2
     b: g2.Vector = 1 * g2.Vector.e_1 + 2 * g2.Vector.e_2
     # the runtime type has always been correct; here we pin it next to the static one
-    assert type(a * b) is g2.Rotor
+    assert type(a * b) is g2.Versor
     assert type(a ^ b) is g2.Bivector
     assert type(a.inner_product(b)) is g2.Scalar
     assert type(a * 3) is g2.Vector
     # value equals the wedge coefficient e_1 e_2:  3*2 - 4*1 = 2
     assert (a ^ b).coeff_e_12 == 2
     # and the geometric product carries both scalar and bivector parts
-    product: g2.Rotor = a * b
+    product: g2.Versor = a * b
     assert product.coeff_scalar == 11  # 3*1 + 4*2
     assert product.coeff_e_12 == 2

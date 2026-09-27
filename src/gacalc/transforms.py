@@ -29,13 +29,13 @@ these names for backward compatibility.
 Rotation is *derived from* the algebra, and packaged here three ways, all
 free functions:  :func:`projection_rotation` is the from-vector/to-vector
 *projection* formula (split the operand into in-plane + perpendicular parts,
-turn the in-plane part), kept for teaching;  :func:`rotor_rotation` wraps the
-same from/to rotation as a *rotor* sandwich (one fixed rotation);  and
+turn the in-plane part), kept for teaching;  :func:`versor_rotation` wraps the
+same from/to rotation as a *versor* sandwich (one fixed rotation);  and
 :func:`plane_rotation` separates the two concerns the from/to form conflates
 -- it takes two vectors that *define a plane* (their normalized wedge is the
 plane's unit bivector ``i``) and returns a function of the angle, so one plane
 established once yields any rotation angle on demand (and interpolation for
-free).  The rotor *builder* ``MultiVectorBase.rotor_from_vectors(from, to)``
+free).  The rotor *builder* ``MultiVectorBase.versor_from_vectors(from, to)``
 remains the algebra-level primitive.  (The very old planar 2D
 ``rotate(angle)`` / ``rotate_90_degrees`` / ``rotate_around`` factories were
 removed long before: they acted only in the e_1 e_2 plane and silently
@@ -192,10 +192,10 @@ def projection_rotation(
     *inside* the turn (not normalized up front), so their lengths cancel and this
     is a *pure* rotation (no scaling) whatever the inputs' magnitudes.  It is the
     projection formulation of the same rotation
-    that :func:`rotor_rotation` produces via the rotor sandwich
-    ``R v R.inverse()`` (``R = rotor_from_vectors(from_vector, to_vector)``); both
+    that :func:`versor_rotation` produces via the rotor sandwich
+    ``R v R.inverse()`` (``R = versor_from_vectors(from_vector, to_vector)``); both
     agree.  This form is kept for teaching -- it makes the in-plane / perpendicular
-    split explicit -- while ``rotor_rotation`` is the faster, more general path.
+    split explicit -- while ``versor_rotation`` is the faster, more general path.
     Like every factory here it is representation-agnostic: the operand's own type
     supplies the basis, so a ``G`` in yields a ``G`` out, ``Gn`` yields ``Gn``.
 
@@ -229,31 +229,31 @@ def projection_rotation(
     return r
 
 
-def rotor_rotation(
+def versor_rotation(
     from_vector: V,
     to_vector: V,
     *,
     interpolate: typing.Callable[[float], "InvertibleFunction[V]"] | None = None,
 ) -> InvertibleFunction[V]:
     r"""A rotation packaged as an :class:`InvertibleFunction`, built from the
-    **rotor** ``R = rotor_from_vectors(from, to)``.
+    **versor** ``R = versor_from_vectors(from, to)``.
 
     The forward is the versor sandwich ``R v R^-1``; the inverse is ``R^-1 v R``
     (see ``MultiVectorBase.sandwich``).  Both return ``v``'s own type.
     ``linearity`` is ``LINEAR`` (a rotation fixes the origin), and it handles
-    ``zero`` for free.  This is the *rotor* formulation of a rotation; the
+    ``zero`` for free.  This is the *versor* formulation of a rotation; the
     *projection* formulation lives at :func:`projection_rotation`.
 
-    Its LaTeX label is fixed as ``R`` / ``R^{-1}`` (the rotor and its inverse).
+    Its LaTeX label is fixed as ``R`` / ``R^{-1}`` (the versor and its inverse).
     ``interpolate`` lets a caller (e.g. an angle-parameterized rotation) supply
     an interpolation law that from/to vectors alone can't express.
 
     Example:
         >>> import math
-        >>> from gacalc.transforms import rotor_rotation
+        >>> from gacalc.transforms import versor_rotation
         >>> from gacalc.g3 import Vector
         >>> to = math.cos(1.0) * Vector.e_1 + math.sin(1.0) * Vector.e_2
-        >>> R = rotor_rotation(Vector.e_1, to)
+        >>> R = versor_rotation(Vector.e_1, to)
         >>> R.linearity.name
         'LINEAR'
         >>> R(Vector.zero()).isclose(Vector.zero(), rel_tol=1e-5, abs_tol=1e-5)
@@ -261,16 +261,16 @@ def rotor_rotation(
         >>> R.inverse(R(Vector.e_1)).isclose(Vector.e_1, rel_tol=1e-5, abs_tol=1e-5)
         True
     """
-    rotor: MultiVectorBase = type(from_vector).rotor_from_vectors(
+    versor: MultiVectorBase = type(from_vector).versor_from_vectors(
         from_vector=from_vector, to_vector=to_vector
     )
-    rotor_inv: MultiVectorBase = rotor.inverse()
+    versor_inv: MultiVectorBase = versor.inverse()
 
     def forward(v: V) -> V:
-        return rotor.sandwich(v)
+        return versor.sandwich(v)
 
     def backward(v: V) -> V:
-        return rotor_inv.sandwich(v)
+        return versor_inv.sandwich(v)
 
     return InvertibleFunction(
         func=forward,
@@ -429,7 +429,7 @@ def plane_rotation(
     r"""Establish a plane of rotation from two vectors; get back *angle ->
     rotation*.
 
-    The from/to rotor form (:func:`rotor_rotation`,
+    The from/to rotor form (:func:`versor_rotation`,
     :func:`projection_rotation`) conflates two concerns: choosing the *plane*
     and choosing the *angle* (locked to the angle between the two vectors).
     This factory separates them.  ``a`` and ``b``'s only job is to define the
@@ -899,7 +899,7 @@ __all__ = [
     "identity",
     "translate",
     "projection_rotation",
-    "rotor_rotation",
+    "versor_rotation",
     "plane_rotation",
     "bivector_rotation",
     "uniform_scale",

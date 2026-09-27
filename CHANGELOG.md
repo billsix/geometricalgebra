@@ -11,6 +11,26 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+## [0.1.0] — 2026-09-28
+
+### Changed
+- **BREAKING — the "rotor" API is renamed to "versor".** Strictly, a *rotor* is the unit
+  special case (`R R̃ = 1`) of a *versor*; gacalc's objects are generally un-normalized versors
+  (e.g. `versor_from_vectors` builds `|a||b| + b a`, applied via the scale-invariant inverse
+  sandwich `R v R⁻¹`), so the general term is now used. Renamed public names: the graded type
+  **`Rotor` → `Versor`**; **`MultiVectorBase.rotor_from_vectors` → `versor_from_vectors`**;
+  **`transforms.rotor_rotation` → `versor_rotation`**. `Bivector.exp()` now returns a `Versor`
+  (its value is still a unit rotor at runtime). The word "rotor" is retained only where an object
+  is genuinely unit — the `exp` / `plane_rotation` / `bivector_rotation` half-angle rotor
+  `cos(θ/2) − sin(θ/2) i`. Consumers pinning gacalc must update these names. Rationale:
+  `tasks/reference/unit-bivector-and-rotors.md` §6; work record: `tasks/rename-rotor-to-versor.md`.
+- **Read-only container parameters widened to their covariant supertypes.**
+  `transforms.compose_intermediate_fns` and `compose_intermediate_fns_and_fn` now take
+  `Sequence[InvertibleFunction[V]]` rather than `list[...]`, so any sequence is accepted.
+  Purely permissive — existing calls passing a list are unaffected. Part of the repo-wide
+  type-annotation sweep, whose deliberate exemptions are recorded in
+  `tasks/reference/type-annotation-exemptions.md`.
+
 ### Fixed
 - **Numeric `==` no longer calls `sympy.simplify`.** Comparing two multivectors whose
   coefficients are plain numbers now short-circuits on the native `==` in both outcomes;
@@ -19,14 +39,6 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   symbolic equality, including structurally-different-but-equal forms, is unchanged.
   A differing `g2.Vector` comparison drops from ~48 µs to ~0.4 µs. The rule now lives in
   one place, `base._coef_eq`, shared by the generated same-type and blade-dict paths.
-
-### Changed
-- **Read-only container parameters widened to their covariant supertypes.**
-  `transforms.compose_intermediate_fns` and `compose_intermediate_fns_and_fn` now take
-  `Sequence[InvertibleFunction[V]]` rather than `list[...]`, so any sequence is accepted.
-  Purely permissive — existing calls passing a list are unaffected. Part of the repo-wide
-  type-annotation sweep, whose deliberate exemptions are recorded in
-  `tasks/reference/type-annotation-exemptions.md`.
 
 ## [0.0.20] — 2026-09-06
 

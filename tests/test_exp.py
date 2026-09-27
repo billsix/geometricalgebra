@@ -36,8 +36,8 @@ from gacalc.transforms import plane_rotation
 
 
 def test_exp_of_zero_is_one() -> None:
-    r: g2.Rotor = (0 * g2.Bivector.e_12).exp()
-    assert r == g2.Rotor(coeff_scalar=1)
+    r: g2.Versor = (0 * g2.Bivector.e_12).exp()
+    assert r == g2.Versor(coeff_scalar=1)
 
 
 def test_exp_scalar() -> None:
@@ -48,13 +48,13 @@ def test_exp_scalar() -> None:
 def test_exp_float_stays_float() -> None:
     # the numeric-preservation contract (as magnitude/inverse): float
     # coefficients in, float coefficients out -- no sympy leak.
-    r: g2.Rotor = (0.75 * g2.Bivector.e_12).exp()
+    r: g2.Versor = (0.75 * g2.Bivector.e_12).exp()
     assert all(isinstance(coef, float) for coef in r.to_blade_dict().values())
     assert float(r.magnitude()) == pytest.approx(1.0)
 
 
 def test_exp_int_stays_exact() -> None:
-    assert g2.Bivector.e_12.exp() == g2.Rotor.e_12 * sympy.sin(1) + sympy.cos(1)
+    assert g2.Bivector.e_12.exp() == g2.Versor.e_12 * sympy.sin(1) + sympy.cos(1)
 
 
 def test_exp_of_a_vector_is_rejected() -> None:
@@ -82,7 +82,7 @@ def test_exp_inverse_is_exp_of_negation() -> None:
 def test_exp_rejects_non_scalar_square() -> None:
     # a rotor (scalar + bivector) has a non-scalar square
     with pytest.raises(ValueError):
-        (1 * g2.Rotor.e_12 + 1).exp()
+        (1 * g2.Versor.e_12 + 1).exp()
     # a NON-SIMPLE homogeneous bivector (dim >= 4, Gn only): e12 + e34
     # squares to -2 + 2 e1234, not a scalar -- the guard must catch it even
     # though the operand is homogeneous of grade 2.
@@ -99,7 +99,7 @@ def test_exp_agrees_with_plane_rotation_numeric() -> None:
         theta
     )
     i: g3.Bivector = g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
-    r: g3.Rotor = (i * (-theta / 2)).exp()
+    r: g3.Versor = (i * (-theta / 2)).exp()
     v: g3.Vector = 3 * g3.Vector.e_1 + 4 * g3.Vector.e_2 + 5 * g3.Vector.e_3
     assert r.sandwich(v).isclose(f(v), rel_tol=1e-5, abs_tol=1e-5)
 
@@ -116,10 +116,10 @@ def test_exp_agrees_with_plane_rotation_symbolic() -> None:
         theta
     )
     i: g2.Bivector = g2.Vector.i(g2.Vector.e_1, g2.Vector.e_2)
-    r: g2.Rotor = (i * (-theta / 2)).exp()
+    r: g2.Versor = (i * (-theta / 2)).exp()
     # identical coefficient FORM, not merely simplify-equal: the follow-up
     # swap must not change what a notebook renders.
-    assert r == g2.Rotor.e_12 * -sympy.sin(theta / 2) + sympy.cos(theta / 2)
+    assert r == g2.Versor.e_12 * -sympy.sin(theta / 2) + sympy.cos(theta / 2)
     x: sympy.Symbol
     y: sympy.Symbol
     x, y = sympy.symbols("x y")

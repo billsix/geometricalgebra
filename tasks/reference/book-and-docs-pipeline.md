@@ -151,7 +151,7 @@ The follow-ups that were open here are fixed (work record: the archived
 1. **`|A|`-style RST warnings** — there were far fewer than the ~12 predicted (most `|A|` are
    already inside `` `` `` code-spans or `::` literal blocks, which RST doesn't parse). The
    genuinely-bare `|`/`` ` `` tokens (in `magnitude`/`magnitude_squared`/`inverse`/`cosine`/`exp`/
-   `normalize`, one `rotor_from_vectors` prose line, a stray `` ``Rational``s ``, and `measure.py`)
+   `normalize`, one `versor_from_vectors` prose line, a stray `` ``Rational``s ``, and `measure.py`)
    were wrapped in the `` `` `` code-role. `make docs` → **0** substitution warnings.
 2. **`ₙ` (U+2099) missing from FreeSerif** — a luaotfload fallback to DejaVu Sans (by file)
    supplies it, FreeSerif kept as main (it has 𝒢). **0** `Missing character`.

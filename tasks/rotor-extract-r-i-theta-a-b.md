@@ -1,11 +1,11 @@
-# Extract r, I, θ (and a, b, conjugate) from a rotor (Macdonald p85–86)
+# Extract r, I, θ (and a, b, conjugate) from a versor (Macdonald p85–86)
 
 **Status:** blocked
 **Priority:** 6
 **Difficulty:** 5
 **Started:** 2026-08-27 (William Emerison Six <billsix@gmail.com>)
 **Blocked on:** maintainer answers the Open questions below (runtime methods vs notebook formulas; the
-scaled/un-normalized rotor case; what "a and b" means; Macdonald edition/page).
+scaled/un-normalized versor case; what "a and b" means; Macdonald edition/page).
 **Recheck:** the Open questions below are answered (maintainer-gated; `/recheck-blocked` surfaces it).
 
 ## Goal
@@ -17,16 +17,16 @@ I think this can work for gn, as well as be generated on all the rotor implement
 it more, I think I do want to be able to extract a, B and I. Because from the rotor itself, I may be
 scaled by some magnitude. To calculate R, look at page 86."*
 
-From a rotor formed by `u*v`, extract its magnitude `r`, unit bivector/plane `I`, and angle `θ` (and
-`a`, `b`, and a complex-conjugate helper). Should work for `gn` and be generated on all rotor
+From a versor formed by `u*v`, extract its magnitude `r`, unit bivector/plane `I`, and angle `θ` (and
+`a`, `b`, and a complex-conjugate helper). Should work for `gn` and be generated on all versor
 implementations.
 
 ## Context (investigation 2026-08-27)
 
-- `Rotor.plane_of_rotation()` already exists and yields the plane bivector `I` (`src/gacalc/g2.py:3459`,
+- `Versor.plane_of_rotation()` already exists and yields the plane bivector `I` (`src/gacalc/g2.py:3459`,
   `src/gacalc/g3.py:5508`) — but there is **no** `angle()`/`theta()` or scalar-magnitude `r` extractor,
   and **no** complex-conjugate helper.
-- Reference doc `tasks/reference/unit-bivector-and-rotors.md:78-99,119-138` has the rotor math
+- Reference doc `tasks/reference/unit-bivector-and-rotors.md:78-99,119-138` has the versor math
   (`R = e^{−iθ/2}`, Macdonald citations, and the hyperbolic `γ₀v̂` scaled case at §4.1 — relevant to
   your "I may be scaled by some magnitude" and the "look at p86 for R" note).
 - **Design tension to reconcile first:** `tasks/reference/book-outline.md:225-227` records a deliberate
@@ -40,15 +40,15 @@ implementations.
 
 - [ ] Reconcile with the book-outline "θ is a property, not solved-for" stance.
 - [ ] Add extractors (`r`, `theta`/`angle`, `I` via existing `plane_of_rotation`, `conjugate`) — as
-      runtime methods or notebook formulas per Q1 — handling the scaled/un-normalized rotor (Q2).
-- [ ] Symbolic checks; generate on all rotor implementations (`gn`).
+      runtime methods or notebook formulas per Q1 — handling the scaled/un-normalized versor (Q2).
+- [ ] Symbolic checks; generate on all versor implementations (`gn`).
 
 ## Open questions
 
 1. **Runtime methods or notebook formulas?** Should extraction produce methods (`r`, `theta`, `I`,
-   `conjugate`) on `Rotor`, or only notebook-demonstrated formulas?
-2. **Scaled rotor** — "should work for gn and all rotor implementations": include the un-normalized case
+   `conjugate`) on `Versor`, or only notebook-demonstrated formulas?
+2. **Scaled versor** — "should work for gn and all versor implementations": include the un-normalized case
    (`R R̃ ≠ 1`) where `r` is the sandwich scale factor?
 3. **What is "a and b"** — recovering the two generating vectors `u, v` (not unique), or the even-part
-   scalar/bivector components of the rotor?
+   scalar/bivector components of the versor?
 4. **Citation** — which edition/page of Macdonald? The reference doc cites the *Survey*; you say p85/p86.

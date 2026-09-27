@@ -275,7 +275,7 @@ Things to look at (non-exhaustive, to be filled in during the sweep):
   `Frame`?
 - Do **`project` / `reject` / `reflect`** (which already accept a `[*sequence]` of vectors →
   `outer_product_of_vectors`) gain a frame overload, or subsume that sequence handling?
-- Does the **transform layer** (`transforms.py`, rotors, `to_matrix`) want to express itself via
+- Does the **transform layer** (`transforms.py`, versors, `to_matrix`) want to express itself via
   frames?
 - Where does **orthogonalization** belong (on `Frame`, or a free function), and does anything already
   do it ad hoc?

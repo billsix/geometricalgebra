@@ -15,8 +15,8 @@
 
 ``bivector_from_vectors(a, b)`` is the raw wedge ``a ∧ b`` (the area bivector);
 ``i(a, b)`` normalizes it to the plane's unit bivector (``i² = -1``); ``.i()``
-gets a bivector's / rotor's own unit plane.  All return a BIVECTOR, never a
-rotor.  Design + math: tasks/reference/unit-bivector-and-rotors.md.
+gets a bivector's / versor's own unit plane.  All return a BIVECTOR, never a
+versor.  Design + math: tasks/reference/unit-bivector-and-versors.md.
 """
 
 import pytest
@@ -56,7 +56,7 @@ def test_i_is_a_unit_bivector_squaring_to_minus_one() -> None:
         g3.G.i(g3.G.e_1, g3.G.e_3),
         g2.Vector.i(g2.Vector.e_1, g2.Vector.e_2),
     ):
-        assert i.is_bivector()  # a BIVECTOR, never a rotor
+        assert i.is_bivector()  # a BIVECTOR, never a versor
         assert abs(i) == 1  # unit
         assert (i * i).scalar_part() == -1  # i² = -1
 
@@ -81,7 +81,7 @@ def test_i_method_on_a_bivector_is_it_normalized() -> None:
 
 
 def test_i_method_on_a_rotor_is_its_plane_of_rotation() -> None:
-    r: g3.Rotor = g3.Vector.e_1 * g3.Vector.e_2  # vector * vector is a Rotor
+    r: g3.Versor = g3.Vector.e_1 * g3.Vector.e_2  # vector * vector is a Versor
     assert r.i() == r.plane_of_rotation()
     assert r.i().is_bivector()
 

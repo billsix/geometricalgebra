@@ -32,7 +32,7 @@ from gacalc.functions import ComposableFunction, InvertibleFunction, Linearity
 # A multivector coefficient: a plain Python number or a sympy expression
 # (symbolic mode).  Concrete `int | float | sympy.Expr` rather than the
 # `numbers.Real` ABC -- ty turns `numbers.Real` arithmetic into `_ComplexLike`
-# and then rejects `+`/`/`/`**` on it, which broke the generated rotor sandwich.
+# and then rejects `+`/`/`/`**` on it, which broke the generated versor sandwich.
 Coef = int | float | sympy.Expr
 #: A basis blade: a tuple of basis-vector indices, e.g. ``(1, 2)`` ≙ e₁e₂ (``()`` is
 #: the scalar blade).  The key type of the ``BladeCoef`` interchange dict.
@@ -51,7 +51,7 @@ Blade = tuple[int, ...]
 #:   a hidden zero away; the lazy classes prune only a structural ``0``.
 #: - **A graded type's ``from_blade_dict`` keeps ONLY its own blades** --
 #:   foreign keys are silently dropped, so a result carrying a new grade must
-#:   be built via dispatching arithmetic (``Bivector + scalar -> Rotor``),
+#:   be built via dispatching arithmetic (``Bivector + scalar -> Versor``),
 #:   never via ``from_blade_dict`` on the operand's type (see ``exp``).
 BladeCoef = dict[Blade, Coef]
 MultiVectorFn = Callable[["MultiVectorBase"], "MultiVectorBase"]
@@ -492,7 +492,7 @@ class MultiVectorBase(abc.ABC):
     def __add__(self, rhs: MultiVectorBase | Coef) -> typing.Self:
         """Sum  A + B  — coefficient-wise over the union of both multivectors' blades.
         A bare number adds to the scalar (grade-0) part, so ``bivector + c`` builds
-        the rotor  c + B  in every representation.
+        the versor  c + B  in every representation.
 
         Args:
             rhs: the right operand — a multivector, or a bare number / ``sympy``
@@ -503,7 +503,7 @@ class MultiVectorBase(abc.ABC):
         """
         # A bare number is the scalar (grade-0) part -- the generated
         # specialized classes already accept ``mv + 2``; the shared base
-        # matches them so e.g. ``bivector * (-s) + c`` builds a rotor in
+        # matches them so e.g. ``bivector * (-s) + c`` builds a versor in
         # every representation.
         if isinstance(rhs, (int, float, sympy.Expr)):
             rhs = type(self).from_blade_dict({(): rhs})
@@ -1140,7 +1140,7 @@ class MultiVectorBase(abc.ABC):
 
     def grades(self) -> list[int]:
         """The distinct grades present in A — the set of blade lengths that carry a
-        nonzero coefficient (e.g. a rotor gives ``[0, 2]``).  Empty for ``zero``.
+        nonzero coefficient (e.g. a versor gives ``[0, 2]``).  Empty for ``zero``.
 
         Returns:
             list[int]: the distinct grades present (blade lengths with a nonzero
@@ -1623,12 +1623,12 @@ class MultiVectorBase(abc.ABC):
         )
 
     @classmethod
-    def rotor_from_vectors(
+    def versor_from_vectors(
         cls,
         from_vector: MultiVectorBase,
         to_vector: MultiVectorBase,
     ) -> MultiVectorBase:
-        r"""The rotor ``R`` taking ``from_vector`` toward ``to_vector``, built from
+        r"""The versor ``R`` taking ``from_vector`` toward ``to_vector``, built from
         the angle bisector.  (Geometric products are juxtaposition, as elsewhere;
         ``A B`` is *not* an inner product.)
 
@@ -1654,8 +1654,8 @@ class MultiVectorBase(abc.ABC):
                            \|/
                             O
 
-        A rotor is the geometric product of two vectors separated by *half* the
-        target angle -- so the rotor is the bisector times the from-vector::
+        A versor is the geometric product of two vectors separated by *half* the
+        target angle -- so the versor is the bisector times the from-vector::
 
             h a  =  (|b| a + |a| b) a
                  =  |b| (a a)  +  |a| (b a)        # a a = |a|^2  (a scalar)
@@ -1681,11 +1681,11 @@ class MultiVectorBase(abc.ABC):
         degenerates only on that measure-zero case.)
 
         Args:
-            from_vector: the vector the rotor rotates *from*.
-            to_vector: the vector the rotor rotates *toward*.
+            from_vector: the vector the versor rotates *from*.
+            to_vector: the vector the versor rotates *toward*.
 
         Returns:
-            MultiVectorBase: the un-normalized rotor ``|a||b| + b a`` (scalar +
+            MultiVectorBase: the un-normalized versor ``|a||b| + b a`` (scalar +
             bivector); apply it with ``R v R.inverse()``.
 
         Raises:
@@ -1693,7 +1693,7 @@ class MultiVectorBase(abc.ABC):
         """
         assert from_vector.is_vector()
         assert to_vector.is_vector()
-        # |from||to| -- the rotor's scalar part, making it the half-angle rotor.
+        # |from||to| -- the versor's scalar part, making it the half-angle versor.
         # Kept as the *product of two magnitudes* (two simple sqrts), NOT
         # |to from| = sqrt(|to|^2 |from|^2): the latter is mathematically equal
         # but sympy leaves it as a nested radical it cannot simplify through the
@@ -1704,7 +1704,7 @@ class MultiVectorBase(abc.ABC):
         # demonstrated in notebooks/displayg2.py and displayg3.py; that the
         # |to from| form regresses this identity was re-confirmed empirically.)
         scale: Coef = from_vector.magnitude() * to_vector.magnitude()
-        # scalar + bivector -- the rotor's grade
+        # scalar + bivector -- the versor's grade
         product: MultiVectorBase = to_vector * from_vector
         return product + type(product).from_coef(scale)
 
@@ -1722,7 +1722,7 @@ class MultiVectorBase(abc.ABC):
         classes (Gn, G2, G3, Vector).  Parallel vectors span no plane, so their
         wedge is the **zero** bivector -- this builder does not raise on that;
         the ``i`` builder does, when it normalizes.  Companion to
-        :meth:`rotor_from_vectors` (which builds the *rotor* from two vectors;
+        :meth:`versor_from_vectors` (which builds the *rotor* from two vectors;
         this builds the *plane*).
 
         Args:
@@ -1752,8 +1752,8 @@ class MultiVectorBase(abc.ABC):
         ``R x R⁻¹`` is **grade-preserving**: a vector goes to a vector, a
         bivector to a bivector, and so on.  The raw product
         ``self * x * self.inverse()`` carries the higher grade *structurally*
-        (e.g. ``Rotor * Vector`` carries a trivector when ``x`` is off the
-        rotor's plane — in 𝒢₃ that is the named ``Odd_3`` type, elsewhere it
+        (e.g. ``Versor * Vector`` carries a trivector when ``x`` is off the
+        versor's plane — in 𝒢₃ that is the named ``Odd_3`` type, elsewhere it
         widens to the full ``G_n``), but for a versor those extra grades are
         zero, so the result is rebuilt as ``type(x)`` — whose ``from_blade_dict``
         keeps only ``x``'s blades.  ``zero`` conjugates to ``zero`` (no
@@ -1813,7 +1813,7 @@ class MultiVectorBase(abc.ABC):
 
         The result is built with *dispatching arithmetic* (``A·k + c``), never
         ``from_blade_dict``, so a graded operand returns the resolved type
-        that can hold the scalar part (Bivector → Rotor; a Bivector cannot
+        that can hold the scalar part (Bivector → Versor; a Bivector cannot
         represent its own exponential).
 
         Returns:
@@ -1827,20 +1827,20 @@ class MultiVectorBase(abc.ABC):
 
         Example:
             >>> import sympy
-            >>> from gacalc.g2 import Bivector, Rotor
+            >>> from gacalc.g2 import Bivector, Versor
             >>> (0 * Bivector.e_12).exp()
-            g2.Rotor(coeff_scalar=1, coeff_e_12=0)
-            >>> (0 * Bivector.e_12).exp() == Rotor(coeff_scalar=1)
+            g2.Versor(coeff_scalar=1, coeff_e_12=0)
+            >>> (0 * Bivector.e_12).exp() == Versor(coeff_scalar=1)
             True
             >>> Bivector.e_12.exp()
-            g2.Rotor(coeff_scalar=cos(1), coeff_e_12=sin(1))
-            >>> Bivector.e_12.exp() == Rotor.e_12 * sympy.sin(1) + sympy.cos(1)
+            g2.Versor(coeff_scalar=cos(1), coeff_e_12=sin(1))
+            >>> Bivector.e_12.exp() == Versor.e_12 * sympy.sin(1) + sympy.cos(1)
             True
             >>> theta = sympy.Symbol("theta", positive=True)
             >>> (Bivector.e_12 * (-theta / 2)).exp()  # the half-angle rotor
-            g2.Rotor(coeff_scalar=cos(theta/2), coeff_e_12=-sin(theta/2))
+            g2.Versor(coeff_scalar=cos(theta/2), coeff_e_12=-sin(theta/2))
             >>> R = (Bivector.e_12 * (-theta / 2)).exp()
-            >>> R == Rotor.e_12 * -sympy.sin(theta / 2) + sympy.cos(theta / 2)
+            >>> R == Versor.e_12 * -sympy.sin(theta / 2) + sympy.cos(theta / 2)
             True
         """
         if self.is_scalar():
@@ -1920,7 +1920,7 @@ class MultiVectorBase(abc.ABC):
 
         The generated value types are ``@dataclass(repr=False)`` and inherit this,
         so the module short name (``g1``/``g2``/``g3``) carries the algebra's
-        dimension that the unsuffixed class name (``Vector``, ``Rotor``, ``G``) no
+        dimension that the unsuffixed class name (``Vector``, ``Versor``, ``G``) no
         longer does. (``Gn`` keeps its own dataclass repr — it isn't renamed.)
         Assumes the concrete type is a dataclass, which every representation is.
 

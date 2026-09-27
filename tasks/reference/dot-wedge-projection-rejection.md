@@ -4,7 +4,7 @@
 **What this is:** a settled, book-ready result with its proof and its computational
 verification. This is the **archetype "box/unbox" result** the pedagogy survey names
 (see [[openstax-math-pedagogy]] §10 rec. 3 and §11): prove it once, box it, then treat
-`ab = a·b + a∧b` as the settled decomposition and build projection/reflection/rotors on
+`ab = a·b + a∧b` as the settled decomposition and build projection/reflection/versors on
 top without reopening it.
 
 ## The result (boxed theorem)

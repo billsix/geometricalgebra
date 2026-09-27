@@ -98,7 +98,7 @@ elif owner is not None and owner == result_spec.name and cast is cast_self:
     # Same-type result. Every value type is now @typing.final ...
     stmts.append(return_stmt(construct(result_spec.name, pairs)))
 else:
-    # grade-changing arm ... the old cast(Self, Rotor(...)) was unsound.
+    # grade-changing arm ... the old cast(Self, Versor(...)) was unsound.
     stmts.append(return_stmt(construct(result_spec.name, pairs)))
 
 # after
@@ -240,7 +240,7 @@ of contents you can hold in your head, each chapter read by name only when neede
   this reason — it reads as a tiny diff but gives every phase a hidden side effect on a shared list.
 
 **Applied (`generate_graded_type`'s per-grade special-case injections):** a run of long, independent
-blocks — `Bivector` (exp + `.i()`), `Rotor` (plane_of_rotation + sandwich + `.i()`), `Odd_3`
+blocks — `Bivector` (exp + `.i()`), `Versor` (plane_of_rotation + sandwich + `.i()`), `Odd_3`
 (to_vector/to_trivector casts), `Vector` (project/reject/reflect overrides + factory narrowings +
 the 𝒢₃ cross) — each well past a screen, so the dispatch structure was invisible.
 ```python
@@ -248,7 +248,7 @@ the 𝒢₃ cross) — each well past a screen, so the dispatch structure was in
 if spec.name.startswith("Bivector"):
     body.append( ...exp... )              # ~30 lines
     body.append(i_extractor("normalize", "Bivector"))
-if spec.name.startswith("Rotor"):
+if spec.name.startswith("Versor"):
     body.append( ...plane_of_rotation... )   # ~40 lines
     ...
 if spec.name == "Odd_3":
@@ -263,13 +263,13 @@ def bivector_extras() -> list[ast.stmt]:
     extras.append(i_extractor("normalize", "Bivector"))
     return extras
 
-def rotor_extras() -> list[ast.stmt]: ...
+def versor_extras() -> list[ast.stmt]: ...
 def odd3_extras() -> list[ast.stmt]: ...
 def vector_extras() -> list[ast.stmt]: ...
 
 match spec.name:
     case "Bivector": body += bivector_extras()
-    case "Rotor":    body += rotor_extras()
+    case "Versor":    body += versor_extras()
     case "Odd_3":    body += odd3_extras()
     case "Vector":   body += vector_extras()
     case _:

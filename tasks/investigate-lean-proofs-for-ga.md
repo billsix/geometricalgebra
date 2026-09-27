@@ -1,7 +1,8 @@
 # Investigate Lean 4 as a proof-checking layer for the GA derivations
 
-**Status:** proposed — investigation done and all design questions answered by the author
-(2026-09-27); needs an explicit go-ahead to start the learning spike / scaffold the Lean project
+**Status:** in-progress — both learning spikes complete and verified (2026-09-27/28); the author
+greenlit scaffolding the real `proofs/` project (2026-09-28). This task is now the **umbrella**; the
+individual from-scratch proofs become step-tasks (see the Plan).
 **Priority:** 6
 **Difficulty:** 7
 **Started:** 2026-09-27 (William Emerison Six <billsix@gmail.com>)
@@ -79,34 +80,81 @@ task becomes an umbrella that spawns one step-task per proof on the list below.
 *(Sequenced; the first two are the real go/no-go gate — do not batch the whole proof list before the
 author has seen the workflow.)*
 
-- [ ] **Learning spike, no repo changes yet:** stand up a throwaway Lake project in the container,
-      pull Mathlib, and prove one trivial lemma end-to-end so the author can watch how a proof is
-      made and how a Mathlib result is imported/cited. Write up "how proofs are made / how reuse
-      works" in a short reference doc (`tasks/reference/lean-for-gacalc.md`).
-- [ ] **Scaffold the real Lean project** under the repo at **`proofs/`** (decision Q2): `lakefile`,
-      `lean-toolchain` pin, Mathlib dependency, one committed proof file.
-- [ ] **First real proof — pseudoscalar square sign** (`I_r² = (−1)^(r(r−1)/2)`, decision Q5 — the
-      `I²` form **only**, not `I·reverse(I)`): do the 2D and 3D cases from scratch, plus the general
-      case, and add a note pointing at the Mathlib/general result if one exists.
-- [ ] **Build gate:** add a **`make lean`** target (`: image` prereq) that fails on any
-      `sorry`/extra axiom (warnings-as-errors and/or a `#print axioms` guard); verify a
-      deliberately-broken proof turns it red.
-- [ ] **CI wiring (decision Q3 — on tagged releases, not every push):** have GitHub Actions call
-      `make lean` **on a `v*` tag**, NOT in the per-push `checks.yml`. Note: a tag-triggered workflow
-      does **not exist yet** — releases are currently manual and a tag-triggered PyPI publish is only
-      *proposed* in `tasks/github-actions-pypi-publish-on-tag.md`. So this step either adds a
-      tag-triggered workflow or folds `make lean` into that proposed release workflow; coordinate with
-      it. (The author said "gitlab" but this repo uses **GitHub Actions**.)
-- [ ] **Go/no-go checkpoint with the author.** If go, split the remaining proofs into step-tasks:
-  - [ ] Rotation from scratch (sin/cos → rotate a→b) → derive the geometric product → derive dot &
-        wedge as its symmetric/antisymmetric parts.
-  - [ ] Lagrange identity in the **squared** form `‖a‖²‖b‖² = (a·b)² + ‖a∧b‖²` (decision Q1 —
-        confirmed against the Python: `notebooks/displayg2.py` L470–529 uses exactly this squared
-        form, and it *is* the step that yields `sinθ = √(1−cos²θ)` and `|a||b|sinθ`), 2D and 3D
-        separately (later higher grades).
-  - [ ] Projection correctness, 2D and 3D, vector-onto-vector **and** vector-onto-plane (bivector),
-        via the general formula (in 2D, deducible from the rotation-derived geometric product).
-  - [ ] Each proof: from-scratch 2D/3D version **plus** a noted pointer to the general/Mathlib proof.
+- [x] **Learning spike — phase 1 (pure Lean, no Mathlib), DONE 2026-09-27.** Proved trivial lemmas
+      end-to-end in the container; confirmed the reliable CI gate is **`#print axioms` grep for
+      `sorryAx`** (a `sorry` proof warns but exits 0, so a bare build is insufficient). Wrote up the
+      beginner orientation in `tasks/reference/lean-for-gacalc.md`. Harness:
+      `tasks/adhoc/investigate-lean-proofs-for-ga/spike-pure-lean.sh`. Gotchas found: use a `lib` (not
+      `exe`) target to avoid a clang link step; `-DwarningAsError` is not valid in Lake 5.0.0; don't
+      mask exit status through a `| tail` pipe. See the reference doc's "What the spike actually
+      showed".
+- [x] **Learning spike — phase 2 (Mathlib reuse), DONE 2026-09-28.** `import Mathlib` + `lake exe
+      cache get` works; proved the **2D Lagrange identity** with `ring`, and cited `real_inner_comm`
+      (dot-product symmetry, arbitrary dimension). `#print axioms` on all three (incl. Mathlib's own)
+      reported only `[propext, Classical.choice, Quot.sound]` — so the dot product is **proved, not an
+      axiom**. Harness: `tasks/adhoc/investigate-lean-proofs-for-ga/spike-mathlib.sh`. Findings folded
+      into the reference doc; **two carry into the real build (see below).**
+      - **git must be in the image** — added to `entrypoint/install-lean.sh` under `USE_LEAN` (lake
+        needs it to clone Mathlib). **This is a permanent addition; needs the maintainer's OK to keep**
+        (the image otherwise ships no git by design). It is staged.
+      - **Offline gap** — phase 2 fetched Mathlib at *runtime* (network), violating gacalc's
+        bake-deps-at-build rule. The real `proofs/` setup must clone+`cache get`+build Mathlib **into
+        the image** under `USE_LEAN` so an exported image is offline. This is a design item for the
+        scaffold step.
+- [x] **Scaffold the real Lean project — DONE 2026-09-28.** `proofs/` generated by `lake init
+      GacalcProofs math` (so the Mathlib pin is lake's own): `lean-toolchain` = `v4.34.1`,
+      `lakefile.toml`/`lake-manifest.json` pin Mathlib, `.lake/` gitignored. First proofs landed and
+      `make lean` green — see next.
+- [x] **First proofs landed — 2D DONE 2026-09-28; 3D/general moved to step-tasks.** Landed and
+      `make lean`-green: `GacalcProofs/Lagrange.lean` (Lagrange 2D **and** 3D by `ring`) and
+      `GacalcProofs/G2.lean` — a from-scratch 𝒢₂ with the geometric product, proving **dot =
+      symmetric part**, **wedge = antisymmetric part**, dot ≡ the coordinate sum (equivalence to the
+      general dot), and the **pseudoscalar** `I₂² = −1 = (−1)^(r(r−1)/2)` (decision Q5). The 3D
+      versions, the general pseudoscalar, and the from-*rotation* derivation are the step-tasks below.
+- [x] **Build gate — DONE 2026-09-28.** `make lean` (`: image` prereq) runs `proofs/check.sh`:
+      `lake build` + a completeness gate that fails on any `sorry`/`admit` in the sources (namespace-
+      agnostic; `#print axioms`/`sorryAx` stays the manual gold-standard check). Failure-propagating,
+      portable (container + host).
+- [x] **Offline-baking — DONE 2026-09-28.** The Dockerfile bakes Mathlib into `/opt/gacalc-proofs/.lake`
+      (a committed layer outside the mount, gated on `USE_LEAN`); `check.sh` copies it into the mounted
+      `proofs/.lake` when absent, so `make lean` runs offline (the mount would otherwise shadow a baked
+      `proofs/.lake`). Adds several GB to a Lean image — only `USE_LEAN` images pay it.
+- [x] **CI wiring — DONE 2026-09-28.** `.github/workflows/lean.yml` runs `make lean` on a `v*` tag
+      (decision Q3 — not per-push), matching the repo's thin-wrapper CI style. (The author said
+      "gitlab"; this repo uses **GitHub Actions**.) Coordinate with the still-proposed
+      `tasks/github-actions-pypi-publish-on-tag.md` if a combined release workflow is wanted later.
+- [x] **Go/no-go checkpoint — GO (author, 2026-09-28).** The spike answered the feasibility
+      questions (proofs check; reliable gate; Mathlib reuse works; dot product is proved not
+      axiomatic). Proceeding to scaffold + step-tasks.
+
+**Step-tasks (created 2026-09-28)** — each doc carries the full structure (*special-case 2D then 3D
+via the book's rotation methods* + *equivalence to the general case* + *reference to the existing
+Mathlib/general proof*; per decisions 4–5). Status is per that doc; the 2D coordinate results already
+live in `proofs/` (see above), so several are `in-progress`:
+
+  - [ ] `tasks/lean-proof-rotation-from-scratch.md` — sin/cos → rotate a→b → geometric product →
+        dot & wedge as its parts (the shared foundation; hardest, D8). **2D core landed 2026-09-28**
+        (`proofs/GacalcProofs/Rotation.lean`: product enacts rotation, product of unit vectors = rotor
+        of the angle, dot/wedge read off); 3D + general-vector framing + Mathlib equivalence remain.
+  - [ ] `tasks/lean-proof-dot-product.md` — 2D landed (`G2.dot_is_sym_part`/`dot_eq_coord_sum`);
+        from-rotation derivation + 3D remain.
+  - [ ] `tasks/lean-proof-wedge-product.md` — 2D landed (`G2.wedge_is_antisym_part`); from-rotation
+        + 3D remain.
+  - [ ] `tasks/lean-proof-pseudoscalar-square-sign.md` — 2D landed (`G2.I_sq`/`I_sq_eq_sign`); 3D +
+        general remain.
+  - [ ] **Lagrange identity** — 2D **and** 3D already landed (`GacalcProofs/Lagrange.lean`); no
+        separate step-task needed (the `ring` proofs are complete; the rotation-derivation framing is
+        covered by the rotation step-task).
+  - [ ] `tasks/lean-proof-projection.md` — 2D/3D, onto-vector and onto-plane; the projection
+        decomposition (`(A·B)B⁻¹`). **Planned as the next 3D work (2026-09-29), sequenced BEFORE the 3D
+        versor sandwich** — proving it reduces the 3D sandwich to the (done) G2 sandwich. Its gating
+        prerequisite is a from-scratch **`G3`** (see below).
+  - [ ] `tasks/lean-proof-2d-dual-perpendicular.md` — **NEW 2026-09-29**, small/ready: the dual of a
+        vector is ⊥ the vector, in 𝒢₂ (doable now in the existing `G2`; warm-up for projection's 3D
+        dual/normal step).
+  - [ ] **Build a from-scratch `G3`** (8-dim) — the shared prerequisite for the 3D versions of
+        projection, dot, wedge, pseudoscalar, and the rotation sandwich. Build once; unblocks all of
+        them. (Tracked here; owned first by `lean-proof-projection.md`.)
 
 ## Notes / decisions
 
@@ -130,8 +178,18 @@ author has seen the workflow.)*
 4. **Reuse posture → every proof from scratch, as standalone as possible;** learning from and
    *referencing* others' Lean proofs is welcome, but no proof should *depend* on external GA
    formalizations. (Mathlib as the ambient library is fine; a from-scratch proof + a pointer to the
-   general result each time.)
-5. **Pseudoscalar statement → `Iᵣ² = (−1)^(r(r−1)/2)` ONLY** (not `Iᵣ·reverse(Iᵣ)`).
+   general result each time.) **Refined 2026-09-28:**
+   - The **dot product** and the **wedge product** each get the author's **own from-scratch proof in
+     2D and in 3D**, derived via the **book's rotation-based methods** (dot/wedge as the
+     symmetric/antisymmetric parts of the rotation-derived geometric product) — *not* by citing the
+     general Mathlib theorem as the proof.
+   - Each such proof is explicitly a **special case**, and is paired with a proof that the special
+     case is **equivalent to the general case** (i.e. the 2D/3D rotation-derived quantity equals the
+     general definition — Mathlib's `@inner`/wedge, or gacalc's general formula). So each deliverable
+     = *(special-case proof) + (equivalence-to-general proof) + (reference to the existing general
+     proof)*.
+5. **Pseudoscalar statement → `Iᵣ² = (−1)^(r(r−1)/2)` ONLY** (not `Iᵣ·reverse(Iᵣ)`); same special-case
+   (2D, 3D) + general-case + equivalence structure applies.
 
 ## Open questions
 

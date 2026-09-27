@@ -115,7 +115,7 @@ def main() -> None:
     # graded subtypes: a typed Vector*Vector computes only the needed components
     # (scalar + bivector) -- vs the full G_n product and the general Gn.
     sys.stdout.write("\n")
-    sys.stdout.write("graded subtype: vector * vector (-> rotor)\n")
+    sys.stdout.write("graded subtype: vector * vector (-> versor)\n")
     sys.stdout.write("-" * 67 + "\n")
     n: int
     vector_cls: type[MultiVectorBase]

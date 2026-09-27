@@ -1,13 +1,13 @@
 # How the generated graded types type their products & sums
 
 **Reference document** — the design and *rationale* for the precise `@typing.overload` typing on
-the generated graded types' products/sums (so `v2 * v2 : Rotor`, not `Vector`). Not a task;
+the generated graded types' products/sums (so `v2 * v2 : Versor`, not `Vector`). Not a task;
 update in place if the generator's product typing changes. Last updated 2026-08-22. Origin: the
 type-precise products/sums work — `tasks/archive/2026/07/21/typed-product-helper-functions.md`.
 
 ## The design
 
-Each generated graded type (`Scalar`/`Vector`/`Bivector`/`Rotor`, and the 𝒢₃ set — the grade-0
+Each generated graded type (`Scalar`/`Vector`/`Bivector`/`Versor`, and the 𝒢₃ set — the grade-0
 `ScalarN` is per-algebra since the 2026-07-22 split, so grade-0 results below read `Scalar`
 by algebra where this doc's older examples say bare `Scalar`) carries
 `@typing.overload` signatures on its product/sum methods, so a known-type call site gets the
@@ -15,8 +15,8 @@ by algebra where this doc's older examples say bare `Scalar`) carries
 
 - `__mul__` (`*`), `__xor__` (`^`), `outer_product`, `inner_product`, `_geometric_product`,
   `__add__`, `__sub__` — one `@overload` per rhs type returning the **resolved concrete type**
-  (e.g. `Vector * Vector -> Rotor`, `Vector ^ Vector -> Bivector`, `Bivector + scalar ->
-  Rotor`), plus a scalar/number overload and a `MultiVectorBase` catch-all (→ the full class
+  (e.g. `Vector * Vector -> Versor`, `Vector ^ Vector -> Bivector`, `Bivector + scalar ->
+  Versor`), plus a scalar/number overload and a `MultiVectorBase` catch-all (→ the full class
   `G_n`). (`_geometric_product` — the primitive `__mul__` delegates to — was overloaded in a
   2026-07-22 follow-up so a direct caller also gets the precise type.)
 - `__radd__` / `__rsub__` (number on the **left**, `2 + 3*i2`) are typed directly to the resolved
@@ -26,7 +26,7 @@ by algebra where this doc's older examples say bare `Scalar`) carries
   on the left, because every gacalc multivector-on-the-left is handled by that operand's own forward
   op (which never returns `NotImplemented`), so a multivector never reaches the reflected op. For that
   sole number-left case the single-signature typing is already precise (`2 * v → Vector`,
-  `2 + i2 → Rotor`, `2 - v → G`, `2 * Scalar → Scalar`). **The one imprecision is a `sympy.Expr`
+  `2 + i2 → Versor`, `2 - v → G`, `2 * Scalar → Scalar`). **The one imprecision is a `sympy.Expr`
   on the left** (`t * v`): `ty` infers `Unknown` — but that is a **sympy operator-stub limitation, not
   a gacalc gap**, and **overloads cannot fix it**: `sympy.Expr.__mul__(Vector)` "handles" the op in
   the checker's view (returns `Unknown`), so the checker never consults gacalc's `__rmul__` at all. At
@@ -36,14 +36,14 @@ by algebra where this doc's older examples say bare `Scalar`) carries
   `tasks/archive/2026/07/23/reflected-operator-typing-overloads.md`.
 - `r_vector_part` (2026-07-22 follow-up) — same technique, but keyed on an **int literal** rather
   than an operand type: one `@overload` per grade `r: Literal[<0..DIMENSION>]` → that grade's
-  resolved part type (present grade → its type, e.g. `Rotor.r_vector_part(Literal[2]) ->
+  resolved part type (present grade → its type, e.g. `Versor.r_vector_part(Literal[2]) ->
   Bivector`; absent grade → `Scalar`, the returned zero), plus an `r: int -> MultiVectorBase`
   catch-all. Impl broadened to `-> MultiVectorBase`, unsound `Self` casts dropped (each `if r ==
   …:` arm returns its concrete type). Mechanism: a `cast` callback on `unary_stmt`/`unary_body`
   (default `cast_self`; identity for these broadened arms).
 - `even_part` / `odd_part` (2026-07-22 follow-up) — **no argument to overload on**, so instead of
   `@overload`s the graded override just *declares* its resolved return type directly (`Vector.even_part
-  -> Scalar`, `Bivector.odd_part -> Scalar`, `Rotor.even_part -> Rotor`), with no cast. That
+  -> Scalar`, `Bivector.odd_part -> Scalar`, `Versor.even_part -> Versor`), with no cast. That
   required retyping **`base.even_part`/`odd_part` from `-> Self` to `-> MultiVectorBase`** (a
   `-> Self` base can't be overridden by `-> Scalar`); the full class `G_n` keeps `-> Self` (a valid
   narrowing), and **`Gn` inherits the `-> MultiVectorBase` floor** (no override — nothing depended on
@@ -52,14 +52,14 @@ by algebra where this doc's older examples say bare `Scalar`) carries
   `Callable[[Gn], MultiVectorBase]` so it accepts the now-`MultiVectorBase`-returning
   `even_part`/`odd_part` (Gn-returning ops like `dual` still fit by covariance).
 - `exp` (2026-07-29) — a thin cast-and-delegate narrowing override on `Bivector_n` only:
-  `Bivector_n.exp() -> Rotor_n` (the exponential map onto the rotors). Unlike the products, the
+  `Bivector_n.exp() -> Versor_n` (the exponential map onto the rotors). Unlike the products, the
   body is NOT a generated closed form (transcendental — the cse machinery is polynomial); it
   delegates to the shared `MultiVectorBase.exp`, whose dispatching-add construction already
-  produces a `Rotor_n` at runtime. `Vector_n`/`Trivector` get no override (scalar+vector /
+  produces a `Versor_n` at runtime. `Vector_n`/`Trivector` get no override (scalar+vector /
   scalar+trivector have no covering graded type — they widen honestly to `G_n`).
 - `dual` (2026-07-22, closes the unary-op family) — same "retype `base.dual` off `-> Self` to
   `-> MultiVectorBase`, graded override narrows to the resolved grade-(n−r) type" pattern as even/odd
-  (`Bivector.dual -> Vector`, `Trivector.dual -> Scalar`, `Rotor.dual -> Odd_3` — the odd part {1,3};
+  (`Bivector.dual -> Vector`, `Trivector.dual -> Scalar`, `Versor.dual -> Odd_3` — the odd part {1,3};
   before `Odd_3` was registered (2026-09-05) this widened to `G`). Two twists: (1) `dual` keeps the `n`
   (dimension) param, so a fixed-dimension type
   **raises on a mismatched `n`** rather than falling back to `G_n` (the old `_coerce(self, G_n).dual(n)`
@@ -70,18 +70,18 @@ by algebra where this doc's older examples say bare `Scalar`) carries
   parametrized `generate_scalar(n, name, full_name)`.
 - The **implementations keep the inline `match`** — runtime is unchanged; the overloads only supply
   static types. Each overloaded impl returns **`-> MultiVectorBase`** (not `-> Self`), and because
-  of that its arms construct the result with **no cast** (`return Rotor(...)`) — the old
-  `cast(typing.Self, Rotor(...))` was unsound and is gone from every product/sum arm (the
+  of that its arms construct the result with **no cast** (`return Versor(...)`) — the old
+  `cast(typing.Self, Versor(...))` was unsound and is gone from every product/sum arm (the
   grade-changing arms *and* the `case _:` Gn-fallback; 2026-07-22 follow-up).
 - The full class `G_n` is **not** overloaded — its products return the concrete `-> G` (a `@final`
   class; changed from `-> typing.Self` 2026-08-22, see the high-dim ty section below), already
   correct (`G * G → G`), and its coerce-branch keeps a `cast(Self, …)` (fine: `Self <: G`).
 
 Precision (guarded by `typing.assert_type` in `tests/test_operator_typing.py`, so a regression
-fails `ty check tests`): `v2 * v2 → Rotor`, `v2 ^ v2 → Bivector`, `.inner_product → Scalar`,
-`v2 * 3 → Vector`, `2 + 3*i2 → Rotor`, `rotor2.r_vector_part(2) → Bivector`,
+fails `ty check tests`): `v2 * v2 → Versor`, `v2 ^ v2 → Bivector`, `.inner_product → Scalar`,
+`v2 * 3 → Vector`, `2 + 3*i2 → Versor`, `versor2.r_vector_part(2) → Bivector`,
 `v2.r_vector_part(0) → Scalar`; 𝒢₃ likewise (grade-0 → `Scalar`). Runtime was always correct — this was a
-static-typing fix, replacing an unsound `typing.cast(typing.Self, Rotor(...))`.
+static-typing fix, replacing an unsound `typing.cast(typing.Self, Versor(...))`.
 
 ## Why this design (decisions & rejected alternatives)
 
@@ -96,14 +96,14 @@ static-typing fix, replacing an unsound `typing.cast(typing.Self, Rotor(...))`.
   inherit the overloads — and it is **sound**: the overload return equals what the impl returns at
   runtime (unlike the old `-> Self` cast, which lied). So base.py stayed untouched.
 - **Impl return is `MultiVectorBase`, not `Self` or `G_n`.** An overloaded impl's return must be a
-  supertype of *every* overload return. The overload returns (`Rotor`, `Bivector`, `Scalar`,
+  supertype of *every* overload return. The overload returns (`Versor`, `Bivector`, `Scalar`,
   `Vector`, `G`) are **all siblings under `MultiVectorBase`** — none subclasses another or the
   full class `G_n`. So `MultiVectorBase` is the only common supertype. `-> G` was tried and
-  fails (a `Rotor` is not a `G`). The old `-> Self` was internally inconsistent with its own
-  overloads (claimed `Vector` while an overload said `Rotor`).
+  fails (a `Versor` is not a `G`). The old `-> Self` was internally inconsistent with its own
+  overloads (claimed `Vector` while an overload said `Versor`).
 - **Not declaring the operator `-> G_n`** (a single wide return instead of overloads):
-  **dominated.** Runtime returns a `Rotor` (not a `G_n` subclass), so it still needs a cast, and
-  `G_n` exposes coefficients the real `Rotor` lacks (type-checks, crashes at runtime). Overloads
+  **dominated.** Runtime returns a `Versor` (not a `G_n` subclass), so it still needs a cast, and
+  `G_n` exposes coefficients the real `Versor` lacks (type-checks, crashes at runtime). Overloads
   give the *exact* type, soundly.
 
 ## Mechanism (in the generator)
@@ -135,15 +135,15 @@ static-typing fix, replacing an unsound `typing.cast(typing.Self, Rotor(...))`.
   `tasks/archive/2026/07/22/precise-product-types-coefficient-cleanup.md` in
   `github.com/billsix/modelviewprojection`.
 - **The odd-type gap — CLOSED 2026-09-05 by `Odd_3`.** In 𝒢₃ the *raw full geometric product* of an
-  odd-producing pair (e.g. `Rotor * Vector`, `Vector * Bivector`, `Rotor.dual()`) used to widen to `G`
+  odd-producing pair (e.g. `Versor * Vector`, `Vector * Bivector`, `Versor.dual()`) used to widen to `G`
   for lack of a registered `{1,3}` type. Now registered: **`Odd_3` = {1,3}** (the odd part, mirroring
-  `Rotor` = even {0,2}) — a graded *subspace*, not a subalgebra (odd·odd=even → `Odd_3*Odd_3 → Rotor`);
+  `Versor` = even {0,2}) — a graded *subspace*, not a subalgebra (odd·odd=even → `Odd_3*Odd_3 → Versor`);
   those products return `Odd_3` instead of `G`. Plus an **opt-in grade query + cast**
   (`Odd_3.to_vector()`/`to_trivector()`, raising if the discarded grade is nonzero). **The return type
   stays operation-based / value-independent** — the value-dependent alternative (products
   runtime-narrowing to the smallest actual type) was **rejected**, so "the type follows the operation,
   never runtime float values" still holds; narrowing is a deliberate caller step. The precise
-  operations already reached for are unchanged (`Rotor.sandwich(x) -> type(x)`,
+  operations already reached for are unchanged (`Versor.sandwich(x) -> type(x)`,
   `Vector.inner_product(Bivector) -> Vector`, `Vector ^ Bivector -> Trivector`); what `Odd_3` newly
   buys is a **named intermediate + a one-coefficient grade-preservation proof** for the plain-product
   sandwich `R v R⁻¹` (types as `Odd_3`, so "it's a vector" == `simplify(coeff_e_123) == 0` — see
@@ -156,7 +156,7 @@ static-typing fix, replacing an unsound `typing.cast(typing.Self, Rotor(...))`.
 
 `Scalar` now carry the same overloads as the other graded types — so
 `Scalar * Vector → Vector`, `Scalar * Bivector → Bivector`, `Scalar * Trivector →
-Trivector`, `Scalar + Bivector → Rotor`, `Scalar + Vector → G`, and `Scalar.inner_product(X)
+Trivector`, `Scalar + Bivector → Versor`, `Scalar + Vector → G`, and `Scalar.inner_product(X)
 → Scalar` (scalar·X ≡ 0 under the Hestenes dot). **How:** `generate_scalar`'s bespoke hand-built
 `__mul__` / `_geometric_product` / `outer_product` / `inner_product` / `__add__` / `__sub__` bodies
 (which returned `-> Self` with an unsound `cast(Self, coeff * rhs)` on the general arm) were replaced
@@ -185,7 +185,7 @@ it (AST-identical output — verified) and it now also emits the additions:
 - **`wedge` / `dot` aliases** — were inherited from `base` as `-> Self`, so
   `Vector.wedge(Vector)` mistyped as `Vector` (want `Bivector`) and
   `.dot` as `Vector` (want `Scalar`). Now overridden on **every** graded type
-  (Vector/Bivector/Trivector/Rotor **and** ScalarN): `wedge → outer_product`,
+  (Vector/Bivector/Trivector/Versor **and** ScalarN): `wedge → outer_product`,
   `dot → inner_product`, typed precisely.
 - **`ScalarN` operators** — `generate_scalar` emitted **none** of
   `__xor__`/`__lt__`/`__gt__`/`wedge`/`dot` and no contraction dispatch, so all
@@ -227,7 +227,7 @@ a concrete one is statically knowable. Full analysis + rationale in
   grade-pure blade type with `grade <= max_onto_grade`, then the catch-all, then a one-line
   `return super().<method>(...)` impl (runtime unchanged — base does the work), injected only on
   vector specs (`spec.name.startswith("Vector")`), exactly like the `exp`-on-Bivector /
-  `sandwich`-on-Rotor grade-specific injections. **`base.py` needed no signature change** (inside
+  `sandwich`-on-Versor grade-specific injections. **`base.py` needed no signature change** (inside
   base, `cls` is generic `Self`). **One soundness fix in `base.py`:** `base.reject` was NOT
   narrowing its result to the operand grade (in 3D it returned the raw `G` container — grade-1
   data, higher coeffs identically zero), so a `Vector` overload would have been unsound;
@@ -247,22 +247,22 @@ a concrete one is statically knowable. Full analysis + rationale in
   `ComposableFunction` wrapper, so the impl returns `MultiVectorBase` directly (no invariance issue,
   unlike the factory case's `wrapper[Any]` impl). Names mirror each factory's keyword; guarded by
   `assert_type`. — `tasks/archive/2026/08/26/precise-typing-remaining-methods.md`.
-- **`rotor_from_vectors`** — `-> MultiVectorBase`, but always builds scalar + bivector = a rotor,
-  so `Vector_n.rotor_from_vectors → Rotor_n` (mirrors `Bivector_n.exp() → Rotor_n`). **DONE
+- **`versor_from_vectors`** — `-> MultiVectorBase`, but always builds scalar + bivector = a versor,
+  so `Vector_n.versor_from_vectors → Versor_n` (mirrors `Bivector_n.exp() → Versor_n`). **DONE
   2026-08-15**, with the plane helpers: **`bivector_from_vectors` / `i` → `Bivector_n`** and
   **`.i()` / `plane_of_rotation` → `Bivector_n`** (all narrow to the algebra's grade-2 type; gated
-  on n≥2, since 𝒢₁ has no bivector/rotor). Two new generator helpers do it:
+  on n≥2, since 𝒢₁ has no bivector/versor). Two new generator helpers do it:
   **`classmethod_narrowing_overloads`** (precise + `MultiVectorBase` catch-all `@overload`s that
-  discriminate on the `Vector` param type — sound because the wedge/rotor of two *same-algebra*
-  vectors is that algebra's `Bivector`/`Rotor` at runtime) and **`inherited_classmethod_narrowing`**
+  discriminate on the `Vector` param type — sound because the wedge/versor of two *same-algebra*
+  vectors is that algebra's `Bivector`/`Versor` at runtime) and **`inherited_classmethod_narrowing`**
   (those stubs + a `super()`-delegating impl, for the base-inherited `bivector_from_vectors` /
-  `rotor_from_vectors`). The `inverse` `-> Self` spot-check also landed (confirmed it returns the
+  `versor_from_vectors`). The `inverse` `-> Self` spot-check also landed (confirmed it returns the
   concrete type, not `Gn`). Caveat: this does **not** help `transforms.plane_rotation` (generic over
   `V` — a concrete-returning classmethod would widen it); the `i`-first `bivector_rotation` builder
   is operand-agnostic for the same reason — see `design-decisions.md`.
 - **`identity`** — `InvertibleFunction[MultiVectorBase]`; could be generic `InvertibleFunction[T]`.
   Minor.
-- **Not this mechanism:** `transforms.projection_rotation`/`rotor_rotation`/`plane_rotation` are
+- **Not this mechanism:** `transforms.projection_rotation`/`versor_rotation`/`plane_rotation` are
   free functions (generics, not graded overloads); the `-> Self` grade-preservers
   (`reverse`/`normalize`/`simplified`/`expanded`/`inverse`) are already precise on the `@final`
   types; `outer_product_of_vectors` genuinely widens (variadic grade).

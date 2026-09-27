@@ -402,9 +402,9 @@ wedge_magnitude_from_sin
 assert sympy.simplify(wedge_magnitude_from_sin - (a ^ b).magnitude()) == 0
 
 # %% [markdown]
-# **Rotor capstone.** As in 𝒢₂, $ab = a\cdot b + a\wedge b$ splits into
+# **Versor capstone.** As in 𝒢₂, $ab = a\cdot b + a\wedge b$ splits into
 # orthogonal grades, so $|ab|^2 = (a\cdot b)^2 + |a\wedge b|^2 = |a|^2|b|^2$ and
-# $|ab| = |a||b|$. Here $ab$ is a `g3.Rotor` (scalar + bivector):
+# $|ab| = |a||b|$. Here $ab$ is a `g3.Versor` (scalar + bivector):
 
 # %%
 a * b

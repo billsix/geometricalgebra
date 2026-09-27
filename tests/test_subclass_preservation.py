@@ -14,7 +14,7 @@
 """Subclassing policy for the generated types.
 
 **Every generated value type is `@typing.final`** (not subclassable): the graded
-value types (``Vector`` / ``Bivector`` / ``Trivector`` / ``Rotor`` per module), the
+value types (``Vector`` / ``Bivector`` / ``Trivector`` / ``Versor`` per module), the
 per-algebra ``Scalar``, **and the full class ``G``**.  Nothing
 subclasses ``G_n`` (the graded types are the value types; the general
 dimension-agnostic representation is ``Gn`` in ``gn.py``, a separate class), so the
@@ -37,11 +37,11 @@ _FINAL_TYPES: list[type[MultiVectorBase]] = [
     g1.Vector,
     g2.Vector,
     g2.Bivector,
-    g2.Rotor,
+    g2.Versor,
     g3.Vector,
     g3.Bivector,
     g3.Trivector,
-    g3.Rotor,
+    g3.Versor,
     g1.G,
     g2.G,
     g3.G,

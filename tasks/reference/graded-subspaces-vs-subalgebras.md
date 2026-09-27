@@ -44,15 +44,15 @@ almost nothing else is.
 
 - **Even part `𝒢⁺ = {0, 2, 4, …}`** — closed (even × even → even). It is a genuine subalgebra, and a
   famous one: `𝒢⁺₂ ≅ ℂ` (`{a + b·e₁₂}`, `e₁₂² = −1`) and **`𝒢⁺₃ ≅ ℍ`, the quaternions** (its unit
-  elements are exactly the rotors/spinors). In gacalc this is `Rotor_n`.
+  elements are exactly the rotors/spinors). In gacalc this is `Versor_n`.
 - **Odd part `𝒢⁻ = {1, 3, 5, …}`** — a perfectly good linear subspace (closed under `+`, scalar
   `·`, and `reverse`, which preserves grade), but **NOT closed under the geometric product**:
   **odd × odd = even**. E.g. in 𝒢₃, an `Odd_3` value (a vector + a trivector) times another `Odd_3`
-  lands in `{0, 2}` = `Rotor_3` — *outside* `Odd_3`. So `𝒢⁻` is a subspace, not a subalgebra. This is
+  lands in `{0, 2}` = `Versor_3` — *outside* `Odd_3`. So `𝒢⁻` is a subspace, not a subalgebra. This is
   the type we call `Odd_3` (see `tasks/archive/2026/09/05/model-odd-graded-type.md`).
 
 The odd part is not structureless, though — it is a **bimodule over the even subalgebra**:
-`even × odd → odd` and `odd × even → odd`, so `Rotor_n · Odd_n ⊆ Odd_n` on both sides. The clean way
+`even × odd → odd` and `odd × even → odd`, so `Versor_n · Odd_n ⊆ Odd_n` on both sides. The clean way
 to say it: `𝒢 = 𝒢⁺ ⊕ 𝒢⁻` is a **ℤ₂-graded (super)algebra** — the even part is the degree-0
 subalgebra, the odd part is the degree-1 component, an `𝒢⁺`-module but not an algebra in its own
 right.
@@ -76,7 +76,7 @@ the same, well-populated company as `Vector`/`Bivector`/`Trivector` — the norm
 | `{1}` | `Vector` | no | `v·v ∈ {0,2}` |
 | `{2}` | `Bivector` | no | `B·B ∈ {0,2}` |
 | `{3}` | `Trivector` | no | `T² ∈ {0}` |
-| `{0,2}` | `Rotor` | **yes** (≅ ℍ) | even × even → even |
+| `{0,2}` | `Versor` | **yes** (≅ ℍ) | even × even → even |
 | **`{1,3}`** | **`Odd_3`** | **no** | **odd × odd → even** |
 | `{0,3}` | (unnamed) | **yes** (≅ ℂ) | `I₃` is central in odd dim and `I₃² = −1`, so `{a + b·I₃}` is closed |
 | `{0,1,2,3}` | `G3` | **yes** | the whole algebra |
@@ -92,7 +92,7 @@ type**: `Vector`/`Bivector`/`Trivector` are all non-closed and all typed. `Odd_3
 
 What *does* matter is that the product's **return type follows the operation**, resolved from the
 symbolic result's grade support (see `tasks/reference/generated-product-typing.md`). So the generator
-types `Odd_3 * Odd_3 → Rotor_3` (odd × odd = even) automatically — the non-closure surfaces as a
+types `Odd_3 * Odd_3 → Versor_3` (odd × odd = even) automatically — the non-closure surfaces as a
 *correct return type*, never as a problem. That is exactly why adding `Odd_3` is safe: the type
 records a subspace, and the generator's grade-support resolution already handles the fact that
 products leave it.

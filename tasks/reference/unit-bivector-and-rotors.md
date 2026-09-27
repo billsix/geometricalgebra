@@ -44,21 +44,21 @@ guard in exactly one place and keeps a descriptive name alongside the terse `i`.
 extracts the plane bivector from a value. The **rotor is a separate object** built later from the
 bivector via `exp(−(θ/2)·i)` (§3) — `i` is what you *feed* `exp`, not the rotor itself. This is why
 the return type is a bivector: a rotor-returning `i` would both contradict the "`i` = unit bivector"
-convention and duplicate `rotor_from_vectors` / `plane_rotation`.
+convention and duplicate `versor_from_vectors` / `plane_rotation`.
 
 - **`bivector_from_vectors(a, b) → a ∧ b`** (un-normalized) — the area bivector. Classmethod on
-  `MultiVectorBase`, paralleling `rotor_from_vectors` (`base.py:867`). Validates grade-1; returns
+  `MultiVectorBase`, paralleling `versor_from_vectors` (`base.py:867`). Validates grade-1; returns
   `a.outer_product(b)`. No parallel guard — the wedge of parallel vectors is the legitimate zero
   bivector.
 - **`i(a, b) → normalize(bivector_from_vectors(a, b))`** — the unit bivector (`i² = −1`). The
   parallel-vectors guard lands here (normalizing zero raises `ZeroDivisionError`, gacalc ≥ 0.0.16).
   Classmethod on the **full** classes `Gn`/`G2`/`G3` (see placement).
-- **`.i()`** — instance method on the graded `Bivector`/`Rotor` types, returning the value's unit
-  plane. `Bivector.i() = self.normalize()`; `Rotor.i()` = the existing `plane_of_rotation()`
+- **`.i()`** — instance method on the graded `Bivector`/`Versor` types, returning the value's unit
+  plane. `Bivector.i() = self.normalize()`; `Versor.i()` = the existing `plane_of_rotation()`
   (`g2.py:3211`, `r_vector_part(2).normalize()`), exposed under the `i` name.
 
 **Placement / the name-clash resolution.** The full types (`Gn`/`G2`/`G3`) and graded types
-(`Bivector`/`Rotor`) are **siblings** (all `@typing.final` subclasses of `MultiVectorBase`), so a
+(`Bivector`/`Versor`) are **siblings** (all `@typing.final` subclasses of `MultiVectorBase`), so a
 classmethod `i(a,b)` on the full classes and an instance `.i()` on the graded types do **not**
 collide. Keep `i(a,b)` **off** the shared base (else the graded `.i()` shadows the inherited
 classmethod), and don't put `.i()` on the full `G` classes. `bivector_from_vectors` *is* safe on the
@@ -67,7 +67,7 @@ base (no instance-method twin). **`plane_rotation` (`transforms.py:337-343`) alr
 
 **Decided (William Emerison Six <billsix@gmail.com>, 2026-08-14):** the **`i(a,b)` classmethod goes on `Gn`, `G2`, `G3`, *and*
 `Vector`** (a,b are vectors, so `Vector.i(a,b)` reads naturally); **`.i()` stays on the graded
-`Bivector`/`Rotor` only.** A single class cannot carry both an `i(a,b)` classmethod and an `.i()`
+`Bivector`/`Versor` only.** A single class cannot carry both an `i(a,b)` classmethod and an `.i()`
 instance method, so the full/general types (`Gn`/`G2`/`G3`) + `Vector` get the *builder* and the
 graded types get the *extractor* — no collision, since they're siblings. `Gn` gets the classmethod
 (not `.i()`); to get the plane out of a general `Gn` value that is a bivector, use `.normalize()`
@@ -139,6 +139,85 @@ Priority is books **the maintainer owns**. Status: ✅ verified in this research
 
 **When a citation is confirmed against the maintainer's copy, record author + title + section/equation here
 and in the relevant docstring, and flip its box to ✅.**
+
+## 6. Rotor vs versor, and why gacalc rotates with the *inverse* sandwich `R v R⁻¹` (not `R v R̃`)
+
+**Status: analysis + suggestion (2026-09-28, William Emerison Six <billsix@gmail.com>), pending the
+maintainer's naming decision (Q1 below).** Prompted by the maintainer noting that gacalc's sandwich
+uses `inverse`, not the textbook `reverse`, and that gacalc's rotors are not required to be unit —
+and asking whether that is wrong or misnamed. Short answer: **it is correct, not a bug**; the only
+open point is terminology.
+
+### The two sandwiches
+
+For an even element `R` and a vector `v`:
+
+- **Reverse sandwich `v ↦ R v R̃`** — the standard textbook formula (`R̃` = reverse). It is a *pure
+  rotation* **only when `R` is a unit rotor** (`R R̃ = 1`). For a general `R` it also *scales* by
+  `R R̃ = |R|²`:  `R v R̃ = |R|² · (R v R⁻¹)`.
+- **Inverse sandwich `v ↦ R v R⁻¹`** — the *versor conjugation*. Since `R⁻¹ = R̃ / (R R̃)`, we have
+  `R v R⁻¹ = (R v R̃) / |R|²` — the reverse sandwich with the `|R|²` scaling divided out. It is a pure
+  rotation for **any** invertible even versor `R`, unit or not, and is **scale-invariant**:
+  `(λR) v (λR)⁻¹ = R v R⁻¹` for `λ ≠ 0`, so the result depends only on `R`'s *direction*, never its
+  magnitude.
+
+For a **unit** rotor the two coincide (`R⁻¹ = R̃`), so the inverse sandwich **generalizes** the
+textbook one rather than contradicting it. So the maintainer's proof is not wrong: `R v R⁻¹` is the
+right, more general formula; `R v R̃` is its special case at `|R| = 1`.
+
+### What gacalc actually does — and it is correct
+
+- `MultiVectorBase.sandwich` (`base.py:1746`) is `R x R⁻¹` (docstring: "Versor conjugation").
+- `versor_from_vectors(a,b)` (`base.py:1626`) deliberately builds the **un-normalized** even versor
+  `R = |a||b| + b a` (scalar + bivector) and rotates via `R v R⁻¹`; its docstring already states that
+  `R v R̃` would scale by `|R|²` and that `R⁻¹ = R̃/|R|²` divides it out — a pure rotation with **no
+  normalization step**. That is a valid, deliberate design choice.
+- The **exp / `plane_rotation`** path (§3) is the *other* branch: it builds a *unit* rotor
+  `cos(θ/2) − sin(θ/2) i`, so there `R⁻¹ = R̃` and using `reverse` for the backward direction is a
+  sound optimization (`transforms.py:404,504`). So gacalc uses **both** conventions — unit-rotor +
+  reverse on the exp path, un-normalized-versor + inverse on the from-vectors path — with the general
+  `sandwich` always using inverse. (§3's "`R R̃ = 1`, `v ↦ R v R̃`" wording describes the *unit* path;
+  it is not the definition the general `sandwich` uses. Worth reconciling if §3 is ever revised.)
+
+### Terminology: it is really a *versor* (the open question)
+
+In the GA literature a **versor** is any geometric product of non-null vectors; a **rotor** is the
+special case of an *even, unit* versor (`R R̃ = 1`). gacalc's `versor_from_vectors` output is an
+**un-normalized even versor**, so "rotor" is used loosely. Two coherent ways forward — **Q1, the
+maintainer's call:**
+
+  - **(a) Keep the name "rotor"** and just document the convention (un-normalized even versor;
+    rotation = the inverse sandwich; equals the textbook `R v R̃` when unit). Zero API churn.
+    *Recommended* — the code already reads this way and `sandwich` is already called "versor
+    conjugation."
+  - **(b) Rename to "versor"** (`versor_from_vectors`, `Versor_n`, …), reserving "rotor" for unit
+    ones. Precise, but a breaking API change across the generated types + `transforms`, and a
+    `CHANGELOG`/version bump.
+
+### Suggested Lean statements (the sandwich / composition story — not yet written)
+
+Prove in `G2` (standalone, reusing the landed elements/table), covering both the general and textbook
+forms:
+
+1. `sandwich R v := R * v * R⁻¹` is grade-preserving on vectors and **norm-preserving** (a rotation).
+2. **Scale-invariance:** `sandwich (λ • R) v = sandwich R v` for `λ ≠ 0` — magnitude is irrelevant.
+3. For the **unit** rotor `Rθ = cos(θ/2)·1 + sin(θ/2)·e₁₂`: prove `Rθ⁻¹ = R̃θ` (inverse = reverse when
+   unit) and `sandwich Rθ v = rot θ v` — ties the sandwich to `rot`/`rotor` already proved.
+4. **Composition:** `sandwich R₂ (sandwich R₁ v) = sandwich (R₂ * R₁) v`, and unit-rotor half-angles
+   add (`Rθ₂ * Rθ₁ = R(θ₁+θ₂)`), so rotations compose by multiplying rotors.
+
+This yields the general (inverse) result **and** the textbook (reverse, unit) special case in one file.
+
+### Sources (2026-09-28 research pass)
+
+- **Wikipedia, *Rotor (mathematics)*** — "a rotor is … the product of an even number of unit vectors
+  and satisfies `R R̃ = 1`"; "the inverse of a [unit] rotor is its reverse." (Confirms rotor = unit.)
+- **Dorst, Fontijne & Mann, *GA for Computer Science* (2007), ch. on versors/operators** — the versor
+  sandwich `R x R⁻¹` (with grade involution for odd versors) as the general orthogonal-transform
+  operator; rotors as the even, unit case. (Reference of record; the maintainer may not own it.)
+- **Hestenes, *GA Primer*, "Rotors and Rotations in the Euclidean Plane"** — unit rotors and `v ↦ R v R̃`.
+- **Definition of versor / "unity quasi-norm ⇒ rotor"** — general GA references (e.g. arXiv:1607.04767).
+  URLs to be verified against the maintainer's own reading before promoting to docstrings (per §5's rule).
 
 ## Related
 

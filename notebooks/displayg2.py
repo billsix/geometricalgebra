@@ -272,14 +272,14 @@ gram_fe_to_mol_fe(gram_fe=95.8)
 # **representation preserving**: applied to a `g2.G`, it returns a `g2.G`.  Each
 # factory builds an `InvertibleFunction` that renders its own LaTeX.
 #
-# Rotation in geometric algebra is the rotor sandwich `R v R.inverse()`, and
+# Rotation in geometric algebra is the versor sandwich `R v R.inverse()`, and
 # `plane_rotation(a, b)` packages it: it wedge-normalizes the two vectors `a`, `b`
 # into the unit bivector of their plane once, then returns an
 # `angle -> InvertibleFunction` factory (the half-angle rotor is built inside the
 # library -- no hand-rolled cos/sin).  So `rotate = plane_rotation(e_1, e_2)`
 # rotates in the `e_1 e_2` plane (positive `angle` turns `e_1` toward
 # `e_2`); each `rotate(angle)` is an `InvertibleFunction` that renders its own LaTeX,
-# composes / inverts like the other transforms, and -- via the rotor sandwich --
+# composes / inverts like the other transforms, and -- via the versor sandwich --
 # preserves the type of whatever it rotates (a `g2.G` stays a `g2.G`).
 
 
@@ -543,13 +543,13 @@ wedge_magnitude_from_sin
 assert sympy.simplify(wedge_magnitude_from_sin - (a ^ b).magnitude()) == 0
 
 # %% [markdown]
-# **Why this matters for rotors.** The geometric product
+# **Why this matters for versors.** The geometric product
 # $a b = a\cdot b + a\wedge b$ splits into orthogonal grades, so
 #
 # $$|ab|^2 = (a\cdot b)^2 + |a\wedge b|^2
 #          = |a|^2|b|^2(\cos^2\theta + \sin^2\theta) = |a|^2|b|^2 ,$$
 #
-# i.e. $|ab| = |a||b|$. A rotor built from $a$ and $b$ can therefore take the
+# i.e. $|ab| = |a||b|$. A versor built from $a$ and $b$ can therefore take the
 # magnitude of the *product* directly instead of multiplying the two magnitudes:
 
 # %%

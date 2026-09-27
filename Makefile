@@ -273,6 +273,14 @@ test: image ## Run the full test suite INSIDE the container; exit 0 on success, 
 		$(CONTAINER_NAME) \
 		-c 'set -e; source /venv/bin/activate; cd /gacalc; python tools/gen_specialized.py; python -m pytest'
 
+.PHONY: lean
+lean: image ## Build + verify the Lean proofs (proofs/); nonzero if any proof is incomplete (sorryAx). Needs an image with USE_LEAN=1 (the default full image).
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
+		-v $(CURDIR):/gacalc:Z \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		/gacalc/proofs/check.sh
+
 # Releasing runs inside the container (the image's pinned toolchain -- python,
 # build, and twine, all baked in via the dev extras).  `dist` builds the
 # sdist+wheel into $(DIST_DIR) on the host through a bind mount; `upload` runs

@@ -1,0 +1,27 @@
+# Lean-proofs gate, on RELEASE TAGS only (not every push).
+#
+# Same governing principle as checks.yml: CI is a THIN WRAPPER over make -- this
+# job is just `checkout` -> `make lean`, which builds the image (USE_LEAN=1 is the
+# default) and runs proofs/check.sh (lake build + the sorryAx axioms gate) inside
+# it. CONTAINER_CMD auto-detects podman->docker, so the identical target runs on
+# ubuntu-latest and on the maintainer's podman host.
+#
+# WHY tag-gated, not per-push (maintainer decision, 2026-09-28): a Mathlib-backed
+# `lake build` is heavy (large dependency; `lake exe cache get` / build), so gating
+# it on `v*` tags keeps the per-push format/test/generated checks fast. The extra
+# flags build a leaner image (no docs/emacs/spyder/jupyter) that still carries Lean.
+# checkout is pinned @v5 (Node 24; @v4 is Node 20, being deprecated).
+name: lean
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  lean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: make lean
+        run: make lean BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0 USE_JUPYTER=0

@@ -56,11 +56,11 @@ def test_frozen_immutable_rebind_not_mutate() -> None:
 
 
 def test_coordinates_only_on_grade_1() -> None:
-    # x on a rotor / bivector / full multivector would suggest a coordinate
+    # x on a versor / bivector / full multivector would suggest a coordinate
     # tuple those types don't have.
     value: MultiVectorBase
     for value in (
-        g2.Rotor(coeff_scalar=1.0, coeff_e_12=0.0),
+        g2.Versor(coeff_scalar=1.0, coeff_e_12=0.0),
         1 * g2.Bivector.e_12,
         g2.G(coeff_scalar=1.0),
         g2.Scalar(coeff_scalar=1.0),
@@ -100,10 +100,10 @@ def test_division_is_multiplication_by_inverse() -> None:
     b: g2.Vector = g2.Vector(1.0, 2.0)
     assert ((a * b) / b).isclose(a, rel_tol=1e-5, abs_tol=1e-5)
     assert (a / b).isclose(a * b.inverse(), rel_tol=1e-5, abs_tol=1e-5)
-    # v / v is 1 (a vector times its own inverse) -- as a g2.Rotor, the
+    # v / v is 1 (a vector times its own inverse) -- as a g2.Versor, the
     # smallest registered type covering the geometric product's grades.
     assert (a / a).isclose(
-        g2.Rotor(coeff_scalar=1.0, coeff_e_12=0.0), rel_tol=1e-5, abs_tol=1e-5
+        g2.Versor(coeff_scalar=1.0, coeff_e_12=0.0), rel_tol=1e-5, abs_tol=1e-5
     )
 
 
