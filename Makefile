@@ -1,21 +1,22 @@
 .DEFAULT_GOAL := help
 
 USE_SPYDER ?= 0
-# Optional-feature flags default to their LEAN value (0) when the image is built
-# NESTED inside a runClaudeInContainer/runCrushInContainer sandbox (which exports
-# NESTED_PODMAN=1) and to their FULL value (1) on a real host -- the same idiom as
-# PODMAN_RUN_FLAGS below. The full image (Emacs + a TeX distribution + the Lean
-# theorem-prover toolchain + the Sphinx-book stack) does not fit the nested RAM
-# store, and NONE of it is needed by the `make test` gate (pytest + doctests, whose
-# deps are the always-installed numpy/sympy/pytest venv). Override either way on the
-# command line, e.g. `make image BUILD_DOCS=1` nested (needs a store big enough) or
-# `make image USE_EMACS=0` on a host. A bare `podman build` stays lean regardless
-# (each Dockerfile ARG defaults to 0). USE_SPYDER stays 0 everywhere (opt-in only).
+# Optional-feature flags. Full image by default; a LEAN image is opt-in with
+# MINIMAL_IMAGE=1, which flips each feature OFF -- `make image MINIMAL_IMAGE=1`
+# drops Emacs, the TeX distribution, the Lean theorem-prover toolchain, and the
+# Sphinx-book stack, NONE of which the `make test` gate needs (pytest + doctests
+# run on the always-installed numpy/sympy/pytest venv). Measured: lean 2.42 GB vs
+# full 7.21 GB. MINIMAL_IMAGE is a BUILD-CONTENT signal and is deliberately SEPARATE
+# from NESTED_PODMAN (a RUN-capability signal, used only by PODMAN_RUN_FLAGS below):
+# the sandbox does NOT auto-set MINIMAL_IMAGE, so a nested `make image` builds the
+# full image unless you ask for lean. Override any single flag too (e.g.
+# `make image MINIMAL_IMAGE=1 BUILD_DOCS=1`). A bare `podman build` stays lean
+# regardless (each Dockerfile ARG defaults to 0). USE_SPYDER stays 0 everywhere.
 # Convention: runClaudeInContainer tasks/reference/minimal-nested-images.md.
-USE_EMACS   ?= $(if $(filter 1,$(NESTED_PODMAN)),0,1)
-BUILD_DOCS  ?= $(if $(filter 1,$(NESTED_PODMAN)),0,1)
-USE_JUPYTER ?= $(if $(filter 1,$(NESTED_PODMAN)),0,1)
-USE_LEAN    ?= $(if $(filter 1,$(NESTED_PODMAN)),0,1)
+USE_EMACS   ?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)
+BUILD_DOCS  ?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)
+USE_JUPYTER ?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)
+USE_LEAN    ?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)
 
 
 CONTAINER_CMD ?= $(shell command -v podman >/dev/null 2>&1 && echo podman || echo docker)
