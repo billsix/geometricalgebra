@@ -1,11 +1,22 @@
 .DEFAULT_GOAL := help
 
 USE_SPYDER ?= 0
-USE_EMACS ?= 0
-# Build the Sphinx-book toolchain into the image by default (the Dockerfile
-# defaults this to 0, so a bare `podman build` stays lean). Set BUILD_DOCS=0 for
-# a quicker image if you don't need `make docs`.
-BUILD_DOCS ?= 1
+# Optional-feature flags. Full image by default; a LEAN image is opt-in with
+# MINIMAL_IMAGE=1, which flips each feature OFF -- `make image MINIMAL_IMAGE=1`
+# drops Emacs, the TeX distribution, the Lean theorem-prover toolchain, and the
+# Sphinx-book stack, NONE of which the `make test` gate needs (pytest + doctests
+# run on the always-installed numpy/sympy/pytest venv). Measured: lean 2.42 GB vs
+# full 7.21 GB. MINIMAL_IMAGE is a BUILD-CONTENT signal and is deliberately SEPARATE
+# from NESTED_PODMAN (a RUN-capability signal, used only by PODMAN_RUN_FLAGS below):
+# the sandbox does NOT auto-set MINIMAL_IMAGE, so a nested `make image` builds the
+# full image unless you ask for lean. Override any single flag too (e.g.
+# `make image MINIMAL_IMAGE=1 BUILD_DOCS=1`). A bare `podman build` stays lean
+# regardless (each Dockerfile ARG defaults to 0). USE_SPYDER stays 0 everywhere.
+# Convention: runClaudeInContainer tasks/reference/minimal-nested-images.md.
+USE_EMACS   ?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)
+BUILD_DOCS  ?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)
+USE_JUPYTER ?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)
+USE_LEAN    ?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)
 
 
 CONTAINER_CMD ?= $(shell command -v podman >/dev/null 2>&1 && echo podman || echo docker)
@@ -81,6 +92,8 @@ image: ## Build the OCI image
                          --build-arg USE_SPYDER=$(USE_SPYDER) \
                          --build-arg USE_EMACS=$(USE_EMACS) \
                          --build-arg BUILD_DOCS=$(BUILD_DOCS) \
+                         --build-arg USE_JUPYTER=$(USE_JUPYTER) \
+                         --build-arg USE_LEAN=$(USE_LEAN) \
                          $(ELPA_MOUNT) \
                          .
 

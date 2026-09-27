@@ -1,13 +1,49 @@
 # Lean image for nested-podman builds — what "minimal" means for geometricalgebra
 
-**Status:** proposed — research done 2026-09-10 (survey of the Dockerfile + Makefile from the
-runClaudeInContainer sandbox); **implementation needs go-ahead**. One of the per-project children of
+**Status:** DONE 2026-09-27 (William Emerison Six <billsix@gmail.com>) — implemented, gate-verified,
+and rewritten onto the decided `MINIMAL_IMAGE` signal; ready to archive once the maintainer commits.
+The maintainer's 2026-09-27 decisions settled the design: (a) the lean signal is its own name
+**`MINIMAL_IMAGE`**, decoupled from `NESTED_PODMAN` (run-capability only) —
+runClaudeInContainer `tasks/decouple-minimal-image-from-nested-podman.md`; (b) it is **opt-in** — the
+sandbox does NOT auto-set it, so a nested `make image` builds FULL unless you pass `MINIMAL_IMAGE=1`;
+(c) the nested store is moving to a disk directory + `additionalimagestores`
+(runClaudeInContainer `tasks/dir-backed-nested-podman-storage.md`), which is why lean is opt-in rather
+than a nested necessity. One of the per-project children of
 runClaudeInContainer `tasks/minimal-image-for-nested-podman-standard.md` (the convention: every optional-feature build flag defaults to its lean value when
 `NESTED_PODMAN=1`); the fleet-wide findings table is runClaudeInContainer `tasks/reference/minimal-nested-images.md`. Created 2026-09-10 at the maintainer's
 request (William Emerison Six <billsix@gmail.com>: "go through all of my projects with CLAUDE.md …
 research what a minimal nested podman container would be for them").
 **Priority:** 3
 **Difficulty:** 4
+
+## Done (2026-09-27)
+
+Implemented the lean-when-nested flag defaults, built the lean image nested, ran the gate.
+
+- **Signal: `MINIMAL_IMAGE` (opt-in), not `NESTED_PODMAN`.** First implemented on the old
+  `$(if $(filter 1,$(NESTED_PODMAN)),0,1)` idiom, then rewritten per the maintainer's 2026-09-27
+  decision to a dedicated `MINIMAL_IMAGE` signal (the 2026-09-12 decoupling found `NESTED_PODMAN`
+  conflates run-capability with build-content; this extends the fix — `NESTED_PODMAN` now drives
+  only `PODMAN_RUN_FLAGS` here). Verified: plain `make image` → full (all features 1);
+  `make image MINIMAL_IMAGE=1` → lean (all features 0).
+- **Flags added (`?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)` in the Makefile; ARG default 0 in the
+  Dockerfile):** `USE_EMACS` (made live — was a dead ARG), `BUILD_DOCS` (was plain `?= 1`), new
+  `USE_JUPYTER`, new `USE_LEAN`. `USE_SPYDER` stays 0 everywhere.
+- **Emacs** moved out of `01-install-base.sh` into a new `entrypoint/05-install-emacs.sh`, dispatched
+  by `USE_EMACS` (this is what makes the ARG live).
+- **`03-install-notebook-tex.sh`** (pandoc + XeLaTeX for nbconvert PDF export) now runs when
+  `USE_JUPYTER=1` **OR** `BUILD_DOCS=1` — the Sphinx-book block `04-install-docs.sh` depends on the
+  "recommended" TeX collections `03` installs, so the docs build still gets them.
+- **`install-lean.sh`** (Lean 4 theorem-prover toolchain, curl-installed) now runs only when
+  `USE_LEAN=1`; the `PATH` entry stays unconditional (harmless when the dir is absent).
+- **Results.** Lean nested image (all four flags 0): **2.42 GB**, `make test` = **649 passed**.
+  Full image (host defaults, all flags 1): **7.21 GB** — the lean image is **~67% smaller** (saves
+  ~4.8 GB, mostly TeX + the Lean toolchain). Both built cleanly nested in the 32 GB store. Host
+  `make image` (no `NESTED_PODMAN` in the env) stays effectively byte-identical to before
+  (emacs/notebook-tex/lean/docs all still installed).
+- **CLAUDE.md documented.** Added a `make image MINIMAL_IMAGE=1` bullet to the "Dev workflow" section:
+  what the lean image is for (gate/CI/nested), the sizes, exactly what it drops and how to add any one
+  feature back, and that `MINIMAL_IMAGE` is separate from `NESTED_PODMAN`.
 
 ## BLUF
 

@@ -1,10 +1,17 @@
 FROM registry.fedoraproject.org/fedora:44
 
+# Every optional-feature ARG defaults to 0 so a bare `podman build` stays lean; the
+# Makefile passes each flag's real value (full on a host, lean when built nested --
+# see the Makefile flag block and runClaudeInContainer
+# tasks/reference/minimal-nested-images.md).
 ARG USE_SPYDER=0
 ARG USE_EMACS=0
-# BUILD_DOCS defaults to 0 here so a bare `podman build` stays lean; the Makefile
-# passes BUILD_DOCS=1 so `make image` builds the Sphinx-book toolchain in.
 ARG BUILD_DOCS=0
+# USE_JUPYTER gates the pandoc + XeLaTeX toolchain nbconvert's notebook "Export to
+# PDF" renders through (03-install-notebook-tex.sh). USE_LEAN gates the Lean 4
+# theorem-prover toolchain (install-lean.sh). Neither is needed by `make test`.
+ARG USE_JUPYTER=0
+ARG USE_LEAN=0
 
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
@@ -22,11 +29,13 @@ COPY entrypoint/dotfiles/ /root/
 COPY entrypoint/01-install-base.sh \
      entrypoint/02-install-spyder.sh \
      entrypoint/03-install-notebook-tex.sh \
-     entrypoint/04-install-docs.sh /usr/local/bin/
+     entrypoint/04-install-docs.sh \
+     entrypoint/05-install-emacs.sh /usr/local/bin/
 
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     /usr/local/bin/01-install-base.sh ; \
+    if [ "$USE_EMACS" = "1" ]; then /usr/local/bin/05-install-emacs.sh ; fi ; \
     if [ "$USE_SPYDER" = "1" ]; then \
       /usr/local/bin/02-install-spyder.sh && \
       mkdir -p ~/.config/spyder-py3/config && \
@@ -57,11 +66,18 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
 # to end against a math-heavy notebook (`jupyter nbconvert --to pdf --execute`):
 # the recommended font/latex collections cover most of it, and the named helper
 # packages (adjustbox/tcolorbox/ucs/soul/ulem/titling/enumitem/rsfs/mathrsfs via
-# jknapltx/...) are the template's specific dependencies. Installed
-# unconditionally, alongside the always-present jupyter stack above.
+# jknapltx/...) are the template's specific dependencies.
+#
+# Gated behind USE_JUPYTER (its own feature: notebook PDF export) OR BUILD_DOCS --
+# the Sphinx-book LaTeX block below (04-install-docs.sh) relies on the "recommended"
+# font/latex COLLECTIONS this installs, so the docs build needs it too. When both
+# flags are 0 (the lean nested image) no TeX is installed at all; `make test` needs
+# none of it.
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
-    /usr/local/bin/03-install-notebook-tex.sh
+    if [ "$USE_JUPYTER" = "1" ] || [ "$BUILD_DOCS" = "1" ]; then \
+      /usr/local/bin/03-install-notebook-tex.sh ; \
+    fi
 
 # Sphinx book toolchain (`make docs` -> HTML + PDF). Gated behind BUILD_DOCS so a
 # bare `podman build` stays lean; `make image` sets BUILD_DOCS=1. The PDF is built
@@ -114,9 +130,11 @@ RUN export VIRTUAL_ENV_DISABLE_PROMPT=1 && source /venv/bin/activate && \
 
 # Lean 4 (theorem prover) via elan — host-runnable script, curl-installed; bakes the
 # stable toolchain so an exported image has Lean offline. Late layer (after the Python
-# build) so editing src/ doesn't re-run it.
+# build) so editing src/ doesn't re-run it. Gated behind USE_LEAN: the Lean toolchain
+# is a large download not needed by `make test`, so a lean nested image skips it. The
+# PATH entry is harmless when the dir is absent, so it stays unconditional.
 COPY entrypoint/install-lean.sh /usr/local/bin/
-RUN /usr/local/bin/install-lean.sh
+RUN if [ "$USE_LEAN" = "1" ]; then /usr/local/bin/install-lean.sh ; fi
 ENV PATH="/root/.elan/bin:${PATH}"
 
 
