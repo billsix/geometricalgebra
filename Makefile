@@ -1,11 +1,21 @@
 .DEFAULT_GOAL := help
 
 USE_SPYDER ?= 0
-USE_EMACS ?= 0
-# Build the Sphinx-book toolchain into the image by default (the Dockerfile
-# defaults this to 0, so a bare `podman build` stays lean). Set BUILD_DOCS=0 for
-# a quicker image if you don't need `make docs`.
-BUILD_DOCS ?= 1
+# Optional-feature flags default to their LEAN value (0) when the image is built
+# NESTED inside a runClaudeInContainer/runCrushInContainer sandbox (which exports
+# NESTED_PODMAN=1) and to their FULL value (1) on a real host -- the same idiom as
+# PODMAN_RUN_FLAGS below. The full image (Emacs + a TeX distribution + the Lean
+# theorem-prover toolchain + the Sphinx-book stack) does not fit the nested RAM
+# store, and NONE of it is needed by the `make test` gate (pytest + doctests, whose
+# deps are the always-installed numpy/sympy/pytest venv). Override either way on the
+# command line, e.g. `make image BUILD_DOCS=1` nested (needs a store big enough) or
+# `make image USE_EMACS=0` on a host. A bare `podman build` stays lean regardless
+# (each Dockerfile ARG defaults to 0). USE_SPYDER stays 0 everywhere (opt-in only).
+# Convention: runClaudeInContainer tasks/reference/minimal-nested-images.md.
+USE_EMACS   ?= $(if $(filter 1,$(NESTED_PODMAN)),0,1)
+BUILD_DOCS  ?= $(if $(filter 1,$(NESTED_PODMAN)),0,1)
+USE_JUPYTER ?= $(if $(filter 1,$(NESTED_PODMAN)),0,1)
+USE_LEAN    ?= $(if $(filter 1,$(NESTED_PODMAN)),0,1)
 
 
 CONTAINER_CMD ?= $(shell command -v podman >/dev/null 2>&1 && echo podman || echo docker)
@@ -81,6 +91,8 @@ image: ## Build the OCI image
                          --build-arg USE_SPYDER=$(USE_SPYDER) \
                          --build-arg USE_EMACS=$(USE_EMACS) \
                          --build-arg BUILD_DOCS=$(BUILD_DOCS) \
+                         --build-arg USE_JUPYTER=$(USE_JUPYTER) \
+                         --build-arg USE_LEAN=$(USE_LEAN) \
                          $(ELPA_MOUNT) \
                          .
 

@@ -6,8 +6,8 @@
 # decided by the Dockerfile's ARG `if` blocks (or by a human choosing which scripts to
 # run). Same packages during `podman build`, on a bare Fedora host, or in a guest with
 # no container runtime. `dnf upgrade` stays in the Dockerfile (it runs in its own earlier
-# layer, before the dotfiles COPY). Emacs is unconditional here, matching the original
-# Dockerfile (the USE_EMACS ARG is declared but was never wired to a dnf group).
+# layer, before the dotfiles COPY). Emacs is NOT here -- it is its own optional group
+# (05-install-emacs.sh) gated by the USE_EMACS ARG, so a lean image can skip it.
 #
 # Several dnf calls, so accumulate a non-zero exit if any fails.
 set -uo pipefail
@@ -21,7 +21,6 @@ fi
 status=0
 
 dnf install -y \
-    emacs \
     python3 \
     python3-setuptools \
     python3-sympy \
@@ -29,8 +28,6 @@ dnf install -y \
     python3-pytest \
     python3-wheel \
     ruff \
-    emacs-gtk+x11 \
-    emacs-pgtk \
     tmux \
     uv \
     ty \

@@ -1,13 +1,52 @@
 # Lean image for nested-podman builds — what "minimal" means for geometricalgebra
 
-**Status:** proposed — research done 2026-09-10 (survey of the Dockerfile + Makefile from the
-runClaudeInContainer sandbox); **implementation needs go-ahead**. One of the per-project children of
+**Status:** implemented + gate-verified 2026-09-27 (William Emerison Six <billsix@gmail.com>), but
+**HELD — not ready to archive.** The maintainer is reconsidering the whole signal (2026-09-27): the
+lean flags here key off `NESTED_PODMAN`, whose name/role is under review
+(runClaudeInContainer `tasks/decouple-minimal-image-from-nested-podman.md`), and the nested RAM store
+that motivates lean images may move to disk (runClaudeInContainer
+`tasks/dir-backed-nested-podman-storage.md`). If the signal is renamed to `MINIMAL_IMAGE`, the four
+flags below switch from `$(…NESTED_PODMAN…)` to `$(…MINIMAL_IMAGE…)` — one line each; nothing else
+changes. One of the per-project children of
 runClaudeInContainer `tasks/minimal-image-for-nested-podman-standard.md` (the convention: every optional-feature build flag defaults to its lean value when
 `NESTED_PODMAN=1`); the fleet-wide findings table is runClaudeInContainer `tasks/reference/minimal-nested-images.md`. Created 2026-09-10 at the maintainer's
 request (William Emerison Six <billsix@gmail.com>: "go through all of my projects with CLAUDE.md …
 research what a minimal nested podman container would be for them").
 **Priority:** 3
 **Difficulty:** 4
+
+## Done (2026-09-27)
+
+Implemented the lean-when-nested flag defaults, built the lean image nested, ran the gate.
+
+- **Mechanism verified against the 2026-09-12 supersession.** The maintainer flagged that
+  something superseded `NESTED_PODMAN`. It did — but **only for the two sandboxes**
+  (runClaudeInContainer, the runCrush client), which are built on the host and merely launched
+  nested. The decision record (runCrushInContainer `tasks/reference/nested-podman-vs-image-content.md`,
+  2026-09-12) §4 explicitly keeps the idiom for **downstream projects**, naming geometricalgebra:
+  "Downstream projects (geometricalgebra, modelviewprojection, …): unchanged. There `NESTED_PODMAN`
+  is inherited (meaning #2) … lean-when-nested + `PODMAN_RUN_FLAGS` are correct." gacalc reads
+  `NESTED_PODMAN` **inherited from the sandbox env**, never typed at its own `make shell`, so the
+  `$(if $(filter 1,$(NESTED_PODMAN)),0,1)` idiom is the current, correct standard here.
+- **Flags added (nested-aware default in the Makefile; ARG default 0 in the Dockerfile):**
+  `USE_EMACS` (made live — was a dead ARG), `BUILD_DOCS` (was plain `?= 1`), new `USE_JUPYTER`,
+  new `USE_LEAN`. `USE_SPYDER` stays 0 everywhere.
+- **Emacs** moved out of `01-install-base.sh` into a new `entrypoint/05-install-emacs.sh`, dispatched
+  by `USE_EMACS` (this is what makes the ARG live).
+- **`03-install-notebook-tex.sh`** (pandoc + XeLaTeX for nbconvert PDF export) now runs when
+  `USE_JUPYTER=1` **OR** `BUILD_DOCS=1` — the Sphinx-book block `04-install-docs.sh` depends on the
+  "recommended" TeX collections `03` installs, so the docs build still gets them.
+- **`install-lean.sh`** (Lean 4 theorem-prover toolchain, curl-installed) now runs only when
+  `USE_LEAN=1`; the `PATH` entry stays unconditional (harmless when the dir is absent).
+- **Results.** Lean nested image (all four flags 0): **2.42 GB**, `make test` = **649 passed**.
+  Full image (host defaults, all flags 1): **7.21 GB** — the lean image is **~67% smaller** (saves
+  ~4.8 GB, mostly TeX + the Lean toolchain). Both built cleanly nested in the 32 GB store. Host
+  `make image` (no `NESTED_PODMAN` in the env) stays effectively byte-identical to before
+  (emacs/notebook-tex/lean/docs all still installed).
+- **CLAUDE.md documentation deferred.** The task's last plan item (document the lean image in
+  `CLAUDE.md`) is intentionally NOT done yet — the signal name is under review (see Status), so
+  writing the `NESTED_PODMAN`-worded paragraph now would just be rewritten. Do it once the maintainer
+  settles the naming/storage decision.
 
 ## BLUF
 
