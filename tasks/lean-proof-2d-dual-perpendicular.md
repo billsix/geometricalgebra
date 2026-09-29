@@ -6,7 +6,9 @@
 **Related:** `tasks/lean-proof-projection.md` — the 3D "dual of a bivector ⊥ the plane" step is the
 3D analogue; this 2D case is its warm-up. Also the 𝒢₂ quarter turn (`g2.rotate_90_degrees`, `v * e_12`).
 
-**Status:** proposed — ready (small, self-contained; no prerequisites)
+**Status:** DONE 2026-09-29 — `make lean` green. Landed in `proofs/GacalcProofs/G2.lean`:
+`dual`, `dual_vec` (`(x,y) ↦ (y,−x)`), `dual_vec_perp` (the ⊥ result), plus `I_inv` and `I_mul_I_inv`.
+Ready to archive — left to the maintainer's squash flow (not auto-archived).
 **Priority:** 6
 **Difficulty:** 2
 
@@ -32,14 +34,14 @@ matching gacalc's `dual` convention (`base.py:1217`).
 
 ## Plan
 
-- [ ] Define `dual (v : G2) : G2` matching gacalc (`v · I₂⁻¹`, or `mul v e_12` with the sign noted) —
-      or state the lemma directly on `mul v e_12`.
-- [ ] Prove `(dual v) · v = 0` for a grade-1 `v = G2.vec x y` — expand `mul`/dot; `ring` closes it
-      (no trig, no Pythagorean identity needed — it's a polynomial identity `−xy + xy = 0`).
-- [ ] (Optional) note the tie to `versor`/the quarter turn: `dual(v)` is `v` rotated 90°.
-- [ ] `make lean` green; mention in `proofs/README.md`.
+- [x] Define `dual (v : G2) : G2 := mul v I_inv` matching gacalc's `A · I₂⁻¹` (base.py:1217), with
+      `I_inv = ⟨0,0,0,-1⟩ = −e₁₂` and `I_mul_I_inv : mul I I_inv = one` confirming the inverse.
+- [x] Prove `(dual v) · v = 0` for `v = vec x y` (`dual_vec_perp`) — `simp` + `ring` (the polynomial
+      identity `xy − xy = 0`; no trig, no Pythagorean identity).
+- [x] `dual_vec : dual (vec x y) = vec y (-x)` — the dual of a vector is the −90° rotation.
+- [x] `make lean` green; noted in `proofs/README.md`.
 
-## Open questions
+## Resolved
 
-1. Match gacalc's exact `dual` sign/normalization (`v · I₂⁻¹` vs `v · I₂`) — pin from `base.py:1217`
-   when implementing; the perpendicularity holds either way, so this only fixes the statement's form.
+1. gacalc's `dual` is `A · I⁻¹` (base.py:1217); in 𝒢₂, `I₂⁻¹ = −e₁₂`, so `dual(v) = v·(−e₁₂) = (y,−x)`.
+   Perpendicularity holds regardless of sign convention; matched gacalc's form exactly.

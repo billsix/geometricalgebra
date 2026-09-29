@@ -168,6 +168,27 @@ theorem I_sq : mul I I = ⟨-1, 0, 0, 0⟩ := by
 theorem I_sq_eq_sign : (mul I I).s = (-1 : ℝ) ^ (2 * (2 - 1) / 2) := by
   simp only [mul, I, e_12]; norm_num
 
+/-! ### The dual, and: the dual of a vector is perpendicular to it (2D) -/
+
+/-- The inverse unit pseudoscalar I₂⁻¹ = −e₁₂ (since I₂² = −1, so I₂⁻¹ = −I₂). -/
+def I_inv : G2 := ⟨0, 0, 0, -1⟩
+
+/-- I₂ · I₂⁻¹ = 1, confirming `I_inv` is the inverse of the pseudoscalar `I`. -/
+theorem I_mul_I_inv : mul I I_inv = one := by
+  simp only [mul, I, e_12, I_inv, one]; ext <;> ring
+
+/-- The dual `A* = A · I₂⁻¹` (grade r ↦ grade 2−r), matching gacalc's `dual` (base.py:1217). -/
+noncomputable def dual (a : G2) : G2 := mul a I_inv
+
+/-- The dual of a vector is again a vector — the −90° rotation `(x, y) ↦ (y, −x)`. -/
+theorem dual_vec (x y : ℝ) : dual (vec x y) = vec y (-x) := by
+  simp only [dual, I_inv, mul, vec]; ext <;> ring
+
+/-- **The dual of a vector is perpendicular to it** (2D): the dot product of `dual v` and
+    `v` — the scalar part of their geometric product (`dot_eq_coord_sum`) — is zero. -/
+theorem dual_vec_perp (x y : ℝ) : (mul (dual (vec x y)) (vec x y)).s = 0 := by
+  simp only [dual, I_inv, mul, vec]; ring
+
 end G2
 
 end GacalcProofs
