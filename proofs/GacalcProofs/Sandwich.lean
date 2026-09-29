@@ -88,4 +88,29 @@ theorem sandwich_preserves_normSq_vec (s c12 c13 c23 v1 v2 v3 : ℝ)
       = dot (vec v1 v2 v3) (vec v1 v2 v3) :=
   sandwich_preserves_dot s c12 c13 c23 v1 v2 v3 v1 v2 v3 hr
 
+/-- **A plane rotation leaves the orthogonal axis fixed** — the 3D fact with no 2D analogue. A versor
+    in the e₁e₂ plane (`R = s + c₁₂·e₁₂`, `c₁₃ = c₂₃ = 0`) fixes the e₃ component: `R (z e₃) R⁻¹ = z e₃`
+    (e₃ commutes with the plane bivector, so it slides through `R R⁻¹ = 1`). This is exactly the
+    maintainer's "no effect on components orthogonal to the plane of rotation." -/
+theorem sandwich_fixes_orthogonal (s c12 z : ℝ) (hr : s ^ 2 + c12 ^ 2 ≠ 0) :
+    sandwich (evenVersor s c12 0 0) (vec 0 0 z) = vec 0 0 z := by
+  have hd : normSq (evenVersor s c12 0 0) = s ^ 2 + c12 ^ 2 := by
+    simp only [normSq, evenVersor, mul, reverse]; ring
+  simp only [sandwich, inverse, hd]
+  simp only [evenVersor, mul, reverse, smul, vec]
+  ext <;> field_simp [hr] <;> ring
+
+/-- **A plane rotation keeps in-plane vectors in the plane.** A versor in the e₁e₂ plane sends a
+    vector `x e₁ + y e₂` to another vector in that plane — its e₃ component stays `0`. With
+    `sandwich_fixes_orthogonal`, the plane and its normal are both invariant, so the 3D sandwich
+    reduces to a 2D rotation in the plane. -/
+theorem sandwich_plane_invariant (s c12 x y : ℝ) (hr : s ^ 2 + c12 ^ 2 ≠ 0) :
+    (sandwich (evenVersor s c12 0 0) (vec x y 0)).c3 = 0 := by
+  have hd : normSq (evenVersor s c12 0 0) = s ^ 2 + c12 ^ 2 := by
+    simp only [normSq, evenVersor, mul, reverse]; ring
+  simp only [sandwich, inverse, hd]
+  simp only [evenVersor, mul, reverse, smul, vec]
+  field_simp [hr]
+  ring
+
 end GacalcProofs.G3
