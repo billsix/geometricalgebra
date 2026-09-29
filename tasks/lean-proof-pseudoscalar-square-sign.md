@@ -3,7 +3,7 @@
 **Part of:** `tasks/investigate-lean-proofs-for-ga.md`
 **Depends on:** the `proofs/` scaffold (done); the 3D case reuses the `G3` representation from the
 dot/wedge step-tasks.
-**Next:** `tasks/lean-proof-projection.md`
+**Next:** `tasks/investigate-lean-proofs-for-ga.md` (projection is DONE + archived 2026-09-29)
 
 **Status:** in-progress — 2D landed; 3D + general remain
 **Priority:** 7

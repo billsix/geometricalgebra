@@ -135,7 +135,10 @@ live in `proofs/` (see above), so several are `in-progress`:
   - [ ] `tasks/lean-proof-rotation-from-scratch.md` — sin/cos → rotate a→b → geometric product →
         dot & wedge as its parts (the shared foundation; hardest, D8). **2D core landed 2026-09-28**
         (`proofs/GacalcProofs/Rotation.lean`: product enacts rotation, product of unit vectors = rotor
-        of the angle, dot/wedge read off); 3D + general-vector framing + Mathlib equivalence remain.
+        of the angle, dot/wedge read off). **The 3D versor sandwich is DONE 2026-09-29**
+        (`Sandwich.lean`/`Rotation3D.lean`: carries a→b, isometry, orthogonal-axis fixed, plane
+        invariant), **and the composition story** (`sandwich_comp`: rotations compose by versor product).
+        Remaining: only the Mathlib-rotation equivalence proof.
   - [ ] `tasks/lean-proof-dot-product.md` — 2D landed (`G2.dot_is_sym_part`/`dot_eq_coord_sum`);
         from-rotation derivation + 3D remain.
   - [ ] `tasks/lean-proof-wedge-product.md` — 2D landed (`G2.wedge_is_antisym_part`); from-rotation
@@ -145,16 +148,58 @@ live in `proofs/` (see above), so several are `in-progress`:
   - [ ] **Lagrange identity** — 2D **and** 3D already landed (`GacalcProofs/Lagrange.lean`); no
         separate step-task needed (the `ring` proofs are complete; the rotation-derivation framing is
         covered by the rotation step-task).
-  - [ ] `tasks/lean-proof-projection.md` — 2D/3D, onto-vector and onto-plane; the projection
-        decomposition (`(A·B)B⁻¹`). **Planned as the next 3D work (2026-09-29), sequenced BEFORE the 3D
-        versor sandwich** — proving it reduces the 3D sandwich to the (done) G2 sandwich. Its gating
-        prerequisite is a from-scratch **`G3`** (see below).
+  - [x] `tasks/archive/2026/09/29/lean-proof-projection.md` — **DONE + ARCHIVED 2026-09-29**: gacalc's
+        uniform Hestenes `project`/`reject` (`(A·B)B⁻¹` / `(A∧B)B⁻¹`) for vector- and bivector-blades,
+        2D and 3D; `project_add_reject`, `proj_plane = project_onto`, the graded inner product, magnitude,
+        and the promoted `tools/derive_lean_algebra.py`. Architecture harvested to
+        `tasks/reference/lean-ga-proof-architecture.md`.
+  - [x] `tasks/archive/2026/09/29/lean-proof-2d-versor-from-vectors.md` — **DONE + ARCHIVED
+        2026-09-29**: the angle-free versor-from-two-vectors technique in 𝒢₂ (pedagogical warm-up) —
+        `R·a = |a|·h`, the sandwich isometry, and the capstone `R a R⁻¹ = (|a|/|b|)·b`
+        (`Versor2D.lean`, `Sandwich.lean`).
   - [x] `tasks/archive/2026/09/29/lean-proof-2d-dual-perpendicular.md` — **DONE + ARCHIVED 2026-09-29**:
         the dual of a vector is ⊥ the vector, in 𝒢₂ (`G2.dual`/`dual_vec`/`dual_vec_perp`, `make lean`
         green). Warm-up for projection's 3D dual/normal step.
-  - [ ] **Build a from-scratch `G3`** (8-dim) — the shared prerequisite for the 3D versions of
-        projection, dot, wedge, pseudoscalar, and the rotation sandwich. Build once; unblocks all of
-        them. (Tracked here; owned first by `lean-proof-projection.md`.)
+  - [~] **From-scratch `G3`** (8-dim) — the shared prerequisite for the 3D versions of projection, dot,
+        wedge, pseudoscalar, and the rotation sandwich. **Core LANDED 2026-09-29**
+        (`proofs/GacalcProofs/G3.lean`: product+wedge+reverse transcribed from gacalc's `Gn`, basis
+        elements, multiplication table, I₃²=−1; `make lean` green). Remaining: dot/`I₃⁻¹`/`dual`/`project`
+        (added as `lean-proof-projection.md` needs them). Unblocks the other 3D step-tasks.
+
+  - [x] `tasks/archive/2026/09/29/lean-proof-algebra-laws-g2-g3.md` — **DONE + ARCHIVED 2026-09-29**:
+        the associative-unital-ℝ-algebra laws for `G2`/`G3` (mul associative + distributive, `one`
+        identity, scalar compatibility, ⊥-vector anticommutation) in `proofs/GacalcProofs/AlgebraLaws.lean`.
+        The fundamental identity `a b = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`) and `vec_mul_perp` are
+        in `G3.lean`.
+  - [x] `tasks/archive/2026/09/29/lean-proof-rotation-preserves-length.md` — **DONE + ARCHIVED
+        2026-09-29**: the sandwich `R v R⁻¹` by an even versor preserves length (`|R v R⁻¹|² = |v|²`),
+        2D + 3D, in `proofs/GacalcProofs/Sandwich.lean`.
+  - [x] `tasks/archive/2026/09/29/lean-proof-rotation-preserves-angles.md` — **DONE + ARCHIVED
+        2026-09-29**: the sandwich preserves the dot product (`sandwich_preserves_dot`), hence angles,
+        2D + 3D, in `proofs/GacalcProofs/Sandwich.lean`.
+
+  - [ ] `tasks/investigate-lean-to-python-proof-notebooks.md` — **proposed** (2026-09-29): can we
+        auto-generate percent-formatted Python proof notebooks (college-level symbolic form) from the
+        Lean proofs — e.g. `G2` mul associativity/distributivity — driven by / certified by Lean? P7/D7.
+
+  - [x] `tasks/archive/2026/09/29/lean-proof-sandwich-rotates-components.md` — **DONE + ARCHIVED
+        2026-09-29** (matrix-free reframing): for the actual a→b rotation `R = versorFromVectors a b`,
+        the maintainer's three goals — rotates in the a→b plane (`rotation_fixes_plane_bivector` +
+        `plane_eq_wedge` + carries-a→b), rotates the *oriented* angle correctly (oriented isometry:
+        `rotation_preserves_dot` + `rotation_fixes_plane_bivector`), perpendicular components fixed
+        (`rotation_fixes_normal`) — in `RotateComponents.lean`/`Sandwich.lean`. The rotation-matrix /
+        double-angle route was dropped as unnecessary.
+
+  - [ ] `tasks/lean-proofs-make-coordinate-free.md` — **proposed** (2026-09-29): audit + refactor the
+        proof layer to make as many proofs coordinate-free (structural `rw` chains) as cleanly reduce,
+        given the algebra-law / bilinearity / normSq abstractions; record the leaf-vs-structural split.
+        P7/D5.
+
+  Future (deferred, NOT a proof step):
+  - [ ] `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` — explore a dimension-agnostic
+        `Gn`-style product (blade→coefficient, any `n`) and Hestenes-style dot/wedge (graded parts of
+        the product) in Lean, proved consistent with the per-component `G2`/`G3`. **Deferred**: the
+        maintainer prefers the concrete component approach for now (learning). P9.
 
 ## Notes / decisions
 
