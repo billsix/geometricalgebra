@@ -11,8 +11,9 @@ archived together so the final squash deletes the rename's adhoc codemods in one
 **Status:** in-progress — 2D core + the general-vector "from a to b" framing landed 2026-09-28
 (`proofs/GacalcProofs/Rotation.lean`); the **angle-free 3D versor-from-two-vectors + the bisector
 identity `R a = |a|·h`** landed 2026-09-29 (`proofs/GacalcProofs/Rotation3D.lean`, `make lean` green).
-The 3D sandwich itself (reduce-to-2D via the orthogonal frame), the sandwich/composition story, and
-the Mathlib-rotation *equivalence* proof remain.
+The **3D versor sandwich is now DONE** (2026-09-29, `Sandwich.lean`: carries a→b, isometry,
+orthogonal-axis fixed, plane invariant). The Mathlib-rotation *equivalence* proof and the
+sandwich-*composition* story remain (so this task stays open, not archived).
 **Priority:** 7
 **Difficulty:** 8
 
@@ -139,7 +140,7 @@ vectors' geometric product is their wedge).
 - [x] **The plane is `a (b − proj_a b) = a ∧ b`** (2026-09-29, `Projection.lean` `plane_eq_wedge`) —
       combines `vec_mul_perp` + the rejection's perpendicularity. The rotation plane is now a proved
       bivector built from `a` and `b`.
-- [~] **3D versor sandwich — SUBSTANTIALLY DONE 2026-09-29; one capstone remains.** Landed
+- [x] **3D versor sandwich — DONE 2026-09-29.** Landed
       (`proofs/GacalcProofs/Sandwich.lean`, `Rotation3D.lean`, `Projection.lean`, `make lean` green):
       - the sandwich infrastructure `normSq`/`inverse`/`sandwich` (`R v R⁻¹`, `R⁻¹ = R̃/|R|²`) and the
         `evenVersor` constructor (the even subalgebra ≅ quaternions);
@@ -151,19 +152,12 @@ vectors' geometric product is their wedge).
       - the plane `a(b − proj_a b) = a∧b` (`plane_eq_wedge`), and both bisector identities
         `R·a = |a|·h` (`versor_mul_from_eq_bisector`) and `b·R = |b|·h` (`from_mul_versor_eq_bisector`).
 
-      **Remaining capstone — `R a R⁻¹ = (|a|/|b|)·b` (the versor from `a,b` carries `a` to `b`).** ALL
-      ingredients now landed (2026-09-29): `versor_mul_from_eq_bisector` (`R a = |a|h`),
-      `from_mul_versor_eq_bisector` (`b R = |b|h`), `versorFromVectors_mul_reverse`
-      (`R R̃ = |R|²·1`), `versorFromVectors_mul_inverse` (`R R⁻¹ = 1`), and `G3.smul_smul`/`mul_smul`/
-      `smul_mul`/`mul_assoc`/`mul_one`/`one_smul` in `AlgebraLaws.lean`. **Only the final assembly
-      remains** — a `rw` chain: `sandwich R a = |a|·(h R⁻¹)`, with `h = (1/|b|)(b R)` (from
-      `from_mul_versor_eq_bisector`), `h R⁻¹ = (1/|b|)·b·(R R⁻¹) = (1/|b|)·b` (assoc + `R R̃ = |R|²` +
-      `R R⁻¹ = 1`), so `sandwich R a = (|a|/|b|)·b`. Needs `mag b ≠ 0`, `normSq R ≠ 0`.
-      **Gotcha for the assembler:** the `G3` algebra-law lemmas (`mul_smul`, `smul_smul`, `mul_one`,
-      `mul_assoc`, `one_smul`) share their names with Mathlib's ℝ versions, so **fully-qualify the G3
-      ones** (`GacalcProofs.G3.mul_smul`, …) in the `rw` chain to avoid ambiguity — and add `one_smul`
-      to `AlgebraLaws.lean` (`smul 1 a = a`, not yet added). The 𝒢₂ capstone
-      (`tasks/lean-proof-2d-versor-from-vectors.md`) is structurally identical.
+      **Capstone DONE 2026-09-29 — `sandwich_carries_from_to` (`Sandwich.lean`):** `R a R⁻¹ = (|a|/|b|)·b`,
+      the versor from `a, b` carries `a` to `b`, angle-free. Assembled from `R a = |a|h`, `b R = |b|h`,
+      `R R̃ = |R|²·1`, `R R⁻¹ = 1`, associativity + `mul_one` (all `AlgebraLaws.lean`). The 𝒢₂ twin is in
+      `Sandwich.lean` too (archived task `tasks/archive/2026/09/29/lean-proof-2d-versor-from-vectors.md`).
+      So **the 3D versor sandwich is complete**: it carries `a→b`, is an isometry (length + angles), and
+      fixes the orthogonal complement while keeping the plane invariant.
 - [ ] Update `proofs/README.md` when the sandwich lands. (`Rotation3D.lean`'s versor/bisector already
       noted, 2026-09-29.)
 
