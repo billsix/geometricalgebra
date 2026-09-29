@@ -193,6 +193,14 @@ theorem sandwich_plane_invariant (s c12 x y : ℝ) (hr : s ^ 2 + c12 ^ 2 ≠ 0) 
   field_simp [hr]
   ring
 
+/-- The sandwich is **linear** in the rotated vector: it distributes over addition. -/
+theorem sandwich_add (r u v : G3) : sandwich r (add u v) = add (sandwich r u) (sandwich r v) := by
+  simp only [sandwich]; rw [GacalcProofs.G3.mul_add, GacalcProofs.G3.add_mul]
+
+/-- The sandwich is **linear** in the rotated vector: it pulls out scalars. -/
+theorem sandwich_smul (k : ℝ) (r v : G3) : sandwich r (smul k v) = smul k (sandwich r v) := by
+  simp only [sandwich]; rw [GacalcProofs.G3.mul_smul, GacalcProofs.G3.smul_mul]
+
 /-! ### Composition: rotations compose by multiplying versors -/
 
 /-- **Reverse is an anti-automorphism:** `(a b)~ = b~ a~`. General (no evenness needed). -/
