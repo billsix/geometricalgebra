@@ -7,10 +7,12 @@ Lean (to build — see Prerequisite below; shared with the 3D dot/wedge/pseudosc
 **Feeds:** the **3D versor sandwich** in `tasks/lean-proof-rotation-from-scratch.md` — the projection
 decomposition proved here is what makes the 3D sandwich a corollary of the (already proved) G2 sandwich.
 
-**Status:** in-progress (2026-09-29) — `G3` core + the projection-op extension landed, and chain steps
-1–3 proved (`reject_perp`, `wedge_reject`, `dual_wedge_perp_left`/`_right`), `make lean` green. Remaining:
-the plane-projection `= (c·B)B⁻¹` (needs vector·bivector inner + blade inverse), the 2D cases, then the
-3D versor sandwich as the corollary.
+**Status:** in-progress (2026-09-29). `G3` core + chain steps 1–3 proved (`reject_perp`, `wedge_reject`,
+`dual_wedge_perp_left`/`_right`), `make lean` green. **Refocused 2026-09-29 (maintainer steer):** match
+gacalc's *uniform Hestenes* `project`/`reject` forms — see "Hestenes project/reject" below. The 3D versor
+sandwich this task once "fed" **already landed independently** (via the even-versor/quaternion route in
+`Sandwich.lean`, not the projection decomposition), so this task is now about faithfully reproducing
+`project`/`reject` and generalizing the rotation's perpendicular-fixed result to `reject` onto the plane.
 **Priority:** 6
 **Difficulty:** 7
 
@@ -56,6 +58,50 @@ general `(A·B)B⁻¹`. Two facts to keep straight (the maintainer confirmed the
   The angle-free versor itself and the identity `R a = |a|·h` are already landed in `Rotation3D.lean`
   (see `tasks/lean-proof-rotation-from-scratch.md`).
 
+## Hestenes project/reject — the uniform form (maintainer steer, 2026-09-29)
+
+gacalc's `project`/`reject` (base.py:1279/1338, Hestenes & Sobczyk p.18 eqs 2.9) are two formulas,
+**uniform for `B` a vector OR a bivector**:
+
+- `project(onto=B)(A) = (A · B) · B⁻¹`  — the component of `A` in the subspace `B`.
+- `reject(away_from=B)(A) = (A ∧ B) · B⁻¹`  — the component of `A` orthogonal to `B`.
+
+**Status of each piece in Lean (2026-09-29):**
+
+- **`project` onto a vector** — HAVE it: `Projection.proj a b = (b·a/a·a)·a` *is* `(A·B)B⁻¹` for a
+  vector `B` (since `a⁻¹ = a/(a·a)`), just written divided-out.
+- **Blade inverse `B⁻¹`** — HAVE it (resolves old open Q1): `Sandwich.inverse B = B̃/normSq B` works for a
+  **bivector** too — `normSq B = |B|² > 0` and `B · (inverse B) = 1` (a bivector in 𝒢₃ is simple, so
+  `B B̃` is a scalar). No new blade-inverse code needed.
+- **`reject` onto a vector** — DEFINABLE NOW (wedge + inverse): `(b∧a)·a⁻¹`, and it **equals** the
+  current `b − proj_a b` (because `(b∧a)a⁻¹ + (b·a)a⁻¹ = (ba)a⁻¹ = b`). Worth proving as the bridge.
+- **`reject` onto a bivector** — DEFINABLE NOW (wedge + inverse): `(A∧B)·B⁻¹`; `A∧B` is a trivector
+  (`wedge` handles it) times the bivector `inverse` → a vector.
+- **`project` onto a bivector** — THE ONLY GAP: needs `A·B` as a **grade-1 left contraction** (vector
+  into plane → vector). Our `dot` only extracts the grade-0 (scalar) part, which for vector·bivector is
+  **identically zero** — so `dot` cannot express it. This is the one genuinely new operation.
+
+**Why the left contraction is barely relevant (maintainer asked):** it is needed ONLY for `project`
+onto a bivector via the literal `(A·B)B⁻¹`. It is NOT needed for any `reject` (those use `∧`), NOT for
+`project` onto a vector (scalar dot), and NOT for the rotation proofs — there the in-plane component is
+just `c − reject_B(c)` (projection = identity − rejection for a blade), so the perpendicular/in-plane
+split needs only `reject`. So the contraction is the lowest-priority piece; add it only to reproduce
+Python's `project`-onto-a-plane formula exactly (and to prove `proj_plane = (c·B)B⁻¹`).
+
+**Payoff for the rotation proofs:** "components perpendicular to the plane are unchanged" is exactly
+`reject` onto the plane bivector `B = a∧b` (= `(c∧B)B⁻¹`), definable now. So `rotation_fixes_normal`
+(which only fixes the one normal direction) generalizes to **`sandwich R (reject_B c) = reject_B c` for
+ANY vector `c`** — the whole perpendicular component fixed. And reduce-to-2D becomes the clean,
+Python-faithful statement: *the sandwich rotates `project_B(c)` and fixes `reject_B(c)`*.
+
+**Proposed next steps (this task):**
+- [ ] Define `reject` the Hestenes way `(A∧B)·B⁻¹` (using `wedge` + `Sandwich.inverse`); prove the
+      vector case equals `b − proj_a b`.
+- [ ] Generalize goal 3: `sandwich R (reject_{a∧b} c) = reject_{a∧b} c` for any `c` (supersedes the
+      specific `rotation_fixes_normal`).
+- [ ] Add the grade-1 **left contraction** `A ⌋ B`, then `project` onto a bivector `= (A·B)B⁻¹`, and
+      prove `proj_plane = (c·(a∧b))(a∧b)⁻¹` (the current normal-based construction equals Hestenes).
+
 ## Prerequisite: a from-scratch `G3` in Lean (shared)
 
 We have only `G2` (4-dim) in `proofs/GacalcProofs/G2.lean`. This needs **`G3`** — the 8-dim algebra
@@ -93,5 +139,6 @@ blades as genuine `G3` elements, per the rotor→versor representation lesson).
 
 ## Open questions
 
-1. `B⁻¹` (blade inverse) in `G3`: for a simple blade `B`, `B⁻¹ = B̃ / (B B̃)`; confirm the scalar-norm
-   form is enough for the vector/bivector cases we need (it is in 𝒢₃; no non-simple bivectors until 𝒢₄).
+1. ~~`B⁻¹` (blade inverse) in `G3`~~ — **RESOLVED 2026-09-29.** `Sandwich.inverse B = B̃/normSq B` is
+   exactly `B̃/(B B̃)` and works for a vector and a (simple) bivector in 𝒢₃ (`B · inverse B = 1`,
+   verified). No non-simple bivectors until 𝒢₄. See "Hestenes project/reject" above.
