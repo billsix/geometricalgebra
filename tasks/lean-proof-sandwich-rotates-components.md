@@ -74,7 +74,37 @@ proved in `G3`, `make lean` green.
 3. **What "correctly" asserts** → **the explicit rotated-vector equation**, with the orthogonal/det-1
     rotation-matrix facts (`c²+s²=1` from `lagrange_3d`) as a short corollary.
 
-## Decision needed (maintainer) — how far to push
+## Reframed goal (maintainer, 2026-09-29) — matrix-free; the real target
+
+The maintainer does **not** want matrix notation. The actual goals are three, and this reframing makes
+the double-angle second column and the rotation matrix **unnecessary**:
+
+1. **Rotates in the plane defined by a→b.** Have: `sandwich_carries_from_to` (a→b) + `plane_eq_wedge`
+   (the plane is `a∧b`). Gap: "in-plane vectors stay in-plane" is proved only for the standard e₁e₂
+   versor (`sandwich_plane_invariant`) — generalize to `versorFromVectors a b`.
+2. **Rotates the *oriented* angle correctly.** This = the sandwich is an **oriented isometry**:
+   preserves the dot product (angle *magnitude* — `sandwich_preserves_dot`, done) **and** preserves the
+   **wedge** (the *orientation* — so it is a rotation, not a reflection). **Preserving the wedge is the
+   one new, tractable piece** (same `field_simp`+`ring` shape as `preserves_dot`). Carrying a→b **plus**
+   oriented-isometry ⟹ it is exactly the rotation by the oriented angle from a to b — no matrix, no
+   double angle.
+3. **Components perpendicular to the plane are unchanged.** Have `sandwich_fixes_orthogonal` for the
+   standard plane; generalize to "a vector ⊥ both `a` and `b` is fixed."
+
+**Matrix-free plan (agent recommendation):**
+- [ ] **`sandwich_preserves_wedge`** — `wedge (sandwich R u) (sandwich R v) = wedge u v` for an even
+      versor (`|R|²≠0`); the orientation half of "oriented angle correct." Tractable like `preserves_dot`.
+- [ ] **Bridge `versorFromVectors a b = evenVersor …`** (it is even) so the `evenVersor` isometry /
+      perpendicular lemmas apply to the *actual* a→b rotation `R = versorFromVectors a b`.
+- [ ] **Generalize perpendicular-fixed** to "`n·a = 0 ∧ n·b = 0 ⟹ sandwich R n = n`" (the a∧b normal).
+- [ ] **Generalize plane-invariance** to `versorFromVectors a b` (in-plane → in-plane).
+- The Stage-1 `â ↦ b̂` result stays as the concrete "carries the frame." The matrix/double-angle route
+  (old Stage 3) is **dropped** as unnecessary for these goals.
+
+## Decision needed (maintainer) — SUPERSEDED by the reframing above
+
+The earlier (a)/(b)/(c) "how far to push the matrix theorem" question is moot now that the goal is
+matrix-free; kept for history. Original options:
 
 After Stage 1 (linearity + `â ↦ b̂`, landed), Stages 2–3 are each a real chunk of work (see the two
 obstacles above: the derived-vector/bivector magnitude layer, and the double angle for the second
