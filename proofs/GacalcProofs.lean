@@ -5,6 +5,7 @@ import GacalcProofs.AlgebraLaws
 import GacalcProofs.Versor2D
 import GacalcProofs.Sandwich
 import GacalcProofs.RotateComponents
+import GacalcProofs.Projection2D
 import GacalcProofs.Projection
 import GacalcProofs.Rotation
 import GacalcProofs.Rotation3D
