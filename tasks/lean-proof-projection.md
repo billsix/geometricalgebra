@@ -77,16 +77,24 @@ gacalc's `project`/`reject` (base.py:1279/1338, Hestenes & Sobczyk p.18 eqs 2.9)
   current `b − proj_a b` (because `(b∧a)a⁻¹ + (b·a)a⁻¹ = (ba)a⁻¹ = b`). Worth proving as the bridge.
 - **`reject` onto a bivector** — DEFINABLE NOW (wedge + inverse): `(A∧B)·B⁻¹`; `A∧B` is a trivector
   (`wedge` handles it) times the bivector `inverse` → a vector.
-- **`project` onto a bivector** — THE ONLY GAP: needs `A·B` as a **grade-1 left contraction** (vector
-  into plane → vector). Our `dot` only extracts the grade-0 (scalar) part, which for vector·bivector is
-  **identically zero** — so `dot` cannot express it. This is the one genuinely new operation.
+- **`project` onto a bivector** — THE ONLY GAP: needs Hestenes' **graded inner product** `A·B =
+  ⟨AB⟩_{|r−s|}` for the vector·bivector case (`r=1, s=2`), which is the **grade-1** (vector) part of the
+  geometric product. Our `dot a b = (mul a b).s` only takes the **grade-0 (scalar)** part — which *is*
+  Hestenes' inner product for two vectors, but for a vector·bivector the scalar part is **identically
+  zero**, so `dot` returns 0 instead of the intended vector. So the gap is a *graded* version of the
+  dot, not any new operation. (Terminology note, maintainer 2026-09-29: this is **Hestenes' inner
+  product** — `A·B = ⟨AB⟩_{|r−s|}`, defined for all grades in *Clifford Algebra to Geometric Calculus*,
+  1984 — **not** the "left/right contraction," which is a later, slightly different notion from
+  Lounesto and Dorst–Fontijne–Mann. For vector·bivector the two coincide, which is why they're easy to
+  conflate; the library and the book use Hestenes' inner product.)
 
-**Why the left contraction is barely relevant (maintainer asked):** it is needed ONLY for `project`
-onto a bivector via the literal `(A·B)B⁻¹`. It is NOT needed for any `reject` (those use `∧`), NOT for
-`project` onto a vector (scalar dot), and NOT for the rotation proofs — there the in-plane component is
-just `c − reject_B(c)` (projection = identity − rejection for a blade), so the perpendicular/in-plane
-split needs only `reject`. So the contraction is the lowest-priority piece; add it only to reproduce
-Python's `project`-onto-a-plane formula exactly (and to prove `proj_plane = (c·B)B⁻¹`).
+**Why this graded inner product is barely relevant (maintainer asked):** it is needed ONLY for
+`project` onto a bivector via the literal `(A·B)B⁻¹`. It is NOT needed for any `reject` (those use `∧`),
+NOT for `project` onto a vector (scalar dot suffices), and NOT for the rotation proofs — there the
+in-plane component is just `c − reject_B(c)` (projection = identity − rejection for a blade), so the
+perpendicular/in-plane split needs only `reject`. So Hestenes' graded dot is the lowest-priority piece;
+add it only to reproduce Python's `project`-onto-a-plane formula exactly (and to prove
+`proj_plane = (c·B)B⁻¹`).
 
 **Payoff for the rotation proofs:** "components perpendicular to the plane are unchanged" is exactly
 `reject` onto the plane bivector `B = a∧b` (= `(c∧B)B⁻¹`), definable now. So `rotation_fixes_normal`
@@ -99,8 +107,9 @@ Python-faithful statement: *the sandwich rotates `project_B(c)` and fixes `rejec
       vector case equals `b − proj_a b`.
 - [ ] Generalize goal 3: `sandwich R (reject_{a∧b} c) = reject_{a∧b} c` for any `c` (supersedes the
       specific `rotation_fixes_normal`).
-- [ ] Add the grade-1 **left contraction** `A ⌋ B`, then `project` onto a bivector `= (A·B)B⁻¹`, and
-      prove `proj_plane = (c·(a∧b))(a∧b)⁻¹` (the current normal-based construction equals Hestenes).
+- [ ] Add Hestenes' **graded inner product** `A·B = ⟨AB⟩_{|r−s|}` (specifically the vector·bivector →
+      grade-1 case), then `project` onto a bivector `= (A·B)B⁻¹`, and prove
+      `proj_plane = (c·(a∧b))(a∧b)⁻¹` (the current normal-based construction equals Hestenes' formula).
 
 ## Prerequisite: a from-scratch `G3` in Lean (shared)
 
