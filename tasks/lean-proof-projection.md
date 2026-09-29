@@ -7,8 +7,10 @@ Lean (to build — see Prerequisite below; shared with the 3D dot/wedge/pseudosc
 **Feeds:** the **3D versor sandwich** in `tasks/lean-proof-rotation-from-scratch.md` — the projection
 decomposition proved here is what makes the 3D sandwich a corollary of the (already proved) G2 sandwich.
 
-**Status:** proposed — **planned as the next 3D work (decided with the maintainer 2026-09-29)**;
-sequenced BEFORE the 3D versor sandwich. Gated on building `G3`.
+**Status:** in-progress (2026-09-29) — `G3` core + the projection-op extension landed, and chain steps
+1–3 proved (`reject_perp`, `wedge_reject`, `dual_wedge_perp_left`/`_right`), `make lean` green. Remaining:
+the plane-projection `= (c·B)B⁻¹` (needs vector·bivector inner + blade inverse), the 2D cases, then the
+3D versor sandwich as the corollary.
 **Priority:** 6
 **Difficulty:** 7
 
@@ -46,6 +48,13 @@ general `(A·B)B⁻¹`. Two facts to keep straight (the maintainer confirmed the
 - **The sandwich payoff.** Decompose `v = v_in + v_⊥` (in-plane + along the normal). The versor
   sandwich fixes `v_⊥` and rotates `v_in` within the plane — and that in-plane rotation *is* the G2
   `sandwich_versor` already proved. So 3D sandwich = (2D result) + (this projection decomposition).
+- **The plane is `a (b − proj_a b)` (maintainer, 2026-09-29).** Since `r = b − proj_a b ⊥ a`
+  (`reject_perp`), the geometric product has no scalar part, so `a (b − proj_a b) = a ∧ r = a ∧ b`
+  (`wedge_reject`) — the plane bivector, built on the orthogonal frame `{a, r}`. Normalizing `{â, r̂}`
+  reproduces G2's `{e₁, e₂, e₁₂}` table (`â²=r̂²=1`, `âr̂=−r̂â`, `(âr̂)²=−1`), which is the concrete
+  mechanism of the reduce-to-2D finish. The one new unlocking lemma: **`a r = a ∧ r` for `a ⊥ r`**.
+  The angle-free versor itself and the identity `R a = |a|·h` are already landed in `Rotation3D.lean`
+  (see `tasks/lean-proof-rotation-from-scratch.md`).
 
 ## Prerequisite: a from-scratch `G3` in Lean (shared)
 
@@ -64,18 +73,23 @@ blades as genuine `G3` elements, per the rotor→versor representation lesson).
       product + wedge + reverse (transcribed from gacalc's `Gn` via
       `tasks/adhoc/build-g3-lean/derive_g3_product.py`), the 8 basis elements, `vec`, `I₃`, the
       multiplication table, `I₃² = −1`. `make lean` green (2026-09-29).
-- [ ] **Extend `G3`** with the projection-specific ops: `inner_product`/dot, `I₃⁻¹` + `dual` (=`A·I₃⁻¹`,
-      the `cross`), and `project`/`reject` (`(A·B)B⁻¹`). Then the lemma chain below.
-- [ ] **Vector-onto-vector projection:** `proj a b := ((b·a)/(a·a)) • a` (a·a ≠ 0). Prove `proj a b ∥ a`
-      and `(b − proj a b) · a = 0` (rejection ⊥ a).
-- [ ] **Wedge via rejection:** `a ∧ b = a ∧ (b − proj a b)`.
-- [ ] **Dual/normal orthogonality:** `n := (a∧b) · I₃⁻¹` (= `cross a b`); prove `n·a = 0` and `n·b = 0`.
+- [x] **Extend `G3`** (2026-09-29, in `G3.lean`): `dot` (= ⟨AB⟩₀; the Euclidean dot for vectors) with
+      `dot_sub_left`/`dot_smul_left` bilinearity, wedge bilinearity (`wedge_sub_right`/`wedge_smul_right`),
+      `wedge_self_vec`, `zero`, `I₃⁻¹` (`I_inv`, with `I_mul_I_inv`), and `dual := A·I₃⁻¹`. Still to add:
+      the full `project`/`reject` (`(A·B)B⁻¹`, incl. vector·bivector inner) for the plane-projection step.
+- [x] **Vector-onto-vector projection** (2026-09-29, in `Projection.lean`): `proj a b := (b·a/a·a) • a`,
+      and **`reject_perp`** — `(b − proj_a b) · a = 0` for `a·a ≠ 0`.
+- [x] **Wedge via rejection** (`wedge_reject`): for a vector `a`, `a ∧ (b − proj_a b) = a ∧ b`.
+- [x] **Dual/normal orthogonality** (`dual_wedge_perp_left`/`_right`): `dual(a∧b) · a = 0` and `· b = 0`
+      for vectors — the plane normal is ⊥ the plane.
 - [ ] **Projection onto the plane:** for `c`, `c_⊥ := proj n c`, `c_in := c − c_⊥`; prove `c_in ⊥ n`
       (lies in the plane) **and `c_in = (c · (a∧b))(a∧b)⁻¹`** — the geometric construction equals the
-      general Hestenes/`project` formula. (The prize: verifies gacalc's `project`/`reject`.)
+      general Hestenes/`project` formula. (The prize: verifies gacalc's `project`/`reject`.) Needs the
+      vector·bivector inner + blade inverse (open question 1).
 - [ ] **2D cases** (onto-vector, onto the pseudoscalar plane) — deducible from the rotation-derived
       product; the simpler warm-up.
-- [ ] `make lean` green; update `proofs/README.md`.
+- [ ] Then the **3D versor sandwich** (in `lean-proof-rotation-from-scratch.md`) as the corollary.
+- [x] `make lean` green (for what's landed); `proofs/README.md` updated.
 
 ## Open questions
 

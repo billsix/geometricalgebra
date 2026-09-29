@@ -144,6 +144,65 @@ theorem I_sq : mul I I = neg one := by simp only [mul, I, e_123, neg, one]; ext 
 theorem reverse_reverse (a : G3) : reverse (reverse a) = a := by
   simp only [reverse]; ext <;> ring
 
+/-! ### The dual, the dot, and bilinearity helpers (for projection) -/
+
+/-- The zero multivector. -/
+def zero : G3 := ⟨0, 0, 0, 0, 0, 0, 0, 0⟩
+
+/-- The scalar product ⟨A B⟩₀ — the scalar part of the geometric product. For two
+    vectors this is the Euclidean dot product `a₁b₁ + a₂b₂ + a₃b₃`. -/
+noncomputable def dot (a b : G3) : ℝ := (mul a b).s
+
+/-- `dot` distributes over subtraction on the left (it is bilinear). -/
+theorem dot_sub_left (u w v : G3) : dot (sub u w) v = dot u v - dot w v := by
+  simp only [dot, mul, sub]; ring
+
+/-- `dot` pulls out a scalar on the left. -/
+theorem dot_smul_left (k : ℝ) (u v : G3) : dot (smul k u) v = k * dot u v := by
+  simp only [dot, mul, smul]; ring
+
+/-- The wedge distributes over subtraction on the right. -/
+theorem wedge_sub_right (a u w : G3) : wedge a (sub u w) = sub (wedge a u) (wedge a w) := by
+  simp only [wedge, sub]; ext <;> ring
+
+/-- The wedge pulls out a scalar on the right. -/
+theorem wedge_smul_right (k : ℝ) (a u : G3) : wedge a (smul k u) = smul k (wedge a u) := by
+  simp only [wedge, smul]; ext <;> ring
+
+/-- A vector wedged with itself is zero. -/
+theorem wedge_self_vec (x y z : ℝ) : wedge (vec x y z) (vec x y z) = zero := by
+  simp only [wedge, vec, zero]; ext <;> ring
+
+/-- **The fundamental identity `a b = a·b + a∧b` for vectors** (Hestenes' defining relation):
+    the geometric product of two vectors splits into its scalar (inner) part `a·b` and its
+    bivector (outer) part `a∧b`. Unconditional; pure `ring`. -/
+theorem vec_mul_eq_dot_add_wedge (a1 a2 a3 b1 b2 b3 : ℝ) :
+    mul (vec a1 a2 a3) (vec b1 b2 b3)
+      = add (smul (dot (vec a1 a2 a3) (vec b1 b2 b3)) one)
+            (wedge (vec a1 a2 a3) (vec b1 b2 b3)) := by
+  simp only [mul, wedge, smul, one, dot, add, vec]; ext <;> ring
+
+/-- **Orthogonal vectors' geometric product is their wedge:** for vectors with `a · b = 0`,
+    `a b = a ∧ b`. A corollary of the fundamental identity — orthogonality kills the scalar part,
+    leaving only the bivector. This is what turns `a (b − proj_a b)` into the plane bivector
+    `a ∧ b` (with `r = b − proj_a b ⊥ a`) — the step that reduces the 3D versor sandwich to 2D. -/
+theorem vec_mul_perp (a1 a2 a3 b1 b2 b3 : ℝ)
+    (h : dot (vec a1 a2 a3) (vec b1 b2 b3) = 0) :
+    mul (vec a1 a2 a3) (vec b1 b2 b3) = wedge (vec a1 a2 a3) (vec b1 b2 b3) := by
+  rw [vec_mul_eq_dot_add_wedge, h]
+  simp only [smul, one, add, zero]; ext <;> ring
+
+/-- The inverse unit pseudoscalar I₃⁻¹ = −e₁₂₃ (since I₃² = −1). -/
+def I_inv : G3 := ⟨0, 0, 0, 0, 0, 0, 0, -1⟩
+
+/-- I₃ · I₃⁻¹ = 1. -/
+theorem I_mul_I_inv : mul I I_inv = one := by
+  simp only [mul, I, e_123, I_inv, one]; ext <;> ring
+
+/-- The dual `A* = A · I₃⁻¹` (grade r ↦ grade 3−r), matching gacalc's `dual`
+    (base.py:1217). In 3D, `dual (a ∧ b)` is the plane normal (gacalc's `cross a b`). -/
+noncomputable def dual (a : G3) : G3 := mul a I_inv
+
 end G3
 
 end GacalcProofs

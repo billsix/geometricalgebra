@@ -19,7 +19,14 @@ the Python implementation.
   `GacalcProofs/G3.lean` (a from-scratch 𝒢₃, the 8-dim algebra: geometric product +
   wedge + reverse — transcribed from gacalc's `Gn` oracle — the eight basis elements
   `one`/`e_1`/…/`e_123 : G3`, the multiplication table, pseudoscalar I₃² = −1; the shared
-  prerequisite for the 3D proofs), and `GacalcProofs/Rotation.lean` (2D: rotation from sin/cos; the geometric product
+  prerequisite for the 3D proofs), `GacalcProofs/Projection.lean` (3D projection: vector
+  projection with the rejection ⊥ the vector, the wedge sees only the rejection, and the
+  dual of `a∧b` — the plane normal — is ⊥ both spanning vectors),
+  `GacalcProofs/Rotation3D.lean` (the **angle-free** 3D versor built from two vectors, à la
+  `versor_from_vectors`: the half-angle bisector vector `h = |b|·a + |a|·b`, the half-angle versor
+  `R = b·a + |a||b|`, and `versor_mul_from_eq_bisector` — `R·a = |a|·h`, the versor times the
+  from-vector recovers the scaled bisector, with no trig), and
+  `GacalcProofs/Rotation.lean` (2D: rotation from sin/cos; the geometric product
   enacts rotation and the product of two unit vectors is the rotor of the angle
   between them — dot = cos, wedge = sin; plus rotation "from a to b" for general
   vectors, `b = (|b|/|a|)·rot(φb−φa)a`). The basis blades are modelled as algebra

@@ -148,7 +148,12 @@ live in `proofs/` (see above), so several are `in-progress`:
   - [ ] `tasks/lean-proof-projection.md` — 2D/3D, onto-vector and onto-plane; the projection
         decomposition (`(A·B)B⁻¹`). **Planned as the next 3D work (2026-09-29), sequenced BEFORE the 3D
         versor sandwich** — proving it reduces the 3D sandwich to the (done) G2 sandwich. Its gating
-        prerequisite is a from-scratch **`G3`** (see below).
+        prerequisite is a from-scratch **`G3`** (see below). 3D angle-free versor + the bisector
+        identity `R·a = |a|·h` landed 2026-09-29 (`proofs/GacalcProofs/Rotation3D.lean`).
+  - [ ] `tasks/lean-proof-2d-versor-from-vectors.md` — **proposed** (2026-09-29): the same angle-free
+        versor-from-two-vectors technique shown in 𝒢₂ as a pedagogical warm-up (not necessary — 𝒢₂ has
+        the angle-parameterized `sandwich_versor` — but it makes the 3D construction read as "the same
+        thing, which also leaves the orthogonal complement fixed"). P7/D4.
   - [x] `tasks/archive/2026/09/29/lean-proof-2d-dual-perpendicular.md` — **DONE + ARCHIVED 2026-09-29**:
         the dual of a vector is ⊥ the vector, in 𝒢₂ (`G2.dual`/`dual_vec`/`dual_vec_perp`, `make lean`
         green). Warm-up for projection's 3D dual/normal step.
@@ -157,6 +162,15 @@ live in `proofs/` (see above), so several are `in-progress`:
         (`proofs/GacalcProofs/G3.lean`: product+wedge+reverse transcribed from gacalc's `Gn`, basis
         elements, multiplication table, I₃²=−1; `make lean` green). Remaining: dot/`I₃⁻¹`/`dual`/`project`
         (added as `lean-proof-projection.md` needs them). Unblocks the other 3D step-tasks.
+
+  - [ ] `tasks/lean-proof-algebra-laws-g2-g3.md` — **proposed** (2026-09-29): the associative-unital-
+        ℝ-algebra laws for `G2`/`G3` (mul associative + distributive, `one` identity, scalar
+        compatibility, anticommutation for ⊥ vectors). P7/D4. The fundamental identity `a b = a·b + a∧b`
+        (`vec_mul_eq_dot_add_wedge`) and `vec_mul_perp` already landed in `G3.lean` (2026-09-29).
+  - [ ] `tasks/lean-proof-rotation-preserves-length.md` — **proposed** (2026-09-29): the sandwich is an
+        isometry (`|R v R⁻¹| = |v|`), 2D + 3D. P7/D6.
+  - [ ] `tasks/lean-proof-rotation-preserves-angles.md` — **proposed** (2026-09-29): the sandwich
+        preserves the dot product (hence angles), 2D + 3D. P7/D6. Companion to the length proof.
 
   Future (deferred, NOT a proof step):
   - [ ] `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` — explore a dimension-agnostic
