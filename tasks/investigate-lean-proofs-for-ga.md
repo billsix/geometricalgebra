@@ -135,7 +135,9 @@ live in `proofs/` (see above), so several are `in-progress`:
   - [ ] `tasks/lean-proof-rotation-from-scratch.md` — sin/cos → rotate a→b → geometric product →
         dot & wedge as its parts (the shared foundation; hardest, D8). **2D core landed 2026-09-28**
         (`proofs/GacalcProofs/Rotation.lean`: product enacts rotation, product of unit vectors = rotor
-        of the angle, dot/wedge read off); 3D + general-vector framing + Mathlib equivalence remain.
+        of the angle, dot/wedge read off). **The 3D versor sandwich is DONE 2026-09-29**
+        (`Sandwich.lean`/`Rotation3D.lean`: carries a→b, isometry, orthogonal-axis fixed, plane
+        invariant). Remaining: the Mathlib-rotation equivalence proof and the sandwich-composition story.
   - [ ] `tasks/lean-proof-dot-product.md` — 2D landed (`G2.dot_is_sym_part`/`dot_eq_coord_sum`);
         from-rotation derivation + 3D remain.
   - [ ] `tasks/lean-proof-wedge-product.md` — 2D landed (`G2.wedge_is_antisym_part`); from-rotation
@@ -150,10 +152,10 @@ live in `proofs/` (see above), so several are `in-progress`:
         versor sandwich** — proving it reduces the 3D sandwich to the (done) G2 sandwich. Its gating
         prerequisite is a from-scratch **`G3`** (see below). 3D angle-free versor + the bisector
         identity `R·a = |a|·h` landed 2026-09-29 (`proofs/GacalcProofs/Rotation3D.lean`).
-  - [~] `tasks/lean-proof-2d-versor-from-vectors.md` — **in-progress** (2026-09-29): the angle-free
-        versor-from-two-vectors technique in 𝒢₂ (pedagogical warm-up). Identity `R·a = |a|·h`
-        (`Versor2D.lean`) and the 𝒢₂ sandwich isometry (`Sandwich.lean`) landed; the from-vectors
-        "carries a to b" capstone remains (shared chain with the 3D case). P7/D4.
+  - [x] `tasks/archive/2026/09/29/lean-proof-2d-versor-from-vectors.md` — **DONE + ARCHIVED
+        2026-09-29**: the angle-free versor-from-two-vectors technique in 𝒢₂ (pedagogical warm-up) —
+        `R·a = |a|·h`, the sandwich isometry, and the capstone `R a R⁻¹ = (|a|/|b|)·b`
+        (`Versor2D.lean`, `Sandwich.lean`).
   - [x] `tasks/archive/2026/09/29/lean-proof-2d-dual-perpendicular.md` — **DONE + ARCHIVED 2026-09-29**:
         the dual of a vector is ⊥ the vector, in 𝒢₂ (`G2.dual`/`dual_vec`/`dual_vec_perp`, `make lean`
         green). Warm-up for projection's 3D dual/normal step.
