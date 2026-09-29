@@ -163,10 +163,11 @@ live in `proofs/` (see above), so several are `in-progress`:
         elements, multiplication table, I₃²=−1; `make lean` green). Remaining: dot/`I₃⁻¹`/`dual`/`project`
         (added as `lean-proof-projection.md` needs them). Unblocks the other 3D step-tasks.
 
-  - [ ] `tasks/lean-proof-algebra-laws-g2-g3.md` — **proposed** (2026-09-29): the associative-unital-
-        ℝ-algebra laws for `G2`/`G3` (mul associative + distributive, `one` identity, scalar
-        compatibility, anticommutation for ⊥ vectors). P7/D4. The fundamental identity `a b = a·b + a∧b`
-        (`vec_mul_eq_dot_add_wedge`) and `vec_mul_perp` already landed in `G3.lean` (2026-09-29).
+  - [x] `tasks/archive/2026/09/29/lean-proof-algebra-laws-g2-g3.md` — **DONE + ARCHIVED 2026-09-29**:
+        the associative-unital-ℝ-algebra laws for `G2`/`G3` (mul associative + distributive, `one`
+        identity, scalar compatibility, ⊥-vector anticommutation) in `proofs/GacalcProofs/AlgebraLaws.lean`.
+        The fundamental identity `a b = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`) and `vec_mul_perp` are
+        in `G3.lean`.
   - [ ] `tasks/lean-proof-rotation-preserves-length.md` — **proposed** (2026-09-29): the sandwich is an
         isometry (`|R v R⁻¹| = |v|`), 2D + 3D. P7/D6.
   - [ ] `tasks/lean-proof-rotation-preserves-angles.md` — **proposed** (2026-09-29): the sandwich
