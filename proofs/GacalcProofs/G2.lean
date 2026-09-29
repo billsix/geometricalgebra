@@ -104,6 +104,16 @@ def vec (x y : ℝ) : G2 := ⟨0, x, y, 0⟩
 /-- The unit pseudoscalar I = e₁e₂. -/
 def I : G2 := e_12
 
+/-- The **squared magnitude** `|A|² = ⟨A Ã⟩₀` (Hestenes p.13 eq 1.49, gacalc `magnitude_squared`). -/
+noncomputable def normSq (a : G2) : ℝ := (mul a (reverse a)).s
+
+/-- The **magnitude** `|A| = √⟨A Ã⟩`, for all grades. -/
+noncomputable def magnitude (a : G2) : ℝ := Real.sqrt (normSq a)
+
+/-- **Leaf:** `|a|² = a₁² + a₂²` on a coordinate vector. -/
+theorem normSq_vec (a1 a2 : ℝ) : normSq (vec a1 a2) = a1 ^ 2 + a2 ^ 2 := by
+  simp only [normSq, mul, reverse, vec]; ring
+
 /-- Every element is the linear combination of the basis blades with its coefficients:
     `g = s·1 + c1·e₁ + c2·e₂ + c12·e₁e₂`. This is the bridge between the coefficient
     fields and the basis *elements*. -/

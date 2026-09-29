@@ -190,10 +190,17 @@ live in `proofs/` (see above), so several are `in-progress`:
         (`rotation_fixes_normal`) — in `RotateComponents.lean`/`Sandwich.lean`. The rotation-matrix /
         double-angle route was dropped as unnecessary.
 
-  - [ ] `tasks/lean-proofs-make-coordinate-free.md` — **proposed** (2026-09-29): audit + refactor the
-        proof layer to make as many proofs coordinate-free (structural `rw` chains) as cleanly reduce,
-        given the algebra-law / bilinearity / normSq abstractions; record the leaf-vs-structural split.
-        P7/D5.
+  - [~] `tasks/lean-proofs-make-coordinate-free.md` — **in-progress** (2026-09-29): make proofs
+        coordinate-free via the algebra-law / bilinearity / normSq abstractions. Landed: the inner/outer
+        property + sin/cos leaves, named coordinate leaves + index, a de-dup sweep, and the flagship
+        `sandwich_preserves_cos` (rotation preserves the cosine/angle, coordinate-free). Remaining:
+        optional `sandwich_preserves_sin` and fuller de-dup. P7/D5.
+  - [x] `tasks/archive/2026/09/29/lean-proofs-magnitude-and-conciseness-sweep.md` — **done** (2026-09-29):
+        collapsed self-dot / the two magnitude concepts (`mag` vs `magnitude`) / inline re-derivations into
+        the one `normSq`/`magnitude` primitive (the maintainer's "dot of a vector with itself IS its
+        magnitude squared"). `mag` and the unused `magnitude_vec` deleted; `normSq`/`magnitude` moved into
+        `G2`/`G3`; plane-projection lemmas now take `normSq B ≠ 0` (no raw coordinate sum). `make lean`
+        green, no warnings. P7/D5.
 
   Future (deferred, NOT a proof step):
   - [ ] `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` — explore a dimension-agnostic

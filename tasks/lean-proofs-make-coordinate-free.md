@@ -34,6 +34,42 @@ reference note on the leaf/structural split.
   `sandwich_add`/`smul`, `project_eq_sub_reject`, the 3D + new 2D `reject_perp`). Candidates still doing
   coordinate work that *might* reduce structurally with the existing lemmas.
 
+## Progress (2026-09-29, autonomous session)
+
+Landed and `make lean` green:
+- **Inner/outer property leaves** (G2 + G3): `dot_comm`, `dot_add_left`, `wedge_antisymm`,
+  `wedge_sub_left`/`wedge_smul_left` (G3), `wedge_sub_right`/`wedge_smul_right`/`wedge_self_vec` (G2).
+- **Lagrange-as-property + sin/cos** (`Trig.lean`, both algebras): `lagrange_property`,
+  `cos_between`/`sin_between`, `cos_sq_add_sin_sq` (`cos²+sin²=1`) — the sine/cosine leaves.
+- **General magnitude** `|A| = √(normSq A)` (all grades) — the **single** magnitude concept after the
+  2026-09-29 unification (the vector-only `mag = √(a·a)` and the `magnitude_vec` bridge were deleted;
+  `normSq`/`magnitude` moved into `G2.lean`/`G3.lean`). See the archived
+  `tasks/archive/2026/09/29/lean-proofs-magnitude-and-conciseness-sweep.md`.
+- **Named coordinate leaves** `normSq_vec`/`dot_vec`/`normSq_wedge_vec` (G2 + G3); the **leaf-node index**
+  recorded in `tasks/reference/lean-ga-proof-architecture.md`.
+- **De-dup sweep (partial):** `Trig` `cos_sq_add_sin_sq` haves collapsed to leaf one-liners;
+  `Projection` `reject_vec_eq`/`plane_eq_wedge` use `normSq_vec` and phrase nondegeneracy as
+  `normSq (vec a) ≠ 0` (dropped the redundant `dot_self_vec` — self-dot is just the squared magnitude).
+- **Cross-project distillation:** `runClaudeInContainer`/`runCrushInContainer`
+  `tasks/reference/lean-proof-methodology.md` (coordinates-first-then-leaves workflow + the gotchas).
+
+- **Flagship DONE:** **a rotation preserves the cosine of the angle, coordinate-free** —
+  `sandwich_preserves_cos` (`cos(RuR⁻¹, RvR⁻¹) = cos(u,v)`, G2 + G3), from `sandwich_preserves_dot`
+  (numerator) + `magnitude_sandwich_vec` (denominators). Since `cos` determines the unoriented angle,
+  the rotation preserves the angle. The magnitude leaf `sandwich_preserves_normSq_of_vec`
+  (`|RvR⁻¹|²=|v|²`) was done **structurally** (the direct `field_simp` choked on the `|R|⁴` denominator):
+  factor the inverse's scalar (`mul_smul`), `normSq_smul`, the pure-polynomial `|RvR̃|²=|R|⁴|v|²`
+  (`normSq_reverse_sandwich`), then cancel `(1/|R|²)²·|R|⁴ = 1`.
+
+**Remaining (optional):**
+- **`sandwich_preserves_sin`** (⟹ the *oriented* angle, not just `cos`): needs
+  `|wedge(RuR⁻¹)(RvR⁻¹)| = |u∧v|`. Cleanest route: the sandwich is an **outermorphism**
+  (`wedge(Ru R⁻¹)(Rv R⁻¹) = sandwich R (u∧v)`, from conjugation being multiplicative + grade-preserving)
+  plus `normSq` preserved on the *bivector* `u∧v` (a bivector is a blade in 3D, so `normSq_reverse_sandwich`
+  extends to it). The orientation itself is already covered for the rotation by `rotation_fixes_plane_bivector`.
+- A fuller de-dup pass over the remaining inline coordinate derivations (limited by the `a*a` vs `a^2`
+  form friction — some genuinely need a `ring` bridge, e.g. `plane_eq_wedge`'s field computation).
+
 ## Inner/outer-product property layer (maintainer steer, 2026-09-29) — the main thrust
 
 Treat the **inner product `·` and outer product `∧` as leaf nodes carrying algebraic properties**
@@ -87,6 +123,22 @@ a fuller inner/outer *property algebra*. What exists already: `vec_mul_eq_dot_ad
       bridge and which are structural — the "leaf vs structural" architecture, as guidance for future
       proofs (write the structural form; let a few leaves touch coordinates).
 - [ ] `make lean` green throughout; no proof gets *longer* (revert a conversion that doesn't shorten).
+
+## Final step (maintainer, 2026-09-29): leaf-node index + de-duplication sweep
+
+- [ ] **Build named leaf lemmas** for the coordinate facts re-derived inline all over the proofs — first
+      the magnitude/product-on-vectors ones: `normSq_vec` (`normSq (vec a) = a₁²+…`), `dot_vec`
+      (`dot (vec a)(vec b) = a₁b₁+…`), `normSq_wedge_vec` (`|a∧b|² = …`), for **both G2 and G3**. (There
+      are ~26 inline `normSq (vec …) = …²` / `dot (vec …)(vec …) = …` re-derivations right now — e.g. in
+      `Trig.lean`, `Rotation3D.lean`/`Versor2D.lean` `mag_sq_vec`, `Projection.lean` `plane_eq_wedge`,
+      `reject_vec_eq`, the `Sandwich.lean` `*_fixes_*`/`normSq_evenVersor` haves.)
+- [ ] **Index the leaf nodes** in `tasks/reference/lean-ga-proof-architecture.md` — one list of every
+      coordinate-bridge lemma (`normSq_vec`, `dot_vec`, the multiplication table, bilinearity, the
+      fundamental split, Lagrange-property, …), so future proofs reach for a named leaf, not `ext; ring`.
+- [ ] **Scan every proof and de-duplicate:** wherever a proof re-derives one of those facts inline (or
+      bashes coordinates for something a landed result already gives), rewrite it to **use the leaf node
+      / prior result** instead — compacting the proof and making it legible, not coordinates everywhere.
+      `make lean` green throughout; revert any rewrite that doesn't actually shorten/clarify.
 
 ## Open questions
 

@@ -19,14 +19,43 @@ noncomputable def wedge (a b : G2) : G2 where
   c12 := a.c1 * b.c2 - a.c2 * b.c1 + a.c12 * b.s + a.s * b.c12
 
 /-- Vector projection of `b` onto the vector `a`: `proj_a b = (b·a / a·a)·a` (Hestenes `(A·B)B⁻¹`
-    for a vector `B`). -/
+    for a vector `B`).
+
+    The denominator is the self-inner-product `a·a` (Hestenes `dot`), **not** `normSq a`. They agree
+    for a vector (`a·a = |a|²`), but this def is general in `a : G2`, where `a·a ≠ normSq a` on grade ≥ 2
+    (`normSq` uses the reverse). Do NOT tighten the denominator to `normSq a`. (Same call as 3D `proj`.) -/
 noncomputable def proj (a b : G2) : G2 := smul (dot b a / dot a a) a
+
+/-- The wedge distributes over subtraction on the right (2D). -/
+theorem wedge_sub_right (a u w : G2) : wedge a (sub u w) = sub (wedge a u) (wedge a w) := by
+  simp only [wedge, sub]; ext <;> ring
+
+/-- The wedge pulls out a scalar on the right (2D). -/
+theorem wedge_smul_right (k : ℝ) (a u : G2) : wedge a (smul k u) = smul k (wedge a u) := by
+  simp only [wedge, smul]; ext <;> ring
+
+/-- A vector wedged with itself is zero (2D). -/
+theorem wedge_self_vec (x y : ℝ) : wedge (vec x y) (vec x y) = (⟨0, 0, 0, 0⟩ : G2) := by
+  simp only [wedge, vec]; ext <;> ring
+
+/-- **The wedge of vectors is antisymmetric:** `a∧b = −(b∧a)` (2D). -/
+theorem wedge_antisymm (a1 a2 b1 b2 : ℝ) :
+    wedge (vec a1 a2) (vec b1 b2) = neg (wedge (vec b1 b2) (vec a1 a2)) := by
+  simp only [wedge, vec, neg]; ext <;> ring
+
+/-- **Leaf:** `|a∧b|² = (a₁b₂ − a₂b₁)²` — the squared magnitude of the plane bivector of two vectors (2D). -/
+theorem normSq_wedge_vec (a1 a2 b1 b2 : ℝ) :
+    normSq (wedge (vec a1 a2) (vec b1 b2)) = (a1 * b2 - a2 * b1) ^ 2 := by
+  simp only [normSq, wedge, mul, reverse, vec]; ring
 
 /-- Hestenes rejection `reject_B A = (A ∧ B) B⁻¹`. -/
 noncomputable def reject (awayFrom a : G2) : G2 := mul (wedge a awayFrom) (inverse awayFrom)
 
 /-- **The rejection is ⊥ the vector** (2D): `(b − proj_a b) · a = 0` for `a·a ≠ 0`. Structural, via the
-    `dot` bilinearity lemmas — the exact shape of the 3D `reject_perp`, and general in `a, b`. -/
+    `dot` bilinearity lemmas — the exact shape of the 3D `reject_perp`, and general in `a, b`.
+
+    The hypothesis is the **general** `dot a a ≠ 0`, deliberately not `normSq a ≠ 0`: it holds for any
+    `a : G2`, and for a non-vector `a` the two differ (see `proj`). Do NOT tighten it to `normSq`. -/
 theorem reject_perp (a b : G2) (ha : dot a a ≠ 0) :
     dot (sub b (proj a b)) a = 0 := by
   rw [dot_sub_left, proj, dot_smul_left]

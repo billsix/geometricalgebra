@@ -52,28 +52,24 @@ namespace GacalcProofs.G3
 
 open Real
 
-/-- The magnitude `|a| = √(a·a)` of a multivector (here used on vectors). `noncomputable`
-    (`Real.sqrt`). -/
-noncomputable def mag (a : G3) : ℝ := Real.sqrt (dot a a)
-
 /-- The **half-angle (bisector) vector** of `from`/`to`: `h = |to|·from + |from|·to`.
     Scale each vector by the *other's* magnitude and add — the sum bisects the angle
-    (`base.py` `versor_from_vectors`, the `h` there). -/
+    (`base.py` `versor_from_vectors`, the `h` there). Uses the general `magnitude = √normSq`
+    (all grades), which agrees with `√(a·a)` on a vector. -/
 noncomputable def bisector (fromV toV : G3) : G3 :=
-  add (smul (mag toV) fromV) (smul (mag fromV) toV)
+  add (smul (magnitude toV) fromV) (smul (magnitude fromV) toV)
 
 /-- The **half-angle versor** taking `from` toward `to`, à la gacalc's `versor_from_vectors`:
     the un-normalized even element `R = to·from + |from||to|` (scalar + bivector). Applied by
     the scale-invariant sandwich `R v R⁻¹`. -/
 noncomputable def versorFromVectors (fromV toV : G3) : G3 :=
-  add (mul toV fromV) (smul (mag fromV * mag toV) one)
+  add (mul toV fromV) (smul (magnitude fromV * magnitude toV) one)
 
-/-- `|a|² = a·a` for a vector — the one analytic fact the identity below needs. -/
-theorem mag_sq_vec (a1 a2 a3 : ℝ) :
-    mag (vec a1 a2 a3) ^ 2 = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
-  have hd : dot (vec a1 a2 a3) (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
-    simp only [dot, mul, vec]; ring
-  rw [mag, hd, Real.sq_sqrt (by positivity)]
+/-- `|a|² = a₁²+a₂²+a₃²` for a coordinate vector — the one analytic fact the identity below needs.
+    `magnitude = √normSq`, so this is `normSq_vec` under the square root. -/
+theorem magnitude_sq_vec (a1 a2 a3 : ℝ) :
+    magnitude (vec a1 a2 a3) ^ 2 = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
+  rw [magnitude, Real.sq_sqrt (by rw [normSq_vec]; positivity), normSq_vec]
 
 /-- **The versor collapses to the from-vector's square on a vector**: `(b a) a = (a·a)·b`,
     the associativity fact `b(aa) = b|a|²` behind the identity below (`aa = a·a` is a
@@ -91,12 +87,12 @@ theorem vec_mul_mul_self (b1 b2 b3 a1 a2 a3 : ℝ) :
     cancels in the sandwich). Angle-free: the only non-`ring` step is `|a|² = a·a`. -/
 theorem versor_mul_from_eq_bisector (a1 a2 a3 b1 b2 b3 : ℝ) :
     mul (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) (vec a1 a2 a3)
-      = smul (mag (vec a1 a2 a3)) (bisector (vec a1 a2 a3) (vec b1 b2 b3)) := by
+      = smul (magnitude (vec a1 a2 a3)) (bisector (vec a1 a2 a3) (vec b1 b2 b3)) := by
   simp only [versorFromVectors, bisector]
   -- Abstract the two magnitudes to opaque atoms; the only fact needed is `sa² = a·a`.
-  set sa := mag (vec a1 a2 a3)
-  set sb := mag (vec b1 b2 b3)
-  have hsa : sa ^ 2 = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := mag_sq_vec a1 a2 a3
+  set sa := magnitude (vec a1 a2 a3)
+  set sb := magnitude (vec b1 b2 b3)
+  have hsa : sa ^ 2 = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := magnitude_sq_vec a1 a2 a3
   clear_value sa sb
   simp only [mul, add, smul, one, vec]
   -- The three vector components need `sa² = a·a`; every other component is 0 = 0.
@@ -116,11 +112,11 @@ theorem versor_mul_from_eq_bisector (a1 a2 a3 b1 b2 b3 : ℝ) :
     `R a = |a| h` and `b R = |b| h`, associativity, and `R R̃ = |R|²`, `R a R⁻¹ = (|a|/|b|)·b`. -/
 theorem from_mul_versor_eq_bisector (a1 a2 a3 b1 b2 b3 : ℝ) :
     mul (vec b1 b2 b3) (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
-      = smul (mag (vec b1 b2 b3)) (bisector (vec a1 a2 a3) (vec b1 b2 b3)) := by
+      = smul (magnitude (vec b1 b2 b3)) (bisector (vec a1 a2 a3) (vec b1 b2 b3)) := by
   simp only [versorFromVectors, bisector]
-  set sa := mag (vec a1 a2 a3)
-  set sb := mag (vec b1 b2 b3)
-  have hsb : sb ^ 2 = b1 ^ 2 + b2 ^ 2 + b3 ^ 2 := mag_sq_vec b1 b2 b3
+  set sa := magnitude (vec a1 a2 a3)
+  set sb := magnitude (vec b1 b2 b3)
+  have hsb : sb ^ 2 = b1 ^ 2 + b2 ^ 2 + b3 ^ 2 := magnitude_sq_vec b1 b2 b3
   clear_value sa sb
   simp only [mul, add, smul, one, vec]
   ext
