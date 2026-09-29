@@ -4,7 +4,7 @@ import GacalcProofs.Sandwich
 /-! # Projection in 𝒢₃ — the geometric construction
 
     The chain that builds 3D projection from vector projections + the dual, feeding the
-    3D versor sandwich (see `tasks/lean-proof-projection.md`):
+    3D versor sandwich (see `tasks/reference/lean-ga-proof-architecture.md`):
 
       * `proj a b = (b·a / a·a) · a` — vector projection; the rejection `b − proj_a b` is
         perpendicular to `a` (`reject_perp`).

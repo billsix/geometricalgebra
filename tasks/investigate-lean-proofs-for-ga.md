@@ -148,11 +148,11 @@ live in `proofs/` (see above), so several are `in-progress`:
   - [ ] **Lagrange identity** — 2D **and** 3D already landed (`GacalcProofs/Lagrange.lean`); no
         separate step-task needed (the `ring` proofs are complete; the rotation-derivation framing is
         covered by the rotation step-task).
-  - [ ] `tasks/lean-proof-projection.md` — 2D/3D, onto-vector and onto-plane; the projection
-        decomposition (`(A·B)B⁻¹`). **Planned as the next 3D work (2026-09-29), sequenced BEFORE the 3D
-        versor sandwich** — proving it reduces the 3D sandwich to the (done) G2 sandwich. Its gating
-        prerequisite is a from-scratch **`G3`** (see below). 3D angle-free versor + the bisector
-        identity `R·a = |a|·h` landed 2026-09-29 (`proofs/GacalcProofs/Rotation3D.lean`).
+  - [x] `tasks/archive/2026/09/29/lean-proof-projection.md` — **DONE + ARCHIVED 2026-09-29**: gacalc's
+        uniform Hestenes `project`/`reject` (`(A·B)B⁻¹` / `(A∧B)B⁻¹`) for vector- and bivector-blades,
+        2D and 3D; `project_add_reject`, `proj_plane = project_onto`, the graded inner product, magnitude,
+        and the promoted `tools/derive_lean_algebra.py`. Architecture harvested to
+        `tasks/reference/lean-ga-proof-architecture.md`.
   - [x] `tasks/archive/2026/09/29/lean-proof-2d-versor-from-vectors.md` — **DONE + ARCHIVED
         2026-09-29**: the angle-free versor-from-two-vectors technique in 𝒢₂ (pedagogical warm-up) —
         `R·a = |a|·h`, the sandwich isometry, and the capstone `R a R⁻¹ = (|a|/|b|)·b`
@@ -189,6 +189,11 @@ live in `proofs/` (see above), so several are `in-progress`:
         `rotation_preserves_dot` + `rotation_fixes_plane_bivector`), perpendicular components fixed
         (`rotation_fixes_normal`) — in `RotateComponents.lean`/`Sandwich.lean`. The rotation-matrix /
         double-angle route was dropped as unnecessary.
+
+  - [ ] `tasks/lean-proofs-make-coordinate-free.md` — **proposed** (2026-09-29): audit + refactor the
+        proof layer to make as many proofs coordinate-free (structural `rw` chains) as cleanly reduce,
+        given the algebra-law / bilinearity / normSq abstractions; record the leaf-vs-structural split.
+        P7/D5.
 
   Future (deferred, NOT a proof step):
   - [ ] `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` — explore a dimension-agnostic
