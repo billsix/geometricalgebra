@@ -158,6 +158,12 @@ live in `proofs/` (see above), so several are `in-progress`:
         elements, multiplication table, I₃²=−1; `make lean` green). Remaining: dot/`I₃⁻¹`/`dual`/`project`
         (added as `lean-proof-projection.md` needs them). Unblocks the other 3D step-tasks.
 
+  Future (deferred, NOT a proof step):
+  - [ ] `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` — explore a dimension-agnostic
+        `Gn`-style product (blade→coefficient, any `n`) and Hestenes-style dot/wedge (graded parts of
+        the product) in Lean, proved consistent with the per-component `G2`/`G3`. **Deferred**: the
+        maintainer prefers the concrete component approach for now (learning). P9.
+
 ## Notes / decisions
 
 - Investigation performed 2026-09-27 (web + repo read). Sources are cited inline in Context.
