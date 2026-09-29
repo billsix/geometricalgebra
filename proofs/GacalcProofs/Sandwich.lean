@@ -201,6 +201,37 @@ theorem sandwich_add (r u v : G3) : sandwich r (add u v) = add (sandwich r u) (s
 theorem sandwich_smul (k : ℝ) (r v : G3) : sandwich r (smul k v) = smul k (sandwich r v) := by
   simp only [sandwich]; rw [GacalcProofs.G3.mul_smul, GacalcProofs.G3.smul_mul]
 
+/-- **The from-vectors versor is an even versor** — `versorFromVectors a b = evenVersor …`, its scalar
+    part `b·a + |a||b|` and its bivector part `b∧a`. This bridge lets the general `evenVersor` results
+    (isometry, fixed bivector, fixed normal) apply to the actual a→b rotation. -/
+theorem versorFromVectors_eq_evenVersor (a1 a2 a3 b1 b2 b3 : ℝ) :
+    versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)
+      = evenVersor (b1 * a1 + b2 * a2 + b3 * a3 + mag (vec a1 a2 a3) * mag (vec b1 b2 b3))
+          (b1 * a2 - b2 * a1) (b1 * a3 - b3 * a1) (b2 * a3 - b3 * a2) := by
+  simp only [versorFromVectors, evenVersor, mul, add, smul, one, vec]; ext <;> ring
+
+/-- **A rotation fixes its own plane bivector** (orientation preserved): for an even versor
+    `R = s + B` with `B = p·e₁₂ + q·e₁₃ + t·e₂₃`, `sandwich R B = B` (B commutes with R, so it rides
+    through `R R⁻¹ = 1`). This is the "rotates the oriented angle correctly / it's a rotation, not a
+    reflection" content: the plane of rotation is kept, with its orientation. -/
+theorem sandwich_fixes_own_bivector (s p q t : ℝ) (hr : s ^ 2 + p ^ 2 + q ^ 2 + t ^ 2 ≠ 0) :
+    sandwich (evenVersor s p q t) ⟨0, 0, 0, 0, p, q, t, 0⟩ = (⟨0, 0, 0, 0, p, q, t, 0⟩ : G3) := by
+  have hd : normSq (evenVersor s p q t) = s ^ 2 + p ^ 2 + q ^ 2 + t ^ 2 := normSq_evenVersor s p q t
+  simp only [sandwich, inverse, hd]
+  simp only [evenVersor, mul, reverse, smul]
+  ext <;> field_simp [hr] <;> ring
+
+/-- **A rotation fixes the normal to its plane** (perpendicular components unchanged): for an even
+    versor `R = s + (p·e₁₂ + q·e₁₃ + t·e₂₃)`, the vector `n = t·e₁ − q·e₂ + p·e₃` — the dual of the
+    plane bivector, i.e. the axis ⊥ the plane — satisfies `sandwich R n = n` (`n` commutes with `R`,
+    so it rides through `R R⁻¹ = 1`). The general-plane form of `sandwich_fixes_orthogonal`. -/
+theorem sandwich_fixes_own_normal (s p q t : ℝ) (hr : s ^ 2 + p ^ 2 + q ^ 2 + t ^ 2 ≠ 0) :
+    sandwich (evenVersor s p q t) (vec t (-q) p) = vec t (-q) p := by
+  have hd : normSq (evenVersor s p q t) = s ^ 2 + p ^ 2 + q ^ 2 + t ^ 2 := normSq_evenVersor s p q t
+  simp only [sandwich, inverse, hd]
+  simp only [evenVersor, mul, reverse, smul, vec]
+  ext <;> field_simp [hr] <;> ring
+
 /-! ### Composition: rotations compose by multiplying versors -/
 
 /-- **Reverse is an anti-automorphism:** `(a b)~ = b~ a~`. General (no evenness needed). -/
