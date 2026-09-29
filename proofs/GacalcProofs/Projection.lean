@@ -97,4 +97,33 @@ theorem proj_plane_perp_normal (a b c : G3)
     dot (proj_plane a b c) (dual (wedge a b)) = 0 := by
   rw [proj_plane]; exact reject_perp (dual (wedge a b)) c hn
 
+/-! ### Hestenes projection onto a plane, via the graded inner product -/
+
+/-- **Hestenes inner product, grade-1 case** `⟨A B⟩₁` — for a vector `A` and a bivector `B`, the
+    grade-1 (vector) part of the geometric product `A B`. This is Hestenes' inner product `A · B` for
+    this grade pair (*Clifford Algebra to Geometric Calculus*, 1984) — the "vector into the plane"
+    component. It is **not** the scalar `dot` (which is `⟨A B⟩₀`, identically 0 here) and **not** the
+    later "contraction." Correct as an inner product only for the vector·bivector grade pair. -/
+noncomputable def inner_vb (a b : G3) : G3 := vec (mul a b).c1 (mul a b).c2 (mul a b).c3
+
+/-- **Hestenes projection onto a bivector (plane):** `project_B A = (A · B) B⁻¹` — the in-plane
+    component of the vector `A` (gacalc `project`, base.py; H&S p.18), using the grade-1 inner
+    product `inner_vb` and the blade inverse. The bivector counterpart of `proj` (onto a vector). -/
+noncomputable def project_onto (onto a : G3) : G3 := mul (inner_vb a onto) (inverse onto)
+
+/-- **Projection + rejection = identity**, for a vector onto a plane (bivector `B = p·e₁₂ + q·e₁₃ +
+    r·e₂₃`, `|B|² ≠ 0`): `(A·B)B⁻¹ + (A∧B)B⁻¹ = A`. Because `(A·B) + (A∧B) = A B` (the grade-1 and
+    grade-3 parts are the whole product for a vector·bivector) and `B B⁻¹ = 1`. This validates the
+    Hestenes `project`/`reject` pair — the in-plane part plus the perpendicular part reconstruct the
+    vector. -/
+theorem project_add_reject (a1 a2 a3 p q r : ℝ) (hB : p ^ 2 + q ^ 2 + r ^ 2 ≠ 0) :
+    add (project_onto ⟨0, 0, 0, 0, p, q, r, 0⟩ (vec a1 a2 a3))
+        (reject ⟨0, 0, 0, 0, p, q, r, 0⟩ (vec a1 a2 a3))
+      = vec a1 a2 a3 := by
+  have hd : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) = p ^ 2 + q ^ 2 + r ^ 2 := by
+    simp only [normSq, mul, reverse]; ring
+  simp only [project_onto, reject, inner_vb, inverse, hd]
+  simp only [wedge, mul, reverse, smul, add, vec]
+  ext <;> field_simp [hB] <;> ring
+
 end GacalcProofs.G3
