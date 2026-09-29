@@ -172,6 +172,10 @@ live in `proofs/` (see above), so several are `in-progress`:
   - [ ] `tasks/lean-proof-rotation-preserves-angles.md` — **proposed** (2026-09-29): the sandwich
         preserves the dot product (hence angles), 2D + 3D. P7/D6. Companion to the length proof.
 
+  - [ ] `tasks/investigate-lean-to-python-proof-notebooks.md` — **proposed** (2026-09-29): can we
+        auto-generate percent-formatted Python proof notebooks (college-level symbolic form) from the
+        Lean proofs — e.g. `G2` mul associativity/distributivity — driven by / certified by Lean? P7/D7.
+
   Future (deferred, NOT a proof step):
   - [ ] `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` — explore a dimension-agnostic
         `Gn`-style product (blade→coefficient, any `n`) and Hestenes-style dot/wedge (graded parts of
