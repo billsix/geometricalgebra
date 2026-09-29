@@ -60,8 +60,12 @@ blades as genuine `G3` elements, per the rotor→versor representation lesson).
 
 ## Plan
 
-- [ ] **Build `G3`** (the shared prerequisite above): struct + product + basis elements + table +
-      dot/wedge/dual/inverse + `project`/`reject`; `make lean` green.
+- [x] **Build `G3` core** (the shared prerequisite): `proofs/GacalcProofs/G3.lean` — struct, geometric
+      product + wedge + reverse (transcribed from gacalc's `Gn` via
+      `tasks/adhoc/build-g3-lean/derive_g3_product.py`), the 8 basis elements, `vec`, `I₃`, the
+      multiplication table, `I₃² = −1`. `make lean` green (2026-09-29).
+- [ ] **Extend `G3`** with the projection-specific ops: `inner_product`/dot, `I₃⁻¹` + `dual` (=`A·I₃⁻¹`,
+      the `cross`), and `project`/`reject` (`(A·B)B⁻¹`). Then the lemma chain below.
 - [ ] **Vector-onto-vector projection:** `proj a b := ((b·a)/(a·a)) • a` (a·a ≠ 0). Prove `proj a b ∥ a`
       and `(b − proj a b) · a = 0` (rejection ⊥ a).
 - [ ] **Wedge via rejection:** `a ∧ b = a ∧ (b − proj a b)`.

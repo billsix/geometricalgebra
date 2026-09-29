@@ -16,7 +16,10 @@ the Python implementation.
   part, wedge = antisymmetric part, pseudoscalar I₂² = −1, the basis blades as
   genuine elements `one`/`e_1`/`e_2`/`e_12 : G2` with their multiplication table, and
   the dual `A·I₂⁻¹` with `dual_vec_perp`: the dual of a vector is ⊥ the vector),
-  and `GacalcProofs/Rotation.lean` (2D: rotation from sin/cos; the geometric product
+  `GacalcProofs/G3.lean` (a from-scratch 𝒢₃, the 8-dim algebra: geometric product +
+  wedge + reverse — transcribed from gacalc's `Gn` oracle — the eight basis elements
+  `one`/`e_1`/…/`e_123 : G3`, the multiplication table, pseudoscalar I₃² = −1; the shared
+  prerequisite for the 3D proofs), and `GacalcProofs/Rotation.lean` (2D: rotation from sin/cos; the geometric product
   enacts rotation and the product of two unit vectors is the rotor of the angle
   between them — dot = cos, wedge = sin; plus rotation "from a to b" for general
   vectors, `b = (|b|/|a|)·rot(φb−φa)a`). The basis blades are modelled as algebra

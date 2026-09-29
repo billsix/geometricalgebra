@@ -152,9 +152,11 @@ live in `proofs/` (see above), so several are `in-progress`:
   - [x] `tasks/archive/2026/09/29/lean-proof-2d-dual-perpendicular.md` — **DONE + ARCHIVED 2026-09-29**:
         the dual of a vector is ⊥ the vector, in 𝒢₂ (`G2.dual`/`dual_vec`/`dual_vec_perp`, `make lean`
         green). Warm-up for projection's 3D dual/normal step.
-  - [ ] **Build a from-scratch `G3`** (8-dim) — the shared prerequisite for the 3D versions of
-        projection, dot, wedge, pseudoscalar, and the rotation sandwich. Build once; unblocks all of
-        them. (Tracked here; owned first by `lean-proof-projection.md`.)
+  - [~] **From-scratch `G3`** (8-dim) — the shared prerequisite for the 3D versions of projection, dot,
+        wedge, pseudoscalar, and the rotation sandwich. **Core LANDED 2026-09-29**
+        (`proofs/GacalcProofs/G3.lean`: product+wedge+reverse transcribed from gacalc's `Gn`, basis
+        elements, multiplication table, I₃²=−1; `make lean` green). Remaining: dot/`I₃⁻¹`/`dual`/`project`
+        (added as `lean-proof-projection.md` needs them). Unblocks the other 3D step-tasks.
 
 ## Notes / decisions
 
