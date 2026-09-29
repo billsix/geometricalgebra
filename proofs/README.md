@@ -18,8 +18,12 @@ the Python implementation.
   the dual `A·I₂⁻¹` with `dual_vec_perp`: the dual of a vector is ⊥ the vector),
   `GacalcProofs/G3.lean` (a from-scratch 𝒢₃, the 8-dim algebra: geometric product +
   wedge + reverse — transcribed from gacalc's `Gn` oracle — the eight basis elements
-  `one`/`e_1`/…/`e_123 : G3`, the multiplication table, pseudoscalar I₃² = −1; the shared
-  prerequisite for the 3D proofs), `GacalcProofs/Projection.lean` (3D projection: vector
+  `one`/`e_1`/…/`e_123 : G3`, the multiplication table, pseudoscalar I₃² = −1, the fundamental
+  identity `a b = a·b + a∧b` for vectors and its `a ⊥ b ⟹ a b = a∧b` corollary; the shared
+  prerequisite for the 3D proofs), `GacalcProofs/AlgebraLaws.lean` (the associative-unital-ℝ-algebra
+  laws for both 𝒢₂ and 𝒢₃: the product is associative, distributes over addition both sides, `one`
+  is a two-sided identity, scalars pull through, and orthogonal vectors anticommute),
+  `GacalcProofs/Projection.lean` (3D projection: vector
   projection with the rejection ⊥ the vector, the wedge sees only the rejection, and the
   dual of `a∧b` — the plane normal — is ⊥ both spanning vectors),
   `GacalcProofs/Rotation3D.lean` (the **angle-free** 3D versor built from two vectors, à la
