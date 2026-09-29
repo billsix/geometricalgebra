@@ -1,6 +1,7 @@
 import GacalcProofs.G2
 import GacalcProofs.G3
 import GacalcProofs.Versor2D
+import GacalcProofs.Rotation3D
 import GacalcProofs.AlgebraLaws
 
 /-! # The versor sandwich is an isometry: it preserves lengths and angles (𝒢₂ pilot)
@@ -87,6 +88,26 @@ theorem sandwich_preserves_normSq_vec (s c12 c13 c23 v1 v2 v3 : ℝ)
         (sandwich (evenVersor s c12 c13 c23) (vec v1 v2 v3))
       = dot (vec v1 v2 v3) (vec v1 v2 v3) :=
   sandwich_preserves_dot s c12 c13 c23 v1 v2 v3 v1 v2 v3 hr
+
+/-- `R R̃ = |R|²·1` for the from-vectors versor (it is even — scalar + bivector — so `R R̃` is a
+    pure scalar). Proved by `ext <;> ring`: the odd/bivector components vanish structurally, with no
+    `√` fact needed (the magnitudes appear only in the scalar coefficient). -/
+theorem versorFromVectors_mul_reverse (a1 a2 a3 b1 b2 b3 : ℝ) :
+    mul (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
+        (reverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)))
+      = smul (normSq (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))) one := by
+  simp only [normSq, versorFromVectors, mul, reverse, add, smul, one, vec]
+  ext <;> ring
+
+/-- **The from-vectors versor is invertible: `R R⁻¹ = 1`** (for `|R|² ≠ 0`). Uses `R R̃ = |R|²·1`,
+    `mul_smul`, `smul_smul`, and `1/|R|² · |R|² = 1`. -/
+theorem versorFromVectors_mul_inverse (a1 a2 a3 b1 b2 b3 : ℝ)
+    (hr : normSq (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
+    mul (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
+        (inverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))) = one := by
+  rw [inverse, GacalcProofs.G3.mul_smul, versorFromVectors_mul_reverse,
+      GacalcProofs.G3.smul_smul, one_div_mul_cancel hr]
+  simp only [smul, one]; ext <;> ring
 
 /-- **A plane rotation leaves the orthogonal axis fixed** — the 3D fact with no 2D analogue. A versor
     in the e₁e₂ plane (`R = s + c₁₂·e₁₂`, `c₁₃ = c₂₃ = 0`) fixes the e₃ component: `R (z e₃) R⁻¹ = z e₃`

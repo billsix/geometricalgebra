@@ -82,6 +82,10 @@ theorem smul_mul (k : ℝ) (a b : G3) : mul (smul k a) b = smul k (mul a b) := b
 theorem mul_smul (k : ℝ) (a b : G3) : mul a (smul k b) = smul k (mul a b) := by
   simp only [mul, smul]; ext <;> ring
 
+/-- Scalar multiples compose: `k • (m • a) = (k·m) • a`. -/
+theorem smul_smul (k m : ℝ) (a : G3) : smul k (smul m a) = smul (k * m) a := by
+  simp only [smul]; ext <;> ring
+
 /-- **Orthogonal vectors anticommute:** if `a·b = 0` then `a b = −(b a)`. A corollary of
     `vec_mul_perp` (`a b = a∧b`) plus the antisymmetry of the wedge. -/
 theorem vec_anticomm_perp (a1 a2 a3 b1 b2 b3 : ℝ)
