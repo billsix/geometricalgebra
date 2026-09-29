@@ -103,13 +103,15 @@ ANY vector `c`** — the whole perpendicular component fixed. And reduce-to-2D b
 Python-faithful statement: *the sandwich rotates `project_B(c)` and fixes `reject_B(c)`*.
 
 **Proposed next steps (this task):**
-- [ ] Define `reject` the Hestenes way `(A∧B)·B⁻¹` (using `wedge` + `Sandwich.inverse`); prove the
-      vector case equals `b − proj_a b`.
-- [ ] Generalize goal 3: `sandwich R (reject_{a∧b} c) = reject_{a∧b} c` for any `c` (supersedes the
-      specific `rotation_fixes_normal`).
+- [x] Define `reject` the Hestenes way `(A∧B)·B⁻¹` (`Projection.reject`, using `wedge` +
+      `Sandwich.inverse`); prove the vector case equals `b − proj_a b` (`reject_vec_eq`). DONE 2026-09-29.
+- [x] Generalize goal 3: `rotation_fixes_perp` — the rotation fixes any multiple of the plane normal
+      `b×a` (= the whole orthogonal complement in 3D), superseding the single-direction
+      `rotation_fixes_normal`. DONE 2026-09-29 (`RotateComponents.lean`).
 - [ ] Add Hestenes' **graded inner product** `A·B = ⟨AB⟩_{|r−s|}` (specifically the vector·bivector →
       grade-1 case), then `project` onto a bivector `= (A·B)B⁻¹`, and prove
       `proj_plane = (c·(a∧b))(a∧b)⁻¹` (the current normal-based construction equals Hestenes' formula).
+      (Lowest priority — only for the literal `project`-onto-a-plane; see the terminology note above.)
 
 ## Prerequisite: a from-scratch `G3` in Lean (shared)
 
