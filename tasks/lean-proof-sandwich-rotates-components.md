@@ -67,13 +67,28 @@ proved in `G3`, `make lean` green.
 - [ ] (Optional, Q3) the rotation-matrix corollary: orthogonal, det 1 (from `c²+s²=1`).
 - [ ] `make lean` green; `proofs/README.md` updated.
 
-## Open questions (maintainer)
+## Answered questions (maintainer, 2026-09-29)
 
-1. **Frame — orthonormal `{â, r̂}` or the raw `{a, r}`?** The clean cos/sin rotation matrix only exists
-    in the orthonormal frame (raw `{a, r}` carries scale factors since `|a| ≠ |r|`). (Rec: orthonormal
-    `{â, r̂}` — accept the `√` from normalization; that is where sin/cos live.)
-2. **Sign of sin** — orient by `a∧b` so `r̂` is the `+90°` image of `â` and `sin θ ≥ 0`? (Rec: yes;
-    `r = b − proj_a b` already points to `b`'s side.)
-3. **What "correctly" asserts** — the explicit rotated-vector equation (Rec), and/or the
-    orthogonal/det-1 rotation-matrix corollary with `c²+s²=1` from `lagrange_3d` (Rec: the equation
-    first; the matrix facts as a short corollary).
+1. **Frame** → **orthonormal `{â, r̂}`** (accept the `√` from normalization; that is where sin/cos live).
+2. **Sign of sin** → **orient by `a∧b`**, so `r̂` is the `+90°` image of `â` and `sin θ ≥ 0`.
+3. **What "correctly" asserts** → **the explicit rotated-vector equation**, with the orthogonal/det-1
+    rotation-matrix facts (`c²+s²=1` from `lagrange_3d`) as a short corollary.
+
+## Decision needed (maintainer) — how far to push
+
+After Stage 1 (linearity + `â ↦ b̂`, landed), Stages 2–3 are each a real chunk of work (see the two
+obstacles above: the derived-vector/bivector magnitude layer, and the double angle for the second
+column). Options:
+
+- **(a) Push through both stages** — land the full literal rotation-matrix theorem
+  `sandwich R (s₁â + s₂r̂) = (s₁c − s₂s)â + (s₁s + s₂c)r̂` (derived-magnitude layer + the double-angle
+  second column via `sandwich_comp`). This is the honest full statement the request described.
+- **(b) Land Stage 2 only** — `c²+s²=1` + the `b̂ = câ + sr̂` decomposition (the "sin/cos from dot &
+  wedge" heart), and treat `â ↦ b̂` + isometry + composition as "rotation is correct"; defer the
+  double-angle second column.
+- **(c) Stop here** — Stage 1 plus the already-proved isometry / plane-invariance / orthogonal-fixed /
+  composition is enough as "the rotation is correct"; move on to the Mathlib-rotation equivalence proof
+  instead.
+
+Agent lean: **(a)** if the literal rotation-matrix theorem is wanted; **(b)** if the
+sin/cos-from-dot/wedge result is the real prize. Awaiting the maintainer's pick.
