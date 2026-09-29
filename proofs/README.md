@@ -28,7 +28,9 @@ the Python implementation.
   invertible (`R R̃ = |R|²`, `R R⁻¹ = 1`) and **carries `a` to `b`**, `R a R⁻¹ = (|a|/|b|)·b`,
   angle-free; in 3D a plane rotation fixes the orthogonal axis and keeps in-plane vectors in-plane;
   and rotations **compose by multiplying versors**, `sandwich (R₁R₂) v = sandwich R₁ (sandwich R₂ v)`,
-  with the supporting `reverse_mul`/`normSq_mul`/`inverse_mul`),
+  with the supporting `reverse_mul`/`normSq_mul`/`inverse_mul`; and for the actual a→b rotation:
+  it keeps its plane oriented, fixes the perpendicular axis, and preserves the dot product — an
+  oriented isometry carrying a→b, in `GacalcProofs/RotateComponents.lean`),
   `GacalcProofs/Versor2D.lean` (the angle-free versor-from-two-vectors construction in 𝒢₂: the
   bisector `h`, the versor `R = b·a + |a||b|`, `R·a = |a|·h`, and the carries-`a`-to-`b` capstone — the
   pedagogical twin of the 3D `Rotation3D.lean`), `GacalcProofs/Projection.lean` (3D projection: vector
