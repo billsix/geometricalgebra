@@ -44,34 +44,30 @@ theorem dot_add_left (u w v : G2) : dot (add u w) v = dot u v + dot w v := by
 theorem dot_vec (a1 a2 b1 b2 : ℝ) : dot (vec a1 a2) (vec b1 b2) = a1 * b1 + a2 * b2 := by
   simp only [dot, mul, vec]; ring
 
-/-- The magnitude `|a| = √(a·a)`. -/
-noncomputable def mag (a : G2) : ℝ := Real.sqrt (dot a a)
-
 /-- The **half-angle (bisector) vector** of `from`/`to`: `h = |to|·from + |from|·to`. -/
 noncomputable def bisector (fromV toV : G2) : G2 :=
-  add (smul (mag toV) fromV) (smul (mag fromV) toV)
+  add (smul (magnitude toV) fromV) (smul (magnitude fromV) toV)
 
 /-- The **half-angle versor** taking `from` toward `to`: `R = to·from + |from||to|` (scalar +
     bivector), applied by the scale-invariant sandwich `R v R⁻¹`. -/
 noncomputable def versorFromVectors (fromV toV : G2) : G2 :=
-  add (mul toV fromV) (smul (mag fromV * mag toV) one)
+  add (mul toV fromV) (smul (magnitude fromV * magnitude toV) one)
 
-/-- `|a|² = a·a` for a vector. -/
-theorem mag_sq_vec (a1 a2 : ℝ) : mag (vec a1 a2) ^ 2 = a1 ^ 2 + a2 ^ 2 := by
-  have hd : dot (vec a1 a2) (vec a1 a2) = a1 ^ 2 + a2 ^ 2 := by
-    simp only [dot, mul, vec]; ring
-  rw [mag, hd, Real.sq_sqrt (by positivity)]
+/-- `|a|² = a₁²+a₂²` for a coordinate vector. `magnitude = √normSq`, so this is `normSq_vec`
+    under the square root. -/
+theorem magnitude_sq_vec (a1 a2 : ℝ) : magnitude (vec a1 a2) ^ 2 = a1 ^ 2 + a2 ^ 2 := by
+  rw [magnitude, Real.sq_sqrt (by rw [normSq_vec]; positivity), normSq_vec]
 
 /-- **The half-angle versor times the from-vector is the (scaled) bisector**: `R · a = |a| · h`,
     the 2D twin of `Rotation3D.versor_mul_from_eq_bisector`. Angle-free; the only non-`ring` step is
     `|a|² = a·a`. -/
 theorem versor_mul_from_eq_bisector (a1 a2 b1 b2 : ℝ) :
     mul (versorFromVectors (vec a1 a2) (vec b1 b2)) (vec a1 a2)
-      = smul (mag (vec a1 a2)) (bisector (vec a1 a2) (vec b1 b2)) := by
+      = smul (magnitude (vec a1 a2)) (bisector (vec a1 a2) (vec b1 b2)) := by
   simp only [versorFromVectors, bisector]
-  set sa := mag (vec a1 a2)
-  set sb := mag (vec b1 b2)
-  have hsa : sa ^ 2 = a1 ^ 2 + a2 ^ 2 := mag_sq_vec a1 a2
+  set sa := magnitude (vec a1 a2)
+  set sb := magnitude (vec b1 b2)
+  have hsa : sa ^ 2 = a1 ^ 2 + a2 ^ 2 := magnitude_sq_vec a1 a2
   clear_value sa sb
   simp only [mul, add, smul, one, vec]
   ext
@@ -85,11 +81,11 @@ theorem versor_mul_from_eq_bisector (a1 a2 b1 b2 : ℝ) :
     "carries a to b" capstone. -/
 theorem from_mul_versor_eq_bisector (a1 a2 b1 b2 : ℝ) :
     mul (vec b1 b2) (versorFromVectors (vec a1 a2) (vec b1 b2))
-      = smul (mag (vec b1 b2)) (bisector (vec a1 a2) (vec b1 b2)) := by
+      = smul (magnitude (vec b1 b2)) (bisector (vec a1 a2) (vec b1 b2)) := by
   simp only [versorFromVectors, bisector]
-  set sa := mag (vec a1 a2)
-  set sb := mag (vec b1 b2)
-  have hsb : sb ^ 2 = b1 ^ 2 + b2 ^ 2 := mag_sq_vec b1 b2
+  set sa := magnitude (vec a1 a2)
+  set sb := magnitude (vec b1 b2)
+  have hsb : sb ^ 2 = b1 ^ 2 + b2 ^ 2 := magnitude_sq_vec b1 b2
   clear_value sa sb
   simp only [mul, add, smul, one, vec]
   ext

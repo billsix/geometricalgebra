@@ -190,7 +190,7 @@ theorem vec_mul_perp (a1 a2 a3 b1 b2 b3 : ℝ)
     (h : dot (vec a1 a2 a3) (vec b1 b2 b3) = 0) :
     mul (vec a1 a2 a3) (vec b1 b2 b3) = wedge (vec a1 a2 a3) (vec b1 b2 b3) := by
   rw [vec_mul_eq_dot_add_wedge, h]
-  simp only [smul, one, add, zero]; ext <;> ring
+  simp only [smul, one, add]; ext <;> ring
 
 /-! ### Inner/outer-product properties (leaf lemmas — the coordinate bridge) -/
 
@@ -206,6 +206,23 @@ theorem dot_add_left (u w v : G3) : dot (add u w) v = dot u v + dot w v := by
 theorem dot_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
     dot (vec a1 a2 a3) (vec b1 b2 b3) = a1 * b1 + a2 * b2 + a3 * b3 := by
   simp only [dot, mul, vec]; ring
+
+/-- The **squared magnitude** `|A|² = ⟨A Ã⟩₀` (Hestenes & Sobczyk p.13 eq 1.49, gacalc
+    `magnitude_squared`; `⟨AÃ⟩ = ⟨ÃA⟩` as the scalar part is symmetric). -/
+noncomputable def normSq (a : G3) : ℝ := (mul a (reverse a)).s
+
+/-- The **magnitude** `|A| = √⟨A Ã⟩` (Hestenes p.13 eq 1.49, gacalc `magnitude`), for all grades. -/
+noncomputable def magnitude (a : G3) : ℝ := Real.sqrt (normSq a)
+
+/-- **Leaf:** `|a|² = a₁² + a₂² + a₃²` on a coordinate vector. -/
+theorem normSq_vec (a1 a2 a3 : ℝ) : normSq (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
+  simp only [normSq, mul, reverse, vec]; ring
+
+/-- **Leaf:** `|a∧b|² = (a₁b₂−a₂b₁)² + (a₁b₃−a₃b₁)² + (a₂b₃−a₃b₂)²`. -/
+theorem normSq_wedge_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
+    normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3))
+      = (a1 * b2 - a2 * b1) ^ 2 + (a1 * b3 - a3 * b1) ^ 2 + (a2 * b3 - a3 * b2) ^ 2 := by
+  simp only [normSq, wedge, mul, reverse, vec]; ring
 
 /-- **The wedge of vectors is antisymmetric:** `a∧b = −(b∧a)`. -/
 theorem wedge_antisymm (a1 a2 a3 b1 b2 b3 : ℝ) :

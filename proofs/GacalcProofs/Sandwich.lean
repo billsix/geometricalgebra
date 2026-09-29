@@ -13,24 +13,6 @@ import GacalcProofs.AlgebraLaws
     `-angles.md`). Uses the magnitude-squared (`dot`) form throughout to stay `√`-free. -/
 namespace GacalcProofs.G2
 
-/-- The **squared magnitude** `|A|² = ⟨A Ã⟩₀` — the scalar part of `A` times its reverse (Hestenes &
-    Sobczyk p.13 eq 1.49, gacalc `magnitude_squared`; `⟨AÃ⟩ = ⟨ÃA⟩` since the scalar part is symmetric).
-    For an even versor it is `s² + c²`. -/
-noncomputable def normSq (a : G2) : ℝ := (mul a (reverse a)).s
-
-/-- The **magnitude** `|A| = √⟨A Ã⟩` (Hestenes p.13 eq 1.49, gacalc `magnitude`). Correct for all grades
-    (unlike the vector-only `mag = √(A·A)`, which has the wrong sign for a bivector). -/
-noncomputable def magnitude (a : G2) : ℝ := Real.sqrt (normSq a)
-
-/-- On a vector, the general magnitude agrees with `mag` (`√⟨AÃ⟩ = √(A·A)`, since `reverse` fixes a
-    vector). -/
-theorem magnitude_vec (x y : ℝ) : magnitude (vec x y) = mag (vec x y) := by
-  simp only [magnitude, mag, normSq, dot, reverse, mul, vec]; congr 1; ring
-
-/-- **Leaf:** `|a|² = a₁² + a₂²` on a coordinate vector (2D). Reuse this instead of re-deriving inline. -/
-theorem normSq_vec (a1 a2 : ℝ) : normSq (vec a1 a2) = a1 ^ 2 + a2 ^ 2 := by
-  simp only [normSq, mul, reverse, vec]; ring
-
 /-- The inverse `R⁻¹ = R̃ / |R|²` (valid when `|R|² ≠ 0`). -/
 noncomputable def inverse (a : G2) : G2 := smul (1 / normSq a) (reverse a)
 
@@ -53,13 +35,6 @@ theorem sandwich_preserves_dot (s c u1 u2 v1 v2 : ℝ) (hr : s ^ 2 + c ^ 2 ≠ 0
   simp only [evenVersor, mul, reverse, smul, vec]
   field_simp [hr]
   ring
-
-/-- **The sandwich preserves length** (magnitude-squared form): for an even versor `R` with
-    `|R|² ≠ 0`, `|R v R⁻¹|² = |v|²`. A corollary of `sandwich_preserves_dot` (`u = v`). -/
-theorem sandwich_preserves_normSq_vec (s c v1 v2 : ℝ) (hr : s ^ 2 + c ^ 2 ≠ 0) :
-    dot (sandwich (evenVersor s c) (vec v1 v2)) (sandwich (evenVersor s c) (vec v1 v2))
-      = dot (vec v1 v2) (vec v1 v2) :=
-  sandwich_preserves_dot s c v1 v2 v1 v2 hr
 
 /-- `normSq` of a scalar multiple: `|k•a|² = k²|a|²` (2D). -/
 theorem normSq_smul (k : ℝ) (a : G2) : normSq (smul k a) = k ^ 2 * normSq a := by
@@ -96,17 +71,17 @@ theorem versorFromVectors_mul_reverse (a1 a2 b1 b2 : ℝ) :
     2D twin of `Rotation3D`'s `sandwich_carries_from_to`, same assembly. In 𝒢₂ the plane is the whole
     space, so this is the whole rotation. Needs `|b| ≠ 0`, `|R|² ≠ 0`. -/
 theorem sandwich_carries_from_to (a1 a2 b1 b2 : ℝ)
-    (hb : mag (vec b1 b2) ≠ 0)
+    (hb : magnitude (vec b1 b2) ≠ 0)
     (hr : normSq (versorFromVectors (vec a1 a2) (vec b1 b2)) ≠ 0) :
     sandwich (versorFromVectors (vec a1 a2) (vec b1 b2)) (vec a1 a2)
-      = smul (mag (vec a1 a2) / mag (vec b1 b2)) (vec b1 b2) := by
+      = smul (magnitude (vec a1 a2) / magnitude (vec b1 b2)) (vec b1 b2) := by
   have hbis : bisector (vec a1 a2) (vec b1 b2)
-      = smul (1 / mag (vec b1 b2)) (mul (vec b1 b2) (versorFromVectors (vec a1 a2) (vec b1 b2))) := by
+      = smul (1 / magnitude (vec b1 b2)) (mul (vec b1 b2) (versorFromVectors (vec a1 a2) (vec b1 b2))) := by
     rw [from_mul_versor_eq_bisector, GacalcProofs.G2.smul_smul, one_div_mul_cancel hb,
         GacalcProofs.G2.one_smul]
   have hkey : mul (bisector (vec a1 a2) (vec b1 b2))
                   (inverse (versorFromVectors (vec a1 a2) (vec b1 b2)))
-      = smul (1 / mag (vec b1 b2)) (vec b1 b2) := by
+      = smul (1 / magnitude (vec b1 b2)) (vec b1 b2) := by
     rw [hbis, GacalcProofs.G2.smul_mul, inverse, GacalcProofs.G2.mul_smul,
         GacalcProofs.G2.mul_assoc, versorFromVectors_mul_reverse, GacalcProofs.G2.mul_smul,
         GacalcProofs.G2.mul_one, GacalcProofs.G2.smul_smul, GacalcProofs.G2.smul_smul]
@@ -118,30 +93,6 @@ theorem sandwich_carries_from_to (a1 a2 b1 b2 : ℝ)
 end GacalcProofs.G2
 
 namespace GacalcProofs.G3
-
-/-- The **squared magnitude** `|A|² = ⟨A Ã⟩₀` (Hestenes & Sobczyk p.13 eq 1.49, gacalc
-    `magnitude_squared`). For an even versor `s + B` it is `s² + |B|²`. -/
-noncomputable def normSq (a : G3) : ℝ := (mul a (reverse a)).s
-
-/-- The **magnitude** `|A| = √⟨A Ã⟩` (Hestenes p.13 eq 1.49, gacalc `magnitude`). Correct for all grades
-    (unlike the vector-only `mag = √(A·A)`). -/
-noncomputable def magnitude (a : G3) : ℝ := Real.sqrt (normSq a)
-
-/-- On a vector, the general magnitude agrees with the vector-only `mag`. (The def `magnitude` itself
-    is for **all** grades; this bridge is vector-only only because `mag` is.) -/
-theorem magnitude_vec (x y z : ℝ) : magnitude (vec x y z) = mag (vec x y z) := by
-  simp only [magnitude, mag, normSq, dot, reverse, mul, vec]; congr 1; ring
-
-/-- **Leaf:** `|a|² = a₁² + a₂² + a₃²` on a coordinate vector. Reuse instead of re-deriving inline. -/
-theorem normSq_vec (a1 a2 a3 : ℝ) : normSq (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
-  simp only [normSq, mul, reverse, vec]; ring
-
-/-- **Leaf:** `|a∧b|² = (a₁b₂−a₂b₁)² + (a₁b₃−a₃b₁)² + (a₂b₃−a₃b₂)²` — the squared magnitude of the plane
-    bivector of two vectors. Reuse instead of re-deriving inline. -/
-theorem normSq_wedge_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
-    normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3))
-      = (a1 * b2 - a2 * b1) ^ 2 + (a1 * b3 - a3 * b1) ^ 2 + (a2 * b3 - a3 * b2) ^ 2 := by
-  simp only [normSq, wedge, mul, reverse, vec]; ring
 
 /-- The inverse `R⁻¹ = R̃ / |R|²` (valid when `|R|² ≠ 0`). -/
 noncomputable def inverse (a : G3) : G3 := smul (1 / normSq a) (reverse a)
@@ -158,6 +109,11 @@ theorem normSq_evenVersor (s c12 c13 c23 : ℝ) :
     normSq (evenVersor s c12 c13 c23) = s ^ 2 + c12 ^ 2 + c13 ^ 2 + c23 ^ 2 := by
   simp only [normSq, evenVersor, mul, reverse]; ring
 
+/-- **Leaf:** `|B|² = p² + q² + r²` for a bivector `B = p·e₁₂ + q·e₁₃ + r·e₂₃`. Reuse instead of
+    re-deriving inline. -/
+theorem normSq_biv (p q r : ℝ) : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) = p ^ 2 + q ^ 2 + r ^ 2 := by
+  simp only [normSq, mul, reverse]; ring
+
 /-- **The sandwich preserves the dot product** (hence angles): for an even versor `R` with
     `|R|² ≠ 0`, `(R u R⁻¹) · (R v R⁻¹) = u · v`. -/
 theorem sandwich_preserves_dot (s c12 c13 c23 u1 u2 u3 v1 v2 v3 : ℝ)
@@ -169,15 +125,6 @@ theorem sandwich_preserves_dot (s c12 c13 c23 u1 u2 u3 v1 v2 v3 : ℝ)
   simp only [evenVersor, mul, reverse, smul, vec]
   field_simp [hr]
   ring
-
-/-- **The sandwich preserves length** (magnitude-squared form): for an even versor `R` with
-    `|R|² ≠ 0`, `|R v R⁻¹|² = |v|²`. A corollary of `sandwich_preserves_dot` (`u = v`). -/
-theorem sandwich_preserves_normSq_vec (s c12 c13 c23 v1 v2 v3 : ℝ)
-    (hr : s ^ 2 + c12 ^ 2 + c13 ^ 2 + c23 ^ 2 ≠ 0) :
-    dot (sandwich (evenVersor s c12 c13 c23) (vec v1 v2 v3))
-        (sandwich (evenVersor s c12 c13 c23) (vec v1 v2 v3))
-      = dot (vec v1 v2 v3) (vec v1 v2 v3) :=
-  sandwich_preserves_dot s c12 c13 c23 v1 v2 v3 v1 v2 v3 hr
 
 /-- `R R̃ = |R|²·1` for the from-vectors versor (it is even — scalar + bivector — so `R R̃` is a
     pure scalar). Proved by `ext <;> ring`: the odd/bivector components vanish structurally, with no
@@ -204,20 +151,20 @@ theorem versorFromVectors_mul_inverse (a1 a2 a3 b1 b2 b3 : ℝ)
     rotation preserves length, so `a` of length `|a|` lands on `b̂` at length `|a|`). Assembled from
     `R a = |a|·h`, `b R = |b|·h`, `R R̃ = |R|²·1`, and `R R⁻¹ = 1`. Needs `|b| ≠ 0`, `|R|² ≠ 0`. -/
 theorem sandwich_carries_from_to (a1 a2 a3 b1 b2 b3 : ℝ)
-    (hb : mag (vec b1 b2 b3) ≠ 0)
+    (hb : magnitude (vec b1 b2 b3) ≠ 0)
     (hr : normSq (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
     sandwich (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) (vec a1 a2 a3)
-      = smul (mag (vec a1 a2 a3) / mag (vec b1 b2 b3)) (vec b1 b2 b3) := by
+      = smul (magnitude (vec a1 a2 a3) / magnitude (vec b1 b2 b3)) (vec b1 b2 b3) := by
   -- The bisector expressed via `b R` (from `b R = |b|·h`, undone with |b| ≠ 0).
   have hbis : bisector (vec a1 a2 a3) (vec b1 b2 b3)
-      = smul (1 / mag (vec b1 b2 b3))
+      = smul (1 / magnitude (vec b1 b2 b3))
              (mul (vec b1 b2 b3) (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))) := by
     rw [from_mul_versor_eq_bisector, GacalcProofs.G3.smul_smul, one_div_mul_cancel hb,
         GacalcProofs.G3.one_smul]
   -- The heart: h R⁻¹ = (1/|b|)·b, via associativity + R R̃ = |R|² + mul_one.
   have hkey : mul (bisector (vec a1 a2 a3) (vec b1 b2 b3))
                   (inverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)))
-      = smul (1 / mag (vec b1 b2 b3)) (vec b1 b2 b3) := by
+      = smul (1 / magnitude (vec b1 b2 b3)) (vec b1 b2 b3) := by
     rw [hbis, GacalcProofs.G3.smul_mul, inverse, GacalcProofs.G3.mul_smul,
         GacalcProofs.G3.mul_assoc, versorFromVectors_mul_reverse, GacalcProofs.G3.mul_smul,
         GacalcProofs.G3.mul_one, GacalcProofs.G3.smul_smul, GacalcProofs.G3.smul_smul]
@@ -294,7 +241,7 @@ theorem sandwich_smul (k : ℝ) (r v : G3) : sandwich r (smul k v) = smul k (san
     (isometry, fixed bivector, fixed normal) apply to the actual a→b rotation. -/
 theorem versorFromVectors_eq_evenVersor (a1 a2 a3 b1 b2 b3 : ℝ) :
     versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)
-      = evenVersor (b1 * a1 + b2 * a2 + b3 * a3 + mag (vec a1 a2 a3) * mag (vec b1 b2 b3))
+      = evenVersor (b1 * a1 + b2 * a2 + b3 * a3 + magnitude (vec a1 a2 a3) * magnitude (vec b1 b2 b3))
           (b1 * a2 - b2 * a1) (b1 * a3 - b3 * a1) (b2 * a3 - b3 * a2) := by
   simp only [versorFromVectors, evenVersor, mul, add, smul, one, vec]; ext <;> ring
 

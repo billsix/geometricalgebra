@@ -41,7 +41,10 @@ Landed and `make lean` green:
   `wedge_sub_left`/`wedge_smul_left` (G3), `wedge_sub_right`/`wedge_smul_right`/`wedge_self_vec` (G2).
 - **Lagrange-as-property + sin/cos** (`Trig.lean`, both algebras): `lagrange_property`,
   `cos_between`/`sin_between`, `cos_sq_add_sin_sq` (`cos²+sin²=1`) — the sine/cosine leaves.
-- **General magnitude** `|A| = √(normSq A)` (all grades) + `magnitude_vec` bridge.
+- **General magnitude** `|A| = √(normSq A)` (all grades) — the **single** magnitude concept after the
+  2026-09-29 unification (the vector-only `mag = √(a·a)` and the `magnitude_vec` bridge were deleted;
+  `normSq`/`magnitude` moved into `G2.lean`/`G3.lean`). See the archived
+  `tasks/archive/2026/09/29/lean-proofs-magnitude-and-conciseness-sweep.md`.
 - **Named coordinate leaves** `normSq_vec`/`dot_vec`/`normSq_wedge_vec` (G2 + G3); the **leaf-node index**
   recorded in `tasks/reference/lean-ga-proof-architecture.md`.
 - **De-dup sweep (partial):** `Trig` `cos_sq_add_sin_sq` haves collapsed to leaf one-liners;

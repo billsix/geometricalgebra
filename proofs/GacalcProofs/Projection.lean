@@ -16,10 +16,18 @@ import GacalcProofs.Sandwich
     3D sandwich as a corollary of the G2 `sandwich_versor`. -/
 namespace GacalcProofs.G3
 
-/-- Vector projection of `b` onto `a`: `proj_a b = (b·a / a·a) · a`. Lies along `a`. -/
+/-- Vector projection of `b` onto `a`: `proj_a b = (b·a / a·a) · a`. Lies along `a`.
+
+    The denominator is the self-inner-product `a·a` (Hestenes `dot`), **not** `normSq a`. They agree
+    for a vector (`a·a = |a|²`), but this def is stated for a general `a : G3`, where `a·a ≠ normSq a`
+    (they have opposite signs on grade ≥ 2, since `normSq` uses the reverse: `normSq a = ⟨a ã⟩`).
+    Rewriting the denominator to `normSq a` would narrow the def incorrectly — so it stays `dot a a`. -/
 noncomputable def proj (a b : G3) : G3 := smul (dot b a / dot a a) a
 
-/-- **The rejection is perpendicular to `a`**: `(b − proj_a b) · a = 0`, for `a·a ≠ 0`. -/
+/-- **The rejection is perpendicular to `a`**: `(b − proj_a b) · a = 0`, for `a·a ≠ 0`.
+
+    The hypothesis is the **general** `dot a a ≠ 0`, deliberately not `normSq a ≠ 0`: this holds for
+    any `a : G3`, and for a non-vector `a` the two differ (see `proj`). Do NOT tighten it to `normSq`. -/
 theorem reject_perp (a b : G3) (ha : dot a a ≠ 0) :
     dot (sub b (proj a b)) a = 0 := by
   rw [dot_sub_left, proj, dot_smul_left]
@@ -109,12 +117,13 @@ noncomputable def project_onto (onto a : G3) : G3 := mul (inner_vb a onto) (inve
     grade-3 parts are the whole product for a vector·bivector) and `B B⁻¹ = 1`. This validates the
     Hestenes `project`/`reject` pair — the in-plane part plus the perpendicular part reconstruct the
     vector. -/
-theorem project_add_reject (a1 a2 a3 p q r : ℝ) (hB : p ^ 2 + q ^ 2 + r ^ 2 ≠ 0) :
+theorem project_add_reject (a1 a2 a3 p q r : ℝ)
+    (hB : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) ≠ 0) :
     add (project_onto ⟨0, 0, 0, 0, p, q, r, 0⟩ (vec a1 a2 a3))
         (reject ⟨0, 0, 0, 0, p, q, r, 0⟩ (vec a1 a2 a3))
       = vec a1 a2 a3 := by
-  have hd : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) = p ^ 2 + q ^ 2 + r ^ 2 := by
-    simp only [normSq, mul, reverse]; ring
+  have hd := normSq_biv p q r
+  rw [hd] at hB  -- the plane's magnitude in coordinates, for the field_simp step
   simp only [project_onto, reject, inner_vb, inverse, hd]
   simp only [wedge, mul, reverse, smul, add, vec]
   ext <;> field_simp [hB] <;> ring
@@ -126,21 +135,23 @@ theorem add_eq_left_sub (x y z : G3) (h : add x y = z) : x = sub z y := by
 /-- **Rejection from a plane = projection onto its normal** (for a bivector `B = p·e₁₂ + q·e₁₃ +
     r·e₂₃`, `|B|² ≠ 0`): `(c ∧ B) B⁻¹ = proj_{dual B} c`. Both are the perpendicular component of `c`.
     Stated for a literal bivector so the degrees stay low. -/
-theorem reject_eq_proj_normal (p q r c1 c2 c3 : ℝ) (h : p ^ 2 + q ^ 2 + r ^ 2 ≠ 0) :
+theorem reject_eq_proj_normal (p q r c1 c2 c3 : ℝ)
+    (h : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) ≠ 0) :
     reject (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) (vec c1 c2 c3)
       = proj (dual (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3)) (vec c1 c2 c3) := by
-  have hd1 : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) = p ^ 2 + q ^ 2 + r ^ 2 := by
-    simp only [normSq, mul, reverse]; ring
+  have hd1 := normSq_biv p q r
+  rw [hd1] at h  -- the plane's magnitude in coordinates, for the field_simp step
   have hd2 : dot (dual (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3)) (dual (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3))
       = p ^ 2 + q ^ 2 + r ^ 2 := by
-    simp only [dot, dual, I_inv, mul, reverse]; ring
+    simp only [dot, dual, I_inv, mul]; ring
   simp only [reject, inverse, proj, hd1, hd2]
   simp only [dual, I_inv, wedge, mul, reverse, smul, dot, vec]
   ext <;> field_simp [h] <;> ring
 
 /-- `project` onto a plane = `c −` (rejection from the plane), for a literal bivector — a rearrangement
     of `project_add_reject`. -/
-theorem project_eq_sub_reject (p q r c1 c2 c3 : ℝ) (h : p ^ 2 + q ^ 2 + r ^ 2 ≠ 0) :
+theorem project_eq_sub_reject (p q r c1 c2 c3 : ℝ)
+    (h : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) ≠ 0) :
     project_onto (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) (vec c1 c2 c3)
       = sub (vec c1 c2 c3) (reject (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) (vec c1 c2 c3)) :=
   add_eq_left_sub _ _ _ (project_add_reject c1 c2 c3 p q r h)
@@ -158,12 +169,10 @@ theorem proj_plane_eq_project_onto (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
   have hw : wedge (vec a1 a2 a3) (vec b1 b2 b3)
       = (⟨0, 0, 0, 0, a1 * b2 - a2 * b1, a1 * b3 - a3 * b1, a2 * b3 - a3 * b2, 0⟩ : G3) := by
     simp only [wedge, vec]; ext <;> ring
-  have hne : (a1 * b2 - a2 * b1) ^ 2 + (a1 * b3 - a3 * b1) ^ 2 + (a2 * b3 - a3 * b2) ^ 2 ≠ 0 := by
-    have e : normSq (⟨0, 0, 0, 0, a1 * b2 - a2 * b1, a1 * b3 - a3 * b1, a2 * b3 - a3 * b2, 0⟩ : G3)
-        = (a1 * b2 - a2 * b1) ^ 2 + (a1 * b3 - a3 * b1) ^ 2 + (a2 * b3 - a3 * b2) ^ 2 := by
-      simp only [normSq, mul, reverse]; ring
-    rw [hw] at hn; rwa [e] at hn
+  -- The two literal-bivector lemmas now take `normSq B ≠ 0` (the plane's squared magnitude), which is
+  -- exactly `hn` once the wedge is rewritten to its bivector literal — no coordinate sum anywhere.
+  rw [hw] at hn
   simp only [proj_plane]
-  rw [hw, ← reject_eq_proj_normal _ _ _ c1 c2 c3 hne, project_eq_sub_reject _ _ _ c1 c2 c3 hne]
+  rw [hw, ← reject_eq_proj_normal _ _ _ c1 c2 c3 hn, project_eq_sub_reject _ _ _ c1 c2 c3 hn]
 
 end GacalcProofs.G3

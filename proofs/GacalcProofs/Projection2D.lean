@@ -19,7 +19,11 @@ noncomputable def wedge (a b : G2) : G2 where
   c12 := a.c1 * b.c2 - a.c2 * b.c1 + a.c12 * b.s + a.s * b.c12
 
 /-- Vector projection of `b` onto the vector `a`: `proj_a b = (b·a / a·a)·a` (Hestenes `(A·B)B⁻¹`
-    for a vector `B`). -/
+    for a vector `B`).
+
+    The denominator is the self-inner-product `a·a` (Hestenes `dot`), **not** `normSq a`. They agree
+    for a vector (`a·a = |a|²`), but this def is general in `a : G2`, where `a·a ≠ normSq a` on grade ≥ 2
+    (`normSq` uses the reverse). Do NOT tighten the denominator to `normSq a`. (Same call as 3D `proj`.) -/
 noncomputable def proj (a b : G2) : G2 := smul (dot b a / dot a a) a
 
 /-- The wedge distributes over subtraction on the right (2D). -/
@@ -48,7 +52,10 @@ theorem normSq_wedge_vec (a1 a2 b1 b2 : ℝ) :
 noncomputable def reject (awayFrom a : G2) : G2 := mul (wedge a awayFrom) (inverse awayFrom)
 
 /-- **The rejection is ⊥ the vector** (2D): `(b − proj_a b) · a = 0` for `a·a ≠ 0`. Structural, via the
-    `dot` bilinearity lemmas — the exact shape of the 3D `reject_perp`, and general in `a, b`. -/
+    `dot` bilinearity lemmas — the exact shape of the 3D `reject_perp`, and general in `a, b`.
+
+    The hypothesis is the **general** `dot a a ≠ 0`, deliberately not `normSq a ≠ 0`: it holds for any
+    `a : G2`, and for a non-vector `a` the two differ (see `proj`). Do NOT tighten it to `normSq`. -/
 theorem reject_perp (a b : G2) (ha : dot a a ≠ 0) :
     dot (sub b (proj a b)) a = 0 := by
   rw [dot_sub_left, proj, dot_smul_left]

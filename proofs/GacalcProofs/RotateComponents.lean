@@ -19,11 +19,11 @@ namespace GacalcProofs.G3
     (`R a R⁻¹ = (|a|/|b|)·b`), the `|a|` scales cancel. Since `b̂ = cos θ·â + sin θ·r̂`, this already
     exhibits `â`'s image with components `(cos θ, sin θ)` in the plane frame. -/
 theorem sandwich_ahat (a1 a2 a3 b1 b2 b3 : ℝ)
-    (ha : mag (vec a1 a2 a3) ≠ 0) (hb : mag (vec b1 b2 b3) ≠ 0)
+    (ha : magnitude (vec a1 a2 a3) ≠ 0) (hb : magnitude (vec b1 b2 b3) ≠ 0)
     (hr : normSq (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
     sandwich (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
-             (smul (1 / mag (vec a1 a2 a3)) (vec a1 a2 a3))
-      = smul (1 / mag (vec b1 b2 b3)) (vec b1 b2 b3) := by
+             (smul (1 / magnitude (vec a1 a2 a3)) (vec a1 a2 a3))
+      = smul (1 / magnitude (vec b1 b2 b3)) (vec b1 b2 b3) := by
   rw [sandwich_smul, sandwich_carries_from_to a1 a2 a3 b1 b2 b3 hb hr,
       GacalcProofs.G3.smul_smul]
   congr 1
