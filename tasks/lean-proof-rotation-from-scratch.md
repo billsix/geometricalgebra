@@ -12,8 +12,10 @@ archived together so the final squash deletes the rename's adhoc codemods in one
 (`proofs/GacalcProofs/Rotation.lean`); the **angle-free 3D versor-from-two-vectors + the bisector
 identity `R a = |a|·h`** landed 2026-09-29 (`proofs/GacalcProofs/Rotation3D.lean`, `make lean` green).
 The **3D versor sandwich is now DONE** (2026-09-29, `Sandwich.lean`: carries a→b, isometry,
-orthogonal-axis fixed, plane invariant). The Mathlib-rotation *equivalence* proof and the
-sandwich-*composition* story remain (so this task stays open, not archived).
+orthogonal-axis fixed, plane invariant), and so is the **sandwich composition story** (`sandwich_comp`:
+rotations compose by versor product). The only remaining item is the Mathlib-rotation *equivalence*
+proof (so this task stays open, not archived); an optional extension — the sandwich rotating general
+in-plane components — is filed as `tasks/lean-proof-sandwich-rotates-components.md`.
 **Priority:** 7
 **Difficulty:** 8
 
@@ -123,7 +125,10 @@ vectors' geometric product is their wedge).
 - [x] Rotation "from a to b" for general (non-unit) vectors: `b = |b|/|a| · rot θ a` where θ is the
       angle from a to b (magnitudes scale, direction rotates) — the book's exact framing.
       (Landed 2026-09-28: `polar`/`scale`/`rot_polar`/`rot_from_to`, plus `rotorFromTo_carry`.)
-- [ ] The rotor sandwich / rotor composition story (optional for 2D; needed to generalize to 3D).
+- [x] **The versor sandwich / composition story — DONE 2026-09-29** (`Sandwich.lean` `sandwich_comp`):
+      rotations compose by multiplying versors, `sandwich (R₁R₂) v = sandwich R₁ (sandwich R₂ v)`, with
+      `reverse_mul` (anti-automorphism), `normSq_mul` (multiplicative norm), `inverse_mul`. The original
+      analysis note (kept for context):
       **Design settled in analysis (2026-09-28), one open naming Q:** gacalc rotates with the
       *inverse* sandwich `R v R⁻¹` (versor conjugation, scale-invariant), not the textbook `R v R̃`
       (which needs a unit rotor); both agree when `R` is unit. gacalc's "rotor" is really an

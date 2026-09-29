@@ -137,7 +137,8 @@ live in `proofs/` (see above), so several are `in-progress`:
         (`proofs/GacalcProofs/Rotation.lean`: product enacts rotation, product of unit vectors = rotor
         of the angle, dot/wedge read off). **The 3D versor sandwich is DONE 2026-09-29**
         (`Sandwich.lean`/`Rotation3D.lean`: carries a→b, isometry, orthogonal-axis fixed, plane
-        invariant). Remaining: the Mathlib-rotation equivalence proof and the sandwich-composition story.
+        invariant), **and the composition story** (`sandwich_comp`: rotations compose by versor product).
+        Remaining: only the Mathlib-rotation equivalence proof.
   - [ ] `tasks/lean-proof-dot-product.md` — 2D landed (`G2.dot_is_sym_part`/`dot_eq_coord_sum`);
         from-rotation derivation + 3D remain.
   - [ ] `tasks/lean-proof-wedge-product.md` — 2D landed (`G2.wedge_is_antisym_part`); from-rotation

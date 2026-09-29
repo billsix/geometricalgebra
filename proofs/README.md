@@ -26,7 +26,9 @@ the Python implementation.
   `GacalcProofs/Sandwich.lean` (the versor sandwich `R v R⁻¹` by an even versor, in 𝒢₂ and 𝒢₃: it is
   an isometry — preserves the dot product, hence lengths and angles; the from-vectors versor is
   invertible (`R R̃ = |R|²`, `R R⁻¹ = 1`) and **carries `a` to `b`**, `R a R⁻¹ = (|a|/|b|)·b`,
-  angle-free; and in 3D a plane rotation fixes the orthogonal axis and keeps in-plane vectors in-plane),
+  angle-free; in 3D a plane rotation fixes the orthogonal axis and keeps in-plane vectors in-plane;
+  and rotations **compose by multiplying versors**, `sandwich (R₁R₂) v = sandwich R₁ (sandwich R₂ v)`,
+  with the supporting `reverse_mul`/`normSq_mul`/`inverse_mul`),
   `GacalcProofs/Versor2D.lean` (the angle-free versor-from-two-vectors construction in 𝒢₂: the
   bisector `h`, the versor `R = b·a + |a||b|`, `R·a = |a|·h`, and the carries-`a`-to-`b` capstone — the
   pedagogical twin of the 3D `Rotation3D.lean`), `GacalcProofs/Projection.lean` (3D projection: vector
