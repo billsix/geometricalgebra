@@ -13,8 +13,19 @@ import GacalcProofs.AlgebraLaws
     `-angles.md`). Uses the magnitude-squared (`dot`) form throughout to stay `√`-free. -/
 namespace GacalcProofs.G2
 
-/-- The versor norm `|R|² = ⟨R R̃⟩₀`. For an even versor it is `s² + c²`. -/
+/-- The **squared magnitude** `|A|² = ⟨A Ã⟩₀` — the scalar part of `A` times its reverse (Hestenes &
+    Sobczyk p.13 eq 1.49, gacalc `magnitude_squared`; `⟨AÃ⟩ = ⟨ÃA⟩` since the scalar part is symmetric).
+    For an even versor it is `s² + c²`. -/
 noncomputable def normSq (a : G2) : ℝ := (mul a (reverse a)).s
+
+/-- The **magnitude** `|A| = √⟨A Ã⟩` (Hestenes p.13 eq 1.49, gacalc `magnitude`). Correct for all grades
+    (unlike the vector-only `mag = √(A·A)`, which has the wrong sign for a bivector). -/
+noncomputable def magnitude (a : G2) : ℝ := Real.sqrt (normSq a)
+
+/-- On a vector, the general magnitude agrees with `mag` (`√⟨AÃ⟩ = √(A·A)`, since `reverse` fixes a
+    vector). -/
+theorem magnitude_vec (x y : ℝ) : magnitude (vec x y) = mag (vec x y) := by
+  simp only [magnitude, mag, normSq, dot, reverse, mul, vec]; congr 1; ring
 
 /-- The inverse `R⁻¹ = R̃ / |R|²` (valid when `|R|² ≠ 0`). -/
 noncomputable def inverse (a : G2) : G2 := smul (1 / normSq a) (reverse a)
@@ -81,8 +92,18 @@ end GacalcProofs.G2
 
 namespace GacalcProofs.G3
 
-/-- The versor norm `|R|² = ⟨R R̃⟩₀`. For an even versor `s + B` it is `s² + |B|²`. -/
+/-- The **squared magnitude** `|A|² = ⟨A Ã⟩₀` (Hestenes & Sobczyk p.13 eq 1.49, gacalc
+    `magnitude_squared`). For an even versor `s + B` it is `s² + |B|²`. -/
 noncomputable def normSq (a : G3) : ℝ := (mul a (reverse a)).s
+
+/-- The **magnitude** `|A| = √⟨A Ã⟩` (Hestenes p.13 eq 1.49, gacalc `magnitude`). Correct for all grades
+    (unlike the vector-only `mag = √(A·A)`). -/
+noncomputable def magnitude (a : G3) : ℝ := Real.sqrt (normSq a)
+
+/-- On a vector, the general magnitude agrees with the vector-only `mag`. (The def `magnitude` itself
+    is for **all** grades; this bridge is vector-only only because `mag` is.) -/
+theorem magnitude_vec (x y z : ℝ) : magnitude (vec x y z) = mag (vec x y z) := by
+  simp only [magnitude, mag, normSq, dot, reverse, mul, vec]; congr 1; ring
 
 /-- The inverse `R⁻¹ = R̃ / |R|²` (valid when `|R|² ≠ 0`). -/
 noncomputable def inverse (a : G3) : G3 := smul (1 / normSq a) (reverse a)
