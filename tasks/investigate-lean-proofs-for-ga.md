@@ -168,10 +168,12 @@ live in `proofs/` (see above), so several are `in-progress`:
         identity, scalar compatibility, ⊥-vector anticommutation) in `proofs/GacalcProofs/AlgebraLaws.lean`.
         The fundamental identity `a b = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`) and `vec_mul_perp` are
         in `G3.lean`.
-  - [ ] `tasks/lean-proof-rotation-preserves-length.md` — **proposed** (2026-09-29): the sandwich is an
-        isometry (`|R v R⁻¹| = |v|`), 2D + 3D. P7/D6.
-  - [ ] `tasks/lean-proof-rotation-preserves-angles.md` — **proposed** (2026-09-29): the sandwich
-        preserves the dot product (hence angles), 2D + 3D. P7/D6. Companion to the length proof.
+  - [x] `tasks/archive/2026/09/29/lean-proof-rotation-preserves-length.md` — **DONE + ARCHIVED
+        2026-09-29**: the sandwich `R v R⁻¹` by an even versor preserves length (`|R v R⁻¹|² = |v|²`),
+        2D + 3D, in `proofs/GacalcProofs/Sandwich.lean`.
+  - [x] `tasks/archive/2026/09/29/lean-proof-rotation-preserves-angles.md` — **DONE + ARCHIVED
+        2026-09-29**: the sandwich preserves the dot product (`sandwich_preserves_dot`), hence angles,
+        2D + 3D, in `proofs/GacalcProofs/Sandwich.lean`.
 
   - [ ] `tasks/investigate-lean-to-python-proof-notebooks.md` — **proposed** (2026-09-29): can we
         auto-generate percent-formatted Python proof notebooks (college-level symbolic form) from the
