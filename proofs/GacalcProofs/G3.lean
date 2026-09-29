@@ -192,6 +192,34 @@ theorem vec_mul_perp (a1 a2 a3 b1 b2 b3 : ℝ)
   rw [vec_mul_eq_dot_add_wedge, h]
   simp only [smul, one, add, zero]; ext <;> ring
 
+/-! ### Inner/outer-product properties (leaf lemmas — the coordinate bridge) -/
+
+/-- **The scalar product is symmetric:** `a·b = b·a` (the scalar part of a product is symmetric). -/
+theorem dot_comm (a b : G3) : dot a b = dot b a := by simp only [dot, mul]; ring
+
+/-- `dot` distributes over addition on the left. -/
+theorem dot_add_left (u w v : G3) : dot (add u w) v = dot u v + dot w v := by
+  simp only [dot, mul, add]; ring
+
+/-- **Leaf:** the dot product on coordinate vectors is the Euclidean dot `a₁b₁ + a₂b₂ + a₃b₃`. Reuse
+    this named lemma instead of re-deriving it inline. -/
+theorem dot_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
+    dot (vec a1 a2 a3) (vec b1 b2 b3) = a1 * b1 + a2 * b2 + a3 * b3 := by
+  simp only [dot, mul, vec]; ring
+
+/-- **The wedge of vectors is antisymmetric:** `a∧b = −(b∧a)`. -/
+theorem wedge_antisymm (a1 a2 a3 b1 b2 b3 : ℝ) :
+    wedge (vec a1 a2 a3) (vec b1 b2 b3) = neg (wedge (vec b1 b2 b3) (vec a1 a2 a3)) := by
+  simp only [wedge, vec, neg]; ext <;> ring
+
+/-- The wedge distributes over subtraction on the left. -/
+theorem wedge_sub_left (u w a : G3) : wedge (sub u w) a = sub (wedge u a) (wedge w a) := by
+  simp only [wedge, sub]; ext <;> ring
+
+/-- The wedge pulls out a scalar on the left. -/
+theorem wedge_smul_left (k : ℝ) (u a : G3) : wedge (smul k u) a = smul k (wedge u a) := by
+  simp only [wedge, smul]; ext <;> ring
+
 /-- The inverse unit pseudoscalar I₃⁻¹ = −e₁₂₃ (since I₃² = −1). -/
 def I_inv : G3 := ⟨0, 0, 0, 0, 0, 0, 0, -1⟩
 

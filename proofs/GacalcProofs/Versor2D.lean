@@ -33,6 +33,17 @@ theorem dot_sub_left (u w v : G2) : dot (sub u w) v = dot u v - dot w v := by
 theorem dot_smul_left (k : ℝ) (u v : G2) : dot (smul k u) v = k * dot u v := by
   simp only [dot, mul, smul]; ring
 
+/-- **The scalar product is symmetric:** `a·b = b·a` (2D). -/
+theorem dot_comm (a b : G2) : dot a b = dot b a := by simp only [dot, mul]; ring
+
+/-- `dot` distributes over addition on the left (2D). -/
+theorem dot_add_left (u w v : G2) : dot (add u w) v = dot u v + dot w v := by
+  simp only [dot, mul, add]; ring
+
+/-- **Leaf:** the dot product on coordinate vectors is `a₁b₁ + a₂b₂` (2D). -/
+theorem dot_vec (a1 a2 b1 b2 : ℝ) : dot (vec a1 a2) (vec b1 b2) = a1 * b1 + a2 * b2 := by
+  simp only [dot, mul, vec]; ring
+
 /-- The magnitude `|a| = √(a·a)`. -/
 noncomputable def mag (a : G2) : ℝ := Real.sqrt (dot a a)
 

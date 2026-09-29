@@ -38,6 +38,34 @@ went from a `vec`-form `field_simp` bash to `rw [dot_sub_left, proj, dot_smul_le
 — coordinate-free and general in `a, b`. **Write proofs structurally; let only the leaves touch
 coordinates.** (Follow-up audit: `tasks/lean-proofs-make-coordinate-free.md`.)
 
+## Leaf-node index (the coordinate bridge — reuse these, don't re-derive inline)
+
+Every proof should reach for a *named* leaf, not a fresh `ext <;> ring`. The leaves, by category
+(2D `G2` + 3D `G3` unless noted):
+
+- **Multiplication table:** `e_1_sq`/`e_2_sq`/`e_3_sq`, `e_1_mul_e_2`/…, `e_2_mul_e_1` (anticommute),
+  `e_12_mul_e_3`, `I_sq` (`I² = −1`), `reverse_reverse`.
+- **Algebra laws** (`AlgebraLaws.lean`): `mul_assoc`, `mul_add`/`add_mul`, `one_mul`/`mul_one`,
+  `smul_mul`/`mul_smul`, `smul_smul`, `one_smul`, `vec_anticomm_perp`.
+- **Inner product `·`:** `dot_comm` (symmetry), `dot_sub_left`/`dot_smul_left`/`dot_add_left`
+  (bilinearity), `dot_vec` (`a·b = a₁b₁+…`).
+- **Outer product `∧`:** `wedge_sub_right`/`wedge_smul_right`/`wedge_sub_left`/`wedge_smul_left`
+  (bilinearity), `wedge_antisymm` (`a∧b = −(b∧a)`), `wedge_self_vec` (`a∧a = 0`).
+- **The split:** `vec_mul_eq_dot_add_wedge` (`ab = a·b + a∧b`, G3), `vec_mul_perp` (`a⊥b ⟹ ab = a∧b`).
+- **Magnitude (squared is the primitive):** `normSq_vec` (`|a|² = a₁²+…`), `normSq_wedge_vec`
+  (`|a∧b|² = …`), `normSq_evenVersor`, `versorFromVectors_mul_reverse` (`R R̃ = |R|²·1`), `normSq_mul`
+  (multiplicative); `mag_sq_vec`, `magnitude_vec` (bridge `magnitude` ↔ vector-only `mag`).
+- **Sin/cos & Lagrange** (`Trig.lean`): `lagrange_property` (`(a·b)²+|a∧b|² = |a|²|b|²`),
+  `cos_between`/`sin_between`, `cos_sq_add_sin_sq` (`cos²+sin²=1`), and `sandwich_preserves_cos`
+  (a rotation preserves the cosine, hence the angle — coordinate-free).
+- **Sandwich isometry leaves** (`Sandwich.lean`): `sandwich_preserves_dot`, `normSq_smul`,
+  `normSq_reverse_sandwich` (`|RvR̃|²=|R|⁴|v|²`), `sandwich_preserves_normSq_of_vec` (`|RvR⁻¹|²=|v|²`),
+  `magnitude_sandwich_vec`.
+- **Duals / pseudoscalar:** `I_inv`, `I_mul_I_inv`, `dual`, `dual_wedge_perp_left`/`_right`.
+
+**Note:** the squared magnitude `normSq_vec` is *the* "|a|²" primitive — "a vector dotted with itself"
+is not its own leaf; route it through `normSq` (and phrase nondegeneracy as `normSq (vec a) ≠ 0`).
+
 ## Other techniques worth reusing
 
 - **The even-versor bridge.** `versorFromVectors_eq_evenVersor` proves the a→b versor `= evenVersor …`

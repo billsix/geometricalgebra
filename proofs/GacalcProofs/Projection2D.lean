@@ -22,6 +22,28 @@ noncomputable def wedge (a b : G2) : G2 where
     for a vector `B`). -/
 noncomputable def proj (a b : G2) : G2 := smul (dot b a / dot a a) a
 
+/-- The wedge distributes over subtraction on the right (2D). -/
+theorem wedge_sub_right (a u w : G2) : wedge a (sub u w) = sub (wedge a u) (wedge a w) := by
+  simp only [wedge, sub]; ext <;> ring
+
+/-- The wedge pulls out a scalar on the right (2D). -/
+theorem wedge_smul_right (k : ℝ) (a u : G2) : wedge a (smul k u) = smul k (wedge a u) := by
+  simp only [wedge, smul]; ext <;> ring
+
+/-- A vector wedged with itself is zero (2D). -/
+theorem wedge_self_vec (x y : ℝ) : wedge (vec x y) (vec x y) = (⟨0, 0, 0, 0⟩ : G2) := by
+  simp only [wedge, vec]; ext <;> ring
+
+/-- **The wedge of vectors is antisymmetric:** `a∧b = −(b∧a)` (2D). -/
+theorem wedge_antisymm (a1 a2 b1 b2 : ℝ) :
+    wedge (vec a1 a2) (vec b1 b2) = neg (wedge (vec b1 b2) (vec a1 a2)) := by
+  simp only [wedge, vec, neg]; ext <;> ring
+
+/-- **Leaf:** `|a∧b|² = (a₁b₂ − a₂b₁)²` — the squared magnitude of the plane bivector of two vectors (2D). -/
+theorem normSq_wedge_vec (a1 a2 b1 b2 : ℝ) :
+    normSq (wedge (vec a1 a2) (vec b1 b2)) = (a1 * b2 - a2 * b1) ^ 2 := by
+  simp only [normSq, wedge, mul, reverse, vec]; ring
+
 /-- Hestenes rejection `reject_B A = (A ∧ B) B⁻¹`. -/
 noncomputable def reject (awayFrom a : G2) : G2 := mul (wedge a awayFrom) (inverse awayFrom)
 

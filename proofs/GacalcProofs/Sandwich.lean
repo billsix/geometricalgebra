@@ -27,6 +27,10 @@ noncomputable def magnitude (a : G2) : ℝ := Real.sqrt (normSq a)
 theorem magnitude_vec (x y : ℝ) : magnitude (vec x y) = mag (vec x y) := by
   simp only [magnitude, mag, normSq, dot, reverse, mul, vec]; congr 1; ring
 
+/-- **Leaf:** `|a|² = a₁² + a₂²` on a coordinate vector (2D). Reuse this instead of re-deriving inline. -/
+theorem normSq_vec (a1 a2 : ℝ) : normSq (vec a1 a2) = a1 ^ 2 + a2 ^ 2 := by
+  simp only [normSq, mul, reverse, vec]; ring
+
 /-- The inverse `R⁻¹ = R̃ / |R|²` (valid when `|R|² ≠ 0`). -/
 noncomputable def inverse (a : G2) : G2 := smul (1 / normSq a) (reverse a)
 
@@ -56,6 +60,29 @@ theorem sandwich_preserves_normSq_vec (s c v1 v2 : ℝ) (hr : s ^ 2 + c ^ 2 ≠ 
     dot (sandwich (evenVersor s c) (vec v1 v2)) (sandwich (evenVersor s c) (vec v1 v2))
       = dot (vec v1 v2) (vec v1 v2) :=
   sandwich_preserves_dot s c v1 v2 v1 v2 hr
+
+/-- `normSq` of a scalar multiple: `|k•a|² = k²|a|²` (2D). -/
+theorem normSq_smul (k : ℝ) (a : G2) : normSq (smul k a) = k ^ 2 * normSq a := by
+  simp only [normSq, smul, reverse, mul]; ring
+
+/-- `|R v R̃|² = |R|⁴ |v|²` for an even versor and a vector (2D), pure polynomial `ring`. -/
+theorem normSq_reverse_sandwich (s c v1 v2 : ℝ) :
+    normSq (mul (mul (evenVersor s c) (vec v1 v2)) (reverse (evenVersor s c)))
+      = normSq (evenVersor s c) ^ 2 * normSq (vec v1 v2) := by
+  simp only [normSq, evenVersor, mul, reverse, vec]; ring
+
+/-- **The sandwich preserves a vector's squared magnitude** (2D): `|R v R⁻¹|² = |v|²`. -/
+theorem sandwich_preserves_normSq_of_vec (s c v1 v2 : ℝ) (hr : s ^ 2 + c ^ 2 ≠ 0) :
+    normSq (sandwich (evenVersor s c) (vec v1 v2)) = normSq (vec v1 v2) := by
+  have hr' : normSq (evenVersor s c) ≠ 0 := by rw [normSq_evenVersor]; exact hr
+  rw [sandwich, inverse, GacalcProofs.G2.mul_smul, normSq_smul, normSq_reverse_sandwich]
+  field_simp [hr']
+
+/-- **The sandwich preserves a vector's magnitude** (2D): `|R v R⁻¹| = |v|`. -/
+theorem magnitude_sandwich_vec (s c v1 v2 : ℝ) (hr : s ^ 2 + c ^ 2 ≠ 0) :
+    magnitude (sandwich (evenVersor s c) (vec v1 v2)) = magnitude (vec v1 v2) := by
+  simp only [magnitude]
+  rw [sandwich_preserves_normSq_of_vec s c v1 v2 hr]
 
 /-- `R R̃ = |R|²·1` for the from-vectors versor (even, so `R R̃` is a pure scalar). -/
 theorem versorFromVectors_mul_reverse (a1 a2 b1 b2 : ℝ) :
@@ -104,6 +131,17 @@ noncomputable def magnitude (a : G3) : ℝ := Real.sqrt (normSq a)
     is for **all** grades; this bridge is vector-only only because `mag` is.) -/
 theorem magnitude_vec (x y z : ℝ) : magnitude (vec x y z) = mag (vec x y z) := by
   simp only [magnitude, mag, normSq, dot, reverse, mul, vec]; congr 1; ring
+
+/-- **Leaf:** `|a|² = a₁² + a₂² + a₃²` on a coordinate vector. Reuse instead of re-deriving inline. -/
+theorem normSq_vec (a1 a2 a3 : ℝ) : normSq (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
+  simp only [normSq, mul, reverse, vec]; ring
+
+/-- **Leaf:** `|a∧b|² = (a₁b₂−a₂b₁)² + (a₁b₃−a₃b₁)² + (a₂b₃−a₃b₂)²` — the squared magnitude of the plane
+    bivector of two vectors. Reuse instead of re-deriving inline. -/
+theorem normSq_wedge_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
+    normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3))
+      = (a1 * b2 - a2 * b1) ^ 2 + (a1 * b3 - a3 * b1) ^ 2 + (a2 * b3 - a3 * b2) ^ 2 := by
+  simp only [normSq, wedge, mul, reverse, vec]; ring
 
 /-- The inverse `R⁻¹ = R̃ / |R|²` (valid when `|R|² ≠ 0`). -/
 noncomputable def inverse (a : G3) : G3 := smul (1 / normSq a) (reverse a)
@@ -188,6 +226,35 @@ theorem sandwich_carries_from_to (a1 a2 a3 b1 b2 b3 : ℝ)
   -- Assemble: sandwich R a = |a|·(h R⁻¹) = |a|·(1/|b|)·b = (|a|/|b|)·b.
   rw [sandwich, versor_mul_from_eq_bisector, GacalcProofs.G3.smul_mul, hkey,
       GacalcProofs.G3.smul_smul, mul_one_div]
+
+/-- `normSq` of a scalar multiple: `|k•a|² = k²|a|²`. -/
+theorem normSq_smul (k : ℝ) (a : G3) : normSq (smul k a) = k ^ 2 * normSq a := by
+  simp only [normSq, smul, reverse, mul]; ring
+
+/-- **The reverse sandwich scales the norm by `|R|²`:** `|R v R̃|² = |R|⁴ |v|²` for an even versor and a
+    vector (the versor norm is multiplicative through the reverse sandwich). Pure polynomial `ring`. -/
+theorem normSq_reverse_sandwich (s c12 c13 c23 v1 v2 v3 : ℝ) :
+    normSq (mul (mul (evenVersor s c12 c13 c23) (vec v1 v2 v3))
+                (reverse (evenVersor s c12 c13 c23)))
+      = normSq (evenVersor s c12 c13 c23) ^ 2 * normSq (vec v1 v2 v3) := by
+  simp only [normSq, evenVersor, mul, reverse, vec]; ring
+
+/-- **The sandwich preserves a vector's squared magnitude:** `|R v R⁻¹|² = |v|²` — the inverse sandwich
+    is a rotation. Structural: factor the inverse's scalar (`mul_smul`), scale by `normSq_smul`, use
+    `|R v R̃|² = |R|⁴|v|²`, then cancel `(1/|R|²)²·|R|⁴ = 1` (`|R|² ≠ 0`). -/
+theorem sandwich_preserves_normSq_of_vec (s c12 c13 c23 v1 v2 v3 : ℝ)
+    (hr : s ^ 2 + c12 ^ 2 + c13 ^ 2 + c23 ^ 2 ≠ 0) :
+    normSq (sandwich (evenVersor s c12 c13 c23) (vec v1 v2 v3)) = normSq (vec v1 v2 v3) := by
+  have hr' : normSq (evenVersor s c12 c13 c23) ≠ 0 := by rw [normSq_evenVersor]; exact hr
+  rw [sandwich, inverse, GacalcProofs.G3.mul_smul, normSq_smul, normSq_reverse_sandwich]
+  field_simp [hr']
+
+/-- **The sandwich preserves a vector's magnitude:** `|R v R⁻¹| = |v|` (from `_normSq_of_vec`). -/
+theorem magnitude_sandwich_vec (s c12 c13 c23 v1 v2 v3 : ℝ)
+    (hr : s ^ 2 + c12 ^ 2 + c13 ^ 2 + c23 ^ 2 ≠ 0) :
+    magnitude (sandwich (evenVersor s c12 c13 c23) (vec v1 v2 v3)) = magnitude (vec v1 v2 v3) := by
+  simp only [magnitude]
+  rw [sandwich_preserves_normSq_of_vec s c12 c13 c23 v1 v2 v3 hr]
 
 /-- **A plane rotation leaves the orthogonal axis fixed** — the 3D fact with no 2D analogue. A versor
     in the e₁e₂ plane (`R = s + c₁₂·e₁₂`, `c₁₃ = c₂₃ = 0`) fixes the e₃ component: `R (z e₃) R⁻¹ = z e₃`

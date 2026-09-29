@@ -50,13 +50,10 @@ theorem dual_wedge_perp_right (a1 a2 a3 b1 b2 b3 : ℝ) :
     rejection — exhibiting the plane of rotation as the pure bivector `a ∧ b`, built from `a` and
     `b`. This is the step that reduces the 3D versor sandwich to the 2D case. -/
 theorem plane_eq_wedge (a1 a2 a3 b1 b2 b3 : ℝ)
-    (ha : dot (vec a1 a2 a3) (vec a1 a2 a3) ≠ 0) :
+    (ha : normSq (vec a1 a2 a3) ≠ 0) :
     mul (vec a1 a2 a3) (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3)))
       = wedge (vec a1 a2 a3) (vec b1 b2 b3) := by
-  have hd : a1 ^ 2 + a2 ^ 2 + a3 ^ 2 ≠ 0 := by
-    have e : dot (vec a1 a2 a3) (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
-      simp only [dot, mul, vec]; ring
-    rwa [e] at ha
+  have hd : a1 ^ 2 + a2 ^ 2 + a3 ^ 2 ≠ 0 := by rwa [normSq_vec] at ha
   simp only [mul, sub, proj, smul, wedge, dot, vec]
   ext <;> field_simp [hd] <;> ring
 
@@ -71,15 +68,11 @@ noncomputable def reject (awayFrom a : G3) : G3 := mul (wedge a awayFrom) (inver
     (for `a·a ≠ 0`). Confirms the direct `(A∧B)B⁻¹` form matches the vector-projection construction
     (`(b∧a)a⁻¹ + (b·a)a⁻¹ = (ba)a⁻¹ = b`). -/
 theorem reject_vec_eq (a1 a2 a3 b1 b2 b3 : ℝ)
-    (ha : dot (vec a1 a2 a3) (vec a1 a2 a3) ≠ 0) :
+    (ha : normSq (vec a1 a2 a3) ≠ 0) :
     reject (vec a1 a2 a3) (vec b1 b2 b3)
       = sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3)) := by
-  have hd : normSq (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
-    simp only [normSq, mul, reverse, vec]; ring
-  have hne : a1 ^ 2 + a2 ^ 2 + a3 ^ 2 ≠ 0 := by
-    have e : dot (vec a1 a2 a3) (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
-      simp only [dot, mul, vec]; ring
-    rwa [e] at ha
+  have hd := normSq_vec a1 a2 a3
+  have hne : a1 ^ 2 + a2 ^ 2 + a3 ^ 2 ≠ 0 := by rwa [normSq_vec] at ha
   simp only [reject, inverse, hd]
   simp only [proj, sub, wedge, mul, reverse, smul, dot, vec]
   ext <;> field_simp [hne] <;> ring
