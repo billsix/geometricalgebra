@@ -108,10 +108,14 @@ Python-faithful statement: *the sandwich rotates `project_B(c)` and fixes `rejec
 - [x] Generalize goal 3: `rotation_fixes_perp` — the rotation fixes any multiple of the plane normal
       `b×a` (= the whole orthogonal complement in 3D), superseding the single-direction
       `rotation_fixes_normal`. DONE 2026-09-29 (`RotateComponents.lean`).
-- [ ] Add Hestenes' **graded inner product** `A·B = ⟨AB⟩_{|r−s|}` (specifically the vector·bivector →
-      grade-1 case), then `project` onto a bivector `= (A·B)B⁻¹`, and prove
-      `proj_plane = (c·(a∧b))(a∧b)⁻¹` (the current normal-based construction equals Hestenes' formula).
-      (Lowest priority — only for the literal `project`-onto-a-plane; see the terminology note above.)
+- [x] Add Hestenes' **graded inner product** `⟨AB⟩₁` (`inner_vb`, the vector·bivector → grade-1 case)
+      and `project` onto a bivector `= (A·B)B⁻¹` (`project_onto`). DONE 2026-09-29 (`Projection.lean`).
+      Validated by **`project_add_reject`**: `(A·B)B⁻¹ + (A∧B)B⁻¹ = A` (in-plane part + perpendicular
+      part reconstruct the vector), since `(A·B)+(A∧B) = AB` and `B B⁻¹ = 1`.
+- [ ] (Optional, minor) the explicit `proj_plane a b c = project_onto (a∧b) c` equivalence (the
+      normal-based construction equals the Hestenes form) — follows from `project_add_reject` + that
+      `reject_{a∧b}` is the projection onto the normal; and the **2D** onto-vector / onto-pseudoscalar
+      warm-ups. Not needed for the rotation results.
 
 ## Prerequisite: a from-scratch `G3` in Lean (shared)
 

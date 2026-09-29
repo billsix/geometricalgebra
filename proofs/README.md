@@ -36,7 +36,8 @@ the Python implementation.
   pedagogical twin of the 3D `Rotation3D.lean`), `GacalcProofs/Projection.lean` (3D projection: vector
   projection with the rejection ⊥ the vector, the wedge sees only the rejection, and the
   dual of `a∧b` — the plane normal — is ⊥ both spanning vectors; plus the uniform Hestenes rejection
-  `reject_B A = (A∧B)·B⁻¹`, proved to equal `b − proj_a b` for the vector case),
+  `reject_B A = (A∧B)·B⁻¹`, proved to equal `b − proj_a b` for the vector case; plus the graded inner product `⟨AB⟩₁`,
+  `project` onto a plane `(A·B)B⁻¹`, and `project + reject = identity`),
   `GacalcProofs/Rotation3D.lean` (the **angle-free** 3D versor built from two vectors, à la
   `versor_from_vectors`: the half-angle bisector vector `h = |b|·a + |a|·b`, the half-angle versor
   `R = b·a + |a||b|`, and `versor_mul_from_eq_bisector` — `R·a = |a|·h`, the versor times the
