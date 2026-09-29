@@ -110,4 +110,27 @@ theorem versor_mul_from_eq_bisector (a1 a2 a3 b1 b2 b3 : ℝ) :
   · ring
   · ring
 
+/-- **Companion identity: the to-vector times the versor is the (scaled) bisector**, `b · R = |b| · h`
+    (multiplying `R` on the LEFT by `b`). Symmetric to `versor_mul_from_eq_bisector` (`R · a = |a| · h`).
+    Together the pair drives the capstone `R a R⁻¹ = (|a|/|b|)·b` (the versor carries `a` to `b`): from
+    `R a = |a| h` and `b R = |b| h`, associativity, and `R R̃ = |R|²`, `R a R⁻¹ = (|a|/|b|)·b`. -/
+theorem from_mul_versor_eq_bisector (a1 a2 a3 b1 b2 b3 : ℝ) :
+    mul (vec b1 b2 b3) (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
+      = smul (mag (vec b1 b2 b3)) (bisector (vec a1 a2 a3) (vec b1 b2 b3)) := by
+  simp only [versorFromVectors, bisector]
+  set sa := mag (vec a1 a2 a3)
+  set sb := mag (vec b1 b2 b3)
+  have hsb : sb ^ 2 = b1 ^ 2 + b2 ^ 2 + b3 ^ 2 := mag_sq_vec b1 b2 b3
+  clear_value sa sb
+  simp only [mul, add, smul, one, vec]
+  ext
+  · ring
+  · linear_combination -a1 * hsb
+  · linear_combination -a2 * hsb
+  · linear_combination -a3 * hsb
+  · ring
+  · ring
+  · ring
+  · ring
+
 end GacalcProofs.G3
