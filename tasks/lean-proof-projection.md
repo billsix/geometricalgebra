@@ -7,12 +7,13 @@ Lean (to build — see Prerequisite below; shared with the 3D dot/wedge/pseudosc
 **Feeds:** the **3D versor sandwich** in `tasks/lean-proof-rotation-from-scratch.md` — the projection
 decomposition proved here is what makes the 3D sandwich a corollary of the (already proved) G2 sandwich.
 
-**Status:** in-progress (2026-09-29). `G3` core + chain steps 1–3 proved (`reject_perp`, `wedge_reject`,
-`dual_wedge_perp_left`/`_right`), `make lean` green. **Refocused 2026-09-29 (maintainer steer):** match
-gacalc's *uniform Hestenes* `project`/`reject` forms — see "Hestenes project/reject" below. The 3D versor
-sandwich this task once "fed" **already landed independently** (via the even-versor/quaternion route in
-`Sandwich.lean`, not the projection decomposition), so this task is now about faithfully reproducing
-`project`/`reject` and generalizing the rotation's perpendicular-fixed result to `reject` onto the plane.
+**Status:** nearly complete (2026-09-29), `make lean` green. Landed: `G3` core; the uniform Hestenes
+`proj`/`reject` (vector- and bivector-blades) via `(A·B)B⁻¹` / `(A∧B)B⁻¹`; `project_add_reject`
+(project + reject = identity); `proj_plane = project_onto` (normal construction = Hestenes form); the
+2D cases (`Projection2D.lean`); the graded inner product `⟨AB⟩₁`; and the general magnitude. Only the
+optional G2 `dot`-bilinearity cleanup remains (below). **Refocused 2026-09-29 (maintainer steer):**
+match gacalc's *uniform Hestenes* `project`/`reject` — see "Hestenes project/reject" below. The 3D versor
+sandwich this task once "fed" **landed independently** (even-versor/quaternion route in `Sandwich.lean`).
 **Priority:** 6
 **Difficulty:** 7
 
@@ -112,10 +113,19 @@ Python-faithful statement: *the sandwich rotates `project_B(c)` and fixes `rejec
       and `project` onto a bivector `= (A·B)B⁻¹` (`project_onto`). DONE 2026-09-29 (`Projection.lean`).
       Validated by **`project_add_reject`**: `(A·B)B⁻¹ + (A∧B)B⁻¹ = A` (in-plane part + perpendicular
       part reconstruct the vector), since `(A·B)+(A∧B) = AB` and `B B⁻¹ = 1`.
-- [ ] (Optional, minor) the explicit `proj_plane a b c = project_onto (a∧b) c` equivalence (the
-      normal-based construction equals the Hestenes form) — follows from `project_add_reject` + that
-      `reject_{a∧b}` is the projection onto the normal; and the **2D** onto-vector / onto-pseudoscalar
-      warm-ups. Not needed for the rotation results.
+- [x] **`proj_plane a b c = project_onto (a∧b) c`** (the normal-based construction equals the Hestenes
+      form) — DONE 2026-09-29 (`Projection.lean` `proj_plane_eq_project_onto`), assembled from the
+      literal-bivector lemmas `reject_eq_proj_normal` (rejection from a plane = projection onto its
+      normal) + `project_eq_sub_reject`, instantiated at `a∧b`.
+- [x] **2D cases** — DONE 2026-09-29 (`Projection2D.lean`): G2 `wedge`/`proj`/`reject`, `reject_perp`
+      (rejection ⊥ the vector), and the onto-the-pseudoscalar-plane case (`vec_wedge_I_eq_zero`,
+      `reject_from_I_eq_zero` — a 2D vector has no perpendicular component to the whole plane).
+- [x] **Magnitude** (maintainer ask 2026-09-29): the squared magnitude `normSq = ⟨AÃ⟩` (H&S p.13
+      eq 1.49) was already defined and is the workhorse of the versor layer; added the general
+      `magnitude = √(normSq)` (all grades) with `magnitude_vec` bridging to the vector-only `mag`.
+
+**Follow-on (optional):** add G2 `dot` bilinearity lemmas (`dot_sub_left`/`dot_smul_left`, as G3 has)
+so the G2 projection proofs become structural (coordinate-free) like the 3D ones.
 
 ## Prerequisite: a from-scratch `G3` in Lean (shared)
 
