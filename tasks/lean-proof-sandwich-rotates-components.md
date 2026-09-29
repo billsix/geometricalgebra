@@ -9,7 +9,11 @@ and `Lagrange.lean` (`lagrange_3d`: `|a|²|b|² = (a·b)² + |a∧b|²`).
 rotates an arbitrary in-plane vector by the correct angle, with sin/cos taken from `a·b` and `a∧b`,
 never computing the angle."
 
-**Status:** proposed — needs go-ahead (open questions below) (2026-09-29, William Emerison Six <billsix@gmail.com>)
+**Status:** in-progress — decisions made (2026-09-29): orthonormal `{â, r̂}`, `sin θ ≥ 0` oriented by
+`a∧b`, prove the explicit rotated-vector equation with `c²+s²=1` a corollary of `lagrange_3d`. **Stage 1
+landed** (`RotateComponents.lean`, `make lean` green): sandwich linearity (`sandwich_add`/`sandwich_smul`
+in `Sandwich.lean`) + **`sandwich_ahat`** (`â ↦ b̂`, the first column). Stages 2–3 remain — see the two
+obstacles below.
 **Priority:** 6
 **Difficulty:** 7
 
@@ -38,15 +42,29 @@ proved in `G3`, `make lean` green.
   `sandwich R r̂ = −s·â + c·r̂` (the perpendicular in-plane image). Then
   `sandwich R (s₁â + s₂r̂) = (s₁c − s₂s)â + (s₁s + s₂c)r̂`.
 
-## Plan (pending the open-question answers)
+## Plan / progress
 
-- [ ] Define `c`, `s` from `a·b` and `|a∧b|` (dot + wedge), and prove `c² + s² = 1` from `lagrange_3d`.
-- [ ] `sandwich R r̂ = −s·â + c·r̂` (the perpendicular basis image) — the new piece beyond
-      `sandwich_carries_from_to` (which gives `sandwich R â = b̂ = c·â + s·r̂`).
-- [ ] Linearity of the sandwich (`sandwich R (add u v) = add (sandwich R u)(sandwich R v)`,
-      `sandwich R (smul k v) = smul k (sandwich R v)`) — from `mul_add`/`add_mul`/`smul_mul`/`mul_smul`.
-- [ ] The main theorem: `sandwich R (s₁â + s₂r̂) = (s₁c − s₂s)â + (s₁s + s₂c)r̂`.
-- [ ] (Optional, Q3) the rotation-matrix corollary: orthogonal, det 1.
+- [x] **Stage 1 (landed 2026-09-29):** sandwich linearity (`sandwich_add`, `sandwich_smul`) and
+      **`sandwich_ahat`** (`sandwich R â = b̂`, the first column). Since `b̂ = cos θ·â + sin θ·r̂`, this
+      already exhibits `â`'s image with plane components `(cos θ, sin θ)`.
+- [ ] **Stage 2 — `c² + s² = 1` and the decomposition `b̂ = c·â + s·r̂`.** Obstacle: needs the
+      **magnitude of derived vectors** — `mag(b − proj_a b)` (not a `vec` literal, so `mag_sq_vec`
+      doesn't apply) and, for the "sin from the wedge" form, the **bivector magnitude** `|a∧b|` (where
+      `dot B B < 0`, so `mag = √(dot ..)` is the wrong sign). Fix: add a small layer — `mag_sq` for a
+      general grade-1 vector (`(mag v)² = dot v v` given `dot v v ≥ 0`), and a bivector norm
+      `bmag B = √(B.c12² + B.c13² + B.c23²)`, then `|a∧b| = |a|·|r|` (from `lagrange_3d`) ties `s = |r|/|b|`
+      to `s = |a∧b|/(|a||b|)`. With those, `c²+s² = ((a·b)²+|a∧b|²)/(|a|²|b|²) = 1` by `lagrange_3d`.
+- [ ] **Stage 3 — the second column `sandwich R r̂ = −s·â + c·r̂` and the full theorem.** The deep part:
+      `r̂` is `â` turned `+90°`, so its image is `b̂` turned `+90°` — equivalently `sandwich R b̂ =
+      sandwich (R²) â` (via `sandwich_comp`, already proved), which brings in the **double angle**
+      `cos 2θ = 2c²−1`, `sin 2θ = 2cs`. From `sandwich R b̂ = cos2θ·â + sin2θ·r̂` and `r̂ = (b̂ − c·â)/s`
+      (linearity), `sandwich R r̂ = −s·â + c·r̂` falls out. Then the main theorem
+      `sandwich R (s₁â + s₂r̂) = (s₁c − s₂s)â + (s₁s + s₂c)r̂` is linearity + collecting.
+      Alternative route (avoids the explicit double angle): prove `sandwich` preserves the **wedge**
+      (orientation-preserving, like `sandwich_preserves_dot`) and pin `sandwich R r̂` by
+      unit + ⊥ b̂ + in-plane + orientation — but that needs a 2D "these four facts determine the vector"
+      lemma. The double-angle route is more direct.
+- [ ] (Optional, Q3) the rotation-matrix corollary: orthogonal, det 1 (from `c²+s²=1`).
 - [ ] `make lean` green; `proofs/README.md` updated.
 
 ## Open questions (maintainer)

@@ -182,10 +182,11 @@ live in `proofs/` (see above), so several are `in-progress`:
         auto-generate percent-formatted Python proof notebooks (college-level symbolic form) from the
         Lean proofs — e.g. `G2` mul associativity/distributivity — driven by / certified by Lean? P7/D7.
 
-  - [ ] `tasks/lean-proof-sandwich-rotates-components.md` — **proposed** (2026-09-29): extend the 3D
-        sandwich beyond "carries a→b" to "rotates a general in-plane vector `s₁â + s₂r̂` correctly," with
-        sin/cos read off `a·b` and `a∧b` (via `lagrange_3d`), no angle computed. Has open questions
-        (frame normalization, sin sign, target form). P6/D7.
+  - [~] `tasks/lean-proof-sandwich-rotates-components.md` — **in-progress** (2026-09-29): extend the 3D
+        sandwich beyond "carries a→b" to "rotates a general in-plane vector `s₁â + s₂r̂` correctly," sin/cos
+        from `a·b`/`a∧b`, no angle. **Stage 1 landed** (sandwich linearity + `â ↦ b̂`, the first column).
+        Remaining: `c²+s²=1` + `b̂` decomposition (needs a derived-vector/bivector magnitude layer), and
+        the second column via the double angle (`sandwich R b̂ = sandwich R² â`). P6/D7.
 
   Future (deferred, NOT a proof step):
   - [ ] `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` — explore a dimension-agnostic
