@@ -193,4 +193,39 @@ theorem sandwich_plane_invariant (s c12 x y : ℝ) (hr : s ^ 2 + c12 ^ 2 ≠ 0) 
   field_simp [hr]
   ring
 
+/-! ### Composition: rotations compose by multiplying versors -/
+
+/-- **Reverse is an anti-automorphism:** `(a b)~ = b~ a~`. General (no evenness needed). -/
+theorem reverse_mul (a b : G3) : reverse (mul a b) = mul (reverse b) (reverse a) := by
+  simp only [reverse, mul]; ext <;> ring
+
+/-- **The versor norm is multiplicative:** `|R₁ R₂|² = |R₁|² |R₂|²` for even versors (the norm on
+    𝒢₃'s even subalgebra ≅ the quaternions). -/
+theorem normSq_mul (s1 p1 q1 t1 s2 p2 q2 t2 : ℝ) :
+    normSq (mul (evenVersor s1 p1 q1 t1) (evenVersor s2 p2 q2 t2))
+      = normSq (evenVersor s1 p1 q1 t1) * normSq (evenVersor s2 p2 q2 t2) := by
+  simp only [normSq, evenVersor, mul, reverse]; ring
+
+/-- **Inverse of a product:** `(R₁ R₂)⁻¹ = R₂⁻¹ R₁⁻¹` for even versors (`|R₁|², |R₂|² ≠ 0`). Uses the
+    anti-automorphism of reverse and multiplicativity of the norm. -/
+theorem inverse_mul (s1 p1 q1 t1 s2 p2 q2 t2 : ℝ)
+    (h1 : normSq (evenVersor s1 p1 q1 t1) ≠ 0) (h2 : normSq (evenVersor s2 p2 q2 t2) ≠ 0) :
+    inverse (mul (evenVersor s1 p1 q1 t1) (evenVersor s2 p2 q2 t2))
+      = mul (inverse (evenVersor s2 p2 q2 t2)) (inverse (evenVersor s1 p1 q1 t1)) := by
+  simp only [inverse, reverse_mul, normSq_mul, GacalcProofs.G3.smul_mul,
+             GacalcProofs.G3.mul_smul, GacalcProofs.G3.smul_smul]
+  congr 1
+  field_simp
+
+/-- **Rotations compose by multiplying versors:** `(R₁ R₂) v (R₁ R₂)⁻¹ = R₁ (R₂ v R₂⁻¹) R₁⁻¹`, i.e.
+    applying the sandwich by `R₂` then by `R₁` equals the single sandwich by the product `R₁ R₂`.
+    (For even versors with nonzero norm; `inverse_mul` + associativity.) -/
+theorem sandwich_comp (s1 p1 q1 t1 s2 p2 q2 t2 : ℝ) (v : G3)
+    (h1 : normSq (evenVersor s1 p1 q1 t1) ≠ 0) (h2 : normSq (evenVersor s2 p2 q2 t2) ≠ 0) :
+    sandwich (mul (evenVersor s1 p1 q1 t1) (evenVersor s2 p2 q2 t2)) v
+      = sandwich (evenVersor s1 p1 q1 t1) (sandwich (evenVersor s2 p2 q2 t2) v) := by
+  simp only [sandwich]
+  rw [inverse_mul s1 p1 q1 t1 s2 p2 q2 t2 h1 h2]
+  simp only [GacalcProofs.G3.mul_assoc]
+
 end GacalcProofs.G3
