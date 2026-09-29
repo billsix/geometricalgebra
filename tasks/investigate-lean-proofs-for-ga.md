@@ -149,9 +149,9 @@ live in `proofs/` (see above), so several are `in-progress`:
         decomposition (`(A·B)B⁻¹`). **Planned as the next 3D work (2026-09-29), sequenced BEFORE the 3D
         versor sandwich** — proving it reduces the 3D sandwich to the (done) G2 sandwich. Its gating
         prerequisite is a from-scratch **`G3`** (see below).
-  - [ ] `tasks/lean-proof-2d-dual-perpendicular.md` — **NEW 2026-09-29**, small/ready: the dual of a
-        vector is ⊥ the vector, in 𝒢₂ (doable now in the existing `G2`; warm-up for projection's 3D
-        dual/normal step).
+  - [x] `tasks/archive/2026/09/29/lean-proof-2d-dual-perpendicular.md` — **DONE + ARCHIVED 2026-09-29**:
+        the dual of a vector is ⊥ the vector, in 𝒢₂ (`G2.dual`/`dual_vec`/`dual_vec_perp`, `make lean`
+        green). Warm-up for projection's 3D dual/normal step.
   - [ ] **Build a from-scratch `G3`** (8-dim) — the shared prerequisite for the 3D versions of
         projection, dot, wedge, pseudoscalar, and the rotation sandwich. Build once; unblocks all of
         them. (Tracked here; owned first by `lean-proof-projection.md`.)

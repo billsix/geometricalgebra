@@ -13,8 +13,9 @@ the Python implementation.
   the fetched Mathlib — gitignored, never committed.
 - **What's here:** `GacalcProofs/Lagrange.lean` (Lagrange identity, 2D + 3D),
   `GacalcProofs/G2.lean` (a from-scratch 𝒢₂: geometric product, dot = symmetric
-  part, wedge = antisymmetric part, pseudoscalar I₂² = −1, and the basis blades as
-  genuine elements `one`/`e_1`/`e_2`/`e_12 : G2` with their multiplication table),
+  part, wedge = antisymmetric part, pseudoscalar I₂² = −1, the basis blades as
+  genuine elements `one`/`e_1`/`e_2`/`e_12 : G2` with their multiplication table, and
+  the dual `A·I₂⁻¹` with `dual_vec_perp`: the dual of a vector is ⊥ the vector),
   and `GacalcProofs/Rotation.lean` (2D: rotation from sin/cos; the geometric product
   enacts rotation and the product of two unit vectors is the rotor of the angle
   between them — dot = cos, wedge = sin; plus rotation "from a to b" for general
