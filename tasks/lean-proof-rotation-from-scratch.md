@@ -134,8 +134,11 @@ vectors' geometric product is their wedge).
       2026-09-28: keep the construction standalone; Mathlib is mapped in only here, for equivalence.)
 - [x] **Angle-free 3D versor from two vectors + the bisector identity `R a = |a|·h`** (2026-09-29,
       `Rotation3D.lean`) — see Progress above.
-- [ ] **`a r = a ∧ r` for `a ⊥ r`** (orthogonal vectors' geometric product is their wedge) — the lemma
-      that makes `a (b − proj_a b) = a ∧ b` and unlocks the reduce-to-2D finish.
+- [x] **`a r = a ∧ r` for `a ⊥ r`** (2026-09-29, `G3.lean`) — landed as `vec_mul_perp`, a corollary of
+      the fundamental identity `a b = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`).
+- [x] **The plane is `a (b − proj_a b) = a ∧ b`** (2026-09-29, `Projection.lean` `plane_eq_wedge`) —
+      combines `vec_mul_perp` + the rejection's perpendicularity. The rotation plane is now a proved
+      bivector built from `a` and `b`.
 - [ ] **3D versor sandwich — the reduce-to-2D finish (the maintainer's plan, see Progress above).**
       Prerequisites already landed: from-scratch **`G3`**, and the projection decomposition
       (`tasks/lean-proof-projection.md`: `reject_perp`, `wedge_reject`, `dual_wedge_perp`). With the plane

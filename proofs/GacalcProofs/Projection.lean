@@ -43,6 +43,22 @@ theorem dual_wedge_perp_right (a1 a2 a3 b1 b2 b3 : ℝ) :
     dot (dual (wedge (vec a1 a2 a3) (vec b1 b2 b3))) (vec b1 b2 b3) = 0 := by
   simp only [dot, dual, I_inv, wedge, vec, mul]; ring
 
+/-- **The rotation plane is `a (b − proj_a b)`**: for a vector `a` with `a·a ≠ 0`,
+    `a (b − proj_a b) = a ∧ b`. The rejection `r = b − proj_a b` is ⊥ `a`, so the geometric
+    product loses its scalar (inner) part and only the bivector survives, and the wedge ignores the
+    rejection — exhibiting the plane of rotation as the pure bivector `a ∧ b`, built from `a` and
+    `b`. This is the step that reduces the 3D versor sandwich to the 2D case. -/
+theorem plane_eq_wedge (a1 a2 a3 b1 b2 b3 : ℝ)
+    (ha : dot (vec a1 a2 a3) (vec a1 a2 a3) ≠ 0) :
+    mul (vec a1 a2 a3) (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3)))
+      = wedge (vec a1 a2 a3) (vec b1 b2 b3) := by
+  have hd : a1 ^ 2 + a2 ^ 2 + a3 ^ 2 ≠ 0 := by
+    have e : dot (vec a1 a2 a3) (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
+      simp only [dot, mul, vec]; ring
+    rwa [e] at ha
+  simp only [mul, sub, proj, smul, wedge, dot, vec]
+  ext <;> field_simp [hd] <;> ring
+
 /-- **Projection of `c` ONTO the `a∧b` plane** (the book's construction): project `c` away
     from the plane's normal `n = dual(a∧b)` (a vector projection) and subtract — what's
     left lies in the plane. -/
