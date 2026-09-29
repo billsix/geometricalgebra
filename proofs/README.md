@@ -23,7 +23,12 @@ the Python implementation.
   prerequisite for the 3D proofs), `GacalcProofs/AlgebraLaws.lean` (the associative-unital-ℝ-algebra
   laws for both 𝒢₂ and 𝒢₃: the product is associative, distributes over addition both sides, `one`
   is a two-sided identity, scalars pull through, and orthogonal vectors anticommute),
-  `GacalcProofs/Projection.lean` (3D projection: vector
+  `GacalcProofs/Sandwich.lean` (the versor sandwich `R v R⁻¹` by an even versor is an isometry, in
+  𝒢₂ and 𝒢₃: it preserves the dot product — hence lengths and angles — proved for a general even
+  versor with `|R|² ≠ 0`, magnitude-squared form),
+  `GacalcProofs/Versor2D.lean` (the angle-free versor-from-two-vectors construction in 𝒢₂: the
+  bisector `h`, the versor `R = b·a + |a||b|`, and `R·a = |a|·h` — the pedagogical twin of the 3D
+  `Rotation3D.lean`), `GacalcProofs/Projection.lean` (3D projection: vector
   projection with the rejection ⊥ the vector, the wedge sees only the rejection, and the
   dual of `a∧b` — the plane normal — is ⊥ both spanning vectors),
   `GacalcProofs/Rotation3D.lean` (the **angle-free** 3D versor built from two vectors, à la
