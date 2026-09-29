@@ -46,6 +46,37 @@ theorem sandwich_preserves_normSq_vec (s c v1 v2 : ℝ) (hr : s ^ 2 + c ^ 2 ≠ 
       = dot (vec v1 v2) (vec v1 v2) :=
   sandwich_preserves_dot s c v1 v2 v1 v2 hr
 
+/-- `R R̃ = |R|²·1` for the from-vectors versor (even, so `R R̃` is a pure scalar). -/
+theorem versorFromVectors_mul_reverse (a1 a2 b1 b2 : ℝ) :
+    mul (versorFromVectors (vec a1 a2) (vec b1 b2))
+        (reverse (versorFromVectors (vec a1 a2) (vec b1 b2)))
+      = smul (normSq (versorFromVectors (vec a1 a2) (vec b1 b2))) one := by
+  simp only [normSq, versorFromVectors, mul, reverse, add, smul, one, vec]
+  ext <;> ring
+
+/-- **The versor from `a, b` carries `a` to `b`** in 𝒢₂: `R a R⁻¹ = (|a|/|b|)·b` (angle-free) — the
+    2D twin of `Rotation3D`'s `sandwich_carries_from_to`, same assembly. In 𝒢₂ the plane is the whole
+    space, so this is the whole rotation. Needs `|b| ≠ 0`, `|R|² ≠ 0`. -/
+theorem sandwich_carries_from_to (a1 a2 b1 b2 : ℝ)
+    (hb : mag (vec b1 b2) ≠ 0)
+    (hr : normSq (versorFromVectors (vec a1 a2) (vec b1 b2)) ≠ 0) :
+    sandwich (versorFromVectors (vec a1 a2) (vec b1 b2)) (vec a1 a2)
+      = smul (mag (vec a1 a2) / mag (vec b1 b2)) (vec b1 b2) := by
+  have hbis : bisector (vec a1 a2) (vec b1 b2)
+      = smul (1 / mag (vec b1 b2)) (mul (vec b1 b2) (versorFromVectors (vec a1 a2) (vec b1 b2))) := by
+    rw [from_mul_versor_eq_bisector, GacalcProofs.G2.smul_smul, one_div_mul_cancel hb,
+        GacalcProofs.G2.one_smul]
+  have hkey : mul (bisector (vec a1 a2) (vec b1 b2))
+                  (inverse (versorFromVectors (vec a1 a2) (vec b1 b2)))
+      = smul (1 / mag (vec b1 b2)) (vec b1 b2) := by
+    rw [hbis, GacalcProofs.G2.smul_mul, inverse, GacalcProofs.G2.mul_smul,
+        GacalcProofs.G2.mul_assoc, versorFromVectors_mul_reverse, GacalcProofs.G2.mul_smul,
+        GacalcProofs.G2.mul_one, GacalcProofs.G2.smul_smul, GacalcProofs.G2.smul_smul]
+    congr 1
+    field_simp
+  rw [sandwich, versor_mul_from_eq_bisector, GacalcProofs.G2.smul_mul, hkey,
+      GacalcProofs.G2.smul_smul, mul_one_div]
+
 end GacalcProofs.G2
 
 namespace GacalcProofs.G3

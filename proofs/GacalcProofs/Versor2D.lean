@@ -60,4 +60,22 @@ theorem versor_mul_from_eq_bisector (a1 a2 b1 b2 : ℝ) :
   · linear_combination -b2 * hsa
   · ring
 
+/-- Companion identity: `b · R = |b| · h` (multiplying the versor on the LEFT by the to-vector),
+    the 2D twin of `Rotation3D.from_mul_versor_eq_bisector`. With `R·a = |a|·h` it drives the
+    "carries a to b" capstone. -/
+theorem from_mul_versor_eq_bisector (a1 a2 b1 b2 : ℝ) :
+    mul (vec b1 b2) (versorFromVectors (vec a1 a2) (vec b1 b2))
+      = smul (mag (vec b1 b2)) (bisector (vec a1 a2) (vec b1 b2)) := by
+  simp only [versorFromVectors, bisector]
+  set sa := mag (vec a1 a2)
+  set sb := mag (vec b1 b2)
+  have hsb : sb ^ 2 = b1 ^ 2 + b2 ^ 2 := mag_sq_vec b1 b2
+  clear_value sa sb
+  simp only [mul, add, smul, one, vec]
+  ext
+  · ring
+  · linear_combination -a1 * hsb
+  · linear_combination -a2 * hsb
+  · ring
+
 end GacalcProofs.G2

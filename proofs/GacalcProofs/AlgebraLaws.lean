@@ -41,6 +41,13 @@ theorem smul_mul (k : ℝ) (a b : G2) : mul (smul k a) b = smul k (mul a b) := b
 theorem mul_smul (k : ℝ) (a b : G2) : mul a (smul k b) = smul k (mul a b) := by
   simp only [mul, smul]; ext <;> ring
 
+/-- Scalar multiples compose: `k • (m • a) = (k·m) • a`. -/
+theorem smul_smul (k m : ℝ) (a : G2) : smul k (smul m a) = smul (k * m) a := by
+  simp only [smul]; ext <;> ring
+
+/-- `1 • a = a`. -/
+theorem one_smul (a : G2) : smul 1 a = a := by simp only [smul]; ext <;> ring
+
 /-- **Orthogonal vectors anticommute:** if `u·v = 0` (here `u₁v₁ + u₂v₂ = 0`) then `u v = −(v u)`.
     The scalar (inner) parts cancel by orthogonality; the bivector parts are already antisymmetric. -/
 theorem vec_anticomm_perp (u1 u2 v1 v2 : ℝ) (h : u1 * v1 + u2 * v2 = 0) :
