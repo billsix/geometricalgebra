@@ -151,16 +151,19 @@ vectors' geometric product is their wedge).
       - the plane `a(b − proj_a b) = a∧b` (`plane_eq_wedge`), and both bisector identities
         `R·a = |a|·h` (`versor_mul_from_eq_bisector`) and `b·R = |b|·h` (`from_mul_versor_eq_bisector`).
 
-      **Remaining capstone — `R a R⁻¹ = (|a|/|b|)·b` (the versor from `a,b` carries `a` to `b`).** The
-      math is a short chain, worked out 2026-09-29 (needs a fresh session — error-prone to land blind):
-      from `R a = |a|·h` and `b R = |b|·h`, and `R R̃ = |R|²·1` (`R` is even, so `mul R (reverse R)` is
-      scalar), with associativity + `mul_one` (all in `AlgebraLaws.lean`):
-      `sandwich R a = |a|·(h R⁻¹)`, and `h R⁻¹ = (1/|b|)·(b R)R⁻¹ = (1/|b|)·b·(R R⁻¹) = (1/|b|)·b`, so
-      `sandwich R a = (|a|/|b|)·b`. To land it, add three lemmas: `smul_smul` (combine scalar factors),
-      `versorFromVectors_mul_reverse` (`mul R (reverse R) = smul (normSq R) one` — provable by
-      `ext <;> ring` since `R` is even, no `√` facts needed), and `versorFromVectors_mul_inverse`
-      (`mul R (inverse R) = one`, via `mul_smul` + the previous + `inv_mul_cancel₀`), then the chain
-      above. Needs `mag b ≠ 0` and `normSq R ≠ 0`.
+      **Remaining capstone — `R a R⁻¹ = (|a|/|b|)·b` (the versor from `a,b` carries `a` to `b`).** ALL
+      ingredients now landed (2026-09-29): `versor_mul_from_eq_bisector` (`R a = |a|h`),
+      `from_mul_versor_eq_bisector` (`b R = |b|h`), `versorFromVectors_mul_reverse`
+      (`R R̃ = |R|²·1`), `versorFromVectors_mul_inverse` (`R R⁻¹ = 1`), and `G3.smul_smul`/`mul_smul`/
+      `smul_mul`/`mul_assoc`/`mul_one`/`one_smul` in `AlgebraLaws.lean`. **Only the final assembly
+      remains** — a `rw` chain: `sandwich R a = |a|·(h R⁻¹)`, with `h = (1/|b|)(b R)` (from
+      `from_mul_versor_eq_bisector`), `h R⁻¹ = (1/|b|)·b·(R R⁻¹) = (1/|b|)·b` (assoc + `R R̃ = |R|²` +
+      `R R⁻¹ = 1`), so `sandwich R a = (|a|/|b|)·b`. Needs `mag b ≠ 0`, `normSq R ≠ 0`.
+      **Gotcha for the assembler:** the `G3` algebra-law lemmas (`mul_smul`, `smul_smul`, `mul_one`,
+      `mul_assoc`, `one_smul`) share their names with Mathlib's ℝ versions, so **fully-qualify the G3
+      ones** (`GacalcProofs.G3.mul_smul`, …) in the `rw` chain to avoid ambiguity — and add `one_smul`
+      to `AlgebraLaws.lean` (`smul 1 a = a`, not yet added). The 𝒢₂ capstone
+      (`tasks/lean-proof-2d-versor-from-vectors.md`) is structurally identical.
 - [ ] Update `proofs/README.md` when the sandwich lands. (`Rotation3D.lean`'s versor/bisector already
       noted, 2026-09-29.)
 
