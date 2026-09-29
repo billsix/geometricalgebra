@@ -63,6 +63,17 @@ theorem rotation_fixes_normal (a1 a2 a3 b1 b2 b3 : ℝ)
   rw [versorFromVectors_eq_evenVersor, normSq_evenVersor] at hr
   exact sandwich_fixes_own_normal _ _ _ _ hr
 
+/-- **Any perpendicular vector is fixed** — every scalar multiple of the normal `b×a = dual(b∧a)` is
+    unchanged by the rotation. In 3D the orthogonal complement of the a∧b plane is exactly the normal
+    line, so this is the full "components perpendicular to the plane are not changed" for any vector
+    (its perpendicular part is a multiple of the normal). Linearity + `rotation_fixes_normal`. -/
+theorem rotation_fixes_perp (a1 a2 a3 b1 b2 b3 k : ℝ)
+    (hr : normSq (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
+    sandwich (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
+             (smul k (vec (b2 * a3 - b3 * a2) (-(b1 * a3 - b3 * a1)) (b1 * a2 - b2 * a1)))
+      = smul k (vec (b2 * a3 - b3 * a2) (-(b1 * a3 - b3 * a1)) (b1 * a2 - b2 * a1)) := by
+  rw [sandwich_smul, rotation_fixes_normal a1 a2 a3 b1 b2 b3 hr]
+
 /-- **The rotation preserves the dot product** (angle magnitude): `(R u R⁻¹)·(R v R⁻¹) = u·v`, for the
     actual a→b rotation `R = versorFromVectors a b`. With `rotation_fixes_plane_bivector` (orientation),
     this is the oriented isometry — "rotates the oriented angle correctly." -/

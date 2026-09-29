@@ -1,4 +1,5 @@
 import GacalcProofs.G3
+import GacalcProofs.Sandwich
 
 /-! # Projection in 𝒢₃ — the geometric construction
 
@@ -58,6 +59,30 @@ theorem plane_eq_wedge (a1 a2 a3 b1 b2 b3 : ℝ)
     rwa [e] at ha
   simp only [mul, sub, proj, smul, wedge, dot, vec]
   ext <;> field_simp [hd] <;> ring
+
+/-- **Hestenes rejection** `reject_B A = (A ∧ B) · B⁻¹` — the component of `A` orthogonal to the
+    subspace (blade) `B` (gacalc `reject`, base.py; Hestenes & Sobczyk p.18). `B` may be a vector or a
+    (simple) bivector — the *same* formula — using the blade inverse `inverse` (from `Sandwich.lean`,
+    `B̃ / (B B̃)`; `B · inverse B = 1`). Companion to `proj`; the outer product picks out only the part
+    of `A` outside `B`. -/
+noncomputable def reject (awayFrom a : G3) : G3 := mul (wedge a awayFrom) (inverse awayFrom)
+
+/-- **Hestenes rejection onto a vector equals the projection-complement:** `(b ∧ a) a⁻¹ = b − proj_a b`
+    (for `a·a ≠ 0`). Confirms the direct `(A∧B)B⁻¹` form matches the vector-projection construction
+    (`(b∧a)a⁻¹ + (b·a)a⁻¹ = (ba)a⁻¹ = b`). -/
+theorem reject_vec_eq (a1 a2 a3 b1 b2 b3 : ℝ)
+    (ha : dot (vec a1 a2 a3) (vec a1 a2 a3) ≠ 0) :
+    reject (vec a1 a2 a3) (vec b1 b2 b3)
+      = sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3)) := by
+  have hd : normSq (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
+    simp only [normSq, mul, reverse, vec]; ring
+  have hne : a1 ^ 2 + a2 ^ 2 + a3 ^ 2 ≠ 0 := by
+    have e : dot (vec a1 a2 a3) (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
+      simp only [dot, mul, vec]; ring
+    rwa [e] at ha
+  simp only [reject, inverse, hd]
+  simp only [proj, sub, wedge, mul, reverse, smul, dot, vec]
+  ext <;> field_simp [hne] <;> ring
 
 /-- **Projection of `c` ONTO the `a∧b` plane** (the book's construction): project `c` away
     from the plane's normal `n = dual(a∧b)` (a vector projection) and subtract — what's
