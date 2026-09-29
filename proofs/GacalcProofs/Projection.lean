@@ -126,4 +126,51 @@ theorem project_add_reject (a1 a2 a3 p q r : ℝ) (hB : p ^ 2 + q ^ 2 + r ^ 2 �
   simp only [wedge, mul, reverse, smul, add, vec]
   ext <;> field_simp [hB] <;> ring
 
+/-- `add X Y = Z → X = Z − Y` (componentwise cancellation). -/
+theorem add_eq_left_sub (x y z : G3) (h : add x y = z) : x = sub z y := by
+  rw [← h]; ext <;> simp only [add, sub] <;> ring
+
+/-- **Rejection from a plane = projection onto its normal** (for a bivector `B = p·e₁₂ + q·e₁₃ +
+    r·e₂₃`, `|B|² ≠ 0`): `(c ∧ B) B⁻¹ = proj_{dual B} c`. Both are the perpendicular component of `c`.
+    Stated for a literal bivector so the degrees stay low. -/
+theorem reject_eq_proj_normal (p q r c1 c2 c3 : ℝ) (h : p ^ 2 + q ^ 2 + r ^ 2 ≠ 0) :
+    reject (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) (vec c1 c2 c3)
+      = proj (dual (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3)) (vec c1 c2 c3) := by
+  have hd1 : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) = p ^ 2 + q ^ 2 + r ^ 2 := by
+    simp only [normSq, mul, reverse]; ring
+  have hd2 : dot (dual (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3)) (dual (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3))
+      = p ^ 2 + q ^ 2 + r ^ 2 := by
+    simp only [dot, dual, I_inv, mul, reverse]; ring
+  simp only [reject, inverse, proj, hd1, hd2]
+  simp only [dual, I_inv, wedge, mul, reverse, smul, dot, vec]
+  ext <;> field_simp [h] <;> ring
+
+/-- `project` onto a plane = `c −` (rejection from the plane), for a literal bivector — a rearrangement
+    of `project_add_reject`. -/
+theorem project_eq_sub_reject (p q r c1 c2 c3 : ℝ) (h : p ^ 2 + q ^ 2 + r ^ 2 ≠ 0) :
+    project_onto (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) (vec c1 c2 c3)
+      = sub (vec c1 c2 c3) (reject (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) (vec c1 c2 c3)) :=
+  add_eq_left_sub _ _ _ (project_add_reject c1 c2 c3 p q r h)
+
+/-- **The normal-based plane projection equals the Hestenes form:** `proj_plane a b c =
+    project_onto (a∧b) c`. Both are the in-plane component of `c` — `proj_plane` builds it as
+    `c −` (projection onto the normal), Hestenes as `(c·(a∧b))(a∧b)⁻¹`; they agree (for a
+    nondegenerate plane, `|a∧b|² ≠ 0`). Verifies gacalc's `project` onto a plane against the geometric
+    construction. Assembled from the two literal-bivector lemmas above (instantiated at `a∧b`), so it
+    is just rewrites — no re-expansion. -/
+theorem proj_plane_eq_project_onto (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
+    (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
+    proj_plane (vec a1 a2 a3) (vec b1 b2 b3) (vec c1 c2 c3)
+      = project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3) := by
+  have hw : wedge (vec a1 a2 a3) (vec b1 b2 b3)
+      = (⟨0, 0, 0, 0, a1 * b2 - a2 * b1, a1 * b3 - a3 * b1, a2 * b3 - a3 * b2, 0⟩ : G3) := by
+    simp only [wedge, vec]; ext <;> ring
+  have hne : (a1 * b2 - a2 * b1) ^ 2 + (a1 * b3 - a3 * b1) ^ 2 + (a2 * b3 - a3 * b2) ^ 2 ≠ 0 := by
+    have e : normSq (⟨0, 0, 0, 0, a1 * b2 - a2 * b1, a1 * b3 - a3 * b1, a2 * b3 - a3 * b2, 0⟩ : G3)
+        = (a1 * b2 - a2 * b1) ^ 2 + (a1 * b3 - a3 * b1) ^ 2 + (a2 * b3 - a3 * b2) ^ 2 := by
+      simp only [normSq, mul, reverse]; ring
+    rw [hw] at hn; rwa [e] at hn
+  simp only [proj_plane]
+  rw [hw, ← reject_eq_proj_normal _ _ _ c1 c2 c3 hne, project_eq_sub_reject _ _ _ c1 c2 c3 hne]
+
 end GacalcProofs.G3
