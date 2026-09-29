@@ -34,6 +34,43 @@ reference note on the leaf/structural split.
   `sandwich_add`/`smul`, `project_eq_sub_reject`, the 3D + new 2D `reject_perp`). Candidates still doing
   coordinate work that *might* reduce structurally with the existing lemmas.
 
+## Inner/outer-product property layer (maintainer steer, 2026-09-29) — the main thrust
+
+Treat the **inner product `·` and outer product `∧` as leaf nodes carrying algebraic properties**
+(including the sine/cosine characterization), then rebuild the higher proofs on those properties
+instead of coordinates. This is the same trade `normSq` + `dot`-bilinearity already bought, extended to
+a fuller inner/outer *property algebra*. What exists already: `vec_mul_eq_dot_add_wedge` (the split
+`ab = a·b + a∧b`, G3), `dot_sub_left`/`dot_smul_left`, `wedge_sub_right`/`wedge_smul_right`,
+`wedge_self_vec`, G2 `vec_mul`/`dot_is_sym_part`/`wedge_is_antisym_part`, Lagrange 2D/3D.
+
+**Leaf properties to add (proved once by `ext`/`ring` — the coordinate bridge):**
+- [ ] **Symmetry / antisymmetry:** `dot_comm` (`a·b = b·a`), `wedge_antisymm` (`a∧b = −(b∧a)` for
+      vectors). Neither is a named lemma yet.
+- [ ] **Full bilinearity:** the `add`-versions and the missing side (`dot_add_*`, `wedge_add_*`,
+      left/right) — currently only `sub`/`smul` on one side.
+- [ ] **The fundamental split, general form:** a version of `ab = a·b + a∧b` over *arbitrary* vectors
+      (the current one is vector-literal only). The master rewrite turning geometric-product goals into
+      inner+outer — highest leverage.
+- [ ] **Lagrange as a property (coordinate-free):** `(a·b)² + |a∧b|² = |a|²|b|²` in terms of
+      `dot`/`normSq`/`wedge` (proved by unfolding). This is the sin/cos Pythagorean.
+- [ ] **The sin/cos characterization:** `cos a b := (a·b)/(|a||b|)`, `sin a b := |a∧b|/(|a||b|)`, with
+      **`cos² + sin² = 1`** a one-line corollary of Lagrange-as-property. The maintainer's sine/cosine
+      leaves.
+
+**Payoff — proofs that go coordinate-free (best first):**
+- [ ] **"Rotation preserves the *oriented angle*"** (the top spike). Have `sandwich_preserves_dot`
+      (the `cos` numerator). Add ONE leaf — **`sandwich_preserves_wedge`** (outer product preserved,
+      like `preserves_dot`) — then "preserves the oriented angle" = "preserves `cos` AND `sin`" falls
+      out coordinate-free from the sin/cos properties. Realizes the sine/cosine idea literally.
+- [ ] **`plane_eq_wedge`** — from the `field_simp` bash to structural: `a·r + a∧r` via the general
+      split, scalar part killed by `reject_perp`, wedge part by `wedge_reject`.
+- [ ] **`reject_vec_eq` / `project_add_reject`** — reduce to `ab = a·b + a∧b` + `B B⁻¹ = 1`
+      manipulations rather than coordinates.
+
+**Limits (stay coordinate-proved — correct, they are the bridge):** the leaf properties themselves
+(symmetry, the split, Lagrange, bilinearity) and the two *preservation* lemmas
+(`sandwich_preserves_dot`/`_wedge`). The gain is entirely in the high-level geometric theorems.
+
 ## Plan (audit, then convert the tractable ones)
 
 - [ ] **Inventory** every theorem whose proof is `ext <;> ring` / `field_simp` / `simp; ext; ring`, and
