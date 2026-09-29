@@ -109,6 +109,34 @@ theorem versorFromVectors_mul_inverse (a1 a2 a3 b1 b2 b3 : ℝ)
       GacalcProofs.G3.smul_smul, one_div_mul_cancel hr]
   simp only [smul, one]; ext <;> ring
 
+/-- **The versor from `a, b` carries `a` to `b`**: `R a R⁻¹ = (|a|/|b|)·b` (angle-free). The
+    scale-invariant sandwich sends the from-vector to the to-vector, scaled to length `|a|` (the
+    rotation preserves length, so `a` of length `|a|` lands on `b̂` at length `|a|`). Assembled from
+    `R a = |a|·h`, `b R = |b|·h`, `R R̃ = |R|²·1`, and `R R⁻¹ = 1`. Needs `|b| ≠ 0`, `|R|² ≠ 0`. -/
+theorem sandwich_carries_from_to (a1 a2 a3 b1 b2 b3 : ℝ)
+    (hb : mag (vec b1 b2 b3) ≠ 0)
+    (hr : normSq (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
+    sandwich (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) (vec a1 a2 a3)
+      = smul (mag (vec a1 a2 a3) / mag (vec b1 b2 b3)) (vec b1 b2 b3) := by
+  -- The bisector expressed via `b R` (from `b R = |b|·h`, undone with |b| ≠ 0).
+  have hbis : bisector (vec a1 a2 a3) (vec b1 b2 b3)
+      = smul (1 / mag (vec b1 b2 b3))
+             (mul (vec b1 b2 b3) (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))) := by
+    rw [from_mul_versor_eq_bisector, GacalcProofs.G3.smul_smul, one_div_mul_cancel hb,
+        GacalcProofs.G3.one_smul]
+  -- The heart: h R⁻¹ = (1/|b|)·b, via associativity + R R̃ = |R|² + mul_one.
+  have hkey : mul (bisector (vec a1 a2 a3) (vec b1 b2 b3))
+                  (inverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)))
+      = smul (1 / mag (vec b1 b2 b3)) (vec b1 b2 b3) := by
+    rw [hbis, GacalcProofs.G3.smul_mul, inverse, GacalcProofs.G3.mul_smul,
+        GacalcProofs.G3.mul_assoc, versorFromVectors_mul_reverse, GacalcProofs.G3.mul_smul,
+        GacalcProofs.G3.mul_one, GacalcProofs.G3.smul_smul, GacalcProofs.G3.smul_smul]
+    congr 1
+    field_simp
+  -- Assemble: sandwich R a = |a|·(h R⁻¹) = |a|·(1/|b|)·b = (|a|/|b|)·b.
+  rw [sandwich, versor_mul_from_eq_bisector, GacalcProofs.G3.smul_mul, hkey,
+      GacalcProofs.G3.smul_smul, mul_one_div]
+
 /-- **A plane rotation leaves the orthogonal axis fixed** — the 3D fact with no 2D analogue. A versor
     in the e₁e₂ plane (`R = s + c₁₂·e₁₂`, `c₁₃ = c₂₃ = 0`) fixes the e₃ component: `R (z e₃) R⁻¹ = z e₃`
     (e₃ commutes with the plane bivector, so it slides through `R R⁻¹ = 1`). This is exactly the

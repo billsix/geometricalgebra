@@ -86,6 +86,9 @@ theorem mul_smul (k : ℝ) (a b : G3) : mul a (smul k b) = smul k (mul a b) := b
 theorem smul_smul (k m : ℝ) (a : G3) : smul k (smul m a) = smul (k * m) a := by
   simp only [smul]; ext <;> ring
 
+/-- `1 • a = a`. -/
+theorem one_smul (a : G3) : smul 1 a = a := by simp only [smul]; ext <;> ring
+
 /-- **Orthogonal vectors anticommute:** if `a·b = 0` then `a b = −(b a)`. A corollary of
     `vec_mul_perp` (`a b = a∧b`) plus the antisymmetry of the wedge. -/
 theorem vec_anticomm_perp (a1 a2 a3 b1 b2 b3 : ℝ)
