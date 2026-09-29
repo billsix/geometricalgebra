@@ -7,7 +7,9 @@ versor already landed in `proofs/GacalcProofs/Rotation3D.lean` (`mag`/`bisector`
 **Related:** `tasks/lean-proof-rotation-from-scratch.md` (holds the 3D sandwich and the reduce-to-2D
 plan; 𝒢₂ already has the *angle-parameterized* `sandwich_versor`).
 
-**Status:** proposed — needs go-ahead (filed 2026-09-29, William Emerison Six <billsix@gmail.com>)
+**Status:** in-progress — the identity + the 𝒢₂ sandwich isometry landed 2026-09-29
+(`proofs/GacalcProofs/Versor2D.lean`, `Sandwich.lean`, `make lean` green); the from-vectors
+"carries a to b" capstone remains (same short chain as the 3D case).
 **Priority:** 7
 **Difficulty:** 4
 
@@ -49,18 +51,19 @@ components orthogonal to the plane of rotation unchanged — so 2D isolates "the
 
 ## Plan
 
-- [ ] **𝒢₂ `mag`/`bisector`/`versorFromVectors`** — the 2D transcriptions (𝒢₂ has `s`/`c1`/`c2`/`c12`;
-      a vector is `c1·e₁ + c2·e₂`). `mag a = √(a·a)`.
-- [ ] **`mag_sq_vec` (2D)** — `|a|² = a₁² + a₂²` via `Real.sq_sqrt`.
-- [ ] **`versor_mul_from_eq_bisector` (2D)** — `R·a = |a|·h`; the same proof shape as 3D
-      (`set` the two magnitudes, `clear_value`, `simp only [...]`, `ext`, `ring`/`linear_combination`).
-- [ ] **The 2D sandwich from vectors (the new content vs. the existing `sandwich_versor`):** prove
-      `R v R⁻¹` carries `a` to a positive multiple of `b` — angle-free — and relate it to the
-      angle-parameterized `sandwich_versor` (they agree; the from-vectors `R` is the unit
-      `sandwich_versor` up to the scale `|R|`). Needs `R⁻¹` in 𝒢₂ (`R̃ / |R|²`; 𝒢₂ even elements are
-      `s + c12·e₁₂`, so the inverse is closed-form).
-- [ ] Module docstring states the 2D-vs-3D correspondence above; `proofs/README.md` updated.
-- [ ] `make lean` green.
+- [x] **𝒢₂ `dot`/`mag`/`bisector`/`versorFromVectors`** (2026-09-29, `Versor2D.lean`).
+- [x] **`mag_sq_vec` (2D)** — `|a|² = a₁² + a₂²` via `Real.sq_sqrt` (`Versor2D.lean`).
+- [x] **`versor_mul_from_eq_bisector` (2D)** — `R·a = |a|·h` (`Versor2D.lean`), same proof shape as 3D.
+- [x] **The 𝒢₂ sandwich is an isometry** (`Sandwich.lean`, 2026-09-29): `normSq`/`inverse`/`sandwich` +
+      `evenVersor` (the even subalgebra ≅ ℂ), and `sandwich_preserves_dot` / `sandwich_preserves_normSq_vec`
+      — a general even versor with `|R|²≠0` preserves dot, length, and angles. (This is the "it's a
+      rotation" content; in 2D the whole space is the plane, so there is nothing orthogonal to fix.)
+- [ ] **The from-vectors "carries a to b" capstone** — `R a R⁻¹ = (|a|/|b|)·b` in 𝒢₂, the same short
+      chain documented in `tasks/lean-proof-rotation-from-scratch.md` (needs `smul_smul`,
+      `versorFromVectors_mul_reverse`, `versorFromVectors_mul_inverse`, then `R a = |a|h`, `b R = |b|h`).
+      Do the 3D capstone first (or together) — the 𝒢₂ and 𝒢₃ proofs are structurally identical.
+- [x] Module docstring states the 2D-vs-3D correspondence; `proofs/README.md` updated.
+- [x] `make lean` green (for what's landed).
 
 ## Open questions
 

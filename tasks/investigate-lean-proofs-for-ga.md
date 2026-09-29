@@ -150,10 +150,10 @@ live in `proofs/` (see above), so several are `in-progress`:
         versor sandwich** — proving it reduces the 3D sandwich to the (done) G2 sandwich. Its gating
         prerequisite is a from-scratch **`G3`** (see below). 3D angle-free versor + the bisector
         identity `R·a = |a|·h` landed 2026-09-29 (`proofs/GacalcProofs/Rotation3D.lean`).
-  - [ ] `tasks/lean-proof-2d-versor-from-vectors.md` — **proposed** (2026-09-29): the same angle-free
-        versor-from-two-vectors technique shown in 𝒢₂ as a pedagogical warm-up (not necessary — 𝒢₂ has
-        the angle-parameterized `sandwich_versor` — but it makes the 3D construction read as "the same
-        thing, which also leaves the orthogonal complement fixed"). P7/D4.
+  - [~] `tasks/lean-proof-2d-versor-from-vectors.md` — **in-progress** (2026-09-29): the angle-free
+        versor-from-two-vectors technique in 𝒢₂ (pedagogical warm-up). Identity `R·a = |a|·h`
+        (`Versor2D.lean`) and the 𝒢₂ sandwich isometry (`Sandwich.lean`) landed; the from-vectors
+        "carries a to b" capstone remains (shared chain with the 3D case). P7/D4.
   - [x] `tasks/archive/2026/09/29/lean-proof-2d-dual-perpendicular.md` — **DONE + ARCHIVED 2026-09-29**:
         the dual of a vector is ⊥ the vector, in 𝒢₂ (`G2.dual`/`dual_vec`/`dual_vec_perp`, `make lean`
         green). Warm-up for projection's 3D dual/normal step.
