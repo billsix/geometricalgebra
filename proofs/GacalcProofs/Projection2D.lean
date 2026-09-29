@@ -25,11 +25,12 @@ noncomputable def proj (a b : G2) : G2 := smul (dot b a / dot a a) a
 /-- Hestenes rejection `reject_B A = (A ∧ B) B⁻¹`. -/
 noncomputable def reject (awayFrom a : G2) : G2 := mul (wedge a awayFrom) (inverse awayFrom)
 
-/-- **The rejection is ⊥ the vector** (2D): `(b − proj_a b) · a = 0` for `a·a ≠ 0`. -/
-theorem reject_perp (a1 a2 b1 b2 : ℝ) (ha : a1 ^ 2 + a2 ^ 2 ≠ 0) :
-    dot (sub (vec b1 b2) (proj (vec a1 a2) (vec b1 b2))) (vec a1 a2) = 0 := by
-  simp only [dot, sub, proj, smul, mul, vec]
-  field_simp [ha]
+/-- **The rejection is ⊥ the vector** (2D): `(b − proj_a b) · a = 0` for `a·a ≠ 0`. Structural, via the
+    `dot` bilinearity lemmas — the exact shape of the 3D `reject_perp`, and general in `a, b`. -/
+theorem reject_perp (a b : G2) (ha : dot a a ≠ 0) :
+    dot (sub b (proj a b)) a = 0 := by
+  rw [dot_sub_left, proj, dot_smul_left]
+  field_simp
   ring
 
 /-- **A 2D vector wedged with the pseudoscalar is zero**: `v ∧ I₂ = 0` (grade 1 + 2 = 3 exceeds the

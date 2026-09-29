@@ -124,8 +124,9 @@ Python-faithful statement: *the sandwich rotates `project_B(c)` and fixes `rejec
       eq 1.49) was already defined and is the workhorse of the versor layer; added the general
       `magnitude = √(normSq)` (all grades) with `magnitude_vec` bridging to the vector-only `mag`.
 
-**Follow-on (optional):** add G2 `dot` bilinearity lemmas (`dot_sub_left`/`dot_smul_left`, as G3 has)
-so the G2 projection proofs become structural (coordinate-free) like the 3D ones.
+- [x] **G2 `dot` bilinearity** (`dot_sub_left`/`dot_smul_left` in `Versor2D.lean`) — DONE 2026-09-29;
+      the G2 `reject_perp` is now structural (coordinate-free) and general in `a, b`, the exact shape of
+      the 3D proof.
 
 ## Prerequisite: a from-scratch `G3` in Lean (shared)
 

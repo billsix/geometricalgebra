@@ -24,6 +24,15 @@ open Real
     Euclidean dot `a₁b₁ + a₂b₂`). -/
 noncomputable def dot (a b : G2) : ℝ := (mul a b).s
 
+/-- `dot` distributes over subtraction on the left (it is bilinear) — the 𝒢₂ twin of
+    `G3.dot_sub_left`, letting projection proofs be structural rather than coordinate-based. -/
+theorem dot_sub_left (u w v : G2) : dot (sub u w) v = dot u v - dot w v := by
+  simp only [dot, mul, sub]; ring
+
+/-- `dot` pulls out a scalar on the left. -/
+theorem dot_smul_left (k : ℝ) (u v : G2) : dot (smul k u) v = k * dot u v := by
+  simp only [dot, mul, smul]; ring
+
 /-- The magnitude `|a| = √(a·a)`. -/
 noncomputable def mag (a : G2) : ℝ := Real.sqrt (dot a a)
 
