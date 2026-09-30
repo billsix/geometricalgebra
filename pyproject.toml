@@ -55,7 +55,12 @@ select = [
        "UP035", "S311", "S602", "T201",
        "E", "F", "I", "N"
        ]
-ignore = []
+# N806 (non-lowercase variable in a function) is disabled project-wide: gacalc
+# follows Hestenes' convention that a CAPITAL letter denotes a multivector (A, B,
+# R, ...), so uppercase math locals are intentional here, not accidental
+# constants.  Argument naming (N803) stays enforced -- parameters remain
+# lowercase; this only frees local bindings inside a function body.
+ignore = ["N806"]
 
 [tool.ruff.lint.per-file-ignores]
 # tools/gen_specialized.py is a code generator whose CUSTOM_METHOD_DOCS table and doc
