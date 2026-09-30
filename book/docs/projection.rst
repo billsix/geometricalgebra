@@ -6,4 +6,6 @@ Placeholder — content to come. Rotate, then take the components — shown equi
 .. toctree::
    :maxdepth: 1
 
+   proof-projection
    notebooks/projection
+   notebooks/proof-projection

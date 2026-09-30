@@ -128,6 +128,12 @@ and call `self * other`, dispatched to the concrete type.
   `sympy.sqrt`/`sympify` (guarded by `tests/test_numeric_magnitude.py`).
 - **Terminology:** 𝒢ₙ denotes the *algebra*; an instance is an *element of* 𝒢ₙ; classes are named
   after their algebra; the dimension parameter is `n` (never `grade`).
+- **"Reduction to standard position" is an accepted duplicate-definition theme** — an operation may
+  additionally have a standard-position (frame-reduction) variant that rotates the figure to a
+  standard frame, does the easy version, and rotates back; the Hestenes-derived definition stays the
+  canonical/primary one. Mark the variant with a prime (Lean `proj'`/`reject'`; Python suffix, e.g.
+  `_sp`). Same spirit as the duplicate 𝒢₂ `rotate_90_degrees`. Full theme:
+  `tasks/reference/reduction-to-standard-position.md`.
 
 Deep mechanics + every "Caveat —" block (frozen+slots property-write quirk, frozen≠hashable,
 coefficient-view re-simplify on `Gn`, custom blade display symbols, `Coef` vs `numbers.Real`, the
