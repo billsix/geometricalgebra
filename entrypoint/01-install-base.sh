@@ -27,6 +27,7 @@ dnf install -y \
     python3-pandas \
     python3-pytest \
     python3-wheel \
+    diffutils \
     ruff \
     tmux \
     uv \
