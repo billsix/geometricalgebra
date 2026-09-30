@@ -190,14 +190,14 @@ live in `proofs/` (see above), so several are `in-progress`:
         (`rotation_fixes_normal`) — in `RotateComponents.lean`/`Sandwich.lean`. The rotation-matrix /
         double-angle route was dropped as unnecessary.
 
-  - [x] `tasks/lean-proofs-make-coordinate-free.md` — **done** (2026-09-30; awaiting archive): made proofs
+  - [x] `tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md` — **done** (2026-09-30): made proofs
         coordinate-free via a leaf/structural property algebra. Full inner/outer bilinearity + sin/cos +
         the general `IsVector` split `mul_eq_dot_add_wedge`; the flagship angle-preservation
         (`sandwich_preserves_cos` **and** `sandwich_preserves_sin` via the outermorphism
         `sandwich_preserves_wedge`); the versor-hypothesis sweep (`normSq (evenVersor …) ≠ 0`); the
         structural conversions of `plane_eq_wedge` / `reject_vec_eq` (blade-inverse leaf
         `mul_vec_inverse_self`); and a de-dup sweep (`dot_self_vec_eq_normSq`, `wedge_vec_eq_biv`). P7/D5.
-  - [x] `tasks/lean-inverses-g2-g3.md` — **done** (2026-09-29): investigated inverses. Finding: `Ã/|A|²`
+  - [x] `tasks/archive/2026/09/30/lean-inverses-g2-g3.md` — **done** (2026-09-29): investigated inverses. Finding: `Ã/|A|²`
         is the blade/versor inverse, NOT general (correct iff `A Ã` is scalar); a general low-dim closed
         form exists (Hitzer–Sangwine). Proved the blade subset in Lean — vector ✓, versor ✓, **bivector**
         (`mul_biv_inverse_self`) ✓, **trivector** (`mul_triv_inverse_self`) ✓ — which covers every grade the

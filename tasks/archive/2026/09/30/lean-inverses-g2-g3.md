@@ -1,7 +1,7 @@
 # Lean proofs — inverses in 𝒢₂ and 𝒢₃: is there a general formula, and what subset to prove?
 
 **Part of:** `tasks/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
-**Related:** `tasks/lean-proofs-make-coordinate-free.md` (added `mul_vec_inverse_self`, the *vector* case).
+**Related:** `tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md` (added `mul_vec_inverse_self`, the *vector* case).
 
 **Status:** done (2026-09-29, William Emerison Six <billsix@gmail.com>) — investigation resolved; the
 per-blade subset is proved in Lean; the general case is spun out to `tasks/lean-general-multivector-inverse.md`.

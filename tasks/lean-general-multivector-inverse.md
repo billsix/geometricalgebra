@@ -1,7 +1,7 @@
 # Lean proofs — the GENERAL multivector inverse for 𝒢₂ and 𝒢₃
 
 **Part of:** `tasks/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
-**Grew out of:** `tasks/lean-inverses-g2-g3.md` (the investigation; the per-blade subset is done there).
+**Grew out of:** `tasks/archive/2026/09/30/lean-inverses-g2-g3.md` (the investigation; the per-blade subset is done there).
 
 **Status:** proposed — needs go-ahead (2026-09-29, William Emerison Six <billsix@gmail.com>)
 **Priority:** 7
@@ -40,7 +40,7 @@ goal of the *general* case, deferred until wanted. "Done" = the general closed f
    inverse ships there) as per-grade sign-flip defs, with the small identities they need.
 3. Prove `A A⁻¹ = 1` (and `A⁻¹ A = 1`) for a *general* `A : G2` / `A : G3` (the denominator-is-scalar step
    is the crux; likely pure `ring` once the involution product is unfolded).
-4. **Python reconciliation** (this is open question 2 from `lean-inverses-g2-g3.md`, relevant only here):
+4. **Python reconciliation** (this is open question 2 from `archive/2026/09/30/lean-inverses-g2-g3.md`, relevant only here):
    decide whether Python's `inverse` adopts the general formula (diverging from today's `Ã/|A|²`) or keeps
    the subset formula with the guard. If it changes, it is a **breaking change** to a published library —
    changelog entry + version bump (maintainer publishes).

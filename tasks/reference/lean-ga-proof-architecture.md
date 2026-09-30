@@ -36,7 +36,7 @@ The **squared magnitude** `normSq = ⟨A Ã⟩` (NOT the `√` magnitude — pro
 and the `dot`/`wedge` **bilinearity lemmas** are what enable this. Concrete example: G2 `reject_perp`
 went from a `vec`-form `field_simp` bash to `rw [dot_sub_left, proj, dot_smul_left]; field_simp; ring`
 — coordinate-free and general in `a, b`. **Write proofs structurally; let only the leaves touch
-coordinates.** (Follow-up audit: `tasks/lean-proofs-make-coordinate-free.md`.)
+coordinates.** (Follow-up audit: `tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md`.)
 
 ## Leaf-node index (the coordinate bridge — reuse these, don't re-derive inline)
 
