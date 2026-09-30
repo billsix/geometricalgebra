@@ -215,6 +215,11 @@ version resolution is lake's own, not hand-picked):
   `GacalcProofs/Rotation.lean` (2D: `rot` from sin/cos; the geometric product enacts rotation; the
   product of two unit vectors is the rotor of the angle; rotation "from a to b" for general vectors,
   `b = (|b|/|a|)·rot(φb−φa)a`, and the rotor from a's direction to b's carrying a to b).
+  This list is only the earliest landmarks and drifts — for the **current full inventory** (which now
+  also includes the reverse anti-automorphism, the sandwich/rotation suite, projection/rejection,
+  `Cross.lean` (cross/dual/scalar-triple), and `StandardPosition.lean` (reduction to standard position
+  via elementary plane rotations), and the per-grade `bivector`/`trivector`/`scalar` builders) see the
+  "Inventory" section of `tasks/reference/lean-ga-proof-architecture.md`.
 - **Representation (decided 2026-09-28, standalone):** 𝒢ₙ is modelled concretely by a coordinate
   `structure` whose fields are the real *coefficients* on the basis blades (`s`/`c1`/`c2`/`c12` in
   `G2`) — a field is a coefficient, so it is an `ℝ`. But the basis blades themselves are **elements**

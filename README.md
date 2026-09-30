@@ -28,6 +28,7 @@ src/gacalc/
   frame.py         frames + Gram–Schmidt / Hestenes orthogonalization
   measure.py       area / volume / content, signed and unsigned
   vectorcalc.py    the cross product (the dual of the wedge, 𝒢₃)
+  standardposition.py  project_sp / reject_sp via elementary plane rotations (𝒢₃)
   transforms.py    translate / scale / rotation factories (composable, invertible)
 ```
 

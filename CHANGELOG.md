@@ -11,6 +11,13 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+### Added
+- **`gacalc.standardposition`** (`project_sp`, `reject_sp`) — a pedagogical, "reduction to standard
+  position" duplicate of `project`/`reject`: it rotates the target vector onto the `e_1` axis with
+  elementary coordinate-plane rotations, projects there, and rotates back. Equal to the canonical
+  `projected_onto`/`rejected_away_from` (machine-checked in `proofs/GacalcProofs/StandardPosition.lean`).
+  Additive, non-breaking; the Hestenes-formula `project`/`reject` remain the primary API.
+
 ### Changed
 - **`MultiVectorBase.inverse` now rejects a general mixed-grade multivector.** The formula
   `A⁻¹ = Ã/|A|²` is a correct inverse only when `Ã A` is a scalar — i.e. for a **blade** (a

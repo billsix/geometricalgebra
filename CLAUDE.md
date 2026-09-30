@@ -39,6 +39,11 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   dual of the wedge, 𝒢₃ only. Free function + `MultiVectorBase.cross` method; 𝒢₃'s generated
   `Vector` carries a closed-form `cross` typed `Vector -> Vector`. Deliberately NO dot/triple
   aliases (dot = `scalar_product`, triple = `measure.signed_volume`); grad/div/curl out of scope.
+- `src/gacalc/standardposition.py` — **standard-position (frame-reduction) `project_sp`/`reject_sp`**:
+  project/reject a vector onto another by rotating `b` onto the `e_1` axis with elementary
+  coordinate-plane rotations, projecting there, and rotating back — a deliberate *duplicate* of the
+  canonical Hestenes `project`/`reject`, proven equal in `proofs/GacalcProofs/StandardPosition.lean`.
+  See `tasks/reference/reduction-to-standard-position.md`.
 - **The 𝒢₂ quarter turn** (generated into `g2.py` only): `Vector.rotate_90_degrees()` + the
   module-level `rotate_90_degrees()` factory — both `= v * e_12` (the unit pseudoscalar,
   `(x, y) -> (-y, x)`), exact, 𝒢₂-only. Rationale: `tasks/reference/design-decisions.md`,
