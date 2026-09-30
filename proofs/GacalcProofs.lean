@@ -10,3 +10,5 @@ import GacalcProofs.Trig
 import GacalcProofs.Projection
 import GacalcProofs.Rotation
 import GacalcProofs.Rotation3D
+import GacalcProofs.StandardPosition
+import GacalcProofs.Cross

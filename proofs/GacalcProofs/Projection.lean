@@ -142,14 +142,14 @@ noncomputable def project_onto (onto a : G3) : G3 := mul (inner_vb a onto) (inve
     Hestenes `project`/`reject` pair — the in-plane part plus the perpendicular part reconstruct the
     vector. -/
 theorem project_add_reject (a1 a2 a3 p q r : ℝ)
-    (hB : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) ≠ 0) :
-    add (project_onto ⟨0, 0, 0, 0, p, q, r, 0⟩ (vec a1 a2 a3))
-        (reject ⟨0, 0, 0, 0, p, q, r, 0⟩ (vec a1 a2 a3))
+    (hB : normSq (bivector p q r) ≠ 0) :
+    add (project_onto (bivector p q r) (vec a1 a2 a3))
+        (reject (bivector p q r) (vec a1 a2 a3))
       = vec a1 a2 a3 := by
   have hd := normSq_biv p q r
   rw [hd] at hB  -- the plane's magnitude in coordinates, for the field_simp step
   simp only [project_onto, reject, inner_vb, inverse, hd]
-  simp only [wedge, mul, reverse, smul, add, vec]
+  simp only [wedge, mul, reverse, smul, add, vec, bivector, zero]
   ext <;> field_simp [hB] <;> ring
 
 /-- `add X Y = Z → X = Z − Y` (componentwise cancellation). -/
@@ -160,24 +160,24 @@ theorem add_eq_left_sub (x y z : G3) (h : add x y = z) : x = sub z y := by
     r·e₂₃`, `|B|² ≠ 0`): `(c ∧ B) B⁻¹ = proj_{dual B} c`. Both are the perpendicular component of `c`.
     Stated for a literal bivector so the degrees stay low. -/
 theorem reject_eq_proj_normal (p q r c1 c2 c3 : ℝ)
-    (h : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) ≠ 0) :
-    reject (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) (vec c1 c2 c3)
-      = proj (dual (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3)) (vec c1 c2 c3) := by
+    (h : normSq (bivector p q r) ≠ 0) :
+    reject (bivector p q r) (vec c1 c2 c3)
+      = proj (dual (bivector p q r)) (vec c1 c2 c3) := by
   have hd1 := normSq_biv p q r
   rw [hd1] at h  -- the plane's magnitude in coordinates, for the field_simp step
-  have hd2 : dot (dual (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3)) (dual (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3))
+  have hd2 : dot (dual (bivector p q r)) (dual (bivector p q r))
       = p ^ 2 + q ^ 2 + r ^ 2 := by
-    simp only [dot, dual, I_inv, mul]; ring
+    simp only [dot, dual, I_inv, mul, bivector, zero]; ring
   simp only [reject, inverse, proj, hd1, hd2]
-  simp only [dual, I_inv, wedge, mul, reverse, smul, dot, vec]
+  simp only [dual, I_inv, wedge, mul, reverse, smul, dot, vec, bivector, zero]
   ext <;> field_simp [h] <;> ring
 
 /-- `project` onto a plane = `c −` (rejection from the plane), for a literal bivector — a rearrangement
     of `project_add_reject`. -/
 theorem project_eq_sub_reject (p q r c1 c2 c3 : ℝ)
-    (h : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) ≠ 0) :
-    project_onto (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) (vec c1 c2 c3)
-      = sub (vec c1 c2 c3) (reject (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) (vec c1 c2 c3)) :=
+    (h : normSq (bivector p q r) ≠ 0) :
+    project_onto (bivector p q r) (vec c1 c2 c3)
+      = sub (vec c1 c2 c3) (reject (bivector p q r) (vec c1 c2 c3)) :=
   add_eq_left_sub _ _ _ (project_add_reject c1 c2 c3 p q r h)
 
 /-- **The normal-based plane projection equals the Hestenes form:** `proj_plane a b c =
