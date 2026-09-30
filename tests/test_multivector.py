@@ -15,6 +15,7 @@
 import itertools
 import unittest.mock
 
+import pytest
 import sympy
 
 import gacalc.g2 as g2
@@ -406,6 +407,25 @@ def test_multivector_inverse() -> None:
     plane: MultiVector = u3 ^ v3
     assert (plane * plane.inverse()) == one
     assert (plane.inverse() * plane) == one
+
+
+def test_inverse_supports_versor() -> None:
+    # A versor (scalar + bivector, here 1 + e_12) is supported -- A Ã is a scalar,
+    # so Ã / |A|² is a genuine inverse even though A is not grade-pure.
+    versor: MultiVector = 1 * one + 1 * (e_1 ^ e_2)
+    assert (versor * versor.inverse()) == one
+    assert (versor.inverse() * versor) == one
+
+
+def test_inverse_rejects_general_multivector() -> None:
+    # A mixed-grade multivector that is neither a blade nor a versor -- here the
+    # scalar+vector 1 + e_1, for which Ã A = 2 + 2 e_1 is NOT a scalar -- has no
+    # inverse of the form Ã / |A|² (1 + e_1 is in fact a zero divisor).  The general
+    # multivector inverse is not implemented, so inverse() must reject it loudly
+    # rather than return a wrong answer.
+    mixed: MultiVector = 1 * one + 1 * e_1
+    with pytest.raises(RuntimeError):
+        mixed.inverse()
 
 
 def test_project_and_reject() -> None:

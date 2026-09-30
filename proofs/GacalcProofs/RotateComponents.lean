@@ -45,11 +45,9 @@ theorem rotation_fixes_plane_bivector (a1 a2 a3 b1 b2 b3 : ℝ)
     sandwich (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
              (wedge (vec b1 b2 b3) (vec a1 a2 a3))
       = wedge (vec b1 b2 b3) (vec a1 a2 a3) := by
-  have hw : wedge (vec b1 b2 b3) (vec a1 a2 a3)
-      = (⟨0, 0, 0, 0, b1 * a2 - b2 * a1, b1 * a3 - b3 * a1, b2 * a3 - b3 * a2, 0⟩ : G3) := by
-    simp only [wedge, vec]; ext <;> ring
+  have hw := wedge_vec_eq_biv b1 b2 b3 a1 a2 a3
   rw [versorFromVectors_eq_evenVersor, hw]
-  rw [versorFromVectors_eq_evenVersor, normSq_evenVersor] at hr
+  rw [versorFromVectors_eq_evenVersor] at hr
   exact sandwich_fixes_own_bivector _ _ _ _ hr
 
 /-- **The rotation fixes the normal to its plane**: the axis `b×a = dual(b∧a)` (⊥ both `a` and `b`) is
@@ -60,7 +58,7 @@ theorem rotation_fixes_normal (a1 a2 a3 b1 b2 b3 : ℝ)
              (vec (b2 * a3 - b3 * a2) (-(b1 * a3 - b3 * a1)) (b1 * a2 - b2 * a1))
       = vec (b2 * a3 - b3 * a2) (-(b1 * a3 - b3 * a1)) (b1 * a2 - b2 * a1) := by
   rw [versorFromVectors_eq_evenVersor]
-  rw [versorFromVectors_eq_evenVersor, normSq_evenVersor] at hr
+  rw [versorFromVectors_eq_evenVersor] at hr
   exact sandwich_fixes_own_normal _ _ _ _ hr
 
 /-- **Any perpendicular vector is fixed** — every scalar multiple of the normal `b×a = dual(b∧a)` is
@@ -83,7 +81,7 @@ theorem rotation_preserves_dot (a1 a2 a3 b1 b2 b3 u1 u2 u3 v1 v2 v3 : ℝ)
         (sandwich (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) (vec v1 v2 v3))
       = dot (vec u1 u2 u3) (vec v1 v2 v3) := by
   rw [versorFromVectors_eq_evenVersor]
-  rw [versorFromVectors_eq_evenVersor, normSq_evenVersor] at hr
+  rw [versorFromVectors_eq_evenVersor] at hr
   exact sandwich_preserves_dot _ _ _ _ u1 u2 u3 v1 v2 v3 hr
 
 end GacalcProofs.G3

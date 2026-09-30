@@ -40,6 +40,18 @@ theorem dot_comm (a b : G2) : dot a b = dot b a := by simp only [dot, mul]; ring
 theorem dot_add_left (u w v : G2) : dot (add u w) v = dot u v + dot w v := by
   simp only [dot, mul, add]; ring
 
+/-- `dot` distributes over addition on the right (2D, bilinear on the right too). -/
+theorem dot_add_right (u v w : G2) : dot u (add v w) = dot u v + dot u w := by
+  simp only [dot, mul, add]; ring
+
+/-- `dot` distributes over subtraction on the right (2D). -/
+theorem dot_sub_right (u v w : G2) : dot u (sub v w) = dot u v - dot u w := by
+  simp only [dot, mul, sub]; ring
+
+/-- `dot` pulls out a scalar on the right (2D). -/
+theorem dot_smul_right (k : ℝ) (u v : G2) : dot u (smul k v) = k * dot u v := by
+  simp only [dot, mul, smul]; ring
+
 /-- **Leaf:** the dot product on coordinate vectors is `a₁b₁ + a₂b₂` (2D). -/
 theorem dot_vec (a1 a2 b1 b2 : ℝ) : dot (vec a1 a2) (vec b1 b2) = a1 * b1 + a2 * b2 := by
   simp only [dot, mul, vec]; ring

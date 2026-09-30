@@ -61,9 +61,19 @@ theorem plane_eq_wedge (a1 a2 a3 b1 b2 b3 : ℝ)
     (ha : normSq (vec a1 a2 a3) ≠ 0) :
     mul (vec a1 a2 a3) (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3)))
       = wedge (vec a1 a2 a3) (vec b1 b2 b3) := by
-  have hd : a1 ^ 2 + a2 ^ 2 + a3 ^ 2 ≠ 0 := by rwa [normSq_vec] at ha
-  simp only [mul, sub, proj, smul, wedge, dot, vec]
-  ext <;> field_simp [hd] <;> ring
+  -- Structural, on the fundamental split: `a r = a·r + a∧r` with `r = b − proj_a b` the rejection.
+  -- The rejection is ⊥ `a` (`reject_perp`), so the scalar part dies; and the wedge ignores the
+  -- parallel part (`wedge_reject`), so the bivector part is `a∧b`.
+  have hdaa : dot (vec a1 a2 a3) (vec a1 a2 a3) ≠ 0 := by
+    rw [dot_self_vec_eq_normSq]; exact ha
+  have hpv : IsVector (proj (vec a1 a2 a3) (vec b1 b2 b3)) := by
+    rw [proj]; exact (isVector_vec a1 a2 a3).smul _
+  have hrv : IsVector (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3))) :=
+    (isVector_vec b1 b2 b3).sub hpv
+  have hd0 : dot (vec a1 a2 a3) (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3))) = 0 := by
+    rw [dot_comm]; exact reject_perp (vec a1 a2 a3) (vec b1 b2 b3) hdaa
+  rw [mul_eq_dot_add_wedge (isVector_vec a1 a2 a3) hrv, wedge_reject, hd0]
+  simp only [smul, one, add]; ext <;> ring
 
 /-- **Hestenes rejection** `reject_B A = (A ∧ B) · B⁻¹` — the component of `A` orthogonal to the
     subspace (blade) `B` (gacalc `reject`, base.py; Hestenes & Sobczyk p.18). `B` may be a vector or a
@@ -72,6 +82,13 @@ theorem plane_eq_wedge (a1 a2 a3 b1 b2 b3 : ℝ)
     of `A` outside `B`. -/
 noncomputable def reject (awayFrom a : G3) : G3 := mul (wedge a awayFrom) (inverse awayFrom)
 
+/-- **A vector times its own inverse is `1`** (the blade-inverse identity `B B⁻¹ = 1` for a vector,
+    `a·a ≠ 0`): `a⁻¹ = ã/|a|² = a/|a|²`, and `a a = |a|²`, so `a a⁻¹ = |a|²/|a|² = 1`. -/
+theorem mul_vec_inverse_self (a1 a2 a3 : ℝ) (ha : normSq (vec a1 a2 a3) ≠ 0) :
+    mul (vec a1 a2 a3) (inverse (vec a1 a2 a3)) = one := by
+  rw [inverse, reverse_vec, GacalcProofs.G3.mul_smul, mul_vec_self, GacalcProofs.G3.smul_smul,
+      one_div_mul_cancel ha, GacalcProofs.G3.one_smul]
+
 /-- **Hestenes rejection onto a vector equals the projection-complement:** `(b ∧ a) a⁻¹ = b − proj_a b`
     (for `a·a ≠ 0`). Confirms the direct `(A∧B)B⁻¹` form matches the vector-projection construction
     (`(b∧a)a⁻¹ + (b·a)a⁻¹ = (ba)a⁻¹ = b`). -/
@@ -79,11 +96,18 @@ theorem reject_vec_eq (a1 a2 a3 b1 b2 b3 : ℝ)
     (ha : normSq (vec a1 a2 a3) ≠ 0) :
     reject (vec a1 a2 a3) (vec b1 b2 b3)
       = sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3)) := by
-  have hd := normSq_vec a1 a2 a3
-  have hne : a1 ^ 2 + a2 ^ 2 + a3 ^ 2 ≠ 0 := by rwa [normSq_vec] at ha
-  simp only [reject, inverse, hd]
-  simp only [proj, sub, wedge, mul, reverse, smul, dot, vec]
-  ext <;> field_simp [hne] <;> ring
+  -- Structural (Hestenes): `b∧a = ba − (b·a)·1`, so `(b∧a)a⁻¹ = b(a a⁻¹) − (b·a)a⁻¹ = b − proj_a b`.
+  have hsplit : wedge (vec b1 b2 b3) (vec a1 a2 a3)
+      = sub (mul (vec b1 b2 b3) (vec a1 a2 a3)) (smul (dot (vec b1 b2 b3) (vec a1 a2 a3)) one) := by
+    rw [vec_mul_eq_dot_add_wedge]; simp only [sub, add, smul, one]; ext <;> ring
+  rw [reject, hsplit, GacalcProofs.G3.sub_mul, GacalcProofs.G3.mul_assoc,
+      mul_vec_inverse_self a1 a2 a3 ha, GacalcProofs.G3.mul_one, GacalcProofs.G3.smul_mul,
+      GacalcProofs.G3.one_mul]
+  -- Left with `b − (b·a)a⁻¹ = b − proj_a b`; the two rejection terms agree once `a⁻¹`'s scalar is folded.
+  congr 1
+  rw [proj, inverse, reverse_vec, GacalcProofs.G3.smul_smul]
+  congr 1
+  rw [dot_self_vec_eq_normSq]; ring
 
 /-- **Projection of `c` ONTO the `a∧b` plane** (the book's construction): project `c` away
     from the plane's normal `n = dual(a∧b)` (a vector projection) and subtract — what's
@@ -166,9 +190,7 @@ theorem proj_plane_eq_project_onto (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
     (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
     proj_plane (vec a1 a2 a3) (vec b1 b2 b3) (vec c1 c2 c3)
       = project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3) := by
-  have hw : wedge (vec a1 a2 a3) (vec b1 b2 b3)
-      = (⟨0, 0, 0, 0, a1 * b2 - a2 * b1, a1 * b3 - a3 * b1, a2 * b3 - a3 * b2, 0⟩ : G3) := by
-    simp only [wedge, vec]; ext <;> ring
+  have hw := wedge_vec_eq_biv a1 a2 a3 b1 b2 b3
   -- The two literal-bivector lemmas now take `normSq B ≠ 0` (the plane's squared magnitude), which is
   -- exactly `hn` once the wedge is rewritten to its bivector literal — no coordinate sum anywhere.
   rw [hw] at hn

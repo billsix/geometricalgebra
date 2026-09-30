@@ -45,13 +45,33 @@ theorem cos_sq_add_sin_sq (a1 a2 a3 b1 b2 b3 : ℝ)
     `magnitude_sandwich_vec` (the two denominators). Since `cos` determines the unoriented angle, the
     rotation preserves the angle — coordinate-free, straight off the inner-product leaves. -/
 theorem sandwich_preserves_cos (s c12 c13 c23 u1 u2 u3 v1 v2 v3 : ℝ)
-    (hr : s ^ 2 + c12 ^ 2 + c13 ^ 2 + c23 ^ 2 ≠ 0) :
+    (hr : normSq (evenVersor s c12 c13 c23) ≠ 0) :
     cos_between (sandwich (evenVersor s c12 c13 c23) (vec u1 u2 u3))
                 (sandwich (evenVersor s c12 c13 c23) (vec v1 v2 v3))
       = cos_between (vec u1 u2 u3) (vec v1 v2 v3) := by
   simp only [cos_between]
   rw [sandwich_preserves_dot s c12 c13 c23 u1 u2 u3 v1 v2 v3 hr,
       magnitude_sandwich_vec s c12 c13 c23 u1 u2 u3 hr,
+      magnitude_sandwich_vec s c12 c13 c23 v1 v2 v3 hr]
+
+/-- **A rotation preserves the sine of the angle** between two vectors:
+    `sin(R u R⁻¹, R v R⁻¹) = sin(u, v)`. The numerator `|u∧v|` is preserved because the sandwich is an
+    outermorphism (`sandwich_preserves_wedge`) that is an isometry on the bivector `u∧v`
+    (`sandwich_preserves_normSq_of_biv`); the denominators by `magnitude_sandwich_vec`. With
+    `sandwich_preserves_cos`, a rotation preserves the full (oriented) angle, coordinate-free. -/
+theorem sandwich_preserves_sin (s c12 c13 c23 u1 u2 u3 v1 v2 v3 : ℝ)
+    (hr : normSq (evenVersor s c12 c13 c23) ≠ 0) :
+    sin_between (sandwich (evenVersor s c12 c13 c23) (vec u1 u2 u3))
+                (sandwich (evenVersor s c12 c13 c23) (vec v1 v2 v3))
+      = sin_between (vec u1 u2 u3) (vec v1 v2 v3) := by
+  have hnum : magnitude (wedge (sandwich (evenVersor s c12 c13 c23) (vec u1 u2 u3))
+                               (sandwich (evenVersor s c12 c13 c23) (vec v1 v2 v3)))
+      = magnitude (wedge (vec u1 u2 u3) (vec v1 v2 v3)) := by
+    rw [sandwich_preserves_wedge s c12 c13 c23 u1 u2 u3 v1 v2 v3 hr]
+    simp only [magnitude]
+    rw [sandwich_preserves_normSq_of_wedge s c12 c13 c23 u1 u2 u3 v1 v2 v3 hr]
+  simp only [sin_between]
+  rw [hnum, magnitude_sandwich_vec s c12 c13 c23 u1 u2 u3 hr,
       magnitude_sandwich_vec s c12 c13 c23 v1 v2 v3 hr]
 
 end GacalcProofs.G3
@@ -86,11 +106,27 @@ theorem cos_sq_add_sin_sq (a1 a2 b1 b2 : ℝ)
 
 /-- **A rotation preserves the cosine of the angle** between two vectors (2D):
     `cos(R u R⁻¹, R v R⁻¹) = cos(u, v)`. -/
-theorem sandwich_preserves_cos (s c u1 u2 v1 v2 : ℝ) (hr : s ^ 2 + c ^ 2 ≠ 0) :
+theorem sandwich_preserves_cos (s c u1 u2 v1 v2 : ℝ) (hr : normSq (evenVersor s c) ≠ 0) :
     cos_between (sandwich (evenVersor s c) (vec u1 u2)) (sandwich (evenVersor s c) (vec v1 v2))
       = cos_between (vec u1 u2) (vec v1 v2) := by
   simp only [cos_between]
   rw [sandwich_preserves_dot s c u1 u2 v1 v2 hr, magnitude_sandwich_vec s c u1 u2 hr,
       magnitude_sandwich_vec s c v1 v2 hr]
+
+/-- **A rotation preserves the sine of the angle** between two vectors (2D):
+    `sin(R u R⁻¹, R v R⁻¹) = sin(u, v)`. In 𝒢₂ the wedge is the pseudoscalar (signed area), preserved by
+    `sandwich_preserves_wedge` / `sandwich_preserves_normSq_of_wedge`; the denominators by
+    `magnitude_sandwich_vec`. With `sandwich_preserves_cos`, the full angle is preserved. -/
+theorem sandwich_preserves_sin (s c u1 u2 v1 v2 : ℝ) (hr : normSq (evenVersor s c) ≠ 0) :
+    sin_between (sandwich (evenVersor s c) (vec u1 u2)) (sandwich (evenVersor s c) (vec v1 v2))
+      = sin_between (vec u1 u2) (vec v1 v2) := by
+  have hnum : magnitude (wedge (sandwich (evenVersor s c) (vec u1 u2))
+                               (sandwich (evenVersor s c) (vec v1 v2)))
+      = magnitude (wedge (vec u1 u2) (vec v1 v2)) := by
+    rw [sandwich_preserves_wedge s c u1 u2 v1 v2 hr]
+    simp only [magnitude]
+    rw [sandwich_preserves_normSq_of_wedge s c u1 u2 v1 v2 hr]
+  simp only [sin_between]
+  rw [hnum, magnitude_sandwich_vec s c u1 u2 hr, magnitude_sandwich_vec s c v1 v2 hr]
 
 end GacalcProofs.G2

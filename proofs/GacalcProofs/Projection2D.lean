@@ -30,8 +30,24 @@ noncomputable def proj (a b : G2) : G2 := smul (dot b a / dot a a) a
 theorem wedge_sub_right (a u w : G2) : wedge a (sub u w) = sub (wedge a u) (wedge a w) := by
   simp only [wedge, sub]; ext <;> ring
 
+/-- The wedge distributes over addition on the right (2D). -/
+theorem wedge_add_right (a u w : G2) : wedge a (add u w) = add (wedge a u) (wedge a w) := by
+  simp only [wedge, add]; ext <;> ring
+
 /-- The wedge pulls out a scalar on the right (2D). -/
 theorem wedge_smul_right (k : ℝ) (a u : G2) : wedge a (smul k u) = smul k (wedge a u) := by
+  simp only [wedge, smul]; ext <;> ring
+
+/-- The wedge distributes over subtraction on the left (2D). -/
+theorem wedge_sub_left (u w a : G2) : wedge (sub u w) a = sub (wedge u a) (wedge w a) := by
+  simp only [wedge, sub]; ext <;> ring
+
+/-- The wedge distributes over addition on the left (2D). -/
+theorem wedge_add_left (u w a : G2) : wedge (add u w) a = add (wedge u a) (wedge w a) := by
+  simp only [wedge, add]; ext <;> ring
+
+/-- The wedge pulls out a scalar on the left (2D). -/
+theorem wedge_smul_left (k : ℝ) (u a : G2) : wedge (smul k u) a = smul k (wedge u a) := by
   simp only [wedge, smul]; ext <;> ring
 
 /-- A vector wedged with itself is zero (2D). -/
@@ -42,6 +58,22 @@ theorem wedge_self_vec (x y : ℝ) : wedge (vec x y) (vec x y) = (⟨0, 0, 0, 0�
 theorem wedge_antisymm (a1 a2 b1 b2 : ℝ) :
     wedge (vec a1 a2) (vec b1 b2) = neg (wedge (vec b1 b2) (vec a1 a2)) := by
   simp only [wedge, vec, neg]; ext <;> ring
+
+/-- **The fundamental identity `a b = a·b + a∧b`, for arbitrary vectors** (2D): for grade-1 `a`, `b`,
+    the geometric product splits into its scalar (inner) part `a·b` and its pseudoscalar (outer) part
+    `a∧b`. The 2D twin of the 𝒢₃ `mul_eq_dot_add_wedge`. -/
+theorem mul_eq_dot_add_wedge {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    mul a b = add (smul (dot a b) one) (wedge a b) := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  simp only [mul, wedge, smul, one, dot, add]
+  ext <;> simp only [has, ha12, hbs, hb12] <;> ring
+
+/-- **Orthogonal vectors' geometric product is their wedge** (2D, arbitrary vectors): `a·b = 0 ⟹ a b = a∧b`. -/
+theorem mul_eq_wedge_of_perp {a b : G2} (ha : IsVector a) (hb : IsVector b) (h : dot a b = 0) :
+    mul a b = wedge a b := by
+  rw [mul_eq_dot_add_wedge ha hb, h]
+  simp only [smul, one, add]; ext <;> ring
 
 /-- **Leaf:** `|a∧b|² = (a₁b₂ − a₂b₁)²` — the squared magnitude of the plane bivector of two vectors (2D). -/
 theorem normSq_wedge_vec (a1 a2 b1 b2 : ℝ) :
@@ -72,5 +104,41 @@ theorem vec_wedge_I_eq_zero (x y : ℝ) : wedge (vec x y) I = (⟨0, 0, 0, 0⟩ 
 theorem reject_from_I_eq_zero (x y : ℝ) : reject I (vec x y) = (⟨0, 0, 0, 0⟩ : G2) := by
   rw [reject, vec_wedge_I_eq_zero]
   ext <;> simp only [mul, inverse, smul, reverse, normSq, I, e_12] <;> ring
+
+/-- **The reverse-sandwich is an outermorphism up to `|R|²`** (2D): `(R u R̃) ∧ (R v R̃) = |R|²·R (u∧v) R̃`.
+    A pure polynomial identity — the unnormalized core of the 2D `sandwich_preserves_wedge`. -/
+theorem wedge_reverse_sandwich (s c u1 u2 v1 v2 : ℝ) :
+    wedge (mul (mul (evenVersor s c) (vec u1 u2)) (reverse (evenVersor s c)))
+          (mul (mul (evenVersor s c) (vec v1 v2)) (reverse (evenVersor s c)))
+      = smul (normSq (evenVersor s c))
+             (mul (mul (evenVersor s c) (wedge (vec u1 u2) (vec v1 v2)))
+                  (reverse (evenVersor s c))) := by
+  simp only [normSq, wedge, evenVersor, mul, reverse, smul, vec]; ext <;> ring
+
+/-- **The sandwich preserves the outer product** (2D outermorphism): `(R u R⁻¹) ∧ (R v R⁻¹) = R (u∧v) R⁻¹`.
+    In 𝒢₂ the wedge is the pseudoscalar (signed area), so this is "a rotation preserves signed area." -/
+theorem sandwich_preserves_wedge (s c u1 u2 v1 v2 : ℝ) (hr : normSq (evenVersor s c) ≠ 0) :
+    wedge (sandwich (evenVersor s c) (vec u1 u2)) (sandwich (evenVersor s c) (vec v1 v2))
+      = sandwich (evenVersor s c) (wedge (vec u1 u2) (vec v1 v2)) := by
+  simp only [sandwich, inverse, GacalcProofs.G2.mul_smul, GacalcProofs.G2.wedge_smul_left,
+             GacalcProofs.G2.wedge_smul_right, GacalcProofs.G2.smul_smul]
+  rw [wedge_reverse_sandwich, GacalcProofs.G2.smul_smul]
+  congr 1
+  field_simp
+
+/-- **The reverse sandwich scales the wedge's norm by `|R|²`** (2D): `|R (u∧v) R̃|² = |R|⁴ |u∧v|²`,
+    stated on the pseudoscalar `u∧v` itself. Pure polynomial. -/
+theorem normSq_reverse_sandwich_wedge (s c u1 u2 v1 v2 : ℝ) :
+    normSq (mul (mul (evenVersor s c) (wedge (vec u1 u2) (vec v1 v2))) (reverse (evenVersor s c)))
+      = normSq (evenVersor s c) ^ 2 * normSq (wedge (vec u1 u2) (vec v1 v2)) := by
+  simp only [normSq, wedge, evenVersor, mul, reverse, vec]; ring
+
+/-- **The sandwich preserves the wedge's squared magnitude** (2D): `|R (u∧v) R⁻¹|² = |u∧v|²` — a
+    rotation preserves signed area. Same structural shape as the vector case. -/
+theorem sandwich_preserves_normSq_of_wedge (s c u1 u2 v1 v2 : ℝ) (hr : normSq (evenVersor s c) ≠ 0) :
+    normSq (sandwich (evenVersor s c) (wedge (vec u1 u2) (vec v1 v2)))
+      = normSq (wedge (vec u1 u2) (vec v1 v2)) := by
+  rw [sandwich, inverse, GacalcProofs.G2.mul_smul, normSq_smul, normSq_reverse_sandwich_wedge]
+  field_simp [hr]
 
 end GacalcProofs.G2
