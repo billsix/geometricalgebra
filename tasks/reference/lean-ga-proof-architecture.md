@@ -152,7 +152,10 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   `one_smul`, ⊥-anticommutation, for both algebras.
 - `Sandwich.lean` — `inverse`/`sandwich` (`normSq`/`magnitude` moved down to `G2`/`G3`); the sandwich is an isometry
   (`sandwich_preserves_dot`, length); fixes its own plane bivector and normal; the versor is invertible
-  (`R R̃ = |R|²`, `R R⁻¹ = 1`); rotations compose (`sandwich_comp`); the even-versor bridge.
+  (`R R̃ = |R|²`, `R R⁻¹ = 1`); rotations compose (`sandwich_comp`); the even-versor bridge. Also the
+  **reverse anti-automorphism** `reverse_mul` (`(ab)~ = b~ a~`, general) and its vector corollaries
+  `reverse_of_isVector`, `reverse_mul_vec` (`(ab)~ = ba`), `reverse_mul3_vec` (`(abc)~ = cba`); the G2
+  twins (`reverse_mul`/`reverse_vec`/`reverse_of_isVector`/`reverse_mul_vec`) live in `G2.lean`.
 - `Rotation.lean` (2D angle-parameterized), `Rotation3D.lean` / `Versor2D.lean` (angle-free
   versor-from-vectors: bisector, `R·a = |a|·h`, `b·R = |b|·h`; the carries-a→b capstone
   `R a R⁻¹ = (|a|/|b|)·b`).
@@ -160,6 +163,14 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   plane, oriented isometry, perpendicular fixed) + `sandwich_ahat` (â↦b̂).
 - `Projection.lean` / `Projection2D.lean` — Hestenes `proj`/`reject`/`project_onto`, `project_add_reject`,
   `proj_plane = project_onto`, and the 2D cases.
+- `StandardPosition.lean` — elementary coordinate-plane rotations `rotXY`/`rotXZ` (NOT versors),
+  their `preserves_dot`, projection/rejection equivariance under them, the explicit `b ↦ |b|·e₁`
+  alignment (`rotate_b_to_e1` + magnitude form), and the product-from-projection payoff
+  (`mul_eq_proj_dot_add_reject_wedge`).
+- `Cross.lean` — the 𝒢₃ `cross a b = (a∧b) I₃⁻¹`: `cross_vec` (coordinate formula), `cross_anticomm_vec`,
+  `cross_perp_left`/`_right`, `dual_vec` (3D vector dual = ⊥ bivector), and `dot_cross_eq_signedVolume`
+  (scalar triple = signed volume = `det[a,b,c]`). Plus `Sandwich.sandwich_evenVersor_vec_isVector`
+  (the even-versor sandwich of a vector stays a vector — grade-preserving).
 
 Remaining (see the umbrella `tasks/investigate-lean-proofs-for-ga.md`): the Mathlib-rotation
 *equivalence* proofs, the dot/wedge/pseudoscalar step-tasks' 3D from-rotation derivations.

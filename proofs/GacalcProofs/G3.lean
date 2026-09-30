@@ -149,6 +149,16 @@ theorem reverse_reverse (a : G3) : reverse (reverse a) = a := by
 /-- The zero multivector. -/
 def zero : G3 := ⟨0, 0, 0, 0, 0, 0, 0, 0⟩
 
+/-- A **bivector** `p·e₁₂ + q·e₁₃ + r·e₂₃` (grade 2), naming just the three bivector coefficients on
+    top of `zero` — self-documenting in place of the raw literal `⟨0,0,0,0,p,q,r,0⟩`. -/
+def bivector (p q r : ℝ) : G3 := { zero with c12 := p, c13 := q, c23 := r }
+
+/-- A **trivector** (pseudoscalar) `t·e₁₂₃` (grade 3), in place of `⟨0,0,0,0,0,0,0,t⟩`. -/
+def trivector (t : ℝ) : G3 := { zero with c123 := t }
+
+/-- A **scalar** `a` (grade 0) as a 𝒢₃ element, in place of `⟨a,0,0,0,0,0,0,0⟩`. -/
+def scalar (a : ℝ) : G3 := { zero with s := a }
+
 /-- The scalar product ⟨A B⟩₀ — the scalar part of the geometric product. For two
     vectors this is the Euclidean dot product `a₁b₁ + a₂b₂ + a₃b₃`. -/
 noncomputable def dot (a b : G3) : ℝ := (mul a b).s
@@ -296,8 +306,8 @@ theorem dot_self_vec_eq_normSq (a1 a2 a3 : ℝ) :
     with `simp only [wedge, vec]; ext <;> ring` inline. -/
 theorem wedge_vec_eq_biv (a1 a2 a3 b1 b2 b3 : ℝ) :
     wedge (vec a1 a2 a3) (vec b1 b2 b3)
-      = (⟨0, 0, 0, 0, a1 * b2 - a2 * b1, a1 * b3 - a3 * b1, a2 * b3 - a3 * b2, 0⟩ : G3) := by
-  simp only [wedge, vec]; ext <;> ring
+      = bivector (a1 * b2 - a2 * b1) (a1 * b3 - a3 * b1) (a2 * b3 - a3 * b2) := by
+  simp only [wedge, vec, bivector, zero]; ext <;> ring
 
 /-- **A vector's square is its squared magnitude:** `a a = |a|²·1` (`a∧a = 0`, so only the scalar
     survives). The `B B = |B|²` half of the blade-inverse identity. -/

@@ -79,6 +79,10 @@ theorem add_mul (a b c : G3) : mul (add a b) c = add (mul a c) (mul b c) := by
 theorem sub_mul (a b c : G3) : mul (sub a b) c = sub (mul a c) (mul b c) := by
   simp only [mul, sub]; ext <;> ring
 
+/-- Left distributivity over subtraction (the `mul_sub` twin of `sub_mul`). -/
+theorem mul_sub (a b c : G3) : mul a (sub b c) = sub (mul a b) (mul a c) := by
+  simp only [mul, sub]; ext <;> ring
+
 /-- `one` is a **left identity**. -/
 theorem one_mul (a : G3) : mul one a = a := by simp only [mul, one]; ext <;> ring
 

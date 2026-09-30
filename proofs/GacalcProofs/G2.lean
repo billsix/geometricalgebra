@@ -208,6 +208,28 @@ theorem dual_vec (x y : ℝ) : dual (vec x y) = vec y (-x) := by
 theorem dual_vec_perp (x y : ℝ) : (mul (dual (vec x y)) (vec x y)).s = 0 := by
   simp only [dual, I_inv, mul, vec]; ring
 
+/-! ### Reverse is an anti-automorphism, and reverses a product of vectors -/
+
+/-- **Reverse is an anti-automorphism:** `(a b)~ = b~ a~`. General (no evenness needed) — the
+    2D twin of `GacalcProofs.G3.reverse_mul`. -/
+theorem reverse_mul (a b : G2) : reverse (mul a b) = mul (reverse b) (reverse a) := by
+  simp only [reverse, mul]; ext <;> ring
+
+/-- `reverse` fixes a coordinate vector (grade 1): the grade-2 part it flips is absent. -/
+theorem reverse_vec (x y : ℝ) : reverse (vec x y) = vec x y := by
+  simp only [reverse, vec]; ext <;> ring
+
+/-- `reverse` fixes any grade-1 element (the `IsVector` form of `reverse_vec`). -/
+theorem reverse_of_isVector {a : G2} (ha : IsVector a) : reverse a = a := by
+  obtain ⟨_, h12⟩ := ha
+  simp only [reverse]; ext <;> simp [h12]
+
+/-- **Reverse reverses a product of vectors:** `(a b)~ = b a` for vectors `a, b` (2D). Corollary of
+    the anti-automorphism `reverse_mul` and `reverse` fixing a vector (`reverse_of_isVector`). -/
+theorem reverse_mul_vec {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    reverse (mul a b) = mul b a := by
+  rw [reverse_mul, reverse_of_isVector ha, reverse_of_isVector hb]
+
 end G2
 
 end GacalcProofs

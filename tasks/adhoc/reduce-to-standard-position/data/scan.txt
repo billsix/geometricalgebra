@@ -1,0 +1,87 @@
+# standard-position scan — raw grep hits (2026-09-30T02:43Z)
+
+## src: project/reject/reflect/cross definitions + call sites
+src/gacalc/base.py:735:    def inner_product(self, rhs: typing.Self) -> typing.Self:
+src/gacalc/base.py:750:        def inner_product_of_homogenous_multivectors(
+src/gacalc/base.py:787:    def outer_product(self, rhs: typing.Self) -> typing.Self:
+src/gacalc/base.py:802:        def outer_product_of_homogenous_multivectors(
+src/gacalc/base.py:972:    def outer_product_of_vectors(
+src/gacalc/base.py:1322:    def project(
+src/gacalc/base.py:1381:    def reject(
+src/gacalc/base.py:1419:        def rejection(blade: MultiVectorBase) -> ComposableFunction[MultiVectorBase]:
+src/gacalc/base.py:1439:    def reflect(
+src/gacalc/base.py:1472:        def reflection(blade: MultiVectorBase) -> InvertibleFunction[MultiVectorBase]:
+src/gacalc/base.py:1495:    # apply that function to ``self`` in one call, so ``v.rejected_away_from(b)`` reads
+src/gacalc/base.py:1501:    def projected_onto(
+src/gacalc/base.py:1516:    def rejected_away_from(
+src/gacalc/base.py:1531:    def reflected_across(
+src/gacalc/base.py:1629:    def cross(self, other: MultiVectorBase) -> MultiVectorBase:
+src/gacalc/frame.py:125:            w = w.rejected_away_from(prior)
+src/gacalc/transforms.py:182:def projection_rotation(
+src/gacalc/vectorcalc.py:34:def cross(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
+
+## proofs: existing project/reject/sandwich Lean
+proofs/GacalcProofs/AlgebraLaws.lean
+proofs/GacalcProofs/G2.lean
+proofs/GacalcProofs/G3.lean
+proofs/GacalcProofs/Projection.lean
+proofs/GacalcProofs/Projection2D.lean
+proofs/GacalcProofs/RotateComponents.lean
+proofs/GacalcProofs/Rotation.lean
+proofs/GacalcProofs/Rotation3D.lean
+proofs/GacalcProofs/Sandwich.lean
+proofs/GacalcProofs/Trig.lean
+proofs/GacalcProofs/Versor2D.lean
+
+## book: reduce-to-coordinates / rotate / projection pages (the exemplar)
+book/docs/geometric-product.rst
+book/docs/hook.rst
+book/docs/index.rst
+book/docs/interactive-calculator.rst
+book/docs/notebooks/geometric-product.py
+book/docs/notebooks/hook.py
+book/docs/notebooks/projection-rejection-3d.py
+book/docs/notebooks/projection.py
+book/docs/notebooks/rotate.py
+book/docs/projection-rejection-3d.rst
+book/docs/projection.rst
+book/docs/proof-rotate.rst
+book/docs/reflection.rst
+book/docs/relative-graph-paper.rst
+book/docs/rotate.rst
+
+## notebooks: projection/rotation demos
+displayg2.py
+displayg3.py
+displaygraded.py
+displaymv.py
+displayrotations.py
+displayvectorcalc.py
+canonical-form.ipynb
+canonical-form.py
+defining-g2.ipynb
+defining-g2.py
+dual.ipynb
+dual.py
+geometric-product.ipynb
+geometric-product.py
+hook.ipynb
+hook.py
+one-dimension.ipynb
+one-dimension.py
+projection-rejection-3d.ipynb
+projection-rejection-3d.py
+projection.ipynb
+projection.py
+reflection.ipynb
+reflection.py
+relative-graph-paper.ipynb
+relative-graph-paper.py
+rotate.ipynb
+rotate.py
+three-dimensions.ipynb
+three-dimensions.py
+vector-addition.ipynb
+vector-addition.py
+vectors-as-number-lines.ipynb
+vectors-as-number-lines.py

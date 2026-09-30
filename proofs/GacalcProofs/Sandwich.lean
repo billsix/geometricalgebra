@@ -111,36 +111,36 @@ theorem normSq_evenVersor (s c12 c13 c23 : ℝ) :
 
 /-- **Leaf:** `|B|² = p² + q² + r²` for a bivector `B = p·e₁₂ + q·e₁₃ + r·e₂₃`. Reuse instead of
     re-deriving inline. -/
-theorem normSq_biv (p q r : ℝ) : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) = p ^ 2 + q ^ 2 + r ^ 2 := by
-  simp only [normSq, mul, reverse]; ring
+theorem normSq_biv (p q r : ℝ) : normSq (bivector p q r) = p ^ 2 + q ^ 2 + r ^ 2 := by
+  simp only [normSq, bivector, zero, mul, reverse]; ring
 
 /-- **Leaf:** `|T|² = t²` for the pseudoscalar (trivector) `T = t·e₁₂₃`. -/
-theorem normSq_triv (t : ℝ) : normSq (⟨0, 0, 0, 0, 0, 0, 0, t⟩ : G3) = t ^ 2 := by
-  simp only [normSq, mul, reverse]; ring
+theorem normSq_triv (t : ℝ) : normSq (trivector t) = t ^ 2 := by
+  simp only [normSq, trivector, zero, mul, reverse]; ring
 
 /-- `B B̃ = |B|²·1` for a bivector — in 𝒢₃ every bivector is a blade, so `B B̃` is a scalar. -/
 theorem mul_biv_reverse_self (p q r : ℝ) :
-    mul (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) (reverse (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3))
-      = smul (normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3)) one := by
-  rw [normSq_biv]; simp only [mul, reverse, one, smul]; ext <;> ring
+    mul (bivector p q r) (reverse (bivector p q r))
+      = smul (normSq (bivector p q r)) one := by
+  rw [normSq_biv]; simp only [bivector, zero, mul, reverse, one, smul]; ext <;> ring
 
 /-- **A bivector times its own inverse is `1`** (`|B|² ≠ 0`): the blade-inverse identity `B B⁻¹ = 1`
     for a grade-2 element — same shape as the vector case, since a 𝒢₃ bivector is a blade. -/
-theorem mul_biv_inverse_self (p q r : ℝ) (hb : normSq (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) ≠ 0) :
-    mul (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3) (inverse (⟨0, 0, 0, 0, p, q, r, 0⟩ : G3)) = one := by
+theorem mul_biv_inverse_self (p q r : ℝ) (hb : normSq (bivector p q r) ≠ 0) :
+    mul (bivector p q r) (inverse (bivector p q r)) = one := by
   rw [inverse, GacalcProofs.G3.mul_smul, mul_biv_reverse_self, GacalcProofs.G3.smul_smul,
       one_div_mul_cancel hb, GacalcProofs.G3.one_smul]
 
 /-- `T T̃ = |T|²·1` for the pseudoscalar (a blade). -/
 theorem mul_triv_reverse_self (t : ℝ) :
-    mul (⟨0, 0, 0, 0, 0, 0, 0, t⟩ : G3) (reverse (⟨0, 0, 0, 0, 0, 0, 0, t⟩ : G3))
-      = smul (normSq (⟨0, 0, 0, 0, 0, 0, 0, t⟩ : G3)) one := by
-  rw [normSq_triv]; simp only [mul, reverse, one, smul]; ext <;> ring
+    mul (trivector t) (reverse (trivector t))
+      = smul (normSq (trivector t)) one := by
+  rw [normSq_triv]; simp only [trivector, zero, mul, reverse, one, smul]; ext <;> ring
 
 /-- **The pseudoscalar times its own inverse is `1`** (`|T|² ≠ 0`): the blade-inverse identity for the
     grade-3 element. -/
-theorem mul_triv_inverse_self (t : ℝ) (ht : normSq (⟨0, 0, 0, 0, 0, 0, 0, t⟩ : G3) ≠ 0) :
-    mul (⟨0, 0, 0, 0, 0, 0, 0, t⟩ : G3) (inverse (⟨0, 0, 0, 0, 0, 0, 0, t⟩ : G3)) = one := by
+theorem mul_triv_inverse_self (t : ℝ) (ht : normSq (trivector t) ≠ 0) :
+    mul (trivector t) (inverse (trivector t)) = one := by
   rw [inverse, GacalcProofs.G3.mul_smul, mul_triv_reverse_self, GacalcProofs.G3.smul_smul,
       one_div_mul_cancel ht, GacalcProofs.G3.one_smul]
 
@@ -315,6 +315,19 @@ theorem sandwich_add (r u v : G3) : sandwich r (add u v) = add (sandwich r u) (s
 theorem sandwich_smul (k : ℝ) (r v : G3) : sandwich r (smul k v) = smul k (sandwich r v) := by
   simp only [sandwich]; rw [GacalcProofs.G3.mul_smul, GacalcProofs.G3.smul_mul]
 
+/-- The sandwich is **linear** in the rotated vector: it distributes over subtraction. -/
+theorem sandwich_sub (r u v : G3) : sandwich r (sub u v) = sub (sandwich r u) (sandwich r v) := by
+  simp only [sandwich]; rw [GacalcProofs.G3.mul_sub, GacalcProofs.G3.sub_mul]
+
+/-- **The sandwich of a vector by an even versor stays a vector** — it is grade-preserving: the
+    scalar, bivector and pseudoscalar parts of `R v R⁻¹` all vanish, so the grade-3 (trivector) part
+    in particular is zero (`tests/test_odd3.py`: conjugation keeps `v` in grade 1). Holds for any even
+    versor `R` and vector `v` (no `|R|² ≠ 0` needed: each vanishing part is `(1/|R|²)·0`). -/
+theorem sandwich_evenVersor_vec_isVector (s c12 c13 c23 v1 v2 v3 : ℝ) :
+    IsVector (sandwich (evenVersor s c12 c13 c23) (vec v1 v2 v3)) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;>
+    simp only [sandwich, inverse, evenVersor, mul, reverse, smul, vec] <;> ring
+
 /-- **The from-vectors versor is an even versor** — `versorFromVectors a b = evenVersor …`, its scalar
     part `b·a + |a||b|` and its bivector part `b∧a`. This bridge lets the general `evenVersor` results
     (isometry, fixed bivector, fixed normal) apply to the actual a→b rotation. -/
@@ -329,11 +342,11 @@ theorem versorFromVectors_eq_evenVersor (a1 a2 a3 b1 b2 b3 : ℝ) :
     through `R R⁻¹ = 1`). This is the "rotates the oriented angle correctly / it's a rotation, not a
     reflection" content: the plane of rotation is kept, with its orientation. -/
 theorem sandwich_fixes_own_bivector (s p q t : ℝ) (hr : normSq (evenVersor s p q t) ≠ 0) :
-    sandwich (evenVersor s p q t) ⟨0, 0, 0, 0, p, q, t, 0⟩ = (⟨0, 0, 0, 0, p, q, t, 0⟩ : G3) := by
+    sandwich (evenVersor s p q t) (bivector p q t) = bivector p q t := by
   have hd : normSq (evenVersor s p q t) = s ^ 2 + p ^ 2 + q ^ 2 + t ^ 2 := normSq_evenVersor s p q t
   rw [hd] at hr
   simp only [sandwich, inverse, hd]
-  simp only [evenVersor, mul, reverse, smul]
+  simp only [evenVersor, bivector, zero, mul, reverse, smul]
   ext <;> field_simp [hr] <;> ring
 
 /-- **A rotation fixes the normal to its plane** (perpendicular components unchanged): for an even
@@ -353,6 +366,27 @@ theorem sandwich_fixes_own_normal (s p q t : ℝ) (hr : normSq (evenVersor s p q
 /-- **Reverse is an anti-automorphism:** `(a b)~ = b~ a~`. General (no evenness needed). -/
 theorem reverse_mul (a b : G3) : reverse (mul a b) = mul (reverse b) (reverse a) := by
   simp only [reverse, mul]; ext <;> ring
+
+/-- `reverse` fixes any grade-1 element (the `IsVector` form of `reverse_vec`): the grades 2 and 3
+    it flips are absent from a vector. -/
+theorem reverse_of_isVector {a : G3} (ha : IsVector a) : reverse a = a := by
+  obtain ⟨_, h12, h13, h23, h123⟩ := ha
+  simp only [reverse]; ext <;> simp [h12, h13, h23, h123]
+
+/-- **Reverse reverses a product of two vectors:** `(a b)~ = b a` for vectors `a, b`. Corollary of
+    the anti-automorphism `reverse_mul` and `reverse` fixing a vector (`reverse_of_isVector`). -/
+theorem reverse_mul_vec {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    reverse (mul a b) = mul b a := by
+  rw [reverse_mul, reverse_of_isVector ha, reverse_of_isVector hb]
+
+/-- **Reverse reverses a product of three vectors:** `(a b c)~ = c b a` for vectors `a, b, c` (3D).
+    Corollary of `reverse_mul` applied twice, `reverse_of_isVector`, and associativity
+    (`mul_assoc`) to normalise the result to `(c b) a`. -/
+theorem reverse_mul3_vec {a b c : G3} (ha : IsVector a) (hb : IsVector b) (hc : IsVector c) :
+    reverse (mul (mul a b) c) = mul (mul c b) a := by
+  rw [reverse_mul, reverse_of_isVector hc, reverse_mul, reverse_of_isVector hb,
+      reverse_of_isVector ha]
+  exact (GacalcProofs.G3.mul_assoc c b a).symm
 
 /-- **The versor norm is multiplicative:** `|R₁ R₂|² = |R₁|² |R₂|²` for even versors (the norm on
     𝒢₃'s even subalgebra ≅ the quaternions). -/
