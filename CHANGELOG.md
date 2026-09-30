@@ -11,6 +11,16 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+### Changed
+- **`MultiVectorBase.inverse` now rejects a general mixed-grade multivector.** The formula
+  `A⁻¹ = Ã/|A|²` is a correct inverse only when `Ã A` is a scalar — i.e. for a **blade** (a
+  grade-pure simple element: scalar, vector, bivector, trivector/pseudoscalar) or a **versor** (a
+  product of vectors, e.g. a rotor). For a mixed-grade `A` the formula previously returned a
+  silently *wrong* result; it now raises `RuntimeError` (the general multivector inverse is not
+  implemented — tracked in `tasks/lean-general-multivector-inverse.md`). Only affects inputs that
+  were already getting a wrong answer — blades and versors are unchanged. `A A⁻¹ = 1` for the
+  vector, versor, bivector and trivector cases is machine-checked in `proofs/GacalcProofs/`.
+
 ## [0.1.0] — 2026-09-28
 
 ### Changed

@@ -151,6 +151,15 @@ theorem vec_mul (u1 u2 v1 v2 : ℝ) :
       = ⟨u1 * v1 + u2 * v2, 0, 0, u1 * v2 - u2 * v1⟩ := by
   simp only [mul, vec]; ext <;> ring
 
+/-- A multivector is a **vector** (grade 1) exactly when its scalar and bivector (pseudoscalar) parts
+    vanish — how "`a` is a vector" is stated for an arbitrary `a : G2` (no vector subtype). -/
+def IsVector (a : G2) : Prop := a.s = 0 ∧ a.c12 = 0
+
+/-- A grade-1 multivector is the `vec` of its own coordinates (2D) — the bridge to the `vec …` lemmas. -/
+theorem eq_vec_of_isVector {a : G2} (ha : IsVector a) : a = vec a.c1 a.c2 := by
+  obtain ⟨hs, h12⟩ := ha
+  ext <;> simp only [vec] <;> first | rfl | assumption
+
 /-- The **dot product** is the scalar part of the symmetric product ½(uv + vu). -/
 theorem dot_is_sym_part (u1 u2 v1 v2 : ℝ) :
     (smul (1 / 2) (add (mul (vec u1 u2) (vec v1 v2)) (mul (vec v1 v2) (vec u1 u2)))).s

@@ -1184,30 +1184,73 @@ class MultiVectorBase(abc.ABC):
         )
 
     def inverse(self) -> typing.Self:
-        """Inverse  A⁻¹  =  Ã / ``|A|²``  — defined when ``|A|²`` ≠ 0.
+        """Inverse  A⁻¹  =  Ã / ``|A|²``  — for a **blade or versor** (see scope).
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18
 
-        (Self-flagged: not sure if I'm doing this correctly — see the "known
-        issues" note in ``CLAUDE.md``.)
+        Scope (this is NOT the general multivector inverse): the formula
+        ``Ã/|A|²`` is exact only when ``Ã A`` is a **scalar** — true for a
+        **blade** (a grade-pure simple element: scalar, vector, bivector, or
+        trivector/pseudoscalar) and for a **versor** (a product of invertible
+        vectors, e.g. a rotor), where ``(Ã/|A|²) A = Ã A / |A|² = 1``.  For a
+        **general mixed-grade multivector**, ``Ã A`` has non-scalar parts, so
+        this returns a WRONG "inverse".  A general low-dimensional closed form
+        does exist (Hitzer & Sangwine 2017, via the grade involutions) but is
+        not implemented here — it is tracked in
+        ``tasks/lean-general-multivector-inverse.md``.  ``A A⁻¹ = 1`` is
+        machine-checked for the vector, versor, bivector and trivector cases in
+        the Lean proof layer (``proofs/GacalcProofs/``).
+
+        (This replaces the older "not sure if I'm doing this correctly" flag:
+        the method is correct for the subset above; the general case is
+        unimplemented and now **guarded** — a mixed-grade ``A`` raises
+        ``RuntimeError`` instead of returning a wrong answer.  The guard is the
+        exact condition "``Ã A`` is a scalar", which subsumes scalar/vector/blade/
+        versor in every dimension — unlike a grade-shape test, which cannot spot a
+        versor and would wrongly accept a non-simple grade-pure element in 𝒢₄/𝒢₅.
+        A good alternative NOT used: trust the graded subtypes — a ``Vector``/
+        ``Bivector``/``Trivector``/``Versor`` is a blade/versor by construction, so
+        no runtime check is needed on those types; only a raw mixed-grade ``Gn``/
+        ``G`` is unsafe.  The general low-dim closed form is tracked in
+        ``tasks/lean-general-multivector-inverse.md``.)
 
         Returns:
-            Self: the inverse ``A⁻¹ = Ã / |A|²``.
+            Self: the inverse ``A⁻¹ = Ã / |A|²`` (valid for a blade or versor).
 
         Raises:
             ZeroDivisionError: if ``|A|²`` is zero (A has no inverse).
+            RuntimeError: if ``A`` is a mixed-grade multivector (``Ã A`` not a
+                scalar) — the general inverse is not implemented.
         """
+        # Compute the full product Ã A once — reverse on the LEFT, matching
+        # :meth:`magnitude_squared` (= ``self.reverse().scalar_product(self)`` = ⟨Ã A⟩)
+        # and the returned inverse ``Ã / |A|²``.  We keep the *whole* product rather
+        # than just its scalar part so the non-scalar part is available for the gate
+        # below; its scalar part (via :meth:`scalar_part`) is exactly ``|A|²``, and
+        # ``a_reverse`` is reused for the returned inverse.
+        a_reverse: typing.Self = self.reverse()
+        reverse_times_self: typing.Self = a_reverse * self
+        # Gate: ``Ã / |A|²`` is a genuine inverse iff ``Ã A`` is a scalar — then
+        # ``A⁻¹ A = Ã A / |A|² = 1`` — which holds for a blade or versor.  A non-scalar
+        # product means A is a mixed-grade element whose (general) inverse is not
+        # implemented.  See :meth:`is_scalar`.
+        if not reverse_times_self.is_scalar():
+            raise RuntimeError(
+                "inverse() supports a blade or versor (where Ã A is a scalar); the "
+                "general mixed-grade multivector inverse is not implemented "
+                "(see tasks/lean-general-multivector-inverse.md)"
+            )
         # Keep numeric input numeric: a ``float`` |A|² stays a float so the
         # reciprocal doesn't leak sympy into numeric pipelines.  For an ``int``
         # (e.g. a unit blade, |A|² == 1) sympify first, so ``int ** -1`` keeps the
         # exact Rational instead of silently degrading to a float; symbolic |A|²
         # stays symbolic.  (Mirrors the numeric/symbolic split in ``magnitude``.)
-        mag_sq: Coef = self.magnitude_squared()
+        mag_sq: Coef = reverse_times_self.scalar_part()
         if not isinstance(mag_sq, float):
             mag_sq = sympy.sympify(mag_sq)
         if mag_sq == 0:
             raise ZeroDivisionError("cannot invert a zero-magnitude multivector")
-        return self.reverse() * (mag_sq ** (-1))
+        return a_reverse * (mag_sq ** (-1))
 
     # dual returns MultiVectorBase (not Self) for the same reason as even_part/
     # odd_part below: it maps grade r -> grade n−r, a *different* grade, so a

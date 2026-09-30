@@ -190,11 +190,21 @@ live in `proofs/` (see above), so several are `in-progress`:
         (`rotation_fixes_normal`) — in `RotateComponents.lean`/`Sandwich.lean`. The rotation-matrix /
         double-angle route was dropped as unnecessary.
 
-  - [~] `tasks/lean-proofs-make-coordinate-free.md` — **in-progress** (2026-09-29): make proofs
-        coordinate-free via the algebra-law / bilinearity / normSq abstractions. Landed: the inner/outer
-        property + sin/cos leaves, named coordinate leaves + index, a de-dup sweep, and the flagship
-        `sandwich_preserves_cos` (rotation preserves the cosine/angle, coordinate-free). Remaining:
-        optional `sandwich_preserves_sin` and fuller de-dup. P7/D5.
+  - [x] `tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md` — **done** (2026-09-30): made proofs
+        coordinate-free via a leaf/structural property algebra. Full inner/outer bilinearity + sin/cos +
+        the general `IsVector` split `mul_eq_dot_add_wedge`; the flagship angle-preservation
+        (`sandwich_preserves_cos` **and** `sandwich_preserves_sin` via the outermorphism
+        `sandwich_preserves_wedge`); the versor-hypothesis sweep (`normSq (evenVersor …) ≠ 0`); the
+        structural conversions of `plane_eq_wedge` / `reject_vec_eq` (blade-inverse leaf
+        `mul_vec_inverse_self`); and a de-dup sweep (`dot_self_vec_eq_normSq`, `wedge_vec_eq_biv`). P7/D5.
+  - [x] `tasks/archive/2026/09/30/lean-inverses-g2-g3.md` — **done** (2026-09-29): investigated inverses. Finding: `Ã/|A|²`
+        is the blade/versor inverse, NOT general (correct iff `A Ã` is scalar); a general low-dim closed
+        form exists (Hitzer–Sangwine). Proved the blade subset in Lean — vector ✓, versor ✓, **bivector**
+        (`mul_biv_inverse_self`) ✓, **trivector** (`mul_triv_inverse_self`) ✓ — which covers every grade the
+        library inverts. Python `inverse` docstring + `CLAUDE.md` known-issue tightened to state the scope. P3/D4.
+  - [ ] `tasks/lean-general-multivector-inverse.md` — **proposed** (2026-09-29): the *general* multivector
+        inverse for 𝒢₂/𝒢₃ (Hitzer–Sangwine closed form via grade involutions), + the Python reconciliation
+        (a breaking change if adopted there). Stretch goal, deferred until wanted. P7/D7.
   - [x] `tasks/archive/2026/09/29/lean-proofs-magnitude-and-conciseness-sweep.md` — **done** (2026-09-29):
         collapsed self-dot / the two magnitude concepts (`mag` vs `magnitude`) / inline re-derivations into
         the one `normSq`/`magnitude` primitive (the maintainer's "dot of a vector with itself IS its
