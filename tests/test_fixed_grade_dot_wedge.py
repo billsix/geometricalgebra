@@ -22,7 +22,7 @@ These tests pin that this *bound-grade* reading (``(a*b).r_vector_part(0)`` /
 (which pick the grade dynamically from each homogeneous pair).  This is the
 middle "fixed-grade" rung of the levels-of-abstraction theme — coordinate →
 fixed-grade → coordinate-free — proved equal.  See
-``tasks/per-type-fixed-grade-dot-wedge-sine-cosine.md``.
+``tasks/archive/2026/10/01/per-type-fixed-grade-dot-wedge-sine-cosine.md``.
 """
 
 import gacalc.g2 as g2
