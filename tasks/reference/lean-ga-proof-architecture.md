@@ -174,3 +174,59 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 
 Remaining (see the umbrella `tasks/investigate-lean-proofs-for-ga.md`): the Mathlib-rotation
 *equivalence* proofs, the dot/wedge/pseudoscalar step-tasks' 3D from-rotation derivations.
+
+## Coverage map (public method → Lean coverage)
+
+Every public math method in `src/gacalc/{base,vectorcalc,measure}.py` against the theorems in
+`proofs/GacalcProofs/*.lean` (audited 2026-10-01, William Emerison Six <billsix@gmail.com>, from
+reading the actual theorems — not grep substrings). HAS = a theorem states the operation's defining
+property; PARTIAL = only a special case or an adjacent fact; NONE = no theorem. The "→ task" column
+names the `lean-proof-*` task filed for a genuine gap (or the existing task that already owns it).
+Counts: **16 HAS, 5 PARTIAL, 11 NONE** (32 methods).
+
+**Correction to the earlier menu:** `vectorcalc.cross` and the 3D vector `dual` were wrongly listed
+as gaps — `Cross.lean` proves both (`cross`/`cross_vec`/`cross_anticomm_vec`/`cross_perp_left`/`_right`
+and `dual_vec`). Both are HAS.
+
+| Method (`base.py` unless noted) | Coverage | Theorem(s) / file — or task |
+| --- | --- | --- |
+| `magnitude` / `magnitude_squared` | HAS | `magnitude`, `normSq`, `normSq_vec`, `magnitude_sq_vec`, `normSq_wedge_vec`, `normSq_mul`, `magnitude_sandwich_vec` (G2/G3, Sandwich) |
+| `normalize` | NONE | → `lean-proof-normalize` |
+| `inner_product` (general graded) | PARTIAL | only vector·bivector `inner_vb` (Projection:132); general `⟨AB⟩_{\|r−s\|}` owned by existing `lean-general-gn-product-and-hestenes-dot-wedge` |
+| `dot` | HAS | G3 `dot`/`dot_vec`/`dot_comm` + bilinearity; G2 `dot` (Versor2D), `dot_is_sym_part`, `dot_eq_coord_sum` (in-progress `lean-proof-dot-product`) |
+| `outer_product` / `wedge` | HAS | `wedge`, `wedge_vec_eq_biv`, `wedge_antisymm`, full bilinearity (G2/G3) |
+| `scalar_product` | HAS | the scalar part `⟨AB⟩₀`; vector case via `dot` / `dot_is_sym_part` |
+| `left_contraction` | NONE | → `lean-proof-contractions` |
+| `right_contraction` | NONE | → `lean-proof-contractions` |
+| `r_vector_part` | NONE | → `lean-proof-grade-projection` |
+| `is_orthogonal_to` | NONE | perpendicularity appears only as a *hypothesis* (`vec_mul_perp`, `mul_eq_wedge_of_perp`, `reject_perp`, `dual_wedge_perp`), not as the predicate → `lean-proof-predicates` |
+| `is_parallel_to` | NONE | → `lean-proof-predicates` (code is self-flagged uncertain) |
+| `reverse` | HAS | `reverse_reverse`, `reverse_mul` (anti-automorphism), `reverse_vec`, `reverse_of_isVector`, `reverse_mul_vec` |
+| `inverse` | PARTIAL | blade/versor cases: `mul_vec_inverse_self`, `mul_biv_inverse_self`, `mul_triv_inverse_self`, `versorFromVectors_mul_inverse`, `inverse_mul`; general mixed-grade owned by existing `lean-general-multivector-inverse` |
+| `dual` | HAS | G2 `dual_vec`; G3 `dual`, `dual_vec` (Cross:50), `dual_wedge_perp_left`/`_right` |
+| `even_part` | NONE | → `lean-proof-grade-projection` |
+| `odd_part` | NONE | → `lean-proof-grade-projection` |
+| `cosine` | HAS | `cos_between`, `cos_sq_add_sin_sq`, `sandwich_preserves_cos`, `cos_between_uvec` (TrigEquiv) |
+| `abs_sin` | HAS | `sin_between`, `sin_between_eq_abs_signed_vec`, `signed_sin_between`(`_uvec`) (TrigEquiv), `sandwich_preserves_sin` |
+| `project` / `projected_onto` | HAS | `proj`, `project_onto`, `project_add_reject`, `proj_plane_eq_project_onto` (Projection/Projection2D) |
+| `reject` / `rejected_away_from` | HAS | `reject`, `reject_perp`, `reject_vec_eq`, `project_add_reject` |
+| `reflect` / `reflected_across` | NONE | → `lean-proof-reflect` (cheap: `project − reject`, both in Lean) |
+| `versor_from_vectors` | HAS | `versorFromVectors`, `versorFromVectors_mul_reverse`/`_inverse`, `sandwich_carries_from_to`, `bisector` (Rotation3D/Sandwich) |
+| `bivector_from_vectors` | HAS | the raw wedge `a∧b`: `wedge`, `wedge_vec_eq_biv` |
+| `sandwich` | HAS | `sandwich`, `sandwich_preserves_dot`/`_normSq`/`_wedge`/`_cos`/`_sin`, `sandwich_comp`, isometry (Sandwich/RotateComponents) |
+| `exp` | NONE | → `lean-proof-exp` (bivector exp = rotor `cos\|A\|+sin\|A\|·Â`) |
+| `vectorcalc.cross` | HAS | `cross`, `cross_vec`, `cross_anticomm_vec`, `cross_perp_left`/`_right` (Cross) |
+| `measure.area` | PARTIAL | `normSq_wedge_vec` (= `\|a∧b\|²`) is adjacent; `area = \|a∧b\|` not stated → `lean-proof-measures` |
+| `measure.volume` | PARTIAL | trivector coefficient = `signedVolume` (Cross); `\|·\| = volume` not stated → `lean-proof-measures` |
+| `measure.signed_area` | PARTIAL | 2D wedge coefficient (`wedge_antisymm`, `wedge_is_antisym_part`, G2); `signed_area =` that not stated → `lean-proof-measures` |
+| `measure.signed_volume` | HAS | `dot_cross_eq_signedVolume` (= `det[a,b,c]`) (Cross) |
+| `measure.content` (general `n`) | NONE | → `lean-proof-measures` |
+
+Gaps already owned by an existing task (NOT re-filed): general graded `inner_product`
+(`lean-general-gn-product-and-hestenes-dot-wedge`), general mixed-grade `inverse`
+(`lean-general-multivector-inverse`); `dot`/`wedge`/pseudoscalar 3D-from-rotation derivations
+(`lean-proof-dot-product`, `lean-proof-wedge-product`, `lean-proof-pseudoscalar-square-sign`,
+`lean-proof-rotation-from-scratch`). New gap tasks filed from this audit: `lean-proof-reflect`,
+`lean-proof-contractions`, `lean-proof-exp`, `lean-proof-normalize`, `lean-proof-measures`,
+`lean-proof-grade-projection`, `lean-proof-predicates` (all `proposed — needs go-ahead`, cross-linked
+to `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` and the umbrella).

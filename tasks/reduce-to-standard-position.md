@@ -107,3 +107,17 @@ elementary coordinate-plane rotations instead. The versor version was replaced w
 - The maintainer's voice pass on the book draft (and real figures, and a `make docs` build check).
 - Optional follow-ons from the ideas list: a 3D projection-rejection book page (B2), cross-links to
   `rotate.rst` (B3). No decisions block them.
+- **Full 3-rotation reduction (maintainer, 2026-10-01).** The 3D Lean proof (`StandardPosition.lean`)
+  uses only **2** elementary rotations — `rotXY` then `rotXZ` (`rotate_b_to_e1`) — to bring the *onto*
+  vector `b` to `|b|·e₁`. That is correct and minimal **for project/reject**: projecting onto the `e₁`
+  axis only needs `b` on that axis; you then read `a`'s `e₁` component, and `a`'s `e₂`/`e₃` components
+  are irrelevant, so `a` never needs to be brought into the `e₁e₂` plane. The archetype
+  `multivariate-math/proofs/crossproduct.tex` uses a **3rd** rotation (`f_{b''}^{xy}`, after 2 that put
+  `a` on the x-axis) precisely because the **cross product** reduces *both* vectors to a full 2-D
+  (xy-plane) computation — a cross-product need, not a project/reject one.
+  The maintainer wants the **fuller reduction** anyway (bring the second vector down into the `e₁e₂`
+  plane with a 3rd rotation — a rotation in the `e₂e₃` plane about the fixed `e₁` axis), for
+  pedagogical completeness and as the basis for a **standard-position cross-product derivation in
+  Lean**. Proposed follow-on: add `rotYZ` + the alignment lemma bringing `a`'s `e₃` component to 0
+  after `b` is on `e₁`, and build the cross product (`(a∧b)I₃⁻¹`) via the full reduction, proved equal
+  to `Cross.lean`'s `cross_vec`. (Could become its own `lean-proof-*` task if it grows.)

@@ -1,9 +1,13 @@
 # Audit which gacalc math operations have no Lean coverage, then decide what to add
 
-**Status:** proposed — needs go-ahead
+**Status:** DONE 2026-10-01 — coverage map written into `tasks/reference/lean-ga-proof-architecture.md`
+(32 methods: 16 HAS / 5 PARTIAL / 11 NONE; the stale `cross`/`dual` "gap" corrected — both covered by
+`Cross.lean`). Maintainer chose the whole menu (incl. predicates); 7 gap tasks filed:
+`lean-proof-{reflect,normalize,predicates,measures,grade-projection,contractions,exp}.md`. Proving them
+is the follow-on (those tasks), not this audit.
 **Priority:** 7
 **Difficulty:** 3
-**Created:** 2026-09-30 **Updated:** 2026-09-30 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-09-30 **Completed:** 2026-10-01 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
