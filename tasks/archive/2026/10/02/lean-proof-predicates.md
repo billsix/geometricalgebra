@@ -3,7 +3,7 @@
 **Part of:** `tasks/investigate-lean-proofs-for-ga.md`
 **From:** `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the coverage-map gap audit)
 
-**Status:** proposed — needs go-ahead
+**Status:** DONE 2026-10-01 — `proofs/GacalcProofs/Predicates.lean`: `perp_iff_mul_eq_wedge` (`a·b=0 ⟺ ab=a∧b`, both directions) and `wedge_parallel_smul` (`a∧(k·a)=0`). `make lean` green, sorry-free. **Reported discrepancy:** Python `is_parallel_to` uses `cosine==1` (same-direction only), narrower than the geometric wedge-zero parallel (which includes anti-parallel) — CLAUDE.md known-issue #2; the Lean wedge-zero form is the correct one.
 **Priority:** 5
 **Difficulty:** 3
 

@@ -13,3 +13,10 @@ import GacalcProofs.TrigEquiv
 import GacalcProofs.Rotation3D
 import GacalcProofs.StandardPosition
 import GacalcProofs.Cross
+import GacalcProofs.Normalize
+import GacalcProofs.Reflect
+import GacalcProofs.Predicates
+import GacalcProofs.GradeProjection
+import GacalcProofs.Contractions
+import GacalcProofs.Measures
+import GacalcProofs.Exp

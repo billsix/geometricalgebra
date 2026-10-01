@@ -3,7 +3,12 @@
 **Part of:** `tasks/investigate-lean-proofs-for-ga.md`
 **From:** `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the coverage-map gap audit)
 
-**Status:** proposed — needs go-ahead
+**Status:** DONE 2026-10-02 — `proofs/GacalcProofs/Contractions.lean` (G3): `leftContraction`/
+`rightContraction` (`⟨AB⟩_{m−k}` / `⟨AB⟩_{k−m}`, operand grades explicit); proved
+`leftContraction_vec_vec`/`rightContraction_vec_vec` (both = the scalar dot for two vectors) and
+`leftContraction_scalar_vec` (`α ⌋ b = α·b` — the grade-0 inclusion that distinguishes the contraction
+from the Hestenes dot, per `contraction-and-dot-definitions.md`). `make lean` green, sorry-free. (The
+vector·bivector = `inner_vb` equality was not needed to characterise them; a possible extension.)
 **Priority:** 6
 **Difficulty:** 5
 

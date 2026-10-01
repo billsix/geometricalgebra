@@ -3,7 +3,16 @@
 **Part of:** `tasks/investigate-lean-proofs-for-ga.md`
 **From:** `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the coverage-map gap audit)
 
-**Status:** proposed — needs go-ahead
+**Status:** DONE 2026-10-02 — `proofs/GacalcProofs/Measures.lean`: G3 `area` (= `|a∧b|`) with
+`area_sq_vec` (= `normSq (wedge ..)`) and `normSq_wedge_eq_lagrange` (`|a∧b|² = |a|²|b|² − (a·b)²`, from
+`lagrange_property`); G3 `volume` (= `|a∧b∧c|`) with `volume_sq_vec` = `signedVolume²` (via
+`normSq_wedge3_eq_signedVolume_sq`); G2 `signedArea` (= `a₁b₂ − a₂b₁`) with `signedArea_sq`
+(`|signed_area| = area`). `make lean` green, sorry-free. `signed_volume` was already covered
+(`Cross.dot_cross_eq_signedVolume`). **Deferred (confirmed 2026-10-02):** the general `content`
+(`|a₁∧…∧aₖ|`, arbitrary `k`) needs a dimension-general `Gn` Lean representation that does not exist
+(these proofs use concrete `G2`/`G3` structs); building it is the prerequisite task
+`tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` (deliberately deferred). `area` (k=2) and
+`volume` (k=3) are its concrete instances. A `-- TODO` pointing at that task is in `Measures.lean`.
 **Priority:** 5
 **Difficulty:** 5
 

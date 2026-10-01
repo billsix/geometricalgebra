@@ -3,7 +3,7 @@
 **Part of:** `tasks/investigate-lean-proofs-for-ga.md`
 **From:** `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the coverage-map gap audit)
 
-**Status:** proposed — needs go-ahead
+**Status:** DONE 2026-10-01 — `proofs/GacalcProofs/Reflect.lean`: `reflectVec` (= proj − reject) and `reflectVec_eq` (`reflect_d v = 2·proj_d v − v`, via `reject_vec_eq`), 𝒢₃ vectors. `make lean` green, sorry-free. **Isometry now proved too (2026-10-02):** `normSq_reflectVec` (`|reflect_d v|² = |v|²`, a reflection preserves length), via the `2·proj − v` coordinate form + `field_simp`/`ring`. Fully done.
 **Priority:** 3
 **Difficulty:** 2
 

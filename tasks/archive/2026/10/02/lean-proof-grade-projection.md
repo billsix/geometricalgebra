@@ -3,7 +3,10 @@
 **Part of:** `tasks/investigate-lean-proofs-for-ga.md`
 **From:** `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the coverage-map gap audit)
 
-**Status:** proposed — needs go-ahead
+**Status:** DONE 2026-10-02 — `proofs/GacalcProofs/GradeProjection.lean` (G2 + G3): `rVectorPart`
+(grade-r selector `⟨a⟩_r`), `evenPart`/`oddPart`; proved `rVectorPart_idem` (idempotence),
+`rVectorPart_complete` (the parts reassemble the whole), `even_add_odd` (even+odd = whole). `make lean`
+green, sorry-free.
 **Priority:** 6
 **Difficulty:** 4
 

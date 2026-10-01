@@ -3,7 +3,7 @@
 **Part of:** `tasks/investigate-lean-proofs-for-ga.md`
 **From:** `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the coverage-map gap audit)
 
-**Status:** proposed — needs go-ahead
+**Status:** DONE 2026-10-01 — `proofs/GacalcProofs/Normalize.lean`: `normalizeVec` (= `(1/|v|)·v`), `normSq_normalizeVec` (= 1) and `magnitude_normalizeVec` (= 1) for `normSq v ≠ 0`, 𝒢₃ vectors. `make lean` green, sorry-free.
 **Priority:** 4
 **Difficulty:** 2
 

@@ -3,7 +3,13 @@
 **Part of:** `tasks/investigate-lean-proofs-for-ga.md`
 **From:** `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the coverage-map gap audit)
 
-**Status:** proposed — needs go-ahead
+**Status:** DONE 2026-10-02 — `proofs/GacalcProofs/Exp.lean` (G2 + G3): `expBivector`/`expBivector12`
+(the closed form `cos θ·1 + sin θ·e₁₂` for the unit-plane bivector `θ·e₁₂`, `(e₁₂)² = −1`); proved
+`*_eq_evenVersor` (exp = the even versor, so the rotor/sandwich layer applies) and `normSq_* = 1`
+(**exp of a bivector is a unit versor — a rotor**, via `cos²+sin²=1`). `make lean` green, sorry-free.
+**General case now proved too (2026-10-02):** `expBivectorGeneral p q r = cos|B|·1 + (sin|B|/|B|)·B`
+for any nonzero 𝒢₃ bivector `B = p·e₁₂ + q·e₁₃ + r·e₂₃` (every 𝒢₃ bivector is simple, so this is the
+full case), with `normSq_expBivectorGeneral = 1` (`|B|² = p²+q²+r²`). Fully done.
 **Priority:** 7
 **Difficulty:** 6
 
