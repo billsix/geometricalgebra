@@ -97,6 +97,13 @@ elementary coordinate-plane rotations instead. The versor version was replaced w
 
 ## Remaining
 
+- **FIXED 2026-10-01 — `tests/test_standardposition.py` `ty` failure (was CI RED).** `project_sp`/
+  `reject_sp` are typed `-> MultiVectorBase`, but the test typed `_coords`'s param and two `difference`
+  locals as `Vector`, giving 5 `ty` diagnostics (`invalid-argument-type` ×3, `invalid-assignment` ×2)
+  that slipped past `make test` (pytest only) and failed CI's `make format` (`ty`) job. Fixed by typing
+  `_coords(v: MultiVectorBase)` and `difference: MultiVectorBase` (option c — narrowing the API return
+  types would have needed narrowing the `MultiVectorBase` inputs too, a bigger change). `make format`
+  now green. Unrelated to the per-type-sine work; flagged by the maintainer.
 - The maintainer's voice pass on the book draft (and real figures, and a `make docs` build check).
 - Optional follow-ons from the ideas list: a 3D projection-rejection book page (B2), cross-links to
   `rotate.rst` (B3). No decisions block them.

@@ -26,11 +26,12 @@ numerically and symbolically.  See the reference doc
 import numpy as np
 import sympy
 
+from gacalc.base import MultiVectorBase
 from gacalc.g3 import Vector, e_1, e_2, e_3
 from gacalc.standardposition import project_sp, reject_sp
 
 
-def _coords(v: Vector) -> np.ndarray:
+def _coords(v: MultiVectorBase) -> np.ndarray:
     # iteration yields the coefficient values in blade order = the coordinates
     return np.array(list(v), dtype=float)
 
@@ -64,7 +65,7 @@ def test_project_sp_matches_canonical_symbolic() -> None:
     standard-position projection equals the canonical Hestenes projection."""
     a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
     a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    difference: Vector = project_sp(a, _B_EXACT) - a.projected_onto(_B_EXACT)
+    difference: MultiVectorBase = project_sp(a, _B_EXACT) - a.projected_onto(_B_EXACT)
     assert all(
         sympy.simplify(sympy.sympify(coefficient)) == 0 for coefficient in difference
     )
@@ -73,7 +74,9 @@ def test_project_sp_matches_canonical_symbolic() -> None:
 def test_reject_sp_matches_canonical_symbolic() -> None:
     a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
     a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    difference: Vector = reject_sp(a, _B_EXACT) - a.rejected_away_from(_B_EXACT)
+    difference: MultiVectorBase = reject_sp(a, _B_EXACT) - a.rejected_away_from(
+        _B_EXACT
+    )
     assert all(
         sympy.simplify(sympy.sympify(coefficient)) == 0 for coefficient in difference
     )

@@ -1,22 +1,24 @@
-# Per-type fixed-grade dot/wedge, a per-type grade operation, and per-type sine/cosine — each proved equivalent to the general form
+# Per-type fixed-grade dot/wedge (via r_vector_part) and per-type sine/cosine — each proved equivalent to the general form
 
-**Status:** proposed — needs go-ahead (2026-09-30, William Emerison Six <billsix@gmail.com>)
+**Status:** in-progress — Phases 1 & 2 DONE (general unsigned **`abs_sin`**; signed 𝒢₂ **`sine`**,
+Decision 8); `make format` (ruff + ty) and `make test` both green 2026-10-01; Phases 3–5 awaiting
+go-ahead
 **Priority:** 6
 **Difficulty:** 7
-**Created:** 2026-09-30 **Updated:** 2026-09-30 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-09-30 **Updated:** 2026-10-01 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
-Add **special-case, per-type** definitions of the core operations — a fixed grade accessor, `dot`
-and `wedge` written the Hestenes way but with the grade **bound to a literal constant** per type
-pair, and `sine`/`cosine` for vectors — as **teaching artifacts that live alongside** the existing
-canonical coordinate-free ones, with a **proof of equivalence** (symbolic test in Python, theorem in
-Lean) for each. This makes concrete the project principle that special-case formulas at every level
-of abstraction — full-coordinate → coordinate-free/dimension-independent — are *desirable* for
-students, provided a check pins each to the general form; **the coordinate-free form stays the
-default/canonical one.** "Done" for THIS task = the design questions below are decided and (on
-go-ahead) the operations + equivalence checks land green (`make test` + `make lean`); it is **not**
-yet authorization to implement.
+Add **special-case, per-type** presentations of the core operations — `dot` and `wedge` written the
+Hestenes way but with the grade **bound to a literal constant** per grade-pure type pair (via the
+existing grade-projection `r_vector_part`), and a `sine` companion to the existing `cosine` for
+vectors — as **teaching artifacts that live alongside** the canonical coordinate-free ones, with a
+**proof of equivalence** (symbolic test in Python, theorem in Lean) for each. This makes concrete the
+project principle that special-case formulas at every level of abstraction — full-coordinate →
+coordinate-free/dimension-independent — are *desirable* for students, provided a check pins each to
+the general form; **the coordinate-free form stays the default/canonical one.** "Done" = (on
+go-ahead) the deliverables + equivalence checks land green (`make test` + `make lean`). The design
+questions are now decided (see Decisions); this is **not** yet authorization to implement.
 
 ## The idea (maintainer, verbatim, 2026-09-30)
 
@@ -53,22 +55,48 @@ missing middle rung and a missing operation, and formalises the "prove they're e
   not the general `abs(r-s)` sum. This is the pedagogical bridge "for two vectors, dot IS the grade-0
   part of the product and wedge IS the grade-2 part."
 
-**Grade operation — missing:**
-- General grade **selection** exists (`r_vector_part(r)`, `base.py:985`; graded overrides carry
-  `@overload` on `Literal[r]`, see `archive/2026/07/22/overload-r-vector-part.md`). There is **no
-  per-type integer `grade` constant/accessor** — only `grades()` (runtime; returns `[]` for a zero
-  value, `base.py:1141`) and the generator's `grade_name(k)` naming helper (`gen_specialized.py:2870`).
-- A fixed `Vector.grade = 1` / `Bivector.grade = 2` constant is new and small — **but only
-  well-defined for grade-pure types.** `Versor` ({0,2}) and `Odd_3` ({1,3}, `archive/2026/09/05/model-odd-graded-type.md`)
-  are multi-grade and have no single grade; the fixed-grade dot/wedge applies to **grade-pure pairs
-  only** (mixed types keep the general sum).
+**Grade operation — already exists (clarified by the maintainer 2026-09-30):**
+- "A per-type grade operation" means an `r_vector_part`-style projection that **returns just the
+  components of a given grade** — NOT an integer grade-*number* accessor (that was the agent's misread
+  in the first draft). That projection already exists: `MultiVectorBase.r_vector_part(r)`
+  (`base.py:985`), with per-type generated overrides carrying `@overload` on `Literal[r]`
+  (`archive/2026/07/22/overload-r-vector-part.md`). It works on any type — a zero-grade request on a
+  grade-pure type returns the `Scalar` zero.
+- So **no new grade operation is needed.** What is new is *using* `r_vector_part` with a **bound
+  literal grade** inside the per-type `dot`/`wedge` presentation (below) — the "call the grade, bind
+  the grade" step. This applies to **grade-pure pairs** (for grade-`r` × grade-`s`: dot picks
+  `|r−s|`, wedge picks `r+s`); mixed-grade types (`Versor` {0,2}, `Odd_3` {1,3},
+  `archive/2026/09/05/model-odd-graded-type.md`) keep the general grade-summed form, and `r_vector_part`
+  already handles them correctly anyway.
 
-**Sine / cosine — cosine exists, sine does not:**
+**Sine / cosine — original state (before Phase 1): cosine existed, no sine method:**
 - `MultiVectorBase.cosine(other)` exists (`base.py:1303`, Hestenes 1.53b, `cos θ = (Ã ∗ B)/(|A||B|)`),
   general multivectors.
-- There is **no `sine`** in the library core — only a notebook-plot free function `sine(v1, v2)`
-  (`nbplotutils.py:309`, vectors only, via `v1 * e_12` then dot). So a general `sine` companion to
-  `cosine`, and per-type vector `sine`/`cosine`, are new.
+- There was **no sine method** in the library core — only a notebook-plot free function `sine(v1, v2)`
+  (`nbplotutils.py:309`, vectors only, signed: `v1 * e_12` then dot). So an unsigned `abs_sin` companion
+  to `cosine`, and per-type vector trig, were the gap (abs_sin filled in Phase 1).
+- **DONE (Phase 1, 2026-10-01):** a general unsigned `MultiVectorBase.abs_sin(other)` now exists
+  (`base.py`, right after `cosine`), `|A ∧ B| / (|A| |B|)`, same primitives as `cosine` so it
+  preserves numeric input (float→float on the generated classes, int/symbolic exact); tests
+  `test_multivector_abs_sin` + `test_abs_sin_cosine_pythagorean` (cos²+abs_sin²==1, numeric and
+  symbolic). It is inherited by the generated classes via MRO — `cosine`/`abs_sin` are NOT
+  generator-specialized, so no generator change and `check-generated` stays byte-identical. (Named
+  `abs_sin`, not `sine`, per Decision 7 — `sine` is reserved for the signed 𝒢₂ form.)
+
+**Prior art in modelviewprojection (reference/validation, 2026-10-01) — github.com/billsix/modelviewprojection:**
+`src/modelviewprojection/mathutils.py` already carries the whole sin/cos family that depends on gacalc,
+and confirms the design space (gacalc is the lower layer, so these would be *adapted down*, not imported):
+- `cosine(v1, v2)` — any dimension; **NaN-guarded on a zero-length operand** (gacalc's
+  `cosine`/`abs_sin`/`sine` do NOT guard — they divide and raise, by Decision 6).
+- `sine(v1, v2)` — **signed, 𝒢₂ only**: `(v1 ^ v2).coeff_e_12 / (|v1| |v2|)`; the sign is the *turn
+  direction* (swapping arguments negates it), used for "which side of an edge a point lies on." This is
+  the maintainer's remembered 2D signed sine.
+- `abs_sin(v1, v2)` — **unsigned, 𝒢₃**: `|v1 ^ v2| / (|v1| |v2|)` — i.e. exactly gacalc's new general
+  `abs_sin` restricted to 3D vectors.
+So the **signed 𝒢₂ sine is a genuinely-wanted special case** (Phase 2), analogous to the existing
+𝒢₂-only `rotate_90_degrees` and 𝒢₃-only `Vector.cross` closed forms. **Naming (Decision 7): gacalc
+adopts mvp's names exactly** — `sine` = signed (𝒢₂), `abs_sin` = unsigned (any-dim) — so the two
+libraries agree (Phase 1's general method was renamed `sine`→`abs_sin` on 2026-10-01).
 
 **Lean state (proofs/GacalcProofs, `make lean` green 2026-09-30):**
 - dot/wedge as parts of the product are proved **per-dimension**: `G2.dot_is_sym_part`/`wedge_is_antisym_part`
@@ -78,6 +106,9 @@ missing middle rung and a missing operation, and formalises the "prove they're e
   `Trig.cos_between`/`sin_between` (`Trig.lean:22`/`25` G3, `:88`/`:91` G2) via Lagrange; and
   angle-parametrized `Rotation.uvec_dot` (dot of unit vectors = `cos(β−α)`, `Rotation.lean:86`) /
   `uvec_wedge` (= `sin(β−α)`, `Rotation.lean:91`). Tying these is new and is exactly the gap.
+  **Note `uvec_wedge` (`Rotation.lean:91`) is already the SIGNED 𝒢₂ sine** (`sin(β−α)`, from the e₁₂
+  coefficient) — so it is the ready-made Lean target for the signed-2D Python `sine` (mvp's `sine`),
+  and `sin_between` (`Trig.lean:91`) is the unsigned one; the 2D equivalence is `|signed| = unsigned`.
 - **No abstract grade operator `⟨⟩_k` in Lean, by an explicit decision** — the coordinate-free pass
   (`archive/2026/09/30/lean-proofs-make-coordinate-free.md`, open-Q2 RESOLVED "no") kept per-grade-pair
   forms. This **agrees** with "bind the grade per type," and constrains the Lean side to stay per-type.
@@ -111,64 +142,120 @@ deliberately-duplicate special-case variant, the variant marked with a prime (Le
 
 ## What is genuinely new (the deliverables)
 
-1. **A per-type grade accessor** for grade-pure types (`Scalar`.grade=0 … the pseudoscalar), a fixed
-   constant, generator-emitted. Decide whether multi-grade types expose `grades` only (no `grade`) or
-   raise on `.grade`.
-2. **Per-type fixed-grade `dot`/`wedge`** — the middle rung, `(a*b).r_vector_part(K)` with `K` a bound
-   literal per grade-pure pair. As a *distinct, marked duplicate* of the existing closed-form
-   `dot`/`wedge` (naming in Q3), NOT a replacement.
-3. **A general `sine`** on `MultiVectorBase` (companion to `cosine`), plus **per-type vector
-   `sine`/`cosine`** special cases.
-4. **Equivalence checks** for every special case: a **symbolic (and numeric) Python test** that the
+Per Decision 1, the fixed-grade and coordinate rungs are added as **proved-equal teaching material**
+(notebook/book demonstrations + tests + Lean theorems), NOT as competing public `dot`/`wedge` methods;
+the only genuinely-missing *API* pieces are the general `abs_sin` (DONE Phase 1) and the signed 𝒢₂ `sine`.
+
+1. **A general unsigned `abs_sin`** on `MultiVectorBase` — the companion the API was missing next to
+   `cosine` (`base.py:1303`), unsigned (Decision 4), `|a∧b| / (|a||b|)`. **DONE 2026-10-01**
+   (Phase 1): inherited by the generated classes via MRO, numeric-preserving, cos²+abs_sin²==1 tested.
+2. **A signed 𝒢₂ `sine` — a per-type generated closed form** (𝒢₂ `Vector` only), `(a ∧ b).coeff_e_12 /
+   (|a| |b|)`, the oriented turn-direction sine mvp uses for edge-side tests. Analogous to the existing
+   𝒢₂-only `rotate_90_degrees` and 𝒢₃-only `Vector.cross` closed forms. 𝒢₂ only — 3D has no single
+   turn direction (mvp's 3D form is the unsigned `abs_sin`). Name `sine`, raises on zero length
+   (Decisions 7, 6). mvp `mathutils.py` is the behavioral reference.
+3. **A per-type fixed-grade `dot`/`wedge` *demonstration*** — the middle rung, `(a*b).r_vector_part(K)`
+   with `K` a **bound literal** per grade-pure pair (vector·vector: `.r_vector_part(0)` for dot,
+   `.r_vector_part(2)` for wedge), shown in a notebook/book page and pinned by a symbolic test + a Lean
+   theorem — not a new public method (Decision 1).
+4. **Per-type vector `cosine` + the fixed-grade/signed sine special cases**, shown the same way
+   (demonstration + equivalence check), reusing `abs_sin`/`sine`/`cosine`.
+5. **Equivalence checks** for every special case: a **symbolic (and numeric) Python test** that the
    special form equals the canonical general form; and, where the special case is a *derivation* worth
-   certifying, a **Lean theorem** (esp. `sin_between ↔ uvec_wedge`, `cos_between ↔ uvec_dot`, and the
-   fixed-grade dot/wedge = `mul_eq_dot_add_wedge` graded-part form).
-5. **Pedagogy surface**: the "levels of abstraction, all proved equal" chain shown in the book /
-   percent-notebooks (ties into `tasks/investigate-lean-to-python-proof-notebooks.md` and
-   `tasks/reference-doc-lean-workflow-and-proof-notebooks.md` — the "verify, don't derive" method).
+   certifying, a **Lean theorem** — the signed-2D ones have ready targets (`Rotation.uvec_wedge` is the
+   signed `sin`, `Rotation.lean:91`; `Trig.sin_between` the unsigned, so 2D equivalence is
+   `|signed| = unsigned`), plus `sin_between ↔ uvec_wedge`, `cos_between ↔ uvec_dot`, and the
+   fixed-grade dot/wedge = `mul_eq_dot_add_wedge` graded-part form.
+6. **Pedagogy surface**: the "levels of abstraction, all proved equal" chain shown in the book /
+   percent-notebooks (coordinate → fixed-grade → coordinate-free), ties into
+   `tasks/investigate-lean-to-python-proof-notebooks.md` and
+   `tasks/reference-doc-lean-workflow-and-proof-notebooks.md` — the "verify, don't derive" method.
 
-## Proposed phases (on go-ahead; may split into an umbrella if it grows past ~3 chunks)
+## Phases (on go-ahead — single task with a phase list, Decision 5; not an umbrella)
 
-- [ ] **Phase 0 — decide the design questions below** (naming, home, scope of grade accessor, how
-      many dims/types). This is the go/no-go gate.
-- [ ] **Phase 1 — grade accessor** (generator-first: `tools/gen_specialized.py`; grade-pure types get
-      a fixed `grade`; verify `make check-generated` byte-identical + `make test`).
-- [ ] **Phase 2 — general `sine` on `base.py`** + its symbolic/numeric test against the Lagrange
-      relation `|a∧b| = |a||b| sinθ` (cf. `archive/2026/06/27/wedge-magnitude-sin-notebook.md`), keeping
-      numeric-in→numeric-out (CLAUDE.md magnitude/inverse rule).
-- [ ] **Phase 3 — per-type fixed-grade `dot`/`wedge` + per-type vector `sine`/`cosine`** (generator),
-      each with a conformance/equivalence test vs the canonical form.
-- [ ] **Phase 4 — Lean equivalences**: `cos_between ↔ uvec_dot`, `sin_between ↔ uvec_wedge`
-      (`Trig.lean` ↔ `Rotation.lean`), and the fixed-grade dot/wedge = graded-part characterization;
-      `make lean` green, `sorry`-free.
-- [ ] **Phase 5 — pedagogy**: the levels-of-abstraction chain in a notebook/book page (coordinate →
-      fixed-grade → coordinate-free), each rung annotated with its equivalence check.
+- [x] **Phase 1 — general unsigned `abs_sin` on `base.py`** (companion to `cosine`, Decisions 4/7).
+      **DONE + committed 2026-10-01** (initial method `6ff302b`; renamed `sine`→`abs_sin` per Decision 7
+      the same day): `|A∧B|/(|A||B|)`, inherited by generated classes via MRO (no generator change;
+      `check-generated` byte-identical), numeric-preserving (float→float on g2 verified), tests
+      `test_multivector_abs_sin` + `test_abs_sin_cosine_pythagorean` (cos²+abs_sin²==1 numeric &
+      symbolic). `make test` green (658 passing).
+- [x] **Phase 2 — signed 𝒢₂ `sine`, a per-type generated closed form. DONE 2026-10-01.** Emitted by
+      the generator (`tools/gen_specialized.py`, `if n == 2:` vector-role block, next to
+      `rotate_90_degrees`) as `g2.Vector.sine(other) -> Coef = (a∧b).coeff_e_12 · |a|⁻¹ · |b|⁻¹` — a
+      signed scalar (Decision 8), oriented (swap negates), raises on zero length (Decision 6), 𝒢₂-only
+      (g1/g3 `Vector` have none). Dedicated `SINE_METHOD_DOC` with doctests. Tests: `tests/test_signed_sine.py`
+      (signed value, swap-negates, parallel=0, `abs(sine)==abs_sin`, symbolic Lagrange `cos²+sin²=1`,
+      raises on zero, 𝒢₂-only). `make test` green (666); `make check-generated` byte-identical; `make
+      format` (ruff + ty) green. Reference: mvp `mathutils.py` `sine`.
+      `make check-generated` byte-identical + `make test`.
+- [x] **Phase 3 — the per-type fixed-grade `dot`/`wedge` demonstration. DONE 2026-10-01.** Symbolic
+      test `tests/test_fixed_grade_dot_wedge.py` (5 tests, host-green) pins, for the grade-pure vector
+      pair (Gn 2D/3D + generated g2/g3), that `dot = (a*b).r_vector_part(0)` and `wedge =
+      (a*b).r_vector_part(2)` with the grade a **literal**, equal to the canonical
+      `inner_product`/`outer_product`, plus `ab = dot + wedge`. Pedagogy in the Phase-5 notebook.
+- [x] **Phase 4 — Lean equivalences. DONE 2026-10-01** (`make lean` green, sorry-free, 8940 jobs).
+      `proofs/GacalcProofs/TrigEquiv.lean` (imported in the proofs root): `uvec_magnitude`,
+      `cos_between_uvec` (`G2.cos_between` of two unit vectors = `cos(β−α)`, via `uvec_dot`), a Lean
+      `signed_sin_between` def (the Python `g2.Vector.sine`) with `signed_sin_between_uvec` = `sin(β−α)`
+      (via `uvec_wedge`), `sin_between_eq_abs_signed_vec` (the unsigned `G2.sin_between` = `|signed|` for
+      ANY two vectors — the Lean mirror of `abs(sine)==abs_sin`), and `sin_between_uvec = |sin(β−α)|`.
+      Fixed-grade dot/wedge = graded-part needed no new theorem (already `G2.vec_mul`/`mul_eq_dot_add_wedge`;
+      cross-referenced in the file header).
+- [x] **Phase 5 — pedagogy. DONE 2026-10-01.** `book/docs/notebooks/levels-of-abstraction.py` (runnable,
+      verified executes) + `book/docs/levels-of-abstraction.rst` (in the index toctree) show the
+      coordinate → fixed-grade → coordinate-free chain for dot/wedge (all proved equal), that
+      coordinate-free is dimension-independent (𝒢₂ and 𝒢₃), and the sine/cosine family
+      (`cosine`/`abs_sin`/signed `sine`, `cos²+sin²=1`). Prose/figures are a draft for the maintainer's
+      voice pass (noted in the .rst).
 
-## Design questions / decisions to make (BLOCKING — resolve in Phase 0)
+## Decisions (maintainer, 2026-09-30 for 1–5, 2026-10-01 for 6–7; William Emerison Six <billsix@gmail.com>)
 
-Raised inline above; consolidated here so you can answer by number.
+1. **Naming / where the extra rungs live → agent's discretion; keep the canonical names.** Decided:
+   do NOT mint competing public `dot`/`wedge`/`cosine` methods for the special cases — the canonical
+   coordinate-free forms keep those names and stay the default. The fixed-grade and coordinate rungs
+   are **proved-equal teaching material** (notebook/book demonstrations + symbolic tests + Lean
+   theorems). The genuinely-missing *API* additions are the two trig names in Decision 7.
+2. **"Per-type grade operation" = the `r_vector_part`-style projection, which already exists** (the
+   maintainer clarified item 2 meant "the thing that returns just the components of that grade," not an
+   integer grade-number accessor). No new grade operation is built; the integer-accessor question is
+   moot and dropped. `r_vector_part` already works on grade-pure and multi-grade types alike.
+3. **Which dims/types → agent's discretion, revisable.** Decided: vectors in g2+g3 first (the
+   motivating case); extend to other grade-pure pairs/dims if it proves worthwhile.
+4. **The general sine is unsigned** `|a∧b| / (|a||b|)`. (Superseded on naming by Decision 7: this
+   function is named `abs_sin`, and `sine` is the signed 𝒢₂ form.) Note for Phase 4: Lean's
+   `uvec_wedge` is the *signed* `sin(β−α)`, so the equivalence compares the unsigned `abs_sin` to
+   `|uvec_wedge|` and the signed `sine` directly to `uvec_wedge`.
+5. **Single task with a phase list** (not an umbrella).
+6. **Zero-length guard → keep the raise (no NaN).** gacalc's `cosine`/`abs_sin`/`sine` divide by
+   `|A|` and raise on a zero-length operand; do NOT add mvp's NaN guard. This stays consistent with the
+   existing `cosine`, and mvp's NaN behavior is an mvp-side choice (not mirrored down into gacalc).
+7. **Trig naming follows mvp: `sine` = signed, `abs_sin` = unsigned, used consistently everywhere.**
+   `sine` is the **signed** (oriented, 𝒢₂-only) sine — `(a∧b).coeff_e_12 / (|a||b|)`; `abs_sin` is the
+   **unsigned**, any-dimension one — `|a∧b| / (|a||b|)`. Applied 2026-10-01: Phase 1's general method
+   was renamed `sine`→`abs_sin` (`base.py` + tests, `make test` green). The existing signed plotting
+   helper `nbplotutils.sine` already matches (keeps its name). Phase 2 adds the signed `sine` as a
+   generated 𝒢₂ `Vector` method. Consequence to watch: mvp also names them `sine`/`abs_sin` the same
+   way, so the two libraries are now consistent (if mvp later delegates to gacalc, no rename needed).
+8. **`sine` returns a signed scalar `Coef`** (not a bivector) — the "just the numbers" trig family
+   alongside `cosine`/`abs_sin`. Full rationale + the bivector alternative considered: Open question 8.
 
-1. **Naming of the special-case duplicates.** The canonical `dot`/`wedge`/`cosine` names are taken by
-   the coordinate-free forms and must stay the default. What suffix marks the special-case rung? A
-   `_sp`-style suffix (echoing standard-position), a `_coord` / `_grade` suffix, or keep the extra
-   rungs **out of the API entirely and only in notebooks/book**? (My lean: keep the fixed-grade and
-   coordinate rungs as *teaching material in the book/notebooks* + one canonical API method each; add
-   only the genuinely-missing API methods — `grade` accessor and a general `sine` — to the code. That
-   avoids three near-identical public `dot`s.)
-2. **Grade accessor on multi-grade types.** `Versor`/`Odd_3` have no single grade. Does `.grade` exist
-   only on grade-pure types (my lean), or exist everywhere and raise on multi-grade, or return the set?
-3. **Which dimensions/types for the per-type special cases?** All of g1–g3 (dev-generated), or just the
-   vector cases the idea names? (My lean: vectors in g2+g3 first — the motivating case — then decide.)
-4. **`sine` sign/branch.** `sin θ = √(1−cos²θ)` is non-negative; the wedge magnitude `|a∧b|/(|a||b|)`
-   is also non-negative (unsigned angle). Is the general `sine` the unsigned magnitude form (my lean,
-   matches `cosine`'s companion), or do you want an oriented/signed 2D sine (`(a∧b)` coefficient sign)?
-   These are different functions; the Lean `uvec_wedge` is the *signed* `sin(β−α)`.
-5. **Umbrella or single task?** If Phases 1–5 each want their own commit boundary, promote this to an
-   umbrella with step-tasks (per CLAUDE.md step-task convention). My lean: keep it one task with the
-   phase list above unless Phase 0 shows it's larger; don't over-scaffold.
+## Open questions
 
-## Cross-references (verified to exist 2026-09-30)
+8. **What should `sine` RETURN? → DECIDED: a signed scalar (Decision 8).** The maintainer first
+   flagged the scalar return as odd (2026-10-01: "I don't know why sine gives scalar … we may not want
+   to follow that"), then resolved it the same day: "maybe I do want scalar … sometimes we just want to
+   know the sine and cosine." So `sine` returns a signed `Coef`, matching `cosine`/`abs_sin` — the
+   "just the numbers" trig family. The GA-native alternative (a *bivector* `(a∧b)/(|a||b|) = sin θ·î`,
+   so `cosine + sine` is the rotor) was considered and **not** chosen: the bivector/rotor view stays
+   available directly via the wedge (`a ^ b`) and the geometric product when a caller wants it. No
+   change to `abs_sin` (a scalar magnitude, consistent).
 
+## Cross-references (verified to exist 2026-09-30; mvp line added 2026-10-01)
+
+- Prior art (reference/validation): **github.com/billsix/modelviewprojection**
+  `src/modelviewprojection/mathutils.py` — `cosine` (any-dim, NaN-guarded), `sine` (signed 𝒢₂),
+  `abs_sin` (unsigned 𝒢₃); tests in `tests/test_mathutils.py`. gacalc is the lower layer, so these are
+  adapted down, not imported.
 - Theme: `tasks/reference/reduction-to-standard-position.md`, CLAUDE.md "Reduction to standard position".
 - Dot/wedge: `tasks/reference/contraction-and-dot-definitions.md`,
   `tasks/reference/dot-wedge-projection-rejection.md`,

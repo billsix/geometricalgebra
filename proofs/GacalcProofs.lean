@@ -9,6 +9,7 @@ import GacalcProofs.Projection2D
 import GacalcProofs.Trig
 import GacalcProofs.Projection
 import GacalcProofs.Rotation
+import GacalcProofs.TrigEquiv
 import GacalcProofs.Rotation3D
 import GacalcProofs.StandardPosition
 import GacalcProofs.Cross
