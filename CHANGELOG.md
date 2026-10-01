@@ -17,6 +17,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   elementary coordinate-plane rotations, projects there, and rotates back. Equal to the canonical
   `projected_onto`/`rejected_away_from` (machine-checked in `proofs/GacalcProofs/StandardPosition.lean`).
   Additive, non-breaking; the Hestenes-formula `project`/`reject` remain the primary API.
+- **Sine companions to `cosine`:** `MultiVectorBase.abs_sin` — the unsigned, any-dimension sine
+  `|a∧b| / (|a||b|)` — and the 𝒢₂-only `gacalc.g2.Vector.sine` — the signed 2D sine
+  `(a∧b).coeff_e_12 / (|a||b|)`, whose sign is the turn direction (swapping the operands negates it).
+  Additive, non-breaking. `cosine² + sin² = 1` and `abs(sine) == abs_sin` are machine-checked in
+  `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
 - **`MultiVectorBase.inverse` now rejects a general mixed-grade multivector.** The formula

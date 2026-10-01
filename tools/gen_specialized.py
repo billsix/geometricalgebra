@@ -2691,6 +2691,36 @@ ROTATE_90_FACTORY_DOC: str = (
     "        True"
 )
 
+# The 𝒢₂ signed sine (the scalar, oriented companion to the unsigned, any-dimension
+# ``MultiVectorBase.abs_sin``).  Decision 8 in the task: ``sine`` returns a SIGNED
+# SCALAR, not a bivector -- "sometimes we just want to know the sine and cosine."
+SINE_METHOD_DOC: str = (
+    "Signed sine of the angle from this vector to ``other`` (𝒢₂ only).\n"
+    "\n"
+    "        The wedge of two 𝒢₂ vectors has a single component, the signed area\n"
+    "        ``(a ∧ b).coeff_e_12 = a₁b₂ − a₂b₁``; dividing by the two magnitudes\n"
+    "        gives a **signed** ``sin θ`` whose sign is the turn direction, so\n"
+    "        swapping the arguments negates it -- unlike the unsigned,\n"
+    "        any-dimension :meth:`MultiVectorBase.abs_sin`.  The scalar companion\n"
+    "        to :meth:`MultiVectorBase.cosine`; raises on a zero-length operand.\n"
+    "        𝒢₂ only: in higher dimensions the wedge spans a plane with no single\n"
+    "        turn direction, so use ``abs_sin`` there.\n"
+    "\n"
+    "        Args:\n"
+    "            other: the other vector.\n"
+    "\n"
+    "        Returns:\n"
+    "            Coef: the signed sine ``(a ∧ b).coeff_e_12 / (|a| |b|)``.\n"
+    "\n"
+    "        Example:\n"
+    "            >>> (1.0 * Vector.e_1).sine(1.0 * Vector.e_2)\n"
+    "            1.0\n"
+    "            >>> (1.0 * Vector.e_2).sine(1.0 * Vector.e_1)\n"
+    "            -1.0\n"
+    "            >>> (1.0 * Vector.e_1).sine(5.0 * Vector.e_1)\n"
+    "            0.0"
+)
+
 # The unit-bivector plane helpers: `i(a, b)` (classmethod, on Gn/G2/G3/Vector,
 # building the plane from two vectors) and `.i()` (instance, on Bivector/Versor,
 # getting a value's own plane).  `i(a, b)` normalizes `bivector_from_vectors`
@@ -5495,6 +5525,34 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                         owner=spec.name,
                     ),
                     returns=name_ref(turn_spec.name),
+                )
+            )
+            # sine(a, b) = (a ∧ b).coeff_e_12 / (|a| |b|) -- the SIGNED sine of
+            # the angle from a to b, 𝒢₂ only (Decision 8 in the task doc: a
+            # scalar, not a bivector -- "sometimes we just want the number").  In
+            # 𝒢₂ the wedge has one component (the signed area a₁b₂ − a₂b₁), so this
+            # is a signed scalar; swapping a, b negates it -- the oriented turn
+            # direction mvp uses for which-side-of-an-edge tests, unlike the
+            # unsigned MultiVectorBase.abs_sin.  Mirrors cosine/abs_sin's
+            # `* abs**-1` idiom and reuses the generated wedge; raises on a
+            # zero-length operand (division), matching cosine.  Vector -> Coef.
+            extras.append(
+                function_def(
+                    "sine",
+                    [class_doc_stmt(SINE_METHOD_DOC)]
+                    + [
+                        return_stmt(
+                            parse_expr(
+                                "(self ^ other).coeff_e_12"
+                                " * (abs(self) ** (-1)) * (abs(other) ** (-1))"
+                            )
+                        )
+                    ],
+                    params=[
+                        argument("self"),
+                        argument("other", name_ref(spec.name)),
+                    ],
+                    returns=name_ref("Coef"),
                 )
             )
         if n == 3:

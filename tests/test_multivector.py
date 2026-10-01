@@ -312,6 +312,32 @@ def test_multivector_cosine() -> None:
     assert MultiVector.from_scalar(u.cosine(v) * abs(u) * abs(v)) == u.dot(v)
 
 
+def test_multivector_abs_sin() -> None:
+    a: MultiVector = 3 * e_1 + 4 * e_2
+    assert a.abs_sin(a) == 0  # the angle a vector makes with itself is 0
+    b: MultiVector = -4 * e_1 + 3 * e_2
+    assert a.abs_sin(b) == 1  # perpendicular vectors
+
+    # general 2D vectors: sin θ · |u| · |v| == |u ∧ v| (the definition of abs_sin):
+    u: MultiVector = a_1 * e_1 + a_2 * e_2
+    v: MultiVector = b_1 * e_1 + b_2 * e_2
+    assert (
+        sympy.simplify(sympy.sympify(u.abs_sin(v) * abs(u) * abs(v) - abs(u.wedge(v))))
+        == 0
+    )
+
+
+def test_abs_sin_cosine_pythagorean() -> None:
+    # cos²θ + sin²θ == 1 for vectors (Lagrange's identity), numeric and symbolic.
+    a: MultiVector = 3 * e_1 + 4 * e_2
+    b: MultiVector = 1 * e_1 + 2 * e_2
+    assert sympy.simplify(sympy.sympify(a.cosine(b) ** 2 + a.abs_sin(b) ** 2)) == 1
+
+    u: MultiVector = a_1 * e_1 + a_2 * e_2
+    v: MultiVector = b_1 * e_1 + b_2 * e_2
+    assert sympy.simplify(sympy.sympify(u.cosine(v) ** 2 + u.abs_sin(v) ** 2)) == 1
+
+
 def test_multivector_wedge() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2
     assert a.wedge(a) == zero

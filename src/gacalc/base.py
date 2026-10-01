@@ -1318,6 +1318,30 @@ class MultiVectorBase(abc.ABC):
             * (abs(other) ** (-1))
         )
 
+    def abs_sin(self, other: MultiVectorBase) -> Coef:
+        """Unsigned sine of the angle between A and B:  ``|A ∧ B|`` / (``|A|`` ``|B|``).
+
+        The non-negative, any-dimension companion to :meth:`cosine`.  By Lagrange's
+        identity ``‖A ∧ B‖² = ‖A‖²‖B‖² − (A ∗ B)²`` the two satisfy
+        ``cosine² + abs_sin² == 1`` for vectors
+        (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>; the Hestenes dot/
+        magnitude relation ``|A ∧ B| = |A| |B| sin θ`` is the companion of
+        ``cosine``'s H&S p. 14, eq. 1.53b).  Float input stays a float; int and
+        symbolic stay exact (via :meth:`magnitude`).
+
+        The *signed* (oriented) sine exists only in 𝒢₂, where two vectors have a
+        single turn direction; see the plotting helper ``nbplotutils.sine``.
+
+        Args:
+            other: the other multivector.
+
+        Returns:
+            Coef: the unsigned sine ``|A ∧ B| / (|A| |B|)``.
+        """
+        return (
+            abs(self.outer_product(other)) * (abs(self) ** (-1)) * (abs(other) ** (-1))
+        )
+
     @classmethod
     def project(
         cls,

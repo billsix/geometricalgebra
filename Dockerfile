@@ -154,9 +154,13 @@ COPY tools /gacalc/tools
 # [project.optional-dependencies] -- the single source of truth (no requirements.txt,
 # no hardcoded package list). Build prereqs (setuptools/wheel/numpy/sympy) are
 # installed above, so --no-build-isolation reuses them; the setup.py build_py hook
-# generates the algebras if missing. (This layer re-runs when src/ changes, so the
-# notebook/jupyter deps reinstall then -- uv's cache keeps that fast.)
-RUN export VIRTUAL_ENV_DISABLE_PROMPT=1 && source /venv/bin/activate && \
+# generates the algebras if missing. This layer re-runs when src/ changes, so the
+# notebook/jupyter deps would reinstall then -- the uv CACHE MOUNT below keeps that
+# fast (reuses already-downloaded wheels, incl. JupyterLab). The cache is discarded
+# (not in the image), but the deps still land in the committed /venv, so an exported
+# image stays self-contained -- the mount only speeds the rebuild.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    export VIRTUAL_ENV_DISABLE_PROMPT=1 && source /venv/bin/activate && \
     cd /gacalc && uv pip install --python $(which python) --no-build-isolation ".[dev,notebooks,jupyter]" && \
     jupytext-config set-default-viewer python && \
     jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
