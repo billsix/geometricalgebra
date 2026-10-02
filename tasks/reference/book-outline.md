@@ -78,6 +78,16 @@ content fills in per the outline below.
 *The E→F spine (rotate → geometric product → projection → reflection) is Bill's explicit
 order. Sections A–D and G–I placement is inferred — reorder freely.*
 
+> **Non-circularity note (the bootstrap arc).** "Define rotate like MVP, then from rotate define the
+> geometric product" (§E) would be circular if "rotate" meant the versor sandwich or the vector→vector
+> MVP rotate — both presuppose the product. The **non-circular foundation under this spine is the three
+> elementary coordinate-plane rotations** `rotXY`/`rotXZ`/`rotYZ` (high-school 2-D rotations on a
+> vector's components — not versors, not the MVP rotate). From them, **reduction to standard position**
+> derives project/reject, and then the geometric product, cross, dot, wedge; the MVP "general rotate" is
+> then **(re)defined from project/reject**. So the rigorous order is **plane rotations → project/reject
+> → product → general rotate**, even though the book *presents* it rotate-first for motivation. Full arc
+> + the machine-checked proofs: `tasks/reference/reduction-to-standard-position.md`.
+
 **A. Hook & framing (grab attention)**
 - Open with exciting pictures: **rotation, projection, reflection** — what the book will
   let them do.

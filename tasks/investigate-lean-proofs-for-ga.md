@@ -148,6 +148,17 @@ live in `proofs/` (see above), so several are `in-progress`:
   - [ ] **Lagrange identity** — 2D **and** 3D already landed (`GacalcProofs/Lagrange.lean`); no
         separate step-task needed (the `ring` proofs are complete; the rotation-derivation framing is
         covered by the rotation step-task).
+  - [x] **Reduction-to-standard-position bootstrap thread** (`tasks/reduce-to-standard-position.md`) —
+        the **non-circular** route, fully machine-checked across four files: 3 elementary plane rotations
+        (`rotXY`/`rotXZ`/`rotYZ`, NOT versors) → project/reject + the geometric product → a general
+        rotation from project/reject. `StandardPosition.lean` (base + product), `CrossStandardPosition.lean`
+        (the uniform `reduceToPlane` bringing both vectors into the e₁e₂ plane, so proj/reject/cross run
+        through one frame), `ProjectionRotation.lean` (step 3 `projRotation` with carries-from→to, ⊥-fixed,
+        isometry `projRotation_isometry`, and route-equivalence `projRotation_eq_sandwich` = route P =
+        versor-sandwich route V), and `Projection2DRotation.lean` (the 𝒢₂ specialization). Per-lemma detail
+        and the √-handling: `tasks/reference/reduction-to-standard-position.md`. (Complements, and contrasts
+        with, the versor-sandwich route in `lean-proof-rotation-from-scratch.md`.) The book/notebook
+        presentation remains, tracked in the sub-task.
   - [x] `tasks/archive/2026/09/29/lean-proof-projection.md` — **DONE + ARCHIVED 2026-09-29**: gacalc's
         uniform Hestenes `project`/`reject` (`(A·B)B⁻¹` / `(A∧B)B⁻¹`) for vector- and bivector-blades,
         2D and 3D; `project_add_reject`, `proj_plane = project_onto`, the graded inner product, magnitude,

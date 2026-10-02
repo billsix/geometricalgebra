@@ -73,3 +73,10 @@ Per [[openstax-math-pedagogy]] §11: box the theorem above, put the proof in ski
 re-derive the component grind. This is the levels-of-abstraction lesson delivered by the
 box/unbox grammar: the dot product is one proven face of the geometric product, and the
 reader may use it without looking inside.
+
+**Read in the bootstrap direction, this is the link that builds the product.** This doc proves the
+identity product-first (`a∥ b = a·b`, `a⊥ b = a∧b`, assuming the product). Read the other way, it is
+exactly the step that lets **project/reject** — themselves derived from the three elementary plane
+rotations via reduction to standard position — *construct* the geometric product `ab = a·b + a∧b`
+non-circularly. See the bootstrap arc in `tasks/reference/reduction-to-standard-position.md` (3 plane
+rotations → project/reject → product → general rotation).

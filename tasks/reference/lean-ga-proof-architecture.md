@@ -166,7 +166,35 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 - `StandardPosition.lean` — elementary coordinate-plane rotations `rotXY`/`rotXZ` (NOT versors),
   their `preserves_dot`, projection/rejection equivariance under them, the explicit `b ↦ |b|·e₁`
   alignment (`rotate_b_to_e1` + magnitude form), and the product-from-projection payoff
-  (`mul_eq_proj_dot_add_reject_wedge`).
+  (`mul_eq_proj_dot_add_reject_wedge`). This is the base of the **bootstrap arc** (3 elementary plane
+  rotations → project/reject/product/cross via reduce-to-2-D → a general rotation from project/reject;
+  see `tasks/reference/reduction-to-standard-position.md`). The uniform 3-rotation tool is in
+  `CrossStandardPosition.lean` (below).
+- `CrossStandardPosition.lean` — the uniform reduce-both-to-2-D tool: `rotYZ` (the 3rd plane rotation,
+  e₂e₃ about `e₁`) + toolkit; `reduceToPlane` (`reduceToPlane_a_on_e1` / `reduceToPlane_b_in_plane` —
+  both vectors into the e₁e₂ plane); equivariance of proj/reject/cross under all three rotations
+  (`proj_rotYZ_equivariant`, `vecReject_rotXZ/YZ_equivariant`, `cross_rotXY/XZ/YZ_equivariant`); and the
+  2-D evals `proj_reduced`/`vecReject_reduced`/`cross_reduced` — project/reject/cross all through the one
+  3-rotation frame.
+- `ProjectionRotation.lean` — the arc's **step 3**, a general rotation from project/reject:
+  `projRotation f t v = (project_{f∧t} v)·f̂·t̂ + reject_{f∧t} v` (mirrors Python
+  `transforms.projection_rotation`; non-circular — project/reject + the product, no versor), with
+  `projRotation_carries_from_to` (carries from→to) and `projRotation_perp` (⊥ part fixed). Its two deep
+  properties: **isometry** `projRotation_isometry` (`normSq (projRotation f t v) = normSq v`), with
+  scaffold `normSq_add`/`normSq_add_of_orthogonal`/`normSq_mul_vec`/`inplane_perp_reject`/
+  `project_perp_reject`/`plane_pythagorean` (`magnitude² = normSq` squares the √'s away, the cross term
+  dies by orthogonality, no Lagrange); and **route-equivalence** `projRotation_eq_sandwich`
+  (`projRotation f t v = sandwich (versorFromVectors f t) v`, route P = route V), with lemmas
+  `versor_mul_project_eq` (in-plane `R P = P R̃`), `versor_mul_reject_comm` (⊥ `R Rⱼ = Rⱼ R`),
+  `normalizeVec_mul_versor_eq_reverse`/`vec_mul_bisector_eq`/`normalizeVec_to_mul_versor_eq_bisector`
+  (`f̂ t̂ = R̃ R⁻¹`). √-free: `R`'s scalar `|f||t|·1` is handled abstractly via `R R⁻¹ = 1`, never expanded.
+- `Projection2DRotation.lean` — the **𝒢₂ specialization** of step 3: the same `projRotation` triple
+  (`projRotation_carries_from_to` / `projRotation_isometry` / `projRotation_eq_sandwich`) in 2D, the
+  degenerate base case where the `f∧t` plane is all of 𝒢₂, so `reject_plane_eq_zero` (`reject = 0`)
+  collapses it to the rotor action `v·f̂·t̂` (`projRotation_eq_vec_mul`). Reuses
+  `Versor2D`/`Sandwich`/`Projection2D`/`AlgebraLaws` lemmas; the one √ stays confined to `key_reverse_sq`.
+  The 2D isometry needs only `normSq f, normSq t ≠ 0` (from `normSq_mul_three_vec` + unit `f̂`/`t̂`,
+  independent of route-equivalence). Registered via `import` in the root `GacalcProofs.lean`.
 - `Cross.lean` — the 𝒢₃ `cross a b = (a∧b) I₃⁻¹`: `cross_vec` (coordinate formula), `cross_anticomm_vec`,
   `cross_perp_left`/`_right`, `dual_vec` (3D vector dual = ⊥ bivector), and `dot_cross_eq_signedVolume`
   (scalar triple = signed volume = `det[a,b,c]`). Plus `Sandwich.sandwich_evenVersor_vec_isVector`

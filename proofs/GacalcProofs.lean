@@ -20,3 +20,6 @@ import GacalcProofs.GradeProjection
 import GacalcProofs.Contractions
 import GacalcProofs.Measures
 import GacalcProofs.Exp
+import GacalcProofs.CrossStandardPosition
+import GacalcProofs.ProjectionRotation
+import GacalcProofs.Projection2DRotation
