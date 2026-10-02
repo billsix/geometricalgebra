@@ -29,6 +29,14 @@ by citing the general Mathlib theorem) with `make lean` green, and a proof that 
 result is **equivalent to the general case** (Mathlib's rotation/inner-product machinery). This is
 the hardest and most foundational proof; the other proof step-tasks reuse its geometric product.
 
+**Two routes to a general rotation (contrast).** This task is **route V**: a general rotation as the
+**versor sandwich** `R v R⁻¹`. It is **product-based** — a versor *is* a geometric product — so it is
+NOT a bootstrap *of* the product; it's the GA-native rotation once the product exists. The complementary
+**route P** defines a general rotation from **project/reject** via reduction to standard position
+(`tasks/reference/reduction-to-standard-position.md` — the bootstrap arc: 3 elementary plane rotations →
+project/reject → general rotation), which presupposes no product and is non-circular. Both reduce 3-D to
+2-D; keep them distinct (this one is the versor view).
+
 ## Context — read first
 
 - Read `tasks/reference/lean-for-gacalc.md` (Lean orientation + the `proofs/` layout) and

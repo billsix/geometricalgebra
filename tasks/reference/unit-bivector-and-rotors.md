@@ -142,6 +142,14 @@ and in the relevant docstring, and flip its box to ✅.**
 
 ## 6. Rotor vs versor, and why gacalc rotates with the *inverse* sandwich `R v R⁻¹` (not `R v R̃`)
 
+> **This is the product-based route to a general rotation; it is not the only one.** The versor sandwich
+> `R v R⁻¹` here is a **general rotation defined from the geometric product** (a versor *is* a product),
+> so it presupposes the product — it is NOT a bootstrap of it. A **general rotation can also be defined
+> from project/reject** via reduction to standard position, which presupposes no product and is
+> non-circular (the bootstrap arc: 3 elementary plane rotations → project/reject → general rotation; see
+> `tasks/reference/reduction-to-standard-position.md`). "Rotors = the general rotation" stays accurate —
+> it's just the product-based view, not the foundation.
+
 **Status: analysis + suggestion (2026-09-28, William Emerison Six <billsix@gmail.com>), pending the
 maintainer's naming decision (Q1 below).** Prompted by the maintainer noting that gacalc's sandwich
 uses `inverse`, not the textbook `reverse`, and that gacalc's rotors are not required to be unit —

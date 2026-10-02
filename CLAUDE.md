@@ -137,7 +137,10 @@ and call `self * other`, dispatched to the concrete type.
   additionally have a standard-position (frame-reduction) variant that rotates the figure to a
   standard frame, does the easy version, and rotates back; the Hestenes-derived definition stays the
   canonical/primary one. Mark the variant with a prime (Lean `proj'`/`reject'`; Python suffix, e.g.
-  `_sp`). Same spirit as the duplicate 𝒢₂ `rotate_90_degrees`. Full theme:
+  `_sp`). Same spirit as the duplicate 𝒢₂ `rotate_90_degrees`. It is also a **non-circular bootstrap**:
+  3 elementary plane rotations (`rotXY`/`rotXZ`/`rotYZ`, not versors) → project/reject + the geometric
+  product/cross via reduce-to-2-D → a **general rotation defined from project/reject**
+  (`transforms.projection_rotation`). Full theme + the arc:
   `tasks/reference/reduction-to-standard-position.md`.
 
 Deep mechanics + every "Caveat —" block (frozen+slots property-write quirk, frozen≠hashable,

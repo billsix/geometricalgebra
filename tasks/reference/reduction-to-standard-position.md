@@ -73,6 +73,34 @@ to `|b|·e₁` — the standard position — with the `(cos, sin)` read off `b`'
 trusted for matching it, not assumed. This yields the grade-1×grade-1 product; the
 arbitrary-multivector product needs bilinear extension.
 
+## The full bootstrap arc
+
+Reduction to standard position is not a one-off trick — it is the **non-circular foundation** gacalc's
+whole rotation/geometry stack builds on, bottom-up:
+
+1. **Three elementary coordinate-plane rotations** — `rotXY`, `rotXZ`, `rotYZ` — are the base. Each is
+   the high-school 2-D rotation applied to one coordinate plane (recombine two components, leave the
+   third), trusted from precalculus and **independent of the geometric product** (not a versor, not the
+   vector→vector "MVP rotate").
+2. **From them, via reduction to standard position, the GA operations are derived.** Rotate the figure
+   into the standard frame, do the elementary version there, and — for a *vector* result — rotate it
+   back by the inverse rotations (a *scalar* result is rotation-invariant, so it needs no rotate-back).
+   This yields project, reject, the geometric product `ab = a·b + a∧b`, the cross product, and dot/wedge
+   — each proved equal to its canonical (Hestenes) form.
+3. **Then a GENERAL rotation can be defined from project/reject** — which are themselves derived from
+   the three plane rotations in step 1. The Python `transforms.projection_rotation` (rotate "from vec1
+   to vec2") is exactly this: a general rotation built from projection, no geometric product
+   presupposed. The arc closes: **3 plane rotations → project/reject (+ product/cross/dot/wedge) →
+   general rotation**, nothing circular (elementary rotations, not the product or a versor, sit underneath).
+
+**One reduce-to-2-D tool, many operations, a uniform 3 rotations.** Bringing *both* 3-D vectors into the
+e₁e₂ plane takes 3 rotations (one vector onto `e₁`, the other swung into the plane), after which *every*
+operation is elementary 2-D. This uniform 3-rotation reduction is the general tool — the maintainer's
+deliberate choice to run everything through one mechanism. A given operation may need fewer:
+**project/reject minimally need only 2 rotations** (the target vector on an axis — the `rotate_b_to_e1`
+form proved below). The 3rd rotation is what makes the frame fully 2-D for operations that need *both*
+vectors reduced (e.g. the cross product); it is not a requirement of project/reject.
+
 ## What is proven vs. still open (as of 2026-09-30)
 
 All in `proofs/GacalcProofs/StandardPosition.lean` (gate-verified, `sorry`-free):
@@ -92,9 +120,12 @@ All in `proofs/GacalcProofs/StandardPosition.lean` (gate-verified, `sorry`-free)
   `tests/test_standardposition.py`.
 - Supporting lemmas in their homes: `AlgebraLaws.mul_sub`, `Sandwich.sandwich_sub`.
 
+- **In progress (the uniform 3-rotation tool):** `rotYZ` (the third plane rotation, e₂e₃ about `e₁`)
+  and the full reduce-both-vectors-to-the-e₁e₂-plane lemma, from which the **cross product** is derived
+  as a 2-D operation and proved equal to `Cross.cross_vec` — the step-2 generality beyond project/reject.
 - **Still open (follow-up):** a `√`-wrapper instantiating `k = √(b₁²+b₂²)`, `m = |b|` in
-  `rotate_b_to_e1`; and the book + notebook presentations (the Sphinx book is the intended best home —
-  see the task's ideas list, items B*/N*).
+  `rotate_b_to_e1`; the step-3 general-rotation-from-project/reject stated in Lean; and the book +
+  notebook presentations (the Sphinx book is the intended best home — see the task's ideas list, B*/N*).
 
 ## Where it belongs
 
@@ -108,5 +139,9 @@ per-subsystem ideas list and the decision log.
 - `tasks/reference/lean-ga-proof-architecture.md` — the sandwich/projection lemmas this builds on.
 - `tasks/notebook-dot-wedge-projection-demo.md`, `tasks/reference/dot-wedge-projection-rejection.md`
   — the related "dot = projected product, wedge = rejected" result.
-- `tasks/lean-proof-rotation-from-scratch.md` — the other reduce-3D-to-2D thread (via the versor
-  sandwich + `a∧b` plane), complementary to this coordinate-frame reduction.
+- `tasks/lean-proof-rotation-from-scratch.md` — the **other route to a general rotation**: the versor
+  sandwich `R v R⁻¹`. It is **product-based** (a versor *is* a geometric product), so it is NOT a
+  bootstrap of the product — complementary to, and contrasted with, route P here (general rotation from
+  project/reject, which presupposes no product). Both reduce 3-D to 2-D; only the coordinate-frame route
+  is non-circular as a foundation.
+- `tasks/reference/unit-bivector-and-rotors.md` — rotors as the general rotation (the versor / route-V view).

@@ -17,7 +17,10 @@ This established **reduction to standard position** — defining or justifying a
 already-trusted simpler ones by a change-of-frame (rotate the figure into a standard frame, do the
 easy version, rotate back) — as a named theme of the project. Scope for this first pass was
 **`project` and `reject` only**: once you have those you can split any vector `a = a∥ + a⊥` relative
-to `b`, whence `ab = a·b + a∧b` (the geometric product of two vectors) and thence rotation. The
+to `b`, whence `ab = a·b + a∧b` (the geometric product of two vectors) and thence a **general rotation
+defined from project/reject**. This is the bootstrap arc the theme is really for: **3 elementary plane
+rotations → project/reject (+ product/cross/dot/wedge via reduce-to-2-D) → general rotation** (step 3 =
+e.g. `transforms.projection_rotation`), nothing circular. The
 rotations are **elementary coordinate-plane rotations, not versors** — using a versor would be
 circular, since a versor is itself a geometric product and the point is to bootstrap the product
 from operations trusted independently of it. Delivered in Lean (the justification + explicit
@@ -115,9 +118,17 @@ elementary coordinate-plane rotations instead. The versor version was replaced w
   `multivariate-math/proofs/crossproduct.tex` uses a **3rd** rotation (`f_{b''}^{xy}`, after 2 that put
   `a` on the x-axis) precisely because the **cross product** reduces *both* vectors to a full 2-D
   (xy-plane) computation — a cross-product need, not a project/reject one.
-  The maintainer wants the **fuller reduction** anyway (bring the second vector down into the `e₁e₂`
-  plane with a 3rd rotation — a rotation in the `e₂e₃` plane about the fixed `e₁` axis), for
-  pedagogical completeness and as the basis for a **standard-position cross-product derivation in
-  Lean**. Proposed follow-on: add `rotYZ` + the alignment lemma bringing `a`'s `e₃` component to 0
-  after `b` is on `e₁`, and build the cross product (`(a∧b)I₃⁻¹`) via the full reduction, proved equal
-  to `Cross.lean`'s `cross_vec`. (Could become its own `lean-proof-*` task if it grows.)
+  The maintainer wants the **uniform 3-rotation reduction** anyway — one reusable tool that brings
+  *both* vectors into the `e₁e₂` plane (add `rotYZ`, a rotation in the `e₂e₃` plane about the fixed `e₁`
+  axis), after which **every** operation is an elementary 2-D one. The deliberate choice is generality
+  over minimality: project/reject keep their 2-rotation form, but the same 3-rotation tool also gives the
+  **cross product** and underpins step 3 below. **In progress (2026-10-02):** `rotYZ` + the full
+  reduce-both-to-the-`e₁e₂`-plane lemma + the cross product derived through it, proved equal to
+  `Cross.lean`'s `cross_vec`.
+- **The bootstrap arc / step 3 — general rotation from project/reject.** The theme's real payoff:
+  **3 elementary plane rotations → project/reject (+ product/cross/dot/wedge via reduce-to-2-D) → a
+  general rotation defined from project/reject** (the Python `transforms.projection_rotation`, "rotate
+  from vec1 to vec2", is exactly this). Non-circular throughout — the elementary rotations, not the
+  geometric product or a versor, sit underneath. Contrast the **versor-sandwich** route to a general
+  rotation (`tasks/lean-proof-rotation-from-scratch.md`), which is product-based. Follow-on: state the
+  step-3 general-rotation-from-project/reject in Lean. Full arc: `tasks/reference/reduction-to-standard-position.md`.

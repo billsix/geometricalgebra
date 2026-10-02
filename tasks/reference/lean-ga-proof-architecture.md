@@ -166,7 +166,11 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 - `StandardPosition.lean` — elementary coordinate-plane rotations `rotXY`/`rotXZ` (NOT versors),
   their `preserves_dot`, projection/rejection equivariance under them, the explicit `b ↦ |b|·e₁`
   alignment (`rotate_b_to_e1` + magnitude form), and the product-from-projection payoff
-  (`mul_eq_proj_dot_add_reject_wedge`).
+  (`mul_eq_proj_dot_add_reject_wedge`). This is the base of the **bootstrap arc** (3 elementary plane
+  rotations → project/reject/product/cross via reduce-to-2-D → a general rotation from project/reject;
+  see `tasks/reference/reduction-to-standard-position.md`). *In progress:* `rotYZ` (the 3rd plane
+  rotation) + the uniform reduce-both-vectors-to-the-e₁e₂-plane lemma + the **cross product** derived
+  through it (`== Cross.cross_vec`).
 - `Cross.lean` — the 𝒢₃ `cross a b = (a∧b) I₃⁻¹`: `cross_vec` (coordinate formula), `cross_anticomm_vec`,
   `cross_perp_left`/`_right`, `dual_vec` (3D vector dual = ⊥ bivector), and `dot_cross_eq_signedVolume`
   (scalar triple = signed volume = `det[a,b,c]`). Plus `Sandwich.sandwich_evenVersor_vec_isVector`
