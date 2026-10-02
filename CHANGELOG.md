@@ -33,6 +33,13 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   were already getting a wrong answer — blades and versors are unchanged. `A A⁻¹ = 1` for the
   vector, versor, bivector and trivector cases is machine-checked in `proofs/GacalcProofs/`.
 
+### Fixed
+- **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)
+  instead of `cos θ == 1`. The old test wrongly returned `False` for **anti-parallel** vectors (whose
+  cosine is −1) even though they are geometrically parallel. Behavior change: anti-parallel inputs now
+  return `True`. The equivalence `A ∧ B = 0 ⟺ A ∥ B` is machine-checked in
+  `proofs/GacalcProofs/Predicates.lean`.
+
 ## [0.1.0] — 2026-09-28
 
 ### Changed

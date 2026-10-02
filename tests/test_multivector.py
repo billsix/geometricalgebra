@@ -300,6 +300,17 @@ def test_is_orthogonal() -> None:
     assert a.is_orthogonal_to(c)
 
 
+def test_is_parallel() -> None:
+    a: MultiVector = 3 * e_1 + 4 * e_2
+    assert a.is_parallel_to(2 * a)  # same direction
+    assert a.is_parallel_to(-1 * a)  # anti-parallel: cos = -1, but still parallel
+    perpendicular: MultiVector = -4 * e_1 + 3 * e_2
+    assert not a.is_parallel_to(perpendicular)
+    # the float-tolerance path agrees:
+    af: MultiVector = 3.0 * e_1 + 4.0 * e_2
+    assert af.is_parallel_to(-2.0 * af, float_close_to_zero=True)
+
+
 def test_multivector_cosine() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2
     assert a.cosine(a) == 1

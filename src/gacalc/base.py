@@ -1100,18 +1100,21 @@ class MultiVectorBase(abc.ABC):
     def is_parallel_to(
         self, other: typing.Self, float_close_to_zero: bool = False
     ) -> bool:
-        """True iff vectors A and B are parallel (their cosine is 1).
+        """True iff vectors A and B are parallel — i.e. their outer product
+        ``A ∧ B`` is zero (they are linearly dependent).
 
-        (Self-flagged: not sure if I'm doing this correctly — see the "known
-        issues" note in ``CLAUDE.md``.)
+        ``A ∧ B = 0`` iff A and B span no area, so this holds for both
+        same-direction and anti-parallel vectors. The equivalence
+        ``A ∧ B = 0 ⟺ A ∥ B`` is machine-checked in
+        ``proofs/GacalcProofs/Predicates.lean``.
 
         Args:
             other: the other vector.
-            float_close_to_zero: when ``True``, test the cosine with a ``numpy``
+            float_close_to_zero: when ``True``, test the wedge with a ``numpy``
                 floating-point tolerance instead of exact equality.
 
         Returns:
-            bool: ``True`` iff ``cos θ`` between A and B is (approximately) 1.
+            bool: ``True`` iff ``A ∧ B`` is (approximately) zero.
 
         Raises:
             AssertionError: if either operand is not a vector (grade 1).
@@ -1122,11 +1125,10 @@ class MultiVectorBase(abc.ABC):
         assert self.is_vector()
         assert other.is_vector()
 
-        return bool(
-            np.isclose(float(self.cosine(other)), float(1.0), rtol=1e-5, atol=1e-5)
-            if float_close_to_zero
-            else (self.cosine(other) == 1)
-        )
+        wedge: typing.Self = self.outer_product(other)
+        if float_close_to_zero:
+            return wedge.isclose(type(self).zero(), rel_tol=1e-5, abs_tol=1e-5)
+        return bool(wedge == type(self).zero())
 
     def scalar_part(self) -> Coef:
         """Scalar part  ⟨A⟩  =  ⟨A⟩₀  — the grade-0 (scalar) component of A.

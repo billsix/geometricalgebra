@@ -332,11 +332,12 @@ Open issues (genuinely open; resolution history lives in git + archived task doc
 
 1. **Fixed Euclidean signature**: eᵢeᵢ always reduces to +1. No spacetime/null/conformal
    signatures — a hard limit (the classes are explicitly 𝒢ₙ over ℝⁿ).
-2. **Self-flagged uncertainty**: `is_parallel_to` carries a "not sure if I'm doing this correctly"
-   comment; not verified against known results. (`inverse` is now scoped: `Ã/|A|²` is correct for a
-   blade or versor — machine-checked in `proofs/GacalcProofs/` for the vector/versor/bivector/trivector
-   cases — and is NOT the general multivector inverse; the general low-dim closed form is tracked in
-   `tasks/lean-general-multivector-inverse.md`.)
+2. **`inverse` is scoped to blades/versors**: `Ã/|A|²` is correct for a blade or versor —
+   machine-checked in `proofs/GacalcProofs/` for the vector/versor/bivector/trivector cases — and is
+   NOT the general multivector inverse (it raises on a mixed-grade `A`); the general low-dim closed
+   form is tracked in `tasks/lean-general-multivector-inverse.md`.
+   (The former `is_parallel_to` self-flagged-uncertainty is resolved — it now uses the wedge-zero
+   test `A ∧ B = 0`, machine-checked in `proofs/GacalcProofs/Predicates.lean`.)
 
 ## Future directions (not yet decided)
 
