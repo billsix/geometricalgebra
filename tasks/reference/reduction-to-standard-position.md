@@ -101,7 +101,7 @@ deliberate choice to run everything through one mechanism. A given operation may
 form proved below). The 3rd rotation is what makes the frame fully 2-D for operations that need *both*
 vectors reduced (e.g. the cross product); it is not a requirement of project/reject.
 
-## What is proven vs. still open (as of 2026-09-30)
+## What is proven vs. still open (as of 2026-09-30; uniform 3-rotation tool added 2026-10-02)
 
 All in `proofs/GacalcProofs/StandardPosition.lean` (gate-verified, `sorry`-free):
 
@@ -120,12 +120,56 @@ All in `proofs/GacalcProofs/StandardPosition.lean` (gate-verified, `sorry`-free)
   `tests/test_standardposition.py`.
 - Supporting lemmas in their homes: `AlgebraLaws.mul_sub`, `Sandwich.sandwich_sub`.
 
-- **In progress (the uniform 3-rotation tool):** `rotYZ` (the third plane rotation, e₂e₃ about `e₁`)
-  and the full reduce-both-vectors-to-the-e₁e₂-plane lemma, from which the **cross product** is derived
-  as a 2-D operation and proved equal to `Cross.cross_vec` — the step-2 generality beyond project/reject.
-- **Still open (follow-up):** a `√`-wrapper instantiating `k = √(b₁²+b₂²)`, `m = |b|` in
-  `rotate_b_to_e1`; the step-3 general-rotation-from-project/reject stated in Lean; and the book +
-  notebook presentations (the Sphinx book is the intended best home — see the task's ideas list, B*/N*).
+- **The uniform 3-rotation tool (DONE 2026-10-02, `proofs/GacalcProofs/CrossStandardPosition.lean`,
+  `make lean` green/sorry-free):** `rotYZ` (the third plane rotation, e₂e₃ about `e₁`) + its toolkit
+  (`rotYZ_smul`/`rotYZ_sub`/`rotYZ_preserves_dot`/`rotYZ_vec`/`rotYZ_fixes_e1`, plus the `rotXZ_sub`/
+  `rotXY_vec`/`rotXZ_vec` gaps it filled); `reduceToPlane` (`rotYZ ∘ rotXZ ∘ rotXY`) with
+  `reduceToPlane_a_on_e1` (`a ↦ |a|·e₁`) and `reduceToPlane_b_in_plane` (reduced `b` has `.c3 = 0` — so
+  **both** vectors are in the e₁e₂ plane); equivariance of **all three operations under all three
+  rotations** (`proj_rotYZ_equivariant`, `vecReject_rotXZ/YZ_equivariant`, `cross_rotXY/XZ/YZ_equivariant`);
+  and the elementary 2-D evals in the reduced frame — `proj_reduced`, `vecReject_reduced`, and
+  `cross_reduced` (`cross (|a|·e₁) (b₁,b₂,0) = (0,0,|a|·b₂)`). project/reject/cross all go through the one
+  3-rotation frame uniformly (per the arc — no 2-rotation shortcut taken for proj/reject here).
+- **Step 3 — general rotation from project/reject (DONE 2026-10-02, `proofs/GacalcProofs/ProjectionRotation.lean`,
+  `make lean` green/sorry-free):** `projRotation f t v = (project_{f∧t} v)·f̂·t̂ + reject_{f∧t} v` (mirrors
+  the Python `transforms.projection_rotation`) — defined from project/reject (step 2) + the product
+  (itself from project/reject), so non-circular; no versor. Proved `projRotation_carries_from_to`
+  (`projRotation f t f = (|f|/|t|)·t`, the defining property) and `projRotation_perp` (the ⊥ part passes
+  through). This closes the arc: 3 plane rotations → project/reject → general rotation.
+- **Isometry — DONE 2026-10-02 (`ProjectionRotation.lean`, `make lean` green/sorry-free):**
+  `projRotation_isometry` proves **`normSq (projRotation f t v) = normSq v`** (for nondegenerate `f`, `t`).
+  The √ obstruction dissolved exactly as the maintainer's insight predicted: `magnitude² = normSq`
+  (`normSq_mul_vec`, `|Ma|² = |a|²|M|²`) squares away every `1/√(normSq f·normSq t)` when the two unit
+  scalars are pulled out of the in-plane term as **one** `smul (1/(|f||t|))`, and the in-plane×⊥ cross
+  term is killed structurally by orthogonality (`inplane_perp_reject`, `project_perp_reject`), not by
+  `ring`. **Lagrange was not needed here.** Scaffold (all sorry-free): `normSq_add` (polarization),
+  `normSq_add_of_orthogonal` (Pythagoras), `normSq_mul_vec`, `inplane_perp_reject`, `project_perp_reject`,
+  `plane_pythagorean` (`|project|²+|reject|² = |v|²`, built on the existing `project_add_reject`).
+- **Route-equivalence — DONE 2026-10-02 (`ProjectionRotation.lean`, `make lean` green/sorry-free):**
+  `projRotation_eq_sandwich` proves **`projRotation f t v = sandwich (versorFromVectors f t) v`**
+  (route P = route V, the Python docstring's "both agree"), for nondegenerate `f`, `t`, plane, and versor
+  (`|R|² ≠ 0`, i.e. `f`, `t` not antiparallel). The √ that defeated a brute attack never appears: the
+  scalar part `|f||t|·1` of `R = t·f + |f||t|` is pulled out abstractly via `R R⁻¹ = 1` rather than
+  expanded, so every identity reduces to a √-free rational core about the bivector `t∧f`. Three structural
+  lemmas: `versor_mul_project_eq` (in-plane `P` anticommutes through `R`: `R P = P R̃`),
+  `versor_mul_reject_comm` (the ⊥ part commutes: `R Rⱼ = Rⱼ R`, so the sandwich fixes it), and
+  `normalizeVec_mul_versor_eq_reverse` (`f̂ t̂ = R̃ R⁻¹`, from the bisector identities `t̂ R = h`, `f̂ h = R̃`
+  in `Rotation3D.lean`). The whole bootstrap arc + both deep properties (isometry, route-equivalence) are
+  now machine-checked. Still open (minor, no decision blocks them): a `√`-wrapper instantiating
+  `k = √(b₁²+b₂²)`, `m = |b|` in `rotate_b_to_e1`; and the book + notebook presentations (Sphinx book —
+  see the task's ideas list, B*/N*).
+- **2D specialization — the degenerate base case (DONE 2026-10-02,
+  `proofs/GacalcProofs/Projection2DRotation.lean`, `make lean` green/sorry-free):** the same
+  `projRotation f t v = (project_{f∧t} v)·f̂·t̂ + reject_{f∧t} v` in 𝒢₂, with the identical triple
+  `projRotation_carries_from_to` / `projRotation_isometry` (`normSq (projRotation f t v) = normSq v`) /
+  `projRotation_eq_sandwich` (`= sandwich (versorFromVectors f t) v`). In 𝒢₂ the `f∧t` plane **is** the
+  whole space, so `reject_{f∧t} v = 0` (`reject_plane_eq_zero`) and the rotation collapses to the pure
+  rotor action `v·f̂·t̂` (`projRotation_eq_vec_mul`) — the 3D construction's degenerate base case, made
+  explicit so the 3D↔2D parallel reads side by side. Same structural √-handling as 3D: the one √-bearing
+  identity stays confined to `key_reverse_sq` (`|f||t|·R̃² = |R|²·(f t)`, closed by `linear_combination`
+  against `(|f||t|)² = |f|²|t|²`) and never expands per-coordinate. The 2D isometry needs only
+  `normSq f, normSq t ≠ 0` (no `|R|² ≠ 0`), since it comes straight from `normSq_mul_three_vec` +
+  `|f̂|=|t̂|=1`, independent of route-equivalence.
 
 ## Where it belongs
 

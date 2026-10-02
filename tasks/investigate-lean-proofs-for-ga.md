@@ -152,8 +152,17 @@ live in `proofs/` (see above), so several are `in-progress`:
         `proofs/GacalcProofs/StandardPosition.lean`) — the **non-circular** route: 3 elementary plane
         rotations (`rotXY`/`rotXZ`/`rotYZ`, NOT versors) → project/reject + the geometric product
         (`mul_eq_proj_dot_add_reject_wedge`) → a **general rotation from project/reject** (step 3). 2D
-        project/reject + product landed; *in progress:* `rotYZ` + the uniform reduce-both-to-2D lemma +
-        the **cross product via standard position** (`== Cross.cross_vec`). The full arc:
+        project/reject + product landed; **DONE 2026-10-02** (`CrossStandardPosition.lean`): `rotYZ` +
+        the uniform `reduceToPlane` (both vectors into the e₁e₂ plane) + proj/reject/cross all derived
+        through it as 2-D ops (`proj_reduced`/`vecReject_reduced`/`cross_reduced`, equivariance under all
+        three rotations). **Step 3 also landed 2026-10-02** (`ProjectionRotation.lean`): `projRotation`
+        (general rotation from project/reject) with `projRotation_carries_from_to` + `projRotation_perp`.
+        **Isometry DONE 2026-10-02** (`projRotation_isometry`, `normSq (projRotation f t v) = normSq v`):
+        `magnitude² = normSq` squares the √'s away (unit scalars pulled out as one `smul`), cross term dies
+        by orthogonality, Lagrange not needed. **Route-equivalence DONE 2026-10-02** (`projRotation_eq_sandwich`,
+        `projRotation f t v = sandwich(versorFromVectors f t) v` = route P = route V): √-free because `R`'s
+        scalar `|f||t|·1` is handled abstractly via `R R⁻¹ = 1` (in-plane `R P = P R̃`, ⊥ `R Rⱼ = Rⱼ R`,
+        `f̂ t̂ = R̃ R⁻¹`). The bootstrap arc + both deep properties are now fully machine-checked. The full arc:
         `tasks/reference/reduction-to-standard-position.md`. (Complements, and contrasts with, the
         versor-sandwich route in `lean-proof-rotation-from-scratch.md`.)
   - [x] `tasks/archive/2026/09/29/lean-proof-projection.md` — **DONE + ARCHIVED 2026-09-29**: gacalc's

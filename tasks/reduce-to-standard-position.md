@@ -122,13 +122,28 @@ elementary coordinate-plane rotations instead. The versor version was replaced w
   *both* vectors into the `e₁e₂` plane (add `rotYZ`, a rotation in the `e₂e₃` plane about the fixed `e₁`
   axis), after which **every** operation is an elementary 2-D one. The deliberate choice is generality
   over minimality: project/reject keep their 2-rotation form, but the same 3-rotation tool also gives the
-  **cross product** and underpins step 3 below. **In progress (2026-10-02):** `rotYZ` + the full
-  reduce-both-to-the-`e₁e₂`-plane lemma + the cross product derived through it, proved equal to
-  `Cross.lean`'s `cross_vec`.
+  **cross product** and underpins step 3 below. **DONE 2026-10-02** (`proofs/GacalcProofs/CrossStandardPosition.lean`,
+  `make lean` green/sorry-free): `rotYZ` + toolkit, `reduceToPlane` (`reduceToPlane_a_on_e1` +
+  `reduceToPlane_b_in_plane` — both vectors into the `e₁e₂` plane), equivariance of proj/reject/cross under
+  all three rotations, and the 2-D evals `proj_reduced`/`vecReject_reduced`/`cross_reduced` — project,
+  reject AND cross all derived through the one uniform 3-rotation frame.
 - **The bootstrap arc / step 3 — general rotation from project/reject.** The theme's real payoff:
   **3 elementary plane rotations → project/reject (+ product/cross/dot/wedge via reduce-to-2-D) → a
   general rotation defined from project/reject** (the Python `transforms.projection_rotation`, "rotate
   from vec1 to vec2", is exactly this). Non-circular throughout — the elementary rotations, not the
   geometric product or a versor, sit underneath. Contrast the **versor-sandwich** route to a general
-  rotation (`tasks/lean-proof-rotation-from-scratch.md`), which is product-based. Follow-on: state the
-  step-3 general-rotation-from-project/reject in Lean. Full arc: `tasks/reference/reduction-to-standard-position.md`.
+  rotation (`tasks/lean-proof-rotation-from-scratch.md`), which is product-based. **DONE 2026-10-02**
+  (`proofs/GacalcProofs/ProjectionRotation.lean`, `make lean` green): `projRotation` defined from
+  project/reject, with `projRotation_carries_from_to` (carries from→to, the defining property) and
+  `projRotation_perp` (⊥ part fixed). **Isometry DONE 2026-10-02** (`projRotation_isometry`,
+  `normSq (projRotation f t v) = normSq v`, `make lean` green/sorry-free): `magnitude² = normSq`
+  (`normSq_mul_vec`) squares away every `1/√(|f||t|)` once the unit scalars are pulled out as one `smul`,
+  and the in-plane×⊥ cross term dies by orthogonality (`inplane_perp_reject`/`project_perp_reject`), not
+  `ring` — Lagrange not needed. Scaffold all sorry-free (`normSq_add`, `normSq_add_of_orthogonal`,
+  `normSq_mul_vec`, `inplane_perp_reject`, `project_perp_reject`, `plane_pythagorean`). **Route-equivalence
+  DONE 2026-10-02** (`projRotation_eq_sandwich`, `projRotation f t v = sandwich(versorFromVectors f t) v`,
+  `make lean` green/sorry-free): the √ never appears — `R`'s scalar part `|f||t|·1` is pulled out abstractly
+  via `R R⁻¹ = 1`, so each piece is a √-free core about `t∧f`: `versor_mul_project_eq` (in-plane `R P = P R̃`),
+  `versor_mul_reject_comm` (⊥ `R Rⱼ = Rⱼ R`), `normalizeVec_mul_versor_eq_reverse` (`f̂ t̂ = R̃ R⁻¹`, from the
+  `Rotation3D.lean` bisector identities). The bootstrap arc + both deep properties are fully machine-checked.
+  Full arc: `tasks/reference/reduction-to-standard-position.md`.
