@@ -148,23 +148,17 @@ live in `proofs/` (see above), so several are `in-progress`:
   - [ ] **Lagrange identity** — 2D **and** 3D already landed (`GacalcProofs/Lagrange.lean`); no
         separate step-task needed (the `ring` proofs are complete; the rotation-derivation framing is
         covered by the rotation step-task).
-  - [~] **Reduction-to-standard-position bootstrap thread** (`tasks/reduce-to-standard-position.md`,
-        `proofs/GacalcProofs/StandardPosition.lean`) — the **non-circular** route: 3 elementary plane
-        rotations (`rotXY`/`rotXZ`/`rotYZ`, NOT versors) → project/reject + the geometric product
-        (`mul_eq_proj_dot_add_reject_wedge`) → a **general rotation from project/reject** (step 3). 2D
-        project/reject + product landed; **DONE 2026-10-02** (`CrossStandardPosition.lean`): `rotYZ` +
-        the uniform `reduceToPlane` (both vectors into the e₁e₂ plane) + proj/reject/cross all derived
-        through it as 2-D ops (`proj_reduced`/`vecReject_reduced`/`cross_reduced`, equivariance under all
-        three rotations). **Step 3 also landed 2026-10-02** (`ProjectionRotation.lean`): `projRotation`
-        (general rotation from project/reject) with `projRotation_carries_from_to` + `projRotation_perp`.
-        **Isometry DONE 2026-10-02** (`projRotation_isometry`, `normSq (projRotation f t v) = normSq v`):
-        `magnitude² = normSq` squares the √'s away (unit scalars pulled out as one `smul`), cross term dies
-        by orthogonality, Lagrange not needed. **Route-equivalence DONE 2026-10-02** (`projRotation_eq_sandwich`,
-        `projRotation f t v = sandwich(versorFromVectors f t) v` = route P = route V): √-free because `R`'s
-        scalar `|f||t|·1` is handled abstractly via `R R⁻¹ = 1` (in-plane `R P = P R̃`, ⊥ `R Rⱼ = Rⱼ R`,
-        `f̂ t̂ = R̃ R⁻¹`). The bootstrap arc + both deep properties are now fully machine-checked. The full arc:
-        `tasks/reference/reduction-to-standard-position.md`. (Complements, and contrasts with, the
-        versor-sandwich route in `lean-proof-rotation-from-scratch.md`.)
+  - [x] **Reduction-to-standard-position bootstrap thread** (`tasks/reduce-to-standard-position.md`) —
+        the **non-circular** route, fully machine-checked across four files: 3 elementary plane rotations
+        (`rotXY`/`rotXZ`/`rotYZ`, NOT versors) → project/reject + the geometric product → a general
+        rotation from project/reject. `StandardPosition.lean` (base + product), `CrossStandardPosition.lean`
+        (the uniform `reduceToPlane` bringing both vectors into the e₁e₂ plane, so proj/reject/cross run
+        through one frame), `ProjectionRotation.lean` (step 3 `projRotation` with carries-from→to, ⊥-fixed,
+        isometry `projRotation_isometry`, and route-equivalence `projRotation_eq_sandwich` = route P =
+        versor-sandwich route V), and `Projection2DRotation.lean` (the 𝒢₂ specialization). Per-lemma detail
+        and the √-handling: `tasks/reference/reduction-to-standard-position.md`. (Complements, and contrasts
+        with, the versor-sandwich route in `lean-proof-rotation-from-scratch.md`.) The book/notebook
+        presentation remains, tracked in the sub-task.
   - [x] `tasks/archive/2026/09/29/lean-proof-projection.md` — **DONE + ARCHIVED 2026-09-29**: gacalc's
         uniform Hestenes `project`/`reject` (`(A·B)B⁻¹` / `(A∧B)B⁻¹`) for vector- and bivector-blades,
         2D and 3D; `project_add_reject`, `proj_plane = project_onto`, the graded inner product, magnitude,
