@@ -12,12 +12,14 @@ namespace GacalcProofs
 
 namespace G2
 
-/-- Grade-r projection `⟨a⟩_r` on 𝒢₂ (grades 0,1,2; higher r gives 0). -/
+/-- Grade-r projection `⟨a⟩_r` on 𝒢₂ (grades 0,1,2; higher r gives 0), as the linear
+    combination of the grade-r basis blades (the `e_*` constants) rather than a positional
+    struct literal — the Lean mirror of gacalc's "build from the basis constants". -/
 noncomputable def rVectorPart (r : ℕ) (a : G2) : G2 :=
   match r with
-  | 0 => ⟨a.s, 0, 0, 0⟩
-  | 1 => ⟨0, a.c1, a.c2, 0⟩
-  | 2 => ⟨0, 0, 0, a.c12⟩
+  | 0 => smul a.s one
+  | 1 => add (smul a.c1 e_1) (smul a.c2 e_2)
+  | 2 => smul a.c12 e_12
   | _ => ⟨0, 0, 0, 0⟩
 
 /-- Even part `⟨a⟩₀ + ⟨a⟩₂`. -/
@@ -29,16 +31,17 @@ noncomputable def oddPart (a : G2) : G2 := rVectorPart 1 a
 /-- **Idempotence:** `⟨⟨a⟩_r⟩_r = ⟨a⟩_r`. -/
 theorem rVectorPart_idem (r : ℕ) (a : G2) :
     rVectorPart r (rVectorPart r a) = rVectorPart r a := by
-  rcases r with _ | _ | _ | n <;> rfl
+  rcases r with _ | _ | _ | n <;>
+    simp only [rVectorPart, add, smul, one, e_1, e_2, e_12] <;> ext <;> ring
 
 /-- **Completeness:** `⟨a⟩₀ + ⟨a⟩₁ + ⟨a⟩₂ = a`. -/
 theorem rVectorPart_complete (a : G2) :
     add (add (rVectorPart 0 a) (rVectorPart 1 a)) (rVectorPart 2 a) = a := by
-  simp only [rVectorPart, add]; ext <;> ring
+  simp only [rVectorPart, add, smul, one, e_1, e_2, e_12]; ext <;> ring
 
 /-- **Even + odd = whole:** `even_part a + odd_part a = a`. -/
 theorem even_add_odd (a : G2) : add (evenPart a) (oddPart a) = a := by
-  simp only [evenPart, oddPart, rVectorPart, add]; ext <;> ring
+  simp only [evenPart, oddPart, rVectorPart, add, smul, one, e_1, e_2, e_12]; ext <;> ring
 
 end G2
 

@@ -1,6 +1,6 @@
 import GacalcProofs.G3
 import GacalcProofs.Cross
-import GacalcProofs.Projection
+import GacalcProofs.Projection3D
 import GacalcProofs.StandardPosition
 
 /-! # Reduction to standard position as a GENERAL tool — reduce both vectors to the e₁e₂ plane (𝒢₃)

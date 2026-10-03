@@ -1,6 +1,6 @@
 import GacalcProofs.G3
 import GacalcProofs.AlgebraLaws
-import GacalcProofs.Projection
+import GacalcProofs.Projection3D
 import GacalcProofs.Sandwich
 import GacalcProofs.Normalize
 import GacalcProofs.Rotation3D

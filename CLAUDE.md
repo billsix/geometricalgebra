@@ -233,6 +233,13 @@ Repo-specific invariants the agent must obey (rationale in the shared doc + the 
   exactly and suppress a linter narrowly with the reason at the site.
 - **A local bound to a class/type object is named `cls`** (e.g. `cls = type(vector)`), never
   `representation`/`klass`. **The dimension is `n`, never `grade`.**
+- **Prefer `match` / total dispatch for structural case analysis** — the cross-project "Prefer total
+  dispatch over an open-ended conditional chain" convention, and it applies to the **Lean proofs**
+  (`proofs/`) as much as the Python. Where a definition dispatches on structure (a grade/`n`, a
+  constructor, a tag), write a `match` with a mandatory-feeling default rather than an `if`/`elif`
+  chain; the Lean grade projection `rVectorPart` (`proofs/GacalcProofs/GradeProjection.lean`) is the
+  model. Caveat: `match` earns its keep on *structural* patterns — don't convert a two-branch boolean
+  guard into one.
 - Conditional refactoring worked examples: `tasks/reference/conditional-refactoring-rules.md`.
   Type-annotation exemptions catalogue: `tasks/reference/type-annotation-exemptions.md` (re-run
   `python tools/check_annotations.py` after reshaping hand-written Python — a row it reports that
@@ -340,7 +347,7 @@ Open issues (genuinely open; resolution history lives in git + archived task doc
    NOT the general multivector inverse (it raises on a mixed-grade `A`); the general low-dim closed
    form is tracked in `tasks/lean-general-multivector-inverse.md`.
    (The former `is_parallel_to` self-flagged-uncertainty is resolved — it now uses the wedge-zero
-   test `A ∧ B = 0`, machine-checked in `proofs/GacalcProofs/Predicates.lean`.)
+   test `A ∧ B = 0`, machine-checked in `proofs/GacalcProofs/Predicates3D.lean`.)
 
 ## Future directions (not yet decided)
 

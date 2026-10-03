@@ -1,4 +1,4 @@
-import GacalcProofs.Projection
+import GacalcProofs.Projection3D
 
 /-! # Reflection across a vector (𝒢₃)
 

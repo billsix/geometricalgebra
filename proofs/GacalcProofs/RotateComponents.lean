@@ -1,5 +1,5 @@
 import GacalcProofs.Sandwich
-import GacalcProofs.Projection
+import GacalcProofs.Projection3D
 
 /-! # The 3D sandwich rotates in-plane components correctly (sin/cos from dot & wedge)
 
