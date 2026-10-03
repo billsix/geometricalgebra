@@ -310,9 +310,15 @@ def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Coef:
     """sin of the angle between two **vectors** — ``v1`` turned 90° in the e₁e₂
     plane, projected onto ``v2``, over ``|v1||v2|``.  The sine companion to
     ``MultiVectorBase.cosine``; vectors only (it uses ``|ab| = |a||b|``).
+
+    Raises:
+        ValueError: if ``v1`` or ``v2`` is the zero vector — the angle (hence its
+            sine) is undefined there (matches ``MultiVectorBase.cosine`` / ``abs_sin``).
     """
     # v1, v2 must be VECTORS: the ``abs(v1 * v2)`` below is used as |v1||v2|, which
     # holds only for vectors (|ab| = |a||b| when a, b are vectors).
+    if v1 == type(v1).zero() or v2 == type(v2).zero():
+        raise ValueError("sine (the angle) is undefined for the zero vector")
     assert v1.is_vector() and v2.is_vector()
     # rotate v1 by 90 degrees in the e_1 e_2 plane (v1 * e_1 e_2), then project on v2
     rot90: MultiVectorBase = v1 * type(v1).from_blade_dict({(1, 2): 1})

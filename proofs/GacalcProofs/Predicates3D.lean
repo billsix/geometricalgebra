@@ -34,7 +34,7 @@ theorem perp_iff_mul_eq_wedge {a b : G3} (ha : IsVector a) (hb : IsVector b) :
 /-- **A vector is parallel to its scalar multiples**: `a ∧ (k·a) = 0` — the correct geometric
     "parallel" (the outer product / linear dependence vanishes), including the anti-parallel `k < 0`
     case. See the module note on the Python `is_parallel_to`'s narrower `cosine == 1`. -/
-theorem wedge_parallel_smul (a1 a2 a3 k : ℝ) :
-    wedge (vec a1 a2 a3) (smul k (vec a1 a2 a3)) = zero := by
-  rw [wedge_smul_right, wedge_self_vec]
-  ext <;> simp only [smul, zero] <;> ring
+theorem wedge_parallel_smul {a : G3} (ha : IsVector a) (k : ℝ) :
+    wedge a (smul k a) = zero := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  ext <;> simp only [wedge, smul, zero, has, ha12, ha13, ha23, ha123] <;> ring

@@ -38,6 +38,27 @@ went from a `vec`-form `field_simp` bash to `rw [dot_sub_left, proj, dot_smul_le
 — coordinate-free and general in `a, b`. **Write proofs structurally; let only the leaves touch
 coordinates.** (Follow-up audit: `tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md`.)
 
+**Coordinates only when needed — and this governs the STATEMENT, not just the proof
+(2026-10-03).** State a theorem over **objects** — a vector/multivector `(a b : G3)` with an
+`IsVector` hypothesis — rather than over its real coefficients `(a1 a2 a3 : ℝ)`, *unless coordinates
+are genuinely required*. Coordinates are fine when they are what's needed (a leaf/bridge lemma proved
+by `ext <;> ring`; a fact that is inherently about components); they are not a default. An
+object-level theorem is proved by dropping to its coordinate leaf once (`eq_vec_of_isVector`), so the
+reader cites the object form while a single coordinate leaf underneath carries the computation. The
+test: *do we need the coordinates here?* If not, don't expose them in the statement. (Mirror of
+gacalc's Python side; see `CLAUDE.md`.)
+
+**Nonzero guard for angle/trig theorems (2026-10-03).** A theorem stated through `cos_between` /
+`sin_between` (or any `/ (|a| |b|)` quotient) carries nonzero hypotheses — `magnitude a ≠ 0`,
+`magnitude b ≠ 0` (equivalently `normSq a ≠ 0`, or `a ≠ zero`). This is what makes the trig form
+**faithful**: with a nonzero denominator `cos = 0 ⟺ dot = 0` (and `sin = 0 ⟺ wedge = 0`), so the
+`0/0` junk case (Lean's `x/0 = 0`) is excluded and the cosine/sine statement is exactly as strong as
+the dot/wedge primitive — not the weaker claim it would be without the guard. The `cos = 0` proof
+often closes by `zero_div` without consuming the hypothesis, so the guard is a "gate for meaning"
+(name it `_`-prefixed to keep the unused-variable linter quiet); it still prevents the theorem from
+being applied to a zero vector. The Python angle methods mirror this by **raising** on a zero operand
+(the angle is undefined), rather than returning `0/0 → 0`.
+
 ## File organization & naming (convention, 2026-10-03)
 
 The proofs are organized **by topic** (one concept per file: projection, rotation, sandwich, cross,
@@ -55,10 +76,29 @@ bare (`Cross`, `Reflect`, `Normalize`, `StandardPosition`, … are 3D-only; `Tri
 import list, any sibling `import`, **and any prose pointer in these reference docs**.
 
 **G2 `dot`/perpendicularity:** `G2.dot` (and its bilinearity algebra) lives in `Versor2D.lean`, not
-`G2.lean` (which imports only Mathlib). Perpendicularity facts stated through `dot` over `IsVector`
-objects go in `Predicates2D.lean` (the 2D twin of `Predicates3D.lean`): e.g. `dual_perp` — "the dual
-of a vector is perpendicular to it," `dot (dual v) v = 0` — the object/named-function form of the
-coordinate leaf `G2.dual_vec_perp` (which stays in `G2.lean` as the bridge it rests on).
+`G2.lean` (which imports only Mathlib). The `dot`-form perpendicularity lemmas over `IsVector` objects
+go in `Predicates2D.lean` (the 2D twin of `Predicates3D.lean`): e.g. `dual_perp_dot` —
+`dot (dual v) v = 0` — the object form of the coordinate leaf `G2.dual_vec_perp` (which stays in
+`G2.lean` as the bridge it rests on).
+
+**Naming: the geometric name is the student-facing (cosine/sine) theorem; the dot/wedge form carries a
+`_dot` suffix (2026-10-03).** Cosine is an implementation detail, so the theorem a reader cites is
+named for the geometry — `dual_perp`, `cross_perp_left`, `reject_perp`, `parallel_smul`, … (stated as
+`cos_between … = 0` / `sin_between … = 0`, in `StudentTrigForms.lean`) — and the underlying
+scalar-product fact it rests on is the `_dot` lemma (`dual_perp_dot`, `reject_perp_dot`,
+`cross_perp_left_dot`, …). NOT a `_cos`/`_sin` suffix on the geometric theorem.
+
+**Student-facing sine/cosine forms (`StudentTrigForms.lean`) rest on, never replace, dot/wedge.**
+`cos_between a b = dot a b / (|a| |b|)`, and the division carries a subtlety: in Lean/Mathlib
+`x / 0 = 0` (junk value), so for a zero vector `cos_between = 0/0 = 0` — true but meaningless (the
+angle is undefined). Thus `dot a b = 0 → cos = 0` always, but `cos = 0 → dot = 0` only for nonzero
+`|a|, |b|` — **`cos = 0` is logically weaker than `dot = 0`** (same for `sin = 0` vs `wedge = 0`). So
+the `cos`/`sin` corollaries in `StudentTrigForms.lean` are each proved FROM their dot/wedge lemma
+(`simp only [cos_between, <lemma>, zero_div]`), inheriting the primitive's full strength; the dot/wedge
+form is kept as the robust underlying fact. This is also why the Python predicates (`is_orthogonal_to`
+/ `is_parallel_to`) keep their dot/wedge *implementation* and only present cosine/sine in prose —
+reimplementing as `cos == 0` would import the `0/0` degeneracy. (`CLAUDE.md` › "Presenting to
+students".)
 
 **Grade-projection form:** G2's `rVectorPart` is written as a linear combination of the basis blades
 (`add (smul a.c1 e_1) (smul a.c2 e_2)`, …, the Lean mirror of gacalc's "build from the basis

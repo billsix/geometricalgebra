@@ -11,7 +11,7 @@ namespace GacalcProofs.G2
 /-- **The dual of a vector is perpendicular to it** (2D): for any vector `v` (`IsVector`), the dot
     product of its dual with itself is zero, `(v*) · v = 0`. The named-`dot`, object-level form of
     the coordinate leaf `dual_vec_perp`. -/
-theorem dual_perp {v : G2} (hv : IsVector v) : dot (dual v) v = 0 := by
+theorem dual_perp_dot {v : G2} (hv : IsVector v) : dot (dual v) v = 0 := by
   obtain ⟨hs, h12⟩ := hv
   simp only [dot, dual, I_inv, mul, hs, h12]; ring
 

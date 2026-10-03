@@ -1064,7 +1064,14 @@ class MultiVectorBase(abc.ABC):
     def is_orthogonal_to(
         self, other: typing.Self, float_close_to_zero: bool = False
     ) -> bool:
-        """True iff vectors A and B are orthogonal (their inner product is zero).
+        """True iff vectors A and B are orthogonal (perpendicular) — the cosine of
+        the angle between them is zero.
+
+        For a geometry/trig student: perpendicular vectors meet at a right angle, so
+        ``cos θ = 0`` (see :meth:`cosine`).  The test is implemented with the inner
+        product ``A · B`` — the robust, division-free primitive — because
+        ``cos θ = 0 ⟺ A · B = 0`` for (nonzero) vectors, without ``cosine``'s 0/0
+        edge case.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 9,
         between equations 1.32 and 1.33
@@ -1078,8 +1085,15 @@ class MultiVectorBase(abc.ABC):
             bool: ``True`` iff ``A · B`` is (approximately) zero.
 
         Raises:
+            ValueError: if either operand is the zero vector — the angle is undefined,
+                so orthogonality is too (matches the Lean proofs' nonzero hypothesis).
             AssertionError: if either operand is not a vector (grade 1).
         """
+
+        if self == type(self).zero() or other == type(other).zero():
+            raise ValueError(
+                "orthogonality (the angle) is undefined for the zero vector"
+            )
 
         # TODO - defined for vectors only right now, it's probably defined more
         # generally later in the book
@@ -1100,13 +1114,17 @@ class MultiVectorBase(abc.ABC):
     def is_parallel_to(
         self, other: typing.Self, float_close_to_zero: bool = False
     ) -> bool:
-        """True iff vectors A and B are parallel — i.e. their outer product
-        ``A ∧ B`` is zero (they are linearly dependent).
+        """True iff vectors A and B are parallel — the sine of the angle between
+        them is zero (equivalently, their outer product ``A ∧ B`` is zero: they are
+        linearly dependent).
 
-        ``A ∧ B = 0`` iff A and B span no area, so this holds for both
-        same-direction and anti-parallel vectors. The equivalence
-        ``A ∧ B = 0 ⟺ A ∥ B`` is machine-checked in
-        ``proofs/GacalcProofs/Predicates.lean``.
+        For a geometry/trig student: parallel vectors point the same way (or exactly
+        opposite), so they enclose no angle and ``sin θ = 0`` (see :meth:`abs_sin`).
+        The test is implemented with the outer product ``A ∧ B`` — the robust,
+        division-free primitive — since ``sin θ = 0 ⟺ A ∧ B = 0``.  ``A ∧ B = 0``
+        iff A and B span no area, so this holds for both same-direction and
+        anti-parallel vectors. The equivalence ``A ∧ B = 0 ⟺ A ∥ B`` is
+        machine-checked in ``proofs/GacalcProofs/Predicates3D.lean``.
 
         Args:
             other: the other vector.
@@ -1117,8 +1135,14 @@ class MultiVectorBase(abc.ABC):
             bool: ``True`` iff ``A ∧ B`` is (approximately) zero.
 
         Raises:
+            ValueError: if either operand is the zero vector — parallelism is framed via
+                the angle (sine 0), which is undefined there (matches the Lean proofs'
+                nonzero hypothesis).
             AssertionError: if either operand is not a vector (grade 1).
         """
+
+        if self == type(self).zero() or other == type(other).zero():
+            raise ValueError("parallelism (the angle) is undefined for the zero vector")
 
         # TODO - defined for vectors only right now, it's probably defined more
         # generally later in the book
@@ -1313,7 +1337,14 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Coef: the cosine ``cos θ = (Ã ∗ B) / (|A| |B|)``.
+
+        Raises:
+            ValueError: if ``self`` or ``other`` is the zero vector — the angle (hence
+                its cosine) is undefined there; mirrors the Lean proofs' nonzero
+                hypothesis on the sine/cosine theorems.
         """
+        if self == type(self).zero() or other == type(other).zero():
+            raise ValueError("cosine (the angle) is undefined for the zero vector")
         return (
             self.reverse().scalar_product(other)
             * (abs(self) ** (-1))
@@ -1339,7 +1370,14 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Coef: the unsigned sine ``|A ∧ B| / (|A| |B|)``.
+
+        Raises:
+            ValueError: if ``self`` or ``other`` is the zero vector — the angle (hence
+                its sine) is undefined there (matches :meth:`cosine` and the Lean
+                proofs' nonzero hypothesis).
         """
+        if self == type(self).zero() or other == type(other).zero():
+            raise ValueError("abs_sin (the angle) is undefined for the zero vector")
         return (
             abs(self.outer_product(other)) * (abs(self) ** (-1)) * (abs(other) ** (-1))
         )
@@ -1576,8 +1614,9 @@ class MultiVectorBase(abc.ABC):
     # are methods; ``content`` takes a sequence and stays a free function.
 
     def area(self, other: MultiVectorBase) -> Coef:
-        """The area of the parallelogram on ``self`` and ``other`` -- the method form
-        of :func:`gacalc.measure.area` (``= |a ∧ b|``).
+        """The area of the parallelogram on ``self`` and ``other`` -- the student's
+        ``|a| |b| sin θ`` (see :meth:`abs_sin`), computed as ``|a ∧ b|`` (the method
+        form of :func:`gacalc.measure.area`).
 
         Args:
             other: the second vector spanning the parallelogram.

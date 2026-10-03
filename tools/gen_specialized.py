@@ -5541,12 +5541,37 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                     "sine",
                     [class_doc_stmt(SINE_METHOD_DOC)]
                     + [
+                        # The angle (hence its sine) is undefined for the zero vector;
+                        # raise a clear ValueError rather than let the `* abs**-1`
+                        # division fail cryptically -- matching MultiVectorBase.cosine /
+                        # abs_sin and the Lean proofs' nonzero hypothesis.
+                        ast.If(
+                            parse_expr(
+                                "self == type(self).zero()"
+                                " or other == type(other).zero()"
+                            ),
+                            [
+                                ast.Raise(
+                                    exc=call(
+                                        "ValueError",
+                                        [
+                                            constant(
+                                                "sine (the angle) is undefined for"
+                                                " the zero vector"
+                                            )
+                                        ],
+                                    ),
+                                    cause=None,
+                                )
+                            ],
+                            [],
+                        ),
                         return_stmt(
                             parse_expr(
                                 "(self ^ other).coeff_e_12"
                                 " * (abs(self) ** (-1)) * (abs(other) ** (-1))"
                             )
-                        )
+                        ),
                     ],
                     params=[
                         argument("self"),
