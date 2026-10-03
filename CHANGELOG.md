@@ -32,13 +32,20 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   implemented — tracked in `tasks/lean-general-multivector-inverse.md`). Only affects inputs that
   were already getting a wrong answer — blades and versors are unchanged. `A A⁻¹ = 1` for the
   vector, versor, bivector and trivector cases is machine-checked in `proofs/GacalcProofs/`.
+- **Angle-based methods now raise `ValueError` on a zero-vector operand** (breaking). `cosine`,
+  `abs_sin`, `is_orthogonal_to`, `is_parallel_to` (`MultiVectorBase`), and the 𝒢₂ `Vector.sine`
+  previously returned a meaningless `0/0` value or raised a bare `ZeroDivisionError` when given the
+  zero vector; they now raise a clear `ValueError` — the angle (hence its cosine/sine, and
+  orthogonality/parallelism framed through it) is undefined there. `area`/`volume` are unaffected (no
+  division; a degenerate measure of 0 is meaningful). Mirrors the Lean proofs' nonzero hypothesis on
+  the sine/cosine theorems (`proofs/GacalcProofs/StudentTrigForms.lean`).
 
 ### Fixed
 - **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)
   instead of `cos θ == 1`. The old test wrongly returned `False` for **anti-parallel** vectors (whose
   cosine is −1) even though they are geometrically parallel. Behavior change: anti-parallel inputs now
   return `True`. The equivalence `A ∧ B = 0 ⟺ A ∥ B` is machine-checked in
-  `proofs/GacalcProofs/Predicates.lean`.
+  `proofs/GacalcProofs/Predicates3D.lean`.
 
 ## [0.1.0] — 2026-09-28
 

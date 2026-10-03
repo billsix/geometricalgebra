@@ -74,7 +74,9 @@ def test_cosine_squared_plus_signed_sine_squared_is_one() -> None:
 def test_zero_length_operand_raises() -> None:
     zero_vector: Vector = 0.0 * e_1 + 0.0 * e_2
     unit: Vector = 1.0 * e_1 + 0.0 * e_2
-    with pytest.raises(ZeroDivisionError):
+    # The angle (hence its sine) is undefined for the zero vector, so it raises a
+    # clear ValueError (matching cosine / abs_sin), not a bare ZeroDivisionError.
+    with pytest.raises(ValueError, match="zero vector"):
         zero_vector.sine(unit)
 
 

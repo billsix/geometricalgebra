@@ -336,6 +336,27 @@ Specialized classes are ~15–35× faster than `Gn` numerically and **thousands�
 cost and is kept slow-but-correct on purpose (it's the oracle). Run `python tools/bench.py`; detail
 in `tasks/reference/design-decisions.md`.
 
+## Presenting to students: prefer sine/cosine over dot/wedge
+
+When a result is **presented to a student** (book, notebook, docstring, or a proof's *stated* form),
+prefer the **sine/cosine-of-the-angle** phrasing over the raw **dot/wedge** one wherever a faithful
+option exists — "the cosine of the angle between them is 0" (perpendicular) / "the sine is 0"
+(parallel) / "area = |a||b| sin θ" are things a geometry-trig student can picture and draw; dot/wedge
+is the algebra underneath. **Keep dot/wedge as the primitive and layer the trig phrasing on top** (e.g.
+a `cos_between … = 0` corollary resting on a `dot … = 0` lemma), never trading the robust,
+√/division-free primitive for a trig form whose only effect is to add `√`/`0÷0` noise. Within reason;
+use discretion. Tracked: `tasks/prefer-sine-cosine-presentation.md`.
+
+## Coordinates only when needed
+
+Prefer the **object/coordinate-free** form — a vector/multivector over its real coefficients — in a
+**statement**, not just a proof: a Lean theorem takes `(a b : G3)` + `IsVector` rather than
+`(a1 a2 a3 : ℝ)`, and Python works on multivectors, **unless coordinates are genuinely needed**.
+Coordinates are fine where they are what's needed (a leaf/bridge lemma, a fact inherently about
+components) — they are not a default. The test is simply: *do we need the coordinates here?* If not,
+don't expose them. (Lean detail + the nonzero-guard convention for angle/trig theorems:
+`tasks/reference/lean-ga-proof-architecture.md`.)
+
 ## Assessment / known issues
 
 Open issues (genuinely open; resolution history lives in git + archived task docs):

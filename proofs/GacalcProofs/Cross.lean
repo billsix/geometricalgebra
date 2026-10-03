@@ -34,15 +34,23 @@ theorem cross_anticomm_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
     cross (vec a1 a2 a3) (vec b1 b2 b3) = neg (cross (vec b1 b2 b3) (vec a1 a2 a3)) := by
   simp only [cross, dual, I_inv, wedge, mul, neg, vec]; ext <;> ring
 
-/-- **The cross product is perpendicular to its left factor:** `(a × b) · a = 0`. -/
-theorem cross_perp_left (a1 a2 a3 b1 b2 b3 : ℝ) :
-    dot (cross (vec a1 a2 a3) (vec b1 b2 b3)) (vec a1 a2 a3) = 0 := by
-  simp only [dot, cross, dual, I_inv, wedge, mul, vec]; ring
+/-- **The cross product is perpendicular to its left factor:** `(a × b) · a = 0`, for vectors. -/
+theorem cross_perp_left_dot {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    dot (cross a b) a = 0 := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  simp only [dot, cross, dual, I_inv, wedge, mul,
+    has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+  ring
 
-/-- **The cross product is perpendicular to its right factor:** `(a × b) · b = 0`. -/
-theorem cross_perp_right (a1 a2 a3 b1 b2 b3 : ℝ) :
-    dot (cross (vec a1 a2 a3) (vec b1 b2 b3)) (vec b1 b2 b3) = 0 := by
-  simp only [dot, cross, dual, I_inv, wedge, mul, vec]; ring
+/-- **The cross product is perpendicular to its right factor:** `(a × b) · b = 0`, for vectors. -/
+theorem cross_perp_right_dot {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    dot (cross a b) b = 0 := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  simp only [dot, cross, dual, I_inv, wedge, mul,
+    has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+  ring
 
 /-- **The dual of a 3D vector is a bivector — the perpendicular plane:**
     `(x, y, z)* = −z·e₁₂ + y·e₁₃ − x·e₂₃` (grade 2; its scalar, vector and pseudoscalar parts all

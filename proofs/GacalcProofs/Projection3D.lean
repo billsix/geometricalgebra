@@ -7,10 +7,10 @@ import GacalcProofs.Sandwich
     3D versor sandwich (see `tasks/reference/lean-ga-proof-architecture.md`):
 
       * `proj a b = (b·a / a·a) · a` — vector projection; the rejection `b − proj_a b` is
-        perpendicular to `a` (`reject_perp`).
+        perpendicular to `a` (`reject_perp_dot`).
       * The wedge sees only the rejection: `a ∧ b = a ∧ (b − proj_a b)` (`wedge_reject`).
       * The dual of `a ∧ b` (the plane normal, gacalc's `cross`) is ⊥ both spanning
-        vectors (`dual_wedge_perp_left`/`_right`).
+        vectors (`dual_wedge_perp_left_dot`/`_right`).
 
     Still to come: projection onto the plane `= (c·B)B⁻¹` (the Hestenes formula), then the
     3D sandwich as a corollary of the G2 `sandwich_versor`. -/
@@ -28,7 +28,7 @@ noncomputable def proj (a b : G3) : G3 := smul (dot b a / dot a a) a
 
     The hypothesis is the **general** `dot a a ≠ 0`, deliberately not `normSq a ≠ 0`: this holds for
     any `a : G3`, and for a non-vector `a` the two differ (see `proj`). Do NOT tighten it to `normSq`. -/
-theorem reject_perp (a b : G3) (ha : dot a a ≠ 0) :
+theorem reject_perp_dot (a b : G3) (ha : dot a a ≠ 0) :
     dot (sub b (proj a b)) a = 0 := by
   rw [dot_sub_left, proj, dot_smul_left]
   field_simp
@@ -43,14 +43,22 @@ theorem wedge_reject (a1 a2 a3 : ℝ) (b : G3) :
 
 /-- **The dual of `a ∧ b` (the plane normal) is ⊥ `a`** — for vectors `a`, `b`. The dual of
     the wedge is `cross a b` (gacalc), and `(a × b) · a = 0`. -/
-theorem dual_wedge_perp_left (a1 a2 a3 b1 b2 b3 : ℝ) :
-    dot (dual (wedge (vec a1 a2 a3) (vec b1 b2 b3))) (vec a1 a2 a3) = 0 := by
-  simp only [dot, dual, I_inv, wedge, vec, mul]; ring
+theorem dual_wedge_perp_left_dot {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    dot (dual (wedge a b)) a = 0 := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  simp only [dot, dual, I_inv, wedge, mul,
+    has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+  ring
 
 /-- …and ⊥ `b`. -/
-theorem dual_wedge_perp_right (a1 a2 a3 b1 b2 b3 : ℝ) :
-    dot (dual (wedge (vec a1 a2 a3) (vec b1 b2 b3))) (vec b1 b2 b3) = 0 := by
-  simp only [dot, dual, I_inv, wedge, vec, mul]; ring
+theorem dual_wedge_perp_right_dot {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    dot (dual (wedge a b)) b = 0 := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  simp only [dot, dual, I_inv, wedge, mul,
+    has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+  ring
 
 /-- **The rotation plane is `a (b − proj_a b)`**: for a vector `a` with `a·a ≠ 0`,
     `a (b − proj_a b) = a ∧ b`. The rejection `r = b − proj_a b` is ⊥ `a`, so the geometric
@@ -62,7 +70,7 @@ theorem plane_eq_wedge (a1 a2 a3 b1 b2 b3 : ℝ)
     mul (vec a1 a2 a3) (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3)))
       = wedge (vec a1 a2 a3) (vec b1 b2 b3) := by
   -- Structural, on the fundamental split: `a r = a·r + a∧r` with `r = b − proj_a b` the rejection.
-  -- The rejection is ⊥ `a` (`reject_perp`), so the scalar part dies; and the wedge ignores the
+  -- The rejection is ⊥ `a` (`reject_perp_dot`), so the scalar part dies; and the wedge ignores the
   -- parallel part (`wedge_reject`), so the bivector part is `a∧b`.
   have hdaa : dot (vec a1 a2 a3) (vec a1 a2 a3) ≠ 0 := by
     rw [dot_self_vec_eq_normSq]; exact ha
@@ -71,7 +79,7 @@ theorem plane_eq_wedge (a1 a2 a3 b1 b2 b3 : ℝ)
   have hrv : IsVector (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3))) :=
     (isVector_vec b1 b2 b3).sub hpv
   have hd0 : dot (vec a1 a2 a3) (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3))) = 0 := by
-    rw [dot_comm]; exact reject_perp (vec a1 a2 a3) (vec b1 b2 b3) hdaa
+    rw [dot_comm]; exact reject_perp_dot (vec a1 a2 a3) (vec b1 b2 b3) hdaa
   rw [mul_eq_dot_add_wedge (isVector_vec a1 a2 a3) hrv, wedge_reject, hd0]
   simp only [smul, one, add]; ext <;> ring
 
@@ -115,12 +123,12 @@ theorem reject_vec_eq (a1 a2 a3 b1 b2 b3 : ℝ)
 noncomputable def proj_plane (a b c : G3) : G3 := sub c (proj (dual (wedge a b)) c)
 
 /-- The plane-projection lies in the plane: it is ⊥ the normal `dual(a∧b)` — for a
-    nondegenerate plane (`dual(a∧b) · dual(a∧b) ≠ 0`). This is exactly `reject_perp`
+    nondegenerate plane (`dual(a∧b) · dual(a∧b) ≠ 0`). This is exactly `reject_perp_dot`
     applied to the normal. -/
-theorem proj_plane_perp_normal (a b c : G3)
+theorem proj_plane_perp_normal_dot (a b c : G3)
     (hn : dot (dual (wedge a b)) (dual (wedge a b)) ≠ 0) :
     dot (proj_plane a b c) (dual (wedge a b)) = 0 := by
-  rw [proj_plane]; exact reject_perp (dual (wedge a b)) c hn
+  rw [proj_plane]; exact reject_perp_dot (dual (wedge a b)) c hn
 
 /-! ### Hestenes projection onto a plane, via the graded inner product -/
 

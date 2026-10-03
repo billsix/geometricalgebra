@@ -84,11 +84,11 @@ theorem normSq_wedge_vec (a1 a2 b1 b2 : ℝ) :
 noncomputable def reject (awayFrom a : G2) : G2 := mul (wedge a awayFrom) (inverse awayFrom)
 
 /-- **The rejection is ⊥ the vector** (2D): `(b − proj_a b) · a = 0` for `a·a ≠ 0`. Structural, via the
-    `dot` bilinearity lemmas — the exact shape of the 3D `reject_perp`, and general in `a, b`.
+    `dot` bilinearity lemmas — the exact shape of the 3D `reject_perp_dot`, and general in `a, b`.
 
     The hypothesis is the **general** `dot a a ≠ 0`, deliberately not `normSq a ≠ 0`: it holds for any
     `a : G2`, and for a non-vector `a` the two differ (see `proj`). Do NOT tighten it to `normSq`. -/
-theorem reject_perp (a b : G2) (ha : dot a a ≠ 0) :
+theorem reject_perp_dot (a b : G2) (ha : dot a a ≠ 0) :
     dot (sub b (proj a b)) a = 0 := by
   rw [dot_sub_left, proj, dot_smul_left]
   field_simp
