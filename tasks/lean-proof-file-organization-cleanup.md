@@ -1,6 +1,8 @@
 # Lean proof files: keep topic-oriented, unify the 2D/3D filing rule, fix asymmetric names
 
-**Status:** proposed — needs go-ahead
+**Status:** done — 4 renames + 10 import fixes applied, `make lean` green (8950 jobs, no
+`sorry`/`admit`), staged (maintainer commits). Archive after the work commit. Minimal scope chosen
+(only the ambiguous paired concepts suffixed; solo-dimension files left bare — maintainer approved).
 **Priority:** 6
 **Difficulty:** 4
 **Created:** 2026-10-03 (William Emerison Six <billsix@gmail.com>, from a "do these topic files

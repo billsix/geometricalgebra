@@ -1,5 +1,5 @@
 import GacalcProofs.Trig
-import GacalcProofs.Rotation
+import GacalcProofs.Rotation2D
 import GacalcProofs.Versor2D
 
 /-! # Trig equivalence: property-form ↔ angle-form, and the signed 2D sine (𝒢₂)
