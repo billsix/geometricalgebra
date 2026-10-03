@@ -38,6 +38,34 @@ went from a `vec`-form `field_simp` bash to `rw [dot_sub_left, proj, dot_smul_le
 — coordinate-free and general in `a, b`. **Write proofs structurally; let only the leaves touch
 coordinates.** (Follow-up audit: `tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md`.)
 
+## File organization & naming (convention, 2026-10-03)
+
+The proofs are organized **by topic** (one concept per file: projection, rotation, sandwich, cross,
+measures, grade projection, …), mirroring the Python library's one-concept-per-file layout and the
+book — NOT by algebra. `G2.lean`/`G3.lean` hold only each algebra's from-scratch core (struct, `mul`,
+basis, leaf lemmas); concept files build on them and keep both dimensions together where the concept
+is small/cross-dimensional (`AlgebraLaws`, `Measures`, `Trig`, `Exp`, `GradeProjection`, `Lagrange`).
+
+Naming rule: a dimension-specific file is suffixed `2D`/`3D`; a bare name means "both dimensions" or a
+concept that exists in only one dimension (no sibling to confuse it with). **Paired** concepts are
+both suffixed — `Projection2D`/`Projection3D`, `Rotation2D`/`Rotation3D`,
+`ProjectionRotation2D`/`ProjectionRotation3D`, `Predicates2D`/`Predicates3D`. Solo-dimension files stay
+bare (`Cross`, `Reflect`, `Normalize`, `StandardPosition`, … are 3D-only; `TrigEquiv`, `Versor2D` are
+2D-only). The root `GacalcProofs.lean` imports every topic file; renaming one means updating that
+import list, any sibling `import`, **and any prose pointer in these reference docs**.
+
+**G2 `dot`/perpendicularity:** `G2.dot` (and its bilinearity algebra) lives in `Versor2D.lean`, not
+`G2.lean` (which imports only Mathlib). Perpendicularity facts stated through `dot` over `IsVector`
+objects go in `Predicates2D.lean` (the 2D twin of `Predicates3D.lean`): e.g. `dual_perp` — "the dual
+of a vector is perpendicular to it," `dot (dual v) v = 0` — the object/named-function form of the
+coordinate leaf `G2.dual_vec_perp` (which stays in `G2.lean` as the bridge it rests on).
+
+**Grade-projection form:** G2's `rVectorPart` is written as a linear combination of the basis blades
+(`add (smul a.c1 e_1) (smul a.c2 e_2)`, …, the Lean mirror of gacalc's "build from the basis
+constants"); G3's stays a coordinate struct-literal — its grade-2 arm would be a noisier nested
+three-term `add`, and the basis form would push proof churn into `Contractions.lean`. Per-case per the
+"spike decides each case" rule: basis form only where it reads better and doesn't cost proof health.
+
 ## Leaf-node index (the coordinate bridge — reuse these, don't re-derive inline)
 
 Every proof should reach for a *named* leaf, not a fresh `ext <;> ring`. The leaves, by category
@@ -121,7 +149,7 @@ vector or bivector blade `B`:
 - `reject_B A = (A ∧ B) B⁻¹` — the component of `A` orthogonal to `B`.
 
 Lean status: `proj`/`reject`/`project_onto` cover vector- and bivector-blades in 3D
-(`Projection.lean`) and 2D (`Projection2D.lean`); `project_add_reject` (`(A·B)B⁻¹ + (A∧B)B⁻¹ = A`) is
+(`Projection3D.lean`) and 2D (`Projection2D.lean`); `project_add_reject` (`(A·B)B⁻¹ + (A∧B)B⁻¹ = A`) is
 the validating decomposition; `proj_plane_eq_project_onto` shows the normal-based plane projection
 equals the Hestenes form. The blade inverse `B⁻¹` is `Sandwich.inverse` (`B̃/(B B̃)`, works for a simple
 bivector: `B · inverse B = 1`).
@@ -156,12 +184,12 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   **reverse anti-automorphism** `reverse_mul` (`(ab)~ = b~ a~`, general) and its vector corollaries
   `reverse_of_isVector`, `reverse_mul_vec` (`(ab)~ = ba`), `reverse_mul3_vec` (`(abc)~ = cba`); the G2
   twins (`reverse_mul`/`reverse_vec`/`reverse_of_isVector`/`reverse_mul_vec`) live in `G2.lean`.
-- `Rotation.lean` (2D angle-parameterized), `Rotation3D.lean` / `Versor2D.lean` (angle-free
+- `Rotation2D.lean` (2D angle-parameterized), `Rotation3D.lean` / `Versor2D.lean` (angle-free
   versor-from-vectors: bisector, `R·a = |a|·h`, `b·R = |b|·h`; the carries-a→b capstone
   `R a R⁻¹ = (|a|/|b|)·b`).
 - `RotateComponents.lean` — the three matrix-free rotation goals for the actual a→b rotation (in the
   plane, oriented isometry, perpendicular fixed) + `sandwich_ahat` (â↦b̂).
-- `Projection.lean` / `Projection2D.lean` — Hestenes `proj`/`reject`/`project_onto`, `project_add_reject`,
+- `Projection3D.lean` / `Projection2D.lean` — Hestenes `proj`/`reject`/`project_onto`, `project_add_reject`,
   `proj_plane = project_onto`, and the 2D cases.
 - `StandardPosition.lean` — elementary coordinate-plane rotations `rotXY`/`rotXZ` (NOT versors),
   their `preserves_dot`, projection/rejection equivariance under them, the explicit `b ↦ |b|·e₁`
@@ -176,7 +204,7 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   (`proj_rotYZ_equivariant`, `vecReject_rotXZ/YZ_equivariant`, `cross_rotXY/XZ/YZ_equivariant`); and the
   2-D evals `proj_reduced`/`vecReject_reduced`/`cross_reduced` — project/reject/cross all through the one
   3-rotation frame.
-- `ProjectionRotation.lean` — the arc's **step 3**, a general rotation from project/reject:
+- `ProjectionRotation3D.lean` — the arc's **step 3**, a general rotation from project/reject:
   `projRotation f t v = (project_{f∧t} v)·f̂·t̂ + reject_{f∧t} v` (mirrors Python
   `transforms.projection_rotation`; non-circular — project/reject + the product, no versor), with
   `projRotation_carries_from_to` (carries from→to) and `projRotation_perp` (⊥ part fixed). Its two deep
@@ -188,7 +216,7 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   `versor_mul_project_eq` (in-plane `R P = P R̃`), `versor_mul_reject_comm` (⊥ `R Rⱼ = Rⱼ R`),
   `normalizeVec_mul_versor_eq_reverse`/`vec_mul_bisector_eq`/`normalizeVec_to_mul_versor_eq_bisector`
   (`f̂ t̂ = R̃ R⁻¹`). √-free: `R`'s scalar `|f||t|·1` is handled abstractly via `R R⁻¹ = 1`, never expanded.
-- `Projection2DRotation.lean` — the **𝒢₂ specialization** of step 3: the same `projRotation` triple
+- `ProjectionRotation2D.lean` — the **𝒢₂ specialization** of step 3: the same `projRotation` triple
   (`projRotation_carries_from_to` / `projRotation_isometry` / `projRotation_eq_sandwich`) in 2D, the
   degenerate base case where the `f∧t` plane is all of 𝒢₂, so `reject_plane_eq_zero` (`reject = 0`)
   collapses it to the rotor action `v·f̂·t̂` (`projRotation_eq_vec_mul`). Reuses
@@ -230,8 +258,8 @@ and `dual_vec`). Both are HAS.
 | `left_contraction` | HAS | `leftContraction_vec_vec` (= dot), `leftContraction_scalar_vec` (grade-0 inclusion) (Contractions.lean) |
 | `right_contraction` | HAS | `rightContraction_vec_vec` (Contractions.lean) |
 | `r_vector_part` | HAS | `rVectorPart`, `rVectorPart_idem`, `rVectorPart_complete` (GradeProjection.lean) |
-| `is_orthogonal_to` | HAS | `perp_iff_mul_eq_wedge` (`a·b=0 ⟺ ab=a∧b`) (Predicates.lean) |
-| `is_parallel_to` | HAS | `wedge_parallel_smul` + the wedge-zero criterion (Predicates.lean); Python `is_parallel_to` fixed to the wedge-zero form |
+| `is_orthogonal_to` | HAS | `perp_iff_mul_eq_wedge` (`a·b=0 ⟺ ab=a∧b`) (Predicates3D.lean) |
+| `is_parallel_to` | HAS | `wedge_parallel_smul` + the wedge-zero criterion (Predicates3D.lean); Python `is_parallel_to` fixed to the wedge-zero form |
 | `reverse` | HAS | `reverse_reverse`, `reverse_mul` (anti-automorphism), `reverse_vec`, `reverse_of_isVector`, `reverse_mul_vec` |
 | `inverse` | PARTIAL | blade/versor cases: `mul_vec_inverse_self`, `mul_biv_inverse_self`, `mul_triv_inverse_self`, `versorFromVectors_mul_inverse`, `inverse_mul`; general mixed-grade owned by existing `lean-general-multivector-inverse` |
 | `dual` | HAS | G2 `dual_vec`; G3 `dual`, `dual_vec` (Cross:50), `dual_wedge_perp_left`/`_right` |

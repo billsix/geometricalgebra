@@ -347,7 +347,7 @@ Open issues (genuinely open; resolution history lives in git + archived task doc
    NOT the general multivector inverse (it raises on a mixed-grade `A`); the general low-dim closed
    form is tracked in `tasks/lean-general-multivector-inverse.md`.
    (The former `is_parallel_to` self-flagged-uncertainty is resolved — it now uses the wedge-zero
-   test `A ∧ B = 0`, machine-checked in `proofs/GacalcProofs/Predicates.lean`.)
+   test `A ∧ B = 0`, machine-checked in `proofs/GacalcProofs/Predicates3D.lean`.)
 
 ## Future directions (not yet decided)
 

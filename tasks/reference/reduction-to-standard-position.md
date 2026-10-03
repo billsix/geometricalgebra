@@ -133,7 +133,7 @@ operations under all three rotations (`proj_rotYZ_equivariant`, `vecReject_rotXZ
 `vecReject_reduced`, `cross_reduced` (`cross (|a|·e₁) (b₁,b₂,0) = (0,0,|a|·b₂)`). project/reject/cross all
 run through the one 3-rotation frame uniformly.
 
-**Step 3 — the general rotation from project/reject** (`ProjectionRotation.lean`):
+**Step 3 — the general rotation from project/reject** (`ProjectionRotation3D.lean`):
 `projRotation f t v = (project_{f∧t} v)·f̂·t̂ + reject_{f∧t} v` (mirrors the Python
 `transforms.projection_rotation`) — defined from project/reject + the product (itself from
 project/reject), so non-circular; no versor. It carries from→to (`projRotation_carries_from_to`,
@@ -157,7 +157,7 @@ Its two deep properties:
   `normalizeVec_mul_versor_eq_reverse` (`f̂ t̂ = R̃ R⁻¹`, from the bisector identities `t̂ R = h`,
   `f̂ h = R̃` in `Rotation3D.lean`).
 
-**2D specialization — the degenerate base case** (`Projection2DRotation.lean`): the same
+**2D specialization — the degenerate base case** (`ProjectionRotation2D.lean`): the same
 `projRotation` and the identical triple (`projRotation_carries_from_to` / `projRotation_isometry` /
 `projRotation_eq_sandwich`) in 𝒢₂. There the `f∧t` plane **is** the whole space, so `reject_{f∧t} v = 0`
 (`reject_plane_eq_zero`) and the rotation collapses to the pure rotor action `v·f̂·t̂`

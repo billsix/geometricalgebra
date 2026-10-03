@@ -212,7 +212,7 @@ version resolution is lake's own, not hand-picked):
   `GacalcProofs/G2.lean` (a from-scratch 𝒢₂: geometric product, dot = symmetric part, wedge =
   antisymmetric part, dot ≡ coordinate sum, pseudoscalar `I₂² = −1 = (−1)^(r(r−1)/2)`, the basis
   multiplication table `e_1_sq`/`e_1_mul_e_2`/`e_2_mul_e_1`/`e_12_sq`, and `eq_smul_basis`), and
-  `GacalcProofs/Rotation.lean` (2D: `rot` from sin/cos; the geometric product enacts rotation; the
+  `GacalcProofs/Rotation2D.lean` (2D: `rot` from sin/cos; the geometric product enacts rotation; the
   product of two unit vectors is the rotor of the angle; rotation "from a to b" for general vectors,
   `b = (|b|/|a|)·rot(φb−φa)a`, and the rotor from a's direction to b's carrying a to b).
   This list is only the earliest landmarks and drifts — for the **current full inventory** (which now
