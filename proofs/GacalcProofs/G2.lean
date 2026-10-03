@@ -160,23 +160,32 @@ theorem eq_vec_of_isVector {a : G2} (ha : IsVector a) : a = vec a.c1 a.c2 := by
   obtain ⟨hs, h12⟩ := ha
   ext <;> simp only [vec] <;> first | rfl | assumption
 
-/-- The **dot product** is the scalar part of the symmetric product ½(uv + vu). -/
-theorem dot_is_sym_part (u1 u2 v1 v2 : ℝ) :
-    (smul (1 / 2) (add (mul (vec u1 u2) (vec v1 v2)) (mul (vec v1 v2) (vec u1 u2)))).s
-      = u1 * v1 + u2 * v2 := by
-  simp only [smul, add, mul, vec]; ring
+/-- A coordinate vector `vec x y` is a vector (grade 1) — lets a caller discharge the `IsVector`
+    hypothesis of an object-level theorem when it holds a concrete `vec`. -/
+theorem isVector_vec (x y : ℝ) : IsVector (vec x y) := ⟨rfl, rfl⟩
 
-/-- The **wedge product** is the e₁e₂ part of the antisymmetric product ½(uv − vu). -/
-theorem wedge_is_antisym_part (u1 u2 v1 v2 : ℝ) :
-    (smul (1 / 2) (sub (mul (vec u1 u2) (vec v1 v2)) (mul (vec v1 v2) (vec u1 u2)))).c12
-      = u1 * v2 - u2 * v1 := by
-  simp only [smul, sub, mul, vec]; ring
+/-- The **dot product** is the scalar part of the symmetric product ½(ab + ba) — for vectors `a`, `b`
+    (object form; the coordinates are pulled from the operands for the computation). -/
+theorem dot_is_sym_part {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    (smul (1 / 2) (add (mul a b) (mul b a))).s = a.c1 * b.c1 + a.c2 * b.c2 := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  simp only [smul, add, mul, has, ha12, hbs, hb12]; ring
 
-/-- Equivalence to the general case: the dot defined above is the Euclidean
-    coordinate sum ∑ uᵢvᵢ (= `@inner ℝ (EuclideanSpace ℝ (Fin 2)) _ u v`). -/
-theorem dot_eq_coord_sum (u1 u2 v1 v2 : ℝ) :
-    (mul (vec u1 u2) (vec v1 v2)).s = u1 * v1 + u2 * v2 := by
-  simp only [mul, vec]; ring
+/-- The **wedge product** is the e₁e₂ part of the antisymmetric product ½(ab − ba) — for vectors. -/
+theorem wedge_is_antisym_part {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    (smul (1 / 2) (sub (mul a b) (mul b a))).c12 = a.c1 * b.c2 - a.c2 * b.c1 := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  simp only [smul, sub, mul, has, ha12, hbs, hb12]; ring
+
+/-- Equivalence to the general case: the dot is the Euclidean coordinate sum ∑ aᵢbᵢ
+    (= `@inner ℝ (EuclideanSpace ℝ (Fin 2)) _ a b`) — for vectors. -/
+theorem dot_eq_coord_sum {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    (mul a b).s = a.c1 * b.c1 + a.c2 * b.c2 := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  simp only [mul, has, ha12, hbs, hb12]; ring
 
 /-- The unit pseudoscalar squares to −1 (a scalar). -/
 theorem I_sq : mul I I = ⟨-1, 0, 0, 0⟩ := by

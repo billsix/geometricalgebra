@@ -106,13 +106,10 @@ theorem one_smul (a : G3) : smul 1 a = a := by simp only [smul]; ext <;> ring
 
 /-- **Orthogonal vectors anticommute:** if `a·b = 0` then `a b = −(b a)`. A corollary of
     `vec_mul_perp` (`a b = a∧b`) plus the antisymmetry of the wedge. -/
-theorem vec_anticomm_perp (a1 a2 a3 b1 b2 b3 : ℝ)
-    (h : dot (vec a1 a2 a3) (vec b1 b2 b3) = 0) :
-    mul (vec a1 a2 a3) (vec b1 b2 b3) = neg (mul (vec b1 b2 b3) (vec a1 a2 a3)) := by
-  have hba : dot (vec b1 b2 b3) (vec a1 a2 a3) = 0 := by
-    simp only [dot, mul, vec] at h ⊢; linear_combination h
-  rw [vec_mul_perp _ _ _ _ _ _ h, vec_mul_perp _ _ _ _ _ _ hba]
-  simp only [wedge, neg, vec]; ext <;> ring
+theorem vec_anticomm_perp {a b : G3} (ha : IsVector a) (hb : IsVector b) (h : dot a b = 0) :
+    mul a b = neg (mul b a) := by
+  have hba : dot b a = 0 := by rw [dot_comm b a]; exact h
+  rw [mul_eq_wedge_of_perp ha hb h, mul_eq_wedge_of_perp hb ha hba, wedge_antisymm ha hb]
 
 end G3
 

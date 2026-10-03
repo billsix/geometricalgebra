@@ -50,13 +50,15 @@ theorem wedge_add_left (u w a : G2) : wedge (add u w) a = add (wedge u a) (wedge
 theorem wedge_smul_left (k : ℝ) (u a : G2) : wedge (smul k u) a = smul k (wedge u a) := by
   simp only [wedge, smul]; ext <;> ring
 
-/-- A vector wedged with itself is zero (2D). -/
-theorem wedge_self_vec (x y : ℝ) : wedge (vec x y) (vec x y) = (⟨0, 0, 0, 0⟩ : G2) := by
-  simp only [wedge, vec]; ext <;> ring
+/-- `a ∧ a = 0` for a vector `a` (2D). -/
+theorem wedge_self_vec {a : G2} (ha : IsVector a) : wedge a a = (⟨0, 0, 0, 0⟩ : G2) := by
+  obtain ⟨has, ha12⟩ := ha
+  simp only [wedge, has, ha12]; ext <;> ring
 
-/-- **The wedge of vectors is antisymmetric:** `a∧b = −(b∧a)` (2D). -/
-theorem wedge_antisymm (a1 a2 b1 b2 : ℝ) :
-    wedge (vec a1 a2) (vec b1 b2) = neg (wedge (vec b1 b2) (vec a1 a2)) := by
+/-- **The wedge of vectors is antisymmetric:** `a∧b = −(b∧a)` (2D), for vectors `a`, `b`. -/
+theorem wedge_antisymm {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    wedge a b = neg (wedge b a) := by
+  rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb]
   simp only [wedge, vec, neg]; ext <;> ring
 
 /-- **The fundamental identity `a b = a·b + a∧b`, for arbitrary vectors** (2D): for grade-1 `a`, `b`,
@@ -106,39 +108,47 @@ theorem reject_from_I_eq_zero (x y : ℝ) : reject I (vec x y) = (⟨0, 0, 0, 0�
   ext <;> simp only [mul, inverse, smul, reverse, normSq, I, e_12] <;> ring
 
 /-- **The reverse-sandwich is an outermorphism up to `|R|²`** (2D): `(R u R̃) ∧ (R v R̃) = |R|²·R (u∧v) R̃`.
-    A pure polynomial identity — the unnormalized core of the 2D `sandwich_preserves_wedge`. -/
-theorem wedge_reverse_sandwich (s c u1 u2 v1 v2 : ℝ) :
-    wedge (mul (mul (evenVersor s c) (vec u1 u2)) (reverse (evenVersor s c)))
-          (mul (mul (evenVersor s c) (vec v1 v2)) (reverse (evenVersor s c)))
-      = smul (normSq (evenVersor s c))
-             (mul (mul (evenVersor s c) (wedge (vec u1 u2) (vec v1 v2)))
-                  (reverse (evenVersor s c))) := by
-  simp only [normSq, wedge, evenVersor, mul, reverse, smul, vec]; ext <;> ring
+    A pure polynomial identity (atomic `normSq R`) — the unnormalized core of the 2D
+    `sandwich_preserves_wedge`. -/
+theorem wedge_reverse_sandwich {R : G2} (hR : IsEvenVersor R) {u v : G2}
+    (hu : IsVector u) (hv : IsVector v) :
+    wedge (mul (mul R u) (reverse R)) (mul (mul R v) (reverse R))
+      = smul (normSq R) (mul (mul R (wedge u v)) (reverse R)) := by
+  obtain ⟨hR1, hR2⟩ := hR
+  obtain ⟨hus, hu12⟩ := hu
+  obtain ⟨hvs, hv12⟩ := hv
+  simp only [normSq, wedge, mul, reverse, smul, hR1, hR2, hus, hu12, hvs, hv12]
+  ext <;> ring
 
-/-- **The sandwich preserves the outer product** (2D outermorphism): `(R u R⁻¹) ∧ (R v R⁻¹) = R (u∧v) R⁻¹`.
+/-- **The sandwich preserves the outer product** (object form, 2D outermorphism):
+    `(R u R⁻¹) ∧ (R v R⁻¹) = R (u∧v) R⁻¹` for an even versor `R` with `|R|² ≠ 0` and vectors `u`, `v`.
     In 𝒢₂ the wedge is the pseudoscalar (signed area), so this is "a rotation preserves signed area." -/
-theorem sandwich_preserves_wedge (s c u1 u2 v1 v2 : ℝ) (hr : normSq (evenVersor s c) ≠ 0) :
-    wedge (sandwich (evenVersor s c) (vec u1 u2)) (sandwich (evenVersor s c) (vec v1 v2))
-      = sandwich (evenVersor s c) (wedge (vec u1 u2) (vec v1 v2)) := by
+theorem sandwich_preserves_wedge {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0)
+    {u v : G2} (hu : IsVector u) (hv : IsVector v) :
+    wedge (sandwich R u) (sandwich R v) = sandwich R (wedge u v) := by
   simp only [sandwich, inverse, GacalcProofs.G2.mul_smul, GacalcProofs.G2.wedge_smul_left,
              GacalcProofs.G2.wedge_smul_right, GacalcProofs.G2.smul_smul]
-  rw [wedge_reverse_sandwich, GacalcProofs.G2.smul_smul]
+  rw [wedge_reverse_sandwich hR hu hv, GacalcProofs.G2.smul_smul]
   congr 1
   field_simp
 
 /-- **The reverse sandwich scales the wedge's norm by `|R|²`** (2D): `|R (u∧v) R̃|² = |R|⁴ |u∧v|²`,
-    stated on the pseudoscalar `u∧v` itself. Pure polynomial. -/
-theorem normSq_reverse_sandwich_wedge (s c u1 u2 v1 v2 : ℝ) :
-    normSq (mul (mul (evenVersor s c) (wedge (vec u1 u2) (vec v1 v2))) (reverse (evenVersor s c)))
-      = normSq (evenVersor s c) ^ 2 * normSq (wedge (vec u1 u2) (vec v1 v2)) := by
-  simp only [normSq, wedge, evenVersor, mul, reverse, vec]; ring
+    stated on the pseudoscalar `u∧v` itself (atomic `normSq R`). Pure polynomial. -/
+theorem normSq_reverse_sandwich_wedge {R : G2} (hR : IsEvenVersor R) {u v : G2}
+    (hu : IsVector u) (hv : IsVector v) :
+    normSq (mul (mul R (wedge u v)) (reverse R)) = normSq R ^ 2 * normSq (wedge u v) := by
+  obtain ⟨hR1, hR2⟩ := hR
+  obtain ⟨hus, hu12⟩ := hu
+  obtain ⟨hvs, hv12⟩ := hv
+  simp only [normSq, wedge, mul, reverse, hR1, hR2, hus, hu12, hvs, hv12]
+  ring
 
-/-- **The sandwich preserves the wedge's squared magnitude** (2D): `|R (u∧v) R⁻¹|² = |u∧v|²` — a
-    rotation preserves signed area. Same structural shape as the vector case. -/
-theorem sandwich_preserves_normSq_of_wedge (s c u1 u2 v1 v2 : ℝ) (hr : normSq (evenVersor s c) ≠ 0) :
-    normSq (sandwich (evenVersor s c) (wedge (vec u1 u2) (vec v1 v2)))
-      = normSq (wedge (vec u1 u2) (vec v1 v2)) := by
-  rw [sandwich, inverse, GacalcProofs.G2.mul_smul, normSq_smul, normSq_reverse_sandwich_wedge]
+/-- **The sandwich preserves the wedge's squared magnitude** (object form, 2D): `|R (u∧v) R⁻¹|² = |u∧v|²`
+    for an even versor `R` with `|R|² ≠ 0` and vectors `u`, `v` — a rotation preserves signed area. -/
+theorem sandwich_preserves_normSq_of_wedge {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0)
+    {u v : G2} (hu : IsVector u) (hv : IsVector v) :
+    normSq (sandwich R (wedge u v)) = normSq (wedge u v) := by
+  rw [sandwich, inverse, GacalcProofs.G2.mul_smul, normSq_smul, normSq_reverse_sandwich_wedge hR hu hv]
   field_simp [hr]
 
 end GacalcProofs.G2

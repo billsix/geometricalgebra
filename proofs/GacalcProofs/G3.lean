@@ -196,7 +196,7 @@ theorem wedge_add_right (a u w : G3) : wedge a (add u w) = add (wedge a u) (wedg
   simp only [wedge, add]; ext <;> ring
 
 /-- A vector wedged with itself is zero. -/
-theorem wedge_self_vec (x y z : ℝ) : wedge (vec x y z) (vec x y z) = zero := by
+theorem wedge_self_vec_coord (x y z : ℝ) : wedge (vec x y z) (vec x y z) = zero := by
   simp only [wedge, vec, zero]; ext <;> ring
 
 /-- **The fundamental identity `a b = a·b + a∧b` for vectors** (Hestenes' defining relation):
@@ -251,6 +251,37 @@ theorem mul_eq_wedge_of_perp {a b : G3} (ha : IsVector a) (hb : IsVector b) (h :
 /-- A coordinate vector is grade-1. -/
 theorem isVector_vec (x y z : ℝ) : IsVector (vec x y z) := ⟨rfl, rfl, rfl, rfl, rfl⟩
 
+/-- `B` is a **bivector** (grade 2): its scalar, vector and pseudoscalar parts vanish — how "`B` is a
+    (simple, in 𝒢₃ always simple) bivector" is stated for an arbitrary `B : G3`. The plane companion of
+    `IsVector`. -/
+def IsBivector (B : G3) : Prop := B.s = 0 ∧ B.c1 = 0 ∧ B.c2 = 0 ∧ B.c3 = 0 ∧ B.c123 = 0
+
+/-- A grade-2 multivector is the `bivector` of its own grade-2 coordinates — the bridge to the
+    `bivector …` lemmas (the `eq_vec_of_isVector` analogue for planes). -/
+theorem eq_bivector_of_isBivector {B : G3} (hB : IsBivector B) : B = bivector B.c12 B.c13 B.c23 := by
+  obtain ⟨hs, h1, h2, h3, h123⟩ := hB
+  ext <;> simp only [bivector, zero] <;> first | rfl | assumption
+
+/-- A coordinate `bivector p q r` is grade-2 — lets a caller discharge the `IsBivector` hypothesis of an
+    object-level theorem when it holds a concrete `bivector`. -/
+theorem isBivector_bivector (p q r : ℝ) : IsBivector (bivector p q r) :=
+  ⟨rfl, rfl, rfl, rfl, rfl⟩
+
+/-- `T` is a **trivector** (the pseudoscalar, grade 3): every part but `e₁₂₃` vanishes. The grade-3
+    companion of `IsVector`/`IsBivector`. -/
+def IsTrivector (T : G3) : Prop :=
+  T.s = 0 ∧ T.c1 = 0 ∧ T.c2 = 0 ∧ T.c3 = 0 ∧ T.c12 = 0 ∧ T.c13 = 0 ∧ T.c23 = 0
+
+/-- A grade-3 multivector is the `trivector` of its own pseudoscalar coordinate — the bridge to the
+    `trivector …` lemmas. -/
+theorem eq_trivector_of_isTrivector {T : G3} (hT : IsTrivector T) : T = trivector T.c123 := by
+  obtain ⟨hs, h1, h2, h3, h12, h13, h23⟩ := hT
+  ext <;> simp only [trivector, zero] <;> first | rfl | assumption
+
+/-- A coordinate `trivector t` is grade-3. -/
+theorem isTrivector_trivector (t : ℝ) : IsTrivector (trivector t) :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+
 /-- Grade-1 is closed under scalar multiplication. -/
 theorem IsVector.smul {a : G3} (ha : IsVector a) (k : ℝ) : IsVector (GacalcProofs.G3.smul k a) := by
   obtain ⟨hs, h12, h13, h23, h123⟩ := ha
@@ -297,7 +328,7 @@ theorem normSq_vec (a1 a2 a3 : ℝ) : normSq (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + 
     "a vector dotted with itself is its magnitude squared"; the bridge that lets a `dot a a` hypothesis
     be read as the primitive `normSq a` (`reverse` fixes a vector, so `⟨a a⟩ = ⟨a ã⟩`). Reuse instead of
     re-deriving `rw [dot_vec, normSq_vec]; ring` inline. -/
-theorem dot_self_vec_eq_normSq (a1 a2 a3 : ℝ) :
+theorem dot_self_vec_eq_normSq_coord (a1 a2 a3 : ℝ) :
     dot (vec a1 a2 a3) (vec a1 a2 a3) = normSq (vec a1 a2 a3) := by
   rw [dot_vec, normSq_vec]; ring
 
@@ -311,7 +342,7 @@ theorem wedge_vec_eq_biv (a1 a2 a3 b1 b2 b3 : ℝ) :
 
 /-- **A vector's square is its squared magnitude:** `a a = |a|²·1` (`a∧a = 0`, so only the scalar
     survives). The `B B = |B|²` half of the blade-inverse identity. -/
-theorem mul_vec_self (a1 a2 a3 : ℝ) :
+theorem mul_vec_self_coord (a1 a2 a3 : ℝ) :
     mul (vec a1 a2 a3) (vec a1 a2 a3) = smul (normSq (vec a1 a2 a3)) one := by
   rw [normSq_vec]; simp only [mul, one, smul, vec]; ext <;> ring
 
@@ -322,8 +353,9 @@ theorem normSq_wedge_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
   simp only [normSq, wedge, mul, reverse, vec]; ring
 
 /-- **The wedge of vectors is antisymmetric:** `a∧b = −(b∧a)`. -/
-theorem wedge_antisymm (a1 a2 a3 b1 b2 b3 : ℝ) :
-    wedge (vec a1 a2 a3) (vec b1 b2 b3) = neg (wedge (vec b1 b2 b3) (vec a1 a2 a3)) := by
+theorem wedge_antisymm {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    wedge a b = neg (wedge b a) := by
+  rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb]
   simp only [wedge, vec, neg]; ext <;> ring
 
 /-- The wedge distributes over subtraction on the left. -/
@@ -348,6 +380,26 @@ theorem I_mul_I_inv : mul I I_inv = one := by
 /-- The dual `A* = A · I₃⁻¹` (grade r ↦ grade 3−r), matching gacalc's `dual`
     (base.py:1217). In 3D, `dual (a ∧ b)` is the plane normal (gacalc's `cross a b`). -/
 noncomputable def dual (a : G3) : G3 := mul a I_inv
+
+/-! ### The self-product vector leaves, object form (compute on the vector's own getters) -/
+
+/-- `a ∧ a = 0` for a vector `a`. -/
+theorem wedge_self_vec {a : G3} (ha : IsVector a) : wedge a a = zero := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  simp only [wedge, zero, has, ha12, ha13, ha23, ha123]
+  ext <;> ring
+
+/-- `a · a = |a|²` for a vector `a`. -/
+theorem dot_self_vec_eq_normSq {a : G3} (ha : IsVector a) : dot a a = normSq a := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  simp only [dot, normSq, mul, reverse, has, ha12, ha13, ha23, ha123]
+  ring
+
+/-- `a a = |a|²·1` for a vector `a`. -/
+theorem mul_vec_self {a : G3} (ha : IsVector a) : mul a a = smul (normSq a) one := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  simp only [normSq, mul, reverse, one, smul, has, ha12, ha13, ha23, ha123]
+  ext <;> ring
 
 end G3
 

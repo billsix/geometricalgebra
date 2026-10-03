@@ -20,23 +20,31 @@ noncomputable def leftContraction (k m : ℕ) (a b : G3) : G3 := rVectorPart (m 
 noncomputable def rightContraction (k m : ℕ) (a b : G3) : G3 := rVectorPart (k - m) (mul a b)
 
 /-- For two vectors (grade 1 each) the **left** contraction is the scalar dot `⟨ab⟩₀`. -/
-theorem leftContraction_vec_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
-    leftContraction 1 1 (vec a1 a2 a3) (vec b1 b2 b3)
-      = scalar (dot (vec a1 a2 a3) (vec b1 b2 b3)) := by
-  simp only [leftContraction, rVectorPart, mul, vec, scalar, dot, zero]
+theorem leftContraction_vec_vec {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    leftContraction 1 1 a b = scalar (dot a b) := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  simp only [leftContraction, rVectorPart, mul, scalar, dot, zero,
+    has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
 
 /-- For two vectors the **right** contraction is likewise the scalar dot `⟨ab⟩₀`. -/
-theorem rightContraction_vec_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
-    rightContraction 1 1 (vec a1 a2 a3) (vec b1 b2 b3)
-      = scalar (dot (vec a1 a2 a3) (vec b1 b2 b3)) := by
-  simp only [rightContraction, rVectorPart, mul, vec, scalar, dot, zero]
+theorem rightContraction_vec_vec {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    rightContraction 1 1 a b = scalar (dot a b) := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  simp only [rightContraction, rVectorPart, mul, scalar, dot, zero,
+    has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
 
 /-- **Grade-0 inclusion — the Taylor-vs-Hestenes difference.** A *scalar* `α` (grade 0) left-contracted
     with a vector `b` keeps the vector: `α ⌋ b = α·b` (grade `1−0 = 1`). The Hestenes dot
-    (`inner_product`) of a grade-0 operand is `0`, so the contraction genuinely differs here. -/
-theorem leftContraction_scalar_vec (α b1 b2 b3 : ℝ) :
-    leftContraction 0 1 (scalar α) (vec b1 b2 b3) = smul α (vec b1 b2 b3) := by
-  simp only [leftContraction, rVectorPart, mul, scalar, vec, smul, zero]; ext <;> ring
+    (`inner_product`) of a grade-0 operand is `0`, so the contraction genuinely differs here.
+    (`α` is a genuine scalar parameter — stays `ℝ`; `b` is a vector object.) -/
+theorem leftContraction_scalar_vec (α : ℝ) {b : G3} (hb : IsVector b) :
+    leftContraction 0 1 (scalar α) b = smul α b := by
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  simp only [leftContraction, rVectorPart, mul, scalar, smul, zero,
+    hbs, hb12, hb13, hb23, hb123]
+  ext <;> ring
 
 end G3
 

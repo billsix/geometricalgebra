@@ -49,10 +49,9 @@ theorem signed_sin_between_uvec (α β : ℝ) :
   simp only [uvec_eq_vec, G2.wedge, G2.vec, sin_sub]
   ring
 
-/-- **The unsigned `sin_between` is the absolute value of the signed sine**, for any two vectors —
-    the Lean mirror of the Python relation `abs(sine) == abs_sin`. In 𝒢₂ the wedge of two vectors is a
-    pure bivector, so its magnitude is `|c12|`. -/
-theorem sin_between_eq_abs_signed_vec (a1 a2 b1 b2 : ℝ) :
+/-- **The unsigned `sin_between` is the absolute value of the signed sine** (coordinate leaf). In 𝒢₂
+    the wedge of two vectors is a pure bivector, so its magnitude is `|c12|`. -/
+theorem sin_between_eq_abs_signed_vec_coord (a1 a2 b1 b2 : ℝ) :
     G2.sin_between (G2.vec a1 a2) (G2.vec b1 b2)
       = |signed_sin_between (G2.vec a1 a2) (G2.vec b1 b2)| := by
   have hden : (0 : ℝ) ≤ G2.magnitude (G2.vec a1 a2) * G2.magnitude (G2.vec b1 b2) := by
@@ -65,10 +64,17 @@ theorem sin_between_eq_abs_signed_vec (a1 a2 b1 b2 : ℝ) :
     rw [G2.magnitude, hnsq, Real.sqrt_sq_eq_abs]
   rw [G2.sin_between, hw, signed_sin_between, abs_div, abs_of_nonneg hden]
 
+/-- **The unsigned `sin_between` is the absolute value of the signed sine** (object form), for any two
+    vectors — the Lean mirror of the Python relation `abs(sine) == abs_sin`. -/
+theorem sin_between_eq_abs_signed_vec {a b : G2} (ha : G2.IsVector a) (hb : G2.IsVector b) :
+    G2.sin_between a b = |signed_sin_between a b| := by
+  have h := sin_between_eq_abs_signed_vec_coord a.c1 a.c2 b.c1 b.c2
+  rwa [← G2.eq_vec_of_isVector ha, ← G2.eq_vec_of_isVector hb] at h
+
 /-- Corollary: for unit vectors the unsigned `sin_between` is `|sin (β−α)|`. -/
 theorem sin_between_uvec (α β : ℝ) :
     G2.sin_between (uvec α) (uvec β) = |sin (β - α)| := by
-  rw [uvec_eq_vec α, uvec_eq_vec β, sin_between_eq_abs_signed_vec, ← uvec_eq_vec α,
+  rw [uvec_eq_vec α, uvec_eq_vec β, sin_between_eq_abs_signed_vec_coord, ← uvec_eq_vec α,
       ← uvec_eq_vec β, signed_sin_between_uvec]
 
 end GacalcProofs
