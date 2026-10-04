@@ -93,7 +93,7 @@ elementary coordinate-plane rotations instead. The versor version was replaced w
 
 ## Overlap (cross-referenced, not duplicated)
 
-- `tasks/lean-proof-rotation-from-scratch.md` — reduces 3D to 2D via the versor sandwich, a
+- `tasks/archive/2026/10/04/lean-proof-rotation-from-scratch.md` (archived) — reduces 3D to 2D via the versor sandwich, a
   complementary approach.
 - `tasks/notebook-dot-wedge-projection-demo.md` — dot = projected product, wedge = rejected (proved
   in `tasks/reference/dot-wedge-projection-rejection.md`); a related display task.

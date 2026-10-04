@@ -134,7 +134,7 @@ them), the 2D angle-form rotation theory (`rot`, `polar`, `rot_from_to`), `rotYZ
 
 | Goal (where stated) | Status |
 |---|---|
-| A private machine-checked oracle for the *math* behind the derivations, not the Python (`tasks/investigate-lean-proofs-for-ga.md` BLUF) | **met** |
+| A private machine-checked oracle for the *math* behind the derivations, not the Python (umbrella BLUF; archived to `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`) | **met** |
 | Fails like a unit test: `make lean` + `check.sh` + CI on `v*` tags | **met** |
 | From-scratch proofs, with an equivalence to Mathlib's general machinery per deliverable (umbrella decision 4) | **half**: from-scratch done for 2D+3D; the Mathlib-equivalence half is unstarted in all four step tasks (rotation, dot, wedge, pseudoscalar) |
 | Matrix-free rotation (three geometric goals) | **met** 09-29 |
@@ -145,7 +145,7 @@ them), the 2D angle-form rotation theory (`rot`, `polar`, `rot_from_to`), `rotYZ
 | Lean → symbolic tests → student-verifiable proof notebooks | **open**, both tasks `proposed` |
 
 Open Lean tasks, easy wins first: `trim-unused-simp-components` (done, archive owed),
-`rename-rotor-to-versor` (done, archive coupled to rotation-from-scratch),
+`rename-rotor-to-versor` (done; archived 2026-10-04 with rotation-from-scratch),
 `reference-doc-lean-workflow-and-proof-notebooks` (P6/D4, 3 open questions),
 `lean-unit-versors-rotors-sandwich-with-reverse` (P6/D6, 3 questions), `reduce-to-standard-position`
 (voice pass), `lean-cross-standard-position-capstone` (2 questions), the four P7 step tasks
@@ -192,7 +192,7 @@ corrected.
 
 - `proofs/README.md`: cites `GacalcProofs/Projection.lean` and `GacalcProofs/Rotation.lean` (renamed
   2026-10-02 to `Projection3D.lean`, `Rotation2D.lean`); "What's here" names 11 of 27 files; "What's
-  planned" lists work finished 09-29. `tasks/lean-proof-rotation-from-scratch.md` has the unchecked
+  planned" lists work finished 09-29. `tasks/lean-proof-rotation-from-scratch.md` (since archived to `tasks/archive/2026/10/04/`) had the unchecked
   "[ ] Update `proofs/README.md`".
 - Module docstrings citing old names: `G2.lean`, `Versor2D.lean`, `TrigEquiv.lean` (`Rotation.lean`);
   `Projection2D.lean` (`Projection.lean`); `ProjectionRotation2D.lean` (`ProjectionRotation.lean`).
@@ -206,7 +206,7 @@ corrected.
   `tasks/archive/2026/10/03/`); `tasks/reference-doc-lean-workflow-and-proof-notebooks.md` cites
   `tasks/bootstrap-change-of-frame-definitions.md` (never created; the theme became
   `reduce-to-standard-position.md`).
-- Umbrella `tasks/investigate-lean-proofs-for-ga.md`: open questions still await "go-ahead to begin the
+- Umbrella `tasks/investigate-lean-proofs-for-ga.md` (since archived to `tasks/archive/2026/10/04/`): open questions still await "go-ahead to begin the
   spike" (done); G3 marked `[~]` pending projection (done); archives since 09-30 not listed.
 - Lean docstrings cite `base.py` line numbers that have rotted (`exp`, `dual`, `even_part`,
   `reflect`, `is_parallel_to`).

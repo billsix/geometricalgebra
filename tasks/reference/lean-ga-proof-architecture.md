@@ -5,8 +5,9 @@ beginner orientation). It records the *architecture* of the from-scratch Lean pr
 `proofs/GacalcProofs/`, the techniques that keep them tractable, and an inventory of what is proven.
 Read this before extending the proofs. Updated in place (never archived).
 
-**Status:** written 2026-09-29 (William Emerison Six <billsix@gmail.com>), harvesting the versor /
-projection / algebra-law session. `make lean` green.
+**Status:** living document, updated in place. Written 2026-09-29 (William Emerison Six
+<billsix@gmail.com>) from the versor / projection / algebra-law session; reconciled 2026-10-04 after the
+Mathlib bridges completed the original program (29 modules, `make lean` green).
 
 ## The representation (settled)
 
@@ -38,8 +39,7 @@ went from a `vec`-form `field_simp` bash to `rw [dot_sub_left, proj, dot_smul_le
 — coordinate-free and general in `a, b`. **Write proofs structurally; let only the leaves touch
 coordinates.** (Follow-up audit: `tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md`.)
 
-**Coordinates only when needed — and this governs the STATEMENT, not just the proof
-(2026-10-03).** State a theorem over **objects** — a vector/multivector `(a b : G3)` with an
+**Coordinates only when needed — and this governs the STATEMENT, not just the proof.** State a theorem over **objects** — a vector/multivector `(a b : G3)` with an
 `IsVector` hypothesis — rather than over its real coefficients `(a1 a2 a3 : ℝ)`, *unless coordinates
 are genuinely required*. Coordinates are fine when they are what's needed (a leaf/bridge lemma proved
 by `ext <;> ring`; a fact that is inherently about components); they are not a default. An
@@ -79,7 +79,7 @@ gacalc's Python side; see `CLAUDE.md`.)
   the vector args, if any; keep the scalar). A *coordinate-computation leaf* whose RHS is an explicit
   computed coordinate-vector (`rotXY_vec`-style `= vec (c*x−s*y) …`) also stays coordinate.
 
-**Versor components are NOT a C-keep — they lift (B), 2026-10-03.** The `ℝ` tuple `(s c12 c13 c23)` of a
+**Versor components are NOT a C-keep — they lift (B).** The `ℝ` tuple `(s c12 c13 c23)` of a
 `sandwich (evenVersor s c12 c13 c23) …` theorem is the *versor's own coordinates*, and an even versor is a
 geometric object, so these lift exactly like vector coordinates: state `{R : G_n} (hR : IsEvenVersor R)
 (hr : normSq R ≠ 0)` and bridge with `eq_evenVersor_of_isEvenVersor` (the versor twin of
@@ -111,7 +111,7 @@ literal-then-instantiate exceptions, and the delicate `calc`/`set` capstones (`p
 CrossStandardPosition) — those public statements are already object-in, only their private scaffold stays
 coordinate. Pushing that tier (optional) is `tasks/push-delicate-coordinate-core-tier.md`.
 
-**Nonzero guard for angle/trig theorems (2026-10-03).** A theorem stated through `cos_between` /
+**Nonzero guard for angle/trig theorems.** A theorem stated through `cos_between` /
 `sin_between` (or any `/ (|a| |b|)` quotient) carries nonzero hypotheses — `magnitude a ≠ 0`,
 `magnitude b ≠ 0` (equivalently `normSq a ≠ 0`, or `a ≠ zero`). This is what makes the trig form
 **faithful**: with a nonzero denominator `cos = 0 ⟺ dot = 0` (and `sin = 0 ⟺ wedge = 0`), so the
@@ -122,7 +122,7 @@ often closes by `zero_div` without consuming the hypothesis, so the guard is a "
 being applied to a zero vector. The Python angle methods mirror this by **raising** on a zero operand
 (the angle is undefined), rather than returning `0/0 → 0`.
 
-## File organization & naming (convention, 2026-10-03)
+## File organization & naming
 
 The proofs are organized **by topic** (one concept per file: projection, rotation, sandwich, cross,
 measures, grade projection, …), mirroring the Python library's one-concept-per-file layout and the
@@ -145,7 +145,7 @@ go in `Predicates2D.lean` (the 2D twin of `Predicates3D.lean`): e.g. `dual_perp_
 `G2.lean` as the bridge it rests on).
 
 **Naming: the geometric name is the student-facing (cosine/sine) theorem; the dot/wedge form carries a
-`_dot` suffix (2026-10-03).** Cosine is an implementation detail, so the theorem a reader cites is
+`_dot` suffix.** Cosine is an implementation detail, so the theorem a reader cites is
 named for the geometry — `dual_perp`, `cross_perp_left`, `reject_perp`, `parallel_smul`, … (stated as
 `cos_between … = 0` / `sin_between … = 0`, in `StudentTrigForms.lean`) — and the underlying
 scalar-product fact it rests on is the `_dot` lemma (`dual_perp_dot`, `reject_perp_dot`,
@@ -204,11 +204,15 @@ Every proof should reach for a *named* leaf, not a fresh `ext <;> ring`. The lea
   `cos_between`/`sin_between`, `cos_sq_add_sin_sq` (`cos²+sin²=1`), and `sandwich_preserves_cos` /
   `sandwich_preserves_sin` — a rotation preserves the cosine AND sine, hence the whole angle,
   coordinate-free (G2 + G3).
-- **Sandwich isometry leaves** (`Sandwich.lean`): `sandwich_preserves_dot`; the outermorphism
-  `sandwich_preserves_wedge` (`(RuR⁻¹)∧(RvR⁻¹)=R(u∧v)R⁻¹`); `normSq_smul`; the pure-`ring` cores
-  `normSq_reverse_sandwich` (`|RvR̃|²=|R|⁴|v|²`) and `normSq_reverse_sandwich_wedge` (grade-2 twin);
-  the isometries `sandwich_preserves_normSq_of_vec` (`|RvR⁻¹|²=|v|²`) and
-  `sandwich_preserves_normSq_of_wedge` (`|R(u∧v)R⁻¹|²=|u∧v|²`); `magnitude_sandwich_vec`.
+- **Sandwich isometry leaves** (`Sandwich.lean`, all for ANY `u`, `v` given `IsEvenVersor R`): the
+  structural leaves `normSq_eq_dot_reverse`, `mul_reverse_self_of_isEvenVersor`/`reverse_mul_self_of_isEvenVersor`
+  (`R R̃ = R̃ R = |R|²·1`), `dot_reverse_conj` (`⟨R X R̃⟩₀ = |R|²⟨X⟩₀`), `dot_reverse_sandwich`
+  (`(RuR̃)·(RvR̃) = |R|⁴ u·v`), `normSq_reverse_sandwich` (`|RvR̃|² = |R|⁴|v|²`); the pure-`ring`
+  `wedge_reverse_sandwich` and `normSq_reverse_sandwich_wedge`; `normSq_smul`, `normSq_reverse`,
+  `reverse_smul`; the isometries `sandwich_preserves_dot`, `sandwich_preserves_normSq`, `magnitude_sandwich`,
+  the outermorphism `sandwich_preserves_wedge` (`(RuR⁻¹)∧(RvR⁻¹) = R(u∧v)R⁻¹`), `sandwich_preserves_normSq_of_wedge`;
+  the inverse facts `inverse_inverse`, `inverse_mul_self_of_isEvenVersor`/`mul_inverse_self_of_isEvenVersor`,
+  and the round trip `sandwich_inverse_sandwich` (`sandwich R⁻¹ ∘ sandwich R = id`).
 - **Duals / pseudoscalar:** `I_inv`, `I_mul_I_inv`, `dual`, `dual_wedge_perp_left`/`_right`.
 
 **Note:** the squared magnitude `normSq_vec` is *the* "|a|²" primitive — "a vector dotted with itself"
@@ -244,7 +248,7 @@ leaves are stated on `wedge u v`, not a bivector-coordinate literal. This is the
   `mul_one`, `one_smul`, `mul_assoc`) **clashes with Mathlib's ℝ version** — fully-qualify the G3/G2 one
   (`GacalcProofs.G3.mul_smul`) in `rw` chains.
 
-### Converting coordinate proofs to object/getter form — paths that DON'T work (2026-10-03)
+### Converting coordinate proofs to object/getter form — paths that DON'T work
 
 Lessons from the "geometric objects in, scalars in the body, geometric objects out" refactor (take
 `{a : G3} (ha : IsVector a)`, `obtain ⟨…⟩ := ha`, compute on `a.c1`, `a.c12`, … — not scalar args +
@@ -267,7 +271,8 @@ Lessons from the "geometric objects in, scalars in the body, geometric objects o
   never expands it. **Fix (the atomic-`normSq` leaf recipe):** state a leaf on the *reverse* sandwich
   `R v R̃` (no inverse) whose RHS keeps `normSq R` **atomic** — e.g. `normSq_reverse_sandwich`
   (`|R v R̃|² = normSq R ² · |v|²`), `dot_reverse_sandwich` (`(R u R̃)·(R v R̃) = normSq R ² · (u·v)`),
-  `wedge_reverse_sandwich`. Prove the leaf by `obtain`-getters + pure `ring`/`ext` (no division). Then the
+  `wedge_reverse_sandwich`. Prove the leaf without division — structurally where the identity has a reason
+  (see "Structural proofs over brute `ring`"), else by `obtain`-getters + `ring`/`ext`. Then the
   composite pulls the inverse's `1/normSq R` out (`mul_smul`), collects it through the bilinear op
   (`normSq_smul`, `dot_smul_left/right`, `wedge_smul_left/right`), rewrites by the leaf, and `field_simp
   [hr]` cancels the now-**atomic** `normSq R`. No "fighter" class remains — every division proof reduces
@@ -293,31 +298,15 @@ Lessons from the "geometric objects in, scalars in the body, geometric objects o
   [has, ha12, …] <;> field_simp [hdd] <;> ring` (a pre-`ext` `simp` with the zeros misses the RHS). Worked:
   `Projection3D.project_add_reject`.
 
-### Trimming vacuous `simp` args and dropping unused hypotheses — "name-absent" ≠ "unused" (2026-10-04)
+### Vacuous `simp` arguments and unused hypotheses
 
-Two related cleanups, and the trap they share. **(1) Trim vacuous `simp only` components:** the getter
-proofs `obtain ⟨hs, h12, …⟩ := ha` and hand them all to `simp`, but some zero-facts never fire. **(2) Drop
-unused hypotheses:** some theorems turn out more general than stated (e.g. 𝒢₂ `dot_reverse_sandwich`,
-`normSq_reverse_sandwich`, and both grades of `wedge_reverse_sandwich`/`normSq_reverse_sandwich_wedge` need
-only `IsEvenVersor R`, not `IsVector u/v` — the reverse-sandwich *conjugation* scales `dot`/`normSq`/`wedge`
-for arbitrary multivectors). **THE TRAP:** you cannot decide either by reading the text. A component/hyp
-name being *absent from the body* does **not** mean it's unused — `field_simp`/`simp`/`assumption` pull
-hypotheses of the form `_ ≠ 0` (and others) **from the local context without naming them**, so a name-absent
-`(hr : normSq R ≠ 0)` or `(ha : dot a a ≠ 0)` is often load-bearing (e.g. `reject_perp_dot`'s `ha`,
-`sandwich_preserves_wedge`'s `hr`). And Lean has **no linter** for unused `simp` args or unused *signature*
-hypotheses. **So the only sound test is delete-and-rebuild** — drop it, `lake build` the module, keep the
-drop iff still green. Restrict any name-absence *heuristic* to pure grade predicates
-(`IsVector`/`IsEvenVersor`/…) on `simp`+`ring`/`ext` proofs (no `field_simp`), and still build-verify.
-**A failed delete-and-rebuild has two readings.** The hypothesis is needed by the *theorem* (the
-rebuild leaves a residual goal, i.e. a counterexample shape) — or only by *this proof script* (a `ring`
-heartbeat/timeout on the larger polynomial the dropped zeros no longer shrink). Only the first justifies
-keeping it; the second says restructure the proof. Incident 2026-10-04: the 𝒢₃
-`dot_reverse_sandwich`/`normSq_reverse_sandwich` were recorded as "genuinely using the vector
-components — a real grade asymmetry"; they do not (the identity is `R u (R̃ R) v R̃ = |R|²·R(uv)R̃` plus the
-cyclic scalar part, grade-free), the minimizer had never built those drops (`skip … could not edit
-cleanly` in its log), and a direct rebuild without them was green. Both grades now take only
-`IsEvenVersor R`, proved structurally (see "Structural proofs over brute `ring`" below). Record: `tasks/archive/2026/10/04/trim-unused-simp-components.md`; the detector was promoted to
-`tools/detect_unused_hypotheses.py` (the one-shot minimizer was deleted at archive).
+A getter proof's `simp only [defs, zeros]` list says nothing about what the proof relies on: `simp`
+silently ignores a listed fact that never fires, and a hypothesis named nowhere in the body may still be
+consumed by `field_simp`/`simp` from the local context. The 2026-10-04 minimizer trimmed 73 vacuous
+components so each list now documents exactly the components its proof touches
+(`tasks/archive/2026/10/04/trim-unused-simp-components.md`; detector: `tools/detect_unused_hypotheses.py`).
+How to decide whether a hypothesis is needed — and how to read a failed delete-and-rebuild — is the
+"Hypotheses" section below.
 
 ## Hestenes projection / rejection (uniform, all grades)
 
@@ -349,12 +338,15 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   uses folded into `magnitude` (2026-09-29). `normSq`/`magnitude` live in `G2.lean`/`G3.lean` (below the
   algebra, above every consumer).
 
-## Inventory (files in `proofs/GacalcProofs/`; core 2026-09-29, additions through 2026-10-04)
+## Inventory (files in `proofs/GacalcProofs/`)
 
 - `Lagrange.lean` — Lagrange identity 2D/3D (`|a|²|b|² = (a·b)² + |a∧b|²`).
 - `G2.lean` / `G3.lean` — the algebras: product/wedge/reverse, basis elements, multiplication table,
   `I² = −1`, dot, dual, `I⁻¹`; `normSq`/`magnitude` (+ `normSq_vec`, and `normSq_wedge_vec` in `G3`);
-  `G3` also the fundamental identity `ab = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`) and `vec_mul_perp`.
+  `G3` also the fundamental identity `ab = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`), `vec_mul_perp`, and the
+  object-form `dot_is_sym_part`/`wedge_is_antisym_part` (dot and wedge as the two parts of the product);
+  both have `I_sq_eq_sign` (the pseudoscalar sign for r = 2, 3). `G1.lean` is the 1D teaching twin
+  (`I² = +1`, commutative, every vector pair parallel).
 - `AlgebraLaws.lean` — associativity, distributivity, identity, scalar compatibility, `smul_smul`,
   `one_smul`, ⊥-anticommutation, for both algebras.
 - `Sandwich.lean` — `inverse`/`sandwich` (`normSq`/`magnitude` moved down to `G2`/`G3`); the sandwich is an isometry
@@ -371,9 +363,10 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 - `Projection3D.lean` / `Projection2D.lean` — Hestenes `proj`/`reject`/`project_onto`, `project_add_reject`,
   `proj_plane = project_onto`, and the 2D cases.
 - `StandardPosition.lean` — elementary coordinate-plane rotations `rotXY`/`rotXZ` (NOT versors),
-  their `preserves_dot`, projection/rejection equivariance under them, the explicit `b ↦ |b|·e₁`
-  alignment (`rotate_b_to_e1` + magnitude form), and the product-from-projection payoff
-  (`mul_eq_proj_dot_add_reject_wedge`). This is the base of the **bootstrap arc** (3 elementary plane
+  their `preserves_dot` and inverses (`rotXY_inv`/`rotXZ_inv`), projection/rejection equivariance under
+  them, the explicit `b ↦ |b|·e₁` alignment (`rotate_b_to_e1` + magnitude form), the
+  product-from-projection payoff (`mul_eq_proj_dot_add_reject_wedge`), and `projectSP`/`rejectSP` with
+  `projectSP_eq_proj`/`rejectSP_eq_reject` (Python `standardposition` proven equal to Hestenes). This is the base of the **bootstrap arc** (3 elementary plane
   rotations → project/reject/product/cross via reduce-to-2-D → a general rotation from project/reject;
   see `tasks/reference/reduction-to-standard-position.md`). The uniform 3-rotation tool is in
   `CrossStandardPosition.lean` (below).
@@ -419,36 +412,37 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   (`a·b = 0 ⟺ ab = a∧b`), `wedge_parallel_smul` (3D).
 - `Reflect.lean` (𝒢₃) — `reflectVec d v = proj − reject = 2·proj − v`, an isometry (across a vector only).
 - `Trig.lean` — `cos_between`/`sin_between`, `lagrange_property`, `cos_sq_add_sin_sq`, both preserved by
-  the sandwich (for ANY `u`, `v` since 2026-10-04). `TrigEquiv.lean` — the angle-form equivalences
+  the sandwich (for ANY `u`, `v`). `TrigEquiv.lean` — the angle-form equivalences
   (`cos_between_uvec`, `signed_sin_between`, `sin_between_eq_abs_signed_vec`). `StudentTrigForms.lean` —
   the cosine-0 / sine-0 / `area = |a||b| sin θ` corollaries with `_`-prefixed meaning gates.
 
-Remaining (see the umbrella `tasks/investigate-lean-proofs-for-ga.md`): the Mathlib-rotation
-*equivalence* proofs, the dot/wedge/pseudoscalar step-tasks' 3D from-rotation derivations.
+- `MathlibBridge.lean` — the "equivalence to the general case" bridges: `G2.toE`/`G3.toE` into
+  `EuclideanSpace`, `dot_eq_inner`, `norm_toE`, `dot_comm_of_inner`, `abs_dot_le_magnitude_mul`
+  (Cauchy–Schwarz by citing `abs_real_inner_le_norm`); `wedge_eq_det`, `wedge_c12/c13/c23_eq_det`, `toF_cross`
+  (= Mathlib `crossProduct`), `signedVolume_eq_det` (via `triple_product_eq_det`); `toC_rot`, `toC_rot_rot`,
+  `versor_sandwich_eq_rotation` (`rot θ` and the 2D versor sandwich = `Complex.orientation.rotation θ`).
+
+Remaining (the umbrella is archived, `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`): the
+general-n algebra with the general pseudoscalar sign and Hestenes dot/wedge (deferred), the general
+multivector inverse, the 3D rotor angle theorem, frames, the Lean→notebook pipeline — each its own task.
 
 ## Coverage map (public method → Lean coverage)
 
 Every public math method in `src/gacalc/{base,vectorcalc,measure}.py` against the theorems in
-`proofs/GacalcProofs/*.lean` (audited 2026-10-01, William Emerison Six <billsix@gmail.com>, from
-reading the actual theorems — not grep substrings). HAS = a theorem states the operation's defining
-property; PARTIAL = only a special case or an adjacent fact; NONE = no theorem. The "→ task" column
-names the `lean-proof-*` task filed for a genuine gap (or the existing task that already owns it).
-Counts (updated 2026-10-02): **29 HAS, 2 PARTIAL, 1 NONE** (32 methods). The 7 gap tasks this audit
-filed were all proven in Lean and archived 2026-10-02 (`tasks/archive/2026/10/02/lean-proof-*.md`),
-flipping 10 NONE→HAS and 3 PARTIAL→HAS; only general `content` remains NONE (blocked on the general-`Gn`
-layer). (Originally 16/5/11 at the 2026-10-01 audit.)
-
-**Correction to the earlier menu:** `vectorcalc.cross` and the 3D vector `dual` were wrongly listed
-as gaps — `Cross.lean` proves both (`cross`/`cross_vec`/`cross_anticomm`/`cross_perp_left`/`_right`
-and `dual_vec`). Both are HAS.
+`proofs/GacalcProofs/*.lean`, read from the actual theorem statements. HAS = a theorem states the
+operation's defining property; PARTIAL = only a special case or an adjacent fact; NONE = no theorem.
+Counts: **29 HAS, 2 PARTIAL, 1 NONE** of 32 methods — for vector operands in n ∈ {2, 3}; the general-grade
+and general-n forms are the PARTIAL/NONE rows and belong to the deferred Gn task. (The audit that produced
+this table and the seven gap tasks it filed are archived under `tasks/archive/2026/10/01/` and `10/02/`.)
+The modules outside this table are in the subsection that follows it.
 
 | Method (`base.py` unless noted) | Coverage | Theorem(s) / file — or task |
 | --- | --- | --- |
-| `magnitude` / `magnitude_squared` | HAS | `magnitude`, `normSq`, `normSq_vec`, `magnitude_sq_vec`, `normSq_wedge_vec`, `normSq_mul`, `magnitude_sandwich_vec` (G2/G3, Sandwich) |
+| `magnitude` / `magnitude_squared` | HAS | `magnitude`, `normSq`, `normSq_vec`, `magnitude_sq_vec`, `normSq_wedge_vec`, `normSq_mul`, `magnitude_sandwich` (G2/G3, Sandwich); = Mathlib's norm: `norm_toE` (MathlibBridge) |
 | `normalize` | HAS | `normalizeVec`, `magnitude_normalizeVec`/`normSq_normalizeVec` (= 1) (Normalize.lean) |
 | `inner_product` (general graded) | PARTIAL | only vector·bivector `inner_vb` (Projection3D.lean); general `⟨AB⟩_{\|r−s\|}` owned by existing `lean-general-gn-product-and-hestenes-dot-wedge` |
-| `dot` | HAS | G3 `dot`/`dot_vec`/`dot_comm` + bilinearity; G2 `dot` (Versor2D), `dot_is_sym_part`, `dot_eq_coord_sum` (in-progress `lean-proof-dot-product`) |
-| `outer_product` / `wedge` | HAS | `wedge`, `wedge_vec_eq_biv`, `wedge_antisymm`, full bilinearity (G2/G3) |
+| `dot` | HAS | `dot`/`dot_vec`/`dot_comm` + bilinearity, `dot_is_sym_part` (G2 coordinate form, G3 object form), `dot_eq_coord_sum`; = Mathlib's `inner`: `dot_eq_inner`, with `dot_comm_of_inner` and Cauchy–Schwarz `abs_dot_le_magnitude_mul` by citation (MathlibBridge) |
+| `outer_product` / `wedge` | HAS | `wedge`, `wedge_vec_eq_biv`, `wedge_antisymm`, full bilinearity, `wedge_is_antisym_part` (G2/G3); = determinant / minors: `wedge_eq_det`, `wedge_c12/c13/c23_eq_det` (MathlibBridge) |
 | `scalar_product` | HAS | the scalar part `⟨AB⟩₀`; vector case via `dot` / `dot_is_sym_part` |
 | `left_contraction` | HAS | `leftContraction_vec_vec` (= dot), `leftContraction_scalar_vec` (grade-0 inclusion) (Contractions.lean) |
 | `right_contraction` | HAS | `rightContraction_vec_vec` (Contractions.lean) |
@@ -467,30 +461,25 @@ and `dual_vec`). Both are HAS.
 | `reflect` / `reflected_across` | HAS | `reflectVec` (= proj − reject), `reflectVec_eq`, `normSq_reflectVec` (isometry) (Reflect.lean) |
 | `versor_from_vectors` | HAS | `versorFromVectors`, `versorFromVectors_mul_reverse`/`_inverse`, `sandwich_carries_from_to`, `bisector` (Rotation3D/Sandwich) |
 | `bivector_from_vectors` | HAS | the raw wedge `a∧b`: `wedge`, `wedge_vec_eq_biv` |
-| `sandwich` | HAS | `sandwich`, `sandwich_preserves_dot`/`_normSq`/`_wedge`/`_cos`/`_sin`, `sandwich_comp`, isometry (Sandwich/RotateComponents) |
+| `sandwich` | HAS | `sandwich`, `sandwich_preserves_dot`/`_normSq`/`_wedge`/`_cos`/`_sin` (any `u`, `v`), `sandwich_comp`, `sandwich_inverse_sandwich` (Sandwich/RotateComponents); the 2D versor sandwich = `Orientation.rotation`: `versor_sandwich_eq_rotation` (MathlibBridge) |
 | `exp` | HAS | `expBivector`/`expBivectorGeneral` (= `cos\|B\|+sin\|B\|·B̂`), `normSq_expBivectorGeneral` = 1 (unit versor/rotor) (Exp.lean) |
-| `vectorcalc.cross` | HAS | `cross`, `cross_vec`, `cross_anticomm`, `cross_perp_left`/`_right` (Cross) |
+| `vectorcalc.cross` | HAS | `cross`, `cross_vec`, `cross_anticomm`, `cross_perp_left`/`_right` (Cross); = Mathlib's `crossProduct`: `toF_cross` (MathlibBridge) |
 | `measure.area` | HAS | `area_sq_vec` (= `normSq (a∧b)`), `normSq_wedge_eq_lagrange` (Measures.lean) |
 | `measure.volume` | HAS | `volume_sq_vec` (= `signedVolume²`) (Measures.lean) |
 | `measure.signed_area` | HAS | `signedArea` (= a₁b₂−a₂b₁), `signedArea_eq` (Measures.lean) |
-| `measure.signed_volume` | HAS | `dot_cross_eq_signedVolume` (= `det[a,b,c]`) (Cross) |
+| `measure.signed_volume` | HAS | `dot_cross_eq_signedVolume` (Cross); = `Matrix.det`: `signedVolume_eq_det` (MathlibBridge) |
 | `measure.content` (general `n`) | NONE | deferred — needs the general-`Gn` layer (`lean-general-gn-product-and-hestenes-dot-wedge`); k=2,3 are the proven `area`/`volume` |
 
-Gaps already owned by an existing task (NOT re-filed): general graded `inner_product`
-(`lean-general-gn-product-and-hestenes-dot-wedge`), general mixed-grade `inverse`
-(`lean-general-multivector-inverse`); `dot`/`wedge`/pseudoscalar 3D-from-rotation derivations
-(`lean-proof-dot-product`, `lean-proof-wedge-product`, `lean-proof-pseudoscalar-square-sign`,
-`lean-proof-rotation-from-scratch`). Gap tasks filed from this audit — reflect, contractions, exp,
-normalize, measures, grade-projection, predicates — were **all proven and archived 2026-10-02**
-(`tasks/archive/2026/10/02/lean-proof-*.md`); only general `content` remains (blocked on the
-general-`Gn` task above).
+Still owned by open tasks: the general graded `inner_product` and general `content`
+(`lean-general-gn-product-and-hestenes-dot-wedge`, deferred) and the general mixed-grade `inverse`
+(`lean-general-multivector-inverse`). Everything else in the table is proven; the from-rotation
+derivations and the Mathlib bridges are recorded in the archived step tasks under `tasks/archive/2026/10/04/`.
 
+### The modules outside the original audit — `standardposition`, `functions`, `transforms`, `g1`
 
-### The modules outside the original audit — `standardposition`, `functions`, `transforms`, `g1` (2026-10-04)
-
-The table above audited `base`/`vectorcalc`/`measure` only. The review of 2026-10-04 found six modules
-never in scope; `tasks/lean-coverage-extend-transforms-frame-gn.md` brought these in (frames and the 3D
-rotor angle theorem are their own tasks; `gn` waits on a general-n algebra).
+The table above covers `base`/`vectorcalc`/`measure`. Six further modules were brought into scope on
+2026-10-04 (`tasks/lean-coverage-extend-transforms-frame-gn.md`); frames and the 3D rotor angle theorem are
+their own tasks, and `gn` waits on a general-n algebra.
 
 | Python | Status | Lean |
 |---|---|---|
@@ -507,7 +496,7 @@ rotor angle theorem are their own tasks; `gn` waits on a general-n algebra).
 | `frame.py` | NONE | `tasks/lean-frame-coverage.md` (parked) |
 | `gn.py` | NONE | `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` (deferred) |
 
-## Hypotheses: what each kind is for, and how to decide (2026-10-04)
+## Hypotheses: what each kind is for, and how to decide
 
 A theorem's hypotheses are the preconditions its conclusion is claimed under. Three kinds appear here:
 
@@ -523,9 +512,12 @@ script* to close — a tactic question: the getter-style proofs feed the zero co
 the polynomial, so a proof can fail without a hypothesis the theorem does not need. **A failed
 delete-and-rebuild proves only (2).** Read the failure: a `ring`/heartbeat timeout says "restructure the
 proof" (prove the small algebraic reason and chain it, see the next section); a residual goal with a
-counterexample shape says "the theorem needs it". The 2026-10-04 incident (𝒢₃ `dot_reverse_sandwich`,
-recorded above) is the worked example of mistaking (2) for (1) — and of trusting a recollection of a
-failed build that the tool's log showed never ran.
+counterexample shape says "the theorem needs it". The worked example of mistaking (2) for (1), 2026-10-04: the 𝒢₃ `dot_reverse_sandwich`/
+`normSq_reverse_sandwich` were recorded as "genuinely using the vector components — a real grade
+asymmetry". They do not: the identity is `R u (R̃ R) v R̃ = |R|²·R(uv)R̃` plus the cyclic scalar part, grade-free;
+the minimizer's own log showed those drops were never built (`skip … could not edit cleanly`), and a direct
+rebuild without them was green. Both grades now take only `IsEvenVersor R`, proved structurally (next
+section). Lesson: classify the failure, and never trust a recollection of a failed build over the log.
 
 **Lean does tell you about kind (1), partly.** The `unusedVariables` linter warns `Variable name `hu` is
 not explicitly referenced` on a signature hypothesis the proof never names — read the build warnings. Two
@@ -533,7 +525,7 @@ quirks: a hypothesis used only through `simp`/`field_simp`'s context search is *
 silently), and a hypothesis rewritten in place (`rw [...] at hn`) and then used IS flagged, because the
 rewrite shadows the original binder (the four `hn` warnings in `ProjectionRotation3D.lean` are this —
 real hypotheses, not vacuous). `simp only [...]` ignores a listed fact that never fires, so a long `simp`
-list says nothing about what the proof relies on; the 2026-10-04 minimizer trimmed those.
+list says nothing about what the proof relies on (see "Vacuous `simp` arguments" above).
 
 Decision procedure, in order: (a) does the identity hold without it (think, or check the leaf it rests
 on — if the leaf is general, the composite is); (b) drop it and rebuild; (c) on failure, classify the
@@ -542,7 +534,7 @@ composite's grade hypothesis vacuous (here: `sandwich_preserves_dot/_normSq/_wed
 `magnitude_sandwich`, `sandwich_preserves_cos/_sin`, `rotation_preserves_dot`), and names like `_of_vec`
 that encoded the dropped hypothesis must change with it.
 
-## Structural proofs over brute `ring` (2026-10-04)
+## Structural proofs over brute `ring`
 
 The polynomial tier proves a leaf by unfolding everything and calling `ring`. That is fine for a genuine
 coordinate fact (`normSq_vec`, the multiplication table), but for an identity that *has a reason* it
@@ -566,7 +558,7 @@ becomes syntactically `a = a`. Ordering matters — a lemma must be defined abov
 (the 𝒢₃ `reverse_mul` had to move up). Mathlib's `ring` prints an info-level "Try this: ring_nf" when
 `ring1` fails but `ring_nf` closes the goal (`CrossStandardPosition.cross_reduced`): not an error.
 
-## Build discipline for the corpus (2026-10-04)
+## Build discipline for the corpus
 
 - `make lean` depends on `image`. On the host that is a no-op when the image is current; **inside a nested
   sandbox it re-runs the whole 16 GB `podman build`** (the host image is reused only as a base, not as
@@ -575,7 +567,7 @@ becomes syntactically `a = a`. Ordering matters — a lemma must be defined abov
   (full incremental gate ≈ 2–5 min; `Sandwich` alone ≈ 70 s).
 - `lake` reads each source when it reaches that module, so editing a file while a build runs is racy.
   Always finish with one full gate on the final tree; the oleans make it cheap.
-- `proofs/lakefile.toml` sets `autoImplicit = false` (2026-10-04): with the default `true`, a typo'd
+- `proofs/lakefile.toml` sets `autoImplicit = false`: with the default `true`, a typo'd
   identifier in a *statement* becomes a silently bound variable and the theorem may still prove — a
   proof corpus wants the error.
 - The completeness gate in `check.sh` is a `sorry`/`admit` grep over the sources; it would not catch
@@ -583,3 +575,25 @@ becomes syntactically `a = a`. Ordering matters — a lemma must be defined abov
 - Reviewing the corpus: three parallel read-only passes (commit-by-commit statement audit, Python→Lean
   coverage with `tools/derive_lean_algebra.py` parity re-derivation, goals/status from the docs) plus a
   build experiment for any "needed" claim worked well; record: `lean-proof-corpus-review-2026-10-04.md`.
+
+## Program decisions
+
+The Lean effort's standing decisions, so a reader does not need the archived umbrella
+(`tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`):
+
+1. **Purpose:** a private, machine-checked oracle for the *mathematics* behind the derivations — not
+   student material, and not a verification of the Python (that is a separate, unstarted undertaking).
+2. **Lagrange identity** in the squared form `‖a‖²‖b‖² = (a·b)² + ‖a∧b‖²`.
+3. **Location and gate:** `proofs/`, `make lean` = `proofs/check.sh` (`lake build` + a `sorry`/`admit`
+   completeness gate); CI runs it on `v*` tags only.
+4. **From scratch, with an equivalence bridge.** Every result is proved on the coordinate structs
+   `G1`/`G2`/`G3` (basis blades as genuine elements), never by citing Mathlib's general theorem as the
+   proof; Mathlib is the ambient library and is mapped in only in `MathlibBridge.lean`, which shows the
+   from-scratch objects ARE the standard ones — dot ↦ `inner` on `EuclideanSpace` (so symmetry and
+   Cauchy–Schwarz apply), wedge ↦ determinant / minors / `crossProduct` / `det` for the signed volume,
+   rotation ↦ `Orientation.rotation` on ℂ. "Derived from rotation" for dot/wedge is discharged by
+   `Rotation2D.uvec_mul_uvec` + `uvec_dot`/`uvec_wedge`.
+5. **Pseudoscalar statement** `Iᵣ² = (−1)^(r(r−1)/2)` only, proved for n = 1, 2, 3 against each
+   algebra's own `I²`; general n with the Gn task.
+6. **Rotor vs versor:** gacalc rotates with the scale-invariant inverse sandwich `R v R⁻¹` of an
+   un-normalized even *versor*; "rotor" is reserved for the unit case (`rename-rotor-to-versor`, 2026-09-28).

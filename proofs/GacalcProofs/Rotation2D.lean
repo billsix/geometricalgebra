@@ -31,7 +31,8 @@ import GacalcProofs.G2
     the general case* (Mathlib's `Real.Angle`/rotation, `@inner`) is where we map to
     Mathlib, and that mapping is the only place we lean on its GA/rotation machinery.
 
-    STATUS: `tasks/lean-proof-rotation-from-scratch.md`. 2D core + the general-vector
+    Record: `tasks/archive/2026/10/04/lean-proof-rotation-from-scratch.md`; the Mathlib bridge (`rot θ` is
+    `Orientation.rotation θ` on ℂ) is in `MathlibBridge.lean`. 2D core + the general-vector
     "from a to b" framing landed; the sandwich/rotor-composition story, the
     Mathlib-rotation *equivalence* proof, and the 3D version remain. -/
 namespace GacalcProofs

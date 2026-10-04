@@ -139,12 +139,12 @@ live in `proofs/` (see above), so several are `in-progress`:
         (`Sandwich.lean`/`Rotation3D.lean`: carries a→b, isometry, orthogonal-axis fixed, plane
         invariant), **and the composition story** (`sandwich_comp`: rotations compose by versor product).
         Remaining: only the Mathlib-rotation equivalence proof.
-  - [ ] `tasks/lean-proof-dot-product.md` — 2D landed (`G2.dot_is_sym_part`/`dot_eq_coord_sum`);
-        from-rotation derivation + 3D remain.
-  - [ ] `tasks/lean-proof-wedge-product.md` — 2D landed (`G2.wedge_is_antisym_part`); from-rotation
-        + 3D remain.
-  - [ ] `tasks/lean-proof-pseudoscalar-square-sign.md` — 2D landed (`G2.I_sq`/`I_sq_eq_sign`); 3D +
-        general remain.
+  - [ ] `tasks/lean-proof-dot-product.md` — 2D + 3D coordinate forms done; remaining: the 3D
+        symmetric-part corollary and the `EuclideanSpace`/`inner` bridge (decision 6).
+  - [ ] `tasks/lean-proof-wedge-product.md` — 2D + 3D coordinate forms done; remaining: the 3D
+        antisymmetric-part corollary and the determinant / `crossProduct` bridge (decision 6).
+  - [ ] `tasks/lean-proof-pseudoscalar-square-sign.md` — 1D + 2D done; remaining: the 3D `I_sq_eq_sign`
+        line; the general n moved to the Gn task (decision 6).
   - [ ] **Lagrange identity** — 2D **and** 3D already landed (`GacalcProofs/Lagrange.lean`); no
         separate step-task needed (the `ring` proofs are complete; the rotation-derivation framing is
         covered by the rotation step-task).
@@ -266,6 +266,17 @@ live in `proofs/` (see above), so several are `in-progress`:
      proof)*.
 5. **Pseudoscalar statement → `Iᵣ² = (−1)^(r(r−1)/2)` ONLY** (not `Iᵣ·reverse(Iᵣ)`); same special-case
    (2D, 3D) + general-case + equivalence structure applies.
+6. **What "equivalence to the general case" means, per result (author, 2026-10-04):** the author had
+   lost track of the phrase; it is the bridge from the from-scratch definitions to the standard objects.
+   Settled as: **dot** — map `G2`/`G3` vectors into `EuclideanSpace ℝ (Fin n)` and prove `dot = inner`, so
+   Mathlib's theorems about `inner` (symmetry, Cauchy–Schwarz) provably apply; **wedge** — the 2D wedge is
+   `Matrix.det` of the `2×2`, the 3D wedge's components are the minors, and its dual is Mathlib's
+   `crossProduct` (with `triple_product_eq_det` for the signed volume); **rotation** — `rot θ` is
+   `Orientation.rotation θ` on the oriented plane; **pseudoscalar** — n = 1, 2, 3 only, each against the
+   algebra's own `I²`, with the general n pushed to the Gn task along with what the Python's `Gn` oracle and
+   `tests/test_pseudoscalar_square_sign.py` already establish. Also: the "derived from rotation" half of
+   dot/wedge is **discharged** by `Rotation2D.uvec_mul_uvec` + `uvec_dot`/`uvec_wedge` (no construction of
+   the product from rotation is wanted). All three bridges go in one new `MathlibBridge.lean`.
 
 ## Open questions
 

@@ -4,12 +4,12 @@
 never used a proof assistant, written specifically for the gacalc project's goal of *machine-checking
 the mathematics behind the geometric-algebra derivations*. It states what is true about Lean and how
 we intend to use it; the live plan and open decisions are in the task
-`tasks/investigate-lean-proofs-for-ga.md`, not here.
+`tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md` (archived), not here.
 
-**Status:** first draft, 2026-09-27 (William Emerison Six <billsix@gmail.com>). Written during the
-learning spike. Sections marked *(spike-confirmed)* were run in this repo's container; the rest is
-general Lean 4 knowledge and will be tightened as the spike proceeds. A **living** doc — update in
-place.
+**Status:** living document, updated in place. Written 2026-09-27 (William Emerison Six
+<billsix@gmail.com>) during the learning spike; reconciled 2026-10-04 after the proof program completed.
+Sections marked *(spike-confirmed)* were run in this repo's container; the rest is general Lean 4
+knowledge.
 
 ## The one thing to understand first: what a Lean proof does and does NOT check
 
@@ -96,7 +96,8 @@ This is the crux for "run it in the build so a bad proof fails like a unit test.
 
 ### What the spike actually showed *(spike-confirmed, 2026-09-27, Lean 4.34.1 / Lake 5.0.0)*
 
-Running `tasks/adhoc/investigate-lean-proofs-for-ga/spike-pure-lean.sh` in the container confirmed:
+Running the one-shot spike harness `spike-pure-lean.sh` (deleted at archive 2026-10-04; in git history
+under `tasks/adhoc/investigate-lean-proofs-for-ga/`) in the container confirmed:
 
 - A complete proof checks, and `#print axioms` reported **`'two' does not depend on any axioms`** —
   a proof by pure computation (`rfl`/`decide`) rests on *zero* axioms, an even cleaner result than
@@ -145,7 +146,7 @@ How reuse works in practice:
 
 ### What phase 2 actually showed *(spike-confirmed, 2026-09-28, Lean 4.34.1 / Mathlib via `cache get`)*
 
-Running `tasks/adhoc/investigate-lean-proofs-for-ga/spike-mathlib.sh` in the container confirmed the
+Running the one-shot `spike-mathlib.sh` harness (same deleted directory) in the container confirmed the
 reuse story end to end:
 
 - `import Mathlib` + `lake exe cache get` works; after the one-time download, rebuilding a proof file
@@ -241,10 +242,12 @@ version resolution is lake's own, not hand-picked):
   `lean-ga-proof-architecture.md`, "Build discipline").
 - **CI:** `.github/workflows/lean.yml` runs `make lean` on `v*` tags only (heavy Mathlib build kept
   off the per-push checks).
-- **Still to do** (step-tasks under `tasks/investigate-lean-proofs-for-ga.md`): the equivalence of the
-  from-scratch results to Mathlib's rotation/`@inner` machinery, and the general pseudoscalar sign
-  (`(−1)^{r(r−1)/2}` is stated only for n = 2). Projection, the 3D dot/wedge/pseudoscalar values, and the
-  rotation derivation are done; see `tasks/reference/lean-proof-corpus-review-2026-10-04.md`.
+- **The original program is complete** (umbrella archived 2026-10-04,
+  `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`): every from-scratch result is bridged to its
+  Mathlib counterpart in `proofs/GacalcProofs/MathlibBridge.lean` (dot ↦ `inner`, wedge ↦ `det`/
+  `crossProduct`, rotation ↦ `Orientation.rotation`), and the pseudoscalar sign is proved for n = 1, 2, 3.
+  Still open, as their own tasks: the general-n algebra (and the general pseudoscalar sign with it), the
+  general multivector inverse, the Lean→notebook pipeline, the 3D rotor angle theorem, frames.
 
 ## Where to learn more
 

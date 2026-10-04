@@ -271,7 +271,8 @@ over a "run it on your host" instruction.
   `USE_LEAN=1` (the default full image). Mathlib is **baked into the image** under `USE_LEAN` so this
   runs offline (adds several GB — Lean images only). See `proofs/README.md`,
   `tasks/reference/lean-for-gacalc.md` (beginner orientation) and `tasks/reference/lean-ga-proof-architecture.md`
-  (architecture, techniques, and what's proven); work tracked under `tasks/investigate-lean-proofs-for-ga.md`.
+  (architecture, techniques, what's proven, and the program decisions; the original umbrella is archived at
+  `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`).
 - **`make image`** then **`make shell`** — containerized dev; Jupyter on port 8888.
   **`make update-emacs-packages`** — refresh the vendored Emacs packages (maintainer-only, rarely).
 - **`make image MINIMAL_IMAGE=1`** — a **lean image** (~2.42 GB vs the full ~7.21 GB) that still runs

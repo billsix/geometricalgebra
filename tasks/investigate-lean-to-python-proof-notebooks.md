@@ -1,6 +1,6 @@
 # Investigate: generate percent-formatted Python proof notebooks from Lean proofs
 
-**Part of:** `tasks/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
+**Part of:** the Lean-proofs program (umbrella archived: `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`)
 **Related:** the codegen conventions (`~/.claude/reference/codegen-conventions.md` — prefer structured
 output over string concatenation; build a parity harness); the existing demo notebooks
 (`notebooks/displayg2.py`/`displayg3.py`, jupytext percent format).

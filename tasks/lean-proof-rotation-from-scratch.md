@@ -8,7 +8,9 @@ dot/wedge step-tasks build on.
 archived together so the final squash deletes the rename's adhoc codemods in one step; they share the
 "a rotor is really a unit versor" thread. Don't archive this until it too is complete.
 
-**Status:** in-progress — 2D core + the general-vector "from a to b" framing landed 2026-09-28
+**Status:** in progress — only the Mathlib bridge (below, decided 2026-10-04) remains; the from-rotation
+derivation of dot/wedge was declared discharged by `uvec_mul_uvec`/`uvec_dot`/`uvec_wedge` the same day.
+Original status line: 2D core + the general-vector "from a to b" framing landed 2026-09-28
 (`proofs/GacalcProofs/Rotation2D.lean`); the **angle-free 3D versor-from-two-vectors + the bisector
 identity `R a = |a|·h`** landed 2026-09-29 (`proofs/GacalcProofs/Rotation3D.lean`, `make lean` green).
 The **3D versor sandwich is now DONE** (2026-09-29, `Sandwich.lean`: carries a→b, isometry,
@@ -143,9 +145,25 @@ vectors' geometric product is their wedge).
       un-normalized even **versor** — keep the name (recommended) or rename to versor (Q1). Suggested
       Lean statements (sandwich norm-preserving, scale-invariant, `R⁻¹=R̃` for unit R, composition by
       rotor product) are all in `tasks/reference/unit-bivector-and-rotors.md` §6. Discuss before coding.
-- [ ] Prove equivalence to the general case (Mathlib's `Real.Angle`/rotation or `Complex` rotation,
-      and `@inner` for the dot) — learn from those, keep the construction standalone. (DECIDED
-      2026-09-28: keep the construction standalone; Mathlib is mapped in only here, for equivalence.)
+- [ ] **Bridge to `Orientation.rotation`** (decided 2026-10-04, William Emerison Six <billsix@gmail.com>:
+      "map it to Orientation.rotation! great!"). Mathlib's `Orientation.rotation` (`Mathlib/Geometry/
+      Euclidean/Angle/Oriented/Rotation.lean`; the `Orientation` machinery itself is in
+      `Analysis/InnerProductSpace/TwoDim.lean`) is the rotation by a `Real.Angle` on an oriented real inner-product
+      plane, a linear isometry equivalence. Plan: use `V = EuclideanSpace ℝ (Fin 2)` with the standard
+      orientation (the one in which `![1,0], ![0,1]` is positively oriented — obtain it as
+      `(EuclideanSpace.basisFun (Fin 2) ℝ).toBasis.orientation`, or work in `ℂ` with `Complex.orientation`
+      and map `(x, y) ↦ x + y·I`; pick whichever the pinned Mathlib makes short), map `rot θ` on our pairs/`G2` vectors through `toE`, and
+      prove `toE (rot θ v) = o.rotation (θ : Real.Angle) (toE v)`. The working lemmas are
+      `Orientation.rotation_apply` (`rotation θ x = cos θ • x + sin θ • J x`, with `J` the right-angle
+      rotation) and `rotation_eq_matrix_toLin` (for `x ≠ 0`: the matrix `!![cos θ, −sin θ; sin θ, cos θ]` in
+      the basis `{x, J x}`), which match `rot`'s definition componentwise once `J` is shown to be
+      `(x, y) ↦ (−y, x)` (`Complex.orientation.rightAngleRotation z = I * z` is the ℂ form). All names
+      verified present in the pinned Mathlib on 2026-10-04. Then the payoff lemmas: `rot_add` is `Orientation.rotation_trans`/`rotation_rotation`,
+      and `rot_normSq` is the isometry property. Also bridge the 2D versor sandwich: `sandwich_versor`
+      (`R v R̃ = rot θ v`) composed with the above gives `toE (sandwich (versor θ) v) = o.rotation θ (toE v)`
+      — the from-scratch rotor IS Mathlib's rotation. Keep the construction standalone (decision
+      2026-09-28); Mathlib is mapped in only here. Same `MathlibBridge.lean` file as the dot/wedge bridges.
+      Exact Mathlib lemma names must be re-verified against the pinned `v4.34.1` Mathlib when starting.
 - [x] **Angle-free 3D versor from two vectors + the bisector identity `R a = |a|·h`** (2026-09-29,
       `Rotation3D.lean`) — see Progress above.
 - [x] **`a r = a ∧ r` for `a ⊥ r`** (2026-09-29, `G3.lean`) — landed as `vec_mul_perp`, a corollary of

@@ -26,3 +26,4 @@ import GacalcProofs.CrossStandardPosition
 import GacalcProofs.ProjectionRotation3D
 import GacalcProofs.ProjectionRotation2D
 import GacalcProofs.StudentTrigForms
+import GacalcProofs.MathlibBridge

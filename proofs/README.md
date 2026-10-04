@@ -11,7 +11,7 @@ the Python implementation.
 - **Toolchain / deps:** pinned in `lean-toolchain` (Lean `v4.34.1`) and
   `lake-manifest.json` (the exact Mathlib revision). `.lake/` is build output +
   the fetched Mathlib — gitignored, never committed.
-- **What's here** (28 modules under `GacalcProofs/`, grouped; every file is 𝒢₂+𝒢₃ unless noted):
+- **What's here** (29 modules under `GacalcProofs/`, grouped; every file is 𝒢₂+𝒢₃ unless noted):
   - *Algebras:* `G1.lean` (𝒢₁ for teaching: `I² = +1`, commutative, every vector pair parallel so
     `u v = u·v`), `G2.lean`, `G3.lean` — coordinate structs; product/wedge/reverse (𝒢₃'s transcribed
     verbatim from gacalc's `Gn` oracle by `tools/derive_lean_algebra.py`), the basis blades as genuine
@@ -47,16 +47,20 @@ the Python implementation.
     scalar triple = signed volume — 𝒢₃); `Measures.lean` (area/volume, `|a∧b|²` Lagrange form,
     `|a∧b∧c|² = signedVolume²`); `Predicates2D.lean` / `Predicates3D.lean` (dual ⊥; `a·b = 0 ⟺ ab = a∧b`;
     `a ∧ (k·a) = 0`).
+  - *Bridges to Mathlib:* `MathlibBridge.lean` — the from-scratch objects ARE the standard ones: `dot` is
+    `inner` on `EuclideanSpace` (so `real_inner_comm` and Cauchy–Schwarz apply: `abs_dot_le_magnitude_mul`),
+    the wedge is the `2×2` determinant / the three minors, the dual of the 3D wedge is `crossProduct`, the
+    signed volume is `Matrix.det`, and `rot θ` (and the 2D versor sandwich) is `Orientation.rotation θ` on ℂ.
   The basis blades are modelled as algebra *elements* (as in Mathlib `CliffordAlgebra` / pygae lean-ga),
   not real fields — see `tasks/reference/lean-for-gacalc.md`. What each Python method maps to, and what
   is NOT covered (general grades, general n, `frame.py`, the transform factories), is in
   `tasks/reference/lean-ga-proof-architecture.md` (coverage map) and the review
   `tasks/reference/lean-proof-corpus-review-2026-10-04.md`.
-- **What's planned:** the equivalence of the from-scratch results to Mathlib's rotation/`@inner`
-  machinery and the general pseudoscalar sign (step-tasks under
-  `tasks/investigate-lean-proofs-for-ga.md`); extending coverage to `transforms`, `standardposition`,
-  `frame`, `functions`, `g1`/`gn` (`tasks/lean-coverage-extend-transforms-frame-gn.md`); general-grade
-  products and a dimension-general algebra (`tasks/lean-general-gn-product-and-hestenes-dot-wedge.md`).
+- **What's planned:** a dimension-general algebra, with the general pseudoscalar sign and Hestenes
+  dot/wedge (`tasks/lean-general-gn-product-and-hestenes-dot-wedge.md`, deferred); the general multivector
+  inverse; the 3D rotor angle theorem (`tasks/lean-rotor-3d-angle-theorem.md`); frames
+  (`tasks/lean-frame-coverage.md`, parked); the Lean→notebook pipeline. The original program
+  (`tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`) is complete.
 
 Beginner orientation to Lean and how proofs/reuse work:
 `tasks/reference/lean-for-gacalc.md`.
