@@ -49,11 +49,12 @@ curated default set like `normSq, mul, reverse, dot, wedge, smul, add, sub, vec`
 with `ring`/`ext <;> ring` or leaves that to the caller, and how it handles the divide-by-`normSq` proofs
 (which also need the grouped-`^2` denominator fact and `field_simp [hr]` — see the recipes doc).
 
-## Relationship to the simp-component trim (`tasks/trim-unused-simp-components.md`)
+## Relationship to the simp-component trim (`tasks/archive/2026/10/04/trim-unused-simp-components.md`)
 
-If this tactic is ever built, the per-proof simp-arg minimization becomes mostly moot — the tactic would
-pass only the zero-facts that fire. So consider this a potential *successor* that would supersede the
-hand-trimmed simp lists. (That trim is a fine standalone cleanup regardless; this would subsume it.)
+The trim (done and archived 2026-10-04) minimized each proof's `simp only` list by delete-and-rebuild. If
+this tactic is ever built, that per-proof minimization becomes moot — the tactic would pass only the
+zero-facts that fire — so this is a potential *successor* to the hand-trimmed lists, not a prerequisite
+of anything.
 
 ## See also
 

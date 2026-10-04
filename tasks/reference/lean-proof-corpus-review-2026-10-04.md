@@ -70,7 +70,7 @@ goes; the missing half is the distinction above. Reading a failed build is part 
 
 A fourth thing that LOOKS like a needed hypothesis but is not: `simp only [...]` silently ignores a
 zero-fact that never fires, so a long `simp` list says nothing about what the proof relies on. The
-2026-10-04 minimizer (`tasks/adhoc/trim-unused-simp-components/trim.py`) removed 73 such entries; the
+2026-10-04 minimizer (archived task) removed 73 such entries; the
 trimmed lists are now honest documentation of what each polynomial proof touches.
 
 ## 2. What the Lean work did this week (commit audit, condensed)
@@ -173,8 +173,8 @@ No step looks at the grade of `u` or `v`. The 𝒢₃ wedge twins (`wedge_revers
 `normSq_reverse_sandwich_wedge`) were already generalized the same day and built green with full
 8-component `u`, `v`, so `ring` closures of this size are known to succeed.
 
-Why the claim arose: the minimizer log (`tasks/adhoc/trim-unused-simp-components/trim.log`, 02:42)
-records every 𝒢₃ `dot_reverse_sandwich` component drop as `skip (could not edit cleanly)` — the tool
+Why the claim arose: the minimizer log (deleted at archive; the lines are quoted in
+`tasks/archive/2026/10/04/trim-unused-simp-components.md`, 02:42) recorded every 𝒢₃ `dot_reverse_sandwich` component drop as `skip (could not edit cleanly)` — the tool
 never built them — and the task doc's "my first over-eager attempt to drop the G3 ones (build failed,
 reverted)" has no corroborating log. Build experiment (this review, direct `proofs/check.sh` against the
 existing image with the two 𝒢₃ leaves and their callers generalized): **green** — `[lean] OK`, 0 errors, `Sandwich` rebuilt in 70 s, full gate 4m42s (the generalization was then applied with structural proofs and the cascade, go-ahead given the same day). The only new output was the unused-variable linter flagging the composites' now-vacuous `hu`/`hv` (6 in `Sandwich.lean`, 4 in `Projection2D.lean`, 1 in `StudentTrigForms.lean`).
@@ -210,10 +210,15 @@ corrected.
   spike" (done); G3 marked `[~]` pending projection (done); archives since 09-30 not listed.
 - Lean docstrings cite `base.py` line numbers that have rotted (`exp`, `dual`, `even_part`,
   `reflect`, `is_parallel_to`).
-- `tasks/trim-unused-simp-components.md` is DONE but unarchived; `tasks/adhoc/trim-unused-simp-components/__pycache__/`
-  must not be committed.
+- `tasks/trim-unused-simp-components.md` was DONE but unarchived (archived 2026-10-04 to
+  `tasks/archive/2026/10/04/`, minimizer deleted, detector promoted to `tools/detect_unused_hypotheses.py`).
 
-## 7. Actions (proposed 2026-10-04; items 1–5 APPLIED the same day on the maintainer's go-ahead, `make lean` green; item 6 became the task `tasks/lean-coverage-extend-transforms-frame-gn.md`, which also covers the out-of-scope modules of §3)
+## 7. Actions taken (all on 2026-10-04, on the maintainer's go-ahead; `make lean` green)
+
+Items 1–5 below were applied the same day; item 6 became `tasks/lean-coverage-extend-transforms-frame-gn.md`,
+which also covered the out-of-scope modules of §3 (𝒢₁, standard position, the sandwich round-trip), with
+the 3D rotor angle theorem and frames spun into `tasks/lean-rotor-3d-angle-theorem.md` and
+`tasks/lean-frame-coverage.md`.
 
 1. Commit the 𝒢₃ generalization of `dot_reverse_sandwich`/`normSq_reverse_sandwich` (if the build
    experiment is green), then drop the vacuous vector hypotheses from the composites listed in §5, and

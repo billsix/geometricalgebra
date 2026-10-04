@@ -316,8 +316,8 @@ keeping it; the second says restructure the proof. Incident 2026-10-04: the 𝒢
 components — a real grade asymmetry"; they do not (the identity is `R u (R̃ R) v R̃ = |R|²·R(uv)R̃` plus the
 cyclic scalar part, grade-free), the minimizer had never built those drops (`skip … could not edit
 cleanly` in its log), and a direct rebuild without them was green. Both grades now take only
-`IsEvenVersor R`, proved structurally (see "Structural proofs over brute `ring`" below). Tooling + record: `tasks/trim-unused-simp-components.md` (minimizer +
-`tasks/adhoc/generalize-unused-hypotheses/detect.py`).
+`IsEvenVersor R`, proved structurally (see "Structural proofs over brute `ring`" below). Record: `tasks/archive/2026/10/04/trim-unused-simp-components.md`; the detector was promoted to
+`tools/detect_unused_hypotheses.py` (the one-shot minimizer was deleted at archive).
 
 ## Hestenes projection / rejection (uniform, all grades)
 
@@ -484,6 +484,28 @@ Gaps already owned by an existing task (NOT re-filed): general graded `inner_pro
 normalize, measures, grade-projection, predicates — were **all proven and archived 2026-10-02**
 (`tasks/archive/2026/10/02/lean-proof-*.md`); only general `content` remains (blocked on the
 general-`Gn` task above).
+
+
+### The modules outside the original audit — `standardposition`, `functions`, `transforms`, `g1` (2026-10-04)
+
+The table above audited `base`/`vectorcalc`/`measure` only. The review of 2026-10-04 found six modules
+never in scope; `tasks/lean-coverage-extend-transforms-frame-gn.md` brought these in (frames and the 3D
+rotor angle theorem are their own tasks; `gn` waits on a general-n algebra).
+
+| Python | Status | Lean |
+|---|---|---|
+| `standardposition.project_sp` | HAS | `projectSP` (= Python's align → `proj` → rotate back, same `(cos, sin)` formulas), **`projectSP_eq_proj`** (`= proj b a` for a vector `b` off the z-axis), via `rotXY_inv`/`rotXZ_inv` + equivariance (StandardPosition.lean) |
+| `standardposition.reject_sp` | HAS | `rejectSP`, `rejectSP_eq_vecReject`, `rejectSP_eq_reject` (= Hestenes `reject b a` for vectors) |
+| `standardposition.rotate_in_xy_plane` / `_xz_plane` | HAS | `rotXY`/`rotXZ` — identical formulas; `*_preserves_dot`, `*_inv` |
+| `functions.compose` / `inverse` / `identity` | plumbing — no theorem | the one GA fact they carry for versors: `sandwich_inverse_sandwich` (`sandwich R⁻¹ ∘ sandwich R = id`, both grades), on `inverse_inverse` and `inverse_mul_self_of_isEvenVersor` (Sandwich.lean) |
+| `transforms.projection_rotation` | HAS | `projRotation_*`, `projRotation_eq_sandwich` (ProjectionRotation2D/3D) |
+| `transforms.versor_rotation` (forward / `backward`) | HAS | `sandwich_*`; backward = `sandwich_inverse_sandwich` |
+| `transforms.bivector_rotation` / `plane_rotation` (half-angle rotor by θ in a general 3D plane) | PARTIAL | 𝒢₂ `e₁₂` plane only (`Rotation2D.sandwich_versor`); unit-ness `Exp.normSq_expBivectorGeneral`; plane/normal fixed `sandwich_fixes_own_*`. The angle theorem: `tasks/lean-rotor-3d-angle-theorem.md` |
+| `transforms.bivector_rotation(θ).at(t)`, `functions.at` | plumbing — no theorem | the rotor factory's interpolation law rebuilds the rotor with `t·θ`; composites interpolate component-wise |
+| `transforms.translate`, `uniform_scale`, `scale_non_uniform`, `to_matrix`, `MatrixTemplate`, `to_matrix_template` | plumbing — no theorem | affine/matrix bookkeeping; `scale_non_uniform` rests on `proj` onto `e_i` (covered) |
+| `g1.py` (𝒢₁) | HAS | `G1.lean`: `mul`/`wedge` (oracle-transcribed), `I_sq` (= **+1**), `I_sq_eq_sign`, `mul_comm`, `mul_assoc`, `vec_mul` (pure scalar), `wedge_vec` (= 0: all 1D vectors parallel), `dot_vec`, `normSq_vec`, `magnitude_vec` (`= |x|`), `dual_vec` (a scalar), `mul_vec_inverse_self` |
+| `frame.py` | NONE | `tasks/lean-frame-coverage.md` (parked) |
+| `gn.py` | NONE | `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` (deferred) |
 
 ## Hypotheses: what each kind is for, and how to decide (2026-10-04)
 

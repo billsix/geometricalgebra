@@ -11,8 +11,9 @@ the Python implementation.
 - **Toolchain / deps:** pinned in `lean-toolchain` (Lean `v4.34.1`) and
   `lake-manifest.json` (the exact Mathlib revision). `.lake/` is build output +
   the fetched Mathlib — gitignored, never committed.
-- **What's here** (27 modules under `GacalcProofs/`, grouped; every file is 𝒢₂+𝒢₃ unless noted):
-  - *Algebras:* `G2.lean`, `G3.lean` — coordinate structs; product/wedge/reverse (𝒢₃'s transcribed
+- **What's here** (28 modules under `GacalcProofs/`, grouped; every file is 𝒢₂+𝒢₃ unless noted):
+  - *Algebras:* `G1.lean` (𝒢₁ for teaching: `I² = +1`, commutative, every vector pair parallel so
+    `u v = u·v`), `G2.lean`, `G3.lean` — coordinate structs; product/wedge/reverse (𝒢₃'s transcribed
     verbatim from gacalc's `Gn` oracle by `tools/derive_lean_algebra.py`), the basis blades as genuine
     elements with their multiplication table, `I² = −1`, `dot` (the scalar part of the product),
     `dual = A·I⁻¹`, `normSq`/`magnitude`, the grade predicates `IsVector`/`IsBivector`/`IsTrivector`;
@@ -37,7 +38,8 @@ the Python implementation.
     (`reflectVec = 2·proj − v`, an isometry — 𝒢₃, across a vector); `Normalize.lean` (unit magnitude).
   - *Standard position (the non-circular bootstrap):* `StandardPosition.lean` (elementary plane
     rotations `rotXY`/`rotXZ`, NOT versors; preserve dot; proj/reject equivariant; align `b` to `e₁`;
-    the product from projection); `CrossStandardPosition.lean` (`rotYZ`, `reduceToPlane`, cross
+    the product from projection; `projectSP`/`rejectSP` = Python `project_sp`/`reject_sp`, proven equal to
+    `proj`/`reject`); `CrossStandardPosition.lean` (`rotYZ`, `reduceToPlane`, cross
     equivariance, the reduced-frame evaluations); `ProjectionRotation3D.lean` / `ProjectionRotation2D.lean`
     (`projRotation` = Python `transforms.projection_rotation`: carries from→to, ⊥ fixed, isometry, and
     equals the versor sandwich).

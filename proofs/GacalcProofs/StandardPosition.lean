@@ -200,4 +200,112 @@ theorem rotate_b_to_e1_magnitude (b1 b2 b3 : ℝ)
   rw [rotate_b_to_e1 b1 b2 b3 _ _ hk hb hk2 hm2]
   simp only [vec, smul]; ext <;> ring
 
+/-! ### The standard-position projection equals the Hestenes projection
+
+    Python `standardposition.project_sp a b` (`_project_via_standard_position`): align `b` to the
+    x-axis with `rotXY (b₁/k) (−b₂/k)` then `rotXZ (k/m) (−b₃/m)` (`k = |b's xy-part|`, `m = |b|`),
+    apply the same to `a`, project there, and rotate back (negate each sine, reverse the order). The
+    two rotations preserve the dot and are projection-equivariant, and each is undone by its negated-sine
+    twin — so the whole procedure IS `proj b a`. This is the single theorem `CLAUDE.md` and the Python
+    docstring promise; the degenerate z-axis case (`k = 0`) is excluded by hypothesis, as in Python. -/
+
+/-- A plane rotation is undone by the one with the opposite sine (`s' = −s`), when `c² + s² = 1`. -/
+theorem rotXY_inv (c s s' : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (h : s' + s = 0) (v : G3) :
+    rotXY c s' (rotXY c s v) = v := by
+  ext
+  · rfl
+  · show c * (c * v.c1 - s * v.c2) - s' * (s * v.c1 + c * v.c2) = v.c1
+    linear_combination v.c1 * hcs - (s * v.c1 + c * v.c2) * h
+  · show s' * (c * v.c1 - s * v.c2) + c * (s * v.c1 + c * v.c2) = v.c2
+    linear_combination v.c2 * hcs + (c * v.c1 - s * v.c2) * h
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+
+theorem rotXZ_inv (c s s' : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (h : s' + s = 0) (v : G3) :
+    rotXZ c s' (rotXZ c s v) = v := by
+  ext
+  · rfl
+  · show c * (c * v.c1 - s * v.c3) - s' * (s * v.c1 + c * v.c3) = v.c1
+    linear_combination v.c1 * hcs - (s * v.c1 + c * v.c3) * h
+  · rfl
+  · show s' * (c * v.c1 - s * v.c3) + c * (s * v.c1 + c * v.c3) = v.c3
+    linear_combination v.c3 * hcs + (c * v.c1 - s * v.c3) * h
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+
+/-- `k = |b's xy-part| = magnitude (vec b₁ b₂ 0)` — the first standard-position magnitude. -/
+noncomputable def xyMagnitude (b : G3) : ℝ := magnitude (vec b.c1 b.c2 0)
+
+/-- **Align to the x-axis** (Python `align`): `rotXY (b₁/k) (−b₂/k)` then `rotXZ (k/m) (−b₃/m)`,
+    with the `(cos, sin)` read off `b`'s own coordinates, applied to any `v`. -/
+noncomputable def alignSP (b v : G3) : G3 :=
+  rotXZ (xyMagnitude b / magnitude b) (-b.c3 / magnitude b)
+    (rotXY (b.c1 / xyMagnitude b) (-b.c2 / xyMagnitude b) v)
+
+/-- **Rotate back** (Python `rotate_back`): negate each sine, apply in the reverse order. -/
+noncomputable def unalignSP (b v : G3) : G3 :=
+  rotXY (b.c1 / xyMagnitude b) (b.c2 / xyMagnitude b)
+    (rotXZ (xyMagnitude b / magnitude b) (b.c3 / magnitude b) v)
+
+/-- **Standard-position projection** (Python `standardposition.project_sp a b`): align, project the
+    aligned `a` onto the aligned `b`, rotate back. -/
+noncomputable def projectSP (a b : G3) : G3 := unalignSP b (proj (alignSP b b) (alignSP b a))
+
+/-- **Standard-position rejection** (Python `standardposition.reject_sp a b = a − project_sp a b`). -/
+noncomputable def rejectSP (a b : G3) : G3 := sub a (projectSP a b)
+
+/-- `k² = b₁² + b₂²`. -/
+theorem xyMagnitude_sq (b : G3) : xyMagnitude b ^ 2 = b.c1 ^ 2 + b.c2 ^ 2 := by
+  rw [xyMagnitude, magnitude, Real.sq_sqrt (by rw [normSq_vec]; positivity), normSq_vec]; ring
+
+/-- `m² = |b|² = b₁² + b₂² + b₃²` for a vector `b`. -/
+theorem magnitude_sq_of_isVector {b : G3} (hbv : IsVector b) :
+    magnitude b ^ 2 = b.c1 ^ 2 + b.c2 ^ 2 + b.c3 ^ 2 := by
+  have hnb : normSq b = b.c1 ^ 2 + b.c2 ^ 2 + b.c3 ^ 2 := by
+    conv_lhs => rw [eq_vec_of_isVector hbv]
+    exact normSq_vec b.c1 b.c2 b.c3
+  rw [magnitude, Real.sq_sqrt (by rw [hnb]; positivity), hnb]
+
+/-- The xy `(cos, sin)` read off `b` is a unit pair. -/
+theorem cs_xy_unit {b : G3} (hk : xyMagnitude b ≠ 0) :
+    (b.c1 / xyMagnitude b) ^ 2 + (-b.c2 / xyMagnitude b) ^ 2 = 1 := by
+  rw [div_pow, div_pow, neg_sq, ← add_div, ← xyMagnitude_sq]
+  exact div_self (pow_ne_zero 2 hk)
+
+/-- The xz `(cos, sin)` read off `b` is a unit pair. -/
+theorem cs_xz_unit {b : G3} (hbv : IsVector b) (hb : magnitude b ≠ 0) :
+    (xyMagnitude b / magnitude b) ^ 2 + (-b.c3 / magnitude b) ^ 2 = 1 := by
+  rw [div_pow, div_pow, neg_sq, ← add_div, xyMagnitude_sq, ← magnitude_sq_of_isVector hbv]
+  exact div_self (pow_ne_zero 2 hb)
+
+/-- Rotating back undoes the alignment. -/
+theorem unalignSP_alignSP {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
+    (hb : magnitude b ≠ 0) (v : G3) : unalignSP b (alignSP b v) = v := by
+  simp only [unalignSP, alignSP]
+  rw [rotXZ_inv _ _ _ (cs_xz_unit hbv hb) (by ring), rotXY_inv _ _ _ (cs_xy_unit hk) (by ring)]
+
+/-- **`project_sp = project`:** the standard-position projection of `a` onto `b` is the Hestenes
+    projection `proj b a`, for a vector `b` not on the z-axis (`k ≠ 0`) and nonzero (`|b| ≠ 0`);
+    `a` may be any multivector. Equivariance of `proj` under both plane rotations, then undo them. -/
+theorem projectSP_eq_proj {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
+    (hb : magnitude b ≠ 0) (a : G3) : projectSP a b = proj b a := by
+  simp only [projectSP, alignSP, unalignSP]
+  rw [proj_rotXZ_equivariant _ _ (cs_xz_unit hbv hb), proj_rotXY_equivariant _ _ (cs_xy_unit hk),
+      rotXZ_inv _ _ _ (cs_xz_unit hbv hb) (by ring), rotXY_inv _ _ _ (cs_xy_unit hk) (by ring)]
+
+/-- **`reject_sp = reject`:** the standard-position rejection is the vector rejection
+    `a − proj b a` (`vecReject`), hence the Hestenes `reject b a` for vectors (`reject_vec_eq`). -/
+theorem rejectSP_eq_vecReject {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
+    (hb : magnitude b ≠ 0) (a : G3) : rejectSP a b = vecReject b a := by
+  simp only [rejectSP, vecReject, projectSP_eq_proj hbv hk hb]
+
+theorem rejectSP_eq_reject {a b : G3} (hav : IsVector a) (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
+    (hb : magnitude b ≠ 0) (hbn : normSq b ≠ 0) : rejectSP a b = reject b a := by
+  rw [rejectSP_eq_vecReject hbv hk hb, vecReject, reject_vec_eq hbv hav hbn]
+
 end GacalcProofs.G3
