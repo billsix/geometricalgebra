@@ -9,7 +9,7 @@ archived together so the final squash deletes the rename's adhoc codemods in one
 "a rotor is really a unit versor" thread. Don't archive this until it too is complete.
 
 **Status:** in-progress — 2D core + the general-vector "from a to b" framing landed 2026-09-28
-(`proofs/GacalcProofs/Rotation.lean`); the **angle-free 3D versor-from-two-vectors + the bisector
+(`proofs/GacalcProofs/Rotation2D.lean`); the **angle-free 3D versor-from-two-vectors + the bisector
 identity `R a = |a|·h`** landed 2026-09-29 (`proofs/GacalcProofs/Rotation3D.lean`, `make lean` green).
 The **3D versor sandwich is now DONE** (2026-09-29, `Sandwich.lean`: carries a→b, isometry,
 orthogonal-axis fixed, plane invariant), and so is the **sandwich composition story** (`sandwich_comp`:
@@ -52,7 +52,7 @@ project/reject → general rotation), which presupposes no product and is non-ci
   `CliffordAlgebra` and map back). Reference existing Lean rotation/GA proofs (Mathlib's
   `Complex`/`Real.Angle`, `pygae/lean-ga`) and learn from them — but keep the proof standalone.
 
-## Progress (2026-09-28) — 2D core landed in `proofs/GacalcProofs/Rotation.lean`
+## Progress (2026-09-28) — 2D core landed in `proofs/GacalcProofs/Rotation2D.lean` (then `Rotation.lean`)
 
 The 2D representation choice is settled: rotation acts on `ℝ × ℝ` (the geometric, pre-algebra
 definition), the algebra is the from-scratch `GacalcProofs.G2`, and Mathlib supplies only the trig
@@ -79,7 +79,7 @@ Two follow-ups landed the same day, both `make lean`-green:
   fields were typed `ℝ` as if `e₁` were a real. Fixed in `G2.lean`: the fields are honest coordinate
   *coefficients* (`s`/`c1`/`c2`/`c12 : ℝ`), and the basis blades are genuine elements
   `one`/`e_1`/`e_2`/`e_12 : G2` with the GA multiplication table (`e_1_sq`, `e_1_mul_e_2`,
-  `e_2_mul_e_1`, `e_12_sq`) and `eq_smul_basis`. `Rotation.lean`'s `rotor`/`uvec` are now linear
+  `e_2_mul_e_1`, `e_12_sq`) and `eq_smul_basis`. `Rotation2D.lean`'s `rotor`/`uvec` are now linear
   combinations of those elements (`cos θ · 1 + sin θ · e₁e₂`, `cos α · e₁ + sin α · e₂`), not raw
   tuples; `uvec_eq_vec` bridges back to `G2.vec`. See the Resolved decisions below and the citation.
 
@@ -150,11 +150,11 @@ vectors' geometric product is their wedge).
       `Rotation3D.lean`) — see Progress above.
 - [x] **`a r = a ∧ r` for `a ⊥ r`** (2026-09-29, `G3.lean`) — landed as `vec_mul_perp`, a corollary of
       the fundamental identity `a b = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`).
-- [x] **The plane is `a (b − proj_a b) = a ∧ b`** (2026-09-29, `Projection.lean` `plane_eq_wedge`) —
+- [x] **The plane is `a (b − proj_a b) = a ∧ b`** (2026-09-29, `Projection3D.lean` `plane_eq_wedge`) —
       combines `vec_mul_perp` + the rejection's perpendicularity. The rotation plane is now a proved
       bivector built from `a` and `b`.
 - [x] **3D versor sandwich — DONE 2026-09-29.** Landed
-      (`proofs/GacalcProofs/Sandwich.lean`, `Rotation3D.lean`, `Projection.lean`, `make lean` green):
+      (`proofs/GacalcProofs/Sandwich.lean`, `Rotation3D.lean`, `Projection3D.lean`, `make lean` green):
       - the sandwich infrastructure `normSq`/`inverse`/`sandwich` (`R v R⁻¹`, `R⁻¹ = R̃/|R|²`) and the
         `evenVersor` constructor (the even subalgebra ≅ quaternions);
       - **the sandwich is an isometry** — `sandwich_preserves_dot` (preserves the dot product, hence
@@ -171,7 +171,7 @@ vectors' geometric product is their wedge).
       `Sandwich.lean` too (archived task `tasks/archive/2026/09/29/lean-proof-2d-versor-from-vectors.md`).
       So **the 3D versor sandwich is complete**: it carries `a→b`, is an isometry (length + angles), and
       fixes the orthogonal complement while keeping the plane invariant.
-- [ ] Update `proofs/README.md` when the sandwich lands. (`Rotation3D.lean`'s versor/bisector already
+- [x] Update `proofs/README.md` (rewritten from the real file list 2026-10-04). (`Rotation3D.lean`'s versor/bisector already
       noted, 2026-09-29.)
 
 ## Open questions

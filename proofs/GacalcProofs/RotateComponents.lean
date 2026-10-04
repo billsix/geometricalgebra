@@ -99,15 +99,15 @@ theorem rotation_fixes_perp {a b : G3} (ha : IsVector a) (hb : IsVector b) (k : 
   rw [sandwich_smul, rotation_fixes_normal ha hb hr]
 
 /-- **The rotation preserves the dot product** (angle magnitude): `(R u R⁻¹)·(R v R⁻¹) = u·v` for the
-    a→b rotation `R = versorFromVectors a b` and vectors `u`, `v`; the oriented isometry. -/
+    a→b rotation `R = versorFromVectors a b` and ANY `u`, `v`; the oriented isometry. -/
 theorem rotation_preserves_dot {a b u v : G3}
-    (ha : IsVector a) (hb : IsVector b) (hu : IsVector u) (hv : IsVector v)
+    (ha : IsVector a) (hb : IsVector b)
     (hr : normSq (versorFromVectors a b) ≠ 0) :
     dot (sandwich (versorFromVectors a b) u) (sandwich (versorFromVectors a b) v)
       = dot u v := by
   have hR : IsEvenVersor (versorFromVectors a b) := by
     rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb, versorFromVectors_eq_evenVersor]
     exact isEvenVersor_evenVersor _ _ _ _
-  exact sandwich_preserves_dot hR hr hu hv
+  exact sandwich_preserves_dot hR hr
 
 end GacalcProofs.G3

@@ -4,7 +4,7 @@ import GacalcProofs.Sandwich
 
 /-! # Projection / rejection in 𝒢₂ — the 2D warm-up
 
-    The 2D counterpart of `Projection.lean`: vector-onto-vector projection with the rejection ⊥ the
+    The 2D counterpart of `Projection3D.lean`: vector-onto-vector projection with the rejection ⊥ the
     vector, and the onto-the-pseudoscalar-plane case — where a 2D vector has **no** perpendicular
     component (the plane is the whole space), so its rejection from `I₂` is `0` and projecting it onto
     `I₂` recovers the vector. Uses the same Hestenes forms as 3D (`proj` = `(A·B)B⁻¹` for a vector `B`,
@@ -118,10 +118,9 @@ theorem wedge_reverse_sandwich {R : G2} (hR : IsEvenVersor R) {u v : G2} :
   ext <;> ring
 
 /-- **The sandwich preserves the outer product** (object form, 2D outermorphism):
-    `(R u R⁻¹) ∧ (R v R⁻¹) = R (u∧v) R⁻¹` for an even versor `R` with `|R|² ≠ 0` and vectors `u`, `v`.
+    `(R u R⁻¹) ∧ (R v R⁻¹) = R (u∧v) R⁻¹` for an even versor `R` with `|R|² ≠ 0` and ANY `u`, `v`.
     In 𝒢₂ the wedge is the pseudoscalar (signed area), so this is "a rotation preserves signed area." -/
-theorem sandwich_preserves_wedge {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0)
-    {u v : G2} (hu : IsVector u) (hv : IsVector v) :
+theorem sandwich_preserves_wedge {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G2} :
     wedge (sandwich R u) (sandwich R v) = sandwich R (wedge u v) := by
   simp only [sandwich, inverse, GacalcProofs.G2.mul_smul, GacalcProofs.G2.wedge_smul_left,
              GacalcProofs.G2.wedge_smul_right, GacalcProofs.G2.smul_smul]
@@ -138,9 +137,9 @@ theorem normSq_reverse_sandwich_wedge {R : G2} (hR : IsEvenVersor R) {u v : G2} 
   ring
 
 /-- **The sandwich preserves the wedge's squared magnitude** (object form, 2D): `|R (u∧v) R⁻¹|² = |u∧v|²`
-    for an even versor `R` with `|R|² ≠ 0` and vectors `u`, `v` — a rotation preserves signed area. -/
+    for an even versor `R` with `|R|² ≠ 0` and ANY `u`, `v` — a rotation preserves signed area. -/
 theorem sandwich_preserves_normSq_of_wedge {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0)
-    {u v : G2} (hu : IsVector u) (hv : IsVector v) :
+    {u v : G2} :
     normSq (sandwich R (wedge u v)) = normSq (wedge u v) := by
   rw [sandwich, inverse, GacalcProofs.G2.mul_smul, normSq_smul, normSq_reverse_sandwich_wedge hR]
   field_simp [hr]

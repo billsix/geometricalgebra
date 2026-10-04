@@ -378,7 +378,7 @@ theorem I_mul_I_inv : mul I I_inv = one := by
   simp only [mul, I, e_123, I_inv, one]; ext <;> ring
 
 /-- The dual `A* = A · I₃⁻¹` (grade r ↦ grade 3−r), matching gacalc's `dual`
-    (base.py:1217). In 3D, `dual (a ∧ b)` is the plane normal (gacalc's `cross a b`). -/
+    (base.py). In 3D, `dual (a ∧ b)` is the plane normal (gacalc's `cross a b`). -/
 noncomputable def dual (a : G3) : G3 := mul a I_inv
 
 /-! ### The self-product vector leaves, object form (compute on the vector's own getters) -/

@@ -74,7 +74,7 @@ every occurrence swept (Python via the generator, all docs, tests, notebooks, bo
 2. **`*_rotation` names keep "rotation"** (they name the *operation*/result): `plane_rotation`,
    `projection_rotation` stay; only names containing **"rotor"** change (e.g. `versor_rotation` →
    `versor_rotation`).
-3. **Lean proofs** (`proofs/GacalcProofs/Rotation.lean`) already use `versor` for the new sandwich
+3. **Lean proofs** (`proofs/GacalcProofs/Rotation2D.lean`) already use `versor` for the new sandwich
    material; the older `rotor θ` (one-sided full-angle operator) can be renamed for consistency or
    left — decide (low stakes, separate from the Python API).
 

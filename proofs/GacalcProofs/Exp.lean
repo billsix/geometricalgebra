@@ -4,7 +4,7 @@ import GacalcProofs.Sandwich
 
 /-! # The exponential map: exp of a bivector is a rotor
 
-    gacalc's `exp` (base.py:1842) is the closed form `cos|A| + sin|A|·Â` for a negative-square blade
+    gacalc's `exp` (base.py) is the closed form `cos|A| + sin|A|·Â` for a negative-square blade
     `A` (`A² < 0`: a bivector, or the 𝒢₃ pseudoscalar), and it is automatically a **unit versor**
     (a rotor), since `cos² + sin² = 1` (Dorst–Fontijne–Mann §7.4, "a rotor is the exp of a bivector").
     Here we prove the key special case — the exp of the unit-plane bivector `θ·e₁₂` (so `|A| = |θ|`,

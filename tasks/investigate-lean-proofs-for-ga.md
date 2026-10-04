@@ -134,7 +134,7 @@ live in `proofs/` (see above), so several are `in-progress`:
 
   - [ ] `tasks/lean-proof-rotation-from-scratch.md` — sin/cos → rotate a→b → geometric product →
         dot & wedge as its parts (the shared foundation; hardest, D8). **2D core landed 2026-09-28**
-        (`proofs/GacalcProofs/Rotation.lean`: product enacts rotation, product of unit vectors = rotor
+        (`proofs/GacalcProofs/Rotation2D.lean`: product enacts rotation, product of unit vectors = rotor
         of the angle, dot/wedge read off). **The 3D versor sandwich is DONE 2026-09-29**
         (`Sandwich.lean`/`Rotation3D.lean`: carries a→b, isometry, orthogonal-axis fixed, plane
         invariant), **and the composition story** (`sandwich_comp`: rotations compose by versor product).
@@ -153,9 +153,9 @@ live in `proofs/` (see above), so several are `in-progress`:
         (`rotXY`/`rotXZ`/`rotYZ`, NOT versors) → project/reject + the geometric product → a general
         rotation from project/reject. `StandardPosition.lean` (base + product), `CrossStandardPosition.lean`
         (the uniform `reduceToPlane` bringing both vectors into the e₁e₂ plane, so proj/reject/cross run
-        through one frame), `ProjectionRotation.lean` (step 3 `projRotation` with carries-from→to, ⊥-fixed,
+        through one frame), `ProjectionRotation3D.lean` (step 3 `projRotation` with carries-from→to, ⊥-fixed,
         isometry `projRotation_isometry`, and route-equivalence `projRotation_eq_sandwich` = route P =
-        versor-sandwich route V), and `Projection2DRotation.lean` (the 𝒢₂ specialization). Per-lemma detail
+        versor-sandwich route V), and `ProjectionRotation2D.lean` (the 𝒢₂ specialization). Per-lemma detail
         and the √-handling: `tasks/reference/reduction-to-standard-position.md`. (Complements, and contrasts
         with, the versor-sandwich route in `lean-proof-rotation-from-scratch.md`.) The book/notebook
         presentation remains, tracked in the sub-task.
@@ -171,11 +171,14 @@ live in `proofs/` (see above), so several are `in-progress`:
   - [x] `tasks/archive/2026/09/29/lean-proof-2d-dual-perpendicular.md` — **DONE + ARCHIVED 2026-09-29**:
         the dual of a vector is ⊥ the vector, in 𝒢₂ (`G2.dual`/`dual_vec`/`dual_vec_perp`, `make lean`
         green). Warm-up for projection's 3D dual/normal step.
-  - [~] **From-scratch `G3`** (8-dim) — the shared prerequisite for the 3D versions of projection, dot,
+  - [x] **From-scratch `G3`** (8-dim) — the shared prerequisite for the 3D versions of projection, dot,
         wedge, pseudoscalar, and the rotation sandwich. **Core LANDED 2026-09-29**
         (`proofs/GacalcProofs/G3.lean`: product+wedge+reverse transcribed from gacalc's `Gn`, basis
-        elements, multiplication table, I₃²=−1; `make lean` green). Remaining: dot/`I₃⁻¹`/`dual`/`project`
-        (added as `lean-proof-projection.md` needs them). Unblocks the other 3D step-tasks.
+        elements, multiplication table, I₃²=−1; `make lean` green); dot/`I₃⁻¹`/`dual`/`project` landed with projection (archived 2026-09-29).
+        Everything since (09-30 → 10-04: coordinate-free statements, standard position, contractions/exp/
+        measures/predicates/reflect, student trig forms, the object-in sweep) is recorded in
+        `tasks/archive/2026/09/30/`, `10/01/` … `10/04/` and summarized in
+        `tasks/reference/lean-proof-corpus-review-2026-10-04.md`.
 
   - [x] `tasks/archive/2026/09/29/lean-proof-algebra-laws-g2-g3.md` — **DONE + ARCHIVED 2026-09-29**:
         the associative-unital-ℝ-algebra laws for `G2`/`G3` (mul associative + distributive, `one`
@@ -266,6 +269,5 @@ live in `proofs/` (see above), so several are `in-progress`:
 
 ## Open questions
 
-None — all five design questions are answered above. Remaining before work starts is only the
-author's explicit **go-ahead to begin the spike** (this task is investigation-complete but not yet
-approved to implement).
+None. (The spike was approved and done 2026-09-28; what remains open is the Mathlib-equivalence half of
+the four step-tasks and the general pseudoscalar sign — see the step list.)

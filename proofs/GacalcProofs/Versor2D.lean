@@ -5,7 +5,7 @@ import GacalcProofs.G2
     The pedagogical warm-up for the 3D versor sandwich (`Rotation3D.lean`): build the rotation versor
     directly from two vectors, with **no angle parameter**, exactly as in the 3D case and in gacalc's
     `versor_from_vectors`. It is not *necessary* in 2D — 𝒢₂ already has the angle-parameterized
-    `sandwich_versor` in `Rotation.lean` — but showing the *same* construction here, in the simplest
+    `sandwich_versor` in `Rotation2D.lean` — but showing the *same* construction here, in the simplest
     algebra, makes the 3D case read as "the same thing."
 
     **The 2D-vs-3D point:** in 𝒢₂ the plane of rotation is the *whole space*, so there is no

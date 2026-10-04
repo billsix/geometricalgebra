@@ -177,7 +177,7 @@ Why the claim arose: the minimizer log (`tasks/adhoc/trim-unused-simp-components
 records every 𝒢₃ `dot_reverse_sandwich` component drop as `skip (could not edit cleanly)` — the tool
 never built them — and the task doc's "my first over-eager attempt to drop the G3 ones (build failed,
 reverted)" has no corroborating log. Build experiment (this review, direct `proofs/check.sh` against the
-existing image with the two 𝒢₃ leaves and their callers generalized): **green** — `[lean] OK`, 0 errors, `Sandwich` rebuilt in 70 s, full gate 4m42s (log kept for the session; the edit itself is saved as a patch, not applied, pending the maintainer's go-ahead). The only new output was the unused-variable linter flagging the composites' now-vacuous `hu`/`hv` (6 in `Sandwich.lean`, 4 in `Projection2D.lean`, 1 in `StudentTrigForms.lean`).
+existing image with the two 𝒢₃ leaves and their callers generalized): **green** — `[lean] OK`, 0 errors, `Sandwich` rebuilt in 70 s, full gate 4m42s (the generalization was then applied with structural proofs and the cascade, go-ahead given the same day). The only new output was the unused-variable linter flagging the composites' now-vacuous `hu`/`hv` (6 in `Sandwich.lean`, 4 in `Projection2D.lean`, 1 in `StudentTrigForms.lean`).
 
 Consequences once the 𝒢₃ leaves are general: the composites still carrying vacuous vector hypotheses
 become droppable in both grades — `sandwich_preserves_dot`, `sandwich_preserves_normSq_of_vec`,
@@ -213,7 +213,7 @@ corrected.
 - `tasks/trim-unused-simp-components.md` is DONE but unarchived; `tasks/adhoc/trim-unused-simp-components/__pycache__/`
   must not be committed.
 
-## 7. Proposed actions (none applied; need a go-ahead)
+## 7. Actions (proposed 2026-10-04; items 1–5 APPLIED the same day on the maintainer's go-ahead, `make lean` green; item 6 became the task `tasks/lean-coverage-extend-transforms-frame-gn.md`, which also covers the out-of-scope modules of §3)
 
 1. Commit the 𝒢₃ generalization of `dot_reverse_sandwich`/`normSq_reverse_sandwich` (if the build
    experiment is green), then drop the vacuous vector hypotheses from the composites listed in §5, and

@@ -4,14 +4,11 @@ import GacalcProofs.G3
 
     The geometric content of gacalc's two vector predicates:
 
-    * `is_orthogonal_to` (base.py:1064) tests `a·b = 0`. Its geometric meaning: the product is a pure
+    * `is_orthogonal_to` (base.py) tests `a·b = 0`. Its geometric meaning: the product is a pure
       wedge, `a b = a ∧ b` (no scalar part) — proved both ways below (`perp_iff_mul_eq_wedge`).
-    * `is_parallel_to` (base.py:1100) — the correct geometric predicate is the wedge vanishing (linear
-      dependence); a vector is parallel to its scalar multiples, `a ∧ (k·a) = 0` (`wedge_parallel_smul`).
-      **Discrepancy reported:** the Python `is_parallel_to` instead tests `cosine == 1`, which is `True`
-      only for SAME-direction vectors (`k > 0`) and `False` for anti-parallel ones (`k < 0`, `cosine = −1`)
-      even though they are geometrically parallel — so the code is narrower than the geometric
-      predicate (CLAUDE.md known-issue #2; the wedge-zero form here is the correct characterization).
+    * `is_parallel_to` tests `a ∧ b = 0` — the wedge vanishing (linear dependence), so anti-parallel
+      vectors count as parallel; a vector is parallel to its scalar multiples, `a ∧ (k·a) = 0`
+      (`wedge_parallel_smul`). The converse (`a ∧ b = 0 ⟹ b = k·a` for `a ≠ 0`) is not yet stated here.
 
     From the coverage-map gap audit (`tasks/archive/2026/10/01/lean-coverage-gap-audit.md`). -/
 namespace GacalcProofs.G3

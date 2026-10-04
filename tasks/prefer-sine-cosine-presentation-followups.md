@@ -3,7 +3,7 @@
 **Status:** proposed — needs the maintainer's review of the candidate list below. **Priority:** 7.
 **Difficulty:** 4. **Created:** 2026-10-03 (William Emerison Six <billsix@gmail.com>).
 **Part of:** the "present in sin/cos" initiative — the first pass is
-`tasks/prefer-sine-cosine-presentation.md` (perpendicularity / parallelism / area families);
+`tasks/archive/2026/10/03/prefer-sine-cosine-presentation.md` (perpendicularity / parallelism / area families);
 principle in `CLAUDE.md` › "Presenting to students".
 
 ## BLUF

@@ -2,7 +2,7 @@ import GacalcProofs.Projection3D
 
 /-! # Reflection across a vector (𝒢₃)
 
-    gacalc's `reflect(across=d)` is "the projection minus the rejection" (base.py:1463),
+    gacalc's `reflect(across=d)` is "the projection minus the rejection" (base.py),
     `reflect_d v = proj_d v − reject_d v`. Since `proj + reject = v` (here via `reject_vec_eq`), this
     equals `2·proj_d v − v` — the defining characterization proved below, reusing the already-proven
     `proj`/`reject`. From the coverage-map gap audit

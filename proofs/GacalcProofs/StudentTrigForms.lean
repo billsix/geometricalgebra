@@ -91,8 +91,8 @@ theorem dual_wedge_perp_left {a b : G3} (ha : IsVector a) (hb : IsVector b)
     cos_between (dual (wedge a b)) a = 0 := by
   simp only [cos_between, dual_wedge_perp_left_dot ha hb, zero_div]
 
-/-- …and to the right spanning vector (cosine 0) — for nonzero vectors. -/
-theorem dual_wedge_perp_right {a b : G3} (ha : IsVector a) (hb : IsVector b)
+/-- …and to the right spanning vector (cosine 0) — for a nonzero vector `b` (and ANY `a`). -/
+theorem dual_wedge_perp_right {a b : G3} (hb : IsVector b)
     (_ha0 : normSq a ≠ 0) (_hb0 : normSq b ≠ 0) :
     cos_between (dual (wedge a b)) b = 0 := by
   simp only [cos_between, dual_wedge_perp_right_dot hb, zero_div]

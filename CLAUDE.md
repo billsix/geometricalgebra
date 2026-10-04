@@ -345,7 +345,8 @@ option exists — "the cosine of the angle between them is 0" (perpendicular) / 
 is the algebra underneath. **Keep dot/wedge as the primitive and layer the trig phrasing on top** (e.g.
 a `cos_between … = 0` corollary resting on a `dot … = 0` lemma), never trading the robust,
 √/division-free primitive for a trig form whose only effect is to add `√`/`0÷0` noise. Within reason;
-use discretion. Tracked: `tasks/prefer-sine-cosine-presentation.md`.
+use discretion. Record: `tasks/archive/2026/10/03/prefer-sine-cosine-presentation.md`; remaining candidates in
+`tasks/prefer-sine-cosine-presentation-followups.md`.
 
 ## Coordinates only when needed
 
@@ -373,9 +374,11 @@ coordinate proof (`set`/`calc`/big `field_simp`) must be kept verbatim and is sh
 pure-real identities (`lagrange_2d/3d`); and the definitional `vec`-literal unfold leaves (`normSq_vec`,
 `dot_vec`, `cross_vec`, …) stay coordinate (their RHS *is* coordinate arithmetic). **Carry only what the
 proof uses** — drop a grade hypothesis or `simp` component the body never needs (some theorems are more
-general than first stated, and a 𝒢₂ one can be more general than its 𝒢₃ twin); **but a name being absent
-from the body does NOT prove it unused** (`field_simp`/`simp` use `_ ≠ 0` hyps from context unnamed), and
-Lean flags neither, so decide by **delete-and-rebuild**. The corpus sweep is **done for the polynomial
+general than first stated — the reverse-sandwich isometries hold for ANY multivector in both grades);
+**but a name being absent from the body does NOT prove it unused** (`field_simp`/`simp` use `_ ≠ 0` hyps from context unnamed), and
+Lean flags only the signature kind (`unusedVariables` warning), so decide by **delete-and-rebuild** —
+and read a failure: a `ring` timeout means *this proof* needs the hypothesis (restructure it), only a
+residual-goal failure means the *theorem* does. The corpus sweep is **done for the polynomial
 tier** (2026-10-04); the method, final tier split, and reusable recipes live in
 `tasks/reference/lean-ga-proof-architecture.md` (record: `tasks/archive/2026/10/04/`).
 

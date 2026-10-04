@@ -69,8 +69,8 @@ it (build-verified), so the minimizer processes every `obtain`+`simp only` block
 The minimizer ran over all 8 converted files: **206 candidates → 73 components dropped**, 103 kept as
 load-bearing (reverted), **14 all-`_` `obtain` lines removed**, 30 skipped (not cleanly editable — left
 untouched, harmless). Per-file drops: Sandwich 30, Projection3D 20, Projection2D 10, ProjectionRotation3D
-8, G3 2, ProjectionRotation2D 2, Trig 1. **No new warnings** (Lean doesn't flag an unused *signature*
-hypothesis; the 4 pre-existing `hn` warnings in ProjectionRotation3D are unrelated). Full decision log:
+8, G3 2, ProjectionRotation2D 2, Trig 1. **No new warnings** (Lean's `unusedVariables` linter DOES warn on an unused signature hypothesis (the 09aa05a build already
+showed five such warnings, and the review's rebuild eleven); the 4 pre-existing `hn` warnings in ProjectionRotation3D are unrelated). Full decision log:
 `tasks/adhoc/trim-unused-simp-components/trim.log`.
 
 **Finding worth noting (maintainer's call, not acted on):** several leaves turned out *more general than
@@ -87,16 +87,20 @@ the body — a *candidate* list; the build is the judge, because `field_simp`/`s
 context *without naming them*, so a name-absent `≠ 0` guard is NOT safe to drop; I restricted detection to
 `IsVector`/etc. predicates and build-verified).
 
-**G2-only generalization DONE (maintainer chose (b), 2026-10-04, `make lean` green).** `dot_reverse_sandwich`
-and `normSq_reverse_sandwich` now take only `IsEvenVersor R` in **G2** (the 2D identities hold for arbitrary
-`u`/`v`), while **G3 keeps** the vector hypotheses (its proofs genuinely use the components — a real
-mathematical asymmetry, so the G2/G3 signatures now differ in arity, intentionally). Only the G2 call sites
-were updated (anchored on `GacalcProofs.G2.mul_smul`, since the G2/G3 caller lines are otherwise identical);
-the G3 callers still pass `hR hu hv` / `hR hv`.
-
-My hand-reasoning had wrongly guessed the components were needed; the mechanical delete-and-rebuild caught
-it — and also caught my first over-eager attempt to drop the G3 ones (build failed, reverted), which is the
-point of the method.
+**Generalization of `dot_reverse_sandwich`/`normSq_reverse_sandwich` — BOTH grades (2026-10-04).** First
+only the **G2** pair was generalized to `IsEvenVersor R` alone, on the belief that the **G3** proofs
+"genuinely use the vector components — a real mathematical asymmetry". That belief was wrong: the
+identity is `(R u R̃)(R v R̃) = R u (R̃ R) v R̃ = |R|²·R (u v) R̃` plus the cyclic scalar part, which never
+looks at the grade of `u`, `v`; the minimizer log shows the G3 drops were never built (`skip … could not
+edit cleanly`), and the "build failed, reverted" recollection had no log behind it. The independent review
+(`tasks/reference/lean-proof-corpus-review-2026-10-04.md`) rebuilt without the hypotheses: green. Both
+grades now take only `IsEvenVersor R`, proved **structurally** (`mul_reverse_self_of_isEvenVersor`,
+`reverse_mul_self_of_isEvenVersor`, `dot_reverse_conj`, associativity) so the proof records the reason, and
+the vacuous `hu`/`hv` were dropped from the composites downstream (`sandwich_preserves_dot/_normSq/
+_wedge/_normSq_of_wedge`, `magnitude_sandwich`, `sandwich_preserves_cos/_sin`, `rotation_preserves_dot`,
+`dual_wedge_perp_right`; the two `_of_vec`/`_vec` names lost their suffix). Lesson recorded in
+`lean-ga-proof-architecture.md`: a failed delete-and-rebuild can mean the *proof script* needs the
+hypothesis (tactic budget), not the theorem — read the failure before concluding.
 
 ## See also
 

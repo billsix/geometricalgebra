@@ -236,10 +236,15 @@ version resolution is lake's own, not hand-picked):
   `/opt/gacalc-proofs/.lake`), and `check.sh` copies it into the mounted `proofs/.lake` when absent —
   so `make lean` runs with no network. It adds several GB to a Lean image (only `USE_LEAN` images pay
   it). The bake lives *outside* the mount because a bind-mount would shadow a baked `proofs/.lake`.
+- **Nested sandbox gotcha:** `make lean` depends on `image`, which nested re-runs the whole 16 GB
+  `podman build`; run `check.sh` directly against the existing image instead (recipe in
+  `lean-ga-proof-architecture.md`, "Build discipline").
 - **CI:** `.github/workflows/lean.yml` runs `make lean` on `v*` tags only (heavy Mathlib build kept
   off the per-push checks).
-- **Still to do** (step-tasks under `tasks/investigate-lean-proofs-for-ga.md`): the from-*rotation*
-  derivation, the 3D dot/wedge/pseudoscalar, the general pseudoscalar, and projection.
+- **Still to do** (step-tasks under `tasks/investigate-lean-proofs-for-ga.md`): the equivalence of the
+  from-scratch results to Mathlib's rotation/`@inner` machinery, and the general pseudoscalar sign
+  (`(−1)^{r(r−1)/2}` is stated only for n = 2). Projection, the 3D dot/wedge/pseudoscalar values, and the
+  rotation derivation are done; see `tasks/reference/lean-proof-corpus-review-2026-10-04.md`.
 
 ## Where to learn more
 

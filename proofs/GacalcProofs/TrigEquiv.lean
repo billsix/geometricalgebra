@@ -9,7 +9,7 @@ import GacalcProofs.Versor2D
     * the **property form** (`GacalcProofs.G2.cos_between` / `sin_between`, Trig.lean) — sin/cos read
       off the inner/outer products, `cos = (a·b)/(|a||b|)`, `sin = |a∧b|/(|a||b|)` (the latter
       UNSIGNED, the Python `abs_sin`); and
-    * the **angle form** (`uvec_dot` / `uvec_wedge`, Rotation.lean) — for unit vectors at angles
+    * the **angle form** (`uvec_dot` / `uvec_wedge`, Rotation2D.lean) — for unit vectors at angles
       `α, β`, `(uvec α · uvec β) = cos (β−α)` and `(uvec α ∧ uvec β).c12 = sin (β−α)`.
 
     It also gives the **signed** 2D sine (the Python `g2.Vector.sine`, `(a∧b).c12 / (|a||b|)`) a Lean

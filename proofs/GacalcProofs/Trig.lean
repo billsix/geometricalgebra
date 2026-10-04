@@ -52,26 +52,24 @@ theorem cos_sq_add_sin_sq {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b)
   exact div_self (mul_ne_zero ha' hb')
 
 /-- **A rotation preserves the cosine of the angle**: `cos(R u R⁻¹, R v R⁻¹) = cos(u, v)` for an even
-    versor `R` with `|R|² ≠ 0` and vectors `u`, `v` — straight off the object dot/magnitude isometries. -/
-theorem sandwich_preserves_cos {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0)
-    {u v : G3} (hu : IsVector u) (hv : IsVector v) :
+    versor `R` with `|R|² ≠ 0` and ANY `u`, `v` (meaningful for vectors) — straight off the object
+    dot/magnitude isometries. -/
+theorem sandwich_preserves_cos {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G3} :
     cos_between (sandwich R u) (sandwich R v) = cos_between u v := by
   simp only [cos_between]
-  rw [sandwich_preserves_dot hR hr hu hv, magnitude_sandwich_vec hR hr hu,
-      magnitude_sandwich_vec hR hr hv]
+  rw [sandwich_preserves_dot hR hr, magnitude_sandwich hR hr, magnitude_sandwich hR hr]
 
 /-- **A rotation preserves the sine of the angle**: `sin(R u R⁻¹, R v R⁻¹) = sin(u, v)` for an even
-    versor `R` with `|R|² ≠ 0` and vectors `u`, `v`. The numerator `|u∧v|` is preserved by the
-    outermorphism + bivector isometry; the denominators by `magnitude_sandwich_vec`. -/
-theorem sandwich_preserves_sin {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0)
-    {u v : G3} (hu : IsVector u) (hv : IsVector v) :
+    versor `R` with `|R|² ≠ 0` and ANY `u`, `v` (meaningful for vectors). The numerator `|u∧v|` is preserved by the
+    outermorphism + bivector isometry; the denominators by `magnitude_sandwich`. -/
+theorem sandwich_preserves_sin {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G3} :
     sin_between (sandwich R u) (sandwich R v) = sin_between u v := by
   have hnum : magnitude (wedge (sandwich R u) (sandwich R v)) = magnitude (wedge u v) := by
-    rw [sandwich_preserves_wedge hR hr hu hv]
+    rw [sandwich_preserves_wedge hR hr]
     simp only [magnitude]
-    rw [sandwich_preserves_normSq_of_wedge hR hr hu hv]
+    rw [sandwich_preserves_normSq_of_wedge hR hr]
   simp only [sin_between]
-  rw [hnum, magnitude_sandwich_vec hR hr hu, magnitude_sandwich_vec hR hr hv]
+  rw [hnum, magnitude_sandwich hR hr, magnitude_sandwich hR hr]
 
 end GacalcProofs.G3
 
@@ -115,24 +113,21 @@ theorem cos_sq_add_sin_sq {a b : G2} (ha_isv : IsVector a) (hb_isv : IsVector b)
   exact div_self (mul_ne_zero ha' hb')
 
 /-- **A rotation preserves the cosine of the angle** (2D): `cos(R u R⁻¹, R v R⁻¹) = cos(u, v)` for an
-    even versor `R` with `|R|² ≠ 0` and vectors `u`, `v`. -/
-theorem sandwich_preserves_cos {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0)
-    {u v : G2} (hu : IsVector u) (hv : IsVector v) :
+    even versor `R` with `|R|² ≠ 0` and ANY `u`, `v` (meaningful for vectors). -/
+theorem sandwich_preserves_cos {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G2} :
     cos_between (sandwich R u) (sandwich R v) = cos_between u v := by
   simp only [cos_between]
-  rw [sandwich_preserves_dot hR hr hu hv, magnitude_sandwich_vec hR hr hu,
-      magnitude_sandwich_vec hR hr hv]
+  rw [sandwich_preserves_dot hR hr, magnitude_sandwich hR hr, magnitude_sandwich hR hr]
 
 /-- **A rotation preserves the sine of the angle** (2D): `sin(R u R⁻¹, R v R⁻¹) = sin(u, v)` for an
-    even versor `R` with `|R|² ≠ 0` and vectors `u`, `v`. -/
-theorem sandwich_preserves_sin {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0)
-    {u v : G2} (hu : IsVector u) (hv : IsVector v) :
+    even versor `R` with `|R|² ≠ 0` and ANY `u`, `v` (meaningful for vectors). -/
+theorem sandwich_preserves_sin {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G2} :
     sin_between (sandwich R u) (sandwich R v) = sin_between u v := by
   have hnum : magnitude (wedge (sandwich R u) (sandwich R v)) = magnitude (wedge u v) := by
-    rw [sandwich_preserves_wedge hR hr hu hv]
+    rw [sandwich_preserves_wedge hR hr]
     simp only [magnitude]
-    rw [sandwich_preserves_normSq_of_wedge hR hr hu hv]
+    rw [sandwich_preserves_normSq_of_wedge hR hr]
   simp only [sin_between]
-  rw [hnum, magnitude_sandwich_vec hR hr hu, magnitude_sandwich_vec hR hr hv]
+  rw [hnum, magnitude_sandwich hR hr, magnitude_sandwich hR hr]
 
 end GacalcProofs.G2
