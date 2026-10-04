@@ -7,10 +7,13 @@ whose bound name never appears in the proof body.
 
 CAVEAT — a *candidate* list, not proof of unusedness: `field_simp`/`simp` use `≠ 0`
 hypotheses from context WITHOUT naming them, so a name-absent guard may still be
-load-bearing. The build is the judge — drop one and `lake build` to confirm. Read-only.
+load-bearing, and a hypothesis rewritten in place (`rw … at h`) is reported although
+used. The build is the judge — drop one and `lake build` to confirm; a `ring`
+timeout means the PROOF needs it, only a residual goal means the THEOREM does (see
+tasks/reference/lean-ga-proof-architecture.md, "Hypotheses"). Read-only.
 
-Paths are relative to this script:
-tasks/adhoc/generalize-unused-hypotheses/ -> repo = parents[3].
+Usage (repo root, host or container): `python3 tools/detect_unused_hypotheses.py`.
+Paths are relative to this script: tools/ -> repo = parents[1].
 """
 
 from __future__ import annotations
@@ -18,7 +21,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-SRC: Path = Path(__file__).resolve().parents[3] / "proofs" / "GacalcProofs"
+SRC: Path = Path(__file__).resolve().parents[1] / "proofs" / "GacalcProofs"
 
 THEOREM: re.Pattern[str] = re.compile(r"^(theorem|lemma)\s+(\w+)", re.MULTILINE)
 # a named binder group: ( names : type )  or  { names : type }
