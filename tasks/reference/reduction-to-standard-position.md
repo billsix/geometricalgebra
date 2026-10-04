@@ -1,7 +1,7 @@
 # Reduction to standard position (frame reduction) — a construction theme
 
 *Durable knowledge. States what the theme IS and why it's sound; the work that introduced it is
-tracked in `tasks/reduce-to-standard-position.md`.*
+recorded in `tasks/archive/2026/10/04/reduce-to-standard-position.md` (archived 2026-10-04).*
 
 ## What it is
 
@@ -189,7 +189,7 @@ the maintainer's voice pass on the drafted book page + notebook
 
 Lean first (it certifies the equivalence), then the "Geometry 2" book (`book/docs/`, the reduce-to-
 coordinates exemplar — proof pages in separate `.rst`, calculations in the companion notebooks), then
-optionally duplicate suffixed definitions in the code. See `tasks/reduce-to-standard-position.md` for the decision log and the
+optionally duplicate suffixed definitions in the code. See `tasks/archive/2026/10/04/reduce-to-standard-position.md` for the decision log and the
 harvested per-subsystem ideas list.
 
 ## See also

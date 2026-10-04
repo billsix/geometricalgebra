@@ -1,6 +1,6 @@
 # Reduction to standard position: define project/reject from trusted simpler ops via change-of-frame
 
-**Status:** done — archive owed (the book voice pass continues in
+**Status:** done — archived 2026-10-04 (the book voice pass continues in
 `tasks/proof-projection-book-voice-pass.md`)
 **Priority:** 6
 **Difficulty:** 7
