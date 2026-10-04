@@ -4,6 +4,8 @@
 **Priority:** 6
 **Difficulty:** 3
 **Started:** 2026-08-27 (William Emerison Six <billsix@gmail.com>)
+**Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — citations re-verified (the book
+still has no parallelogram narrative); line-number anchor replaced by section names.
 **Blocked on:** maintainer answers the Open questions below (book-narrative vs code/notebook deliverable;
 which primitives).
 **Recheck:** the Open questions below are answered (maintainer-gated; `/recheck-blocked` surfaces it).
@@ -23,7 +25,8 @@ geometry, and note that two vectors implicitly define a parallelogram.
 ## Context (investigation 2026-08-27)
 
 - **The math is already documented; the *thesis/narrative* is not centralized.**
-  `tasks/reference/content-area-volume.md:13,30-47` already states "area of the parallelogram on a and
+  `tasks/reference/content-area-volume.md` (§ "The pedagogical principle" and § "The relevant pages")
+  already states "area of the parallelogram on a and
   b," `|v₁||v₂|sinθ`, and "base × height = the parallelogram" (height = V₂ rejected from V₁). Pedagogy
   lives in `openstax-math-pedagogy.md` and `book-outline.md`.
 - Archived: `2026/08/24/area-volume-content.md`, `2026/06/27/wedge-magnitude-sin-notebook.md`,

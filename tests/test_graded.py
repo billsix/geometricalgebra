@@ -13,7 +13,7 @@
 
 """Graded subtype suite.
 
-The graded types (Vector_n, Bivector_n, g3.Trivector, Rotor_n, Scalar_n) dispatch a
+The graded types (Vector_n, Bivector_n, g3.Trivector, Versor_n, Scalar_n) dispatch a
 product by the operand types and return the *grade-correct* type, decided
 symbolically at generation time (so it never depends on runtime float values).
 Each case asserts both the **return type** and that the **value** equals the same

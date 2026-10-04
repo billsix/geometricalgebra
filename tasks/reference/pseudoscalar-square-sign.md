@@ -6,7 +6,7 @@ reader: we work it out by hand for grades 1–5, watching every swap, then prove
 ways (a short induction, then a one-line "reversal" argument). Durable domain + design notes; **update
 in place**, not archived. Last updated 2026-08-16 (William Emerison Six <billsix@gmail.com>). Supports
 `base.pseudoscalar_squared_sign` and the task
-`tasks/prove-blade-square-sign-equals-pseudoscalar-squared.md`; the permanent check is
+`tasks/archive/2026/08/16/prove-blade-square-sign-equals-pseudoscalar-squared.md`; the permanent check is
 `tests/test_pseudoscalar_square_sign.py`.
 
 ## What we're proving, and why anyone cares
@@ -203,8 +203,8 @@ decision.)
 
 ## Related
 
-- `tasks/prove-blade-square-sign-equals-pseudoscalar-squared.md` — the task this doc proves (Phase 2).
-- The associativity write-up in `tasks/prove-associativity-of-multiplication.md` uses the same
+- `tasks/archive/2026/08/16/prove-blade-square-sign-equals-pseudoscalar-squared.md` — the task this doc proves (Phase 2).
+- The associativity write-up in `tasks/archive/2026/08/25/prove-associativity-of-multiplication.md` uses the same
   swap/annihilate machinery (`decrease_grade`) for a different theorem.
 - `notebooks/displaymv.py` — the plain-language intro to the three rules, for a reader meeting them
   for the first time.

@@ -1,8 +1,11 @@
 # Generalize reject / reflect to higher-grade blades (grade 3+)
 
-**Status:** not started · proposed 2026-06-05 · needs go-ahead (user wants to re-read Hestenes first)
+**Status:** proposed — not started; needs the maintainer's go-ahead on the three design decisions +
+the mixed-grade-value scope (Open questions 1–4). No book re-read is needed for the homogeneous case
+(research 2026-08-22, below).
 **Priority:** 5
 **Difficulty:** 4
+**Created:** 2026-06-04 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
 
 ## Goal
 
@@ -30,8 +33,8 @@ of **any grade** (at least up to the pseudoscalar of `Gn`/`G3`).
   vector/bivector — this is the `match`-arm restriction above; and (b) the **value** being
   projected/rejected may itself be any r-vector, not only a grade-1 vector. Today `reject`'s inner
   `r()` and `reflect`'s inner `r()` both `assert value.is_vector()` and narrow via
-  `r_vector_part(1)` — that grade-1 hardcoding is the (b) restriction (`base.py` ~lines 814-826,
-  864-868). `project`'s `fn` already handles a general r-vector value (it computes
+  `r_vector_part(1)` — that grade-1 hardcoding is the (b) restriction (the inner `r()` of `reject`
+  and of `reflect` in `base.py`). `project`'s `fn` already handles a general r-vector value (it computes
   `r = max(grades)` and narrows to that grade), so (b) is mostly a `reject`/`reflect` gap.
 - **To confirm while reading p. 18:** that the `(a∧B)B⁻¹` rejection is valid for an r-blade B of any
   grade, and whether the value being projected/rejected must itself be a vector (current code
@@ -53,12 +56,12 @@ transformed; `blade` = the `onto`/`away_from`/`across` argument):
 
 **Conclusion — `project` is already done; the gaps are entirely in `reject`/`reflect`:**
 
-- **Axis (a), blade grade** — `reject`/`reflect`'s `match` (`base.py` ~835-845, ~881-889) has arms
+- **Axis (a), blade grade** — `reject`/`reflect`'s `match` on `away_from`/`across` (`base.py`) has arms
   only for `is_vector()` / `is_bivector()`; a trivector (or any grade ≥3) `away_from`/`across` falls
   to `case _: raise`. `project` has no such restriction (its `fn` uses `onto.inverse()` for any
   blade).
-- **Axis (b), value grade** — `reject`'s inner `r()` (`base.py` ~814-826) and `reflect`'s inner
-  `r()` (~864-868) both `assert value.is_vector()` and narrow via `r_vector_part(1)`, so a bivector
+- **Axis (b), value grade** — `reject`'s inner `r()` and `reflect`'s inner `r()` (`base.py`) both
+  `assert value.is_vector()` and narrow via `r_vector_part(1)`, so a bivector
   (or higher) **value** raises. `project`'s `fn` already handles a general r-vector value (computes
   `r = max(grades)` and narrows to that grade — verified correct vs `Gn`).
 
@@ -66,6 +69,12 @@ So the work is: generalize `reject`'s `match` to any homogeneous blade **and** r
 `is_vector()`/`r_vector_part(1)` hardcoding with the value's own grade (mirroring what `project.fn`
 already does); `reflect` then follows for free. No `project` code change — only new `project` tests
 to lock in the higher-grade cases.
+
+**Lean side (2026-10-04):** the proof layer mirrors the same restriction — `proofs/GacalcProofs/
+Projection3D.lean` defines `reject` generally (`(a ∧ B) B⁻¹`) but its theorems (`reject_vec_eq`,
+`project_add_reject`, `reject_eq_proj_normal`) cover a **vector** value against a vector/bivector blade
+only, and `Reflect.lean` (`reflectVec`) is reflection across a **vector**. Generalizing the Python
+should spawn the matching Lean statements.
 
 ## Plan (to validate against the book)
 
@@ -91,12 +100,12 @@ The maintainer's memory was right on both counts: **projection is defined for r-
 **galgebra** (`github.com/pygae/galgebra`, local checkout `/mnt/sda1/galgebra/galgebra/mv.py`) is the
 concrete precedent:
 
-- **`project_in_blade(self, blade)` (`mv.py:435`)** projects a **general multivector** `self` onto
+- **`Mv.project_in_blade(self, blade)`** (galgebra `mv.py`) projects a **general multivector** `self` onto
   any **blade** (any grade): `return (self < blade) * blade_inv` where `blade_inv =
   blade.rev() / blade.qform()`. It uses the **left contraction `<`**, *not* the Hestenes inner
   product. Guard: `blade.is_blade()` and non-null (`qform != 0`); **no restriction that `self` be a
   vector or homogeneous** — mixed grade is fine, because the contraction is linear over grades.
-- **`reflect_in_blade(self, blade)` (`mv.py:414`)** reflects a general multivector by
+- **`Mv.reflect_in_blade(self, blade)`** (galgebra `mv.py`) reflects a general multivector by
   **grade-decomposing `self`** and applying the graded sandwich per grade: for blade grade `s` and
   value grade `r`, `(-1)^{s(r+1)} · blade · ⟨A⟩_r · blade⁻¹`. It is **not** built as
   `project − reject`.
@@ -133,12 +142,12 @@ Beyond `reject`/`reflect`, several methods carry the same `assert …is_vector()
 more generally later in the book" TODO. They belong to this generalization effort (working tree is
 otherwise clean — nothing uncommitted was added):
 
-- **`base.is_orthogonal_to` (`base.py:609`)** and **`base.is_parallel_to` (`base.py:633`)** — both
-  `assert self.is_vector()` / `assert other.is_vector()` with a `# TODO - defined for vectors only …`
-  comment; `is_parallel_to` also carries a `not sure if I'm doing this correctly` note (already listed
-  under CLAUDE.md "Assessment / known issues #2"). Orthogonality/parallelism generalize to blades
-  (via inner product / wedge being zero).
-- **`transforms.projection_rotation`'s inner `r` (`transforms.py:217`)** — `assert value.is_vector()
+- **`base.is_orthogonal_to`** and **`base.is_parallel_to`** — both `assert self.is_vector()` /
+  `assert other.is_vector()` with a `# TODO - defined for vectors only …` comment (the former
+  "not sure if I'm doing this correctly" flag on `is_parallel_to` is gone — it now uses the wedge-zero
+  test, machine-checked in `Predicates3D.lean`; only the vectors-only restriction remains).
+  Orthogonality/parallelism generalize to blades (via inner product / wedge being zero).
+- **`transforms.projection_rotation`'s inner `r`** (`transforms.py`) — `assert value.is_vector()
   # TODO - can this be generalized?`. It's downstream of `reject` (uses `cls.reject(plane)`), so it is
   unblocked once `reject` accepts a general value.
 
@@ -155,15 +164,20 @@ verify-after step once `reject` generalizes.
 
 ## Open questions
 
-- **Homogeneous r-vector value: no book re-read needed** — galgebra + the literature confirm
-  projection/rejection onto any blade is standard for a homogeneous value. The genuinely uncertain
-  case the maintainer wanted to re-read Hestenes for is the **mixed-grade multivector value** — and
-  galgebra shows even that is well-defined via the contraction + grade decomposition. Confirm gacalc
-  wants to support mixed-grade values (recommended: yes, matching galgebra), or restrict to
-  homogeneous blades for now.
-- Product choice, reflect definition, and blade-vs-homogeneous guard — see the three design decisions
-  above.
-- Is there an upper-grade limit worth enforcing, or does it just work up to the pseudoscalar?
+1. **Mixed-grade multivector value — in scope?** (Homogeneous r-vector value: no book re-read
+   needed — galgebra + the literature confirm projection/rejection onto any blade is standard for a
+   homogeneous value. The genuinely uncertain case the maintainer wanted to re-read Hestenes for is
+   the **mixed-grade multivector value** — and galgebra shows even that is well-defined via the
+   contraction + grade decomposition.) Confirm gacalc wants to support mixed-grade values
+   (recommended: yes, matching galgebra), or restrict to homogeneous blades for now.
+2. **Product choice** — Hestenes dot vs left contraction (design decision 1 above).
+3. **`reflect` definition** — `project − reject` vs the graded sandwich (design decision 2 above).
+4. **Blade vs merely-homogeneous guard** (design decision 3 above).
+5. **Upper-grade limit** — is one worth enforcing, or does it just work up to the pseudoscalar?
+6. **Line/plane projections (folded in 2026-08-27, below)** — confirm "line"/"plane" mean
+   **origin-through** subspaces (grade-1/grade-2), distinct from the affine flats of
+   `affine-flats-lines-planes-from-points.md`, and whether the symbolic checks + graded-notebook demos
+   are tracked here or split into a notebook task.
 
 ## Folded-in idea (2026-08-27, William Emerison Six <billsix@gmail.com>) — projections line→line / line→plane / plane→plane
 
@@ -171,11 +185,11 @@ A batch triage mapped this maintainer bullet here (same grade-general project/re
 *"In generated types, make projections from line to line, line to plane, plane to plane. Check
 symbolically. Make examples in graded notebook."* Here "line"/"plane" mean **origin-through** blades
 (grade-1 subspace / grade-2 subspace) — so plane→plane is exactly the grade-2-onto-grade-2 case this
-task targets (`MultiVectorBase.project` at `src/gacalc/base.py:763` is already grade-general; the
+task targets (`MultiVectorBase.project` in `src/gacalc/base.py` is already grade-general; the
 restriction is in `reject`/`reflect`). The symbolic-check + graded-notebook demonstration could live
 here or in `displaygraded-geometric-plots.md`.
 
-**New open question (blocks this addition):** confirm "line"/"plane" here mean **origin-through**
+**Open question 6 (blocks this addition):** confirm "line"/"plane" here mean **origin-through**
 subspaces (grade-1/grade-2) — distinct from the *affine/offset* flats in
 `affine-flats-lines-planes-from-points.md`, so the two tasks don't collide — and whether the symbolic
 checks + graded-notebook demos are tracked here or split into a notebook task.

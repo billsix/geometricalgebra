@@ -15,15 +15,15 @@ can do; do not implement until that decision is made.**
 **Status:** proposed — needs go-ahead (a maintainer decision, see Open questions)
 **Priority:** 6
 **Difficulty:** 4
-**Started:** 2026-09-26 (William Emerison Six <billsix@gmail.com>) — spun off from
-`tasks/github-actions-ci.md` (that task's Phase 2 / open question 3), whose Phase 1 (check-only CI)
-is complete.
+**Started:** 2026-09-26 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — spun
+off from `tasks/archive/2026/09/26/github-actions-ci.md` (that task's Phase 2 / open question 3),
+whose Phase 1 (check-only CI) is complete and archived.
 
 ## Context
 
 - **Phase 1 CI is live** (`.github/workflows/checks.yml`): jobs `format`, `test`, and `generated`
   (the codegen determinism + doc-region gates), all thin `checkout → make <target>` wrappers. See
-  `tasks/github-actions-ci.md` for the phase-1 record and the governing "CI is a thin wrapper over
+  `tasks/archive/2026/09/26/github-actions-ci.md` for the phase-1 record and the governing "CI is a thin wrapper over
   the make/Dockerfile system" principle that this task must also follow.
 - **gacalc publishes to PyPI** (`github.com/billsix/geometricalgebra`), unlike modelviewprojection
   (a book/app that pushes a container image to ghcr). So gacalc's release story is **PyPI-first**;
@@ -36,6 +36,10 @@ is complete.
   - Auth today is an API token via `~/.pypirc` (mounted read-only) or `TWINE_PASSWORD`.
 - **The version-tag guard in `make release`** should be reused so a tag can't publish a version that
   disagrees with `pyproject.toml`.
+- **`.github/workflows/lean.yml` (added 2026-09-27, after this task) already triggers on `v*` tags**
+  and runs `make lean`. A `release.yml` on the same trigger must decide its ordering relative to that
+  Lean gate — publish only after `lean` passes (a `needs:`/workflow dependency), or run independently
+  (Open question 2).
 
 ## Plan
 
@@ -62,10 +66,13 @@ is complete.
    one-time PyPI-side config only you can do (add the trusted publisher for this repo +
    `release.yml`). Keeping it manual is also legitimate if you'd rather gate every release by hand.
    (No ghcr/image-push step — gacalc doesn't push a container image.)
+2. **Gate the publish on the tag-triggered Lean workflow?** (a) publish only if `lean.yml` passes
+   on the same tag (recommended — a release with a broken proof corpus is the thing the tag gate
+   exists to catch), or (b) run them independently?
 
 ## See also
 
-- `tasks/github-actions-ci.md` — Phase 1 (this task is its spun-off Phase 2).
+- `tasks/archive/2026/09/26/github-actions-ci.md` — Phase 1 (this task is its spun-off Phase 2).
 - `github.com/billsix/modelviewprojection` › `.github/workflows/release.yml` and
   `tasks/github-actions-release-ci.md` — the sibling release workflow (ghcr + tarball + GitHub
   Release); gacalc's differs by publishing to PyPI instead of pushing an image.

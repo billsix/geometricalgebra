@@ -4,6 +4,8 @@
 **Priority:** 6
 **Difficulty:** 3
 **Started:** 2026-08-27 (William Emerison Six <billsix@gmail.com>)
+**Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — citations re-verified; stale line
+counts/dates dropped.
 **Blocked on:** maintainer answers the Open question below (contributor-facing doc update vs a new
 reader/book-facing explainer).
 **Recheck:** the Open question below is answered (maintainer-gated; `/recheck-blocked` surfaces it).
@@ -21,13 +23,15 @@ the begin doc region and doc region sort of way that I have done other code."*
 ## Context (investigation 2026-08-27) — the core confusion is answerable NOW
 
 - **It generates FROM sympy; it does NOT re-read/process existing source Lisp-style.** The generator
-  (`tools/gen_specialized.py` ~2300 lines + `tools/astbuild.py` ~470 + `tools/check_doc_regions.py`)
+  (`tools/gen_specialized.py` + `tools/astbuild.py` + `tools/check_doc_regions.py`)
   runs `Gn` on **sympy symbols** to capture each formula, then builds Python **`ast` nodes** →
   `ast.unparse` (no string/template layer). Outputs `src/gacalc/g1.py|g2.py|g3.py` are gitignored build
   artifacts. So: sympy-defines → AST-emits; the "Lisp reads code" mental model is not what happens.
-- **Mostly already documented** — `tasks/reference/code-generator-architecture.md` (the contributor map,
-  last updated 2026-07-21) + `tasks/reference/generated-product-typing.md` + the `tools/gen_specialized.py`
+- **Mostly already documented** — `tasks/reference/code-generator-architecture.md` (the contributor map)
+  + `tasks/reference/generated-product-typing.md` + the `tools/gen_specialized.py`
   module docstring (narrative front door with an ASCII pipeline diagram + doctest'd worked trace). The
+  explicit "generates from sympy, does not read code Lisp-style" sentence is still absent from the
+  contributor map (verified 2026-10-04: no "Lisp" in that doc), so the Plan below is still open. The
   string→AST rationale (the "Lisp/code-as-data" idea) is archived at `2026/06/07/codegen-via-python-ast.md`.
   Doc-region marker machinery: `astbuild.py` + `check_doc_regions.py`; markers emitted per
   `2026/07/21/emit-doc-region-markers.md`.

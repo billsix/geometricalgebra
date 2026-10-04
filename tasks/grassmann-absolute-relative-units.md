@@ -5,6 +5,7 @@ maintainer confirming the interpretation and choosing the predicate/tests.
 **Priority:** 7
 **Difficulty:** 3
 **Started:** 2026-08-27 (William Emerison Six <billsix@gmail.com>)
+**Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — citations re-verified.
 **Blocked on:** maintainer confirms the proposed interpretation (absolute unit = the scalar 1, NOT
 `1*e_1`) and decides what predicate/tests to build.
 **Recheck:** the remaining Open questions below are answered (maintainer-gated; `/recheck-blocked`
@@ -96,7 +97,7 @@ absolute unit alone.
   scalar multiples ("numerical derivation of a series") you then form. Zero is excluded because
   its multiples are all zero — no series.
 - **Absolute unit** = **the number 1** — the one unit that is canonical rather than chosen
-  (gacalc's `one` / `Scalar(1)`). **NOT `1*e_1`** — this contradicts the task's original working
+  (gacalc's `one` / `Scalar.from_scalar(1)`). **NOT `1*e_1`** — this contradicts the task's original working
   example, flagged for the maintainer.
 - **Relative units** = every adopted unit other than 1 (a meter, a corn flake, `e_1`) — "relative"
   because they exist only relative to a chosen system of units.

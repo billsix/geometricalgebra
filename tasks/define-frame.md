@@ -1,24 +1,38 @@
 # Define a `frame` (a set/basis of vectors) as a first-class concept
 
-**Status:** in-progress — **Phase 1 (`is_frame` + `make_frame` free functions) approved by Bill
-2026-08-23 and is representation-agnostic, so it proceeds now**; the `Frame`-class representation
-decision (below) stays open and only gates the later phases. Phase 1 = `are_linearly_independent` +
-`is_frame` pass-through + `make_orthogonal_frame` (Bill's rejection method), then a proof that
-Hestenes' (same-page, p. 27) orthogonalization is the same. **Parts 1a + 1b IMPLEMENTED 2026-08-23**
-in `src/gacalc/frame.py` (+ `tests/test_frame.py`, 10 tests; full suite 380 passed; ruff + ty clean).
+**Status:** in-progress — **Phase 1 DONE 2026-09-02** (`are_linearly_independent`/`is_frame`,
+`make_orthogonal_frame` + `make_orthogonal_frame_hestenes` in `src/gacalc/frame.py`, and the equivalence
+tests `c_k = |A_{k-1}|² w_k` in `tests/test_frame.py`, 16 tests). Remaining: **(a)** the `Frame`-class
+representation decision (open — the maintainer's call; see "The representation decision"); **(b)** the
+codebase sweep, gated on (a); **(c)** the optional prose proof of H&S eqs 3.1–3.2. The Lean side is its
+own task, `tasks/lean-frame-coverage.md`, **parked by the maintainer 2026-10-04** ("not ready for frames
+yet"). The pre-2026-10-04 status narrative is kept verbatim under "History" below.
+**Priority:** 8 (raised from 4 on 2026-10-04, William Emerison Six <billsix@gmail.com>: frames are
+parked on the Lean side and the remaining work waits on the representation decision; restore a low
+number when frames are picked back up)
+**Difficulty:** 7
+**Created:** 2026-07-22 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
+Prerequisite for reciprocal frames / outermorphisms / geometric calculus — see
+`tasks/reference/galgebra-comparison.md` (Findings 1, 3b, 5).
+
+## History — the Phase-1 status narrative as it stood 2026-09-02 (moved out of the header 2026-10-04)
+
+Phase 1 (`is_frame` + `make_frame` free functions) was approved by the maintainer 2026-08-23 as
+representation-agnostic, so it proceeded ahead of the `Frame`-class representation decision, which
+stays open and only gates the later phases. Phase 1 = `are_linearly_independent` + `is_frame`
+pass-through + `make_orthogonal_frame` (the maintainer's rejection method), then a proof that Hestenes'
+(same-page, p. 27) orthogonalization is the same. **Parts 1a + 1b IMPLEMENTED 2026-08-23** in
+`src/gacalc/frame.py` (+ `tests/test_frame.py`, 10 tests; full suite 380 passed; ruff + ty clean).
 **Part 1c — equivalence TESTS DONE 2026-08-23.** `tests/test_frame.py` proves Hestenes'
-`c_k = Ã_{k-1} A_k` equals Bill's rejection via `c_k == |A_{k-1}|² · w_k`, symbolic (exact) and numeric,
-in 2D and 3D (12 tests; full suite green; ruff + ty clean). The formal *written* proof (prose) is
-optional next. **Both methods are now PUBLIC and kept for teaching (Bill, 2026-08-23):**
+`c_k = Ã_{k-1} A_k` equals the maintainer's rejection via `c_k == |A_{k-1}|² · w_k`, symbolic (exact)
+and numeric, in 2D and 3D (12 tests; full suite green; ruff + ty clean). The formal *written* proof
+(prose) is optional next. **Both methods are now PUBLIC and kept for teaching (William Emerison Six <billsix@gmail.com>, 2026-08-23):**
 `make_orthogonal_frame` (rejection) **and** `make_orthogonal_frame_hestenes` (closed-form blade
 product), cross-referencing docstrings, equivalence enforced by the tests — deliberately UNLIKE the
 archived blade-square-sign task, where one form was optimal and replaced the other. Zero-vector
 question resolved (keep the raise). **Generated-classes question: investigated — NO, keep as free
-functions (see "Generated classes?" below).**
-**Priority:** 4
-**Difficulty:** 7
-Created 2026-07-22. Prerequisite for reciprocal frames / outermorphisms / geometric calculus — see
-`tasks/reference/galgebra-comparison.md` (Findings 1, 3b, 5).
+functions (see "Generated classes?" below).** The symbolic tests were made fully general 2026-09-02
+(14 → 16 tests; see Part 1c).
 
 ## Goal
 
@@ -27,7 +41,7 @@ Introduce a **frame** — an ordered set of vectors `{a_1, …, a_k}` spanning a
 Today gacalc has only the *implicit* standard basis (`basis_vector(i)` and the class constants
 `Vector2.e_1` …); there is no object for "an arbitrary set of vectors" you can operate on as a unit.
 
-## Motivating example (Bill)
+## Motivating example (the maintainer)
 
 Create a frame from a set of vectors and **orthogonalize / orthonormalize** it *the Hestenes way* —
 Gram–Schmidt expressed with the **rejection** operator, not coordinates: each new vector has the
@@ -38,7 +52,7 @@ gacalc already has the pieces: `base.reject` (orthogonal component), `base.norma
 "fold `reject` over the vectors." (Pin the exact Hestenes & Sobczyk page for the orthogonalization
 when implementing — do not cite a page unverified.)
 
-## The representation decision (OPEN — Bill's call; blocks everything else)
+## The representation decision (OPEN — the maintainer's call; blocks everything else)
 
 How should a frame be represented? Sketch of the options, trade-offs to weigh:
 
@@ -56,20 +70,20 @@ How should a frame be represented? Sketch of the options, trade-offs to weigh:
 because the downstream goals (reciprocal frames, linear operators, easier inverses) all need the
 individual vectors + metric, which a bare blade throws away.
 
-## Phase 1 — the frame predicate + Bill's orthogonalization, then prove Hestenes' equals it
+## Phase 1 — the frame predicate + the maintainer's orthogonalization, then prove Hestenes' equals it
 
 Free functions over a sequence of vectors, **representation-agnostic** (they work whether or not a
 `Frame` class later wraps them — this is galgebra's shape too, a bare `Sequence[Mv]` with operations
 elsewhere), so Phase 1 proceeds **without** the `Frame`-class representation decision. All primitives
-exist in `base.py`: `outer_product_of_vectors` (574, the `a_1 ∧ … ∧ a_k` blade + its `== 0`
-dependence test), `reject` (807), `is_orthogonal_to` (615, already `np.isclose`-based), `normalize`
-(349), `scalar_product` (475), `magnitude` (324).
+exist in `base.py`: `outer_product_of_vectors` (the `a_1 ∧ … ∧ a_k` blade + its `== 0`
+dependence test), `reject`, `is_orthogonal_to` (already `np.isclose`-based), `normalize`,
+`scalar_product`, `magnitude`.
 
 ### Definitions (corrected to Hestenes & Sobczyk, *Clifford Algebra to Geometric Calculus*)
 
 Hestenes defines a **frame** as a set of vectors whose **wedge across all of them is nonzero** —
 `a ∧ b ∧ c ∧ … ≠ 0` — i.e. **linear independence** (NOT orthogonality; oblique frames are normal,
-which is the whole point of reciprocal frames). Bill confirmed this from the book 2026-08-23:
+which is the whole point of reciprocal frames). The maintainer confirmed this from the book 2026-08-23:
 **Hestenes & Sobczyk, *Clifford Algebra to Geometric Calculus*, page 27** — where both the frame
 definition (wedge nonzero) and the orthogonalization (Part 1c) appear.
 
@@ -81,9 +95,9 @@ definition (wedge nonzero) and the orthogonalization (Part 1c) appear.
 - **`is_frame(vectors)` → bool** — a **pass-through** to `are_linearly_independent`. A frame *is* a
   linearly independent set.
 
-### Part 1b — orthogonalization, Bill's way FIRST
+### Part 1b — orthogonalization, the maintainer's way FIRST
 
-Implement **Bill's** rejection method (not Hestenes' formula — that comes in 1c): keep the first
+Implement **the maintainer's** rejection method (not Hestenes' formula — that comes in 1c): keep the first
 vector as-is; each subsequent `w_{k+1}` is `v_{k+1}` with the span of the previous vectors rejected
 out, as sequential rejection `reject(reject(… reject(v_{k+1}, w_1) …), w_k)` (equals rejecting the
 span blade, since the `w_j` are already mutually orthogonal). The function is **`make_orthogonal_frame(vectors)`**.
@@ -92,9 +106,9 @@ Precondition: the input **is a frame** (`is_frame` true); a non-frame input **ra
 kept; an `orthonormalize` (`normalize` each result) is a later follow-up. Post-condition, worth a small
 `is_orthogonal_frame` helper to state/test: the result is mutually orthogonal AND still a frame.
 
-### Part 1c — prove Hestenes' orthogonalization equals Bill's — UNBLOCKED 2026-08-23 (definition in hand)
+### Part 1c — prove Hestenes' orthogonalization equals the maintainer's — UNBLOCKED 2026-08-23 (definition in hand)
 
-**Hestenes' p. 27 orthogonalization, transcribed by Bill (H&S eqs 3.1–3.2):**
+**Hestenes' p. 27 orthogonalization, transcribed by the maintainer (H&S eqs 3.1–3.2):**
 
 - **(3.1)** `A_0 := 1` (scalar), `A_1 := v_1`, `A_2 := v_1 ∧ v_2`, …, `A_k := v_1 ∧ v_2 ∧ … ∧ v_k` —
   the outer product (k-blade) of the first k frame vectors, so `A_k = A_{k-1} ∧ v_k`. (In gacalc:
@@ -102,18 +116,18 @@ kept; an `orthonormalize` (`normalize` each result) is a later follow-up. Post-c
 - **(3.2)** `c_k := Ã_{k-1} A_k` — the **reverse** of the previous blade times the current blade
   (geometric product). The `{c_k}` are the orthogonal frame.
 
-(Equation numbers per Bill's transcription of p. 27, 2026-08-23. H&S 3.3 is a separate result, not
+(Equation numbers per the maintainer's transcription of p. 27, 2026-08-23. H&S 3.3 is a separate result, not
 used here.)
 
-**Why this equals Bill's rejection method (the proof crux).** Because `A_k = A_{k-1} ∧ v_k`, and
+**Why this equals the maintainer's rejection method (the proof crux).** Because `A_k = A_{k-1} ∧ v_k`, and
 wedging a blade with a vector keeps only the part of `v_k` *orthogonal* to that blade's subspace — and
 for that orthogonal part the wedge equals the geometric product — we have `A_k = A_{k-1} ∧ v_k =
-A_{k-1} v_k^⊥`, where `v_k^⊥` is exactly the **rejection of `v_k` from span(v_1…v_{k-1})** — Bill's
+A_{k-1} v_k^⊥`, where `v_k^⊥` is exactly the **rejection of `v_k` from span(v_1…v_{k-1})** — the maintainer's
 `w_k` (what `make_orthogonal_frame` computes). Therefore
 
 >   `c_k = Ã_{k-1} A_k = Ã_{k-1} A_{k-1} v_k^⊥ = |A_{k-1}|² · v_k^⊥`,
 
-since `Ã_{k-1} A_{k-1} = |A_{k-1}|²` is a **positive scalar**. So **`c_k` = Bill's rejection `w_k`
+since `Ã_{k-1} A_{k-1} = |A_{k-1}|²` is a **positive scalar**. So **`c_k` = the maintainer's rejection `w_k`
 scaled by the positive scalar `|A_{k-1}|²`** (and `c_1 = v_1 = w_1` exactly, as `|A_0|² = 1`). The two
 orthogonalizations give the **same orthogonal directions**, identical up to a positive per-vector
 length factor `|A_{k-1}|²` — *exactly* equal only after normalization. So the honest theorem is
@@ -138,7 +152,7 @@ scalar·rejection); `==` returns False while the eager-simplifying subtraction r
 (The general `==`-based symbolic tests elsewhere in the suite work only because both sides come from
 the *same* construction; cross-construction equality needs the subtraction form.)
 
-**TODO — make the symbolic tests fully general (Bill, 2026-08-23) — DONE 2026-09-02
+**TODO — make the symbolic tests fully general (William Emerison Six <billsix@gmail.com>, 2026-08-23) — DONE 2026-09-02
 (William Emerison Six <billsix@gmail.com>).** The symbolic tests for **both** orthogonalizations now
 run on fully-general `symbol * basis` frames of the full dimension:
 
@@ -170,7 +184,7 @@ Gate: `tests/test_frame.py` 14 → 16 tests; full suite **441 passed**; ruff + `
 concrete. The intent — every symbolic case a general full-dimension frame — was applied to the file
 as it actually stood.)
 
-**Proof plan (when Bill greenlights writing the prose):** (i) the formal argument above, tightened — justify
+**Proof plan (when the maintainer greenlights writing the prose):** (i) the formal argument above, tightened — justify
 `A_k = A_{k-1} v_k^⊥` (wedge-with-a-blade keeps the orthogonal part; geometric = wedge there) and that
 `c_k` is grade 1 and orthogonal to all prior `c_j`; (ii) a **computational cross-check** — implement
 Hestenes' `c_k = Ã_{k-1} A_k` (via `reverse` + `outer_product_of_vectors` of the prefix), and assert
@@ -179,29 +193,30 @@ plus numeric spot checks. Cite H&S p. 27, eqs 3.1–3.2.
 
 **What "different means" actually is, and 1c implementation notes (new understanding, 2026-08-23):**
 
-- **Hestenes' method is closed-form / "parallel"; Bill's is recursive / "sequential."** Each Hestenes
+- **Hestenes' method is closed-form / "parallel"; the maintainer's is recursive / "sequential."** Each Hestenes
   `c_k = Ã_{k-1} A_k` is computed **directly from the original prefix** `v_1…v_k` (build the blades,
-  reverse, multiply) — the `c_k` do not reference each other. Bill's `w_k` is built **from the already-
+  reverse, multiply) — the `c_k` do not reference each other. The maintainer's `w_k` is built **from the already-
   orthogonalized** `w_1…w_{k-1}` (sequential rejection). That is the "different means"; the proof
   bridges the two, and `c_k = |A_{k-1}|² w_k` is the exact bridge.
 - **`c_k` is a vector (grade 1)** — algebraically `|A_{k-1}|² v_k^⊥`. In code the raw geometric product
   `Ã_{k-1} A_k` may carry an identically-zero higher-grade term (the same container-widening `reject`
   guards against), so the cross-check should take `.r_vector_part(1)` of it, exactly as `base.reject`
   narrows.
-- **The scalar factor is `A_{k-1}.magnitude_squared()`** (`= Ã_{k-1} A_{k-1}`, gacalc `base.py:~347`) —
+- **The scalar factor is `A_{k-1}.magnitude_squared()`** (`= Ã_{k-1} A_{k-1}`, gacalc
+  `MultiVectorBase.magnitude_squared` in `base.py`) —
   so the cross-check asserts `r_vector_part(1)(reverse(A_{k-1}) * A_k) == A_{k-1}.magnitude_squared() * w_k`.
   Blades come from `outer_product_of_vectors(*vectors[:k])`; reverse from `.reverse()`.
 - **After normalization the two frames are *identical*** (the factor `|A_{k-1}|² > 0` preserves
   direction and sign), which is why the honest theorem is "equal up to a positive scalar per vector"
-  and why a later `orthonormalize` makes Hestenes' and Bill's frames literally coincide.
+  and why a later `orthonormalize` makes Hestenes' and the maintainer's frames literally coincide.
 - **Recursive volume relation** (falls out, may help the proof): `|A_k|² = |A_{k-1}|² · |v_k^⊥|²`, so
   `|A_k|² = ∏_{j≤k} |w_j|²` — the squared volume of the parallelotope is the product of the orthogonal
   heights, the GA statement of Gram-determinant / Hadamard.
 
 **Note (secondary sources, for context):** GA orthogonalization is rejection-based (perpendicular
 component `a∧B / B`, i.e. gacalc's `reject`, already cited to H&S **p. 18**); the section is 1-3
-"Frames and Matrices". The exact p. 27 statement above is Bill's transcription (the book is
-borrow-walled online, so it could not be fetched — the primary source is Bill's copy).
+"Frames and Matrices". The exact p. 27 statement above is the maintainer's transcription (the book is
+borrow-walled online, so it could not be fetched — the primary source is the maintainer's copy).
 
 **Placement:** module-level free functions over `MultiVectorBase` vectors — a new
 `src/gacalc/frame.py` (or alongside the vector ops in `base.py`); decide when implementing.
@@ -211,7 +226,7 @@ borrow-walled online, so it could not be fetched — the primary source is Bill'
 the equivalence cross-check (1c); ty clean (src/tests/tools); generator deterministic; doc-regions OK;
 `make format` green.
 
-### Phase-1 decisions (all settled 2026-08-23, Bill)
+### Phase-1 decisions (all settled 2026-08-23, William Emerison Six <billsix@gmail.com>)
 
 1. **Independence-predicate name → `are_linearly_independent`** (with `is_frame` a pass-through to it).
 2. **Orthogonalizer name → `make_orthogonal_frame`.**
@@ -227,21 +242,22 @@ the equivalence cross-check (1c); ty clean (src/tests/tools); generator determin
   `is_orthogonal_to`). **`is_frame`** is a one-line pass-through.
 - **`make_orthogonal_frame(vectors)`** — **iterative** rejection (`reject` one prior vector at a time),
   chosen over blade rejection because gacalc's `reject` only implements grade-1/grade-2 spans, so
-  rejecting from a 3-vector (trivector) span would hit its `raise`; the pairwise chain only ever rejects
+  rejecting from a 3-vector (trivector) span would hit its `raise` (lifting that restriction is
+  `tasks/generalize-reject-reflect-higher-grade.md`); the pairwise chain only ever rejects
   from a single vector and is equal since the priors are mutually orthogonal. First vector returned
   unchanged; orthogonal, not orthonormal. Raises `ValueError` on a dependent (non-frame) input.
 - **Refinements made while implementing:** a **non-vector** member (e.g. a bivector) **raises `ValueError`**
-  (a category error, not "a dependent frame" — Bill's steer 2026-08-23); an **empty** sequence returns
+  (a category error, not "a dependent frame" — the maintainer's steer 2026-08-23); an **empty** sequence returns
   `False`. Tests cover independent/dependent 2D & 3D, oblique frames, symbolic exact orthogonality,
   numeric 3D orthogonality, first-vector-unchanged, and both raises.
 - Gates: 10 new tests pass; full suite **380 passed**; ruff + `ruff format --check` + ty all clean.
 
-**Zero-vector handling — RESOLVED (Bill, 2026-08-23): keep the raise.** A zero vector in a frame is
+**Zero-vector handling — RESOLVED (William Emerison Six <billsix@gmail.com>, 2026-08-23): keep the raise.** A zero vector in a frame is
 almost certainly a bug worth surfacing loudly; a caller expecting possibly-zero vectors checks first.
 So a zero member (not `is_vector()` in gacalc) raises `ValueError` like any other non-vector — matching
 the current implementation.
 
-### Generated classes? — investigated 2026-08-23 (Bill asked): NO
+### Generated classes? — investigated 2026-08-23 (the maintainer asked): NO
 
 Should any of Phase 1 be added to the **generated** per-algebra classes (`g1`/`g2`/`g3`, via
 `tools/gen_specialized.py`)? **No — keep them as representation-agnostic free functions in `frame.py`.**
@@ -261,7 +277,8 @@ Should any of Phase 1 be added to the **generated** per-algebra classes (`g1`/`g
   `make_orthogonal_frame(list[Vector3])` currently returns `list[MultiVectorBase]` statically (runtime
   elements *are* `Vector3`, since `reject` narrows to `type(value)`). Making it return `list[Vector3]`
   would be a plain `TypeVar`-generic signature — but it can only be *sound* once `reject`/the transform
-  layer report the concrete type, which is exactly `tasks/precise-typing-remaining-methods.md` /
+  layer report the concrete type, which is exactly the (archived)
+  `tasks/archive/2026/08/26/precise-typing-remaining-methods.md` /
   [[generated-product-typing]]. So park frame type-precision under that task, not here, and not as
   generated code.
 
@@ -296,7 +313,7 @@ Read from galgebra 0.6.0 source for *ideas*, to adapt to gacalc's style — not 
   "inverse without RREF" idea. It builds the frame's pseudoscalar `E = v_1 ∧ … ∧ v_n`, then each
   reciprocal vector `vⁱ = (−1)ⁱ (v_1 ∧ … skip i … ∧ v_n) · E`, normalized by `E²` so
   `vⁱ · v_j = δⁱ_j`. `mode='append'` returns `E²` separately instead of dividing (keeps things exact
-  / factored). `Ga.mvr()` is the same for the algebra's own basis. **This is the mechanism Bill's
+  / factored). `Ga.mvr()` is the same for the algebra's own basis. **This is the mechanism the maintainer's
   "better than RREF" intuition points at** — coordinates/inverses come from wedges and the
   pseudoscalar, no row reduction.
 - **Linear transform = outermorphism, defined by a frame** (`lt.py`, `class Lt`) — stored as
@@ -307,13 +324,13 @@ Read from galgebra 0.6.0 source for *ideas*, to adapt to gacalc's style — not 
   the **inverse** built from those — no matrices, no RREF. This is the concrete shape of "linear
   operations, my own way," and it sits directly on top of frames + reciprocal frames.
 
-## Future directions (Bill's side notes — downstream, NOT in this task's scope)
+## Future directions (the maintainer's side notes — downstream, NOT in this task's scope)
 
 - **GA-native linear operators** — "linear operations like matrix algebra, but my own way." This is
   the **outermorphism / `Lt`** territory (`galgebra-comparison.md` Finding 3b, roadmap #4): a linear
   map defined on vectors, extended to the whole algebra by `f(a ∧ b) = f(a) ∧ f(b)`. Frames +
   reciprocal frames are the substrate (`f(x) = Σ f(a_i) (a^i · x)`).
-- **Inverses without RREF** — Bill's intuition that GA gives a cleaner inverse than reduced-row-
+- **Inverses without RREF** — the maintainer's intuition that GA gives a cleaner inverse than reduced-row-
   echelon. In GA a linear map's inverse comes from its **adjoint and how it scales the pseudoscalar**
   (`det = f(I)/I`; `f⁻¹` via the reciprocal frame / outermorphism), no row reduction. Worth its own
   task once frames + reciprocal frames + outermorphisms exist; capture the "better than RREF" idea
@@ -326,3 +343,7 @@ Read from galgebra 0.6.0 source for *ideas*, to adapt to gacalc's style — not 
   roadmap rows "reciprocal frames" and "outermorphisms / general linear transforms."
 - Building blocks already present: `base.reject`, `base.normalize`, `base.outer_product_of_vectors`,
   `base.is_orthogonal_to`, `base.basis_vector`.
+- `tasks/lean-frame-coverage.md` — the Lean coverage of `frame.py` (parked by the maintainer
+  2026-10-04; `lean-ga-proof-architecture.md`'s coverage table lists `frame.py` as NONE).
+- `tasks/generalize-reject-reflect-higher-grade.md` — lifts the grade-1/grade-2-span limit of `reject`
+  that forced `make_orthogonal_frame`'s iterative (pairwise) rejection.

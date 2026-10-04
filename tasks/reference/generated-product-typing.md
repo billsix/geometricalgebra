@@ -208,7 +208,7 @@ already correct (`G.wedge(G) → G`).
 
 A survey of `base.py`'s return annotations for methods still returning the abstract type where
 a concrete one is statically knowable. Full analysis + rationale in
-`tasks/precise-typing-remaining-methods.md`.
+`tasks/archive/2026/08/26/precise-typing-remaining-methods.md`.
 
 - **`project` / `reject` / `reflect` — DONE 2026-08-03, extended to any blade grade 2026-08-22.**
   The function-returning family were `ComposableFunction[MultiVectorBase]` /
@@ -234,7 +234,7 @@ a concrete one is statically knowable. Full analysis + rationale in
   `reject`'s inner `r` now narrows to grade via
   `type(value).from_blade_dict(rejected.r_vector_part(1)…)`, mirroring `project` and matching the
   CLAUDE.md Architecture claim ("project/reject are grade-preserving"). Guarded by `assert_type`
-  (`Vector`/`Vector.project`/`reject`/`reflect → Vector_n`, 2D+3D). Origin: Bill noticing
+  (`Vector`/`Vector.project`/`reject`/`reflect → Vector_n`, 2D+3D). Origin: the maintainer noticing
   `proj_b(a)` of a vector is a `Vector`, not `MultiVectorBase`.
 - **The project/reject/reflect *pass-through* instance methods (2026-08-26)** —
   `projected_onto(onto)` / `rejected_away_from(away_from)` / `reflected_across(across)` on
@@ -274,7 +274,7 @@ g1–g3** — but the flagged code was *byte-identical* to g1–g3. Root cause: 
 incomplete at smaller module scale** and only catches several genuinely-imprecise (but latent)
 patterns once the module is ~3× larger (g4 = 529 KB vs g3 = 166 KB). g3 "passing" was ty missing
 them, not the code being sound. All were fixed with real changes (no suppressions); each also made
-g1–g3 more sound. Work record + full tally: `tasks/generator-ty-clean-high-dim.md`.
+g1–g3 more sound. Work record + full tally: `tasks/archive/2026/08/23/generator-ty-clean-high-dim.md`.
 
 **Durable rules that came out of it:**
 

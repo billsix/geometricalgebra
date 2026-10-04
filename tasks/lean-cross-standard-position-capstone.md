@@ -14,8 +14,8 @@ way `StandardPosition.lean` caps the project/reject arc. "Done" = a capstone the
 stranded step-lemmas (so they are no longer stranded) and `make lean` is green.
 
 **Status:** proposed — needs go-ahead. **Priority:** 6. **Difficulty:** 7.
-**Created:** 2026-10-03 (William Emerison Six <billsix@gmail.com>). Surfaced by the dead-code audit
-(`tasks/lean-proofs-dead-code-audit.md`): those step-lemmas are *proven-but-not-assembled*, not dead.
+**Created:** 2026-10-03 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>). Surfaced by
+the dead-code audit (`tasks/archive/2026/10/03/lean-proofs-dead-code-audit.md`): those step-lemmas are *proven-but-not-assembled*, not dead.
 **See also:** `tasks/reference/reduction-to-standard-position.md` (the arc; its "full bootstrap arc"
 section names the cross product as the one step whose equality is not yet assembled — this task);
 `tasks/reference/lean-ga-proof-architecture.md`.
@@ -37,11 +37,11 @@ section names the cross product as the one step whose equality is not yet assemb
 - **What already exists in `CrossStandardPosition.lean`** (the ingredients; cited counts from the
   2026-10-03 audit):
   - rotation algebra: `rotYZ_smul/_sub/_preserves_dot`, `rotXY_vec`/`rotXZ_vec`/`rotYZ_vec` (used).
-  - **stranded steps (0 citations — to be consumed by the capstone):** `rotYZ_fixes_e1` (`:63`),
-    `vecReject_rotXZ_equivariant`/`_rotYZ_equivariant` (`:77`,`:82`),
-    `cross_rotXY_equivariant`/`_rotXZ_`/`_rotYZ_` (`:94`,`:109`,`:124`),
-    `reduceToPlane_a_on_e1` (`:167`), `reduceToPlane_b_in_plane` (`:180`),
-    `vecReject_reduced` (`:205`), `cross_reduced` (`:213`).
+  - **stranded steps (0 citations as of 2026-10-04, re-verified — to be consumed by the capstone):**
+    `rotYZ_fixes_e1`, `vecReject_rotXZ_equivariant`/`_rotYZ_equivariant`, the object-form
+    `cross_rotXY_equivariant`/`_rotXZ_`/`_rotYZ_` (their `_coord` leaves each have one citation —
+    the object form is the stranded one), `reduceToPlane_a_on_e1`, `reduceToPlane_b_in_plane`,
+    `vecReject_reduced`, `cross_reduced`.
 
 ## What to prove (the capstone)
 
@@ -64,9 +64,10 @@ optional and out of scope here (this task is the Lean capstone only).
 ## Open questions
 
 1. State the capstone purely over objects (`{a b : G3}` + `IsVector`), or in coordinates to match the
-   existing coordinate step-lemmas it assembles? My recommendation: coordinates for the capstone
-   statement (it must thread the explicit `(cos, sin)` of the reduction rotations, which are
-   coordinate data), consistent with how `StandardPosition.lean`'s capstone is stated.
+   existing coordinate step-lemmas it assembles? My recommendation: objects in the statement, with the
+   `(cos, sin)` of the reduction rotations introduced inside the proof via `reduceToPlane` — exactly
+   how `projectSP_eq_proj` is stated (`{b : G3} (hbv : IsVector b) … (a : G3) : projectSP a b = proj b a`)
+   with the angles hidden inside `alignSP`.
 2. Is a Python/notebook companion wanted (a `cross` "reduction" cross-check, mirroring `project_sp`),
    or is the Lean capstone sufficient? My recommendation: Lean only for now; file a separate task if a
    Python duplicate is desired.

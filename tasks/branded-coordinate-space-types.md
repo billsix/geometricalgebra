@@ -5,6 +5,7 @@ Six <billsix@gmail.com>, 2026-08-28). Do not start without a fresh go-ahead.
 **Priority:** 9
 **Difficulty:** 7
 **Created:** 2026-08-28 (spun out of the composable-function naming/patterns investigation)
+**Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
 **See also:** `tasks/archive/2026/08/29/document-composable-function-math-identity.md` (archived — the docs-only sibling — the
 investigation that produced both tasks), `tasks/reference/transform-and-composable-function-layer.md`.
 
@@ -32,13 +33,14 @@ vectors in robotics libraries).
 ## Why it's parked (the cost side, from the 2026-08-28 investigation)
 
 - **Today every use in both repos is `Vector → Vector` of one concrete class** (e.g. mvp
-  `demo05.py:135-141` annotates `InvertibleFunction[Vector]` throughout). Without branding,
+  `demos/demo05.py`'s paddle/world `translate` annotations are `InvertibleFunction[Vector]` throughout). Without branding,
   two parameters is pure ceremony (`[Vector, Vector]` everywhere); the branding is what carries
   all the value — and all the cost.
 - Every transform factory becomes space-parameterized; every vertex literal must be constructed
   *in* a space; `compose(list[...])` over a heterogeneous chain stops being expressible as
   `list[T]` (only chained binary `@` can thread `A→B→C` types).
-- `functions.py` is a leaf with an unbounded `TypeVar` on purpose (`functions.py:31-34`); a
+- `functions.py` is a leaf with an unbounded `TypeVar` on purpose (the module-level
+  `V = typing.TypeVar("V")`); a
   two-parameter redesign must preserve that layering.
 - Cross-repo blast radius: mvp imports these types in ~15+ demos, the Cayley layer, framebuffer
   code, and the book's `literalinclude` regions point at `functions.py` signatures — a signature

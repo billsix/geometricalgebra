@@ -34,7 +34,8 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   were already getting a wrong answer — blades and versors are unchanged. `A A⁻¹ = 1` for the
   vector, versor, bivector and trivector cases is machine-checked in `proofs/GacalcProofs/`.
 - **Angle-based methods now raise `ValueError` on a zero-vector operand** (breaking). `cosine`,
-  `abs_sin`, `is_orthogonal_to`, `is_parallel_to` (`MultiVectorBase`), and the 𝒢₂ `Vector.sine`
+  `abs_sin`, `is_orthogonal_to`, `is_parallel_to` (`MultiVectorBase`), the 𝒢₂ `Vector.sine`, and the
+  notebook helper `nbplotutils.sine`
   previously returned a meaningless `0/0` value or raised a bare `ZeroDivisionError` when given the
   zero vector; they now raise a clear `ValueError` — the angle (hence its cosine/sine, and
   orthogonality/parallelism framed through it) is undefined there. `area`/`volume` are unaffected (no

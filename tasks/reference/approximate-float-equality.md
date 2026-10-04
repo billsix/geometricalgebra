@@ -54,7 +54,7 @@ with `all(...)`, this is exactly "`numpy.allclose` but symmetric."
   also drops NumPy from this path (`np` is no longer imported by the generated
   modules).
 - **Both tolerances default to `0.0`**, and **all ~72 in-tree callers pass
-  `rel_tol=1e-5, abs_tol=1e-5`** explicitly. Rationale (Bill): the defaults should be
+  `rel_tol=1e-5, abs_tol=1e-5`** explicitly. Rationale (the maintainer): the defaults should be
   the honest ones — no silent tolerance at all, so a bare `a.isclose(b)` is *exact*
   equality — and each call site declares the tolerance it actually relies on. GA
   results are full of exact/near-zero blades (a rotated basis vector's off-axis parts,

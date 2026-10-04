@@ -449,7 +449,7 @@ The modules outside this table are in the subsection that follows it.
 | `right_contraction` | HAS | `rightContraction_vec_vec` (Contractions.lean) |
 | `r_vector_part` | HAS | `rVectorPart`, `rVectorPart_idem`, `rVectorPart_complete` (GradeProjection.lean) |
 | `is_orthogonal_to` | HAS | `perp_iff_mul_eq_wedge` (`a·b=0 ⟺ ab=a∧b`) (Predicates3D.lean) |
-| `is_parallel_to` | HAS | `wedge_parallel_smul` + the wedge-zero criterion (Predicates3D.lean); Python `is_parallel_to` fixed to the wedge-zero form |
+| `is_parallel_to` | PARTIAL | `wedge_parallel_smul` (`a ∧ ka = 0`) + the wedge-zero criterion (Predicates3D.lean); the converse (`a ∧ b = 0 ∧ a ≠ 0 ⟹ ∃ k, b = k·a`) is not stated — `tasks/lean-frame-coverage.md`; Python `is_parallel_to` fixed to the wedge-zero form |
 | `reverse` | HAS | `reverse_reverse`, `reverse_mul` (anti-automorphism), `reverse_vec`, `reverse_of_isVector`, `reverse_mul_vec` |
 | `inverse` | PARTIAL | blade/versor cases: `mul_vec_inverse_self`, `mul_biv_inverse_self`, `mul_triv_inverse_self`, `versorFromVectors_mul_inverse`, `inverse_mul`; general mixed-grade owned by existing `lean-general-multivector-inverse` |
 | `dual` | HAS | G2 `dual_vec`; G3 `dual`, `dual_vec` (Cross.lean), `dual_wedge_perp_left`/`_right` |
@@ -479,7 +479,7 @@ derivations and the Mathlib bridges are recorded in the archived step tasks unde
 ### The modules outside the original audit — `standardposition`, `functions`, `transforms`, `g1`
 
 The table above covers `base`/`vectorcalc`/`measure`. Six further modules were brought into scope on
-2026-10-04 (`tasks/lean-coverage-extend-transforms-frame-gn.md`); frames and the 3D rotor angle theorem are
+2026-10-04 (`tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md`); frames and the 3D rotor angle theorem are
 their own tasks, and `gn` waits on a general-n algebra.
 
 | Python | Status | Lean |

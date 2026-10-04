@@ -11,13 +11,13 @@ verified 2026-08-25** against `src/gacalc/gn.py`; the computational check
 ## What multiplication *is*, in `gn`
 
 A **blade** is an index sequence `α = (a₁,…,a_p)` meaning `e_{a₁}···e_{a_p}`. Write `dg(·)` for
-`decrease_grade` (the nested function inside `Gn._geometric_product`, `gn.py:131`) and `α ++ β` for
+`decrease_grade` (the nested function inside `Gn._geometric_product`, `gn.py`) and `α ++ β` for
 sequence concatenation. On blades the geometric product is, by definition,
 
 >   `e_α · e_β  =  dg(α ++ β)`   (a signed canonical blade),
 
 and on general multivectors it is extended **bilinearly** — `Gn` stores a multivector as a dict
-`{blade: coefficient}`, and `_geometric_product` (`gn.py:130`) sums `dg` over every pair of terms
+`{blade: coefficient}`, and `_geometric_product` (`gn.py`) sums `dg` over every pair of terms
 (one from each operand).
 
 Two structural facts, both immediate:
@@ -29,7 +29,7 @@ Two structural facts, both immediate:
   blade→coefficient map). So a signed canonical blade `λ·e_S` determines both `S` and `λ`: if
   `λ₁ e_{S₁} = λ₂ e_{S₂}` with `S₁, S₂` canonical, then `S₁ = S₂` and `λ₁ = λ₂`.
 
-## The four `decrease_grade` arms (`gn.py:131`)
+## The four `decrease_grade` arms (`gn.py`)
 
 `dg` recurses over `blade` via structural `match`; the arms, exactly as implemented:
 
@@ -101,7 +101,7 @@ through unchanged. The library hardcodes `+1`.
 ## Verification & cross-links
 
 - **Computational:** `(A*B)*C == A*(B*C)` holds for symbolic 𝒢₃ full multivectors (re-verified
-  2026-08-25; also `notebooks/displaymv.py:405` has a 𝒢₂ instance cell).
-- Code: `Gn._geometric_product` / its nested `decrease_grade` (`src/gacalc/gn.py:130`–).
+  2026-08-25; also `notebooks/displaymv.py` has a 𝒢₂ instance cell).
+- Code: `Gn._geometric_product` / its nested `decrease_grade` (`src/gacalc/gn.py`).
 - Origin: `tasks/archive/2026/08/25/prove-associativity-of-multiplication.md`.
 - Builds on the "explain gn multiplication" material.

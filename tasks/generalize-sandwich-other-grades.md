@@ -3,18 +3,23 @@
 **Status:** **partly DONE** 2026-06-08 · the Versor conjugation family landed; reflections + higher-dims remain
 **Priority:** 8
 **Difficulty:** 5
+**Created:** 2026-06-07 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
 
 **Update:** the implementation (`tasks/archive/2026/06/08/derived-sandwich-operation.md`) generated
 the **whole `Versor` conjugation family** via `dispatch_method`, not just
 `Versor·Vector` — so `Versor3.sandwich(Bivector3) → Bivector3`,
 `Versor3.sandwich(Trivector3) → Trivector3` (pseudoscalar invariance),
-`Versor3.sandwich(Versor3) → Versor3`, etc. are **already done and tested**. What
-remains really is future work:
+`Versor3.sandwich(Versor3) → Versor3`, etc. are **generated** (the per-operand `match` arms of the
+generated `Versor.sandwich`); **only the vector operand is tested** (`tests/test_transforms.py`'s
+`test_sandwich_*`). The Lean layer covers the general operand: `proofs/GacalcProofs/Sandwich.lean`
+`sandwich_preserves_dot` (any operands `u`, `v`), `sandwich_fixes_own_bivector`,
+`sandwich_preserves_wedge`. What remains really is future work:
 
 - **Vector-as-versor reflections** (`v X v⁻¹`, an improper versor) — orientation
   / sign conventions to settle. Not generated (only the even `Versor` class gets a
   `sandwich`).
-- **Higher dimensions** (𝒢₄+) once those algebras are generated.
+- **Higher dimensions** — 𝒢₄/𝒢₅ are generated release-only; verify the generated `Versor` sandwich
+  arms there via `make test-all-dims` (plus Python tests for the bivector/trivector operands).
 
 The original notes below are superseded for the Versor-grade cases.
 
@@ -36,7 +41,8 @@ applies to every operand grade, and each comes out type-correct.
   `{0,2}·{2} = {0,2}` then `·Versor3` = `{0,2}` — but the *grade-0 part of the full
   sandwich* is zero (a versor conjugation preserves grade 2), so the derived
   result is a pure `Bivector3`. Worth confirming symbolically as we did for the
-  vector case.
+  vector case. (Machine-checked since: `Sandwich.lean` `sandwich_fixes_own_bivector` and the
+  dot/wedge preservation for any operand; no Python test yet.)
 - **`Versor3.sandwich(Trivector3) → Trivector3`** — the pseudoscalar is invariant
   under rotation, so this should derive to the identity on `Trivector3` (a nice
   sanity check / teaching point).
@@ -46,8 +52,8 @@ applies to every operand grade, and each comes out type-correct.
 - **Vector as the versor (reflections):** `v X v⁻¹` is a *reflection* (an
   improper versor). Could generate `Vector.sandwich(...)` for reflections too —
   but mind the sign/orientation conventions (reflections flip orientation).
-- **Higher dimensions:** once 𝒢₄+ are generated, the same family applies (with
-  more grades).
+- **Higher dimensions:** 𝒢₄/𝒢₅ exist (release-only, `make test-all-dims`); the same family
+  applies (with more grades).
 
 ## Why deferred
 
@@ -63,5 +69,3 @@ teaching example), so the generator surface grows only where it's exercised.
 - The generic fallback already covers all grades: `MultiVectorBase.sandwich`
   in `base.py` (runtime `type(x)` projection). This future work is about
   *type-correct closed forms* for the specialized classes, not new capability.
-```
-```

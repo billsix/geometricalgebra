@@ -1,9 +1,16 @@
 # Use `bivector_from_vectors` / `i` in the notebooks and unit tests
 
-**Status:** proposed — **BLOCKED on a small prerequisite** (narrow `bivector_from_vectors` / `i` for
-`Gn`; see Finding). Not cleanly actionable until that lands.
+**Status:** proposed — not cleanly actionable until its prerequisite lands (see Finding).
+**Depends on:** `tasks/narrow-gn-bivector-from-vectors-and-i.md` (filed 2026-10-04 on the maintainer's
+go-ahead) — the Gn-narrowing prerequisite (`Gn.i` / `Gn.bivector_from_vectors` typed `-> Gn`
+instead of `-> MultiVectorBase`), **filed 2026-10-04** as a task (Q2 below).
 **Priority:** 6
 **Difficulty:** 3
+**Created:** 2026-08-14
+**Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — prerequisite re-verified still
+unmet (`gn.py`'s `i` still returns `MultiVectorBase`, no `bivector_from_vectors` override); the
+"BLOCKED" wording replaced by a dependency (the gate is within our control); line-number anchors
+replaced by expressions.
 
 ## Finding (2026-08-27) — the adoption downgrades typing for `Gn`, so it needs a prerequisite
 
@@ -13,9 +20,10 @@ Attempted the adoption; **reverted, no changes kept.** Verified every candidate 
   the geometric/outer product, the Lagrange-identity / plane-decomposition cells). The task already
   says to keep those — correct, they stay.
 - **The genuine "plane/bivector as a means to an end" sites are all in `Gn` / `MultiVector` context:**
-  `notebooks/displaymv.py:443` (`biv = vec_a ^ vec_b`, then used across ~8 downstream cells —
-  `biv*biv`, `biv.dual(3)`, `biv.dot(biv.dual(3))`, …) and `tests/test_conformance.py:254`
-  (`b = vec(n,0) ^ vec(n,10)`, a bivector fed to `exp`). These are the only real scaffolding uses.
+  `notebooks/displaymv.py` (the cell `biv: MultiVector = vec_a ^ vec_b`, then used across ~8
+  downstream cells — `biv*biv`, `biv.dual(3)`, `biv.dot(biv.dual(3))`, …) and
+  `tests/test_conformance.py` (the line `b: Gn = vec(n, 0) ^ vec(n, 10)`, a bivector fed to `exp`).
+  These are the only real scaffolding uses.
 
 **The blocker (root cause):** **`Gn.bivector_from_vectors` / `Gn.i` return `MultiVectorBase`, not
 `Gn`** — only the *generated graded* `Vector_n` types got the narrowing overload (Tier 2 of the
@@ -35,14 +43,14 @@ site where adoption is both meaningful and non-regressive.
 hand-written override in `gn.py` typing `Gn.bivector_from_vectors(a, b) -> Gn` and `Gn.i(a, b) -> Gn`
 (the wedge, and its normalization, of two `Gn` vectors *is* a `Gn`, so `-> Self` is sound; `i` also
 raises on parallel vectors, unchanged). That mirrors the Tier-2 graded narrowing, which simply never
-covered the non-generated `Gn`. Once `Gn` narrows too, the `displaymv.py:443` / `test_conformance:254`
-adoptions are clean (no typing downgrade), and this task can proceed. **Definitional equality is
+covered the non-generated `Gn`. Once `Gn` narrows too, the `displaymv.py` `biv` /
+`test_conformance.py` `b: Gn = vec(n, 0) ^ vec(n, 10)` adoptions are clean (no typing downgrade), and this task can proceed. **Definitional equality is
 confirmed** (`Gn.bivector_from_vectors(a, b) == a ^ b`), so the runtime/display is unchanged either
 way — this is purely a typing gate.
 
-**Recommendation:** do the `Gn`-narrowing prerequisite first (its own small task), then this one. If
-that's declined, this task should be **closed** — there are no clean adoption sites at present.
-(Priority dropped 5 → 6 to reflect the block.)
+**Recommendation:** do the `Gn`-narrowing prerequisite first (`tasks/narrow-gn-bivector-from-vectors-and-i.md`,
+filed 2026-10-04), then this one. If that's declined, this task should be **closed** — there are no clean
+adoption sites at present. (Priority dropped 5 → 6 to reflect the dependency.)
 
 ## Goal
 
@@ -62,17 +70,18 @@ one of them should change:
   subject is the outer product itself (`a ∧ b = a·b`'s antisymmetric part, the
   Lagrange-identity derivation, `|a ∧ b| = |a||b|sinθ`, dot+wedge = geometric product)
   must keep spelling the wedge out; hiding it behind `bivector_from_vectors` would
-  erase the lesson. Most `displayg2.py` wedge uses (≈ lines 132–530) are this kind.
+  erase the lesson. Most `displayg2.py` wedge uses (from `a_vec.wedge(b_vec)` through the
+  `a_perp * b == a.wedge(b)` cell) are this kind.
 - **Constructing a plane as a means to an end** — adopt the helper. Where two vectors
   are wedged only to *get the plane they span* (then normalized, inverted, or fed to a
   rotation), `bivector_from_vectors(a, b)` / `i(a, b)` names the intent and reads as the
   math. Candidate sites found in a first pass (verify each before editing):
-  - `notebooks/displaymv.py:443` — `biv: MultiVector = vec_a ^ vec_b` (a raw bivector
+  - `notebooks/displaymv.py` — `biv: MultiVector = vec_a ^ vec_b` (a raw bivector
     from two vectors → `bivector_from_vectors`).
-  - `notebooks/displaymv.py:327,330,333` — `sym_vec3_1.wedge(sym_vec3_2)` and its
+  - `notebooks/displaymv.py` — the three `sym_vec3_1.wedge(sym_vec3_2)` cells and its
     `.inverse()` (the plane and its inverse).
-  - `notebooks/displaymv.py:308–321` — the `e1e2plane(...) ^ e1e2plane(...)` plane
-    constructions.
+  - `notebooks/displaymv.py` — the `e1e2plane(...) ^ e1e2plane(...)` (and `e2e3plane` /
+    `e1e3plane` / `e3e1plane`) plane constructions.
   - Any `(a ^ b).normalize()` used as "the unit plane" → `i(a, b)`.
 
 ## Tests
@@ -98,3 +107,6 @@ wedge/normalize itself unchanged.
    use them silently as scaffolding? Recommend: **one introductory cell** in the 𝒢₂ or
    𝒢₃ notebook that presents the helper right after the wedge is taught, then silent use
    elsewhere.
+2. ~~Should the Gn-narrowing prerequisite be filed as its own small task?~~ **Answered (a) by the
+   maintainer 2026-10-04:** filed as `tasks/narrow-gn-bivector-from-vectors-and-i.md`; this task waits
+   on it.

@@ -8,33 +8,33 @@ it doesn't restate it. Not a task; update in place. Created 2026-08-27 (William 
 
 ## Two-type capability split (`src/gacalc/functions.py`, a leaf module)
 
-- **`ComposableFunction[V]`** (`functions.py:74`) — a callable `V → V` you can compose, with **no
+- **`ComposableFunction[V]`** (`functions.py`) — a callable `V → V` you can compose, with **no
   inverse**. Generic over an **unbounded** `TypeVar V` (so the module is a dependency leaf — nothing in
   `gacalc` needs to be imported here).
-- **`InvertibleFunction[V]`** (`functions.py:187`) — subclass of `ComposableFunction` that **adds an
-  inverse**. `inverse(f)` (`functions.py:238`) returns the inverse `InvertibleFunction`; `identity()`
-  (`functions.py:353`) is the identity `InvertibleFunction`.
-- **`Linearity`** (`functions.py:47`, an `IntEnum` lattice) — tags a function LINEAR / AFFINE /
+- **`InvertibleFunction[V]`** (`functions.py`) — subclass of `ComposableFunction` that **adds an
+  inverse**. `inverse(f)` (`functions.py`) returns the inverse `InvertibleFunction`; `identity()`
+  (`functions.py`) is the identity `InvertibleFunction`.
+- **`Linearity`** (`functions.py`, an `IntEnum` lattice) — tags a function LINEAR / AFFINE /
   NONLINEAR; `to_matrix` (below) uses it to reject NONLINEAR.
-- **`NotInvertibleError`** (`functions.py:63`) — raised when an inverse is requested but unavailable.
-- **`compose`** (`functions.py:284-287`, **overloaded**) — composing a list of `InvertibleFunction`s
+- **`NotInvertibleError`** (`functions.py`) — raised when an inverse is requested but unavailable.
+- **`compose`** (`functions.py`, **overloaded**) — composing a list of `InvertibleFunction`s
   yields an `InvertibleFunction`; composing `ComposableFunction`s yields a `ComposableFunction` (the type
   degrades correctly). The runtime `composed_fn` is built at `:310`.
 
 ## Transform factories (`src/gacalc/transforms.py`, builds on + re-exports `functions.py`)
 
 These return `InvertibleFunction`s and are **representation-preserving** — they late-bind the basis from
-`type(vector).basis_vector(i)` (module docstring `transforms.py:14-27`), so the same factory works across
+`type(vector).basis_vector(i)` (module docstring `transforms.py`), so the same factory works across
 `G2`/`G3`/`Gn`:
-- **`translate(b)`** (`transforms.py:148`), **`uniform_scale(m)`** (`:518`), **`scale_non_uniform(*factors)`**
-  (`:558`). Since 0.0.19 the two scalar factories return `InvertibleFunction[V]`, the `V` inferred from the
+- **`translate(b)`** (`transforms.py`), **`uniform_scale(m)`**, **`scale_non_uniform(*factors)`**
+ . Since 0.0.19 the two scalar factories return `InvertibleFunction[V]`, the `V` inferred from the
   caller's annotation (a `typing.cast` at their return bridges what ty cannot see through the grade-general
   scalar product) — so `f: InvertibleFunction[g3.Vector] = uniform_scale(2.0)` type-checks under ty's
   invariance enforcement (`tasks/archive/2026/09/06/ty-invariance-transform-factories-bind-v.md`).
 
 ### Rotation factories (the trio + shared rotor factory)
-- **`projection_rotation`** (`transforms.py:177`), **`versor_rotation`** (`:227`), **`plane_rotation`**
-  (`:417`), **`bivector_rotation`** (`:336`) — different *specifications* of a rotation, all funnelling
+- **`projection_rotation`** (`transforms.py`), **`versor_rotation`**, **`plane_rotation`**
+ , **`bivector_rotation`** — different *specifications* of a rotation, all funnelling
   through the shared **`_unit_bivector_rotor_factory`** (`:280`, used as the default `rotor_for` at
   `:388,:488`). (The naming distinguishes the rotation *spec* from its rotor *formulation*.)
 - **`g2.rotate_90_degrees()`** (2026-09-06) — the one rotation factory that lives in a *generated*
@@ -46,7 +46,7 @@ These return `InvertibleFunction`s and are **representation-preserving** — the
   module). Emitter: `generate_quarter_turn` in `tools/gen_specialized.py`; design record
   `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`.
 
-### `to_matrix` (`transforms.py:611`)
+### `to_matrix` (`transforms.py`)
 Renders a function as a **homogeneous `(n+1)×(n+1)` matrix**, with numpy/sympy backends. A NONLINEAR
 function raises (per its `Linearity` tag); a `Gn` value needs its `n` supplied explicitly (unlike
 `G2`/`G3`, whose dimension is fixed). Since 0.0.19 its `fn` parameter is `InvertibleFunction[typing.Any]`

@@ -1,7 +1,8 @@
 # Push the delicate coordinate-core tier to object/getter form (optional)
 
 **Status:** proposed — needs go-ahead (spun off 2026-10-04 from the completed object-in-getters sweep,
-`tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md`)
+`tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md`; updated 2026-10-04, William
+Emerison Six <billsix@gmail.com>)
 **Priority:** 8 (optional; the valuable polynomial tier is already done)
 **Difficulty:** 8 (sqrt/`magnitude` algebra + delicate `calc`/`set` capstones)
 
@@ -20,8 +21,9 @@ These proofs are **not polynomial**, so `obtain`-getters + `ring` doesn't close 
 
 - **sqrt / `magnitude` / `normalizeVec`.** `magnitude a = √(normSq a)`, `normalizeVec a = (1/|a|)·a`, and
   G2 `versorFromVectors` is built from them. `ring` can't reason about `√`; these need `Real.sq_sqrt`
-  and nonnegativity side-conditions. There is currently **no object `normSq_nonneg` / `magnitude`
-  lemma layer** — that's the prerequisite (see below).
+  and nonnegativity side-conditions. There is currently **no object `normSq_nonneg` and no object
+  `magnitude_sq`** (only the coordinate `magnitude_sq_vec`); `Normalize.lean` already has the object
+  `normSq_normalizeVec`/`magnitude_normalizeVec` as the model — that's the prerequisite (see below).
 - **divide-by-`normSq(a∧b)` (degree blowup).** The plane-projection family (`reject`/`project_onto`
   onto `wedge a b`) divides by `normSq(a∧b)`, which is **quadratic** in `a,b`; `field_simp` on it
   cross-multiplies to degree-8 and times out. The `_coord` form exists precisely to prove these on a
@@ -34,8 +36,9 @@ These proofs are **not polynomial**, so `obtain`-getters + `ring` doesn't close 
 
 Add an **object `magnitude`/`normalizeVec` lemma layer** so the sqrt tier has getter-native tools:
 `normSq_nonneg {a} : 0 ≤ normSq a` (or per-grade), `magnitude_sq {a} (ha : IsVector a) : magnitude a ^ 2
-= normSq a` as an object lemma, `magnitude_normalizeVec`, `R⁻¹ = R̃` for unit versors (overlaps
-`tasks/lean-unit-versors-rotors-sandwich-with-reverse.md`), etc. Without these the conversions below just
+= normSq a` as an object lemma (shaped like the existing `Normalize.magnitude_normalizeVec`), `R⁻¹ = R̃`
+for unit versors (a one-liner on `mul_reverse_self_of_isEvenVersor`; see
+`tasks/lean-unit-versors-rotors-sandwich-with-reverse.md` Q3), etc. Without these the conversions below just
 re-derive sqrt facts inline each time.
 
 ## Targets (apply the recipes from the reference doc once the prereq exists)

@@ -3,7 +3,7 @@
 **Status:** proposed — needs go-ahead
 **Priority:** 7
 **Difficulty:** 6
-**Created:** 2026-09-26 **Updated:** 2026-09-26 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-09-26 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
@@ -27,11 +27,14 @@ terminology map), because "why is the constructor `from_real` but the method sti
   and probably a deprecation alias for one release. This is the single biggest cost.
 - The word "scalar" is used in the source in **three distinct senses**, and only ONE is a
   rename candidate. Conflating them is the trap this task exists to prevent.
-- Rough scale: ~713 textual occurrences of "scalar" across `src`/`tools`/`tests`/
-  `notebooks`/`README`, but the *public API surface* that would actually change is small
+- Rough scale (2026-10-04, tracked files only — the gitignored generated `g*.py` are excluded):
+  **584** whole-word occurrences of "scalar" on 489 lines
+  (`git grep -oiw scalar -- src tools tests notebooks README.md | wc -l`), **1060** as a substring
+  (`git grep -oi scalar …`, which also counts `pseudoscalar` etc.) — but the *public API surface*
+  that would actually change is small
   (a handful of names); the bulk is the generator, tests, and established GA terms.
 
-## Deviation from Hestenes — and why the Real/Scalar distinction is right in Python (Bill, 2026-09-26)
+## Deviation from Hestenes — and why the Real/Scalar distinction is right in Python (William Emerison Six <billsix@gmail.com>, 2026-09-26)
 
 **This project deliberately distinguishes a plain real number from a grade-0 multivector; Hestenes
 does not — and that difference is a consequence of paper vs. Python, not a disagreement with the
@@ -56,14 +59,15 @@ did not need.
 
 These denote "a plain real number living in the algebra" and are the actual subject:
 
-- `MultiVectorBase.from_scalar(scalar)` — `src/gacalc/base.py:234`. The headline case:
+- `MultiVectorBase.from_scalar(scalar)` (`src/gacalc/base.py`). The headline case:
   `from_scalar` → `from_real`. (Its param is even named `scalar: int | float`.)
 - The generated **`Scalar` / `ScalarN` / `Scalar_n`** grade-0 class — generator
-  `tools/gen_specialized.py` (`scalar_spec` `:1593`, `generate_scalar`, `ScalarN` docstring
-  `:421`), exported per-module as `Scalar`. Candidate: `Scalar` → `Real`.
-- The grade-0 **field** `coeff_scalar` — generated (`tools/gen_specialized.py:244`), e.g.
+  `tools/gen_specialized.py` (`scalar_spec`, `generate_scalar`, the `ScalarN` docstring),
+  exported per-module as `Scalar`. Candidate: `Scalar` → `Real`.
+- The grade-0 **field** `coeff_scalar` — generated (`tools/gen_specialized.py`, the
+  `field_name` blade→field mapping), e.g.
   `Scalar(coeff_scalar=3)`. Candidate: `coeff_real`.
-- Possibly `from_coef` / `Coef` (`base.py:36,242`) — the symbolic sibling of `from_scalar`;
+- Possibly `from_coef` / `Coef` (`base.py`) — the symbolic sibling of `from_scalar`;
   if `from_scalar`→`from_real`, decide whether `from_coef` stays (it accepts `sympy.Expr`,
   i.e. a *symbolic* real, so "real" still fits) or is left as the "coefficient" bridge.
 - Constructor param names / locals named `scalar` throughout (mechanical, follow the API).
@@ -75,16 +79,16 @@ number, but about the plain Python number you get *back out*. Whenever you extra
 coefficient, that value is a real (numeric or symbolic-real). Same notion of "real number,"
 same word to consider:
 
-- **`Coef = int | float | sympy.Expr`** (`base.py:36`) — the coefficient type: exactly "a
+- **`Coef = int | float | sympy.Expr`** (`base.py`, module level) — the coefficient type: exactly "a
   real number, numeric or symbolic". This is the strongest `→ Real` candidate on the
   extraction side (a type alias `Real` reads as ℝ). It threads everywhere (`BladeCoef`,
   return types of the methods below), so renaming it is high-churn but conceptually clean.
-- **`scalar_part()` → returns a `Coef`** (`base.py:785`) — the grade-0 part, *as a real*.
+- **`scalar_part()` → returns a `Coef`** — the grade-0 part, *as a real*.
 - **`coefficient(blade)` → `Coef`** — reads one coefficient (a real).
 - **`magnitude()` / `magnitude_squared()` / `__abs__()` → `Coef`** — norms are reals.
 - **Iteration** (`list(v)`) — yields the coordinate *values*, i.e. reals, in blade order.
 
-The point of this section (added per Bill, 2026-09-26): "real" describes the numbers at BOTH
+The point of this section (added per the maintainer, 2026-09-26): "real" describes the numbers at BOTH
 boundaries of the algebra — the ones you put in and the ones you take out — which is a
 stronger, more consistent story than "real is just the grade-0 constructor." It does NOT by
 itself force renaming the extraction *methods* (see the terminology tension below —
@@ -96,16 +100,16 @@ coefficient **type** `Coef` squarely in scope and sharpens the rationale for `Re
 Renaming these would diverge from Hestenes & Sobczyk and the wider GA literature, and from
 math usage students will meet elsewhere. They are effectively externally-defined names:
 
-- **`scalar_part()`** (`base.py:785`) — "the scalar part ⟨A⟩₀ of a multivector" is the
+- **`scalar_part()`** — "the scalar part ⟨A⟩₀ of a multivector" is the
   universal GA term for the grade-0 component; `real_part` would also collide with the
   complex-number meaning. **Keep.**
-- **`scalar_product()`** (`base.py:596`) — the scalar product ⟨A B⟩ is a named GA product.
+- **`scalar_product()`** — the scalar product ⟨A B⟩ is a named GA product.
   **Keep.**
-- **`is_scalar()`** (`base.py:721`) — "is this a (pure) scalar?" is the grade predicate in
+- **`is_scalar()`** — "is this a (pure) scalar?" is the grade predicate in
   GA parlance (cf. `is_vector`/`is_bivector`). **Keep** (renaming to `is_real` fights the
   grade-predicate family). *Open question — this one is arguable.*
 - **`pseudoscalar` / `unit_pseudoscalar` / `unit_pseudoscalar_squared` /
-  `pseudoscalar_squared_sign`** (`base.py:159,269,311`) — "pseudoscalar" is a single GA term
+  `pseudoscalar_squared_sign`** (`base.py`) — "pseudoscalar" is a single GA term
   (the top-grade blade); it is NOT "pseudo" + our "scalar". **Keep, absolutely.**
 
 ### (C) INTERNAL — generator/impl names (rename only for consistency, low external cost)
@@ -133,7 +137,7 @@ Mechanical, but large and must stay in lockstep with (A).
   real number into the algebra," which is exactly the operation.
 - **Consistency with the grade-pure family framing** — `Vector`/`Bivector`/`Trivector` name
   *what the element is*; `Real` continues that ("the grade-0 elements are the reals").
-- **Symmetry at both boundaries** (Bill, 2026-09-26; see (A′)). A real number goes *in*
+- **Symmetry at both boundaries** (the maintainer, 2026-09-26; see (A′)). A real number goes *in*
   (`from_real`) and a real number comes *out* (coefficients, `scalar_part`, `magnitude`,
   iteration). Naming the grade-0 type / coefficient "real" makes the same word describe the
   numbers on both sides of the algebra — the thing a student hands in and the thing they read
@@ -151,6 +155,11 @@ Mechanical, but large and must stay in lockstep with (A).
   very inconsistency the reference doc would have to justify.
 - **`scalar` is not wrong**, just abstract; the docstrings written 2026-09-26 already explain
   the grade-0 type in plain terms, which mitigates the pedagogy gap without a rename.
+- **Precedent that shrinks the cost above (gacalc 0.1.0, 2026-09-28):** the rotor → versor rename
+  was a breaking public rename and was accepted by the maintainer ("nobody but me uses my
+  library"), shipped as a `CHANGELOG.md` BREAKING entry plus a consumer grep (mvp) — so the
+  mechanism is settled and "breaking public API" weighs less than when this task was filed
+  (`tasks/archive/2026/10/04/rename-rotor-to-versor.md`).
 
 ## Open questions
 
@@ -172,7 +181,7 @@ Mechanical, but large and must stay in lockstep with (A).
    type but not `Coef`, or vice-versa, re-introduces the split we're trying to remove. My
    lean: if `Scalar`→`Real`, also `Coef`→`Real`; if we keep `Scalar`, keep `Coef`.
 
-## Recommendation — reals cross the boundary, algebra elements stay inside (Bill, 2026-09-26)
+## Recommendation — reals cross the boundary, algebra elements stay inside (William Emerison Six <billsix@gmail.com>, 2026-09-26)
 
 A concrete answer to the "(A′) what returns a real?" question — *should the extraction/measurement
 methods keep returning `Coef` (a plain real), or return a grade-0 multivector wrapping it?*

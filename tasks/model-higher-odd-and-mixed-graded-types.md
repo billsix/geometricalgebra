@@ -3,6 +3,7 @@
 **Status:** proposed — needs go-ahead (spun off 2026-09-05 from the 𝒢₃ `Odd_3` work)
 **Priority:** 7
 **Difficulty:** 5
+**Created:** 2026-09-05 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
 **Part of / follows:** `tasks/archive/2026/09/05/model-odd-graded-type.md` (the 𝒢₃ `Odd_3` precedent — DONE 2026-09-05)
 
 ## BLUF
@@ -30,8 +31,8 @@ domain study.
   diagnostics that were latent (byte-identical) in 𝒢₃**. So any g4/g5 typing MUST be verified in
   **full context** (`ty check src/gacalc/g1.py … g5.py gn.py base.py functions.py transforms.py`
   together), not per-file, and not trusting a green g3-only run. See
-  `tasks/reference/generated-product-typing.md` › "High-dimension ty findings" and
-  `CLAUDE.md` › Dev workflow (the `ty check src/gacalc/g1.py … transforms.py` full-context line) to extend.
+  `tasks/reference/generated-product-typing.md` › "High-dimension ty findings" and the
+  `make test-all-dims` target (the full-dim + full-context ty gate; `CLAUDE.md` › Dev workflow) to extend.
 - **g4/g5 are release-only** (`GACALC_DIMS=1,2,3` in dev; 1,2,3,4,5 at `make dist`/`release`;
   ~5 min / ~87 min to generate) — see `tasks/reference/generated-algebra-generation-cost.md`. So this
   work is verified via the opt-in `make generate-all` / `make test-all-dims`, not the default gate.

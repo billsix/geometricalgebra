@@ -13,18 +13,18 @@ calls this structure*.
 
 ## The core identity: endomorphisms and automorphisms
 
-- **`ComposableFunction[V]`** (`src/gacalc/functions.py:74`) is a self-map `V → V`. Mathematics
+- **`ComposableFunction[V]`** (`src/gacalc/functions.py`) is a self-map `V → V`. Mathematics
   calls a structure-preserving self-map an **endomorphism**; the set of all of them under
-  composition, with `identity()` (`functions.py:353`) as the unit, is the **endomorphism monoid**
+  composition, with `identity()` (`functions.py`) as the unit, is the **endomorphism monoid**
   End(V).
-- **`InvertibleFunction[V]`** (`functions.py:187`) is an invertible endomorphism: an
+- **`InvertibleFunction[V]`** (`functions.py`) is an invertible endomorphism: an
   **automorphism**. The invertibles form the **automorphism group** Aut(V) — the group of units
   *inside* End(V).
 - So the subclass relation `InvertibleFunction <: ComposableFunction` is literally
   "Aut(V) sits inside End(V)". The class diagram and the mathematics agree; the inheritance is a
   fact about the objects, not just a code-reuse convenience.
 - The only bare (non-invertible) `ComposableFunction`s gacalc constructs are `project` / `reject`
-  (`src/gacalc/base.py:766`, `:817`). Both are **idempotent** (p∘p = p), and an idempotent linear
+  (`src/gacalc/base.py`). Both are **idempotent** (p∘p = p), and an idempotent linear
   operator is precisely what linear algebra calls *a projection* — "projections are not
   automorphisms" is a theorem the type split encodes, not a style preference.
 
@@ -41,18 +41,18 @@ and a reader who doesn't loses nothing.
 
 ## Secondary structures the code already implements
 
-- **`compose` stores the word, not just the product.** `components` (`functions.py:95`) keeps the
+- **`compose` stores the word, not just the product.** `components` (`functions.py`) keeps the
   generator sequence, and `steps()`, `latex_repr`, `at()`, and `inverse()` are each
   *interpretations* of that word: flatten it, typeset it, interpolate it, or reverse-and-invert it
-  (the (g∘h)⁻¹ = h⁻¹∘g⁻¹ rule, `functions.py:274-278`). In algebraic terms: elements are
+  (the (g∘h)⁻¹ = h⁻¹∘g⁻¹ rule, `functions.py`). In algebraic terms: elements are
   represented as **words in a generating set**, and each feature is a homomorphism out of the free
   monoid, evaluated on demand. This is why the animation and LaTeX layers fell out so cheaply —
   the free-structure pattern makes new interpretations additive.
 - **`at(t)` is a one-parameter subgroup / flow** (the Lie-theory shape t ↦ exp(tX)): `at(0)` is
   the identity, `at(1)` the function, and the "inverse commutes with `at`" law enforced at
-  `functions.py:265-273` is exactly the statement that interpolation respects the group structure.
+  `functions.py` is exactly the statement that interpolation respects the group structure.
 - **The `Linearity` lattice is a subgroup chain.** LINEAR ⊂ AFFINE ⊂ NONLINEAR corresponds to
-  GL(V) ⊂ Aff(V) ⊂ (all bijections); the `max()` join (`functions.py:320`) computes the smallest
+  GL(V) ⊂ Aff(V) ⊂ (all bijections); the `max()` join (`functions.py`) computes the smallest
   class in the chain containing every factor — i.e., which group the composite lives in.
 
 ## The Cayley-graph layer (modelviewprojection) — the exact terms, and why the name is fair
@@ -100,7 +100,7 @@ reject cross-space application — that experiment is parked with full costs at
 ## Nominal inheritance, not Protocols — and the library comparison
 
 - **The subclass does real work at exactly one boundary** (named in the module docstring,
-  `functions.py:22-26`): a Cayley-graph `Step` *requires* `InvertibleFunction`, so passing a
+  `functions.py`): a Cayley-graph `Step` *requires* `InvertibleFunction`, so passing a
   projection where an inverse will be needed is a **type error at the boundary**, not a runtime
   surprise mid-render. Liskov-clean: the subtype only adds capability (an inverse and its label),
   never weakens a base promise.
@@ -122,7 +122,7 @@ reject cross-space application — that experiment is parked with full costs at
     [`Composition`/`Chain`](https://www.tensorflow.org/probability/api_docs/python/tfp/bijectors/Composition)
     wrappers mirroring gacalc's `inverse()` / `compose()` — but with no home for non-invertible
     maps like `project`/`reject` at all.
-  - [galgebra](https://github.com/pygae/galgebra)'s `Lt` (`galgebra/lt.py:161`): symbolic linear
+  - [galgebra](https://github.com/pygae/galgebra)'s `Lt` (`galgebra/lt.py`): symbolic linear
     transformation with `__mul__` composition; no capability split — `inv()` simply fails on a
     singular map.
 
@@ -132,6 +132,6 @@ reject cross-space application — that experiment is parked with full costs at
 ## Known wart (recorded, deliberately not "fixed")
 
 `InvertibleFunction`'s positional constructor order (`func, latex_repr, inverse, latex_repr_inv`)
-works only because the base's tail fields are `kw_only` (`functions.py:195-198`) — a
+works only because the base's tail fields are `kw_only` (`functions.py`) — a
 dataclass-inheritance fragility, and two interleaved `Callable`/`str` pairs are easy to transpose
 silently. Keyword construction is the safe idiom; any future constructor change should harden this.

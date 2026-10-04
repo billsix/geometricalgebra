@@ -3,7 +3,7 @@
 **Status:** proposed — parked by the maintainer ("I'm not ready for frames yet", 2026-10-04); do not
 start without a go-ahead. **Priority:** 8 (parked). **Difficulty:** 5.
 **Created:** 2026-10-04 (William Emerison Six <billsix@gmail.com>), spun out of
-`tasks/lean-coverage-extend-transforms-frame-gn.md`. **Owner:** William Emerison Six <billsix@gmail.com>.
+`tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md`. **Owner:** William Emerison Six <billsix@gmail.com>.
 **See also:** `tasks/reference/lean-proof-corpus-review-2026-10-04.md` §3, `tasks/define-frame.md` (the
 Python-side frame work), `tasks/reference/lean-ga-proof-architecture.md`.
 

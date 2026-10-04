@@ -10,7 +10,7 @@ limits, and where the logic lives. The **symbolic sibling** of `tasks/reference/
 
 - **Symbolic** (this doc): `==` / `simplify(a − b) == 0`. Exact equality of symbolic coefficients, for
   values built from `sympy` symbols. Ground truth, but heuristic and slow (see Limits).
-- **Numeric:** `MultiVectorBase.isclose` (`src/gacalc/base.py:1207`) — ULP/absolute-tolerance float
+- **Numeric:** `MultiVectorBase.isclose` (`src/gacalc/base.py`) — ULP/absolute-tolerance float
   comparison, for concrete float coefficients. Documented separately in `approximate-float-equality.md`.
 
 Use symbolic `==` for symbolic values; `isclose` for floats.
@@ -39,10 +39,10 @@ steps, in order:
   when at least one coefficient is symbolic.
 
 **Why the simplify is needed (not just `==`):** the specialized/graded classes follow a **lazy
-policy — they do NOT eager-simplify** coefficients (`base.py:393`; `.simplified()` at `base.py:391`
-is the opt-in that simplifies every coefficient). So two genuinely-equal multivectors can hold
-coefficients in *different forms* — `2*x` vs `x + x`, or unreduced `sqrt` expressions (`base.py:1256`
-notes a raw coefficient "may not be in lowest terms"). A bare `==` would report those unequal; the
+policy — they do NOT eager-simplify** coefficients (the module header's eager/lazy note in
+`src/gacalc/base.py`; `MultiVectorBase.simplified()` is the opt-in that simplifies every coefficient). So two genuinely-equal multivectors can hold
+coefficients in *different forms* — `2*x` vs `x + x`, or unreduced `sqrt` expressions
+(`MultiVectorBase._repr_latex_` notes a raw coefficient "may not be in lowest terms"). A bare `==` would report those unequal; the
 `simplify(a − b) == 0` check is what makes equality correct.
 
 ## Gotcha: a multivector never `==` a bare Python number
@@ -77,7 +77,7 @@ and compare that: `mv.scalar_part() == 0` is fine, `mv == 0` is not.
 - **No false positives:** if `simplify` reduces the difference to `0`, the values *are* equal.
 - **Possible false negatives:** `sympy.simplify` is a **heuristic**, not a decision procedure — it can
   fail to prove that a genuinely-zero difference is zero (e.g. a nested radical it "cannot simplify
-  through," called out at `base.py:1061`). So `==` can under-report equality on hard symbolic forms.
+  through," called out in `MultiVectorBase.versor_from_vectors`). So `==` can under-report equality on hard symbolic forms.
 - **Cost:** `simplify` is expensive, and it is the reason both fast paths above exist. Measured
   2026-09-06 from a modelviewprojection profile (gacalc 0.0.19, Python 3.14): a *differing* numeric
   comparison, `g2.Vector(3.0, 4.0) == g2.Vector(1.5, -2.0)`, cost **48 µs** against 0.018 µs for the
@@ -89,11 +89,12 @@ and compare that: `mv.scalar_part() == 0` is fine, `mv == 0` is not.
 ## Test helpers that reuse the pattern (currently duplicated)
 
 Tests compare multivectors **blade-dict-wise** with the same idiom, each rolled by hand:
-- `tests/test_conformance.py:401` `_same_value(x, y)` — per-blade
-  `simplify(sympify(dx[k]) − sympify(dy[k])) == 0` over `to_blade_dict()` (`:408`).
-- `tests/test_graded.py:381` `simplify_equal(a, b)` — same (`:392`), used where magnitudes are `sqrt(...)`
-  (`:419`), e.g. `test_versor_sandwich_equals_rotate_*`.
-- Inline one-offs: `tests/test_conformance.py:87`, `tests/test_measure.py:139-140`.
+- `tests/test_conformance.py` › `_same_value(x, y)` — per-blade
+  `simplify(sympify(dx[k]) − sympify(dy[k])) == 0` over `to_blade_dict()`.
+- `tests/test_graded.py` › `simplify_equal(a, b)` — same, used where magnitudes are `sqrt(...)`
+ , e.g. `test_versor_sandwich_equals_rotate_*`.
+- Inline one-offs: `scalar_eq()` in `tests/test_conformance.py`; the `content` assertions in
+  `tests/test_measure.py` › `test_content_two_ways_both_give_the_determinant_symbolic`.
 
 There is **no public `MultiVectorBase.symbolically_equal` method** — the `simplify(a−b)==0` logic is
 re-implemented ad hoc in each test helper. That duplication is the actionable gap (see follow-on).

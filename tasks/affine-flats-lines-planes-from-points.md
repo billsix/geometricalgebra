@@ -4,6 +4,8 @@
 **Priority:** 7
 **Difficulty:** 7
 **Started:** 2026-08-27 (William Emerison Six <billsix@gmail.com>)
+**Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — citations re-verified;
+line-number anchor replaced by section/row names.
 **Blocked on:** maintainer answers the Open questions below — chiefly full PGA/CGA substrate vs a
 lightweight pedagogical representation. **This is the most under-specified bullet and potentially the
 largest (architectural).**
@@ -22,8 +24,9 @@ Model **affine** (offset, not origin-through) lines and planes as geometric obje
 
 ## Context (investigation 2026-08-27)
 
-- **Scope flag — this is likely large/architectural.** `tasks/reference/galgebra-comparison.md:30,33,35,
-  107-131` records that non-origin lines/planes/points + meet/join/incidence need a **projective (PGA)**
+- **Scope flag — this is likely large/architectural.** `tasks/reference/galgebra-comparison.md` (the
+  TL;DR table rows #7 and #9, and § "Finding 1 — Metrics, signatures & frames") records that
+  non-origin lines/planes/points + meet/join/incidence need a **projective (PGA)**
   or **conformal (CGA)** model, which needs mixed/degenerate metric signatures — listed as gap row #7
   (signatures, "large, architectural") gating row #9 (meet/join/incidence). gacalc today is **Euclidean
   origin-through-subspaces only**.
@@ -45,5 +48,5 @@ Model **affine** (offset, not origin-through) lines and planes as geometric obje
    metric signatures per galgebra-comparison #7), or a **pedagogical** calc-3 representation (point +
    direction/normal blade) that skips conformal machinery? *(Recommend: pedagogical interim first.)*
 2. **"Transform 2d into 3d"** — what does this mean: an embedding of 2D into 3D, or a homogeneous lift?
-3. Confirm this is distinct from the origin-through-subspace projections work (bullet 3 /
-   `generalize-reject-reflect-higher-grade.md`).
+3. Confirm this is distinct from the origin-through-subspace projections work
+   (`tasks/generalize-reject-reflect-higher-grade.md`).

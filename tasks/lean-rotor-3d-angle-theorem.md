@@ -3,7 +3,7 @@
 **Status:** proposed — needs go-ahead; the statement form is undecided (open question 1).
 **Priority:** 6. **Difficulty:** 6.
 **Created:** 2026-10-04 (William Emerison Six <billsix@gmail.com>), spun out of
-`tasks/lean-coverage-extend-transforms-frame-gn.md` at the maintainer's request ("not sure, I don't have
+`tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md` at the maintainer's request ("not sure, I don't have
 time to think about this now, spin that into its own task"). **Owner:** William Emerison Six
 <billsix@gmail.com>.
 **See also:** `tasks/reference/lean-proof-corpus-review-2026-10-04.md` §3 (gap #4),
@@ -31,9 +31,10 @@ fixes the perpendicular part; `make lean` green; coverage table row updated.
   in the `e₁₂` plane `Rotation2D.sandwich_versor` (𝒢₂) or `Sandwich.sandwich_fixes_orthogonal`/
   `sandwich_plane_invariant` (𝒢₃, `e₁₂`-plane versor, still coordinate-literal) do the rest. The missing
   piece is the 𝒢₃ angle statement in the `e₁₂` plane plus the transport.
-- Also unstated: the interpolation law `bivector_rotation(θ).at(t) = bivector_rotation(t·θ)` — check
-  `transforms.py` `at`; if it rebuilds the rotor with `t·θ` it is definitional (no theorem), otherwise it
-  follows from additivity (`Rotation2D.versor_mul` in 2D; the 3D version from this task's theorem).
+- The interpolation law `bivector_rotation(θ).at(t) = bivector_rotation(t·θ)` is **definitional** — the
+  factory rebuilds the rotor with `t·θ` (`transforms.py` docstrings: "`rotation(theta).at(t)` is
+  `rotation(t * theta)`"), recorded as "plumbing — no theorem" in the architecture doc's coverage map.
+  Nothing to prove here.
 - Build nested with the direct `check.sh` recipe in `lean-ga-proof-architecture.md` "Build discipline".
 
 ## Open questions

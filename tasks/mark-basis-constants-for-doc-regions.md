@@ -4,6 +4,9 @@
 `tasks/dangling-book-code-includes.md` was archived there and this was its one unresolved residual.
 **Priority:** 7
 **Difficulty:** 2
+**Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — citations re-verified (the
+assignments are still unmarked in a generated `g2.py`); the CLAUDE.md pointer repointed to the
+reference doc that now holds the statement.
 
 ## BLUF
 
@@ -38,9 +41,11 @@ point a `literalinclude` at it.
   marks the class, its declaration, its `cls variables` (the `ClassVar` *declarations*), its instance
   variables, and each method. The basis-constant **assignments** are module-level statements emitted
   *after* the class (a class cannot reference itself mid-definition), so the walk never sees them.
-  This is recorded as deliberate in `CLAUDE.md` › "doc-region markers" ("Basis-constant assignments
-  (`Cls.e_1 = …`, post-class) are deliberately **not** marked") and in
-  `tasks/reference/code-generator-architecture.md` §6.
+  This is recorded in `tasks/reference/code-generator-architecture.md` §6 "Doc-region markers — end
+  to end", "Emission recap" paragraph ("Basis-constant assignments (`Cls.e_1 = …`, post-class) are
+  also unmarked"). (`CLAUDE.md` no longer carries a "doc-region markers" section — its former
+  "deliberately **not** marked" sentence lives only in that reference doc now, without the word
+  "deliberately".)
 - **Why it was deliberate:** unknown — the note states the exclusion without a reason, and the two
   archived marker tasks (`tasks/archive/2026/07/21/emit-doc-region-markers.md`,
   `annotate-generated-doc-regions.md`) do not argue it either. It reads as "nothing asked for them",

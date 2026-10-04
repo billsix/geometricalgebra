@@ -4,6 +4,8 @@
 **Priority:** 5
 **Difficulty:** 4
 **Started:** 2026-06-06
+**Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — citations re-verified after the
+rotor→versor rename; line-number anchors replaced by names.
 
 ## Goal
 
@@ -15,7 +17,7 @@ arrows for a rotation, etc.
 
 ## Why
 
-This is a geometric-algebra teaching notebook; the payoff is *geometric intuition*. A rotor that turns
+This is a geometric-algebra teaching notebook; the payoff is *geometric intuition*. A versor that turns
 `e_1 → e_2`, a wedge that sweeps an oriented parallelogram, the dual of a plane that points along its
 normal — these land far harder as pictures than as blade-dicts. The repo already has plotting
 infrastructure in `nbplotutils.py` (`create_graphs`, `create_basis`, `draw_*`, `plot_multivector`) and
@@ -27,7 +29,7 @@ infrastructure in `nbplotutils.py` (`create_graphs`, `create_basis`, `draw_*`, `
 2. **Two vectors + their wedge** (`a`, `b`, `a ^ b`): the two arrows plus the **oriented parallelogram**
    they span (the bivector = signed area), with an arc/arrow showing orientation. Tie it to
    `a * b = a·b + a∧b` (the dot = projection length, the wedge = area).
-3. **A rotor rotating a vector** (`quarter * e_1 * quarter.reverse()`): `e_1` and its rotated image
+3. **A versor rotating a vector** (`quarter * e_1 * quarter.inverse()`, `quarter: g2.Versor`): `e_1` and its rotated image
    (a quarter turn), with the swept arc.
 4. **The un-normalized versor sandwich** (the cell that compares `R w R̃` vs `R w R⁻¹` vs `rotate(w)`):
    overlay `w = e_1`, the **scaled** result `R w R̃ = 2 e_2` (a longer arrow), the **pure** result
@@ -47,8 +49,8 @@ infrastructure in `nbplotutils.py` (`create_graphs`, `create_basis`, `draw_*`, `
   `draw_bivector(ax, a, b)` (a shaded parallelogram + orientation arc) — either added to
   `nbplotutils.py` (reusable, but that module is matplotlib-heavy and excluded from the test suite) or
   kept **inline** in the notebook (simpler, self-contained). Decide in the plan.
-- Pull components out of a `G2`/`Vector2` via `to_blade_dict()` (e.g. `d.get((1,), 0)`, `d.get((2,), 0)`),
-  cast to `float`. (Symbolic values like the `quarter` rotor's `cos/sin(pi/4)` need `float(...)`.)
+- Pull components out of a `g2.G`/`g2.Vector` via `to_blade_dict()` (e.g. `d.get((1,), 0)`, `d.get((2,), 0)`),
+  cast to `float`. (Symbolic values like the `quarter` versor's `cos/sin(pi/4)` need `float(...)`.)
 - Reuse `create_graphs` for axes/grid if it fits; otherwise a plain `plt.subplots` with equal aspect.
 
 ## Plan (once approved)
@@ -86,13 +88,13 @@ Two maintainer bullets were triaged into this task because it already owns the n
 
 - **Bullet: *"Matplotlib print vectors 2d and 3d, put in the notebooks."*** — this is concept 1 (2D
   vector arrows) plus the 3D vector case. **The 3D half is genuinely new infrastructure** — all current
-  plotting (`src/gacalc/nbplotutils.py`: `plot_multivector:495`, `create_graphs:143`, `_to_xy:68`) is
+  plotting (`src/gacalc/nbplotutils.py`: `plot_multivector`, `create_graphs`, `_to_xy`) is
   **2D only**; there is no 3D helper yet (concept 6 above already flagged `mplot3d`). See the existing
   "include the 3D plots?" open question — this bullet raises its priority.
 - **Bullet: *"2D Plot things like scalar vector multiplication. Plot things like vector vector
   multiplication."*** — vector·vector is already covered (concept 2: `a*b = a·b + a∧b`, dot = projection
   length, wedge = parallelogram area). **Scalar·vector scaling is the net-new add** (an arrow and its
-  scaled image). `nbplotutils.show_mult` (`src/gacalc/nbplotutils.py:615`) already renders a
+  scaled image). `nbplotutils.show_mult` (`src/gacalc/nbplotutils.py`) already renders a
   multiplication *table* (values, not geometry) — decide whether to add a geometry panel there or keep
   these as standalone plots (Q below).
 

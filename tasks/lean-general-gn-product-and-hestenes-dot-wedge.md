@@ -3,12 +3,14 @@
 **Relates to:** the Lean-proofs program (umbrella archived: `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`) and the
 per-component algebras `proofs/GacalcProofs/G2.lean`, `G3.lean`.
 
-**Status:** proposed — **deliberately deferred** (do NOT start now). The maintainer prefers the
-current per-component approach (explicit `G2`/`G3` coordinate structs) for now — it makes the algebra
-concrete and is **desirable for his learning**. This task is a *later* exploration of a more general
-formulation, once the component proofs have served their teaching purpose.
+**Status:** proposed — **deliberately deferred** (do NOT start now; William Emerison Six
+<billsix@gmail.com>, 2026-09-28). The maintainer prefers the current per-component approach (explicit
+`G2`/`G3` coordinate structs) for now — it makes the algebra concrete and is **desirable for his
+learning**. This task is a *later* exploration of a more general formulation, once the component proofs
+have served their teaching purpose.
 **Priority:** 9
 **Difficulty:** 8
+**Created:** 2026-09-28 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
@@ -34,8 +36,9 @@ dot/wedge, **proved consistent with the per-component `G2`/`G3`** (a bridge lemm
   blade type — with `mul` defined by that rule, parametric in `n`.
 - **What "Hestenes dot/wedge" means:** define the inner and outer products as *derived* from the
   geometric product via grade projection (Hestenes & Sobczyk), not as separate coordinate formulas —
-  the from-rotation `dot = symmetric part` / `wedge = antisymmetric part` already proved in 2D
-  (`G2.dot_is_sym_part`/`wedge_is_antisym_part`) is the vector case; generalize it.
+  the from-rotation `dot = symmetric part` / `wedge = antisymmetric part` already proved for vectors
+  in 𝒢₂ (coordinate form) and 𝒢₃ (object form: `G3.dot_is_sym_part`/`wedge_is_antisym_part`) is the
+  vector case; generalize it.
 - **Standalone-policy note:** this stays *from-scratch* (a blade-`Finsupp` model of our own), separate
   from depending on Mathlib's `CliffordAlgebra` — though comparing to / mapping onto `CliffordAlgebra`
   for an equivalence check would be welcome (as elsewhere, Mathlib for the *equivalence* direction).
@@ -56,6 +59,15 @@ dot/wedge, **proved consistent with the per-component `G2`/`G3`** (a bridge lemm
   permutation, and `Iₙ² ` is the sign of reversing `[0, …, n−1]`, i.e. `(−1)^(n(n−1)/2)` by induction on
   `n` (`Iₙ₊₁ = Iₙ eₙ`, and moving `eₙ` through `Iₙ` costs `n` swaps). Mathlib's `CliffordAlgebra` is the
   reference for the general statement but is not the standalone route this corpus uses.
+
+## Added scope (2026-10-04): the `gn.py` coverage phase
+
+The archived coverage task `tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md`
+brought `transforms`, `standardposition`, `functions` and `g1` into the Lean coverage map; its last
+phase — `gn.py` (`Gn`, `bases(n)`, `basis_vector`, `unit_pseudoscalar(n)`, `dual(n)` for `n ∉ {2,3}`,
+`symbolic_multivector`) — needs the dimension-general representation this task would build, so it
+lives here. Once the general `Gn` exists, that phase reduces to open question 3 below: prove
+`G1`/`G2`/`G3` ≃ the `n = 1, 2, 3` instances.
 
 ## Open questions
 

@@ -48,7 +48,7 @@ the code-generated fast paths, the from→to rotation API, and equation-cited fi
 
 ## What this is
 
-Bill is reading ~5 books on geometric algebra and has limited time; this note front-loads
+The maintainer is reading ~5 books on geometric algebra and has limited time; this note front-loads
 the "what does a mature GA library actually contain" research. We read the **full source of
 `galgebra` 0.6.0** (the well-known symbolic GA library for SymPy — `pygae/galgebra`, orig.
 Alan Bromborsky) and cross-referenced it against gacalc's current capabilities and against
@@ -68,12 +68,12 @@ the wider GA literature, then wrote up the differences organized for triage.
    gacalc is deliberately different-by-design (pedagogical, provably-correct reference +
    generated fast paths, Euclidean-only on purpose), that is noted rather than treated as a
    deficiency.
-4. **Not evaluating galgebra's code quality** — Bill wants the *functionality* map. Design
+4. **Not evaluating galgebra's code quality** — the maintainer wants the *functionality* map. Design
    contrasts are noted only where they bear on what gacalc would have to change to close a
    gap.
 5. **gacalc's own stated non-goals still hold** (fixed Euclidean signature is a documented
-   limit, paravectors deferred until Bill studies APS). Gaps that collide with those are
-   flagged as "collides with a current gacalc decision" so Bill can decide consciously.
+   limit, paravectors deferred until the maintainer studies APS). Gaps that collide with those are
+   flagged as "collides with a current gacalc decision" so the maintainer can decide consciously.
 
 ## galgebra module map (0.6.0, ~8,850 LOC)
 
@@ -139,7 +139,7 @@ Consequences galgebra gets "for free" from the general metric, all **absent in g
 
 **Collides with a current gacalc decision:** fixed Euclidean signature is documented as an
 intentional limit. Everything in this finding is downstream of lifting it. Prioritization
-question for Bill is really "do I want non-Euclidean signatures at all, and if so, is it a
+question for the maintainer is really "do I want non-Euclidean signatures at all, and if so, is it a
 signature *flag* (cheap: STA-like diagonal ±1) or a full metric tensor (expensive:
 CGA/curvilinear/manifolds)?" — those are very different sizes of project.
 
@@ -264,7 +264,7 @@ what makes these **coordinate-free and blade-aware**:
 `to_matrix`. No object representing "an arbitrary linear operator," so gacalc cannot express
 `det(f)`, the adjoint, eigenblades, or the action of a general linear map on a bivector.
 
-**Sequencing note for Bill:** 3b (outermorphism/`Lt`) is buildable on a *Euclidean* algebra
+**Sequencing note for the maintainer:** 3b (outermorphism/`Lt`) is buildable on a *Euclidean* algebra
 and does **not** strictly require lifting the signature — an outermorphism over `G` with
 det/adjoint/trace is a self-contained, high-value addition and arguably the best "big" next
 step. 3a (∇) needs coordinates + reciprocal frame first, so it's downstream of
@@ -370,6 +370,6 @@ a GA expert would name **arbitrary signature** and **geometric calculus** first.
   the PGA hub (projectivegeometricalgebra.org), Lengyel's dual-PGA blog, Dorst *GA for
   Computer Science*, Hestenes & Sobczyk *Clifford Algebra to Geometric Calculus*, the
   kingdon paper (arXiv:2503.10451), and the clifford/galgebra docs.
-- **Next step if Bill wants to act on any row of the TL;DR table:** run `/findings-to-tasks`
+- **Next step if the maintainer wants to act on any row of the TL;DR table:** run `/findings-to-tasks`
   to spin the chosen row(s) into their own `tasks/` docs (each `proposed — needs go-ahead`).
   This doc stays as the reference map.

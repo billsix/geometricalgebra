@@ -47,7 +47,7 @@ the return type is a bivector: a rotor-returning `i` would both contradict the "
 convention and duplicate `versor_from_vectors` / `plane_rotation`.
 
 - **`bivector_from_vectors(a, b) → a ∧ b`** (un-normalized) — the area bivector. Classmethod on
-  `MultiVectorBase`, paralleling `versor_from_vectors` (`base.py:867`). Validates grade-1; returns
+  `MultiVectorBase`, paralleling `versor_from_vectors` (`base.py`). Validates grade-1; returns
   `a.outer_product(b)`. No parallel guard — the wedge of parallel vectors is the legitimate zero
   bivector.
 - **`i(a, b) → normalize(bivector_from_vectors(a, b))`** — the unit bivector (`i² = −1`). The
@@ -55,14 +55,14 @@ convention and duplicate `versor_from_vectors` / `plane_rotation`.
   Classmethod on the **full** classes `Gn`/`G2`/`G3` (see placement).
 - **`.i()`** — instance method on the graded `Bivector`/`Versor` types, returning the value's unit
   plane. `Bivector.i() = self.normalize()`; `Versor.i()` = the existing `plane_of_rotation()`
-  (`g2.py:3211`, `r_vector_part(2).normalize()`), exposed under the `i` name.
+  (`g2.py`, `r_vector_part(2).normalize()`), exposed under the `i` name.
 
 **Placement / the name-clash resolution.** The full types (`Gn`/`G2`/`G3`) and graded types
 (`Bivector`/`Versor`) are **siblings** (all `@typing.final` subclasses of `MultiVectorBase`), so a
 classmethod `i(a,b)` on the full classes and an instance `.i()` on the graded types do **not**
 collide. Keep `i(a,b)` **off** the shared base (else the graded `.i()` shadows the inherited
 classmethod), and don't put `.i()` on the full `G` classes. `bivector_from_vectors` *is* safe on the
-base (no instance-method twin). **`plane_rotation` (`transforms.py:337-343`) already inlines exactly
+base (no instance-method twin). **`plane_rotation` (`transforms.py`) already inlines exactly
 `a∧b` + guard + normalize — refactor it to call these, one implementation.**
 
 **Decided (William Emerison Six <billsix@gmail.com>, 2026-08-14):** the **`i(a,b)` classmethod goes on `Gn`, `G2`, `G3`, *and*
@@ -107,7 +107,7 @@ the cosh/sinh *formula* is standard, **but only for Minkowski boosts** (spacetim
 `A²=+1` in a Lorentzian metric) — no standard text presents "`exp` of a *Euclidean vector*" as
 meaningful. gacalc's grade-1 branch applies the boost formula to a Euclidean vector only because it
 *happens* to have positive square; it has no Euclidean geometric interpretation, and it mirrors
-galgebra's `Mv.exp` (`/foo/opt/galgebra/galgebra/mv.py:1218`, cosh/sinh for `sq>0`) without a book
+galgebra's `Mv.exp` (galgebra's `galgebra/mv.py`, cosh/sinh for `sq>0`) without a book
 motivation. **Leaning: drop it**, restricting `exp` to "the exponential map onto the rotors." (Task
 subtask 3.)
 
@@ -175,14 +175,14 @@ right, more general formula; `R v R̃` is its special case at `|R| = 1`.
 
 ### What gacalc actually does — and it is correct
 
-- `MultiVectorBase.sandwich` (`base.py:1746`) is `R x R⁻¹` (docstring: "Versor conjugation").
-- `versor_from_vectors(a,b)` (`base.py:1626`) deliberately builds the **un-normalized** even versor
+- `MultiVectorBase.sandwich` (`base.py`) is `R x R⁻¹` (docstring: "Versor conjugation").
+- `versor_from_vectors(a,b)` (`base.py`) deliberately builds the **un-normalized** even versor
   `R = |a||b| + b a` (scalar + bivector) and rotates via `R v R⁻¹`; its docstring already states that
   `R v R̃` would scale by `|R|²` and that `R⁻¹ = R̃/|R|²` divides it out — a pure rotation with **no
   normalization step**. That is a valid, deliberate design choice.
 - The **exp / `plane_rotation`** path (§3) is the *other* branch: it builds a *unit* rotor
   `cos(θ/2) − sin(θ/2) i`, so there `R⁻¹ = R̃` and using `reverse` for the backward direction is a
-  sound optimization (`transforms.py:404,504`). So gacalc uses **both** conventions — unit-rotor +
+  sound optimization (`transforms.py`). So gacalc uses **both** conventions — unit-rotor +
   reverse on the exp path, un-normalized-versor + inverse on the from-vectors path — with the general
   `sandwich` always using inverse. (§3's "`R R̃ = 1`, `v ↦ R v R̃`" wording describes the *unit* path;
   it is not the definition the general `sandwich` uses. Worth reconciling if §3 is ever revised.)

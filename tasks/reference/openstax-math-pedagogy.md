@@ -9,7 +9,7 @@ reader of this doc's Part II.
 
 ## How this was produced (and how to re-run it)
 
-Source: Bill's `latex` branch of four OpenStax repos under `/foo/opt/openstax` (GitHub
+Source: the maintainer's `latex` branch of four OpenStax repos under `/foo/opt/openstax` (GitHub
 mirrors of the openstax org). Each repo carries a Python CNXML→LaTeX converter at
 `tools/cnxml2tex/convert.py` that is pure-Python (needs only `lxml`) and runs in-sandbox —
 no TeXLive container needed. Regenerate any book's LaTeX with:

@@ -48,10 +48,10 @@ would use primes; the suffix was chosen when the Lean definitions were written, 
 ## The archetype (the pattern to imitate)
 
 `multivariate-math/proofs/crossproduct.tex` (hand-written LaTeX, not code) derives the cross product
-exactly this way: rotate `a` onto the x-axis by composing plane rotations (`:70-173`), apply the
-**same** rotation to `b` (`:177-182`), compute with trusted 2D steps in the aligned frame
-(`:228-332`), compose the **inverse** rotations to bring the result back (`:335-417`), and rescale
-(`:419-434`). The 2D/3D building blocks (`Rotate2D90`, `Rotate3DToXY`, …) are in
+exactly this way: rotate `a` onto the x-axis by composing plane rotations, apply the
+**same** rotation to `b`, compute with trusted 2D steps in the aligned frame,
+compose the **inverse** rotations to bring the result back, and rescale.
+The 2D/3D building blocks (`Rotate2D90`, `Rotate3DToXY`, …) are in
 `multivariatebasics.tex`.
 
 ## Why it is sound (and not circular)

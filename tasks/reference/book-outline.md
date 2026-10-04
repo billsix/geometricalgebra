@@ -13,11 +13,11 @@ exercise structure, repetition, the settled-result/black-box grammar, and print-
 Consult it when writing a section; its §10–11 translate the survey into concrete
 recommendations for this book (including a rebuilt "dot product" section).
 
-**Status:** first synthesis of Bill's semi-ordered ideas (2026-08-02). The
+**Status:** first synthesis of the maintainer's semi-ordered ideas (2026-08-02). The
 rotate → geometric-product → projection → reflection spine and the 2D-then-3D split are
-Bill's **explicit** ordering. Placement of everything else (sets, number-lines, relative
+The maintainer's **explicit** ordering. Placement of everything else (sets, number-lines, relative
 graph paper, orthogonal, the dual, the formal-algebra definition) is **my inferred
-grouping — open for Bill to reorder.** Bill's raw ideas are preserved verbatim in the
+grouping — open for the maintainer to reorder.** the maintainer's raw ideas are preserved verbatim in the
 appendix.
 
 ## Pedagogical principles (the through-line — these govern every section)
@@ -75,7 +75,7 @@ content fills in per the outline below.
 
 ## Part I — Two dimensions (first half)
 
-*The E→F spine (rotate → geometric product → projection → reflection) is Bill's explicit
+*The E→F spine (rotate → geometric product → projection → reflection) is the maintainer's explicit
 order. Sections A–D and G–I placement is inferred — reorder freely.*
 
 > **Non-circularity note (the bootstrap arc).** "Define rotate like MVP, then from rotate define the
@@ -114,13 +114,13 @@ order. Sections A–D and G–I placement is inferred — reorder freely.*
   a ruler at an angle.
 - **Vector addition** — pictures, in 2D only to start.
 
-**E. Rotate → the geometric product → its action** *(Bill's explicit spine)*
+**E. Rotate → the geometric product → its action** *(the maintainer's explicit spine)*
 - **Define rotate like MVP:** not by an angle, but **from the direction of vec 1 to
   vec 2**, and **magnitudes don't matter**.
 - **From rotate, define the geometric product.** Show that a product of **three
   factors** stays ordinary — you never have to form a fraction, because you *order* the
   operations so the division resolves cleanly.
-  **Cracker example (Bill):** a 6-pack costs 5¢, so one cracker is `5/6` of a cent — but
+  **Cracker example (the maintainer):** a 6-pack costs 5¢, so one cracker is `5/6` of a cent — but
   pennies aren't divisible, and none of that matters if you're buying 12. Keep `6` and
   `5` whole and compute `12 · 6⁻¹ · 5`: `12 · 6⁻¹` resolves to `2`, then `· 5 = 10¢` — no
   `5/6` ever appears. The same discipline (keep things exact; order the multiplications
@@ -141,7 +141,7 @@ order. Sections A–D and G–I placement is inferred — reorder freely.*
 - **Orthogonal** — define it, related to angles; relate to what they know.
 - **The dual.**
 
-**H. The formal algebra — "the boring work" (after attention is grabbed)** *(Bill:
+**H. The formal algebra — "the boring work" (after attention is grabbed)** *(the maintainer:
 explicitly after the hook)*
 - Define the algebra properly. Look at how **geometry textbooks** define things.
   **Explain G.** Explain that the basis blades are **constants**. Rules for
@@ -157,11 +157,11 @@ explicitly after the hook)*
 
 ## Part II — Three dimensions (second half)
 
-*To be fleshed out much later — Bill flagged this as under-developed for now.*
+*To be fleshed out much later — the maintainer flagged this as under-developed for now.*
 - Ideally **restart from the geometric product**, and show how **projection and
   rejection** work in 3D.
 
-## Appendix — Bill's ideas, as given (verbatim, not re-ordered)
+## Appendix — the maintainer's ideas, as given (verbatim, not re-ordered)
 
 Preserved so nothing is lost in the synthesis above. Lightly numbered for reference only.
 

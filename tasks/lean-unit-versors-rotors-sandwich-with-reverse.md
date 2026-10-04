@@ -3,6 +3,7 @@
 **Status:** proposed — needs go-ahead
 **Priority:** 6
 **Difficulty:** 6
+**Created:** 2026-10-03 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
@@ -22,8 +23,13 @@ with a `sandwich_reverse`-style theorem, or a written finding that it is not wor
   even-grade predicate (`R.c1 = R.c2 = R.c3 = R.c123 = 0`); it does **not** constrain the magnitude.
 - For a **unit** versor (`normSq R = 1`) the inverse equals the reverse (`R⁻¹ = R̃`), so the sandwich
   `R v R⁻¹` simplifies to `R v R̃` — no division, and it's the form textbooks use for rotors. The
-  maintainer's terminology (2026-10-03): **versor = even, not necessarily unit; rotor = unit versor**
-  (matches the Python naming, where unit length is the distinguishing property).
+  maintainer's terminology (William Emerison Six <billsix@gmail.com>, 2026-10-03): **versor = even, not
+  necessarily unit; rotor = unit versor** (matches the Python naming, where unit length is the
+  distinguishing property).
+- **Two spellings already coexist.** `Sandwich.sandwich` (both grades) is `R v R⁻¹`; but the 2D
+  half-angle layer already uses the reverse form — `Rotation2D.sandwich_versor` is stated as
+  `mul (mul (versor θ) v) (reverse (versor θ))` with `versor θ := cos(θ/2) − sin(θ/2) e₁₂`, unit by
+  construction. A unit layer would unify the two.
 
 ## Questions to resolve
 
@@ -31,8 +37,11 @@ with a `sandwich_reverse`-style theorem, or a written finding that it is not wor
    `IsRotor R := IsEvenVersor R ∧ normSq R = 1`? The bare predicate is lighter and matches `IsEvenVersor`.
 2. Which existing sandwich theorems get a unit-`reverse` companion — all of `sandwich_preserves_*`, or
    just a headline `sandwich R v = R v R̃` equality that the others can be rephrased through?
-3. Is `R⁻¹ = R̃` for a unit versor already available (or cheap to prove) in the current Lean layer
-   (`inverse`/`reverse`/`normSq` defs), so the reverse-form is a thin corollary of the inverse-form?
+3. ~~Is `R⁻¹ = R̃` for a unit versor already available (or cheap to prove)?~~ **Answered 2026-10-04 by
+   reading the corpus:** cheap. `inverse a := smul (1 / normSq a) (reverse a)` (both grades) and
+   `mul_reverse_self_of_isEvenVersor` / `reverse_mul_self_of_isEvenVersor` give `R R̃ = R̃ R = |R|²·1`,
+   so under `normSq R = 1` the equality `inverse R = reverse R` is a one-line `simp [inverse, h]`, and
+   the reverse-form sandwich is a thin corollary of the inverse-form. No new leaf needed.
 
 ## Related
 
