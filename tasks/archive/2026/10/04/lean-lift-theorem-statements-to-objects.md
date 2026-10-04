@@ -1,5 +1,14 @@
 # Lift Lean theorem statements from coordinate tuples to geometric objects (corpus-wide sweep)
 
+> **SUPERSEDED & ARCHIVED 2026-10-04 — folded into
+> [[lean-object-in-getters-out-proof-style]]** (sibling: `lean-object-in-getters-out-proof-style.md`).
+> This was the earlier "lift ~224 ℝ-arg *statements*" framing; once the maintainer clarified the intent as
+> "geometric objects in, scalars in the body, geometric objects out," the two became the **same effort** and
+> the object-in-getters doc carries the live per-file record, recipes, and final tier split. Kept here as the
+> historical origin (the A/B/C judgment framework below is harvested into
+> `tasks/reference/lean-ga-proof-architecture.md`). Outcome: polynomial tier DONE; coordinate core retained
+> by decision. Do not resume from this doc — see the consolidated record.
+
 ## BLUF
 
 Across `proofs/GacalcProofs/*.lean`, **~224 of 323 theorems take `ℝ` arguments** — many as raw vector

@@ -15,7 +15,8 @@ with a `sandwich_reverse`-style theorem, or a written finding that it is not wor
 
 ## Context
 
-- Spun off from the ℝ→object sweep (`tasks/lean-lift-theorem-statements-to-objects.md`), Open Q2. In that
+- Spun off from the ℝ→object sweep (`tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md`,
+  which absorbed the earlier statement-lift task), Open Q2. In that
   sweep we lift the `sandwich_preserves_*` family to take an **object versor** `{R} (hR : IsEvenVersor R)
   (hr : normSq R ≠ 0)` rather than loose real components `(s c12 c13 c23)`. `IsEvenVersor` is the
   even-grade predicate (`R.c1 = R.c2 = R.c3 = R.c123 = 0`); it does **not** constrain the magnitude.
@@ -35,6 +36,7 @@ with a `sandwich_reverse`-style theorem, or a written finding that it is not wor
 
 ## Related
 
-- `tasks/lean-lift-theorem-statements-to-objects.md` (parent sweep; `IsEvenVersor` lives in `Sandwich.lean`).
+- `tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md` (parent sweep, archived;
+  `IsEvenVersor` lives in `Sandwich.lean`).
 - `tasks/reference/lean-ga-proof-architecture.md` (proof architecture; versor/sandwich section).
 - `tasks/reference/unit-bivector-and-rotors.md` (the Python-side rotor/versor math).

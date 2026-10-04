@@ -1,7 +1,9 @@
 # Lean proofs: "geometric objects in, components out" — dissolve the scalar `_coord` layer
 
-**Status:** polynomial tier DONE (2026-10-04, `make lean` green, staged) — coordinate core retained by
-documented decision; one optional follow-up (push the delicate sqrt/`magnitude` tier) remains
+**Status:** DONE & ARCHIVED 2026-10-04 (`make lean` green). Polynomial tier converted; coordinate core
+retained by documented decision (maintainer approved option (a), 2026-10-04). **Consolidated record** — this
+doc absorbed the earlier statement-lift task [[lean-lift-theorem-statements-to-objects]] (now a superseded
+stub). Optional follow-up: [[push-delicate-coordinate-core-tier]].
 **Priority:** 6 (was 4; the valuable bulk is done, the remainder is an optional high-risk tier)
 **Difficulty:** 7
 

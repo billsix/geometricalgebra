@@ -371,8 +371,9 @@ shared through OBJECT theorems** — a composite (`cos_between` preservation) co
 coordinate proof (`set`/`calc`/big `field_simp`) must be kept verbatim and is shared by ≥2 object theorems.
 **Genuine scalars stay scalar** — angles (`θ`/`α`/`β`), a rotation's `cos`/`sin`, a scalar multiple `k`, and
 pure-real identities (`lagrange_2d/3d`); and the definitional `vec`-literal unfold leaves (`normSq_vec`,
-`dot_vec`, `cross_vec`, …) stay coordinate (their RHS *is* coordinate arithmetic). Corpus conversion plan:
-`tasks/lean-object-in-getters-out-proof-style.md`.
+`dot_vec`, `cross_vec`, …) stay coordinate (their RHS *is* coordinate arithmetic). The corpus sweep is
+**done for the polynomial tier** (2026-10-04); the method, final tier split, and reusable recipes live in
+`tasks/reference/lean-ga-proof-architecture.md` (record: `tasks/archive/2026/10/04/`).
 
 The **per-theorem A/B/C judgment** (coordinate-free object / object-then-pull-coords / keep genuine
 scalars), the nonzero-guard convention for angle/trig theorems, and the Lean detail are in

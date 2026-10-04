@@ -70,7 +70,9 @@ gacalc's Python side; see `CLAUDE.md`.)
   proof (`set`/`calc`/big `field_simp`) kept verbatim AND shared by ≥2 object theorems; otherwise inline.
   (`rw [eq_vec_of_isVector ha]` to reuse an existing vec-literal proof is a lighter alternative to `obtain`,
   but it re-mentions `vec a.c1 a.c2 a.c3`; prefer `obtain` so no object is reconstructed.) Corpus-wide
-  conversion plan + per-file inventory: `tasks/lean-object-in-getters-out-proof-style.md`.
+  conversion record + per-file inventory + reusable recipes:
+  `tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md` (DONE for the polynomial tier
+  2026-10-04; the sqrt/`magnitude`/degree-blowup/delicate tier keeps its coordinate core by decision).
 - **C — genuine `ℝ`, keep.** (c1) a *pure scalar identity* with no GA object in the statement
   (`Lagrange.lean`'s `lagrange_2d`/`lagrange_3d`); or (c2) the `ℝ` is an irreducible scalar
   *parameter* — a rotation's `cos`/`sin`, a scalar multiple `k` — not a vector coordinate (lift only
@@ -84,8 +86,8 @@ geometric object, so these lift exactly like vector coordinates: state `{R : G_n
 `eq_vec_of_isVector`). `IsEvenVersor R` = the grade-0+2 predicate (`R.c1 = … = 0`, pseudoscalar too in G3);
 it does **not** fix the magnitude — a *rotor* is a unit versor, tracked in
 `tasks/lean-unit-versors-rotors-sandwich-with-reverse.md`. The whole `sandwich_preserves_*` family is in
-object-versor form (`tasks/lean-lift-theorem-statements-to-objects.md`, Increments 10–11). (This revises the
-earlier note that listed "a versor component" under C.)
+object-versor form, getter-native (`tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md`).
+(This revises the earlier note that listed "a versor component" under C.)
 
 **Grade-structure predicates (the general pattern).** The same lift applies to any coordinate tuple that is
 really a *grade-pure object's* own components. Three predicates now exist, each with an `eq_…_of_is…` bridge
@@ -95,9 +97,19 @@ lifts to `{B : G3} (hB : IsBivector B) (hBn : normSq B ≠ 0)` exactly as a vers
 plane-projection cluster, Increment 16). Reach for a new such predicate whenever a theorem's reals are a
 grade-pure object's coordinates.
 
-Prefer A, then B; fall to C only for genuine scalars. The corpus-wide application is tracked in
-`tasks/lean-lift-theorem-statements-to-objects.md` (a large, cascade-aware, incremental sweep —
-converting a signature breaks its callers, so go bottom-up and `make lean`-verify each step).
+Prefer A, then B; fall to C only for genuine scalars. The corpus-wide application is **DONE for the
+polynomial tier** (2026-10-04) and recorded in
+`tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md` (which absorbed the earlier
+statement-lift task). It was a cascade-aware, bottom-up incremental sweep (converting a signature breaks
+its callers, so `make lean`-verify each step). **Final outcome:** every *polynomial*-proof theorem is now
+object-in / getters-in-body (Sandwich, Reflect, G3 self-products, Projection2D, Projection3D 3/4, Trig
+`lagrange_property`, RotateComponents `rotation_preserves_dot`, the pure-poly ProjectionRotation scaffold);
+the **coordinate core is retained by decision** for the non-polynomial tier — sqrt/`magnitude`/
+`normalizeVec` proofs, the divide-by-`normSq(a∧b)` degree-blowup plane projections, the cos/sin/angle and
+literal-then-instantiate exceptions, and the delicate `calc`/`set` capstones (`projRotation_eq_sandwich`/
+`_isometry`, bisector machinery, `reject_vec_eq`, `cos_sq_add_sin_sq`, `sin_between_eq_abs_signed_vec`,
+CrossStandardPosition) — those public statements are already object-in, only their private scaffold stays
+coordinate. Pushing that tier (optional) is `tasks/push-delicate-coordinate-core-tier.md`.
 
 **Nonzero guard for angle/trig theorems (2026-10-03).** A theorem stated through `cos_between` /
 `sin_between` (or any `/ (|a| |b|)` quotient) carries nonzero hypotheses — `magnitude a ≠ 0`,
