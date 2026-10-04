@@ -229,12 +229,11 @@ theorem magnitude_sq_of_normSq {a : G2} (ha : IsVector a) :
   have h := magnitude_sq_of_normSq_coord a.c1 a.c2
   rwa [← eq_vec_of_isVector ha] at h
 
-theorem normSq_mul_three_vec {v f t : G2} (hv : IsVector v) (hf : IsVector f) (ht : IsVector t) :
+theorem normSq_mul_three_vec {v f t : G2} (hv : IsVector v) (ht : IsVector t) :
     normSq (mul (mul v f) t) = normSq v * normSq f * normSq t := by
   obtain ⟨hvs, hv12⟩ := hv
-  obtain ⟨hfs, hf12⟩ := hf
   obtain ⟨hts, ht12⟩ := ht
-  simp only [normSq, mul, reverse, hvs, hv12, hfs, hf12, hts, ht12]
+  simp only [normSq, mul, reverse, hvs, hv12, hts, ht12]
   ring
 
 theorem versorFromVectors_mul_vec_eq {f t v : G2} (hf : IsVector f) (ht : IsVector t)

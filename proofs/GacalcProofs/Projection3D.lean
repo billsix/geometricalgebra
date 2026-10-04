@@ -45,19 +45,18 @@ theorem wedge_reject (a1 a2 a3 : ℝ) (b : G3) :
     the wedge is `cross a b` (gacalc), and `(a × b) · a = 0`. -/
 theorem dual_wedge_perp_left_dot {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     dot (dual (wedge a b)) a = 0 := by
-  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
-  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  obtain ⟨has, _, _, _, _⟩ := ha
+  obtain ⟨hbs, _, _, _, _⟩ := hb
   simp only [dot, dual, I_inv, wedge, mul,
-    has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+    has, hbs]
   ring
 
 /-- …and ⊥ `b`. -/
-theorem dual_wedge_perp_right_dot {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+theorem dual_wedge_perp_right_dot {a b : G3} (hb : IsVector b) :
     dot (dual (wedge a b)) b = 0 := by
-  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
-  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  obtain ⟨hbs, hb12, hb13, hb23, _⟩ := hb
   simp only [dot, dual, I_inv, wedge, mul,
-    has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+    hbs, hb12, hb13, hb23]
   ring
 
 /-- **The rotation plane is `a (b − proj_a b)`**: for a vector `a` with `a·a ≠ 0`,
@@ -175,12 +174,12 @@ theorem project_add_reject {B : G3} (hB : IsBivector B) (hBn : normSq B ≠ 0) {
   have hd : normSq B = B.c12 ^ 2 + B.c13 ^ 2 + B.c23 ^ 2 := by
     rw [← normSq_biv, ← eq_bivector_of_isBivector hB]
   obtain ⟨hBs, hB1, hB2, hB3, hB123⟩ := hB
-  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨_, ha12, ha13, ha23, _⟩ := ha
   rw [hd] at hBn
   simp only [project_onto, reject, inner_vb, inverse, hd]
   simp only [wedge, mul, reverse, smul, add, vec, hBs, hB1, hB2, hB3, hB123,
-             has, ha12, ha13, ha23, ha123]
-  ext <;> simp only [has, ha12, ha13, ha23, ha123] <;> field_simp [hBn] <;> ring
+             ha12, ha13, ha23]
+  ext <;> simp only [ha12, ha13, ha23] <;> field_simp [hBn] <;> ring
 
 /-- `add X Y = Z → X = Z − Y` (componentwise cancellation). -/
 theorem add_eq_left_sub (x y z : G3) (h : add x y = z) : x = sub z y := by
@@ -209,13 +208,13 @@ theorem reject_eq_proj_normal {B : G3} (hB : IsBivector B) (hBn : normSq B ≠ 0
   have hd1 : normSq B = B.c12 ^ 2 + B.c13 ^ 2 + B.c23 ^ 2 := by
     rw [← normSq_biv, ← eq_bivector_of_isBivector hB]
   obtain ⟨hBs, hB1, hB2, hB3, hB123⟩ := hB
-  obtain ⟨hcs, hc12, hc13, hc23, hc123⟩ := hc
+  obtain ⟨hcs, _, _, _, _⟩ := hc
   have hd2 : dot (dual B) (dual B) = B.c12 ^ 2 + B.c13 ^ 2 + B.c23 ^ 2 := by
     simp only [dot, dual, I_inv, mul, hBs, hB1, hB2, hB3, hB123]; ring
   rw [hd1] at hBn
   simp only [reject, inverse, proj, hd1, hd2]
   simp only [dual, I_inv, wedge, mul, reverse, smul, dot, hBs, hB1, hB2, hB3, hB123,
-             hcs, hc12, hc13, hc23, hc123]
+             hcs]
   ext <;> field_simp [hBn] <;> ring
 
 /-- `project` onto a plane = `c −` (rejection from the plane), for a literal bivector — a rearrangement

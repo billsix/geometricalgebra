@@ -21,9 +21,9 @@ theorem lagrange_property_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
 /-- **Lagrange, as a property** (object form): `(a·b)² + |a∧b|² = |a|²|b|²` for vectors `a`, `b`. -/
 theorem lagrange_property {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     dot a b ^ 2 + normSq (wedge a b) = normSq a * normSq b := by
-  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨_, ha12, ha13, ha23, ha123⟩ := ha
   obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
-  simp only [dot, normSq, wedge, mul, reverse, has, ha12, ha13, ha23, ha123,
+  simp only [dot, normSq, wedge, mul, reverse, ha12, ha13, ha23, ha123,
              hbs, hb12, hb13, hb23, hb123]
   ring
 

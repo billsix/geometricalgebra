@@ -77,10 +77,26 @@ hypothesis; the 4 pre-existing `hn` warnings in ProjectionRotation3D are unrelat
 stated* — e.g. `dot_reverse_sandwich` needs only `IsEvenVersor R`, not `IsVector u`/`IsVector v` (the
 identity holds for arbitrary `u, v`); the minimizer removed their now-vacuous `obtain`s, leaving the
 unused `(hu : IsVector u)`/`(hv : IsVector v)` hypotheses in the *signatures* (Lean doesn't warn on
-those). Optionally those theorems could be **generalized** by dropping the unused hypotheses (stronger
-statements, but an API change touching call sites) — a separate decision, deliberately left to the
-maintainer. My hand-reasoning had wrongly guessed those were needed; the mechanical delete-and-rebuild
-is what caught it, which is the point of the method.
+those). **Generalization DONE for the grade-consistent cases (2026-10-04, maintainer: "generalize those", `make
+lean` green).** Dropped the unused `IsVector` hypotheses from the signatures + call sites of:
+`wedge_reverse_sandwich` (G2 + G3), `normSq_reverse_sandwich_wedge` (G2 + G3) — both hold for arbitrary
+`u, v`, needing only `IsEvenVersor R`; `normSq_mul_three_vec` (dropped the unused `hf`, no callers);
+`dual_wedge_perp_right_dot` (dropped the unused `ha`; one caller in StudentTrigForms updated). Detection
+script: `tasks/adhoc/generalize-unused-hypotheses/detect.py` (grade-predicate hypotheses unreferenced in
+the body — a *candidate* list; the build is the judge, because `field_simp`/`simp` use `_ ≠ 0` hyps from
+context *without naming them*, so a name-absent `≠ 0` guard is NOT safe to drop; I restricted detection to
+`IsVector`/etc. predicates and build-verified).
+
+**G2-only generalization DONE (maintainer chose (b), 2026-10-04, `make lean` green).** `dot_reverse_sandwich`
+and `normSq_reverse_sandwich` now take only `IsEvenVersor R` in **G2** (the 2D identities hold for arbitrary
+`u`/`v`), while **G3 keeps** the vector hypotheses (its proofs genuinely use the components — a real
+mathematical asymmetry, so the G2/G3 signatures now differ in arity, intentionally). Only the G2 call sites
+were updated (anchored on `GacalcProofs.G2.mul_smul`, since the G2/G3 caller lines are otherwise identical);
+the G3 callers still pass `hR hu hv` / `hR hv`.
+
+My hand-reasoning had wrongly guessed the components were needed; the mechanical delete-and-rebuild caught
+it — and also caught my first over-eager attempt to drop the G3 ones (build failed, reverted), which is the
+point of the method.
 
 ## See also
 

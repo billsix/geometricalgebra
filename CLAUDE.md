@@ -371,8 +371,12 @@ shared through OBJECT theorems** — a composite (`cos_between` preservation) co
 coordinate proof (`set`/`calc`/big `field_simp`) must be kept verbatim and is shared by ≥2 object theorems.
 **Genuine scalars stay scalar** — angles (`θ`/`α`/`β`), a rotation's `cos`/`sin`, a scalar multiple `k`, and
 pure-real identities (`lagrange_2d/3d`); and the definitional `vec`-literal unfold leaves (`normSq_vec`,
-`dot_vec`, `cross_vec`, …) stay coordinate (their RHS *is* coordinate arithmetic). The corpus sweep is
-**done for the polynomial tier** (2026-10-04); the method, final tier split, and reusable recipes live in
+`dot_vec`, `cross_vec`, …) stay coordinate (their RHS *is* coordinate arithmetic). **Carry only what the
+proof uses** — drop a grade hypothesis or `simp` component the body never needs (some theorems are more
+general than first stated, and a 𝒢₂ one can be more general than its 𝒢₃ twin); **but a name being absent
+from the body does NOT prove it unused** (`field_simp`/`simp` use `_ ≠ 0` hyps from context unnamed), and
+Lean flags neither, so decide by **delete-and-rebuild**. The corpus sweep is **done for the polynomial
+tier** (2026-10-04); the method, final tier split, and reusable recipes live in
 `tasks/reference/lean-ga-proof-architecture.md` (record: `tasks/archive/2026/10/04/`).
 
 The **per-theorem A/B/C judgment** (coordinate-free object / object-then-pull-coords / keep genuine

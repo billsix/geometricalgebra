@@ -95,7 +95,7 @@ theorem dual_wedge_perp_left {a b : G3} (ha : IsVector a) (hb : IsVector b)
 theorem dual_wedge_perp_right {a b : G3} (ha : IsVector a) (hb : IsVector b)
     (_ha0 : normSq a ≠ 0) (_hb0 : normSq b ≠ 0) :
     cos_between (dual (wedge a b)) b = 0 := by
-  simp only [cos_between, dual_wedge_perp_right_dot ha hb, zero_div]
+  simp only [cos_between, dual_wedge_perp_right_dot hb, zero_div]
 
 /-- **A projection onto a plane is perpendicular to that plane's normal** (cosine 0). -/
 theorem proj_plane_perp_normal (a b c : G3)

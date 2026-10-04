@@ -236,10 +236,10 @@ theorem eq_vec_of_isVector {a : G3} (ha : IsVector a) : a = vec a.c1 a.c2 a.c3 :
     geometric product of vectors into inner + outer, coordinate-free at the call site. -/
 theorem mul_eq_dot_add_wedge {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     mul a b = add (smul (dot a b) one) (wedge a b) := by
-  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨_, ha12, ha13, ha23, ha123⟩ := ha
   obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
   simp only [mul, wedge, smul, one, dot, add]
-  ext <;> simp only [has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123] <;> ring
+  ext <;> simp only [ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123] <;> ring
 
 /-- **Orthogonal vectors' geometric product is their wedge** (arbitrary vectors): `a·b = 0 ⟹ a b = a∧b`.
     The general-`IsVector` form of `vec_mul_perp`, a corollary of the split. -/
@@ -385,14 +385,14 @@ noncomputable def dual (a : G3) : G3 := mul a I_inv
 
 /-- `a ∧ a = 0` for a vector `a`. -/
 theorem wedge_self_vec {a : G3} (ha : IsVector a) : wedge a a = zero := by
-  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
-  simp only [wedge, zero, has, ha12, ha13, ha23, ha123]
+  obtain ⟨has, ha12, ha13, ha23, _⟩ := ha
+  simp only [wedge, zero, has, ha12, ha13, ha23]
   ext <;> ring
 
 /-- `a · a = |a|²` for a vector `a`. -/
 theorem dot_self_vec_eq_normSq {a : G3} (ha : IsVector a) : dot a a = normSq a := by
-  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
-  simp only [dot, normSq, mul, reverse, has, ha12, ha13, ha23, ha123]
+  obtain ⟨_, ha12, ha13, ha23, ha123⟩ := ha
+  simp only [dot, normSq, mul, reverse, ha12, ha13, ha23, ha123]
   ring
 
 /-- `a a = |a|²·1` for a vector `a`. -/

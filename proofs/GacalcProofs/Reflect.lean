@@ -30,8 +30,6 @@ theorem normSq_reflectVec {d v : G3} (hd_isv : IsVector d) (hv_isv : IsVector v)
     rw [← normSq_vec, ← eq_vec_of_isVector hd_isv]; exact hd
   rw [reflectVec_eq hd_isv hv_isv hd, proj]
   obtain ⟨hds, hd12, hd13, hd23, hd123⟩ := hd_isv
-  obtain ⟨hvs, hv12, hv13, hv23, hv123⟩ := hv_isv
-  simp only [normSq, dot, smul, sub, mul, reverse, hds, hd12, hd13, hd23, hd123,
-             hvs, hv12, hv13, hv23, hv123]
+  simp only [normSq, dot, smul, sub, mul, reverse, hds, hd12, hd13, hd23, hd123]
   field_simp [hdd]
   ring

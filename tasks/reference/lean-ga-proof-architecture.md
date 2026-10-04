@@ -293,6 +293,26 @@ Lessons from the "geometric objects in, scalars in the body, geometric objects o
   [has, ha12, …] <;> field_simp [hdd] <;> ring` (a pre-`ext` `simp` with the zeros misses the RHS). Worked:
   `Projection3D.project_add_reject`.
 
+### Trimming vacuous `simp` args and dropping unused hypotheses — "name-absent" ≠ "unused" (2026-10-04)
+
+Two related cleanups, and the trap they share. **(1) Trim vacuous `simp only` components:** the getter
+proofs `obtain ⟨hs, h12, …⟩ := ha` and hand them all to `simp`, but some zero-facts never fire. **(2) Drop
+unused hypotheses:** some theorems turn out more general than stated (e.g. 𝒢₂ `dot_reverse_sandwich`,
+`normSq_reverse_sandwich`, and both grades of `wedge_reverse_sandwich`/`normSq_reverse_sandwich_wedge` need
+only `IsEvenVersor R`, not `IsVector u/v` — the reverse-sandwich *conjugation* scales `dot`/`normSq`/`wedge`
+for arbitrary multivectors). **THE TRAP:** you cannot decide either by reading the text. A component/hyp
+name being *absent from the body* does **not** mean it's unused — `field_simp`/`simp`/`assumption` pull
+hypotheses of the form `_ ≠ 0` (and others) **from the local context without naming them**, so a name-absent
+`(hr : normSq R ≠ 0)` or `(ha : dot a a ≠ 0)` is often load-bearing (e.g. `reject_perp_dot`'s `ha`,
+`sandwich_preserves_wedge`'s `hr`). And Lean has **no linter** for unused `simp` args or unused *signature*
+hypotheses. **So the only sound test is delete-and-rebuild** — drop it, `lake build` the module, keep the
+drop iff still green. Restrict any name-absence *heuristic* to pure grade predicates
+(`IsVector`/`IsEvenVersor`/…) on `simp`+`ring`/`ext` proofs (no `field_simp`), and still build-verify.
+**Mind grade asymmetry:** a 𝒢₂ identity can be strictly more general than its 𝒢₃ twin (the 𝒢₃ proof genuinely
+uses the vector components), so generalizing can leave the paired signatures with different arity — a
+deliberate choice, not a mistake. Tooling + record: `tasks/trim-unused-simp-components.md` (minimizer +
+`tasks/adhoc/generalize-unused-hypotheses/detect.py`).
+
 ## Hestenes projection / rejection (uniform, all grades)
 
 gacalc's `project`/`reject` (base.py; Hestenes & Sobczyk p.18 eqs 2.9) are two formulas, uniform for a
