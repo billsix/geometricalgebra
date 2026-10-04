@@ -42,8 +42,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 - `src/gacalc/standardposition.py` — **standard-position (frame-reduction) `project_sp`/`reject_sp`**:
   project/reject a vector onto another by rotating `b` onto the `e_1` axis with elementary
   coordinate-plane rotations, projecting there, and rotating back — a deliberate *duplicate* of the
-  canonical Hestenes `project`/`reject`, proven equal in `proofs/GacalcProofs/StandardPosition.lean`.
-  See `tasks/reference/reduction-to-standard-position.md`.
+  canonical Hestenes `project`/`reject`, proven equal in `proofs/GacalcProofs/StandardPosition.lean`
+  (`projectSP_eq_proj` / `rejectSP_eq_reject`). See `tasks/reference/reduction-to-standard-position.md`.
 - **The 𝒢₂ quarter turn** (generated into `g2.py` only): `Vector.rotate_90_degrees()` + the
   module-level `rotate_90_degrees()` factory — both `= v * e_12` (the unit pseudoscalar,
   `(x, y) -> (-y, x)`), exact, 𝒢₂-only. Rationale: `tasks/reference/design-decisions.md`,
@@ -136,8 +136,9 @@ and call `self * other`, dispatched to the concrete type.
 - **"Reduction to standard position" is an accepted duplicate-definition theme** — an operation may
   additionally have a standard-position (frame-reduction) variant that rotates the figure to a
   standard frame, does the easy version, and rotates back; the Hestenes-derived definition stays the
-  canonical/primary one. Mark the variant with a prime (Lean `proj'`/`reject'`; Python suffix, e.g.
-  `_sp`). Same spirit as the duplicate 𝒢₂ `rotate_90_degrees`. It is also a **non-circular bootstrap**:
+  canonical/primary one. Mark the variant with an `SP`/`_sp` suffix — Lean `projectSP`/`rejectSP`,
+  Python `project_sp`/`reject_sp` — the stand-in for a prime. Same spirit as the duplicate 𝒢₂
+  `rotate_90_degrees`. It is also a **non-circular bootstrap**:
   3 elementary plane rotations (`rotXY`/`rotXZ`/`rotYZ`, not versors) → project/reject + the geometric
   product/cross via reduce-to-2-D → a **general rotation defined from project/reject**
   (`transforms.projection_rotation`). Full theme + the arc:

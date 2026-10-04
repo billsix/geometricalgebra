@@ -112,7 +112,7 @@ also catch `native_decide`/`axiom` (none present today).
 | `r_vector_part`, `even_part`/`odd_part`, grade predicates | `GradeProjection.lean`, `IsVector`/… | **proven** |
 | `project`/`reject`/`reflect` of a vector | `Projection2D/3D.lean`, `Reflect.lean` (𝒢₃, across a vector) | **proven** for vector operand onto vector/bivector; reflect across a bivector and reflect∘reflect = id **not stated** |
 | `versor_from_vectors`, `sandwich`, `transforms.projection_rotation` / `versor_rotation` | `Rotation3D`, `Versor2D`, `Sandwich`, `RotateComponents`, `ProjectionRotation2D/3D` (incl. `projRotation_eq_sandwich`) | **proven** (forward); `backward ∘ forward = id` not stated |
-| `standardposition.project_sp` | `StandardPosition.lean` equivariance + alignment | **proven by ingredients**; no single `project_sp = project` theorem although `CLAUDE.md` and the Python docstring say "proven equal" |
+| `standardposition.project_sp` | `StandardPosition.lean` equivariance + alignment | **proven by ingredients**; no single `project_sp = project` theorem although `CLAUDE.md` and the Python docstring say "proven equal" — closed later the same day by `projectSP_eq_proj` (§7) |
 | `cross`, `area`, `volume`, signed area/volume, `cosine`/`abs_sin`/`sine` | `Cross`, `Measures`, `Lagrange`, `Trig`, `TrigEquiv`, `StudentTrigForms` | **proven** (𝒢₃; Lagrange also 𝒢₂) |
 | `is_orthogonal_to`, `is_parallel_to` | `Predicates2D/3D` | proven / **half** (`a ∧ ka = 0` only; the converse "wedge zero ⇒ dependent" unstated) |
 | `exp` | `Exp.lean` closed form is a unit versor | **partial** (no series, no scalar or pseudoscalar case) |
@@ -148,7 +148,7 @@ Open Lean tasks, easy wins first: `trim-unused-simp-components` (done, archive o
 `rename-rotor-to-versor` (done; archived 2026-10-04 with rotation-from-scratch),
 `reference-doc-lean-workflow-and-proof-notebooks` (P6/D4, 3 open questions),
 `lean-unit-versors-rotors-sandwich-with-reverse` (P6/D6, 3 questions), `reduce-to-standard-position`
-(voice pass), `lean-cross-standard-position-capstone` (2 questions), the four P7 step tasks
+(voice pass; archived 2026-10-04, the voice pass is `proof-projection-book-voice-pass`), `lean-cross-standard-position-capstone` (2 questions), the four P7 step tasks
 (dot/wedge/pseudoscalar/rotation — only Mathlib equivalence left), `lean-general-multivector-inverse`,
 `investigate-lean-to-python-proof-notebooks`, `push-delicate-coordinate-core-tier` (P8),
 `grade-simp-tactic` (P9, maintainer undecided), `lean-general-gn-product` (P9, deferred).

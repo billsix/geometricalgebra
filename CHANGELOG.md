@@ -14,8 +14,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ### Added
 - **`gacalc.standardposition`** (`project_sp`, `reject_sp`) — a pedagogical, "reduction to standard
   position" duplicate of `project`/`reject`: it rotates the target vector onto the `e_1` axis with
-  elementary coordinate-plane rotations, projects there, and rotates back. Equal to the canonical
-  `projected_onto`/`rejected_away_from` (machine-checked in `proofs/GacalcProofs/StandardPosition.lean`).
+  elementary coordinate-plane rotations, keeps the x-component there (no geometric product), and
+  rotates back. Equal to the canonical `projected_onto`/`rejected_away_from` (machine-checked as
+  `projectSP_eq_proj`/`rejectSP_eq_reject` in `proofs/GacalcProofs/StandardPosition.lean`).
   Additive, non-breaking; the Hestenes-formula `project`/`reject` remain the primary API.
 - **Sine companions to `cosine`:** `MultiVectorBase.abs_sin` — the unsigned, any-dimension sine
   `|a∧b| / (|a||b|)` — and the 𝒢₂-only `gacalc.g2.Vector.sine` — the signed 2D sine

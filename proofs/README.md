@@ -38,8 +38,8 @@ the Python implementation.
     (`reflectVec = 2·proj − v`, an isometry — 𝒢₃, across a vector); `Normalize.lean` (unit magnitude).
   - *Standard position (the non-circular bootstrap):* `StandardPosition.lean` (elementary plane
     rotations `rotXY`/`rotXZ`, NOT versors; preserve dot; proj/reject equivariant; align `b` to `e₁`;
-    the product from projection; `projectSP`/`rejectSP` = Python `project_sp`/`reject_sp`, proven equal to
-    `proj`/`reject`); `CrossStandardPosition.lean` (`rotYZ`, `reduceToPlane`, cross
+    the product from projection; `projectSP`/`rejectSP` = Python `project_sp`/`reject_sp` — align, keep the
+    x-component, unalign — proven equal to `proj`/`reject`); `CrossStandardPosition.lean` (`rotYZ`, `reduceToPlane`, cross
     equivariance, the reduced-frame evaluations); `ProjectionRotation3D.lean` / `ProjectionRotation2D.lean`
     (`projRotation` = Python `transforms.projection_rotation`: carries from→to, ⊥ fixed, isometry, and
     equals the versor sandwich).

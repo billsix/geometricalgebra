@@ -98,6 +98,6 @@ statement of intent + the two conventions above.
 2. **Drift-tag convention:** comment tags on both sides (my lean), a central mapping table in the
    doc, or a checked `tools/` script that greps for orphaned tags? (A script could become a gate
    later — don't auto-wire it.)
-3. Does the "bootstrapping" theme (the standard-position theme, `tasks/reduce-to-standard-position.md` — the "bootstrap" name was rejected) belong in
+3. Does the "bootstrapping" theme (the standard-position theme, `tasks/archive/2026/10/04/reduce-to-standard-position.md` — the "bootstrap" name was rejected) belong in
    this doc or its own? My lean: its own reference doc; this one just links it as the pedagogy's
    backbone.

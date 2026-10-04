@@ -131,7 +131,9 @@ projecting. In symbols, with :math:`P` for "project onto",
 
 (That is the one fact doing the real work; it is proved once and for all in the library —
 ``proj_rotXY_equivariant`` / ``proj_rotXZ_equivariant`` in
-``proofs/GacalcProofs/StandardPosition.lean``.)
+``proofs/GacalcProofs/StandardPosition.lean`` — and the whole rotate / keep-the-x-coordinate /
+rotate-back procedure is proved equal to the geometric-algebra projection there, as the single
+theorem ``projectSP_eq_proj``.)
 
 Now the algebra
 ---------------

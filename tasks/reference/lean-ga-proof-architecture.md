@@ -365,7 +365,8 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 - `StandardPosition.lean` — elementary coordinate-plane rotations `rotXY`/`rotXZ` (NOT versors),
   their `preserves_dot` and inverses (`rotXY_inv`/`rotXZ_inv`), projection/rejection equivariance under
   them, the explicit `b ↦ |b|·e₁` alignment (`rotate_b_to_e1` + magnitude form), the
-  product-from-projection payoff (`mul_eq_proj_dot_add_reject_wedge`), and `projectSP`/`rejectSP` with
+  product-from-projection payoff (`mul_eq_proj_dot_add_reject_wedge`), and `projectSP`/`rejectSP`
+  (align, keep the aligned `a`'s x-component — `proj_onto_x_axis`, no product — rotate back) with
   `projectSP_eq_proj`/`rejectSP_eq_reject` (Python `standardposition` proven equal to Hestenes). This is the base of the **bootstrap arc** (3 elementary plane
   rotations → project/reject/product/cross via reduce-to-2-D → a general rotation from project/reject;
   see `tasks/reference/reduction-to-standard-position.md`). The uniform 3-rotation tool is in
@@ -483,7 +484,7 @@ their own tasks, and `gn` waits on a general-n algebra.
 
 | Python | Status | Lean |
 |---|---|---|
-| `standardposition.project_sp` | HAS | `projectSP` (= Python's align → `proj` → rotate back, same `(cos, sin)` formulas), **`projectSP_eq_proj`** (`= proj b a` for a vector `b` off the z-axis), via `rotXY_inv`/`rotXZ_inv` + equivariance (StandardPosition.lean) |
+| `standardposition.project_sp` | HAS | `projectSP` (= Python's align → keep the x-component → rotate back, same `(cos, sin)` formulas), **`projectSP_eq_proj`** (`= proj b a` for a vector `b` off the z-axis), via `proj_onto_x_axis` + `alignSP_self` + `rotXY_inv`/`rotXZ_inv` + equivariance (StandardPosition.lean) |
 | `standardposition.reject_sp` | HAS | `rejectSP`, `rejectSP_eq_vecReject`, `rejectSP_eq_reject` (= Hestenes `reject b a` for vectors) |
 | `standardposition.rotate_in_xy_plane` / `_xz_plane` | HAS | `rotXY`/`rotXZ` — identical formulas; `*_preserves_dot`, `*_inv` |
 | `functions.compose` / `inverse` / `identity` | plumbing — no theorem | the one GA fact they carry for versors: `sandwich_inverse_sandwich` (`sandwich R⁻¹ ∘ sandwich R = id`, both grades), on `inverse_inverse` and `inverse_mul_self_of_isEvenVersor` (Sandwich.lean) |
