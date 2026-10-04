@@ -4,8 +4,8 @@ import GacalcProofs.G3
 /-! # Grade projection: `r_vector_part`, `even_part`, `odd_part`
 
     The grade-r selector `⟨a⟩_r` keeps the grade-r coefficients and zeros the rest (gacalc
-    `r_vector_part`, base.py:985); `even_part`/`odd_part` sum the even/odd grade parts
-    (base.py:1277/1290). The projection laws — idempotence, completeness (the parts reassemble the
+    `r_vector_part`, base.py); `even_part`/`odd_part` sum the even/odd grade parts
+    (base.py). The projection laws — idempotence, completeness (the parts reassemble the
     whole), and even+odd = whole — are coordinate leaves. "Obvious by construction," but named here so
     the contraction/inner-product proofs can lean on them. -/
 namespace GacalcProofs

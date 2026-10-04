@@ -35,7 +35,7 @@ import Mathlib
     "Special case + equivalence to the general case": the dot here equals the
     coordinate sum u₁v₁ + u₂v₂ (`dot_eq_coord_sum`), i.e. the general Euclidean dot
     product / Mathlib's `@inner ℝ (EuclideanSpace ℝ (Fin 2))`. (The book's full
-    sin/cos → rotation → geometric-product derivation is in `Rotation.lean`; this
+    sin/cos → rotation → geometric-product derivation is in `Rotation2D.lean`; this
     module establishes the dot/wedge-as-parts step it culminates in.) -/
 namespace GacalcProofs
 
@@ -205,7 +205,7 @@ def I_inv : G2 := ⟨0, 0, 0, -1⟩
 theorem I_mul_I_inv : mul I I_inv = one := by
   simp only [mul, I, e_12, I_inv, one]; ext <;> ring
 
-/-- The dual `A* = A · I₂⁻¹` (grade r ↦ grade 2−r), matching gacalc's `dual` (base.py:1217). -/
+/-- The dual `A* = A · I₂⁻¹` (grade r ↦ grade 2−r), matching gacalc's `dual` (base.py). -/
 noncomputable def dual (a : G2) : G2 := mul a I_inv
 
 /-- The dual of a vector is again a vector — the −90° rotation `(x, y) ↦ (y, −x)`. -/

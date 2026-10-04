@@ -1,4 +1,5 @@
 import GacalcProofs.Lagrange
+import GacalcProofs.G1
 import GacalcProofs.G2
 import GacalcProofs.G3
 import GacalcProofs.AlgebraLaws
@@ -25,3 +26,4 @@ import GacalcProofs.CrossStandardPosition
 import GacalcProofs.ProjectionRotation3D
 import GacalcProofs.ProjectionRotation2D
 import GacalcProofs.StudentTrigForms
+import GacalcProofs.MathlibBridge

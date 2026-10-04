@@ -59,7 +59,7 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   (its value is still a unit rotor at runtime). The word "rotor" is retained only where an object
   is genuinely unit — the `exp` / `plane_rotation` / `bivector_rotation` half-angle rotor
   `cos(θ/2) − sin(θ/2) i`. Consumers pinning gacalc must update these names. Rationale:
-  `tasks/reference/unit-bivector-and-rotors.md` §6; work record: `tasks/rename-rotor-to-versor.md`.
+  `tasks/reference/unit-bivector-and-rotors.md` §6; work record: `tasks/archive/2026/10/04/rename-rotor-to-versor.md`.
 - **Read-only container parameters widened to their covariant supertypes.**
   `transforms.compose_intermediate_fns` and `compose_intermediate_fns_and_fn` now take
   `Sequence[InvertibleFunction[V]]` rather than `list[...]`, so any sequence is accepted.

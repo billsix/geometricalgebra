@@ -4,7 +4,7 @@ import GacalcProofs.GradeProjection
 /-! # Left and right contraction (Taylor 2021, p.103)
 
     `leftContraction k m A B = ⟨A B⟩_{m−k}` and `rightContraction k m A B = ⟨A B⟩_{k−m}`, for a
-    grade-`k` `A` and grade-`m` `B` (gacalc `left_contraction`/`right_contraction`, base.py:862/907).
+    grade-`k` `A` and grade-`m` `B` (gacalc `left_contraction`/`right_contraction`, base.py).
     The operand grades are passed explicitly (the concrete struct carries no grade tag). Unlike the
     Hestenes dot (`inner_product`), the contractions **include grade 0** — see
     `tasks/reference/contraction-and-dot-definitions.md`; `leftContraction_scalar_vec` below exhibits

@@ -426,9 +426,9 @@ theorem projRotation_eq_sandwich {f t v : G3} (hf : IsVector f) (ht : IsVector t
 
 theorem wedge_vec_wedge_self {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     wedge a (wedge a b) = zero := by
-  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
-  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
-  simp only [wedge, zero, has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+  obtain ⟨has, _, _, _, _⟩ := ha
+  obtain ⟨hbs, _, _, _, _⟩ := hb
+  simp only [wedge, zero, has, hbs]
   ext <;> ring
 
 theorem reject_in_plane_self {a b : G3} (ha : IsVector a) (hb : IsVector b) :

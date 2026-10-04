@@ -182,7 +182,7 @@ per-subsystem ideas list and the decision log.
 - `tasks/reference/lean-ga-proof-architecture.md` — the sandwich/projection lemmas this builds on.
 - `tasks/notebook-dot-wedge-projection-demo.md`, `tasks/reference/dot-wedge-projection-rejection.md`
   — the related "dot = projected product, wedge = rejected" result.
-- `tasks/lean-proof-rotation-from-scratch.md` — the **other route to a general rotation**: the versor
+- `tasks/archive/2026/10/04/lean-proof-rotation-from-scratch.md` (archived) — the **other route to a general rotation**: the versor
   sandwich `R v R⁻¹`. It is **product-based** (a versor *is* a geometric product), so it is NOT a
   bootstrap of the product — complementary to, and contrasted with, route P here (general rotation from
   project/reject, which presupposes no product). Both reduce 3-D to 2-D; only the coordinate-frame route

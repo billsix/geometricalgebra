@@ -5,6 +5,7 @@ defaultTargets = ["GacalcProofs"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
+autoImplicit = false
 relaxedAutoImplicit = false
 weak.linter.mathlibStandardSet = false # off: these are standalone self-check proofs, not a Mathlib PR (the header/style linters just add noise)
 maxSynthPendingDepth = 3

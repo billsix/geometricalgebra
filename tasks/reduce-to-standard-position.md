@@ -93,7 +93,7 @@ elementary coordinate-plane rotations instead. The versor version was replaced w
 
 ## Overlap (cross-referenced, not duplicated)
 
-- `tasks/lean-proof-rotation-from-scratch.md` — reduces 3D to 2D via the versor sandwich, a
+- `tasks/archive/2026/10/04/lean-proof-rotation-from-scratch.md` (archived) — reduces 3D to 2D via the versor sandwich, a
   complementary approach.
 - `tasks/notebook-dot-wedge-projection-demo.md` — dot = projected product, wedge = rejected (proved
   in `tasks/reference/dot-wedge-projection-rejection.md`); a related display task.
@@ -111,10 +111,10 @@ pointer, not a copy.
   in `tests/test_standardposition.py`.
 - **Uniform 3-rotation tool** (`CrossStandardPosition.lean`): `rotYZ` + `reduceToPlane` bring *both*
   vectors into the e₁e₂ plane, so project/reject/cross all run through one frame.
-- **Step 3 — general rotation from project/reject** (`ProjectionRotation.lean`): `projRotation`, with
+- **Step 3 — general rotation from project/reject** (`ProjectionRotation3D.lean`): `projRotation`, with
   carries-from→to, ⊥-fixed, isometry (`projRotation_isometry`), and route-equivalence
   (`projRotation_eq_sandwich`, route P = versor-sandwich route V).
-- **𝒢₂ specialization** (`Projection2DRotation.lean`): the same triple in 2D, the degenerate base case
+- **𝒢₂ specialization** (`ProjectionRotation2D.lean`): the same triple in 2D, the degenerate base case
   (`reject = 0`, collapses to the rotor action `v·f̂·t̂`).
 
 **Design rationale — why a uniform 3 rotations.** project/reject *minimally* need only 2 rotations

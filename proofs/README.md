@@ -6,54 +6,61 @@ derivations, in **Lean 4** on **Mathlib**. These are an independent check of the
 the Python implementation.
 
 - **Build + verify:** `make lean` from the repo root (runs `proofs/check.sh` in the
-  container: `lake build` + an axioms gate that fails on any incomplete `sorry`
-  proof). Needs an image built with `USE_LEAN=1` (the default full image).
+  container: `lake build` + a completeness gate that fails on any `sorry`/`admit` in the
+  sources). Needs an image built with `USE_LEAN=1` (the default full image).
 - **Toolchain / deps:** pinned in `lean-toolchain` (Lean `v4.34.1`) and
   `lake-manifest.json` (the exact Mathlib revision). `.lake/` is build output +
   the fetched Mathlib — gitignored, never committed.
-- **What's here:** `GacalcProofs/Lagrange.lean` (Lagrange identity, 2D + 3D),
-  `GacalcProofs/G2.lean` (a from-scratch 𝒢₂: geometric product, dot = symmetric
-  part, wedge = antisymmetric part, pseudoscalar I₂² = −1, the basis blades as
-  genuine elements `one`/`e_1`/`e_2`/`e_12 : G2` with their multiplication table, and
-  the dual `A·I₂⁻¹` with `dual_vec_perp`: the dual of a vector is ⊥ the vector),
-  `GacalcProofs/G3.lean` (a from-scratch 𝒢₃, the 8-dim algebra: geometric product +
-  wedge + reverse — transcribed from gacalc's `Gn` oracle — the eight basis elements
-  `one`/`e_1`/…/`e_123 : G3`, the multiplication table, pseudoscalar I₃² = −1, the fundamental
-  identity `a b = a·b + a∧b` for vectors and its `a ⊥ b ⟹ a b = a∧b` corollary; the shared
-  prerequisite for the 3D proofs), `GacalcProofs/AlgebraLaws.lean` (the associative-unital-ℝ-algebra
-  laws for both 𝒢₂ and 𝒢₃: the product is associative, distributes over addition both sides, `one`
-  is a two-sided identity, scalars pull through, and orthogonal vectors anticommute),
-  `GacalcProofs/Sandwich.lean` (the versor sandwich `R v R⁻¹` by an even versor, in 𝒢₂ and 𝒢₃: it is
-  an isometry — preserves the dot product, hence lengths and angles; the from-vectors versor is
-  invertible (`R R̃ = |R|²`, `R R⁻¹ = 1`) and **carries `a` to `b`**, `R a R⁻¹ = (|a|/|b|)·b`,
-  angle-free; in 3D a plane rotation fixes the orthogonal axis and keeps in-plane vectors in-plane;
-  and rotations **compose by multiplying versors**, `sandwich (R₁R₂) v = sandwich R₁ (sandwich R₂ v)`,
-  with the supporting `reverse_mul`/`normSq_mul`/`inverse_mul`; and for the actual a→b rotation:
-  it keeps its plane oriented, fixes the perpendicular axis, and preserves the dot product — an
-  oriented isometry carrying a→b, in `GacalcProofs/RotateComponents.lean`),
-  `GacalcProofs/Versor2D.lean` (the angle-free versor-from-two-vectors construction in 𝒢₂: the
-  bisector `h`, the versor `R = b·a + |a||b|`, `R·a = |a|·h`, and the carries-`a`-to-`b` capstone — the
-  pedagogical twin of the 3D `Rotation3D.lean`), `GacalcProofs/Projection.lean` (3D projection: vector
-  projection with the rejection ⊥ the vector, the wedge sees only the rejection, and the
-  dual of `a∧b` — the plane normal — is ⊥ both spanning vectors; plus the uniform Hestenes rejection
-  `reject_B A = (A∧B)·B⁻¹`, proved to equal `b − proj_a b` for the vector case; plus the graded inner product `⟨AB⟩₁`,
-  `project` onto a plane `(A·B)B⁻¹`, `project + reject = identity`, and `proj_plane = project_onto`),
-  `GacalcProofs/Projection2D.lean` (the 2D warm-up: `proj`/`reject` onto a vector, and onto the
-  pseudoscalar plane where a vector has no perpendicular part),
-  `GacalcProofs/Rotation3D.lean` (the **angle-free** 3D versor built from two vectors, à la
-  `versor_from_vectors`: the half-angle bisector vector `h = |b|·a + |a|·b`, the half-angle versor
-  `R = b·a + |a||b|`, and `versor_mul_from_eq_bisector` — `R·a = |a|·h`, the versor times the
-  from-vector recovers the scaled bisector, with no trig), and
-  `GacalcProofs/Rotation.lean` (2D: rotation from sin/cos; the geometric product
-  enacts rotation and the product of two unit vectors is the rotor of the angle
-  between them — dot = cos, wedge = sin; plus rotation "from a to b" for general
-  vectors, `b = (|b|/|a|)·rot(φb−φa)a`). The basis blades are modelled as algebra
-  *elements* (as in Mathlib `CliffordAlgebra` / pygae lean-ga), not real fields —
-  see `tasks/reference/lean-for-gacalc.md`.
-- **What's planned:** the 3D versions, the rotor sandwich / composition, the
-  equivalence to Mathlib's rotation/`@inner`, the general pseudoscalar sign, and
-  projection correctness — tracked as step-tasks under
-  `tasks/investigate-lean-proofs-for-ga.md`.
+- **What's here** (29 modules under `GacalcProofs/`, grouped; every file is 𝒢₂+𝒢₃ unless noted):
+  - *Algebras:* `G1.lean` (𝒢₁ for teaching: `I² = +1`, commutative, every vector pair parallel so
+    `u v = u·v`), `G2.lean`, `G3.lean` — coordinate structs; product/wedge/reverse (𝒢₃'s transcribed
+    verbatim from gacalc's `Gn` oracle by `tools/derive_lean_algebra.py`), the basis blades as genuine
+    elements with their multiplication table, `I² = −1`, `dot` (the scalar part of the product),
+    `dual = A·I⁻¹`, `normSq`/`magnitude`, the grade predicates `IsVector`/`IsBivector`/`IsTrivector`;
+    `Lagrange.lean` (the real-number Lagrange identity 2D/3D); `AlgebraLaws.lean` (associativity,
+    two-sided distributivity, identity, scalar laws, ⊥ vectors anticommute); `GradeProjection.lean`
+    (`rVectorPart`/`evenPart`/`oddPart`, idempotent + complete); `Contractions.lean` (Taylor's left/right
+    contraction, grade 0 included, vs Hestenes — 𝒢₃).
+  - *Angles and trig:* `Rotation2D.lean` (2D from sin/cos: the product enacts rotation, unit-vector
+    product = rotor of the angle, half-angle versor `R v R̃`); `Trig.lean` (`cos_between`/`sin_between`,
+    `cos² + sin² = 1`, both preserved by the sandwich); `TrigEquiv.lean` (angle-form equivalences, signed
+    sine in 2D); `StudentTrigForms.lean` (the student-facing cosine/sine corollaries of the dot/wedge facts).
+  - *Versors and rotation:* `Versor2D.lean` / `Rotation3D.lean` (angle-free versor from two vectors:
+    bisector `h`, `R = b·a + |a||b|`, `R·a = |a|·h`); `Sandwich.lean` (`inverse`, `sandwich`,
+    `IsEvenVersor`; `R R̃ = |R|²·1`; the reverse-sandwich scalings of dot/normSq/wedge for ANY multivector;
+    the sandwich is an isometry — dot, length, wedge, hence angles; carries `a` to `b`; fixes its own
+    plane bivector and normal; rotations compose by multiplying versors; reverse is an anti-automorphism;
+    blade inverses); `RotateComponents.lean` (the three matrix-free rotation goals for the a→b rotation);
+    `Exp.lean` (the closed-form bivector exponential is a unit even versor).
+  - *Projection, rejection, reflection:* `Projection2D.lean` / `Projection3D.lean` (Hestenes
+    `proj`/`reject`/`project_onto` of a vector onto a vector or (3D) a bivector; rejection ⊥; the wedge
+    sees only the rejection; `project + reject = id`; `proj_plane = project_onto`); `Reflect.lean`
+    (`reflectVec = 2·proj − v`, an isometry — 𝒢₃, across a vector); `Normalize.lean` (unit magnitude).
+  - *Standard position (the non-circular bootstrap):* `StandardPosition.lean` (elementary plane
+    rotations `rotXY`/`rotXZ`, NOT versors; preserve dot; proj/reject equivariant; align `b` to `e₁`;
+    the product from projection; `projectSP`/`rejectSP` = Python `project_sp`/`reject_sp`, proven equal to
+    `proj`/`reject`); `CrossStandardPosition.lean` (`rotYZ`, `reduceToPlane`, cross
+    equivariance, the reduced-frame evaluations); `ProjectionRotation3D.lean` / `ProjectionRotation2D.lean`
+    (`projRotation` = Python `transforms.projection_rotation`: carries from→to, ⊥ fixed, isometry, and
+    equals the versor sandwich).
+  - *Cross, measures, predicates:* `Cross.lean` (`cross = dual (a∧b)`, anticommutative, ⊥ both,
+    scalar triple = signed volume — 𝒢₃); `Measures.lean` (area/volume, `|a∧b|²` Lagrange form,
+    `|a∧b∧c|² = signedVolume²`); `Predicates2D.lean` / `Predicates3D.lean` (dual ⊥; `a·b = 0 ⟺ ab = a∧b`;
+    `a ∧ (k·a) = 0`).
+  - *Bridges to Mathlib:* `MathlibBridge.lean` — the from-scratch objects ARE the standard ones: `dot` is
+    `inner` on `EuclideanSpace` (so `real_inner_comm` and Cauchy–Schwarz apply: `abs_dot_le_magnitude_mul`),
+    the wedge is the `2×2` determinant / the three minors, the dual of the 3D wedge is `crossProduct`, the
+    signed volume is `Matrix.det`, and `rot θ` (and the 2D versor sandwich) is `Orientation.rotation θ` on ℂ.
+  The basis blades are modelled as algebra *elements* (as in Mathlib `CliffordAlgebra` / pygae lean-ga),
+  not real fields — see `tasks/reference/lean-for-gacalc.md`. What each Python method maps to, and what
+  is NOT covered (general grades, general n, `frame.py`, the transform factories), is in
+  `tasks/reference/lean-ga-proof-architecture.md` (coverage map) and the review
+  `tasks/reference/lean-proof-corpus-review-2026-10-04.md`.
+- **What's planned:** a dimension-general algebra, with the general pseudoscalar sign and Hestenes
+  dot/wedge (`tasks/lean-general-gn-product-and-hestenes-dot-wedge.md`, deferred); the general multivector
+  inverse; the 3D rotor angle theorem (`tasks/lean-rotor-3d-angle-theorem.md`); frames
+  (`tasks/lean-frame-coverage.md`, parked); the Lean→notebook pipeline. The original program
+  (`tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`) is complete.
 
 Beginner orientation to Lean and how proofs/reuse work:
 `tasks/reference/lean-for-gacalc.md`.

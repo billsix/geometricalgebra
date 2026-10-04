@@ -6,7 +6,7 @@ import GacalcProofs.Sandwich
 
 /-! # A general rotation defined from project/reject — the 𝒢₂ parallel
 
-    The 2D companion of `ProjectionRotation.lean` (the 𝒢₃ step 3 of the reduce-to-standard-position
+    The 2D companion of `ProjectionRotation3D.lean` (the 𝒢₃ step 3 of the reduce-to-standard-position
     bootstrap arc, `tasks/reference/reduction-to-standard-position.md`). It mirrors that file exactly:
     define a *general* rotation "from `f` to `t`" out of **projection / rejection**, split `v` into its
     in-plane part (turned through the from→to angle by `· f̂ · t̂`) and its perpendicular part (left
@@ -18,7 +18,7 @@ import GacalcProofs.Sandwich
     onto the plane is the identity. The rotation therefore collapses to the pure rotor action
     `v ↦ v · f̂ · t̂` (`projRotation_eq_vec_mul`) — exactly what `Versor2D.lean` means by "in 𝒢₂ the plane
     is the whole space, so the sandwich is purely the rotation, nothing is left fixed." Reading this file
-    beside `ProjectionRotation.lean` shows the same three theorems, with the ⊥ term present but provably
+    beside `ProjectionRotation3D.lean` shows the same three theorems, with the ⊥ term present but provably
     zero. Nothing new is proven here that the existing 𝒢₂ lemmas did not already give; this is the named,
     side-by-side 3D↔2D parallel. -/
 namespace GacalcProofs.G2
@@ -229,12 +229,11 @@ theorem magnitude_sq_of_normSq {a : G2} (ha : IsVector a) :
   have h := magnitude_sq_of_normSq_coord a.c1 a.c2
   rwa [← eq_vec_of_isVector ha] at h
 
-theorem normSq_mul_three_vec {v f t : G2} (hv : IsVector v) (hf : IsVector f) (ht : IsVector t) :
+theorem normSq_mul_three_vec {v f t : G2} (hv : IsVector v) (ht : IsVector t) :
     normSq (mul (mul v f) t) = normSq v * normSq f * normSq t := by
   obtain ⟨hvs, hv12⟩ := hv
-  obtain ⟨hfs, hf12⟩ := hf
   obtain ⟨hts, ht12⟩ := ht
-  simp only [normSq, mul, reverse, hvs, hv12, hfs, hf12, hts, ht12]
+  simp only [normSq, mul, reverse, hvs, hv12, hts, ht12]
   ring
 
 theorem versorFromVectors_mul_vec_eq {f t v : G2} (hf : IsVector f) (ht : IsVector t)

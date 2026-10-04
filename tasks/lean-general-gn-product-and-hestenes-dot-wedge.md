@@ -1,6 +1,6 @@
 # Lean — a dimension-agnostic `Gn`-style product, and Hestenes-style dot/wedge (future)
 
-**Relates to:** `tasks/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella) and the
+**Relates to:** the Lean-proofs program (umbrella archived: `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`) and the
 per-component algebras `proofs/GacalcProofs/G2.lean`, `G3.lean`.
 
 **Status:** proposed — **deliberately deferred** (do NOT start now). The maintainer prefers the
@@ -39,6 +39,23 @@ dot/wedge, **proved consistent with the per-component `G2`/`G3`** (a bridge lemm
 - **Standalone-policy note:** this stays *from-scratch* (a blade-`Finsupp` model of our own), separate
   from depending on Mathlib's `CliffordAlgebra` — though comparing to / mapping onto `CliffordAlgebra`
   for an equivalence check would be welcome (as elsewhere, Mathlib for the *equivalence* direction).
+
+## Added scope (2026-10-04): the general-n pseudoscalar sign
+
+`tasks/archive/2026/10/04/lean-proof-pseudoscalar-square-sign.md` (archived) covers n = 1, 2, 3; the general statement
+`Iₙ² = (−1)^(n(n−1)/2)` belongs here, once a dimension-general blade model exists. What is already known:
+
+- The Python closed form `base.pseudoscalar_squared_sign(r)` replaced a body that squared the unit
+  pseudoscalar through the `Gn` oracle (commits `45dcdc9` → `3a98012`); `tests/test_pseudoscalar_square_sign.py`
+  gates the two equal for a range of `r`, and `tests/test_conformance.py` checks each generated algebra's
+  `unit_pseudoscalar_squared` against `Gn`. So a *computed* general-n check exists in Python.
+- The *written* general proof is `tasks/reference/pseudoscalar-square-sign.md`: count the adjacent swaps
+  needed to reverse `e₁…eₙ` (the triangular number `n(n−1)/2`), or the one-liner via `reverse`.
+- In Lean the natural statement is on the blade model this task picks: a basis blade is a sorted index
+  list (or `Finset (Fin n)`), the product of blades is the merged list with the sign of the sorting
+  permutation, and `Iₙ² ` is the sign of reversing `[0, …, n−1]`, i.e. `(−1)^(n(n−1)/2)` by induction on
+  `n` (`Iₙ₊₁ = Iₙ eₙ`, and moving `eₙ` through `Iₙ` costs `n` swaps). Mathlib's `CliffordAlgebra` is the
+  reference for the general statement but is not the standalone route this corpus uses.
 
 ## Open questions
 

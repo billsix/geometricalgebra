@@ -271,7 +271,8 @@ over a "run it on your host" instruction.
   `USE_LEAN=1` (the default full image). Mathlib is **baked into the image** under `USE_LEAN` so this
   runs offline (adds several GB — Lean images only). See `proofs/README.md`,
   `tasks/reference/lean-for-gacalc.md` (beginner orientation) and `tasks/reference/lean-ga-proof-architecture.md`
-  (architecture, techniques, and what's proven); work tracked under `tasks/investigate-lean-proofs-for-ga.md`.
+  (architecture, techniques, what's proven, and the program decisions; the original umbrella is archived at
+  `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`).
 - **`make image`** then **`make shell`** — containerized dev; Jupyter on port 8888.
   **`make update-emacs-packages`** — refresh the vendored Emacs packages (maintainer-only, rarely).
 - **`make image MINIMAL_IMAGE=1`** — a **lean image** (~2.42 GB vs the full ~7.21 GB) that still runs
@@ -345,7 +346,8 @@ option exists — "the cosine of the angle between them is 0" (perpendicular) / 
 is the algebra underneath. **Keep dot/wedge as the primitive and layer the trig phrasing on top** (e.g.
 a `cos_between … = 0` corollary resting on a `dot … = 0` lemma), never trading the robust,
 √/division-free primitive for a trig form whose only effect is to add `√`/`0÷0` noise. Within reason;
-use discretion. Tracked: `tasks/prefer-sine-cosine-presentation.md`.
+use discretion. Record: `tasks/archive/2026/10/03/prefer-sine-cosine-presentation.md`; remaining candidates in
+`tasks/prefer-sine-cosine-presentation-followups.md`.
 
 ## Coordinates only when needed
 
@@ -371,8 +373,14 @@ shared through OBJECT theorems** — a composite (`cos_between` preservation) co
 coordinate proof (`set`/`calc`/big `field_simp`) must be kept verbatim and is shared by ≥2 object theorems.
 **Genuine scalars stay scalar** — angles (`θ`/`α`/`β`), a rotation's `cos`/`sin`, a scalar multiple `k`, and
 pure-real identities (`lagrange_2d/3d`); and the definitional `vec`-literal unfold leaves (`normSq_vec`,
-`dot_vec`, `cross_vec`, …) stay coordinate (their RHS *is* coordinate arithmetic). The corpus sweep is
-**done for the polynomial tier** (2026-10-04); the method, final tier split, and reusable recipes live in
+`dot_vec`, `cross_vec`, …) stay coordinate (their RHS *is* coordinate arithmetic). **Carry only what the
+proof uses** — drop a grade hypothesis or `simp` component the body never needs (some theorems are more
+general than first stated — the reverse-sandwich isometries hold for ANY multivector in both grades);
+**but a name being absent from the body does NOT prove it unused** (`field_simp`/`simp` use `_ ≠ 0` hyps from context unnamed), and
+Lean flags only the signature kind (`unusedVariables` warning), so decide by **delete-and-rebuild** —
+and read a failure: a `ring` timeout means *this proof* needs the hypothesis (restructure it), only a
+residual-goal failure means the *theorem* does. The corpus sweep is **done for the polynomial
+tier** (2026-10-04); the method, final tier split, and reusable recipes live in
 `tasks/reference/lean-ga-proof-architecture.md` (record: `tasks/archive/2026/10/04/`).
 
 The **per-theorem A/B/C judgment** (coordinate-free object / object-then-pull-coords / keep genuine

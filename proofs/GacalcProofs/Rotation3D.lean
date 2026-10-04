@@ -24,7 +24,7 @@ import GacalcProofs.G3
         yields the (scaled) half-angle bisector vector. The only analytic fact it touches is
         `|a|² = a·a` (`Real.sq_sqrt`); everything else is `ring`.
 
-    Next (see `tasks/lean-proof-rotation-from-scratch.md`): the sandwich `R v R⁻¹` itself —
+    The sandwich `R v R⁻¹` itself (record: `tasks/archive/2026/10/04/lean-proof-rotation-from-scratch.md`) —
     that it carries `a` to (a scalar multiple of) `b` and fixes the plane normal
     `dual (a ∧ b)` — as the angle-free 3D analogue of the G2 `sandwich_versor`. The intended
     finish reduces it to 2D via the plane `a (b − proj_a b) = a ∧ b` (from the proved
