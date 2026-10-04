@@ -284,6 +284,14 @@ Lessons from the "geometric objects in, scalars in the body, geometric objects o
   in `Versor2D.lean`, not `G2.lean`, and so are `G2.dot_smul_left/right` — a `grep … G2.lean` falsely
   concluded "G2 lacks them." **Fix:** grep the whole `proofs/GacalcProofs/` tree (or `rg`), never a single
   file, before concluding a lemma is missing.
+- **Two `simp`-set gotchas in `obtain`-getter proofs** (both bit the Projection3D bivector conversions):
+  **(a)** when a def in the goal *constructs* a `vec` (e.g. `inner_vb a b = vec (mul a b).c1 …`), the proof
+  reads back `(vec …).c12`/`.c23` etc., so **`vec` must be in the `simp only [...]` set** or those
+  projections don't reduce to `0` (leftover `(vec …).c12` in the goal). **(b)** when the RHS is a bare
+  object (`… = a`), `a`'s non-vector components (`a.s`, `a.c12`, …) appear only **after `ext`** splits the
+  goal — so the grade-predicate zero-substitution must be **repeated after `ext`**: `ext <;> simp only
+  [has, ha12, …] <;> field_simp [hdd] <;> ring` (a pre-`ext` `simp` with the zeros misses the RHS). Worked:
+  `Projection3D.project_add_reject`.
 
 ## Hestenes projection / rejection (uniform, all grades)
 
