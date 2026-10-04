@@ -22,7 +22,9 @@ only where the args are genuinely scalars — a pure scalar identity, or an irre
 are A/B candidates. "Done" = every A/B theorem lifted, callers updated, `make lean` green, and the
 remaining `ℝ`-taking theorems are only genuine-scalar (C) cases.
 
-**Status:** in progress — large incremental sweep (reopened 2026-10-03 from the first increment).
+**Status:** SUPERSEDED & ARCHIVED 2026-10-04 — the statement-lift phase landed (the `sandwich_*` and
+grade-predicate families became object-form across Increments 1–23) and the effort continued as the
+getters-in-body consolidation recorded in the sibling doc. Historical record below.
 **Priority:** 5. **Difficulty:** 7 (scale + caller cascades).
 **Created:** 2026-10-03 (William Emerison Six <billsix@gmail.com>).
 **See also:** `CLAUDE.md` › "Coordinates only when needed"; `tasks/reference/lean-ga-proof-architecture.md`
@@ -439,8 +441,9 @@ Predicates used: `IsVector`, `IsEvenVersor`, `IsBivector` (all already exist).
 **DONE (Increment 21, 2026-10-03, `make lean` green).** All listed scaffold lemmas are now object-form:
 each coordinate proof kept verbatim as `_coord`, an object wrapper added bridging via
 `rwa [← eq_vec/eq_bivector/eq_evenVersor …] at h`, and every (coordinate) caller repointed to `_coord`.
-The mechanical rename+repoint was done by `tasks/adhoc/lean-lift-scaffold/rename_to_coord.py` (whole-word
-`\bNAME\b` → `NAME_coord` on code lines, docstrings skipped); the object wrappers were added by hand.
+The mechanical rename+repoint was done by a one-shot codemod `rename_to_coord.py` (whole-word
+`\bNAME\b` → `NAME_coord` on code lines, docstrings skipped; `git rm`'d at archive since the whole `_coord`
+layer it created was later dissolved); the object wrappers were added by hand.
 `G3.mul_vec_self` and the other form-D bridge leaves were deliberately left coordinate (see below).
 - **Mistake made + fixed within this unit:** the codemod was not idempotent — a second run re-matched the
   new wrapper defs (`theorem NAME {…}`) and appended `_coord`, colliding with the leaves (32 lines). Caught

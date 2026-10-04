@@ -422,7 +422,7 @@ and `dual_vec`). Both are HAS.
 | `vectorcalc.cross` | HAS | `cross`, `cross_vec`, `cross_anticomm_vec`, `cross_perp_left`/`_right` (Cross) |
 | `measure.area` | HAS | `area_sq_vec` (= `normSq (a∧b)`), `normSq_wedge_eq_lagrange` (Measures.lean) |
 | `measure.volume` | HAS | `volume_sq_vec` (= `signedVolume²`) (Measures.lean) |
-| `measure.signed_area` | HAS | `signedArea` (= a₁b₂−a₂b₁), `signedArea_sq` (`\|signed_area\| = area`) (Measures.lean) |
+| `measure.signed_area` | HAS | `signedArea` (= a₁b₂−a₂b₁), `signedArea_eq` (Measures.lean) |
 | `measure.signed_volume` | HAS | `dot_cross_eq_signedVolume` (= `det[a,b,c]`) (Cross) |
 | `measure.content` (general `n`) | NONE | deferred — needs the general-`Gn` layer (`lean-general-gn-product-and-hestenes-dot-wedge`); k=2,3 are the proven `area`/`volume` |
 

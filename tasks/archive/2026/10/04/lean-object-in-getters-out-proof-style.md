@@ -109,8 +109,9 @@ arithmetic** (`= a1²+a2²+a3²`, `= vec (a2*b3−…)`). Two options:
    `vec_mul_eq_dot_add_wedge`/`vec_mul_perp`/`dual_vec_perp` already have object companions
    (`mul_eq_dot_add_wedge`/`mul_eq_wedge_of_perp`/`dual_perp`).
 
-**Recommendation: option 2** — don't flip the definitional unfolds (no readability gain + high blast);
-remove any that become unused once (A) is done. **This is the main thing to confirm.**
+**Chose option 2** (maintainer-approved, Decision 1 below) — the definitional unfolds were not flipped (no
+readability gain + high blast); the ones left unused after the conversion were removed in the final sweep
+(`signedArea_sq`, `normSq_triv`), the rest kept.
 
 ### (C) coordinate-parameterized defs/theorems — the rotation is DEFINED by coordinates
 
@@ -128,24 +129,25 @@ off its getters, but the statement stays intrinsically coordinate. **Low value; 
 `sin_between`/`versorFromVectors` scalar params, the `k` scalar multiples, and the companion discharge
 lemmas `isVector_vec`/`isBivector_bivector`/`isTrivector_trivector`/`isEvenVersor_evenVersor`.
 
-## Risks / what I'd watch
+## Risks anticipated (1 and 2 materialized and were handled)
 
-1. **Chain-wide, not one-at-a-time.** A composite's object proof needs its sub-lemmas object *first*; convert
-   bottom-up (leaves → composites), `make lean` green each step. Shared `_coord` can't be deleted until all
-   its callers are object.
+1. **Chain-wide, not one-at-a-time.** A composite's object proof needs its sub-lemmas object *first*;
+   conversion went bottom-up (leaves → composites), `make lean` green each step; a shared `_coord` could not
+   be deleted until all its callers were object. *(Materialized — refined by the textual-ordering finding
+   below: "bottom-up" had to mean bottom-up **in the file**, not just in the dependency DAG.)*
 2. **Delicate proofs** (`projRotation_eq_sandwich` plen~55, `_isometry` plen~42, `key_reverse_sq`,
-   `versor_mul_from_eq_bisector`, the √-structural cores): `obtain`+`field_simp`/`ring` should work (ring is
-   name-agnostic), but `set`/`calc` proofs may need care. Keep an `eq_vec`-reconstruction fallback for any
-   that fight the `obtain` form.
-3. **This reverses the `_coord`+bridge pattern from Increments 9–23.** Expect churn on just-done work; net
-   result is fewer symbols and a single object theorem each.
-4. **Docstring hygiene:** when merging a `_coord`+wrapper into one theorem, delete the *stale* leaf docstring
-   (two `/-- … -/` in a row is a Lean parse error — this bit bucket 1; caught by a "two docstrings before one
-   decl" scan).
+   `versor_mul_from_eq_bisector`, the √-structural cores): `obtain`+`field_simp`/`ring` works for polynomial
+   proofs but `set`/`calc`/sqrt proofs did not — these became the **retained coordinate core** (the delicate
+   tier), kept with their coordinate scaffold.
+3. **This reversed the `_coord`+bridge pattern from the statement-lift increments.** There was churn on
+   just-done work; the net result is fewer symbols and a single object theorem each.
+4. **Docstring hygiene:** merging a `_coord`+wrapper into one theorem meant deleting the *stale* leaf
+   docstring (two `/-- … -/` in a row is a Lean parse error — this bit bucket 1; caught by a "two docstrings
+   before one decl" scan).
 
-## End-of-conversion cleanup sweep (planned; maintainer asked 2026-10-03 "are those components even used?")
+## The cleanup sweep — plan & rationale (executed; results in the "Final `_coord`-deletion sweep" subsection below)
 
-After every `_coord` is deleted, run a dead-code sweep:
+The maintainer asked 2026-10-03, "are those components even used?" The dead-code sweep that answered it:
 
 1. **Dead whole lemmas** — the form-D `vec`-literal bridges (Decision 1 below) and any leaf/helper left
    unreferenced once the `obtain`-getters proofs stopped calling them. Find with
@@ -349,27 +351,13 @@ Ran the sweep (`grep` every `_coord` def, count non-definition code uses):
   `simp only [… , hR1, hvs, …]` list, so Lean's `unusedVariables` linter stays quiet (verified: build has no
   warnings surfaced). Redundant `simp only` args left as-is per the agreed low-value call.
 
-### Previously-owed sweep notes (superseded by the DONE section above)
-
-Per the cleanup-sweep plan above: grep each remaining `_coord` for live references and delete the ones left
-unreferenced after this pass (e.g. Projection3D's `project_eq_sub_reject_coord`, possibly
-`reject_eq_proj_normal_coord`), version-aware of the G2/G3 twins. The leaf `_coord` kept for external/delicate
-consumers (`G3.{wedge_self_vec,dot_self_vec_eq_normSq,mul_vec_self}_coord`, `project_add_reject_coord`,
-`reject_vec_eq_coord`, `lagrange_property_coord`, the ProjectionRotation scaffold, the form-D `vec`-literal
-bridges in Decision 1) stay until their consumers are converted or are accepted as the coordinate core.
-
-## Converted files summary (2026-10-03, all `make lean` green + staged)
+## Converted files summary (all `make lean` green)
 
 Sandwich (full: vec/wedge/dot/inverse-self/reverse-self, G2+G3), RotateComponents (`rotation_preserves_dot`),
 Reflect (full), G3 (self-product wrappers), Projection2D (full wedge cluster), Projection3D (3 of 4 bivector
-proofs), Trig (`lagrange_property` G2+G3). Retained coordinate core (documented, by design): the two
-ProjectionRotation files, CrossStandardPosition, TrigEquiv, `cos_sq_add_sin_sq`, `reject_vec_eq`, and the
-form-D `vec`-literal bridges.
-
-## Other files — remaining (same mechanic, bottom-up per file)
-
-`ProjectionRotation3D` (16), `ProjectionRotation2D` (7), `Projection3D` (4), `Projection2D` (5 — note it has
-its own G2 copies of `wedge_reverse_sandwich_coord` etc.), `Reflect` (2), `G3` (3), `CrossStandardPosition`
-(3), `Trig` (2 lagrange), `TrigEquiv` (1), `Rotation3D`/`Versor2D` (bisector — delicate). Leaves →
-`obtain`-getters + `ring`/`ext`; composites → compose-object (atomic-`normSq` leaf where there's division);
-delicate capstones last. Build green + stage per file.
+proofs), Trig (`lagrange_property` G2+G3), and the pure-polynomial ProjectionRotation scaffold leaves
+(2D `mul_vec_self`/`normSq_mul_three_vec`, 3D `wedge_vec_wedge_self`). Retained coordinate core (by the
+maintainer-approved decision, 2026-10-04): the two ProjectionRotation capstone files, CrossStandardPosition,
+TrigEquiv, `cos_sq_add_sin_sq`, `reject_vec_eq`, the Sandwich delicate capstones (`sandwich_carries_from_to`,
+`sandwich_fixes_own_bivector`/`_normal`, `sandwich_comp`), and the form-D `vec`-literal bridges. Pushing that
+tier is the optional follow-up [[push-delicate-coordinate-core-tier]].

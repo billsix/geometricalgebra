@@ -47,9 +47,35 @@ the two `ProjectionRotation2D/3D` files' scaffold + capstones (`key_reverse_sq`,
 `projRotation_eq_sandwich`/`_isometry`). Plus the Sandwich delicate capstones still on their bridge
 (`sandwich_carries_from_to` G2+G3, `sandwich_fixes_own_bivector`/`_normal`, `sandwich_comp`).
 
-The retained coordinate `_coord` leaves feeding these (listed in the archived parent task) can only be
-deleted once their capstones are converted — do it bottom-up, `make lean`-green each step, keeping an
-`eq_vec`-reconstruction fallback for any that still resist.
+The retained coordinate `_coord` leaves feeding these can only be deleted once their capstones are
+converted — do it bottom-up, `make lean`-green each step, keeping an `eq_vec`-reconstruction fallback for
+any that still resist.
+
+## Current retained `_coord` scaffold (as of the 2026-10-04 sweep)
+
+The sweep confirmed **no `_coord` is orphaned** — each still feeds a retained coordinate-core proof.
+Regenerate the live list (and spot any that a future conversion orphans) from the repo root with:
+
+```sh
+cd proofs && for n in $(grep -rhoE '^(theorem|lemma|def) [A-Za-z0-9_]*_coord' --include='*.lean' GacalcProofs/ \
+  | sed -E 's/^(theorem|lemma|def) //' | sort -u); do
+  echo "=== $n ==="; grep -rnE "\b$n\b" --include='*.lean' GacalcProofs/ | grep -vE ":[0-9]+:(theorem|lemma|def) $n"
+done
+```
+
+The retained set at archive time, by cluster: **Sandwich** `versorFromVectors_mul_reverse_coord` (G2+G3),
+`sandwich_carries_from_to_coord` (G2+G3), `versorFromVectors_mul_inverse_coord`,
+`sandwich_fixes_own_bivector_coord`, `sandwich_fixes_own_normal_coord`, `sandwich_comp_coord`; **G3**
+`wedge_self_vec_coord`, `dot_self_vec_eq_normSq_coord`, `mul_vec_self_coord` (feed Projection*,
+StandardPosition, ProjectionRotation*); **Projection3D** `reject_vec_eq_coord`, `project_add_reject_coord`,
+`reject_eq_proj_normal_coord`, `project_eq_sub_reject_coord`; **Trig** `lagrange_property_coord` (G2+G3,
+feeds `cos_sq_add_sin_sq`); **CrossStandardPosition** `cross_rot{XY,XZ,YZ}_equivariant_coord`;
+**Rotation3D/Versor2D** `versor_mul_from_eq_bisector_coord`, `from_mul_versor_eq_bisector_coord`;
+**RotateComponents** `sandwich_ahat_coord`, `rotation_fixes_normal_coord`; **TrigEquiv**
+`sin_between_eq_abs_signed_vec_coord`; and the whole **ProjectionRotation2D/3D** scaffold
+(`key_reverse_sq_coord`, `fhat_that_eq_reverse_mul_inverse_coord`, `magnitude_sq_of_normSq_coord`,
+`projRotation_*_coord`, `normalizeVec_*_coord`, `vec_mul_bisector_eq_coord`, the plane-projection `_coord`,
+etc.) plus the form-D `vec`-literal bridges kept by Decision 1.
 
 ## See also
 
