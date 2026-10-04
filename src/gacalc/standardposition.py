@@ -4,9 +4,10 @@ These are **deliberate duplicate definitions** alongside the canonical Hestenes
 ``project`` / ``reject`` in :mod:`gacalc.base` (see
 ``tasks/reference/reduction-to-standard-position.md``).  To project a vector ``a``
 onto a vector ``b``, rotate ``b`` onto the ``e_1`` axis (standard position) using
-**elementary coordinate-plane rotations**, project in that frame, and rotate back::
+**elementary coordinate-plane rotations**, keep the x-component of the aligned ``a``
+(projecting onto the x-axis is just reading off a coordinate), and rotate back::
 
-    project_sp(a, b) = unalign( align(a) projected onto align(b) ),
+    project_sp(a, b) = unalign( x-component of align(a) · e_1 ),
         where align rotates b's xy-part onto the x-axis (zeroing b_y), then its
         xz-part onto the x-axis (zeroing b_z), so align(b) = |b|·e_1.
 
@@ -19,11 +20,13 @@ operations trusted independently of it.  This mirrors the matrix-free change-of-
 in ``multivariate-math/proofs/crossproduct.tex``.
 
 Proven **equal** to the canonical operations in
-``proofs/GacalcProofs/StandardPosition.lean`` (``proj_rotXY_equivariant`` /
-``proj_rotXZ_equivariant`` -- projection commutes with a plane rotation; and
-``rotate_b_to_e1`` -- the composite alignment).  The prime is written ``_sp``
-because ``'`` is not a legal Python identifier character; in Lean it is ``rotXY`` /
-``rotXZ`` and the primed operations.
+``proofs/GacalcProofs/StandardPosition.lean``: ``projectSP_eq_proj`` and
+``rejectSP_eq_reject`` transcribe this module (``projectSP`` / ``rejectSP``, the same
+``(cos, sin)`` formulas) and prove it equals the Hestenes ``proj`` / ``reject``, via
+``proj_onto_x_axis`` (keep-the-x-component IS the projection onto ``|b|·e_1``),
+projection-equivariance under each plane rotation, and the rotations' inverses.  The
+derived variants carry an ``_sp`` / ``SP`` suffix in both languages (the stand-in for a
+prime, which is not a legal Python identifier character).
 
 Caveat: the ``e_1`` alignment is undefined when ``b`` lies along the ``z`` axis
 (``b_x = b_y = 0``), because the first plane rotation would divide by ``|xy-part| =
@@ -75,20 +78,20 @@ def _project_via_standard_position(
         )
 
     a_aligned: MultiVectorBase = align(a)
-    b_aligned: MultiVectorBase = align(b)  # = magnitude * e_1
-    projected_in_standard_position: MultiVectorBase = a_aligned.projected_onto(
-        b_aligned
-    )
+    # align(b) = magnitude * e_1, so projecting onto it is "keep the x-component":
+    # no dot product, no geometric product -- just read off a coordinate.
+    a_aligned_x, _a_aligned_y, _a_aligned_z = list(a_aligned)
+    projected_in_standard_position: MultiVectorBase = a_aligned_x * e_1
     return rotate_back(projected_in_standard_position)
 
 
 def project_sp(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
     """Standard-position projection of vector ``a`` onto vector ``b`` (𝒢₃).
 
-    Rotates ``b`` onto the ``e_1`` axis with elementary plane rotations, projects
-    there, and rotates back.  Equal to ``a.projected_onto(b)`` (the canonical
-    Hestenes projection); the equality is proven in
-    ``proofs/GacalcProofs/StandardPosition.lean``.
+    Rotates ``b`` onto the ``e_1`` axis with elementary plane rotations, keeps the
+    x-component of the aligned ``a``, and rotates back.  Equal to
+    ``a.projected_onto(b)`` (the canonical Hestenes projection); the equality is the
+    theorem ``projectSP_eq_proj`` in ``proofs/GacalcProofs/StandardPosition.lean``.
 
     Args:
         a: the vector being projected.
@@ -106,7 +109,8 @@ def reject_sp(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
     """Standard-position rejection of vector ``a`` from vector ``b`` (𝒢₃).
 
     The perpendicular component ``a − project_sp(a, b)`` — equal to the canonical
-    vector rejection ``a.rejected_away_from(b)`` (for vectors).
+    vector rejection ``a.rejected_away_from(b)`` (for vectors); the theorem is
+    ``rejectSP_eq_reject`` in ``proofs/GacalcProofs/StandardPosition.lean``.
 
     Args:
         a: the vector being split.

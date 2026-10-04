@@ -16,8 +16,8 @@ stranded step-lemmas (so they are no longer stranded) and `make lean` is green.
 **Status:** proposed — needs go-ahead. **Priority:** 6. **Difficulty:** 7.
 **Created:** 2026-10-03 (William Emerison Six <billsix@gmail.com>). Surfaced by the dead-code audit
 (`tasks/lean-proofs-dead-code-audit.md`): those step-lemmas are *proven-but-not-assembled*, not dead.
-**See also:** `tasks/reference/reduction-to-standard-position.md` (the arc; it explicitly lists "the
-cross product … proved equal to its canonical (Hestenes) form" as a deliverable, `:88`);
+**See also:** `tasks/reference/reduction-to-standard-position.md` (the arc; its "full bootstrap arc"
+section names the cross product as the one step whose equality is not yet assembled — this task);
 `tasks/reference/lean-ga-proof-architecture.md`.
 
 ## Context — read these first (cold start)
@@ -29,9 +29,11 @@ cross product … proved equal to its canonical (Hestenes) form" as a deliverabl
   duplicate. The hand-written derivation is `multivariate-math/proofs/crossproduct.tex`
   (github.com/billsix/multivariate-math), which this Lean arc mirrors.
 - **The analogous CAPPED arc** to mirror: `proofs/GacalcProofs/StandardPosition.lean` caps the
-  project/reject/geometric-product arc — e.g. `rotate_b_to_e1` / `rotate_b_to_e1_magnitude`
-  (`:172`,`:184`), `mul_eq_proj_dot_add_reject_wedge` (`:121`). Model the cross capstone on how those
-  assemble the align-to-`e₁` rotations + the reduced-frame computation.
+  project/reject/geometric-product arc — `rotate_b_to_e1` / `rotate_b_to_e1_magnitude`,
+  `mul_eq_proj_dot_add_reject_wedge`, and above all `projectSP_eq_proj` (align → keep the x-component
+  → unalign, proved equal to `proj` via `proj_onto_x_axis`, `alignSP_self`, equivariance, and the
+  `rot*_inv` inverses). Model the cross capstone on how that assembles the align-to-`e₁` rotations +
+  the reduced-frame computation.
 - **What already exists in `CrossStandardPosition.lean`** (the ingredients; cited counts from the
   2026-10-03 audit):
   - rotation algebra: `rotYZ_smul/_sub/_preserves_dot`, `rotXY_vec`/`rotXZ_vec`/`rotYZ_vec` (used).

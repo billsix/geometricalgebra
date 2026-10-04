@@ -35,13 +35,15 @@ corrected it — 2026-09-30.)
 
 ## Naming and the prime convention
 
-The theme is "reduction to standard position." The derived-operation variants are marked with a
-**prime**: in Lean the plane rotations are `rotXY` / `rotXZ` and the derived operations carry the
-theme; in Python a `_sp` suffix stands in (`project_sp` / `reject_sp`), since `'` is not a legal
-identifier character. The prime echoes how the matrix-math proof
-`multivariate-math/proofs/crossproduct.tex` already primes the successively transformed vectors
-(`a'`, `a''`, `b''`, …): a prime means "the same object, reached by the derived route." (The theme was
-informally called "bootstrapping" during design; that term was dropped.)
+The theme is "reduction to standard position." The derived-operation variants carry an **`SP` / `_sp`
+suffix** in both languages — Lean `projectSP` / `rejectSP` (with `alignSP` / `unalignSP`), Python
+`project_sp` / `reject_sp` — the stand-in for a prime (`'` is not a legal Python identifier
+character, and primed Lean names read badly inside `simp only` lists). The intent is the prime of the
+matrix-math proof `multivariate-math/proofs/crossproduct.tex`, which primes the successively
+transformed vectors (`a'`, `a''`, `b''`, …): "the same object, reached by the derived route." The
+elementary plane rotations themselves are `rotXY` / `rotXZ` / `rotYZ`. (The theme was informally
+called "bootstrapping" during design; that term was dropped. The naming note originally said Lean
+would use primes; the suffix was chosen when the Lean definitions were written, 2026-10-04.)
 
 ## The archetype (the pattern to imitate)
 
@@ -64,7 +66,9 @@ rotation-equivariant). This is machine-checked in `proofs/GacalcProofs/StandardP
 Equivariance is exactly the statement "doing it in the rotated frame and rotating back = doing it in
 place," so you may **WLOG** rotate `b` to a coordinate axis, compute, and rotate back. The explicit
 alignment `rotate_b_to_e1` composes `rotXY` (zeroing `b_y`) then `rotXZ` (zeroing `b_z`) to send `b`
-to `|b|·e₁` — the standard position — with the `(cos, sin)` read off `b`'s coordinates.
+to `|b|·e₁` — the standard position — with the `(cos, sin)` read off `b`'s coordinates. In that
+frame projecting onto `|b|·e₁` is "keep the x-component" (`proj_onto_x_axis`), no product needed —
+which is what makes the derived route genuinely elementary, not a rotated copy of the Hestenes formula.
 
 **Non-circular:** the rotations are elementary (precalculus), not the GA product. So one may then
 *define* the dot and wedge — and hence the vector geometric product `ab = a·b + a∧b` — from
@@ -85,8 +89,9 @@ whole rotation/geometry stack builds on, bottom-up:
 2. **From them, via reduction to standard position, the GA operations are derived.** Rotate the figure
    into the standard frame, do the elementary version there, and — for a *vector* result — rotate it
    back by the inverse rotations (a *scalar* result is rotation-invariant, so it needs no rotate-back).
-   This yields project, reject, the geometric product `ab = a·b + a∧b`, the cross product, and dot/wedge
-   — each proved equal to its canonical (Hestenes) form.
+   This yields project, reject, the geometric product `ab = a·b + a∧b`, and dot/wedge — each proved
+   equal to its canonical (Hestenes) form — and the cross product, whose step-lemmas are proven but not
+   yet assembled into the equality (`tasks/lean-cross-standard-position-capstone.md`).
 3. **Then a GENERAL rotation can be defined from project/reject** — which are themselves derived from
    the three plane rotations in step 1. The Python `transforms.projection_rotation` (rotate "from vec1
    to vec2") is exactly this: a general rotation built from projection, no geometric product
@@ -114,13 +119,22 @@ The whole arc is machine-checked across four Lean files, all gate-verified (`mak
 - Equivariance — the justification: `proj_rotXY_equivariant`, `proj_rotXZ_equivariant`,
   `vecReject_rotXY_equivariant`.
 - Explicit alignment: `rotXY_aligns_xy` (`b ↦ (k,0,b₃)`), `rotXZ_aligns_xz` (`(k,0,b₃) ↦ (m,0,0)`),
-  `rotate_b_to_e1` (the composite `b ↦ |b|·e₁`), with `k`,`m` supplied via their squares.
+  `rotate_b_to_e1` (the composite `b ↦ |b|·e₁`, with `k`,`m` supplied via their squares) and
+  `rotate_b_to_e1_magnitude` (the same stated with the actual magnitudes `k = |b's xy-part|`,
+  `m = |b|`).
 - The product from projection/rejection: `mul_proj_eq_dot` (`a (proj_a b) = (b·a)·1`) and
   `mul_eq_proj_dot_add_reject_wedge` (`a b = (a·b)·1 + a∧b`) — "project+reject build the product,"
   versor-free.
-- The Python twin (`src/gacalc/standardposition.py`, `project_sp`/`reject_sp`) implements the same
-  elementary rotations and is asserted equal to canonical `projected_onto`/`rejected_away_from` in
-  `tests/test_standardposition.py`.
+- **The derived route equals the canonical one, as one theorem:** `projectSP a b` (`alignSP` — the
+  two rotations with `(cos, sin)` read off `b`, `xyMagnitude` — then keep the aligned `a`'s
+  x-component, then `unalignSP`) satisfies `projectSP_eq_proj` (`= proj b a`, for a vector `b` off the
+  z-axis and nonzero; `a` any multivector), via `proj_onto_x_axis` (`proj (m·e₁) v = (v₁,0,0)`),
+  `alignSP_self` (`alignSP b b = |b|·e₁`), the equivariance lemmas, and the inverses
+  `rotXY_inv`/`rotXZ_inv` (negated sine undoes a plane rotation). `rejectSP = a − projectSP` gives
+  `rejectSP_eq_vecReject` and `rejectSP_eq_reject` (= Hestenes `reject b a` for vectors).
+- The Python twin (`src/gacalc/standardposition.py`, `project_sp`/`reject_sp`) is the procedure
+  `projectSP` transcribes — same rotations, same `(cos, sin)`, keep-the-x-component — and is asserted
+  equal to canonical `projected_onto`/`rejected_away_from` in `tests/test_standardposition.py`.
 - Supporting lemmas in their homes: `AlgebraLaws.mul_sub`, `Sandwich.sandwich_sub`.
 
 **The uniform 3-rotation tool** (`CrossStandardPosition.lean`): `rotYZ` (the third plane rotation,
@@ -167,15 +181,16 @@ structural √-handling applies: the one √-bearing identity stays confined to 
 isometry needs only `normSq f, normSq t ≠ 0` (it comes straight from `normSq_mul_three_vec` + unit
 `f̂`/`t̂`, independent of route-equivalence).
 
-**Not yet done** (minor, nothing blocks): a `√`-wrapper instantiating `k = √(b₁²+b₂²)`, `m = |b|` in
-`rotate_b_to_e1`; and the book + notebook presentations (Sphinx book — see the task's ideas list, B*/N*).
+**Not yet done:** the cross-product capstone (`tasks/lean-cross-standard-position-capstone.md`), and
+the maintainer's voice pass on the drafted book page + notebook
+(`tasks/proof-projection-book-voice-pass.md`, which also holds the remaining book/notebook ideas).
 
 ## Where it belongs
 
 Lean first (it certifies the equivalence), then the "Geometry 2" book (`book/docs/`, the reduce-to-
 coordinates exemplar — proof pages in separate `.rst`, calculations in the companion notebooks), then
-optionally duplicate primed definitions in the code. See `tasks/reduce-to-standard-position.md` for the
-per-subsystem ideas list and the decision log.
+optionally duplicate suffixed definitions in the code. See `tasks/reduce-to-standard-position.md` for the decision log and the
+harvested per-subsystem ideas list.
 
 ## See also
 

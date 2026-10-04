@@ -139,8 +139,8 @@ theorem mul_eq_proj_dot_add_reject_wedge {a b : G3} (ha_isv : IsVector a) (hb_is
     The concrete standard position the maintainer described (as in `crossproduct.tex`): compose the
     xy-plane rotation that zeroes `b₂` with the xz-plane rotation that zeroes `b₃`, sending `b` to
     `|b|·e₁`. The `(cos, sin)` are read off `b`'s own coordinates. Stated with `k = √(b₁²+b₂²)` and
-    `m = |b| = √(b₁²+b₂²+b₃²)` supplied via their squares, so the arithmetic is `ring`/`field_simp`
-    (a `√`-wrapper instantiating `k`, `m` follows in a later pass). -/
+    `m = |b| = √(b₁²+b₂²+b₃²)` supplied via their squares, so the arithmetic is `ring`/`field_simp`;
+    `rotate_b_to_e1_magnitude` then instantiates them as the actual magnitudes. -/
 
 /-- **Step 1 — swing `b`'s xy-part onto the x-axis:** `rotXY (b₁/k) (−b₂/k)` sends `(b₁, b₂, b₃)` to
     `(k, 0, b₃)`, where `k = √(b₁²+b₂²)` (`k ≠ 0`, `k² = b₁²+b₂²`). -/
@@ -204,10 +204,13 @@ theorem rotate_b_to_e1_magnitude (b1 b2 b3 : ℝ)
 
     Python `standardposition.project_sp a b` (`_project_via_standard_position`): align `b` to the
     x-axis with `rotXY (b₁/k) (−b₂/k)` then `rotXZ (k/m) (−b₃/m)` (`k = |b's xy-part|`, `m = |b|`),
-    apply the same to `a`, project there, and rotate back (negate each sine, reverse the order). The
-    two rotations preserve the dot and are projection-equivariant, and each is undone by its negated-sine
-    twin — so the whole procedure IS `proj b a`. This is the single theorem `CLAUDE.md` and the Python
-    docstring promise; the degenerate z-axis case (`k = 0`) is excluded by hypothesis, as in Python. -/
+    apply the same to `a`, **keep the aligned `a`'s x-component** (projection onto the x-axis is the
+    elementary "read off a coordinate" step — no product, `proj_onto_x_axis`), and rotate back (negate
+    each sine, reverse the order). In the aligned frame that x-component IS the Hestenes projection onto
+    `|b|·e₁`; the two rotations preserve the dot and are projection-equivariant, and each is undone by
+    its negated-sine twin — so the whole procedure IS `proj b a`. This is the single theorem `CLAUDE.md`
+    and the Python docstring promise; the degenerate z-axis case (`k = 0`) is excluded by hypothesis, as
+    in Python. -/
 
 /-- A plane rotation is undone by the one with the opposite sine (`s' = −s`), when `c² + s² = 1`. -/
 theorem rotXY_inv (c s s' : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (h : s' + s = 0) (v : G3) :
@@ -252,9 +255,16 @@ noncomputable def unalignSP (b v : G3) : G3 :=
   rotXY (b.c1 / xyMagnitude b) (b.c2 / xyMagnitude b)
     (rotXZ (xyMagnitude b / magnitude b) (b.c3 / magnitude b) v)
 
-/-- **Standard-position projection** (Python `standardposition.project_sp a b`): align, project the
-    aligned `a` onto the aligned `b`, rotate back. -/
-noncomputable def projectSP (a b : G3) : G3 := unalignSP b (proj (alignSP b b) (alignSP b a))
+/-- **Projection onto the x-axis is "keep the x-component":** `proj (m·e₁) v = (v₁, 0, 0)` for any
+    multivector `v` and `m ≠ 0` — the elementary step done in standard position, where no product is
+    needed to project. -/
+theorem proj_onto_x_axis (m : ℝ) (hm : m ≠ 0) (v : G3) : proj (vec m 0 0) v = vec v.c1 0 0 := by
+  simp only [proj, dot, mul, smul, vec]
+  ext <;> field_simp <;> ring
+
+/-- **Standard-position projection** (Python `standardposition.project_sp a b`): align, keep the
+    aligned `a`'s x-component (the elementary projection onto the x-axis), rotate back. -/
+noncomputable def projectSP (a b : G3) : G3 := unalignSP b (vec (alignSP b a).c1 0 0)
 
 /-- **Standard-position rejection** (Python `standardposition.reject_sp a b = a − project_sp a b`). -/
 noncomputable def rejectSP (a b : G3) : G3 := sub a (projectSP a b)
@@ -289,12 +299,27 @@ theorem unalignSP_alignSP {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
   simp only [unalignSP, alignSP]
   rw [rotXZ_inv _ _ _ (cs_xz_unit hbv hb) (by ring), rotXY_inv _ _ _ (cs_xy_unit hk) (by ring)]
 
+/-- **The alignment sends `b` itself to `|b|·e₁`** — `rotate_b_to_e1` read through `alignSP`. -/
+theorem alignSP_self {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
+    (hb : magnitude b ≠ 0) : alignSP b b = vec (magnitude b) 0 0 := by
+  have h := rotate_b_to_e1 b.c1 b.c2 b.c3 (xyMagnitude b) (magnitude b) hk hb (xyMagnitude_sq b)
+    (magnitude_sq_of_isVector hbv)
+  have hb' : rotXY (b.c1 / xyMagnitude b) (-b.c2 / xyMagnitude b) b
+      = rotXY (b.c1 / xyMagnitude b) (-b.c2 / xyMagnitude b) (vec b.c1 b.c2 b.c3) := by
+    rw [← eq_vec_of_isVector hbv]
+  rw [alignSP, hb', h]
+
 /-- **`project_sp = project`:** the standard-position projection of `a` onto `b` is the Hestenes
     projection `proj b a`, for a vector `b` not on the z-axis (`k ≠ 0`) and nonzero (`|b| ≠ 0`);
-    `a` may be any multivector. Equivariance of `proj` under both plane rotations, then undo them. -/
+    `a` may be any multivector. In the aligned frame "keep the x-component" is `proj (|b|·e₁)`
+    (`proj_onto_x_axis` + `alignSP_self`); then equivariance of `proj` under both plane rotations,
+    and undo them. -/
 theorem projectSP_eq_proj {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
     (hb : magnitude b ≠ 0) (a : G3) : projectSP a b = proj b a := by
-  simp only [projectSP, alignSP, unalignSP]
+  have hx : vec (alignSP b a).c1 0 0 = proj (alignSP b b) (alignSP b a) := by
+    rw [alignSP_self hbv hk hb, proj_onto_x_axis (magnitude b) hb]
+  rw [projectSP, hx]
+  simp only [alignSP, unalignSP]
   rw [proj_rotXZ_equivariant _ _ (cs_xz_unit hbv hb), proj_rotXY_equivariant _ _ (cs_xy_unit hk),
       rotXZ_inv _ _ _ (cs_xz_unit hbv hb) (by ring), rotXY_inv _ _ _ (cs_xy_unit hk) (by ring)]
 

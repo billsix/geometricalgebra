@@ -112,7 +112,7 @@ also catch `native_decide`/`axiom` (none present today).
 | `r_vector_part`, `even_part`/`odd_part`, grade predicates | `GradeProjection.lean`, `IsVector`/… | **proven** |
 | `project`/`reject`/`reflect` of a vector | `Projection2D/3D.lean`, `Reflect.lean` (𝒢₃, across a vector) | **proven** for vector operand onto vector/bivector; reflect across a bivector and reflect∘reflect = id **not stated** |
 | `versor_from_vectors`, `sandwich`, `transforms.projection_rotation` / `versor_rotation` | `Rotation3D`, `Versor2D`, `Sandwich`, `RotateComponents`, `ProjectionRotation2D/3D` (incl. `projRotation_eq_sandwich`) | **proven** (forward); `backward ∘ forward = id` not stated |
-| `standardposition.project_sp` | `StandardPosition.lean` equivariance + alignment | **proven by ingredients**; no single `project_sp = project` theorem although `CLAUDE.md` and the Python docstring say "proven equal" |
+| `standardposition.project_sp` | `StandardPosition.lean` equivariance + alignment | **proven by ingredients**; no single `project_sp = project` theorem although `CLAUDE.md` and the Python docstring say "proven equal" — closed later the same day by `projectSP_eq_proj` (§7) |
 | `cross`, `area`, `volume`, signed area/volume, `cosine`/`abs_sin`/`sine` | `Cross`, `Measures`, `Lagrange`, `Trig`, `TrigEquiv`, `StudentTrigForms` | **proven** (𝒢₃; Lagrange also 𝒢₂) |
 | `is_orthogonal_to`, `is_parallel_to` | `Predicates2D/3D` | proven / **half** (`a ∧ ka = 0` only; the converse "wedge zero ⇒ dependent" unstated) |
 | `exp` | `Exp.lean` closed form is a unit versor | **partial** (no series, no scalar or pseudoscalar case) |

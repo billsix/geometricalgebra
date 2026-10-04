@@ -14,12 +14,11 @@
 """Standard-position (frame-reduction) project/reject (``gacalc.standardposition``).
 
 The ``project_sp`` / ``reject_sp`` rotate ``b`` onto the ``e_1`` axis with elementary
-plane rotations, project/reject there, and rotate back.  These tests are the runnable
-twin of the Lean equivariance/alignment proofs
-(``proofs/GacalcProofs/StandardPosition.lean``: ``proj_rotXY_equivariant`` /
-``proj_rotXZ_equivariant`` / ``rotate_b_to_e1``): they assert the standard-position
-result equals the canonical Hestenes ``projected_onto`` / ``rejected_away_from``,
-numerically and symbolically.  See the reference doc
+plane rotations, keep the aligned ``a``'s x-component, and rotate back.  These tests
+are the runnable twin of the Lean theorems ``projectSP_eq_proj`` and
+``rejectSP_eq_reject`` (``proofs/GacalcProofs/StandardPosition.lean``): they assert
+the standard-position result equals the canonical Hestenes ``projected_onto`` /
+``rejected_away_from``, numerically and symbolically.  See the reference doc
 ``tasks/reference/reduction-to-standard-position.md``.
 """
 
