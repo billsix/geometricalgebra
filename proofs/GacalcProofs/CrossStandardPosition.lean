@@ -91,7 +91,7 @@ theorem vecReject_rotYZ_equivariant (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (a b :
     leaves alone and one `cos²+sin²=1` step on the component the rotation acts in (the cross-component
     of the rotation's fixed axis). -/
 
-theorem cross_rotXY_equivariant (c s a1 a2 a3 b1 b2 b3 : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) :
+theorem cross_rotXY_equivariant_coord (c s a1 a2 a3 b1 b2 b3 : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) :
     cross (rotXY c s (vec a1 a2 a3)) (rotXY c s (vec b1 b2 b3))
       = rotXY c s (cross (vec a1 a2 a3) (vec b1 b2 b3)) := by
   simp only [rotXY_vec, cross_vec]
@@ -106,7 +106,7 @@ theorem cross_rotXY_equivariant (c s a1 a2 a3 b1 b2 b3 : ℝ) (hcs : c ^ 2 + s ^
   · ring
   · ring
 
-theorem cross_rotXZ_equivariant (c s a1 a2 a3 b1 b2 b3 : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) :
+theorem cross_rotXZ_equivariant_coord (c s a1 a2 a3 b1 b2 b3 : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) :
     cross (rotXZ c s (vec a1 a2 a3)) (rotXZ c s (vec b1 b2 b3))
       = rotXZ c s (cross (vec a1 a2 a3) (vec b1 b2 b3)) := by
   simp only [rotXZ_vec, cross_vec]
@@ -121,7 +121,7 @@ theorem cross_rotXZ_equivariant (c s a1 a2 a3 b1 b2 b3 : ℝ) (hcs : c ^ 2 + s ^
   · ring
   · ring
 
-theorem cross_rotYZ_equivariant (c s a1 a2 a3 b1 b2 b3 : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) :
+theorem cross_rotYZ_equivariant_coord (c s a1 a2 a3 b1 b2 b3 : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) :
     cross (rotYZ c s (vec a1 a2 a3)) (rotYZ c s (vec b1 b2 b3))
       = rotYZ c s (cross (vec a1 a2 a3) (vec b1 b2 b3)) := by
   simp only [rotYZ_vec, cross_vec]
@@ -212,5 +212,25 @@ theorem vecReject_reduced (m b1 b2 : ℝ) (hm : m ≠ 0) :
     axis-length times `b`'s in-plane height. Immediate from `cross_vec`. -/
 theorem cross_reduced (m b1 b2 : ℝ) : cross (vec m 0 0) (vec b1 b2 0) = vec 0 0 (m * b2) := by
   rw [cross_vec]; ext <;> ring
+
+/-! ### Object-form wrappers for cross-equivariance (match the `proj`/`vecReject` equivariance lemmas) -/
+
+theorem cross_rotXY_equivariant {a b : G3} (ha : IsVector a) (hb : IsVector b) (c s : ℝ)
+    (hcs : c ^ 2 + s ^ 2 = 1) :
+    cross (rotXY c s a) (rotXY c s b) = rotXY c s (cross a b) := by
+  have h := cross_rotXY_equivariant_coord c s a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 hcs
+  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
+
+theorem cross_rotXZ_equivariant {a b : G3} (ha : IsVector a) (hb : IsVector b) (c s : ℝ)
+    (hcs : c ^ 2 + s ^ 2 = 1) :
+    cross (rotXZ c s a) (rotXZ c s b) = rotXZ c s (cross a b) := by
+  have h := cross_rotXZ_equivariant_coord c s a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 hcs
+  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
+
+theorem cross_rotYZ_equivariant {a b : G3} (ha : IsVector a) (hb : IsVector b) (c s : ℝ)
+    (hcs : c ^ 2 + s ^ 2 = 1) :
+    cross (rotYZ c s a) (rotYZ c s b) = rotYZ c s (cross a b) := by
+  have h := cross_rotYZ_equivariant_coord c s a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 hcs
+  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
 
 end GacalcProofs.G3

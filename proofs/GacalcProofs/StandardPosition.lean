@@ -104,30 +104,35 @@ theorem vecReject_rotXY_equivariant (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (a b :
     already `plane_eq_wedge`; this adds the dot half and the reassembly. **Versor-free** — it uses
     only `proj`, `mul`, and the elementary product identities. -/
 
-/-- **The projection recovers the dot:** `a (proj_a b) = (b·a)·1` for a vector `a` (`|a|² ≠ 0`). -/
-theorem mul_proj_eq_dot (a1 a2 a3 b1 b2 b3 : ℝ) (ha : normSq (vec a1 a2 a3) ≠ 0) :
-    mul (vec a1 a2 a3) (proj (vec a1 a2 a3) (vec b1 b2 b3))
-      = smul (dot (vec b1 b2 b3) (vec a1 a2 a3)) one := by
-  have hdaa : dot (vec a1 a2 a3) (vec a1 a2 a3) ≠ 0 := by
-    rw [dot_self_vec_eq_normSq]; exact ha
-  rw [proj, GacalcProofs.G3.mul_smul, mul_vec_self, GacalcProofs.G3.smul_smul,
-      ← dot_self_vec_eq_normSq]
+/-- **The projection recovers the dot** (object form): `a (proj_a b) = (b·a)·1` for a vector `a`
+    (`|a|² ≠ 0`) and a vector `b`. -/
+theorem mul_proj_eq_dot {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b) (ha : normSq a ≠ 0) :
+    mul a (proj a b) = smul (dot b a) one := by
+  rw [eq_vec_of_isVector ha_isv, eq_vec_of_isVector hb_isv]
+  have hdaa : dot (vec a.c1 a.c2 a.c3) (vec a.c1 a.c2 a.c3) ≠ 0 := by
+    rw [dot_self_vec_eq_normSq_coord, ← eq_vec_of_isVector ha_isv]; exact ha
+  rw [proj, GacalcProofs.G3.mul_smul, mul_vec_self_coord, GacalcProofs.G3.smul_smul,
+      ← dot_self_vec_eq_normSq_coord]
   congr 1
   field_simp
 
 /-- **The geometric product of two vectors, from projection + rejection:** `a b = (a·b)·1 + a∧b`,
     assembled as `a (proj_a b) + a (b − proj_a b)`. The payoff of the theme: the vector geometric
     product is built from `project`/`reject` (for `|a|² ≠ 0`). -/
-theorem mul_eq_proj_dot_add_reject_wedge (a1 a2 a3 b1 b2 b3 : ℝ) (ha : normSq (vec a1 a2 a3) ≠ 0) :
-    mul (vec a1 a2 a3) (vec b1 b2 b3)
-      = add (smul (dot (vec b1 b2 b3) (vec a1 a2 a3)) one) (wedge (vec a1 a2 a3) (vec b1 b2 b3)) := by
-  have hsplit : mul (vec a1 a2 a3) (vec b1 b2 b3)
-      = add (mul (vec a1 a2 a3) (proj (vec a1 a2 a3) (vec b1 b2 b3)))
-            (mul (vec a1 a2 a3) (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3)))) := by
+theorem mul_eq_proj_dot_add_reject_wedge {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b)
+    (ha : normSq a ≠ 0) :
+    mul a b = add (smul (dot b a) one) (wedge a b) := by
+  rw [eq_vec_of_isVector ha_isv, eq_vec_of_isVector hb_isv]
+  have ha' : normSq (vec a.c1 a.c2 a.c3) ≠ 0 := by rw [← eq_vec_of_isVector ha_isv]; exact ha
+  have hsplit : mul (vec a.c1 a.c2 a.c3) (vec b.c1 b.c2 b.c3)
+      = add (mul (vec a.c1 a.c2 a.c3) (proj (vec a.c1 a.c2 a.c3) (vec b.c1 b.c2 b.c3)))
+            (mul (vec a.c1 a.c2 a.c3)
+                 (sub (vec b.c1 b.c2 b.c3) (proj (vec a.c1 a.c2 a.c3) (vec b.c1 b.c2 b.c3)))) := by
     rw [← GacalcProofs.G3.mul_add]
     congr 1
     simp only [proj, add, sub, smul, vec]; ext <;> ring
-  rw [hsplit, mul_proj_eq_dot a1 a2 a3 b1 b2 b3 ha, plane_eq_wedge a1 a2 a3 b1 b2 b3 ha]
+  rw [hsplit, mul_proj_eq_dot (isVector_vec a.c1 a.c2 a.c3) (isVector_vec b.c1 b.c2 b.c3) ha',
+      plane_eq_wedge a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 ha']
 
 /-! ### The explicit alignment: rotate `b` onto the x-axis by composing plane rotations
 

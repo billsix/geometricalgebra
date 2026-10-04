@@ -354,8 +354,30 @@ Prefer the **object/coordinate-free** form — a vector/multivector over its rea
 `(a1 a2 a3 : ℝ)`, and Python works on multivectors, **unless coordinates are genuinely needed**.
 Coordinates are fine where they are what's needed (a leaf/bridge lemma, a fact inherently about
 components) — they are not a default. The test is simply: *do we need the coordinates here?* If not,
-don't expose them. (Lean detail + the nonzero-guard convention for angle/trig theorems:
-`tasks/reference/lean-ga-proof-architecture.md`.)
+don't expose them.
+
+**Geometric objects in, scalars in the body, geometric objects out** (in = the function's parameters,
+out = its conclusion/return, in-the-body = the implementation). A Lean theorem takes the **object** and a
+grade predicate as inputs (`{a : G3} (ha : IsVector a)`, `{R} (hR : IsEvenVersor R)`, `{B} IsBivector`,
+`{T} IsTrivector`), and its **conclusion is about objects** too; only **in the body**, where the proof
+needs coordinates, does it drop to scalars — `obtain ⟨hs, h12, …⟩ := ha; simp only [defs, those-zeros];
+field_simp; ring`, computing on the getters `a.c1`/`a.c12`. It does **NOT** take free scalars
+`(a1 a2 a3 : ℝ)` as inputs and *construct* `vec a1 a2 a3` inside — that inverted "scalars in, build the
+object" shape is what we are removing. So **avoid a separate
+scalar-taking `_coord` leaf** (`foo_coord (reals) : P (vec reals)` bridged by `foo {obj} := by have h :=
+foo_coord …; rwa [← eq_vec] at h`): fold the computation into the object theorem. **Shared computation is
+shared through OBJECT theorems** — a composite (`cos_between` preservation) composes the object `dot`/
+`magnitude` isometries, not a scalar leaf. A named `_coord` leaf is justified ONLY when a genuinely fragile
+coordinate proof (`set`/`calc`/big `field_simp`) must be kept verbatim and is shared by ≥2 object theorems.
+**Genuine scalars stay scalar** — angles (`θ`/`α`/`β`), a rotation's `cos`/`sin`, a scalar multiple `k`, and
+pure-real identities (`lagrange_2d/3d`); and the definitional `vec`-literal unfold leaves (`normSq_vec`,
+`dot_vec`, `cross_vec`, …) stay coordinate (their RHS *is* coordinate arithmetic). The corpus sweep is
+**done for the polynomial tier** (2026-10-04); the method, final tier split, and reusable recipes live in
+`tasks/reference/lean-ga-proof-architecture.md` (record: `tasks/archive/2026/10/04/`).
+
+The **per-theorem A/B/C judgment** (coordinate-free object / object-then-pull-coords / keep genuine
+scalars), the nonzero-guard convention for angle/trig theorems, and the Lean detail are in
+`tasks/reference/lean-ga-proof-architecture.md` ("Coordinates only when needed").
 
 ## Assessment / known issues
 

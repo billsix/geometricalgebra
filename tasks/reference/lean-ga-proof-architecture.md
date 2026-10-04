@@ -48,6 +48,69 @@ reader cites the object form while a single coordinate leaf underneath carries t
 test: *do we need the coordinates here?* If not, don't expose them in the statement. (Mirror of
 gacalc's Python side; see `CLAUDE.md`.)
 
+**The per-theorem judgment (A/B/C) when a theorem takes `ℝ` arguments.** Ask what each `ℝ` arg *is*:
+
+- **A — coordinate-free object.** The fact is structural (holds by algebra — bilinearity, assoc,
+  `IsVector`). State it `{a b : G_n} (ha : IsVector a) …` and prove it with `rw`/property lemmas, no
+  field access. Best. (E.g. `G3.mul_eq_dot_add_wedge`, the `sandwich_*` properties.)
+- **B — object-in, pull-coords.** The fact is geometric but the proof needs the coordinate
+  computation. Take the object + `IsVector`, then `obtain ⟨hs, …⟩ := ha` and
+  `simp only [defs, those field-zeros]; ring` — the *statement* speaks objects; only the proof touches
+  coordinates. (E.g. the perp/parallel `_dot` lemmas; `G2.dot_is_sym_part`/`wedge_is_antisym_part`.)
+  **This is THE form: geometric objects in, scalars in the body, geometric objects out** (in = the
+  theorem's parameters, out = its conclusion, in-the-body = the proof). The theorem takes the object and
+  concludes about objects; only the body `obtain`s it to the getters and computes. Do **NOT** take free scalars `(a1 a2 a3 : ℝ)` and *construct*
+  `vec a1 a2 a3` inside — that inverted "scalars in, build the object" shape is the thing being removed
+  (maintainer, 2026-10-03). So **do not mint a separate scalar-taking `_coord` leaf** (`foo_coord (reals) :
+  P (vec reals)` bridged by `foo {obj} := by have h := foo_coord …; rwa [← eq_vec] at h`); fold the
+  computation into the object theorem via `obtain`. **Share through OBJECT theorems, not scalar leaves** —
+  a composite (`sandwich_preserves_cos`) composes the object `dot`/`magnitude` isometries directly (zero
+  coords), which is also why the "sharing" that made `_coord` leaves look load-bearing dissolves once the
+  whole chain is object-form. A named `_coord` leaf is justified ONLY for a genuinely fragile coordinate
+  proof (`set`/`calc`/big `field_simp`) kept verbatim AND shared by ≥2 object theorems; otherwise inline.
+  (`rw [eq_vec_of_isVector ha]` to reuse an existing vec-literal proof is a lighter alternative to `obtain`,
+  but it re-mentions `vec a.c1 a.c2 a.c3`; prefer `obtain` so no object is reconstructed.) Corpus-wide
+  conversion record + per-file inventory + reusable recipes:
+  `tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md` (DONE for the polynomial tier
+  2026-10-04; the sqrt/`magnitude`/degree-blowup/delicate tier keeps its coordinate core by decision).
+- **C — genuine `ℝ`, keep.** (c1) a *pure scalar identity* with no GA object in the statement
+  (`Lagrange.lean`'s `lagrange_2d`/`lagrange_3d`); or (c2) the `ℝ` is an irreducible scalar
+  *parameter* — a rotation's `cos`/`sin`, a scalar multiple `k` — not a vector coordinate (lift only
+  the vector args, if any; keep the scalar). A *coordinate-computation leaf* whose RHS is an explicit
+  computed coordinate-vector (`rotXY_vec`-style `= vec (c*x−s*y) …`) also stays coordinate.
+
+**Versor components are NOT a C-keep — they lift (B), 2026-10-03.** The `ℝ` tuple `(s c12 c13 c23)` of a
+`sandwich (evenVersor s c12 c13 c23) …` theorem is the *versor's own coordinates*, and an even versor is a
+geometric object, so these lift exactly like vector coordinates: state `{R : G_n} (hR : IsEvenVersor R)
+(hr : normSq R ≠ 0)` and bridge with `eq_evenVersor_of_isEvenVersor` (the versor twin of
+`eq_vec_of_isVector`). `IsEvenVersor R` = the grade-0+2 predicate (`R.c1 = … = 0`, pseudoscalar too in G3);
+it does **not** fix the magnitude — a *rotor* is a unit versor, tracked in
+`tasks/lean-unit-versors-rotors-sandwich-with-reverse.md`. The whole `sandwich_preserves_*` family is in
+object-versor form, getter-native (`tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md`).
+(This revises the earlier note that listed "a versor component" under C.)
+
+**Grade-structure predicates (the general pattern).** The same lift applies to any coordinate tuple that is
+really a *grade-pure object's* own components. Three predicates now exist, each with an `eq_…_of_is…` bridge
+(the `eq_vec_of_isVector` analogue) and an `is…_…` companion: **`IsVector`** (grade 1), **`IsEvenVersor`**
+(grades 0+2, `Sandwich.lean`), **`IsBivector`** (grade 2, `G3.lean`). So a `bivector p q r` plane argument
+lifts to `{B : G3} (hB : IsBivector B) (hBn : normSq B ≠ 0)` exactly as a versor does (the `Projection3D`
+plane-projection cluster, Increment 16). Reach for a new such predicate whenever a theorem's reals are a
+grade-pure object's coordinates.
+
+Prefer A, then B; fall to C only for genuine scalars. The corpus-wide application is **DONE for the
+polynomial tier** (2026-10-04) and recorded in
+`tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md` (which absorbed the earlier
+statement-lift task). It was a cascade-aware, bottom-up incremental sweep (converting a signature breaks
+its callers, so `make lean`-verify each step). **Final outcome:** every *polynomial*-proof theorem is now
+object-in / getters-in-body (Sandwich, Reflect, G3 self-products, Projection2D, Projection3D 3/4, Trig
+`lagrange_property`, RotateComponents `rotation_preserves_dot`, the pure-poly ProjectionRotation scaffold);
+the **coordinate core is retained by decision** for the non-polynomial tier — sqrt/`magnitude`/
+`normalizeVec` proofs, the divide-by-`normSq(a∧b)` degree-blowup plane projections, the cos/sin/angle and
+literal-then-instantiate exceptions, and the delicate `calc`/`set` capstones (`projRotation_eq_sandwich`/
+`_isometry`, bisector machinery, `reject_vec_eq`, `cos_sq_add_sin_sq`, `sin_between_eq_abs_signed_vec`,
+CrossStandardPosition) — those public statements are already object-in, only their private scaffold stays
+coordinate. Pushing that tier (optional) is `tasks/push-delicate-coordinate-core-tier.md`.
+
 **Nonzero guard for angle/trig theorems (2026-10-03).** A theorem stated through `cos_between` /
 `sin_between` (or any `/ (|a| |b|)` quotient) carries nonzero hypotheses — `magnitude a ≠ 0`,
 `magnitude b ≠ 0` (equivalently `normSq a ≠ 0`, or `a ≠ zero`). This is what makes the trig form
@@ -151,11 +214,12 @@ Every proof should reach for a *named* leaf, not a fresh `ext <;> ring`. The lea
 **Note:** the squared magnitude `normSq_vec` is *the* "|a|²" primitive — "a vector dotted with itself"
 is not its own leaf; route it through `normSq` (and phrase nondegeneracy as `normSq (vec a) ≠ 0`).
 
-**Note (versor-hypothesis convention, 2026-09-29):** every sandwich lemma states its nondegeneracy as
-`normSq (evenVersor …) ≠ 0` (the versor's squared magnitude — "R is invertible"), **never** the raw
-coordinate sum `s²+c12²+… ≠ 0`; the coordinate form is recovered inside a proof only where `field_simp`
-needs it (`rw [normSq_evenVersor] at hr`). Likewise the grade-2 isometry leaves are stated on
-`wedge (vec u)(vec v)`, not a bivector-coordinate literal. This is the interface half of the
+**Note (versor-hypothesis convention, 2026-09-29; object-form update 2026-10-03):** every sandwich lemma
+states its nondegeneracy as the versor's squared magnitude — "R is invertible" — **never** the raw
+coordinate sum `s²+c12²+… ≠ 0`. The object form is `normSq R ≠ 0` (for `{R} (hR : IsEvenVersor R)`); the
+coordinate `_coord` leaf states `normSq (evenVersor …) ≠ 0`, and the coordinate sum is recovered inside a
+proof only where `field_simp` needs it (`rw [normSq_evenVersor] at hr`). Likewise the grade-2 isometry
+leaves are stated on `wedge u v`, not a bivector-coordinate literal. This is the interface half of the
 "carry the meaningful quantity, not a coordinate sum" rule.
 
 ## Other techniques worth reusing
@@ -179,6 +243,47 @@ needs it (`rw [normSq_evenVersor] at hr`). Likewise the grade-2 isometry leaves 
   so peel with `congr 1; ring`. (3) A `G3`/`G2` algebra-law lemma name (`mul_smul`, `smul_smul`,
   `mul_one`, `one_smul`, `mul_assoc`) **clashes with Mathlib's ℝ version** — fully-qualify the G3/G2 one
   (`GacalcProofs.G3.mul_smul`) in `rw` chains.
+
+### Converting coordinate proofs to object/getter form — paths that DON'T work (2026-10-03)
+
+Lessons from the "geometric objects in, scalars in the body, geometric objects out" refactor (take
+`{a : G3} (ha : IsVector a)`, `obtain ⟨…⟩ := ha`, compute on `a.c1`, `a.c12`, … — not scalar args +
+`vec`/`evenVersor` reconstruction). Three dead ends, each with the fix that does work:
+
+- **DON'T reference an object leaf that is defined textually below its consumer.** A composite's object
+  proof `rw [leaf hR hv]` fails with *"Unknown identifier `leaf`"* if the object `leaf` sits lower in the
+  file (e.g. in an end-of-namespace wrapper block). Lean resolution is top-down; the DAG being acyclic is
+  not enough. **Fix:** convert each `_coord` leaf **in place** — rewrite its body to `obtain`-getters and
+  rename it (drop `_coord`) where it already sits — and delete the end-block duplicate. Because the
+  `_coord` definitions are already ordered leaf-before-composite, in-place conversion keeps the order
+  correct for free; no leaf needs moving.
+
+- **DON'T prove a divide-by-`normSq` fact by a direct getter unfold.** For anything with `inverse` in it
+  (dot/normSq/wedge preservation under the *full* `sandwich R v R⁻¹`), the tactic
+  `obtain …; simp only [normSq, mul, reverse, <zeros>] at hr ⊢; field_simp [hr]; ring` leaves
+  **`unsolved goals`**: the sandwich contributes `(normSq R)²` in the denominator, the getter unfold
+  **expands** it (`s⁴+2s²c²+c⁴`), and `field_simp` can't match the expansion to `hr : normSq R ≠ 0`. The
+  old `_coord` proofs only worked because `normSq_evenVersor` keeps `normSq R` *grouped* (`s²+c²`) and
+  never expands it. **Fix (the atomic-`normSq` leaf recipe):** state a leaf on the *reverse* sandwich
+  `R v R̃` (no inverse) whose RHS keeps `normSq R` **atomic** — e.g. `normSq_reverse_sandwich`
+  (`|R v R̃|² = normSq R ² · |v|²`), `dot_reverse_sandwich` (`(R u R̃)·(R v R̃) = normSq R ² · (u·v)`),
+  `wedge_reverse_sandwich`. Prove the leaf by `obtain`-getters + pure `ring`/`ext` (no division). Then the
+  composite pulls the inverse's `1/normSq R` out (`mul_smul`), collects it through the bilinear op
+  (`normSq_smul`, `dot_smul_left/right`, `wedge_smul_left/right`), rewrites by the leaf, and `field_simp
+  [hr]` cancels the now-**atomic** `normSq R`. No "fighter" class remains — every division proof reduces
+  this way.
+
+- **For a divide-by-`dot d d` / `normSq d` proof where `d` is a vector argument**, the clean
+  denominator-nonzero hypothesis is `have hdd : d.c1^2 + d.c2^2 + d.c3^2 ≠ 0 := by rw [← normSq_vec,
+  ← eq_vec_of_isVector hd_isv]; exact hd` — this gives the **grouped `^2` form** `field_simp` normalizes to.
+  Do **not** derive it by `simpa only [normSq, mul, reverse, <zeros>] using hd`: that yields the raw
+  `d.c1*d.c1 - 0*-0 - … ` form, which neither matches a stated `^2` goal (a `have` type-mismatch) nor
+  `field_simp`'s normalized `^2` denominator (leftover `(…)⁻¹`, `ring` then fails). Worked:
+  `Reflect.normSq_reflectVec`.
+- **DON'T assume an operation's helper lemmas live in the grade's main file.** `dot` for `G2` is defined
+  in `Versor2D.lean`, not `G2.lean`, and so are `G2.dot_smul_left/right` — a `grep … G2.lean` falsely
+  concluded "G2 lacks them." **Fix:** grep the whole `proofs/GacalcProofs/` tree (or `rg`), never a single
+  file, before concluding a lemma is missing.
 
 ## Hestenes projection / rejection (uniform, all grades)
 
@@ -317,7 +422,7 @@ and `dual_vec`). Both are HAS.
 | `vectorcalc.cross` | HAS | `cross`, `cross_vec`, `cross_anticomm_vec`, `cross_perp_left`/`_right` (Cross) |
 | `measure.area` | HAS | `area_sq_vec` (= `normSq (a∧b)`), `normSq_wedge_eq_lagrange` (Measures.lean) |
 | `measure.volume` | HAS | `volume_sq_vec` (= `signedVolume²`) (Measures.lean) |
-| `measure.signed_area` | HAS | `signedArea` (= a₁b₂−a₂b₁), `signedArea_sq` (`\|signed_area\| = area`) (Measures.lean) |
+| `measure.signed_area` | HAS | `signedArea` (= a₁b₂−a₂b₁), `signedArea_eq` (Measures.lean) |
 | `measure.signed_volume` | HAS | `dot_cross_eq_signedVolume` (= `det[a,b,c]`) (Cross) |
 | `measure.content` (general `n`) | NONE | deferred — needs the general-`Gn` layer (`lean-general-gn-product-and-hestenes-dot-wedge`); k=2,3 are the proven `area`/`volume` |
 

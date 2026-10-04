@@ -29,10 +29,15 @@ theorem cross_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
       = vec (a2 * b3 - a3 * b2) (a3 * b1 - a1 * b3) (a1 * b2 - a2 * b1) := by
   simp only [cross, dual, I_inv, wedge, mul, vec]; ext <;> ring
 
-/-- **The cross product is anticommutative:** `a × b = −(b × a)`. -/
-theorem cross_anticomm_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
-    cross (vec a1 a2 a3) (vec b1 b2 b3) = neg (cross (vec b1 b2 b3) (vec a1 a2 a3)) := by
-  simp only [cross, dual, I_inv, wedge, mul, neg, vec]; ext <;> ring
+/-- **The cross product is anticommutative:** `a × b = −(b × a)`, for vectors (the wedge is
+    antisymmetric on vectors). -/
+theorem cross_anticomm {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    cross a b = neg (cross b a) := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  simp only [cross, dual, I_inv, wedge, mul, neg,
+    has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+  ext <;> ring
 
 /-- **The cross product is perpendicular to its left factor:** `(a × b) · a = 0`, for vectors. -/
 theorem cross_perp_left_dot {a b : G3} (ha : IsVector a) (hb : IsVector b) :
@@ -66,9 +71,14 @@ noncomputable def signedVolume (a b c : G3) : ℝ := (wedge (wedge a b) c).c123
 /-- **The scalar triple product equals the signed volume:** `a · (b × c) = signedVolume a b c`.
     Both are the 3×3 determinant `det[a, b, c]` — the scalar-triple form via the cross product, the
     signed-volume form via the pseudoscalar part of the triple wedge. -/
-theorem dot_cross_eq_signedVolume (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ) :
-    dot (vec a1 a2 a3) (cross (vec b1 b2 b3) (vec c1 c2 c3))
-      = signedVolume (vec a1 a2 a3) (vec b1 b2 b3) (vec c1 c2 c3) := by
-  simp only [dot, cross, dual, I_inv, wedge, mul, signedVolume, vec]; ring
+theorem dot_cross_eq_signedVolume {a b c : G3}
+    (ha : IsVector a) (hb : IsVector b) (hc : IsVector c) :
+    dot a (cross b c) = signedVolume a b c := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  obtain ⟨hcs, hc12, hc13, hc23, hc123⟩ := hc
+  simp only [dot, cross, dual, I_inv, wedge, mul, signedVolume,
+    has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123, hcs, hc12, hc13, hc23, hc123]
+  ring
 
 end GacalcProofs.G3

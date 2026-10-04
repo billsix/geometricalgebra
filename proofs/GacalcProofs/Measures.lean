@@ -18,38 +18,40 @@ namespace G3
 noncomputable def area (a b : G3) : ℝ := magnitude (wedge a b)
 
 /-- `area² = |a∧b|²` on vectors (squared form; `normSq (wedge ..) ≥ 0`). -/
-theorem area_sq_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
-    area (vec a1 a2 a3) (vec b1 b2 b3) ^ 2
-      = normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) := by
-  have h : (0 : ℝ) ≤ normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) := by
-    rw [normSq_wedge_vec]; positivity
+theorem area_sq_vec {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    area a b ^ 2 = normSq (wedge a b) := by
+  have h : (0 : ℝ) ≤ normSq (wedge a b) := by
+    rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb, normSq_wedge_vec]; positivity
   simp only [area, magnitude]
   exact Real.sq_sqrt h
 
 /-- **Lagrange form of the area:** `|a∧b|² = |a|²|b|² − (a·b)²` (rearranged `lagrange_property`). -/
-theorem normSq_wedge_eq_lagrange (a1 a2 a3 b1 b2 b3 : ℝ) :
-    normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3))
-      = normSq (vec a1 a2 a3) * normSq (vec b1 b2 b3)
-        - dot (vec a1 a2 a3) (vec b1 b2 b3) ^ 2 := by
-  have h := lagrange_property a1 a2 a3 b1 b2 b3
+theorem normSq_wedge_eq_lagrange {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    normSq (wedge a b) = normSq a * normSq b - dot a b ^ 2 := by
+  have h := lagrange_property_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
+  rw [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
   linarith
 
 /-- The **volume** of the parallelepiped on `a,b,c` = `|a ∧ b ∧ c|` (gacalc `measure.volume`). -/
 noncomputable def volume (a b c : G3) : ℝ := magnitude (wedge (wedge a b) c)
 
 /-- The trivector `a∧b∧c` carries only the `e₁₂₃` coefficient, so `|a∧b∧c|² = signedVolume²`. -/
-theorem normSq_wedge3_eq_signedVolume_sq (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ) :
-    normSq (wedge (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-      = signedVolume (vec a1 a2 a3) (vec b1 b2 b3) (vec c1 c2 c3) ^ 2 := by
-  simp only [normSq, signedVolume, wedge, mul, reverse, vec]; ring
+theorem normSq_wedge3_eq_signedVolume_sq {a b c : G3}
+    (ha : IsVector a) (hb : IsVector b) (hc : IsVector c) :
+    normSq (wedge (wedge a b) c) = signedVolume a b c ^ 2 := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  obtain ⟨hcs, hc12, hc13, hc23, hc123⟩ := hc
+  simp only [normSq, signedVolume, wedge, mul, reverse,
+    has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123, hcs, hc12, hc13, hc23, hc123]
+  ring
 
 /-- `volume² = signedVolume²` — so `volume = |signedVolume| = |det[a,b,c]|`. -/
-theorem volume_sq_vec (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ) :
-    volume (vec a1 a2 a3) (vec b1 b2 b3) (vec c1 c2 c3) ^ 2
-      = signedVolume (vec a1 a2 a3) (vec b1 b2 b3) (vec c1 c2 c3) ^ 2 := by
+theorem volume_sq_vec {a b c : G3} (ha : IsVector a) (hb : IsVector b) (hc : IsVector c) :
+    volume a b c ^ 2 = signedVolume a b c ^ 2 := by
   simp only [volume, magnitude]
-  rw [Real.sq_sqrt (by rw [normSq_wedge3_eq_signedVolume_sq]; exact sq_nonneg _)]
-  exact normSq_wedge3_eq_signedVolume_sq a1 a2 a3 b1 b2 b3 c1 c2 c3
+  rw [Real.sq_sqrt (by rw [normSq_wedge3_eq_signedVolume_sq ha hb hc]; exact sq_nonneg _)]
+  exact normSq_wedge3_eq_signedVolume_sq ha hb hc
 
 -- TODO (deferred): the GENERAL `content |a₁∧…∧aₖ|` for arbitrary grade `k` needs a dimension-general
 -- `Gn` Lean representation, which does not exist here (these proofs use the concrete G2/G3 structs).
@@ -68,11 +70,6 @@ noncomputable def signedArea (a1 a2 b1 b2 : ℝ) : ℝ := (mul (vec a1 a2) (vec 
 theorem signedArea_eq (a1 a2 b1 b2 : ℝ) :
     signedArea a1 a2 b1 b2 = a1 * b2 - a2 * b1 := by
   simp only [signedArea, mul, vec]; ring
-
-/-- `|signed_area| = area`: the area is the magnitude of the signed area (squared, `(a₁b₂−a₂b₁)²`). -/
-theorem signedArea_sq (a1 a2 b1 b2 : ℝ) :
-    signedArea a1 a2 b1 b2 ^ 2 = (a1 * b2 - a2 * b1) ^ 2 := by
-  rw [signedArea_eq]
 
 end G2
 
