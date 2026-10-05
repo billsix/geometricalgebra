@@ -1,6 +1,6 @@
 # Cite Lagrange's identity everywhere it is used or referenced
 
-**Status:** partly done — `MultiVectorBase.abs_sin`'s docstring and `proofs/GacalcProofs/Lagrange.lean`
+**Status:** done 2026-10-05 (format gate green; citation-only change); archived 2026-10-05
 already carry the name + link (2026-10-04 audit); the two `display*` notebooks remain — needs go-ahead
 for the rest (filed 2026-09-27)
 **Priority:** 6
@@ -95,3 +95,23 @@ notebooks that already say "Lagrange."
 None yet — the scope is "cite it wherever it appears." One judgment call is folded into the plan:
 whether any generated docstring (not just notebooks/reference docs) should carry the citation; the
 audit answers it.
+
+## Work record (2026-10-05)
+
+Re-grepped `git grep -niI lagrange` (the inventory had grown with the 2026-10-05 rotor work) and cited
+<https://en.wikipedia.org/wiki/Lagrange%27s_identity> by name at every site that invokes the identity:
+- **Notebooks:** `notebooks/displayg2.py` and `displayg3.py` Lagrange cells (name + link in the markdown).
+- **Source:** `base.py` `rotor_from_vectors` docstring (the closed form `|R|² = 2|a||b|(|a||b| + a·b)`);
+  **by another name:** `measure.py` `content` (`√det(Gram)` — for k = 2 that is Lagrange) and
+  `vectorcalc.py` `cross` (`|a||b| sin θ`), both now cite it. `abs_sin` already did.
+- **Tests / book:** `test_signed_sine.py`, `test_multivector.py`, `test_rotor_from_vectors.py`,
+  `book/docs/notebooks/levels-of-abstraction.py` — one link each.
+- **Lean:** `Trig.lean` header and `Rotor.lean`'s `normSq_versorFromVectors` docstrings point at
+  `Lagrange.lean`, which carries the link (Lean sites cite the module rather than repeat the URL).
+- **Reference docs:** `unit-bivector-and-rotors.md` §7, `symbolic-equality.md` "Square roots",
+  `lean-ga-proof-architecture.md` inventory line, `lean-for-gacalc.md`, `content-area-volume.md` (the Gram
+  determinant line).
+- **Ruled out:** `dot-wedge-projection-rejection.md` has no wedge-magnitude relation (not Lagrange);
+  no *generated* docstring invokes the identity (`magnitude_squared` is "sum of squared coordinates"), so
+  `tools/gen_specialized.py` is unchanged. `CLAUDE.md` names only the Lean lemmas, which is a pointer.
+Notebook markdown changed only; the cells were not re-executed (comment lines cannot affect execution).
