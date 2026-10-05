@@ -155,7 +155,7 @@ def _spec(n: int, name: str) -> gen.TypeSpec:
     return by_name[name]
 
 
-def test_product_result_geometric_vector_times_vector_is_rotor() -> None:
+def test_product_result_geometric_vector_times_vector_is_versor() -> None:
     v2: gen.TypeSpec = _spec(2, "Vector")
     result_spec: gen.TypeSpec
     result_spec, _ = gen.product_result(v2, v2, lambda a, b: a * b, 2, "G")

@@ -790,7 +790,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
     ),
     "versor|reverse": (
         "Reverse  R̃  of a versor keeps the scalar part and negates the bivector\n"
-        "part.  For a unit rotor  R̃  is its inverse, so  R R̃ = 1  -- reversing a\n"
+        "part.  For a rotor (a unit versor)  R̃  is its inverse, so  R R̃ = 1  -- reversing a\n"
         "rotor undoes its rotation.\n"
         "\n"
         "Returns:\n"
@@ -2114,11 +2114,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    True"
     ),
     "versor|magnitude_squared": (
-        "Squared magnitude  |R|² = scalar² + |bivector|²; a rotation rotor is\n"
-        "unit.\n"
+        "Squared magnitude  |R|² = scalar² + |bivector|²; a rotor (a unit versor)\n"
+        "has |R|² = 1.\n"
         "\n"
         "Returns:\n"
-        "    Coef: the squared magnitude (1 for a rotation rotor).\n"
+        "    Coef: the squared magnitude (1 for a rotor).\n"
         "\n"
         "Example:\n"
         "    >>> (1 + 1 * Versor.e_12).magnitude_squared()\n"

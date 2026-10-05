@@ -16,7 +16,7 @@
 ``bivector_from_vectors(a, b)`` is the raw wedge ``a ∧ b`` (the area bivector);
 ``i(a, b)`` normalizes it to the plane's unit bivector (``i² = -1``); ``.i()``
 gets a bivector's / versor's own unit plane.  All return a BIVECTOR, never a
-versor.  Design + math: tasks/reference/unit-bivector-and-versors.md.
+versor.  Design + math: tasks/reference/unit-bivector-and-rotors.md.
 """
 
 import pytest

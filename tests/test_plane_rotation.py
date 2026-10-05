@@ -146,7 +146,7 @@ def test_symbolic_theta() -> None:
         )
 
 
-def test_agrees_with_from_to_rotor_formulation() -> None:
+def test_agrees_with_from_to_versor_formulation() -> None:
     # rotating BY the angle between from and to, in their plane, is the
     # same rotation versor_rotation performs.
     t: float = math.radians(40)

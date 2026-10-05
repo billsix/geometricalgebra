@@ -37,9 +37,15 @@ So the whole rotation is a single multiplication:
    \vec{r}(\vec{a}; \theta) = \cos\theta\,\vec{a} + \sin\theta\,(\vec{a}\,e_{12})
                             = \vec{a}\,(\cos\theta + \sin\theta\,e_{12}).
 
-The object :math:`R = \cos\theta + \sin\theta\,e_{12}` is a **rotor**: to rotate is
-simply to *multiply by* :math:`R`. This is what we mean when we say the geometric
-product produces a rotation — an **action**, not just a number.
+The object :math:`R = \cos\theta + \sin\theta\,e_{12}` is a **full-angle rotor**: to
+rotate is simply to *multiply by* :math:`R`, on one side, by the whole angle. This is what
+we mean when we say the geometric product produces a rotation — an **action**, not just a
+number. The one-sided, full-angle form works because in two dimensions nothing lies outside
+the plane of rotation. The form that survives into three dimensions is the *half-angle*
+rotor :math:`\cos(\theta/2) - \sin(\theta/2)\,e_{12}` applied as a sandwich
+:math:`R\,\vec{v}\,\tilde{R}`; gacalc's ``plane_rotation`` uses it under the hood, and the
+companion notebook checks that the two give the same answer. (gacalc's Lean proofs name the two
+objects ``fullAngleRotor`` and ``rotor``, and prove them equal in effect.)
 
 Keep everything exact
 ---------------------
@@ -49,7 +55,7 @@ Notice we never turned :math:`\cos\theta` or :math:`\sin\theta` into a decimal, 
 crackers from a 6-for-5¢ pack: you keep :math:`6` and :math:`5` whole and compute
 :math:`12 \cdot 6^{-1} \cdot 5 = 10`, and the fraction :math:`5/6` never appears (see
 :doc:`canonical-form`). We order the operations so the answer stays in exact, canonical
-form — a rotor built from :math:`\cos\theta`, :math:`\sin\theta`, and :math:`e_{12}`,
+form — a full-angle rotor built from :math:`\cos\theta`, :math:`\sin\theta`, and :math:`e_{12}`,
 not a table of rounded numbers.
 
 The companion notebook builds :math:`R` in gacalc and checks — symbolically — that

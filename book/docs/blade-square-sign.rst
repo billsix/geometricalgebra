@@ -12,7 +12,7 @@
 Squaring a Blade: The Sign, by Counting Flips
 =============================================
 
-In :doc:`geometric-product` you met the rotor :math:`R = \cos\theta + \sin\theta\,e_{12}`,
+In :doc:`geometric-product` you met the full-angle rotor :math:`R = \cos\theta + \sin\theta\,e_{12}`,
 and along the way a small surprise: the object :math:`e_{12} = e_1 e_2` **squares to**
 :math:`-1`, exactly like the imaginary unit :math:`i` from precalculus. Why :math:`-1`,
 and not :math:`+1`? And what happens if we square :math:`e_1 e_2 e_3`, or the product of

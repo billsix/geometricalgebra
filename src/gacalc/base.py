@@ -1830,7 +1830,7 @@ class MultiVectorBase(abc.ABC):
         classes (Gn, G2, G3, Vector).  Parallel vectors span no plane, so their
         wedge is the **zero** bivector -- this builder does not raise on that;
         the ``i`` builder does, when it normalizes.  Companion to
-        :meth:`versor_from_vectors` (which builds the *rotor* from two vectors;
+        :meth:`versor_from_vectors` (which builds the *versor* from two vectors;
         this builds the *plane*).
 
         Args:

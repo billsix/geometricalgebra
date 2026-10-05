@@ -35,7 +35,7 @@ same from/to rotation as a *versor* sandwich (one fixed rotation);  and
 -- it takes two vectors that *define a plane* (their normalized wedge is the
 plane's unit bivector ``i``) and returns a function of the angle, so one plane
 established once yields any rotation angle on demand (and interpolation for
-free).  The rotor *builder* ``MultiVectorBase.versor_from_vectors(from, to)``
+free).  The versor *builder* ``MultiVectorBase.versor_from_vectors(from, to)``
 remains the algebra-level primitive.  (The very old planar 2D
 ``rotate(angle)`` / ``rotate_90_degrees`` / ``rotate_around`` factories were
 removed long before: they acted only in the e_1 e_2 plane and silently
@@ -192,7 +192,7 @@ def projection_rotation(
     *inside* the turn (not normalized up front), so their lengths cancel and this
     is a *pure* rotation (no scaling) whatever the inputs' magnitudes.  It is the
     projection formulation of the same rotation
-    that :func:`versor_rotation` produces via the rotor sandwich
+    that :func:`versor_rotation` produces via the versor sandwich
     ``R v R.inverse()`` (``R = versor_from_vectors(from_vector, to_vector)``); both
     agree.  This form is kept for teaching -- it makes the in-plane / perpendicular
     split explicit -- while ``versor_rotation`` is the faster, more general path.
@@ -429,7 +429,7 @@ def plane_rotation(
     r"""Establish a plane of rotation from two vectors; get back *angle ->
     rotation*.
 
-    The from/to rotor form (:func:`versor_rotation`,
+    The from/to versor form (:func:`versor_rotation`,
     :func:`projection_rotation`) conflates two concerns: choosing the *plane*
     and choosing the *angle* (locked to the angle between the two vectors).
     This factory separates them.  ``a`` and ``b``'s only job is to define the

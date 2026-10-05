@@ -10,8 +10,10 @@
 # # The Geometric Product — rotation is a multiplication
 #
 # The chapter claims that rotating a vector `a` by an angle `theta` is the same as
-# multiplying it by the rotor `R = cos(theta) + sin(theta) * e_12`. We check that,
-# symbolically, against both the coordinate formula and gacalc's own rotation.
+# multiplying it, on one side, by the full-angle rotor
+# `R = cos(theta) + sin(theta) * e_12` (2D only: nothing lies outside the plane).
+# We check that, symbolically, against both the coordinate formula and gacalc's
+# own rotation.
 
 # %%
 import sympy
@@ -27,16 +29,18 @@ a = a_x * Vector.e_1 + a_y * Vector.e_2
 a * Bivector.e_12  # -> (-a_y, a_x)
 
 # %%
-# The rotor R = cos(theta) + sin(theta) * e_12, applied by multiplication on the right.
+# The full-angle rotor R = cos(theta) + sin(theta) * e_12, applied one-sided, by
+# multiplication on the right.
 R = sympy.cos(theta) + sympy.sin(theta) * Bivector.e_12
-rotor_result = (a * R).simplified()
-rotor_result
+full_angle_result = (a * R).simplified()
+full_angle_result
 
 # %%
-# gacalc's own rotation, in the e_1 -> e_2 plane, by the same angle.
+# gacalc's own rotation, in the e_1 -> e_2 plane, by the same angle -- under the hood a
+# half-angle rotor cos(theta/2) - sin(theta/2) * e_12 applied as the sandwich R v R~.
 gacalc_result = plane_rotation(Vector.e_1, Vector.e_2)(theta)(a).simplified()
 gacalc_result
 
 # %%
 # They agree: the difference is zero.
-(rotor_result - gacalc_result).simplified()
+(full_angle_result - gacalc_result).simplified()
