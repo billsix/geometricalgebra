@@ -339,7 +339,8 @@ def test_multivector_abs_sin() -> None:
 
 
 def test_abs_sin_cosine_pythagorean() -> None:
-    # cos²θ + sin²θ == 1 for vectors (Lagrange's identity), numeric and symbolic.
+    # cos²θ + sin²θ == 1 for vectors (Lagrange's identity,
+    # <https://en.wikipedia.org/wiki/Lagrange%27s_identity>), numeric and symbolic.
     a: MultiVector = 3 * e_1 + 4 * e_2
     b: MultiVector = 1 * e_1 + 2 * e_2
     assert sympy.simplify(sympy.sympify(a.cosine(b) ** 2 + a.abs_sin(b) ** 2)) == 1

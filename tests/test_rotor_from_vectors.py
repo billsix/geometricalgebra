@@ -24,7 +24,7 @@ unit rotor, and its REVERSE sandwich ``R̂ v R̂~`` is the versor's INVERSE sand
 ``proofs/GacalcProofs/Rotor.lean``, proven *symbolically* with sympy where it can be.
 
 The piece that needs Lagrange: ``normalize`` divides by ``sqrt(|R|²)`` with ``|R|²``
-the raw polynomial ``(|a||b| + a·b)² + |a∧b|²``.  Lagrange's identity
+the raw polynomial ``(|a||b| + a·b)² + |a∧b|²``.  Lagrange's identity (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>)
 ``(a·b)² + |a∧b|² = |a|²|b|²`` collapses it to ``2|a||b|(|a||b| + a·b)``, and for unit
 vectors at angle θ that is ``2 + 2cos θ = 4cos²(θ/2)`` -- which is how the normalized
 versor turns out to be the half-angle rotor ``cos(θ/2) - sin(θ/2)·i``.  Parametrizing by

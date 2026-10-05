@@ -254,7 +254,7 @@ angle, the whole thing?" Yes, now — in Lean (`proofs/GacalcProofs/Rotor.lean`)
    (`rotorSandwich_rotorFromVectors_eq_projRotation`), carries `a` to `b` scaled to `|a|`
    (`…_carries_from_to`), and preserves dot/length (`rotorSandwich_preserves_*`).
 3. **Lagrange gives the magnitude in closed form:** with `R = b·a + |a||b| = (|a||b| + a·b) + b∧a`,
-   `|R|² = (|a||b| + a·b)² + |a∧b|²`, and Lagrange's `(a·b)² + |a∧b|² = |a|²|b|²` collapses it to
+   `|R|² = (|a||b| + a·b)² + |a∧b|²`, and Lagrange's identity (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) `(a·b)² + |a∧b|² = |a|²|b|²` collapses it to
 
        |R|² = 2 |a||b| ( |a||b| + a·b )
 

@@ -6,7 +6,7 @@ import GacalcProofs.Projection2D
     The sin/cos characterization of two vectors, read off the **inner and outer products** (no angle
     computed): `cos = (a·b)/(|a||b|)`, `sin = |a∧b|/(|a||b|)`, with `cos² + sin² = 1` — the leaf
     property the higher (rotation/angle) proofs build on. `cos² + sin² = 1` is exactly Lagrange's
-    identity in coordinate-free form (`lagrange_property`: `(a·b)² + |a∧b|² = |a|²|b|²`). Proved for
+    identity in coordinate-free form (reference: `Lagrange.lean`) (`lagrange_property`: `(a·b)² + |a∧b|² = |a|²|b|²`). Proved for
     both 𝒢₂ and 𝒢₃. See `tasks/reference/lean-ga-proof-architecture.md`. -/
 
 namespace GacalcProofs.G3

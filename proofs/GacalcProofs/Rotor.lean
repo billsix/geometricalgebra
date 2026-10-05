@@ -146,7 +146,7 @@ theorem rotorSandwich_rotorFromVectors_carries_from_to {a b : G2} (ha : IsVector
 
 /-! ### Lagrange: the from-vectors versor's magnitude in closed form -/
 
-/-- **`|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`** — by Lagrange's identity
+/-- **`|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`** — by Lagrange's identity (reference: `Lagrange.lean`)
     `(a·b)² + |a∧b|² = |a|²|b|²` (`Trig.lagrange_property`, a `ring` identity in coordinates): the
     versor is `(|a||b| + a·b) + b∧a`, so its squared magnitude is `(|a||b| + a·b)² + |a∧b|²`, and
     Lagrange collapses `(a·b)² + |a∧b|²` to `|a|²|b|²`. Hence the versor vanishes exactly when `a` and
@@ -297,7 +297,7 @@ theorem rotorSandwich_rotorFromVectors_carries_from_to {a b : G3} (ha : IsVector
 
 /-! ### Lagrange: the from-vectors versor's magnitude in closed form -/
 
-/-- **`|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`** — by Lagrange's identity
+/-- **`|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`** — by Lagrange's identity (reference: `Lagrange.lean`)
     `(a·b)² + |a∧b|² = |a|²|b|²` (`Trig.lagrange_property`, a `ring` identity in coordinates): the
     versor is `(|a||b| + a·b) + b∧a`, so its squared magnitude is `(|a||b| + a·b)² + |a∧b|²`, and
     Lagrange collapses `(a·b)² + |a∧b|²` to `|a|²|b|²`. Hence the versor vanishes exactly when `a` and

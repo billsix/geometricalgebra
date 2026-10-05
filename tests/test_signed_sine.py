@@ -16,7 +16,7 @@
 The scalar, oriented companion to the unsigned, any-dimension
 ``MultiVectorBase.abs_sin``.  These pin: the signed value and that swapping the
 operands negates it (the turn direction); the relation ``abs(sine) == abs_sin``;
-exactness on integer and symbolic coefficients and the Lagrange identity
+exactness on integer and symbolic coefficients and the Lagrange identity (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>)
 ``cosine² + sine² == 1``; the raise on a zero-length operand; and that the
 method is 𝒢₂-only (no ``sine`` on 𝒢₁ or 𝒢₃'s ``Vector``).
 """

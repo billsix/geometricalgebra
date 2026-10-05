@@ -342,7 +342,8 @@ plot_multivector(u * v)
 #
 # The 𝒢₂ derivation carries over: two vectors always span a single 2-plane, so
 # $|a\wedge b| = |a||b|\sin\theta$ holds in 𝒢₃ too. The only difference is that
-# $a\wedge b$ is now a **three-component** bivector, and the Lagrange identity is
+# $a\wedge b$ is now a **three-component** bivector, and the Lagrange identity
+# (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) is
 # a *sum* of squares
 #
 # $$|a|^2|b|^2 - (a\cdot b)^2

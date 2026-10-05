@@ -1834,6 +1834,7 @@ class MultiVectorBase(abc.ABC):
         ``projection_rotation`` and carries ``from`` to ``to``.
 
         The magnitude divided out has a closed form, by Lagrange's identity
+        (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>)
         ``(a·b)² + |a∧b|² = |a|²|b|²``::
 
             |R|²  =  2 |a||b| ( |a||b| + a·b )

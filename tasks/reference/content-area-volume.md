@@ -52,7 +52,7 @@ W&T's recursive volume — `∏ |h_j|`, the heights being rejections — is **ex
 orthogonalization** (`make_orthogonal_frame`, `tasks/define-frame.md`): each `h_j` = `v_j` rejected
 from the span of the previous vectors = the orthogonalized `w_j`. Hence
 
->   `content([v₁,…,v_k]) = ∏_j |w_j| = |v₁ ∧ … ∧ v_k| = √det(Gram)`.
+>   `content([v₁,…,v_k]) = ∏_j |w_j| = |v₁ ∧ … ∧ v_k| = √det(Gram)` (for k = 2, `|a∧b|² = |a|²|b|² − (a·b)²` is Lagrange's identity, <https://en.wikipedia.org/wiki/Lagrange%27s_identity>).
 
 So there are **two equal ways to compute content**: W&T's **product of rejected heights**, and the
 **magnitude of the wedge blade**. That is the same "two constructions, one result" pattern as the two

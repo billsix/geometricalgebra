@@ -111,7 +111,7 @@ re-deriving the rule. That is a fact for the follow-on task to use, not a decisi
 `simplify(a − b) == 0` stalls when the two sides hide the same square root in different shapes.
 `versor_from_vectors(a, b).normalize()` divides by `sqrt(|R|²)` with `|R|²` the raw polynomial
 `(|a||b| + a·b)² + |a∧b|²`; proving the result is the half-angle rotor `cos(θ/2) − sin(θ/2)·i` needs two
-relations sympy does not discover: Lagrange's `(a·b)² + |a∧b|² = |a|²|b|²` (collapsing `|R|²` to
+relations sympy does not discover: Lagrange's (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) `(a·b)² + |a∧b|² = |a|²|b|²` (collapsing `|R|²` to
 `2|a||b|(|a||b| + a·b)`) and the half-angle identity. The pattern that works, from
 `tests/test_rotor_from_vectors.py`:
 

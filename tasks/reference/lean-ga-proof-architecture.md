@@ -390,7 +390,7 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 
 ## Inventory (files in `proofs/GacalcProofs/`)
 
-- `Lagrange.lean` — Lagrange identity 2D/3D (`|a|²|b|² = (a·b)² + |a∧b|²`).
+- `Lagrange.lean` — Lagrange identity 2D/3D (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) (`|a|²|b|² = (a·b)² + |a∧b|²`).
 - `G2.lean` / `G3.lean` — the algebras: product/wedge/reverse, basis elements, multiplication table,
   `I² = −1`, dot, dual, `I⁻¹`; `normSq`/`magnitude` (+ `normSq_vec`, and `normSq_wedge_vec` in `G3`);
   `G3` also the fundamental identity `ab = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`), `vec_mul_perp`, and the

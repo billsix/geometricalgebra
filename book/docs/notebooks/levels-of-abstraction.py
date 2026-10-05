@@ -101,7 +101,7 @@ p.inner_product(q)
 # - the signed **`sine`**, 𝒢₂ only — `(a∧b)·e₁₂ / (|a||b|)`, whose sign is the
 #   turn direction, so swapping the arguments negates it.
 #
-# They agree in magnitude, and `cosine² + sine² = 1` (Lagrange's identity).
+# They agree in magnitude, and `cosine² + sine² = 1` (Lagrange's identity, <https://en.wikipedia.org/wiki/Lagrange%27s_identity>).
 
 # %%
 u = 3.0 * g2.e_1 + 4.0 * g2.e_2
