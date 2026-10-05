@@ -8,7 +8,9 @@ time to think about this now, spin that into its own task"). **Owner:** William 
 <billsix@gmail.com>.
 **See also:** `tasks/reference/lean-proof-corpus-review-2026-10-04.md` §3 (gap #4),
 `tasks/reference/lean-ga-proof-architecture.md`, `tasks/reference/unit-bivector-and-rotors.md`,
-`tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md` (the unit-rotor layer this builds on — `Sandwich.IsRotor`, landed 2026-10-05).
+`tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md` (the unit-rotor layer this builds on — `Sandwich.IsRotor`, landed 2026-10-05; the from-vectors rotor
+`Rotor.rotorFromVectors` + the 2D half-angle identification `rotorFromVectors_uvec`:
+`tasks/archive/2026/10/05/lean-rotor-from-vectors-chain.md`).
 
 ## BLUF
 
