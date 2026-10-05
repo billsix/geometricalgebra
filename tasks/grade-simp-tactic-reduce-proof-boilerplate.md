@@ -61,5 +61,5 @@ of anything.
 - `tasks/reference/lean-ga-proof-architecture.md` — the getter-native norm, the recipes, the dead-ends
   (the boilerplate this would collapse).
 - `tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md` — where the proof style came from.
-- `tasks/lean-unit-versors-rotors-sandwich-with-reverse.md` / `tasks/push-delicate-coordinate-core-tier.md`
+- `tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md` / `tasks/push-delicate-coordinate-core-tier.md`
   — other open Lean-proof threads.

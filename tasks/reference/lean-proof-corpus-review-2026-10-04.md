@@ -147,7 +147,7 @@ them), the 2D angle-form rotation theory (`rot`, `polar`, `rot_from_to`), `rotYZ
 Open Lean tasks, easy wins first: `trim-unused-simp-components` (done, archive owed),
 `rename-rotor-to-versor` (done; archived 2026-10-04 with rotation-from-scratch),
 `reference-doc-lean-workflow-and-proof-notebooks` (P6/D4, 3 open questions),
-`lean-unit-versors-rotors-sandwich-with-reverse` (P6/D6, 3 questions), `reduce-to-standard-position`
+`lean-unit-versors-rotors-sandwich-with-reverse` (done + archived 2026-10-05), `reduce-to-standard-position`
 (voice pass; archived 2026-10-04, the voice pass is `proof-projection-book-voice-pass`), `lean-cross-standard-position-capstone` (2 questions), the four P7 step tasks
 (dot/wedge/pseudoscalar/rotation — only Mathlib equivalence left), `lean-general-multivector-inverse`,
 `investigate-lean-to-python-proof-notebooks`, `push-delicate-coordinate-core-tier` (P8),

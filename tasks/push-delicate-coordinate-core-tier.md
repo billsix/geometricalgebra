@@ -38,7 +38,7 @@ Add an **object `magnitude`/`normalizeVec` lemma layer** so the sqrt tier has ge
 `normSq_nonneg {a} : 0 ≤ normSq a` (or per-grade), `magnitude_sq {a} (ha : IsVector a) : magnitude a ^ 2
 = normSq a` as an object lemma (shaped like the existing `Normalize.magnitude_normalizeVec`), `R⁻¹ = R̃`
 for unit versors (a one-liner on `mul_reverse_self_of_isEvenVersor`; see
-`tasks/lean-unit-versors-rotors-sandwich-with-reverse.md` Q3), etc. Without these the conversions below just
+`tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md` Q3), etc. Without these the conversions below just
 re-derive sqrt facts inline each time.
 
 ## Targets (apply the recipes from the reference doc once the prereq exists)
@@ -86,5 +86,5 @@ etc.) plus the form-D `vec`-literal bridges kept by Decision 1.
   record, and the decision to retain this tier.
 - `tasks/reference/lean-ga-proof-architecture.md` — the getter-native norm, the atomic-`normSq`-leaf
   recipe, the clean-`^2`-denominator derivation, and the "paths that don't work" dead-ends.
-- `tasks/lean-unit-versors-rotors-sandwich-with-reverse.md` — the unit-versor `R⁻¹ = R̃` layer (overlaps
+- `tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md` — the unit-versor `R⁻¹ = R̃` layer (overlaps
   the prerequisite).

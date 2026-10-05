@@ -8,7 +8,7 @@ time to think about this now, spin that into its own task"). **Owner:** William 
 <billsix@gmail.com>.
 **See also:** `tasks/reference/lean-proof-corpus-review-2026-10-04.md` §3 (gap #4),
 `tasks/reference/lean-ga-proof-architecture.md`, `tasks/reference/unit-bivector-and-rotors.md`,
-`tasks/lean-unit-versors-rotors-sandwich-with-reverse.md` (the unit-rotor layer this would build on).
+`tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md` (the unit-rotor layer this builds on — `Sandwich.IsRotor`, landed 2026-10-05).
 
 ## BLUF
 
@@ -25,7 +25,7 @@ fixes the perpendicular part; `make lean` green; coverage table row updated.
 
 - Lean's `G3` is a coordinate struct; proofs are "objects in, scalars in the body, objects out"
   (`CLAUDE.md` "Coordinates only when needed"). Rotors are not a subtype: `IsEvenVersor R` is a predicate,
-  unit-ness is `normSq R = 1` (`lean-unit-versors-rotors-sandwich-with-reverse.md` proposes a named layer).
+  unit-ness is `normSq R = 1` (`Sandwich.IsRotor`, landed 2026-10-05).
 - The natural route is **reduce to standard position**: `CrossStandardPosition.reduceToPlane` carries any
   plane into `e₁₂` by three elementary rotations that preserve dot and are equivariant for proj/reject/cross;
   in the `e₁₂` plane `Rotation2D.sandwich_versor` (𝒢₂) or `Sandwich.sandwich_fixes_orthogonal`/
