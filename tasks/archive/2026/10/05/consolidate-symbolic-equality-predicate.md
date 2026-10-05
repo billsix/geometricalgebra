@@ -1,6 +1,6 @@
 # Consolidate the symbolic-equality predicate; expand symbolic tests
 
-**Status:** blocked
+**Status:** done 2026-10-05 (Q1 (a), Q2 (a) decided by the maintainer; 695 tests, format/ty green); archived 2026-10-05
 **Priority:** 6
 **Difficulty:** 3
 **Started:** 2026-08-27 (William Emerison Six <billsix@gmail.com>)
@@ -52,3 +52,23 @@ consolidate the duplicated helpers into one public predicate and grow the symbol
 2. **Return type?** (a) a plain `bool` (matching `_same_value`; recommended — documented to be
    conservative, a `False` may mean "not proven equal," per the reference doc's Limits), or (b)
    raise/flag "undecided" separately when `simplify` can't prove it?
+
+## Decisions and work record (2026-10-05)
+
+- **Q1 → (a) a public method** `MultiVectorBase.symbolically_equal(other, *, subs=None)`; **Q2 → (a) a
+  plain `bool`**, conservative (`False` = not proven equal). Decided by the maintainer 2026-10-05.
+- Implementation (`src/gacalc/base.py`): blade-dict-wise over the union of present blades, so any two
+  representations compare; per blade it delegates to `_coef_eq` (the generated `__eq__`'s rule — exact for
+  plain numbers, `simplify`-backed when a side is symbolic). With `subs` (type
+  `gacalc.base.SymbolicSubstitution = Mapping[sympy.Basic | complex, sympy.Expr | complex]`) it applies the
+  substitution to each blade's difference before `simplify` — the "hand sympy the relation" recipe from
+  the rotor work (`{s**2: 1 - c**2}`), which is why the parameter exists.
+- The three hand-rolled copies were removed and their call sites rewritten to the method:
+  `test_conformance._same_value` (3 sites), `test_graded.simplify_equal` (2), and
+  `test_rotor_from_vectors._simplify_equal` (10). Scalar-level one-offs (`scalar_eq`, the `content`
+  assertions in `test_measure.py`) compare `Coef`s, not multivectors, and stay.
+- New `tests/test_symbolic_equality.py` pins: structurally-different-but-equal forms, unequal values and
+  a blade present on one side only, exact numeric comparison, cross-representation (`Gn` vs `g2`), and the
+  substitution path (`sqrt(4c⁴ + 4s²c²)` vs `2c`: `False` without the relation, `True` with it).
+- Docs: `symbolic-equality.md` "The public predicate" section replaces the "currently duplicated" one;
+  README and `CLAUDE.md` one-liners; `CHANGELOG` Added.
