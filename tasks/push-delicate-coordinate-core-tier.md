@@ -1,6 +1,6 @@
 # Push the delicate coordinate-core tier to object/getter form (optional)
 
-**Status:** proposed — needs go-ahead (spun off 2026-10-04 from the completed object-in-getters sweep,
+**Status:** in progress — the 2D tier, the carries-from-to capstones, `cos_sq_add_sin_sq` and the Lagrange area form are getter-native (2026-10-05); the 3D projection-rotation scaffold and the remaining Sandwich/Projection3D/Cross coordinate leaves are the open remainder (see "Work record")
 `tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md`; updated 2026-10-04, William
 Emerison Six <billsix@gmail.com>)
 **Priority:** 8 (optional; the valuable polynomial tier is already done)
@@ -32,7 +32,42 @@ These proofs are **not polynomial**, so `obtain`-getters + `ring` doesn't close 
   bisector lemmas, `sandwich_carries_from_to`, `sandwich_fixes_*`, `sandwich_comp` — assembled from the
   sqrt/magnitude scaffold via `calc`/`set`/`rw` chains.
 
-## Prerequisite (do this first)
+## Work record (2026-10-05)
+
+**Prerequisite cleared** by the rotor work: `normSq_eq_sum_sq`, `normSq_nonneg`, `magnitude_sq_eq_normSq`,
+`magnitude_ne_zero_of_normSq_ne_zero` (object, any multivector) — first in `Rotor.lean`, then moved down
+into `G2.lean`/`G3.lean` (right after `magnitude`) so every module can use them; `R⁻¹ = R̃` for rotors is
+`Sandwich.inverse_eq_reverse_of_isRotor`.
+
+**Converted to getter-native (no `_coord` scaffold left), gate `[lean] OK`:**
+- `ProjectionRotation2D.lean`, the whole file: `mul_vec_self`, `reject_plane_eq_zero`,
+  `projRotation_eq_vec_mul`, `projRotation_carries_from_to`, `normSq_mul_three_vec`,
+  `projRotation_isometry`, `versorFromVectors_mul_vec_eq`, `key_reverse_sq` (the `√` identity: object
+  `hK2` from `magnitude_sq_eq_normSq` + `normSq_eq_sum_sq`, then the same `set`/`linear_combination`
+  leaf), `fhat_that_eq_reverse_mul_inverse`, `projRotation_eq_sandwich`. Eight `_coord` lemmas and the
+  two local magnitude helpers deleted.
+- `Sandwich.lean`: `versorFromVectors_mul_reverse` (𝒢₂, direct) and `sandwich_carries_from_to` (𝒢₂ and
+  𝒢₃) — the same structural script (`R a = |a|·h`, `b R = |b|·h`, `R R̃ = |R|²·1`, `field_simp`) on
+  object hypotheses; three `_coord` lemmas deleted (the 𝒢₃ `versorFromVectors_mul_reverse_coord` /
+  `_mul_inverse_coord` stay: `ProjectionRotation3D` still consumes them).
+- `Trig.lean`: `cos_sq_add_sin_sq` (both grades) from `lagrange_property` + `normSq_nonneg` directly;
+  `lagrange_property_coord` deleted (both grades). `Measures.normSq_wedge_eq_lagrange` likewise.
+- `RotateComponents.sandwich_ahat` direct from the object carries; `sandwich_ahat_coord` deleted.
+Lesson: the sqrt tier was never hard once the four object `√` lemmas existed — each conversion was the
+coordinate script with `isVector_vec` replaced by the object hypothesis and `magnitude_sq_of_normSq_coord`
+by `magnitude_sq_eq_normSq`. The "degree blow-up" tier (division by `normSq (f ∧ t)`) was not touched.
+
+**Remaining (the open part of this task):** the `ProjectionRotation3D` scaffold (`projRotation_*_coord`,
+`key_reverse_sq_coord`, `fhat_that_eq_reverse_mul_inverse_coord`, `normalizeVec_*_coord`,
+`vec_mul_bisector_eq_coord`, the plane-projection `_coord`s — these divide by `normSq (f ∧ t)`, the
+blow-up tier); `Sandwich` `sandwich_fixes_own_bivector/normal_coord`, `sandwich_comp_coord`, the 𝒢₃
+`versorFromVectors_mul_reverse/inverse_coord`; `Projection3D` `reject_vec_eq_coord`,
+`project_add_reject_coord`, `reject_eq_proj_normal_coord`, `project_eq_sub_reject_coord`;
+`CrossStandardPosition` `cross_rot*_equivariant_coord`; `RotateComponents` `rotation_fixes_normal_coord`;
+`TrigEquiv` `sin_between_eq_abs_signed_vec_coord`; `Versor2D`/`Rotation3D` bisector `_coord`s; the `G3`
+`vec`-literal leaves kept by Decision 1. Regenerate the live list with the command below.
+
+## Prerequisite (done — see the work record)
 
 Add an **object `magnitude`/`normalizeVec` lemma layer** so the sqrt tier has getter-native tools:
 `normSq_nonneg {a} : 0 ≤ normSq a` (or per-grade), `magnitude_sq {a} (ha : IsVector a) : magnitude a ^ 2

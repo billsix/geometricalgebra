@@ -54,6 +54,13 @@ Blade = tuple[int, ...]
 #:   be built via dispatching arithmetic (``Bivector + scalar -> Versor``),
 #:   never via ``from_blade_dict`` on the operand's type (see ``exp``).
 BladeCoef = dict[Blade, Coef]
+
+#: A substitution handed to :meth:`MultiVectorBase.symbolically_equal` -- the relations
+# sympy
+#: cannot discover on its own (``{s**2: 1 - c**2}``), applied to each blade's difference
+# before
+#: ``simplify``. Typed to match ``sympy.Expr.subs``'s mapping overload.
+SymbolicSubstitution = Mapping[sympy.Basic | complex, sympy.Expr | complex]
 MultiVectorFn = Callable[["MultiVectorBase"], "MultiVectorBase"]
 
 #: Type variable for the operand of a versor sandwich -- the result has the
@@ -1834,6 +1841,7 @@ class MultiVectorBase(abc.ABC):
         ``projection_rotation`` and carries ``from`` to ``to``.
 
         The magnitude divided out has a closed form, by Lagrange's identity
+        (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>)
         ``(a·b)² + |a∧b|² = |a|²|b|²``::
 
             |R|²  =  2 |a||b| ( |a||b| + a·b )
@@ -1860,6 +1868,75 @@ class MultiVectorBase(abc.ABC):
         return cls.versor_from_vectors(
             from_vector=from_vector, to_vector=to_vector
         ).normalize()
+
+    def plane_of_rotation(self) -> typing.Self:
+        """The unit bivector plane ``I`` this versor rotates in -- its bivector part,
+        normalized (Macdonald's ``I`` in ``R = r(cos θ + I sin θ)``; the generated
+        ``Versor`` classes override this with a ``Bivector``-typed version).
+
+        Returns:
+            Self: the unit bivector ``⟨R⟩₂ / |⟨R⟩₂|``.
+
+        Raises:
+            ZeroDivisionError: if the bivector part is zero (a pure scalar has no
+            plane).
+        """
+        return self.r_vector_part(2).normalize()
+
+    def angle(self) -> Coef:
+        """The angle ``θ`` of a versor ``R = r (cos θ + I sin θ)`` -- the angle between
+        the two vectors whose product it is (``R = u v`` gives ``θ = ∠(u, v)``), read
+        off its scalar and bivector parts: ``θ = atan2(|⟨R⟩₂|, ⟨R⟩₀) ∈ [0, π]``.
+
+        The other two factors are already methods: ``r`` is :meth:`magnitude` and
+        ``I`` is :meth:`plane_of_rotation`, so ``R == r * (cos θ + sin θ * I)`` exactly.
+        Mind the half angle: the sandwich ``R v R⁻¹`` rotates ``v`` by ``2θ``, so for
+        the
+        half-angle rotor ``plane_rotation`` builds (``cos(φ/2) - sin(φ/2) I``) this
+        returns ``φ/2``.  Defined for a **scalar + bivector** versor (an even element
+        of 𝒢₂ or 𝒢₃, or ``u v`` in any dimension); numeric input gives a ``float``,
+        symbolic input a ``sympy.atan2``.
+
+        Returns:
+            Coef: ``θ`` in ``[0, π]``.
+
+        Raises:
+            ValueError: if ``R`` has a grade other than 0 or 2.
+        """
+        self._require_scalar_plus_bivector("angle")
+        scalar: Coef = self.scalar_part()
+        bivector_magnitude: Coef = self.r_vector_part(2).magnitude()
+        if isinstance(scalar, sympy.Basic) or isinstance(
+            bivector_magnitude, sympy.Basic
+        ):
+            return sympy.atan2(bivector_magnitude, scalar)
+        return math.atan2(bivector_magnitude, scalar)
+
+    def conjugate(self) -> typing.Self:
+        """The complex conjugate of a scalar + bivector versor:
+        ``R = r (cos θ + I sin θ)  ↦  R̄ = r (cos θ - I sin θ)`` -- the bivector part
+        negated, exactly as ``a + bi ↦ a - bi``, since ``I² = -1``.  For such a versor
+        this coincides with :meth:`reverse` (``R R̄ = r² = |R|²``); it is kept as its own
+        name for the complex-number reading, and is restricted to the scalar + bivector
+        case where the two notions agree.
+
+        Returns:
+            Self: the conjugate versor.
+
+        Raises:
+            ValueError: if ``R`` has a grade other than 0 or 2.
+        """
+        self._require_scalar_plus_bivector("conjugate")
+        return self.reverse()
+
+    def _require_scalar_plus_bivector(self, method_name: str) -> None:
+        """Raise unless this multivector is a scalar + bivector (grades ⊆ {0, 2})."""
+        stray: list[int] = [grade for grade in self.grades() if grade not in (0, 2)]
+        if stray:
+            raise ValueError(
+                f"{method_name}() is defined for a scalar + bivector versor; "
+                f"this value also has grade(s) {stray}"
+            )
 
     @classmethod
     def bivector_from_vectors(
@@ -2026,6 +2103,67 @@ class MultiVectorBase(abc.ABC):
         sin_t: Coef = math.sin(theta) if numeric else sympy.sin(theta)
         #   Â sin|A| + cos|A|   with   Â = A / |A|
         return self * (sin_t / theta) + cos_t
+
+    def symbolically_equal(
+        self,
+        other: MultiVectorBase,
+        *,
+        subs: SymbolicSubstitution | None = None,
+    ) -> bool:
+        """Exact equality of **values**, blade by blade, with sympy deciding symbolic
+        coefficients: two multivectors are symbolically equal when every blade's
+        coefficients are equal numbers, or -- if either is a sympy expression --
+        when ``simplify(left - right) == 0``.  This is value equality independent of
+        the *form* a coefficient happens to be in (``(x + 1)**2`` vs
+        ``x**2 + 2*x + 1``), the test the structural ``==`` cannot make; it is the
+        one home for the ``simplify(a - b) == 0`` idiom the tests used to re-roll.
+
+        Representation-agnostic: ``other`` may be any gacalc multivector (``Gn`` vs a
+        generated ``g2``/``g3`` value), compared through the blade-dict interchange.
+
+        ``subs`` hands sympy a relation it cannot find by itself -- e.g. the
+        Pythagorean ``{s**2: 1 - c**2}`` that lets ``sqrt(4*c**4 + 4*s**2*c**2)``
+        collapse to ``2*c`` (see ``tasks/reference/symbolic-equality.md``, "Square
+        roots").  It is applied to each blade's *difference* before ``simplify``.
+
+        Conservative, like ``==``: a ``False`` means "not proven equal" -- ``simplify``
+        is a heuristic and can fail on hard forms (nested radicals); it never reports
+        two unequal values as equal.  Floating-point values are compared exactly; for
+        tolerances use :meth:`isclose`.
+
+        Args:
+            other: the multivector to compare against (any representation).
+            subs: optional substitution applied to each blade's difference before
+                simplifying.
+
+        Returns:
+            bool: ``True`` iff every blade's coefficients are provably equal.
+
+        Example:
+            >>> import sympy
+            >>> from gacalc.g2 import Vector
+            >>> x = sympy.Symbol("x")
+            >>> ((x + 1) ** 2 * Vector.e_1).symbolically_equal(
+            ...     (x**2 + 2 * x + 1) * Vector.e_1
+            ... )
+            True
+        """
+        left: BladeCoef = self.to_blade_dict()
+        right: BladeCoef = other.to_blade_dict()
+        blade: tuple[int, ...]
+        for blade in set(left) | set(right):
+            left_coef: Coef = left.get(blade, 0)
+            right_coef: Coef = right.get(blade, 0)
+            if subs is None:
+                if not _coef_eq(left_coef, right_coef):
+                    return False
+            else:
+                difference: sympy.Expr = (
+                    sympy.sympify(left_coef) - sympy.sympify(right_coef)
+                ).subs(subs)
+                if sympy.simplify(difference) != 0:
+                    return False
+        return True
 
     def isclose(
         self, other: typing.Self, rel_tol: float = 0.0, abs_tol: float = 0.0

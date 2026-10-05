@@ -79,7 +79,9 @@ def content(vectors: Sequence[MultiVectorBase]) -> Coef:
     """The k-dimensional **content** of the parallelotope on ``vectors`` -- the
     high-school length/area/volume generalized (Williamson & Trotter p. 308).
 
-    Computed as ``|a_1 ∧ … ∧ a_k|``, the magnitude of the wedge (``= √det(Gram)``);
+    Computed as ``|a_1 ∧ … ∧ a_k|``, the magnitude of the wedge (``= √det(Gram)``; for k
+    = 2 that
+    is Lagrange's identity, <https://en.wikipedia.org/wiki/Lagrange%27s_identity>);
     an **unsigned scalar**.  ``content([a]) == |a|`` (length), ``content([a, b])`` is
     an area, ``content([a, b, c])`` a volume.  A linearly **dependent** set spans a
     degenerate parallelotope, so its content is ``0`` (the wedge vanishes) -- unlike

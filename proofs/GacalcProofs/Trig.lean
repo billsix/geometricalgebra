@@ -6,17 +6,10 @@ import GacalcProofs.Projection2D
     The sin/cos characterization of two vectors, read off the **inner and outer products** (no angle
     computed): `cos = (a·b)/(|a||b|)`, `sin = |a∧b|/(|a||b|)`, with `cos² + sin² = 1` — the leaf
     property the higher (rotation/angle) proofs build on. `cos² + sin² = 1` is exactly Lagrange's
-    identity in coordinate-free form (`lagrange_property`: `(a·b)² + |a∧b|² = |a|²|b|²`). Proved for
+    identity in coordinate-free form (reference: `Lagrange.lean`) (`lagrange_property`: `(a·b)² + |a∧b|² = |a|²|b|²`). Proved for
     both 𝒢₂ and 𝒢₃. See `tasks/reference/lean-ga-proof-architecture.md`. -/
 
 namespace GacalcProofs.G3
-
-/-- **Lagrange, as a property** (coordinate-free): `(a·b)² + |a∧b|² = |a|²|b|²` — the inner-square plus
-    the outer-square is the product of the squared magnitudes. This is `cos² + sin² = 1` scaled. -/
-theorem lagrange_property_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
-    dot (vec a1 a2 a3) (vec b1 b2 b3) ^ 2 + normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3))
-      = normSq (vec a1 a2 a3) * normSq (vec b1 b2 b3) := by
-  simp only [dot, normSq, wedge, mul, reverse, vec]; ring
 
 /-- **Lagrange, as a property** (object form): `(a·b)² + |a∧b|² = |a|²|b|²` for vectors `a`, `b`. -/
 theorem lagrange_property {a b : G3} (ha : IsVector a) (hb : IsVector b) :
@@ -38,18 +31,11 @@ noncomputable def sin_between (a b : G3) : ℝ := magnitude (wedge a b) / (magni
 theorem cos_sq_add_sin_sq {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b)
     (ha : normSq a ≠ 0) (hb : normSq b ≠ 0) :
     cos_between a b ^ 2 + sin_between a b ^ 2 = 1 := by
-  rw [eq_vec_of_isVector ha_isv, eq_vec_of_isVector hb_isv]
-  have ha' : normSq (vec a.c1 a.c2 a.c3) ≠ 0 := by rw [← eq_vec_of_isVector ha_isv]; exact ha
-  have hb' : normSq (vec b.c1 b.c2 b.c3) ≠ 0 := by rw [← eq_vec_of_isVector hb_isv]; exact hb
-  have hna : (0 : ℝ) ≤ normSq (vec a.c1 a.c2 a.c3) := by rw [normSq_vec]; positivity
-  have hnb : (0 : ℝ) ≤ normSq (vec b.c1 b.c2 b.c3) := by rw [normSq_vec]; positivity
-  have hnw : (0 : ℝ) ≤ normSq (wedge (vec a.c1 a.c2 a.c3) (vec b.c1 b.c2 b.c3)) := by
-    rw [normSq_wedge_vec]; positivity
-  have hla := lagrange_property_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
-  simp only [cos_between, sin_between, magnitude, div_pow, mul_pow, Real.sq_sqrt hna,
-             Real.sq_sqrt hnb, Real.sq_sqrt hnw]
+  have hla := lagrange_property ha_isv hb_isv
+  simp only [cos_between, sin_between, magnitude, div_pow, mul_pow, Real.sq_sqrt (normSq_nonneg a),
+             Real.sq_sqrt (normSq_nonneg b), Real.sq_sqrt (normSq_nonneg (wedge a b))]
   rw [← add_div, hla]
-  exact div_self (mul_ne_zero ha' hb')
+  exact div_self (mul_ne_zero ha hb)
 
 /-- **A rotation preserves the cosine of the angle**: `cos(R u R⁻¹, R v R⁻¹) = cos(u, v)` for an even
     versor `R` with `|R|² ≠ 0` and ANY `u`, `v` (meaningful for vectors) — straight off the object
@@ -75,12 +61,6 @@ end GacalcProofs.G3
 
 namespace GacalcProofs.G2
 
-/-- **Lagrange, as a property** (coordinate-free), in 𝒢₂. -/
-theorem lagrange_property_coord (a1 a2 b1 b2 : ℝ) :
-    dot (vec a1 a2) (vec b1 b2) ^ 2 + normSq (wedge (vec a1 a2) (vec b1 b2))
-      = normSq (vec a1 a2) * normSq (vec b1 b2) := by
-  simp only [dot, normSq, wedge, mul, reverse, vec]; ring
-
 /-- **Lagrange, as a property** (object form, 2D): `(a·b)² + |a∧b|² = |a|²|b|²` for vectors `a`, `b`. -/
 theorem lagrange_property {a b : G2} (ha : IsVector a) (hb : IsVector b) :
     dot a b ^ 2 + normSq (wedge a b) = normSq a * normSq b := by
@@ -99,18 +79,11 @@ noncomputable def sin_between (a b : G2) : ℝ := magnitude (wedge a b) / (magni
 theorem cos_sq_add_sin_sq {a b : G2} (ha_isv : IsVector a) (hb_isv : IsVector b)
     (ha : normSq a ≠ 0) (hb : normSq b ≠ 0) :
     cos_between a b ^ 2 + sin_between a b ^ 2 = 1 := by
-  rw [eq_vec_of_isVector ha_isv, eq_vec_of_isVector hb_isv]
-  have ha' : normSq (vec a.c1 a.c2) ≠ 0 := by rw [← eq_vec_of_isVector ha_isv]; exact ha
-  have hb' : normSq (vec b.c1 b.c2) ≠ 0 := by rw [← eq_vec_of_isVector hb_isv]; exact hb
-  have hna : (0 : ℝ) ≤ normSq (vec a.c1 a.c2) := by rw [normSq_vec]; positivity
-  have hnb : (0 : ℝ) ≤ normSq (vec b.c1 b.c2) := by rw [normSq_vec]; positivity
-  have hnw : (0 : ℝ) ≤ normSq (wedge (vec a.c1 a.c2) (vec b.c1 b.c2)) := by
-    rw [normSq_wedge_vec]; positivity
-  have hla := lagrange_property_coord a.c1 a.c2 b.c1 b.c2
-  simp only [cos_between, sin_between, magnitude, div_pow, mul_pow, Real.sq_sqrt hna,
-             Real.sq_sqrt hnb, Real.sq_sqrt hnw]
+  have hla := lagrange_property ha_isv hb_isv
+  simp only [cos_between, sin_between, magnitude, div_pow, mul_pow, Real.sq_sqrt (normSq_nonneg a),
+             Real.sq_sqrt (normSq_nonneg b), Real.sq_sqrt (normSq_nonneg (wedge a b))]
   rw [← add_div, hla]
-  exact div_self (mul_ne_zero ha' hb')
+  exact div_self (mul_ne_zero ha hb)
 
 /-- **A rotation preserves the cosine of the angle** (2D): `cos(R u R⁻¹, R v R⁻¹) = cos(u, v)` for an
     even versor `R` with `|R|² ≠ 0` and ANY `u`, `v` (meaningful for vectors). -/

@@ -12,6 +12,15 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`MultiVectorBase.symbolically_equal(other, *, subs=None)`** — the one public home of symbolic value
+  equality (`simplify(a − b) == 0` blade by blade, delegating to the same per-coefficient rule as `==`;
+  representation-agnostic; `subs` feeds sympy a relation such as `{s**2: 1 - c**2}` before simplifying).
+  Replaces the hand-rolled test helpers. Additive. `gacalc.base.SymbolicSubstitution` is its mapping type.
+- **Versor extraction: `angle()`, `conjugate()`, and a base-class `plane_of_rotation()`** — for a
+  scalar + bivector versor `R = r (cos θ + I sin θ)`: `r = R.magnitude()`, `I = R.plane_of_rotation()`
+  (now also on `G`/`Gn`, not only the generated `Versor`), `θ = R.angle() = atan2(|⟨R⟩₂|, ⟨R⟩₀)` (the
+  angle between the two vectors whose product `R` is; the sandwich rotates by `2θ`), `R̄ = R.conjugate()`
+  (= `reverse` for such a versor). `angle`/`conjugate` raise `ValueError` on other grades. Additive.
 - **`MultiVectorBase.rotor_from_vectors(from, to)`** — the `versor_from_vectors` versor normalized to unit
   magnitude: a true *rotor*, applied with the textbook reverse sandwich `R v R.reverse()`. Equal to the
   versor's inverse sandwich and to `projection_rotation` (machine-checked in
@@ -61,7 +70,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   the versor's magnitude; 2D: the from-vectors rotor of two unit directions is the half-angle `rotor θ`). New
   `PlaneRotation3D.lean`: the 3D half-angle rotor `planeRotor θ i` of a unit bivector is a rotor and
   `R v R̃ = v⊥ + cos θ·v∥ + sin θ·(v ⌋ i)` — what `plane_rotation`/`bivector_rotation` compute, proven for a
-  general plane (previously only `e₁₂` in 𝒢₂). No Python name changed.
+  general plane (previously only `e₁₂` in 𝒢₂). The object `√` lemmas (`normSq_nonneg`,
+  `magnitude_sq_eq_normSq`, …) now live in `G2.lean`/`G3.lean`; `ProjectionRotation2D.lean`, the
+  carries-from-to theorems, `cos_sq_add_sin_sq` and the Lagrange area form are getter-native with their
+  coordinate scaffolds removed (`lagrange_property_coord`, `sandwich_ahat_coord`, … are gone). No Python
+  name changed.
 
 ### Fixed
 - **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)

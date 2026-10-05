@@ -12,7 +12,7 @@ import GacalcProofs.Rotation2D
     (the inverse sandwich `R v R⁻¹` of the un-normalized `R = b·a + |a||b|`), it carries `a` to `b`, and
     it is an isometry. This module proves **the same chain for rotors with the reverse sandwich
     `R v R̃`** — without re-proving anything about projections. The whole thing rests on one algebraic
-    bridge (`rotorSandwich_normalize`):
+    bridge (`rotorSandwich_normalize`; the `√` facts `normSq_nonneg`/`magnitude_sq_eq_normSq` live in `G2.lean`/`G3.lean`):
 
         (R/|R|) v (R/|R|)~  =  R v R̃ / |R|²  =  R v R⁻¹        for every R,
 
@@ -26,24 +26,6 @@ import GacalcProofs.Rotation2D
 namespace GacalcProofs
 
 namespace G2
-
-/-! ### `normSq` is a sum of squares, so `|R| = √(normSq R)` is a genuine magnitude -/
-
-/-- `normSq a = Σ (component)²` — the scalar part of `a ã` is positive-definite (every blade's reverse
-    sign cancels its square's sign). -/
-theorem normSq_eq_sum_sq (a : G2) : normSq a = a.s ^ 2 + a.c1 ^ 2 + a.c2 ^ 2 + a.c12 ^ 2 := by
-  simp only [normSq, mul, reverse]; ring
-
-theorem normSq_nonneg (a : G2) : 0 ≤ normSq a := by
-  rw [normSq_eq_sum_sq]; positivity
-
-/-- `|a|² = normSq a` for ANY multivector — the one `√` fact this module needs. -/
-theorem magnitude_sq_eq_normSq (a : G2) : magnitude a ^ 2 = normSq a := by
-  simp only [magnitude]; exact Real.sq_sqrt (normSq_nonneg a)
-
-theorem magnitude_ne_zero_of_normSq_ne_zero {a : G2} (h : normSq a ≠ 0) : magnitude a ≠ 0 := by
-  simp only [magnitude]
-  exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne (normSq_nonneg a) (Ne.symm h))
 
 /-! ### `normalize` for any multivector, and normalizing a versor gives a rotor -/
 
@@ -146,7 +128,7 @@ theorem rotorSandwich_rotorFromVectors_carries_from_to {a b : G2} (ha : IsVector
 
 /-! ### Lagrange: the from-vectors versor's magnitude in closed form -/
 
-/-- **`|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`** — by Lagrange's identity
+/-- **`|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`** — by Lagrange's identity (reference: `Lagrange.lean`)
     `(a·b)² + |a∧b|² = |a|²|b|²` (`Trig.lagrange_property`, a `ring` identity in coordinates): the
     versor is `(|a||b| + a·b) + b∧a`, so its squared magnitude is `(|a||b| + a·b)² + |a∧b|²`, and
     Lagrange collapses `(a·b)² + |a∧b|²` to `|a|²|b|²`. Hence the versor vanishes exactly when `a` and
@@ -176,24 +158,6 @@ theorem normSq_versorFromVectors_ne_zero {a b : G2} (ha : IsVector a) (hb : IsVe
 end G2
 
 namespace G3
-
-/-! ### `normSq` is a sum of squares, so `|R| = √(normSq R)` is a genuine magnitude -/
-
-/-- `normSq a = Σ (component)²` — the scalar part of `a ã` is positive-definite (every blade's reverse
-    sign cancels its square's sign). -/
-theorem normSq_eq_sum_sq (a : G3) : normSq a = a.s ^ 2 + a.c1 ^ 2 + a.c2 ^ 2 + a.c3 ^ 2 + a.c12 ^ 2 + a.c13 ^ 2 + a.c23 ^ 2 + a.c123 ^ 2 := by
-  simp only [normSq, mul, reverse]; ring
-
-theorem normSq_nonneg (a : G3) : 0 ≤ normSq a := by
-  rw [normSq_eq_sum_sq]; positivity
-
-/-- `|a|² = normSq a` for ANY multivector — the one `√` fact this module needs. -/
-theorem magnitude_sq_eq_normSq (a : G3) : magnitude a ^ 2 = normSq a := by
-  simp only [magnitude]; exact Real.sq_sqrt (normSq_nonneg a)
-
-theorem magnitude_ne_zero_of_normSq_ne_zero {a : G3} (h : normSq a ≠ 0) : magnitude a ≠ 0 := by
-  simp only [magnitude]
-  exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne (normSq_nonneg a) (Ne.symm h))
 
 /-! ### `normalize` for any multivector, and normalizing a versor gives a rotor -/
 
@@ -297,7 +261,7 @@ theorem rotorSandwich_rotorFromVectors_carries_from_to {a b : G3} (ha : IsVector
 
 /-! ### Lagrange: the from-vectors versor's magnitude in closed form -/
 
-/-- **`|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`** — by Lagrange's identity
+/-- **`|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`** — by Lagrange's identity (reference: `Lagrange.lean`)
     `(a·b)² + |a∧b|² = |a|²|b|²` (`Trig.lagrange_property`, a `ring` identity in coordinates): the
     versor is `(|a||b| + a·b) + b∧a`, so its squared magnitude is `(|a||b| + a·b)² + |a∧b|²`, and
     Lagrange collapses `(a·b)² + |a∧b|²` to `|a|²|b|²`. Hence the versor vanishes exactly when `a` and

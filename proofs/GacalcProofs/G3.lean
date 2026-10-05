@@ -320,6 +320,22 @@ noncomputable def normSq (a : G3) : ℝ := (mul a (reverse a)).s
 /-- The **magnitude** `|A| = √⟨A Ã⟩` (Hestenes p.13 eq 1.49, gacalc `magnitude`), for all grades. -/
 noncomputable def magnitude (a : G3) : ℝ := Real.sqrt (normSq a)
 
+/-- `normSq a = Σ (component)²` — the scalar part of `a ã` is positive-definite (every blade's reverse
+    sign cancels its square's sign). -/
+theorem normSq_eq_sum_sq (a : G3) : normSq a = a.s ^ 2 + a.c1 ^ 2 + a.c2 ^ 2 + a.c3 ^ 2 + a.c12 ^ 2 + a.c13 ^ 2 + a.c23 ^ 2 + a.c123 ^ 2 := by
+  simp only [normSq, mul, reverse]; ring
+
+theorem normSq_nonneg (a : G3) : 0 ≤ normSq a := by
+  rw [normSq_eq_sum_sq]; positivity
+
+/-- `|a|² = normSq a` for ANY multivector — the one `√` fact the magnitude tier needs. -/
+theorem magnitude_sq_eq_normSq (a : G3) : magnitude a ^ 2 = normSq a := by
+  simp only [magnitude]; exact Real.sq_sqrt (normSq_nonneg a)
+
+theorem magnitude_ne_zero_of_normSq_ne_zero {a : G3} (h : normSq a ≠ 0) : magnitude a ≠ 0 := by
+  simp only [magnitude]
+  exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne (normSq_nonneg a) (Ne.symm h))
+
 /-- **Leaf:** `|a|² = a₁² + a₂² + a₃²` on a coordinate vector. -/
 theorem normSq_vec (a1 a2 a3 : ℝ) : normSq (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
   simp only [normSq, mul, reverse, vec]; ring

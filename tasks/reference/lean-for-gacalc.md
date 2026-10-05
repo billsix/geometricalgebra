@@ -151,7 +151,7 @@ reuse story end to end:
 
 - `import Mathlib` + `lake exe cache get` works; after the one-time download, rebuilding a proof file
   that imports all of Mathlib took **3.1s** (`✔ Built Mathspike`, `Build completed successfully`).
-- **The 2D Lagrange identity** `(a₁²+a₂²)(b₁²+b₂²) = (a₁b₁+a₂b₂)² + (a₁b₂−a₂b₁)²` is proved outright
+- **The 2D Lagrange identity (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>)** `(a₁²+a₂²)(b₁²+b₂²) = (a₁b₁+a₂b₂)² + (a₁b₂−a₂b₁)²` is proved outright
   by Mathlib's **`ring`** tactic — this is gacalc's first real target, done in one line.
 - **The dot product is proved, not assumed.** `#print axioms real_inner_comm` (symmetry of the dot
   product on `EuclideanSpace ℝ (Fin n)`, arbitrary dimension) reported only

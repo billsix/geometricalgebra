@@ -28,8 +28,7 @@ theorem area_sq_vec {a b : G3} (ha : IsVector a) (hb : IsVector b) :
 /-- **Lagrange form of the area:** `|a∧b|² = |a|²|b|² − (a·b)²` (rearranged `lagrange_property`). -/
 theorem normSq_wedge_eq_lagrange {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     normSq (wedge a b) = normSq a * normSq b - dot a b ^ 2 := by
-  have h := lagrange_property_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
-  rw [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
+  have h := lagrange_property ha hb
   linarith
 
 /-- The **volume** of the parallelepiped on `a,b,c` = `|a ∧ b ∧ c|` (gacalc `measure.volume`). -/

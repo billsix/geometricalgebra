@@ -34,7 +34,7 @@ import gacalc.g1 as g1
 import gacalc.g2 as g2
 import gacalc.g3 as g3
 import gacalc.gn as gn
-from gacalc.base import BladeCoef, MultiVectorBase
+from gacalc.base import MultiVectorBase
 from gacalc.gn import Gn
 from gacalc.transforms import projection_rotation
 
@@ -387,22 +387,6 @@ def test_symbolic_product_matches_gn() -> None:
 # pure rotation.)
 
 
-def simplify_equal(a: MultiVectorBase, b: MultiVectorBase) -> bool:
-    """True iff a and b are equal after simplifying each blade's difference.
-
-    Needed where the values carry ``sqrt`` magnitudes: ``Gn.__eq__`` compares
-    eager-simplified forms for identity, which can differ for equal expressions;
-    simplifying the *difference* to 0 is the reliable check.
-    """
-    da: BladeCoef
-    db: BladeCoef
-    da, db = a.to_blade_dict(), b.to_blade_dict()
-    return all(
-        sympy.simplify(sympy.sympify(da.get(k, 0)) - sympy.sympify(db.get(k, 0))) == 0
-        for k in set(da) | set(db)
-    )
-
-
 def test_versor_sandwich_equals_rotate_symbolic_2d() -> None:
     # general symbolic vectors -- a real symbolic proof, not just sample points
     a1: sympy.Symbol
@@ -418,8 +402,8 @@ def test_versor_sandwich_equals_rotate_symbolic_2d() -> None:
     to: Gn = b1 * gn.e_1 + b2 * gn.e_2
     w: Gn = w1 * gn.e_1 + w2 * gn.e_2
     r: MultiVectorBase = Gn.versor_from_vectors(from_vector=frm, to_vector=to)
-    assert simplify_equal(
-        r * w * r.inverse(), projection_rotation(from_vector=frm, to_vector=to)(w)
+    assert (r * w * r.inverse()).symbolically_equal(
+        projection_rotation(from_vector=frm, to_vector=to)(w)
     )
 
 
@@ -430,8 +414,8 @@ def test_versor_sandwich_equals_rotate_3d() -> None:
     to: Gn = 4 * gn.e_1 + 5 * gn.e_2 + 6 * gn.e_3
     w: Gn = 7 * gn.e_1 + 1 * gn.e_2 + 2 * gn.e_3  # in-plane and perpendicular parts
     r: MultiVectorBase = Gn.versor_from_vectors(from_vector=frm, to_vector=to)
-    assert simplify_equal(
-        r * w * r.inverse(), projection_rotation(from_vector=frm, to_vector=to)(w)
+    assert (r * w * r.inverse()).symbolically_equal(
+        projection_rotation(from_vector=frm, to_vector=to)(w)
     )
 
 

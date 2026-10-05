@@ -1,22 +1,15 @@
-# Copyright (c) 2018-2026 William Emerison Six
+# Copyright (c) 2025-2026 William Emerison Six
+# SPDX-License-Identifier: LGPL-2.1-only
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
+# This library is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License, version
+# 2.1, as published by the Free Software Foundation.
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# This library is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License (the LICENSE file in this repository)
+# for more details.
 
 """``rotor_from_vectors`` -- the versor of ``versor_from_vectors``, normalized -- is a
 unit rotor, and its REVERSE sandwich ``R̂ v R̂~`` is the versor's INVERSE sandwich
@@ -24,7 +17,7 @@ unit rotor, and its REVERSE sandwich ``R̂ v R̂~`` is the versor's INVERSE sand
 ``proofs/GacalcProofs/Rotor.lean``, proven *symbolically* with sympy where it can be.
 
 The piece that needs Lagrange: ``normalize`` divides by ``sqrt(|R|²)`` with ``|R|²``
-the raw polynomial ``(|a||b| + a·b)² + |a∧b|²``.  Lagrange's identity
+the raw polynomial ``(|a||b| + a·b)² + |a∧b|²``.  Lagrange's identity (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>)
 ``(a·b)² + |a∧b|² = |a|²|b|²`` collapses it to ``2|a||b|(|a||b| + a·b)``, and for unit
 vectors at angle θ that is ``2 + 2cos θ = 4cos²(θ/2)`` -- which is how the normalized
 versor turns out to be the half-angle rotor ``cos(θ/2) - sin(θ/2)·i``.  Parametrizing by
@@ -32,36 +25,14 @@ versor turns out to be the half-angle rotor ``cos(θ/2) - sin(θ/2)·i``.  Param
 """
 
 import math
-from collections.abc import Mapping
 
 import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
-from gacalc.base import BladeCoef, Coef, MultiVectorBase
+from gacalc.base import Coef, MultiVectorBase, SymbolicSubstitution
 from gacalc.functions import InvertibleFunction
 from gacalc.transforms import plane_rotation, projection_rotation
-
-Substitution = Mapping[sympy.Basic | complex, sympy.Expr | complex]
-
-
-def _simplify_equal(
-    a: MultiVectorBase,
-    b: MultiVectorBase,
-    subs: Substitution | None = None,
-) -> bool:
-    """Blade-wise ``simplify(a_k - b_k) == 0``, after an optional substitution
-    (used to feed sympy the ``s² = 1 - c²`` relation it cannot discover itself)."""
-    da: BladeCoef = a.to_blade_dict()
-    db: BladeCoef = b.to_blade_dict()
-    key: tuple[int, ...]
-    for key in set(da) | set(db):
-        diff: sympy.Expr = sympy.sympify(da.get(key, 0)) - sympy.sympify(db.get(key, 0))
-        if subs is not None:
-            diff = diff.subs(subs)
-        if sympy.simplify(diff) != 0:
-            return False
-    return True
 
 
 def _lagrange_closed_form(a: MultiVectorBase, b: MultiVectorBase) -> Coef:
@@ -117,8 +88,8 @@ def test_rotor_from_vectors_is_a_unit_versor_2d_symbolic() -> None:
     rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=a, to_vector=b)
     assert type(rhat) is g2.Versor  # the generated narrowing: a Versor of this algebra
     assert sympy.simplify(sympy.sympify(rhat.magnitude_squared()) - 1) == 0
-    assert _simplify_equal(
-        rhat * rhat.reverse(), g2.Versor(coeff_scalar=1, coeff_e_12=0)
+    assert (rhat * rhat.reverse()).symbolically_equal(
+        g2.Versor(coeff_scalar=1, coeff_e_12=0)
     )  # R̂ R̂~ = 1: the inverse IS the reverse
 
 
@@ -134,10 +105,10 @@ def test_rotor_reverse_sandwich_is_versor_inverse_sandwich_2d_symbolic() -> None
     r: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=a, to_vector=b)
     rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=a, to_vector=b)
     rotor_sandwich: MultiVectorBase = rhat * v * rhat.reverse()
-    assert _simplify_equal(rotor_sandwich, r * v * r.inverse())
-    assert _simplify_equal(rotor_sandwich, rhat.sandwich(v))
-    assert _simplify_equal(
-        rotor_sandwich, projection_rotation(from_vector=a, to_vector=b)(v)
+    assert rotor_sandwich.symbolically_equal(r * v * r.inverse())
+    assert rotor_sandwich.symbolically_equal(rhat.sandwich(v))
+    assert rotor_sandwich.symbolically_equal(
+        projection_rotation(from_vector=a, to_vector=b)(v)
     )
 
 
@@ -151,13 +122,13 @@ def test_rotor_reverse_sandwich_is_versor_inverse_sandwich_3d() -> None:
     assert type(rhat) is g3.Versor
     assert sympy.simplify(sympy.sympify(rhat.magnitude_squared()) - 1) == 0
     rotor_sandwich: MultiVectorBase = rhat * v * rhat.reverse()
-    assert _simplify_equal(rotor_sandwich, r * v * r.inverse())
-    assert _simplify_equal(
-        rotor_sandwich, projection_rotation(from_vector=a, to_vector=b)(v)
+    assert rotor_sandwich.symbolically_equal(r * v * r.inverse())
+    assert rotor_sandwich.symbolically_equal(
+        projection_rotation(from_vector=a, to_vector=b)(v)
     )
     # carries a to b, scaled to |a|: R̂ a R̂~ = (|a|/|b|) b
-    assert _simplify_equal(
-        rhat * a * rhat.reverse(), (a.magnitude() / b.magnitude()) * b
+    assert (rhat * a * rhat.reverse()).symbolically_equal(
+        (a.magnitude() / b.magnitude()) * b
     )
 
 
@@ -172,20 +143,20 @@ def test_rotor_from_unit_vectors_is_the_half_angle_rotor_symbolic() -> None:
     c: sympy.Symbol
     s: sympy.Symbol
     c, s = sympy.symbols("c s", real=True, positive=True)
-    pythagoras: Substitution = {s**2: 1 - c**2}
+    pythagoras: SymbolicSubstitution = {s**2: 1 - c**2}
     a: g2.Vector = 1 * g2.Vector.e_1
     b: g2.Vector = (2 * c**2 - 1) * g2.Vector.e_1 + (2 * s * c) * g2.Vector.e_2
     r: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=a, to_vector=b)
     # |b| arrives as sqrt(4c²s² + (2c² − 1)²); it is 1 only once sympy knows
     # s² = 1 − c²
-    assert _simplify_equal(
-        r, g2.Versor(coeff_scalar=2 * c**2, coeff_e_12=-2 * s * c), subs=pythagoras
+    assert r.symbolically_equal(
+        g2.Versor(coeff_scalar=2 * c**2, coeff_e_12=-2 * s * c), subs=pythagoras
     )
     r_norm_sq: sympy.Expr = sympy.sympify(r.magnitude_squared()).subs(pythagoras)
     assert sympy.simplify(r_norm_sq - 4 * c**2) == 0
     rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=a, to_vector=b)
     half_angle_rotor: g2.Versor = g2.Versor(coeff_scalar=c, coeff_e_12=-s)
-    assert _simplify_equal(rhat, half_angle_rotor, subs=pythagoras)
+    assert rhat.symbolically_equal(half_angle_rotor, subs=pythagoras)
 
 
 def test_rotor_from_unit_vectors_matches_plane_rotation_numerically() -> None:

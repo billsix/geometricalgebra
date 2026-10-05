@@ -93,7 +93,8 @@ applies to a rotor unchanged via `normSq_ne_zero_of_isRotor`, and transfers to t
 `Rotor.isRotor_rotorFromVectors`. **The rotor chain (`Rotor.lean`, 2026-10-05):** rather than re-prove the
 projection-rotation story for rotors, `rotorFromVectors a b := normalize (versorFromVectors a b)` and ONE
 algebraic bridge `rotorSandwich_normalize : (R/|R|) v (R/|R|)~ = R v R⁻¹` (every `R`; the single `√` fact is
-`magnitude_sq_eq_normSq`, from `normSq_eq_sum_sq`/`normSq_nonneg`) transfer every versor theorem to the
+`magnitude_sq_eq_normSq`, from `normSq_eq_sum_sq`/`normSq_nonneg` — in `G2.lean`/`G3.lean` since 2026-10-05, so the
+whole magnitude tier can use them) transfer every versor theorem to the
 reverse-sandwich form by one `rw`: `rotorSandwich_rotorFromVectors_eq_projRotation`, `_carries_from_to`,
 `rotorSandwich_preserves_dot/normSq/magnitude`. **Lagrange** (`normSq_versorFromVectors`:
 `|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`) turns the chain's `normSq R ≠ 0` guard into "nonzero and
@@ -390,7 +391,7 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 
 ## Inventory (files in `proofs/GacalcProofs/`)
 
-- `Lagrange.lean` — Lagrange identity 2D/3D (`|a|²|b|² = (a·b)² + |a∧b|²`).
+- `Lagrange.lean` — Lagrange identity 2D/3D (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) (`|a|²|b|² = (a·b)² + |a∧b|²`).
 - `G2.lean` / `G3.lean` — the algebras: product/wedge/reverse, basis elements, multiplication table,
   `I² = −1`, dot, dual, `I⁻¹`; `normSq`/`magnitude` (+ `normSq_vec`, and `normSq_wedge_vec` in `G3`);
   `G3` also the fundamental identity `ab = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`), `vec_mul_perp`, and the

@@ -86,32 +86,26 @@ and compare that: `mv.scalar_part() == 0` is fine, `mv == 0` is not.
   keeping: a structural fast path guarded only on *equality* still leaves the *inequality* case
   paying full symbolic price, which is the case a game actually hits every frame.
 
-## Test helpers that reuse the pattern (currently duplicated)
+## The public predicate: `MultiVectorBase.symbolically_equal` (2026-10-05)
 
-Tests compare multivectors **blade-dict-wise** with the same idiom, each rolled by hand:
-- `tests/test_conformance.py` › `_same_value(x, y)` — per-blade
-  `simplify(sympify(dx[k]) − sympify(dy[k])) == 0` over `to_blade_dict()`.
-- `tests/test_graded.py` › `simplify_equal(a, b)` — same, used where magnitudes are `sqrt(...)`
- , e.g. `test_versor_sandwich_equals_rotate_*`.
-- Inline one-offs: `scalar_eq()` in `tests/test_conformance.py`; the `content` assertions in
-  `tests/test_measure.py` › `test_content_two_ways_both_give_the_determinant_symbolic`.
-
-There is **no public `MultiVectorBase.symbolically_equal` method** — the `simplify(a−b)==0` logic is
-re-implemented ad hoc in each test helper. That duplication is the actionable gap (see follow-on).
-
-**What changed 2026-09-09:** the per-*coefficient* half of that logic is no longer duplicated — it is
-`base._coef_eq`, one hand-written function the generated `__eq__` calls from both of its paths. The
-test helpers above still roll their own, and they compare whole multivectors blade-dict-wise rather
-than coefficient-wise, so the gap is unchanged in substance; but a consolidated public predicate now
-has an obvious implementation to delegate to (`_coef_eq` per blade over the key union) instead of
-re-deriving the rule. That is a fact for the follow-on task to use, not a decision it forecloses.
+The `simplify(a − b) == 0` idiom has one home: `a.symbolically_equal(b, subs=None)` in `src/gacalc/base.py`
+(`tasks/archive/2026/10/05/consolidate-symbolic-equality-predicate.md`). Blade-dict-wise over the union of
+present blades, so it is representation-agnostic (`Gn` vs `g2`/`g3`); per blade it delegates to `_coef_eq`
+(the same rule the generated `__eq__` uses: exact for plain numbers, `simplify`-backed only when a side is
+symbolic), and with `subs` it applies the substitution to each blade's *difference* before `simplify` (the
+"Square roots" recipe below). It returns a plain `bool` and is **conservative**: `False` means "not proven
+equal" (decided 2026-10-05: public method, plain `bool` — no separate "undecided" signal). Tests use it
+directly; the former hand-rolled copies (`_same_value` in `test_conformance.py`, `simplify_equal` in
+`test_graded.py`, `_simplify_equal` in `test_rotor_from_vectors.py`) are gone. Scalar-level one-offs
+(`scalar_eq` in `test_conformance.py`, the `content` assertions in `test_measure.py`) compare `Coef`s, not
+multivectors, and stay as `simplify(...) == 0`. Pinned by `tests/test_symbolic_equality.py`.
 
 ## Square roots: hand sympy the relation it cannot find (Lagrange / Pythagoras) (2026-10-05)
 
 `simplify(a − b) == 0` stalls when the two sides hide the same square root in different shapes.
 `versor_from_vectors(a, b).normalize()` divides by `sqrt(|R|²)` with `|R|²` the raw polynomial
 `(|a||b| + a·b)² + |a∧b|²`; proving the result is the half-angle rotor `cos(θ/2) − sin(θ/2)·i` needs two
-relations sympy does not discover: Lagrange's `(a·b)² + |a∧b|² = |a|²|b|²` (collapsing `|R|²` to
+relations sympy does not discover: Lagrange's (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) `(a·b)² + |a∧b|² = |a|²|b|²` (collapsing `|R|²` to
 `2|a||b|(|a||b| + a·b)`) and the half-angle identity. The pattern that works, from
 `tests/test_rotor_from_vectors.py`:
 
@@ -133,7 +127,7 @@ The Lean twin needs none of this: `Rotor.lean` proves the same chain structurall
 
 ## Follow-on
 
-`tasks/consolidate-symbolic-equality-predicate.md` — consolidate `_same_value`/`simplify_equal` into a
+`tasks/archive/2026/10/05/consolidate-symbolic-equality-predicate.md` (done 2026-10-05) — consolidate `_same_value`/`simplify_equal` into a
 single public predicate and expand the symbolic tests. (Blocked on a small API decision — see that task.)
 
 ## Cross-links

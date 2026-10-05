@@ -235,3 +235,7 @@ Preserved so nothing is lost in the synthesis above. Lightly numbered for refere
 25. At some point, mention about how we're not iterating over much, unlike plotting.
     Mention about how we show theta, but we don't really need to calculate it, it's a
     property, not something to solve for.
+    Library note (2026-10-05): the API now *does* compute it — `R.angle()`, with `R.magnitude()`
+    and `R.plane_of_rotation()` as `r` and `I` (the maintainer's decision for
+    `tasks/archive/2026/10/05/rotor-extract-r-i-theta-a-b.md`). The book's presentation stance above is
+    unchanged.

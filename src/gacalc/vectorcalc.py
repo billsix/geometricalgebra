@@ -37,7 +37,9 @@ def cross(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
     The wedge ``a ∧ b`` is the oriented parallelogram on ``a`` and ``b``; its
     dual (multiplication by the inverse unit pseudoscalar, :meth:`dual
     <gacalc.base.MultiVectorBase.dual>`) is the **vector** perpendicular to that
-    plane, with magnitude ``|a||b| sin θ`` -- the right-hand-rule cross product
+    plane, with magnitude ``|a||b| sin θ`` (Lagrange's identity,
+    <https://en.wikipedia.org/wiki/Lagrange%27s_identity>) -- the right-hand-rule cross
+    product
     (sign pinned by ``tests/test_vectorcalc.py``):
 
     >>> from gacalc.g3 import e_1, e_2, e_3

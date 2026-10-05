@@ -494,7 +494,9 @@ a.inner_product(b)
 a ^ b
 
 # %% [markdown]
-# **The Lagrange step.** Distributing $|a|^2|b|^2(\cos^2\theta + \sin^2\theta)$
+# **The Lagrange step** (Lagrange's identity,
+# <https://en.wikipedia.org/wiki/Lagrange%27s_identity>). Distributing
+# $|a|^2|b|^2(\cos^2\theta + \sin^2\theta)$
 # into $(a\cdot b)^2 + |a\wedge b|^2$ gives
 #
 # $$|a|^2|b|^2 - (a\cdot b)^2 = |a\wedge b|^2 .$$
