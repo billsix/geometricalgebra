@@ -21,17 +21,19 @@ the Python implementation.
     two-sided distributivity, identity, scalar laws, ⊥ vectors anticommute); `GradeProjection.lean`
     (`rVectorPart`/`evenPart`/`oddPart`, idempotent + complete); `Contractions.lean` (Taylor's left/right
     contraction, grade 0 included, vs Hestenes — 𝒢₃).
-  - *Angles and trig:* `Rotation2D.lean` (2D from sin/cos: the product enacts rotation, unit-vector
-    product = rotor of the angle, half-angle versor `R v R̃`); `Trig.lean` (`cos_between`/`sin_between`,
+  - *Angles and trig:* `Rotation2D.lean` (2D from sin/cos: the product enacts rotation one-sided by the
+    full-angle `fullAngleRotor`, unit-vector product = that rotor of the angle; the half-angle `rotor`
+    sandwich `R v R̃`, proven equal to the one-sided form and to gacalc's inverse sandwich); `Trig.lean` (`cos_between`/`sin_between`,
     `cos² + sin² = 1`, both preserved by the sandwich); `TrigEquiv.lean` (angle-form equivalences, signed
     sine in 2D); `StudentTrigForms.lean` (the student-facing cosine/sine corollaries of the dot/wedge facts).
   - *Versors and rotation:* `Versor2D.lean` / `Rotation3D.lean` (angle-free versor from two vectors:
     bisector `h`, `R = b·a + |a||b|`, `R·a = |a|·h`); `Sandwich.lean` (`inverse`, `sandwich`,
-    `IsEvenVersor`; `R R̃ = |R|²·1`; the reverse-sandwich scalings of dot/normSq/wedge for ANY multivector;
+    `IsEvenVersor` (even, any magnitude) and `IsRotor` (unit versor: `R⁻¹ = R̃`, so `sandwich R v = R v R̃`);
+    `R R̃ = |R|²·1`; the reverse-sandwich scalings of dot/normSq/wedge for ANY multivector;
     the sandwich is an isometry — dot, length, wedge, hence angles; carries `a` to `b`; fixes its own
     plane bivector and normal; rotations compose by multiplying versors; reverse is an anti-automorphism;
     blade inverses); `RotateComponents.lean` (the three matrix-free rotation goals for the a→b rotation);
-    `Exp.lean` (the closed-form bivector exponential is a unit even versor).
+    `Exp.lean` (the closed-form bivector exponential is a rotor, `IsRotor`).
   - *Projection, rejection, reflection:* `Projection2D.lean` / `Projection3D.lean` (Hestenes
     `proj`/`reject`/`project_onto` of a vector onto a vector or (3D) a bivector; rejection ⊥; the wedge
     sees only the rejection; `project + reject = id`; `proj_plane = project_onto`); `Reflect.lean`

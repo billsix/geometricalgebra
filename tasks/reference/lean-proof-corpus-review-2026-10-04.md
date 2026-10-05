@@ -116,7 +116,7 @@ also catch `native_decide`/`axiom` (none present today).
 | `cross`, `area`, `volume`, signed area/volume, `cosine`/`abs_sin`/`sine` | `Cross`, `Measures`, `Lagrange`, `Trig`, `TrigEquiv`, `StudentTrigForms` | **proven** (𝒢₃; Lagrange also 𝒢₂) |
 | `is_orthogonal_to`, `is_parallel_to` | `Predicates2D/3D` | proven / **half** (`a ∧ ka = 0` only; the converse "wedge zero ⇒ dependent" unstated) |
 | `exp` | `Exp.lean` closed form is a unit versor | **partial** (no series, no scalar or pseudoscalar case) |
-| `transforms.bivector_rotation`/`plane_rotation` (half-angle rotor) | `Rotation2D.sandwich_versor` | **𝒢₂, plane e₁₂ only**; no 𝒢₃ general-plane angle theorem; `at(t)` law unstated |
+| `transforms.bivector_rotation`/`plane_rotation` (half-angle rotor) | `Rotation2D.sandwich_rotor` | **𝒢₂, plane e₁₂ only**; no 𝒢₃ general-plane angle theorem; `at(t)` law unstated |
 | Hestenes `inner_product`/`dot`, `left_/right_contraction` (general grades) | vec·vec, vec·biv, scalar·vec cases only | **partial**; owned by `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` |
 | general `inverse`, `content`, `pseudoscalar_squared_sign(r)` general r | — | **none** (tasks exist) |
 | `gn.py`, `g1.py`, `frame.py`, `normalize` of non-vectors, `translate`/scales/`to_matrix`/`compose` | — | **none** (`Gn` is the oracle Lean was derived from, not a theorem) |

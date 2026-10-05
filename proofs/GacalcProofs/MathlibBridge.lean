@@ -18,7 +18,7 @@ import GacalcProofs.Rotation2D
         and the signed volume is `Matrix.det` of the three rows (`triple_product_eq_det`).
       * **rotation** — `toC` reads a pair as a complex number; `rot θ` is `Complex.orientation.rotation θ`
         (Mathlib's `Orientation.rotation` on the oriented plane ℂ), and so is the from-scratch 2D
-        versor sandwich `R v R̃` via `sandwich_versor`.
+        versor sandwich `R v R̃` via `sandwich_rotor`.
 
     The constructions stay standalone (decision 2026-09-28); Mathlib is mapped in only here. -/
 namespace GacalcProofs
@@ -163,15 +163,15 @@ theorem toC_rot_rot (θ φ : ℝ) (v : ℝ × ℝ) :
           (Complex.orientation.rotation (φ : Real.Angle) (toC v)) := by
   rw [toC_rot, toC_rot]
 
-/-- **The 2D versor sandwich IS Mathlib's rotation:** `R v R̃` for `R = versor θ`
+/-- **The 2D rotor sandwich IS Mathlib's rotation:** `R v R̃` for `R = rotor θ`
     (`cos(θ/2) − sin(θ/2)·e₁₂`), read as a complex number, is `Complex.orientation.rotation θ` of the
-    vector — the from-scratch rotor rotates by exactly the Mathlib angle `θ`. Via `sandwich_versor`
+    vector — the from-scratch rotor rotates by exactly the Mathlib angle `θ`. Via `sandwich_rotor`
     (`R v R̃ = rot θ v`) and `toC_rot`. -/
-theorem versor_sandwich_eq_rotation (θ x y : ℝ) :
-    (⟨(G2.mul (G2.mul (versor θ) (G2.vec x y)) (G2.reverse (versor θ))).c1,
-      (G2.mul (G2.mul (versor θ) (G2.vec x y)) (G2.reverse (versor θ))).c2⟩ : ℂ)
+theorem rotor_sandwich_eq_rotation (θ x y : ℝ) :
+    (⟨(G2.mul (G2.mul (rotor θ) (G2.vec x y)) (G2.reverse (rotor θ))).c1,
+      (G2.mul (G2.mul (rotor θ) (G2.vec x y)) (G2.reverse (rotor θ))).c2⟩ : ℂ)
       = Complex.orientation.rotation (θ : Real.Angle) ⟨x, y⟩ := by
-  rw [sandwich_versor]
+  rw [sandwich_rotor]
   exact toC_rot θ (x, y)
 
 end GacalcProofs

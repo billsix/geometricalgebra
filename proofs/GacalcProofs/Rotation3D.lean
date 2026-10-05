@@ -26,10 +26,10 @@ import GacalcProofs.G3
 
     The sandwich `R v R⁻¹` itself (record: `tasks/archive/2026/10/04/lean-proof-rotation-from-scratch.md`) —
     that it carries `a` to (a scalar multiple of) `b` and fixes the plane normal
-    `dual (a ∧ b)` — as the angle-free 3D analogue of the G2 `sandwich_versor`. The intended
+    `dual (a ∧ b)` — as the angle-free 3D analogue of the G2 `sandwich_rotor`. The intended
     finish reduces it to 2D via the plane `a (b − proj_a b) = a ∧ b` (from the proved
     `reject_perp` + `wedge_reject`): the orthogonal frame `{a, r}` normalizes to G2's
-    `{e₁, e₂, e₁₂}` table, so the sandwich is a corollary of the proved G2 `sandwich_versor`,
+    `{e₁, e₂, e₁₂}` table, so the sandwich is a corollary of the proved G2 `sandwich_rotor`,
     fixing the normal. The one new unlocking lemma is `a r = a ∧ r` for `a ⊥ r`.
 
     ## References (for when this is picked up again)

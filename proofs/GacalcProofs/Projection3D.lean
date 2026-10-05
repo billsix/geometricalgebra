@@ -13,7 +13,7 @@ import GacalcProofs.Sandwich
         vectors (`dual_wedge_perp_left_dot`/`_right`).
 
     Still to come: projection onto the plane `= (c·B)B⁻¹` (the Hestenes formula), then the
-    3D sandwich as a corollary of the G2 `sandwich_versor`. -/
+    3D sandwich as a corollary of the G2 `sandwich_rotor`. -/
 namespace GacalcProofs.G3
 
 /-- Vector projection of `b` onto `a`: `proj_a b = (b·a / a·a) · a`. Lies along `a`.

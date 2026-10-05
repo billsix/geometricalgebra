@@ -42,6 +42,14 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   division; a degenerate measure of 0 is meaningful). Mirrors the Lean proofs' nonzero hypothesis on
   the sine/cosine theorems (`proofs/GacalcProofs/StudentTrigForms.lean`).
 
+- **Lean proofs (not the Python API):** a rotor layer in `proofs/GacalcProofs/Sandwich.lean` — `IsRotor`
+  (unit even versor) with `R⁻¹ = R̃` and `sandwich R v = R v R̃` — and the 2D names aligned to the
+  vocabulary *versor = even, any magnitude; rotor = unit versor*: `Rotation2D.versor` → `rotor`
+  (`sandwich_versor` → `sandwich_rotor`, `versor_unit` → `rotor_unit`, `versor_mul` → `rotor_mul`,
+  `MathlibBridge.versor_sandwich_eq_rotation` → `rotor_sandwich_eq_rotation`), and the one-sided
+  full-angle `rotor` → `fullAngleRotor` (`vec_mul_rotor` → `vec_mul_fullAngleRotor`,
+  `rotorFromTo` → `fullAngleRotorFromTo`). No Python name changed.
+
 ### Fixed
 - **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)
   instead of `cos θ == 1`. The old test wrongly returned `False` for **anti-parallel** vectors (whose

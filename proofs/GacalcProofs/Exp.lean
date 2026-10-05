@@ -31,6 +31,11 @@ theorem normSq_expBivector (θ : ℝ) : normSq (expBivector θ) = 1 := by
   rw [expBivector_eq_evenVersor, normSq_evenVersor]
   exact Real.cos_sq_add_sin_sq θ
 
+/-- `exp(θ·e₁₂)` is a **rotor** (`IsRotor`: even and unit), so the reverse-form sandwich
+    `sandwich_eq_reverse_sandwich_of_isRotor` applies to it. -/
+theorem isRotor_expBivector (θ : ℝ) : IsRotor (expBivector θ) :=
+  ⟨by rw [expBivector_eq_evenVersor]; exact isEvenVersor_evenVersor _ _, normSq_expBivector θ⟩
+
 end G2
 
 namespace G3
@@ -48,6 +53,10 @@ theorem expBivector12_eq_evenVersor (θ : ℝ) :
 theorem normSq_expBivector12 (θ : ℝ) : normSq (expBivector12 θ) = 1 := by
   simp only [normSq, expBivector12, add, smul, one, e_12, mul, reverse]
   linear_combination Real.sin_sq_add_cos_sq θ
+
+/-- `exp(θ·e₁₂)` is a **rotor** (`IsRotor`: even and unit). -/
+theorem isRotor_expBivector12 (θ : ℝ) : IsRotor (expBivector12 θ) :=
+  ⟨by rw [expBivector12_eq_evenVersor]; exact isEvenVersor_evenVersor _ _ _ _, normSq_expBivector12 θ⟩
 
 /-- `exp B` for a **general** nonzero 𝒢₃ bivector `B = p·e₁₂ + q·e₁₃ + r·e₂₃`, by the closed form
     `cos|B|·1 + sin|B|·B̂` with `B̂ = B/|B|` and `|B| = √(p²+q²+r²)` — i.e. `cos|B|·1 + (sin|B|/|B|)·B`.
@@ -70,6 +79,12 @@ theorem normSq_expBivectorGeneral (p q r : ℝ) (h : p ^ 2 + q ^ 2 + r ^ 2 ≠ 0
   have hpyth : Real.sin m ^ 2 + Real.cos m ^ 2 = 1 := Real.sin_sq_add_cos_sq m
   field_simp
   nlinarith [hpyth, hm2, hmne]
+
+/-- **exp of a general bivector is a rotor** (`IsRotor`: even and unit) for `B ≠ 0`. -/
+theorem isRotor_expBivectorGeneral (p q r : ℝ) (h : p ^ 2 + q ^ 2 + r ^ 2 ≠ 0) :
+    IsRotor (expBivectorGeneral p q r) :=
+  ⟨by refine ⟨?_, ?_, ?_, ?_⟩ <;> simp only [expBivectorGeneral, add, smul, one, bivector, zero] <;> ring,
+   normSq_expBivectorGeneral p q r h⟩
 
 end G3
 
