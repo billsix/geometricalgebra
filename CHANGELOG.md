@@ -12,6 +12,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`MultiVectorBase.rotor_from_vectors(from, to)`** — the `versor_from_vectors` versor normalized to unit
+  magnitude: a true *rotor*, applied with the textbook reverse sandwich `R v R.reverse()`. Equal to the
+  versor's inverse sandwich and to `projection_rotation` (machine-checked in
+  `proofs/GacalcProofs/Rotor.lean`; sympy-checked in `tests/test_rotor_from_vectors.py`, using the Lagrange
+  closed form `|R|² = 2|a||b|(|a||b| + a·b)`). On `g2`/`g3` vectors it is typed `Versor`. Additive.
 - **`gacalc.standardposition`** (`project_sp`, `reject_sp`) — a pedagogical, "reduction to standard
   position" duplicate of `project`/`reject`: it rotates the target vector onto the `e_1` axis with
   elementary coordinate-plane rotations, keeps the x-component there (no geometric product), and

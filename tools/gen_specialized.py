@@ -1566,6 +1566,19 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Returns:\n"
         "    Versor: the versor taking ``from_vector`` toward ``to_vector``."
     ),
+    "vector|rotor_from_vectors": (
+        "The unit **rotor** that rotates ``a`` to ``b`` in the a-b plane (a\n"
+        "classmethod): ``versor_from_vectors`` normalized, so the textbook reverse\n"
+        "sandwich ``R v R.reverse()`` rotates with no division (the inverse of a\n"
+        "rotor is its reverse).\n"
+        "\n"
+        "Args:\n"
+        "    from_vector: the vector to rotate from.\n"
+        "    to_vector: the vector to rotate toward.\n"
+        "\n"
+        "Returns:\n"
+        "    Versor: the unit rotor taking ``from_vector`` toward ``to_vector``."
+    ),
     "vector|cross": (
         "Cross product (𝒢₃ only)  a × b = (a ∧ b) I₃⁻¹ -- the vector dual of the\n"
         "wedge, right-handed:  e₁ × e₂ = e₃.\n"
@@ -5494,6 +5507,13 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             extras.extend(
                 inherited_classmethod_narrowing(
                     "versor_from_vectors", ["from_vector", "to_vector"], "Versor"
+                )
+            )
+            # rotor_from_vectors(from, to) -> Versor too: the normalized versor is
+            # still an even element of this algebra (unit, but no narrower type).
+            extras.extend(
+                inherited_classmethod_narrowing(
+                    "rotor_from_vectors", ["from_vector", "to_vector"], "Versor"
                 )
             )
         if n == 2:

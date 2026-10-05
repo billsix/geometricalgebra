@@ -1817,6 +1817,51 @@ class MultiVectorBase(abc.ABC):
         return product + type(product).from_coef(scale)
 
     @classmethod
+    def rotor_from_vectors(
+        cls,
+        from_vector: MultiVectorBase,
+        to_vector: MultiVectorBase,
+    ) -> MultiVectorBase:
+        r"""The **rotor** taking ``from_vector`` toward ``to_vector``: the versor of
+        :meth:`versor_from_vectors`, normalized to unit magnitude, ``R̂ = R / |R|``.
+
+        gacalc's vocabulary: a *versor* is even of any magnitude (``R v R.inverse()``
+        rotates); a *rotor* is a unit versor, for which the inverse is the reverse, so
+        the textbook sandwich ``R̂ v R̂.reverse()`` rotates with no division.  The two
+        agree exactly -- ``(R/|R|) v (R/|R|)~  =  R v R~ / |R|²  =  R v R.inverse()`` --
+        machine-checked as ``rotorSandwich_normalize`` in
+        ``proofs/GacalcProofs/Rotor.lean``, which also proves the rotor sandwich equals
+        ``projection_rotation`` and carries ``from`` to ``to``.
+
+        The magnitude divided out has a closed form, by Lagrange's identity
+        ``(a·b)² + |a∧b|² = |a|²|b|²``::
+
+            |R|²  =  2 |a||b| ( |a||b| + a·b )
+
+        so ``R`` is zero exactly when ``a``, ``b`` are antiparallel (or one is
+        zero), and for unit ``a``, ``b`` at angle θ the rotor is the half-angle
+        ``cos(θ/2) - sin(θ/2)·i`` that ``transforms.plane_rotation`` builds
+        (``|R|² = 2 + 2cos θ = 4cos²(θ/2)``).  With symbolic inputs ``normalize``
+        leaves ``sqrt(|R|²)`` unevaluated; substitute this closed form to simplify
+        (see ``tests/test_rotor_from_vectors.py``).
+
+        Args:
+            from_vector: the vector the rotor rotates *from*.
+            to_vector: the vector the rotor rotates *toward*.
+
+        Returns:
+            MultiVectorBase: the unit rotor ``R̂``; apply it with ``R̂ v R̂.reverse()``
+            (or ``sandwich`` -- for a rotor the inverse is the reverse).
+
+        Raises:
+            AssertionError: if either argument is not a vector (grade 1).
+            ZeroDivisionError: if the vectors are antiparallel (the versor is zero).
+        """
+        return cls.versor_from_vectors(
+            from_vector=from_vector, to_vector=to_vector
+        ).normalize()
+
+    @classmethod
     def bivector_from_vectors(
         cls,
         a: MultiVectorBase,
