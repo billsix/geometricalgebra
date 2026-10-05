@@ -1,6 +1,6 @@
 # Extract r, I, θ (and a, b, conjugate) from a versor (Macdonald p85–86)
 
-**Status:** blocked
+**Status:** done 2026-10-05 for `r`, `I`, `θ`, conjugate (Q1 methods, Q2 yes — maintainer 2026-10-05); `a and b` and the Macdonald citation remain open, see the record; archived 2026-10-05
 **Priority:** 6
 **Difficulty:** 5
 **Started:** 2026-08-27 (William Emerison Six <billsix@gmail.com>) **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
@@ -63,3 +63,29 @@ implementations.
 3. **What is "a and b"** — recovering the two generating vectors `u, v` (not unique), or the even-part
    scalar/bivector components of the versor?
 4. **Citation** — which edition/page of Macdonald? The reference doc cites the *Survey*; you say p85/p86.
+
+## Decisions and work record (2026-10-05)
+
+- **Q1 → runtime methods** (the maintainer, 2026-10-05: "methods"); this supersedes `book-outline.md`
+  item 25's "θ is a property, not solved-for" stance for the library API (the book may still present it
+  that way). **Q2 → yes:** the methods take any scalar + bivector versor, normalized or not; `r` is the
+  magnitude and `θ` is read off the ratio, so scale is irrelevant.
+- **The methods** (`src/gacalc/base.py`, inherited by `Gn` and the generated algebras):
+  `R.magnitude()` is `r` (already existed; documented as such), `R.plane_of_rotation()` is `I` (new on
+  the base class — the normalized bivector part; the generated `Versor` keeps its `Bivector`-typed
+  override), `R.angle()` is `θ = atan2(|⟨R⟩₂|, ⟨R⟩₀) ∈ [0, π]` (the angle between the two vectors whose
+  product `R` is; the sandwich rotates by `2θ`, so `rotor_from_vectors(a, b).angle()` is half the a→b
+  angle), `R.conjugate()` is `r(cos θ − I sin θ)` = `reverse` for such a versor, kept as its own name for
+  the complex-number reading. `angle`/`conjugate` raise `ValueError` on any other grade (so the Clifford
+  conjugate / reverse distinction for odd elements never bites).
+- **`a and b` (Q3): not a method.** The generating vectors are not recoverable from `R`: every pair at
+  angle `θ` in the plane `I` with `|u||v| = r` gives the same `R`. The even-part reading of "a and b"
+  is already `R.scalar_part()` and `R.r_vector_part(2)`. If the maintainer meant something else, it is a
+  new ask.
+- **Citation (Q4): still the maintainer's.** The docstrings say "Macdonald" without a page; the reference
+  doc cites the *Survey*. Recording the edition/page of p85–86 is owed by the maintainer
+  (`finalize-exp-citation.md` is the same kind of gate).
+- Tests (`tests/test_versor_extraction.py`, 7): `u v` yields `θ = ∠(u, v)`, `r = |u||v|`, the plane;
+  reconstruction `R = r(cos θ + I sin θ)` numeric (3D) and symbolic (positive `c`, `s`); the half-angle
+  rotor's `angle()` is `φ/2`; conjugate = reverse with `R R̄ = |R|²`; `Gn`; the grade guard.
+- Docs: README, `CLAUDE.md`, `CHANGELOG` Added; `book-outline.md` item 25 annotated.
