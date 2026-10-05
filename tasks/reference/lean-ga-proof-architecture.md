@@ -266,6 +266,28 @@ leaves are stated on `wedge u v`, not a bivector-coordinate literal. This is the
   `mul_one`, `one_smul`, `mul_assoc`) **clashes with Mathlib's ℝ version** — fully-qualify the G3/G2 one
   (`GacalcProofs.G3.mul_smul`) in `rw` chains.
 
+### Transfer a whole proof chain by normalize + bridge + `rw` — don't duplicate it (2026-10-05)
+
+When a second formulation of an operation is "the first one, rescaled" (the rotor sandwich `R v R̃` vs the
+versor sandwich `R v R⁻¹`; a unit-ized object vs the raw one), do **not** re-prove the chain for the second
+form. Define the second object as the normalization of the first (`rotorFromVectors := normalize ∘
+versorFromVectors`), prove ONE algebraic bridge with no hypothesis (`rotorSandwich_normalize :
+(R/|R|) v (R/|R|)~ = R v R⁻¹` — six structural rewrites, the single `√` fact `magnitude_sq_eq_normSq`), and
+then every theorem of the first chain becomes a theorem of the second by `rw [bridge, old_theorem]`
+(`Rotor.lean`: `_eq_projRotation`, `_carries_from_to`, `_preserves_*`). The hypotheses carry over
+unchanged; a closed form for the normalizing scalar (Lagrange: `|versorFromVectors a b|² =
+2|a||b|(|a||b| + a·b)`) then turns the inherited `normSq R ≠ 0` guard into a geometric condition. Record:
+`tasks/archive/2026/10/05/lean-rotor-from-vectors-chain.md`.
+
+### State coordinate-level operations on the algebra struct, not on bare tuples (2026-10-05)
+
+`Rotation2D.rot` was first defined on `ℝ × ℝ`, so every theorem that landed in 𝒢₂ read
+`G2.vec (rot θ (x, y)).1 (rot θ (x, y)).2` — anonymous `.1`/`.2` the maintainer could not read. A "from
+scratch, before the algebra" definition does not need a tuple: `G2`/`G3` are coordinate structs, so define the
+operation on the struct's **named** components (`v.c1`, `v.c2`) and return a `G2.vec`; the theorems then take
+`{v} (hv : IsVector v)` like everything else, pair projections vanish, and the Mathlib bridge reads the named
+components (`toC v := ⟨v.c1, v.c2⟩`). Record: `tasks/archive/2026/10/05/lean-rot-on-g2-named-components.md`.
+
 ### Converting coordinate proofs to object/getter form — paths that DON'T work
 
 Lessons from the "geometric objects in, scalars in the body, geometric objects out" refactor (take

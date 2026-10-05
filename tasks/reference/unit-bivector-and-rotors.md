@@ -150,11 +150,11 @@ and in the relevant docstring, and flip its box to ✅.**
 > `tasks/reference/reduction-to-standard-position.md`). "Rotors = the general rotation" stays accurate —
 > it's just the product-based view, not the foundation.
 
-**Status: analysis + suggestion (2026-09-28, William Emerison Six <billsix@gmail.com>), pending the
-maintainer's naming decision (Q1 below).** Prompted by the maintainer noting that gacalc's sandwich
-uses `inverse`, not the textbook `reverse`, and that gacalc's rotors are not required to be unit —
-and asking whether that is wrong or misnamed. Short answer: **it is correct, not a bug**; the only
-open point is terminology.
+**Status: settled (vocabulary decided 2026-10-04/05; the Lean rotor chain and its Python mirror landed
+2026-10-05 — §7).** Prompted by the maintainer noting that gacalc's sandwich uses `inverse`, not the
+textbook `reverse`, and that gacalc's from-vectors "rotors" were not required to be unit — and asking
+whether that is wrong or misnamed. Short answer: **it is correct, not a bug**; the terminology was the
+only open point, and it is now fixed (below).
 
 ### The two sandwiches
 
@@ -187,20 +187,24 @@ right, more general formula; `R v R̃` is its special case at `|R| = 1`.
   `sandwich` always using inverse. (§3's "`R R̃ = 1`, `v ↦ R v R̃`" wording describes the *unit* path;
   it is not the definition the general `sandwich` uses. Worth reconciling if §3 is ever revised.)
 
-### Terminology: it is really a *versor* (the open question)
+### Terminology — decided: *versor* = even, any magnitude; *rotor* = unit versor
 
 In the GA literature a **versor** is any geometric product of non-null vectors; a **rotor** is the
-special case of an *even, unit* versor (`R R̃ = 1`). gacalc's `versor_from_vectors` output is an
-**un-normalized even versor**, so "rotor" is used loosely. Two coherent ways forward — **Q1, the
-maintainer's call:**
+special case of an *even, unit* versor (`R R̃ = 1`). The maintainer's decision (William Emerison Six
+<billsix@gmail.com>; Python rename 2026-09-28, `tasks/archive/2026/10/04/rename-rotor-to-versor.md`;
+Lean aligned 2026-10-05, `tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md`):
 
-  - **(a) Keep the name "rotor"** and just document the convention (un-normalized even versor;
-    rotation = the inverse sandwich; equals the textbook `R v R̃` when unit). Zero API churn.
-    *Recommended* — the code already reads this way and `sandwich` is already called "versor
-    conjugation."
-  - **(b) Rename to "versor"** (`versor_from_vectors`, `Versor_n`, …), reserving "rotor" for unit
-    ones. Precise, but a breaking API change across the generated types + `transforms`, and a
-    `CHANGELOG`/version bump.
+- **versor** — even, *any* magnitude. Python: class `Versor`, `versor_from_vectors` (the un-normalized
+  `b·a + |a||b|`), `versor_rotation` (its inverse sandwich `R v R⁻¹`). Lean: `IsEvenVersor`,
+  `versorFromVectors`, `sandwich`.
+- **rotor** — a *unit* versor, the object of the textbook reverse sandwich `R v R̃`. Python:
+  `rotor_from_vectors` (= the versor normalized), `_unit_bivector_rotor_factory`'s `rotor_for`
+  (the half-angle `cos(θ/2) − sin(θ/2)·i`), `B.exp()`. Lean: `IsRotor`, `rotorFromVectors`, the 2D
+  half-angle `Rotation2D.rotor θ`, `isRotor_expBivector*`.
+- **full-angle rotor** — the 2D-only one-sided teaching operator `cos θ + sin θ·e₁₂` (§8). Lean:
+  `Rotation2D.fullAngleRotor`; the book says "full-angle rotor".
+
+Both notions are kept side by side on purpose; the versor proofs were never replaced by the rotor ones.
 
 ### Suggested Lean statements (the sandwich / composition story — written; status 2026-10-05)
 
@@ -233,6 +237,53 @@ This yields the general (inverse) result **and** the textbook (reverse, unit) sp
 - **Hestenes, *GA Primer*, "Rotors and Rotations in the Euclidean Plane"** — unit rotors and `v ↦ R v R̃`.
 - **Definition of versor / "unity quasi-norm ⇒ rotor"** — general GA references (e.g. arXiv:1607.04767).
   URLs to be verified against the maintainer's own reading before promoting to docstrings (per §5's rule).
+
+## 7. The rotor chain: the normalized versor IS a rotor, and the two sandwiches agree (2026-10-05)
+
+The question that closed this section (the maintainer, 2026-10-05): "did you prove that the versor sandwich,
+using the inverse, is the same as the rotor? like, starting from 'rotate from vector a to b', take the half
+angle, the whole thing?" Yes, now — in Lean (`proofs/GacalcProofs/Rotor.lean`) and mirrored in sympy
+(`tests/test_rotor_from_vectors.py`), without re-proving the projection-rotation story:
+
+1. **The bridge, for every even `R` (no hypothesis):**
+   `(R/|R|) v (R/|R|)~ = R v R̃ / |R|² = R v R⁻¹` — "the versor sandwich, divided by the magnitudes, is the
+   rotor sandwich". Lean `rotorSandwich_normalize`; the one `√` fact is `|R|² = normSq R` (`normSq` is a sum
+   of squares in both grades). Python: `rotor_from_vectors(a, b) = versor_from_vectors(a, b).normalize()`.
+2. **So every versor theorem is a rotor theorem by one rewrite:** `rotorFromVectors a b` is a rotor
+   (`isRotor_rotorFromVectors`), its reverse sandwich equals `projRotation` and `transforms.projection_rotation`
+   (`rotorSandwich_rotorFromVectors_eq_projRotation`), carries `a` to `b` scaled to `|a|`
+   (`…_carries_from_to`), and preserves dot/length (`rotorSandwich_preserves_*`).
+3. **Lagrange gives the magnitude in closed form:** with `R = b·a + |a||b| = (|a||b| + a·b) + b∧a`,
+   `|R|² = (|a||b| + a·b)² + |a∧b|²`, and Lagrange's `(a·b)² + |a∧b|² = |a|²|b|²` collapses it to
+
+       |R|² = 2 |a||b| ( |a||b| + a·b )
+
+   (`normSq_versorFromVectors`). So the versor is zero exactly when `a`, `b` are antiparallel or one is zero
+   (`normSq_versorFromVectors_ne_zero`) — the geometric reading of the chain's `normSq R ≠ 0` guard.
+4. **The half angle appears:** for unit vectors at angle θ, `|R|² = 2 + 2cos θ = 4cos²(θ/2)`, and the normalized
+   versor is exactly the half-angle rotor `cos(θ/2) − sin(θ/2)·e₁₂` that `plane_rotation` builds. Lean (2D):
+   `versorFromVectors (uvec α) (uvec β) = 2cos(θ/2) • rotor θ` and `rotorFromVectors_uvec = rotor (β − α)` for
+   `cos(θ/2) > 0`, hence `rotorSandwich_rotorFromVectors_uvec : R̂ v R̂~ = rot (β − α) v`.
+
+**Why the earlier Python attempt stalled, and the fix.** sympy cannot simplify `sqrt(|R|²)` from the raw
+polynomial; equating a normalized coefficient to `cos(θ/2)` needs step 3 and the half-angle identity, neither of
+which sympy discovers. The working proof parametrizes by the *half* angle — `(c, s) = (cos(θ/2), sin(θ/2))` as
+positive symbols, `b = (2c² − 1)e₁ + 2sc·e₂` — and hands sympy the one relation `s² → 1 − c²`; then `|b| → 1`,
+`|R|² → 4c²`, `sqrt → 2c`, and the rotor simplifies to `c − s·e₁₂` (`test_rotor_from_unit_vectors_is_the_half_angle_rotor_symbolic`).
+See `tasks/reference/symbolic-equality.md` "Square roots".
+
+## 8. The 2D teaching sequence: full-angle one-sided first, half-angle sandwich second (2026-10-05)
+
+The book introduces rotation in 2D as a **one-sided, full-angle** product, `v ↦ v · (cos θ + sin θ·e₁₂)`
+(`book/docs/geometric-product.rst`; Lean `Rotation2D.fullAngleRotor`, `vec_mul_fullAngleRotor`). This is
+deliberate pedagogy (the maintainer, 2026-10-05): in two dimensions nothing lies outside the plane of
+rotation, so no sandwich is needed and the angle is the whole angle — the intuitive first encounter. The
+**half-angle sandwich** `R v R̃` with `R = cos(θ/2) − sin(θ/2)·e₁₂` (Lean `Rotation2D.rotor`,
+`sandwich_rotor`) is then introduced and *proven equal in effect* (`sandwich_rotor_eq_vec_mul_fullAngleRotor`);
+it is the form that survives into 3D, where a vector has a component perpendicular to the plane that a
+one-sided product would send to a trivector. Both objects stay; only the names say which is which. The
+name "full-angle rotor" was chosen from five candidates (`fullAngleRotor`, `oneSidedRotor`, `rightRotor`,
+`complexRotor`, `turn`) as a throwaway label whose one job is to say what differs from the real rotor.
 
 ## Related
 

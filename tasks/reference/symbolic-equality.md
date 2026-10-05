@@ -106,6 +106,31 @@ than coefficient-wise, so the gap is unchanged in substance; but a consolidated 
 has an obvious implementation to delegate to (`_coef_eq` per blade over the key union) instead of
 re-deriving the rule. That is a fact for the follow-on task to use, not a decision it forecloses.
 
+## Square roots: hand sympy the relation it cannot find (Lagrange / Pythagoras) (2026-10-05)
+
+`simplify(a − b) == 0` stalls when the two sides hide the same square root in different shapes.
+`versor_from_vectors(a, b).normalize()` divides by `sqrt(|R|²)` with `|R|²` the raw polynomial
+`(|a||b| + a·b)² + |a∧b|²`; proving the result is the half-angle rotor `cos(θ/2) − sin(θ/2)·i` needs two
+relations sympy does not discover: Lagrange's `(a·b)² + |a∧b|² = |a|²|b|²` (collapsing `|R|²` to
+`2|a||b|(|a||b| + a·b)`) and the half-angle identity. The pattern that works, from
+`tests/test_rotor_from_vectors.py`:
+
+- **Parametrize so the relation is a single substitution.** Use the half angle itself: `(c, s) =
+  (cos(θ/2), sin(θ/2))` as `positive=True` symbols, `b = (2c² − 1)·e₁ + 2sc·e₂`, and the one relation
+  `s² → 1 − c²`. Then `|b| → 1`, `|R|² → 4c²`, `sqrt(4c²) → 2c` (positivity lets sympy take the root), and the
+  rotor simplifies to exactly `c − s·e₁₂`.
+- **Substitute before simplifying, blade-wise.** The comparison helper takes an optional substitution and
+  applies it to each blade's *difference* before `simplify` (`_simplify_equal(a, b, subs=…)`). Substituting
+  `s**2` hits it inside the `sqrt` argument too.
+- **Prove the closed form itself as its own assertion** (`simplify(R.magnitude_squared() − 2|a||b|(|a||b| +
+  a·b)) == 0`, fully symbolic in 2D and 3D) — it is a plain polynomial identity once `sqrt(x)**2 → x`.
+- **Typing (ty):** `magnitude_squared()` is `Coef = float | Expr`, so wrap it in `sympy.sympify` before
+  `.subs`/`simplify`; a substitution map is `Mapping[sympy.Basic | complex, sympy.Expr | complex]` (dict keys
+  are invariant, so `dict[Expr, Expr]` is rejected by sympy's `subs` overloads).
+
+The Lean twin needs none of this: `Rotor.lean` proves the same chain structurally and gets Lagrange by `ring`
+(`tasks/reference/unit-bivector-and-rotors.md` §7).
+
 ## Follow-on
 
 `tasks/consolidate-symbolic-equality-predicate.md` — consolidate `_same_value`/`simplify_equal` into a
