@@ -1,6 +1,6 @@
 # Consider renaming the grade-0 number type "scalar" → "real"
 
-**Status:** ready — all five open questions decided 2026-10-05 (William Emerison Six <billsix@gmail.com>); awaiting the go-ahead to do the rename
+**Status:** done 2026-10-05 (the rename shipped: 696 tests, format/ty, check-generated, check-regions green); archived 2026-10-05
 **Priority:** 7
 **Difficulty:** 6
 **Created:** 2026-09-26 **Updated:** 2026-10-05 (William Emerison Six <billsix@gmail.com>)
@@ -181,7 +181,29 @@ The five questions below were put to the maintainer and answered; the decision r
 Scale (2026-10-05): ~287 tracked occurrences of the four names across `src`, `tools`, `tests`, `notebooks`,
 `README.md`, `book`, plus the generator's emitted code (`Coef` return types, `from_scalar` doctests).
 
-## Plan (once the go-ahead comes)
+## Work record (2026-10-05)
+
+Done as a bulk find-and-fix on the decisions above, in one pass:
+- **Discovery** `tasks/adhoc/consider-renaming-scalar-to-real/discover.sh` → `data/sites.txt`: 336 tracked
+  sites of `Coef`/`BladeCoef`/`from_scalar`/`from_coef` across `src`, `tools`, `tests`, `notebooks`,
+  `README.md`, `book`, `CLAUDE.md`, `tasks/reference` (the decision record excluded — its map holds the old
+  names on purpose).
+- **By hand first:** the two constructors merged into `MultiVectorBase.from_real(real: Real)` (docstring
+  states the boundary; a doctest added), and the `CHANGELOG` BREAKING entry.
+- **Codemod** `rename.py` (whole-word, content-keyed): `BladeCoef → BladeReal`, `Coef → Real`,
+  `from_scalar`/`from_coef → from_real`; 38 files rewritten; second run = 0 changes (idempotent). The
+  generator emits `Real` in every annotation and doctest (`from gacalc.base import … Real`), so the
+  gitignored `g*.py` follow. `tools/astbuild.cast_coef` keeps its internal name.
+- Re-grep for the four names = zero outside the decision record. Gates nested against the existing
+  image: `make test` (696 passed), `make format` (ruff fixed 11 import orderings; ty clean),
+  `make check-generated`, `make check-regions`. `make docs` not run (one code cell in
+  `book/docs/notebooks/levels-of-abstraction.py` now calls `from_real`, which exists; the next docs build
+  is the check).
+- **Version:** `pyproject.toml` stays at 0.1.0; the breaking bump to 0.2.0 and the promotion of
+  `[Unreleased]` are the maintainer's release step.
+- The adhoc scripts are one-shot: removed in the archive commit.
+
+## Plan (as executed)
 
 1. `base.py`: `Real` (alias, with `Coef` gone), `BladeReal`, `from_real` absorbing `from_coef`; every
    `Coef` annotation → `Real`. Generator (`tools/gen_specialized.py`): emitted annotations, the

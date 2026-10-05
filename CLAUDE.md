@@ -169,7 +169,7 @@ composable-function hierarchy, rotations/versors + the versor sandwich derivatio
   a bare number's inverse is its reciprocal, so `v / s` divides every coefficient)
 - rotations: `transforms.projection_rotation(from, to)` / `versor_rotation(from, to)` /
   `plane_rotation(a, b)` (free-function factories); `MultiVectorBase.versor_from_vectors(from, to)`
-  (the versor builder) and `rotor_from_vectors(from, to)` (= that versor normalized: a unit rotor,
+  (the versor builder) and `rotor_from_vectors(from, to)` (= that versor normalized: a rotor, i.e. a unit versor,
   reverse sandwich) — any plane / representation; a versor's `magnitude()`/`plane_of_rotation()`/`angle()`/`conjugate()` read
   `r`, `I`, `θ`, `R̄` back out of `R = r (cos θ + I sin θ)`
 - cross product (𝒢₃ only): `vectorcalc.cross(a, b)` = `(a ∧ b) I₃⁻¹` (the dual of the wedge;
