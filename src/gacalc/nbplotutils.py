@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2026 William Emerison Six
+# Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #
 # This library is free software; you can redistribute it and/or modify

@@ -299,6 +299,12 @@ over a "run it on your host" instruction.
   re-used version, and `release` refuses if a `v<version>` tag exists.
 - Packaging: `pyproject.toml` (setuptools, `src/` layout); runtime deps are **only** `numpy` +
   `sympy`; extras `notebooks`/`jupyter`/`dev`; there is **no `requirements.txt`**. License LGPL-2.1-only.
+- **License headers: every `.py` file (source, tests, tools, notebooks) starts with the project's
+  LGPL-2.1-only header — copy it verbatim from `tests/test_rotate_90_degrees.py` — with
+  `Copyright (c) 2025-2026 William Emerison Six` (this project began in 2025). Never the MIT /
+  `2018-…` header: that belongs to modelviewprojection, a different project under the same author.
+  Lean files carry no header. (Corrected 2026-10-05 after three new test files shipped with the wrong
+  header.)
 
 Rationale (why the dev gate skips the generated code + how to actually type-check it in full
 context, the PyPI-403 catalogue + credential resolution order, the JupyterLab bakes, the
