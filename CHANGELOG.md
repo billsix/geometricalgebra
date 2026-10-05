@@ -50,7 +50,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   full-angle `rotor` → `fullAngleRotor` (`vec_mul_rotor` → `vec_mul_fullAngleRotor`,
   `rotorFromTo` → `fullAngleRotorFromTo`). `Rotation2D.rot θ` now acts on a 𝒢₂ vector by its named
   components `c1`/`c2` instead of a bare `ℝ × ℝ` pair (`polar` likewise; `scale` dropped for `G2.smul`;
-  `rot_cossin` → `rot_uvec`; `MathlibBridge.toC` reads a 𝒢₂ vector). No Python name changed.
+  `rot_cossin` → `rot_uvec`; `MathlibBridge.toC` reads a 𝒢₂ vector). New `proofs/GacalcProofs/Rotor.lean`: the
+  rotor chain with the reverse sandwich (`rotorFromVectors = normalize ∘ versorFromVectors` is a rotor; the
+  bridge `(R/|R|) v (R/|R|)~ = R v R⁻¹`; = `projRotation`, carries from→to, isometry; Lagrange closed form of
+  the versor's magnitude; 2D: the from-vectors rotor of two unit directions is the half-angle `rotor θ`).
+  No Python name changed.
 
 ### Fixed
 - **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)

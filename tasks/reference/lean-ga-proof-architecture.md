@@ -7,7 +7,7 @@ Read this before extending the proofs. Updated in place (never archived).
 
 **Status:** living document, updated in place. Written 2026-09-29 (William Emerison Six
 <billsix@gmail.com>) from the versor / projection / algebra-law session; reconciled 2026-10-04 after the
-Mathlib bridges completed the original program (29 modules, `make lean` green).
+Mathlib bridges completed the original program (29 modules at completion, 30 with `Rotor.lean`; `make lean` green).
 
 ## The representation (settled)
 
@@ -89,7 +89,17 @@ it does **not** fix the magnitude — a *rotor* is a unit versor, `IsRotor R := 
 `sandwich_eq_reverse_sandwich_of_isRotor` gives `sandwich R v = R v R̃` — every `sandwich_preserves_*` theorem
 applies to a rotor unchanged via `normSq_ne_zero_of_isRotor`, and transfers to the `R v R̃` form by one `rw`
 (decision: the headline only, no per-theorem `_reverse` companions; William Emerison Six <billsix@gmail.com>,
-2026-10-05). Instances: `Rotation2D.isRotor_rotor` (the half-angle 2D rotor), `Exp.isRotor_expBivector*`.
+2026-10-05). Instances: `Rotation2D.isRotor_rotor` (the half-angle 2D rotor), `Exp.isRotor_expBivector*`,
+`Rotor.isRotor_rotorFromVectors`. **The rotor chain (`Rotor.lean`, 2026-10-05):** rather than re-prove the
+projection-rotation story for rotors, `rotorFromVectors a b := normalize (versorFromVectors a b)` and ONE
+algebraic bridge `rotorSandwich_normalize : (R/|R|) v (R/|R|)~ = R v R⁻¹` (every `R`; the single `√` fact is
+`magnitude_sq_eq_normSq`, from `normSq_eq_sum_sq`/`normSq_nonneg`) transfer every versor theorem to the
+reverse-sandwich form by one `rw`: `rotorSandwich_rotorFromVectors_eq_projRotation`, `_carries_from_to`,
+`rotorSandwich_preserves_dot/normSq/magnitude`. **Lagrange** (`normSq_versorFromVectors`:
+`|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`) turns the chain's `normSq R ≠ 0` guard into "nonzero and
+not antiparallel" (`normSq_versorFromVectors_ne_zero`) — the identity the earlier Python-side attempt to
+normalize the versor lacked. 2D coda: `versorFromVectors (uvec α) (uvec β) = 2cos(θ/2) • rotor θ`, so
+`rotorFromVectors_uvec = rotor (β − α)` for `cos(θ/2) > 0` and the from-vectors rotor sandwich is `rot (β − α)`.
 **2D naming** (same decision): `Rotation2D.rotor θ` is the half-angle sandwich object (matches Python's
 `rotor_for`); the one-sided full-angle teaching operator `cos θ + sin θ e₁₂` is `fullAngleRotor θ` (and
 `fullAngleRotorFromTo`), kept because in 2D a vector rotates by the full angle under a one-sided product
@@ -448,7 +458,7 @@ The modules outside this table are in the subsection that follows it.
 | Method (`base.py` unless noted) | Coverage | Theorem(s) / file — or task |
 | --- | --- | --- |
 | `magnitude` / `magnitude_squared` | HAS | `magnitude`, `normSq`, `normSq_vec`, `magnitude_sq_vec`, `normSq_wedge_vec`, `normSq_mul`, `magnitude_sandwich` (G2/G3, Sandwich); = Mathlib's norm: `norm_toE` (MathlibBridge) |
-| `normalize` | HAS | `normalizeVec`, `magnitude_normalizeVec`/`normSq_normalizeVec` (= 1) (Normalize.lean) |
+| `normalize` | HAS | `normalizeVec`, `magnitude_normalizeVec`/`normSq_normalizeVec` (= 1) (Normalize.lean); any multivector: `Rotor.normalize`, `normSq_normalize`, `isRotor_normalize` |
 | `inner_product` (general graded) | PARTIAL | only vector·bivector `inner_vb` (Projection3D.lean); general `⟨AB⟩_{\|r−s\|}` owned by existing `lean-general-gn-product-and-hestenes-dot-wedge` |
 | `dot` | HAS | `dot`/`dot_vec`/`dot_comm` + bilinearity, `dot_is_sym_part` (G2 coordinate form, G3 object form), `dot_eq_coord_sum`; = Mathlib's `inner`: `dot_eq_inner`, with `dot_comm_of_inner` and Cauchy–Schwarz `abs_dot_le_magnitude_mul` by citation (MathlibBridge) |
 | `outer_product` / `wedge` | HAS | `wedge`, `wedge_vec_eq_biv`, `wedge_antisymm`, full bilinearity, `wedge_is_antisym_part` (G2/G3); = determinant / minors: `wedge_eq_det`, `wedge_c12/c13/c23_eq_det` (MathlibBridge) |
@@ -468,9 +478,9 @@ The modules outside this table are in the subsection that follows it.
 | `project` / `projected_onto` | HAS | `proj`, `project_onto`, `project_add_reject`, `proj_plane_eq_project_onto` (Projection/Projection2D) |
 | `reject` / `rejected_away_from` | HAS | `reject`, `reject_perp`, `reject_vec_eq`, `project_add_reject` |
 | `reflect` / `reflected_across` | HAS | `reflectVec` (= proj − reject), `reflectVec_eq`, `normSq_reflectVec` (isometry) (Reflect.lean) |
-| `versor_from_vectors` | HAS | `versorFromVectors`, `versorFromVectors_mul_reverse`/`_inverse`, `sandwich_carries_from_to`, `bisector` (Rotation3D/Sandwich) |
+| `versor_from_vectors` | HAS | `versorFromVectors`, `versorFromVectors_mul_reverse`/`_inverse`, `sandwich_carries_from_to`, `bisector` (Rotation3D/Sandwich); `normSq_versorFromVectors` (Lagrange closed form), `rotorFromVectors` = its normalization, `isRotor_rotorFromVectors`, `rotorSandwich_rotorFromVectors(_eq_projRotation/_carries_from_to)`, 2D `rotorFromVectors_uvec = rotor (β−α)` (Rotor.lean) |
 | `bivector_from_vectors` | HAS | the raw wedge `a∧b`: `wedge`, `wedge_vec_eq_biv` |
-| `sandwich` | HAS | `sandwich`, `sandwich_preserves_dot`/`_normSq`/`_wedge`/`_cos`/`_sin` (any `u`, `v`), `sandwich_comp`, `sandwich_inverse_sandwich` (Sandwich/RotateComponents); the 2D rotor sandwich = `Orientation.rotation`: `rotor_sandwich_eq_rotation` (MathlibBridge); `IsRotor` (unit versor): `inverse_eq_reverse_of_isRotor`, `sandwich_eq_reverse_sandwich_of_isRotor` (`R v R⁻¹ = R v R̃`), `Rotation2D.sandwich_rotor_eq_rot` |
+| `sandwich` | HAS | `sandwich`, `sandwich_preserves_dot`/`_normSq`/`_wedge`/`_cos`/`_sin` (any `u`, `v`), `sandwich_comp`, `sandwich_inverse_sandwich` (Sandwich/RotateComponents); the 2D rotor sandwich = `Orientation.rotation`: `rotor_sandwich_eq_rotation` (MathlibBridge); `IsRotor` (unit versor): `inverse_eq_reverse_of_isRotor`, `sandwich_eq_reverse_sandwich_of_isRotor` (`R v R⁻¹ = R v R̃`), `Rotation2D.sandwich_rotor_eq_rot`; the reverse sandwich as an operation: `Rotor.rotorSandwich`, bridge `rotorSandwich_normalize` (`(R/\|R\|) v (R/\|R\|)~ = R v R⁻¹`), `rotorSandwich_preserves_dot/normSq/magnitude` |
 | `exp` | HAS | `expBivector`/`expBivectorGeneral` (= `cos\|B\|+sin\|B\|·B̂`), `normSq_expBivectorGeneral` = 1, `isRotor_expBivector*` (`IsRotor`) (Exp.lean) |
 | `vectorcalc.cross` | HAS | `cross`, `cross_vec`, `cross_anticomm`, `cross_perp_left`/`_right` (Cross); = Mathlib's `crossProduct`: `toF_cross` (MathlibBridge) |
 | `measure.area` | HAS | `area_sq_vec` (= `normSq (a∧b)`), `normSq_wedge_eq_lagrange` (Measures.lean) |

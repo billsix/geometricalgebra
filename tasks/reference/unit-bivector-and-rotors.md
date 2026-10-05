@@ -202,7 +202,14 @@ maintainer's call:**
     ones. Precise, but a breaking API change across the generated types + `transforms`, and a
     `CHANGELOG`/version bump.
 
-### Suggested Lean statements (the sandwich / composition story — not yet written)
+### Suggested Lean statements (the sandwich / composition story — written; status 2026-10-05)
+
+Status: **done** in `proofs/GacalcProofs/` — (1) `sandwich_preserves_normSq`/`_dot` (`Sandwich.lean`); (2) scale-
+invariance in the normalized form, `Rotor.rotorSandwich_normalize` (`(R/|R|) v (R/|R|)~ = R v R⁻¹`); (3) `IsRotor`,
+`inverse_eq_reverse_of_isRotor`, `Rotation2D.sandwich_rotor_eq_rot` (`sandwich (rotor θ) v = rot θ v`); (4)
+`sandwich_comp` (𝒢₃) and `Rotation2D.rotor_mul`. Plus the from-vectors link: `Rotor.rotorFromVectors_uvec`
+(`versorFromVectors (uvec α) (uvec β)` normalized IS `rotor (β − α)`) and the Lagrange closed form
+`normSq_versorFromVectors`. The original plan, kept for the record:
 
 Prove in `G2` (standalone, reusing the landed elements/table), covering both the general and textbook
 forms:

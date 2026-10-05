@@ -11,7 +11,7 @@ the Python implementation.
 - **Toolchain / deps:** pinned in `lean-toolchain` (Lean `v4.34.1`) and
   `lake-manifest.json` (the exact Mathlib revision). `.lake/` is build output +
   the fetched Mathlib — gitignored, never committed.
-- **What's here** (29 modules under `GacalcProofs/`, grouped; every file is 𝒢₂+𝒢₃ unless noted):
+- **What's here** (30 modules under `GacalcProofs/`, grouped; every file is 𝒢₂+𝒢₃ unless noted):
   - *Algebras:* `G1.lean` (𝒢₁ for teaching: `I² = +1`, commutative, every vector pair parallel so
     `u v = u·v`), `G2.lean`, `G3.lean` — coordinate structs; product/wedge/reverse (𝒢₃'s transcribed
     verbatim from gacalc's `Gn` oracle by `tools/derive_lean_algebra.py`), the basis blades as genuine
@@ -33,7 +33,11 @@ the Python implementation.
     the sandwich is an isometry — dot, length, wedge, hence angles; carries `a` to `b`; fixes its own
     plane bivector and normal; rotations compose by multiplying versors; reverse is an anti-automorphism;
     blade inverses); `RotateComponents.lean` (the three matrix-free rotation goals for the a→b rotation);
-    `Exp.lean` (the closed-form bivector exponential is a rotor, `IsRotor`).
+    `Exp.lean` (the closed-form bivector exponential is a rotor, `IsRotor`); `Rotor.lean` (the versor chain
+    re-done with the reverse sandwich: `rotorFromVectors = normalize ∘ versorFromVectors` is a rotor, the
+    bridge `(R/|R|) v (R/|R|)~ = R v R⁻¹` for every `R`, hence the rotor sandwich = `projRotation`, carries
+    `a` to `b`, isometry; Lagrange gives `|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`; 2D coda: the
+    from-vectors rotor of two unit directions IS the half-angle `rotor θ`).
   - *Projection, rejection, reflection:* `Projection2D.lean` / `Projection3D.lean` (Hestenes
     `proj`/`reject`/`project_onto` of a vector onto a vector or (3D) a bivector; rejection ⊥; the wedge
     sees only the rejection; `project + reject = id`; `proj_plane = project_onto`); `Reflect.lean`
