@@ -217,7 +217,7 @@ corrected.
 
 Items 1–5 below were applied the same day; item 6 became `tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md`,
 which also covered the out-of-scope modules of §3 (𝒢₁, standard position, the sandwich round-trip), with
-the 3D rotor angle theorem and frames spun into `tasks/lean-rotor-3d-angle-theorem.md` and
+the 3D rotor angle theorem and frames spun into `tasks/archive/2026/10/05/lean-rotor-3d-angle-theorem.md` (done 2026-10-05) and
 `tasks/lean-frame-coverage.md`.
 
 1. Commit the 𝒢₃ generalization of `dot_reverse_sandwich`/`normSq_reverse_sandwich` (if the build
