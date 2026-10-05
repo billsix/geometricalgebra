@@ -272,6 +272,12 @@ positive symbols, `b = (2c² − 1)e₁ + 2sc·e₂` — and hands sympy the one
 `|R|² → 4c²`, `sqrt → 2c`, and the rotor simplifies to `c − s·e₁₂` (`test_rotor_from_unit_vectors_is_the_half_angle_rotor_symbolic`).
 See `tasks/reference/symbolic-equality.md` "Square roots".
 
+5. **The 3D angle theorem (`PlaneRotation3D.lean`, 2026-10-05).** For a unit bivector `i` and the half-angle
+   rotor `R = cos(θ/2) − sin(θ/2)·i` that `plane_rotation`/`bivector_rotation` build, `R v R̃ = v⊥ + cos θ·v∥ +
+   sin θ·(v ⌋ i)` for every vector `v` (`rotorSandwich_planeRotor`): the perpendicular part is fixed and the
+   in-plane part turns by the full angle θ, orientation included — §3's "rotation by θ in the plane of `i`" is
+   now machine-checked in 𝒢₃ for a general plane, not only `e₁₂`.
+
 ## 8. The 2D teaching sequence: full-angle one-sided first, half-angle sandwich second (2026-10-05)
 
 The book introduces rotation in 2D as a **one-sided, full-angle** product, `v ↦ v · (cos θ + sin θ·e₁₂)`

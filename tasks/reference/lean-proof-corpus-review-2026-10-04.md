@@ -231,7 +231,7 @@ the 3D rotor angle theorem and frames spun into `tasks/lean-rotor-3d-angle-theor
 4. Set `autoImplicit = false` in `proofs/lakefile.toml` and rebuild.
 5. Qualify the architecture doc's coverage tally ("vector operands, n ∈ {2,3}") and add the
    out-of-scope modules (`transforms`, `standardposition`, `frame`, `gn`, `g1`, `functions`) to it.
-6. For the half-angle 3D rotor (gap #4 in §3): file a task for "sandwich by `cos(θ/2) − sin(θ/2)·i`
+6. (Done 2026-10-05: `PlaneRotation3D.rotorSandwich_planeRotor`.) For the half-angle 3D rotor (gap #4 in §3): file a task for "sandwich by `cos(θ/2) − sin(θ/2)·i`
    rotates by θ in the plane of `i`" in 𝒢₃, since `transforms.bivector_rotation`/`plane_rotation`
    rest on it and only the e₁₂ 𝒢₂ case is proven.
 

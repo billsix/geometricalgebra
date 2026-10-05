@@ -7,7 +7,7 @@ Read this before extending the proofs. Updated in place (never archived).
 
 **Status:** living document, updated in place. Written 2026-09-29 (William Emerison Six
 <billsix@gmail.com>) from the versor / projection / algebra-law session; reconciled 2026-10-04 after the
-Mathlib bridges completed the original program (29 modules at completion, 30 with `Rotor.lean`; `make lean` green).
+Mathlib bridges completed the original program (29 modules at completion, 31 with `Rotor.lean` + `PlaneRotation3D.lean`; `make lean` green).
 
 ## The representation (settled)
 
@@ -100,6 +100,16 @@ reverse-sandwich form by one `rw`: `rotorSandwich_rotorFromVectors_eq_projRotati
 not antiparallel" (`normSq_versorFromVectors_ne_zero`) — the identity the earlier Python-side attempt to
 normalize the versor lacked. 2D coda: `versorFromVectors (uvec α) (uvec β) = 2cos(θ/2) • rotor θ`, so
 `rotorFromVectors_uvec = rotor (β − α)` for `cos(θ/2) > 0` and the from-vectors rotor sandwich is `rot (β − α)`.
+**The 3D angle theorem (`PlaneRotation3D.lean`, 2026-10-05):** for a unit bivector `i` and
+`planeRotor θ i = cos(θ/2) − sin(θ/2)·i` (a rotor), `rotorSandwich_planeRotor : R v R̃ = reject i v +
+cos θ · project_onto i v + sin θ · inner_vb v i` for every vector `v` — the perpendicular part fixed, the in-plane
+part rotated by θ with orientation. Proven as a coordinate leaf: each vector component is a polynomial identity
+modulo `cos²(θ/2) + sin²(θ/2) = 1` and `|i|² = 1`, closed by `linear_combination` with cofactors computed offline
+(sympy `reduced` over gacalc's product — the harness is recorded in the task); the other components vanish by
+`ring`. Corollaries: `cos_between_rotorSandwich_planeRotor` (student form, in-plane nonzero `v`) and
+`rotorSandwich_planeRotor_fixes_normal`. Gotcha met on the way: inside `namespace GacalcProofs.G3`,
+`cos_sq_add_sin_sq` resolves to the corpus's own angle theorem (`Trig.lean`), not Mathlib's — write
+`Real.cos_sq_add_sin_sq`.
 **2D naming** (same decision): `Rotation2D.rotor θ` is the half-angle sandwich object (matches Python's
 `rotor_for`); the one-sided full-angle teaching operator `cos θ + sin θ e₁₂` is `fullAngleRotor θ` (and
 `fullAngleRotorFromTo`), kept because in 2D a vector rotates by the full angle under a one-sided product
@@ -465,7 +475,8 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 
 Remaining (the umbrella is archived, `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`): the
 general-n algebra with the general pseudoscalar sign and Hestenes dot/wedge (deferred), the general
-multivector inverse, the 3D rotor angle theorem, frames, the Lean→notebook pipeline — each its own task.
+multivector inverse, frames, the Lean→notebook pipeline — each its own task (the 3D rotor angle theorem landed
+2026-10-05, `PlaneRotation3D.lean`).
 
 ## Coverage map (public method → Lean coverage)
 
@@ -519,8 +530,8 @@ derivations and the Mathlib bridges are recorded in the archived step tasks unde
 ### The modules outside the original audit — `standardposition`, `functions`, `transforms`, `g1`
 
 The table above covers `base`/`vectorcalc`/`measure`. Six further modules were brought into scope on
-2026-10-04 (`tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md`); frames and the 3D rotor angle theorem are
-their own tasks, and `gn` waits on a general-n algebra.
+2026-10-04 (`tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md`); frames are their own task, the 3D rotor angle
+theorem landed 2026-10-05 (`PlaneRotation3D.lean`), and `gn` waits on a general-n algebra.
 
 | Python | Status | Lean |
 |---|---|---|
@@ -530,7 +541,7 @@ their own tasks, and `gn` waits on a general-n algebra.
 | `functions.compose` / `inverse` / `identity` | plumbing — no theorem | the one GA fact they carry for versors: `sandwich_inverse_sandwich` (`sandwich R⁻¹ ∘ sandwich R = id`, both grades), on `inverse_inverse` and `inverse_mul_self_of_isEvenVersor` (Sandwich.lean) |
 | `transforms.projection_rotation` | HAS | `projRotation_*`, `projRotation_eq_sandwich` (ProjectionRotation2D/3D) |
 | `transforms.versor_rotation` (forward / `backward`) | HAS | `sandwich_*`; backward = `sandwich_inverse_sandwich` |
-| `transforms.bivector_rotation` / `plane_rotation` (half-angle rotor by θ in a general 3D plane) | PARTIAL | 𝒢₂ `e₁₂` plane only (`Rotation2D.sandwich_rotor`); unit-ness `Exp.normSq_expBivectorGeneral`; plane/normal fixed `sandwich_fixes_own_*`. The angle theorem: `tasks/lean-rotor-3d-angle-theorem.md` |
+| `transforms.bivector_rotation` / `plane_rotation` (half-angle rotor by θ in a general 3D plane) | HAS | `PlaneRotation3D.planeRotor θ i`, `isRotor_planeRotor`, **`rotorSandwich_planeRotor`** (`R v R̃ = v⊥ + cos θ·v∥ + sin θ·(v ⌋ i)` for a unit bivector `i`, any vector `v`), `cos_between_rotorSandwich_planeRotor` (in-plane `v`: angle θ), `rotorSandwich_planeRotor_fixes_normal`; 2D case `Rotation2D.sandwich_rotor`; unit-ness also `Exp.normSq_expBivectorGeneral` |
 | `transforms.bivector_rotation(θ).at(t)`, `functions.at` | plumbing — no theorem | the rotor factory's interpolation law rebuilds the rotor with `t·θ`; composites interpolate component-wise |
 | `transforms.translate`, `uniform_scale`, `scale_non_uniform`, `to_matrix`, `MatrixTemplate`, `to_matrix_template` | plumbing — no theorem | affine/matrix bookkeeping; `scale_non_uniform` rests on `proj` onto `e_i` (covered) |
 | `g1.py` (𝒢₁) | HAS | `G1.lean`: `mul`/`wedge` (oracle-transcribed), `I_sq` (= **+1**), `I_sq_eq_sign`, `mul_comm`, `mul_assoc`, `vec_mul` (pure scalar), `wedge_vec` (= 0: all 1D vectors parallel), `dot_vec`, `normSq_vec`, `magnitude_vec` (`= |x|`), `dual_vec` (a scalar), `mul_vec_inverse_self` |

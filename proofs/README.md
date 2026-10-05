@@ -11,7 +11,7 @@ the Python implementation.
 - **Toolchain / deps:** pinned in `lean-toolchain` (Lean `v4.34.1`) and
   `lake-manifest.json` (the exact Mathlib revision). `.lake/` is build output +
   the fetched Mathlib — gitignored, never committed.
-- **What's here** (30 modules under `GacalcProofs/`, grouped; every file is 𝒢₂+𝒢₃ unless noted):
+- **What's here** (31 modules under `GacalcProofs/`, grouped; every file is 𝒢₂+𝒢₃ unless noted):
   - *Algebras:* `G1.lean` (𝒢₁ for teaching: `I² = +1`, commutative, every vector pair parallel so
     `u v = u·v`), `G2.lean`, `G3.lean` — coordinate structs; product/wedge/reverse (𝒢₃'s transcribed
     verbatim from gacalc's `Gn` oracle by `tools/derive_lean_algebra.py`), the basis blades as genuine
@@ -37,7 +37,11 @@ the Python implementation.
     re-done with the reverse sandwich: `rotorFromVectors = normalize ∘ versorFromVectors` is a rotor, the
     bridge `(R/|R|) v (R/|R|)~ = R v R⁻¹` for every `R`, hence the rotor sandwich = `projRotation`, carries
     `a` to `b`, isometry; Lagrange gives `|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`; 2D coda: the
-    from-vectors rotor of two unit directions IS the half-angle `rotor θ`).
+    from-vectors rotor of two unit directions IS the half-angle `rotor θ`); `PlaneRotation3D.lean` (𝒢₃: the
+    half-angle rotor `planeRotor θ i = cos(θ/2) − sin(θ/2)·i` of a unit bivector is a rotor and
+    `R v R̃ = v⊥ + cos θ·v∥ + sin θ·(v ⌋ i)` — the perpendicular part fixed, the in-plane part rotated by θ,
+    orientation included; corollaries `cos_between (R v R̃) v = cos θ` for in-plane `v`, the normal fixed —
+    what `plane_rotation`/`bivector_rotation` do).
   - *Projection, rejection, reflection:* `Projection2D.lean` / `Projection3D.lean` (Hestenes
     `proj`/`reject`/`project_onto` of a vector onto a vector or (3D) a bivector; rejection ⊥; the wedge
     sees only the rejection; `project + reject = id`; `proj_plane = project_onto`); `Reflect.lean`
@@ -64,7 +68,7 @@ the Python implementation.
   `tasks/reference/lean-proof-corpus-review-2026-10-04.md`.
 - **What's planned:** a dimension-general algebra, with the general pseudoscalar sign and Hestenes
   dot/wedge (`tasks/lean-general-gn-product-and-hestenes-dot-wedge.md`, deferred); the general multivector
-  inverse; the 3D rotor angle theorem (`tasks/lean-rotor-3d-angle-theorem.md`); frames
+  inverse; frames
   (`tasks/lean-frame-coverage.md`, parked); the Lean→notebook pipeline. The original program
   (`tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`) is complete.
 

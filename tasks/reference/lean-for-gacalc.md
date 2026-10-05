@@ -247,7 +247,7 @@ version resolution is lake's own, not hand-picked):
   Mathlib counterpart in `proofs/GacalcProofs/MathlibBridge.lean` (dot ↦ `inner`, wedge ↦ `det`/
   `crossProduct`, rotation ↦ `Orientation.rotation`), and the pseudoscalar sign is proved for n = 1, 2, 3.
   Still open, as their own tasks: the general-n algebra (and the general pseudoscalar sign with it), the
-  general multivector inverse, the Lean→notebook pipeline, the 3D rotor angle theorem, frames.
+  general multivector inverse, the Lean→notebook pipeline, frames.
 
 ## Where to learn more
 

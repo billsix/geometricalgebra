@@ -58,8 +58,10 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `rot_cossin` → `rot_uvec`; `MathlibBridge.toC` reads a 𝒢₂ vector). New `proofs/GacalcProofs/Rotor.lean`: the
   rotor chain with the reverse sandwich (`rotorFromVectors = normalize ∘ versorFromVectors` is a rotor; the
   bridge `(R/|R|) v (R/|R|)~ = R v R⁻¹`; = `projRotation`, carries from→to, isometry; Lagrange closed form of
-  the versor's magnitude; 2D: the from-vectors rotor of two unit directions is the half-angle `rotor θ`).
-  No Python name changed.
+  the versor's magnitude; 2D: the from-vectors rotor of two unit directions is the half-angle `rotor θ`). New
+  `PlaneRotation3D.lean`: the 3D half-angle rotor `planeRotor θ i` of a unit bivector is a rotor and
+  `R v R̃ = v⊥ + cos θ·v∥ + sin θ·(v ⌋ i)` — what `plane_rotation`/`bivector_rotation` compute, proven for a
+  general plane (previously only `e₁₂` in 𝒢₂). No Python name changed.
 
 ### Fixed
 - **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)
