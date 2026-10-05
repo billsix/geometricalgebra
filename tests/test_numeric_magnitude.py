@@ -40,7 +40,7 @@ def test_inverse_of_float_vector_stays_float() -> None:
     assert type(inv.coeff_e_1) is float
 
 
-def test_rotor_rotation_of_float_vectors_stays_float_forward_and_inverse() -> None:
+def test_versor_rotation_of_float_vectors_stays_float_forward_and_inverse() -> None:
     # the focus path walks transforms *against the arrows* (inverse), so both
     # directions must stay numeric.
     v: g3.Vector = g3.Vector(coeff_e_1=1.0, coeff_e_2=0.0, coeff_e_3=0.0)

@@ -342,12 +342,12 @@ def test_same_type_eq_fast_path_stays_simplify_aware() -> None:
     assert s1 == s2
 
 
-def test_rotor_is_complex_2d() -> None:
+def test_versors_are_complex_numbers_2d() -> None:
     # the even subalgebra of g2.G is the complex numbers: e_12^2 == -1
     assert g2.Bivector.e_12 * g2.Bivector.e_12 == -gn.one
 
 
-def test_rotor_is_quaternion_3d() -> None:
+def test_versors_are_quaternions_3d() -> None:
     # each unit bivector squares to -1 (the even subalgebra of g3.G is the quaternions).
     # bivector*bivector is *typed* g3.Versor (generally scalar+bivector) -- here the
     # value is a pure scalar, but the type follows the operation, not the value.
@@ -403,7 +403,7 @@ def simplify_equal(a: MultiVectorBase, b: MultiVectorBase) -> bool:
     )
 
 
-def test_rotor_sandwich_equals_rotate_symbolic_2d() -> None:
+def test_versor_sandwich_equals_rotate_symbolic_2d() -> None:
     # general symbolic vectors -- a real symbolic proof, not just sample points
     a1: sympy.Symbol
     a2: sympy.Symbol
@@ -423,7 +423,7 @@ def test_rotor_sandwich_equals_rotate_symbolic_2d() -> None:
     )
 
 
-def test_rotor_sandwich_equals_rotate_3d() -> None:
+def test_versor_sandwich_equals_rotate_3d() -> None:
     # 3D, concrete vectors (full symbolic 3D simplify is slow for the suite);
     # magnitudes are sqrt(...), so compare via simplify_equal
     frm: Gn = 1 * gn.e_1 + 2 * gn.e_2 + 3 * gn.e_3
@@ -435,7 +435,7 @@ def test_rotor_sandwich_equals_rotate_3d() -> None:
     )
 
 
-def test_rotor_rotate_across_representations() -> None:
+def test_versor_rotate_across_representations() -> None:
     # the same identity holds (by value) for Gn, g2.G and g3.G; the versor built from
     # vectors of a specialized type is a Versor of that algebra
     w2: g2.Vector = 2 * g2.Vector.e_1 + 1 * g2.Vector.e_2
@@ -457,7 +457,7 @@ def test_rotor_rotate_across_representations() -> None:
     )(w3)
 
 
-def test_unnormalized_rotor_scales_then_normalizes() -> None:
+def test_unnormalized_versor_scales_then_normalizes() -> None:
     # the bare sandwich R v R~ scales by R.magnitude_squared(); inverse divides it out
     frm: g2.Vector
     to: g2.Vector

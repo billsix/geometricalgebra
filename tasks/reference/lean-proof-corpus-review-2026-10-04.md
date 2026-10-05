@@ -116,7 +116,7 @@ also catch `native_decide`/`axiom` (none present today).
 | `cross`, `area`, `volume`, signed area/volume, `cosine`/`abs_sin`/`sine` | `Cross`, `Measures`, `Lagrange`, `Trig`, `TrigEquiv`, `StudentTrigForms` | **proven** (𝒢₃; Lagrange also 𝒢₂) |
 | `is_orthogonal_to`, `is_parallel_to` | `Predicates2D/3D` | proven / **half** (`a ∧ ka = 0` only; the converse "wedge zero ⇒ dependent" unstated) |
 | `exp` | `Exp.lean` closed form is a unit versor | **partial** (no series, no scalar or pseudoscalar case) |
-| `transforms.bivector_rotation`/`plane_rotation` (half-angle rotor) | `Rotation2D.sandwich_versor` | **𝒢₂, plane e₁₂ only**; no 𝒢₃ general-plane angle theorem; `at(t)` law unstated |
+| `transforms.bivector_rotation`/`plane_rotation` (half-angle rotor) | `Rotation2D.sandwich_rotor` | **𝒢₂, plane e₁₂ only**; no 𝒢₃ general-plane angle theorem; `at(t)` law unstated |
 | Hestenes `inner_product`/`dot`, `left_/right_contraction` (general grades) | vec·vec, vec·biv, scalar·vec cases only | **partial**; owned by `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` |
 | general `inverse`, `content`, `pseudoscalar_squared_sign(r)` general r | — | **none** (tasks exist) |
 | `gn.py`, `g1.py`, `frame.py`, `normalize` of non-vectors, `translate`/scales/`to_matrix`/`compose` | — | **none** (`Gn` is the oracle Lean was derived from, not a theorem) |
@@ -147,7 +147,7 @@ them), the 2D angle-form rotation theory (`rot`, `polar`, `rot_from_to`), `rotYZ
 Open Lean tasks, easy wins first: `trim-unused-simp-components` (done, archive owed),
 `rename-rotor-to-versor` (done; archived 2026-10-04 with rotation-from-scratch),
 `reference-doc-lean-workflow-and-proof-notebooks` (P6/D4, 3 open questions),
-`lean-unit-versors-rotors-sandwich-with-reverse` (P6/D6, 3 questions), `reduce-to-standard-position`
+`lean-unit-versors-rotors-sandwich-with-reverse` (done + archived 2026-10-05), `reduce-to-standard-position`
 (voice pass; archived 2026-10-04, the voice pass is `proof-projection-book-voice-pass`), `lean-cross-standard-position-capstone` (2 questions), the four P7 step tasks
 (dot/wedge/pseudoscalar/rotation — only Mathlib equivalence left), `lean-general-multivector-inverse`,
 `investigate-lean-to-python-proof-notebooks`, `push-delicate-coordinate-core-tier` (P8),
@@ -217,7 +217,7 @@ corrected.
 
 Items 1–5 below were applied the same day; item 6 became `tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md`,
 which also covered the out-of-scope modules of §3 (𝒢₁, standard position, the sandwich round-trip), with
-the 3D rotor angle theorem and frames spun into `tasks/lean-rotor-3d-angle-theorem.md` and
+the 3D rotor angle theorem and frames spun into `tasks/archive/2026/10/05/lean-rotor-3d-angle-theorem.md` (done 2026-10-05) and
 `tasks/lean-frame-coverage.md`.
 
 1. Commit the 𝒢₃ generalization of `dot_reverse_sandwich`/`normSq_reverse_sandwich` (if the build
@@ -231,7 +231,7 @@ the 3D rotor angle theorem and frames spun into `tasks/lean-rotor-3d-angle-theor
 4. Set `autoImplicit = false` in `proofs/lakefile.toml` and rebuild.
 5. Qualify the architecture doc's coverage tally ("vector operands, n ∈ {2,3}") and add the
    out-of-scope modules (`transforms`, `standardposition`, `frame`, `gn`, `g1`, `functions`) to it.
-6. For the half-angle 3D rotor (gap #4 in §3): file a task for "sandwich by `cos(θ/2) − sin(θ/2)·i`
+6. (Done 2026-10-05: `PlaneRotation3D.rotorSandwich_planeRotor`.) For the half-angle 3D rotor (gap #4 in §3): file a task for "sandwich by `cos(θ/2) − sin(θ/2)·i`
    rotates by θ in the plane of `i`" in 𝒢₃, since `transforms.bivector_rotation`/`plane_rotation`
    rest on it and only the e₁₂ 𝒢₂ case is proven.
 

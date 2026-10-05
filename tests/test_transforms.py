@@ -472,7 +472,7 @@ def _to3(angle: float) -> MultiVectorBase:
     )
 
 
-def test_rotor_rotation_is_linear_and_round_trips() -> None:
+def test_versor_rotation_is_linear_and_round_trips() -> None:
     r: InvertibleFunction[MultiVectorBase] = versor_rotation(
         g3.G.basis_vector(1), _to3(0.7)
     )
@@ -487,18 +487,18 @@ def test_rotor_rotation_is_linear_and_round_trips() -> None:
         assert r.inverse(r(v)).isclose(v, rel_tol=1e-5, abs_tol=1e-5)
 
 
-def test_rotor_rotation_handles_zero() -> None:
+def test_versor_rotation_handles_zero() -> None:
     r: InvertibleFunction[MultiVectorBase] = versor_rotation(
         g3.G.basis_vector(1), _to3(0.7)
     )
     assert r(g3.G.zero()).isclose(g3.G.zero(), rel_tol=1e-5, abs_tol=1e-5)
 
 
-def test_rotor_rotation_matches_projection_rotate() -> None:
+def test_versor_rotation_matches_projection_rotate() -> None:
     # the two formulations of a rotation agree (versor sandwich vs projection),
     # including the perpendicular axis being fixed
     to: MultiVectorBase = _to3(0.7)
-    rotor_fn: InvertibleFunction[MultiVectorBase] = versor_rotation(
+    versor_fn: InvertibleFunction[MultiVectorBase] = versor_rotation(
         g3.G.basis_vector(1), to
     )
     proj_fn: MultiVectorFn = projection_rotation(
@@ -511,7 +511,7 @@ def test_rotor_rotation_matches_projection_rotate() -> None:
         g3.G.basis_vector(3),
         vec(g3.G, 2, -1, 3),
     ):
-        assert rotor_fn(v).isclose(proj_fn(v), rel_tol=1e-5, abs_tol=1e-5)
+        assert versor_fn(v).isclose(proj_fn(v), rel_tol=1e-5, abs_tol=1e-5)
 
 
 # --- constructing ComposableFunction / InvertibleFunction directly to label a

@@ -12,6 +12,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`MultiVectorBase.rotor_from_vectors(from, to)`** — the `versor_from_vectors` versor normalized to unit
+  magnitude: a true *rotor*, applied with the textbook reverse sandwich `R v R.reverse()`. Equal to the
+  versor's inverse sandwich and to `projection_rotation` (machine-checked in
+  `proofs/GacalcProofs/Rotor.lean`; sympy-checked in `tests/test_rotor_from_vectors.py`, using the Lagrange
+  closed form `|R|² = 2|a||b|(|a||b| + a·b)`). On `g2`/`g3` vectors it is typed `Versor`. Additive.
 - **`gacalc.standardposition`** (`project_sp`, `reject_sp`) — a pedagogical, "reduction to standard
   position" duplicate of `project`/`reject`: it rotates the target vector onto the `e_1` axis with
   elementary coordinate-plane rotations, keeps the x-component there (no geometric product), and
@@ -41,6 +46,22 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   orthogonality/parallelism framed through it) is undefined there. `area`/`volume` are unaffected (no
   division; a degenerate measure of 0 is meaningful). Mirrors the Lean proofs' nonzero hypothesis on
   the sine/cosine theorems (`proofs/GacalcProofs/StudentTrigForms.lean`).
+
+- **Lean proofs (not the Python API):** a rotor layer in `proofs/GacalcProofs/Sandwich.lean` — `IsRotor`
+  (unit even versor) with `R⁻¹ = R̃` and `sandwich R v = R v R̃` — and the 2D names aligned to the
+  vocabulary *versor = even, any magnitude; rotor = unit versor*: `Rotation2D.versor` → `rotor`
+  (`sandwich_versor` → `sandwich_rotor`, `versor_unit` → `rotor_unit`, `versor_mul` → `rotor_mul`,
+  `MathlibBridge.versor_sandwich_eq_rotation` → `rotor_sandwich_eq_rotation`), and the one-sided
+  full-angle `rotor` → `fullAngleRotor` (`vec_mul_rotor` → `vec_mul_fullAngleRotor`,
+  `rotorFromTo` → `fullAngleRotorFromTo`). `Rotation2D.rot θ` now acts on a 𝒢₂ vector by its named
+  components `c1`/`c2` instead of a bare `ℝ × ℝ` pair (`polar` likewise; `scale` dropped for `G2.smul`;
+  `rot_cossin` → `rot_uvec`; `MathlibBridge.toC` reads a 𝒢₂ vector). New `proofs/GacalcProofs/Rotor.lean`: the
+  rotor chain with the reverse sandwich (`rotorFromVectors = normalize ∘ versorFromVectors` is a rotor; the
+  bridge `(R/|R|) v (R/|R|)~ = R v R⁻¹`; = `projRotation`, carries from→to, isometry; Lagrange closed form of
+  the versor's magnitude; 2D: the from-vectors rotor of two unit directions is the half-angle `rotor θ`). New
+  `PlaneRotation3D.lean`: the 3D half-angle rotor `planeRotor θ i` of a unit bivector is a rotor and
+  `R v R̃ = v⊥ + cos θ·v∥ + sin θ·(v ⌋ i)` — what `plane_rotation`/`bivector_rotation` compute, proven for a
+  general plane (previously only `e₁₂` in 𝒢₂). No Python name changed.
 
 ### Fixed
 - **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)

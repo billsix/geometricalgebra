@@ -25,5 +25,7 @@ import GacalcProofs.Exp
 import GacalcProofs.CrossStandardPosition
 import GacalcProofs.ProjectionRotation3D
 import GacalcProofs.ProjectionRotation2D
+import GacalcProofs.Rotor
+import GacalcProofs.PlaneRotation3D
 import GacalcProofs.StudentTrigForms
 import GacalcProofs.MathlibBridge

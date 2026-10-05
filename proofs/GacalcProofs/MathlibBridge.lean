@@ -16,9 +16,9 @@ import GacalcProofs.Rotation2D
       * **wedge** — the 2D wedge is the `2×2` determinant (`Matrix.det_fin_two_of`); the 3D wedge's
         three components are the three minors; the dual of the 3D wedge is Mathlib's `crossProduct`,
         and the signed volume is `Matrix.det` of the three rows (`triple_product_eq_det`).
-      * **rotation** — `toC` reads a pair as a complex number; `rot θ` is `Complex.orientation.rotation θ`
+      * **rotation** — `toC` reads a 𝒢₂ vector as a complex number; `rot θ` is `Complex.orientation.rotation θ`
         (Mathlib's `Orientation.rotation` on the oriented plane ℂ), and so is the from-scratch 2D
-        versor sandwich `R v R̃` via `sandwich_versor`.
+        versor sandwich `R v R̃` via `sandwich_rotor`.
 
     The constructions stay standalone (decision 2026-09-28); Mathlib is mapped in only here. -/
 namespace GacalcProofs
@@ -142,36 +142,37 @@ end G3
 
 /-! ### Rotation ↦ `Orientation.rotation` (on the oriented plane ℂ) -/
 
-/-- A pair of reals as a complex number — Mathlib's oriented plane. -/
-noncomputable def toC (v : ℝ × ℝ) : ℂ := ⟨v.1, v.2⟩
+/-- A 𝒢₂ vector as a complex number — Mathlib's oriented plane — read off its named components:
+    `c1` (the e₁ coefficient) is the real part, `c2` (the e₂ coefficient) the imaginary part. -/
+noncomputable def toC (v : G2) : ℂ := ⟨v.c1, v.c2⟩
 
-/-- **The from-scratch rotation IS Mathlib's `Orientation.rotation`:** `rot θ` on pairs is rotation by
-    the angle `θ` for the standard orientation of ℂ (`Complex.orientation`), whose right-angle rotation
-    is multiplication by `I`. -/
-theorem toC_rot (θ : ℝ) (v : ℝ × ℝ) :
+/-- **The from-scratch rotation IS Mathlib's `Orientation.rotation`:** `rot θ` on 𝒢₂ vectors is rotation
+    by the angle `θ` for the standard orientation of ℂ (`Complex.orientation`), whose right-angle
+    rotation is multiplication by `I`. Holds for every `v` (both sides read only `c1`/`c2`). -/
+theorem toC_rot (θ : ℝ) (v : G2) :
     toC (rot θ v) = Complex.orientation.rotation (θ : Real.Angle) (toC v) := by
   rw [Orientation.rotation_apply, Complex.rightAngleRotation]
   apply Complex.ext <;>
-    simp [toC, rot, Real.Angle.cos_coe, Real.Angle.sin_coe, Complex.cos_ofReal_re, Complex.sin_ofReal_re] <;>
+    simp [toC, rot, G2.vec, Real.Angle.cos_coe, Real.Angle.sin_coe, Complex.cos_ofReal_re,
+      Complex.sin_ofReal_re] <;>
     ring
 
 /-- Composition of from-scratch rotations is composition of Mathlib rotations (`rot_add` ↔
     `Orientation.rotation_rotation`). -/
-theorem toC_rot_rot (θ φ : ℝ) (v : ℝ × ℝ) :
+theorem toC_rot_rot (θ φ : ℝ) (v : G2) :
     toC (rot θ (rot φ v))
       = Complex.orientation.rotation (θ : Real.Angle)
           (Complex.orientation.rotation (φ : Real.Angle) (toC v)) := by
   rw [toC_rot, toC_rot]
 
-/-- **The 2D versor sandwich IS Mathlib's rotation:** `R v R̃` for `R = versor θ`
-    (`cos(θ/2) − sin(θ/2)·e₁₂`), read as a complex number, is `Complex.orientation.rotation θ` of the
-    vector — the from-scratch rotor rotates by exactly the Mathlib angle `θ`. Via `sandwich_versor`
-    (`R v R̃ = rot θ v`) and `toC_rot`. -/
-theorem versor_sandwich_eq_rotation (θ x y : ℝ) :
-    (⟨(G2.mul (G2.mul (versor θ) (G2.vec x y)) (G2.reverse (versor θ))).c1,
-      (G2.mul (G2.mul (versor θ) (G2.vec x y)) (G2.reverse (versor θ))).c2⟩ : ℂ)
-      = Complex.orientation.rotation (θ : Real.Angle) ⟨x, y⟩ := by
-  rw [sandwich_versor]
-  exact toC_rot θ (x, y)
+/-- **The 2D rotor sandwich IS Mathlib's rotation:** `R v R̃` for `R = rotor θ`
+    (`cos(θ/2) − sin(θ/2)·e₁₂`) and a vector `v`, read as a complex number, is
+    `Complex.orientation.rotation θ` of `v` — the from-scratch rotor rotates by exactly the Mathlib
+    angle `θ`. Via `sandwich_rotor` (`R v R̃ = rot θ v`) and `toC_rot`. -/
+theorem rotor_sandwich_eq_rotation (θ : ℝ) {v : G2} (hv : G2.IsVector v) :
+    toC (G2.mul (G2.mul (rotor θ) v) (G2.reverse (rotor θ)))
+      = Complex.orientation.rotation (θ : Real.Angle) (toC v) := by
+  rw [sandwich_rotor θ hv]
+  exact toC_rot θ v
 
 end GacalcProofs
