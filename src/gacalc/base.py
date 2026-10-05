@@ -54,6 +54,13 @@ Blade = tuple[int, ...]
 #:   be built via dispatching arithmetic (``Bivector + scalar -> Versor``),
 #:   never via ``from_blade_dict`` on the operand's type (see ``exp``).
 BladeCoef = dict[Blade, Coef]
+
+#: A substitution handed to :meth:`MultiVectorBase.symbolically_equal` -- the relations
+# sympy
+#: cannot discover on its own (``{s**2: 1 - c**2}``), applied to each blade's difference
+# before
+#: ``simplify``. Typed to match ``sympy.Expr.subs``'s mapping overload.
+SymbolicSubstitution = Mapping[sympy.Basic | complex, sympy.Expr | complex]
 MultiVectorFn = Callable[["MultiVectorBase"], "MultiVectorBase"]
 
 #: Type variable for the operand of a versor sandwich -- the result has the
@@ -2027,6 +2034,67 @@ class MultiVectorBase(abc.ABC):
         sin_t: Coef = math.sin(theta) if numeric else sympy.sin(theta)
         #   Â sin|A| + cos|A|   with   Â = A / |A|
         return self * (sin_t / theta) + cos_t
+
+    def symbolically_equal(
+        self,
+        other: MultiVectorBase,
+        *,
+        subs: SymbolicSubstitution | None = None,
+    ) -> bool:
+        """Exact equality of **values**, blade by blade, with sympy deciding symbolic
+        coefficients: two multivectors are symbolically equal when every blade's
+        coefficients are equal numbers, or -- if either is a sympy expression --
+        when ``simplify(left - right) == 0``.  This is value equality independent of
+        the *form* a coefficient happens to be in (``(x + 1)**2`` vs
+        ``x**2 + 2*x + 1``), the test the structural ``==`` cannot make; it is the
+        one home for the ``simplify(a - b) == 0`` idiom the tests used to re-roll.
+
+        Representation-agnostic: ``other`` may be any gacalc multivector (``Gn`` vs a
+        generated ``g2``/``g3`` value), compared through the blade-dict interchange.
+
+        ``subs`` hands sympy a relation it cannot find by itself -- e.g. the
+        Pythagorean ``{s**2: 1 - c**2}`` that lets ``sqrt(4*c**4 + 4*s**2*c**2)``
+        collapse to ``2*c`` (see ``tasks/reference/symbolic-equality.md``, "Square
+        roots").  It is applied to each blade's *difference* before ``simplify``.
+
+        Conservative, like ``==``: a ``False`` means "not proven equal" -- ``simplify``
+        is a heuristic and can fail on hard forms (nested radicals); it never reports
+        two unequal values as equal.  Floating-point values are compared exactly; for
+        tolerances use :meth:`isclose`.
+
+        Args:
+            other: the multivector to compare against (any representation).
+            subs: optional substitution applied to each blade's difference before
+                simplifying.
+
+        Returns:
+            bool: ``True`` iff every blade's coefficients are provably equal.
+
+        Example:
+            >>> import sympy
+            >>> from gacalc.g2 import Vector
+            >>> x = sympy.Symbol("x")
+            >>> ((x + 1) ** 2 * Vector.e_1).symbolically_equal(
+            ...     (x**2 + 2 * x + 1) * Vector.e_1
+            ... )
+            True
+        """
+        left: BladeCoef = self.to_blade_dict()
+        right: BladeCoef = other.to_blade_dict()
+        blade: tuple[int, ...]
+        for blade in set(left) | set(right):
+            left_coef: Coef = left.get(blade, 0)
+            right_coef: Coef = right.get(blade, 0)
+            if subs is None:
+                if not _coef_eq(left_coef, right_coef):
+                    return False
+            else:
+                difference: sympy.Expr = (
+                    sympy.sympify(left_coef) - sympy.sympify(right_coef)
+                ).subs(subs)
+                if sympy.simplify(difference) != 0:
+                    return False
+        return True
 
     def isclose(
         self, other: typing.Self, rel_tol: float = 0.0, abs_tol: float = 0.0

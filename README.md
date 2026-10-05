@@ -146,7 +146,9 @@ doesn't arise in the 𝒢₂ table above (every product is covered), but in 𝒢
 also narrow to the tightest type). Versors carry `plane_of_rotation()`, and
 `versor_from_vectors(from, to)` builds the versor whose sandwich `R v R.inverse()` equals
 `projection_rotation(from, to)(v)` (a free function in `gacalc.transforms`). `rotor_from_vectors(from, to)` is that versor normalized — a unit *rotor*, applied with the
-textbook reverse sandwich `R v R.reverse()`; the two rotations agree (`proofs/GacalcProofs/Rotor.lean`). To separate the plane from the angle, `plane_rotation(a, b)`
+textbook reverse sandwich `R v R.reverse()`; the two rotations agree (`proofs/GacalcProofs/Rotor.lean`). A versor's factors read back as `R.magnitude()`, `R.plane_of_rotation()`, `R.angle()` (so
+`R == r * (cos θ + sin θ * I)`), with `R.conjugate()` its complex conjugate; `a.symbolically_equal(b)` is
+exact symbolic value equality for any two representations. To separate the plane from the angle, `plane_rotation(a, b)`
 (new in 0.0.8) wedge-normalizes the two vectors into a unit bivector once and returns
 a factory: each `θ` yields an `InvertibleFunction` doing the half-angle rotor sandwich
 (numeric `θ` stays float — no sympy in the result). Versors can also be built the

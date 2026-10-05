@@ -417,18 +417,6 @@ def test_expand_numerators_dict_for_display() -> None:
     assert d == den
 
 
-def _same_value(x: MultiVectorBase, y: MultiVectorBase) -> bool:
-    # Value equality independent of coefficient *form* (Gn's __eq__ is structural,
-    # so (a+b)**2 vs a**2+2ab+b**2 would compare unequal there).
-    dx: BladeCoef
-    dy: BladeCoef
-    dx, dy = x.to_blade_dict(), y.to_blade_dict()
-    return all(
-        sympy.simplify(sympy.sympify(dx.get(k, 0)) - sympy.sympify(dy.get(k, 0))) == 0
-        for k in set(dx) | set(dy)
-    )
-
-
 @pytest.mark.parametrize("n,cls", CASES)
 def test_simplified_and_expanded_preserve_value(
     n: int, cls: type[MultiVectorBase]
@@ -439,12 +427,12 @@ def test_simplified_and_expanded_preserve_value(
     t: sympy.Symbol
     a, b, t = sympy.symbols("a b t")
     v: MultiVectorBase = cls.from_blade_dict({(1,): (a + b) ** 2})
-    assert _same_value(v.expanded(), v)
-    assert _same_value(v.simplified(), v)
+    assert v.expanded().symbolically_equal(v)
+    assert v.simplified().symbolically_equal(v)
     w: MultiVectorBase = cls.from_blade_dict(
         {(1,): sympy.sin(t) ** 2 + sympy.cos(t) ** 2}
     )
-    assert _same_value(w.simplified(), w)
+    assert w.simplified().symbolically_equal(w)
     assert w.simplified().to_blade_dict()[(1,)] == 1
 
 

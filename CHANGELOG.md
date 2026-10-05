@@ -12,6 +12,10 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`MultiVectorBase.symbolically_equal(other, *, subs=None)`** — the one public home of symbolic value
+  equality (`simplify(a − b) == 0` blade by blade, delegating to the same per-coefficient rule as `==`;
+  representation-agnostic; `subs` feeds sympy a relation such as `{s**2: 1 - c**2}` before simplifying).
+  Replaces the hand-rolled test helpers. Additive. `gacalc.base.SymbolicSubstitution` is its mapping type.
 - **`MultiVectorBase.rotor_from_vectors(from, to)`** — the `versor_from_vectors` versor normalized to unit
   magnitude: a true *rotor*, applied with the textbook reverse sandwich `R v R.reverse()`. Equal to the
   versor's inverse sandwich and to `projection_rotation` (machine-checked in
