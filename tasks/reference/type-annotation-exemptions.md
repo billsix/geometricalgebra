@@ -52,7 +52,7 @@ which is additionally **variadic** (`*factors: float`), hence `Callable[..., ...
 
 ### 2. Returns left inferred (2 sites)
 
-- **`MultiVectorBase.__iter__`** (`src/gacalc/base.py`) — annotating it `Generator[Coef]`
+- **`MultiVectorBase.__iter__`** (`src/gacalc/base.py`) — annotating it `Generator[Real]`
   makes ty treat a multivector as a destructurable iterable, so the `case [*sequence]:`
   patterns in project/reject/reflect match a lone multivector and widen the bound element
   type. A false positive: at runtime a multivector is not a `Sequence`. The docstring
@@ -90,7 +90,7 @@ of them produced errors in exactly one test; the other 21 are now typed.
   `MultiVectorBase` does not. Same root cause as §2 and §3.
 - **`tests/test_odd3.py`** — `conjugated`. Declaring `g3.Odd_3` is correct at runtime (the
   next line asserts exactly that), but it widens `coeff_e_123` to the full
-  `Coef = int | float | sympy.Expr`, and sympy's stubs have no `simplify` overload taking
+  `Real = int | float | sympy.Expr`, and sympy's stubs have no `simplify` overload taking
   a bare `int`/`float`.
 
 Note the shape these share: **the abstract base is less capable than every concrete
@@ -99,7 +99,7 @@ exemption of this family traces back to that.
 
 ## What is NOT an exemption
 
-Type aliases (`Coef`, `Blade`, `BladeCoef`, `MultiVectorFn`, `MultiVector = Gn`), `TypeVar`
+Type aliases (`Real`, `Blade`, `BladeReal`, `MultiVectorFn`, `MultiVector = Gn`), `TypeVar`
 definitions, `Enum` members, and `_` discards are not annotation candidates at all —
 annotating one changes what it means. They are excluded from the audit rather than
 exempted from it.

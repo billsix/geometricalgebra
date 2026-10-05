@@ -57,7 +57,7 @@ from collections.abc import Sequence
 import numpy as np
 import sympy
 
-from gacalc.base import BladeCoef, Coef, MultiVectorBase, MultiVectorFn
+from gacalc.base import BladeReal, MultiVectorBase, MultiVectorFn, Real
 from gacalc.functions import (
     ComposableFunction,
     InvertibleFunction,
@@ -284,7 +284,7 @@ def versor_rotation(
 
 def _unit_bivector_rotor_factory(
     i: MultiVectorBase,
-) -> typing.Callable[[Coef], MultiVectorBase]:
+) -> typing.Callable[[Real], MultiVectorBase]:
     """Given a **unit** bivector ``i`` (``i * i == -1``), return *angle -> the
     half-angle rotor* ``R = cos(theta/2) - sin(theta/2) * i``.
 
@@ -308,7 +308,7 @@ def _unit_bivector_rotor_factory(
     ``cos(theta)``, not ``1.0*cos(theta)``.  A purely symbolic plane never
     coerces.  ``i`` is assumed already unit -- callers normalize before calling.
     """
-    i_coefs: BladeCoef = i.to_blade_dict()
+    i_coefs: BladeReal = i.to_blade_dict()
     i_numeric: MultiVectorBase | None = None
     if all(
         isinstance(c, (int, float)) or bool(getattr(c, "is_number", False))
@@ -318,11 +318,11 @@ def _unit_bivector_rotor_factory(
             {blade: float(c) for blade, c in i_coefs.items()}
         )
 
-    def rotor_for(theta: Coef) -> MultiVectorBase:
+    def rotor_for(theta: Real) -> MultiVectorBase:
         # sympy trig for a symbolic angle, math trig for a numeric one -- keep a
         # purely numeric pipeline numeric (magnitude()/inverse() convention).
-        cos_half: Coef
-        sin_half: Coef
+        cos_half: Real
+        sin_half: Real
         plane_i: MultiVectorBase
         if isinstance(theta, sympy.Expr):
             cos_half = sympy.cos(theta / 2)
@@ -341,9 +341,9 @@ def _unit_bivector_rotor_factory(
 def bivector_rotation(
     i: MultiVectorBase,
     *,
-    latex_repr: typing.Callable[[Coef], str] | None = None,
-    latex_repr_inv: typing.Callable[[Coef], str] | None = None,
-) -> typing.Callable[[Coef], InvertibleFunction[MultiVectorBase]]:
+    latex_repr: typing.Callable[[Real], str] | None = None,
+    latex_repr_inv: typing.Callable[[Real], str] | None = None,
+) -> typing.Callable[[Real], InvertibleFunction[MultiVectorBase]]:
     r"""Establish a plane of rotation from a **bivector**; get back *angle ->
     rotation*.
 
@@ -390,11 +390,11 @@ def bivector_rotation(
         raise TypeError(
             f"bivector_rotation takes a bivector (grade-2); got grades {i.grades()}"
         )
-    rotor_for: typing.Callable[[Coef], MultiVectorBase] = _unit_bivector_rotor_factory(
+    rotor_for: typing.Callable[[Real], MultiVectorBase] = _unit_bivector_rotor_factory(
         i.normalize()
     )
 
-    def rotation(theta: Coef) -> InvertibleFunction[MultiVectorBase]:
+    def rotation(theta: Real) -> InvertibleFunction[MultiVectorBase]:
         rotor: MultiVectorBase = rotor_for(theta)
 
         def forward(v: MultiVectorBase) -> MultiVectorBase:
@@ -423,9 +423,9 @@ def plane_rotation(
     a: V,
     b: V,
     *,
-    latex_repr: typing.Callable[[Coef], str] | None = None,
-    latex_repr_inv: typing.Callable[[Coef], str] | None = None,
-) -> typing.Callable[[Coef], InvertibleFunction[V]]:
+    latex_repr: typing.Callable[[Real], str] | None = None,
+    latex_repr_inv: typing.Callable[[Real], str] | None = None,
+) -> typing.Callable[[Real], InvertibleFunction[V]]:
     r"""Establish a plane of rotation from two vectors; get back *angle ->
     rotation*.
 
@@ -490,11 +490,11 @@ def plane_rotation(
     # there.  Kept separate from ``bivector_rotation`` (rather than delegating to
     # it) so this factory preserves the precise operand type ``V``: rotating a
     # ``Vector3`` returns a ``Vector3``, not a ``MultiVectorBase``.
-    rotor_for: typing.Callable[[Coef], MultiVectorBase] = _unit_bivector_rotor_factory(
+    rotor_for: typing.Callable[[Real], MultiVectorBase] = _unit_bivector_rotor_factory(
         plane.normalize()
     )
 
-    def rotation(theta: Coef) -> InvertibleFunction[V]:
+    def rotation(theta: Real) -> InvertibleFunction[V]:
         rotor: MultiVectorBase = rotor_for(theta)
 
         def forward(v: V) -> V:
@@ -683,17 +683,17 @@ def to_matrix(
         fn(cls.basis_vector(i + 1)) - origin for i in range(n)
     ]
 
-    def coords(v: MultiVectorBase, bottom: int) -> list[Coef]:
+    def coords(v: MultiVectorBase, bottom: int) -> list[Real]:
         # one full column: the n coordinates of v -- read straight from its
         # blade-dict (the coefficient each representation already stores; no
         # product to compute, no dependence on component/scalar_product) -- plus
         # the column's bottom entry (0 for a direction column, 1 for translation).
-        d: BladeCoef = v.to_blade_dict()
+        d: BladeReal = v.to_blade_dict()
         return [d.get((j + 1,), 0) for j in range(n)] + [bottom]
 
     # the matrix's columns: each unit-direction image (bottom 0), then the origin
     # (translation, bottom 1).
-    columns: list[list[Coef]] = [coords(d, 0) for d in directions] + [coords(origin, 1)]
+    columns: list[list[Real]] = [coords(d, 0) for d in directions] + [coords(origin, 1)]
 
     match backend:
         case "sympy":

@@ -55,21 +55,21 @@ even when the multivector *is* that number:
 
 ```
 >>> from gacalc import g2
->>> g2.Scalar.from_scalar(-1) == -1          # False -- NOT lifted
+>>> g2.Scalar.from_real(-1) == -1          # False -- NOT lifted
 False
->>> g2.Scalar.from_scalar(-1) == g2.Scalar.from_scalar(-1)   # compare typed values
+>>> g2.Scalar.from_real(-1) == g2.Scalar.from_real(-1)   # compare typed values
 True
 ```
 
 **This is asymmetric with arithmetic**, which *does* lift a bare number (`__add__`/`__mul__`
-route it through `from_blade_dict`/`from_scalar`), so `scalar + 1` and `bivector * 2` work
+route it through `from_blade_dict`/`from_real`), so `scalar + 1` and `bivector * 2` work
 fine — only `==` refuses. The footgun: a grade-0 *result* compared to `0`/`1` with `==` is
 silently `False` even when it holds that value (`some_scalar_result == 0` misfires).
 
 Practical rule, and the one the generated **doctests** follow: compare a multivector result
-to a **correctly-typed** value — `== Scalar.from_scalar(-1)`, `== Vector.e_3`,
-`== Versor.from_scalar(1)` — never to a bare number. When you want the *number*, pull it out
-first (`.scalar_part()`, `.coefficient(blade)`, `.magnitude_squared()` return a plain `Coef`)
+to a **correctly-typed** value — `== Scalar.from_real(-1)`, `== Vector.e_3`,
+`== Versor.from_real(1)` — never to a bare number. When you want the *number*, pull it out
+first (`.scalar_part()`, `.coefficient(blade)`, `.magnitude_squared()` return a plain `Real`)
 and compare that: `mv.scalar_part() == 0` is fine, `mv == 0` is not.
 
 ## Limits — what `simplify(a − b) == 0` can and can't do
@@ -97,7 +97,7 @@ symbolic), and with `subs` it applies the substitution to each blade's *differen
 equal" (decided 2026-10-05: public method, plain `bool` — no separate "undecided" signal). Tests use it
 directly; the former hand-rolled copies (`_same_value` in `test_conformance.py`, `simplify_equal` in
 `test_graded.py`, `_simplify_equal` in `test_rotor_from_vectors.py`) are gone. Scalar-level one-offs
-(`scalar_eq` in `test_conformance.py`, the `content` assertions in `test_measure.py`) compare `Coef`s, not
+(`scalar_eq` in `test_conformance.py`, the `content` assertions in `test_measure.py`) compare `Real`s, not
 multivectors, and stay as `simplify(...) == 0`. Pinned by `tests/test_symbolic_equality.py`.
 
 ## Square roots: hand sympy the relation it cannot find (Lagrange / Pythagoras) (2026-10-05)
@@ -118,7 +118,7 @@ relations sympy does not discover: Lagrange's (<https://en.wikipedia.org/wiki/La
   `s**2` hits it inside the `sqrt` argument too.
 - **Prove the closed form itself as its own assertion** (`simplify(R.magnitude_squared() − 2|a||b|(|a||b| +
   a·b)) == 0`, fully symbolic in 2D and 3D) — it is a plain polynomial identity once `sqrt(x)**2 → x`.
-- **Typing (ty):** `magnitude_squared()` is `Coef = float | Expr`, so wrap it in `sympy.sympify` before
+- **Typing (ty):** `magnitude_squared()` is `Real = float | Expr`, so wrap it in `sympy.sympify` before
   `.subs`/`simplify`; a substitution map is `Mapping[sympy.Basic | complex, sympy.Expr | complex]` (dict keys
   are invariant, so `dict[Expr, Expr]` is rejected by sympy's `subs` overloads).
 

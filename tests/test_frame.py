@@ -28,7 +28,7 @@ import pytest
 import sympy
 from _helpers import random_vector
 
-from gacalc.base import Coef, MultiVectorBase
+from gacalc.base import MultiVectorBase, Real
 from gacalc.frame import (
     are_linearly_independent,
     is_frame,
@@ -180,7 +180,7 @@ def test_make_orthogonal_frame_raises_on_dependent() -> None:
 # |A_{k-1}|² v_k^⊥``.  See ``tasks/define-frame.md`` Part 1c.
 
 
-def _prev_blade_magnitude_squared(vectors: Sequence[MultiVectorBase], k: int) -> Coef:
+def _prev_blade_magnitude_squared(vectors: Sequence[MultiVectorBase], k: int) -> Real:
     """The positive scalar factor ``|A_{k-1}|²`` -- i.e. ``content(v_1..v_{k-1})²``
     (with ``A_0 = 1`` -> ``1``)."""
     if k == 1:

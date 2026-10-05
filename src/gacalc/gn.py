@@ -24,9 +24,9 @@ import sympy
 
 from gacalc.base import (
     Blade,
-    BladeCoef,
-    Coef,
+    BladeReal,
     MultiVectorBase,
+    Real,
     _require_canonical_blades,
 )
 
@@ -55,7 +55,7 @@ from gacalc.transforms import (  # noqa: F401
 
 class BladeDictionaryEntry(NamedTuple):
     blade: Blade
-    coefficient: Coef
+    coefficient: Real
 
     def as_multivector(self) -> Gn:
         """Promote this single (blade, coefficient) pair to a one-term ``Gn``.
@@ -90,7 +90,7 @@ class Gn(MultiVectorBase):
     ``tools/gen_specialized.py`` for that pipeline.
     """
 
-    coefficient_of_blade: BladeCoef
+    coefficient_of_blade: BladeReal
 
     def __post_init__(self) -> None:
         """Normalize the stored coefficients: eagerly ``sympy.simplify`` every one
@@ -113,7 +113,7 @@ class Gn(MultiVectorBase):
         }
 
     @classmethod
-    def from_blade_dict(cls, blade_coef: Mapping[Blade, Coef]) -> Gn:
+    def from_blade_dict(cls, blade_coef: Mapping[Blade, Real]) -> Gn:
         """Build a ``Gn`` from a canonical blade → coefficient mapping.
 
         The interchange constructor (see ``MultiVectorBase.from_blade_dict``).
@@ -162,12 +162,12 @@ class Gn(MultiVectorBase):
             )
         return plane.normalize()
 
-    def to_blade_dict(self) -> BladeCoef:
+    def to_blade_dict(self) -> BladeReal:
         """Return the canonical blade → coefficient mapping (``Gn`` stores exactly
         this, so it is returned directly, not rebuilt).
 
         Returns:
-            BladeCoef: the stored blade -> coefficient dict.
+            BladeReal: the stored blade -> coefficient dict.
         """
         return self.coefficient_of_blade
 
@@ -279,8 +279,8 @@ e_7: MultiVector = MultiVector({(7,): 1})
 e_8: MultiVector = MultiVector({(8,): 1})
 e_9: MultiVector = MultiVector({(9,): 1})
 e_10: MultiVector = MultiVector({(10,): 1})
-zero: MultiVector = MultiVector.from_scalar(0)
-one: MultiVector = MultiVector.from_scalar(1)
+zero: MultiVector = MultiVector.from_real(0)
+one: MultiVector = MultiVector.from_real(1)
 
 a_1: sympy.Symbol
 a_2: sympy.Symbol

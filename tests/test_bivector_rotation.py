@@ -30,7 +30,7 @@ import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
-from gacalc.base import Coef, MultiVectorBase
+from gacalc.base import MultiVectorBase, Real
 from gacalc.functions import InvertibleFunction
 from gacalc.transforms import bivector_rotation, plane_rotation
 
@@ -51,7 +51,7 @@ def test_agrees_with_plane_rotation_on_the_same_plane() -> None:
 
 
 def test_quarter_turn_maps_e1_to_e2_and_fixes_perpendicular() -> None:
-    turn: Callable[[Coef], InvertibleFunction[MultiVectorBase]] = bivector_rotation(
+    turn: Callable[[Real], InvertibleFunction[MultiVectorBase]] = bivector_rotation(
         g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
     )
     quarter: InvertibleFunction[MultiVectorBase] = turn(math.radians(90))
@@ -83,7 +83,7 @@ def test_inverse_undoes_the_rotation() -> None:
 
 
 def test_interpolation_is_a_fraction_of_the_angle() -> None:
-    turn: Callable[[Coef], InvertibleFunction[MultiVectorBase]] = bivector_rotation(
+    turn: Callable[[Real], InvertibleFunction[MultiVectorBase]] = bivector_rotation(
         g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
     )
     half: InvertibleFunction[MultiVectorBase] = turn(math.radians(80)).at(0.5)

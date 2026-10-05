@@ -30,7 +30,7 @@ import sys
 
 import sympy
 
-from gacalc.base import BladeCoef
+from gacalc.base import BladeReal
 from gacalc.gn import Gn
 
 
@@ -51,7 +51,7 @@ def blade_name(bl: tuple[int, ...], prefix: str) -> str:
 
 def dump(title: str, value: Gn, prefix: str, all_blades: list[tuple[int, ...]]) -> None:
     """Print each coefficient of `value` as `<prefix><blade> = <expanded formula>`."""
-    coefs: BladeCoef = value.to_blade_dict()
+    coefs: BladeReal = value.to_blade_dict()
     print(f"\n=== {title} ===")  # noqa: T201 -- derived formulas are the tool's output
     bl: tuple[int, ...]
     for bl in all_blades:

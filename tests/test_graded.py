@@ -289,7 +289,7 @@ def test_exp_narrows_bivector_to_rotor() -> None:
 
 
 def test_scalar_type() -> None:
-    s5: g2.Scalar = g2.Scalar.from_scalar(5)
+    s5: g2.Scalar = g2.Scalar.from_real(5)
     v: g2.Vector = 3 * g2.Vector.e_1 + 4 * g2.Vector.e_2
     assert type(s5 * v) is g2.Vector and s5 * v == 15 * gn.e_1 + 20 * gn.e_2
     assert type(3 * v) is g2.Vector and 3 * v == 9 * gn.e_1 + 12 * gn.e_2

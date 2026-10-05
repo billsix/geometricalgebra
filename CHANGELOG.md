@@ -39,6 +39,13 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **BREAKING — `Coef` → `Real`, `BladeCoef` → `BladeReal`, `from_scalar`/`from_coef` → `from_real`.** The
+  Python real number (`int | float | sympy.Expr`) that goes into the algebra and comes back out of every
+  extraction is now named `Real`; the one constructor `from_real(real)` lifts any real, numeric or
+  symbolic, into the grade-0 element (`from_coef` is gone). The grade-0 *class* stays `Scalar`, its field
+  `coeff_scalar`, and `scalar_part`/`scalar_product`/`is_scalar`/`pseudoscalar` keep the literature's
+  word. Migration: rename the imports and the two constructors; nothing else changes. Rationale and
+  the full keep/rename map: `tasks/reference/scalar-vs-real-naming.md`.
 - **`MultiVectorBase.inverse` now rejects a general mixed-grade multivector.** The formula
   `A⁻¹ = Ã/|A|²` is a correct inverse only when `Ã A` is a scalar — i.e. for a **blade** (a
   grade-pure simple element: scalar, vector, bivector, trivector/pseudoscalar) or a **versor** (a

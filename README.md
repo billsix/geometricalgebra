@@ -35,7 +35,7 @@ src/gacalc/
 All representations interoperate through one interchange format: the **blade
 coefficient dictionary** (`{(1, 2): 4}` means `4·e₁e₂`; `()` keys the scalar),
 read/written by `to_blade_dict()` / `from_blade_dict()`. Its full contract is
-documented at `BladeCoef` in `base.py`.
+documented at `BladeReal` in `base.py`.
 
 > Installing from a git checkout (not from PyPI)? Run `make generate` once first —
 > the specialized `g*.py` modules aren't committed; they're generated from `Gn`
@@ -48,7 +48,7 @@ from gacalc.g2 import G, e_1, e_2
 
 a = 3 * e_1 + 4 * e_2
 a.magnitude_squared()  # 25  (a vector squared is its magnitude squared)
-a * a == G.from_scalar(25)  # True
+a * a == G.from_real(25)  # True
 e_1 * e_2  # the unit bivector e_12
 a.dual()  # the dual; n defaults to this algebra's dimension (2)
 a.coefficient(e_1)  # 3   (the stored coefficient on a unit blade — a thin

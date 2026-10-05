@@ -113,7 +113,7 @@ def test_rejects_anything_but_a_g2_vector() -> None:
     with pytest.raises(TypeError, match="grade-1 Vector"):
         turn(e_12)  # ty: ignore[invalid-argument-type]
     with pytest.raises(TypeError, match="grade-1 Vector"):
-        turn(g2.Scalar.from_scalar(2))  # ty: ignore[invalid-argument-type]
+        turn(g2.Scalar.from_real(2))  # ty: ignore[invalid-argument-type]
     with pytest.raises(TypeError, match="grade-1 Vector"):
         turn(g3.e_1)  # ty: ignore[invalid-argument-type]
     with pytest.raises(TypeError, match="grade-1 Vector"):

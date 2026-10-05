@@ -41,7 +41,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 
-from gacalc.base import Coef, MultiVectorBase
+from gacalc.base import MultiVectorBase, Real
 from gacalc.frame import make_orthogonal_frame
 
 
@@ -75,7 +75,7 @@ def _max_basis_index(vectors: Sequence[MultiVectorBase]) -> int:
     )
 
 
-def content(vectors: Sequence[MultiVectorBase]) -> Coef:
+def content(vectors: Sequence[MultiVectorBase]) -> Real:
     """The k-dimensional **content** of the parallelotope on ``vectors`` -- the
     high-school length/area/volume generalized (Williamson & Trotter p. 308).
 
@@ -114,7 +114,7 @@ def content(vectors: Sequence[MultiVectorBase]) -> Coef:
     return MultiVectorBase.outer_product_of_vectors(*vectors).magnitude()
 
 
-def content_by_rejection(vectors: Sequence[MultiVectorBase]) -> Coef:
+def content_by_rejection(vectors: Sequence[MultiVectorBase]) -> Real:
     """The content computed **Hestenes/Williamson-Trotter's way** -- the product of
     rejected heights, ``∏_j |h_j|`` (W&T p. 146), the sibling of :func:`content`.
 
@@ -150,7 +150,7 @@ def content_by_rejection(vectors: Sequence[MultiVectorBase]) -> Coef:
     )
 
 
-def area(a: MultiVectorBase, b: MultiVectorBase) -> Coef:
+def area(a: MultiVectorBase, b: MultiVectorBase) -> Real:
     """The area of the parallelogram on ``a`` and ``b`` -- ``content([a, b])``
     (Williamson & Trotter pp. 144-145; ``= |a||b| sin θ = |a ∧ b|``).
 
@@ -171,7 +171,7 @@ def area(a: MultiVectorBase, b: MultiVectorBase) -> Coef:
     return content([a, b])
 
 
-def volume(a: MultiVectorBase, b: MultiVectorBase, c: MultiVectorBase) -> Coef:
+def volume(a: MultiVectorBase, b: MultiVectorBase, c: MultiVectorBase) -> Real:
     """The volume of the parallelepiped on ``a``, ``b``, ``c`` --
     ``content([a, b, c])`` (Williamson & Trotter p. 146).
 
@@ -183,7 +183,7 @@ def volume(a: MultiVectorBase, b: MultiVectorBase, c: MultiVectorBase) -> Coef:
     return content([a, b, c])
 
 
-def signed_content(vectors: Sequence[MultiVectorBase]) -> Coef:
+def signed_content(vectors: Sequence[MultiVectorBase]) -> Real:
     """The **signed** (oriented) content -- the determinant -- of ``n`` vectors that
     span the full ``n``-dimensional space.
 
@@ -251,7 +251,7 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Coef:
     return oriented.scalar_part()
 
 
-def signed_area(a: MultiVectorBase, b: MultiVectorBase) -> Coef:
+def signed_area(a: MultiVectorBase, b: MultiVectorBase) -> Real:
     """The **signed** area of the parallelogram on ``a``, ``b`` --
     ``signed_content([a, b])``, the 2-D determinant ``a_1 b_2 - a_2 b_1`` (needs 2-D
     vectors; see :func:`signed_content`).
@@ -275,7 +275,7 @@ def signed_area(a: MultiVectorBase, b: MultiVectorBase) -> Coef:
     return signed_content([a, b])
 
 
-def signed_volume(a: MultiVectorBase, b: MultiVectorBase, c: MultiVectorBase) -> Coef:
+def signed_volume(a: MultiVectorBase, b: MultiVectorBase, c: MultiVectorBase) -> Real:
     """The **signed** volume of the parallelepiped on ``a``, ``b``, ``c`` --
     ``signed_content([a, b, c])``, the 3-D determinant (needs 3-D vectors).
 

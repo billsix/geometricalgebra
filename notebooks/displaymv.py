@@ -36,7 +36,7 @@ import warnings
 import sympy
 from IPython.display import Math, display
 
-from gacalc.base import Coef, MultiVectorFn
+from gacalc.base import MultiVectorFn, Real
 from gacalc.gn import (
     InvertibleFunction,
     MultiVector,
@@ -494,7 +494,7 @@ show_mult(
 # rotate(angle): rotation in the e_1 e_2 plane (positive angle turns e_1 -> e_2).
 # plane_rotation builds the half-angle rotor + sandwich internally and returns a
 # properly-labelled InvertibleFunction -- no hand-built rotor, and it renders LaTeX.
-rotate: typing.Callable[[Coef], InvertibleFunction[MultiVector]] = plane_rotation(
+rotate: typing.Callable[[Real], InvertibleFunction[MultiVector]] = plane_rotation(
     e_1, e_2
 )
 

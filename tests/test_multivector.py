@@ -119,7 +119,7 @@ def test_multivector_mult() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2
     assert a.magnitude_squared() == 25
 
-    assert (a * a) == MultiVector.from_scalar(25)
+    assert (a * a) == MultiVector.from_real(25)
     assert (a * a).is_scalar()
 
     i: MultiVector = MultiVector.unit_pseudoscalar(2)
@@ -131,7 +131,7 @@ def test_multivector_mult() -> None:
     u: MultiVector = a_1 * e_1 + a_2 * e_2
     v: MultiVector = b_1 * e_1 + b_2 * e_2
     assert (u * v) == (
-        MultiVector.from_scalar(a_1 * b_1 + a_2 * b_2)  # dot: u·v
+        MultiVector.from_real(a_1 * b_1 + a_2 * b_2)  # dot: u·v
         + (a_1 * b_2 - a_2 * b_1) * e_1 * e_2  # wedge: (u∧v) e_12
     )
     # the same product, split via the pseudoscalar i:
@@ -151,7 +151,7 @@ def test_multivector_mult3d() -> None:
 
     # the geometric product = the scalar dot + the three bivector wedge parts:
     assert (u * v) == (
-        MultiVector.from_scalar(a_1 * b_1 + a_2 * b_2 + a_3 * b_3)  # dot
+        MultiVector.from_real(a_1 * b_1 + a_2 * b_2 + a_3 * b_3)  # dot
         + (a_1 * b_2 - a_2 * b_1) * e_1 * e_2  # wedge in the e_1 e_2 plane
         + (a_2 * b_3 - a_3 * b_2) * e_2 * e_3  # wedge in the e_2 e_3 plane
         + (a_3 * b_1 - a_1 * b_3) * e_3 * e_1  # wedge in the e_3 e_1 plane
@@ -282,7 +282,7 @@ def test_even_part_odd_part() -> None:
 
 def test_multivector_dot() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2
-    assert a.dot(a) == MultiVector.from_scalar(25)
+    assert a.dot(a) == MultiVector.from_real(25)
     assert a.dot(a).is_scalar()
     c: MultiVector = -4 * e_1 + 3 * e_2
     assert a.dot(c) == zero
@@ -290,7 +290,7 @@ def test_multivector_dot() -> None:
     # general 2D vectors: the dot product is the scalar a_1 b_1 + a_2 b_2:
     u: MultiVector = a_1 * e_1 + a_2 * e_2
     v: MultiVector = b_1 * e_1 + b_2 * e_2
-    assert u.dot(v) == MultiVector.from_scalar(a_1 * b_1 + a_2 * b_2)
+    assert u.dot(v) == MultiVector.from_real(a_1 * b_1 + a_2 * b_2)
     assert u.dot(v).is_scalar()
 
 
@@ -320,7 +320,7 @@ def test_multivector_cosine() -> None:
     # general 2D vectors: cos θ · |u| · |v| == u · v (the definition of cosine):
     u: MultiVector = a_1 * e_1 + a_2 * e_2
     v: MultiVector = b_1 * e_1 + b_2 * e_2
-    assert MultiVector.from_scalar(u.cosine(v) * abs(u) * abs(v)) == u.dot(v)
+    assert MultiVector.from_real(u.cosine(v) * abs(u) * abs(v)) == u.dot(v)
 
 
 def test_multivector_abs_sin() -> None:

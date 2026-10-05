@@ -33,9 +33,9 @@ from gacalc.functions import ComposableFunction, InvertibleFunction, Linearity
 # (symbolic mode).  Concrete `int | float | sympy.Expr` rather than the
 # `numbers.Real` ABC -- ty turns `numbers.Real` arithmetic into `_ComplexLike`
 # and then rejects `+`/`/`/`**` on it, which broke the generated versor sandwich.
-Coef = int | float | sympy.Expr
+Real = int | float | sympy.Expr
 #: A basis blade: a tuple of basis-vector indices, e.g. ``(1, 2)`` ≙ e₁e₂ (``()`` is
-#: the scalar blade).  The key type of the ``BladeCoef`` interchange dict.
+#: the scalar blade).  The key type of the ``BladeReal`` interchange dict.
 Blade = tuple[int, ...]
 #: THE interchange format of the library.  Every representation (``Gn``,
 #: ``G``, the graded subtypes) converts to and from this dict via
@@ -53,7 +53,7 @@ Blade = tuple[int, ...]
 #:   foreign keys are silently dropped, so a result carrying a new grade must
 #:   be built via dispatching arithmetic (``Bivector + scalar -> Versor``),
 #:   never via ``from_blade_dict`` on the operand's type (see ``exp``).
-BladeCoef = dict[Blade, Coef]
+BladeReal = dict[Blade, Real]
 
 #: A substitution handed to :meth:`MultiVectorBase.symbolically_equal` -- the relations
 # sympy
@@ -146,7 +146,7 @@ def blade_latex(blade: Blade, symbols: Mapping[Blade, str] | None = None) -> str
     )
 
 
-def blade_dict_latex(d: BladeCoef, symbols: Mapping[Blade, str] | None = None) -> str:
+def blade_dict_latex(d: BladeReal, symbols: Mapping[Blade, str] | None = None) -> str:
     """Render a blade -> coefficient dict as a LaTeX string (the body of
     ``_repr_latex_``, factored out so callers can render a chosen *view*).
 
@@ -167,7 +167,7 @@ def blade_dict_latex(d: BladeCoef, symbols: Mapping[Blade, str] | None = None) -
         str: the LaTeX string (``$...$``; ``$0$`` for an empty dict).
     """
 
-    def add_parens_or_dont(x: Coef) -> str:
+    def add_parens_or_dont(x: Real) -> str:
         # Parenthesize a sum so its terms bind to the blade; render straight from
         # the sympy/number object (no fragile sympify(str(x)) round-trip).
         return (
@@ -241,7 +241,7 @@ class MultiVectorBase(abc.ABC):
 
     Concrete representations (Gn, and later G) implement a tiny interchange
     protocol -- ``from_blade_dict`` / ``to_blade_dict`` -- plus the core
-    ``_geometric_product``.  The blade dict (``BladeCoef``, documented at its
+    ``_geometric_product``.  The blade dict (``BladeReal``, documented at its
     definition above) is **the canonical interchange representation**: every
     type converts through it, and all the shared arithmetic below routes
     through it.  Every representation-independent method here is
@@ -260,12 +260,12 @@ class MultiVectorBase(abc.ABC):
     # ------------------------------------------------------------------
     @classmethod
     @abc.abstractmethod
-    def from_blade_dict(cls, blade_coef: Mapping[Blade, Coef]) -> typing.Self:
+    def from_blade_dict(cls, blade_coef: Mapping[Blade, Real]) -> typing.Self:
         """Build an instance of this representation from a blade->coef mapping.
 
         Args:
             blade_coef: a canonical blade -> coefficient mapping (keys are
-                strictly-increasing index tuples; see ``BladeCoef``).
+                strictly-increasing index tuples; see ``BladeReal``).
 
         Returns:
             Self: an instance of this concrete representation holding those
@@ -277,42 +277,35 @@ class MultiVectorBase(abc.ABC):
         """
 
     @abc.abstractmethod
-    def to_blade_dict(self) -> BladeCoef:
+    def to_blade_dict(self) -> BladeReal:
         """Return this multivector as a canonical blade -> coefficient mapping.
 
         Returns:
-            BladeCoef: the blade -> coefficient interchange dict (canonical keys,
+            BladeReal: the blade -> coefficient interchange dict (canonical keys,
             exact-zero coefficients omitted).
         """
 
     @classmethod
-    def from_scalar(cls, scalar: int | float) -> typing.Self:
-        """The scalar (grade-0) multivector  ⟨A⟩₀ = scalar  — every other blade zero.
-
-        For a symbolic coefficient use ``from_coef``; this takes a plain number.
+    def from_real(cls, real: Real) -> typing.Self:
+        """The scalar (grade-0) multivector  ⟨A⟩₀ = real  — every other blade zero:
+        the one constructor that lifts a **real number** (a plain ``int``/``float``
+        or a symbolic ``sympy.Expr``) into the algebra.  The number you pass in is a
+        ``Real``; the grade-0 *element* you get back is a ``Scalar`` — the two sides
+        of the type boundary (``tasks/reference/scalar-vs-real-naming.md``).
 
         Args:
-            scalar: the grade-0 coefficient (a plain Python number).
+            real: the grade-0 coefficient — a number or a ``sympy.Expr``.
 
         Returns:
-            Self: the multivector whose scalar part is ``scalar`` and whose every
+            Self: the multivector whose scalar part is ``real`` and whose every
             other blade coefficient is zero.
+
+        Example:
+            >>> from gacalc.g2 import Scalar
+            >>> Scalar.from_real(3).scalar_part()
+            3
         """
-        return cls.from_blade_dict({tuple(): scalar})
-
-    @classmethod
-    def from_coef(cls, s: Coef) -> typing.Self:
-        """The scalar (grade-0) multivector whose coefficient is ``s`` — like
-        ``from_scalar`` but also accepts a symbolic ``sympy.Expr`` coefficient.
-
-        Args:
-            s: the grade-0 coefficient (a number or a ``sympy.Expr``).
-
-        Returns:
-            Self: the multivector whose scalar part is ``s``, every other blade
-            zero.
-        """
-        return cls.from_blade_dict({tuple(): s})
+        return cls.from_blade_dict({tuple(): real})
 
     @classmethod
     def zero(cls) -> typing.Self:
@@ -321,7 +314,7 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: the multivector with every coefficient zero.
         """
-        return cls.from_scalar(0)
+        return cls.from_real(0)
 
     @classmethod
     def one(cls) -> typing.Self:
@@ -330,7 +323,7 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: the unit scalar (scalar part 1, every other blade zero).
         """
-        return cls.from_scalar(1)
+        return cls.from_real(1)
 
     @classmethod
     def basis_vector(cls, i: int) -> typing.Self:
@@ -448,7 +441,7 @@ class MultiVectorBase(abc.ABC):
             Self: the geometric product ``self * rhs``.
         """
 
-    def __mul__(self, rhs: MultiVectorBase | Coef) -> typing.Self:
+    def __mul__(self, rhs: MultiVectorBase | Real) -> typing.Self:
         """Geometric product  A B  (``*``).  A bare number on the right is lifted to a
         scalar first, so ``A * 2`` scales; otherwise this is the full product of the
         algebra, dispatched to the representation's ``_geometric_product``.
@@ -462,13 +455,13 @@ class MultiVectorBase(abc.ABC):
         """
         match rhs:
             case int() | float() as n:
-                return self._geometric_product(type(self).from_scalar(n))
+                return self._geometric_product(type(self).from_real(n))
             case sympy.Expr() as s:
-                return self._geometric_product(type(self).from_coef(s))
+                return self._geometric_product(type(self).from_real(s))
             case _:
                 return self._geometric_product(rhs)
 
-    def __rmul__(self, lhs: MultiVectorBase | Coef) -> typing.Self:
+    def __rmul__(self, lhs: MultiVectorBase | Real) -> typing.Self:
         """Reflected geometric product  (number) A  — gives ``2 * A`` for a bare number
         on the left.  A multivector left operand is handled by its own ``__mul__``; any
         other left type returns ``NotImplemented`` so Python raises ``TypeError``.
@@ -483,9 +476,9 @@ class MultiVectorBase(abc.ABC):
         """
         match lhs:
             case int() | float() as n:
-                return self._geometric_product(type(self).from_scalar(n))
+                return self._geometric_product(type(self).from_real(n))
             case sympy.Expr() as s:
-                return self._geometric_product(type(self).from_coef(s))
+                return self._geometric_product(type(self).from_real(s))
             case _:
                 # multivector*multivector is handled by __mul__; any other left
                 # operand is unsupported -- defer so Python raises a clean
@@ -496,7 +489,7 @@ class MultiVectorBase(abc.ABC):
     # ------------------------------------------------------------------
     # shared arithmetic, all built on the interchange + primitives
     # ------------------------------------------------------------------
-    def __add__(self, rhs: MultiVectorBase | Coef) -> typing.Self:
+    def __add__(self, rhs: MultiVectorBase | Real) -> typing.Self:
         """Sum  A + B  — coefficient-wise over the union of both multivectors' blades.
         A bare number adds to the scalar (grade-0) part, so ``bivector + c`` builds
         the versor  c + B  in every representation.
@@ -514,8 +507,8 @@ class MultiVectorBase(abc.ABC):
         # every representation.
         if isinstance(rhs, (int, float, sympy.Expr)):
             rhs = type(self).from_blade_dict({(): rhs})
-        left: BladeCoef = self.to_blade_dict()
-        right: BladeCoef = rhs.to_blade_dict()
+        left: BladeReal = self.to_blade_dict()
+        right: BladeReal = rhs.to_blade_dict()
         return type(self).from_blade_dict(
             {
                 blade: (left.get(blade, 0) + right.get(blade, 0))
@@ -523,7 +516,7 @@ class MultiVectorBase(abc.ABC):
             }
         )
 
-    def __radd__(self, lhs: Coef) -> typing.Self:
+    def __radd__(self, lhs: Real) -> typing.Self:
         """Reflected sum  (number) + A  — addition commutes, so this gives ``2 + A``
         for free.  ``lhs`` is always a bare number (a multivector left operand uses
         its own ``__add__``).
@@ -537,8 +530,8 @@ class MultiVectorBase(abc.ABC):
         # addition commutes; gives ``2 + mv`` for free.  ``lhs`` is a bare number,
         # never a multivector: Python only calls ``__radd__`` when the left operand
         # (here a non-multivector) has no ``__add__`` for us -- a multivector left
-        # operand uses its own ``__add__``.  Typing it ``Coef`` (not
-        # ``MultiVectorBase | Coef``) also matches the generated specialized
+        # operand uses its own ``__add__``.  Typing it ``Real`` (not
+        # ``MultiVectorBase | Real``) also matches the generated specialized
         # ``__radd__`` (whose ``lhs`` is a number union), so the override is
         # Liskov-clean at every dimension.
         return self.__add__(lhs)
@@ -562,7 +555,7 @@ class MultiVectorBase(abc.ABC):
         """
         return -1 * self
 
-    def __truediv__(self, rhs: MultiVectorBase | Coef) -> typing.Self:
+    def __truediv__(self, rhs: MultiVectorBase | Real) -> typing.Self:
         """Quotient  A / B  =  A B⁻¹  — division IS multiplication by the
         inverse (right division: order matters in a non-commutative algebra).
         A bare number's inverse is its reciprocal, so ``v / s`` divides every
@@ -586,16 +579,16 @@ class MultiVectorBase(abc.ABC):
             else self * rhs.inverse()
         )
 
-    def __abs__(self) -> Coef:
+    def __abs__(self) -> Real:
         """Magnitude  \\|A\\|  =  ``abs(A)``  — the norm √⟨A A˜⟩; see ``magnitude``.
 
         Returns:
-            Coef: the magnitude ``|A|`` (see :meth:`magnitude`).
+            Real: the magnitude ``|A|`` (see :meth:`magnitude`).
         """
         return self.magnitude()
 
     def __iter__(self):
-        # Return intentionally left unannotated: typing it ``Generator[Coef]``
+        # Return intentionally left unannotated: typing it ``Generator[Real]``
         # makes ty treat a MultiVectorBase as a destructurable iterable, so the
         # ``case [*sequence]:`` patterns in project/reject/reflect then also match
         # a lone multivector and widen the bound element type -- a false positive
@@ -609,12 +602,12 @@ class MultiVectorBase(abc.ABC):
         ``to_blade_dict()``.
 
         Yields:
-            Coef: each coefficient value, in grade-then-index blade order.
+            Real: each coefficient value, in grade-then-index blade order.
         """
-        d: BladeCoef = self.to_blade_dict()
+        d: BladeReal = self.to_blade_dict()
         yield from (d[key] for key in sorted(d.keys(), key=lambda b: (len(b), b)))
 
-    def magnitude(self) -> Coef:
+    def magnitude(self) -> Real:
         """Magnitude  ``|A|``  =  √(Ã ∗ A)  — the positive square root of the scalar
         product of A with its reverse.
 
@@ -631,21 +624,21 @@ class MultiVectorBase(abc.ABC):
         not floats); symbolic coefficients also stay symbolic.
 
         Returns:
-            Coef: the magnitude ``|A|`` — a ``float`` for float input, otherwise
+            Real: the magnitude ``|A|`` — a ``float`` for float input, otherwise
             an exact ``sympy`` value.
         """
-        magnitude_squared: Coef = self.magnitude_squared()
+        magnitude_squared: Real = self.magnitude_squared()
         return (
             math.sqrt(magnitude_squared)
             if isinstance(magnitude_squared, float)
             else sympy.sqrt(magnitude_squared)
         )
 
-    def magnitude_squared(self) -> Coef:
+    def magnitude_squared(self) -> Real:
         """Squared magnitude  ``|A|²``  =  Ã ∗ A  =  ⟨Ã A⟩  (a scalar).
 
         Returns:
-            Coef: the scalar ``|A|²`` (the scalar product of the reverse with A).
+            Real: the scalar ``|A|²`` (the scalar product of the reverse with A).
         """
         return self.reverse().scalar_product(self)
 
@@ -668,7 +661,7 @@ class MultiVectorBase(abc.ABC):
             raise ZeroDivisionError("cannot normalize a zero-magnitude multivector")
         return self * (abs(self) ** (-1))
 
-    def coefficient(self, blade: typing.Self) -> Coef:
+    def coefficient(self, blade: typing.Self) -> Real:
         """The coefficient this multivector stores on the unit basis ``blade``.
 
         A thin reader convenience: it reads the stored value straight from the
@@ -684,7 +677,7 @@ class MultiVectorBase(abc.ABC):
                 ``g2.Bivector.e_12``, or a module constant like ``gn.e_1``.
 
         Returns:
-            Coef: the coefficient stored on ``blade`` (0 if absent).
+            Real: the coefficient stored on ``blade`` (0 if absent).
 
         Example:
             >>> from gacalc.g2 import Vector
@@ -694,7 +687,7 @@ class MultiVectorBase(abc.ABC):
         (key,) = blade.to_blade_dict()  # the single blade of a unit basis blade
         return self.to_blade_dict().get(key, 0)
 
-    def _map_coefficients(self, op: Callable[[Coef], Coef]) -> typing.Self:
+    def _map_coefficients(self, op: Callable[[Real], Real]) -> typing.Self:
         """Return a new multivector with ``op`` applied to each coefficient.
 
         The same value, with its blade coefficients transformed (e.g. by a sympy
@@ -829,7 +822,7 @@ class MultiVectorBase(abc.ABC):
         )
         return typing.cast(typing.Self, outer)
 
-    def scalar_product(self, other: typing.Self) -> Coef:
+    def scalar_product(self, other: typing.Self) -> Real:
         """Scalar product  A ∗ B  =  ⟨A B⟩  — the grade-0 (scalar) part of the
         geometric product.
 
@@ -840,7 +833,7 @@ class MultiVectorBase(abc.ABC):
             other: the right operand.
 
         Returns:
-            Coef: the scalar product ``⟨A B⟩`` (the grade-0 part of the product).
+            Real: the scalar product ``⟨A B⟩`` (the grade-0 part of the product).
         """
         return (self * other).scalar_part()
 
@@ -1000,7 +993,7 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: the grade-``r`` part of A (zero if A has no grade-``r`` blades).
         """
-        d: BladeCoef = self.to_blade_dict()
+        d: BladeReal = self.to_blade_dict()
         return type(self).from_blade_dict(
             {blade: d[blade] for blade in d.keys() if len(blade) == r}
         )
@@ -1161,13 +1154,13 @@ class MultiVectorBase(abc.ABC):
             return wedge.isclose(type(self).zero(), rel_tol=1e-5, abs_tol=1e-5)
         return bool(wedge == type(self).zero())
 
-    def scalar_part(self) -> Coef:
+    def scalar_part(self) -> Real:
         """Scalar part  ⟨A⟩  =  ⟨A⟩₀  — the grade-0 (scalar) component of A.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 4
 
         Returns:
-            Coef: the grade-0 coefficient of A (0 if absent).
+            Real: the grade-0 coefficient of A (0 if absent).
         """
         return self.to_blade_dict().get(tuple(), 0)
 
@@ -1278,7 +1271,7 @@ class MultiVectorBase(abc.ABC):
         # (e.g. a unit blade, |A|² == 1) sympify first, so ``int ** -1`` keeps the
         # exact Rational instead of silently degrading to a float; symbolic |A|²
         # stays symbolic.  (Mirrors the numeric/symbolic split in ``magnitude``.)
-        mag_sq: Coef = reverse_times_self.scalar_part()
+        mag_sq: Real = reverse_times_self.scalar_part()
         if not isinstance(mag_sq, float):
             mag_sq = sympy.sympify(mag_sq)
         if mag_sq == 0:
@@ -1333,7 +1326,7 @@ class MultiVectorBase(abc.ABC):
             start=type(self).zero(),
         )
 
-    def cosine(self, other: MultiVectorBase) -> Coef:
+    def cosine(self, other: MultiVectorBase) -> Real:
         """Cosine of the angle between A and B:  cos θ  =  (Ã ∗ B) / (``|A|`` ``|B|``).
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 14,
@@ -1343,7 +1336,7 @@ class MultiVectorBase(abc.ABC):
             other: the other multivector.
 
         Returns:
-            Coef: the cosine ``cos θ = (Ã ∗ B) / (|A| |B|)``.
+            Real: the cosine ``cos θ = (Ã ∗ B) / (|A| |B|)``.
 
         Raises:
             ValueError: if ``self`` or ``other`` is the zero vector — the angle (hence
@@ -1358,7 +1351,7 @@ class MultiVectorBase(abc.ABC):
             * (abs(other) ** (-1))
         )
 
-    def abs_sin(self, other: MultiVectorBase) -> Coef:
+    def abs_sin(self, other: MultiVectorBase) -> Real:
         """Unsigned sine of the angle between A and B:  ``|A ∧ B|`` / (``|A|`` ``|B|``).
 
         The non-negative, any-dimension companion to :meth:`cosine`.  By Lagrange's
@@ -1376,7 +1369,7 @@ class MultiVectorBase(abc.ABC):
             other: the other multivector.
 
         Returns:
-            Coef: the unsigned sine ``|A ∧ B| / (|A| |B|)``.
+            Real: the unsigned sine ``|A ∧ B| / (|A| |B|)``.
 
         Raises:
             ValueError: if ``self`` or ``other`` is the zero vector — the angle (hence
@@ -1620,7 +1613,7 @@ class MultiVectorBase(abc.ABC):
     # module graph acyclic (``measure`` imports ``base``).  Only the fixed-arity ones
     # are methods; ``content`` takes a sequence and stays a free function.
 
-    def area(self, other: MultiVectorBase) -> Coef:
+    def area(self, other: MultiVectorBase) -> Real:
         """The area of the parallelogram on ``self`` and ``other`` -- the student's
         ``|a| |b| sin θ`` (see :meth:`abs_sin`), computed as ``|a ∧ b|`` (the method
         form of :func:`gacalc.measure.area`).
@@ -1629,7 +1622,7 @@ class MultiVectorBase(abc.ABC):
             other: the second vector spanning the parallelogram.
 
         Returns:
-            Coef: the (unsigned) area ``|a ∧ b|``.
+            Real: the (unsigned) area ``|a ∧ b|``.
 
         Example:
             >>> from gacalc.g2 import e_1, e_2
@@ -1642,7 +1635,7 @@ class MultiVectorBase(abc.ABC):
 
         return measure.area(self, other)
 
-    def volume(self, b: MultiVectorBase, c: MultiVectorBase) -> Coef:
+    def volume(self, b: MultiVectorBase, c: MultiVectorBase) -> Real:
         """The volume of the parallelepiped on ``self``, ``b``, ``c`` -- the method
         form of :func:`gacalc.measure.volume`.
 
@@ -1651,13 +1644,13 @@ class MultiVectorBase(abc.ABC):
             c: the third edge vector.
 
         Returns:
-            Coef: the (unsigned) volume of the parallelepiped.
+            Real: the (unsigned) volume of the parallelepiped.
         """
         from gacalc import measure
 
         return measure.volume(self, b, c)
 
-    def signed_area(self, other: MultiVectorBase) -> Coef:
+    def signed_area(self, other: MultiVectorBase) -> Real:
         """The signed (oriented) area of ``self`` and ``other`` -- the method form of
         :func:`gacalc.measure.signed_area` (the 2-D determinant; needs 2-D vectors).
 
@@ -1665,7 +1658,7 @@ class MultiVectorBase(abc.ABC):
             other: the second vector.
 
         Returns:
-            Coef: the signed area (the 2-D determinant; negative when ``other`` is
+            Real: the signed area (the 2-D determinant; negative when ``other`` is
             clockwise from ``self``).
 
         Example:
@@ -1681,7 +1674,7 @@ class MultiVectorBase(abc.ABC):
 
         return measure.signed_area(self, other)
 
-    def signed_volume(self, b: MultiVectorBase, c: MultiVectorBase) -> Coef:
+    def signed_volume(self, b: MultiVectorBase, c: MultiVectorBase) -> Real:
         """The signed (oriented) volume of ``self``, ``b``, ``c`` -- the method form
         of :func:`gacalc.measure.signed_volume` (3-D determinant; needs 3-D vectors).
 
@@ -1690,7 +1683,7 @@ class MultiVectorBase(abc.ABC):
             c: the third edge vector.
 
         Returns:
-            Coef: the signed volume (the 3-D determinant).
+            Real: the signed volume (the 3-D determinant).
         """
         from gacalc import measure
 
@@ -1814,14 +1807,14 @@ class MultiVectorBase(abc.ABC):
         # but sympy leaves it as a nested radical it cannot simplify through the
         # sandwich, breaking the symbolic R v R^-1 == projection_rotation
         # identity.  No cast
-        # needed now that magnitude() is typed Coef (int | float | sympy.Expr).
+        # needed now that magnitude() is typed Real (int | float | sympy.Expr).
         # (Why the two are equal -- |ab| = |a||b| via |a^b| = |a||b|sin θ -- is
         # demonstrated in notebooks/displayg2.py and displayg3.py; that the
         # |to from| form regresses this identity was re-confirmed empirically.)
-        scale: Coef = from_vector.magnitude() * to_vector.magnitude()
+        scale: Real = from_vector.magnitude() * to_vector.magnitude()
         # scalar + bivector -- the versor's grade
         product: MultiVectorBase = to_vector * from_vector
-        return product + type(product).from_coef(scale)
+        return product + type(product).from_real(scale)
 
     @classmethod
     def rotor_from_vectors(
@@ -1883,7 +1876,7 @@ class MultiVectorBase(abc.ABC):
         """
         return self.r_vector_part(2).normalize()
 
-    def angle(self) -> Coef:
+    def angle(self) -> Real:
         """The angle ``θ`` of a versor ``R = r (cos θ + I sin θ)`` -- the angle between
         the two vectors whose product it is (``R = u v`` gives ``θ = ∠(u, v)``), read
         off its scalar and bivector parts: ``θ = atan2(|⟨R⟩₂|, ⟨R⟩₀) ∈ [0, π]``.
@@ -1898,14 +1891,14 @@ class MultiVectorBase(abc.ABC):
         symbolic input a ``sympy.atan2``.
 
         Returns:
-            Coef: ``θ`` in ``[0, π]``.
+            Real: ``θ`` in ``[0, π]``.
 
         Raises:
             ValueError: if ``R`` has a grade other than 0 or 2.
         """
         self._require_scalar_plus_bivector("angle")
-        scalar: Coef = self.scalar_part()
-        bivector_magnitude: Coef = self.r_vector_part(2).magnitude()
+        scalar: Real = self.scalar_part()
+        bivector_magnitude: Real = self.r_vector_part(2).magnitude()
         if isinstance(scalar, sympy.Basic) or isinstance(
             bivector_magnitude, sympy.Basic
         ):
@@ -2074,8 +2067,8 @@ class MultiVectorBase(abc.ABC):
             True
         """
         if self.is_scalar():
-            s: Coef = self.scalar_part()
-            exp_s: Coef = math.exp(s) if isinstance(s, float) else sympy.exp(s)
+            s: Real = self.scalar_part()
+            exp_s: Real = math.exp(s) if isinstance(s, float) else sympy.exp(s)
             # zero() + exp_s routes through the dispatching add (see docstring)
             return type(self).zero() + exp_s
         if not self.is_r_vector() or not (self * self).is_scalar():
@@ -2097,10 +2090,10 @@ class MultiVectorBase(abc.ABC):
                 f"pseudoscalar). got grades {sorted(self.grades())}"
             )
         # the one remaining case: A**2 < 0 (bivector / pseudoscalar) -> a rotor.
-        theta: Coef = self.magnitude()
+        theta: Real = self.magnitude()
         numeric: bool = isinstance(theta, float)
-        cos_t: Coef = math.cos(theta) if numeric else sympy.cos(theta)
-        sin_t: Coef = math.sin(theta) if numeric else sympy.sin(theta)
+        cos_t: Real = math.cos(theta) if numeric else sympy.cos(theta)
+        sin_t: Real = math.sin(theta) if numeric else sympy.sin(theta)
         #   Â sin|A| + cos|A|   with   Â = A / |A|
         return self * (sin_t / theta) + cos_t
 
@@ -2148,12 +2141,12 @@ class MultiVectorBase(abc.ABC):
             ... )
             True
         """
-        left: BladeCoef = self.to_blade_dict()
-        right: BladeCoef = other.to_blade_dict()
+        left: BladeReal = self.to_blade_dict()
+        right: BladeReal = other.to_blade_dict()
         blade: tuple[int, ...]
         for blade in set(left) | set(right):
-            left_coef: Coef = left.get(blade, 0)
-            right_coef: Coef = right.get(blade, 0)
+            left_coef: Real = left.get(blade, 0)
+            right_coef: Real = right.get(blade, 0)
             if subs is None:
                 if not _coef_eq(left_coef, right_coef):
                     return False
@@ -2193,8 +2186,8 @@ class MultiVectorBase(abc.ABC):
             TypeError: if any coefficient is symbolic (non-numeric) — use ``==``
                 for exact/symbolic equality.
         """
-        left: BladeCoef = self.to_blade_dict()
-        right: BladeCoef = other.to_blade_dict()
+        left: BladeReal = self.to_blade_dict()
+        right: BladeReal = other.to_blade_dict()
         # ``blade`` is a genexpr var (separate scope) so it stays inferred.
         return all(
             math.isclose(
@@ -2244,7 +2237,7 @@ class MultiVectorBase(abc.ABC):
         return blade_dict_latex(self.simplified().to_blade_dict())
 
 
-def _coef_eq(left: Coef, right: Coef) -> bool:
+def _coef_eq(left: Real, right: Real) -> bool:
     """Coefficient equality: exact for plain numbers, ``simplify``-backed for symbols.
 
     Native ``==`` settles *both* plain-number outcomes on its own -- equal numbers
@@ -2272,7 +2265,7 @@ def _coef_eq(left: Coef, right: Coef) -> bool:
     return bool(sympy.simplify(sympy.sympify(left) - sympy.sympify(right)) == 0)
 
 
-def _require_float(coef: Coef) -> float:
+def _require_float(coef: Real) -> float:
     """A coefficient as a ``float`` for ``isclose``; raise a clear
     error on a symbolic (non-numeric) coefficient.
 
@@ -2291,7 +2284,7 @@ def _require_float(coef: Coef) -> float:
     return float(coef)
 
 
-def _coerce[T: MultiVectorBase](x: MultiVectorBase | Coef, cls: type[T]) -> T:
+def _coerce[T: MultiVectorBase](x: MultiVectorBase | Real, cls: type[T]) -> T:
     """Coerce a scalar or multivector to ``cls`` (the full type).
 
     The shared widen helper for the generated dispatch methods' ``case _:``
@@ -2304,14 +2297,14 @@ def _coerce[T: MultiVectorBase](x: MultiVectorBase | Coef, cls: type[T]) -> T:
         case MultiVectorBase():
             return cls.from_blade_dict(x.to_blade_dict())
         case sympy.Expr():
-            return cls.from_coef(x)
+            return cls.from_real(x)
         case _:
-            return cls.from_scalar(x)
+            return cls.from_real(x)
 
 
 def _require_canonical_blades(blade_coef: Mapping[Blade, object]) -> None:
-    """Raise ``ValueError`` on a non-canonical blade key (see ``BladeCoef``).
-    Only the keys are read, so any blade-keyed mapping qualifies (a ``BladeCoef``,
+    """Raise ``ValueError`` on a non-canonical blade key (see ``BladeReal``).
+    Only the keys are read, so any blade-keyed mapping qualifies (a ``BladeReal``,
     or ``set_blade_symbols``'s blade -> LaTeX-string map).
 
     A canonical key's indices are strictly increasing (``(1, 2)``, never

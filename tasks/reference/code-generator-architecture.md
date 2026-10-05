@@ -141,11 +141,11 @@ generated ops" entry) and `tasks/archive/2026/07/23/investigate-final-full-class
 - `cast_self(v)` → `typing.cast(typing.Self, v)`.
 - `cast_operand(v)` → `typing.cast(_OperandT, v)` — for the versor sandwich, which returns the
   *operand's* type, not `Self`.
-- `cast_coef(v)` → `typing.cast(Coef, v)`, **except** it returns `v` unwrapped when `v` is a bare
+- `cast_coef(v)` → `typing.cast(Real, v)`, **except** it returns `v` unwrapped when `v` is a bare
   field (`ast.Name`/`ast.Attribute`, e.g. `self.coeff_x`) or a negated field (`-self.coeff_x`) —
-  those are already `Coef`, and casting them makes ty warn about a redundant cast. Only
+  those are already `Real`, and casting them makes ty warn about a redundant cast. Only
   compound expressions (sums, products, `d.get(...)`, literals) get wrapped. This is why the
-  generated code has `typing.cast(Coef, …)` on some fields but bare `self.coeff_e_1` on others.
+  generated code has `typing.cast(Real, …)` on some fields but bare `self.coeff_e_1` on others.
 
 **`SymbolToAttr(ast.NodeTransformer)`** — the sympy→AST bridge's rewriter. Given a `rename` map
 `{sympy-symbol-name: (obj, attr)}`, it visits `Name` nodes and rewrites each operand symbol to
@@ -255,7 +255,7 @@ each into a constructor field value:
 - `result_value` / `unary_value` — thin wrappers picking the right form for a bare symbol vs a
   compound expression (avoiding redundant `cast_coef`).
 - **`sympy.cse`** — common-subexpression elimination. `result_block_stmts` runs
-  `sympy.cse(out_exprs)`, emits the `x0: Coef = …`, `x1: Coef = …` temporaries as typed locals, then
+  `sympy.cse(out_exprs)`, emits the `x0: Real = …`, `x1: Real = …` temporaries as typed locals, then
   the `return … (field=reduced_expr, …)`. This is why generated products carry `x0`/`x1`/`x2`
   temps (visible in the sandwich output).
 

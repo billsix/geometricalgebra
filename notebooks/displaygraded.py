@@ -208,7 +208,7 @@ R * w * R.inverse() == projection_rotation(from_vector=frm, to_vector=to)(w)
 
 # %%
 named: list[tuple[str, MultiVectorBase]] = [
-    ("g2.Scalar", g2.Scalar.from_scalar(5)),
+    ("g2.Scalar", g2.Scalar.from_real(5)),
     ("g2.Vector", a),
     ("g2.Bivector", i2),
     ("g2.Versor", r),

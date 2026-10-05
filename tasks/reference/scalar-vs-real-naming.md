@@ -2,8 +2,7 @@
 
 **Reference document** — the naming decision for the grade-0 / real-number boundary, decided
 2026-10-05 (William Emerison Six <billsix@gmail.com>) on the analysis in
-`tasks/consider-renaming-scalar-to-real.md`. States what is true of the API once the rename lands;
-until then the task is the work record. Update in place.
+`tasks/archive/2026/10/05/consider-renaming-scalar-to-real.md`. The rename landed 2026-10-05 (`tasks/archive/2026/10/05/consider-renaming-scalar-to-real.md`). Update in place.
 
 ## The rule in one line
 
@@ -55,6 +54,6 @@ in-house consumer calls `from_scalar`/`from_coef` or imports `Coef`/`BladeCoef` 
 
 ## Related
 
-- `tasks/consider-renaming-scalar-to-real.md` — the analysis, the three-senses inventory, the work record
+- `tasks/archive/2026/10/05/consider-renaming-scalar-to-real.md` — the analysis, the three-senses inventory, the work record
 - `tasks/reference/symbolic-equality.md` — why a multivector is never `==` a bare number
 - `tasks/reference/graded-subspaces-vs-subalgebras.md` — the grade-pure types the `Scalar` class belongs to

@@ -30,14 +30,14 @@ import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
-from gacalc.base import Coef, MultiVectorBase, SymbolicSubstitution
+from gacalc.base import MultiVectorBase, Real, SymbolicSubstitution
 from gacalc.functions import InvertibleFunction
 from gacalc.transforms import plane_rotation, projection_rotation
 
 
-def _lagrange_closed_form(a: MultiVectorBase, b: MultiVectorBase) -> Coef:
+def _lagrange_closed_form(a: MultiVectorBase, b: MultiVectorBase) -> Real:
     """``2|a||b|(|a||b| + a·b)`` -- the versor's squared magnitude by Lagrange."""
-    ab: Coef = a.magnitude() * b.magnitude()
+    ab: Real = a.magnitude() * b.magnitude()
     return 2 * ab * (ab + a.scalar_product(b))
 
 

@@ -110,7 +110,7 @@ def test_sandwich_grade_preservation_is_one_coefficient() -> None:
     v: g3.Vector = x * g3.Vector.e_1 + y * g3.Vector.e_2 + z * g3.Vector.e_3
     # Left inferred: declaring `g3.Odd_3` is correct at runtime (the next line
     # asserts exactly that), but it widens `coeff_e_123` to the full
-    # `Coef = int | float | sympy.Expr`, and sympy's stubs have no
+    # `Real = int | float | sympy.Expr`, and sympy's stubs have no
     # `simplify` overload taking a bare int/float -- so the annotation would
     # fail the line below without making anything clearer.
     conjugated = versor * v * versor.inverse()

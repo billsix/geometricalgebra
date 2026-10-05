@@ -31,7 +31,7 @@ import gacalc.g1 as g1
 import gacalc.g2 as g2
 import gacalc.g3 as g3
 import gacalc.gn as gn
-from gacalc.base import Blade, BladeCoef, Coef, MultiVectorBase
+from gacalc.base import Blade, BladeReal, MultiVectorBase, Real
 from gacalc.gn import Gn
 from gacalc.transforms import projection_rotation
 
@@ -91,7 +91,7 @@ def vec(n: int, base: int) -> Gn:
     return Gn.from_blade_dict({(i,): base + i for i in range(1, n + 1)})
 
 
-def scalar_eq(a: Coef, b: Coef) -> bool:
+def scalar_eq(a: Real, b: Real) -> bool:
     return sympy.simplify(sympy.sympify(a) - sympy.sympify(b)) == 0
 
 
@@ -251,7 +251,7 @@ def test_exp(n: int, cls: type[MultiVectorBase]) -> None:
     # exp is defined for a scalar and any negative-square blade (bivector /
     # pseudoscalar); every representation must agree with Gn on each kind it can
     # hold, and reject a vector (A**2 > 0) the same way.
-    s: Gn = Gn.from_scalar(2)
+    s: Gn = Gn.from_real(2)
     assert to(cls, s).exp() == s.exp()
     v: Gn = vec(n, 0)
     with pytest.raises(ValueError):
@@ -269,7 +269,7 @@ def test_coefficient_readback(n: int, cls: type[MultiVectorBase]) -> None:
     # coefficient * blade over the basis reconstructs the value (decomposition)
     g: Gn = full(n, 0)
     x: MultiVectorBase = to(cls, g)
-    coefs: BladeCoef = g.to_blade_dict()
+    coefs: BladeReal = g.to_blade_dict()
     recon: MultiVectorBase = cls.zero()
     b: Blade
     for b in blades(n):
@@ -408,10 +408,10 @@ def test_expand_numerators_dict_for_display() -> None:
     v: Gn = Gn.from_blade_dict({(1,): a * (b + c)})
     assert _expand_numerators_dict(v)[(1,)] == a * b + a * c
     # numerator expanded, radical denominator left factored (not rationalized)
-    den: Coef = sympy.sqrt(a**2 + b**2)
+    den: Real = sympy.sqrt(a**2 + b**2)
     w: Gn = Gn.from_blade_dict({(1,): (a + b) ** 2 / den})
-    num: Coef
-    d: Coef
+    num: Real
+    d: Real
     num, d = sympy.fraction(sympy.together(_expand_numerators_dict(w)[(1,)]))
     assert num == a**2 + 2 * a * b + b**2
     assert d == den

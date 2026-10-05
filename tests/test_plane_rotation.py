@@ -29,7 +29,7 @@ import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
-from gacalc.base import Coef, MultiVectorBase
+from gacalc.base import MultiVectorBase, Real
 from gacalc.gn import Gn, plane_rotation
 from gacalc.transforms import (
     InvertibleFunction,
@@ -52,7 +52,7 @@ def test_rotates_a_toward_b() -> None:
 
 
 def test_angle_values_match_trig() -> None:
-    turn: typing.Callable[[Coef], InvertibleFunction[g2.Vector]] = plane_rotation(
+    turn: typing.Callable[[Real], InvertibleFunction[g2.Vector]] = plane_rotation(
         E1, E2
     )
     deg: int
@@ -106,7 +106,7 @@ def test_zero_rotates_to_zero() -> None:
 
 
 def test_inverse_and_composition() -> None:
-    turn: typing.Callable[[Coef], InvertibleFunction[g2.Vector]] = plane_rotation(
+    turn: typing.Callable[[Real], InvertibleFunction[g2.Vector]] = plane_rotation(
         E1, E2
     )
     f: InvertibleFunction[g2.Vector] = turn(0.7)
@@ -118,7 +118,7 @@ def test_inverse_and_composition() -> None:
 
 
 def test_interpolation() -> None:
-    turn: typing.Callable[[Coef], InvertibleFunction[g2.Vector]] = plane_rotation(
+    turn: typing.Callable[[Real], InvertibleFunction[g2.Vector]] = plane_rotation(
         E1, E2
     )
     f: InvertibleFunction[g2.Vector] = turn(math.radians(90))
@@ -128,15 +128,15 @@ def test_interpolation() -> None:
 
 
 def test_symbolic_theta() -> None:
-    theta: Coef = sympy.Symbol("theta", real=True)
+    theta: Real = sympy.Symbol("theta", real=True)
     f: InvertibleFunction[g2.Vector] = plane_rotation(E1, E2)(theta)
     got: MultiVectorBase = f(E1).simplified()
-    want: dict[tuple[int, ...], Coef] = {
+    want: dict[tuple[int, ...], Real] = {
         (1,): sympy.cos(theta),
         (2,): sympy.sin(theta),
     }
     blade: tuple[int, ...]
-    expr: Coef
+    expr: Real
     for blade, expr in want.items():
         assert (
             sympy.simplify(
@@ -171,7 +171,7 @@ def test_numeric_theta_stays_numeric() -> None:
 def test_symbolic_theta_stays_exact() -> None:
     # ...while a symbolic theta keeps the exact plane: cos(theta), not
     # 1.0*cos(theta).
-    theta: Coef = sympy.Symbol("theta", real=True)
+    theta: Real = sympy.Symbol("theta", real=True)
     got: MultiVectorBase = plane_rotation(E1, E2)(theta)(
         g2.Vector(coeff_e_1=1, coeff_e_2=0)
     ).simplified()
@@ -182,7 +182,7 @@ def test_symbolic_theta_stays_exact() -> None:
 
 
 def test_latex_label_hooks() -> None:
-    turn: typing.Callable[[Coef], InvertibleFunction[g2.Vector]] = plane_rotation(
+    turn: typing.Callable[[Real], InvertibleFunction[g2.Vector]] = plane_rotation(
         E1,
         E2,
         latex_repr=lambda t: f"RZ_{{<{t}>}}",
