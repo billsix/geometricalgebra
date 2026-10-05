@@ -1869,6 +1869,75 @@ class MultiVectorBase(abc.ABC):
             from_vector=from_vector, to_vector=to_vector
         ).normalize()
 
+    def plane_of_rotation(self) -> typing.Self:
+        """The unit bivector plane ``I`` this versor rotates in -- its bivector part,
+        normalized (Macdonald's ``I`` in ``R = r(cos θ + I sin θ)``; the generated
+        ``Versor`` classes override this with a ``Bivector``-typed version).
+
+        Returns:
+            Self: the unit bivector ``⟨R⟩₂ / |⟨R⟩₂|``.
+
+        Raises:
+            ZeroDivisionError: if the bivector part is zero (a pure scalar has no
+            plane).
+        """
+        return self.r_vector_part(2).normalize()
+
+    def angle(self) -> Coef:
+        """The angle ``θ`` of a versor ``R = r (cos θ + I sin θ)`` -- the angle between
+        the two vectors whose product it is (``R = u v`` gives ``θ = ∠(u, v)``), read
+        off its scalar and bivector parts: ``θ = atan2(|⟨R⟩₂|, ⟨R⟩₀) ∈ [0, π]``.
+
+        The other two factors are already methods: ``r`` is :meth:`magnitude` and
+        ``I`` is :meth:`plane_of_rotation`, so ``R == r * (cos θ + sin θ * I)`` exactly.
+        Mind the half angle: the sandwich ``R v R⁻¹`` rotates ``v`` by ``2θ``, so for
+        the
+        half-angle rotor ``plane_rotation`` builds (``cos(φ/2) - sin(φ/2) I``) this
+        returns ``φ/2``.  Defined for a **scalar + bivector** versor (an even element
+        of 𝒢₂ or 𝒢₃, or ``u v`` in any dimension); numeric input gives a ``float``,
+        symbolic input a ``sympy.atan2``.
+
+        Returns:
+            Coef: ``θ`` in ``[0, π]``.
+
+        Raises:
+            ValueError: if ``R`` has a grade other than 0 or 2.
+        """
+        self._require_scalar_plus_bivector("angle")
+        scalar: Coef = self.scalar_part()
+        bivector_magnitude: Coef = self.r_vector_part(2).magnitude()
+        if isinstance(scalar, sympy.Basic) or isinstance(
+            bivector_magnitude, sympy.Basic
+        ):
+            return sympy.atan2(bivector_magnitude, scalar)
+        return math.atan2(bivector_magnitude, scalar)
+
+    def conjugate(self) -> typing.Self:
+        """The complex conjugate of a scalar + bivector versor:
+        ``R = r (cos θ + I sin θ)  ↦  R̄ = r (cos θ - I sin θ)`` -- the bivector part
+        negated, exactly as ``a + bi ↦ a - bi``, since ``I² = -1``.  For such a versor
+        this coincides with :meth:`reverse` (``R R̄ = r² = |R|²``); it is kept as its own
+        name for the complex-number reading, and is restricted to the scalar + bivector
+        case where the two notions agree.
+
+        Returns:
+            Self: the conjugate versor.
+
+        Raises:
+            ValueError: if ``R`` has a grade other than 0 or 2.
+        """
+        self._require_scalar_plus_bivector("conjugate")
+        return self.reverse()
+
+    def _require_scalar_plus_bivector(self, method_name: str) -> None:
+        """Raise unless this multivector is a scalar + bivector (grades ⊆ {0, 2})."""
+        stray: list[int] = [grade for grade in self.grades() if grade not in (0, 2)]
+        if stray:
+            raise ValueError(
+                f"{method_name}() is defined for a scalar + bivector versor; "
+                f"this value also has grade(s) {stray}"
+            )
+
     @classmethod
     def bivector_from_vectors(
         cls,

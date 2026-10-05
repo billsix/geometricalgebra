@@ -16,6 +16,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   equality (`simplify(a − b) == 0` blade by blade, delegating to the same per-coefficient rule as `==`;
   representation-agnostic; `subs` feeds sympy a relation such as `{s**2: 1 - c**2}` before simplifying).
   Replaces the hand-rolled test helpers. Additive. `gacalc.base.SymbolicSubstitution` is its mapping type.
+- **Versor extraction: `angle()`, `conjugate()`, and a base-class `plane_of_rotation()`** — for a
+  scalar + bivector versor `R = r (cos θ + I sin θ)`: `r = R.magnitude()`, `I = R.plane_of_rotation()`
+  (now also on `G`/`Gn`, not only the generated `Versor`), `θ = R.angle() = atan2(|⟨R⟩₂|, ⟨R⟩₀)` (the
+  angle between the two vectors whose product `R` is; the sandwich rotates by `2θ`), `R̄ = R.conjugate()`
+  (= `reverse` for such a versor). `angle`/`conjugate` raise `ValueError` on other grades. Additive.
 - **`MultiVectorBase.rotor_from_vectors(from, to)`** — the `versor_from_vectors` versor normalized to unit
   magnitude: a true *rotor*, applied with the textbook reverse sandwich `R v R.reverse()`. Equal to the
   versor's inverse sandwich and to `projection_rotation` (machine-checked in
