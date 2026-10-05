@@ -52,7 +52,7 @@ the Python implementation.
   - *Bridges to Mathlib:* `MathlibBridge.lean` — the from-scratch objects ARE the standard ones: `dot` is
     `inner` on `EuclideanSpace` (so `real_inner_comm` and Cauchy–Schwarz apply: `abs_dot_le_magnitude_mul`),
     the wedge is the `2×2` determinant / the three minors, the dual of the 3D wedge is `crossProduct`, the
-    signed volume is `Matrix.det`, and `rot θ` (and the 2D versor sandwich) is `Orientation.rotation θ` on ℂ.
+    signed volume is `Matrix.det`, and `rot θ` (and the 2D rotor sandwich) is `Orientation.rotation θ` on ℂ (`toC` reads a 𝒢₂ vector's `c1`/`c2`).
   The basis blades are modelled as algebra *elements* (as in Mathlib `CliffordAlgebra` / pygae lean-ga),
   not real fields — see `tasks/reference/lean-for-gacalc.md`. What each Python method maps to, and what
   is NOT covered (general grades, general n, `frame.py`, the transform factories), is in

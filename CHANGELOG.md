@@ -48,7 +48,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   (`sandwich_versor` → `sandwich_rotor`, `versor_unit` → `rotor_unit`, `versor_mul` → `rotor_mul`,
   `MathlibBridge.versor_sandwich_eq_rotation` → `rotor_sandwich_eq_rotation`), and the one-sided
   full-angle `rotor` → `fullAngleRotor` (`vec_mul_rotor` → `vec_mul_fullAngleRotor`,
-  `rotorFromTo` → `fullAngleRotorFromTo`). No Python name changed.
+  `rotorFromTo` → `fullAngleRotorFromTo`). `Rotation2D.rot θ` now acts on a 𝒢₂ vector by its named
+  components `c1`/`c2` instead of a bare `ℝ × ℝ` pair (`polar` likewise; `scale` dropped for `G2.smul`;
+  `rot_cossin` → `rot_uvec`; `MathlibBridge.toC` reads a 𝒢₂ vector). No Python name changed.
 
 ### Fixed
 - **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)
