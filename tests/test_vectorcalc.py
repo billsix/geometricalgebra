@@ -82,7 +82,7 @@ def test_scalar_triple_product_is_signed_volume() -> None:
     a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
     b: Vector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
     c: Vector = c_1 * e_1 + c_2 * e_2 + c_3 * e_3
-    # sympify first: a Coef difference is int | float | Expr, and simplify's
+    # sympify first: a Real difference is int | float | Expr, and simplify's
     # overloads take only sympy types (here the values are symbolic anyway).
     assert (
         sympy.simplify(

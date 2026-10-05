@@ -224,4 +224,4 @@ def test_cast_coef_wraps_compound_expression() -> None:
         astbuild.name_ref("a"), ast.Add(), astbuild.name_ref("b")
     )
     wrapped: ast.expr = astbuild.cast_coef(compound)
-    assert ast.unparse(wrapped) == "typing.cast(Coef, a + b)"
+    assert ast.unparse(wrapped) == "typing.cast(Real, a + b)"

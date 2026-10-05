@@ -292,11 +292,11 @@ g1–g3 more sound. Work record + full tally: `tasks/archive/2026/08/23/generato
   **gradual** `wrapper[Any]` (impl is never called directly; overloads keep the precise type).
 - **`_coerce` is generic** `_coerce[T: MultiVectorBase](x, cls: type[T]) -> T` (was
   `-> MultiVectorBase`), so `_coerce(self, G)` returns `G`.
-- **`base.__radd__` param is `Coef`, not `MultiVectorBase | Coef`** — `__radd__` only ever receives a
+- **`base.__radd__` param is `Real`, not `MultiVectorBase | Real`** — `__radd__` only ever receives a
   bare number (a multivector left operand uses its own `__add__`), which also matches the generated
   override (Liskov-clean).
 - **`cast_coef` skips a bare field, a negated field, AND a single `field ** constant`** — all are
-  already `Coef`; casting warns (`redundant-cast`). Multi-term sympy *sums* still cast.
+  already `Real`; casting warns (`redundant-cast`). Multi-term sympy *sums* still cast.
 
 **Verification method (important): ty and ruff both respect `.gitignore`, and the generated
 `g*.py` are gitignored, so the dev gate `ty check src` / `ruff check src` SKIP every generated

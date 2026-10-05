@@ -186,7 +186,7 @@ def check_function(
 def is_type_definition(value: ast.expr) -> bool:
     """Whether a module-level assignment's right-hand side *defines a type*.
 
-    Type aliases (``Coef = int | float | sympy.Expr``, ``Blade = tuple[int, ...]``,
+    Type aliases (``Real = int | float | sympy.Expr``, ``Blade = tuple[int, ...]``,
     ``MultiVector = Gn``) and type-system constructors (``TypeVar``, ``NewType``,
     ``ParamSpec``) look like ordinary assignments to ``ast`` but are not
     annotation candidates -- annotating one changes what it means.  Recognized by

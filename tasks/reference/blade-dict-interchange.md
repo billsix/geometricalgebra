@@ -1,9 +1,9 @@
-# The blade-dict interchange — `BladeCoef`
+# The blade-dict interchange — `BladeReal`
 
-**Reference document** — the contract for `BladeCoef` (`dict[Blade, Coef]`), THE canonical
+**Reference document** — the contract for `BladeReal` (`dict[Blade, Real]`), THE canonical
 interchange format of gacalc: every representation converts to and from it, and all shared
 arithmetic in `base.py` routes through it. Not a task; update in place if the contract
-changes. Last updated 2026-08-13. Authoritative source: the `BladeCoef` docstring and
+changes. Last updated 2026-08-13. Authoritative source: the `BladeReal` docstring and
 `_require_canonical_blades` in `src/gacalc/base.py` — this doc consolidates and explains
 what lives there (and what was scattered across archived task docs). Read alongside
 CLAUDE.md's "Architecture" (the interchange protocol) and `design-decisions.md`.
@@ -15,8 +15,8 @@ the specialized `G`, and the graded subtypes (`Vector`, `Bivector`, `Versor`,
 `ScalarN`, ...). They all interoperate through **one** shared format:
 
     Blade      = tuple[int, ...]        # basis-vector indices; () is the scalar blade
-    Coef       = int | float | sympy.Expr
-    BladeCoef  = dict[Blade, Coef]      # e.g. {(): 3, (1, 2): -4}  ==  3 − 4·e₁e₂
+    Real       = int | float | sympy.Expr
+    BladeReal  = dict[Blade, Real]      # e.g. {(): 3, (1, 2): -4}  ==  3 − 4·e₁e₂
 
 Two methods are the whole protocol: `to_blade_dict()` (this value → the dict) and the
 `from_blade_dict()` classmethod (the dict → this representation). Mixing two representations
@@ -89,7 +89,7 @@ with a dispatching `+`, not `from_blade_dict` (see its docstring).
 
 ## Where it lives
 
-- **`src/gacalc/base.py`** — the `Blade` / `Coef` / `BladeCoef` aliases and the `BladeCoef`
+- **`src/gacalc/base.py`** — the `Blade` / `Real` / `BladeReal` aliases and the `BladeReal`
   docstring (the authoritative contract); `_require_canonical_blades` (the shared validator);
   the abstract `from_blade_dict` / `to_blade_dict` on `MultiVectorBase`.
 - **`src/gacalc/gn.py`** — `Gn.from_blade_dict` / `to_blade_dict` (calls the validator;
@@ -100,7 +100,7 @@ with a dispatching `+`, not `from_blade_dict` (see its docstring).
 
 ## Sources
 
-- `src/gacalc/base.py` (`BladeCoef` docstring + `_require_canonical_blades`) — authoritative.
+- `src/gacalc/base.py` (`BladeReal` docstring + `_require_canonical_blades`) — authoritative.
 - `tasks/archive/2026/07/29/validate-blade-dict-keys.md` — the raise-vs-canonicalize decision.
 - `tasks/archive/2026/07/29/blade-dict-tests-and-comments.md` — the consolidated contract + tests.
 - Related: `tasks/reference/design-decisions.md`, `tasks/reference/code-generator-architecture.md`.

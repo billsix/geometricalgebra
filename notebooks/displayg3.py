@@ -48,7 +48,7 @@ from typing import cast
 import sympy
 from IPython.display import Math, display
 
-from gacalc.base import Coef
+from gacalc.base import Real
 from gacalc.g3 import G, Vector
 from gacalc.measure import area, signed_volume, volume
 from gacalc.nbplotutils import plot_multivector, show_mult
@@ -104,10 +104,10 @@ e_23  # pyright: ignore[reportUnusedExpression]
 2 * e_1 + 3 * e_2 + 4 * e_3 + 5 * e_1  # pyright: ignore[reportUnusedExpression]
 
 # %%
-G.from_scalar(0)  # pyright: ignore[reportUnusedExpression]
+G.from_real(0)  # pyright: ignore[reportUnusedExpression]
 
 # %%
-G.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
+G.from_real(1)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Symbolic vectors
@@ -208,7 +208,7 @@ signed_volume(b_vec, a_vec, c_vec)  # pyright: ignore[reportUnusedExpression]
 
 # %%
 sympy.simplify(
-    # signed_volume() returns Coef (int | float | Expr); cast to Expr for
+    # signed_volume() returns Real (int | float | Expr); cast to Expr for
     # sympy.simplify, whose stub wants a Basic.
     cast(
         sympy.Expr,
@@ -303,7 +303,7 @@ m.normalize()
 m.inverse()
 
 # %%
-m * m.inverse() == G.from_scalar(1)
+m * m.inverse() == G.from_real(1)
 
 # %%
 # reverse of the pseudoscalar
@@ -321,9 +321,7 @@ m.dual()
 # accepts any representation — here, `g3.G` values.
 
 # %%
-plot_multivector(
-    2 * G.from_scalar(1) + 3 * e_1 - 1.5 * e_2 + 4 * e_3 + 0.7 * (e_1 * e_2)
-)
+plot_multivector(2 * G.from_real(1) + 3 * e_1 - 1.5 * e_2 + 4 * e_3 + 0.7 * (e_1 * e_2))
 
 # %%
 u: G = 3 * e_1 - 1.5 * e_2 + 2 * e_3
@@ -369,7 +367,7 @@ a ^ b
 # **The Lagrange step.** The residual collapses to $0$ symbolically:
 
 # %%
-dot: Coef = a.inner_product(b).scalar_part()
+dot: Real = a.inner_product(b).scalar_part()
 lagrange_residual: sympy.Expr = sympy.simplify(
     cast(
         sympy.Expr,
@@ -391,9 +389,9 @@ assert lagrange_residual == 0
 # sympy closes the difference directly:
 
 # %%
-cos: Coef = a.cosine(b)
+cos: Real = a.cosine(b)
 sin: sympy.Expr = sympy.sqrt(1 - cos**2)  # sinθ ≥ 0 for θ in [0, π]
-wedge_magnitude_from_sin: Coef = a.magnitude() * b.magnitude() * sin
+wedge_magnitude_from_sin: Real = a.magnitude() * b.magnitude() * sin
 wedge_magnitude_from_sin
 
 # %%

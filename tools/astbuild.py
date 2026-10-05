@@ -28,8 +28,8 @@ form; there is no string-template layer.
 
 This module knows **nothing about geometric algebra** -- only the conventions of
 the code the generator emits: the three casts (``cast_self`` -> ``typing.Self``,
-``cast_operand`` -> ``_OperandT``, ``cast_coef`` -> ``Coef``, the last skipping
-the cast for a bare/negated field that is already ``Coef``), and the doc-region
+``cast_operand`` -> ``_OperandT``, ``cast_coef`` -> ``Real``, the last skipping
+the cast for a bare/negated field that is already ``Real``), and the doc-region
 markers below.
 
 **The doc-region markers.** A comment cannot live in an AST, so a marker is
@@ -354,7 +354,7 @@ def cast_operand(value: ast.expr) -> ast.Call:
 
 def cast_coef(value: ast.expr) -> ast.expr:
     # A bare field (``self.coeff_x``) or a negated field (``-self.coeff_x``) is
-    # already of type ``Coef``, so casting it is redundant (ty warns).  Only wrap
+    # already of type ``Real``, so casting it is redundant (ty warns).  Only wrap
     # compound expressions (sums, products, ``d.get(...)``, literals).
     if isinstance(value, (ast.Name, ast.Attribute)):
         return value
@@ -365,10 +365,10 @@ def cast_coef(value: ast.expr) -> ast.expr:
     ):
         return value
     # A single power of a bare field by a constant exponent (``self.coeff_e_123
-    # ** 2`` -- a single-blade type's ``magnitude_squared``): ``Coef ** int`` is
-    # already ``Coef``, so the cast is redundant (ty warns).  Only the single-term
+    # ** 2`` -- a single-blade type's ``magnitude_squared``): ``Real ** int`` is
+    # already ``Real``, so the cast is redundant (ty warns).  Only the single-term
     # case -- a SUM of powers (a multi-blade magnitude_squared) still needs the
-    # cast, since ty can't narrow the sympy sum back to ``Coef``.
+    # cast, since ty can't narrow the sympy sum back to ``Real``.
     if (
         isinstance(value, ast.BinOp)
         and isinstance(value.op, ast.Pow)
@@ -376,7 +376,7 @@ def cast_coef(value: ast.expr) -> ast.expr:
         and isinstance(value.right, ast.Constant)
     ):
         return value
-    return cast(name_ref("Coef"), value)
+    return cast(name_ref("Real"), value)
 
 
 def return_stmt(value: ast.expr | None) -> ast.Return:

@@ -119,7 +119,7 @@ built as AST, so a type like ``typing.Self`` is a node, not a string):
 
   - ``self_ann``   -> ``typing.Self``
   - ``mvb_ann``    -> ``MultiVectorBase``
-  - ``coef_ann``   -> ``Coef``
+  - ``coef_ann``   -> ``Real``
   - ``param_ann``  -> a method parameter's annotation
   - ``radd_ann``   -> the ``__radd__`` return annotation
 
@@ -193,7 +193,7 @@ from astbuild import (  # noqa: E402
 
 from gacalc.base import (  # noqa: E402
     Blade,
-    BladeCoef,
+    BladeReal,
     MultiVectorBase,
     pseudoscalar_squared_sign,
 )
@@ -508,7 +508,7 @@ def _bivector_dual_doc(role: str, n: int) -> str:
             "    Scalar: the dual of the bivector (a scalar in 𝒢₂).\n"
             "\n"
             "Example:\n"
-            "    >>> (1 * Bivector.e_12).dual() == Scalar.from_scalar(1)\n"
+            "    >>> (1 * Bivector.e_12).dual() == Scalar.from_real(1)\n"
             "    True"
         )
     return (
@@ -535,7 +535,7 @@ def _vector_dual_doc(role: str, n: int) -> str:
             "    Scalar: the dual (a scalar in 𝒢₁).\n"
             "\n"
             "Example:\n"
-            "    >>> (1 * Vector.e_1).dual() == Scalar.from_scalar(1)\n"
+            "    >>> (1 * Vector.e_1).dual() == Scalar.from_real(1)\n"
             "    True"
         )
     if n == 2:
@@ -713,7 +713,7 @@ def _scalar_dual_doc(role: str, n: int) -> str:
         f"    the top-grade blade (the {kind}): the scalar times the pseudoscalar.\n"
         "\n"
         "Example:\n"
-        f"    >>> Scalar.from_scalar(1).dual() == {top}\n"
+        f"    >>> Scalar.from_real(1).dual() == {top}\n"
         "    True"
     )
 
@@ -798,7 +798,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "\n"
         "Example:\n"
         "    >>> R: Versor = (1 * Bivector.e_12).exp()\n"
-        "    >>> R * R.reverse() == Versor.from_scalar(1)\n"
+        "    >>> R * R.reverse() == Versor.from_real(1)\n"
         "    True"
     ),
     "odd|reverse": (
@@ -858,7 +858,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    a versor in general).\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Bivector.e_12) * (1 * Bivector.e_12) == Scalar.from_scalar(-1)\n"
+        "    >>> (1 * Bivector.e_12) * (1 * Bivector.e_12) == Scalar.from_real(-1)\n"
         "    True"
     ),
     "bivector|_geometric_product": (
@@ -882,7 +882,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: the inner product (a scalar).\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Bivector.e_12).dot(1 * Bivector.e_12) == Scalar.from_scalar(-1)\n"
+        "    >>> (1 * Bivector.e_12).dot(1 * Bivector.e_12) == Scalar.from_real(-1)\n"
         "    True"
     ),
     "bivector|inner_product": (
@@ -906,7 +906,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: the left contraction (a scalar for two bivectors).\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Bivector.e_12).left_contraction(1 * Bivector.e_12) == Scalar.from_scalar(-1)\n"
+        "    >>> (1 * Bivector.e_12).left_contraction(1 * Bivector.e_12) == Scalar.from_real(-1)\n"
         "    True"
     ),
     "bivector|right_contraction": (
@@ -975,7 +975,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "The scalar (grade-0) part of a bivector is 0.\n"
         "\n"
         "Returns:\n"
-        "    Coef: 0 (a bivector has no scalar part).\n"
+        "    Real: 0 (a bivector has no scalar part).\n"
         "\n"
         "Example:\n"
         "    >>> (2 * Bivector.e_12).scalar_part()\n"
@@ -1009,7 +1009,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Squared magnitude  |B|²  -- the sum of squared plane components.\n"
         "\n"
         "Returns:\n"
-        "    Coef: the squared magnitude.\n"
+        "    Real: the squared magnitude.\n"
         "\n"
         "Example:\n"
         "    >>> (2 * Bivector.e_12).magnitude_squared()\n"
@@ -1023,7 +1023,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Versor: the rotor cos|B| + sin|B| B̂.\n"
         "\n"
         "Example:\n"
-        "    >>> (0 * Bivector.e_12).exp() == Versor.from_scalar(1)\n"
+        "    >>> (0 * Bivector.e_12).exp() == Versor.from_real(1)\n"
         "    True"
     ),
     "bivector|i": (
@@ -1042,7 +1042,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "(one value in 𝒢₂; the e₁e₂, e₁e₃, e₂e₃ components in 𝒢₃).\n"
         "\n"
         "Yields:\n"
-        "    Coef: each plane-component value, in blade order."
+        "    Real: each plane-component value, in blade order."
     ),
     "bivector|isclose": (
         "Numeric near-equality of two bivectors, component-wise (see the base\n"
@@ -1068,7 +1068,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "This bivector as a blade→coefficient dict (grade-2 blades only).\n"
         "\n"
         "Returns:\n"
-        "    BladeCoef: the grade-2 blade -> coefficient mapping."
+        "    BladeReal: the grade-2 blade -> coefficient mapping."
     ),
     "bivector|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -1120,7 +1120,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: the sum.\n"
         "\n"
         "Example:\n"
-        "    >>> Scalar.from_scalar(2) + Scalar.from_scalar(3) == Scalar.from_scalar(5)\n"
+        "    >>> Scalar.from_real(2) + Scalar.from_real(3) == Scalar.from_real(5)\n"
         "    True"
     ),
     "scalar|__sub__": (
@@ -1139,7 +1139,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: the negated scalar.\n"
         "\n"
         "Example:\n"
-        "    >>> -Scalar.from_scalar(3) == Scalar.from_scalar(-3)\n"
+        "    >>> -Scalar.from_real(3) == Scalar.from_real(-3)\n"
         "    True"
     ),
     "scalar|__mul__": (
@@ -1153,7 +1153,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the product -- another scalar times a scalar, or the operand scaled.\n"
         "\n"
         "Example:\n"
-        "    >>> Scalar.from_scalar(2) * Scalar.from_scalar(3) == Scalar.from_scalar(6)\n"
+        "    >>> Scalar.from_real(2) * Scalar.from_real(3) == Scalar.from_real(6)\n"
         "    True"
     ),
     "scalar|_geometric_product": (
@@ -1176,7 +1176,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: 0 (the Hestenes dot excludes grade 0).\n"
         "\n"
         "Example:\n"
-        "    >>> Scalar.from_scalar(2).dot(Scalar.from_scalar(3)) == Scalar.zero()\n"
+        "    >>> Scalar.from_real(2).dot(Scalar.from_real(3)) == Scalar.zero()\n"
         "    True"
     ),
     "scalar|inner_product": (
@@ -1200,7 +1200,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the wedge -- a scalar adds no grade, so this scales ``rhs``.\n"
         "\n"
         "Example:\n"
-        "    >>> Scalar.from_scalar(2).wedge(Scalar.from_scalar(3)) == Scalar.from_scalar(6)\n"
+        "    >>> Scalar.from_real(2).wedge(Scalar.from_real(3)) == Scalar.from_real(6)\n"
         "    True"
     ),
     "scalar|wedge": (
@@ -1249,7 +1249,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: the scalar itself.\n"
         "\n"
         "Example:\n"
-        "    >>> Scalar.from_scalar(3).even_part() == Scalar.from_scalar(3)\n"
+        "    >>> Scalar.from_real(3).even_part() == Scalar.from_real(3)\n"
         "    True"
     ),
     "scalar|odd_part": (
@@ -1259,17 +1259,17 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: 0 (a scalar has no odd part).\n"
         "\n"
         "Example:\n"
-        "    >>> Scalar.from_scalar(3).odd_part() == Scalar.zero()\n"
+        "    >>> Scalar.from_real(3).odd_part() == Scalar.zero()\n"
         "    True"
     ),
     "scalar|scalar_part": (
         "The scalar part of a scalar is its own value (a plain number).\n"
         "\n"
         "Returns:\n"
-        "    Coef: the scalar's own value.\n"
+        "    Real: the scalar's own value.\n"
         "\n"
         "Example:\n"
-        "    >>> Scalar.from_scalar(3).scalar_part()\n"
+        "    >>> Scalar.from_real(3).scalar_part()\n"
         "    3"
     ),
     "scalar|r_vector_part": (
@@ -1283,7 +1283,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: the grade-``r`` part (the scalar itself for r=0, else 0).\n"
         "\n"
         "Example:\n"
-        "    >>> Scalar.from_scalar(3).r_vector_part(0) == Scalar.from_scalar(3)\n"
+        "    >>> Scalar.from_real(3).r_vector_part(0) == Scalar.from_real(3)\n"
         "    True"
     ),
     "scalar|grades": (
@@ -1293,14 +1293,14 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    list[int]: ``[0]`` for a nonzero scalar.\n"
         "\n"
         "Example:\n"
-        "    >>> Scalar.from_scalar(3).grades()\n"
+        "    >>> Scalar.from_real(3).grades()\n"
         "    [0]"
     ),
     "scalar|__iter__": (
         "Iterating a scalar yields its single grade-0 component.\n"
         "\n"
         "Yields:\n"
-        "    Coef: the single grade-0 component value."
+        "    Real: the single grade-0 component value."
     ),
     "scalar|isclose": (
         "Numeric near-equality of two scalars (see the base ``isclose``).\n"
@@ -1325,7 +1325,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "This scalar as a blade→coefficient dict (the scalar blade only).\n"
         "\n"
         "Returns:\n"
-        "    BladeCoef: the ``{(): value}`` mapping."
+        "    BladeReal: the ``{(): value}`` mapping."
     ),
     "scalar|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -1412,7 +1412,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    vectors; a versor in general).\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Vector.e_1) * (1 * Vector.e_1) == Scalar.from_scalar(1)\n"
+        "    >>> (1 * Vector.e_1) * (1 * Vector.e_1) == Scalar.from_real(1)\n"
         "    True"
     ),
     "vector|_geometric_product": (
@@ -1435,7 +1435,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: the dot product  a·b = |a||b|cos θ.\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Vector.e_1).dot(1 * Vector.e_1) == Scalar.from_scalar(1)\n"
+        "    >>> (1 * Vector.e_1).dot(1 * Vector.e_1) == Scalar.from_real(1)\n"
         "    True"
     ),
     "vector|inner_product": (
@@ -1502,7 +1502,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "The scalar (grade-0) part of a vector is 0.\n"
         "\n"
         "Returns:\n"
-        "    Coef: 0 (a vector has no scalar part).\n"
+        "    Real: 0 (a vector has no scalar part).\n"
         "\n"
         "Example:\n"
         "    >>> (2 * Vector.e_1).scalar_part()\n"
@@ -1536,7 +1536,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Squared length  |a|² = a·a  -- the sum of squared coordinates.\n"
         "\n"
         "Returns:\n"
-        "    Coef: the squared length.\n"
+        "    Real: the squared length.\n"
         "\n"
         "Example:\n"
         "    >>> (3 * Vector.e_1).magnitude_squared()\n"
@@ -1648,7 +1648,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "is the coordinate tuple that feeds numpy / plotting.\n"
         "\n"
         "Yields:\n"
-        "    Coef: each coordinate value, in order."
+        "    Real: each coordinate value, in order."
     ),
     "vector|isclose": (
         "Numeric near-equality of two vectors, coordinate-wise (see the base\n"
@@ -1674,7 +1674,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "This vector as a blade→coefficient dict (grade-1 blades only).\n"
         "\n"
         "Returns:\n"
-        "    BladeCoef: the grade-1 blade -> coefficient mapping."
+        "    BladeReal: the grade-1 blade -> coefficient mapping."
     ),
     "vector|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -1762,7 +1762,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    dualized in general).\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Trivector.e_123) * (1 * Trivector.e_123) == Scalar.from_scalar(-1)\n"
+        "    >>> (1 * Trivector.e_123) * (1 * Trivector.e_123) == Scalar.from_real(-1)\n"
         "    True"
     ),
     "trivector|_geometric_product": (
@@ -1786,7 +1786,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: the inner product (a scalar).\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Trivector.e_123).dot(1 * Trivector.e_123) == Scalar.from_scalar(-1)\n"
+        "    >>> (1 * Trivector.e_123).dot(1 * Trivector.e_123) == Scalar.from_real(-1)\n"
         "    True"
     ),
     "trivector|inner_product": (
@@ -1857,7 +1857,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: the dual (a scalar).\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Trivector.e_123).dual() == Scalar.from_scalar(1)\n"
+        "    >>> (1 * Trivector.e_123).dual() == Scalar.from_real(1)\n"
         "    True"
     ),
     "trivector|even_part": (
@@ -1884,7 +1884,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "The scalar (grade-0) part of a trivector is 0.\n"
         "\n"
         "Returns:\n"
-        "    Coef: 0 (a trivector has no scalar part).\n"
+        "    Real: 0 (a trivector has no scalar part).\n"
         "\n"
         "Example:\n"
         "    >>> (2 * Trivector.e_123).scalar_part()\n"
@@ -1918,7 +1918,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Squared magnitude  |T|²  -- the square of the single e₁e₂e₃ component.\n"
         "\n"
         "Returns:\n"
-        "    Coef: the squared magnitude.\n"
+        "    Real: the squared magnitude.\n"
         "\n"
         "Example:\n"
         "    >>> (2 * Trivector.e_123).magnitude_squared()\n"
@@ -1928,7 +1928,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Iterating a trivector yields its single grade-3 component value.\n"
         "\n"
         "Yields:\n"
-        "    Coef: the single grade-3 component value."
+        "    Real: the single grade-3 component value."
     ),
     "trivector|isclose": (
         "Numeric near-equality of two trivectors (see the base ``isclose``).\n"
@@ -1952,7 +1952,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "This trivector as a blade→coefficient dict (grade-3 blade only).\n"
         "\n"
         "Returns:\n"
-        "    BladeCoef: the grade-3 blade -> coefficient mapping."
+        "    BladeReal: the grade-3 blade -> coefficient mapping."
     ),
     "trivector|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -2005,7 +2005,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Versor: the component-wise sum (not a composed rotation).\n"
         "\n"
         "Example:\n"
-        "    >>> Versor.from_scalar(1) + Versor.from_scalar(2) == Versor.from_scalar(3)\n"
+        "    >>> Versor.from_real(1) + Versor.from_real(2) == Versor.from_real(3)\n"
         "    True"
     ),
     "versor|__sub__": (
@@ -2035,7 +2035,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "\n"
         "Example:\n"
         "    >>> R: Versor = (1 * Bivector.e_12).exp()\n"
-        "    >>> R * R.reverse() == Versor.from_scalar(1)\n"
+        "    >>> R * R.reverse() == Versor.from_real(1)\n"
         "    True"
     ),
     "versor|_geometric_product": (
@@ -2058,7 +2058,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the rotated value  R x R̃, of ``x``'s own type.\n"
         "\n"
         "Example:\n"
-        "    >>> Versor.from_scalar(1).sandwich(1 * Vector.e_1) == 1 * Vector.e_1\n"
+        "    >>> Versor.from_real(1).sandwich(1 * Vector.e_1) == 1 * Vector.e_1\n"
         "    True"
     ),
     "versor|plane_of_rotation": (
@@ -2107,7 +2107,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "The scalar (grade-0) part of a versor -- cos(θ/2) for a rotation by θ.\n"
         "\n"
         "Returns:\n"
-        "    Coef: the grade-0 coefficient (cos(θ/2) for a rotation by θ).\n"
+        "    Real: the grade-0 coefficient (cos(θ/2) for a rotation by θ).\n"
         "\n"
         "Example:\n"
         "    >>> (1 + 1 * Versor.e_12).scalar_part()\n"
@@ -2123,7 +2123,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the grade-``r`` part (a scalar for r=0, a bivector for r=2).\n"
         "\n"
         "Example:\n"
-        "    >>> (1 + 1 * Versor.e_12).r_vector_part(0) == Scalar.from_scalar(1)\n"
+        "    >>> (1 + 1 * Versor.e_12).r_vector_part(0) == Scalar.from_real(1)\n"
         "    True"
     ),
     "versor|magnitude_squared": (
@@ -2131,7 +2131,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "has |R|² = 1.\n"
         "\n"
         "Returns:\n"
-        "    Coef: the squared magnitude (1 for a rotor).\n"
+        "    Real: the squared magnitude (1 for a rotor).\n"
         "\n"
         "Example:\n"
         "    >>> (1 + 1 * Versor.e_12).magnitude_squared()\n"
@@ -2211,7 +2211,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "parts).\n"
         "\n"
         "Yields:\n"
-        "    Coef: each component value (scalar then bivector parts)."
+        "    Real: each component value (scalar then bivector parts)."
     ),
     "versor|isclose": (
         "Numeric near-equality of two versors (see the base ``isclose``).\n"
@@ -2236,7 +2236,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "This versor as a blade→coefficient dict (scalar + bivector blades).\n"
         "\n"
         "Returns:\n"
-        "    BladeCoef: the grade-0 + grade-2 blade -> coefficient mapping."
+        "    BladeReal: the grade-0 + grade-2 blade -> coefficient mapping."
     ),
     "versor|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -2318,7 +2318,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "\n"
         "Example:\n"
         "    >>> product: Versor = (1 * Odd_3.e_1) * (1 * Odd_3.e_1)\n"
-        "    >>> product == Versor.from_scalar(1)\n"
+        "    >>> product == Versor.from_real(1)\n"
         "    True"
     ),
     "odd|_geometric_product": (
@@ -2407,7 +2407,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "The scalar (grade-0) part of an odd multivector is 0.\n"
         "\n"
         "Returns:\n"
-        "    Coef: 0 (an odd multivector has no scalar part).\n"
+        "    Real: 0 (an odd multivector has no scalar part).\n"
         "\n"
         "Example:\n"
         "    >>> (1 * Odd_3.e_1 + 1 * Odd_3.e_123).scalar_part()\n"
@@ -2417,7 +2417,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Squared magnitude  |O|²  -- the sum of squared components.\n"
         "\n"
         "Returns:\n"
-        "    Coef: the squared magnitude.\n"
+        "    Real: the squared magnitude.\n"
         "\n"
         "Example:\n"
         "    >>> (1 * Odd_3.e_1 + 1 * Odd_3.e_123).magnitude_squared()\n"
@@ -2497,7 +2497,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "grade-3).\n"
         "\n"
         "Yields:\n"
-        "    Coef: each component value (grade-1 then grade-3)."
+        "    Real: each component value (grade-1 then grade-3)."
     ),
     "odd|isclose": (
         "Numeric near-equality of two odd multivectors (see the base\n"
@@ -2524,7 +2524,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "blades).\n"
         "\n"
         "Returns:\n"
-        "    BladeCoef: the grade-1 + grade-3 blade -> coefficient mapping."
+        "    BladeReal: the grade-1 + grade-3 blade -> coefficient mapping."
     ),
     "odd|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -2723,7 +2723,7 @@ SINE_METHOD_DOC: str = (
     "            other: the other vector.\n"
     "\n"
     "        Returns:\n"
-    "            Coef: the signed sine ``(a ∧ b).coeff_e_12 / (|a| |b|)``.\n"
+    "            Real: the signed sine ``(a ∧ b).coeff_e_12 / (|a| |b|)``.\n"
     "\n"
     "        Example:\n"
     "            >>> (1.0 * Vector.e_1).sine(1.0 * Vector.e_2)\n"
@@ -2997,7 +2997,7 @@ def product_result(
     result_mv: Gn = gn_product(
         Gn.from_blade_dict(lhs_symbols), Gn.from_blade_dict(rhs_symbols)
     )
-    result_coeffs: BladeCoef = result_mv.to_blade_dict()
+    result_coeffs: BladeReal = result_mv.to_blade_dict()
     support: list[Blade] = [
         b for b in blades_for_dim(n) if sympy.sympify(result_coeffs.get(b, 0)) != 0
     ]
@@ -3023,7 +3023,7 @@ def unary_result(
         b: sympy.Symbol("a_" + blade_label(b)) for b in operand_spec.blades
     }
     result_mv: MultiVectorBase = gn_unary(Gn.from_blade_dict(operand_symbols))
-    result_coeffs: BladeCoef = result_mv.to_blade_dict()
+    result_coeffs: BladeReal = result_mv.to_blade_dict()
     support: list[Blade] = [
         b for b in blades_for_dim(n) if sympy.sympify(result_coeffs.get(b, 0)) != 0
     ]
@@ -3041,7 +3041,7 @@ def _is_neg_term(term: sympy.Expr, rename: Mapping[str, tuple[str, str]]) -> boo
 def summed_value(expr: sympy.Expr, rename: Mapping[str, tuple[str, str]]) -> ast.expr:
     """A constructor field value: grade-ordered sum of terms (≈ format_assignment).
 
-    Constants are cast to ``Coef``; sums fold left-assoc as ``BinOp`` in
+    Constants are cast to ``Real``; sums fold left-assoc as ``BinOp`` in
     ``term_grade_key`` order, subtracting negative terms -- so the node tree matches
     the string baseline's operand order.
     """
@@ -3121,7 +3121,7 @@ def coordinate_property_defs(spec: TypeSpec) -> list[ast.stmt]:
                     return_stmt(attribute("self", field)),
                 ],
                 decorators=[name_ref("property")],
-                returns=name_ref("Coef"),
+                returns=name_ref("Real"),
             )
         )
     return defs
@@ -3246,10 +3246,10 @@ def eq_method(fields: Sequence[str]) -> ast.FunctionDef:
             orelse=[],
         ),
         annotated_assign(
-            "left", name_ref("BladeCoef"), call(attribute("self", "to_blade_dict"))
+            "left", name_ref("BladeReal"), call(attribute("self", "to_blade_dict"))
         ),
         annotated_assign(
-            "right", name_ref("BladeCoef"), call(attribute("other", "to_blade_dict"))
+            "right", name_ref("BladeReal"), call(attribute("other", "to_blade_dict"))
         ),
         return_stmt(call("all", [gen])),
     ]
@@ -3271,9 +3271,9 @@ def dimension_decl(n: int) -> ast.stmt:
 
 
 def field_decls(blades: Sequence[Blade]) -> list[ast.stmt]:
-    """``<field>: Coef = cast(Coef, 0)`` per blade."""
+    """``<field>: Real = cast(Real, 0)`` per blade."""
     return [
-        annotated_assign(field_name(b), name_ref("Coef"), cast_coef(constant(0)))
+        annotated_assign(field_name(b), name_ref("Real"), cast_coef(constant(0)))
         for b in blades
     ]
 
@@ -3322,9 +3322,9 @@ def from_blade_dict_method(blades: Sequence[Blade]) -> ast.FunctionDef:
     keywords: list[ast.keyword] = [
         ast.keyword(
             arg=field_name(b),
-            # No ``cast(Coef, ...)`` here: ``d`` is a ``BladeCoef`` (= dict[Blade,
-            # Coef]) and the default is ``0`` (an int, ⊆ Coef), so ``d.get(b, 0)``
-            # is already ``Coef``.  Casting is redundant -- and ty flags it as such
+            # No ``cast(Real, ...)`` here: ``d`` is a ``BladeReal`` (= dict[Blade,
+            # Real]) and the default is ``0`` (an int, ⊆ Real), so ``d.get(b, 0)``
+            # is already ``Real``.  Casting is redundant -- and ty flags it as such
             # on the large generated modules (harmless warning, but it fails the
             # ``ty check`` gate once g4/g5 are generated).
             value=call(attribute("d", "get"), [constant(b), constant(0)]),
@@ -3333,7 +3333,7 @@ def from_blade_dict_method(blades: Sequence[Blade]) -> ast.FunctionDef:
     ]
     body: list[ast.stmt] = [
         annotated_assign(
-            "d", name_ref("BladeCoef"), call("dict", [name_ref("blade_coef")])
+            "d", name_ref("BladeReal"), call("dict", [name_ref("blade_coef")])
         ),
         # loud rejection of a non-canonical key (base's shared validator) --
         # canonical-but-foreign keys still fall through the ``d.get``s below
@@ -3371,7 +3371,7 @@ def to_blade_dict_method(blades: Sequence[Blade]) -> ast.FunctionDef:
         key=name_ref("blade"), value=name_ref("coef"), generators=[comp]
     )
     return function_def(
-        "to_blade_dict", [return_stmt(dictcomp)], returns=name_ref("BladeCoef")
+        "to_blade_dict", [return_stmt(dictcomp)], returns=name_ref("BladeReal")
     )
 
 
@@ -3572,7 +3572,7 @@ def result_block_stmts(
     """
     replacements, reduced = sympy.cse(out_exprs)
     stmts: list[ast.stmt] = [
-        annotated_assign(str(t), name_ref("Coef"), expr_to_ast(e, rename))
+        annotated_assign(str(t), name_ref("Real"), expr_to_ast(e, rename))
         for t, e in replacements
     ]
     pairs: list[tuple[str, ast.expr]] = [
@@ -3770,7 +3770,7 @@ def dispatch_method(
 
 
 def _number_union() -> ast.expr:
-    """The annotation ``int | float | sympy.Expr`` (a scalar Coef operand)."""
+    """The annotation ``int | float | sympy.Expr`` (a scalar Real operand)."""
     return ast.BinOp(
         ast.BinOp(name_ref("int"), ast.BitOr(), name_ref("float")),
         ast.BitOr(),
@@ -4017,7 +4017,7 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
 
     def scalar_const_coef(
         value: ast.expr,
-    ) -> ast.expr:  # cast(typing.Self, Scalar(coeff_scalar=cast(Coef, value)))
+    ) -> ast.expr:  # cast(typing.Self, Scalar(coeff_scalar=cast(Real, value)))
         return scalar_const(cast_coef(value))
 
     def mul_expr(a: ast.expr, b: ast.expr) -> ast.BinOp:
@@ -4029,7 +4029,7 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
     # unavoidably) flagged there; ``-> Scalar`` matches exactly and is a valid
     # override of base's ``-> Self`` (for the receiver, Self ≡ the class).
     self_ann: ast.expr = name_ref(name)
-    coef_ann: ast.expr = name_ref("Coef")
+    coef_ann: ast.expr = name_ref("Real")
     # The *implementation* return type of an overloaded product/sum method: its
     # per-rhs overloads return the resolved concrete types (Vector, Bivector,
     # ...), siblings under MultiVectorBase, so the impl's own return must be their
@@ -4092,7 +4092,7 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
                     )
                 )
             ],
-            returns=name_ref("BladeCoef"),
+            returns=name_ref("BladeReal"),
         ),
         eq_method([field_name(())]),
         # The products/sums are the same machinery the graded types use
@@ -4503,7 +4503,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
         """A dense full-class product method (geometric/inner/outer/contraction):
         the closed form over ALL blades (cse'd), with an isinstance guard that
         coerces a foreign rhs to ``Gn`` and delegates via ``cross_node``."""
-        result_coeffs: BladeCoef = result_mv.to_blade_dict()
+        result_coeffs: BladeReal = result_mv.to_blade_dict()
         replacements, reduced = sympy.cse(
             [sympy.sympify(result_coeffs.get(b, 0)) for b in blades]
         )
@@ -4549,7 +4549,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
                     [
                         assign(
                             "rhs",
-                            call(attribute(name, "from_coef"), [name_ref("rhs")]),
+                            call(attribute(name, "from_real"), [name_ref("rhs")]),
                         )
                     ],
                     [],
@@ -4650,7 +4650,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
         # / its square / bases / symbolic_multivector emit the closed form or
         # constant directly instead of running base's general n-parametrized
         # algorithm (products of basis vectors, powersets).
-        dual_coeffs: BladeCoef = a_mv.dual(n).to_blade_dict()
+        dual_coeffs: BladeReal = a_mv.dual(n).to_blade_dict()
         top_blade: Blade = blades[-1]
         pseudoscalar: Gn = Gn.from_blade_dict({top_blade: 1})
         i_squared: int = int(
@@ -4827,7 +4827,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
             "scalar_part",
             method_doc_stmts("scalar_part")
             + [return_stmt(attribute("self", field_name(())))],
-            returns=name_ref("Coef"),
+            returns=name_ref("Real"),
         ),
         grades_method(
             [(g, [field_name(b) for b in by_grade[g]]) for g in range(n + 1)]
@@ -5266,13 +5266,13 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                     else cast_coef(constant(0))
                 )
             ],
-            returns=name_ref("Coef"),
+            returns=name_ref("Real"),
         ),
         function_def(
             "magnitude_squared",
             method_doc_stmts("magnitude_squared")
             + [return_stmt(cast_coef(expr_to_ast(msq_expr, unary_rename)))],
-            returns=name_ref("Coef"),
+            returns=name_ref("Real"),
         ),
         grades_method(
             [
@@ -5555,7 +5555,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             # direction mvp uses for which-side-of-an-edge tests, unlike the
             # unsigned MultiVectorBase.abs_sin.  Mirrors cosine/abs_sin's
             # `* abs**-1` idiom and reuses the generated wedge; raises on a
-            # zero-length operand (division), matching cosine.  Vector -> Coef.
+            # zero-length operand (division), matching cosine.  Vector -> Real.
             extras.append(
                 function_def(
                     "sine",
@@ -5597,7 +5597,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                         argument("self"),
                         argument("other", name_ref(spec.name)),
                     ],
-                    returns=name_ref("Coef"),
+                    returns=name_ref("Real"),
                 )
             )
         if n == 3:
@@ -5853,12 +5853,12 @@ def generate_constants(n: int, name: str) -> list[ast.stmt]:
         annotated_assign(
             "zero",
             name_ref(scalar_name),
-            call(attribute(scalar_name, "from_scalar"), [constant(0)]),
+            call(attribute(scalar_name, "from_real"), [constant(0)]),
         ),
         annotated_assign(
             "one",
             name_ref(scalar_name),
-            call(attribute(scalar_name, "from_scalar"), [constant(1)]),
+            call(attribute(scalar_name, "from_real"), [constant(1)]),
         ),
     ]
     b: Blade
@@ -5942,8 +5942,8 @@ from gacalc.base import (
     ComposableFunction,
     InvertibleFunction,
     MultiVectorBase,
-    BladeCoef,
-    Coef,
+    BladeReal,
+    Real,
     _coef_eq,
     _coerce,
     _require_canonical_blades,

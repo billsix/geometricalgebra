@@ -1,9 +1,9 @@
 # Consider renaming the grade-0 number type "scalar" → "real"
 
-**Status:** proposed — needs go-ahead
+**Status:** done 2026-10-05 (the rename shipped: 696 tests, format/ty, check-generated, check-regions green); archived 2026-10-05
 **Priority:** 7
 **Difficulty:** 6
-**Created:** 2026-09-26 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-09-26 **Updated:** 2026-10-05 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
@@ -161,7 +161,59 @@ Mechanical, but large and must stay in lockstep with (A).
   mechanism is settled and "breaking public API" weighs less than when this task was filed
   (`tasks/archive/2026/10/04/rename-rotor-to-versor.md`).
 
-## Open questions
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-10-05)
+
+The five questions below were put to the maintainer and answered; the decision record lives in
+`tasks/reference/scalar-vs-real-naming.md` (the KEEP/RENAME map + the deviation-from-Hestenes reasoning).
+
+1. **Scope → (a):** rename the coefficient type `Coef` → `Real` and the constructor `from_scalar` →
+   `from_real` (parameter `scalar:` → `real:`); **keep** the grade-0 class `Scalar` and the field
+   `coeff_scalar`. "Real" names the Python number, not the algebra element.
+2. **`is_scalar()` → keep** (the `is_<grade>` family; literature term). `scalar_part`, `scalar_product`,
+   `pseudoscalar` stay as well.
+3. **Compatibility → (a) hard break:** `CHANGELOG` BREAKING entry + version bump, no deprecation alias.
+   Evidence 2026-10-05: no in-house consumer uses `from_scalar`/`from_coef`/`Coef`/`coeff_scalar` (mvp: zero
+   hits; the only out-of-repo matches are galgebra's own unrelated names).
+4. **`from_coef` → (a) fold** into the one constructor `from_real(real: Real)` (`Real = int | float |
+   sympy.Expr` already covers the symbolic case); remove `from_coef`.
+5. **`BladeCoef` → (a) `BladeReal`.**
+
+Scale (2026-10-05): ~287 tracked occurrences of the four names across `src`, `tools`, `tests`, `notebooks`,
+`README.md`, `book`, plus the generator's emitted code (`Coef` return types, `from_scalar` doctests).
+
+## Work record (2026-10-05)
+
+Done as a bulk find-and-fix on the decisions above, in one pass:
+- **Discovery** `tasks/adhoc/consider-renaming-scalar-to-real/discover.sh` → `data/sites.txt`: 336 tracked
+  sites of `Coef`/`BladeCoef`/`from_scalar`/`from_coef` across `src`, `tools`, `tests`, `notebooks`,
+  `README.md`, `book`, `CLAUDE.md`, `tasks/reference` (the decision record excluded — its map holds the old
+  names on purpose).
+- **By hand first:** the two constructors merged into `MultiVectorBase.from_real(real: Real)` (docstring
+  states the boundary; a doctest added), and the `CHANGELOG` BREAKING entry.
+- **Codemod** `rename.py` (whole-word, content-keyed): `BladeCoef → BladeReal`, `Coef → Real`,
+  `from_scalar`/`from_coef → from_real`; 38 files rewritten; second run = 0 changes (idempotent). The
+  generator emits `Real` in every annotation and doctest (`from gacalc.base import … Real`), so the
+  gitignored `g*.py` follow. `tools/astbuild.cast_coef` keeps its internal name.
+- Re-grep for the four names = zero outside the decision record. Gates nested against the existing
+  image: `make test` (696 passed), `make format` (ruff fixed 11 import orderings; ty clean),
+  `make check-generated`, `make check-regions`. `make docs` not run (one code cell in
+  `book/docs/notebooks/levels-of-abstraction.py` now calls `from_real`, which exists; the next docs build
+  is the check).
+- **Version:** `pyproject.toml` stays at 0.1.0; the breaking bump to 0.2.0 and the promotion of
+  `[Unreleased]` are the maintainer's release step.
+- The adhoc scripts are one-shot: removed in the archive commit.
+
+## Plan (as executed)
+
+1. `base.py`: `Real` (alias, with `Coef` gone), `BladeReal`, `from_real` absorbing `from_coef`; every
+   `Coef` annotation → `Real`. Generator (`tools/gen_specialized.py`): emitted annotations, the
+   `Scalar.from_scalar(...)` doctests and role-key docstrings, internal names that mirror the public ones.
+2. Tests, notebooks, README, book, `CLAUDE.md` (the API bullets), reference docs that name `Coef`.
+3. `CHANGELOG` `[Unreleased]` BREAKING entry; version bump at release (the maintainer tags).
+4. Gates: `make test`, `make format`, `make check-generated`, `make check-regions`, `make docs` if book
+   text changed; grep = zero for `from_scalar`, `from_coef`, `\bCoef\b`, `BladeCoef`.
+
+## Open questions (answered 2026-10-05 — kept for the record)
 
 1. **Scope of the rename:** just `from_scalar` → `from_real` (smallest, keeps the `Scalar`
    type name), OR also the `Scalar` type → `Real` and `coeff_scalar` → `coeff_real` (full)?

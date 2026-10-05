@@ -27,7 +27,7 @@ import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
-from gacalc.base import Coef, MultiVectorBase
+from gacalc.base import MultiVectorBase, Real
 from gacalc.gn import Gn
 
 
@@ -75,7 +75,7 @@ def test_scalar_division() -> None:
         (): 1.0,
         (1,): 2.0,
     }
-    assert (g3.G.from_scalar(6) / 2).scalar_part() == 3
+    assert (g3.G.from_real(6) / 2).scalar_part() == 3
     assert (g2.Scalar(coeff_scalar=6.0) / 2).coeff_scalar == 3.0
     assert (Gn.from_blade_dict({(1,): 3.0}) / 2).isclose(
         Gn.from_blade_dict({(1,): 1.5}), rel_tol=1e-5, abs_tol=1e-5
@@ -88,7 +88,7 @@ def test_division_matches_scaling() -> None:
 
 
 def test_symbolic_division() -> None:
-    s: Coef = sympy.Symbol("s", positive=True)
+    s: Real = sympy.Symbol("s", positive=True)
     v: g2.Vector = g2.Vector(coeff_e_1=s, coeff_e_2=2 * s)
     got: MultiVectorBase = (v / s).simplified()
     assert got.to_blade_dict() == {(1,): 1, (2,): 2}

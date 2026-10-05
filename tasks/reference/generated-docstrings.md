@@ -87,8 +87,8 @@ regenerate and verify (below). No other generator code needs to change.
   args, `coefficient(e_1)`.
 - **Typed comparisons, never bare numbers.** A multivector result compared with `==` to a
   Python `int` is `False` (`Bivector.e_12 * Bivector.e_12 == -1` is `False`). Compare to the
-  correctly-typed value: `... == Scalar.from_scalar(-1)`, `... == Vector.e_3`,
-  `... == Versor.from_scalar(1)`. Methods that return a *coefficient* (`scalar_part`,
+  correctly-typed value: `... == Scalar.from_real(-1)`, `... == Vector.e_3`,
+  `... == Versor.from_real(1)`. Methods that return a *coefficient* (`scalar_part`,
   `magnitude_squared`) do return a plain number, so those doctests show the number.
 - **Type annotations are for readability, not assertions.** A local in a doctest is
   annotated to *show the reader* the type — `R: Versor = (1 * Bivector.e_12).exp()` — which

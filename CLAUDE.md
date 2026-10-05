@@ -19,7 +19,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `Linearity`, `NotInvertibleError`, `compose`/`inverse`/`identity`. **Imports nothing internal**
   (unbounded `TypeVar`) — the one module `base` is allowed to import.
 - `src/gacalc/base.py` — `MultiVectorBase` (the abstract base) + the type aliases `Blade`,
-  `BladeCoef`, `MultiVectorFn`. Imports only the `functions` leaf.
+  `BladeReal`, `MultiVectorFn`. Imports only the `functions` leaf.
 - `src/gacalc/gn.py` — `Gn`, the general dimension-agnostic representation, plus the
   `e_1..e_10` / `zero` / `one` constants, the symbolic vectors (`sym_vec2_1`, …), and the
   `MultiVector = Gn` alias.
@@ -100,7 +100,7 @@ and call `self * other`, dispatched to the concrete type.
   (`g*.py`) are the fast, lazy, code-generated specialized classes, provably consistent with `Gn`.
   Every generated value type is `@typing.final` + `@dataclass(frozen=True, slots=True)`
   (immutable — "changing a coordinate" means rebinding, `v = Vector(-v.x, v.y)`). Coefficient
-  type is `Coef = int | float | sympy.Expr` (a concrete union, deliberately not `numbers.Real`).
+  type is `Real = int | float | sympy.Expr` (a concrete union, deliberately not `numbers.Real`).
 - **Iteration yields coefficient VALUES in blade order** — `list(v)` is a vector's coordinate
   tuple and feeds numpy/plotting directly; to decompose into single-blade terms iterate
   `to_blade_dict()`. Read one coefficient with `value.coefficient(blade)` (a thin `to_blade_dict()`
@@ -145,7 +145,7 @@ and call `self * other`, dispatched to the concrete type.
   `tasks/reference/reduction-to-standard-position.md`.
 
 Deep mechanics + every "Caveat —" block (frozen+slots property-write quirk, frozen≠hashable,
-coefficient-view re-simplify on `Gn`, custom blade display symbols, `Coef` vs `numbers.Real`, the
+coefficient-view re-simplify on `Gn`, custom blade display symbols, `Real` vs `numbers.Real`, the
 composable-function hierarchy, rotations/versors + the versor sandwich derivation, `plane_rotation`,
 `to_matrix`/`to_matrix_template`, project/reject grade-narrowing) live in:
 
@@ -169,7 +169,7 @@ composable-function hierarchy, rotations/versors + the versor sandwich derivatio
   a bare number's inverse is its reciprocal, so `v / s` divides every coefficient)
 - rotations: `transforms.projection_rotation(from, to)` / `versor_rotation(from, to)` /
   `plane_rotation(a, b)` (free-function factories); `MultiVectorBase.versor_from_vectors(from, to)`
-  (the versor builder) and `rotor_from_vectors(from, to)` (= that versor normalized: a unit rotor,
+  (the versor builder) and `rotor_from_vectors(from, to)` (= that versor normalized: a rotor, i.e. a unit versor,
   reverse sandwich) — any plane / representation; a versor's `magnitude()`/`plane_of_rotation()`/`angle()`/`conjugate()` read
   `r`, `I`, `θ`, `R̄` back out of `R = r (cos θ + I sin θ)`
 - cross product (𝒢₃ only): `vectorcalc.cross(a, b)` = `(a ∧ b) I₃⁻¹` (the dual of the wedge;

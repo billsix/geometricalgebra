@@ -49,7 +49,7 @@ from typing import cast
 import sympy
 from IPython.display import Math, display
 
-from gacalc.base import Coef
+from gacalc.base import Real
 from gacalc.g2 import G, Vector
 from gacalc.measure import area, signed_area
 from gacalc.nbplotutils import (
@@ -112,10 +112,10 @@ e_12 == e_1 * e_2
 2 * e_1 + 3 * e_2 + 5 * e_1  # pyright: ignore[reportUnusedExpression]
 
 # %%
-G.from_scalar(0)  # pyright: ignore[reportUnusedExpression]
+G.from_real(0)  # pyright: ignore[reportUnusedExpression]
 
 # %%
-G.from_scalar(1)  # pyright: ignore[reportUnusedExpression]
+G.from_real(1)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Symbolic vectors
@@ -234,7 +234,7 @@ m.normalize()
 m.inverse()
 
 # %%
-m * m.inverse() == G.from_scalar(1)
+m * m.inverse() == G.from_real(1)
 
 # %%
 # reverse of the bivector negates it
@@ -284,7 +284,7 @@ gram_fe_to_mol_fe(gram_fe=95.8)
 
 
 # %%
-rotate: Callable[[Coef], InvertibleFunction[G]] = plane_rotation(e_1, e_2)
+rotate: Callable[[Real], InvertibleFunction[G]] = plane_rotation(e_1, e_2)
 
 
 # %%
@@ -348,7 +348,7 @@ inverse(rotate(sympy.pi / 2))(rotate(sympy.pi / 2)(w)) == w
 # accepts any representation — here, `g2.G` values.
 
 # %%
-plot_multivector(2 * G.from_scalar(1) + 3 * e_1 - 1.5 * e_2 + 0.7 * (e_1 * e_2))
+plot_multivector(2 * G.from_real(1) + 3 * e_1 - 1.5 * e_2 + 0.7 * (e_1 * e_2))
 
 # %%
 u: G = 3 * e_1 - 1.5 * e_2
@@ -504,9 +504,9 @@ a ^ b
 # Symbolically the residual collapses to $0$:
 
 # %%
-dot: Coef = a.inner_product(b).scalar_part()
-lagrange_residual: Coef = sympy.simplify(
-    # magnitude_squared() etc. are typed Coef (int | float | Expr); cast to Expr
+dot: Real = a.inner_product(b).scalar_part()
+lagrange_residual: Real = sympy.simplify(
+    # magnitude_squared() etc. are typed Real (int | float | Expr); cast to Expr
     # for sympy.simplify, whose stub wants a Basic.
     cast(
         sympy.Expr,
@@ -531,9 +531,9 @@ assert lagrange_residual == 0
 # exposes the perfect square $(a_1 b_2 - a_2 b_1)^2$, whose root is $|a\wedge b|$.
 
 # %%
-cos: Coef = a.cosine(b)
-sin: Coef = sympy.sqrt(1 - cos**2)  # sinθ ≥ 0 for θ in [0, π]
-wedge_magnitude_from_sin: Coef = sympy.sqrt(
+cos: Real = a.cosine(b)
+sin: Real = sympy.sqrt(1 - cos**2)  # sinθ ≥ 0 for θ in [0, π]
+wedge_magnitude_from_sin: Real = sympy.sqrt(
     sympy.factor(sympy.simplify((a.magnitude() * b.magnitude() * sin) ** 2))
 )
 wedge_magnitude_from_sin

@@ -41,8 +41,8 @@ def test_exp_of_zero_is_one() -> None:
 
 
 def test_exp_scalar() -> None:
-    s: Gn = Gn.from_scalar(2)
-    assert s.exp() == Gn.from_coef(sympy.exp(2))
+    s: Gn = Gn.from_real(2)
+    assert s.exp() == Gn.from_real(sympy.exp(2))
 
 
 def test_exp_float_stays_float() -> None:

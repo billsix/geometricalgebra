@@ -92,7 +92,7 @@ rotor (`R R̃ = 1`), and that is automatic because `cos² + sin² = 1`: with `R 
 literally: get `i`, pick θ, return `cos(θ/2) − sin(θ/2)·i`. (Sign/orientation: gacalc's
 `plane_rotation` uses the `−` form, `= exp(−(θ/2)·i)`, which turns `a→b` for positive θ; the `+`
 form first written by the maintainer is the same rotor family with the opposite orientation — mirror direction. Any
-scalar `c` and coefficient `s` with `c² + s² = 1` is a unit rotor rotating by `θ = 2·atan2(s, c)`.)
+scalar `c` and coefficient `s` with `c² + s² = 1` is a rotor (unit versor) rotating by `θ = 2·atan2(s, c)`.)
 
 **A unit bivector is NOT a rotor** —
 the bivector is the plane (grade-2, `i²=−1`, angle-free); the rotor is even-grade and carries the
@@ -161,7 +161,7 @@ only open point, and it is now fixed (below).
 For an even element `R` and a vector `v`:
 
 - **Reverse sandwich `v ↦ R v R̃`** — the standard textbook formula (`R̃` = reverse). It is a *pure
-  rotation* **only when `R` is a unit rotor** (`R R̃ = 1`). For a general `R` it also *scales* by
+  rotation* **only when `R` is a rotor, i.e. unit** (`R R̃ = 1`). For a general `R` it also *scales* by
   `R R̃ = |R|²`:  `R v R̃ = |R|² · (R v R⁻¹)`.
 - **Inverse sandwich `v ↦ R v R⁻¹`** — the *versor conjugation*. Since `R⁻¹ = R̃ / (R R̃)`, we have
   `R v R⁻¹ = (R v R̃) / |R|²` — the reverse sandwich with the `|R|²` scaling divided out. It is a pure

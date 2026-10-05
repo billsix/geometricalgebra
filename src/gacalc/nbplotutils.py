@@ -45,9 +45,9 @@ from matplotlib_inline.backend_inline import set_matplotlib_formats
 
 from gacalc.base import (
     Blade,
-    BladeCoef,
-    Coef,
+    BladeReal,
     MultiVectorBase,
+    Real,
     blade_dict_latex,
     blade_latex,
 )
@@ -73,7 +73,7 @@ if get_ipython() is not None:
 _IDENTITY = identity()
 
 
-def _coord(mv: MultiVectorBase, blade: tuple[int, ...]) -> Coef:
+def _coord(mv: MultiVectorBase, blade: tuple[int, ...]) -> Real:
     """The coefficient ``mv`` stores on ``blade`` (e.g. (1,) for e_1, (2,) for e_2).
 
     Reads the value straight from the blade-dict interchange -- the coefficient
@@ -306,7 +306,7 @@ def create_x_and_y(
     )
 
 
-def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Coef:
+def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Real:
     """sin of the angle between two **vectors** — ``v1`` turned 90° in the e₁e₂
     plane, projected onto ``v2``, over ``|v1||v2|``.  The sine companion to
     ``MultiVectorBase.cosine``; vectors only (it uses ``|ab| = |a||b|``).
@@ -551,7 +551,7 @@ def draw_screen(
             axes.add_patch(square)
 
 
-def _coef_as_float(coef: Coef) -> float | None:
+def _coef_as_float(coef: Real) -> float | None:
     """``coef`` as a ``float``, or ``None`` when it is symbolic (not convertible)."""
     try:
         return float(coef)
@@ -579,13 +579,13 @@ def plot_multivector(
     ``random_seed`` defaults to 0 for reproducibility — pass ``None`` for
     fresh randomness on every call.
     """
-    blade_dict: BladeCoef = mv.to_blade_dict()
+    blade_dict: BladeReal = mv.to_blade_dict()
     blades: list[Blade] = sorted(blade_dict.keys(), key=lambda b: (len(b), b)) or [()]
     n: int = len(blades)
 
     rng: np.random.Generator = np.random.default_rng(random_seed)
 
-    coefs: list[Coef] = [blade_dict.get(b, 0) for b in blades]
+    coefs: list[Real] = [blade_dict.get(b, 0) for b in blades]
     xs: list[float] = []
     for coef in coefs:
         x: float | None = _coef_as_float(coef)
@@ -602,7 +602,7 @@ def plot_multivector(
     fig, ax = plt.subplots(figsize=figsize or (8, max(2.0, 0.7 * n)))
 
     blade: Blade
-    coef: Coef
+    coef: Real
     for i, (blade, coef, x) in enumerate(zip(blades, coefs, xs)):
         y: int = n - 1 - i  # top blade drawn first
         ax.axhline(y, xmin=0.0, xmax=1.0, color="gray", linewidth=0.5, alpha=0.6)

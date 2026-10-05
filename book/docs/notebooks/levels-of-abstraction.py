@@ -46,7 +46,7 @@ product  # the full geometric product: a scalar part + an e_12 (bivector) part
 # `inner_product`). All three are the same scalar.
 
 # %%
-dot_coordinate = g2.Scalar.from_coef(a_x * b_x + a_y * b_y)
+dot_coordinate = g2.Scalar.from_real(a_x * b_x + a_y * b_y)
 dot_fixed_grade = product.r_vector_part(0)  # <ab>_0, the bound grade 0
 dot_coordinate_free = a.inner_product(b)  # the canonical, dimension-free form
 

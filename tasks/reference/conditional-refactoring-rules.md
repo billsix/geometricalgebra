@@ -79,7 +79,7 @@ The second outcome is a multi-statement build (`body = …` then a `return`), so
 - `astbuild.cast_coef` — three guards (`Name`/`Attribute`, negated field, `field**const`) that all
   `return value`, then a `cast` fallback. OR-ing three multi-part `isinstance` conditions into one
   ternary reads *worse* than the cascade, so it stays. (A dedup-style merge — "if it's already a
-  `Coef` in any of these shapes, don't cast" — is the only refactor worth considering here, and it
+  `Real` in any of these shapes, don't cast" — is the only refactor worth considering here, and it
   buries three distinct, separately-commented shape checks.)
 
 ## Rule B — dedup before you restructure
@@ -163,10 +163,10 @@ raise ValueError(f"unknown backend {backend!r}")             return np.column_st
 if isinstance(x, MultiVectorBase):           match x:
     return cls.from_blade_dict(...)               case MultiVectorBase():
 if isinstance(x, sympy.Expr):                         return cls.from_blade_dict(...)
-    return cls.from_coef(x)                       case sympy.Expr():
-return cls.from_scalar(x)                             return cls.from_coef(x)
+    return cls.from_real(x)                       case sympy.Expr():
+return cls.from_real(x)                             return cls.from_real(x)
                                                   case _:  # scalar
-                                                      return cls.from_scalar(x)
+                                                      return cls.from_real(x)
 ```
 Both replace a fall-through (a bare `raise`, a bare `return`) with an explicit `case _` that names
 the default. The pilot already uses good structural `match`es too: `Gn._geometric_product`'s

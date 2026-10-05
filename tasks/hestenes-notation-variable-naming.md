@@ -47,7 +47,7 @@ questions are decided (below); this is now a go-ahead-to-execute gate, not a des
   notation. I think it would be lowercase variable for scalars and vectors, capital for
   multivectors." Refined by the Q3 lookup below: Hestenes actually uses **Greek** for scalars,
   and the user chose "use whatever he used" — so scalars are Greek, not lowercase Latin.
-- **Related tasks:** `tasks/consider-renaming-scalar-to-real.md` (a separate axis — the *word*
+- **Related tasks:** `tasks/archive/2026/10/05/consider-renaming-scalar-to-real.md` (done 2026-10-05; a separate axis — the *word*
   "scalar" vs "real", not the letter-case of variables); the two are orthogonal but both touch
   naming and both would land in a naming reference doc.
 

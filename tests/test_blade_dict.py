@@ -14,7 +14,7 @@
 """Dedicated tests for the blade coefficient dictionary — THE interchange format.
 
 Every representation (``Gn``, ``g1.G``/``g2.G``/``g3.G``, the graded subtypes) converts
-to and from ``BladeCoef`` (``dict[Blade, Coef]``), and all shared arithmetic in
+to and from ``BladeReal`` (``dict[Blade, Real]``), and all shared arithmetic in
 ``base.py`` routes through it.  Other suites use the interchange incidentally
 (conversion helpers); this one pins its *contract*:
 
@@ -43,11 +43,11 @@ import sympy
 import gacalc.g1 as g1
 import gacalc.g2 as g2
 import gacalc.g3 as g3
-from gacalc.base import Blade, BladeCoef, MultiVectorBase
+from gacalc.base import Blade, BladeReal, MultiVectorBase
 from gacalc.gn import Gn
 
 # every concrete representation, with a dense sample value's blade dict
-SAMPLES: list[tuple[type[MultiVectorBase], BladeCoef]] = [
+SAMPLES: list[tuple[type[MultiVectorBase], BladeReal]] = [
     (Gn, {(): 1, (1,): 2, (2,): 3, (1, 2): 4}),
     (g1.G, {(): 1, (1,): 2}),
     (g2.G, {(): 1, (1,): 2, (2,): 3, (1, 2): 4}),
@@ -86,7 +86,7 @@ def test_roundtrip_identity() -> None:
 
 def test_cross_representation_preserves_coefficients() -> None:
     # Gn -> dict -> specialized -> dict -> Gn is the identity on the dict.
-    d: BladeCoef = {(): 1, (1,): 2, (2,): 3, (1, 2): 4}
+    d: BladeReal = {(): 1, (1,): 2, (2,): 3, (1, 2): 4}
     g: Gn = Gn.from_blade_dict(d)
     specialized: g2.G = g2.G.from_blade_dict(g.to_blade_dict())
     assert specialized.to_blade_dict() == d
@@ -95,10 +95,10 @@ def test_cross_representation_preserves_coefficients() -> None:
 
 def test_arithmetic_through_interchange_agrees() -> None:
     # the same addition done in Gn and in g3.G produces the same blade dict
-    a: BladeCoef = {(1,): 1, (1, 2): 2}
-    b: BladeCoef = {(): 5, (1,): 10}
-    gn_sum: BladeCoef = (Gn.from_blade_dict(a) + Gn.from_blade_dict(b)).to_blade_dict()
-    g3_sum: BladeCoef = (
+    a: BladeReal = {(1,): 1, (1, 2): 2}
+    b: BladeReal = {(): 5, (1,): 10}
+    gn_sum: BladeReal = (Gn.from_blade_dict(a) + Gn.from_blade_dict(b)).to_blade_dict()
+    g3_sum: BladeReal = (
         g3.G.from_blade_dict(a) + g3.G.from_blade_dict(b)
     ).to_blade_dict()
     assert gn_sum == g3_sum == {(): 5, (1,): 11, (1, 2): 2}
@@ -107,7 +107,7 @@ def test_arithmetic_through_interchange_agrees() -> None:
 def test_scalar_blade_is_the_empty_tuple() -> None:
     cls: type[MultiVectorBase]
     for cls in (Gn, g1.G, g2.G, g3.G):
-        assert cls.from_scalar(7).to_blade_dict() == {(): 7}
+        assert cls.from_real(7).to_blade_dict() == {(): 7}
         assert cls.from_blade_dict({(): 7}).scalar_part() == 7
 
 
@@ -177,9 +177,9 @@ def test_non_canonical_keys_raise() -> None:
 def test_coef_types_survive_lazy_roundtrip() -> None:
     # lazy classes hand back exactly what was put in: float stays float, int
     # stays int, sympy stays sympy
-    d: BladeCoef = g2.Vector.from_blade_dict({(1,): 1.5, (2,): 2}).to_blade_dict()
+    d: BladeReal = g2.Vector.from_blade_dict({(1,): 1.5, (2,): 2}).to_blade_dict()
     assert type(d[(1,)]) is float and type(d[(2,)]) is int
-    sym: BladeCoef = g2.Vector.from_blade_dict(
+    sym: BladeReal = g2.Vector.from_blade_dict(
         {(1,): sympy.Symbol("x")}
     ).to_blade_dict()
     assert isinstance(sym[(1,)], sympy.Expr)
