@@ -70,7 +70,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   the versor's magnitude; 2D: the from-vectors rotor of two unit directions is the half-angle `rotor θ`). New
   `PlaneRotation3D.lean`: the 3D half-angle rotor `planeRotor θ i` of a unit bivector is a rotor and
   `R v R̃ = v⊥ + cos θ·v∥ + sin θ·(v ⌋ i)` — what `plane_rotation`/`bivector_rotation` compute, proven for a
-  general plane (previously only `e₁₂` in 𝒢₂). No Python name changed.
+  general plane (previously only `e₁₂` in 𝒢₂). The object `√` lemmas (`normSq_nonneg`,
+  `magnitude_sq_eq_normSq`, …) now live in `G2.lean`/`G3.lean`; `ProjectionRotation2D.lean`, the
+  carries-from-to theorems, `cos_sq_add_sin_sq` and the Lagrange area form are getter-native with their
+  coordinate scaffolds removed (`lagrange_property_coord`, `sandwich_ahat_coord`, … are gone). No Python
+  name changed.
 
 ### Fixed
 - **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)

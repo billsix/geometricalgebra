@@ -93,7 +93,8 @@ applies to a rotor unchanged via `normSq_ne_zero_of_isRotor`, and transfers to t
 `Rotor.isRotor_rotorFromVectors`. **The rotor chain (`Rotor.lean`, 2026-10-05):** rather than re-prove the
 projection-rotation story for rotors, `rotorFromVectors a b := normalize (versorFromVectors a b)` and ONE
 algebraic bridge `rotorSandwich_normalize : (R/|R|) v (R/|R|)~ = R v R⁻¹` (every `R`; the single `√` fact is
-`magnitude_sq_eq_normSq`, from `normSq_eq_sum_sq`/`normSq_nonneg`) transfer every versor theorem to the
+`magnitude_sq_eq_normSq`, from `normSq_eq_sum_sq`/`normSq_nonneg` — in `G2.lean`/`G3.lean` since 2026-10-05, so the
+whole magnitude tier can use them) transfer every versor theorem to the
 reverse-sandwich form by one `rw`: `rotorSandwich_rotorFromVectors_eq_projRotation`, `_carries_from_to`,
 `rotorSandwich_preserves_dot/normSq/magnitude`. **Lagrange** (`normSq_versorFromVectors`:
 `|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`) turns the chain's `normSq R ≠ 0` guard into "nonzero and

@@ -206,55 +206,32 @@ theorem magnitude_sandwich {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) 
   rw [sandwich_preserves_normSq hR hr]
 
 /-- `R R̃ = |R|²·1` for the from-vectors versor (even, so `R R̃` is a pure scalar). -/
-theorem versorFromVectors_mul_reverse_coord (a1 a2 b1 b2 : ℝ) :
-    mul (versorFromVectors (vec a1 a2) (vec b1 b2))
-        (reverse (versorFromVectors (vec a1 a2) (vec b1 b2)))
-      = smul (normSq (versorFromVectors (vec a1 a2) (vec b1 b2))) one := by
-  simp only [normSq, versorFromVectors, mul, reverse, add, smul, one, vec]
+theorem versorFromVectors_mul_reverse {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    mul (versorFromVectors a b) (reverse (versorFromVectors a b))
+      = smul (normSq (versorFromVectors a b)) one := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  simp only [normSq, versorFromVectors, mul, reverse, add, smul, one, has, ha12, hbs, hb12]
   ext <;> ring
 
 /-- **The versor from `a, b` carries `a` to `b`** in 𝒢₂: `R a R⁻¹ = (|a|/|b|)·b` (angle-free) — the
     2D twin of `Rotation3D`'s `sandwich_carries_from_to`, same assembly. In 𝒢₂ the plane is the whole
-    space, so this is the whole rotation. Needs `|b| ≠ 0`, `|R|² ≠ 0`. -/
-theorem sandwich_carries_from_to_coord (a1 a2 b1 b2 : ℝ)
-    (hb : magnitude (vec b1 b2) ≠ 0)
-    (hr : normSq (versorFromVectors (vec a1 a2) (vec b1 b2)) ≠ 0) :
-    sandwich (versorFromVectors (vec a1 a2) (vec b1 b2)) (vec a1 a2)
-      = smul (magnitude (vec a1 a2) / magnitude (vec b1 b2)) (vec b1 b2) := by
-  have hbis : bisector (vec a1 a2) (vec b1 b2)
-      = smul (1 / magnitude (vec b1 b2)) (mul (vec b1 b2) (versorFromVectors (vec a1 a2) (vec b1 b2))) := by
-    rw [from_mul_versor_eq_bisector (isVector_vec a1 a2) (isVector_vec b1 b2),
-        GacalcProofs.G2.smul_smul, one_div_mul_cancel hb,
-        GacalcProofs.G2.one_smul]
-  have hkey : mul (bisector (vec a1 a2) (vec b1 b2))
-                  (inverse (versorFromVectors (vec a1 a2) (vec b1 b2)))
-      = smul (1 / magnitude (vec b1 b2)) (vec b1 b2) := by
-    rw [hbis, GacalcProofs.G2.smul_mul, inverse, GacalcProofs.G2.mul_smul,
-        GacalcProofs.G2.mul_assoc, versorFromVectors_mul_reverse_coord, GacalcProofs.G2.mul_smul,
-        GacalcProofs.G2.mul_one, GacalcProofs.G2.smul_smul, GacalcProofs.G2.smul_smul]
-    congr 1
-    field_simp
-  rw [sandwich, versor_mul_from_eq_bisector (isVector_vec a1 a2) (isVector_vec b1 b2),
-      GacalcProofs.G2.smul_mul, hkey,
-      GacalcProofs.G2.smul_smul, mul_one_div]
-
-/-- **The versor from `a, b` carries `a` to `b`** (object form, 2D): `R a R⁻¹ = (|a|/|b|)·b` for vectors
-    `a`, `b` with `|b| ≠ 0` and `|R|² ≠ 0`. -/
+    space, so this is the whole rotation. Needs `|b| ≠ 0`, `|R|² ≠ 0`. Structural: `R a = |a|·h`,
+    `b R = |b|·h`, `R R̃ = |R|²·1`; getter-native (no coordinate scaffold). -/
 theorem sandwich_carries_from_to {a b : G2} (ha : IsVector a) (hb : IsVector b)
     (hbn : magnitude b ≠ 0) (hr : normSq (versorFromVectors a b) ≠ 0) :
     sandwich (versorFromVectors a b) a = smul (magnitude a / magnitude b) b := by
-  have h := sandwich_carries_from_to_coord a.c1 a.c2 b.c1 b.c2
-    (by rw [← eq_vec_of_isVector hb]; exact hbn)
-    (by rw [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb]; exact hr)
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
-
-/-! ### Object-form wrappers for the scaffold lemmas -/
-
-theorem versorFromVectors_mul_reverse {a b : G2} (ha : IsVector a) (hb : IsVector b) :
-    mul (versorFromVectors a b) (reverse (versorFromVectors a b))
-      = smul (normSq (versorFromVectors a b)) one := by
-  have h := versorFromVectors_mul_reverse_coord a.c1 a.c2 b.c1 b.c2
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
+  have hbis : bisector a b = smul (1 / magnitude b) (mul b (versorFromVectors a b)) := by
+    rw [from_mul_versor_eq_bisector ha hb, GacalcProofs.G2.smul_smul, one_div_mul_cancel hbn,
+        GacalcProofs.G2.one_smul]
+  have hkey : mul (bisector a b) (inverse (versorFromVectors a b)) = smul (1 / magnitude b) b := by
+    rw [hbis, GacalcProofs.G2.smul_mul, inverse, GacalcProofs.G2.mul_smul,
+        GacalcProofs.G2.mul_assoc, versorFromVectors_mul_reverse ha hb, GacalcProofs.G2.mul_smul,
+        GacalcProofs.G2.mul_one, GacalcProofs.G2.smul_smul, GacalcProofs.G2.smul_smul]
+    congr 1
+    field_simp
+  rw [sandwich, versor_mul_from_eq_bisector ha hb, GacalcProofs.G2.smul_mul, hkey,
+      GacalcProofs.G2.smul_smul, mul_one_div]
 
 end GacalcProofs.G2
 
@@ -390,45 +367,48 @@ theorem versorFromVectors_mul_inverse_coord (a1 a2 a3 b1 b2 b3 : ℝ)
       GacalcProofs.G3.smul_smul, one_div_mul_cancel hr]
   simp only [smul, one]; ext <;> ring
 
+theorem mul_biv_reverse_self {B : G3} (hB : IsBivector B) :
+    mul B (reverse B) = smul (normSq B) one := by
+  obtain ⟨_, hB1, hB2, hB3, hB123⟩ := hB
+  simp only [normSq, mul, reverse, one, smul, hB1, hB2, hB3, hB123]
+  ext <;> ring
+
+theorem mul_biv_inverse_self {B : G3} (hB : IsBivector B) (hBn : normSq B ≠ 0) :
+    mul B (inverse B) = one := by
+  rw [inverse, GacalcProofs.G3.mul_smul, mul_biv_reverse_self hB, GacalcProofs.G3.smul_smul,
+      one_div_mul_cancel hBn, GacalcProofs.G3.one_smul]
+
+theorem versorFromVectors_mul_reverse {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    mul (versorFromVectors a b) (reverse (versorFromVectors a b))
+      = smul (normSq (versorFromVectors a b)) one := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  simp only [normSq, versorFromVectors, mul, reverse, add, smul, one,
+             has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+  ext <;> ring
+
 /-- **The versor from `a, b` carries `a` to `b`**: `R a R⁻¹ = (|a|/|b|)·b` (angle-free). The
     scale-invariant sandwich sends the from-vector to the to-vector, scaled to length `|a|` (the
     rotation preserves length, so `a` of length `|a|` lands on `b̂` at length `|a|`). Assembled from
-    `R a = |a|·h`, `b R = |b|·h`, `R R̃ = |R|²·1`, and `R R⁻¹ = 1`. Needs `|b| ≠ 0`, `|R|² ≠ 0`. -/
-theorem sandwich_carries_from_to_coord (a1 a2 a3 b1 b2 b3 : ℝ)
-    (hb : magnitude (vec b1 b2 b3) ≠ 0)
-    (hr : normSq (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
-    sandwich (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) (vec a1 a2 a3)
-      = smul (magnitude (vec a1 a2 a3) / magnitude (vec b1 b2 b3)) (vec b1 b2 b3) := by
+    `R a = |a|·h`, `b R = |b|·h`, `R R̃ = |R|²·1`. Needs `|b| ≠ 0`, `|R|² ≠ 0`. Getter-native (no
+    coordinate scaffold). -/
+theorem sandwich_carries_from_to {a b : G3} (ha : IsVector a) (hb : IsVector b)
+    (hbn : magnitude b ≠ 0) (hr : normSq (versorFromVectors a b) ≠ 0) :
+    sandwich (versorFromVectors a b) a = smul (magnitude a / magnitude b) b := by
   -- The bisector expressed via `b R` (from `b R = |b|·h`, undone with |b| ≠ 0).
-  have hbis : bisector (vec a1 a2 a3) (vec b1 b2 b3)
-      = smul (1 / magnitude (vec b1 b2 b3))
-             (mul (vec b1 b2 b3) (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))) := by
-    rw [from_mul_versor_eq_bisector (isVector_vec a1 a2 a3) (isVector_vec b1 b2 b3),
-        GacalcProofs.G3.smul_smul, one_div_mul_cancel hb,
+  have hbis : bisector a b = smul (1 / magnitude b) (mul b (versorFromVectors a b)) := by
+    rw [from_mul_versor_eq_bisector ha hb, GacalcProofs.G3.smul_smul, one_div_mul_cancel hbn,
         GacalcProofs.G3.one_smul]
   -- The heart: h R⁻¹ = (1/|b|)·b, via associativity + R R̃ = |R|² + mul_one.
-  have hkey : mul (bisector (vec a1 a2 a3) (vec b1 b2 b3))
-                  (inverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)))
-      = smul (1 / magnitude (vec b1 b2 b3)) (vec b1 b2 b3) := by
+  have hkey : mul (bisector a b) (inverse (versorFromVectors a b)) = smul (1 / magnitude b) b := by
     rw [hbis, GacalcProofs.G3.smul_mul, inverse, GacalcProofs.G3.mul_smul,
-        GacalcProofs.G3.mul_assoc, versorFromVectors_mul_reverse_coord, GacalcProofs.G3.mul_smul,
+        GacalcProofs.G3.mul_assoc, versorFromVectors_mul_reverse ha hb, GacalcProofs.G3.mul_smul,
         GacalcProofs.G3.mul_one, GacalcProofs.G3.smul_smul, GacalcProofs.G3.smul_smul]
     congr 1
     field_simp
   -- Assemble: sandwich R a = |a|·(h R⁻¹) = |a|·(1/|b|)·b = (|a|/|b|)·b.
-  rw [sandwich, versor_mul_from_eq_bisector (isVector_vec a1 a2 a3) (isVector_vec b1 b2 b3),
-      GacalcProofs.G3.smul_mul, hkey,
+  rw [sandwich, versor_mul_from_eq_bisector ha hb, GacalcProofs.G3.smul_mul, hkey,
       GacalcProofs.G3.smul_smul, mul_one_div]
-
-/-- **The versor from `a, b` carries `a` to `b`** (object form): `R a R⁻¹ = (|a|/|b|)·b` for vectors
-    `a`, `b` with `|b| ≠ 0` and `|R|² ≠ 0`. -/
-theorem sandwich_carries_from_to {a b : G3} (ha : IsVector a) (hb : IsVector b)
-    (hbn : magnitude b ≠ 0) (hr : normSq (versorFromVectors a b) ≠ 0) :
-    sandwich (versorFromVectors a b) a = smul (magnitude a / magnitude b) b := by
-  have h := sandwich_carries_from_to_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
-    (by rw [← eq_vec_of_isVector hb]; exact hbn)
-    (by rw [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb]; exact hr)
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
 
 /-- `normSq` of a scalar multiple: `|k•a|² = k²|a|²`. -/
 theorem normSq_smul (k : ℝ) (a : G3) : normSq (smul k a) = k ^ 2 * normSq a := by
@@ -744,25 +724,6 @@ theorem sandwich_comp {R1 R2 : G3} (hR1 : IsEvenVersor R1) (hR2 : IsEvenVersor R
 
 /-! ### Object-form wrappers for the scaffold lemmas -/
 
-theorem mul_biv_reverse_self {B : G3} (hB : IsBivector B) :
-    mul B (reverse B) = smul (normSq B) one := by
-  obtain ⟨_, hB1, hB2, hB3, hB123⟩ := hB
-  simp only [normSq, mul, reverse, one, smul, hB1, hB2, hB3, hB123]
-  ext <;> ring
-
-theorem mul_biv_inverse_self {B : G3} (hB : IsBivector B) (hBn : normSq B ≠ 0) :
-    mul B (inverse B) = one := by
-  rw [inverse, GacalcProofs.G3.mul_smul, mul_biv_reverse_self hB, GacalcProofs.G3.smul_smul,
-      one_div_mul_cancel hBn, GacalcProofs.G3.one_smul]
-
-theorem versorFromVectors_mul_reverse {a b : G3} (ha : IsVector a) (hb : IsVector b) :
-    mul (versorFromVectors a b) (reverse (versorFromVectors a b))
-      = smul (normSq (versorFromVectors a b)) one := by
-  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
-  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
-  simp only [normSq, versorFromVectors, mul, reverse, add, smul, one,
-             has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
-  ext <;> ring
 
 theorem versorFromVectors_mul_inverse {a b : G3} (ha : IsVector a) (hb : IsVector b)
     (hr : normSq (versorFromVectors a b) ≠ 0) :

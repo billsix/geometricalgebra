@@ -18,29 +18,16 @@ namespace GacalcProofs.G3
 /-- **The sandwich sends `â` to `b̂`** (the first column of the rotation matrix): the unit vector along
     `a` maps to the unit vector along `b`. From linearity + `sandwich_carries_from_to`
     (`R a R⁻¹ = (|a|/|b|)·b`), the `|a|` scales cancel. Since `b̂ = cos θ·â + sin θ·r̂`, this already
-    exhibits `â`'s image with components `(cos θ, sin θ)` in the plane frame. -/
-theorem sandwich_ahat_coord (a1 a2 a3 b1 b2 b3 : ℝ)
-    (ha : magnitude (vec a1 a2 a3) ≠ 0) (hb : magnitude (vec b1 b2 b3) ≠ 0)
-    (hr : normSq (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
-    sandwich (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
-             (smul (1 / magnitude (vec a1 a2 a3)) (vec a1 a2 a3))
-      = smul (1 / magnitude (vec b1 b2 b3)) (vec b1 b2 b3) := by
-  rw [sandwich_smul, sandwich_carries_from_to_coord a1 a2 a3 b1 b2 b3 hb hr,
-      GacalcProofs.G3.smul_smul]
-  congr 1
-  field_simp
-
-/-- Object form of `sandwich_ahat_coord`, for nonzero vectors `a`, `b`. -/
+    exhibits `â`'s image with components `(cos θ, sin θ)` in the plane frame. For nonzero vectors
+    `a`, `b`; getter-native (no coordinate scaffold). -/
 theorem sandwich_ahat {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b)
     (ha : magnitude a ≠ 0) (hb : magnitude b ≠ 0)
     (hr : normSq (versorFromVectors a b) ≠ 0) :
     sandwich (versorFromVectors a b) (smul (1 / magnitude a) a)
       = smul (1 / magnitude b) b := by
-  have h := sandwich_ahat_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
-    (by rw [← eq_vec_of_isVector ha_isv]; exact ha)
-    (by rw [← eq_vec_of_isVector hb_isv]; exact hb)
-    (by rw [← eq_vec_of_isVector ha_isv, ← eq_vec_of_isVector hb_isv]; exact hr)
-  rwa [← eq_vec_of_isVector ha_isv, ← eq_vec_of_isVector hb_isv] at h
+  rw [sandwich_smul, sandwich_carries_from_to ha_isv hb_isv hb hr, GacalcProofs.G3.smul_smul]
+  congr 1
+  field_simp
 
 /-! ### The three goals, for the actual a→b rotation `R = versorFromVectors a b`
 
