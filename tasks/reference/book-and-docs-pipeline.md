@@ -39,6 +39,53 @@ doesn't need.
   Dockerfile block installs the Sphinx + LaTeX packages (list below).
 - **`make clean`** removes `output/*` and `book/docs/_build`.
 
+## ePiX figures: Python sources, rendered at build (2026-10-07)
+
+The book's drawn figures are authored with the **`epix` Python package** (source baked at `/opt/epix-src`) (the maintainer's
+ePiX mirror, github.com/billsix/epix-mirror, baked into the image at the commit pinned by the
+Dockerfile's `EPIX_COMMIT` ARG — `USE_EPIX=1`, the default), in the style of epix-mirror's own
+`notebooks/`: a jupytext percent-format `.py` under **`book/figures/epix/`** that builds the
+scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
+
+- **Rendering:** `docs.sh` runs `tools/render_epix_figures.py`, which executes each figure
+  file in a **fresh interpreter** (libepix keeps global drawing state with no reset — one
+  process per figure, as epix-mirror's harness does) and writes
+  `book/docs/_static/epix/<name>.pdf` (`elaps --pdf` over the figure's eepic text, for the
+  LuaLaTeX build) and `<name>.png` (the `Figure`'s lazily rasterized PNG, for HTML). Both are
+  gitignored build artifacts. `<name>` is the file stem with `_` → `-`.
+- **Referencing:** `.. figure:: _static/epix/<name>.*` — the wildcard lets Sphinx pick the PDF
+  for the `latex` builder and the PNG for `html`.
+- **Dark mode:** ghostscript's `pngalpha` PNGs are transparent, which read badly on the HTML
+  theme's dark default (only the disc stayed light). A figure file may define a module-level
+  `BACKGROUND = "#rrggbb"`; the renderer then flattens its PNG onto that colour with ImageMagick.
+  The rotation figures use the disc's own fill (`#f2f2f2`, `epix.white(0.95)`), so the PNG is a
+  uniform light panel. PDFs are untouched (the page is white).
+- **Keyword arguments everywhere (maintainer's rule, 2026-10-07):** every call in a figure file names
+  its arguments — `epix.label(at=head, offset=Point(x=7, y=0), text="$x$", align=epix.LabelPos.r)`,
+  `polar(radius=1, angle=BETA)`, `epix.white(intensity=0.95)` — including the single-value calls that
+  epix-mirror's own notebooks leave positional (there, `black(0.2)` and the `label(at, …)` anchor stay
+  bare; here they don't). The binding's names are its `nb::arg`s (`color`/`width`, `intensity`, `t` for
+  `label_angle`, `size` for `font_size`, `at`/`offset`/`text`/`align`, `tail`/`head`/`scale`,
+  `center`/`radius`/`normal`, `data`/`closed`/`filled`). Positional-only builtins (`math.*`) are the one
+  exemption. `tools/check_epix_keywords.py` reports violations (exit 1) and `--fix` inserts the names
+  from its per-function table — extend the table when a new epix call is used, never guess a name.
+  It runs in `entrypoint/format.sh` (wired 2026-10-07 on the maintainer's go-ahead).
+- **Types everywhere, as in the rest of the repo:** module-level points are `name: Point = polar(...)`;
+  the `with … as fig` target is declared on the line above as `fig: PendingFigure` —
+  `_rotation_scene.py`'s alias for `epix.figure._Pending`, the proxy `epix.figure()` yields that becomes
+  the `Figure` after the block (epix keeps the class private, hence the alias).
+- **Shared geometry:** `book/figures/epix/_rotation_scene.py` (skipped by the renderer, `_`-prefixed)
+  holds the constants (β, θ, r) and the drawing helpers for the `rotate1`–`rotate8` sequence, so
+  every step agrees with the goal figure. `epix.label_angle` takes **radians**.
+- **Why Python, not `.xp`:** the maintainer's choice (2026-10-07) — one language across the
+  book's notebooks and figures, and the figure source is itself a runnable notebook.
+- **Decision (2026-10-06): coexist.** `nbplotutils.py` (matplotlib) stays for the interactive
+  notebooks; ePiX is the book's LaTeX-native figure source. First ported figure:
+  `rotate-goal` (`rotate.rst`, `proof-rotate.rst`), replacing the hand-drawn CC0 SVG.
+- **Gotcha:** a lean image (`MINIMAL_IMAGE=1`, so `USE_EPIX=0`) has no `elaps`; the renderer
+  exits 2 with a message naming the flag, and `make docs` stops there — the book needs the
+  full image anyway (`BUILD_DOCS=1`).
+
 ## Executable notebooks: the Sphinx-in-venv requirement (hard-won, 2026-08-03)
 
 The book's notebooks `import gacalc`, and myst_nb runs them in a Jupyter kernel. For

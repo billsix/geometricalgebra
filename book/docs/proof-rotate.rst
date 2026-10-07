@@ -36,14 +36,14 @@ We want to expand on that, so we can rotate **any** point :math:`\vec{a}`, where
 is, about the origin by some angle :math:`\theta`. Call the rotated point
 :math:`\vec{r}(\vec{a}; \theta)`.
 
-.. figure:: _static/cc0/williamesix/rotate-goal.svg
+.. figure:: _static/epix/rotate-goal.*
    :align: center
    :alt: the goal — rotate a-vector by theta
 
 From high school geometry, a Cartesian point :math:`(x, y)` can be described by its
 length :math:`r` and the cosine and sine of its angle.
 
-.. figure:: _static/cc0/williamesix/rotate1.svg
+.. figure:: _static/epix/rotate1.*
    :align: center
    :alt: a point by its length and angle
 
@@ -56,7 +56,7 @@ triangles), so we work on the unit circle but **remember** the length of
 :math:`\beta` — and remember, the angle we actually want to rotate *by* is a different
 one, :math:`\theta`.
 
-.. figure:: _static/cc0/williamesix/rotate2.svg
+.. figure:: _static/epix/rotate2.*
    :align: center
    :alt: the angle beta of a, and r
 
@@ -64,14 +64,14 @@ Before we can rotate by :math:`\theta`, we first need to rotate by 90°
 (:math:`\pi/2`). Rotating :math:`(\cos\beta, \sin\beta)` by :math:`\pi/2` gives
 :math:`(\cos(\beta + \pi/2),\ \sin(\beta + \pi/2))`.
 
-.. figure:: _static/cc0/williamesix/rotate3.svg
+.. figure:: _static/epix/rotate3.*
    :align: center
    :alt: rotating the unit direction by 90 degrees
 
 Now give those two directions new names, :math:`\vec{x'}` and :math:`\vec{y'}`, so we
 can ignore their details for a moment (just as we set :math:`r` aside above).
 
-.. figure:: _static/cc0/williamesix/rotate4.svg
+.. figure:: _static/epix/rotate4.*
    :align: center
    :alt: name the two directions x-prime and y-prime
 
@@ -80,27 +80,27 @@ Now **forget about** :math:`\beta`, and remember our goal is to rotate by
 left: :math:`\vec{x'}` and :math:`\vec{y'}` look just like the ordinary Cartesian
 plane and unit circle — this is exactly the high-school picture we already know.
 
-.. figure:: _static/cc0/williamesix/rotate5.svg
+.. figure:: _static/epix/rotate5.*
    :align: center
    :alt: x-prime and y-prime as a familiar frame
 
 So in this new frame we can rotate :math:`\vec{x'}` by :math:`\theta` and read off a
 right triangle on the unit circle.
 
-.. figure:: _static/cc0/williamesix/rotate6.svg
+.. figure:: _static/epix/rotate6.*
    :align: center
    :alt: rotate by theta in the new frame
 
 The rotated **direction** is therefore :math:`\cos(\theta)\,\vec{x'} +
 \sin(\theta)\,\vec{y'}`.
 
-.. figure:: _static/cc0/williamesix/rotate7.svg
+.. figure:: _static/epix/rotate7.*
    :align: center
    :alt: the rotated direction
 
 and finally we scale it back to length :math:`r`.
 
-.. figure:: _static/cc0/williamesix/rotate8.svg
+.. figure:: _static/epix/rotate8.*
    :align: center
    :alt: re-lengthen to r
 
