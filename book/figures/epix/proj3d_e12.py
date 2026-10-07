@@ -52,16 +52,20 @@ with frame_scene() as fig:
     epix.label_color(color=BLUE)
     epix.label(
         at=proj,
-        offset=Point(x=-6, y=-10),
-        text=r"$\mathrm{proj}$",
+        offset=Point(x=-10, y=-11),
+        text=r"$\mathrm{proj}_{e_{12}}\,\vec{a}$",
         align=epix.LabelPos.c,
     )
     # rejection: perpendicular to the plane, green
     epix.pen(color=GREEN, width=2.0)
     epix.line(tail=proj, head=A)
     epix.label_color(color=GREEN)
+    mid_rej: Point = 0.5 * (proj + A)
     epix.label(
-        at=A, offset=Point(x=13, y=-12), text=r"$\mathrm{rej}$", align=epix.LabelPos.l
+        at=mid_rej,
+        offset=Point(x=13, y=0),
+        text=r"$\mathrm{rej}_{e_{12}}\,\vec{a}$",
+        align=epix.LabelPos.l,
     )
     epix.label_color(color=epix.black())
     right_angle_3d(corner=proj, toward_a=A - proj, toward_b=ORIGIN3 - proj)

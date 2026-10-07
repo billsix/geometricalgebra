@@ -44,15 +44,15 @@ with frame_scene() as fig:
     plane3(plane="e_23")
     axes3()
     proj: Point = project_onto(plane="e_23")
-    vector3(head=A, text=r"$\vec{a}$", offset=Point(x=5, y=6), align=epix.LabelPos.l)
+    vector3(head=A, text=r"$\vec{a}$", offset=Point(x=8, y=5), align=epix.LabelPos.l)
     epix.pen(color=BLUE, width=2.0)
     epix.line(tail=ORIGIN3, head=proj)
     epix.dot(at=proj)
     epix.label_color(color=BLUE)
     epix.label(
         at=proj,
-        offset=Point(x=-11, y=4),
-        text=r"$\mathrm{proj}$",
+        offset=Point(x=-16, y=4),
+        text=r"$\mathrm{proj}_{e_{23}}\,\vec{a}$",
         align=epix.LabelPos.r,
     )
     epix.pen(color=GREEN, width=2.0)
@@ -61,8 +61,8 @@ with frame_scene() as fig:
     mid_rej: Point = 0.5 * (proj + A)
     epix.label(
         at=mid_rej,
-        offset=Point(x=0, y=-11),
-        text=r"$\mathrm{rej}$",
+        offset=Point(x=-2, y=-13),
+        text=r"$\mathrm{rej}_{e_{23}}\,\vec{a}$",
         align=epix.LabelPos.c,
     )
     epix.label_color(color=epix.black())
