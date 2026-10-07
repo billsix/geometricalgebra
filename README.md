@@ -275,6 +275,39 @@ specialized geometric product is ~15–34× faster numerically and thousands of
 times faster symbolically (the general `Gn` eagerly `sympy.simplify`s every
 intermediate; the closed form does a single simplify-free pass).
 
+## Building the container image
+
+Development, tests and the book build all run inside a Fedora container image driven by
+the `Makefile` (`podman`, falling back to `docker`):
+
+```sh
+make image                  # full image: every optional feature on (see the table)
+make image MINIMAL_IMAGE=1  # lean image (~2.4 GB vs ~7 GB): only what `make test` needs
+make shell                  # dev shell in the image; make test / make docs / make lean
+```
+
+The optional features are build flags. The **Makefile defaults every one to on**, and
+`MINIMAL_IMAGE=1` flips them all off; any single flag can be overridden on the command line
+(`make image USE_LEAN=0`, or `make image MINIMAL_IMAGE=1 USE_EPIX=1`).
+
+| Flag | Default | What it adds | Needed by |
+| --- | --- | --- | --- |
+| `USE_EMACS` | 1 | Emacs + the vendored packages | an in-container editor |
+| `BUILD_DOCS` | 1 | Sphinx + the LuaLaTeX stack | `make docs` |
+| `USE_JUPYTER` | 1 | pandoc + XeLaTeX for notebook "Export to PDF" | notebook PDF export |
+| `USE_LEAN` | 1 | Lean 4 + a baked Mathlib (several GB, the slow layer) | `make lean` |
+| `USE_EPIX` | 1 | ePiX (github.com/billsix/epix-mirror) + its Python package, for the book's figures | `make docs` |
+| `USE_SPYDER` | 0 | the Spyder IDE | — |
+
+The `Dockerfile`'s own `ARG`s all default to **0**, so a bare `podman build` that bypasses
+the Makefile produces the lean image; the Makefile passes the real values with
+`--build-arg`.
+
+> `USE_EPIX=1` fetches one pinned commit of epix-mirror from GitHub during the build (the
+> `EPIX_COMMIT` ARG in the `Dockerfile` is the single place that pin lives) and compiles it
+> with Meson, so that layer needs network access at build time only. `USE_LEAN=1` likewise
+> downloads Mathlib at build time. Everything runs offline afterwards.
+
 ## Contributing
 
 Coding standards (naming, idioms, the mutate-vs-return rule, type-annotation policy,

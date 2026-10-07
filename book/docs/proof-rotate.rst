@@ -36,7 +36,7 @@ We want to expand on that, so we can rotate **any** point :math:`\vec{a}`, where
 is, about the origin by some angle :math:`\theta`. Call the rotated point
 :math:`\vec{r}(\vec{a}; \theta)`.
 
-.. figure:: _static/cc0/williamesix/rotate-goal.svg
+.. figure:: _static/epix/rotate-goal.*
    :align: center
    :alt: the goal — rotate a-vector by theta
 

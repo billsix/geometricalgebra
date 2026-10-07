@@ -38,3 +38,6 @@ gacalc-*.tar
 # book notebooks: the percent-format .py sources are tracked; the .ipynb are
 # generated from them at build time (docs.sh / jupytext), so ignore those.
 /book/docs/notebooks/*.ipynb
+
+# ePiX book figures, rendered at `make docs` from book/figures/epix/*.py
+book/docs/_static/epix/

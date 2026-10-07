@@ -29,6 +29,12 @@ for f in book/docs/notebooks/*.py; do
     jupytext --to ipynb "$f"
 done
 
+# Render the book's ePiX figures (book/figures/epix/*.py, written with the epix Python
+# package the way epix-mirror's notebooks are) to _static/epix/<name>.{pdf,png}; the
+# pages reference them as `_static/epix/<name>.*` and Sphinx picks pdf for LaTeX, png
+# for HTML. Needs the image's ePiX (USE_EPIX=1, the default); fails loudly otherwise.
+python tools/render_epix_figures.py
+
 # Build the two formats. `make html` / `make latexpdf` use book/docs/Makefile,
 # which just calls sphinx-build. The PDF goes through LuaLaTeX (set in conf.py).
 cd book/docs
@@ -40,7 +46,10 @@ make latexpdf
 mkdir -p /output/gacalc
 rm -rf /output/gacalc/html
 cp -r _build/html /output/gacalc/html
-cp _build/latex/*.pdf /output/gacalc/
+# Only the book itself: Sphinx also copies the ePiX figure PDFs into _build/latex/.
+for f in _build/latex/*.pdf; do
+    [ -e "_static/epix/$(basename "$f")" ] || cp "$f" /output/gacalc/
+done
 touch /output/gacalc/.nojekyll
 
 echo "Book built: /output/gacalc/html/ and /output/gacalc/*.pdf"

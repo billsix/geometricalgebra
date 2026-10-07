@@ -10,6 +10,7 @@
 #   git                      fetch the pinned epix-mirror commit (install-epix.sh)
 #   meson ninja-build        ePiX's build system
 #   gcc-c++ binutils         compile libepix; g++ also compiles .xp figures at runtime
+#   python3-devel            Python.h for the nanobind extension (install-epix.sh)
 #   bash sed findutils which diffutils   the driver scripts + make_header
 #   ghostscript              ps2epsi / ps2pdf: elaps' eps and pdf steps, eps->png
 #   ImageMagick              `convert`: flix animations (eps->png->mng/gif)
@@ -31,7 +32,7 @@ fi
 
 dnf install -y \
     git \
-    meson ninja-build gcc-c++ binutils \
+    meson ninja-build gcc-c++ binutils python3-devel \
     bash sed findutils which diffutils \
     ghostscript ImageMagick \
     texlive-collection-basic \

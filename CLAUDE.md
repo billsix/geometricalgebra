@@ -295,13 +295,17 @@ over a "run it on your host" instruction.
   github.com/billsix/epix-mirror, built from source at the commit pinned by the Dockerfile's
   `EPIX_COMMIT` ARG (bump that one ARG to move it) and installed in `/usr/local` — `epix` (`.xp` →
   eepic), `elaps` (→ eps/pdf), `flix` (animations), `laps`, plus `libepix.a` + headers; the source
-  stays at `/opt/epix-src` (its `samples/README` is the figure-writing index). Scripts:
+  stays at `/opt/epix-src` (its `samples/README` and `notebooks/` are the figure-writing reference;
+  it is fetched to `/epix` only while epix-mirror's `build_py.sh` builds the extension, then moved —
+  a bare `epix` directory in `/` would shadow the package as a namespace package when the cwd is `/`). Scripts:
   `entrypoint/06-install-epix.sh` (packages: git, meson/g++ — g++ is a *runtime* need, the drivers
   compile each figure — ghostscript, ImageMagick, the TeX set) and `entrypoint/install-epix.sh`
   (shallow git fetch of the pin, `meson install`). Decision (2026-10-06): ePiX **coexists** with
   `nbplotutils.py` — matplotlib stays for the interactive notebooks; ePiX is the **book's**
-  LaTeX-native figure source (`.xp` → PDF for the LuaLaTeX build, eps → SVG/PNG for HTML). Wiring the
-  first book figure is `tasks/epix-plot-integration.md`.
+  LaTeX-native figure source, written in **Python** with the `epix` package (installed editable in
+  `/venv`, nanobind extension built at image build): `book/figures/epix/*.py`, rendered by `make docs`
+  via `tools/render_epix_figures.py` to `_static/epix/<name>.{pdf,png}` and referenced as
+  `_static/epix/<name>.*`. Details: `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
 - **`make docs`** — builds the Sphinx book ("Geometry 2", `book/docs/`) to HTML + PDF into
   `output/gacalc/` (needs an image built with `BUILD_DOCS=1`, the default).
 - **`make dist`** (build sdist+wheel, `GACALC_DIMS=1,2,3,4,5`) → **`make upload`** /

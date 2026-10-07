@@ -1,7 +1,8 @@
 # Import epix-mirror at container build time for plot generation
 
 **Status:** in-progress (go-ahead 2026-10-06: "1) yes 2) agreed", and "use git to fetch it"); the image
-integration is built and verified (table below); the first book figure is the remaining step. **Fully unblocked 2026-10-06:** the GitHub URL
+integration is built and verified (table below); the Python front-end was added to the image and the first
+book figure (`rotate-goal`) ported on 2026-10-07 — book build verification in the second table. **Fully unblocked 2026-10-06:** the GitHub URL
 (`https://github.com/billsix/epix-mirror`, 2026-10-04) *and* the pin — the maintainer wants the image to
 pull **commit `ebf3ca607ae6c1d4fa307e8b0359960d875d219c`** (GitHub `master` as of 2026-10-06, the merge of
 epix-mirror's `containerFileRework` branch).
@@ -47,15 +48,23 @@ and `CLAUDE.md`), usable to learn the build before the GitHub URL is given.)
       reproducible; the installed tools run offline.
 - [x] **Replace-vs-coexist decided (2026-10-06, maintainer): coexist.** `nbplotutils.py` (matplotlib)
       stays for the interactive notebooks; ePiX is the book's LaTeX-native figure source.
-- [ ] **Wire the first book figure.** `.xp` sources under `book/figures/epix/`, rendered at `make docs`
-      to PDF (`elaps --pdf`, for the LuaLaTeX build) and to SVG/PNG for HTML (`gs` from the eps); pick
-      one existing book figure to port as the proof. Exposing the Python `epix` package in the gacalc
-      venv (nanobind extension, lazy-PNG `Figure`) is a possible second step after that.
+- [x] **Wire the first book figure (2026-10-07).** The maintainer wanted the figures written with the
+      **Python** front-end, not `.xp`, so `install-epix.sh` now also builds the nanobind extension (via
+      epix-mirror's own `build_py.sh`, which is why the tree is fetched to `/epix` — then moved to
+      `/opt/epix-src` before the editable install: the maintainer's host build failed on `import epix` from the
+      Dockerfile's cwd `/`, where the bare `/epix` directory shadowed the package as a namespace package) and installs the `epix`
+      package editable into `/venv` (`python3-devel` added to `06-install-epix.sh` for `Python.h`).
+      `book/figures/epix/rotate_goal.py` (jupytext percent, epix-notebook style) rebuilds the
+      `rotate-goal` figure; `tools/render_epix_figures.py` (one fresh process per figure) writes
+      `_static/epix/rotate-goal.{pdf,png}` from `docs.sh`; `rotate.rst` + `proof-rotate.rst` reference
+      `_static/epix/rotate-goal.*`. Pipeline documented in `tasks/reference/book-and-docs-pipeline.md`.
 - [ ] **Keep both doc paths in mind.** Usable from a future Sphinx build *and* a
       LaTeX port (where epix's native LaTeX/eepic output is a natural fit) — don't
       hard-wire it to one.
 - [x] **Document** the dependency: `CLAUDE.md` ("ePiX in the image" bullet + the lean-image flag list).
-- [ ] **Document** how to regenerate the book figures once the first one exists.
+- [x] **Document** how to regenerate the book figures: `tasks/reference/book-and-docs-pipeline.md`
+      ("ePiX figures") — `make docs` renders them; `python tools/render_epix_figures.py [NAME]` in the
+      image renders one by hand.
 
 ## Verification (2026-10-06, nested in the runClaudeInContainer sandbox)
 

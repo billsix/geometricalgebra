@@ -22,7 +22,7 @@ But before that coordinate-free version, we should see where rotation *comes fro
 the ordinary high-school trigonometry everything here connects to. That derivation is
 the foundation, so read it first:
 
-.. figure:: _static/cc0/williamesix/rotate-goal.svg
+.. figure:: _static/epix/rotate-goal.*
    :align: center
    :alt: the goal — rotate a-vector by an angle
 

@@ -39,6 +39,31 @@ doesn't need.
   Dockerfile block installs the Sphinx + LaTeX packages (list below).
 - **`make clean`** removes `output/*` and `book/docs/_build`.
 
+## ePiX figures: Python sources, rendered at build (2026-10-07)
+
+The book's drawn figures are authored with the **`epix` Python package** (source baked at `/opt/epix-src`) (the maintainer's
+ePiX mirror, github.com/billsix/epix-mirror, baked into the image at the commit pinned by the
+Dockerfile's `EPIX_COMMIT` ARG — `USE_EPIX=1`, the default), in the style of epix-mirror's own
+`notebooks/`: a jupytext percent-format `.py` under **`book/figures/epix/`** that builds the
+scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
+
+- **Rendering:** `docs.sh` runs `tools/render_epix_figures.py`, which executes each figure
+  file in a **fresh interpreter** (libepix keeps global drawing state with no reset — one
+  process per figure, as epix-mirror's harness does) and writes
+  `book/docs/_static/epix/<name>.pdf` (`elaps --pdf` over the figure's eepic text, for the
+  LuaLaTeX build) and `<name>.png` (the `Figure`'s lazily rasterized PNG, for HTML). Both are
+  gitignored build artifacts. `<name>` is the file stem with `_` → `-`.
+- **Referencing:** `.. figure:: _static/epix/<name>.*` — the wildcard lets Sphinx pick the PDF
+  for the `latex` builder and the PNG for `html`.
+- **Why Python, not `.xp`:** the maintainer's choice (2026-10-07) — one language across the
+  book's notebooks and figures, and the figure source is itself a runnable notebook.
+- **Decision (2026-10-06): coexist.** `nbplotutils.py` (matplotlib) stays for the interactive
+  notebooks; ePiX is the book's LaTeX-native figure source. First ported figure:
+  `rotate-goal` (`rotate.rst`, `proof-rotate.rst`), replacing the hand-drawn CC0 SVG.
+- **Gotcha:** a lean image (`MINIMAL_IMAGE=1`, so `USE_EPIX=0`) has no `elaps`; the renderer
+  exits 2 with a message naming the flag, and `make docs` stops there — the book needs the
+  full image anyway (`BUILD_DOCS=1`).
+
 ## Executable notebooks: the Sphinx-in-venv requirement (hard-won, 2026-08-03)
 
 The book's notebooks `import gacalc`, and myst_nb runs them in a Jupyter kernel. For
