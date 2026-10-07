@@ -20,7 +20,7 @@ in the book build, the section pages reference them, and this umbrella's checkli
   `_rotation_scene.py` (constants + `unit_circle_scene`/`vector`/`wedge`/`right_angle_marker`/`leg`),
   `tools/render_epix_figures.py`, and the "ePiX figures" section of
   `tasks/reference/book-and-docs-pipeline.md` (how rendering, referencing, `BACKGROUND` flattening and
-  the radians gotcha work). Record: `tasks/epix-plot-integration.md` (the image integration + the
+  the radians gotcha work). Record: `tasks/archive/2026/10/07/epix-plot-integration.md` (the image integration + the
   rotation port).
 - **The three sections today:** `book/docs/vector-addition.rst`, `projection.rst`,
   `projection-rejection-3d.rst` are placeholders ("content to come") with placeholder notebooks

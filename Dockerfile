@@ -14,7 +14,7 @@ ARG USE_JUPYTER=0
 ARG USE_LEAN=0
 # USE_EPIX bakes the maintainer's ePiX mirror (C++ figure library + the epix/elaps
 # drivers) for the book's LaTeX-native figures; EPIX_COMMIT is the ONE place its pin
-# lives (tasks/epix-plot-integration.md). `make test` needs neither.
+# lives (tasks/archive/2026/10/07/epix-plot-integration.md). `make test` needs neither.
 ARG USE_EPIX=0
 ARG EPIX_COMMIT=ebf3ca607ae6c1d4fa307e8b0359960d875d219c
 

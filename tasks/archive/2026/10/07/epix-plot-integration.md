@@ -1,14 +1,13 @@
 # Import epix-mirror at container build time for plot generation
 
-**Status:** in-progress (go-ahead 2026-10-06: "1) yes 2) agreed", and "use git to fetch it"); the image
-integration is built and verified (table below); the Python front-end was added to the image and the first
-book figure (`rotate-goal`) ported on 2026-10-07, then the remaining eight (`rotate1`–`rotate8`) the same day
-and the nine hand-drawn SVGs removed — book build verification in the second table. **Fully unblocked 2026-10-06:** the GitHub URL
+**Status:** DONE (2026-10-07); archived 2026-10-07 on the maintainer's say-so ("looks great both in HTML and
+PDF" … "6) yes"). The image integration (2026-10-06) and the Python front-end + all nine rotation figures
+(2026-10-07) are in; the follow-on figure work is `tasks/book-epix-figures.md`. **Fully unblocked 2026-10-06:** the GitHub URL
 (`https://github.com/billsix/epix-mirror`, 2026-10-04) *and* the pin — the maintainer wants the image to
 pull **commit `ebf3ca607ae6c1d4fa307e8b0359960d875d219c`** (GitHub `master` as of 2026-10-06, the merge of
 epix-mirror's `containerFileRework` branch).
 **Priority:** 7
-**Difficulty:** 5 (was 6 — the epix side now ships host-runnable install scripts and a Meson build, so
+**Difficulty:** 5 (was 6 — by then the epix side shipped host-runnable install scripts and a Meson build, so
 the "learn the build" step is done; see Notes)
 **Created:** 2026-06-13
 **Updated:** 2026-10-06 (William Emerison Six <billsix@gmail.com>, via agent) — pin recorded; plan made
@@ -25,7 +24,7 @@ or via a **LaTeX port** (gacalc's Sphinx book is described in
 
 (epix-mirror is the maintainer's mirror of ePiX, a C++ library that produces precise
 mathematical figures with LaTeX-quality output. A copy is also mounted locally at
-`/mnt/sda1/epix-mirror` (a sandbox path; it now carries its own `Dockerfile`, `Makefile`,
+`/mnt/sda1/epix-mirror` (a sandbox path; by 2026-10-04 it carried its own `Dockerfile`, `Makefile`,
 and `CLAUDE.md`), usable to learn the build before the GitHub URL is given.)
 
 ## Plan
@@ -50,7 +49,7 @@ and `CLAUDE.md`), usable to learn the build before the GitHub URL is given.)
 - [x] **Replace-vs-coexist decided (2026-10-06, maintainer): coexist.** `nbplotutils.py` (matplotlib)
       stays for the interactive notebooks; ePiX is the book's LaTeX-native figure source.
 - [x] **Wire the first book figure (2026-10-07).** The maintainer wanted the figures written with the
-      **Python** front-end, not `.xp`, so `install-epix.sh` now also builds the nanobind extension (via
+      **Python** front-end, not `.xp`, so `install-epix.sh` from then on also builds the nanobind extension (via
       epix-mirror's own `build_py.sh`, which is why the tree is fetched to `/epix` — then moved to
       `/opt/epix-src` before the editable install: the maintainer's host build failed on `import epix` from the
       Dockerfile's cwd `/`, where the bare `/epix` directory shadowed the package as a namespace package) and installs the `epix`
@@ -75,6 +74,27 @@ and `CLAUDE.md`), usable to learn the build before the GitHub URL is given.)
       ("ePiX figures") — `make docs` renders them; `python tools/render_epix_figures.py [NAME]` in the
       image renders one by hand.
 
+## Chronology (harvested from the branch history before the squash)
+
+1. 2026-06-13 filed (moved here from modelviewprojection); blocked on the GitHub URL until 2026-10-04.
+2. 2026-10-06 the maintainer pushed epix-mirror and chose the pin (`ebf3ca6`, GitHub `master`) and
+   `git` as the fetch method; "coexist" decided for the plotting question.
+3. 2026-10-06 the image half: `USE_EPIX` flag, `06-install-epix.sh` + `install-epix.sh` (shallow fetch of
+   the pin, Meson install), `install-lean.sh`'s no-git note widened. Verified nested: pin logged, `hello.xp`
+   rendered, 696 tests, lean permutation without epix.
+4. 2026-10-07 the maintainer asked for the figures in **Python**, not `.xp`: the nanobind extension built
+   in the image, `epix` installed editable in `/venv`, the first figure (`rotate-goal`), the render tool,
+   the `docs.sh` hook, the `.*` figure references. The maintainer's host build then failed on `import epix`
+   from the Dockerfile's cwd `/` — the bare `/epix` tree shadowed the package as a namespace package —
+   fixed by moving the tree to `/opt/epix-src` before the editable install; the README gained its
+   container-build section with the flag table.
+5. 2026-10-07 the remaining eight proof figures via `_rotation_scene.py`; the dark-mode fix (HTML PNGs
+   flattened onto the disc fill); the nine CC0 SVGs removed; `epix.label_angle` found to take radians.
+6. 2026-10-07 follow-on umbrella `book-epix-figures` filed with three steps; then the maintainer's two
+   rules — every argument by keyword (`tools/check_epix_keywords.py`, a `make format` gate step) and every
+   binding typed (`fig: PendingFigure`) — applied to all ten figure files, eepic oracle byte-identical.
+7. 2026-10-07 archived on the maintainer's approval of the HTML and PDF.
+
 ## Verification (2026-10-06, nested in the runClaudeInContainer sandbox)
 
 | Check | Result |
@@ -89,6 +109,8 @@ and `CLAUDE.md`), usable to learn the build before the GitHub URL is given.)
 
 `tasks/book-epix-figures.md` (umbrella, 2026-10-07): the same figure pipeline applied to the
 vector-addition, projection (2D, result + derivation) and 3D-projection sections, three step tasks.
+Two rules landed at the end of this task and carry forward there: every argument by keyword
+(`tools/check_epix_keywords.py`, a `make format` gate step) and every binding typed (`fig: PendingFigure`).
 
 ## Notes / decisions
 
