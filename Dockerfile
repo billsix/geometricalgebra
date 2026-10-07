@@ -161,30 +161,38 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
       EPIX_COMMIT="$EPIX_COMMIT" /usr/local/bin/install-epix.sh ; \
     fi
 
-# Copy the build-relevant project files (not the whole tree: the 31M vendored
-# Emacs elpa tree is already at /root, and .dockerignore is global so it can't be
-# excluded for just this COPY). Placed LAST, after every slow source-independent
-# layer (dnf/MELPA/TeX + the Lean/Mathlib bake above), so editing source rebusts
-# only this COPY and the editable install below -- nothing expensive. At runtime
-# `make shell`'s bind mount overlays /gacalc with the live host tree, so this copy
-# is only used for the build below.
+# --- Dependencies (the slow layer) -- from pyproject, needs ONLY pyproject.toml ---
+# Install the project's runtime deps + the dev/notebooks/jupyter extras straight from
+# pyproject's own [project.(optional-)dependencies] -- the single source of truth (no
+# requirements.txt, no hardcoded list). `-r pyproject.toml` installs the DEPENDENCIES,
+# NOT the gacalc package, so this layer neither builds gacalc nor needs src/ or tools/,
+# and is placed BEFORE `COPY src`/`COPY tools` so a code edit never rebusts it. It also
+# sits after every slow source-independent layer (dnf/MELPA/TeX + the Lean/Mathlib bake
+# above). The uv CACHE MOUNT only speeds a rebuild (it is discarded, not in the image);
+# the deps still land in the committed /venv, so an exported image stays self-contained.
 COPY pyproject.toml setup.py README.md /gacalc/
-COPY src   /gacalc/src
-COPY tools /gacalc/tools
-
-# Install the package + ALL its optional extras from pyproject's own
-# [project.optional-dependencies] -- the single source of truth (no requirements.txt,
-# no hardcoded package list). Build prereqs (setuptools/wheel/numpy/sympy) are
-# installed above, so --no-build-isolation reuses them; the setup.py build_py hook
-# generates the algebras if missing. This layer re-runs when src/ changes, so the
-# notebook/jupyter deps would reinstall then -- the uv CACHE MOUNT below keeps that
-# fast (reuses already-downloaded wheels, incl. JupyterLab). The cache is discarded
-# (not in the image), but the deps still land in the committed /venv, so an exported
-# image stays self-contained -- the mount only speeds the rebuild.
 RUN --mount=type=cache,target=/root/.cache/uv \
     export VIRTUAL_ENV_DISABLE_PROMPT=1 && source /venv/bin/activate && \
-    cd /gacalc && uv pip install --python $(which python) --no-build-isolation ".[dev,notebooks,jupyter]" && \
+    cd /gacalc && \
+    uv pip install --python $(which python) -r pyproject.toml \
+        --extra dev --extra notebooks --extra jupyter && \
     jupytext-config set-default-viewer python && \
     jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
+
+# --- The gacalc package itself (the cheap layer) -- needs src/ + tools/ ---
+# Build + install gacalc. The install runs setup.py's build_py hook, which execs
+# tools/gen_specialized.py to generate g1/g2/g3.py when they are absent -- so tools/
+# must be present HERE (this is the only step that needs it; the dep layer above does
+# not). --no-deps: the deps are already installed above; the build prereqs
+# (setuptools/wheel/numpy/sympy, installed earlier) satisfy --no-build-isolation. A
+# src/ or tools/ edit now rebusts only this small layer, never the deps. At runtime
+# `make shell`'s bind mount overlays /gacalc with the live host tree and re-installs
+# editable (regenerating the algebras), so this copy is used only for the build -- and
+# for a non-mounted/pulled image, which then has a working `import gacalc` standalone.
+COPY src   /gacalc/src
+COPY tools /gacalc/tools
+RUN --mount=type=cache,target=/root/.cache/uv \
+    export VIRTUAL_ENV_DISABLE_PROMPT=1 && source /venv/bin/activate && \
+    cd /gacalc && uv pip install --python $(which python) --no-deps --no-build-isolation .
 
 ENTRYPOINT ["/entrypoint.sh"]
