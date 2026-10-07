@@ -12,6 +12,11 @@ ARG BUILD_DOCS=0
 # theorem-prover toolchain (install-lean.sh). Neither is needed by `make test`.
 ARG USE_JUPYTER=0
 ARG USE_LEAN=0
+# USE_EPIX bakes the maintainer's ePiX mirror (C++ figure library + the epix/elaps
+# drivers) for the book's LaTeX-native figures; EPIX_COMMIT is the ONE place its pin
+# lives (tasks/epix-plot-integration.md). `make test` needs neither.
+ARG USE_EPIX=0
+ARG EPIX_COMMIT=ebf3ca607ae6c1d4fa307e8b0359960d875d219c
 
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
@@ -137,6 +142,23 @@ ENV PATH="/root/.elan/bin:${PATH}"
 COPY proofs/lakefile.toml proofs/lean-toolchain proofs/lake-manifest.json /opt/gacalc-proofs/
 RUN if [ "$USE_LEAN" = "1" ]; then \
       cd /opt/gacalc-proofs && touch GacalcProofs.lean && lake exe cache get ; \
+    fi
+
+# ePiX (github.com/billsix/epix-mirror), pinned to EPIX_COMMIT, built from source with
+# Meson into /usr/local -- the `epix`/`elaps`/`flix`/`laps` drivers + libepix for the
+# book's LaTeX-native figures (decision 2026-10-06: epix COEXISTS with the matplotlib
+# plotting in nbplotutils.py; it is the book's figure source, not the notebooks').
+# Two host-runnable scripts: 06-install-epix.sh (dnf: git, meson/g++, ghostscript,
+# ImageMagick, the TeX set epix's own render script names) then install-epix.sh (shallow
+# git fetch of the pinned commit, meson install). Gated on USE_EPIX; placed before
+# COPY src for the same cache-ordering reason as the Lean block above. The fetch is
+# the only network use and happens at build time; the installed tools run offline.
+COPY entrypoint/06-install-epix.sh entrypoint/install-epix.sh /usr/local/bin/
+RUN --mount=type=cache,target=/var/cache/libdnf5 \
+    --mount=type=cache,target=/var/lib/dnf \
+    if [ "$USE_EPIX" = "1" ]; then \
+      /usr/local/bin/06-install-epix.sh && \
+      EPIX_COMMIT="$EPIX_COMMIT" /usr/local/bin/install-epix.sh ; \
     fi
 
 # Copy the build-relevant project files (not the whole tree: the 31M vendored

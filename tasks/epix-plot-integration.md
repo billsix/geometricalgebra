@@ -1,6 +1,7 @@
 # Import epix-mirror at container build time for plot generation
 
-**Status:** proposed — needs go-ahead; not started. **Fully unblocked 2026-10-06:** the GitHub URL
+**Status:** in-progress (go-ahead 2026-10-06: "1) yes 2) agreed", and "use git to fetch it"); the image
+integration is built and verified (table below); the first book figure is the remaining step. **Fully unblocked 2026-10-06:** the GitHub URL
 (`https://github.com/billsix/epix-mirror`, 2026-10-04) *and* the pin — the maintainer wants the image to
 pull **commit `ebf3ca607ae6c1d4fa307e8b0359960d875d219c`** (GitHub `master` as of 2026-10-06, the merge of
 epix-mirror's `containerFileRework` branch).
@@ -34,28 +35,37 @@ and `CLAUDE.md`), usable to learn the build before the GitHub URL is given.)
       headers + man pages + samples. Runtime: `g++` (the `epix` driver compiles each `.xp`), `bash`,
       `latex`, `ps2epsi`; `gs` for eps→png, ImageMagick for animations. The tree's own
       `entrypoint/01-install-base.sh` / `02-install-render.sh` are host-runnable dnf group scripts.
-- [ ] **Add it to gacalc's `Dockerfile`** behind a new `USE_EPIX` flag (`?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)`
-      in the Makefile, `ARG USE_EPIX=0` in the Dockerfile; `make test` needs none of it). Fetch the pinned
-      commit as a tarball with `curl` (no `git` in the base image):
-      `https://github.com/billsix/epix-mirror/archive/ebf3ca607ae6c1d4fa307e8b0359960d875d219c.tar.gz`,
-      unpack to `/opt/epix-src`, install the build deps (a new `entrypoint/06-install-epix.sh`: meson,
-      ninja-build, gcc-c++, binutils, sed, findutils, bash, plus the rendering set epix's
-      `02-install-render.sh` names — ghostscript, ImageMagick, texlive-eepic/-epstopdf/-dvips/
-      -collection-pstricks/-collection-pictures; gacalc's `03-install-notebook-tex.sh` already brings
-      latexrecommended/fontsrecommended/pgf), then `meson setup`/`meson install` into `/usr/local`.
-      Everything lands in committed layers at build time, so the exported image runs offline
-      (the "deps fetched at build, offline thereafter" rule); the pin makes the layer reproducible.
-- [ ] **Wire it into the plot flow.** Work out how epix output fits with gacalc's
-      existing plotting: `src/gacalc/nbplotutils.py` and the `notebooks/`
-      (`displayg2.py`, `displayg3.py`, `displaymv.py`, `displaygraded.py`,
-      `displayrotations.py`), plus the `jupyter.sh` / `percentToIpynb.sh` workflow.
-      Decide replace-vs-coexist with the current plotting and where generated
-      figures land.
+- [x] **Add it to gacalc's `Dockerfile`** (2026-10-06) behind `USE_EPIX` (`?= $(if $(filter
+      1,$(MINIMAL_IMAGE)),0,1)` in the Makefile, `ARG USE_EPIX=0` + `ARG EPIX_COMMIT=ebf3ca6…` in the
+      Dockerfile). **Fetched with git** (the maintainer's choice over a tarball): `entrypoint/install-epix.sh`
+      does a shallow `git fetch --depth 1 origin $EPIX_COMMIT` + detached checkout, `meson setup`/`meson
+      install` into `/usr/local`, removes the build dir and `.git`, keeps the source at `/opt/epix-src`.
+      `entrypoint/06-install-epix.sh` installs git, meson/ninja/g++/binutils, ghostscript, ImageMagick and
+      the TeX set epix's own `02-install-render.sh` names (overlap with `03-install-notebook-tex.sh` is a
+      dnf no-op; listed in full so an epix-only image has `latex`). Placed before `COPY src` for cache
+      ordering. Everything lands in committed layers at build time; the pin makes the layer
+      reproducible; the installed tools run offline.
+- [x] **Replace-vs-coexist decided (2026-10-06, maintainer): coexist.** `nbplotutils.py` (matplotlib)
+      stays for the interactive notebooks; ePiX is the book's LaTeX-native figure source.
+- [ ] **Wire the first book figure.** `.xp` sources under `book/figures/epix/`, rendered at `make docs`
+      to PDF (`elaps --pdf`, for the LuaLaTeX build) and to SVG/PNG for HTML (`gs` from the eps); pick
+      one existing book figure to port as the proof. Exposing the Python `epix` package in the gacalc
+      venv (nanobind extension, lazy-PNG `Figure`) is a possible second step after that.
 - [ ] **Keep both doc paths in mind.** Usable from a future Sphinx build *and* a
       LaTeX port (where epix's native LaTeX/eepic output is a natural fit) — don't
       hard-wire it to one.
-- [ ] **Document.** Update this task as it progresses; once landed, note the new
-      dependency in `CLAUDE.md` / `README` and how to regenerate plots.
+- [x] **Document** the dependency: `CLAUDE.md` ("ePiX in the image" bullet + the lean-image flag list).
+- [ ] **Document** how to regenerate the book figures once the first one exists.
+
+## Verification (2026-10-06, nested in the runClaudeInContainer sandbox)
+
+| Check | Result |
+| --- | --- |
+| `make image USE_LEAN=0 USE_EMACS=0` (ePiX on; Lean/Emacs trimmed — the diff touches neither) | built; the ePiX layer logged `epix-mirror at ebf3ca607ae6c1d4fa307e8b0359960d875d219c` and Meson installed 194 files under `/usr/local` |
+| tools present | `epix`/`elaps`/`flix`/`laps` on PATH, `libepix.a` + `epix.h` installed, source at `/opt/epix-src` with `.git` removed |
+| render `samples/hello.xp` in the image | `epix` → eepic; `elaps --pdf` → `hello.pdf` (4.6 KB) through latex → dvips → ps2epsi → epstopdf |
+| gacalc gate (`make test`'s run line) | **696 passed** |
+| `make image MINIMAL_IMAGE=1` (flag-off permutation) | built, 2.47 GB; `epix`, `git` and `meson` all absent — the `USE_EPIX` gate holds. The ePiX-enabled image (Lean/Emacs still off) is 3.96 GB |
 
 ## Notes / decisions
 
@@ -90,5 +100,6 @@ and `CLAUDE.md`), usable to learn the build before the GitHub URL is given.)
 1. ~~What's the epix-mirror GitHub URL?~~ **Answered 2026-10-04:** `https://github.com/billsix/epix-mirror`.
 2. ~~Pin to a commit/tag, or track a branch?~~ **Answered 2026-10-06:** pin to commit
    `ebf3ca607ae6c1d4fa307e8b0359960d875d219c` (William Emerison Six <billsix@gmail.com>).
-3. epix output target: pre-rendered PNG/SVG for notebooks, native LaTeX/eepic for a
-   book/LaTeX port, or both? How should it coexist with `nbplotutils.py`?
+3. ~~epix output target / coexistence with `nbplotutils.py`?~~ **Answered 2026-10-06 (William Emerison
+   Six <billsix@gmail.com>): coexist** — matplotlib for the notebooks, ePiX for the book's LaTeX-native
+   figures (PDF for LuaLaTeX, SVG/PNG for HTML).

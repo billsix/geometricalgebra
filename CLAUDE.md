@@ -279,18 +279,29 @@ over a "run it on your host" instruction.
 - **`make image`** then **`make shell`** — containerized dev; Jupyter on port 8888.
   **`make update-emacs-packages`** — refresh the vendored Emacs packages (maintainer-only, rarely).
 - **`make image MINIMAL_IMAGE=1`** — a **lean image** (~2.42 GB vs the full ~7.21 GB) that still runs
-  the full `make test` gate. `MINIMAL_IMAGE=1` flips the four optional-feature flags off
-  (`USE_EMACS`/`BUILD_DOCS`/`USE_JUPYTER`/`USE_LEAN` → 0), dropping Emacs, the TeX distribution (both
-  the nbconvert-PDF `03` and the Sphinx-book `04` LaTeX), the Lean 4 theorem-prover toolchain, and the
-  Sphinx doc stack — none of which pytest/doctests need. Use it for: the test/lint gate, fast CI, and
+  the full `make test` gate. `MINIMAL_IMAGE=1` flips the five optional-feature flags off
+  (`USE_EMACS`/`BUILD_DOCS`/`USE_JUPYTER`/`USE_LEAN`/`USE_EPIX` → 0), dropping Emacs, the TeX
+  distribution (both the nbconvert-PDF `03` and the Sphinx-book `04` LaTeX), the Lean 4 theorem-prover
+  toolchain, the Sphinx doc stack, and ePiX — none of which pytest/doctests need. Use it for: the test/lint gate, fast CI, and
   building nested inside a runClaudeInContainer/runCrushInContainer sandbox where a 7 GB image is
   wasteful. **`MINIMAL_IMAGE` is a build-content signal, deliberately separate from `NESTED_PODMAN`**
   (which is run-capability only, used by `PODMAN_RUN_FLAGS`); the sandbox does **not** auto-set it, so
   a plain nested `make image` builds the full image unless you ask for lean. What the lean image
   *cannot* do: `make docs` (needs `BUILD_DOCS=1`), notebook "Export to PDF" (`USE_JUPYTER=1`), Lean
-  proofs (`USE_LEAN=1`), or an in-container Emacs (`USE_EMACS=1`) — pass the specific flag to add one
-  back (e.g. `make image MINIMAL_IMAGE=1 BUILD_DOCS=1`). Convention:
+  proofs (`USE_LEAN=1`), ePiX figures (`USE_EPIX=1`), or an in-container Emacs (`USE_EMACS=1`) — pass
+  the specific flag to add one back (e.g. `make image MINIMAL_IMAGE=1 BUILD_DOCS=1`). Convention:
   runClaudeInContainer `tasks/reference/minimal-nested-images.md`.
+- **ePiX in the image (`USE_EPIX=1`, the default):** the maintainer's mirror
+  github.com/billsix/epix-mirror, built from source at the commit pinned by the Dockerfile's
+  `EPIX_COMMIT` ARG (bump that one ARG to move it) and installed in `/usr/local` — `epix` (`.xp` →
+  eepic), `elaps` (→ eps/pdf), `flix` (animations), `laps`, plus `libepix.a` + headers; the source
+  stays at `/opt/epix-src` (its `samples/README` is the figure-writing index). Scripts:
+  `entrypoint/06-install-epix.sh` (packages: git, meson/g++ — g++ is a *runtime* need, the drivers
+  compile each figure — ghostscript, ImageMagick, the TeX set) and `entrypoint/install-epix.sh`
+  (shallow git fetch of the pin, `meson install`). Decision (2026-10-06): ePiX **coexists** with
+  `nbplotutils.py` — matplotlib stays for the interactive notebooks; ePiX is the **book's**
+  LaTeX-native figure source (`.xp` → PDF for the LuaLaTeX build, eps → SVG/PNG for HTML). Wiring the
+  first book figure is `tasks/epix-plot-integration.md`.
 - **`make docs`** — builds the Sphinx book ("Geometry 2", `book/docs/`) to HTML + PDF into
   `output/gacalc/` (needs an image built with `BUILD_DOCS=1`, the default).
 - **`make dist`** (build sdist+wheel, `GACALC_DIMS=1,2,3,4,5`) → **`make upload`** /
