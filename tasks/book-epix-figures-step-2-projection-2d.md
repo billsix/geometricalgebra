@@ -48,9 +48,6 @@ two `.. TODO figure` markers (lines 37 and 57) and adding the steps between. Don
 
 ## Open questions
 
-1. `proof-projection.rst` currently narrates the **3D** reduction (two rotations, xy then xz). Draw the
-   2D case here (one rotation, the page's first half) and leave the 3D pictures to step 3, or redraw the
-   page's framing as 2D-first? Recommendation: 2D here; step 3 adds the 3D "one plane at a time" figures,
-   and the page gets a short 2D-then-3D structure — the maintainer's prose call.
-2. Which `a` and `b`: reuse the rotation sequence's `a` (1.25 at 66°) and put `b` at 20°, length 1?
-   Recommendation: yes — one cast of characters across the book.
+None — both decided 2026-10-07 (William Emerison Six <billsix@gmail.com>): the **2D** derivation is
+drawn here (3D pictures are step 3's; the page's 2D-then-3D restructuring is the maintainer's prose
+call), and `a` is the rotation sequence's (1.25 at 66°) with `b` at 20°, length 1.

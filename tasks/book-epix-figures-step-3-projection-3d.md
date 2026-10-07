@@ -49,12 +49,7 @@ outputs checked, and the helper is documented in the book pipeline reference.
 
 ## Open questions
 
-1. Plane labels: `e_31` (the maintainer's wording, cyclic) or `e_13` (gacalc's `Bivector.e_13`)?
-   Recommendation: `e_31` in the figures with a one-line note on the page that gacalc spells the blade
-   `e_13 = -e_31`.
-2. Three figures (one per plane, each showing projection and rejection) plus an overview, or six (one per
-   operation per plane)? Recommendation: three plus the overview.
-3. Should these 3D figures also show the "one plane at a time" standard-position reduction (the 3D
-   derivation `proof-projection.rst` narrates), or only the results? Recommendation: results here; the
-   derivation figures are a follow-on once the maintainer settles the page's 2D-then-3D structure
-   (step 2, open question 1).
+None — decided 2026-10-07 (William Emerison Six <billsix@gmail.com>): labels `e_31` with a page note
+(`e_13 = -e_31` in gacalc); three figures (one per plane, projection + rejection) plus an overview;
+results only here — the 3D standard-position derivation pictures are a follow-on after the maintainer
+restructures `proof-projection.rst` as 2D-then-3D.

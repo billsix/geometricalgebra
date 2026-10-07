@@ -60,16 +60,17 @@ helper); none is `blocked` — all within our control.
 - The 3D plane names in figure labels follow the book's wording (`e_12`, `e_23`, `e_31`); gacalc's
   blade constant for the third is `Bivector.e_13` (= −`e_31`) — see step 3's open question 1.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-10-07)
+
+- Projection figures reuse the rotation sequence's `a` (length 1.25 at 66°), `b` at 20°, length 1.
+- The third plane is labelled `e_31` (cyclic) in the figures, with a one-line page note that gacalc
+  spells the blade `e_13 = -e_31`.
+- 3D: one figure per plane showing projection *and* rejection, plus an overview with all three planes.
+- `proof-projection.rst` gets the **2D** derivation figures in step 2; the 3D "one plane at a time"
+  pictures wait for step 3 and the maintainer's 2D-then-3D restructuring of that page.
+- Every argument by keyword, every binding typed; `tools/check_epix_keywords.py` is a `make format`
+  gate step.
+
 ## Open questions
 
-Collected from the steps (answer by number there or here):
-
-1. (step 2) Which vectors to use for `a` and `b` in the projection figures — the same `a` as the rotation
-   sequence (length 1.25 at 66°) with `b` along, say, 20°? Recommendation: yes, reuse `a`.
-2. (step 3) Label the third plane `e_31` (cyclic, the maintainer's wording) or `e_13` (gacalc's blade
-   name)? Recommendation: `e_31` in the figures, with a one-line note on the page that gacalc spells
-   the blade `e_13 = -e_31`.
-3. (step 3) One figure per plane (three figures, each showing projection *and* rejection onto one
-   plane) or one figure per operation per plane (six)? Recommendation: three, each with the vector,
-   its projection (on the plane) and rejection (the perpendicular stub), plus a seventh overview with
-   all three planes faint.
+None.
