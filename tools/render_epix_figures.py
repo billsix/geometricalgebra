@@ -12,8 +12,9 @@ under ``book/docs/_static/epix/``:
   build (Sphinx picks it for the ``latex`` builder);
 - ``<name>.png`` -- the figure's lazily rasterized PNG (``elaps`` -> eps -> ``gs``),
   for the HTML builder. ghostscript's ``pngalpha`` leaves the background transparent,
-  which reads badly on a dark-mode page; a figure file may define a module-level
-  ``BACKGROUND`` (``"#rrggbb"``) and the PNG is then flattened onto it with ImageMagick.
+  which reads badly on a dark-mode page; so every PNG is flattened (ImageMagick) onto
+  ``DEFAULT_BACKGROUND`` (``#f2f2f2``), or onto a module-level ``BACKGROUND``
+  (``"#rrggbb"``) a figure defines to override it.
 
 A page then references the figure as ``.. figure:: _static/epix/<name>.*`` and Sphinx
 chooses the format per builder. Run from the repo root, inside the image
@@ -35,6 +36,12 @@ from pathlib import Path
 REPO: Path = Path(__file__).resolve().parents[1]
 FIGURES: Path = REPO / "book" / "figures" / "epix"
 OUT: Path = REPO / "book" / "docs" / "_static" / "epix"
+
+# Every figure's PNG is flattened onto this unless the figure overrides it with a
+# module-level BACKGROUND -- so no figure renders with a transparent background (which
+# reads badly on a dark-mode HTML page). It matches the disc fill epix.white(0.95) =
+# #f2f2f2, so a disc-and-axes figure becomes one seamless light panel.
+DEFAULT_BACKGROUND: str = "#f2f2f2"
 
 # Runs inside the fresh interpreter: execute the figure file, then emit its eepic
 # and PNG to the paths given on the command line.
@@ -94,9 +101,9 @@ def render_one(src: Path, dpi: int) -> None:
             capture_output=True,
             text=True,
         )
-        background: str = child.stdout.strip()
-        if background:
-            flatten_png(png, background)
+        # the figure's own BACKGROUND, or the default so nothing is left transparent
+        background: str = child.stdout.strip() or DEFAULT_BACKGROUND
+        flatten_png(png, background)
         eepic_to_pdf(eepic, pdf)
     print(f"rendered {src.relative_to(REPO)} -> {pdf.relative_to(REPO)}, {png.name}")
 

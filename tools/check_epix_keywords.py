@@ -50,16 +50,20 @@ KNOWN: dict[tuple[str, str], Names] = {
     ("epix", "triangle"): ["a", "b", "c"],
     ("epix", "rgb"): ["r", "g", "b"],
     ("epix", "figure"): ["lower_left", "upper_right", "size", "dpi"],
+    ("epix", "line_style"): ["style"],
     ("epix", "Path"): ["data", "closed", "filled"],
     ("epix", "Point"): ["x", "y", "z"],
     ("", "Point"): ["x", "y", "z"],
-    # the figure helpers (book/figures/epix/_rotation_scene.py)
+    # the figure helpers (book/figures/epix/_scene2d.py)
     ("", "polar"): ["radius", "angle"],
     ("", "vector"): ["head", "text", "offset", "align"],
+    ("", "dashed_vector"): ["tail", "head", "text", "offset", "align"],
+    ("", "parallelogram"): ["corner_a", "corner_b", "color"],
     ("", "wedge"): ["start", "finish", "text", "radius"],
     ("", "right_angle_marker"): ["angle", "size"],
+    ("", "right_angle_at"): ["corner", "angle", "size"],
     ("", "leg"): ["tail", "head", "color", "text", "angle", "offset"],
-    ("", "unit_circle_scene"): ["lower_left", "upper_right"],
+    ("", "unit_circle_scene"): ["lower_left", "upper_right", "disc"],
 }
 for tint in ("black", "white", "red", "green", "blue", "yellow", "cyan", "magenta"):
     KNOWN[("epix", tint)] = ["intensity"]
@@ -67,6 +71,8 @@ for tint in ("black", "white", "red", "green", "blue", "yellow", "cyan", "magent
 EXEMPT_MODULES: frozenset[str] = frozenset({"math"})
 EXEMPT_BUILTINS: frozenset[str] = frozenset(
     {"range", "len", "int", "float", "str", "print", "open", "list", "set", "sorted"}
+    # exception constructors take a positional message by convention
+    | {"ValueError", "TypeError", "KeyError", "RuntimeError", "NotImplementedError"}
 )
 
 

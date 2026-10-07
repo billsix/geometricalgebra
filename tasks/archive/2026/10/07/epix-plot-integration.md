@@ -2,7 +2,7 @@
 
 **Status:** DONE (2026-10-07); archived 2026-10-07 on the maintainer's say-so ("looks great both in HTML and
 PDF" … "6) yes"). The image integration (2026-10-06) and the Python front-end + all nine rotation figures
-(2026-10-07) are in; the follow-on figure work is `tasks/book-epix-figures.md`. **Fully unblocked 2026-10-06:** the GitHub URL
+(2026-10-07) are in; the follow-on figure work is `tasks/archive/2026/10/07/book-epix-figures.md`. **Fully unblocked 2026-10-06:** the GitHub URL
 (`https://github.com/billsix/epix-mirror`, 2026-10-04) *and* the pin — the maintainer wants the image to
 pull **commit `ebf3ca607ae6c1d4fa307e8b0359960d875d219c`** (GitHub `master` as of 2026-10-06, the merge of
 epix-mirror's `containerFileRework` branch).
@@ -107,7 +107,7 @@ and `CLAUDE.md`), usable to learn the build before the GitHub URL is given.)
 
 ## Follow-on
 
-`tasks/book-epix-figures.md` (umbrella, 2026-10-07): the same figure pipeline applied to the
+`tasks/archive/2026/10/07/book-epix-figures.md` (umbrella, 2026-10-07): the same figure pipeline applied to the
 vector-addition, projection (2D, result + derivation) and 3D-projection sections, three step tasks.
 Two rules landed at the end of this task and carry forward there: every argument by keyword
 (`tools/check_epix_keywords.py`, a `make format` gate step) and every binding typed (`fig: PendingFigure`).

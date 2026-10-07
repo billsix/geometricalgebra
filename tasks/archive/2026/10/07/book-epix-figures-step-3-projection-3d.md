@@ -1,8 +1,8 @@
 # Step 3: ePiX figures for projection and rejection in 3D onto the e_12, e_23 and e_31 planes
 
-**Part of:** `tasks/book-epix-figures.md` · **Depends on:** step 1 (`_scene2d.py` conventions), step 2
+**Part of:** `tasks/archive/2026/10/07/book-epix-figures.md` · **Depends on:** step 1 (`_scene2d.py` conventions), step 2
 (the 2D cast and idioms) · **Next:** — (last step; the umbrella archives when this lands)
-**Status:** proposed — needs go-ahead.
+**Status:** DONE 2026-10-07 (overnight autonomous run) — figures render, page wired, gate green, full html+PDF build clean.
 **Priority:** 5
 **Difficulty:** 6 (first 3D figures: camera, depth cues, plane rendering)
 **Created:** 2026-10-07 (William Emerison Six <billsix@gmail.com>)
@@ -32,20 +32,29 @@ outputs checked, and the helper is documented in the book pipeline reference.
 
 ## Plan
 
-- [ ] `_scene3d.py`: a `frame_scene(camera, box)` context manager drawing the three axes with
-      arrowheads and labels `x`, `y`, `z`, a light-filled coordinate plane helper (`plane(e_12)` etc.),
-      `vector3`, a `drop_line` (dashed perpendicular from a point to a plane) and `foot` marker.
-- [ ] Pick one camera position for the whole section (e.g. `epix.camera.at(Point(x=5, y=-7, z=4))`) and
-      one `a` (e.g. `Point(x=1.0, y=0.7, z=0.9)`); record both in the helper as the section's constants.
-- [ ] Figures: `proj3d_overview.py` (a with all three planes faint); `proj3d_e12.py`, `proj3d_e23.py`,
-      `proj3d_e31.py` — each: the plane filled, `a`, its projection on the plane (blue, in-plane), the
-      rejection (green, perpendicular stub) with the right-angle marker, `a = project + reject`.
-- [ ] `projection-rejection-3d.rst`: `.. figure::` entries with alt text; `.. TODO prose`.
-- [ ] Verify: `make docs` nested; check the PDF (vector) and PNG (flattened background) — and check the
-      PNG at the HTML size, since 3D figures with thin dashed lines can be hard to read when small.
-- [ ] Document the 3D helper in `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
+- [x] `_scene3d.py`: `frame_scene(camera, box)` context manager (figure + `epix.camera.at`), `axes3()`
+      (three arrow axes + x/y/z labels), `plane3(plane, faint=)` (light-filled `e_12`/`e_23`/`e_31`
+      patch via `epix.Path` of four 3D points), `vector3`, `project_onto(plane)`, and `right_angle_3d`
+      (right-angle square at an arbitrary corner, two direction legs). (Used `right_angle_3d` rather than
+      a separate drop-line/foot marker — the rejection stub + right angle reads cleanly.)
+- [x] Camera `Point(x=9, y=-6, z=5)` (tuned from the suggested `(5,-7,4)` so the y-axis doesn't collide
+      with `a`), `a = Point(x=1.0, y=0.7, z=0.9)` — both constants in `_scene3d.py`.
+- [x] Figures: `proj3d_overview` (a + all three faint planes); `proj3d_e12`/`e23`/`e31` — plane filled,
+      a, projection (blue, in-plane), rejection (green, perpendicular) with right-angle marker.
+- [x] `projection-rejection-3d.rst`: `.. figure::` entries with alt text, `.. TODO prose`, and the
+      `e_31 = -e_13` note.
+- [x] Verified: figures render; `make format` gate green; **full `make docs` (HTML + LuaLaTeX PDF) built
+      clean** — HTML embeds all 17 figures across the three sections, `geometry2.pdf` is 118 pages, no
+      real Sphinx warnings. Checked the 3D PNGs at size (readable; e31 is tight but color-distinguished).
+- [x] Documented `_scene3d` in `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
 
 ## Notes / decisions
+
+- `epix.Point` supports `+`, scalar `*` and `.norm()`; `fig.png`/`fig.eepic` only materialize after the
+  `with` block. The plane patch is drawn first (behind), then `axes3()`, then the vectors.
+- `check_epix_keywords.py` now exempts exception constructors (`ValueError` etc.) from the positional-arg
+  check — a figure helper raising `ValueError(msg)` on an unknown plane is a legitimate positional call.
+- `vector3` hoists its `epix.black()` / `Point(...)` defaults to module constants (ruff B008).
 
 ## Open questions
 
