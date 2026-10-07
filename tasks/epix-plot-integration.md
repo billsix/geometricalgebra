@@ -85,6 +85,11 @@ and `CLAUDE.md`), usable to learn the build before the GitHub URL is given.)
 | gacalc gate (`make test`'s run line) | **696 passed** |
 | `make image MINIMAL_IMAGE=1` (flag-off permutation) | built, 2.47 GB; `epix`, `git` and `meson` all absent — the `USE_EPIX` gate holds. The ePiX-enabled image (Lean/Emacs still off) is 3.96 GB |
 
+## Follow-on
+
+`tasks/book-epix-figures.md` (umbrella, 2026-10-07): the same figure pipeline applied to the
+vector-addition, projection (2D, result + derivation) and 3D-projection sections, three step tasks.
+
 ## Notes / decisions
 
 - **What the 2026-10-06 push unlocked (epix-mirror `ebf3ca6`).** (a) The build is documented and
