@@ -1,6 +1,6 @@
 # Umbrella: ePiX figures for the book's vector-addition, projection and 3D-projection sections
 
-**Status:** proposed — needs go-ahead per step (filed 2026-10-07 at the maintainer's request).
+**Status:** DONE 2026-10-07 (overnight autonomous run) — all three steps built, gate green, full html+PDF clean. Archived with its steps.
 **Priority:** 4
 **Difficulty:** 5 (the 3D step carries most of it)
 **Created:** 2026-10-07 (William Emerison Six <billsix@gmail.com>: "make a umbrella task for the following …")
@@ -38,14 +38,15 @@ in the book build, the section pages reference them, and this umbrella's checkli
 
 ## Steps (the index; each is its own task doc)
 
-1. [x] `tasks/book-epix-figures-step-1-vector-addition.md` — addition + subtraction figures (2D); also
+1. [x] `tasks/archive/2026/10/07/book-epix-figures-step-1-vector-addition.md` — addition + subtraction figures (2D); also
    promotes the generic 2D helpers out of `_rotation_scene.py` into a shared `_scene2d.py`.
    **DONE 2026-10-07** (archived → `tasks/archive/2026/10/07/`).
-2. [x] `tasks/book-epix-figures-step-2-projection-2d.md` — projection + rejection: the result, then the
+2. [x] `tasks/archive/2026/10/07/book-epix-figures-step-2-projection-2d.md` — projection + rejection: the result, then the
    rotate-to-standard-position derivation (fills `proof-projection.rst`'s TODO figures).
    **DONE 2026-10-07** (archived → `tasks/archive/2026/10/07/`).
-3. [ ] `tasks/book-epix-figures-step-3-projection-3d.md` — projection + rejection in 3D onto the
+3. [x] `tasks/archive/2026/10/07/book-epix-figures-step-3-projection-3d.md` — projection + rejection in 3D onto the
    `e_12`, `e_23`, `e_31` planes; first 3D figures, new `_scene3d.py`.
+   **DONE 2026-10-07** (archived → `tasks/archive/2026/10/07/`).
 
 Ordering is expressed by Priority + `Depends on` in the step docs (steps 2 and 3 reuse step 1's shared
 helper); none is `blocked` — all within our control.

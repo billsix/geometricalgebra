@@ -71,6 +71,8 @@ for tint in ("black", "white", "red", "green", "blue", "yellow", "cyan", "magent
 EXEMPT_MODULES: frozenset[str] = frozenset({"math"})
 EXEMPT_BUILTINS: frozenset[str] = frozenset(
     {"range", "len", "int", "float", "str", "print", "open", "list", "set", "sorted"}
+    # exception constructors take a positional message by convention
+    | {"ValueError", "TypeError", "KeyError", "RuntimeError", "NotImplementedError"}
 )
 
 

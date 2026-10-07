@@ -89,6 +89,13 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     the rotate-to-standard-position derivation) share. `_scene2d.right_angle_at(corner, angle)` draws a
     right-angle square at an arbitrary corner (the origin-only `right_angle_marker` kept for the rotation
     figures' oracle).
+  - `_scene3d.py` is the **3D** stage for `proj3d_*` (projection onto the coordinate planes): one
+    `CAMERA` (`Point(x=9, y=-6, z=5)`), one vector `A`, `frame_scene` (figure + `epix.camera.at`), and
+    helpers `axes3` (3 arrow axes + x/y/z labels), `plane3(plane, faint=)` (a light-filled `e_12`/`e_23`/
+    `e_31` patch via `epix.Path` of four 3D points), `vector3`, `project_onto(plane)`, and
+    `right_angle_3d(corner, toward_a, toward_b)`. 3D `epix.line`/`epix.arrow`/`epix.dot` project through
+    the camera; `Point` supports `+`, scalar `*` and `.norm()`; `fig.png`/`fig.eepic` only materialize
+    **after** the `with` block. Plane patch is drawn first (behind), then `axes3()`, then the vectors.
   - `epix.label_angle` takes **radians**.
 - **Why Python, not `.xp`:** the maintainer's choice (2026-10-07) — one language across the
   book's notebooks and figures, and the figure source is itself a runnable notebook.
