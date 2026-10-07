@@ -30,6 +30,7 @@ import math
 from _rotation_scene import (
     BACKGROUND,  # noqa: F401  (read by tools/render_epix_figures.py from the module globals)
     BETA,
+    PendingFigure,
     Point,
     epix,
     polar,
@@ -39,15 +40,16 @@ from _rotation_scene import (
 )
 
 # %%
-unit_point = polar(1, BETA)
-perp_point = polar(1, BETA + math.pi / 2)
+unit_point: Point = polar(radius=1, angle=BETA)
+perp_point: Point = polar(radius=1, angle=BETA + math.pi / 2)
 
+fig: PendingFigure
 with unit_circle_scene(lower_left=Point(x=-2.7, y=-1.3)) as fig:
-    right_angle_marker(BETA)
-    vector(unit_point, r"$(\cos\beta,\ \sin\beta)$")
+    right_angle_marker(angle=BETA)
+    vector(head=unit_point, text=r"$(\cos\beta,\ \sin\beta)$")
     vector(
-        perp_point,
-        r"$(\cos(\beta+\pi/2),\ \sin(\beta+\pi/2))$",
+        head=perp_point,
+        text=r"$(\cos(\beta+\pi/2),\ \sin(\beta+\pi/2))$",
         offset=Point(x=-7, y=4),
         align=epix.LabelPos.l,
     )

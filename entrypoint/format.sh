@@ -24,4 +24,8 @@ ty check tools || status=1
 # Version <-> changelog consistency: fails when pyproject.toml's version has no
 # heading in CHANGELOG.md (0.0.19 shipped unlogged that way, 2026-09-05).
 python tools/check_changelog.py || status=1
+
+# The book's ePiX figure files pass every argument by keyword (CLAUDE.md, "ePiX in the
+# image"); the checker exits 1 on a positional argument (`--fix` inserts the names).
+python tools/check_epix_keywords.py || status=1
 exit $status

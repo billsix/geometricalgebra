@@ -31,6 +31,7 @@ from _rotation_scene import (
     BACKGROUND,  # noqa: F401  (read by tools/render_epix_figures.py from the module globals)
     BETA,
     THETA,
+    PendingFigure,
     Point,
     epix,
     polar,
@@ -41,16 +42,19 @@ from _rotation_scene import (
 )
 
 # %%
-x_prime = polar(1, BETA)
-y_prime = polar(1, BETA + math.pi / 2)
-rotated = polar(1, BETA + THETA)
+x_prime: Point = polar(radius=1, angle=BETA)
+y_prime: Point = polar(radius=1, angle=BETA + math.pi / 2)
+rotated: Point = polar(radius=1, angle=BETA + THETA)
 
+fig: PendingFigure
 with unit_circle_scene() as fig:
-    wedge(BETA, BETA + THETA, r"$\theta$")
-    right_angle_marker(BETA)
-    vector(x_prime, r"$\vec{x'}$")
-    vector(y_prime, r"$\vec{y'}$", offset=Point(x=-7, y=4), align=epix.LabelPos.l)
-    vector(rotated)
+    wedge(start=BETA, finish=BETA + THETA, text=r"$\theta$")
+    right_angle_marker(angle=BETA)
+    vector(head=x_prime, text=r"$\vec{x'}$")
+    vector(
+        head=y_prime, text=r"$\vec{y'}$", offset=Point(x=-7, y=4), align=epix.LabelPos.l
+    )
+    vector(head=rotated)
 
 # %%
 fig

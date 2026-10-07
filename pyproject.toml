@@ -70,9 +70,10 @@ ignore = ["N806"]
 # generator's actual code is still wrapped by `ruff format`, and the generated modules are
 # gitignored (not line-length-gated).  See tasks/reference/generated-docstrings.md.
 "tools/gen_specialized.py" = ["E501"]
-# tools/render_epix_figures.py is a command-line build step whose progress/failure
-# lines ARE its output (same class as a CLI gate).
+# tools/render_epix_figures.py and tools/check_epix_keywords.py are command-line build
+# steps whose progress/failure lines ARE their output (same class as a CLI gate).
 "tools/render_epix_figures.py" = ["T201"]
+"tools/check_epix_keywords.py" = ["T201"]
 # book/docs/conf.py's only long line is inside the r\"\"\"...\"\"\" LaTeX preamble
 # (the \directlua luaotfload-fallback line, 89 cols) -- un-reflowable LaTeX/lua
 # string content, and an inline `# noqa` is impossible there (it would inject

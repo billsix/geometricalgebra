@@ -29,6 +29,7 @@ import math
 
 import epix
 from epix import Point
+from epix.figure import _Pending as PendingFigure  # what epix.figure() yields
 
 ORIGIN: Point = Point(x=0, y=0)
 A_LENGTH: float = 1.25  # |a|: a is NOT a unit vector -- the circle is only for scale
@@ -46,55 +47,59 @@ def polar(radius: float, angle: float) -> Point:
     return Point(x=radius * math.cos(angle), y=radius * math.sin(angle))
 
 
-a: Point = polar(A_LENGTH, A_ANGLE)
-rotated_a: Point = polar(A_LENGTH, A_ANGLE + THETA)
+a: Point = polar(radius=A_LENGTH, angle=A_ANGLE)
+rotated_a: Point = polar(radius=A_LENGTH, angle=A_ANGLE + THETA)
 
 # %%
+fig: PendingFigure
 with epix.figure(
     lower_left=Point(x=-1.6, y=-1.3),  # room for the r(a;theta) label at left
     upper_right=Point(x=1.5, y=1.4),
     size="3.72x3.24in",  # 1.2 in per unit on both axes
 ) as fig:
-    epix.font_size("large")
+    epix.font_size(size="large")
 
     # the unit circle, filled light gray, for scale
-    epix.pen(epix.black(0.45), width=0.9)
-    epix.fill(epix.white(0.95))
+    epix.pen(color=epix.black(intensity=0.45), width=0.9)
+    epix.fill(color=epix.white(intensity=0.95))
     epix.circle(center=ORIGIN, radius=1)
     epix.nofill()
 
     # axes with arrowheads
-    epix.pen(epix.black(), width=1.1)
+    epix.pen(color=epix.black(), width=1.1)
     epix.arrow(tail=Point(x=-1.15, y=0), head=Point(x=1.3, y=0), scale=1)
     epix.arrow(tail=Point(x=0, y=-1.15), head=Point(x=0, y=1.3), scale=1)
     epix.label(
-        Point(x=1.3, y=0), offset=Point(x=5, y=0), text="$x$", align=epix.LabelPos.r
+        at=Point(x=1.3, y=0), offset=Point(x=5, y=0), text="$x$", align=epix.LabelPos.r
     )
     epix.label(
-        Point(x=0, y=1.3), offset=Point(x=5, y=-2), text="$y$", align=epix.LabelPos.r
+        at=Point(x=0, y=1.3), offset=Point(x=5, y=-2), text="$y$", align=epix.LabelPos.r
     )
 
     # the angle theta as a filled wedge from a's direction to the rotated direction
-    epix.pen(PURPLE, width=0.8)
-    epix.fill(PURPLE_FILL)
+    epix.pen(color=PURPLE, width=0.8)
+    epix.fill(color=PURPLE_FILL)
     wedge_points: list[Point] = [ORIGIN] + [
-        polar(WEDGE_RADIUS, A_ANGLE + THETA * i / 24) for i in range(25)
+        polar(radius=WEDGE_RADIUS, angle=A_ANGLE + THETA * i / 24) for i in range(25)
     ]
     epix.Path(data=wedge_points, closed=True, filled=True).draw()
     epix.nofill()
-    epix.label_color(PURPLE)
-    epix.label(polar(0.55 * WEDGE_RADIUS, A_ANGLE + THETA / 2), text=r"$\theta$")
-    epix.label_color(epix.black())
+    epix.label_color(color=PURPLE)
+    epix.label(
+        at=polar(radius=0.55 * WEDGE_RADIUS, angle=A_ANGLE + THETA / 2),
+        text=r"$\theta$",
+    )
+    epix.label_color(color=epix.black())
 
     # a and its rotation, as vectors from the origin with a dot at the head
-    epix.pen(epix.black(), width=1.8)
+    epix.pen(color=epix.black(), width=1.8)
     epix.line(tail=ORIGIN, head=a)
     epix.line(tail=ORIGIN, head=rotated_a)
     epix.dot(at=a)
     epix.dot(at=rotated_a)
-    epix.label(a, offset=Point(x=7, y=0), text=r"$\vec{a}$", align=epix.LabelPos.r)
+    epix.label(at=a, offset=Point(x=7, y=0), text=r"$\vec{a}$", align=epix.LabelPos.r)
     epix.label(
-        rotated_a,
+        at=rotated_a,
         offset=Point(x=-7, y=2),
         text=r"$\vec{r}(\vec{a};\theta)$",
         align=epix.LabelPos.l,

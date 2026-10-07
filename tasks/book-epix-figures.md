@@ -53,6 +53,8 @@ helper); none is `blocked` — all within our control.
 - Same conventions as the rotation sequence: one `.py` per figure, percent-format, module-level `fig`,
   `BACKGROUND = "#f2f2f2"` for the HTML PNG, LaTeX labels matching the prose (`\vec{a}`, `\vec{b}`),
   colours: black vectors, purple angles, blue/green for the two legs/components.
+- **Every argument by keyword** (maintainer, 2026-10-07) — `tools/check_epix_keywords.py` is the check;
+  add any new helper or epix call to its table.
 - Figures illustrate; the prose on each page is the maintainer's to write (the steps add the figures
   and minimal captions/alt text, and may leave `.. TODO prose` markers).
 - The 3D plane names in figure labels follow the book's wording (`e_12`, `e_23`, `e_31`); gacalc's

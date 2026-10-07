@@ -33,6 +33,7 @@ from _rotation_scene import (
     GREEN,
     ORIGIN,
     THETA,
+    PendingFigure,
     Point,
     epix,
     leg,
@@ -44,35 +45,49 @@ from _rotation_scene import (
 )
 
 # %%
-x_prime = polar(1, BETA)
-y_prime = polar(1, BETA + math.pi / 2)
-rotated = polar(1, BETA + THETA)
-foot = polar(math.cos(THETA), BETA)
+x_prime: Point = polar(radius=1, angle=BETA)
+y_prime: Point = polar(radius=1, angle=BETA + math.pi / 2)
+rotated: Point = polar(radius=1, angle=BETA + THETA)
+foot: Point = polar(radius=math.cos(THETA), angle=BETA)
 
+fig: PendingFigure
 with unit_circle_scene(
     lower_left=Point(x=-2.2, y=-1.3), upper_right=Point(x=1.5, y=1.9)
 ) as fig:
-    wedge(BETA, BETA + THETA, r"$\theta$")
-    right_angle_marker(BETA)
-    vector(x_prime, r"$\vec{x'}$")
-    vector(y_prime, r"$\vec{y'}$", offset=Point(x=-7, y=-2), align=epix.LabelPos.l)
-    leg(ORIGIN, foot, BLUE, r"$\cos\theta$", angle=BETA, offset=Point(x=11, y=-5))
+    wedge(start=BETA, finish=BETA + THETA, text=r"$\theta$")
+    right_angle_marker(angle=BETA)
+    vector(head=x_prime, text=r"$\vec{x'}$")
+    vector(
+        head=y_prime,
+        text=r"$\vec{y'}$",
+        offset=Point(x=-7, y=-2),
+        align=epix.LabelPos.l,
+    )
     leg(
-        foot,
-        rotated,
-        GREEN,
-        r"$\sin\theta$",
+        tail=ORIGIN,
+        head=foot,
+        color=BLUE,
+        text=r"$\cos\theta$",
+        angle=BETA,
+        offset=Point(x=11, y=-5),
+    )
+    leg(
+        tail=foot,
+        head=rotated,
+        color=GREEN,
+        text=r"$\sin\theta$",
         angle=BETA - math.pi / 2,
         offset=Point(x=5, y=11),
     )
-    vector(rotated)
+    vector(head=rotated)
     # the name of the point, outside the circle on the vector's own line, reading
     # perpendicular to it (as the hand-drawn SVG did)
-    epix.label_angle(BETA + THETA - math.pi / 2)
+    epix.label_angle(t=BETA + THETA - math.pi / 2)
     epix.label(
-        polar(1.45, BETA + THETA), text=r"$\cos\theta\,\vec{x'} + \sin\theta\,\vec{y'}$"
+        at=polar(radius=1.45, angle=BETA + THETA),
+        text=r"$\cos\theta\,\vec{x'} + \sin\theta\,\vec{y'}$",
     )
-    epix.label_angle(0)
+    epix.label_angle(t=0)
 
 # %%
 fig

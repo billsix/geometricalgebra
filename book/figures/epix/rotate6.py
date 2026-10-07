@@ -34,6 +34,7 @@ from _rotation_scene import (
     GREEN,
     ORIGIN,
     THETA,
+    PendingFigure,
     Point,
     epix,
     leg,
@@ -45,23 +46,34 @@ from _rotation_scene import (
 )
 
 # %%
-x_prime = polar(1, BETA)
-y_prime = polar(1, BETA + math.pi / 2)
-rotated = polar(1, BETA + THETA)
-foot = polar(math.cos(THETA), BETA)  # the projection of the rotated point onto x'
+x_prime: Point = polar(radius=1, angle=BETA)
+y_prime: Point = polar(radius=1, angle=BETA + math.pi / 2)
+rotated: Point = polar(radius=1, angle=BETA + THETA)
+# the projection of the rotated point onto x'
+foot: Point = polar(radius=math.cos(THETA), angle=BETA)
 
+fig: PendingFigure
 with unit_circle_scene() as fig:
-    wedge(BETA, BETA + THETA, r"$\theta$")
-    right_angle_marker(BETA)
-    vector(x_prime, r"$\vec{x'}$")
-    vector(y_prime, r"$\vec{y'}$", offset=Point(x=-7, y=4), align=epix.LabelPos.l)
-    vector(rotated)
-    leg(ORIGIN, foot, BLUE, r"$\cos\theta$", angle=BETA, offset=Point(x=11, y=-5))
+    wedge(start=BETA, finish=BETA + THETA, text=r"$\theta$")
+    right_angle_marker(angle=BETA)
+    vector(head=x_prime, text=r"$\vec{x'}$")
+    vector(
+        head=y_prime, text=r"$\vec{y'}$", offset=Point(x=-7, y=4), align=epix.LabelPos.l
+    )
+    vector(head=rotated)
     leg(
-        foot,
-        rotated,
-        GREEN,
-        r"$\sin\theta$",
+        tail=ORIGIN,
+        head=foot,
+        color=BLUE,
+        text=r"$\cos\theta$",
+        angle=BETA,
+        offset=Point(x=11, y=-5),
+    )
+    leg(
+        tail=foot,
+        head=rotated,
+        color=GREEN,
+        text=r"$\sin\theta$",
         angle=BETA - math.pi / 2,
         offset=Point(x=5, y=11),
     )

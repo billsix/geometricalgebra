@@ -60,6 +60,20 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   `BACKGROUND = "#rrggbb"`; the renderer then flattens its PNG onto that colour with ImageMagick.
   The rotation figures use the disc's own fill (`#f2f2f2`, `epix.white(0.95)`), so the PNG is a
   uniform light panel. PDFs are untouched (the page is white).
+- **Keyword arguments everywhere (maintainer's rule, 2026-10-07):** every call in a figure file names
+  its arguments — `epix.label(at=head, offset=Point(x=7, y=0), text="$x$", align=epix.LabelPos.r)`,
+  `polar(radius=1, angle=BETA)`, `epix.white(intensity=0.95)` — including the single-value calls that
+  epix-mirror's own notebooks leave positional (there, `black(0.2)` and the `label(at, …)` anchor stay
+  bare; here they don't). The binding's names are its `nb::arg`s (`color`/`width`, `intensity`, `t` for
+  `label_angle`, `size` for `font_size`, `at`/`offset`/`text`/`align`, `tail`/`head`/`scale`,
+  `center`/`radius`/`normal`, `data`/`closed`/`filled`). Positional-only builtins (`math.*`) are the one
+  exemption. `tools/check_epix_keywords.py` reports violations (exit 1) and `--fix` inserts the names
+  from its per-function table — extend the table when a new epix call is used, never guess a name.
+  It runs in `entrypoint/format.sh` (wired 2026-10-07 on the maintainer's go-ahead).
+- **Types everywhere, as in the rest of the repo:** module-level points are `name: Point = polar(...)`;
+  the `with … as fig` target is declared on the line above as `fig: PendingFigure` —
+  `_rotation_scene.py`'s alias for `epix.figure._Pending`, the proxy `epix.figure()` yields that becomes
+  the `Figure` after the block (epix keeps the class private, hence the alias).
 - **Shared geometry:** `book/figures/epix/_rotation_scene.py` (skipped by the renderer, `_`-prefixed)
   holds the constants (β, θ, r) and the drawing helpers for the `rotate1`–`rotate8` sequence, so
   every step agrees with the goal figure. `epix.label_angle` takes **radians**.

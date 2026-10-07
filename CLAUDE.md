@@ -305,7 +305,13 @@ over a "run it on your host" instruction.
   LaTeX-native figure source, written in **Python** with the `epix` package (installed editable in
   `/venv`, nanobind extension built at image build): `book/figures/epix/*.py`, rendered by `make docs`
   via `tools/render_epix_figures.py` to `_static/epix/<name>.{pdf,png}` and referenced as
-  `_static/epix/<name>.*`. Details: `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
+  `_static/epix/<name>.*`. **Every argument in a figure file is passed by keyword** — `polar(radius=1,
+  angle=BETA)`, `epix.pen(color=..., width=...)`, `epix.black(intensity=0.45)` — so a figure reads as a
+  scene description; the only exceptions are positional-only builtins (`math.cos(x)`). Checked and fixed
+  by `python tools/check_epix_keywords.py [--fix]`, a `make format` gate step (the maintainer's rule,
+  2026-10-07). Every binding in a figure file is typed, as everywhere else (`fig: PendingFigure`
+  declared above the `with`; `PendingFigure` is `_rotation_scene`'s alias for what `epix.figure()` yields). Details:
+  `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
 - **`make docs`** — builds the Sphinx book ("Geometry 2", `book/docs/`) to HTML + PDF into
   `output/gacalc/` (needs an image built with `BUILD_DOCS=1`, the default).
 - **`make dist`** (build sdist+wheel, `GACALC_DIMS=1,2,3,4,5`) → **`make upload`** /

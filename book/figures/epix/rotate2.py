@@ -31,6 +31,7 @@ from _rotation_scene import (
     BLUE,
     GREEN,
     ORIGIN,
+    PendingFigure,
     Point,
     leg,
     polar,
@@ -40,14 +41,29 @@ from _rotation_scene import (
 )
 
 # %%
-unit_point = polar(1, BETA)
-foot = Point(x=unit_point.x1(), y=0)
+unit_point: Point = polar(radius=1, angle=BETA)
+foot: Point = Point(x=unit_point.x1(), y=0)
 
+fig: PendingFigure
 with unit_circle_scene() as fig:
-    wedge(0, BETA, r"$\beta$")
-    leg(foot, unit_point, GREEN, r"$\sin\beta$", angle=0, offset=Point(x=24, y=0))
-    leg(ORIGIN, foot, BLUE, r"$\cos\beta$", angle=0, offset=Point(x=0, y=-13))
-    vector(unit_point, r"$(\cos\beta,\ \sin\beta)$")
+    wedge(start=0, finish=BETA, text=r"$\beta$")
+    leg(
+        tail=foot,
+        head=unit_point,
+        color=GREEN,
+        text=r"$\sin\beta$",
+        angle=0,
+        offset=Point(x=24, y=0),
+    )
+    leg(
+        tail=ORIGIN,
+        head=foot,
+        color=BLUE,
+        text=r"$\cos\beta$",
+        angle=0,
+        offset=Point(x=0, y=-13),
+    )
+    vector(head=unit_point, text=r"$(\cos\beta,\ \sin\beta)$")
 
 # %%
 fig

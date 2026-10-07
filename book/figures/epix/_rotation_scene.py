@@ -20,7 +20,12 @@ from contextlib import contextmanager
 import epix
 from epix import Point
 
-__all__ = [
+# What `epix.figure(...)` yields: a proxy that becomes the rendered `Figure` after the
+# `with` block (its `.eepic`/`.png`/`.save` forward to it). epix keeps the class
+# private, so the figure files type their `fig` through this alias.
+from epix.figure import _Pending as PendingFigure
+
+__all__: list[str] = [
     "BETA",
     "THETA",
     "R",
@@ -29,6 +34,7 @@ __all__ = [
     "PURPLE_FILL",
     "GREEN",
     "BLUE",
+    "PendingFigure",
     "Point",
     "epix",
     "polar",
@@ -68,7 +74,7 @@ def polar(radius: float, angle: float) -> Point:
 def unit_circle_scene(
     lower_left: Point = DEFAULT_LOWER_LEFT,
     upper_right: Point = DEFAULT_UPPER_RIGHT,
-) -> Iterator[object]:
+) -> Iterator[PendingFigure]:
     """``epix.figure`` with the unit disc and the labelled axes already drawn.
 
     The physical size follows the bounding box at ``UNIT_SCALE_IN`` per unit, so
@@ -77,21 +83,22 @@ def unit_circle_scene(
     width: float = upper_right.x1() - lower_left.x1()
     height: float = upper_right.x2() - lower_left.x2()
     size: str = f"{width * UNIT_SCALE_IN:.2f}x{height * UNIT_SCALE_IN:.2f}in"
+    fig: PendingFigure
     with epix.figure(lower_left=lower_left, upper_right=upper_right, size=size) as fig:
-        epix.font_size("large")
+        epix.font_size(size="large")
         # the unit circle, filled light gray, for scale
-        epix.pen(epix.black(0.45), width=0.9)
-        epix.fill(epix.white(0.95))
+        epix.pen(color=epix.black(intensity=0.45), width=0.9)
+        epix.fill(color=epix.white(intensity=0.95))
         epix.circle(center=ORIGIN, radius=1)
         epix.nofill()
         # axes with arrowheads
-        epix.pen(epix.black(), width=1.1)
+        epix.pen(color=epix.black(), width=1.1)
         x_end: Point = Point(x=upper_right.x1() - 0.15, y=0)
         y_end: Point = Point(x=0, y=upper_right.x2() - 0.1)
         epix.arrow(tail=Point(x=lower_left.x1() + 0.2, y=0), head=x_end, scale=1)
         epix.arrow(tail=Point(x=0, y=lower_left.x2() + 0.15), head=y_end, scale=1)
-        epix.label(x_end, offset=Point(x=5, y=0), text="$x$", align=epix.LabelPos.r)
-        epix.label(y_end, offset=Point(x=5, y=-2), text="$y$", align=epix.LabelPos.r)
+        epix.label(at=x_end, offset=Point(x=5, y=0), text="$x$", align=epix.LabelPos.r)
+        epix.label(at=y_end, offset=Point(x=5, y=-2), text="$y$", align=epix.LabelPos.r)
         yield fig
 
 
@@ -102,32 +109,32 @@ def vector(
     align: epix.LabelPos = epix.LabelPos.r,
 ) -> None:
     """A black segment from the origin to ``head``, with a dot and an optional label."""
-    epix.pen(epix.black(), width=1.8)
+    epix.pen(color=epix.black(), width=1.8)
     epix.line(tail=ORIGIN, head=head)
     epix.dot(at=head)
     if text:
-        epix.label(head, offset=offset, text=text, align=align)
+        epix.label(at=head, offset=offset, text=text, align=align)
 
 
 def wedge(start: float, finish: float, text: str, radius: float = 0.33) -> None:
     """A purple filled wedge at the origin from ``start`` to ``finish`` (radians)."""
-    epix.pen(PURPLE, width=0.8)
-    epix.fill(PURPLE_FILL)
+    epix.pen(color=PURPLE, width=0.8)
+    epix.fill(color=PURPLE_FILL)
     points: list[Point] = [ORIGIN] + [
-        polar(radius, start + (finish - start) * i / 24) for i in range(25)
+        polar(radius=radius, angle=start + (finish - start) * i / 24) for i in range(25)
     ]
     epix.Path(data=points, closed=True, filled=True).draw()
     epix.nofill()
-    epix.label_color(PURPLE)
-    epix.label(polar(0.55 * radius, (start + finish) / 2), text=text)
-    epix.label_color(epix.black())
+    epix.label_color(color=PURPLE)
+    epix.label(at=polar(radius=0.55 * radius, angle=(start + finish) / 2), text=text)
+    epix.label_color(color=epix.black())
 
 
 def right_angle_marker(angle: float, size: float = 0.12) -> None:
     """The right-angle square at the origin between ``angle`` and ``angle + π/2``."""
-    epix.pen(epix.black(), width=0.9)
-    corner_a: Point = polar(size, angle)
-    corner_b: Point = polar(size, angle + math.pi / 2)
+    epix.pen(color=epix.black(), width=0.9)
+    corner_a: Point = polar(radius=size, angle=angle)
+    corner_b: Point = polar(radius=size, angle=angle + math.pi / 2)
     corner_ab: Point = Point(
         x=corner_a.x1() + corner_b.x1(), y=corner_a.x2() + corner_b.x2()
     )
@@ -139,11 +146,11 @@ def leg(
     tail: Point, head: Point, color: epix.Color, text: str, angle: float, offset: Point
 ) -> None:
     """A coloured triangle leg ``tail``→``head``; label rotated by ``angle`` radians."""
-    epix.pen(color, width=1.6)
+    epix.pen(color=color, width=1.6)
     epix.line(tail=tail, head=head)
-    epix.label_color(color)
-    epix.label_angle(angle)
+    epix.label_color(color=color)
+    epix.label_angle(t=angle)
     mid: Point = Point(x=(tail.x1() + head.x1()) / 2, y=(tail.x2() + head.x2()) / 2)
-    epix.label(mid, offset=offset, text=text, align=epix.LabelPos.c)
-    epix.label_angle(0)
-    epix.label_color(epix.black())
+    epix.label(at=mid, offset=offset, text=text, align=epix.LabelPos.c)
+    epix.label_angle(t=0)
+    epix.label_color(color=epix.black())
