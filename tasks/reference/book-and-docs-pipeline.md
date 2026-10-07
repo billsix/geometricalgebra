@@ -72,11 +72,19 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   It runs in `entrypoint/format.sh` (wired 2026-10-07 on the maintainer's go-ahead).
 - **Types everywhere, as in the rest of the repo:** module-level points are `name: Point = polar(...)`;
   the `with … as fig` target is declared on the line above as `fig: PendingFigure` —
-  `_rotation_scene.py`'s alias for `epix.figure._Pending`, the proxy `epix.figure()` yields that becomes
+  `_scene2d.py`'s alias for `epix.figure._Pending`, the proxy `epix.figure()` yields that becomes
   the `Figure` after the block (epix keeps the class private, hence the alias).
-- **Shared geometry:** `book/figures/epix/_rotation_scene.py` (skipped by the renderer, `_`-prefixed)
-  holds the constants (β, θ, r) and the drawing helpers for the `rotate1`–`rotate8` sequence, so
-  every step agrees with the goal figure. `epix.label_angle` takes **radians**.
+- **Shared helpers (all `_`-prefixed, skipped by the renderer):**
+  - `book/figures/epix/_scene2d.py` is the **generic** 2D stage and primitives every figure builds
+    from: colours, `polar`, `unit_circle_scene` (the disc-and-axes stage, with a `disc: bool = True`
+    toggle so a figure that doesn't need the circle still gets axes), `vector`, `dashed_vector` (a
+    translated copy, drawn via `epix.dashed()` then reset with `epix.line_style(style="-")`),
+    `parallelogram`, `wedge`, `right_angle_marker`, `leg`.
+  - `_rotation_scene.py` adds the rotation-sequence constants (β, θ, r) and re-exports the `_scene2d`
+    helpers, so the `rotate1`–`rotate8` figures import everything from one place.
+  - `_addition_scene.py` holds the fixed vectors a, b (and a+b, −b, a−b, the two framing boxes) the
+    vector-addition/subtraction figures (`add1`–`add3`, `sub1`–`sub2`) share.
+  - `epix.label_angle` takes **radians**.
 - **Why Python, not `.xp`:** the maintainer's choice (2026-10-07) — one language across the
   book's notebooks and figures, and the figure source is itself a runnable notebook.
 - **Decision (2026-10-06): coexist.** `nbplotutils.py` (matplotlib) stays for the interactive

@@ -38,8 +38,9 @@ in the book build, the section pages reference them, and this umbrella's checkli
 
 ## Steps (the index; each is its own task doc)
 
-1. [ ] `tasks/book-epix-figures-step-1-vector-addition.md` — addition + subtraction figures (2D); also
+1. [x] `tasks/book-epix-figures-step-1-vector-addition.md` — addition + subtraction figures (2D); also
    promotes the generic 2D helpers out of `_rotation_scene.py` into a shared `_scene2d.py`.
+   **DONE 2026-10-07** (archived → `tasks/archive/2026/10/07/`).
 2. [ ] `tasks/book-epix-figures-step-2-projection-2d.md` — projection + rejection: the result, then the
    rotate-to-standard-position derivation (fills `proof-projection.rst`'s TODO figures).
 3. [ ] `tasks/book-epix-figures-step-3-projection-3d.md` — projection + rejection in 3D onto the
