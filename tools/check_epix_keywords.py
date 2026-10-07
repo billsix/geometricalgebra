@@ -61,6 +61,7 @@ KNOWN: dict[tuple[str, str], Names] = {
     ("", "parallelogram"): ["corner_a", "corner_b", "color"],
     ("", "wedge"): ["start", "finish", "text", "radius"],
     ("", "right_angle_marker"): ["angle", "size"],
+    ("", "right_angle_at"): ["corner", "angle", "size"],
     ("", "leg"): ["tail", "head", "color", "text", "angle", "offset"],
     ("", "unit_circle_scene"): ["lower_left", "upper_right", "disc"],
 }

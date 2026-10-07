@@ -34,7 +34,15 @@ We are handed two vectors :math:`\vec{a}` and :math:`\vec{b}` in 3D, and we want
 piece of :math:`\vec{a}` that lies along :math:`\vec{b}` — its shadow on the line
 through :math:`\vec{b}`.
 
-.. TODO figure: a and b in 3D, with a's shadow on the line through b.
+.. figure:: _static/epix/sp1.*
+   :align: center
+   :alt: a and b, the line through b, and the shadow of a on it
+
+..
+   TODO prose (2D vs 3D): the figures in this chapter are drawn for the **2D** case — a single
+   rotation carries b onto the x-axis. The prose below is still written for 3D (two plane
+   rotations, xy then xz). The maintainer will restructure the page as 2D-first-then-3D; until
+   then the 2D figures illustrate the idea and the 3D pictures are a step-3 follow-on.
 
 If you already read :doc:`projection`, you know the slick geometric-algebra formula for
 this. Forget it for a moment. We are going to earn the answer a different way — one that
@@ -54,10 +62,22 @@ x-axis, do the trivial projection there, and then rotate back. And whatever rota
 do to :math:`\vec{b}`, we do to :math:`\vec{a}` as well — we are turning the graph paper,
 and both vectors ride along with it.
 
-.. TODO figure: the same a and b after the whole frame is rotated so b is on the x-axis.
+In 2D the angle to undo is just the angle :math:`\varphi` that :math:`\vec{b}` makes with the
+x-axis:
+
+.. figure:: _static/epix/sp2.*
+   :align: center
+   :alt: the angle phi that b makes with the x-axis, the amount to rotate back by
+
+Rotate the whole picture by :math:`-\varphi` and :math:`\vec{b}` lands flat on the x-axis,
+carrying :math:`\vec{a}` along with it:
+
+.. figure:: _static/epix/sp3.*
+   :align: center
+   :alt: a and b rotated so b lies on the x-axis, with the faint originals shown dashed
 
 Rotating :math:`\vec{b}` onto the x-axis, one plane at a time
-------------------------------------------------------------
+------------------------------------------------------------------
 
 How do we rotate :math:`\vec{b}` onto the x-axis? We never need a fancy 3D rotation. We
 do it with the plain 2D rotation from :doc:`proof-rotate`, applied to one coordinate
@@ -146,6 +166,20 @@ Stop thinking about geometry — the rest is bookkeeping. Putting the three step
    x-coordinate of :math:`\vec{a}'`, drop the rest, giving :math:`\vec{a}'_x\,\vec{e}_1`.
 #. **Rotate back** by :math:`R^{-1}` (each 2D rotation undone by rotating the same plane
    through the negative angle, in the reverse order).
+
+In standard position step 2 is the whole point — the projection is simply the x-coordinate,
+and the rejection is the y-coordinate:
+
+.. figure:: _static/epix/sp4.*
+   :align: center
+   :alt: in standard position, the projection is a-prime's x-coordinate and the rejection its y-coordinate
+
+Undo the rotation and those two pieces land exactly on the projection and rejection of the
+original :math:`\vec{a}` onto :math:`\vec{b}`:
+
+.. figure:: _static/epix/sp5.*
+   :align: center
+   :alt: rotated back, the projection along b and the rejection perpendicular to b
 
 That is the entire projection, and it never used anything but the 2D rotation of
 :doc:`proof-rotate`. You can run the whole construction — and check, symbolically, that it

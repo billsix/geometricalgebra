@@ -46,6 +46,7 @@ __all__: list[str] = [
     "parallelogram",
     "wedge",
     "right_angle_marker",
+    "right_angle_at",
     "leg",
 ]
 
@@ -172,6 +173,22 @@ def right_angle_marker(angle: float, size: float = 0.12) -> None:
     )
     epix.line(tail=corner_a, head=corner_ab)
     epix.line(tail=corner_ab, head=corner_b)
+
+
+def right_angle_at(corner: Point, angle: float, size: float = 0.1) -> None:
+    """A right-angle square with its corner at ``corner``, spanning ``angle`` to
+    ``angle + π/2`` (radians) -- the arbitrary-corner ``right_angle_marker``."""
+    epix.pen(color=epix.black(), width=0.9)
+    leg_a: Point = polar(radius=size, angle=angle)
+    leg_b: Point = polar(radius=size, angle=angle + math.pi / 2)
+    p_a: Point = Point(x=corner.x1() + leg_a.x1(), y=corner.x2() + leg_a.x2())
+    p_b: Point = Point(x=corner.x1() + leg_b.x1(), y=corner.x2() + leg_b.x2())
+    p_ab: Point = Point(
+        x=corner.x1() + leg_a.x1() + leg_b.x1(),
+        y=corner.x2() + leg_a.x2() + leg_b.x2(),
+    )
+    epix.line(tail=p_a, head=p_ab)
+    epix.line(tail=p_ab, head=p_b)
 
 
 def leg(

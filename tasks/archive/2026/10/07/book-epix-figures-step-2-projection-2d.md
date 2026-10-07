@@ -1,8 +1,8 @@
 # Step 2: ePiX figures for projection and rejection in 2D — the result and the derivation
 
-**Part of:** `tasks/book-epix-figures.md` · **Depends on:** step 1 (`_scene2d.py`) ·
-**Next:** `tasks/book-epix-figures-step-3-projection-3d.md`
-**Status:** proposed — needs go-ahead.
+**Part of:** `tasks/archive/2026/10/07/book-epix-figures.md` · **Depends on:** step 1 (`_scene2d.py`) ·
+**Next:** `tasks/archive/2026/10/07/book-epix-figures-step-3-projection-3d.md`
+**Status:** DONE 2026-10-07 (overnight autonomous run) — figures render, both pages wired, gate green, HTML clean.
 **Priority:** 4
 **Difficulty:** 4
 **Created:** 2026-10-07 (William Emerison Six <billsix@gmail.com>)
@@ -33,18 +33,26 @@ two `.. TODO figure` markers (lines 37 and 57) and adding the steps between. Don
 
 ## Plan
 
-- [ ] Result figures: `proj1.py` — `a`, `b`, the dashed line through `b`, the foot of the perpendicular;
-      `proj2.py` — `project(a,b)` (blue, along `b`) and `reject(a,b)` (green, perpendicular) with the
-      right-angle marker, labelled with the book's names; `proj3.py` — `a = project + reject` as a
-      tip-to-tail sum (reuses step 1's idiom).
-- [ ] Derivation figures (`sp1.py` …): the general picture → the rotation angle of `b` marked → everything
-      rotated so `b` is on the x-axis (dashed originals faint) → the projection is the x-coordinate, the
-      rejection the y-coordinate → rotated back. Share `a`, `b` constants in a `_projection_scene.py`.
-- [ ] `projection.rst` + `proof-projection.rst`: replace the two `.. TODO figure` markers and add the
-      series with alt text; keep `.. TODO prose` where the maintainer's text is missing.
-- [ ] Verify: `make docs` nested; HTML + PDF; `make format` green.
+- [x] Result figures: `proj1` (a, b, dashed line through b, foot of the perpendicular), `proj2`
+      (projection blue along b + rejection green perpendicular, right-angle marker, labelled
+      `proj_b a` / `rej_b a`), `proj3` (a = proj + rej tip-to-tail).
+- [x] Derivation figures `sp1`–`sp5`: goal → rotation angle φ marked → rotated so b on x-axis (faint
+      dashed originals) → projection = x-coord, rejection = y-coord (right angle) → rotated back.
+      Shared vectors in `_projection_scene.py`; added `right_angle_at` to `_scene2d.py` for a
+      right-angle marker at an arbitrary corner.
+- [x] `projection.rst` (proj1-3) + `proof-projection.rst` (sp1 at the first TODO marker, sp2+sp3 at the
+      second, sp4+sp5 in "Now the algebra") wired with alt text; `.. TODO prose` left for the maintainer.
+      **Also fixed** the pre-existing `Title underline too short` warning in `proof-projection.rst`.
+- [x] Verified: figures render; `make format` gate green; Sphinx HTML builds **with no warnings** and
+      embeds all 8 PNGs. Full html+PDF build runs at the end of step 3.
 
 ## Notes / decisions
+
+- The 2D derivation figures are drawn here per the decision; the page's prose is still 3D-framed, so a
+  `.. TODO prose` note near the top of `proof-projection.rst` flags the 2D-then-3D restructuring as the
+  maintainer's (the 3D "one plane at a time" pictures are step 3's follow-on).
+- Vectors: a = 1.25 at 66° (rotation sequence's a), b = 1 at 20°; projection scalar ≈ 0.868, so in
+  standard position a' is at 46° and its x-coordinate is the projection.
 
 ## Open questions
 

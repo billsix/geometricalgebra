@@ -84,6 +84,11 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     helpers, so the `rotate1`–`rotate8` figures import everything from one place.
   - `_addition_scene.py` holds the fixed vectors a, b (and a+b, −b, a−b, the two framing boxes) the
     vector-addition/subtraction figures (`add1`–`add3`, `sub1`–`sub2`) share.
+  - `_projection_scene.py` holds a (1.25 at 66°), b (1 at 20°), the projection point, and the
+    rotated-to-standard-position vectors the projection figures (`proj1`–`proj3`, the result; `sp1`–`sp5`,
+    the rotate-to-standard-position derivation) share. `_scene2d.right_angle_at(corner, angle)` draws a
+    right-angle square at an arbitrary corner (the origin-only `right_angle_marker` kept for the rotation
+    figures' oracle).
   - `epix.label_angle` takes **radians**.
 - **Why Python, not `.xp`:** the maintainer's choice (2026-10-07) — one language across the
   book's notebooks and figures, and the figure source is itself a runnable notebook.
