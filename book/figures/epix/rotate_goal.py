@@ -19,8 +19,8 @@
 # angle $\theta$, the angle marked as a wedge, and the unit circle for scale. Built with
 # the `epix` Python package (github.com/billsix/epix-mirror) in the style of its
 # `notebooks/`; `tools/render_epix_figures.py` runs this file and writes
-# `_static/epix/rotate-goal.{pdf,png}` for the book. Originally a hand-drawn SVG
-# (`_static/cc0/williamesix/rotate-goal.svg`, CC0); this source is CC0 too.
+# `_static/epix/rotate-goal.{pdf,png}` for the book. CC0, like the hand-drawn SVG it
+# replaced.
 
 # %%
 from __future__ import annotations
@@ -37,6 +37,7 @@ THETA: float = math.radians(66)  # the rotation angle
 WEDGE_RADIUS: float = 0.33
 
 PURPLE: epix.Color = epix.rgb(r=0.5, g=0.0, b=0.5)
+BACKGROUND: str = "#f2f2f2"  # HTML PNGs are flattened onto the disc fill
 PURPLE_FILL: epix.Color = epix.rgb(r=0xDD / 255, g=0xCA / 255, b=0xD4 / 255)
 
 

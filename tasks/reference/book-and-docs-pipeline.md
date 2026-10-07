@@ -55,6 +55,14 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   gitignored build artifacts. `<name>` is the file stem with `_` → `-`.
 - **Referencing:** `.. figure:: _static/epix/<name>.*` — the wildcard lets Sphinx pick the PDF
   for the `latex` builder and the PNG for `html`.
+- **Dark mode:** ghostscript's `pngalpha` PNGs are transparent, which read badly on the HTML
+  theme's dark default (only the disc stayed light). A figure file may define a module-level
+  `BACKGROUND = "#rrggbb"`; the renderer then flattens its PNG onto that colour with ImageMagick.
+  The rotation figures use the disc's own fill (`#f2f2f2`, `epix.white(0.95)`), so the PNG is a
+  uniform light panel. PDFs are untouched (the page is white).
+- **Shared geometry:** `book/figures/epix/_rotation_scene.py` (skipped by the renderer, `_`-prefixed)
+  holds the constants (β, θ, r) and the drawing helpers for the `rotate1`–`rotate8` sequence, so
+  every step agrees with the goal figure. `epix.label_angle` takes **radians**.
 - **Why Python, not `.xp`:** the maintainer's choice (2026-10-07) — one language across the
   book's notebooks and figures, and the figure source is itself a runnable notebook.
 - **Decision (2026-10-06): coexist.** `nbplotutils.py` (matplotlib) stays for the interactive

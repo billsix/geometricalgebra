@@ -11,7 +11,9 @@ under ``book/docs/_static/epix/``:
 - ``<name>.pdf`` -- ``elaps --pdf`` over the figure's eepic text, for the LuaLaTeX
   build (Sphinx picks it for the ``latex`` builder);
 - ``<name>.png`` -- the figure's lazily rasterized PNG (``elaps`` -> eps -> ``gs``),
-  for the HTML builder.
+  for the HTML builder. ghostscript's ``pngalpha`` leaves the background transparent,
+  which reads badly on a dark-mode page; a figure file may define a module-level
+  ``BACKGROUND`` (``"#rrggbb"``) and the PNG is then flattened onto it with ImageMagick.
 
 A page then references the figure as ``.. figure:: _static/epix/<name>.*`` and Sphinx
 chooses the format per builder. Run from the repo root, inside the image
@@ -39,12 +41,14 @@ OUT: Path = REPO / "book" / "docs" / "_static" / "epix"
 _CHILD: str = r"""
 import runpy, sys
 src, eepic_out, png_out, dpi = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
-fig = runpy.run_path(src)["fig"]
+g = runpy.run_path(src)
+fig = g["fig"]
 with open(eepic_out, "w") as f:
     f.write(fig.eepic)
 fig.dpi = dpi
 with open(png_out, "wb") as f:
     f.write(fig.png)
+print(g.get("BACKGROUND", ""), end="")
 """
 
 
@@ -62,6 +66,20 @@ def eepic_to_pdf(eepic: Path, pdf: Path) -> None:
         )
 
 
+def flatten_png(png: Path, background: str) -> None:
+    """Replace the PNG's transparent background with a solid colour (ImageMagick)."""
+    magick: str | None = shutil.which("magick") or shutil.which("convert")
+    if magick is None:
+        raise FileNotFoundError(
+            "ImageMagick (magick/convert) is needed to flatten PNGs"
+        )
+    subprocess.run(
+        [magick, str(png), "-background", background, "-flatten", str(png)],
+        check=True,
+        capture_output=True,
+    )
+
+
 def render_one(src: Path, dpi: int) -> None:
     """Run one figure file in a fresh process and write its .pdf and .png."""
     name: str = src.stem.replace("_", "-")
@@ -69,11 +87,16 @@ def render_one(src: Path, dpi: int) -> None:
     png: Path = OUT / f"{name}.png"
     with tempfile.TemporaryDirectory() as d:
         eepic: Path = Path(d) / f"{name}.eepic"
-        subprocess.run(
+        child: subprocess.CompletedProcess[str] = subprocess.run(
             [sys.executable, "-c", _CHILD, str(src), str(eepic), str(png), str(dpi)],
             check=True,
             cwd=src.parent,
+            capture_output=True,
+            text=True,
         )
+        background: str = child.stdout.strip()
+        if background:
+            flatten_png(png, background)
         eepic_to_pdf(eepic, pdf)
     print(f"rendered {src.relative_to(REPO)} -> {pdf.relative_to(REPO)}, {png.name}")
 
@@ -98,7 +121,9 @@ def main() -> int:
         return 2
 
     OUT.mkdir(parents=True, exist_ok=True)
-    sources: list[Path] = sorted(FIGURES.glob("*.py"))
+    sources: list[Path] = sorted(
+        p for p in FIGURES.glob("*.py") if not p.name.startswith("_")
+    )  # _-prefixed files are shared helpers, not figures
     if args.names:
         wanted: set[str] = set(args.names)
         sources = [

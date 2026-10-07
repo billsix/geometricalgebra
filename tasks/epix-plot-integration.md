@@ -2,7 +2,8 @@
 
 **Status:** in-progress (go-ahead 2026-10-06: "1) yes 2) agreed", and "use git to fetch it"); the image
 integration is built and verified (table below); the Python front-end was added to the image and the first
-book figure (`rotate-goal`) ported on 2026-10-07 — book build verification in the second table. **Fully unblocked 2026-10-06:** the GitHub URL
+book figure (`rotate-goal`) ported on 2026-10-07, then the remaining eight (`rotate1`–`rotate8`) the same day
+and the nine hand-drawn SVGs removed — book build verification in the second table. **Fully unblocked 2026-10-06:** the GitHub URL
 (`https://github.com/billsix/epix-mirror`, 2026-10-04) *and* the pin — the maintainer wants the image to
 pull **commit `ebf3ca607ae6c1d4fa307e8b0359960d875d219c`** (GitHub `master` as of 2026-10-06, the merge of
 epix-mirror's `containerFileRework` branch).
@@ -58,6 +59,14 @@ and `CLAUDE.md`), usable to learn the build before the GitHub URL is given.)
       `rotate-goal` figure; `tools/render_epix_figures.py` (one fresh process per figure) writes
       `_static/epix/rotate-goal.{pdf,png}` from `docs.sh`; `rotate.rst` + `proof-rotate.rst` reference
       `_static/epix/rotate-goal.*`. Pipeline documented in `tasks/reference/book-and-docs-pipeline.md`.
+- [x] **Port the remaining eight (2026-10-07, maintainer: "do that for the remaining svgs").**
+      `rotate1.py`–`rotate8.py` share `_rotation_scene.py` (β, θ, r, disc + axes, `vector`/`wedge`/
+      `right_angle_marker`/`leg` helpers) so the sequence agrees with the goal figure and the last step
+      lands on `r(a;θ)`; `proof-rotate.rst` references `_static/epix/rotateN.*`. Dark mode (maintainer's
+      report): the `pngalpha` PNGs were transparent, so each figure defines `BACKGROUND = "#f2f2f2"` (the
+      disc fill) and the renderer flattens the HTML PNGs onto it with ImageMagick. Gotcha: `epix.label_angle`
+      takes radians. The nine CC0 SVGs under `_static/cc0/williamesix/` were `git rm`'d (the maintainer's
+      choice); the Stephan Kulla unit-circle SVG stays (not ours to redraw).
 - [ ] **Keep both doc paths in mind.** Usable from a future Sphinx build *and* a
       LaTeX port (where epix's native LaTeX/eepic output is a natural fit) — don't
       hard-wire it to one.
