@@ -54,6 +54,38 @@ appendix.
   placeholder `.rst`/notebooks stand in for unwritten sections so any section can be
   drafted first.
 
+## Notation & prose conventions for proof pages (William Emerison Six <billsix@gmail.com>, 2026-10-08)
+
+These came out of reworking `proof-projection.rst`; apply them to every proof page.
+
+- **Default to :math:`\theta` for an angle.** Use `\theta` as the standing symbol for a
+  rotation angle (the amount you turn by), in prose, figures, and notebooks alike — not
+  `\varphi`/`\phi`/etc. When a *second*, distinct angle must coexist, follow
+  `proof-rotate.rst`: `\beta` is a vector's own pre-existing standing angle, `\theta` the
+  rotation applied to it. (The `.xp`/ePiX figure labels must match the prose — e.g. `sp2`
+  draws `r"$\theta$"`.)
+
+- **Build each step on a tool already defined — never drop unexplained machinery.** When a
+  derivation needs an earlier result (the rotation from `proof-rotate.rst`, say), *re-state
+  that function and substitute into it* so the reader sees where the formula comes from. Do
+  **not** introduce a bare matrix / closed form "out of nowhere" and assert it is the
+  rotation. Worked instance: `proof-projection.rst` writes the standard-position rotation as
+  `r(v; −φ)` using the chapter-ending formula of `proof-rotate.rst`, then plugs in
+  `cos(−φ)=b_x/|b|`, `sin(−φ)=−b_y/|b|` — reusing even the "we never need the angle itself,
+  only its cosine and sine" trick that chapter established.
+- **Name a transform by what it does, from → to**, with the `R_{from}^{to}` sub/superscript
+  convention (subscript = where it starts, superscript = where it points) — the from/to
+  labelling of *Model View Projection* (`ch02.rst`'s `f_{source}^{dest}`). The inverse swaps
+  the labels. Example: `R_{\vec b}^{\vec e_1}` rotates `b`'s direction onto the `e₁` axis;
+  `R_{\vec e_1}^{\vec b}` rotates back. A reader sees the geometry in the name.
+- **Chain transforms with function composition (`∘`, read right-to-left), not nested
+  parentheses — "compose, don't nest."** Write `P_b = (R_{b}^{e_1})⁻¹ ∘ P_{e_1} ∘ R_{b}^{e_1}`,
+  not `R⁻¹(P(R(a)))`. **Write the undo-step as the explicit inverse of the step it undoes**
+  (`(R_{b}^{e_1})⁻¹`, not the label-swapped `R_{e_1}^{b}` — even though they are equal): the
+  reader must see at a glance that the last map applied is the first map inverted. This mirrors
+  the library's own `compose([...])` / `@` (`compose([f, g])` is `f ∘ g`, last applied first
+  — `src/gacalc/functions.py`).
+
 ## File layout (scaffolded 2026-08-02)
 
 The skeleton exists: one `book/docs/<name>.rst` prose page per section, reading order in

@@ -14,7 +14,7 @@
 # %% [markdown]
 # # sp3 — the whole picture rotated so $\vec{b}$ lies on the x-axis
 #
-# After rotating by $-\varphi$: the originals $\vec{a}$, $\vec{b}$ (faint, dashed) ride
+# After rotating by $-\theta$: the originals $\vec{a}$, $\vec{b}$ (faint, dashed) ride
 # along to $\vec{a}'$, $\vec{b}'$ (solid), and $\vec{b}'$ now points straight along the
 # x-axis.
 # Built with the `epix` package; `tools/render_epix_figures.py` writes

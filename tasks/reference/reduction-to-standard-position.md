@@ -108,7 +108,7 @@ vectors reduced (e.g. the cross product); it is not a requirement of project/rej
 
 ## What is proven
 
-The whole arc is machine-checked across four Lean files, all gate-verified (`make lean` green,
+The whole arc is machine-checked across five Lean files, all gate-verified (`make lean` green,
 `sorry`-free).
 
 **Base — elementary plane rotations, equivariance, and the product** (`StandardPosition.lean`):
@@ -136,6 +136,23 @@ The whole arc is machine-checked across four Lean files, all gate-verified (`mak
   `projectSP` transcribes — same rotations, same `(cos, sin)`, keep-the-x-component — and is asserted
   equal to canonical `projected_onto`/`rejected_away_from` in `tests/test_standardposition.py`.
 - Supporting lemmas in their homes: `AlgebraLaws.mul_sub`, `Sandwich.sandwich_sub`.
+
+**2D — the single-rotation base case** (`StandardPosition2D.lean`): projection onto a vector is
+intrinsically planar, so in 𝒢₂ a **single** elementary plane rotation does the whole alignment (no
+`rotXZ` second plane — there is no third coordinate to fold down). This is the version the book
+presents **first** (`book/docs/proof-projection.rst`), the 𝒢₃ file above being the 3D step-up. One
+rotation `rotPlane c s` (procedure on the `(c1, c2)` components) with `rotPlane_smul`/`rotPlane_sub`
+(linearity), `rotPlane_preserves_dot` (orthogonality, `cos²+sin²=1`), `proj_rotPlane_equivariant` /
+`vecReject_rotPlane_equivariant` (the justification), `rotPlane_aligns` (`b ↦ |b|·e₁`, `(cos,sin) =
+(b₁/|b|, −b₂/|b|)` read off `b`), `rotPlane_inv` (negated sine undoes it), and `proj_onto_x_axis`
+(`proj (m·e₁) v = (v₁,0)`). The derived route equals the canonical one as one theorem:
+`projectSP a b` (`alignSP` → keep the aligned `a`'s x-component → `unalignSP`) satisfies
+**`projectSP_eq_proj`** (`= proj b a`, for a nonzero vector `b`; `a` any multivector), with
+`rejectSP = a − projectSP` giving `rejectSP_eq_vecReject` and **`rejectSP_eq_reject`** (= Hestenes
+`reject b a` for vectors, via the division-free structural `reject_vec_eq`). The Python
+`standardposition.project_sp`/`reject_sp` remain 𝒢₃-only; the 2D case is shown directly against `g2`'s
+`projected_onto` in the companion notebook (a genuine 𝒢₂ `project_sp` is deferred with the rest of the
+3D/code work).
 
 **The uniform 3-rotation tool** (`CrossStandardPosition.lean`): `rotYZ` (the third plane rotation,
 e₂e₃ about `e₁`) + its toolkit (`rotYZ_smul`/`rotYZ_sub`/`rotYZ_preserves_dot`/`rotYZ_vec`/

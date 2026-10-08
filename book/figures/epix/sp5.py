@@ -14,7 +14,7 @@
 # %% [markdown]
 # # sp5 — rotate back: the projection and rejection of the original $\vec{a}$
 #
-# Undo the rotation by $+\varphi$ and the coordinate split from `sp4` lands exactly
+# Undo the rotation by $+\theta$ and the coordinate split from `sp4` lands exactly
 # on the projection (blue) and rejection (green) of the original $\vec{a}$ onto
 # $\vec{b}$ — the same answer the geometric-algebra formula gives. Built with the
 # `epix` package; `tools/render_epix_figures.py` writes
