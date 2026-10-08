@@ -108,7 +108,7 @@ vectors reduced (e.g. the cross product); it is not a requirement of project/rej
 
 ## What is proven
 
-The whole arc is machine-checked across five Lean files, all gate-verified (`make lean` green,
+The whole arc is machine-checked across six Lean files, all gate-verified (`make lean` green,
 `sorry`-free).
 
 **Base — elementary plane rotations, equivariance, and the product** (`StandardPosition.lean`):
@@ -153,6 +153,17 @@ rotation `rotPlane c s` (procedure on the `(c1, c2)` components) with `rotPlane_
 `standardposition.project_sp`/`reject_sp` remain 𝒢₃-only; the 2D case is shown directly against `g2`'s
 `projected_onto` in the companion notebook (a genuine 𝒢₂ `project_sp` is deferred with the rest of the
 3D/code work).
+
+**2D — rotate from direction `a` to direction `b`** (`RotateFromTo2D.lean`, the book's
+`proof-rotate-from-a-to-b.rst`): the same standard-position idea applied to *rotation* — align `a` to
+`e₁` with `rotPlane`, rotate to `b' = R_a^{e₁}(b)` in that frame (cos/sin read off `b'`), un-align.
+`rotPlane_comp` (rotPlane composition = angle addition, so rotPlanes commute) and
+`rotPlane_conj_collapse` (conjugation by a unit `(cos, sin)` leaves the middle rotation unchanged) give
+the **collapse**: the 3-step sandwich equals its middle rotation (`rotateFromTo_collapse`), a single
+`rotPlane ((a·b)/(|a||b|)) ((a∧b)/(|a||b|))` — the cos/sin of the `a→b` angle as coordinate formulas,
+no angle named. Applied to `a` it lands on `(|a|/|b|)·b` (`rotateFromTo_carries`). The dot and the 2D
+wedge fall out as the two numerators. This is the standard-position version; the angle-free
+geometric-product version (`â b̂` *is* the rotor) is the later payoff (`tasks/book-rotation-from-vectors-no-angle.md`).
 
 **The uniform 3-rotation tool** (`CrossStandardPosition.lean`): `rotYZ` (the third plane rotation,
 e₂e₃ about `e₁`) + its toolkit (`rotYZ_smul`/`rotYZ_sub`/`rotYZ_preserves_dot`/`rotYZ_vec`/

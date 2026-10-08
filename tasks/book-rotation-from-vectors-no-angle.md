@@ -81,6 +81,10 @@ of `proof-rotate.rst` — is a payoff moment: the angle was scaffolding; the vec
 
 ## See also
 
+- `tasks/book-proof-rotate-from-a-to-b.md` — the **angle-based** rotate-from-a-to-b proof
+  (reduction-to-standard-position, cos/sin, per-step diagrams), the companion to this angle-free
+  version. That one comes first (right after "Proof: Rotate"); this is the later "you don't even need
+  the angle" payoff.
 - `tasks/reference/reduction-to-standard-position.md` — the proven `projRotation` account.
 - `tasks/reference/transform-and-composable-function-layer.md` — the rotation factories.
 - `tasks/reference/unit-bivector-and-rotors.md` — the versor / rotor math.

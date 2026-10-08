@@ -14,6 +14,7 @@ import GacalcProofs.TrigEquiv
 import GacalcProofs.Rotation3D
 import GacalcProofs.StandardPosition
 import GacalcProofs.StandardPosition2D
+import GacalcProofs.RotateFromTo2D
 import GacalcProofs.Cross
 import GacalcProofs.Normalize
 import GacalcProofs.Reflect
