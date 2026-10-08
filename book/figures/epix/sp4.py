@@ -44,7 +44,7 @@ with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as 
         head=A_ROT, text=r"$\vec{a}'$", offset=Point(x=7, y=4), align=epix.LabelPos.r
     )
     vector(
-        head=B_ROT, text=r"$\vec{b}'$", offset=Point(x=2, y=-11), align=epix.LabelPos.c
+        head=B_ROT, text=r"$\vec{b}'$", offset=Point(x=7, y=-10), align=epix.LabelPos.l
     )
     # projection = x-coordinate of a', blue along the x-axis
     epix.pen(color=BLUE, width=2.0)
@@ -52,7 +52,7 @@ with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as 
     epix.dot(at=PROJ_ROT)
     epix.label_color(color=BLUE)
     epix.label(
-        at=PROJ_ROT, offset=Point(x=0, y=-12), text=r"$a'_x$", align=epix.LabelPos.c
+        at=PROJ_ROT, offset=Point(x=-6, y=-12), text=r"$a'_x$", align=epix.LabelPos.r
     )
     # rejection = y-coordinate of a', green and vertical
     epix.pen(color=GREEN, width=2.0)
