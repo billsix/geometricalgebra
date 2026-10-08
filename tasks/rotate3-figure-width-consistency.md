@@ -1,9 +1,28 @@
 # Make the rotate3 figure the same width as its sibling rotate figures
 
-**Status:** proposed — needs go-ahead
+**Status:** done — 2026-10-08 (gates green)
 **Priority:** 6
 **Difficulty:** 3
 **Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
+
+## What was done (2026-10-08)
+
+- **`book/figures/epix/rotate3.py`** — dropped the widened box override (`lower_left=(-2.7,-1.3)`) back
+  to the default `unit_circle_scene()`, and reformatted the long upper-left label
+  `(\cos(\beta+\pi/2),\ \sin(\beta+\pi/2))` from a horizontal pair into a **column vector**
+  `\begin{bmatrix}\cos(\beta+\pi/2)\\\sin(\beta+\pi/2)\end{bmatrix}` (the book already uses bmatrix
+  column vectors in the algebra sections), placed centered above the perpendicular vector's head
+  (`offset=(6,16)`, `align=c`) so it clears the vector line. The shorter `(\cos\beta,\sin\beta)` label
+  stays horizontal, matching `rotate1`/`rotate2`.
+- **Result:** `rotate3` now renders **537×457 px**, matching the siblings (`rotate2` 537, `rotate1`
+  564) — was 833 px wide. Verified by render→view + PIL size check; `make format` + `make docs` green.
+- **Sibling scan:** `rotate1`/`2`/`4`/`5`/`6` already use the default box (consistent). **`rotate7`
+  (645×547) and `rotate8` (681×583) are larger**, but for a different reason — they are also **taller**
+  (`upper_right.y = 1.9` / `2.1`) to show the result vector reaching up, and their width comes from the
+  inherently-wide *sum* label `r(\cos\theta\,\vec{x'}+\sin\theta\,\vec{y'})` (not a coordinate pair that
+  column-stacks cleanly). Left as-is: they're larger by design for the content, and `rotate3` was the
+  flagged egregious width outlier. If the maintainer wants `rotate7`/`8` normalized too, that's a
+  follow-on (would mean relocating/reformatting the result-sum label).
 
 ## BLUF
 
