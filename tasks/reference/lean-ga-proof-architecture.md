@@ -428,6 +428,16 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   (`proj_rotYZ_equivariant`, `vecReject_rotXZ/YZ_equivariant`, `cross_rotXY/XZ/YZ_equivariant`); and the
   2-D evals `proj_reduced`/`vecReject_reduced`/`cross_reduced` — project/reject/cross all through the one
   3-rotation frame.
+- `StandardPosition2D.lean` — the **2D** single-rotation case (𝒢₂): one elementary plane rotation
+  `rotPlane` (no versor), its linearity/`rotPlane_preserves_dot`/inverse, projection/rejection
+  equivariance, the `b ↦ |b|·e₁` alignment, and `projectSP`/`rejectSP` with
+  `projectSP_eq_proj`/`rejectSP_eq_reject`. The book's 2D projection proof (`proof-projection.rst`).
+- `RotateFromTo2D.lean` — rotate `a`'s direction onto `b`'s by standard position (𝒢₂):
+  `rotPlane_comp` (rotPlane composition = angle addition, so rotPlanes commute),
+  `rotPlane_conj_collapse` (the align/un-align sandwich collapses to its middle rotation),
+  `rotateFromTo_collapse` (the 3-step = a single `rotPlane ((a·b)/(|a||b|)) ((a∧b)/(|a||b|))`), and
+  `rotateFromTo_carries` (`a ↦ (|a|/|b|)·b`). The book's `proof-rotate-from-a-to-b.rst`;
+  see `tasks/reference/reduction-to-standard-position.md`.
 - `ProjectionRotation3D.lean` — the arc's **step 3**, a general rotation from project/reject:
   `projRotation f t v = (project_{f∧t} v)·f̂·t̂ + reject_{f∧t} v` (mirrors Python
   `transforms.projection_rotation`; non-circular — project/reject + the product, no versor), with
