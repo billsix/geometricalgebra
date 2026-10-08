@@ -72,63 +72,25 @@ carrying :math:`\vec{a}` along with it:
 Rotating :math:`\vec{b}` onto the x-axis
 ----------------------------------------
 
-We already built the tool for this — it is exactly the rotation from :doc:`proof-rotate`.
-Recall what that chapter ended with: rotating a vector :math:`\vec{v}` by an angle
-:math:`\theta` is
+We already built this move, in :doc:`proof-rotate-from-a-to-b` — rotating a vector onto the
+x-axis is its **step 1**. Applied to :math:`\vec{b}`, it is the rotation
+:math:`R_{\vec{b}}^{\vec{e}_1}` (read "from :math:`\vec{b}`, to :math:`\vec{e}_1`"), whose
+cosine and sine we read straight off :math:`\vec{b}` —
 
 .. math::
 
-   \vec{r}(\vec{v};\ \theta) = \cos\theta\,\vec{v} + \sin\theta\,\vec{r}(\vec{v};\ \pi/2),
-   \qquad \vec{r}(\vec{v};\ \pi/2) = \begin{bmatrix} -\vec{v}_y \\ \vec{v}_x \end{bmatrix}
+   \cos = \frac{\vec{b}_x}{|\vec{b}|}, \qquad \sin = -\frac{\vec{b}_y}{|\vec{b}|}
 
-— a rotation is a blend of the vector and its 90°-rotated self. We want to turn the whole
-picture by :math:`-\theta`, which carries the direction of :math:`\vec{b}` onto the
-:math:`\vec{e}_1` (x-) axis. Name that one rotation after what it does:
+— without ever having to find the angle :math:`\theta`. It lays :math:`\vec{b}` flat on the
+x-axis, exactly its own length out:
 
 .. math::
 
-   R_{\vec{b}}^{\vec{e}_1}(\vec{v}) = \vec{r}(\vec{v};\ -\theta),
+   R_{\vec{b}}^{\vec{e}_1}(\vec{b}) = \lvert\vec{b}\rvert\,\vec{e}_1.
 
-reading the subscript and superscript as *from* :math:`\vec{b}`, *to* :math:`\vec{e}_1`.
-Undoing it just swaps the labels: :math:`R_{\vec{e}_1}^{\vec{b}} = \big(R_{\vec{b}}^{\vec{e}_1}\big)^{-1}`
-rotates back, from :math:`\vec{e}_1` to :math:`\vec{b}`.
-
-Here is the nice part, and it is the **same trick** :doc:`proof-rotate` used: we never need
-the angle :math:`\theta` itself, only its cosine and sine — and those we can read straight
-off :math:`\vec{b}`. The angle of :math:`\vec{b}` is :math:`\theta`, so, exactly as that
-chapter had :math:`\cos\beta = \vec{a}_x/r`,
-
-.. math::
-
-   \cos\theta = \frac{\vec{b}_x}{m}, \qquad \sin\theta = \frac{\vec{b}_y}{m},
-   \qquad m = \lvert\vec{b}\rvert = \sqrt{\vec{b}_x^{\,2} + \vec{b}_y^{\,2}}.
-
-We are turning by :math:`-\theta`, and cosine is even while sine is odd, so
-:math:`\cos(-\theta) = \vec{b}_x/m` and :math:`\sin(-\theta) = -\vec{b}_y/m`. Substitute
-those into :math:`\vec{r}` above — no new machinery, just the rotation we already have:
-
-.. math::
-
-   \begin{aligned}
-   R_{\vec{b}}^{\vec{e}_1}(\vec{v}) = \vec{r}(\vec{v};\ -\theta)
-     &= \cos\theta\,\vec{v} \;-\; \sin\theta\,\vec{r}(\vec{v};\ \pi/2) \\
-     &= \frac{\vec{b}_x}{m}\begin{bmatrix} \vec{v}_x \\ \vec{v}_y \end{bmatrix}
-        \;-\; \frac{\vec{b}_y}{m}\begin{bmatrix} -\vec{v}_y \\ \vec{v}_x \end{bmatrix}
-      = \frac{1}{m}\begin{bmatrix} \vec{b}_x\,\vec{v}_x + \vec{b}_y\,\vec{v}_y \\[2pt]
-                                   \vec{b}_x\,\vec{v}_y - \vec{b}_y\,\vec{v}_x \end{bmatrix}.
-   \end{aligned}
-
-Now do the arithmetic on :math:`\vec{b}` itself. Its :math:`x`-coordinate becomes
-:math:`(\vec{b}_x^2 + \vec{b}_y^2)/m = m^2/m = m`, and its :math:`y`-coordinate becomes
-:math:`(\vec{b}_x\vec{b}_y - \vec{b}_y\vec{b}_x)/m = 0` — so :math:`\vec{b}` lands flat on
-the x-axis, exactly its own length out:
-
-.. math::
-
-   R_{\vec{b}}^{\vec{e}_1}(\vec{b}) = (m,\ 0) = \lvert\vec{b}\rvert\,\vec{e}_1.
-
-:math:`\vec{b}` is now standing flat on the x-axis, exactly :math:`\lvert\vec{b}\rvert`
-long.
+Undoing it just swaps the labels:
+:math:`R_{\vec{e}_1}^{\vec{b}} = \big(R_{\vec{b}}^{\vec{e}_1}\big)^{-1}` rotates back, from
+:math:`\vec{e}_1` to :math:`\vec{b}`.
 
 Why we are allowed to do this
 -----------------------------
