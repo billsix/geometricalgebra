@@ -63,7 +63,7 @@ with frame_scene() as fig:
     mid_rej: Point = 0.5 * (proj + A)
     epix.label(
         at=mid_rej,
-        offset=Point(x=13, y=0),
+        offset=Point(x=18, y=-6),
         text=r"$\mathrm{rej}_{e_{12}}\,\vec{a}$",
         align=epix.LabelPos.l,
     )

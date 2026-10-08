@@ -42,7 +42,7 @@ from _scene2d import (
 fig: PendingFigure
 with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as fig:
     vector(head=A, text=r"$\vec{a}$", offset=Point(x=-6, y=7), align=epix.LabelPos.l)
-    vector(head=B, text=r"$\vec{b}$", offset=Point(x=6, y=-6), align=epix.LabelPos.r)
+    vector(head=B, text=r"$\vec{b}$", offset=Point(x=9, y=2), align=epix.LabelPos.l)
     # projection along b (blue)
     epix.pen(color=BLUE, width=2.0)
     epix.line(tail=ORIGIN, head=PROJ)
@@ -50,9 +50,9 @@ with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as 
     epix.label_color(color=BLUE)
     epix.label(
         at=PROJ,
-        offset=Point(x=2, y=-11),
+        offset=Point(x=-11, y=-12),
         text=r"$\mathrm{proj}_{\vec{b}}\,\vec{a}$",
-        align=epix.LabelPos.c,
+        align=epix.LabelPos.r,
     )
     # rejection perpendicular (green)
     epix.pen(color=GREEN, width=2.0)

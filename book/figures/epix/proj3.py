@@ -40,7 +40,17 @@ fig: PendingFigure
 with unit_circle_scene(
     lower_left=PROJ_LOWER_LEFT, upper_right=PROJ_UPPER_RIGHT, disc=False
 ) as fig:
-    vector(head=A, text=r"$\vec{a}$", offset=Point(x=-7, y=6), align=epix.LabelPos.l)
+    # Label the a vector itself with the identity it satisfies (NOT down on the
+    # projection segment, where it reads as the projection's label).
+    vector(
+        head=A,
+        text=(
+            r"$\vec{a}=\mathrm{proj}_{\vec{b}}\,\vec{a}"
+            r"+\mathrm{rej}_{\vec{b}}\,\vec{a}$"
+        ),
+        offset=Point(x=-4, y=12),
+        align=epix.LabelPos.r,
+    )
     # projection (blue) then rejection (green), tip-to-tail
     epix.pen(color=BLUE, width=2.0)
     epix.line(tail=ORIGIN, head=PROJ)
@@ -48,15 +58,6 @@ with unit_circle_scene(
     epix.pen(color=GREEN, width=2.0)
     epix.line(tail=PROJ, head=A)
     epix.label_color(color=epix.black())
-    epix.label(
-        at=PROJ,
-        offset=Point(x=0, y=-12),
-        text=(
-            r"$\vec{a}=\mathrm{proj}_{\vec{b}}\,\vec{a}"
-            r"+\mathrm{rej}_{\vec{b}}\,\vec{a}$"
-        ),
-        align=epix.LabelPos.c,
-    )
 
 # %%
 fig
