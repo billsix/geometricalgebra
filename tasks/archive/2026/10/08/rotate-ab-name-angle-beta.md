@@ -1,9 +1,24 @@
 # Name a's standing angle β in the rotate-from-a-to-b proof (prose + figure)
 
-**Status:** proposed — needs go-ahead
+**Status:** done — 2026-10-08 (gates green)
 **Priority:** 6
 **Difficulty:** 2
 **Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
+
+## What was done (2026-10-08)
+
+- **Prose** (`book/docs/proof-rotate-from-a-to-b.rst`, step 1): named :math:`\beta` as the angle
+  :math:`\vec{a}` makes with the x-axis — :math:`\cos\beta = \vec{a}_x/|\vec{a}|`,
+  :math:`\sin\beta = \vec{a}_y/|\vec{a}|` — and we swing :math:`\vec{a}` onto the axis by rotating by
+  :math:`-\beta` (cosine even, sine odd ⇒ the rotation uses :math:`\cos = \vec{a}_x/|\vec{a}|`,
+  :math:`\sin = -\vec{a}_y/|\vec{a}|`), without computing :math:`\beta`. Matches `proof-rotate.rst`'s
+  use of :math:`\beta` for a vector's standing angle; :math:`\theta` stays the :math:`\vec{a}\to\vec{b}`
+  angle.
+- **Figure** (`book/figures/epix/rotate_ab_goal.py`): added a wedge from the x-axis to :math:`\vec{a}`
+  labelled :math:`\beta` (radius 0.3), alongside the existing :math:`\theta` wedge (bumped to radius
+  0.55 so the two read as nested angles). Verified by render→view; keyword-only, typed
+  (`check_epix_keywords` green).
+- **Gates** — `make format` and `make docs` green (page renders with :math:`\beta`, figure embeds).
 
 ## BLUF
 
