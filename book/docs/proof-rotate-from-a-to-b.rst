@@ -17,9 +17,9 @@ definition this book is built on (:doc:`rotate`) is different: rotate so that th
 :math:`\vec{a}` is carried onto the direction of :math:`\vec{b}`. Here we earn that — in 2D, using
 nothing but the rotation we already have — and, as a bonus, **without ever computing an angle**.
 
-The trick is the same one the projection proof uses (:doc:`proof-projection`): **reduction to standard
-position**. Rotating onto a general vector is annoying; rotating onto the x-axis is easy. So we move the
-problem to the x-axis, solve it there, and move it back.
+The trick is **reduction to standard position**: rotating onto a general vector is annoying, but
+rotating onto the x-axis is easy. So we move the problem to the x-axis, solve it there, and move it
+back. (The same move does the work later in :doc:`projection`.)
 
 The goal
 --------
@@ -47,11 +47,24 @@ order they are applied — **right to left**, the way a composition reads —
 Read it right to left: swing :math:`\vec{a}` onto :math:`\vec{e}_1`, rotate up to :math:`\vec{b}'` there,
 then undo the first swing.
 
-**Step 1 — swing :math:`\vec{a}` onto the x-axis.** This is exactly the move from the projection proof,
-"rotate :math:`\vec{b}` onto :math:`\vec{e}_1`", applied to :math:`\vec{a}`: the plane rotation
-:math:`R_{\vec{a}}^{\vec{e}_1}` whose cosine and sine are read off :math:`\vec{a}` itself
-(:math:`\cos = \vec{a}_x/|\vec{a}|`, :math:`\sin = -\vec{a}_y/|\vec{a}|`). It sends :math:`\vec{a}` to
-:math:`|\vec{a}|\,\vec{e}_1`, and it carries :math:`\vec{b}` along to a new vector :math:`\vec{b}'`.
+**Step 1 — swing :math:`\vec{a}` onto the x-axis.** This is the single plane rotation of
+:doc:`proof-rotate`, and — as in that chapter — we never need the angle it turns through, only its
+cosine and sine, which we read straight off :math:`\vec{a}`:
+
+.. math::
+
+   \cos = \frac{\vec{a}_x}{|\vec{a}|}, \qquad \sin = -\frac{\vec{a}_y}{|\vec{a}|}.
+
+Substitute those into :math:`\vec{r}(\,\cdot\,;\theta)` and call the result
+:math:`R_{\vec{a}}^{\vec{e}_1}` — read "from :math:`\vec{a}`, to :math:`\vec{e}_1`". Applied to
+:math:`\vec{a}` itself, its :math:`y`-coordinate cancels and its :math:`x`-coordinate becomes
+:math:`(\vec{a}_x^2 + \vec{a}_y^2)/|\vec{a}| = |\vec{a}|`:
+
+.. math::
+
+   R_{\vec{a}}^{\vec{e}_1}(\vec{a}) = |\vec{a}|\,\vec{e}_1.
+
+And it carries :math:`\vec{b}` along to a new vector :math:`\vec{b}' = R_{\vec{a}}^{\vec{e}_1}(\vec{b})`.
 
 .. figure:: _static/epix/rotate-ab-step1.*
    :align: center
