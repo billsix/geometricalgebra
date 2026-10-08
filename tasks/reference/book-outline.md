@@ -85,6 +85,14 @@ These came out of reworking `proof-projection.rst`; apply them to every proof pa
   reader must see at a glance that the last map applied is the first map inverted. This mirrors
   the library's own `compose([...])` / `@` (`compose([f, g])` is `f ∘ g`, last applied first
   — `src/gacalc/functions.py`).
+- **Match the algebra's symbols to the diagram beside it.** When prose or algebra sits next to a
+  figure and explains it, use **the figure's own variable names** — not names carried in from a
+  source proof (e.g. *Model View Projection*) or an earlier section's proof. The reader is looking
+  at the picture; the symbols must line up with it. The book's standing names for vectors are
+  `\vec{a}`, `\vec{b}`, `\vec{v}` (not `\vec{v_1}`/`\vec{v_2}`). If a diagram and its algebra
+  genuinely need different symbols, change the **diagram** to match, not the reverse. (Origin:
+  `rotate.rst` had imported *MVP*'s `\vec{v_1}`/`\vec{v_2}` for the from→to definition while its
+  diagram `rotate-goal` and the whole book use `\vec{a}`/`\vec{b}`; fixed 2026-10-08.)
 
 ## File layout (scaffolded 2026-08-02)
 
