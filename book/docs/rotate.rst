@@ -33,4 +33,5 @@ rotation again — coordinate-free — and check that the two agree.
    :maxdepth: 1
 
    proof-rotate
+   proof-rotate-from-a-to-b
    notebooks/rotate
