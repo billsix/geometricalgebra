@@ -14,8 +14,8 @@ Rotate
 
 Rotation is the operation this whole book is built on. We will define it the way
 *Model View Projection* does: **not by an angle, but from the direction of one vector
-to another** — rotate so that the direction of :math:`\vec{v_1}` is carried onto the
-direction of :math:`\vec{v_2}`. The **magnitudes don't matter**; only the directions
+to another** — rotate so that the direction of :math:`\vec{a}` is carried onto the
+direction of :math:`\vec{b}`. The **magnitudes don't matter**; only the directions
 set the rotation.
 
 But before that coordinate-free version, we should see where rotation *comes from* —
