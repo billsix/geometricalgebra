@@ -27,7 +27,8 @@ from _scene2d import PendingFigure, Point, epix, unit_circle_scene, vector, wedg
 # %%
 fig: PendingFigure
 with unit_circle_scene(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig:
-    wedge(start=A_ANGLE, finish=B_ANGLE, text=r"$\theta$", radius=0.5)
+    wedge(start=0.0, finish=A_ANGLE, text=r"$\beta$", radius=0.3)
+    wedge(start=A_ANGLE, finish=B_ANGLE, text=r"$\theta$", radius=0.55)
     vector(head=A, text=r"$\vec{a}$", offset=Point(x=8, y=-2), align=epix.LabelPos.l)
     vector(head=B, text=r"$\vec{b}$", offset=Point(x=2, y=9), align=epix.LabelPos.c)
 
