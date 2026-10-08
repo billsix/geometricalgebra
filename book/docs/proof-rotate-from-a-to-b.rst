@@ -48,13 +48,16 @@ Read it right to left: swing :math:`\vec{a}` onto :math:`\vec{e}_1`, rotate up t
 then undo the first swing.
 
 **Step 1 — swing :math:`\vec{a}` onto the x-axis.** This is the single plane rotation of
-:doc:`proof-rotate`, and — as in that chapter — we never need the angle it turns through, only its
-cosine and sine, which we read straight off :math:`\vec{a}`:
+:doc:`proof-rotate`. Call the angle :math:`\vec{a}` makes with the x-axis :math:`\beta`; its cosine and
+sine are read straight off :math:`\vec{a}`, so — as in that chapter — we never have to compute
+:math:`\beta` itself:
 
 .. math::
 
-   \cos = \frac{\vec{a}_x}{|\vec{a}|}, \qquad \sin = -\frac{\vec{a}_y}{|\vec{a}|}.
+   \cos\beta = \frac{\vec{a}_x}{|\vec{a}|}, \qquad \sin\beta = \frac{\vec{a}_y}{|\vec{a}|}.
 
+To swing :math:`\vec{a}` down onto the axis we rotate by :math:`-\beta`, and since cosine is even while
+sine is odd that rotation uses :math:`\cos = \vec{a}_x/|\vec{a}|`, :math:`\sin = -\vec{a}_y/|\vec{a}|`.
 Substitute those into :math:`\vec{r}(\,\cdot\,;\theta)` and call the result
 :math:`R_{\vec{a}}^{\vec{e}_1}` — read "from :math:`\vec{a}`, to :math:`\vec{e}_1`". Applied to
 :math:`\vec{a}` itself, its :math:`y`-coordinate cancels and its :math:`x`-coordinate becomes
