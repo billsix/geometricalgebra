@@ -167,7 +167,7 @@ show(quarter.plane_of_rotation())
 #
 # `projection_rotation(from, to)` rotates a vector by `project`/`reject` +
 # the geometric product. The *versor* way builds `R = versor_from_vectors(from, to)`
-# = `|from||to| + to·from` and sandwiches: `R v R⁻¹`. They give the **same**
+# = `|from| * |to| + to * from` and sandwiches: `R * v * R⁻¹`. They give the **same**
 # rotation — provably, even symbolically (see `tests/test_graded.py`).
 
 # %%
@@ -176,7 +176,7 @@ R: g2.Versor = g2.Vector.versor_from_vectors(from_vector=frm, to_vector=to)
 show(R)  # an (un-normalized) g2.Versor
 
 # %% [markdown]
-# Because `R` is not normalized, the bare sandwich `R v R̃` *scales* as well as
+# Because `R` is not normalized, the bare sandwich `R * v * R̃` *scales* as well as
 # rotates — by `R.magnitude_squared()` (= `R R̃`). Using `R.inverse()` (which is
 # `R̃ / |R|²`) divides that out, leaving a pure rotation equal to `projection_rotation`.
 
@@ -254,9 +254,9 @@ show((g3.Vector.e_1 ^ g3.Vector.e_2) * (g3.Vector.e_1 ^ g3.Vector.e_2))
 
 # %% [markdown]
 # A bivector times its **own dual** collapses to the pseudoscalar scaled by
-# `|B|²`:  `B (B*) = |B|² I`.  For a *unit* bivector that is just the pseudoscalar
-# `I = e₁e₂e₃`.  The lazy `g3.Bivector` stores the raw `cos²t + sin²t` coefficient;
-# only the **display** simplifies it — so the cancellation shows.
+# `|B|²`:  `B * (B*) = |B|² * I`.  For a *unit* bivector that is just the pseudoscalar
+# `I = e₁ * e₂ * e₃`.  The lazy `g3.Bivector` stores the raw `cos²(t) + sin²(t)`
+# coefficient; only the **display** simplifies it — so the cancellation shows.
 
 # %%
 t: sympy.Symbol = sympy.symbols("t")
@@ -340,7 +340,7 @@ show(a, a * b, a ^ b, r)
 # the transform factories (`translate`, `uniform_scale`, …).
 
 # %%
-B3: g3.Bivector = g3.Vector.e_1 ^ g3.Vector.e_2  # the e_1 e_2 plane
+B3: g3.Bivector = g3.Vector.e_1 ^ g3.Vector.e_2  # the e_1 * e_2 plane
 P: ComposableFunction[g3.Vector] = g3.Vector.project(
     B3
 )  # a ComposableFunction, already labelled from B3

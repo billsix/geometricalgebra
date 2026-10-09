@@ -13,7 +13,7 @@ product is **correct-by-construction against gacalc** rather than hand-derived.
 Parallels ``tools/gen_specialized.py`` (which generates the *Python* specialized
 classes ``G``); this emits the formulas for their *Lean* twins in
 ``proofs/GacalcProofs/``. The coefficient/field names match the Lean struct
-fields: ``s`` for the scalar, ``12`` for e₁e₂, etc. (single-digit indices, so
+fields: ``s`` for the scalar, ``12`` for e₁ * e₂, etc. (single-digit indices, so
 n ≤ 9).
 
 Run in the container (needs gacalc importable):

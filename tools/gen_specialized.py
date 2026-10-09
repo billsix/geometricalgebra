@@ -513,7 +513,7 @@ def _bivector_dual_doc(role: str, n: int) -> str:
         )
     return (
         "Dual  B* = B / i  in 𝒢₃: the dual of a bivector is the VECTOR normal to\n"
-        "its plane -- the e₁e₂ plane duals to e₃.\n"
+        "its plane -- the e₁ * e₂ plane duals to e₃.\n"
         "\n"
         "Returns:\n"
         "    Vector: the vector normal to the bivector's plane (𝒢₃).\n"
@@ -552,7 +552,7 @@ def _vector_dual_doc(role: str, n: int) -> str:
         )
     return (
         "Dual of a vector in 𝒢₃ is the BIVECTOR of the plane perpendicular to it\n"
-        "(its normal plane):  e₁ → −e₂e₃.\n"
+        "(its normal plane):  e₁ → −e₂ * e₃.\n"
         "\n"
         "Returns:\n"
         "    Bivector: the bivector of the plane perpendicular to the vector.\n"
@@ -1016,11 +1016,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    4"
     ),
     "bivector|exp": (
-        "Exponential of a bivector IS a rotor:  exp(B) = cos|B| + sin|B| B̂.\n"
+        "Exponential of a bivector IS a rotor:  exp(B) = cos(|B|) + sin(|B|) * B̂.\n"
         "The zero bivector exponentiates to the identity rotor 1.\n"
         "\n"
         "Returns:\n"
-        "    Versor: the rotor cos|B| + sin|B| B̂.\n"
+        "    Versor: the rotor cos(|B|) + sin(|B|) * B̂.\n"
         "\n"
         "Example:\n"
         "    >>> (0 * Bivector.e_12).exp() == Versor.from_real(1)\n"
@@ -1028,7 +1028,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
     ),
     "bivector|i": (
         "The unit bivector  î = B / |B|  of this plane (î² = −1); already unit for\n"
-        "a basis blade like e₁e₂.  This is the plane you feed a versor / ``exp``.\n"
+        "a basis blade like e₁ * e₂.  This is the plane you feed a versor / ``exp``.\n"
         "\n"
         "Returns:\n"
         "    Bivector: the unit bivector î of this plane (î² = −1).\n"
@@ -1039,7 +1039,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
     ),
     "bivector|__iter__": (
         "Iterating a bivector yields its plane-component values in blade order\n"
-        "(one value in 𝒢₂; the e₁e₂, e₁e₃, e₂e₃ components in 𝒢₃).\n"
+        "(one value in 𝒢₂; the e₁ * e₂, e₁ * e₃, e₂ * e₃ components in 𝒢₃).\n"
         "\n"
         "Yields:\n"
         "    Real: each plane-component value, in blade order."
@@ -1191,7 +1191,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
     ),
     "scalar|outer_product": (
         "Outer (wedge) product.  A scalar wedges by ordinary multiplication (it\n"
-        "adds no grade), so s ∧ t = s·t.\n"
+        "adds no grade), so s ∧ t = s * t.\n"
         "\n"
         "Args:\n"
         "    rhs: the right operand.\n"
@@ -1425,21 +1425,21 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the geometric product ``self * rhs``."
     ),
     "vector|dot": (
-        "Inner (dot) product of two vectors -- the scalar  a·b = |a||b|cos θ.\n"
+        "Inner (dot) product of two vectors -- the scalar  a·b = |a| * |b| * cos(θ).\n"
         "A unit vector dotted with itself is 1; perpendicular vectors give 0.\n"
         "\n"
         "Args:\n"
         "    rhs: the other vector.\n"
         "\n"
         "Returns:\n"
-        "    Scalar: the dot product  a·b = |a||b|cos θ.\n"
+        "    Scalar: the dot product  a·b = |a| * |b| * cos(θ).\n"
         "\n"
         "Example:\n"
         "    >>> (1 * Vector.e_1).dot(1 * Vector.e_1) == Scalar.from_real(1)\n"
         "    True"
     ),
     "vector|inner_product": (
-        "The dot product of two vectors,  a·b = |a||b|cos θ (see ``dot``).\n"
+        "The dot product of two vectors,  a·b = |a| * |b| * cos(θ) (see ``dot``).\n"
         "\n"
         "Args:\n"
         "    rhs: the other vector.\n"
@@ -1569,7 +1569,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
     "vector|rotor_from_vectors": (
         "The unit **rotor** that rotates ``a`` to ``b`` in the a-b plane (a\n"
         "classmethod): ``versor_from_vectors`` normalized, so the textbook reverse\n"
-        "sandwich ``R v R.reverse()`` rotates with no division (the inverse of a\n"
+        "sandwich ``R * v * R.reverse()`` rotates with no division (the inverse of a\n"
         "rotor is its reverse).\n"
         "\n"
         "Args:\n"
@@ -1595,7 +1595,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
     ),
     "vector|rotate_90_degrees": (
         "Quarter turn (𝒢₂ only), +90° from e₁ toward e₂:  (x, y) → (−y, x).  This\n"
-        "is exactly multiplication by the unit pseudoscalar e₁e₂.\n"
+        "is exactly multiplication by the unit pseudoscalar e₁ * e₂.\n"
         "\n"
         "Returns:\n"
         "    Vector: this vector turned +90° (e₁ toward e₂).\n"
@@ -1719,7 +1719,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
     # ------------------------------------------------------------------
     "trivector|__add__": (
         "Sum of two trivectors -- added component-wise (still a trivector; 𝒢₃ has\n"
-        "a single grade-3 blade e₁e₂e₃).\n"
+        "a single grade-3 blade e₁ * e₂ * e₃).\n"
         "\n"
         "Args:\n"
         "    rhs: the trivector to add.\n"
@@ -1915,7 +1915,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    [3]"
     ),
     "trivector|magnitude_squared": (
-        "Squared magnitude  |T|²  -- the square of the single e₁e₂e₃ component.\n"
+        "Squared magnitude  |T|²  -- the square of the single e₁ * e₂ * e₃ component.\n"
         "\n"
         "Returns:\n"
         "    Real: the squared magnitude.\n"
@@ -2048,14 +2048,14 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the geometric product ``self * rhs``."
     ),
     "versor|sandwich": (
-        "Apply this versor to a value:  R x R⁻¹  (the sandwich) -- this is how a\n"
+        "Apply this versor to a value:  R * x * R⁻¹  (the sandwich) -- this is how a\n"
         "versor actually rotates.  The identity versor leaves x unchanged.\n"
         "\n"
         "Args:\n"
         "    x: the value to rotate; the result has ``x``'s own type.\n"
         "\n"
         "Returns:\n"
-        "    the rotated value  R x R̃, of ``x``'s own type.\n"
+        "    the rotated value  R * x * R̃, of ``x``'s own type.\n"
         "\n"
         "Example:\n"
         "    >>> Versor.from_real(1).sandwich(1 * Vector.e_1) == 1 * Vector.e_1\n"
@@ -2664,7 +2664,7 @@ def inject_method_docstrings(nodes: Sequence[ast.stmt], n: int, full_name: str) 
 # teach the identity the name stands for: in 𝒢₂ a quarter turn IS
 # multiplication by the unit pseudoscalar e_12.
 ROTATE_90_METHOD_DOC: str = (
-    "Rotate this vector a quarter turn (+90°, e₁ toward e₂) in the e₁e₂ plane.\n"
+    "Rotate this vector a quarter turn (+90°, e₁ toward e₂) in the e₁ * e₂ plane.\n"
     "\n"
     "        In 𝒢₂ a quarter turn IS multiplication by the unit pseudoscalar:\n"
     "        ``v.rotate_90_degrees() == v * e_12``, i.e. ``(x, y) -> (-y, x)``.\n"
@@ -2711,8 +2711,8 @@ SINE_METHOD_DOC: str = (
     "Signed sine of the angle from this vector to ``other`` (𝒢₂ only).\n"
     "\n"
     "        The wedge of two 𝒢₂ vectors has a single component, the signed area\n"
-    "        ``(a ∧ b).coeff_e_12 = a₁b₂ − a₂b₁``; dividing by the two magnitudes\n"
-    "        gives a **signed** ``sin θ`` whose sign is the turn direction, so\n"
+    "        ``(a ∧ b).coeff_e_12 = a₁ * b₂ − a₂ * b₁``; dividing by the two magnitudes\n"
+    "        gives a **signed** ``sin(θ)`` whose sign is the turn direction, so\n"
     "        swapping the arguments negates it -- unlike the unsigned,\n"
     "        any-dimension :meth:`MultiVectorBase.abs_sin`.  The scalar companion\n"
     "        to :meth:`MultiVectorBase.cosine`; raises on a zero-length operand.\n"
@@ -2723,7 +2723,7 @@ SINE_METHOD_DOC: str = (
     "            other: the other vector.\n"
     "\n"
     "        Returns:\n"
-    "            Real: the signed sine ``(a ∧ b).coeff_e_12 / (|a| |b|)``.\n"
+    "            Real: the signed sine ``(a ∧ b).coeff_e_12 / (|a| * |b|)``.\n"
     "\n"
     "        Example:\n"
     "            >>> (1.0 * Vector.e_1).sine(1.0 * Vector.e_2)\n"
@@ -5350,7 +5350,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 returns=name_ref("Bivector"),
             )
         )
-        # Versor conjugation  R x R^-1  -- the versor sandwich, GRADE-PRESERVING:
+        # Versor conjugation  R * x * R^-1  -- the versor sandwich, GRADE-PRESERVING:
         # the derived closed form's support is exactly x's grades (the would-be
         # higher grades cancel symbolically), so each operand returns its own
         # type (Vector->Vector, Bivector->Bivector, ...) with no projection.
@@ -5517,7 +5517,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                 )
             )
         if n == 2:
-            # rotate_90_degrees() = v * e_12 -- 𝒢₂ only.  There the e₁e₂ plane is
+            # rotate_90_degrees() = v * e_12 -- 𝒢₂ only.  There the e₁ * e₂ plane is
             # the whole space, so right-multiplying by the unit pseudoscalar is a
             # pure quarter turn; in 𝒢₃+ the same product sends an e₃ component to
             # a trivector -- the footgun that got the old general-dimension
@@ -5547,10 +5547,10 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                     returns=name_ref(turn_spec.name),
                 )
             )
-            # sine(a, b) = (a ∧ b).coeff_e_12 / (|a| |b|) -- the SIGNED sine of
+            # sine(a, b) = (a ∧ b).coeff_e_12 / (|a| * |b|) -- the SIGNED sine of
             # the angle from a to b, 𝒢₂ only (Decision 8 in the task doc: a
             # scalar, not a bivector -- "sometimes we just want the number").  In
-            # 𝒢₂ the wedge has one component (the signed area a₁b₂ − a₂b₁), so this
+            # 𝒢₂ the wedge has one component (the signed area a₁ * b₂ − a₂ * b₁), so this
             # is a signed scalar; swapping a, b negates it -- the oriented turn
             # direction mvp uses for which-side-of-an-edge tests, unlike the
             # unsigned MultiVectorBase.abs_sin.  Mirrors cosine/abs_sin's

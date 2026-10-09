@@ -38,7 +38,7 @@ established once yields any rotation angle on demand (and interpolation for
 free).  The versor *builder* ``MultiVectorBase.versor_from_vectors(from, to)``
 remains the algebra-level primitive.  (The very old planar 2D
 ``rotate(angle)`` / ``rotate_90_degrees`` / ``rotate_around`` factories were
-removed long before: they acted only in the e_1 e_2 plane and silently
+removed long before: they acted only in the e_1 * e_2 plane and silently
 mis-transformed a vector with an e_3+ component -- ``plane_rotation`` is the
 plane-explicit replacement.)
 
@@ -193,7 +193,7 @@ def projection_rotation(
     is a *pure* rotation (no scaling) whatever the inputs' magnitudes.  It is the
     projection formulation of the same rotation
     that :func:`versor_rotation` produces via the versor sandwich
-    ``R v R.inverse()`` (``R = versor_from_vectors(from_vector, to_vector)``); both
+    ``R * v * R.inverse()`` (``R = versor_from_vectors(from_vector, to_vector)``); both
     agree.  This form is kept for teaching -- it makes the in-plane / perpendicular
     split explicit -- while ``versor_rotation`` is the faster, more general path.
     Like every factory here it is representation-agnostic: the operand's own type
@@ -238,7 +238,7 @@ def versor_rotation(
     r"""A rotation packaged as an :class:`InvertibleFunction`, built from the
     **versor** ``R = versor_from_vectors(from, to)``.
 
-    The forward is the versor sandwich ``R v R^-1``; the inverse is ``R^-1 v R``
+    The forward is the versor sandwich ``R * v * R^-1``; the inverse is ``R^-1 v R``
     (see ``MultiVectorBase.sandwich``).  Both return ``v``'s own type.
     ``linearity`` is ``LINEAR`` (a rotation fixes the origin), and it handles
     ``zero`` for free.  This is the *versor* formulation of a rotation; the
@@ -354,14 +354,14 @@ def bivector_rotation(
     bivector that has drifted off unit length (floating point) or is simply
     unnormalized still yields the correct angle.  It must be a *bivector* (grade
     2) -- and a *simple* one (``i * i == -1``, true of every 𝒢₂/𝒢₃ bivector); a
-    non-simple bivector (only possible in 𝒢₄+, e.g. ``e_1 e_2 + e_3 e_4``) spans
+    non-simple bivector (only possible in 𝒢₄+, e.g. ``e_1 * e_2 + e_3 * e_4``) spans
     no single plane and is out of scope.
 
     The returned function takes an angle ``theta`` and packages the rotation as
     an :class:`InvertibleFunction` whose forward is the half-angle rotor sandwich
 
     .. math:: R \, v \, \tilde{R}, \qquad
-              R = \cos(\theta/2) - \sin(\theta/2)\, i
+              R = \cos(\theta/2) - \sin(\theta/2) * i
 
     and whose inverse is the same with ``-theta``;  ``rotation(theta).at(t)`` is
     ``rotation(t * theta)`` (interpolation).  Positive ``theta`` turns in ``i``'s
@@ -440,7 +440,7 @@ def plane_rotation(
     is the half-angle rotor sandwich
 
     .. math:: R \, v \, \tilde{R}, \qquad
-              R = \cos(\theta/2) - \sin(\theta/2)\, i
+              R = \cos(\theta/2) - \sin(\theta/2) * i
 
     and whose inverse is the same with ``-theta``.  Positive ``theta`` turns
     **from a toward b** (the wedge's orientation), so argument order is

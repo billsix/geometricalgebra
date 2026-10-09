@@ -233,13 +233,13 @@ def test_contraction_runtime_types_and_values() -> None:
     assert type(a.left_contraction(a)) is g2.Scalar
     assert a.left_contraction(a).coeff_scalar == 25
     assert (a < a).coeff_scalar == 25  # operator agrees
-    # e_1 ⌋ (5 e_12) = 5 e_2 ;  contraction asymmetry: (5 e_12) ⌋ e_1 == 0
+    # e_1 ⌋ (5 e_12) = 5 * e_2 ;  contraction asymmetry: (5 e_12) ⌋ e_1 == 0
     assert type(g2.Vector.e_1.left_contraction(i2)) is g2.Vector
     assert g2.Vector.e_1.left_contraction(i2).coeff_e_2 == 5
     assert (
         type(i2.left_contraction(g2.Vector.e_1)) is g2.Scalar
     )  # grade -1 -> g2.Scalar(0)
-    assert (i2 > g2.Vector.e_1).coeff_e_2 == -5  # bivector ⌊ vector = -5 e_2
+    assert (i2 > g2.Vector.e_1).coeff_e_2 == -5  # bivector ⌊ vector = -5 * e_2
 
 
 def test_dual_narrows_by_grade() -> None:
@@ -292,7 +292,7 @@ def test_operator_runtime_types_and_values() -> None:
     assert type(a ^ b) is g2.Bivector
     assert type(a.inner_product(b)) is g2.Scalar
     assert type(a * 3) is g2.Vector
-    # value equals the wedge coefficient e_1 e_2:  3*2 - 4*1 = 2
+    # value equals the wedge coefficient e_1 * e_2:  3*2 - 4*1 = 2
     assert (a ^ b).coeff_e_12 == 2
     # and the geometric product carries both scalar and bivector parts
     product: g2.Versor = a * b

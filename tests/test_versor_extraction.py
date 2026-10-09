@@ -11,8 +11,8 @@
 # Lesser General Public License (the LICENSE file in this repository)
 # for more details.
 
-"""Extracting ``r``, ``I``, ``θ`` and the conjugate from a versor ``R = r (cos θ + I
-sin θ)``
+"""Extracting ``r``, ``I``, ``θ`` and the conjugate from a versor ``R = r * (cos(θ) + I
+sin(θ))``
 (Macdonald): ``r = R.magnitude()``, ``I = R.plane_of_rotation()``, ``θ = R.angle()``,
 ``R̄ = R.conjugate()``.  Works on the generated algebras and on ``Gn``, normalized or
 not."""
@@ -37,7 +37,7 @@ def test_product_of_two_vectors_yields_their_angle_scale_and_plane(
     v: g2.Vector = 3.0 * (
         math.cos(theta) * g2.Vector.e_1 + math.sin(theta) * g2.Vector.e_2
     )
-    r: MultiVectorBase = u * v  # an un-normalized versor: r = |u||v| = 6
+    r: MultiVectorBase = u * v  # an un-normalized versor: r = |u| * |v| = 6
     assert math.isclose(r.angle(), theta, rel_tol=1e-12)
     assert math.isclose(r.magnitude(), 6.0, rel_tol=1e-12)
     assert r.plane_of_rotation().isclose(
@@ -56,7 +56,7 @@ def test_versor_reconstructs_from_r_i_theta_numeric() -> None:
 
 
 def test_versor_reconstructs_from_r_i_theta_symbolic() -> None:
-    # R = c + s·I with c, s positive symbols (first quadrant, so sympy can take
+    # R = c + s * I with c, s positive symbols (first quadrant, so sympy can take
     # s/|s| = 1 and cos(atan2(s, c)) = c/sqrt(c² + s²)): the three factors read
     # back and rebuild R symbolically.
     c: sympy.Symbol

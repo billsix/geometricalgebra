@@ -47,8 +47,9 @@ coordinate_formula: Vector = (
 full_angle_result == coordinate_formula  # -> True
 
 # %%
-# gacalc's own rotation, in the e_1 -> e_2 plane, by the same angle -- under the hood a
-# half-angle rotor cos(theta/2) - sin(theta/2) * e_12 applied as the sandwich R v R~.
+# gacalc's own rotation, in the e_1 -> e_2 plane, by the same angle -- under the hood
+# a half-angle rotor cos(theta/2) - sin(theta/2) * e_12 applied as the sandwich
+# R * v * R~.
 gacalc_result: Vector = plane_rotation(Vector.e_1, Vector.e_2)(theta)(a).simplified()
 gacalc_result
 

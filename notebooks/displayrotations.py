@@ -33,7 +33,7 @@
 #
 # A rotation can be written two equivalent ways in geometric algebra:
 #
-# * the **versor sandwich**  $R\,v\,R^{-1}$, where $R$ is the versor that carries
+# * the **versor sandwich** $R * v * R^{-1}$, where $R$ is the versor that carries
 #   one vector toward another, and
 # * the **projection formula** (`transforms.projection_rotation`): turn the part
 #   of $v$ that lies in the plane of rotation, and leave the perpendicular part fixed.
@@ -82,7 +82,7 @@ b: Gn = e_1 * sympy.cos(theta) + e_2 * sympy.sin(theta)
 # $\mathcal{G}_2$ -- the plane
 # ----------------------------
 #
-# A symbolic vector $v = v_1 e_1 + v_2 e_2$.
+# A symbolic vector $v = v_1 * e_1 + v_2 * e_2$.
 
 # %%
 v1, v2 = sympy.symbols("v1 v2", real=True)
@@ -93,7 +93,7 @@ v_2d: Gn = v1 * e_1 + v2 * e_2
 R: Gn = cast(Gn, Gn.versor_from_vectors(from_vector=a, to_vector=b))
 
 # %% [markdown]
-# The versor sandwich $R\,v\,R^{-1}$ (simplified for display):
+# The versor sandwich $R * v * R^{-1}$ (simplified for display):
 
 # %%
 sandwich_2d: Gn = R * v_2d * R.inverse()
@@ -116,8 +116,8 @@ sandwich_2d - projection_2d  # pyright: ignore[reportUnusedExpression]
 # $\mathcal{G}_3$ -- space
 # ------------------------
 #
-# A symbolic vector $v = v_1 e_1 + v_2 e_2 + v_3 e_3$, rotated by the *same*
-# rotation (in the $e_1 e_2$ plane).  The $e_3$ component is perpendicular to the
+# A symbolic vector $v = v_1 * e_1 + v_2 * e_2 + v_3 * e_3$, rotated by the *same*
+# rotation (in the $e_1 * e_2$ plane).  The $e_3$ component is perpendicular to the
 # plane, so a correct rotation must leave it untouched -- both formulas do.
 
 # %%
@@ -150,21 +150,21 @@ sandwich_3d - projection_3d  # pyright: ignore[reportUnusedExpression]
 # Every intermediate product along the way
 # ----------------------------------------
 #
-# The sandwich is two geometric products -- first $R\,v$, then $(R\,v)\,R^{-1}$.
+# The sandwich is two geometric products -- first $R * v$, then $(R * v) * R^{-1}$.
 # `show_mult` lays out *every* component-times-component term and sums them, the
 # same way you can watch associativity term by term.  The thing to notice in
-# $\mathcal{G}_3$: $R\,v$ carries a **trivector** ($e_1 e_2 e_3$) as well as a
+# $\mathcal{G}_3$: $R * v$ carries a **trivector** ($e_1 * e_2 * e_3$) as well as a
 # vector, and the second product makes that trivector **cancel**, leaving a pure
 # vector -- which is *why* a versor sandwich of a vector is always a vector.
 
 # %% [markdown]
-# **Step 1 --- $R\,v$** (a vector *and* a trivector):
+# **Step 1 --- $R * v$** (a vector *and* a trivector):
 
 # %%
 show_mult(R3, v_3d)
 
 # %% [markdown]
-# **Step 2 --- $(R\,v)\,R^{-1}$** (the trivector cancels; a pure vector remains):
+# **Step 2 --- $(R * v) * R^{-1}$** (the trivector cancels; a pure vector remains):
 
 # %%
 show_mult(R3 * v_3d, R3.inverse())
@@ -174,7 +174,7 @@ show_mult(R3 * v_3d, R3.inverse())
 # =================================================
 #
 # The cross product $a \times b$ is the vector perpendicular to both $a$ and $b$,
-# with length $|a||b|\sin\theta$. We can *build* it out of nothing but
+# with length $|a| * |b| * \sin(\theta)$. We can *build* it out of nothing but
 # `projection_rotation` and `project`, composed — no cross-product formula needed.
 #
 # Take two **symbolic** 3D vectors (the grade-1 part of a symbolic multivector):
@@ -194,7 +194,7 @@ b
 # right-to-left in the `@` chain — the last one written is applied first):
 #
 # 1. **rotate $a \to e_1$** — spin space so $a$ lies along $e_1$.
-# 2. **project onto the $e_2 e_3$ plane** — drop the part along $a$ (now $e_1$),
+# 2. **project onto the $e_2 * e_3$ plane** — drop the part along $a$ (now $e_1$),
 #    keeping only the component of $b$ *perpendicular* to $a$.
 # 3. **rotate $e_2 \to e_3$** — a quarter turn *in that perpendicular plane*: this
 #    is the $90^\circ$ turn that makes a cross product a cross product.
@@ -250,7 +250,7 @@ result  # pyright: ignore[reportUnusedExpression]
 # $e^{A} = \sum A^k / k!$ closes into trig — for the scaled plane
 # $A = -(\theta/2)\, i$ it sums to exactly the half-angle rotor:
 #
-# $$ e^{-(\theta/2)\, i} \;=\; \cos(\theta/2) \;-\; \sin(\theta/2)\, i $$
+# $$ e^{-(\theta/2)\, i} \;=\; \cos(\theta/2) \;-\; \sin(\theta/2) * i $$
 #
 # The angle here is declared *positive*: `exp` computes $|A| = \sqrt{\theta^2}/2$,
 # which collapses to $\theta/2$ only once sympy knows the sign.

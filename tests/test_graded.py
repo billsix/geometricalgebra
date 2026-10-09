@@ -381,8 +381,8 @@ def test_symbolic_product_matches_gn() -> None:
 
 
 # --- the versor sandwich equals projection_rotation(from, to) ------------------
-# R = versor_from_vectors(from, to) = |from||to| + to*from ; for any vector v,
-#   R v R.inverse()  ==  projection_rotation(from, to)(v)
+# R = versor_from_vectors(from, to) = |from| * |to| + to*from ; for any vector v,
+#   R * v * R.inverse()  ==  projection_rotation(from, to)(v)
 # (R.inverse() = R.reverse()/|R|^2 divides out the versor's scaling, leaving a
 # pure rotation.)
 
@@ -442,7 +442,8 @@ def test_versor_rotate_across_representations() -> None:
 
 
 def test_unnormalized_versor_scales_then_normalizes() -> None:
-    # the bare sandwich R v R~ scales by R.magnitude_squared(); inverse divides it out
+    # the bare sandwich R * v * R~ scales by R.magnitude_squared(); inverse divides
+    # it out
     frm: g2.Vector
     to: g2.Vector
     w: g2.Vector

@@ -105,7 +105,7 @@ def test_orthogonal_frame_keeps_first_vector() -> None:
 
 def test_orthogonal_frame_2d_symbolic() -> None:
     """Orthogonalize a general 2D frame -- ``sym_vec2_1`` / ``sym_vec2_2`` are
-    ``a_1 e_1 + a_2 e_2`` / ``b_1 e_1 + b_2 e_2``: the first vector is kept, the
+    ``a_1 * e_1 + a_2 * e_2`` / ``b_1 * e_1 + b_2 * e_2``: the first vector is kept, the
     second becomes orthogonal to it, and the pair still spans the plane."""
     w: list[MultiVectorBase] = make_orthogonal_frame([sym_vec2_1, sym_vec2_2])
     assert w[0] == sym_vec2_1  # first vector unchanged
@@ -132,7 +132,7 @@ def test_orthogonal_frame_3d_concrete() -> None:
 
 def test_orthogonal_frame_3d_symbolic() -> None:
     """Orthogonalize a *fully general* 3D frame (``sym_vec3_1``, ``sym_vec3_2``,
-    ``sym_vec3_3`` -- three arbitrary vectors ``a·e``, ``b·e``, ``c·e``): the
+    ``sym_vec3_3`` -- three arbitrary vectors ``a * e``, ``b * e``, ``c * e``): the
     first is kept, each later one is exactly orthogonal to all earlier ones, and
     the result still spans 3-space. Proves it for *every* 3D frame, not just the
     concrete and numeric samples."""
@@ -175,7 +175,7 @@ def test_make_orthogonal_frame_raises_on_dependent() -> None:
 #   (3.1)  A_0 := 1,  A_k := v_1 ∧ v_2 ∧ … ∧ v_k        (the prefix k-blades)
 #   (3.2)  c_k := reverse(A_{k-1}) A_k                   (the orthogonal frame)
 # This equals ``make_orthogonal_frame`` (rejection) up to a positive scalar per
-# vector: ``c_k == |A_{k-1}|² · w_k`` (and c_1 == v_1 == w_1), because
+# vector: ``c_k == |A_{k-1}|² * w_k`` (and c_1 == v_1 == w_1), because
 # ``A_k = A_{k-1} v_k^⊥`` so ``c_k = (reverse(A_{k-1}) A_{k-1}) v_k^⊥ =
 # |A_{k-1}|² v_k^⊥``.  See ``tasks/define-frame.md`` Part 1c.
 
@@ -191,7 +191,7 @@ def _prev_blade_magnitude_squared(vectors: Sequence[MultiVectorBase], k: int) ->
 def test_hestenes_equals_rejection_2d_symbolic() -> None:
     """On a general 2D frame (``sym_vec2_1`` / ``sym_vec2_2``), Hestenes' ``c_k``
     equals the rejection ``w_k`` scaled by ``|A_{k-1}|²``: ``c_1 = w_1`` and
-    ``c_2 = |sym_vec2_1|² · w_2``.
+    ``c_2 = |sym_vec2_1|² * w_2``.
 
     The two are equal but built differently (a blade product vs a scaled
     rejection), so their sympy forms are not structurally identical -- the
@@ -200,12 +200,12 @@ def test_hestenes_equals_rejection_2d_symbolic() -> None:
     c: list[MultiVectorBase] = make_orthogonal_frame_hestenes([sym_vec2_1, sym_vec2_2])
     assert c[0] == sym_vec2_1  # c_1 = w_1 = sym_vec2_1
     factor: object = content([sym_vec2_1]) ** 2  # |A_1|² = |sym_vec2_1|²
-    assert c[1] - factor * w[1] == type(c[1]).zero()  # c_2 = |sym_vec2_1|² · w_2
+    assert c[1] - factor * w[1] == type(c[1]).zero()  # c_2 = |sym_vec2_1|² * w_2
 
 
 def test_hestenes_equals_rejection_3d_concrete() -> None:
     """On a concrete oblique 3D frame -- so every value is a readable number --
-    ``c_k == |A_{k-1}|² · w_k`` for each k."""
+    ``c_k == |A_{k-1}|² * w_k`` for each k."""
     a: Gn = 1 * e_1 + 1 * e_2
     b: Gn = 1 * e_2 + 1 * e_3
     c: Gn = 1 * e_1 + 1 * e_3
@@ -229,11 +229,11 @@ def test_hestenes_equals_rejection_3d_symbolic() -> None:
     zero: MultiVectorBase = type(c[0]).zero()
     for k in range(1, 4):
         factor = _prev_blade_magnitude_squared(frame, k)
-        assert c[k - 1] - factor * w[k - 1] == zero  # c_k = |A_{k-1}|² · w_k
+        assert c[k - 1] - factor * w[k - 1] == zero  # c_k = |A_{k-1}|² * w_k
 
 
 def test_hestenes_equals_rejection_numeric() -> None:
-    """``c_k`` (Hestenes) == ``|A_{k-1}|² · w_k`` (rejection) on random 2D/3D frames."""
+    """``c_k`` (Hestenes) == ``|A_{k-1}|² * w_k`` (rejection) on random 2D/3D frames."""
     random.seed(20260823)
     dim: int
     for dim in (2, 3):

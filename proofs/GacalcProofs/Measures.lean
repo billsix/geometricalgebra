@@ -25,7 +25,7 @@ theorem area_sq_vec {a b : G3} (ha : IsVector a) (hb : IsVector b) :
   simp only [area, magnitude]
   exact Real.sq_sqrt h
 
-/-- **Lagrange form of the area:** `|a∧b|² = |a|²|b|² − (a·b)²` (rearranged `lagrange_property`). -/
+/-- **Lagrange form of the area:** `|a∧b|² = |a|² * |b|² − (a·b)²` (rearranged `lagrange_property`). -/
 theorem normSq_wedge_eq_lagrange {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     normSq (wedge a b) = normSq a * normSq b - dot a b ^ 2 := by
   have h := lagrange_property ha hb
@@ -62,10 +62,10 @@ end G3
 namespace G2
 
 /-- The **signed area** (2D) = the oriented wedge coefficient (gacalc `signed_area`), i.e. the `e₁₂`
-    part of `a b` — the signed `a₁b₂ − a₂b₁` (= the 2×2 determinant). -/
+    part of `a b` — the signed `a₁ * b₂ − a₂ * b₁` (= the 2×2 determinant). -/
 noncomputable def signedArea (a1 a2 b1 b2 : ℝ) : ℝ := (mul (vec a1 a2) (vec b1 b2)).c12
 
-/-- The signed area is the oriented determinant `a₁b₂ − a₂b₁`. -/
+/-- The signed area is the oriented determinant `a₁ * b₂ − a₂ * b₁`. -/
 theorem signedArea_eq (a1 a2 b1 b2 : ℝ) :
     signedArea a1 a2 b1 b2 = a1 * b2 - a2 * b1 := by
   simp only [signedArea, mul, vec]; ring

@@ -588,7 +588,7 @@ convention ([[book-outline]] › "Notation & prose conventions"):
 
 So the reader has never seen a *subscript* on a coordinate — only positional pairs and the
 letters i/j. The book's bridge (in `relative-graph-paper.rst` › "How we write coordinates") is
-`a i + b j` → `a_1 e_1 + a_2 e_2`: same object, the subscript naming the axis, which is what
+`a i + b j` → `a_1 * e_1 + a_2 * e_2`: same object, the subscript naming the axis, which is what
 keeps working at three axes and at `n`.
 
 ## Appendix — pointers back to source

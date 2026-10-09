@@ -29,7 +29,7 @@ synthesis, not from any doc):
 | 3 | **Reciprocal frames** | small–medium | no | Independently useful *and* the prerequisite for geometric calculus. Build regardless. (Finding 1, 5) |
 | 4 | **Outermorphisms / general linear transforms** (`Lt`: det/adjoint/trace as pseudoscalar/blade operations) | medium, self-contained | **no** — works on Euclidean G | Beautiful teaching topic ("det = how a map scales the pseudoscalar"); generalizes gacalc's versor-only transforms. The best "big" step that *doesn't* need signatures. (Finding 3b) |
 | 5 | **General-multivector inverse** (Hitzer closed-form n<6 / Shirokov) | small–medium | no | Correctness/coverage: gacalc's `inverse()` only handles blade/versor cases; a general multivector can silently fail. (Finding 2B) |
-| 6 | **Symbolic ergonomics**: `Mv.subs`, `trigsimp`, public `func`, `Fmt(1|2|3)` display | small | no | On-brand for a symbolic pedagogical lib; `Fmt` (per-grade/per-blade LaTeX layout) is the single most transferable presentation idea. (Findings 2C, 4) |
+| 6 | **Symbolic ergonomics**: `Mv.subs`, `trigsimp`, public `func`, `Fmt(1 * |2|3)` display | small | no | On-brand for a symbolic pedagogical lib; `Fmt` (per-grade/per-blade LaTeX layout) is the single most transferable presentation idea. (Findings 2C, 4) |
 | 7 | **Arbitrary metric signature (p,q,r)** | **large, architectural** | — (this IS it) | The root gap. Turns "Clifford arithmetic in ℝⁿ" into "a GA library." Decide scope: a signature *flag* (diagonal ±1, unlocks STA — moderate) vs a full *metric tensor* (unlocks CGA/curvilinear/manifolds — large). (Findings 1, 5) |
 | 8 | **Geometric calculus (∇, directional/multivector derivatives, fundamental theorem)** | large, new layer | reciprocal frames + coords (not strictly signatures) | The *namesake* gap — the book is "…to Geometric **Calculus**" and gacalc stops at the algebra. Uniquely tractable here thanks to the sympy backend. (Finding 3a) |
 | 9 | **meet/join/incidence + non-pseudoscalar-division duality** | large | **yes — gated on #7** | Very visible for "doing geometry," but the useful version can't exist without a projective/conformal model. Do after signatures. (Finding 5) |
@@ -193,7 +193,7 @@ This is the "cheap wins" bucket. galgebra's `Mv` delegates product *definitions*
 - **`trigsimp()`** and **`func(fct)`** (apply an arbitrary fn to each coefficient — gacalc
   has a *private* `_map_coefficients` but exposes no public `func`). gacalc already has
   `simplified()`/`expanded()`.
-- **`Fmt(1|2|3)`** display modes (one multivector / one grade / one blade per line).
+- **`Fmt(1 * |2|3)`** display modes (one multivector / one grade / one blade per line).
 
 **Differentiation preview (full treatment in Finding 3):** galgebra's `Mv` can be
 differentiated at the value level — **`A.diff(coord)`**, **`pdiff`**, and even a sympy
@@ -248,7 +248,7 @@ on vectors is extended to *all* blades/multivectors by
 what makes these **coordinate-free and blade-aware**:
 - **`Lt.det()`** = `L(E)·E⁻¹` — the determinant as "how L scales the pseudoscalar" (needs the
   outermorphism to even state).
-- **`Lt.adj()`** — adjoint L̄ via `a·L(b)=b·L̄(a)` (metric-correct `g⁻¹·Mᵀ·g`).
+- **`Lt.adj()`** — adjoint L̄ via `a·L(b)=b·L̄(a)` (metric-correct `g⁻¹ * Mᵀ * g`).
 - **`Lt.tr()`** = `∇_a·L(a)` — trace, *defined using the calculus layer* (ties 3a and 3b).
 - **`Lt.inv()`**, **`Lt.is_singular()`**, **`Lt.matrix()`**, and an algebra of Lts
   (`+`,`-`,`*`=composition).
@@ -282,7 +282,7 @@ it's "here are the few presentation ideas worth stealing, and the ecosystem sign
 library has."
 
 **Worth copying (ranked by value-for-effort):**
-1. **User-controlled multivector display layout** — galgebra's `Mv.Fmt(1|2|3)`: whole
+1. **User-controlled multivector display layout** — galgebra's `Mv.Fmt(1 * |2|3)`: whole
    multivector on one line / **one grade per line** / **one blade per line**, with an
    optional LaTeX `title = <mv>`. This is the single most transferable presentation idea;
    gacalc's `_repr_latex_` emits one fixed form. Cheap, high pedagogical payoff (a graded

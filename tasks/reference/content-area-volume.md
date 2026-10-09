@@ -27,17 +27,17 @@ the 2nd ed. Internet Archive (borrow): `archive.org/details/multivariablemat02ed
 ## The relevant pages (the maintainer's reading, 2026-08-23)
 
 - **pp. 144–145 — geometric properties of vectors.** Connects the geometric interpretation of vectors,
-  parallelograms, and **sin**: the area of the parallelogram on two vectors is `|v₁| |v₂| sin θ`. Good
+  parallelograms, and **sin**: the area of the parallelogram on two vectors is `|v₁| * |v₂| * sin(θ)`. Good
   grounding to reference when writing the book's vector chapters (the maintainer flagged it for that).
 - **p. 145 — the k-dimensional parallelepiped.** Defines the parallelepiped spanned by k vectors — the
   k-dimensional generalization of the parallelogram (k = 2) and the parallelepiped (k = 3).
   ("Parallelepiped" is the word the maintainer wants to keep on hand.)
 - **p. 146 — volume, defined recursively by heights (= rejections).**
   - **1-D volume** = `|V₁|` (length).
-  - **2-D volume** = `|V₁| · |h₂|`, where `h₂` is the height of `V₂` *away from* `V₁` — **in gacalc's
+  - **2-D volume** = `|V₁| * |h₂|`, where `h₂` is the height of `V₂` *away from* `V₁` — **in gacalc's
     terms, `h₂` is `V₂` rejected from `V₁`** (post-reject). That is base × height = the parallelogram
     area.
-  - **3-D volume** = (2-D volume) · `|h₃|`, where `h₃` is the third vector **rejected from the plane of
+  - **3-D volume** = (2-D volume) * `|h₃|`, where `h₃` is the third vector **rejected from the plane of
     the first two**.
   - So in general **k-D volume = `∏_{j=1..k} |h_j|`**, with `h_j` = `v_j` rejected from the span of the
     ones before it.
@@ -52,7 +52,7 @@ W&T's recursive volume — `∏ |h_j|`, the heights being rejections — is **ex
 orthogonalization** (`make_orthogonal_frame`, `tasks/define-frame.md`): each `h_j` = `v_j` rejected
 from the span of the previous vectors = the orthogonalized `w_j`. Hence
 
->   `content([v₁,…,v_k]) = ∏_j |w_j| = |v₁ ∧ … ∧ v_k| = √det(Gram)` (for k = 2, `|a∧b|² = |a|²|b|² − (a·b)²` is Lagrange's identity, <https://en.wikipedia.org/wiki/Lagrange%27s_identity>).
+>   `content([v₁,…,v_k]) = ∏_j |w_j| = |v₁ ∧ … ∧ v_k| = √det(Gram)` (for k = 2, `|a∧b|² = |a|² * |b|² − (a·b)²` is Lagrange's identity, <https://en.wikipedia.org/wiki/Lagrange%27s_identity>).
 
 So there are **two equal ways to compute content**: W&T's **product of rejected heights**, and the
 **magnitude of the wedge blade**. That is the same "two constructions, one result" pattern as the two

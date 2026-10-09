@@ -34,7 +34,7 @@ from gacalc.functions import ComposableFunction, InvertibleFunction, Linearity
 # `numbers.Real` ABC -- ty turns `numbers.Real` arithmetic into `_ComplexLike`
 # and then rejects `+`/`/`/`**` on it, which broke the generated versor sandwich.
 Real = int | float | sympy.Expr
-#: A basis blade: a tuple of basis-vector indices, e.g. ``(1, 2)`` ≙ e₁e₂ (``()`` is
+#: A basis blade: a tuple of basis-vector indices, e.g. ``(1, 2)`` ≙ e₁ * e₂ (``()`` is
 #: the scalar blade).  The key type of the ``BladeReal`` interchange dict.
 Blade = tuple[int, ...]
 #: THE interchange format of the library.  Every representation (``Gn``,
@@ -188,12 +188,12 @@ def blade_dict_latex(d: BladeReal, symbols: Mapping[Blade, str] | None = None) -
 def pseudoscalar_squared_sign(r: int) -> int:
     """The sign (``+1`` / ``−1``) of a grade-``r`` blade's square in Euclidean 𝒢ₙ.
 
-    A grade-``r`` blade ``A`` satisfies ``A² = (−1)^(r(r−1)/2) · |A|²``; this is
+    A grade-``r`` blade ``A`` satisfies ``A² = (−1)^(r * (r−1)/2) * |A|²``; this is
     that sign factor — equivalently the reversion sign for grade ``r``, and the
     sign of the ``r``-dimensional unit pseudoscalar squared. Named so ``reverse`` /
     ``exp`` (and the generator's emitted ``reverse``) read as what they mean.
 
-    Uses the closed form ``(−1)^(r(r−1)/2)``, proven equal to actually squaring the
+    Uses the closed form ``(−1)^(r * (r−1)/2)``, proven equal to actually squaring the
     ``r``-dimensional unit pseudoscalar. For a hand-counted proof (grades 1–5,
     move-by-move) see ``tasks/reference/pseudoscalar-square-sign.md``; the
     equivalence is gated permanently by ``tests/test_pseudoscalar_square_sign.py``.
@@ -205,7 +205,7 @@ def pseudoscalar_squared_sign(r: int) -> int:
         r: the grade of the blade.
 
     Returns:
-        int: the sign factor ``(−1)^(r(r−1)/2)`` (``+1`` or ``−1``).
+        int: the sign factor ``(−1)^(r * (r−1)/2)`` (``+1`` or ``−1``).
     """
     # Proven equal to squaring the unit pseudoscalar the slow, obviously-correct way
     # — the SAME calculation, kept here as a comment so it reads as a proof for a
@@ -217,7 +217,7 @@ def pseudoscalar_squared_sign(r: int) -> int:
     #     return int(Gn.unit_pseudoscalar_squared(r).scalar_part())
     #
     # The closed form drops that base→gn coupling and is O(1).  The reversion swap
-    # count for a grade-r blade is the triangular number r(r−1)/2 (see the proof).
+    # count for a grade-r blade is the triangular number r * (r−1)/2 (see the proof).
     return (-1) ** ((r * (r - 1)) // 2)
 
 
@@ -351,7 +351,7 @@ class MultiVectorBase(abc.ABC):
                 e₁ through e_n).
 
         Returns:
-            Self: the unit pseudoscalar e₁e₂…e_n.
+            Self: the unit pseudoscalar e₁ * e₂ * … * e_n.
         """
         return math.prod(
             [cls.basis_vector(x) for x in range(1, n + 1)],
@@ -361,8 +361,8 @@ class MultiVectorBase(abc.ABC):
     @classmethod
     def bases(cls, n: int) -> Generator[typing.Self]:
         """Yield the  2ⁿ  basis blades of 𝒢ₙ, one multivector each, from the scalar
-        1 through the pseudoscalar e₁e₂…e_n (the powerset of {e₁, …, e_n}, ordered
-        by grade).  This is the linear basis every multivector is a sum over.
+        1 through the pseudoscalar e₁ * e₂ * … * e_n (the powerset of {e₁, …, e_n},
+        ordered by grade).  This is the linear basis every multivector is a sum over.
 
         Args:
             n: the dimension of the algebra (yields 2ⁿ blades).
@@ -429,7 +429,7 @@ class MultiVectorBase(abc.ABC):
     # ------------------------------------------------------------------
     @abc.abstractmethod
     def _geometric_product(self, rhs: MultiVectorBase) -> typing.Self:
-        """Geometric product  A B  (juxtaposition) — the fundamental product of the
+        """Geometric product  A * B  — the fundamental product of the
         algebra, from which the inner product  A · B  and outer product  A ∧ B  are
         derived.  This is the representation-specific primitive.
 
@@ -442,7 +442,7 @@ class MultiVectorBase(abc.ABC):
         """
 
     def __mul__(self, rhs: MultiVectorBase | Real) -> typing.Self:
-        """Geometric product  A B  (``*``).  A bare number on the right is lifted to a
+        """Geometric product  A * B.  A bare number on the right is lifted to a
         scalar first, so ``A * 2`` scales; otherwise this is the full product of the
         algebra, dispatched to the representation's ``_geometric_product``.
 
@@ -556,7 +556,7 @@ class MultiVectorBase(abc.ABC):
         return -1 * self
 
     def __truediv__(self, rhs: MultiVectorBase | Real) -> typing.Self:
-        """Quotient  A / B  =  A B⁻¹  — division IS multiplication by the
+        """Quotient  A / B  =  A * B⁻¹  — division IS multiplication by the
         inverse (right division: order matters in a non-commutative algebra).
         A bare number's inverse is its reciprocal, so ``v / s`` divides every
         coefficient.
@@ -635,7 +635,7 @@ class MultiVectorBase(abc.ABC):
         )
 
     def magnitude_squared(self) -> Real:
-        """Squared magnitude  ``|A|²``  =  Ã ∗ A  =  ⟨Ã A⟩  (a scalar).
+        """Squared magnitude  ``|A|²``  =  Ã ∗ A  =  ⟨Ã * A⟩  (a scalar).
 
         Returns:
             Real: the scalar ``|A|²`` (the scalar product of the reverse with A).
@@ -734,7 +734,7 @@ class MultiVectorBase(abc.ABC):
 
     def inner_product(self, rhs: typing.Self) -> typing.Self:
         """Inner (dot) product  A · B  — the lowest-grade part of the geometric
-        product, ⟨A B⟩_|r−s| summed over the homogeneous grade-r, grade-s parts.
+        product, ⟨A * B⟩_|r−s| summed over the homogeneous grade-r, grade-s parts.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 6,
         equation 1.21a, 1.21b, 1.21c
@@ -786,7 +786,7 @@ class MultiVectorBase(abc.ABC):
 
     def outer_product(self, rhs: typing.Self) -> typing.Self:
         """Outer (wedge) product  A ∧ B  — the highest-grade part of the geometric
-        product, ⟨A B⟩_(r+s) summed over the homogeneous grade-r, grade-s parts.
+        product, ⟨A * B⟩_(r+s) summed over the homogeneous grade-r, grade-s parts.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 6,
         equation 1.22a, 1.22b, 1.22c
@@ -823,7 +823,7 @@ class MultiVectorBase(abc.ABC):
         return typing.cast(typing.Self, outer)
 
     def scalar_product(self, other: typing.Self) -> Real:
-        """Scalar product  A ∗ B  =  ⟨A B⟩  — the grade-0 (scalar) part of the
+        """Scalar product  A ∗ B  =  ⟨A * B⟩  — the grade-0 (scalar) part of the
         geometric product.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 13,
@@ -833,7 +833,7 @@ class MultiVectorBase(abc.ABC):
             other: the right operand.
 
         Returns:
-            Real: the scalar product ``⟨A B⟩`` (the grade-0 part of the product).
+            Real: the scalar product ``⟨A * B⟩`` (the grade-0 part of the product).
         """
         return (self * other).scalar_part()
 
@@ -1068,9 +1068,9 @@ class MultiVectorBase(abc.ABC):
         the angle between them is zero.
 
         For a geometry/trig student: perpendicular vectors meet at a right angle, so
-        ``cos θ = 0`` (see :meth:`cosine`).  The test is implemented with the inner
+        ``cos(θ) = 0`` (see :meth:`cosine`).  The test is implemented with the inner
         product ``A · B`` — the robust, division-free primitive — because
-        ``cos θ = 0 ⟺ A · B = 0`` for (nonzero) vectors, without ``cosine``'s 0/0
+        ``cos(θ) = 0 ⟺ A · B = 0`` for (nonzero) vectors, without ``cosine``'s 0/0
         edge case.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 9,
@@ -1119,9 +1119,9 @@ class MultiVectorBase(abc.ABC):
         linearly dependent).
 
         For a geometry/trig student: parallel vectors point the same way (or exactly
-        opposite), so they enclose no angle and ``sin θ = 0`` (see :meth:`abs_sin`).
+        opposite), so they enclose no angle and ``sin(θ) = 0`` (see :meth:`abs_sin`).
         The test is implemented with the outer product ``A ∧ B`` — the robust,
-        division-free primitive — since ``sin θ = 0 ⟺ A ∧ B = 0``.  ``A ∧ B = 0``
+        division-free primitive — since ``sin(θ) = 0 ⟺ A ∧ B = 0``.  ``A ∧ B = 0``
         iff A and B span no area, so this holds for both same-direction and
         anti-parallel vectors. The equivalence ``A ∧ B = 0 ⟺ A ∥ B`` is
         machine-checked in ``proofs/GacalcProofs/Predicates3D.lean``.
@@ -1189,7 +1189,7 @@ class MultiVectorBase(abc.ABC):
         """Reverse  Ã  — reverses the order of the vector factors in each blade,
         giving the grade-``r`` part the reversion sign
         :func:`~gacalc.base.pseudoscalar_squared_sign` (of the grade ``r``;
-        ``= (−1)^(r(r−1)/2)``).
+        ``= (−1)^(r * (r−1)/2)``).
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 5,
         equation 1.19
@@ -1215,11 +1215,11 @@ class MultiVectorBase(abc.ABC):
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18
 
         Scope (this is NOT the general multivector inverse): the formula
-        ``Ã/|A|²`` is exact only when ``Ã A`` is a **scalar** — true for a
+        ``Ã/|A|²`` is exact only when ``Ã * A`` is a **scalar** — true for a
         **blade** (a grade-pure simple element: scalar, vector, bivector, or
         trivector/pseudoscalar) and for a **versor** (a product of invertible
-        vectors, e.g. a rotor), where ``(Ã/|A|²) A = Ã A / |A|² = 1``.  For a
-        **general mixed-grade multivector**, ``Ã A`` has non-scalar parts, so
+        vectors, e.g. a rotor), where ``(Ã/|A|²) * A = Ã * A / |A|² = 1``.  For a
+        **general mixed-grade multivector**, ``Ã * A`` has non-scalar parts, so
         this returns a WRONG "inverse".  A general low-dimensional closed form
         does exist (Hitzer & Sangwine 2017, via the grade involutions) but is
         not implemented here — it is tracked in
@@ -1231,7 +1231,7 @@ class MultiVectorBase(abc.ABC):
         the method is correct for the subset above; the general case is
         unimplemented and now **guarded** — a mixed-grade ``A`` raises
         ``RuntimeError`` instead of returning a wrong answer.  The guard is the
-        exact condition "``Ã A`` is a scalar", which subsumes scalar/vector/blade/
+        exact condition "``Ã * A`` is a scalar", which subsumes scalar/vector/blade/
         versor in every dimension — unlike a grade-shape test, which cannot spot a
         versor and would wrongly accept a non-simple grade-pure element in 𝒢₄/𝒢₅.
         A good alternative NOT used: trust the graded subtypes — a ``Vector``/
@@ -1245,24 +1245,24 @@ class MultiVectorBase(abc.ABC):
 
         Raises:
             ZeroDivisionError: if ``|A|²`` is zero (A has no inverse).
-            RuntimeError: if ``A`` is a mixed-grade multivector (``Ã A`` not a
+            RuntimeError: if ``A`` is a mixed-grade multivector (``Ã * A`` not a
                 scalar) — the general inverse is not implemented.
         """
-        # Compute the full product Ã A once — reverse on the LEFT, matching
-        # :meth:`magnitude_squared` (= ``self.reverse().scalar_product(self)`` = ⟨Ã A⟩)
-        # and the returned inverse ``Ã / |A|²``.  We keep the *whole* product rather
-        # than just its scalar part so the non-scalar part is available for the gate
-        # below; its scalar part (via :meth:`scalar_part`) is exactly ``|A|²``, and
-        # ``a_reverse`` is reused for the returned inverse.
+        # Compute the full product Ã * A once — reverse on the LEFT, matching
+        # :meth:`magnitude_squared` (= ``self.reverse().scalar_product(self)``
+        # = ⟨Ã * A⟩) and the returned inverse ``Ã / |A|²``.  We keep the *whole* product
+        # rather than just its scalar part so the non-scalar part is available for the
+        # gate below; its scalar part (via :meth:`scalar_part`) is exactly ``|A|²``,
+        # and ``a_reverse`` is reused for the returned inverse.
         a_reverse: typing.Self = self.reverse()
         reverse_times_self: typing.Self = a_reverse * self
-        # Gate: ``Ã / |A|²`` is a genuine inverse iff ``Ã A`` is a scalar — then
-        # ``A⁻¹ A = Ã A / |A|² = 1`` — which holds for a blade or versor.  A non-scalar
-        # product means A is a mixed-grade element whose (general) inverse is not
-        # implemented.  See :meth:`is_scalar`.
+        # Gate: ``Ã / |A|²`` is a genuine inverse iff ``Ã * A`` is a scalar — then
+        # ``A⁻¹ * A = Ã * A / |A|² = 1`` — which holds for a blade or versor.  A
+        # non-scalar product means A is a mixed-grade element whose (general) inverse
+        # is not implemented.  See :meth:`is_scalar`.
         if not reverse_times_self.is_scalar():
             raise RuntimeError(
-                "inverse() supports a blade or versor (where Ã A is a scalar); the "
+                "inverse() supports a blade or versor (where Ã * A is a scalar); the "
                 "general mixed-grade multivector inverse is not implemented "
                 "(see tasks/lean-general-multivector-inverse.md)"
             )
@@ -1284,14 +1284,14 @@ class MultiVectorBase(abc.ABC):
     # (Bivector.dual -> Vector) -- an override that -> Self would forbid.  The
     # full class G_n keeps -> Self (all grades); Gn inherits this base.
     def dual(self, n: int) -> MultiVectorBase:
-        """Dual  A*  =  A I⁻¹  — multiplication by the inverse unit pseudoscalar I,
+        """Dual  A* =  A * I⁻¹  — multiplication by the inverse unit pseudoscalar I,
         mapping a grade-r part to grade n−r.
 
         Args:
             n: the dimension of the algebra (fixes the pseudoscalar I).
 
         Returns:
-            MultiVectorBase: the dual ``A I⁻¹`` (grade r ↦ grade n−r).
+            MultiVectorBase: the dual ``A * I⁻¹`` (grade r ↦ grade n−r).
         """
         return self * type(self).unit_pseudoscalar(n).inverse()
 
@@ -1327,7 +1327,7 @@ class MultiVectorBase(abc.ABC):
         )
 
     def cosine(self, other: MultiVectorBase) -> Real:
-        """Cosine of the angle between A and B:  cos θ  =  (Ã ∗ B) / (``|A|`` ``|B|``).
+        """Cosine of the angle between A and B:  cos(θ) = (Ã ∗ B) / (``|A|`` * ``|B|``).
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 14,
         equation 1.53b
@@ -1336,7 +1336,7 @@ class MultiVectorBase(abc.ABC):
             other: the other multivector.
 
         Returns:
-            Real: the cosine ``cos θ = (Ã ∗ B) / (|A| |B|)``.
+            Real: the cosine ``cos(θ) = (Ã ∗ B) / (|A| * |B|)``.
 
         Raises:
             ValueError: if ``self`` or ``other`` is the zero vector — the angle (hence
@@ -1352,13 +1352,13 @@ class MultiVectorBase(abc.ABC):
         )
 
     def abs_sin(self, other: MultiVectorBase) -> Real:
-        """Unsigned sine of the angle between A and B:  ``|A ∧ B|`` / (``|A|`` ``|B|``).
+        """Unsigned sine of the angle between A and B:  ``|A ∧ B| / (|A| * |B|)``.
 
         The non-negative, any-dimension companion to :meth:`cosine`.  By Lagrange's
         identity ``‖A ∧ B‖² = ‖A‖²‖B‖² − (A ∗ B)²`` the two satisfy
         ``cosine² + abs_sin² == 1`` for vectors
         (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>; the Hestenes dot/
-        magnitude relation ``|A ∧ B| = |A| |B| sin θ`` is the companion of
+        magnitude relation ``|A ∧ B| = |A| * |B| * sin(θ)`` is the companion of
         ``cosine``'s H&S p. 14, eq. 1.53b).  Float input stays a float; int and
         symbolic stay exact (via :meth:`magnitude`).
 
@@ -1369,7 +1369,7 @@ class MultiVectorBase(abc.ABC):
             other: the other multivector.
 
         Returns:
-            Real: the unsigned sine ``|A ∧ B| / (|A| |B|)``.
+            Real: the unsigned sine ``|A ∧ B| / (|A| * |B|)``.
 
         Raises:
             ValueError: if ``self`` or ``other`` is the zero vector — the angle (hence
@@ -1615,8 +1615,8 @@ class MultiVectorBase(abc.ABC):
 
     def area(self, other: MultiVectorBase) -> Real:
         """The area of the parallelogram on ``self`` and ``other`` -- the student's
-        ``|a| |b| sin θ`` (see :meth:`abs_sin`), computed as ``|a ∧ b|`` (the method
-        form of :func:`gacalc.measure.area`).
+        ``|a| * |b| * sin(θ)`` (see :meth:`abs_sin`), computed as ``|a ∧ b|`` (the
+        method form of :func:`gacalc.measure.area`).
 
         Args:
             other: the second vector spanning the parallelogram.
@@ -1738,20 +1738,20 @@ class MultiVectorBase(abc.ABC):
     ) -> MultiVectorBase:
         r"""The versor ``R`` taking ``from_vector`` toward ``to_vector``, built from
         the angle bisector.  (Geometric products are juxtaposition, as elsewhere;
-        ``A B`` is *not* an inner product.)
+        ``A * B`` is *not* an inner product.)
 
         Derivation (write ``a = from_vector``, ``b = to_vector``).  Scale each
         input by the *other's* length and add -- this is the half-angle, or
         angle-bisector, vector::
 
-            h  =  |b| a  +  |a| b
+            h  =  |b| * a  +  |a| * b
 
-        Both ``|b| a`` and ``|a| b`` have length ``|a||b|``, so their sum ``h``
+        Both ``|b| * a`` and ``|a| * b`` have length ``|a| * |b|``, so their sum ``h``
         bisects the a->b angle -- it sits the same angle θ/2 from each of ``a``
         and ``b`` (drawn with ``h`` straight up, ``a`` and ``b`` mirror-imaged;
         their lengths may differ, only the directions matter here)::
 
-                            ^   h = |b| a + |a| b
+                            ^   h = |b| * a + |a| * b
             b = to  \       |       / a = from
                      \      |      /
                       \     |     /
@@ -1765,23 +1765,23 @@ class MultiVectorBase(abc.ABC):
         A versor is the geometric product of two vectors separated by *half* the
         target angle -- so the versor is the bisector times the from-vector::
 
-            h a  =  (|b| a + |a| b) a
-                 =  |b| (a a)  +  |a| (b a)        # a a = |a|^2  (a scalar)
-                 =  |b| |a|^2  +  |a| (b a)
-                 =  |a| ( |a||b|  +  b a )
-                 =  |a| R
+            h * a  =  (|b| * a + |a| * b) * a
+                 =  |b| * (a * a)  +  |a| * (b * a)    # a * a = |a|^2  (a scalar)
+                 =  |b| * |a|^2  +  |a| * (b * a)
+                 =  |a| * ( |a| * |b|  +  b * a )
+                 =  |a| * R
 
-        so  ``R = b a + |a||b|`` = ``h a / |a|``  -- the leading ``|a|`` is just a
-        positive scale that cancels in the sandwich.  And because
-        ``|a||b| = |b a|`` (the magnitude of a product of two vectors is the
+        so  ``R = b * a + |a| * |b|`` = ``h * a / |a|``  -- the leading ``|a|`` is just
+        a positive scale that cancels in the sandwich.  And because
+        ``|a| * |b| = |b * a|`` (the magnitude of a product of two vectors is the
         product of their magnitudes), this is the compact ``product + |product|``
         form built below -- but that form hides the bisector ``h`` it came from.
 
-        ``R`` is thus the (un-normalized) even multivector ``|a||b| + b a``
-        (scalar + bivector): a vector ``v`` rotates by ``R v R.inverse()``, which
+        ``R`` is thus the (un-normalized) even multivector ``|a| * |b| + b * a``
+        (scalar + bivector): a vector ``v`` rotates by ``R * v * R.inverse()``, which
         equals ``projection_rotation(from, to)(v)`` (in ``transforms``).  Because
         ``R`` is un-normalized, the bare
-        ``R v R.reverse()`` would also *scale* by ``R.magnitude_squared()``;
+        ``R * v * R.reverse()`` would also *scale* by ``R.magnitude_squared()``;
         ``R.inverse()`` (= ``R.reverse() / |R|^2``) divides that out, leaving a
         pure rotation.
 
@@ -1793,23 +1793,23 @@ class MultiVectorBase(abc.ABC):
             to_vector: the vector the versor rotates *toward*.
 
         Returns:
-            MultiVectorBase: the un-normalized versor ``|a||b| + b a`` (scalar +
-            bivector); apply it with ``R v R.inverse()``.
+            MultiVectorBase: the un-normalized versor ``|a| * |b| + b * a`` (scalar +
+            bivector); apply it with ``R * v * R.inverse()``.
 
         Raises:
             AssertionError: if either argument is not a vector (grade 1).
         """
         assert from_vector.is_vector()
         assert to_vector.is_vector()
-        # |from||to| -- the versor's scalar part, making it the half-angle versor.
+        # |from| * |to| -- the versor's scalar part, making it the half-angle versor.
         # Kept as the *product of two magnitudes* (two simple sqrts), NOT
-        # |to from| = sqrt(|to|^2 |from|^2): the latter is mathematically equal
+        # |to from| = sqrt(|to|^2 * |from|^2): the latter is mathematically equal
         # but sympy leaves it as a nested radical it cannot simplify through the
-        # sandwich, breaking the symbolic R v R^-1 == projection_rotation
+        # sandwich, breaking the symbolic R * v * R^-1 == projection_rotation
         # identity.  No cast
         # needed now that magnitude() is typed Real (int | float | sympy.Expr).
-        # (Why the two are equal -- |ab| = |a||b| via |a^b| = |a||b|sin θ -- is
-        # demonstrated in notebooks/displayg2.py and displayg3.py; that the
+        # (Why the two are equal -- |ab| = |a| * |b| via |a^b| = |a| * |b| * sin(θ) --
+        # is demonstrated in notebooks/displayg2.py and displayg3.py; that the
         # |to from| form regresses this identity was re-confirmed empirically.)
         scale: Real = from_vector.magnitude() * to_vector.magnitude()
         # scalar + bivector -- the versor's grade
@@ -1825,23 +1825,24 @@ class MultiVectorBase(abc.ABC):
         r"""The **rotor** taking ``from_vector`` toward ``to_vector``: the versor of
         :meth:`versor_from_vectors`, normalized to unit magnitude, ``R̂ = R / |R|``.
 
-        gacalc's vocabulary: a *versor* is even of any magnitude (``R v R.inverse()``
-        rotates); a *rotor* is a unit versor, for which the inverse is the reverse, so
-        the textbook sandwich ``R̂ v R̂.reverse()`` rotates with no division.  The two
-        agree exactly -- ``(R/|R|) v (R/|R|)~  =  R v R~ / |R|²  =  R v R.inverse()`` --
+        gacalc's vocabulary: a *versor* is even of any magnitude
+        (``R * v * R.inverse()`` rotates); a *rotor* is a unit versor, for which the
+        inverse is the reverse, so the textbook sandwich ``R̂ * v * R̂.reverse()``
+        rotates with no division.  The two agree exactly --
+        ``(R/|R|) * v * (R/|R|)~  =  R * v * R~ / |R|²  =  R * v * R.inverse()`` --
         machine-checked as ``rotorSandwich_normalize`` in
         ``proofs/GacalcProofs/Rotor.lean``, which also proves the rotor sandwich equals
         ``projection_rotation`` and carries ``from`` to ``to``.
 
         The magnitude divided out has a closed form, by Lagrange's identity
         (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>)
-        ``(a·b)² + |a∧b|² = |a|²|b|²``::
+        ``(a·b)² + |a∧b|² = |a|² * |b|²``::
 
-            |R|²  =  2 |a||b| ( |a||b| + a·b )
+            |R|²  =  2 * |a| * |b| * ( |a| * |b| + a·b )
 
         so ``R`` is zero exactly when ``a``, ``b`` are antiparallel (or one is
         zero), and for unit ``a``, ``b`` at angle θ the rotor is the half-angle
-        ``cos(θ/2) - sin(θ/2)·i`` that ``transforms.plane_rotation`` builds
+        ``cos(θ/2) - sin(θ/2) * i`` that ``transforms.plane_rotation`` builds
         (``|R|² = 2 + 2cos θ = 4cos²(θ/2)``).  With symbolic inputs ``normalize``
         leaves ``sqrt(|R|²)`` unevaluated; substitute this closed form to simplify
         (see ``tests/test_rotor_from_vectors.py``).
@@ -1864,8 +1865,8 @@ class MultiVectorBase(abc.ABC):
 
     def plane_of_rotation(self) -> typing.Self:
         """The unit bivector plane ``I`` this versor rotates in -- its bivector part,
-        normalized (Macdonald's ``I`` in ``R = r(cos θ + I sin θ)``; the generated
-        ``Versor`` classes override this with a ``Bivector``-typed version).
+        normalized (Macdonald's ``I`` in ``R = r * (cos(θ) + I * sin(θ))``; the
+        generated ``Versor`` classes override this with a ``Bivector``-typed version).
 
         Returns:
             Self: the unit bivector ``⟨R⟩₂ / |⟨R⟩₂|``.
@@ -1877,17 +1878,18 @@ class MultiVectorBase(abc.ABC):
         return self.r_vector_part(2).normalize()
 
     def angle(self) -> Real:
-        """The angle ``θ`` of a versor ``R = r (cos θ + I sin θ)`` -- the angle between
-        the two vectors whose product it is (``R = u v`` gives ``θ = ∠(u, v)``), read
-        off its scalar and bivector parts: ``θ = atan2(|⟨R⟩₂|, ⟨R⟩₀) ∈ [0, π]``.
+        """The angle ``θ`` of a versor ``R = r * (cos(θ) + I * sin(θ))`` -- the angle
+        between the two vectors whose product it is (``R = u * v`` gives
+        ``θ = ∠(u, v)``), read off its scalar and bivector parts:
+        ``θ = atan2(|⟨R⟩₂|, ⟨R⟩₀) ∈ [0, π]``.
 
         The other two factors are already methods: ``r`` is :meth:`magnitude` and
-        ``I`` is :meth:`plane_of_rotation`, so ``R == r * (cos θ + sin θ * I)`` exactly.
-        Mind the half angle: the sandwich ``R v R⁻¹`` rotates ``v`` by ``2θ``, so for
-        the
-        half-angle rotor ``plane_rotation`` builds (``cos(φ/2) - sin(φ/2) I``) this
-        returns ``φ/2``.  Defined for a **scalar + bivector** versor (an even element
-        of 𝒢₂ or 𝒢₃, or ``u v`` in any dimension); numeric input gives a ``float``,
+        ``I`` is :meth:`plane_of_rotation`, so ``R == r * (cos(θ) + sin(θ) * I)``
+        exactly.  Mind the half angle: the sandwich ``R * v * R⁻¹`` rotates ``v`` by
+        ``2θ``, so for the half-angle rotor ``plane_rotation`` builds
+        (``cos(φ/2) - sin(φ/2) * I``) this returns ``φ/2``.  Defined for a
+        **scalar + bivector** versor (an even element of 𝒢₂ or 𝒢₃, or ``u * v`` in
+        any dimension); numeric input gives a ``float``,
         symbolic input a ``sympy.atan2``.
 
         Returns:
@@ -1907,11 +1909,11 @@ class MultiVectorBase(abc.ABC):
 
     def conjugate(self) -> typing.Self:
         """The complex conjugate of a scalar + bivector versor:
-        ``R = r (cos θ + I sin θ)  ↦  R̄ = r (cos θ - I sin θ)`` -- the bivector part
-        negated, exactly as ``a + bi ↦ a - bi``, since ``I² = -1``.  For such a versor
-        this coincides with :meth:`reverse` (``R R̄ = r² = |R|²``); it is kept as its own
-        name for the complex-number reading, and is restricted to the scalar + bivector
-        case where the two notions agree.
+        ``R = r * (cos(θ) + I * sin(θ))  ↦  R̄ = r * (cos(θ) - I * sin(θ))`` -- the
+        bivector part negated, exactly as ``a + bi ↦ a - bi``, since ``I² = -1``.  For
+        such a versor this coincides with :meth:`reverse` (``R * R̄ = r² = |R|²``); it
+        is kept as its own name for the complex-number reading, and is restricted to
+        the scalar + bivector case where the two notions agree.
 
         Returns:
             Self: the conjugate versor.
@@ -1972,7 +1974,7 @@ class MultiVectorBase(abc.ABC):
 
         For a *versor* ``R`` (a geometric product of invertible vectors — every
         invertible even element of 𝒢₂/𝒢₃ is one, up to scale), the conjugation
-        ``R x R⁻¹`` is **grade-preserving**: a vector goes to a vector, a
+        ``R * x * R⁻¹`` is **grade-preserving**: a vector goes to a vector, a
         bivector to a bivector, and so on.  The raw product
         ``self * x * self.inverse()`` carries the higher grade *structurally*
         (e.g. ``Versor * Vector`` carries a trivector when ``x`` is off the
@@ -1990,7 +1992,7 @@ class MultiVectorBase(abc.ABC):
             x: the operand to conjugate; the result is rebuilt as ``type(x)``.
 
         Returns:
-            _OperandT: the conjugate ``R x R⁻¹``, of ``x``'s own type.
+            _OperandT: the conjugate ``R * x * R⁻¹``, of ``x``'s own type.
         """
         conjugated: MultiVectorBase = self * x * self.inverse()
         return type(x).from_blade_dict(conjugated.to_blade_dict())
@@ -2000,7 +2002,7 @@ class MultiVectorBase(abc.ABC):
         for a scalar, or for a simple (homogeneous) blade, where the Euclidean
         signature closes the series in one trig identity.
 
-        For a grade-``r`` blade,  ``A² = pseudoscalar_squared_sign(r) · |A|²``
+        For a grade-``r`` blade,  ``A² = pseudoscalar_squared_sign(r) * |A|²``
         (:func:`~gacalc.base.pseudoscalar_squared_sign`) — the *sign of the
         square is decided by the grade*, never by inspecting a (possibly
         symbolic) coefficient, so no branch hint is ever needed (galgebra's
@@ -2008,14 +2010,14 @@ class MultiVectorBase(abc.ABC):
         have).  The series then sums to:
 
         * scalar ``s``                              →  e^s
-        * A² < 0  (a bivector; the 𝒢₃ pseudoscalar) →  cos|A| + sin|A| Â
+        * A² < 0  (a bivector; the 𝒢₃ pseudoscalar) →  cos(|A|) + sin(|A|) * Â
 
         This is the **exponential map onto the rotors** (Dorst, Fontijne &
         Mann, *Geometric Algebra for Computer Science*, §7.4): for a unit
         bivector ``i`` (an oriented plane),  ``exp(−(θ/2) i)``  is exactly the
         half-angle rotor that ``transforms.plane_rotation`` /
         ``transforms.bivector_rotation`` build — "a rotor is the exponential of
-        a bivector" — and it is automatically unit (cos² + sin² = 1).
+        a bivector" — and it is automatically unit (cos²(θ) + sin²(θ) = 1).
 
         Defined **only** for the scalar and negative-square (A² < 0) cases;
         raises ``ValueError`` otherwise.  That covers A² not scalar at all (a
@@ -2041,7 +2043,7 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             MultiVectorBase: e^A — a scalar for a scalar A, otherwise the rotor
-            ``cos|A| + sin|A| Â`` (a bivector / the 𝒢₃ pseudoscalar).
+            ``cos(|A|) + sin(|A|) * Â`` (a bivector / the 𝒢₃ pseudoscalar).
 
         Raises:
             ValueError: if A² is not a scalar (a rotor or a non-simple bivector),
@@ -2094,7 +2096,7 @@ class MultiVectorBase(abc.ABC):
         numeric: bool = isinstance(theta, float)
         cos_t: Real = math.cos(theta) if numeric else sympy.cos(theta)
         sin_t: Real = math.sin(theta) if numeric else sympy.sin(theta)
-        #   Â sin|A| + cos|A|   with   Â = A / |A|
+        #   Â * sin(|A|) + cos(|A|)   with   Â = A / |A|
         return self * (sin_t / theta) + cos_t
 
     def symbolically_equal(
@@ -2308,8 +2310,8 @@ def _require_canonical_blades(blade_coef: Mapping[Blade, object]) -> None:
     or ``set_blade_symbols``'s blade -> LaTeX-string map).
 
     A canonical key's indices are strictly increasing (``(1, 2)``, never
-    ``(2, 1)`` or ``(1, 1)``).  ``e₂e₁`` is a legal algebra *element* but not
-    a legal *key*: it equals ``−e₁e₂``, so it belongs under the sorted key
+    ``(2, 1)`` or ``(1, 1)``).  ``e₂ * e₁`` is a legal algebra *element* but not
+    a legal *key*: it equals ``−e₁ * e₂``, so it belongs under the sorted key
     with the sign folded into the coefficient (and a repeated index contracts
     away entirely, ``eᵢeᵢ = 1``).  Shared by every representation's
     ``from_blade_dict`` (the generated modules import it), replacing two old

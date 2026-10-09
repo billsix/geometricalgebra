@@ -6,19 +6,19 @@ import GacalcProofs.Cross
 
     Extends the sandwich beyond "carries `a` to `b`" (see `tasks/lean-proof-sandwich-rotates-components.md`):
     in the orthonormal frame `{â, r̂}` of the rotation plane (`â = a/|a|`, `r̂ = r/|r|`,
-    `r = b − proj_a b`), the sandwich `R v R⁻¹` acts as the 2D rotation matrix `[[c, −s], [s, c]]`, with
-    `c = cos θ = (a·b)/(|a||b|)` and `s = sin θ` read off the **dot and wedge** of `a` and `b`, and the
+    `r = b − proj_a b`), the sandwich `R * v * R⁻¹` acts as the 2D rotation matrix `[[c, −s], [s, c]]`, with
+    `c = cos(θ) = (a·b)/(|a| * |b|)` and `s = sin(θ)` read off the **dot and wedge** of `a` and `b`, and the
     angle θ never computed. Built in stages; this file currently carries Stage 1 (linearity + `â ↦ b̂`).
 
-    Frame/orientation decisions (maintainer, 2026-09-29): orthonormal `{â, r̂}`; `sin θ ≥ 0` oriented by
+    Frame/orientation decisions (maintainer, 2026-09-29): orthonormal `{â, r̂}`; `sin(θ) ≥ 0` oriented by
     `a ∧ b`; prove the explicit rotated-vector equation with `c² + s² = 1` (from `lagrange_3d`) as a
     corollary. -/
 namespace GacalcProofs.G3
 
 /-- **The sandwich sends `â` to `b̂`** (the first column of the rotation matrix): the unit vector along
     `a` maps to the unit vector along `b`. From linearity + `sandwich_carries_from_to`
-    (`R a R⁻¹ = (|a|/|b|)·b`), the `|a|` scales cancel. Since `b̂ = cos θ·â + sin θ·r̂`, this already
-    exhibits `â`'s image with components `(cos θ, sin θ)` in the plane frame. For nonzero vectors
+    (`R * a * R⁻¹ = (|a|/|b|) * b`), the `|a|` scales cancel. Since `b̂ = cos(θ) * â + sin(θ) * r̂`, this already
+    exhibits `â`'s image with components `(cos(θ), sin(θ))` in the plane frame. For nonzero vectors
     `a`, `b`; getter-native (no coordinate scaffold). -/
 theorem sandwich_ahat {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b)
     (ha : magnitude a ≠ 0) (hb : magnitude b ≠ 0)
@@ -85,7 +85,7 @@ theorem rotation_fixes_perp {a b : G3} (ha : IsVector a) (hb : IsVector b) (k : 
     sandwich (versorFromVectors a b) (smul k (cross b a)) = smul k (cross b a) := by
   rw [sandwich_smul, rotation_fixes_normal ha hb hr]
 
-/-- **The rotation preserves the dot product** (angle magnitude): `(R u R⁻¹)·(R v R⁻¹) = u·v` for the
+/-- **The rotation preserves the dot product** (angle magnitude): `(R * u * R⁻¹)·(R * v * R⁻¹) = u·v` for the
     a→b rotation `R = versorFromVectors a b` and ANY `u`, `v`; the oriented isometry. -/
 theorem rotation_preserves_dot {a b u v : G3}
     (ha : IsVector a) (hb : IsVector b)

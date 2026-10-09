@@ -109,9 +109,9 @@ p.inner_product(q)
 # `cosine` is coordinate-free and works in any dimension. For the sine there are
 # two rungs worth naming:
 #
-# - **`abs_sin`** — the unsigned, any-dimension sine `|a∧b| / (|a||b|)` (the
+# - **`abs_sin`** — the unsigned, any-dimension sine `|a∧b| / (|a| * |b|)` (the
 #   companion to `cosine`); and
-# - the signed **`sine`**, 𝒢₂ only — `(a∧b)·e₁₂ / (|a||b|)`, whose sign is the
+# - the signed **`sine`**, 𝒢₂ only — `(a∧b)·e₁₂ / (|a| * |b|)`, whose sign is the
 #   turn direction, so swapping the arguments negates it.
 #
 # They agree in magnitude, and `cosine² + sine² = 1` (Lagrange's identity, <https://en.wikipedia.org/wiki/Lagrange%27s_identity>).
@@ -122,14 +122,14 @@ v: Vector = -1.0 * g2.e_1 + 2.0 * g2.e_2
 u.cosine(v)  # coordinate-free, any dimension
 
 # %%
-u.abs_sin(v)  # the unsigned sine |a∧b|/(|a||b|), any dimension
+u.abs_sin(v)  # the unsigned sine |a∧b|/(|a| * |b|), any dimension
 
 # %%
 # The signed 𝒢₂ sine: its sign is the turn direction, so swapping negates it.
 u.sine(v), v.sine(u)
 
 # %%
-# Signed and unsigned agree in magnitude; Lagrange gives cos² + sin² = 1.
+# Signed and unsigned agree in magnitude; Lagrange gives cos²(θ) + sin²(θ) = 1.
 cos_squared_plus_sin_squared: Real = u.cosine(v) ** 2 + u.sine(v) ** 2
 assert abs(u.sine(v)) == u.abs_sin(v)
 assert round(cos_squared_plus_sin_squared, 10) == 1.0

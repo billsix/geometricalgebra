@@ -103,7 +103,7 @@ def make_orthogonal_frame(
     See also :func:`make_orthogonal_frame_hestenes` -- the *same* orthogonalization
     computed a different way (Hestenes' closed-form blade product), kept side by side
     for teaching. The two agree up to a positive scalar per vector
-    (``c_k == |A_{k-1}|² · w_k``; proved by ``tests/test_frame.py``). Unlike the
+    (``c_k == |A_{k-1}|² * w_k``; proved by ``tests/test_frame.py``). Unlike the
     archived blade-square-sign task -- where one form was strictly optimal and replaced
     the other -- neither is "better" here, so both stay.
 
@@ -147,7 +147,7 @@ def make_orthogonal_frame_hestenes(
 
     **Equivalence, kept side by side for teaching.** This produces the *same
     orthogonal directions* as :func:`make_orthogonal_frame`, scaled by a positive
-    scalar per vector: ``c_k == |A_{k-1}|² · w_k`` where ``w_k`` is the rejection
+    scalar per vector: ``c_k == |A_{k-1}|² * w_k`` where ``w_k`` is the rejection
     result and ``|A_{k-1}|² = A_{k-1}.magnitude_squared()`` (so ``c_1 == w_1``, and
     the later ``c_k`` are *longer*).  ``tests/test_frame.py`` verifies this exactly
     (symbolic) and numerically, in 2D and 3D.  Neither method is "better" -- rejection

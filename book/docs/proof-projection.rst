@@ -79,7 +79,7 @@ cosine and sine we read straight off :math:`\vec{b}` —
 
 .. math::
 
-   \cos = \frac{b_1}{|\vec{b}|}, \qquad \sin = -\frac{b_2}{|\vec{b}|}
+   \cos(-\theta) = \frac{b_1}{|\vec{b}|}, \qquad \sin(-\theta) = -\frac{b_2}{|\vec{b}|}
 
 — without ever having to find the angle :math:`\theta`. It lays :math:`\vec{b}` flat on the
 x-axis, exactly its own length out:
@@ -163,13 +163,13 @@ rotation that leaves the third coordinate alone.
 
 **First, swing the** :math:`xy` **shadow onto the x-axis.** Look at :math:`\vec{b}`'s
 shadow on the :math:`xy`-plane, the point :math:`(b_1, b_2)`, of length
-:math:`k = \sqrt{b_1^{\,2} + b_2^{\,2}}`. Rotate the :math:`xy`-plane with
-:math:`\cos = b_1 / k`, :math:`\sin = -b_2 / k`, **copying the** :math:`z`
+:math:`k = \sqrt{b_1^{\,2} + b_2^{\,2}}`. Rotate the :math:`xy`-plane by an angle :math:`\theta_1` with
+:math:`\cos(\theta_1) = b_1 / k`, :math:`\sin(\theta_1) = -b_2 / k`, **copying the** :math:`z`
 **part straight down**, and :math:`\vec{b}` moves to :math:`(k,\ 0,\ b_3)`.
 
 **Then swing the** :math:`z` **part down.** Now :math:`\vec{b}` is flat in the
-:math:`xz`-plane; rotate *that* plane with :math:`\cos = k / m`,
-:math:`\sin = -b_3 / m` (where :math:`m = \lvert\vec{b}\rvert`), leaving :math:`y`
+:math:`xz`-plane; rotate *that* plane by an angle :math:`\theta_2` with
+:math:`\cos(\theta_2) = k / m`, :math:`\sin(\theta_2) = -b_3 / m` (where :math:`m = \lvert\vec{b}\rvert`), leaving :math:`y`
 alone, and :math:`\vec{b}` lands on :math:`(m,\ 0,\ 0) = \lvert\vec{b}\rvert\,\vec{e}_1`.
 Compose the two rotations and we are back in standard position, where projection is again
 "keep the x-coordinate."

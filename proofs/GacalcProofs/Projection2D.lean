@@ -77,7 +77,7 @@ theorem mul_eq_wedge_of_perp {a b : G2} (ha : IsVector a) (hb : IsVector b) (h :
   rw [mul_eq_dot_add_wedge ha hb, h]
   simp only [smul, one, add]; ext <;> ring
 
-/-- **Leaf:** `|a∧b|² = (a₁b₂ − a₂b₁)²` — the squared magnitude of the plane bivector of two vectors (2D). -/
+/-- **Leaf:** `|a∧b|² = (a₁ * b₂ − a₂ * b₁)²` — the squared magnitude of the plane bivector of two vectors (2D). -/
 theorem normSq_wedge_vec (a1 a2 b1 b2 : ℝ) :
     normSq (wedge (vec a1 a2) (vec b1 b2)) = (a1 * b2 - a2 * b1) ^ 2 := by
   simp only [normSq, wedge, mul, reverse, vec]; ring
@@ -107,7 +107,7 @@ theorem reject_from_I_eq_zero (x y : ℝ) : reject I (vec x y) = (⟨0, 0, 0, 0�
   rw [reject, vec_wedge_I_eq_zero]
   ext <;> simp only [mul, inverse, smul, reverse, normSq, I, e_12] <;> ring
 
-/-- **The reverse-sandwich is an outermorphism up to `|R|²`** (2D): `(R u R̃) ∧ (R v R̃) = |R|²·R (u∧v) R̃`.
+/-- **The reverse-sandwich is an outermorphism up to `|R|²`** (2D): `(R * u * R̃) ∧ (R * v * R̃) = |R|² * R (u∧v) R̃`.
     A pure polynomial identity (atomic `normSq R`) — the unnormalized core of the 2D
     `sandwich_preserves_wedge`. -/
 theorem wedge_reverse_sandwich {R : G2} (hR : IsEvenVersor R) {u v : G2} :
@@ -118,7 +118,7 @@ theorem wedge_reverse_sandwich {R : G2} (hR : IsEvenVersor R) {u v : G2} :
   ext <;> ring
 
 /-- **The sandwich preserves the outer product** (object form, 2D outermorphism):
-    `(R u R⁻¹) ∧ (R v R⁻¹) = R (u∧v) R⁻¹` for an even versor `R` with `|R|² ≠ 0` and ANY `u`, `v`.
+    `(R * u * R⁻¹) ∧ (R * v * R⁻¹) = R (u∧v) R⁻¹` for an even versor `R` with `|R|² ≠ 0` and ANY `u`, `v`.
     In 𝒢₂ the wedge is the pseudoscalar (signed area), so this is "a rotation preserves signed area." -/
 theorem sandwich_preserves_wedge {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G2} :
     wedge (sandwich R u) (sandwich R v) = sandwich R (wedge u v) := by

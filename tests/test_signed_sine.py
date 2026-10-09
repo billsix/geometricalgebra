@@ -11,7 +11,7 @@
 # Lesser General Public License (the LICENSE file in this repository)
 # for more details.
 
-"""The 𝒢₂ signed sine: ``Vector.sine`` = ``(a ∧ b).coeff_e_12 / (|a| |b|)``.
+"""The 𝒢₂ signed sine: ``Vector.sine`` = ``(a ∧ b).coeff_e_12 / (|a| * |b|)``.
 
 The scalar, oriented companion to the unsigned, any-dimension
 ``MultiVectorBase.abs_sin``.  These pin: the signed value and that swapping the
@@ -54,7 +54,8 @@ def test_signed_sine_symbolic_is_the_signed_area_over_magnitudes() -> None:
     a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
     u: Vector = a_1 * e_1 + a_2 * e_2
     v: Vector = b_1 * e_1 + b_2 * e_2
-    # sine · |u| · |v| == the signed area (a₁b₂ − a₂b₁), the e₁₂ coefficient of u ∧ v.
+    # sine * |u| * |v| == the signed area (a₁ * b₂ − a₂ * b₁), the e₁₂ coefficient of
+    # u ∧ v.
     assert (
         sympy.simplify(
             sympy.sympify(u.sine(v) * abs(u) * abs(v) - (a_1 * b_2 - a_2 * b_1))

@@ -3,7 +3,7 @@ import Mathlib
 /-! # 𝒢₃ from scratch: the 8-dimensional Euclidean geometric algebra
 
     A self-contained construction of the 3D geometric algebra over ℝ in the basis
-    {1, e₁, e₂, e₃, e₁e₂, e₁e₃, e₂e₃, e₁e₂e₃}, Euclidean signature (eᵢ²=1, eᵢeⱼ=−eⱼeᵢ).
+    {1, e₁, e₂, e₃, e₁ * e₂, e₁ * e₃, e₂ * e₃, e₁ * e₂ * e₃}, Euclidean signature (eᵢ²=1, eᵢeⱼ=−eⱼeᵢ).
     Built the same way as `G2`: a coordinate struct whose fields are the eight real
     **coefficients**, with the basis blades exposed as genuine `G3` **elements**
     (`one`/`e_1`/…/`e_123`) — a basis vector is a vector, not a real.
@@ -29,10 +29,10 @@ structure G3 where
   c1 : ℝ   -- coefficient of e₁                       (grade 1)
   c2 : ℝ   -- coefficient of e₂                       (grade 1)
   c3 : ℝ   -- coefficient of e₃                       (grade 1)
-  c12 : ℝ  -- coefficient of e₁e₂                     (grade 2)
-  c13 : ℝ  -- coefficient of e₁e₃                     (grade 2)
-  c23 : ℝ  -- coefficient of e₂e₃                     (grade 2)
-  c123 : ℝ -- coefficient of e₁e₂e₃ (pseudoscalar)    (grade 3)
+  c12 : ℝ  -- coefficient of e₁ * e₂                     (grade 2)
+  c13 : ℝ  -- coefficient of e₁ * e₃                     (grade 2)
+  c23 : ℝ  -- coefficient of e₂ * e₃                     (grade 2)
+  c123 : ℝ -- coefficient of e₁ * e₂ * e₃ (pseudoscalar)    (grade 3)
 
 namespace G3
 
@@ -115,7 +115,7 @@ def e_123 : G3 := ⟨0, 0, 0, 0, 0, 0, 0, 1⟩
 /-- A grade-1 vector from its three coordinates. -/
 def vec (x y z : ℝ) : G3 := ⟨0, x, y, z, 0, 0, 0, 0⟩
 
-/-- The unit pseudoscalar I₃ = e₁e₂e₃. -/
+/-- The unit pseudoscalar I₃ = e₁ * e₂ * e₃. -/
 def I : G3 := e_123
 
 /-! ### The geometric-product multiplication table (confirms the transcription) -/
@@ -124,20 +124,20 @@ theorem e_1_sq : mul e_1 e_1 = one := by simp only [mul, e_1, one]; ext <;> ring
 theorem e_2_sq : mul e_2 e_2 = one := by simp only [mul, e_2, one]; ext <;> ring
 theorem e_3_sq : mul e_3 e_3 = one := by simp only [mul, e_3, one]; ext <;> ring
 
-/-- e₁e₂ = e₁₂ (the bivector is the product of the two basis vectors). -/
+/-- e₁ * e₂ = e₁₂ (the bivector is the product of the two basis vectors). -/
 theorem e_1_mul_e_2 : mul e_1 e_2 = e_12 := by simp only [mul, e_1, e_2, e_12]; ext <;> ring
 theorem e_1_mul_e_3 : mul e_1 e_3 = e_13 := by simp only [mul, e_1, e_3, e_13]; ext <;> ring
 theorem e_2_mul_e_3 : mul e_2 e_3 = e_23 := by simp only [mul, e_2, e_3, e_23]; ext <;> ring
 
-/-- e₂e₁ = −e₁₂ (orthogonal basis vectors anticommute). -/
+/-- e₂ * e₁ = −e₁₂ (orthogonal basis vectors anticommute). -/
 theorem e_2_mul_e_1 : mul e_2 e_1 = neg e_12 := by
   simp only [mul, e_2, e_1, e_12, neg]; ext <;> ring
 
-/-- e₁e₂e₃ = e₁₂₃ (the pseudoscalar is the product of the three basis vectors). -/
+/-- e₁ * e₂ * e₃ = e₁₂₃ (the pseudoscalar is the product of the three basis vectors). -/
 theorem e_12_mul_e_3 : mul e_12 e_3 = e_123 := by
   simp only [mul, e_12, e_3, e_123]; ext <;> ring
 
-/-- **The pseudoscalar squares to −1:** I₃² = −1 = (−1)^(3·2/2). -/
+/-- **The pseudoscalar squares to −1:** I₃² = −1 = (−1)^(3 * 2/2). -/
 theorem I_sq : mul I I = neg one := by simp only [mul, I, e_123, neg, one]; ext <;> ring
 
 /-- Reverse is an involution. -/
@@ -160,7 +160,7 @@ def trivector (t : ℝ) : G3 := { zero with c123 := t }
 def scalar (a : ℝ) : G3 := { zero with s := a }
 
 /-- The scalar product ⟨A B⟩₀ — the scalar part of the geometric product. For two
-    vectors this is the Euclidean dot product `a₁b₁ + a₂b₂ + a₃b₃`. -/
+    vectors this is the Euclidean dot product `a₁ * b₁ + a₂ * b₂ + a₃ * b₃`. -/
 noncomputable def dot (a b : G3) : ℝ := (mul a b).s
 
 /-- `dot` distributes over subtraction on the left (it is bilinear). -/
@@ -307,7 +307,7 @@ theorem dot_comm (a b : G3) : dot a b = dot b a := by simp only [dot, mul]; ring
 theorem dot_add_left (u w v : G3) : dot (add u w) v = dot u v + dot w v := by
   simp only [dot, mul, add]; ring
 
-/-- **Leaf:** the dot product on coordinate vectors is the Euclidean dot `a₁b₁ + a₂b₂ + a₃b₃`. Reuse
+/-- **Leaf:** the dot product on coordinate vectors is the Euclidean dot `a₁ * b₁ + a₂ * b₂ + a₃ * b₃`. Reuse
     this named lemma instead of re-deriving it inline. -/
 theorem dot_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
     dot (vec a1 a2 a3) (vec b1 b2 b3) = a1 * b1 + a2 * b2 + a3 * b3 := by
@@ -349,20 +349,20 @@ theorem dot_self_vec_eq_normSq_coord (a1 a2 a3 : ℝ) :
   rw [dot_vec, normSq_vec]; ring
 
 /-- **Leaf:** the wedge of two coordinate vectors is the plane bivector, in coordinates:
-    `a ∧ b = (a₁b₂−a₂b₁)e₁₂ + (a₁b₃−a₃b₁)e₁₃ + (a₂b₃−a₃b₂)e₂₃`. Reuse instead of re-deriving the literal
+    `a ∧ b = (a₁ * b₂−a₂ * b₁)e₁₂ + (a₁ * b₃−a₃ * b₁)e₁₃ + (a₂ * b₃−a₃ * b₂)e₂₃`. Reuse instead of re-deriving the literal
     with `simp only [wedge, vec]; ext <;> ring` inline. -/
 theorem wedge_vec_eq_biv (a1 a2 a3 b1 b2 b3 : ℝ) :
     wedge (vec a1 a2 a3) (vec b1 b2 b3)
       = bivector (a1 * b2 - a2 * b1) (a1 * b3 - a3 * b1) (a2 * b3 - a3 * b2) := by
   simp only [wedge, vec, bivector, zero]; ext <;> ring
 
-/-- **A vector's square is its squared magnitude:** `a a = |a|²·1` (`a∧a = 0`, so only the scalar
+/-- **A vector's square is its squared magnitude:** `a a = |a|² * 1` (`a∧a = 0`, so only the scalar
     survives). The `B B = |B|²` half of the blade-inverse identity. -/
 theorem mul_vec_self_coord (a1 a2 a3 : ℝ) :
     mul (vec a1 a2 a3) (vec a1 a2 a3) = smul (normSq (vec a1 a2 a3)) one := by
   rw [normSq_vec]; simp only [mul, one, smul, vec]; ext <;> ring
 
-/-- **Leaf:** `|a∧b|² = (a₁b₂−a₂b₁)² + (a₁b₃−a₃b₁)² + (a₂b₃−a₃b₂)²`. -/
+/-- **Leaf:** `|a∧b|² = (a₁ * b₂−a₂ * b₁)² + (a₁ * b₃−a₃ * b₁)² + (a₂ * b₃−a₃ * b₂)²`. -/
 theorem normSq_wedge_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
     normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3))
       = (a1 * b2 - a2 * b1) ^ 2 + (a1 * b3 - a3 * b1) ^ 2 + (a2 * b3 - a3 * b2) ^ 2 := by
@@ -411,7 +411,7 @@ theorem dot_self_vec_eq_normSq {a : G3} (ha : IsVector a) : dot a a = normSq a :
   simp only [dot, normSq, mul, reverse, ha12, ha13, ha23, ha123]
   ring
 
-/-- `a a = |a|²·1` for a vector `a`. -/
+/-- `a a = |a|² * 1` for a vector `a`. -/
 theorem mul_vec_self {a : G3} (ha : IsVector a) : mul a a = smul (normSq a) one := by
   obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
   simp only [normSq, mul, reverse, one, smul, has, ha12, ha13, ha23, ha123]
@@ -419,7 +419,7 @@ theorem mul_vec_self {a : G3} (ha : IsVector a) : mul a a = smul (normSq a) one 
 
 /-! ### Dot and wedge as the two parts of the geometric product (3D) -/
 
-/-- **The dot product is the symmetric part of the geometric product** (3D): `½(ab + ba) = (a·b)·1`
+/-- **The dot product is the symmetric part of the geometric product** (3D): `½(ab + ba) = (a·b) * 1`
     for vectors — the 3D twin of `G2.dot_is_sym_part`, in object form. -/
 theorem dot_is_sym_part {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     smul (1 / 2) (add (mul a b) (mul b a)) = smul (dot a b) one := by

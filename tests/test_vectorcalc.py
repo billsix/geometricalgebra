@@ -14,7 +14,7 @@
 """The cross product (``gacalc.vectorcalc.cross``) -- ``a × b = (a ∧ b) I₃⁻¹``.
 
 Pins the right-hand-rule **sign convention** (the task's "verify the sign" step:
-the existing ``dual`` is ``A I⁻¹`` and ``I₃⁻¹ = −I₃``, which should give the
+the existing ``dual`` is ``A * I⁻¹`` and ``I₃⁻¹ = −I₃``, which should give the
 standard orientation -- these tests are the proof), checks the coordinate
 formula symbolically and against ``numpy.cross`` numerically, gates the
 **scalar-triple-product identity** ``a · (b × c) = signed_volume(a, b, c)``,

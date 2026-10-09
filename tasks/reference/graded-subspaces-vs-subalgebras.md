@@ -72,7 +72,7 @@ the same, well-populated company as `Vector`/`Bivector`/`Trivector` — the norm
 
 | grade-set | gacalc type | subalgebra? | why |
 |---|---|---|---|
-| `{0}` | `Scalar` | **yes** | the base field, `s·s ∈ {0}` |
+| `{0}` | `Scalar` | **yes** | the base field, `s * s ∈ {0}` |
 | `{1}` | `Vector` | no | `v·v ∈ {0,2}` |
 | `{2}` | `Bivector` | no | `B·B ∈ {0,2}` |
 | `{3}` | `Trivector` | no | `T² ∈ {0}` |

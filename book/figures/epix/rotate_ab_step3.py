@@ -15,7 +15,7 @@
 # # rotate_ab_step3 — undo step 1, landing on $\vec{b}$'s direction
 #
 # Step 3: rotate back (the inverse of step 1). The image of $\vec{a}$ lands on
-# $\vec{b}$'s direction, with $\vec{a}$'s own length: $(|\vec{a}|/|\vec{b}|)\,\vec{b}$.
+# $\vec{b}$'s direction, with $\vec{a}$'s own length: $(|\vec{a}|/|\vec{b}|) * \vec{b}$.
 # The faint dashed arrow is $\vec{b}'$ (before undoing). Built with `epix`;
 # `render_epix_figures.py`. CC0.
 

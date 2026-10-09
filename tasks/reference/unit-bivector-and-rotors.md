@@ -21,10 +21,10 @@ plane they span, whose magnitude is the area of the parallelogram on `a, b`. Its
 `î = (a ∧ b) / |a ∧ b|` is the **unit bivector** of that plane, and it satisfies `î² = −1`. Two
 derivations (both worth a docstring line):
 
-1. **Orthonormal factoring.** Any Euclidean 2-blade factors as `B = |B| e₁e₂` with `e₁, e₂`
-   orthonormal (Gram–Schmidt on `a, b`). Then `B² = |B|² e₁e₂e₁e₂`; since orthogonal vectors
-   anticommute (`e₂e₁ = −e₁e₂`) and each squares to `+1` (Euclidean signature), `e₁e₂e₁e₂ =
-   −e₁e₁e₂e₂ = −1`. So `B² = −|B|²`, and the unit bivector `î = B/|B|` has `î² = −1`.
+1. **Orthonormal factoring.** Any Euclidean 2-blade factors as `B = |B| * e₁ * e₂` with `e₁, e₂`
+   orthonormal (Gram–Schmidt on `a, b`). Then `B² = |B|² * e₁ * e₂ * e₁ * e₂`; since orthogonal vectors
+   anticommute (`e₂ * e₁ = −e₁ * e₂`) and each squares to `+1` (Euclidean signature), `e₁ * e₂ * e₁ * e₂ =
+   −e₁ * e₁ * e₂ * e₂ = −1`. So `B² = −|B|²`, and the unit bivector `î = B/|B|` has `î² = −1`.
 2. **Grade formula.** For a grade-`r` blade, `A² = (−1)^{r(r−1)/2} |A|²` (this is already in
    `base.py`'s `exp` docstring). At `r = 2`, `(−1)^1 = −1` → `A² = −|A|²`. (Same formula: `r = 1`
    vectors → `+|A|²`; the 𝒢₃ pseudoscalar `r = 3` → `−|A|²`.)
@@ -78,21 +78,21 @@ graded types get the *extractor* — no collision, since they're siblings. `Gn` 
 A **rotor** `R` (even-grade, `R R̃ = 1`) rotates by angle θ in the plane of unit bivector `i` via
 the half-angle exponential:
 
-  `R = exp(−(θ/2) i) = cos(θ/2) − sin(θ/2) i` ,  and `v ↦ R v R̃` rotates `v` by θ (oriented a→b).
+  `R = exp(−(θ/2) i) = cos(θ/2) − sin(θ/2) * i` ,  and `v ↦ R * v * R̃` rotates `v` by θ (oriented a→b).
 
 This is exactly what `plane_rotation(a, b)(θ)` builds today.
 
 **Building the rotor from `i` directly — no series needed (William Emerison Six <billsix@gmail.com>, 2026-08-14; verified).** Once you
 have the unit bivector `i`, the rotor for angle θ is just a scalar plus `i` scaled by the
-half-angle sines: **`R = cos(θ/2) − sin(θ/2)·i`**. The one requirement is that `R` be a **unit**
-rotor (`R R̃ = 1`), and that is automatic because `cos² + sin² = 1`: with `R = c + s·i`,
-`R R̃ = (c + s·i)(c − s·i) = c² − s²·i² = c² + s² = 1`. **The `1/√2` example checks out:**
-`R = (1/√2) + (1/√2)·i` has scalar and bivector-coefficient both `1/√2`, so `c = s = 1/√2 ⇒
+half-angle sines: **`R = cos(θ/2) − sin(θ/2) * i`**. The one requirement is that `R` be a **unit**
+rotor (`R R̃ = 1`), and that is automatic because `cos²(θ) + sin²(θ) = 1`: with `R = c + s * i`,
+`R R̃ = (c + s * i)(c − s * i) = c² − s² * i² = c² + s² = 1`. **The `1/√2` example checks out:**
+`R = (1/√2) + (1/√2) * i` has scalar and bivector-coefficient both `1/√2`, so `c = s = 1/√2 ⇒
 θ/2 = 45° ⇒ θ = 90°` — a 90° rotor — and `c² + s² = ½ + ½ = 1`, unit. ✓ So the subtask-2 builder is
-literally: get `i`, pick θ, return `cos(θ/2) − sin(θ/2)·i`. (Sign/orientation: gacalc's
+literally: get `i`, pick θ, return `cos(θ/2) − sin(θ/2) * i`. (Sign/orientation: gacalc's
 `plane_rotation` uses the `−` form, `= exp(−(θ/2)·i)`, which turns `a→b` for positive θ; the `+`
 form first written by the maintainer is the same rotor family with the opposite orientation — mirror direction. Any
-scalar `c` and coefficient `s` with `c² + s² = 1` is a rotor (unit versor) rotating by `θ = 2·atan2(s, c)`.)
+scalar `c` and coefficient `s` with `c² + s² = 1` is a rotor (unit versor) rotating by `θ = 2 * atan2(s, c)`.)
 
 **A unit bivector is NOT a rotor** —
 the bivector is the plane (grade-2, `i²=−1`, angle-free); the rotor is even-grade and carries the
@@ -102,7 +102,7 @@ a rotor only at θ = π, a 180° turn.)
 ## 4. The domain of `exp` (the redo's open question)
 
 `exp` is well-defined when `A²` is scalar. The **scalar** and **bivector** (→ rotor) cases are the
-keepers. The **grade-1 vector case** (`A² = +|A|² > 0 → cosh|A| + sinh|A|·â`) is under review:
+keepers. The **grade-1 vector case** (`A² = +|A|² > 0 → cosh|A| + sinh|A| * â`) is under review:
 the cosh/sinh *formula* is standard, **but only for Minkowski boosts** (spacetime bivectors,
 `A²=+1` in a Lorentzian metric) — no standard text presents "`exp` of a *Euclidean vector*" as
 meaningful. gacalc's grade-1 branch applies the boost formula to a Euclidean vector only because it
@@ -115,7 +115,7 @@ subtask 3.)
 
 Priority is books **the maintainer owns**. Status: ✅ verified in this research pass · ⬜ needs the maintainer's copy.
 
-- **`R = exp(−(θ/2) i) = cos(θ/2) − sin(θ/2) i` (rotor as exp of a unit bivector):**
+- **`R = exp(−(θ/2) i) = cos(θ/2) − sin(θ/2) * i` (rotor as exp of a unit bivector):**
   - ✅ **Macdonald, *A Survey of GA & GC*** (free PDF, faculty.luther.edu/~macdonal): **Eq. (2.3)
     §2.2.1** and **Eq. (2.4) §2.3.2** — `R = e^{−iθ/2}`, `i` the unit bivector. *the maintainer owns Macdonald.*
     Check whether his **textbook *Linear and Geometric Algebra*** carries the same (the survey is the
@@ -140,10 +140,10 @@ Priority is books **the maintainer owns**. Status: ✅ verified in this research
 **When a citation is confirmed against the maintainer's copy, record author + title + section/equation here
 and in the relevant docstring, and flip its box to ✅.**
 
-## 6. Rotor vs versor, and why gacalc rotates with the *inverse* sandwich `R v R⁻¹` (not `R v R̃`)
+## 6. Rotor vs versor, and why gacalc rotates with the *inverse* sandwich `R * v * R⁻¹` (not `R * v * R̃`)
 
 > **This is the product-based route to a general rotation; it is not the only one.** The versor sandwich
-> `R v R⁻¹` here is a **general rotation defined from the geometric product** (a versor *is* a product),
+> `R * v * R⁻¹` here is a **general rotation defined from the geometric product** (a versor *is* a product),
 > so it presupposes the product — it is NOT a bootstrap of it. A **general rotation can also be defined
 > from project/reject** via reduction to standard position, which presupposes no product and is
 > non-circular (the bootstrap arc: 3 elementary plane rotations → project/reject → general rotation; see
@@ -160,31 +160,31 @@ only open point, and it is now fixed (below).
 
 For an even element `R` and a vector `v`:
 
-- **Reverse sandwich `v ↦ R v R̃`** — the standard textbook formula (`R̃` = reverse). It is a *pure
+- **Reverse sandwich `v ↦ R * v * R̃`** — the standard textbook formula (`R̃` = reverse). It is a *pure
   rotation* **only when `R` is a rotor, i.e. unit** (`R R̃ = 1`). For a general `R` it also *scales* by
-  `R R̃ = |R|²`:  `R v R̃ = |R|² · (R v R⁻¹)`.
-- **Inverse sandwich `v ↦ R v R⁻¹`** — the *versor conjugation*. Since `R⁻¹ = R̃ / (R R̃)`, we have
-  `R v R⁻¹ = (R v R̃) / |R|²` — the reverse sandwich with the `|R|²` scaling divided out. It is a pure
+  `R R̃ = |R|²`:  `R * v * R̃ = |R|² * (R * v * R⁻¹)`.
+- **Inverse sandwich `v ↦ R * v * R⁻¹`** — the *versor conjugation*. Since `R⁻¹ = R̃ / (R R̃)`, we have
+  `R * v * R⁻¹ = (R * v * R̃) / |R|²` — the reverse sandwich with the `|R|²` scaling divided out. It is a pure
   rotation for **any** invertible even versor `R`, unit or not, and is **scale-invariant**:
-  `(λR) v (λR)⁻¹ = R v R⁻¹` for `λ ≠ 0`, so the result depends only on `R`'s *direction*, never its
+  `(λR) v (λR)⁻¹ = R * v * R⁻¹` for `λ ≠ 0`, so the result depends only on `R`'s *direction*, never its
   magnitude.
 
 For a **unit** rotor the two coincide (`R⁻¹ = R̃`), so the inverse sandwich **generalizes** the
-textbook one rather than contradicting it. So the maintainer's proof is not wrong: `R v R⁻¹` is the
-right, more general formula; `R v R̃` is its special case at `|R| = 1`.
+textbook one rather than contradicting it. So the maintainer's proof is not wrong: `R * v * R⁻¹` is the
+right, more general formula; `R * v * R̃` is its special case at `|R| = 1`.
 
 ### What gacalc actually does — and it is correct
 
-- `MultiVectorBase.sandwich` (`base.py`) is `R x R⁻¹` (docstring: "Versor conjugation").
+- `MultiVectorBase.sandwich` (`base.py`) is `R * x * R⁻¹` (docstring: "Versor conjugation").
 - `versor_from_vectors(a,b)` (`base.py`) deliberately builds the **un-normalized** even versor
-  `R = |a||b| + b a` (scalar + bivector) and rotates via `R v R⁻¹`; its docstring already states that
-  `R v R̃` would scale by `|R|²` and that `R⁻¹ = R̃/|R|²` divides it out — a pure rotation with **no
+  `R = |a| * |b| + b a` (scalar + bivector) and rotates via `R * v * R⁻¹`; its docstring already states that
+  `R * v * R̃` would scale by `|R|²` and that `R⁻¹ = R̃/|R|²` divides it out — a pure rotation with **no
   normalization step**. That is a valid, deliberate design choice.
 - The **exp / `plane_rotation`** path (§3) is the *other* branch: it builds a *unit* rotor
-  `cos(θ/2) − sin(θ/2) i`, so there `R⁻¹ = R̃` and using `reverse` for the backward direction is a
+  `cos(θ/2) − sin(θ/2) * i`, so there `R⁻¹ = R̃` and using `reverse` for the backward direction is a
   sound optimization (`transforms.py`). So gacalc uses **both** conventions — unit-rotor +
   reverse on the exp path, un-normalized-versor + inverse on the from-vectors path — with the general
-  `sandwich` always using inverse. (§3's "`R R̃ = 1`, `v ↦ R v R̃`" wording describes the *unit* path;
+  `sandwich` always using inverse. (§3's "`R R̃ = 1`, `v ↦ R * v * R̃`" wording describes the *unit* path;
   it is not the definition the general `sandwich` uses. Worth reconciling if §3 is ever revised.)
 
 ### Terminology — decided: *versor* = even, any magnitude; *rotor* = unit versor
@@ -195,13 +195,13 @@ special case of an *even, unit* versor (`R R̃ = 1`). The maintainer's decision 
 Lean aligned 2026-10-05, `tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md`):
 
 - **versor** — even, *any* magnitude. Python: class `Versor`, `versor_from_vectors` (the un-normalized
-  `b·a + |a||b|`), `versor_rotation` (its inverse sandwich `R v R⁻¹`). Lean: `IsEvenVersor`,
+  `b * a + |a| * |b|`), `versor_rotation` (its inverse sandwich `R * v * R⁻¹`). Lean: `IsEvenVersor`,
   `versorFromVectors`, `sandwich`.
-- **rotor** — a *unit* versor, the object of the textbook reverse sandwich `R v R̃`. Python:
+- **rotor** — a *unit* versor, the object of the textbook reverse sandwich `R * v * R̃`. Python:
   `rotor_from_vectors` (= the versor normalized), `_unit_bivector_rotor_factory`'s `rotor_for`
-  (the half-angle `cos(θ/2) − sin(θ/2)·i`), `B.exp()`. Lean: `IsRotor`, `rotorFromVectors`, the 2D
+  (the half-angle `cos(θ/2) − sin(θ/2) * i`), `B.exp()`. Lean: `IsRotor`, `rotorFromVectors`, the 2D
   half-angle `Rotation2D.rotor θ`, `isRotor_expBivector*`.
-- **full-angle rotor** — the 2D-only one-sided teaching operator `cos θ + sin θ·e₁₂` (§8). Lean:
+- **full-angle rotor** — the 2D-only one-sided teaching operator `cos(θ) + sin(θ) * e₁₂` (§8). Lean:
   `Rotation2D.fullAngleRotor`; the book says "full-angle rotor".
 
 Both notions are kept side by side on purpose; the versor proofs were never replaced by the rotor ones.
@@ -209,7 +209,7 @@ Both notions are kept side by side on purpose; the versor proofs were never repl
 ### Suggested Lean statements (the sandwich / composition story — written; status 2026-10-05)
 
 Status: **done** in `proofs/GacalcProofs/` — (1) `sandwich_preserves_normSq`/`_dot` (`Sandwich.lean`); (2) scale-
-invariance in the normalized form, `Rotor.rotorSandwich_normalize` (`(R/|R|) v (R/|R|)~ = R v R⁻¹`); (3) `IsRotor`,
+invariance in the normalized form, `Rotor.rotorSandwich_normalize` (`(R/|R|) * v * (R/|R|)~ = R * v * R⁻¹`); (3) `IsRotor`,
 `inverse_eq_reverse_of_isRotor`, `Rotation2D.sandwich_rotor_eq_rot` (`sandwich (rotor θ) v = rot θ v`); (4)
 `sandwich_comp` (𝒢₃) and `Rotation2D.rotor_mul`. Plus the from-vectors link: `Rotor.rotorFromVectors_uvec`
 (`versorFromVectors (uvec α) (uvec β)` normalized IS `rotor (β − α)`) and the Lagrange closed form
@@ -220,7 +220,7 @@ forms:
 
 1. `sandwich R v := R * v * R⁻¹` is grade-preserving on vectors and **norm-preserving** (a rotation).
 2. **Scale-invariance:** `sandwich (λ • R) v = sandwich R v` for `λ ≠ 0` — magnitude is irrelevant.
-3. For the **unit** rotor `Rθ = cos(θ/2)·1 + sin(θ/2)·e₁₂`: prove `Rθ⁻¹ = R̃θ` (inverse = reverse when
+3. For the **unit** rotor `Rθ = cos(θ/2) * 1 + sin(θ/2) * e₁₂`: prove `Rθ⁻¹ = R̃θ` (inverse = reverse when
    unit) and `sandwich Rθ v = rot θ v` — ties the sandwich to `rot`/`rotor` already proved.
 4. **Composition:** `sandwich R₂ (sandwich R₁ v) = sandwich (R₂ * R₁) v`, and unit-rotor half-angles
    add (`Rθ₂ * Rθ₁ = R(θ₁+θ₂)`), so rotations compose by multiplying rotors.
@@ -232,9 +232,9 @@ This yields the general (inverse) result **and** the textbook (reverse, unit) sp
 - **Wikipedia, *Rotor (mathematics)*** — "a rotor is … the product of an even number of unit vectors
   and satisfies `R R̃ = 1`"; "the inverse of a [unit] rotor is its reverse." (Confirms rotor = unit.)
 - **Dorst, Fontijne & Mann, *GA for Computer Science* (2007), ch. on versors/operators** — the versor
-  sandwich `R x R⁻¹` (with grade involution for odd versors) as the general orthogonal-transform
+  sandwich `R * x * R⁻¹` (with grade involution for odd versors) as the general orthogonal-transform
   operator; rotors as the even, unit case. (Reference of record; the maintainer may not own it.)
-- **Hestenes, *GA Primer*, "Rotors and Rotations in the Euclidean Plane"** — unit rotors and `v ↦ R v R̃`.
+- **Hestenes, *GA Primer*, "Rotors and Rotations in the Euclidean Plane"** — unit rotors and `v ↦ R * v * R̃`.
 - **Definition of versor / "unity quasi-norm ⇒ rotor"** — general GA references (e.g. arXiv:1607.04767).
   URLs to be verified against the maintainer's own reading before promoting to docstrings (per §5's rule).
 
@@ -246,45 +246,45 @@ angle, the whole thing?" Yes, now — in Lean (`proofs/GacalcProofs/Rotor.lean`)
 (`tests/test_rotor_from_vectors.py`), without re-proving the projection-rotation story:
 
 1. **The bridge, for every even `R` (no hypothesis):**
-   `(R/|R|) v (R/|R|)~ = R v R̃ / |R|² = R v R⁻¹` — "the versor sandwich, divided by the magnitudes, is the
+   `(R/|R|) * v * (R/|R|)~ = R * v * R̃ / |R|² = R * v * R⁻¹` — "the versor sandwich, divided by the magnitudes, is the
    rotor sandwich". Lean `rotorSandwich_normalize`; the one `√` fact is `|R|² = normSq R` (`normSq` is a sum
    of squares in both grades). Python: `rotor_from_vectors(a, b) = versor_from_vectors(a, b).normalize()`.
 2. **So every versor theorem is a rotor theorem by one rewrite:** `rotorFromVectors a b` is a rotor
    (`isRotor_rotorFromVectors`), its reverse sandwich equals `projRotation` and `transforms.projection_rotation`
    (`rotorSandwich_rotorFromVectors_eq_projRotation`), carries `a` to `b` scaled to `|a|`
    (`…_carries_from_to`), and preserves dot/length (`rotorSandwich_preserves_*`).
-3. **Lagrange gives the magnitude in closed form:** with `R = b·a + |a||b| = (|a||b| + a·b) + b∧a`,
-   `|R|² = (|a||b| + a·b)² + |a∧b|²`, and Lagrange's identity (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) `(a·b)² + |a∧b|² = |a|²|b|²` collapses it to
+3. **Lagrange gives the magnitude in closed form:** with `R = b * a + |a| * |b| = (|a| * |b| + a·b) + b∧a`,
+   `|R|² = (|a| * |b| + a·b)² + |a∧b|²`, and Lagrange's identity (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) `(a·b)² + |a∧b|² = |a|² * |b|²` collapses it to
 
-       |R|² = 2 |a||b| ( |a||b| + a·b )
+       |R|² = 2 * |a| * |b| * ( |a| * |b| + a·b )
 
    (`normSq_versorFromVectors`). So the versor is zero exactly when `a`, `b` are antiparallel or one is zero
    (`normSq_versorFromVectors_ne_zero`) — the geometric reading of the chain's `normSq R ≠ 0` guard.
 4. **The half angle appears:** for unit vectors at angle θ, `|R|² = 2 + 2cos θ = 4cos²(θ/2)`, and the normalized
-   versor is exactly the half-angle rotor `cos(θ/2) − sin(θ/2)·e₁₂` that `plane_rotation` builds. Lean (2D):
+   versor is exactly the half-angle rotor `cos(θ/2) − sin(θ/2) * e₁₂` that `plane_rotation` builds. Lean (2D):
    `versorFromVectors (uvec α) (uvec β) = 2cos(θ/2) • rotor θ` and `rotorFromVectors_uvec = rotor (β − α)` for
    `cos(θ/2) > 0`, hence `rotorSandwich_rotorFromVectors_uvec : R̂ v R̂~ = rot (β − α) v`.
 
 **Why the earlier Python attempt stalled, and the fix.** sympy cannot simplify `sqrt(|R|²)` from the raw
 polynomial; equating a normalized coefficient to `cos(θ/2)` needs step 3 and the half-angle identity, neither of
 which sympy discovers. The working proof parametrizes by the *half* angle — `(c, s) = (cos(θ/2), sin(θ/2))` as
-positive symbols, `b = (2c² − 1)e₁ + 2sc·e₂` — and hands sympy the one relation `s² → 1 − c²`; then `|b| → 1`,
-`|R|² → 4c²`, `sqrt → 2c`, and the rotor simplifies to `c − s·e₁₂` (`test_rotor_from_unit_vectors_is_the_half_angle_rotor_symbolic`).
+positive symbols, `b = (2c² − 1) * e₁ + 2sc * e₂` — and hands sympy the one relation `s² → 1 − c²`; then `|b| → 1`,
+`|R|² → 4c²`, `sqrt → 2c`, and the rotor simplifies to `c − s * e₁₂` (`test_rotor_from_unit_vectors_is_the_half_angle_rotor_symbolic`).
 See `tasks/reference/symbolic-equality.md` "Square roots".
 
 5. **The 3D angle theorem (`PlaneRotation3D.lean`, 2026-10-05).** For a unit bivector `i` and the half-angle
-   rotor `R = cos(θ/2) − sin(θ/2)·i` that `plane_rotation`/`bivector_rotation` build, `R v R̃ = v⊥ + cos θ·v∥ +
-   sin θ·(v ⌋ i)` for every vector `v` (`rotorSandwich_planeRotor`): the perpendicular part is fixed and the
+   rotor `R = cos(θ/2) − sin(θ/2) * i` that `plane_rotation`/`bivector_rotation` build, `R * v * R̃ = v⊥ + cos(θ) * v∥ +
+   sin(θ) * (v ⌋ i)` for every vector `v` (`rotorSandwich_planeRotor`): the perpendicular part is fixed and the
    in-plane part turns by the full angle θ, orientation included — §3's "rotation by θ in the plane of `i`" is
    now machine-checked in 𝒢₃ for a general plane, not only `e₁₂`.
 
 ## 8. The 2D teaching sequence: full-angle one-sided first, half-angle sandwich second (2026-10-05)
 
-The book introduces rotation in 2D as a **one-sided, full-angle** product, `v ↦ v · (cos θ + sin θ·e₁₂)`
+The book introduces rotation in 2D as a **one-sided, full-angle** product, `v ↦ v · (cos(θ) + sin(θ) * e₁₂)`
 (`book/docs/geometric-product.rst`; Lean `Rotation2D.fullAngleRotor`, `vec_mul_fullAngleRotor`). This is
 deliberate pedagogy (the maintainer, 2026-10-05): in two dimensions nothing lies outside the plane of
 rotation, so no sandwich is needed and the angle is the whole angle — the intuitive first encounter. The
-**half-angle sandwich** `R v R̃` with `R = cos(θ/2) − sin(θ/2)·e₁₂` (Lean `Rotation2D.rotor`,
+**half-angle sandwich** `R * v * R̃` with `R = cos(θ/2) − sin(θ/2) * e₁₂` (Lean `Rotation2D.rotor`,
 `sandwich_rotor`) is then introduced and *proven equal in effect* (`sandwich_rotor_eq_vec_mul_fullAngleRotor`);
 it is the form that survives into 3D, where a vector has a component perpendicular to the plane that a
 one-sided product would send to a trivector. Both objects stay; only the names say which is which. The

@@ -73,7 +73,7 @@ class Gn(MultiVectorBase):
 
     𝒢ₙ has 2ⁿ basis blades.  This is the general, dimension-agnostic
     representation, storing a dict from blade (a tuple of basis-vector indices,
-    e.g. ``(1, 2)`` ≙ e₁e₂) to coefficient.  G and G will be specialized,
+    e.g. ``(1, 2)`` ≙ e₁ * e₂) to coefficient.  G and G will be specialized,
     faster representations of 𝒢₂ and 𝒢₃.
 
     Terminology: 𝒢ₙ denotes the *algebra*; an instance of this class is an
@@ -172,7 +172,7 @@ class Gn(MultiVectorBase):
         return self.coefficient_of_blade
 
     def _geometric_product(self, rhs: MultiVectorBase) -> typing.Self:
-        """Reference geometric product  A B  for ``Gn``.
+        """Reference geometric product  A * B  for ``Gn``.
 
         For each pair of blades it concatenates their index sequences and reduces
         the result to a signed canonical blade (``decrease_grade``: adjacent equal

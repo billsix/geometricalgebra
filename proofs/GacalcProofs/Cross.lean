@@ -23,7 +23,7 @@ namespace GacalcProofs.G3
 noncomputable def cross (a b : G3) : G3 := dual (wedge a b)
 
 /-- **The cross-product coordinate formula:**
-    `a × b = (a₂b₃−a₃b₂, a₃b₁−a₁b₃, a₁b₂−a₂b₁)` (right-handed). -/
+    `a × b = (a₂ * b₃−a₃ * b₂, a₃ * b₁−a₁ * b₃, a₁ * b₂−a₂ * b₁)` (right-handed). -/
 theorem cross_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
     cross (vec a1 a2 a3) (vec b1 b2 b3)
       = vec (a2 * b3 - a3 * b2) (a3 * b1 - a1 * b3) (a1 * b2 - a2 * b1) := by

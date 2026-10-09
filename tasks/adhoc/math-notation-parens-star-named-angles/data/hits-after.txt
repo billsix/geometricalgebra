@@ -1,0 +1,614 @@
+1	CLAUDE.md:399:  not `cos θ` / `\cos\theta`. A reader from precalculus reads `cos θ` as a product.
+1	CLAUDE.md:409:Exempt, because the form is dictated from outside: Lean *code* (`Real.cos θ` is the language's
+1	proofs/GacalcProofs/Exp.lean:22:  add (smul (Real.cos θ) one) (smul (Real.sin θ) e_12)
+1	proofs/GacalcProofs/Exp.lean:26:    expBivector θ = evenVersor (Real.cos θ) (Real.sin θ) := by
+1	proofs/GacalcProofs/Exp.lean:45:  add (smul (Real.cos θ) one) (smul (Real.sin θ) e_12)
+1	proofs/GacalcProofs/Exp.lean:49:    expBivector12 θ = evenVersor (Real.cos θ) (Real.sin θ) 0 0 := by
+1	proofs/GacalcProofs/Exp.lean:65:  add (smul (Real.cos (Real.sqrt (p ^ 2 + q ^ 2 + r ^ 2))) one)
+1	proofs/GacalcProofs/Exp.lean:66:      (smul (Real.sin (Real.sqrt (p ^ 2 + q ^ 2 + r ^ 2)) / Real.sqrt (p ^ 2 + q ^ 2 + r ^ 2))
+1	proofs/GacalcProofs/Lagrange.lean:9:    book uses to derive sin/cos (`notebooks/displayg2.py`). See
+1	proofs/GacalcProofs/PlaneRotation3D.lean:38:  add (smul (cos (θ / 2)) one) (smul (-(sin (θ / 2))) i)
+1	proofs/GacalcProofs/PlaneRotation3D.lean:61:  linear_combination Real.cos_sq_add_sin_sq (θ / 2) + sin (θ / 2) ^ 2 * hpqr
+1	proofs/GacalcProofs/PlaneRotation3D.lean:79:      = add (reject i v) (add (smul (cos θ) (project_onto i v)) (smul (sin θ) (inner_vb v i))) := by
+1	proofs/GacalcProofs/PlaneRotation3D.lean:80:  have hc : cos θ = cos (θ / 2) ^ 2 - sin (θ / 2) ^ 2 := by
+1	proofs/GacalcProofs/PlaneRotation3D.lean:84:  have hs : sin θ = 2 * sin (θ / 2) * cos (θ / 2) := by
+1	proofs/GacalcProofs/PlaneRotation3D.lean:88:  have hcs : cos (θ / 2) ^ 2 + sin (θ / 2) ^ 2 = 1 := Real.cos_sq_add_sin_sq (θ / 2)
+1	proofs/GacalcProofs/PlaneRotation3D.lean:99:        + (v.c1 * (sin (θ / 2) - 1) * (sin (θ / 2) + 1)) * hpqr
+1	proofs/GacalcProofs/PlaneRotation3D.lean:102:        + (v.c2 * (sin (θ / 2) - 1) * (sin (θ / 2) + 1)) * hpqr
+1	proofs/GacalcProofs/PlaneRotation3D.lean:105:        + (v.c3 * (sin (θ / 2) - 1) * (sin (θ / 2) + 1)) * hpqr
+1	proofs/GacalcProofs/PlaneRotation3D.lean:117:    cos_between (rotorSandwich (planeRotor θ i) v) v = cos θ := by
+1	proofs/GacalcProofs/PlaneRotation3D.lean:141:  have hcs : cos (θ / 2) ^ 2 + sin (θ / 2) ^ 2 = 1 := Real.cos_sq_add_sin_sq (θ / 2)
+1	proofs/GacalcProofs/PlaneRotation3D.lean:147:  · linear_combination (k * i.c23) * hcs + (k * i.c23 * sin (θ / 2) ^ 2) * hpqr
+1	proofs/GacalcProofs/PlaneRotation3D.lean:148:  · linear_combination (-(k * i.c13)) * hcs + (-(k * i.c13) * sin (θ / 2) ^ 2) * hpqr
+1	proofs/GacalcProofs/PlaneRotation3D.lean:149:  · linear_combination (k * i.c12) * hcs + (k * i.c12 * sin (θ / 2) ^ 2) * hpqr
+1	proofs/GacalcProofs/Rotation2D.lean:57:  G2.vec (v.c1 * cos θ - v.c2 * sin θ) (v.c1 * sin θ + v.c2 * cos θ)
+1	proofs/GacalcProofs/Rotation2D.lean:62:    rot θ (G2.vec x y) = G2.vec (x * cos θ - y * sin θ) (x * sin θ + y * cos θ) := rfl
+1	proofs/GacalcProofs/Rotation2D.lean:86:noncomputable def fullAngleRotor (θ : ℝ) : G2 := G2.add (G2.smul (cos θ) G2.one) (G2.smul (sin θ) G2.e_12)
+1	proofs/GacalcProofs/Rotation2D.lean:98:noncomputable def uvec (α : ℝ) : G2 := G2.add (G2.smul (cos α) G2.e_1) (G2.smul (sin α) G2.e_2)
+1	proofs/GacalcProofs/Rotation2D.lean:106:theorem uvec_eq_vec (α : ℝ) : uvec α = G2.vec (cos α) (sin α) := by
+1	proofs/GacalcProofs/Rotation2D.lean:119:theorem uvec_dot (α β : ℝ) : (G2.mul (uvec α) (uvec β)).s = cos (β - α) := by
+1	proofs/GacalcProofs/Rotation2D.lean:124:theorem uvec_wedge (α β : ℝ) : (G2.mul (uvec α) (uvec β)).c12 = sin (β - α) := by
+1	proofs/GacalcProofs/Rotation2D.lean:136:noncomputable def polar (r φ : ℝ) : G2 := G2.vec (r * cos φ) (r * sin φ)
+1	proofs/GacalcProofs/Rotation2D.lean:191:  G2.add (G2.smul (cos (θ / 2)) G2.one) (G2.smul (-(sin (θ / 2))) G2.e_12)
+1	proofs/GacalcProofs/Rotation2D.lean:218:  have hc : cos θ = cos (θ / 2) ^ 2 - sin (θ / 2) ^ 2 := by
+1	proofs/GacalcProofs/Rotation2D.lean:222:  have hs : sin θ = 2 * sin (θ / 2) * cos (θ / 2) := by
+1	proofs/GacalcProofs/Rotor.lean:311:    G2.versorFromVectors (uvec α) (uvec β) = G2.smul (2 * cos ((β - α) / 2)) (rotor (β - α)) := by
+1	proofs/GacalcProofs/Rotor.lean:312:  have hc : cos (β - α) = 2 * cos ((β - α) / 2) ^ 2 - 1 := by
+1	proofs/GacalcProofs/Rotor.lean:316:  have hs : sin (β - α) = 2 * sin ((β - α) / 2) * cos ((β - α) / 2) := by
+1	proofs/GacalcProofs/Rotor.lean:327:theorem rotorFromVectors_uvec (α β : ℝ) (hc : 0 < cos ((β - α) / 2)) :
+1	proofs/GacalcProofs/Rotor.lean:329:  have hpos : (0 : ℝ) < 2 * cos ((β - α) / 2) := by linarith
+1	proofs/GacalcProofs/Rotor.lean:330:  have hm : G2.magnitude (G2.smul (2 * cos ((β - α) / 2)) (rotor (β - α)))
+1	proofs/GacalcProofs/Rotor.lean:331:      = 2 * cos ((β - α) / 2) := by
+1	proofs/GacalcProofs/Rotor.lean:340:theorem rotorSandwich_rotorFromVectors_uvec (α β : ℝ) (hc : 0 < cos ((β - α) / 2)) {v : G2}
+1	proofs/GacalcProofs/TrigEquiv.lean:34:    G2.cos_between (uvec α) (uvec β) = cos (β - α) := by
+1	proofs/GacalcProofs/TrigEquiv.lean:47:    signed_sin_between (uvec α) (uvec β) = sin (β - α) := by
+1	proofs/GacalcProofs/TrigEquiv.lean:76:    G2.sin_between (uvec α) (uvec β) = |sin (β - α)| := by
+1	tasks/reference/book-outline.md:119:  page, figure label and notebook: `\cos(\theta)` never `\cos\theta`; an explicit `*` on every
+1	tasks/reference/unit-bivector-and-rotors.md:33:exponential series splits into cos/sin (§3). This is why the 2D geometric algebra "secretly
+3	CLAUDE.md:407:  `sin = y/r`, `(cos = c, sin = s)`, `cos = 0`.
+3	tasks/reference/book-outline.md:122:  the code; and never an unnamed angle (`\sin(\theta) = a_2/|a|`, not `\sin = a_2/|a|`).
+2	CLAUDE.md:162:- `*` geometric product · `^` wedge (outer) product · `@` composition of `InvertibleFunction`s
+2	CLAUDE.md:165:- `<` left contraction (`a.left_contraction(b)`) · `>` right contraction (`a.right_contraction(b)`)
+2	CLAUDE.md:168:- `abs(mv)` → magnitude · inverse via `.inverse()` · `A / B` quotient (`= A * B.inverse()`;
+2	CLAUDE.md:231:  for `f(x) = m·x + b`; do **not** "improve" them to `offset`/`factor`, and call them by keyword
+2	README.md:99:type(a * b)  # Versor     (a·b scalar  +  a∧b bivector)
+2	README.md:174:scalar triple product need no new names: dot is `scalar_product`, and `a · (b × c)` is
+2	book/docs/blade-square-sign.rst:57:Write :math:`I_r = e_1 * e_2 * \cdots * e_r` for the product of the first :math:`r` basis
+2	book/docs/blade-square-sign.rst:150::math:`(r-1) + (r-2) + \cdots + 1 + 0`, and that sum is the number of ways to pick two of
+2	book/docs/blade-square-sign.rst:175:Multiplying those together stacks up the exponents :math:`(r-1) + (r-2) + \cdots + 0`,
+2	book/docs/blade-square-sign.rst:182:   directions back-to-front, :math:`\tilde{I}_r = e_r * \cdots * e_1`; untangling that ordering
+2	book/docs/geometric-product.rst:71::math:`12 \cdot 6^{-1} \cdot 5 = 10`, and the fraction :math:`5/6` never appears (see
+2	book/docs/notebooks/levels-of-abstraction.py:77:# ## The fundamental identity: `ab = a·b + a∧b`
+2	book/docs/notebooks/levels-of-abstraction.py:114:# - the signed **`sine`**, 𝒢₂ only — `(a∧b)·e₁₂ / (|a| * |b|)`, whose sign is the
+2	book/docs/notebooks/one-dimension.py:10:# # One Dimension: m·x + b — calculations
+2	book/docs/one-dimension.rst:1:One Dimension: m·x + b
+2	book/figures/epix/_projection_scene.py:29:    ``((a·b)/(b·b)) b``, i.e. the head of the projection vector."""
+2	notebooks/displayg2.py:146:# $$ ab = a\cdot b + a\wedge b $$
+2	notebooks/displayg2.py:479:# together with the definition of the dot product $a\cdot b = |a| * |b| * \cos(\theta)$.
+2	notebooks/displayg2.py:500:# into $(a\cdot b)^2 + |a\wedge b|^2$ gives
+2	notebooks/displayg2.py:502:# $$|a|^2 * |b|^2 - (a\cdot b)^2 = |a\wedge b|^2 .$$
+2	notebooks/displayg2.py:525:# $\cos(\theta) = a\cdot b / (|a| * |b|)$ and $\sin(\theta) = \sqrt{1-\cos^2(\theta)}\ge 0$
+2	notebooks/displayg2.py:528:# $$|a| * |b| * \sin(\theta) = \sqrt{|a|^2 * |b|^2 - (a\cdot b)^2}.$$
+2	notebooks/displayg2.py:549:# $a b = a\cdot b + a\wedge b$ splits into orthogonal grades, so
+2	notebooks/displayg2.py:551:# $$|ab|^2 = (a\cdot b)^2 + |a\wedge b|^2
+2	notebooks/displayg2.py:627:# $$ a_\parallel\, b = a\cdot b \qquad\qquad a_\perp\, b = a\wedge b $$
+2	notebooks/displayg2.py:707:# geometric product $ab = a\cdot b + a\wedge b$: the parallel/perpendicular
+2	notebooks/displayg3.py:135:# $$ ab = a\cdot b + a\wedge b $$
+2	notebooks/displayg3.py:347:# $$|a|^2 * |b|^2 - (a\cdot b)^2
+2	notebooks/displayg3.py:386:# $\cos(\theta) = a\cdot b/(|a| * |b|)$ and $\sin(\theta) = \sqrt{1-\cos^2(\theta)}\ge 0$,
+2	notebooks/displayg3.py:404:# **Versor capstone.** As in 𝒢₂, $ab = a\cdot b + a\wedge b$ splits into
+2	notebooks/displayg3.py:405:# orthogonal grades, so $|ab|^2 = (a\cdot b)^2 + |a\wedge b|^2 = |a|^2 * |b|^2$ and
+2	notebooks/displaygraded.py:96:# $$ ab = a\cdot b + a\wedge b $$
+2	notebooks/displaygraded.py:170:# = `|from| * |to| + to·from` and sandwiches: `R * v * R⁻¹`. They give the **same**
+2	notebooks/displaygraded.py:266:# B * B.dual() stores (cos^2 t + sin^2 t)·e_123 but displays as the trivector e_123
+2	notebooks/displaygraded.py:276:# the full `g3.G`). It is a graded *subspace*, **not** a subalgebra: odd·odd = even,
+2	notebooks/displayvectorcalc.py:99:# The **dot product** is `scalar_product` (`a · b = ⟨a b⟩`), and the **scalar
+2	notebooks/displayvectorcalc.py:100:# triple product** `a · (b × c)` is `measure.signed_volume(a, b, c)` — the 3-D
+2	proofs/GacalcProofs/AlgebraLaws.lean:10:    fact that **orthogonal vectors anticommute** (`u·v = 0 ⟹ u v = −(v u)`).
+2	proofs/GacalcProofs/AlgebraLaws.lean:44:/-- Scalar multiples compose: `k • (m • a) = (k·m) • a`. -/
+2	proofs/GacalcProofs/AlgebraLaws.lean:51:/-- **Orthogonal vectors anticommute:** if `u·v = 0` (here `u₁ * v₁ + u₂ * v₂ = 0`) then `u v = −(v u)`.
+2	proofs/GacalcProofs/AlgebraLaws.lean:57:  · linear_combination 2 * h
+2	proofs/GacalcProofs/AlgebraLaws.lean:58:  · ring
+2	proofs/GacalcProofs/AlgebraLaws.lean:59:  · ring
+2	proofs/GacalcProofs/AlgebraLaws.lean:60:  · ring
+2	proofs/GacalcProofs/AlgebraLaws.lean:100:/-- Scalar multiples compose: `k • (m • a) = (k·m) • a`. -/
+2	proofs/GacalcProofs/AlgebraLaws.lean:107:/-- **Orthogonal vectors anticommute:** if `a·b = 0` then `a b = −(b a)`. A corollary of
+2	proofs/GacalcProofs/Contractions.lean:39:    with a vector `b` keeps the vector: `α ⌋ b = α·b` (grade `1−0 = 1`). The Hestenes dot
+2	proofs/GacalcProofs/Cross.lean:12:      * the **scalar triple product = signed volume**: `a · (b × c)` equals the pseudoscalar
+2	proofs/GacalcProofs/Cross.lean:42:/-- **The cross product is perpendicular to its left factor:** `(a × b) · a = 0`, for vectors. -/
+2	proofs/GacalcProofs/Cross.lean:51:/-- **The cross product is perpendicular to its right factor:** `(a × b) · b = 0`, for vectors. -/
+2	proofs/GacalcProofs/Cross.lean:61:    `(x, y, z)* = −z·e₁₂ + y·e₁₃ − x·e₂₃` (grade 2; its scalar, vector and pseudoscalar parts all
+2	proofs/GacalcProofs/Cross.lean:71:/-- **The scalar triple product equals the signed volume:** `a · (b × c) = signedVolume a b c`.
+2	proofs/GacalcProofs/CrossStandardPosition.lean:100:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:101:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:102:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:103:  · linear_combination (a1 * b2 - a2 * b1) * hcs
+2	proofs/GacalcProofs/CrossStandardPosition.lean:104:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:105:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:106:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:107:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:115:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:116:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:117:  · linear_combination (a3 * b1 - a1 * b3) * hcs
+2	proofs/GacalcProofs/CrossStandardPosition.lean:118:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:119:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:120:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:121:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:122:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:130:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:131:  · linear_combination (a2 * b3 - a3 * b2) * hcs
+2	proofs/GacalcProofs/CrossStandardPosition.lean:132:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:133:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:134:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:135:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:136:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:137:  · ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:148:  · rfl
+2	proofs/GacalcProofs/CrossStandardPosition.lean:149:  · rfl
+2	proofs/GacalcProofs/CrossStandardPosition.lean:150:  · field_simp; linear_combination -hk2
+2	proofs/GacalcProofs/CrossStandardPosition.lean:151:  · field_simp; ring
+2	proofs/GacalcProofs/CrossStandardPosition.lean:152:  · rfl
+2	proofs/GacalcProofs/CrossStandardPosition.lean:153:  · rfl
+2	proofs/GacalcProofs/CrossStandardPosition.lean:154:  · rfl
+2	proofs/GacalcProofs/CrossStandardPosition.lean:155:  · rfl
+2	proofs/GacalcProofs/CrossStandardPosition.lean:211:/-- **Cross product in the reduced frame:** `a × b = (0,0,m·b₂)` — a pure `e₃` vector, `a`'s
+2	proofs/GacalcProofs/Exp.lean:15:    bivector `B = p·e₁₂ + q·e₁₃ + r·e₂₃` (every 𝒢₃ bivector is simple): a unit versor, `normSq = 1`. -/
+2	proofs/GacalcProofs/Exp.lean:61:/-- `exp B` for a **general** nonzero 𝒢₃ bivector `B = p·e₁₂ + q·e₁₃ + r·e₂₃`, by the closed form
+2	proofs/GacalcProofs/Exp.lean:62:    `cos(|B|) * 1 + sin(|B|) * B̂` with `B̂ = B/|B|` and `|B| = √(p²+q²+r²)` — i.e. `cos(|B|) * 1 + (sin(|B|)/|B|)·B`.
+2	proofs/GacalcProofs/G1.lean:12:        product of vectors is pure scalar, `u v = u·v`;
+2	proofs/GacalcProofs/G1.lean:44:/-- A vector `x·e₁`. -/
+2	proofs/GacalcProofs/G1.lean:63:theorem e_1_sq : mul e_1 e_1 = one := by simp only [mul, e_1, one]; ext <;> ring
+2	proofs/GacalcProofs/G1.lean:85:/-- The fundamental identity `u v = u·v + u∧v`, degenerate: the wedge term is `0`. -/
+2	proofs/GacalcProofs/G1.lean:101:  · field_simp; ring
+2	proofs/GacalcProofs/G1.lean:102:  · ring
+2	proofs/GacalcProofs/G2.lean:9:      * for vectors u, v:  u v = (u·v) + (u∧v) * e₁ * e₂,
+2	proofs/GacalcProofs/G2.lean:101:    `x·e₁ + y·e₂` (`vec_eq_smul`). -/
+2	proofs/GacalcProofs/G2.lean:140:/-- A vector is `x·e₁ + y·e₂`. -/
+2	proofs/GacalcProofs/G2.lean:147:theorem e_1_sq : mul e_1 e_1 = one := by simp only [mul, e_1, one]; ext <;> ring
+2	proofs/GacalcProofs/G2.lean:150:theorem e_2_sq : mul e_2 e_2 = one := by simp only [mul, e_2, one]; ext <;> ring
+2	proofs/GacalcProofs/G2.lean:153:theorem e_1_mul_e_2 : mul e_1 e_2 = e_12 := by simp only [mul, e_1, e_2, e_12]; ext <;> ring
+2	proofs/GacalcProofs/G2.lean:156:theorem e_2_mul_e_1 : mul e_2 e_1 = neg e_12 := by simp only [mul, e_2, e_1, e_12, neg]; ext <;> ring
+2	proofs/GacalcProofs/G2.lean:159:theorem e_12_sq : mul e_12 e_12 = neg one := by simp only [mul, e_12, neg, one]; ext <;> ring
+2	proofs/GacalcProofs/G2.lean:164:    (wedge) part: u v = (u·v) + (u∧v) * e₁ * e₂. -/
+2	proofs/GacalcProofs/G2.lean:220:/-- I₂ · I₂⁻¹ = 1, confirming `I_inv` is the inverse of the pseudoscalar `I`. -/
+2	proofs/GacalcProofs/G2.lean:224:/-- The dual `A* = A · I₂⁻¹` (grade r ↦ grade 2−r), matching gacalc's `dual` (base.py). -/
+2	proofs/GacalcProofs/G3.lean:123:theorem e_1_sq : mul e_1 e_1 = one := by simp only [mul, e_1, one]; ext <;> ring
+2	proofs/GacalcProofs/G3.lean:124:theorem e_2_sq : mul e_2 e_2 = one := by simp only [mul, e_2, one]; ext <;> ring
+2	proofs/GacalcProofs/G3.lean:125:theorem e_3_sq : mul e_3 e_3 = one := by simp only [mul, e_3, one]; ext <;> ring
+2	proofs/GacalcProofs/G3.lean:128:theorem e_1_mul_e_2 : mul e_1 e_2 = e_12 := by simp only [mul, e_1, e_2, e_12]; ext <;> ring
+2	proofs/GacalcProofs/G3.lean:129:theorem e_1_mul_e_3 : mul e_1 e_3 = e_13 := by simp only [mul, e_1, e_3, e_13]; ext <;> ring
+2	proofs/GacalcProofs/G3.lean:130:theorem e_2_mul_e_3 : mul e_2 e_3 = e_23 := by simp only [mul, e_2, e_3, e_23]; ext <;> ring
+2	proofs/GacalcProofs/G3.lean:133:theorem e_2_mul_e_1 : mul e_2 e_1 = neg e_12 := by
+2	proofs/GacalcProofs/G3.lean:137:theorem e_12_mul_e_3 : mul e_12 e_3 = e_123 := by
+2	proofs/GacalcProofs/G3.lean:152:/-- A **bivector** `p·e₁₂ + q·e₁₃ + r·e₂₃` (grade 2), naming just the three bivector coefficients on
+2	proofs/GacalcProofs/G3.lean:156:/-- A **trivector** (pseudoscalar) `t·e₁₂₃` (grade 3), in place of `⟨0,0,0,0,0,0,0,t⟩`. -/
+2	proofs/GacalcProofs/G3.lean:202:/-- **The fundamental identity `a b = a·b + a∧b` for vectors** (Hestenes' defining relation):
+2	proofs/GacalcProofs/G3.lean:203:    the geometric product of two vectors splits into its scalar (inner) part `a·b` and its
+2	proofs/GacalcProofs/G3.lean:211:/-- **Orthogonal vectors' geometric product is their wedge:** for vectors with `a · b = 0`,
+2	proofs/GacalcProofs/G3.lean:233:/-- **The fundamental identity `a b = a·b + a∧b`, for arbitrary vectors** (Hestenes' defining relation,
+2	proofs/GacalcProofs/G3.lean:235:    scalar (inner) part `a·b` and its bivector (outer) part `a∧b`. The master rewrite that turns a
+2	proofs/GacalcProofs/G3.lean:244:/-- **Orthogonal vectors' geometric product is their wedge** (arbitrary vectors): `a·b = 0 ⟹ a b = a∧b`.
+2	proofs/GacalcProofs/G3.lean:303:/-- **The scalar product is symmetric:** `a·b = b·a` (the scalar part of a product is symmetric). -/
+2	proofs/GacalcProofs/G3.lean:343:/-- **Leaf — self-dot IS the squared magnitude, on a vector:** `a·a = |a|²`. The formal statement of
+2	proofs/GacalcProofs/G3.lean:392:/-- I₃ · I₃⁻¹ = 1. -/
+2	proofs/GacalcProofs/G3.lean:396:/-- The dual `A* = A · I₃⁻¹` (grade r ↦ grade 3−r), matching gacalc's `dual`
+2	proofs/GacalcProofs/G3.lean:408:/-- `a · a = |a|²` for a vector `a`. -/
+2	proofs/GacalcProofs/G3.lean:422:/-- **The dot product is the symmetric part of the geometric product** (3D): `½(ab + ba) = (a·b)·1`
+2	proofs/GacalcProofs/Lagrange.lean:5:    ‖a‖²‖b‖² = (a·b)² + ‖a∧b‖²   (equivalently ‖a∧b‖² = ‖a‖²‖b‖² − (a·b)²).
+2	proofs/GacalcProofs/Measures.lean:28:/-- **Lagrange form of the area:** `|a∧b|² = |a|² * |b|² − (a·b)²` (rearranged `lagrange_property`). -/
+2	proofs/GacalcProofs/PlaneRotation3D.lean:96:  · ring
+2	proofs/GacalcProofs/PlaneRotation3D.lean:97:  · linear_combination
+2	proofs/GacalcProofs/PlaneRotation3D.lean:100:  · linear_combination
+2	proofs/GacalcProofs/PlaneRotation3D.lean:103:  · linear_combination
+2	proofs/GacalcProofs/PlaneRotation3D.lean:106:  · ring
+2	proofs/GacalcProofs/PlaneRotation3D.lean:107:  · ring
+2	proofs/GacalcProofs/PlaneRotation3D.lean:108:  · ring
+2	proofs/GacalcProofs/PlaneRotation3D.lean:109:  · ring
+2	proofs/GacalcProofs/PlaneRotation3D.lean:113:    leaf: `v⊥ = 0` and `v∥ = v`, the sandwich is an isometry (`|R * v * R̃| = |v|`), and `(v ⌋ i) · v = 0`
+2	proofs/GacalcProofs/PlaneRotation3D.lean:146:  · ring
+2	proofs/GacalcProofs/PlaneRotation3D.lean:147:  · linear_combination (k * i.c23) * hcs + (k * i.c23 * sin (θ / 2) ^ 2) * hpqr
+2	proofs/GacalcProofs/PlaneRotation3D.lean:148:  · linear_combination (-(k * i.c13)) * hcs + (-(k * i.c13) * sin (θ / 2) ^ 2) * hpqr
+2	proofs/GacalcProofs/PlaneRotation3D.lean:149:  · linear_combination (k * i.c12) * hcs + (k * i.c12 * sin (θ / 2) ^ 2) * hpqr
+2	proofs/GacalcProofs/PlaneRotation3D.lean:150:  · ring
+2	proofs/GacalcProofs/PlaneRotation3D.lean:151:  · ring
+2	proofs/GacalcProofs/PlaneRotation3D.lean:152:  · ring
+2	proofs/GacalcProofs/PlaneRotation3D.lean:153:  · ring
+2	proofs/GacalcProofs/Predicates2D.lean:12:    product of its dual with itself is zero, `(v*) · v = 0`. The named-`dot`, object-level form of
+2	proofs/GacalcProofs/Predicates3D.lean:7:    * `is_orthogonal_to` (base.py) tests `a·b = 0`. Its geometric meaning: the product is a pure
+2	proofs/GacalcProofs/Predicates3D.lean:10:      vectors count as parallel; a vector is parallel to its scalar multiples, `a ∧ (k·a) = 0`
+2	proofs/GacalcProofs/Predicates3D.lean:11:      (`wedge_parallel_smul`). The converse (`a ∧ b = 0 ⟹ b = k·a` for `a ≠ 0`) is not yet stated here.
+2	proofs/GacalcProofs/Predicates3D.lean:16:/-- **Orthogonality ⟺ the product is a pure wedge**: for vectors `a`, `b`, `a ⊥ b` (`a·b = 0`,
+2	proofs/GacalcProofs/Predicates3D.lean:18:    the scalar part (`(a b).s = a·b`, `(a ∧ b).s = 0`). -/
+2	proofs/GacalcProofs/Predicates3D.lean:22:  · exact mul_eq_wedge_of_perp ha hb
+2	proofs/GacalcProofs/Predicates3D.lean:23:  · intro h
+2	proofs/GacalcProofs/Predicates3D.lean:31:/-- **A vector is parallel to its scalar multiples**: `a ∧ (k·a) = 0` — the correct geometric
+2	proofs/GacalcProofs/Projection2D.lean:10:    `I₂` recovers the vector. Uses the same Hestenes forms as 3D (`proj` = `(A·B)B⁻¹` for a vector `B`,
+2	proofs/GacalcProofs/Projection2D.lean:21:/-- Vector projection of `b` onto the vector `a`: `proj_a b = (b·a / a·a)·a` (Hestenes `(A·B)B⁻¹`
+2	proofs/GacalcProofs/Projection2D.lean:24:    The denominator is the self-inner-product `a·a` (Hestenes `dot`), **not** `normSq a`. They agree
+2	proofs/GacalcProofs/Projection2D.lean:25:    for a vector (`a·a = |a|²`), but this def is general in `a : G2`, where `a·a ≠ normSq a` on grade ≥ 2
+2	proofs/GacalcProofs/Projection2D.lean:64:/-- **The fundamental identity `a b = a·b + a∧b`, for arbitrary vectors** (2D): for grade-1 `a`, `b`,
+2	proofs/GacalcProofs/Projection2D.lean:65:    the geometric product splits into its scalar (inner) part `a·b` and its pseudoscalar (outer) part
+2	proofs/GacalcProofs/Projection2D.lean:74:/-- **Orthogonal vectors' geometric product is their wedge** (2D, arbitrary vectors): `a·b = 0 ⟹ a b = a∧b`. -/
+2	proofs/GacalcProofs/Projection2D.lean:88:/-- **The rejection is ⊥ the vector** (2D): `(b − proj_a b) · a = 0` for `a·a ≠ 0`. Structural, via the
+2	proofs/GacalcProofs/Projection3D.lean:9:      * `proj a b = (b·a / a·a) · a` — vector projection; the rejection `b − proj_a b` is
+2	proofs/GacalcProofs/Projection3D.lean:19:/-- Vector projection of `b` onto `a`: `proj_a b = (b·a / a·a) · a`. Lies along `a`.
+2	proofs/GacalcProofs/Projection3D.lean:21:    The denominator is the self-inner-product `a·a` (Hestenes `dot`), **not** `normSq a`. They agree
+2	proofs/GacalcProofs/Projection3D.lean:22:    for a vector (`a·a = |a|²`), but this def is stated for a general `a : G3`, where `a·a ≠ normSq a`
+2	proofs/GacalcProofs/Projection3D.lean:27:/-- **The rejection is perpendicular to `a`**: `(b − proj_a b) · a = 0`, for `a·a ≠ 0`.
+2	proofs/GacalcProofs/Projection3D.lean:45:    the wedge is `cross a b` (gacalc), and `(a × b) · a = 0`. -/
+2	proofs/GacalcProofs/Projection3D.lean:62:/-- **The rotation plane is `a (b − proj_a b)`**: for a vector `a` with `a·a ≠ 0`,
+2	proofs/GacalcProofs/Projection3D.lean:71:  -- Structural, on the fundamental split: `a r = a·r + a∧r` with `r = b − proj_a b` the rejection.
+2	proofs/GacalcProofs/Projection3D.lean:85:/-- **Hestenes rejection** `reject_B A = (A ∧ B) · B⁻¹` — the component of `A` orthogonal to the
+2	proofs/GacalcProofs/Projection3D.lean:88:    `B̃ / (B B̃)`; `B · inverse B = 1`). Companion to `proj`; the outer product picks out only the part
+2	proofs/GacalcProofs/Projection3D.lean:93:    `a·a ≠ 0`): `a⁻¹ = ã/|a|² = a/|a|²`, and `a a = |a|²`, so `a a⁻¹ = |a|²/|a|² = 1`. -/
+2	proofs/GacalcProofs/Projection3D.lean:100:    (for `a·a ≠ 0`). Confirms the direct `(A∧B)B⁻¹` form matches the vector-projection construction
+2	proofs/GacalcProofs/Projection3D.lean:101:    (`(b∧a)a⁻¹ + (b·a)a⁻¹ = (ba)a⁻¹ = b`). -/
+2	proofs/GacalcProofs/Projection3D.lean:106:  -- Structural (Hestenes): `b∧a = ba − (b·a)·1`, so `(b∧a)a⁻¹ = b(a a⁻¹) − (b·a)a⁻¹ = b − proj_a b`.
+2	proofs/GacalcProofs/Projection3D.lean:113:  -- Left with `b − (b·a)a⁻¹ = b − proj_a b`; the two rejection terms agree once `a⁻¹`'s scalar is folded.
+2	proofs/GacalcProofs/Projection3D.lean:133:    nondegenerate plane (`dual(a∧b) · dual(a∧b) ≠ 0`). This is exactly `reject_perp_dot`
+2	proofs/GacalcProofs/Projection3D.lean:143:    grade-1 (vector) part of the geometric product `A B`. This is Hestenes' inner product `A · B` for
+2	proofs/GacalcProofs/Projection3D.lean:146:    later "contraction." Correct as an inner product only for the vector·bivector grade pair. -/
+2	proofs/GacalcProofs/Projection3D.lean:149:/-- **Hestenes projection onto a bivector (plane):** `project_B A = (A · B) B⁻¹` — the in-plane
+2	proofs/GacalcProofs/Projection3D.lean:154:/-- **Projection + rejection = identity**, for a vector onto a plane (bivector `B = p·e₁₂ + q·e₁₃ +
+2	proofs/GacalcProofs/Projection3D.lean:155:    r·e₂₃`, `|B|² ≠ 0`): `(A·B)B⁻¹ + (A∧B)B⁻¹ = A`. Because `(A·B) + (A∧B) = A B` (the grade-1 and
+2	proofs/GacalcProofs/Projection3D.lean:156:    grade-3 parts are the whole product for a vector·bivector) and `B B⁻¹ = 1`. This validates the
+2	proofs/GacalcProofs/Projection3D.lean:171:    (`|B|² ≠ 0`), `(A·B)B⁻¹ + (A∧B)B⁻¹ = A`. -/
+2	proofs/GacalcProofs/Projection3D.lean:188:/-- **Rejection from a plane = projection onto its normal** (for a bivector `B = p·e₁₂ + q·e₁₃ +
+2	proofs/GacalcProofs/Projection3D.lean:189:    r·e₂₃`, `|B|² ≠ 0`): `(c ∧ B) B⁻¹ = proj_{dual B} c`. Both are the perpendicular component of `c`.
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:12:    in-plane part (turned through the from→to angle by `· f̂ · t̂`) and its perpendicular part (left
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:19:    `v ↦ v · f̂ · t̂` (`projRotation_eq_vec_mul`) — exactly what `Versor2D.lean` means by "in 𝒢₂ the plane
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:55:    `transforms.projection_rotation`): `projRotation f t v = (project_{f∧t} v) · f̂ · t̂ + reject_{f∧t} v`.
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:63:/-- **The rotation collapses to the rotor action** `v ↦ v · f̂ · t̂` in 𝒢₂ — the perpendicular term is
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:74:    `f` is in the plane so its ⊥ part is zero and its in-plane part is `f`; then `f · f̂ · t̂ = |f| * t̂`.
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:100:/-- **The rotation is an isometry:** `|projRotation f t v|² = |v|²`. The rotation is `v · f̂ · t̂` with
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:116:    The 2D twin of `G3.projRotation_eq_sandwich`. The versor `R = versorFromVectors f t = t·f + |f| * |t|`
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:144:    (Brahmagupta–Fibonacci, `|f|² * |t|² = (f·t)² + (f∧t)²`). -/
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:161:  · linear_combination (Mf * Mt + (f.c1 * t.c1 + f.c2 * t.c2)) * hK2
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:162:  · ring
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:163:  · ring
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:164:  · linear_combination (f.c1 * t.c2 - f.c2 * t.c1) * hK2
+2	proofs/GacalcProofs/ProjectionRotation2D.lean:175:  -- `R̃² = (nR/|f| * |t|)·(f t)` — divide `key_reverse_sq` through by the nonzero scalar `|f| * |t|`.
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:26:    `projRotation f t v = (project_{f∧t} v) · f̂ · t̂ + reject_{f∧t} v` — turn the in-plane part of `v`
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:52:/-- `(f · (f∧t)) · reverse(f∧t) = |f∧t|² * f` — a polynomial identity: the in-plane projection
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:81:    `f` itself; then `f · f̂ · t̂ = |f| * t̂ = (|f|/|t|) * t`. The defining property of the rotation. -/
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:114:    The in-plane term `(project_{f∧t} v) · f̂ · t̂` carries a factor `1/(|f| * |t|)`; a brute
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:122:/-- **Polarization in 𝒢₃:** `|x + y|² = |x|² + |y|² + 2⟨x ỹ⟩`, where `⟨x ỹ⟩ = (x·ȳ).s` is the
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:128:/-- **Orthogonal Pythagoras:** if `⟨x ȳ⟩ = (x·ȳ).s = 0` then `|x + y|² = |x|² + |y|²`. The cross
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:135:    `M` and a vector `a` — because `a ã = a·a = |a|²` is a scalar that rides out of the sandwich
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:137:    `1/|·|²` into the matching coordinate sum. -/
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:145:    `(project_{f∧t} v) · f · t` is perpendicular to the rejection `reject_{f∧t} v` — their scalar
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:164:/-- **The projection and the rejection are orthogonal (`√`-free):** `⟨project_{f∧t} v · reverse(reject
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:228:  -- The in-plane term ⊥ the rejection (normalized core = scalar · un-normalized core = scalar · 0).
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:258:    *scalar* part `|f| * |t| * 1` of `R = versorFromVectors f t = t·f + |f| * |t|` commutes with everything,
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:282:    division-free companion to `f̂ h = R̃`. The only analytic fact is `|f|² = f·f` (`magnitude_sq_vec`),
+2	proofs/GacalcProofs/ProjectionRotation3D.lean:295:  -- Every component is pure `ring` except the scalar, which needs `|f|² = f·f` (`hsa`).
+2	proofs/GacalcProofs/Reflect.lean:25:    and a vector `v`. From `reflect = 2 * proj − v` with `proj = (v·d / d·d)·d`; the `(d·d)` denominator
+2	proofs/GacalcProofs/RotateComponents.lean:10:    `c = cos(θ) = (a·b)/(|a| * |b|)` and `s = sin(θ)` read off the **dot and wedge** of `a` and `b`, and the
+2	proofs/GacalcProofs/RotateComponents.lean:88:/-- **The rotation preserves the dot product** (angle magnitude): `(R * u * R⁻¹)·(R * v * R⁻¹) = u·v` for the
+2	proofs/GacalcProofs/RotateFromTo2D.lean:13:         `b'`'s own coordinates. `b'`'s unit coordinates are `(a·b)/(|a| * |b|)` and `(a∧b)/(|a| * |b|)`
+2	proofs/GacalcProofs/RotateFromTo2D.lean:14:         (`bprime_coords`), so this middle rotation is `rotPlane ((a·b)/(|a| * |b|)) ((a∧b)/(|a| * |b|))`.
+2	proofs/GacalcProofs/RotateFromTo2D.lean:20:    are the coordinate formulas `(a·b)/(|a| * |b|)` and `(a∧b)/(|a| * |b|)` — **no angle ever named**. Applied
+2	proofs/GacalcProofs/RotateFromTo2D.lean:59:  · rfl
+2	proofs/GacalcProofs/RotateFromTo2D.lean:60:  · linear_combination (c2 * v.c1 - s2 * v.c2) * h
+2	proofs/GacalcProofs/RotateFromTo2D.lean:61:  · linear_combination (s2 * v.c1 + c2 * v.c2) * h
+2	proofs/GacalcProofs/RotateFromTo2D.lean:62:  · rfl
+2	proofs/GacalcProofs/RotateFromTo2D.lean:65:    `e₁` axis gives the vector whose coordinates are `(a·b)/|a|` and `(a∧b)/|a|` — so its *unit*
+2	proofs/GacalcProofs/RotateFromTo2D.lean:81:    middle rotation `rotPlane ((a·b)/(|a| * |b|)) ((a∧b)/(|a| * |b|))` remains. For any `v`. -/
+2	proofs/GacalcProofs/RotateFromTo2D.lean:102:  · simp
+2	proofs/GacalcProofs/RotateFromTo2D.lean:103:  · field_simp
+2	proofs/GacalcProofs/RotateFromTo2D.lean:105:  · field_simp
+2	proofs/GacalcProofs/RotateFromTo2D.lean:107:  · simp
+2	proofs/GacalcProofs/Rotation2D.lean:243:/-- **Rotors compose by multiplication, and half-angles add:** `R θ₂ · R θ₁ = R (θ₁+θ₂)`,
+2	proofs/GacalcProofs/Rotation3D.lean:18:      * **The half-angle versor** `R = b·a + |a| * |b|` (`versorFromVectors`): the geometric
+2	proofs/GacalcProofs/Rotation3D.lean:19:        product of two vectors θ/2 apart is an even-grade versor — here `h·a = |a| * R`, so
+2	proofs/GacalcProofs/Rotation3D.lean:23:        `R·a = |a| * h`. The versor built from `a, b`, multiplied by the from-vector `a`,
+2	proofs/GacalcProofs/Rotation3D.lean:25:        `|a|² = a·a` (`Real.sq_sqrt`); everything else is `ring`.
+2	proofs/GacalcProofs/Rotation3D.lean:38:      and the `R·a = |a| * h` derivation.
+2	proofs/GacalcProofs/Rotation3D.lean:50:      `EuclideanSpace ℝ (Fin 3)` or a local `angle a b := arccos (a·b / (|a| * |b|))`. -/
+2	proofs/GacalcProofs/Rotation3D.lean:58:    (all grades), which agrees with `√(a·a)` on a vector. -/
+2	proofs/GacalcProofs/Rotation3D.lean:63:    the un-normalized even element `R = to·from + |from| * |to|` (scalar + bivector). Applied by
+2	proofs/GacalcProofs/Rotation3D.lean:82:    `R · a = |a| * h`, where `R = versorFromVectors a b` and `h = bisector a b`.
+2	proofs/GacalcProofs/Rotation3D.lean:86:    cancels in the sandwich). Angle-free: the only non-`ring` step is `|a|² = a·a`. -/
+2	proofs/GacalcProofs/Rotation3D.lean:91:  -- Abstract the two magnitudes to opaque atoms; the only fact needed is `sa² = a·a`.
+2	proofs/GacalcProofs/Rotation3D.lean:97:  -- The three vector components need `sa² = a·a`; every other component is 0 = 0.
+2	proofs/GacalcProofs/Rotation3D.lean:99:  · ring
+2	proofs/GacalcProofs/Rotation3D.lean:100:  · linear_combination -b1 * hsa
+2	proofs/GacalcProofs/Rotation3D.lean:101:  · linear_combination -b2 * hsa
+2	proofs/GacalcProofs/Rotation3D.lean:102:  · linear_combination -b3 * hsa
+2	proofs/GacalcProofs/Rotation3D.lean:103:  · ring
+2	proofs/GacalcProofs/Rotation3D.lean:104:  · ring
+2	proofs/GacalcProofs/Rotation3D.lean:105:  · ring
+2	proofs/GacalcProofs/Rotation3D.lean:106:  · ring
+2	proofs/GacalcProofs/Rotation3D.lean:109:    `R · from = |from| * h`. -/
+2	proofs/GacalcProofs/Rotation3D.lean:115:/-- **Companion identity: the to-vector times the versor is the (scaled) bisector**, `b · R = |b| * h`
+2	proofs/GacalcProofs/Rotation3D.lean:116:    (multiplying `R` on the LEFT by `b`). Symmetric to `versor_mul_from_eq_bisector` (`R · a = |a| * h`).
+2	proofs/GacalcProofs/Rotation3D.lean:129:  · ring
+2	proofs/GacalcProofs/Rotation3D.lean:130:  · linear_combination -a1 * hsb
+2	proofs/GacalcProofs/Rotation3D.lean:131:  · linear_combination -a2 * hsb
+2	proofs/GacalcProofs/Rotation3D.lean:132:  · linear_combination -a3 * hsb
+2	proofs/GacalcProofs/Rotation3D.lean:133:  · ring
+2	proofs/GacalcProofs/Rotation3D.lean:134:  · ring
+2	proofs/GacalcProofs/Rotation3D.lean:135:  · ring
+2	proofs/GacalcProofs/Rotation3D.lean:136:  · ring
+2	proofs/GacalcProofs/Rotation3D.lean:139:    `to · R = |to| * h`. -/
+2	proofs/GacalcProofs/Rotor.lean:12:    (the inverse sandwich `R * v * R⁻¹` of the un-normalized `R = b·a + |a| * |b|`), it carries `a` to `b`, and
+2	proofs/GacalcProofs/Rotor.lean:23:    `|versorFromVectors a b|² = 2 * |a| * |b| * (|a| * |b| + a·b)`, so the chain's `normSq R ≠ 0` guard reads
+2	proofs/GacalcProofs/Rotor.lean:91:/-- The from-vectors versor `b·a + |a| * |b|` is even. -/
+2	proofs/GacalcProofs/Rotor.lean:131:/-- **`|versorFromVectors a b|² = 2 * |a| * |b| * (|a| * |b| + a·b)`** — by Lagrange's identity (reference: `Lagrange.lean`)
+2	proofs/GacalcProofs/Rotor.lean:132:    `(a·b)² + |a∧b|² = |a|² * |b|²` (`Trig.lagrange_property`, a `ring` identity in coordinates): the
+2	proofs/GacalcProofs/Rotor.lean:133:    versor is `(|a| * |b| + a·b) + b∧a`, so its squared magnitude is `(|a| * |b| + a·b)² + |a∧b|²`, and
+2	proofs/GacalcProofs/Rotor.lean:134:    Lagrange collapses `(a·b)² + |a∧b|²` to `|a|² * |b|²`. Hence the versor vanishes exactly when `a` and
+2	proofs/GacalcProofs/Rotor.lean:135:    `b` are antiparallel (`a·b = −|a| * |b|`) or one is zero — the normalization is well-defined otherwise.
+2	proofs/GacalcProofs/Rotor.lean:223:/-- The from-vectors versor `b·a + |a| * |b|` is even. -/
+2	proofs/GacalcProofs/Rotor.lean:264:/-- **`|versorFromVectors a b|² = 2 * |a| * |b| * (|a| * |b| + a·b)`** — by Lagrange's identity (reference: `Lagrange.lean`)
+2	proofs/GacalcProofs/Rotor.lean:265:    `(a·b)² + |a∧b|² = |a|² * |b|²` (`Trig.lagrange_property`, a `ring` identity in coordinates): the
+2	proofs/GacalcProofs/Rotor.lean:266:    versor is `(|a| * |b| + a·b) + b∧a`, so its squared magnitude is `(|a| * |b| + a·b)² + |a∧b|²`, and
+2	proofs/GacalcProofs/Rotor.lean:267:    Lagrange collapses `(a·b)² + |a∧b|²` to `|a|² * |b|²`. Hence the versor vanishes exactly when `a` and
+2	proofs/GacalcProofs/Rotor.lean:268:    `b` are antiparallel (`a·b = −|a| * |b|`) or one is zero — the normalization is well-defined otherwise.
+2	proofs/GacalcProofs/Rotor.lean:308:    `θ = β − α`: `uvec β · uvec α + 1 = (1 + cos(θ)) − sin(θ) * e₁₂ = 2cos(θ/2) * (cos(θ/2) − sin(θ/2) * e₁₂)`
+2	proofs/GacalcProofs/Sandwich.lean:44:/-- `|a|² = a · ã`: `normSq` is the scalar part of `a ã`, i.e. the dot with the reverse (definitional). -/
+2	proofs/GacalcProofs/Sandwich.lean:71:/-- **The reverse sandwich scales the dot product by `|R|⁴`** (2D): `(R * u * R̃) · (R * v * R̃) = |R|⁴·(u · v)` for an
+2	proofs/GacalcProofs/Sandwich.lean:91:    `(R * u * R⁻¹) · (R * v * R⁻¹) = u · v`. Structural: pull the inverse's `1/|R|²` out of each factor
+2	proofs/GacalcProofs/Sandwich.lean:189:    is `X · X̃`, the reverse is an anti-automorphism (`R * v * R̃` reverses to `R ṽ R̃`), so this is
+2	proofs/GacalcProofs/Sandwich.lean:246:/-- An **even versor** `s + c₁₂·e₁₂ + c₁₃·e₁₃ + c₂₃·e₂₃` — an element of 𝒢₃'s even subalgebra
+2	proofs/GacalcProofs/Sandwich.lean:272:/-- **Leaf:** `|B|² = p² + q² + r²` for a bivector `B = p·e₁₂ + q·e₁₃ + r·e₂₃`. Reuse instead of
+2	proofs/GacalcProofs/Sandwich.lean:294:/-- `|a|² = a · ã`: `normSq` is the scalar part of `a ã`, i.e. the dot with the reverse (definitional). -/
+2	proofs/GacalcProofs/Sandwich.lean:321:/-- **The reverse sandwich scales the dot product by `|R|⁴`**: `(R * u * R̃) · (R * v * R̃) = |R|⁴·(u · v)` for an
+2	proofs/GacalcProofs/Sandwich.lean:341:    `(R * u * R⁻¹) · (R * v * R⁻¹) = u · v`. Structural: pull the inverse's `1/|R|²` out of each factor
+2	proofs/GacalcProofs/Sandwich.lean:502:    is `X · X̃`, the reverse is an anti-automorphism (`R * v * R̃` reverses to `R ṽ R̃`), so this is
+2	proofs/GacalcProofs/Sandwich.lean:567:    in the e₁ * e₂ plane (`R = s + c₁₂·e₁₂`, `c₁₃ = c₂₃ = 0`) fixes the e₃ component: `R (z e₃) R⁻¹ = z e₃`
+2	proofs/GacalcProofs/Sandwich.lean:615:    part `b·a + |a| * |b|` and its bivector part `b∧a`. This bridge lets the general `evenVersor` results
+2	proofs/GacalcProofs/Sandwich.lean:624:    `R = s + B` with `B = p·e₁₂ + q·e₁₃ + t·e₂₃`, `sandwich R B = B` (B commutes with R, so it rides
+2	proofs/GacalcProofs/Sandwich.lean:644:    versor `R = s + (p·e₁₂ + q·e₁₃ + t·e₂₃)`, the vector `n = t·e₁ − q·e₂ + p·e₃` — the dual of the
+2	proofs/GacalcProofs/StandardPosition.lean:69:    `proj a b = (b·a / a·a)·a`, and a plane rotation is linear and preserves the dot, so both the
+2	proofs/GacalcProofs/StandardPosition.lean:88:    `a·a ≠ 0` this equals the Hestenes rejection `(b∧a)a⁻¹` (`reject_vec_eq`). -/
+2	proofs/GacalcProofs/StandardPosition.lean:101:    product of two vectors, because `a = a∥ + a⊥` relative to `b` gives `ab = a·b + a∧b`. Here we do
+2	proofs/GacalcProofs/StandardPosition.lean:103:    contributing the scalar `a·b` and the perpendicular part the bivector `a∧b`. The wedge half is
+2	proofs/GacalcProofs/StandardPosition.lean:107:/-- **The projection recovers the dot** (object form): `a (proj_a b) = (b·a)·1` for a vector `a`
+2	proofs/GacalcProofs/StandardPosition.lean:119:/-- **The geometric product of two vectors, from projection + rejection:** `a b = (a·b)·1 + a∧b`,
+2	proofs/GacalcProofs/StandardPosition.lean:151:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:152:  · field_simp; linear_combination -hk2
+2	proofs/GacalcProofs/StandardPosition.lean:153:  · field_simp; ring
+2	proofs/GacalcProofs/StandardPosition.lean:154:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:155:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:156:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:157:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:158:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:166:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:167:  · field_simp; linear_combination -hm2
+2	proofs/GacalcProofs/StandardPosition.lean:168:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:169:  · field_simp; ring
+2	proofs/GacalcProofs/StandardPosition.lean:170:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:171:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:172:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:173:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:219:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:220:  · show c * (c * v.c1 - s * v.c2) - s' * (s * v.c1 + c * v.c2) = v.c1
+2	proofs/GacalcProofs/StandardPosition.lean:222:  · show s' * (c * v.c1 - s * v.c2) + c * (s * v.c1 + c * v.c2) = v.c2
+2	proofs/GacalcProofs/StandardPosition.lean:224:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:225:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:226:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:227:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:228:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:233:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:234:  · show c * (c * v.c1 - s * v.c3) - s' * (s * v.c1 + c * v.c3) = v.c1
+2	proofs/GacalcProofs/StandardPosition.lean:236:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:237:  · show s' * (c * v.c1 - s * v.c3) + c * (s * v.c1 + c * v.c3) = v.c3
+2	proofs/GacalcProofs/StandardPosition.lean:239:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:240:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:241:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:242:  · rfl
+2	proofs/GacalcProofs/StandardPosition.lean:258:/-- **Projection onto the x-axis is "keep the x-component":** `proj (m·e₁) v = (v₁, 0, 0)` for any
+2	proofs/GacalcProofs/StandardPosition2D.lean:59:    `proj a b = (b·a / a·a)·a`, and the plane rotation is linear and preserves the dot, so both the
+2	proofs/GacalcProofs/StandardPosition2D.lean:71:    `a·a ≠ 0` this equals the Hestenes rejection `(b∧a)a⁻¹` (`reject_vec_eq`). -/
+2	proofs/GacalcProofs/StandardPosition2D.lean:92:  · rfl
+2	proofs/GacalcProofs/StandardPosition2D.lean:93:  · field_simp; linear_combination -hm2
+2	proofs/GacalcProofs/StandardPosition2D.lean:94:  · field_simp; ring
+2	proofs/GacalcProofs/StandardPosition2D.lean:95:  · rfl
+2	proofs/GacalcProofs/StandardPosition2D.lean:101:  · rfl
+2	proofs/GacalcProofs/StandardPosition2D.lean:102:  · show c * (c * v.c1 - s * v.c2) - s' * (s * v.c1 + c * v.c2) = v.c1
+2	proofs/GacalcProofs/StandardPosition2D.lean:104:  · show s' * (c * v.c1 - s * v.c2) + c * (s * v.c1 + c * v.c2) = v.c2
+2	proofs/GacalcProofs/StandardPosition2D.lean:106:  · rfl
+2	proofs/GacalcProofs/StandardPosition2D.lean:108:/-- **Projection onto the x-axis is "keep the x-component":** `proj (m·e₁) v = (v₁, 0)` for any
+2	proofs/GacalcProofs/StandardPosition2D.lean:187:    b − proj_a b`, for `a·a ≠ 0`. Structural (Hestenes), division-free: `b∧a = ba − (b·a)·1`, so
+2	proofs/GacalcProofs/StandardPosition2D.lean:188:    `(b∧a)a⁻¹ = b(a a⁻¹) − (b·a)a⁻¹ = b − proj_a b`. -/
+2	proofs/GacalcProofs/StudentTrigForms.lean:47:    `a·a ≠ 0` (i.e. `a` nonzero). -/
+2	proofs/GacalcProofs/StudentTrigForms.lean:67:    `a·a ≠ 0`. -/
+2	proofs/GacalcProofs/StudentTrigForms.lean:72:/-- **Parallel vectors have sine 0**: `sin(a, k·a) = 0` — the outer product of a (nonzero) vector and
+2	proofs/GacalcProofs/Trig.lean:7:    computed): `cos(θ) = (a·b)/(|a| * |b|)`, `sin(θ) = |a∧b|/(|a| * |b|)`, with `cos²(θ) + sin²(θ) = 1` — the leaf
+2	proofs/GacalcProofs/Trig.lean:9:    identity in coordinate-free form (reference: `Lagrange.lean`) (`lagrange_property`: `(a·b)² + |a∧b|² = |a|² * |b|²`). Proved for
+2	proofs/GacalcProofs/Trig.lean:14:/-- **Lagrange, as a property** (object form): `(a·b)² + |a∧b|² = |a|² * |b|²` for vectors `a`, `b`. -/
+2	proofs/GacalcProofs/Trig.lean:23:/-- `cos` of the angle between two vectors, from the inner product: `(a·b)/(|a| * |b|)`. -/
+2	proofs/GacalcProofs/Trig.lean:64:/-- **Lagrange, as a property** (object form, 2D): `(a·b)² + |a∧b|² = |a|² * |b|²` for vectors `a`, `b`. -/
+2	proofs/GacalcProofs/TrigEquiv.lean:10:      off the inner/outer products, `cos(θ) = (a·b)/(|a| * |b|)`, `sin(θ) = |a∧b|/(|a| * |b|)` (the latter
+2	proofs/GacalcProofs/TrigEquiv.lean:13:      `α, β`, `(uvec α · uvec β) = cos(β−α)` and `(uvec α ∧ uvec β).c12 = sin(β−α)`.
+2	proofs/GacalcProofs/Versor2D.lean:13:    the identical `R = b·a + |a| * |b|` acts in the `a∧b` plane and *additionally* fixes any component
+2	proofs/GacalcProofs/Versor2D.lean:18:    (`R·a = |a| * h`). Terminology: versor, not rotor (un-normalized; applied by `R * v * R⁻¹`). -/
+2	proofs/GacalcProofs/Versor2D.lean:23:/-- The scalar product `a·b = ⟨a b⟩₀` in 𝒢₂ (scalar part of the geometric product; for vectors the
+2	proofs/GacalcProofs/Versor2D.lean:36:/-- **The scalar product is symmetric:** `a·b = b·a` (2D). -/
+2	proofs/GacalcProofs/Versor2D.lean:63:/-- The **half-angle versor** taking `from` toward `to`: `R = to·from + |from| * |to|` (scalar +
+2	proofs/GacalcProofs/Versor2D.lean:73:/-- **The half-angle versor times the from-vector is the (scaled) bisector**: `R · a = |a| * h`,
+2	proofs/GacalcProofs/Versor2D.lean:75:    `|a|² = a·a`. -/
+2	proofs/GacalcProofs/Versor2D.lean:86:  · ring
+2	proofs/GacalcProofs/Versor2D.lean:87:  · linear_combination -b1 * hsa
+2	proofs/GacalcProofs/Versor2D.lean:88:  · linear_combination -b2 * hsa
+2	proofs/GacalcProofs/Versor2D.lean:89:  · ring
+2	proofs/GacalcProofs/Versor2D.lean:92:    `R · from = |from| * h`. -/
+2	proofs/GacalcProofs/Versor2D.lean:98:/-- Companion identity: `b · R = |b| * h` (multiplying the versor on the LEFT by the to-vector),
+2	proofs/GacalcProofs/Versor2D.lean:99:    the 2D twin of `Rotation3D.from_mul_versor_eq_bisector`. With `R·a = |a| * h` it drives the
+2	proofs/GacalcProofs/Versor2D.lean:111:  · ring
+2	proofs/GacalcProofs/Versor2D.lean:112:  · linear_combination -a1 * hsb
+2	proofs/GacalcProofs/Versor2D.lean:113:  · linear_combination -a2 * hsb
+2	proofs/GacalcProofs/Versor2D.lean:114:  · ring
+2	proofs/GacalcProofs/Versor2D.lean:117:    `to · R = |to| * h`. -/
+2	src/gacalc/base.py:191:    A grade-``r`` blade ``A`` satisfies ``A² = (−1)^(r * (r−1)/2) · |A|²``; this is
+2	src/gacalc/base.py:391:        basis blade — ``prefix0``·1 + ``prefix1``·e₁ + … over all  2ⁿ  blades.
+2	src/gacalc/base.py:433:        algebra, from which the inner product  A · B  and outer product  A ∧ B  are
+2	src/gacalc/base.py:736:        """Inner (dot) product  A · B  — the lowest-grade part of the geometric
+2	src/gacalc/base.py:746:            Self: the inner product ``A · B`` (the lowest-grade part of the
+2	src/gacalc/base.py:773:        """Inner (dot) product  A · B  — a spelling of ``inner_product``.
+2	src/gacalc/base.py:783:            Self: the inner product ``A · B`` (see :meth:`inner_product`).
+2	src/gacalc/base.py:1072:        product ``A · B`` — the robust, division-free primitive — because
+2	src/gacalc/base.py:1073:        ``cos(θ) = 0 ⟺ A · B = 0`` for (nonzero) vectors, without ``cosine``'s 0/0
+2	src/gacalc/base.py:1085:            bool: ``True`` iff ``A · B`` is (approximately) zero.
+2	src/gacalc/base.py:1390:        """Projection  P_B(A)  =  (A · B) B⁻¹  — the component of A lying in the
+2	src/gacalc/base.py:1408:            (non-invertible) projection ``A ↦ (A · B) B⁻¹``.
+2	src/gacalc/base.py:1838:        ``(a·b)² + |a∧b|² = |a|² * |b|²``::
+2	src/gacalc/base.py:1840:            |R|²  =  2 * |a| * |b| * ( |a| * |b| + a·b )
+2	src/gacalc/base.py:2003:        For a grade-``r`` blade,  ``A² = pseudoscalar_squared_sign(r) · |A|²``
+2	src/gacalc/base.py:2037:        The result is built with *dispatching arithmetic* (``A·k + c``), never
+2	src/gacalc/frame.py:141:        c_k := reverse(A_{k-1}) · A_k                 (eq 3.2)
+2	src/gacalc/standardposition.py:10:    project_sp(a, b) = unalign( x-component of align(a) · e_1 ),
+2	src/gacalc/vectorcalc.py:20:  :meth:`gacalc.base.MultiVectorBase.scalar_product` (``a · b = ⟨a b⟩``).
+2	src/gacalc/vectorcalc.py:21:- the **scalar triple product** ``a · (b × c)`` needs no alias either: it is
+2	tasks/reference/approximate-float-equality.md:61:  `scalar·vector = 0`, cancelling products), so those comparisons genuinely need
+2	tasks/reference/book-and-docs-pipeline.md:186:  (`√ ∧ · e₁ ² ⁻¹ Ã ≙`). **pdflatex aborts on those characters; lualatex typesets
+2	tasks/reference/book-outline.md:188:**B. 1D warm-up — `m·x + b`**
+2	tasks/reference/book-outline.md:189:- One dimension first: `m·x + b`, **input value on the left, output value on the right**,
+2	tasks/reference/content-area-volume.md:55:>   `content([v₁,…,v_k]) = ∏_j |w_j| = |v₁ ∧ … ∧ v_k| = √det(Gram)` (for k = 2, `|a∧b|² = |a|² * |b|² − (a·b)²` is Lagrange's identity, <https://en.wikipedia.org/wiki/Lagrange%27s_identity>).
+2	tasks/reference/content-area-volume.md:68:the full space (`k = n`): then `a_1∧…∧a_n = (signed content)·I_n`, and the signed content is that
+2	tasks/reference/content-area-volume.md:97:  product `a · (b × c)`; the identity against `cross` is gated by
+2	tasks/reference/contraction-and-dot-definitions.md:18:| Hestenes inner / dot `·` | `|k − m|` | — | **no** — excluded (`base.inner_product`, `if lg>0 and rg>0`) |
+2	tasks/reference/design-decisions.md:5:Each entry: **what** was decided · *why* (the surprising/re-litigable part) · the archived task where it was decided. CLAUDE.md is the "what is true now"; this is the "why, and where it was settled." Paths are repo-relative under `tasks/archive/`.
+2	tasks/reference/design-decisions.md:13:- **Specialized classes are lazy (simplify only on equality/display); `Gn` is eager.** The whole speed win is (a) closed form + (b) *no* eager simplify. Consequence: a lazy class stores un-reduced coefficients (e.g. `B·B.dual()` stores `(cos²t+sin²t)·e₁₂₃`), which is why `.simplified()`/display-simplify exist. — `2026/06/03/specialized-multivectors.md`, `2026/06/12/graded-bivector-dual-simplify.md`
+2	tasks/reference/design-decisions.md:27:- **A closed-form `sandwich(x)` (`R·v·R⁻¹`) is generated as its own derived op — no runtime grade projection.** Running the *whole* `R * x * R.inverse()` symbolically proves the `e₁₂₃` part cancels identically (the intermediate `R·v` has support `{1,3}` — the named `Odd_3` type since 2026-09-05, which previously widened to `G`), so `resolve()` types it exactly as the operand with zero runtime projection. **`Odd_3` also makes the grade-preservation a one-coefficient proof:** the plain-product form `R * v * R⁻¹` types as `Odd_3`, so "it is a vector" is just `simplify((R * v * R.inverse()).coeff_e_123) == 0` (holds for a general symbolic versor; `tests/test_odd3.py::test_sandwich_grade_preservation_is_one_coefficient`). Uses the inverse form `R * v * R⁻¹` (true for any versor, accepting rational `/|R|²` coefficients) over `R * v * R̃` (unit-rotor only). — `2026/06/08/derived-sandwich-operation.md`
+2	tasks/reference/design-decisions.md:59:- **`base.project` narrows to the operand's grade/type instead of widening to `Gn`.** `P_B(A)=(A·B)B⁻¹` is grade-preserving in *value*, but the generic product widens the *type* (`Vector * Bivector⁻¹` types as `{1,3}`→`G` because a vector·bivector *could* carry grade 3). For a projection that grade-3 part is identically zero — "a vector wearing a `G` tag." The `is_r_vector` branch rebuilds in the operand's own type. — `2026/06/12/project-grade-preserving-narrowing.md`
+2	tasks/reference/design-decisions.md:81:- **The animation layer (`at`/`steps`) and the invariant it must satisfy.** `at(t)` resolves in three tiers: a primitive uses its own `interpolate` law; a composite (from `compose`, which stores `components`) recurses into its components and re-composes; otherwise it's a step (identity until `t≥1`). The load-bearing rule: **`inverse` must commute with `at` at every `t`, not just the endpoints** — `inverse(f).at(t) == inverse(f.at(t))` — which is why `inverse` rebuilds a primitive's law inverted and a composite's components reversed-and-each-inverted; that is what lets an against-the-arrow Cayley edge animate smoothly instead of snapping. Per-factory laws: `translate(b) → translate(b·t)`, `uniform_scale(m) → 1+(m−1)·t` (linear 1→m). — `2026/06/08/port-animation-layer-from-mvp.md`
+2	tasks/reference/design-decisions.md:87:- **`plane_rotation(a, b)` separates plane from angle — the API that fixed mvp's animation fight.** `rotate(from, to)` locks the angle to the two vectors ("no way to say same plane, varying angle"); `plane_rotation` returns `θ → InvertibleFunction` so interpolation falls out as `f(t·θ)`. The wedge-is-zero test *is* the linear-dependence test. It caches two copies of the unit bivector (exact + float-coerced) and picks per-θ to avoid a measured ~6× per-frame slowdown from sympy `Float` contamination; symbolic θ stays symbolic. Cost model deliberately splits factory-time / per-θ / per-application work so no θ-cache is needed. — `2026/07/09/plane-rotation-pretag-and-mvp-adoption.md`, `2026/07/09/upgrade-rotation-and-ctc-vector-mapping.md`
+2	tasks/reference/design-decisions.md:103:- **`m` and `b` are a protected exception to "descriptive over terse."** `translate(b=...)`/`uniform_scale(m=...)` are named for `f(x)=m·x+b` (`b` shift, `m` stretch) so a student meets the transforms through an equation they know. Recorded in *both* CLAUDE.mds precisely so a future naming pass doesn't "fix" them to `offset`/`factor`. Keyword form is used at teaching-facing call sites only; library internals stay positional. — `2026/07/21/mx-plus-b-named-parameters.md`
+2	tasks/reference/design-decisions.md:105:- **`exp()` dispatches by grade structure, not by the sign of A² — that's the payoff of hardcoded-Euclidean.** galgebra's `exp(hint='-'/'+')` exists because arbitrary signatures leave a symbolic A²'s sign undecidable; in Euclidean 𝒢ₙ a grade-r blade has `A² = (−1)^(r(r−1)/2)|A|²`, so the sign of A² is decided structurally by grade and no hint parameter exists. **Slim-down (2026-08-15): `exp` is now defined ONLY for the scalar and negative-square (`A² < 0`) cases → `cos(|A|) + sin(|A|) * Â` (the rotor case).** The positive-square (`A² > 0`, **vector**) branch — which returned the galgebra-style hyperbolic `cosh|A| + sinh|A| * Â` — was **removed**: that is the Minkowski *boost* form, meaningless in this Euclidean library, so a vector's `exp` now raises `ValueError` rather than silently applying a spacetime formula (`2026/08/15/redo-exp-book-referenced.md`, subtask 3; primary citation Dorst, Fontijne & Mann §7.4). Two details everything hinges on: the result is built with *dispatching arithmetic* (`Â·sin(|A|) + cos(|A|)`), never `from_blade_dict`, because a graded operand's own type can't hold the scalar part (a `Bivector` cannot represent its own exponential — the dispatching `+` widens it to `Versor`, which is also what makes the generated narrowing override `Bivector_n.exp() -> Versor_n` sound); and the `(A²).is_scalar()` guard is required even for *homogeneous* input, because a non-simple bivector of 𝒢ₙ (n ≥ 4, e.g. `e12 + e34`) is grade-2 yet has a non-scalar square. Merging `exp` also fixed a latent contract bug it exposed: the generated full classes' `__add__`/`__sub__` crashed on a bare number/`sympy.Expr`, violating `MultiVectorBase.__add__`'s documented contract. — `2026/07/29/exp-for-rotors.md`
+2	tasks/reference/design-decisions.md:124:- **The cross product (`gacalc/vectorcalc.py`, 2026-08-31): a free function + method sugar + one generated closed form — and deliberately NO `dot`/triple-product aliases.** `cross(a, b) = (a ∧ b) I₃⁻¹` — the dual of the wedge; since `dual` is `A·I⁻¹` and `I₃⁻¹ = −I₃`, the existing `dual` yields the standard right-handed sign (`e₁ × e₂ = e₃`, pinned by `tests/test_vectorcalc.py` incl. numpy parity and a `Gn`-oracle symbolic identity). **𝒢₃ only** (only there is a bivector's dual a vector): fixed types need `DIMENSION == 3` (the generated `dual` is dimension-locked), `Gn` operands need basis indices ≤ 3; else `ValueError`. Shape mirrors `measure.py`: free function over `MultiVectorBase` + an inherited `MultiVectorBase.cross(other)` pass-through (deferred import) — **not** generated per-algebra, EXCEPT one narrowing override: 𝒢₃'s generated `Vector.cross` (see `tasks/reference/generated-product-typing.md`). Dot is `scalar_product` and the scalar triple product IS `measure.signed_volume` (`a · (b × c) = det` — identity gated by test), so no synonyms were added; grad/div/curl parked (need multivector fields). A "vector-calculus subclass" was the original idea and is **impossible** — the generated types are `@typing.final`. — `tasks/archive/2026/08/31/custom-symbols-and-vector-calc.md`, `tasks/archive/2026/08/31/generated-vector-cross.md`
+2	tasks/reference/design-decisions.md:126:- **Vocabulary: *versor* = even, any magnitude; *rotor* = unit versor — and both APIs exist (2026-10-05).** `versor_from_vectors` / `versor_rotation` keep the un-normalized versor and rotate by the inverse sandwich `R * v * R⁻¹` (scale-invariant, no normalization); `rotor_from_vectors` is that versor normalized — a true rotor for the textbook reverse sandwich `R * v * R.reverse()` — typed `Versor` on `g2`/`g3`; the half-angle `plane_rotation`/`bivector_rotation` rotor and `B.exp()` are rotors too. The two sandwiches agree exactly (`(R/|R|) * v * (R/|R|)~ = R * v * R⁻¹`, machine-checked in `proofs/GacalcProofs/Rotor.lean`; sympy-checked with the Lagrange closed form `|R|² = 2 * |a| * |b| * (|a| * |b| + a·b)`). The book's 2D one-sided `cos(θ) + sin(θ) * e₁₂` is the "full-angle rotor" (`Rotation2D.fullAngleRotor`), kept for teaching. — `tasks/reference/unit-bivector-and-rotors.md` §6–§8, `tasks/archive/2026/10/05/`
+2	tasks/reference/dot-wedge-projection-rejection.md:7:`ab = a·b + a∧b` as the settled decomposition and build projection/reflection/versors on
+2	tasks/reference/dot-wedge-projection-rejection.md:15:    a_∥ = proj_b(a) = (a·b) b⁻¹        a_⊥ = rej_b(a) = (a∧b) b⁻¹
+2	tasks/reference/dot-wedge-projection-rejection.md:20:    a_∥ b = a·b        (the dot product — a scalar)
+2	tasks/reference/dot-wedge-projection-rejection.md:24:product is the rejection's.** Adding them recovers `ab = a·b + a∧b`.
+2	tasks/reference/dot-wedge-projection-rejection.md:28:Two facts about the geometric product of vectors, both from `uv = u·v + u∧v`:
+2	tasks/reference/dot-wedge-projection-rejection.md:31:   and therefore `u b = u·b` (a scalar).
+2	tasks/reference/dot-wedge-projection-rejection.md:32:2. **Perpendicular ⇒ zero dot.** If `u ⊥ b`, then `u·b = |u| * |b| * cos(θ) = 0`, so
+2	tasks/reference/dot-wedge-projection-rejection.md:35:Both `·` and `∧` are bilinear, so they distribute over the split `a = a_∥ + a_⊥`:
+2	tasks/reference/dot-wedge-projection-rejection.md:37:- `a_∥` is parallel to `b` (it is the scalar multiple `(a·b)b⁻¹ = (a·b/|b|²) b` of `b`), so
+2	tasks/reference/dot-wedge-projection-rejection.md:38:  by fact 1, `a_∥ b = a_∥·b`. Distributing the dot: `a·b = (a_∥ + a_⊥)·b = a_∥·b + a_⊥·b`,
+2	tasks/reference/dot-wedge-projection-rejection.md:39:  and `a_⊥·b = 0` because `a_⊥ ⊥ b`. Hence `a_∥ b = a_∥·b = a·b`. ∎
+2	tasks/reference/dot-wedge-projection-rejection.md:45:`a·b + a∧b`. The split of `a` into parallel/perpendicular parts *is* the split of `ab`
+2	tasks/reference/dot-wedge-projection-rejection.md:49:identity read the other way: `a = a b b⁻¹ = (a·b + a∧b) b⁻¹ = (a·b)b⁻¹ + (a∧b)b⁻¹`, i.e.
+2	tasks/reference/dot-wedge-projection-rejection.md:60:  All four identities (`a_∥ b = a·b`, `a_⊥ b = a∧b`, `a_∥ + a_⊥ = a`,
+2	tasks/reference/dot-wedge-projection-rejection.md:61:  `a_∥ b + a_⊥ b = ab = a·b + a∧b`) hold as symbolic equalities.
+2	tasks/reference/dot-wedge-projection-rejection.md:72:"Proof" text ending in ∎, and from then on invoke `ab = a·b + a∧b` **by name** — never
+2	tasks/reference/dot-wedge-projection-rejection.md:78:identity product-first (`a∥ b = a·b`, `a⊥ b = a∧b`, assuming the product). Read the other way, it is
+2	tasks/reference/dot-wedge-projection-rejection.md:80:rotations via reduction to standard position — *construct* the geometric product `ab = a·b + a∧b`
+2	tasks/reference/galgebra-comparison.md:99:dimension `n` with a hardcoded Euclidean orthonormal basis (`eᵢ·eᵢ=+1`, `eᵢ·eⱼ=0`).
+2	tasks/reference/galgebra-comparison.md:116:  representation and a general product `eᵢeⱼ = 2(eᵢ·eⱼ) − eⱼeᵢ` (`reduce_basis`) — the
+2	tasks/reference/galgebra-comparison.md:117:  direct generalization of gacalc's bubble-sort, which hardcodes `eᵢ·eⱼ=δᵢⱼ`.
+2	tasks/reference/galgebra-comparison.md:138:  computes `I² = (−1)^{n(n−1)/2}·det(g)`. gacalc has a fixed Euclidean `dual()` only.
+2	tasks/reference/galgebra-comparison.md:225:`coefᵢ·Pdopᵢ`) → `mv.Dop` (attaches a *multivector* coefficient to each `Pdop`, so it acts
+2	tasks/reference/galgebra-comparison.md:231:- divergence: `ga.grad | F`   · curl: `ga.grad ^ F`   · Laplacian: `ga.grad * ga.grad`
+2	tasks/reference/galgebra-comparison.md:232:- directional derivative a·∇: `(a | ga.grad) * F`; derivative w.r.t. a multivector variable:
+2	tasks/reference/galgebra-comparison.md:249:- **`Lt.det()`** = `L(E)·E⁻¹` — the determinant as "how L scales the pseudoscalar" (needs the
+2	tasks/reference/galgebra-comparison.md:251:- **`Lt.adj()`** — adjoint L̄ via `a·L(b)=b·L̄(a)` (metric-correct `g⁻¹ * Mᵀ·g`).
+2	tasks/reference/galgebra-comparison.md:252:- **`Lt.tr()`** = `∇_a·L(a)` — trace, *defined using the calculus layer* (ties 3a and 3b).
+2	tasks/reference/generated-product-typing.md:140:  `Versor` = even {0,2}) — a graded *subspace*, not a subalgebra (odd·odd=even → `Odd_3*Odd_3 → Versor`);
+2	tasks/reference/generated-product-typing.md:160:→ Scalar` (scalar·X ≡ 0 under the Hestenes dot). **How:** `generate_scalar`'s bespoke hand-built
+2	tasks/reference/geometric-product-associativity.md:13:A **blade** is an index sequence `α = (a₁,…,a_p)` meaning `e_{a₁}···e_{a_p}`. Write `dg(·)` for
+2	tasks/reference/geometric-product-associativity.md:17:>   `e_α · e_β  =  dg(α ++ β)`   (a signed canonical blade),
+2	tasks/reference/geometric-product-associativity.md:29:  blade→coefficient map). So a signed canonical blade `λ·e_S` determines both `S` and `λ`: if
+2	tasks/reference/geometric-product-associativity.md:40:  `e_a e_c = − e_c e_a` (rule **R2**), a true identity → `λ·e_w` is unchanged.
+2	tasks/reference/geometric-product-associativity.md:47:For any sequence `w` and coefficient `λ`, the value `λ · e_w ∈ 𝒢ₙ` is **unchanged** by `dg`. Proof:
+2	tasks/reference/geometric-product-associativity.md:49:the recursion. By induction on the recursion, `dg` preserves `λ·e_w`. ∎
+2	tasks/reference/geometric-product-associativity.md:54:`λ·e_u = μ·e_v  ⟹  λ·dg(u) = μ·dg(v)`.
+2	tasks/reference/geometric-product-associativity.md:57:`λ·e_{dg(u)} = λ·e_u`; likewise `μ·e_{dg(v)} = μ·e_v`. The right-hand sides are equal by hypothesis, so
+2	tasks/reference/geometric-product-associativity.md:58:`λ·e_{dg(u)} = μ·e_{dg(v)}` — two signed canonical blades naming one element. By **(B)** they are
+2	tasks/reference/graded-subspaces-vs-subalgebras.md:46:  famous one: `𝒢⁺₂ ≅ ℂ` (`{a + b·e₁₂}`, `e₁₂² = −1`) and **`𝒢⁺₃ ≅ ℍ`, the quaternions** (its unit
+2	tasks/reference/graded-subspaces-vs-subalgebras.md:49:  `·`, and `reverse`, which preserves grade), but **NOT closed under the geometric product**:
+2	tasks/reference/graded-subspaces-vs-subalgebras.md:55:`even × odd → odd` and `odd × even → odd`, so `Versor_n · Odd_n ⊆ Odd_n` on both sides. The clean way
+2	tasks/reference/graded-subspaces-vs-subalgebras.md:64:- `Vector` (grade 1): `v·v = |v|² + (v ∧ v)` → `{0, 2}`, not grade 1.
+2	tasks/reference/graded-subspaces-vs-subalgebras.md:65:- `Bivector` (grade 2): `B·B ∈ {0, 2}`, not pure grade 2.
+2	tasks/reference/graded-subspaces-vs-subalgebras.md:76:| `{1}` | `Vector` | no | `v·v ∈ {0,2}` |
+2	tasks/reference/graded-subspaces-vs-subalgebras.md:77:| `{2}` | `Bivector` | no | `B·B ∈ {0,2}` |
+2	tasks/reference/graded-subspaces-vs-subalgebras.md:81:| `{0,3}` | (unnamed) | **yes** (≅ ℂ) | `I₃` is central in odd dim and `I₃² = −1`, so `{a + b·I₃}` is closed |
+2	tasks/reference/lean-for-gacalc.md:22:‖a‖²‖b‖² − (a·b)²"); the Python tests (`Gn` vs the generated `G`, ~650 of them) check the *code*.
+2	tasks/reference/lean-for-gacalc.md:67:    algebraic identities gacalc cares about, e.g. expanding `(a·b)² + ‖a∧b‖²`).
+2	tasks/reference/lean-for-gacalc.md:196:makes it a good first target. Then the Lagrange identity `‖a‖²‖b‖² = (a·b)² + ‖a∧b‖²` (the squared
+2	tasks/reference/lean-ga-proof-architecture.md:31:  (`R R̃ = normSq·1`), `normSq_mul` (multiplicative). These are the bridge; there is nothing below them.
+2	tasks/reference/lean-ga-proof-architecture.md:100:`|versorFromVectors a b|² = 2 * |a| * |b| * (|a| * |b| + a·b)`) turns the chain's `normSq R ≠ 0` guard into "nonzero and
+2	tasks/reference/lean-ga-proof-architecture.md:210:- **Inner product `·`:** `dot_comm` (symmetry); **full bilinearity** — `dot_add`/`dot_sub`/`dot_smul`
+2	tasks/reference/lean-ga-proof-architecture.md:211:  in both `_left` and `_right` forms; `dot_vec` (`a·b = a₁ * b₁+…`); `dot_self_vec_eq_normSq`
+2	tasks/reference/lean-ga-proof-architecture.md:212:  (`a·a = |a|²` — the bridge that reads a `dot a a` hypothesis as the `normSq` primitive).
+2	tasks/reference/lean-ga-proof-architecture.md:216:- **The split:** `vec_mul_eq_dot_add_wedge` (`ab = a·b + a∧b`, coordinate-literal form) and its
+2	tasks/reference/lean-ga-proof-architecture.md:230:  magnitude concept — `magnitude = √normSq`, all grades; the old vector-only `mag = √(a·a)` was deleted
+2	tasks/reference/lean-ga-proof-architecture.md:232:- **Sin/cos & Lagrange** (`Trig.lean`): `lagrange_property` (`(a·b)²+|a∧b|² = |a|² * |b|²`),
+2	tasks/reference/lean-ga-proof-architecture.md:239:  (`(RuR̃)·(RvR̃) = |R|⁴ u·v`), `normSq_reverse_sandwich` (`|RvR̃|² = |R|⁴|v|²`); the pure-`ring`
+2	tasks/reference/lean-ga-proof-architecture.md:290:2 * |a| * |b| * (|a| * |b| + a·b)`) then turns the inherited `normSq R ≠ 0` guard into a geometric condition. Record:
+2	tasks/reference/lean-ga-proof-architecture.md:324:  (`|R * v * R̃|² = normSq R ² * |v|²`), `dot_reverse_sandwich` (`(R * u * R̃)·(R * v * R̃) = normSq R ² * (u·v)`),
+2	tasks/reference/lean-ga-proof-architecture.md:367:- `project_B A = (A · B) B⁻¹` — the component of `A` in `B`.
+2	tasks/reference/lean-ga-proof-architecture.md:371:(`Projection3D.lean`) and 2D (`Projection2D.lean`); `project_add_reject` (`(A·B)B⁻¹ + (A∧B)B⁻¹ = A`) is
+2	tasks/reference/lean-ga-proof-architecture.md:374:bivector: `B · inverse B = 1`).
+2	tasks/reference/lean-ga-proof-architecture.md:376:**Terminology (maintainer, 2026-09-29):** the `·` here is **Hestenes' inner product**
+2	tasks/reference/lean-ga-proof-architecture.md:377:`A·B = ⟨AB⟩_{|r−s|}` (defined for all grades in *Clifford Algebra to Geometric Calculus*, 1984) — for a
+2	tasks/reference/lean-ga-proof-architecture.md:378:vector·bivector it is the grade-1 part (`inner_vb`, a vector), NOT the scalar `dot` (grade 0, which is
+2	tasks/reference/lean-ga-proof-architecture.md:380:Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy to conflate. gacalc's `<`/`>`
+2	tasks/reference/lean-ga-proof-architecture.md:388:  magnitude concept: the older vector-only `mag = √(A·A)` (wrong sign for a bivector) was deleted and its
+2	tasks/reference/lean-ga-proof-architecture.md:394:- `Lagrange.lean` — Lagrange identity 2D/3D (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) (`|a|² * |b|² = (a·b)² + |a∧b|²`).
+2	tasks/reference/lean-ga-proof-architecture.md:397:  `G3` also the fundamental identity `ab = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`), `vec_mul_perp`, and the
+2	tasks/reference/lean-ga-proof-architecture.md:411:  versor-from-vectors: bisector, `R·a = |a| * h`, `b·R = |b| * h`; the carries-a→b capstone
+2	tasks/reference/lean-ga-proof-architecture.md:440:  `rotateFromTo_collapse` (the 3-step = a single `rotPlane ((a·b)/(|a| * |b|)) ((a∧b)/(|a| * |b|))`), and
+2	tasks/reference/lean-ga-proof-architecture.md:444:  `projRotation f t v = (project_{f∧t} v)·f̂·t̂ + reject_{f∧t} v` (mirrors Python
+2	tasks/reference/lean-ga-proof-architecture.md:458:  collapses it to the rotor action `v·f̂·t̂` (`projRotation_eq_vec_mul`). Reuses
+2	tasks/reference/lean-ga-proof-architecture.md:467:  of the product (grade 0 included); vec·vec = `dot`, scalar·vec = the Hestenes-vs-Taylor difference.
+2	tasks/reference/lean-ga-proof-architecture.md:476:  (`a·b = 0 ⟺ ab = a∧b`), `wedge_parallel_smul` (3D).
+2	tasks/reference/lean-ga-proof-architecture.md:508:| `inner_product` (general graded) | PARTIAL | only vector·bivector `inner_vb` (Projection3D.lean); general `⟨AB⟩_{\|r−s\|}` owned by existing `lean-general-gn-product-and-hestenes-dot-wedge` |
+2	tasks/reference/lean-ga-proof-architecture.md:515:| `is_orthogonal_to` | HAS | `perp_iff_mul_eq_wedge` (`a·b=0 ⟺ ab=a∧b`) (Predicates3D.lean) |
+2	tasks/reference/lean-ga-proof-architecture.md:516:| `is_parallel_to` | PARTIAL | `wedge_parallel_smul` (`a ∧ ka = 0`) + the wedge-zero criterion (Predicates3D.lean); the converse (`a ∧ b = 0 ∧ a ≠ 0 ⟹ ∃ k, b = k·a`) is not stated — `tasks/lean-frame-coverage.md`; Python `is_parallel_to` fixed to the wedge-zero form |
+2	tasks/reference/lean-ga-proof-architecture.md:558:| `transforms.bivector_rotation(θ).at(t)`, `functions.at` | plumbing — no theorem | the rotor factory's interpolation law rebuilds the rotor with `t·θ`; composites interpolate component-wise |
+2	tasks/reference/lean-ga-proof-architecture.md:651:2. **Lagrange identity** in the squared form `‖a‖²‖b‖² = (a·b)² + ‖a∧b‖²`.
+2	tasks/reference/lean-proof-corpus-review-2026-10-04.md:120:| Hestenes `inner_product`/`dot`, `left_/right_contraction` (general grades) | vec·vec, vec·biv, scalar·vec cases only | **partial**; owned by `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` |
+2	tasks/reference/lean-proof-corpus-review-2026-10-04.md:163:scalar, so `R R̃ = s² − B² = n·1`, and `R̃ * R` is the same scalar (the leaf `mul_biv_reverse_self` is
+2	tasks/reference/lean-proof-corpus-review-2026-10-04.md:168:⟨(R * u * R̃)(R * v * R̃)⟩₀ = ⟨R u (R̃ * R) v R̃⟩₀ = n·⟨R (u v) R̃⟩₀ = n·⟨(u v) R̃ * R⟩₀ = n² * ⟨u v⟩₀
+2	tasks/reference/lean-proof-corpus-review-2026-10-04.md:169:normSq (R * v * R̃)    = ⟨R * v * R̃ * R ṽ R̃⟩₀    = n·⟨R (v ṽ) R̃⟩₀  = n² * ⟨v ṽ⟩₀
+2	tasks/reference/openstax-math-pedagogy.md:316:>   d/dx(f(x)g(x)) = d/dx(f(x))·g(x) + d/dx(g(x))·f(x).
+2	tasks/reference/openstax-math-pedagogy.md:500:   - **Reuse:** from then on, treat `ab = a·b + a∧b` as the settled decomposition and build
+2	tasks/reference/openstax-math-pedagogy.md:550:2. **Concept-first statement, boxed:** *Definition — the dot product `a·b` is the scalar part
+2	tasks/reference/openstax-math-pedagogy.md:554:   *`a·b` is the geometric product of `a`'s projection onto `b` with `b`; `a∧b` is the
+2	tasks/reference/openstax-math-pedagogy.md:561:6. **Black-box from here on:** the rest of the book writes `a·b` and `ab = a·b + a∧b` as
+2	tasks/reference/pseudoscalar-square-sign.md:74:I_3² =  e1 e2 e3 · e1 e2 e3                 sign = +1
+2	tasks/reference/pseudoscalar-square-sign.md:76:        e1 e2 e1 e3 · e2 e3   (past e3)  R2 → sign = −1
+2	tasks/reference/pseudoscalar-square-sign.md:77:        e1 e1 e2 e3 · e2 e3   (past e2)  R2 → sign = +1
+2	tasks/reference/pseudoscalar-square-sign.md:79:              e2 e3 · e2 e3                 ← the SAME shape, one grade smaller (indices {2,3})
+2	tasks/reference/pseudoscalar-square-sign.md:81:              e2 e2 e3 · e3   (past e3)   R2 → sign = −1
+2	tasks/reference/pseudoscalar-square-sign.md:143:  >   `s(r) = (−1)^(r−1) · s(r−1)`.
+2	tasks/reference/pseudoscalar-square-sign.md:163:>   `Ĩ_r = (−1)^(r(r−1)/2) · I_r`.     (★)
+2	tasks/reference/pseudoscalar-square-sign.md:166:`e_1 * … * e_r · e_r * … * e_1`, the inner `e_r e_r = +1` (R1) disappears, then `e_{r−1} e_{r−1} = +1`, and so
+2	tasks/reference/pseudoscalar-square-sign.md:173:>   `I_r² = I_r · I_r = (−1)^(r(r−1)/2) · (I_r Ĩ_r) = (−1)^(r(r−1)/2) · 1 = (−1)^(r(r−1)/2)`.   ∎
+2	tasks/reference/reduction-to-standard-position.md:19:Hestenes-derived ones (`project = (A·B)B⁻¹`, etc.); the standard-position versions are **deliberate
+2	tasks/reference/reduction-to-standard-position.md:74:*define* the dot and wedge — and hence the vector geometric product `ab = a·b + a∧b` — from
+2	tasks/reference/reduction-to-standard-position.md:75:`project`/`reject`, because `a = a∥ + a⊥` with `a∥` ∥ `b` (⟹ `a∥b = a·b`, scalar) and `a⊥` ⊥ `b`
+2	tasks/reference/reduction-to-standard-position.md:92:   This yields project, reject, the geometric product `ab = a·b + a∧b`, and dot/wedge — each proved
+2	tasks/reference/reduction-to-standard-position.md:125:- The product from projection/rejection: `mul_proj_eq_dot` (`a (proj_a b) = (b·a)·1`) and
+2	tasks/reference/reduction-to-standard-position.md:126:  `mul_eq_proj_dot_add_reject_wedge` (`a b = (a·b)·1 + a∧b`) — "project+reject build the product,"
+2	tasks/reference/reduction-to-standard-position.md:131:  z-axis and nonzero; `a` any multivector), via `proj_onto_x_axis` (`proj (m·e₁) v = (v₁,0,0)`),
+2	tasks/reference/reduction-to-standard-position.md:148:(`proj (m·e₁) v = (v₁,0)`). The derived route equals the canonical one as one theorem:
+2	tasks/reference/reduction-to-standard-position.md:164:`rotPlane ((a·b)/(|a| * |b|)) ((a∧b)/(|a| * |b|))` — the cos/sin of the `a→b` angle as coordinate formulas,
+2	tasks/reference/reduction-to-standard-position.md:180:`projRotation f t v = (project_{f∧t} v)·f̂·t̂ + reject_{f∧t} v` (mirrors the Python
+2	tasks/reference/reduction-to-standard-position.md:188:  `1/√(normSq f·normSq t)` once the two unit scalars are pulled out of the in-plane term as one
+2	tasks/reference/reduction-to-standard-position.md:196:  The √ never appears: the scalar part `|f| * |t| * 1` of `R = t·f + |f| * |t|` is pulled out abstractly via
+2	tasks/reference/reduction-to-standard-position.md:206:(`reject_plane_eq_zero`) and the rotation collapses to the pure rotor action `v·f̂·t̂`
+2	tasks/reference/symbolic-equality.md:107:`(|a| * |b| + a·b)² + |a∧b|²`; proving the result is the half-angle rotor `cos(θ/2) − sin(θ/2) * i` needs two
+2	tasks/reference/symbolic-equality.md:108:relations sympy does not discover: Lagrange's (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) `(a·b)² + |a∧b|² = |a|² * |b|²` (collapsing `|R|²` to
+2	tasks/reference/symbolic-equality.md:109:`2 * |a| * |b| * (|a| * |b| + a·b)`) and the half-angle identity. The pattern that works, from
+2	tasks/reference/symbolic-equality.md:120:  a·b)) == 0`, fully symbolic in 2D and 3D) — it is a plain polynomial identity once `sqrt(x)**2 → x`.
+2	tasks/reference/transform-and-composable-function-layer.md:43:  guard on non-`g2.Vector` input, and an `interpolate` law of `plane_rotation(e_1, e_2)(t·π/2)` that
+2	tasks/reference/unit-bivector-and-rotors.md:45:bivector via `exp(−(θ/2)·i)` (§3) — `i` is what you *feed* `exp`, not the rotor itself. This is why
+2	tasks/reference/unit-bivector-and-rotors.md:93:`plane_rotation` uses the `−` form, `= exp(−(θ/2)·i)`, which turns `a→b` for positive θ; the `+`
+2	tasks/reference/unit-bivector-and-rotors.md:116:Priority is books **the maintainer owns**. Status: ✅ verified in this research pass · ⬜ needs the maintainer's copy.
+2	tasks/reference/unit-bivector-and-rotors.md:198:  `b·a + |a| * |b|`), `versor_rotation` (its inverse sandwich `R * v * R⁻¹`). Lean: `IsEvenVersor`,
+2	tasks/reference/unit-bivector-and-rotors.md:256:3. **Lagrange gives the magnitude in closed form:** with `R = b·a + |a| * |b| = (|a| * |b| + a·b) + b∧a`,
+2	tasks/reference/unit-bivector-and-rotors.md:257:   `|R|² = (|a| * |b| + a·b)² + |a∧b|²`, and Lagrange's identity (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) `(a·b)² + |a∧b|² = |a|² * |b|²` collapses it to
+2	tasks/reference/unit-bivector-and-rotors.md:259:       |R|² = 2 * |a| * |b| * ( |a| * |b| + a·b )
+2	tasks/reference/unit-bivector-and-rotors.md:283:The book introduces rotation in 2D as a **one-sided, full-angle** product, `v ↦ v · (cos(θ) + sin(θ) * e₁₂)`
+2	tests/test_dot_wedge_projection_split.py:23:geometric product ``a b = a·b + a∧b``:
+2	tests/test_dot_wedge_projection_split.py:25:    a_par  b = a·b       (the wedge term vanishes: a_par ∥ b)
+2	tests/test_dot_wedge_projection_split.py:49:    """``ab = a·b + a∧b`` for general 2D vectors -- both parts read off explicitly."""
+2	tests/test_dot_wedge_projection_split.py:62:    """``ab = a·b + a∧b`` for general 3D vectors -- the wedge now has three
+2	tests/test_dot_wedge_projection_split.py:79:    Multiplying each by ``b`` isolates one face of the product: ``a_par b = a·b``
+2	tests/test_fixed_grade_dot_wedge.py:17:product: ``a·b = ⟨ab⟩_|r−s|`` and ``a∧b = ⟨ab⟩_(r+s)`` (H&S p. 6, eqs. 1.21/1.22).
+2	tests/test_fixed_grade_dot_wedge.py:66:    # The two bound-grade parts reassemble the whole product: ab = a·b + a∧b.
+2	tests/test_frame.py:135:    ``sym_vec3_3`` -- three arbitrary vectors ``a·e``, ``b·e``, ``c * e``): the
+2	tests/test_measure.py:24:``|a|² * |b|² − (a·b)²``. The general-symbolic 3D ``content_by_rejection`` is checked
+2	tests/test_measure.py:147:    **Gram determinant** ``|a|² * |b|² − (a·b)²``.  (The ``k < n`` generalization of
+2	tests/test_multivector.py:134:        MultiVector.from_real(a_1 * b_1 + a_2 * b_2)  # dot: u·v
+2	tests/test_multivector.py:320:    # general 2D vectors: cos(θ) * |u| * |v| == u · v (the definition of cosine):
+2	tests/test_rotor_from_vectors.py:20:the raw polynomial ``(|a| * |b| + a·b)² + |a∧b|²``.  Lagrange's identity (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>)
+2	tests/test_rotor_from_vectors.py:21:``(a·b)² + |a∧b|² = |a|² * |b|²`` collapses it to ``2 * |a| * |b| * (|a| * |b| + a·b)``, and for unit
+2	tests/test_rotor_from_vectors.py:39:    """``2 * |a| * |b| * (|a| * |b| + a·b)`` -- the versor's squared magnitude by Lagrange."""
+2	tests/test_rotor_from_vectors.py:138:    # b·e_1 + 1 = 2c² − 2sc e_12 = 2c (c − s e_12), with |R|² = 4c²(c² + s²) = 4c²;
+2	tests/test_vectorcalc.py:20:**scalar-triple-product identity** ``a · (b × c) = signed_volume(a, b, c)``,
+2	tests/test_vectorcalc.py:77:    """a · (b × c) == signed_volume(a, b, c) -- why measure.signed_volume needs
+2	tools/gen_specialized.py:876:        "B · B = −1 (the dot carries the same −1 as the square).\n"
+2	tools/gen_specialized.py:889:        "Inner product of two bivectors -- a scalar; B · B = −1 for a unit\n"
+2	tools/gen_specialized.py:1404:        "Geometric product of two vectors  a b = a·b + a∧b  -- a scalar (their\n"
+2	tools/gen_specialized.py:1411:        "    the geometric product a·b + a∧b (a scalar for parallel unit\n"
+2	tools/gen_specialized.py:1419:        "The geometric-product primitive (use ``*``):  a b = a·b + a∧b.\n"
+2	tools/gen_specialized.py:1428:        "Inner (dot) product of two vectors -- the scalar  a·b = |a| * |b| * cos(θ).\n"
+2	tools/gen_specialized.py:1435:        "    Scalar: the dot product  a·b = |a| * |b| * cos(θ).\n"
+2	tools/gen_specialized.py:1442:        "The dot product of two vectors,  a·b = |a| * |b| * cos(θ) (see ``dot``).\n"
+2	tools/gen_specialized.py:1536:        "Squared length  |a|² = a·a  -- the sum of squared coordinates.\n"
