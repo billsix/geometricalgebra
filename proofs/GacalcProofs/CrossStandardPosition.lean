@@ -3,12 +3,12 @@ import GacalcProofs.Cross
 import GacalcProofs.Projection3D
 import GacalcProofs.StandardPosition
 
-/-! # Reduction to standard position as a GENERAL tool — reduce both vectors to the e₁ * e₂ plane (𝒢₃)
+/-! # Reduction to standard position as a GENERAL tool — reduce both vectors to the e₁*e₂ plane (𝒢₃)
 
     `StandardPosition.lean` reduces ONE vector to the `e₁` axis (2 elementary plane rotations) and does
     `project`/`reject`/the geometric product there. This file makes the technique **uniform**: three
     elementary plane rotations (`rotXY`, `rotXZ`, `rotYZ` — procedures on the components, NOT versors)
-    put BOTH vectors into the `e₁ * e₂` plane — `a` on `e₁ = (|a|,0,0)`, `b = (b₁',b₂',0)` — after which
+    put BOTH vectors into the `e₁*e₂` plane — `a` on `e₁ = (|a|,0,0)`, `b = (b₁',b₂',0)` — after which
     EVERY operation is an elementary 2-D operation in that plane, rotated back. The same 3-rotation
     reduction serves `project`, `reject`, AND the `cross` product (mirroring the maintainer's
     `multivariate-math/proofs/crossproduct.tex`). The 3rd rotation (`rotYZ`, swinging `b` into the
@@ -136,10 +136,10 @@ theorem cross_rotYZ_equivariant_coord (c s a1 a2 a3 b1 b2 b3 : ℝ) (hcs : c ^ 2
   · ring
   · ring
 
-/-! ### The 3rd rotation: swing `b` into the e₁ * e₂ plane -/
+/-! ### The 3rd rotation: swing `b` into the e₁*e₂ plane -/
 
 /-- `rotYZ (b₂/k) (−b₃/k)` sends `(b₁, b₂, b₃)` to `(b₁, k, 0)` — `b`'s yz-part swung onto `e₂`, so `b`
-    lands in the `e₁ * e₂` plane. `k = √(b₂²+b₃²)` (`k ≠ 0`, `k² = b₂²+b₃²`). The analog of
+    lands in the `e₁*e₂` plane. `k = √(b₂²+b₃²)` (`k ≠ 0`, `k² = b₂²+b₃²`). The analog of
     `rotXY_aligns_xy` for the final reduction. -/
 theorem rotYZ_aligns_yz (b1 b2 b3 k : ℝ) (hk : k ≠ 0) (hk2 : k ^ 2 = b2 ^ 2 + b3 ^ 2) :
     rotYZ (b2 / k) (-b3 / k) (vec b1 b2 b3) = vec b1 k 0 := by
@@ -154,14 +154,14 @@ theorem rotYZ_aligns_yz (b1 b2 b3 k : ℝ) (hk : k ≠ 0) (hk2 : k ^ 2 = b2 ^ 2 
   · rfl
   · rfl
 
-/-! ### The general 3-rotation reduction to the e₁ * e₂ plane -/
+/-! ### The general 3-rotation reduction to the e₁*e₂ plane -/
 
 /-- The full reduction: compose the two rotations that put `a` on `e₁` (`rotXZ ∘ rotXY`, as in
-    `StandardPosition.rotate_b_to_e1`) with the `rotYZ` that swings `b` into the `e₁ * e₂` plane. -/
+    `StandardPosition.rotate_b_to_e1`) with the `rotYZ` that swings `b` into the `e₁*e₂` plane. -/
 noncomputable def reduceToPlane (cx sx cz sz cy sy : ℝ) (v : G3) : G3 :=
   rotYZ cy sy (rotXZ cz sz (rotXY cx sx v))
 
-/-- **`a` lands on `e₁`:** the full reduction sends `a` to `|a| * e₁` — the first two rotations put it on
+/-- **`a` lands on `e₁`:** the full reduction sends `a` to `|a|*e₁` — the first two rotations put it on
     `e₁` (`rotate_b_to_e1_magnitude`), and the third (`rotYZ`, about `e₁`) fixes it. The `(cos,sin)` of
     the first two are read off `a`; `cy`,`sy` are arbitrary (they do not move an `e₁` vector). -/
 theorem reduceToPlane_a_on_e1 (a1 a2 a3 cy sy : ℝ)
@@ -174,7 +174,7 @@ theorem reduceToPlane_a_on_e1 (a1 a2 a3 cy sy : ℝ)
   rw [rotate_b_to_e1_magnitude a1 a2 a3 hk hm]
   simp only [rotYZ, smul, vec]; ext <;> ring
 
-/-- **`b` lands in the `e₁ * e₂` plane:** after the two `a`-rotations carry `b` to some `(P,Q,R)`, the
+/-- **`b` lands in the `e₁*e₂` plane:** after the two `a`-rotations carry `b` to some `(P,Q,R)`, the
     third rotation `rotYZ (Q/j) (−R/j)` (`j = √(Q²+R²)`) zeroes its `e₃` component. So `b`'s reduced
     `e₃` coordinate is `0` — it lies in the plane. `(cx,sx,cz,sz)` are the `a`-rotation `(cos,sin)`. -/
 theorem reduceToPlane_b_in_plane (cx sx cz sz b1 b2 b3 j : ℝ) (hj : j ≠ 0)

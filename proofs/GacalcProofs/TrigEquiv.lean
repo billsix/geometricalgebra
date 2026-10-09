@@ -7,12 +7,12 @@ import GacalcProofs.Versor2D
     Ties the two characterizations of sine/cosine that already live in the proofs:
 
     * the **property form** (`GacalcProofs.G2.cos_between` / `sin_between`, Trig.lean) — sin/cos read
-      off the inner/outer products, `cos(θ) = (a·b)/(|a| * |b|)`, `sin(θ) = |a∧b|/(|a| * |b|)` (the latter
+      off the inner/outer products, `cos(θ) = (a·b)/(|a|*|b|)`, `sin(θ) = |a∧b|/(|a|*|b|)` (the latter
       UNSIGNED, the Python `abs_sin`); and
     * the **angle form** (`uvec_dot` / `uvec_wedge`, Rotation2D.lean) — for unit vectors at angles
       `α, β`, `(uvec α · uvec β) = cos(β−α)` and `(uvec α ∧ uvec β).c12 = sin(β−α)`.
 
-    It also gives the **signed** 2D sine (the Python `g2.Vector.sine`, `(a∧b).c12 / (|a| * |b|)`) a Lean
+    It also gives the **signed** 2D sine (the Python `g2.Vector.sine`, `(a∧b).c12 / (|a|*|b|)`) a Lean
     definition and shows the unsigned `sin_between` is its absolute value — mirroring the Python pair
     `abs_sin` (unsigned) / `sine` (signed), `abs(sine) == abs_sin`.
 

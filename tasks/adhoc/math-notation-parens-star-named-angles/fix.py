@@ -7,6 +7,7 @@ Applied only where a reader sees math, never to code:
 * ``.py``  -- comment tokens and string tokens (docstrings, the generator's docstring table,
   figure label strings, notebook markdown cells), skipping doctest lines (``>>>``/``...``);
 * ``.lean`` -- comment spans only (``/-- … -/``, ``/-! … -/``, ``-- …``); Lean code is exempt;
+  in those spans the star carries no surrounding spaces (``|a|*|b|``, ``R*v*R̃``);
 * ``.rst`` / ``.md`` -- whole file, except ``blade-square-sign.rst`` (its sliding diagrams are
   hand-edited: a ``*`` between every neighbour would break their column alignment), and except
   text between ``<!-- notation-rule: begin -->`` / ``<!-- notation-rule: end -->`` markers,
@@ -216,9 +217,15 @@ def rewrite_python(src: str) -> str:
 LEAN_COMMENT = re.compile(r"/-[-!].*?-/|--[^\n]*", re.DOTALL)
 
 
+# In a Lean comment the multiplication star is written WITHOUT surrounding spaces, so it
+# visually binds tighter than `+`/`−` (`a₁*b₂ − a₂*b₁`, not `a₁ * b₂ − a₂ * b₁`). A star
+# with only whitespace before it on its line is a markdown bullet and is left alone.
+TIGHTEN = re.compile(r"(?<=\S) \* (?=\S)")
+
+
 def rewrite_lean(src: str) -> str:
     """Rewrite only comment spans: block doc comments and line comments."""
-    return LEAN_COMMENT.sub(lambda m: rewrite(m.group(0)), src)
+    return LEAN_COMMENT.sub(lambda m: TIGHTEN.sub("*", rewrite(m.group(0))), src)
 
 
 HAND_EDITED: set[str] = {"book/docs/blade-square-sign.rst"}

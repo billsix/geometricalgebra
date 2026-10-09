@@ -10,18 +10,18 @@ import GacalcProofs.G2
 
     **The 2D-vs-3D point:** in 𝒢₂ the plane of rotation is the *whole space*, so there is no
     orthogonal complement and nothing is "left fixed" — the sandwich is purely the rotation. In 𝒢₃
-    the identical `R = b * a + |a| * |b|` acts in the `a∧b` plane and *additionally* fixes any component
+    the identical `R = b*a + |a|*|b|` acts in the `a∧b` plane and *additionally* fixes any component
     along the normal. So 2D isolates "the rotation itself"; 3D adds "and the orthogonal complement is
     untouched."
 
     Mirrors `Rotation3D.lean`: `bisector`, `versorFromVectors`, and `versor_mul_from_eq_bisector`
-    (`R * a = |a| * h`). Terminology: versor, not rotor (un-normalized; applied by `R * v * R⁻¹`). -/
+    (`R*a = |a|*h`). Terminology: versor, not rotor (un-normalized; applied by `R*v*R⁻¹`). -/
 namespace GacalcProofs.G2
 
 open Real
 
 /-- The scalar product `a·b = ⟨a b⟩₀` in 𝒢₂ (scalar part of the geometric product; for vectors the
-    Euclidean dot `a₁ * b₁ + a₂ * b₂`). -/
+    Euclidean dot `a₁*b₁ + a₂*b₂`). -/
 noncomputable def dot (a b : G2) : ℝ := (mul a b).s
 
 /-- `dot` distributes over subtraction on the left (it is bilinear) — the 𝒢₂ twin of
@@ -52,16 +52,16 @@ theorem dot_sub_right (u v w : G2) : dot u (sub v w) = dot u v - dot u w := by
 theorem dot_smul_right (k : ℝ) (u v : G2) : dot u (smul k v) = k * dot u v := by
   simp only [dot, mul, smul]; ring
 
-/-- **Leaf:** the dot product on coordinate vectors is `a₁ * b₁ + a₂ * b₂` (2D). -/
+/-- **Leaf:** the dot product on coordinate vectors is `a₁*b₁ + a₂*b₂` (2D). -/
 theorem dot_vec (a1 a2 b1 b2 : ℝ) : dot (vec a1 a2) (vec b1 b2) = a1 * b1 + a2 * b2 := by
   simp only [dot, mul, vec]; ring
 
-/-- The **half-angle (bisector) vector** of `from`/`to`: `h = |to| * from + |from| * to`. -/
+/-- The **half-angle (bisector) vector** of `from`/`to`: `h = |to|*from + |from|*to`. -/
 noncomputable def bisector (fromV toV : G2) : G2 :=
   add (smul (magnitude toV) fromV) (smul (magnitude fromV) toV)
 
-/-- The **half-angle versor** taking `from` toward `to`: `R = to * from + |from| * |to|` (scalar +
-    bivector), applied by the scale-invariant sandwich `R * v * R⁻¹`. -/
+/-- The **half-angle versor** taking `from` toward `to`: `R = to*from + |from|*|to|` (scalar +
+    bivector), applied by the scale-invariant sandwich `R*v*R⁻¹`. -/
 noncomputable def versorFromVectors (fromV toV : G2) : G2 :=
   add (mul toV fromV) (smul (magnitude fromV * magnitude toV) one)
 
@@ -70,7 +70,7 @@ noncomputable def versorFromVectors (fromV toV : G2) : G2 :=
 theorem magnitude_sq_vec (a1 a2 : ℝ) : magnitude (vec a1 a2) ^ 2 = a1 ^ 2 + a2 ^ 2 := by
   rw [magnitude, Real.sq_sqrt (by rw [normSq_vec]; positivity), normSq_vec]
 
-/-- **The half-angle versor times the from-vector is the (scaled) bisector**: `R * a = |a| * h`,
+/-- **The half-angle versor times the from-vector is the (scaled) bisector**: `R*a = |a|*h`,
     the 2D twin of `Rotation3D.versor_mul_from_eq_bisector`. Angle-free; the only non-`ring` step is
     `|a|² = a·a`. -/
 theorem versor_mul_from_eq_bisector_coord (a1 a2 b1 b2 : ℝ) :
@@ -89,14 +89,14 @@ theorem versor_mul_from_eq_bisector_coord (a1 a2 b1 b2 : ℝ) :
   · ring
 
 /-- Object form of `versor_mul_from_eq_bisector_coord`, for vectors `fromV`, `toV`:
-    `R * from = |from| * h`. -/
+    `R*from = |from|*h`. -/
 theorem versor_mul_from_eq_bisector {fromV toV : G2} (hf : IsVector fromV) (ht : IsVector toV) :
     mul (versorFromVectors fromV toV) fromV = smul (magnitude fromV) (bisector fromV toV) := by
   have h := versor_mul_from_eq_bisector_coord fromV.c1 fromV.c2 toV.c1 toV.c2
   rwa [← eq_vec_of_isVector hf, ← eq_vec_of_isVector ht] at h
 
-/-- Companion identity: `b * R = |b| * h` (multiplying the versor on the LEFT by the to-vector),
-    the 2D twin of `Rotation3D.from_mul_versor_eq_bisector`. With `R * a = |a| * h` it drives the
+/-- Companion identity: `b*R = |b|*h` (multiplying the versor on the LEFT by the to-vector),
+    the 2D twin of `Rotation3D.from_mul_versor_eq_bisector`. With `R*a = |a|*h` it drives the
     "carries a to b" capstone. -/
 theorem from_mul_versor_eq_bisector_coord (a1 a2 b1 b2 : ℝ) :
     mul (vec b1 b2) (versorFromVectors (vec a1 a2) (vec b1 b2))
@@ -114,7 +114,7 @@ theorem from_mul_versor_eq_bisector_coord (a1 a2 b1 b2 : ℝ) :
   · ring
 
 /-- Object form of `from_mul_versor_eq_bisector_coord`, for vectors `fromV`, `toV`:
-    `to * R = |to| * h`. -/
+    `to*R = |to|*h`. -/
 theorem from_mul_versor_eq_bisector {fromV toV : G2} (hf : IsVector fromV) (ht : IsVector toV) :
     mul toV (versorFromVectors fromV toV) = smul (magnitude toV) (bisector fromV toV) := by
   have h := from_mul_versor_eq_bisector_coord fromV.c1 fromV.c2 toV.c1 toV.c2

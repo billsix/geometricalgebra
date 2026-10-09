@@ -392,7 +392,8 @@ use discretion. Record: `tasks/archive/2026/10/03/prefer-sine-cosine-presentatio
 
 Three rules for every place a reader sees math — book prose and figure labels, book and demo
 notebooks, Python docstrings (hand-written and the generator's `CUSTOM_METHOD_DOCS`), Lean doc
-comments, reference docs, README (William Emerison Six <billsix@gmail.com>, 2026-10-08/09):
+comments, reference docs, README (William Emerison Six <billsix@gmail.com>, 2026-10-08/09; the
+sweep that applied them is `tasks/math-notation-parens-star-named-angles.md`):
 
 <!-- notation-rule: begin -->  (the sweep codemod skips this span: it quotes the rejected forms)
 - **Parentheses show function application, never multiplication** — `cos(θ)`, `\cos(\theta)`,
@@ -405,18 +406,30 @@ comments, reference docs, README (William Emerison Six <billsix@gmail.com>, 2026
   cross product).
 - **Every angle is named** — `sin(θ) = y/r`, `(cos(θ) = c, sin(θ) = s)`, `cos(θ) = 0`; never
   `sin = y/r`, `(cos = c, sin = s)`, `cos = 0`.
+- **In Lean doc comments the star carries no surrounding spaces** — `|a|*|b|`, `R*v*R̃`,
+  `a₁*b₂ − a₂*b₁` — so multiplication visually binds tighter than `+`/`−` (with spaces,
+  `a₁ * b₂-a₂ * b₁` reads as if the minus bound tighter; those comments are pure monospace
+  prose-math). **Everywhere else keeps the spaced `a * b`**, on purpose: LaTeX math (book pages,
+  MathJax notebooks) is *rendered*, so source spacing is ignored and `*`/`−` get equal operator
+  spacing however you type it; and Python docstring math doubles as copyable code, where
+  `2 * e_1` / `translate(b=3 * e_1)` is correct PEP 8 and `2*e_1` would read as bad Python. Lean
+  *code* keeps the language's own spacing.
 
-Exempt, because the form is dictated from outside: Lean *code* (`Real.cos θ` is the language's
+**The middle dot is the dot product, never a multiplication to mark.** `a·b`, `u·v`,
+`(v·d / d·d)`, and the Hestenes plane projection `(c·B)B⁻¹` keep the dot. A versor identity such
+as `R = b * a + |a| * |b|` or `R * a = |a| * h` takes the star because its Lean statement is `mul`
+(the geometric product); written `b·a` it reads as a dot product one line away from a real one. The
+`∗` scalar-product symbol in `base.py` docstrings (`Ã ∗ B`) is a third thing and stays.
+
+**Exempt**, because the form is dictated from outside: Lean *code* (`Real.cos θ` is the language's
 application syntax; doc comments are not exempt), Python code (`sympy.cos(theta)` already applies
 with parentheses; a Python local named `cos` is a name, not notation), and doctest lines.
-Juxtaposition also survives, on purpose, where it is not a product being written: the middle dot
-as the **dot product** (`a·b`); a **quotation of the reader's prior notation** (`a i + b j`,
-`(x + 2)(x + 3)`); and `blade-square-sign.rst`'s sliding diagrams, whose columns a `*` would
-misalign (the page says so once). **A doc that quotes a rejected spelling on purpose** — these
-rule paragraphs do — fences the span with `<!-- notation-rule: begin -->` /
-`<!-- notation-rule: end -->` so a re-sweep skips it. The sweep that applied the rules (2026-10-09,
-three codemod versions, each caught by reading the diff) is recorded in
-`tasks/math-notation-parens-star-named-angles.md`.
+Juxtaposition also survives, on purpose, where it is not a product being written: a **quotation of
+the reader's prior notation** (`a i + b j`, `(x + 2)(x + 3)`), and `blade-square-sign.rst`'s sliding
+diagrams, whose columns a `*` would misalign (the page says so once).
+
+**A doc that quotes a rejected spelling on purpose** — these rule paragraphs do — fences the span
+with `<!-- notation-rule: begin -->` / `<!-- notation-rule: end -->` so a re-sweep skips it.
 <!-- notation-rule: end -->
 
 ## Coordinates only when needed

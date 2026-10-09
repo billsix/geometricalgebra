@@ -9,7 +9,7 @@ import GacalcProofs.Measures
 
     Geometric facts proved elsewhere in dot/wedge terms, **restated through `cos_between` /
     `sin_between`** (`Trig.lean`) the way a geometry/trig student meets them: perpendicular ⇒ the
-    cosine of the angle is 0; parallel ⇒ the sine is 0; area = |a| * |b| * sin(θ).
+    cosine of the angle is 0; parallel ⇒ the sine is 0; area = |a|*|b|*sin(θ).
 
     **Stated over objects, with a nonzero guard.** Each theorem takes vectors/multivectors
     (`IsVector`), not coefficient tuples ("use coordinates only when needed" — see `CLAUDE.md` and
@@ -18,10 +18,10 @@ import GacalcProofs.Measures
 
     ## Why the cosine form RESTS ON the dot form, and why the nonzero guard matters
 
-    `cos_between a b = dot a b / (|a| * |b|)`. The dot product is the division-free primitive:
+    `cos_between a b = dot a b / (|a|*|b|)`. The dot product is the division-free primitive:
     `dot a b = 0` is the exact orthogonality condition for ALL `a, b`, needing no nonzero assumption.
     Dividing introduces a subtlety — in Lean/Mathlib `x / 0 = 0` (the junk-value convention) — so if
-    either vector is the zero vector then `|a| * |b| = 0` and `cos_between a b = 0/0 = 0`: TRUE but
+    either vector is the zero vector then `|a|*|b| = 0` and `cos_between a b = 0/0 = 0`: TRUE but
     meaningless, since the angle to a zero vector is undefined. Hence `dot a b = 0 → cos_between a b =
     0` always, but the converse `cos(θ) = 0 → dot = 0` needs `|a|, |b| ≠ 0`; i.e. `cos(θ) = 0` is logically
     WEAKER than `dot = 0` — UNLESS we add the nonzero guard, which excludes the `0/0` case and makes
@@ -77,8 +77,8 @@ theorem parallel_smul {a : G3} (ha : IsVector a) (_ha0 : normSq a ≠ 0) (k : �
     rw [wedge_parallel_smul ha k]; simp [magnitude, normSq, mul, reverse, zero]
   simp only [sin_between, hm, zero_div]
 
-/-- **Area = |a| * |b| * sin(θ)** — the student's area-of-a-parallelogram formula, from `area = |a∧b|`
-    and `sin_between = |a∧b| / (|a| * |b|)` (for nonzero `a`, `b`). -/
+/-- **Area = |a|*|b|*sin(θ)** — the student's area-of-a-parallelogram formula, from `area = |a∧b|`
+    and `sin_between = |a∧b| / (|a|*|b|)` (for nonzero `a`, `b`). -/
 theorem area_eq_mag_mul_sin (a b : G3) (ha : magnitude a ≠ 0) (hb : magnitude b ≠ 0) :
     area a b = magnitude a * magnitude b * sin_between a b := by
   simp only [area, sin_between]

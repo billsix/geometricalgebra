@@ -10,15 +10,15 @@ import GacalcProofs.StandardPosition2D
 
       1. `R_a^{e₁} = rotPlane (a₁/|a|) (−a₂/|a|)` — swing `a` onto the `e₁` axis.
       2. `R_{e₁}^{b'}` — in that frame, rotate `e₁` onto `b' = R_a^{e₁}(b)`, reading the cosine/sine off
-         `b'`'s own coordinates. `b'`'s unit coordinates are `(a·b)/(|a| * |b|)` and `(a∧b)/(|a| * |b|)`
-         (`bprime_coords`), so this middle rotation is `rotPlane ((a·b)/(|a| * |b|)) ((a∧b)/(|a| * |b|))`.
+         `b'`'s own coordinates. `b'`'s unit coordinates are `(a·b)/(|a|*|b|)` and `(a∧b)/(|a|*|b|)`
+         (`bprime_coords`), so this middle rotation is `rotPlane ((a·b)/(|a|*|b|)) ((a∧b)/(|a|*|b|))`.
       3. `(R_a^{e₁})⁻¹ = rotPlane (a₁/|a|) (a₂/|a|)` — undo step 1.
 
     **The punchline — the sandwich collapses.** In 2D plane rotations commute, so the align/un-align of
     steps 1 and 3 cancel around the middle and the whole thing is *just the middle rotation*
     (`rotateFromTo_collapse`): a single `rotPlane` by the angle from `a` to `b`, whose cosine and sine
-    are the coordinate formulas `(a·b)/(|a| * |b|)` and `(a∧b)/(|a| * |b|)` — **no angle ever named**. Applied
-    to `a`, it lands on `(|a|/|b|) * b` — `b`'s direction with `a`'s magnitude (`rotateFromTo_carries`),
+    are the coordinate formulas `(a·b)/(|a|*|b|)` and `(a∧b)/(|a|*|b|)` — **no angle ever named**. Applied
+    to `a`, it lands on `(|a|/|b|)*b` — `b`'s direction with `a`'s magnitude (`rotateFromTo_carries`),
     since magnitudes don't set the rotation, only directions do. The engine is `rotPlane_comp` (the
     composition of two plane rotations is the rotation by the angle-sum), its corollary
     `rotPlane_comm` (plane rotations commute — the fact the book's "The collapse" cites by name),
@@ -28,7 +28,7 @@ import GacalcProofs.StandardPosition2D
 namespace GacalcProofs.G2
 
 /-- **Composition of plane rotations = rotation-angle addition.** `rotPlane c₁ s₁ ∘ rotPlane c₂ s₂` is
-    `rotPlane (c₁ * c₂ − s₁ * s₂) (s₁ * c₂ + c₁ * s₂)` — the 2×2 rotation-matrix product. Pure algebra; holds for
+    `rotPlane (c₁*c₂ − s₁*s₂) (s₁*c₂ + c₁*s₂)` — the 2×2 rotation-matrix product. Pure algebra; holds for
     any `(c, s)` (no unit constraint). The result is symmetric in the two pairs, which is why plane
     rotations commute — stated as `rotPlane_comm` below. -/
 theorem rotPlane_comp (c1 s1 c2 s2 : ℝ) (v : G2) :
@@ -78,7 +78,7 @@ theorem cs_a_unit (a1 a2 ma : ℝ) (hma : ma ≠ 0) (hma2 : a1 ^ 2 + a2 ^ 2 = ma
 /-- **The three-step construction collapses to a single plane rotation** — the punchline. Align `a` to
     `e₁` (`rotPlane (a₁/|a|) (−a₂/|a|)`), rotate by the coordinate `(cos, sin)` of the `a→b` angle in
     that frame, then un-align (`rotPlane (a₁/|a|) (a₂/|a|)`); the align/un-align cancel and only the
-    middle rotation `rotPlane ((a·b)/(|a| * |b|)) ((a∧b)/(|a| * |b|))` remains. For any `v`. -/
+    middle rotation `rotPlane ((a·b)/(|a|*|b|)) ((a∧b)/(|a|*|b|))` remains. For any `v`. -/
 theorem rotateFromTo_collapse (a1 a2 b1 b2 ma mb : ℝ)
     (hma : ma ≠ 0) (hma2 : a1 ^ 2 + a2 ^ 2 = ma ^ 2) (v : G2) :
     rotPlane (a1 / ma) (a2 / ma)
@@ -88,7 +88,7 @@ theorem rotateFromTo_collapse (a1 a2 b1 b2 ma mb : ℝ)
   rotPlane_conj_collapse (a1 / ma) (a2 / ma) _ _ (cs_a_unit a1 a2 ma hma hma2) v
 
 /-- **The construction carries `a`'s direction to `b`'s direction.** The three-step rotation applied to
-    `a` is `(|a|/|b|) * b` — `b`'s direction, scaled to `a`'s magnitude (magnitudes don't set the
+    `a` is `(|a|/|b|)*b` — `b`'s direction, scaled to `a`'s magnitude (magnitudes don't set the
     rotation). For nonzero `a`, `b` (`ma = |a|`, `mb = |b|`). -/
 theorem rotateFromTo_carries (a1 a2 b1 b2 ma mb : ℝ)
     (hma : ma ≠ 0) (hmb : mb ≠ 0) (hma2 : a1 ^ 2 + a2 ^ 2 = ma ^ 2) :
