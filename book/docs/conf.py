@@ -136,3 +136,8 @@ nb_execution_timeout = 600
 # tasks/archive/2026/08/29/fix-broken-book-notebooks-vector2-rename.md). With
 # docs.sh's `set -eu`, a non-zero sphinx-build now aborts `make docs`.
 nb_execution_raise_on_error = True
+
+# Show line numbers on every notebook code cell, in HTML and the LaTeX/PDF, the way
+# Model View Projection does. Library source quoted with `literalinclude` gets its own
+# `:linenos:` + `:lineno-match:` (see tasks/reference/book-and-docs-pipeline.md).
+nb_number_source_lines = True
