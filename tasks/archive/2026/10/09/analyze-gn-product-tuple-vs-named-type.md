@@ -14,8 +14,9 @@ tuple form the maintainer recalls as "cleaner" and two other options, all behavi
 the concrete before/after from git history, the options table, and a recommendation are in
 `tasks/reference/gn-product-structure-options.md`. Outcome: it is a **taste call**, not a defect —
 either keep the NamedTuple (no work) or adopt option C (a type-aliased tuple) to recover the terse
-recursion with a readable return type. The option-C change is scaffolded as
-`tasks/change-gn-product-term-representation.md` (`proposed — needs go-ahead`).
+recursion with a readable return type. **The maintainer chose to keep the `NamedTuple` as is
+(2026-10-09)**; option C was declined and its scaffolded task removed. The decision is recorded in
+`tasks/reference/gn-product-structure-options.md`.
 
 ## What was found
 
@@ -43,6 +44,5 @@ dataclass, heavier for no gain) are not recommended. The pick is the maintainer'
 
 ## Open questions
 
-None for this analysis. The one decision — keep the NamedTuple or switch to option C — lives in the
-follow-on task `tasks/change-gn-product-term-representation.md` (its Open question 1), gated on the
-maintainer's pick.
+None. The one decision — keep the NamedTuple or switch to option C — was answered by the maintainer
+(2026-10-09): **keep the NamedTuple**. See `tasks/reference/gn-product-structure-options.md`.

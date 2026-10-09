@@ -96,6 +96,9 @@ behaviour-identical, for the maintainer to pick:
 A/D are not recommended: A reintroduces the opaque annotation; D is heavier than B for no gain (the
 term is never mutated and does not need to be non-iterable).
 
-The pick is a taste call on "field names vs. terseness", not a correctness one. The follow-on
-implementation task (`tasks/change-gn-product-term-representation.md`, `proposed — needs go-ahead`)
-captures option C as the concrete change if the maintainer wants it.
+The pick is a taste call on "field names vs. terseness", not a correctness one.
+
+**Decision (William Emerison Six <billsix@gmail.com>, 2026-10-09): keep the current `NamedTuple`
+(option B).** Option C (the type-aliased tuple) was considered and declined; the field names in the
+four `match` arms and the `as_multivector()` method home were judged worth the small construction
+verbosity. No change to the code.
