@@ -14,7 +14,7 @@ four moves) is `tasks/reference/gn-multiplication-by-hand.md`.
 right blade, canonicalizing the concatenation with the recursive `decrease_grade`, promoting each
 result to a one-term `Gn`, and summing. The unit carried through the recursion is a **named record**:
 
-```python
+```text
 class BladeDictionaryEntry(NamedTuple):
     blade: Blade          # Blade = tuple[int, ...]
     coefficient: Real
@@ -33,7 +33,7 @@ def decrease_grade(basis_blade: BladeDictionaryEntry) -> BladeDictionaryEntry:
 Commit `ca31ce5` ("use tuple instead, directly", then `src/geometricalgebra/multivector.py`) passed the
 blade and coefficient as **two positional values**, returning a **bare 2-tuple**:
 
-```python
+```text
 def decrease_grade(basis_blades: tuple[int, ...], magnitude: Numeric
                    ) -> tuple[tuple[int, ...], Numeric]:
     match basis_blades:
