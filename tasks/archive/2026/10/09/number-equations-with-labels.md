@@ -13,7 +13,7 @@ The maintainer wanted displayed equations numbered "like TeX" and citable by num
 the rotation formula of `proof-rotate.rst` carries a `:label:` and is cited with `:eq:` from the two
 pages that point at it, and the convention is recorded in `tasks/reference/book-outline.md`. The
 numbers run straight through (`(3)`, `(4)`, …) for now and become per-chapter `(2.3)` the moment the
-companion `tasks/pdf-section-and-page-numbers-for-print.md` adds `:numbered:` to the toctree — the two
+companion `tasks/archive/2026/10/09/pdf-section-and-page-numbers-for-print.md` adds `:numbered:` to the toctree — the two
 tasks share that switch, and the page/section-number task is being done next in the same session.
 
 ## What was done
@@ -43,7 +43,7 @@ equation. The multi-line derivations are single `\begin{aligned}` blocks, so eac
 ## Dependency on the page/section-number task
 
 Per-chapter equation numbers (`(2.3)`) need numbered sections, i.e. `:numbered:` on `index.rst`'s
-toctree. That switch is owned by `tasks/pdf-section-and-page-numbers-for-print.md` (its plan step 2),
+toctree. That switch is owned by `tasks/archive/2026/10/09/pdf-section-and-page-numbers-for-print.md` (its plan step 2),
 so it is added there, not here, to avoid a duplicate edit. Until it lands the equations number
 straight through (`(3)`, `(4)`); the numbering infrastructure and the `:eq:` references are complete
 and correct either way. Verify per-chapter rendering at the end of that task.
