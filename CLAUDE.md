@@ -393,7 +393,7 @@ use discretion. Record: `tasks/archive/2026/10/03/prefer-sine-cosine-presentatio
 Three rules for every place a reader sees math — book prose and figure labels, book and demo
 notebooks, Python docstrings (hand-written and the generator's `CUSTOM_METHOD_DOCS`), Lean doc
 comments, reference docs, README (William Emerison Six <billsix@gmail.com>, 2026-10-08/09; the
-sweep that applied them is `tasks/math-notation-parens-star-named-angles.md`):
+sweep that applied them is `tasks/archive/2026/10/09/math-notation-parens-star-named-angles.md`):
 
 <!-- notation-rule: begin -->  (the sweep codemod skips this span: it quotes the rejected forms)
 - **Parentheses show function application, never multiplication** — `cos(θ)`, `\cos(\theta)`,

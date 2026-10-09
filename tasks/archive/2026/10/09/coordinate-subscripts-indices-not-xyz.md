@@ -69,7 +69,7 @@ and the `sp4` figure labels; a second run changed nothing; `data/hits-after.txt`
 edits followed: the `proof-projection` notebook's locals for the *aligned* vector's coordinates
 became `a_aligned_1`/`a_aligned_2` (the mechanical rename would have shadowed the module-level
 symbols), and the passage and outline spell the rejected form `a_{x}` so the sweep's zero stays
-meaningful. **Ordering:** this ran before `tasks/math-notation-parens-star-named-angles.md` (still
+meaningful. **Ordering:** this ran before `tasks/archive/2026/10/09/math-notation-parens-star-named-angles.md` (still
 proposed), which touches the same equations and can run on top.
 
 **The codemod bug, caught by the gate.** The first `make docs` failed in the PDF step

@@ -1,9 +1,9 @@
 # Math notation sweep: parentheses for function application, `*` for scalar multiplication, every angle named
 
-**Status:** DONE 2026-10-09 (work committed by the maintainer as pre-squash quick-saves — the "added parenthesis and use * for
-multiplication" and "tigthen mult without spaces" commits, which collapse into one at squash); the
-archive move plus `git rm -r tasks/adhoc/math-notation-parens-star-named-angles/` are owed as their
-own commit after the squash.
+**Status:** complete
+**Completed:** 2026-10-09 (archived in its own commit, with the one-shot codemod removed; the
+pre-squash quick-saves "added parenthesis and use * for multiplication" / "tigthen mult without
+spaces" collapse into one at squash)
 **Priority:** 3
 **Difficulty:** 4
 **Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
