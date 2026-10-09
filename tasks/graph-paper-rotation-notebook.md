@@ -19,7 +19,7 @@ similar-triangle step).
 
 ## Context (read first)
 
-- **The idea's foundation** is `tasks/prove-rotation-is-distributive-2d.md` — rotation is linear, so
+- **The idea's foundation** is `tasks/archive/2026/10/09/prove-rotation-is-distributive-2d.md` — rotation is linear, so
   rotating every grid point is the same as rotating the two basis vectors and carrying the grid with
   them. This notebook is the visual of that.
 - **ePiX figures** live in `book/figures/epix/` and render to `_static/epix/*.png` for `.. figure::`
