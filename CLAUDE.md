@@ -326,7 +326,10 @@ over a "run it on your host" instruction.
   scene description; the only exceptions are positional-only builtins (`math.cos(x)`). Checked and fixed
   by `python tools/check_epix_keywords.py [--fix]`, a `make format` gate step (the maintainer's rule,
   2026-10-07). Every binding in a figure file is typed, as everywhere else (`fig: PendingFigure`
-  declared above the `with`; `PendingFigure` is `_rotation_scene`'s alias for what `epix.figure()` yields). Details:
+  declared above the `with`; `PendingFigure` is `_rotation_scene`'s alias for what `epix.figure()` yields).
+  **A label's colour matches the line/vector it labels** (the maintainer's rule, 2026-10-09) so a reader
+  sees at a glance which label is which; `leg()`/`vector()` do it automatically, an explicit
+  `epix.label()` on a coloured element sets `epix.label_color(color=…)` first. Details:
   `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
 - **`make docs`** — builds the Sphinx book ("Geometry 2", `book/docs/`) to HTML + PDF into
   `output/gacalc/` (needs an image built with `BUILD_DOCS=1`, the default).

@@ -32,7 +32,7 @@ from epix import Point
 from epix.figure import _Pending as PendingFigure  # what epix.figure() yields
 
 ORIGIN: Point = Point(x=0, y=0)
-A_LENGTH: float = 1.25  # |a|: a is NOT a unit vector -- the circle is only for scale
+A_LENGTH: float = 1.7  # |a|: matches _rotation_scene.R so every rotate figure agrees
 A_ANGLE: float = math.radians(66)  # direction of a
 THETA: float = math.radians(66)  # the rotation angle
 WEDGE_RADIUS: float = 0.33
