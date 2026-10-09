@@ -205,3 +205,23 @@ def test_parallel_vectors_rejected() -> None:
         plane_rotation(E1, 3 * E1)
     with pytest.raises(ValueError, match="parallel"):
         plane_rotation(E1, -E1)
+
+
+def test_rotation_is_distributive_over_addition_symbolic_2d() -> None:
+    """Rotation distributes over +: (a + b) * R == a * R + b * R, and a's rotation is
+    the sum of the basis rotations -- the linearity behind the natural-basis
+    decomposition (Lean: rot_add_vec / rot_smul / rot_basis_decomp)."""
+    theta: sympy.Symbol = sympy.Symbol("theta", real=True)
+    a_1: sympy.Symbol
+    a_2: sympy.Symbol
+    b_1: sympy.Symbol
+    b_2: sympy.Symbol
+    a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
+    a: g2.Vector = a_1 * g2.Vector.e_1 + a_2 * g2.Vector.e_2
+    b: g2.Vector = b_1 * g2.Vector.e_1 + b_2 * g2.Vector.e_2
+    rotor: g2.Versor = sympy.cos(theta) + sympy.sin(theta) * g2.Bivector.e_12
+    assert ((a + b) * rotor).simplified() == (a * rotor + b * rotor).simplified()
+    basis_decomposition: g2.Vector = a_1 * (g2.Vector.e_1 * rotor) + a_2 * (
+        g2.Vector.e_2 * rotor
+    )
+    assert (a * rotor).simplified() == basis_decomposition.simplified()

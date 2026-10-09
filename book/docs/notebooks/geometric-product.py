@@ -56,3 +56,25 @@ gacalc_result
 # %%
 # They agree: the difference is zero.
 (full_angle_result - gacalc_result).simplified()
+
+# %% [markdown]
+# **Rotation is distributive.** Because to rotate is to multiply by `R`, and the
+# geometric product distributes over `+`, rotating a sum is rotating each piece and
+# adding: `(a + b) * R == a * R + b * R`.
+
+# %%
+b_1: sympy.Symbol
+b_2: sympy.Symbol
+b_1, b_2 = sympy.symbols("b_1 b_2", real=True)
+b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2
+
+# rotating a sum equals rotating each piece and adding -- the difference is zero.
+(((a + b) * R) - (a * R + b * R)).simplified()
+
+# %% [markdown]
+# So a rotation is fixed by what it does to the two basis vectors: `a * R` is built
+# from the rotations of `e_1` and `e_2`.
+
+# %%
+basis_decomposition: Vector = a_1 * (Vector.e_1 * R) + a_2 * (Vector.e_2 * R)
+((a * R) - basis_decomposition).simplified()

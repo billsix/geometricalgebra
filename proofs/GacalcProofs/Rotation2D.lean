@@ -80,6 +80,29 @@ theorem rot_normSq (θ : ℝ) {v : G2} (hv : G2.IsVector v) : G2.normSq (rot θ 
   simp only [G2.normSq, rot, G2.vec, G2.mul, G2.reverse, hs, h12]
   linear_combination (v.c1 ^ 2 + v.c2 ^ 2) * cos_sq_add_sin_sq θ
 
+/-- **Rotation is additive (distributive over +):** `rot θ (u + v) = rot θ u + rot θ v`, because the
+    coordinate map is linear in `c1`/`c2`. The book's statement is that rotating `\vec u + \vec v` is
+    the same as rotating each and adding — true because the geometric product (which enacts rotation,
+    `vec_mul_fullAngleRotor`) distributes over `+`. -/
+theorem rot_add_vec (θ : ℝ) (u v : G2) : rot θ (G2.add u v) = G2.add (rot θ u) (rot θ v) := by
+  simp only [rot, G2.add, G2.vec]
+  ext <;> ring
+
+/-- **Rotation is homogeneous:** `rot θ (k • v) = k • rot θ v`. With `rot_add_vec` this makes rotation
+    **linear**. -/
+theorem rot_smul (θ k : ℝ) (v : G2) : rot θ (G2.smul k v) = G2.smul k (rot θ v) := by
+  simp only [rot, G2.smul, G2.vec]
+  ext <;> ring
+
+/-- **A rotation is fixed by what it does to the natural basis:** `rot θ v = v₁ • rot θ e₁ + v₂ • rot
+    θ e₂`. This is the payoff of linearity (`rot_add_vec` + `rot_smul`) — rotate the two basis vectors
+    and every vector's rotation follows, the fact the book's "rotation is rotating the graph paper"
+    picture rests on. Holds for any `v` (`rot` reads only `c1`/`c2`). -/
+theorem rot_basis_decomp (θ : ℝ) (v : G2) :
+    rot θ v = G2.add (G2.smul v.c1 (rot θ G2.e_1)) (G2.smul v.c2 (rot θ G2.e_2)) := by
+  simp only [rot, G2.add, G2.smul, G2.vec, G2.e_1, G2.e_2]
+  ext <;> ring
+
 /-- The **full-angle rotor** for angle θ, as a linear combination of the basis *elements* `one`
     and `e_12` (not a raw coordinate tuple): R = cos(θ)*1 + sin(θ)*e₁*e₂ ∈ 𝒢₂. Unit, and used
     ONE-SIDED (`v*fullAngleRotor θ`) — the 2D teaching form; the sandwich rotor is `rotor θ`. -/
