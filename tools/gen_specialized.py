@@ -137,6 +137,19 @@ multivector type of an operand or a result:
   - ``rvp_body``            -> the graded classes' ``if r == …:`` chain
   - ``rvp_overload_stub(s)`` -> its ``@overload`` signatures
   - ``rvp_spec``            -> a grade's resolved part type
+
+Variable names the generator EMITS into ``g1``/``g2``/``g3`` follow the Hestenes
+grade-class convention like the rest of the codebase (Greek scalars, lowercase
+vectors, CAPITAL multivectors -- ``tasks/reference/hestenes-variable-notation.md``).
+In practice the emitted names are already conforming without special handling:
+method parameters are lowercase vectors (``a``/``b``/``from_vector``), locals are
+the systematic coefficient/CSE temporaries (``c*``/``x*``) and canonical constants
+(``e_12``/``one``/``zero``, externally-fixed), plus a few descriptive multivector
+words (``plane``/``lhs``/``rhs``) the convention leaves as-is. The angle/trig math
+is NOT emitted here -- the specialized methods delegate to ``MultiVectorBase`` (so
+the only Greek-scalar site, ``θ`` in ``exp``, lives in ``base.py``). So a new emitter
+should keep a terse multivector local CAPITAL and an angle scalar Greek; do not
+introduce a lowercase terse multivector or a Latin single-letter angle.
 """
 
 from __future__ import annotations

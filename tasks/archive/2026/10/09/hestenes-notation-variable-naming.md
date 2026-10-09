@@ -65,6 +65,36 @@ labels (`sympy.symbols("theta")`) and comments were untouched. ~130 NAME tokens 
 - **Container gates** against the existing image (nested podman): `entrypoint/format.sh` all green;
   `pytest` **697 passed**.
 
+## Subtask: verify the generated code (`g1`/`g2`/`g3`) follows the pattern (2026-10-09)
+
+Added after the first pass archived, because the sweep had covered `src/`/`tests/`/`notebooks/` but
+never confirmed the **generated** modules conform (the task's scope said "generator-first for
+anything under `src/gacalc/g*.py` — variable names there come from `tools/gen_specialized.py`"). The
+generated files are gitignored build artifacts, so this is checked by regenerating and reading the
+real output, never by hand-editing it.
+
+**Finding: the generated code already conforms; no generator change was needed.** An `ast` scan of
+all three generated files found the complete set of non-coefficient local-binding names to be
+`DIMENSION`, `__all__`, `d`, `left`, `right`, `rhs`, `present`, `plane`, `one`, `zero`. Every one is
+convention-clean:
+
+- `one`/`zero`/`DIMENSION`/`e_1`/`e_12`/… — canonical, externally-fixed basis and identity constants
+  (exempt, like `cls`/`n`).
+- `d`/`left`/`right` are blade dicts (`BladeReal`), `present` is a `list[int]` of grades, `__all__` is
+  the export dunder — none is a geometric-algebra scalar/vector/multivector, so the grade-class rules
+  do not apply.
+- `plane` (bivector), `rhs`/`lhs` (operand multivectors) are descriptive multivector words, left as-is
+  per the same descriptive-fallback used in the hand-written sweep.
+- Method parameters are lowercase vectors (`a`/`b`/`x`/`from_vector`), correct and public (N803).
+- **No scalar-angle local exists in the generated code**: the specialized `exp`/rotation methods
+  delegate to `MultiVectorBase` (`return typing.cast(Versor, MultiVectorBase.exp(self))`), so the one
+  Greek-scalar site (`θ` in `exp`) lives in `base.py`, already swept.
+
+**Durable guard added:** a note in `tools/gen_specialized.py`'s "Naming conventions" docstring records
+that emitted-code names follow the Hestenes convention (pointer to the reference doc), so a future
+emitter keeps a terse multivector local CAPITAL and an angle scalar Greek. Regenerated (`make generate`
+equivalent) and reran the gates: generated output unchanged, `ruff`/`ty` clean, `pytest` 697 passed.
+
 ## Open questions
 
 None.
