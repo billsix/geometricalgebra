@@ -259,7 +259,7 @@ def test_exp(n: int, cls: type[MultiVectorBase]) -> None:
     with pytest.raises(ValueError):
         to(cls, v).exp()
     if n >= 2:
-        B: Gn = vec(n, 0) ^ vec(n, 10)
+        B: Gn = Gn.bivector_from_vectors(vec(n, 0), vec(n, 10))
         assert to(cls, B).exp() == B.exp()
 
 

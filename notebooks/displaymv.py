@@ -114,9 +114,7 @@ e_2 * e_1  # pyright: ignore[reportUnusedExpression]
 # `2x + 3y + 5x`.
 
 # %%
-(
-    2 * e_1 + 3 * e_2 + 5 * e_1
-)  # -> 7*e_1 + 3*e_2  # pyright: ignore[reportUnusedExpression]
+(2 * e_1 + 3 * e_2 + 5 * e_1)  # -> 7*e_1 + 3*e_2  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Putting the rules together
@@ -226,9 +224,7 @@ i * i  # pyright: ignore[reportUnusedExpression]
 # > `  = -6 e_12`
 
 # %%
-(2 * e_1) * (3 * e_3) * (4 * e_3) * (
-    5 * e_1
-)  # -> 120  # pyright: ignore[reportUnusedExpression]
+(2 * e_1) * (3 * e_3) * (4 * e_3) * (5 * e_1)  # -> 120  # pyright: ignore[reportUnusedExpression]
 
 # %%
 (2 * e_2) * (3 * e_1)  # -> -6*e_12  # pyright: ignore[reportUnusedExpression]
@@ -271,9 +267,7 @@ i * i  # pyright: ignore[reportUnusedExpression]
 e_1 * (e_3 * (e_3 * e_1))  # right-to-left  # pyright: ignore[reportUnusedExpression]
 
 # %%
-e_1 * (
-    (e_3 * e_3) * e_1
-)  # middle-pair first (what we did by hand)  # pyright: ignore[reportUnusedExpression]
+e_1 * ((e_3 * e_3) * e_1)  # middle-pair first (what we did by hand)  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # They all agree. That is **associativity**: for a product of several things, *how you
@@ -302,6 +296,14 @@ sym_vec2_1.dot(sym_vec2_2)
 
 # %%
 sym_vec2_1.wedge(sym_vec2_2)
+
+# %%
+# Wedging two vectors just to *name the plane they span* is common enough to have
+# helpers: `bivector_from_vectors(a, b)` is exactly `a ^ b`, and `i(a, b)` is that
+# plane's UNIT bivector (i^2 = -1) -- the same as `(a ^ b).normalize()`. Reach for
+# them when the plane is a means to an end (to normalize, invert, or feed a rotation);
+# keep `^` when the wedge itself is the lesson.
+MultiVector.i(sym_vec2_1, sym_vec2_2) == (sym_vec2_1 ^ sym_vec2_2).normalize()
 
 # %%
 e1e2plane: MultiVectorFn = MultiVector.project(onto=e_1 * e_2)
@@ -443,7 +445,7 @@ a_1 * e_1 * e_2 * e_4  # pyright: ignore[reportUnusedExpression]
 # %%
 vec_a: MultiVector = MultiVector.symbolic_multivector(n=3, prefix="e").r_vector_part(1)
 vec_b: MultiVector = MultiVector.symbolic_multivector(n=3, prefix="f").r_vector_part(1)
-B: MultiVector = vec_a ^ vec_b
+B: MultiVector = MultiVector.bivector_from_vectors(vec_a, vec_b)
 B  # pyright: ignore[reportUnusedExpression]
 
 
