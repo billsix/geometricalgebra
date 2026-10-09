@@ -1,77 +1,67 @@
-# Audit the Dockerfile package list for CLI tools the gates/CI need (cmp is missing)
+# Audit the Dockerfile package list for CLI tools the gates/CI need
 
-**Status:** proposed — needs go-ahead for the broader audit; the immediate `diffutils` fix LANDED in
-`d478c9d` (2026-09-30), so the `cmp` failure is gone
+**Status:** complete
+**Completed:** 2026-10-09
 **Priority:** 3
 **Difficulty:** 2
-**Created:** 2026-09-30 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-09-30 **Updated:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
-A GitHub Actions job failed with `/bin/bash: line 1: cmp: command not found` — the image built by
-the `Dockerfile` didn't install `cmp` (from **`diffutils`**), which the codegen-determinism gate
-(`make check-generated`) uses to compare the twice-generated `g*.py`. That one-package fix landed in
-`d478c9d` (the commit that filed this task); what remains is the broader task: **audit every gate / CI job / entrypoint script for the CLI
-tools it shells out to, cross-check against what the image actually installs, and add the missing
-ones to the package list** (the host-runnable `entrypoint/0N-install-*.sh` scripts the Dockerfile
-dispatches). "Done" = a reviewed list of missing packages + the one-line fix(es), CI green.
+A GitHub Actions job died with `cmp: command not found` — the image did not install `cmp` (from
+**`diffutils`**), which `make check-generated` uses to compare the twice-generated `g*.py`. That
+one-package fix landed in `d478c9d` (2026-09-30). This task was the **broader audit**: enumerate
+every CLI tool each gate / CI job / entrypoint script shells out to, cross-check against what the
+install scripts put in the image, and add anything missing. **Finding: `diffutils` was the only
+gap. No additional packages are needed** — every other container-side gate tool is already in the
+right install group, and the one tool CI uses that the image intentionally lacks (`git` for
+`check-format`) runs on the host runner, not in the image. CI is green. The durable rule and the
+gate → tool → group map are now recorded in `CLAUDE.md` › Continuous integration.
 
-## The failure (verbatim, 2026-09-30 — fixed)
+## The audit (what was checked, and the result)
 
-The `generated` check (`make check-generated`) runs, inside the container:
+CI is a thin wrapper over `make` (`.github/workflows/checks.yml` + `lean.yml`), so the audit
+enumerated the tools each gate shells out to **inside the container** and matched each to an
+`entrypoint/0N-install-*.sh` group (the Dockerfile dispatches these by ARG; `git grep` of the
+Makefile gate targets, the workflow YAML, `entrypoint/format.sh`, `proofs/check.sh`, and the
+`subprocess` calls in `tools/*.py`):
 
-```
-python tools/gen_specialized.py; ... for f in g1.py g2.py g3.py; do
-  cmp -s "$f" "/tmp/gen0/$(basename "$f")" || { echo "...non-deterministic..."; exit 1; }; done
-```
+| Gate (CI job)                     | Container-side CLI tools                          | Install group / source           |
+|-----------------------------------|---------------------------------------------------|----------------------------------|
+| `check-generated` (`generated`)   | `python3`, `cmp` (diffutils), `cp`/`mkdir`/`basename` (coreutils) | base `01` (diffutils added `d478c9d`); coreutils is Fedora-base |
+| `check-regions` (`generated`)     | `python3`                                         | base `01`                        |
+| `test` (`test`)                   | `pytest` (`python3-pytest`), `python3`            | base `01`                        |
+| `check-format` (`format`)         | `ruff`, `ty`, `python3`; `git diff` runs on the **host** runner | base `01`; `git` = host/runner   |
+| `lean` (`lean.yml`, `v*` tags)    | `lake` (elan), `git`, `cp`/`grep`                 | `install-lean.sh` (elan + `dnf install git`) |
+| `docs` (`make docs`, not per-push)| `convert` (ImageMagick), `gs` (ghostscript), `elaps`/`epix`, `g++`, texlive, `jupytext`, `sphinx-build`, `make` | `06-install-epix.sh` + `04-install-docs.sh` (+ `make`, present in image) |
 
-and dies at `cmp: command not found`. So the determinism check never actually ran — it failed on
-a missing tool, not on a real non-determinism. (The generator IS deterministic; the earlier lines
-show both runs wrote identical files.)
+Findings:
 
-## Immediate cause + fix (DONE, `d478c9d`)
+- **`diffutils` (`cmp`) was the only missing package**, and it was already fixed in `d478c9d`
+  before this audit ran. No other gate shells out to a tool absent from its image.
+- **`git` is deliberately NOT in the base image.** CI's `check-format` runs `make format` in the
+  container then `git diff --exit-code` on the **host** runner (ubuntu-latest ships git). The only
+  container-side `git` use is `lean`'s `lake` (Mathlib is a git dependency), and `install-lean.sh`
+  installs git itself. So no base-image git is needed — matching the project's "git is a host-side
+  concern" convention.
+- **`tools/gen_specialized.py`'s only `subprocess` call is `ruff check --fix`** (best-effort,
+  stdout/stderr discarded); `ruff` is in the base group. `render_epix_figures.py` shells out to
+  `elaps`/`convert`/`magick`/`gs` (all in `06`) and uses `shutil.which` to degrade gracefully.
+- **coreutils** (`cp`/`mkdir`/`basename`/`grep`) is always present in the Fedora base image; only
+  `cmp`'s `diffutils` had to be added explicitly — that is exactly the gap that bit.
+- **CI builds the image for the container-side steps.** `checks.yml` passes
+  `BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0` (a leaner image) but keeps `USE_LEAN`/`USE_EPIX` at their
+  defaults; none of its four gates need docs/emacs/spyder tools, so the lean CI image still carries
+  everything they shell out to.
 
-`cmp` ships in **`diffutils`**. `diffutils` is in the base package install
-(`entrypoint/01-install-base.sh`, dispatched by the `Dockerfile` per the "host-agnostic setup"
-convention). That alone unblocked the `generated` job.
+## Fix delivered
 
-## The broader audit (the actual task)
-
-Don't stop at `cmp`. Other gate/CI steps may shell out to tools not in the image and only fail
-when that specific path runs (CI runs more than a local `make shell` typically exercises).
-
-1. **Enumerate the tools the gates use.** `git grep` the CI-facing surface for shelled-out
-   commands and check each is installed:
-   - `.github/workflows/*.yml`, the `Makefile` gate targets (`check-format`, `check-generated`,
-     `check-regions`, `test`, `lean`, `docs`), `proofs/check.sh`, `tools/*.py` (subprocess calls),
-     `entrypoint/*.sh`.
-   - Usual suspects beyond `cmp`/`diffutils`: `diff`/`patch`, `git`, `cmp`, `find`, `xargs`,
-     `envsubst` (gettext), `jq`, `column`, `timeout` (coreutils), `bc`, `rsync`, `unzip`.
-2. **Cross-check against installed packages.** The install lives in `entrypoint/01-install-base.sh`
-   (+ the feature-group scripts `02-install-spyder.sh`, `03-install-notebook-tex.sh`,
-   `04-install-docs.sh`, `05-install-emacs.sh`, and the unnumbered `install-lean.sh`, which installs
-   `git` + elan); list what each `dnf install`s and diff against the tool list from step 1.
-   **Partial inspection (2026-10-04, by reading, not by a clean-image run):** `check-generated` needs
-   `cmp`/`cp`/`mkdir`/`basename` (diffutils + coreutils, present); `check-format` runs `git diff` on the
-   HOST runner, not in the image; `tools/gen_specialized.py` shells out to `ruff` (best-effort, in base);
-   `proofs/check.sh` needs `lake`/`cp`/`grep` (`git` via `install-lean.sh`); `docs` needs ImageMagick
-   `convert` (in `04-install-docs.sh`). No further missing tool found by inspection; a clean-runner
-   pass of every gate is still the proof.
-3. **Add the missing packages** to the right group script (base for gate tools; a feature group if
-   the tool is only for docs/lean/etc.), keeping the "host-runnable, no flags" convention.
-4. **Verify:** rebuild the image and run each gate (`make check-generated`, `check-format`,
-   `check-regions`, `test`) — they should get past the tool-availability stage.
-
-## Notes / cross-refs
-
-- Package-install convention: `entrypoint/0N-install-*.sh` group scripts the Dockerfile dispatches
-  by ARG (personal overlay "Host-agnostic setup belongs in a script"). Add `diffutils` to the base
-  group, not inline in the Dockerfile.
-- This is invisible locally when your dev image happens to have the tool (or you never run
-  `check-generated`); it only bites on the clean CI runner — the same class as the `: image`
-  prereq bug noted in `CLAUDE.md` › Continuous integration.
+No source/package change in this task (the audit confirms completeness). The durable deliverable is
+a generalized rule added to `CLAUDE.md` › Continuous integration: *every CLI tool a containerized
+gate shells out to must be installed by an `entrypoint/0N-install-*.sh` group; a missing one fails
+only on the clean runner* — the diffutils lesson, next to the sibling `: image`-prereq gotcha, with
+this task's gate → tool → group map cited.
 
 ## Open questions
 
-None open. The original question ("just `diffutils` now, or the full audit first?") was answered by
-the maintainer's own commit `d478c9d`: `diffutils` first; the audit is this task.
+None.
