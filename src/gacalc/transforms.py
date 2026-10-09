@@ -318,19 +318,19 @@ def _unit_bivector_rotor_factory(
             {blade: float(c) for blade, c in i_coefs.items()}
         )
 
-    def rotor_for(theta: Real) -> MultiVectorBase:
+    def rotor_for(θ: Real) -> MultiVectorBase:
         # sympy trig for a symbolic angle, math trig for a numeric one -- keep a
         # purely numeric pipeline numeric (magnitude()/inverse() convention).
         cos_half: Real
         sin_half: Real
         plane_i: MultiVectorBase
-        if isinstance(theta, sympy.Expr):
-            cos_half = sympy.cos(theta / 2)
-            sin_half = sympy.sin(theta / 2)
+        if isinstance(θ, sympy.Expr):
+            cos_half = sympy.cos(θ / 2)
+            sin_half = sympy.sin(θ / 2)
             plane_i = i
         else:
-            cos_half = math.cos(theta / 2)
-            sin_half = math.sin(theta / 2)
+            cos_half = math.cos(θ / 2)
+            sin_half = math.sin(θ / 2)
             # numeric theta: use the float-coerced plane (see above)
             plane_i = i_numeric if i_numeric is not None else i
         return plane_i * (-sin_half) + cos_half

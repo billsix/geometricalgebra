@@ -383,38 +383,38 @@ for x in MultiVector.bases(3):
 
 
 # %%
-g2_1: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="a")
-g2_1
+G2_1: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="a")
+G2_1
 
 
 # %%
-g2_2: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="b")
-g2_2
+G2_2: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="b")
+G2_2
 
 
 # %%
-g2_3: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="c")
-g2_3
+G2_3: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="c")
+G2_3
 
 
 # %%
-show_mult(g2_1, g2_2)
+show_mult(G2_1, G2_2)
 
 
 # %%
-show_mult(g2_1 * g2_2, g2_3)
+show_mult(G2_1 * G2_2, G2_3)
 
 
 # %%
-show_mult(g2_2, g2_3)
+show_mult(G2_2, G2_3)
 
 
 # %%
-show_mult(g2_1, g2_2 * g2_3)
+show_mult(G2_1, G2_2 * G2_3)
 
 
 # %%
-((g2_1 * g2_2) * g2_3) - (g2_1 * (g2_2 * g2_3))
+((G2_1 * G2_2) * G2_3) - (G2_1 * (G2_2 * G2_3))
 
 
 # %%
@@ -443,15 +443,15 @@ a_1 * e_1 * e_2 * e_4  # pyright: ignore[reportUnusedExpression]
 # %%
 vec_a: MultiVector = MultiVector.symbolic_multivector(n=3, prefix="e").r_vector_part(1)
 vec_b: MultiVector = MultiVector.symbolic_multivector(n=3, prefix="f").r_vector_part(1)
-biv: MultiVector = vec_a ^ vec_b
-biv  # pyright: ignore[reportUnusedExpression]
+B: MultiVector = vec_a ^ vec_b
+B  # pyright: ignore[reportUnusedExpression]
 
 
 # %%
-biv * biv
+B * B
 
 # %%
-biv.dual(3)
+B.dual(3)
 
 
 # %%
@@ -460,16 +460,16 @@ biv.dual(3)
 # %%
 # dual() is typed MultiVectorBase by design (grade-changing); cast back to the
 # concrete type so dot()'s same-type parameter accepts it.
-biv.dot(typing.cast(MultiVector, biv.dual(3)))
+B.dot(typing.cast(MultiVector, B.dual(3)))
 
 # %%
-show_mult(biv, biv.dual(3))
+show_mult(B, B.dual(3))
 
 # %%
-show_mult(biv, biv.dual(3).inverse())
+show_mult(B, B.dual(3).inverse())
 
 # %%
-biv * (biv.dual(3))  # pyright: ignore[reportUnusedExpression]
+B * (B.dual(3))  # pyright: ignore[reportUnusedExpression]
 
 # %%
 show_mult(sym_vec2_1, sym_vec2_2)

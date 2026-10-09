@@ -169,11 +169,11 @@ def make_orthogonal_frame_hestenes(
         if k == 1:
             orthogonal.append(vectors[0])  # c_1 = reverse(A_0=1) A_1 = v_1
             continue
-        a_prev: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(
+        A_prev: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(
             *vectors[: k - 1]
         )
-        a_k: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(*vectors[:k])
+        A_k: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(*vectors[:k])
         # reverse(A_{k-1}) A_k is grade 1 algebraically; narrow, as base.reject does,
         # to drop any identically-zero widened term.
-        orthogonal.append((a_prev.reverse() * a_k).r_vector_part(1))
+        orthogonal.append((A_prev.reverse() * A_k).r_vector_part(1))
     return orthogonal

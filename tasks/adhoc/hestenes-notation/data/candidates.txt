@@ -1,0 +1,101 @@
+# Spelled-out Greek-name locals (prime Greek-identifier candidates)
+THETA  (1)  -> tests/test_matrix_template.py:53
+phi  (2)  -> notebooks/displayrotations.py:259, tests/test_versor_extraction.py:80
+theta  (18)  -> notebooks/displayrotations.py:73, src/gacalc/base.py:2095, src/gacalc/nbplotutils.py:249, src/gacalc/nbplotutils.py:250, tests/test_bivector_rotation.py:99, tests/test_exp.py:97, tests/test_exp.py:114, tests/test_matrix_template.py:135
+
+# Short (<=2 char) lowercase locals (classify: scalar->Greek / vector->lower / mv->CAP)
+_a  (1)  -> tests/test_odd3.py:21
+_b  (1)  -> tests/test_odd3.py:22
+_n  (2)  -> tests/test_conformance.py:43, tests/test_conformance.py:44
+a  (125)  -> notebooks/displaygraded.py:88, notebooks/displayrotations.py:77, notebooks/displayrotations.py:183, notebooks/displayvectorcalc.py:67, src/gacalc/base.py:2324, src/gacalc/nbplotutils.py:361, tests/test_blade_dict.py:98, tests/test_conformance.py:103
+a1  (8)  -> tests/test_graded.py:371, tests/test_graded.py:375, tests/test_graded.py:392, tests/test_graded.py:398, tests/test_rotor_from_vectors.py:49, tests/test_rotor_from_vectors.py:53, tests/test_rotor_from_vectors.py:85, tests/test_rotor_from_vectors.py:89
+a2  (8)  -> tests/test_graded.py:372, tests/test_graded.py:375, tests/test_graded.py:393, tests/test_graded.py:398, tests/test_rotor_from_vectors.py:50, tests/test_rotor_from_vectors.py:53, tests/test_rotor_from_vectors.py:86, tests/test_rotor_from_vectors.py:89
+a3  (1)  -> notebooks/displaygraded.py:290
+ab  (1)  -> tests/test_rotor_from_vectors.py:44
+af  (1)  -> tests/test_multivector.py:310
+ap  (2)  -> tools/check_annotations.py:314, tools/check_changelog.py:22
+ax  (1)  -> src/gacalc/nbplotutils.py:603
+b1  (8)  -> tests/test_graded.py:373, tests/test_graded.py:375, tests/test_graded.py:394, tests/test_graded.py:398, tests/test_rotor_from_vectors.py:51, tests/test_rotor_from_vectors.py:53, tests/test_rotor_from_vectors.py:87, tests/test_rotor_from_vectors.py:89
+b2  (9)  -> tests/test_generator.py:173, tests/test_graded.py:374, tests/test_graded.py:375, tests/test_graded.py:395, tests/test_graded.py:398, tests/test_rotor_from_vectors.py:52, tests/test_rotor_from_vectors.py:53, tests/test_rotor_from_vectors.py:88
+b3  (2)  -> notebooks/displaygraded.py:291, tests/test_graded.py:192
+bl  (4)  -> tools/derive_lean_algebra.py:60, tools/derive_lean_algebra.py:61, tools/derive_lean_algebra.py:70, tools/derive_lean_algebra.py:73
+bm  (2)  -> tools/detect_unused_hypotheses.py:55, tools/detect_unused_hypotheses.py:56
+bs  (1)  -> tools/gen_specialized.py:5457
+c  (35)  -> notebooks/displayvectorcalc.py:105, src/gacalc/functions.py:273, src/gacalc/functions.py:274, src/gacalc/functions.py:378, src/gacalc/functions.py:211, src/gacalc/transforms.py:315, src/gacalc/transforms.py:318, src/gacalc/transforms.py:703
+d  (19)  -> src/gacalc/base.py:607, src/gacalc/base.py:996, src/gacalc/transforms.py:691, src/gacalc/transforms.py:696, tests/test_blade_dict.py:81, tests/test_blade_dict.py:89, tests/test_blade_dict.py:180, tests/test_conformance.py:414
+df  (1)  -> src/gacalc/nbplotutils.py:701
+e  (9)  -> tools/check_annotations.py:301, tools/detect_unused_hypotheses.py:48, tools/gen_specialized.py:3066, tools/gen_specialized.py:3076, tools/gen_specialized.py:3576, tools/gen_specialized.py:3580, tools/gen_specialized.py:3610, tools/gen_specialized.py:4517
+e1  (4)  -> tests/test_conformance.py:449, tests/test_conformance.py:452, tests/test_graded.py:468, tests/test_graded.py:470
+e2  (2)  -> tests/test_conformance.py:450, tests/test_conformance.py:452
+e3  (4)  -> tests/test_conformance.py:451, tests/test_conformance.py:452, tests/test_graded.py:469, tests/test_graded.py:470
+ex  (6)  -> src/gacalc/nbplotutils.py:110, src/gacalc/nbplotutils.py:242, src/gacalc/nbplotutils.py:285, src/gacalc/nbplotutils.py:346, src/gacalc/nbplotutils.py:453, src/gacalc/nbplotutils.py:523
+ey  (6)  -> src/gacalc/nbplotutils.py:111, src/gacalc/nbplotutils.py:243, src/gacalc/nbplotutils.py:286, src/gacalc/nbplotutils.py:347, src/gacalc/nbplotutils.py:454, src/gacalc/nbplotutils.py:524
+f  (49)  -> notebooks/displaymv.py:647, notebooks/displaymv.py:648, notebooks/displaymv.py:672, notebooks/displaymv.py:673, notebooks/displayrotations.py:273, src/gacalc/base.py:2221, src/gacalc/functions.py:418, src/gacalc/functions.py:419
+f2  (1)  -> tests/test_plane_rotation.py:91
+f3  (1)  -> tests/test_plane_rotation.py:97
+fa  (1)  -> tools/bench.py:126
+fb  (1)  -> tools/bench.py:126
+fn  (24)  -> notebooks/displaymv.py:549, notebooks/displaymv.py:567, notebooks/displaymv.py:595, notebooks/displaymv.py:624, tests/test_matrix_template.py:97, tests/test_matrix_template.py:121, tests/test_matrix_template.py:172, tests/test_matrix_template.py:191
+fs  (1)  -> src/gacalc/transforms.py:109
+ft  (1)  -> tests/test_transforms.py:235
+g  (13)  -> src/gacalc/base.py:1312, src/gacalc/base.py:1325, tests/test_blade_dict.py:90, tests/test_conformance.py:270, tests/test_isclose.py:53, tests/test_plane_rotation.py:50, tests/test_transforms.py:389, tools/gen_specialized.py:3466
+ga  (1)  -> tools/bench.py:77
+gb  (1)  -> tools/bench.py:77
+gv  (1)  -> tests/test_conformance.py:444
+h  (9)  -> tests/test_frame.py:214, tests/test_matrix_template.py:107, tests/test_matrix_template.py:108, tests/test_matrix_template.py:205, tests/test_matrix_template.py:206, tests/test_matrix_template.py:276, tests/test_matrix_template.py:277, tests/test_matrix_template.py:305
+hw  (1)  -> tests/test_matrix_template.py:351
+i1  (1)  -> tests/test_multivector.py:374
+i2  (9)  -> notebooks/displaygraded.py:130, tests/test_multivector.py:377, tests/test_operator_typing.py:115, tests/test_operator_typing.py:130, tests/test_operator_typing.py:195, tests/test_operator_typing.py:204, tests/test_operator_typing.py:215, tests/test_operator_typing.py:231
+i3  (3)  -> tests/test_multivector.py:214, tests/test_multivector.py:380, tests/test_operator_typing.py:251
+i4  (1)  -> tests/test_multivector.py:382
+i5  (1)  -> tests/test_multivector.py:384
+i6  (1)  -> tests/test_multivector.py:386
+i7  (1)  -> tests/test_multivector.py:388
+i8  (1)  -> tests/test_multivector.py:390
+i9  (1)  -> tests/test_multivector.py:392
+lg  (4)  -> src/gacalc/base.py:765, src/gacalc/base.py:819, src/gacalc/base.py:901, src/gacalc/base.py:943
+mv  (1)  -> src/gacalc/base.py:404
+na  (2)  -> notebooks/displaygraded.py:221, notebooks/displaygraded.py:217
+nm  (2)  -> tools/detect_unused_hypotheses.py:61, tools/detect_unused_hypotheses.py:62
+o  (2)  -> tests/test_transforms.py:161, tests/test_transforms.py:257
+p  (23)  -> notebooks/displaymv.py:692, src/gacalc/transforms.py:763, tests/test_measure.py:188, tests/test_measure.py:205, tests/test_subclass_preservation.py:65, tests/test_transforms.py:202, tests/test_transforms.py:232, tests/test_transforms.py:244
+q  (3)  -> notebooks/displaymv.py:699, tests/test_measure.py:189, tests/test_subclass_preservation.py:66
+r  (44)  -> notebooks/displaygraded.py:141, src/gacalc/base.py:2081, src/gacalc/base.py:1207, src/gacalc/base.py:1431, src/gacalc/base.py:378, tests/test_conformance.py:149, tests/test_conformance.py:150, tests/test_conformance.py:77
+r2  (4)  -> tests/test_graded.py:266, tests/test_graded.py:283, tests/test_graded.py:426, tests/test_operator_typing.py:131
+r3  (4)  -> tests/test_graded.py:271, tests/test_graded.py:286, tests/test_graded.py:435, tests/test_operator_typing.py:255
+rg  (4)  -> src/gacalc/base.py:765, src/gacalc/base.py:819, src/gacalc/base.py:901, src/gacalc/base.py:943
+s  (26)  -> src/gacalc/base.py:376, src/gacalc/base.py:2072, src/gacalc/base.py:406, tests/test_conformance.py:254, tests/test_exp.py:44, tests/test_generator.py:130, tests/test_generator.py:153, tests/test_graded.py:304
+s1  (1)  -> tests/test_graded.py:339
+s2  (2)  -> tests/test_graded.py:340, tests/test_operator_typing.py:132
+s3  (1)  -> tests/test_operator_typing.py:52
+s5  (1)  -> tests/test_graded.py:292
+sa  (1)  -> tools/bench.py:105
+sb  (1)  -> tools/bench.py:106
+sq  (1)  -> tests/test_graded.py:356
+t  (48)  -> notebooks/displaygraded.py:262, tests/test_blade_dict.py:142, tests/test_conformance.py:385, tests/test_conformance.py:386, tests/test_conformance.py:427, tests/test_conformance.py:428, tests/test_conformance.py:463, tests/test_exp.py:73
+t0  (1)  -> tools/bench.py:56
+t3  (1)  -> tests/test_operator_typing.py:253
+to  (8)  -> notebooks/displaygraded.py:174, tests/test_graded.py:402, tests/test_graded.py:414, tests/test_graded.py:448, tests/test_graded.py:450, tests/test_numeric_magnitude.py:47, tests/test_plane_rotation.py:153, tests/test_transforms.py:500
+tx  (14)  -> tests/test_matrix_template.py:104, tests/test_matrix_template.py:108, tests/test_matrix_template.py:133, tests/test_matrix_template.py:136, tests/test_matrix_template.py:202, tests/test_matrix_template.py:206, tests/test_matrix_template.py:229, tests/test_matrix_template.py:233
+ty  (12)  -> tests/test_matrix_template.py:105, tests/test_matrix_template.py:108, tests/test_matrix_template.py:134, tests/test_matrix_template.py:136, tests/test_matrix_template.py:203, tests/test_matrix_template.py:206, tests/test_matrix_template.py:230, tests/test_matrix_template.py:233
+tz  (2)  -> tests/test_matrix_template.py:231, tests/test_matrix_template.py:233
+u  (19)  -> notebooks/displaygraded.py:239, tests/test_multivector.py:131, tests/test_multivector.py:149, tests/test_multivector.py:271, tests/test_multivector.py:291, tests/test_multivector.py:321, tests/test_multivector.py:333, tests/test_multivector.py:348
+u2  (3)  -> tests/test_multivector.py:187, tests/test_multivector.py:434, tests/test_multivector.py:536
+u3  (3)  -> tests/test_multivector.py:191, tests/test_multivector.py:439, tests/test_multivector.py:538
+v  (89)  -> notebooks/displaygraded.py:240, notebooks/displaymv.py:140, src/gacalc/frame.py:59, src/gacalc/frame.py:60, src/gacalc/frame.py:120, src/gacalc/frame.py:122, src/gacalc/measure.py:52, src/gacalc/measure.py:53
+v1  (2)  -> notebooks/displayrotations.py:88, notebooks/displayrotations.py:124
+v2  (7)  -> notebooks/displayrotations.py:88, notebooks/displayrotations.py:124, tests/test_generator.py:159, tests/test_generator.py:166, tests/test_generator.py:180, tests/test_graded.py:463, tests/test_operator_typing.py:259
+v3  (5)  -> notebooks/displayrotations.py:124, tests/test_generator.py:187, tests/test_multivector.py:444, tests/test_operator_typing.py:143, tests/test_operator_typing.py:249
+va  (1)  -> tools/bench.py:125
+vb  (1)  -> tools/bench.py:125
+w  (25)  -> notebooks/displaygraded.py:184, src/gacalc/frame.py:123, src/gacalc/frame.py:125, tests/test_conformance.py:389, tests/test_conformance.py:412, tests/test_conformance.py:432, tests/test_frame.py:110, tests/test_frame.py:123
+w1  (2)  -> tests/test_graded.py:396, tests/test_graded.py:398
+w2  (3)  -> tests/test_graded.py:397, tests/test_graded.py:398, tests/test_graded.py:425
+w3  (2)  -> notebooks/displaygraded.py:370, tests/test_graded.py:434
+wh  (1)  -> tests/test_matrix_template.py:350
+x  (41)  -> notebooks/displaygraded.py:71, notebooks/displaygraded.py:221, notebooks/displaymv.py:350, notebooks/displaymv.py:351, notebooks/displaymv.py:358, notebooks/displaymv.py:359, notebooks/displaymv.py:380, notebooks/displaymv.py:381
+xs  (1)  -> src/gacalc/nbplotutils.py:590
+y  (14)  -> notebooks/displaygraded.py:220, src/gacalc/nbplotutils.py:127, src/gacalc/nbplotutils.py:128, src/gacalc/nbplotutils.py:528, src/gacalc/nbplotutils.py:530, src/gacalc/nbplotutils.py:608, src/gacalc/standardposition.py:62, src/gacalc/standardposition.py:68
+z  (9)  -> src/gacalc/standardposition.py:62, src/gacalc/standardposition.py:68, tests/test_measure.py:198, tests/test_measure.py:265, tests/test_multivector.py:257, tests/test_multivector.py:258, tests/test_numeric_magnitude.py:73, tests/test_numeric_magnitude.py:74
+
+# total distinct local names: 759 across 55 files

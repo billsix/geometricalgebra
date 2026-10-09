@@ -189,8 +189,8 @@ def test_coefficient_readback() -> None:
     assert v.coefficient(g2.Vector.e_1) == 3 and v.coefficient(g2.Vector.e_2) == 4
     assert (7 * g2.Bivector.e_12).coefficient(g2.Bivector.e_12) == 7
     assert (5 * g3.Trivector.e_123).coefficient(g3.Trivector.e_123) == 5
-    b3: g3.Bivector = 4 * g3.Bivector.e_12 + 5 * g3.Bivector.e_13 + 6 * g3.Bivector.e_23
-    assert b3.coefficient(g3.Bivector.e_13) == 5
+    B3: g3.Bivector = 4 * g3.Bivector.e_12 + 5 * g3.Bivector.e_13 + 6 * g3.Bivector.e_23
+    assert B3.coefficient(g3.Bivector.e_13) == 5
 
 
 def test_linear_combination_construction() -> None:
@@ -214,8 +214,8 @@ def test_linear_combination_construction() -> None:
 def test_type_is_operation_driven_not_value_driven() -> None:
     # orthogonal vectors: the scalar (dot) part is exactly 0, but the type stays
     # g2.Versor -- we never narrow by inspecting a (possibly float-fuzzy) value.
-    r: MultiVectorBase = g2.Vector.e_1 * g2.Vector.e_2
-    assert type(r) is g2.Versor and r == gn.e_1 ^ gn.e_2
+    R: MultiVectorBase = g2.Vector.e_1 * g2.Vector.e_2
+    assert type(R) is g2.Versor and R == gn.e_1 ^ gn.e_2
     # a pure blade is got by *asking* for it (wedge), never by luck of the values
     assert type(g2.Vector.e_1 ^ g2.Vector.e_2) is g2.Bivector
 
@@ -249,13 +249,13 @@ def test_dual_narrows() -> None:
 
 
 def test_grade_projection_narrows() -> None:
-    r: MultiVectorBase = (
+    R: MultiVectorBase = (
         1 + 1 * g3.Bivector.e_12 + 2 * g3.Bivector.e_13 + 3 * g3.Bivector.e_23
     )  # a g3.Versor
-    assert type(r.r_vector_part(0)) is g3.Scalar
-    assert type(r.r_vector_part(2)) is g3.Bivector
-    assert type(r.even_part()) is g3.Versor
-    assert r.r_vector_part(2) == widen(r).r_vector_part(2)
+    assert type(R.r_vector_part(0)) is g3.Scalar
+    assert type(R.r_vector_part(2)) is g3.Bivector
+    assert type(R.even_part()) is g3.Versor
+    assert R.r_vector_part(2) == widen(R).r_vector_part(2)
     # a grade absent from the type projects to the zero scalar
     assert type((1 * g3.Vector.e_1 + 1 * g3.Vector.e_2).r_vector_part(0)) is g3.Scalar
     assert type((1 * g3.Vector.e_1 + 1 * g3.Vector.e_2).even_part()) is g3.Scalar
@@ -263,16 +263,16 @@ def test_grade_projection_narrows() -> None:
 
 def test_plane_of_rotation() -> None:
     # the versor that turns e1 -> e2 rotates in the e1-e2 plane
-    r2: MultiVectorBase = g2.Vector.versor_from_vectors(
+    R2: MultiVectorBase = g2.Vector.versor_from_vectors(
         from_vector=g2.Vector.e_1, to_vector=g2.Vector.e_2
     )
-    assert type(r2) is g2.Versor
-    assert r2.plane_of_rotation() == -(gn.e_1 ^ gn.e_2)  # the (oriented) unit plane
-    r3: MultiVectorBase = g3.Vector.versor_from_vectors(
+    assert type(R2) is g2.Versor
+    assert R2.plane_of_rotation() == -(gn.e_1 ^ gn.e_2)  # the (oriented) unit plane
+    R3: MultiVectorBase = g3.Vector.versor_from_vectors(
         from_vector=g3.Vector.e_1, to_vector=g3.Vector.e_2
     )
-    assert type(r3) is g3.Versor
-    plane: MultiVectorBase = r3.plane_of_rotation()
+    assert type(R3) is g3.Versor
+    plane: MultiVectorBase = R3.plane_of_rotation()
     assert type(plane) is g3.Bivector and plane == -(gn.e_1 ^ gn.e_2)
 
 
@@ -280,12 +280,12 @@ def test_exp_narrows_bivector_to_rotor() -> None:
     # the exponential map onto the rotors: exp of a bivector IS a rotor, and
     # the generated narrowing override types it that way.  It comes out unit
     # (cos^2 + sin^2 = 1) without normalizing.
-    r2: g2.Versor = g2.Bivector.e_12.exp()
-    assert type(r2) is g2.Versor
-    assert sympy.simplify(sympy.sympify(r2.magnitude_squared())) == 1
-    r3: g3.Versor = (g3.Vector.e_1 ^ g3.Vector.e_2).exp()
-    assert type(r3) is g3.Versor
-    assert sympy.simplify(sympy.sympify(r3.magnitude_squared())) == 1
+    R2: g2.Versor = g2.Bivector.e_12.exp()
+    assert type(R2) is g2.Versor
+    assert sympy.simplify(sympy.sympify(R2.magnitude_squared())) == 1
+    R3: g3.Versor = (g3.Vector.e_1 ^ g3.Vector.e_2).exp()
+    assert type(R3) is g3.Versor
+    assert sympy.simplify(sympy.sympify(R3.magnitude_squared())) == 1
 
 
 def test_scalar_type() -> None:
@@ -401,8 +401,8 @@ def test_versor_sandwich_equals_rotate_symbolic_2d() -> None:
     frm: Gn = a1 * gn.e_1 + a2 * gn.e_2
     to: Gn = b1 * gn.e_1 + b2 * gn.e_2
     w: Gn = w1 * gn.e_1 + w2 * gn.e_2
-    r: MultiVectorBase = Gn.versor_from_vectors(from_vector=frm, to_vector=to)
-    assert (r * w * r.inverse()).symbolically_equal(
+    R: MultiVectorBase = Gn.versor_from_vectors(from_vector=frm, to_vector=to)
+    assert (R * w * R.inverse()).symbolically_equal(
         projection_rotation(from_vector=frm, to_vector=to)(w)
     )
 
@@ -413,8 +413,8 @@ def test_versor_sandwich_equals_rotate_3d() -> None:
     frm: Gn = 1 * gn.e_1 + 2 * gn.e_2 + 3 * gn.e_3
     to: Gn = 4 * gn.e_1 + 5 * gn.e_2 + 6 * gn.e_3
     w: Gn = 7 * gn.e_1 + 1 * gn.e_2 + 2 * gn.e_3  # in-plane and perpendicular parts
-    r: MultiVectorBase = Gn.versor_from_vectors(from_vector=frm, to_vector=to)
-    assert (r * w * r.inverse()).symbolically_equal(
+    R: MultiVectorBase = Gn.versor_from_vectors(from_vector=frm, to_vector=to)
+    assert (R * w * R.inverse()).symbolically_equal(
         projection_rotation(from_vector=frm, to_vector=to)(w)
     )
 
@@ -423,20 +423,20 @@ def test_versor_rotate_across_representations() -> None:
     # the same identity holds (by value) for Gn, g2.G and g3.G; the versor built from
     # vectors of a specialized type is a Versor of that algebra
     w2: g2.Vector = 2 * g2.Vector.e_1 + 1 * g2.Vector.e_2
-    r2: MultiVectorBase = g2.Vector.versor_from_vectors(
+    R2: MultiVectorBase = g2.Vector.versor_from_vectors(
         from_vector=g2.Vector.e_1, to_vector=g2.Vector.e_2
     )
-    assert type(r2) is g2.Versor
-    assert r2 * w2 * r2.inverse() == projection_rotation(
+    assert type(R2) is g2.Versor
+    assert R2 * w2 * R2.inverse() == projection_rotation(
         from_vector=g2.Vector.e_1, to_vector=g2.Vector.e_2
     )(w2)
 
     w3: g3.Vector = 1 * g3.Vector.e_1 + 3 * g3.Vector.e_3
-    r3: MultiVectorBase = g3.Vector.versor_from_vectors(
+    R3: MultiVectorBase = g3.Vector.versor_from_vectors(
         from_vector=g3.Vector.e_1, to_vector=g3.Vector.e_2
     )
-    assert type(r3) is g3.Versor
-    assert r3 * w3 * r3.inverse() == projection_rotation(
+    assert type(R3) is g3.Versor
+    assert R3 * w3 * R3.inverse() == projection_rotation(
         from_vector=g3.Vector.e_1, to_vector=g3.Vector.e_2
     )(w3)
 
@@ -452,10 +452,10 @@ def test_unnormalized_versor_scales_then_normalizes() -> None:
         1 * g2.Vector.e_2,
         1 * g2.Vector.e_1,
     )  # 90 deg, e1 -> e2
-    r: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=frm, to_vector=to)
-    assert r * r.reverse() == 2 * gn.one  # |R|^2
-    assert r * w * r.reverse() == 2 * gn.e_2  # scaled rotation
-    assert r * w * r.inverse() == gn.e_2  # pure rotation
+    R: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=frm, to_vector=to)
+    assert R * R.reverse() == 2 * gn.one  # |R|^2
+    assert R * w * R.reverse() == 2 * gn.e_2  # scaled rotation
+    assert R * w * R.inverse() == gn.e_2  # pure rotation
 
 
 def test_project_vector_onto_bivector_trivector_subtypes() -> None:

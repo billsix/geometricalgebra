@@ -128,12 +128,12 @@ def test_interpolation() -> None:
 
 
 def test_symbolic_theta() -> None:
-    theta: Real = sympy.Symbol("theta", real=True)
-    f: InvertibleFunction[g2.Vector] = plane_rotation(E1, E2)(theta)
+    θ: Real = sympy.Symbol("theta", real=True)
+    f: InvertibleFunction[g2.Vector] = plane_rotation(E1, E2)(θ)
     got: MultiVectorBase = f(E1).simplified()
     want: dict[tuple[int, ...], Real] = {
-        (1,): sympy.cos(theta),
-        (2,): sympy.sin(theta),
+        (1,): sympy.cos(θ),
+        (2,): sympy.sin(θ),
     }
     blade: tuple[int, ...]
     expr: Real
@@ -171,13 +171,13 @@ def test_numeric_theta_stays_numeric() -> None:
 def test_symbolic_theta_stays_exact() -> None:
     # ...while a symbolic theta keeps the exact plane: cos(theta), not
     # 1.0*cos(theta).
-    theta: Real = sympy.Symbol("theta", real=True)
-    got: MultiVectorBase = plane_rotation(E1, E2)(theta)(
+    θ: Real = sympy.Symbol("theta", real=True)
+    got: MultiVectorBase = plane_rotation(E1, E2)(θ)(
         g2.Vector(coeff_e_1=1, coeff_e_2=0)
     ).simplified()
     assert got.to_blade_dict() == {
-        (1,): sympy.cos(theta),
-        (2,): sympy.sin(theta),
+        (1,): sympy.cos(θ),
+        (2,): sympy.sin(θ),
     }
 
 

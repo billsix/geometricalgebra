@@ -117,8 +117,8 @@ G.from_real(1)  # pyright: ignore[reportUnusedExpression]
 # `r_vector_part(1)` keeps only the grade-1 (vector) part.
 
 # %%
-a_full: G = G.symbolic_multivector(prefix="a")
-a_full  # pyright: ignore[reportUnusedExpression]
+A_full: G = G.symbolic_multivector(prefix="a")
+A_full  # pyright: ignore[reportUnusedExpression]
 
 # %%
 a_vec: G = G.symbolic_multivector(prefix="a").r_vector_part(1)
@@ -221,17 +221,17 @@ sympy.simplify(
 # ---------------------------
 
 # %%
-g3_1: G = G.symbolic_multivector(prefix="a")
-g3_2: G = G.symbolic_multivector(prefix="b")
-show_mult(g3_1, g3_2)
+G3_1: G = G.symbolic_multivector(prefix="a")
+G3_2: G = G.symbolic_multivector(prefix="b")
+show_mult(G3_1, G3_2)
 
 # %% [markdown]
 # Associativity
 # -------------
 
 # %%
-g3_3: G = G.symbolic_multivector(prefix="c")
-((g3_1 * g3_2) * g3_3) - (g3_1 * (g3_2 * g3_3))
+G3_3: G = G.symbolic_multivector(prefix="c")
+((G3_1 * G3_2) * G3_3) - (G3_1 * (G3_2 * G3_3))
 
 # %% [markdown]
 # Grade projection
@@ -240,17 +240,17 @@ g3_3: G = G.symbolic_multivector(prefix="c")
 # 𝒢₃ has grades 0–3: scalar, vector, bivector, trivector.
 
 # %%
-c: G = G.symbolic_multivector(prefix="c")
-c.r_vector_part(0)
+C: G = G.symbolic_multivector(prefix="c")
+C.r_vector_part(0)
 
 # %%
-c.r_vector_part(1)
+C.r_vector_part(1)
 
 # %%
-c.r_vector_part(2)
+C.r_vector_part(2)
 
 # %%
-c.r_vector_part(3)
+C.r_vector_part(3)
 
 # %% [markdown]
 # The basis of 𝒢₃
@@ -272,18 +272,18 @@ for x in G.bases():
 # $a\wedge b$ and its dual; the dual is parallel to $a\times b$.
 
 # %%
-biv: G = a_vec ^ b_vec
-biv  # pyright: ignore[reportUnusedExpression]
+B: G = a_vec ^ b_vec
+B  # pyright: ignore[reportUnusedExpression]
 
 # %%
-biv.dual()
+B.dual()
 
 # %%
-biv * biv.dual()  # pyright: ignore[reportUnusedExpression]
+B * B.dual()  # pyright: ignore[reportUnusedExpression]
 
 # %%
 # a bivector squares to a (negative) scalar — it has a magnitude
-biv * biv  # pyright: ignore[reportUnusedExpression]
+B * B  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
 # Magnitude, inverse, reverse, dual of a vector

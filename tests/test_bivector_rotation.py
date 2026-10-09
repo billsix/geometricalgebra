@@ -96,13 +96,13 @@ def test_symbolic_angle_keeps_clean_half_angle_form() -> None:
     # The whole reason it is built directly (cos(theta/2) - sin(theta/2) * i) and
     # NOT via exp: a symbolic angle must render cos(theta/2), never
     # cos(sqrt(theta**2)/2).  Same guarantee plane_rotation gives.
-    theta: sympy.Symbol = sympy.Symbol("theta", positive=True)
+    θ: sympy.Symbol = sympy.Symbol("theta", positive=True)
     i: g2.Bivector = g2.Vector.i(g2.Vector.e_1, g2.Vector.e_2)
-    rotor: InvertibleFunction[MultiVectorBase] = bivector_rotation(i)(theta)
+    rotor: InvertibleFunction[MultiVectorBase] = bivector_rotation(i)(θ)
     # apply to e_1 and read the coefficient forms back
     rotated: MultiVectorBase = rotor(g2.Vector.e_1)
     expected: MultiVectorBase = (
-        sympy.cos(theta) * g2.Vector.e_1 + sympy.sin(theta) * g2.Vector.e_2
+        sympy.cos(θ) * g2.Vector.e_1 + sympy.sin(θ) * g2.Vector.e_2
     )
     assert rotated == expected
 

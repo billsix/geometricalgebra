@@ -45,38 +45,38 @@ def test_odd3_product_types_runtime() -> None:
 
 
 def test_cast_in_plane_is_vector() -> None:
-    r: g3.Odd_3 = _B * _in_plane
-    assert type(r) is g3.Odd_3 and r.grades() == [1]
-    typing.assert_type(r.to_vector(), g3.Vector)
-    v: g3.Vector = r.to_vector()
+    R: g3.Odd_3 = _B * _in_plane
+    assert type(R) is g3.Odd_3 and R.grades() == [1]
+    typing.assert_type(R.to_vector(), g3.Vector)
+    v: g3.Vector = R.to_vector()
     assert type(v) is g3.Vector
     assert (v.coeff_e_1, v.coeff_e_2, v.coeff_e_3) == (
-        r.coeff_e_1,
-        r.coeff_e_2,
-        r.coeff_e_3,
+        R.coeff_e_1,
+        R.coeff_e_2,
+        R.coeff_e_3,
     )
     with pytest.raises(ValueError):
-        r.to_trivector()
+        R.to_trivector()
 
 
 def test_cast_perpendicular_is_trivector() -> None:
-    r: g3.Odd_3 = _B * _perp
-    assert type(r) is g3.Odd_3 and r.grades() == [3]
-    typing.assert_type(r.to_trivector(), g3.Trivector)
-    t: g3.Trivector = r.to_trivector()
-    assert type(t) is g3.Trivector
-    assert t.coeff_e_123 == r.coeff_e_123
+    R: g3.Odd_3 = _B * _perp
+    assert type(R) is g3.Odd_3 and R.grades() == [3]
+    typing.assert_type(R.to_trivector(), g3.Trivector)
+    T: g3.Trivector = R.to_trivector()
+    assert type(T) is g3.Trivector
+    assert T.coeff_e_123 == R.coeff_e_123
     with pytest.raises(ValueError):
-        r.to_vector()
+        R.to_vector()
 
 
 def test_cast_mixed_raises_both() -> None:
-    r: g3.Odd_3 = _B * _mixed
-    assert type(r) is g3.Odd_3 and r.grades() == [1, 3]
+    R: g3.Odd_3 = _B * _mixed
+    assert type(R) is g3.Odd_3 and R.grades() == [1, 3]
     with pytest.raises(ValueError):
-        r.to_vector()
+        R.to_vector()
     with pytest.raises(ValueError):
-        r.to_trivector()
+        R.to_trivector()
 
 
 def test_query_predicates() -> None:

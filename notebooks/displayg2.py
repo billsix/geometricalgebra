@@ -125,8 +125,8 @@ G.from_real(1)  # pyright: ignore[reportUnusedExpression]
 # of `sympy` symbols; `r_vector_part(1)` keeps only the grade-1 (vector) part.
 
 # %%
-a_full: G = G.symbolic_multivector(prefix="a")
-a_full  # pyright: ignore[reportUnusedExpression]
+A_full: G = G.symbolic_multivector(prefix="a")
+A_full  # pyright: ignore[reportUnusedExpression]
 
 # %%
 a_vec: G = G.symbolic_multivector(prefix="a").r_vector_part(1)
@@ -169,9 +169,9 @@ a_vec.dot(b_vec) + a_vec.wedge(b_vec) == a_vec * b_vec
 # `show_mult` expands the product of two general multivectors term by term.
 
 # %%
-g2_1: G = G.symbolic_multivector(prefix="a")
-g2_2: G = G.symbolic_multivector(prefix="b")
-show_mult(g2_1, g2_2)
+G2_1: G = G.symbolic_multivector(prefix="a")
+G2_2: G = G.symbolic_multivector(prefix="b")
+show_mult(G2_1, G2_2)
 
 # %% [markdown]
 # Associativity
@@ -181,8 +181,8 @@ show_mult(g2_1, g2_2)
 # their difference is zero.
 
 # %%
-g2_3: G = G.symbolic_multivector(prefix="c")
-((g2_1 * g2_2) * g2_3) - (g2_1 * (g2_2 * g2_3))
+G2_3: G = G.symbolic_multivector(prefix="c")
+((G2_1 * G2_2) * G2_3) - (G2_1 * (G2_2 * G2_3))
 
 # %% [markdown]
 # Grade projection
@@ -192,14 +192,14 @@ g2_3: G = G.symbolic_multivector(prefix="c")
 # bivectors (2).
 
 # %%
-c: G = G.symbolic_multivector(prefix="c")
-c.r_vector_part(0)
+C: G = G.symbolic_multivector(prefix="c")
+C.r_vector_part(0)
 
 # %%
-c.r_vector_part(1)
+C.r_vector_part(1)
 
 # %%
-c.r_vector_part(2)
+C.r_vector_part(2)
 
 # %% [markdown]
 # The basis of 𝒢₂

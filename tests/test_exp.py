@@ -36,8 +36,8 @@ from gacalc.transforms import plane_rotation
 
 
 def test_exp_of_zero_is_one() -> None:
-    r: g2.Versor = (0 * g2.Bivector.e_12).exp()
-    assert r == g2.Versor(coeff_scalar=1)
+    R: g2.Versor = (0 * g2.Bivector.e_12).exp()
+    assert R == g2.Versor(coeff_scalar=1)
 
 
 def test_exp_scalar() -> None:
@@ -48,9 +48,9 @@ def test_exp_scalar() -> None:
 def test_exp_float_stays_float() -> None:
     # the numeric-preservation contract (as magnitude/inverse): float
     # coefficients in, float coefficients out -- no sympy leak.
-    r: g2.Versor = (0.75 * g2.Bivector.e_12).exp()
-    assert all(isinstance(coef, float) for coef in r.to_blade_dict().values())
-    assert float(r.magnitude()) == pytest.approx(1.0)
+    R: g2.Versor = (0.75 * g2.Bivector.e_12).exp()
+    assert all(isinstance(coef, float) for coef in R.to_blade_dict().values())
+    assert float(R.magnitude()) == pytest.approx(1.0)
 
 
 def test_exp_int_stays_exact() -> None:
@@ -70,13 +70,13 @@ def test_exp_of_a_vector_is_rejected() -> None:
 def test_exp_trivector_is_trig() -> None:
     # the g3.G pseudoscalar squares to -1, so it exponentiates like a bivector
     # (scalar + trivector has no covering graded type, so the result is a g3.G)
-    t: g3.Trivector = g3.Trivector.e_123 * 2
-    assert t.exp() == g3.Trivector.e_123 * sympy.sin(2) + sympy.cos(2)
+    T: g3.Trivector = g3.Trivector.e_123 * 2
+    assert T.exp() == g3.Trivector.e_123 * sympy.sin(2) + sympy.cos(2)
 
 
 def test_exp_inverse_is_exp_of_negation() -> None:
-    b: g2.Bivector = g2.Bivector.e_12 * sympy.Rational(1, 3)
-    assert b.exp().inverse() == (-b).exp()
+    B: g2.Bivector = g2.Bivector.e_12 * sympy.Rational(1, 3)
+    assert B.exp().inverse() == (-B).exp()
 
 
 def test_exp_rejects_non_scalar_square() -> None:
@@ -94,14 +94,12 @@ def test_exp_rejects_non_scalar_square() -> None:
 
 def test_exp_agrees_with_plane_rotation_numeric() -> None:
     # exp((-theta/2) i) IS plane_rotation's half-angle rotor -- numeric theta
-    theta: float = 1.234
-    f: InvertibleFunction[g3.Vector] = plane_rotation(g3.Vector.e_1, g3.Vector.e_2)(
-        theta
-    )
+    θ: float = 1.234
+    f: InvertibleFunction[g3.Vector] = plane_rotation(g3.Vector.e_1, g3.Vector.e_2)(θ)
     i: g3.Bivector = g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
-    r: g3.Versor = (i * (-theta / 2)).exp()
+    R: g3.Versor = (i * (-θ / 2)).exp()
     v: g3.Vector = 3 * g3.Vector.e_1 + 4 * g3.Vector.e_2 + 5 * g3.Vector.e_3
-    assert r.sandwich(v).isclose(f(v), rel_tol=1e-5, abs_tol=1e-5)
+    assert R.sandwich(v).isclose(f(v), rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_exp_agrees_with_plane_rotation_symbolic() -> None:
@@ -111,17 +109,15 @@ def test_exp_agrees_with_plane_rotation_symbolic() -> None:
     # symbol the exp-built rotor keeps the sqrt and is NOT syntactically
     # cos(theta/2).  (That limitation is WHY plane_rotation keeps its
     # hand-built rotor -- see tasks/reference/design-decisions.md.)
-    theta: sympy.Symbol = sympy.Symbol("theta", positive=True)
-    f: InvertibleFunction[g2.Vector] = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)(
-        theta
-    )
+    θ: sympy.Symbol = sympy.Symbol("theta", positive=True)
+    f: InvertibleFunction[g2.Vector] = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)(θ)
     i: g2.Bivector = g2.Vector.i(g2.Vector.e_1, g2.Vector.e_2)
-    r: g2.Versor = (i * (-theta / 2)).exp()
+    R: g2.Versor = (i * (-θ / 2)).exp()
     # identical coefficient FORM, not merely simplify-equal: the follow-up
     # swap must not change what a notebook renders.
-    assert r == g2.Versor.e_12 * -sympy.sin(theta / 2) + sympy.cos(theta / 2)
+    assert R == g2.Versor.e_12 * -sympy.sin(θ / 2) + sympy.cos(θ / 2)
     x: sympy.Symbol
     y: sympy.Symbol
     x, y = sympy.symbols("x y")
     v: g2.Vector = g2.Vector.e_1 * x + g2.Vector.e_2 * y
-    assert r.sandwich(v) == f(v)
+    assert R.sandwich(v) == f(v)

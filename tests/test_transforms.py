@@ -436,32 +436,32 @@ def test_to_matrix_sympy_backend_is_exact() -> None:
 def test_sandwich_rotates_and_preserves_type_3d() -> None:
     # quarter turn in the e_2-e_3 plane: e_2 -> e_3 (use the graded g3.Vector so
     # the type round-trip can be checked)
-    r: MultiVectorBase = g3.Vector.versor_from_vectors(
+    R: MultiVectorBase = g3.Vector.versor_from_vectors(
         from_vector=g3.Vector.e_2, to_vector=g3.Vector.e_3
     )
-    out: g3.Vector = r.sandwich(g3.Vector.e_2)
+    out: g3.Vector = R.sandwich(g3.Vector.e_2)
     assert type(out) is g3.Vector
     assert out.isclose(g3.Vector.e_3, rel_tol=1e-5, abs_tol=1e-5)
     # the axis (e_1) is perpendicular to the plane -> fixed, and still a g3.Vector
-    axis: g3.Vector = r.sandwich(g3.Vector.e_1)
+    axis: g3.Vector = R.sandwich(g3.Vector.e_1)
     assert type(axis) is g3.Vector
     assert axis.isclose(g3.Vector.e_1, rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_sandwich_2d_stays_vector2() -> None:
-    r: MultiVectorBase = g2.Vector.versor_from_vectors(
+    R: MultiVectorBase = g2.Vector.versor_from_vectors(
         from_vector=g2.Vector.e_1, to_vector=g2.Vector.e_2
     )
-    out: g2.Vector = r.sandwich(g2.Vector.e_1)
+    out: g2.Vector = R.sandwich(g2.Vector.e_1)
     assert type(out) is g2.Vector
     assert out.isclose(g2.Vector.e_2, rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_sandwich_of_zero_is_zero() -> None:
-    r: MultiVectorBase = g3.Vector.versor_from_vectors(
+    R: MultiVectorBase = g3.Vector.versor_from_vectors(
         from_vector=g3.Vector.e_2, to_vector=g3.Vector.e_3
     )
-    out: g3.Vector = r.sandwich(g3.Vector.zero())
+    out: g3.Vector = R.sandwich(g3.Vector.zero())
     assert type(out) is g3.Vector
     assert out.isclose(g3.Vector.zero(), rel_tol=1e-5, abs_tol=1e-5)
 
