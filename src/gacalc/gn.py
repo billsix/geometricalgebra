@@ -132,7 +132,28 @@ class Gn(MultiVectorBase):
         return cls(coefficient_of_blade=dict(blade_coef))
 
     @classmethod
-    def i(cls, a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
+    def bivector_from_vectors(cls, a: MultiVectorBase, b: MultiVectorBase) -> Gn:
+        """The bivector ``a ∧ b`` (the plane the two vectors span), as a ``Gn``.
+
+        Same logic as :meth:`MultiVectorBase.bivector_from_vectors`; this
+        hand-written override narrows the return from the base ``MultiVectorBase``
+        to ``Gn``, so a ``Gn``-typed binding is not downgraded (the generated graded
+        classes narrow to ``Bivector`` the same way). No new logic.
+
+        Args:
+            a: the first vector.
+            b: the second vector.
+
+        Returns:
+            Gn: the bivector ``a ∧ b`` (zero if ``a`` and ``b`` are parallel).
+
+        Raises:
+            TypeError: if either argument is not a vector (grade 1).
+        """
+        return typing.cast(Gn, super().bivector_from_vectors(a, b))
+
+    @classmethod
+    def i(cls, a: MultiVectorBase, b: MultiVectorBase) -> Gn:
         r"""The **unit bivector** ``i`` of the plane spanned by vectors ``a``,
         ``b`` (``i * i == -1``) -- the normalized wedge ``a`` ∧ ``b``.
 
@@ -147,14 +168,13 @@ class Gn(MultiVectorBase):
             b: the second vector spanning the plane.
 
         Returns:
-            MultiVectorBase: the unit bivector ``i`` of the a∧b plane
-            (``i * i == -1``).
+            Gn: the unit bivector ``i`` of the a∧b plane (``i * i == -1``).
 
         Raises:
             ValueError: if ``a`` and ``b`` are parallel (their wedge is zero, so
                 they span no plane).
         """
-        plane: MultiVectorBase = cls.bivector_from_vectors(a, b)
+        plane: Gn = cls.bivector_from_vectors(a, b)
         if plane == type(plane).zero():
             raise ValueError(
                 "the two vectors are parallel (their wedge is zero): "

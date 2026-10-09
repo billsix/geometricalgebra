@@ -82,6 +82,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   carries-from-to theorems, `cos_sq_add_sin_sq` and the Lagrange area form are getter-native with their
   coordinate scaffolds removed (`lagrange_property_coord`, `sandwich_ahat_coord`, … are gone). No Python
   name changed.
+- **Typing refinement (non-breaking): `Gn.bivector_from_vectors` and `Gn.i` now return `Gn`.** The
+  hand-written `Gn` previously inherited the base `-> MultiVectorBase` signatures, so adopting the
+  plane helpers in `Gn`-typed code downgraded the binding; it now narrows to `Gn`, matching how the
+  generated graded classes narrow to `Bivector`. Runtime behavior and the Python names are
+  unchanged; only the static return type is more precise.
 
 ### Fixed
 - **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)
