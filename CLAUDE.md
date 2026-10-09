@@ -369,6 +369,14 @@ with the `/tmp/.X11-unix` bind, Wayland, `EXPOSE_PORT`, `ELPA_MOUNT`) plus `shel
 reinstall — all irrelevant and fragile on a headless runner. `shell-exec` is for interactive/dev
 batch use; headless CI gates use the minimal invocation.
 
+**Every CLI tool a containerized gate shells out to must be installed by an `entrypoint/0N-install-*.sh` group** — a tool missing from the image fails only on the clean CI
+runner, never on a dev box whose image happens to carry it (same invisible-locally class as the
+`: image` bug above). The break that proved it: `make check-generated` died on `cmp: command not
+found` because `cmp` (from **`diffutils`**) was not installed; fixed by adding `diffutils` to the
+base group (`d478c9d`). The full gate → tool → install-group audit (and why `git` is deliberately
+**absent** from the base image — a host concern for `check-format`'s `git diff`, while `lean`
+installs its own for `lake`) is `tasks/archive/2026/10/09/dockerfile-missing-ci-packages.md`.
+
 ## Performance
 
 Specialized classes are ~15–35× faster than `Gn` numerically and **thousands×** symbolically
