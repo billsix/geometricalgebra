@@ -29,6 +29,13 @@ against.
   (the slope/intercept of `f(x) = m*x + b` in `translate`/`uniform_scale`), loop indices `i`/`j`/`k`,
   every dunder, `_repr_latex_`, and the interchange primitives
   `from_blade_dict`/`to_blade_dict`/`_geometric_product`.
+- **The generated modules (`g1`/`g2`/`g3`) follow the convention via the generator**, never by
+  hand-editing the gitignored output. As of 2026-10-09 the emitted code already conforms: its locals
+  are the systematic coefficient/CSE temporaries (`c*`/`x*`), the canonical constants
+  (`e_12`/`one`/`zero`), blade dicts (`d`/`left`/`right`), and descriptive multivector words
+  (`plane`/`rhs`); the angle/trig math delegates to `MultiVectorBase`, so the only Greek-scalar site
+  (`θ` in `exp`) lives in `base.py`. `tools/gen_specialized.py`'s "Naming conventions" docstring
+  records this so a new emitter keeps a terse multivector local CAPITAL and an angle scalar Greek.
 
 ## The Greek-scalar caveat (Latin fallback)
 
