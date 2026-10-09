@@ -19,6 +19,8 @@ gets a bivector's / versor's own unit plane.  All return a BIVECTOR, never a
 versor.  Design + math: tasks/reference/unit-bivector-and-rotors.md.
 """
 
+import typing
+
 import pytest
 
 import gacalc.g2 as g2
@@ -26,9 +28,10 @@ import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase
 from gacalc.gn import Gn, e_1, e_2
 
-# `bivector_from_vectors` / `i` are on `MultiVectorBase` (or built from it), so they
-# are statically typed `MultiVectorBase` even though the runtime value is precise
-# (a Bivector on the graded Vector, a Gn on Gn, ...).  Annotate locals accordingly.
+# `bivector_from_vectors` / `i` narrow their return to the precise subtype where the
+# class overrides them -- a `Bivector` on the generated graded classes, a `Gn` on `Gn`
+# (test_gn_bivector_and_i_narrow_to_gn below).  The `MultiVectorBase` locals in the
+# older tests are the widened base type, which stays valid.
 
 
 def test_bivector_from_vectors_is_the_unnormalized_wedge() -> None:
@@ -92,3 +95,17 @@ def test_i_from_vectors_composes_the_two_primitives() -> None:
     b: g3.Vector = g3.Vector.e_3
     plane: MultiVectorBase = g3.Vector.bivector_from_vectors(a, b)
     assert g3.Vector.i(a, b) == plane.normalize()
+
+
+def test_gn_bivector_and_i_narrow_to_gn() -> None:
+    # Gn's hand-written overrides narrow the return from the base MultiVectorBase to
+    # Gn, so a Gn-typed binding is not downgraded (the generated graded classes narrow
+    # to Bivector the same way). Static (ty's assert_type) and runtime (isinstance).
+    a: Gn = e_1
+    b: Gn = e_2
+    bivector: Gn = Gn.bivector_from_vectors(a, b)
+    unit: Gn = Gn.i(a, b)
+    typing.assert_type(Gn.bivector_from_vectors(a, b), Gn)
+    typing.assert_type(Gn.i(a, b), Gn)
+    assert isinstance(bivector, Gn)
+    assert isinstance(unit, Gn)

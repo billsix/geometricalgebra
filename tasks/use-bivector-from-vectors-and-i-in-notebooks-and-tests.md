@@ -1,7 +1,10 @@
 # Use `bivector_from_vectors` / `i` in the notebooks and unit tests
 
-**Status:** proposed — not cleanly actionable until its prerequisite lands (see Finding).
-**Depends on:** `tasks/narrow-gn-bivector-from-vectors-and-i.md` (filed 2026-10-04 on the maintainer's
+**Status:** proposed — needs go-ahead. **Prerequisite CLEARED 2026-10-09**: the Gn narrowing
+landed (`Gn.bivector_from_vectors`/`Gn.i` now typed `-> Gn`,
+`tasks/archive/2026/10/09/narrow-gn-bivector-from-vectors-and-i.md`), so adopting the helpers
+no longer downgrades a `Gn` binding. Now actionable.
+**Depends on:** `tasks/archive/2026/10/09/narrow-gn-bivector-from-vectors-and-i.md` (filed 2026-10-04 on the maintainer's
 go-ahead) — the Gn-narrowing prerequisite (`Gn.i` / `Gn.bivector_from_vectors` typed `-> Gn`
 instead of `-> MultiVectorBase`), **filed 2026-10-04** as a task (Q2 below).
 **Priority:** 6
@@ -48,7 +51,7 @@ covered the non-generated `Gn`. Once `Gn` narrows too, the `displaymv.py` `biv` 
 confirmed** (`Gn.bivector_from_vectors(a, b) == a ^ b`), so the runtime/display is unchanged either
 way — this is purely a typing gate.
 
-**Recommendation:** do the `Gn`-narrowing prerequisite first (`tasks/narrow-gn-bivector-from-vectors-and-i.md`,
+**Recommendation:** do the `Gn`-narrowing prerequisite first (`tasks/archive/2026/10/09/narrow-gn-bivector-from-vectors-and-i.md`,
 filed 2026-10-04), then this one. If that's declined, this task should be **closed** — there are no clean
 adoption sites at present. (Priority dropped 5 → 6 to reflect the dependency.)
 
@@ -108,5 +111,5 @@ wedge/normalize itself unchanged.
    𝒢₃ notebook that presents the helper right after the wedge is taught, then silent use
    elsewhere.
 2. ~~Should the Gn-narrowing prerequisite be filed as its own small task?~~ **Answered (a) by the
-   maintainer 2026-10-04:** filed as `tasks/narrow-gn-bivector-from-vectors-and-i.md`; this task waits
+   maintainer 2026-10-04:** filed as `tasks/archive/2026/10/09/narrow-gn-bivector-from-vectors-and-i.md`; this task waits
    on it.
