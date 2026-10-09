@@ -203,6 +203,9 @@ decision.)
 
 ## Related
 
+- [[gn-multiplication-by-hand]] (`tasks/reference/gn-multiplication-by-hand.md`) — the **general**
+  slide-flip-annihilate account of the geometric product; this doc is its special case `I_r²`. Read
+  that first for the mechanism, this for the pseudoscalar sign.
 - `tasks/archive/2026/08/16/prove-blade-square-sign-equals-pseudoscalar-squared.md` — the task this doc proves (Phase 2).
 - The associativity write-up in `tasks/archive/2026/08/25/prove-associativity-of-multiplication.md` uses the same
   swap/annihilate machinery (`decrease_grade`) for a different theorem.
