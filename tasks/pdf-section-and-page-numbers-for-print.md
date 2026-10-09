@@ -35,7 +35,7 @@ like "see Proof: Rotate (Section 2.3, page 41)", and HTML shows the same section
 3. **Figure / table / listing numbers:** `numfig = True` (plus `numfig_format`) numbers figures
    ("Fig. 2.1") and lets `:numref:` reference them. The book's ePiX figures currently have no
    captions and are referenced only by position in the prose; numbering them is optional but is
-   the same switch the equation-numbering task needs (`tasks/number-equations-with-labels.md`).
+   the same switch the equation-numbering task needs (`tasks/archive/2026/10/09/number-equations-with-labels.md`).
 4. **External URLs in print:** `latex_show_urls = "footnote"` prints each external link's URL as
    a footnote in the PDF (default `"no"`: the URL is invisible on paper). Same print concern, same
    file; include it unless the maintainer objects.
@@ -61,7 +61,7 @@ like "see Proof: Rotate (Section 2.3, page 41)", and HTML shows the same section
 - modelviewprojection's book (the template this book was modelled on,
   `tasks/reference/book-and-docs-pipeline.md`) sets none of these either, so this is new ground,
   not a port.
-- Related: `tasks/number-equations-with-labels.md` (equation numbers share `numfig`/
+- Related: `tasks/archive/2026/10/09/number-equations-with-labels.md` (equation numbers share `numfig`/
   `numfig_format`) and `tasks/archive/2026/10/09/line-numbers-in-source-listings.md` (the other print-readability
   item from the same 2026-10-08 list).
 
