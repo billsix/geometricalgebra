@@ -375,7 +375,7 @@ runner, never on a dev box whose image happens to carry it (same invisible-local
 found` because `cmp` (from **`diffutils`**) was not installed; fixed by adding `diffutils` to the
 base group (`d478c9d`). The full gate → tool → install-group audit (and why `git` is deliberately
 **absent** from the base image — a host concern for `check-format`'s `git diff`, while `lean`
-installs its own for `lake`) is `tasks/dockerfile-missing-ci-packages.md`.
+installs its own for `lake`) is `tasks/archive/2026/10/09/dockerfile-missing-ci-packages.md`.
 
 ## Performance
 
