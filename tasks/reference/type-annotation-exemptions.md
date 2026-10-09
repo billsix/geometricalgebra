@@ -16,7 +16,8 @@ forces edits to unrelated logic, or breaks flow-narrowing, is not worth it.
 
 **`python tools/check_annotations.py`** — the auditor built for the sweep, promoted out of
 `tasks/adhoc/` because it answers "has coverage regressed?" on any future change. It walks
-`src/`, `tools/`, `tests/` and `notebooks/` with `ast` reporting: `def`s without a return
+`src/`, `tools/`, `tests/`, `notebooks/` and (since 2026-10-09) the book's companion notebooks
+`book/docs/notebooks/` with `ast` reporting: `def`s without a return
 annotation, params without one, assignments to a bare name, `for`-targets, bare generics,
 `Any`, and invariant `dict`/`list`/`set` params. It excludes the generated
 `src/gacalc/g*.py` (the generator owns their annotations — fix
@@ -28,9 +29,18 @@ and `_` discards out of the count, since annotating one of those changes what it
 **It is informational, not a gate**, and deliberately not wired into `make` — deciding
 whether a row is an exemption needs a human. Wiring it in is the maintainer's call.
 
-As of 2026-09-09 it reports **29 rows in 10 files, all of them listed below**: 9 `Any`,
+As of 2026-09-09 it reported **29 rows in 10 files, all of them listed below**: 9 `Any`,
 7 aliases, 3 enum members, 3 invariant params, 3 locals, 2 returns, 1 param, 1 loop target.
 Anything *not* on this list is a genuine gap: annotate it, or add it here with its reason.
+
+**Current state (2026-10-09, noticed while adding `book/docs/notebooks/` to the scope; the
+book notebooks themselves report 0 rows):** it reports **47 rows in 15 files** — 11 loop
+targets, 10 aliases, 9 `Any`, 6 locals, 5 invariant params, 3 enum members, 2 returns, 1
+param. The 18 rows beyond the list below are in files written *after* the sweep and never
+run through the auditor — `tools/check_epix_keywords.py` (7), `tools/detect_unused_hypotheses.py`
+(4), `src/gacalc/standardposition.py` (3), `tools/derive_lean_algebra.py` (2) — plus a
+handful in `tests/test_graded.py`. None has been classified yet; the re-baseline (annotate or
+exempt each, then restate the floor) is `tasks/re-baseline-annotation-auditor.md`.
 
 ## The exemptions
 

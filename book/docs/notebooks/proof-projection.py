@@ -17,7 +17,9 @@
 # %%
 import sympy
 
-from gacalc.g2 import e_1, e_2
+import gacalc.g3 as g3
+from gacalc.base import MultiVectorBase, Real
+from gacalc.g2 import Vector, e_1, e_2
 from gacalc.g3 import e_1 as e3_1
 from gacalc.g3 import e_2 as e3_2
 from gacalc.g3 import e_3 as e3_3
@@ -33,21 +35,27 @@ from gacalc.standardposition import project_sp, reject_sp
 
 
 # %%
-def project_and_reject_sp(a, b):
-    b_x, b_y = b.coefficient(e_1), b.coefficient(e_2)
-    magnitude = b.magnitude()
-    cos, sin = b_x / magnitude, -b_y / magnitude
+def project_and_reject_sp(a: Vector, b: Vector) -> tuple[Vector, Vector]:
+    """Project and reject `a` onto `b` by reduction to standard position."""
+    b_x: Real = b.coefficient(e_1)
+    b_y: Real = b.coefficient(e_2)
+    magnitude: Real = b.magnitude()
+    cos: Real = b_x / magnitude
+    sin: Real = -b_y / magnitude
 
-    def rotate(cos, sin, v):  # the plain 2D rotation on the (e_1, e_2) components
-        x, y = v.coefficient(e_1), v.coefficient(e_2)
+    def rotate(cos: Real, sin: Real, v: Vector) -> Vector:
+        """The plain 2D rotation on the (e_1, e_2) components."""
+        x: Real = v.coefficient(e_1)
+        y: Real = v.coefficient(e_2)
         return (cos * x - sin * y) * e_1 + (sin * x + cos * y) * e_2
 
-    a_aligned = rotate(cos, sin, a)  # b is now on the x-axis; a rides along
-    a_x, a_y = a_aligned.coefficient(e_1), a_aligned.coefficient(e_2)
+    a_aligned: Vector = rotate(cos, sin, a)  # b is now on the x-axis; a rides along
+    a_x: Real = a_aligned.coefficient(e_1)
+    a_y: Real = a_aligned.coefficient(e_2)
     # rotate back (negate the sine): the kept x-part is the projection, the
     # y-part the rejection
-    projection = rotate(cos, -sin, a_x * e_1)
-    rejection = rotate(cos, -sin, a_y * e_2)
+    projection: Vector = rotate(cos, -sin, a_x * e_1)
+    rejection: Vector = rotate(cos, -sin, a_y * e_2)
     return projection, rejection
 
 
@@ -58,8 +66,10 @@ def project_and_reject_sp(a, b):
 # projection and the canonical Hestenes projection agree.
 
 # %%
-a = 2.0 * e_1 + 5.0 * e_2
-b = 1.0 * e_1 + 2.0 * e_2
+a: Vector = 2.0 * e_1 + 5.0 * e_2
+b: Vector = 1.0 * e_1 + 2.0 * e_2
+projection: Vector
+rejection: Vector
 projection, rejection = project_and_reject_sp(a, b)
 projection  # rotate b to the x-axis, keep a's x, rotate back
 
@@ -74,13 +84,38 @@ a.projected_onto(b)  # the canonical (a . b) b^-1 -- same vector
 # general `a`, the difference between the two projections is zero in every coordinate.
 
 # %%
+a_1: sympy.Symbol
+a_2: sympy.Symbol
 a_1, a_2 = sympy.symbols("a_1 a_2")
-a_symbolic = a_1 * e_1 + a_2 * e_2
-b_exact = 3 * e_1 + 4 * e_2
+a_symbolic: Vector = a_1 * e_1 + a_2 * e_2
+b_exact: Vector = 3 * e_1 + 4 * e_2
 
+projection_symbolic: Vector
+rejection_symbolic: Vector
 projection_symbolic, rejection_symbolic = project_and_reject_sp(a_symbolic, b_exact)
-difference = projection_symbolic - a_symbolic.projected_onto(b_exact)
+difference: Vector = projection_symbolic - a_symbolic.projected_onto(b_exact)
 [sympy.simplify(sympy.sympify(coefficient)) for coefficient in difference]  # -> [0, 0]
+
+# %% [markdown]
+# ## ...and for any `b` too
+#
+# Nothing above depended on `b = 3 e_1 + 4 e_2`; it only kept the printing short. With
+# `b` symbolic as well, `|b| = sqrt(b_1^2 + b_2^2)` appears inside the cosine and sine,
+# and the difference between the two projections still simplifies to zero in both
+# coordinates — so the rotate / keep-x / rotate-back construction equals the
+# geometric-algebra projection for *every* `a` and `b`.
+
+# %%
+b_1: sympy.Symbol
+b_2: sympy.Symbol
+b_1, b_2 = sympy.symbols("b_1 b_2", real=True)
+b_symbolic: Vector = b_1 * e_1 + b_2 * e_2
+projection_general: Vector
+projection_general, _ = project_and_reject_sp(a_symbolic, b_symbolic)
+difference_general: Vector = projection_general - a_symbolic.projected_onto(b_symbolic)
+[
+    sympy.simplify(sympy.sympify(coefficient)) for coefficient in difference_general
+]  # -> [0, 0]
 
 # %% [markdown]
 # ## Projection plus rejection rebuild the vector
@@ -104,9 +139,10 @@ difference = projection_symbolic - a_symbolic.projected_onto(b_exact)
 # symbolic check stays clean.
 
 # %%
-a_3d = a_1 * e3_1 + a_2 * e3_2 + sympy.symbols("a_3") * e3_3
-b_3d = 3 * e3_1 + 4 * e3_2 + 12 * e3_3
-difference_3d = project_sp(a_3d, b_3d) - a_3d.projected_onto(b_3d)
+a_3: sympy.Symbol = sympy.symbols("a_3")
+a_3d: g3.Vector = a_1 * e3_1 + a_2 * e3_2 + a_3 * e3_3
+b_3d: g3.Vector = 3 * e3_1 + 4 * e3_2 + 12 * e3_3
+difference_3d: MultiVectorBase = project_sp(a_3d, b_3d) - a_3d.projected_onto(b_3d)
 [
     sympy.simplify(sympy.sympify(coefficient)) for coefficient in difference_3d
 ]  # -> [0, 0, 0]

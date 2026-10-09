@@ -23,13 +23,32 @@ Adding vectors
    :align: center
    :alt: a plus b drawn tip-to-tail, with b slid onto the head of a
 
-..
-   TODO prose: either order lands on the same corner, so addition commutes — the
-   parallelogram the two vectors span.
+.. note::
+
+   Draft. The paragraph below is agent-drafted; maintainer's voice pass pending (the rest of
+   this page's prose is still to be written).
+
+Slide :math:`\vec{b}` onto the head of :math:`\vec{a}`, or slide :math:`\vec{a}` onto the head of
+:math:`\vec{b}` — either order lands on the same corner of the parallelogram the two vectors span,
+so **addition commutes**: :math:`\vec{a} + \vec{b} = \vec{b} + \vec{a}`.
 
 .. figure:: _static/epix/add3.*
    :align: center
    :alt: the parallelogram spanned by a and b, showing a plus b equals b plus a
+
+The picture says it; the coordinates confirm it. Adding two vectors adds their coordinates, and
+adding two ordinary numbers gives the same answer in either order:
+
+.. math::
+
+   \vec{a} + \vec{b}
+     = \begin{bmatrix} \vec{a}_x + \vec{b}_x \\ \vec{a}_y + \vec{b}_y \end{bmatrix}
+     = \begin{bmatrix} \vec{b}_x + \vec{a}_x \\ \vec{b}_y + \vec{a}_y \end{bmatrix}
+     = \vec{b} + \vec{a}.
+
+This is the first of many times this book will read a fact off a picture and then check it in
+coordinates. The companion notebook runs the same check with the coordinates left as symbols, so
+it holds for every pair of vectors at once.
 
 Subtracting vectors
 -------------------

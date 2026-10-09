@@ -35,3 +35,4 @@ rotation again — coordinate-free — and check that the two agree.
    proof-rotate
    proof-rotate-from-a-to-b
    notebooks/rotate
+   notebooks/proof-rotate-from-a-to-b

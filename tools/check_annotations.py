@@ -2,17 +2,18 @@
 """Report every place a type annotation is missing or loose.
 
 **When to run it:** after adding or reshaping hand-written Python, to check that
-the repo-wide annotation coverage has not regressed.  As of 2026-09-09 the tree
-is at a known-good floor of **24 rows, every one a deliberate exemption** listed
-in ``tasks/reference/type-annotation-exemptions.md``.  A row that is not in that
-list is a genuine gap -- annotate it, or add it to the list with its reason.
+the repo-wide annotation coverage has not regressed.  The known-good floor -- every
+row a deliberate exemption -- and the current count live in
+``tasks/reference/type-annotation-exemptions.md``.  A row that is not in that list
+is a genuine gap -- annotate it, or add it to the list with its reason.
 
 Informational, not a gate: judging whether a row is an exemption needs a human,
 so this reports and never fails the build.  Wiring it into ``make`` would need
 the maintainer's go-ahead and a decision about what "clean" means.
 
-Walks the hand-written Python in ``src/``, ``tools/``, ``tests/`` and
-``notebooks/`` with the ``ast`` module and reports, per file:
+Walks the hand-written Python in ``src/``, ``tools/``, ``tests/``, ``notebooks/`` and
+the book's companion notebooks ``book/docs/notebooks/`` with the ``ast`` module and
+reports, per file:
 
 * ``RET``    -- a ``def`` with no return annotation.
 * ``PARAM``  -- a parameter with no annotation (``self``/``cls`` excluded).
@@ -52,7 +53,13 @@ from collections.abc import Iterator
 # tools/ -> repo root
 REPO: pathlib.Path = pathlib.Path(__file__).resolve().parents[1]
 
-SCOPE_DIRS: tuple[str, ...] = ("src", "tools", "tests", "notebooks")
+SCOPE_DIRS: tuple[str, ...] = (
+    "src",
+    "tools",
+    "tests",
+    "notebooks",
+    "book/docs/notebooks",
+)
 
 # Build artifacts: the generator owns their annotations (fix tools/, never these).
 GENERATED: re.Pattern[str] = re.compile(r"^src/gacalc/g\d+\.py$")

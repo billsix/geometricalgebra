@@ -406,7 +406,8 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   **reverse anti-automorphism** `reverse_mul` (`(ab)~ = b~ a~`, general) and its vector corollaries
   `reverse_of_isVector`, `reverse_mul_vec` (`(ab)~ = ba`), `reverse_mul3_vec` (`(abc)~ = cba`); the G2
   twins (`reverse_mul`/`reverse_vec`/`reverse_of_isVector`/`reverse_mul_vec`) live in `G2.lean`.
-- `Rotation2D.lean` (2D angle-parameterized), `Rotation3D.lean` / `Versor2D.lean` (angle-free
+- `Rotation2D.lean` (2D angle-parameterized; `rot_add`/`rot_comm` — rotations compose by angle
+  addition, hence commute), `Rotation3D.lean` / `Versor2D.lean` (angle-free
   versor-from-vectors: bisector, `R·a = |a|·h`, `b·R = |b|·h`; the carries-a→b capstone
   `R a R⁻¹ = (|a|/|b|)·b`).
 - `RotateComponents.lean` — the three matrix-free rotation goals for the actual a→b rotation (in the
@@ -433,7 +434,8 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   equivariance, the `b ↦ |b|·e₁` alignment, and `projectSP`/`rejectSP` with
   `projectSP_eq_proj`/`rejectSP_eq_reject`. The book's 2D projection proof (`proof-projection.rst`).
 - `RotateFromTo2D.lean` — rotate `a`'s direction onto `b`'s by standard position (𝒢₂):
-  `rotPlane_comp` (rotPlane composition = angle addition, so rotPlanes commute),
+  `rotPlane_comp` (rotPlane composition = angle addition), its corollary `rotPlane_comm` (plane
+  rotations commute — the book's "The collapse" cites it by name; angle form `Rotation2D.rot_comm`),
   `rotPlane_conj_collapse` (the align/un-align sandwich collapses to its middle rotation),
   `rotateFromTo_collapse` (the 3-step = a single `rotPlane ((a·b)/(|a||b|)) ((a∧b)/(|a||b|))`), and
   `rotateFromTo_carries` (`a ↦ (|a|/|b|)·b`). The book's `proof-rotate-from-a-to-b.rst`;
