@@ -37,6 +37,13 @@ doesn't need.
   hand-written Python under the full coding standard — **every binding typed** (`CLAUDE.md` ›
   "Coding standard (Python)", 2026-10-09); `make format` type-checks them
   (`ty check book/docs/notebooks`) and `tools/check_annotations.py` audits them.
+- **Code listings carry line numbers.** `conf.py` sets `nb_number_source_lines = True`, so every
+  notebook code cell is numbered in HTML and PDF (matching *Model View Projection*). **Quoting
+  library source** (none in the book yet) uses `literalinclude` with `:linenos:` **and**
+  `:lineno-match:` so the printed numbers equal the real `src/` line numbers, e.g.
+  `.. literalinclude:: ../../src/gacalc/transforms.py` with `:pyobject: translate` /
+  `:linenos:` / `:lineno-match:`. In the PDF a long numbered line wraps under the number gutter;
+  shorten the cell rather than fighting `fancyvrb`.
 - **`BUILD_DOCS`** gates the toolchain: Dockerfile `ARG BUILD_DOCS=0` (bare build stays
   lean), Makefile `BUILD_DOCS ?= 1` (so `make image` builds it in). The gated
   Dockerfile block installs the Sphinx + LaTeX packages (list below).
