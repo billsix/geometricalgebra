@@ -1,9 +1,11 @@
-# Sine/cosine presentation — deferred candidates (two SKIPs await the maintainer's confirmation)
+# Sine/cosine presentation — deferred candidates (both deferred items BUILT 2026-10-09)
 
-**Status:** proposed — needs the maintainer's confirmation of the two SKIPs below. **Priority:** 7.
+**Status:** complete
+**Completed:** 2026-10-09
+**Priority:** 7.
 **Difficulty:** 4. **Created:** 2026-10-03 (William Emerison Six <billsix@gmail.com>).
-**Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — BLUF reconciled with Progress;
-theorem names corrected to the ones in the corpus; line numbers dropped.
+**Updated:** 2026-10-09 (William Emerison Six <billsix@gmail.com>) — maintainer chose "build both"
+(2026-10-09), overriding the recommended SKIPs; both items landed in `StudentTrigForms.lean`.
 **Part of:** the "present in sin/cos" initiative — the first pass is
 `tasks/archive/2026/10/03/prefer-sine-cosine-presentation.md` (perpendicularity / parallelism / area families);
 principle in `CLAUDE.md` › "Presenting to students".
@@ -49,14 +51,33 @@ the work.
   `dual_wedge_perp_left_dot` / `dual_wedge_perp_right_dot` / `proj_plane_perp_normal_dot` in
   `Projection3D.lean`, same trivial `zero_div` pattern as the first pass. (Names verified against the
   corpus 2026-10-04.)
-- **Hypothesis-side `(h : dot a b = 0)` entry points — SKIPPED** (use-your-discretion opt-out): a
-  trig-phrased variant would take `cos_between a b = 0` and have to recover `dot a b = 0` (needs
-  `|a|,|b| ≠ 0` to divide back), which is friction for a hypothesis callers already hold in dot form.
-  Still available if the maintainer wants it.
-- **Volume-in-trig — SKIPPED**: a `|a||b||c|`·(trig) form for the scalar triple product is less
-  standard than area = |a||b|sinθ and reads as noise; left as `|a∧b∧c|`.
+- **Hypothesis-side `(h : dot a b = 0)` entry points — BUILT 2026-10-09** (maintainer chose "build
+  both"): added a shared leaf `dot_eq_zero_of_cos_between` (recovers `dot a b = 0` from
+  `cos_between a b = 0` under `magnitude a, b ≠ 0`, via `div_eq_zero_iff` + `resolve_right`) in both
+  the `G2` and `G3` namespaces of `proofs/GacalcProofs/StudentTrigForms.lean`, and the trig-side
+  entry points on top of it: `mul_eq_wedge_of_cos_perp` (G2 and G3), `vec_anticomm_cos_perp` (G3), and
+  the iff `cos_perp_iff_mul_eq_wedge` (G3, forward needs the guard, reverse is free). Each wraps the
+  existing dot-hypothesis theorem (`mul_eq_wedge_of_perp`, `vec_anticomm_perp`, `perp_iff_mul_eq_wedge`),
+  so the nonzero guard is exactly what the header's "why the guard matters" paragraph describes.
+- **Volume-in-trig — BUILT 2026-10-09**: `volume_eq_mag_mul_cos` (G3) —
+  `volume = |a|*|b×c|*|cos(a, b×c)|`, the parallelepiped's "base area × height" through the cross
+  product (`|b×c|` is the b–c face's area, the angle is from `a` to that face's normal). Proved from
+  `volume_sq_vec` (`volume = |signed volume|`, via `Real.sqrt_sq_eq_abs`) and
+  `dot_cross_eq_signedVolume` (`a·(b×c) = signed volume`), then `abs_div` + `field_simp` under the
+  nonzero guards `magnitude a ≠ 0`, `magnitude (cross b c) ≠ 0`.
+
+## Verification
+
+- `proofs/check.sh` (the `make lean` gate) green in-container against the existing image: `lake build`
+  completed (8958 jobs), completeness gate "no sorry/admit in sources", "[lean] OK". A targeted
+  `lake build GacalcProofs.StudentTrigForms` compiled the new theorems on the first try.
+- Pre-existing, unrelated: the build log shows a recovered `ring`-failed note and two `hn`
+  unused-variable warnings in `ProjectionRotation3D.lean` (a file this task did not touch; build still
+  green).
 
 ## Open questions
 
-1. Confirm the two SKIPs above (hypothesis-side entry points, volume-in-trig), or do you want either
-   after all? My recommendation: leave both skipped.
+None — the maintainer answered the one open question (2026-10-09): **build both**, overriding the
+recommended SKIPs. Both items are built and gate-verified. Since this is a Lean presentation layer on
+results whose Python and prose forms already exist, the other two of the "three forms" are
+intentionally not added here.

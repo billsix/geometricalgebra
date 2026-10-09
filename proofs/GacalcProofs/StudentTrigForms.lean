@@ -1,9 +1,11 @@
 import GacalcProofs.Trig
 import GacalcProofs.Cross
+import GacalcProofs.Projection2D
 import GacalcProofs.Projection3D
 import GacalcProofs.Predicates2D
 import GacalcProofs.Predicates3D
 import GacalcProofs.Measures
+import GacalcProofs.AlgebraLaws
 
 /-! # Student-facing sine/cosine forms
 
@@ -48,6 +50,21 @@ theorem dual_perp {v : G2} (hv : IsVector v) (_hv0 : normSq v ≠ 0) :
 theorem reject_perp (a b : G2) (ha : dot a a ≠ 0) :
     cos_between (sub b (proj a b)) a = 0 := by
   simp only [cos_between, reject_perp_dot a b ha, zero_div]
+
+/-- **Recover `dot a b = 0` from `cos(θ) = 0`** (2D), for nonzero vectors. The nonzero guard excludes
+    the junk `0/0` case (see the header), making `cos(θ) = 0` as strong as the dot primitive. -/
+theorem dot_eq_zero_of_cos_between (a b : G2) (ha : magnitude a ≠ 0) (hb : magnitude b ≠ 0)
+    (h : cos_between a b = 0) : dot a b = 0 := by
+  rw [cos_between, div_eq_zero_iff] at h
+  exact h.resolve_right (mul_ne_zero ha hb)
+
+/-- **Perpendicular (cosine 0) ⇒ the product IS the wedge** (2D), stated on the trig side: for
+    nonzero vectors with `cos(θ) = 0`, `a b = a ∧ b`. The student-facing entry point to
+    `mul_eq_wedge_of_perp` (which takes the dot form). -/
+theorem mul_eq_wedge_of_cos_perp {a b : G2} (ha : IsVector a) (hb : IsVector b)
+    (ha0 : magnitude a ≠ 0) (hb0 : magnitude b ≠ 0) (h : cos_between a b = 0) :
+    mul a b = wedge a b :=
+  mul_eq_wedge_of_perp ha hb (dot_eq_zero_of_cos_between a b ha0 hb0 h)
 
 end GacalcProofs.G2
 
@@ -102,5 +119,59 @@ theorem proj_plane_perp_normal (a b c : G3)
     (hn : dot (dual (wedge a b)) (dual (wedge a b)) ≠ 0) :
     cos_between (proj_plane a b c) (dual (wedge a b)) = 0 := by
   simp only [cos_between, proj_plane_perp_normal_dot a b c hn, zero_div]
+
+/-- **Recover `dot a b = 0` from `cos(θ) = 0`** (3D), for nonzero vectors. The nonzero guard excludes
+    the junk `0/0` case (see the header), making `cos(θ) = 0` as strong as the dot primitive. -/
+theorem dot_eq_zero_of_cos_between (a b : G3) (ha : magnitude a ≠ 0) (hb : magnitude b ≠ 0)
+    (h : cos_between a b = 0) : dot a b = 0 := by
+  rw [cos_between, div_eq_zero_iff] at h
+  exact h.resolve_right (mul_ne_zero ha hb)
+
+/-- **Perpendicular (cosine 0) ⇒ the product IS the wedge** (3D), trig side: for nonzero vectors with
+    `cos(θ) = 0`, `a b = a ∧ b`. Student entry point to `mul_eq_wedge_of_perp`. -/
+theorem mul_eq_wedge_of_cos_perp {a b : G3} (ha : IsVector a) (hb : IsVector b)
+    (ha0 : magnitude a ≠ 0) (hb0 : magnitude b ≠ 0) (h : cos_between a b = 0) :
+    mul a b = wedge a b :=
+  mul_eq_wedge_of_perp ha hb (dot_eq_zero_of_cos_between a b ha0 hb0 h)
+
+/-- **Perpendicular (cosine 0) ⇒ the vectors anticommute** (3D), trig side: for nonzero vectors with
+    `cos(θ) = 0`, `a b = −(b a)`. Student entry point to `vec_anticomm_perp`. -/
+theorem vec_anticomm_cos_perp {a b : G3} (ha : IsVector a) (hb : IsVector b)
+    (ha0 : magnitude a ≠ 0) (hb0 : magnitude b ≠ 0) (h : cos_between a b = 0) :
+    mul a b = neg (mul b a) :=
+  vec_anticomm_perp ha hb (dot_eq_zero_of_cos_between a b ha0 hb0 h)
+
+/-- **`cos(θ) = 0 ⟺ a b = a ∧ b`** (3D), for nonzero vectors — the trig-side iff of
+    `perp_iff_mul_eq_wedge`. Forward needs the nonzero guard (to rule out the junk `0/0`); the reverse
+    (`a b = a ∧ b ⇒ cos(θ) = 0`) is free, since `dot a b = 0 ⇒ cos(θ) = 0` always. -/
+theorem cos_perp_iff_mul_eq_wedge {a b : G3} (ha : IsVector a) (hb : IsVector b)
+    (ha0 : magnitude a ≠ 0) (hb0 : magnitude b ≠ 0) :
+    cos_between a b = 0 ↔ mul a b = wedge a b := by
+  constructor
+  · intro h
+    exact mul_eq_wedge_of_perp ha hb (dot_eq_zero_of_cos_between a b ha0 hb0 h)
+  · intro h
+    have hd : dot a b = 0 := (perp_iff_mul_eq_wedge ha hb).mpr h
+    simp only [cos_between, hd, zero_div]
+
+/-- **The scalar triple product as base-area × height**, through the cross product:
+    `volume = |a|*|b×c|*|cos(a, b×c)|`. The parallelepiped's volume is `|a|` times the area of the
+    b–c face (`|b×c|`, the length of its normal) times the cosine of the angle from `a` to that normal
+    — the student's "base times height". For nonzero `a` and nonzero `b×c`. Rests on
+    `dot_cross_eq_signedVolume` (`a·(b×c) = signed volume`) and `volume_sq_vec` (`volume = |signed volume|`). -/
+theorem volume_eq_mag_mul_cos {a b c : G3} (ha : IsVector a) (hb : IsVector b) (hc : IsVector c)
+    (ha0 : magnitude a ≠ 0) (hbc0 : magnitude (cross b c) ≠ 0) :
+    volume a b c = magnitude a * magnitude (cross b c) * |cos_between a (cross b c)| := by
+  have hp : (0 : ℝ) ≤ magnitude a := Real.sqrt_nonneg _
+  have hq : (0 : ℝ) ≤ magnitude (cross b c) := Real.sqrt_nonneg _
+  have hvol : volume a b c = |signedVolume a b c| := by
+    have hnn : (0 : ℝ) ≤ volume a b c := Real.sqrt_nonneg _
+    have hsq : volume a b c ^ 2 = signedVolume a b c ^ 2 := volume_sq_vec ha hb hc
+    have habs : |volume a b c| = |signedVolume a b c| := by
+      rw [← Real.sqrt_sq_eq_abs, ← Real.sqrt_sq_eq_abs, hsq]
+    rwa [abs_of_nonneg hnn] at habs
+  rw [hvol, ← dot_cross_eq_signedVolume ha hb hc, cos_between, abs_div,
+    abs_of_nonneg (mul_nonneg hp hq)]
+  field_simp
 
 end GacalcProofs.G3
