@@ -417,6 +417,28 @@ The **per-theorem A/B/C judgment** (coordinate-free object / object-then-pull-co
 scalars), the nonzero-guard convention for angle/trig theorems, and the Lean detail are in
 `tasks/reference/lean-ga-proof-architecture.md` ("Coordinates only when needed").
 
+## Every piece of math comes in three forms: Lean, symbolic Python, prose + LaTeX
+
+**Standing default (William Emerison Six <billsix@gmail.com>, 2026-10-09):** whenever the maintainer
+asks for a mathematical result — a definition, derivation, identity, proof, or an equivalence between
+two formulations — deliver it in **all three** forms unless he overrides it for that request:
+
+1. **Lean** — a machine-checked theorem in `proofs/GacalcProofs/` (`make lean`), in the house style
+   of "Coordinates only when needed" above (objects in, scalars only in the body).
+2. **Symbolic Python** — the same result computed with gacalc + sympy, as a book notebook cell
+   (`book/docs/notebooks/*.py`) and/or a test, with symbolic coordinates simplified to equality —
+   the student-runnable check.
+3. **Prose + LaTeX** — the book page (`book/docs/*.rst`) stating it, deriving it, and citing the Lean
+   theorem by name (per `tasks/reference/book-outline.md`'s proof-page conventions).
+
+The projection proof is the model trio: `book/docs/proof-projection.rst` +
+`book/docs/notebooks/proof-projection.py` + `proofs/GacalcProofs/StandardPosition.lean`. **This is a
+rule for new work when asked, not a backfill order** — do not go through existing results producing
+missing forms unprompted; when a request plainly wants only one form, say which of the other two you
+are skipping and why, rather than silently dropping them. The agent's own tendency this guards
+against: writing the prose and stopping, or proving in Lean and never showing the student the
+coordinates.
+
 ## Assessment / known issues
 
 Open issues (genuinely open; resolution history lives in git + archived task docs):
