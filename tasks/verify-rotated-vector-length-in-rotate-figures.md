@@ -1,61 +1,54 @@
 # Verify the rotated `a` vector is drawn at the same length as the original `a` in the rotate figures
 
-**Status:** in-progress
+**Status:** complete
+**Completed:** 2026-10-09
 **Priority:** 4
 **Difficulty:** 2
 **Started:** 2026-10-09
 
 ## BLUF
 
-The maintainer wants a check that the rotate figures place the **rotated** `a` at the **same length**
-as the original `a` — it looked, at first glance, like the rotated point might carry values derived by
-eye from the maintainer's original hand-made SVG rather than computed. Verify by reading the ePiX
-figure Python, confirming both the original and the rotated vectors use the **same radius constant**
-(a rotation preserves length). Deliverable: a confirmation (with the exact lines) that the lengths
-match — or, if any figure places the rotated point at a different/eyeballed radius, a fix so it uses
-the original's radius. Also check git history for whether an SVG-derived magic coordinate was ever used.
+**Verified correct — no fix needed.** Every rotate figure draws the rotated `a` with the **same radius
+constant** as the original `a`, so the two are equal length by construction. The rotated point has
+always been *computed* (`polar(radius=<original length>, angle=<rotated angle>)`), never an eyeballed
+coordinate derived from the maintainer's hand-made SVG — true back to the first ePiX commit. The
+original SVGs were removed when the Python figures replaced them, but the Python never inherited a
+magic rotated-coordinate.
 
-## Context (read first)
+## What was checked
 
-The figures are ePiX Python under `book/figures/epix/`, rendered by `tools/render_epix_figures.py`
-(see `CLAUDE.md` › "ePiX in the image" and `tasks/reference/book-and-docs-pipeline.md`). `polar(radius,
-angle)` places a point; a length-preserving rotation keeps `radius` and changes only `angle`.
+Read every `book/figures/epix/rotate*.py` and the shared scene modules; tabulated each
+original-vs-rotated `polar` radius:
 
-Early reading (verify each; this is most of the task):
+| figure | original | rotated | same radius? |
+|---|---|---|---|
+| `rotate_goal.py` | `a = polar(radius=A_LENGTH=1.25, angle=A_ANGLE)` | `rotated_a = polar(radius=A_LENGTH=1.25, angle=A_ANGLE+THETA)` | ✓ |
+| `rotate1.py` / `rotate8.py` | `a = polar(radius=R=1.25, angle=BETA)` | `result = polar(radius=R=1.25, angle=BETA+THETA)` | ✓ |
+| `_rotate_ab_scene.py` | `A = polar(radius=A_LENGTH=1.1, angle=A_ANGLE)` | `RESULT = polar(radius=A_LENGTH=1.1, angle=B_ANGLE)` | ✓ |
 
-- **`rotate_goal.py`** draws both: `a = polar(radius=A_LENGTH, angle=A_ANGLE)` and
-  `rotated_a = polar(radius=A_LENGTH, angle=A_ANGLE + THETA)` — same `A_LENGTH`, so equal length by
-  construction. `THETA = math.radians(66)`.
-- **`rotate1.py` … `rotate8.py`** import `R`/`BETA`/`THETA` from `_rotation_scene.py`;
-  `rotate1` has `a = polar(radius=R, angle=BETA)` and `rotate8` has
-  `result = polar(radius=R, angle=BETA + THETA)` — same `R`.
-- **`_rotate_ab_scene.py`** (the a→b figures): `A = polar(radius=A_LENGTH, …)` and
-  `RESULT = polar(radius=A_LENGTH, …)` — same `A_LENGTH`.
+- The `radius=1` points in `rotate3`–`rotate7` are the **unit-circle intermediate steps** (the rotated
+  *direction* before re-lengthening); `rotate8`'s `result` is where it is scaled back to `R`. Correct.
+- The only hardcoded radii (`rotate7.py:87` `radius=1.45`, `rotate8.py:89` `radius=R + 0.2`) are
+  **label positions**, not vector endpoints.
+- A length-preserving rotation changes only `angle`, not `radius` — which is exactly what the code does.
 
-So the quick read says every rotated vector reuses the original's radius constant (lengths equal). The
-maintainer's "derived from my SVG" worry is about the *angle/length constants* possibly being eyeballed
-— but as long as original and rotated share the radius, the **length-equality** the maintainer asked
-about holds regardless of the constant's value.
+## The "derived from my SVG" recollection — resolved by git history
 
-## Goal
+- `git log --follow book/figures/epix/rotate_goal.py`: created in `dcc4ba3` (ePiX front-end + first
+  figures), ported in `90ee212` ("Port the eight proof figures … remove the SVGs"). The rotate proof
+  itself was ported from modelviewprojection (`6f67a3d`).
+- In the **first** version (`dcc4ba3`), `rotated_a = polar(A_LENGTH, A_ANGLE + THETA)` — already the
+  same `A_LENGTH` as `a = polar(A_LENGTH, A_ANGLE)`. So no SVG-measured coordinate was ever used for
+  the rotated point; it has always been computed from the original's length.
+- The maintainer's hand-made SVGs existed and were deliberately removed (`90ee212`) when the ePiX
+  Python figures replaced them; the layout constants (`A_LENGTH`, `A_ANGLE=66°`, `THETA=66°`) may have
+  been chosen to echo that SVG's look, but they are cosmetic and do not affect length-equality.
 
-Confirm, with the exact `polar(...)` lines from every rotate figure and the shared scene modules, that
-the rotated `a` uses the same radius as the original `a` (so the drawn lengths are equal). If any figure
-violates this (an eyeballed/hardcoded rotated coordinate), change it to `polar(radius=<original radius>,
-angle=<rotated angle>)`. Check `git log`/`git show` on the figure files and any removed SVG for whether
-an SVG-derived value was once used. Re-render if anything changes (`make docs` / the epix step) and
-confirm the figures still build.
+## Verification
 
-## Plan
-
-- [ ] Read every `book/figures/epix/rotate*.py` and the shared `_rotation_scene.py` /
-      `_rotate_ab_scene.py`; tabulate each original-vs-rotated `polar` radius.
-- [ ] Confirm equality (or find and fix a mismatch).
-- [ ] `git log`/`git show` the figure files + any `.svg` the maintainer removed, to address the
-      "derived from the SVG" recollection.
-- [ ] If anything changed, re-render the epix figures and confirm the build.
+Read-only — no figure changed, so no re-render was needed. The conclusion is a direct read of the
+`polar(...)` calls plus `git show dcc4ba3:…` on the first version.
 
 ## Open questions
 
-None — the intent is clear (rotated length must equal original length); verify, and fix only if a
-figure violates it.
+None.
