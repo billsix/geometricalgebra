@@ -56,6 +56,42 @@ for label separation — a change that must stay consistent across the shared `_
 - [ ] Come back to the maintainer with the rendered candidates and the follow-up questions (new step vs.
       enhance rotate8; chosen `R`; overlay vs. side-by-side; label placement).
 
+## Experiment results (2026-10-09)
+
+Built an overlaid figure (`tasks/adhoc/rotate-figure-similar-triangle-for-a/expsimilar.py`) — the unit
+triangle (`cos θ`, `sin θ`, hypotenuse dashed) and `a`'s scaled-up triangle (`r·cos θ`, `r·sin θ`,
+hypotenuse the solid `a`), sharing the origin corner and the `θ` wedge. Rendered at three magnitudes and
+viewed the PNGs:
+
+- **R = 1.25 (current shared value): too crowded.** The two triangles are nearly the same size, so
+  `sin(θ)`/`r·sin(θ)` sit on top of each other and `cos(θ)`/`r·cos(θ)` collide — unreadable. Confirms the
+  maintainer's overlap worry.
+- **R = 1.6: readable `sin` legs.** The two green `sin` legs separate into distinct parallel lines with
+  readable labels, and `a` sits just outside the unit circle.
+- **R = 2.0: very clear `sin` separation, but `a` extends well outside the circle**, which reframes the
+  whole sequence more.
+- **The `cos` legs are COLLINEAR at every R.** Both run from the origin along `x'`, so the short one
+  (`cos θ`) is a sub-segment of the long one (`r·cos θ`) — the *lines* coincide; only the *labels* can be
+  moved apart. This is pedagogically fine (it literally shows `cos θ` is `r·cos θ` scaled down), but the
+  two `cos` labels must be repositioned (short leg vs. far end) — a label fix independent of R.
+- **R is shared across all eight `rotate*` figures** via `_rotation_scene.py`, so bumping it changes the
+  framing of `rotate1`–`rotate7` too, not just this step.
+
+Experiment script saved at `tasks/adhoc/rotate-figure-similar-triangle-for-a/expsimilar.py` (render by
+copying it into `book/figures/epix/` and `python tools/render_epix_figures.py expsimilar`).
+
 ## Open questions
 
-(To be filled from the experiment — this task deliberately returns with questions before finalizing.)
+1. **New step, or enhance `rotate8`?** `rotate8` already draws the unit triangle + the full-length
+   result; I can add the scaled-up triangle there, or make a dedicated **`rotate9`** "similar triangles"
+   step. Recommend a **new `rotate9`** — `rotate8` is already busy with the long result-formula label.
+2. **Magnitude.** Keep the shared `R = 1.25` (too crowded here), bump the shared `R` for the whole
+   sequence (1.6 or 2.0), or use a **larger `R` only for this figure**? Recommend a **local larger `R`
+   (~1.6) for just this figure** (or `rotate9`), leaving `rotate1`–`rotate8` at 1.25 so their framing
+   doesn't change. If you'd rather the whole sequence match, 1.6 reads better than 1.25 and keeps `a`
+   near the circle.
+3. **`cos`-leg presentation.** OK to keep the overlay with the two `cos` legs collinear (labels
+   separated), or do you want the unit triangle drawn **translated/side-by-side** so all six sides are
+   distinct? Recommend the overlay (the nesting IS the proportionality).
+4. **Which three images do you want to see?** I have R = 1.25 / 1.6 / 2.0 rendered; say if you want
+   different magnitudes or the `cos`-label-separated version before I finalize.
