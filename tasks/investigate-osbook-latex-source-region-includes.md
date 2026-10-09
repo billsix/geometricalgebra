@@ -80,7 +80,7 @@ works in all three outputs. Test all three (`pdf`, `html`, `epub`) in the minima
   osbook-defer.sty}`, `tasks/reference/tooling/converters.md`, `tasks/reference/tooling/cross-references.md`.
 - This repo: `tasks/reference/openstax-math-pedagogy.md` (why `osbook`'s environments appeal to
   this book), `tasks/reference/book-and-docs-pipeline.md` (the Sphinx pipeline being compared),
-  `tasks/line-numbers-in-source-listings.md` (the `:linenos:` + `:lineno-match:` pattern the LaTeX
+  `tasks/archive/2026/10/09/line-numbers-in-source-listings.md` (the `:linenos:` + `:lineno-match:` pattern the LaTeX
   side must match).
 
 ## Open questions

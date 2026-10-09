@@ -62,7 +62,7 @@ like "see Proof: Rotate (Section 2.3, page 41)", and HTML shows the same section
   `tasks/reference/book-and-docs-pipeline.md`) sets none of these either, so this is new ground,
   not a port.
 - Related: `tasks/number-equations-with-labels.md` (equation numbers share `numfig`/
-  `numfig_format`) and `tasks/line-numbers-in-source-listings.md` (the other print-readability
+  `numfig_format`) and `tasks/archive/2026/10/09/line-numbers-in-source-listings.md` (the other print-readability
   item from the same 2026-10-08 list).
 
 ## Open questions
