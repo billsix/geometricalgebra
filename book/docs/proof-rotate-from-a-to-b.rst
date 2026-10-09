@@ -97,8 +97,8 @@ The collapse
 ------------
 
 Now the payoff. In 2D, **rotations commute** — turning by one angle and then another is the same in
-either order. That is easy to believe, and we can *check it in coordinates* with the formula of
-:doc:`proof-rotate`. Rotate :math:`\vec{v}` by :math:`\theta_1`, then rotate the result by
+either order. That is easy to believe, and we can *check it in coordinates* with the formula
+:eq:`eq-rotate-formula` of :doc:`proof-rotate`. Rotate :math:`\vec{v}` by :math:`\theta_1`, then rotate the result by
 :math:`\theta_2`, and multiply out:
 
 .. math::
@@ -152,7 +152,7 @@ And its cosine and sine are a tidy formula in the coordinates of :math:`\vec{a}`
    \sin(\theta) = \frac{a_1 * b_2 - a_2 * b_1}{|\vec{a}| * |\vec{b}|}.
 
 So the rotation that carries :math:`\vec{a}`'s direction to :math:`\vec{b}`'s, applied to any vector
-:math:`\vec{v}`, is just the rotation of :doc:`proof-rotate` with that cosine and sine:
+:math:`\vec{v}`, is just the rotation :eq:`eq-rotate-formula` of :doc:`proof-rotate` with that cosine and sine:
 
 .. math::
 

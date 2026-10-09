@@ -127,6 +127,22 @@ latex_elements = {
 # A couple of Markdown niceties, matching modelviewprojection.
 myst_enable_extensions = ["colon_fence", "dollarmath"]
 
+# Number every displayed equation LaTeX-style and let a labelled one be cited by
+# number with :eq: (the maintainer asked for TeX-style numbers, 2026-10-08).
+# math_number_all numbers every ``.. math::`` block (and, via dollarmath's default
+# myst_dmath_allow_labels, the notebooks' ``$$ … $$``) in HTML and PDF. math_numfig
+# (default True, set explicitly) ties equation numbers to numfig so they read
+# per-chapter ((2.3), not a running (7)) -- but per-chapter ALSO needs numbered
+# sections (``:numbered:`` on index.rst's toctree), which the companion
+# page/section-number work adds (tasks/pdf-section-and-page-numbers-for-print.md);
+# until then the equations number straight through ((3), (4), …). numfig_secnum_depth
+# sets how deep the chapter prefix goes once sections are numbered.
+# Label-naming convention (eq-<page>-<what>): tasks/reference/book-outline.md.
+math_number_all = True
+math_numfig = True
+numfig = True
+numfig_secnum_depth = 1
+
 # If a notebook page is slow to run, allow up to ten minutes for it.
 nb_execution_timeout = 600
 

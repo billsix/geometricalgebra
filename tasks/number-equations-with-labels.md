@@ -1,65 +1,63 @@
 # Number the book's displayed equations, LaTeX-style, and reference them by number
 
-**Status:** proposed — needs go-ahead
+**Status:** complete
+**Completed:** 2026-10-09
 **Priority:** 4
 **Difficulty:** 2
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-08 **Updated:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
-The maintainer wants displayed equations to carry numbers "like happens in TeX" (2026-10-08) —
-`(2.3)` in the margin, referenced as "by (2.3)" from the prose. Today the book has 18
-`.. math::` directives across five pages and **zero** `:label:`s, so nothing is numbered and
-nothing can be referenced. "Done" = every displayed equation a proof later refers to has a
-`:label:` and is cited with `:eq:`; the numbering is per-chapter (`(2.3)`) in both HTML and PDF;
-`make docs` is green with no "undefined label" warnings.
+The maintainer wanted displayed equations numbered "like TeX" and citable by number. Done:
+`book/docs/conf.py` now numbers every `.. math::` block (and notebook `$$ … $$`) in HTML and PDF,
+the rotation formula of `proof-rotate.rst` carries a `:label:` and is cited with `:eq:` from the two
+pages that point at it, and the convention is recorded in `tasks/reference/book-outline.md`. The
+numbers run straight through (`(3)`, `(4)`, …) for now and become per-chapter `(2.3)` the moment the
+companion `tasks/pdf-section-and-page-numbers-for-print.md` adds `:numbered:` to the toctree — the two
+tasks share that switch, and the page/section-number task is being done next in the same session.
 
-## How Sphinx numbers equations (verified against Sphinx 8.2.3, 2026-10-08)
+## What was done
 
-- A `.. math::` block with `:label: name` is numbered in both builders and `:eq:\`name\`` renders
-  the number as a link, `(3)` by default (`sphinx/domains/math.py`: `math_eqref_format`, default
-  `"({number})"`).
-- `math_number_all = True` numbers **every** displayed equation, labelled or not — this is the
-  "like TeX" behaviour (`equation` environment numbers everything). Recommended, so the reader can
-  point at any line; add `:label:` only to the ones cited.
-- Per-chapter numbers `(2.3)` instead of running `(7)`: `numfig = True` **and** `math_numfig = True`
-  (the latter is the default; it only takes effect with `numfig`). The chapter prefix depth is
-  `numfig_secnum_depth` (default 1 = chapter). This is the same `numfig` switch
-  `tasks/pdf-section-and-page-numbers-for-print.md` turns on — do these two tasks together or
-  in sequence.
-- Notebook pages (myst_nb, `book/docs/notebooks/*.py`) use `$$ … $$` dollar-math; MyST labels
-  them as `$$ … $$ (label)` and `myst_dmath_allow_labels` is on by default (`conf.py` enables
-  `dollarmath`), so the same numbering reaches the executed notebooks.
+- **`conf.py`:** `math_number_all = True` (numbers every displayed equation, the "like TeX"
+  behaviour), `math_numfig = True` + `numfig = True` + `numfig_secnum_depth = 1` (per-chapter
+  numbering, which also needs numbered sections — see the dependency below). A comment explains the
+  mechanism and the `:numbered:` dependency.
+- **`proof-rotate.rst`:** gave the chapter's result equation `\vec{r}(\vec{a};\theta) = …` the label
+  `:label: eq-rotate-formula` — the formula cited from elsewhere.
+- **Cited it with `:eq:`** where prose points at it: `geometric-product.rst` ("… in Proof: Rotate,
+  equation (N)") and `proof-rotate-from-a-to-b.rst` (two spots: "the formula (N) of …", "the rotation
+  (N) of …"). `:eq:` renders the number as a cross-document hyperlink in both builders.
+- **`tasks/reference/book-outline.md`:** added a "Displayed equations are numbered, TeX-style" bullet
+  under the proof-page notation conventions (label only what prose cites, `eq-<page>-<what>`,
+  one `aligned` block = one number).
 
-## Current state
+## Decision: labelling
 
-| File | `.. math::` blocks | labels |
-|---|---|---|
-| `book/docs/proof-rotate-from-a-to-b.rst` | 6 | 0 |
-| `book/docs/blade-square-sign.rst` | 4 | 0 |
-| `book/docs/geometric-product.rst` | 3 | 0 |
-| `book/docs/proof-projection.rst` | 3 | 0 |
-| `book/docs/proof-rotate.rst` | 2 | 0 |
+`math_number_all` already numbers every equation, so the reader can point at any line; a `:label:` is
+added **only** to an equation the prose refers back to (per the task plan and the BLUF's "every
+equation a proof refers to"). Only `eq-rotate-formula` met that bar across the current pages — the
+other cross-references were prose/`:doc:` pointers to a whole page, not to a specific displayed
+equation. The multi-line derivations are single `\begin{aligned}` blocks, so each takes one number
+(not one per `&=` line).
 
-Several of these are multi-line `align`-style derivations (the `proof-rotate.rst` chain of `&=`
-steps). In LaTeX an `align` numbers every line; decide per block whether the whole derivation
-gets one number (wrap as a single equation, or `:nowrap:` with an explicit `\begin{align*}` and a
-`\tag`) or each line gets its own.
+## Dependency on the page/section-number task
 
-## Plan
+Per-chapter equation numbers (`(2.3)`) need numbered sections, i.e. `:numbered:` on `index.rst`'s
+toctree. That switch is owned by `tasks/pdf-section-and-page-numbers-for-print.md` (its plan step 2),
+so it is added there, not here, to avoid a duplicate edit. Until it lands the equations number
+straight through (`(3)`, `(4)`); the numbering infrastructure and the `:eq:` references are complete
+and correct either way. Verify per-chapter rendering at the end of that task.
 
-1. `book/docs/conf.py`: `math_number_all = True`, `numfig = True` (if not already from the
-   page-numbers task), `math_eqref_format = "Eq. ({number})"` or plain `"({number})"` —
-   maintainer's taste; TeX convention is plain `(2.3)`.
-2. Walk the 18 blocks: give a `:label:` to each equation the prose refers back to (the rotation
-   formula `\vec{r}(\vec{a}; \theta)` in `proof-rotate.rst` is cited from `geometric-product.rst`,
-   `proof-rotate-from-a-to-b.rst` and `proof-projection.rst` — the obvious first label). Label
-   names: `eq-<page>-<what>`, e.g. `eq-rotate-formula`.
-3. Replace the prose's "the formula above" / "the chapter-ending formula of Proof: Rotate" with
-   `:eq:` references where a number is clearer than a name.
-4. `make docs`; check the HTML (MathJax renders the numbers at the right margin) and the PDF.
-   Note the convention (label naming, when to label) in `tasks/reference/book-outline.md` ›
-   "Notation & prose conventions for proof pages".
+## Verification
+
+- Built the book against the existing full image (`entrypoint/docs.sh`, nested podman): HTML + PDF
+  both succeed ("build succeeded"; "Book built"). 24 equations carry numbers in the HTML.
+- `eq-rotate-formula` resolves as a cross-document link in HTML
+  (`geometric-product.html` → `proof-rotate.html#equation-eq-rotate-formula`) and in the PDF (final
+  LaTeX pass has no undefined references).
+- Pre-existing, unrelated warnings seen and left alone: a docutils "Undefined substitution: A" from
+  the `exp` docstring's `|A|` (predates this work — `base.py` is unchanged on this branch), and the
+  known missing-glyph `𝒢` fallback in FreeMono.
 
 ## Open questions
 

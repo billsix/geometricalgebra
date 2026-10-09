@@ -49,7 +49,8 @@ with the formula we started from:
      = (a_1 * \cos(\theta) - a_2 * \sin(\theta)) * e_1
        + (a_1 * \sin(\theta) + a_2 * \cos(\theta)) * e_2,
 
-exactly the two coordinates of :math:`\vec{r}(\vec{a}; \theta)` in :doc:`proof-rotate`. (The Lean
+exactly the two coordinates of :math:`\vec{r}(\vec{a}; \theta)` in :doc:`proof-rotate`,
+equation :eq:`eq-rotate-formula`. (The Lean
 proofs state this as ``vec_mul_fullAngleRotor`` in ``proofs/GacalcProofs/Rotation2D.lean``.)
 
 The object :math:`R = \cos(\theta) + \sin(\theta) * e_{12}` is a **full-angle rotor**: to
