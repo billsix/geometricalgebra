@@ -151,7 +151,7 @@ reuse story end to end:
 
 - `import Mathlib` + `lake exe cache get` works; after the one-time download, rebuilding a proof file
   that imports all of Mathlib took **3.1s** (`✔ Built Mathspike`, `Build completed successfully`).
-- **The 2D Lagrange identity (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>)** `(a₁²+a₂²)(b₁²+b₂²) = (a₁b₁+a₂b₂)² + (a₁b₂−a₂b₁)²` is proved outright
+- **The 2D Lagrange identity (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>)** `(a₁²+a₂²)(b₁²+b₂²) = (a₁ * b₁+a₂ * b₂)² + (a₁ * b₂−a₂ * b₁)²` is proved outright
   by Mathlib's **`ring`** tactic — this is gacalc's first real target, done in one line.
 - **The dot product is proved, not assumed.** `#print axioms real_inner_comm` (symmetry of the dot
   product on `EuclideanSpace ℝ (Fin n)`, arbitrary dimension) reported only
@@ -215,7 +215,7 @@ version resolution is lake's own, not hand-picked):
   multiplication table `e_1_sq`/`e_1_mul_e_2`/`e_2_mul_e_1`/`e_12_sq`, and `eq_smul_basis`), and
   `GacalcProofs/Rotation2D.lean` (2D: `rot` from sin/cos; the geometric product enacts rotation; the
   product of two unit vectors is the rotor of the angle; rotation "from a to b" for general vectors,
-  `b = (|b|/|a|)·rot(φb−φa)a`, and the rotor from a's direction to b's carrying a to b).
+  `b = (|b|/|a|) * rot(φb−φa)a`, and the rotor from a's direction to b's carrying a to b).
   This list is only the earliest landmarks and drifts — for the **current full inventory** (which now
   also includes the reverse anti-automorphism, the sandwich/rotation suite, projection/rejection,
   `Cross.lean` (cross/dual/scalar-triple), and `StandardPosition.lean` (reduction to standard position

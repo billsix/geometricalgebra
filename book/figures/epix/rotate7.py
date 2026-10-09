@@ -14,8 +14,8 @@
 # %% [markdown]
 # # rotate7 — the rotated direction
 #
-# The rotated **direction** is $\cos\theta\,\vec{x'} + \sin\theta\,\vec{y'}$: the two
-# legs of the triangle, added as vectors. One step of the `proof-rotate.rst`
+# The rotated **direction** is $\cos(\theta) * \vec{x'} + \sin(\theta) * \vec{y'}$: the
+# two legs of the triangle, added as vectors. One step of the `proof-rotate.rst`
 # sequence; the geometry (β, θ, r) is shared with the other steps through
 # `_rotation_scene.py`, so the last step lands exactly on the goal figure's
 # $\vec{r}(\vec{a};\theta)$. Built with the `epix` Python package
@@ -67,7 +67,7 @@ with unit_circle_scene(
         tail=ORIGIN,
         head=foot,
         color=BLUE,
-        text=r"$\cos\theta$",
+        text=r"$\cos(\theta)$",
         angle=BETA,
         offset=Point(x=11, y=-5),
     )
@@ -75,7 +75,7 @@ with unit_circle_scene(
         tail=foot,
         head=rotated,
         color=GREEN,
-        text=r"$\sin\theta$",
+        text=r"$\sin(\theta)$",
         angle=BETA - math.pi / 2,
         offset=Point(x=5, y=11),
     )
@@ -85,7 +85,7 @@ with unit_circle_scene(
     epix.label_angle(t=BETA + THETA - math.pi / 2)
     epix.label(
         at=polar(radius=1.45, angle=BETA + THETA),
-        text=r"$\cos\theta\,\vec{x'} + \sin\theta\,\vec{y'}$",
+        text=r"$\cos(\theta) * \vec{x'} + \sin(\theta) * \vec{y'}$",
     )
     epix.label_angle(t=0)
 

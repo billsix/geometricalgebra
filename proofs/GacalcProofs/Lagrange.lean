@@ -11,7 +11,7 @@ import Mathlib
     Mathlib's `inner_mul_le_norm_mul_norm` (Cauchy–Schwarz) is the ≤ half. -/
 namespace GacalcProofs
 
-/-- Lagrange's identity in 2D (a∧b is the single minor a₁b₂ − a₂b₁). -/
+/-- Lagrange's identity in 2D (a∧b is the single minor a₁*b₂ − a₂*b₁). -/
 theorem lagrange_2d (a1 a2 b1 b2 : ℝ) :
     (a1 ^ 2 + a2 ^ 2) * (b1 ^ 2 + b2 ^ 2)
       = (a1 * b1 + a2 * b2) ^ 2 + (a1 * b2 - a2 * b1) ^ 2 := by

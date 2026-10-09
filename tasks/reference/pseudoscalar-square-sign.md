@@ -14,12 +14,12 @@ in place**, not archived. Last updated 2026-08-16 (William Emerison Six <billsix
 The **unit pseudoscalar** of the n-dimensional algebra is the product of all n basis vectors, in
 order:
 
->   `I_r  =  e_1 e_2 … e_r`.
+>   `I_r  =  e_1 * e_2 * … * e_r`.
 
 (We use `r` for its grade so the formula reads the same whether it's the top blade of the whole
 algebra or an r-blade sitting inside a bigger one.) The claim is:
 
->   **`I_r²  =  (−1)^(r(r−1)/2)`**   (Euclidean signature: every `e_i e_i = +1`).
+>   **`I_r²  =  (−1)^(r(r−1)/2)`** (Euclidean signature: every `e_i e_i = +1`).
 
 This one sign controls real code. `reverse()` gives the grade-r part of a multivector exactly this
 sign (Hestenes & Sobczyk eq. 1.19), `exp()` uses it to decide whether a blade squares to a positive
@@ -57,7 +57,7 @@ I_1² =  e1 e1              sign = +1
 ```
 Zero swaps. **`I_1² = +1`.**
 
-### Grade 2 — `I_2 = e_1 e_2`
+### Grade 2 — `I_2 = e_1 * e_2`
 
 ```
 I_2² =  e1 e2 e1 e2                    sign = +1
@@ -66,9 +66,9 @@ I_2² =  e1 e2 e1 e2                    sign = +1
         └──┘ e1 e1 = +1     └──┘ e2 e2 = +1     (annihilate)
      =  −1
 ```
-One swap. **`I_2² = −1`.**  (This is the famous "`i² = −1`" of the plane's unit bivector.)
+One swap. **`I_2² = −1`.** (This is the famous "`i² = −1`" of the plane's unit bivector.)
 
-### Grade 3 — `I_3 = e_1 e_2 e_3`
+### Grade 3 — `I_3 = e_1 * e_2 * e_3`
 
 ```
 I_3² =  e1 e2 e3 · e1 e2 e3                 sign = +1
@@ -132,10 +132,10 @@ Two things jump out:
 
 The peeling above *is* an induction. Let `s(r)` be the sign of `I_r²`.
 
-- **Base case:** `s(0) = +1` (the empty product `I_0 = 1`, and `1² = 1`); equivalently `s(1) = e_1 e_1 = +1`.
-- **Inductive step:** in `I_r² = (e_1 … e_r)(e_1 … e_r)`, slide the second block's `e_1` left past
+- **Base case:** `s(0) = +1` (the empty product `I_0 = 1`, and `1² = 1`); equivalently `s(1) = e_1 * e_1 = +1`.
+- **Inductive step:** in `I_r² = (e_1 * … * e_r)(e_1 * … * e_r)`, slide the second block's `e_1` left past
   `e_r, e_{r−1}, …, e_2` — that's `r − 1` swaps by R2, since all those vectors differ from `e_1`.
-  Now the two `e_1`s are adjacent; annihilate with R1. What remains is `e_2 … e_r e_2 … e_r`, which is
+  Now the two `e_1`s are adjacent; annihilate with R1. What remains is `e_2 * … * e_r e_2 * … * e_r`, which is
   `I'²` for the algebra on indices `{2, …, r}`. Relabelling `2→1, 3→2, …` doesn't change any product
   (the rules never mention *which* index, only whether two are equal), so that leftover squares with
   sign `s(r−1)`. Therefore
@@ -157,14 +157,14 @@ The **reverse** of `I_r` writes its factors back-to-front:
 
 >   `Ĩ_r = e_r e_{r−1} … e_1`.
 
-Turning `e_1 e_2 … e_r` into `e_r … e_2 e_1` by adjacent swaps takes `C(r,2) = r(r−1)/2` swaps (that's
+Turning `e_1 * e_2 * … * e_r` into `e_r * … * e_2 * e_1` by adjacent swaps takes `C(r,2) = r(r−1)/2` swaps (that's
 how many out-of-order pairs a full reversal has), each an R2 flip, so
 
 >   `Ĩ_r = (−1)^(r(r−1)/2) · I_r`.     (★)
 
 Separately, `I_r Ĩ_r` **telescopes to `+1`**: line them up and cancel from the middle out —
-`e_1 … e_r · e_r … e_1`, the inner `e_r e_r = +1` (R1) disappears, then `e_{r−1} e_{r−1} = +1`, and so
-on down to the last `e_1 e_1 = +1`:
+`e_1 * … * e_r * e_r * … * e_1`, the inner `e_r * e_r = +1` (R1) disappears, then `e_{r−1} * e_{r−1} = +1`, and so
+on down to the last `e_1 * e_1 = +1`:
 
 >   `I_r Ĩ_r = +1`.     (this is exactly what makes `I_r` a *unit* pseudoscalar)
 

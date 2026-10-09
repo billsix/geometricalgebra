@@ -92,7 +92,7 @@ and call `self * other`, dispatched to the concrete type.
 - **Primitives** a concrete class must supply: `from_blade_dict` (classmethod), `to_blade_dict`,
   `_geometric_product`, and `__eq__`. Shared methods build results via
   `type(self).from_blade_dict()` / `type(self).zero()` so they stay polymorphic.
-- A *blade* is a tuple of basis-vector indices, e.g. `(1, 2)` ≙ e₁e₂; **Euclidean signature is
+- A *blade* is a tuple of basis-vector indices, e.g. `(1, 2)` ≙ e₁ * e₂; **Euclidean signature is
   hardcoded** (eᵢeᵢ = 1). Full blade-dict contract — canonical keys and the `ValueError` on a
   non-canonical one, zero-omission, the eager/lazy hidden-zero split, and the graded silent-drop
   ("exp() trap") — is in `tasks/reference/blade-dict-interchange.md`.
@@ -171,7 +171,7 @@ composable-function hierarchy, rotations/versors + the versor sandwich derivatio
   `plane_rotation(a, b)` (free-function factories); `MultiVectorBase.versor_from_vectors(from, to)`
   (the versor builder) and `rotor_from_vectors(from, to)` (= that versor normalized: a rotor, i.e. a unit versor,
   reverse sandwich) — any plane / representation; a versor's `magnitude()`/`plane_of_rotation()`/`angle()`/`conjugate()` read
-  `r`, `I`, `θ`, `R̄` back out of `R = r (cos θ + I sin θ)`
+  `r`, `I`, `θ`, `R̄` back out of `R = r * (cos(θ) + I * sin(θ))`
 - cross product (𝒢₃ only): `vectorcalc.cross(a, b)` = `(a ∧ b) I₃⁻¹` (the dual of the wedge;
   right-handed, `e₁ × e₂ = e₃`) / `a.cross(b)` (on 𝒢₃'s generated `Vector` a closed form typed
   `Vector -> Vector`). Dot = `scalar_product`; scalar triple product = `measure.signed_volume` — no aliases
@@ -184,7 +184,7 @@ composable-function hierarchy, rotations/versors + the versor sandwich derivatio
   and are type-precise on the specialized types. `i` **raises `ValueError` on parallel vectors**.
   Math + the classmethod/instance split: `tasks/reference/unit-bivector-and-rotors.md`
 - `mv.exp()` — exponential map, defined for a scalar or a **negative-square** blade (`A² < 0`:
-  a bivector / the 𝒢₃ pseudoscalar): `cos|A| + sin|A|·Â` — **exp of a bivector IS a rotor**
+  a bivector / the 𝒢₃ pseudoscalar): `cos(|A|) + sin(|A|) * Â` — **exp of a bivector IS a rotor**
   (`Bivector_n.exp() -> Versor_n`). A **vector** (`A² > 0`) is **rejected** with `ValueError` (the
   hyperbolic Minkowski-boost branch was removed — meaningless in this Euclidean library). See
   `tasks/reference/design-decisions.md`, `unit-bivector-and-rotors.md`.
@@ -381,12 +381,56 @@ in `tasks/reference/design-decisions.md`.
 When a result is **presented to a student** (book, notebook, docstring, or a proof's *stated* form),
 prefer the **sine/cosine-of-the-angle** phrasing over the raw **dot/wedge** one wherever a faithful
 option exists — "the cosine of the angle between them is 0" (perpendicular) / "the sine is 0"
-(parallel) / "area = |a||b| sin θ" are things a geometry-trig student can picture and draw; dot/wedge
+(parallel) / "area = |a| * |b| * sin(θ)" are things a geometry-trig student can picture and draw; dot/wedge
 is the algebra underneath. **Keep dot/wedge as the primitive and layer the trig phrasing on top** (e.g.
 a `cos_between … = 0` corollary resting on a `dot … = 0` lemma), never trading the robust,
 √/division-free primitive for a trig form whose only effect is to add `√`/`0÷0` noise. Within reason;
 use discretion. Record: `tasks/archive/2026/10/03/prefer-sine-cosine-presentation.md`; remaining candidates in
 `tasks/prefer-sine-cosine-presentation-followups.md`.
+
+## Math notation for readers: parentheses apply, `*` multiplies, every angle is named
+
+Three rules for every place a reader sees math — book prose and figure labels, book and demo
+notebooks, Python docstrings (hand-written and the generator's `CUSTOM_METHOD_DOCS`), Lean doc
+comments, reference docs, README (William Emerison Six <billsix@gmail.com>, 2026-10-08/09; the
+sweep that applied them is `tasks/archive/2026/10/09/math-notation-parens-star-named-angles.md`):
+
+<!-- notation-rule: begin -->  (the sweep codemod skips this span: it quotes the rejected forms)
+- **Parentheses show function application, never multiplication** — `cos(θ)`, `\cos(\theta)`,
+  not `cos θ` / `\cos\theta`. A reader from precalculus reads `cos θ` as a product.
+- **Every multiplication has an explicit `*`, scalar or geometric** — `r * (cos(θ), sin(θ))`,
+  `|a| * |b| * sin(θ)`, `\cos(\theta) * \vec{a}`, `\vec{a} * e_{12}`, `e_1 * e_2 * e_1`.
+  Juxtaposition never means a product where a reader sees math, so the typeset math reads exactly
+  like the code, where `*` *is* the geometric product (Operators above). In LaTeX the symbol is a
+  **literal `*`** in math mode — not `\ast`, not `\cdot` (the dot product), not `\times` (the
+  cross product).
+- **Every angle is named** — `sin(θ) = y/r`, `(cos(θ) = c, sin(θ) = s)`, `cos(θ) = 0`; never
+  `sin = y/r`, `(cos = c, sin = s)`, `cos = 0`.
+- **In Lean doc comments the star carries no surrounding spaces** — `|a|*|b|`, `R*v*R̃`,
+  `a₁*b₂ − a₂*b₁` — so multiplication visually binds tighter than `+`/`−` (with spaces,
+  `a₁ * b₂-a₂ * b₁` reads as if the minus bound tighter; those comments are pure monospace
+  prose-math). **Everywhere else keeps the spaced `a * b`**, on purpose: LaTeX math (book pages,
+  MathJax notebooks) is *rendered*, so source spacing is ignored and `*`/`−` get equal operator
+  spacing however you type it; and Python docstring math doubles as copyable code, where
+  `2 * e_1` / `translate(b=3 * e_1)` is correct PEP 8 and `2*e_1` would read as bad Python. Lean
+  *code* keeps the language's own spacing.
+
+**The middle dot is the dot product, never a multiplication to mark.** `a·b`, `u·v`,
+`(v·d / d·d)`, and the Hestenes plane projection `(c·B)B⁻¹` keep the dot. A versor identity such
+as `R = b * a + |a| * |b|` or `R * a = |a| * h` takes the star because its Lean statement is `mul`
+(the geometric product); written `b·a` it reads as a dot product one line away from a real one. The
+`∗` scalar-product symbol in `base.py` docstrings (`Ã ∗ B`) is a third thing and stays.
+
+**Exempt**, because the form is dictated from outside: Lean *code* (`Real.cos θ` is the language's
+application syntax; doc comments are not exempt), Python code (`sympy.cos(theta)` already applies
+with parentheses; a Python local named `cos` is a name, not notation), and doctest lines.
+Juxtaposition also survives, on purpose, where it is not a product being written: a **quotation of
+the reader's prior notation** (`a i + b j`, `(x + 2)(x + 3)`), and `blade-square-sign.rst`'s sliding
+diagrams, whose columns a `*` would misalign (the page says so once).
+
+**A doc that quotes a rejected spelling on purpose** — these rule paragraphs do — fences the span
+with `<!-- notation-rule: begin -->` / `<!-- notation-rule: end -->` so a re-sweep skips it.
+<!-- notation-rule: end -->
 
 ## Coordinates only when needed
 

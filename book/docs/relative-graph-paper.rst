@@ -24,13 +24,13 @@ This book writes that idea one way, everywhere. The two axis directions are the 
 
 .. math::
 
-   \vec{a} = a_1\,e_1 + a_2\,e_2,
+   \vec{a} = a_1 * e_1 + a_2 * e_2,
 
 where the plain numbers :math:`a_1` and :math:`a_2` are the **coordinates** of :math:`\vec{a}`.
 Compare :math:`a\,\mathbf{i} + b\,\mathbf{j}`: same thing, but the subscript now *names the axis
 the number belongs to*. We write :math:`a_1`, never :math:`a_{x}`, for two reasons. The subscript
 matches the basis vector it multiplies (:math:`a_1` goes with :math:`e_1`), and it keeps working
-when there is a third axis (:math:`a_3 e_3`) or, later, :math:`n` of them — there is no fourth
+when there is a third axis (:math:`a_3 * e_3`) or, later, :math:`n` of them — there is no fourth
 letter after :math:`z`. A coordinate is an ordinary number, so it carries no arrow: :math:`\vec{a}`
 is the vector, :math:`a_1` is one of its numbers.
 

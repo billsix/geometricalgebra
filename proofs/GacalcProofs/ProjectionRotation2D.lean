@@ -28,10 +28,10 @@ namespace GacalcProofs.G2
 
 open Real
 
-/-- Normalize a vector to unit length: `v̂ = (1/|v|)·v` (the 𝒢₂ twin of `Normalize.lean`'s `normalizeVec`). -/
+/-- Normalize a vector to unit length: `v̂ = (1/|v|)*v` (the 𝒢₂ twin of `Normalize.lean`'s `normalizeVec`). -/
 noncomputable def normalizeVec (a : G2) : G2 := smul (1 / magnitude a) a
 
-/-- A vector squares to its squared magnitude: `a a = |a|²·1` (2D twin of `G3.mul_vec_self`). -/
+/-- A vector squares to its squared magnitude: `a a = |a|²*1` (2D twin of `G3.mul_vec_self`). -/
 theorem mul_vec_self {a : G2} (ha : IsVector a) :
     mul a a = smul (normSq a) one := by
   obtain ⟨has, ha12⟩ := ha
@@ -70,8 +70,8 @@ theorem projRotation_eq_vec_mul {f t v : G2} (hf : IsVector f) (ht : IsVector t)
 
 /-! ### Carries from → to -/
 
-/-- **The rotation carries `from` to `to`:** `projRotation f t f = (|f|/|t|)·t` — the defining property.
-    `f` is in the plane so its ⊥ part is zero and its in-plane part is `f`; then `f · f̂ · t̂ = |f|·t̂`.
+/-- **The rotation carries `from` to `to`:** `projRotation f t f = (|f|/|t|)*t` — the defining property.
+    `f` is in the plane so its ⊥ part is zero and its in-plane part is `f`; then `f · f̂ · t̂ = |f|*t̂`.
     Mirrors `G3.projRotation_carries_from_to`. -/
 theorem projRotation_carries_from_to {f t : G2} (hf : IsVector f) (ht : IsVector t)
     (hfn : normSq f ≠ 0) (htn : normSq t ≠ 0) :
@@ -88,7 +88,7 @@ theorem projRotation_carries_from_to {f t : G2} (hf : IsVector f) (ht : IsVector
 
 /-! ### Isometry -/
 
-/-- **A triple product of vectors is norm-multiplicative** (2D): `|v f t|² = |v|²|f|²|t|²` — the
+/-- **A triple product of vectors is norm-multiplicative** (2D): `|v f t|² = |v|²*|f|²*|t|²` — the
     Brahmagupta–Fibonacci identity applied twice (the product of three 2D vectors is again a vector). -/
 theorem normSq_mul_three_vec {v f t : G2} (hv : IsVector v) (ht : IsVector t) :
     normSq (mul (mul v f) t) = normSq v * normSq f * normSq t := by
@@ -98,7 +98,7 @@ theorem normSq_mul_three_vec {v f t : G2} (hv : IsVector v) (ht : IsVector t) :
   ring
 
 /-- **The rotation is an isometry:** `|projRotation f t v|² = |v|²`. The rotation is `v · f̂ · t̂` with
-    `f̂`, `t̂` unit, so its squared length is `|v|²·1·1`. Mirrors `G3.projRotation_isometry` (in 2D the
+    `f̂`, `t̂` unit, so its squared length is `|v|²*1*1`. Mirrors `G3.projRotation_isometry` (in 2D the
     √ dissolves the same way — `|f̂|² = |t̂|² = 1`). -/
 theorem projRotation_isometry {f t v : G2} (hf : IsVector f) (ht : IsVector t) (hv : IsVector v)
     (hfn : normSq f ≠ 0) (htn : normSq t ≠ 0) :
@@ -113,11 +113,11 @@ theorem projRotation_isometry {f t v : G2} (hf : IsVector f) (ht : IsVector t) (
 
 /-! ### Route-equivalence: projection-formula route P = versor-sandwich route V
 
-    The 2D twin of `G3.projRotation_eq_sandwich`. The versor `R = versorFromVectors f t = t·f + |f||t|`
+    The 2D twin of `G3.projRotation_eq_sandwich`. The versor `R = versorFromVectors f t = t*f + |f|*|t|`
     (`Versor2D.lean`) is even, so `R v = v R̃` for any vector `v` (`versorFromVectors_mul_vec_eq`); then
-    `R v R⁻¹ = v (R̃ R⁻¹) = v (f̂ t̂)` once `R̃ R⁻¹ = f̂ t̂` (`fhat_that_eq_reverse_mul_inverse`), which is
-    `projRotation`. The `√` lives only inside `R`'s scalar `|f||t|`; it is handled structurally (the key
-    identity `|f||t|·R̃² = |R|²·(f t)`, `key_reverse_sq`, reduces by the one fact `(|f||t|)² = |f|²|t|²`),
+    `R*v*R⁻¹ = v (R̃*R⁻¹) = v (f̂ t̂)` once `R̃*R⁻¹ = f̂ t̂` (`fhat_that_eq_reverse_mul_inverse`), which is
+    `projRotation`. The `√` lives only inside `R`'s scalar `|f|*|t|`; it is handled structurally (the key
+    identity `|f|*|t|*R̃² = |R|²*(f t)`, `key_reverse_sq`, reduces by the one fact `(|f|*|t|)² = |f|²*|t|²`),
     never expanded per-coordinate. -/
 
 /-- `R v = v R̃` for the even versor `R = versorFromVectors f t` and any vector `v` — a pure identity
@@ -139,9 +139,9 @@ theorem reverse_versorFromVectors_mul {f t : G2} (hf : IsVector f) (ht : IsVecto
   simp only [versorFromVectors, reverse, mul, add, smul, one, normSq, hfs, hf12, hts, ht12]
   ext <;> ring
 
-/-- **The key √-bearing identity**, proven structurally: `|f||t|·R̃² = |R|²·(f t)`. The only analytic
-    input is `(|f||t|)² = |f|²|t|²`; the per-coordinate residue is pure `ring`
-    (Brahmagupta–Fibonacci, `|f|²|t|² = (f·t)² + (f∧t)²`). -/
+/-- **The key √-bearing identity**, proven structurally: `|f|*|t|*R̃² = |R|²*(f t)`. The only analytic
+    input is `(|f|*|t|)² = |f|²*|t|²`; the per-coordinate residue is pure `ring`
+    (Brahmagupta–Fibonacci, `|f|²*|t|² = (f·t)² + (f∧t)²`). -/
 theorem key_reverse_sq {f t : G2} (hf : IsVector f) (ht : IsVector t) :
     smul (magnitude f * magnitude t)
          (mul (reverse (versorFromVectors f t)) (reverse (versorFromVectors f t)))
@@ -163,8 +163,8 @@ theorem key_reverse_sq {f t : G2} (hf : IsVector f) (ht : IsVector t) :
   · ring
   · linear_combination (f.c1 * t.c2 - f.c2 * t.c1) * hK2
 
-/-- `f̂ t̂ = R̃ R⁻¹`: the one-sided unit-vector product equals the reverse-times-inverse of the versor.
-    Derived from `key_reverse_sq` by clearing the two nonzero scalars `|f||t|` and `|R|²`. -/
+/-- `f̂ t̂ = R̃*R⁻¹`: the one-sided unit-vector product equals the reverse-times-inverse of the versor.
+    Derived from `key_reverse_sq` by clearing the two nonzero scalars `|f|*|t|` and `|R|²`. -/
 theorem fhat_that_eq_reverse_mul_inverse {f t : G2} (hf : IsVector f) (ht : IsVector t)
     (hfn : normSq f ≠ 0) (htn : normSq t ≠ 0) (hr : normSq (versorFromVectors f t) ≠ 0) :
     mul (normalizeVec f) (normalizeVec t)
@@ -172,7 +172,7 @@ theorem fhat_that_eq_reverse_mul_inverse {f t : G2} (hf : IsVector f) (ht : IsVe
   have hmf := magnitude_ne_zero_of_normSq_ne_zero hfn
   have hmt := magnitude_ne_zero_of_normSq_ne_zero htn
   have hK : magnitude f * magnitude t ≠ 0 := mul_ne_zero hmf hmt
-  -- `R̃² = (nR/|f||t|)·(f t)` — divide `key_reverse_sq` through by the nonzero scalar `|f||t|`.
+  -- `R̃² = (nR/(|f|*|t|))*(f t)` — divide `key_reverse_sq` through by the nonzero scalar `|f|*|t|`.
   have hXeq : mul (reverse (versorFromVectors f t)) (reverse (versorFromVectors f t))
       = smul (1 / (magnitude f * magnitude t) * normSq (versorFromVectors f t)) (mul f t) := by
     have hc := congrArg (smul (1 / (magnitude f * magnitude t))) (key_reverse_sq hf ht)

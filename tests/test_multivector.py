@@ -132,7 +132,7 @@ def test_multivector_mult() -> None:
     v: MultiVector = b_1 * e_1 + b_2 * e_2
     assert (u * v) == (
         MultiVector.from_real(a_1 * b_1 + a_2 * b_2)  # dot: u·v
-        + (a_1 * b_2 - a_2 * b_1) * e_1 * e_2  # wedge: (u∧v) e_12
+        + (a_1 * b_2 - a_2 * b_1) * e_1 * e_2  # wedge: (u∧v) * e_12
     )
     # the same product, split via the pseudoscalar i:
     assert (u * v) == u.dot(v) + (u * i).dot(v) * i
@@ -152,9 +152,9 @@ def test_multivector_mult3d() -> None:
     # the geometric product = the scalar dot + the three bivector wedge parts:
     assert (u * v) == (
         MultiVector.from_real(a_1 * b_1 + a_2 * b_2 + a_3 * b_3)  # dot
-        + (a_1 * b_2 - a_2 * b_1) * e_1 * e_2  # wedge in the e_1 e_2 plane
-        + (a_2 * b_3 - a_3 * b_2) * e_2 * e_3  # wedge in the e_2 e_3 plane
-        + (a_3 * b_1 - a_1 * b_3) * e_3 * e_1  # wedge in the e_3 e_1 plane
+        + (a_1 * b_2 - a_2 * b_1) * e_1 * e_2  # wedge in the e_1 * e_2 plane
+        + (a_2 * b_3 - a_3 * b_2) * e_2 * e_3  # wedge in the e_2 * e_3 plane
+        + (a_3 * b_1 - a_1 * b_3) * e_3 * e_1  # wedge in the e_3 * e_1 plane
     )
 
     # the dot product, explicitly:
@@ -303,7 +303,7 @@ def test_is_orthogonal() -> None:
 def test_is_parallel() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2
     assert a.is_parallel_to(2 * a)  # same direction
-    assert a.is_parallel_to(-1 * a)  # anti-parallel: cos = -1, but still parallel
+    assert a.is_parallel_to(-1 * a)  # anti-parallel: cos(θ) = -1, but still parallel
     perpendicular: MultiVector = -4 * e_1 + 3 * e_2
     assert not a.is_parallel_to(perpendicular)
     # the float-tolerance path agrees:
@@ -317,7 +317,7 @@ def test_multivector_cosine() -> None:
     b: MultiVector = -4 * e_1 + 3 * e_2
     assert a.cosine(b) == 0
 
-    # general 2D vectors: cos θ · |u| · |v| == u · v (the definition of cosine):
+    # general 2D vectors: cos(θ) * |u| * |v| == u · v (the definition of cosine):
     u: MultiVector = a_1 * e_1 + a_2 * e_2
     v: MultiVector = b_1 * e_1 + b_2 * e_2
     assert MultiVector.from_real(u.cosine(v) * abs(u) * abs(v)) == u.dot(v)
@@ -329,7 +329,7 @@ def test_multivector_abs_sin() -> None:
     b: MultiVector = -4 * e_1 + 3 * e_2
     assert a.abs_sin(b) == 1  # perpendicular vectors
 
-    # general 2D vectors: sin θ · |u| · |v| == |u ∧ v| (the definition of abs_sin):
+    # general 2D vectors: sin(θ) * |u| * |v| == |u ∧ v| (the definition of abs_sin):
     u: MultiVector = a_1 * e_1 + a_2 * e_2
     v: MultiVector = b_1 * e_1 + b_2 * e_2
     assert (
@@ -339,7 +339,7 @@ def test_multivector_abs_sin() -> None:
 
 
 def test_abs_sin_cosine_pythagorean() -> None:
-    # cos²θ + sin²θ == 1 for vectors (Lagrange's identity,
+    # cos²(θ) + sin²(θ) == 1 for vectors (Lagrange's identity,
     # <https://en.wikipedia.org/wiki/Lagrange%27s_identity>), numeric and symbolic.
     a: MultiVector = 3 * e_1 + 4 * e_2
     b: MultiVector = 1 * e_1 + 2 * e_2
@@ -356,7 +356,7 @@ def test_multivector_wedge() -> None:
     c: MultiVector = -4 * e_1 + 3 * e_2
     assert a.wedge(c) == 25 * e_1 * e_2
 
-    # general 2D vectors: the wedge is the bivector (a_1 b_2 - a_2 b_1) e_12,
+    # general 2D vectors: the wedge is the bivector (a_1 b_2 - a_2 b_1) * e_12,
     # reachable the same three ways:
     u: MultiVector = a_1 * e_1 + a_2 * e_2
     v: MultiVector = b_1 * e_1 + b_2 * e_2
@@ -430,7 +430,7 @@ def test_multivector_inverse() -> None:
     assert a.magnitude_squared() == 25
     assert a.magnitude_squared() * a.inverse() == a
 
-    # a general 2D vector: |u|² · u⁻¹ == u, and u⁻¹ u == 1
+    # a general 2D vector: |u|² * u⁻¹ == u, and u⁻¹ * u == 1
     u2: MultiVector = a_1 * e_1 + a_2 * e_2
     assert u2.magnitude_squared() * u2.inverse() == u2
     assert (u2.inverse() * u2).scalar_part() == 1
@@ -457,8 +457,8 @@ def test_inverse_supports_versor() -> None:
 
 def test_inverse_rejects_general_multivector() -> None:
     # A mixed-grade multivector that is neither a blade nor a versor -- here the
-    # scalar+vector 1 + e_1, for which Ã A = 2 + 2 e_1 is NOT a scalar -- has no
-    # inverse of the form Ã / |A|² (1 + e_1 is in fact a zero divisor).  The general
+    # scalar+vector 1 + e_1, for which Ã * A = 2 + 2 * e_1 is NOT a scalar -- has no
+    # inverse of the form Ã / |A|² * (1 + e_1 is in fact a zero divisor).  The general
     # multivector inverse is not implemented, so inverse() must reject it loudly
     # rather than return a wrong answer.
     mixed: MultiVector = 1 * one + 1 * e_1
@@ -542,7 +542,7 @@ def test_normalize() -> None:
 def test_rotate() -> None:
     # rotate across planes
     a: MultiVector = 3 * e_1 + 4 * e_2 + 5 * e_3
-    # rotate across e_1 e_2 plane
+    # rotate across e_1 * e_2 plane
     assert (
         projection_rotation(from_vector=e_1, to_vector=e_2)(a)
         == -4 * e_1 + 3 * e_2 + 5 * e_3
@@ -551,7 +551,7 @@ def test_rotate() -> None:
         projection_rotation(from_vector=e_2, to_vector=e_1)(a)
         == 4 * e_1 - 3 * e_2 + 5 * e_3
     )
-    # rotate across e_2 e_3 plane
+    # rotate across e_2 * e_3 plane
     b: MultiVector = 5 * e_1 + 3 * e_2 + 4 * e_3
     assert (
         projection_rotation(from_vector=e_2, to_vector=e_3)(b)
@@ -561,7 +561,7 @@ def test_rotate() -> None:
         projection_rotation(from_vector=e_3, to_vector=e_2)(b)
         == 5 * e_1 + 4 * e_2 - 3 * e_3
     )
-    # rotate across e_3 e_1 plane
+    # rotate across e_3 * e_1 plane
     c: MultiVector = 4 * e_1 + 5 * e_2 + 3 * e_3
     assert (
         projection_rotation(from_vector=e_3, to_vector=e_1)(c)

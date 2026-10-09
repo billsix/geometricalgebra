@@ -7,12 +7,12 @@ import GacalcProofs.Versor2D
     Ties the two characterizations of sine/cosine that already live in the proofs:
 
     * the **property form** (`GacalcProofs.G2.cos_between` / `sin_between`, Trig.lean) — sin/cos read
-      off the inner/outer products, `cos = (a·b)/(|a||b|)`, `sin = |a∧b|/(|a||b|)` (the latter
+      off the inner/outer products, `cos(θ) = (a·b)/(|a|*|b|)`, `sin(θ) = |a∧b|/(|a|*|b|)` (the latter
       UNSIGNED, the Python `abs_sin`); and
     * the **angle form** (`uvec_dot` / `uvec_wedge`, Rotation2D.lean) — for unit vectors at angles
-      `α, β`, `(uvec α · uvec β) = cos (β−α)` and `(uvec α ∧ uvec β).c12 = sin (β−α)`.
+      `α, β`, `(uvec α · uvec β) = cos(β−α)` and `(uvec α ∧ uvec β).c12 = sin(β−α)`.
 
-    It also gives the **signed** 2D sine (the Python `g2.Vector.sine`, `(a∧b).c12 / (|a||b|)`) a Lean
+    It also gives the **signed** 2D sine (the Python `g2.Vector.sine`, `(a∧b).c12 / (|a|*|b|)`) a Lean
     definition and shows the unsigned `sin_between` is its absolute value — mirroring the Python pair
     `abs_sin` (unsigned) / `sine` (signed), `abs(sine) == abs_sin`.
 
@@ -24,7 +24,7 @@ namespace GacalcProofs
 
 open Real
 
-/-- A unit vector `uvec α` has magnitude 1 (from `cos²+sin² = 1`). -/
+/-- A unit vector `uvec α` has magnitude 1 (from `cos²(θ) + sin²(θ) = 1`). -/
 theorem uvec_magnitude (α : ℝ) : G2.magnitude (uvec α) = 1 := by
   simp only [uvec_eq_vec, G2.magnitude, G2.normSq_vec, cos_sq_add_sin_sq, Real.sqrt_one]
 
@@ -41,7 +41,7 @@ theorem cos_between_uvec (α β : ℝ) :
 noncomputable def signed_sin_between (a b : G2) : ℝ :=
   (G2.wedge a b).c12 / (G2.magnitude a * G2.magnitude b)
 
-/-- **The signed sine of two unit vectors is the angle sine** `sin (β−α)` — ties the signed 2D sine
+/-- **The signed sine of two unit vectors is the angle sine** `sin(β−α)` — ties the signed 2D sine
     to the angle form `uvec_wedge`. -/
 theorem signed_sin_between_uvec (α β : ℝ) :
     signed_sin_between (uvec α) (uvec β) = sin (β - α) := by
@@ -71,7 +71,7 @@ theorem sin_between_eq_abs_signed_vec {a b : G2} (ha : G2.IsVector a) (hb : G2.I
   have h := sin_between_eq_abs_signed_vec_coord a.c1 a.c2 b.c1 b.c2
   rwa [← G2.eq_vec_of_isVector ha, ← G2.eq_vec_of_isVector hb] at h
 
-/-- Corollary: for unit vectors the unsigned `sin_between` is `|sin (β−α)|`. -/
+/-- Corollary: for unit vectors the unsigned `sin_between` is `|sin(β−α)|`. -/
 theorem sin_between_uvec (α β : ℝ) :
     G2.sin_between (uvec α) (uvec β) = |sin (β - α)| := by
   rw [uvec_eq_vec α, uvec_eq_vec β, sin_between_eq_abs_signed_vec_coord, ← uvec_eq_vec α,

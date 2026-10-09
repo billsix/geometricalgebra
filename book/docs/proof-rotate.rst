@@ -61,7 +61,7 @@ one, :math:`\theta`.
    :alt: the angle beta of a, and r
 
 Before we can rotate by :math:`\theta`, we first need to rotate by 90°
-(:math:`\pi/2`). Rotating :math:`(\cos\beta, \sin\beta)` by :math:`\pi/2` gives
+(:math:`\pi/2`). Rotating :math:`(\cos(\beta), \sin(\beta))` by :math:`\pi/2` gives
 :math:`(\cos(\beta + \pi/2),\ \sin(\beta + \pi/2))`.
 
 .. figure:: _static/epix/rotate3.*
@@ -91,8 +91,8 @@ right triangle on the unit circle.
    :align: center
    :alt: rotate by theta in the new frame
 
-The rotated **direction** is therefore :math:`\cos(\theta)\,\vec{x'} +
-\sin(\theta)\,\vec{y'}`.
+The rotated **direction** is therefore :math:`\cos(\theta) * \vec{x'} +
+\sin(\theta) * \vec{y'}`.
 
 .. figure:: _static/epix/rotate7.*
    :align: center
@@ -111,30 +111,30 @@ Stop thinking about geometry — from here it is only algebra. Do **not** try to
 these formulas.
 
 Substitute the values of :math:`\vec{x'}` and :math:`\vec{y'}` back in. The angle of
-:math:`\vec{a}` is :math:`\beta`, so :math:`\cos\beta = a_1 / r` and
-:math:`\sin\beta = a_2 / r`. And by the angle-addition identities,
-:math:`\cos(\beta + \pi/2) = -\sin\beta` and :math:`\sin(\beta + \pi/2) = \cos\beta`
+:math:`\vec{a}` is :math:`\beta`, so :math:`\cos(\beta) = a_1 / r` and
+:math:`\sin(\beta) = a_2 / r`. And by the angle-addition identities,
+:math:`\cos(\beta + \pi/2) = -\sin(\beta)` and :math:`\sin(\beta + \pi/2) = \cos(\beta)`
 — so we never need :math:`\beta` itself, only the sine and cosine we already have.
 
 .. math::
 
    \begin{aligned}
    \vec{r}(\vec{a}; \theta)
-     &= r\,\big(\cos\theta\,\vec{x'} + \sin\theta\,\vec{y'}\big) \\
-     &= r\,\Big(\cos\theta \begin{bmatrix} \cos\beta \\ \sin\beta \end{bmatrix}
-              + \sin\theta \begin{bmatrix} \cos(\beta + \pi/2) \\ \sin(\beta + \pi/2) \end{bmatrix}\Big) \\
-     &= r\,\Big(\cos\theta \begin{bmatrix} a_1 / r \\ a_2 / r \end{bmatrix}
-              + \sin\theta \begin{bmatrix} -a_2 / r \\ a_1 / r \end{bmatrix}\Big) \\
-     &= \cos\theta \begin{bmatrix} a_1 \\ a_2 \end{bmatrix}
-              + \sin\theta \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix} \\
-     &= \cos\theta\,\vec{a} + \sin\theta \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}
+     &= r * \big(\cos(\theta) * \vec{x'} + \sin(\theta) * \vec{y'}\big) \\
+     &= r * \Big(\cos(\theta) * \begin{bmatrix} \cos(\beta) \\ \sin(\beta) \end{bmatrix}
+              + \sin(\theta) * \begin{bmatrix} \cos(\beta + \pi/2) \\ \sin(\beta + \pi/2) \end{bmatrix}\Big) \\
+     &= r * \Big(\cos(\theta) * \begin{bmatrix} a_1 / r \\ a_2 / r \end{bmatrix}
+              + \sin(\theta) * \begin{bmatrix} -a_2 / r \\ a_1 / r \end{bmatrix}\Big) \\
+     &= \cos(\theta) * \begin{bmatrix} a_1 \\ a_2 \end{bmatrix}
+              + \sin(\theta) * \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix} \\
+     &= \cos(\theta) * \vec{a} + \sin(\theta) * \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}
    \end{aligned}
 
 The :math:`r`'s cancel, and we are left with the whole point of this chapter:
 
 .. math::
 
-   \vec{r}(\vec{a}; \theta) = \cos\theta\,\vec{a} + \sin\theta\,\vec{r}(\vec{a}; \pi/2),
+   \vec{r}(\vec{a}; \theta) = \cos(\theta) * \vec{a} + \sin(\theta) * \vec{r}(\vec{a}; \pi/2),
    \qquad \vec{r}(\vec{a}; \pi/2) = \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}.
 
 **A rotation is a blend of the point and its 90°-rotated self.** That is worth staring

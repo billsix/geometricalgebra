@@ -56,7 +56,7 @@ def test_quarter_turn_maps_e1_to_e2_and_fixes_perpendicular() -> None:
     )
     quarter: InvertibleFunction[MultiVectorBase] = turn(math.radians(90))
     assert quarter(g3.Vector.e_1).isclose(g3.Vector.e_2, rel_tol=1e-6, abs_tol=1e-6)
-    # e_3 is perpendicular to the e_1 e_2 plane -> left fixed.
+    # e_3 is perpendicular to the e_1 * e_2 plane -> left fixed.
     assert quarter(g3.Vector.e_3).isclose(g3.Vector.e_3, rel_tol=1e-6, abs_tol=1e-6)
 
 
@@ -93,7 +93,7 @@ def test_interpolation_is_a_fraction_of_the_angle() -> None:
 
 
 def test_symbolic_angle_keeps_clean_half_angle_form() -> None:
-    # The whole reason it is built directly (cos(theta/2) - sin(theta/2) i) and
+    # The whole reason it is built directly (cos(theta/2) - sin(theta/2) * i) and
     # NOT via exp: a symbolic angle must render cos(theta/2), never
     # cos(sqrt(theta**2)/2).  Same guarantee plane_rotation gives.
     theta: sympy.Symbol = sympy.Symbol("theta", positive=True)

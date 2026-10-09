@@ -39,7 +39,7 @@
 #
 # 𝒢₃ has 2³ = 8 basis blades: the scalar `1`, three vectors `e_1`, `e_2`, `e_3`,
 # three bivectors `e_12`, `e_13`, `e_23`, and the trivector / pseudoscalar
-# `e_123 = e_1 e_2 e_3`.
+# `e_123 = e_1 * e_2 * e_3`.
 
 # %%
 import warnings
@@ -335,17 +335,18 @@ plot_multivector(v)
 plot_multivector(u * v)
 
 # %% [markdown]
-# The wedge magnitude: $|a \wedge b| = |a|\,|b|\,\sin\theta$ (in 𝒢₃)
+# The wedge magnitude: $|a \wedge b| = |a| * |b| * \sin(\theta)$ (in 𝒢₃)
 # ================================================================
 #
 # The 𝒢₂ derivation carries over: two vectors always span a single 2-plane, so
-# $|a\wedge b| = |a||b|\sin\theta$ holds in 𝒢₃ too. The only difference is that
+# $|a\wedge b| = |a| * |b| * \sin(\theta)$ holds in 𝒢₃ too. The only difference is that
 # $a\wedge b$ is now a **three-component** bivector, and the Lagrange identity
 # (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) is
 # a *sum* of squares
 #
-# $$|a|^2|b|^2 - (a\cdot b)^2
-#   = (a_1b_2-a_2b_1)^2 + (a_1b_3-a_3b_1)^2 + (a_2b_3-a_3b_2)^2 = |a\wedge b|^2 .$$
+# $$|a|^2 * |b|^2 - (a\cdot b)^2
+#   = (a_1 * b_2 - a_2 * b_1)^2 + (a_1 * b_3 - a_3 * b_1)^2
+#   + (a_2 * b_3 - a_3 * b_2)^2 = |a\wedge b|^2 .$$
 #
 # Symbols are declared **real** so that $\sqrt{x^2}=|x|$ behaves.
 
@@ -383,14 +384,15 @@ assert lagrange_residual == 0
 
 # %% [markdown]
 # **From the squared form to the magnitude.** With
-# $\cos\theta = a\cdot b/(|a||b|)$ and $\sin\theta = \sqrt{1-\cos^2\theta}\ge 0$,
-# both $|a\wedge b|$ and $|a||b|\sin\theta$ are the square root of the *same* sum
-# of squares. So, unlike the 𝒢₂ case (a single perfect square needing `factor`),
+# $\cos(\theta) = a\cdot b/(|a| * |b|)$ and
+# $\sin(\theta) = \sqrt{1-\cos^2(\theta)}\ge 0$, both $|a\wedge b|$ and
+# $|a| * |b| * \sin(\theta)$ are the square root of the *same* sum of squares. So,
+# unlike the 𝒢₂ case (a single perfect square needing `factor`),
 # sympy closes the difference directly:
 
 # %%
 cos: Real = a.cosine(b)
-sin: sympy.Expr = sympy.sqrt(1 - cos**2)  # sinθ ≥ 0 for θ in [0, π]
+sin: sympy.Expr = sympy.sqrt(1 - cos**2)  # sin(θ) ≥ 0 for θ in [0, π]
 wedge_magnitude_from_sin: Real = a.magnitude() * b.magnitude() * sin
 wedge_magnitude_from_sin
 
@@ -402,8 +404,8 @@ assert sympy.simplify(wedge_magnitude_from_sin - (a ^ b).magnitude()) == 0
 
 # %% [markdown]
 # **Versor capstone.** As in 𝒢₂, $ab = a\cdot b + a\wedge b$ splits into
-# orthogonal grades, so $|ab|^2 = (a\cdot b)^2 + |a\wedge b|^2 = |a|^2|b|^2$ and
-# $|ab| = |a||b|$. Here $ab$ is a `g3.Versor` (scalar + bivector):
+# orthogonal grades, so $|ab|^2 = (a\cdot b)^2 + |a\wedge b|^2 = |a|^2 * |b|^2$ and
+# $|ab| = |a| * |b|$. Here $ab$ is a `g3.Versor` (scalar + bivector):
 
 # %%
 a * b

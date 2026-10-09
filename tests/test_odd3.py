@@ -90,7 +90,7 @@ def test_query_predicates() -> None:
 
 
 def test_sandwich_result_is_odd3_static() -> None:
-    # The versor sandwich R v R⁻¹ as PLAIN products (not the derived sandwich() op)
+    # The versor sandwich R * v * R⁻¹ as PLAIN products (not the derived sandwich() op)
     # types as Odd_3: Versor*Vector = Odd_3, then Odd_3*Versor = Odd_3.
     versor: g3.Versor = g3.Vector.e_1 * g3.Vector.e_2
     typing.assert_type(versor * g3.Vector.e_1 * versor.inverse(), g3.Odd_3)
@@ -99,10 +99,11 @@ def test_sandwich_result_is_odd3_static() -> None:
 def test_sandwich_grade_preservation_is_one_coefficient() -> None:
     """Odd_3 makes versor-sandwich grade-preservation a ONE-coefficient proof.
 
-    ``R v R⁻¹`` (as plain products) types as ``Odd_3`` -- support {1,3} -- so proving
-    it is a vector reduces to showing its single grade-3 coefficient vanishes, rather
-    than clearing the several non-grade-1 parts of the old ``G3`` form.  It holds for a
-    GENERAL symbolic versor, not just a unit one (the versor is grade-preserving).
+    ``R * v * R⁻¹`` (as plain products) types as ``Odd_3`` -- support {1,3} -- so
+    proving it is a vector reduces to showing its single grade-3 coefficient
+    vanishes, rather than clearing the several non-grade-1 parts of the old ``G3``
+    form.  It holds for a GENERAL symbolic versor, not just a unit one (the versor is
+    grade-preserving).
     """
     a, b, c, d = sympy.symbols("a b c d", real=True)
     x, y, z = sympy.symbols("x y z", real=True)

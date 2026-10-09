@@ -15,7 +15,7 @@
 # # rotate2 — the unit direction of a, remembering r
 #
 # Similar triangles: work on the unit circle and keep the length $r$ aside. The unit
-# point in the direction of $\vec{a}$ is $(\cos\beta, \sin\beta)$. One step of the
+# point in the direction of $\vec{a}$ is $(\cos(\beta), \sin(\beta))$. One step of the
 # `proof-rotate.rst`
 # sequence; the geometry (β, θ, r) is shared with the other steps through
 # `_rotation_scene.py`, so the last step lands exactly on the goal figure's
@@ -51,7 +51,7 @@ with unit_circle_scene() as fig:
         tail=foot,
         head=unit_point,
         color=GREEN,
-        text=r"$\sin\beta$",
+        text=r"$\sin(\beta)$",
         angle=0,
         offset=Point(x=24, y=0),
     )
@@ -59,11 +59,11 @@ with unit_circle_scene() as fig:
         tail=ORIGIN,
         head=foot,
         color=BLUE,
-        text=r"$\cos\beta$",
+        text=r"$\cos(\beta)$",
         angle=0,
         offset=Point(x=0, y=-13),
     )
-    vector(head=unit_point, text=r"$(\cos\beta,\ \sin\beta)$")
+    vector(head=unit_point, text=r"$(\cos(\beta),\ \sin(\beta))$")
 
 # %%
 fig

@@ -6,9 +6,9 @@ import GacalcProofs.AlgebraLaws
 
 /-! # The versor sandwich is an isometry: it preserves lengths and angles (𝒢₂ pilot)
 
-    The scale-invariant sandwich `R v R⁻¹` (with `R⁻¹ = R̃ / |R|²`) by an even versor `R` — the
+    The scale-invariant sandwich `R*v*R⁻¹` (with `R⁻¹ = R̃ / |R|²`) by an even versor `R` — the
     rotations of the plane — preserves the dot product, hence lengths and angles. Proved here in 𝒢₂
-    for a general even versor (`evenVersor s c = s + c·e₁₂`, the elements of 𝒢₂'s even subalgebra ≅ ℂ);
+    for a general even versor (`evenVersor s c = s + c*e₁₂`, the elements of 𝒢₂'s even subalgebra ≅ ℂ);
     the 𝒢₃ versions follow the same shape (see `tasks/lean-proof-rotation-preserves-length.md` and
     `-angles.md`). Uses the magnitude-squared (`dot`) form throughout to stay `√`-free. -/
 namespace GacalcProofs.G2
@@ -16,10 +16,10 @@ namespace GacalcProofs.G2
 /-- The inverse `R⁻¹ = R̃ / |R|²` (valid when `|R|² ≠ 0`). -/
 noncomputable def inverse (a : G2) : G2 := smul (1 / normSq a) (reverse a)
 
-/-- The scale-invariant versor sandwich `R v R⁻¹`. -/
+/-- The scale-invariant versor sandwich `R*v*R⁻¹`. -/
 noncomputable def sandwich (r v : G2) : G2 := mul (mul r v) (inverse r)
 
-/-- An **even versor** `s + c·e₁₂` — an element of 𝒢₂'s even subalgebra (≅ ℂ), the rotations. -/
+/-- An **even versor** `s + c*e₁₂` — an element of 𝒢₂'s even subalgebra (≅ ℂ), the rotations. -/
 def evenVersor (s c : ℝ) : G2 := ⟨s, 0, 0, c⟩
 
 /-- `R` is an **even versor** (grades 0 and 2): its vector part vanishes — how "`R` is an even versor"
@@ -44,22 +44,22 @@ theorem normSq_evenVersor (s c : ℝ) : normSq (evenVersor s c) = s ^ 2 + c ^ 2 
 /-- `|a|² = a · ã`: `normSq` is the scalar part of `a ã`, i.e. the dot with the reverse (definitional). -/
 theorem normSq_eq_dot_reverse (a : G2) : normSq a = dot a (reverse a) := rfl
 
-/-- `R R̃ = |R|²·1` for an even versor `R` (object form) (2D): `R R̃` is a pure scalar. Leaf, `ext <;> ring`. -/
+/-- `R R̃ = |R|²*1` for an even versor `R` (object form) (2D): `R R̃` is a pure scalar. Leaf, `ext <;> ring`. -/
 theorem mul_reverse_self_of_isEvenVersor {R : G2} (hR : IsEvenVersor R) :
     mul R (reverse R) = smul (normSq R) one := by
   obtain ⟨hR1, hR2⟩ := hR
   simp only [normSq, mul, reverse, one, smul, hR1, hR2]
   ext <;> ring
 
-/-- `R̃ R = |R|²·1` for an even versor `R` (2D) — the same scalar from the other side. -/
+/-- `R̃*R = |R|²*1` for an even versor `R` (2D) — the same scalar from the other side. -/
 theorem reverse_mul_self_of_isEvenVersor {R : G2} (hR : IsEvenVersor R) :
     mul (reverse R) R = smul (normSq R) one := by
   obtain ⟨hR1, hR2⟩ := hR
   simp only [normSq, mul, reverse, one, smul, hR1, hR2]
   ext <;> ring
 
-/-- **Conjugation by an even versor scales the scalar part:** `⟨R X R̃⟩₀ = |R|²·⟨X⟩₀` for ANY `X` (2D).
-    The scalar part of a product is cyclic (`dot_comm` moves `R̃` to the front), then `R̃ R = |R|²·1`. -/
+/-- **Conjugation by an even versor scales the scalar part:** `⟨R*X*R̃⟩₀ = |R|²*⟨X⟩₀` for ANY `X` (2D).
+    The scalar part of a product is cyclic (`dot_comm` moves `R̃` to the front), then `R̃*R = |R|²*1`. -/
 theorem dot_reverse_conj {R : G2} (hR : IsEvenVersor R) (X : G2) :
     dot (mul R X) (reverse R) = normSq R * X.s := by
   rw [dot_comm]
@@ -68,9 +68,9 @@ theorem dot_reverse_conj {R : G2} (hR : IsEvenVersor R) (X : G2) :
       GacalcProofs.G2.one_mul]
   simp only [smul]
 
-/-- **The reverse sandwich scales the dot product by `|R|⁴`** (2D): `(R u R̃) · (R v R̃) = |R|⁴·(u · v)` for an
+/-- **The reverse sandwich scales the dot product by `|R|⁴`** (2D): `(R*u*R̃) · (R*v*R̃) = |R|⁴*(u · v)` for an
     even versor `R` and ANY `u`, `v` — no grade hypothesis, because the proof never looks at `u` or `v`:
-    `(R u R̃)(R v R̃) = R u (R̃ R) v R̃ = |R|²·R (u v) R̃` by associativity and `R̃ R = |R|²·1`, then
+    `(R*u*R̃)(R*v*R̃) = R u (R̃*R) v R̃ = |R|²*R (u v) R̃` by associativity and `R̃*R = |R|²*1`, then
     `dot_reverse_conj` on `X = u v`. The dot leaf behind `sandwich_preserves_dot`. -/
 theorem dot_reverse_sandwich {R : G2} (hR : IsEvenVersor R) {u v : G2} :
     dot (mul (mul R u) (reverse R)) (mul (mul R v) (reverse R)) = normSq R ^ 2 * dot u v := by
@@ -88,7 +88,7 @@ theorem dot_reverse_sandwich {R : G2} (hR : IsEvenVersor R) {u v : G2} :
 
 /-- **The sandwich preserves the dot product** (object form, hence angles, 2D): for an even versor `R`
     with `|R|² ≠ 0` and ANY `u`, `v` (stated for vectors in the book; the identity needs no grade),
-    `(R u R⁻¹) · (R v R⁻¹) = u · v`. Structural: pull the inverse's `1/|R|²` out of each factor
+    `(R*u*R⁻¹) · (R*v*R⁻¹) = u · v`. Structural: pull the inverse's `1/|R|²` out of each factor
     (`mul_smul`), collect through the bilinear dot (`dot_smul_left/right`), apply
     `dot_reverse_sandwich`, then cancel. -/
 theorem sandwich_preserves_dot {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G2} :
@@ -122,17 +122,17 @@ theorem inverse_mul_self_of_isEvenVersor {R : G2} (hR : IsEvenVersor R) (hr : no
   rw [inverse, GacalcProofs.G2.smul_mul, reverse_mul_self_of_isEvenVersor hR,
       GacalcProofs.G2.smul_smul, one_div_mul_cancel hr, GacalcProofs.G2.one_smul]
 
-/-- `R R⁻¹ = 1` for an even versor with `|R|² ≠ 0`. -/
+/-- `R*R⁻¹ = 1` for an even versor with `|R|² ≠ 0`. -/
 theorem mul_inverse_self_of_isEvenVersor {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) :
     mul R (inverse R) = one := by
   rw [inverse, GacalcProofs.G2.mul_smul, mul_reverse_self_of_isEvenVersor hR,
       GacalcProofs.G2.smul_smul, one_div_mul_cancel hr, GacalcProofs.G2.one_smul]
 
-/-! ## Rotors: unit even versors, for which the sandwich is `R v R̃`
+/-! ## Rotors: unit even versors, for which the sandwich is `R*v*R̃`
 
-    gacalc's vocabulary: a **versor** is even of any magnitude (`IsEvenVersor`; sandwich `R v R⁻¹`), a
+    gacalc's vocabulary: a **versor** is even of any magnitude (`IsEvenVersor`; sandwich `R*v*R⁻¹`), a
     **rotor** is a *unit* versor, `|R|² = 1`. For a rotor `R⁻¹ = R̃/|R|² = R̃`, so the sandwich needs no
-    division — the textbook `R v R̃`. Every `sandwich_preserves_*` theorem applies to a rotor unchanged
+    division — the textbook `R*v*R̃`. Every `sandwich_preserves_*` theorem applies to a rotor unchanged
     (`normSq_ne_zero_of_isRotor` discharges its `|R|² ≠ 0` guard); the headline
     `sandwich_eq_reverse_sandwich_of_isRotor` rewrites the inverse form into the reverse form. -/
 
@@ -158,7 +158,7 @@ theorem isRotor_of_mul_reverse_eq_one {R : G2} (hR : IsEvenVersor R) (h : mul R 
 theorem mul_reverse_self_of_isRotor {R : G2} (hR : IsRotor R) : mul R (reverse R) = one := by
   rw [mul_reverse_self_of_isEvenVersor hR.1, hR.2, GacalcProofs.G2.one_smul]
 
-/-- `R̃ R = 1` for a rotor. -/
+/-- `R̃*R = 1` for a rotor. -/
 theorem reverse_mul_self_of_isRotor {R : G2} (hR : IsRotor R) : mul (reverse R) R = one := by
   rw [reverse_mul_self_of_isEvenVersor hR.1, hR.2, GacalcProofs.G2.one_smul]
 
@@ -166,9 +166,9 @@ theorem reverse_mul_self_of_isRotor {R : G2} (hR : IsRotor R) : mul (reverse R) 
 theorem inverse_eq_reverse_of_isRotor {R : G2} (hR : IsRotor R) : inverse R = reverse R := by
   rw [inverse, hR.2, div_one, GacalcProofs.G2.one_smul]
 
-/-- **The rotor sandwich is `R v R̃`** (headline): for a rotor the inverse sandwich `R v R⁻¹`
+/-- **The rotor sandwich is `R*v*R̃`** (headline): for a rotor the inverse sandwich `R*v*R⁻¹`
     (`sandwich`) equals the reverse sandwich, for ANY `v` — no division. Every `sandwich_preserves_*`
-    statement transfers to the `R v R̃` form by rewriting with this. -/
+    statement transfers to the `R*v*R̃` form by rewriting with this. -/
 theorem sandwich_eq_reverse_sandwich_of_isRotor {R : G2} (hR : IsRotor R) (v : G2) :
     sandwich R v = mul (mul R v) (reverse R) := by
   rw [sandwich, inverse_eq_reverse_of_isRotor hR]
@@ -184,28 +184,28 @@ theorem sandwich_inverse_sandwich {R : G2} (hR : IsEvenVersor R) (hr : normSq R 
   rw [inverse_mul_self_of_isEvenVersor hR hr, GacalcProofs.G2.mul_one,
       ← GacalcProofs.G2.mul_assoc, inverse_mul_self_of_isEvenVersor hR hr, GacalcProofs.G2.one_mul]
 
-/-- **The reverse sandwich scales the norm by `|R|⁴`** (2D): `|R v R̃|² = |R|⁴ |v|²` for an even versor
+/-- **The reverse sandwich scales the norm by `|R|⁴`** (2D): `|R*v*R̃|² = |R|⁴ |v|²` for an even versor
     `R` and ANY `v` (the versor norm is multiplicative through the reverse sandwich). Structural: `|X|²`
-    is `X · X̃`, the reverse is an anti-automorphism (`R v R̃` reverses to `R ṽ R̃`), so this is
+    is `X · X̃`, the reverse is an anti-automorphism (`R*v*R̃` reverses to `R ṽ R̃`), so this is
     `dot_reverse_sandwich` at `u = v`, `v = ṽ`. -/
 theorem normSq_reverse_sandwich {R : G2} (hR : IsEvenVersor R) {v : G2} :
     normSq (mul (mul R v) (reverse R)) = normSq R ^ 2 * normSq v := by
   rw [normSq_eq_dot_reverse (mul (mul R v) (reverse R)), reverse_mul, reverse_mul, reverse_reverse,
       ← GacalcProofs.G2.mul_assoc, dot_reverse_sandwich hR, normSq_eq_dot_reverse v]
 
-/-- **The sandwich preserves the squared magnitude** (object form, 2D): `|R v R⁻¹|² = |v|²` for ANY `v`. -/
+/-- **The sandwich preserves the squared magnitude** (object form, 2D): `|R*v*R⁻¹|² = |v|²` for ANY `v`. -/
 theorem sandwich_preserves_normSq {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {v : G2} :
     normSq (sandwich R v) = normSq v := by
   rw [sandwich, inverse, GacalcProofs.G2.mul_smul, normSq_smul, normSq_reverse_sandwich hR]
   field_simp [hr]
 
-/-- **The sandwich preserves the magnitude** (object form, 2D): `|R v R⁻¹| = |v|` for ANY `v`. -/
+/-- **The sandwich preserves the magnitude** (object form, 2D): `|R*v*R⁻¹| = |v|` for ANY `v`. -/
 theorem magnitude_sandwich {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {v : G2} :
     magnitude (sandwich R v) = magnitude v := by
   simp only [magnitude]
   rw [sandwich_preserves_normSq hR hr]
 
-/-- `R R̃ = |R|²·1` for the from-vectors versor (even, so `R R̃` is a pure scalar). -/
+/-- `R R̃ = |R|²*1` for the from-vectors versor (even, so `R R̃` is a pure scalar). -/
 theorem versorFromVectors_mul_reverse {a b : G2} (ha : IsVector a) (hb : IsVector b) :
     mul (versorFromVectors a b) (reverse (versorFromVectors a b))
       = smul (normSq (versorFromVectors a b)) one := by
@@ -214,10 +214,10 @@ theorem versorFromVectors_mul_reverse {a b : G2} (ha : IsVector a) (hb : IsVecto
   simp only [normSq, versorFromVectors, mul, reverse, add, smul, one, has, ha12, hbs, hb12]
   ext <;> ring
 
-/-- **The versor from `a, b` carries `a` to `b`** in 𝒢₂: `R a R⁻¹ = (|a|/|b|)·b` (angle-free) — the
+/-- **The versor from `a, b` carries `a` to `b`** in 𝒢₂: `R*a*R⁻¹ = (|a|/|b|)*b` (angle-free) — the
     2D twin of `Rotation3D`'s `sandwich_carries_from_to`, same assembly. In 𝒢₂ the plane is the whole
-    space, so this is the whole rotation. Needs `|b| ≠ 0`, `|R|² ≠ 0`. Structural: `R a = |a|·h`,
-    `b R = |b|·h`, `R R̃ = |R|²·1`; getter-native (no coordinate scaffold). -/
+    space, so this is the whole rotation. Needs `|b| ≠ 0`, `|R|² ≠ 0`. Structural: `R a = |a|*h`,
+    `b R = |b|*h`, `R R̃ = |R|²*1`; getter-native (no coordinate scaffold). -/
 theorem sandwich_carries_from_to {a b : G2} (ha : IsVector a) (hb : IsVector b)
     (hbn : magnitude b ≠ 0) (hr : normSq (versorFromVectors a b) ≠ 0) :
     sandwich (versorFromVectors a b) a = smul (magnitude a / magnitude b) b := by
@@ -240,11 +240,11 @@ namespace GacalcProofs.G3
 /-- The inverse `R⁻¹ = R̃ / |R|²` (valid when `|R|² ≠ 0`). -/
 noncomputable def inverse (a : G3) : G3 := smul (1 / normSq a) (reverse a)
 
-/-- The scale-invariant versor sandwich `R v R⁻¹`. -/
+/-- The scale-invariant versor sandwich `R*v*R⁻¹`. -/
 noncomputable def sandwich (r v : G3) : G3 := mul (mul r v) (inverse r)
 
-/-- An **even versor** `s + c₁₂·e₁₂ + c₁₃·e₁₃ + c₂₃·e₂₃` — an element of 𝒢₃'s even subalgebra
-    (≅ the quaternions), whose nonzero elements are exactly the rotations via `R v R⁻¹`. -/
+/-- An **even versor** `s + c₁₂*e₁₂ + c₁₃*e₁₃ + c₂₃*e₂₃` — an element of 𝒢₃'s even subalgebra
+    (≅ the quaternions), whose nonzero elements are exactly the rotations via `R*v*R⁻¹`. -/
 def evenVersor (s c12 c13 c23 : ℝ) : G3 := ⟨s, 0, 0, 0, c12, c13, c23, 0⟩
 
 /-- `R` is an **even versor** (grades 0 and 2): its vector and pseudoscalar parts vanish — how "`R` is an
@@ -274,7 +274,7 @@ theorem normSq_evenVersor (s c12 c13 c23 : ℝ) :
 theorem normSq_biv (p q r : ℝ) : normSq (bivector p q r) = p ^ 2 + q ^ 2 + r ^ 2 := by
   simp only [normSq, bivector, zero, mul, reverse]; ring
 
-/-- `T T̃ = |T|²·1` for a trivector (pseudoscalar) `T` (object form). -/
+/-- `T T̃ = |T|²*1` for a trivector (pseudoscalar) `T` (object form). -/
 theorem mul_triv_reverse_self {T : G3} (hT : IsTrivector T) :
     mul T (reverse T) = smul (normSq T) one := by
   obtain ⟨hTs, _, _, _, hT12, hT13, hT23⟩ := hT
@@ -294,22 +294,22 @@ theorem reverse_mul (a b : G3) : reverse (mul a b) = mul (reverse b) (reverse a)
 /-- `|a|² = a · ã`: `normSq` is the scalar part of `a ã`, i.e. the dot with the reverse (definitional). -/
 theorem normSq_eq_dot_reverse (a : G3) : normSq a = dot a (reverse a) := rfl
 
-/-- `R R̃ = |R|²·1` for an even versor `R` (object form): `R R̃` is a pure scalar. Leaf, `ext <;> ring`. -/
+/-- `R R̃ = |R|²*1` for an even versor `R` (object form): `R R̃` is a pure scalar. Leaf, `ext <;> ring`. -/
 theorem mul_reverse_self_of_isEvenVersor {R : G3} (hR : IsEvenVersor R) :
     mul R (reverse R) = smul (normSq R) one := by
   obtain ⟨hR1, hR2, hR3, hR123⟩ := hR
   simp only [normSq, mul, reverse, one, smul, hR1, hR2, hR3, hR123]
   ext <;> ring
 
-/-- `R̃ R = |R|²·1` for an even versor `R` — the same scalar from the other side. -/
+/-- `R̃*R = |R|²*1` for an even versor `R` — the same scalar from the other side. -/
 theorem reverse_mul_self_of_isEvenVersor {R : G3} (hR : IsEvenVersor R) :
     mul (reverse R) R = smul (normSq R) one := by
   obtain ⟨hR1, hR2, hR3, hR123⟩ := hR
   simp only [normSq, mul, reverse, one, smul, hR1, hR2, hR3, hR123]
   ext <;> ring
 
-/-- **Conjugation by an even versor scales the scalar part:** `⟨R X R̃⟩₀ = |R|²·⟨X⟩₀` for ANY `X`.
-    The scalar part of a product is cyclic (`dot_comm` moves `R̃` to the front), then `R̃ R = |R|²·1`. -/
+/-- **Conjugation by an even versor scales the scalar part:** `⟨R*X*R̃⟩₀ = |R|²*⟨X⟩₀` for ANY `X`.
+    The scalar part of a product is cyclic (`dot_comm` moves `R̃` to the front), then `R̃*R = |R|²*1`. -/
 theorem dot_reverse_conj {R : G3} (hR : IsEvenVersor R) (X : G3) :
     dot (mul R X) (reverse R) = normSq R * X.s := by
   rw [dot_comm]
@@ -318,9 +318,9 @@ theorem dot_reverse_conj {R : G3} (hR : IsEvenVersor R) (X : G3) :
       GacalcProofs.G3.one_mul]
   simp only [smul]
 
-/-- **The reverse sandwich scales the dot product by `|R|⁴`**: `(R u R̃) · (R v R̃) = |R|⁴·(u · v)` for an
+/-- **The reverse sandwich scales the dot product by `|R|⁴`**: `(R*u*R̃) · (R*v*R̃) = |R|⁴*(u · v)` for an
     even versor `R` and ANY `u`, `v` — no grade hypothesis, because the proof never looks at `u` or `v`:
-    `(R u R̃)(R v R̃) = R u (R̃ R) v R̃ = |R|²·R (u v) R̃` by associativity and `R̃ R = |R|²·1`, then
+    `(R*u*R̃)(R*v*R̃) = R u (R̃*R) v R̃ = |R|²*R (u v) R̃` by associativity and `R̃*R = |R|²*1`, then
     `dot_reverse_conj` on `X = u v`. The dot leaf behind `sandwich_preserves_dot`. -/
 theorem dot_reverse_sandwich {R : G3} (hR : IsEvenVersor R) {u v : G3} :
     dot (mul (mul R u) (reverse R)) (mul (mul R v) (reverse R)) = normSq R ^ 2 * dot u v := by
@@ -338,16 +338,16 @@ theorem dot_reverse_sandwich {R : G3} (hR : IsEvenVersor R) {u v : G3} :
 
 /-- **The sandwich preserves the dot product** (object form, hence angles): for an even versor `R` with
     `|R|² ≠ 0` and ANY `u`, `v` (stated for vectors in the book; the identity needs no grade),
-    `(R u R⁻¹) · (R v R⁻¹) = u · v`. Structural: pull the inverse's `1/|R|²` out of each factor
+    `(R*u*R⁻¹) · (R*v*R⁻¹) = u · v`. Structural: pull the inverse's `1/|R|²` out of each factor
     (`mul_smul`), collect through the bilinear dot (`dot_smul_left/right`), apply
-    `dot_reverse_sandwich`, then cancel `(1/|R|²)²·|R|⁴ = 1`. -/
+    `dot_reverse_sandwich`, then cancel `(1/|R|²)²*|R|⁴ = 1`. -/
 theorem sandwich_preserves_dot {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G3} :
     dot (sandwich R u) (sandwich R v) = dot u v := by
   simp only [sandwich, inverse, GacalcProofs.G3.mul_smul]
   rw [dot_smul_left, dot_smul_right, dot_reverse_sandwich hR]
   field_simp [hr]
 
-/-- `R R̃ = |R|²·1` for the from-vectors versor (it is even — scalar + bivector — so `R R̃` is a
+/-- `R R̃ = |R|²*1` for the from-vectors versor (it is even — scalar + bivector — so `R R̃` is a
     pure scalar). Proved by `ext <;> ring`: the odd/bivector components vanish structurally, with no
     `√` fact needed (the magnitudes appear only in the scalar coefficient). -/
 theorem versorFromVectors_mul_reverse_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
@@ -357,8 +357,8 @@ theorem versorFromVectors_mul_reverse_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
   simp only [normSq, versorFromVectors, mul, reverse, add, smul, one, vec]
   ext <;> ring
 
-/-- **The from-vectors versor is invertible: `R R⁻¹ = 1`** (for `|R|² ≠ 0`). Uses `R R̃ = |R|²·1`,
-    `mul_smul`, `smul_smul`, and `1/|R|² · |R|² = 1`. -/
+/-- **The from-vectors versor is invertible: `R*R⁻¹ = 1`** (for `|R|² ≠ 0`). Uses `R R̃ = |R|²*1`,
+    `mul_smul`, `smul_smul`, and `1/|R|²*|R|² = 1`. -/
 theorem versorFromVectors_mul_inverse_coord (a1 a2 a3 b1 b2 b3 : ℝ)
     (hr : normSq (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
     mul (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
@@ -387,26 +387,26 @@ theorem versorFromVectors_mul_reverse {a b : G3} (ha : IsVector a) (hb : IsVecto
              has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
   ext <;> ring
 
-/-- **The versor from `a, b` carries `a` to `b`**: `R a R⁻¹ = (|a|/|b|)·b` (angle-free). The
+/-- **The versor from `a, b` carries `a` to `b`**: `R*a*R⁻¹ = (|a|/|b|)*b` (angle-free). The
     scale-invariant sandwich sends the from-vector to the to-vector, scaled to length `|a|` (the
     rotation preserves length, so `a` of length `|a|` lands on `b̂` at length `|a|`). Assembled from
-    `R a = |a|·h`, `b R = |b|·h`, `R R̃ = |R|²·1`. Needs `|b| ≠ 0`, `|R|² ≠ 0`. Getter-native (no
+    `R a = |a|*h`, `b R = |b|*h`, `R R̃ = |R|²*1`. Needs `|b| ≠ 0`, `|R|² ≠ 0`. Getter-native (no
     coordinate scaffold). -/
 theorem sandwich_carries_from_to {a b : G3} (ha : IsVector a) (hb : IsVector b)
     (hbn : magnitude b ≠ 0) (hr : normSq (versorFromVectors a b) ≠ 0) :
     sandwich (versorFromVectors a b) a = smul (magnitude a / magnitude b) b := by
-  -- The bisector expressed via `b R` (from `b R = |b|·h`, undone with |b| ≠ 0).
+  -- The bisector expressed via `b R` (from `b R = |b|*h`, undone with |b| ≠ 0).
   have hbis : bisector a b = smul (1 / magnitude b) (mul b (versorFromVectors a b)) := by
     rw [from_mul_versor_eq_bisector ha hb, GacalcProofs.G3.smul_smul, one_div_mul_cancel hbn,
         GacalcProofs.G3.one_smul]
-  -- The heart: h R⁻¹ = (1/|b|)·b, via associativity + R R̃ = |R|² + mul_one.
+  -- The heart: h R⁻¹ = (1/|b|)*b, via associativity + R R̃ = |R|² + mul_one.
   have hkey : mul (bisector a b) (inverse (versorFromVectors a b)) = smul (1 / magnitude b) b := by
     rw [hbis, GacalcProofs.G3.smul_mul, inverse, GacalcProofs.G3.mul_smul,
         GacalcProofs.G3.mul_assoc, versorFromVectors_mul_reverse ha hb, GacalcProofs.G3.mul_smul,
         GacalcProofs.G3.mul_one, GacalcProofs.G3.smul_smul, GacalcProofs.G3.smul_smul]
     congr 1
     field_simp
-  -- Assemble: sandwich R a = |a|·(h R⁻¹) = |a|·(1/|b|)·b = (|a|/|b|)·b.
+  -- Assemble: sandwich R a = |a|*(h R⁻¹) = |a|*(1/|b|)*b = (|a|/|b|)*b.
   rw [sandwich, versor_mul_from_eq_bisector ha hb, GacalcProofs.G3.smul_mul, hkey,
       GacalcProofs.G3.smul_smul, mul_one_div]
 
@@ -435,17 +435,17 @@ theorem inverse_mul_self_of_isEvenVersor {R : G3} (hR : IsEvenVersor R) (hr : no
   rw [inverse, GacalcProofs.G3.smul_mul, reverse_mul_self_of_isEvenVersor hR,
       GacalcProofs.G3.smul_smul, one_div_mul_cancel hr, GacalcProofs.G3.one_smul]
 
-/-- `R R⁻¹ = 1` for an even versor with `|R|² ≠ 0`. -/
+/-- `R*R⁻¹ = 1` for an even versor with `|R|² ≠ 0`. -/
 theorem mul_inverse_self_of_isEvenVersor {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) :
     mul R (inverse R) = one := by
   rw [inverse, GacalcProofs.G3.mul_smul, mul_reverse_self_of_isEvenVersor hR,
       GacalcProofs.G3.smul_smul, one_div_mul_cancel hr, GacalcProofs.G3.one_smul]
 
-/-! ## Rotors: unit even versors, for which the sandwich is `R v R̃`
+/-! ## Rotors: unit even versors, for which the sandwich is `R*v*R̃`
 
-    gacalc's vocabulary: a **versor** is even of any magnitude (`IsEvenVersor`; sandwich `R v R⁻¹`), a
+    gacalc's vocabulary: a **versor** is even of any magnitude (`IsEvenVersor`; sandwich `R*v*R⁻¹`), a
     **rotor** is a *unit* versor, `|R|² = 1`. For a rotor `R⁻¹ = R̃/|R|² = R̃`, so the sandwich needs no
-    division — the textbook `R v R̃`. Every `sandwich_preserves_*` theorem applies to a rotor unchanged
+    division — the textbook `R*v*R̃`. Every `sandwich_preserves_*` theorem applies to a rotor unchanged
     (`normSq_ne_zero_of_isRotor` discharges its `|R|² ≠ 0` guard); the headline
     `sandwich_eq_reverse_sandwich_of_isRotor` rewrites the inverse form into the reverse form. -/
 
@@ -471,7 +471,7 @@ theorem isRotor_of_mul_reverse_eq_one {R : G3} (hR : IsEvenVersor R) (h : mul R 
 theorem mul_reverse_self_of_isRotor {R : G3} (hR : IsRotor R) : mul R (reverse R) = one := by
   rw [mul_reverse_self_of_isEvenVersor hR.1, hR.2, GacalcProofs.G3.one_smul]
 
-/-- `R̃ R = 1` for a rotor. -/
+/-- `R̃*R = 1` for a rotor. -/
 theorem reverse_mul_self_of_isRotor {R : G3} (hR : IsRotor R) : mul (reverse R) R = one := by
   rw [reverse_mul_self_of_isEvenVersor hR.1, hR.2, GacalcProofs.G3.one_smul]
 
@@ -479,9 +479,9 @@ theorem reverse_mul_self_of_isRotor {R : G3} (hR : IsRotor R) : mul (reverse R) 
 theorem inverse_eq_reverse_of_isRotor {R : G3} (hR : IsRotor R) : inverse R = reverse R := by
   rw [inverse, hR.2, div_one, GacalcProofs.G3.one_smul]
 
-/-- **The rotor sandwich is `R v R̃`** (headline): for a rotor the inverse sandwich `R v R⁻¹`
+/-- **The rotor sandwich is `R*v*R̃`** (headline): for a rotor the inverse sandwich `R*v*R⁻¹`
     (`sandwich`) equals the reverse sandwich, for ANY `v` — no division. Every `sandwich_preserves_*`
-    statement transfers to the `R v R̃` form by rewriting with this. -/
+    statement transfers to the `R*v*R̃` form by rewriting with this. -/
 theorem sandwich_eq_reverse_sandwich_of_isRotor {R : G3} (hR : IsRotor R) (v : G3) :
     sandwich R v = mul (mul R v) (reverse R) := by
   rw [sandwich, inverse_eq_reverse_of_isRotor hR]
@@ -497,30 +497,30 @@ theorem sandwich_inverse_sandwich {R : G3} (hR : IsEvenVersor R) (hr : normSq R 
   rw [inverse_mul_self_of_isEvenVersor hR hr, GacalcProofs.G3.mul_one,
       ← GacalcProofs.G3.mul_assoc, inverse_mul_self_of_isEvenVersor hR hr, GacalcProofs.G3.one_mul]
 
-/-- **The reverse sandwich scales the norm by `|R|⁴`**: `|R v R̃|² = |R|⁴ |v|²` for an even versor
+/-- **The reverse sandwich scales the norm by `|R|⁴`**: `|R*v*R̃|² = |R|⁴ |v|²` for an even versor
     `R` and ANY `v` (the versor norm is multiplicative through the reverse sandwich). Structural: `|X|²`
-    is `X · X̃`, the reverse is an anti-automorphism (`R v R̃` reverses to `R ṽ R̃`), so this is
+    is `X · X̃`, the reverse is an anti-automorphism (`R*v*R̃` reverses to `R ṽ R̃`), so this is
     `dot_reverse_sandwich` at `u = v`, `v = ṽ`. -/
 theorem normSq_reverse_sandwich {R : G3} (hR : IsEvenVersor R) {v : G3} :
     normSq (mul (mul R v) (reverse R)) = normSq R ^ 2 * normSq v := by
   rw [normSq_eq_dot_reverse (mul (mul R v) (reverse R)), reverse_mul, reverse_mul, reverse_reverse,
       ← GacalcProofs.G3.mul_assoc, dot_reverse_sandwich hR, normSq_eq_dot_reverse v]
 
-/-- **The sandwich preserves the squared magnitude** (object form): `|R v R⁻¹|² = |v|²` for ANY `v` — the
+/-- **The sandwich preserves the squared magnitude** (object form): `|R*v*R⁻¹|² = |v|²` for ANY `v` — the
     inverse sandwich is an isometry. Structural: factor the inverse's scalar (`mul_smul`), scale by
-    `normSq_smul`, use `|R v R̃|² = |R|⁴|v|²`, then cancel `(1/|R|²)²·|R|⁴ = 1` (`|R|² ≠ 0`). -/
+    `normSq_smul`, use `|R*v*R̃|² = |R|⁴|v|²`, then cancel `(1/|R|²)²*|R|⁴ = 1` (`|R|² ≠ 0`). -/
 theorem sandwich_preserves_normSq {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {v : G3} :
     normSq (sandwich R v) = normSq v := by
   rw [sandwich, inverse, GacalcProofs.G3.mul_smul, normSq_smul, normSq_reverse_sandwich hR]
   field_simp [hr]
 
-/-- **The sandwich preserves the magnitude** (object form): `|R v R⁻¹| = |v|` for ANY `v`. -/
+/-- **The sandwich preserves the magnitude** (object form): `|R*v*R⁻¹| = |v|` for ANY `v`. -/
 theorem magnitude_sandwich {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {v : G3} :
     magnitude (sandwich R v) = magnitude v := by
   simp only [magnitude]
   rw [sandwich_preserves_normSq hR hr]
 
-/-- **The reverse-sandwich is an outermorphism up to `|R|²`:** `(R u R̃) ∧ (R v R̃) = |R|²·R (u∧v) R̃`.
+/-- **The reverse-sandwich is an outermorphism up to `|R|²`:** `(R*u*R̃) ∧ (R*v*R̃) = |R|²*R (u∧v) R̃`.
     A pure polynomial identity (no division) — the unnormalized core of `sandwich_preserves_wedge`, the
     outer-product twin of `normSq_reverse_sandwich`. -/
 theorem wedge_reverse_sandwich {R : G3} (hR : IsEvenVersor R) {u v : G3} :
@@ -531,12 +531,12 @@ theorem wedge_reverse_sandwich {R : G3} (hR : IsEvenVersor R) {u v : G3} :
   ext <;> ring
 
 /-- **The sandwich preserves the outer product** (object form, the *outermorphism* property):
-    `(R u R⁻¹) ∧ (R v R⁻¹) = R (u ∧ v) R⁻¹` for an even versor `R` with `|R|² ≠ 0` and ANY `u`, `v`.
+    `(R*u*R⁻¹) ∧ (R*v*R⁻¹) = R (u ∧ v) R⁻¹` for an even versor `R` with `|R|² ≠ 0` and ANY `u`, `v`.
     Since it is multiplicative and grade-preserving, it carries the plane bivector `u ∧ v` intact
     (orientation included) — the outer-product analogue of `sandwich_preserves_dot`, and the leaf behind
     sine / oriented-angle preservation. Structural: pull the inverse's `1/|R|²` out of each factor
     (`mul_smul`), collect the scalars through the bilinear wedge, apply `wedge_reverse_sandwich`, then
-    `(1/|R|²)²·|R|² = 1/|R|²`. -/
+    `(1/|R|²)²*|R|² = 1/|R|²`. -/
 theorem sandwich_preserves_wedge {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G3} :
     wedge (sandwich R u) (sandwich R v) = sandwich R (wedge u v) := by
   simp only [sandwich, inverse, GacalcProofs.G3.mul_smul, GacalcProofs.G3.wedge_smul_left,
@@ -564,8 +564,8 @@ theorem sandwich_preserves_normSq_of_wedge {R : G3} (hR : IsEvenVersor R) (hr : 
   field_simp [hr]
 
 /-- **A plane rotation leaves the orthogonal axis fixed** — the 3D fact with no 2D analogue. A versor
-    in the e₁e₂ plane (`R = s + c₁₂·e₁₂`, `c₁₃ = c₂₃ = 0`) fixes the e₃ component: `R (z e₃) R⁻¹ = z e₃`
-    (e₃ commutes with the plane bivector, so it slides through `R R⁻¹ = 1`). This is exactly the
+    in the e₁*e₂ plane (`R = s + c₁₂*e₁₂`, `c₁₃ = c₂₃ = 0`) fixes the e₃ component: `R (z e₃) R⁻¹ = z e₃`
+    (e₃ commutes with the plane bivector, so it slides through `R*R⁻¹ = 1`). This is exactly the
     maintainer's "no effect on components orthogonal to the plane of rotation." -/
 theorem sandwich_fixes_orthogonal (s c12 z : ℝ) (hr : normSq (evenVersor s c12 0 0) ≠ 0) :
     sandwich (evenVersor s c12 0 0) (vec 0 0 z) = vec 0 0 z := by
@@ -576,7 +576,7 @@ theorem sandwich_fixes_orthogonal (s c12 z : ℝ) (hr : normSq (evenVersor s c12
   simp only [evenVersor, mul, reverse, smul, vec]
   ext <;> field_simp [hr] <;> ring
 
-/-- **A plane rotation keeps in-plane vectors in the plane.** A versor in the e₁e₂ plane sends a
+/-- **A plane rotation keeps in-plane vectors in the plane.** A versor in the e₁*e₂ plane sends a
     vector `x e₁ + y e₂` to another vector in that plane — its e₃ component stays `0`. With
     `sandwich_fixes_orthogonal`, the plane and its normal are both invariant, so the 3D sandwich
     reduces to a 2D rotation in the plane. -/
@@ -603,8 +603,8 @@ theorem sandwich_sub (r u v : G3) : sandwich r (sub u v) = sub (sandwich r u) (s
   simp only [sandwich]; rw [GacalcProofs.G3.mul_sub, GacalcProofs.G3.sub_mul]
 
 /-- **The sandwich of a vector by an even versor stays a vector** — grade-preserving (the scalar,
-    bivector and pseudoscalar parts of `R v R⁻¹` all vanish), for any even versor `R` and vector `v`
-    (no `|R|² ≠ 0` needed: each vanishing part is `(1/|R|²)·0`). -/
+    bivector and pseudoscalar parts of `R*v*R⁻¹` all vanish), for any even versor `R` and vector `v`
+    (no `|R|² ≠ 0` needed: each vanishing part is `(1/|R|²)*0`). -/
 theorem sandwich_evenVersor_vec_isVector {R : G3} (hR : IsEvenVersor R) {v : G3} (hv : IsVector v) :
     IsVector (sandwich R v) := by
   rw [eq_evenVersor_of_isEvenVersor hR, eq_vec_of_isVector hv]
@@ -612,7 +612,7 @@ theorem sandwich_evenVersor_vec_isVector {R : G3} (hR : IsEvenVersor R) {v : G3}
     simp only [sandwich, inverse, evenVersor, mul, reverse, smul, vec] <;> ring
 
 /-- **The from-vectors versor is an even versor** — `versorFromVectors a b = evenVersor …`, its scalar
-    part `b·a + |a||b|` and its bivector part `b∧a`. This bridge lets the general `evenVersor` results
+    part `b*a + |a|*|b|` and its bivector part `b∧a`. This bridge lets the general `evenVersor` results
     (isometry, fixed bivector, fixed normal) apply to the actual a→b rotation. -/
 theorem versorFromVectors_eq_evenVersor (a1 a2 a3 b1 b2 b3 : ℝ) :
     versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)
@@ -622,7 +622,7 @@ theorem versorFromVectors_eq_evenVersor (a1 a2 a3 b1 b2 b3 : ℝ) :
 
 /-- **A rotation fixes its own plane bivector** (orientation preserved): for an even versor
     `R = s + B` with `B = p·e₁₂ + q·e₁₃ + t·e₂₃`, `sandwich R B = B` (B commutes with R, so it rides
-    through `R R⁻¹ = 1`). This is the "rotates the oriented angle correctly / it's a rotation, not a
+    through `R*R⁻¹ = 1`). This is the "rotates the oriented angle correctly / it's a rotation, not a
     reflection" content: the plane of rotation is kept, with its orientation. -/
 theorem sandwich_fixes_own_bivector_coord (s p q t : ℝ) (hr : normSq (evenVersor s p q t) ≠ 0) :
     sandwich (evenVersor s p q t) (bivector p q t) = bivector p q t := by
@@ -643,7 +643,7 @@ theorem sandwich_fixes_own_bivector {R : G3} (hR : IsEvenVersor R) (hr : normSq 
 /-- **A rotation fixes the normal to its plane** (perpendicular components unchanged): for an even
     versor `R = s + (p·e₁₂ + q·e₁₃ + t·e₂₃)`, the vector `n = t·e₁ − q·e₂ + p·e₃` — the dual of the
     plane bivector, i.e. the axis ⊥ the plane — satisfies `sandwich R n = n` (`n` commutes with `R`,
-    so it rides through `R R⁻¹ = 1`). The general-plane form of `sandwich_fixes_orthogonal`. -/
+    so it rides through `R*R⁻¹ = 1`). The general-plane form of `sandwich_fixes_orthogonal`. -/
 theorem sandwich_fixes_own_normal_coord (s p q t : ℝ) (hr : normSq (evenVersor s p q t) ≠ 0) :
     sandwich (evenVersor s p q t) (vec t (-q) p) = vec t (-q) p := by
   have hd : normSq (evenVersor s p q t) = s ^ 2 + p ^ 2 + q ^ 2 + t ^ 2 := normSq_evenVersor s p q t
@@ -683,7 +683,7 @@ theorem reverse_mul3_vec {a b c : G3} (ha : IsVector a) (hb : IsVector b) (hc : 
       reverse_of_isVector ha]
   exact (GacalcProofs.G3.mul_assoc c b a).symm
 
-/-- **The versor norm is multiplicative:** `|R₁ R₂|² = |R₁|² |R₂|²` for even versors (the norm on
+/-- **The versor norm is multiplicative:** `|R₁ R₂|² = |R₁|²*|R₂|²` for even versors (the norm on
     𝒢₃'s even subalgebra ≅ the quaternions). -/
 theorem normSq_mul (s1 p1 q1 t1 s2 p2 q2 t2 : ℝ) :
     normSq (mul (evenVersor s1 p1 q1 t1) (evenVersor s2 p2 q2 t2))

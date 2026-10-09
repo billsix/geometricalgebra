@@ -16,7 +16,7 @@ the specialized `G`, and the graded subtypes (`Vector`, `Bivector`, `Versor`,
 
     Blade      = tuple[int, ...]        # basis-vector indices; () is the scalar blade
     Real       = int | float | sympy.Expr
-    BladeReal  = dict[Blade, Real]      # e.g. {(): 3, (1, 2): -4}  ==  3 − 4·e₁e₂
+    BladeReal  = dict[Blade, Real]      # e.g. {(): 3, (1, 2): -4}  ==  3 − 4 * e₁ * e₂
 
 Two methods are the whole protocol: `to_blade_dict()` (this value → the dict) and the
 `from_blade_dict()` classmethod (the dict → this representation). Mixing two representations
@@ -35,7 +35,7 @@ A key's basis-vector indices must be **strictly increasing**: `(1, 2)`, never `(
     >>> G.from_blade_dict({(2, 1): 1})     # ValueError  (specialized classes too)
     >>> Gn.from_blade_dict({(1, 1): 1})     # ValueError  (repeated index)
 
-`e₂e₁` is a legal algebra *element* — it just isn't a legal *key*: it equals `−e₁e₂`, so it
+`e₂ * e₁` is a legal algebra *element* — it just isn't a legal *key*: it equals `−e₁ * e₂`, so it
 belongs under key `(1, 2)` with the sign folded into the coefficient (and a repeated index
 contracts away, `eᵢeᵢ = 1`). The dict is **not** read as a signed permutation; it is a
 canonical-key store.

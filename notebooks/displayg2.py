@@ -38,7 +38,7 @@
 # provably consistent with the reference while being much faster.
 #
 # 𝒢₂ has 2² = 4 basis blades: the scalar `1`, the two vectors `e_1`, `e_2`, and
-# the bivector / pseudoscalar `e_12 = e_1 e_2`.
+# the bivector / pseudoscalar `e_12 = e_1 * e_2`.
 
 # %%
 import math
@@ -272,12 +272,12 @@ gram_fe_to_mol_fe(gram_fe=95.8)
 # **representation preserving**: applied to a `g2.G`, it returns a `g2.G`.  Each
 # factory builds an `InvertibleFunction` that renders its own LaTeX.
 #
-# Rotation in geometric algebra is the versor sandwich `R v R.inverse()`, and
+# Rotation in geometric algebra is the versor sandwich `R * v * R.inverse()`, and
 # `plane_rotation(a, b)` packages it: it wedge-normalizes the two vectors `a`, `b`
 # into the unit bivector of their plane once, then returns an
 # `angle -> InvertibleFunction` factory (the half-angle rotor is built inside the
 # library -- no hand-rolled cos/sin).  So `rotate = plane_rotation(e_1, e_2)`
-# rotates in the `e_1 e_2` plane (positive `angle` turns `e_1` toward
+# rotates in the `e_1 * e_2` plane (positive `angle` turns `e_1` toward
 # `e_2`); each `rotate(angle)` is an `InvertibleFunction` that renders its own LaTeX,
 # composes / inverts like the other transforms, and -- via the versor sandwich --
 # preserves the type of whatever it rotates (a `g2.G` stays a `g2.G`).
@@ -321,7 +321,7 @@ w: G = 3 * e_1 + 4 * e_2
 w  # pyright: ignore[reportUnusedExpression]
 
 # %%
-# a 90 degree rotation in the e_1 e_2 plane: 3 e_1 + 4 e_2  ->  -4 e_1 + 3 e_2
+# a 90 degree rotation in the e_1 * e_2 plane: 3 * e_1 + 4 * e_2  ->  -4 * e_1 + 3 * e_2
 rotate(sympy.pi / 2)(w)  # pyright: ignore[reportUnusedExpression]
 
 # %%
@@ -467,16 +467,16 @@ for f in compose_intermediate_fns(
         axes.set_title(f._repr_latex_())
 
 # %% [markdown]
-# The wedge magnitude: $|a \wedge b| = |a|\,|b|\,\sin\theta$
+# The wedge magnitude: $|a \wedge b| = |a| * |b| * \sin(\theta)$
 # =========================================================
 #
-# For two general vectors $a = a_1 e_1 + a_2 e_2$ and $b = b_1 e_1 + b_2 e_2$ in
-# 𝒢₂, the magnitude of the wedge is $|a||b|\sin\theta$. We derive it from the
+# For two general vectors $a = a_1 * e_1 + a_2 * e_2$ and $b = b_1 * e_1 + b_2 * e_2$ in
+# 𝒢₂, the magnitude of the wedge is $|a| * |b| * \sin(\theta)$. We derive it from the
 # identity
 #
-# $$|a|^2|b|^2 = |a|^2|b|^2\,(\cos^2\theta + \sin^2\theta)$$
+# $$|a|^2 * |b|^2 = |a|^2 * |b|^2 * (\cos^2(\theta) + \sin^2(\theta))$$
 #
-# together with the definition of the dot product $a\cdot b = |a||b|\cos\theta$.
+# together with the definition of the dot product $a\cdot b = |a| * |b| * \cos(\theta)$.
 # (Symbols are declared **real** so that $\sqrt{x^2}=|x|$ behaves.)
 
 # %%
@@ -496,10 +496,10 @@ a ^ b
 # %% [markdown]
 # **The Lagrange step** (Lagrange's identity,
 # <https://en.wikipedia.org/wiki/Lagrange%27s_identity>). Distributing
-# $|a|^2|b|^2(\cos^2\theta + \sin^2\theta)$
+# $|a|^2 * |b|^2 * (\cos^2(\theta) + \sin^2(\theta))$
 # into $(a\cdot b)^2 + |a\wedge b|^2$ gives
 #
-# $$|a|^2|b|^2 - (a\cdot b)^2 = |a\wedge b|^2 .$$
+# $$|a|^2 * |b|^2 - (a\cdot b)^2 = |a\wedge b|^2 .$$
 #
 # Symbolically the residual collapses to $0$:
 
@@ -522,17 +522,17 @@ assert lagrange_residual == 0
 
 # %% [markdown]
 # **From the squared form to the magnitude.** With
-# $\cos\theta = a\cdot b / (|a||b|)$ and $\sin\theta = \sqrt{1-\cos^2\theta}\ge 0$
-# (taking $\theta\in[0,\pi]$),
+# $\cos(\theta) = a\cdot b / (|a| * |b|)$ and
+# $\sin(\theta) = \sqrt{1-\cos^2(\theta)}\ge 0$ (taking $\theta\in[0,\pi]$),
 #
-# $$|a||b|\sin\theta = \sqrt{|a|^2|b|^2 - (a\cdot b)^2}.$$
+# $$|a| * |b| * \sin(\theta) = \sqrt{|a|^2 * |b|^2 - (a\cdot b)^2}.$$
 #
 # sympy leaves this as the square root of a *sum*; **factoring the radicand**
 # exposes the perfect square $(a_1 b_2 - a_2 b_1)^2$, whose root is $|a\wedge b|$.
 
 # %%
 cos: Real = a.cosine(b)
-sin: Real = sympy.sqrt(1 - cos**2)  # sinθ ≥ 0 for θ in [0, π]
+sin: Real = sympy.sqrt(1 - cos**2)  # sin(θ) ≥ 0 for θ in [0, π]
 wedge_magnitude_from_sin: Real = sympy.sqrt(
     sympy.factor(sympy.simplify((a.magnitude() * b.magnitude() * sin) ** 2))
 )
@@ -549,9 +549,9 @@ assert sympy.simplify(wedge_magnitude_from_sin - (a ^ b).magnitude()) == 0
 # $a b = a\cdot b + a\wedge b$ splits into orthogonal grades, so
 #
 # $$|ab|^2 = (a\cdot b)^2 + |a\wedge b|^2
-#          = |a|^2|b|^2(\cos^2\theta + \sin^2\theta) = |a|^2|b|^2 ,$$
+#          = |a|^2 * |b|^2 * (\cos^2(\theta) + \sin^2(\theta)) = |a|^2 * |b|^2 ,$$
 #
-# i.e. $|ab| = |a||b|$. A versor built from $a$ and $b$ can therefore take the
+# i.e. $|ab| = |a| * |b|$. A versor built from $a$ and $b$ can therefore take the
 # magnitude of the *product* directly instead of multiplying the two magnitudes:
 
 # %%
@@ -572,7 +572,7 @@ assert (
 # The wedge magnitude *is* an area — `area(a, b)`
 # -----------------------------------------------
 #
-# $|a \wedge b| = |a||b|\sin\theta$ is exactly the **area of the parallelogram**
+# $|a \wedge b| = |a| * |b| * \sin(\theta)$ is exactly the **area of the parallelogram**
 # spanned by `a` and `b` — the high-school area, generalized by geometric algebra
 # (Williamson & Trotter call the k-dimensional version the *content*).
 # `gacalc.measure.area(a, b)` names it:

@@ -15,7 +15,7 @@ import GacalcProofs.Projection2D
 
     **The rotation here is an ELEMENTARY plane rotation, built as a procedure on the vector's components
     — deliberately NOT a versor / the geometric-product sandwich.** `rotPlane c s` takes the two
-    components `(v.c1, v.c2)`, rotates them by `(cos = c, sin = s)`, and leaves the scalar/bivector parts
+    components `(v.c1, v.c2)`, rotates them by `(cos(θ) = c, sin(θ) = s)`, and leaves the scalar/bivector parts
     untouched — the precalculus "rotate the coordinate pair" operation. Using a versor here would be
     **circular**: a versor is itself a geometric product, and the point of standard position is to
     *bootstrap* the geometric product from projection/rejection using only operations trusted
@@ -31,7 +31,7 @@ namespace GacalcProofs.G2
 
 /-! ### The elementary plane rotation (a procedure on the components) -/
 
-/-- Rotate the `(e₁, e₂)` components of a 𝒢₂ vector by `(cos = c, sin = s)`, leaving the scalar and
+/-- Rotate the `(e₁, e₂)` components of a 𝒢₂ vector by `(cos(θ) = c, sin(θ) = s)`, leaving the scalar and
     bivector parts untouched: `(x, y) ↦ (c x − s y, s x + c y)`. No matrices, no versors — it just
     recombines the components. (The 2D twin of `GacalcProofs.G3.rotXY`; in 2D there is only one plane,
     so this one rotation is the whole alignment.) -/
@@ -81,7 +81,7 @@ theorem vecReject_rotPlane_equivariant (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (a 
 /-! ### The explicit alignment: rotate `b` onto the x-axis with the single plane rotation
 
     The concrete 2D standard position: `rotPlane (b₁/m) (−b₂/m)` (with `m = |b|`, so the `(cos, sin)` is
-    read off `b`'s coordinates) swings `b` onto `|b|·e₁`. One rotation — no second plane. -/
+    read off `b`'s coordinates) swings `b` onto `|b|*e₁`. One rotation — no second plane. -/
 
 /-- **`b` rotates onto the x-axis:** `rotPlane (b₁/m) (−b₂/m)` sends `(b₁, b₂)` to `(m, 0)`, where
     `m = |b| = √(b₁²+b₂²)` (`m ≠ 0`, `m² = b₁²+b₂²`). The elementary, versor-free alignment. -/
@@ -117,7 +117,7 @@ theorem proj_onto_x_axis (m : ℝ) (hm : m ≠ 0) (v : G2) : proj (vec m 0) v = 
     `project_sp a b`: align `b` to the x-axis with `rotPlane (b₁/m) (−b₂/m)` (`m = |b|`), apply the same
     to `a`, **keep the aligned `a`'s x-component** (projection onto the x-axis is the elementary "read
     off a coordinate" step — no product, `proj_onto_x_axis`), and rotate back (negate the sine). In the
-    aligned frame that x-component IS the Hestenes projection onto `|b|·e₁`; the rotation preserves the
+    aligned frame that x-component IS the Hestenes projection onto `|b|*e₁`; the rotation preserves the
     dot and is projection-equivariant, and is undone by its negated-sine twin — so the whole procedure
     IS `proj b a`. The degenerate `b = 0` case (`|b| = 0`) is excluded by hypothesis. -/
 
@@ -157,7 +157,7 @@ theorem unalignSP_alignSP {b : G2} (hbv : IsVector b) (hb : magnitude b ≠ 0) (
   simp only [unalignSP, alignSP]
   rw [rotPlane_inv _ _ _ (cs_unit hbv hb) (by ring)]
 
-/-- **The alignment sends `b` itself to `|b|·e₁`** — `rotPlane_aligns` read through `alignSP`. -/
+/-- **The alignment sends `b` itself to `|b|*e₁`** — `rotPlane_aligns` read through `alignSP`. -/
 theorem alignSP_self {b : G2} (hbv : IsVector b) (hb : magnitude b ≠ 0) :
     alignSP b b = vec (magnitude b) 0 := by
   have h := rotPlane_aligns b.c1 b.c2 (magnitude b) hb (magnitude_sq_of_isVector hbv)
@@ -168,7 +168,7 @@ theorem alignSP_self {b : G2} (hbv : IsVector b) (hb : magnitude b ≠ 0) :
 
 /-- **`project_sp = project`:** the standard-position projection of `a` onto `b` is the Hestenes
     projection `proj b a`, for a nonzero vector `b` (`|b| ≠ 0`); `a` may be any multivector. In the
-    aligned frame "keep the x-component" is `proj (|b|·e₁)` (`proj_onto_x_axis` + `alignSP_self`); then
+    aligned frame "keep the x-component" is `proj (|b|*e₁)` (`proj_onto_x_axis` + `alignSP_self`); then
     equivariance of `proj` under the plane rotation, and undo it. -/
 theorem projectSP_eq_proj {b : G2} (hbv : IsVector b) (hb : magnitude b ≠ 0) (a : G2) :
     projectSP a b = proj b a := by

@@ -12,7 +12,7 @@ import GacalcProofs.Projection3D
 
     **The rotations here are ELEMENTARY coordinate-plane rotations, built as procedures on a vector's
     components — deliberately NOT versors / the geometric-product sandwich.** A plane rotation
-    `rotXY c s` takes the two in-plane components `(v.c1, v.c2)`, rotates them by `(cos = c, sin = s)`,
+    `rotXY c s` takes the two in-plane components `(v.c1, v.c2)`, rotates them by `(cos(θ) = c, sin(θ) = s)`,
     and leaves the perpendicular component `v.c3` (and the scalar/bivector parts) untouched — the
     high-school "break the vector into its components, rotate the plane, add the axis part back"
     operation. Using a versor here would be **circular**: a versor is itself a geometric product, and
@@ -22,20 +22,20 @@ import GacalcProofs.Projection3D
     We prove each plane rotation is linear and **preserves the dot product** (when `c² + s² = 1`),
     hence **projection and rejection are equivariant** under it: `proj (R a) (R b) = R (proj a b)`.
     That is exactly what makes "rotate to standard position, project, rotate back" valid. Composing
-    `rotXY` then `rotXZ` with the `(cos, sin)` read off `b`'s own coordinates sends `b` to `|b|·e₁`
+    `rotXY` then `rotXZ` with the `(cos, sin)` read off `b`'s own coordinates sends `b` to `|b|*e₁`
     (the standard position), where the projection is elementary. See
     `tasks/reference/reduction-to-standard-position.md`. -/
 namespace GacalcProofs.G3
 
 /-! ### Elementary coordinate-plane rotations (procedures on the components) -/
 
-/-- Rotate the e₁,e₂ (xy-plane) components of a vector by `(cos = c, sin = s)`, leaving e₃ and the
+/-- Rotate the e₁,e₂ (xy-plane) components of a vector by `(cos(θ) = c, sin(θ) = s)`, leaving e₃ and the
     scalar/bivector/pseudoscalar parts untouched. The elementary 2D rotation embedded in the xy-plane
     — no matrices, no versors: it just recombines the components. -/
 noncomputable def rotXY (c s : ℝ) (v : G3) : G3 :=
   ⟨v.s, c * v.c1 - s * v.c2, s * v.c1 + c * v.c2, v.c3, v.c12, v.c13, v.c23, v.c123⟩
 
-/-- Rotate the e₁,e₃ (xz-plane) components by `(cos = c, sin = s)`, leaving e₂ and the other parts. -/
+/-- Rotate the e₁,e₃ (xz-plane) components by `(cos(θ) = c, sin(θ) = s)`, leaving e₂ and the other parts. -/
 noncomputable def rotXZ (c s : ℝ) (v : G3) : G3 :=
   ⟨v.s, c * v.c1 - s * v.c3, v.c2, s * v.c1 + c * v.c3, v.c12, v.c13, v.c23, v.c123⟩
 
@@ -116,7 +116,7 @@ theorem mul_proj_eq_dot {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b) (
   congr 1
   field_simp
 
-/-- **The geometric product of two vectors, from projection + rejection:** `a b = (a·b)·1 + a∧b`,
+/-- **The geometric product of two vectors, from projection + rejection:** `a b = (a·b)*1 + a∧b`,
     assembled as `a (proj_a b) + a (b − proj_a b)`. The payoff of the theme: the vector geometric
     product is built from `project`/`reject` (for `|a|² ≠ 0`). -/
 theorem mul_eq_proj_dot_add_reject_wedge {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b)
@@ -138,7 +138,7 @@ theorem mul_eq_proj_dot_add_reject_wedge {a b : G3} (ha_isv : IsVector a) (hb_is
 
     The concrete standard position the maintainer described (as in `crossproduct.tex`): compose the
     xy-plane rotation that zeroes `b₂` with the xz-plane rotation that zeroes `b₃`, sending `b` to
-    `|b|·e₁`. The `(cos, sin)` are read off `b`'s own coordinates. Stated with `k = √(b₁²+b₂²)` and
+    `|b|*e₁`. The `(cos, sin)` are read off `b`'s own coordinates. Stated with `k = √(b₁²+b₂²)` and
     `m = |b| = √(b₁²+b₂²+b₃²)` supplied via their squares, so the arithmetic is `ring`/`field_simp`;
     `rotate_b_to_e1_magnitude` then instantiates them as the actual magnitudes. -/
 
@@ -172,7 +172,7 @@ theorem rotXZ_aligns_xz (k b3 m : ℝ) (hm : m ≠ 0) (hm2 : m ^ 2 = k ^ 2 + b3 
   · rfl
   · rfl
 
-/-- **`b` rotates onto the x-axis:** composing the two plane rotations sends `b` to `|b|·e₁ =
+/-- **`b` rotates onto the x-axis:** composing the two plane rotations sends `b` to `|b|*e₁ =
     vec m 0 0` (`m = |b|`). The elementary, versor-free standard-position alignment. -/
 theorem rotate_b_to_e1 (b1 b2 b3 k m : ℝ) (hk : k ≠ 0) (hm : m ≠ 0)
     (hk2 : k ^ 2 = b1 ^ 2 + b2 ^ 2) (hm2 : m ^ 2 = b1 ^ 2 + b2 ^ 2 + b3 ^ 2) :
@@ -182,7 +182,7 @@ theorem rotate_b_to_e1 (b1 b2 b3 k m : ℝ) (hk : k ≠ 0) (hm : m ≠ 0)
 
 /-- **`b` rotates onto the x-axis, entirely in `magnitude` terms** — the instantiated form of
     `rotate_b_to_e1` with `k = |b's xy-part| = magnitude (vec b₁ b₂ 0)` and `m = |b| =
-    magnitude (vec b₁ b₂ b₃)`. Both `(cos, sin)` and the target `|b|·e₁` read as actual magnitudes
+    magnitude (vec b₁ b₂ b₃)`. Both `(cos, sin)` and the target `|b|*e₁` read as actual magnitudes
     (no raw `√(…)` or coordinate sums): `b's xy-part` swings onto the x-axis, then the residual `b₃`
     is rotated in. The square hypotheses `k² = b₁²+b₂²` and `m² = b₁²+b₂²+b₃²` are just the two
     `magnitude² = normSq` facts (`Real.sq_sqrt` + `normSq_vec`). -/
@@ -207,7 +207,7 @@ theorem rotate_b_to_e1_magnitude (b1 b2 b3 : ℝ)
     apply the same to `a`, **keep the aligned `a`'s x-component** (projection onto the x-axis is the
     elementary "read off a coordinate" step — no product, `proj_onto_x_axis`), and rotate back (negate
     each sine, reverse the order). In the aligned frame that x-component IS the Hestenes projection onto
-    `|b|·e₁`; the two rotations preserve the dot and are projection-equivariant, and each is undone by
+    `|b|*e₁`; the two rotations preserve the dot and are projection-equivariant, and each is undone by
     its negated-sine twin — so the whole procedure IS `proj b a`. This is the single theorem `CLAUDE.md`
     and the Python docstring promise; the degenerate z-axis case (`k = 0`) is excluded by hypothesis, as
     in Python. -/
@@ -299,7 +299,7 @@ theorem unalignSP_alignSP {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
   simp only [unalignSP, alignSP]
   rw [rotXZ_inv _ _ _ (cs_xz_unit hbv hb) (by ring), rotXY_inv _ _ _ (cs_xy_unit hk) (by ring)]
 
-/-- **The alignment sends `b` itself to `|b|·e₁`** — `rotate_b_to_e1` read through `alignSP`. -/
+/-- **The alignment sends `b` itself to `|b|*e₁`** — `rotate_b_to_e1` read through `alignSP`. -/
 theorem alignSP_self {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
     (hb : magnitude b ≠ 0) : alignSP b b = vec (magnitude b) 0 0 := by
   have h := rotate_b_to_e1 b.c1 b.c2 b.c3 (xyMagnitude b) (magnitude b) hk hb (xyMagnitude_sq b)
@@ -311,7 +311,7 @@ theorem alignSP_self {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
 
 /-- **`project_sp = project`:** the standard-position projection of `a` onto `b` is the Hestenes
     projection `proj b a`, for a vector `b` not on the z-axis (`k ≠ 0`) and nonzero (`|b| ≠ 0`);
-    `a` may be any multivector. In the aligned frame "keep the x-component" is `proj (|b|·e₁)`
+    `a` may be any multivector. In the aligned frame "keep the x-component" is `proj (|b|*e₁)`
     (`proj_onto_x_axis` + `alignSP_self`); then equivariance of `proj` under both plane rotations,
     and undo them. -/
 theorem projectSP_eq_proj {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)

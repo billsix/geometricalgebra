@@ -146,7 +146,7 @@ static-typing fix, replacing an unsound `typing.cast(typing.Self, Versor(...))`.
   operations already reached for are unchanged (`Versor.sandwich(x) -> type(x)`,
   `Vector.inner_product(Bivector) -> Vector`, `Vector ^ Bivector -> Trivector`); what `Odd_3` newly
   buys is a **named intermediate + a one-coefficient grade-preservation proof** for the plain-product
-  sandwich `R v R⁻¹` (types as `Odd_3`, so "it's a vector" == `simplify(coeff_e_123) == 0` — see
+  sandwich `R * v * R⁻¹` (types as `Odd_3`, so "it's a vector" == `simplify(coeff_e_123) == 0` — see
   `design-decisions.md` › the sandwich note, and `tests/test_odd3.py`). Wiring: one gated block in
   `graded_specs` (`gen_specialized.py`, `n == 3`) + a name-prefixed `to_vector`/`to_trivector`
   injection. Work: `tasks/archive/2026/09/05/model-odd-graded-type.md`; subspace rationale:
@@ -321,7 +321,7 @@ rather than the full type table, because the cross product is vector×vector onl
   `MultiVectorBase.cross`) whose body is the exact-type early-out (`type(other) is Vector` — sound
   because the classes are `@typing.final`) returning the **closed form** derived by
   `product_result(spec, spec, lambda a, b: a.outer_product(b).dual(3), …)` — the textbook
-  `(a₂b₃ − a₃b₂, a₃b₁ − a₁b₃, a₁b₂ − a₂b₁)` — with every other operand delegated to
+  `(a₂ * b₃ − a₃ * b₂, a₃ * b₁ − a₁ * b₃, a₁ * b₂ − a₂ * b₁)` — with every other operand delegated to
   `MultiVectorBase.cross(self, other)` (the vectorcalc free function: `Gn` mixing, guard errors).
 
 `dispatch_method` was NOT used — it emits one closed-form arm per rhs type, wrong for a

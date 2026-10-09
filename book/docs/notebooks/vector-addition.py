@@ -27,7 +27,7 @@ a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
 a: Vector = a_1 * e_1 + a_2 * e_2
 b: Vector = b_1 * e_1 + b_2 * e_2
 
-a + b  # the coordinates add: (a_1 + b_1) e_1 + (a_2 + b_2) e_2
+a + b  # the coordinates add: (a_1 + b_1) * e_1 + (a_2 + b_2) * e_2
 
 # %%
 b + a  # the same two coordinates — each a sum of two numbers, in the other order

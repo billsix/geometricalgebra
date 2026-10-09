@@ -113,9 +113,17 @@ These came out of reworking `proof-projection.rst`; apply them to every proof pa
   genuinely need different symbols, change the **diagram** to match, not the reverse. (Origin:
   `rotate.rst` had imported *MVP*'s `\vec{v_1}`/`\vec{v_2}` for the from→to definition while its
   diagram `rotate-goal` and the whole book use `\vec{a}`/`\vec{b}`; fixed 2026-10-08.)
+<!-- notation-rule: begin -->
+- **Parentheses apply, `*` multiplies, every angle is named** (the maintainer, 2026-10-08/09;
+  the standing rule and its exemptions are `CLAUDE.md` › "Math notation for readers"). In every
+  page, figure label and notebook: `\cos(\theta)` never `\cos\theta`; an explicit `*` on every
+  product, scalar or geometric — `r * (\cos(\theta), \sin(\theta))`, `\cos(\theta) * \vec{a}`,
+  `\vec{a} * e_{12}`, `e_1 * e_2` — as a literal `*` in math mode, so the typeset math reads like
+  the code; and never an unnamed angle (`\sin(\theta) = a_2/|a|`, not `\sin = a_2/|a|`).
+<!-- notation-rule: end -->
 - **Coordinates are `a_1`, `a_2` (and `a_3`), never `a_{x}`, `a_{y}`, `a_{z}`** (the maintainer,
   2026-10-08; swept 2026-10-09). The subscript names the basis vector the number multiplies
-  (`a = a_1 e_1 + a_2 e_2`) and survives 3D and 𝒢ₙ; a coordinate is a scalar, so it carries no
+  (`a = a_1 * e_1 + a_2 * e_2`) and survives 3D and 𝒢ₙ; a coordinate is a scalar, so it carries no
   arrow (`\vec{a}` is the vector, `a_1` its number; primes carry over, `b'_2`). Introduced in
   `relative-graph-paper.rst` › "How we write coordinates", which bridges from the reader's
   `(x, y)` ordered pairs (OpenStax *Algebra 1*, Unit 1 "Find Coordinates") and `⟨a, b⟩` /
@@ -205,7 +213,7 @@ order. Sections A–D and G–I placement is inferred — reorder freely.*
   operations so the division resolves cleanly.
   **Cracker example (the maintainer):** a 6-pack costs 5¢, so one cracker is `5/6` of a cent — but
   pennies aren't divisible, and none of that matters if you're buying 12. Keep `6` and
-  `5` whole and compute `12 · 6⁻¹ · 5`: `12 · 6⁻¹` resolves to `2`, then `· 5 = 10¢` — no
+  `5` whole and compute `12 * 6⁻¹ * 5`: `12 * 6⁻¹` resolves to `2`, then `* 5 = 10¢` — no
   `5/6` ever appears. The same discipline (keep things exact; order the multiplications
   so they resolve) carries into the geometric product. Ties back to
   **canonical-form-over-decimals** above.

@@ -47,7 +47,7 @@ the preconditions the conclusion is claimed under. In this corpus they come in t
 |---|---|---|---|
 | Grade predicate | `(ha : IsVector a)` | "`a` has only grade-1 components" (the other 5 getters are 0) | the theorem claims the identity for *every* multivector `a` — true for some identities (e.g. the reverse-sandwich scalings), false for others (e.g. `a ∧ a = 0` fails for a general multivector) |
 | Nonzero guard | `(hr : normSq R ≠ 0)`, `(ha : dot a a ≠ 0)` | "we may divide by this" | Lean defines `x / 0 = 0`, so a division-based statement becomes a junk-value claim; the proof's `field_simp` needs the guard to cancel |
-| Meaning gate | `(_ha0 : magnitude a ≠ 0)` in `StudentTrigForms` | "the cosine of the angle is meaningful" — not used by the proof, kept so the *statement* excludes the `0/0` case | nothing breaks; the theorem would then say a vacuous `cos = 0` about the zero vector. The `_` prefix marks "deliberately unused" to the linter and the reader |
+| Meaning gate | `(_ha0 : magnitude a ≠ 0)` in `StudentTrigForms` | "the cosine of the angle is meaningful" — not used by the proof, kept so the *statement* excludes the `0/0` case | nothing breaks; the theorem would then say a vacuous `cos(θ) = 0` about the zero vector. The `_` prefix marks "deliberately unused" to the linter and the reader |
 
 Two different questions hide behind "is this hypothesis needed?":
 
@@ -61,7 +61,7 @@ Two different questions hide behind "is this hypothesis needed?":
    `ring` must normalize. A proof can *fail* without a hypothesis the statement does not need, because
    `ring` runs out of its heartbeat budget on the bigger polynomial. So **a failed delete-and-rebuild
    proves only that THIS proof needs it, not that the theorem does.** A heartbeat/timeout error says
-   "restructure the proof" (prove the small algebraic reason, e.g. `R R̃ = |R|²·1`, then use
+   "restructure the proof" (prove the small algebraic reason, e.g. `R R̃ = |R|² * 1`, then use
    associativity and the cyclic scalar part); a genuine counterexample-shaped failure ("`ring` failed,
    goal not closed", with a residual polynomial) says "the hypothesis is mathematically required".
 
@@ -160,13 +160,13 @@ Claim (in `tasks/trim-unused-simp-components.md`, `CLAUDE.md` "Coordinates only 
 `normSq_reverse_sandwich` hold for arbitrary `u`, `v` but the 𝒢₃ twins need `IsVector u`/`IsVector v`.
 
 Why it is false. Let `R` be even in 𝒢₃ (`R = s + B`) and `n = normSq R`. A 3D bivector squares to a
-scalar, so `R R̃ = s² − B² = n·1`, and `R̃ R` is the same scalar (the leaf `mul_biv_reverse_self` is
+scalar, so `R R̃ = s² − B² = n·1`, and `R̃ * R` is the same scalar (the leaf `mul_biv_reverse_self` is
 already in the tree). The scalar part of a product is cyclic — `dot_comm` in `G3.lean` states
 `⟨AB⟩₀ = ⟨BA⟩₀` for arbitrary `A`, `B` with no hypotheses. Then, by associativity alone:
 
 ```
-⟨(R u R̃)(R v R̃)⟩₀ = ⟨R u (R̃ R) v R̃⟩₀ = n·⟨R (u v) R̃⟩₀ = n·⟨(u v) R̃ R⟩₀ = n²·⟨u v⟩₀
-normSq (R v R̃)    = ⟨R v R̃ R ṽ R̃⟩₀    = n·⟨R (v ṽ) R̃⟩₀  = n²·⟨v ṽ⟩₀
+⟨(R * u * R̃)(R * v * R̃)⟩₀ = ⟨R u (R̃ * R) v R̃⟩₀ = n·⟨R (u v) R̃⟩₀ = n·⟨(u v) R̃ * R⟩₀ = n² * ⟨u v⟩₀
+normSq (R * v * R̃)    = ⟨R * v * R̃ * R ṽ R̃⟩₀    = n·⟨R (v ṽ) R̃⟩₀  = n² * ⟨v ṽ⟩₀
 ```
 
 No step looks at the grade of `u` or `v`. The 𝒢₃ wedge twins (`wedge_reverse_sandwich`,
@@ -231,7 +231,7 @@ the 3D rotor angle theorem and frames spun into `tasks/archive/2026/10/05/lean-r
 4. Set `autoImplicit = false` in `proofs/lakefile.toml` and rebuild.
 5. Qualify the architecture doc's coverage tally ("vector operands, n ∈ {2,3}") and add the
    out-of-scope modules (`transforms`, `standardposition`, `frame`, `gn`, `g1`, `functions`) to it.
-6. (Done 2026-10-05: `PlaneRotation3D.rotorSandwich_planeRotor`.) For the half-angle 3D rotor (gap #4 in §3): file a task for "sandwich by `cos(θ/2) − sin(θ/2)·i`
+6. (Done 2026-10-05: `PlaneRotation3D.rotorSandwich_planeRotor`.) For the half-angle 3D rotor (gap #4 in §3): file a task for "sandwich by `cos(θ/2) − sin(θ/2) * i`
    rotates by θ in the plane of `i`" in 𝒢₃, since `transforms.bivector_rotation`/`plane_rotation`
    rest on it and only the e₁₂ 𝒢₂ case is proven.
 

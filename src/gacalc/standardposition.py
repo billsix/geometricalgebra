@@ -9,7 +9,7 @@ onto a vector ``b``, rotate ``b`` onto the ``e_1`` axis (standard position) usin
 
     project_sp(a, b) = unalign( x-component of align(a) · e_1 ),
         where align rotates b's xy-part onto the x-axis (zeroing b_y), then its
-        xz-part onto the x-axis (zeroing b_z), so align(b) = |b|·e_1.
+        xz-part onto the x-axis (zeroing b_z), so align(b) = |b| * e_1.
 
 **No versors, no geometric product, no matrices** -- only the high-school 2D
 rotation applied to a coordinate plane, one plane at a time ("break the vector into
@@ -23,7 +23,7 @@ Proven **equal** to the canonical operations in
 ``proofs/GacalcProofs/StandardPosition.lean``: ``projectSP_eq_proj`` and
 ``rejectSP_eq_reject`` transcribe this module (``projectSP`` / ``rejectSP``, the same
 ``(cos, sin)`` formulas) and prove it equals the Hestenes ``proj`` / ``reject``, via
-``proj_onto_x_axis`` (keep-the-x-component IS the projection onto ``|b|·e_1``),
+``proj_onto_x_axis`` (keep-the-x-component IS the projection onto ``|b| * e_1``),
 projection-equivariance under each plane rotation, and the rotations' inverses.  The
 derived variants carry an ``_sp`` / ``SP`` suffix in both languages (the stand-in for a
 prime, which is not a legal Python identifier character).

@@ -33,7 +33,7 @@ src/gacalc/
 ```
 
 All representations interoperate through one interchange format: the **blade
-coefficient dictionary** (`{(1, 2): 4}` means `4·e₁e₂`; `()` keys the scalar),
+coefficient dictionary** (`{(1, 2): 4}` means `4 * e₁ * e₂`; `()` keys the scalar),
 read/written by `to_blade_dict()` / `from_blade_dict()`. Its full contract is
 documented at `BladeReal` in `base.py`.
 
@@ -144,10 +144,10 @@ doesn't arise in the 𝒢₂ table above (every product is covered), but in 𝒢
 `Vector * Bivector` spans grades 1 and 3, so it widens to `G`. Build values by linear combination of the basis
 (`3*e_1 + 4*e_2`; a bivector via `e_1 ^ e_2`; a versor via `scalar + bivector` — `+`/`-`
 also narrow to the tightest type). Versors carry `plane_of_rotation()`, and
-`versor_from_vectors(from, to)` builds the versor whose sandwich `R v R.inverse()` equals
+`versor_from_vectors(from, to)` builds the versor whose sandwich `R * v * R.inverse()` equals
 `projection_rotation(from, to)(v)` (a free function in `gacalc.transforms`). `rotor_from_vectors(from, to)` is that versor normalized — a unit *rotor*, applied with the
-textbook reverse sandwich `R v R.reverse()`; the two rotations agree (`proofs/GacalcProofs/Rotor.lean`). A versor's factors read back as `R.magnitude()`, `R.plane_of_rotation()`, `R.angle()` (so
-`R == r * (cos θ + sin θ * I)`), with `R.conjugate()` its complex conjugate; `a.symbolically_equal(b)` is
+textbook reverse sandwich `R * v * R.reverse()`; the two rotations agree (`proofs/GacalcProofs/Rotor.lean`). A versor's factors read back as `R.magnitude()`, `R.plane_of_rotation()`, `R.angle()` (so
+`R == r * (cos(θ) + sin(θ) * I)`), with `R.conjugate()` its complex conjugate; `a.symbolically_equal(b)` is
 exact symbolic value equality for any two representations. To separate the plane from the angle, `plane_rotation(a, b)`
 (new in 0.0.8) wedge-normalizes the two vectors into a unit bivector once and returns
 a factory: each `θ` yields an `InvertibleFunction` doing the half-angle rotor sandwich

@@ -17,7 +17,7 @@ The high-school-legible measure of the parallelotope a set of vectors spans:
 length -> area -> volume -> **content** (the k-dimensional generalization). From
 **Williamson & Trotter, Multivariable Mathematics, 2nd ed., 1979**: "content" is
 defined on **p. 308**; the recursive height construction on **p. 146**; the
-parallelogram area (``|a||b| sin θ``) on **pp. 144-145**. See
+parallelogram area (``|a| * |b| * sin(θ)``) on **pp. 144-145**. See
 ``tasks/reference/content-area-volume.md`` for the source notes and the connection
 to frames.
 
@@ -152,7 +152,7 @@ def content_by_rejection(vectors: Sequence[MultiVectorBase]) -> Real:
 
 def area(a: MultiVectorBase, b: MultiVectorBase) -> Real:
     """The area of the parallelogram on ``a`` and ``b`` -- ``content([a, b])``
-    (Williamson & Trotter pp. 144-145; ``= |a||b| sin θ = |a ∧ b|``).
+    (Williamson & Trotter pp. 144-145; ``= |a| * |b| * sin(θ) = |a ∧ b|``).
 
     Examples:
         >>> from gacalc.g2 import e_1, e_2
@@ -188,7 +188,7 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Real:
     span the full ``n``-dimensional space.
 
     The wedge of ``n`` spanning vectors is a multiple of the unit pseudoscalar,
-    ``a_1 ∧ … ∧ a_n = c · I_n``; this returns that scalar ``c`` -- the **determinant**
+    ``a_1 ∧ … ∧ a_n = c * I_n``; this returns that scalar ``c`` -- the **determinant**
     of the vectors' coordinates.  It carries the **orientation** (the sign flips when
     two vectors are swapped) and ``abs(signed_content) == content`` (the unsigned
     magnitude).  :func:`signed_area` / :func:`signed_volume` are the ``k = 2`` /
@@ -237,7 +237,7 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Real:
             f"to span the n-dimensional space (k = n); got k = {len(vectors)}, "
             f"n = {n}. Use content() (unsigned) for k != n."
         )
-    # k = n: the wedge is c·I_n (or 0 when the vectors are dependent), so its dual by
+    # k = n: the wedge is c * I_n (or 0 when the vectors are dependent), so its dual by
     # I_n is the scalar c -- the signed content.  A non-scalar dual would mean the
     # vectors don't span the full space; is_scalar() states that invariant (it holds
     # for k = n, and is correct on the zero/degenerate case, where max_grade() raises).

@@ -18,7 +18,7 @@ import GacalcProofs.Rotation3D
 
     It *does* use the geometric product (`mul`) — but in the arc the product is itself derived from
     project/reject, so this stays non-circular (the elementary plane rotations sit underneath). This is
-    the projection-formula sibling of the versor sandwich `R v R⁻¹` (`Sandwich.lean`); the two routes to
+    the projection-formula sibling of the versor sandwich `R*v*R⁻¹` (`Sandwich.lean`); the two routes to
     a general rotation agree (route P here vs route V there). -/
 namespace GacalcProofs.G3
 
@@ -49,7 +49,7 @@ theorem reject_in_plane_self_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
     reject (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec a1 a2 a3) = zero := by
   rw [reject, wedge_vec_wedge_self_coord, zero_mul]
 
-/-- `(f · (f∧t)) · reverse(f∧t) = |f∧t|² · f` — a polynomial identity: the in-plane projection
+/-- `(f · (f∧t)) · reverse(f∧t) = |f∧t|²*f` — a polynomial identity: the in-plane projection
     numerator recovers `f` scaled by the plane's squared magnitude. -/
 theorem inner_vb_mul_reverse_self_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
     mul (inner_vb (vec a1 a2 a3) (wedge (vec a1 a2 a3) (vec b1 b2 b3)))
@@ -76,9 +76,9 @@ theorem projRotation_perp (f t v : G3) (h : project_onto (wedge f t) v = zero) :
     projRotation f t v = reject (wedge f t) v := by
   rw [projRotation, h, zero_mul, zero_mul, zero_add]
 
-/-- **The rotation carries `from` to `to`:** `projRotation f t f = (|f|/|t|)·t` (so for unit `f`, `t`
+/-- **The rotation carries `from` to `to`:** `projRotation f t f = (|f|/|t|)*t` (so for unit `f`, `t`
     it sends `f ↦ t`). `f` is in the plane, so its perpendicular part vanishes and its in-plane part is
-    `f` itself; then `f · f̂ · t̂ = |f| · t̂ = (|f|/|t|)·t`. The defining property of the rotation. -/
+    `f` itself; then `f · f̂ · t̂ = |f|*t̂ = (|f|/|t|)*t`. The defining property of the rotation. -/
 theorem projRotation_carries_from_to_coord (a1 a2 a3 b1 b2 b3 : ℝ)
     (hf : normSq (vec a1 a2 a3) ≠ 0) (ht : normSq (vec b1 b2 b3) ≠ 0)
     (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
@@ -98,7 +98,7 @@ theorem projRotation_carries_from_to_coord (a1 a2 a3 b1 b2 b3 : ℝ)
     simp only [magnitude]; exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne hpos2 (Ne.symm ht))
   rw [← hsq]; field_simp <;> ring
 
-/-- **The rotation carries `from` to `to`** (object form): `projRotation f t f = (|f|/|t|)·t`, for
+/-- **The rotation carries `from` to `to`** (object form): `projRotation f t f = (|f|/|t|)*t`, for
     nonzero vectors `f`, `t` with a nondegenerate plane. Thin bridge over the (delicate) `_coord` leaf. -/
 theorem projRotation_carries_from_to {f t : G3} (hf : IsVector f) (ht : IsVector t)
     (hfn : normSq f ≠ 0) (htn : normSq t ≠ 0) (hpn : normSq (wedge f t) ≠ 0) :
@@ -111,12 +111,12 @@ theorem projRotation_carries_from_to {f t : G3} (hf : IsVector f) (ht : IsVector
 
 /-! ### Scaffold for the isometry (how the `√` obstruction dissolves)
 
-    The in-plane term `(project_{f∧t} v) · f̂ · t̂` carries a factor `1/(|f||t|)`; a brute
+    The in-plane term `(project_{f∧t} v) · f̂ · t̂` carries a factor `1/(|f|*|t|)`; a brute
     `field_simp; ring` stalls because `ring` cannot relate `magnitude f` to `normSq f`, and the
-    in-plane×⊥ cross term keeps a bare `1/(|f||t|)` that only vanishes by orthogonality. The way
+    in-plane×⊥ cross term keeps a bare `1/(|f|*|t|)` that only vanishes by orthogonality. The way
     through (no brute coordinates on the whole expression): pull the two unit scalars out of the
-    in-plane term as one `smul (1/(|f||t|))`, so every `√` appears **squared** (`(1/|f|)² = 1/|f|²`,
-    killed by `magnitude² = normSq`) or **cancels exactly** (the cross term's bare `1/(|f||t|)`
+    in-plane term as one `smul (1/(|f|*|t|))`, so every `√` appears **squared** (`(1/|f|)² = 1/|f|²`,
+    killed by `magnitude² = normSq`) or **cancels exactly** (the cross term's bare `1/(|f|*|t|)`
     multiplies a provably-zero orthogonality core). Then `normSq` splits by the four lemmas below. -/
 
 /-- **Polarization in 𝒢₃:** `|x + y|² = |x|² + |y|² + 2⟨x ỹ⟩`, where `⟨x ỹ⟩ = (x·ȳ).s` is the
@@ -131,7 +131,7 @@ theorem normSq_add_of_orthogonal (x y : G3) (h : (mul x (reverse y)).s = 0) :
     normSq (add x y) = normSq x + normSq y := by
   rw [normSq_add, h]; ring
 
-/-- **A vector factor is multiplicative on `normSq`:** `|M a|² = |a|² · |M|²` for ANY multivector
+/-- **A vector factor is multiplicative on `normSq`:** `|M a|² = |a|²*|M|²` for ANY multivector
     `M` and a vector `a` — because `a ã = a·a = |a|²` is a scalar that rides out of the sandwich
     `(Ma)(Ma)~ = M a a M̃ = |a|² M M̃`. Pure `ring`; this is where the two unit factors each turn a
     `1/|·|²` into the matching coordinate sum. -/
@@ -145,7 +145,7 @@ set_option maxRecDepth 8000 in
     `(project_{f∧t} v) · f · t` is perpendicular to the rejection `reject_{f∧t} v` — their scalar
     product `⟨… reverse(reject)⟩` is `0`. All three of `project`, `f`, `t` lie in the `f∧t` plane,
     so their product is in-plane, hence ⊥ the (normal) rejection. A rational identity in the
-    coordinates: `field_simp; ring`. The normalized version is this times `1/(|f||t|)`. -/
+    coordinates: `field_simp; ring`. The normalized version is this times `1/(|f|*|t|)`. -/
 theorem inplane_perp_reject_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
     (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
     (mul (mul (mul (project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
@@ -196,7 +196,7 @@ theorem plane_pythagorean_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
     fixed, so the squared length is unchanged. Assembled from the scaffold: pull the unit scalars
     out of the in-plane term (`hin`), split `normSq` across the ⊥ decomposition
     (`normSq_add_of_orthogonal` + `inplane_perp_reject`), reduce the in-plane norm to `|project|²`
-    (`normSq_mul_vec` twice, `magnitude² = normSq` cancelling the `1/(|f||t|)²`), then close with
+    (`normSq_mul_vec` twice, `magnitude² = normSq` cancelling the `1/(|f|*|t|)²`), then close with
     `plane_pythagorean`. No `√` survives. -/
 theorem projRotation_isometry_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
     (hf : normSq (vec a1 a2 a3) ≠ 0) (ht : normSq (vec b1 b2 b3) ≠ 0)
@@ -232,7 +232,7 @@ theorem projRotation_isometry_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
     simp only [smul]
     rw [hP, hRj, inplane_perp_reject_coord a1 a2 a3 b1 b2 b3 c1 c2 c3 hn]
     ring
-  -- The in-plane norm collapses to `|project|²` once the `1/(|f||t|)²` meets `magnitude² = normSq`.
+  -- The in-plane norm collapses to `|project|²` once the `1/(|f|*|t|)²` meets `magnitude² = normSq`.
   have hcoef : (1 / magnitude (vec a1 a2 a3) * (1 / magnitude (vec b1 b2 b3))) ^ 2
       * ((b1 ^ 2 + b2 ^ 2 + b3 ^ 2) * ((a1 ^ 2 + a2 ^ 2 + a3 ^ 2) * normSq P)) = normSq P := by
     rw [← hmf2, ← hmt2]; field_simp [hmf, hmt]
@@ -255,21 +255,21 @@ theorem projRotation_isometry {f t v : G3} (hf : IsVector f) (ht : IsVector t) (
 
     The payoff — the two general-rotation constructions agree:
     `projRotation f t v = sandwich (versorFromVectors f t) v`. The structural key is that the
-    *scalar* part `|f||t|·1` of `R = versorFromVectors f t = t·f + |f||t|` commutes with everything,
+    *scalar* part `|f|*|t|*1` of `R = versorFromVectors f t = t*f + |f|*|t|` commutes with everything,
     so every identity below reduces to a `√`-free rational core about the bivector part `t∧f`:
 
       * **In-plane vectors anticommute through `R`** → `R w = w R̃` (so the double-sided sandwich
         collapses to a one-sided product).
       * **The perpendicular (reject) part commutes with `R`** → `R Rⱼ = Rⱼ R` (so the sandwich fixes
         it, `R Rⱼ R⁻¹ = Rⱼ`).
-      * **`f̂ t̂ = R̃ R⁻¹`**, assembled from the bisector identities `t̂ R = h` and `f̂ h = R̃`
+      * **`f̂ t̂ = R̃*R⁻¹`**, assembled from the bisector identities `t̂ R = h` and `f̂ h = R̃`
         (`Rotation3D.lean`), with no coordinate `√` ever expanded.
 
-    The irreducible `√(|f||t|)` that defeats a brute coordinate attack never appears because it rides
-    the scalar `1`, which is pulled out abstractly via `R R⁻¹ = 1` rather than expanded. -/
+    The irreducible `√(|f|*|t|)` that defeats a brute coordinate attack never appears because it rides
+    the scalar `1`, which is pulled out abstractly via `R*R⁻¹ = 1` rather than expanded. -/
 
 /-- **The normalized to-vector times the versor is the half-angle bisector:** `t̂ R = h`. From
-    `t R = |t|·h` (`from_mul_versor_eq_bisector`), scaled by `1/|t|`. -/
+    `t R = |t|*h` (`from_mul_versor_eq_bisector`), scaled by `1/|t|`. -/
 theorem normalizeVec_to_mul_versor_eq_bisector_coord (a1 a2 a3 b1 b2 b3 : ℝ)
     (ht : magnitude (vec b1 b2 b3) ≠ 0) :
     mul (normalizeVec (vec b1 b2 b3)) (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
@@ -278,7 +278,7 @@ theorem normalizeVec_to_mul_versor_eq_bisector_coord (a1 a2 a3 b1 b2 b3 : ℝ)
       from_mul_versor_eq_bisector (isVector_vec a1 a2 a3) (isVector_vec b1 b2 b3),
       GacalcProofs.G3.smul_smul, one_div_mul_cancel ht, GacalcProofs.G3.one_smul]
 
-/-- **The from-vector times the bisector is the (scaled) reverse versor:** `f h = |f|·R̃`. The
+/-- **The from-vector times the bisector is the (scaled) reverse versor:** `f h = |f|*R̃`. The
     division-free companion to `f̂ h = R̃`. The only analytic fact is `|f|² = f·f` (`magnitude_sq_vec`),
     used on the single scalar component; every other component is pure `ring`. Mirrors
     `versor_mul_from_eq_bisector`. -/
@@ -297,7 +297,7 @@ theorem vec_mul_bisector_eq_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
   linear_combination -sb * hsa
 
 /-- **`f̂ t̂ R = R̃`** — the key alignment identity: the product of the two unit vectors, times the
-    versor, is the reverse versor. Assembled from `t̂ R = h` and `f̂ h = R̃` (via `f h = |f|·R̃`), with
+    versor, is the reverse versor. Assembled from `t̂ R = h` and `f̂ h = R̃` (via `f h = |f|*R̃`), with
     the `1/|f|`, `1/|t|` cancelling against the bisector scalings — no coordinate `√` expanded. -/
 theorem normalizeVec_mul_versor_eq_reverse_coord (a1 a2 a3 b1 b2 b3 : ℝ)
     (hf : magnitude (vec a1 a2 a3) ≠ 0) (ht : magnitude (vec b1 b2 b3) ≠ 0) :
@@ -311,9 +311,9 @@ theorem normalizeVec_mul_versor_eq_reverse_coord (a1 a2 a3 b1 b2 b3 : ℝ)
 set_option maxHeartbeats 8000000 in
 set_option maxRecDepth 8000 in
 /-- **In-plane vectors anticommute through the versor:** `R P = P R̃` for `P = project_{f∧t} v` (in the
-    `f∧t` plane). The scalar part `|f||t|·1` of `R` commutes trivially; the bivector part `t∧f`
+    `f∧t` plane). The scalar part `|f|*|t|*1` of `R` commutes trivially; the bivector part `t∧f`
     anticommutes with the in-plane `P` — so the identity has NO `√` (both sides carry the same
-    `|f||t|·P` term, which cancels), reducing to a rational core (`field_simp; ring`). -/
+    `|f|*|t|*P` term, which cancels), reducing to a rational core (`field_simp; ring`). -/
 theorem versor_mul_project_eq_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
     (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
     mul (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
@@ -350,7 +350,7 @@ theorem versor_mul_reject_comm_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
     sandwich, `projRotation f t v = sandwich (versorFromVectors f t) v`. Needs `|f|,|t| ≠ 0`, a
     nondegenerate plane (`|f∧t|² ≠ 0`) and a nondegenerate versor (`|R|² ≠ 0`, i.e. `f`, `t` not
     antiparallel). Structural: split `v = project + reject`, send the in-plane part through
-    `R P R⁻¹ = P (R̃ R⁻¹) = P f̂ t̂` (anticommutation + `f̂ t̂ = R̃ R⁻¹`) and fix the ⊥ part
+    `R*P*R⁻¹ = P (R̃*R⁻¹) = P f̂ t̂` (anticommutation + `f̂ t̂ = R̃*R⁻¹`) and fix the ⊥ part
     `R Rⱼ R⁻¹ = Rⱼ` (commutation). This is the projection-formula sibling of `sandwich_carries_from_to`
     (route V), confirming the Python `transforms.projection_rotation` docstring's "both agree." -/
 theorem projRotation_eq_sandwich_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
@@ -365,7 +365,7 @@ theorem projRotation_eq_sandwich_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
   have hmt : magnitude (vec b1 b2 b3) ≠ 0 := by
     have h0 : (0 : ℝ) ≤ normSq (vec b1 b2 b3) := by rw [normSq_vec]; positivity
     simp only [magnitude]; exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne h0 (Ne.symm ht))
-  -- `f̂ t̂ = R̃ R⁻¹`, from `f̂ t̂ R = R̃` and `R R⁻¹ = 1`.
+  -- `f̂ t̂ = R̃*R⁻¹`, from `f̂ t̂ R = R̃` and `R*R⁻¹ = 1`.
   have hAt : mul (normalizeVec (vec a1 a2 a3)) (normalizeVec (vec b1 b2 b3))
       = mul (reverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)))
             (inverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))) := by

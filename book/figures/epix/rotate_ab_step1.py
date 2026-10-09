@@ -14,8 +14,9 @@
 # %% [markdown]
 # # rotate_ab_step1 — swing $\vec{a}$ onto the x-axis
 #
-# Step 1: rotate the whole picture so $\vec{a}$ lands on the x-axis at $|\vec{a}|\,e_1$,
-# and $\vec{b}$ is carried to $\vec{b}'$. The faint dashed arrows are the originals.
+# Step 1: rotate the whole picture so $\vec{a}$ lands on the x-axis at
+# $|\vec{a}| * e_1$, and $\vec{b}$ is carried to $\vec{b}'$. The faint dashed arrows are
+# the originals.
 # Built with `epix`; `render_epix_figures.py`. CC0.
 
 # %%
@@ -39,7 +40,7 @@ with unit_circle_scene(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig:
     dashed_vector(tail=ORIGIN, head=B)  # b, before
     vector(
         head=A_ON_E1,
-        text=r"$|\vec{a}|\,e_1$",
+        text=r"$|\vec{a}| * e_1$",
         offset=Point(x=4, y=-11),
         align=epix.LabelPos.c,
     )

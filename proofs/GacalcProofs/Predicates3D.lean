@@ -24,7 +24,7 @@ theorem perp_iff_mul_eq_wedge {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     have hs : (mul a b).s = (wedge a b).s := by rw [h]
     simp only [dot]
     rw [hs]
-    -- (a ∧ b).s = a.s * b.s (the outer product keeps the scalar×scalar part); a.s = 0 for a vector.
+    -- (a ∧ b).s = a.s*b.s (the outer product keeps the scalar×scalar part); a.s = 0 for a vector.
     simp only [wedge]
     rw [ha.1, zero_mul]
 

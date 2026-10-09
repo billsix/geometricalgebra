@@ -54,10 +54,11 @@ sine are read straight off :math:`\vec{a}`, so — as in that chapter — we nev
 
 .. math::
 
-   \cos\beta = \frac{a_1}{|\vec{a}|}, \qquad \sin\beta = \frac{a_2}{|\vec{a}|}.
+   \cos(\beta) = \frac{a_1}{|\vec{a}|}, \qquad \sin(\beta) = \frac{a_2}{|\vec{a}|}.
 
 To swing :math:`\vec{a}` down onto the axis we rotate by :math:`-\beta`, and since cosine is even while
-sine is odd that rotation uses :math:`\cos = a_1/|\vec{a}|`, :math:`\sin = -a_2/|\vec{a}|`.
+sine is odd that rotation uses :math:`\cos(-\beta) = a_1/|\vec{a}|`,
+:math:`\sin(-\beta) = -a_2/|\vec{a}|`.
 Substitute those into :math:`\vec{r}(\,\cdot\,;\theta)` and call the result
 :math:`R_{\vec{a}}^{\vec{e}_1}` — read "from :math:`\vec{a}`, to :math:`\vec{e}_1`". Applied to
 :math:`\vec{a}` itself, its :math:`y`-coordinate cancels and its :math:`x`-coordinate becomes
@@ -76,7 +77,7 @@ And it carries :math:`\vec{b}` along to a new vector :math:`\vec{b}' = R_{\vec{a
 **Step 2 — in standard position, rotate :math:`\vec{e}_1` onto :math:`\vec{b}'`.** Now the problem is
 easy: swing the x-axis up onto :math:`\vec{b}'` by the angle :math:`\theta` between them — and, again,
 we read its cosine and sine straight off :math:`\vec{b}'`'s coordinates
-(:math:`\cos = b'_1/|\vec{b}'|`, :math:`\sin = b'_2/|\vec{b}'|`). Call it
+(:math:`\cos(\theta) = b'_1/|\vec{b}'|`, :math:`\sin(\theta) = b'_2/|\vec{b}'|`). Call it
 :math:`R_{\vec{e}_1}^{\vec{b}'}`.
 
 .. figure:: _static/epix/rotate-ab-step2.*
@@ -86,7 +87,7 @@ we read its cosine and sine straight off :math:`\vec{b}'`'s coordinates
 **Step 3 — undo step 1.** Rotate back by :math:`\big(R_{\vec{a}}^{\vec{e}_1}\big)^{-1}`, the same
 rotation as step 1 run backwards. Whatever was on the x-axis swings up to where :math:`\vec{a}`
 started, carrying our standard-position answer with it — so the image of :math:`\vec{a}` lands exactly
-on :math:`\vec{b}`'s direction, with :math:`\vec{a}`'s own length: :math:`(|\vec{a}|/|\vec{b}|)\,\vec{b}`.
+on :math:`\vec{b}`'s direction, with :math:`\vec{a}`'s own length: :math:`(|\vec{a}|/|\vec{b}|) * \vec{b}`.
 
 .. figure:: _static/epix/rotate-ab-step3.*
    :align: center
@@ -105,20 +106,20 @@ either order. That is easy to believe, and we can *check it in coordinates* with
    \begin{aligned}
    \vec{r}\big(\vec{r}(\vec{v};\theta_1);\theta_2\big)
      &= \begin{bmatrix}
-          \cos\theta_2\,(v_1\cos\theta_1 - v_2\sin\theta_1)
-            - \sin\theta_2\,(v_1\sin\theta_1 + v_2\cos\theta_1) \\
-          \sin\theta_2\,(v_1\cos\theta_1 - v_2\sin\theta_1)
-            + \cos\theta_2\,(v_1\sin\theta_1 + v_2\cos\theta_1)
+          \cos(\theta_2) * (v_1 * \cos(\theta_1) - v_2 * \sin(\theta_1))
+            - \sin(\theta_2) * (v_1 * \sin(\theta_1) + v_2 * \cos(\theta_1)) \\
+          \sin(\theta_2) * (v_1 * \cos(\theta_1) - v_2 * \sin(\theta_1))
+            + \cos(\theta_2) * (v_1 * \sin(\theta_1) + v_2 * \cos(\theta_1))
         \end{bmatrix} \\
      &= \begin{bmatrix}
-          v_1\,(\cos\theta_1\cos\theta_2 - \sin\theta_1\sin\theta_2)
-            - v_2\,(\sin\theta_1\cos\theta_2 + \cos\theta_1\sin\theta_2) \\
-          v_1\,(\sin\theta_1\cos\theta_2 + \cos\theta_1\sin\theta_2)
-            + v_2\,(\cos\theta_1\cos\theta_2 - \sin\theta_1\sin\theta_2)
+          v_1 * (\cos(\theta_1) * \cos(\theta_2) - \sin(\theta_1) * \sin(\theta_2))
+            - v_2 * (\sin(\theta_1) * \cos(\theta_2) + \cos(\theta_1) * \sin(\theta_2)) \\
+          v_1 * (\sin(\theta_1) * \cos(\theta_2) + \cos(\theta_1) * \sin(\theta_2))
+            + v_2 * (\cos(\theta_1) * \cos(\theta_2) - \sin(\theta_1) * \sin(\theta_2))
         \end{bmatrix} \\
      &= \begin{bmatrix}
-          v_1\cos(\theta_1 + \theta_2) - v_2\sin(\theta_1 + \theta_2) \\
-          v_1\sin(\theta_1 + \theta_2) + v_2\cos(\theta_1 + \theta_2)
+          v_1 * \cos(\theta_1 + \theta_2) - v_2 * \sin(\theta_1 + \theta_2) \\
+          v_1 * \sin(\theta_1 + \theta_2) + v_2 * \cos(\theta_1 + \theta_2)
         \end{bmatrix}
       = \vec{r}(\vec{v};\ \theta_1 + \theta_2),
    \end{aligned}
@@ -146,23 +147,23 @@ And its cosine and sine are a tidy formula in the coordinates of :math:`\vec{a}`
 
 .. math::
 
-   \cos\theta = \frac{a_1b_1 + a_2b_2}{|\vec{a}|\,|\vec{b}|},
+   \cos(\theta) = \frac{a_1 * b_1 + a_2 * b_2}{|\vec{a}| * |\vec{b}|},
    \qquad
-   \sin\theta = \frac{a_1b_2 - a_2b_1}{|\vec{a}|\,|\vec{b}|}.
+   \sin(\theta) = \frac{a_1 * b_2 - a_2 * b_1}{|\vec{a}| * |\vec{b}|}.
 
 So the rotation that carries :math:`\vec{a}`'s direction to :math:`\vec{b}`'s, applied to any vector
 :math:`\vec{v}`, is just the rotation of :doc:`proof-rotate` with that cosine and sine:
 
 .. math::
 
-   R_{\vec{a}}^{\vec{b}}(\vec{v}) = \cos\theta\,\vec{v} + \sin\theta\,\vec{r}(\vec{v};\ \pi/2).
+   R_{\vec{a}}^{\vec{b}}(\vec{v}) = \cos(\theta) * \vec{v} + \sin(\theta) * \vec{r}(\vec{v};\ \pi/2).
 
 (Both facts are machine-checked in ``proofs/GacalcProofs/RotateFromTo2D.lean``: the sandwich collapses
 to the middle rotation — ``rotateFromTo_collapse``, built on ``rotPlane_conj_collapse``, which rests on
-``rotPlane_comm`` above — and the whole construction carries :math:`\vec{a}` to :math:`(|\vec{a}|/|\vec{b}|)\,\vec{b}` — ``rotateFromTo_carries``.)
+``rotPlane_comm`` above — and the whole construction carries :math:`\vec{a}` to :math:`(|\vec{a}|/|\vec{b}|) * \vec{b}` — ``rotateFromTo_carries``.)
 
-Look again at those two numerators. The top one, :math:`a_1b_1 + a_2b_2`, is the
+Look again at those two numerators. The top one, :math:`a_1 * b_1 + a_2 * b_2`, is the
 **dot product** of :math:`\vec{a}` and :math:`\vec{b}`; the bottom one,
-:math:`a_1b_2 - a_2b_1`, is the **signed area** of the parallelogram they span.
+:math:`a_1 * b_2 - a_2 * b_1`, is the **signed area** of the parallelogram they span.
 We built the rotation from nothing but turns we already trusted, and the answer handed us the two
 quantities the rest of the book is about. That is worth staring at.

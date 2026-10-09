@@ -177,15 +177,15 @@ i * i  # pyright: ignore[reportUnusedExpression]
 #
 # The worked example above is then just a chain of equalities:
 #
-# > `e_1 e_3 e_3 e_1`
-# > `  = e_1 (e_3 e_3) e_1`   — regroup (associativity)
-# > `  = e_1 (1) e_1`         — (R1) on the middle pair
-# > `  = e_1 e_1`
+# > `e_1 * e_3 * e_3 * e_1`
+# > `  = e_1 * (e_3 * e_3) * e_1`   — regroup (associativity)
+# > `  = e_1 * (1) * e_1`         — (R1) on the middle pair
+# > `  = e_1 * e_1`
 # > `  = 1`                   — (R1) again
 #
 # and one that only sorts, with nothing to cancel:
 #
-# > `e_2 e_1 e_3 = - e_1 e_2 e_3`   — one swap of `e_2` past `e_1`, by (R2).
+# > `e_2 * e_1 * e_3 = - e_1 * e_2 * e_3`   — one swap of `e_2` past `e_1`, by (R2).
 #
 # (These two moves — sort with a sign, then cancel repeats — are exactly what `Gn`'s
 # geometric product carries out: in the code, the recursive `decrease_grade` helper in
@@ -210,19 +210,19 @@ i * i  # pyright: ignore[reportUnusedExpression]
 #    sign (R2), cancel repeats (R1).
 #
 # For instance, gather the four numbers up front, then reuse the very reduction we just
-# did (`e_1 e_3 e_3 e_1 = 1`):
+# did (`e_1 * e_3 * e_3 * e_1 = 1`):
 #
-# > `(2 e_1)(3 e_3)(4 e_3)(5 e_1)`
-# > `  = (2·3·4·5) (e_1 e_3 e_3 e_1)`   — scalars to the front
-# > `  = 120 · 1`                       — reduce the basis vectors
+# > `(2 * e_1) * (3 * e_3) * (4 * e_3) * (5 * e_1)`
+# > `  = (2 * 3 * 4 * 5) * (e_1 * e_3 * e_3 * e_1)`   — scalars to the front
+# > `  = 120 * 1`                       — reduce the basis vectors
 # > `  = 120`
 #
 # The scalars ride along untouched by the sign-flipping; only the basis vectors produce
 # minus signs. A shorter one where the arrows *do* create a sign:
 #
-# > `(2 e_2)(3 e_1)`
-# > `  = 6 (e_2 e_1)`      — scalars to the front
-# > `  = 6 (- e_1 e_2)`    — one swap, by (R2)
+# > `(2 * e_2) * (3 * e_1)`
+# > `  = 6 * (e_2 * e_1)`      — scalars to the front
+# > `  = 6 * (- e_1 * e_2)`    — one swap, by (R2)
 # > `  = -6 e_12`
 
 # %%
@@ -241,8 +241,8 @@ i * i  # pyright: ignore[reportUnusedExpression]
 #
 # `(e_1*e_3) * (e_3*e_1)`
 #
-# Written out, that's the four arrows `e_1 e_3 e_3 e_1` in a row. Nothing here is a
-# plain number yet, so we lean on the rules. The trick is to notice the two `e_3`'s
+# Written out, that's the four arrows `e_1 * e_3 * e_3 * e_1` in a row. Nothing here is
+# a plain number yet, so we lean on the rules. The trick is to notice the two `e_3`'s
 # sitting next to each other in the middle:
 #
 # `e_1 * (e_3 * e_3) * e_1`   ... group the middle pair
@@ -262,7 +262,7 @@ i * i  # pyright: ignore[reportUnusedExpression]
 # still get `1`?
 #
 # Here are three different ways of parenthesizing the very same four arrows
-# `e_1 e_3 e_3 e_1`. Every one of them gives `1`:
+# `e_1 * e_3 * e_3 * e_1`. Every one of them gives `1`:
 
 # %%
 ((e_1 * e_3) * e_3) * e_1  # left-to-right  # pyright: ignore[reportUnusedExpression]
@@ -491,7 +491,7 @@ show_mult(
 # %%
 
 
-# rotate(angle): rotation in the e_1 e_2 plane (positive angle turns e_1 -> e_2).
+# rotate(angle): rotation in the e_1 * e_2 plane (positive angle turns e_1 -> e_2).
 # plane_rotation builds the half-angle rotor + sandwich internally and returns a
 # properly-labelled InvertibleFunction -- no hand-built rotor, and it renders LaTeX.
 rotate: typing.Callable[[Real], InvertibleFunction[MultiVector]] = plane_rotation(

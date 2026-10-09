@@ -15,7 +15,7 @@
 # # rotate6 — rotate x′ by θ and read off the right triangle
 #
 # In the new frame, rotating $\vec{x'}$ by $\theta$ gives a right triangle on the unit
-# circle with legs $\cos\theta$ along $\vec{x'}$ and $\sin\theta$ along $\vec{y'}$.
+# circle with legs $\cos(\theta)$ along $\vec{x'}$ and $\sin(\theta)$ along $\vec{y'}$.
 # One step of the `proof-rotate.rst`
 # sequence; the geometry (β, θ, r) is shared with the other steps through
 # `_rotation_scene.py`, so the last step lands exactly on the goal figure's
@@ -65,7 +65,7 @@ with unit_circle_scene() as fig:
         tail=ORIGIN,
         head=foot,
         color=BLUE,
-        text=r"$\cos\theta$",
+        text=r"$\cos(\theta)$",
         angle=BETA,
         offset=Point(x=11, y=-5),
     )
@@ -73,7 +73,7 @@ with unit_circle_scene() as fig:
         tail=foot,
         head=rotated,
         color=GREEN,
-        text=r"$\sin\theta$",
+        text=r"$\sin(\theta)$",
         angle=BETA - math.pi / 2,
         offset=Point(x=5, y=11),
     )

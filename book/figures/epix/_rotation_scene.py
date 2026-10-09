@@ -2,7 +2,7 @@
 
 One picture, built up step by step across the eight proof figures: the unit disc
 with axes, the direction of :math:`\\vec{a}` at angle β, its perpendicular at β + π/2,
-the rotation angle θ, the right triangle with legs cos θ and sin θ, and the result
+the rotation angle θ, the right triangle with legs cos(θ) and sin(θ), and the result
 scaled back to length r. The constants here are the single source of the geometry, so
 every figure in the sequence agrees with the goal figure (same β, same θ, same r).
 

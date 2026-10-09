@@ -8,18 +8,18 @@ import GacalcProofs.Rotor
 /-! # The 3D half-angle rotor rotates by its angle, in its plane (`plane_rotation` / `bivector_rotation`)
 
     gacalc's `transforms.plane_rotation(a, b)(θ)` and `bivector_rotation(B)(θ)` build the half-angle rotor
-    `R = cos(θ/2)·1 − sin(θ/2)·i` for the plane's **unit bivector** `i` and apply the reverse sandwich
-    `R v R̃`. This module proves what that does to an arbitrary vector `v` in 𝒢₃ (the general plane, not
+    `R = cos(θ/2)*1 − sin(θ/2)*i` for the plane's **unit bivector** `i` and apply the reverse sandwich
+    `R*v*R̃`. This module proves what that does to an arbitrary vector `v` in 𝒢₃ (the general plane, not
     only `e₁₂`): split `v` into its in-plane part `v∥ = project_onto i v` and its perpendicular part
     `v⊥ = reject i v`; then
 
-        R v R̃  =  v⊥  +  cos θ · v∥  +  sin θ · (v ⌋ i),
+        R*v*R̃  =  v⊥  +  cos(θ)*v∥  +  sin(θ)*(v ⌋ i),
 
     where `v ⌋ i = inner_vb v i` is `v∥` turned a quarter turn in the plane (for `i = e₁₂`,
     `(x, y, z) ⌋ e₁₂ = (−y, x, 0)`). So the perpendicular part is fixed and the in-plane part rotates by
     the full angle θ, orientation included — the 3D analogue of `Rotation2D.sandwich_rotor`
-    (`R v R̃ = rot θ v`), whose `rot θ v = cos θ·v + sin θ·(v e₁₂)` is the `v⊥ = 0` case. Corollaries:
-    the student-facing `cos_between (R v R̃) v = cos θ` for a nonzero in-plane `v`, and the plane's normal
+    (`R*v*R̃ = rot θ v`), whose `rot θ v = cos(θ)*v + sin(θ)*(v*e₁₂)` is the `v⊥ = 0` case. Corollaries:
+    the student-facing `cos_between (R*v*R̃) v = cos(θ)` for a nonzero in-plane `v`, and the plane's normal
     is fixed.
 
     Proof shape: `planeRotor` is a rotor (`IsRotor`, so the whole `Rotor.lean` layer applies: unit,
@@ -32,7 +32,7 @@ namespace GacalcProofs.G3
 open Real
 
 /-- gacalc's half-angle rotor for angle θ in the plane of the unit bivector `i`:
-    `R = cos(θ/2)·1 − sin(θ/2)·i` — what `transforms._unit_bivector_rotor_factory`'s `rotor_for` builds
+    `R = cos(θ/2)*1 − sin(θ/2)*i` — what `transforms._unit_bivector_rotor_factory`'s `rotor_for` builds
     (`Rotation2D.rotor θ` is the `i = e₁₂` case). -/
 noncomputable def planeRotor (θ : ℝ) (i : G3) : G3 :=
   add (smul (cos (θ / 2)) one) (smul (-(sin (θ / 2))) i)
@@ -51,7 +51,7 @@ theorem sum_sq_of_unit_bivector {i : G3} (hi : IsBivector i) (hu : normSq i = 1)
   rw [normSq_eq_sum_sq, his, hi1, hi2, hi3, hi123] at h
   linear_combination h
 
-/-- `|planeRotor θ i|² = cos²(θ/2) + sin²(θ/2)·|i|² = 1` for a unit bivector `i`. -/
+/-- `|planeRotor θ i|² = cos²(θ/2) + sin²(θ/2)*|i|² = 1` for a unit bivector `i`. -/
 theorem normSq_planeRotor (θ : ℝ) {i : G3} (hi : IsBivector i) (hu : normSq i = 1) :
     normSq (planeRotor θ i) = 1 := by
   have hpqr := sum_sq_of_unit_bivector hi hu
@@ -67,11 +67,11 @@ theorem isRotor_planeRotor (θ : ℝ) {i : G3} (hi : IsBivector i) (hu : normSq 
   ⟨isEvenVersor_planeRotor θ hi, normSq_planeRotor θ hi hu⟩
 
 /-- **The 3D rotor angle theorem (the leaf):** for a unit bivector `i` and a vector `v`,
-    `R v R̃ = v⊥ + cos θ·v∥ + sin θ·(v ⌋ i)` with `R = planeRotor θ i`, `v∥ = project_onto i v`,
+    `R*v*R̃ = v⊥ + cos(θ)*v∥ + sin(θ)*(v ⌋ i)` with `R = planeRotor θ i`, `v∥ = project_onto i v`,
     `v⊥ = reject i v` — the perpendicular part is fixed, the in-plane part is rotated by θ (orientation
     included: `v ⌋ i` is `v∥` turned +90° in the plane). Coordinate leaf: after unfolding (`|i|² = 1`
     makes `i⁻¹ = ĩ`), each vector component is a polynomial identity modulo `cos²(θ/2) + sin²(θ/2) = 1`
-    and `|i|² = 1`, with the double-angle `cos θ = cos²(θ/2) − sin²(θ/2)`, `sin θ = 2 sin(θ/2) cos(θ/2)`
+    and `|i|² = 1`, with the double-angle `cos(θ) = cos²(θ/2) − sin²(θ/2)`, `sin(θ) = 2 sin(θ/2) cos(θ/2)`
     substituted first; the scalar/bivector/trivector components vanish identically. -/
 theorem rotorSandwich_planeRotor (θ : ℝ) {i v : G3} (hi : IsBivector i) (hu : normSq i = 1)
     (hv : IsVector v) :
@@ -109,8 +109,8 @@ theorem rotorSandwich_planeRotor (θ : ℝ) {i v : G3} (hi : IsBivector i) (hu :
   · ring
 
 /-- **Student-facing corollary:** for a nonzero vector `v` lying IN the plane (`reject i v = 0`), the
-    cosine of the angle between `v` and its image `R v R̃` is `cos θ` — the rotor rotates by θ. From the
-    leaf: `v⊥ = 0` and `v∥ = v`, the sandwich is an isometry (`|R v R̃| = |v|`), and `(v ⌋ i) · v = 0`
+    cosine of the angle between `v` and its image `R*v*R̃` is `cos(θ)` — the rotor rotates by θ. From the
+    leaf: `v⊥ = 0` and `v∥ = v`, the sandwich is an isometry (`|R*v*R̃| = |v|`), and `(v ⌋ i) · v = 0`
     (the quarter-turn is perpendicular to `v`). -/
 theorem cos_between_rotorSandwich_planeRotor (θ : ℝ) {i v : G3} (hi : IsBivector i) (hu : normSq i = 1)
     (hv : IsVector v) (hin : reject i v = zero) (hvn : normSq v ≠ 0) :

@@ -26,7 +26,7 @@ geometric product ``a b = a·b + a∧b``:
     a_perp b = a∧b       (the dot term vanishes:   a_perp ⊥ b)
 
 The symbolic tests are written **explicitly** -- general vectors spelled out as
-``a = a_1 e_1 + a_2 e_2``, with the dot product and the wedge asserted against
+``a = a_1 * e_1 + a_2 * e_2``, with the dot product and the wedge asserted against
 their exact formulas (so each test reads like the math) -- plus a **numeric**
 check over random vectors (float-tolerant ``isclose``).  See
 ``tasks/reference/dot-wedge-projection-rejection.md`` for the hand proof.

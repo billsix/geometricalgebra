@@ -94,7 +94,7 @@ rotate_cs(rotate_cs(v, c_1, s_1), c_2, s_2) == rotate_cs(
 #
 # Build the chapter's three turns for a general `a` and compare the composite with the
 # single rotation the chapter ends with. We keep `a` fully symbolic and pick a `b` with
-# an exact length (`3 e_1 + 4 e_2`, `|b| = 5`) so the square roots stay clean; `|a|`
+# an exact length (`3 * e_1 + 4 * e_2`, `|b| = 5`) so the square roots stay clean; `|a|`
 # stays symbolic.
 
 # %%
@@ -106,7 +106,8 @@ b: Vector = 3 * e_1 + 4 * e_2
 magnitude_a: Real = a.magnitude()
 magnitude_b: Real = b.magnitude()
 
-# Step 1: swing a onto the x-axis (cos = a_1/|a|, sin = -a_2/|a|). It lands on |a| e_1.
+# Step 1: swing a onto the x-axis (cos(-β) = a_1/|a|, sin(-β) = -a_2/|a|). It lands on
+# |a| * e_1.
 cos_1: Real = a_1 / magnitude_a
 sin_1: Real = -a_2 / magnitude_a
 rotate_cs(a, cos_1, sin_1).symbolically_equal(magnitude_a * e_1)  # -> True

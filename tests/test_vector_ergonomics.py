@@ -14,7 +14,7 @@
 """Vector ergonomics added for coordinate-speaking consumers (mvp / ctc).
 
 x/y/z read-only coordinate properties on the grade-1 types (the value types are
-frozen/immutable), and the quotient ``A / B = A B**-1`` (division IS
+frozen/immutable), and the quotient ``A / B = A * B**-1`` (division IS
 multiplication by the inverse -- Bill's definition, 2026-07-09; a bare number's
 inverse is its reciprocal).
 See tasks/upgrade-rotation-and-ctc-vector-mapping.md (Task 2).

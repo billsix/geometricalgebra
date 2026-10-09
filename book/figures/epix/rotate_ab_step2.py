@@ -30,7 +30,7 @@ with unit_circle_scene(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig:
     wedge(start=0.0, finish=B_ANGLE - A_ANGLE, text=r"$\theta$", radius=0.42)
     vector(
         head=A_ON_E1,
-        text=r"$|\vec{a}|\,e_1$",
+        text=r"$|\vec{a}| * e_1$",
         offset=Point(x=4, y=-11),
         align=epix.LabelPos.c,
     )

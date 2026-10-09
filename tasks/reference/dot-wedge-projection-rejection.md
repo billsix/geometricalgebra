@@ -29,7 +29,7 @@ Two facts about the geometric product of vectors, both from `uv = u·v + u∧v`:
 
 1. **Parallel ⇒ zero wedge.** If `u ∥ b`, the two span no oriented area, so `u∧b = 0`
    and therefore `u b = u·b` (a scalar).
-2. **Perpendicular ⇒ zero dot.** If `u ⊥ b`, then `u·b = |u||b|cosθ = 0`, so
+2. **Perpendicular ⇒ zero dot.** If `u ⊥ b`, then `u·b = |u| * |b| * cos(θ) = 0`, so
    `u b = u∧b` (a bivector).
 
 Both `·` and `∧` are bilinear, so they distribute over the split `a = a_∥ + a_⊥`:
@@ -55,8 +55,8 @@ Verified in gacalc (`github.com/billsix/geometricalgebra`) — see
 `tests/test_dot_wedge_projection_split.py`, using the library's own `Gn.project` /
 `Gn.reject`, geometric product `*`, `dot`, and `wedge`:
 
-- **Symbolic, exact** — over fully general 2D vectors (`a = a₁e₁ + a₂e₂`,
-  `b = b₁e₁ + b₂e₂`) and 3D vectors, on the eager-simplifying `Gn` reference with `==`.
+- **Symbolic, exact** — over fully general 2D vectors (`a = a₁ * e₁ + a₂ * e₂`,
+  `b = b₁ * e₁ + b₂ * e₂`) and 3D vectors, on the eager-simplifying `Gn` reference with `==`.
   All four identities (`a_∥ b = a·b`, `a_⊥ b = a∧b`, `a_∥ + a_⊥ = a`,
   `a_∥ b + a_⊥ b = ab = a·b + a∧b`) hold as symbolic equalities.
 - **Numeric, tolerant** — 100 random float vectors per dimension (2D and 3D),

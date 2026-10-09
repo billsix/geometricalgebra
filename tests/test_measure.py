@@ -21,7 +21,7 @@ The symbolic tests are written **explicitly**, so each reads like the math it ve
 ``signed_area`` is the 2x2 determinant, ``signed_volume`` the 3x3, ``area``/``volume``
 their magnitudes, ``content`` (both ``|wedge|`` and ``∏ |rejected heights|``) the
 ``|determinant|``, and the area of two vectors in 3-space is the Gram determinant
-``|a|²|b|² − (a·b)²``. The general-symbolic 3D ``content_by_rejection`` is checked
+``|a|² * |b|² − (a·b)²``. The general-symbolic 3D ``content_by_rejection`` is checked
 numerically instead (its Gram–Schmidt form is too large for sympy to reduce).
 """
 
@@ -63,7 +63,7 @@ def test_unit_measures() -> None:
 def test_area_is_wedge_magnitude_oblique() -> None:
     # (e_1 + e_2) ∧ e_2 = e_1 ∧ e_2, so the parallelogram area is 1.
     assert area(1 * e_1 + 1 * e_2, 1 * e_2) == 1
-    # |a||b| sin θ: a = e_1, b = e_1 + e_2 -> 1 · √2 · sin45° = 1.
+    # |a| * |b| * sin(θ): a = e_1, b = e_1 + e_2 -> 1 * √2 * sin45° = 1.
     assert area(1 * e_1, 1 * e_1 + 1 * e_2) == 1
 
 
@@ -144,7 +144,7 @@ def test_content_two_ways_both_give_the_determinant_symbolic() -> None:
 def test_area_of_two_vectors_in_3d_is_the_gram_determinant() -> None:
     """Two vectors in 3-space (k = 2 < n = 3) have **no single determinant** -- but
     the area SQUARED is the sum of the three 2x2 minors squared, equivalently the
-    **Gram determinant** ``|a|²|b|² − (a·b)²``.  (The ``k < n`` generalization of
+    **Gram determinant** ``|a|² * |b|² − (a·b)²``.  (The ``k < n`` generalization of
     ``signed_area``'s 2x2 determinant; and ``area(_A3, _B3)`` literally returns the
     sqrt of those three minors.)"""
     minors_squared: sympy.Expr = (
@@ -184,7 +184,7 @@ def test_content_by_rejection_requires_a_frame() -> None:
 
 
 def test_signed_area_is_the_2d_determinant() -> None:
-    # (2 e_1 + e_2) and (e_1 + 3 e_2): det = 2·3 − 1·1 = 5.
+    # (2 * e_1 + e_2) and (e_1 + 3 * e_2): det = 2 * 3 − 1 * 1 = 5.
     p: MultiVectorBase = 2 * g2.e_1 + 1 * g2.e_2
     q: MultiVectorBase = 1 * g2.e_1 + 3 * g2.e_2
     assert signed_area(p, q) == 5

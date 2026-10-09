@@ -29,8 +29,9 @@ from gacalc.standardposition import project_sp, reject_sp
 # ## The construction, in two dimensions
 #
 # One plane, one rotation. Read the cosine and sine straight off `b`'s coordinates
-# (`cos = b_1 / |b|`, `sin = -b_2 / |b|`), rotate both `a` and `b` by `-φ` so `b` lands
-# on the x-axis, keep `a`'s x-coordinate (projection) and y-coordinate (rejection), then
+# (`cos(-θ) = b_1 / |b|`, `sin(-θ) = -b_2 / |b|`), rotate both `a` and `b` by `-θ` so
+# `b` lands on the x-axis, keep `a`'s x-coordinate (projection) and y-coordinate
+# (rejection), then
 # rotate back. No dot product, no geometric product — only the 2D rotation.
 
 
@@ -79,7 +80,7 @@ a.projected_onto(b)  # the canonical (a . b) b^-1 -- same vector
 # %% [markdown]
 # ## Symbolically, for any `a`
 #
-# We keep `b = 3 e_1 + 4 e_2`, whose length is `5` — exact — so the rotation has
+# We keep `b = 3 * e_1 + 4 * e_2`, whose length is `5` — exact — so the rotation has
 # rational cosine and sine and the symbolic comparison stays clean. For a fully
 # general `a`, the difference between the two projections is zero in every coordinate.
 
@@ -99,10 +100,10 @@ difference: Vector = projection_symbolic - a_symbolic.projected_onto(b_exact)
 # %% [markdown]
 # ## ...and for any `b` too
 #
-# Nothing above depended on `b = 3 e_1 + 4 e_2`; it only kept the printing short. With
-# `b` symbolic as well, `|b| = sqrt(b_1^2 + b_2^2)` appears inside the cosine and sine,
-# and the difference between the two projections still simplifies to zero in both
-# coordinates — so the rotate / keep-x / rotate-back construction equals the
+# Nothing above depended on `b = 3 * e_1 + 4 * e_2`; it only kept the printing short.
+# With `b` symbolic as well, `|b| = sqrt(b_1^2 + b_2^2)` appears inside the cosine and
+# sine, and the difference between the two projections still simplifies to zero in
+# both coordinates — so the rotate / keep-x / rotate-back construction equals the
 # geometric-algebra projection for *every* `a` and `b`.
 
 # %%
@@ -135,8 +136,8 @@ difference_general: Vector = projection_general - a_symbolic.projected_onto(b_sy
 # In space one rotation is not enough, so `gacalc.standardposition.project_sp` does
 # it one plane at a time (swing the `xy`-shadow onto the x-axis, then fold the
 # `z`-part down). The same equivalence holds: the standard-position projection equals
-# the Hestenes one. Here `b = 3 e_1 + 4 e_2 + 12 e_3` has an exact length `13`, so the
-# symbolic check stays clean.
+# the Hestenes one. Here `b = 3 * e_1 + 4 * e_2 + 12 * e_3` has an exact length `13`,
+# so the symbolic check stays clean.
 
 # %%
 a_3: sympy.Symbol = sympy.symbols("a_3")

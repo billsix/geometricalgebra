@@ -4,7 +4,7 @@ This is the permanent, executable half of the hand proof in
 ``tasks/reference/pseudoscalar-square-sign.md``.  It asserts the closed form the
 library uses for the reversion / pseudoscalar-square sign
 (``base.pseudoscalar_squared_sign``) against an *independent* computation: it
-literally builds ``I_r = e_1 e_2 ... e_r`` and squares it in ``Gn``, then reads
+literally builds ``I_r = e_1 * e_2 * ... * e_r`` and squares it in ``Gn``, then reads
 the scalar.  Because the check re-squares the pseudoscalar rather than
 re-deriving the formula, it keeps guarding the equivalence even after the Phase-2
 optimization makes the helper *be* the closed form (see

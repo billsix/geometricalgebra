@@ -440,7 +440,7 @@ def test_project_vector_onto_bivector_2d() -> None:
     # the bivector e_12 spans the whole plane, so any 2D vector projects to itself
     v: g2.G = 3 * g2.G.basis_vector(1) + 4 * g2.G.basis_vector(2)
     assert g2.G.project(onto=g2.G.e_12)(v) == v
-    # Gn reference: same result onto the e_1 e_2 bivector
+    # Gn reference: same result onto the e_1 * e_2 bivector
     gv: Gn = 3 * gn.e_1 + 4 * gn.e_2
     assert Gn.project(onto=gn.e_1 * gn.e_2)(gv) == gv
 

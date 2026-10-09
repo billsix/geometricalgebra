@@ -13,15 +13,18 @@
 
 """``rotor_from_vectors`` -- the versor of ``versor_from_vectors``, normalized -- is a
 unit rotor, and its REVERSE sandwich ``R̂ v R̂~`` is the versor's INVERSE sandwich
-``R v R⁻¹`` (hence ``projection_rotation``).  The Python mirror of
+``R * v * R⁻¹`` (hence ``projection_rotation``).  The Python mirror of
 ``proofs/GacalcProofs/Rotor.lean``, proven *symbolically* with sympy where it can be.
 
 The piece that needs Lagrange: ``normalize`` divides by ``sqrt(|R|²)`` with ``|R|²``
-the raw polynomial ``(|a||b| + a·b)² + |a∧b|²``.  Lagrange's identity (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>)
-``(a·b)² + |a∧b|² = |a|²|b|²`` collapses it to ``2|a||b|(|a||b| + a·b)``, and for unit
-vectors at angle θ that is ``2 + 2cos θ = 4cos²(θ/2)`` -- which is how the normalized
-versor turns out to be the half-angle rotor ``cos(θ/2) - sin(θ/2)·i``.  Parametrizing by
-``(c, s) = (cos(θ/2), sin(θ/2))`` with ``s² → 1 - c²`` lets sympy take that square root.
+the raw polynomial ``(|a| * |b| + a·b)² + |a∧b|²``.  Lagrange's identity
+(<https://en.wikipedia.org/wiki/Lagrange%27s_identity>)
+``(a·b)² + |a∧b|² = |a|² * |b|²`` collapses it to
+``2 * |a| * |b| * (|a| * |b| + a·b)``, and for unit vectors at angle θ that is
+``2 + 2 * cos(θ) = 4 * cos²(θ/2)`` -- which is how the normalized versor turns out to
+be the half-angle rotor ``cos(θ/2) - sin(θ/2) * i``.  Parametrizing by
+``(c, s) = (cos(θ/2), sin(θ/2))`` with ``s² → 1 - c²`` lets sympy take that square
+root.
 """
 
 import math
@@ -36,7 +39,8 @@ from gacalc.transforms import plane_rotation, projection_rotation
 
 
 def _lagrange_closed_form(a: MultiVectorBase, b: MultiVectorBase) -> Real:
-    """``2|a||b|(|a||b| + a·b)`` -- the versor's squared magnitude by Lagrange."""
+    """``2 * |a| * |b| * (|a| * |b| + a·b)`` -- the versor's squared magnitude, by
+    Lagrange."""
     ab: Real = a.magnitude() * b.magnitude()
     return 2 * ab * (ab + a.scalar_product(b))
 
@@ -94,8 +98,9 @@ def test_rotor_from_vectors_is_a_unit_versor_2d_symbolic() -> None:
 
 
 def test_rotor_reverse_sandwich_is_versor_inverse_sandwich_2d_symbolic() -> None:
-    # the bridge (Rotor.lean `rotorSandwich_normalize`): (R/|R|) v (R/|R|)~ = R v R⁻¹,
-    # and both are projection_rotation -- a symbolic proof over general 2D vectors
+    # the bridge (Rotor.lean `rotorSandwich_normalize`):
+    # (R/|R|) * v * (R/|R|)~ = R * v * R⁻¹, and both are projection_rotation -- a
+    # symbolic proof over general 2D vectors
     syms: list[sympy.Symbol] = list(
         sympy.symbols("a1 a2 b1 b2 v1 v2", real=True, positive=True)
     )
@@ -134,7 +139,7 @@ def test_rotor_reverse_sandwich_is_versor_inverse_sandwich_3d() -> None:
 
 def test_rotor_from_unit_vectors_is_the_half_angle_rotor_symbolic() -> None:
     # Parametrize the angle θ from e_1 to b by its HALF: c = cos(θ/2), s = sin(θ/2),
-    # so b = cos θ e_1 + sin θ e_2 = (2c² − 1) e_1 + 2sc e_2.  The versor is
+    # so b = cos(θ) * e_1 + sin(θ) * e_2 = (2c² − 1) * e_1 + 2sc * e_2.  The versor is
     # b·e_1 + 1 = 2c² − 2sc e_12 = 2c (c − s e_12), with |R|² = 4c²(c² + s²) = 4c²;
     # Lagrange is what makes that square root collapse: sqrt(|R|²) = 2c once sympy
     # is told s² = 1 − c².  Normalizing then gives exactly the half-angle rotor

@@ -30,7 +30,7 @@ The proofs split into two layers, and keeping the split clean is what makes them
   (`AlgebraLaws.lean`), the `dot`/`wedge` bilinearity lemmas, `normSq_evenVersor`, `versorFromVectors_mul_reverse`
   (`R R̃ = normSq·1`), `normSq_mul` (multiplicative). These are the bridge; there is nothing below them.
 - **Structural layer** — everything built on the leaves — is **coordinate-free `rw` chains**:
-  `inverse` (`R̃/normSq`), `versorFromVectors_mul_inverse` (`R R⁻¹ = 1`), `sandwich_carries_from_to`,
+  `inverse` (`R̃/normSq`), `versorFromVectors_mul_inverse` (`R * R⁻¹ = 1`), `sandwich_carries_from_to`,
   `sandwich_comp`, `sandwich_add`/`_smul`, `project_eq_sub_reject`, `reject_perp` (both dims).
 
 The **squared magnitude** `normSq = ⟨A Ã⟩` (NOT the `√` magnitude — proofs stay squared to avoid `√`)
@@ -86,24 +86,24 @@ geometric object, so these lift exactly like vector coordinates: state `{R : G_n
 `eq_vec_of_isVector`). `IsEvenVersor R` = the grade-0+2 predicate (`R.c1 = … = 0`, pseudoscalar too in G3);
 it does **not** fix the magnitude — a *rotor* is a unit versor, `IsRotor R := IsEvenVersor R ∧ normSq R = 1`
 (`Sandwich.lean`, both grades), for which `inverse_eq_reverse_of_isRotor` gives `R⁻¹ = R̃` and the headline
-`sandwich_eq_reverse_sandwich_of_isRotor` gives `sandwich R v = R v R̃` — every `sandwich_preserves_*` theorem
-applies to a rotor unchanged via `normSq_ne_zero_of_isRotor`, and transfers to the `R v R̃` form by one `rw`
+`sandwich_eq_reverse_sandwich_of_isRotor` gives `sandwich R v = R * v * R̃` — every `sandwich_preserves_*` theorem
+applies to a rotor unchanged via `normSq_ne_zero_of_isRotor`, and transfers to the `R * v * R̃` form by one `rw`
 (decision: the headline only, no per-theorem `_reverse` companions; William Emerison Six <billsix@gmail.com>,
 2026-10-05). Instances: `Rotation2D.isRotor_rotor` (the half-angle 2D rotor), `Exp.isRotor_expBivector*`,
 `Rotor.isRotor_rotorFromVectors`. **The rotor chain (`Rotor.lean`, 2026-10-05):** rather than re-prove the
 projection-rotation story for rotors, `rotorFromVectors a b := normalize (versorFromVectors a b)` and ONE
-algebraic bridge `rotorSandwich_normalize : (R/|R|) v (R/|R|)~ = R v R⁻¹` (every `R`; the single `√` fact is
+algebraic bridge `rotorSandwich_normalize : (R/|R|) * v * (R/|R|)~ = R * v * R⁻¹` (every `R`; the single `√` fact is
 `magnitude_sq_eq_normSq`, from `normSq_eq_sum_sq`/`normSq_nonneg` — in `G2.lean`/`G3.lean` since 2026-10-05, so the
 whole magnitude tier can use them) transfer every versor theorem to the
 reverse-sandwich form by one `rw`: `rotorSandwich_rotorFromVectors_eq_projRotation`, `_carries_from_to`,
 `rotorSandwich_preserves_dot/normSq/magnitude`. **Lagrange** (`normSq_versorFromVectors`:
-`|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`) turns the chain's `normSq R ≠ 0` guard into "nonzero and
+`|versorFromVectors a b|² = 2 * |a| * |b| * (|a| * |b| + a·b)`) turns the chain's `normSq R ≠ 0` guard into "nonzero and
 not antiparallel" (`normSq_versorFromVectors_ne_zero`) — the identity the earlier Python-side attempt to
 normalize the versor lacked. 2D coda: `versorFromVectors (uvec α) (uvec β) = 2cos(θ/2) • rotor θ`, so
 `rotorFromVectors_uvec = rotor (β − α)` for `cos(θ/2) > 0` and the from-vectors rotor sandwich is `rot (β − α)`.
 **The 3D angle theorem (`PlaneRotation3D.lean`, 2026-10-05):** for a unit bivector `i` and
-`planeRotor θ i = cos(θ/2) − sin(θ/2)·i` (a rotor), `rotorSandwich_planeRotor : R v R̃ = reject i v +
-cos θ · project_onto i v + sin θ · inner_vb v i` for every vector `v` — the perpendicular part fixed, the in-plane
+`planeRotor θ i = cos(θ/2) − sin(θ/2) * i` (a rotor), `rotorSandwich_planeRotor : R * v * R̃ = reject i v +
+cos(θ) * project_onto i v + sin(θ) * inner_vb v i` for every vector `v` — the perpendicular part fixed, the in-plane
 part rotated by θ with orientation. Proven as a coordinate leaf: each vector component is a polynomial identity
 modulo `cos²(θ/2) + sin²(θ/2) = 1` and `|i|² = 1`, closed by `linear_combination` with cofactors computed offline
 (sympy `reduced` over gacalc's product — the harness is recorded in the task); the other components vanish by
@@ -112,7 +112,7 @@ modulo `cos²(θ/2) + sin²(θ/2) = 1` and `|i|² = 1`, closed by `linear_combin
 `cos_sq_add_sin_sq` resolves to the corpus's own angle theorem (`Trig.lean`), not Mathlib's — write
 `Real.cos_sq_add_sin_sq`.
 **2D naming** (same decision): `Rotation2D.rotor θ` is the half-angle sandwich object (matches Python's
-`rotor_for`); the one-sided full-angle teaching operator `cos θ + sin θ e₁₂` is `fullAngleRotor θ` (and
+`rotor_for`); the one-sided full-angle teaching operator `cos(θ) + sin(θ) * e₁₂` is `fullAngleRotor θ` (and
 `fullAngleRotorFromTo`), kept because in 2D a vector rotates by the full angle under a one-sided product
 and `sandwich_rotor_eq_vec_mul_fullAngleRotor` proves the two agree. The whole `sandwich_preserves_*` family is in
 object-versor form, getter-native (`tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md`).
@@ -141,11 +141,11 @@ CrossStandardPosition) — those public statements are already object-in, only t
 coordinate. Pushing that tier (optional) is `tasks/push-delicate-coordinate-core-tier.md`.
 
 **Nonzero guard for angle/trig theorems.** A theorem stated through `cos_between` /
-`sin_between` (or any `/ (|a| |b|)` quotient) carries nonzero hypotheses — `magnitude a ≠ 0`,
+`sin_between` (or any `/ (|a| * |b|)` quotient) carries nonzero hypotheses — `magnitude a ≠ 0`,
 `magnitude b ≠ 0` (equivalently `normSq a ≠ 0`, or `a ≠ zero`). This is what makes the trig form
-**faithful**: with a nonzero denominator `cos = 0 ⟺ dot = 0` (and `sin = 0 ⟺ wedge = 0`), so the
+**faithful**: with a nonzero denominator `cos(θ) = 0 ⟺ dot = 0` (and `sin(θ) = 0 ⟺ wedge = 0`), so the
 `0/0` junk case (Lean's `x/0 = 0`) is excluded and the cosine/sine statement is exactly as strong as
-the dot/wedge primitive — not the weaker claim it would be without the guard. The `cos = 0` proof
+the dot/wedge primitive — not the weaker claim it would be without the guard. The `cos(θ) = 0` proof
 often closes by `zero_div` without consuming the hypothesis, so the guard is a "gate for meaning"
 (name it `_`-prefixed to keep the unused-variable linter quiet); it still prevents the theorem from
 being applied to a zero vector. The Python angle methods mirror this by **raising** on a zero operand
@@ -181,10 +181,10 @@ scalar-product fact it rests on is the `_dot` lemma (`dual_perp_dot`, `reject_pe
 `cross_perp_left_dot`, …). NOT a `_cos`/`_sin` suffix on the geometric theorem.
 
 **Student-facing sine/cosine forms (`StudentTrigForms.lean`) rest on, never replace, dot/wedge.**
-`cos_between a b = dot a b / (|a| |b|)`, and the division carries a subtlety: in Lean/Mathlib
+`cos_between a b = dot a b / (|a| * |b|)`, and the division carries a subtlety: in Lean/Mathlib
 `x / 0 = 0` (junk value), so for a zero vector `cos_between = 0/0 = 0` — true but meaningless (the
-angle is undefined). Thus `dot a b = 0 → cos = 0` always, but `cos = 0 → dot = 0` only for nonzero
-`|a|, |b|` — **`cos = 0` is logically weaker than `dot = 0`** (same for `sin = 0` vs `wedge = 0`). So
+angle is undefined). Thus `dot a b = 0 → cos(θ) = 0` always, but `cos(θ) = 0 → dot = 0` only for nonzero
+`|a|, |b|` — **`cos(θ) = 0` is logically weaker than `dot = 0`** (same for `sin(θ) = 0` vs `wedge = 0`). So
 the `cos`/`sin` corollaries in `StudentTrigForms.lean` are each proved FROM their dot/wedge lemma
 (`simp only [cos_between, <lemma>, zero_div]`), inheriting the primitive's full strength; the dot/wedge
 form is kept as the robust underlying fact. This is also why the Python predicates (`is_orthogonal_to`
@@ -208,7 +208,7 @@ Every proof should reach for a *named* leaf, not a fresh `ext <;> ring`. The lea
 - **Algebra laws** (`AlgebraLaws.lean`): `mul_assoc`, `mul_add`/`add_mul`, `one_mul`/`mul_one`,
   `smul_mul`/`mul_smul`, `smul_smul`, `one_smul`, `vec_anticomm_perp`.
 - **Inner product `·`:** `dot_comm` (symmetry); **full bilinearity** — `dot_add`/`dot_sub`/`dot_smul`
-  in both `_left` and `_right` forms; `dot_vec` (`a·b = a₁b₁+…`); `dot_self_vec_eq_normSq`
+  in both `_left` and `_right` forms; `dot_vec` (`a·b = a₁ * b₁+…`); `dot_self_vec_eq_normSq`
   (`a·a = |a|²` — the bridge that reads a `dot a a` hypothesis as the `normSq` primitive).
 - **Outer product `∧`:** **full bilinearity** — `wedge_add`/`wedge_sub`/`wedge_smul` in both `_left` and
   `_right` forms; `wedge_antisymm` (`a∧b = −(b∧a)`), `wedge_self_vec` (`a∧a = 0`), `wedge_vec_eq_biv`
@@ -219,23 +219,23 @@ Every proof should reach for a *named* leaf, not a fresh `ext <;> ring`. The lea
   `mul_eq_wedge_of_perp` (`a⊥b ⟹ ab = a∧b`). G2 + G3 (G2's split lives in `Projection2D.lean`, where
   `dot` and `wedge` are both in scope). `IsVector` is closed under the operations used to build a
   rejection: `isVector_vec`, `IsVector.smul`, `IsVector.sub`.
-- **Blade inverse (vectors):** `reverse_vec` (`reverse` fixes a vector), `mul_vec_self` (`a a = |a|²·1`),
+- **Blade inverse (vectors):** `reverse_vec` (`reverse` fixes a vector), `mul_vec_self` (`a a = |a|² * 1`),
   and `mul_vec_inverse_self` (`a a⁻¹ = 1` for `|a|² ≠ 0`) — the `B B⁻¹ = 1` identity that turns a
   Hestenes `(…)a⁻¹` proof structural. With these, `plane_eq_wedge` (`a (b − proj_a b) = a∧b`) and
   `reject_vec_eq` (`(b∧a)a⁻¹ = b − proj_a b`) are now structural `rw`-chains on the split, not
   `field_simp` bashes.
 - **Magnitude (squared is the primitive):** `normSq_vec` (`|a|² = a₁²+…`), `normSq_wedge_vec`
-  (`|a∧b|² = …`), `normSq_evenVersor`, `versorFromVectors_mul_reverse` (`R R̃ = |R|²·1`), `normSq_mul`
+  (`|a∧b|² = …`), `normSq_evenVersor`, `versorFromVectors_mul_reverse` (`R R̃ = |R|² * 1`), `normSq_mul`
   (multiplicative); `magnitude_sq_vec` (`|a|² = a₁²+…` via `normSq_vec` under the `√`). There is **one**
   magnitude concept — `magnitude = √normSq`, all grades; the old vector-only `mag = √(a·a)` was deleted
   and unified into `magnitude` (2026-09-29).
-- **Sin/cos & Lagrange** (`Trig.lean`): `lagrange_property` (`(a·b)²+|a∧b|² = |a|²|b|²`),
-  `cos_between`/`sin_between`, `cos_sq_add_sin_sq` (`cos²+sin²=1`), and `sandwich_preserves_cos` /
+- **Sin/cos & Lagrange** (`Trig.lean`): `lagrange_property` (`(a·b)²+|a∧b|² = |a|² * |b|²`),
+  `cos_between`/`sin_between`, `cos_sq_add_sin_sq` (`cos²(θ) + sin²(θ) = 1`), and `sandwich_preserves_cos` /
   `sandwich_preserves_sin` — a rotation preserves the cosine AND sine, hence the whole angle,
   coordinate-free (G2 + G3).
 - **Sandwich isometry leaves** (`Sandwich.lean`, all for ANY `u`, `v` given `IsEvenVersor R`): the
   structural leaves `normSq_eq_dot_reverse`, `mul_reverse_self_of_isEvenVersor`/`reverse_mul_self_of_isEvenVersor`
-  (`R R̃ = R̃ R = |R|²·1`), `dot_reverse_conj` (`⟨R X R̃⟩₀ = |R|²⟨X⟩₀`), `dot_reverse_sandwich`
+  (`R R̃ = R̃ * R = |R|² * 1`), `dot_reverse_conj` (`⟨R * X * R̃⟩₀ = |R|²⟨X⟩₀`), `dot_reverse_sandwich`
   (`(RuR̃)·(RvR̃) = |R|⁴ u·v`), `normSq_reverse_sandwich` (`|RvR̃|² = |R|⁴|v|²`); the pure-`ring`
   `wedge_reverse_sandwich` and `normSq_reverse_sandwich_wedge`; `normSq_smul`, `normSq_reverse`,
   `reverse_smul`; the isometries `sandwich_preserves_dot`, `sandwich_preserves_normSq`, `magnitude_sandwich`,
@@ -279,15 +279,15 @@ leaves are stated on `wedge u v`, not a bivector-coordinate literal. This is the
 
 ### Transfer a whole proof chain by normalize + bridge + `rw` — don't duplicate it (2026-10-05)
 
-When a second formulation of an operation is "the first one, rescaled" (the rotor sandwich `R v R̃` vs the
-versor sandwich `R v R⁻¹`; a unit-ized object vs the raw one), do **not** re-prove the chain for the second
+When a second formulation of an operation is "the first one, rescaled" (the rotor sandwich `R * v * R̃` vs the
+versor sandwich `R * v * R⁻¹`; a unit-ized object vs the raw one), do **not** re-prove the chain for the second
 form. Define the second object as the normalization of the first (`rotorFromVectors := normalize ∘
 versorFromVectors`), prove ONE algebraic bridge with no hypothesis (`rotorSandwich_normalize :
-(R/|R|) v (R/|R|)~ = R v R⁻¹` — six structural rewrites, the single `√` fact `magnitude_sq_eq_normSq`), and
+(R/|R|) * v * (R/|R|)~ = R * v * R⁻¹` — six structural rewrites, the single `√` fact `magnitude_sq_eq_normSq`), and
 then every theorem of the first chain becomes a theorem of the second by `rw [bridge, old_theorem]`
 (`Rotor.lean`: `_eq_projRotation`, `_carries_from_to`, `_preserves_*`). The hypotheses carry over
 unchanged; a closed form for the normalizing scalar (Lagrange: `|versorFromVectors a b|² =
-2|a||b|(|a||b| + a·b)`) then turns the inherited `normSq R ≠ 0` guard into a geometric condition. Record:
+2 * |a| * |b| * (|a| * |b| + a·b)`) then turns the inherited `normSq R ≠ 0` guard into a geometric condition. Record:
 `tasks/archive/2026/10/05/lean-rotor-from-vectors-chain.md`.
 
 ### State coordinate-level operations on the algebra struct, not on bare tuples (2026-10-05)
@@ -314,14 +314,14 @@ Lessons from the "geometric objects in, scalars in the body, geometric objects o
   correct for free; no leaf needs moving.
 
 - **DON'T prove a divide-by-`normSq` fact by a direct getter unfold.** For anything with `inverse` in it
-  (dot/normSq/wedge preservation under the *full* `sandwich R v R⁻¹`), the tactic
+  (dot/normSq/wedge preservation under the *full* `sandwich R * v * R⁻¹`), the tactic
   `obtain …; simp only [normSq, mul, reverse, <zeros>] at hr ⊢; field_simp [hr]; ring` leaves
   **`unsolved goals`**: the sandwich contributes `(normSq R)²` in the denominator, the getter unfold
   **expands** it (`s⁴+2s²c²+c⁴`), and `field_simp` can't match the expansion to `hr : normSq R ≠ 0`. The
   old `_coord` proofs only worked because `normSq_evenVersor` keeps `normSq R` *grouped* (`s²+c²`) and
   never expands it. **Fix (the atomic-`normSq` leaf recipe):** state a leaf on the *reverse* sandwich
-  `R v R̃` (no inverse) whose RHS keeps `normSq R` **atomic** — e.g. `normSq_reverse_sandwich`
-  (`|R v R̃|² = normSq R ² · |v|²`), `dot_reverse_sandwich` (`(R u R̃)·(R v R̃) = normSq R ² · (u·v)`),
+  `R * v * R̃` (no inverse) whose RHS keeps `normSq R` **atomic** — e.g. `normSq_reverse_sandwich`
+  (`|R * v * R̃|² = normSq R ² * |v|²`), `dot_reverse_sandwich` (`(R * u * R̃)·(R * v * R̃) = normSq R ² * (u·v)`),
   `wedge_reverse_sandwich`. Prove the leaf without division — structurally where the identity has a reason
   (see "Structural proofs over brute `ring`"), else by `obtain`-getters + `ring`/`ext`. Then the
   composite pulls the inverse's `1/normSq R` out (`mul_smul`), collects it through the bilinear op
@@ -391,7 +391,7 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 
 ## Inventory (files in `proofs/GacalcProofs/`)
 
-- `Lagrange.lean` — Lagrange identity 2D/3D (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) (`|a|²|b|² = (a·b)² + |a∧b|²`).
+- `Lagrange.lean` — Lagrange identity 2D/3D (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) (`|a|² * |b|² = (a·b)² + |a∧b|²`).
 - `G2.lean` / `G3.lean` — the algebras: product/wedge/reverse, basis elements, multiplication table,
   `I² = −1`, dot, dual, `I⁻¹`; `normSq`/`magnitude` (+ `normSq_vec`, and `normSq_wedge_vec` in `G3`);
   `G3` also the fundamental identity `ab = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`), `vec_mul_perp`, and the
@@ -402,21 +402,21 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   `one_smul`, ⊥-anticommutation, for both algebras.
 - `Sandwich.lean` — `inverse`/`sandwich` (`normSq`/`magnitude` moved down to `G2`/`G3`); the sandwich is an isometry
   (`sandwich_preserves_dot`, length); fixes its own plane bivector and normal; the versor is invertible
-  (`R R̃ = |R|²`, `R R⁻¹ = 1`); rotations compose (`sandwich_comp`); the even-versor bridge. Also the
+  (`R R̃ = |R|²`, `R * R⁻¹ = 1`); rotations compose (`sandwich_comp`); the even-versor bridge. Also the
   **reverse anti-automorphism** `reverse_mul` (`(ab)~ = b~ a~`, general) and its vector corollaries
   `reverse_of_isVector`, `reverse_mul_vec` (`(ab)~ = ba`), `reverse_mul3_vec` (`(abc)~ = cba`); the G2
   twins (`reverse_mul`/`reverse_vec`/`reverse_of_isVector`/`reverse_mul_vec`) live in `G2.lean`.
 - `Rotation2D.lean` (2D angle-parameterized; `rot_add`/`rot_comm` — rotations compose by angle
   addition, hence commute), `Rotation3D.lean` / `Versor2D.lean` (angle-free
-  versor-from-vectors: bisector, `R·a = |a|·h`, `b·R = |b|·h`; the carries-a→b capstone
-  `R a R⁻¹ = (|a|/|b|)·b`).
+  versor-from-vectors: bisector, `R * a = |a| * h`, `b * R = |b| * h`; the carries-a→b capstone
+  `R * a * R⁻¹ = (|a|/|b|) * b`).
 - `RotateComponents.lean` — the three matrix-free rotation goals for the actual a→b rotation (in the
   plane, oriented isometry, perpendicular fixed) + `sandwich_ahat` (â↦b̂).
 - `Projection3D.lean` / `Projection2D.lean` — Hestenes `proj`/`reject`/`project_onto`, `project_add_reject`,
   `proj_plane = project_onto`, and the 2D cases.
 - `StandardPosition.lean` — elementary coordinate-plane rotations `rotXY`/`rotXZ` (NOT versors),
   their `preserves_dot` and inverses (`rotXY_inv`/`rotXZ_inv`), projection/rejection equivariance under
-  them, the explicit `b ↦ |b|·e₁` alignment (`rotate_b_to_e1` + magnitude form), the
+  them, the explicit `b ↦ |b| * e₁` alignment (`rotate_b_to_e1` + magnitude form), the
   product-from-projection payoff (`mul_eq_proj_dot_add_reject_wedge`), and `projectSP`/`rejectSP`
   (align, keep the aligned `a`'s x-component — `proj_onto_x_axis`, no product — rotate back) with
   `projectSP_eq_proj`/`rejectSP_eq_reject` (Python `standardposition` proven equal to Hestenes). This is the base of the **bootstrap arc** (3 elementary plane
@@ -424,21 +424,21 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   see `tasks/reference/reduction-to-standard-position.md`). The uniform 3-rotation tool is in
   `CrossStandardPosition.lean` (below).
 - `CrossStandardPosition.lean` — the uniform reduce-both-to-2-D tool: `rotYZ` (the 3rd plane rotation,
-  e₂e₃ about `e₁`) + toolkit; `reduceToPlane` (`reduceToPlane_a_on_e1` / `reduceToPlane_b_in_plane` —
-  both vectors into the e₁e₂ plane); equivariance of proj/reject/cross under all three rotations
+  e₂ * e₃ about `e₁`) + toolkit; `reduceToPlane` (`reduceToPlane_a_on_e1` / `reduceToPlane_b_in_plane` —
+  both vectors into the e₁ * e₂ plane); equivariance of proj/reject/cross under all three rotations
   (`proj_rotYZ_equivariant`, `vecReject_rotXZ/YZ_equivariant`, `cross_rotXY/XZ/YZ_equivariant`); and the
   2-D evals `proj_reduced`/`vecReject_reduced`/`cross_reduced` — project/reject/cross all through the one
   3-rotation frame.
 - `StandardPosition2D.lean` — the **2D** single-rotation case (𝒢₂): one elementary plane rotation
   `rotPlane` (no versor), its linearity/`rotPlane_preserves_dot`/inverse, projection/rejection
-  equivariance, the `b ↦ |b|·e₁` alignment, and `projectSP`/`rejectSP` with
+  equivariance, the `b ↦ |b| * e₁` alignment, and `projectSP`/`rejectSP` with
   `projectSP_eq_proj`/`rejectSP_eq_reject`. The book's 2D projection proof (`proof-projection.rst`).
 - `RotateFromTo2D.lean` — rotate `a`'s direction onto `b`'s by standard position (𝒢₂):
   `rotPlane_comp` (rotPlane composition = angle addition), its corollary `rotPlane_comm` (plane
   rotations commute — the book's "The collapse" cites it by name; angle form `Rotation2D.rot_comm`),
   `rotPlane_conj_collapse` (the align/un-align sandwich collapses to its middle rotation),
-  `rotateFromTo_collapse` (the 3-step = a single `rotPlane ((a·b)/(|a||b|)) ((a∧b)/(|a||b|))`), and
-  `rotateFromTo_carries` (`a ↦ (|a|/|b|)·b`). The book's `proof-rotate-from-a-to-b.rst`;
+  `rotateFromTo_collapse` (the 3-step = a single `rotPlane ((a·b)/(|a| * |b|)) ((a∧b)/(|a| * |b|))`), and
+  `rotateFromTo_carries` (`a ↦ (|a|/|b|) * b`). The book's `proof-rotate-from-a-to-b.rst`;
   see `tasks/reference/reduction-to-standard-position.md`.
 - `ProjectionRotation3D.lean` — the arc's **step 3**, a general rotation from project/reject:
   `projRotation f t v = (project_{f∧t} v)·f̂·t̂ + reject_{f∧t} v` (mirrors Python
@@ -451,7 +451,7 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   (`projRotation f t v = sandwich (versorFromVectors f t) v`, route P = route V), with lemmas
   `versor_mul_project_eq` (in-plane `R P = P R̃`), `versor_mul_reject_comm` (⊥ `R Rⱼ = Rⱼ R`),
   `normalizeVec_mul_versor_eq_reverse`/`vec_mul_bisector_eq`/`normalizeVec_to_mul_versor_eq_bisector`
-  (`f̂ t̂ = R̃ R⁻¹`). √-free: `R`'s scalar `|f||t|·1` is handled abstractly via `R R⁻¹ = 1`, never expanded.
+  (`f̂ t̂ = R̃ * R⁻¹`). √-free: `R`'s scalar `|f| * |t| * 1` is handled abstractly via `R * R⁻¹ = 1`, never expanded.
 - `ProjectionRotation2D.lean` — the **𝒢₂ specialization** of step 3: the same `projRotation` triple
   (`projRotation_carries_from_to` / `projRotation_isometry` / `projRotation_eq_sandwich`) in 2D, the
   degenerate base case where the `f∧t` plane is all of 𝒢₂, so `reject_plane_eq_zero` (`reject = 0`)
@@ -474,11 +474,11 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 - `Normalize.lean` — `normalizeVec` has unit `normSq`/`magnitude` (𝒢₃ vectors; 𝒢₂'s lives in `ProjectionRotation2D`).
 - `Predicates2D.lean` / `Predicates3D.lean` — `dual_perp_dot` (2D); `perp_iff_mul_eq_wedge`
   (`a·b = 0 ⟺ ab = a∧b`), `wedge_parallel_smul` (3D).
-- `Reflect.lean` (𝒢₃) — `reflectVec d v = proj − reject = 2·proj − v`, an isometry (across a vector only).
+- `Reflect.lean` (𝒢₃) — `reflectVec d v = proj − reject = 2 * proj − v`, an isometry (across a vector only).
 - `Trig.lean` — `cos_between`/`sin_between`, `lagrange_property`, `cos_sq_add_sin_sq`, both preserved by
   the sandwich (for ANY `u`, `v`). `TrigEquiv.lean` — the angle-form equivalences
   (`cos_between_uvec`, `signed_sin_between`, `sin_between_eq_abs_signed_vec`). `StudentTrigForms.lean` —
-  the cosine-0 / sine-0 / `area = |a||b| sin θ` corollaries with `_`-prefixed meaning gates.
+  the cosine-0 / sine-0 / `area = |a| * |b| * sin(θ)` corollaries with `_`-prefixed meaning gates.
 
 - `MathlibBridge.lean` — the "equivalence to the general case" bridges: `G2.toE`/`G3.toE` into
   `EuclideanSpace`, `dot_eq_inner`, `norm_toE`, `dot_comm_of_inner`, `abs_dot_le_magnitude_mul`
@@ -526,12 +526,12 @@ The modules outside this table are in the subsection that follows it.
 | `reflect` / `reflected_across` | HAS | `reflectVec` (= proj − reject), `reflectVec_eq`, `normSq_reflectVec` (isometry) (Reflect.lean) |
 | `versor_from_vectors` | HAS | `versorFromVectors`, `versorFromVectors_mul_reverse`/`_inverse`, `sandwich_carries_from_to`, `bisector` (Rotation3D/Sandwich); `normSq_versorFromVectors` (Lagrange closed form), `rotorFromVectors` = its normalization, `isRotor_rotorFromVectors`, `rotorSandwich_rotorFromVectors(_eq_projRotation/_carries_from_to)`, 2D `rotorFromVectors_uvec = rotor (β−α)` (Rotor.lean) |
 | `bivector_from_vectors` | HAS | the raw wedge `a∧b`: `wedge`, `wedge_vec_eq_biv` |
-| `sandwich` | HAS | `sandwich`, `sandwich_preserves_dot`/`_normSq`/`_wedge`/`_cos`/`_sin` (any `u`, `v`), `sandwich_comp`, `sandwich_inverse_sandwich` (Sandwich/RotateComponents); the 2D rotor sandwich = `Orientation.rotation`: `rotor_sandwich_eq_rotation` (MathlibBridge); `IsRotor` (unit versor): `inverse_eq_reverse_of_isRotor`, `sandwich_eq_reverse_sandwich_of_isRotor` (`R v R⁻¹ = R v R̃`), `Rotation2D.sandwich_rotor_eq_rot`; the reverse sandwich as an operation: `Rotor.rotorSandwich`, bridge `rotorSandwich_normalize` (`(R/\|R\|) v (R/\|R\|)~ = R v R⁻¹`), `rotorSandwich_preserves_dot/normSq/magnitude` |
-| `exp` | HAS | `expBivector`/`expBivectorGeneral` (= `cos\|B\|+sin\|B\|·B̂`), `normSq_expBivectorGeneral` = 1, `isRotor_expBivector*` (`IsRotor`) (Exp.lean) |
+| `sandwich` | HAS | `sandwich`, `sandwich_preserves_dot`/`_normSq`/`_wedge`/`_cos`/`_sin` (any `u`, `v`), `sandwich_comp`, `sandwich_inverse_sandwich` (Sandwich/RotateComponents); the 2D rotor sandwich = `Orientation.rotation`: `rotor_sandwich_eq_rotation` (MathlibBridge); `IsRotor` (unit versor): `inverse_eq_reverse_of_isRotor`, `sandwich_eq_reverse_sandwich_of_isRotor` (`R * v * R⁻¹ = R * v * R̃`), `Rotation2D.sandwich_rotor_eq_rot`; the reverse sandwich as an operation: `Rotor.rotorSandwich`, bridge `rotorSandwich_normalize` (`(R/\|R\|) v (R/\|R\|)~ = R * v * R⁻¹`), `rotorSandwich_preserves_dot/normSq/magnitude` |
+| `exp` | HAS | `expBivector`/`expBivectorGeneral` (= `cos\|B\|+sin\|B\| * B̂`), `normSq_expBivectorGeneral` = 1, `isRotor_expBivector*` (`IsRotor`) (Exp.lean) |
 | `vectorcalc.cross` | HAS | `cross`, `cross_vec`, `cross_anticomm`, `cross_perp_left`/`_right` (Cross); = Mathlib's `crossProduct`: `toF_cross` (MathlibBridge) |
 | `measure.area` | HAS | `area_sq_vec` (= `normSq (a∧b)`), `normSq_wedge_eq_lagrange` (Measures.lean) |
 | `measure.volume` | HAS | `volume_sq_vec` (= `signedVolume²`) (Measures.lean) |
-| `measure.signed_area` | HAS | `signedArea` (= a₁b₂−a₂b₁), `signedArea_eq` (Measures.lean) |
+| `measure.signed_area` | HAS | `signedArea` (= a₁ * b₂−a₂ * b₁), `signedArea_eq` (Measures.lean) |
 | `measure.signed_volume` | HAS | `dot_cross_eq_signedVolume` (Cross); = `Matrix.det`: `signedVolume_eq_det` (MathlibBridge) |
 | `measure.content` (general `n`) | NONE | deferred — needs the general-`Gn` layer (`lean-general-gn-product-and-hestenes-dot-wedge`); k=2,3 are the proven `area`/`volume` |
 
@@ -554,7 +554,7 @@ theorem landed 2026-10-05 (`PlaneRotation3D.lean`), and `gn` waits on a general-
 | `functions.compose` / `inverse` / `identity` | plumbing — no theorem | the one GA fact they carry for versors: `sandwich_inverse_sandwich` (`sandwich R⁻¹ ∘ sandwich R = id`, both grades), on `inverse_inverse` and `inverse_mul_self_of_isEvenVersor` (Sandwich.lean) |
 | `transforms.projection_rotation` | HAS | `projRotation_*`, `projRotation_eq_sandwich` (ProjectionRotation2D/3D) |
 | `transforms.versor_rotation` (forward / `backward`) | HAS | `sandwich_*`; backward = `sandwich_inverse_sandwich` |
-| `transforms.bivector_rotation` / `plane_rotation` (half-angle rotor by θ in a general 3D plane) | HAS | `PlaneRotation3D.planeRotor θ i`, `isRotor_planeRotor`, **`rotorSandwich_planeRotor`** (`R v R̃ = v⊥ + cos θ·v∥ + sin θ·(v ⌋ i)` for a unit bivector `i`, any vector `v`), `cos_between_rotorSandwich_planeRotor` (in-plane `v`: angle θ), `rotorSandwich_planeRotor_fixes_normal`; 2D case `Rotation2D.sandwich_rotor`; unit-ness also `Exp.normSq_expBivectorGeneral` |
+| `transforms.bivector_rotation` / `plane_rotation` (half-angle rotor by θ in a general 3D plane) | HAS | `PlaneRotation3D.planeRotor θ i`, `isRotor_planeRotor`, **`rotorSandwich_planeRotor`** (`R * v * R̃ = v⊥ + cos(θ) * v∥ + sin(θ) * (v ⌋ i)` for a unit bivector `i`, any vector `v`), `cos_between_rotorSandwich_planeRotor` (in-plane `v`: angle θ), `rotorSandwich_planeRotor_fixes_normal`; 2D case `Rotation2D.sandwich_rotor`; unit-ness also `Exp.normSq_expBivectorGeneral` |
 | `transforms.bivector_rotation(θ).at(t)`, `functions.at` | plumbing — no theorem | the rotor factory's interpolation law rebuilds the rotor with `t·θ`; composites interpolate component-wise |
 | `transforms.translate`, `uniform_scale`, `scale_non_uniform`, `to_matrix`, `MatrixTemplate`, `to_matrix_template` | plumbing — no theorem | affine/matrix bookkeeping; `scale_non_uniform` rests on `proj` onto `e_i` (covered) |
 | `g1.py` (𝒢₁) | HAS | `G1.lean`: `mul`/`wedge` (oracle-transcribed), `I_sq` (= **+1**), `I_sq_eq_sign`, `mul_comm`, `mul_assoc`, `vec_mul` (pure scalar), `wedge_vec` (= 0: all 1D vectors parallel), `dot_vec`, `normSq_vec`, `magnitude_vec` (`= |x|`), `dual_vec` (a scalar), `mul_vec_inverse_self` |
@@ -569,7 +569,7 @@ A theorem's hypotheses are the preconditions its conclusion is claimed under. Th
 |---|---|---|---|
 | grade predicate | `(ha : IsVector a)` | the other getters of `a` are `0` | the claim is for every multivector — true for some identities (the reverse-sandwich scalings), false for others (`a ∧ a = 0`) |
 | nonzero guard | `(hr : normSq R ≠ 0)` | "we may divide by this" | Lean's `x / 0 = 0` turns the statement into a junk-value claim; `field_simp` needs the guard to cancel |
-| meaning gate | `(_ha0 : magnitude a ≠ 0)` (`StudentTrigForms`) | the cosine is meaningful | nothing breaks; the theorem would then assert a vacuous `cos = 0` about the zero vector. The `_` prefix marks it deliberately unused |
+| meaning gate | `(_ha0 : magnitude a ≠ 0)` (`StudentTrigForms`) | the cosine is meaningful | nothing breaks; the theorem would then assert a vacuous `cos(θ) = 0` about the zero vector. The `_` prefix marks it deliberately unused |
 
 **"Needed" means two things.** (1) Needed for the *statement* to be true — a mathematical question;
 without it the hypothesis only weakens the theorem (fewer callers can use it). (2) Needed for *this proof
@@ -579,7 +579,7 @@ delete-and-rebuild proves only (2).** Read the failure: a `ring`/heartbeat timeo
 proof" (prove the small algebraic reason and chain it, see the next section); a residual goal with a
 counterexample shape says "the theorem needs it". The worked example of mistaking (2) for (1), 2026-10-04: the 𝒢₃ `dot_reverse_sandwich`/
 `normSq_reverse_sandwich` were recorded as "genuinely using the vector components — a real grade
-asymmetry". They do not: the identity is `R u (R̃ R) v R̃ = |R|²·R(uv)R̃` plus the cyclic scalar part, grade-free;
+asymmetry". They do not: the identity is `R u (R̃ * R) v R̃ = |R|² * R(uv)R̃` plus the cyclic scalar part, grade-free;
 the minimizer's own log showed those drops were never built (`skip … could not edit cleanly`), and a direct
 rebuild without them was green. Both grades now take only `IsEvenVersor R`, proved structurally (next
 section). Lesson: classify the failure, and never trust a recollection of a failed build over the log.
@@ -608,12 +608,12 @@ show the alternative; the pattern reuses four small lemmas per algebra (in `Sand
 
 - `normSq_eq_dot_reverse (a) : normSq a = dot a (reverse a) := rfl` — a **definitional bridge** stated as a
   `rfl` lemma, so `rw` can move between the two spellings of the same thing. Prefer this to re-unfolding.
-- `mul_reverse_self_of_isEvenVersor` / `reverse_mul_self_of_isEvenVersor` : `R R̃ = R̃ R = |R|²·1` — the one
+- `mul_reverse_self_of_isEvenVersor` / `reverse_mul_self_of_isEvenVersor` : `R R̃ = R̃ * R = |R|² * 1` — the one
   coordinate fact (`ext <;> ring` on an even `R`; a 3D bivector squares to a scalar).
 - `dot_reverse_conj (hR) (X) : dot (mul R X) (reverse R) = normSq R * X.s` — **the scalar part is cyclic**
-  (`dot_comm` is `⟨AB⟩₀ = ⟨BA⟩₀` for arbitrary `A`, `B`), then `R̃ R` collapses.
+  (`dot_comm` is `⟨AB⟩₀ = ⟨BA⟩₀` for arbitrary `A`, `B`), then `R̃ * R` collapses.
 - `dot_reverse_sandwich` then is: `simp only [mul_assoc]` to right-associate, one `rw [← mul_assoc (reverse R) R]`
-  to group `R̃ R`, collapse it, pull the scalar out with `smul_mul`/`one_mul`/`mul_smul`, and finish with
+  to group `R̃ * R`, collapse it, pull the scalar out with `smul_mul`/`one_mul`/`mul_smul`, and finish with
   `dot_reverse_conj` on `X = u v`. `normSq_reverse_sandwich` is the same leaf at `u = v, v = ṽ` after
   `reverse_mul` (anti-automorphism) and `reverse_reverse`.
 
@@ -660,5 +660,5 @@ The Lean effort's standing decisions, so a reader does not need the archived umb
    `Rotation2D.uvec_mul_uvec` + `uvec_dot`/`uvec_wedge`.
 5. **Pseudoscalar statement** `Iᵣ² = (−1)^(r(r−1)/2)` only, proved for n = 1, 2, 3 against each
    algebra's own `I²`; general n with the Gn task.
-6. **Rotor vs versor:** gacalc rotates with the scale-invariant inverse sandwich `R v R⁻¹` of an
+6. **Rotor vs versor:** gacalc rotates with the scale-invariant inverse sandwich `R * v * R⁻¹` of an
    un-normalized even *versor*; "rotor" is reserved for the unit case (`rename-rotor-to-versor`, 2026-09-28).

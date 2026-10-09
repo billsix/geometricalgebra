@@ -27,7 +27,7 @@ the Python implementation.
     `cos² + sin² = 1`, both preserved by the sandwich); `TrigEquiv.lean` (angle-form equivalences, signed
     sine in 2D); `StudentTrigForms.lean` (the student-facing cosine/sine corollaries of the dot/wedge facts).
   - *Versors and rotation:* `Versor2D.lean` / `Rotation3D.lean` (angle-free versor from two vectors:
-    bisector `h`, `R = b·a + |a||b|`, `R·a = |a|·h`); `Sandwich.lean` (`inverse`, `sandwich`,
+    bisector `h`, `R = b * a + |a| * |b|`, `R * a = |a| * h`); `Sandwich.lean` (`inverse`, `sandwich`,
     `IsEvenVersor` (even, any magnitude) and `IsRotor` (unit versor: `R⁻¹ = R̃`, so `sandwich R v = R v R̃`);
     `R R̃ = |R|²·1`; the reverse-sandwich scalings of dot/normSq/wedge for ANY multivector;
     the sandwich is an isometry — dot, length, wedge, hence angles; carries `a` to `b`; fixes its own
