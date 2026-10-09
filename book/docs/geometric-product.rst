@@ -18,17 +18,17 @@ In :doc:`proof-rotate` we derived, from high-school trigonometry, that rotating 
 .. math::
 
    \vec{r}(\vec{a}; \theta) = \cos\theta\,\vec{a} + \sin\theta\,\vec{r}(\vec{a}; \pi/2),
-   \qquad \vec{r}(\vec{a}; \pi/2) = \begin{bmatrix} -\vec{a}_y \\ \vec{a}_x \end{bmatrix}.
+   \qquad \vec{r}(\vec{a}; \pi/2) = \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}.
 
-The 90° rotation :math:`(-\vec{a}_y, \vec{a}_x)` is the key. **It is a product.** Write
+The 90° rotation :math:`(-a_2, a_1)` is the key. **It is a product.** Write
 the two basis directions as :math:`e_1` and :math:`e_2`, and define their *geometric
 product* :math:`e_1 e_2` — call it :math:`e_{12}`. Multiplying :math:`\vec{a}` by
 :math:`e_{12}` on the right turns it 90°:
 
 .. math::
 
-   \vec{a}\,e_{12} = (\vec{a}_x e_1 + \vec{a}_y e_2)\,e_{12}
-                   = -\vec{a}_y\,e_1 + \vec{a}_x\,e_2.
+   \vec{a}\,e_{12} = (a_1 e_1 + a_2 e_2)\,e_{12}
+                   = -a_2\,e_1 + a_1\,e_2.
 
 (The two facts used, :math:`e_1 e_{12} = e_2` and :math:`e_2 e_{12} = -e_1`, are the
 multiplication rules of the algebra, spelled out in :doc:`defining-g2`.) So the whole rotation is
@@ -45,9 +45,9 @@ with the formula we started from:
 .. math::
 
    \vec{a}\,(\cos\theta + \sin\theta\,e_{12})
-     = \cos\theta\,(\vec{a}_x e_1 + \vec{a}_y e_2) + \sin\theta\,(-\vec{a}_y e_1 + \vec{a}_x e_2)
-     = (\vec{a}_x\cos\theta - \vec{a}_y\sin\theta)\,e_1
-       + (\vec{a}_x\sin\theta + \vec{a}_y\cos\theta)\,e_2,
+     = \cos\theta\,(a_1 e_1 + a_2 e_2) + \sin\theta\,(-a_2 e_1 + a_1 e_2)
+     = (a_1\cos\theta - a_2\sin\theta)\,e_1
+       + (a_1\sin\theta + a_2\cos\theta)\,e_2,
 
 exactly the two coordinates of :math:`\vec{r}(\vec{a}; \theta)` in :doc:`proof-rotate`. (The Lean
 proofs state this as ``vec_mul_fullAngleRotor`` in ``proofs/GacalcProofs/Rotation2D.lean``.)

@@ -40,7 +40,7 @@ discovery grep below returns zero hits (or an explained residue), figures re-ren
   prefer sine/cosine over dot/wedge" and "Coordinates only when needed";
   `tasks/reference/book-outline.md` › "Notation & prose conventions for proof pages" (θ is the
   standing angle symbol; β a vector's own standing angle). The new rules extend that section.
-- **Companion sweep:** `tasks/coordinate-subscripts-indices-not-xyz.md` (`a_1` instead of `a_x`)
+- **Companion sweep:** `tasks/archive/2026/10/09/coordinate-subscripts-indices-not-xyz.md` (`a_1` instead of `a_x`)
   touches the same lines; run it **after** this one, or in the same pass with its own commit.
 
 ## Current state (discovery, 2026-10-08)

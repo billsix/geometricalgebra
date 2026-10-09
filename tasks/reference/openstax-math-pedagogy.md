@@ -9,16 +9,21 @@ reader of this doc's Part II.
 
 ## How this was produced (and how to re-run it)
 
-Source: the maintainer's `latex` branch of four OpenStax repos under `/foo/opt/openstax` (GitHub
-mirrors of the openstax org). Each repo carries a Python CNXML→LaTeX converter at
-`tools/cnxml2tex/convert.py` that is pure-Python (needs only `lxml`) and runs in-sandbox —
-no TeXLive container needed. Regenerate any book's LaTeX with:
+Source: the maintainer's OpenStax ports in **impo** (https://github.com/billsix/impo, the
+patch-carrier repo; the former per-repo `latex` branches and their separate mount are gone —
+the work was redone in impo). Each book is a thin folder `openstax/osbooks-<book>/` whose `fetch.sh`
+clones the pristine OpenStax CNXML at a pinned commit into a gitignored `checkout/`, and whose
+`apply.sh` overlays the one shared toolchain `openstax/tooling/` onto it. The CNXML→LaTeX
+converter is pure-Python (needs only `lxml`) and runs in-sandbox — no TeXLive container needed.
+Regenerate any book's LaTeX (into `checkout/latex/<collection>.tex` + `checkout/latex/sections/
+<module>.tex`, the files cited below) with:
 
 ```sh
-cd /foo/opt/openstax/<repo> && python3 tools/cnxml2tex/convert.py all
+cd <impo>/openstax/osbooks-<book> && ./fetch.sh && ./apply.sh   # network once, then offline
+python3 checkout/tools/cnxml2tex/convert.py all                 # or: make convert (container)
 ```
 
-Books surveyed (collection → repo):
+Books surveyed (collection → book folder, `openstax/osbooks-<…>/`):
 
 | Book | Collection | Repo | Modules |
 |---|---|---|---|
@@ -27,8 +32,9 @@ Books surveyed (collection → repo):
 | Precalculus 2e | `precalculus-2e` | `osbooks-college-algebra-bundle` | 87 |
 | Calculus Volume 1 | `calculus-volume-1` | `osbooks-calculus-bundle` | 55 |
 
-The `sections/` dirs in the multi-book bundles are shared across collections; use the master
+The `sections/` dir in a multi-book bundle is shared across its collections; use the master
 `<collection>.tex`'s `\input`/`\subfile` order to know which sections belong to which book.
+(§12 below was read straight from the pinned CNXML, before conversion.)
 
 ---
 
@@ -562,6 +568,28 @@ inside. That is the whole levels-of-abstraction lesson, delivered by the box/unb
 rather than by exhortation.
 
 ---
+
+### 12. Coordinates and vectors: the notation the reader arrives with (consulted 2026-10-09)
+
+Read from the pinned CNXML (fetched with each book's `fetch.sh` into its gitignored
+`openstax/osbooks-*/checkout/` in impo, https://github.com/billsix/impo) for
+`tasks/archive/2026/10/09/coordinate-subscripts-indices-not-xyz.md`, which set the book's `a_1`/`a_2`
+convention ([[book-outline]] › "Notation & prose conventions"):
+
+- **Algebra 1** (HS), Unit 1 "Preparing for Success / Linear Equations", lesson "Find
+  Coordinates: Mini-Lesson Review" (module `m00040`): "every point is represented by an
+  **ordered pair**. The first number in the ordered pair is the *x*-coordinate of the point, and
+  the second number is the *y*-coordinate" — written `(x, y)`; the origin is `(0, 0)`.
+- **Precalculus 2e** §8.8 "Vectors" (module `m49412`, chapter 8 "Further Applications of
+  Trigonometry"): a vector in **component form** `⟨a, b⟩` ("the horizontal component is the x
+  direction, and the vertical component is the y direction"); the **unit vectors** **i** and
+  **j**, "directed along the positive horizontal/vertical axis"; vectors written "in terms of
+  i and j", `a i + b j`; magnitude and the unit vector `v/|v|`.
+
+So the reader has never seen a *subscript* on a coordinate — only positional pairs and the
+letters i/j. The book's bridge (in `relative-graph-paper.rst` › "How we write coordinates") is
+`a i + b j` → `a_1 e_1 + a_2 e_2`: same object, the subscript naming the axis, which is what
+keeps working at three axes and at `n`.
 
 ## Appendix — pointers back to source
 

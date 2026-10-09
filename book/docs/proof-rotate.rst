@@ -111,8 +111,8 @@ Stop thinking about geometry — from here it is only algebra. Do **not** try to
 these formulas.
 
 Substitute the values of :math:`\vec{x'}` and :math:`\vec{y'}` back in. The angle of
-:math:`\vec{a}` is :math:`\beta`, so :math:`\cos\beta = \vec{a}_x / r` and
-:math:`\sin\beta = \vec{a}_y / r`. And by the angle-addition identities,
+:math:`\vec{a}` is :math:`\beta`, so :math:`\cos\beta = a_1 / r` and
+:math:`\sin\beta = a_2 / r`. And by the angle-addition identities,
 :math:`\cos(\beta + \pi/2) = -\sin\beta` and :math:`\sin(\beta + \pi/2) = \cos\beta`
 — so we never need :math:`\beta` itself, only the sine and cosine we already have.
 
@@ -123,11 +123,11 @@ Substitute the values of :math:`\vec{x'}` and :math:`\vec{y'}` back in. The angl
      &= r\,\big(\cos\theta\,\vec{x'} + \sin\theta\,\vec{y'}\big) \\
      &= r\,\Big(\cos\theta \begin{bmatrix} \cos\beta \\ \sin\beta \end{bmatrix}
               + \sin\theta \begin{bmatrix} \cos(\beta + \pi/2) \\ \sin(\beta + \pi/2) \end{bmatrix}\Big) \\
-     &= r\,\Big(\cos\theta \begin{bmatrix} \vec{a}_x / r \\ \vec{a}_y / r \end{bmatrix}
-              + \sin\theta \begin{bmatrix} -\vec{a}_y / r \\ \vec{a}_x / r \end{bmatrix}\Big) \\
-     &= \cos\theta \begin{bmatrix} \vec{a}_x \\ \vec{a}_y \end{bmatrix}
-              + \sin\theta \begin{bmatrix} -\vec{a}_y \\ \vec{a}_x \end{bmatrix} \\
-     &= \cos\theta\,\vec{a} + \sin\theta \begin{bmatrix} -\vec{a}_y \\ \vec{a}_x \end{bmatrix}
+     &= r\,\Big(\cos\theta \begin{bmatrix} a_1 / r \\ a_2 / r \end{bmatrix}
+              + \sin\theta \begin{bmatrix} -a_2 / r \\ a_1 / r \end{bmatrix}\Big) \\
+     &= \cos\theta \begin{bmatrix} a_1 \\ a_2 \end{bmatrix}
+              + \sin\theta \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix} \\
+     &= \cos\theta\,\vec{a} + \sin\theta \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}
    \end{aligned}
 
 The :math:`r`'s cancel, and we are left with the whole point of this chapter:
@@ -135,9 +135,9 @@ The :math:`r`'s cancel, and we are left with the whole point of this chapter:
 .. math::
 
    \vec{r}(\vec{a}; \theta) = \cos\theta\,\vec{a} + \sin\theta\,\vec{r}(\vec{a}; \pi/2),
-   \qquad \vec{r}(\vec{a}; \pi/2) = \begin{bmatrix} -\vec{a}_y \\ \vec{a}_x \end{bmatrix}.
+   \qquad \vec{r}(\vec{a}; \pi/2) = \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}.
 
 **A rotation is a blend of the point and its 90°-rotated self.** That is worth staring
 at. The next chapter, :doc:`geometric-product`, notices that the 90° rotation
-:math:`(-\vec{a}_y, \vec{a}_x)` is itself a *product* — and that observation is where
+:math:`(-a_2, a_1)` is itself a *product* — and that observation is where
 the geometric product comes from.

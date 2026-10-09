@@ -19,7 +19,7 @@
 #
 # The three rungs for the product of two vectors `a`, `b`:
 #
-# 1. **Coordinate** — write the numbers out (e.g. `a_x*b_x + a_y*b_y`).
+# 1. **Coordinate** — write the numbers out (e.g. `a_1*b_1 + a_2*b_2`).
 # 2. **Fixed-grade** — Hestenes' definition with the grade *bound to a literal*: for two
 #    vectors the dot is the grade-0 part of the product `⟨ab⟩₀`, the wedge the grade-2
 #    part `⟨ab⟩₂`.
@@ -34,13 +34,13 @@ import gacalc.g3 as g3
 from gacalc.base import Real
 from gacalc.g2 import Vector
 
-a_x: sympy.Symbol
-a_y: sympy.Symbol
-b_x: sympy.Symbol
-b_y: sympy.Symbol
-a_x, a_y, b_x, b_y = sympy.symbols("a_x a_y b_x b_y", real=True)
-a: Vector = a_x * Vector.e_1 + a_y * Vector.e_2
-b: Vector = b_x * Vector.e_1 + b_y * Vector.e_2
+a_1: sympy.Symbol
+a_2: sympy.Symbol
+b_1: sympy.Symbol
+b_2: sympy.Symbol
+a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
+a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2
+b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2
 product: g2.Versor = a * b
 product  # the full geometric product: a scalar part + an e_12 (bivector) part
 
@@ -51,7 +51,7 @@ product  # the full geometric product: a scalar part + an e_12 (bivector) part
 # `inner_product`). All three are the same scalar.
 
 # %%
-dot_coordinate: g2.Scalar = g2.Scalar.from_real(a_x * b_x + a_y * b_y)
+dot_coordinate: g2.Scalar = g2.Scalar.from_real(a_1 * b_1 + a_2 * b_2)
 dot_fixed_grade: g2.Scalar = product.r_vector_part(0)  # <ab>_0, the bound grade 0
 dot_coordinate_free: g2.Scalar = a.inner_product(
     b
@@ -66,7 +66,7 @@ dot_coordinate_free
 # The same three rungs, now for `a ∧ b = ⟨ab⟩₂`.
 
 # %%
-wedge_coordinate: g2.Bivector = (a_x * b_y - a_y * b_x) * g2.Bivector.e_12
+wedge_coordinate: g2.Bivector = (a_1 * b_2 - a_2 * b_1) * g2.Bivector.e_12
 wedge_fixed_grade: g2.Bivector = product.r_vector_part(2)  # <ab>_2, the bound grade 2
 wedge_coordinate_free: g2.Bivector = a.outer_product(b)  # canonical; also a ^ b
 
@@ -88,15 +88,15 @@ assert product == product.r_vector_part(0) + product.r_vector_part(2)
 # mentions 2 or 3. That is the point of the coordinate-free rung.
 
 # %%
-p_x: sympy.Symbol
-p_y: sympy.Symbol
-p_z: sympy.Symbol
-q_x: sympy.Symbol
-q_y: sympy.Symbol
-q_z: sympy.Symbol
-p_x, p_y, p_z, q_x, q_y, q_z = sympy.symbols("p_x p_y p_z q_x q_y q_z", real=True)
-p: g3.Vector = p_x * g3.Vector.e_1 + p_y * g3.Vector.e_2 + p_z * g3.Vector.e_3
-q: g3.Vector = q_x * g3.Vector.e_1 + q_y * g3.Vector.e_2 + q_z * g3.Vector.e_3
+p_1: sympy.Symbol
+p_2: sympy.Symbol
+p_3: sympy.Symbol
+q_1: sympy.Symbol
+q_2: sympy.Symbol
+q_3: sympy.Symbol
+p_1, p_2, p_3, q_1, q_2, q_3 = sympy.symbols("p_1 p_2 p_3 q_1 q_2 q_3", real=True)
+p: g3.Vector = p_1 * g3.Vector.e_1 + p_2 * g3.Vector.e_2 + p_3 * g3.Vector.e_3
+q: g3.Vector = q_1 * g3.Vector.e_1 + q_2 * g3.Vector.e_2 + q_3 * g3.Vector.e_3
 product_3d: g3.Versor = p * q
 
 assert product_3d.r_vector_part(0) == p.inner_product(q)  # dot = <pq>_0, still

@@ -42,8 +42,8 @@ adding two ordinary numbers gives the same answer in either order:
 .. math::
 
    \vec{a} + \vec{b}
-     = \begin{bmatrix} \vec{a}_x + \vec{b}_x \\ \vec{a}_y + \vec{b}_y \end{bmatrix}
-     = \begin{bmatrix} \vec{b}_x + \vec{a}_x \\ \vec{b}_y + \vec{a}_y \end{bmatrix}
+     = \begin{bmatrix} a_1 + b_1 \\ a_2 + b_2 \end{bmatrix}
+     = \begin{bmatrix} b_1 + a_1 \\ b_2 + a_2 \end{bmatrix}
      = \vec{b} + \vec{a}.
 
 This is the first of many times this book will read a fact off a picture and then check it in
