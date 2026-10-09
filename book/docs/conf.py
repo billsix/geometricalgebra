@@ -143,6 +143,15 @@ math_numfig = True
 numfig = True
 numfig_secnum_depth = 1
 
+# Make cross-references usable on PAPER (the maintainer asked, 2026-10-08): a printed
+# PDF can't follow a hyperlink, so the LaTeX writer appends " (page N)" to every
+# :ref:/:doc: cross-reference (latex_show_pagerefs) and prints each external link's URL
+# as a footnote (latex_show_urls). Both default off and affect the PDF only, not HTML.
+# Section numbers in the reference text come from the numbered toctree in index.rst
+# (``:numbered:``), which also turns the equation numbers above into per-chapter (2.3).
+latex_show_pagerefs = True
+latex_show_urls = "footnote"
+
 # If a notebook page is slow to run, allow up to ten minutes for it.
 nb_execution_timeout = 600
 
