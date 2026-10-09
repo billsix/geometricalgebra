@@ -63,6 +63,33 @@ rotor :math:`\cos(\theta/2) - \sin(\theta/2) * e_{12}` applied as a sandwich
 companion notebook checks that the two give the same answer. (gacalc's Lean proofs name the two
 objects ``fullAngleRotor`` and ``rotor``, and prove them equal in effect.)
 
+Rotation is distributive
+------------------------
+
+Because to rotate is to *multiply by* :math:`R`, and the geometric product **distributes over
+addition**, rotation distributes too:
+
+.. math::
+   :label: eq-rotation-distributive
+
+   (\vec{u} + \vec{v}) * R = \vec{u} * R + \vec{v} * R.
+
+Rotating a sum is the same as rotating each piece and adding. That one fact is the whole game. Write
+any vector in the **natural basis**, :math:`\vec{v} = v_1 * \vec{e_1} + v_2 * \vec{e_2}`, and
+distribute:
+
+.. math::
+
+   \vec{v} * R = (v_1 * \vec{e_1} + v_2 * \vec{e_2}) * R
+               = v_1 * (\vec{e_1} * R) + v_2 * (\vec{e_2} * R).
+
+A rotation is **completely determined by what it does to** :math:`\vec{e_1}` **and**
+:math:`\vec{e_2}` — rotate those two, and every vector's rotation follows by distributing. (This is
+the idea the "rotating the graph paper" picture will rest on: turn the two axes, and everything drawn
+on the paper turns with them.) The Lean proofs state this as ``rot_add_vec`` (and ``rot_smul`` for a
+scalar multiple), with the basis form ``rot_basis_decomp`` in
+``proofs/GacalcProofs/Rotation2D.lean``; the companion notebook checks it symbolically in gacalc.
+
 Keep everything exact
 ---------------------
 
