@@ -47,7 +47,7 @@ order they are applied — **right to left**, the way a composition reads —
 Read it right to left: swing :math:`\vec{a}` onto :math:`\vec{e}_1`, rotate up to :math:`\vec{b}'` there,
 then undo the first swing.
 
-**Step 1 — swing :math:`\vec{a}` onto the x-axis.** This is the single plane rotation of
+**Step 1 — swing** :math:`\vec{a}` **onto the x-axis.** This is the single plane rotation of
 :doc:`proof-rotate`. Call the angle :math:`\vec{a}` makes with the x-axis :math:`\beta`; its cosine and
 sine are read straight off :math:`\vec{a}`, so — as in that chapter — we never have to compute
 :math:`\beta` itself:
@@ -74,7 +74,7 @@ And it carries :math:`\vec{b}` along to a new vector :math:`\vec{b}' = R_{\vec{a
    :align: center
    :alt: a swung onto the x-axis; b carried to b-prime; faint dashed originals
 
-**Step 2 — in standard position, rotate :math:`\vec{e}_1` onto :math:`\vec{b}'`.** Now the problem is
+**Step 2 — in standard position, rotate** :math:`\vec{e}_1` **onto** :math:`\vec{b}'`. Now the problem is
 easy: swing the x-axis up onto :math:`\vec{b}'` by the angle :math:`\theta` between them — and, again,
 we read its cosine and sine straight off :math:`\vec{b}'`'s coordinates
 (:math:`\cos(\theta) = b'_1/|\vec{b}'|`, :math:`\sin(\theta) = b'_2/|\vec{b}'|`). Call it
