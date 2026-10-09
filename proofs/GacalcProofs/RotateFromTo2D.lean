@@ -20,23 +20,38 @@ import GacalcProofs.StandardPosition2D
     are the coordinate formulas `(a·b)/(|a||b|)` and `(a∧b)/(|a||b|)` — **no angle ever named**. Applied
     to `a`, it lands on `(|a|/|b|)·b` — `b`'s direction with `a`'s magnitude (`rotateFromTo_carries`),
     since magnitudes don't set the rotation, only directions do. The engine is `rotPlane_comp` (the
-    composition of two plane rotations is the rotation by the angle-sum) and `rotPlane_conj_collapse`
-    (a conjugation by a unit `(cos, sin)` leaves the middle rotation unchanged). See
+    composition of two plane rotations is the rotation by the angle-sum), its corollary
+    `rotPlane_comm` (plane rotations commute — the fact the book's "The collapse" cites by name),
+    and `rotPlane_conj_collapse` (a conjugation by a unit `(cos, sin)` leaves the middle rotation
+    unchanged). See
     `tasks/reference/reduction-to-standard-position.md`. -/
 namespace GacalcProofs.G2
 
 /-- **Composition of plane rotations = rotation-angle addition.** `rotPlane c₁ s₁ ∘ rotPlane c₂ s₂` is
     `rotPlane (c₁c₂ − s₁s₂) (s₁c₂ + c₁s₂)` — the 2×2 rotation-matrix product. Pure algebra; holds for
-    any `(c, s)` (no unit constraint). In particular rotPlane rotations **commute** (the result is
-    symmetric in the two pairs). -/
+    any `(c, s)` (no unit constraint). The result is symmetric in the two pairs, which is why plane
+    rotations commute — stated as `rotPlane_comm` below. -/
 theorem rotPlane_comp (c1 s1 c2 s2 : ℝ) (v : G2) :
     rotPlane c1 s1 (rotPlane c2 s2 v) = rotPlane (c1 * c2 - s1 * s2) (s1 * c2 + c1 * s2) v := by
   simp only [rotPlane]; ext <;> ring
 
+/-- **Plane rotations commute:** `rotPlane c₁ s₁ ∘ rotPlane c₂ s₂ = rotPlane c₂ s₂ ∘ rotPlane c₁ s₁`.
+    By `rotPlane_comp` each side is the single rotation by the angle-sum, and that rotation's
+    `(cos, sin)` is symmetric in the two pairs (real multiplication and addition commute). Pure
+    algebra — no unit constraint, any `v`. This is the fact `rotPlane_conj_collapse` rests on and the
+    one the book's `proof-rotate-from-a-to-b.rst` ("The collapse") cites; the angle form is
+    `Rotation2D.rot_comm`. -/
+theorem rotPlane_comm (c1 s1 c2 s2 : ℝ) (v : G2) :
+    rotPlane c1 s1 (rotPlane c2 s2 v) = rotPlane c2 s2 (rotPlane c1 s1 v) := by
+  have hc : c1 * c2 - s1 * s2 = c2 * c1 - s2 * s1 := by ring
+  have hs : s1 * c2 + c1 * s2 = s2 * c1 + c2 * s1 := by ring
+  rw [rotPlane_comp, rotPlane_comp, hc, hs]
+
 /-- **Sandwich collapse:** conjugating a rotation by a *unit* plane rotation leaves it unchanged —
     aligning with `rotPlane ca (−sa)`, rotating by `(c₂, s₂)` in the aligned frame, then un-aligning
-    with `rotPlane ca sa`, is the same as just rotating by `(c₂, s₂)`. (2D rotations commute, so the
-    align/un-align cancel.) Needs only `ca² + sa² = 1`. -/
+    with `rotPlane ca sa`, is the same as just rotating by `(c₂, s₂)`. (2D rotations commute —
+    `rotPlane_comm` — so the align/un-align slide past the middle rotation and cancel.) Needs only
+    `ca² + sa² = 1`. -/
 theorem rotPlane_conj_collapse (ca sa c2 s2 : ℝ) (h : ca ^ 2 + sa ^ 2 = 1) (v : G2) :
     rotPlane ca sa (rotPlane c2 s2 (rotPlane ca (-sa) v)) = rotPlane c2 s2 v := by
   simp only [rotPlane]

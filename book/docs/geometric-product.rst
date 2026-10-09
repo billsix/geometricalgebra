@@ -30,12 +30,27 @@ product* :math:`e_1 e_2` — call it :math:`e_{12}`. Multiplying :math:`\vec{a}`
    \vec{a}\,e_{12} = (\vec{a}_x e_1 + \vec{a}_y e_2)\,e_{12}
                    = -\vec{a}_y\,e_1 + \vec{a}_x\,e_2.
 
-So the whole rotation is a single multiplication:
+(The two facts used, :math:`e_1 e_{12} = e_2` and :math:`e_2 e_{12} = -e_1`, are the
+multiplication rules of the algebra, spelled out in :doc:`defining-g2`.) So the whole rotation is
+a single multiplication:
 
 .. math::
 
    \vec{r}(\vec{a}; \theta) = \cos\theta\,\vec{a} + \sin\theta\,(\vec{a}\,e_{12})
                             = \vec{a}\,(\cos\theta + \sin\theta\,e_{12}).
+
+Check it in coordinates. Multiply the right-hand side out, component by component, and compare
+with the formula we started from:
+
+.. math::
+
+   \vec{a}\,(\cos\theta + \sin\theta\,e_{12})
+     = \cos\theta\,(\vec{a}_x e_1 + \vec{a}_y e_2) + \sin\theta\,(-\vec{a}_y e_1 + \vec{a}_x e_2)
+     = (\vec{a}_x\cos\theta - \vec{a}_y\sin\theta)\,e_1
+       + (\vec{a}_x\sin\theta + \vec{a}_y\cos\theta)\,e_2,
+
+exactly the two coordinates of :math:`\vec{r}(\vec{a}; \theta)` in :doc:`proof-rotate`. (The Lean
+proofs state this as ``vec_mul_fullAngleRotor`` in ``proofs/GacalcProofs/Rotation2D.lean``.)
 
 The object :math:`R = \cos\theta + \sin\theta\,e_{12}` is a **full-angle rotor**: to
 rotate is simply to *multiply by* :math:`R`, on one side, by the whole angle. This is what

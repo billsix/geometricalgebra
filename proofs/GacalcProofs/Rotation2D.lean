@@ -10,8 +10,8 @@ import GacalcProofs.Sandwich
 
       * `rot θ` — rotation of a 𝒢₂ vector by θ, the geometric definition from sin/cos
         on the vector's **named components** `c1`/`c2` (its e₁/e₂ coefficients — no bare
-        coordinate pairs); it composes by adding angles (`rot_add`) and preserves the
-        norm (`rot_normSq`).
+        coordinate pairs); it composes by adding angles (`rot_add`), so 2D rotations commute
+        (`rot_comm`), and preserves the norm (`rot_normSq`).
       * `fullAngleRotor θ = cos θ + sin θ · e₁e₂ ∈ 𝒢₂`, the **full-angle rotor**, and **the
         geometric product ENACTS rotation**: right-multiplying a vector by it rotates the
         vector by θ (`vec_mul_fullAngleRotor`). This one-sided, full-angle form is 2D-only —
@@ -65,6 +65,14 @@ theorem rot_vec (θ x y : ℝ) :
 theorem rot_add (θ φ : ℝ) (v : G2) : rot θ (rot φ v) = rot (φ + θ) v := by
   simp only [rot, G2.vec, cos_add, sin_add]
   ext <;> ring
+
+/-- **2D rotations commute:** rotating by φ then by θ is the same as θ then φ — by `rot_add` each
+    side is the single rotation by the angle sum, and real addition commutes. The angle form of
+    the fact the book's `proof-rotate-from-a-to-b.rst` ("The collapse") rests on; the `(cos, sin)`
+    form the collapse is written in is `RotateFromTo2D.rotPlane_comm`. For every `v` (both sides
+    read only `c1`/`c2`, as in `rot_add`). -/
+theorem rot_comm (θ φ : ℝ) (v : G2) : rot θ (rot φ v) = rot φ (rot θ v) := by
+  rw [rot_add, rot_add, add_comm]
 
 /-- Rotation preserves the squared norm of a vector (magnitudes are unchanged). -/
 theorem rot_normSq (θ : ℝ) {v : G2} (hv : G2.IsVector v) : G2.normSq (rot θ v) = G2.normSq v := by

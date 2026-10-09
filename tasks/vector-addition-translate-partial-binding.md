@@ -48,6 +48,11 @@ points, and `make docs` green.
 
 ## Plan
 
+> Landed ahead of this task (2026-10-09, via `tasks/coordinate-proofs-alongside-early-results.md`):
+> the `add3` paragraph on the page — addition commutes, with the coordinate check — behind a
+> `Draft` banner, and the companion notebook's `a + b == b + a` / subtraction cells (typed).
+> Write the rest of the page around them; don't re-draft them.
+
 1. **Prose** (`vector-addition.rst`, new subsection "Translate: adding the same vector to
    everything"): (a) `a + b` as a one-off; (b) fix `b`, vary `a` → a function; name it
    `translate(b)`; (c) partial binding in one paragraph; (d) apply it to every grid point → the
@@ -56,7 +61,8 @@ points, and `make docs` green.
 2. **Figures** (`book/figures/epix/`, keyword-args-everywhere + typed, per the house rules):
    `trans1` — the grid and a few labelled points; `trans2` — the same grid slid by `b`, old grid
    faint, each point's displacement arrow drawn. Add a `grid(...)` helper to `_scene2d.py`.
-3. **Notebook** (`book/docs/notebooks/vector-addition.py`, currently the `1 + 1` stub): build
+3. **Notebook** (`book/docs/notebooks/vector-addition.py`, which now holds the typed commutation
+   and subtraction cells — add to it, don't replace it): build
    `a`, `b` from basis constants (`2 * e_1 + 1 * e_2` form); `t = translate(b=b)`; apply `t` to
    `a`, to the basis vectors, to a list of grid points; show `t.inverse()(t(a)) == a`; show
    `t.interpolate(0.5)` as "half-way". Coordinates alongside each (per

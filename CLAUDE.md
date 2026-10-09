@@ -236,6 +236,14 @@ Repo-specific invariants the agent must obey (rationale in the shared doc + the 
   exactly and suppress a linter narrowly with the reason at the site.
 - **A local bound to a class/type object is named `cls`** (e.g. `cls = type(vector)`), never
   `representation`/`klass`. **The dimension is `n`, never `grade`.**
+- **The book's notebooks are hand-written Python under the full standard — every binding
+  typed** (the maintainer, 2026-10-09). `book/docs/notebooks/*.py` annotate every assignment
+  (`a: Vector = a_x * e_1 + a_y * e_2`, `R: Versor = …`, `magnitude: Real = b.magnitude()`),
+  declare each name on the line above a `sympy.symbols` unpack (`a_x: sympy.Symbol`), and
+  annotate every `def`'s parameters and return — exactly as `tests/` and `notebooks/` do; a
+  `1 + 1` placeholder has nothing to type. Enforcement: `make format` runs
+  `ty check book/docs/notebooks`, and `tools/check_annotations.py` walks `book/docs/notebooks/`
+  so a missing annotation shows up as a row (none expected).
 - **Prefer `match` / total dispatch for structural case analysis** — the cross-project "Prefer total
   dispatch over an open-ended conditional chain" convention, and it applies to the **Lean proofs**
   (`proofs/`) as much as the Python. Where a definition dispatches on structure (a grade/`n`, a
@@ -260,7 +268,8 @@ over a "run it on your host" instruction.
   tests`, `addopts = --doctest-modules` so docstrings run as tests). Quick host run:
   `python -m pytest -q` after `make generate`.
 - **`entrypoint/format.sh`** (via `make format`, the real gate) — `ruff check --fix`,
-  `ruff format`, `ty check` (`src`/`tests`/`tools`, all clean), and `tools/check_changelog.py`
+  `ruff format`, `ty check` (`src`/`tests`/`tools`/`book/docs/notebooks`, all clean), and
+  `tools/check_changelog.py`
   (the version↔changelog guard). `make check-changelog` runs that guard alone on the host. The
   vendored Emacs tree is excluded via `extend-exclude` in `pyproject.toml [tool.ruff]`, **not** a
   CLI flag (`ruff format` rejects `--extend-exclude`) — don't "fix" `format.sh` to pass it.
@@ -421,7 +430,7 @@ scalars), the nonzero-guard convention for angle/trig theorems, and the Lean det
 
 **Standing default (William Emerison Six <billsix@gmail.com>, 2026-10-09):** whenever the maintainer
 asks for a mathematical result — a definition, derivation, identity, proof, or an equivalence between
-two formulations — deliver it in **all three** forms unless he overrides it for that request:
+two formulations — deliver it in **all three** forms unless the maintainer overrides it for that request:
 
 1. **Lean** — a machine-checked theorem in `proofs/GacalcProofs/` (`make lean`), in the house style
    of "Coordinates only when needed" above (objects in, scalars only in the body).

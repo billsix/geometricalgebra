@@ -96,7 +96,42 @@ The collapse
 ------------
 
 Now the payoff. In 2D, **rotations commute** — turning by one angle and then another is the same in
-either order. So in :math:`\big(R_{\vec{a}}^{\vec{e}_1}\big)^{-1} \circ R_{\vec{e}_1}^{\vec{b}'} \circ
+either order. That is easy to believe, and we can *check it in coordinates* with the formula of
+:doc:`proof-rotate`. Rotate :math:`\vec{v}` by :math:`\theta_1`, then rotate the result by
+:math:`\theta_2`, and multiply out:
+
+.. math::
+
+   \begin{aligned}
+   \vec{r}\big(\vec{r}(\vec{v};\theta_1);\theta_2\big)
+     &= \begin{bmatrix}
+          \cos\theta_2\,(\vec{v}_x\cos\theta_1 - \vec{v}_y\sin\theta_1)
+            - \sin\theta_2\,(\vec{v}_x\sin\theta_1 + \vec{v}_y\cos\theta_1) \\
+          \sin\theta_2\,(\vec{v}_x\cos\theta_1 - \vec{v}_y\sin\theta_1)
+            + \cos\theta_2\,(\vec{v}_x\sin\theta_1 + \vec{v}_y\cos\theta_1)
+        \end{bmatrix} \\
+     &= \begin{bmatrix}
+          \vec{v}_x\,(\cos\theta_1\cos\theta_2 - \sin\theta_1\sin\theta_2)
+            - \vec{v}_y\,(\sin\theta_1\cos\theta_2 + \cos\theta_1\sin\theta_2) \\
+          \vec{v}_x\,(\sin\theta_1\cos\theta_2 + \cos\theta_1\sin\theta_2)
+            + \vec{v}_y\,(\cos\theta_1\cos\theta_2 - \sin\theta_1\sin\theta_2)
+        \end{bmatrix} \\
+     &= \begin{bmatrix}
+          \vec{v}_x\cos(\theta_1 + \theta_2) - \vec{v}_y\sin(\theta_1 + \theta_2) \\
+          \vec{v}_x\sin(\theta_1 + \theta_2) + \vec{v}_y\cos(\theta_1 + \theta_2)
+        \end{bmatrix}
+      = \vec{r}(\vec{v};\ \theta_1 + \theta_2),
+   \end{aligned}
+
+by the angle-addition identities. The last line is the single rotation by :math:`\theta_1 + \theta_2`
+— and :math:`\theta_1 + \theta_2 = \theta_2 + \theta_1`, so the two turns in the other order land
+on exactly the same vector. (The companion notebook, :doc:`notebooks/proof-rotate-from-a-to-b`, runs
+the same check with symbolic coordinates, and the Lean proofs state it twice: ``rot_comm`` in
+``proofs/GacalcProofs/Rotation2D.lean`` for this angle form, and ``rotPlane_comm`` in
+``proofs/GacalcProofs/RotateFromTo2D.lean`` for the cosine-and-sine form the three turns above are
+written in.)
+
+So in :math:`\big(R_{\vec{a}}^{\vec{e}_1}\big)^{-1} \circ R_{\vec{e}_1}^{\vec{b}'} \circ
 R_{\vec{a}}^{\vec{e}_1}`, the outer rotation and the inner rotation — step 3 and step 1, which are
 inverses — slide past the middle one and **cancel**. The whole sandwich collapses to its middle turn:
 
@@ -123,8 +158,8 @@ So the rotation that carries :math:`\vec{a}`'s direction to :math:`\vec{b}`'s, a
    R_{\vec{a}}^{\vec{b}}(\vec{v}) = \cos\theta\,\vec{v} + \sin\theta\,\vec{r}(\vec{v};\ \pi/2).
 
 (Both facts are machine-checked in ``proofs/GacalcProofs/RotateFromTo2D.lean``: the sandwich collapses
-to the middle rotation — ``rotateFromTo_collapse``, built on ``rotPlane_conj_collapse`` — and the whole
-construction carries :math:`\vec{a}` to :math:`(|\vec{a}|/|\vec{b}|)\,\vec{b}` — ``rotateFromTo_carries``.)
+to the middle rotation — ``rotateFromTo_collapse``, built on ``rotPlane_conj_collapse``, which rests on
+``rotPlane_comm`` above — and the whole construction carries :math:`\vec{a}` to :math:`(|\vec{a}|/|\vec{b}|)\,\vec{b}` — ``rotateFromTo_carries``.)
 
 Look again at those two numerators. The top one, :math:`\vec{a}_x\vec{b}_x + \vec{a}_y\vec{b}_y`, is the
 **dot product** of :math:`\vec{a}` and :math:`\vec{b}`; the bottom one,

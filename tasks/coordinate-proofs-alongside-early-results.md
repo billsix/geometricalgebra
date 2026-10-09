@@ -1,6 +1,7 @@
 # Early in the book, show results in coordinates too — not only the coordinate-free statement
 
-**Status:** proposed — needs go-ahead (a book-outline principle + an audit-and-fill pass)
+**Status:** DONE 2026-10-09 (work committed by the maintainer as `76ac097`); the archive move to
+`tasks/archive/2026/10/09/` is owed as its own commit after the squash.
 **Priority:** 5
 **Difficulty:** 5
 **Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
@@ -14,89 +15,112 @@ way of coordinates. Obviously, as the book moves towards coordinate free, that s
 
 So in **Part I** a result is presented twice: the coordinate-free statement (and its proof, where
 the book proves it) **and** a coordinate verification the reader can check by hand or in the
-companion notebook. The coordinate half tapers off as the book turns coordinate-free (Part I's
-later chapters, all of Part II). "Done" = the principle is written into
-`tasks/reference/book-outline.md`, every Part I result currently asserted without a coordinate
-check has one (prose, or the page's notebook, or both), **the 2D-rotations-commute claim has a
-named Lean theorem the book cites** (maintainer's addition, 2026-10-09), and `make docs` +
-`make lean` are green.
+companion notebook, tapering off as the book turns coordinate-free. The task wrote that principle
+and its taper boundary into `tasks/reference/book-outline.md`, gave every Part I claim that lacked a
+coordinate check one (prose, notebook, or both), added the two Lean theorems that state "2D
+rotations commute" so the book can cite them by name, and — on a mid-task request — typed every
+binding in the book's notebooks and made that a gated rule. `make docs` and `make lean` passed.
 
-## Context
+## Context (still true of the repo)
 
-- **This sharpens, not contradicts, an existing principle.** `tasks/reference/book-outline.md` ›
-  "Coordinate-free is the destination; coordinates are scaffolding" already says "for teaching and
-  proofs we reduce to coordinates" and routes coordinate calculations to notebooks. The new rule
-  adds: a coordinate-free *statement* on its own is not enough early on — put the coordinate form
-  next to it, and say when to stop. It also matches the outline's §E/§F lines "OK to reduce to
-  coordinates for this" and "show **in coordinates** that the geometric-product implementation is
-  equivalent".
-- **The library-side rule is different and stays.** `CLAUDE.md` › "Coordinates only when needed"
-  governs *Lean theorem statements and Python signatures* (objects in, scalars only in the body).
-  That is about the code's API shape, not about what the book shows a student; the two coexist.
-- **The structural home for the coordinate half:** the book's three-media split (prose / figures /
-  notebooks). A coordinate check is naturally a **notebook cell** (sympy, symbolic coordinates,
-  both sides simplified to equal) under the page, with the prose giving the by-hand version when
-  it is short. `book/docs/notebooks/levels-of-abstraction.py` already does exactly this for dot
-  and wedge (coordinate → fixed-grade → coordinate-free, all proved equal) and is the model.
+- **The rule sharpens an existing principle.** `book-outline.md` › "Coordinate-free is the
+  destination; coordinates are scaffolding" already routed coordinate calculations to notebooks;
+  the addition is that a coordinate-free *statement* alone is not enough early on, and the taper
+  point is a decision rather than drift. Its sub-bullets now carry the rule, the boundary (through
+  §D–F; dropped from `blade-square-sign`/`dual`/`defining-g2` and all of Part II), and the pattern.
+- **The library-side rule is different and unchanged.** `CLAUDE.md` › "Coordinates only when
+  needed" governs Lean statements and Python signatures (objects in, scalars only in the body); it is
+  about the API's shape, not what the book shows a student. The two coexist.
+- **Where a coordinate check lives:** in the prose when it is a few lines, otherwise in the page's
+  companion notebook (sympy, symbolic coordinates, both sides simplified to equal), with the Lean
+  theorem cited beside it — the three-forms rule of `CLAUDE.md` › "Every piece of math comes in
+  three forms". `notebooks/levels-of-abstraction.py` is the pattern; `proof-rotate-from-a-to-b` and
+  `proof-projection` are the proof-page instances.
 
-## Audit — Part I claims currently stated without a coordinate check (2026-10-08)
+## Chronology (from the unpushed commits `origin/master..HEAD`, 2026-10-08 → 10-09)
 
-Found by `grep -niE "commut|compos|equivalent|the same"` over `book/docs/*.rst`; extend the audit
-when picking this up (the pages are still being written).
+1. **Filed** (`e6e1643`, 2026-10-08) with "done" = principle in the outline, the four audit items
+   below filled, `make docs` green. The audit came from
+   `grep -niE "commut|compos|equivalent|the same"` over `book/docs/*.rst`.
+2. **Sibling decisions that shaped this task** (`e5e829f`, 2026-10-08): the vector-addition page's
+   prose is agent-drafted behind a `.. note:: Draft` banner (not left `TODO`), and the coordinate
+   subscript convention (`a_1`/`a_2` instead of `a_x`/`a_y`) stayed a separate, still-proposed task.
+3. **The three-forms rule** landed in `CLAUDE.md` (`257b40a`): every math result as Lean + symbolic
+   Python + prose/LaTeX by default.
+4. **Scope raised** (`bf026eb`, 2026-10-09): the maintainer added "the 2D-rotations-commute claim
+   has a named Lean theorem the book cites" to the done-state, and `make lean` to the gates. The
+   proofs held the *engine* (`rot_add`; `rotPlane_comp`, whose doc comment *said* "in particular
+   rotPlane rotations commute") but no theorem *stated* commutation.
+5. **Go-ahead and the work** (`76ac097`, 2026-10-09), including the mid-task request "all of these
+   notebooks should have types just like everything else … and update the reference document, or
+   claude.md, to ensure this happens going forward".
 
-1. **"In 2D, rotations commute"** — `book/docs/proof-rotate-from-a-to-b.rst`, section "The
-   collapse". Asserted and used (the sandwich collapses to its middle turn), never shown. The
-   coordinate version is short: apply the `r(v; θ)` formula of `proof-rotate.rst` twice in each
-   order and expand with the angle-addition identities — both orders give
-   `cos(θ₁ + θ₂)`, `sin(θ₁ + θ₂)`; the notebook does it with sympy `simplify`.
-   **Lean (maintainer, 2026-10-09: make a theorem for it as part of this task).** The proofs
-   already hold the *engine* but not the *statement*: `rot_add` in
-   `proofs/GacalcProofs/Rotation2D.lean` (`rot θ (rot φ v) = rot (φ + θ) v`, angle form) and
-   `rotPlane_comp` in `proofs/GacalcProofs/RotateFromTo2D.lean` (composition of two `(cos, sin)`
-   plane rotations is the angle-sum rotation; its doc comment *says* "in particular rotPlane
-   rotations commute" but no theorem states it). Add the two one-line corollaries, named so the
-   book can cite them:
-   - `rot_comm (θ φ : ℝ) (v : G2) : rot θ (rot φ v) = rot φ (rot θ v)` in `Rotation2D.lean`
-     (by `rot_add` twice and `add_comm`) — the angle-based form `proof-rotate.rst` teaches;
-   - `rotPlane_comm (c1 s1 c2 s2 : ℝ) (v : G2) : rotPlane c1 s1 (rotPlane c2 s2 v) =
-     rotPlane c2 s2 (rotPlane c1 s1 v)` in `RotateFromTo2D.lean` (by `rotPlane_comp` twice and
-     `ring`, no unit constraint needed) — the `(cos, sin)` form the collapse actually uses; then
-     have `rotPlane_conj_collapse`'s doc comment point at it as the reason the sandwich collapses.
-   Both follow the house style (objects in: `v : G2`, no `IsVector` needed since both sides read
-   only `c1`/`c2` — same as `rot_add`). The book's "The collapse" paragraph then cites
-   `rotPlane_comm` by name next to the existing `RotateFromTo2D.lean` citation (line ~125), and
-   `tasks/reference/lean-ga-proof-architecture.md`'s what-is-proven list gets the two names.
-2. **"Either order lands on the same corner, so addition commutes"** —
-   `book/docs/vector-addition.rst` (TODO prose; the `add3` figure). Coordinates:
-   `(a_1 + b_1, a_2 + b_2) = (b_1 + a_1, b_2 + a_2)` because real addition commutes — one line,
-   and it is the first place a student sees "the picture says it; the coordinates confirm it".
-   Coordinate with `tasks/vector-addition-translate-partial-binding.md` (same page).
-3. **`geometric-product.rst`** — the rotor `R = cos(θ) + sin(θ) e_12` is shown to equal the
-   coordinate formula ("equals both the coordinate formula …"); verify the page actually *expands*
-   `a (cos(θ) + sin(θ) e_12)` into components rather than asserting it.
-4. **`projection.rst` / `proof-projection.rst`** — the outline (§F) already demands the coordinate
-   equivalence of the geometric-product projection and the rotate-then-take-components one;
-   check it is present, not just promised.
+## What was done (all in `76ac097`)
 
-Pages where the coordinate half should **stop** (taper): `blade-square-sign.rst` (general-`n`
-sign argument — inherently coordinate-free), `dual.rst`, `defining-g2.rst`, and all of Part II.
-Write that boundary into the outline so the taper is a decision, not drift.
+**The principle.** `book-outline.md`: three sub-bullets under the coordinate-free principle (rule
+verbatim, taper boundary, pattern/instances); one line under "Notation & prose conventions for proof
+pages" (state → prove → verify in coordinates); the file-layout paragraph names the two proof pages'
+companion notebooks and which notebooks have content.
 
-## Plan
+**The four audit items.**
 
-1. `tasks/reference/book-outline.md`: under "Pedagogical principles", extend the coordinate-free
-   bullet with the rule above (quote the maintainer), name the taper boundary, and point at
-   `levels-of-abstraction.py` as the pattern. Also add a line to "Notation & prose conventions
-   for proof pages": *a Part I proof page states the result, proves it, and then verifies it in
-   coordinates (prose if ≤ a few lines, else the notebook).*
-2. Fill the audit items 1–4 (prose + notebook cells), in the page's existing voice; items 1 and 3
-   are small, 2 rides with the vector-addition task, 4 is a check.
-3. Lean: add `rot_comm` and `rotPlane_comm` (audit item 1), cite them from the book page and the
-   proof-architecture reference doc; `make lean` (needs the full image, `USE_LEAN=1`).
-4. `make docs`; the notebooks' new cells must execute (`nb_execution_raise_on_error = True`
-   already makes a failing cell fail the build).
+1. *"In 2D, rotations commute"* (`proof-rotate-from-a-to-b.rst` › "The collapse") — was asserted
+   and used, never shown. The page now expands `r(r(v; θ₁); θ₂)` by hand with the angle-addition
+   identities to `r(v; θ₁ + θ₂)`, which is symmetric in the two angles. A new companion notebook
+   `book/docs/notebooks/proof-rotate-from-a-to-b.py` (linked from `rotate.rst`'s toctree) checks
+   with symbolic coordinates: commutation in the angle form and in the `(cos, sin)` form, the
+   three-turn sandwich collapsing to the single rotation, and that rotation carrying `a` to
+   `(|a|/|b|) b` — every `symbolically_equal` is `True`. Lean: `rot_comm` in `Rotation2D.lean`
+   (`rot_add` twice and `add_comm`) and `rotPlane_comm` in `RotateFromTo2D.lean` (`rotPlane_comp`
+   twice and two `ring`-proved scalar rewrites; no unit constraint, any `v`) — house style, objects
+   in, no `IsVector` needed since both sides read only `c1`/`c2`. `rotPlane_comp`'s and
+   `rotPlane_conj_collapse`'s doc comments and the module header point at `rotPlane_comm`; the page
+   cites both theorems; `lean-ga-proof-architecture.md` (inventory) and
+   `reduction-to-standard-position.md` list them.
+2. *"Either order lands on the same corner, so addition commutes"* (`vector-addition.rst`, the
+   `add3` figure) — the `TODO` became a Draft-bannered paragraph with the one-line coordinate check;
+   `notebooks/vector-addition.py` replaced its `1 + 1` stub with `a + b == b + a` and the two
+   subtraction identities. `tasks/vector-addition-translate-partial-binding.md` records what landed
+   so its translate section adds to the page rather than redrafting it.
+3. *The full-angle rotor* (`geometric-product.rst`) — the page now multiplies
+   `a (cos θ + sin θ e₁₂)` out component by component and matches `proof-rotate`'s formula, citing
+   `vec_mul_fullAngleRotor`, and points the `e₁e₁₂ = e₂`, `e₂e₁₂ = −e₁` steps at `defining-g2`.
+   **Finding:** the notebook's markdown promised a comparison with the coordinate formula but had
+   no such cell; added (`full_angle_result == coordinate_formula` → `True`).
+4. *Projection* — the coordinate equivalence was already in `notebooks/proof-projection.py` (fixed
+   `b = 3e₁ + 4e₂`, general `a`); a fully symbolic `b` cell was added and sympy still simplifies the
+   difference to `[0, 0]`.
+
+**Typed notebooks (the mid-task request).** The six notebooks with content
+(`levels-of-abstraction`, `rotate`, `geometric-product`, `proof-projection`, `vector-addition`,
+`proof-rotate-from-a-to-b`) annotate every binding: `sympy.Symbol` declared above each `symbols`
+unpack, `Vector`/`Versor`/`Scalar`/`Bivector`/`Real`/`MultiVectorBase` on values,
+`Callable[[Real], InvertibleFunction[Vector]]` on the rotation factory, every `def` signature. The
+other ten are `1 + 1` placeholders. Types came from `ty`'s `reveal_type` on annotated inputs — sympy
+is untyped, so a `symbols` result is `Any` and the declared type carries the meaning. The rule is in
+`CLAUDE.md` › "Coding standard (Python)" and `book-and-docs-pipeline.md`; enforcement is
+`ty check book/docs/notebooks` in `entrypoint/format.sh` and `book/docs/notebooks` in
+`tools/check_annotations.py`'s scope (verified by planting a one-line untyped file — reported as
+`LOCAL`, then removed; the real notebooks report 0 rows).
+
+**Decisions and non-changes.** New prose and notebooks use `a_x`/`a_y` to match the pages they sit
+in (the subscript task will convert them with everything else). Book notebooks carry no license
+header, matching the existing ones. No `CHANGELOG` entry: a book change plus two Lean corollaries,
+nothing a consumer pins.
+
+**Gates.** `make lean` (`make -o image lean`, no image rebuild): `[lean] OK`, the two edited modules
+rebuilt without warnings, no `sorry`/`admit`. `make docs` (`make -o image docs`): exit 0 twice, before
+and after the typing sweep; every notebook executed; the new notebook page renders and the proof page
+cites `rotPlane_comm`. Locally: `ruff check .` and `ruff format --check .` clean,
+`ty check book/docs/notebooks` and `ty check tools` pass.
+
+## Found, not fixed
+
+The annotation auditor's whole-tree total is 47 rows, not the 24 documented in
+`tasks/reference/type-annotation-exemptions.md`: none are from the book notebooks. The drift is
+recorded in that doc's "Current state" and the re-baseline is scaffolded as
+`tasks/re-baseline-annotation-auditor.md` (proposed — needs go-ahead).
 
 ## Open questions
 
-None — the rule and the taper point are the maintainer's; the audit list is the agent's and
-grows as pages are written.
+None.

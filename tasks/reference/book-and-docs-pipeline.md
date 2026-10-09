@@ -13,9 +13,9 @@ doesn't need.
   scaffolded** (2026-08-03): one `.rst` prose page per section + `api.rst` (autodoc over
   every package module — `gacalc.base`/`gn`/`functions`/`transforms`/`measure`/`vectorcalc`/
   `frame`; expanded from the original three 2026-09-26 so cross-refs resolve), and
-  **percent-format notebook stubs** under
-  `book/docs/notebooks/*.py`. Structure and the prose-vs-notebook split live in
-  `book-outline.md`; content fills in later.
+  **percent-format notebooks** under `book/docs/notebooks/*.py` (stubs at first; which
+  ones have content is tracked in `book-outline.md` › "File layout"). Structure and the
+  prose-vs-notebook split live in `book-outline.md`.
 - Builds to **HTML and PDF** (no EPUB).
 - **Licensing:** the book *prose* is **GFDL-1.3** (GNU Free Documentation License,
   Version 1.3 — matching mvp's book), declared in a header on each ported `.rst`
@@ -33,7 +33,10 @@ doesn't need.
 - **Book notebooks:** the percent-format `.py` are the tracked source; the `.ipynb` are
   build artifacts (gitignored, regenerated each build). A notebook is a sub-page of its
   prose page (`.. toctree:: notebooks/<name>`); label a heading with MyST `(label)=` to
-  `:ref:` a subsection from elsewhere (auto heading-anchors are off by design).
+  `:ref:` a subsection from elsewhere (auto heading-anchors are off by design). They are
+  hand-written Python under the full coding standard — **every binding typed** (`CLAUDE.md` ›
+  "Coding standard (Python)", 2026-10-09); `make format` type-checks them
+  (`ty check book/docs/notebooks`) and `tools/check_annotations.py` audits them.
 - **`BUILD_DOCS`** gates the toolchain: Dockerfile `ARG BUILD_DOCS=0` (bare build stays
   lean), Makefile `BUILD_DOCS ?= 1` (so `make image` builds it in). The gated
   Dockerfile block installs the Sphinx + LaTeX packages (list below).

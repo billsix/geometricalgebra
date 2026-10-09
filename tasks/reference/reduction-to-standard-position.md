@@ -157,7 +157,8 @@ rotation `rotPlane c s` (procedure on the `(c1, c2)` components) with `rotPlane_
 **2D — rotate from direction `a` to direction `b`** (`RotateFromTo2D.lean`, the book's
 `proof-rotate-from-a-to-b.rst`): the same standard-position idea applied to *rotation* — align `a` to
 `e₁` with `rotPlane`, rotate to `b' = R_a^{e₁}(b)` in that frame (cos/sin read off `b'`), un-align.
-`rotPlane_comp` (rotPlane composition = angle addition, so rotPlanes commute) and
+`rotPlane_comp` (rotPlane composition = angle addition), its corollary `rotPlane_comm` (plane
+rotations commute; angle form `Rotation2D.rot_comm`), and
 `rotPlane_conj_collapse` (conjugation by a unit `(cos, sin)` leaves the middle rotation unchanged) give
 the **collapse**: the 3-step sandwich equals its middle rotation (`rotateFromTo_collapse`), a single
 `rotPlane ((a·b)/(|a||b|)) ((a∧b)/(|a||b|))` — the cos/sin of the `a→b` angle as coordinate formulas,

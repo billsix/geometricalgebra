@@ -31,12 +31,17 @@ import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
+from gacalc.base import Real
 from gacalc.g2 import Vector
 
+a_x: sympy.Symbol
+a_y: sympy.Symbol
+b_x: sympy.Symbol
+b_y: sympy.Symbol
 a_x, a_y, b_x, b_y = sympy.symbols("a_x a_y b_x b_y", real=True)
-a = a_x * Vector.e_1 + a_y * Vector.e_2
-b = b_x * Vector.e_1 + b_y * Vector.e_2
-product = a * b
+a: Vector = a_x * Vector.e_1 + a_y * Vector.e_2
+b: Vector = b_x * Vector.e_1 + b_y * Vector.e_2
+product: g2.Versor = a * b
 product  # the full geometric product: a scalar part + an e_12 (bivector) part
 
 # %% [markdown]
@@ -46,9 +51,11 @@ product  # the full geometric product: a scalar part + an e_12 (bivector) part
 # `inner_product`). All three are the same scalar.
 
 # %%
-dot_coordinate = g2.Scalar.from_real(a_x * b_x + a_y * b_y)
-dot_fixed_grade = product.r_vector_part(0)  # <ab>_0, the bound grade 0
-dot_coordinate_free = a.inner_product(b)  # the canonical, dimension-free form
+dot_coordinate: g2.Scalar = g2.Scalar.from_real(a_x * b_x + a_y * b_y)
+dot_fixed_grade: g2.Scalar = product.r_vector_part(0)  # <ab>_0, the bound grade 0
+dot_coordinate_free: g2.Scalar = a.inner_product(
+    b
+)  # the canonical, dimension-free form
 
 assert dot_coordinate == dot_fixed_grade == dot_coordinate_free
 dot_coordinate_free
@@ -59,9 +66,9 @@ dot_coordinate_free
 # The same three rungs, now for `a ∧ b = ⟨ab⟩₂`.
 
 # %%
-wedge_coordinate = (a_x * b_y - a_y * b_x) * g2.Bivector.e_12
-wedge_fixed_grade = product.r_vector_part(2)  # <ab>_2, the bound grade 2
-wedge_coordinate_free = a.outer_product(b)  # canonical; also a ^ b
+wedge_coordinate: g2.Bivector = (a_x * b_y - a_y * b_x) * g2.Bivector.e_12
+wedge_fixed_grade: g2.Bivector = product.r_vector_part(2)  # <ab>_2, the bound grade 2
+wedge_coordinate_free: g2.Bivector = a.outer_product(b)  # canonical; also a ^ b
 
 assert wedge_coordinate == wedge_fixed_grade == wedge_coordinate_free == (a ^ b)
 wedge_coordinate_free
@@ -81,10 +88,16 @@ assert product == product.r_vector_part(0) + product.r_vector_part(2)
 # mentions 2 or 3. That is the point of the coordinate-free rung.
 
 # %%
+p_x: sympy.Symbol
+p_y: sympy.Symbol
+p_z: sympy.Symbol
+q_x: sympy.Symbol
+q_y: sympy.Symbol
+q_z: sympy.Symbol
 p_x, p_y, p_z, q_x, q_y, q_z = sympy.symbols("p_x p_y p_z q_x q_y q_z", real=True)
-p = p_x * g3.Vector.e_1 + p_y * g3.Vector.e_2 + p_z * g3.Vector.e_3
-q = q_x * g3.Vector.e_1 + q_y * g3.Vector.e_2 + q_z * g3.Vector.e_3
-product_3d = p * q
+p: g3.Vector = p_x * g3.Vector.e_1 + p_y * g3.Vector.e_2 + p_z * g3.Vector.e_3
+q: g3.Vector = q_x * g3.Vector.e_1 + q_y * g3.Vector.e_2 + q_z * g3.Vector.e_3
+product_3d: g3.Versor = p * q
 
 assert product_3d.r_vector_part(0) == p.inner_product(q)  # dot = <pq>_0, still
 assert product_3d.r_vector_part(2) == p.outer_product(q)  # wedge = <pq>_2, still
@@ -104,8 +117,8 @@ p.inner_product(q)
 # They agree in magnitude, and `cosine² + sine² = 1` (Lagrange's identity, <https://en.wikipedia.org/wiki/Lagrange%27s_identity>).
 
 # %%
-u = 3.0 * g2.e_1 + 4.0 * g2.e_2
-v = -1.0 * g2.e_1 + 2.0 * g2.e_2
+u: Vector = 3.0 * g2.e_1 + 4.0 * g2.e_2
+v: Vector = -1.0 * g2.e_1 + 2.0 * g2.e_2
 u.cosine(v)  # coordinate-free, any dimension
 
 # %%
@@ -117,6 +130,7 @@ u.sine(v), v.sine(u)
 
 # %%
 # Signed and unsigned agree in magnitude; Lagrange gives cos² + sin² = 1.
+cos_squared_plus_sin_squared: Real = u.cosine(v) ** 2 + u.sine(v) ** 2
 assert abs(u.sine(v)) == u.abs_sin(v)
-assert round(u.cosine(v) ** 2 + u.sine(v) ** 2, 10) == 1.0
-u.cosine(v) ** 2 + u.sine(v) ** 2  # == 1
+assert round(cos_squared_plus_sin_squared, 10) == 1.0
+cos_squared_plus_sin_squared  # == 1
