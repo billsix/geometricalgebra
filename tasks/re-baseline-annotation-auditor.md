@@ -3,7 +3,7 @@
 **Status:** proposed — needs go-ahead
 **Priority:** 6
 **Difficulty:** 3
-**Created:** 2026-10-09 (agent, from a finding in `tasks/coordinate-proofs-alongside-early-results.md`;
+**Created:** 2026-10-09 (agent, from a finding in `tasks/archive/2026/10/09/coordinate-proofs-alongside-early-results.md`;
 go-ahead William Emerison Six <billsix@gmail.com> pending)
 
 ## BLUF

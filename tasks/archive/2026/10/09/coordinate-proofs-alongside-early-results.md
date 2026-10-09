@@ -1,7 +1,8 @@
 # Early in the book, show results in coordinates too — not only the coordinate-free statement
 
-**Status:** DONE 2026-10-09 (work committed by the maintainer as `76ac097`); the archive move to
-`tasks/archive/2026/10/09/` is owed as its own commit after the squash.
+**Status:** complete
+**Completed:** 2026-10-09 (work committed by the maintainer as `cc2ee40`; archived in its own
+commit after the squash)
 **Priority:** 5
 **Difficulty:** 5
 **Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
@@ -37,7 +38,7 @@ binding in the book's notebooks and made that a gated rule. `make docs` and `mak
   three forms". `notebooks/levels-of-abstraction.py` is the pattern; `proof-rotate-from-a-to-b` and
   `proof-projection` are the proof-page instances.
 
-## Chronology (from the unpushed commits `origin/master..HEAD`, 2026-10-08 → 10-09)
+## Chronology (harvested from the pre-squash quick-save commits, 2026-10-08 → 10-09; all five were squashed into `cc2ee40`, so the hashes below are no longer on a branch)
 
 1. **Filed** (`e6e1643`, 2026-10-08) with "done" = principle in the outline, the four audit items
    below filled, `make docs` green. The audit came from
@@ -51,11 +52,11 @@ binding in the book's notebooks and made that a gated rule. `make docs` and `mak
    has a named Lean theorem the book cites" to the done-state, and `make lean` to the gates. The
    proofs held the *engine* (`rot_add`; `rotPlane_comp`, whose doc comment *said* "in particular
    rotPlane rotations commute") but no theorem *stated* commutation.
-5. **Go-ahead and the work** (`76ac097`, 2026-10-09), including the mid-task request "all of these
+5. **Go-ahead and the work** (`76ac097`, 2026-10-09; now `cc2ee40`), including the mid-task request "all of these
    notebooks should have types just like everything else … and update the reference document, or
    claude.md, to ensure this happens going forward".
 
-## What was done (all in `76ac097`)
+## What was done (all in `cc2ee40`)
 
 **The principle.** `book-outline.md`: three sub-bullets under the coordinate-free principle (rule
 verbatim, taper boundary, pattern/instances); one line under "Notation & prose conventions for proof

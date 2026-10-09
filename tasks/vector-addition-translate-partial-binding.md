@@ -48,7 +48,7 @@ points, and `make docs` green.
 
 ## Plan
 
-> Landed ahead of this task (2026-10-09, via `tasks/coordinate-proofs-alongside-early-results.md`):
+> Landed ahead of this task (2026-10-09, via `tasks/archive/2026/10/09/coordinate-proofs-alongside-early-results.md`):
 > the `add3` paragraph on the page — addition commutes, with the coordinate check — behind a
 > `Draft` banner, and the companion notebook's `a + b == b + a` / subtraction cells (typed).
 > Write the rest of the page around them; don't re-draft them.
@@ -66,7 +66,7 @@ points, and `make docs` green.
    `a`, `b` from basis constants (`2 * e_1 + 1 * e_2` form); `t = translate(b=b)`; apply `t` to
    `a`, to the basis vectors, to a list of grid points; show `t.inverse()(t(a)) == a`; show
    `t.interpolate(0.5)` as "half-way". Coordinates alongside each (per
-   `tasks/coordinate-proofs-alongside-early-results.md`: `(a_1 + b_1, a_2 + b_2)`).
+   `tasks/archive/2026/10/09/coordinate-proofs-alongside-early-results.md`: `(a_1 + b_1, a_2 + b_2)`).
 4. `make docs`; eyeball the two PNGs; note the new helper in
    `tasks/reference/book-and-docs-pipeline.md` ("Shared helpers").
 
