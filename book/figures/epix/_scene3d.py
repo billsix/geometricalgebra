@@ -147,10 +147,9 @@ def vector3(
     offset: Point = _VEC3_LABEL_OFFSET,
     align: epix.LabelPos = epix.LabelPos.l,
 ) -> None:
-    """A 3D segment from the origin to ``head``, with a dot and an optional label."""
+    """A 3D arrow from the origin to ``head``, with an optional label."""
     epix.pen(color=color, width=width)
-    epix.line(tail=ORIGIN3, head=head)
-    epix.dot(at=head)
+    epix.arrow(tail=ORIGIN3, head=head, scale=1)
     if text:
         epix.label_color(color=color)
         epix.label(at=head, offset=offset, text=text, align=align)
