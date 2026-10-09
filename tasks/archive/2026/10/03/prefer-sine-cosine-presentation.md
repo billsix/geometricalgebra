@@ -4,7 +4,7 @@
 **Completed:** 2026-10-03 (William Emerison Six <billsix@gmail.com>).
 **Durable knowledge harvested to:** `CLAUDE.md` › "Presenting to students" and "Coordinates only when
 needed"; `tasks/reference/lean-ga-proof-architecture.md` (naming, the nonzero-guard convention, the
-`0/0` rationale). **Follow-ups:** `tasks/prefer-sine-cosine-presentation-followups.md` (deferred Lean
+`0/0` rationale). **Follow-ups:** `tasks/archive/2026/10/09/prefer-sine-cosine-presentation-followups.md` (deferred Lean
 candidates, maintainer to review), `tasks/lean-cross-standard-position-capstone.md`.
 
 ## What this was

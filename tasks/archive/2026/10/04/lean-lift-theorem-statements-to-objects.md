@@ -127,7 +127,7 @@ raw "~224 take ℝ" resolves into:
   (6), `dot_vec`, `magnitude_sq_vec` (6), `rotXY_vec`, `signedArea_eq`, `dual_vec` — RHS *is* the
   coordinate expression; converting them is wrong.
 - **Hypothesis-side `(h : dot = 0)`:** `vec_anticomm_perp`, `mul_eq_wedge_of_perp`, … → the separate
-  `tasks/prefer-sine-cosine-presentation-followups.md`.
+  `tasks/archive/2026/10/09/prefer-sine-cosine-presentation-followups.md`.
 - **The CAPTURED clean A/B tier:** the perp/parallel facts + G2 dot/wedge-part + `Cross` + `Contractions`
   (increments 1–4). This was the self-contained, uncited, no-cascade set — now done.
 - **The HARD cascaded tier (remaining real work):** geometric facts stated over vector coordinates
