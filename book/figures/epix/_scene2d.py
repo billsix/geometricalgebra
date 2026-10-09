@@ -112,10 +112,9 @@ def vector(
     offset: Point = LABEL_RIGHT,
     align: epix.LabelPos = epix.LabelPos.r,
 ) -> None:
-    """A black segment from the origin to ``head``, with a dot and an optional label."""
+    """A black arrow from the origin to ``head``, with an optional label."""
     epix.pen(color=epix.black(), width=1.8)
-    epix.line(tail=ORIGIN, head=head)
-    epix.dot(at=head)
+    epix.arrow(tail=ORIGIN, head=head, scale=1)
     if text:
         epix.label(at=head, offset=offset, text=text, align=align)
 
@@ -127,12 +126,11 @@ def dashed_vector(
     offset: Point = LABEL_RIGHT,
     align: epix.LabelPos = epix.LabelPos.r,
 ) -> None:
-    """A dashed black segment ``tail``->``head`` -- a translated copy of a vector."""
+    """A dashed black arrow ``tail``->``head`` -- a translated copy of a vector."""
     epix.pen(color=epix.black(), width=1.4)
     epix.dashed()
-    epix.line(tail=tail, head=head)
+    epix.arrow(tail=tail, head=head, scale=1)
     epix.line_style(style="-")  # back to solid for whatever draws next
-    epix.dot(at=head)
     if text:
         epix.label(at=head, offset=offset, text=text, align=align)
 
