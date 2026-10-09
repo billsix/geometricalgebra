@@ -6,6 +6,7 @@ later, and sections may be written out of order.
 
 .. toctree::
    :maxdepth: 2
+   :numbered:
    :caption: Contents:
 
    hook

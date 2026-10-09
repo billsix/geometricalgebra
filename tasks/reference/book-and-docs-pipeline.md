@@ -181,6 +181,16 @@ book above, and its toolchain is installed **unconditionally** (not gated by `BU
   special-members), **`autodoc_typehints = "none"`** (annotations are NOT rendered as cross-refs
   — the types live in the Google `Args:`/`Returns:` prose — which keeps unresolved-reference
   warnings out of the PDF), `mathjax3_config` (`$…$`/`$$…$$` delimiters).
+- **Numbering & print-readability (added 2026-10-08/09):** `math_number_all = True`,
+  `math_numfig = True`, `numfig = True`, `numfig_secnum_depth = 1` number every displayed
+  equation per-chapter (`(2.3)`) in HTML and PDF; `index.rst`'s toctree is `:numbered:`, so
+  chapters/sections carry numbers in headings, the TOC, and `:numref:`, and that same switch is
+  what makes the equation numbers per-chapter rather than running. For print, `latex_show_pagerefs
+  = True` appends `(page N)` (via `\autopageref`) to every `:ref:`/`:doc:` cross-reference in the
+  PDF, and `latex_show_urls = "footnote"` prints external URLs as footnotes; both are PDF-only.
+  Label an equation only when prose cites it (`eq-<page>-<what>`, cited with `:eq:`). Records:
+  `tasks/archive/2026/10/09/number-equations-with-labels.md`,
+  `tasks/archive/2026/10/09/pdf-section-and-page-numbers-for-print.md`.
 
 ## Decisions & rationale
 
