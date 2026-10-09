@@ -400,8 +400,9 @@ option exists — "the cosine of the angle between them is 0" (perpendicular) / 
 is the algebra underneath. **Keep dot/wedge as the primitive and layer the trig phrasing on top** (e.g.
 a `cos_between … = 0` corollary resting on a `dot … = 0` lemma), never trading the robust,
 √/division-free primitive for a trig form whose only effect is to add `√`/`0÷0` noise. Within reason;
-use discretion. Record: `tasks/archive/2026/10/03/prefer-sine-cosine-presentation.md`; remaining candidates in
-`tasks/prefer-sine-cosine-presentation-followups.md`.
+use discretion. Record: `tasks/archive/2026/10/03/prefer-sine-cosine-presentation.md`; the follow-up
+corollaries (both deferred items built 2026-10-09):
+`tasks/archive/2026/10/09/prefer-sine-cosine-presentation-followups.md`.
 
 ## Math notation for readers: parentheses apply, `*` multiplies, every angle is named
 
