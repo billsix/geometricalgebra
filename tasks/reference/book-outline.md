@@ -132,6 +132,16 @@ These came out of reworking `proof-projection.rst`; apply them to every proof pa
   x-axis", "keep the x-coordinate") — the rule is about subscripts. The sweep's discovery grep
   and codemod are recorded in `tasks/archive/2026/10/09/coordinate-subscripts-indices-not-xyz.md` (the scripts
   themselves were one-shot and removed at archive; `git log` recovers them).
+- **Displayed equations are numbered, TeX-style, and cited by number** (the maintainer, 2026-10-08;
+  wired 2026-10-09). `conf.py` sets `math_number_all = True` (every `.. math::` block and notebook
+  `$$ … $$` gets a number in HTML and PDF) with `numfig`/`math_numfig` so the number is per-chapter
+  `(2.3)` once sections are numbered (the `:numbered:` toctree from the page/section-number work).
+  Give an equation a `:label:` **only when prose refers back to it**, named `eq-<page>-<what>`
+  (e.g. `eq-rotate-formula`, the rotation formula of `proof-rotate.rst`), and cite it with
+  `:eq:\`name\`` — which renders the number as a cross-document link in both builders (verified:
+  `geometric-product.rst` and `proof-rotate-from-a-to-b.rst` cite `proof-rotate`'s formula). A
+  multi-line derivation written as one `\begin{aligned}…\end{aligned}` block takes a single number,
+  not one per line. Record: `tasks/archive/2026/10/09/number-equations-with-labels.md`.
 - **A Part I proof page states the result, proves it, then verifies it in coordinates**
   (2026-10-09; the rule and its taper are under "Coordinate-free is the destination" above).
   In the prose when the check is a few lines (vector addition commutes because

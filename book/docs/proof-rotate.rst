@@ -133,6 +133,7 @@ Substitute the values of :math:`\vec{x'}` and :math:`\vec{y'}` back in. The angl
 The :math:`r`'s cancel, and we are left with the whole point of this chapter:
 
 .. math::
+   :label: eq-rotate-formula
 
    \vec{r}(\vec{a}; \theta) = \cos(\theta) * \vec{a} + \sin(\theta) * \vec{r}(\vec{a}; \pi/2),
    \qquad \vec{r}(\vec{a}; \pi/2) = \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}.
