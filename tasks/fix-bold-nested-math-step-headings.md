@@ -16,7 +16,7 @@ role), and `make docs` is green.
 ## Context
 
 - **The two broken sites** (found 2026-10-09 while reading the PDF for
-  `tasks/coordinate-subscripts-indices-not-xyz.md`; the rendering predates that work):
+  `tasks/archive/2026/10/09/coordinate-subscripts-indices-not-xyz.md`; the rendering predates that work):
   - `book/docs/proof-rotate-from-a-to-b.rst` line ~50:
     ``**Step 1 — swing :math:`\vec{a}` onto the x-axis.**``
   - `book/docs/proof-rotate-from-a-to-b.rst` line ~76:

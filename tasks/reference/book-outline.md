@@ -121,8 +121,9 @@ These came out of reworking `proof-projection.rst`; apply them to every proof pa
   `(x, y)` ordered pairs (OpenStax *Algebra 1*, Unit 1 "Find Coordinates") and `⟨a, b⟩` /
   `a i + b j` (OpenStax *Precalculus 2e* §8.8 "Vectors"). Code cells still read `.x`/`.y`
   (the public API, kept on purpose); the page says so once. The axis *names* stay ("the
-  x-axis", "keep the x-coordinate") — the rule is about subscripts. Mechanics:
-  `tasks/adhoc/coordinate-subscripts-indices-not-xyz/` (archived with its task).
+  x-axis", "keep the x-coordinate") — the rule is about subscripts. The sweep's discovery grep
+  and codemod are recorded in `tasks/archive/2026/10/09/coordinate-subscripts-indices-not-xyz.md` (the scripts
+  themselves were one-shot and removed at archive; `git log` recovers them).
 - **A Part I proof page states the result, proves it, then verifies it in coordinates**
   (2026-10-09; the rule and its taper are under "Coordinate-free is the destination" above).
   In the prose when the check is a few lines (vector addition commutes because

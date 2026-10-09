@@ -1,8 +1,8 @@
 # Write coordinates as `a_1`, `a_2`, not `a_x`, `a_y` — and introduce the notation for high-school readers
 
-**Status:** DONE 2026-10-09 (work committed by the maintainer as `8f0b5f0`); the archive move plus
-`git rm -r tasks/adhoc/coordinate-subscripts-indices-not-xyz/` are owed as their own commit after
-the squash.
+**Status:** complete
+**Completed:** 2026-10-09 (work committed by the maintainer as `7d6e873` after the squash; archived,
+with the one-shot codemod removed, in its own commit)
 **Priority:** 4
 **Difficulty:** 4
 **Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
@@ -43,11 +43,11 @@ coordinate subscript out of the book's pages, companion notebooks and figure lab
 2. **API question decided** 2026-10-09 (the decision above) in the sibling-task answers commit.
 3. **Go-ahead** 2026-10-09 ("start the coordinate-subscripts-indices not xyz task"). The consult was
    done by the agent from the OpenStax ports instead of waiting on the maintainer.
-4. **The work** (`8f0b5f0`, "use a_1 instead of a_x"). By then the hit count had grown to 106 in
+4. **The work** (`7d6e873`, "use a_1 instead of a_x"). By then the hit count had grown to 106 in
    12 files, because the coordinate-proofs task (archived 2026-10-09) had added typed notebooks in
    the old spelling.
 
-## What was done (all in `8f0b5f0`)
+## What was done (all in `7d6e873`)
 
 **The consult.** The pinned OpenStax content was fetched with each book's `fetch.sh` into impo's
 gitignored `checkout/` (network was available; nothing downloaded was executed). *Algebra 1* Unit 1,

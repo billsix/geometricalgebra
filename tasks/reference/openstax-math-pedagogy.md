@@ -573,7 +573,7 @@ rather than by exhortation.
 
 Read from the pinned CNXML (fetched with each book's `fetch.sh` into its gitignored
 `openstax/osbooks-*/checkout/` in impo, https://github.com/billsix/impo) for
-`tasks/coordinate-subscripts-indices-not-xyz.md`, which set the book's `a_1`/`a_2`
+`tasks/archive/2026/10/09/coordinate-subscripts-indices-not-xyz.md`, which set the book's `a_1`/`a_2`
 convention ([[book-outline]] › "Notation & prose conventions"):
 
 - **Algebra 1** (HS), Unit 1 "Preparing for Success / Linear Equations", lesson "Find
