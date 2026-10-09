@@ -89,7 +89,7 @@ Locally: `ruff check .` / `ruff format --check .` clean, `ty check book/docs/not
 
 The rotate-from-a-to-b page's bold step headings wrap `:math:` roles, which reStructuredText cannot
 nest, so their LaTeX prints literally in HTML and PDF. Filed as
-`tasks/fix-bold-nested-math-step-headings.md` (proposed — needs go-ahead).
+`tasks/archive/2026/10/09/fix-bold-nested-math-step-headings.md` (proposed — needs go-ahead).
 
 ## Open questions
 
