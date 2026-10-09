@@ -40,7 +40,7 @@ ruled out.
     `book/docs/notebooks/levels-of-abstraction.py` (the two `cosine² + sine² = 1` cells), `CLAUDE.md`
     (the Lean leaves paragraph naming `lagrange_2d/3d`), `tasks/reference/lean-ga-proof-architecture.md`,
     `lean-for-gacalc.md`, `reduction-to-standard-position.md`.
-  - `tasks/use-bivector-from-vectors-and-i-in-notebooks-and-tests.md` (its notebook-scope bullets) — refers to the
+  - `tasks/archive/2026/10/09/use-bivector-from-vectors-and-i-in-notebooks-and-tests.md` (its notebook-scope bullets) — refers to the
     "Lagrange-identity" cells; update the pointer if the cells change, but this is a *task* doc, so a
     citation there is optional (lower priority than the notebooks).
 - **Candidate sites that use it by another name** — audit each; add the citation where the identity is

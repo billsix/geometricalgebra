@@ -13,7 +13,7 @@
 hand-written `Gn` never did, so adopting the plane helpers in `Gn`-typed code (e.g.
 `notebooks/displaymv.py`, `tests/test_conformance.py`) would *downgrade* a `Gn` binding to the
 base type. This task added hand-written `Gn` overrides that narrow the return to `Gn`, with no
-new logic, unblocking `tasks/use-bivector-from-vectors-and-i-in-notebooks-and-tests.md`.
+new logic, unblocking `tasks/archive/2026/10/09/use-bivector-from-vectors-and-i-in-notebooks-and-tests.md`.
 
 ## What was done
 
