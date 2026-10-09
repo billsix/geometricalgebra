@@ -33,14 +33,17 @@ As of 2026-09-09 it reported **29 rows in 10 files, all of them listed below**: 
 7 aliases, 3 enum members, 3 invariant params, 3 locals, 2 returns, 1 param, 1 loop target.
 Anything *not* on this list is a genuine gap: annotate it, or add it here with its reason.
 
-**Current state (2026-10-09, noticed while adding `book/docs/notebooks/` to the scope; the
-book notebooks themselves report 0 rows):** it reports **47 rows in 15 files** — 11 loop
-targets, 10 aliases, 9 `Any`, 6 locals, 5 invariant params, 3 enum members, 2 returns, 1
-param. The 18 rows beyond the list below are in files written *after* the sweep and never
-run through the auditor — `tools/check_epix_keywords.py` (7), `tools/detect_unused_hypotheses.py`
-(4), `src/gacalc/standardposition.py` (3), `tools/derive_lean_algebra.py` (2) — plus a
-handful in `tests/test_graded.py`. None has been classified yet; the re-baseline (annotate or
-exempt each, then restate the floor) is `tasks/re-baseline-annotation-auditor.md`.
+**Floor (re-baselined 2026-10-09):** the auditor reports **32 rows in 12 files** — every one
+either a listed exemption below or a *classified-out* row (a type alias or an `Enum` member,
+which the auditor prints but does not treat as a gap). The split: **13 classified-out** (10
+type aliases, 3 enum members) and **19 listed exemptions** (9 `Any` §1, 2 returns §2, 1 param
+§3, 3 invariant params §4, 4 locals §5). The 18 rows that had been beyond the old 29-floor —
+loop targets and locals in files written after the 2026-09-09 sweep (`check_epix_keywords.py`,
+`detect_unused_hypotheses.py`, `derive_lean_algebra.py`, `standardposition.py`) — were resolved
+by annotating each loop target (a declaration above the `for`), typing the `standardposition`
+locals, and widening two read-only `list` params to `Sequence`; only `test_odd3`'s
+`conjugated` joined the exemptions (§5). Record:
+`tasks/archive/2026/10/09/re-baseline-annotation-auditor.md`.
 
 ## The exemptions
 
@@ -93,11 +96,16 @@ of them produced errors in exactly one test; the other 21 are now typed.
 - **`check_annotations.check_function(out: list[Finding])`** — the auditor's own
   accumulator, appended to. Same out-parameter case as `_method_label`.
 
-### 5. Three locals whose declared type would lose information
+### 5. Locals whose declared type would lose information
 
 - **`tests/test_graded.py`** — `cases`, and the `val`/`d` derived from it. The inferred
   concrete union keeps `val.dual()` (dimension-defaulting) and `val.DIMENSION` resolvable;
   `MultiVectorBase` does not. Same root cause as §2 and §3.
+- **`tests/test_odd3.py`** — `conjugated = versor * v * versor.inverse()`. Annotating it
+  widens `coeff_e_123` to `Real` (`int | float | sympy.Expr`), and sympy's stubs carry no
+  `simplify` overload for a bare `int`/`float`, so the annotation fails the next line
+  (`sympy.simplify(conjugated.coeff_e_123)`) without clarifying anything; the in-code comment
+  already says so.
 - **`tests/test_odd3.py`** — `conjugated`. Declaring `g3.Odd_3` is correct at runtime (the
   next line asserts exactly that), but it widens `coeff_e_123` to the full
   `Real = int | float | sympy.Expr`, and sympy's stubs have no `simplify` overload taking

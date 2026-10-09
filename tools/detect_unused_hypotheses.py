@@ -35,11 +35,15 @@ PRED: re.Pattern[str] = re.compile(
 
 def main() -> None:
     total: int = 0
+    path: Path
     for path in sorted(SRC.glob("*.lean")):
         text: str = path.read_text()
         starts: list[tuple[str, int]] = [
             (m.group(2), m.start()) for m in THEOREM.finditer(text)
         ]
+        idx: int
+        name: str
+        s: int
         for idx, (name, s) in enumerate(starts):
             e: int = starts[idx + 1][1] if idx + 1 < len(starts) else len(text)
             block: str = text[s:e]
@@ -48,11 +52,13 @@ def main() -> None:
                 continue
             sig: str = block[:delim]
             body: str = block[delim + 2 :]
+            bm: re.Match[str]
             for bm in BINDER.finditer(sig):
                 names: list[str] = bm.group(1).split()
                 btype: str = bm.group(2)
                 if not PRED.search(btype):
                     continue
+                nm: str
                 for nm in names:
                     if not re.search(rf"\b{re.escape(nm)}\b", body):
                         total += 1
