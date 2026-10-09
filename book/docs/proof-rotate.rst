@@ -104,6 +104,18 @@ and finally we scale it back to length :math:`r`.
    :align: center
    :alt: re-lengthen to r
 
+Before we turn to the algebra, look at what we just drew. There are **two** right triangles
+now: the little one on the unit circle, with legs :math:`\cos(\theta)` and :math:`\sin(\theta)`,
+and :math:`\vec{a}`'s own, with legs :math:`r * \cos(\theta)` and :math:`r * \sin(\theta)`. They
+have the **same angles** — so, by the high-school fact that **similar triangles have proportional
+sides**, they are the same shape at two sizes, :math:`\vec{a}`'s being the unit one with every side
+times :math:`r`. That is exactly why the last step worked: scaling the unit answer by :math:`r`
+lands right on the rotated :math:`\vec{a}`.
+
+.. figure:: _static/epix/rotate9.*
+   :align: center
+   :alt: a's triangle is the unit triangle scaled by r — similar triangles
+
 Now the algebra
 ---------------
 

@@ -60,4 +60,6 @@ __all__: list[str] = [
 
 BETA: float = math.radians(66)  # the angle of a itself
 THETA: float = math.radians(66)  # the angle we rotate BY (same as the goal figure)
-R: float = 1.25  # |a|: a is not a unit vector -- the circle is only for scale
+R: float = (
+    1.7  # |a|: bigger than unit so the similar-triangle step (rotate9) reads clearly
+)

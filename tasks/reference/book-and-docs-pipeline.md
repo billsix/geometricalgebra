@@ -90,8 +90,10 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     toggle so a figure that doesn't need the circle still gets axes), `vector`, `dashed_vector` (a
     translated copy, drawn via `epix.dashed()` then reset with `epix.line_style(style="-")`),
     `parallelogram`, `wedge`, `right_angle_marker`, `leg`.
-  - `_rotation_scene.py` adds the rotation-sequence constants (β, θ, r) and re-exports the `_scene2d`
-    helpers, so the `rotate1`–`rotate8` figures import everything from one place.
+  - `_rotation_scene.py` adds the rotation-sequence constants (β, θ, r = 1.7) and re-exports the
+    `_scene2d` helpers, so the `rotate1`–`rotate9` figures import everything from one place. `r` is 1.7
+    (not unit) so the similar-triangle step `rotate9` separates the unit and scaled triangles' labels;
+    `rotate_goal.py` keeps its own `A_LENGTH` in sync with it.
   - `_addition_scene.py` holds the fixed vectors a, b (and a+b, −b, a−b, the two framing boxes) the
     vector-addition/subtraction figures (`add1`–`add3`, `sub1`–`sub2`) share.
   - `_projection_scene.py` holds a (1.25 at 66°), b (1 at 20°), the projection point, and the
@@ -107,6 +109,15 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     the camera; `Point` supports `+`, scalar `*` and `.norm()`; `fig.png`/`fig.eepic` only materialize
     **after** the `with` block. Plane patch is drawn first (behind), then `axes3()`, then the vectors.
   - `epix.label_angle` takes **radians**.
+- **A label's colour matches the line/vector it labels** (the maintainer's standard, 2026-10-09), so a
+  reader instantly sees which label goes with which element. `leg()` and `vector()` already do this
+  (`leg` sets `label_color` to the leg's colour; `vector`'s black line takes a black label); for an
+  explicit `epix.label(...)` on a coloured element, call `epix.label_color(color=<that colour>)` first
+  and reset with `epix.label_color(color=epix.black())` after. When two similar shapes overlap — e.g.
+  the unit and scaled triangles in `rotate9` — give corresponding parts the **same hue at different
+  shades** (dark for the big/real one, light for the small/reference one) and draw the small one on top,
+  so the correspondence *and* the distinction both read; collinear legs (the two `cos` legs) get their
+  labels placed explicitly at well-separated radii.
 - **Why Python, not `.xp`:** the maintainer's choice (2026-10-07) — one language across the
   book's notebooks and figures, and the figure source is itself a runnable notebook.
 - **Decision (2026-10-06): coexist.** `nbplotutils.py` (matplotlib) stays for the interactive
