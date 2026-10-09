@@ -259,8 +259,8 @@ def test_exp(n: int, cls: type[MultiVectorBase]) -> None:
     with pytest.raises(ValueError):
         to(cls, v).exp()
     if n >= 2:
-        b: Gn = vec(n, 0) ^ vec(n, 10)
-        assert to(cls, b).exp() == b.exp()
+        B: Gn = vec(n, 0) ^ vec(n, 10)
+        assert to(cls, B).exp() == B.exp()
 
 
 @pytest.mark.parametrize("n,cls", CASES)

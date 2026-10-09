@@ -53,10 +53,10 @@ def test_versor_magnitude_squared_has_the_lagrange_closed_form_2d_symbolic() -> 
     a1, a2, b1, b2 = sympy.symbols("a1 a2 b1 b2", real=True, positive=True)
     a: g2.Vector = a1 * g2.Vector.e_1 + a2 * g2.Vector.e_2
     b: g2.Vector = b1 * g2.Vector.e_1 + b2 * g2.Vector.e_2
-    r: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=a, to_vector=b)
+    R: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=a, to_vector=b)
     assert (
         sympy.simplify(
-            sympy.sympify(r.magnitude_squared()) - _lagrange_closed_form(a, b)
+            sympy.sympify(R.magnitude_squared()) - _lagrange_closed_form(a, b)
         )
         == 0
     )
@@ -72,10 +72,10 @@ def test_versor_magnitude_squared_has_the_lagrange_closed_form_3d_symbolic() -> 
     b: g3.Vector = (
         syms[3] * g3.Vector.e_1 + syms[4] * g3.Vector.e_2 + syms[5] * g3.Vector.e_3
     )
-    r: MultiVectorBase = g3.Vector.versor_from_vectors(from_vector=a, to_vector=b)
+    R: MultiVectorBase = g3.Vector.versor_from_vectors(from_vector=a, to_vector=b)
     assert (
         sympy.simplify(
-            sympy.sympify(r.magnitude_squared()) - _lagrange_closed_form(a, b)
+            sympy.sympify(R.magnitude_squared()) - _lagrange_closed_form(a, b)
         )
         == 0
     )
@@ -89,10 +89,10 @@ def test_rotor_from_vectors_is_a_unit_versor_2d_symbolic() -> None:
     a1, a2, b1, b2 = sympy.symbols("a1 a2 b1 b2", real=True, positive=True)
     a: g2.Vector = a1 * g2.Vector.e_1 + a2 * g2.Vector.e_2
     b: g2.Vector = b1 * g2.Vector.e_1 + b2 * g2.Vector.e_2
-    rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=a, to_vector=b)
-    assert type(rhat) is g2.Versor  # the generated narrowing: a Versor of this algebra
-    assert sympy.simplify(sympy.sympify(rhat.magnitude_squared()) - 1) == 0
-    assert (rhat * rhat.reverse()).symbolically_equal(
+    Rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=a, to_vector=b)
+    assert type(Rhat) is g2.Versor  # the generated narrowing: a Versor of this algebra
+    assert sympy.simplify(sympy.sympify(Rhat.magnitude_squared()) - 1) == 0
+    assert (Rhat * Rhat.reverse()).symbolically_equal(
         g2.Versor(coeff_scalar=1, coeff_e_12=0)
     )  # R̂ R̂~ = 1: the inverse IS the reverse
 
@@ -107,11 +107,11 @@ def test_rotor_reverse_sandwich_is_versor_inverse_sandwich_2d_symbolic() -> None
     a: g2.Vector = syms[0] * g2.Vector.e_1 + syms[1] * g2.Vector.e_2
     b: g2.Vector = syms[2] * g2.Vector.e_1 + syms[3] * g2.Vector.e_2
     v: g2.Vector = syms[4] * g2.Vector.e_1 + syms[5] * g2.Vector.e_2
-    r: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=a, to_vector=b)
-    rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=a, to_vector=b)
-    rotor_sandwich: MultiVectorBase = rhat * v * rhat.reverse()
-    assert rotor_sandwich.symbolically_equal(r * v * r.inverse())
-    assert rotor_sandwich.symbolically_equal(rhat.sandwich(v))
+    R: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=a, to_vector=b)
+    Rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=a, to_vector=b)
+    rotor_sandwich: MultiVectorBase = Rhat * v * Rhat.reverse()
+    assert rotor_sandwich.symbolically_equal(R * v * R.inverse())
+    assert rotor_sandwich.symbolically_equal(Rhat.sandwich(v))
     assert rotor_sandwich.symbolically_equal(
         projection_rotation(from_vector=a, to_vector=b)(v)
     )
@@ -122,12 +122,12 @@ def test_rotor_reverse_sandwich_is_versor_inverse_sandwich_3d() -> None:
     a: g3.Vector = 1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3
     b: g3.Vector = 4 * g3.Vector.e_1 + 5 * g3.Vector.e_2 + 6 * g3.Vector.e_3
     v: g3.Vector = 7 * g3.Vector.e_1 + 1 * g3.Vector.e_2 + 2 * g3.Vector.e_3
-    r: MultiVectorBase = g3.Vector.versor_from_vectors(from_vector=a, to_vector=b)
+    R: MultiVectorBase = g3.Vector.versor_from_vectors(from_vector=a, to_vector=b)
     rhat: MultiVectorBase = g3.Vector.rotor_from_vectors(from_vector=a, to_vector=b)
     assert type(rhat) is g3.Versor
     assert sympy.simplify(sympy.sympify(rhat.magnitude_squared()) - 1) == 0
     rotor_sandwich: MultiVectorBase = rhat * v * rhat.reverse()
-    assert rotor_sandwich.symbolically_equal(r * v * r.inverse())
+    assert rotor_sandwich.symbolically_equal(R * v * R.inverse())
     assert rotor_sandwich.symbolically_equal(
         projection_rotation(from_vector=a, to_vector=b)(v)
     )
@@ -151,36 +151,34 @@ def test_rotor_from_unit_vectors_is_the_half_angle_rotor_symbolic() -> None:
     pythagoras: SymbolicSubstitution = {s**2: 1 - c**2}
     a: g2.Vector = 1 * g2.Vector.e_1
     b: g2.Vector = (2 * c**2 - 1) * g2.Vector.e_1 + (2 * s * c) * g2.Vector.e_2
-    r: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=a, to_vector=b)
+    R: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=a, to_vector=b)
     # |b| arrives as sqrt(4c²s² + (2c² − 1)²); it is 1 only once sympy knows
     # s² = 1 − c²
-    assert r.symbolically_equal(
+    assert R.symbolically_equal(
         g2.Versor(coeff_scalar=2 * c**2, coeff_e_12=-2 * s * c), subs=pythagoras
     )
-    r_norm_sq: sympy.Expr = sympy.sympify(r.magnitude_squared()).subs(pythagoras)
+    r_norm_sq: sympy.Expr = sympy.sympify(R.magnitude_squared()).subs(pythagoras)
     assert sympy.simplify(r_norm_sq - 4 * c**2) == 0
-    rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=a, to_vector=b)
+    Rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=a, to_vector=b)
     half_angle_rotor: g2.Versor = g2.Versor(coeff_scalar=c, coeff_e_12=-s)
-    assert rhat.symbolically_equal(half_angle_rotor, subs=pythagoras)
+    assert Rhat.symbolically_equal(half_angle_rotor, subs=pythagoras)
 
 
 def test_rotor_from_unit_vectors_matches_plane_rotation_numerically() -> None:
     # the same identity at sample angles, against the half-angle rotor factory
     v: g2.Vector = g2.Vector(coeff_e_1=1.0, coeff_e_2=3.0)
     rotate_in_plane: InvertibleFunction[g2.Vector]
-    theta: float
-    for theta in (0.3, 1.0, math.radians(90), 2.5):
-        b: g2.Vector = math.cos(theta) * g2.Vector.e_1 + math.sin(theta) * g2.Vector.e_2
-        rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(
+    θ: float
+    for θ in (0.3, 1.0, math.radians(90), 2.5):
+        b: g2.Vector = math.cos(θ) * g2.Vector.e_1 + math.sin(θ) * g2.Vector.e_2
+        Rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(
             from_vector=1.0 * g2.Vector.e_1, to_vector=b
         )
         expected: g2.Versor = g2.Versor(
-            coeff_scalar=math.cos(theta / 2), coeff_e_12=-math.sin(theta / 2)
+            coeff_scalar=math.cos(θ / 2), coeff_e_12=-math.sin(θ / 2)
         )
-        assert rhat.isclose(expected, rel_tol=1e-9, abs_tol=1e-9)
-        rotate_in_plane = plane_rotation(1.0 * g2.Vector.e_1, 1.0 * g2.Vector.e_2)(
-            theta
-        )
-        assert (rhat * v * rhat.reverse()).isclose(
+        assert Rhat.isclose(expected, rel_tol=1e-9, abs_tol=1e-9)
+        rotate_in_plane = plane_rotation(1.0 * g2.Vector.e_1, 1.0 * g2.Vector.e_2)(θ)
+        assert (Rhat * v * Rhat.reverse()).isclose(
             rotate_in_plane(v), rel_tol=1e-9, abs_tol=1e-9
         )

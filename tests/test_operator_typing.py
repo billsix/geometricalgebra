@@ -112,12 +112,12 @@ def test_alias_and_scalar_contraction_runtime() -> None:
 def test_add_sub_narrow_by_grade() -> None:
     # scalar + bivector spans grades {0, 2} -> the even/Versor type, in either
     # order (__add__ / __radd__) and for subtraction (__sub__ / __rsub__).
-    i2: g2.Bivector = g2.Vector.e_1 ^ g2.Vector.e_2
-    typing.assert_type(3 * i2 + 2, g2.Versor)  # __add__ scalar arm
-    typing.assert_type(2 + 3 * i2, g2.Versor)  # __radd__ (number on the left)
-    typing.assert_type(i2 - 2, g2.Versor)  # __add__ (subtract a scalar)
-    typing.assert_type(2 - i2, g2.Versor)  # __rsub__
-    typing.assert_type(i2 + i2, g2.Bivector)  # same grade stays g2.Bivector
+    I2: g2.Bivector = g2.Vector.e_1 ^ g2.Vector.e_2
+    typing.assert_type(3 * I2 + 2, g2.Versor)  # __add__ scalar arm
+    typing.assert_type(2 + 3 * I2, g2.Versor)  # __radd__ (number on the left)
+    typing.assert_type(I2 - 2, g2.Versor)  # __add__ (subtract a scalar)
+    typing.assert_type(2 - I2, g2.Versor)  # __rsub__
+    typing.assert_type(I2 + I2, g2.Bivector)  # same grade stays g2.Bivector
 
 
 def test_reflected_operators_are_precise_for_numbers() -> None:
@@ -127,13 +127,13 @@ def test_reflected_operators_are_precise_for_numbers() -> None:
     # sole number-left case the single-signature typing is already precise -- no
     # @overload needed.  (See the archived reflected-operator-typing-overloads task.)
     v: g2.Vector = g2.Vector.e_1
-    i2: g2.Bivector = g2.Vector.e_1 ^ g2.Vector.e_2
-    r2: g2.Versor = g2.Vector.e_1 * g2.Vector.e_2
+    I2: g2.Bivector = g2.Vector.e_1 ^ g2.Vector.e_2
+    R2: g2.Versor = g2.Vector.e_1 * g2.Vector.e_2
     s2: g2.Scalar = g2.Scalar(coeff_scalar=3.0)
     # __rmul__: number * multivector scales -> the multivector's own type
     typing.assert_type(2 * v, g2.Vector)
-    typing.assert_type(2.0 * i2, g2.Bivector)
-    typing.assert_type(2 * r2, g2.Versor)
+    typing.assert_type(2.0 * I2, g2.Bivector)
+    typing.assert_type(2 * R2, g2.Versor)
     typing.assert_type(2 * s2, g2.Scalar)
     # __radd__/__rsub__: narrow by grade, either operand order
     typing.assert_type(2 + v, g2.G)  # {0} + {1} -> full g2.G
@@ -192,19 +192,19 @@ def test_even_odd_part_narrow_to_resolved_grade() -> None:
     v: g2.Vector = 3 * g2.Vector.e_1 + 4 * g2.Vector.e_2
     typing.assert_type(v.odd_part(), g2.Vector)  # a vector is purely odd
     typing.assert_type(v.even_part(), g2.Scalar)  # its even part is the scalar 0
-    i2: g2.Bivector = g2.Vector.e_1 ^ g2.Vector.e_2
-    typing.assert_type(i2.even_part(), g2.Bivector)  # a bivector is purely even
-    typing.assert_type(i2.odd_part(), g2.Scalar)
+    I2: g2.Bivector = g2.Vector.e_1 ^ g2.Vector.e_2
+    typing.assert_type(I2.even_part(), g2.Bivector)  # a bivector is purely even
+    typing.assert_type(I2.odd_part(), g2.Scalar)
     versor: g2.Versor = g2.Vector.e_1 * g2.Vector.e_2
     typing.assert_type(versor.even_part(), g2.Versor)  # grades {0, 2} are both even
     typing.assert_type(versor.odd_part(), g2.Scalar)
 
 
 def test_even_odd_part_runtime_types() -> None:
-    i2: g2.Bivector = 5 * (g2.Vector.e_1 ^ g2.Vector.e_2)
-    assert type(i2.even_part()) is g2.Bivector
-    assert i2.even_part().coeff_e_12 == 5
-    assert type(i2.odd_part()) is g2.Scalar
+    I2: g2.Bivector = 5 * (g2.Vector.e_1 ^ g2.Vector.e_2)
+    assert type(I2.even_part()) is g2.Bivector
+    assert I2.even_part().coeff_e_12 == 5
+    assert type(I2.odd_part()) is g2.Scalar
     assert type((3 * g2.Vector.e_1).even_part()) is g2.Scalar  # vector has no even part
 
 
@@ -212,34 +212,34 @@ def test_contraction_static_types() -> None:
     # left/right contraction resolve their grade like the other products:
     # left keeps grade m-k (right-left), right keeps k-m; a negative grade -> g2.Scalar.
     a: g2.Vector = g2.Vector.e_1
-    i2: g2.Bivector = g2.Vector.e_1 ^ g2.Vector.e_2
+    I2: g2.Bivector = g2.Vector.e_1 ^ g2.Vector.e_2
     typing.assert_type(a.left_contraction(a), g2.Scalar)  # vector ⌋ vector = dot
-    typing.assert_type(a.left_contraction(i2), g2.Vector)  # vector ⌋ bivector (grade 1)
-    typing.assert_type(i2.left_contraction(a), g2.Scalar)  # bivector ⌋ vector -> 0
+    typing.assert_type(a.left_contraction(I2), g2.Vector)  # vector ⌋ bivector (grade 1)
+    typing.assert_type(I2.left_contraction(a), g2.Scalar)  # bivector ⌋ vector -> 0
     typing.assert_type(
-        i2.right_contraction(a), g2.Vector
+        I2.right_contraction(a), g2.Vector
     )  # bivector ⌊ vector (grade 1)
-    typing.assert_type(a.right_contraction(i2), g2.Scalar)  # vector ⌊ bivector -> 0
+    typing.assert_type(a.right_contraction(I2), g2.Scalar)  # vector ⌊ bivector -> 0
     # the < / > operators carry the same precise overloads
     typing.assert_type(a < a, g2.Scalar)
-    typing.assert_type(a < i2, g2.Vector)
-    typing.assert_type(i2 > a, g2.Vector)
+    typing.assert_type(a < I2, g2.Vector)
+    typing.assert_type(I2 > a, g2.Vector)
 
 
 def test_contraction_runtime_types_and_values() -> None:
     a: g2.Vector = 3 * g2.Vector.e_1 + 4 * g2.Vector.e_2
-    i2: g2.Bivector = 5 * (g2.Vector.e_1 ^ g2.Vector.e_2)
+    I2: g2.Bivector = 5 * (g2.Vector.e_1 ^ g2.Vector.e_2)
     # vector ⌋ vector is the dot product: 3*3 + 4*4 = 25
     assert type(a.left_contraction(a)) is g2.Scalar
     assert a.left_contraction(a).coeff_scalar == 25
     assert (a < a).coeff_scalar == 25  # operator agrees
     # e_1 ⌋ (5 e_12) = 5 * e_2 ;  contraction asymmetry: (5 e_12) ⌋ e_1 == 0
-    assert type(g2.Vector.e_1.left_contraction(i2)) is g2.Vector
-    assert g2.Vector.e_1.left_contraction(i2).coeff_e_2 == 5
+    assert type(g2.Vector.e_1.left_contraction(I2)) is g2.Vector
+    assert g2.Vector.e_1.left_contraction(I2).coeff_e_2 == 5
     assert (
-        type(i2.left_contraction(g2.Vector.e_1)) is g2.Scalar
+        type(I2.left_contraction(g2.Vector.e_1)) is g2.Scalar
     )  # grade -1 -> g2.Scalar(0)
-    assert (i2 > g2.Vector.e_1).coeff_e_2 == -5  # bivector ⌊ vector = -5 * e_2
+    assert (I2 > g2.Vector.e_1).coeff_e_2 == -5  # bivector ⌊ vector = -5 * e_2
 
 
 def test_dual_narrows_by_grade() -> None:
@@ -248,18 +248,18 @@ def test_dual_narrows_by_grade() -> None:
     # the resolved grade type -- no unsound Self cast.
     v3: g3.Vector = 3.0 * g3.Vector.e_1
     typing.assert_type(v3.dual(), g3.Bivector)  # grade 1 -> grade 2 in 3D
-    i3: g3.Bivector = 5.0 * g3.Bivector.e_23
-    typing.assert_type(i3.dual(), g3.Vector)  # grade 2 -> grade 1 in 3D
-    t3: g3.Trivector = 7.0 * g3.Trivector.e_123
-    typing.assert_type(t3.dual(), g3.Scalar)  # grade 3 -> grade 0
-    r3: g3.Versor = 1 + 2.0 * g3.Bivector.e_12
-    typing.assert_type(r3.dual(), g3.Odd_3)  # {0,2} -> {1,3} = the odd part, now Odd_3
+    I3: g3.Bivector = 5.0 * g3.Bivector.e_23
+    typing.assert_type(I3.dual(), g3.Vector)  # grade 2 -> grade 1 in 3D
+    T3: g3.Trivector = 7.0 * g3.Trivector.e_123
+    typing.assert_type(T3.dual(), g3.Scalar)  # grade 3 -> grade 0
+    R3: g3.Versor = 1 + 2.0 * g3.Bivector.e_12
+    typing.assert_type(R3.dual(), g3.Odd_3)  # {0,2} -> {1,3} = the odd part, now Odd_3
 
     # 2D duals: grade n−r with n=2.
     v2: g2.Vector = 3 * g2.Vector.e_1
     typing.assert_type(v2.dual(), g2.Vector)  # grade 1 -> grade 1
-    i2: g2.Bivector = 5 * g2.Bivector.e_12
-    typing.assert_type(i2.dual(), g2.Scalar)  # grade 2 -> grade 0
+    I2: g2.Bivector = 5 * g2.Bivector.e_12
+    typing.assert_type(I2.dual(), g2.Scalar)  # grade 2 -> grade 0
     rotor2: g2.Versor = 1 + 2 * g2.Bivector.e_12
     typing.assert_type(rotor2.dual(), g2.Versor)  # {0,2} -> {2,0} = {0,2}
 

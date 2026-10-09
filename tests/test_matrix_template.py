@@ -132,16 +132,16 @@ def test_g2_affine_rotation_and_translation_uses_expression_entries() -> None:
     assert t.evaluate_expressions is not None
     tx: float
     ty: float
-    theta: float
-    for tx, ty, theta, _ in SAMPLES:
+    θ: float
+    for tx, ty, θ, _ in SAMPLES:
         direct: ComposableFunction[g2.Vector] = compose(
             [
                 translate(b=tx * g2.Vector.e_1 + ty * g2.Vector.e_2),
-                plane_rotation(g2.e_1, g2.e_2)(theta),
+                plane_rotation(g2.e_1, g2.e_2)(θ),
             ]
         )
         assert np.allclose(
-            t.fill(tx, ty, theta), numeric(to_matrix(direct, g2.Vector)), atol=1e-5
+            t.fill(tx, ty, θ), numeric(to_matrix(direct, g2.Vector)), atol=1e-5
         )
     # and the block really is a rotation: theta = pi/2 is the quarter turn
     m: np.ndarray = t.fill(0.0, 0.0, math.pi / 2)
@@ -173,11 +173,11 @@ def test_g3_linear_rotation_about_e2_matches_to_matrix() -> None:
     t: MatrixTemplate = to_matrix_template(fn, g3.Vector, (THETA,))
     assert t.shape == (4, 4)
     assert t.slots == ()
-    theta: float
-    for _, _, theta, _ in SAMPLES:
+    θ: float
+    for _, _, θ, _ in SAMPLES:
         assert np.allclose(
-            t.fill(theta),
-            numeric(to_matrix(plane_rotation(g3.e_3, g3.e_1)(theta), g3.Vector)),
+            t.fill(θ),
+            numeric(to_matrix(plane_rotation(g3.e_3, g3.e_1)(θ), g3.Vector)),
             atol=1e-5,
         )
     # linear: zero translation column, fixed bottom row
@@ -229,18 +229,18 @@ def test_g3_affine_rotation_and_translation_4x4() -> None:
     tx: float
     ty: float
     tz: float
-    theta: float
-    for tx, ty, tz, theta in SAMPLES:
+    θ: float
+    for tx, ty, tz, θ in SAMPLES:
         direct: ComposableFunction[g3.Vector] = compose(
             [
                 translate(
                     b=tx * g3.Vector.e_1 + ty * g3.Vector.e_2 + tz * g3.Vector.e_3
                 ),
-                plane_rotation(g3.e_1, g3.e_2)(theta),
+                plane_rotation(g3.e_1, g3.e_2)(θ),
             ]
         )
         assert np.allclose(
-            t.fill(tx, ty, tz, theta), numeric(to_matrix(direct, g3.Vector)), atol=1e-5
+            t.fill(tx, ty, tz, θ), numeric(to_matrix(direct, g3.Vector)), atol=1e-5
         )
 
 

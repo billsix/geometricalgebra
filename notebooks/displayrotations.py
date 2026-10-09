@@ -70,13 +70,13 @@ def simplified(mv: Gn) -> Gn:
 
 
 # the angle of rotation, fully symbolic
-theta: sympy.Symbol = sympy.symbols("theta", real=True)
+θ: sympy.Symbol = sympy.symbols("theta", real=True)
 
 # the rotation carries e_1 toward the unit vector at angle theta in the e_1-e_2
 # plane; the same rotation is used in 2D and 3D below
 a: Gn = e_1
 # multivector-first so Gn.__mul__ (-> Gn) is used, not sympy's Expr.__mul__
-b: Gn = e_1 * sympy.cos(theta) + e_2 * sympy.sin(theta)
+b: Gn = e_1 * sympy.cos(θ) + e_2 * sympy.sin(θ)
 
 # %% [markdown]
 # $\mathcal{G}_2$ -- the plane
@@ -256,10 +256,10 @@ result  # pyright: ignore[reportUnusedExpression]
 # which collapses to $\theta/2$ only once sympy knows the sign.
 
 # %%
-phi: sympy.Symbol = sympy.symbols("phi", positive=True)
+φ: sympy.Symbol = sympy.symbols("phi", positive=True)
 
 i: g2.Bivector = g2.Bivector.e_12
-R_exp: g2.Versor = (i * (-phi / 2)).exp()
+R_exp: g2.Versor = (i * (-φ / 2)).exp()
 R_exp  # pyright: ignore[reportUnusedExpression]
 
 # %% [markdown]
@@ -270,6 +270,6 @@ R_exp  # pyright: ignore[reportUnusedExpression]
 # plane and angle:
 
 # %%
-f: InvertibleFunction[g2.Vector] = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)(phi)
+f: InvertibleFunction[g2.Vector] = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)(φ)
 v_exp: g2.Vector = v1 * g2.Vector.e_1 + v2 * g2.Vector.e_2
 R_exp.sandwich(v_exp) == f(v_exp)

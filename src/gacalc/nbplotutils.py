@@ -246,15 +246,15 @@ def create_unit_circle(
         theta_increment: float = 0.01
         scale_radius: float = 1.0
 
-        theta: float
-        for theta in np.arange(0.0, 2 * math.pi, theta_increment):
+        θ: float
+        for θ in np.arange(0.0, 2 * math.pi, theta_increment):
             yield (
                 [
-                    scale_radius * (math.cos(theta) * ex + math.sin(theta) * ey),
+                    scale_radius * (math.cos(θ) * ex + math.sin(θ) * ey),
                     scale_radius
                     * (
-                        math.cos(theta + theta_increment) * ex
-                        + math.sin(theta + theta_increment) * ey
+                        math.cos(θ + theta_increment) * ex
+                        + math.sin(θ + theta_increment) * ey
                     ),
                 ]
             )

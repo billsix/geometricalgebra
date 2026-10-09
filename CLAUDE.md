@@ -236,6 +236,13 @@ Repo-specific invariants the agent must obey (rationale in the shared doc + the 
   exactly and suppress a linter narrowly with the reason at the site.
 - **A local bound to a class/type object is named `cls`** (e.g. `cls = type(vector)`), never
   `representation`/`klass`. **The dimension is `n`, never `grade`.**
+- **Variable names follow the Hestenes grade-class convention** — a **Greek** letter for a scalar
+  (`θ`, `α`, `λ`; Latin fallback where Greek hurts), **lowercase Latin** for a vector (`a`, `v`,
+  `x`), **CAPITAL Latin** for a bivector/trivector/pseudoscalar or any general multivector/versor
+  (`A`, `B`, `R`, `I`). Applies to **locals + private helpers only** (public parameters stay — N803
+  on, N806 off). The rule table, the Greek-vs-Latin-fallback caveat (cos/sin values and descriptive
+  scalar names stay Latin), the exempt-names list, and the tooling facts (Greek passes ruff/ty) are
+  in `tasks/reference/hestenes-variable-notation.md`.
 - **The book's notebooks are hand-written Python under the full standard — every binding
   typed** (the maintainer, 2026-10-09). `book/docs/notebooks/*.py` annotate every assignment
   (`a: Vector = a_1 * e_1 + a_2 * e_2`, `R: Versor = …`, `magnitude: Real = b.magnitude()`),

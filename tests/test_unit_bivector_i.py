@@ -78,15 +78,15 @@ def test_i_of_parallel_vectors_raises() -> None:
 
 
 def test_i_method_on_a_bivector_is_it_normalized() -> None:
-    b: g2.Bivector = g2.Bivector(coeff_e_12=5)
-    assert b.i() == b.normalize()
-    assert b.i().is_bivector()
+    B: g2.Bivector = g2.Bivector(coeff_e_12=5)
+    assert B.i() == B.normalize()
+    assert B.i().is_bivector()
 
 
 def test_i_method_on_a_rotor_is_its_plane_of_rotation() -> None:
-    r: g3.Versor = g3.Vector.e_1 * g3.Vector.e_2  # vector * vector is a Versor
-    assert r.i() == r.plane_of_rotation()
-    assert r.i().is_bivector()
+    R: g3.Versor = g3.Vector.e_1 * g3.Vector.e_2  # vector * vector is a Versor
+    assert R.i() == R.plane_of_rotation()
+    assert R.i().is_bivector()
 
 
 def test_i_from_vectors_composes_the_two_primitives() -> None:

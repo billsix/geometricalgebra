@@ -127,8 +127,8 @@ show(e_1 ^ e_2)
 # dedicated `g2.Scalar` type.
 
 # %%
-i2: g2.Bivector = e_1 ^ e_2  # the unit bivector
-show(i2 * i2)
+I2: g2.Bivector = e_1 ^ e_2  # the unit bivector
+show(I2 * I2)
 
 # %% [markdown]
 # Versors are the complex numbers
@@ -138,11 +138,11 @@ show(i2 * i2)
 # narrows to `g2.Versor`), and the unit bivector squares to −1.
 
 # %%
-r: g2.Versor = 2 + 3 * i2  # scalar + bivector  -> g2.Versor
-show(r)
+R0: g2.Versor = 2 + 3 * I2  # scalar + bivector  -> g2.Versor
+show(R0)
 
 # %%
-show(i2 * i2)  # == -1
+show(I2 * I2)  # == -1
 
 # %%
 # a versor rotates a vector: the versor that turns e_1 -> e_2 is a
@@ -210,8 +210,8 @@ R * w * R.inverse() == projection_rotation(from_vector=frm, to_vector=to)(w)
 named: list[tuple[str, MultiVectorBase]] = [
     ("g2.Scalar", g2.Scalar.from_real(5)),
     ("g2.Vector", a),
-    ("g2.Bivector", i2),
-    ("g2.Versor", r),
+    ("g2.Bivector", I2),
+    ("g2.Versor", R0),
 ]
 # the 𝒢₂ grade product table: (row) * (column) -> result type
 header: str = "| `*` | " + " | ".join(na for na, _ in named) + " |"
@@ -242,11 +242,11 @@ show(u * v, u ^ v)
 
 # %%
 # dual of a bivector (a plane) is the orthogonal vector -- like u x v
-biv: g3.Bivector = u ^ v
-show(biv, biv.dual())
+B: g3.Bivector = u ^ v
+show(B, B.dual())
 
 # %%
-biv.dual()  # the components of u x v
+B.dual()  # the components of u x v
 
 # %%
 # each unit bivector of g3.G squares to -1 (the even subalgebra is the quaternions)
@@ -278,7 +278,7 @@ show(B, B.dual(), B * B.dual())
 # `tasks/reference/graded-subspaces-vs-subalgebras.md`.
 
 # %%
-kind(u * biv)  # g3.Odd_3 (was g3.G)
+kind(u * B)  # g3.Odd_3 (was g3.G)
 
 # %% [markdown]
 # The three geometric cases. For a plane `B = a ^ b`, the product `B * v` is grade 1
@@ -327,7 +327,7 @@ a == 3 * e_1 + 4 * e_2
 
 # %%
 # display a few as latex
-show(a, a * b, a ^ b, r)
+show(a, a * b, a ^ b, R0)
 
 # %% [markdown]
 # Projections and reflections compose in a pipeline

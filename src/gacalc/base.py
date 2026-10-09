@@ -2092,12 +2092,12 @@ class MultiVectorBase(abc.ABC):
                 f"pseudoscalar). got grades {sorted(self.grades())}"
             )
         # the one remaining case: A**2 < 0 (bivector / pseudoscalar) -> a rotor.
-        theta: Real = self.magnitude()
-        numeric: bool = isinstance(theta, float)
-        cos_t: Real = math.cos(theta) if numeric else sympy.cos(theta)
-        sin_t: Real = math.sin(theta) if numeric else sympy.sin(theta)
+        θ: Real = self.magnitude()
+        numeric: bool = isinstance(θ, float)
+        cos_t: Real = math.cos(θ) if numeric else sympy.cos(θ)
+        sin_t: Real = math.sin(θ) if numeric else sympy.sin(θ)
         #   Â * sin(|A|) + cos(|A|)   with   Â = A / |A|
-        return self * (sin_t / theta) + cos_t
+        return self * (sin_t / θ) + cos_t
 
     def symbolically_equal(
         self,

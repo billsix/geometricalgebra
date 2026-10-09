@@ -211,12 +211,12 @@ def test_multivector_grade() -> None:
     assert (b * c).r_vector_part(2) == 25 * e_1 * e_2
     assert (b * c).max_grade() == 2
 
-    i3: MultiVector = e_1 * e_2 * e_3
-    assert i3.scalar_part() == 0
-    assert i3.r_vector_part(1) == zero
-    assert i3.r_vector_part(2) == zero
-    assert i3.r_vector_part(3) == i3
-    assert i3.max_grade() == 3
+    I3: MultiVector = e_1 * e_2 * e_3
+    assert I3.scalar_part() == 0
+    assert I3.r_vector_part(1) == zero
+    assert I3.r_vector_part(2) == zero
+    assert I3.r_vector_part(3) == I3
+    assert I3.max_grade() == 3
 
 
 def test_is_homogeneous_of_grade_r() -> None:
@@ -371,38 +371,38 @@ def test_multivector_unit_pseudoscalar() -> None:
     assert MultiVector.unit_pseudoscalar(2) == e_1 * e_2
     assert MultiVector.unit_pseudoscalar(3) == e_1 * e_2 * e_3
 
-    i1: MultiVector = MultiVector.unit_pseudoscalar(1)
-    assert i1 * i1 == one
+    I1: MultiVector = MultiVector.unit_pseudoscalar(1)
+    assert I1 * I1 == one
     assert MultiVector.unit_pseudoscalar_squared(1) == one
-    i2: MultiVector = MultiVector.unit_pseudoscalar(2)
-    assert i2 * i2 == -one
+    I2: MultiVector = MultiVector.unit_pseudoscalar(2)
+    assert I2 * I2 == -one
     assert MultiVector.unit_pseudoscalar_squared(2) == -one
-    i3: MultiVector = MultiVector.unit_pseudoscalar(3)
-    assert i3 * i3 == -one
-    i4: MultiVector = MultiVector.unit_pseudoscalar(4)
-    assert i4 * i4 == one
-    i5: MultiVector = MultiVector.unit_pseudoscalar(5)
-    assert i5 * i5 == one
-    i6: MultiVector = MultiVector.unit_pseudoscalar(6)
-    assert i6 * i6 == -one
-    i7: MultiVector = MultiVector.unit_pseudoscalar(7)
-    assert i7 * i7 == -one
-    i8: MultiVector = MultiVector.unit_pseudoscalar(8)
-    assert i8 * i8 == one
-    i9: MultiVector = MultiVector.unit_pseudoscalar(9)
-    assert i9 * i9 == one
-    i10: MultiVector = MultiVector.unit_pseudoscalar(10)
-    assert i10 * i10 == -one
-    i11: MultiVector = MultiVector.unit_pseudoscalar(11)
-    assert i11 * i11 == -one
-    i12: MultiVector = MultiVector.unit_pseudoscalar(12)
-    assert i12 * i12 == one
-    i13: MultiVector = MultiVector.unit_pseudoscalar(13)
-    assert i13 * i13 == one
-    i14: MultiVector = MultiVector.unit_pseudoscalar(14)
-    assert i14 * i14 == -one
-    i15: MultiVector = MultiVector.unit_pseudoscalar(15)
-    assert i15 * i15 == -one
+    I3: MultiVector = MultiVector.unit_pseudoscalar(3)
+    assert I3 * I3 == -one
+    I4: MultiVector = MultiVector.unit_pseudoscalar(4)
+    assert I4 * I4 == one
+    I5: MultiVector = MultiVector.unit_pseudoscalar(5)
+    assert I5 * I5 == one
+    I6: MultiVector = MultiVector.unit_pseudoscalar(6)
+    assert I6 * I6 == -one
+    I7: MultiVector = MultiVector.unit_pseudoscalar(7)
+    assert I7 * I7 == -one
+    I8: MultiVector = MultiVector.unit_pseudoscalar(8)
+    assert I8 * I8 == one
+    I9: MultiVector = MultiVector.unit_pseudoscalar(9)
+    assert I9 * I9 == one
+    I10: MultiVector = MultiVector.unit_pseudoscalar(10)
+    assert I10 * I10 == -one
+    I11: MultiVector = MultiVector.unit_pseudoscalar(11)
+    assert I11 * I11 == -one
+    I12: MultiVector = MultiVector.unit_pseudoscalar(12)
+    assert I12 * I12 == one
+    I13: MultiVector = MultiVector.unit_pseudoscalar(13)
+    assert I13 * I13 == one
+    I14: MultiVector = MultiVector.unit_pseudoscalar(14)
+    assert I14 * I14 == -one
+    I15: MultiVector = MultiVector.unit_pseudoscalar(15)
+    assert I15 * I15 == -one
 
 
 def test_multivector_reverse() -> None:
