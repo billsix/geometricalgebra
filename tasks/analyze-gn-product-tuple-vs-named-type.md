@@ -1,56 +1,48 @@
 # Analyze the structure/naming of the Gn geometric product: named type vs. passing tuples
 
-**Status:** in-progress
+**Status:** complete
+**Completed:** 2026-10-09
 **Priority:** 5
 **Difficulty:** 3
 **Started:** 2026-10-09
 
 ## BLUF
 
-Analyze how `Gn._geometric_product` is structured and named today — it canonicalizes each concatenated
-blade with the recursive helper `decrease_grade`, carrying a `BladeDictionaryEntry(NamedTuple)` of
-`(blade, coefficient)`. The maintainer recalls an earlier version that passed **plain tuples** around
-and felt it "looked cleaner," and wants the alternatives weighed. Deliverable: a reference doc that
-describes the current design, lays out the options (plain tuple / `NamedTuple` [current] / frozen
-dataclass / a pair of parallel values / a small typed record), each keeping behaviour identical, with
-pros/cons and a recommendation. **Analysis only — no refactor here**; if the recommendation is to
-change, it scaffolds a follow-on implementation task (`proposed — needs go-ahead`).
+Analyzed how `Gn._geometric_product` carries a `(blade, coefficient)` term through its `decrease_grade`
+canonicalization, compared the current `BladeDictionaryEntry(NamedTuple)` against the earlier plain
+tuple form the maintainer recalls as "cleaner" and two other options, all behaviour-identical. Findings,
+the concrete before/after from git history, the options table, and a recommendation are in
+`tasks/reference/gn-product-structure-options.md`. Outcome: it is a **taste call**, not a defect —
+either keep the NamedTuple (no work) or adopt option C (a type-aliased tuple) to recover the terse
+recursion with a readable return type. The option-C change is scaffolded as
+`tasks/change-gn-product-term-representation.md` (`proposed — needs go-ahead`).
 
-## Context (read first)
+## What was found
 
-- The code: `src/gacalc/gn.py` — `BladeDictionaryEntry(NamedTuple)` (`blade: Blade`,
-  `coefficient: Real`, plus `as_multivector()`), the `_geometric_product` method and its nested
-  `decrease_grade` recursion (four `match` arms: base `() | (_,)`, annihilate `a == c`, swap+negate
-  `a > c`, in-order-insert `a < c`), and the final comprehension that maps `decrease_grade` over every
-  pair of blades from the two factors and sums.
-- The types: `Blade = tuple[int, ...]`, `BladeReal = dict[Blade, Real]` (`src/gacalc/base.py`).
-- The mechanism is now documented for readers in `tasks/reference/gn-multiplication-by-hand.md`
-  (the ASCII slide/flip/annihilate account) — the analysis should stay consistent with it.
-- Git history: find the pre-named-type version to ground "it looked cleaner" in the actual old code
-  (`git log -- src/gacalc/gn.py`, look for the commit that introduced `BladeDictionaryEntry` /
-  `NamedTuple`); quote the before/after so the comparison is concrete, not from memory.
-- Conventions that bound the options: the project's Python standard (expression/CQS, naming grammar,
-  `cls` for type locals) and "an externally-defined name wins" — the interchange primitives
-  `from_blade_dict`/`to_blade_dict`/`_geometric_product` are fixed by `MultiVectorBase` and out of
-  scope for renaming.
+- **Current (named record):** `BladeDictionaryEntry(NamedTuple)` (`blade`, `coefficient`,
+  `as_multivector()`); `decrease_grade` takes/returns it; the four `match` arms read
+  `basis_blade.blade` / `.coefficient` and reconstruct the record at each recursive call.
+- **The maintainer's recollection is accurate.** Git history shows the oscillation: `ca31ce5`
+  ("use tuple instead, directly", in `src/geometricalgebra/multivector.py`) passed the blade and
+  coefficient as **two positional values** and returned a bare `(blade, magnitude)` 2-tuple, with terse
+  recursive calls and a `sorted_rest, new_mag = decrease_grade(...)` destructure; `18e1536`
+  ("extracted type") later introduced the named record.
+- **Where each wins:** the tuple form's advantage is the terse recursive calls / return-destructure
+  (the bulk of the function); the NamedTuple's advantage is self-documenting field access in the arms
+  and a home for `as_multivector()`. The tuple era's one real weakness was the opaque return
+  annotation `tuple[tuple[int, …], Real]`.
+- **Not a performance question:** the product maps `decrease_grade` over every blade pair, but a
+  NamedTuple, a plain tuple, and a slotted frozen dataclass allocate comparably.
 
-## Goal
+## Recommendation (in the reference doc)
 
-Produce `tasks/reference/gn-product-structure-options.md` (a design-rationale reference doc): the
-current structure, the alternatives with concrete before/after sketches, the trade-offs (readability,
-type precision, immutability, `match`-pattern ergonomics, allocation cost in the hot product loop,
-consistency with the rest of the code), and a recommendation. Keep behaviour identical in every option.
-
-## Plan
-
-- [ ] Read `_geometric_product`/`decrease_grade`/`BladeDictionaryEntry` and the git history of the
-      tuple→named-type change; quote the old tuple form.
-- [ ] Enumerate the options and sketch each against the four `match` arms (does it still pattern-match
-      cleanly? `NamedTuple` and tuple both destructure in `match`; a dataclass needs field patterns).
-- [ ] Weigh trade-offs; note the hot-loop allocation angle (the product maps over every blade pair).
-- [ ] Write the reference doc with a recommendation; if it recommends a change, scaffold the follow-on
-      implementation task as `proposed — needs go-ahead`, cross-linked.
+Either keep the `NamedTuple` (field names earn their keep; no work) or adopt **option C** — a type alias
+`BladeTerm = tuple[Blade, Real]`, positional return, `as_multivector` as a free helper — which recovers
+the old terseness while naming the return type. Options A (bare tuple, opaque annotation) and D (frozen
+dataclass, heavier for no gain) are not recommended. The pick is the maintainer's taste.
 
 ## Open questions
 
-None — this is analysis; any change is a separate, go-ahead-gated task.
+None for this analysis. The one decision — keep the NamedTuple or switch to option C — lives in the
+follow-on task `tasks/change-gn-product-term-representation.md` (its Open question 1), gated on the
+maintainer's pick.
