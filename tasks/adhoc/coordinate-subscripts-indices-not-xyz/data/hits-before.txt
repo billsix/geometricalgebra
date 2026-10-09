@@ -1,0 +1,106 @@
+book/docs/geometric-product.rst:21:   \qquad \vec{r}(\vec{a}; \pi/2) = \begin{bmatrix} -\vec{a}_y \\ \vec{a}_x \end{bmatrix}.
+book/docs/geometric-product.rst:23:The 90° rotation :math:`(-\vec{a}_y, \vec{a}_x)` is the key. **It is a product.** Write
+book/docs/geometric-product.rst:30:   \vec{a}\,e_{12} = (\vec{a}_x e_1 + \vec{a}_y e_2)\,e_{12}
+book/docs/geometric-product.rst:31:                   = -\vec{a}_y\,e_1 + \vec{a}_x\,e_2.
+book/docs/geometric-product.rst:48:     = \cos\theta\,(\vec{a}_x e_1 + \vec{a}_y e_2) + \sin\theta\,(-\vec{a}_y e_1 + \vec{a}_x e_2)
+book/docs/geometric-product.rst:49:     = (\vec{a}_x\cos\theta - \vec{a}_y\sin\theta)\,e_1
+book/docs/geometric-product.rst:50:       + (\vec{a}_x\sin\theta + \vec{a}_y\cos\theta)\,e_2,
+book/docs/proof-projection.rst:50:of :math:`\vec{a}` on the x-axis is just its x-coordinate — throw away :math:`\vec{a}_y`,
+book/docs/proof-projection.rst:51:keep :math:`\vec{a}_x`. Nothing to it.
+book/docs/proof-projection.rst:82:   \cos = \frac{\vec{b}_x}{|\vec{b}|}, \qquad \sin = -\frac{\vec{b}_y}{|\vec{b}|}
+book/docs/proof-projection.rst:133:   x-coordinate of :math:`\vec{a}'`, drop the rest, giving :math:`\vec{a}'_x\,\vec{e}_1`.
+book/docs/proof-projection.rst:165:shadow on the :math:`xy`-plane, the point :math:`(\vec{b}_x, \vec{b}_y)`, of length
+book/docs/proof-projection.rst:166::math:`k = \sqrt{\vec{b}_x^{\,2} + \vec{b}_y^{\,2}}`. Rotate the :math:`xy`-plane with
+book/docs/proof-projection.rst:167::math:`\cos = \vec{b}_x / k`, :math:`\sin = -\vec{b}_y / k`, **copying the** :math:`z`
+book/docs/proof-projection.rst:168:**part straight down**, and :math:`\vec{b}` moves to :math:`(k,\ 0,\ \vec{b}_z)`.
+book/docs/proof-projection.rst:172::math:`\sin = -\vec{b}_z / m` (where :math:`m = \lvert\vec{b}\rvert`), leaving :math:`y`
+book/docs/proof-rotate-from-a-to-b.rst:57:   \cos\beta = \frac{\vec{a}_x}{|\vec{a}|}, \qquad \sin\beta = \frac{\vec{a}_y}{|\vec{a}|}.
+book/docs/proof-rotate-from-a-to-b.rst:60:sine is odd that rotation uses :math:`\cos = \vec{a}_x/|\vec{a}|`, :math:`\sin = -\vec{a}_y/|\vec{a}|`.
+book/docs/proof-rotate-from-a-to-b.rst:64::math:`(\vec{a}_x^2 + \vec{a}_y^2)/|\vec{a}| = |\vec{a}|`:
+book/docs/proof-rotate-from-a-to-b.rst:79:(:math:`\cos = \vec{b}'_x/|\vec{b}'|`, :math:`\sin = \vec{b}'_y/|\vec{b}'|`). Call it
+book/docs/proof-rotate-from-a-to-b.rst:108:          \cos\theta_2\,(\vec{v}_x\cos\theta_1 - \vec{v}_y\sin\theta_1)
+book/docs/proof-rotate-from-a-to-b.rst:109:            - \sin\theta_2\,(\vec{v}_x\sin\theta_1 + \vec{v}_y\cos\theta_1) \\
+book/docs/proof-rotate-from-a-to-b.rst:110:          \sin\theta_2\,(\vec{v}_x\cos\theta_1 - \vec{v}_y\sin\theta_1)
+book/docs/proof-rotate-from-a-to-b.rst:111:            + \cos\theta_2\,(\vec{v}_x\sin\theta_1 + \vec{v}_y\cos\theta_1)
+book/docs/proof-rotate-from-a-to-b.rst:114:          \vec{v}_x\,(\cos\theta_1\cos\theta_2 - \sin\theta_1\sin\theta_2)
+book/docs/proof-rotate-from-a-to-b.rst:115:            - \vec{v}_y\,(\sin\theta_1\cos\theta_2 + \cos\theta_1\sin\theta_2) \\
+book/docs/proof-rotate-from-a-to-b.rst:116:          \vec{v}_x\,(\sin\theta_1\cos\theta_2 + \cos\theta_1\sin\theta_2)
+book/docs/proof-rotate-from-a-to-b.rst:117:            + \vec{v}_y\,(\cos\theta_1\cos\theta_2 - \sin\theta_1\sin\theta_2)
+book/docs/proof-rotate-from-a-to-b.rst:120:          \vec{v}_x\cos(\theta_1 + \theta_2) - \vec{v}_y\sin(\theta_1 + \theta_2) \\
+book/docs/proof-rotate-from-a-to-b.rst:121:          \vec{v}_x\sin(\theta_1 + \theta_2) + \vec{v}_y\cos(\theta_1 + \theta_2)
+book/docs/proof-rotate-from-a-to-b.rst:149:   \cos\theta = \frac{\vec{a}_x\vec{b}_x + \vec{a}_y\vec{b}_y}{|\vec{a}|\,|\vec{b}|},
+book/docs/proof-rotate-from-a-to-b.rst:151:   \sin\theta = \frac{\vec{a}_x\vec{b}_y - \vec{a}_y\vec{b}_x}{|\vec{a}|\,|\vec{b}|}.
+book/docs/proof-rotate-from-a-to-b.rst:164:Look again at those two numerators. The top one, :math:`\vec{a}_x\vec{b}_x + \vec{a}_y\vec{b}_y`, is the
+book/docs/proof-rotate-from-a-to-b.rst:166::math:`\vec{a}_x\vec{b}_y - \vec{a}_y\vec{b}_x`, is the **signed area** of the parallelogram they span.
+book/docs/proof-rotate.rst:114::math:`\vec{a}` is :math:`\beta`, so :math:`\cos\beta = \vec{a}_x / r` and
+book/docs/proof-rotate.rst:115::math:`\sin\beta = \vec{a}_y / r`. And by the angle-addition identities,
+book/docs/proof-rotate.rst:126:     &= r\,\Big(\cos\theta \begin{bmatrix} \vec{a}_x / r \\ \vec{a}_y / r \end{bmatrix}
+book/docs/proof-rotate.rst:127:              + \sin\theta \begin{bmatrix} -\vec{a}_y / r \\ \vec{a}_x / r \end{bmatrix}\Big) \\
+book/docs/proof-rotate.rst:128:     &= \cos\theta \begin{bmatrix} \vec{a}_x \\ \vec{a}_y \end{bmatrix}
+book/docs/proof-rotate.rst:129:              + \sin\theta \begin{bmatrix} -\vec{a}_y \\ \vec{a}_x \end{bmatrix} \\
+book/docs/proof-rotate.rst:130:     &= \cos\theta\,\vec{a} + \sin\theta \begin{bmatrix} -\vec{a}_y \\ \vec{a}_x \end{bmatrix}
+book/docs/proof-rotate.rst:138:   \qquad \vec{r}(\vec{a}; \pi/2) = \begin{bmatrix} -\vec{a}_y \\ \vec{a}_x \end{bmatrix}.
+book/docs/proof-rotate.rst:142::math:`(-\vec{a}_y, \vec{a}_x)` is itself a *product* — and that observation is where
+book/docs/vector-addition.rst:45:     = \begin{bmatrix} \vec{a}_x + \vec{b}_x \\ \vec{a}_y + \vec{b}_y \end{bmatrix}
+book/docs/vector-addition.rst:46:     = \begin{bmatrix} \vec{b}_x + \vec{a}_x \\ \vec{b}_y + \vec{a}_y \end{bmatrix}
+book/docs/notebooks/geometric-product.py:25:a_x: sympy.Symbol
+book/docs/notebooks/geometric-product.py:26:a_y: sympy.Symbol
+book/docs/notebooks/geometric-product.py:27:a_x, a_y = sympy.symbols("a_x a_y", real=True)
+book/docs/notebooks/geometric-product.py:28:a: Vector = a_x * Vector.e_1 + a_y * Vector.e_2
+book/docs/notebooks/geometric-product.py:31:a * Bivector.e_12  # -> (-a_y, a_x)
+book/docs/notebooks/geometric-product.py:42:# (a_x cos(theta) - a_y sin(theta), a_x sin(theta) + a_y cos(theta)). The one-sided
+book/docs/notebooks/geometric-product.py:45:    a_x * sympy.cos(theta) - a_y * sympy.sin(theta)
+book/docs/notebooks/geometric-product.py:46:) * Vector.e_1 + (a_x * sympy.sin(theta) + a_y * sympy.cos(theta)) * Vector.e_2
+book/docs/notebooks/levels-of-abstraction.py:22:# 1. **Coordinate** — write the numbers out (e.g. `a_x*b_x + a_y*b_y`).
+book/docs/notebooks/levels-of-abstraction.py:37:a_x: sympy.Symbol
+book/docs/notebooks/levels-of-abstraction.py:38:a_y: sympy.Symbol
+book/docs/notebooks/levels-of-abstraction.py:39:b_x: sympy.Symbol
+book/docs/notebooks/levels-of-abstraction.py:40:b_y: sympy.Symbol
+book/docs/notebooks/levels-of-abstraction.py:41:a_x, a_y, b_x, b_y = sympy.symbols("a_x a_y b_x b_y", real=True)
+book/docs/notebooks/levels-of-abstraction.py:42:a: Vector = a_x * Vector.e_1 + a_y * Vector.e_2
+book/docs/notebooks/levels-of-abstraction.py:43:b: Vector = b_x * Vector.e_1 + b_y * Vector.e_2
+book/docs/notebooks/levels-of-abstraction.py:54:dot_coordinate: g2.Scalar = g2.Scalar.from_real(a_x * b_x + a_y * b_y)
+book/docs/notebooks/levels-of-abstraction.py:69:wedge_coordinate: g2.Bivector = (a_x * b_y - a_y * b_x) * g2.Bivector.e_12
+book/docs/notebooks/levels-of-abstraction.py:91:p_x: sympy.Symbol
+book/docs/notebooks/levels-of-abstraction.py:92:p_y: sympy.Symbol
+book/docs/notebooks/levels-of-abstraction.py:93:p_z: sympy.Symbol
+book/docs/notebooks/levels-of-abstraction.py:94:q_x: sympy.Symbol
+book/docs/notebooks/levels-of-abstraction.py:95:q_y: sympy.Symbol
+book/docs/notebooks/levels-of-abstraction.py:96:q_z: sympy.Symbol
+book/docs/notebooks/levels-of-abstraction.py:97:p_x, p_y, p_z, q_x, q_y, q_z = sympy.symbols("p_x p_y p_z q_x q_y q_z", real=True)
+book/docs/notebooks/levels-of-abstraction.py:98:p: g3.Vector = p_x * g3.Vector.e_1 + p_y * g3.Vector.e_2 + p_z * g3.Vector.e_3
+book/docs/notebooks/levels-of-abstraction.py:99:q: g3.Vector = q_x * g3.Vector.e_1 + q_y * g3.Vector.e_2 + q_z * g3.Vector.e_3
+book/docs/notebooks/proof-projection.py:32:# (`cos = b_x / |b|`, `sin = -b_y / |b|`), rotate both `a` and `b` by `-φ` so `b` lands
+book/docs/notebooks/proof-projection.py:40:    b_x: Real = b.coefficient(e_1)
+book/docs/notebooks/proof-projection.py:41:    b_y: Real = b.coefficient(e_2)
+book/docs/notebooks/proof-projection.py:43:    cos: Real = b_x / magnitude
+book/docs/notebooks/proof-projection.py:44:    sin: Real = -b_y / magnitude
+book/docs/notebooks/proof-projection.py:53:    a_x: Real = a_aligned.coefficient(e_1)
+book/docs/notebooks/proof-projection.py:54:    a_y: Real = a_aligned.coefficient(e_2)
+book/docs/notebooks/proof-projection.py:57:    projection: Vector = rotate(cos, -sin, a_x * e_1)
+book/docs/notebooks/proof-projection.py:58:    rejection: Vector = rotate(cos, -sin, a_y * e_2)
+book/docs/notebooks/proof-rotate-from-a-to-b.py:33:v_x: sympy.Symbol
+book/docs/notebooks/proof-rotate-from-a-to-b.py:34:v_y: sympy.Symbol
+book/docs/notebooks/proof-rotate-from-a-to-b.py:35:v_x, v_y = sympy.symbols("v_x v_y", real=True)
+book/docs/notebooks/proof-rotate-from-a-to-b.py:36:v: Vector = v_x * e_1 + v_y * e_2
+book/docs/notebooks/proof-rotate-from-a-to-b.py:101:a_x: sympy.Symbol
+book/docs/notebooks/proof-rotate-from-a-to-b.py:102:a_y: sympy.Symbol
+book/docs/notebooks/proof-rotate-from-a-to-b.py:103:a_x, a_y = sympy.symbols("a_x a_y", real=True, positive=True)
+book/docs/notebooks/proof-rotate-from-a-to-b.py:104:a: Vector = a_x * e_1 + a_y * e_2
+book/docs/notebooks/proof-rotate-from-a-to-b.py:109:# Step 1: swing a onto the x-axis (cos = a_x/|a|, sin = -a_y/|a|). It lands on |a| e_1.
+book/docs/notebooks/proof-rotate-from-a-to-b.py:110:cos_1: Real = a_x / magnitude_a
+book/docs/notebooks/proof-rotate-from-a-to-b.py:111:sin_1: Real = -a_y / magnitude_a
+book/docs/notebooks/proof-rotate-from-a-to-b.py:127:cos_ab: Real = (a_x * 3 + a_y * 4) / (magnitude_a * magnitude_b)
+book/docs/notebooks/proof-rotate-from-a-to-b.py:128:sin_ab: Real = (a_x * 4 - a_y * 3) / (magnitude_a * magnitude_b)
+book/docs/notebooks/vector-addition.py:22:a_x: sympy.Symbol
+book/docs/notebooks/vector-addition.py:23:a_y: sympy.Symbol
+book/docs/notebooks/vector-addition.py:24:b_x: sympy.Symbol
+book/docs/notebooks/vector-addition.py:25:b_y: sympy.Symbol
+book/docs/notebooks/vector-addition.py:26:a_x, a_y, b_x, b_y = sympy.symbols("a_x a_y b_x b_y", real=True)
+book/docs/notebooks/vector-addition.py:27:a: Vector = a_x * e_1 + a_y * e_2
+book/docs/notebooks/vector-addition.py:28:b: Vector = b_x * e_1 + b_y * e_2
+book/docs/notebooks/vector-addition.py:30:a + b  # the coordinates add: (a_x + b_x) e_1 + (a_y + b_y) e_2
+book/figures/epix/sp4.py:55:        at=PROJ_ROT, offset=Point(x=-6, y=-12), text=r"$a'_x$", align=epix.LabelPos.r
+book/figures/epix/sp4.py:64:    epix.label(at=mid, offset=Point(x=9, y=0), text=r"$a'_y$", align=epix.LabelPos.l)
+tasks/reference/book-outline.md:94:  `cos(−θ)=b_x/|b|`, `sin(−θ)=−b_y/|b|` — reusing even the "we never need the angle itself,
+tasks/reference/book-outline.md:119:  `(a_x + b_x, a_y + b_y) = (b_x + a_x, b_y + a_y)`), otherwise in the page's companion

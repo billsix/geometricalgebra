@@ -91,7 +91,7 @@ These came out of reworking `proof-projection.rst`; apply them to every proof pa
   **not** introduce a bare matrix / closed form "out of nowhere" and assert it is the
   rotation. Worked instance: `proof-projection.rst` writes the standard-position rotation as
   `r(v; −θ)` using the chapter-ending formula of `proof-rotate.rst`, then plugs in
-  `cos(−θ)=b_x/|b|`, `sin(−θ)=−b_y/|b|` — reusing even the "we never need the angle itself,
+  `cos(−θ)=b_1/|b|`, `sin(−θ)=−b_2/|b|` — reusing even the "we never need the angle itself,
   only its cosine and sine" trick that chapter established.
 - **Name a transform by what it does, from → to**, with the `R_{from}^{to}` sub/superscript
   convention (subscript = where it starts, superscript = where it points) — the from/to
@@ -113,10 +113,20 @@ These came out of reworking `proof-projection.rst`; apply them to every proof pa
   genuinely need different symbols, change the **diagram** to match, not the reverse. (Origin:
   `rotate.rst` had imported *MVP*'s `\vec{v_1}`/`\vec{v_2}` for the from→to definition while its
   diagram `rotate-goal` and the whole book use `\vec{a}`/`\vec{b}`; fixed 2026-10-08.)
+- **Coordinates are `a_1`, `a_2` (and `a_3`), never `a_{x}`, `a_{y}`, `a_{z}`** (the maintainer,
+  2026-10-08; swept 2026-10-09). The subscript names the basis vector the number multiplies
+  (`a = a_1 e_1 + a_2 e_2`) and survives 3D and 𝒢ₙ; a coordinate is a scalar, so it carries no
+  arrow (`\vec{a}` is the vector, `a_1` its number; primes carry over, `b'_2`). Introduced in
+  `relative-graph-paper.rst` › "How we write coordinates", which bridges from the reader's
+  `(x, y)` ordered pairs (OpenStax *Algebra 1*, Unit 1 "Find Coordinates") and `⟨a, b⟩` /
+  `a i + b j` (OpenStax *Precalculus 2e* §8.8 "Vectors"). Code cells still read `.x`/`.y`
+  (the public API, kept on purpose); the page says so once. The axis *names* stay ("the
+  x-axis", "keep the x-coordinate") — the rule is about subscripts. Mechanics:
+  `tasks/adhoc/coordinate-subscripts-indices-not-xyz/` (archived with its task).
 - **A Part I proof page states the result, proves it, then verifies it in coordinates**
   (2026-10-09; the rule and its taper are under "Coordinate-free is the destination" above).
   In the prose when the check is a few lines (vector addition commutes because
-  `(a_x + b_x, a_y + b_y) = (b_x + a_x, b_y + a_y)`), otherwise in the page's companion
+  `(a_1 + b_1, a_2 + b_2) = (b_1 + a_1, b_2 + a_2)`), otherwise in the page's companion
   notebook (`notebooks/proof-<name>.py`, sympy with symbolic coordinates), and cite the Lean
   theorem by name next to it so the three forms sit together.
 

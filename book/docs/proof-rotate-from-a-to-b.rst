@@ -54,14 +54,14 @@ sine are read straight off :math:`\vec{a}`, so — as in that chapter — we nev
 
 .. math::
 
-   \cos\beta = \frac{\vec{a}_x}{|\vec{a}|}, \qquad \sin\beta = \frac{\vec{a}_y}{|\vec{a}|}.
+   \cos\beta = \frac{a_1}{|\vec{a}|}, \qquad \sin\beta = \frac{a_2}{|\vec{a}|}.
 
 To swing :math:`\vec{a}` down onto the axis we rotate by :math:`-\beta`, and since cosine is even while
-sine is odd that rotation uses :math:`\cos = \vec{a}_x/|\vec{a}|`, :math:`\sin = -\vec{a}_y/|\vec{a}|`.
+sine is odd that rotation uses :math:`\cos = a_1/|\vec{a}|`, :math:`\sin = -a_2/|\vec{a}|`.
 Substitute those into :math:`\vec{r}(\,\cdot\,;\theta)` and call the result
 :math:`R_{\vec{a}}^{\vec{e}_1}` — read "from :math:`\vec{a}`, to :math:`\vec{e}_1`". Applied to
 :math:`\vec{a}` itself, its :math:`y`-coordinate cancels and its :math:`x`-coordinate becomes
-:math:`(\vec{a}_x^2 + \vec{a}_y^2)/|\vec{a}| = |\vec{a}|`:
+:math:`(a_1^2 + a_2^2)/|\vec{a}| = |\vec{a}|`:
 
 .. math::
 
@@ -76,7 +76,7 @@ And it carries :math:`\vec{b}` along to a new vector :math:`\vec{b}' = R_{\vec{a
 **Step 2 — in standard position, rotate :math:`\vec{e}_1` onto :math:`\vec{b}'`.** Now the problem is
 easy: swing the x-axis up onto :math:`\vec{b}'` by the angle :math:`\theta` between them — and, again,
 we read its cosine and sine straight off :math:`\vec{b}'`'s coordinates
-(:math:`\cos = \vec{b}'_x/|\vec{b}'|`, :math:`\sin = \vec{b}'_y/|\vec{b}'|`). Call it
+(:math:`\cos = b'_1/|\vec{b}'|`, :math:`\sin = b'_2/|\vec{b}'|`). Call it
 :math:`R_{\vec{e}_1}^{\vec{b}'}`.
 
 .. figure:: _static/epix/rotate-ab-step2.*
@@ -105,20 +105,20 @@ either order. That is easy to believe, and we can *check it in coordinates* with
    \begin{aligned}
    \vec{r}\big(\vec{r}(\vec{v};\theta_1);\theta_2\big)
      &= \begin{bmatrix}
-          \cos\theta_2\,(\vec{v}_x\cos\theta_1 - \vec{v}_y\sin\theta_1)
-            - \sin\theta_2\,(\vec{v}_x\sin\theta_1 + \vec{v}_y\cos\theta_1) \\
-          \sin\theta_2\,(\vec{v}_x\cos\theta_1 - \vec{v}_y\sin\theta_1)
-            + \cos\theta_2\,(\vec{v}_x\sin\theta_1 + \vec{v}_y\cos\theta_1)
+          \cos\theta_2\,(v_1\cos\theta_1 - v_2\sin\theta_1)
+            - \sin\theta_2\,(v_1\sin\theta_1 + v_2\cos\theta_1) \\
+          \sin\theta_2\,(v_1\cos\theta_1 - v_2\sin\theta_1)
+            + \cos\theta_2\,(v_1\sin\theta_1 + v_2\cos\theta_1)
         \end{bmatrix} \\
      &= \begin{bmatrix}
-          \vec{v}_x\,(\cos\theta_1\cos\theta_2 - \sin\theta_1\sin\theta_2)
-            - \vec{v}_y\,(\sin\theta_1\cos\theta_2 + \cos\theta_1\sin\theta_2) \\
-          \vec{v}_x\,(\sin\theta_1\cos\theta_2 + \cos\theta_1\sin\theta_2)
-            + \vec{v}_y\,(\cos\theta_1\cos\theta_2 - \sin\theta_1\sin\theta_2)
+          v_1\,(\cos\theta_1\cos\theta_2 - \sin\theta_1\sin\theta_2)
+            - v_2\,(\sin\theta_1\cos\theta_2 + \cos\theta_1\sin\theta_2) \\
+          v_1\,(\sin\theta_1\cos\theta_2 + \cos\theta_1\sin\theta_2)
+            + v_2\,(\cos\theta_1\cos\theta_2 - \sin\theta_1\sin\theta_2)
         \end{bmatrix} \\
      &= \begin{bmatrix}
-          \vec{v}_x\cos(\theta_1 + \theta_2) - \vec{v}_y\sin(\theta_1 + \theta_2) \\
-          \vec{v}_x\sin(\theta_1 + \theta_2) + \vec{v}_y\cos(\theta_1 + \theta_2)
+          v_1\cos(\theta_1 + \theta_2) - v_2\sin(\theta_1 + \theta_2) \\
+          v_1\sin(\theta_1 + \theta_2) + v_2\cos(\theta_1 + \theta_2)
         \end{bmatrix}
       = \vec{r}(\vec{v};\ \theta_1 + \theta_2),
    \end{aligned}
@@ -146,9 +146,9 @@ And its cosine and sine are a tidy formula in the coordinates of :math:`\vec{a}`
 
 .. math::
 
-   \cos\theta = \frac{\vec{a}_x\vec{b}_x + \vec{a}_y\vec{b}_y}{|\vec{a}|\,|\vec{b}|},
+   \cos\theta = \frac{a_1b_1 + a_2b_2}{|\vec{a}|\,|\vec{b}|},
    \qquad
-   \sin\theta = \frac{\vec{a}_x\vec{b}_y - \vec{a}_y\vec{b}_x}{|\vec{a}|\,|\vec{b}|}.
+   \sin\theta = \frac{a_1b_2 - a_2b_1}{|\vec{a}|\,|\vec{b}|}.
 
 So the rotation that carries :math:`\vec{a}`'s direction to :math:`\vec{b}`'s, applied to any vector
 :math:`\vec{v}`, is just the rotation of :doc:`proof-rotate` with that cosine and sine:
@@ -161,8 +161,8 @@ So the rotation that carries :math:`\vec{a}`'s direction to :math:`\vec{b}`'s, a
 to the middle rotation — ``rotateFromTo_collapse``, built on ``rotPlane_conj_collapse``, which rests on
 ``rotPlane_comm`` above — and the whole construction carries :math:`\vec{a}` to :math:`(|\vec{a}|/|\vec{b}|)\,\vec{b}` — ``rotateFromTo_carries``.)
 
-Look again at those two numerators. The top one, :math:`\vec{a}_x\vec{b}_x + \vec{a}_y\vec{b}_y`, is the
+Look again at those two numerators. The top one, :math:`a_1b_1 + a_2b_2`, is the
 **dot product** of :math:`\vec{a}` and :math:`\vec{b}`; the bottom one,
-:math:`\vec{a}_x\vec{b}_y - \vec{a}_y\vec{b}_x`, is the **signed area** of the parallelogram they span.
+:math:`a_1b_2 - a_2b_1`, is the **signed area** of the parallelogram they span.
 We built the rotation from nothing but turns we already trusted, and the answer handed us the two
 quantities the rest of the book is about. That is worth staring at.

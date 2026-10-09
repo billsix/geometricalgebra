@@ -1,79 +1,95 @@
 # Write coordinates as `a_1`, `a_2`, not `a_x`, `a_y` — and introduce the notation for high-school readers
 
-**Status:** proposed — needs go-ahead; the pedagogy half needs the maintainer's high-school-text
-consult (see Plan step 1). API question decided 2026-10-09 (keep `.x`/`.y`/`.z`).
+**Status:** DONE 2026-10-09 (work committed by the maintainer as `8f0b5f0`); the archive move plus
+`git rm -r tasks/adhoc/coordinate-subscripts-indices-not-xyz/` are owed as their own commit after
+the squash.
 **Priority:** 4
 **Difficulty:** 4
 **Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
-Use **indexed** coordinate subscripts in the book — `a_1`, `a_2` (and `a_3` in 3D) — instead of
-the axis-letter form `a_x`, `a_y`, `a_z`, and **introduce that notation** where the book first
-meets coordinates, for a reader whose last contact was high-school geometry / Algebra 2 /
-precalculus (`(x, y)` points, `⟨a, b⟩` or `a i + b j` vectors). Maintainer, 2026-10-08: *"Use
-things like `a_1` instead of `a_x`, introduce the notation for students familiar with high school
-geometry. Bill will likely need to consult a high school text book for more context of what they
-would know."* "Done" = zero `_x`/`_y`/`_z` coordinate subscripts in `book/docs/*.rst`, the ePiX
-figure labels, and the book notebooks; an explicit "how we write coordinates" passage early in
-Part I; `make docs` green.
+The maintainer's ask (2026-10-08, verbatim): *"Use things like `a_1` instead of `a_x`, introduce the
+notation for students familiar with high school geometry. Bill will likely need to consult a high
+school text book for more context of what they would know."* The task swept every axis-letter
+coordinate subscript out of the book's pages, companion notebooks and figure labels (106 hits, now
+0), wrote the "How we write coordinates" passage that bridges from the reader's `(x, y)` and
+`⟨a, b⟩ = a i + b j` to `a_1 e_1 + a_2 e_2`, and put the rule in the outline. `make docs` passed.
 
-## Why indices
+## Context (still true of the repo)
 
-- The subscript names **which basis vector** the coefficient multiplies: `a = a_1 e_1 + a_2 e_2`.
-  With `e_1`, `e_2`, `e_{12}` already the book's basis notation, `a_x` is an orphan letter system.
-- It survives the move to 3D and 𝒢ₙ (`a_1 … a_n`; there is no fourth axis letter), matching the
-  code and the proofs, which **already** use indices: generated docstrings `a₁b₂ − a₂b₁`
-  (`tools/gen_specialized.py` `CUSTOM_METHOD_DOCS`), Lean getters `a.c1`/`a.c2`
-  (`proofs/GacalcProofs/*.lean`), the basis constants `e_1`/`e_2`. The book is the outlier.
+- **The rule and its rationale** live in `tasks/reference/book-outline.md` › "Notation & prose
+  conventions for proof pages" (coordinates are `a_1`, `a_2`, `a_3`; the subscript names the basis
+  vector it multiplies and survives 3D and 𝒢ₙ; a coordinate is a scalar, so no arrow; primes carry
+  over). The code and the proofs already used indices — generated docstrings `a₁b₂ − a₂b₁`, Lean
+  getters `a.c1`/`a.c2`, basis constants `e_1`/`e_2` — the book had been the outlier.
+- **What the reader arrives with** is recorded in `tasks/reference/openstax-math-pedagogy.md`
+  ("Coordinates and vectors: the notation the reader arrives with"): ordered pairs `(x, y)` from
+  *Algebra 1*, component form `⟨a, b⟩` and `a i + b j` from *Precalculus 2e* §8.8.
+- **The passage** is `book/docs/relative-graph-paper.rst` › "How we write coordinates", behind a
+  `.. note:: Draft` banner for the maintainer's voice pass; the rest of that page is still a
+  placeholder.
+- **Decision (William Emerison Six <billsix@gmail.com>, 2026-10-09): the public `Vector.x`/`.y`/`.z`
+  attribute views stay.** Renaming them is a SemVer-breaking change; the book's math says `a_1`, its
+  code cells say `.x`, and the passage names the mismatch once. No `.c1`/`.c2` aliases.
+- **Prose axis names stayed by design** ("the x-axis", "keep the x-coordinate", figure alt text):
+  the rule is about subscripts, and the axis is still called the x-axis.
 
-## Current state (discovery 2026-10-08)
+## Chronology (from the pre-squash commits `master..HEAD` and the session, 2026-10-08 → 10-09)
 
-| Where | `_x`/`_y`/`_z` hits | Notes |
-|---|---|---|
-| `book/docs/proof-rotate-from-a-to-b.rst` | 22 | `\vec{a}_x`, `\vec{b}'_y`, … |
-| `book/docs/proof-rotate.rst` | 16 | the derivation matrices |
-| `book/docs/proof-projection.rst` | 12 | incl. the 3D `\vec{b}_z` |
-| `book/docs/geometric-product.rst` | 8 | `(-\vec{a}_y, \vec{a}_x)` |
-| `book/figures/epix/sp4.py` | 2 | labels `$a'_x$`, `$a'_y$` |
-| `book/docs/notebooks/proof-projection.py` | ~4 | markdown `b_x`, code locals `b_x`/`b_y` |
+1. **Filed** 2026-10-08 with the maintainer's ask, a discovery table (60 hits across four pages,
+   one figure, one notebook), the "why indices" rationale, and a plan whose first step — the
+   high-school-text consult — was marked maintainer-gated.
+2. **API question decided** 2026-10-09 (the decision above) in the sibling-task answers commit.
+3. **Go-ahead** 2026-10-09 ("start the coordinate-subscripts-indices not xyz task"). The consult was
+   done by the agent from the OpenStax ports instead of waiting on the maintainer.
+4. **The work** (`8f0b5f0`, "use a_1 instead of a_x"). By then the hit count had grown to 106 in
+   12 files, because the coordinate-proofs task (archived 2026-10-09) had added typed notebooks in
+   the old spelling.
 
-Out of scope (public API, not prose): the generated `Vector.x`/`.y`/`.z` **attribute views**
-(`AXIS_NAMES` in `tools/gen_specialized.py`; `v = Vector(-v.x, v.y)` in `CLAUDE.md`). Renaming
-those is a SemVer-breaking change, and the maintainer decided (2026-10-09) to **keep them as-is**.
-The book uses `.x`/`.y` in *code cells* and writes `a_1`/`a_2` in math — say so once where the
-notation is introduced ("in code, the first coordinate is `.x`").
+## What was done (all in `8f0b5f0`)
 
-## Plan
+**The consult.** The pinned OpenStax content was fetched with each book's `fetch.sh` into impo's
+gitignored `checkout/` (network was available; nothing downloaded was executed). *Algebra 1* Unit 1,
+"Find Coordinates" (module `m00040`): a point is an ordered pair `(x, y)` with an *x*-coordinate and
+a *y*-coordinate. *Precalculus 2e* §8.8 "Vectors" (module `m49412`): component form `⟨a, b⟩`, unit
+vectors **i**, **j** along the axes, and vectors "in terms of i and j", `a i + b j`. The bridge
+sentence the plan guessed was therefore right as written.
 
-1. **Pedagogy (maintainer-gated):** consult a high-school/precalculus text for what the reader
-   already writes. Lead to check first: the OpenStax *Precalculus 2e* vectors section (component
-   form `⟨a, b⟩`, unit vectors `i`, `j`, `v = a i + b j`) and *Algebra 1*'s `(x, y)` coordinate
-   plane — both are in the maintainer's impo OpenStax ports (`tasks/reference/openstax-math-pedagogy.md`
-   has the repo map and the regeneration command). Verify the exact section numbers in the
-   source before citing them. The bridge sentence then writes itself: *you wrote `a i + b j`; we
-   write `a_1 e_1 + a_2 e_2` — same thing, and the subscript tells you which axis, so it keeps
-   working when there are three, or `n`.*
-2. **Where to introduce it:** `book/docs/relative-graph-paper.rst` (placeholder: "coordinates,
-   the natural basis") is the natural home — it is where two vectors become graph paper and a
-   point gets coordinates on it; `vectors-as-number-lines.rst` and `trigonometry.rst` (both
-   placeholders) precede it and may foreshadow. Add the passage there and a one-line pointer in
-   `tasks/reference/book-outline.md` › "Notation & prose conventions" (new bullet: *coordinates
-   are `a_1, a_2`, never `a_x, a_y`; introduced in Relative Graph Paper*).
-3. **Sweep** (`tasks/adhoc/coordinate-subscripts-indices-not-xyz/discover.sh` — the grep in the
-   table, logged to `data/`): `\vec{a}_x` → `a_1` style across the four `.rst` pages, the `sp4`
-   figure labels (re-render), the `proof-projection` notebook markdown. Primes carry over
-   (`\vec{b}'_y` → `b'_2`). Read every hit — a `_x` inside an ePiX `Point(x=…, y=…)` keyword
-   argument is Python, not notation. **Run after `tasks/math-notation-parens-star-named-angles.md`**
-   (same lines; that sweep changes `\cos\theta`/`r\,(…)` on the same equations) or in the same pass
-   with its own commit.
-4. Verify: re-grep = zero; `make docs`; read `proof-rotate` (densest page) in the PDF.
+**The passage and the rule.** `relative-graph-paper.rst` gained the section (two prior notations with
+their sources, `a = a_1 e_1 + a_2 e_2`, the two reasons for indices, "no arrow on a coordinate", the
+`.x`/`.y` wrinkle). The outline gained the convention bullet. Foreshadowing in
+`vectors-as-number-lines`/`trigonometry` was left to their own prose passes (both placeholders).
 
-## Decisions (William Emerison Six <billsix@gmail.com>, 2026-10-09)
+**The sweep.** `tasks/adhoc/coordinate-subscripts-indices-not-xyz/discover.sh` logged 106 hits to
+`data/hits-before.txt`; every hit was read — no false positives (an ePiX `Point(x=…)` keyword never
+matched). `fix.py`, a content-matching codemod, rewrote `\vec{a}_x` → `a_1`, `\vec{b}'_y` → `b'_2`,
+`\vec{b}_z` → `b_3`, and plain `a_x` → `a_1` in notebook code, markdown, `sympy.symbols("…")` strings
+and the `sp4` figure labels; a second run changed nothing; `data/hits-after.txt` is empty. Two hand
+edits followed: the `proof-projection` notebook's locals for the *aligned* vector's coordinates
+became `a_aligned_1`/`a_aligned_2` (the mechanical rename would have shadowed the module-level
+symbols), and the passage and outline spell the rejected form `a_{x}` so the sweep's zero stays
+meaningful. **Ordering:** this ran before `tasks/math-notation-parens-star-named-angles.md` (still
+proposed), which touches the same equations and can run on top.
 
-1. **Keep the generated `Vector.x`/`.y`/`.z` attribute views as the public API.** The book's
-   math says `a_1`, `a_2`; its code cells say `.x`, `.y`; the mismatch is named once where the
-   notation is introduced. No `.c1`/`.c2` aliases.
+**The codemod bug, caught by the gate.** The first `make docs` failed in the PDF step
+(`! Paragraph ended before \split was complete`): the codemod's optional closing brace after a
+subscript had swallowed the brace of an enclosing `\frac{…}` in four numerators. The regex was
+fixed to consume a brace only when the subscript opened one (unit-tested on the four shapes in the
+book), the two damaged pages were reverted by path, and the final codemod was run once more (then
+again: 0 changes).
+
+**Gates.** `make docs` (`make -o image docs`): exit 0 on the second run, every notebook executed,
+HTML and PDF built; the proof-rotate derivation page (`a_1/r`, `a_2/r`) and the projection page
+(`\cos = b_1/|b|`, `a'_1 e_1`) read correctly in the PDF, and the `sp4` labels are `a'_1`/`a'_2`.
+Locally: `ruff check .` / `ruff format --check .` clean, `ty check book/docs/notebooks` and
+`tools/check_epix_keywords.py` pass, the five content notebooks execute, `discover.sh` = 0.
+
+## Found, not fixed
+
+The rotate-from-a-to-b page's bold step headings wrap `:math:` roles, which reStructuredText cannot
+nest, so their LaTeX prints literally in HTML and PDF. Filed as
+`tasks/fix-bold-nested-math-step-headings.md` (proposed — needs go-ahead).
 
 ## Open questions
 

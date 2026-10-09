@@ -29,7 +29,7 @@ from gacalc.standardposition import project_sp, reject_sp
 # ## The construction, in two dimensions
 #
 # One plane, one rotation. Read the cosine and sine straight off `b`'s coordinates
-# (`cos = b_x / |b|`, `sin = -b_y / |b|`), rotate both `a` and `b` by `-φ` so `b` lands
+# (`cos = b_1 / |b|`, `sin = -b_2 / |b|`), rotate both `a` and `b` by `-φ` so `b` lands
 # on the x-axis, keep `a`'s x-coordinate (projection) and y-coordinate (rejection), then
 # rotate back. No dot product, no geometric product — only the 2D rotation.
 
@@ -37,11 +37,11 @@ from gacalc.standardposition import project_sp, reject_sp
 # %%
 def project_and_reject_sp(a: Vector, b: Vector) -> tuple[Vector, Vector]:
     """Project and reject `a` onto `b` by reduction to standard position."""
-    b_x: Real = b.coefficient(e_1)
-    b_y: Real = b.coefficient(e_2)
+    b_1: Real = b.coefficient(e_1)
+    b_2: Real = b.coefficient(e_2)
     magnitude: Real = b.magnitude()
-    cos: Real = b_x / magnitude
-    sin: Real = -b_y / magnitude
+    cos: Real = b_1 / magnitude
+    sin: Real = -b_2 / magnitude
 
     def rotate(cos: Real, sin: Real, v: Vector) -> Vector:
         """The plain 2D rotation on the (e_1, e_2) components."""
@@ -50,12 +50,12 @@ def project_and_reject_sp(a: Vector, b: Vector) -> tuple[Vector, Vector]:
         return (cos * x - sin * y) * e_1 + (sin * x + cos * y) * e_2
 
     a_aligned: Vector = rotate(cos, sin, a)  # b is now on the x-axis; a rides along
-    a_x: Real = a_aligned.coefficient(e_1)
-    a_y: Real = a_aligned.coefficient(e_2)
+    a_aligned_1: Real = a_aligned.coefficient(e_1)
+    a_aligned_2: Real = a_aligned.coefficient(e_2)
     # rotate back (negate the sine): the kept x-part is the projection, the
     # y-part the rejection
-    projection: Vector = rotate(cos, -sin, a_x * e_1)
-    rejection: Vector = rotate(cos, -sin, a_y * e_2)
+    projection: Vector = rotate(cos, -sin, a_aligned_1 * e_1)
+    rejection: Vector = rotate(cos, -sin, a_aligned_2 * e_2)
     return projection, rejection
 
 

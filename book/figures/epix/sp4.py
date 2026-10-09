@@ -52,7 +52,7 @@ with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as 
     epix.dot(at=PROJ_ROT)
     epix.label_color(color=BLUE)
     epix.label(
-        at=PROJ_ROT, offset=Point(x=-6, y=-12), text=r"$a'_x$", align=epix.LabelPos.r
+        at=PROJ_ROT, offset=Point(x=-6, y=-12), text=r"$a'_1$", align=epix.LabelPos.r
     )
     # rejection = y-coordinate of a', green and vertical
     epix.pen(color=GREEN, width=2.0)
@@ -61,7 +61,7 @@ with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as 
     mid: Point = Point(
         x=(PROJ_ROT.x1() + A_ROT.x1()) / 2, y=(PROJ_ROT.x2() + A_ROT.x2()) / 2
     )
-    epix.label(at=mid, offset=Point(x=9, y=0), text=r"$a'_y$", align=epix.LabelPos.l)
+    epix.label(at=mid, offset=Point(x=9, y=0), text=r"$a'_2$", align=epix.LabelPos.l)
     epix.label_color(color=epix.black())
     right_angle_at(corner=PROJ_ROT, angle=math.pi / 2)
 

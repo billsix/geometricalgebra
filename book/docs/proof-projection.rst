@@ -47,8 +47,8 @@ The idea: make it easy by moving the problem
 
 Here is the one trick in this whole chapter. Projecting onto a general vector
 :math:`\vec{b}` is annoying. But projecting onto the **x-axis** is trivial: the shadow
-of :math:`\vec{a}` on the x-axis is just its x-coordinate — throw away :math:`\vec{a}_y`,
-keep :math:`\vec{a}_x`. Nothing to it.
+of :math:`\vec{a}` on the x-axis is just its x-coordinate — throw away :math:`a_2`,
+keep :math:`a_1`. Nothing to it.
 
 So we cheat. We **rotate the whole picture** until :math:`\vec{b}` lies flat along the
 x-axis, do the trivial projection there, and then rotate back. And whatever rotation we
@@ -79,7 +79,7 @@ cosine and sine we read straight off :math:`\vec{b}` —
 
 .. math::
 
-   \cos = \frac{\vec{b}_x}{|\vec{b}|}, \qquad \sin = -\frac{\vec{b}_y}{|\vec{b}|}
+   \cos = \frac{b_1}{|\vec{b}|}, \qquad \sin = -\frac{b_2}{|\vec{b}|}
 
 — without ever having to find the angle :math:`\theta`. It lays :math:`\vec{b}` flat on the
 x-axis, exactly its own length out:
@@ -130,7 +130,7 @@ Stop thinking about geometry — the rest is bookkeeping. Putting the three step
    :math:`\vec{a}' = R_{\vec{b}}^{\vec{e}_1}(\vec{a})`,
    :math:`\vec{b}' = R_{\vec{b}}^{\vec{e}_1}(\vec{b}) = \lvert\vec{b}\rvert\,\vec{e}_1`.
 #. **Project in standard position** — onto the x-axis, which is trivial: keep the
-   x-coordinate of :math:`\vec{a}'`, drop the rest, giving :math:`\vec{a}'_x\,\vec{e}_1`.
+   x-coordinate of :math:`\vec{a}'`, drop the rest, giving :math:`a'_1\,\vec{e}_1`.
 #. **Rotate back** by :math:`\big(R_{\vec{b}}^{\vec{e}_1}\big)^{-1}` — the same rotation
    undone (through :math:`+\theta`, i.e. with the sine negated).
 
@@ -162,14 +162,14 @@ not all the way onto the x-axis. So we do it **one plane at a time**, each a pla
 rotation that leaves the third coordinate alone.
 
 **First, swing the** :math:`xy` **shadow onto the x-axis.** Look at :math:`\vec{b}`'s
-shadow on the :math:`xy`-plane, the point :math:`(\vec{b}_x, \vec{b}_y)`, of length
-:math:`k = \sqrt{\vec{b}_x^{\,2} + \vec{b}_y^{\,2}}`. Rotate the :math:`xy`-plane with
-:math:`\cos = \vec{b}_x / k`, :math:`\sin = -\vec{b}_y / k`, **copying the** :math:`z`
-**part straight down**, and :math:`\vec{b}` moves to :math:`(k,\ 0,\ \vec{b}_z)`.
+shadow on the :math:`xy`-plane, the point :math:`(b_1, b_2)`, of length
+:math:`k = \sqrt{b_1^{\,2} + b_2^{\,2}}`. Rotate the :math:`xy`-plane with
+:math:`\cos = b_1 / k`, :math:`\sin = -b_2 / k`, **copying the** :math:`z`
+**part straight down**, and :math:`\vec{b}` moves to :math:`(k,\ 0,\ b_3)`.
 
 **Then swing the** :math:`z` **part down.** Now :math:`\vec{b}` is flat in the
 :math:`xz`-plane; rotate *that* plane with :math:`\cos = k / m`,
-:math:`\sin = -\vec{b}_z / m` (where :math:`m = \lvert\vec{b}\rvert`), leaving :math:`y`
+:math:`\sin = -b_3 / m` (where :math:`m = \lvert\vec{b}\rvert`), leaving :math:`y`
 alone, and :math:`\vec{b}` lands on :math:`(m,\ 0,\ 0) = \lvert\vec{b}\rvert\,\vec{e}_1`.
 Compose the two rotations and we are back in standard position, where projection is again
 "keep the x-coordinate."

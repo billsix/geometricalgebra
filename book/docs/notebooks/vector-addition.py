@@ -19,15 +19,15 @@ import sympy
 
 from gacalc.g2 import Vector, e_1, e_2
 
-a_x: sympy.Symbol
-a_y: sympy.Symbol
-b_x: sympy.Symbol
-b_y: sympy.Symbol
-a_x, a_y, b_x, b_y = sympy.symbols("a_x a_y b_x b_y", real=True)
-a: Vector = a_x * e_1 + a_y * e_2
-b: Vector = b_x * e_1 + b_y * e_2
+a_1: sympy.Symbol
+a_2: sympy.Symbol
+b_1: sympy.Symbol
+b_2: sympy.Symbol
+a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
+a: Vector = a_1 * e_1 + a_2 * e_2
+b: Vector = b_1 * e_1 + b_2 * e_2
 
-a + b  # the coordinates add: (a_x + b_x) e_1 + (a_y + b_y) e_2
+a + b  # the coordinates add: (a_1 + b_1) e_1 + (a_2 + b_2) e_2
 
 # %%
 b + a  # the same two coordinates — each a sum of two numbers, in the other order

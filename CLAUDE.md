@@ -238,8 +238,8 @@ Repo-specific invariants the agent must obey (rationale in the shared doc + the 
   `representation`/`klass`. **The dimension is `n`, never `grade`.**
 - **The book's notebooks are hand-written Python under the full standard — every binding
   typed** (the maintainer, 2026-10-09). `book/docs/notebooks/*.py` annotate every assignment
-  (`a: Vector = a_x * e_1 + a_y * e_2`, `R: Versor = …`, `magnitude: Real = b.magnitude()`),
-  declare each name on the line above a `sympy.symbols` unpack (`a_x: sympy.Symbol`), and
+  (`a: Vector = a_1 * e_1 + a_2 * e_2`, `R: Versor = …`, `magnitude: Real = b.magnitude()`),
+  declare each name on the line above a `sympy.symbols` unpack (`a_1: sympy.Symbol`), and
   annotate every `def`'s parameters and return — exactly as `tests/` and `notebooks/` do; a
   `1 + 1` placeholder has nothing to type. Enforcement: `make format` runs
   `ty check book/docs/notebooks`, and `tools/check_annotations.py` walks `book/docs/notebooks/`

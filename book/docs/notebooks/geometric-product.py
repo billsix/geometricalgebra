@@ -22,13 +22,13 @@ from gacalc.g2 import Bivector, Vector, Versor
 from gacalc.transforms import plane_rotation
 
 theta: sympy.Symbol = sympy.Symbol("theta", real=True)
-a_x: sympy.Symbol
-a_y: sympy.Symbol
-a_x, a_y = sympy.symbols("a_x a_y", real=True)
-a: Vector = a_x * Vector.e_1 + a_y * Vector.e_2
+a_1: sympy.Symbol
+a_2: sympy.Symbol
+a_1, a_2 = sympy.symbols("a_1 a_2", real=True)
+a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2
 
 # The 90-degree rotation is multiplication by the unit bivector e_12.
-a * Bivector.e_12  # -> (-a_y, a_x)
+a * Bivector.e_12  # -> (-a_2, a_1)
 
 # %%
 # The full-angle rotor R = cos(theta) + sin(theta) * e_12, applied one-sided, by
@@ -39,11 +39,11 @@ full_angle_result
 
 # %%
 # The coordinate formula from *Proof: Rotate*, written out component by component:
-# (a_x cos(theta) - a_y sin(theta), a_x sin(theta) + a_y cos(theta)). The one-sided
+# (a_1 cos(theta) - a_2 sin(theta), a_1 sin(theta) + a_2 cos(theta)). The one-sided
 # multiplication lands on exactly those two coordinates.
 coordinate_formula: Vector = (
-    a_x * sympy.cos(theta) - a_y * sympy.sin(theta)
-) * Vector.e_1 + (a_x * sympy.sin(theta) + a_y * sympy.cos(theta)) * Vector.e_2
+    a_1 * sympy.cos(theta) - a_2 * sympy.sin(theta)
+) * Vector.e_1 + (a_1 * sympy.sin(theta) + a_2 * sympy.cos(theta)) * Vector.e_2
 full_angle_result == coordinate_formula  # -> True
 
 # %%

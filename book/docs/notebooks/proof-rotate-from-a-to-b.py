@@ -30,10 +30,10 @@ import sympy
 from gacalc.base import Real
 from gacalc.g2 import Vector, e_1, e_2
 
-v_x: sympy.Symbol
-v_y: sympy.Symbol
-v_x, v_y = sympy.symbols("v_x v_y", real=True)
-v: Vector = v_x * e_1 + v_y * e_2
+v_1: sympy.Symbol
+v_2: sympy.Symbol
+v_1, v_2 = sympy.symbols("v_1 v_2", real=True)
+v: Vector = v_1 * e_1 + v_2 * e_2
 
 
 def rotate(v: Vector, theta: Real) -> Vector:
@@ -98,17 +98,17 @@ rotate_cs(rotate_cs(v, c_1, s_1), c_2, s_2) == rotate_cs(
 # stays symbolic.
 
 # %%
-a_x: sympy.Symbol
-a_y: sympy.Symbol
-a_x, a_y = sympy.symbols("a_x a_y", real=True, positive=True)
-a: Vector = a_x * e_1 + a_y * e_2
+a_1: sympy.Symbol
+a_2: sympy.Symbol
+a_1, a_2 = sympy.symbols("a_1 a_2", real=True, positive=True)
+a: Vector = a_1 * e_1 + a_2 * e_2
 b: Vector = 3 * e_1 + 4 * e_2
 magnitude_a: Real = a.magnitude()
 magnitude_b: Real = b.magnitude()
 
-# Step 1: swing a onto the x-axis (cos = a_x/|a|, sin = -a_y/|a|). It lands on |a| e_1.
-cos_1: Real = a_x / magnitude_a
-sin_1: Real = -a_y / magnitude_a
+# Step 1: swing a onto the x-axis (cos = a_1/|a|, sin = -a_2/|a|). It lands on |a| e_1.
+cos_1: Real = a_1 / magnitude_a
+sin_1: Real = -a_2 / magnitude_a
 rotate_cs(a, cos_1, sin_1).symbolically_equal(magnitude_a * e_1)  # -> True
 
 # %%
@@ -124,8 +124,8 @@ three_turns: Vector = rotate_cs(
 )
 
 # The chapter's single rotation, with cos and sin written in the coordinates of a and b.
-cos_ab: Real = (a_x * 3 + a_y * 4) / (magnitude_a * magnitude_b)
-sin_ab: Real = (a_x * 4 - a_y * 3) / (magnitude_a * magnitude_b)
+cos_ab: Real = (a_1 * 3 + a_2 * 4) / (magnitude_a * magnitude_b)
+sin_ab: Real = (a_1 * 4 - a_2 * 3) / (magnitude_a * magnitude_b)
 one_turn: Vector = rotate_cs(v, cos_ab, sin_ab)
 
 three_turns.symbolically_equal(
