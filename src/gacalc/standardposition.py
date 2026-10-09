@@ -34,13 +34,13 @@ Caveat: the ``e_1`` alignment is undefined when ``b`` lies along the ``z`` axis
 different axis, in that case.
 """
 
-from gacalc.base import MultiVectorBase
+from gacalc.base import MultiVectorBase, Real
 
 
 def _project_via_standard_position(
     a: MultiVectorBase, b: MultiVectorBase
 ) -> MultiVectorBase:
-    cls = type(b)
+    cls: type[MultiVectorBase] = type(b)
     e_1: MultiVectorBase = cls.basis_vector(1)
     e_2: MultiVectorBase = cls.basis_vector(2)
     e_3: MultiVectorBase = cls.basis_vector(3)
@@ -48,8 +48,8 @@ def _project_via_standard_position(
     # b's coordinates (iteration yields the coefficient values in blade order)
     b_x, b_y, b_z = list(b)
     # magnitude of b's xy-part (numeric-preserving), and of b itself
-    xy_magnitude = (b_x * e_1 + b_y * e_2).magnitude()
-    magnitude = b.magnitude()
+    xy_magnitude: Real = (b_x * e_1 + b_y * e_2).magnitude()
+    magnitude: Real = b.magnitude()
 
     # (cos, sin) read off b's own coordinates: the xy rotation that zeroes b_y,
     # then the xz rotation that zeroes b_z -- so align(b) = magnitude * e_1.

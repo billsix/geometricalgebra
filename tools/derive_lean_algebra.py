@@ -27,6 +27,7 @@ or, from the host via the project's container:
 
 import itertools
 import sys
+from collections.abc import Sequence
 
 import sympy
 
@@ -38,6 +39,7 @@ def blades(n: int) -> list[tuple[int, ...]]:
     """All canonical basis blades of 𝒢ₙ, grade-ascending then lexicographic —
     matching gacalc's canonical blade keys (sorted ascending index tuples)."""
     out: list[tuple[int, ...]] = []
+    grade: int
     for grade in range(n + 1):
         out.extend(itertools.combinations(range(1, n + 1), grade))
     return out
@@ -49,7 +51,9 @@ def blade_name(bl: tuple[int, ...], prefix: str) -> str:
     return prefix + suffix
 
 
-def dump(title: str, value: Gn, prefix: str, all_blades: list[tuple[int, ...]]) -> None:
+def dump(
+    title: str, value: Gn, prefix: str, all_blades: Sequence[tuple[int, ...]]
+) -> None:
     """Print each coefficient of `value` as `<prefix><blade> = <expanded formula>`."""
     coefs: BladeReal = value.to_blade_dict()
     print(f"\n=== {title} ===")  # noqa: T201 -- derived formulas are the tool's output

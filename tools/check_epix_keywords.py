@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+from collections.abc import Sequence
 from pathlib import Path
 
 REPO: Path = Path(__file__).resolve().parents[1]
@@ -65,6 +66,7 @@ KNOWN: dict[tuple[str, str], Names] = {
     ("", "leg"): ["tail", "head", "color", "text", "angle", "offset"],
     ("", "unit_circle_scene"): ["lower_left", "upper_right", "disc"],
 }
+tint: str
 for tint in ("black", "white", "red", "green", "blue", "yellow", "cyan", "magenta"):
     KNOWN[("epix", tint)] = ["intensity"]
 # positional-only callees: nothing to do, nothing to report
@@ -119,6 +121,8 @@ def scan(path: Path) -> tuple[list[tuple[int, int, str]], list[str]]:
                 f"{path.name}:{node.lineno}: {module + '.' if module else ''}{name}(…)"
             )
             continue
+        arg: ast.expr
+        param: str
         for arg, param in zip(node.args, params, strict=False):
             if isinstance(arg, ast.Starred):
                 continue
@@ -126,9 +130,12 @@ def scan(path: Path) -> tuple[list[tuple[int, int, str]], list[str]]:
     return edits, unknown
 
 
-def apply(path: Path, edits: list[tuple[int, int, str]]) -> None:
+def apply(path: Path, edits: Sequence[tuple[int, int, str]]) -> None:
     """Insert ``name=`` before each positional argument, last position first."""
     lines: list[str] = path.read_text().split("\n")
+    lineno: int
+    col: int
+    name: str
     for lineno, col, name in sorted(edits, reverse=True):
         line: str = lines[lineno - 1]
         lines[lineno - 1] = line[:col] + f"{name}=" + line[col:]
@@ -149,6 +156,7 @@ def main() -> int:
     status: int = 0
     for path in paths:
         edits, unknown = scan(path)
+        report: str
         for report in unknown:
             print(f"unknown callee (not rewritten): {report}")
             status = 1
@@ -159,6 +167,9 @@ def main() -> int:
             print(f"{path.relative_to(REPO)}: {len(edits)} keyword(s) inserted")
         else:
             status = 1
+            lineno: int
+            col: int
+            name: str
             for lineno, col, name in sorted(edits):
                 print(
                     f"{path.relative_to(REPO)}:{lineno}:{col + 1}: "
