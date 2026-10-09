@@ -44,7 +44,7 @@
 (setq lsp-auto-guess-root nil)
 
 (defun my-lsp-root (&rest _)
-  "/geometricalgebra/")
+  "/gacalc/")
 
 (advice-add 'lsp--calculate-root :override #'my-lsp-root)
 
