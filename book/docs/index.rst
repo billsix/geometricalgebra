@@ -20,6 +20,7 @@ later, and sections may be written out of order.
    vector-addition
    rotate
    geometric-product
+   rotation-graph-paper
    levels-of-abstraction
    blade-square-sign
    projection
