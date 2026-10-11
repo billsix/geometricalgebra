@@ -32,8 +32,8 @@ with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as 
     # the originals, faint and dashed
     epix.pen(color=epix.black(intensity=0.55), width=1.0)
     epix.dashed()
-    epix.line(tail=ORIGIN, head=A)
-    epix.line(tail=ORIGIN, head=B)
+    epix.arrow(tail=ORIGIN, head=A, scale=0.7)
+    epix.arrow(tail=ORIGIN, head=B, scale=0.7)
     epix.line_style(style="-")
     epix.label_color(color=epix.black(intensity=0.55))
     epix.label(at=A, offset=Point(x=-6, y=7), text=r"$\vec{a}$", align=epix.LabelPos.l)

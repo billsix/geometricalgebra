@@ -53,10 +53,10 @@ with unit_circle_scene(
     )
     # projection (blue) then rejection (green), tip-to-tail
     epix.pen(color=BLUE, width=2.0)
-    epix.line(tail=ORIGIN, head=PROJ)
+    epix.arrow(tail=ORIGIN, head=PROJ, scale=0.7)
     epix.dot(at=PROJ)
     epix.pen(color=GREEN, width=2.0)
-    epix.line(tail=PROJ, head=A)
+    epix.arrow(tail=PROJ, head=A, scale=0.7)
     epix.label_color(color=epix.black())
 
 # %%

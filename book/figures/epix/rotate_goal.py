@@ -93,8 +93,8 @@ with epix.figure(
 
     # a and its rotation, as vectors from the origin with a dot at the head
     epix.pen(color=epix.black(), width=1.8)
-    epix.line(tail=ORIGIN, head=a)
-    epix.line(tail=ORIGIN, head=rotated_a)
+    epix.arrow(tail=ORIGIN, head=a, scale=0.7)
+    epix.arrow(tail=ORIGIN, head=rotated_a, scale=0.7)
     epix.dot(at=a)
     epix.dot(at=rotated_a)
     epix.label(at=a, offset=Point(x=7, y=0), text=r"$\vec{a}$", align=epix.LabelPos.r)

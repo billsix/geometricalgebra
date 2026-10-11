@@ -48,7 +48,7 @@ with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as 
     )
     # projection = x-coordinate of a', blue along the x-axis
     epix.pen(color=BLUE, width=2.0)
-    epix.line(tail=ORIGIN, head=PROJ_ROT)
+    epix.arrow(tail=ORIGIN, head=PROJ_ROT, scale=0.7)
     epix.dot(at=PROJ_ROT)
     epix.label_color(color=BLUE)
     epix.label(
@@ -56,7 +56,7 @@ with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as 
     )
     # rejection = y-coordinate of a', green and vertical
     epix.pen(color=GREEN, width=2.0)
-    epix.line(tail=PROJ_ROT, head=A_ROT)
+    epix.arrow(tail=PROJ_ROT, head=A_ROT, scale=0.7)
     epix.label_color(color=GREEN)
     mid: Point = Point(
         x=(PROJ_ROT.x1() + A_ROT.x1()) / 2, y=(PROJ_ROT.x2() + A_ROT.x2()) / 2

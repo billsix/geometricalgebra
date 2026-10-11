@@ -33,7 +33,7 @@ with unit_circle_scene(
     vector(head=B, text=r"$\vec{b}$", offset=Point(x=-5, y=7), align=epix.LabelPos.l)
     # a - b: the connector from b's head to a's head
     epix.pen(color=GREEN, width=1.8)
-    epix.line(tail=B, head=A)
+    epix.arrow(tail=B, head=A, scale=0.7)
     epix.dot(at=A)
     epix.label_color(color=GREEN)
     mid: Point = Point(x=(A.x1() + B.x1()) / 2, y=(A.x2() + B.x2()) / 2)
