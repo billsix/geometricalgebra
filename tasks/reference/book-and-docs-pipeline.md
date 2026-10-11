@@ -108,6 +108,15 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     `right_angle_3d(corner, toward_a, toward_b)`. 3D `epix.line`/`epix.arrow`/`epix.dot` project through
     the camera; `Point` supports `+`, scalar `*` and `.norm()`; `fig.png`/`fig.eepic` only materialize
     **after** the `with` block. Plane patch is drawn first (behind), then `axes3()`, then the vectors.
+  - `_graphpaper_scene.py` is the stage for the `graphpaper1`–`graphpaper5` sequence (the
+    "rotation is turning the graph paper" page, `rotation-graph-paper.rst`): `ANGLE = radians(30)`,
+    `COORDS = [0, 1, 2, 3]` (the grid `{0,1,2,3}²`), `FAINT = black(intensity=0.35)` for the
+    unrotated paper under the rotated one, and `rotate(point, angle)`, `grid_points(angle)`,
+    `draw_grid(angle, color, width, dots)`, `parabola_points(angle, x_min, x_max, steps)` (places
+    `y = x²` in the rotated frame). Re-exports the `_scene2d` helpers. Per the keyword rule above its
+    own helper calls are all keyword, and it builds point lists with comprehensions, not
+    `list.append` — an unknown callee with a positional arg (`.append` included) trips
+    `check_epix_keywords`.
   - `epix.label_angle` takes **radians**.
 - **A label's colour matches the line/vector it labels** (the maintainer's standard, 2026-10-09), so a
   reader instantly sees which label goes with which element. `leg()` and `vector()` already do this

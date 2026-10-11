@@ -167,6 +167,9 @@ have a companion notebook, `notebooks/proof-<name>.py`, holding the page's coord
   projection-rejection-3d.
 - **Prose only** (for now): multiplication, trigonometry, sets, orthogonal,
   interactive-calculator.
+- **Prose + ePiX figures, no companion notebook** (a conceptual page, not a notebook stub):
+  `rotation-graph-paper` (in the toctree after `geometric-product`), the "rotation is turning the
+  graph paper" picture built from the `graphpaper1`–`graphpaper5` sequence (added 2026-10-11).
 
 A notebook starts as a stub holding a single `1 + 1` cell (proves it executes) and fills in
 per the outline below. Filled so far (2026-10-09): `levels-of-abstraction`, `rotate`,
