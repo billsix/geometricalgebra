@@ -48,7 +48,7 @@ with unit_circle_scene(
     dashed_vector(tail=A, head=A_MINUS_B)
     # the sum a + (-b) = a - b, from the origin
     epix.pen(color=GREEN, width=1.8)
-    epix.line(tail=ORIGIN, head=A_MINUS_B)
+    epix.arrow(tail=ORIGIN, head=A_MINUS_B, scale=0.7)
     epix.dot(at=A_MINUS_B)
     epix.label_color(color=GREEN)
     epix.label(

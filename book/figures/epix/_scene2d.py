@@ -99,8 +99,8 @@ def unit_circle_scene(
         epix.pen(color=epix.black(), width=1.1)
         x_end: Point = Point(x=upper_right.x1() - 0.15, y=0)
         y_end: Point = Point(x=0, y=upper_right.x2() - 0.1)
-        epix.arrow(tail=Point(x=lower_left.x1() + 0.2, y=0), head=x_end, scale=1)
-        epix.arrow(tail=Point(x=0, y=lower_left.x2() + 0.15), head=y_end, scale=1)
+        epix.arrow(tail=Point(x=lower_left.x1() + 0.2, y=0), head=x_end, scale=0.7)
+        epix.arrow(tail=Point(x=0, y=lower_left.x2() + 0.15), head=y_end, scale=0.7)
         epix.label(at=x_end, offset=Point(x=5, y=0), text="$x$", align=epix.LabelPos.r)
         epix.label(at=y_end, offset=Point(x=5, y=-2), text="$y$", align=epix.LabelPos.r)
         yield fig
@@ -114,7 +114,7 @@ def vector(
 ) -> None:
     """A black arrow from the origin to ``head``, with an optional label."""
     epix.pen(color=epix.black(), width=1.8)
-    epix.arrow(tail=ORIGIN, head=head, scale=1)
+    epix.arrow(tail=ORIGIN, head=head, scale=0.7)
     if text:
         epix.label(at=head, offset=offset, text=text, align=align)
 
@@ -129,7 +129,7 @@ def dashed_vector(
     """A dashed black arrow ``tail``->``head`` -- a translated copy of a vector."""
     epix.pen(color=epix.black(), width=1.4)
     epix.dashed()
-    epix.arrow(tail=tail, head=head, scale=1)
+    epix.arrow(tail=tail, head=head, scale=0.7)
     epix.line_style(style="-")  # back to solid for whatever draws next
     if text:
         epix.label(at=head, offset=offset, text=text, align=align)

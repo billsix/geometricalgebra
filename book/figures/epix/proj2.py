@@ -45,7 +45,7 @@ with unit_circle_scene(
     vector(head=B, text=r"$\vec{b}$", offset=Point(x=8, y=3), align=epix.LabelPos.l)
     # projection: blue, from the origin along b to the foot
     epix.pen(color=BLUE, width=2.0)
-    epix.line(tail=ORIGIN, head=PROJ)
+    epix.arrow(tail=ORIGIN, head=PROJ, scale=0.7)
     epix.dot(at=PROJ)
     epix.label_color(color=BLUE)
     epix.label(
@@ -56,7 +56,7 @@ with unit_circle_scene(
     )
     # rejection: green, from the foot up to a (perpendicular to b)
     epix.pen(color=GREEN, width=2.0)
-    epix.line(tail=PROJ, head=A)
+    epix.arrow(tail=PROJ, head=A, scale=0.7)
     epix.label_color(color=GREEN)
     mid: Point = Point(x=(PROJ.x1() + A.x1()) / 2, y=(PROJ.x2() + A.x2()) / 2)
     epix.label(

@@ -83,9 +83,9 @@ def frame_scene(
 def axes3() -> None:
     """The three axes as arrows from the origin, with labels x, y, z."""
     epix.pen(color=epix.black(), width=1.1)
-    epix.arrow(tail=ORIGIN3, head=_AXIS_X, scale=1)
-    epix.arrow(tail=ORIGIN3, head=_AXIS_Y, scale=1)
-    epix.arrow(tail=ORIGIN3, head=_AXIS_Z, scale=1)
+    epix.arrow(tail=ORIGIN3, head=_AXIS_X, scale=0.7)
+    epix.arrow(tail=ORIGIN3, head=_AXIS_Y, scale=0.7)
+    epix.arrow(tail=ORIGIN3, head=_AXIS_Z, scale=0.7)
     epix.label(at=_AXIS_X, offset=Point(x=4, y=-5), text="$x$", align=epix.LabelPos.r)
     epix.label(at=_AXIS_Y, offset=Point(x=6, y=-2), text="$y$", align=epix.LabelPos.r)
     epix.label(at=_AXIS_Z, offset=Point(x=-2, y=7), text="$z$", align=epix.LabelPos.t)
@@ -149,7 +149,7 @@ def vector3(
 ) -> None:
     """A 3D arrow from the origin to ``head``, with an optional label."""
     epix.pen(color=color, width=width)
-    epix.arrow(tail=ORIGIN3, head=head, scale=1)
+    epix.arrow(tail=ORIGIN3, head=head, scale=0.7)
     if text:
         epix.label_color(color=color)
         epix.label(at=head, offset=offset, text=text, align=align)
