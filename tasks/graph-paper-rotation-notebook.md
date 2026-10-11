@@ -1,66 +1,48 @@
-# Notebook: rotation as rotating the graph paper (a grid of points, then deformed paper with f(x)=x²)
+# Rotation as rotating the graph paper (a grid of points, then deformed paper with f(x)=x²)
 
-**Status:** in-progress (experiment phase — will prototype and return with questions)
+**Status:** complete
+**Completed:** 2026-10-11
 **Priority:** 5
 **Difficulty:** 6
 **Started:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
-After rotation is defined, build a notebook of ePiX plots that rotates a **3×3 grid of input points**
-(`0*e_1 + 0*e_2`, `1*e_1 + 0*e_2`, `0*e_1 + 1*e_2`, …), **leaving a point behind after each rotation**
-and **aggregating on a final plot** that traces out the whole rotated grid. The payoff: reframe
-rotation not as moving individual vectors/points but as **rotating the graph paper itself**, which
-carries the points along. End by drawing the **transformed graph paper** and plotting **f(x) = x²** on
-it, to connect to high-school math — it really is just deformed graph paper you can draw on. Its own
-notebook, also built into the Sphinx book. **Experiment first:** prototype the figures, look at them,
-and return with questions before finalizing (this is open-ended and figure-heavy, like the
-similar-triangle step).
+Built a book page, **"Rotation is turning the graph paper"** (`book/docs/rotation-graph-paper.rst`), as
+a five-figure ePiX sequence that rotates a 4×4 grid `{0,1,2,3}²` about the origin by 30°, point by point
+then all at once, then reframes it as the **whole sheet of graph paper turning** (the points ride
+along), and finally plots `y = x²` on the tilted frame — the same high-school parabola, on turned paper.
+It follows the distributivity result (`geometric-product.rst`): once the paper turns, the two basis
+vectors turn and everything drawn on it comes along. `make docs` builds clean.
 
-## Context (read first)
+## What was done (maintainer decisions, 2026-10-11)
 
-- **The idea's foundation** is `tasks/archive/2026/10/09/prove-rotation-is-distributive-2d.md` — rotation is linear, so
-  rotating every grid point is the same as rotating the two basis vectors and carrying the grid with
-  them. This notebook is the visual of that.
-- **ePiX figures** live in `book/figures/epix/` and render to `_static/epix/*.png` for `.. figure::`
-  includes (`tools/render_epix_figures.py`, `make docs`); conventions in
-  `tasks/reference/book-and-docs-pipeline.md`. The **book notebooks** are `book/docs/notebooks/*.py`
-  (jupytext, executed by myst_nb) and currently use gacalc (+ matplotlib via `nbplotutils`), **not**
-  ePiX. Decide (see Open questions) whether this is a *notebook* that renders ePiX figures inline (an
-  `epix.Figure` exposes `.png`, so a cell can display it), or a **page + a sequence of ePiX figure
-  files** like the `rotate*` sequence, or both.
-- **Rotation in gacalc:** `transforms.plane_rotation(e_1, e_2)(θ)` rotates a vector; `g2` has the
-  quarter-turn. The grid points are `i*e_1 + j*e_2`.
-- Scene helpers: `_scene2d.py` (`unit_circle_scene`/axes, `vector`, `polar`, grid?). There is **no
-  graph-paper/grid helper yet** — part of the work is drawing grid lines (and the rotated grid lines),
-  probably a new helper.
+- **Figure sequence** (not an inline notebook) — the proven ePiX pipeline:
+  `book/figures/epix/graphpaper1`…`5.py` sharing `_graphpaper_scene.py` (constants `ANGLE = 30°`,
+  `COORDS = {0,1,2,3}`, and `rotate`/`grid_points`/`draw_grid`/`parabola_points` helpers), all one frame
+  so the grid appears to rotate in place.
+  1. the grid of points; 2. a few points rotated with arrows; 3. all 16 rotated (blue over faint
+  original); 4. the grid **lines** rotated too — the sheet turned; 5. `y = x²` on the rotated frame.
+- **Grid `{0,1,2,3}²`** (maintainer's choice, anchored at the origin = the fixed point).
+- **`y = x²` drawn in the rotated frame** (points `(x, x²)` placed at `rotate(x, x²)`), so the parabola
+  sits on the tilted paper. `x ∈ [0, 1.8]` so it stays on the grid.
+- **30°** rotation.
+- A book page in the toctree after `geometric-product`, with prose tying the sequence to the
+  distributivity/natural-basis idea and ending on "a rotation is deformed graph paper".
 
-## Goal
+## Notes
 
-A notebook (built into the book) that: (1) shows a 3×3 grid of points, (2) rotates them one by one,
-leaving a trail, (3) aggregates into the rotated grid, (4) reframes it as the graph paper rotating, and
-(5) draws the deformed graph paper with `f(x) = x²` on it. The reader should come away seeing a rotation
-as "the paper turned, and everything drawn on it turned with it."
+- `check_epix_keywords` treats an unknown callee **with a positional arg** as a failure, so the scene
+  module's helper calls all pass arguments by keyword and avoid `list.append` (uses comprehensions) —
+  recorded here because any future scene helper must do the same.
 
-## Plan
+## Verification
 
-- [ ] Prototype: draw a 3×3 grid of points and the grid lines; rotate by a fixed angle; render.
-- [ ] Prototype the deformed graph paper (rotated grid lines) and `f(x)=x²` sampled and drawn on it.
-- [ ] Decide the notebook-vs-figure-sequence shape; wire a first version into the book.
-- [ ] Return to the maintainer with the rendered prototype and the open questions below.
+Each figure rendered and eyeballed (graphpaper4 shows the sheet turned, graphpaper5 the parabola on it).
+`ruff`/`ruff format`/`check_epix_keywords` clean on the figures and scene module; `make docs` builds
+HTML + PDF, the new page and all five figures included, no broken references.
 
 ## Open questions
 
-1. **Notebook rendering ePiX inline, or a book page + a `rotate_grid*` figure sequence** (like the
-   `rotate*` steps), or both? (`.py` notebook can display an `epix.Figure.png`; a figure sequence is
-   the established pattern.) Recommend: an ePiX **figure sequence on a short book page** first, since
-   that's the proven pipeline; add an interactive notebook if wanted.
-2. **Grid extent:** the examples start at `(0,0),(1,0),(0,1)` — is the 3×3 grid `{0,1,2}×{0,1,2}`, or
-   centered `{-1,0,1}×{-1,0,1}`? Centered reads better under rotation (symmetric about the origin, the
-   fixed point). Recommend centered `{-1,0,1}²` unless you want it anchored at the origin.
-3. **`f(x)=x²` on the deformed paper:** draw the parabola in the ORIGINAL coordinates and rotate the
-   whole curve with the paper (so it's "the same parabola, paper turned"), or draw `y=x²` in the
-   rotated frame? Recommend the former (rotate the drawn curve with the paper) — that's the "deformed
-   graph paper you can draw on" point.
-4. **Rotation angle** for the demo (e.g. 30°, 45°, the book's 66°)? Recommend a clean 45° or 30° so the
-   grid deformation is obvious but still readable.
+None — all four were answered by the maintainer (2026-10-11): figure sequence; `{0,1,2,3}²`; `y=x²` in
+the rotated frame; 30°.
