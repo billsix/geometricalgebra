@@ -215,13 +215,16 @@ dist`/`release`, the `GACALC_DIMS` env var, the wheel bake), and how to change/e
 
 ## Coding standard (Python)
 
-**The full standard lives in the shared cross-project doc
+**The portable standard lives in the shared cross-project doc
 `runClaudeInContainer/tasks/reference/python-coding-standard.md`** (canonical:
 github.com/billsix/runClaudeInContainer) — the (a) ruff-enforces-mechanically / (b) judgment-calls
 split, naming grammar, expressions/CQS, `sum`/`math.prod` folds, the idioms checklist,
 type-annotation policy, generics parameterization, inline-once, the extraction rules, comments, the
-conditional Rules A–E, and the modern-Python list. Read it before reshaping Python. A green
-`make format` is authority for everything ruff checks.
+conditional Rules A–E, and the modern-Python list. **gacalc's own worked examples and type-layer
+specifics (the `base.reject` extraction, the `nbplotutils` dedup, `ComposableFunction`/
+`InvertibleFunction` invariance, the annotation-sweep exemptions) are in
+`tasks/reference/python-coding-standard-gacalc.md`** — read both. Read before reshaping Python. A
+green `make format` is authority for everything ruff checks.
 
 Repo-specific invariants the agent must obey (rationale in the shared doc + the docs named):
 
