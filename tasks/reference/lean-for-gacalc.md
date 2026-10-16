@@ -120,7 +120,7 @@ Three gotchas the spike surfaced (all folded into the plan):
    above, which is what actually worked.
 3. **Don't pipe the build through `tail` when you need its exit status** — the pipe reports `tail`'s
    exit (0), masking a real `lake`/`lean` failure. This is the repo's own "a multi-step check script
-   must propagate every step's failure" rule (`~/.claude/reference/shell-and-gate-scripts.md`); the
+   must propagate every step's failure" rule (`github.com/billsix/runClaudeInContainer:tasks/reference/shell-and-gate-scripts.md`); the
    `make lean` gate must capture `$?` of the command itself (`status=0; cmd || status=1`), not a pipe
    tail.
 

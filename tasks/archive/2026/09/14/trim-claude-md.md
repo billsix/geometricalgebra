@@ -44,7 +44,7 @@ tok)**, a ~76% cut, moving the bulk of **Architecture** (22.6 KB) and the **Codi
   numbers: runCrushInContainer `tasks/reference/crush-context-assembly.md`.
 - **Current CLAUDE.md size:** 74,732 B ≈ 18.7K tok (907 lines).
 - **@-imports:** **none.** This repo-local `CLAUDE.md` has no own-line `@path` import lines
-  (unlike the global `~/.claude/CLAUDE.md`), so nothing is recursively spliced from it —
+  (unlike the global `github.com/billsix/runClaudeInContainer:entrypoint/dotfiles/.claude/CLAUDE.md`), so nothing is recursively spliced from it —
   the 18.7K is all in this one file.
 - **Convention:** `CLAUDE.md` lean + `tasks/reference/<slug>.md` for detail (the maintainer's
   own rule, stated verbatim inside this very file: "Canonical home is this file" for the
@@ -143,5 +143,5 @@ tok)**, a ~76% cut, moving the bulk of **Architecture** (22.6 KB) and the **Codi
 - runCrushInContainer `tasks/reference/crush-context-assembly.md` — the measurement + method.
 - runCrushInContainer `tasks/investigate-context-bloat-geometricalgebra.md` — the diagnosis this
   follows from.
-- This repo's own convention (inside `CLAUDE.md` and `~/.claude/CLAUDE.md`): "keep `CLAUDE.md`
+- This repo's own convention (inside `CLAUDE.md` and `github.com/billsix/runClaudeInContainer:entrypoint/dotfiles/.claude/CLAUDE.md`): "keep `CLAUDE.md`
   lean and push detail into `tasks/reference/`."

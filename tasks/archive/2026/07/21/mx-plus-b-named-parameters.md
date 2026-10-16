@@ -68,7 +68,7 @@ them because they are not `src/`:
 scripts, not imported modules, so a passing test suite proves nothing about them. Execute
 each notebook and assignment after converting (mvp's notebooks run headless with
 `MPLBACKEND=Agg`; the GL assignments need Xvfb — see the recipe in
-`~/.claude/CLAUDE.md` › nested containers).
+`github.com/billsix/runClaudeInContainer:entrypoint/dotfiles/.claude/CLAUDE.md` › nested containers).
 
 ## Open questions to settle before starting
 

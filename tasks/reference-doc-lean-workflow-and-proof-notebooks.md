@@ -89,7 +89,7 @@ separate task `tasks/investigate-lean-to-python-proof-notebooks.md`.
 
 ## Scope note — this is a reference doc, not the notebook machinery
 
-Per the sandbox-global `~/.claude/reference/reference-doc-conventions.md`, a reference doc "states
+Per the sandbox-global `github.com/billsix/runClaudeInContainer:tasks/reference/reference-doc-conventions.md`, a reference doc "states
 what is TRUE, not what to DO." Keep the *pipeline mechanics* (jupytext build, myst_nb kernel-in-venv gotcha —
 `tasks/reference/book-and-docs-pipeline.md`) out of it by reference. This doc is the durable
 statement of intent + the two conventions above.
