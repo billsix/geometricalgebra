@@ -1,9 +1,12 @@
 # Book section: a rotation that takes vector a to vector b, without naming an angle
 
-**Status:** proposed — needs go-ahead (a *later* book section; not on the critical path)
+**Status:** implemented 2026-10-19 — `rotation-from-vectors.rst` + companion notebook written and
+verified (host-side ruff/ty clean, notebook executes to zeros, in-sandbox `make docs` — see Work
+record). Prose carries a `Draft` banner for the maintainer's voice pass.
 **Priority:** 8
 **Difficulty:** 4
 **Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
+**Done by:** William Emerison Six <billsix@gmail.com> (agent, unattended batch), 2026-10-19
 
 ## BLUF
 
@@ -22,7 +25,7 @@ rotate-from-:math:`\vec{a}`-to-:math:`\vec{b}`, **derived from the book's own bu
 blocks** — the rotation `r(v; θ)` of `proof-rotate.rst`, projection/rejection, and the
 geometric product — rather than presented as a library call. In the book's 2D-first-then-3D
 structure (`tasks/reference/book-outline.md`) this is a Part I section; the 3D version is the
-later step-up. **Do not start yet.**
+later step-up.
 
 ## The 2D construction (do first), from our own building blocks
 
@@ -70,14 +73,42 @@ product `b a / |b||a|` (or the versor from the two vectors) already encodes the 
 takes one direction to the other. Teaching that — side by side with the angle-based rotation
 of `proof-rotate.rst` — is a payoff moment: the angle was scaffolding; the vectors are enough.
 
-## Open questions (for when this is picked up)
+## Decisions (agent, unattended batch, 2026-10-19 — the task's own recommendations, taken)
 
-1. Which home — a new `.rst` (e.g. `rotation-from-vectors.rst`) in Part I, or folded into an
-   existing chapter? It likely belongs *after* `geometric-product.rst` (it needs the product)
-   and relates to `projection.rst`.
-2. Which of the three 2D derivations above to lead with (recommend the geometric-product one),
-   and how much of the project/reject route to show alongside. (2D-first-then-3D is decided —
-   maintainer, 2026-10-08.)
+1. **Home:** a new page `book/docs/rotation-from-vectors.rst`, added as a child of
+   `geometric-product.rst`'s toctree (it needs the product). Not folded into an existing chapter.
+   (Resolves old open question 1 with its recommendation.)
+2. **Lead derivation:** the geometric-product route — the product of two unit vectors `â * b̂` is
+   the full-angle rotor, and `â * (â * b̂) = b̂` by associativity + `â * â = 1`, no angle named.
+   The project/reject route is shown second (shorter), and the angle-based `proof-rotate-from-a-to-b`
+   is contrasted as "the angle was scaffolding." (Resolves old open question 2 with its recommendation.)
+3. **Draft banner** added to the prose (`.. note:: Draft`), matching the recent voice-pass pattern
+   (`levels-of-abstraction` / `vector-addition`); the notebook and the cited Lean are not draft.
+
+## Work record (2026-10-19)
+
+Write-up only, as the BLUF scoped it — no new math. Delivered:
+
+- **Prose:** `book/docs/rotation-from-vectors.rst` — "A Rotation from Two Vectors — No Angle." Wired
+  into `geometric-product.rst`'s nested toctree. References no ePiX figures (none added).
+- **Notebook:** `book/docs/notebooks/rotation-from-vectors.py` (percent-format, every binding typed)
+  — checks, symbolically in gacalc: the product of two unit vectors is the rotor
+  (`cos(α−β) − sin(α−β) e₁₂`), the carry `â * (â * b̂) − b̂ == 0`, the versor and projection routes
+  agree, and the rotation carries `frm` onto `(|frm|/|to|) * to`. All four checks executed to the
+  zero vector / equality host-side.
+- **Lean / Python already existed** (cited, not written): `uvec_mul_uvec`, `uvec_dot`, `uvec_wedge`,
+  `fullAngleRotorFromTo_carry` (`proofs/GacalcProofs/Rotation2D.lean`); `projRotation_carries_from_to`,
+  `projRotation_isometry`, `projRotation_eq_sandwich` (`ProjectionRotation2D.lean`);
+  `versor_from_vectors`/`rotor_from_vectors` (`base.py`), `versor_rotation`/`projection_rotation`
+  (`transforms.py`).
+- **Doc delta:** `tasks/reference/book-outline.md` updated (new page + notebook listed).
+
+**Gate status:** `ruff check`/`ruff format --check` clean, `ty check book/docs/notebooks` clean,
+`tools/check_annotations.py` reports no row for the new notebook, and the notebook's computations
+were executed on the host (all collapse to zero/equality). The full `make docs` (Sphinx HTML +
+lualatex PDF) was run **in-sandbox against the existing `gacalc:latest` BUILD_DOCS image** via
+`docs.sh`'s own `podman run` (avoiding the `: image` nested rebuild) — see the session report for
+the result; the build is not `-W`, so unresolved cross-refs (if any) are warnings, not errors.
 
 ## See also
 
