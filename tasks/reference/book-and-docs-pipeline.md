@@ -89,7 +89,11 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     from: colours, `polar`, `unit_circle_scene` (the disc-and-axes stage, with a `disc: bool = True`
     toggle so a figure that doesn't need the circle still gets axes), `vector`, `dashed_vector` (a
     translated copy, drawn via `epix.dashed()` then reset with `epix.line_style(style="-")`),
-    `parallelogram`, `wedge`, `right_angle_marker`, `leg`.
+    `parallelogram`, `grid` (a light unit graph-paper grid across the box, every line shifted by an
+    `offset` — `offset=b` draws the paper slid by `b`; `faint` dashes it for the pre-slide copy; the
+    line on an axis is skipped so the scene's black axes show through), `wedge`,
+    `right_angle_marker`, `leg`. The `grid` helper drives the vector-addition `trans1`/`trans2`
+    figures (the `translate` / "whole graph paper slides" section).
   - `_rotation_scene.py` adds the rotation-sequence constants (β, θ, r = 1.7) and re-exports the
     `_scene2d` helpers, so the `rotate1`–`rotate9` figures import everything from one place. `r` is 1.7
     (not unit) so the similar-triangle step `rotate9` separates the unit and scaled triangles' labels;

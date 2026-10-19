@@ -35,6 +35,7 @@ __all__: list[str] = [
     "PURPLE_FILL",
     "GREEN",
     "BLUE",
+    "GRID",
     "BACKGROUND",
     "PendingFigure",
     "Point",
@@ -44,6 +45,7 @@ __all__: list[str] = [
     "vector",
     "dashed_vector",
     "parallelogram",
+    "grid",
     "wedge",
     "right_angle_marker",
     "right_angle_at",
@@ -60,6 +62,7 @@ PURPLE: epix.Color = epix.rgb(r=0.5, g=0.0, b=0.5)
 PURPLE_FILL: epix.Color = epix.rgb(r=0xDD / 255, g=0xCA / 255, b=0xD4 / 255)
 GREEN: epix.Color = epix.rgb(r=0.0, g=0.5, b=0.0)
 BLUE: epix.Color = epix.rgb(r=0.0, g=0.0, b=0.75)
+GRID: epix.Color = epix.black(intensity=0.8)  # light gray graph-paper lines
 # The PNGs for the HTML book are flattened onto this, the disc's own fill
 # (epix.white(0.95)), so a dark-mode page shows a uniform light panel instead of a
 # transparent sheet around the disc.
@@ -145,6 +148,50 @@ def parallelogram(
     epix.fill(color=color)
     epix.Path(data=[ORIGIN, corner_a, far, corner_b], closed=True, filled=True).draw()
     epix.nofill()
+
+
+def grid(
+    lower_left: Point,
+    upper_right: Point,
+    offset: Point = ORIGIN,
+    spacing: int = 1,
+    color: epix.Color = GRID,
+    width: float = 0.4,
+    faint: bool = False,
+) -> None:
+    """A light unit grid across the box, every line translated by ``offset`` -- so
+    ``offset=b`` draws the graph paper slid by :math:`\\vec{b}` (every gridline moves,
+    not just one). ``faint`` dashes the lines, for the pre-translation copy drawn under
+    the slid one. The axes themselves come from :func:`unit_circle_scene`."""
+    epix.pen(color=color, width=width)
+    if faint:
+        epix.dashed()
+    x_lo: float = lower_left.x1()
+    y_lo: float = lower_left.x2()
+    x_hi: float = upper_right.x1()
+    y_hi: float = upper_right.x2()
+    dx: float = offset.x1()
+    dy: float = offset.x2()
+    # Skip a line that lands exactly on an axis -- the scene's black axes serve as the
+    # x = 0 / y = 0 gridlines, and a light line on top would fade them.
+    column: int = math.ceil(x_lo)
+    while column <= x_hi:
+        if column + dx != 0.0:
+            epix.line(
+                tail=Point(x=column + dx, y=y_lo + dy),
+                head=Point(x=column + dx, y=y_hi + dy),
+            )
+        column += spacing
+    row: int = math.ceil(y_lo)
+    while row <= y_hi:
+        if row + dy != 0.0:
+            epix.line(
+                tail=Point(x=x_lo + dx, y=row + dy),
+                head=Point(x=x_hi + dx, y=row + dy),
+            )
+        row += spacing
+    if faint:
+        epix.line_style(style="-")
 
 
 def wedge(start: float, finish: float, text: str, radius: float = 0.33) -> None:

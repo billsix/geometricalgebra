@@ -23,3 +23,11 @@ ADD_LOWER_LEFT: Point = Point(x=-0.5, y=-0.45)
 ADD_UPPER_RIGHT: Point = Point(x=2.35, y=1.95)
 SUB_LOWER_LEFT: Point = Point(x=-1.15, y=-1.5)
 SUB_UPPER_RIGHT: Point = Point(x=2.35, y=1.95)
+
+# The translate figures (``trans1``/``trans2``) show the whole graph paper slid by
+# :math:`\\vec{b}`. A roomier box so both the original lattice points and their
+# slid-by-``B`` images fit, with two sample points on the integer lattice.
+TRANS_LOWER_LEFT: Point = Point(x=-0.6, y=-0.6)
+TRANS_UPPER_RIGHT: Point = Point(x=3.0, y=3.2)
+TRANS_P: Point = Point(x=1, y=1)
+TRANS_Q: Point = Point(x=2, y=1)
