@@ -108,4 +108,5 @@ above and gacalc's own rotation.
 .. toctree::
    :maxdepth: 1
 
+   rotation-from-vectors
    notebooks/geometric-product

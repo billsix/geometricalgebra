@@ -17,7 +17,9 @@
 # %%
 import sympy
 
+from gacalc.functions import InvertibleFunction
 from gacalc.g2 import Vector, e_1, e_2
+from gacalc.transforms import translate
 
 a_1: sympy.Symbol
 a_2: sympy.Symbol
@@ -45,3 +47,39 @@ a + b == b + a  # -> True
 
 # %%
 a - b == a + (-b)  # -> True
+
+# %% [markdown]
+# ## Translate: adding the same vector to everything
+#
+# Fix `b` and let the other input vary, and `+` becomes a one-input machine
+# `translate(b)`: feed it any point `v`, get `v + b`. This is **partial binding** --
+# one of the two blanks of `+` filled in. It moves *every* point the same way, so
+# applying it to the whole plane slides the graph paper by `b`.
+
+# %%
+t: InvertibleFunction[Vector] = translate(b=b)
+
+# applied to a: the one-off a + b, now produced by the machine
+t(a) == a + b  # -> True
+
+# %%
+# it moves every point by the same b -- here the two basis vectors
+[t(e_1), t(e_2)]  # -> [e_1 + b, e_2 + b]
+
+# %%
+# the whole sheet of graph paper: a lattice of points, each slid by b
+grid_points: list[Vector] = [i * e_1 + j * e_2 for i in range(3) for j in range(3)]
+translated: list[Vector] = [t(point) for point in grid_points]
+all(moved == point + b for moved, point in zip(translated, grid_points))  # -> True
+
+# %% [markdown]
+# Its **inverse** is `translate(-b)`: sliding the paper back undoes the slide. And
+# `.at(0.5)` is the paper slid half way (the interpolation `translate(b * t)`).
+
+# %%
+# `inverse` is the inverse function itself (a callable), so apply it directly.
+t.inverse(t(a)) == a  # -> True
+
+# %%
+halfway: Vector = t.at(0.5)(a)
+halfway == a + b * 0.5  # -> True
