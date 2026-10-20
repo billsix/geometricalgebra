@@ -1,109 +1,56 @@
 # Lean sweep: find ℝ-scalar statements that should be geometric-object statements
 
-**Status:** proposed — needs go-ahead (a corpus-consistency sweep; recon is read-only)
+**Status:** done 2026-10-20 — recon complete; the one clean A-site lifted and verified
+(`make lean` green, sorry-free); the rest classified C/B/borderline per the approved recommendation.
 **Priority:** 6
 **Difficulty:** 5
-**Created:** 2026-10-19 (William Emerison Six <billsix@gmail.com>: "sweep the lean proofs and
-find places where Real numbers are used that really could use geometric objects like g2 and g3")
+**Created:** 2026-10-19 (William Emerison Six <billsix@gmail.com>: "sweep the lean proofs and find
+places where Real numbers are used that really could use geometric objects like g2 and g3")
+**Done:** 2026-10-20 (William Emerison Six <billsix@gmail.com>: "I go with your recommendations")
 
 ## BLUF
 
-Walk every theorem/def in `proofs/GacalcProofs/*.lean` and **find the places that take or
-produce bare `ℝ` scalars where the statement is really *about a geometric object*** — a `G1`/
-`G2`/`G3` vector, bivector, trivector, or versor — and should take that object (plus a grade
-predicate) as input and conclude about objects, dropping to coordinates **only in the body**.
-This is the next pass of the house rule already in `CLAUDE.md` ("Coordinates only when needed"
-and "Geometric objects in, scalars in the body, geometric objects out"); the **polynomial tier
-was swept 2026-10-04** (`tasks/archive/2026/10/04/lean-lift-theorem-statements-to-objects.md`),
-so this task is the **continuation into the tiers that pass still left as coordinate statements**.
-"Done" = (1) a per-file candidate report classifying every `ℝ`-binder site A/B/C (see Plan),
-(2) the conversions the report marks "A — lift to object" applied, each re-verified with
-`make lean` green and no new `sorry`/`admit`, and (3) the leaf/`_coord` exemptions recorded in
-`tasks/reference/lean-ga-proof-architecture.md`.
+Continuation of the 2026-10-04 polynomial-tier object-lift (the house rule "Coordinates only when
+needed / geometric objects in, scalars in the body, geometric objects out"). Walked every `ℝ`-binder
+site in `proofs/GacalcProofs/*.lean` and classified each A (lift to object) / B (keep as a bridged
+`_coord` leaf) / C (genuine scalar or definitional unfold). The corpus was **already mostly swept in
+2026-10-04**, so the one clean, unambiguous A-site remaining was **`G2.vec_anticomm_perp`** — its `G3`
+twin was already object-form and the `G2` version was the lone leftover in free `ℝ` coords, with zero
+consumers. Lifted it; `make lean` green, no new `sorry`/`admit`. Everything else is C or B, with a
+short **borderline** list left for a per-site call (not converted), per the approved recommendation.
 
-**Recon (the find) is read-only and comes first — do NOT edit a proof until the report is
-reviewed** (this task is scoped by the maintainer's word "find"; the lift is the follow-on).
+## Result
 
-## Context (read first)
+**Converted (A) — 1 site.** `G2.vec_anticomm_perp` (`AlgebraLaws.lean`): was
+`(u1 u2 v1 v2 : ℝ) (h : u1*v1+u2*v2 = 0) : mul (vec u1 u2) (vec v1 v2) = neg (mul (vec v1 v2) (vec u1 u2))`,
+now `{u v : G2} (hu : IsVector u) (hv : IsVector v) (h : dot u v = 0) : mul u v = neg (mul v u)` —
+matching the existing `G3.vec_anticomm_perp` twin exactly. No consumers to update (the only caller,
+`StudentTrigForms`, already uses the `G3` object form). The proof stays coordinate (obtain the
+`IsVector` zero-fields, `simp only [dot, mul, <zeros>]`, `ext`, `linear_combination 2*h` / `ring`);
+needed `import GacalcProofs.Versor2D` for `G2.dot` (acyclic — `Versor2D` imports only `G2`). Verified:
+`make lean` → `Build completed successfully`, `[lean] no sorry/admit`, `[lean] OK`.
 
-- **The governing rule is already written.** `CLAUDE.md` › "Coordinates only when needed" and
-  "Geometric objects in, scalars in the body, geometric objects out": a theorem takes the
-  **object** + a grade predicate (`{a : G3} (ha : IsVector a)`) and concludes about objects; it
-  drops to `a.c1`/`a.c12` getters **only in the proof body** (`obtain … := ha; simp only […];
-  field_simp; ring`). The inverted shape this sweep removes is **"free scalars in, build the
-  object inside"** — `foo (a1 a2 a3 : ℝ) : P (vec a1 a2 a3)`.
-- **What is NOT a target (genuine scalars stay scalar).** Per the same rule, leave alone:
-  angles and their `cos`/`sin` (`θ`, `α`, `β`, `c`, `s`), a scalar multiple `k`/`smul`, pure-real
-  identities (`Lagrange.lean`), and the **definitional `vec`/`bivector`/`trivector` unfold leaves**
-  (`normSq_vec`, `dot_vec`, `cross_vec`, `vec_mul`, `isVector_vec`, …) whose RHS *is* coordinate
-  arithmetic — those are the bridge leaves listed in the arch doc's "Leaf-node index" and are
-  meant to stay coordinate. A named `_coord` leaf is **justified** only when a fragile coordinate
-  proof (`set`/`calc`/big `field_simp`) is shared by ≥2 object theorems.
-- **Prior art to imitate.** The 2026-10-04 polynomial-tier sweep:
-  `tasks/archive/2026/10/04/lean-lift-theorem-statements-to-objects.md` (the lift),
-  `lean-object-in-getters-out-proof-style.md` (the proof-style), and the corpus review
-  `tasks/reference/lean-proof-corpus-review-2026-10-04.md`. Method, the A/B/C judgment, the
-  leaf-node index, and the "paths that DON'T work" for coordinate→object conversion are in
-  `tasks/reference/lean-ga-proof-architecture.md` (§ "Coordinates only when needed",
-  § "Leaf-node index", § "Converting coordinate proofs to object/getter form — paths that DON'T
-  work").
-- **Deciding unused-ness is by delete-and-rebuild, never by eyeballing** (`CLAUDE.md`): a name
-  absent from the body is not proven unused (`field_simp`/`simp` consume `_ ≠ 0` hyps unnamed);
-  Lean only warns on the signature kind. Drop a hypothesis/arg by removing it and rebuilding.
+**Left as C/B (not converted).** The overwhelming majority: `smul`/`smul_smul` scalars; every angle /
+`cos`/`sin` theorem (`rot`, `uvec`, `polar`, `planeRotor`, `fullAngleRotor`, `rotXY/XZ/YZ`, …); the
+definitional `vec`/`bivector`/`trivector` unfold leaves (`normSq_vec`, `dot_vec`, `cross_vec`,
+`vec_mul`, `isVector_vec`, …); `lagrange_2d/3d` pure-real identities; and every already-bridged
+`_coord` leaf still shared ≥2× by object theorems (`CrossStandardPosition`, `Projection3D`,
+`ProjectionRotation3D`, `Rotation3D`, `Sandwich`, `Versor2D`, `StandardPosition2D`, `TrigEquiv`) —
+the sanctioned pattern, left in place.
 
-## Candidate sites found in recon (2026-10-19, read-only grep — leads, not verdicts)
-
-Starting worklist (from `grep -nE '(theorem|lemma|def).*: ℝ'` over `proofs/GacalcProofs/*.lean`;
-each needs the A/B/C judgment, this is not a conversion list):
-
-- **`AlgebraLaws.lean`** — `vec_anticomm_perp (u1 u2 v1 v2 : ℝ) (h : u1*v1 + u2*v2 = 0)` is the
-  clearest **A-candidate**: it is a statement about two perpendicular *vectors*, spelled in 4 free
-  scalars + a coordinate dot-zero hypothesis; the object form is `{u v : G2} (hu : IsVector u)
-  (hv : IsVector v) (hperp : dot u v = 0)`. (`smul`/`smul_smul` take `k m : ℝ` — genuine scalars,
-  **C, leave**.)
-- **`CrossStandardPosition.lean`** (25 `ℝ` binders) — the `*_coord` theorems
-  (`cross_rotXY_equivariant_coord (c s a1 a2 a3 b1 b2 b3 : ℝ)`, `reduceToPlane_b_in_plane`,
-  `rotYZ_aligns_yz`, …) are already **bridged** to object theorems (`cross_rotXY_equivariant
-  {a b : G3}`); confirm each `_coord` leaf is still shared by ≥2 object theorems (B, keep) or has
-  become a single-use inline (A, fold in). The `rotXY_vec`/`rotYZ_vec` unfold leaves are **C**.
-- **`Exp.lean`** — `expBivectorGeneral (p q r : ℝ)`, `normSq_expBivectorGeneral`,
-  `isRotor_expBivectorGeneral`: `(p q r)` are the *components of a bivector*; candidate to take
-  `{B : G3} (hB : IsBivector B)` and conclude about `B.exp()` being a rotor. Judge A vs B.
-- **`G1/G2/G3.lean`** — almost entirely **C** (the `vec`/`bivector`/`trivector` definitions and
-  their `*_vec` unfold leaves are the coordinate bridge, by design). Scan only for a non-leaf
-  theorem that happens to take scalars.
-- **`ProjectionRotation3D.lean` / `Sandwich.lean` / `StandardPosition*.lean` / `Rotation2D.lean`**
-  — high `ℝ`-binder counts, but most are angle/`cos`/`sin` (**C**) or already object-stated with a
-  coordinate body. These need reading, not grep — flag only genuine "scalars in, build object" shapes.
-
-## Plan
-
-1. **Recon / classify (read-only).** For every `ℝ`-binder site, record file:line, the binder, and
-   an **A/B/C verdict**: **A** = lift to an object statement (the target); **B** = keep as a named
-   `_coord` leaf (fragile proof shared ≥2×) — note which object theorems consume it; **C** = genuine
-   scalar / definitional unfold leaf, leave. Deliver the report in this doc (a table per file).
-2. **Report and get go-ahead** on the A-list before editing (Open question 1).
-3. **Apply the A-list**, one file per staged unit: rewrite the statement to objects + grade
-   predicate, move coordinates into the body via `obtain`/getters, **delete-and-rebuild** to prove
-   each dropped scalar/hyp is really unused, `make lean` green per unit, no new `sorry`/`admit`.
-4. **If a result has book/Python companions** (per `CLAUDE.md` "three forms"), a *statement* change
-   that a book page cites by name must update that citation — check `book/docs/*.rst` for the
-   theorem name before renaming/re-signing it.
-5. **Record** the final leaf/`_coord` exemptions and any new bridge leaves in
-   `tasks/reference/lean-ga-proof-architecture.md`; slim this task to a work record pointing there.
-
-## Open questions
-
-1. Scope of the lift: apply to **every** A-site found, or only the clearly-worth-it ones (e.g.
-   `vec_anticomm_perp`, `Exp.lean`'s bivector trio) and leave borderline `_coord` bridges as-is?
-   Recommend: convert the unambiguous A-sites, leave every already-bridged `_coord` leaf that is
-   still shared ≥2× (it is the sanctioned pattern), and list the borderline ones for a per-site call.
+**Borderline — listed for a per-site call, NOT converted (recommendation, approved):**
+- `Exp.lean` `expBivectorGeneral (p q r : ℝ)` + `normSq_expBivectorGeneral` + `isRotor_expBivectorGeneral`:
+  `(p,q,r)` are a bivector's components and the `def` builds `bivector p q r`. Lifting it means a NEW
+  object-level `exp (B : G3) (hB : IsBivector B)` def plus its rotor theorems (new theory, not a
+  mechanical statement lift — closer to a new project), and there is no object-level Lean `exp` to lift
+  into yet. Left as-is; revisit if/when an object-level `exp` is wanted.
+- `Projection2D.lean` `vec_wedge_I_eq_zero (x y : ℝ)` / `reject_from_I_eq_zero (x y : ℝ)` and
+  `Projection3D.lean` `wedge_reject (a1 a2 a3 : ℝ) (b : G3)`: non-`_coord` scalar-taking theorems that
+  *could* take `IsVector` objects, but each is a single-use leaf whose lift buys little.
 
 ## See also
 
-- `CLAUDE.md` › "Coordinates only when needed" and "Geometric objects in, scalars in the body,
-  geometric objects out" — the governing rule.
-- `tasks/reference/lean-ga-proof-architecture.md` — A/B/C judgment, leaf-node index, non-working
-  conversion paths.
+- `tasks/reference/lean-ga-proof-architecture.md` — "Coordinates only when needed" (the A/B/C
+  judgment) and the leaf-node index (updated: `vec_anticomm_perp` is now object-form in both `G2`/`G3`).
 - `tasks/archive/2026/10/04/lean-lift-theorem-statements-to-objects.md` — the polynomial-tier sweep
   this continues; `tasks/reference/lean-proof-corpus-review-2026-10-04.md` — the corpus map.

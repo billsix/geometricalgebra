@@ -1,5 +1,6 @@
 import GacalcProofs.G2
 import GacalcProofs.G3
+import GacalcProofs.Versor2D
 
 /-! # The algebra laws of 𝒢₂ and 𝒢₃
 
@@ -48,11 +49,15 @@ theorem smul_smul (k m : ℝ) (a : G2) : smul k (smul m a) = smul (k * m) a := b
 /-- `1 • a = a`. -/
 theorem one_smul (a : G2) : smul 1 a = a := by simp only [smul]; ext <;> ring
 
-/-- **Orthogonal vectors anticommute:** if `u·v = 0` (here `u₁*v₁ + u₂*v₂ = 0`) then `u v = −(v u)`.
-    The scalar (inner) parts cancel by orthogonality; the bivector parts are already antisymmetric. -/
-theorem vec_anticomm_perp (u1 u2 v1 v2 : ℝ) (h : u1 * v1 + u2 * v2 = 0) :
-    mul (vec u1 u2) (vec v1 v2) = neg (mul (vec v1 v2) (vec u1 u2)) := by
-  simp only [mul, neg, vec]
+/-- **Orthogonal vectors anticommute:** if `u·v = 0` then `u v = −(v u)` — the 𝒢₂ twin of the 𝒢₃
+    `G3.vec_anticomm_perp`. Objects in (two vectors + a perpendicularity hypothesis), object out:
+    the scalar (inner) parts cancel by orthogonality and the bivector parts are already antisymmetric. -/
+theorem vec_anticomm_perp {u v : G2} (hu : IsVector u) (hv : IsVector v) (h : dot u v = 0) :
+    mul u v = neg (mul v u) := by
+  obtain ⟨hus, huc12⟩ := hu
+  obtain ⟨hvs, hvc12⟩ := hv
+  simp only [dot, mul, hus, huc12, hvs, hvc12] at h
+  simp only [mul, neg, hus, huc12, hvs, hvc12]
   ext
   · linear_combination 2 * h
   · ring
