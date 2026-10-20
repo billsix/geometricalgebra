@@ -206,7 +206,10 @@ Every proof should reach for a *named* leaf, not a fresh `ext <;> ring`. The lea
 - **Multiplication table:** `e_1_sq`/`e_2_sq`/`e_3_sq`, `e_1_mul_e_2`/…, `e_2_mul_e_1` (anticommute),
   `e_12_mul_e_3`, `I_sq` (`I² = −1`), `reverse_reverse`.
 - **Algebra laws** (`AlgebraLaws.lean`): `mul_assoc`, `mul_add`/`add_mul`, `one_mul`/`mul_one`,
-  `smul_mul`/`mul_smul`, `smul_smul`, `one_smul`, `vec_anticomm_perp`.
+  `smul_mul`/`mul_smul`, `smul_smul`, `one_smul`, `vec_anticomm_perp` (**object-form in both `G2` and
+  `G3`**: `{u v} (IsVector u) (IsVector v) (dot u v = 0) : mul u v = neg (mul v u)`; the `G2` twin was
+  lifted from free `ℝ` coords to match `G3` on 2026-10-20, the lean-sweep follow-up to the 2026-10-04
+  tier — `tasks/archive/2026/10/20/lean-sweep-scalars-to-geometric-objects.md`).
 - **Inner product `·`:** `dot_comm` (symmetry); **full bilinearity** — `dot_add`/`dot_sub`/`dot_smul`
   in both `_left` and `_right` forms; `dot_vec` (`a·b = a₁ * b₁+…`); `dot_self_vec_eq_normSq`
   (`a·a = |a|²` — the bridge that reads a `dot a a` hypothesis as the `normSq` primitive).
