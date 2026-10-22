@@ -1,79 +1,60 @@
 # Lean: assemble the CrossStandardPosition step-lemmas into a capstone (cross via reduction = canonical)
 
-## BLUF
+**Status:** done — 2026-10-22 (William Emerison Six <billsix@gmail.com>). All three forms delivered;
+`make lean` green (`[lean] OK`); the previously-stranded step-lemmas are all cited now.
+**Priority:** 6 **Difficulty:** 7
+**Created:** 2026-10-03 **Updated:** 2026-10-22 (William Emerison Six <billsix@gmail.com>)
 
-`proofs/GacalcProofs/CrossStandardPosition.lean` proves all the *steps* of computing the 3D cross
-product by reducing two vectors to a standard frame — `cross` is equivariant under the elementary
-plane rotations (`cross_rotXY/XZ/YZ_equivariant`), the reduction lands `a` on `e₁` and `b` in the
-`e₁e₂` plane (`reduceToPlane_a_on_e1`, `reduceToPlane_b_in_plane`), and in that frame the cross is a
-pure `e₃` vector (`cross_reduced`) — but it **never assembles them into a capstone theorem**. Those
-step-lemmas are currently *stranded* (proven, 0 citations). This task writes the capstone: prove the
-general cross product equals the value obtained by reducing to the standard frame, computing there,
-and rotating back — i.e. **cross-via-reduction = canonical `cross`** — closing the cross arc the same
-way `StandardPosition.lean` caps the project/reject arc. "Done" = a capstone theorem that cites the
-stranded step-lemmas (so they are no longer stranded) and `make lean` is green.
+## What this was
 
-**DECISION 2026-10-22 (William Emerison Six <billsix@gmail.com>): GO — and in ALL THREE FORMS.**
-Assemble the Lean capstone (stated over geometric objects, not free scalars) citing the stranded
-step-lemmas, AND add the matching symbolic-Python check + the book page, per the standing "Lean +
-symbolic Python + prose/LaTeX" default (NOT Lean-only). "Done" therefore extends to: `make lean`
-green + a symbolic-Python cell/test + a book `.rst` stating it and citing the Lean theorem by name.
+`proofs/GacalcProofs/CrossStandardPosition.lean` proved all the *steps* of computing the 3D cross
+product by reducing two vectors to a standard frame (equivariance of `cross` under the elementary
+plane rotations, the `reduceToPlane_*` placements, the in-frame `cross_reduced`) but never assembled
+them into a capstone — the step-lemmas were *stranded* (proven, 0 citations). This task wrote the
+capstone, and per the standing "Lean + symbolic Python + prose/LaTeX" default, in all three forms.
 
-**Status:** proposed — needs go-ahead. **Priority:** 6. **Difficulty:** 7.
-**Created:** 2026-10-03 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>). Surfaced by
-the dead-code audit (`tasks/archive/2026/10/03/lean-proofs-dead-code-audit.md`): those step-lemmas are *proven-but-not-assembled*, not dead.
-**See also:** `tasks/reference/reduction-to-standard-position.md` (the arc; its "full bootstrap arc"
-section names the cross product as the one step whose equality is not yet assembled — this task);
-`tasks/reference/lean-ga-proof-architecture.md`.
+## Decision (2026-10-22, William Emerison Six <billsix@gmail.com>)
 
-## Context — read these first (cold start)
+GO, and in ALL THREE FORMS (this overrode the task's original "Lean only" recommendation in Q2):
+the Lean capstone (over geometric objects, not free scalars — Q1), a symbolic-Python check, and a
+book page citing the Lean theorem by name.
 
-- **The theme** (`reduction-to-standard-position.md`): an operation is additionally defined by
-  rotating the figure to a standard frame with **elementary plane rotations** (NOT versors — that's
-  the non-circular point), doing the easy version there, and rotating back. The canonical
-  Hestenes-form definition stays primary; the reduction form is a cross-checking pedagogical
-  duplicate. The hand-written derivation is `multivariate-math/proofs/crossproduct.tex`
-  (github.com/billsix/multivariate-math), which this Lean arc mirrors.
-- **The analogous CAPPED arc** to mirror: `proofs/GacalcProofs/StandardPosition.lean` caps the
-  project/reject/geometric-product arc — `rotate_b_to_e1` / `rotate_b_to_e1_magnitude`,
-  `mul_eq_proj_dot_add_reject_wedge`, and above all `projectSP_eq_proj` (align → keep the x-component
-  → unalign, proved equal to `proj` via `proj_onto_x_axis`, `alignSP_self`, equivariance, and the
-  `rot*_inv` inverses). Model the cross capstone on how that assembles the align-to-`e₁` rotations +
-  the reduced-frame computation.
-- **What already exists in `CrossStandardPosition.lean`** (the ingredients; cited counts from the
-  2026-10-03 audit):
-  - rotation algebra: `rotYZ_smul/_sub/_preserves_dot`, `rotXY_vec`/`rotXZ_vec`/`rotYZ_vec` (used).
-  - **stranded steps (0 citations as of 2026-10-04, re-verified — to be consumed by the capstone):**
-    `rotYZ_fixes_e1`, `vecReject_rotXZ_equivariant`/`_rotYZ_equivariant`, the object-form
-    `cross_rotXY_equivariant`/`_rotXZ_`/`_rotYZ_` (their `_coord` leaves each have one citation —
-    the object form is the stranded one), `reduceToPlane_a_on_e1`, `reduceToPlane_b_in_plane`,
-    `vecReject_reduced`, `cross_reduced`.
+## What was done (commit `23aaee9`)
 
-## What to prove (the capstone)
+**Lean** (`proofs/GacalcProofs/CrossStandardPosition.lean`):
 
-A theorem stating that the general cross product is recovered by the reduction route: reduce `a`, `b`
-to the standard frame via the composed elementary rotations, apply `cross_reduced` there, and rotate
-back by the inverse rotations — and that this equals the canonical `cross a b`. Follow the shape of
-`StandardPosition.lean`'s project/reject capstone. The `cross_rot*_equivariant` lemmas are exactly the
-"rotating back commutes with cross" ingredient; `reduceToPlane_*` place the operands; `cross_reduced`
-is the easy in-frame value. State it over vectors/`IsVector` objects where practical (per
-`CLAUDE.md` "use coordinates only when needed"), dropping to the coordinate step-lemmas via the usual
-bridge.
+- `cross_reduceToPlane_equivariant` — `cross` commutes with the full 3-rotation reduction, composing
+  the three elementary equivariances. This consumes the previously-stranded **object-form**
+  `cross_rotXY_equivariant` / `cross_rotXZ_equivariant` / `cross_rotYZ_equivariant` (the flagged
+  0-citation ones; their `_coord` leaves each already had a citation).
+- `rotYZ_inv`, `unreduceToPlane`, `unreduceToPlane_reduceToPlane` — the reduction is invertible.
+- `cross_eq_unreduce_cross_reduce` — the round-trip capstone: `cross a b = rotate-back(cross (reduce a)
+  (reduce b))`, for any unit angle pairs. The "both routes agree" payoff (sibling of
+  `projRotation_eq_sandwich`).
+- `cross_via_reduction` (object form) + `cross_via_reduction_of_vectors` (explicit reduction angles):
+  with `a` on `e₁` and `b` in-plane, the reduced cross is the pure-`e₃` vector `(0,0,|a|*b₂')`
+  (`cross_reduced`); the explicit-angle corollary cites `reduceToPlane_a_on_e1` and
+  `reduceToPlane_b_in_plane`. **All six step-lemmas now have ≥1 citation** (re-verified by the
+  audit scan). Full `proofs/check.sh` green.
 
-## How to verify
+**Symbolic Python**: `book/docs/notebooks/proof-cross.py` — the reduce-both → cross → rotate-back
+construction, verified symbolically equal to `gacalc.vectorcalc.cross` (exact `a`, symbolic `b`; the
+swing's `sqrt` cancels in the round trip). ty / ruff / annotation checks pass; runs clean.
 
-`make lean` green (`proofs/check.sh`: `lake build` + no `sorry`/`admit`), and the previously-stranded
-step-lemmas above now show ≥1 citation (re-run the audit scan). If the Python `vectorcalc.cross`
-grows a matching "standard-position" pedagogical note or variant, cross-link it — but that is
-optional and out of scope here (this task is the Lean capstone only).
+**Book**: `book/docs/proof-cross.rst` states the capstone, derives the reduction, and cites the Lean
+theorems by name; wired into `index.rst` + the companion-notebook toctree. The arc reference doc
+`tasks/reference/reduction-to-standard-position.md` updated (cross capstone no longer "not yet
+assembled").
 
-## Open questions
+## Open questions — both resolved by the decision
 
-1. State the capstone purely over objects (`{a b : G3}` + `IsVector`), or in coordinates to match the
-   existing coordinate step-lemmas it assembles? My recommendation: objects in the statement, with the
-   `(cos, sin)` of the reduction rotations introduced inside the proof via `reduceToPlane` — exactly
-   how `projectSP_eq_proj` is stated (`{b : G3} (hbv : IsVector b) … (a : G3) : projectSP a b = proj b a`)
-   with the angles hidden inside `alignSP`.
-2. Is a Python/notebook companion wanted (a `cross` "reduction" cross-check, mirroring `project_sp`),
-   or is the Lean capstone sufficient? My recommendation: Lean only for now; file a separate task if a
-   Python duplicate is desired.
+1. Objects vs coordinates in the statement → **objects** (`cross_via_reduction` is stated over
+   `{a b : G3}` + `IsVector`, angles introduced via `reduceToPlane`, as recommended).
+2. Python/notebook companion wanted? → **yes** (the decision required all three forms).
+
+## Verification note (for the maintainer)
+
+`make lean` was run green this session. The book page + notebook were validated piecewise (ruff/ty/
+annotations, the notebook executed), but a full `make docs` (Sphinx/TeX) was **not** run here — worth
+a `make docs` on the host to confirm `proof-cross.rst` + the notebook render. The new page/notebook
+also join the voice-pass queue in `tasks/proof-projection-book-voice-pass.md`.
