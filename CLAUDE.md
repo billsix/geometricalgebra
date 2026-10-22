@@ -368,9 +368,9 @@ commits), **`test`** (`make test`), and **`generated`** (`make check-generated` 
 **`make lean`** (the Lean/Mathlib proofs) **on `v*` tags only** — not per-push, since a Mathlib build
 is heavy. If CI needs a step, add it as a
 `make` target first (runnable locally), never inline YAML. Pin actions at Node 24
-(`actions/checkout@v5`; `@v4` is the deprecated Node 20). Releases are **manual** for now
-(`make dist`/`upload`/`release` → PyPI); a tag-triggered PyPI publish (Trusted Publishing) is
-proposed in `tasks/github-actions-pypi-publish-on-tag.md`.
+(`actions/checkout@v5`; `@v4` is the deprecated Node 20). Releases are **manual** by decision
+(`make dist`/`upload`/`release` → PyPI); a tag-triggered PyPI publish was **declined** 2026-10-22
+(`tasks/archive/2026/10/22/github-actions-pypi-publish-on-tag.md`).
 
 **Every containerized target a CI job runs needs `: image` as a prerequisite** — a fresh runner has
 no image, so a target that only does `podman run … gacalc` tries to *pull* `gacalc:latest` and dies

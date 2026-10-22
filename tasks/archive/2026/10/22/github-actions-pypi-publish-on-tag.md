@@ -12,7 +12,10 @@ can do; do not implement until that decision is made.**
 
 ## Status
 
-**Status:** proposed — needs go-ahead (a maintainer decision, see Open questions)
+**Status:** DECLINED 2026-10-22 (William Emerison Six <billsix@gmail.com>) — releases stay
+**manual** (`make dist` / `make upload` / `make release` + a host `git tag`); gacalc will not add a
+tag-triggered PyPI publish to CI. Recorded and archived per the maintainer's instruction; reopen by
+restoring this doc from the archive if the decision is ever reconsidered.
 **Priority:** 6
 **Difficulty:** 4
 **Started:** 2026-09-26 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — spun
