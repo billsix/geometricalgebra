@@ -28,7 +28,8 @@ them.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+import functools
+from collections.abc import Iterator, Sequence
 
 import numpy as np
 
@@ -116,15 +117,27 @@ def make_orthogonal_frame(
             "make_orthogonal_frame requires a frame (linearly independent "
             "vectors: a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
         )
-    orthogonal: list[MultiVectorBase] = []
-    v: MultiVectorBase
-    prior: MultiVectorBase
-    for v in vectors:
-        w: MultiVectorBase = v
-        for prior in orthogonal:
-            w = w.rejected_away_from(prior)
-        orthogonal.append(w)
-    return orthogonal
+
+    def reject_span(
+        v: MultiVectorBase, prior: list[MultiVectorBase]
+    ) -> MultiVectorBase:
+        # Reject v off each already-orthogonal vector.  Because the prior vectors are
+        # mutually orthogonal, rejecting them one at a time equals rejecting the whole
+        # span, and each step only ever rejects from a single vector (docstring above).
+        return functools.reduce(lambda w, p: w.rejected_away_from(p), prior, v)
+
+    def orthogonalize(
+        remaining: Sequence[MultiVectorBase], done: list[MultiVectorBase]
+    ) -> list[MultiVectorBase]:
+        match list(remaining):
+            case [v]:  # one vector left -- base case
+                return [*done, reject_span(v, done)]
+            case [v, *rest]:  # multiple -- recurse carrying the accumulator
+                return orthogonalize(rest, [*done, reject_span(v, done)])
+            case _:  # empty -- unreachable (is_frame rules out the empty set)
+                return done
+
+    return orthogonalize(vectors, [])
 
 
 def make_orthogonal_frame_hestenes(
@@ -163,17 +176,29 @@ def make_orthogonal_frame_hestenes(
             "make_orthogonal_frame_hestenes requires a frame (linearly independent "
             "vectors: a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
         )
-    orthogonal: list[MultiVectorBase] = []
-    k: int
-    for k in range(1, len(vectors) + 1):
-        if k == 1:
-            orthogonal.append(vectors[0])  # c_1 = reverse(A_0=1) A_1 = v_1
-            continue
-        A_prev: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(
-            *vectors[: k - 1]
-        )
-        A_k: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(*vectors[:k])
-        # reverse(A_{k-1}) A_k is grade 1 algebraically; narrow, as base.reject does,
-        # to drop any identically-zero widened term.
-        orthogonal.append((A_prev.reverse() * A_k).r_vector_part(1))
-    return orthogonal
+
+    def prefix_blades() -> Iterator[MultiVectorBase]:
+        # A_0 := 1, then A_k := A_{k-1} ∧ v_k (eq 3.1) -- self-referential:
+        # each blade is built from the one yielded just before it, carried in
+        # A, so the whole prefix costs O(k) wedges, not an O(k) rebuild each.
+        A: MultiVectorBase = type(vectors[0]).one()
+        yield A  # A_0 = 1
+        v: MultiVectorBase
+        for v in vectors:
+            A = A ^ v  # A_k = A_{k-1} ∧ v_k
+            yield A
+
+    def hestenes_vectors() -> Iterator[MultiVectorBase]:
+        # c_k := reverse(A_{k-1}) A_k (eq 3.2) -- self-referential: carries the previous
+        # blade across iterations and pairs it with the current one.  c_1 needs no
+        # special case: A_0 = 1 and A_1 = 1 ∧ v_1 = v_1, so c_1 = reverse(1) v_1 = v_1.
+        blades: Iterator[MultiVectorBase] = prefix_blades()
+        A_k_minus_1: MultiVectorBase = next(blades)  # A_0
+        A_k: MultiVectorBase
+        for A_k in blades:  # A_1, A_2, …
+            # reverse(A_{k-1}) A_k is grade 1 algebraically; narrow, as
+            # base.reject does, to drop any identically-zero widened term.
+            yield (A_k_minus_1.reverse() * A_k).r_vector_part(1)
+            A_k_minus_1 = A_k
+
+    return list(hestenes_vectors())

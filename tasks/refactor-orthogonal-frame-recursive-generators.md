@@ -13,8 +13,13 @@ the docstring doctests still pass, and `make format` (ruff + ty) is clean.
 
 ## Status
 
-**Status:** proposed — needs go-ahead (design is settled; the generator shape was confirmed
-2026-10-22, see "Open questions"; awaiting the maintainer's go to touch source)
+**Status:** DONE 2026-10-22 — both functions rewritten in `src/gacalc/frame.py` as designed
+(`make_orthogonal_frame`: nested recursive `orthogonalize` + `reject_span`, `match` on one-vs-many;
+`make_orthogonal_frame_hestenes`: the `prefix_blades` running-wedge generator + the
+`hestenes_vectors` generator, with the previous blade named `A_k_minus_1` per the maintainer). The
+16 `tests/test_frame.py` tests + frame.py doctests pass; `ruff` / `ruff format` / `ty` clean. Public
+signatures and `list[MultiVectorBase]` return unchanged. Work STAGED; archive is its own commit
+after the maintainer's work commit.
 **Priority:** 6
 **Difficulty:** 4
 **Created:** 2026-10-22 (William Emerison Six <billsix@gmail.com>)
