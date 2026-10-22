@@ -31,4 +31,5 @@ later, and sections may be written out of order.
    interactive-calculator
    three-dimensions
    projection-rejection-3d
+   proof-cross
    api

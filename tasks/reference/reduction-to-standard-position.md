@@ -90,8 +90,12 @@ whole rotation/geometry stack builds on, bottom-up:
    into the standard frame, do the elementary version there, and — for a *vector* result — rotate it
    back by the inverse rotations (a *scalar* result is rotation-invariant, so it needs no rotate-back).
    This yields project, reject, the geometric product `ab = a·b + a∧b`, and dot/wedge — each proved
-   equal to its canonical (Hestenes) form — and the cross product, whose step-lemmas are proven but not
-   yet assembled into the equality (`tasks/lean-cross-standard-position-capstone.md`).
+   equal to its canonical (Hestenes) form — and the cross product, now assembled: reduce BOTH vectors
+   to the `e₁e₂` plane, cross there (a pure `e₃` vector `(0,0,|a|·b₂')`, `cross_reduced`), and rotate
+   back equals the canonical `cross a b` (`cross_via_reduction` / `cross_via_reduction_of_vectors`,
+   with the equivariance engine `cross_reduceToPlane_equivariant` and the round-trip
+   `cross_eq_unreduce_cross_reduce`, in `proofs/GacalcProofs/CrossStandardPosition.lean`;
+   book page `proof-cross.rst` + notebook `proof-cross.py`).
 3. **Then a GENERAL rotation can be defined from project/reject** — which are themselves derived from
    the three plane rotations in step 1. The Python `transforms.projection_rotation` (rotate "from vec1
    to vec2") is exactly this: a general rotation built from projection, no geometric product
@@ -210,9 +214,11 @@ structural √-handling applies: the one √-bearing identity stays confined to 
 isometry needs only `normSq f, normSq t ≠ 0` (it comes straight from `normSq_mul_three_vec` + unit
 `f̂`/`t̂`, independent of route-equivalence).
 
-**Not yet done:** the cross-product capstone (`tasks/lean-cross-standard-position-capstone.md`), and
-the maintainer's voice pass on the drafted book page + notebook
-(`tasks/proof-projection-book-voice-pass.md`, which also holds the remaining book/notebook ideas).
+**Cross-product capstone — done** (2026-10-22, `cross_via_reduction` in
+`proofs/GacalcProofs/CrossStandardPosition.lean`, all three forms: Lean + symbolic-Python notebook +
+book page). **Not yet done:** the maintainer's voice pass on the drafted book pages + notebooks
+(`tasks/proof-projection-book-voice-pass.md`, which also holds the remaining book/notebook ideas;
+the new `proof-cross` page/notebook join that voice-pass queue).
 
 ## Where it belongs
 
