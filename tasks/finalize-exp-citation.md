@@ -1,13 +1,13 @@
 # Finalize the `exp()` book citation
 
-**Status:** blocked — waiting on the maintainer's own book reading (Hestenes & Sobczyk especially).
-Not to be done now.
+**Status:** ready (unblocked) — **DECIDED 2026-10-22 (William Emerison Six <billsix@gmail.com>): keep
+the existing Dorst, Fontijne & Mann §7.4 citation** (do NOT swap to Hestenes & Sobczyk / Macdonald).
+Remaining work is purely mechanical: drop the "provisional" wording and confirm §7.4 reads cleanly in
+the 4 places (`base.py` exp docstring, `design-decisions.md`, `Exp.lean` header,
+`unit-bivector-and-rotors.md`). Agent-doable; awaiting go to edit.
 **Priority:** 6
 **Difficulty:** 1
-**Created:** 2026-08-14 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
-**Blocked on:** the maintainer confirms the book anchor for `exp` — Dorst §7.4 as-is, or a Hestenes &
-Sobczyk / Macdonald page/equation to replace it.
-**Recheck:** the maintainer names the anchor (maintainer-gated; `/recheck-blocked` surfaces it).
+**Created:** 2026-08-14 **Updated:** 2026-10-22 (William Emerison Six <billsix@gmail.com>)
 
 ## Goal
 

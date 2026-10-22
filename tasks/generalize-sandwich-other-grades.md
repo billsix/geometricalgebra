@@ -3,7 +3,14 @@
 **Status:** **partly DONE** 2026-06-08 · the Versor conjugation family landed; reflections + higher-dims remain
 **Priority:** 8
 **Difficulty:** 5
-**Created:** 2026-06-07 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-06-07 **Updated:** 2026-10-22 (William Emerison Six <billsix@gmail.com>)
+
+**DECISION 2026-10-22 (William Emerison Six <billsix@gmail.com>):** the vector-as-versor **reflection
+uses the plain sandwich `v X v⁻¹` = reflect ACROSS THE LINE of `v`** (keeps the component along `v`,
+flips the perpendicular) — the sign/orientation that agrees with the existing
+`MultiVectorBase.reflect(across=v)` (projection − rejection). NOT `-v X v⁻¹` (reflection across the
+hyperplane ⟂ v). This unblocks the reflections half; remaining work is then the bivector/trivector
+operand tests + the 𝒢₄/𝒢₅ higher-dim verification.
 
 **Update:** the implementation (`tasks/archive/2026/06/08/derived-sandwich-operation.md`) generated
 the **whole `Versor` conjugation family** via `dispatch_method`, not just

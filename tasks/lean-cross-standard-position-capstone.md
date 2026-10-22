@@ -13,6 +13,12 @@ and rotating back — i.e. **cross-via-reduction = canonical `cross`** — closi
 way `StandardPosition.lean` caps the project/reject arc. "Done" = a capstone theorem that cites the
 stranded step-lemmas (so they are no longer stranded) and `make lean` is green.
 
+**DECISION 2026-10-22 (William Emerison Six <billsix@gmail.com>): GO — and in ALL THREE FORMS.**
+Assemble the Lean capstone (stated over geometric objects, not free scalars) citing the stranded
+step-lemmas, AND add the matching symbolic-Python check + the book page, per the standing "Lean +
+symbolic Python + prose/LaTeX" default (NOT Lean-only). "Done" therefore extends to: `make lean`
+green + a symbolic-Python cell/test + a book `.rst` stating it and citing the Lean theorem by name.
+
 **Status:** proposed — needs go-ahead. **Priority:** 6. **Difficulty:** 7.
 **Created:** 2026-10-03 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>). Surfaced by
 the dead-code audit (`tasks/archive/2026/10/03/lean-proofs-dead-code-audit.md`): those step-lemmas are *proven-but-not-assembled*, not dead.

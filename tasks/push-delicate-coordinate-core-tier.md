@@ -6,6 +6,11 @@ Emerison Six <billsix@gmail.com>)
 **Priority:** 8 (optional; the valuable polynomial tier is already done)
 **Difficulty:** 8 (sqrt/`magnitude` algebra + delicate `calc`/`set` capstones)
 
+**DECISION 2026-10-22 (William Emerison Six <billsix@gmail.com>): GO — implement.** Convert the
+remaining 3D coordinate leaves (ProjectionRotation3D / Sandwich / Projection3D / Cross — the
+`normSq(f∧t)` degree-blowup tier) to getter-native and verify `make lean` green. Needs nothing
+further from the maintainer.
+
 ## BLUF
 
 The object-in-getters sweep converted every **polynomial**-proof theorem to "objects in, getters in the
