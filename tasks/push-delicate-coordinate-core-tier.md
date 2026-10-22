@@ -1,8 +1,9 @@
 # Push the delicate coordinate-core tier to object/getter form (optional)
 
-**Status:** in progress — the 2D tier, the carries-from-to capstones, `cos_sq_add_sin_sq` and the Lagrange area form are getter-native (2026-10-05); the 3D projection-rotation scaffold and the remaining Sandwich/Projection3D/Cross coordinate leaves are the open remainder (see "Work record")
-`tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md`; updated 2026-10-04, William
-Emerison Six <billsix@gmail.com>)
+**Status:** in progress — 2D tier + carries-from-to capstones getter-native (2026-10-05); the clean
+Cross equivariance leaves + `Projection3D.reject_vec_eq` converted (2026-10-22, see "Work record
+(2026-10-22)"); the ProjectionRotation3D degree-blowup scaffold + the delicate Sandwich/Projection3D
+`_coord` remain on their bridges. Updated 2026-10-22, William Emerison Six <billsix@gmail.com>.
 **Priority:** 8 (optional; the valuable polynomial tier is already done)
 **Difficulty:** 8 (sqrt/`magnitude` algebra + delicate `calc`/`set` capstones)
 
@@ -10,6 +11,35 @@ Emerison Six <billsix@gmail.com>)
 remaining 3D coordinate leaves (ProjectionRotation3D / Sandwich / Projection3D / Cross — the
 `normSq(f∧t)` degree-blowup tier) to getter-native and verify `make lean` green. Needs nothing
 further from the maintainer.
+
+## Work record (2026-10-22) — clean leaves converted; the degree-blowup tier left on its bridges
+
+Proportionate progress on this optional P8/D8 task: the self-contained **polynomial** leaves were
+converted object-native (and their `_coord` deleted), `[lean] OK` green. The genuinely
+degree-blowup / delicate-`calc` tier is left on its `_coord` bridges — the fallback this task
+sanctions ("keeping an `eq_vec`-reconstruction fallback for any that still resist").
+
+**Converted (object-native, `_coord` deleted):**
+- `CrossStandardPosition.lean` — `cross_rotXY_equivariant` / `cross_rotXZ_equivariant` /
+  `cross_rotYZ_equivariant` now take `{a b : G3}` + `IsVector` and prove by `rw [eq_vec_of_isVector …]`
+  + the same `ext`/`linear_combination` body; the three `_coord` leaves **and** their three
+  object-wrapper duplicates are gone. (These are the engine behind the task-4 cross capstone.)
+- `Projection3D.lean` — `reject_vec_eq` folds its structural `_coord` body in via
+  `rw [eq_vec_of_isVector]`; `reject_vec_eq_coord` (the G3 one) deleted. (The 2D `reject_vec_eq_coord`
+  in `StandardPosition2D.lean` is a different lemma, untouched.)
+
+**Left on `_coord` bridges (the degree-blowup / delicate tier — resume here):**
+- `ProjectionRotation3D.lean` — all 18 `_coord`: the divide-by-`normSq(f∧t)` plane-projection scaffold
+  (`maxHeartbeats`-cranked `field_simp`), the √/bisector lemmas, and the `calc`/`set` capstones
+  (`projRotation_eq_sandwich_coord`, `projRotation_isometry_coord`). This is the blow-up tier the
+  `_coord` form exists to dodge; converting it needs the atomic-`normSq`-leaf recipe throughout, not a
+  mechanical `rw [eq_vec]`.
+- `Sandwich.lean` — the 5 G3 `_coord` (`versorFromVectors_mul_reverse/inverse_coord`,
+  `sandwich_fixes_own_bivector/normal_coord`, `sandwich_comp_coord`); delicate `calc`/`set`.
+- `Projection3D.lean` — `project_add_reject_coord`, `reject_eq_proj_normal_coord`,
+  `project_eq_sub_reject_coord`. Their OBJECT forms are already native; these `_coord` survive only to
+  feed `proj_plane_eq_project_onto` and ProjectionRotation3D's `_coord`. Removing them needs an
+  `IsBivector (wedge a b)` helper (none exists yet) and converting those two consumers first.
 
 ## BLUF
 
