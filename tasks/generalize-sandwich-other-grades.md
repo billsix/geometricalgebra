@@ -1,9 +1,39 @@
 # Generalize the derived sandwich to other grades (Versor·Bivector → Bivector, …)
 
-**Status:** **partly DONE** 2026-06-08 · the Versor conjugation family landed; reflections + higher-dims remain
+**Status:** in progress — reflections + the 𝒢₂/𝒢₃ grade tests DONE 2026-10-22; the **𝒢₄/𝒢₅
+verification is BLOCKED** on `tasks/gacalc-g4-g5-generation-sandwich-inverse.md` (higher-dim
+generation currently fails). Do not archive until that clears.
 **Priority:** 8
 **Difficulty:** 5
 **Created:** 2026-06-07 **Updated:** 2026-10-22 (William Emerison Six <billsix@gmail.com>)
+
+## Work record (2026-10-22)
+
+Done this session (commit staged separately):
+
+- **Reflections (vector as versor) confirmed + tested.** The generated `Vector.sandwich(x)` already
+  computes `v x v⁻¹` as the **reflection across the LINE of `v`** — keeps the along-`v` component,
+  flips the perpendicular — exactly the decided sign, and equal to `x.reflected_across(across=v)` and
+  `projection − rejection`. So the reflection was already implemented; nothing to wire in code.
+- **The 𝒢₂/𝒢₃ bivector/trivector/versor operand tests** are new in `tests/test_sandwich_grades.py`
+  (9 tests, part of the green 707-test suite): `Versor.sandwich` fixes its own plane bivector, rotates
+  other planes (`e_13 → e_23`, `e_23 → −e_13`), fixes the pseudoscalar (𝒢₂ and 𝒢₃), and a versor
+  conjugated by itself is itself; `Vector.sandwich` reflections across the line match
+  `reflected_across` / proj − rej and preserve grade (the pseudoscalar fixed, since a line reflection
+  is a proper 180° rotation).
+
+**Blocked / not done:**
+
+- **𝒢₄/𝒢₅ verification.** `make test-all-dims` can't run because `g4`/`g5` **generation itself fails**
+  — the generated `Versor.sandwich` arm inverts a *generic* even element, which is only
+  versor-invertible through grade 3. Filed as `tasks/gacalc-g4-g5-generation-sandwich-inverse.md`
+  (likely release-blocking). This task's 𝒢₄/𝒢₅ half resumes once that clears.
+- **Reflection-specific docstring** (polish): `Vector.sandwich` still shows the even-versor
+  "conjugation / rotation" docstring (it falls back to the base doc), which calls `v` a versor and
+  says "every invertible even element is a versor" — misleading for the reflection case. A fix needs a
+  small generator change to route a role-specific sandwich docstring through `dispatch_method` (the
+  role-keyed `CUSTOM_METHOD_DOCS` lookup does not reach the dispatch-built sandwich method). Low
+  priority follow-up.
 
 **DECISION 2026-10-22 (William Emerison Six <billsix@gmail.com>):** the vector-as-versor **reflection
 uses the plain sandwich `v X v⁻¹` = reflect ACROSS THE LINE of `v`** (keeps the component along `v`,
