@@ -1,61 +1,53 @@
 # g4/g5 generation fails: the Versor sandwich arm inverts a generic even element
 
-**Status:** proposed — needs go-ahead (a real, reproduced blocker; likely release-blocking).
-**Priority:** 3 **Difficulty:** 5
-**Created:** 2026-10-22 (William Emerison Six <billsix@gmail.com>). Surfaced while verifying the
-𝒢₄/𝒢₅ half of `tasks/generalize-sandwich-other-grades.md`.
+**Status:** done 2026-10-23 (fix committed; archived). **Priority:** 3 **Difficulty:** 5
+**Created:** 2026-10-22; **Done:** 2026-10-23 (William Emerison Six <billsix@gmail.com>). Surfaced
+while verifying the 𝒢₄/𝒢₅ half of `tasks/generalize-sandwich-other-grades.md`.
 
-## BLUF
+## What it was
 
-Generating the higher-dimension algebras fails: `GACALC_DIMS=1,2,3,4 python tools/gen_specialized.py`
-(and `1,2,3,4,5`, i.e. `make generate-all` / `make dist` / `make test-all-dims`) raises
+`GACALC_DIMS=1,2,3,4,5 python tools/gen_specialized.py` (i.e. `make generate-all` / `make dist` /
+`make test-all-dims`) raised, at `g4`:
 
 ```
 RuntimeError: inverse() supports a blade or versor (where Ã * A is a scalar); the general
-mixed-grade multivector inverse is not implemented (see tasks/lean-general-multivector-inverse.md)
+mixed-grade multivector inverse is not implemented
 ```
 
-`g1`/`g2`/`g3` generate fine; `g4` already fails. Because a released wheel bakes `g4`/`g5`
-(`make dist` sets `GACALC_DIMS=1,2,3,4,5`), **this blocks the next release** (e.g. 0.2.0, whose
-version is already bumped) — confirm before releasing. "Done" = `make generate-all` and
-`make test-all-dims` are green again, by maintainer-chosen approach below.
+The generated `Versor.sandwich` closed form `R * x * R.inverse()` is derived symbolically over a
+**generic** even element `R`. Through 𝒢₃ a generic even element is versor-invertible (`R̃ * R` is a
+scalar: `(s − B)(s + B) = s² − B²`), so `inverse()` succeeds; in **𝒢₄+** a generic even element has a
+grade-4 part and `R̃ * R` is not a scalar, so `inverse()` correctly raised. Genuine math, not a
+host/sympy artifact. It blocked `make dist` (which bakes g4/g5) and therefore the 0.2.0 release.
 
-## Root cause (traceback, confirmed 2026-10-22)
+## Fix — option 1 (maintainer-approved 2026-10-23: "go with your recommendation")
 
-`generate_graded_type` → `versor_extras` (`tools/gen_specialized.py:~5371`) → `dispatch_method`
-(`:3700`) → `product_result` (`:3010`) → the sandwich result-lambda → `base.py:1264` `inverse()`.
+`tools/gen_specialized.py`, two edits:
 
-The generated **`Versor.sandwich`** closed form is `R * x * R.inverse()`, computed symbolically over a
-**generic** even element `R` (grades {0,2,…}). In 𝒢₂/𝒢₃ a generic even element IS versor-invertible
-(`Ã * A` is a scalar: for 𝒢₃, `(s − B)(s + B) = s² − B²` with `B²` scalar), so `inverse()` succeeds.
-In **𝒢₄+** a generic even element has a grade-4 part, and `Ã * A` is **not** a scalar (it keeps grade-2
-/ grade-4 terms for generic coefficients), so `inverse()` correctly raises. This is genuine math, not a
-sympy/host artifact — the container gate fails the same way. (Whether this is a regression since 0.0.20
-or has been latent since the Versor sandwich family landed 2026-06-08 is unconfirmed; either way it is
-broken now.)
+- **`versor_extras()`** — the specialized `Versor.sandwich` `dispatch_method` append is wrapped in
+  `if n <= 3:`. 𝒢₄/𝒢₅ emit no closed-form sandwich and the graded `Versor` inherits
+  `MultiVectorBase.sandwich` (runtime `type(x)` projection, no closed-form `inverse()`) — still
+  correct, just not a specialized closed form.
+- **`header()`** — the `_OperandT` import narrowed from `n >= 2` to `2 <= n <= 3` (it is used only by
+  the specialized sandwich, so it would be an unused F401 in g4/g5 otherwise).
 
-## Options (maintainer's call)
+Work commit: `git log` subject "restrict specialized Versor.sandwich to dims <=3 so g4/g5 generate".
+Durable rationale harvested to `tasks/reference/generated-algebra-generation-cost.md` (point 3, the
+n≥4-only generator-bug class).
 
-1. **Restrict the generated `Versor.sandwich` closed form to dims ≤ 3**, and for 𝒢₄/𝒢₅ fall back to the
-   inherited `MultiVectorBase.sandwich` (runtime `type(x)` projection, which needs no closed-form
-   inverse). Smallest change; higher-dim sandwich stays correct, just not a specialized closed form.
-2. **Generate the sandwich via the reverse form** `R * x * R̃` (no `inverse()`), valid for a **unit**
-   versor; for a general versor divide by `normSq R` symbolically (a scalar for an *actual* versor).
-   The obstacle is that the generator works on a generic even element, which is not a versor in 4D —
-   so this needs the closed form derived on the versor manifold, not generic coefficients.
-3. **Implement the general multivector inverse** (`tasks/lean-general-multivector-inverse.md`) so
-   `inverse()` handles the 𝒢₄/𝒢₅ even case — the largest change.
+## Verification (2026-10-23)
 
-Recommendation: option 1 (restrict + fall back) to unblock releases quickly, with option 2 as the
-principled follow-up if a specialized higher-dim sandwich is wanted.
-
-## Reproduce / verify
-
-- Fails: `GACALC_DIMS=1,2,3,4 python tools/gen_specialized.py` (host or container).
-- Fixed when `make generate-all` writes `g4.py`/`g5.py` and `make test-all-dims` is green.
+- `GACALC_DIMS=1,2,3,4,5 python tools/gen_specialized.py` → all of g1–g5 written + ruff-formatted,
+  exit 0 (the former failure point, g4, now generates).
+- g1–g3 suite: **707 passed** — no regression on the n≤3 path (the fix is a pure no-op there).
+- Runtime intent: `g2.Versor` keeps its specialized `sandwich`; `g4.Versor` has no own `sandwich` and
+  the inherited base `sandwich` returns its operand for the identity versor.
+- **NOT run this session:** the full container `make test-all-dims` (~1.5 h, g5 ~87 min) — a
+  pre-release gate for the maintainer to run before `make dist`/release.
 
 ## See also
 
-- `tasks/generalize-sandwich-other-grades.md` — its 𝒢₄/𝒢₅ verification half is blocked on this.
-- `tasks/lean-general-multivector-inverse.md` — the unimplemented general inverse (option 3).
-- `tasks/reference/generated-algebra-generation-cost.md` — why g4/g5 are release-only.
+- `tasks/generalize-sandwich-other-grades.md` — its 𝒢₄/𝒢₅ half is now **unblocked**: g4/g5 generate,
+  and the sandwich there is the inherited base fallback (already covered by the base tests).
+- `tasks/reference/generated-algebra-generation-cost.md` — release-only design + the full-dim gate.
+- `tasks/lean-general-multivector-inverse.md` — option 3 (implement the general inverse), not pursued.
