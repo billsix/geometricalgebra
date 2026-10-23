@@ -28,7 +28,7 @@ machine-checked in `proofs/GacalcProofs/Exp.lean`); this was purely which book t
   docstring, `proofs/GacalcProofs/Exp.lean`'s module header, and the `exp()` bullet in
   `tasks/reference/design-decisions.md`.
 - `tasks/reference/unit-bivector-and-rotors.md` held all the provisional wording and was updated
-  (commit `c43758e`): preamble now states the anchor is settled on §7.4 with the remaining
+  (in the work commit): preamble now states the anchor is settled on §7.4 with the remaining
   ⬜ boxes reframed as optional, non-blocking corroboration; the §5 Dorst item flipped to the
   confirmed anchor of record; and §4 (the vector-branch domain) brought to the present — it says
   the `A²>0` vector branch *was dropped*, not "under review / leaning to drop".

@@ -19,7 +19,7 @@ GO, and in ALL THREE FORMS (this overrode the task's original "Lean only" recomm
 the Lean capstone (over geometric objects, not free scalars — Q1), a symbolic-Python check, and a
 book page citing the Lean theorem by name.
 
-## What was done (commit `23aaee9`)
+## What was done
 
 **Lean** (`proofs/GacalcProofs/CrossStandardPosition.lean`):
 

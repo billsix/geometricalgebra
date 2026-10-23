@@ -1,8 +1,11 @@
 # Generalize the derived sandwich to other grades (Versor·Bivector → Bivector, …)
 
-**Status:** in progress — reflections + the 𝒢₂/𝒢₃ grade tests DONE 2026-10-22; the **𝒢₄/𝒢₅
-verification is BLOCKED** on `tasks/gacalc-g4-g5-generation-sandwich-inverse.md` (higher-dim
-generation currently fails). Do not archive until that clears.
+**Status:** in progress — reflections + the 𝒢₂/𝒢₃ grade tests DONE 2026-10-22; the **𝒢₄/𝒢₅ half is
+UNBLOCKED 2026-10-23**: g4/g5 now generate (fix archived at
+`tasks/archive/2026/10/23/gacalc-g4-g5-generation-sandwich-inverse.md`), and by that fix 𝒢₄/𝒢₅
+`Versor.sandwich` is the inherited `MultiVectorBase.sandwich` (no specialized closed form), already
+covered by the base tests. Remaining (optional): a few 𝒢₄/𝒢₅ tests exercising the inherited sandwich
+on bivector/trivector operands.
 **Priority:** 8
 **Difficulty:** 5
 **Created:** 2026-06-07 **Updated:** 2026-10-22 (William Emerison Six <billsix@gmail.com>)
@@ -24,10 +27,12 @@ Done this session (commit staged separately):
 
 **Blocked / not done:**
 
-- **𝒢₄/𝒢₅ verification.** `make test-all-dims` can't run because `g4`/`g5` **generation itself fails**
-  — the generated `Versor.sandwich` arm inverts a *generic* even element, which is only
-  versor-invertible through grade 3. Filed as `tasks/gacalc-g4-g5-generation-sandwich-inverse.md`
-  (likely release-blocking). This task's 𝒢₄/𝒢₅ half resumes once that clears.
+- **𝒢₄/𝒢₅ verification — UNBLOCKED 2026-10-23.** g4/g5 now generate; the generation bug is fixed and
+  archived at `tasks/archive/2026/10/23/gacalc-g4-g5-generation-sandwich-inverse.md`. By that fix
+  (option 1), 𝒢₄/𝒢₅ `Versor.sandwich` is the inherited `MultiVectorBase.sandwich` (runtime `type(x)`
+  projection, no specialized closed form) — so there are **no specialized 𝒢₄/𝒢₅ sandwich arms to
+  verify**; the base sandwich is already tested generically. Optional remaining: a few 𝒢₄/𝒢₅ tests
+  confirming the inherited sandwich on bivector/trivector operands (needs g4/g5 generated locally, slow).
 - **Reflection-specific docstring** (polish): `Vector.sandwich` still shows the even-versor
   "conjugation / rotation" docstring (it falls back to the base doc), which calls `v` a versor and
   says "every invertible even element is a versor" — misleading for the reflection case. A fix needs a
