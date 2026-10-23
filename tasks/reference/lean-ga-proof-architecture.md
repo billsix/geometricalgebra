@@ -429,9 +429,11 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 - `CrossStandardPosition.lean` — the uniform reduce-both-to-2-D tool: `rotYZ` (the 3rd plane rotation,
   e₂ * e₃ about `e₁`) + toolkit; `reduceToPlane` (`reduceToPlane_a_on_e1` / `reduceToPlane_b_in_plane` —
   both vectors into the e₁ * e₂ plane); equivariance of proj/reject/cross under all three rotations
-  (`proj_rotYZ_equivariant`, `vecReject_rotXZ/YZ_equivariant`, `cross_rotXY/XZ/YZ_equivariant`); and the
+  (`proj_rotYZ_equivariant`, `vecReject_rotXZ/YZ_equivariant`, `cross_rotXY/XZ/YZ_equivariant`); the
   2-D evals `proj_reduced`/`vecReject_reduced`/`cross_reduced` — project/reject/cross all through the one
-  3-rotation frame.
+  3-rotation frame; and the **cross capstone** `cross_via_reduction` / `cross_eq_unreduce_cross_reduce`
+  (reduce both → in-frame `cross_reduced` → rotate back = the canonical `cross`, assembling the
+  step-lemmas; book `proof-cross.rst`, 2026-10-22).
 - `StandardPosition2D.lean` — the **2D** single-rotation case (𝒢₂): one elementary plane rotation
   `rotPlane` (no versor), its linearity/`rotPlane_preserves_dot`/inverse, projection/rejection
   equivariance, the `b ↦ |b| * e₁` alignment, and `projectSP`/`rejectSP` with
