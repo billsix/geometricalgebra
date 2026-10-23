@@ -33,7 +33,8 @@ def _require_vectors(vectors: Sequence[MultiVectorBase]) -> None:
     for v in vectors:
         if not v.is_vector():
             raise ValueError(
-                "area/volume/content take vectors (grade 1); got a non-vector: " + repr(v)
+                "area/volume/content take vectors (grade 1); got a non-vector: "
+                + repr(v)
             )
 ```
 

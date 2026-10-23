@@ -68,7 +68,9 @@ def make_orthogonal_frame(
     if not is_frame(vectors):
         raise ValueError(...)  # unchanged
 
-    def reject_span(v: MultiVectorBase, prior: list[MultiVectorBase]) -> MultiVectorBase:
+    def reject_span(
+        v: MultiVectorBase, prior: list[MultiVectorBase]
+    ) -> MultiVectorBase:
         # reject v off each already-orthogonal vector (pairwise == rejecting the whole span,
         # because the prior vectors are mutually orthogonal — the existing docstring argument)
         return functools.reduce(lambda w, p: w.rejected_away_from(p), prior, v)
@@ -77,11 +79,11 @@ def make_orthogonal_frame(
         remaining: Sequence[MultiVectorBase], done: list[MultiVectorBase]
     ) -> list[MultiVectorBase]:
         match list(remaining):
-            case [v]:                       # one vector left — base case
+            case [v]:  # one vector left — base case
                 return [*done, reject_span(v, done)]
-            case [v, *rest]:                # multiple — recurse with the accumulator
+            case [v, *rest]:  # multiple — recurse with the accumulator
                 return orthogonalize(rest, [*done, reject_span(v, done)])
-            case _:                         # empty — unreachable (is_frame rules out [])
+            case _:  # empty — unreachable (is_frame rules out [])
                 return done
 
     return orthogonalize(vectors, [])
@@ -108,19 +110,19 @@ def make_orthogonal_frame_hestenes(
         # A_0 := 1, then A_k := A_{k-1} ∧ v_k  (H&S eq 3.1) — self-referential:
         # each blade is built from the one yielded before it, carried in A.
         A: MultiVectorBase = type(vectors[0]).one()
-        yield A                              # A_0 = 1
+        yield A  # A_0 = 1
         v: MultiVectorBase
         for v in vectors:
-            A = A ^ v                        # A_k = A_{k-1} ∧ v_k
+            A = A ^ v  # A_k = A_{k-1} ∧ v_k
             yield A
 
     def hestenes_vectors() -> Iterator[MultiVectorBase]:
         # c_k := reverse(A_{k-1}) * A_k  (H&S eq 3.2) — self-referential: carries the
         # previous blade across iterations and pairs it with the current one.
         blades: Iterator[MultiVectorBase] = prefix_blades()
-        A_prev: MultiVectorBase = next(blades)       # A_0
+        A_prev: MultiVectorBase = next(blades)  # A_0
         A_k: MultiVectorBase
-        for A_k in blades:                           # A_1, A_2, …
+        for A_k in blades:  # A_1, A_2, …
             yield (A_prev.reverse() * A_k).r_vector_part(1)
             A_prev = A_k
 
