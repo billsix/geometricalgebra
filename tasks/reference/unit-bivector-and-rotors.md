@@ -7,12 +7,14 @@ archived. Last updated 2026-08-14. Spawned from the task
 `tasks/archive/2026/08/15/redo-exp-book-referenced.md` (the `exp()` redo + `i` work); this doc holds the *why*, the
 task holds the *work*.
 
-**Citations are the open half of this doc.** The maintainer (William Emerison Six <billsix@gmail.com>) is verifying the rotor/exp material against books
-he owns (Hestenes & Sobczyk, Macdonald, Taylor, …). The **Citations** section below is a checklist
-with per-claim status — some are verified, some need the maintainer's copy. Do **not** invent a page number;
-mark it "needs the maintainer's copy" until confirmed. **The maintainer will populate these over time as he reads —
-there is no deadline; leave a ⬜ box open until he confirms a page/equation against his own copy,
-then flip it to ✅ here and in the docstring it supports.**
+**The exp/rotor citation anchor is settled: Dorst, Fontijne & Mann, *GA for Computer Science* §7.4**
+(decided 2026-10-22, William Emerison Six <billsix@gmail.com>) — it is the reference of record cited in
+`base.py`'s `exp` docstring, `proofs/GacalcProofs/Exp.lean`, and `tasks/reference/design-decisions.md`.
+The remaining ⬜ boxes in the **Citations** section below are **optional corroboration** the maintainer
+may add from books he owns (Hestenes & Sobczyk, Macdonald, Taylor, …); they do **not** block anything,
+and the anchor does not depend on them. Do **not** invent a page number — mark an unconfirmed claim
+"needs the maintainer's copy" until he confirms a page/equation against his own copy, then flip its box
+to ✅ here and in the docstring it supports.
 
 ## 1. The unit bivector `i` of a plane, and why `i² = −1`
 
@@ -99,17 +101,17 @@ the bivector is the plane (grade-2, `i²=−1`, angle-free); the rotor is even-g
 angle in its half-angle trig. `i` is what you *feed* `exp` to get a rotor. (A unit bivector equals
 a rotor only at θ = π, a 180° turn.)
 
-## 4. The domain of `exp` (the redo's open question)
+## 4. The domain of `exp` (settled: scalar + bivector only)
 
 `exp` is well-defined when `A²` is scalar. The **scalar** and **bivector** (→ rotor) cases are the
-keepers. The **grade-1 vector case** (`A² = +|A|² > 0 → cosh|A| + sinh|A| * â`) is under review:
+keepers. The **grade-1 vector case** (`A² = +|A|² > 0 → cosh|A| + sinh|A| * â`) was **dropped**:
 the cosh/sinh *formula* is standard, **but only for Minkowski boosts** (spacetime bivectors,
 `A²=+1` in a Lorentzian metric) — no standard text presents "`exp` of a *Euclidean vector*" as
-meaningful. gacalc's grade-1 branch applies the boost formula to a Euclidean vector only because it
-*happens* to have positive square; it has no Euclidean geometric interpretation, and it mirrors
+meaningful. gacalc's grade-1 branch had applied the boost formula to a Euclidean vector only because it
+*happened* to have positive square; it had no Euclidean geometric interpretation, and it mirrored
 galgebra's `Mv.exp` (galgebra's `galgebra/mv.py`, cosh/sinh for `sq>0`) without a book
-motivation. **Leaning: drop it**, restricting `exp` to "the exponential map onto the rotors." (Task
-subtask 3.)
+motivation. `exp` is now restricted to "the exponential map onto the rotors" and **raises `ValueError`
+on a vector** (shipped in the archived `redo-exp-book-referenced` task, subtask 3).
 
 ## 5. Citations — verify against the maintainer's library (checklist)
 
@@ -127,9 +129,10 @@ Priority is books **the maintainer owns**. Status: ✅ verified in this research
   - ⬜ **Taylor (2021):** gacalc already cites Taylor for contractions (`p.103`, per CLAUDE.md).
     *the maintainer owns it* — check whether it covers rotor = exp(bivector) and cite if so.
   - ✅ **Dorst, Fontijne & Mann, *GA for Computer Science* (2007) §7.4** ("Exponential Representation
-    of Rotors"; §7.4.1 rotors as exp of 2-blades, §7.4.3 exp of bivectors) — the **strongest** and
-    the one whose structure *is* gacalc's `exp`. **But the maintainer may not own it** — treat as the reference
-    of record for the design, cite a maintainer-owned book in the docstrings if one covers it.
+    of Rotors"; §7.4.1 rotors as exp of 2-blades, §7.4.3 exp of bivectors) — the one whose structure
+    *is* gacalc's `exp`, and the **confirmed anchor of record** (decided 2026-10-22): cited in
+    `base.py`'s `exp` docstring, `Exp.lean`'s header, and `design-decisions.md`. Any maintainer-owned
+    book found below to also cover it is supplementary corroboration, not a replacement.
 - **The cosh/sinh (`A²>0`) case is a *boost*, not a Euclidean operation:**
   - ✅ **Macdonald survey §4.1** (verbatim): "since `(γ₀v̂)² = +1`, `e^{γ₀v̂ α/2} = cosh(α/2) +
     γ₀v̂ sinh(α/2)`" — applied to a **spacetime bivector**. ✅ **Dorst §7.4.2** ("Trigonometric and

@@ -96,33 +96,25 @@ theorem mul_vec_inverse_self (a1 a2 a3 : ℝ) (ha : normSq (vec a1 a2 a3) ≠ 0)
   rw [inverse, reverse_vec, GacalcProofs.G3.mul_smul, mul_vec_self_coord, GacalcProofs.G3.smul_smul,
       one_div_mul_cancel ha, GacalcProofs.G3.one_smul]
 
-/-- **Hestenes rejection onto a vector equals the projection-complement:** `(b ∧ a) a⁻¹ = b − proj_a b`
-    (for `a·a ≠ 0`). Confirms the direct `(A∧B)B⁻¹` form matches the vector-projection construction
-    (`(b∧a)a⁻¹ + (b·a)a⁻¹ = (ba)a⁻¹ = b`). -/
-theorem reject_vec_eq_coord (a1 a2 a3 b1 b2 b3 : ℝ)
-    (ha : normSq (vec a1 a2 a3) ≠ 0) :
-    reject (vec a1 a2 a3) (vec b1 b2 b3)
-      = sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3)) := by
-  -- Structural (Hestenes): `b∧a = ba − (b·a)·1`, so `(b∧a)a⁻¹ = b(a a⁻¹) − (b·a)a⁻¹ = b − proj_a b`.
-  have hsplit : wedge (vec b1 b2 b3) (vec a1 a2 a3)
-      = sub (mul (vec b1 b2 b3) (vec a1 a2 a3)) (smul (dot (vec b1 b2 b3) (vec a1 a2 a3)) one) := by
+/-- **Hestenes rejection onto a vector equals the projection-complement:** `reject_a b = b − proj_a b`,
+    for a nonzero vector `a` (`|a|² ≠ 0`) and a vector `b`. Structural (Hestenes): `b∧a = ba − (b·a)·1`,
+    so `(b∧a)a⁻¹ = b(a a⁻¹) − (b·a)a⁻¹ = b − proj_a b`. Object-in, getters in the body. -/
+theorem reject_vec_eq {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b) (ha : normSq a ≠ 0) :
+    reject a b = sub b (proj a b) := by
+  rw [eq_vec_of_isVector ha_isv, eq_vec_of_isVector hb_isv]
+  rw [eq_vec_of_isVector ha_isv] at ha
+  have hsplit : wedge (vec b.c1 b.c2 b.c3) (vec a.c1 a.c2 a.c3)
+      = sub (mul (vec b.c1 b.c2 b.c3) (vec a.c1 a.c2 a.c3))
+            (smul (dot (vec b.c1 b.c2 b.c3) (vec a.c1 a.c2 a.c3)) one) := by
     rw [vec_mul_eq_dot_add_wedge]; simp only [sub, add, smul, one]; ext <;> ring
   rw [reject, hsplit, GacalcProofs.G3.sub_mul, GacalcProofs.G3.mul_assoc,
-      mul_vec_inverse_self a1 a2 a3 ha, GacalcProofs.G3.mul_one, GacalcProofs.G3.smul_mul,
+      mul_vec_inverse_self a.c1 a.c2 a.c3 ha, GacalcProofs.G3.mul_one, GacalcProofs.G3.smul_mul,
       GacalcProofs.G3.one_mul]
   -- Left with `b − (b·a)a⁻¹ = b − proj_a b`; the two rejection terms agree once `a⁻¹`'s scalar is folded.
   congr 1
   rw [proj, inverse, reverse_vec, GacalcProofs.G3.smul_smul]
   congr 1
   rw [dot_self_vec_eq_normSq_coord]; ring
-
-/-- **Hestenes rejection onto a vector equals the projection-complement** (object form):
-    `reject_a b = b − proj_a b`, for a nonzero vector `a` (`|a|² ≠ 0`) and a vector `b`. -/
-theorem reject_vec_eq {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b) (ha : normSq a ≠ 0) :
-    reject a b = sub b (proj a b) := by
-  have h := reject_vec_eq_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
-    (by rw [← eq_vec_of_isVector ha_isv]; exact ha)
-  rwa [← eq_vec_of_isVector ha_isv, ← eq_vec_of_isVector hb_isv] at h
 
 /-- **Projection of `c` ONTO the `a∧b` plane** (the book's construction): project `c` away
     from the plane's normal `n = dual(a∧b)` (a vector projection) and subtract — what's

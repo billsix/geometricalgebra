@@ -67,8 +67,11 @@ higher dims to `ALGEBRAS`:
 2. **`setup.py`'s if-missing `GENERATED` list stays `[g1,g2,g3]`** — a git-checkout build must not
    silently pay the ~1.5 hr; the shipped sdist already contains all dims.
 3. **A CI / opt-in full-dim gate is REQUIRED** (`GACALC_DIMS=1,2,3,4,5 make test` + lint) — because
-   dev never generates g4/g5, an n≥4 generator bug (like the `AXIS_NAMES` crash above) would
-   otherwise first surface at release. This is the one real cost of release-only: g4/g5 aren't
+   dev never generates g4/g5, an n≥4 generator bug would otherwise first surface at release — two
+   have been caught exactly this way: the `AXIS_NAMES` crash above, and the 2026-10-23
+   `Versor.sandwich` generic-even-`inverse()` bug (the specialized sandwich closed form
+   `R * x * R.inverse()` inverts a generic even element, only versor-invertible through 𝒢₃; fixed
+   by gating the specialized sandwich to dims ≤3 so 𝒢₄/𝒢₅ inherit the base `sandwich`). This is the one real cost of release-only: g4/g5 aren't
    exercised in the normal dev loop, so a separate slow gate must exercise them.
 4. **Scope `make check-generated`** to a cheap dimension (or make high-dim determinism opt-in), since
    it regenerates twice (g5 twice ≈ 3 hr).

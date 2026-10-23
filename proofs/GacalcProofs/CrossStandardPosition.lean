@@ -91,44 +91,47 @@ theorem vecReject_rotYZ_equivariant (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (a b :
     leaves alone and one `cos²(θ) + sin²(θ) = 1` step on the component the rotation acts in (the cross-component
     of the rotation's fixed axis). -/
 
-theorem cross_rotXY_equivariant_coord (c s a1 a2 a3 b1 b2 b3 : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) :
-    cross (rotXY c s (vec a1 a2 a3)) (rotXY c s (vec b1 b2 b3))
-      = rotXY c s (cross (vec a1 a2 a3) (vec b1 b2 b3)) := by
+theorem cross_rotXY_equivariant {a b : G3} (ha : IsVector a) (hb : IsVector b) (c s : ℝ)
+    (hcs : c ^ 2 + s ^ 2 = 1) :
+    cross (rotXY c s a) (rotXY c s b) = rotXY c s (cross a b) := by
+  rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb]
   simp only [rotXY_vec, cross_vec]
   simp only [vec]
   ext
   · ring
   · ring
   · ring
-  · linear_combination (a1 * b2 - a2 * b1) * hcs
+  · linear_combination (a.c1 * b.c2 - a.c2 * b.c1) * hcs
   · ring
   · ring
   · ring
   · ring
 
-theorem cross_rotXZ_equivariant_coord (c s a1 a2 a3 b1 b2 b3 : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) :
-    cross (rotXZ c s (vec a1 a2 a3)) (rotXZ c s (vec b1 b2 b3))
-      = rotXZ c s (cross (vec a1 a2 a3) (vec b1 b2 b3)) := by
+theorem cross_rotXZ_equivariant {a b : G3} (ha : IsVector a) (hb : IsVector b) (c s : ℝ)
+    (hcs : c ^ 2 + s ^ 2 = 1) :
+    cross (rotXZ c s a) (rotXZ c s b) = rotXZ c s (cross a b) := by
+  rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb]
   simp only [rotXZ_vec, cross_vec]
   simp only [vec]
   ext
   · ring
   · ring
-  · linear_combination (a3 * b1 - a1 * b3) * hcs
+  · linear_combination (a.c3 * b.c1 - a.c1 * b.c3) * hcs
   · ring
   · ring
   · ring
   · ring
   · ring
 
-theorem cross_rotYZ_equivariant_coord (c s a1 a2 a3 b1 b2 b3 : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) :
-    cross (rotYZ c s (vec a1 a2 a3)) (rotYZ c s (vec b1 b2 b3))
-      = rotYZ c s (cross (vec a1 a2 a3) (vec b1 b2 b3)) := by
+theorem cross_rotYZ_equivariant {a b : G3} (ha : IsVector a) (hb : IsVector b) (c s : ℝ)
+    (hcs : c ^ 2 + s ^ 2 = 1) :
+    cross (rotYZ c s a) (rotYZ c s b) = rotYZ c s (cross a b) := by
+  rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb]
   simp only [rotYZ_vec, cross_vec]
   simp only [vec]
   ext
   · ring
-  · linear_combination (a2 * b3 - a3 * b2) * hcs
+  · linear_combination (a.c2 * b.c3 - a.c3 * b.c2) * hcs
   · ring
   · ring
   · ring
@@ -213,24 +216,172 @@ theorem vecReject_reduced (m b1 b2 : ℝ) (hm : m ≠ 0) :
 theorem cross_reduced (m b1 b2 : ℝ) : cross (vec m 0 0) (vec b1 b2 0) = vec 0 0 (m * b2) := by
   rw [cross_vec]; ext <;> ring
 
-/-! ### Object-form wrappers for cross-equivariance (match the `proj`/`vecReject` equivariance lemmas) -/
+/-! ### The cross-via-reduction capstone: cross = reduce → cross-in-frame → rotate back
 
-theorem cross_rotXY_equivariant {a b : G3} (ha : IsVector a) (hb : IsVector b) (c s : ℝ)
-    (hcs : c ^ 2 + s ^ 2 = 1) :
-    cross (rotXY c s a) (rotXY c s b) = rotXY c s (cross a b) := by
-  have h := cross_rotXY_equivariant_coord c s a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 hcs
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
+    Assembles the step-lemmas above into the statement that the canonical cross product is
+    recovered by reducing both vectors to the `e₁*e₂` plane, crossing there (a pure `e₃` vector),
+    and rotating back — closing the cross arc the way `StandardPosition.projectSP_eq_proj` caps the
+    project/reject arc. The stated form is over vector OBJECTS (`IsVector`); the reduction angles are
+    introduced inside via `reduceToPlane`, exactly as `projectSP_eq_proj` hides its angles in
+    `alignSP`. -/
 
-theorem cross_rotXZ_equivariant {a b : G3} (ha : IsVector a) (hb : IsVector b) (c s : ℝ)
-    (hcs : c ^ 2 + s ^ 2 = 1) :
-    cross (rotXZ c s a) (rotXZ c s b) = rotXZ c s (cross a b) := by
-  have h := cross_rotXZ_equivariant_coord c s a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 hcs
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
+/-- A plane rotation about the fixed `e₁` axis is invertible: negate the sine and reapply. The
+    `rotYZ` twin of `StandardPosition.rotXY_inv`/`rotXZ_inv`. -/
+theorem rotYZ_inv (c s s' : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (h : s' + s = 0) (v : G3) :
+    rotYZ c s' (rotYZ c s v) = v := by
+  ext
+  · rfl
+  · rfl
+  · show c * (c * v.c2 - s * v.c3) - s' * (s * v.c2 + c * v.c3) = v.c2
+    linear_combination v.c2 * hcs - (s * v.c2 + c * v.c3) * h
+  · show s' * (c * v.c2 - s * v.c3) + c * (s * v.c2 + c * v.c3) = v.c3
+    linear_combination v.c3 * hcs + (c * v.c2 - s * v.c3) * h
+  · rfl
+  · rfl
+  · rfl
+  · rfl
 
-theorem cross_rotYZ_equivariant {a b : G3} (ha : IsVector a) (hb : IsVector b) (c s : ℝ)
-    (hcs : c ^ 2 + s ^ 2 = 1) :
-    cross (rotYZ c s a) (rotYZ c s b) = rotYZ c s (cross a b) := by
-  have h := cross_rotYZ_equivariant_coord c s a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 hcs
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
+/-! A plane rotation sends a vector to a vector (needed to chain the object-form equivariance
+    lemmas through the composed reduction). -/
+
+theorem isVector_rotXY {v : G3} (hv : IsVector v) (c s : ℝ) : IsVector (rotXY c s v) := by
+  rw [eq_vec_of_isVector hv, rotXY_vec]; exact isVector_vec _ _ _
+
+theorem isVector_rotXZ {v : G3} (hv : IsVector v) (c s : ℝ) : IsVector (rotXZ c s v) := by
+  rw [eq_vec_of_isVector hv, rotXZ_vec]; exact isVector_vec _ _ _
+
+theorem isVector_rotYZ {v : G3} (hv : IsVector v) (c s : ℝ) : IsVector (rotYZ c s v) := by
+  rw [eq_vec_of_isVector hv, rotYZ_vec]; exact isVector_vec _ _ _
+
+/-- **`cross` commutes with the full 3-rotation reduction** (for unit angle pairs) — the engine
+    behind "reduce, cross, rotate back." Three applications of the elementary cross-equivariance
+    (outermost rotation first), chaining through the vector-preservation helpers. -/
+theorem cross_reduceToPlane_equivariant {a b : G3} (ha : IsVector a) (hb : IsVector b)
+    (cx sx cz sz cy sy : ℝ) (hx : cx ^ 2 + sx ^ 2 = 1) (hz : cz ^ 2 + sz ^ 2 = 1)
+    (hy : cy ^ 2 + sy ^ 2 = 1) :
+    cross (reduceToPlane cx sx cz sz cy sy a) (reduceToPlane cx sx cz sz cy sy b)
+      = reduceToPlane cx sx cz sz cy sy (cross a b) := by
+  simp only [reduceToPlane]
+  rw [cross_rotYZ_equivariant (isVector_rotXZ (isVector_rotXY ha cx sx) cz sz)
+        (isVector_rotXZ (isVector_rotXY hb cx sx) cz sz) cy sy hy,
+      cross_rotXZ_equivariant (isVector_rotXY ha cx sx) (isVector_rotXY hb cx sx) cz sz hz,
+      cross_rotXY_equivariant ha hb cx sx hx]
+
+/-- **Rotate back** the full reduction: negate each sine, apply the three inverse rotations in the
+    reverse order (the `reduceToPlane` twin of `StandardPosition.unalignSP`). -/
+noncomputable def unreduceToPlane (cx sx cz sz cy sy : ℝ) (w : G3) : G3 :=
+  rotXY cx (-sx) (rotXZ cz (-sz) (rotYZ cy (-sy) w))
+
+/-- Rotating back undoes the reduction (for unit angle pairs) — the three `rot*_inv` lemmas in
+    reverse order. -/
+theorem unreduceToPlane_reduceToPlane (cx sx cz sz cy sy : ℝ)
+    (hx : cx ^ 2 + sx ^ 2 = 1) (hz : cz ^ 2 + sz ^ 2 = 1) (hy : cy ^ 2 + sy ^ 2 = 1) (v : G3) :
+    unreduceToPlane cx sx cz sz cy sy (reduceToPlane cx sx cz sz cy sy v) = v := by
+  simp only [unreduceToPlane, reduceToPlane]
+  rw [rotYZ_inv cy sy (-sy) hy (by ring), rotXZ_inv cz sz (-sz) hz (by ring),
+      rotXY_inv cx sx (-sx) hx (by ring)]
+
+/-- **Cross via reduction equals the canonical cross** (round-trip form, any unit angle pairs):
+    reducing both vectors to the `e₁*e₂` plane, crossing there, and rotating back recovers `cross a b`.
+    This is the "both routes agree" payoff — the projection-formula sibling is
+    `ProjectionRotation3D.projRotation_eq_sandwich`. Pure assembly: `cross` commutes with the
+    reduction (`cross_reduceToPlane_equivariant`, i.e. the three elementary equivariances) and the
+    reduction is invertible (`unreduceToPlane_reduceToPlane`). -/
+theorem cross_eq_unreduce_cross_reduce {a b : G3} (ha : IsVector a) (hb : IsVector b)
+    (cx sx cz sz cy sy : ℝ) (hx : cx ^ 2 + sx ^ 2 = 1) (hz : cz ^ 2 + sz ^ 2 = 1)
+    (hy : cy ^ 2 + sy ^ 2 = 1) :
+    cross a b = unreduceToPlane cx sx cz sz cy sy
+        (cross (reduceToPlane cx sx cz sz cy sy a) (reduceToPlane cx sx cz sz cy sy b)) := by
+  rw [cross_reduceToPlane_equivariant ha hb cx sx cz sz cy sy hx hz hy,
+      unreduceToPlane_reduceToPlane cx sx cz sz cy sy hx hz hy]
+
+/-- **The cross capstone (standard-position form).** Given a reduction (unit angle pairs) that puts
+    `a` on `e₁` (`ha_on_e1`) and lands `b` in the `e₁*e₂` plane (`hb_c3 : reduced b's e₃ = 0`), the
+    cross product is recovered by crossing in that frame — where it is the pure-`e₃` vector
+    `(0, 0, |a| * (reduced b).e₂)` (`cross_reduced`) — and rotating back
+    (`cross_eq_unreduce_cross_reduce`). This is the cross analogue of
+    `StandardPosition.projectSP_eq_proj`: stated over vector objects, with the angles supplied as the
+    reduction that standardizes `a` and `b`. `cross_via_reduction_of_vectors` discharges `ha_on_e1`/
+    `hb_c3` from the explicit reduction angles via `reduceToPlane_a_on_e1`/`reduceToPlane_b_in_plane`. -/
+theorem cross_via_reduction {a b : G3} (hav : IsVector a) (hbv : IsVector b)
+    (cx sx cz sz cy sy : ℝ) (hx : cx ^ 2 + sx ^ 2 = 1) (hz : cz ^ 2 + sz ^ 2 = 1)
+    (hy : cy ^ 2 + sy ^ 2 = 1)
+    (ha_on_e1 : reduceToPlane cx sx cz sz cy sy a = vec (magnitude a) 0 0)
+    (hb_c3 : (reduceToPlane cx sx cz sz cy sy b).c3 = 0) :
+    cross a b = unreduceToPlane cx sx cz sz cy sy
+        (vec 0 0 (magnitude a * (reduceToPlane cx sx cz sz cy sy b).c2)) := by
+  rw [cross_eq_unreduce_cross_reduce hav hbv cx sx cz sz cy sy hx hz hy]
+  congr 1
+  rw [ha_on_e1]
+  have hb_vec : IsVector (reduceToPlane cx sx cz sz cy sy b) :=
+    isVector_rotYZ (isVector_rotXZ (isVector_rotXY hbv cx sx) cz sz) cy sy
+  have hbform : reduceToPlane cx sx cz sz cy sy b
+      = vec (reduceToPlane cx sx cz sz cy sy b).c1 (reduceToPlane cx sx cz sz cy sy b).c2 0 := by
+    conv_lhs => rw [eq_vec_of_isVector hb_vec]
+    rw [hb_c3]
+  conv_lhs => rw [hbform]
+  rw [cross_reduced]
+
+/-- **The cross capstone over explicit vectors** — `cross_via_reduction` with the reduction angles
+    that actually standardize `a` and `b`, so it cites the placement lemmas `reduceToPlane_a_on_e1`
+    (sends `a` to `|a|*e₁`) and `reduceToPlane_b_in_plane` (lands `b` in the `e₁*e₂` plane). The
+    reduction `(cos, sin)` are read off `a`'s coordinates (align `a` to `e₁`) plus the swing that
+    puts `b` in the plane; `hk` = `a` off the z-axis, `hm` = `a` nonzero, `j` = `b`'s reduced
+    in-plane height with `hj`/`hj2` (so `b` is not aligned with `a`). This is the fully-assembled
+    "reduce → cross-in-frame → rotate back = canonical cross" for the cross arc. -/
+theorem cross_via_reduction_of_vectors (a1 a2 a3 b1 b2 b3 j : ℝ)
+    (hk : magnitude (vec a1 a2 0) ≠ 0) (hm : magnitude (vec a1 a2 a3) ≠ 0) (hj : j ≠ 0)
+    (hj2 : j ^ 2 =
+       (-a2 / magnitude (vec a1 a2 0) * b1 + a1 / magnitude (vec a1 a2 0) * b2) ^ 2 +
+       (-a3 / magnitude (vec a1 a2 a3) *
+            (a1 / magnitude (vec a1 a2 0) * b1 - -a2 / magnitude (vec a1 a2 0) * b2) +
+          magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3) * b3) ^ 2) :
+    cross (vec a1 a2 a3) (vec b1 b2 b3)
+      = unreduceToPlane (a1 / magnitude (vec a1 a2 0)) (-a2 / magnitude (vec a1 a2 0))
+          (magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3)) (-a3 / magnitude (vec a1 a2 a3))
+          ((-a2 / magnitude (vec a1 a2 0) * b1 + a1 / magnitude (vec a1 a2 0) * b2) / j)
+          (-(-a3 / magnitude (vec a1 a2 a3) *
+                (a1 / magnitude (vec a1 a2 0) * b1 - -a2 / magnitude (vec a1 a2 0) * b2) +
+              magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3) * b3) / j)
+          (vec 0 0 (magnitude (vec a1 a2 a3) *
+             (reduceToPlane (a1 / magnitude (vec a1 a2 0)) (-a2 / magnitude (vec a1 a2 0))
+                (magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3)) (-a3 / magnitude (vec a1 a2 a3))
+                ((-a2 / magnitude (vec a1 a2 0) * b1 + a1 / magnitude (vec a1 a2 0) * b2) / j)
+                (-(-a3 / magnitude (vec a1 a2 a3) *
+                      (a1 / magnitude (vec a1 a2 0) * b1 - -a2 / magnitude (vec a1 a2 0) * b2) +
+                    magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3) * b3) / j)
+                (vec b1 b2 b3)).c2)) := by
+  have hkpos : magnitude (vec a1 a2 0) ^ 2 = a1 ^ 2 + a2 ^ 2 := by rw [magnitude_sq_vec]; ring
+  have hmpos : magnitude (vec a1 a2 a3) ^ 2 = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by rw [magnitude_sq_vec]
+  have hx : (a1 / magnitude (vec a1 a2 0)) ^ 2 + (-a2 / magnitude (vec a1 a2 0)) ^ 2 = 1 := by
+    rw [div_pow, div_pow, neg_sq, ← add_div, ← hkpos]; exact div_self (pow_ne_zero 2 hk)
+  have hz : (magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3)) ^ 2
+        + (-a3 / magnitude (vec a1 a2 a3)) ^ 2 = 1 := by
+    rw [div_pow, div_pow, neg_sq, ← add_div, hkpos, ← hmpos]; exact div_self (pow_ne_zero 2 hm)
+  have hy : ((-a2 / magnitude (vec a1 a2 0) * b1 + a1 / magnitude (vec a1 a2 0) * b2) / j) ^ 2
+        + (-(-a3 / magnitude (vec a1 a2 a3) *
+                (a1 / magnitude (vec a1 a2 0) * b1 - -a2 / magnitude (vec a1 a2 0) * b2) +
+              magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3) * b3) / j) ^ 2 = 1 := by
+    rw [div_pow, div_pow, neg_sq, ← add_div, ← hj2]; exact div_self (pow_ne_zero 2 hj)
+  have ha_on_e1 : reduceToPlane (a1 / magnitude (vec a1 a2 0)) (-a2 / magnitude (vec a1 a2 0))
+        (magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3)) (-a3 / magnitude (vec a1 a2 a3))
+        ((-a2 / magnitude (vec a1 a2 0) * b1 + a1 / magnitude (vec a1 a2 0) * b2) / j)
+        (-(-a3 / magnitude (vec a1 a2 a3) *
+              (a1 / magnitude (vec a1 a2 0) * b1 - -a2 / magnitude (vec a1 a2 0) * b2) +
+            magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3) * b3) / j)
+        (vec a1 a2 a3)
+      = vec (magnitude (vec a1 a2 a3)) 0 0 := by
+    rw [reduceToPlane_a_on_e1 a1 a2 a3 _ _ hk hm]; simp only [smul, vec]; ext <;> ring
+  have hb_c3 := reduceToPlane_b_in_plane (a1 / magnitude (vec a1 a2 0))
+      (-a2 / magnitude (vec a1 a2 0)) (magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3))
+      (-a3 / magnitude (vec a1 a2 a3)) b1 b2 b3 j hj hj2
+  exact cross_via_reduction (isVector_vec a1 a2 a3) (isVector_vec b1 b2 b3)
+    (a1 / magnitude (vec a1 a2 0)) (-a2 / magnitude (vec a1 a2 0))
+    (magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3)) (-a3 / magnitude (vec a1 a2 a3))
+    ((-a2 / magnitude (vec a1 a2 0) * b1 + a1 / magnitude (vec a1 a2 0) * b2) / j)
+    (-(-a3 / magnitude (vec a1 a2 a3) *
+          (a1 / magnitude (vec a1 a2 0) * b1 - -a2 / magnitude (vec a1 a2 0) * b2) +
+        magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3) * b3) / j)
+    hx hz hy ha_on_e1 hb_c3
 
 end GacalcProofs.G3

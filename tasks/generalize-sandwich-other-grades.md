@@ -1,9 +1,51 @@
 # Generalize the derived sandwich to other grades (Versor·Bivector → Bivector, …)
 
-**Status:** **partly DONE** 2026-06-08 · the Versor conjugation family landed; reflections + higher-dims remain
+**Status:** in progress — reflections + the 𝒢₂/𝒢₃ grade tests DONE 2026-10-22; the **𝒢₄/𝒢₅ half is
+UNBLOCKED 2026-10-23**: g4/g5 now generate (fix archived at
+`tasks/archive/2026/10/23/gacalc-g4-g5-generation-sandwich-inverse.md`), and by that fix 𝒢₄/𝒢₅
+`Versor.sandwich` is the inherited `MultiVectorBase.sandwich` (no specialized closed form), already
+covered by the base tests. Remaining (optional): a few 𝒢₄/𝒢₅ tests exercising the inherited sandwich
+on bivector/trivector operands.
 **Priority:** 8
 **Difficulty:** 5
-**Created:** 2026-06-07 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-06-07 **Updated:** 2026-10-22 (William Emerison Six <billsix@gmail.com>)
+
+## Work record (2026-10-22)
+
+Done this session (commit staged separately):
+
+- **Reflections (vector as versor) confirmed + tested.** The generated `Vector.sandwich(x)` already
+  computes `v x v⁻¹` as the **reflection across the LINE of `v`** — keeps the along-`v` component,
+  flips the perpendicular — exactly the decided sign, and equal to `x.reflected_across(across=v)` and
+  `projection − rejection`. So the reflection was already implemented; nothing to wire in code.
+- **The 𝒢₂/𝒢₃ bivector/trivector/versor operand tests** are new in `tests/test_sandwich_grades.py`
+  (9 tests, part of the green 707-test suite): `Versor.sandwich` fixes its own plane bivector, rotates
+  other planes (`e_13 → e_23`, `e_23 → −e_13`), fixes the pseudoscalar (𝒢₂ and 𝒢₃), and a versor
+  conjugated by itself is itself; `Vector.sandwich` reflections across the line match
+  `reflected_across` / proj − rej and preserve grade (the pseudoscalar fixed, since a line reflection
+  is a proper 180° rotation).
+
+**Blocked / not done:**
+
+- **𝒢₄/𝒢₅ verification — UNBLOCKED 2026-10-23.** g4/g5 now generate; the generation bug is fixed and
+  archived at `tasks/archive/2026/10/23/gacalc-g4-g5-generation-sandwich-inverse.md`. By that fix
+  (option 1), 𝒢₄/𝒢₅ `Versor.sandwich` is the inherited `MultiVectorBase.sandwich` (runtime `type(x)`
+  projection, no specialized closed form) — so there are **no specialized 𝒢₄/𝒢₅ sandwich arms to
+  verify**; the base sandwich is already tested generically. Optional remaining: a few 𝒢₄/𝒢₅ tests
+  confirming the inherited sandwich on bivector/trivector operands (needs g4/g5 generated locally, slow).
+- **Reflection-specific docstring** (polish): `Vector.sandwich` still shows the even-versor
+  "conjugation / rotation" docstring (it falls back to the base doc), which calls `v` a versor and
+  says "every invertible even element is a versor" — misleading for the reflection case. A fix needs a
+  small generator change to route a role-specific sandwich docstring through `dispatch_method` (the
+  role-keyed `CUSTOM_METHOD_DOCS` lookup does not reach the dispatch-built sandwich method). Low
+  priority follow-up.
+
+**DECISION 2026-10-22 (William Emerison Six <billsix@gmail.com>):** the vector-as-versor **reflection
+uses the plain sandwich `v X v⁻¹` = reflect ACROSS THE LINE of `v`** (keeps the component along `v`,
+flips the perpendicular) — the sign/orientation that agrees with the existing
+`MultiVectorBase.reflect(across=v)` (projection − rejection). NOT `-v X v⁻¹` (reflection across the
+hyperplane ⟂ v). This unblocks the reflections half; remaining work is then the bivector/trivector
+operand tests + the 𝒢₄/𝒢₅ higher-dim verification.
 
 **Update:** the implementation (`tasks/archive/2026/06/08/derived-sandwich-operation.md`) generated
 the **whole `Versor` conjugation family** via `dispatch_method`, not just
