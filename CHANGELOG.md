@@ -12,6 +12,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`gacalc.frame.prefix_blades(vectors)`** — the prefix outer products of a frame, `A_0 = 1`,
+  `A_k = v_1 ∧ … ∧ v_k` (Hestenes & Sobczyk p. 27, eq 3.1), lifted from a private closure inside
+  `make_orthogonal_frame_hestenes` to a public, representation-agnostic free function (a reusable
+  building block, e.g. for a reciprocal frame). Returns a lazy iterator; raises `ValueError` on an
+  empty sequence. Additive, non-breaking; the orthogonalization output is unchanged.
 - **`MultiVectorBase.symbolically_equal(other, *, subs=None)`** — the one public home of symbolic value
   equality (`simplify(a − b) == 0` blade by blade, delegating to the same per-coefficient rule as `==`;
   representation-agnostic; `subs` feeds sympy a relation such as `{s**2: 1 - c**2}` before simplifying).

@@ -34,6 +34,7 @@ from gacalc.frame import (
     is_frame,
     make_orthogonal_frame,
     make_orthogonal_frame_hestenes,
+    prefix_blades,
 )
 from gacalc.gn import (
     Gn,
@@ -246,3 +247,48 @@ def test_hestenes_equals_rejection_numeric() -> None:
                 assert hestenes[k - 1].isclose(
                     factor * rejection[k - 1], rel_tol=1e-9, abs_tol=1e-9
                 )
+
+
+# --- prefix_blades (the eq-3.1 primitive, lifted to module scope) -----------
+
+
+def test_prefix_blades_2d_symbolic() -> None:
+    """``prefix_blades`` yields ``A_0 = 1``, ``A_1 = v_1``, ``A_2 = v_1 ∧ v_2`` for a
+    general 2D frame -- ``k + 1`` blades for ``k`` vectors."""
+    vectors: list[Gn] = [sym_vec2_1, sym_vec2_2]
+    blades: list[MultiVectorBase] = list(prefix_blades(vectors))
+    assert len(blades) == 3  # A_0, A_1, A_2
+    assert blades[0] == type(sym_vec2_1).one()  # A_0 = 1
+    assert blades[1] == sym_vec2_1  # A_1 = 1 ∧ v_1 = v_1
+    assert blades[2] == sym_vec2_1 ^ sym_vec2_2  # A_2 = v_1 ∧ v_2
+
+
+def test_prefix_blades_3d_symbolic() -> None:
+    """On a fully general 3D frame the prefix blades are ``1, v_1, v_1 ∧ v_2,
+    v_1 ∧ v_2 ∧ v_3`` -- the running wedge, exact."""
+    vectors: list[Gn] = [sym_vec3_1, sym_vec3_2, sym_vec3_3]
+    blades: list[MultiVectorBase] = list(prefix_blades(vectors))
+    assert blades[0] == type(sym_vec3_1).one()
+    assert blades[1] == sym_vec3_1
+    assert blades[2] == sym_vec3_1 ^ sym_vec3_2
+    assert blades[3] == sym_vec3_1 ^ sym_vec3_2 ^ sym_vec3_3
+
+
+def test_prefix_blades_feeds_hestenes() -> None:
+    """The ``A_{k-1}``/``A_k`` pairs ``make_orthogonal_frame_hestenes`` consumes are
+    exactly ``prefix_blades``' output -- ``c_k = reverse(A_{k-1}) A_k`` reproduces its
+    result from the lifted primitive (the rewire kept the behaviour)."""
+    vectors: list[Gn] = [sym_vec2_1, sym_vec2_2]
+    blades: list[MultiVectorBase] = list(prefix_blades(vectors))
+    rebuilt: list[MultiVectorBase] = [
+        (blades[k - 1].reverse() * blades[k]).r_vector_part(1)
+        for k in range(1, len(blades))
+    ]
+    assert rebuilt == make_orthogonal_frame_hestenes(vectors)
+
+
+def test_prefix_blades_empty_raises() -> None:
+    """A public primitive must define the empty case: no operand means no
+    representation for ``A_0 = 1``, so it raises (rather than invent one)."""
+    with pytest.raises(ValueError, match="nonempty"):
+        list(prefix_blades([]))

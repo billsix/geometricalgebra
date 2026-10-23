@@ -29,7 +29,9 @@ them.
 from __future__ import annotations
 
 import functools
+import operator
 from collections.abc import Iterator, Sequence
+from itertools import accumulate
 
 import numpy as np
 
@@ -81,6 +83,39 @@ def is_frame(
     independent set of vectors.
     """
     return are_linearly_independent(vectors, float_close_to_zero)
+
+
+def prefix_blades(
+    vectors: Sequence[MultiVectorBase],
+) -> Iterator[MultiVectorBase]:
+    """The prefix outer products of a frame -- ``A_0 := 1``, ``A_k := A_{k-1} ∧ v_k``
+    (H&S p. 27, eq 3.1).
+
+    Yields ``A_0 = 1`` (the scalar one, in the operands' own representation) first,
+    then each prefix wedge: ``A_1 = v_1``, ``A_2 = v_1 ∧ v_2``, …,
+    ``A_k = v_1 ∧ … ∧ v_k`` -- ``k + 1`` blades for ``k`` vectors.  The fold reuses the
+    blade yielded just before (``accumulate`` carries it), so the whole prefix costs
+    ``O(k)`` wedges, not an ``O(k²)`` rebuild of each blade from scratch.
+
+    A representation-agnostic building block (works on ``Gn`` and the graded
+    ``Vector_n`` types alike).  Its first consumer is
+    :func:`make_orthogonal_frame_hestenes`'s eq-3.2 step, which reads ``A_{k-1}`` and
+    ``A_k`` pairwise; the reciprocal frame (H&S p. 27-28) is another natural consumer.
+    Lazy -- it returns an iterator.
+
+    Raises:
+        ValueError: if ``vectors`` is empty -- there is no operand from which to take
+            the representation of the scalar ``A_0 = 1`` (a frame is a nonempty,
+            linearly independent set of vectors).
+    """
+    if len(vectors) == 0:
+        raise ValueError(
+            "prefix_blades requires a nonempty sequence of vectors (a frame); there "
+            "is no operand to take the representation of the scalar A_0 = 1 from"
+        )
+    # accumulate(seq, ∧, initial=1) folds the wedge over the prefix, seeding with the
+    # scalar one: yields A_0 = 1, A_1 = 1 ∧ v_1 = v_1, A_2 = A_1 ∧ v_2, …
+    return accumulate(vectors, operator.xor, initial=type(vectors[0]).one())
 
 
 def make_orthogonal_frame(
@@ -177,22 +212,13 @@ def make_orthogonal_frame_hestenes(
             "vectors: a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
         )
 
-    def prefix_blades() -> Iterator[MultiVectorBase]:
-        # A_0 := 1, then A_k := A_{k-1} ∧ v_k (eq 3.1) -- self-referential:
-        # each blade is built from the one yielded just before it, carried in
-        # A, so the whole prefix costs O(k) wedges, not an O(k) rebuild each.
-        A: MultiVectorBase = type(vectors[0]).one()
-        yield A  # A_0 = 1
-        v: MultiVectorBase
-        for v in vectors:
-            A = A ^ v  # A_k = A_{k-1} ∧ v_k
-            yield A
-
     def hestenes_vectors() -> Iterator[MultiVectorBase]:
         # c_k := reverse(A_{k-1}) A_k (eq 3.2) -- self-referential: carries the previous
         # blade across iterations and pairs it with the current one.  c_1 needs no
         # special case: A_0 = 1 and A_1 = 1 ∧ v_1 = v_1, so c_1 = reverse(1) v_1 = v_1.
-        blades: Iterator[MultiVectorBase] = prefix_blades()
+        # The A_k come from the top-level prefix_blades (eq 3.1); vectors is nonempty
+        # here (the is_frame guard above rejects the empty set).
+        blades: Iterator[MultiVectorBase] = prefix_blades(vectors)
         A_k_minus_1: MultiVectorBase = next(blades)  # A_0
         A_k: MultiVectorBase
         for A_k in blades:  # A_1, A_2, …
