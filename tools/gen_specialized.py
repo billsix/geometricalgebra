@@ -5367,20 +5367,31 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         # the derived closed form's support is exactly x's grades (the would-be
         # higher grades cancel symbolically), so each operand returns its own
         # type (Vector->Vector, Bivector->Bivector, ...) with no projection.
-        extras.append(
-            dispatch_method(
-                spec,
-                "sandwich",
-                lambda r, x: r * x * r.inverse(),
-                n,
-                full_name,
-                call(attribute("left", "sandwich"), [name_ref("right")]),
-                param_name="x",
-                return_type=name_ref("_OperandT"),
-                cast=cast_operand,
-                param_annotation=name_ref("_OperandT"),
+        #
+        # Derived only for n <= 3.  The closed form is R * x * R.inverse() over a
+        # GENERIC even element R, and inverse() is defined only for a blade or versor
+        # (where R~ * R is a scalar).  Through 𝒢₃ a generic even element IS
+        # versor-invertible ((s - B)(s + B) = s^2 - B^2, a scalar), so the inverse
+        # exists; in 𝒢₄+ a generic even element has a grade-4 part and R~ * R is no
+        # longer a scalar, so inverse() correctly raises and deriving the closed form
+        # would fail.  For 𝒢₄/𝒢₅ the Versor inherits MultiVectorBase.sandwich (runtime
+        # type(x) projection, no closed-form inverse) -- still correct, just not a
+        # specialized closed form.  See tasks/gacalc-g4-g5-generation-sandwich-inverse.md.
+        if n <= 3:
+            extras.append(
+                dispatch_method(
+                    spec,
+                    "sandwich",
+                    lambda r, x: r * x * r.inverse(),
+                    n,
+                    full_name,
+                    call(attribute("left", "sandwich"), [name_ref("right")]),
+                    param_name="x",
+                    return_type=name_ref("_OperandT"),
+                    cast=cast_operand,
+                    param_annotation=name_ref("_OperandT"),
+                )
             )
-        )
         # .i(): the versor's unit plane of rotation (alias of plane_of_rotation);
         # -> Bivector.
         extras.append(i_extractor("plane_of_rotation", "Bivector"))
@@ -5910,9 +5921,11 @@ def generate_constants(n: int, name: str) -> list[ast.stmt]:
 
 
 def header(name: str, n: int) -> str:
-    # _OperandT (the sandwich operand TypeVar) is only used by the Versor class,
-    # which exists for n >= 2; importing it for G would be unused (F401).
-    operand_import: str = "\n    _OperandT," if n >= 2 else ""
+    # _OperandT (the sandwich operand TypeVar) is only used by the specialized
+    # Versor sandwich, which is derived for 2 <= n <= 3 (in 𝒢₄/𝒢₅ the Versor
+    # inherits MultiVectorBase.sandwich -- see versor_extras); importing it
+    # otherwise would be unused (F401).
+    operand_import: str = "\n    _OperandT," if 2 <= n <= 3 else ""
     # The 𝒢₂ rotate_90_degrees() factory (generate_quarter_turn) needs Linearity
     # and plane_rotation (for its interpolation law); importing them elsewhere
     # would be unused (F401).  transforms imports only base/functions, so g2
