@@ -28,9 +28,10 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `MatrixTemplate`, plus the rotation factories `projection_rotation`/`versor_rotation`/
   `plane_rotation`); derives any basis from the value's own type, so it preserves `Gn`/`G`.
   **Re-exports** the `functions` names.
-- `src/gacalc/frame.py` — **frames** (H&S p. 27): `are_linearly_independent`/`is_frame` +
-  two orthogonalizations kept side by side for teaching (`make_orthogonal_frame` /
-  `make_orthogonal_frame_hestenes`, proven equal up to a positive scalar). See `tasks/define-frame.md`.
+- `src/gacalc/frame.py` — **frames** (H&S p. 27): `are_linearly_independent`/`is_frame`, the
+  eq-3.1 prefix-blade primitive `prefix_blades` (`A_0 = 1`, `A_k = v_1 ∧ … ∧ v_k`; a reusable
+  building block), + two orthogonalizations kept side by side for teaching (`make_orthogonal_frame`
+  / `make_orthogonal_frame_hestenes`, proven equal up to a positive scalar). See `tasks/define-frame.md`.
 - `src/gacalc/measure.py` — the named **measures** (Williamson & Trotter 1979):
   `area`/`volume`/`content` (+ `content_by_rejection`) and the **signed** determinants
   `signed_area`/`signed_volume`/`signed_content` (full-space `k = n`); free functions over
