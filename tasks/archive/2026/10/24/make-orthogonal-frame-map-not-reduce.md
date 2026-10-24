@@ -16,7 +16,9 @@ reference doc, `recursive-design.md` — that was the point of the task, not an 
 
 ## Status
 
-**Status:** DONE 2026-10-23 (committed 2026-10-24; pending the maintainer's squash + archive).
+**Status:** complete
+**Completed:** 2026-10-24 (William Emerison Six <billsix@gmail.com>) — done 2026-10-23, committed
+2026-10-24; archived pending the maintainer's squash of the work commit.
 Part A (both `frame.py` functions) and Part B (the `recursive-design.md` doc + wiring) are both
 done and green; all three decisions are resolved. One implementation surprise (`ty` rejects a bare
 `case []`/`case [v, *rest]` list-match as non-exhaustive, forcing a `case _` base) is recorded
@@ -198,15 +200,12 @@ Behavior-preserving, so the proof is the **existing** `tests/test_frame.py` pass
 
 No `CHANGELOG` entry (public API unchanged).
 
-## History (harvested for the squash)
+## History
 
-Two commits on `master` ahead of `origin/master`, to be squashed into one work commit by the
-maintainer:
-
-- `2ecf2f7` (2026-10-23) — added this task doc.
-- `27de49c` (2026-10-24, "simplified implementation") — the `frame.py` rework (A1 + A2) plus the
-  task-doc update to DONE, incl. the `ty`-forced `case _` reconciliation.
-
-Cross-repo doc work (Part B) landed in its own repos: runClaudeInContainer `a393dc8` (+ a staged
-`case _` correction to `recursive-design.md`) and runCrushInContainer `7b921fc` (committed +
-pushed; its `recursive-design.md` copies carry the corrected text).
+The work landed in gacalc as a task-add (this doc) followed by the `frame.py` rework (A1 + A2)
+and the task-doc update — the maintainer squashes those to one commit-per-task on their own
+schedule. The cross-repo doc work (Part B) landed in its own repos: `recursive-design.md` and the
+`CLAUDE.md`/`python-coding-standard.md` wiring in runClaudeInContainer, with byte-identical copies
+in runCrushInContainer (its `tasks/reference/` and the baked crush-client set). See each repo's
+`git log` for the commits — SHAs are omitted here because this history was still being rewritten
+when the doc was archived.
