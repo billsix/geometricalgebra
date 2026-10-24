@@ -288,3 +288,13 @@ tool), protect what matters (the live `cast`/no-cast distinction, the multi-stat
 genuine non-two-way shapes like `at` and `cast_coef`), and surface the judgment calls — the
 **leave-alones** are the review-worthy part. And for a generator, the byte-identical gate is what lets you refactor
 control flow fearlessly: an empty diff IS the proof nothing changed.
+
+## See also — shaping a *recursion* (not just a conditional)
+
+When the `match` is the base/recursive split of a **structural recursion** over a list (nil/cons:
+`case [v, *rest]` + a `case _` empty base), the choice is no longer "which conditional" but "which
+recursion scheme" — prefer a named `map`/`filter`/comprehension over a hand-threaded accumulator or
+`reduce`. That cross-project guidance, with `frame.py`'s `make_orthogonal_frame` before/after as the
+worked example and the note on why `ty` forces the base case to be spelled `case _`, lives in the
+shared **`recursive-design.md`** reference doc (canonical in github.com/billsix/runClaudeInContainer;
+in a Claude session at `~/.claude/reference/recursive-design.md`).
