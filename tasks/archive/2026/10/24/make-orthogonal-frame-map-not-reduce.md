@@ -44,11 +44,17 @@ The 2026-10-22 rewrite being improved had this shape:
 def reject_span(v, prior):
     return functools.reduce(lambda w, p: w.rejected_away_from(p), prior, v)
 
+
 def orthogonalize(remaining, done):
     match list(remaining):
-        case [v]:        return [*done, reject_span(v, done)]
-        case [v, *rest]: return orthogonalize(rest, [*done, reject_span(v, done)])
-        case _:          return done          # "unreachable"
+        case [v]:
+            return [*done, reject_span(v, done)]
+        case [v, *rest]:
+            return orthogonalize(rest, [*done, reject_span(v, done)])
+        case _:
+            return done  # "unreachable"
+
+
 return orthogonalize(vectors, [])
 ```
 
@@ -106,6 +112,8 @@ def orthogonalize(
             return [v, *orthogonalize(rest_orthogonal_to_v)]
         case _:  # the empty list -- base case (wildcard, see the type-checker note)
             return []
+
+
 return orthogonalize(vectors)
 ```
 
