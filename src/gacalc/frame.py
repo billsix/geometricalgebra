@@ -28,10 +28,9 @@ them.
 
 from __future__ import annotations
 
-import functools
 import operator
 from collections.abc import Iterator, Sequence
-from itertools import accumulate
+from itertools import accumulate, pairwise
 
 import numpy as np
 
@@ -124,13 +123,15 @@ def make_orthogonal_frame(
     """Orthogonalize a frame by **rejection** (H&S p. 27) -- Gram–Schmidt done the
     geometric-algebra way.
 
-    Keep the first vector as-is; each subsequent vector has the span of the ones
-    before it rejected out, so the result spans the same subspace but is mutually
-    orthogonal (``is_orthogonal_to`` between every pair).  The rejection is applied
-    one prior vector at a time -- ``reject(… reject(v_{k+1}, w_1) …, w_k)`` -- which,
-    because the ``w_j`` are already mutually orthogonal, equals rejecting the whole
-    span; doing it pairwise only ever rejects from a single vector, so it stays
-    within the grade-1/grade-2 rejections gacalc implements.
+    Keep the first vector as-is, reject it out of every vector after it, then
+    orthogonalize the rest the same way (recursing on the tail).  By the time a
+    vector becomes the head to keep, every vector finalized before it has already
+    been rejected out of it, so it is orthogonal to all of them; the result spans
+    the same subspace but is mutually orthogonal (``is_orthogonal_to`` between every
+    pair).  Each step rejects one already-orthogonal vector at a time, and because
+    those vectors are mutually orthogonal, rejecting them one at a time equals
+    rejecting their whole span -- so it stays within the grade-1/grade-2 rejections
+    gacalc implements.
 
     The result is **orthogonal, not orthonormal** -- the original lengths are kept
     (the first vector is returned unchanged).  Normalizing each result would give an
@@ -153,26 +154,27 @@ def make_orthogonal_frame(
             "vectors: a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
         )
 
-    def reject_span(
-        v: MultiVectorBase, prior: list[MultiVectorBase]
-    ) -> MultiVectorBase:
-        # Reject v off each already-orthogonal vector.  Because the prior vectors are
-        # mutually orthogonal, rejecting them one at a time equals rejecting the whole
-        # span, and each step only ever rejects from a single vector (docstring above).
-        return functools.reduce(lambda w, p: w.rejected_away_from(p), prior, v)
-
     def orthogonalize(
-        remaining: Sequence[MultiVectorBase], done: list[MultiVectorBase]
+        remaining: Sequence[MultiVectorBase],
     ) -> list[MultiVectorBase]:
         match list(remaining):
-            case [v]:  # one vector left -- base case
-                return [*done, reject_span(v, done)]
-            case [v, *rest]:  # multiple -- recurse carrying the accumulator
-                return orthogonalize(rest, [*done, reject_span(v, done)])
-            case _:  # empty -- unreachable (is_frame rules out the empty set)
-                return done
+            case [v, *rest]:
+                # Keep v (already orthogonal to every vector finalized before it -- each
+                # earlier head was rejected out of it on the way down), reject it out of
+                # each remaining vector, and orthogonalize that tail.  One rejection per
+                # vector, always from one already-orthogonal vector (docstring above).
+                rest_orthogonal_to_v: list[MultiVectorBase] = [
+                    w.rejected_away_from(v) for w in rest
+                ]
+                return [v, *orthogonalize(rest_orthogonal_to_v)]
+            case _:
+                # The empty list -- the base case.  Spelled as the wildcard
+                # rather than `case []` because ty reads a bare []/[v, *rest]
+                # match as non-exhaustive (an implicit None return); `_` makes
+                # the base case explicit and total.
+                return []
 
-    return orthogonalize(vectors, [])
+    return orthogonalize(vectors)
 
 
 def make_orthogonal_frame_hestenes(
@@ -212,19 +214,15 @@ def make_orthogonal_frame_hestenes(
             "vectors: a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
         )
 
-    def hestenes_vectors() -> Iterator[MultiVectorBase]:
-        # c_k := reverse(A_{k-1}) A_k (eq 3.2) -- self-referential: carries the previous
-        # blade across iterations and pairs it with the current one.  c_1 needs no
-        # special case: A_0 = 1 and A_1 = 1 ∧ v_1 = v_1, so c_1 = reverse(1) v_1 = v_1.
-        # The A_k come from the top-level prefix_blades (eq 3.1); vectors is nonempty
-        # here (the is_frame guard above rejects the empty set).
-        blades: Iterator[MultiVectorBase] = prefix_blades(vectors)
-        A_k_minus_1: MultiVectorBase = next(blades)  # A_0
-        A_k: MultiVectorBase
-        for A_k in blades:  # A_1, A_2, …
-            # reverse(A_{k-1}) A_k is grade 1 algebraically; narrow, as
-            # base.reject does, to drop any identically-zero widened term.
-            yield (A_k_minus_1.reverse() * A_k).r_vector_part(1)
-            A_k_minus_1 = A_k
-
-    return list(hestenes_vectors())
+    # c_k := reverse(A_{k-1}) A_k (eq 3.2), pairing each prefix blade with the
+    # one before it.  pairwise(prefix_blades(...)) yields the adjacent
+    # (A_{k-1}, A_k) pairs -- (A_0, A_1), (A_1, A_2), … -- the single-pass-safe
+    # form of zip(blades, blades[1:]), since prefix_blades is a lazy iterator.
+    # c_1 needs no special case: A_0 = 1 and A_1 = 1 ∧ v_1 = v_1, so
+    # c_1 = reverse(1) v_1 = v_1.  vectors is nonempty here (the is_frame guard
+    # above rejects the empty set).  reverse(A_{k-1}) A_k is grade 1 algebraically;
+    # narrow, as base.reject does, to drop any identically-zero widened term.
+    return [
+        (A_k_minus_1.reverse() * A_k).r_vector_part(1)
+        for A_k_minus_1, A_k in pairwise(prefix_blades(vectors))
+    ]
