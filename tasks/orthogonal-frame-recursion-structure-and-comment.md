@@ -1,64 +1,42 @@
 # Reshape the orthogonal-frame recursion (nil / one / two-or-more / default) and rewrite its comment
 
-**Status:** proposed — needs go-ahead.
+**Status:** DONE 2026-10-27 (William Emerison Six <billsix@gmail.com>). Ready to archive after the
+work commit.
 **Priority:** 5
 **Difficulty:** 3
-**Created:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
-**Updated:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-27 **Updated:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
-Reshape the Gram–Schmidt-by-rejection recursion in `make_orthogonal_frame`
-(`src/gacalc/frame.py`) so its `match` has the full data-shaped set of cases — **empty list** (base),
-**one element**, **two-or-more** (the recursive case), and a **default** — and **rewrite the comment**
-so it describes the *operation* standalone, not an invariant that only makes sense once you are
-already inside the recursion. Then update the `recursive-design.md` reference doc in
-runClaudeInContainer and runCrushInContainer with the lesson. (Maintainer's request, 2026-10-27.)
+`make_orthogonal_frame`'s inner `orthogonalize` recursion (`src/gacalc/frame.py`) was reshaped so
+every list shape is its own `match` case — `[]` (base), `[v]` (one), `[v, *rest]` (two or more), and
+a total `case _` default — and its per-case comments rewritten to describe the **operation** rather
+than an invariant that only parses once you are already inside the recursion. Behavior is unchanged
+(same algorithm, Modified Gram–Schmidt by rejection). Gates green: ruff + ty clean, `test_frame.py`
+17 passed.
 
-## Context (cold start)
+## What was done
 
-The inner `orthogonalize` in `make_orthogonal_frame` today matches only two cases
-(`frame.py` ~176–194):
+- **Four data-shaped cases.** The old form had only `case [v, *rest]` plus a wildcard standing in for
+  the base. Now `[]` returns `[]` (base — nothing to orthogonalize), `[v]` returns `[v]` (a single
+  vector is already an orthogonal frame on its own), and `[v, *rest]` is the two-or-more recursive
+  case. `case _` stays as the **total default**: it is unreachable (the three shapes cover every
+  list), but `ty` does not prove list-pattern exhaustiveness, so the match needs an explicit
+  catch-all — which also honours the "prefer total dispatch" convention.
+- **Operation-first comment.** The recursive case now reads "remove from each later vector its
+  component parallel to the first (reject the first out of the rest), keep the first, and recurse on
+  the rest"; the first-is-already-orthogonal-to-every-earlier-head fact is a trailing justification,
+  not the lead.
+- **`make_orthogonal_frame_hestenes` left alone** — it is a `pairwise(prefix_blades(...))`
+  list-comprehension (the closed-form blade product), not a recursion with a `match`, so the
+  treatment does not apply.
 
-```python
-match list(remaining):
-    case [v, *rest]:
-        # Keep v (already orthogonal to every vector finalized before it -- each
-        # earlier head was rejected out of it on the way down), reject it out of
-        # each remaining vector, and orthogonalize that tail. ...
-        rest_orthogonal_to_v = [w.rejected_away_from(v) for w in rest]
-        return [v, *orthogonalize(rest_orthogonal_to_v)]
-    case _:
-        return []   # the empty/base case (wildcard, for ty-exhaustiveness)
-```
+## Follow-up (done)
 
-This follows the house conventions "**prefer total dispatch**" and "**shape recursion to the data**
-(nil/cons)" (`~/.claude/reference/recursive-design.md`, gacalc `CLAUDE.md`), but the maintainer wants
-the cases spelled to the data and the comment reworded.
-
-## What to do
-
-1. **Four explicit cases** in the `match`:
-   - `[]` — **base case**, the empty list → `[]`.
-   - `[v]` — **one element**: a single vector is already orthogonal; nothing to reject → `[v]`.
-   - `[v, w, *rest]` (**two or more**) — the recursive case: remove the component of each later
-     vector that is parallel to `v` (reject `v` out of the rest), then recurse on that tail.
-   - `case _:` — **default**: a mandatory-feeling total fallback (keep the ty-exhaustiveness reason
-     noted; raise or an explicit commented no-op as fits).
-   (Keep it `ty`-exhaustive — that is why the current code uses a wildcard; preserve that property.)
-2. **Rewrite the comment** to stand on its own, describing the operation rather than the
-   mid-recursion invariant — the maintainer's phrasing: *"remove the components of the rest that are
-   parallel to the first vector (reject the first out of the rest), then recursively orthogonalize
-   the rest; the first element is already orthogonal to every vector finalized before it."* State the
-   operation first; the "already orthogonal to earlier heads" fact is a justification, not the lead.
-3. Consider whether `make_orthogonal_frame_hestenes` warrants the same treatment (note it; do it only
-   if it reads the same way).
-4. Keep gates green: `make test` (incl. `tests/test_frame.py`) and `make format`.
-
-## Follow-up (required, after the code lands)
-
-Update the **recursive-design** reference doc in **both** sandboxes —
-`runClaudeInContainer tasks/reference/recursive-design.md` (canonical) and the runCrush mirror
-(byte-identical) — with the generalizable lesson: spell the recursion's cases to the data shape
-(nil / single / cons-of-two-or-more / default), and **write the per-case comment to describe the
-operation standalone**, not an invariant that only parses once you are already inside the recursion.
+The generalizable lesson was folded into the shared `recursive-design.md` reference doc in **both**
+sandboxes (`runClaudeInContainer` canonical + byte-identical `runCrushInContainer` mirror): spell
+each data shape its own case (`[]` / `[v]` / `[v, *rest]`), keep `case _` as the total default rather
+than overloading it to mean the base case, and write each per-case comment to describe the operation
+standalone. That doc already carried this frame example as a worked case, so its AFTER block and
+type-checker note were updated to the refined form (the earlier revision used `case _` as the base
+case itself).

@@ -177,20 +177,27 @@ def make_orthogonal_frame(
         remaining: Sequence[MultiVectorBase],
     ) -> list[MultiVectorBase]:
         match list(remaining):
+            case []:
+                # Base case: no vectors, nothing to orthogonalize.
+                return []
+            case [v]:
+                # A single vector is already an orthogonal frame on its own --
+                # there is nothing to reject it out of.
+                return [v]
             case [v, *rest]:
-                # Keep v (already orthogonal to every vector finalized before it -- each
-                # earlier head was rejected out of it on the way down), reject it out of
-                # each remaining vector, and orthogonalize that tail.  One rejection per
-                # vector, always from one already-orthogonal vector (docstring above).
+                # Two or more: remove from each later vector its component parallel
+                # to the first (reject the first out of the rest), keep the first,
+                # and recursively orthogonalize the rest.  The first is already
+                # orthogonal to every vector finalized before it -- each earlier
+                # head was rejected out of it on the way down.
                 rest_orthogonal_to_v: list[MultiVectorBase] = [
                     w.rejected_away_from(v) for w in rest
                 ]
                 return [v, *orthogonalize(rest_orthogonal_to_v)]
             case _:
-                # The empty list -- the base case.  Spelled as the wildcard
-                # rather than `case []` because ty reads a bare []/[v, *rest]
-                # match as non-exhaustive (an implicit None return); `_` makes
-                # the base case explicit and total.
+                # Unreachable: [] / [v] / [v, *rest] already cover every list.
+                # Kept as the total default because ty does not prove list-pattern
+                # exhaustiveness, so the match needs an explicit catch-all.
                 return []
 
     return orthogonalize(vectors)
