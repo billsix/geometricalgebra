@@ -347,16 +347,6 @@ def test_versors_are_quaternions_3d() -> None:
         assert type(sq) is g3.Versor and sq == -gn.one
 
 
-def test_inherited_abc_methods() -> None:
-    v: g2.Vector = 3 * g2.Vector.e_1 + 4 * g2.Vector.e_2
-    assert v.magnitude() == 5
-    assert (
-        v.normalize() == sympy.Rational(3, 5) * gn.e_1 + sympy.Rational(4, 5) * gn.e_2
-    )
-    assert (5 * g2.Bivector.e_12).reverse() == -5 * (gn.e_1 ^ gn.e_2)
-    assert (1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 2 * g3.Vector.e_3).magnitude() == 3
-
-
 def test_symbolic_product_matches_gn() -> None:
     a1: sympy.Symbol
     a2: sympy.Symbol

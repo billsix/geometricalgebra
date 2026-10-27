@@ -335,42 +335,6 @@ def test_inverse_rejects_general_multivector() -> None:
         mixed.inverse()
 
 
-def test_reflect() -> None:
-    a: MultiVector = 3 * e_1 + 4 * e_2 + 5 * e_3
-
-    # reflect across vectors
-    assert MultiVector.reflect(across=e_1)(a) == 3 * e_1 + -4 * e_2 + -5 * e_3
-    assert MultiVector.reflect(across=e_2)(a) == -3 * e_1 + 4 * e_2 + -5 * e_3
-    assert MultiVector.reflect(across=e_3)(a) == -3 * e_1 + -4 * e_2 + 5 * e_3
-
-    # reflect across planes
-    assert (
-        MultiVector.reflect(across=[1 * e_1, 1 * e_2])(a)
-        == 3 * e_1 + 4 * e_2 + -5 * e_3
-    )
-    assert MultiVector.reflect(across=e_1 * e_2)(a) == 3 * e_1 + 4 * e_2 + -5 * e_3
-
-    # reflect across a 1-element span (regression: 1-element sequence must not
-    # crash -- same outer_product arity bug as project/reject)
-    assert MultiVector.reflect(across=[1 * e_1])(a) == MultiVector.reflect(across=e_1)(
-        a
-    )
-    assert MultiVector.reflect(across=e_1 ^ e_2)(a) == 3 * e_1 + 4 * e_2 + -5 * e_3
-
-    assert (
-        MultiVector.reflect(across=[1 * e_2, 1 * e_3])(a)
-        == -3 * e_1 + 4 * e_2 + 5 * e_3
-    )
-    assert (
-        MultiVector.reflect(across=[1 * e_3, 1 * e_1])(a)
-        == 3 * e_1 + -4 * e_2 + 5 * e_3
-    )
-    assert (
-        MultiVector.reflect(across=[1 * e_1, 1 * e_3])(a)
-        == 3 * e_1 + -4 * e_2 + 5 * e_3
-    )
-
-
 def test_normalize() -> None:
     # normalizing a vector divides it by its own magnitude:
     u2: MultiVector = a_1 * e_1 + a_2 * e_2

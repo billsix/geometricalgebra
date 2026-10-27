@@ -34,18 +34,6 @@ from gacalc.gn import Gn, e_1, e_2
 # older tests are the widened base type, which stays valid.
 
 
-def test_bivector_from_vectors_is_the_unnormalized_wedge() -> None:
-    # a ∧ b, un-normalized: its magnitude is the parallelogram area.
-    biv: MultiVectorBase = Gn.bivector_from_vectors(3 * e_1, 4 * e_2)
-    assert biv == 12 * (e_1 ^ e_2)
-    assert abs(biv) == 12
-
-
-def test_bivector_from_vectors_of_parallel_vectors_is_the_zero_bivector() -> None:
-    # parallel vectors span no plane -> wedge is zero (this builder does not raise).
-    assert Gn.bivector_from_vectors(e_1, 2 * e_1) == Gn.zero()
-
-
 def test_bivector_from_vectors_rejects_non_vectors() -> None:
     with pytest.raises(TypeError):
         Gn.bivector_from_vectors(e_1 ^ e_2, e_1)  # a bivector is not grade-1

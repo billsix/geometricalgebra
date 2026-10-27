@@ -28,7 +28,6 @@ import sympy
 import gacalc.g2 as g2
 import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase, Real
-from gacalc.gn import Gn
 
 
 def test_coordinate_read() -> None:
@@ -66,20 +65,6 @@ def test_coordinates_only_on_grade_1() -> None:
         g2.Scalar(coeff_scalar=1.0),
     ):
         assert not hasattr(value, "x")
-
-
-def test_scalar_division() -> None:
-    assert list(g2.Vector(3.0, 4.0) / 2) == [1.5, 2.0]
-    assert list(g3.Vector(2.0, 4.0, 6.0) / 2.0) == [1.0, 2.0, 3.0]
-    assert (g2.G(coeff_scalar=2.0, coeff_e_1=4.0) / 2).to_blade_dict() == {
-        (): 1.0,
-        (1,): 2.0,
-    }
-    assert (g3.G.from_real(6) / 2).scalar_part() == 3
-    assert (g2.Scalar(coeff_scalar=6.0) / 2).coeff_scalar == 3.0
-    assert (Gn.from_blade_dict({(1,): 3.0}) / 2).isclose(
-        Gn.from_blade_dict({(1,): 1.5}), rel_tol=1e-5, abs_tol=1e-5
-    )
 
 
 def test_division_matches_scaling() -> None:

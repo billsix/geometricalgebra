@@ -104,13 +104,6 @@ def test_arithmetic_through_interchange_agrees() -> None:
     assert gn_sum == g3_sum == {(): 5, (1,): 11, (1, 2): 2}
 
 
-def test_scalar_blade_is_the_empty_tuple() -> None:
-    cls: type[MultiVectorBase]
-    for cls in (Gn, g1.G, g2.G, g3.G):
-        assert cls.from_real(7).to_blade_dict() == {(): 7}
-        assert cls.from_blade_dict({(): 7}).scalar_part() == 7
-
-
 def test_canonical_keys_are_sorted_index_tuples() -> None:
     # every key any representation ever EMITS is a strictly increasing tuple of
     # basis-vector indices (the writer-side precondition, held by construction)

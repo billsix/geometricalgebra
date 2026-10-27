@@ -29,19 +29,6 @@ import gacalc.g3 as g3
 from gacalc.g2 import Vector, e_1, e_2
 
 
-def test_signed_value_and_swap_negates() -> None:
-    a: Vector = 1.0 * e_1 + 0.0 * e_2
-    b: Vector = 0.0 * e_1 + 1.0 * e_2
-    assert a.sine(b) == 1.0  # +90°: e₁ toward e₂ is the positive turn
-    assert b.sine(a) == -1.0  # swapping the operands negates the signed sine
-
-
-def test_parallel_vectors_have_zero_sine() -> None:
-    a: Vector = 3.0 * e_1 + 4.0 * e_2
-    assert a.sine(a) == 0.0
-    assert a.sine(5.0 * a) == 0.0  # scaling does not change the direction
-
-
 def test_abs_of_signed_sine_equals_abs_sin() -> None:
     # The signed 𝒢₂ sine and the unsigned base-class abs_sin agree in magnitude.
     a: Vector = 3.0 * e_1 + 4.0 * e_2

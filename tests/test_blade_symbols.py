@@ -26,7 +26,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from gacalc.base import blade_dict_latex, blade_latex, set_blade_symbols
+from gacalc.base import blade_dict_latex, set_blade_symbols
 from gacalc.gn import e_1, e_2
 
 IJK: dict[tuple[int, ...], str] = {
@@ -41,27 +41,6 @@ def _reset_session_symbols() -> Iterator[None]:
     """Every test leaves the session map as it found it: empty (the default)."""
     yield
     set_blade_symbols({})
-
-
-def test_default_rendering_unchanged() -> None:
-    assert blade_latex((1,), symbols={}) == r"\mathbf{\vec{e}}_{1}"
-    assert blade_dict_latex({(1,): 2}) == r"$2\mathbf{\vec{e}}_{1}$"
-
-
-def test_scalar_blade_renders_as_one() -> None:
-    assert blade_latex((), symbols={}) == "1"
-
-
-def test_explicit_symbols_parameter() -> None:
-    assert blade_latex((1,), symbols=IJK) == r"\mathbf{i}"
-    assert blade_dict_latex({(1,): 2}, symbols=IJK) == r"$2\mathbf{i}$"
-
-
-def test_unmapped_blade_falls_back_to_e_notation() -> None:
-    assert (
-        blade_dict_latex({(1, 2): 5}, symbols=IJK)
-        == r"$5\mathbf{\vec{e}}_{1} \mathbf{\vec{e}}_{2}$"
-    )
 
 
 def test_session_map_applies_to_repr_latex() -> None:

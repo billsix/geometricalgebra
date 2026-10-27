@@ -129,6 +129,8 @@ def blade_latex(blade: Blade, symbols: Mapping[Blade, str] | None = None) -> str
     Example:
         >>> blade_latex((1,), symbols={(1,): r"\mathbf{i}"})
         '\\mathbf{i}'
+        >>> blade_latex((1,), symbols={})       # default e-notation
+        '\\mathbf{\\vec{e}}_{1}'
         >>> blade_latex((1, 2), symbols={})
         '\\mathbf{\\vec{e}}_{1} \\mathbf{\\vec{e}}_{2}'
         >>> blade_latex((), symbols={})
@@ -147,7 +149,7 @@ def blade_latex(blade: Blade, symbols: Mapping[Blade, str] | None = None) -> str
 
 
 def blade_dict_latex(d: BladeReal, symbols: Mapping[Blade, str] | None = None) -> str:
-    """Render a blade -> coefficient dict as a LaTeX string (the body of
+    r"""Render a blade -> coefficient dict as a LaTeX string (the body of
     ``_repr_latex_``, factored out so callers can render a chosen *view*).
 
     Blades are grade-ordered (``(len, indices)``); a sum coefficient is
@@ -165,6 +167,17 @@ def blade_dict_latex(d: BladeReal, symbols: Mapping[Blade, str] | None = None) -
 
     Returns:
         str: the LaTeX string (``$...$``; ``$0$`` for an empty dict).
+
+    Example:
+        >>> blade_dict_latex({(1,): 2}) == r"$2\mathbf{\vec{e}}_{1}$"
+        True
+        >>> ijk = {(1,): r"\mathbf{i}", (2,): r"\mathbf{j}"}
+        >>> blade_dict_latex({(1,): 2}, symbols=ijk) == r"$2\mathbf{i}$"
+        True
+        >>> blade_dict_latex({(1, 2): 5}, symbols=ijk) == (
+        ...     r"$5\mathbf{\vec{e}}_{1} \mathbf{\vec{e}}_{2}$"
+        ... )
+        True
     """
 
     def add_parens_or_dont(x: Real) -> str:
@@ -304,6 +317,8 @@ class MultiVectorBase(abc.ABC):
             >>> from gacalc.g2 import Scalar
             >>> Scalar.from_real(3).scalar_part()
             3
+            >>> Scalar.from_real(7).to_blade_dict() == {(): 7}  # scalar blade is ()
+            True
         """
         return cls.from_blade_dict({tuple(): real})
 
@@ -470,6 +485,17 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: the geometric product ``self * rhs``.
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2, e_3
+            >>> e_1 * e_2 == -(e_2 * e_1)  # distinct basis vectors anticommute
+            True
+            >>> (e_1 * e_1).scalar_part() == 1  # and square to +1 (Euclidean)
+            True
+            >>> e_1 * e_3 * e_2 == -(e_1 * e_2 * e_3)  # one swap flips the sign
+            True
+            >>> e_3 * e_1 * e_2 == e_1 * e_2 * e_3  # two swaps restore it
+            True
         """
         match rhs:
             case int() | float() as n:
@@ -587,6 +613,13 @@ class MultiVectorBase(abc.ABC):
             Self: the quotient ``self * rhs.inverse()`` (or ``self * (1 / rhs)``
             for a number).
 
+        Examples:
+            >>> from gacalc.g2 import e_1, e_2
+            >>> (3.0 * e_1 + 4.0 * e_2) / 2 == 1.5 * e_1 + 2.0 * e_2
+            True
+            >>> list((3.0 * e_1 + 4.0 * e_2) / 2)   # the coordinate tuple
+            [1.5, 2.0]
+
         Raises:
             ZeroDivisionError: if ``rhs`` is a zero-magnitude multivector (via
                 ``inverse``) or a zero number.
@@ -644,6 +677,13 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Real: the magnitude ``|A|`` — a ``float`` for float input, otherwise
             an exact ``sympy`` value.
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2, e_3
+            >>> (3 * e_1 + 4 * e_2).magnitude() == 5
+            True
+            >>> (1 * e_1 + 2 * e_2 + 2 * e_3).magnitude() == 3
+            True
         """
         magnitude_squared: Real = self.magnitude_squared()
         return (
@@ -670,6 +710,14 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: the unit multivector ``A / |A|`` (magnitude 1).
+
+        Examples:
+            >>> import sympy
+            >>> from gacalc.gn import e_1, e_2
+            >>> (3 * e_1 + 4 * e_2).normalize() == (
+            ...     sympy.Rational(3, 5) * e_1 + sympy.Rational(4, 5) * e_2
+            ... )
+            True
 
         Raises:
             ZeroDivisionError: if ``A`` has zero magnitude (for any coefficient
@@ -1679,6 +1727,30 @@ class MultiVectorBase(abc.ABC):
         Returns:
             gacalc.functions.InvertibleFunction[MultiVectorBase]: the reflection
             ``P_B(A) − P_B^⊥(A)``, an involution (its own inverse).
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2, e_3, MultiVector
+            >>> a = 3 * e_1 + 4 * e_2 + 5 * e_3
+            >>> MultiVector.reflect(across=e_1)(a) == 3 * e_1 - 4 * e_2 - 5 * e_3
+            True
+            >>> MultiVector.reflect(across=e_2)(a) == -3 * e_1 + 4 * e_2 - 5 * e_3
+            True
+            >>> MultiVector.reflect(across=e_3)(a) == -3 * e_1 - 4 * e_2 + 5 * e_3
+            True
+
+            Across a plane -- a bivector, or a sequence of vectors wedged into one
+            (a one-vector span reflects across that vector's line):
+
+            >>> MultiVector.reflect(across=e_1 * e_2)(a) == 3 * e_1 + 4 * e_2 - 5 * e_3
+            True
+            >>> MultiVector.reflect(across=[1 * e_2, 1 * e_3])(a) == (
+            ...     -3 * e_1 + 4 * e_2 + 5 * e_3
+            ... )
+            True
+            >>> MultiVector.reflect(across=[1 * e_1])(a) == MultiVector.reflect(
+            ...     across=e_1
+            ... )(a)
+            True
 
         Raises:
             Exception: if ``across`` is neither a vector nor a bivector.
