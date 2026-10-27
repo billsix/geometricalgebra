@@ -147,6 +147,16 @@ class Gn(MultiVectorBase):
         Returns:
             Gn: the bivector ``a ∧ b`` (zero if ``a`` and ``b`` are parallel).
 
+        Examples:
+            >>> from gacalc.gn import e_1, e_2
+            >>> biv = Gn.bivector_from_vectors(3 * e_1, 4 * e_2)
+            >>> biv == 12 * (e_1 ^ e_2)      # the area bivector
+            True
+            >>> abs(biv) == 12               # magnitude = the parallelogram area
+            True
+            >>> Gn.bivector_from_vectors(e_1, 2 * e_1) == Gn.zero()  # parallel -> zero
+            True
+
         Raises:
             TypeError: if either argument is not a vector (grade 1).
         """
