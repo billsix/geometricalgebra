@@ -793,7 +793,7 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: an equal multivector with every coefficient ``sympy.simplify``'d.
         """
-        return self._map_coefficients(lambda c: sympy.simplify(c))  # type: ignore
+        return self._map_coefficients(lambda c: sympy.simplify(sympy.sympify(c)))
 
     def expanded(self) -> typing.Self:
         """The same multivector with every coefficient ``sympy.expand``'d.

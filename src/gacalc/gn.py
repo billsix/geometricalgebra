@@ -102,7 +102,7 @@ class Gn(MultiVectorBase):
         """
         # simplify all coefficients
         self.coefficient_of_blade = {
-            blade: sympy.simplify(self.coefficient_of_blade[blade])  # type: ignore
+            blade: sympy.simplify(sympy.sympify(self.coefficient_of_blade[blade]))
             for blade in self.coefficient_of_blade.keys()
         }
         # prune zero coefficient_of_blade
@@ -218,20 +218,48 @@ class Gn(MultiVectorBase):
             Self: the geometric product ``self * rhs`` as a ``Gn``.
         """
 
+        def insert_into_canonical(
+            first: int,
+            sorted_tail: BladeDictionaryEntry,
+        ) -> BladeDictionaryEntry:
+            # Put the index `first` at the front of an already-canonical `sorted_tail`.
+            # If `first` belongs there (strictly below the tail's head), prepend it and
+            # stop; otherwise it collides with or outranks the head, so reduce the
+            # recombined blade again -- that handles the e_i e_i = 1 cancellation or the
+            # swap-and-negate.
+            prepended: BladeDictionaryEntry = BladeDictionaryEntry(
+                blade=(first, *sorted_tail.blade),
+                coefficient=sorted_tail.coefficient,
+            )
+            match sorted_tail.blade:
+                case (head, *_) if first < head:
+                    return prepended
+                case _:
+                    return decrease_grade(prepended)
+
         def decrease_grade(
             basis_blade: BladeDictionaryEntry,
         ) -> BladeDictionaryEntry:
+            # Reduce a product of basis vectors (its index tuple, possibly with repeats
+            # or out of order from concatenating two blades) to the canonical sorted,
+            # repeat-free blade, carrying the sign of each adjacent swap (Euclidean
+            # signature, so e_i e_i = 1).
             match basis_blade.blade:
-                case () | (_,):
-                    # a scalar or a single basis vector is already canonical
+                case ():
+                    # The empty product is the scalar 1 -- already canonical.
+                    return basis_blade
+                case (_,):
+                    # A single basis vector is already canonical.
                     return basis_blade
                 case (a, c, *rest) if a == c:
+                    # Adjacent equal indices square to 1: drop the pair, keep the sign.
                     return decrease_grade(
                         BladeDictionaryEntry(
                             blade=(*rest,), coefficient=basis_blade.coefficient
                         )
                     )
                 case (a, c, *rest) if a > c:
+                    # Adjacent out-of-order pair: swap and negate (e_a e_c = -e_c e_a).
                     return decrease_grade(
                         BladeDictionaryEntry(
                             blade=(c, a, *rest),
@@ -239,29 +267,21 @@ class Gn(MultiVectorBase):
                         )
                     )
                 case (a, c, *rest) if a < c:
-                    sorted_blade_dictionary_entry: BladeDictionaryEntry = (
-                        decrease_grade(
-                            BladeDictionaryEntry(
-                                blade=(c, *rest),
-                                coefficient=basis_blade.coefficient,
-                            )
+                    # `a` already precedes `c`: canonicalize the tail, then insert `a`
+                    # back at the front.
+                    sorted_tail: BladeDictionaryEntry = decrease_grade(
+                        BladeDictionaryEntry(
+                            blade=(c, *rest),
+                            coefficient=basis_blade.coefficient,
                         )
                     )
-                    match sorted_blade_dictionary_entry.blade:
-                        case (b, *_) if a < b:
-                            return BladeDictionaryEntry(
-                                blade=(a, *sorted_blade_dictionary_entry.blade),
-                                coefficient=sorted_blade_dictionary_entry.coefficient,
-                            )
-                        case _:
-                            return decrease_grade(
-                                BladeDictionaryEntry(
-                                    blade=(a, *sorted_blade_dictionary_entry.blade),
-                                    coefficient=sorted_blade_dictionary_entry.coefficient,
-                                )
-                            )
+                    return insert_into_canonical(a, sorted_tail)
                 case _:
-                    raise ValueError("This code should never be able to be executed")
+                    # Unreachable: a tuple is empty, a singleton, or has a head pair
+                    # a/c with a == c / a > c / a < c (trichotomy).  Kept as the total
+                    # default because ty does not prove the guarded match exhaustive --
+                    # removing it makes ty flag an implicit `None` return (verified).
+                    raise ValueError("unreachable: non-canonical blade not handled")
 
         def blade_dictionary_entry_to_multivector(
             b: BladeDictionaryEntry,
