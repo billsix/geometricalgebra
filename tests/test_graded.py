@@ -183,16 +183,6 @@ def test_basis_constant_instance_fallthrough() -> None:
     assert v.coeff_e_1 == 5 and v.coeff_e_2 == 2
 
 
-def test_coefficient_readback() -> None:
-    # coefficient(blade) reads the stored coefficient on a blade, any grade
-    v: g2.Vector = 3 * g2.Vector.e_1 + 4 * g2.Vector.e_2
-    assert v.coefficient(g2.Vector.e_1) == 3 and v.coefficient(g2.Vector.e_2) == 4
-    assert (7 * g2.Bivector.e_12).coefficient(g2.Bivector.e_12) == 7
-    assert (5 * g3.Trivector.e_123).coefficient(g3.Trivector.e_123) == 5
-    B3: g3.Bivector = 4 * g3.Bivector.e_12 + 5 * g3.Bivector.e_13 + 6 * g3.Bivector.e_23
-    assert B3.coefficient(g3.Bivector.e_13) == 5
-
-
 def test_linear_combination_construction() -> None:
     # the basis builds each graded type by linear combination / wedge
     assert type(3 * g2.Vector.e_1 + 4 * g2.Vector.e_2) is g2.Vector

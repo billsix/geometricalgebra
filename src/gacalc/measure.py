@@ -93,11 +93,15 @@ def content(vectors: Sequence[MultiVectorBase]) -> Real:
 
     Examples:
         >>> from gacalc.g2 import e_1, e_2
+        >>> content([1 * e_1])                   # length
+        1
         >>> content([1 * e_1, 1 * e_2])          # the unit square
         1
         >>> content([1 * e_1, 1 * e_1 + 1 * e_2])    # sheared: same base and height
         1
         >>> content([1 * e_1, 2 * e_1])      # dependent -> flat
+        0
+        >>> content([1 * e_1, 1 * e_2, 1 * e_1 + 1 * e_2])  # coplanar -> flat
         0
 
         General symbolic vectors show the formula — the magnitude of the determinant:
@@ -156,9 +160,15 @@ def area(a: MultiVectorBase, b: MultiVectorBase) -> Real:
 
     Examples:
         >>> from gacalc.g2 import e_1, e_2
+        >>> area(1 * e_1, 1 * e_2)               # the unit square
+        1
         >>> area(3 * e_1, 2 * e_2)
         6
+        >>> area(1 * e_1, 1 * e_1 + 1 * e_2)     # oblique: base 1, height 1
+        1
         >>> area(3 * e_1, 2 * e_2) == area(2 * e_2, 3 * e_1)  # unsigned: order-free
+        True
+        >>> area(3 * e_1, 2 * e_2) == content([3 * e_1, 2 * e_2])  # the content alias
         True
 
         General symbolic vectors show the formula — the magnitude of the determinant:
@@ -177,8 +187,12 @@ def volume(a: MultiVectorBase, b: MultiVectorBase, c: MultiVectorBase) -> Real:
 
     Examples:
         >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> volume(1 * e_1, 1 * e_2, 1 * e_3)    # the unit cube
+        1
         >>> volume(2 * e_1, 1 * e_2, 3 * e_3)
         6
+        >>> volume(2 * e_1, 1 * e_2, 3 * e_3) == content([2 * e_1, 1 * e_2, 3 * e_3])
+        True
     """
     return content([a, b, c])
 
@@ -219,6 +233,14 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Real:
         1
         >>> signed_content([1 * gn.e_2, 1 * gn.e_1])          # swap flips the sign
         -1
+        >>> signed_content(
+        ...     [1 * gn.e_1 + 1 * gn.e_2, 2 * gn.e_1 + 2 * gn.e_2]
+        ... )  # parallel (k = n) -> 0
+        0
+        >>> signed_content(
+        ...     [1 * gn.e_1, 1 * gn.e_3, 1 * gn.e_1 + 1 * gn.e_3]
+        ... )  # coplanar (k = n = 3) -> 0
+        0
 
     Raises:
         ValueError: on an empty sequence or a non-vector member (via
@@ -264,6 +286,10 @@ def signed_area(a: MultiVectorBase, b: MultiVectorBase) -> Real:
         5
         >>> signed_area(b, a)      # swapping the two flips the orientation
         -5
+        >>> abs(signed_area(a, b)) == content([a, b])  # |signed| == unsigned area
+        True
+        >>> signed_area(a, 2 * a)  # parallel -> flat -> 0
+        0
 
         General symbolic vectors show it *is* the 2x2 determinant:
 
@@ -285,6 +311,10 @@ def signed_volume(a: MultiVectorBase, b: MultiVectorBase, c: MultiVectorBase) ->
         1
         >>> signed_volume(1 * e_3, 1 * e_2, 1 * e_1)      # left-handed after the swap
         -1
+        >>> abs(signed_volume(1 * e_1, 1 * e_2, 1 * e_3)) == content(
+        ...     [1 * e_1, 1 * e_2, 1 * e_3]
+        ... )
+        True
 
         General symbolic vectors show it *is* the 3x3 determinant (cofactor expansion):
 

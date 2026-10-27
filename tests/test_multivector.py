@@ -236,19 +236,6 @@ def test_is_homogeneous_of_grade_r() -> None:
     assert (a.wedge(c)).is_homogeneous_of_grade_r(2)
 
 
-def test_is_vector() -> None:
-    a: MultiVector = 3 * e_1 + 4 * e_2
-    assert a.is_vector()
-    assert not (a * a).is_vector()
-
-
-def test_is_bivector() -> None:
-    a: MultiVector = 3 * e_1 + 4 * e_2
-    b: MultiVector = 0 * e_1 + 1 * e_2
-    assert not (a * b).is_bivector()
-    assert (a.wedge(b)).is_bivector()
-
-
 def test_zero_multivector_is_homogeneous_of_every_grade() -> None:
     """The zero multivector has no present blades, so it is trivially homogeneous of
     EVERY grade -- consistent with ``is_scalar(zero) == True``.  The grade predicates
@@ -280,49 +267,6 @@ def test_even_part_odd_part() -> None:
     assert (u * v) == (u * v).odd_part() + (u * v).even_part()
 
 
-def test_multivector_dot() -> None:
-    a: MultiVector = 3 * e_1 + 4 * e_2
-    assert a.dot(a) == MultiVector.from_real(25)
-    assert a.dot(a).is_scalar()
-    c: MultiVector = -4 * e_1 + 3 * e_2
-    assert a.dot(c) == zero
-
-    # general 2D vectors: the dot product is the scalar a_1 b_1 + a_2 b_2:
-    u: MultiVector = a_1 * e_1 + a_2 * e_2
-    v: MultiVector = b_1 * e_1 + b_2 * e_2
-    assert u.dot(v) == MultiVector.from_real(a_1 * b_1 + a_2 * b_2)
-    assert u.dot(v).is_scalar()
-
-
-def test_is_orthogonal() -> None:
-    a: MultiVector = 3 * e_1 + 4 * e_2
-    c: MultiVector = -4 * e_1 + 3 * e_2
-    assert a.is_orthogonal_to(c)
-
-
-def test_is_parallel() -> None:
-    a: MultiVector = 3 * e_1 + 4 * e_2
-    assert a.is_parallel_to(2 * a)  # same direction
-    assert a.is_parallel_to(-1 * a)  # anti-parallel: cos(θ) = -1, but still parallel
-    perpendicular: MultiVector = -4 * e_1 + 3 * e_2
-    assert not a.is_parallel_to(perpendicular)
-    # the float-tolerance path agrees:
-    af: MultiVector = 3.0 * e_1 + 4.0 * e_2
-    assert af.is_parallel_to(-2.0 * af, float_close_to_zero=True)
-
-
-def test_multivector_cosine() -> None:
-    a: MultiVector = 3 * e_1 + 4 * e_2
-    assert a.cosine(a) == 1
-    b: MultiVector = -4 * e_1 + 3 * e_2
-    assert a.cosine(b) == 0
-
-    # general 2D vectors: cos(θ) * |u| * |v| == u · v (the definition of cosine):
-    u: MultiVector = a_1 * e_1 + a_2 * e_2
-    v: MultiVector = b_1 * e_1 + b_2 * e_2
-    assert MultiVector.from_real(u.cosine(v) * abs(u) * abs(v)) == u.dot(v)
-
-
 def test_multivector_abs_sin() -> None:
     a: MultiVector = 3 * e_1 + 4 * e_2
     assert a.abs_sin(a) == 0  # the angle a vector makes with itself is 0
@@ -348,81 +292,6 @@ def test_abs_sin_cosine_pythagorean() -> None:
     u: MultiVector = a_1 * e_1 + a_2 * e_2
     v: MultiVector = b_1 * e_1 + b_2 * e_2
     assert sympy.simplify(sympy.sympify(u.cosine(v) ** 2 + u.abs_sin(v) ** 2)) == 1
-
-
-def test_multivector_wedge() -> None:
-    a: MultiVector = 3 * e_1 + 4 * e_2
-    assert a.wedge(a) == zero
-    c: MultiVector = -4 * e_1 + 3 * e_2
-    assert a.wedge(c) == 25 * e_1 * e_2
-
-    # general 2D vectors: the wedge is the bivector (a_1 b_2 - a_2 b_1) * e_12,
-    # reachable the same three ways:
-    u: MultiVector = a_1 * e_1 + a_2 * e_2
-    v: MultiVector = b_1 * e_1 + b_2 * e_2
-    expected_wedge: MultiVector = (a_1 * b_2 - a_2 * b_1) * e_1 * e_2
-    assert u.wedge(v) == expected_wedge  # the method
-    assert (u ^ v) == expected_wedge  # the ^ operator
-    assert MultiVector.outer_product_of_vectors(u, v) == expected_wedge  # the free fn
-
-
-def test_multivector_unit_pseudoscalar() -> None:
-    assert MultiVector.unit_pseudoscalar(1) == e_1
-    assert MultiVector.unit_pseudoscalar(2) == e_1 * e_2
-    assert MultiVector.unit_pseudoscalar(3) == e_1 * e_2 * e_3
-
-    I1: MultiVector = MultiVector.unit_pseudoscalar(1)
-    assert I1 * I1 == one
-    assert MultiVector.unit_pseudoscalar_squared(1) == one
-    I2: MultiVector = MultiVector.unit_pseudoscalar(2)
-    assert I2 * I2 == -one
-    assert MultiVector.unit_pseudoscalar_squared(2) == -one
-    I3: MultiVector = MultiVector.unit_pseudoscalar(3)
-    assert I3 * I3 == -one
-    I4: MultiVector = MultiVector.unit_pseudoscalar(4)
-    assert I4 * I4 == one
-    I5: MultiVector = MultiVector.unit_pseudoscalar(5)
-    assert I5 * I5 == one
-    I6: MultiVector = MultiVector.unit_pseudoscalar(6)
-    assert I6 * I6 == -one
-    I7: MultiVector = MultiVector.unit_pseudoscalar(7)
-    assert I7 * I7 == -one
-    I8: MultiVector = MultiVector.unit_pseudoscalar(8)
-    assert I8 * I8 == one
-    I9: MultiVector = MultiVector.unit_pseudoscalar(9)
-    assert I9 * I9 == one
-    I10: MultiVector = MultiVector.unit_pseudoscalar(10)
-    assert I10 * I10 == -one
-    I11: MultiVector = MultiVector.unit_pseudoscalar(11)
-    assert I11 * I11 == -one
-    I12: MultiVector = MultiVector.unit_pseudoscalar(12)
-    assert I12 * I12 == one
-    I13: MultiVector = MultiVector.unit_pseudoscalar(13)
-    assert I13 * I13 == one
-    I14: MultiVector = MultiVector.unit_pseudoscalar(14)
-    assert I14 * I14 == -one
-    I15: MultiVector = MultiVector.unit_pseudoscalar(15)
-    assert I15 * I15 == -one
-
-
-def test_multivector_reverse() -> None:
-    a: MultiVector = 3 * e_1 + 4 * e_2
-    assert (a * a).reverse() == a * a
-
-    b: MultiVector = 5 * e_1 + 10 * e_2
-    assert (b * a).reverse() == a * b
-
-    # for two general 2D vectors, reversing v u gives u v (reverse flips the
-    # order of the basis vectors in each blade):
-    u: MultiVector = a_1 * e_1 + a_2 * e_2
-    v: MultiVector = b_1 * e_1 + b_2 * e_2
-    assert (v * u).reverse() == u * v
-
-
-def test_multivector_reverse_3d() -> None:
-    u: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    v: MultiVector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
-    assert (v * u).reverse() == u * v
 
 
 def test_multivector_inverse() -> None:
@@ -464,35 +333,6 @@ def test_inverse_rejects_general_multivector() -> None:
     mixed: MultiVector = 1 * one + 1 * e_1
     with pytest.raises(RuntimeError):
         mixed.inverse()
-
-
-def test_project_and_reject() -> None:
-    a: MultiVector = 3 * e_1 + 4 * e_2
-    assert MultiVector.project(onto=e_1)(a) == 3 * e_1
-    assert MultiVector.reject(away_from=e_1)(a) == 4 * e_2
-
-    assert MultiVector.project(onto=[1 * e_1, 1 * e_2])(a) == a
-    assert MultiVector.reject(away_from=[1 * e_1, 1 * e_2])(a) == zero
-
-    assert MultiVector.project(onto=e_1)(2 * a) == 6 * e_1
-    assert MultiVector.reject(away_from=e_1)(2 * a) == 8 * e_2
-
-    assert MultiVector.project(onto=2 * e_1)(a) == 3 * e_1
-    assert MultiVector.reject(away_from=2 * e_1)(a) == 4 * e_2
-
-    # 1-element sequence (regression: must use outer_product_of_vectors, not the
-    # instance method outer_product, which only happens to work for exactly 2
-    # elements -- a 1-element span used to raise TypeError on the missing rhs)
-    assert MultiVector.project(onto=[1 * e_1])(a) == 3 * e_1
-    assert MultiVector.reject(away_from=[1 * e_1])(a) == 4 * e_2
-
-    # for general 2D vectors, projecting v onto u and rejecting v from u split v
-    # into its parallel and perpendicular parts, which sum back to v:
-    u: MultiVector = a_1 * e_1 + a_2 * e_2
-    v: MultiVector = b_1 * e_1 + b_2 * e_2
-    parallel: MultiVectorBase = MultiVector.project(onto=u)(v)
-    perpendicular: MultiVectorBase = MultiVector.reject(away_from=u)(v)
-    assert v == parallel + perpendicular
 
 
 def test_reflect() -> None:

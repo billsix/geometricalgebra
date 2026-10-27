@@ -13,12 +13,12 @@
 
 """The cross product (``gacalc.vectorcalc.cross``) -- ``a × b = (a ∧ b) I₃⁻¹``.
 
-Pins the right-hand-rule **sign convention** (the task's "verify the sign" step:
-the existing ``dual`` is ``A * I⁻¹`` and ``I₃⁻¹ = −I₃``, which should give the
-standard orientation -- these tests are the proof), checks the coordinate
-formula symbolically and against ``numpy.cross`` numerically, gates the
-**scalar-triple-product identity** ``a · (b × c) = signed_volume(a, b, c)``,
-and exercises the 3-D guard.  See ``tasks/custom-symbols-and-vector-calc.md``.
+The right-hand-rule **sign convention** and the symbolic coordinate formula are
+pinned by the doctests in ``cross``'s docstring; this file covers what a doctest
+cannot: the numeric check against ``numpy.cross``, the **scalar-triple-product
+identity** ``a · (b × c) = signed_volume(a, b, c)``, the generated closed-form
+``g3.Vector.cross`` against both the wedge/dual path and the ``Gn`` oracle, and
+the 3-D / non-vector guards.  See ``tasks/custom-symbols-and-vector-calc.md``.
 """
 
 import numpy as np
@@ -30,19 +30,6 @@ import gacalc.gn as gn
 from gacalc.g3 import Vector, e_1, e_2, e_3
 from gacalc.measure import signed_volume
 from gacalc.vectorcalc import cross
-
-
-def test_right_handed_basis() -> None:
-    """The defining cyclic identities: e1 × e2 = e3, e2 × e3 = e1, e3 × e1 = e2."""
-    assert cross(1 * e_1, 1 * e_2) == 1 * e_3
-    assert cross(1 * e_2, 1 * e_3) == 1 * e_1
-    assert cross(1 * e_3, 1 * e_1) == 1 * e_2
-
-
-def test_anticommutative() -> None:
-    a: Vector = 2 * e_1 + 3 * e_2 + 5 * e_3
-    b: Vector = 7 * e_1 + 1 * e_2 + 4 * e_3
-    assert cross(a, b) == -cross(b, a)
 
 
 def test_result_is_a_graded_vector() -> None:
@@ -58,18 +45,6 @@ def test_matches_numpy_cross() -> None:
     assert np.allclose(
         np.array(list(cross(a, b)), dtype=float),
         np.cross(np.array(list(a), dtype=float), np.array(list(b), dtype=float)),
-    )
-
-
-def test_symbolic_coordinate_formula() -> None:
-    a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
-    b_1, b_2, b_3 = sympy.symbols("b_1 b_2 b_3")
-    a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    b: Vector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
-    assert cross(a, b) == (
-        (a_2 * b_3 - a_3 * b_2) * e_1
-        + (a_3 * b_1 - a_1 * b_3) * e_2
-        + (a_1 * b_2 - a_2 * b_1) * e_3
     )
 
 
@@ -90,20 +65,6 @@ def test_scalar_triple_product_is_signed_volume() -> None:
         )
         == 0
     )
-
-
-def test_parallel_vectors_cross_to_zero() -> None:
-    assert cross(2 * e_1, 3 * e_1) == Vector.zero()
-
-
-def test_works_on_gn() -> None:
-    assert cross(1 * gn.e_1, 1 * gn.e_2) == 1 * gn.e_3
-
-
-def test_method_form_matches_free_function() -> None:
-    a: Vector = 2 * e_1 + 3 * e_2 + 5 * e_3
-    b: Vector = 7 * e_1 + 1 * e_2 + 4 * e_3
-    assert a.cross(b) == cross(a, b)
 
 
 def test_generated_closed_form_matches_definition() -> None:

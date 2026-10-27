@@ -13,32 +13,28 @@
 
 """The 𝒢₂ quarter turn: ``rotate_90_degrees`` IS multiplication by ``e_12``.
 
-Two forms share one generated closed form -- the ``Vector.rotate_90_degrees()``
-method and the module-level ``rotate_90_degrees()`` ``InvertibleFunction``
-factory.  These pin: the pseudoscalar identity (``v * e_12``), exactness on
-integer and symbolic coefficients, the +90° direction (e₁ toward e₂), the
-inverse (-90°, ``v * -e_12``), composition (four turns = identity), the
-``at(t)`` interpolation law, the grade/type guard, and that the feature is
-𝒢₂-only (no ``rotate_90_degrees`` on 𝒢₁ or 𝒢₃).
+The pseudoscalar identity (``v * e_12``), symbolic exactness, the inverse, and
+composition are pinned by the doctests on ``Vector.rotate_90_degrees`` and the
+module-level ``rotate_90_degrees()`` factory.  This file pins what a doctest
+cannot: that integer coefficients stay ``int`` (a closed form, not a rotor), the
++90° direction's agreement with the general-angle rotor (``isclose``), the
+``at(t)`` interpolation law, the metadata (``latex_repr``/``Linearity``), the
+grade/type guard, and that the feature is 𝒢₂-only (no ``rotate_90_degrees`` on
+𝒢₁ or 𝒢₃).
 """
 
 import math
 
 import pytest
-import sympy
 
 import gacalc.g1 as g1
 import gacalc.g2 as g2
 import gacalc.g3 as g3
-from gacalc.functions import InvertibleFunction, Linearity, inverse
+from gacalc.functions import InvertibleFunction, Linearity
 from gacalc.g2 import Vector, e_1, e_2, e_12, rotate_90_degrees
 from gacalc.transforms import plane_rotation
 
 V: Vector = 3 * e_1 + 4 * e_2
-
-
-def test_method_is_multiplication_by_the_pseudoscalar() -> None:
-    assert V.rotate_90_degrees() == V * e_12
 
 
 def test_method_is_exact_on_integer_coefficients() -> None:
@@ -50,11 +46,6 @@ def test_method_is_exact_on_integer_coefficients() -> None:
     assert isinstance(turned.coeff_e_2, int)
 
 
-def test_method_is_exact_on_symbolic_coefficients() -> None:
-    x, y = sympy.symbols("x y")
-    assert (x * e_1 + y * e_2).rotate_90_degrees() == Vector(coeff_e_1=-y, coeff_e_2=x)
-
-
 def test_direction_is_e1_toward_e2() -> None:
     turn: InvertibleFunction[Vector] = rotate_90_degrees()
     assert turn(1 * e_1) == 1 * e_2
@@ -63,30 +54,6 @@ def test_direction_is_e1_toward_e2() -> None:
     assert turn(1 * e_1).isclose(
         plane_rotation(e_1, e_2)(math.pi / 2)(1 * e_1), rel_tol=1e-12, abs_tol=1e-12
     )
-
-
-def test_factory_agrees_with_method_and_product() -> None:
-    turn: InvertibleFunction[Vector] = rotate_90_degrees()
-    assert turn(V) == V.rotate_90_degrees()
-    assert turn(V) == V * e_12
-    assert turn(V) == -4 * e_1 + 3 * e_2
-
-
-def test_inverse_is_the_minus_90_turn() -> None:
-    turn: InvertibleFunction[Vector] = rotate_90_degrees()
-    assert turn.inverse(V) == V * -e_12
-    assert turn.inverse(V) == Vector(coeff_e_1=4, coeff_e_2=-3)
-    assert turn.inverse(turn(V)) == V
-    assert inverse(turn)(turn(V)) == V
-    assert turn(inverse(turn)(V)) == V
-
-
-def test_composition_two_turns_is_a_half_turn_four_are_the_identity() -> None:
-    turn: InvertibleFunction[Vector] = rotate_90_degrees()
-    assert (turn @ turn)(V) == -V
-    assert (turn @ turn @ turn @ turn)(V) == V
-    # three turns forward equals one turn back
-    assert (turn @ turn @ turn)(V) == turn.inverse(V)
 
 
 def test_interpolation_law() -> None:

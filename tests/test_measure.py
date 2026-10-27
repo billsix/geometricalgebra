@@ -54,32 +54,6 @@ from gacalc.measure import (
 # --- basic values ----------------------------------------------------------
 
 
-def test_unit_measures() -> None:
-    assert content([1 * e_1]) == 1  # length
-    assert area(1 * e_1, 1 * e_2) == 1  # unit square
-    assert volume(1 * e_1, 1 * e_2, 1 * e_3) == 1  # unit cube
-
-
-def test_area_is_wedge_magnitude_oblique() -> None:
-    # (e_1 + e_2) ∧ e_2 = e_1 ∧ e_2, so the parallelogram area is 1.
-    assert area(1 * e_1 + 1 * e_2, 1 * e_2) == 1
-    # |a| * |b| * sin(θ): a = e_1, b = e_1 + e_2 -> 1 * √2 * sin45° = 1.
-    assert area(1 * e_1, 1 * e_1 + 1 * e_2) == 1
-
-
-def test_area_volume_are_content_aliases() -> None:
-    a, b, c = 1 * e_1 + 1 * e_2, 1 * e_2 + 1 * e_3, 1 * e_1 + 1 * e_3
-    assert area(a, b) == content([a, b])
-    assert volume(a, b, c) == content([a, b, c])
-
-
-def test_content_of_dependent_set_is_zero() -> None:
-    assert content([1 * e_1, 2 * e_1]) == 0  # parallel -> zero area
-    assert (
-        content([1 * e_1, 1 * e_2, 1 * e_1 + 1 * e_2]) == 0
-    )  # coplanar -> zero volume
-
-
 def test_non_vector_and_empty_raise() -> None:
     with pytest.raises(ValueError):
         content([1 * e_1, e_1 ^ e_2])  # a bivector is not a vector
@@ -183,29 +157,6 @@ def test_content_by_rejection_requires_a_frame() -> None:
 # --- signed (oriented) content, k = n --------------------------------------
 
 
-def test_signed_area_is_the_2d_determinant() -> None:
-    # (2 * e_1 + e_2) and (e_1 + 3 * e_2): det = 2 * 3 − 1 * 1 = 5.
-    p: MultiVectorBase = 2 * g2.e_1 + 1 * g2.e_2
-    q: MultiVectorBase = 1 * g2.e_1 + 3 * g2.e_2
-    assert signed_area(p, q) == 5
-    assert signed_area(q, p) == -5  # swap flips orientation
-    assert abs(signed_area(p, q)) == content([p, q])  # |signed| == unsigned
-
-
-def test_signed_volume_is_the_3d_determinant() -> None:
-    x: MultiVectorBase = g3.e_1
-    y: MultiVectorBase = g3.e_2
-    z: MultiVectorBase = g3.e_3
-    assert signed_volume(x, y, z) == 1  # right-handed
-    assert signed_volume(z, y, x) == -1  # swap flips
-    assert abs(signed_volume(x, y, z)) == content([x, y, z])
-
-
-def test_signed_content_dependent_full_set_is_zero() -> None:
-    p: MultiVectorBase = 2 * g2.e_1 + 1 * g2.e_2
-    assert signed_area(p, 4 * g2.e_1 + 2 * g2.e_2) == 0  # parallel
-
-
 def test_signed_content_wrong_count_raises() -> None:
     # k < n on a fixed type: two vectors in 3-space have no scalar sign (a bivector).
     with pytest.raises(ValueError):
@@ -240,14 +191,6 @@ def test_signed_content_on_gn_symbolic_is_the_determinant() -> None:
     a: MultiVectorBase = a_1 * e_1 + a_2 * e_2
     b: MultiVectorBase = b_1 * e_1 + b_2 * e_2
     assert signed_content([a, b]) == a_1 * b_2 - a_2 * b_1
-
-
-def test_signed_content_parallel_full_count_is_zero() -> None:
-    # k = n but linearly dependent (parallel / coplanar) -> flat -> 0.
-    assert (
-        signed_content([1 * e_1 + 1 * e_2, 2 * e_1 + 2 * e_2]) == 0
-    )  # parallel, k=n=2
-    assert signed_content([1 * e_1, 1 * e_3, 1 * e_1 + 1 * e_3]) == 0  # coplanar, k=n=3
 
 
 # --- pass-through methods on the base (discoverability sugar) ----------------
