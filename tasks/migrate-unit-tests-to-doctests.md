@@ -44,7 +44,7 @@ over keep-both; the repo had been carrying both.)
   `ROTATE_90_FACTORY_DOC`) with the pseudoscalar / symbolic / direction / inverse / composition
   identities, and regenerated. Removed 5 duplicates from `test_rotate_90_degrees.py`.
 
-### Exhaustive pass (batches 5–6)
+### Further migration (hand-written modules + the quotient)
 
 - **`base.reflect`** — reflect across vectors / planes / a one-vector span; removed `test_reflect`.
 - **`gn.bivector_from_vectors`** — the un-normalized wedge + parallel→zero; removed 2 from
