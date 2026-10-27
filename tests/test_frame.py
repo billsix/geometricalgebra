@@ -63,27 +63,6 @@ def test_is_frame_is_are_linearly_independent() -> None:
     assert is_frame([1 * e_1, 2 * e_1]) == are_linearly_independent([1 * e_1, 2 * e_1])
 
 
-def test_independent_sets_are_frames() -> None:
-    assert is_frame([1 * e_1])  # a single nonzero vector
-    assert is_frame([1 * e_1, 1 * e_2])  # 2D basis
-    assert is_frame([1 * e_1, 1 * e_2, 1 * e_3])  # 3D basis
-    assert is_frame([1 * e_1 + 1 * e_2, 1 * e_2])  # oblique 2D frame (not orthogonal)
-
-
-def test_dependent_sets_are_not_frames() -> None:
-    assert not is_frame([1 * e_1, 2 * e_1])  # parallel
-    assert not is_frame(
-        [1 * e_1, 1 * e_2, 1 * e_1 + 1 * e_2]
-    )  # third in the span of the first two
-    assert not is_frame(
-        [1 * e_1, 1 * e_2, 1 * e_3, 1 * e_1]
-    )  # a repeat -> 4 vectors in 3D
-
-
-def test_empty_is_not_a_frame() -> None:
-    assert not is_frame([])
-
-
 def test_symbolic_general_vectors_are_a_frame() -> None:
     assert is_frame([sym_vec2_1, sym_vec2_2])
     assert is_frame([sym_vec3_1, sym_vec3_2])

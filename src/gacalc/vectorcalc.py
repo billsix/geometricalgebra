@@ -40,7 +40,7 @@ def cross(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
     plane, with magnitude ``|a| * |b| * sin(θ)`` (Lagrange's identity,
     <https://en.wikipedia.org/wiki/Lagrange%27s_identity>) -- the right-hand-rule cross
     product
-    (sign pinned by ``tests/test_vectorcalc.py``):
+    (the right-hand-rule sign is pinned by the doctests below):
 
     >>> from gacalc.g3 import e_1, e_2, e_3
     >>> cross(1 * e_1, 1 * e_2) == 1 * e_3
@@ -62,6 +62,17 @@ def cross(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
     ...     + (a_3 * b_1 - a_1 * b_3) * e_2
     ...     + (a_1 * b_2 - a_2 * b_1) * e_3
     ... )
+    True
+
+    The same general vectors prove it is anticommutative, that the method form
+    ``a.cross(b)`` agrees, and that it works in the reference algebra ``Gn``:
+
+    >>> cross(a, b) == -cross(b, a)              # anticommutative, any a, b
+    True
+    >>> a.cross(b) == cross(a, b)                # method form
+    True
+    >>> import gacalc.gn as gn
+    >>> cross(1 * gn.e_1, 1 * gn.e_2) == 1 * gn.e_3
     True
 
     The cross product only exists in 3 dimensions (in general the wedge -- a

@@ -80,6 +80,25 @@ def is_frame(
 
     A pass-through to :func:`are_linearly_independent`: a frame *is* a linearly
     independent set of vectors.
+
+    Examples:
+        >>> from gacalc.gn import e_1, e_2, e_3
+        >>> is_frame([1 * e_1])                            # a single nonzero vector
+        True
+        >>> is_frame([1 * e_1, 1 * e_2])                   # the 2-D basis
+        True
+        >>> is_frame([1 * e_1, 1 * e_2, 1 * e_3])          # the 3-D basis
+        True
+        >>> is_frame([1 * e_1 + 1 * e_2, 1 * e_2])         # oblique, still independent
+        True
+        >>> is_frame([1 * e_1, 2 * e_1])                   # parallel -> dependent
+        False
+        >>> is_frame([1 * e_1, 1 * e_2, 1 * e_1 + 1 * e_2])  # dependent: 3rd in span
+        False
+        >>> is_frame([1 * e_1, 1 * e_2, 1 * e_3, 1 * e_1])  # a repeat in 3-D
+        False
+        >>> is_frame([])                                   # an empty set is not a frame
+        False
     """
     return are_linearly_independent(vectors, float_close_to_zero)
 
