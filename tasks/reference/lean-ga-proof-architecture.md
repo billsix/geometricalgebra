@@ -184,11 +184,18 @@ bare (`Cross`, `Reflect`, `Normalize`, `StandardPosition`, … are 3D-only; `Tri
 2D-only). The root `GacalcProofs.lean` imports every topic file; renaming one means updating that
 import list, any sibling `import`, **and any prose pointer in these reference docs**.
 
-**G2 `dot`/perpendicularity:** `G2.dot` (and its bilinearity algebra) lives in `Versor2D.lean`, not
-`G2.lean` (which imports only Mathlib). The `dot`-form perpendicularity lemmas over `IsVector` objects
-go in `Predicates2D.lean` (the 2D twin of `Predicates3D.lean`): e.g. `dual_perp_dot` —
-`dot (dual v) v = 0` — the object form of the coordinate leaf `G2.dual_vec_perp` (which stays in
-`G2.lean` as the bridge it rests on).
+**G2 `dot`/`wedge`/perpendicularity (relocated into `G2.lean`, 2026-10-28):** `G2.dot`, `G2.wedge`,
+their bilinearity algebra, the split `mul_eq_dot_add_wedge`/`mul_eq_wedge_of_perp`, and the wedge grade
+lemmas now live in **`G2.lean`** alongside `mul`/`reverse`, matching `G3`/`G1` (which always defined
+`dot`/`wedge` in-file). The earlier split (`dot` in `Versor2D.lean`, `wedge` in `Projection2D.lean`) was
+reversed because both are pure coordinate formulas depending only on `mul`/fields, so `G2.lean` keeps
+its Mathlib-only import discipline — the move added no import. `Versor2D.lean` now holds only the
+versor-from-vectors construction; `Projection2D.lean` only `proj`/`reject` and the sandwich-wedge
+isometry lemmas. The `dot`-form perpendicularity lemmas over `IsVector` objects still go in
+`Predicates2D.lean` (the 2D twin of `Predicates3D.lean`): e.g. `dual_perp_dot` — `dot (dual v) v = 0` —
+the object form of the coordinate leaf `G2.dual_vec_perp`. (Part of the file-structure pass
+`tasks/study-and-reorder-lean-file-structure.md`: logical-home consolidation done; the within-file
+ordering sweep across the other files is the remainder.)
 
 **Naming: the geometric name is the student-facing (cosine/sine) theorem; the dot/wedge form carries a
 `_dot` suffix.** Cosine is an implementation detail, so the theorem a reader cites is
@@ -356,10 +363,12 @@ Lessons from the "geometric objects in, scalars in the body, geometric objects o
   `d.c1*d.c1 - 0*-0 - … ` form, which neither matches a stated `^2` goal (a `have` type-mismatch) nor
   `field_simp`'s normalized `^2` denominator (leftover `(…)⁻¹`, `ring` then fails). Worked:
   `Reflect.normSq_reflectVec`.
-- **DON'T assume an operation's helper lemmas live in the grade's main file.** `dot` for `G2` is defined
-  in `Versor2D.lean`, not `G2.lean`, and so are `G2.dot_smul_left/right` — a `grep … G2.lean` falsely
-  concluded "G2 lacks them." **Fix:** grep the whole `proofs/GacalcProofs/` tree (or `rg`), never a single
-  file, before concluding a lemma is missing.
+- **DON'T assume an operation's helper lemmas live in the grade's main file.** Not everything about a
+  grade sits in its main file — e.g. the 2D perpendicularity `_dot` lemmas live in `Predicates2D.lean`,
+  and before the 2026-10-28 consolidation `G2.dot`/`G2.dot_smul_left/right` lived in `Versor2D.lean`, so
+  a `grep … G2.lean` falsely concluded "G2 lacks them." (That specific case is fixed — `dot`/`wedge` are
+  in `G2.lean` now — but the hazard stands.) **Fix:** grep the whole `proofs/GacalcProofs/` tree (or
+  `rg`), never a single file, before concluding a lemma is missing.
 - **Two `simp`-set gotchas in `obtain`-getter proofs** (both bit the Projection3D bivector conversions):
   **(a)** when a def in the goal *constructs* a `vec` (e.g. `inner_vb a b = vec (mul a b).c1 …`), the proof
   reads back `(vec …).c12`/`.c23` etc., so **`vec` must be in the `simp only [...]` set** or those
