@@ -192,9 +192,9 @@ theorem reject_vec_eq_coord (a1 a2 b1 b2 : ℝ) (ha : a1 ^ 2 + a2 ^ 2 ≠ 0) :
   have hnorm : normSq (vec a1 a2) = a1 ^ 2 + a2 ^ 2 := normSq_vec a1 a2
   have hdaa : dot (vec a1 a2) (vec a1 a2) = a1 ^ 2 + a2 ^ 2 := by rw [dot_vec]; ring
   have hsplit : wedge (vec b1 b2) (vec a1 a2)
-      = sub (mul (vec b1 b2) (vec a1 a2)) (smul (dot (vec b1 b2) (vec a1 a2)) one) := by
+      = sub (mul (vec b1 b2) (vec a1 a2)) (scalar (dot (vec b1 b2) (vec a1 a2))) := by
     rw [mul_eq_dot_add_wedge (isVector_vec b1 b2) (isVector_vec a1 a2)]
-    simp only [sub, add, smul, one]; ext <;> ring
+    simp only [sub, add, scalar]; ext <;> ring
   have hinv : mul (vec a1 a2) (inverse (vec a1 a2)) = one := by
     rw [inverse, reverse_vec, mul_smul, hnorm,
         show mul (vec a1 a2) (vec a1 a2) = smul (a1 ^ 2 + a2 ^ 2) one by

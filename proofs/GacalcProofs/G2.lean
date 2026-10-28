@@ -74,6 +74,11 @@ def e_12 : G2 := { s := 0, c1 := 0, c2 := 0, c12 := 1 }
     `x·e₁ + y·e₂` (`vec_eq_smul`). -/
 def vec (x y : ℝ) : G2 := { s := 0, c1 := x, c2 := y, c12 := 0 }
 
+/-- A **scalar** `a` (grade 0) as a 𝒢₂ element, in place of `⟨a,0,0,0⟩` — the embedding ℝ ↪ 𝒢₂
+    `a ↦ a*1`. The grade-0 constructor; pairs with `IsScalar` exactly as `vec` pairs with `IsVector`.
+    Preferred over `smul a one` for turning a scalar into an element of the algebra. -/
+def scalar (a : ℝ) : G2 := { s := a, c1 := 0, c2 := 0, c12 := 0 }
+
 /-- The unit pseudoscalar I = e₁*e₂. -/
 def I : G2 := e_12
 
@@ -202,11 +207,15 @@ theorem isVector_vec (x y : ℝ) : IsVector (vec x y) := ⟨rfl, rfl⟩
     grade-3 trivector in 2D. -/
 def IsScalar (a : G2) : Prop := a.c1 = 0 ∧ a.c2 = 0 ∧ a.c12 = 0
 
-/-- A grade-0 multivector is `s*1` with `s` its own scalar coefficient — the scalar twin of
-    `eq_vec_of_isVector`, bridging an `IsScalar` object to the basis-constant form. -/
-theorem eq_smul_one_of_isScalar {a : G2} (ha : IsScalar a) : a = smul a.s one := by
+/-- A grade-0 multivector is `scalar a.s` with `a.s` its own scalar coefficient — the scalar twin of
+    `eq_vec_of_isVector`, bridging an `IsScalar` object to the `scalar` constructor form. -/
+theorem eq_scalar_of_isScalar {a : G2} (ha : IsScalar a) : a = scalar a.s := by
   obtain ⟨h1, h2, h12⟩ := ha
-  ext <;> simp only [smul, one, h1, h2, h12] <;> ring
+  ext <;> simp only [scalar, h1, h2, h12] <;> ring
+
+/-- The `scalar` constructor produces a scalar — the `IsScalar` recognizer for `scalar a`
+    (mirrors `isVector_vec`). -/
+theorem isScalar_scalar (a : ℝ) : IsScalar (scalar a) := ⟨rfl, rfl, rfl⟩
 
 /-- The scalar unit `1` is a scalar — discharges `IsScalar` for a caller holding `one`. -/
 theorem isScalar_one : IsScalar one := ⟨rfl, rfl, rfl⟩
@@ -271,10 +280,10 @@ theorem dot_vec (a1 a2 b1 b2 : ℝ) : dot (vec a1 a2) (vec b1 b2) = a1 * b1 + a2
     for vectors — the 2D twin of `G3.dot_is_sym_part`, in object form (the conclusion names the object
     `(a·b)*1`, not a coordinate sum; only the proof drops to coordinates). -/
 theorem dot_is_sym_part {a b : G2} (ha : IsVector a) (hb : IsVector b) :
-    smul (1 / 2) (add (mul a b) (mul b a)) = smul (dot a b) one := by
+    smul (1 / 2) (add (mul a b) (mul b a)) = scalar (dot a b) := by
   obtain ⟨has, ha12⟩ := ha
   obtain ⟨hbs, hb12⟩ := hb
-  simp only [smul, add, mul, dot, one, has, ha12, hbs, hb12]
+  simp only [smul, scalar, add, mul, dot, has, ha12, hbs, hb12]
   ext <;> ring
 
 /-- **The wedge product is the antisymmetric part of the geometric product** (2D): `½(ab − ba) = a∧b`
@@ -333,17 +342,17 @@ theorem wedge_antisymm {a b : G2} (ha : IsVector a) (hb : IsVector b) :
     the geometric product splits into its scalar (inner) part `a·b` and its pseudoscalar (outer) part
     `a∧b`. The 2D twin of the 𝒢₃ `mul_eq_dot_add_wedge`. -/
 theorem mul_eq_dot_add_wedge {a b : G2} (ha : IsVector a) (hb : IsVector b) :
-    mul a b = add (smul (dot a b) one) (wedge a b) := by
+    mul a b = add (scalar (dot a b)) (wedge a b) := by
   obtain ⟨_, ha12⟩ := ha
   obtain ⟨hbs, hb12⟩ := hb
-  simp only [mul, wedge, smul, one, dot, add]
+  simp only [mul, wedge, scalar, dot, add]
   ext <;> simp only [ha12, hbs, hb12] <;> ring
 
 /-- **Orthogonal vectors' geometric product is their wedge** (2D, arbitrary vectors): `a·b = 0 ⟹ a b = a∧b`. -/
 theorem mul_eq_wedge_of_perp {a b : G2} (ha : IsVector a) (hb : IsVector b) (h : dot a b = 0) :
     mul a b = wedge a b := by
   rw [mul_eq_dot_add_wedge ha hb, h]
-  simp only [smul, one, add]; ext <;> ring
+  simp only [scalar, add]; ext <;> ring
 
 /-- **Leaf:** `|a∧b|² = (a₁*b₂ − a₂*b₁)²` — the squared magnitude of the plane bivector of two vectors (2D). -/
 theorem normSq_wedge_vec (a1 a2 b1 b2 : ℝ) :

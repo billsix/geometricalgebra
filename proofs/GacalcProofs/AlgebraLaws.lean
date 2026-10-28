@@ -46,6 +46,12 @@ theorem mul_smul (k : ℝ) (a b : G2) : mul a (smul k b) = smul k (mul a b) := b
 theorem smul_smul (k m : ℝ) (a : G2) : smul k (smul m a) = smul (k * m) a := by
   simp only [smul]; ext <;> ring
 
+/-- Multiplying by an embedded scalar is scalar multiplication: `(scalar k) b = k • b` — the algebra
+    companion of the `scalar` constructor, so a `scalar k` factor pulls straight out as a `smul`
+    (replacing the old `smul k one` factor + `smul_mul`/`one_mul`). -/
+theorem scalar_mul (k : ℝ) (b : G2) : mul (scalar k) b = smul k b := by
+  simp only [mul, scalar, smul]; ext <;> ring
+
 /-- `1 • a = a`. -/
 theorem one_smul (a : G2) : smul 1 a = a := by simp only [smul]; ext <;> ring
 
@@ -105,6 +111,11 @@ theorem mul_smul (k : ℝ) (a b : G3) : mul a (smul k b) = smul k (mul a b) := b
 /-- Scalar multiples compose: `k • (m • a) = (k·m) • a`. -/
 theorem smul_smul (k m : ℝ) (a : G3) : smul k (smul m a) = smul (k * m) a := by
   simp only [smul]; ext <;> ring
+
+/-- Multiplying by an embedded scalar is scalar multiplication: `(scalar k) b = k • b` — the algebra
+    companion of the `scalar` constructor (3D twin of the G2 lemma). -/
+theorem scalar_mul (k : ℝ) (b : G3) : mul (scalar k) b = smul k b := by
+  simp only [mul, scalar, zero, smul]; ext <;> ring
 
 /-- `1 • a = a`. -/
 theorem one_smul (a : G3) : smul 1 a = a := by simp only [smul]; ext <;> ring

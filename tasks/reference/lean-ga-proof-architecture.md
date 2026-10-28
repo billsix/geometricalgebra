@@ -415,6 +415,72 @@ components so each list now documents exactly the components its proof touches
 How to decide whether a hypothesis is needed — and how to read a failed delete-and-rebuild — is the
 "Hypotheses" section below.
 
+## Scalars into the algebra: the `scalar` constructor, and dot/wedge vs grade projection
+
+Two linked conventions about how a **scalar** (`ℝ`) and a **grade** relate to a multivector. (Decided and
+— for the scalar constructor — implemented 2026-10-28, William Emerison Six <billsix@gmail.com>; full work
+record and the site catalog: `tasks/lean-dot-wedge-grade-projection-faithfulness.md`.)
+
+### Embed a scalar with the `scalar` constructor, not `smul k one`
+
+`dot a b : ℝ`, `normSq a : ℝ` and `(r : ℝ)` are genuine scalars (per "Coordinates only when needed":
+genuine scalars stay scalar). To put one *into* the algebra — needed whenever it appears in an
+object-valued conclusion, e.g. the fundamental identity `a b = ⟨scalar part⟩ + a∧b` — use the grade-0
+**constructor `scalar : ℝ → Gₙ`**, paired with the **`IsScalar` predicate**, exactly as `vec`/`IsVector`
+pair. Do **not** write `smul k one` ("multiply `one` by `k` to change the type") — the maintainer's
+decision: a named constructor + predicate reads as what it is, where `smul k one` reads as arithmetic.
+
+- `scalar a` = `⟨a,0,…,0⟩`; `IsScalar a` = "every non-scalar coordinate is 0". Bridges mirror the vector
+  ones: `eq_scalar_of_isScalar : IsScalar a → a = scalar a.s`, `isScalar_scalar : IsScalar (scalar a)`,
+  `isScalar_one : IsScalar one`.
+- **Algebra companion:** `AlgebraLaws.scalar_mul : mul (scalar k) b = smul k b` — an embedded-scalar
+  factor pulls out as a `smul` in one step (it replaces the older `smul k one` factor followed by
+  `smul_mul` + `one_mul`).
+- **State (2026-10-28):** G3 always had `scalar` (`{ zero with s := a }`). G2 gained `scalar`
+  (named-fields, since G2 has no `zero`) + `isScalar_scalar` + `eq_scalar_of_isScalar` (renamed from the
+  old `eq_smul_one_of_isScalar`). All grade-0 embeddings of `dot`/`normSq` in conclusions now read
+  `scalar (…)`: `G2`/`G3` `mul_eq_dot_add_wedge`, `dot_is_sym_part`, `vec_mul_eq_dot_add_wedge`,
+  `mul_vec_self` (G3 and `ProjectionRotation2D`), and the `hsplit`s in `Projection3D`/`StandardPosition2D`.
+  **G1 was deliberately left on `smul k one`** (it has neither `scalar` nor `IsScalar`; it is the trivial
+  algebra, and `GradeProjection`/the predicate set are G2/G3 only) — a small follow-up if parity is ever
+  wanted. `eq_smul_basis` keeps its `smul g.s one` term on purpose: there every term is `smul coord basis`
+  and `one` is the grade-0 *basis blade*, not a type-cast.
+
+### dot/wedge/measures and `rVectorPart`: coordinate reads vs grade projection (decision: bridging lemmas)
+
+In **Python** (`base.py`) the products ARE grade projections of the geometric product:
+`inner_product = (a*b).r_vector_part(|r−s|)`, `outer_product = (a*b).r_vector_part(r+s)`,
+`scalar_product = ⟨a*b⟩₀`. The rank/grade *is* the definition. In **Lean** we mostly read a raw coordinate
+field instead: `dot := (mul a b).s`, `normSq := (mul a (reverse a)).s`, `signedArea := (mul … ).c12`,
+`signedVolume := (wedge … ).c123`, and `wedge` is a standalone coordinate formula — even though the
+grade-projection operator **`rVectorPart` already exists** (`GradeProjection.lean`, G2 & G3; with
+`evenPart`/`oddPart`, `rVectorPart_idem`, `rVectorPart_complete`) and is already how `Contractions.lean`
+defines `leftContraction`/`rightContraction`.
+
+Only **1-dimensional grades** are a single coordinate, so only these reads are a whole-grade projection:
+grade 0 (`.s`, everywhere) and the **top** grade (G2 grade 2 = `.c12`, G3 grade 3 = `.c123`). A G3 `.c12`
+(grade 2 is 3-dimensional there) is NOT a whole-grade read and is out of scope. Sites of the in-scope
+reads: `dot`/`normSq` (`.s`, G1/G2/G3); `Measures.signedArea` (`.c12`), `Cross.signedVolume` (`.c123`),
+`MathlibBridge` det (`.c12`), `Rotation2D.uvec_wedge`/`TrigEquiv` sine (`.c12`). Exempt: operation
+definitions, grade predicates, the `eq_…_of_is…` object-reconstruction bridges, `normSq_eq_sum_sq`, and
+every G3 grade-1/grade-2 single-coordinate use.
+
+**Decision (2026-10-28): keep the definitions as-is and add bridging lemmas** (option (a) below) — the
+definitions are correct, fast to `simp`, and `dot`/`normSq` rightly return `ℝ`; a small set of lemmas ties
+them to the grade projection to record "the grade IS the definition" and mirror Python, disturbing no
+existing proof: `dot a b = (rVectorPart 0 (mul a b)).s`, `wedge a b = rVectorPart (r+s) (mul a b)` (for
+homogeneous inputs), `signedArea … = (rVectorPart 2 …).c12`, `signedVolume … = (rVectorPart 3 …).c123`.
+*(As of 2026-10-28 these bridging lemmas are planned, not yet written — tracked in the task doc.)*
+
+**Alternatives, kept here in case the decision is revisited:**
+- **(a) bridging lemmas only** — chosen; near-zero risk; definitions unchanged.
+- **(b) redefine the products via `rVectorPart`** (`dot a b := (rVectorPart 0 (mul a b)).s`, `wedge` via
+  `rVectorPart`, measures likewise) so Lean structurally matches Python. Higher fidelity but every
+  `simp only [dot]`/`simp only [wedge]` proof in the corpus would need its unfold set updated and
+  re-verified; if taken, spell the grade-0 result with the `scalar` constructor at the same time.
+- **(c) leave entirely as-is** — rejected: `Contractions.lean` already uses `rVectorPart`, so dot/wedge are
+  the inconsistent holdouts, and the Python parity point stands.
+
 ## Hestenes projection / rejection (uniform, all grades)
 
 gacalc's `project`/`reject` (base.py; Hestenes & Sobczyk p.18 eqs 2.9) are two formulas, uniform for a
