@@ -128,13 +128,13 @@ grade-pure object's coordinates.
 
 **The 2D grade-pure predicate set (`G2.lean`, 2026-10-28).** 𝒢₂ now carries the full grade-pure set
 mirroring Python's `is_*` (`base.py`): **`IsScalar`** (grade 0), **`IsVector`** (grade 1), **`IsBivector`**
-(grade 2 — the pseudoscalar), each with its `eq_…_of_is…` bridge (`eq_smul_one_of_isScalar` →`s*1`,
+(grade 2 — the pseudoscalar), each with its `eq_…_of_is…` bridge (`eq_scalar_of_isScalar` →`scalar a.s`,
 `eq_vec_of_isVector` →`vec`, `eq_smul_e12_of_isBivector` →`c*e₁₂`) and `is…_…` recognizer
-(`isScalar_one`, `isVector_vec`, `isBivector_e12`/`isBivector_I`). Two **grade-of-result** lemmas show the
+(`isScalar_scalar`/`isScalar_one`, `isVector_vec`, `isBivector_e12`/`isBivector_I`). Two **grade-of-result** lemmas show the
 typed-object use: `isScalar_mul_self_of_isVector` (`a a` is a scalar, `G2.lean`) and
 `isBivector_wedge_of_isVector` (`a∧b` is a bivector, `G2.lean`); `vec_wedge_I_eq_zero` was refactored
 into a corollary of the object-form `wedge_isVector_isBivector_eq_zero`. **Object-out parity with G3
-(2026-10-28):** `G2.dot_is_sym_part` (`½(ab+ba) = (a·b)*1`), `wedge_is_antisym_part` (`½(ab−ba) = a∧b`)
+(2026-10-28):** `G2.dot_is_sym_part` (`½(ab+ba) = scalar(a·b)`), `wedge_is_antisym_part` (`½(ab−ba) = a∧b`)
 and `I_sq` (`= neg one`) now conclude about *objects*, matching their G3 twins — no G2 public statement
 leaks raw coordinates except the deliberate equivalence bridge `dot_eq_coord_sum` and the reals-in
 coordinate leaves.
@@ -142,8 +142,9 @@ coordinate leaves.
 `is_versor`/`is_rotor` predicate (versor/rotor are generated *types*, not `Gn` predicates), so no bare
 `IsVersor` was added. There is no grade-3 trivector in 2D. **3D parity (done 2026-10-28):** `G3` carries
 `IsVector`/`IsBivector`/`IsTrivector`/`IsEvenVersor`/`IsRotor` and now also **`IsScalar`** (grade 0) with
-`eq_scalar_of_isScalar` →`scalar a.s` (G3's constructor form, matching `eq_bivector`/`eq_trivector`, not
-2D's `smul one`), `isScalar_scalar`/`isScalar_one` recognizers, and the grade-of-result
+`eq_scalar_of_isScalar` →`scalar a.s` (constructor form, matching `eq_bivector`/`eq_trivector`; G2 later
+gained the matching `scalar` constructor too, 2026-10-28 — see "Scalars into the algebra"),
+`isScalar_scalar`/`isScalar_one` recognizers, and the grade-of-result
 `isScalar_mul_self_of_isVector` (`a a` is a scalar). The wedge/wedge3 grade lemmas were skipped — no 3D
 consumer (the 2D `isBivector_wedge_of_isVector` served the 2D-only `v∧I=0`, which has no 3D analogue).
 (Part 1 of the originating task — the
