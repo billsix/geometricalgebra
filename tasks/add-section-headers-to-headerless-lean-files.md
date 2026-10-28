@@ -12,7 +12,7 @@ Four proof files in `proofs/GacalcProofs/` carry **zero** `/-! ### … -/` secti
 group the existing declarations by phase — a **purely additive** change (new comment lines only, no
 reorder, no body touched), so `make lean` must stay green and `git diff` must show only inserted
 `/-! ### -/` lines. Spun out of the file-structure sweep
-(`tasks/study-and-reorder-lean-file-structure.md`), which found these four while confirming the rest of
+(`tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`), which found these four while confirming the rest of
 the corpus was already sectioned.
 
 ## The four files (line counts as of 2026-10-28)
@@ -40,4 +40,4 @@ the corpus was already sectioned.
 
 - The four files sectioned; `make lean` green; diff = additive header lines only.
 
-See also: `tasks/study-and-reorder-lean-file-structure.md`, `tasks/reference/lean-ga-proof-architecture.md`.
+See also: `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`, `tasks/reference/lean-ga-proof-architecture.md`.

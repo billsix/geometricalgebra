@@ -19,7 +19,7 @@ lifted to the full object-equality form its G3 twin already uses, downstream con
 ## Context (cold start)
 
 - Raised 2026-10-28 by the maintainer while reviewing `G2.dot_is_sym_part`/`wedge_is_antisym_part`
-  during the file-structure sweep (`tasks/study-and-reorder-lean-file-structure.md`). Sibling of
+  during the file-structure sweep (`tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`). Sibling of
   [[lean-basis-constants-self-documenting]]; both are "make the contents live up to the comment,"
   and both are **content** changes out of scope for the content-preserving reorder sweep.
 - The defect is a **weaker interface**, not a wrong proof: the current G2 statements pin only the
@@ -77,5 +77,5 @@ the `simp only` set and an `ext <;> ring` (the goal is now an object equality, l
 - Every coordinate-leaking G2 conclusion that has an object-out G3 twin lifted to match; consumers
   updated; `make lean` green; the A/B/C examples in the architecture doc still accurate.
 
-See also: [[lean-basis-constants-self-documenting]], `tasks/study-and-reorder-lean-file-structure.md`,
+See also: [[lean-basis-constants-self-documenting]], `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`,
 `tasks/reference/lean-ga-proof-architecture.md` (the A/B/C judgment + "objects in, scalars in the body").

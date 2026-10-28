@@ -76,8 +76,9 @@ place as a single debatable leaf used only by `Versor2D`.
 - `proofs/GacalcProofs/G1.lean`, `proofs/GacalcProofs/G3.lean` — Axis 2 (basis-first, headers).
 - `proofs/GacalcProofs/Versor2D.lean`, `proofs/GacalcProofs/Projection2D.lean` — Axis 1 (dot/wedge moved out).
 - `tasks/reference/lean-ga-proof-architecture.md` — the within-file-order rubric + the `dot`/`wedge` home note.
-- `tasks/adhoc/study-and-reorder-lean-file-structure/reorder_lean.py` — the reorder tool (one-shot;
-  `git rm` on archive unless the maintainer wants it promoted to `tools/` for future reorders).
+- `tasks/adhoc/study-and-reorder-lean-file-structure/reorder_lean.py` — the reorder tool; one-shot,
+  `git rm`'d in this archive commit (recoverable from git history if a future reorder wants it; it is a
+  generic block-reassembler + per-file PLANs, so it could be promoted to `tools/` instead).
 
 ## Follow-ups
 

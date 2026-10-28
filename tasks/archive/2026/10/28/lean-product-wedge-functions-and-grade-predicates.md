@@ -8,7 +8,7 @@
 **Updated:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
 
 > **Later move (file-structure task, 2026-10-28):** `dot`/`wedge` and their lemmas were subsequently
-> relocated into `G2.lean` (`tasks/study-and-reorder-lean-file-structure.md`). The `Projection2D.lean`
+> relocated into `G2.lean` (`tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`). The `Projection2D.lean`
 > / `Versor2D.lean` locations cited below — including "where `wedge` currently lives" — were correct at
 > the time of this task; `isBivector_wedge_of_isVector` and `wedge_isVector_isBivector_eq_zero` now live
 > in `G2.lean`.

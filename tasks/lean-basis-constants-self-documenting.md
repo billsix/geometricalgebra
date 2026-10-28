@@ -19,7 +19,7 @@ those def bodies changed (a semantic-preserving edit, not a behavior change).
 ## Context (cold start)
 
 - Raised 2026-10-28 by the maintainer while reviewing the G2 basis block during the file-structure
-  sweep (`tasks/study-and-reorder-lean-file-structure.md`). This is a sibling of the object-out
+  sweep (`tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`). This is a sibling of the object-out
   parity task [[lean-g2-object-out-parity]] — both are "make the contents live up to the comment,"
   and both are **content** changes deliberately out of scope for the content-preserving reorder sweep.
 - The current form (example, `proofs/GacalcProofs/G2.lean`):
@@ -72,5 +72,5 @@ those def bodies changed (a semantic-preserving edit, not a behavior change).
 - Basis constants + constructors in G1/G2/G3 in named-field form; `make lean` green; `git diff`
   limited to those def bodies (plus the new G2 `zero` and any folded inline literals).
 
-See also: [[lean-g2-object-out-parity]], `tasks/study-and-reorder-lean-file-structure.md`,
+See also: [[lean-g2-object-out-parity]], `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`,
 `tasks/reference/lean-ga-proof-architecture.md`.
