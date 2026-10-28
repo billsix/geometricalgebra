@@ -1,7 +1,7 @@
 # Lean: products as functions, grade predicates for every type, narrow ℝ→G2 (2D)
 
 **Status:** done — 2026-10-28 (2D scope, per the "2D now, 3D later" go-ahead). `make lean` green
-(8958 jobs; completeness gate OK). 3D parity is the follow-up `tasks/lean-grade-predicates-3d.md`.
+(8958 jobs; completeness gate OK). 3D parity is the follow-up `tasks/archive/2026/10/28/lean-grade-predicates-3d.md`.
 **Priority:** 5
 **Difficulty:** 6
 **Created:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
@@ -72,4 +72,4 @@ polynomial-tier sweep and the 2026-10-20 follow-up (`lean-ga-proof-architecture.
 
 ## Follow-up
 
-- `tasks/lean-grade-predicates-3d.md` — add `IsScalar` + grade-of-result lemmas to `G3` (3D parity).
+- `tasks/archive/2026/10/28/lean-grade-predicates-3d.md` — add `IsScalar` + grade-of-result lemmas to `G3` (3D parity).
