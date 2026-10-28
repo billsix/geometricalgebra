@@ -80,7 +80,7 @@ theorem plane_eq_wedge (a1 a2 a3 b1 b2 b3 : ℝ)
   have hd0 : dot (vec a1 a2 a3) (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3))) = 0 := by
     rw [dot_comm]; exact reject_perp_dot (vec a1 a2 a3) (vec b1 b2 b3) hdaa
   rw [mul_eq_dot_add_wedge (isVector_vec a1 a2 a3) hrv, wedge_reject, hd0]
-  simp only [smul, one, add]; ext <;> ring
+  simp only [scalar, zero, add]; ext <;> ring
 
 /-- **Hestenes rejection** `reject_B A = (A ∧ B) · B⁻¹` — the component of `A` orthogonal to the
     subspace (blade) `B` (gacalc `reject`, base.py; Hestenes & Sobczyk p.18). `B` may be a vector or a
@@ -105,11 +105,10 @@ theorem reject_vec_eq {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b) (ha
   rw [eq_vec_of_isVector ha_isv] at ha
   have hsplit : wedge (vec b.c1 b.c2 b.c3) (vec a.c1 a.c2 a.c3)
       = sub (mul (vec b.c1 b.c2 b.c3) (vec a.c1 a.c2 a.c3))
-            (smul (dot (vec b.c1 b.c2 b.c3) (vec a.c1 a.c2 a.c3)) one) := by
-    rw [vec_mul_eq_dot_add_wedge]; simp only [sub, add, smul, one]; ext <;> ring
+            (scalar (dot (vec b.c1 b.c2 b.c3) (vec a.c1 a.c2 a.c3))) := by
+    rw [vec_mul_eq_dot_add_wedge]; simp only [sub, add, scalar, zero]; ext <;> ring
   rw [reject, hsplit, GacalcProofs.G3.sub_mul, GacalcProofs.G3.mul_assoc,
-      mul_vec_inverse_self a.c1 a.c2 a.c3 ha, GacalcProofs.G3.mul_one, GacalcProofs.G3.smul_mul,
-      GacalcProofs.G3.one_mul]
+      mul_vec_inverse_self a.c1 a.c2 a.c3 ha, GacalcProofs.G3.mul_one, GacalcProofs.G3.scalar_mul]
   -- Left with `b − (b·a)a⁻¹ = b − proj_a b`; the two rejection terms agree once `a⁻¹`'s scalar is folded.
   congr 1
   rw [proj, inverse, reverse_vec, GacalcProofs.G3.smul_smul]

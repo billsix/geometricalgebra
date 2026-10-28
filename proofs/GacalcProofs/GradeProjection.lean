@@ -43,6 +43,27 @@ theorem rVectorPart_complete (a : G2) :
 theorem even_add_odd (a : G2) : add (evenPart a) (oddPart a) = a := by
   simp only [evenPart, oddPart, rVectorPart, add, smul, one, e_1, e_2, e_12]; ext <;> ring
 
+/-! ### dot and wedge as grade projections (the Python `r_vector_part` view)
+
+    Python defines the products AS grade projections of the geometric product
+    (`inner_product = ⟨a*b⟩_|r−s|`, `outer_product = ⟨a*b⟩_(r+s)`, `scalar_product = ⟨a*b⟩₀`); the Lean
+    `dot`/`wedge` are coordinate-level for speed. These bridges record that the coordinate forms ARE the
+    grade projections. See `tasks/reference/lean-ga-proof-architecture.md` → "Scalars into the algebra". -/
+
+/-- **The dot product is the grade-0 part of the geometric product** — Python's
+    `scalar_product = ⟨a*b⟩₀`: `scalar (a·b) = ⟨a b⟩₀`. (`dot` reads `(a b).s`; this names it as a grade
+    projection.) Holds for all multivectors. -/
+theorem dot_eq_rVectorPart_zero (a b : G2) : scalar (dot a b) = rVectorPart 0 (mul a b) := by
+  simp only [scalar, dot, rVectorPart, smul, one]; ext <;> ring
+
+/-- **The wedge of two vectors is the grade-2 part of their geometric product** — Python's
+    `outer_product = ⟨a*b⟩_(r+s)` with `r = s = 1`: `a∧b = ⟨a b⟩₂` for vectors. -/
+theorem wedge_eq_rVectorPart_two {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    wedge a b = rVectorPart 2 (mul a b) := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  simp only [wedge, rVectorPart, mul, smul, e_12, has, ha12, hbs, hb12]; ext <;> ring
+
 end G2
 
 namespace G3
@@ -75,6 +96,22 @@ theorem rVectorPart_complete (a : G3) :
 /-- **Even + odd = whole:** `even_part a + odd_part a = a`. -/
 theorem even_add_odd (a : G3) : add (evenPart a) (oddPart a) = a := by
   simp only [evenPart, oddPart, rVectorPart, add]; ext <;> ring
+
+/-! ### dot and wedge as grade projections (the Python `r_vector_part` view) — see the G2 note above -/
+
+/-- **The dot product is the grade-0 part of the geometric product** (3D) — Python
+    `scalar_product = ⟨a*b⟩₀`: `scalar (a·b) = ⟨a b⟩₀`. Holds for all multivectors. -/
+theorem dot_eq_rVectorPart_zero (a b : G3) : scalar (dot a b) = rVectorPart 0 (mul a b) := by
+  simp only [scalar, dot, rVectorPart, zero]
+
+/-- **The wedge of two vectors is the grade-2 part of their geometric product** (3D) — Python
+    `outer_product = ⟨a*b⟩_(r+s)` with `r = s = 1`: `a∧b = ⟨a b⟩₂` for vectors. -/
+theorem wedge_eq_rVectorPart_two {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    wedge a b = rVectorPart 2 (mul a b) := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  simp only [wedge, rVectorPart, mul, has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+  ext <;> ring
 
 end G3
 

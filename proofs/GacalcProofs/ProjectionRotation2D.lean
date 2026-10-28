@@ -33,9 +33,9 @@ noncomputable def normalizeVec (a : G2) : G2 := smul (1 / magnitude a) a
 
 /-- A vector squares to its squared magnitude: `a a = |a|²*1` (2D twin of `G3.mul_vec_self`). -/
 theorem mul_vec_self {a : G2} (ha : IsVector a) :
-    mul a a = smul (normSq a) one := by
+    mul a a = scalar (normSq a) := by
   obtain ⟨has, ha12⟩ := ha
-  simp only [mul, normSq, reverse, smul, one, has, ha12]
+  simp only [mul, normSq, reverse, scalar, has, ha12]
   ext <;> ring
 
 /-- **The rejection of a vector from the `f∧t` plane is zero** (2D): the plane is the whole space, so a
@@ -79,8 +79,7 @@ theorem projRotation_carries_from_to {f t : G2} (hf : IsVector f) (ht : IsVector
   rw [projRotation_eq_vec_mul hf ht hf]
   simp only [normalizeVec, GacalcProofs.G2.mul_smul, GacalcProofs.G2.smul_mul,
     GacalcProofs.G2.smul_smul]
-  rw [mul_vec_self hf, GacalcProofs.G2.smul_mul, GacalcProofs.G2.one_mul,
-    GacalcProofs.G2.smul_smul]
+  rw [mul_vec_self hf, GacalcProofs.G2.scalar_mul, GacalcProofs.G2.smul_smul]
   congr 1
   have hmf := magnitude_ne_zero_of_normSq_ne_zero hfn
   have hmt := magnitude_ne_zero_of_normSq_ne_zero htn

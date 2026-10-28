@@ -315,9 +315,9 @@ theorem reverse_vec (x y z : ℝ) : reverse (vec x y z) = vec x y z := by
     bivector (outer) part `a∧b`. Unconditional; pure `ring`. -/
 theorem vec_mul_eq_dot_add_wedge (a1 a2 a3 b1 b2 b3 : ℝ) :
     mul (vec a1 a2 a3) (vec b1 b2 b3)
-      = add (smul (dot (vec a1 a2 a3) (vec b1 b2 b3)) one)
+      = add (scalar (dot (vec a1 a2 a3) (vec b1 b2 b3)))
             (wedge (vec a1 a2 a3) (vec b1 b2 b3)) := by
-  simp only [mul, wedge, smul, one, dot, add, vec]; ext <;> ring
+  simp only [mul, wedge, scalar, zero, dot, add, vec]; ext <;> ring
 
 /-- **Orthogonal vectors' geometric product is their wedge:** for vectors with `a · b = 0`,
     `a b = a ∧ b`. A corollary of the fundamental identity — orthogonality kills the scalar part,
@@ -327,7 +327,7 @@ theorem vec_mul_perp (a1 a2 a3 b1 b2 b3 : ℝ)
     (h : dot (vec a1 a2 a3) (vec b1 b2 b3) = 0) :
     mul (vec a1 a2 a3) (vec b1 b2 b3) = wedge (vec a1 a2 a3) (vec b1 b2 b3) := by
   rw [vec_mul_eq_dot_add_wedge, h]
-  simp only [smul, one, add]; ext <;> ring
+  simp only [scalar, zero, add]; ext <;> ring
 
 /-! ### Grade-structure predicates (vector / bivector / trivector) with their bridges -/
 
@@ -357,6 +357,26 @@ theorem IsVector.sub {a b : G3} (ha : IsVector a) (hb : IsVector b) : IsVector (
   obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
   refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;>
     simp [GacalcProofs.G3.sub, has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+
+/-- `a` is a **scalar** (grade 0): every part but the scalar coefficient `s` vanishes — how "`a` is a
+    scalar" is stated for an arbitrary `a : G3`, the 𝒢₃ mirror of Python's `is_scalar` (`base.py`) and
+    of `G2.IsScalar`. The grade-0 companion of `IsVector`/`IsBivector`/`IsTrivector`. -/
+def IsScalar (a : G3) : Prop :=
+  a.c1 = 0 ∧ a.c2 = 0 ∧ a.c3 = 0 ∧ a.c12 = 0 ∧ a.c13 = 0 ∧ a.c23 = 0 ∧ a.c123 = 0
+
+/-- A grade-0 multivector is the `scalar` of its own scalar coefficient — the bridge to the `scalar …`
+    form (the `eq_vec_of_isVector` analogue, matching `eq_bivector_of_isBivector`/
+    `eq_trivector_of_isTrivector`). -/
+theorem eq_scalar_of_isScalar {a : G3} (ha : IsScalar a) : a = scalar a.s := by
+  obtain ⟨h1, h2, h3, h12, h13, h23, h123⟩ := ha
+  ext <;> simp only [scalar, zero] <;> first | rfl | assumption
+
+/-- A coordinate `scalar a` is grade-0 — discharges `IsScalar` for a caller holding a concrete `scalar`. -/
+theorem isScalar_scalar (a : ℝ) : IsScalar (scalar a) :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+/-- The scalar unit `1` is a scalar. -/
+theorem isScalar_one : IsScalar one := ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /-- `B` is a **bivector** (grade 2): its scalar, vector and pseudoscalar parts vanish — how "`B` is a
     (simple, in 𝒢₃ always simple) bivector" is stated for an arbitrary `B : G3`. The plane companion of
@@ -396,10 +416,10 @@ theorem isTrivector_trivector (t : ℝ) : IsTrivector (trivector t) :=
     scalar (inner) part `a·b` and its bivector (outer) part `a∧b`. The master rewrite that turns a
     geometric product of vectors into inner + outer, coordinate-free at the call site. -/
 theorem mul_eq_dot_add_wedge {a b : G3} (ha : IsVector a) (hb : IsVector b) :
-    mul a b = add (smul (dot a b) one) (wedge a b) := by
+    mul a b = add (scalar (dot a b)) (wedge a b) := by
   obtain ⟨_, ha12, ha13, ha23, ha123⟩ := ha
   obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
-  simp only [mul, wedge, smul, one, dot, add]
+  simp only [mul, wedge, scalar, zero, dot, add]
   ext <;> simp only [ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123] <;> ring
 
 /-- **Orthogonal vectors' geometric product is their wedge** (arbitrary vectors): `a·b = 0 ⟹ a b = a∧b`.
@@ -407,7 +427,7 @@ theorem mul_eq_dot_add_wedge {a b : G3} (ha : IsVector a) (hb : IsVector b) :
 theorem mul_eq_wedge_of_perp {a b : G3} (ha : IsVector a) (hb : IsVector b) (h : dot a b = 0) :
     mul a b = wedge a b := by
   rw [mul_eq_dot_add_wedge ha hb, h]
-  simp only [smul, one, add]; ext <;> ring
+  simp only [scalar, zero, add]; ext <;> ring
 
 /-- **The wedge of vectors is antisymmetric:** `a∧b = −(b∧a)`. -/
 theorem wedge_antisymm {a b : G3} (ha : IsVector a) (hb : IsVector b) :
@@ -428,18 +448,25 @@ theorem dot_self_vec_eq_normSq {a : G3} (ha : IsVector a) : dot a a = normSq a :
   ring
 
 /-- `a a = |a|²*1` for a vector `a`. -/
-theorem mul_vec_self {a : G3} (ha : IsVector a) : mul a a = smul (normSq a) one := by
+theorem mul_vec_self {a : G3} (ha : IsVector a) : mul a a = scalar (normSq a) := by
   obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
-  simp only [normSq, mul, reverse, one, smul, has, ha12, ha13, ha23, ha123]
+  simp only [normSq, mul, reverse, scalar, zero, has, ha12, ha13, ha23, ha123]
   ext <;> ring
+
+/-- **The square of a vector is a scalar** (3D): `a a = |a|²*1` has only a grade-0 part — the
+    typed-object form of "`a²` is a scalar", via the `IsScalar` predicate. The 3D twin of
+    `G2.isScalar_mul_self_of_isVector`. -/
+theorem isScalar_mul_self_of_isVector {a : G3} (ha : IsVector a) : IsScalar (mul a a) := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> simp only [mul, has, ha12, ha13, ha23, ha123] <;> ring
 
 /-- **The dot product is the symmetric part of the geometric product** (3D): `½(ab + ba) = (a·b)*1`
     for vectors — the 3D twin of `G2.dot_is_sym_part`, in object form. -/
 theorem dot_is_sym_part {a b : G3} (ha : IsVector a) (hb : IsVector b) :
-    smul (1 / 2) (add (mul a b) (mul b a)) = smul (dot a b) one := by
+    smul (1 / 2) (add (mul a b) (mul b a)) = scalar (dot a b) := by
   obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
   obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
-  simp only [smul, add, mul, dot, one, has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+  simp only [smul, scalar, zero, add, mul, dot, has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
   ext <;> ring
 
 /-- **The wedge product is the antisymmetric part of the geometric product** (3D): `½(ab − ba) = a∧b`

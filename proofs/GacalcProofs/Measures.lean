@@ -2,6 +2,7 @@ import GacalcProofs.G2
 import GacalcProofs.G3
 import GacalcProofs.Trig
 import GacalcProofs.Cross
+import GacalcProofs.GradeProjection
 
 /-! # Measures: area, volume, signed area (Williamson & Trotter 1979)
 
@@ -69,6 +70,12 @@ noncomputable def signedArea (a1 a2 b1 b2 : ℝ) : ℝ := (mul (vec a1 a2) (vec 
 theorem signedArea_eq (a1 a2 b1 b2 : ℝ) :
     signedArea a1 a2 b1 b2 = a1 * b2 - a2 * b1 := by
   simp only [signedArea, mul, vec]; ring
+
+/-- **The signed area is the grade-2 (pseudoscalar) part** of the product of two 2D vectors — Python
+    reads the top-grade coefficient; this records `signedArea = ⟨a b⟩₂`'s `e₁₂` component. -/
+theorem signedArea_eq_rVectorPart_two (a1 a2 b1 b2 : ℝ) :
+    signedArea a1 a2 b1 b2 = (rVectorPart 2 (mul (vec a1 a2) (vec b1 b2))).c12 := by
+  simp only [signedArea, rVectorPart, smul, e_12]; ring
 
 end G2
 

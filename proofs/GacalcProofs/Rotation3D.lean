@@ -52,6 +52,8 @@ namespace GacalcProofs.G3
 
 open Real
 
+/-! ### The bisector and the from-vectors versor -/
+
 /-- The **half-angle (bisector) vector** of `from`/`to`: `h = |to|*from + |from|*to`.
     Scale each vector by the *other's* magnitude and add — the sum bisects the angle
     (`base.py` `versor_from_vectors`, the `h` there). Uses the general `magnitude = √normSq`
@@ -65,6 +67,8 @@ noncomputable def bisector (fromV toV : G3) : G3 :=
 noncomputable def versorFromVectors (fromV toV : G3) : G3 :=
   add (mul toV fromV) (smul (magnitude fromV * magnitude toV) one)
 
+/-! ### Supporting leaves: `|a|²` on a vector, and `(b*a)*a = |a|²*b` -/
+
 /-- `|a|² = a₁²+a₂²+a₃²` for a coordinate vector — the one analytic fact the identity below needs.
     `magnitude = √normSq`, so this is `normSq_vec` under the square root. -/
 theorem magnitude_sq_vec (a1 a2 a3 : ℝ) :
@@ -77,6 +81,8 @@ theorem vec_mul_mul_self {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     mul (mul b a) a = smul (normSq a) b := by
   rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb, normSq_vec a.c1 a.c2 a.c3]
   simp only [mul, vec, smul]; ext <;> ring
+
+/-! ### The versor–vector identities: `R*a = |a|*h` and `b*R = |b|*h` -/
 
 /-- **The half-angle versor times the from-vector is the (scaled) bisector**:
     `R*a = |a|*h`, where `R = versorFromVectors a b` and `h = bisector a b`.

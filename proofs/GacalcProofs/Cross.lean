@@ -1,4 +1,5 @@
 import GacalcProofs.G3
+import GacalcProofs.GradeProjection
 
 /-! # The cross product, the vector dual, and the scalar triple product (𝒢₃)
 
@@ -67,6 +68,12 @@ theorem dual_vec (x y z : ℝ) :
 /-- The **signed volume** of three vectors = the pseudoscalar (e₁₂₃) coefficient of `a ∧ b ∧ c`
     (gacalc `measure.signed_volume`; the 3×3 determinant with rows `a`, `b`, `c`). -/
 noncomputable def signedVolume (a b c : G3) : ℝ := (wedge (wedge a b) c).c123
+
+/-- **The signed volume is the grade-3 (pseudoscalar) part** of the triple wedge — Python reads the
+    top-grade coefficient; this records `signedVolume = ⟨a∧b∧c⟩₃`'s `e₁₂₃` component. -/
+theorem signedVolume_eq_rVectorPart_three (a b c : G3) :
+    signedVolume a b c = (rVectorPart 3 (wedge (wedge a b) c)).c123 := by
+  simp only [signedVolume, rVectorPart]
 
 /-- **The scalar triple product equals the signed volume:** `a · (b × c) = signedVolume a b c`.
     Both are the 3×3 determinant `det[a, b, c]` — the scalar-triple form via the cross product, the
