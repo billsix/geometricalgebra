@@ -1,83 +1,54 @@
 # Make the Lean basis-constant definitions self-documenting (named fields, not positional tuples)
 
-**Status:** proposed — needs go-ahead (the maintainer will revisit another day). Form **decided**:
-named-all-fields (see Decision).
+**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK). 21 positional
+basis-constant defs across G1/G2/G3 converted to named-all-fields; aliases and parameterized
+constructors left as-is.
 **Priority:** 7
 **Difficulty:** 3
 **Created:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
+**Updated:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
-The basis-constant `def`s in `G1.lean`/`G2.lean`/`G3.lean` are written as **positional**
-anonymous-constructor literals (`def one : G2 := ⟨1, 0, 0, 0⟩`), so a reader must track the field
-order from `structure G2` (`s, c1, c2, c12`) to see which coefficient is the `1`. Rewrite them in a
-**self-documenting named-field** form. **Decision (maintainer, 2026-10-28): option (a),
-named-all-fields** — `def e_1 : G2 := { s := 0, c1 := 1, c2 := 0, c12 := 0 }`, spelling out every
-field, **not** the `{ zero with … }` shorthand. "Done" = every concrete positional basis constant and
-the `vec`/`I_inv` constructors across G1/G2/G3 read in named-all-fields form, `make lean` green, and
-`git diff` shows only those def bodies changed (a semantic-preserving edit, not a behavior change).
+The basis-constant `def`s in `G1.lean`/`G2.lean`/`G3.lean` were **positional** anonymous-constructor
+literals (`def one : G2 := ⟨1, 0, 0, 0⟩`), forcing a reader to track the field order from the
+`structure` to see which coefficient is the `1`. Rewrote them in self-documenting **named-all-fields**
+form (`def e_1 : G2 := { s := 0, c1 := 1, c2 := 0, c12 := 0 }`). Definitionally equal to the old
+literals, so every proof passed unchanged — verified by `make lean`; `git diff` was the converted
+`def` lines only (no proof body touched).
 
 ## Decision (2026-10-28)
 
-**Option (a), named-all-fields, was chosen over (b) `{ zero with … }`.** The maintainer preferred the
-fully-explicit form. Consequences: **no `zero` is added to G2** (option (b) would have needed one), and
-G2's inline `(⟨0,0,0,0⟩ : G2)` literals are **left as-is**.
+**Option (a), named-all-fields, over (b) `{ zero with … }`** — the maintainer preferred the
+fully-explicit form. Consequences: **no `zero` was added to G2** (option (b) would have needed one),
+and G2's inline `(⟨0,0,0,0⟩ : G2)` literals were **left as-is**.
 
-- **(a) named-all-fields** — `{ s := 0, c1 := 1, c2 := 0, c12 := 0 }`; every field spelled out.
-  **← chosen.**
-- **(b) `{ zero with … }`** — "zero except c1 = 1"; matches G3's existing `bivector`/`trivector`/
-  `scalar` constructors but needs a `zero` constant first. **Not chosen.**
+## What was done
 
-## Context (cold start)
+**21 concrete positional `def`s converted** to named-all-fields (`{ s := …, c1 := …, … }` in each
+file's field order — G1 `s,c1`; G2 `s,c1,c2,c12`; G3 `s,c1,c2,c3,c12,c13,c23,c123`):
 
-- Raised 2026-10-28 by the maintainer while reviewing the G2 basis block during the file-structure
-  sweep (`tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`). This is a sibling of the
-  object-out parity task [[lean-g2-object-out-parity]] — both are "make the contents live up to the
-  comment," and both are **content** changes deliberately out of scope for the content-preserving
-  reorder sweep.
-- The current form (example, `proofs/GacalcProofs/G2.lean`):
-  ```lean
-  def one : G2 := ⟨1, 0, 0, 0⟩
-  def e_1 : G2 := ⟨0, 1, 0, 0⟩
-  def e_2 : G2 := ⟨0, 0, 1, 0⟩
-  def e_12 : G2 := ⟨0, 0, 0, 1⟩
-  def vec (x y : ℝ) : G2 := ⟨0, x, y, 0⟩
-  ```
-- The target form (the decided option (a), named-all-fields):
-  ```lean
-  def one  : G2 := { s := 1, c1 := 0, c2 := 0, c12 := 0 }
-  def e_1  : G2 := { s := 0, c1 := 1, c2 := 0, c12 := 0 }
-  def e_2  : G2 := { s := 0, c1 := 0, c2 := 1, c12 := 0 }
-  def e_12 : G2 := { s := 0, c1 := 0, c2 := 0, c12 := 1 }
-  def vec (x y : ℝ) : G2 := { s := 0, c1 := x, c2 := y, c12 := 0 }
-  ```
+- **G1 (4):** `zero`, `one`, `e_1`, `vec`.
+- **G2 (6):** `one`, `e_1`, `e_2`, `e_12`, `vec`, `I_inv`.
+- **G3 (11):** `zero`, `one`, `e_1`, `e_2`, `e_3`, `e_12`, `e_13`, `e_23`, `e_123`, `vec`, `I_inv`.
 
-## Scope
+**Left unchanged, by design:**
 
-1. Convert the **concrete positional `def`s** to named-all-fields across **G1/G2/G3**: the basis
-   constants (`one`/`e_1`/…/`e_123`), `vec`, and the positional `I_inv` (`G2.I_inv := ⟨0,0,0,-1⟩` and
-   `G3.I_inv := ⟨0,…,-1⟩` → `{ s := 0, …, c12 := -1 }` / `{ s := 0, …, c123 := -1 }`).
-2. **Leave alias defs** — `G2.I := e_12`, `G3.I := e_123`, `G1.I := e_1`, `G1.I_inv := e_1`. They are
-   already self-documenting (a name, not a positional literal).
-3. **Leave the already-non-positional parameterized constructors** — G3's `bivector`/`trivector`/
-   `scalar` are `{ zero with c12 := p }`-style and read fine; do **not** expand them to all-fields
-   (strictly more verbose, no readability gain).
-4. **No `zero` is added to G2, and its inline `(⟨0,0,0,0⟩ : G2)` literals** (in `wedge_self_vec`,
-   `wedge_isVector_isBivector_eq_zero`, and `vec_wedge_I_eq_zero` in `Projection2D.lean`) **are left
-   as-is** — a bare `⟨0,0,0,0⟩` already reads as zero; this is the consequence of choosing (a) over (b).
+- **Alias defs** — `G2.I := e_12`, `G3.I := e_123`, `G1.I := e_1`, `G1.I_inv := e_1` — already a name,
+  not a positional literal.
+- **Parameterized `{ zero with … }` constructors** — G3's `bivector`/`trivector`/`scalar` — already
+  self-documenting; expanding them to all-fields would be strictly more verbose.
+- **G2's inline `(⟨0,0,0,0⟩ : G2)` zero literals** in its wedge lemmas — a bare `⟨0,0,0,0⟩` already
+  reads as zero, and (a) adds no `zero` to fold them into.
 
-## Risk / verification
+The conversion was a one-off positional→named transform targeting exactly the named defs (it skipped
+aliases, operations, and `{ zero with … }` naturally, since those are not `:= ⟨…⟩` basis constants);
+not kept as a script (it only reproduces a mechanical file edit).
 
-- `{ s := 1, c1 := 0, … }` and `⟨1, 0, 0, 0⟩` both elaborate to `G2.mk 1 0 0 0` (definitionally equal),
-  so proofs that `simp only [one]; ext <;> ring` should be unaffected — **but confirm with `make lean`,
-  do not assume** (USE_LEAN image; runs `proofs/check.sh`).
-- Lean only. The generated Python `g*.py` are untouched.
-- Content change, so it is **not** part of the content-preserving reorder sweep; its own commit.
+## Files touched
 
-## Deliverables
-
-- The concrete positional basis constants + `vec`/`I_inv` in G1/G2/G3 in named-all-fields form;
-  `make lean` green; `git diff` limited to those def bodies (no new `zero`, inline literals untouched).
+- `proofs/GacalcProofs/G1.lean`, `proofs/GacalcProofs/G2.lean`, `proofs/GacalcProofs/G3.lean` — the
+  converted basis-constant / `vec` / `I_inv` defs. Diff = those def lines only.
 
 See also: [[lean-g2-object-out-parity]], `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`,
 `tasks/reference/lean-ga-proof-architecture.md`.
