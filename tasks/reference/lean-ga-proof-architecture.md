@@ -468,9 +468,21 @@ every G3 grade-1/grade-2 single-coordinate use.
 **Decision (2026-10-28): keep the definitions as-is and add bridging lemmas** (option (a) below) — the
 definitions are correct, fast to `simp`, and `dot`/`normSq` rightly return `ℝ`; a small set of lemmas ties
 them to the grade projection to record "the grade IS the definition" and mirror Python, disturbing no
-existing proof: `dot a b = (rVectorPart 0 (mul a b)).s`, `wedge a b = rVectorPart (r+s) (mul a b)` (for
-homogeneous inputs), `signedArea … = (rVectorPart 2 …).c12`, `signedVolume … = (rVectorPart 3 …).c123`.
-*(As of 2026-10-28 these bridging lemmas are planned, not yet written — tracked in the task doc.)*
+existing proof. **Added 2026-10-28:**
+
+- `GradeProjection.G2`/`G3` `dot_eq_rVectorPart_zero : scalar (dot a b) = rVectorPart 0 (mul a b)`
+  (object form, all multivectors — the grade-0/`scalar` bridge, so it also ties Part A's `scalar`
+  constructor to the projection).
+- `GradeProjection.G2`/`G3` `wedge_eq_rVectorPart_two {a b} (IsVector a) (IsVector b) :
+  wedge a b = rVectorPart 2 (mul a b)` (vectors → the grade-2 part).
+- `Measures.G2.signedArea_eq_rVectorPart_two : signedArea … = (rVectorPart 2 (mul (vec …) (vec …))).c12`
+  and `Cross.G3.signedVolume_eq_rVectorPart_three : signedVolume … = (rVectorPart 3 (wedge (wedge …) …)).c123`
+  (top-grade reads; `Measures`/`Cross` gained `import GacalcProofs.GradeProjection`).
+
+The coordinate definitions themselves are unchanged (they stay the primary, fast forms); these lemmas are
+the machine-checked record that they equal the Python-style grade projections. `normSq`'s own grade-0
+read was left without a separate bridge (it is `dot a a` up to `reverse`; add one only if a consumer wants
+it).
 
 **Alternatives, kept here in case the decision is revisited:**
 - **(a) bridging lemmas only** — chosen; near-zero risk; definitions unchanged.

@@ -108,8 +108,7 @@ theorem reject_vec_eq {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b) (ha
             (scalar (dot (vec b.c1 b.c2 b.c3) (vec a.c1 a.c2 a.c3))) := by
     rw [vec_mul_eq_dot_add_wedge]; simp only [sub, add, scalar, zero]; ext <;> ring
   rw [reject, hsplit, GacalcProofs.G3.sub_mul, GacalcProofs.G3.mul_assoc,
-      mul_vec_inverse_self a.c1 a.c2 a.c3 ha, GacalcProofs.G3.mul_one, GacalcProofs.G3.smul_mul,
-      GacalcProofs.G3.one_mul]
+      mul_vec_inverse_self a.c1 a.c2 a.c3 ha, GacalcProofs.G3.mul_one, GacalcProofs.G3.scalar_mul]
   -- Left with `b − (b·a)a⁻¹ = b − proj_a b`; the two rejection terms agree once `a⁻¹`'s scalar is folded.
   congr 1
   rw [proj, inverse, reverse_vec, GacalcProofs.G3.smul_smul]

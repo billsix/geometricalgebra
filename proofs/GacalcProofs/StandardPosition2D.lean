@@ -200,7 +200,7 @@ theorem reject_vec_eq_coord (a1 a2 b1 b2 : ℝ) (ha : a1 ^ 2 + a2 ^ 2 ≠ 0) :
         show mul (vec a1 a2) (vec a1 a2) = smul (a1 ^ 2 + a2 ^ 2) one by
           simp only [mul, vec, smul, one]; ext <;> ring,
         smul_smul, one_div_mul_cancel ha, one_smul]
-  rw [reject, hsplit, sub_mul, mul_assoc, hinv, mul_one, smul_mul, one_mul]
+  rw [reject, hsplit, sub_mul, mul_assoc, hinv, mul_one, scalar_mul]
   congr 1
   rw [proj, inverse, reverse_vec, smul_smul]
   congr 1

@@ -1,13 +1,12 @@
 # Lean: make dot/wedge/measures faithful to Python's grade-projection definitions (the `.s`/`.c12`/`.c123` reads)
 
-**Status:** Part A **implemented** 2026-10-28 (scalar constructor + predicate; `smul … one` → `scalar`;
-verifying with `make lean`). Part B **decided** = bridging lemmas (option a); its durable rationale +
-catalog + alternatives now live in `tasks/reference/lean-ga-proof-architecture.md` ("Scalars into the
-algebra"); the Part B bridging lemmas themselves are **not yet written** (the maintainer may revisit the
-approach — see the reference doc). Both Open questions resolved (below). Two threads: (A) the `smul … one`
-scalar-embedding asymmetry [root cause: a type necessity; resolution: a `scalar` constructor — DONE], (B)
-coordinate-field grade reads (`.s`, G2 `.c12`, G3 `.c123`) vs the existing `rVectorPart` grade projection,
-the way **Python** defines these [resolution: bridging lemmas, pending].
+**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK). Both parts
+implemented: (A) `scalar` constructor + `IsScalar` predicate replace the `smul … one` type-cast idiom
+(G2 gained the constructor; G3 already had it; `scalar_mul` added); (B) bridging lemmas tie
+dot/wedge/signed-measures to the `rVectorPart` grade projection (option a — definitions kept as-is). Both
+Open questions resolved. Durable rationale + catalog + the a/b/c alternatives live in
+`tasks/reference/lean-ga-proof-architecture.md` ("Scalars into the algebra"). G1 deliberately left on the
+`smul … one` idiom (trivial algebra; no `rVectorPart`/`IsScalar`).
 **Priority:** 7
 **Difficulty:** 4
 **Created:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
@@ -159,16 +158,24 @@ view without disturbing the many `simp only [wedge]` proofs.
   + its `scalar_mul`/`smul_smul` consumer); `StandardPosition2D.lean` (`hsplit`). The `dot = 0`
   consumers swapped `simp only [smul, one, add]` → `[scalar, (zero,) add]`.
 - **G1 left as-is** (no `scalar`/`IsScalar`; trivial algebra) — deliberate, per Open question 2.
-- Verify: `make lean` (running). [update with result once green.]
+- The `hsplit` consumers (`Projection3D`, `StandardPosition2D`) needed their `smul_mul`+`one_mul` rewrite
+  pair swapped for the single `scalar_mul` (the `hsplit` term is now `(scalar k).mul …`).
+- Verify: `make lean` green (8958 jobs; completeness gate OK).
 
-## Part B — approach decided, lemmas pending
+## Part B — implemented (bridging lemmas, 2026-10-28)
 
-Chosen: **bridging lemmas** (option (a) below). The catalog of coordinate-read sites, the 1-dimensional-
-grade restriction, and the full alternative analysis are now in the reference doc
-`tasks/reference/lean-ga-proof-architecture.md` → "Scalars into the algebra". The lemmas to add:
-`dot a b = (rVectorPart 0 (mul a b)).s`, `wedge a b = rVectorPart (r+s) (mul a b)` (homogeneous),
-`signedArea = (rVectorPart 2 …).c12`, `signedVolume = (rVectorPart 3 …).c123`. Not yet written — do as a
-follow-up unit on go-ahead (the maintainer may revisit the approach first).
+Chosen: **bridging lemmas** (option (a)). Added (object form where possible; coordinate reads kept as the
+primary fast definitions — these lemmas are the machine-checked "they equal the grade projection" record):
+
+- `GradeProjection.G2`/`G3` `dot_eq_rVectorPart_zero : scalar (dot a b) = rVectorPart 0 (mul a b)`.
+- `GradeProjection.G2`/`G3` `wedge_eq_rVectorPart_two {a b} (IsVector a) (IsVector b) :
+  wedge a b = rVectorPart 2 (mul a b)`.
+- `Measures.G2.signedArea_eq_rVectorPart_two`, `Cross.G3.signedVolume_eq_rVectorPart_three` (top-grade
+  `.c12`/`.c123` reads; both files gained `import GacalcProofs.GradeProjection`).
+
+`normSq` got no separate bridge (it is `dot a a` up to `reverse`; add one only if a consumer needs it).
+The catalog, the 1-dimensional-grade restriction, and the a/b/c alternatives live durably in
+`tasks/reference/lean-ga-proof-architecture.md` → "Scalars into the algebra".
 
 ## Open questions (both resolved 2026-10-28, William Emerison Six <billsix@gmail.com>)
 
