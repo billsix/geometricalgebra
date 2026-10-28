@@ -1,67 +1,69 @@
-# Lean: define the geometric & wedge products as functions, add grade predicates for every type, then narrow ℝ→G2 signatures
+# Lean: products as functions, grade predicates for every type, narrow ℝ→G2 (2D)
 
-**Status:** proposed — needs go-ahead.
+**Status:** done — 2026-10-28 (2D scope, per the "2D now, 3D later" go-ahead). `make lean` green
+(8958 jobs; completeness gate OK). 3D parity is the follow-up `tasks/lean-grade-predicates-3d.md`.
 **Priority:** 5
 **Difficulty:** 6
 **Created:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
-**Updated:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
+**Updated:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
-In the Lean proofs (at least the **2D** layer), the geometric product and the wedge should be
-**defined as functions** (with their characterizing property in the comments), not only used inline
-in each proof; the grade **predicates** should exist for **every** type the Python code has
-(scalar, vector, bivector, trivector, versor, rotor), not just `IsVector`; and once those are in
-place, 2D signatures that currently take **reals** should take a **G2 object** where that is the
-honest input. (Maintainer's observations, 2026-10-27.) Three linked parts, below.
+Three-part task on the 2D Lean proofs: (1) the geometric & wedge products should be **functions** with
+their characterizing properties; (2) grade **predicates** should exist for every 2D type; (3) 2D proofs
+taking **reals** that are really a G2 object should be narrowed. On inspection, (1) and (3) were already
+satisfied; the genuine delta was (2), the missing grade-pure predicates `IsScalar` and `IsBivector`.
+Those were added with bridges, recognizers, and grade-of-result lemmas, and verified with `make lean`.
+Durable record: `tasks/reference/lean-ga-proof-architecture.md` → "The 2D grade-pure predicate set".
 
-## Context (cold start)
+## What each part turned out to need
 
-- Proofs live in `proofs/GacalcProofs/` (`make lean`; see `tasks/reference/lean-ga-proof-architecture.md`
-  and `lean-for-gacalc.md`). Relevant files for 2D: `G2.lean`, `Predicates2D.lean`, plus the shared
-  `MathlibBridge.lean`, `GradeProjection.lean`. (3D siblings: `G3.lean`, `Predicates3D.lean`.)
-- House conventions this task serves (gacalc `CLAUDE.md`): **"objects in, scalars in the body"**
-  (a theorem takes the object + a grade predicate, drops to coordinates only inside the proof) and
-  **"every piece of math comes in three forms"** (Lean / symbolic Python / prose).
-- The maintainer specifically liked the result that the dot product **is the symmetric part** of the
-  geometric product (the `dot_is_sym_part`-style lemma) — keep and build on that framing.
+**Part 1 — products as functions: already done.** `G2.mul` (`G2.lean`), `G2.wedge`
+(`Projection2D.lean`), `G2.dot` (`Versor2D.lean` = `(mul a b).s`) and `reverse` are all defined
+functions; the characterizing properties already existed in object form — `dot_is_sym_part` /
+`wedge_is_antisym_part` (dot = symmetric part, wedge = antisymmetric part; `G2.lean`), `wedge_antisymm`
+/ `wedge_self_vec` (`Projection2D.lean`), and the split `mul_eq_dot_add_wedge`. No code change; the
+"use the definition, don't re-derive inline" structure was already in place.
 
-## Part 1 — define the products as functions (2D first)
+**Part 2 — grade predicates for every 2D type: the real work.** Added to `G2.lean`, mirroring the
+existing `IsVector` (grade 1) and its `eq_vec_of_isVector` bridge / `isVector_vec` recognizer:
 
-- Give the **geometric product** an actual Lean definition for G2 (it is "perfectly fine to define
-  it, and use coordinates in the definition / elsewhere, for all the types"). Other proofs then use
-  that definition rather than re-deriving the product inline each time.
-- Give the **wedge (outer) product** the same treatment: a function definition, with its
-  **anti-commutation** property stated in the comment (the characterizing property — analogous to the
-  dot = symmetric-part observation). Testing/justifying the definition with coordinates is fine.
-- Keep the symmetric-part / antisymmetric-part decomposition (dot = sym part, wedge = antisym part)
-  as the connective tissue.
+- `IsScalar` (grade 0) + `eq_smul_one_of_isScalar` (object → `s*1`) + `isScalar_one`.
+- `IsBivector` (grade 2, the pseudoscalar's grade) + `eq_smul_e12_of_isBivector` (object → `c*e₁₂`) +
+  `isBivector_e12` + `isBivector_I` (the pseudoscalar `I` *is* `e₁₂`).
+- Grade-of-result lemmas so the predicates aren't dead API: `isScalar_mul_self_of_isVector` — `a a` is a
+  scalar (`G2.lean`); `isBivector_wedge_of_isVector` — `a∧b` is a bivector (`Projection2D.lean`, where
+  `wedge` currently lives).
+- Refactored `vec_wedge_I_eq_zero` into a corollary of the new object-form
+  `wedge_isVector_isBivector_eq_zero` (a vector ∧ a bivector = 0 in 2D), discharged by `isVector_vec` +
+  `isBivector_I` — its signature is unchanged, so `reject_from_I_eq_zero` is unaffected.
 
-## Part 2 — grade predicates for every type
+Decisions (mirroring Python's `is_*` in `base.py`, and "don't add speculative dead code"):
+- The 2D set is complete: `IsScalar`/`IsVector`/`IsBivector` are grades 0/1/2. **No grade-3 `IsTrivector`
+  in 2D.** `IsEvenVersor`/`IsRotor` (`Sandwich.lean`) already cover the versor/rotor notions, and Python
+  has **no** `is_versor`/`is_rotor` predicate (versor/rotor are generated *types*, not `Gn` predicates),
+  so **no bare `IsVersor`** was added — a `IsEvenVersor ∨ IsVector` disjunction nothing consumes would be
+  speculative.
+- Three-forms rule: the Python side already has `is_scalar`/`is_bivector` (the `a∧b`-is-a-bivector fact is
+  in `is_bivector`'s docstring example), so the symbolic-Python form exists; these are mirror predicates,
+  not a headline student result, so no new book page was warranted (the three-forms default is "new work
+  when asked," not a backfill).
 
-Python has `is_vector`/`is_bivector`/`is_scalar`/`is_trivector` and the versor/rotor notions. Lean
-currently tests `IsVector` (and `IsBivector`/`IsEvenVersor` in places) but not the full set. Add the
-missing predicates — **`IsScalar`, `IsBivector`, `IsTrivector`, `IsVersor`, `IsRotor`** (as the
-dimension warrants) — mirroring the Python `is_*` tests, so theorems can take any typed object the
-way they already take a vector. Audit the Python `is_*`/graded types and match the set.
+**Part 3 — narrow ℝ→G2 signatures: already complete for 2D.** Audited every ℝ-taking 2D theorem; each
+remaining one is either a genuine scalar parameter (angles `θ`/`φ`, `cos`/`sin` as `c`/`s`, a scalar
+multiple `k`, a magnitude `m`) or a coordinate leaf whose RHS is coordinate arithmetic (the
+`_coord`-suffixed ones, `vec_mul`, `dot_vec`, `normSq_vec`, `dual_vec`, …) — both of which "Coordinates
+only when needed" explicitly keeps. The disguised-object theorems were lifted in the 2026-10-04
+polynomial-tier sweep and the 2026-10-20 follow-up (`lean-ga-proof-architecture.md`). No edits.
 
-## Part 3 — narrow ℝ→G2 signatures (once Parts 1–2 unlock it)
+## Files touched
 
-With the product defined and the predicates available, find the places in the **2D** proofs that
-currently take **reals** (`(a1 a2 : ℝ)`, etc.) as inputs where the honest input is a **G2 object**
-(`{a : G2} (ha : IsVector a)`), and narrow them — the "objects in, scalars in the body" rule. (This
-is the Lean-side mirror of the polynomial-tier sweep recorded in `lean-ga-proof-architecture.md`.)
+- `proofs/GacalcProofs/G2.lean` — `IsScalar`/`IsBivector` + bridges + recognizers +
+  `isScalar_mul_self_of_isVector`.
+- `proofs/GacalcProofs/Projection2D.lean` — `isBivector_wedge_of_isVector`,
+  `wedge_isVector_isBivector_eq_zero`, `vec_wedge_I_eq_zero` as a corollary.
+- `tasks/reference/lean-ga-proof-architecture.md` — the durable "2D grade-pure predicate set" note.
 
-## Open questions
+## Follow-up
 
-1. **Scope: 2D only, or 2D now + a 3D follow-up?** The maintainer said "at least 2D" — recommend
-   land 2D fully, then file a 3D follow-up rather than widening mid-task.
-2. For Part 3, the `define-frame`/general-inverse style leaf lemmas that are *inherently* about
-   coordinates stay real-taking (per the convention's "genuine scalars stay scalar"); confirm the
-   narrowing targets only the ones whose real inputs are really a disguised object.
-
-## Deliverables (per the three-forms rule)
-
-Each new definition/predicate lands with its Lean proof green (`make lean`), and — where it states a
-result meant for students — a symbolic-Python check and a book note, per
-`tasks/reference/lean-ga-proof-architecture.md` and the gacalc `CLAUDE.md` three-forms default.
+- `tasks/lean-grade-predicates-3d.md` — add `IsScalar` + grade-of-result lemmas to `G3` (3D parity).

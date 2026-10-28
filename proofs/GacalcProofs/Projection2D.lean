@@ -96,10 +96,27 @@ theorem reject_perp_dot (a b : G2) (ha : dot a a ≠ 0) :
   field_simp
   ring
 
+/-- **The wedge of two vectors is a bivector** (2D): `a∧b` has only a grade-2 part — the typed-object
+    grade fact, stated via the `IsBivector` predicate. -/
+theorem isBivector_wedge_of_isVector {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    IsBivector (wedge a b) := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  refine ⟨?_, ?_, ?_⟩ <;> simp only [wedge, has, ha12, hbs, hb12] <;> ring
+
+/-- **A vector wedged with a bivector is zero in 𝒢₂**: grade 1 + 2 = 3 exceeds the dimension, so a
+    vector has no component outside the pseudoscalar plane — object form over `IsVector`/`IsBivector`. -/
+theorem wedge_isVector_isBivector_eq_zero {a B : G2} (ha : IsVector a) (hB : IsBivector B) :
+    wedge a B = (⟨0, 0, 0, 0⟩ : G2) := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hBs, hB1, hB2⟩ := hB
+  simp only [wedge, has, ha12, hBs, hB1, hB2]; ext <;> ring
+
 /-- **A 2D vector wedged with the pseudoscalar is zero**: `v ∧ I₂ = 0` (grade 1 + 2 = 3 exceeds the
-    dimension). So a vector has no part outside the plane. -/
-theorem vec_wedge_I_eq_zero (x y : ℝ) : wedge (vec x y) I = (⟨0, 0, 0, 0⟩ : G2) := by
-  simp only [wedge, vec, I, e_12]; ext <;> ring
+    dimension). So a vector has no part outside the plane. A corollary of the object-form
+    `wedge_isVector_isBivector_eq_zero`, with `isBivector_I` discharging the bivector side. -/
+theorem vec_wedge_I_eq_zero (x y : ℝ) : wedge (vec x y) I = (⟨0, 0, 0, 0⟩ : G2) :=
+  wedge_isVector_isBivector_eq_zero (isVector_vec x y) isBivector_I
 
 /-- **The rejection of a vector from the pseudoscalar plane is zero** — a 2D vector lies entirely in
     the plane, so nothing is rejected. `reject I₂ v = (v ∧ I₂) I₂⁻¹ = 0`. -/

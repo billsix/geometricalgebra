@@ -180,6 +180,44 @@ theorem eq_vec_of_isVector {a : G2} (ha : IsVector a) : a = vec a.c1 a.c2 := by
     hypothesis of an object-level theorem when it holds a concrete `vec`. -/
 theorem isVector_vec (x y : ℝ) : IsVector (vec x y) := ⟨rfl, rfl⟩
 
+/-- A multivector is a **scalar** (grade 0) exactly when its vector and bivector (pseudoscalar) parts
+    vanish — how "`a` is a scalar" is stated for an arbitrary `a : G2`, the 𝒢₂ mirror of Python's
+    `is_scalar` (`base.py`). `zero` qualifies (it is homogeneous of every grade). The even-versor
+    (`IsEvenVersor`, grade 0+2) and rotor (`IsRotor`) predicates live in `Sandwich.lean`; there is no
+    grade-3 trivector in 2D. -/
+def IsScalar (a : G2) : Prop := a.c1 = 0 ∧ a.c2 = 0 ∧ a.c12 = 0
+
+/-- A grade-0 multivector is `s*1` with `s` its own scalar coefficient — the scalar twin of
+    `eq_vec_of_isVector`, bridging an `IsScalar` object to the basis-constant form. -/
+theorem eq_smul_one_of_isScalar {a : G2} (ha : IsScalar a) : a = smul a.s one := by
+  obtain ⟨h1, h2, h12⟩ := ha
+  ext <;> simp only [smul, one, h1, h2, h12] <;> ring
+
+/-- The scalar unit `1` is a scalar — discharges `IsScalar` for a caller holding `one`. -/
+theorem isScalar_one : IsScalar one := ⟨rfl, rfl, rfl⟩
+
+/-- A multivector is a **bivector** (grade 2 — the pseudoscalar's grade in 2D) exactly when its scalar
+    and vector parts vanish — the 𝒢₂ mirror of Python's `is_bivector`. `zero` qualifies. -/
+def IsBivector (B : G2) : Prop := B.s = 0 ∧ B.c1 = 0 ∧ B.c2 = 0
+
+/-- A grade-2 multivector is `c*e₁₂` with `c` its own bivector coefficient — the bivector twin of
+    `eq_vec_of_isVector`. -/
+theorem eq_smul_e12_of_isBivector {B : G2} (hB : IsBivector B) : B = smul B.c12 e_12 := by
+  obtain ⟨hs, h1, h2⟩ := hB
+  ext <;> simp only [smul, e_12, hs, h1, h2] <;> ring
+
+/-- The unit bivector `e₁₂` is a bivector. -/
+theorem isBivector_e12 : IsBivector e_12 := ⟨rfl, rfl, rfl⟩
+
+/-- The unit pseudoscalar `I₂` is a bivector (it *is* `e₁₂`). -/
+theorem isBivector_I : IsBivector I := ⟨rfl, rfl, rfl⟩
+
+/-- **The square of a vector is a scalar** (2D): `a a = |a|²*1` has only a grade-0 part — the
+    typed-object form of "`a²` is a scalar," using the `IsScalar` predicate. -/
+theorem isScalar_mul_self_of_isVector {a : G2} (ha : IsVector a) : IsScalar (mul a a) := by
+  obtain ⟨has, ha12⟩ := ha
+  refine ⟨?_, ?_, ?_⟩ <;> simp only [mul, has, ha12] <;> ring
+
 /-- The **dot product** is the scalar part of the symmetric product ½(ab + ba) — for vectors `a`, `b`
     (object form; the coordinates are pulled from the operands for the computation). -/
 theorem dot_is_sym_part {a b : G2} (ha : IsVector a) (hb : IsVector b) :

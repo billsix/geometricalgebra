@@ -126,6 +126,23 @@ lifts to `{B : G3} (hB : IsBivector B) (hBn : normSq B ≠ 0)` exactly as a vers
 plane-projection cluster, Increment 16). Reach for a new such predicate whenever a theorem's reals are a
 grade-pure object's coordinates.
 
+**The 2D grade-pure predicate set (`G2.lean`, 2026-10-28).** 𝒢₂ now carries the full grade-pure set
+mirroring Python's `is_*` (`base.py`): **`IsScalar`** (grade 0), **`IsVector`** (grade 1), **`IsBivector`**
+(grade 2 — the pseudoscalar), each with its `eq_…_of_is…` bridge (`eq_smul_one_of_isScalar` →`s*1`,
+`eq_vec_of_isVector` →`vec`, `eq_smul_e12_of_isBivector` →`c*e₁₂`) and `is…_…` recognizer
+(`isScalar_one`, `isVector_vec`, `isBivector_e12`/`isBivector_I`). Two **grade-of-result** lemmas show the
+typed-object use: `isScalar_mul_self_of_isVector` (`a a` is a scalar, `G2.lean`) and
+`isBivector_wedge_of_isVector` (`a∧b` is a bivector, `Projection2D.lean` — where `wedge` currently lives);
+`vec_wedge_I_eq_zero` was refactored into a corollary of the object-form `wedge_isVector_isBivector_eq_zero`.
+`IsEvenVersor`/`IsRotor` (`Sandwich.lean`) already cover the versor/rotor notions — Python has no
+`is_versor`/`is_rotor` predicate (versor/rotor are generated *types*, not `Gn` predicates), so no bare
+`IsVersor` was added. There is no grade-3 trivector in 2D. **Not yet done in 3D:** `G3` has
+`IsVector`/`IsBivector`/`IsTrivector`/`IsEvenVersor`/`IsRotor` but **no `IsScalar`** and no grade-of-result
+lemmas — the 3D parity pass is `tasks/lean-grade-predicates-3d.md`. (Part 1 of the originating task — the
+products as functions with their dot=sym-part / wedge=antisym-part characterizations — already existed;
+Part 3 — narrowing ℝ→G2 signatures — was already complete from the 2026-10-04 polynomial-tier sweep and
+its 2026-10-20 follow-up, so the remaining ℝ-taking 2D theorems are genuine scalars or coordinate leaves.)
+
 Prefer A, then B; fall to C only for genuine scalars. The corpus-wide application is **DONE for the
 polynomial tier** (2026-10-04) and recorded in
 `tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md` (which absorbed the earlier
