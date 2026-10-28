@@ -194,8 +194,22 @@ versor-from-vectors construction; `Projection2D.lean` only `proj`/`reject` and t
 isometry lemmas. The `dot`-form perpendicularity lemmas over `IsVector` objects still go in
 `Predicates2D.lean` (the 2D twin of `Predicates3D.lean`): e.g. `dual_perp_dot` — `dot (dual v) v = 0` —
 the object form of the coordinate leaf `G2.dual_vec_perp`. (Part of the file-structure pass
-`tasks/study-and-reorder-lean-file-structure.md`: logical-home consolidation done; the within-file
-ordering sweep across the other files is the remainder.)
+`tasks/study-and-reorder-lean-file-structure.md`, now complete.)
+
+**Within-file order of the algebra-core files (`G1`/`G2`/`G3`, normalized 2026-10-28).** All three
+share one top-to-bottom shape: basis blades & grade constructors (right after the inner `namespace`)
+→ the elementary operations (`mul`/`wedge`/`add`/`sub`/`neg`/`smul`/`reverse`) → magnitude
+(`normSq`/`magnitude` + its √ facts) → the scalar product (`dot`), `I_inv`, `dual` → the
+geometric-product multiplication table (packed as a visual table) → the `dot` leaf lemmas → the
+`wedge` leaf lemmas → the coordinate-vector leaves (`normSq_vec`, `reverse_vec`, …) → the split
+`a b = a·b + a∧b` → the grade-structure predicates with their `eq_…_of_is…` bridges → the
+object-form facts (`mul_eq_dot_add_wedge`, `wedge_antisymm`, the self-products, `dot_is_sym_part`/
+`wedge_is_antisym_part`) — each under a `/-! ### -/` header. Basis-first reflects the module
+docstring, which introduces the basis before the product (maintainer, 2026-10-28). The ~28 concept
+files were audited at the same time and already conformed (docstring → def(s) → concept-grouped
+lemmas), so only the core files were reordered. The reorder was done by
+`tasks/adhoc/study-and-reorder-lean-file-structure/reorder_lean.py`, which proves the change is
+relocations + headers only (identical multiset of declaration blocks).
 
 **Naming: the geometric name is the student-facing (cosine/sine) theorem; the dot/wedge form carries a
 `_dot` suffix.** Cosine is an implementation detail, so the theorem a reader cites is

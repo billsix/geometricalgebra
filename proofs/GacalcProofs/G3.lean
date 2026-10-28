@@ -36,6 +36,37 @@ structure G3 where
 
 namespace G3
 
+/-! ### Basis blades as genuine `G3` elements, and the grade constructors -/
+
+/-- The zero multivector. -/
+def zero : G3 := ⟨0, 0, 0, 0, 0, 0, 0, 0⟩
+def one : G3 := ⟨1, 0, 0, 0, 0, 0, 0, 0⟩
+def e_1 : G3 := ⟨0, 1, 0, 0, 0, 0, 0, 0⟩
+def e_2 : G3 := ⟨0, 0, 1, 0, 0, 0, 0, 0⟩
+def e_3 : G3 := ⟨0, 0, 0, 1, 0, 0, 0, 0⟩
+def e_12 : G3 := ⟨0, 0, 0, 0, 1, 0, 0, 0⟩
+def e_13 : G3 := ⟨0, 0, 0, 0, 0, 1, 0, 0⟩
+def e_23 : G3 := ⟨0, 0, 0, 0, 0, 0, 1, 0⟩
+def e_123 : G3 := ⟨0, 0, 0, 0, 0, 0, 0, 1⟩
+
+/-- A grade-1 vector from its three coordinates. -/
+def vec (x y z : ℝ) : G3 := ⟨0, x, y, z, 0, 0, 0, 0⟩
+
+/-- The unit pseudoscalar I₃ = e₁*e₂*e₃. -/
+def I : G3 := e_123
+
+/-- A **bivector** `p·e₁₂ + q·e₁₃ + r·e₂₃` (grade 2), naming just the three bivector coefficients on
+    top of `zero` — self-documenting in place of the raw literal `⟨0,0,0,0,p,q,r,0⟩`. -/
+def bivector (p q r : ℝ) : G3 := { zero with c12 := p, c13 := q, c23 := r }
+
+/-- A **trivector** (pseudoscalar) `t·e₁₂₃` (grade 3), in place of `⟨0,0,0,0,0,0,0,t⟩`. -/
+def trivector (t : ℝ) : G3 := { zero with c123 := t }
+
+/-- A **scalar** `a` (grade 0) as a 𝒢₃ element, in place of `⟨a,0,0,0,0,0,0,0⟩`. -/
+def scalar (a : ℝ) : G3 := { zero with s := a }
+
+/-! ### The elementary operations: geometric product, wedge, and the vector-space ops -/
+
 /-- The Euclidean geometric product in 𝒢₃ (transcribed from gacalc's `Gn` via
     `tools/derive_lean_algebra.py`). `noncomputable` (ℝ field ops). -/
 noncomputable def mul (a b : G3) : G3 where
@@ -101,22 +132,47 @@ noncomputable def smul (r : ℝ) (a : G3) : G3 :=
 noncomputable def reverse (a : G3) : G3 :=
   ⟨a.s, a.c1, a.c2, a.c3, -a.c12, -a.c13, -a.c23, -a.c123⟩
 
-/-! ### Basis blades as genuine `G3` elements -/
+/-! ### Magnitude (squared is the primitive) -/
 
-def one : G3 := ⟨1, 0, 0, 0, 0, 0, 0, 0⟩
-def e_1 : G3 := ⟨0, 1, 0, 0, 0, 0, 0, 0⟩
-def e_2 : G3 := ⟨0, 0, 1, 0, 0, 0, 0, 0⟩
-def e_3 : G3 := ⟨0, 0, 0, 1, 0, 0, 0, 0⟩
-def e_12 : G3 := ⟨0, 0, 0, 0, 1, 0, 0, 0⟩
-def e_13 : G3 := ⟨0, 0, 0, 0, 0, 1, 0, 0⟩
-def e_23 : G3 := ⟨0, 0, 0, 0, 0, 0, 1, 0⟩
-def e_123 : G3 := ⟨0, 0, 0, 0, 0, 0, 0, 1⟩
+/-- The **squared magnitude** `|A|² = ⟨A Ã⟩₀` (Hestenes & Sobczyk p.13 eq 1.49, gacalc
+    `magnitude_squared`; `⟨AÃ⟩ = ⟨ÃA⟩` as the scalar part is symmetric). -/
+noncomputable def normSq (a : G3) : ℝ := (mul a (reverse a)).s
 
-/-- A grade-1 vector from its three coordinates. -/
-def vec (x y z : ℝ) : G3 := ⟨0, x, y, z, 0, 0, 0, 0⟩
+/-- The **magnitude** `|A| = √⟨A Ã⟩` (Hestenes p.13 eq 1.49, gacalc `magnitude`), for all grades. -/
+noncomputable def magnitude (a : G3) : ℝ := Real.sqrt (normSq a)
 
-/-- The unit pseudoscalar I₃ = e₁*e₂*e₃. -/
-def I : G3 := e_123
+/-- `normSq a = Σ (component)²` — the scalar part of `a ã` is positive-definite (every blade's reverse
+    sign cancels its square's sign). -/
+theorem normSq_eq_sum_sq (a : G3) : normSq a = a.s ^ 2 + a.c1 ^ 2 + a.c2 ^ 2 + a.c3 ^ 2 + a.c12 ^ 2 + a.c13 ^ 2 + a.c23 ^ 2 + a.c123 ^ 2 := by
+  simp only [normSq, mul, reverse]; ring
+
+theorem normSq_nonneg (a : G3) : 0 ≤ normSq a := by
+  rw [normSq_eq_sum_sq]; positivity
+
+/-- `|a|² = normSq a` for ANY multivector — the one `√` fact the magnitude tier needs. -/
+theorem magnitude_sq_eq_normSq (a : G3) : magnitude a ^ 2 = normSq a := by
+  simp only [magnitude]; exact Real.sq_sqrt (normSq_nonneg a)
+
+theorem magnitude_ne_zero_of_normSq_ne_zero {a : G3} (h : normSq a ≠ 0) : magnitude a ≠ 0 := by
+  simp only [magnitude]
+  exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne (normSq_nonneg a) (Ne.symm h))
+
+/-! ### The scalar product (dot), the inverse pseudoscalar, and the dual -/
+
+/-- The scalar product ⟨A B⟩₀ — the scalar part of the geometric product. For two
+    vectors this is the Euclidean dot product `a₁*b₁ + a₂*b₂ + a₃*b₃`. -/
+noncomputable def dot (a b : G3) : ℝ := (mul a b).s
+
+/-- The inverse unit pseudoscalar I₃⁻¹ = −e₁₂₃ (since I₃² = −1). -/
+def I_inv : G3 := ⟨0, 0, 0, 0, 0, 0, 0, -1⟩
+
+/-- I₃ · I₃⁻¹ = 1. -/
+theorem I_mul_I_inv : mul I I_inv = one := by
+  simp only [mul, I, e_123, I_inv, one]; ext <;> ring
+
+/-- The dual `A* = A · I₃⁻¹` (grade r ↦ grade 3−r), matching gacalc's `dual`
+    (base.py). In 3D, `dual (a ∧ b)` is the plane normal (gacalc's `cross a b`). -/
+noncomputable def dual (a : G3) : G3 := mul a I_inv
 
 /-! ### The geometric-product multiplication table (confirms the transcription) -/
 
@@ -140,28 +196,23 @@ theorem e_12_mul_e_3 : mul e_12 e_3 = e_123 := by
 /-- **The pseudoscalar squares to −1:** I₃² = −1 = (−1)^(3*2/2). -/
 theorem I_sq : mul I I = neg one := by simp only [mul, I, e_123, neg, one]; ext <;> ring
 
+/-- `I₃² = (−1)^(r(r−1)/2)` with `r = 3`: the 3D case of the general sign formula
+    (`tasks/reference/pseudoscalar-square-sign.md`), read off `I_sq`. -/
+theorem I_sq_eq_sign : (mul I I).s = (-1 : ℝ) ^ (3 * (3 - 1) / 2) := by
+  simp only [mul, I, e_123]; norm_num
+
 /-- Reverse is an involution. -/
 theorem reverse_reverse (a : G3) : reverse (reverse a) = a := by
   simp only [reverse]; ext <;> ring
 
-/-! ### The dual, the dot, and bilinearity helpers (for projection) -/
+/-! ### Inner-product (dot) leaf lemmas — bilinearity and the coordinate form -/
 
-/-- The zero multivector. -/
-def zero : G3 := ⟨0, 0, 0, 0, 0, 0, 0, 0⟩
+/-- **The scalar product is symmetric:** `a·b = b·a` (the scalar part of a product is symmetric). -/
+theorem dot_comm (a b : G3) : dot a b = dot b a := by simp only [dot, mul]; ring
 
-/-- A **bivector** `p·e₁₂ + q·e₁₃ + r·e₂₃` (grade 2), naming just the three bivector coefficients on
-    top of `zero` — self-documenting in place of the raw literal `⟨0,0,0,0,p,q,r,0⟩`. -/
-def bivector (p q r : ℝ) : G3 := { zero with c12 := p, c13 := q, c23 := r }
-
-/-- A **trivector** (pseudoscalar) `t·e₁₂₃` (grade 3), in place of `⟨0,0,0,0,0,0,0,t⟩`. -/
-def trivector (t : ℝ) : G3 := { zero with c123 := t }
-
-/-- A **scalar** `a` (grade 0) as a 𝒢₃ element, in place of `⟨a,0,0,0,0,0,0,0⟩`. -/
-def scalar (a : ℝ) : G3 := { zero with s := a }
-
-/-- The scalar product ⟨A B⟩₀ — the scalar part of the geometric product. For two
-    vectors this is the Euclidean dot product `a₁*b₁ + a₂*b₂ + a₃*b₃`. -/
-noncomputable def dot (a b : G3) : ℝ := (mul a b).s
+/-- `dot` distributes over addition on the left. -/
+theorem dot_add_left (u w v : G3) : dot (add u w) v = dot u v + dot w v := by
+  simp only [dot, mul, add]; ring
 
 /-- `dot` distributes over subtraction on the left (it is bilinear). -/
 theorem dot_sub_left (u w v : G3) : dot (sub u w) v = dot u v - dot w v := by
@@ -183,6 +234,30 @@ theorem dot_sub_right (u v w : G3) : dot u (sub v w) = dot u v - dot u w := by
 theorem dot_smul_right (k : ℝ) (u v : G3) : dot u (smul k v) = k * dot u v := by
   simp only [dot, mul, smul]; ring
 
+/-- **Leaf:** the dot product on coordinate vectors is the Euclidean dot `a₁*b₁ + a₂*b₂ + a₃*b₃`. Reuse
+    this named lemma instead of re-deriving it inline. -/
+theorem dot_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
+    dot (vec a1 a2 a3) (vec b1 b2 b3) = a1 * b1 + a2 * b2 + a3 * b3 := by
+  simp only [dot, mul, vec]; ring
+
+/-! ### Outer-product (wedge) leaf lemmas — bilinearity and the coordinate forms -/
+
+/-- The wedge distributes over addition on the left. -/
+theorem wedge_add_left (u w a : G3) : wedge (add u w) a = add (wedge u a) (wedge w a) := by
+  simp only [wedge, add]; ext <;> ring
+
+/-- The wedge distributes over subtraction on the left. -/
+theorem wedge_sub_left (u w a : G3) : wedge (sub u w) a = sub (wedge u a) (wedge w a) := by
+  simp only [wedge, sub]; ext <;> ring
+
+/-- The wedge pulls out a scalar on the left. -/
+theorem wedge_smul_left (k : ℝ) (u a : G3) : wedge (smul k u) a = smul k (wedge u a) := by
+  simp only [wedge, smul]; ext <;> ring
+
+/-- The wedge distributes over addition on the right. -/
+theorem wedge_add_right (a u w : G3) : wedge a (add u w) = add (wedge a u) (wedge a w) := by
+  simp only [wedge, add]; ext <;> ring
+
 /-- The wedge distributes over subtraction on the right. -/
 theorem wedge_sub_right (a u w : G3) : wedge a (sub u w) = sub (wedge a u) (wedge a w) := by
   simp only [wedge, sub]; ext <;> ring
@@ -191,13 +266,49 @@ theorem wedge_sub_right (a u w : G3) : wedge a (sub u w) = sub (wedge a u) (wedg
 theorem wedge_smul_right (k : ℝ) (a u : G3) : wedge a (smul k u) = smul k (wedge a u) := by
   simp only [wedge, smul]; ext <;> ring
 
-/-- The wedge distributes over addition on the right. -/
-theorem wedge_add_right (a u w : G3) : wedge a (add u w) = add (wedge a u) (wedge a w) := by
-  simp only [wedge, add]; ext <;> ring
-
 /-- A vector wedged with itself is zero. -/
 theorem wedge_self_vec_coord (x y z : ℝ) : wedge (vec x y z) (vec x y z) = zero := by
   simp only [wedge, vec, zero]; ext <;> ring
+
+/-- **Leaf:** the wedge of two coordinate vectors is the plane bivector, in coordinates:
+    `a ∧ b = (a₁*b₂−a₂*b₁)e₁₂ + (a₁*b₃−a₃*b₁)e₁₃ + (a₂*b₃−a₃*b₂)e₂₃`. Reuse instead of re-deriving the literal
+    with `simp only [wedge, vec]; ext <;> ring` inline. -/
+theorem wedge_vec_eq_biv (a1 a2 a3 b1 b2 b3 : ℝ) :
+    wedge (vec a1 a2 a3) (vec b1 b2 b3)
+      = bivector (a1 * b2 - a2 * b1) (a1 * b3 - a3 * b1) (a2 * b3 - a3 * b2) := by
+  simp only [wedge, vec, bivector, zero]; ext <;> ring
+
+/-! ### Coordinate-vector leaves: magnitude, self-product, and reverse -/
+
+/-- **Leaf:** `|a|² = a₁² + a₂² + a₃²` on a coordinate vector. -/
+theorem normSq_vec (a1 a2 a3 : ℝ) : normSq (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
+  simp only [normSq, mul, reverse, vec]; ring
+
+/-- **Leaf:** `|a∧b|² = (a₁*b₂−a₂*b₁)² + (a₁*b₃−a₃*b₁)² + (a₂*b₃−a₃*b₂)²`. -/
+theorem normSq_wedge_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
+    normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3))
+      = (a1 * b2 - a2 * b1) ^ 2 + (a1 * b3 - a3 * b1) ^ 2 + (a2 * b3 - a3 * b2) ^ 2 := by
+  simp only [normSq, wedge, mul, reverse, vec]; ring
+
+/-- **A vector's square is its squared magnitude:** `a a = |a|²*1` (`a∧a = 0`, so only the scalar
+    survives). The `B B = |B|²` half of the blade-inverse identity. -/
+theorem mul_vec_self_coord (a1 a2 a3 : ℝ) :
+    mul (vec a1 a2 a3) (vec a1 a2 a3) = smul (normSq (vec a1 a2 a3)) one := by
+  rw [normSq_vec]; simp only [mul, one, smul, vec]; ext <;> ring
+
+/-- **Leaf — self-dot IS the squared magnitude, on a vector:** `a·a = |a|²`. The formal statement of
+    "a vector dotted with itself is its magnitude squared"; the bridge that lets a `dot a a` hypothesis
+    be read as the primitive `normSq a` (`reverse` fixes a vector, so `⟨a a⟩ = ⟨a ã⟩`). Reuse instead of
+    re-deriving `rw [dot_vec, normSq_vec]; ring` inline. -/
+theorem dot_self_vec_eq_normSq_coord (a1 a2 a3 : ℝ) :
+    dot (vec a1 a2 a3) (vec a1 a2 a3) = normSq (vec a1 a2 a3) := by
+  rw [dot_vec, normSq_vec]; ring
+
+/-- `reverse` fixes a vector (it only flips the sign of grades 2 and 3, which a vector lacks). -/
+theorem reverse_vec (x y z : ℝ) : reverse (vec x y z) = vec x y z := by
+  simp only [reverse, vec]; ext <;> ring
+
+/-! ### The fundamental split `a b = a·b + a∧b` (coordinate form) -/
 
 /-- **The fundamental identity `a b = a·b + a∧b` for vectors** (Hestenes' defining relation):
     the geometric product of two vectors splits into its scalar (inner) part `a·b` and its
@@ -218,6 +329,8 @@ theorem vec_mul_perp (a1 a2 a3 b1 b2 b3 : ℝ)
   rw [vec_mul_eq_dot_add_wedge, h]
   simp only [smul, one, add]; ext <;> ring
 
+/-! ### Grade-structure predicates (vector / bivector / trivector) with their bridges -/
+
 /-- A multivector is a **vector** (grade 1) exactly when its scalar, bivector and pseudoscalar parts
     vanish. The proofs carry no vector subtype, so this predicate is how "`a` is a vector" is stated for
     an arbitrary `a : G3` (as opposed to a coordinate literal `vec …`). -/
@@ -230,26 +343,20 @@ theorem eq_vec_of_isVector {a : G3} (ha : IsVector a) : a = vec a.c1 a.c2 a.c3 :
   obtain ⟨hs, h12, h13, h23, h123⟩ := ha
   ext <;> simp only [vec] <;> first | rfl | assumption
 
-/-- **The fundamental identity `a b = a·b + a∧b`, for arbitrary vectors** (Hestenes' defining relation,
-    not tied to coordinate literals): for any grade-1 `a`, `b`, the geometric product splits into its
-    scalar (inner) part `a·b` and its bivector (outer) part `a∧b`. The master rewrite that turns a
-    geometric product of vectors into inner + outer, coordinate-free at the call site. -/
-theorem mul_eq_dot_add_wedge {a b : G3} (ha : IsVector a) (hb : IsVector b) :
-    mul a b = add (smul (dot a b) one) (wedge a b) := by
-  obtain ⟨_, ha12, ha13, ha23, ha123⟩ := ha
-  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
-  simp only [mul, wedge, smul, one, dot, add]
-  ext <;> simp only [ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123] <;> ring
-
-/-- **Orthogonal vectors' geometric product is their wedge** (arbitrary vectors): `a·b = 0 ⟹ a b = a∧b`.
-    The general-`IsVector` form of `vec_mul_perp`, a corollary of the split. -/
-theorem mul_eq_wedge_of_perp {a b : G3} (ha : IsVector a) (hb : IsVector b) (h : dot a b = 0) :
-    mul a b = wedge a b := by
-  rw [mul_eq_dot_add_wedge ha hb, h]
-  simp only [smul, one, add]; ext <;> ring
-
 /-- A coordinate vector is grade-1. -/
 theorem isVector_vec (x y z : ℝ) : IsVector (vec x y z) := ⟨rfl, rfl, rfl, rfl, rfl⟩
+
+/-- Grade-1 is closed under scalar multiplication. -/
+theorem IsVector.smul {a : G3} (ha : IsVector a) (k : ℝ) : IsVector (GacalcProofs.G3.smul k a) := by
+  obtain ⟨hs, h12, h13, h23, h123⟩ := ha
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> simp [GacalcProofs.G3.smul, hs, h12, h13, h23, h123]
+
+/-- Grade-1 is closed under subtraction. -/
+theorem IsVector.sub {a b : G3} (ha : IsVector a) (hb : IsVector b) : IsVector (GacalcProofs.G3.sub a b) := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;>
+    simp [GacalcProofs.G3.sub, has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
 
 /-- `B` is a **bivector** (grade 2): its scalar, vector and pseudoscalar parts vanish — how "`B` is a
     (simple, in 𝒢₃ always simple) bivector" is stated for an arbitrary `B : G3`. The plane companion of
@@ -282,122 +389,31 @@ theorem eq_trivector_of_isTrivector {T : G3} (hT : IsTrivector T) : T = trivecto
 theorem isTrivector_trivector (t : ℝ) : IsTrivector (trivector t) :=
   ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
-/-- Grade-1 is closed under scalar multiplication. -/
-theorem IsVector.smul {a : G3} (ha : IsVector a) (k : ℝ) : IsVector (GacalcProofs.G3.smul k a) := by
-  obtain ⟨hs, h12, h13, h23, h123⟩ := ha
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> simp [GacalcProofs.G3.smul, hs, h12, h13, h23, h123]
+/-! ### Object-form facts: the split, antisymmetry, self-products, and dot/wedge as the two parts -/
 
-/-- Grade-1 is closed under subtraction. -/
-theorem IsVector.sub {a b : G3} (ha : IsVector a) (hb : IsVector b) : IsVector (GacalcProofs.G3.sub a b) := by
-  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+/-- **The fundamental identity `a b = a·b + a∧b`, for arbitrary vectors** (Hestenes' defining relation,
+    not tied to coordinate literals): for any grade-1 `a`, `b`, the geometric product splits into its
+    scalar (inner) part `a·b` and its bivector (outer) part `a∧b`. The master rewrite that turns a
+    geometric product of vectors into inner + outer, coordinate-free at the call site. -/
+theorem mul_eq_dot_add_wedge {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    mul a b = add (smul (dot a b) one) (wedge a b) := by
+  obtain ⟨_, ha12, ha13, ha23, ha123⟩ := ha
   obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;>
-    simp [GacalcProofs.G3.sub, has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
+  simp only [mul, wedge, smul, one, dot, add]
+  ext <;> simp only [ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123] <;> ring
 
-/-- `reverse` fixes a vector (it only flips the sign of grades 2 and 3, which a vector lacks). -/
-theorem reverse_vec (x y z : ℝ) : reverse (vec x y z) = vec x y z := by
-  simp only [reverse, vec]; ext <;> ring
-
-/-! ### Inner/outer-product properties (leaf lemmas — the coordinate bridge) -/
-
-/-- **The scalar product is symmetric:** `a·b = b·a` (the scalar part of a product is symmetric). -/
-theorem dot_comm (a b : G3) : dot a b = dot b a := by simp only [dot, mul]; ring
-
-/-- `dot` distributes over addition on the left. -/
-theorem dot_add_left (u w v : G3) : dot (add u w) v = dot u v + dot w v := by
-  simp only [dot, mul, add]; ring
-
-/-- **Leaf:** the dot product on coordinate vectors is the Euclidean dot `a₁*b₁ + a₂*b₂ + a₃*b₃`. Reuse
-    this named lemma instead of re-deriving it inline. -/
-theorem dot_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
-    dot (vec a1 a2 a3) (vec b1 b2 b3) = a1 * b1 + a2 * b2 + a3 * b3 := by
-  simp only [dot, mul, vec]; ring
-
-/-- The **squared magnitude** `|A|² = ⟨A Ã⟩₀` (Hestenes & Sobczyk p.13 eq 1.49, gacalc
-    `magnitude_squared`; `⟨AÃ⟩ = ⟨ÃA⟩` as the scalar part is symmetric). -/
-noncomputable def normSq (a : G3) : ℝ := (mul a (reverse a)).s
-
-/-- The **magnitude** `|A| = √⟨A Ã⟩` (Hestenes p.13 eq 1.49, gacalc `magnitude`), for all grades. -/
-noncomputable def magnitude (a : G3) : ℝ := Real.sqrt (normSq a)
-
-/-- `normSq a = Σ (component)²` — the scalar part of `a ã` is positive-definite (every blade's reverse
-    sign cancels its square's sign). -/
-theorem normSq_eq_sum_sq (a : G3) : normSq a = a.s ^ 2 + a.c1 ^ 2 + a.c2 ^ 2 + a.c3 ^ 2 + a.c12 ^ 2 + a.c13 ^ 2 + a.c23 ^ 2 + a.c123 ^ 2 := by
-  simp only [normSq, mul, reverse]; ring
-
-theorem normSq_nonneg (a : G3) : 0 ≤ normSq a := by
-  rw [normSq_eq_sum_sq]; positivity
-
-/-- `|a|² = normSq a` for ANY multivector — the one `√` fact the magnitude tier needs. -/
-theorem magnitude_sq_eq_normSq (a : G3) : magnitude a ^ 2 = normSq a := by
-  simp only [magnitude]; exact Real.sq_sqrt (normSq_nonneg a)
-
-theorem magnitude_ne_zero_of_normSq_ne_zero {a : G3} (h : normSq a ≠ 0) : magnitude a ≠ 0 := by
-  simp only [magnitude]
-  exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne (normSq_nonneg a) (Ne.symm h))
-
-/-- **Leaf:** `|a|² = a₁² + a₂² + a₃²` on a coordinate vector. -/
-theorem normSq_vec (a1 a2 a3 : ℝ) : normSq (vec a1 a2 a3) = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
-  simp only [normSq, mul, reverse, vec]; ring
-
-/-- **Leaf — self-dot IS the squared magnitude, on a vector:** `a·a = |a|²`. The formal statement of
-    "a vector dotted with itself is its magnitude squared"; the bridge that lets a `dot a a` hypothesis
-    be read as the primitive `normSq a` (`reverse` fixes a vector, so `⟨a a⟩ = ⟨a ã⟩`). Reuse instead of
-    re-deriving `rw [dot_vec, normSq_vec]; ring` inline. -/
-theorem dot_self_vec_eq_normSq_coord (a1 a2 a3 : ℝ) :
-    dot (vec a1 a2 a3) (vec a1 a2 a3) = normSq (vec a1 a2 a3) := by
-  rw [dot_vec, normSq_vec]; ring
-
-/-- **Leaf:** the wedge of two coordinate vectors is the plane bivector, in coordinates:
-    `a ∧ b = (a₁*b₂−a₂*b₁)e₁₂ + (a₁*b₃−a₃*b₁)e₁₃ + (a₂*b₃−a₃*b₂)e₂₃`. Reuse instead of re-deriving the literal
-    with `simp only [wedge, vec]; ext <;> ring` inline. -/
-theorem wedge_vec_eq_biv (a1 a2 a3 b1 b2 b3 : ℝ) :
-    wedge (vec a1 a2 a3) (vec b1 b2 b3)
-      = bivector (a1 * b2 - a2 * b1) (a1 * b3 - a3 * b1) (a2 * b3 - a3 * b2) := by
-  simp only [wedge, vec, bivector, zero]; ext <;> ring
-
-/-- **A vector's square is its squared magnitude:** `a a = |a|²*1` (`a∧a = 0`, so only the scalar
-    survives). The `B B = |B|²` half of the blade-inverse identity. -/
-theorem mul_vec_self_coord (a1 a2 a3 : ℝ) :
-    mul (vec a1 a2 a3) (vec a1 a2 a3) = smul (normSq (vec a1 a2 a3)) one := by
-  rw [normSq_vec]; simp only [mul, one, smul, vec]; ext <;> ring
-
-/-- **Leaf:** `|a∧b|² = (a₁*b₂−a₂*b₁)² + (a₁*b₃−a₃*b₁)² + (a₂*b₃−a₃*b₂)²`. -/
-theorem normSq_wedge_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
-    normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3))
-      = (a1 * b2 - a2 * b1) ^ 2 + (a1 * b3 - a3 * b1) ^ 2 + (a2 * b3 - a3 * b2) ^ 2 := by
-  simp only [normSq, wedge, mul, reverse, vec]; ring
+/-- **Orthogonal vectors' geometric product is their wedge** (arbitrary vectors): `a·b = 0 ⟹ a b = a∧b`.
+    The general-`IsVector` form of `vec_mul_perp`, a corollary of the split. -/
+theorem mul_eq_wedge_of_perp {a b : G3} (ha : IsVector a) (hb : IsVector b) (h : dot a b = 0) :
+    mul a b = wedge a b := by
+  rw [mul_eq_dot_add_wedge ha hb, h]
+  simp only [smul, one, add]; ext <;> ring
 
 /-- **The wedge of vectors is antisymmetric:** `a∧b = −(b∧a)`. -/
 theorem wedge_antisymm {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     wedge a b = neg (wedge b a) := by
   rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb]
   simp only [wedge, vec, neg]; ext <;> ring
-
-/-- The wedge distributes over subtraction on the left. -/
-theorem wedge_sub_left (u w a : G3) : wedge (sub u w) a = sub (wedge u a) (wedge w a) := by
-  simp only [wedge, sub]; ext <;> ring
-
-/-- The wedge pulls out a scalar on the left. -/
-theorem wedge_smul_left (k : ℝ) (u a : G3) : wedge (smul k u) a = smul k (wedge u a) := by
-  simp only [wedge, smul]; ext <;> ring
-
-/-- The wedge distributes over addition on the left. -/
-theorem wedge_add_left (u w a : G3) : wedge (add u w) a = add (wedge u a) (wedge w a) := by
-  simp only [wedge, add]; ext <;> ring
-
-/-- The inverse unit pseudoscalar I₃⁻¹ = −e₁₂₃ (since I₃² = −1). -/
-def I_inv : G3 := ⟨0, 0, 0, 0, 0, 0, 0, -1⟩
-
-/-- I₃ · I₃⁻¹ = 1. -/
-theorem I_mul_I_inv : mul I I_inv = one := by
-  simp only [mul, I, e_123, I_inv, one]; ext <;> ring
-
-/-- The dual `A* = A · I₃⁻¹` (grade r ↦ grade 3−r), matching gacalc's `dual`
-    (base.py). In 3D, `dual (a ∧ b)` is the plane normal (gacalc's `cross a b`). -/
-noncomputable def dual (a : G3) : G3 := mul a I_inv
-
-/-! ### The self-product vector leaves, object form (compute on the vector's own getters) -/
 
 /-- `a ∧ a = 0` for a vector `a`. -/
 theorem wedge_self_vec {a : G3} (ha : IsVector a) : wedge a a = zero := by
@@ -417,8 +433,6 @@ theorem mul_vec_self {a : G3} (ha : IsVector a) : mul a a = smul (normSq a) one 
   simp only [normSq, mul, reverse, one, smul, has, ha12, ha13, ha23, ha123]
   ext <;> ring
 
-/-! ### Dot and wedge as the two parts of the geometric product (3D) -/
-
 /-- **The dot product is the symmetric part of the geometric product** (3D): `½(ab + ba) = (a·b)*1`
     for vectors — the 3D twin of `G2.dot_is_sym_part`, in object form. -/
 theorem dot_is_sym_part {a b : G3} (ha : IsVector a) (hb : IsVector b) :
@@ -436,11 +450,6 @@ theorem wedge_is_antisym_part {a b : G3} (ha : IsVector a) (hb : IsVector b) :
   obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
   simp only [smul, sub, mul, wedge, has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
   ext <;> ring
-
-/-- `I₃² = (−1)^(r(r−1)/2)` with `r = 3`: the 3D case of the general sign formula
-    (`tasks/reference/pseudoscalar-square-sign.md`), read off `I_sq`. -/
-theorem I_sq_eq_sign : (mul I I).s = (-1 : ℝ) ^ (3 * (3 - 1) / 2) := by
-  simp only [mul, I, e_123]; norm_num
 
 end G3
 

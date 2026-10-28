@@ -1,8 +1,11 @@
 # Audit where each Lean declaration is defined and in what order; move each to its logical home, then reorder
 
-**Status:** in progress — the substantive logical-home consolidation (Axis 1) is DONE for the 2D
-algebra core and verified (`make lean` green, 8958 jobs; completeness gate OK); the broader within-file
-ordering sweep (Axis 2) across the remaining files is the remainder. See "## Progress" below.
+**Status:** done — Axis 1 (logical home) and Axis 2 (within-file order) both complete and verified
+(`make lean` green, 8958 jobs; completeness gate OK). The algebra-core files were normalized
+basis-first with section headers; every concept file was audited and found already well-ordered. Two
+*content* improvements surfaced during the maintainer's review are split out as their own
+(deferred) tasks: [[lean-basis-constants-self-documenting]] and [[lean-g2-object-out-parity]]. Ready
+to archive once the work commit lands. See "## Progress" below.
 **Priority:** 7
 **Difficulty:** 7
 **Created:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
@@ -10,38 +13,51 @@ ordering sweep (Axis 2) across the remaining files is the remainder. See "## Pro
 
 ## Progress (2026-10-28)
 
-**Done + verified (committed):**
-- **Axis 1 (logical home) — the `dot`/`wedge` consolidation the maintainer named is complete.** `G2.dot`
-  moved from `Versor2D.lean` and `G2.wedge` (+ its bilinearity lemmas, `wedge_self_vec`/`wedge_antisymm`,
-  the split `mul_eq_dot_add_wedge`/`mul_eq_wedge_of_perp`, `normSq_wedge_vec`, and the grade lemmas
-  `isBivector_wedge_of_isVector`/`wedge_isVector_isBivector_eq_zero`) moved from `Projection2D.lean` —
-  both now in **`G2.lean`**, matching `G3`/`G1` (which already defined `dot`/`wedge` in-file). So the
-  "dot/wedge should be defined in g2 and g3" ask is fully satisfied: **G3/G1 were already correct**; only
-  G2 needed the move. Import-safe (both files import `G2`, so all consumers still resolve the names; no
-  import edits needed). `Versor2D.lean` now holds only the versor-from-vectors construction;
-  `Projection2D.lean` only `proj`/`reject`/`reject_perp_dot` and the sandwich-wedge isometry lemmas.
-- **Axis 2 (within-file order) — applied to `G2.lean`.** Basis constants (`one`/`e_1`/`e_2`/`e_12`/`I`) +
-  `vec` moved to right after `structure G2`, before the operations (the maintainer's "constants earlier"
-  point); `/-! ### … -/` section headers added (basis / operations / dot-&-wedge facts / duals).
-- **Content-preservation proven mechanically:** the set of declaration names across
-  `G2`/`Versor2D`/`Projection2D` is identical before vs. after (total 92; now G2=76, Versor2D=7,
-  Projection2D=9), no duplicates, and `make lean` is green — so the change is relocations + headers only.
-- Architecture doc reconciled (`tasks/reference/lean-ga-proof-architecture.md`): the stale "`G2.dot`
-  lives in `Versor2D`" note reversed; the "helper lemmas may live outside the grade file" hazard kept but
-  de-staled.
+**Increment 1 — the `dot`/`wedge` consolidation + G2 basis-first (committed `c872621`):**
+- **Axis 1 (logical home).** `G2.dot` moved from `Versor2D.lean` and `G2.wedge` (+ its bilinearity
+  lemmas, `wedge_self_vec`/`wedge_antisymm`, the split `mul_eq_dot_add_wedge`/`mul_eq_wedge_of_perp`,
+  `normSq_wedge_vec`, and the grade lemmas `isBivector_wedge_of_isVector`/
+  `wedge_isVector_isBivector_eq_zero`) moved from `Projection2D.lean` — both now in **`G2.lean`**,
+  matching `G3`/`G1` (which already defined `dot`/`wedge` in-file). **G3/G1 were already correct**;
+  only G2 needed the move. Import-safe. `Versor2D.lean` now holds only the versor-from-vectors
+  construction; `Projection2D.lean` only `proj`/`reject`/`reject_perp_dot` + the sandwich-wedge lemmas.
+- **Axis 2 — `G2.lean`.** Basis constants + `vec` moved right after `structure G2`; section headers added.
 
-**Remaining (the continuation — recommend a reviewed pass, see note):**
-- **Axis 2 across the other ~30 files**, including the within-file reorder of `G1.lean`/`G3.lean` to the
-  same rubric (their `dot`/`wedge` are already home-correct — this is ordering only) and the concept
-  files. This is a large, mechanical, content-preserving sweep; each file needs the declaration-set
-  before/after check + `make lean`. **Scoping decision (William Emerison Six <billsix@gmail.com> asleep;
-  agent judgment, 2026-10-28):** executed the substantive, explicitly-named consolidation (above) and
-  stopped before churning ~30 files' line-order unattended — a 30-file reorder is better greenlit/reviewed
-  on the first file before the sweep, and `make lean` per file makes it a slow batch. The rubric (Axis 2)
-  and method below are ready to run it; awaiting a go-ahead to sweep all files (or a tighter subset).
-- **Candidate further Axis-1 moves to decide during the sweep:** none outstanding for 2D that are clearly
-  worth it — `mul_eq_dot_add_wedge` was moved to `G2` with the wedge cluster. Audit the 3D/concept files
-  for any other definition whose home is clearly wrong (log, don't guess) per the declaration map.
+**Increment 2 — G1 + G3 basis-first normalization (staged 2026-10-28; `make lean` green):**
+- **Axis 2 — `G1.lean` and `G3.lean` reordered to the same shape as `G2`** (the maintainer's
+  Open-Q4 "yes, fold G1 into the same normalization"): basis blades + grade constructors first
+  (right after the inner `namespace`), then the elementary operations, magnitude, dot/dual, the
+  multiplication table (packed as a visual table), the dot/wedge leaf lemmas, the coordinate-vector
+  leaves, the split, the grade predicates, and the object-form facts last — each under a `/-! ### -/`
+  header. `G3` went from operations-before-basis to basis-first; `G1` likewise.
+- **Done with a reusable tool, not hand-moves:**
+  `tasks/adhoc/study-and-reorder-lean-file-structure/reorder_lean.py` splits a file into declaration
+  blocks, reassembles them in a per-file PLAN order with fresh headers, and **asserts the multiset of
+  declaration-block texts is unchanged** — the mechanical content-preservation proof. Verified
+  externally too: declaration-name set identical before/after, all non-header lines identical as a
+  multiset, the tool is idempotent (re-run = no change), and `make lean` green (8958 jobs,
+  completeness gate OK; the only diagnostics are pre-existing info/warnings in the untouched
+  `ProjectionRotation3D.lean`).
+
+**Increment 3 — concept-file audit (2026-10-28): no reorder needed.**
+- All ~28 concept files were audited structurally (header + declaration sequence per file). Every one
+  is already in good within-file order: docstring → def(s) → concept-grouped lemmas, dependency-correct;
+  the "both-dimensions" files (`AlgebraLaws`, `Trig`, `GradeProjection`, `Measures`, `Exp`) are parallel
+  `namespace G2` / `namespace G3` blocks, each already def-then-lemma. **None has the basis-after-operations
+  problem** — only the algebra-core files (`G1`/`G2`/`G3`) define basis constants, and those are now fixed.
+  Reordering a coherent 300–700-line concept file (`Sandwich` 734, `ProjectionRotation3D` 515,
+  `CrossStandardPosition` 387) would be churn without a readability gain and carries real breakage risk,
+  so they were **deliberately left as-is** (agent judgment, 2026-10-28; this is the "don't manufacture
+  churn / if the goal is met, stop" discretion, not a deferral).
+
+**Axis-1 residual candidates (logged, not moved):**
+- `Versor2D.magnitude_sq_vec` is a general magnitude *leaf* (arch-doc leaf index lists it under
+  Magnitude leaves) living in a concept file; arguably its home is `G2.lean`. Left in place — it is a
+  single debatable leaf used only by `Versor2D`, and the maintainer is deferring content-ish moves.
+
+**Optional (not done — purely additive, offered to the maintainer):** four concept files have **zero**
+`/-! ### -/` section headers despite 100–275 lines (`Rotation2D`, `Rotation3D`, `StudentTrigForms`,
+`PlaneRotation3D`). Adding navigation headers (no reorder) would help readability; left for a yes.
 
 ## BLUF
 
