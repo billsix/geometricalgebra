@@ -36,10 +36,10 @@ their bridges → object-form facts — each under a `/-! ### -/` header. This p
 *before* the operations (they had been after, in both G2 and G3), reflecting the module docstring's
 basis-first introduction. The full rubric is recorded in the architecture doc.
 
-**The reorder tool.** The G1/G3 reorder was done by
-`tasks/adhoc/study-and-reorder-lean-file-structure/reorder_lean.py`, not by hand: it splits a file into
-declaration blocks, reassembles them per a per-file PLAN with fresh section headers, and **asserts the
-multiset of declaration-block texts is unchanged** — the mechanical content-preservation proof.
+**The reorder tool.** The G1/G3 reorder was done by `tools/reorder_lean.py`, not by hand: it splits a
+file into declaration blocks, reassembles them per a per-file PLAN with fresh section headers, and
+**asserts the multiset of declaration-block texts is unchanged** — the mechanical content-preservation
+proof. (It lived under `tasks/adhoc/` during the task and was promoted to `tools/` on completion.)
 Verified additionally by: identical declaration-name set before/after, identical non-header lines as a
 multiset, idempotent re-run, and `make lean` green. (G2 had been reordered earlier, by hand, with the
 same before/after declaration-set check.)
@@ -76,9 +76,10 @@ place as a single debatable leaf used only by `Versor2D`.
 - `proofs/GacalcProofs/G1.lean`, `proofs/GacalcProofs/G3.lean` — Axis 2 (basis-first, headers).
 - `proofs/GacalcProofs/Versor2D.lean`, `proofs/GacalcProofs/Projection2D.lean` — Axis 1 (dot/wedge moved out).
 - `tasks/reference/lean-ga-proof-architecture.md` — the within-file-order rubric + the `dot`/`wedge` home note.
-- `tasks/adhoc/study-and-reorder-lean-file-structure/reorder_lean.py` — the reorder tool; one-shot,
-  `git rm`'d in this archive commit (recoverable from git history if a future reorder wants it; it is a
-  generic block-reassembler + per-file PLANs, so it could be promoted to `tools/` instead).
+- `tools/reorder_lean.py` — the reorder tool; a generic block-reassembler + per-file PLANs. It lived
+  under `tasks/adhoc/` during the task and was promoted to `tools/` on completion (sibling of
+  `gen_specialized.py`, with a `tools/reorder_lean.py` E501/T201 per-file-ignore in `pyproject.toml`);
+  `python tools/reorder_lean.py G1 G3 --check` re-checks for within-file drift.
 
 ## Follow-ups
 

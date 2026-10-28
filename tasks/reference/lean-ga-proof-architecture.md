@@ -208,9 +208,10 @@ object-form facts (`mul_eq_dot_add_wedge`, `wedge_antisymm`, the self-products, 
 docstring, which introduces the basis before the product (maintainer, 2026-10-28). The ~28 concept
 files were audited at the same time and already conformed (docstring → def(s) → concept-grouped
 lemmas), so only the core files were reordered. The reorder was content-preserving — only relocations
-and `/-! -/` headers changed, proven by an identical multiset of declaration blocks before vs. after
-(a one-shot block-reassembly script did it; see the archived task
-`tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`).
+and `/-! -/` headers changed, proven by an identical multiset of declaration blocks before vs. after.
+The tool that does it (and verifies that invariant) is **`tools/reorder_lean.py`** — a reusable
+block-reassembler driven by a per-file PLAN; run `python tools/reorder_lean.py G1 G3 --check` to detect
+later within-file drift in those files (G2 was reordered by hand and has no PLAN).
 
 **Naming: the geometric name is the student-facing (cosine/sine) theorem; the dot/wedge form carries a
 `_dot` suffix.** Cosine is an implementation detail, so the theorem a reader cites is
