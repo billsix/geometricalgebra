@@ -27,14 +27,14 @@ namespace G1
 
 /-! ### Basis blades as elements, and the constants -/
 
-def zero : G1 := ⟨0, 0⟩
-def one : G1 := ⟨1, 0⟩
+def zero : G1 := { s := 0, c1 := 0 }
+def one : G1 := { s := 1, c1 := 0 }
 
 /-- The basis vector `e₁` — an element of the algebra, not a real. -/
-def e_1 : G1 := ⟨0, 1⟩
+def e_1 : G1 := { s := 0, c1 := 1 }
 
 /-- A vector `x·e₁`. -/
-def vec (x : ℝ) : G1 := ⟨0, x⟩
+def vec (x : ℝ) : G1 := { s := 0, c1 := x }
 
 /-- The unit pseudoscalar of 𝒢₁ is the vector `e₁` itself. -/
 def I : G1 := e_1

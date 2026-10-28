@@ -58,21 +58,21 @@ namespace G2
 /-! ### The basis blades as elements, and the vector constructor -/
 
 /-- The scalar unit `1` (grade 0) — an element of 𝒢₂. -/
-def one : G2 := ⟨1, 0, 0, 0⟩
+def one : G2 := { s := 1, c1 := 0, c2 := 0, c12 := 0 }
 
 /-- The basis vector e₁ (grade 1) — an element of 𝒢₂, NOT a real. -/
-def e_1 : G2 := ⟨0, 1, 0, 0⟩
+def e_1 : G2 := { s := 0, c1 := 1, c2 := 0, c12 := 0 }
 
 /-- The basis vector e₂ (grade 1) — an element of 𝒢₂. -/
-def e_2 : G2 := ⟨0, 0, 1, 0⟩
+def e_2 : G2 := { s := 0, c1 := 0, c2 := 1, c12 := 0 }
 
 /-- The unit bivector e₁*e₂ (grade 2) — an element of 𝒢₂. Equals `mul e_1*e_2`
     (`e_1_mul_e_2`); it is the unit pseudoscalar `I` in 2D. -/
-def e_12 : G2 := ⟨0, 0, 0, 1⟩
+def e_12 : G2 := { s := 0, c1 := 0, c2 := 0, c12 := 1 }
 
 /-- A grade-1 vector from its two coordinates (its e₁ and e₂ coefficients); equals
     `x·e₁ + y·e₂` (`vec_eq_smul`). -/
-def vec (x y : ℝ) : G2 := ⟨0, x, y, 0⟩
+def vec (x y : ℝ) : G2 := { s := 0, c1 := x, c2 := y, c12 := 0 }
 
 /-- The unit pseudoscalar I = e₁*e₂. -/
 def I : G2 := e_12
@@ -376,7 +376,7 @@ theorem I_sq_eq_sign : (mul I I).s = (-1 : ℝ) ^ (2 * (2 - 1) / 2) := by
 /-! ### The dual, and: the dual of a vector is perpendicular to it (2D) -/
 
 /-- The inverse unit pseudoscalar I₂⁻¹ = −e₁₂ (since I₂² = −1, so I₂⁻¹ = −I₂). -/
-def I_inv : G2 := ⟨0, 0, 0, -1⟩
+def I_inv : G2 := { s := 0, c1 := 0, c2 := 0, c12 := -1 }
 
 /-- I₂ · I₂⁻¹ = 1, confirming `I_inv` is the inverse of the pseudoscalar `I`. -/
 theorem I_mul_I_inv : mul I I_inv = one := by
