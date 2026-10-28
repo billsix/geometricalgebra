@@ -39,6 +39,8 @@ import GacalcProofs.AlgebraLaws
     together and is imported only by the root. -/
 namespace GacalcProofs.G2
 
+/-! ### 𝒢₂ student forms: perpendicularity, and product-is-wedge -/
+
 /-- **The dual of a vector is perpendicular to it**, as a student sees it: the cosine of the angle
     between `v*` and `v` is 0. For a nonzero vector `v`. -/
 theorem dual_perp {v : G2} (hv : IsVector v) (_hv0 : normSq v ≠ 0) :
@@ -69,6 +71,8 @@ theorem mul_eq_wedge_of_cos_perp {a b : G2} (ha : IsVector a) (hb : IsVector b)
 end GacalcProofs.G2
 
 namespace GacalcProofs.G3
+
+/-! ### 𝒢₃ student forms: perpendicularity, parallelism, and area -/
 
 /-- **The cross product is perpendicular to its left factor** (cosine 0) — for nonzero vectors. -/
 theorem cross_perp_left {a b : G3} (ha : IsVector a) (hb : IsVector b)
@@ -119,6 +123,8 @@ theorem proj_plane_perp_normal (a b c : G3)
     (hn : dot (dual (wedge a b)) (dual (wedge a b)) ≠ 0) :
     cos_between (proj_plane a b c) (dual (wedge a b)) = 0 := by
   simp only [cos_between, proj_plane_perp_normal_dot a b c hn, zero_div]
+
+/-! ### 𝒢₃: recovering dot/wedge from the trig form, and the triple product -/
 
 /-- **Recover `dot a b = 0` from `cos(θ) = 0`** (3D), for nonzero vectors. The nonzero guard excludes
     the junk `0/0` case (see the header), making `cos(θ) = 0` as strong as the dot primitive. -/

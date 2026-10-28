@@ -1,43 +1,41 @@
 # Add `/-! ### -/` navigation section headers to the four header-less Lean proof files
 
-**Status:** proposed — needs go-ahead
+**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK). 10 section headers
+added across four files; purely additive (25 insertions, 0 deletions — no declaration moved).
 **Priority:** 8
 **Difficulty:** 2
 **Created:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
+**Updated:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
-Four proof files in `proofs/GacalcProofs/` carry **zero** `/-! ### … -/` section headers despite being
-100–275 lines, so there are no in-file waypoints when reading or jumping around them. Add headers that
-group the existing declarations by phase — a **purely additive** change (new comment lines only, no
-reorder, no body touched), so `make lean` must stay green and `git diff` must show only inserted
-`/-! ### -/` lines. Spun out of the file-structure sweep
-(`tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`), which found these four while confirming the rest of
-the corpus was already sectioned.
+Four proof files had no `/-! ### … -/` navigation waypoints despite being 100–275 lines. Added headers
+grouping the existing declarations by phase — a **purely additive** change (new comment lines only, no
+reorder, no body touched); `git diff` is 25 inserted lines, 0 deletions, and `make lean` stayed green.
 
-## The four files (line counts as of 2026-10-28)
+## Audit correction
 
-- `proofs/GacalcProofs/Rotation2D.lean` (275) — `rot`, `fullAngleRotor`, `uvec`, `polar`,
-  `fullAngleRotorFromTo`, `rotor`, and their lemmas: natural groups are the angle-parameterized rotation
-  (`rot` + `rot_add`/`rot_comm`), the full-angle teaching operator, `uvec`/`polar`, and the half-angle
-  `rotor` + `isRotor_rotor`.
-- `proofs/GacalcProofs/Rotation3D.lean` (145) — `bisector`, `versorFromVectors`, and the versor facts.
-- `proofs/GacalcProofs/StudentTrigForms.lean` (177) — the `cos`/`sin` student-facing corollaries; group
-  by the geometric relation each presents (perpendicularity, parallelism, …).
-- `proofs/GacalcProofs/PlaneRotation3D.lean` (155) — `planeRotor` + the `rotorSandwich_planeRotor` angle
-  theorem and its corollaries.
+The originating sweep flagged these four by grepping for `### ` headers only. On inspection
+**`Rotation2D.lean` already had two `/-! ## … -/` section headers** (the "from a to b" and "rotor
+sandwich" sections) — only its top ~100 lines (the `rot`/`fullAngleRotor`/`uvec` material) lacked one.
+So Rotation2D got a single `## ` header matching its own style; the other three were genuinely
+header-less and got `### ` headers matching `G2`/`G3`/`Projection3D`.
 
-## Method
+## What was added
 
-1. Read each file; decide 2–4 phase boundaries that match the existing top-to-bottom declaration order
-   (do **not** reorder — these files are already in good order per the sweep's audit).
-2. Insert `/-! ### <phase> -/` lines (blank line before and after) at those boundaries. Match the
-   wording/▸style of the headers already used in `G2.lean`/`G3.lean`/`Projection3D.lean`.
-3. `make lean` (USE_LEAN image, `proofs/check.sh`) — must stay green. `git diff` must be inserted
-   `/-! -/` lines only (no moved declarations).
+- **`Rotation3D.lean`** (3 `### `): "The bisector and the from-vectors versor"; "Supporting leaves";
+  "The versor–vector identities `R*a = |a|*h` and `b*R = |b|*h`".
+- **`StudentTrigForms.lean`** (3 `### `): "𝒢₂ student forms"; "𝒢₃ student forms: perpendicularity,
+  parallelism, area"; "𝒢₃: recovering dot/wedge from the trig form, and the triple product". (Headed by
+  namespace + one natural G3 boundary — the topics are interleaved in source order, so a finer split
+  would have required reordering, which was out of scope.)
+- **`PlaneRotation3D.lean`** (3 `### `): "The plane rotor, and that it is a rotor"; "The angle theorem
+  `R*v*R̃ = v⊥ + cos(θ)*v∥ + sin(θ)*(v ⌋ i)`"; "Corollaries: rotates by θ in-plane, and fixes the normal".
+- **`Rotation2D.lean`** (1 `## `, matching its existing section style): "Rotation `rot θ`, the
+  full-angle rotor, and the geometric product from rotation" over the previously un-headed top group.
 
 ## Deliverables
 
-- The four files sectioned; `make lean` green; diff = additive header lines only.
+- The four files sectioned; `make lean` green; diff = additive header lines only. ✓
 
 See also: `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`, `tasks/reference/lean-ga-proof-architecture.md`.

@@ -215,7 +215,10 @@ lemmas), so only the core files were reordered. The reorder was content-preservi
 and `/-! -/` headers changed, proven by an identical multiset of declaration blocks before vs. after.
 The tool that does it (and verifies that invariant) is **`tools/reorder_lean.py`** — a reusable
 block-reassembler driven by a per-file PLAN; run `python tools/reorder_lean.py G1 G3 --check` to detect
-later within-file drift in those files (G2 was reordered by hand and has no PLAN).
+later within-file drift in those files (G2 was reordered by hand and has no PLAN). Every proof file now
+carries `/-! -/` navigation headers; the four that still lacked them — the top of `Rotation2D.lean`
+(which already had two `## ` sections) and all of `Rotation3D`/`StudentTrigForms`/`PlaneRotation3D` —
+were sectioned 2026-10-28 (header lines only, `make lean` green).
 
 **Naming: the geometric name is the student-facing (cosine/sine) theorem; the dot/wedge form carries a
 `_dot` suffix.** Cosine is an implementation detail, so the theorem a reader cites is

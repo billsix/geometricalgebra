@@ -31,6 +31,8 @@ namespace GacalcProofs.G3
 
 open Real
 
+/-! ### The plane rotor, and that it is a rotor -/
+
 /-- gacalc's half-angle rotor for angle θ in the plane of the unit bivector `i`:
     `R = cos(θ/2)*1 − sin(θ/2)*i` — what `transforms._unit_bivector_rotor_factory`'s `rotor_for` builds
     (`Rotation2D.rotor θ` is the `i = e₁₂` case). -/
@@ -65,6 +67,8 @@ theorem normSq_planeRotor (θ : ℝ) {i : G3} (hi : IsBivector i) (hu : normSq i
 theorem isRotor_planeRotor (θ : ℝ) {i : G3} (hi : IsBivector i) (hu : normSq i = 1) :
     IsRotor (planeRotor θ i) :=
   ⟨isEvenVersor_planeRotor θ hi, normSq_planeRotor θ hi hu⟩
+
+/-! ### The angle theorem: `R*v*R̃ = v⊥ + cos(θ)*v∥ + sin(θ)*(v ⌋ i)` -/
 
 /-- **The 3D rotor angle theorem (the leaf):** for a unit bivector `i` and a vector `v`,
     `R*v*R̃ = v⊥ + cos(θ)*v∥ + sin(θ)*(v ⌋ i)` with `R = planeRotor θ i`, `v∥ = project_onto i v`,
@@ -107,6 +111,8 @@ theorem rotorSandwich_planeRotor (θ : ℝ) {i v : G3} (hi : IsBivector i) (hu :
   · ring
   · ring
   · ring
+
+/-! ### Corollaries: rotates by θ in-plane, and fixes the plane normal -/
 
 /-- **Student-facing corollary:** for a nonzero vector `v` lying IN the plane (`reject i v = 0`), the
     cosine of the angle between `v` and its image `R*v*R̃` is `cos(θ)` — the rotor rotates by θ. From the

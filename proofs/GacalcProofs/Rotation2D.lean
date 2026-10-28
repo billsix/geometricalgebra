@@ -49,6 +49,13 @@ namespace GacalcProofs
 
 open Real
 
+/-! ## Rotation `rot θ`, the full-angle rotor, and the geometric product from rotation
+
+    `rot θ` (geometric rotation from sin/cos on the named components), its linearity and
+    basis-decomposition; the one-sided **full-angle rotor** `fullAngleRotor θ` that enacts rotation;
+    and the product of two unit vectors as that rotor, with its scalar/`e₁₂` parts read off as the
+    dot and wedge. -/
+
 /-- Rotation of a 𝒢₂ vector by angle θ — the geometric definition, from sin/cos, on the
     vector's named components `c1` (the e₁ coefficient) and `c2` (the e₂ coefficient):
     `(x, y) ↦ (x*cos(θ) − y*sin(θ), x*sin(θ) + y*cos(θ))` packed back into a vector by `G2.vec`. It
