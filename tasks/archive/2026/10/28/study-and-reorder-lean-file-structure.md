@@ -83,7 +83,7 @@ place as a single debatable leaf used only by `Versor2D`.
 
 ## Follow-ups
 
-- `tasks/add-section-headers-to-headerless-lean-files.md` — add `/-! ### -/` navigation headers to the
+- `tasks/archive/2026/10/28/add-section-headers-to-headerless-lean-files.md` — add `/-! ### -/` navigation headers to the
   four concept files that have none (`Rotation2D`/`Rotation3D`/`StudentTrigForms`/`PlaneRotation3D`);
   additive, no reorder.
 - `tasks/archive/2026/10/28/lean-basis-constants-self-documenting.md` and `tasks/archive/2026/10/28/lean-g2-object-out-parity.md` — the two
