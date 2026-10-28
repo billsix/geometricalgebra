@@ -140,9 +140,13 @@ leaks raw coordinates except the deliberate equivalence bridge `dot_eq_coord_sum
 coordinate leaves.
 `IsEvenVersor`/`IsRotor` (`Sandwich.lean`) already cover the versor/rotor notions — Python has no
 `is_versor`/`is_rotor` predicate (versor/rotor are generated *types*, not `Gn` predicates), so no bare
-`IsVersor` was added. There is no grade-3 trivector in 2D. **Not yet done in 3D:** `G3` has
-`IsVector`/`IsBivector`/`IsTrivector`/`IsEvenVersor`/`IsRotor` but **no `IsScalar`** and no grade-of-result
-lemmas — the 3D parity pass is `tasks/lean-grade-predicates-3d.md`. (Part 1 of the originating task — the
+`IsVersor` was added. There is no grade-3 trivector in 2D. **3D parity (done 2026-10-28):** `G3` carries
+`IsVector`/`IsBivector`/`IsTrivector`/`IsEvenVersor`/`IsRotor` and now also **`IsScalar`** (grade 0) with
+`eq_scalar_of_isScalar` →`scalar a.s` (G3's constructor form, matching `eq_bivector`/`eq_trivector`, not
+2D's `smul one`), `isScalar_scalar`/`isScalar_one` recognizers, and the grade-of-result
+`isScalar_mul_self_of_isVector` (`a a` is a scalar). The wedge/wedge3 grade lemmas were skipped — no 3D
+consumer (the 2D `isBivector_wedge_of_isVector` served the 2D-only `v∧I=0`, which has no 3D analogue).
+(Part 1 of the originating task — the
 products as functions with their dot=sym-part / wedge=antisym-part characterizations — already existed;
 Part 3 — narrowing ℝ→G2 signatures — was already complete from the 2026-10-04 polynomial-tier sweep and
 its 2026-10-20 follow-up, so the remaining ℝ-taking 2D theorems are genuine scalars or coordinate leaves.)
