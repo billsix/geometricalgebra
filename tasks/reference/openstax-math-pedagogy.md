@@ -5,7 +5,10 @@
 examples, exercises, repetition, and how they signal "this result is settled, use it as a
 tool" — read from their LaTeX source, plus recommendations for applying it to the GA book.
 **Companion:** [[book-outline]] (the book's own plan and five principles) is the intended
-reader of this doc's Part II.
+reader of this doc's Part II. See also [[algebra-teaching-order]] — the sibling doc on the
+*concept-ordering* (operations and properties) that drives the `G1`/`G2`/`G3` Lean-file
+sequence; this doc is about teaching *style* for the book, that one about *order* for the
+proofs.
 
 ## How this was produced (and how to re-run it)
 
