@@ -1,6 +1,8 @@
 # Lift G2's coordinate-leaking theorem conclusions to G3's object-out form
 
-**Status:** proposed — needs go-ahead (to be looked at after the current file-structure work)
+**Status:** proposed — needs go-ahead (to be looked at after the current file-structure work). Scope
+**decided** (maintainer, 2026-10-28): **audit all of G2 and lift every genuine case**, not just the
+two named theorems — keep the deliberate equivalence bridges (e.g. `dot_eq_coord_sum`) coordinate.
 **Priority:** 6
 **Difficulty:** 4
 **Created:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
