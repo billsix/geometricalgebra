@@ -11,13 +11,6 @@ import GacalcProofs.Sandwich
     `reject` = `(A∧B)B⁻¹`). -/
 namespace GacalcProofs.G2
 
-/-- The outer (wedge) product in 𝒢₂. -/
-noncomputable def wedge (a b : G2) : G2 where
-  s := a.s * b.s
-  c1 := a.c1 * b.s + a.s * b.c1
-  c2 := a.c2 * b.s + a.s * b.c2
-  c12 := a.c1 * b.c2 - a.c2 * b.c1 + a.c12 * b.s + a.s * b.c12
-
 /-- Vector projection of `b` onto the vector `a`: `proj_a b = (b·a / a·a)·a` (Hestenes `(A·B)B⁻¹`
     for a vector `B`).
 
@@ -25,62 +18,6 @@ noncomputable def wedge (a b : G2) : G2 where
     for a vector (`a·a = |a|²`), but this def is general in `a : G2`, where `a·a ≠ normSq a` on grade ≥ 2
     (`normSq` uses the reverse). Do NOT tighten the denominator to `normSq a`. (Same call as 3D `proj`.) -/
 noncomputable def proj (a b : G2) : G2 := smul (dot b a / dot a a) a
-
-/-- The wedge distributes over subtraction on the right (2D). -/
-theorem wedge_sub_right (a u w : G2) : wedge a (sub u w) = sub (wedge a u) (wedge a w) := by
-  simp only [wedge, sub]; ext <;> ring
-
-/-- The wedge distributes over addition on the right (2D). -/
-theorem wedge_add_right (a u w : G2) : wedge a (add u w) = add (wedge a u) (wedge a w) := by
-  simp only [wedge, add]; ext <;> ring
-
-/-- The wedge pulls out a scalar on the right (2D). -/
-theorem wedge_smul_right (k : ℝ) (a u : G2) : wedge a (smul k u) = smul k (wedge a u) := by
-  simp only [wedge, smul]; ext <;> ring
-
-/-- The wedge distributes over subtraction on the left (2D). -/
-theorem wedge_sub_left (u w a : G2) : wedge (sub u w) a = sub (wedge u a) (wedge w a) := by
-  simp only [wedge, sub]; ext <;> ring
-
-/-- The wedge distributes over addition on the left (2D). -/
-theorem wedge_add_left (u w a : G2) : wedge (add u w) a = add (wedge u a) (wedge w a) := by
-  simp only [wedge, add]; ext <;> ring
-
-/-- The wedge pulls out a scalar on the left (2D). -/
-theorem wedge_smul_left (k : ℝ) (u a : G2) : wedge (smul k u) a = smul k (wedge u a) := by
-  simp only [wedge, smul]; ext <;> ring
-
-/-- `a ∧ a = 0` for a vector `a` (2D). -/
-theorem wedge_self_vec {a : G2} (ha : IsVector a) : wedge a a = (⟨0, 0, 0, 0⟩ : G2) := by
-  obtain ⟨has, _⟩ := ha
-  simp only [wedge, has]; ext <;> ring
-
-/-- **The wedge of vectors is antisymmetric:** `a∧b = −(b∧a)` (2D), for vectors `a`, `b`. -/
-theorem wedge_antisymm {a b : G2} (ha : IsVector a) (hb : IsVector b) :
-    wedge a b = neg (wedge b a) := by
-  rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb]
-  simp only [wedge, vec, neg]; ext <;> ring
-
-/-- **The fundamental identity `a b = a·b + a∧b`, for arbitrary vectors** (2D): for grade-1 `a`, `b`,
-    the geometric product splits into its scalar (inner) part `a·b` and its pseudoscalar (outer) part
-    `a∧b`. The 2D twin of the 𝒢₃ `mul_eq_dot_add_wedge`. -/
-theorem mul_eq_dot_add_wedge {a b : G2} (ha : IsVector a) (hb : IsVector b) :
-    mul a b = add (smul (dot a b) one) (wedge a b) := by
-  obtain ⟨_, ha12⟩ := ha
-  obtain ⟨hbs, hb12⟩ := hb
-  simp only [mul, wedge, smul, one, dot, add]
-  ext <;> simp only [ha12, hbs, hb12] <;> ring
-
-/-- **Orthogonal vectors' geometric product is their wedge** (2D, arbitrary vectors): `a·b = 0 ⟹ a b = a∧b`. -/
-theorem mul_eq_wedge_of_perp {a b : G2} (ha : IsVector a) (hb : IsVector b) (h : dot a b = 0) :
-    mul a b = wedge a b := by
-  rw [mul_eq_dot_add_wedge ha hb, h]
-  simp only [smul, one, add]; ext <;> ring
-
-/-- **Leaf:** `|a∧b|² = (a₁*b₂ − a₂*b₁)²` — the squared magnitude of the plane bivector of two vectors (2D). -/
-theorem normSq_wedge_vec (a1 a2 b1 b2 : ℝ) :
-    normSq (wedge (vec a1 a2) (vec b1 b2)) = (a1 * b2 - a2 * b1) ^ 2 := by
-  simp only [normSq, wedge, mul, reverse, vec]; ring
 
 /-- Hestenes rejection `reject_B A = (A ∧ B) B⁻¹`. -/
 noncomputable def reject (awayFrom a : G2) : G2 := mul (wedge a awayFrom) (inverse awayFrom)
@@ -97,9 +34,10 @@ theorem reject_perp_dot (a b : G2) (ha : dot a a ≠ 0) :
   ring
 
 /-- **A 2D vector wedged with the pseudoscalar is zero**: `v ∧ I₂ = 0` (grade 1 + 2 = 3 exceeds the
-    dimension). So a vector has no part outside the plane. -/
-theorem vec_wedge_I_eq_zero (x y : ℝ) : wedge (vec x y) I = (⟨0, 0, 0, 0⟩ : G2) := by
-  simp only [wedge, vec, I, e_12]; ext <;> ring
+    dimension). So a vector has no part outside the plane. A corollary of the object-form
+    `wedge_isVector_isBivector_eq_zero`, with `isBivector_I` discharging the bivector side. -/
+theorem vec_wedge_I_eq_zero (x y : ℝ) : wedge (vec x y) I = (⟨0, 0, 0, 0⟩ : G2) :=
+  wedge_isVector_isBivector_eq_zero (isVector_vec x y) isBivector_I
 
 /-- **The rejection of a vector from the pseudoscalar plane is zero** — a 2D vector lies entirely in
     the plane, so nothing is rejected. `reject I₂ v = (v ∧ I₂) I₂⁻¹ = 0`. -/
