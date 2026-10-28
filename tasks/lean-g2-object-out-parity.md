@@ -1,83 +1,58 @@
 # Lift G2's coordinate-leaking theorem conclusions to G3's object-out form
 
-**Status:** proposed — needs go-ahead (to be looked at after the current file-structure work). Scope
-**decided** (maintainer, 2026-10-28): **audit all of G2 and lift every genuine case**, not just the
-two named theorems — keep the deliberate equivalence bridges (e.g. `dot_eq_coord_sum`) coordinate.
+**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK). Three G2 theorems
+lifted to object-equality form matching their G3 twins; the deliberate coordinate cases kept.
 **Priority:** 6
 **Difficulty:** 4
 **Created:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
+**Updated:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
-Some `G2.lean` theorems take geometric objects in (`{a b : G2} (ha : IsVector a) …`) but **conclude
-with a raw coordinate expression**, where the `G3.lean` twin already concludes about the object. The
-clearest case: `dot_is_sym_part` is commented "the dot product **is** the scalar part of ½(ab + ba)"
-yet concludes `(…).s = a.c1 * b.c1 + a.c2 * b.c2` — a coordinate sum, not `dot a b`. This violates
-the house rule *"geometric objects in, scalars in the body, geometric objects **out**"*
-(`CLAUDE.md`, `tasks/reference/lean-ga-proof-architecture.md`). "Done" = each such G2 theorem is
-lifted to the full object-equality form its G3 twin already uses, downstream consumers updated,
-`make lean` green.
+Some `G2.lean` theorems took geometric objects in (`{a b : G2} (ha : IsVector a) …`) but **concluded
+with a raw coordinate expression / literal**, where the `G3.lean` twin concludes about the object —
+violating the house rule *"geometric objects in, scalars in the body, geometric objects **out**"*
+(`CLAUDE.md`, `tasks/reference/lean-ga-proof-architecture.md`). Audited all of G2 (maintainer's "lift
+every genuine case") and lifted the three genuine cases to their G3-twin object form; verified `make
+lean` green. No consumer needed updating — the three had only doc-comment mentions, no `rw`/`simp`
+call sites.
 
-## Context (cold start)
+## What was done (`proofs/GacalcProofs/G2.lean`)
 
-- Raised 2026-10-28 by the maintainer while reviewing `G2.dot_is_sym_part`/`wedge_is_antisym_part`
-  during the file-structure sweep (`tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`). Sibling of
-  [[lean-basis-constants-self-documenting]]; both are "make the contents live up to the comment,"
-  and both are **content** changes out of scope for the content-preserving reorder sweep.
-- The defect is a **weaker interface**, not a wrong proof: the current G2 statements pin only the
-  relevant component (`.s` / `.c12`) and equate it to a coordinate sum; the object form is strictly
-  stronger (it also asserts the other components vanish) and is what the comment promises.
+Three conclusions lifted (object form, matching G3; proofs gained `dot`/`one`/`wedge`/`neg` in the
+`simp only` set and an `ext <;> ring`):
 
-## The two known cases (G2 current vs. the G3 twin it should match)
+| theorem | before (leaked) | after (object) |
+|---|---|---|
+| `dot_is_sym_part` | `(smul (1/2) (add (mul a b) (mul b a))).s = a.c1*b.c1 + a.c2*b.c2` | `smul (1/2) (add (mul a b) (mul b a)) = smul (dot a b) one` |
+| `wedge_is_antisym_part` | `(smul (1/2) (sub (mul a b) (mul b a))).c12 = a.c1*b.c2 - a.c2*b.c1` | `smul (1/2) (sub (mul a b) (mul b a)) = wedge a b` |
+| `I_sq` | `mul I I = ⟨-1, 0, 0, 0⟩` | `mul I I = neg one` |
 
-`proofs/GacalcProofs/G2.lean`, current:
-```lean
-theorem dot_is_sym_part {a b : G2} (ha : IsVector a) (hb : IsVector b) :
-    (smul (1 / 2) (add (mul a b) (mul b a))).s = a.c1 * b.c1 + a.c2 * b.c2 := by
-  obtain ⟨has, ha12⟩ := ha; obtain ⟨hbs, hb12⟩ := hb
-  simp only [smul, add, mul, has, ha12, hbs, hb12]; ring
+The object forms are *strictly stronger* (they pin every component, not just `.s`/`.c12`), and each is
+exactly what its docstring already promised.
 
-theorem wedge_is_antisym_part {a b : G2} (ha : IsVector a) (hb : IsVector b) :
-    (smul (1 / 2) (sub (mul a b) (mul b a))).c12 = a.c1 * b.c2 - a.c2 * b.c1 := by
-  obtain ⟨has, ha12⟩ := ha; obtain ⟨hbs, hb12⟩ := hb
-  simp only [smul, sub, mul, has, ha12, hbs, hb12]; ring
-```
+## Audit: what was deliberately kept coordinate
 
-`proofs/GacalcProofs/G3.lean`, the target shape:
-```lean
-theorem dot_is_sym_part … : smul (1 / 2) (add (mul a b) (mul b a)) = smul (dot a b) one := by
-  obtain …; simp only [smul, add, mul, dot, one, …]; ext <;> ring
-theorem wedge_is_antisym_part … : smul (1 / 2) (sub (mul a b) (mul b a)) = wedge a b := by
-  obtain …; simp only [smul, sub, mul, wedge, …]; ext <;> ring
-```
+- **`dot_eq_coord_sum`** — the deliberate "equivalence to the general case" bridge (`(mul a b).s =
+  a.c1*b.c1 + a.c2*b.c2` = the Euclidean dot / Mathlib `inner`); its whole point is the coordinate sum.
+  Kept (per the decision).
+- **Reals-in coordinate leaves** (A/B/C "C-keep"): `vec_mul`, `dot_vec`, `normSq_vec`,
+  `normSq_wedge_vec`, `normSq_eq_sum_sq`, `dual_vec_perp`, and `I_sq_eq_sign` (`(mul I I).s =
+  (-1)^(r(r−1)/2)` is *about* the scalar part's sign by design — G3's twin is identical). Their inputs
+  are free reals / their RHS *is* coordinate arithmetic.
+- **The `eq_…_of_is…` bridges** (`eq_vec_of_isVector`, `eq_smul_one_of_isScalar`,
+  `eq_smul_e12_of_isBivector`) — they mention coordinates because expressing the object *by* its
+  coordinates is their job.
+- **`wedge_self_vec` and `wedge_isVector_isBivector_eq_zero`** — conclude `= (⟨0,0,0,0⟩ : G2)`. G3's
+  twins use `zero`, but G2 has **no `zero`** (the sibling task
+  [[lean-basis-constants-self-documenting]] deliberately did not add one). Left as the `⟨0,0,0,0⟩`
+  literal; not a component-arithmetic leak, just the zero value. (If a `G2.zero` is ever added, these
+  two could use it.)
 
-So lift G2's conclusions to `= smul (dot a b) one` and `= wedge a b`, adding `dot`/`one`/`wedge` to
-the `simp only` set and an `ext <;> ring` (the goal is now an object equality, like G3's proof).
+## Files touched
 
-## Method
-
-1. **Audit, don't assume two.** Grep `G2.lean` for theorems that take `IsVector`/`IsScalar`/
-   `IsBivector` and whose conclusion is a `.s`/`.c1`/`.c12 = <coordinate expression>` or a bare
-   coordinate sum — list every one where the G3 twin (or the house style) says it should be an
-   object equality. Candidates to check beyond the two above: `dot_eq_coord_sum` (this one is a
-   deliberate "equivalence to the general case" coordinate bridge — likely keep), the `_vec`
-   coordinate leaves (keep — their RHS *is* coordinate arithmetic, per the A/B/C "C-keep" rule).
-2. **Lift each genuine case** to the G3-twin object form; adjust the proof (`ext <;> ring`).
-3. **Update consumers.** A strengthening can break a caller that `rw`/`simp`-matched the exact old
-   `.s = …` RHS. `rg` each lifted theorem's name across `proofs/GacalcProofs/`, fix call sites,
-   `make lean` after each.
-4. Reconcile `tasks/reference/lean-ga-proof-architecture.md` if its A/B/C examples cite the old form.
-
-## Risk / verification
-
-- Strengthening statements — the risk is downstream call sites, not the proofs themselves. `make lean`
-  (USE_LEAN image, `proofs/check.sh`) is the gate; verify after each lifted theorem.
-- Lean only; generated Python untouched. Own commit (a content change, not the reorder sweep).
-
-## Deliverables
-
-- Every coordinate-leaking G2 conclusion that has an object-out G3 twin lifted to match; consumers
-  updated; `make lean` green; the A/B/C examples in the architecture doc still accurate.
+- `proofs/GacalcProofs/G2.lean` — the three lifts (statements + proofs + docstrings). Diff is those
+  three theorems only; no other declaration changed.
 
 See also: [[lean-basis-constants-self-documenting]], `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`,
 `tasks/reference/lean-ga-proof-architecture.md` (the A/B/C judgment + "objects in, scalars in the body").
