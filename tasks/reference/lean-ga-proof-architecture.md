@@ -132,8 +132,12 @@ mirroring Python's `is_*` (`base.py`): **`IsScalar`** (grade 0), **`IsVector`** 
 `eq_vec_of_isVector` →`vec`, `eq_smul_e12_of_isBivector` →`c*e₁₂`) and `is…_…` recognizer
 (`isScalar_one`, `isVector_vec`, `isBivector_e12`/`isBivector_I`). Two **grade-of-result** lemmas show the
 typed-object use: `isScalar_mul_self_of_isVector` (`a a` is a scalar, `G2.lean`) and
-`isBivector_wedge_of_isVector` (`a∧b` is a bivector, `Projection2D.lean` — where `wedge` currently lives);
-`vec_wedge_I_eq_zero` was refactored into a corollary of the object-form `wedge_isVector_isBivector_eq_zero`.
+`isBivector_wedge_of_isVector` (`a∧b` is a bivector, `G2.lean`); `vec_wedge_I_eq_zero` was refactored
+into a corollary of the object-form `wedge_isVector_isBivector_eq_zero`. **Object-out parity with G3
+(2026-10-28):** `G2.dot_is_sym_part` (`½(ab+ba) = (a·b)*1`), `wedge_is_antisym_part` (`½(ab−ba) = a∧b`)
+and `I_sq` (`= neg one`) now conclude about *objects*, matching their G3 twins — no G2 public statement
+leaks raw coordinates except the deliberate equivalence bridge `dot_eq_coord_sum` and the reals-in
+coordinate leaves.
 `IsEvenVersor`/`IsRotor` (`Sandwich.lean`) already cover the versor/rotor notions — Python has no
 `is_versor`/`is_rotor` predicate (versor/rotor are generated *types*, not `Gn` predicates), so no bare
 `IsVersor` was added. There is no grade-3 trivector in 2D. **Not yet done in 3D:** `G3` has

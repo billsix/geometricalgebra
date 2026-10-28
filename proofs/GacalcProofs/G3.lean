@@ -39,18 +39,18 @@ namespace G3
 /-! ### Basis blades as genuine `G3` elements, and the grade constructors -/
 
 /-- The zero multivector. -/
-def zero : G3 := ⟨0, 0, 0, 0, 0, 0, 0, 0⟩
-def one : G3 := ⟨1, 0, 0, 0, 0, 0, 0, 0⟩
-def e_1 : G3 := ⟨0, 1, 0, 0, 0, 0, 0, 0⟩
-def e_2 : G3 := ⟨0, 0, 1, 0, 0, 0, 0, 0⟩
-def e_3 : G3 := ⟨0, 0, 0, 1, 0, 0, 0, 0⟩
-def e_12 : G3 := ⟨0, 0, 0, 0, 1, 0, 0, 0⟩
-def e_13 : G3 := ⟨0, 0, 0, 0, 0, 1, 0, 0⟩
-def e_23 : G3 := ⟨0, 0, 0, 0, 0, 0, 1, 0⟩
-def e_123 : G3 := ⟨0, 0, 0, 0, 0, 0, 0, 1⟩
+def zero : G3 := { s := 0, c1 := 0, c2 := 0, c3 := 0, c12 := 0, c13 := 0, c23 := 0, c123 := 0 }
+def one : G3 := { s := 1, c1 := 0, c2 := 0, c3 := 0, c12 := 0, c13 := 0, c23 := 0, c123 := 0 }
+def e_1 : G3 := { s := 0, c1 := 1, c2 := 0, c3 := 0, c12 := 0, c13 := 0, c23 := 0, c123 := 0 }
+def e_2 : G3 := { s := 0, c1 := 0, c2 := 1, c3 := 0, c12 := 0, c13 := 0, c23 := 0, c123 := 0 }
+def e_3 : G3 := { s := 0, c1 := 0, c2 := 0, c3 := 1, c12 := 0, c13 := 0, c23 := 0, c123 := 0 }
+def e_12 : G3 := { s := 0, c1 := 0, c2 := 0, c3 := 0, c12 := 1, c13 := 0, c23 := 0, c123 := 0 }
+def e_13 : G3 := { s := 0, c1 := 0, c2 := 0, c3 := 0, c12 := 0, c13 := 1, c23 := 0, c123 := 0 }
+def e_23 : G3 := { s := 0, c1 := 0, c2 := 0, c3 := 0, c12 := 0, c13 := 0, c23 := 1, c123 := 0 }
+def e_123 : G3 := { s := 0, c1 := 0, c2 := 0, c3 := 0, c12 := 0, c13 := 0, c23 := 0, c123 := 1 }
 
 /-- A grade-1 vector from its three coordinates. -/
-def vec (x y z : ℝ) : G3 := ⟨0, x, y, z, 0, 0, 0, 0⟩
+def vec (x y z : ℝ) : G3 := { s := 0, c1 := x, c2 := y, c3 := z, c12 := 0, c13 := 0, c23 := 0, c123 := 0 }
 
 /-- The unit pseudoscalar I₃ = e₁*e₂*e₃. -/
 def I : G3 := e_123
@@ -164,7 +164,7 @@ theorem magnitude_ne_zero_of_normSq_ne_zero {a : G3} (h : normSq a ≠ 0) : magn
 noncomputable def dot (a b : G3) : ℝ := (mul a b).s
 
 /-- The inverse unit pseudoscalar I₃⁻¹ = −e₁₂₃ (since I₃² = −1). -/
-def I_inv : G3 := ⟨0, 0, 0, 0, 0, 0, 0, -1⟩
+def I_inv : G3 := { s := 0, c1 := 0, c2 := 0, c3 := 0, c12 := 0, c13 := 0, c23 := 0, c123 := -1 }
 
 /-- I₃ · I₃⁻¹ = 1. -/
 theorem I_mul_I_inv : mul I I_inv = one := by

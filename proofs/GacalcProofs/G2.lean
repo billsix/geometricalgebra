@@ -58,21 +58,21 @@ namespace G2
 /-! ### The basis blades as elements, and the vector constructor -/
 
 /-- The scalar unit `1` (grade 0) — an element of 𝒢₂. -/
-def one : G2 := ⟨1, 0, 0, 0⟩
+def one : G2 := { s := 1, c1 := 0, c2 := 0, c12 := 0 }
 
 /-- The basis vector e₁ (grade 1) — an element of 𝒢₂, NOT a real. -/
-def e_1 : G2 := ⟨0, 1, 0, 0⟩
+def e_1 : G2 := { s := 0, c1 := 1, c2 := 0, c12 := 0 }
 
 /-- The basis vector e₂ (grade 1) — an element of 𝒢₂. -/
-def e_2 : G2 := ⟨0, 0, 1, 0⟩
+def e_2 : G2 := { s := 0, c1 := 0, c2 := 1, c12 := 0 }
 
 /-- The unit bivector e₁*e₂ (grade 2) — an element of 𝒢₂. Equals `mul e_1*e_2`
     (`e_1_mul_e_2`); it is the unit pseudoscalar `I` in 2D. -/
-def e_12 : G2 := ⟨0, 0, 0, 1⟩
+def e_12 : G2 := { s := 0, c1 := 0, c2 := 0, c12 := 1 }
 
 /-- A grade-1 vector from its two coordinates (its e₁ and e₂ coefficients); equals
     `x·e₁ + y·e₂` (`vec_eq_smul`). -/
-def vec (x y : ℝ) : G2 := ⟨0, x, y, 0⟩
+def vec (x y : ℝ) : G2 := { s := 0, c1 := x, c2 := y, c12 := 0 }
 
 /-- The unit pseudoscalar I = e₁*e₂. -/
 def I : G2 := e_12
@@ -267,20 +267,24 @@ theorem dot_smul_right (k : ℝ) (u v : G2) : dot u (smul k v) = k * dot u v := 
 theorem dot_vec (a1 a2 b1 b2 : ℝ) : dot (vec a1 a2) (vec b1 b2) = a1 * b1 + a2 * b2 := by
   simp only [dot, mul, vec]; ring
 
-/-- The **dot product** is the scalar part of the symmetric product ½(ab + ba) — for vectors `a`, `b`
-    (object form; the coordinates are pulled from the operands for the computation). -/
+/-- **The dot product is the symmetric part of the geometric product** (2D): `½(ab + ba) = (a·b)*1`
+    for vectors — the 2D twin of `G3.dot_is_sym_part`, in object form (the conclusion names the object
+    `(a·b)*1`, not a coordinate sum; only the proof drops to coordinates). -/
 theorem dot_is_sym_part {a b : G2} (ha : IsVector a) (hb : IsVector b) :
-    (smul (1 / 2) (add (mul a b) (mul b a))).s = a.c1 * b.c1 + a.c2 * b.c2 := by
+    smul (1 / 2) (add (mul a b) (mul b a)) = smul (dot a b) one := by
   obtain ⟨has, ha12⟩ := ha
   obtain ⟨hbs, hb12⟩ := hb
-  simp only [smul, add, mul, has, ha12, hbs, hb12]; ring
+  simp only [smul, add, mul, dot, one, has, ha12, hbs, hb12]
+  ext <;> ring
 
-/-- The **wedge product** is the e₁*e₂ part of the antisymmetric product ½(ab − ba) — for vectors. -/
+/-- **The wedge product is the antisymmetric part of the geometric product** (2D): `½(ab − ba) = a∧b`
+    for vectors — the 2D twin of `G3.wedge_is_antisym_part`, in object form. -/
 theorem wedge_is_antisym_part {a b : G2} (ha : IsVector a) (hb : IsVector b) :
-    (smul (1 / 2) (sub (mul a b) (mul b a))).c12 = a.c1 * b.c2 - a.c2 * b.c1 := by
+    smul (1 / 2) (sub (mul a b) (mul b a)) = wedge a b := by
   obtain ⟨has, ha12⟩ := ha
   obtain ⟨hbs, hb12⟩ := hb
-  simp only [smul, sub, mul, has, ha12, hbs, hb12]; ring
+  simp only [smul, sub, mul, wedge, has, ha12, hbs, hb12]
+  ext <;> ring
 
 /-- Equivalence to the general case: the dot is the Euclidean coordinate sum ∑ aᵢbᵢ
     (= `@inner ℝ (EuclideanSpace ℝ (Fin 2)) _ a b`) — for vectors. -/
@@ -364,9 +368,10 @@ theorem wedge_isVector_isBivector_eq_zero {a B : G2} (ha : IsVector a) (hB : IsB
 
 /-! ### Duals and the pseudoscalar -/
 
-/-- The unit pseudoscalar squares to −1 (a scalar). -/
-theorem I_sq : mul I I = ⟨-1, 0, 0, 0⟩ := by
-  simp only [mul, I, e_12]; ext <;> ring
+/-- The unit pseudoscalar squares to −1 (a scalar): `I² = −1`. Object form (`neg one`, not the
+    coordinate literal `⟨-1,0,0,0⟩`), matching `G3.I_sq`. -/
+theorem I_sq : mul I I = neg one := by
+  simp only [mul, I, e_12, neg, one]; ext <;> ring
 
 /-- I² = (−1)^(r(r−1)/2) with r = 2 — the special case of the general
     pseudoscalar-square sign (`tasks/reference/pseudoscalar-square-sign.md`). -/
@@ -376,7 +381,7 @@ theorem I_sq_eq_sign : (mul I I).s = (-1 : ℝ) ^ (2 * (2 - 1) / 2) := by
 /-! ### The dual, and: the dual of a vector is perpendicular to it (2D) -/
 
 /-- The inverse unit pseudoscalar I₂⁻¹ = −e₁₂ (since I₂² = −1, so I₂⁻¹ = −I₂). -/
-def I_inv : G2 := ⟨0, 0, 0, -1⟩
+def I_inv : G2 := { s := 0, c1 := 0, c2 := 0, c12 := -1 }
 
 /-- I₂ · I₂⁻¹ = 1, confirming `I_inv` is the inverse of the pseudoscalar `I`. -/
 theorem I_mul_I_inv : mul I I_inv = one := by

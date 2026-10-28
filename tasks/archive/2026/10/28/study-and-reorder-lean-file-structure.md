@@ -61,9 +61,9 @@ discretion, not a deferral.
   the order legible; the diff is otherwise relocations only.
 - **Two *content* improvements the maintainer surfaced while reviewing G2 were split out, not done here**
   (deferred by the maintainer): the basis constants' positional `⟨…⟩` literals → self-documenting
-  `{ zero with … }` form (`tasks/lean-basis-constants-self-documenting.md`), and lifting G2's
+  `{ zero with … }` form (`tasks/archive/2026/10/28/lean-basis-constants-self-documenting.md`), and lifting G2's
   coordinate-leaking theorem conclusions (`dot_is_sym_part`/`wedge_is_antisym_part`) to G3's object-out
-  form (`tasks/lean-g2-object-out-parity.md`). Both change def/statement bodies, so they are out of scope
+  form (`tasks/archive/2026/10/28/lean-g2-object-out-parity.md`). Both change def/statement bodies, so they are out of scope
   for a content-*preserving* reorder.
 
 **Axis-1 residual (logged, not moved):** `Versor2D.magnitude_sq_vec` is a general magnitude *leaf*
@@ -86,5 +86,5 @@ place as a single debatable leaf used only by `Versor2D`.
 - `tasks/add-section-headers-to-headerless-lean-files.md` — add `/-! ### -/` navigation headers to the
   four concept files that have none (`Rotation2D`/`Rotation3D`/`StudentTrigForms`/`PlaneRotation3D`);
   additive, no reorder.
-- `tasks/lean-basis-constants-self-documenting.md` and `tasks/lean-g2-object-out-parity.md` — the two
+- `tasks/archive/2026/10/28/lean-basis-constants-self-documenting.md` and `tasks/archive/2026/10/28/lean-g2-object-out-parity.md` — the two
   deferred content improvements above.
