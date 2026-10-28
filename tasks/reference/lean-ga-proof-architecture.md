@@ -418,8 +418,8 @@ How to decide whether a hypothesis is needed — and how to read a failed delete
 ## Scalars into the algebra: the `scalar` constructor, and dot/wedge vs grade projection
 
 Two linked conventions about how a **scalar** (`ℝ`) and a **grade** relate to a multivector. (Decided and
-— for the scalar constructor — implemented 2026-10-28, William Emerison Six <billsix@gmail.com>; full work
-record and the site catalog: `tasks/lean-dot-wedge-grade-projection-faithfulness.md`.)
+implemented 2026-10-28, William Emerison Six <billsix@gmail.com> — both the `scalar` constructor and the
+`rVectorPart` bridging lemmas; work record: [[lean-dot-wedge-grade-projection-faithfulness]].)
 
 ### Embed a scalar with the `scalar` constructor, not `smul k one`
 

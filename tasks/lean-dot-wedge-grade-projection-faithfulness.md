@@ -1,12 +1,6 @@
-# Lean: make dot/wedge/measures faithful to Python's grade-projection definitions (the `.s`/`.c12`/`.c123` reads)
+# Lean: make dot/wedge/measures faithful to Python's grade-projection definitions
 
-**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK). Both parts
-implemented: (A) `scalar` constructor + `IsScalar` predicate replace the `smul … one` type-cast idiom
-(G2 gained the constructor; G3 already had it; `scalar_mul` added); (B) bridging lemmas tie
-dot/wedge/signed-measures to the `rVectorPart` grade projection (option a — definitions kept as-is). Both
-Open questions resolved. Durable rationale + catalog + the a/b/c alternatives live in
-`tasks/reference/lean-ga-proof-architecture.md` ("Scalars into the algebra"). G1 deliberately left on the
-`smul … one` idiom (trivial algebra; no `rVectorPart`/`IsScalar`).
+**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK).
 **Priority:** 7
 **Difficulty:** 4
 **Created:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
@@ -14,179 +8,66 @@ Open questions resolved. Durable rationale + catalog + the a/b/c alternatives li
 
 ## BLUF
 
-In the Python library, dot/wedge/scalar-product are defined as **grade projections of the geometric
-product** — `inner_product = (a*b).r_vector_part(|r−s|)`, `outer_product = (a*b).r_vector_part(r+s)`,
-`scalar_product = ⟨a*b⟩₀`. The grade (rank) *is the definition*. In the Lean proofs we mostly bypass
-that: `dot := (mul a b).s`, `normSq := (mul a (reverse a)).s`, `signedArea := (mul … ).c12`,
-`signedVolume := (wedge … ).c123`, and `wedge` is a standalone coordinate formula — each reaching into a
-raw coordinate field instead of the grade-projection operator **`rVectorPart`, which already exists**
-(`GradeProjection.lean`) and is already used by `Contractions.lean`. The maintainer flagged this as the
-proofs "doing weird stuff" / leaking coordinates where a rank/grade would read cleaner and match Python.
+The maintainer flagged two linked things in the Lean proofs: (A) the fundamental identity embedded the
+dot product with `smul (dot a b) one` ("multiply `one` by a scalar to change its type"), and (B) more
+broadly, Lean reads a raw coordinate field (`.s`, top-grade `.c12`/`.c123`) where **Python** defines
+dot/wedge/scalar-product as **grade projections** of the geometric product (`r_vector_part(k)`), even
+though the grade-projection operator `rVectorPart` already exists and `Contractions.lean` already uses it.
+Resolution: (A) a **`scalar` constructor + `IsScalar` predicate** (the `vec`/`IsVector` pairing) replaces
+the `smul … one` idiom; (B) **bridging lemmas** tie the coordinate definitions to `rVectorPart` without
+changing them. Both implemented; `make lean` green. The durable rationale, the full site catalog, and the
+rejected alternatives live in `tasks/reference/lean-ga-proof-architecture.md` → "Scalars into the algebra".
 
-This task **catalogs every such site** and poses the one design decision (Open question 1) that gates
-any change. It is an investigation record, not yet an edit. The honest finding: only **1-dimensional
-grades** (grade 0 everywhere; the **top** grade — G2 grade 2 = `e₁₂`, G3 grade 3 = `e₁₂₃`) are a single
-coordinate, so only those reads are cleanly a whole-grade projection; a G3 `.c12` (grade 2 is
-3-dimensional there) is *not* a whole-grade read and is out of scope. And `dot`/`normSq` genuinely
-*return `ℝ`* (house rule "genuine scalars stay scalar", and Python's `scalar_product -> Real` agrees), so
-the win is mostly *definitional faithfulness + connecting lemmas*, not necessarily changing the `: ℝ`
-signatures.
+## Part A — scalar embedding via a constructor
 
-## Context (cold-start)
+Root cause of the asymmetry: `dot a b : ℝ` is a scalar while `wedge a b : Gₙ` is a multivector, so an
+object-valued conclusion must *embed* the scalar; `smul (dot a b) one` was that embedding and could not
+simply be dropped (`= dot a b` is `ℝ ≠ Gₙ`). The maintainer chose a named `scalar` constructor + `IsScalar`
+predicate over the `smul … one` spelling. Done:
 
-Read first: `src/gacalc/base.py` (`inner_product`/`outer_product`/`scalar_product`/`wedge`, lines ~810–935)
-for the Python grade-projection definitions; `proofs/GacalcProofs/GradeProjection.lean` (the Lean
-`rVectorPart`); `proofs/GacalcProofs/Contractions.lean` (the one place that *does* define a product via
-`rVectorPart`); and the house rule "Coordinates only when needed" / "objects in, scalars in the body,
-objects out" in `CLAUDE.md` + `tasks/reference/lean-ga-proof-architecture.md`.
+- **G2** gained `def scalar (a : ℝ) : G2` (named fields — G2 has no `zero`), plus `isScalar_scalar` and
+  `eq_scalar_of_isScalar` (the latter renamed from `eq_smul_one_of_isScalar`; no external consumers). G3
+  already had `scalar`/`IsScalar`/the bridges.
+- `AlgebraLaws.scalar_mul : mul (scalar k) b = smul k b` added (G2 + G3) — an embedded-scalar factor pulls
+  out in one step.
+- Every grade-0 embedding of `dot`/`normSq` in a conclusion now reads `scalar (…)`: `mul_eq_dot_add_wedge`,
+  `dot_is_sym_part`, `vec_mul_eq_dot_add_wedge`, `mul_vec_self` (G3 and `ProjectionRotation2D`), and the
+  `hsplit`s in `Projection3D`/`StandardPosition2D`.
+- **G1 left on `smul k one`** (trivial algebra; no `rVectorPart`/`IsScalar`) — deliberate; a cheap parity
+  follow-up if ever wanted. `eq_smul_basis` keeps its `smul g.s one` term on purpose (a basis expansion
+  where `one` is the grade-0 basis blade, not a type-cast).
 
-The Lean grade-projection operator that already exists (`GradeProjection.lean`):
+## Part B — dot/wedge/measures as grade projections (bridging lemmas)
 
-- `rVectorPart (r : ℕ) (a : G2) : G2` (G2 lines 18–; G3 lines 51–) — the grade-`r` part, as a
-  multivector. Plus `evenPart`/`oddPart` and the proved `rVectorPart_idem`, `rVectorPart_complete`
-  (Σ grades = identity), `evenPart_add_oddPart`.
-- **Already used** by `Contractions.lean`: `leftContraction k m a b := rVectorPart (m−k) (mul a b)`,
-  `rightContraction k m a b := rVectorPart (k−m) (mul a b)` — i.e. the contractions ARE defined the
-  Python way (grade projection of the product). dot/wedge/normSq/measures are the inconsistent holdouts.
+Chosen option: **keep the fast coordinate definitions, add bridging lemmas** (not a redefinition; the a/b/c
+analysis is in the reference doc). Added:
 
-## Part A — the `smul (dot a b) one` vs bare `wedge a b` asymmetry (ANSWERED: type necessity)
-
-The maintainer first asked why the dot side of the decomposition is `smul (dot a b) one` (a scalar times
-the identity — the "`1 *`") while the wedge side is bare `wedge a b`, and whether the `smul … one` can be
-removed. **It cannot** — the types force it:
-
-- `dot (a b : G2) : ℝ` returns a **scalar** (`G2.lean:99`); `wedge (a b : G2) : G2` returns a
-  **multivector** (`G2.lean:91`); `smul : ℝ → G2 → G2` (`G2.lean:111`); `one : G2` (`G2.lean:61`).
-- A theorem whose LHS is a `G2` needs a `G2` RHS. `= dot a b` is ill-typed (`ℝ ≠ G2`); `= smul (dot a b)`
-  is ill-typed (partial application, not a `G2`); `= smul (dot a b) one` is the well-typed embedding
-  `(dot a b) • 1` of the scalar into the algebra. The wedge needs no wrapper because it is already a `G2`.
-
-### Decision (William Emerison Six <billsix@gmail.com>, 2026-10-28)
-
-Given the ill-typing is real, the maintainer prefers a **`scalar` constructor + `IsScalar` predicate**
-(the pairing `vec`/`IsVector` already has) over the `smul … one` "multiply `one` to change the type"
-idiom. So the embedding `ℝ ↪ Gₙ` is spelled `scalar r`, with `IsScalar` to test membership.
-
-What this entails:
-
-- **G3 — nothing to add**: already has `scalar (a : ℝ) : G3 := { zero with s := a }` (`G3.lean:66`) and
-  `IsScalar`/`isScalar_scalar`/`eq_scalar_of_isScalar`.
-- **G2 — add the constructor** (G2 already has `IsScalar`, `G2.lean:203`, but no `scalar`): define
-  `def scalar (a : ℝ) : G2 := { s := a, c1 := 0, c2 := 0, c12 := 0 }` (named fields — G2 has no `zero`,
-  so mirror how `G2.vec` is written, `G2.lean:75`), and add `isScalar_scalar`/`eq_scalar_of_isScalar`
-  for G2 to complete the pair exactly as G3 has them. (This supersedes the `smul a.s one` spelling in
-  `eq_smul_one_of_isScalar`, `G2.lean:207` — keep or rename to `eq_scalar_of_isScalar`; match G3.)
-- **Replace `smul (<scalar>) one` → `scalar (<scalar>)`** at every grade-0 embedding site (grep
-  `smul (dot …) one` / `smul (normSq …) one`): `G2.lean:274,336`; `G3.lean:318,419,451,466`;
-  `Projection3D.lean:108`; `ProjectionRotation2D.lean:36`; `StandardPosition2D.lean:195`. `G1.lean:118`
-  only if G1 is in scope (G1 has no `scalar` constructor — see Open question 2 on dims scope).
-- Proofs: each changed site's `simp only [… , smul, one]` set swaps to `[… , scalar]` (or unfolds
-  `scalar` to the same `⟨r,0,…⟩`); re-verify with `make lean`.
-
-This is bounded and ready to implement on go-ahead. It also settles the "how is the scalar grade spelled"
-sub-question that Part B option (b) would otherwise raise.
-
-## Part B — coordinate-field grade reads where `rVectorPart` is the principled form
-
-Grouped by whether `rVectorPart` could cleanly apply. **"Candidate"** = a 1-dimensional grade read via a
-raw coordinate field; **"Exempt"** = either not a whole-grade read, or a bridge whose job is coordinates.
-
-### B1. Grade-0 reads via `.s` (candidates — grade 0 is 1-dimensional everywhere)
-
-Mirror Python `scalar_product = ⟨a*b⟩₀` / `r_vector_part(0)`:
-
-- `dot := (mul a b).s` — `G1.lean:70`, `G2.lean:99`, `G3.lean:164`.
-- `normSq := (mul a (reverse a)).s` — `G1.lean:62`, `G2.lean:123`, `G3.lean:139`.
-- Statement-level `.s` reads of a product: `Sandwich.lean:64` & `:314` (`dot (mul R X) (reverse R) =
-  normSq R * X.s`), `ProjectionRotation3D.lean:125` & `:130` (`(mul x (reverse y)).s`),
-  `Rotation2D.lean:149` (`uvec_dot`: `(G2.mul (uvec α) (uvec β)).s = cos(β−α)`). `Predicates3D.lean:18,27`
-  are doc-comment mentions only.
-  - Caveat on `X.s` in `Sandwich` `normSq R * X.s`: here `X.s` is just the scalar coordinate of an
-    argument `X`, not a grade projection of a *product* — lower priority; include only if the decision
-    says to route all grade-0 reads through a `scalarPart`/`rVectorPart 0` abbreviation.
-
-### B2. Top-grade (pseudoscalar) reads — G2 `.c12` (grade 2), G3 `.c123` (grade 3) (candidates)
-
-Each is a 1-dimensional top grade, so a single coordinate = the whole grade; mirror Python
-`r_vector_part(top)`:
-
-- `Measures.signedArea := (mul (vec a1 a2) (vec b1 b2)).c12` — `Measures.lean:66` (the 2D pseudoscalar
-  coefficient of the product).
-- `Cross.signedVolume := (wedge (wedge a b) c).c123` — `Cross.lean:69`.
-- `MathlibBridge.lean:65` & `:106` — `(wedge a b).c12 = Matrix.det !![…]`.
-- `Rotation2D.lean:154` (`uvec_wedge`: `(G2.mul (uvec α) (uvec β)).c12 = sin(β−α)`).
-- `TrigEquiv.lean:42` (`sine := (G2.wedge a b).c12 / (…)`), `:60`, `:62`, and the doc at `:13,:15` — the
-  signed 2D sine, Python `g2.Vector.sine = (a∧b).c12 / (|a|*|b|)`. NOTE: the Python `sine` itself reads a
-  **coefficient** (`.coefficient(e_12)`), so a coordinate read here may be inherent on both sides; decide
-  whether `rVectorPart` buys anything.
-
-### B3. `wedge` defined by a standalone coordinate formula, not as a grade projection (candidate — faithfulness)
-
-Python `outer_product = (a*b).r_vector_part(r+s)`. Lean `wedge (a b : G2/G3) : G2/G3` is a direct
-`where`-formula (`G2.lean:91`, `G3.lean:~95`), provably equal but **not derived** from the product. There
-is currently **no** lemma `wedge a b = rVectorPart (r+s) (mul a b)` for homogeneous inputs. Adding that
-bridging lemma (rather than redefining `wedge`) is likely the cleanest way to record the grade-projection
-view without disturbing the many `simp only [wedge]` proofs.
-
-### B4. Exempt — do NOT flag these (recorded so a re-investigation doesn't re-raise them)
-
-- **Operation definitions** building each field: `mul`/`wedge`/`add`/`sub`/`neg`/`smul`/`reverse`
-  (`G2.lean:84–116`, G3 equivs) — defining the op, not projecting a grade.
-- **Grade predicates** enumerating zero coords: `IsVector`/`IsScalar`/`IsBivector`/`IsTrivector`
-  (`G1.lean:102`, `G2.lean:187,216`, `G3.lean:384,…`) — the predicate's nature.
-- **`eq_…_of_is…` object-reconstruction bridges** (explicitly exempt by house rule): `eq_bivector_of_isBivector`
-  (`G3.lean:388`, `= bivector B.c12 B.c13 B.c23`), `eq_trivector_of_isTrivector` (`G3.lean:404`),
-  `eq_smul_e12_of_isBivector` (`G2.lean:220`), `eq_evenVersor_of_isEvenVersor` (`Sandwich.lean:32,258`),
-  `eq_smul_basis` (`G2.lean:152`).
-- **G3 grade-2 single coords** (`.c12`/`.c13`/`.c23` individually): grade 2 is 3-dimensional in G3, so
-  one coord is NOT a whole-grade read — `rVectorPart` cannot replace them. Covers `Projection3D.lean:166,
-  200,204` (`normSq B = B.c12² + B.c13² + B.c23²` — sum over the grade, inherent), `PlaneRotation3D.lean:146`
-  (`vec i.c23 (-i.c13) i.c12`, the dual/normal construction), and the `Sandwich` `R.c12 R.c13 R.c23`
-  bivector/normal reconstructions (`:638,:658,:720`).
-- **`normSq_eq_sum_sq`** (`G2.lean:130`, `G3.lean:146`) — sum over all coordinates, inherent.
-
-## Part A — implemented (2026-10-28)
-
-- `G2.scalar (a : ℝ) : G2 := { s := a, c1 := 0, c2 := 0, c12 := 0 }` added (named fields; G2 has no
-  `zero`), plus `isScalar_scalar` and `eq_scalar_of_isScalar` (renamed from `eq_smul_one_of_isScalar`; no
-  external consumers). G3 already had `scalar`/`IsScalar`/bridges.
-- `AlgebraLaws.scalar_mul : mul (scalar k) b = smul k b` added for G2 and G3.
-- `smul (dot …) one` / `smul (normSq …) one` → `scalar (…)` at: `G2.lean` `dot_is_sym_part`,
-  `mul_eq_dot_add_wedge` (+ its `mul_eq_wedge_of_perp` consumer); `G3.lean` `vec_mul_eq_dot_add_wedge`,
-  `mul_eq_dot_add_wedge`, `mul_vec_self`, `dot_is_sym_part` (+ `mul_eq_wedge_of_perp`, `vec_mul_perp`
-  consumers); `Projection3D.lean` (perp consumer + `hsplit`); `ProjectionRotation2D.lean` (`mul_vec_self`
-  + its `scalar_mul`/`smul_smul` consumer); `StandardPosition2D.lean` (`hsplit`). The `dot = 0`
-  consumers swapped `simp only [smul, one, add]` → `[scalar, (zero,) add]`.
-- **G1 left as-is** (no `scalar`/`IsScalar`; trivial algebra) — deliberate, per Open question 2.
-- The `hsplit` consumers (`Projection3D`, `StandardPosition2D`) needed their `smul_mul`+`one_mul` rewrite
-  pair swapped for the single `scalar_mul` (the `hsplit` term is now `(scalar k).mul …`).
-- Verify: `make lean` green (8958 jobs; completeness gate OK).
-
-## Part B — implemented (bridging lemmas, 2026-10-28)
-
-Chosen: **bridging lemmas** (option (a)). Added (object form where possible; coordinate reads kept as the
-primary fast definitions — these lemmas are the machine-checked "they equal the grade projection" record):
-
-- `GradeProjection.G2`/`G3` `dot_eq_rVectorPart_zero : scalar (dot a b) = rVectorPart 0 (mul a b)`.
+- `GradeProjection.G2`/`G3` `dot_eq_rVectorPart_zero : scalar (dot a b) = rVectorPart 0 (mul a b)` — object
+  form, all multivectors (also ties Part A's `scalar` to the projection).
 - `GradeProjection.G2`/`G3` `wedge_eq_rVectorPart_two {a b} (IsVector a) (IsVector b) :
-  wedge a b = rVectorPart 2 (mul a b)`.
-- `Measures.G2.signedArea_eq_rVectorPart_two`, `Cross.G3.signedVolume_eq_rVectorPart_three` (top-grade
-  `.c12`/`.c123` reads; both files gained `import GacalcProofs.GradeProjection`).
+  wedge a b = rVectorPart 2 (mul a b)` — vectors → the grade-2 part.
+- `Measures.G2.signedArea_eq_rVectorPart_two`, `Cross.G3.signedVolume_eq_rVectorPart_three` — the top-grade
+  reads; `Measures`/`Cross` gained `import GacalcProofs.GradeProjection`.
 
 `normSq` got no separate bridge (it is `dot a a` up to `reverse`; add one only if a consumer needs it).
-The catalog, the 1-dimensional-grade restriction, and the a/b/c alternatives live durably in
-`tasks/reference/lean-ga-proof-architecture.md` → "Scalars into the algebra".
 
-## Open questions (both resolved 2026-10-28, William Emerison Six <billsix@gmail.com>)
+## Files touched
 
-1. **Policy for dot/wedge/measures vs `rVectorPart`.** RESOLVED → **(a) bridging lemmas only** (keep the
-   definitions; add lemmas tying them to `rVectorPart`). The three options (a/b/c) and the reasons are
-   recorded in `tasks/reference/lean-ga-proof-architecture.md` → "Scalars into the algebra" so the choice
-   can be revisited without this task doc.
-2. **Scope — all dims or G2/G3 only?** RESOLVED → **G2/G3 only.** G1 keeps its `smul k one` /
-   coordinate reads (it is the trivial algebra and has no `rVectorPart`/`IsScalar`); a G1 parity pass is a
-   cheap optional follow-up if ever wanted.
+`G2.lean`, `G3.lean`, `AlgebraLaws.lean` (scalar constructor/bridges/`scalar_mul`, embedding sites);
+`Projection3D.lean`, `ProjectionRotation2D.lean`, `StandardPosition2D.lean` (embedding sites + consumers);
+`GradeProjection.lean`, `Cross.lean`, `Measures.lean` (Part B lemmas + imports); and the reference doc.
+
+## Notes / history
+
+- **The `hsplit` consumer coupling (the one non-obvious fix).** Changing the `hsplit` in
+  `Projection3D`/`StandardPosition2D` from `smul (dot …) one` to `scalar (dot …)` broke their downstream
+  rewrite chains, which had relied on the `smul`/`one` structure (`smul_mul` then `one_mul`). The fix is
+  the single `scalar_mul` lemma in place of that pair. (The intermediate commit that changed the `hsplit`
+  statements without this consumer fix did not build — a reminder to grep consumers before changing a
+  widely-`rw`-ed lemma's shape.)
+- Both original open questions resolved: policy → bridging lemmas (a); dims scope → G2/G3 only.
 
 See also: [[lean-g2-object-out-parity]] (lifted the dot/wedge *conclusions* to object form — this task is
-the sibling about their *definitions*), `proofs/GacalcProofs/GradeProjection.lean`,
-`proofs/GacalcProofs/Contractions.lean`, `tasks/reference/lean-ga-proof-architecture.md`.
+its sibling, about their *definitions*); `tasks/reference/lean-ga-proof-architecture.md` → "Scalars into
+the algebra" (the durable catalog, rationale, and rejected alternatives);
+`proofs/GacalcProofs/GradeProjection.lean`, `proofs/GacalcProofs/Contractions.lean`.
