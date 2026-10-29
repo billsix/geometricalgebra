@@ -169,6 +169,16 @@ run on fully-general `symbol * basis` frames of the full dimension:
 Gate: `tests/test_frame.py` 14 → 16 tests; full suite **441 passed**; ruff + `ruff format --check`
 + `ty check tests` clean (host run; the containerized `make test` gate not run this session).
 
+**Update (William Emerison Six <billsix@gmail.com>, 2026-10-29).** The reverse-based tests named
+above were renamed `test_hestenes_parallel_to_rejection_2d_symbolic` / `_3d_concrete` /
+`_3d_symbolic` / `_numeric` and now assert **parallelism** (`c_k ∥ w_k`, via `is_parallel_to`'s
+outer-product test) rather than the `|A_{k-1}|²` scaling equality — the scale-independent geometric
+fact reads directly, without the `_prev_blade_magnitude_squared` factor machinery (removed). The
+**exact** scale (factor 1) is now pinned by a new inverse-based sibling,
+`make_orthogonal_frame_hestenes_inverse` (same closed form with `inverse` for `reverse`), and its
+tests. See `tasks/archive/2026/10/29/hestenes-orthogonalize-test-parallelism.md` and
+`tasks/archive/2026/10/29/hestenes-orthogonalize-via-inverse.md`.
+
 **Decisions made — open to change (William Emerison Six <billsix@gmail.com>, 2026-09-02):**
 1. The third 3D vector is defined **test-local** (`sym_vec3_3` in `test_frame.py`), NOT added to
    `gn.py`'s public surface. Promote it to `gn.py` alongside `sym_vec3_1`/`sym_vec3_2` if it should be

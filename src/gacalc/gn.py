@@ -218,25 +218,6 @@ class Gn(MultiVectorBase):
             Self: the geometric product ``self * rhs`` as a ``Gn``.
         """
 
-        def insert_into_canonical(
-            first: int,
-            sorted_tail: BladeDictionaryEntry,
-        ) -> BladeDictionaryEntry:
-            # Put the index `first` at the front of an already-canonical `sorted_tail`.
-            # If `first` belongs there (strictly below the tail's head), prepend it and
-            # stop; otherwise it collides with or outranks the head, so reduce the
-            # recombined blade again -- that handles the e_i e_i = 1 cancellation or the
-            # swap-and-negate.
-            prepended: BladeDictionaryEntry = BladeDictionaryEntry(
-                blade=(first, *sorted_tail.blade),
-                coefficient=sorted_tail.coefficient,
-            )
-            match sorted_tail.blade:
-                case (head, *_) if first < head:
-                    return prepended
-                case _:
-                    return decrease_grade(prepended)
-
         def decrease_grade(
             basis_blade: BladeDictionaryEntry,
         ) -> BladeDictionaryEntry:
@@ -267,15 +248,29 @@ class Gn(MultiVectorBase):
                         )
                     )
                 case (a, c, *rest) if a < c:
-                    # `a` already precedes `c`: canonicalize the tail, then insert `a`
-                    # back at the front.
+                    # `a` already precedes `c`: canonicalize the tail, then
+                    # re-insert `a` at the front -- a binary test.  If `a`
+                    # belongs there (tail non-empty and `a` strictly below its
+                    # head) keep the recombined blade as is (identity); otherwise
+                    # `a` collided with or outranks the head, so reduce it again
+                    # (recursion), handling the e_i e_i = 1 cancellation or the
+                    # swap-and-negate.
                     sorted_tail: BladeDictionaryEntry = decrease_grade(
                         BladeDictionaryEntry(
                             blade=(c, *rest),
                             coefficient=basis_blade.coefficient,
                         )
                     )
-                    return insert_into_canonical(a, sorted_tail)
+                    return (
+                        identity()
+                        if sorted_tail.blade and a < sorted_tail.blade[0]
+                        else decrease_grade
+                    )(
+                        BladeDictionaryEntry(
+                            blade=(a, *sorted_tail.blade),
+                            coefficient=sorted_tail.coefficient,
+                        )
+                    )
                 case _:
                     # Unreachable: a tuple is empty, a singleton, or has a head pair
                     # a/c with a == c / a > c / a < c (trichotomy).  Kept as the total

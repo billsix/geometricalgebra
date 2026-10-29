@@ -22,18 +22,18 @@ random vectors (float-tolerant).
 """
 
 import random
-from collections.abc import Sequence
 
 import pytest
 import sympy
 from _helpers import random_vector
 
-from gacalc.base import MultiVectorBase, Real
+from gacalc.base import MultiVectorBase
 from gacalc.frame import (
     are_linearly_independent,
     is_frame,
     make_orthogonal_frame,
     make_orthogonal_frame_hestenes,
+    make_orthogonal_frame_hestenes_inverse,
     prefix_blades,
 )
 from gacalc.gn import (
@@ -46,7 +46,6 @@ from gacalc.gn import (
     sym_vec3_1,
     sym_vec3_2,
 )
-from gacalc.measure import content
 
 # A third fully general 3D vector, so the symbolic 3D tests exercise a complete
 # 3-vector frame (gn only ships ``sym_vec2_*`` / ``sym_vec3_1`` / ``sym_vec3_2``).
@@ -149,71 +148,59 @@ def test_make_orthogonal_frame_raises_on_dependent() -> None:
         make_orthogonal_frame([1 * e_1, 1 * e_2, 1 * e_1 + 1 * e_2])
 
 
-# --- equivalence with Hestenes' p. 27 orthogonalization (Part 1c) -----------
+# --- reverse-based Hestenes orthogonalization: parallel to rejection (Part 1c) ---
 #
 # Hestenes & Sobczyk, Clifford Algebra to Geometric Calculus, p. 27:
 #   (3.1)  A_0 := 1,  A_k := v_1 ∧ v_2 ∧ … ∧ v_k        (the prefix k-blades)
 #   (3.2)  c_k := reverse(A_{k-1}) A_k                   (the orthogonal frame)
-# This equals ``make_orthogonal_frame`` (rejection) up to a positive scalar per
-# vector: ``c_k == |A_{k-1}|² * w_k`` (and c_1 == v_1 == w_1), because
-# ``A_k = A_{k-1} v_k^⊥`` so ``c_k = (reverse(A_{k-1}) A_{k-1}) v_k^⊥ =
-# |A_{k-1}|² v_k^⊥``.  See ``tasks/define-frame.md`` Part 1c.
+# Each c_k points the same way as the rejection w_k -- c_k ∥ w_k (and c_1 == w_1) --
+# because ``A_k = A_{k-1} v_k^⊥``, so ``c_k = (reverse(A_{k-1}) A_{k-1}) v_k^⊥ =
+# |A_{k-1}|² v_k^⊥``, a positive-scalar multiple of w_k.  These tests assert that
+# scale-independent parallelism; the exact scale (factor 1) is pinned by the inverse
+# variant's exact-equality tests above.  See ``tasks/define-frame.md`` Part 1c.
 
 
-def _prev_blade_magnitude_squared(vectors: Sequence[MultiVectorBase], k: int) -> Real:
-    """The positive scalar factor ``|A_{k-1}|²`` -- i.e. ``content(v_1..v_{k-1})²``
-    (with ``A_0 = 1`` -> ``1``)."""
-    if k == 1:
-        return 1
-    return content(vectors[: k - 1]) ** 2
-
-
-def test_hestenes_equals_rejection_2d_symbolic() -> None:
-    """On a general 2D frame (``sym_vec2_1`` / ``sym_vec2_2``), Hestenes' ``c_k``
-    equals the rejection ``w_k`` scaled by ``|A_{k-1}|²``: ``c_1 = w_1`` and
-    ``c_2 = |sym_vec2_1|² * w_2``.
-
-    The two are equal but built differently (a blade product vs a scaled
-    rejection), so their sympy forms are not structurally identical -- the
-    ``(c_2 − |a|² w_2)`` subtraction eager-simplifies to the zero vector."""
+def test_hestenes_parallel_to_rejection_2d_symbolic() -> None:
+    """On a general 2D frame (``sym_vec2_1`` / ``sym_vec2_2``), Hestenes' reverse-based
+    ``c_k`` points the same way as the rejection ``w_k`` -- ``c_k ∥ w_k`` -- the
+    scale-independent geometric fact. ``c_1 = w_1`` exactly; the inverse variant's test
+    pins the exact scale."""
     w: list[MultiVectorBase] = make_orthogonal_frame([sym_vec2_1, sym_vec2_2])
     c: list[MultiVectorBase] = make_orthogonal_frame_hestenes([sym_vec2_1, sym_vec2_2])
-    assert c[0] == sym_vec2_1  # c_1 = w_1 = sym_vec2_1
-    factor: object = content([sym_vec2_1]) ** 2  # |A_1|² = |sym_vec2_1|²
-    assert c[1] - factor * w[1] == type(c[1]).zero()  # c_2 = |sym_vec2_1|² * w_2
+    assert c[0] == sym_vec2_1  # c_1 = w_1 = sym_vec2_1 (first vector unchanged)
+    assert c[1].is_parallel_to(w[1])  # same direction, independent of |A_1|² scaling
 
 
-def test_hestenes_equals_rejection_3d_concrete() -> None:
-    """On a concrete oblique 3D frame -- so every value is a readable number --
-    ``c_k == |A_{k-1}|² * w_k`` for each k."""
+def test_hestenes_parallel_to_rejection_3d_concrete() -> None:
+    """On a concrete oblique 3D frame -- so every value is a readable number -- each
+    reverse-based ``c_k`` is parallel to the rejection ``w_k`` (``c_1`` equal, the rest
+    same-direction)."""
     a: Gn = 1 * e_1 + 1 * e_2
     b: Gn = 1 * e_2 + 1 * e_3
     c: Gn = 1 * e_1 + 1 * e_3
 
     w: list[MultiVectorBase] = make_orthogonal_frame([a, b, c])
     h: list[MultiVectorBase] = make_orthogonal_frame_hestenes([a, b, c])
-    assert h[0] == a  # |A_0|² = 1
-    assert h[1] == content([a]) ** 2 * w[1]  # |A_1|² = |a|²
-    assert h[2] == content([a, b]) ** 2 * w[2]  # |A_2|² = |a ∧ b|²
+    assert h[0] == a  # c_1 = w_1 = a (first vector unchanged)
+    assert h[1].is_parallel_to(w[1])
+    assert h[2].is_parallel_to(w[2])
 
 
-def test_hestenes_equals_rejection_3d_symbolic() -> None:
+def test_hestenes_parallel_to_rejection_3d_symbolic() -> None:
     """On a fully general 3D frame (``sym_vec3_1``, ``sym_vec3_2``, ``sym_vec3_3``),
-    Hestenes' ``c_k`` equals the rejection ``w_k`` scaled by ``|A_{k-1}|²`` for
-    every k -- proven exactly, not just numerically. The ``(c_k − |A_{k-1}|² w_k)``
-    subtraction eager-simplifies to the zero vector even though the two
-    constructions differ structurally."""
+    each reverse-based ``c_k`` is parallel to the rejection ``w_k`` -- proven exactly
+    (the symbolic outer product ``c_k ∧ w_k`` is zero), not just numerically."""
     frame: list[Gn] = [sym_vec3_1, sym_vec3_2, sym_vec3_3]
     w: list[MultiVectorBase] = make_orthogonal_frame(frame)
     c: list[MultiVectorBase] = make_orthogonal_frame_hestenes(frame)
-    zero: MultiVectorBase = type(c[0]).zero()
-    for k in range(1, 4):
-        factor = _prev_blade_magnitude_squared(frame, k)
-        assert c[k - 1] - factor * w[k - 1] == zero  # c_k = |A_{k-1}|² * w_k
+    assert c[0] == sym_vec3_1  # c_1 = w_1 = sym_vec3_1 (first vector unchanged)
+    for k in range(1, 3):
+        assert c[k].is_parallel_to(w[k])  # same direction, scale-independent
 
 
-def test_hestenes_equals_rejection_numeric() -> None:
-    """``c_k`` (Hestenes) == ``|A_{k-1}|² * w_k`` (rejection) on random 2D/3D frames."""
+def test_hestenes_parallel_to_rejection_numeric() -> None:
+    """Each ``c_k`` (reverse Hestenes) is parallel to ``w_k`` (rejection) on random
+    2D/3D frames -- the float outer product ``c_k ∧ w_k`` is ~zero."""
     random.seed(20260823)
     dim: int
     for dim in (2, 3):
@@ -221,11 +208,42 @@ def test_hestenes_equals_rejection_numeric() -> None:
             vectors: list[Gn] = [random_vector(dim) for _ in range(dim)]
             rejection: list[MultiVectorBase] = make_orthogonal_frame(vectors)
             hestenes: list[MultiVectorBase] = make_orthogonal_frame_hestenes(vectors)
-            for k in range(1, dim + 1):
-                factor = _prev_blade_magnitude_squared(vectors, k)
-                assert hestenes[k - 1].isclose(
-                    factor * rejection[k - 1], rel_tol=1e-9, abs_tol=1e-9
+            for k in range(dim):
+                assert hestenes[k].is_parallel_to(
+                    rejection[k], float_close_to_zero=True
                 )
+
+
+# --- inverse-based Hestenes: equals the rejection frame EXACTLY -------------
+#
+# make_orthogonal_frame_hestenes_inverse uses inverse(A_{k-1}) in place of
+# reverse(A_{k-1}).  Since inverse(A) = reverse(A) / |A|^2 for a blade, the
+# |A_{k-1}|^2 factor that scales the reverse variant cancels, so c_k^inv == w_k
+# exactly -- same direction AND length, not merely up to a positive scalar.
+# Built differently (inverse-blade product vs rejection), so compare via the
+# difference eager-simplifying to the zero vector, as the reverse tests do.
+
+
+def test_hestenes_inverse_equals_rejection_exactly_2d_symbolic() -> None:
+    """On a general 2D frame, the inverse-based closed form equals the rejection
+    frame exactly: ``c_k^inv == w_k`` for every k (no ``|A_{k-1}|^2`` factor)."""
+    w: list[MultiVectorBase] = make_orthogonal_frame([sym_vec2_1, sym_vec2_2])
+    c: list[MultiVectorBase] = make_orthogonal_frame_hestenes_inverse(
+        [sym_vec2_1, sym_vec2_2]
+    )
+    zero: MultiVectorBase = type(c[0]).zero()
+    for k in range(2):
+        assert c[k] - w[k] == zero  # exact: the factor is 1, not |A_{k-1}|^2
+
+
+def test_hestenes_inverse_equals_rejection_exactly_3d_symbolic() -> None:
+    """Same exact equality on a fully general 3D frame: ``c_k^inv == w_k`` for all k."""
+    frame: list[Gn] = [sym_vec3_1, sym_vec3_2, sym_vec3_3]
+    w: list[MultiVectorBase] = make_orthogonal_frame(frame)
+    c: list[MultiVectorBase] = make_orthogonal_frame_hestenes_inverse(frame)
+    zero: MultiVectorBase = type(c[0]).zero()
+    for k in range(3):
+        assert c[k] - w[k] == zero
 
 
 # --- prefix_blades (the eq-3.1 primitive, lifted to module scope) -----------

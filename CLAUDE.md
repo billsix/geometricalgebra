@@ -30,8 +30,11 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   **Re-exports** the `functions` names.
 - `src/gacalc/frame.py` — **frames** (H&S p. 27): `are_linearly_independent`/`is_frame`, the
   eq-3.1 prefix-blade primitive `prefix_blades` (`A_0 = 1`, `A_k = v_1 ∧ … ∧ v_k`; a reusable
-  building block), + two orthogonalizations kept side by side for teaching (`make_orthogonal_frame`
-  / `make_orthogonal_frame_hestenes`, proven equal up to a positive scalar). See `tasks/define-frame.md`.
+  building block), + three orthogonalizations kept side by side for teaching:
+  `make_orthogonal_frame` (rejection), `make_orthogonal_frame_hestenes` (closed form
+  `reverse(A_{k-1}) * A_k`, equal to rejection up to the positive scalar `|A_{k-1}|²`), and
+  `make_orthogonal_frame_hestenes_inverse` (same closed form with `inverse` for `reverse`, so the
+  scalar cancels and it equals rejection **exactly**). See `tasks/define-frame.md`.
 - `src/gacalc/measure.py` — the named **measures** (Williamson & Trotter 1979):
   `area`/`volume`/`content` (+ `content_by_rejection`) and the **signed** determinants
   `signed_area`/`signed_volume`/`signed_content` (full-space `k = n`); free functions over
