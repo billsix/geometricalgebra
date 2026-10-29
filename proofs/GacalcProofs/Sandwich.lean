@@ -2,7 +2,6 @@ import GacalcProofs.G2
 import GacalcProofs.G3
 import GacalcProofs.Versor2D
 import GacalcProofs.Rotation3D
-import GacalcProofs.AlgebraLaws
 
 /-! # The versor sandwich is an isometry: it preserves lengths and angles (𝒢₂ pilot)
 

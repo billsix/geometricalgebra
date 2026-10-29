@@ -42,17 +42,19 @@ def I : G1 := e_1
 /-- `I⁻¹ = e₁` too, since `e₁² = 1`. -/
 def I_inv : G1 := e_1
 
-/-! ### The elementary operations: geometric product, wedge, and the vector-space ops -/
+/-! ### Addition and the vector-space operations -/
+
+noncomputable def add (a b : G1) : G1 := ⟨a.s + b.s, a.c1 + b.c1⟩
+
+noncomputable def smul (r : ℝ) (a : G1) : G1 := ⟨r * a.s, r * a.c1⟩
+
+/-! ### The geometric product and the wedge -/
 
 /-- The Euclidean geometric product in 𝒢₁ (`e₁² = 1`), as emitted by `derive_lean_algebra.py 1`. -/
 noncomputable def mul (a b : G1) : G1 := ⟨a.c1 * b.c1 + a.s * b.s, a.c1 * b.s + a.s * b.c1⟩
 
 /-- The outer product in 𝒢₁ (grade 0 kept, as in gacalc): there is no grade 2, so vector∧vector is 0. -/
 noncomputable def wedge (a b : G1) : G1 := ⟨a.s * b.s, a.c1 * b.s + a.s * b.c1⟩
-
-noncomputable def add (a b : G1) : G1 := ⟨a.s + b.s, a.c1 + b.c1⟩
-
-noncomputable def smul (r : ℝ) (a : G1) : G1 := ⟨r * a.s, r * a.c1⟩
 
 /-- The reverse: grades 0 and 1 both have sign `+`, so it is the identity. -/
 def reverse (a : G1) : G1 := ⟨a.s, a.c1⟩

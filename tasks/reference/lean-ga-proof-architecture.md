@@ -27,7 +27,7 @@ The proofs split into two layers, and keeping the split clean is what makes them
 
 - **Leaf lemmas** connect a definition to the 8-field coordinate representation. Proved *once* by
   `ext <;> ring` (or `field_simp`): the multiplication table, `mul_assoc`/distributivity/`smul` laws
-  (`AlgebraLaws.lean`), the `dot`/`wedge` bilinearity lemmas, `normSq_evenVersor`, `versorFromVectors_mul_reverse`
+  (stated with each algebra in `G2.lean`/`G3.lean`), the `dot`/`wedge` bilinearity lemmas, `normSq_evenVersor`, `versorFromVectors_mul_reverse`
   (`R R̃ = normSq·1`), `normSq_mul` (multiplicative). These are the bridge; there is nothing below them.
 - **Structural layer** — everything built on the leaves — is **coordinate-free `rw` chains**:
   `inverse` (`R̃/normSq`), `versorFromVectors_mul_inverse` (`R * R⁻¹ = 1`), `sandwich_carries_from_to`,
@@ -183,7 +183,7 @@ The proofs are organized **by topic** (one concept per file: projection, rotatio
 measures, grade projection, …), mirroring the Python library's one-concept-per-file layout and the
 book — NOT by algebra. `G2.lean`/`G3.lean` hold only each algebra's from-scratch core (struct, `mul`,
 basis, leaf lemmas); concept files build on them and keep both dimensions together where the concept
-is small/cross-dimensional (`AlgebraLaws`, `Measures`, `Trig`, `Exp`, `GradeProjection`, `Lagrange`).
+is small/cross-dimensional (`Measures`, `Trig`, `Exp`, `GradeProjection`, `Lagrange`).
 
 Naming rule: a dimension-specific file is suffixed `2D`/`3D`; a bare name means "both dimensions" or a
 concept that exists in only one dimension (no sibling to confuse it with). **Paired** concepts are
@@ -257,7 +257,7 @@ Every proof should reach for a *named* leaf, not a fresh `ext <;> ring`. The lea
 
 - **Multiplication table:** `e_1_sq`/`e_2_sq`/`e_3_sq`, `e_1_mul_e_2`/…, `e_2_mul_e_1` (anticommute),
   `e_12_mul_e_3`, `I_sq` (`I² = −1`), `reverse_reverse`.
-- **Algebra laws** (`AlgebraLaws.lean`): `mul_assoc`, `mul_add`/`add_mul`, `one_mul`/`mul_one`,
+- **Algebra laws** (folded into `G2.lean`/`G3.lean`, stated with each algebra): `mul_assoc`, `mul_add`/`add_mul`, `one_mul`/`mul_one`,
   `smul_mul`/`mul_smul`, `smul_smul`, `one_smul`, `vec_anticomm_perp` (**object-form in both `G2` and
   `G3`**: `{u v} (IsVector u) (IsVector v) (dot u v = 0) : mul u v = neg (mul v u)`; the `G2` twin was
   lifted from free `ℝ` coords to match `G3` on 2026-10-20, the lean-sweep follow-up to the 2026-10-04
@@ -434,7 +434,7 @@ decision: a named constructor + predicate reads as what it is, where `smul k one
 - `scalar a` = `⟨a,0,…,0⟩`; `IsScalar a` = "every non-scalar coordinate is 0". Bridges mirror the vector
   ones: `eq_scalar_of_isScalar : IsScalar a → a = scalar a.s`, `isScalar_scalar : IsScalar (scalar a)`,
   `isScalar_one : IsScalar one`.
-- **Algebra companion:** `AlgebraLaws.scalar_mul : mul (scalar k) b = smul k b` — an embedded-scalar
+- **Algebra companion:** `G2.scalar_mul`/`G3.scalar_mul` (`mul (scalar k) b = smul k b`) — an embedded-scalar
   factor pulls out as a `smul` in one step (it replaces the older `smul k one` factor followed by
   `smul_mul` + `one_mul`).
 - **State (2026-10-28):** G3 always had `scalar` (`{ zero with s := a }`). G2 gained `scalar`
@@ -533,8 +533,9 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   object-form `dot_is_sym_part`/`wedge_is_antisym_part` (dot and wedge as the two parts of the product);
   both have `I_sq_eq_sign` (the pseudoscalar sign for r = 2, 3). `G1.lean` is the 1D teaching twin
   (`I² = +1`, commutative, every vector pair parallel).
-- `AlgebraLaws.lean` — associativity, distributivity, identity, scalar compatibility, `smul_smul`,
-  `one_smul`, ⊥-anticommutation, for both algebras.
+- Algebra laws — associativity, distributivity, identity, scalar compatibility, `smul_smul`,
+  `one_smul`, ⊥-anticommutation — are stated **with each algebra** (an `### The algebra laws` section
+  in `G2.lean`/`G3.lean`, and inline in `G1.lean`), not a separate `AlgebraLaws.lean` file.
 - `Sandwich.lean` — `inverse`/`sandwich` (`normSq`/`magnitude` moved down to `G2`/`G3`); the sandwich is an isometry
   (`sandwich_preserves_dot`, length); fixes its own plane bivector and normal; the versor is invertible
   (`R R̃ = |R|²`, `R * R⁻¹ = 1`); rotations compose (`sandwich_comp`); the even-versor bridge. Also the
@@ -593,7 +594,7 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   (`projRotation_carries_from_to` / `projRotation_isometry` / `projRotation_eq_sandwich`) in 2D, the
   degenerate base case where the `f∧t` plane is all of 𝒢₂, so `reject_plane_eq_zero` (`reject = 0`)
   collapses it to the rotor action `v·f̂·t̂` (`projRotation_eq_vec_mul`). Reuses
-  `Versor2D`/`Sandwich`/`Projection2D`/`AlgebraLaws` lemmas; the one √ stays confined to `key_reverse_sq`.
+  `Versor2D`/`Sandwich`/`Projection2D` lemmas and the `G2` algebra laws; the one √ stays confined to `key_reverse_sq`.
   The 2D isometry needs only `normSq f, normSq t ≠ 0` (from `normSq_mul_three_vec` + unit `f̂`/`t̂`,
   independent of route-equivalence). Registered via `import` in the root `GacalcProofs.lean`.
 - `Cross.lean` — the 𝒢₃ `cross a b = (a∧b) I₃⁻¹`: `cross_vec` (coordinate formula), `cross_anticomm`,

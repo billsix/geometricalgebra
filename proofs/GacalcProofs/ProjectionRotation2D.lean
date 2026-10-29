@@ -1,5 +1,5 @@
 import GacalcProofs.G2
-import GacalcProofs.AlgebraLaws
+import GacalcProofs.G3
 import GacalcProofs.Versor2D
 import GacalcProofs.Projection2D
 import GacalcProofs.Sandwich

@@ -1,5 +1,5 @@
 import GacalcProofs.G3
-import GacalcProofs.AlgebraLaws
+import GacalcProofs.G2
 import GacalcProofs.Projection3D
 
 /-! # Reduction to standard position — elementary plane rotations, no versors

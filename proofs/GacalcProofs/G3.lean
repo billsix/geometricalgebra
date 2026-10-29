@@ -65,7 +65,28 @@ def trivector (t : ℝ) : G3 := { zero with c123 := t }
 /-- A **scalar** `a` (grade 0) as a 𝒢₃ element, in place of `⟨a,0,0,0,0,0,0,0⟩`. -/
 def scalar (a : ℝ) : G3 := { zero with s := a }
 
-/-! ### The elementary operations: geometric product, wedge, and the vector-space ops -/
+/-! ### Addition and the vector-space operations -/
+
+/-- Componentwise addition. -/
+noncomputable def add (a b : G3) : G3 :=
+  ⟨a.s + b.s, a.c1 + b.c1, a.c2 + b.c2, a.c3 + b.c3,
+   a.c12 + b.c12, a.c13 + b.c13, a.c23 + b.c23, a.c123 + b.c123⟩
+
+/-- Componentwise subtraction. -/
+noncomputable def sub (a b : G3) : G3 :=
+  ⟨a.s - b.s, a.c1 - b.c1, a.c2 - b.c2, a.c3 - b.c3,
+   a.c12 - b.c12, a.c13 - b.c13, a.c23 - b.c23, a.c123 - b.c123⟩
+
+/-- Componentwise negation. -/
+noncomputable def neg (a : G3) : G3 :=
+  ⟨-a.s, -a.c1, -a.c2, -a.c3, -a.c12, -a.c13, -a.c23, -a.c123⟩
+
+/-- Scalar multiple. -/
+noncomputable def smul (r : ℝ) (a : G3) : G3 :=
+  ⟨r * a.s, r * a.c1, r * a.c2, r * a.c3,
+   r * a.c12, r * a.c13, r * a.c23, r * a.c123⟩
+
+/-! ### The geometric product and the wedge -/
 
 /-- The Euclidean geometric product in 𝒢₃ (transcribed from gacalc's `Gn` via
     `tools/derive_lean_algebra.py`). `noncomputable` (ℝ field ops). -/
@@ -108,25 +129,6 @@ noncomputable def wedge (a b : G3) : G3 where
     a.c1 * b.c23 + a.c12 * b.c3 + a.c123 * b.s - a.c13 * b.c2 - a.c2 * b.c13
       + a.c23 * b.c1 + a.c3 * b.c12 + a.s * b.c123
 
-/-- Componentwise addition. -/
-noncomputable def add (a b : G3) : G3 :=
-  ⟨a.s + b.s, a.c1 + b.c1, a.c2 + b.c2, a.c3 + b.c3,
-   a.c12 + b.c12, a.c13 + b.c13, a.c23 + b.c23, a.c123 + b.c123⟩
-
-/-- Componentwise subtraction. -/
-noncomputable def sub (a b : G3) : G3 :=
-  ⟨a.s - b.s, a.c1 - b.c1, a.c2 - b.c2, a.c3 - b.c3,
-   a.c12 - b.c12, a.c13 - b.c13, a.c23 - b.c23, a.c123 - b.c123⟩
-
-/-- Componentwise negation. -/
-noncomputable def neg (a : G3) : G3 :=
-  ⟨-a.s, -a.c1, -a.c2, -a.c3, -a.c12, -a.c13, -a.c23, -a.c123⟩
-
-/-- Scalar multiple. -/
-noncomputable def smul (r : ℝ) (a : G3) : G3 :=
-  ⟨r * a.s, r * a.c1, r * a.c2, r * a.c3,
-   r * a.c12, r * a.c13, r * a.c23, r * a.c123⟩
-
 /-- Reverse `R̃` — grade sign (−1)^(k(k−1)/2): grades 0,1 fixed, grades 2,3 negated
     (transcribed from gacalc; matches the G2 reverse pattern extended to grade 3). -/
 noncomputable def reverse (a : G3) : G3 :=
@@ -140,6 +142,62 @@ noncomputable def normSq (a : G3) : ℝ := (mul a (reverse a)).s
 
 /-- The **magnitude** `|A| = √⟨A Ã⟩` (Hestenes p.13 eq 1.49, gacalc `magnitude`), for all grades. -/
 noncomputable def magnitude (a : G3) : ℝ := Real.sqrt (normSq a)
+
+/-! ### The algebra laws
+
+    `G3` is an **associative, unital ℝ-algebra**: the geometric product is associative and
+    distributes over addition and subtraction (both sides), `one` is a two-sided identity, and
+    scalars pull through the product. Each is a polynomial identity in the coordinate fields, so the
+    proof is `ext <;> ring` (a large but automatic expansion over the eight fields). These are the
+    axioms everything built on the product (the sandwich, projection, the rotation proofs) rests on.
+    The GA-specific `vec_anticomm_perp` (orthogonal vectors anticommute) is stated further down,
+    beside the wedge/anticommutativity material it rests on. -/
+
+/-- The geometric product is **associative**. -/
+theorem mul_assoc (a b c : G3) : mul (mul a b) c = mul a (mul b c) := by
+  simp only [mul]; ext <;> ring
+
+/-- The product **distributes over addition on the left**. -/
+theorem mul_add (a b c : G3) : mul a (add b c) = add (mul a b) (mul a c) := by
+  simp only [mul, add]; ext <;> ring
+
+/-- The product **distributes over addition on the right**. -/
+theorem add_mul (a b c : G3) : mul (add a b) c = add (mul a c) (mul b c) := by
+  simp only [mul, add]; ext <;> ring
+
+/-- The product **distributes over subtraction on the right**. -/
+theorem sub_mul (a b c : G3) : mul (sub a b) c = sub (mul a c) (mul b c) := by
+  simp only [mul, sub]; ext <;> ring
+
+/-- Left distributivity over subtraction (the `mul_sub` twin of `sub_mul`). -/
+theorem mul_sub (a b c : G3) : mul a (sub b c) = sub (mul a b) (mul a c) := by
+  simp only [mul, sub]; ext <;> ring
+
+/-- `one` is a **left identity**. -/
+theorem one_mul (a : G3) : mul one a = a := by simp only [mul, one]; ext <;> ring
+
+/-- `one` is a **right identity**. -/
+theorem mul_one (a : G3) : mul a one = a := by simp only [mul, one]; ext <;> ring
+
+/-- A scalar pulls out of the **left** factor. -/
+theorem smul_mul (k : ℝ) (a b : G3) : mul (smul k a) b = smul k (mul a b) := by
+  simp only [mul, smul]; ext <;> ring
+
+/-- A scalar pulls out of the **right** factor. -/
+theorem mul_smul (k : ℝ) (a b : G3) : mul a (smul k b) = smul k (mul a b) := by
+  simp only [mul, smul]; ext <;> ring
+
+/-- Scalar multiples compose: `k • (m • a) = (k·m) • a`. -/
+theorem smul_smul (k m : ℝ) (a : G3) : smul k (smul m a) = smul (k * m) a := by
+  simp only [smul]; ext <;> ring
+
+/-- Multiplying by an embedded scalar is scalar multiplication: `(scalar k) b = k • b` — the algebra
+    companion of the `scalar` constructor (3D twin of the G2 lemma). -/
+theorem scalar_mul (k : ℝ) (b : G3) : mul (scalar k) b = smul k b := by
+  simp only [mul, scalar, zero, smul]; ext <;> ring
+
+/-- `1 • a = a`. -/
+theorem one_smul (a : G3) : smul 1 a = a := by simp only [smul]; ext <;> ring
 
 /-- `normSq a = Σ (component)²` — the scalar part of `a ã` is positive-definite (every blade's reverse
     sign cancels its square's sign). -/
@@ -434,6 +492,13 @@ theorem wedge_antisymm {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     wedge a b = neg (wedge b a) := by
   rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb]
   simp only [wedge, vec, neg]; ext <;> ring
+
+/-- **Orthogonal vectors anticommute:** if `a·b = 0` then `a b = −(b a)`. A corollary of
+    `vec_mul_perp` (`a b = a∧b`) plus the antisymmetry of the wedge. -/
+theorem vec_anticomm_perp {a b : G3} (ha : IsVector a) (hb : IsVector b) (h : dot a b = 0) :
+    mul a b = neg (mul b a) := by
+  have hba : dot b a = 0 := by rw [dot_comm b a]; exact h
+  rw [mul_eq_wedge_of_perp ha hb h, mul_eq_wedge_of_perp hb ha hba, wedge_antisymm ha hb]
 
 /-- `a ∧ a = 0` for a vector `a`. -/
 theorem wedge_self_vec {a : G3} (ha : IsVector a) : wedge a a = zero := by

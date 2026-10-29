@@ -139,7 +139,7 @@ The whole arc is machine-checked across six Lean files, all gate-verified (`make
 - The Python twin (`src/gacalc/standardposition.py`, `project_sp`/`reject_sp`) is the procedure
   `projectSP` transcribes — same rotations, same `(cos, sin)`, keep-the-x-component — and is asserted
   equal to canonical `projected_onto`/`rejected_away_from` in `tests/test_standardposition.py`.
-- Supporting lemmas in their homes: `AlgebraLaws.mul_sub`, `Sandwich.sandwich_sub`.
+- Supporting lemmas in their homes: `G3.mul_sub`, `Sandwich.sandwich_sub`.
 
 **2D — the single-rotation base case** (`StandardPosition2D.lean`): projection onto a vector is
 intrinsically planar, so in 𝒢₂ a **single** elementary plane rotation does the whole alignment (no

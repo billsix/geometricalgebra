@@ -5,7 +5,8 @@ import GacalcProofs.Projection3D
 import GacalcProofs.Predicates2D
 import GacalcProofs.Predicates3D
 import GacalcProofs.Measures
-import GacalcProofs.AlgebraLaws
+import GacalcProofs.G2
+import GacalcProofs.G3
 
 /-! # Student-facing sine/cosine forms
 

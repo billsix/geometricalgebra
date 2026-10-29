@@ -107,7 +107,7 @@ also catch `native_decide`/`axiom` (none present today).
 
 | Python | Lean | Verdict |
 |---|---|---|
-| geometric product, `wedge`, `reverse`, `scalar_product` | `mul`/`wedge`/`reverse`/`dot`, `AlgebraLaws.lean`, bilinearity, antisymmetry | **proven**, 𝒢₂+𝒢₃ |
+| geometric product, `wedge`, `reverse`, `scalar_product` | `mul`/`wedge`/`reverse`/`dot`, algebra laws (in `G2`/`G3`), bilinearity, antisymmetry | **proven**, 𝒢₂+𝒢₃ |
 | `dual`, `inverse` (blades, even versors), `magnitude(_squared)` | `dual`, `inverse`, `normSq`/`magnitude` + `mul_*_inverse_self` | **proven** for n=2,3 |
 | `r_vector_part`, `even_part`/`odd_part`, grade predicates | `GradeProjection.lean`, `IsVector`/… | **proven** |
 | `project`/`reject`/`reflect` of a vector | `Projection2D/3D.lean`, `Reflect.lean` (𝒢₃, across a vector) | **proven** for vector operand onto vector/bivector; reflect across a bivector and reflect∘reflect = id **not stated** |
