@@ -261,15 +261,16 @@ class Gn(MultiVectorBase):
                             coefficient=basis_blade.coefficient,
                         )
                     )
-                    prepended: BladeDictionaryEntry = BladeDictionaryEntry(
-                        blade=(a, *sorted_tail.blade),
-                        coefficient=sorted_tail.coefficient,
-                    )
                     return (
                         identity()
                         if sorted_tail.blade and a < sorted_tail.blade[0]
                         else decrease_grade
-                    )(prepended)
+                    )(
+                        BladeDictionaryEntry(
+                            blade=(a, *sorted_tail.blade),
+                            coefficient=sorted_tail.coefficient,
+                        )
+                    )
                 case _:
                     # Unreachable: a tuple is empty, a singleton, or has a head pair
                     # a/c with a == c / a > c / a < c (trichotomy).  Kept as the total
