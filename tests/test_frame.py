@@ -34,6 +34,7 @@ from gacalc.frame import (
     is_frame,
     make_orthogonal_frame,
     make_orthogonal_frame_hestenes,
+    make_orthogonal_frame_hestenes_inverse,
     prefix_blades,
 )
 from gacalc.gn import (
@@ -226,6 +227,38 @@ def test_hestenes_equals_rejection_numeric() -> None:
                 assert hestenes[k - 1].isclose(
                     factor * rejection[k - 1], rel_tol=1e-9, abs_tol=1e-9
                 )
+
+
+# --- inverse-based Hestenes: equals the rejection frame EXACTLY -------------
+#
+# make_orthogonal_frame_hestenes_inverse uses inverse(A_{k-1}) in place of
+# reverse(A_{k-1}).  Since inverse(A) = reverse(A) / |A|^2 for a blade, the
+# |A_{k-1}|^2 factor that scales the reverse variant cancels, so c_k^inv == w_k
+# exactly -- same direction AND length, not merely up to a positive scalar.
+# Built differently (inverse-blade product vs rejection), so compare via the
+# difference eager-simplifying to the zero vector, as the reverse tests do.
+
+
+def test_hestenes_inverse_equals_rejection_exactly_2d_symbolic() -> None:
+    """On a general 2D frame, the inverse-based closed form equals the rejection
+    frame exactly: ``c_k^inv == w_k`` for every k (no ``|A_{k-1}|^2`` factor)."""
+    w: list[MultiVectorBase] = make_orthogonal_frame([sym_vec2_1, sym_vec2_2])
+    c: list[MultiVectorBase] = make_orthogonal_frame_hestenes_inverse(
+        [sym_vec2_1, sym_vec2_2]
+    )
+    zero: MultiVectorBase = type(c[0]).zero()
+    for k in range(2):
+        assert c[k] - w[k] == zero  # exact: the factor is 1, not |A_{k-1}|^2
+
+
+def test_hestenes_inverse_equals_rejection_exactly_3d_symbolic() -> None:
+    """Same exact equality on a fully general 3D frame: ``c_k^inv == w_k`` for all k."""
+    frame: list[Gn] = [sym_vec3_1, sym_vec3_2, sym_vec3_3]
+    w: list[MultiVectorBase] = make_orthogonal_frame(frame)
+    c: list[MultiVectorBase] = make_orthogonal_frame_hestenes_inverse(frame)
+    zero: MultiVectorBase = type(c[0]).zero()
+    for k in range(3):
+        assert c[k] - w[k] == zero
 
 
 # --- prefix_blades (the eq-3.1 primitive, lifted to module scope) -----------

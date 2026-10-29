@@ -252,3 +252,44 @@ def make_orthogonal_frame_hestenes(
         (A_k_minus_1.reverse() * A_k).r_vector_part(1)
         for A_k_minus_1, A_k in pairwise(prefix_blades(vectors))
     ]
+
+
+def make_orthogonal_frame_hestenes_inverse(
+    vectors: Sequence[MultiVectorBase],
+) -> list[MultiVectorBase]:
+    """Orthogonalize a frame by the Hestenes closed form, using the **inverse** of each
+    prefix blade instead of its reverse -- the variant that lands exactly on the
+    rejection frame, with no extra per-vector scaling.
+
+    Identical to :func:`make_orthogonal_frame_hestenes` except ``c_k`` uses
+    ``inverse(A_{k-1})`` where that uses ``reverse(A_{k-1})``:
+
+    ::
+
+        c_k := inverse(A_{k-1}) * A_k
+
+    For a blade ``inverse(A) = reverse(A) / |A|^2``, so this divides out the
+    ``|A_{k-1}|^2`` factor that makes :func:`make_orthogonal_frame_hestenes`'s result a
+    scaled copy of the rejection frame.  The result therefore equals
+    :func:`make_orthogonal_frame`'s ``w_k`` **exactly** (same direction *and* length),
+    not merely up to a positive scalar -- verified in ``tests/test_frame.py``.
+    ``A_0 = 1`` and ``inverse(1) = 1``, so ``c_1 = v_1`` (the first vector
+    unchanged), as in both siblings.
+
+    Raises:
+        ValueError: if ``vectors`` is not a frame (linearly dependent -- some
+            ``A_k = 0``, whose inverse is undefined).
+    """
+    if not is_frame(vectors):
+        raise ValueError(
+            "make_orthogonal_frame_hestenes_inverse requires a frame (linearly "
+            "independent vectors: a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
+        )
+
+    # c_k := inverse(A_{k-1}) A_k -- the reverse form divided by |A_{k-1}|^2, which
+    # cancels the scaling and reproduces the rejection frame w_k exactly.  Same
+    # pairwise(prefix_blades(...)) walk and grade-1 narrowing as the reverse variant.
+    return [
+        (A_k_minus_1.inverse() * A_k).r_vector_part(1)
+        for A_k_minus_1, A_k in pairwise(prefix_blades(vectors))
+    ]
