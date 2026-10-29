@@ -1,49 +1,48 @@
 # Test the reverse-based Hestenes orthogonalize by parallelism, not by the scaling factor
 
-**Status:** proposed — needs go-ahead
+**Status:** done — 2026-10-29. Work commit subject:
+"frame tests: assert the reverse Hestenes frame is PARALLEL to rejection".
 **Priority:** 5
-**Difficulty:** 3  (test rewrite; the geometric assertion must still be exact/symbolic)
+**Difficulty:** 3  (test rewrite; the geometric assertion is still exact/symbolic)
 **Created:** 2026-10-29 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
-The tests for the original (reverse-based) `make_orthogonal_frame_hestenes` currently assert the
-**exact scaling relationship** `c_k == |A_{k-1}|² * w_k` against the rejection result `w_k`. That
-obscures the geometric point — the two produce the **same directions** — behind a magnitude factor a
-reader has to compute and reverse-engineer. Rewrite those assertions to test that each `c_k` is
-**parallel** to the corresponding `w_k` (scaling-independent), so the test states the geometric fact
-directly.
+The tests for the reverse-based `make_orthogonal_frame_hestenes` asserted the **exact scaling
+relationship** `c_k == |A_{k-1}|² * w_k` against the rejection `w_k` — which obscured the geometric
+point (the two produce the **same directions**) behind a magnitude factor a reader had to compute
+and reverse-engineer. Those assertions now test that each `c_k` is **parallel** to `w_k`
+(scale-independent), stating the geometric fact directly; the exact scale moved to the inverse
+variant's tests.
 
-## Context (cold-start)
+## What was done
 
-- File: `tests/test_frame.py`. The affected tests (and the helper that computes the factor):
-  - `_prev_blade_magnitude_squared(vectors, k)` — computes `|A_{k-1}|²`.
-  - `test_hestenes_equals_rejection_2d_symbolic` — asserts `c[1] - factor * w[1] == zero`.
-  - `test_hestenes_equals_rejection_3d_concrete` — asserts `h[1] == content([a])**2 * w[1]`, etc.
-  - `test_hestenes_equals_rejection_3d_symbolic` — asserts `c[k-1] - factor * w[k-1] == zero`.
-- The direction/parallelism test gacalc already has: `A.is_parallel_to(B)` uses the wedge-zero test
-  `A ∧ B = 0` (machine-checked in `proofs/GacalcProofs/Predicates3D.lean`) — scale-independent, the
-  right tool here.
+In `tests/test_frame.py`, the four reverse-variant tests were renamed
+`test_hestenes_equals_rejection_*` → `test_hestenes_parallel_to_rejection_*`
+(`2d_symbolic` / `3d_concrete` / `3d_symbolic` / `numeric`) and now assert parallelism via
+`A.is_parallel_to(B)` (the wedge-zero test `A ∧ B = 0`, machine-checked in
+`proofs/GacalcProofs/Predicates3D.lean`):
 
-## Proposed change
+- symbolic/concrete tests: `c[k].is_parallel_to(w[k])` (exact);
+- the numeric test: `c[k].is_parallel_to(w[k], float_close_to_zero=True)`;
+- `c[0] == w[0]` (`c_1 = w_1 = v_1`, first vector unchanged) stays an exact check.
 
-- Assert parallelism instead of the computed scaling, e.g. `assert c[k].is_parallel_to(w[k])` (or
-  `(c[k] ^ w[k]) == zero`) for each k, in the 2D-symbolic, 3D-concrete, and 3D-symbolic tests. Keep
-  `c[0] == w[0]` (`c_1 = w_1 = v_1`, the first vector unchanged — exact, no scaling).
-- Drop `_prev_blade_magnitude_squared` and the `content(...)**2` factors **from these reverse-based
-  tests** (they exist only to express the scaling). The **exact** (unscaled) equality `== w_k` is the
-  natural assertion for the *inverse*-based variant instead — see
-  `tasks/hestenes-orthogonalize-via-inverse.md`; these two tasks are best done together.
-- Keep each `is_frame`/orthogonality coverage already in the file; this task only reshapes the
-  rejection-equivalence assertions.
+The `_prev_blade_magnitude_squared` factor helper was removed, and with it the now-unused
+`content` / `Real` / `Sequence` imports. The leading comment block was reframed from "equivalence up
+to a positive scalar" to "parallel to rejection", noting the exact scale is pinned elsewhere.
+`tasks/define-frame.md`'s 2026-09-02 record got a 2026-10-29 note on the rename/re-scope, and
+`tasks/reference/design-decisions.md`'s "two orthogonalizations" bullet was updated in the
+session-end sweep.
 
-> Decision to confirm during implementation (not a blocker): whether to keep one test that still
-> records the exact `|A_{k-1}|²` factor as documentation of *why* the directions match, or rely on
-> the inverse-variant's exact test for that and keep the reverse tests purely about parallelism.
-> Leaning toward the latter (cleaner division of labor between the two variants).
+## Decision
+
+Resolved the "keep one scaling test, or go pure parallelism?" question in favour of **pure
+parallelism** for the reverse variant — the exact (factor-1) equality is the inverse variant's job
+(`test_hestenes_inverse_equals_rejection_exactly_*`), a clean division of labour between the two.
+This task and `hestenes-orthogonalize-via-inverse` were done together, as anticipated.
 
 ## Verification
 
-- `make test` — `test_frame.py` green; the parallelism assertions hold exactly on the symbolic
-  vectors (not just numerically).
-- `make format` — ruff + ty clean.
+- `python -m pytest` — **692 passed**; the parallelism assertions hold exactly on the symbolic
+  vectors (`c_k ∧ w_k` eager-simplifies to zero), not just numerically.
+- `ruff` + `ty` clean (via `entrypoint/format.sh`).
