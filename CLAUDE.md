@@ -295,7 +295,10 @@ over a "run it on your host" instruction.
   runs offline (adds several GB — Lean images only). See `proofs/README.md`,
   `tasks/reference/lean-for-gacalc.md` (beginner orientation) and `tasks/reference/lean-ga-proof-architecture.md`
   (architecture, techniques, what's proven, and the program decisions; the original umbrella is archived at
-  `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`).
+  `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`). **The `G1`/`G2`/`G3` files are
+  ordered to mirror how algebra is taught** — the vector-space ops (`add`/`sub`/`neg`/`smul`) before
+  the product (`mul`/`wedge`/`dot`), and each algebra's laws stated with it (no shared `AlgebraLaws`
+  file); keep new declarations in that order (`tasks/reference/algebra-teaching-order.md`).
 - **`make image`** then **`make shell`** — containerized dev; Jupyter on port 8888.
   **`make update-emacs-packages`** — refresh the vendored Emacs packages (maintainer-only, rarely).
 - **`make image MINIMAL_IMAGE=1`** — a **lean image** (~2.42 GB vs the full ~7.21 GB) that still runs
