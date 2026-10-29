@@ -1,9 +1,10 @@
 # Reorder G1/G2/G3 Lean files to the math-teaching order (no functional change)
 
-**Status:** proposed — needs go-ahead
-**Priority:** 5  (a readability/pedagogy refactor; nothing is broken or blocked on it)
-**Difficulty:** 4  (pure relocation, but across 3 large files + a shared-laws file, and it
-must leave `make lean` byte-for-byte as green as it is now)
+**Status:** done — 2026-10-29. William Emerison Six <billsix@gmail.com> gave the go-ahead by
+resolving the three open questions (all in favor of the recommendations). Work commit subject:
+"proofs: reorder G1/G2/G3 to the math-teaching order; fold AlgebraLaws in".
+**Priority:** 5  (a readability/pedagogy refactor; nothing was broken or blocked on it)
+**Difficulty:** 4  (pure relocation across 3 large files + the shared-laws file)
 
 ## BLUF
 
@@ -18,8 +19,38 @@ lean` must stay green and prove the same theorem set before and after. "Done" = 
 read top-to-bottom in teaching order, the dead `Versor2D` import is gone, and the proved-
 theorem set is provably unchanged.
 
-This is a **plan for the maintainer's go-ahead**, not work to start now. The maintainer
-explicitly invited the case for keeping some things separate — see §"What stays separate."
+## Outcome (2026-10-29)
+
+Done, as a pure relocation — no statement, proof, or name changed.
+
+- **Operations reordered** in `G1`/`G2`/`G3`: `add`/`sub`/`neg`/`smul` now precede
+  `mul`/`wedge`/`dot`, under split section headers "### Addition and the vector-space
+  operations" then "### The geometric product, the wedge, and the dot".
+- **`AlgebraLaws.lean` folded in and deleted** (question 1 → fold entirely). The G2 laws moved
+  into `G2.lean` and the G3 laws into `G3.lean`, each under a new "### The algebra laws" section;
+  `vec_anticomm_perp` sits beside each file's wedge/anticommutativity material (it depends on it).
+  No law needed a shared file — Phase 3's delete-and-rebuild confirmed every law's dependencies
+  are satisfied within its own algebra (no import cycle). The dead `import GacalcProofs.Versor2D`
+  vanished with the file (Phase 1).
+- **Eight importers repointed** off `AlgebraLaws` onto `G2`/`G3` (the aggregator
+  `GacalcProofs.lean` plus ProjectionRotation3D/2D, StandardPosition, PlaneRotation3D, Rotor,
+  Sandwich, StudentTrigForms); each now directly imports both G2 and G3, the coverage
+  `AlgebraLaws` had re-exported.
+- **G1 kept inline** (question 3 → G1 is the section template): its `mul_comm`/`mul_assoc`/
+  `one_mul`/`mul_add` already lived with the algebra; only its operation order was adjusted.
+- **No new named addition lemmas** (question 2 → reorder existing only). A follow-up task could
+  add explicit `add_comm`/`add_assoc` lemmas if ever wanted; not done here.
+
+**Verification (equivalence):** `make lean` green before (8958 jobs) and after (8957 — one fewer,
+the removed `AlgebraLaws` module), no `sorry`/`admit`; and the sorted declaration-name multiset
+across `G1`/`G2`/`G3` is identical before and after (232 = 232), proving nothing was added,
+removed, or renamed. The durable record is [[algebra-teaching-order]] §Part III.
+
+---
+
+Below is the plan as executed (kept as the how-record).
+
+The maintainer explicitly invited the case for keeping some things separate — see §"What stays separate."
 
 ## Context (cold-start)
 
@@ -121,21 +152,14 @@ The maintainer asked to hear this. Candidates to keep in a shared file even afte
 - This touches only `proofs/` — no Python, no generator, no book; `make test`/`make format`
   are unaffected but cheap to run as a sanity check.
 
-## Open questions
+## Open questions — resolved 2026-10-29 (William Emerison Six <billsix@gmail.com>)
 
-1. **Scope of `AlgebraLaws.lean`:** fold it entirely into `G2`/`G3` (my recommendation,
-   given the `Versor2D` import is dead so no cycle blocks it), or keep a slim shared file
-   for the laws whose side-by-side G2+G3 framing is pedagogically deliberate? See
-   §"What stays separate." Recommendation: fold in, keeping a shared file only if a specific
-   law reads better paired — decided per law during Phase 3.
-2. **Named addition laws:** the files currently prove most vector-space/addition facts
-   inline via `ext <;> ring` rather than as named lemmas (`add_comm`/`add_assoc`/…). Do you
-   want the teaching order realized with **explicit named** addition lemmas added (more
-   faithful to the textbook's "commutative property of addition" heading, but new
-   declarations — a functional *addition*, though not a change), or only reorder the
-   **existing** declarations and leave addition's laws implicit? Recommendation: reorder
-   existing only for this task (keeps it a true no-op refactor); scaffold a separate
-   follow-up task if you want the named addition lemmas.
-3. **G1 as the template:** `G1.lean` is already closest to the target shape. Should it be
-   the explicit style template the G2/G3 reorder matches section-for-section?
-   Recommendation: yes.
+1. **Scope of `AlgebraLaws.lean`** → **fold it entirely into `G2`/`G3`.** Done; no law needed a
+   shared file — Phase 3's delete-and-rebuild found every law's dependencies satisfied within its
+   own algebra (no import cycle). `AlgebraLaws.lean` deleted.
+2. **Named addition laws** → **reorder existing declarations only** (no new lemmas; keeps it a
+   true no-op refactor). A separate follow-up could add explicit `add_comm`/`add_assoc` named
+   lemmas if that faithfulness is ever wanted — not done here.
+3. **G1 as the template** → **yes.** `G1.lean`'s layout (laws stated with the algebra) is the
+   section template `G2`/`G3` now match; `G1`'s own operation order (`add`/`smul` before
+   `mul`/`wedge`) was brought into line too, so it exemplifies the teaching order it anchors.
