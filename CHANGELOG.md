@@ -17,6 +17,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `make_orthogonal_frame_hestenes` to a public, representation-agnostic free function (a reusable
   building block, e.g. for a reciprocal frame). Returns a lazy iterator; raises `ValueError` on an
   empty sequence. Additive, non-breaking; the orthogonalization output is unchanged.
+- **`gacalc.frame.make_orthogonal_frame_hestenes_inverse(vectors)`** — a third orthogonalization
+  sibling: the Hestenes closed form using `inverse(A_{k-1}) * A_k` in place of the reverse variant's
+  `reverse(A_{k-1}) * A_k`. Because `inverse(A) = reverse(A) / |A|²` for a blade, the `|A_{k-1}|²`
+  scaling cancels, so it equals `make_orthogonal_frame` (rejection) **exactly**, not merely up to a
+  positive scalar. Additive, non-breaking.
 - **`MultiVectorBase.symbolically_equal(other, *, subs=None)`** — the one public home of symbolic value
   equality (`simplify(a − b) == 0` blade by blade, delegating to the same per-coefficient rule as `==`;
   representation-agnostic; `subs` feeds sympy a relation such as `{s**2: 1 - c**2}` before simplifying).
