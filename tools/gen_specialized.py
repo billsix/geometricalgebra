@@ -2607,7 +2607,7 @@ def _own_docstring(method: str) -> str | None:
     Only a docstring actually written on one of those classes -- never one an
     ``object`` dunder (``__eq__`` etc.) is inherited by accident.
     """
-    src: type
+    src: type[MultiVectorBase | Gn]
     for src in (MultiVectorBase, Gn):
         if method in vars(src):
             doc: str | None = inspect.getdoc(getattr(src, method))

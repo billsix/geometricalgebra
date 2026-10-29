@@ -652,7 +652,7 @@ def plot_multivector(
     return fig
 
 
-def _blade_terms(mv: MultiVectorBase) -> list:
+def _blade_terms(mv: MultiVectorBase) -> list[MultiVectorBase]:
     """The single-blade multivectors that sum to ``mv`` (its product-table terms).
 
     ``__iter__`` now yields a multivector's coefficient *values*, so the
@@ -666,7 +666,7 @@ def _blade_terms(mv: MultiVectorBase) -> list:
     ]
 
 
-def _expand_numerators_dict(mv: MultiVectorBase) -> dict:
+def _expand_numerators_dict(mv: MultiVectorBase) -> BladeReal:
     """``mv``'s blade dict with each coefficient's NUMERATOR expanded and its
     denominator left factored — for display.
 
@@ -676,7 +676,7 @@ def _expand_numerators_dict(mv: MultiVectorBase) -> dict:
     would re-factor the just-distributed numerator (e.g. back to ``a0*(b0*c0 + ...)``).
     Expanding the dict directly keeps the distributed form on every representation.
     """
-    out: dict = {}
+    out: BladeReal = {}
     for blade, coef in mv.to_blade_dict().items():
         numerator, denominator = sympy.fraction(sympy.together(coef))
         out[blade] = sympy.expand(numerator) / denominator
@@ -694,7 +694,9 @@ def show_mult(a: MultiVectorBase, b: MultiVectorBase) -> None:
     display(Math("$($" + a._repr_latex_() + "$)*($" + b._repr_latex_() + "$)$"))
     display(Markdown("**Multivector Multiplication is distributive over additon**"))
 
-    data: list = list(itertools.product(_blade_terms(a), _blade_terms(b)))
+    data: list[tuple[MultiVectorBase, MultiVectorBase]] = list(
+        itertools.product(_blade_terms(a), _blade_terms(b))
+    )
     result: list[tuple[object, str, object, str, object]] = [
         (left, "*", right, "=", left * right) for left, right in data
     ]
