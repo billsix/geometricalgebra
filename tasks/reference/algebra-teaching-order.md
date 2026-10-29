@@ -11,8 +11,8 @@ files can mirror it.
 worked examples, the box/unbox grammar — for the GA *book*). This doc is about *concept
 ordering for the proof files*; that one is about *teaching style for the book*. Read both
 when touching either.
-**Drives:** the task `tasks/reorder-gn-lean-to-teaching-order.md` (the plan to reorder the
-Lean files to this sequence without changing any proof).
+**Drove:** the reorder `tasks/archive/2026/10/29/reorder-gn-lean-to-teaching-order.md` (completed
+2026-10-29 — reordered the Lean files to this sequence with no change to any statement or proof).
 
 ## How this was produced (and how to re-check it)
 
@@ -120,22 +120,24 @@ Distilled from Part I, in priority order:
 
 ## Part III — Where the GA Lean files stand against this
 
-Current state (read 2026-10-28, `proofs/GacalcProofs/`):
+**State after the 2026-10-29 reorder** (William Emerison Six <billsix@gmail.com>;
+`proofs/GacalcProofs/`): the files now **follow** this teaching order. `G1.lean`/`G2.lean`/
+`G3.lean` each read: representation scaffolding → **addition and the vector-space operations**
+(`add`/`sub`/`neg`/`smul`) → **the geometric product, the wedge, and the dot** → reverse and
+magnitude → **the algebra laws, stated with each algebra** (associativity, two-sided
+distributivity, identity, the scalar laws), with `vec_anticomm_perp` placed beside the
+wedge/anticommutativity material it rests on.
 
-- **Operation order is inverted vs teaching order.** `G2.lean`/`G3.lean` define the
-  geometric product `mul` *first* (G2 line ~87), then the wedge, then `add`/`sub`/`neg`/
-  `smul` (G2 line ~106). A student meets multiplication before addition — the reverse of
-  §1.3-before-§1.4.
-- **The algebra laws are hoisted out.** `AlgebraLaws.lean` holds associativity,
-  distributivity (`mul_add`/`add_mul`), identity (`one_mul`/`mul_one`), the scalar laws,
-  and the orthogonal-vectors-anticommute fact — for both `G2` and `G3` — instead of each
-  living with its algebra. (`G1.lean` is the exception: it keeps its `mul_comm`/
-  `mul_assoc`/`one_mul`/`mul_add` inline, which is closer to the taught shape.)
-- **Commutativity/associativity are not grouped or ordered** the taught way; they are
-  scattered between the per-Gn files and `AlgebraLaws.lean`.
+What changed (a pure relocation — no statement, proof, or name altered; `make lean` green before
+and after, the 232-declaration set byte-identical):
 
-The gap is an *ordering/placement* gap, not a correctness gap — every fact is present and
-proved. The reorder is what `tasks/reorder-gn-lean-to-teaching-order.md` plans.
+- **Operation order corrected.** `add`/`sub`/`neg`/`smul` now precede `mul`/`wedge`/`dot` in all
+  three files — a student meets addition before multiplication (§1.3 before §1.4).
+- **The algebra laws now live with their algebra.** The former `AlgebraLaws.lean` folded into
+  `G2.lean` and `G3.lean` (each gained an `### The algebra laws` section); `G1.lean` already kept
+  its `mul_comm`/`mul_assoc`/`one_mul`/`mul_add` inline. `AlgebraLaws.lean` is gone.
+
+The reorder is recorded in `tasks/archive/2026/10/29/reorder-gn-lean-to-teaching-order.md`.
 
 ### Caveats — where a deviation from the teaching order is legitimate
 
@@ -147,12 +149,12 @@ asked to hear why some things should stay separate):
   order where they conflict. Note each such reversal in a comment.
 - **Cross-algebra shared facts may justify a shared file.** A fact that genuinely needs
   machinery from a *later* module cannot move *up* into `G2.lean` without creating an
-  import cycle — that would be a real reason to leave it separate. But check the true
-  dependency, don't assume it: `AlgebraLaws.lean` carries `import GacalcProofs.Versor2D`,
-  yet its body references no `Versor2D` name — a **stale import**, and since `Versor2D`
-  imports `G2`, removing it is what *clears* the only apparent obstacle to folding the
-  `G2`/`G3` laws back into their algebras. The reorder task must delete-and-rebuild to find
-  each law's real dependencies before deciding placement.
+  import cycle — that would be a real reason to leave it separate. In the event, none did:
+  the 2026-10-29 reorder's delete-and-rebuild confirmed every `G2`/`G3` law's dependencies
+  are satisfied within its own algebra, so all of `AlgebraLaws.lean` folded in with no cycle.
+  (The one suspected obstacle — `AlgebraLaws.lean`'s `import GacalcProofs.Versor2D`, with
+  `Versor2D` importing `G2` — was a **stale import** naming no `Versor2D` symbol, so it
+  blocked nothing; it vanished with the file.)
 - **The representation/plumbing block** (the coordinate `structure`, `zero`/`one`, basis
   blades, `ext`) is prerequisite scaffolding with no textbook analogue; it legitimately
   comes first, before "addition," the way a chapter sets notation before teaching.

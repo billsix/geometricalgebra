@@ -82,7 +82,21 @@ def scalar (a : ℝ) : G2 := { s := a, c1 := 0, c2 := 0, c12 := 0 }
 /-- The unit pseudoscalar I = e₁*e₂. -/
 def I : G2 := e_12
 
-/-! ### The elementary operations: geometric product, wedge, dot, and the vector-space ops -/
+/-! ### Addition and the vector-space operations -/
+
+/-- Componentwise addition. -/
+noncomputable def add (a b : G2) : G2 := ⟨a.s + b.s, a.c1 + b.c1, a.c2 + b.c2, a.c12 + b.c12⟩
+
+/-- Componentwise subtraction. -/
+noncomputable def sub (a b : G2) : G2 := ⟨a.s - b.s, a.c1 - b.c1, a.c2 - b.c2, a.c12 - b.c12⟩
+
+/-- Componentwise negation. -/
+noncomputable def neg (a : G2) : G2 := ⟨-a.s, -a.c1, -a.c2, -a.c12⟩
+
+/-- Scalar multiple. -/
+noncomputable def smul (r : ℝ) (a : G2) : G2 := ⟨r * a.s, r * a.c1, r * a.c2, r * a.c12⟩
+
+/-! ### The geometric product, the wedge, and the dot -/
 
 /-- The Euclidean geometric product in 𝒢₂ (from the table e₁²=e₂²=1, e₁*e₂=−e₂*e₁,
     (e₁*e₂)²=−1). `noncomputable` because `ℝ`'s field ops are. -/
@@ -103,18 +117,6 @@ noncomputable def wedge (a b : G2) : G2 where
     Euclidean dot `a₁*b₁ + a₂*b₂`). -/
 noncomputable def dot (a b : G2) : ℝ := (mul a b).s
 
-/-- Componentwise addition. -/
-noncomputable def add (a b : G2) : G2 := ⟨a.s + b.s, a.c1 + b.c1, a.c2 + b.c2, a.c12 + b.c12⟩
-
-/-- Componentwise subtraction. -/
-noncomputable def sub (a b : G2) : G2 := ⟨a.s - b.s, a.c1 - b.c1, a.c2 - b.c2, a.c12 - b.c12⟩
-
-/-- Componentwise negation. -/
-noncomputable def neg (a : G2) : G2 := ⟨-a.s, -a.c1, -a.c2, -a.c12⟩
-
-/-- Scalar multiple. -/
-noncomputable def smul (r : ℝ) (a : G2) : G2 := ⟨r * a.s, r * a.c1, r * a.c2, r * a.c12⟩
-
 /-- Reverse `R̃` — reverses the order of the vector factors in each blade. Per grade k the
     sign is (−1)^(k(k−1)/2): k=0,1 → +, k=2 → −, so in 𝒢₂ it negates the grade-2 (e₁*e₂)
     coefficient and fixes grades 0 and 1. (Used by the versor/rotor sandwich.) -/
@@ -129,6 +131,54 @@ noncomputable def normSq (a : G2) : ℝ := (mul a (reverse a)).s
 
 /-- The **magnitude** `|A| = √⟨A Ã⟩`, for all grades. -/
 noncomputable def magnitude (a : G2) : ℝ := Real.sqrt (normSq a)
+
+/-! ### The algebra laws
+
+    `G2` is an **associative, unital ℝ-algebra**: the geometric product is associative and
+    distributes over addition (both sides), `one` is a two-sided identity, and scalars pull through
+    the product. Each is a polynomial identity in the coordinate fields, so the proof is
+    `ext <;> ring`. These are the axioms everything built on the product (the sandwich, projection,
+    the rotation proofs) rests on. The GA-specific `vec_anticomm_perp` (orthogonal vectors
+    anticommute) is stated further down, beside the wedge/anticommutativity material it rests on. -/
+
+/-- The geometric product is **associative**. -/
+theorem mul_assoc (a b c : G2) : mul (mul a b) c = mul a (mul b c) := by
+  simp only [mul]; ext <;> ring
+
+/-- The product **distributes over addition on the left**. -/
+theorem mul_add (a b c : G2) : mul a (add b c) = add (mul a b) (mul a c) := by
+  simp only [mul, add]; ext <;> ring
+
+/-- The product **distributes over addition on the right**. -/
+theorem add_mul (a b c : G2) : mul (add a b) c = add (mul a c) (mul b c) := by
+  simp only [mul, add]; ext <;> ring
+
+/-- `one` is a **left identity**. -/
+theorem one_mul (a : G2) : mul one a = a := by simp only [mul, one]; ext <;> ring
+
+/-- `one` is a **right identity**. -/
+theorem mul_one (a : G2) : mul a one = a := by simp only [mul, one]; ext <;> ring
+
+/-- A scalar pulls out of the **left** factor. -/
+theorem smul_mul (k : ℝ) (a b : G2) : mul (smul k a) b = smul k (mul a b) := by
+  simp only [mul, smul]; ext <;> ring
+
+/-- A scalar pulls out of the **right** factor. -/
+theorem mul_smul (k : ℝ) (a b : G2) : mul a (smul k b) = smul k (mul a b) := by
+  simp only [mul, smul]; ext <;> ring
+
+/-- Scalar multiples compose: `k • (m • a) = (k·m) • a`. -/
+theorem smul_smul (k m : ℝ) (a : G2) : smul k (smul m a) = smul (k * m) a := by
+  simp only [smul]; ext <;> ring
+
+/-- Multiplying by an embedded scalar is scalar multiplication: `(scalar k) b = k • b` — the algebra
+    companion of the `scalar` constructor, so a `scalar k` factor pulls straight out as a `smul`
+    (replacing the old `smul k one` factor + `smul_mul`/`one_mul`). -/
+theorem scalar_mul (k : ℝ) (b : G2) : mul (scalar k) b = smul k b := by
+  simp only [mul, scalar, smul]; ext <;> ring
+
+/-- `1 • a = a`. -/
+theorem one_smul (a : G2) : smul 1 a = a := by simp only [smul]; ext <;> ring
 
 /-- `normSq a = Σ (component)²` — the scalar part of `a ã` is positive-definite (every blade's reverse
     sign cancels its square's sign). -/
@@ -353,6 +403,21 @@ theorem mul_eq_wedge_of_perp {a b : G2} (ha : IsVector a) (hb : IsVector b) (h :
     mul a b = wedge a b := by
   rw [mul_eq_dot_add_wedge ha hb, h]
   simp only [scalar, add]; ext <;> ring
+
+/-- **Orthogonal vectors anticommute:** if `u·v = 0` then `u v = −(v u)` — the 𝒢₂ twin of the 𝒢₃
+    `G3.vec_anticomm_perp`. Objects in (two vectors + a perpendicularity hypothesis), object out:
+    the scalar (inner) parts cancel by orthogonality and the bivector parts are already antisymmetric. -/
+theorem vec_anticomm_perp {u v : G2} (hu : IsVector u) (hv : IsVector v) (h : dot u v = 0) :
+    mul u v = neg (mul v u) := by
+  obtain ⟨hus, huc12⟩ := hu
+  obtain ⟨hvs, hvc12⟩ := hv
+  simp only [dot, mul, hus, huc12, hvs, hvc12] at h
+  simp only [mul, neg, hus, huc12, hvs, hvc12]
+  ext
+  · linear_combination 2 * h
+  · ring
+  · ring
+  · ring
 
 /-- **Leaf:** `|a∧b|² = (a₁*b₂ − a₂*b₁)²` — the squared magnitude of the plane bivector of two vectors (2D). -/
 theorem normSq_wedge_vec (a1 a2 b1 b2 : ℝ) :

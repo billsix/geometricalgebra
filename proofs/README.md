@@ -16,9 +16,10 @@ the Python implementation.
     `u v = u·v`), `G2.lean`, `G3.lean` — coordinate structs; product/wedge/reverse (𝒢₃'s transcribed
     verbatim from gacalc's `Gn` oracle by `tools/derive_lean_algebra.py`), the basis blades as genuine
     elements with their multiplication table, `I² = −1`, `dot` (the scalar part of the product),
-    `dual = A·I⁻¹`, `normSq`/`magnitude`, the grade predicates `IsVector`/`IsBivector`/`IsTrivector`;
-    `Lagrange.lean` (the real-number Lagrange identity 2D/3D); `AlgebraLaws.lean` (associativity,
-    two-sided distributivity, identity, scalar laws, ⊥ vectors anticommute); `GradeProjection.lean`
+    `dual = A·I⁻¹`, `normSq`/`magnitude`, the **algebra laws stated with each algebra** (associativity,
+    two-sided distributivity, identity, scalar laws, ⊥ vectors anticommute), the grade predicates
+    `IsVector`/`IsBivector`/`IsTrivector`;
+    `Lagrange.lean` (the real-number Lagrange identity 2D/3D); `GradeProjection.lean`
     (`rVectorPart`/`evenPart`/`oddPart`, idempotent + complete); `Contractions.lean` (Taylor's left/right
     contraction, grade 0 included, vs Hestenes — 𝒢₃).
   - *Angles and trig:* `Rotation2D.lean` (2D from sin/cos: the product enacts rotation one-sided by the
