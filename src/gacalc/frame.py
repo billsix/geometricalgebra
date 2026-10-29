@@ -190,10 +190,10 @@ def make_orthogonal_frame(
                 # and recursively orthogonalize the rest.  The first is already
                 # orthogonal to every vector finalized before it -- each earlier
                 # head was rejected out of it on the way down.
-                rest_orthogonal_to_v: list[MultiVectorBase] = [
-                    w.rejected_away_from(v) for w in rest
+                return [
+                    v,
+                    *orthogonalize([w.rejected_away_from(v) for w in rest]),
                 ]
-                return [v, *orthogonalize(rest_orthogonal_to_v)]
             case _:
                 # Unreachable: [] / [v] / [v, *rest] already cover every list.
                 # Kept as the total default because ty does not prove list-pattern
