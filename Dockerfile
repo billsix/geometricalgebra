@@ -1,4 +1,4 @@
-FROM registry.fedoraproject.org/fedora:44
+FROM registry.fedoraproject.org/fedora:45
 
 # Every optional-feature ARG defaults to 0 so a bare `podman build` stays lean; the
 # Makefile passes each flag's real value (full on a host, lean when built nested --
