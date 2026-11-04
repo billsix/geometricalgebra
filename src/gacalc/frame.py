@@ -20,21 +20,27 @@ A **frame** is a set of vectors ``{a_1, …, a_k}`` whose outer product is nonze
 when ``k = n``).  A frame need NOT be orthogonal; the wedge, not orthogonality, is
 the defining condition.
 
-These are representation-agnostic **free functions** over
-:class:`~gacalc.base.MultiVectorBase` vectors (they work on the general ``Gn`` type
-and on the graded ``Vector_n`` types alike), so no ``Frame`` class is needed to use
-them.
+The predicates and orthogonalizations are representation-agnostic **free functions**
+over :class:`~gacalc.base.MultiVectorBase` vectors (they work on the general ``Gn``
+type and on the graded ``Vector_n`` types alike).  :class:`Frame` packages a frame as
+an orthogonal set plus the coefficients that rebuild the original vectors from it
+(the QR decomposition, with the lengths factored out), and turns it into an
+:class:`~gacalc.functions.InvertibleFunction` sending ``e_i`` to ``v_i``.  The math is
+in ``tasks/reference/frames-qr-and-reciprocal-frames.md``.
 """
 
 from __future__ import annotations
 
+import dataclasses
 import operator
 from collections.abc import Iterator, Sequence
 from itertools import accumulate, pairwise
 
 import numpy as np
+import sympy
 
-from gacalc.base import MultiVectorBase
+from gacalc.base import MultiVectorBase, Real
+from gacalc.functions import InvertibleFunction, Linearity
 
 
 def are_linearly_independent(
@@ -293,3 +299,216 @@ def make_orthogonal_frame_hestenes_inverse(
         (A_k_minus_1.inverse() * A_k).r_vector_part(1)
         for A_k_minus_1, A_k in pairwise(prefix_blades(vectors))
     ]
+
+
+def _exact_quotient(numerator: Real, denominator: Real) -> Real:
+    """``numerator / denominator``, keeping exact input exact.
+
+    A ``float`` on either side gives a ``float`` (numeric input stays numeric).
+    Otherwise both sides are sympified first, so ``int / int`` is an exact
+    ``Rational`` instead of a float, and symbolic input stays symbolic -- the same
+    numeric/symbolic split as :meth:`MultiVectorBase.inverse`.
+    """
+    if isinstance(numerator, float) or isinstance(denominator, float):
+        return numerator / denominator
+    return sympy.sympify(numerator) / sympy.sympify(denominator)
+
+
+@dataclasses.dataclass(frozen=True)
+class Frame:
+    """A frame ``v_1 … v_k`` (H&S p. 27), held as an **orthogonal** set plus the
+    coefficients that rebuild the original vectors from it.
+
+    The constructor takes the frame's vectors and keeps two things instead of them:
+
+    - ``orthogonal_vectors`` -- ``w_1 … w_k``, the frame orthogonalized by rejection
+      (:func:`make_orthogonal_frame`): each ``w_i`` is ``v_i`` with the span of the
+      earlier vectors rejected out of it.
+    - ``coefficients`` -- one row per original vector, ``coefficients[i][j] =
+      (w_j · v_i) / |w_j|²``, so that ``v_i = Σ_j coefficients[i][j] * w_j``.  The
+      rows form a lower-triangular table with ones on the diagonal: ``v_i`` needs only
+      ``w_1 … w_i``, and its component along its own ``w_i`` is exactly ``w_i``.
+
+    Iterating a ``Frame`` (``iter(frame)``, ``list(frame)``) rebuilds the original
+    vectors from these two.
+
+    This is the **QR decomposition** of the matrix whose columns are the ``v_i``,
+    with the lengths factored out of ``Q``: the orthonormal ``u_j = w_j / |w_j|``
+    are ``Q``'s columns (:meth:`orthonormal_vectors`), and ``R``'s entries are
+    ``coefficients[i][j] * |w_j|``.  The orthogonal set is stored rather than the
+    orthonormal one because normalizing introduces a square root of every
+    ``|w_j|²``; dividing by ``|w_j|²`` instead keeps every stored value a rational
+    function of the inputs, which sympy can verify exactly in 3D (see
+    ``tasks/reference/frames-qr-and-reciprocal-frames.md``, "Why gacalc's ``Frame``
+    is stored orthogonal, not orthonormal").  Float input is subject to the usual
+    Gram–Schmidt rounding.
+
+    Examples:
+        >>> from gacalc.gn import e_1, e_2
+        >>> frame = Frame([2 * e_1, 1 * e_1 + 3 * e_2])
+        >>> frame.orthogonal_vectors == (2 * e_1, 3 * e_2)
+        True
+        >>> frame.coefficients
+        ((1, 0), (1/2, 1))
+        >>> list(frame) == [2 * e_1, 1 * e_1 + 3 * e_2]
+        True
+
+    Raises:
+        ValueError: if the vectors are not a frame (linearly dependent, empty, or
+            containing a non-vector).
+    """
+
+    vectors: dataclasses.InitVar[Sequence[MultiVectorBase]]
+    orthogonal_vectors: tuple[MultiVectorBase, ...] = dataclasses.field(init=False)
+    coefficients: tuple[tuple[Real, ...], ...] = dataclasses.field(init=False)
+
+    def __post_init__(self, vectors: Sequence[MultiVectorBase]) -> None:
+        # make_orthogonal_frame raises ValueError on a non-frame.
+        orthogonal_vectors: tuple[MultiVectorBase, ...] = tuple(
+            make_orthogonal_frame(vectors)
+        )
+        coefficients: tuple[tuple[Real, ...], ...] = tuple(
+            tuple(
+                _exact_quotient(w.scalar_product(v), w.magnitude_squared())
+                for w in orthogonal_vectors
+            )
+            for v in vectors
+        )
+        # A frozen dataclass sets its derived fields through object.__setattr__.
+        object.__setattr__(self, "orthogonal_vectors", orthogonal_vectors)
+        object.__setattr__(self, "coefficients", coefficients)
+
+    def __iter__(self) -> Iterator[MultiVectorBase]:
+        """The original frame vectors, rebuilt: ``v_i = Σ_j coefficients[i][j] * w_j``.
+
+        Yields:
+            MultiVectorBase: each ``v_i``, in the order the frame was given.
+        """
+        zero: MultiVectorBase = type(self.orthogonal_vectors[0]).zero()
+        return (
+            sum(
+                (c * w for c, w in zip(row, self.orthogonal_vectors, strict=True)),
+                start=zero,
+            )
+            for row in self.coefficients
+        )
+
+    def __len__(self) -> int:
+        """The number of vectors ``k`` in the frame."""
+        return len(self.orthogonal_vectors)
+
+    def orthonormal_vectors(self) -> tuple[MultiVectorBase, ...]:
+        """The orthonormal set ``u_j = w_j / |w_j|`` -- the columns of ``Q`` in QR.
+
+        Computed on demand (it introduces square roots); the frame itself stores the
+        orthogonal ``w_j``.
+
+        Returns:
+            tuple[MultiVectorBase, ...]: ``u_1 … u_k``, unit length and mutually
+            orthogonal.
+        """
+        return tuple(w.normalize() for w in self.orthogonal_vectors)
+
+    def to_invertible_function(self) -> InvertibleFunction[MultiVectorBase]:
+        """The linear map sending each standard basis vector ``e_i`` to ``v_i``.
+
+        Forward: project the input onto ``e_1 … e_k`` and use the components as
+        weights on the frame vectors, ``f(x) = Σ_i (x · e_i) * v_i``.
+
+        Inverse: given ``y = f(x) = Σ_i x_i * v_i``, dot ``y`` with each orthogonal
+        vector and divide by its squared length.  Because ``w_j`` is orthogonal to
+        every ``v_i`` with ``i < j``, this gives
+        ``(w_j · y) / |w_j|² = Σ_{i ≥ j} coefficients[i][j] * x_i``, a triangular
+        system.  It is solved by back-substitution, last coordinate first:
+        ``x_k = (w_k · y) / |w_k|²``, then each earlier ``x_j`` subtracts the
+        already-solved later ones.  This is ``x = R⁻¹ Qᵀ y`` from the QR
+        decomposition, with no row reduction.
+
+        The frame must span the whole space (``k = n``), or the forward map would
+        discard the components along ``e_{k+1} …`` and could not be inverted.  ``n``
+        is the class's ``DIMENSION`` for the specialized types; ``Gn`` has no fixed
+        dimension, so there ``n`` is the highest basis index the frame vectors use.
+
+        Returns:
+            InvertibleFunction[MultiVectorBase]: the map ``e_i ↦ v_i`` and its
+            inverse, tagged ``LINEAR``.
+
+        Raises:
+            ValueError: if ``k ≠ n`` (the frame does not span the space).
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2
+            >>> f = Frame([2 * e_1, 1 * e_1 + 3 * e_2]).to_invertible_function()
+            >>> f(1 * e_1 + 1 * e_2) == 3 * e_1 + 3 * e_2
+            True
+            >>> f.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
+            True
+        """
+        frame_vectors: tuple[MultiVectorBase, ...] = tuple(self)
+        k: int = len(frame_vectors)
+        cls: type[MultiVectorBase] = type(frame_vectors[0])
+        dimension: int | None = getattr(cls, "DIMENSION", None)
+        n: int = (
+            dimension
+            if dimension is not None
+            else max(
+                max(blade)
+                for v in frame_vectors
+                for blade in v.to_blade_dict()
+                if blade
+            )
+        )
+        if k != n:
+            raise ValueError(
+                f"to_invertible_function needs a frame that spans the space (k = n); "
+                f"got k = {k} vectors in n = {n} dimensions"
+            )
+        orthogonal_vectors: tuple[MultiVectorBase, ...] = self.orthogonal_vectors
+        coefficients: tuple[tuple[Real, ...], ...] = self.coefficients
+
+        def forward(x: MultiVectorBase) -> MultiVectorBase:
+            basis: type[MultiVectorBase] = type(x)
+            return sum(
+                (
+                    x.scalar_product(basis.basis_vector(i + 1)) * v
+                    for i, v in enumerate(frame_vectors)
+                ),
+                start=basis.zero(),
+            )
+
+        def backward(y: MultiVectorBase) -> MultiVectorBase:
+            basis: type[MultiVectorBase] = type(y)
+            # (w_j · y) / |w_j|²: y's coordinate along each orthogonal direction.
+            along: list[Real] = [
+                _exact_quotient(w.scalar_product(y), w.magnitude_squared())
+                for w in orthogonal_vectors
+            ]
+
+            def back_substitute(j: int) -> list[Real]:
+                # Returns x_j, x_{j+1}, …, x_k.  Solve the later coordinates first,
+                # then x_j = (along_j − Σ_{i > j} c_ij * x_i) / c_jj, with
+                # c_ij = coefficients[i][j].
+                if j == k:
+                    return []
+                later: list[Real] = back_substitute(j + 1)
+                remainder: Real = along[j] - sum(
+                    coefficients[i][j] * x_i
+                    for i, x_i in zip(range(j + 1, k), later, strict=True)
+                )
+                return [_exact_quotient(remainder, coefficients[j][j]), *later]
+
+            return sum(
+                (
+                    x_j * basis.basis_vector(j + 1)
+                    for j, x_j in enumerate(back_substitute(0))
+                ),
+                start=basis.zero(),
+            )
+
+        return InvertibleFunction(
+            func=forward,
+            latex_repr="F",
+            inverse=backward,
+            latex_repr_inv="F^{-1}",
+            linearity=Linearity.LINEAR,
+        )

@@ -298,7 +298,7 @@ Should any of Phase 1 be added to the **generated** per-algebra classes (`g1`/`g
   [[generated-product-typing]]. So park frame type-precision under that task, not here, and not as
   generated code.
 
-## Subtask — codebase sweep (BLOCKED on the representation decision above)
+## Subtask — codebase sweep (UNBLOCKED 2026-11-04: `Frame` exists in `src/gacalc/frame.py`)
 
 **Once the representation is chosen, read the whole codebase to see what should change or integrate
 with it** — do not start this before the decision, since the answers depend on the representation.

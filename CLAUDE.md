@@ -35,6 +35,11 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `reverse(A_{k-1}) * A_k`, equal to rejection up to the positive scalar `|A_{k-1}|²`), and
   `make_orthogonal_frame_hestenes_inverse` (same closed form with `inverse` for `reverse`, so the
   scalar cancels and it equals rejection **exactly**). See `tasks/define-frame.md`.
+  Also the **`Frame`** dataclass: a frame held as its orthogonal set `w_j` + triangular
+  coefficients `(w_j · v_i) / |w_j|²` (QR with the lengths factored out — stored orthogonal,
+  not orthonormal, so symbolic 3D stays sqrt-free and decidable), `iter()` rebuilding the
+  originals, and `to_invertible_function()` (`e_i ↦ v_i`, inverted by back-substitution). Math
+  + the orthonormal-vs-orthogonal measurements: `tasks/reference/frames-qr-and-reciprocal-frames.md`.
 - `src/gacalc/measure.py` — the named **measures** (Williamson & Trotter 1979):
   `area`/`volume`/`content` (+ `content_by_rejection`) and the **signed** determinants
   `signed_area`/`signed_volume`/`signed_content` (full-space `k = n`); free functions over
