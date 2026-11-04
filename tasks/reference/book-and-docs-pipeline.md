@@ -62,7 +62,7 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   process per figure, as epix-mirror's harness does. Measured 2026-11-04: a second
   `epix.figure()` in the same process came out byte-identical to the first, pen, dashes and
   palette included. The upstream fix is github.com/billsix/epix-mirror
-  `tasks/reset-global-state-between-figures.md`, which live-rendered notebooks
+  `tasks/archive/2026/11/04/reset-global-state-between-figures.md`, which live-rendered notebooks
   (`tasks/frame-notebooks-epix.md`) wait on) and writes
   `book/docs/_static/epix/<name>.pdf` (`elaps --pdf` over the figure's eepic text, for the
   LuaLaTeX build) and `<name>.png` (the `Figure`'s lazily rasterized PNG, for HTML). Both are

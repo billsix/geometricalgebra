@@ -2,7 +2,7 @@
 
 **Status:** blocked
 **Blocked on:** the ePiX global-state reset (github.com/billsix/epix-mirror
-`tasks/reset-global-state-between-figures.md`) being implemented **and pushed** to epix-mirror's
+`tasks/archive/2026/11/04/reset-global-state-between-figures.md`, implemented 2026-11-04) being **pushed** to epix-mirror's
 `github` remote.
 **Recheck:** `git -C <epix-mirror checkout> fetch github && git -C <epix-mirror checkout> grep -n
 reset_state github/master -- python/epix/figure.py`. Cleared when `figure()` calls `reset_state()` on
