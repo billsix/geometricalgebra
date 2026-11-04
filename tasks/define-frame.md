@@ -52,7 +52,13 @@ gacalc already has the pieces: `base.reject` (orthogonal component), `base.norma
 "fold `reject` over the vectors." (Pin the exact Hestenes & Sobczyk page for the orthogonalization
 when implementing — do not cite a page unverified.)
 
-## The representation decision (OPEN — the maintainer's call; blocks everything else)
+## The representation decision (DECIDED 2026-11-04 — a `Frame` dataclass)
+
+**Decided (William Emerison Six <billsix@gmail.com>, 2026-11-04):** a dedicated `Frame` dataclass. It
+stores an orthonormalized ordered set plus per-vector reconstruction coefficients, rebuilds the originals
+via `__iter__`, and offers `to_invertible_function()`. The design and implementation are tracked in
+`tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md` (done 2026-11-04), so the
+codebase sweep below is unblocked. The original option sketch is kept below for the record.
 
 How should a frame be represented? Sketch of the options, trade-offs to weigh:
 
@@ -292,7 +298,7 @@ Should any of Phase 1 be added to the **generated** per-algebra classes (`g1`/`g
   [[generated-product-typing]]. So park frame type-precision under that task, not here, and not as
   generated code.
 
-## Subtask — codebase sweep (BLOCKED on the representation decision above)
+## Subtask — codebase sweep (UNBLOCKED 2026-11-04: `Frame` exists in `src/gacalc/frame.py`)
 
 **Once the representation is chosen, read the whole codebase to see what should change or integrate
 with it** — do not start this before the decision, since the answers depend on the representation.
