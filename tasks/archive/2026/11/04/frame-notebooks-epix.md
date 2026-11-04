@@ -61,13 +61,13 @@ maintainer's request ("graphically show what's happening at each step"). Impleme
 
 ## Verification (2026-11-04, the rebuilt image `b294e77bfbc7`)
 
-- **Reset, checked on the gacalc side before any notebook** (`tasks/adhoc/frame-notebooks-epix/verify_epix_reset.py`):
+- **Reset, checked on the gacalc side before any notebook** (a one-shot script, `tasks/adhoc/frame-notebooks-epix/verify_epix_reset.py`, removed at archive):
   a plain figure drawn after a red, dashed one that also moved the camera, and a 3D figure drawn after
   the same, each equal the same figure drawn in a fresh process. Both PASS.
 - `tools/render_epix_figures.py`: every existing book figure rendered, none failed.
 - Both notebooks executed under Jupyter (`jupyter nbconvert --execute`): 11 and 9 inline PNGs, and every
   printed check `True`, including `R` upper-triangular, `Q` a rotation, and both symbolic round trips.
-- Every figure was inspected as PNG (`tasks/adhoc/frame-notebooks-epix/run_and_dump.py`), and the
+- Every figure was inspected as PNG (a one-shot dump script, removed at archive), and the
   overlaps and clipping found were fixed.
 - `make format` (ruff, ty over `src`/`tests`/`tools`/`book/docs/notebooks`, the changelog guard,
   `check_epix_keywords`): exit 0. `tools/check_annotations.py`: nothing in the new files.
@@ -82,6 +82,3 @@ maintainer's request ("graphically show what's happening at each step"). Impleme
   pipeline doc's advice is to shorten the cell; it is cosmetic and was left.
 - The full reciprocal frame figure waits on `tasks/reciprocal-frame-hestenes.md` (on hold); only the
   last reciprocal vector is drawn.
-- Owed at archive: `git rm` the two one-shot scripts in `tasks/adhoc/frame-notebooks-epix/`, and repoint
-  the references in `tasks/lean-frame-class-invertible-function.md` and
-  `tasks/reference/frames-qr-and-reciprocal-frames.md` to the archived path.
