@@ -36,8 +36,11 @@ dnf install -y \
 
 dnf install -y pinentry || status=1
 
-# libatomic is a runtime dependency of pyright (the Dockerfile pip-installs pyright into
-# the venv). Installed unconditionally, as in the original Dockerfile.
-dnf install -y libatomic || status=1
+# pyright: the Emacs LSP server (lsp-pyright) and the `make check-notebooks` gate.
+# Installed from npm, which bundles the whole language server into the image, so it
+# runs offline. (The pip `pyright` package is only a launcher that downloads Node and
+# the server on first use in every fresh container, and fails without network.)
+dnf install -y nodejs npm || status=1
+npm install -g pyright || status=1
 
 exit $status
