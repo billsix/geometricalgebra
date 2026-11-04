@@ -6,7 +6,7 @@
 **Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>). This is the follow-up the maintainer
 asked for once the sympy version worked ("If it works symbolically in python now, then make a follow up
 task to make lean equivalent versions"). The Python side is in `src/gacalc/frame.py` `Frame`, and the
-design record is `tasks/frame-class-orthonormal-invertible-function.md`.
+design record is `tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`.
 **Overlaps:** `tasks/lean-frame-coverage.md` (Lean coverage of the rest of `frame.py`: linear
 independence, rejection Gram–Schmidt, and the Hestenes closed form; parked by the maintainer
 2026-10-04). This task needs that one's rejection-orthogonality result, so do that part first or

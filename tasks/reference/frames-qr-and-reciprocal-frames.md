@@ -4,7 +4,7 @@
 recording its coefficients *is* QR, how that gives an inverse without row reduction, and how it relates to
 Hestenes' reciprocal frame and to the SVD, and why gacalc's implementation stores the frame orthogonal
 rather than orthonormal. gacalc implements it as `gacalc.frame.Frame` (`src/gacalc/frame.py`, tests in
-`tests/test_frame_class.py`); the build record is `tasks/frame-class-orthonormal-invertible-function.md`.
+`tests/test_frame_class.py`); the build record is `tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`.
 Open follow-ups: `tasks/reciprocal-frame-hestenes.md`, `tasks/frame-svd-investigation.md`,
 `tasks/frame-notebooks-epix.md`. Created 2026-11-04 (William Emerison Six <billsix@gmail.com>). Update in
 place.

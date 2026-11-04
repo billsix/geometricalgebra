@@ -4,7 +4,7 @@
 **Priority:** 3
 **Difficulty:** 3
 **Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>). Found while prototyping
-`tasks/frame-class-orthonormal-invertible-function.md`; the bug predates that work.
+`tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`; the bug predates that work.
 
 ## BLUF
 

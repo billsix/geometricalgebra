@@ -10,7 +10,7 @@ reset_state github/master -- python/epix/figure.py`. Cleared when `figure()` cal
 **Priority:** 7 (blocked)
 **Difficulty:** 5
 **Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>). Split out of
-`tasks/frame-class-orthonormal-invertible-function.md` (its former Phase 3) at the maintainer's request:
+`tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md` (its former Phase 3) at the maintainer's request:
 "make the notebook stuff a follow up task for when the epix work is done and pushed. when it is, verify
 it on the gacalc side, pull from the correct version, etc".
 

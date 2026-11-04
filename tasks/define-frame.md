@@ -57,8 +57,8 @@ when implementing — do not cite a page unverified.)
 **Decided (William Emerison Six <billsix@gmail.com>, 2026-11-04):** a dedicated `Frame` dataclass. It
 stores an orthonormalized ordered set plus per-vector reconstruction coefficients, rebuilds the originals
 via `__iter__`, and offers `to_invertible_function()`. The design and implementation are tracked in
-`tasks/frame-class-orthonormal-invertible-function.md`. The codebase sweep below is unblocked once that
-class exists. The original option sketch is kept below for the record.
+`tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md` (done 2026-11-04), so the
+codebase sweep below is unblocked. The original option sketch is kept below for the record.
 
 How should a frame be represented? Sketch of the options, trade-offs to weigh:
 

@@ -5,7 +5,7 @@ not started.
 **Priority:** 8 (on hold)
 **Difficulty:** 5
 **Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>)
-**Depends on:** `tasks/frame-class-orthonormal-invertible-function.md` (the `Frame` class it attaches to;
+**Depends on:** `tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md` (the `Frame` class it attaches to;
 that task's inverse should agree with this one, and a test will check that).
 
 ## BLUF
