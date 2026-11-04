@@ -396,7 +396,7 @@ class Frame:
         """
         return tuple(
             tuple(
-                _exact_quotient(w.scalar_product(v), w.magnitude_squared())
+                _exact_quotient(w.dot(v).scalar_part(), w.magnitude_squared())
                 for w in self.orthogonal_vectors
             )
             for v in self.vectors
@@ -460,8 +460,14 @@ class Frame:
             InvertibleFunction[MultiVectorBase]: the map ``e_i ↦ v_i`` and its
             inverse, tagged ``LINEAR``.
 
+        Every dot product here is between two vectors (the frame's own, or the
+        argument, which both directions check), so ``a.dot(b).scalar_part()`` is the
+        familiar dot product read out as a number.
+
         Raises:
-            ValueError: if ``k ≠ n`` (the frame does not span the space).
+            ValueError: if ``k ≠ n`` (the frame does not span the space).  The
+                returned map and its inverse raise ``ValueError`` when called on a
+                non-vector: they are defined on vectors only.
 
         Examples:
             >>> from gacalc.gn import e_1, e_2
@@ -496,12 +502,20 @@ class Frame:
             zip(self.orthogonal_vectors, frame_vectors, strict=True)
         )
 
+        def require_vector(value: MultiVectorBase) -> None:
+            if not value.is_vector():
+                raise ValueError(
+                    "a frame's map takes a vector (grade 1); got a non-vector: "
+                    + repr(value)
+                )
+
         def forward(x: MultiVectorBase) -> MultiVectorBase:
+            require_vector(x)
             basis: type[MultiVectorBase] = type(x)
             # basis_vector numbers the basis from 1, hence enumerate(start=1).
             return sum(
                 (
-                    x.scalar_product(basis.basis_vector(i)) * v
+                    x.dot(basis.basis_vector(i)).scalar_part() * v
                     for i, v in enumerate(frame_vectors, start=1)
                 ),
                 start=basis.zero(),
@@ -522,7 +536,7 @@ class Frame:
                     # built from the earlier vectors alone; solve those coordinates
                     # the same way, and put this one after them.
                     x_last: Real = _exact_quotient(
-                        w.scalar_product(y), w.magnitude_squared()
+                        w.dot(y).scalar_part(), w.magnitude_squared()
                     )
                     return [*peel(earlier, y - x_last * v), x_last]
                 case _:
@@ -532,6 +546,7 @@ class Frame:
                     return []
 
         def backward(y: MultiVectorBase) -> MultiVectorBase:
+            require_vector(y)
             basis: type[MultiVectorBase] = type(y)
             # basis_vector numbers the basis from 1, hence enumerate(start=1).
             return sum(
