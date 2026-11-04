@@ -392,8 +392,11 @@ slices of gacalc, selecting by `:start-after:` / `:end-before:` anchor comments.
 `inject_region_markers` around each class / declaration / instance-variables / method, then rewritten
 to `# doc-region-…` comments by `module_source` (with the `declaration` end placed by the
 `_insert_declaration_ends` text pass). `@overload` stubs are deliberately **unmarked** (`_is_overload`)
-so they don't duplicate the implementation's `<Class> <method> method` region. Basis-constant
-assignments (`Cls.e_1 = …`, post-class) are also unmarked. Names are **descriptive and prefix-free
+so they don't duplicate the implementation's `<Class> <method> method` region. The post-class
+basis-constant assignments (`Cls.e_1 = …`) get a `<Class> basis constants` region (one per class,
+emitted by `basis_constant_assignments`; a class with no nonempty blades, e.g. `Scalar`, gets none)
+so the book can `literalinclude` the basis-vector values — distinct from the `<Class> cls variables`
+region, which covers only their value-less `ClassVar` *declarations* inside the class body. Names are **descriptive and prefix-free
 by construction** — NOT SHA1 — with the trailing keyword required (Sphinx matches the first line
 *containing* the anchor, so `Vector magnitude` would otherwise also match `magnitude_squared`).
 
