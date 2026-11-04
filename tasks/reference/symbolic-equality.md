@@ -85,6 +85,14 @@ and compare that: `mv.scalar_part() == 0` is fine, `mv == 0` is not.
   short-circuit brought that to **~0.4 µs** (~123×) with no change in results. The lesson worth
   keeping: a structural fast path guarded only on *equality* still leaves the *inequality* case
   paying full symbolic price, which is the case a game actually hits every frame.
+- **Fully general 3D Gram–Schmidt is at the edge (measured 2026-11-04).** For a frame whose nine
+  components are all independent symbols, deciding a rebuild or round trip on `Gn` took about 1–2
+  minutes; with the orthonormal `u_j` (square roots of large polynomials) it did not finish in 10
+  minutes; and on the lazy generated `g3.Vector` it did not finish in 5 minutes even with `cancel`,
+  because the unsimplified intermediate expressions grow too large. So for fully symbolic 3D work,
+  prefer `Gn` (eager simplification keeps expressions small), keep values rational (divide by `|w|²`
+  rather than normalizing), and time a prototype in 2D before scaling to 3D. Detail:
+  `tasks/reference/frames-qr-and-reciprocal-frames.md`, "Why gacalc's `Frame` is stored orthogonal".
 
 ## The public predicate: `MultiVectorBase.symbolically_equal` (2026-10-05)
 

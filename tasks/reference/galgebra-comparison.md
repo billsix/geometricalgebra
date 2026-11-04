@@ -119,9 +119,11 @@ Consequences galgebra gets "for free" from the general metric, all **absent in g
   `ReciprocalFrame(vectors)` (reciprocal of *arbitrary* vectors). Trivial/degenerate in an
   orthonormal Euclidean algebra, so gacalc exposes nothing — but it's the machinery the
   vector-derivative operator is built on. **gacalc: reciprocal frames still lacking, but the
-  substrate landed 2026-08-24** — `gacalc/frame.py` now has `is_frame`/`are_linearly_independent` and
-  `make_orthogonal_frame` (Gram–Schmidt by rejection, the Hestenes way), so a `Frame` type + reciprocal
-  frames are the next step (`tasks/define-frame.md`; the `Frame`-class representation decision is open).
+  substrate is in place** — `gacalc/frame.py` has `is_frame`/`are_linearly_independent`,
+  `make_orthogonal_frame` (Gram–Schmidt by rejection, the Hestenes way), and (2026-11-04) the `Frame`
+  class (the original vectors + their orthogonal set, `coefficients()`, `to_invertible_function()`; see
+  `tasks/reference/frames-qr-and-reciprocal-frames.md`). Reciprocal frames are the next step,
+  `tasks/reciprocal-frame-hestenes.md` (on hold).
 - **Coordinates, manifolds, submanifolds.** `class Sm(Ga)` builds a submanifold algebra
   (e.g. the unit sphere) with an induced metric; Christoffel symbols, connections, basis-
   vector derivatives all hang off `coords`. This is the substrate for geometric calculus.

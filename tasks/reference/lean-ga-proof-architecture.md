@@ -696,7 +696,7 @@ theorem landed 2026-10-05 (`PlaneRotation3D.lean`), and `gn` waits on a general-
 | `transforms.bivector_rotation(θ).at(t)`, `functions.at` | plumbing — no theorem | the rotor factory's interpolation law rebuilds the rotor with `t·θ`; composites interpolate component-wise |
 | `transforms.translate`, `uniform_scale`, `scale_non_uniform`, `to_matrix`, `MatrixTemplate`, `to_matrix_template` | plumbing — no theorem | affine/matrix bookkeeping; `scale_non_uniform` rests on `proj` onto `e_i` (covered) |
 | `g1.py` (𝒢₁) | HAS | `G1.lean`: `mul`/`wedge` (oracle-transcribed), `I_sq` (= **+1**), `I_sq_eq_sign`, `mul_comm`, `mul_assoc`, `vec_mul` (pure scalar), `wedge_vec` (= 0: all 1D vectors parallel), `dot_vec`, `normSq_vec`, `magnitude_vec` (`= |x|`), `dual_vec` (a scalar), `mul_vec_inverse_self` |
-| `frame.py` | NONE | `tasks/lean-frame-coverage.md` (parked) |
+| `frame.py` | NONE | `tasks/lean-frame-coverage.md` (parked); `Frame` class: `tasks/lean-frame-class-invertible-function.md` (on hold) |
 | `gn.py` | NONE | `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` (deferred) |
 
 ## Hypotheses: what each kind is for, and how to decide

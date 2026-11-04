@@ -25,7 +25,7 @@ src/gacalc/
   base.py          MultiVectorBase (the abstract base) + type aliases + display symbols
   gn.py            Gn (general 𝒢ₙ) + e_1.. constants + transforms + `MultiVector` alias
   g1.py g2.py g3.py   one specialized class each (generated, not in git -- run `make generate`)
-  frame.py         frames + Gram–Schmidt / Hestenes orthogonalization
+  frame.py         frames + Gram–Schmidt / Hestenes orthogonalization + the `Frame` class
   measure.py       area / volume / content, signed and unsigned
   vectorcalc.py    the cross product (the dual of the wedge, 𝒢₃)
   standardposition.py  project_sp / reject_sp via elementary plane rotations (𝒢₃)
