@@ -316,29 +316,29 @@ def _exact_quotient(numerator: Real, denominator: Real) -> Real:
 
 @dataclasses.dataclass(frozen=True)
 class Frame:
-    """A frame ``v_1 … v_k`` (H&S p. 27), held as an **orthogonal** set plus the
-    coefficients that rebuild the original vectors from it.
+    """A frame ``v_1 … v_k`` (H&S p. 27), held together with its **orthogonal** set.
 
-    The constructor takes the frame's vectors and keeps two things instead of them:
+    The constructor takes the frame's vectors and keeps two things:
 
+    - ``vectors`` -- the original ``v_1 … v_k``, as a tuple.  Iterating a ``Frame``
+      (``iter(frame)``, ``list(frame)``) yields them.
     - ``orthogonal_vectors`` -- ``w_1 … w_k``, the frame orthogonalized by rejection
       (:func:`make_orthogonal_frame`): each ``w_i`` is ``v_i`` with the span of the
       earlier vectors rejected out of it.
-    - ``coefficients`` -- one row per original vector, ``coefficients[i][j] =
-      (w_j · v_i) / |w_j|²``, so that ``v_i = Σ_j coefficients[i][j] * w_j``.  The
-      rows form a lower-triangular table with ones on the diagonal: ``v_i`` needs only
-      ``w_1 … w_i``, and its component along its own ``w_i`` is exactly ``w_i``.
 
-    Iterating a ``Frame`` (``iter(frame)``, ``list(frame)``) rebuilds the original
-    vectors from these two.
+    :meth:`coefficients` gives the table that rebuilds each ``v_i`` from the
+    ``w_j``, ``coefficients()[i][j] = (w_j · v_i) / |w_j|²`` with
+    ``v_i = Σ_j coefficients()[i][j] * w_j``.  It is zero above its diagonal and one
+    on it: ``v_i`` needs only ``w_1 … w_i``, and its component along its own ``w_i``
+    is exactly ``w_i``.
 
     This is the **QR decomposition** of the matrix whose columns are the ``v_i``,
     with the lengths factored out of ``Q``: the orthonormal ``u_j = w_j / |w_j|``
     are ``Q``'s columns (:meth:`orthonormal_vectors`), and ``R``'s entries are
-    ``coefficients[i][j] * |w_j|``.  The orthogonal set is stored rather than the
+    ``coefficients()[i][j] * |w_j|``.  The orthogonal set is kept rather than the
     orthonormal one because normalizing introduces a square root of every
-    ``|w_j|²``; dividing by ``|w_j|²`` instead keeps every stored value a rational
-    function of the inputs, which sympy can verify exactly in 3D (see
+    ``|w_j|²``; dividing by ``|w_j|²`` instead keeps every value a rational function
+    of the inputs, which sympy can verify exactly in 3D (see
     ``tasks/reference/frames-qr-and-reciprocal-frames.md``, "Why gacalc's ``Frame``
     is stored orthogonal, not orthonormal").  Float input is subject to the usual
     Gram–Schmidt rounding.
@@ -348,7 +348,7 @@ class Frame:
         >>> frame = Frame([2 * e_1, 1 * e_1 + 3 * e_2])
         >>> frame.orthogonal_vectors == (2 * e_1, 3 * e_2)
         True
-        >>> frame.coefficients
+        >>> frame.coefficients()
         ((1, 0), (1/2, 1))
         >>> list(frame) == [2 * e_1, 1 * e_1 + 3 * e_2]
         True
@@ -358,44 +358,49 @@ class Frame:
             containing a non-vector).
     """
 
-    vectors: dataclasses.InitVar[Sequence[MultiVectorBase]]
+    vectors: Sequence[MultiVectorBase]
     orthogonal_vectors: tuple[MultiVectorBase, ...] = dataclasses.field(init=False)
-    coefficients: tuple[tuple[Real, ...], ...] = dataclasses.field(init=False)
 
-    def __post_init__(self, vectors: Sequence[MultiVectorBase]) -> None:
+    def __post_init__(self) -> None:
         # make_orthogonal_frame raises ValueError on a non-frame.
         orthogonal_vectors: tuple[MultiVectorBase, ...] = tuple(
-            make_orthogonal_frame(vectors)
+            make_orthogonal_frame(self.vectors)
         )
-        coefficients: tuple[tuple[Real, ...], ...] = tuple(
-            tuple(
-                _exact_quotient(w.scalar_product(v), w.magnitude_squared())
-                for w in orthogonal_vectors
-            )
-            for v in vectors
-        )
-        # A frozen dataclass sets its derived fields through object.__setattr__.
+        # A frozen dataclass sets its fields through object.__setattr__; the
+        # vectors are stored as a tuple whatever sequence was passed.
+        object.__setattr__(self, "vectors", tuple(self.vectors))
         object.__setattr__(self, "orthogonal_vectors", orthogonal_vectors)
-        object.__setattr__(self, "coefficients", coefficients)
 
     def __iter__(self) -> Iterator[MultiVectorBase]:
-        """The original frame vectors, rebuilt: ``v_i = Σ_j coefficients[i][j] * w_j``.
+        """The original frame vectors ``v_1 … v_k``.
 
         Yields:
             MultiVectorBase: each ``v_i``, in the order the frame was given.
         """
-        zero: MultiVectorBase = type(self.orthogonal_vectors[0]).zero()
-        return (
-            sum(
-                (c * w for c, w in zip(row, self.orthogonal_vectors, strict=True)),
-                start=zero,
-            )
-            for row in self.coefficients
-        )
+        return iter(self.vectors)
 
     def __len__(self) -> int:
         """The number of vectors ``k`` in the frame."""
-        return len(self.orthogonal_vectors)
+        return len(self.vectors)
+
+    def coefficients(self) -> tuple[tuple[Real, ...], ...]:
+        """The table rebuilding each ``v_i`` from the orthogonal set -- ``R`` of QR,
+        with the lengths factored out.
+
+        ``coefficients()[i][j] = (w_j · v_i) / |w_j|²``, so that
+        ``v_i = Σ_j coefficients()[i][j] * w_j``.  Zero above the diagonal, one on it.
+
+        Returns:
+            tuple[tuple[Real, ...], ...]: one row per original vector, one entry per
+            orthogonal vector.
+        """
+        return tuple(
+            tuple(
+                _exact_quotient(w.scalar_product(v), w.magnitude_squared())
+                for w in self.orthogonal_vectors
+            )
+            for v in self.vectors
+        )
 
     def orthonormal_vectors(self) -> tuple[MultiVectorBase, ...]:
         """The orthonormal set ``u_j = w_j / |w_j|`` -- the columns of ``Q`` in QR.
@@ -415,14 +420,13 @@ class Frame:
         Forward: project the input onto ``e_1 … e_k`` and use the components as
         weights on the frame vectors, ``f(x) = Σ_i (x · e_i) * v_i``.
 
-        Inverse: given ``y = f(x) = Σ_i x_i * v_i``, dot ``y`` with each orthogonal
-        vector and divide by its squared length.  Because ``w_j`` is orthogonal to
-        every ``v_i`` with ``i < j``, this gives
-        ``(w_j · y) / |w_j|² = Σ_{i ≥ j} coefficients[i][j] * x_i``, a triangular
-        system.  It is solved by back-substitution, last coordinate first:
-        ``x_k = (w_k · y) / |w_k|²``, then each earlier ``x_j`` subtracts the
-        already-solved later ones.  This is ``x = R⁻¹ Qᵀ y`` from the QR
-        decomposition, with no row reduction.
+        Inverse: given ``y = f(x) = Σ_i x_i * v_i``, peel the frame from its last
+        vector.  ``w_k`` is orthogonal to every earlier ``v_i``, so dotting ``y`` with
+        it sees only the last term: ``x_k = (w_k · y) / |w_k|²``.  Subtracting
+        ``x_k * v_k`` leaves ``Σ_{i < k} x_i * v_i``, the same problem for the frame
+        without its last vector, which is solved the same way.  This is
+        back-substitution (``x = R⁻¹ Qᵀ y`` in QR terms) with no row reduction and no
+        coefficient table.
 
         The frame must span the whole space (``k = n``), or the forward map would
         discard the components along ``e_{k+1} …`` and could not be inverted.  ``n``
@@ -444,7 +448,7 @@ class Frame:
             >>> f.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
             True
         """
-        frame_vectors: tuple[MultiVectorBase, ...] = tuple(self)
+        frame_vectors: Sequence[MultiVectorBase] = self.vectors
         k: int = len(frame_vectors)
         cls: type[MultiVectorBase] = type(frame_vectors[0])
         dimension: int | None = getattr(cls, "DIMENSION", None)
@@ -463,44 +467,51 @@ class Frame:
                 f"to_invertible_function needs a frame that spans the space (k = n); "
                 f"got k = {k} vectors in n = {n} dimensions"
             )
-        orthogonal_vectors: tuple[MultiVectorBase, ...] = self.orthogonal_vectors
-        coefficients: tuple[tuple[Real, ...], ...] = self.coefficients
+        # Each orthogonal vector with the frame vector it came from: (w_i, v_i).
+        pairs: tuple[tuple[MultiVectorBase, MultiVectorBase], ...] = tuple(
+            zip(self.orthogonal_vectors, frame_vectors, strict=True)
+        )
 
         def forward(x: MultiVectorBase) -> MultiVectorBase:
             basis: type[MultiVectorBase] = type(x)
+            # basis_vector numbers the basis from 1, hence enumerate(start=1).
             return sum(
                 (
-                    x.scalar_product(basis.basis_vector(i + 1)) * v
-                    for i, v in enumerate(frame_vectors)
+                    x.scalar_product(basis.basis_vector(i)) * v
+                    for i, v in enumerate(frame_vectors, start=1)
                 ),
                 start=basis.zero(),
             )
 
+        def peel(
+            remaining: Sequence[tuple[MultiVectorBase, MultiVectorBase]],
+            y: MultiVectorBase,
+        ) -> list[Real]:
+            match remaining:
+                case []:
+                    # No vectors left: nothing to solve.
+                    return []
+                case [*earlier, (w, v)]:
+                    # Read the last vector's coordinate off its orthogonal direction,
+                    # remove that vector's contribution from y, and solve the earlier
+                    # vectors' coordinates from what is left.
+                    x_last: Real = _exact_quotient(
+                        w.scalar_product(y), w.magnitude_squared()
+                    )
+                    return [*peel(earlier, y - x_last * v), x_last]
+                case _:
+                    # Unreachable: [] and [*earlier, last] cover every list.  Kept as
+                    # the total default because ty does not prove list-pattern
+                    # exhaustiveness, so the match needs an explicit catch-all.
+                    return []
+
         def backward(y: MultiVectorBase) -> MultiVectorBase:
             basis: type[MultiVectorBase] = type(y)
-            # (w_j · y) / |w_j|²: y's coordinate along each orthogonal direction.
-            along: list[Real] = [
-                _exact_quotient(w.scalar_product(y), w.magnitude_squared())
-                for w in orthogonal_vectors
-            ]
-
-            def back_substitute(j: int) -> list[Real]:
-                # Returns x_j, x_{j+1}, …, x_k.  Solve the later coordinates first,
-                # then x_j = (along_j − Σ_{i > j} c_ij * x_i) / c_jj, with
-                # c_ij = coefficients[i][j].
-                if j == k:
-                    return []
-                later: list[Real] = back_substitute(j + 1)
-                remainder: Real = along[j] - sum(
-                    coefficients[i][j] * x_i
-                    for i, x_i in zip(range(j + 1, k), later, strict=True)
-                )
-                return [_exact_quotient(remainder, coefficients[j][j]), *later]
-
+            # basis_vector numbers the basis from 1, hence enumerate(start=1).
             return sum(
                 (
-                    x_j * basis.basis_vector(j + 1)
-                    for j, x_j in enumerate(back_substitute(0))
+                    x_i * basis.basis_vector(i)
+                    for i, x_i in enumerate(peel(pairs, y), start=1)
                 ),
                 start=basis.zero(),
             )

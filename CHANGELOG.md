@@ -13,12 +13,14 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ### Added
 - **`gacalc.frame.Frame`** — a frozen dataclass built from a frame's vectors (`Frame([v_1, …, v_k])`;
-  `ValueError` on a non-frame). It stores the orthogonal set `orthogonal_vectors` (`w_j`, by rejection)
-  and the triangular `coefficients[i][j] = (w_j · v_i) / |w_j|²`, so `v_i = Σ_j coefficients[i][j] * w_j`
-  (the QR decomposition with the lengths factored out; `tasks/reference/frames-qr-and-reciprocal-frames.md`).
-  `iter(frame)` rebuilds the original vectors; `orthonormal_vectors()` gives the `u_j`; and
-  `to_invertible_function()` returns a `LINEAR` `InvertibleFunction` sending `e_i ↦ v_i`, inverted by
-  dotting with the `w_j` and back-substituting (raises `ValueError` unless the frame spans the space).
+  `ValueError` on a non-frame). It stores the original `vectors` (yielded by `iter(frame)`) and their
+  orthogonal set `orthogonal_vectors` (`w_j`, by rejection). `coefficients()` computes the triangular
+  table `coefficients()[i][j] = (w_j · v_i) / |w_j|²`, so `v_i = Σ_j coefficients()[i][j] * w_j` (the QR
+  decomposition with the lengths factored out; `tasks/reference/frames-qr-and-reciprocal-frames.md`);
+  `orthonormal_vectors()` gives the `u_j`; and `to_invertible_function()` returns a `LINEAR`
+  `InvertibleFunction` sending `e_i ↦ v_i`, inverted by peeling the frame from its last vector
+  (`x_k = (w_k · y) / |w_k|²`, subtract `x_k * v_k`, repeat; raises `ValueError` unless the frame spans
+  the space).
   Additive, non-breaking.
 - **`gacalc.frame.prefix_blades(vectors)`** — the prefix outer products of a frame, `A_0 = 1`,
   `A_k = v_1 ∧ … ∧ v_k` (Hestenes & Sobczyk p. 27, eq 3.1), lifted from a private closure inside

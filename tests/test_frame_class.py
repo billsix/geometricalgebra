@@ -13,10 +13,10 @@
 
 """The ``Frame`` dataclass (``gacalc.frame.Frame``) and its ``InvertibleFunction``.
 
-A ``Frame`` holds a frame ``v_1 … v_k`` as an orthogonal set ``w_1 … w_k`` plus
-coefficients ``coefficients[i][j] = (w_j · v_i) / |w_j|²`` with
-``v_i = Σ_j coefficients[i][j] * w_j`` -- the QR decomposition with the lengths
-factored out (``tasks/reference/frames-qr-and-reciprocal-frames.md``).
+A ``Frame`` holds a frame ``v_1 … v_k`` together with its orthogonal set
+``w_1 … w_k``; ``coefficients()`` gives ``coefficients()[i][j] = (w_j · v_i) / |w_j|²``
+with ``v_i = Σ_j coefficients()[i][j] * w_j`` -- the QR decomposition with the
+lengths factored out (``tasks/reference/frames-qr-and-reciprocal-frames.md``).
 
 The symbolic tests use fully general frames (every component its own symbol) on
 ``Gn``, whose eager simplification keeps the 3D expressions small enough for sympy
@@ -82,6 +82,18 @@ def function_3d(frame_3d: Frame) -> InvertibleFunction[MultiVectorBase]:
     return frame_3d.to_invertible_function()
 
 
+# coefficients() is computed on each call (about a minute for the 3D symbolic
+# frame), so the tests that read it share one computation per frame.
+@pytest.fixture(scope="module")
+def frame_2d_coefficients(frame_2d: Frame) -> tuple[tuple[Real, ...], ...]:
+    return frame_2d.coefficients()
+
+
+@pytest.fixture(scope="module")
+def frame_3d_coefficients(frame_3d: Frame) -> tuple[tuple[Real, ...], ...]:
+    return frame_3d.coefficients()
+
+
 # --- The representation: orthogonal set + triangular coefficients ---------
 
 
@@ -104,18 +116,38 @@ def test_coefficients_are_triangular_with_unit_diagonal(
 ) -> None:
     """``v_i`` uses only ``w_1 … w_i`` (zeros above), and exactly one ``w_i``."""
     frame: Frame = request.getfixturevalue(frame_name)
-    k: int = len(frame)
-    assert all(
-        is_zero(frame.coefficients[i][j]) for i in range(k) for j in range(i + 1, k)
+    coefficients: tuple[tuple[Real, ...], ...] = request.getfixturevalue(
+        f"{frame_name}_coefficients"
     )
-    assert all(is_zero(frame.coefficients[i][i] - 1) for i in range(k))
+    k: int = len(frame)
+    assert all(is_zero(coefficients[i][j]) for i in range(k) for j in range(i + 1, k))
+    assert all(is_zero(coefficients[i][i] - 1) for i in range(k))
+
+
+@pytest.mark.parametrize("frame_name", ["frame_2d", "frame_3d"])
+def test_coefficients_rebuild_the_vectors(
+    frame_name: str, request: pytest.FixtureRequest
+) -> None:
+    """``v_i = Σ_j coefficients()[i][j] * w_j`` -- the coefficients are QR's ``R``."""
+    frame: Frame = request.getfixturevalue(frame_name)
+    coefficients: tuple[tuple[Real, ...], ...] = request.getfixturevalue(
+        f"{frame_name}_coefficients"
+    )
+    rebuilt: list[MultiVectorBase] = [
+        sum(
+            (c * w for c, w in zip(row, frame.orthogonal_vectors, strict=True)),
+            start=Gn.zero(),
+        )
+        for row in coefficients
+    ]
+    assert rebuilt == list(frame.vectors)
 
 
 @pytest.mark.parametrize(
     ("frame_name", "vectors"),
     [("frame_2d", [a_2d, b_2d]), ("frame_3d", [a_3d, b_3d, c_3d])],
 )
-def test_iter_rebuilds_the_original_vectors(
+def test_iter_yields_the_original_vectors(
     frame_name: str, vectors: Sequence[Gn], request: pytest.FixtureRequest
 ) -> None:
     frame: Frame = request.getfixturevalue(frame_name)
@@ -161,7 +193,7 @@ def test_concrete_oblique_frames_on_graded_types() -> None:
         2 * g2.e_1 + 0 * g2.e_2,
         0 * g2.e_1 + 3 * g2.e_2,
     )
-    assert frame_2d.coefficients == ((1, 0), (sympy.Rational(1, 2), 1))
+    assert frame_2d.coefficients() == ((1, 0), (sympy.Rational(1, 2), 1))
     assert list(frame_2d) == vectors_2d
     vectors_3d: list[g3.Vector] = [
         2 * g3.e_1 + 0 * g3.e_2 + 1 * g3.e_3,

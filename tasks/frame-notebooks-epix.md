@@ -25,8 +25,10 @@ both notebooks executing in `make docs` with every figure correct, and the gates
 ## Context (read first)
 
 - `tasks/reference/frames-qr-and-reciprocal-frames.md`: the math the figures illustrate.
-- `src/gacalc/frame.py` `Frame`: holds the **orthogonal** `w_j` and coefficients
-  `(w_j · v_i) / |w_j|²` (unit diagonal). `orthonormal_vectors()` gives the `u_j`.
+- `src/gacalc/frame.py` `Frame`: holds the original `vectors` and their **orthogonal** `w_j`;
+  `coefficients()` computes `(w_j · v_i) / |w_j|²` (unit diagonal), `orthonormal_vectors()` the `u_j`,
+  and the inverse peels the frame from its last vector. The "inverse" figure should show those peel
+  steps.
 - `tasks/reference/book-and-docs-pipeline.md` "ePiX figures": keyword arguments everywhere
   (`tools/check_epix_keywords.py`), a label's colour matches its vector, and the shared scene helpers
   `book/figures/epix/_scene2d.py` / `_scene3d.py`. The existing **prebuilt** pipeline
