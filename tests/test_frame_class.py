@@ -104,7 +104,7 @@ def test_orthogonal_vectors_are_mutually_orthogonal(
     frame: Frame = request.getfixturevalue(frame_name)
     w_list: tuple[MultiVectorBase, ...] = frame.orthogonal_vectors
     assert all(
-        is_zero(w_list[i].scalar_product(w_list[j]))
+        is_zero(w_list[i].dot(w_list[j]).scalar_part())
         for i in range(len(w_list))
         for j in range(i + 1, len(w_list))
     )
@@ -182,7 +182,7 @@ def test_squared_lengths_are_ratios_of_span_volumes(
 def test_orthonormal_vectors_2d_symbolic(frame_2d: Frame) -> None:
     u_list: tuple[MultiVectorBase, ...] = frame_2d.orthonormal_vectors()
     assert all(is_zero(u.magnitude_squared() - 1) for u in u_list)
-    assert is_zero(u_list[0].scalar_product(u_list[1]))
+    assert is_zero(u_list[0].dot(u_list[1]).scalar_part())
 
 
 def test_concrete_oblique_frames_on_graded_types() -> None:
@@ -293,7 +293,7 @@ def test_last_reciprocal_vector_is_the_last_rejection(frame_3d: Frame) -> None:
     w_n: MultiVectorBase = frame_3d.orthogonal_vectors[-1]
     v_upper_n: MultiVectorBase = w_n / w_n.magnitude_squared()
     assert all(
-        is_zero(v_upper_n.scalar_product(v) - δ)
+        is_zero(v_upper_n.dot(v).scalar_part() - δ)
         for v, δ in zip((a_3d, b_3d, c_3d), (0, 0, 1), strict=True)
     )
 
@@ -304,3 +304,17 @@ def test_frame_smaller_than_space_raises() -> None:
         Frame([1 * g3.e_1 + 0 * g3.e_2 + 0 * g3.e_3]).to_invertible_function()
     with pytest.raises(ValueError):
         Frame([1 * e_1, 1 * e_3]).to_invertible_function()  # Gn: highest index is 3
+
+
+def test_map_rejects_a_non_vector() -> None:
+    """The frame's map and its inverse are defined on vectors only: a bivector or a
+    scalar raises ``ValueError`` in either direction."""
+    f: InvertibleFunction[MultiVectorBase] = Frame(
+        [2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2]
+    ).to_invertible_function()
+    non_vector: MultiVectorBase
+    for non_vector in (g2.e_1 ^ g2.e_2, g2.G.from_real(3)):
+        with pytest.raises(ValueError):
+            f(non_vector)
+        with pytest.raises(ValueError):
+            f.inverse(non_vector)

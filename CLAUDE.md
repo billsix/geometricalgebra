@@ -134,6 +134,13 @@ and call `self * other`, dispatched to the concrete type.
 - **No local aliases** for a value that already has a canonical name (reference `Vector.e_1` /
   `Bivector.e_12` directly, never `E1 = Vector.basis_vector(1)`). Carve-out: the full-`G` demo
   notebooks (`displayg2`/`displayg3`) may alias full-class constants to bare names.
+- **Dot product for vectors, scalar product only where it is meant** — when the operands are vectors
+  and a number is wanted, write `a.dot(b).scalar_part()` (the familiar `a · b`, read out as a `Real`),
+  not `a.scalar_product(b)`, and make sure the operands are vectors (check with `is_vector()` and
+  raise `ValueError`, unless they are already known to be vectors, e.g. a `Frame`'s own). For two
+  vectors the two products agree, but a reader knows the dot product. Use `scalar_product` (`A ∗ B =
+  ⟨A * B⟩`) only where that operation is the one meant, as where Hestenes defines a result with it
+  (cite the page). The maintainer's rule, William Emerison Six <billsix@gmail.com>, 2026-11-04.
 - **Express rotations via the factories, never hand-built** — `plane_rotation(a, b)(θ)` (plane +
   angle), `projection_rotation`/`versor_rotation`/`versor_from_vectors` (from/to, keyword args), or
   the 𝒢₂ `rotate_90_degrees()` for quarter turns. A versor built by trigonometry as a data literal
@@ -349,7 +356,10 @@ over a "run it on your host" instruction.
   declared above the `with`; `PendingFigure` is `_rotation_scene`'s alias for what `epix.figure()` yields).
   **A label's colour matches the line/vector it labels** (the maintainer's rule, 2026-10-09) so a reader
   sees at a glance which label is which; `leg()`/`vector()` do it automatically, an explicit
-  `epix.label()` on a coloured element sets `epix.label_color(color=…)` first. Details:
+  `epix.label()` on a coloured element sets `epix.label_color(color=…)` first. A book notebook may
+  also draw ePiX figures **live** in its cells (`book/docs/notebooks/frame-qr-*.py`, via
+  `book/figures/epix/_frame_scene.py`), which relies on `epix.figure()` resetting ePiX's global state
+  per figure (`EPIX_COMMIT` `275adef…` or later). Details:
   `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
 - **`make docs`** — builds the Sphinx book ("Geometry 2", `book/docs/`) to HTML + PDF into
   `output/gacalc/` (needs an image built with `BUILD_DOCS=1`, the default).

@@ -58,15 +58,25 @@ Dockerfile's `EPIX_COMMIT` ARG — `USE_EPIX=1`, the default), in the style of e
 scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
 
 - **Rendering:** `docs.sh` runs `tools/render_epix_figures.py`, which executes each figure
-  file in a **fresh interpreter** (libepix keeps global drawing state with no reset — one
-  process per figure, as epix-mirror's harness does. Measured 2026-11-04: a second
-  `epix.figure()` in the same process came out byte-identical to the first, pen, dashes and
-  palette included. The upstream fix is github.com/billsix/epix-mirror
-  `tasks/reset-global-state-between-figures.md`, which live-rendered notebooks
-  (`tasks/frame-notebooks-epix.md`) wait on) and writes
+  file in a fresh interpreter (one process per figure, as epix-mirror's harness does, so one
+  failing figure cannot affect the next) and writes
   `book/docs/_static/epix/<name>.pdf` (`elaps --pdf` over the figure's eepic text, for the
   LuaLaTeX build) and `<name>.png` (the `Figure`'s lazily rasterized PNG, for HTML). Both are
   gitignored build artifacts. `<name>` is the file stem with `_` → `-`.
+- **Live-rendered notebooks (the second path):** a book notebook can also draw its own figures
+  in its cells, inline, with no prebuilt image. Each cell builds a scene in `epix.figure()` and
+  ends with the figure, which Jupyter displays through `_repr_png_`; the PDF build takes the
+  same PNG cell output. This works because `epix.figure()` resets libepix's global drawing
+  state (pen, styles, palette, output format, camera) before each picture. That reset is
+  upstream, github.com/billsix/epix-mirror
+  `tasks/archive/2026/11/04/reset-global-state-between-figures.md`, and needs `EPIX_COMMIT` at
+  `275adef…` or later (pinned 2026-11-04). Before it, a second figure in the same process
+  inherited the first one's state. The first notebooks to use this are
+  `notebooks/frame-qr-2d.py` / `frame-qr-3d.py` (`frames-qr.rst`). They add
+  `book/figures/epix/` to `sys.path` to import `_frame_scene`; `pyproject.toml` lists that
+  directory in ty's `extra-paths` and exempts those two files from E402. Pick per page: the
+  prebuilt path for a figure referenced from `.rst` prose, the live path for figures that sit
+  beside the computation that produced them.
 - **Referencing:** `.. figure:: _static/epix/<name>.*` — the wildcard lets Sphinx pick the PDF
   for the `latex` builder and the PNG for `html`.
 - **Dark mode:** ghostscript's `pngalpha` PNGs are transparent, which read badly on the HTML
@@ -125,6 +135,19 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     own helper calls are all keyword, and it builds point lists with comprehensions, not
     `list.append` — an unknown callee with a positional arg (`.append` included) trips
     `check_epix_keywords`.
+  - `_frame_scene.py` is the stage for the live-rendered frame / QR notebooks: `scene_2d` /
+    `scene_3d` (light, **unlabelled** axes, because there `x` and `y` name vectors; one fixed
+    `CAMERA = (5, -10, 7)`, chosen so the x and y axes project about 60° apart and the plane of
+    `v_1, v_2` reads as a plane), `point(coordinates=list(v))` (a gacalc vector's coefficients
+    to an ePiX `Point`; the module takes coordinates, never gacalc objects), `arrow` /
+    `dashed_arrow` / `note` (labels in their element's colour), `patch`, `box_edges` (a
+    parallelepiped's 12 edges) and `right_angle` (2D or 3D). Colours by role: frame `v_i` blue,
+    orthogonal `w_i` green, unit `u_i` purple, target `y` and remainders red. It re-exports
+    `LabelPos`, so the notebooks never `import epix` themselves: ty cannot resolve the
+    editable-installed `epix` package.
+  - **Gotcha: a tint of black fills dark.** `epix.black(intensity=…)` gives a gray *pen*, but as a
+    `fill` it came out near-black in the eepic output; fill with an explicit `epix.rgb(…)` gray
+    (`_frame_scene.GRAY_FILL`).
   - `epix.label_angle` takes **radians**.
 - **A label's colour matches the line/vector it labels** (the maintainer's standard, 2026-10-09), so a
   reader instantly sees which label goes with which element. `leg()` and `vector()` already do this

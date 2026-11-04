@@ -50,7 +50,8 @@ needed" (vectors in, scalars only in the proof body). Done = the theorems below 
    concretely; in 𝒢₃ keep the same shape.
 3. Cite each theorem by name from the Python `Frame` docstring and `tests/test_frame_class.py`.
 4. Per CLAUDE.md's three-forms rule, the prose + LaTeX book page remains open; the notebooks task
-   (`tasks/frame-notebooks-epix.md`) is the natural home for it.
+   (`tasks/archive/2026/11/04/frame-notebooks-epix.md`) left it as a `TODO prose` comment in
+   `book/docs/frames-qr.rst`, which is its home.
 
 ## Open questions
 

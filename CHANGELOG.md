@@ -20,7 +20,7 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `orthonormal_vectors()` gives the `u_j`; and `to_invertible_function()` returns a `LINEAR`
   `InvertibleFunction` sending `e_i ↦ v_i`, inverted by peeling the frame from its last vector
   (`x_k = (w_k · y) / |w_k|²`, subtract `x_k * v_k`, repeat; raises `ValueError` unless the frame spans
-  the space).
+  the space). The map and its inverse take vectors only and raise `ValueError` on any other grade.
   Additive, non-breaking.
 - **`gacalc.frame.prefix_blades(vectors)`** — the prefix outer products of a frame, `A_0 = 1`,
   `A_k = v_1 ∧ … ∧ v_k` (Hestenes & Sobczyk p. 27, eq 3.1), lifted from a private closure inside
