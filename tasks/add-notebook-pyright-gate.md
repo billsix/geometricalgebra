@@ -1,113 +1,56 @@
 # Add a container `pyright` gate for the notebooks
 
-**Status:** proposed — needs go-ahead. **Prerequisite CLEARED 2026-08-27**:
-`tasks/archive/2026/08/27/fix-notebook-pyright-type-errors.md` landed, so `pyright notebooks/` is now at **0 errors** and a
-pass/fail gate is meaningful.
-**Priority:** 6
-**Difficulty:** 4
-**Created:** 2026-08-27 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
+**Done 2026-11-04** (branch `add-notebook-pyright-gate`; agent under William Emerison Six's batch
+authorization). The notebooks are pyright-clean and a `make check-notebooks` gate now guards them.
 
-## BLUF
+## What was done
 
-Add a container `pyright` gate over `notebooks/` (and optionally a headless-execution gate), wired as
-a separate `make check-notebooks` target, so notebook type/runtime regressions fail a build instead
-of landing silently. "Done" = the target exists, exits non-zero on a deliberately bad annotation, is
-green on the current clean notebooks, and is documented. **Not started as of 2026-10-04:** no
-`pyrightconfig.json`, no `[tool.pyright]`, no `check-notebooks` target; `entrypoint/format.sh` runs
-only ruff + `ty` + the changelog check.
+- **`pyrightconfig.json`** (repo root): `include: ["notebooks"]` and `reportUnusedExpression:
+  "warning"` (the display cells emit intentional unused-expression warnings; this keeps them
+  non-failing — it's also pyright's default, kept explicit as documentation). **No `pythonVersion`
+  key** — see the trap below.
+- **`make check-notebooks`** (`.PHONY`, `##`-documented, `: image`): runs `pyright notebooks/` in the
+  container, mirroring `make test`'s minimal `podman run` (NOT `shell-exec`); regenerates the
+  gitignored `g*.py` first so the notebooks' `gacalc.g2/g3` imports resolve. Kept **separate** from
+  `make test` so a pyright-version bump can't redden the test gate.
+- `CLAUDE.md` › Dev workflow: added the `make check-notebooks` bullet.
 
-## Goal
+## The trap that cost the most time (so it isn't repeated)
 
-Nothing in CI/the gate currently type-checks `notebooks/`: host `ty` doesn't include them, and
-`pyright` lives only in the container image — so notebook type regressions land silently (exactly how
-the `tasks/archive/2026/08/27/parameterize-composable-function-annotations.md` annotations went
-unverified until a manual container run). Add a **`pyright` gate over the notebooks that runs in the container**, so a bad
-notebook annotation fails the build the same way a bad `src`/`tests` annotation fails `ty`.
+**Do NOT hardcode `pythonVersion` in `pyrightconfig.json`.** The first version of the config set
+`"pythonVersion": "3.13"`, but the image's Python is **3.15.0**. That mismatch sent pyright into
+spurious circular-inference and reported two false `reportGeneralTypeIssues` errors
+(`displayrotations.py:170` `R3`, `displayg2.py:521` `lagrange_residual`, both "could not be
+determined because it refers to itself"). Isolated by diff: config with `pythonVersion` → 2 errors;
+no config → 0; config without `pythonVersion` → 0. Letting pyright auto-detect the version from the
+venv is correct and won't rot as the image's Python moves. The notebooks themselves are clean and
+were **not** edited.
 
-**Dependency (now satisfied):** a *pass/fail* gate is only meaningful once the notebooks are clean.
-[[fix-notebook-pyright-type-errors]] cleaned all 47 → 0 (archived 2026-08-27), so this is now
-unblocked.
+A second red herring: a **stale cached image** (7-day-old `gacalc:latest`) shipped a non-functional
+`pyright` (pip wrapper, no node, `nodeenv` couldn't bootstrap). A fresh `make image` build has a
+working pyright — **no Dockerfile/node change is needed**. (The nested `: image` gotcha means `make
+check-notebooks` via `make` rebuilds the whole image when run in a sandbox; test it by running the
+inner `podman run` line directly, as the verification below did.)
 
-**Consider a notebook-*execution* gate too, not only pyright.** During the fix task I verified the
-notebooks by executing them headlessly in the container — the recipe that worked (nothing gates it
-today, so a semantic regression in a notebook is silent):
+## Decisions
 
-```sh
-# in the container, from repo root, with the package installed editable + g*.py generated
-export MPLBACKEND=Agg
-cd notebooks
-for nb in displayg2 displayg3 displaygraded displaymv displayrotations displayvectorcalc; do
-    jupytext --to ipynb "$nb.py"
-    jupyter nbconvert --to notebook --execute \
-        --ExecutePreprocessor.kernel_name=python3 "$nb.ipynb" --output /tmp/out.ipynb
-done
-```
+- **Scope: notebooks only** (the gap `ty` doesn't cover). Not adding pyright over `src`/`tests` — `ty`
+  covers those; a second checker there is maintenance/divergence for no gain.
+- **Separate target, not folded into `make test`** — a pyright-version bump stays isolated.
+- **pyright left unpinned** (matches the Dockerfile's existing unpinned `pyright`). A future pyright
+  bump can change diagnostics on unchanged code; if that reddens the gate, pin pyright then rather
+  than pre-emptively. Noted so the choice is deliberate.
 
-Caveats learned: the notebooks' jupytext header requests a `gacalc` kernel that isn't registered under
-plain nbconvert — force `--ExecutePreprocessor.kernel_name=python3`; and **displaymv is genuinely slow**
-(its `n=8`/`n=9` symbolic `show_mult` cells take minutes), so an execution gate needs a generous
-timeout or should skip those cells. pyright catches *type* regressions; execution catches *runtime*
-ones — they're complementary, and a `make check-notebooks` could run both.
+## Verification (direct `podman run` against the fresh `gacalc:latest`, 2026-11-04)
 
-## Investigation to do first
-
-- **How does `pyright` resolve gacalc's types in the image?** It needs the package importable and the
-  **generated `g*.py` present** (they're gitignored). Confirm the working recipe — the one this task's
-  verification and the fix task both use:
-  `source /venv/bin/activate && pip install -e . --no-index --no-deps && pyright notebooks/`
-  (the repo's current editable-install idiom is `entrypoint/shell.sh`'s
-  `uv pip install --python $(which python) --no-deps --no-index --no-build-isolation -e .`; use that)
-  (checked 2026-08-27: pip editable install is enough; the generated modules are already present in a
-  built image / get regenerated by the editable install — verify whether an explicit regenerate step is
-  needed).
-- **pyright version:** unpinned (`Dockerfile`: `uv pip install … pyright`; the image had 1.1.411 on
-  2026-08-27). Decide whether to pin it (a pyright bump can
-  surface new diagnostics and turn the gate red on unchanged code — same "a version bump is a
-  refactor" caution as elsewhere).
-- **Scope:** notebooks only, or `src`+`tests`+`notebooks`? `ty` already covers `src`/`tests` on the
-  host; the *gap* is notebooks, so the minimal gate is `pyright notebooks/`. Consider whether pyright
-  over `src` too (a second checker) adds value or just noise/divergence from `ty` — **lean: notebooks
-  only**, to fill the actual gap without a two-checker maintenance burden. Record the decision.
-- **Warnings:** the display cells emit intentional `reportUnusedExpression` warnings. The gate must key
-  on **errors only** (`pyright` exits non-zero on errors; configure `reportUnusedExpression` to warning
-  and let the gate ignore warnings), or those legitimate cells would fail it.
-
-## Wiring options (propose, don't auto-wire — changing the gate is the user's call)
-
-Per the template's gate conventions and "a multi-step check script must propagate every step's
-failure":
-
-- **A `make check-notebooks` target** (`.PHONY`, `##`-documented) that runs the container recipe above
-  and exits on pyright errors. Simplest, discoverable, opt-in.
-- **Fold into `make test`** so every gate run checks notebooks. Stronger, but couples type-checking to
-  the test run (slower; a pyright bump can now break `test`).
-- **A `pyrightconfig.json`** (or `[tool.pyright]` in `pyproject.toml`) pinning the include path
-  (`notebooks/`), `reportUnusedExpression: "warning"`, and the Python version — so the invocation is
-  just `pyright` and the config is the single source of truth.
-- If it runs only in-container (pyright isn't on the host), it belongs with the other container-only
-  gates, not a host-side target — mirror how `make test` shells into the image.
-
-**Recommended shape:** a `pyrightconfig.json` scoping to `notebooks/` with `reportUnusedExpression`
-downgraded, plus a `make check-notebooks` target that runs it in the container — kept **separate** from
-`make test` (so a pyright-version bump can't redden the test gate), and noted in `CLAUDE.md` › Coding
-standard (the old "verify notebooks with pyright in the container" note was trimmed from `CLAUDE.md`
-2026-09-13; the surviving pointer is the `design-decisions.md` entry cited below). Confirm before wiring.
-
-## Verification
-
-- With the notebooks clean (post-`fix-notebook-pyright-type-errors`), the new target exits **0**.
-- Introduce a deliberate bad annotation in a notebook → the target exits **non-zero** (proves it
-  actually gates), then revert.
-- The `reportUnusedExpression` display-cell warnings do **not** fail it.
-- `make test` still green; the target is documented in `make help`.
+- **Green:** `pyright notebooks/` with the fixed config → `0 errors, 42 warnings`, exit 0. Reproduced
+  consistently.
+- **Red:** appended a deliberately-wrong annotation (`_pyright_redcase: int = "not an int"`) to a
+  notebook → pyright reported the type error and exited 1; the notebook was restored (tree clean).
 
 ## Cross-links
 
-- `tasks/archive/2026/08/27/fix-notebook-pyright-type-errors.md` — the prerequisite (cleaned the 47
-  errors).
-- `tasks/archive/2026/08/27/parameterize-composable-function-annotations.md` — the regression this
-  gate would have caught automatically instead of by a manual container run.
-- `tasks/reference/design-decisions.md` › the full-`G` demo-notebook alias entry (dated 2026-08-25) —
-  records that the `notebooks/` demos have no execution gate and names this task as the fix.
-- Root sandbox `CLAUDE.md` "Verification gates in nested containers" / "A multi-step check script must
-  propagate every step's failure" — the gate-shape conventions to follow.
+- `tasks/archive/2026/08/27/fix-notebook-pyright-type-errors.md` — cleaned the notebooks to 0 errors
+  (the prerequisite).
+- `tasks/archive/2026/08/27/parameterize-composable-function-annotations.md` — the regression class
+  this gate now catches automatically.

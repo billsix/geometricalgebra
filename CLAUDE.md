@@ -289,6 +289,10 @@ over a "run it on your host" instruction.
   CLI flag (`ruff format` rejects `--extend-exclude`) — don't "fix" `format.sh` to pass it.
 - **`make check-generated`** — regenerates twice, asserts byte-identical (determinism guard; ~30s,
   make/CI target, not part of the default `pytest`).
+- **`make check-notebooks`** — runs `pyright notebooks/` in the container (`ty` covers src/tests but
+  not the notebooks). Kept separate from `make test` so a pyright-version bump can't redden it;
+  `pyrightconfig.json` scopes it to `notebooks/` and must **not** hardcode `pythonVersion` (a mismatch
+  with the image's Python makes pyright emit spurious "refers to itself" errors — let it auto-detect).
 - **`make generate`** / **`make generate-all`** (g1–g5) / **`make test-all-dims`** (the full-dim +
   full-context ty gate).
 - **`make lean`** — build + verify the Lean 4 / Mathlib proofs in `proofs/` (machine-checked math

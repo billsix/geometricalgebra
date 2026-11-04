@@ -264,6 +264,25 @@ check-generated: image ## (container) verify tools/gen_specialized.py is determi
 		$(CONTAINER_NAME) \
 		-c 'set -e; source /venv/bin/activate; cd /gacalc; python tools/gen_specialized.py; mkdir -p /tmp/gen0; cp $(GENERATED) /tmp/gen0/; python tools/gen_specialized.py; for f in $(GENERATED); do cmp -s "$$f" "/tmp/gen0/$$(basename "$$f")" || { echo "ERROR: tools/gen_specialized.py is non-deterministic ($$f differs between runs)."; exit 1; }; done; echo "generator is deterministic"'
 
+# pyright type gate over notebooks/.  `ty` (via `make format`) covers src/tests
+# but NOT the notebooks, so a bad notebook annotation lands silently (exactly how
+# an earlier annotation regression slipped past until a manual container run).
+# pyright lives only in the image, so this runs in-container, mirroring `test`'s
+# minimal invocation (NOT shell-exec).  Regenerates the gitignored g*.py first so
+# the notebooks' gacalc.g2/g3 imports resolve, then runs pyright over notebooks/.
+# pyrightconfig.json scopes it to notebooks/ and downgrades reportUnusedExpression
+# to a warning (the display cells emit those deliberately); pyright exits nonzero
+# on ERRORS only, so a type regression fails the build while those warnings don't.
+# Kept SEPARATE from `make test` so a pyright-version bump can't redden the test
+# gate.  (pyright is unpinned in the Dockerfile -- see the task doc's note.)
+.PHONY: check-notebooks
+check-notebooks: image ## (container) pyright gate over notebooks/ (type regressions fail the build)
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
+		-v $(CURDIR):/gacalc:Z \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'set -e; source /venv/bin/activate; cd /gacalc; python tools/gen_specialized.py; pyright notebooks/'
+
 # Run the suite INSIDE the container (the image's pinned toolchain), like `dist`.
 # The generated g*.py are gitignored, so regenerate them first (into the
 # bind-mounted tree), then run pytest.  Exit 0 on success; on failure the inner
