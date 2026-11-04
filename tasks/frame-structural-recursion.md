@@ -1,102 +1,86 @@
-# `frame.py`: replace index arithmetic with `match` + structural recursion
+# `frame.py`: replace index arithmetic with `match` + structural recursion — done-record
 
-**Status:** proposed — needs go-ahead (open question 1 first)
-**Priority:** 5
-**Difficulty:** 3
-**Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>): "see if we can change the inverse part
-of the frame function to use match and recursion instead of indexes, actually see if there's anything
-else in that file that's possible to do that for too."
+**Completed:** 2026-11-04. Requested and decided by William Emerison Six <billsix@gmail.com>;
+implemented by the agent. The maintainer asked: "see if we can change the inverse part of the frame
+function to use match and recursion instead of indexes, actually see if there's anything else in that
+file that's possible to do that for too."
 
-## BLUF
+## What changed (`src/gacalc/frame.py`, `Frame`)
 
-`Frame.to_invertible_function()`'s inverse solves the triangular system with index arithmetic:
-`back_substitute(j)`, `range(j + 1, k)`, `coefficients[i][j]`, `along[j]`. Rewrite it as a `match`-based
-structural recursion over the frame's vectors, with no indices, the way `make_orthogonal_frame` already
-recurses. Then apply the same treatment to any other index-driven code in `src/gacalc/frame.py` where it
-reads better. Done = no index arithmetic left in `frame.py` except where an index is an external API
-(`basis_vector(i)`) or a cheap guard, every `tests/test_frame*.py` test still green (including the
-symbolic 3D round trips), and each site kept as-is listed below with its reason.
+- **The inverse became a structural recursion with no indices.** `to_invertible_function()`'s
+  `backward` previously solved the triangular system with `back_substitute(j)`, `range(j + 1, k)`,
+  `coefficients[i][j]`, and `along[j]`. It now calls a nested `peel` over the `(w_i, v_i)` pairs, with
+  `case []` / `case [*earlier, (w, v)]` / `case _`. `peel` reads the last coordinate as
+  `x_k = (w_k · y) / |w_k|²` (exact, because `w_k` is orthogonal to every earlier `v_i`), subtracts
+  `x_k * v_k`, and recurses on the earlier pairs. It reads no coefficient table, and the unit-diagonal
+  division is gone.
+- **Storage changed.** `Frame` stores `vectors` (a real field, kept as a tuple) and `orthogonal_vectors`.
+  `__iter__` returns `iter(self.vectors)`. The `coefficients` field was replaced by a `coefficients()`
+  method returning the same table, which keeps the QR view inspectable for the planned notebooks.
+- **The basis-index sites kept their index, without the `+ 1`.** `forward` and `backward`'s result map
+  use `enumerate(..., start=1)` with `basis_vector(i)`, each with a one-line comment: the index is
+  `basis_vector`'s 1-based external numbering.
+- **Kept as-is, with reasons:** the `len(vectors) == 0` guards (cheap top-of-function guards);
+  `prefix_blades`' `vectors[0]` (left to `tasks/frame-prefix-blades-graded-zero-seed.md`); the
+  `make_orthogonal_frame*` and `prefix_blades` bodies (already `match` / `accumulate` / `pairwise`); the
+  `k = len(...)` + `n` derivation (needed for the `k = n` check).
 
-## Context (read first)
+## Chronology (harvested from the three commits on this work, 2026-11-04)
 
-- **The recursion guide:** the "recursive-design.md" reference doc from github.com/billsix/runClaudeInContainer
-  (`tasks/reference/recursive-design.md`). Follow it here: let the recursion follow the data's shape; give
-  each data shape its own `case`, with `case _` as the total default (`ty` does not prove list patterns
-  exhaustive, and drops into `invalid-return-type` without it); per-case comments describe the operation;
-  map/filter as comprehensions; no accumulator unless genuinely needed; Python recursion only for bounded
-  structures (a frame has at most `n` vectors, so this is fine).
-- **The model already in the file:** `make_orthogonal_frame`'s inner `orthogonalize`
-  (`case []` / `case [v]` / `case [v, *rest]` / `case _`), which is also the guide's worked example.
-- `tasks/reference/frames-qr-and-reciprocal-frames.md`: the math of the inverse (back-substitution =
-  `R⁻¹ Qᵀ y`).
-- `tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`: how `Frame` was built, and
-  why its 3D symbolic tests are slow (about 3.5 minutes).
+1. **Task created.** The agent surveyed `frame.py` for index-driven code and found one real target, the
+   inverse's `back_substitute(j)`, plus two `enumerate` + `basis_vector(i + 1)` sites. Everything else was
+   already structural or a cheap guard. Two index-free shapes were proposed: (a), a row recursion over the
+   same coefficient back-substitution, and (b), peel the last vector. A prototype of (b) on concrete
+   oblique 2D and 3D frames with a symbolic input recovered the input exactly. The agent recommended (b),
+   provided the symbolic 3D test was not much slower.
+2. **Design settled.** The maintainer asked whether (b) would let the `coefficients` field go. The agent
+   first answered that `__iter__` still needed it, because the orthogonal `w_j` alone cannot rebuild the
+   originals, and recommended keeping it stored. The maintainer then asked about having `__iter__` return
+   stored originals instead, and chose that, plus an on-demand `coefficients()` method for the QR view.
+   The agent's keep-it-stored recommendation was set aside. Choosing the storage change "alongside (b)"
+   settled shape (b).
+3. **Implementation.**
+   - (b) and the storage change were implemented as planned.
+   - For the basis-index sites, zipping with a list of basis vectors was rejected: it would only move the
+     index into a `range`. The index stayed, written `enumerate(..., start=1)`.
+   - The 3D symbolic round trip slowed from 50.5 s to 60.4 s; (b) was kept.
+   - Two 3D tests each recomputed `coefficients()` (about 70 s apiece), so module-scoped fixtures were
+     added to share one computation per frame.
+   - The annotation checker flagged `peel`'s `list` parameter, which became a `Sequence`.
+   - Mid-task, the maintainer asked whether the graded-input `prefix_blades` bug had a task. It already
+     did (`tasks/frame-prefix-blades-graded-zero-seed.md`), so nothing was created.
 
-## Survey of `src/gacalc/frame.py` (2026-11-04)
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-04)
 
-| site | what it does now | candidate change |
-|---|---|---|
-| `to_invertible_function` › `backward` › `back_substitute(j)` | recursion on an integer `j`; `along[j]`, `coefficients[i][j]`, `coefficients[j][j]`, `zip(range(j + 1, k), later)` | **the main target**; see "The inverse" below |
-| `backward`'s result `sum(x_j * basis.basis_vector(j + 1) for j, x_j in enumerate(…))` | coordinates → vector | `zip` the coordinates with a basis list; the `+1` index is `basis_vector`'s 1-based external API, so the index may stay. Decide in step 3 |
-| `forward`: `x.scalar_product(basis.basis_vector(i + 1)) * v for i, v in enumerate(frame_vectors)` | `f(x) = Σ (x · e_i) * v_i` | same basis-list question as above; already a map/fold, so this is a spelling question only |
-| `to_invertible_function`: `k = len(frame_vectors)`, `cls = type(frame_vectors[0])`, the `n` derivation | the `k = n` check | `k` is needed for the check. If `backward` stops using `k`, it shrinks to the check alone |
-| `__iter__`, `__post_init__` | `zip`/comprehensions | already structural; **keep** |
-| `are_linearly_independent` / `prefix_blades`: `len(vectors) == 0` guard, `vectors[0]` | empty guard, representation pick | cheap top-of-function guards are right per the cross-project rule; **keep** unless a `match` reads clearly better. `prefix_blades`' `vectors[0]` is also involved in `tasks/frame-prefix-blades-graded-zero-seed.md`; don't touch it here |
-| `make_orthogonal_frame*`, `prefix_blades` (`accumulate`, `pairwise`) | already named schemes | **keep** |
+1. **Shape (b), "peel the last vector"**, chosen over (a), which would have kept the coefficient-table
+   back-substitution and only replaced the integer index with a row recursion.
+2. **Store the originals; drop the `coefficients` field.** This reversed decision 2 of the original
+   `Frame` design (`tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`). Nothing
+   read the stored coefficients once the inverse was (b), and `Frame` was unreleased (`CHANGELOG.md`
+   `[Unreleased]`), so no consumer broke.
+3. **Keep an on-demand `coefficients()` method.**
 
-## The inverse: two structural shapes
+## Verification
 
-Both recurse over the frame's `(w_j, v_j)` pairs or rows instead of an index. (b) was prototyped
-2026-11-04 (`Gn`, concrete oblique 2D and 3D frames, symbolic `x`): it recovered `x` exactly and matched
-the current inverse's coordinates.
+- An earlier prototype of (b) on concrete oblique 2D and 3D frames with a symbolic input recovered `x`
+  exactly and matched the old inverse's coordinates.
+- **Timing of `test_composed_round_trip_is_identity_3d_symbolic`:** 50.5 s before, 60.4 s after (about
+  20% slower, judged not "much slower", so (b) was kept).
+- `coefficients()` computes on each call, about 68 s for the 3D symbolic frame, so the tests that read it
+  share one computation per frame through module-scoped `frame_2d_coefficients` / `frame_3d_coefficients`
+  fixtures. `tests/test_frame_class.py` ran in 215 s with 22 tests, against 207 s and 20 tests before.
+- `tests/test_frame_class.py` gained `test_coefficients_rebuild_the_vectors`
+  (`Σ_j coefficients()[i][j] * w_j == v_i`, symbolic 2D and 3D), which took over what `iter()` used to
+  prove. `test_iter_rebuilds_the_original_vectors` was renamed `test_iter_yields_the_original_vectors`.
+- `tests/test_frame_class.py` + `tests/test_frame.py` + the `frame.py` doctests passed (44). ruff and
+  `ty` were clean, and `tools/check_annotations.py` reported 0 findings for both files. A `list` parameter
+  on `peel` was changed to `Sequence` after the checker flagged it as an invariant collection.
+- Container `format.sh` gate passed (ruff, `ty`, the changelog check, the ePiX keyword check); full
+  container `pytest` with doctests: **716 passed** in 4 min 59 s.
 
-**(a) Same algorithm, structural.** Recurse over the rows `(along_j, column of coefficients below the
-diagonal)`, last row first. `x_j = (along_j − Σ c_ij * x_i) / c_jj`, with the `Σ` a `zip` of the column
-against the already-solved later coordinates. This still reads `coefficients`, so building the columns
-still needs a transpose (`zip(*coefficients)`) and a split at the diagonal.
+## Docs touched
 
-**(b) Peel the last vector (no coefficients at all).** Because `w_k` is orthogonal to `v_1 … v_{k-1}`,
-`(w_k · y) / |w_k|²` is exactly `x_k`. Subtract `x_k * v_k` from `y` and recurse on the earlier pairs:
-
-```python
-def peel(pairs, y):
-    match pairs:
-        case []:                      # nothing left to solve
-            return []
-        case [*earlier, (w, v)]:      # the last vector's coordinate, then the rest of y
-            x_last = _exact_quotient(w.scalar_product(y), w.magnitude_squared())
-            return [*peel(earlier, y - x_last * v), x_last]
-        case _:                       # unreachable total default (ty)
-            return []
-```
-
-This is the geometric reading of back-substitution: measure along the direction only the last vector
-has, remove that vector's contribution, and repeat on a smaller frame. It needs no index and no
-coefficient table. `coefficients` would then serve only `__iter__`, and the unit-diagonal division
-disappears.
-
-## Plan
-
-1. Decide (a) or (b) (open question 1).
-2. Rewrite `backward` accordingly. Keep `_exact_quotient` for exactness, keep the docstring's math (update
-   it for (b)), and keep the `case _` default with the comment the guide uses.
-3. Settle the `forward`/result `enumerate` + `basis_vector(i + 1)` sites: either a basis list zipped with
-   the vectors, or the index kept with a one-line reason. Same answer at both sites.
-4. Verify:
-   - `tests/test_frame_class.py` and `tests/test_frame.py` green, **including the fully symbolic 3D round
-     trips**. Record the before/after time of `test_composed_round_trip_is_identity_3d_symbolic`; (b)
-     builds different intermediate expressions, which could be faster or slower;
-   - the `Frame` doctests;
-   - container `format.sh` (ruff + `ty`; `ty` is what catches a missing `case _`);
-   - `tools/check_annotations.py` (0 findings).
-5. If the change alters what the docstring or reference doc says the inverse does, update
-   `tasks/reference/frames-qr-and-reciprocal-frames.md` ("Inverting without row reduction"). No
-   `CHANGELOG.md` entry is needed: the behaviour and public API are unchanged.
-
-## Open questions
-
-1. **Which shape for the inverse?** (a) keeps the current algorithm and only removes the indices; it
-   still reads the coefficient table. (b) peels the last vector off the frame and never reads the
-   coefficients; it is shorter and has a geometric reading, and was prototyped correct on concrete
-   frames. **Recommend (b)**, provided the symbolic 3D round-trip test is not much slower; step 4
-   measures that.
+`CHANGELOG.md` (the existing `[Unreleased]` "Added: `Frame`" entry, amended in place); `CLAUDE.md` (the
+`Frame` module-layout line); `tasks/reference/frames-qr-and-reciprocal-frames.md` (the L0 note, gacalc's
+peel form under "Inverting without row reduction", and the storage section); `tasks/frame-notebooks-epix.md`
+(its Context, and the inverse figure now shows the peel steps).

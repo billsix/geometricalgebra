@@ -17,9 +17,10 @@ linear algebra calls this pair the **QR decomposition** `V = Q R`. Q is the orth
 columns. R is the coefficients, and it is **upper triangular**: `v_i` needs only `u_1 … u_i`. To invert
 the map `x ↦ Σ x_i v_i`, dot the output with each `u_j`, then undo the triangle from the last coordinate
 backwards. That is the standard numerical way to solve linear systems and least-squares problems. GA adds
-a geometric reading of every piece. gacalc's `Frame` stores the same decomposition with the lengths
-factored out (orthogonal `w_j`, coefficients `(w_j · v_i) / |w_j|²`) so symbolic results stay free of
-square roots; see "Why gacalc's `Frame` is stored orthogonal, not orthonormal".
+a geometric reading of every piece. gacalc's `Frame` keeps the original vectors and the orthogonal
+`w_j`, and computes the coefficients `(w_j · v_i) / |w_j|²` on demand: the same decomposition with the
+lengths factored out, so symbolic results stay free of square roots; see "Why gacalc's `Frame` is stored
+orthogonal, not orthonormal".
 
 ## What "QR" means, plainly
 
@@ -77,19 +78,26 @@ If `y` is not in `span(v)` (only possible when `k < n`), the same two steps retu
 x, the x whose `f(x)` is the projection of y onto the span. This is why QR is the standard least-squares
 solver.
 
-With the orthogonal `w_j` in place of the `u_j`, the same two steps read: `(w_j · y) / |w_j|²` in step 1,
-and a back-substitution whose diagonal is 1 in step 2. This is what `Frame.to_invertible_function()`
-computes.
+**gacalc's form: peel the last vector.** `Frame.to_invertible_function()` needs no coefficient table.
+`w_k` is orthogonal to `v_1 … v_{k-1}`, so `(w_k · y) / |w_k|²` is exactly `x_k`. Subtracting
+`x_k * v_k` from `y` leaves the same problem for the frame without its last vector, and a `match`
+recursion (`case []` / `case [*earlier, (w, v)]`) repeats it. This is back-substitution read
+geometrically: measure along the one direction only the last vector has, remove that vector, and
+repeat on a smaller frame. It computes the same coordinates as the two steps above (checked symbolically
+in `tests/test_frame_class.py`).
 
 ## Why gacalc's `Frame` is stored orthogonal, not orthonormal
 
-`Frame` (`src/gacalc/frame.py`) stores the **orthogonal** `w_j` and the coefficients
-`coefficients[i][j] = (w_j · v_i) / |w_j|²`, so `v_i = Σ_j coefficients[i][j] * w_j`. The orthonormal
-`u_j = w_j / |w_j|` are available on demand through `Frame.orthonormal_vectors()`. Indexed as
-`coefficients[original i][orthogonal j]`, the table is zero above its diagonal (it is R transposed,
-rescaled). This is the same QR
-decomposition with the lengths moved out of Q: R's entries are `coefficients[i][j] * |w_j|`, and the
-stored table has ones on its diagonal.
+`Frame` (`src/gacalc/frame.py`) stores the original `vectors` and their **orthogonal** set `w_j`.
+`Frame.coefficients()` computes `coefficients()[i][j] = (w_j · v_i) / |w_j|²`, so
+`v_i = Σ_j coefficients()[i][j] * w_j`, and `Frame.orthonormal_vectors()` computes
+`u_j = w_j / |w_j|`. Indexed as `coefficients()[original i][orthogonal j]`, the table is zero above its
+diagonal and one on it (R transposed, rescaled). This is the same QR decomposition with the lengths
+moved out of Q: R's entries are `coefficients()[i][j] * |w_j|`.
+
+The coefficients were stored in `Frame`'s first version, and `__iter__` rebuilt the originals from them.
+Once the inverse became the peel recursion (above), nothing read them, so `Frame` stores the originals
+instead and computes the coefficients on demand (William Emerison Six <billsix@gmail.com>, 2026-11-04).
 
 **What was tried first, and why it failed (2026-11-04).** The first design followed the original
 request: normalize in `__post_init__`, store `u_j`, and use `c_ij = u_j · v_i`. A prototype on fully
@@ -107,9 +115,12 @@ The cause is the square roots. Symbols are not declared positive, so `sqrt(s)` o
 through a nest of radicals.
 
 **What was done instead (the maintainer's suggestion, 2026-11-04).** Keep the orthogonal `w_j`, and
-divide by `|w_j|²` where the orthonormal design would rely on unit length. Every stored value is then a
-**rational function** of the inputs, which sympy can decide exactly. The inverse is unchanged in shape:
-dot `y` with each `w_j`, divide by `|w_j|²`, then back-substitute. Measured on a fully symbolic 3D frame:
+divide by `|w_j|²` where the orthonormal design would rely on unit length. The `w_j`, the coefficients,
+and every step of the inverse are then **rational functions** of the inputs, which sympy can decide
+exactly. The prototype measured below inverted by the coefficient back-substitution (dot `y` with each
+`w_j`, divide by `|w_j|²`, back-substitute); the shipped inverse is the peel recursion described under
+"Inverting without row reduction", which computes the same coordinates. Measured on a fully symbolic 3D
+frame:
 
 | configuration | build | rebuild + both round trips |
 |---|---|---|
@@ -119,8 +130,10 @@ dot `y` with each `w_j`, divide by `|w_j|²`, then back-substitute. Measured on 
 | orthogonal, `Gn`, Hestenes `inverse(A_{k-1}) * A_k` | 60 s | passes; 103 s total |
 | orthogonal, `Gn`, Hestenes `reverse(A_{k-1}) * A_k` | 15 s | round trip did not finish in 240 s |
 
-The test suite (`tests/test_frame_class.py`) builds the 3D symbolic frame once per module and runs in
-about 3.5 minutes. The maintainer prefers correctness to runtime (2026-11-04), so the fully symbolic 3D
+The test suite (`tests/test_frame_class.py`) builds the 3D symbolic frame once per module, shares one
+`coefficients()` computation per frame (about 68 s for the 3D one) through module-scoped fixtures, and
+runs in about 3.5 minutes. With the peel inverse, the 3D symbolic round-trip test takes about 60 s,
+against about 50 s for the coefficient back-substitution. The maintainer prefers correctness to runtime (2026-11-04), so the fully symbolic 3D
 tests stay in the default suite rather than being replaced by numeric spot checks.
 
 **Why rejection rather than a Hestenes closed form.** Both Hestenes forms rest on `prefix_blades`,
