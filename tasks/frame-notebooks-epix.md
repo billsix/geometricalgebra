@@ -70,8 +70,30 @@ both notebooks executing in `make docs` with every figure correct, and the gates
    - **The forward map:** the unit square (cube) → the frame's parallelogram (parallelepiped),
      `e_i ↦ v_i`.
    - **f = Q ∘ R:** the square → R (shear + scale, keeping `e_1`'s line) → Q (rotate onto the u's).
-   - **The inverse:** a vector `y`, its shadows on the w's, and the back-substitution steps recovering
-     `x_n`, then `x_{n-1}`, and so on.
+   - **The inverse, one figure per peel step** (the maintainer, William Emerison Six
+     <billsix@gmail.com>, 2026-11-04: "graphically show what's happening at each step"). The algorithm
+     is `Frame.to_invertible_function()`'s `peel`, explained in
+     `tasks/reference/frames-qr-and-reciprocal-frames.md` "The peel inverse, step by step". Each figure
+     is its own cell, so the sequence reads like a flip-book, and each cell first prints that step's
+     numbers from gacalc (`w · y`, `|w|²`, the coordinate, the remainder) so the picture and the
+     arithmetic sit together. Use the reference doc's worked frame (`v_1 = 2 * e_1`,
+     `v_2 = 1 * e_1 + 3 * e_2`, `y = 3 * e_1 + 3 * e_2`) for 2D, so the figures match the text.
+     - **2D, step 0 (the setup):** the frame `v_1, v_2` and its parallelogram, the target `y`, and the
+       orthogonal `w_1, w_2`, with a right-angle mark between `w_2` and the `v_1` line.
+     - **2D, step 1 (read `x_2`):** `y`'s shadow on the `w_2` direction, drawn as a dashed drop from `y`
+       to the `v_1` line, next to `v_2`'s own height `|w_2|`, labelled
+       `x_2 = (w_2 · y) / |w_2|² = 1`: two heights, one divided by the other.
+     - **2D, step 2 (remove `x_2 * v_2`):** `y` sliding along `v_2` (a dashed translated copy of
+       `x_2 * v_2`) to the remainder `y − x_2 * v_2`, which lands on the `v_1` line.
+     - **2D, step 3 (read `x_1`):** the remainder against `v_1`, labelled `x_1 = (w_1 · r) / |w_1|²`,
+       then the recovered `x` drawn back in the standard basis, with `f(x) = y` as the check.
+     - **3D, the same sequence one dimension up:** step 0 is the parallelepiped and `w_3` normal to the
+       plane of `v_1, v_2` (draw that plane as a patch); step 1 is `y`'s height above the plane, compared
+       with `v_3`'s, giving `x_3`; step 2 slides `y` along `v_3` into the plane; and the remaining steps
+       repeat the 2D sequence inside that plane, with the camera unchanged so the reader can follow the
+       remainder.
+     - **Why last-first, as a figure:** in step 0, also mark that `w_1 = v_1` is *not* perpendicular to
+       `v_2`, so `w_1 · y` mixes both coordinates. That shows why the peel can't start with `x_1`.
    - **The reciprocal frame:** `vⁿ = w_n / |w_n|²` against the frame; the full set once
      `tasks/reciprocal-frame-hestenes.md` is done.
    Notebook helpers that both notebooks share go in `book/figures/epix/_frame_scene.py` (reusing

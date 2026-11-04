@@ -420,13 +420,36 @@ class Frame:
         Forward: project the input onto ``e_1 … e_k`` and use the components as
         weights on the frame vectors, ``f(x) = Σ_i (x · e_i) * v_i``.
 
-        Inverse: given ``y = f(x) = Σ_i x_i * v_i``, peel the frame from its last
-        vector.  ``w_k`` is orthogonal to every earlier ``v_i``, so dotting ``y`` with
-        it sees only the last term: ``x_k = (w_k · y) / |w_k|²``.  Subtracting
-        ``x_k * v_k`` leaves ``Σ_{i < k} x_i * v_i``, the same problem for the frame
-        without its last vector, which is solved the same way.  This is
-        back-substitution (``x = R⁻¹ Qᵀ y`` in QR terms) with no row reduction and no
-        coefficient table.
+        Inverse: given ``y = f(x) = Σ_i x_i * v_i``, recover the coordinates
+        ``x_1 … x_k`` by **peeling the frame from its last vector**.  Each step:
+
+        1. **Read the last coordinate.**  ``w_k`` is ``v_k`` with the span of
+           ``v_1 … v_{k-1}`` rejected out of it, so ``w_k`` is perpendicular to every
+           earlier frame vector.  Dotting ``y`` with it therefore sees only the last
+           term, ``w_k · y = x_k * (w_k · v_k)``, and ``w_k · v_k = |w_k|²`` (the part
+           of ``v_k`` along ``w_k`` is ``w_k`` itself).  So
+           ``x_k = (w_k · y) / |w_k|²``.
+        2. **Remove the last vector's contribution.**  ``y - x_k * v_k`` equals
+           ``Σ_{i < k} x_i * v_i``: a vector in the span of the first ``k - 1`` frame
+           vectors.
+        3. **Repeat on the smaller frame.**  That remainder is the same problem for
+           ``v_1 … v_{k-1}``, whose last orthogonal vector ``w_{k-1}`` is again
+           perpendicular to every vector before it, so step 1 applies to it.  The
+           recursion stops when no vectors remain.
+
+        Worked example, the frame ``v_1 = 2 * e_1``, ``v_2 = 1 * e_1 + 3 * e_2``
+        (orthogonal set ``w_1 = 2 * e_1``, ``w_2 = 3 * e_2``) and
+        ``y = 3 * e_1 + 3 * e_2``: ``x_2 = (w_2 · y) / |w_2|² = 9 / 9 = 1``; the
+        remainder is ``y - 1 * v_2 = 2 * e_1``; then ``x_1 = (w_1 · 2 * e_1) / |w_1|² =
+        4 / 4 = 1``.  So ``x = 1 * e_1 + 1 * e_2`` (the doctest below).
+
+        The order is forced: with the frame orthogonalized first-to-last, only the
+        last orthogonal vector is perpendicular to *all* the others, so the first
+        coordinate that can be read off directly is the last one.  This is
+        back-substitution (``x = R⁻¹ Qᵀ y`` in QR terms), read geometrically, with no
+        row reduction and no coefficient table; see
+        ``tasks/reference/frames-qr-and-reciprocal-frames.md``, "The peel inverse,
+        step by step".
 
         The frame must span the whole space (``k = n``), or the forward map would
         discard the components along ``e_{k+1} …`` and could not be inverted.  ``n``
@@ -467,7 +490,8 @@ class Frame:
                 f"to_invertible_function needs a frame that spans the space (k = n); "
                 f"got k = {k} vectors in n = {n} dimensions"
             )
-        # Each orthogonal vector with the frame vector it came from: (w_i, v_i).
+        # Each orthogonal vector with the frame vector it came from, (w_i, v_i), in
+        # frame order; peel consumes them from the end.
         pairs: tuple[tuple[MultiVectorBase, MultiVectorBase], ...] = tuple(
             zip(self.orthogonal_vectors, frame_vectors, strict=True)
         )
@@ -492,9 +516,11 @@ class Frame:
                     # No vectors left: nothing to solve.
                     return []
                 case [*earlier, (w, v)]:
-                    # Read the last vector's coordinate off its orthogonal direction,
-                    # remove that vector's contribution from y, and solve the earlier
-                    # vectors' coordinates from what is left.
+                    # One or more vectors.  w is perpendicular to every vector in
+                    # earlier, so w · y sees only this vector's term: its coordinate
+                    # is (w · y) / |w|².  Subtracting that multiple of v leaves a y
+                    # built from the earlier vectors alone; solve those coordinates
+                    # the same way, and put this one after them.
                     x_last: Real = _exact_quotient(
                         w.scalar_product(y), w.magnitude_squared()
                     )

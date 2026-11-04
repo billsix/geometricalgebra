@@ -78,13 +78,59 @@ If `y` is not in `span(v)` (only possible when `k < n`), the same two steps retu
 x, the x whose `f(x)` is the projection of y onto the span. This is why QR is the standard least-squares
 solver.
 
-**gacalc's form: peel the last vector.** `Frame.to_invertible_function()` needs no coefficient table.
-`w_k` is orthogonal to `v_1 … v_{k-1}`, so `(w_k · y) / |w_k|²` is exactly `x_k`. Subtracting
-`x_k * v_k` from `y` leaves the same problem for the frame without its last vector, and a `match`
-recursion (`case []` / `case [*earlier, (w, v)]`) repeats it. This is back-substitution read
-geometrically: measure along the one direction only the last vector has, remove that vector, and
-repeat on a smaller frame. It computes the same coordinates as the two steps above (checked symbolically
-in `tests/test_frame_class.py`).
+**gacalc's form** needs no coefficient table: `Frame.to_invertible_function()` peels the frame from its
+last vector. It computes the same coordinates as the two steps above; the next section walks through it.
+
+## The peel inverse, step by step
+
+`Frame.to_invertible_function()` (`src/gacalc/frame.py`) inverts `f(x) = Σ_i x_i * v_i` with a `match`
+recursion over the pairs `(w_i, v_i)`: `case []` returns no coordinates, `case [*earlier, (w, v)]` solves
+the last one and recurses on `earlier`.
+
+**One step.** Let `y = Σ_{i ≤ k} x_i * v_i`, and let `(w_k, v_k)` be the last pair.
+
+1. **Read the last coordinate.** `w_k` is `v_k` with `span(v_1 … v_{k-1})` rejected out of it, so it is
+   perpendicular to every earlier frame vector. Dotting `y` with it kills every earlier term:
+   `w_k · y = x_k * (w_k · v_k)`. And `w_k · v_k = |w_k|²`, since `v_k` is `w_k` plus a part lying in the
+   earlier span, which `w_k` is perpendicular to. So `x_k = (w_k · y) / |w_k|²`. Geometrically,
+   `(w_k · y) / |w_k|²` is the length of `y`'s shadow on the `w_k` direction, measured in units of
+   `|w_k|`: how far `y` sticks out of the plane (or line) of the earlier vectors, divided by how far
+   `v_k` does.
+2. **Remove that vector's contribution.** `y − x_k * v_k = Σ_{i < k} x_i * v_i`, which lies in
+   `span(v_1 … v_{k-1})`. Geometrically, `y` slides along `v_k` until it lands in the earlier span.
+3. **Repeat on the smaller frame.** For `v_1 … v_{k-1}`, the last orthogonal vector `w_{k-1}` is
+   perpendicular to `v_1 … v_{k-2}`, so step 1 applies again. After `k` steps the remainder is the zero
+   vector and every coordinate has been read.
+
+**Worked example in 2D.** Frame `v_1 = 2 * e_1`, `v_2 = 1 * e_1 + 3 * e_2`; orthogonal set
+`w_1 = 2 * e_1`, `w_2 = 3 * e_2`; `y = 3 * e_1 + 3 * e_2`.
+
+- `x_2 = (w_2 · y) / |w_2|² = 9 / 9 = 1`: `y` is 3 units above the `e_1` line, and so is `v_2`.
+- Remainder: `y − 1 * v_2 = 2 * e_1`. `y` slid down along `v_2` onto the line of `v_1`.
+- `x_1 = (w_1 · 2 * e_1) / |w_1|² = 4 / 4 = 1`.
+- So `x = 1 * e_1 + 1 * e_2`, and indeed `f(x) = 1 * v_1 + 1 * v_2 = y`.
+
+**In 3D** the first step measures `y`'s height above the plane of `v_1, v_2` (along `w_3`), slides `y`
+along `v_3` down into that plane, and the rest is the 2D example.
+
+**Why the order is last-first.** The peel needs, at each step, a direction perpendicular to every frame
+vector except the one being solved. Orthogonalizing in frame order (as `make_orthogonal_frame` and
+Hestenes' prefix blades `A_k = v_1 ∧ … ∧ v_k` do) gives exactly one such direction, the last `w_k`. The
+first vector's `w_1` is `v_1` itself, which is not perpendicular to the others, so `w_1 · y` mixes every
+coordinate. Two head-first alternatives were considered and rejected (William Emerison Six
+<billsix@gmail.com>, 2026-11-04):
+
+- **Matching `[head, *tail]` on the reversed pairs.** This only rearranges the same last-first
+  computation; it adds two reversals and changes no mathematics.
+- **Solving `x_1` first.** Orthogonalize the reversed frame (`v_k` first) and reverse the result, so that
+  `v_1`'s orthogonal vector is perpendicular to `v_2 … v_k`. A prototype recovered symbolic inputs
+  exactly, but the stored set would no longer follow the frame order (breaking the `w_1 = v_1`
+  convention, the below-diagonal zeros of `coefficients()`, and the prefix-blade volume relation), or
+  `Frame` would need a second symbolic orthogonalization. It is the same QR solve applied to the reversed
+  frame, so nothing is gained mathematically.
+
+The order-free version is the reciprocal frame: `x_i = vⁱ · y`, each coordinate one dot product (below,
+and `tasks/reciprocal-frame-hestenes.md`).
 
 ## Why gacalc's `Frame` is stored orthogonal, not orthonormal
 
