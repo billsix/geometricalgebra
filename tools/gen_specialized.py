@@ -3335,8 +3335,15 @@ def basis_constant_assignments(name: str, blades: Sequence[Blade]) -> list[ast.s
     The basis-vector constants of the class's own type, assigned *after* the
     class so it can reference itself.  Because ``e_1`` is not a (``coeff_``) field,
     both ``Name.e_1`` and ``instance.e_1`` resolve to this one constant.
+
+    The whole block is wrapped in a ``<Name> basis constants`` doc-region so the
+    book can ``literalinclude`` "here is what the basis vectors are" (the
+    ``<Name> cls variables`` region only covers the value-less ``ClassVar``
+    *declarations* inside the class body).  One region per class -- not one per
+    blade -- so the marker count stays flat as the dimension grows.  A class with
+    no nonempty blades (``Scalar``) gets no assignments and so no region.
     """
-    return [
+    assignments: list[ast.stmt] = [
         ast.Assign(
             targets=[
                 ast.Attribute(value=name_ref(name), attr=blade_label(b), ctx=_STORE)
@@ -3348,6 +3355,13 @@ def basis_constant_assignments(name: str, blades: Sequence[Blade]) -> list[ast.s
         )
         for b in blades
         if b != ()
+    ]
+    if not assignments:
+        return []
+    return [
+        marker(f"doc-region-begin {name} basis constants"),
+        *assignments,
+        marker(f"doc-region-end {name} basis constants"),
     ]
 
 
