@@ -16,7 +16,7 @@ ARG USE_LEAN=0
 # drivers) for the book's LaTeX-native figures; EPIX_COMMIT is the ONE place its pin
 # lives (tasks/archive/2026/10/07/epix-plot-integration.md). `make test` needs neither.
 ARG USE_EPIX=0
-ARG EPIX_COMMIT=ebf3ca607ae6c1d4fa307e8b0359960d875d219c
+ARG EPIX_COMMIT=275adefe5ced0abdba30a5efd443955c8370fb48
 
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \

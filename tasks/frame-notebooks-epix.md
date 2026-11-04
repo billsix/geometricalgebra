@@ -1,112 +1,87 @@
-# Frame / QR book notebooks (2D and 3D) with live-rendered ePiX figures
+# Frame / QR book notebooks (2D and 3D) with live-rendered ePiX figures — done-record
 
-**Status:** blocked
-**Blocked on:** the ePiX global-state reset (github.com/billsix/epix-mirror
-`tasks/archive/2026/11/04/reset-global-state-between-figures.md`, implemented 2026-11-04) being **pushed** to epix-mirror's
-`github` remote.
-**Recheck:** `git -C <epix-mirror checkout> fetch github && git -C <epix-mirror checkout> grep -n
-reset_state github/master -- python/epix/figure.py`. Cleared when `figure()` calls `reset_state()` on
-`github/master`; also confirm that task is archived (done).
-**Priority:** 7 (blocked)
-**Difficulty:** 5
-**Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>). Split out of
-`tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md` (its former Phase 3) at the maintainer's request:
-"make the notebook stuff a follow up task for when the epix work is done and pushed. when it is, verify
-it on the gacalc side, pull from the correct version, etc".
+**Completed:** 2026-11-04. Requested by William Emerison Six <billsix@gmail.com>, split out of
+`tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md` (its former Phase 3): "make the
+notebook stuff a follow up task for when the epix work is done and pushed. when it is, verify it on the
+gacalc side, pull from the correct version, etc". The per-step peel figures were added at the
+maintainer's request ("graphically show what's happening at each step"). Implemented by the agent.
 
-## BLUF
+## What was built
 
-Two book notebooks, 2D and 3D, that compute a `Frame` with gacalc + sympy and draw the geometry with
-ePiX **live in the notebook**: each figure cell renders inline, with no prebuilt images. Live rendering
-needs ePiX to reset its global state per figure, which is the upstream fix this task waits on. Done =
-gacalc's `EPIX_COMMIT` pinned to the pushed fix, the multi-figure behaviour verified in gacalc's image,
-both notebooks executing in `make docs` with every figure correct, and the gates green.
+- **The ePiX pin.** The Dockerfile's `EPIX_COMMIT` moved from `ebf3ca6…` to
+  `275adefe5ced0abdba30a5efd443955c8370fb48`, the epix-mirror merge that added the per-figure reset
+  (github.com/billsix/epix-mirror `tasks/archive/2026/11/04/reset-global-state-between-figures.md`). It
+  was confirmed as `master` on epix-mirror's `github` remote (`git ls-remote`), and the image build
+  logged `epix-mirror at 275adef…`.
+- **Two notebooks**, `book/docs/notebooks/frame-qr-2d.py` (11 figures) and `frame-qr-3d.py` (9 figures),
+  under a new page `book/docs/frames-qr.rst` (toctree entry after `projection-rejection-3d` in
+  `index.rst`; prose deferred behind a `TODO prose` comment, as on `projection-rejection-3d.rst`). Each
+  section computes with gacalc's `Frame` and then draws in its own cell, live, from the numbers just
+  computed:
+  - 2D: the frame and its orthogonal and unit sets; the coefficient table as a shadow (`4/5 * w_1`);
+    area as `|w_1| * |w_2|`; the forward map (unit square → parallelogram); `R` (shear and scale) and
+    then `Q ∘ R`; the peel in four figures (setup, read `x_2`, remove `x_2 * v_2`, read `x_1`); the
+    symbolic round trip; the last reciprocal vector.
+  - 3D: the frame and orthogonal set; volume as base times height; the forward map (unit cube →
+    parallelepiped); the peel (setup, read `x_3`, slide into the plane, the 2D peel inside the plane,
+    the result); the symbolic round trip; the last reciprocal vector.
+- **`book/figures/epix/_frame_scene.py`**, the drawing helpers both notebooks share (`scene_2d`,
+  `scene_3d`, `point`, `arrow`, `dashed_arrow`, `note`, `patch`, `box_edges`, `right_angle`, the role
+  colours). Documented in `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
+- **Config:** `pyproject.toml` adds `book/figures/epix` to ty's `extra-paths` and exempts
+  `book/docs/notebooks/frame-qr-*.py` from E402 (each notebook puts that directory on `sys.path` before
+  importing `_frame_scene`), both with the reason at the site.
+- **Docs:** `book-and-docs-pipeline.md` describes the live-rendered path beside the prebuilt one, drops
+  the stale "libepix keeps global drawing state with no reset" claim, and adds the black-tint fill
+  gotcha. `CLAUDE.md`'s ePiX bullet names the live path and the pin it needs.
 
-## Context (read first)
+## Decisions
 
-- `tasks/reference/frames-qr-and-reciprocal-frames.md`: the math the figures illustrate.
-- `src/gacalc/frame.py` `Frame`: holds the original `vectors` and their **orthogonal** `w_j`;
-  `coefficients()` computes `(w_j · v_i) / |w_j|²` (unit diagonal), `orthonormal_vectors()` the `u_j`,
-  and the inverse peels the frame from its last vector. The "inverse" figure should show those peel
-  steps.
-- `tasks/reference/book-and-docs-pipeline.md` "ePiX figures": keyword arguments everywhere
-  (`tools/check_epix_keywords.py`), a label's colour matches its vector, and the shared scene helpers
-  `book/figures/epix/_scene2d.py` / `_scene3d.py`. The existing **prebuilt** pipeline
-  (`tools/render_epix_figures.py`, one process per figure) stays for the other pages. This task does not
-  use it.
-- **Why live rendering needs the upstream fix (measured 2026-11-04 in gacalc's image).** Two
-  `epix.figure()` blocks in one process: the second inherits the first figure's pen, line style, fill,
-  label style, color palette and camera. Its eepic was byte-identical to the first figure's. Resetting
-  pen/line style/fill/labels by hand made the drawing match a fresh process, but the palette (and the
-  camera, untested) cannot be reset from Python today.
-- gacalc pins ePiX in one place: the Dockerfile's `ARG EPIX_COMMIT` (installed by
-  `entrypoint/install-epix.sh`). It was `ebf3ca6…` on 2026-11-04.
+1. **A second frame for the QR figures.** The reference doc's worked frame (`v_1 = 2 * e_1`,
+   `v_2 = 1 * e_1 + 3 * e_2`) has `u_i = e_i`, so its `Q` is the identity and a `Q ∘ R` figure would show
+   nothing. The orthogonalization, coefficient, area, forward-map and QR figures use the oblique frame
+   `v_1 = 2 * e_1 + 1 * e_2`, `v_2 = 1 * e_1 + 2 * e_2`. The peel figures keep the worked frame, so they
+   match `tasks/reference/frames-qr-and-reciprocal-frames.md` number for number.
+2. **No `Q ∘ R` figure in 3D.** The plan described it only for the square; the 3D frame
+   (`v_1 = 2 * e_1`, `v_2 = 1 * e_1 + 2 * e_2`, `v_3 = 1 * e_1 + 1 * e_2 + 2 * e_3`, `y = v_1 + v_2 + v_3`)
+   has orthogonal set `2 * e_i`, chosen so the plane of `v_1, v_2` is the `e_1 e_2` plane and each peel
+   step reads plainly.
+3. **Unlabelled axes.** In these figures `x` and `y` name vectors (the coordinates and the target), so
+   axis labels would put two different `y`s on one figure. The axes are drawn light and unlabelled, and
+   each notebook's intro says so.
+4. **Camera `(5, -10, 7)`**, not `_scene3d`'s `(9, -6, 5)`. From the old camera the x and y axes projected
+   almost parallel and the plane of `v_1, v_2` read as a sliver. The choice and the bounding box came
+   from ePiX's perspective formula (`src/lens.cc`, `Perspective::operator()`) applied to the figures'
+   points, not from trial renders.
+5. **The notebooks don't `import epix`.** ty cannot resolve the editable-installed package, so
+   `_frame_scene` re-exports `LabelPos` and holds every colour, including the cube-edge gray.
+6. **No license header** on the new notebooks and helper, matching every other `book/docs/notebooks/`
+   file and the CC0 `book/figures/epix/` helpers.
+7. **No `CHANGELOG.md` entry:** the changelog covers the library, and book pages aren't changelogged.
 
-## Plan
+## Verification (2026-11-04, the rebuilt image `b294e77bfbc7`)
 
-1. **Pull the fixed ePiX.** Take the epix-mirror commit on `github/master` that contains the reset;
-   check `git -C <epix-mirror> log --oneline github/master`, and pin the full SHA, not a branch. Set
-   `EPIX_COMMIT` to it, then `make image` (nested: the full image, because `USE_EPIX=1` and
-   `BUILD_DOCS=1` are needed).
-2. **Verify on the gacalc side, before writing any notebook**, in the rebuilt image:
-   - two figures in one process (the 2026-11-04 red/dashed repro, in the epix-mirror task): the second
-     figure's eepic equals the same figure drawn alone in a fresh process, **including** the palette
-     lines;
-   - a 3D figure after a 2D one: the camera is reset;
-   - `tools/render_epix_figures.py` still renders every existing book figure, and `make docs` still
-     builds (the pin bump must not change other pages).
-   If any check fails, stop and report. The fix belongs in epix-mirror, not in a gacalc workaround.
-3. **Notebooks** `book/docs/notebooks/frame-qr-2d.py` and `frame-qr-3d.py`, plus a stub page
-   `book/docs/frames-qr.rst` with a toctree entry in `index.rst`. Prose is deferred (CLAUDE.md
-   three-forms rule, overridden for the `Frame` work); a `TODO prose` comment marks it, as
-   `projection-rejection-3d.rst` does. Each notebook runs the symbolic computation with gacalc + sympy,
-   then draws from the computed (concrete) vectors:
-   - **The frame and its orthogonalization:** oblique `v_1, v_2(, v_3)`; the rejection `w_2` (`w_3`)
-     with a right-angle mark; the unit `u`'s.
-   - **The coefficients as shadows:** `w_j · v_i / |w_j|²` (and `u_j · v_i`) as projection lengths,
-     with the zeros above the diagonal visible.
-   - **Volume:** the parallelogram (2D) or parallelepiped (3D) as base × height(s), with
-     `|w_1| * |w_2| (* |w_3|) = |v_1 ∧ … ∧ v_n|`.
-   - **The forward map:** the unit square (cube) → the frame's parallelogram (parallelepiped),
-     `e_i ↦ v_i`.
-   - **f = Q ∘ R:** the square → R (shear + scale, keeping `e_1`'s line) → Q (rotate onto the u's).
-   - **The inverse, one figure per peel step** (the maintainer, William Emerison Six
-     <billsix@gmail.com>, 2026-11-04: "graphically show what's happening at each step"). The algorithm
-     is `Frame.to_invertible_function()`'s `peel`, explained in
-     `tasks/reference/frames-qr-and-reciprocal-frames.md` "The peel inverse, step by step". Each figure
-     is its own cell, so the sequence reads like a flip-book, and each cell first prints that step's
-     numbers from gacalc (`w · y`, `|w|²`, the coordinate, the remainder) so the picture and the
-     arithmetic sit together. Use the reference doc's worked frame (`v_1 = 2 * e_1`,
-     `v_2 = 1 * e_1 + 3 * e_2`, `y = 3 * e_1 + 3 * e_2`) for 2D, so the figures match the text.
-     - **2D, step 0 (the setup):** the frame `v_1, v_2` and its parallelogram, the target `y`, and the
-       orthogonal `w_1, w_2`, with a right-angle mark between `w_2` and the `v_1` line.
-     - **2D, step 1 (read `x_2`):** `y`'s shadow on the `w_2` direction, drawn as a dashed drop from `y`
-       to the `v_1` line, next to `v_2`'s own height `|w_2|`, labelled
-       `x_2 = (w_2 · y) / |w_2|² = 1`: two heights, one divided by the other.
-     - **2D, step 2 (remove `x_2 * v_2`):** `y` sliding along `v_2` (a dashed translated copy of
-       `x_2 * v_2`) to the remainder `y − x_2 * v_2`, which lands on the `v_1` line.
-     - **2D, step 3 (read `x_1`):** the remainder against `v_1`, labelled `x_1 = (w_1 · r) / |w_1|²`,
-       then the recovered `x` drawn back in the standard basis, with `f(x) = y` as the check.
-     - **3D, the same sequence one dimension up:** step 0 is the parallelepiped and `w_3` normal to the
-       plane of `v_1, v_2` (draw that plane as a patch); step 1 is `y`'s height above the plane, compared
-       with `v_3`'s, giving `x_3`; step 2 slides `y` along `v_3` into the plane; and the remaining steps
-       repeat the 2D sequence inside that plane, with the camera unchanged so the reader can follow the
-       remainder.
-     - **Why last-first, as a figure:** in step 0, also mark that `w_1 = v_1` is *not* perpendicular to
-       `v_2`, so `w_1 · y` mixes both coordinates. That shows why the peel can't start with `x_1`.
-   - **The reciprocal frame:** `vⁿ = w_n / |w_n|²` against the frame; the full set once
-     `tasks/reciprocal-frame-hestenes.md` is done.
-   Notebook helpers that both notebooks share go in `book/figures/epix/_frame_scene.py` (reusing
-   `_scene2d` / `_scene3d`). The notebooks add that directory to `sys.path`, and `ty` needs it in
-   `pyproject.toml [tool.ty.environment] extra-paths`.
-4. **Gates:** `make format` (ruff, `ty check book/docs/notebooks`, `check_epix_keywords.py`),
-   `python tools/check_annotations.py` (every binding typed), and `make docs`
-   (`nb_execution_raise_on_error = True`, so a failing cell fails the build). Look at every rendered
-   figure in the HTML output.
-5. Update `tasks/reference/book-and-docs-pipeline.md` with the live-rendered notebook path (alongside
-   the prebuilt one) and the `EPIX_COMMIT` bump. Write a `CHANGELOG.md` entry only if the book is
-   changelogged.
+- **Reset, checked on the gacalc side before any notebook** (`tasks/adhoc/frame-notebooks-epix/verify_epix_reset.py`):
+  a plain figure drawn after a red, dashed one that also moved the camera, and a 3D figure drawn after
+  the same, each equal the same figure drawn in a fresh process. Both PASS.
+- `tools/render_epix_figures.py`: every existing book figure rendered, none failed.
+- Both notebooks executed under Jupyter (`jupyter nbconvert --execute`): 11 and 9 inline PNGs, and every
+  printed check `True`, including `R` upper-triangular, `Q` a rotation, and both symbolic round trips.
+- Every figure was inspected as PNG (`tasks/adhoc/frame-notebooks-epix/run_and_dump.py`), and the
+  overlaps and clipping found were fixed.
+- `make format` (ruff, ty over `src`/`tests`/`tools`/`book/docs/notebooks`, the changelog guard,
+  `check_epix_keywords`): exit 0. `tools/check_annotations.py`: nothing in the new files.
+- `make docs`: exit 0, no warning naming the new pages. The HTML pages carry 11 and 9 images; the PDF has
+  them as chapter 23, and a rendered PDF page showed the figures intact.
+- `make test` (its own `podman run` line): **717 passed** in 283 s.
 
-## Open questions
+## Follow-ups
 
-None yet. Re-raise if step 2 finds something.
+- **Optional:** some code lines near 88 columns wrap in the PDF listings (e.g.
+  `with scene_2d(lower_left=PEEL_LOWER_LEFT, upper_right=PEEL_UPPER_RIGHT) as fig_step_1:`). The
+  pipeline doc's advice is to shorten the cell; it is cosmetic and was left.
+- The full reciprocal frame figure waits on `tasks/reciprocal-frame-hestenes.md` (on hold); only the
+  last reciprocal vector is drawn.
+- Owed at archive: `git rm` the two one-shot scripts in `tasks/adhoc/frame-notebooks-epix/`, and repoint
+  the references in `tasks/lean-frame-class-invertible-function.md` and
+  `tasks/reference/frames-qr-and-reciprocal-frames.md` to the archived path.

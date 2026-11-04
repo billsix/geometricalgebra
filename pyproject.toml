@@ -88,11 +88,17 @@ ignore = ["N806"]
 # -- and its progress/`already in order` lines ARE its command-line output (same class as the epix
 # CLI tools' T201 exemption).
 "tools/reorder_lean.py" = ["E501", "T201"]
+# The frame / QR book notebooks import their ePiX scene helpers from book/figures/epix/,
+# which is not a package, so each puts that directory on sys.path first. The imports
+# after that line are the point of the line (E402 would have them before it).
+"book/docs/notebooks/frame-qr-*.py" = ["E402"]
 
 [tool.ty.environment]
 # tools/ (the code generator + its astbuild DSL) is a real source directory but
 # not a package on the default path. Declare it so `ty check tests` resolves the
 # `import astbuild` / `import gen_specialized` in tests/test_generator.py (which
-# add tools/ to sys.path at runtime). This is module-resolution config, not a
-# diagnostic override -- every rule still checks every file.
-extra-paths = ["tools"]
+# add tools/ to sys.path at runtime). book/figures/epix/ is the same case for the
+# frame / QR book notebooks, which import `_frame_scene` from there (they add it to
+# sys.path at runtime). This is module-resolution config, not a diagnostic
+# override -- every rule still checks every file.
+extra-paths = ["tools", "book/figures/epix"]
