@@ -1,27 +1,63 @@
 FROM registry.fedoraproject.org/fedora:45
 
-# Every optional-feature ARG defaults to 0 so a bare `podman build` stays lean; the
-# Makefile passes each flag's real value (full on a host, lean when built nested --
-# see the Makefile flag block and runClaudeInContainer
-# tasks/reference/minimal-nested-images.md).
-ARG USE_SPYDER=0
-ARG USE_EMACS=0
-ARG BUILD_DOCS=0
-# USE_JUPYTER gates the pandoc + XeLaTeX toolchain nbconvert's notebook "Export to
-# PDF" renders through (03-install-notebook-tex.sh). USE_LEAN gates the Lean 4
-# theorem-prover toolchain (install-lean.sh). Neither is needed by `make test`.
-ARG USE_JUPYTER=0
-ARG USE_LEAN=0
-# USE_EPIX bakes the maintainer's ePiX mirror (C++ figure library + the epix/elaps
-# drivers) for the book's LaTeX-native figures; EPIX_COMMIT is the ONE place its pin
-# lives (tasks/archive/2026/10/07/epix-plot-integration.md). `make test` needs neither.
-ARG USE_EPIX=0
-ARG EPIX_COMMIT=275adefe5ced0abdba30a5efd443955c8370fb48
-
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     echo "keepcache=True" >> /etc/dnf/dnf.conf && \
     dnf upgrade -y
+
+# Every optional-feature ARG defaults to 0 so a bare `podman build` stays lean; the
+# Makefile passes each flag's real value (full on a host, lean when built nested --
+# see the Makefile flag block and runClaudeInContainer
+# tasks/reference/minimal-nested-images.md). Each ARG is declared just before the
+# first layer that reads it, never all at the top: a build-arg's value is part of
+# the cache key of EVERY later RUN (used or not), so a top-of-file ARG makes
+# changing any flag, or bumping EPIX_COMMIT, rebuild everything below it,
+# including the multi-GB Lean/Mathlib bake.
+#
+# USE_LEAN gates the Lean 4 theorem-prover toolchain (install-lean.sh) and the
+# Mathlib bake. `make test` needs neither.
+ARG USE_LEAN=0
+
+# Lean 4 (theorem prover) via elan — host-runnable script, curl-installed; bakes the
+# stable toolchain so an exported image has Lean offline. Gated behind USE_LEAN: the
+# Lean toolchain is a large download not needed by `make test`, so a lean nested image
+# skips it. The PATH entry is harmless when the dir is absent, so it stays unconditional.
+#
+# CACHE ORDERING: this block (Lean toolchain + the multi-GB Mathlib bake below) is
+# the slowest step in the build and depends on nothing but install-lean.sh and
+# proofs/'s dep-defining files -- not the dnf groups, the dotfiles, the other
+# feature flags, src/ or tools/. It therefore sits FIRST, right after the
+# never-changing `dnf upgrade` layer, so no edit or flag change elsewhere in this
+# file rebuilds it. The toolchain installed is the one proofs/lean-toolchain pins,
+# so `lake` never fetches a second one.
+COPY entrypoint/install-lean.sh /usr/local/bin/
+COPY proofs/lean-toolchain /opt/gacalc-proofs/
+RUN --mount=type=cache,target=/var/cache/libdnf5 \
+    --mount=type=cache,target=/var/lib/dnf \
+    if [ "$USE_LEAN" = "1" ]; then \
+      LEAN_TOOLCHAIN="$(cat /opt/gacalc-proofs/lean-toolchain)" \
+        /usr/local/bin/install-lean.sh ; \
+    fi
+ENV PATH="/root/.elan/bin:${PATH}"
+
+# Bake Mathlib into the image (a committed layer OUTSIDE the bind-mounted repo) so
+# `make lean` runs OFFLINE -- the "deps fetched at build, offline thereafter" rule.
+# Only proofs/'s dep-defining files are staged here (NOT the .lean sources), so
+# editing a proof doesn't rebust this layer -- and, being first (see the CACHE
+# ORDERING note above), nothing else in the build does either. `lake exe cache get`
+# clones the pinned Mathlib and downloads its prebuilt oleans into
+# /opt/gacalc-proofs/.lake; proofs/check.sh copies that into the (mounted, gitignored)
+# proofs/.lake at runtime -- the bind-mount would otherwise shadow a baked
+# proofs/.lake. Gated on USE_LEAN (adds several GB, so only Lean images pay it). git
+# (needed to clone Mathlib) is installed by install-lean.sh above.
+COPY proofs/lakefile.toml proofs/lake-manifest.json /opt/gacalc-proofs/
+RUN if [ "$USE_LEAN" = "1" ]; then \
+      cd /opt/gacalc-proofs && touch GacalcProofs.lean && lake exe cache get ; \
+    fi
+
+# USE_SPYDER and USE_EMACS gate optional dnf groups in the base layer below.
+ARG USE_SPYDER=0
+ARG USE_EMACS=0
 
 COPY entrypoint/dotfiles/ /root/
 
@@ -62,8 +98,13 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     python3 -m venv --system-site-packages /venv/ && \
     export VIRTUAL_ENV_DISABLE_PROMPT=1 && \
     source /venv/bin/activate && \
-    uv pip install --python $(which python) setuptools wheel numpy sympy && \
-    uv pip install --python $(which python) pyright
+    uv pip install --python $(which python) setuptools wheel numpy sympy
+
+# USE_JUPYTER gates the pandoc + XeLaTeX toolchain nbconvert's notebook "Export to
+# PDF" renders through (03-install-notebook-tex.sh); BUILD_DOCS gates the Sphinx
+# book toolchain. `make test` needs neither.
+ARG USE_JUPYTER=0
+ARG BUILD_DOCS=0
 
 # Notebook "Export to PDF": nbconvert's PDF path renders the notebook through
 # pandoc -> XeLaTeX, so the image needs pandoc plus a XeLaTeX toolchain with the
@@ -113,36 +154,11 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
       uv pip install --python /venv/bin/python sphinx furo nbsphinx myst-nb ; \
     fi
 
-# Lean 4 (theorem prover) via elan — host-runnable script, curl-installed; bakes the
-# stable toolchain so an exported image has Lean offline. Gated behind USE_LEAN: the
-# Lean toolchain is a large download not needed by `make test`, so a lean nested image
-# skips it. The PATH entry is harmless when the dir is absent, so it stays unconditional.
-#
-# CACHE ORDERING: this block (Lean toolchain + the multi-GB Mathlib bake below) is
-# entirely independent of the project source -- it needs only install-lean.sh and
-# proofs/'s dep-defining files, NOT src/ or tools/. It is therefore placed BEFORE
-# `COPY src`/`COPY tools` (which change on every code edit): editing src/ or tools/
-# only rebusts the cheap COPY + editable-install layers at the end, and NEVER this
-# large Lean/Mathlib bake. (Previously this block sat after COPY src, so every code
-# change re-baked Mathlib -- minutes-long. Moved 2026-09-28.)
-COPY entrypoint/install-lean.sh /usr/local/bin/
-RUN if [ "$USE_LEAN" = "1" ]; then /usr/local/bin/install-lean.sh ; fi
-ENV PATH="/root/.elan/bin:${PATH}"
-
-# Bake Mathlib into the image (a committed layer OUTSIDE the bind-mounted repo) so
-# `make lean` runs OFFLINE -- the "deps fetched at build, offline thereafter" rule.
-# Only proofs/'s dep-defining files are staged here (NOT the .lean sources), so
-# editing a proof doesn't rebust this layer -- and, being before COPY src (see the
-# CACHE ORDERING note above), editing src/ doesn't either. `lake exe cache get`
-# clones the pinned Mathlib and downloads its prebuilt oleans into
-# /opt/gacalc-proofs/.lake; proofs/check.sh copies that into the (mounted, gitignored)
-# proofs/.lake at runtime -- the bind-mount would otherwise shadow a baked
-# proofs/.lake. Gated on USE_LEAN (adds several GB, so only Lean images pay it). git
-# (needed to clone Mathlib) is installed by install-lean.sh above.
-COPY proofs/lakefile.toml proofs/lean-toolchain proofs/lake-manifest.json /opt/gacalc-proofs/
-RUN if [ "$USE_LEAN" = "1" ]; then \
-      cd /opt/gacalc-proofs && touch GacalcProofs.lean && lake exe cache get ; \
-    fi
+# USE_EPIX bakes the maintainer's ePiX mirror (C++ figure library + the epix/elaps
+# drivers) for the book's LaTeX-native figures; EPIX_COMMIT is the ONE place its pin
+# lives (tasks/archive/2026/10/07/epix-plot-integration.md). `make test` needs neither.
+ARG USE_EPIX=0
+ARG EPIX_COMMIT=275adefe5ced0abdba30a5efd443955c8370fb48
 
 # ePiX (github.com/billsix/epix-mirror), pinned to EPIX_COMMIT, built from source with
 # Meson into /usr/local -- the `epix`/`elaps`/`flix`/`laps` drivers + libepix for the
@@ -151,7 +167,7 @@ RUN if [ "$USE_LEAN" = "1" ]; then \
 # Two host-runnable scripts: 06-install-epix.sh (dnf: git, meson/g++, ghostscript,
 # ImageMagick, the TeX set epix's own render script names) then install-epix.sh (shallow
 # git fetch of the pinned commit, meson install). Gated on USE_EPIX; placed before
-# COPY src for the same cache-ordering reason as the Lean block above. The fetch is
+# COPY src so a code edit never rebuilds it. The fetch is
 # the only network use and happens at build time; the installed tools run offline.
 COPY entrypoint/06-install-epix.sh entrypoint/install-epix.sh /usr/local/bin/
 RUN --mount=type=cache,target=/var/cache/libdnf5 \

@@ -274,7 +274,7 @@ check-generated: image ## (container) verify tools/gen_specialized.py is determi
 # to a warning (the display cells emit those deliberately); pyright exits nonzero
 # on ERRORS only, so a type regression fails the build while those warnings don't.
 # Kept SEPARATE from `make test` so a pyright-version bump can't redden the test
-# gate.  (pyright is unpinned in the Dockerfile -- see the task doc's note.)
+# gate.  (pyright is unpinned: entrypoint/01-install-base.sh npm-installs the latest.)
 .PHONY: check-notebooks
 check-notebooks: image ## (container) pyright gate over notebooks/ (type regressions fail the build)
 	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \

@@ -13,9 +13,21 @@ convention that must hold. Durable; update in place. Written 2026-10-09 (William
   `eglot-ensure` python hook, but `init.el` then `(remove-hook 'python-mode-hook 'eglot-ensure)` and
   wires `lsp-deferred`, so lsp-mode is the active client for Python. (The two clients coexisting in the
   config is intentional and harmless given the remove-hook; it is not the bug below.)
-- The Pyright **server** is pip-installed into `/venv` (its runtime dep `libatomic` is installed by the
-  Dockerfile); `shell.sh` activates the venv, generates the gitignored `g*.py`, and `uv pip install -e .`
-  so the server resolves `import gacalc` and the generated modules. So package resolution is fine.
+- The Pyright **server** is npm-installed at image build (`npm install -g pyright` in
+  `entrypoint/01-install-base.sh`, into `/usr/local/bin`), so it runs offline. Don't use the pip
+  `pyright` package: it is only a launcher that downloads Node and the server the first time it runs in
+  each fresh container, and without network it exits (`nodeenv failed`), leaving Emacs with no Python
+  completion at all (`tasks/archive/2026/11/04/emacs-python-lsp-investigation.md`). The same pyright
+  serves `make check-notebooks`. `shell.sh` activates the venv, generates the gitignored `g*.py`, and
+  `uv pip install -e .`, so the server resolves `import gacalc` and the generated modules.
+- lsp-mode also starts the **ruff** add-on beside pyright. The vendored lsp-mode ships a `ty-ls` client
+  too, but at priority -1 it loses to lsp-pyright's 2 whenever `pyright-langserver` is on `PATH`; if
+  pyright is missing, lsp-mode silently runs ty instead (github.com/billsix/multivariate-math's image
+  did that as of 2026-11-04).
+- **Parameter hints** come from pyright's signature help. lsp-mode shows them when you type `(` or `,`
+  (`lsp-signature-auto-activate` is `(:on-trigger-char :on-server-request)`); `M-x
+  lsp-signature-activate` shows them on demand. eglot instead shows them continuously through eldoc
+  while the cursor is inside a call.
 - The workspace **root** is pinned, not guessed: `init.el` sets `lsp-auto-guess-root nil` and overrides
   `lsp--calculate-root` with `my-lsp-root`, a function returning a **fixed absolute path**.
 
@@ -47,7 +59,8 @@ uses, so the rule is "keep the literal equal to the mount."
 
 ## Verification status
 
-The fix is a one-line literal change matching mvp's proven-working config. It could not be verified
-end-to-end in the authoring session (that needs an interactive GUI Emacs inside geometricalgebra's own
-container, `make shell`, which this environment can't run). **The maintainer should confirm** by opening
-a `src/gacalc/*.py` in Emacs in the container and checking that type errors and completion appear.
+Verified 2026-11-04 with a headless Emacs that loads the real `init.el` in the gacalc image, with the
+network cut (`--network=none`): pyright and ruff attached, completion after `g3.e_1.` returned the full
+member list, and signature help inside `g3.e_1.project(` returned all four overloads. The probe was a
+one-shot pair of scripts (`probe.el` + `run_probe.sh`), kept in git history under
+`tasks/adhoc/emacs-python-lsp-investigation/`.
