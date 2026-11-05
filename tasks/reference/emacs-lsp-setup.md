@@ -23,7 +23,8 @@ convention that must hold. Durable; update in place. Written 2026-10-09 (William
 - lsp-mode also starts the **ruff** add-on beside pyright. The vendored lsp-mode ships a `ty-ls` client
   too, but at priority -1 it loses to lsp-pyright's 2 whenever `pyright-langserver` is on `PATH`; if
   pyright is missing, lsp-mode silently runs ty instead (github.com/billsix/multivariate-math's image
-  did that as of 2026-11-04).
+  did that until 2026-11-05). lsp-mode builds older than 20261009 register `ty-ls` as an add-on, so it
+  runs beside pyright and duplicates completions; refresh elpa with `make update-emacs-packages`.
 - **Parameter hints** come from pyright's signature help. lsp-mode shows them when you type `(` or `,`
   (`lsp-signature-auto-activate` is `(:on-trigger-char :on-server-request)`); `M-x
   lsp-signature-activate` shows them on demand. eglot instead shows them continuously through eldoc

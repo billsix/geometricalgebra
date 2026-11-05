@@ -123,9 +123,10 @@ static-typing fix, replacing an unsound `typing.cast(typing.Self, Versor(...))`.
 ## Related facts
 
 - **Checker: `ty` for both gacalc and mvp.** gacalc's gate is `ty`; mvp's `format.sh` gate is
-  `ty` too. **pyright** was mvp's emacs LSP only and was **removed 2026-08-23** (switched to a
-  `ty server` LSP — `tasks/archive/2026/08/23/switch-typechecker-pyright-to-ty.md` in
-  `github.com/billsix/modelviewprojection`); it never reached either gate. A one-off pyright check surfaced `reportInconsistentOverload` (the impl's `-> Self` inconsistent with its
+  `ty` too. **pyright** is the Emacs LSP in both repos (mvp used a `ty server` LSP from 2026-08-23
+  until 2026-11-05; see `tasks/reference/design-decisions.md` in
+  `github.com/billsix/modelviewprojection`), and gacalc's `make check-notebooks` runs it over
+  `notebooks/`; it is in neither repo's `ty` gate. A one-off pyright check surfaced `reportInconsistentOverload` (the impl's `-> Self` inconsistent with its
   overloads) — that is what motivated the `-> MultiVectorBase` broadening (an honesty improvement
   even for `ty`, which is lenient about it). pyright would also flag `reportOverlappingOverload`
   on the catch-all overlapping the specific overloads; **not chased**, since we are `ty`-only.
