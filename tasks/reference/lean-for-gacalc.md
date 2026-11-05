@@ -249,6 +249,67 @@ version resolution is lake's own, not hand-picked):
   Still open, as their own tasks: the general-n algebra (and the general pseudoscalar sign with it), the
   general multivector inverse, the Lean→notebook pipeline, frames.
 
+## Reading a theorem's hypotheses, and spotting what is extra
+
+*(Written 2026-11-05 after a corpus audit with Lean v4.34.1: extra linters plus a `clear`-test over all 32
+files and 571 theorems in `proofs/GacalcProofs/`. The fixes it found are tracked in
+`tasks/lean-proofs-remove-extras.md`.)*
+
+**What `ha`, `hab`, `hr` are.** A theorem reads
+`theorem name (inputs) (assumptions) : conclusion := by proof`. Each assumption gets a name so the proof can
+point at it. By convention the name is `h` (for "hypothesis") plus what it is about: `ha : IsVector a` is the
+fact about `a`, `hab` a fact about `a` and `b`, `hr : normSq R ≠ 0` the fact about `R`'s squared magnitude.
+`h1`/`h2` are for throwaway intermediate facts.
+
+**Why many of them look unused, but aren't.** Some tactics search every assumption in scope by themselves:
+`field_simp` (looking for "this is not zero" so it can cancel a division), `simp`, `linarith`, `positivity`.
+A proof can use `hr` without the text ever saying `hr`. Grepping for the name is therefore no test. The audit
+found about 20 such hypotheses, never named in their proofs and all still needed (e.g. `inverse_inverse ha`,
+`sandwich_carries_from_to hr`, `rotorFromVectors_uvec hc`).
+
+**Three ways to tell what is extra, from weakest to strongest:**
+
+1. **Lean's warnings.** The `unusedVariables` linter (on by default) says "Variable name `h` is not
+   explicitly referenced" when a hypothesis doesn't appear in the finished proof at all. Read the build
+   warnings. One known false alarm: `rw [...] at hn` creates a new `hn` that shadows the original, so a
+   hypothesis that *is* used gets flagged (the four `hn` warnings in `ProjectionRotation3D.lean`).
+2. **More linters**, set in `proofs/lakefile.toml`: `linter.unusedTactic` (a tactic that does nothing, like a
+   `<;> ring` after a step that already closed the goal), `linter.unnecessarySimpa`,
+   `linter.unusedSimpArgs` (a `simp [...]` entry that never fires).
+3. **The `clear` test**, which is the definitive check. Put `clear h` at the very start of the proof and
+   rebuild that file (`lake env lean File.lean`).
+   - Still compiles: this proof doesn't need `h`, so the theorem is stronger without it.
+   - Fails: *this proof* needs it, which doesn't prove the *theorem* does (the "Hypotheses" section of
+     `lean-ga-proof-architecture.md` explains how to read the failure).
+   - The linters can miss a hypothesis that `field_simp` drags into the proof term without needing it. The
+     audit found 4 statement hypotheses this way (the two `sandwich_preserves_wedge` and `inverse_mul`):
+     their identities still hold when `|R|² = 0`, because Lean defines `1/0 = 0`.
+
+**What counts as "extra" here:** a statement hypothesis that the `clear` test removes (unless it is a
+deliberate meaning gate, below); a tactic the `unusedTactic` linter flags; a `simp` argument that never
+fires; a `have` that is never used; any `sorry`/`admit` (blocked by `proofs/check.sh`).
+
+## How to write Lean in this project going forward
+
+1. **Carry only what the proof uses.** Before committing a theorem, run the `clear` test on any hypothesis
+   whose name doesn't appear in the proof. A theorem with fewer assumptions is stronger and more reusable.
+2. **Mark intentional extras with `_`.** A hypothesis kept only so the statement *means* something (e.g.
+   "the cosine of the angle is meaningful only if neither vector is zero") gets an underscore:
+   `(_ha0 : magnitude a ≠ 0)`. The linter then stays quiet, and the reader knows it was kept on purpose.
+   `StudentTrigForms.lean` is the model.
+3. **Don't add closing tactics "just in case".** End a proof with exactly the step that closes it.
+   `simp only [...] <;> ring` where `simp` already closed every goal is a no-op the linter flags. Where `ring`
+   says "Try this: ring_nf", write `ring_nf`.
+4. **Keep hypotheses out of `variable`.** Shared *inputs* (`{a b : G3}`) may be declared once per
+   `section` with `variable`. Hypotheses (`(ha : IsVector a)`) should stay in each theorem's signature, so
+   it is obvious which theorems assume what. The corpus uses no `variable` today, which is fine.
+5. **Name by subject:** `ha`, `hab`, `hR`, `hr0`. Match the existing files.
+6. **Keep the build warning-free.** A warning is either fixed, or silenced at the site with a comment saying
+   why. A clean build is what makes a "fail on any warning" gate possible (`tasks/lean-proofs-remove-extras.md`).
+
+The deeper technical version (grade predicates vs nonzero guards vs meaning gates, and how to classify a
+failed delete-and-rebuild) is the "Hypotheses" section of `tasks/reference/lean-ga-proof-architecture.md`.
+
 ## Where to learn more
 
 - **Mathematics in Lean** (the standard tutorial book) and **Theorem Proving in Lean 4** — the two
