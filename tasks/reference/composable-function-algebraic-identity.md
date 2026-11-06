@@ -5,7 +5,7 @@
 and how the design compares to the same shape in other libraries. States what is true; not a task.
 Created 2026-08-28 (William Emerison Six <billsix@gmail.com>) from a direct read of
 `src/gacalc/functions.py`, modelviewprojection's Cayley layer, and the web references cited inline
-(work record: `tasks/archive/.../document-composable-function-math-identity.md` once archived).
+(work record: `tasks/archive/2026/08/29/document-composable-function-math-identity.md`).
 
 Companion docs: `transform-and-composable-function-layer.md` (the API map — *what the surface is*),
 `design-decisions.md` (the local rationale). This doc adds the third leg: *what mathematics already

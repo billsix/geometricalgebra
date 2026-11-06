@@ -19,24 +19,24 @@ it doesn't restate it. Not a task; update in place. Created 2026-08-27 (William 
 - **`NotInvertibleError`** (`functions.py`) — raised when an inverse is requested but unavailable.
 - **`compose`** (`functions.py`, **overloaded**) — composing a list of `InvertibleFunction`s
   yields an `InvertibleFunction`; composing `ComposableFunction`s yields a `ComposableFunction` (the type
-  degrades correctly). The runtime `composed_fn` is built at `:310`.
+  degrades correctly). The runtime function is the nested `composed_fn` inside `compose`.
 
 ## Transform factories (`src/gacalc/transforms.py`, builds on + re-exports `functions.py`)
 
 These return `InvertibleFunction`s and are **representation-preserving** — they late-bind the basis from
 `type(vector).basis_vector(i)` (module docstring `transforms.py`), so the same factory works across
 `G2`/`G3`/`Gn`:
-- **`translate(b)`** (`transforms.py`), **`uniform_scale(m)`**, **`scale_non_uniform(*factors)`**
- . Since 0.0.19 the two scalar factories return `InvertibleFunction[V]`, the `V` inferred from the
+- **`translate(b)`** (`transforms.py`), **`uniform_scale(m)`**, **`scale_non_uniform(*factors)`**.
+  Since 0.0.19 the two scalar factories return `InvertibleFunction[V]`, the `V` inferred from the
   caller's annotation (a `typing.cast` at their return bridges what ty cannot see through the grade-general
   scalar product) — so `f: InvertibleFunction[g3.Vector] = uniform_scale(2.0)` type-checks under ty's
   invariance enforcement (`tasks/archive/2026/09/06/ty-invariance-transform-factories-bind-v.md`).
 
 ### Rotation factories (the trio + shared rotor factory)
-- **`projection_rotation`** (`transforms.py`), **`versor_rotation`**, **`plane_rotation`**
- , **`bivector_rotation`** — different *specifications* of a rotation, all funnelling
-  through the shared **`_unit_bivector_rotor_factory`** (`:280`, used as the default `rotor_for` at
-  `:388,:488`). (The naming distinguishes the rotation *spec* from its rotor *formulation*.)
+- **`projection_rotation`** (`transforms.py`), **`versor_rotation`**, **`plane_rotation`**,
+  **`bivector_rotation`** — different *specifications* of a rotation, all funnelling through the
+  shared **`_unit_bivector_rotor_factory`** (the default `rotor_for` of `plane_rotation` and
+  `bivector_rotation`). (The naming distinguishes the rotation *spec* from its rotor *formulation*.)
 - **`g2.rotate_90_degrees()`** (2026-09-06) — the one rotation factory that lives in a *generated*
   module, not `transforms.py`, because it is 𝒢₂-only: the quarter turn is `v * e_12` in closed form
   (exact; no rotor), wrapped as an `InvertibleFunction[Vector]` with `linearity=LINEAR`, a `TypeError`

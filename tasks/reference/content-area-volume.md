@@ -57,9 +57,9 @@ from the span of the previous vectors = the orthogonalized `w_j`. Hence
 So there are **two equal ways to compute content**: W&T's **product of rejected heights**, and the
 **magnitude of the wedge blade**. That is the same "two constructions, one result" pattern as the two
 orthogonalizations gacalc already keeps side by side for teaching (rejection vs Hestenes' blade
-product; see `tasks/reference/design-decisions.md`). Whether gacalc implements `content` as `|wedge|`,
-as `∏ |heights|`, or **both with an equivalence test** is the open implementation question in
-`tasks/archive/2026/08/24/area-volume-content.md`.
+product; see `tasks/reference/design-decisions.md`). gacalc implements **both**: `measure.content`
+(the wedge magnitude) and `measure.content_by_rejection` (the product of rejected heights), with
+their agreement tested in `tests/test_measure.py` (`tasks/archive/2026/08/24/area-volume-content.md`).
 
 ## Signed (oriented) content — the determinant, for k = n
 

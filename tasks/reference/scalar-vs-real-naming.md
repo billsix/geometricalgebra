@@ -2,7 +2,8 @@
 
 **Reference document** — the naming decision for the grade-0 / real-number boundary, decided
 2026-10-05 (William Emerison Six <billsix@gmail.com>) on the analysis in
-`tasks/archive/2026/10/05/consider-renaming-scalar-to-real.md`. The rename landed 2026-10-05 (`tasks/archive/2026/10/05/consider-renaming-scalar-to-real.md`). Update in place.
+`tasks/archive/2026/10/05/consider-renaming-scalar-to-real.md`, where the rename also landed that day.
+Update in place.
 
 ## The rule in one line
 

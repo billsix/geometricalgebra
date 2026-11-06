@@ -3,7 +3,7 @@
 **Reference document** — why `MultiVectorBase.isclose` works the way
 it does, and the standard practice it follows. Not a task; update in place if the
 method changes. Created 2026-08-02 (from the research behind renaming/reworking the
-old `is_close`; work record in `tasks/archive/.../is-numerically-close-*.md`).
+old `is_close`; work record in `tasks/archive/2026/08/02/is-numerically-close-symmetric-float.md`).
 
 ## The problem
 
