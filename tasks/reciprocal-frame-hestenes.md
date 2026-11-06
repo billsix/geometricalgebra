@@ -3,6 +3,9 @@
 **Status:** on hold — the maintainer said "hold off on that for now" about open question 1 (William Emerison Six <billsix@gmail.com>, 2026-11-04);
 not started.
 **Priority:** 8 (on hold)
+**Blocks:** `tasks/frame-inverse-head-first-recursion.md` (whether the frame map's inverse can run
+first-element-first; its option (B) is the reciprocal-frame map). The maintainer put that task on hold
+until this one is done (William Emerison Six <billsix@gmail.com>, 2026-11-06).
 **Difficulty:** 5
 **Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>)
 **Depends on:** `tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md` (the `Frame` class it attaches to;

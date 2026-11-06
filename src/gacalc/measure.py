@@ -45,36 +45,6 @@ from gacalc.base import MultiVectorBase, Real
 from gacalc.frame import make_orthogonal_frame
 
 
-def _require_vectors(vectors: Sequence[MultiVectorBase]) -> None:
-    """Raise unless ``vectors`` is a non-empty sequence of grade-1 vectors."""
-    if len(vectors) == 0:
-        raise ValueError("area/volume/content need at least one vector")
-    v: MultiVectorBase
-    for v in vectors:
-        if not v.is_vector():
-            raise ValueError(
-                "area/volume/content take vectors (grade 1); got a non-vector: "
-                + repr(v)
-            )
-
-
-def _max_basis_index(vectors: Sequence[MultiVectorBase]) -> int:
-    """The largest basis-vector index appearing in ``vectors`` (``0`` if all zero).
-
-    For the dimension-agnostic ``Gn`` this is the dimension of the smallest coordinate
-    space containing the vectors -- the ``n`` a signed (oriented) ``n``-volume lives in.
-    """
-    return max(
-        (
-            index
-            for vector in vectors
-            for blade in vector.to_blade_dict()
-            for index in blade
-        ),
-        default=0,
-    )
-
-
 def content(vectors: Sequence[MultiVectorBase]) -> Real:
     """The k-dimensional **content** of the parallelotope on ``vectors`` -- the
     high-school length/area/volume generalized (Williamson & Trotter p. 308).
@@ -114,7 +84,7 @@ def content(vectors: Sequence[MultiVectorBase]) -> Real:
     Raises:
         ValueError: on an empty sequence, or any non-vector (grade != 1) member.
     """
-    _require_vectors(vectors)
+    MultiVectorBase.require_vectors(vectors, "area/volume/content")
     return MultiVectorBase.outer_product_of_vectors(*vectors).magnitude()
 
 
@@ -144,7 +114,7 @@ def content_by_rejection(vectors: Sequence[MultiVectorBase]) -> Real:
             dependent set (not a frame -- via
             :func:`~gacalc.frame.make_orthogonal_frame`).
     """
-    _require_vectors(vectors)
+    MultiVectorBase.require_vectors(vectors, "area/volume/content")
     return math.prod(
         (
             perpendicular_vector.magnitude()
@@ -244,15 +214,19 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Real:
 
     Raises:
         ValueError: on an empty sequence or a non-vector member (via
-            :func:`_require_vectors`), or when ``len(vectors) != n`` -- the wrong number
-            of vectors to span the space (too few, or too many / over-determined).
+            :meth:`MultiVectorBase.require_vectors`), or when ``len(vectors) != n``
+            -- the wrong number of vectors to span the space (too few, or too many /
+            over-determined).
     """
-    _require_vectors(vectors)
-    representation: type[MultiVectorBase] = type(vectors[0])
-    dimension: int | None = getattr(representation, "DIMENSION", None)
-    # A fixed type declares the ambient dimension (and its dual is locked to it); the
-    # dimension-agnostic Gn takes the smallest space containing the vectors.
-    n: int = dimension if dimension is not None else _max_basis_index(vectors)
+    MultiVectorBase.require_vectors(vectors, "area/volume/content")
+    # type(vectors[0]) is the representation.  A fixed type declares the ambient
+    # dimension as DIMENSION (and its dual is locked to it); the dimension-agnostic Gn
+    # has none, so the getattr default takes the smallest space containing the vectors.
+    n: int = getattr(
+        type(vectors[0]),
+        "DIMENSION",
+        max(v.implied_minimal_number_of_dimensions() for v in vectors),
+    )
     if len(vectors) != n:
         raise ValueError(
             "signed content is the oriented n-volume: it needs exactly n vectors "

@@ -12,6 +12,14 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`MultiVectorBase.require_vector(value, context)` / `require_vectors(vectors, context)`** — the
+  shared "must be a vector (grade 1)" checks, raising `ValueError` (see the BREAKING entry under
+  Changed). They replace the private `measure._require_vectors`.
+- **`MultiVectorBase.implied_minimal_number_of_dimensions()`** — the dimension of the smallest
+  coordinate space holding a vector: its highest basis index with a nonzero coefficient (0 for the
+  zero vector). Raises `ValueError` on a non-vector. Works on every representation; `measure` and
+  `vectorcalc` now use it for `Gn`'s implied dimension in place of their private helper. Additive,
+  non-breaking.
 - **`gacalc.frame.Frame`** — a frozen dataclass built from a frame's vectors (`Frame([v_1, …, v_k])`;
   `ValueError` on a non-frame). It stores the original `vectors` (yielded by `iter(frame)`) and their
   orthogonal set `orthogonal_vectors` (`w_j`, by rejection). `coefficients()` computes the triangular
@@ -59,6 +67,15 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **BREAKING — every "must be a vector" check now raises `ValueError`.** `bivector_from_vectors`
+  (`MultiVectorBase` and `Gn`) and `transforms.plane_rotation` raised `TypeError`; `is_orthogonal_to`,
+  `is_parallel_to`, `versor_from_vectors`, `rotor_from_vectors` and `transforms.projection_rotation`
+  used bare `assert`s (an `AssertionError`, and no check at all under `python -O`). All of them, and
+  `measure`, `frame` and `vectorcalc.cross`, now go through the new shared checks
+  `MultiVectorBase.require_vector(value, context)` / `require_vectors(vectors, context)`, whose message
+  names the caller. Migrate: catch `ValueError` instead of `TypeError`/`AssertionError`. Unchanged:
+  `g2.rotate_90_degrees` and `bivector_rotation` still raise `TypeError` (a type check and a bivector
+  check, respectively).
 - **BREAKING — `Coef` → `Real`, `BladeCoef` → `BladeReal`, `from_scalar`/`from_coef` → `from_real`.** The
   Python real number (`int | float | sympy.Expr`) that goes into the algebra and comes back out of every
   extraction is now named `Real`; the one constructor `from_real(real)` lifts any real, numeric or

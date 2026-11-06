@@ -210,8 +210,7 @@ def projection_rotation(
         >>> f(Vector.e_3).isclose(Vector.e_3, rel_tol=1e-5, abs_tol=1e-5)
         True
     """
-    assert from_vector.is_vector()
-    assert to_vector.is_vector()
+    MultiVectorBase.require_vectors((from_vector, to_vector), "projection_rotation")
     plane: MultiVectorBase = from_vector ^ to_vector
     cls: type[V] = type(from_vector)
 
@@ -473,11 +472,7 @@ def plane_rotation(
         ...     turn(math.radians(45))(Vector.e_1), rel_tol=1e-5, abs_tol=1e-5)
         True
     """
-    if not (a.is_vector() and b.is_vector()):
-        raise TypeError(
-            "plane_rotation takes two vectors (grade-1); "
-            f"got grades {a.grades()} and {b.grades()}"
-        )
+    MultiVectorBase.require_vectors((a, b), "plane_rotation")
     plane: MultiVectorBase = a.outer_product(b)
     if plane == type(plane).zero():
         raise ValueError(

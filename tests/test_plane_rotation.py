@@ -194,9 +194,9 @@ def test_latex_label_hooks() -> None:
 
 
 def test_non_vector_operands_rejected() -> None:
-    with pytest.raises(TypeError, match="grade-1"):
+    with pytest.raises(ValueError, match="grade 1"):
         plane_rotation(g2.Bivector.e_12, E2)
-    with pytest.raises(TypeError, match="grade-1"):
+    with pytest.raises(ValueError, match="grade 1"):
         plane_rotation(E1, g2.G(coeff_scalar=1.0, coeff_e_1=1.0))
 
 

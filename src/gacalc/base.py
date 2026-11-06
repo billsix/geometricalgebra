@@ -1157,6 +1157,94 @@ class MultiVectorBase(abc.ABC):
         """
         return self.is_homogeneous_of_grade_r(r=1)
 
+    @staticmethod
+    def require_vector(value: MultiVectorBase, context: str) -> None:
+        """Raise ``ValueError`` unless ``value`` is a vector (grade 1).
+
+        The shared guard for every operation defined on vectors only: it raises
+        instead of asserting, so it still guards under ``python -O``.
+
+        Args:
+            value: the value to check.
+            context: what is being called, for the message (``"cross"``,
+                ``"a frame's map"``); the message reads ``"<context> takes a vector
+                (grade 1); got a non-vector: …"``.
+
+        Raises:
+            ValueError: if ``value`` is not homogeneous of grade 1.
+
+        Examples:
+            >>> from gacalc.gn import Gn, e_1, e_2
+            >>> Gn.require_vector(3 * e_1 + 4 * e_2, "an example")
+            >>> Gn.require_vector(e_1 ^ e_2, "an example")  # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+                ...
+            ValueError: an example takes a vector (grade 1); got a non-vector: ...
+        """
+        if not value.is_vector():
+            raise ValueError(
+                f"{context} takes a vector (grade 1); got a non-vector: {value!r}"
+            )
+
+    @staticmethod
+    def require_vectors(vectors: Sequence[MultiVectorBase], context: str) -> None:
+        """Raise ``ValueError`` unless ``vectors`` is a non-empty sequence of vectors.
+
+        :meth:`require_vector` applied to each member, after a check that the
+        sequence is not empty.
+
+        Args:
+            vectors: the values to check.
+            context: what is being called, for the message.
+
+        Raises:
+            ValueError: on an empty sequence, or on the first member that is not
+                homogeneous of grade 1.
+
+        Examples:
+            >>> from gacalc.gn import Gn, e_1, e_2
+            >>> Gn.require_vectors([1 * e_1, 1 * e_2], "an example")
+            >>> Gn.require_vectors([], "an example")
+            Traceback (most recent call last):
+                ...
+            ValueError: an example needs at least one vector
+        """
+        if len(vectors) == 0:
+            raise ValueError(f"{context} needs at least one vector")
+        value: MultiVectorBase
+        for value in vectors:
+            MultiVectorBase.require_vector(value, context)
+
+    def implied_minimal_number_of_dimensions(self) -> int:
+        """The dimension of the smallest coordinate space that holds this vector.
+
+        That is the highest basis index the vector uses: ``3 * e_1 + 4 * e_3`` needs
+        ``e_1 … e_3``, so 3.  A coefficient of ``0`` does not count, so the zero vector
+        gives 0.  The result depends only on the value, not on its type: a 𝒢₃ vector
+        lying along ``e_1`` gives 1.  The dimension-agnostic ``Gn`` uses this as its
+        ``n`` where a specialized type would use its fixed ``DIMENSION``.
+
+        Returns:
+            int: the highest basis index with a nonzero coefficient, or 0 for zero.
+
+        Raises:
+            ValueError: if the value is not a vector (grade 1).
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2, e_3
+            >>> (3 * e_1 + 4 * e_3).implied_minimal_number_of_dimensions()
+            3
+            >>> (2 * e_2).implied_minimal_number_of_dimensions()
+            2
+            >>> (e_1 * e_2).implied_minimal_number_of_dimensions()  # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+                ...
+            ValueError: implied_minimal_number_of_dimensions takes a vector ...
+        """
+        MultiVectorBase.require_vector(self, "implied_minimal_number_of_dimensions")
+        # A vector's blades are the one-index tuples (i,), one per nonzero coefficient.
+        return max((index for (index,) in self.to_blade_dict()), default=0)
+
     def is_bivector(self) -> bool:
         """True iff A is homogeneous of grade 2 (a bivector); ``zero`` qualifies.
 
@@ -1214,18 +1302,16 @@ class MultiVectorBase(abc.ABC):
         Raises:
             ValueError: if either operand is the zero vector — the angle is undefined,
                 so orthogonality is too (matches the Lean proofs' nonzero hypothesis).
-            AssertionError: if either operand is not a vector (grade 1).
+            ValueError: if either operand is not a vector (grade 1).
         """
 
+        # TODO - defined for vectors only right now, it's probably defined more
+        # generally later in the book
+        MultiVectorBase.require_vectors((self, other), "is_orthogonal_to")
         if self == type(self).zero() or other == type(other).zero():
             raise ValueError(
                 "orthogonality (the angle) is undefined for the zero vector"
             )
-
-        # TODO - defined for vectors only right now, it's probably defined more
-        # generally later in the book
-        assert self.is_vector()
-        assert other.is_vector()
 
         return bool(
             np.isclose(
@@ -1278,16 +1364,14 @@ class MultiVectorBase(abc.ABC):
             ValueError: if either operand is the zero vector — parallelism is framed via
                 the angle (sine 0), which is undefined there (matches the Lean proofs'
                 nonzero hypothesis).
-            AssertionError: if either operand is not a vector (grade 1).
+            ValueError: if either operand is not a vector (grade 1).
         """
-
-        if self == type(self).zero() or other == type(other).zero():
-            raise ValueError("parallelism (the angle) is undefined for the zero vector")
 
         # TODO - defined for vectors only right now, it's probably defined more
         # generally later in the book
-        assert self.is_vector()
-        assert other.is_vector()
+        MultiVectorBase.require_vectors((self, other), "is_parallel_to")
+        if self == type(self).zero() or other == type(other).zero():
+            raise ValueError("parallelism (the angle) is undefined for the zero vector")
 
         wedge: typing.Self = self.outer_product(other)
         if float_close_to_zero:
@@ -2030,10 +2114,9 @@ class MultiVectorBase(abc.ABC):
             bivector); apply it with ``R * v * R.inverse()``.
 
         Raises:
-            AssertionError: if either argument is not a vector (grade 1).
+            ValueError: if either argument is not a vector (grade 1).
         """
-        assert from_vector.is_vector()
-        assert to_vector.is_vector()
+        MultiVectorBase.require_vectors((from_vector, to_vector), "versor_from_vectors")
         # |from| * |to| -- the versor's scalar part, making it the half-angle versor.
         # Kept as the *product of two magnitudes* (two simple sqrts), NOT
         # |to from| = sqrt(|to|^2 * |from|^2): the latter is mathematically equal
@@ -2089,7 +2172,7 @@ class MultiVectorBase(abc.ABC):
             (or ``sandwich`` -- for a rotor the inverse is the reverse).
 
         Raises:
-            AssertionError: if either argument is not a vector (grade 1).
+            ValueError: if either argument is not a vector (grade 1).
             ZeroDivisionError: if the vectors are antiparallel (the versor is zero).
         """
         return cls.versor_from_vectors(
@@ -2192,13 +2275,9 @@ class MultiVectorBase(abc.ABC):
             and ``b`` are parallel).
 
         Raises:
-            TypeError: if either argument is not a vector (grade 1).
+            ValueError: if either argument is not a vector (grade 1).
         """
-        if not (a.is_vector() and b.is_vector()):
-            raise TypeError(
-                "bivector_from_vectors takes two vectors (grade-1); "
-                f"got grades {a.grades()} and {b.grades()}"
-            )
+        MultiVectorBase.require_vectors((a, b), "bivector_from_vectors")
         return a.outer_product(b)
 
     def sandwich(self, x: _OperandT) -> _OperandT:
