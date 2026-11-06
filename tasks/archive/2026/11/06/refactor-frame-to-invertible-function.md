@@ -60,7 +60,7 @@ standards. The before/after code and what each change illustrates are in
 
 ## Follow-ons
 
-- `tasks/reuse-existing-vector-check.md` — one shared vector check; replaces the nested `require_vector`
+- `tasks/archive/2026/11/06/reuse-existing-vector-check.md` — one shared vector check; replaces the nested `require_vector`
   this task kept and the check inside the new method.
 - `tasks/frame-inverse-head-first-recursion.md` — whether `peel` can run first-element-first; blocked
   on `tasks/reciprocal-frame-hestenes.md`.
