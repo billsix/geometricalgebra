@@ -231,14 +231,13 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Real:
             of vectors to span the space (too few, or too many / over-determined).
     """
     _require_vectors(vectors)
-    representation: type[MultiVectorBase] = type(vectors[0])
-    dimension: int | None = getattr(representation, "DIMENSION", None)
-    # A fixed type declares the ambient dimension (and its dual is locked to it); the
-    # dimension-agnostic Gn takes the smallest space containing the vectors.
-    n: int = (
-        dimension
-        if dimension is not None
-        else max(v.implied_minimal_number_of_dimensions() for v in vectors)
+    # type(vectors[0]) is the representation.  A fixed type declares the ambient
+    # dimension as DIMENSION (and its dual is locked to it); the dimension-agnostic Gn
+    # has none, so the getattr default takes the smallest space containing the vectors.
+    n: int = getattr(
+        type(vectors[0]),
+        "DIMENSION",
+        max(v.implied_minimal_number_of_dimensions() for v in vectors),
     )
     if len(vectors) != n:
         raise ValueError(

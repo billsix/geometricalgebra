@@ -78,6 +78,31 @@ both sandbox repos. The maintainer has said more issues with this method will fo
    pulling code into its own function"). All three are edited in github.com/billsix/runClaudeInContainer
    and mirrored byte-identically in github.com/billsix/runCrushInContainer. The rule is portable, so
    it does not go in the personal overlay.
+9. **"Used twice" does not by itself earn a name either** (William Emerison Six <billsix@gmail.com>,
+   2026-11-06, mid-implementation: "just because some variable is 'used twice' doesn't mean it has to
+   be"). Before keeping a multi-use local, check whether one expression can absorb the uses.
+   `dimension` was used twice, but only as `d if d is not None else fallback`, which is exactly what
+   `getattr(cls, "DIMENSION", fallback)` already does, so the local and the ternary both go away. The
+   cost is that the fallback is now always evaluated (a few dict lookups per vector), which is fine here.
+   `k = len(self.vectors)` is used twice too, but repeating `len(self.vectors)` costs nothing and reads
+   as well, so it is inlined. A name stays only when repeating its expression would be longer or harder
+   to read than the name (`n`), or would compute something expensive twice. `n` was reviewed against this rule
+   (William Emerison Six <billsix@gmail.com>, 2026-11-06): its second use is only the error message,
+   and the alternatives were (a) inline it into the check and drop `n` from the message, losing
+   information, or (b) write its three-line expression twice. The maintainer chose to keep `n`, here and
+   in `measure.signed_content`. The knowledge-extraction
+   step carries this rule along with Decision 1.
+10. **When a helper is nested into its only caller, its parameters should shadow the caller's
+   variables of the same meaning, and the agent must verify the shadowing is correct** (William
+   Emerison Six <billsix@gmail.com>, 2026-11-06: "I prefer shadowing if it works correctly because it
+   makes sure the reader knows they don't need to keep track of the outer y"). A shadowing parameter
+   tells the reader the outer binding is out of play inside the helper. Correct means the helper never
+   needs the outer value, and none of the helper's other names (parameters, pattern captures, locals)
+   accidentally capture or hide something it does need. Checked for `peel` inside `backward`: `peel`'s
+   `y` shadows `backward`'s `y`, and `peel` reads only its own `y` (each recursive call passes the
+   reduced remainder). Its other names (`remaining`, `earlier`, `w`, `v`, `x_last`) bind nothing in the
+   enclosing scopes (`to_invertible_function` binds `n`, `require_vector`, `forward`, `backward`; the
+   `v` in `forward`'s generator is local to `forward`), so the shadowing is correct and is kept.
 
 ## Plan
 
@@ -88,7 +113,7 @@ both sandbox repos. The maintainer has said more issues with this method will fo
 2. Refactor `to_invertible_function`:
    - Use `self.vectors` directly in place of the `frame_vectors` alias (CLAUDE.md: "No local aliases").
    - Inline `cls` and `dimension`. They disappear once the method from step 2 computes `n`.
-   - Keep `k` and `n`, which are each used twice (the `if` and the error message).
+   - Inline `k` as `len(self.vectors)` and keep `n` (Decision 9).
    - Move `peel` inside `backward`. Inline `pairs` into the `peel(...)` call there, with a comment naming
      it ("pairs: each orthogonal vector `w_i` with the frame vector `v_i` it came from, in frame order").
    - Inline `x_last` into the recursive call only if it is used once. It is used **twice** (in
@@ -104,6 +129,13 @@ both sandbox repos. The maintainer has said more issues with this method will fo
    - Add "declare at the point of use" and "nest a helper inside its only caller".
    - Replace the gacalc worked examples with this refactor (before/after) in
      `tasks/reference/python-coding-standard-gacalc.md`.
+   - Add the shadowing advice (Decision 10): when nesting a helper into its only caller, give its
+     parameter the caller's name when it means the same kind of value, so it deliberately shadows the
+     outer binding, and verify the helper never needs the outer value and that none of its other
+     names capture or hide an enclosing one. Put it beside "nest a helper inside its only caller" in
+     both reference docs and the short `CLAUDE.md` line.
+   - Add Decision 9 ("used twice" does not by itself earn a name; check whether one expression, such
+     as `getattr` with a default, absorbs the uses).
    - Stage both repos by path.
 
 ## Open questions

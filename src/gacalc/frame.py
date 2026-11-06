@@ -477,30 +477,19 @@ class Frame:
             >>> f.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
             True
         """
-        frame_vectors: Sequence[MultiVectorBase] = self.vectors
-        k: int = len(frame_vectors)
-        cls: type[MultiVectorBase] = type(frame_vectors[0])
-        dimension: int | None = getattr(cls, "DIMENSION", None)
-        n: int = (
-            dimension
-            if dimension is not None
-            else max(
-                max(blade)
-                for v in frame_vectors
-                for blade in v.to_blade_dict()
-                if blade
-            )
+        # n is the dimension of the space.  type(self.vectors[0]) is the frame's
+        # representation: a specialized type fixes n as its DIMENSION; Gn has none, so
+        # the getattr default gives the smallest dimension holding every frame vector.
+        n: int = getattr(
+            type(self.vectors[0]),
+            "DIMENSION",
+            max(v.implied_minimal_number_of_dimensions() for v in self.vectors),
         )
-        if k != n:
+        if len(self.vectors) != n:
             raise ValueError(
                 f"to_invertible_function needs a frame that spans the space (k = n); "
-                f"got k = {k} vectors in n = {n} dimensions"
+                f"got k = {len(self.vectors)} vectors in n = {n} dimensions"
             )
-        # Each orthogonal vector with the frame vector it came from, (w_i, v_i), in
-        # frame order; peel consumes them from the end.
-        pairs: tuple[tuple[MultiVectorBase, MultiVectorBase], ...] = tuple(
-            zip(self.orthogonal_vectors, frame_vectors, strict=True)
-        )
 
         def require_vector(value: MultiVectorBase) -> None:
             if not value.is_vector():
@@ -511,50 +500,61 @@ class Frame:
 
         def forward(x: MultiVectorBase) -> MultiVectorBase:
             require_vector(x)
-            basis: type[MultiVectorBase] = type(x)
+            cls: type[MultiVectorBase] = type(x)
             # basis_vector numbers the basis from 1, hence enumerate(start=1).
             return sum(
                 (
-                    x.dot(basis.basis_vector(i)).scalar_part() * v
-                    for i, v in enumerate(frame_vectors, start=1)
+                    x.dot(cls.basis_vector(i)).scalar_part() * v
+                    for i, v in enumerate(self.vectors, start=1)
                 ),
-                start=basis.zero(),
+                start=cls.zero(),
             )
 
-        def peel(
-            remaining: Sequence[tuple[MultiVectorBase, MultiVectorBase]],
-            y: MultiVectorBase,
-        ) -> list[Real]:
-            match remaining:
-                case []:
-                    # No vectors left: nothing to solve.
-                    return []
-                case [*earlier, (w, v)]:
-                    # One or more vectors.  w is perpendicular to every vector in
-                    # earlier, so w · y sees only this vector's term: its coordinate
-                    # is (w · y) / |w|².  Subtracting that multiple of v leaves a y
-                    # built from the earlier vectors alone; solve those coordinates
-                    # the same way, and put this one after them.
-                    x_last: Real = _exact_quotient(
-                        w.dot(y).scalar_part(), w.magnitude_squared()
-                    )
-                    return [*peel(earlier, y - x_last * v), x_last]
-                case _:
-                    # Unreachable: [] and [*earlier, last] cover every list.  Kept as
-                    # the total default because ty does not prove list-pattern
-                    # exhaustiveness, so the match needs an explicit catch-all.
-                    return []
-
         def backward(y: MultiVectorBase) -> MultiVectorBase:
+            def peel(
+                remaining: Sequence[tuple[MultiVectorBase, MultiVectorBase]],
+                y: MultiVectorBase,
+            ) -> list[Real]:
+                match remaining:
+                    case []:
+                        # No vectors left: nothing to solve.
+                        return []
+                    case [*earlier, (w, v)]:
+                        # One or more vectors.  w is perpendicular to every vector in
+                        # earlier, so w · y sees only this vector's term: its
+                        # coordinate is (w · y) / |w|².  Subtracting that multiple of
+                        # v leaves a y built from the earlier vectors alone; solve
+                        # those coordinates the same way, and put this one after them.
+                        x_last: Real = _exact_quotient(
+                            w.dot(y).scalar_part(), w.magnitude_squared()
+                        )
+                        return [*peel(earlier, y - x_last * v), x_last]
+                    case _:
+                        # Unreachable: [] and [*earlier, last] cover every list.  Kept
+                        # as the total default because ty does not prove list-pattern
+                        # exhaustiveness, so the match needs an explicit catch-all.
+                        return []
+
             require_vector(y)
-            basis: type[MultiVectorBase] = type(y)
-            # basis_vector numbers the basis from 1, hence enumerate(start=1).
+            cls: type[MultiVectorBase] = type(y)
+            # basis_vector numbers the basis from 1, hence enumerate(start=1).  The
+            # tuple(zip(...)) argument to peel is the pairs: each orthogonal vector
+            # with the frame vector it came from, (w_i, v_i), in frame order; peel
+            # consumes them from the end.
             return sum(
                 (
-                    x_i * basis.basis_vector(i)
-                    for i, x_i in enumerate(peel(pairs, y), start=1)
+                    x_i * cls.basis_vector(i)
+                    for i, x_i in enumerate(
+                        peel(
+                            tuple(
+                                zip(self.orthogonal_vectors, self.vectors, strict=True)
+                            ),
+                            y,
+                        ),
+                        start=1,
+                    )
                 ),
-                start=basis.zero(),
+                start=cls.zero(),
             )
 
         return InvertibleFunction(
