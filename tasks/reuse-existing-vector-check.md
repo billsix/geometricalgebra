@@ -1,72 +1,127 @@
-# Reuse an existing runtime vector check instead of `frame.py`'s new `require_vector`
+# One shared "must be a vector (grade 1)" check, used everywhere gacalc hand-rolls one
 
-**Status:** proposed — needs go-ahead
+**Status:** proposed — needs go-ahead (open questions below)
 **Priority:** 5
-**Difficulty:** 3
+**Difficulty:** 4
 **Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>): "make a task to see if for that
 require_vector thing you made, for the dot product task, if there's an existing function/method in the
 codebase that checks to ensure a run-time type like being a vector. I believe there is, so we would
 likely want to reuse that".
+**Merged 2026-11-06:** this doc absorbed `tasks/consolidate-vector-grade-checks.md` (created 2026-10-22,
+the same job asked earlier: "there is some procedure somewhere that ensures the parameters are vectors
+… find all references where they do a check like that, and call the procedure instead, if it makes
+sense"). That doc's inventory, its decision, and its open questions are folded in below, and it is
+archived as superseded (William Emerison Six <billsix@gmail.com>, 2026-11-06).
+**Depends on:** `tasks/refactor-frame-to-invertible-function.md`. Do that first. It reshapes
+`Frame.to_invertible_function` (where the nested `require_vector` lives), deletes
+`measure._max_basis_index`, and adds `MultiVectorBase.implied_minimal_number_of_dimensions()`, which
+raises on a non-vector and so is one more site for this task.
 
 ## BLUF
 
-The dot-product task (`tasks/archive/2026/11/04/frame-dot-instead-of-scalar-product.md`) added a nested
-`require_vector` inside `Frame.to_invertible_function()` (`src/gacalc/frame.py`) that raises
-`ValueError` on a non-vector. gacalc already has the predicate `MultiVectorBase.is_vector()`, plus at
-least one raising helper of the same shape, `measure._require_vectors`, and several hand-rolled checks
-that differ in the exception they raise. Done = one shared raising check, used by `frame.py` and named in `CLAUDE.md`, with this
-doc recording which other call sites moved to it and which were left alone, and why.
+gacalc checks "this argument is a vector" in many places, with different messages, different
+exception types (`ValueError` / `TypeError`), and some bare `assert`s that disappear under
+`python -O`. A raising helper already exists, `measure._require_vectors`, but it is private and its
+message names only area/volume/content. Done = one shared raising check in `base.py`, used by every
+real-`raise` site and by the public-API `assert` sites the open questions settle on, named in
+`CLAUDE.md`. Behaviour is preserved, or any change of exception type is deliberate and in
+`CHANGELOG.md`. `make test` and `make format` pass.
 
 ## Context (read first)
 
-A first `grep` for `is_vector()` in `src/gacalc/` (generated `g*.py` excluded), 2026-11-04:
-
-- **The predicate:** `MultiVectorBase.is_vector() -> bool` (`base.py`), "homogeneous of grade 1; `zero`
-  qualifies". Every check below is built on it.
-- **Raising helpers and inline checks, three different behaviours:**
-  - `measure._require_vectors(vectors)` (`measure.py`): private, takes a sequence, raises
-    `ValueError` on an empty sequence or a non-vector. Its message names "area/volume/content", so it
-    can't be reused as it stands.
-  - `frame.are_linearly_independent` (`frame.py`): an inline loop raising `ValueError` ("a frame is a
-    set of vectors (grade 1)").
-  - `frame.Frame.to_invertible_function` (`frame.py`): the new nested `require_vector`, raising
-    `ValueError`.
-  - `MultiVectorBase.bivector_from_vectors` (`base.py`): raises **`TypeError`**, not `ValueError`.
-- **Bare `assert`s** (vanish under `python -O`): `base.py` (two pairs in the vector-only methods near
-  the cosine/sine helpers; `versor_from_vectors`; two `# TODO - can this be generalized?` sites),
-  `transforms.py` (`versor_rotation` and one TODO site), `nbplotutils.py`.
+- **The predicate:** `MultiVectorBase.is_vector() -> bool` (`base.py`) is
+  `is_homogeneous_of_grade_r(1)`; "`zero` qualifies". Every check below is built on it.
+- **The helper to promote:** `measure._require_vectors(vectors)`. It raises `ValueError` on an empty
+  sequence or a non-vector, and its message is hardcoded to "area/volume/content". `measure.area`,
+  `volume`, `content` and `signed_*` call it.
+- **The sibling to copy:** `MultiVectorBase._require_scalar_plus_bivector(method_name)` (`base.py`), a
+  `_require_*` guard that takes a context label so the message names the caller.
 - `CLAUDE.md` › "Dot product for vectors, scalar product only where it is meant" tells new code to
   "check with `is_vector()` and raise `ValueError`". The helper this task settles on should be named
   there.
+- Line numbers are deliberately not given; locate each site by function name (they shift with every
+  edit, and `refactor-frame-to-invertible-function` will move several).
+
+## Inventory (re-grep before starting; this is the 2026-10-22 + 2026-11-04 snapshot)
+
+Discover with `rg -n 'is_vector\(\)' src/gacalc --glob '!g[0-9].py'` and `rg -n 'grade 1' src/gacalc`.
+Also look for a grade-generic check (`is_homogeneous_of_grade_r` plus a raise) that would cover vectors
+as one case.
+
+### A. Real user-facing `raise` on a non-vector argument — convert
+
+- `measure._require_vectors` — the helper itself; moves to `base.py`.
+- `frame.are_linearly_independent` — an inline loop, `ValueError` ("a frame is a set of vectors
+  (grade 1)"). Caveat: its **empty** case must stay `return False`, not raise, so it calls the helper
+  only after its own empty guard (Open Q1).
+- `frame.Frame.to_invertible_function` — the nested `require_vector`, `ValueError`.
+- `MultiVectorBase.implied_minimal_number_of_dimensions` — new, added by
+  `tasks/refactor-frame-to-invertible-function.md`; raises `ValueError` on a non-vector.
+- `vectorcalc.cross` — loops `(a, b)`, `ValueError` ("cross takes vectors (grade 1)").
+- `MultiVectorBase.bivector_from_vectors` — raises **`TypeError`**, not `ValueError`, and reports the
+  grades (Open Q2). `Gn.bivector_from_vectors` delegates to it, and its docstring also says "TypeError".
+- the `transforms` rotation factory that mirrors `bivector_from_vectors`
+  (`if not (a.is_vector() and b.is_vector()): raise …`) — same `TypeError` question.
+
+### B. `assert …is_vector()` on public-API parameters — judgment (Open Q3)
+
+Dev-time asserts (`AssertionError`, gone under `python -O`), and some docstrings advertise "Raises:
+AssertionError". Converting them is a behaviour change.
+
+- `MultiVectorBase.inner_product` / `outer_product`.
+- `MultiVectorBase.versor_from_vectors`.
+- the `transforms` factories (`versor_rotation` and its neighbours).
+
+### C. Leave alone
+
+- `MultiVectorBase.reject` / `reflect` inner asserts marked `# TODO - can this be generalized?`, and the
+  `transforms` mirror: they mark a known scope limit, not an input guard.
+- `nbplotutils.py`'s `assert v1.is_vector() and v2.is_vector()`: a notebook plotting helper.
+- The generated `g3.py` `Odd_3` → `Vector` cast check: generated code (never hand-edited) and a
+  different check (a narrowing cast, not a parameter guard).
+
+## Decisions
+
+1. **The shared check lives in `base.py`, not `measure.py`** (William Emerison Six
+   <billsix@gmail.com>, 2026-10-22). `base` is the lowest shared module: `frame`, `vectorcalc`,
+   `transforms` and `measure` all import it, and it imports none of them, so there is no cycle.
+2. **Name it in `CLAUDE.md`** (William Emerison Six <billsix@gmail.com>, 2026-11-04: "if there is such a
+   method/function, update CLAUDE.md to call it out"), in "Conventions the agent must obey while
+   writing code", and point the "Dot product for vectors" bullet at it.
 
 ## Plan
 
-1. **Re-grep, as the source of truth:** `rg -n 'is_vector\(\)' src/gacalc --glob '!g[0-9].py'` and
-   `rg -n 'grade 1' src/gacalc`. Also look for a grade-generic check (`is_homogeneous_of_grade_r` plus a
-   raise) that would cover vectors as one case. List every site in this doc.
-2. **Pick the shared check.** Most likely a public or module-level helper (`require_vector(value)` /
-   `require_vectors(values, context)`) in `base.py`, beside `is_vector`, raising `ValueError` with the
-   caller's name in the message. That would replace `measure._require_vectors`, the
-   `are_linearly_independent` loop, and `frame.py`'s nested helper. Record the name, the signature and
-   where it lives, with the reason.
-3. **Convert `frame.py` and `measure.py`** to it. The messages may change wording; check the tests that
-   match on them (`rg -n 'match=' tests`).
-4. **Decide the other sites** (the open questions): the `TypeError` in `bivector_from_vectors`, and the
-   bare `assert`s.
-5. **Call the check out in `CLAUDE.md`** (William Emerison Six <billsix@gmail.com>, 2026-11-04: "if
-   there is such a method/function, update CLAUDE.md to call it out"). Name the shared helper (and the
-   predicate `is_vector()` it wraps) in `CLAUDE.md` › "Conventions the agent must obey while writing
-   code", so new code reaches for it instead of writing another check. The "Dot product for vectors"
-   bullet, which says "check with `is_vector()` and raise `ValueError`", should point at it too. Add a
-   `CHANGELOG.md` `[Unreleased]` entry if the exception type or a public name changes.
-6. **Gates:** `make test`, `make format`, `python tools/check_annotations.py`.
+1. Re-grep and refresh the inventory above.
+2. Add the shared check to `base.py` (form per Open Q1), with a context label so each site keeps a
+   message naming the caller. `measure.py` imports it and drops its local copy.
+3. Convert bucket A, preserving each site's message via the context label and the frame's empty case.
+4. Bucket B per Open Q3; the `TypeError` sites per Open Q2.
+5. Call the helper out in `CLAUDE.md` (Decision 2).
+6. `CHANGELOG.md` `[Unreleased]` entry if a public name or an exception type changes (a consumer
+   catching `TypeError` from `bivector_from_vectors` would be broken by a switch).
+7. Gates: `make test` (tests that match on these messages pin the behaviour; check
+   `rg -n 'match=' tests` and update any deliberately), `make format`,
+   `python tools/check_annotations.py`. No `src/gacalc/g*.py` edits.
 
 ## Open questions
 
-1. **Scope:** only the `ValueError` sites (`frame.py` + `measure.py`), or also the bare `assert`s? The
-   asserts would become `ValueError`s that hold under `python -O`. Recommended: also the asserts, since
-   they stop guarding anything under `-O`.
-2. **`bivector_from_vectors`'s `TypeError`:** switch it to `ValueError` to match the rest? That is a
-   breaking change for a released method, so it would get a changelog entry. Recommended: leave it
-   `TypeError` in this task and note the inconsistency, since changing a public exception type deserves
-   its own decision.
+1. **Form and empty policy.** A `@staticmethod` `MultiVectorBase.require_vectors(vectors, context="",
+   require_nonempty=True)` (matching the `_require_scalar_plus_bivector` sibling), or a module-level
+   `base.require_vectors(...)` function? Recommended: the staticmethod, with the empty check on by
+   default so `frame.are_linearly_independent` passes `require_nonempty=False` after its own guard. A
+   single-value convenience `require_vector(value, context)` is worth adding too, since most sites
+   check one or two values.
+2. **`TypeError` sites** (`bivector_from_vectors`, its `transforms` mirror, `Gn`'s docstring): switch to
+   `ValueError` to match the rest, or keep `TypeError`? Switching is a breaking change to a released
+   method and drops the "got grades …" detail. Recommended: keep `TypeError` in this task (the helper
+   takes the exception type, or those sites keep their own raise) and record the inconsistency; changing
+   a public exception type deserves its own decision.
+3. **Bucket B asserts:** convert the public-parameter asserts to the real check so misuse fails even
+   under `python -O`, or convert only bucket A? Recommended: convert bucket B (and update the
+   "Raises: AssertionError" docstrings, with a changelog entry), leave bucket C alone.
+
+## See also
+
+- `tasks/reference/conditional-refactoring-rules.md` — Rule B (dedup before you restructure).
+- `tasks/archive/2026/11/04/frame-dot-instead-of-scalar-product.md` — where the nested `require_vector`
+  came from.

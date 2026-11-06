@@ -4,6 +4,9 @@
 **Priority:** 3
 **Difficulty:** 3
 **Created:** 2026-11-06 (William Emerison Six <billsix@gmail.com>)
+**Next:** `tasks/reuse-existing-vector-check.md` (one shared vector check). It depends on this task: it
+replaces the nested `require_vector` this task keeps, and the non-vector check inside the new
+`implied_minimal_number_of_dimensions()`, so doing this task first avoids editing the same lines twice.
 
 ## BLUF
 
