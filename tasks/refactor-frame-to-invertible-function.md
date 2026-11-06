@@ -1,6 +1,6 @@
 # Refactor `Frame.to_invertible_function`: inline single-use locals, narrow scopes, name the implied dimension
 
-**Status:** proposed — open questions below block implementation.
+**Status:** ready — questions answered 2026-11-06; the maintainer said not to start yet ("don't start work yet").
 **Priority:** 3
 **Difficulty:** 3
 **Created:** 2026-11-06 (William Emerison Six <billsix@gmail.com>)
@@ -58,15 +58,31 @@ both sandbox repos. The maintainer has said more issues with this method will fo
    basis index this vector uses, i.e. the smallest coordinate space that holds it") is extracted into
    `base.py`, `gn.py`, or the generated classes. The working name is `implied_minimal_number_of_dimensions`.
    The method checks that its input is a vector.
+5. **Home and shape (Q1, answered yes):** an instance method on `MultiVectorBase` (`base.py`),
+   `v.implied_minimal_number_of_dimensions() -> int`. It raises `ValueError` on a non-vector and
+   returns the highest basis index `v` uses, or 0 for the zero vector. Callers with several vectors
+   take `max(...)` over them. Being a base method, it works for `Gn` and every generated class with no
+   generator change.
+6. **Name (Q2, answered yes):** exactly `implied_minimal_number_of_dimensions`.
+7. **No shared "`DIMENSION` else implied" helper (Q3, left to the agent's discretion; decided no).**
+   Only the per-vector method is extracted. Each caller keeps its short `getattr(cls, "DIMENSION",
+   None)` check, because `vectorcalc.cross` uses the two halves differently (it rejects a fixed
+   dimension other than 3 and, separately, an implied dimension above 3); one helper would hide that
+   difference. `measure._max_basis_index` is deleted, and its callers use the new method.
+8. **Where the shared rules go (Q4, answered yes):** the full rule with examples goes in
+   `python-coding-standard.md` and the language-agnostic `code-style-conventions.md`, plus one
+   short line in the shared `CLAUDE.md` (`entrypoint/dotfiles/.claude/CLAUDE.md`, under "What earns
+   pulling code into its own function"). All three are edited in github.com/billsix/runClaudeInContainer
+   and mirrored byte-identically in github.com/billsix/runCrushInContainer. The rule is portable, so
+   it does not go in the personal overlay.
 
 ## Plan
 
-1. Settle the open questions.
-2. Add the implied-dimension method (home and name per Q1–Q2), with a doctest and a non-vector
-   `ValueError`. Route `measure.signed_content` and `vectorcalc.cross` through it and delete
-   `measure._max_basis_index` (per Q3). Add a `CHANGELOG.md` `[Unreleased]` "Added" entry for the new
+1. Add `MultiVectorBase.implied_minimal_number_of_dimensions()` (Decisions 5–6), with a doctest and a
+   non-vector `ValueError`. Route `measure.signed_content` and `vectorcalc.cross` through it and delete
+   `measure._max_basis_index` (Decision 7). Add a `CHANGELOG.md` `[Unreleased]` "Added" entry for the new
    public method.
-3. Refactor `to_invertible_function`:
+2. Refactor `to_invertible_function`:
    - Use `self.vectors` directly in place of the `frame_vectors` alias (CLAUDE.md: "No local aliases").
    - Inline `cls` and `dimension`. They disappear once the method from step 2 computes `n`.
    - Keep `k` and `n`, which are each used twice (the `if` and the error message).
@@ -75,8 +91,8 @@ both sandbox repos. The maintainer has said more issues with this method will fo
    - Inline `x_last` into the recursive call only if it is used once. It is used **twice** (in
      `y - x_last * v` and in the returned list), so it stays.
    - Keep `require_vector` at its current level: both `forward` and `backward` use it.
-4. Gates: `make test`, `make format` (ruff + ty), `python tools/check_annotations.py` (no new rows).
-5. **Last item: extract the knowledge.** Update the shared docs (location per Q4) in
+3. Gates: `make test`, `make format` (ruff + ty), `python tools/check_annotations.py` (no new rows).
+4. **Last item: extract the knowledge.** Update the shared docs (Decision 8) in
    github.com/billsix/runClaudeInContainer and mirror the change byte-identically into
    github.com/billsix/runCrushInContainer:
    - Rewrite the inline-once rule: drop the "documents an opaque expression" exception, and replace it
@@ -89,23 +105,7 @@ both sandbox repos. The maintainer has said more issues with this method will fo
 
 ## Open questions
 
-1. **Home and shape of the implied-dimension method.** Recommendation: an **instance method on
-   `MultiVectorBase`** (`base.py`), `v.implied_minimal_number_of_dimensions() -> int`. It raises
-   `ValueError` on a non-vector, returns the highest basis index in `v`, and returns 0 for the zero
-   vector. Callers with several vectors take `max(...)` over them. As a base method it works for `Gn` and
-   every generated class with nothing to generate. Alternative: a free function over a sequence, as
-   `_max_basis_index` is today.
-2. **The name.** You said "some name like" `implied_minimal_number_of_dimensions`. Recommendation: keep
-   it as you wrote it. Alternative: something shorter, e.g. `minimal_dimension`.
-3. **Should the `DIMENSION`-else-max decision move into a helper too?** The pattern "a fixed type's
-   `DIMENSION`, else the implied dimension" appears in `frame.py`, `measure.py`, and (in another form) in
-   `vectorcalc.py`. Recommendation: no. Extract only the per-vector method you asked for, and let each
-   caller keep its short `DIMENSION` check, because `vectorcalc` uses the two halves differently.
-4. **Where in the shared layer the rules go.** Recommendation: the full rule with examples goes in
-   `python-coding-standard.md` and the language-agnostic `code-style-conventions.md`, plus **one terse
-   line** in the shared `CLAUDE.md` (runClaudeInContainer `entrypoint/dotfiles/.claude/CLAUDE.md` and
-   the runCrush twin), under "What earns pulling code into its own function". It is a portable rule,
-   not a personal one, so not the personal overlay.
+None — all four answered 2026-11-06 (see Decisions 5–8).
 
 ## Later issues
 
