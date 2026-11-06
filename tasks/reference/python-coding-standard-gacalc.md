@@ -84,6 +84,66 @@ def reject(cls, away_from):
 A related lesson: an error is best raised by the code that *discovers* it — `_route`'s "no
 path" moved into the search itself, which is what let its tail collapse to one line.
 
+## Inline once, declare at use, nest and shadow — `Frame.to_invertible_function` (2026-11-06)
+
+Illustrating the shared "Inline a value used once, and name it in a comment instead of a binding"
+rule and the "nest a helper with one caller / shadow deliberately" bullets. Before (abridged):
+
+```python
+frame_vectors: Sequence[MultiVectorBase] = self.vectors        # an alias
+k: int = len(frame_vectors)
+cls: type[MultiVectorBase] = type(frame_vectors[0])            # used once
+dimension: int | None = getattr(cls, "DIMENSION", None)
+n: int = (
+    dimension
+    if dimension is not None
+    else max(max(blade) for v in frame_vectors for blade in v.to_blade_dict() if blade)
+)
+...
+pairs = tuple(zip(self.orthogonal_vectors, frame_vectors, strict=True))  # used 40 lines later
+def peel(remaining, y): ...        # only backward calls it
+def backward(y): ... peel(pairs, y) ...
+```
+
+After:
+
+```python
+# n is the dimension of the space.  type(self.vectors[0]) is the frame's representation: a
+# specialized type fixes n as its DIMENSION; Gn has none, so the getattr default gives the
+# smallest dimension holding every frame vector.
+n: int = getattr(
+    type(self.vectors[0]),
+    "DIMENSION",
+    max(v.implied_minimal_number_of_dimensions() for v in self.vectors),
+)
+if len(self.vectors) != n:
+    raise ValueError(f"... got k = {len(self.vectors)} vectors in n = {n} dimensions")
+...
+def backward(y):
+    def peel(remaining, y): ...    # y deliberately shadows backward's y
+    ...
+    # The tuple(zip(...)) argument to peel is the pairs: each orthogonal vector with the
+    # frame vector it came from, (w_i, v_i), in frame order.
+    ... peel(tuple(zip(self.orthogonal_vectors, self.vectors, strict=True)), y) ...
+```
+
+What each change shows:
+
+- `cls`, the `frame_vectors` alias, and `pairs` were single-use: inlined, with a comment naming
+  `pairs`.
+- `dimension` was used twice, but only as "value or fallback", which `getattr`'s default already
+  does. `k` was used twice, but `len(self.vectors)` is cheap to repeat. Both went away.
+- `n` is used twice (the check and its message) and its expression is three lines, so it keeps its
+  name (the maintainer's call).
+- The opaque nested `max(max(blade) …)` became the named method
+  `MultiVectorBase.implied_minimal_number_of_dimensions()`, which also replaced
+  `measure._max_basis_index`.
+- `peel` moved inside `backward`, its only caller. Its `y` shadows `backward`'s `y` on purpose:
+  `peel` only ever reads its own `y`, and none of its other names (`remaining`, `earlier`, `w`,
+  `v`, `x_last`) bind anything in the enclosing scopes.
+
+Record: `tasks/archive/2026/11/06/refactor-frame-to-invertible-function.md`.
+
 ## Cross-links (gacalc)
 
 - `tasks/reference/conditional-refactoring-rules.md` — the Rules A–E worked examples.
