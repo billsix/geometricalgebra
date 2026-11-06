@@ -1,6 +1,6 @@
 # One shared "must be a vector (grade 1)" check, used everywhere gacalc hand-rolls one
 
-**Status:** proposed — needs go-ahead (open questions below)
+**Status:** in progress — questions answered and go-ahead given (William Emerison Six <billsix@gmail.com>, 2026-11-06)
 **Priority:** 5
 **Difficulty:** 4
 **Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>): "make a task to see if for that
@@ -88,6 +88,23 @@ AssertionError". Converting them is a behaviour change.
 2. **Name it in `CLAUDE.md`** (William Emerison Six <billsix@gmail.com>, 2026-11-04: "if there is such a
    method/function, update CLAUDE.md to call it out"), in "Conventions the agent must obey while
    writing code", and point the "Dot product for vectors" bullet at it.
+3. **Form (Q1, the agent's recommendation accepted — William Emerison Six <billsix@gmail.com>,
+   2026-11-06: "whatever you recommend"):** a static method
+   `MultiVectorBase.require_vectors(vectors, context="", require_nonempty=True)` plus a single-value
+   `MultiVectorBase.require_vector(value, context)`, both raising `ValueError` with the caller's context
+   in the message. `frame.are_linearly_independent` keeps its own empty guard and calls with
+   `require_nonempty=False`.
+4. **Exception type (Q2): every vector check raises `ValueError`, including `bivector_from_vectors`
+   and its `transforms` mirror** (William Emerison Six <billsix@gmail.com>, 2026-11-06: "I don't care
+   if we break callers, only me, this project, and modelviewprojection use it - find any uses that
+   cause issues, and update them"). Search gacalc and modelviewprojection for code catching
+   `TypeError` from these sites (tests' `pytest.raises(TypeError…)`, `except TypeError`) and update
+   them. A `CHANGELOG.md` BREAKING entry records the switch.
+5. **Public-parameter asserts become real checks (Q3, the agent's recommendation accepted —
+   William Emerison Six <billsix@gmail.com>, 2026-11-06):** bucket B (`inner_product`,
+   `outer_product`, `versor_from_vectors`, the `transforms` factories) call the shared check, and their
+   "Raises: AssertionError" docstrings become `ValueError`. Bucket C (the `# TODO` reject/reflect
+   asserts, the notebook helper, generated code) is left alone.
 
 ## Plan
 
@@ -105,20 +122,7 @@ AssertionError". Converting them is a behaviour change.
 
 ## Open questions
 
-1. **Form and empty policy.** A `@staticmethod` `MultiVectorBase.require_vectors(vectors, context="",
-   require_nonempty=True)` (matching the `_require_scalar_plus_bivector` sibling), or a module-level
-   `base.require_vectors(...)` function? Recommended: the staticmethod, with the empty check on by
-   default so `frame.are_linearly_independent` passes `require_nonempty=False` after its own guard. A
-   single-value convenience `require_vector(value, context)` is worth adding too, since most sites
-   check one or two values.
-2. **`TypeError` sites** (`bivector_from_vectors`, its `transforms` mirror, `Gn`'s docstring): switch to
-   `ValueError` to match the rest, or keep `TypeError`? Switching is a breaking change to a released
-   method and drops the "got grades …" detail. Recommended: keep `TypeError` in this task (the helper
-   takes the exception type, or those sites keep their own raise) and record the inconsistency; changing
-   a public exception type deserves its own decision.
-3. **Bucket B asserts:** convert the public-parameter asserts to the real check so misuse fails even
-   under `python -O`, or convert only bucket A? Recommended: convert bucket B (and update the
-   "Raises: AssertionError" docstrings, with a changelog entry), leave bucket C alone.
+None — all three answered 2026-11-06 (Decisions 3–5).
 
 ## See also
 
