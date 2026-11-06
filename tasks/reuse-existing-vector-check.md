@@ -7,7 +7,7 @@
 require_vector thing you made, for the dot product task, if there's an existing function/method in the
 codebase that checks to ensure a run-time type like being a vector. I believe there is, so we would
 likely want to reuse that".
-**Merged 2026-11-06:** this doc absorbed `tasks/consolidate-vector-grade-checks.md` (created 2026-10-22,
+**Merged 2026-11-06:** this doc absorbed `tasks/archive/2026/11/06/consolidate-vector-grade-checks.md` (created 2026-10-22,
 the same job asked earlier: "there is some procedure somewhere that ensures the parameters are vectors
 … find all references where they do a check like that, and call the procedure instead, if it makes
 sense"). That doc's inventory, its decision, and its open questions are folded in below, and it is
