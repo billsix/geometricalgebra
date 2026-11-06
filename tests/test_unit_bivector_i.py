@@ -35,7 +35,7 @@ from gacalc.gn import Gn, e_1, e_2
 
 
 def test_bivector_from_vectors_rejects_non_vectors() -> None:
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         Gn.bivector_from_vectors(e_1 ^ e_2, e_1)  # a bivector is not grade-1
 
 

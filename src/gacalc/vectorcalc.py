@@ -85,12 +85,7 @@ def cross(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
             representation other than 3-D, or a ``Gn`` vector with a basis
             index above 3.
     """
-    operand: MultiVectorBase
-    for operand in (a, b):
-        if not operand.is_vector():
-            raise ValueError(
-                "cross takes vectors (grade 1); got a non-vector: " + repr(operand)
-            )
+    MultiVectorBase.require_vectors((a, b), "cross")
     wedge: MultiVectorBase = a.wedge(b)
     # Mirror measure.signed_content's dimension logic: a fixed-dimension type
     # declares DIMENSION (and its dual is locked to it -- any other n raises),

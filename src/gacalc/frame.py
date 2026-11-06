@@ -64,12 +64,7 @@ def are_linearly_independent(
     """
     if len(vectors) == 0:
         return False
-    v: MultiVectorBase
-    for v in vectors:
-        if not v.is_vector():
-            raise ValueError(
-                "a frame is a set of vectors (grade 1); got a non-vector: " + repr(v)
-            )
+    MultiVectorBase.require_vectors(vectors, "a frame")
     blade: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(*vectors)
     return (
         not bool(np.isclose(float(blade.magnitude()), 0.0, rtol=1e-5, atol=1e-5))
@@ -491,15 +486,8 @@ class Frame:
                 f"got k = {len(self.vectors)} vectors in n = {n} dimensions"
             )
 
-        def require_vector(value: MultiVectorBase) -> None:
-            if not value.is_vector():
-                raise ValueError(
-                    "a frame's map takes a vector (grade 1); got a non-vector: "
-                    + repr(value)
-                )
-
         def forward(x: MultiVectorBase) -> MultiVectorBase:
-            require_vector(x)
+            MultiVectorBase.require_vector(x, "a frame's map")
             cls: type[MultiVectorBase] = type(x)
             # basis_vector numbers the basis from 1, hence enumerate(start=1).
             return sum(
@@ -535,7 +523,7 @@ class Frame:
                         # exhaustiveness, so the match needs an explicit catch-all.
                         return []
 
-            require_vector(y)
+            MultiVectorBase.require_vector(y, "a frame's map")
             cls: type[MultiVectorBase] = type(y)
             # basis_vector numbers the basis from 1, hence enumerate(start=1).  The
             # tuple(zip(...)) argument to peel is the pairs: each orthogonal vector

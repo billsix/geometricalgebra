@@ -158,7 +158,7 @@ class Gn(MultiVectorBase):
             True
 
         Raises:
-            TypeError: if either argument is not a vector (grade 1).
+            ValueError: if either argument is not a vector (grade 1).
         """
         return typing.cast(Gn, super().bivector_from_vectors(a, b))
 
