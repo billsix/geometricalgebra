@@ -132,6 +132,17 @@ shell-exec: image ## Run a script/command in the container env (no TTY): make sh
 
 .PHONY: jupyter
 jupyter: image ## Launch JupyterLab (gacalc kernel) on http://127.0.0.1:8888/lab
+	@[ "$(USE_JUPYTER)" = 1 ] || { \
+	  echo 'ERROR: make jupyter needs JupyterLab,'; \
+	  echo '       gated by the build-time flag USE_JUPYTER (currently USE_JUPYTER=$(USE_JUPYTER)).'; \
+	  echo ''; \
+	  echo 'Enable it persistently, then rebuild and run:'; \
+	  echo "  echo 'export USE_JUPYTER=1' >> ~/.bashrc && source ~/.bashrc"; \
+	  echo '  make image'; \
+	  echo '  make jupyter'; \
+	  echo ''; \
+	  echo '(This session only: run  export USE_JUPYTER=1  instead of the echo/source line.)'; \
+	  exit 2; }
 	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) -it --rm \
 		--entrypoint /bin/bash \
 		$(FILES_TO_MOUNT) \
@@ -171,6 +182,18 @@ check-format: format ## (CI) run format, then fail if it changed any tracked fil
 # import gacalc, then runs the book build.
 .PHONY: docs
 docs: image ## (container) build the book -> HTML + PDF into ./output/gacalc/
+	@{ [ "$(BUILD_DOCS)" = 1 ] && [ "$(USE_EPIX)" = 1 ]; } || { \
+	  echo 'ERROR: make docs needs the Sphinx/TeX docs toolchain (BUILD_DOCS) and ePiX figures (USE_EPIX);'; \
+	  echo '       currently BUILD_DOCS=$(BUILD_DOCS), USE_EPIX=$(USE_EPIX).'; \
+	  echo ''; \
+	  echo 'Enable them persistently, then rebuild and run:'; \
+	  echo "  echo 'export BUILD_DOCS=1' >> ~/.bashrc"; \
+	  echo "  echo 'export USE_EPIX=1'   >> ~/.bashrc && source ~/.bashrc"; \
+	  echo '  make image'; \
+	  echo '  make docs'; \
+	  echo ''; \
+	  echo '(This session only: run  export BUILD_DOCS=1 USE_EPIX=1  instead of the echo/source lines.)'; \
+	  exit 2; }
 	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
 		--entrypoint /bin/bash \
 		$(FILES_TO_MOUNT) \
@@ -297,6 +320,17 @@ test: image ## Run the full test suite INSIDE the container; exit 0 on success, 
 
 .PHONY: lean
 lean: image ## Build + verify the Lean proofs (proofs/); nonzero if any proof is incomplete (sorryAx). Needs an image with USE_LEAN=1 (the default full image).
+	@[ "$(USE_LEAN)" = 1 ] || { \
+	  echo 'ERROR: make lean needs the Lean 4 / Mathlib toolchain,'; \
+	  echo '       gated by the build-time flag USE_LEAN (currently USE_LEAN=$(USE_LEAN)).'; \
+	  echo ''; \
+	  echo 'Enable it persistently, then rebuild and run:'; \
+	  echo "  echo 'export USE_LEAN=1' >> ~/.bashrc && source ~/.bashrc"; \
+	  echo '  make image'; \
+	  echo '  make lean'; \
+	  echo ''; \
+	  echo '(This session only: run  export USE_LEAN=1  instead of the echo/source line.)'; \
+	  exit 2; }
 	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
 		-v $(CURDIR):/gacalc:Z \
 		--entrypoint /bin/bash \
