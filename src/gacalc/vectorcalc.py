@@ -28,7 +28,6 @@ over geometric-algebra machinery that already computes it:
 from __future__ import annotations
 
 from gacalc.base import MultiVectorBase
-from gacalc.measure import _max_basis_index
 
 
 def cross(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
@@ -102,9 +101,16 @@ def cross(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
             "the cross product is 3-dimensional; got a "
             f"{dimension}-dimensional representation (use g3, or Gn)"
         )
-    if dimension is None and _max_basis_index([a, b]) > 3:
-        raise ValueError(
-            "the cross product is 3-dimensional; got a vector with a basis "
-            f"index above 3 (largest: {_max_basis_index([a, b])})"
+    if dimension is None:
+        # The smallest dimension holding both Gn vectors: a cross product needs
+        # it to be at most 3.
+        n: int = max(
+            a.implied_minimal_number_of_dimensions(),
+            b.implied_minimal_number_of_dimensions(),
         )
+        if n > 3:
+            raise ValueError(
+                "the cross product is 3-dimensional; got a vector with a basis "
+                f"index above 3 (largest: {n})"
+            )
     return wedge.dual(3)

@@ -12,6 +12,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`MultiVectorBase.implied_minimal_number_of_dimensions()`** — the dimension of the smallest
+  coordinate space holding a vector: its highest basis index with a nonzero coefficient (0 for the
+  zero vector). Raises `ValueError` on a non-vector. Works on every representation; `measure` and
+  `vectorcalc` now use it for `Gn`'s implied dimension in place of their private helper. Additive,
+  non-breaking.
 - **`gacalc.frame.Frame`** — a frozen dataclass built from a frame's vectors (`Frame([v_1, …, v_k])`;
   `ValueError` on a non-frame). It stores the original `vectors` (yielded by `iter(frame)`) and their
   orthogonal set `orthogonal_vectors` (`w_j`, by rejection). `coefficients()` computes the triangular

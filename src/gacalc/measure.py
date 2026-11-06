@@ -58,23 +58,6 @@ def _require_vectors(vectors: Sequence[MultiVectorBase]) -> None:
             )
 
 
-def _max_basis_index(vectors: Sequence[MultiVectorBase]) -> int:
-    """The largest basis-vector index appearing in ``vectors`` (``0`` if all zero).
-
-    For the dimension-agnostic ``Gn`` this is the dimension of the smallest coordinate
-    space containing the vectors -- the ``n`` a signed (oriented) ``n``-volume lives in.
-    """
-    return max(
-        (
-            index
-            for vector in vectors
-            for blade in vector.to_blade_dict()
-            for index in blade
-        ),
-        default=0,
-    )
-
-
 def content(vectors: Sequence[MultiVectorBase]) -> Real:
     """The k-dimensional **content** of the parallelotope on ``vectors`` -- the
     high-school length/area/volume generalized (Williamson & Trotter p. 308).
@@ -252,7 +235,11 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Real:
     dimension: int | None = getattr(representation, "DIMENSION", None)
     # A fixed type declares the ambient dimension (and its dual is locked to it); the
     # dimension-agnostic Gn takes the smallest space containing the vectors.
-    n: int = dimension if dimension is not None else _max_basis_index(vectors)
+    n: int = (
+        dimension
+        if dimension is not None
+        else max(v.implied_minimal_number_of_dimensions() for v in vectors)
+    )
     if len(vectors) != n:
         raise ValueError(
             "signed content is the oriented n-volume: it needs exactly n vectors "

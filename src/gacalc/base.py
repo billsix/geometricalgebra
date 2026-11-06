@@ -1157,6 +1157,40 @@ class MultiVectorBase(abc.ABC):
         """
         return self.is_homogeneous_of_grade_r(r=1)
 
+    def implied_minimal_number_of_dimensions(self) -> int:
+        """The dimension of the smallest coordinate space that holds this vector.
+
+        That is the highest basis index the vector uses: ``3 * e_1 + 4 * e_3`` needs
+        ``e_1 … e_3``, so 3.  A coefficient of ``0`` does not count, so the zero vector
+        gives 0.  The result depends only on the value, not on its type: a 𝒢₃ vector
+        lying along ``e_1`` gives 1.  The dimension-agnostic ``Gn`` uses this as its
+        ``n`` where a specialized type would use its fixed ``DIMENSION``.
+
+        Returns:
+            int: the highest basis index with a nonzero coefficient, or 0 for zero.
+
+        Raises:
+            ValueError: if the value is not a vector (grade 1).
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2, e_3
+            >>> (3 * e_1 + 4 * e_3).implied_minimal_number_of_dimensions()
+            3
+            >>> (2 * e_2).implied_minimal_number_of_dimensions()
+            2
+            >>> (e_1 * e_2).implied_minimal_number_of_dimensions()  # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+                ...
+            ValueError: implied_minimal_number_of_dimensions takes a vector ...
+        """
+        if not self.is_vector():
+            raise ValueError(
+                "implied_minimal_number_of_dimensions takes a vector (grade 1); "
+                f"got a non-vector: {self!r}"
+            )
+        # A vector's blades are the one-index tuples (i,), one per nonzero coefficient.
+        return max((index for (index,) in self.to_blade_dict()), default=0)
+
     def is_bivector(self) -> bool:
         """True iff A is homogeneous of grade 2 (a bivector); ``zero`` qualifies.
 
