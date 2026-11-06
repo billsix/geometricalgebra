@@ -138,10 +138,9 @@ and call `self * other`, dispatched to the concrete type.
   and a number is wanted, write `a.dot(b).scalar_part()` (the familiar `a · b`, read out as a `Real`),
   not `a.scalar_product(b)`, and make sure the operands are vectors (call
   `MultiVectorBase.require_vector(value, context)` / `require_vectors(values, context)`, unless they
-  are already known to be vectors, e.g. a `Frame`'s own). For two
-  vectors the two products agree, but a reader knows the dot product. Use `scalar_product` (`A ∗ B =
-  ⟨A * B⟩`) only where that operation is the one meant, as where Hestenes defines a result with it
-  (cite the page). The maintainer's rule, William Emerison Six <billsix@gmail.com>, 2026-11-04.
+  are already known to be vectors, e.g. a `Frame`'s own). For two vectors the two products agree,
+  but a reader knows the dot product. Use `scalar_product` (`A ∗ B = ⟨A * B⟩`) only where that
+  operation is the one meant, as where Hestenes defines a result with it (cite the page). The maintainer's rule, William Emerison Six <billsix@gmail.com>, 2026-11-04.
 - **Check "must be a vector" with the shared guard** — `MultiVectorBase.require_vector(value,
   context)` / `require_vectors(values, context)` (`base.py`), which raise `ValueError` naming the
   caller. Never a bare `assert` (gone under `python -O`), a hand-rolled `is_vector()` loop, or a
