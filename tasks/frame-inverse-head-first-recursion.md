@@ -12,7 +12,7 @@ below, the reciprocal-frame map, is available to weigh against (A).
 whatever really has to start at the end. I'd like the recursion to go forwards if it can. Given that we
 are dealing with orthogonal components anyway for the algorithm, I wouldn't think order matters, and I
 prefer processing the first element in a recursion first, rather than starting at the tail."
-**Depends on:** `tasks/refactor-frame-to-invertible-function.md` (it moves `peel` inside `backward`;
+**Depends on:** `tasks/archive/2026/11/06/refactor-frame-to-invertible-function.md` (it moves `peel` inside `backward`;
 do this task against that shape).
 
 ## BLUF

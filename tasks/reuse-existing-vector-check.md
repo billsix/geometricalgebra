@@ -12,7 +12,7 @@ the same job asked earlier: "there is some procedure somewhere that ensures the 
 … find all references where they do a check like that, and call the procedure instead, if it makes
 sense"). That doc's inventory, its decision, and its open questions are folded in below, and it is
 archived as superseded (William Emerison Six <billsix@gmail.com>, 2026-11-06).
-**Depends on:** `tasks/refactor-frame-to-invertible-function.md`. Do that first. It reshapes
+**Depends on:** `tasks/archive/2026/11/06/refactor-frame-to-invertible-function.md`. Do that first. It reshapes
 `Frame.to_invertible_function` (where the nested `require_vector` lives), deletes
 `measure._max_basis_index`, and adds `MultiVectorBase.implied_minimal_number_of_dimensions()`, which
 raises on a non-vector and so is one more site for this task.
@@ -56,7 +56,7 @@ as one case.
   only after its own empty guard (Open Q1).
 - `frame.Frame.to_invertible_function` — the nested `require_vector`, `ValueError`.
 - `MultiVectorBase.implied_minimal_number_of_dimensions` — new, added by
-  `tasks/refactor-frame-to-invertible-function.md`; raises `ValueError` on a non-vector.
+  `tasks/archive/2026/11/06/refactor-frame-to-invertible-function.md`; raises `ValueError` on a non-vector.
 - `vectorcalc.cross` — loops `(a, b)`, `ValueError` ("cross takes vectors (grade 1)").
 - `MultiVectorBase.bivector_from_vectors` — raises **`TypeError`**, not `ValueError`, and reports the
   grades (Open Q2). `Gn.bivector_from_vectors` delegates to it, and its docstring also says "TypeError".
