@@ -411,6 +411,32 @@ def test_prefix_blades_on_a_graded_type() -> None:
     assert blades == [g2.Scalar.one(), 2 * g2.e_1 + 0 * g2.e_2, 6 * (g2.e_1 ^ g2.e_2)]
 
 
+graded_frames: list[list[MultiVectorBase]] = [
+    [2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2],
+    [
+        2 * g3.e_1 + 0 * g3.e_2 + 1 * g3.e_3,
+        1 * g3.e_1 + 3 * g3.e_2 + 0 * g3.e_3,
+        1 * g3.e_1 + 1 * g3.e_2 + 4 * g3.e_3,
+    ],
+]
+
+
+@pytest.mark.parametrize("frame", graded_frames, ids=["g2", "g3"])
+def test_hestenes_forms_on_a_graded_type(frame: list[MultiVectorBase]) -> None:
+    """On the graded types both Hestenes closed forms are nonzero and agree with the
+    rejection frame: the inverse form exactly, the reverse form up to the positive
+    scalar ``|A_{k-1}|²``."""
+    w: list[MultiVectorBase] = make_orthogonal_frame(frame)
+    by_inverse: list[MultiVectorBase] = make_orthogonal_frame_hestenes_inverse(frame)
+    by_reverse: list[MultiVectorBase] = make_orthogonal_frame_hestenes(frame)
+    assert by_inverse == w
+    w_k: MultiVectorBase
+    c_k: MultiVectorBase
+    for w_k, c_k in zip(w, by_reverse, strict=True):
+        assert (c_k ^ w_k) == type(c_k ^ w_k).zero()  # parallel
+        assert c_k.dot(w_k).scalar_part() > 0  # same direction, nonzero
+
+
 def test_reciprocal_frame_on_a_graded_type() -> None:
     """A concrete oblique 3D frame on the graded ``g3`` types satisfies eq (3.5)."""
     frame: list[MultiVectorBase] = [
