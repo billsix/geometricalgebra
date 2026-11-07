@@ -307,7 +307,8 @@ over a "run it on your host" instruction.
   as tests). **`make test-full`** runs everything, the tests marked `@pytest.mark.slow` included
   (~800 tests, ~27 min, nearly all of it the 3D symbolic frame tests); CI runs it. **Mark a new test
   `slow` when it takes over 10 s in the container** (the marker is registered in `pytest.ini`; mark
-  only the slow parametrized cases, with `pytest.param(..., marks=pytest.mark.slow)`). Quick host
+  only the slow parametrized cases, with `pytest.param(..., marks=pytest.mark.slow)`), timed in `make
+  test`'s own run, not the full one, where sympy's cache can make a test look fast after a slow one. Quick host
   run: `python -m pytest -q -m "not slow"` after `make generate`.
 - **`entrypoint/format.sh`** (via `make format`, the real gate) — `ruff check --fix`,
   `ruff format`, `ty check` (`src`/`tests`/`tools`/`book/docs/notebooks`, all clean), and
