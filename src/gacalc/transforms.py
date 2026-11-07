@@ -265,13 +265,19 @@ def coordinate_along(
         ValueError: coordinate_along: ... is not on the line of ...
     """
     MultiVectorBase.require_vectors((vector, along), "coordinate_along")
-    if along == type(along).zero():
-        raise ValueError("coordinate_along: the zero vector spans no line")
-    if vector == type(vector).zero():
-        return 0
-    if not vector.is_parallel_to(along, float_close_to_zero):
-        raise ValueError(f"coordinate_along: {vector} is not on the line of {along}")
-    return (vector / along).scalar_part()
+    match vector, along:
+        case _, _ if along == type(along).zero():
+            raise ValueError("coordinate_along: the zero vector spans no line")
+        case _, _ if vector == type(vector).zero():
+            # The origin is on every line, at coordinate 0.
+            return 0
+        case _, _ if not vector.is_parallel_to(along, float_close_to_zero):
+            raise ValueError(
+                f"coordinate_along: {vector} is not on the line of {along}"
+            )
+        case _:
+            # vector = c * along, so dividing by along leaves the scalar c.
+            return (vector / along).scalar_part()
 
 
 def line_to_line_projection(
