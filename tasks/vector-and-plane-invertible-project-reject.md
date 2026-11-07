@@ -53,8 +53,11 @@ from a plane lands on a line, so (c) has no rejection counterpart.
 3. `make check-generated`, `make check-regions`, `make format`, full `make test`; `CHANGELOG.md`
    `[Unreleased]` › Added; CLAUDE.md.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-07: "5) ok")
+
+1. **Which maps:** (a) and (b) only, the line-onto-plane projection and rejection. Plane onto plane (c) is
+   out of scope.
+
 ## Open questions
 
-1. **Which maps?** Recommended: (a) and (b), the line-onto-plane projection and rejection, since they are
-   the direct extension of the line versions and reuse `coordinate_along`. Add (c), plane onto plane, only
-   if you want it; it needs a 2D inverse.
+None. Still proposed: the maintainer has not said to start it.

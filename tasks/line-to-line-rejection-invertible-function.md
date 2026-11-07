@@ -60,12 +60,15 @@ changelog entry.
 3. `make check-generated`, `make check-regions`, `make format`, full `make test`; `CHANGELOG.md`
    `[Unreleased]` › Added; CLAUDE.md's `transforms.py` and generated-modules lines.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-07: "3) ok 4) ok")
+
+1. **Shape of the generated version:** a method on the generated `Vector`,
+   `a.line_to_line_projection(to_vector=n)` / `a.line_to_line_rejection(away_from=n)`, returning an
+   `InvertibleFunction` typed `InvertibleFunction[Vector]`, with the coordinate formulas inside; the
+   `transforms` factories stay the representation-agnostic reference.
+2. **𝒢₁:** generate the projection version only; the rejection version can never be built there (every
+   vector is parallel to every other), so `g1` leaves it out.
+
 ## Open questions
 
-1. **Shape of the generated version.** Recommended: a method on the generated `Vector`,
-   `a.line_to_line_projection(to_vector=n)` / `a.line_to_line_rejection(away_from=n)`, returning the
-   `InvertibleFunction` typed `InvertibleFunction[Vector]`, with the coordinate formulas inside; the
-   `transforms` factories stay the representation-agnostic reference. The alternative is module-level
-   factories in each `g*.py`, like `g2.rotate_90_degrees()`.
-2. **𝒢₁.** Recommended: generate the projection version (it is the identity on the one line, scaled), and
-   leave the rejection version out of `g1`, since it can never be built there.
+None. Still proposed: the maintainer has not said to start it.
