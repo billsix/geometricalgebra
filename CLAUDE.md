@@ -301,10 +301,14 @@ or a dedicated `make` target wrapping `podman run`. The only step that runs on t
 `git` (commits are the author's job, outside the container). Prefer a containerized `make` target
 over a "run it on your host" instruction.
 
-- **`make test`** — regenerates the gitignored `g*.py`, then runs `pytest` inside the container
-  (exit 0/nonzero contract; ~720 tests; `pytest.ini` sets `pythonpath = src`, `testpaths = src
-  tests`, `addopts = --doctest-modules` so docstrings run as tests). Quick host run:
-  `python -m pytest -q` after `make generate`.
+- **`make test`** — the everyday suite: regenerates the gitignored `g*.py`, then runs
+  `pytest -m "not slow"` inside the container (exit 0/nonzero contract; `pytest.ini` sets
+  `pythonpath = src`, `testpaths = src tests tools`, `addopts = --doctest-modules` so docstrings run
+  as tests). **`make test-full`** runs everything, the tests marked `@pytest.mark.slow` included
+  (~800 tests, ~27 min, nearly all of it the 3D symbolic frame tests); CI runs it. **Mark a new test
+  `slow` when it takes over 10 s in the container** (the marker is registered in `pytest.ini`; mark
+  only the slow parametrized cases, with `pytest.param(..., marks=pytest.mark.slow)`). Quick host
+  run: `python -m pytest -q -m "not slow"` after `make generate`.
 - **`entrypoint/format.sh`** (via `make format`, the real gate) — `ruff check --fix`,
   `ruff format`, `ty check` (`src`/`tests`/`tools`/`book/docs/notebooks`, all clean), and
   `tools/check_changelog.py`
@@ -401,7 +405,7 @@ CI (`.github/workflows/`) is a **thin wrapper over the make/Dockerfile system**:
 (`CONTAINER_CMD` auto-detects podman→docker; runners are `ubuntu-latest`). `checks.yml` runs on
 every push + PR as three check-only jobs — **`format`** (`make check-format` = `make format` then
 `git diff --exit-code`; runs the formatter in the disposable runner and fails on a diff, never
-commits), **`test`** (`make test`), and **`generated`** (`make check-generated` then
+commits), **`test`** (`make test-full`, the whole suite), and **`generated`** (`make check-generated` then
 `make check-regions` — the codegen-determinism + doc-region gates). A separate **`lean.yml`** runs
 **`make lean`** (the Lean/Mathlib proofs) **on `v*` tags only** — not per-push, since a Mathlib build
 is heavy. If CI needs a step, add it as a
