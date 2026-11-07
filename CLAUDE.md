@@ -141,6 +141,12 @@ and call `self * other`, dispatched to the concrete type.
   are already known to be vectors, e.g. a `Frame`'s own). For two vectors the two products agree,
   but a reader knows the dot product. Use `scalar_product` (`A ∗ B = ⟨A * B⟩`) only where that
   operation is the one meant, as where Hestenes defines a result with it (cite the page). The maintainer's rule, William Emerison Six <billsix@gmail.com>, 2026-11-04.
+- **Write the named geometric operation where the code means it** — `project`, `reject`, `reflect`, a
+  rotation factory, `coefficient` — not the dot-product formula it reduces to, even when the formula is
+  faster. The code is read by students; the generated `g*.py` classes are where speed lives. The
+  primitives' own definitions are the exception, and so is code whose subject is the dot product (a
+  notebook teaching `a·b + a∧b = ab`, the reciprocal frame's `vⁱ · y`). (William Emerison Six
+  <billsix@gmail.com>, 2026-11-07)
 - **Check "must be a vector" with the shared guard** — `MultiVectorBase.require_vector(value,
   context)` / `require_vectors(values, context)` (`base.py`), which raise `ValueError` naming the
   caller. Never a bare `assert` (gone under `python -O`), a hand-rolled `is_vector()` loop, or a

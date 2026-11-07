@@ -147,6 +147,14 @@ The coefficients were stored in `Frame`'s first version, and `__iter__` rebuilt 
 Once the inverse became the peel recursion (above), nothing read them, so `Frame` stores the originals
 instead and computes the coefficients on demand (William Emerison Six <billsix@gmail.com>, 2026-11-04).
 
+The code reads each coefficient as a projection, not as the dot-product quotient: `_projection_coefficient(v,
+onto=w)` is `(v.projected_onto(w) / w).scalar_part()`, "how many copies of `w` the projection of `v` onto
+`w` is". The peel step uses the same helper. The two forms are equal. The projection form is slower on
+symbolic `Gn` input, because `Gn` simplifies after each inverse and product: on the general 3D symbolic
+frame one coefficient went from 1.9 s to 62 s, and `tests/test_frame.py` + `tests/test_frame_class.py`
+from 6:04 to 12:15. The maintainer prefers the form a student reads over the faster one (CLAUDE.md, "Write
+the named geometric operation"; record: `tasks/archive/2026/11/07/name-the-geometric-operation-over-its-formula.md`).
+
 **What was tried first, and why it failed (2026-11-04).** The first design followed the original
 request: normalize in `__post_init__`, store `u_j`, and use `c_ij = u_j · v_i`. A prototype on fully
 symbolic frames (every component its own symbol) gave:

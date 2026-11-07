@@ -348,15 +348,16 @@ with scene_2d(lower_left=PEEL_LOWER_LEFT, upper_right=PEEL_UPPER_RIGHT) as fig_s
 fig_step_0
 
 # %% [markdown]
-# **Step 1, read $x_2$.** Dot $y$ with $w_2$: every earlier frame vector drops out, and
-# what is left is $y$'s height above $v_1$'s line, measured in units of $v_2$'s own
-# height $|w_2|$. Two heights, one divided by the other.
+# **Step 1, read $x_2$.** Project $y$ onto $w_2$. Every earlier frame vector is
+# perpendicular to $w_2$ and drops out, so the projection is $x_2$ copies of $w_2$:
+# dividing it by $w_2$ reads $x_2$. The projection's length is $y$'s height above
+# $v_1$'s line, and $|w_2|$ is $v_2$'s own height, so $x_2$ is two heights, one
+# divided by the other.
 
 # %%
-w_2_dot_y: Real = b_2.dot(y).scalar_part()
-w_2_squared: Real = b_2.magnitude_squared()
-x_2: Real = sympy.sympify(w_2_dot_y) / w_2_squared
-w_2_dot_y, w_2_squared, x_2
+y_onto_w_2: MultiVectorBase = y.projected_onto(onto=b_2)
+x_2: Real = (y_onto_w_2 / b_2).scalar_part()
+y_onto_w_2, x_2
 
 # %%
 fig_step_1: PendingFigure
@@ -443,7 +444,7 @@ fig_step_2
 # $x_1 * v_1 + x_2 * v_2$, drawn tip to tail in blue, ends on $y$.
 
 # %%
-x_1: Real = sympy.sympify(b_1.dot(r).scalar_part()) / b_1.magnitude_squared()
+x_1: Real = (r.projected_onto(onto=b_1) / b_1).scalar_part()
 x: Vector = x_1 * e_1 + x_2 * e_2
 x_1, x, g.inverse(y) == x, g(x) == y
 

@@ -79,6 +79,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **BREAKING — `reflect` raises `ValueError` instead of a bare `Exception` / `AssertionError`.**
+  `reflect(across=…)` with `across` neither a vector nor a bivector now raises `ValueError` (it raised
+  `Exception` with a message naming `project`), and applying a reflection to a non-vector raises
+  `ValueError` from `require_vector` (it was a bare `assert`, so `python -O` skipped the check). Code
+  catching `Exception` still works; code catching `AssertionError` must catch `ValueError`.
 - **BREAKING — every "must be a vector" check now raises `ValueError`.** `bivector_from_vectors`
   (`MultiVectorBase` and `Gn`) and `transforms.plane_rotation` raised `TypeError`; `is_orthogonal_to`,
   `is_parallel_to`, `versor_from_vectors`, `rotor_from_vectors` and `transforms.projection_rotation`

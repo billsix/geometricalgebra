@@ -39,7 +39,6 @@ from itertools import accumulate, pairwise
 from typing import Literal
 
 import numpy as np
-import sympy
 
 from gacalc.base import MultiVectorBase, Real
 from gacalc.functions import InvertibleFunction, Linearity
@@ -406,6 +405,7 @@ def reciprocal_frame(
     Examples:
         The oblique frame ``a_1 = 2 * e_1``, ``a_2 = 1 * e_1 + 3 * e_2``:
 
+        >>> import sympy
         >>> from gacalc.gn import e_1, e_2
         >>> frame = [2 * e_1, 1 * e_1 + 3 * e_2]
         >>> reciprocal = reciprocal_frame(frame)
@@ -436,17 +436,22 @@ def reciprocal_frame(
     ]
 
 
-def _exact_quotient(numerator: Real, denominator: Real) -> Real:
-    """``numerator / denominator``, keeping exact input exact.
+def _projection_coefficient(v: MultiVectorBase, onto: MultiVectorBase) -> Real:
+    """How many copies of the vector ``onto`` the projection of ``v`` onto it is.
 
-    A ``float`` on either side gives a ``float`` (numeric input stays numeric).
-    Otherwise both sides are sympified first, so ``int / int`` is an exact
-    ``Rational`` instead of a float, and symbolic input stays symbolic -- the same
-    numeric/symbolic split as :meth:`MultiVectorBase.inverse`.
+    The projection of ``v`` onto ``onto`` is parallel to ``onto``, so it is some
+    multiple ``c * onto``; dividing it by ``onto`` leaves that scalar ``c``.  (In
+    coordinates ``c = (onto · v) / |onto|²``.)  Exact input stays exact and float
+    stays float, because ``project`` and ``/`` divide through ``inverse``.
+
+    Examples:
+        >>> from gacalc.g2 import e_1, e_2
+        >>> _projection_coefficient(3 * e_1 + 4 * e_2, onto=2 * e_1)
+        3/2
+        >>> _projection_coefficient(3.0 * e_1 + 4.0 * e_2, onto=2.0 * e_1)
+        1.5
     """
-    if isinstance(numerator, float) or isinstance(denominator, float):
-        return numerator / denominator
-    return sympy.sympify(numerator) / sympy.sympify(denominator)
+    return (v.projected_onto(onto) / onto).scalar_part()
 
 
 @dataclasses.dataclass(frozen=True)
@@ -522,7 +527,8 @@ class Frame:
         """The table rebuilding each ``v_i`` from the orthogonal set -- ``R`` of QR,
         with the lengths factored out.
 
-        ``coefficients()[i][j] = (w_j · v_i) / |w_j|²``, so that
+        ``coefficients()[i][j]`` is how many copies of ``w_j`` the projection of
+        ``v_i`` onto ``w_j`` is (in coordinates ``(w_j · v_i) / |w_j|²``), so that
         ``v_i = Σ_j coefficients()[i][j] * w_j``.  Zero above the diagonal, one on it.
 
         Returns:
@@ -530,10 +536,7 @@ class Frame:
             orthogonal vector.
         """
         return tuple(
-            tuple(
-                _exact_quotient(w.dot(v).scalar_part(), w.magnitude_squared())
-                for w in self.orthogonal_vectors
-            )
+            tuple(_projection_coefficient(v, onto=w) for w in self.orthogonal_vectors)
             for v in self.vectors
         )
 
@@ -672,7 +675,7 @@ class Frame:
             # basis_vector numbers the basis from 1, hence enumerate(start=1).
             return sum(
                 (
-                    x.dot(cls.basis_vector(i)).scalar_part() * v
+                    x.coefficient(cls.basis_vector(i)) * v
                     for i, v in enumerate(self.vectors, start=1)
                 ),
                 start=cls.zero(),
@@ -706,13 +709,12 @@ class Frame:
                         return []
                     case [*earlier, (w, v)]:
                         # One or more vectors.  w is perpendicular to every vector in
-                        # earlier, so w · y sees only this vector's term: its
-                        # coordinate is (w · y) / |w|².  Subtracting that multiple of
-                        # v leaves a y built from the earlier vectors alone; solve
-                        # those coordinates the same way, and put this one after them.
-                        x_last: Real = _exact_quotient(
-                            w.dot(y).scalar_part(), w.magnitude_squared()
-                        )
+                        # earlier, so projecting y onto w sees only this vector's
+                        # term: its coordinate is how many copies of w that
+                        # projection is.  Subtracting that multiple of v leaves a y
+                        # built from the earlier vectors alone; solve those
+                        # coordinates the same way, and put this one after them.
+                        x_last: Real = _projection_coefficient(y, onto=w)
                         return [*peel(earlier, y - x_last * v), x_last]
                     case _:
                         # Unreachable: [] and [*earlier, last] cover every list.  Kept

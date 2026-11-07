@@ -1,89 +1,80 @@
-# Write the named geometric operation (project, reject, …) where code computes its formula by hand
+# Write the named geometric operation (project, reject, …) where code computed its formula by hand
 
-**Status:** ready — the maintainer approved the candidate list (William Emerison Six <billsix@gmail.com>,
-2026-11-07); not started
-**Priority:** 4
-**Difficulty:** 4
-**Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>) · **Done:** 2026-11-07
 
 ## BLUF
 
-The maintainer wants gacalc's code to show a student how the math works, ahead of raw speed: "I think
-'project' and 'reject' make much more sense to a student, than using the dot product directly." Replace
-the hand-written dot-product formulas listed below with the named operation they compute, with no change
-in results, and add the rule to `CLAUDE.md`. Done = the four sites changed, every test still passing,
-`make format` green, the 3D symbolic test time measured before and after, and the rule written.
+The maintainer wanted gacalc's code to show a student how the math works, ahead of raw speed: "I think
+'project' and 'reject' make much more sense to a student, than using the dot product directly." Four
+places that computed a dot-product formula by hand now call the named operation, with equal results;
+`reflect` lost its bare `assert` and bare `Exception`; the rule is in `CLAUDE.md`. The cost: the 3D
+symbolic frame tests take about twice as long (below).
 
-## Context
+## What changed
 
-- The operations: `MultiVectorBase.project(onto)` / `reject(away_from)` in `src/gacalc/base.py`. They are
-  **factories**, `cls.project(onto)(value)`, with pass-through sugar on values (see the comment block
-  "project/reject/reflect pass-through sugar" in `base.py`). `P_B(A) = (A · B) * B⁻¹`, H&S eq 2.9.
-- The survey (2026-11-07) covered `src/gacalc/` (hand-written modules), `book/docs/notebooks/`,
-  `notebooks/` and `book/figures/epix/`. The generated `g1`–`g3` modules were left out: they are the fast
-  path by design, and `Gn` is the readable reference.
-- The frame math the first two sites compute: `tasks/reference/frames-qr-and-reciprocal-frames.md`.
+1. **`Frame.coefficients()` and the peel step** (`src/gacalc/frame.py`) read each coefficient through a
+   new private helper, `_projection_coefficient(v, onto=w) = (v.projected_onto(w) / w).scalar_part()`:
+   how many copies of `w` the projection of `v` onto `w` is. It replaced `_exact_quotient`, which is gone.
+   Exactness holds without it, because `project` and `/` divide through `inverse` (ints become exact
+   rationals, floats stay floats); the helper's doctest shows both. `frame.py` no longer imports
+   `sympy`; the `reciprocal_frame` doctest imports it itself.
+2. **The book notebooks** `book/docs/notebooks/frame-qr-2d.py` and `frame-qr-3d.py`: the five
+   coordinate steps (`x_1`, `x_2` in 2D; `x_3`, `x_2`, `x_1` in 3D) project and divide. The markdown says
+   "project", and keeps the "two heights, one divided by the other" reading, since the projection's
+   length is the height. The setup cells' dot products stayed: they show that `w_1` is *not*
+   perpendicular to the last vector, which is a dot-product fact. The figures' labels (`w_2 · y / |w_2|`
+   as a height) stayed: they draw heights.
+3. **The forward map** now reads `x.coefficient(cls.basis_vector(i))`.
+4. **`_project_point`** (`book/figures/epix/_projection_scene.py`) builds two `g2` vectors, calls
+   `projected_onto`, and reads the point back with `coefficient(blade=…)`. Its result is identical to the
+   old hand formula (difference 0.0 in both coordinates, checked in the container).
+5. **`reflect`** (`src/gacalc/base.py`): the applied reflection checks with
+   `MultiVectorBase.require_vector(value, "reflect")`; an `across` that is neither a vector nor a bivector
+   raises `ValueError` naming `reflect`. Tests: `test_reflect_across_a_scalar_raises` and
+   `test_reflect_of_a_non_vector_raises` in `tests/test_conformance.py`. `CHANGELOG.md` `[Unreleased]`
+   › Changed has the breaking entry.
+6. **`CLAUDE.md`**: "Write the named geometric operation where the code means it", next to the
+   dot-product rule, with the exceptions (the primitives' own definitions, code whose subject is the dot
+   product).
 
-## The sites to change
+## Cost, measured
 
-1. **`Frame.coefficients()` and the peel step of `Frame.to_invertible_function`** (`src/gacalc/frame.py`)
-   compute `(w · v) / |w|²` with `_exact_quotient`. That number is "how many copies of `w` the projection
-   of `v` onto `w` is": `project(v, onto=w) = c * w`. Read `c` off as the quotient of two parallel vectors,
-   `(project(v, onto=w) / w).scalar_part()`, which is a scalar. If that reads awkwardly at both sites,
-   add one small named helper for it (one definition shared by two callers meets the extraction bar).
-   Keep exactness: ints and sympy must stay exact, float stays float (CLAUDE.md, `magnitude`/`inverse`).
-   **Measure** the 3D symbolic tests in `tests/test_frame_class.py` before and after (about a minute today);
-   report the change in the done-record.
-2. **The book notebooks** `book/docs/notebooks/frame-qr-2d.py` and `frame-qr-3d.py` compute the same
-   `(w · y) / |w|²` five times (`x_1`, `x_2`, `x_3` steps). They are the most student-facing of the four;
-   use the same form as site 1, and adjust the surrounding markdown so the prose says "projection" where
-   the code does. The prose's "two heights, one divided by the other" reading stays true; keep it if it
-   still fits.
-3. **The forward map's `x.dot(cls.basis_vector(i)).scalar_part()`** (`frame.py`) becomes
-   `x.coefficient(cls.basis_vector(i))`: the i-th coordinate, said directly.
-4. **The book's projection figure helper** `_project_point` in `book/figures/epix/_projection_scene.py`
-   recomputes `((a·b)/(b·b)) b` from raw coordinates. Build gacalc vectors from the two points, call
-   `project`, and convert the result back to an ePiX `Point`, so the figure is drawn by the operation it
-   illustrates. Keyword arguments throughout (the figure rule in CLAUDE.md); check `make docs` renders it.
+| | before | after |
+|---|---|---|
+| `tests/test_frame.py` + `tests/test_frame_class.py` | 6:04 (81 passed) | 12:15 (88 passed: +7 doctests from `frame.py`) |
+| `test_coefficients_are_triangular_with_unit_diagonal[frame_3d]` | 70 s | 190 s |
+| `test_composed_round_trip_is_identity_symbolic[3d-peel]` | 64 s | 200 s |
+| `test_inverse_methods_are_equivalent_symbolic[3d]` | 38 s | 151 s |
+| one coefficient, general 3D frame, `(w_2, v_3)` | 1.9 s | 62 s |
 
-**Also fix in `reflect`** (`base.py`), found during the survey: the bare `assert value.is_vector()` becomes
-`MultiVectorBase.require_vector(value, "reflect")` (CLAUDE.md: never a bare `assert`), and the default
-branch's `raise Exception("TODO - implement project for " + …)` names the wrong function and raises a bare
-`Exception`; make it a `ValueError` naming `reflect` and the grades it accepts. Add a `CHANGELOG.md`
-`[Unreleased]` entry, since the exception type changes.
+The cause is `Gn`'s eager `sympy.simplify`, which runs after the projection's inverse and product and
+again after the division by `w`; the dot-product quotient simplified once. Every other test was
+unchanged. The full suite went from 6:19 (776 tests) to 12:15 (787).
+
+## Gates
+
+- `entrypoint/format.sh` (ruff, ty over src/tests/tools/notebooks, the ePiX keyword check, changelog):
+  green. ty first caught two notebook annotations (`projected_onto` on a `MultiVectorBase` operand
+  returns `MultiVectorBase`, not `Vector`) and the keyword check caught `coefficient(e_1)`; both fixed.
+- Full `pytest` (with doctests), 12:15: 781 passed, 6 failed. The six were the new
+  `test_reflect_across_a_scalar_raises`: `reflect` built `reject(across)` before checking `across`, and
+  `reject` raised its own bare `Exception` first. `reflect` now builds the projection and rejection inside
+  `reflection(blade)`, after the `match` has checked the blade; `tests/test_conformance.py` and the other
+  reflect tests then passed (241 passed), and `format.sh` stayed green.
+- **Not run: `make docs`.** The local image is the lean one (no ePiX, no Sphinx), so the projection figure
+  was not re-rendered; its point was checked numerically instead.
 
 ## Left alone, and why
 
-- The definitions themselves: `project`/`reject`, `cross` (`(a ∧ b) * I₃⁻¹`), `sandwich`, `exp`,
-  `cosine` (`Ã ∗ B`, H&S eq 1.53b, defined for blades), the measures' wedge-and-dual. These are the
-  primitives the other code should call.
-- Code that already uses the named operations: `reflect` (`project − reject`), `projection_rotation`,
-  `make_orthogonal_frame` (Gram–Schmidt by `reject`).
-- The reciprocal inverse `vⁱ · y`: that dot product is eq 3.5 itself, explained in the reference doc's
-  similar-triangles section.
-- The rotor built from `cos(θ/2)`/`sin(θ/2)` in `transforms.py`: it follows the sine/cosine presentation
-  rule.
-- Notebooks whose subject is the dot product (`notebooks/displayg2.py`/`displayg3.py`
-  `a·b + a∧b = ab`, the Lagrange identity cells): the dot product is what they teach.
-- `standardposition.py`: the deliberate standard-position duplicate.
+The primitives' definitions (`project`/`reject`, `cross`, `sandwich`, `exp`, `cosine`, the measures);
+code that already used the named operations (`reflect`, `projection_rotation`, `make_orthogonal_frame`);
+the reciprocal inverse `vⁱ · y` (that dot product is eq 3.5, explained in
+`tasks/reference/frames-qr-and-reciprocal-frames.md`); the trigonometric rotor in `transforms.py` (the
+sine/cosine presentation rule); notebooks whose subject is the dot product; `standardposition.py` (the
+deliberate standard-position duplicate); the generated `g1`–`g3` modules (the fast path by design).
 
-## The `CLAUDE.md` rule
+## Found, not fixed
 
-Add under "Conventions the agent must obey while writing code", next to the dot-product rule:
-
-> **Write the named geometric operation where the code means it** — `project`, `reject`, `reflect`, a
-> rotation factory, `coefficient` — not the dot-product formula it reduces to, even when the formula is
-> faster. The code is read by students; the generated `g*.py` classes are where speed lives. The
-> primitives' own definitions are the exception. (William Emerison Six <billsix@gmail.com>, 2026-11-07)
-
-## Plan
-
-1. Record the 3D symbolic test time on the current code.
-2. Sites 1 and 3, then the full `make test`; measure again.
-3. Site 2, then site 4 with `make docs`.
-4. The `reflect` fixes with a test that a non-vector raises `ValueError`.
-5. The `CLAUDE.md` rule; `make format`.
-
-## Open questions
-
-None.
+`reject` (`src/gacalc/base.py`) has the same bare `raise Exception("TODO - implement project for " + …)`
+that `reflect` had: wrong function name, bare `Exception`. Outside this task's list; raised with the
+maintainer.

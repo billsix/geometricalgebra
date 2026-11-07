@@ -201,12 +201,14 @@ with scene_3d(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig_step_0:
 fig_step_0
 
 # %% [markdown]
-# **Step 1, read $x_3$.** $y$'s height above the plane, in units of $v_3$'s height
-# $|w_3|$: two heights, one divided by the other.
+# **Step 1, read $x_3$.** Project $y$ onto $w_3$: $v_1$ and $v_2$ drop out, and the
+# projection is $x_3$ copies of $w_3$. Its length is $y$'s height above the plane and
+# $|w_3|$ is $v_3$'s height, so $x_3$ is two heights, one divided by the other.
 
 # %%
-x_3: Real = sympy.sympify(w_3.dot(y).scalar_part()) / w_3.magnitude_squared()
-w_3.dot(y).scalar_part(), w_3.magnitude_squared(), x_3
+y_onto_w_3: MultiVectorBase = y.projected_onto(onto=w_3)
+x_3: Real = (y_onto_w_3 / w_3).scalar_part()
+y_onto_w_3, x_3
 
 # %%
 fig_step_1: PendingFigure
@@ -271,13 +273,14 @@ fig_step_2
 
 # %% [markdown]
 # **Steps 3 and 4, the 2D peel inside the plane.** The camera stays put. $w_2$ is the
-# normal to $v_1$'s line within the plane, so it reads $x_2$ from $r_1$; removing
-# $x_2 * v_2$ leaves $r_2$ on $v_1$'s line, and $w_1$ reads $x_1$ from it.
+# normal to $v_1$'s line within the plane, so projecting $r_1$ onto it reads $x_2$;
+# removing $x_2 * v_2$ leaves $r_2$ on $v_1$'s line, and projecting $r_2$ onto $w_1$
+# reads $x_1$.
 
 # %%
-x_2: Real = sympy.sympify(w_2.dot(r_1).scalar_part()) / w_2.magnitude_squared()
+x_2: Real = (r_1.projected_onto(onto=w_2) / w_2).scalar_part()
 r_2: Vector = r_1 - x_2 * v_2
-x_1: Real = sympy.sympify(w_1.dot(r_2).scalar_part()) / w_1.magnitude_squared()
+x_1: Real = (r_2.projected_onto(onto=w_1) / w_1).scalar_part()
 P_R2: Point = point(coordinates=list(r_2))
 x_2, r_2, x_1
 
