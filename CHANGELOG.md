@@ -12,6 +12,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`Frame.to_invertible_function(*, inverse_method="reciprocal" | "peel")`** — a keyword-only choice of
+  how the inverse recovers the coordinates. `"reciprocal"` (**the new default**) reads each coordinate
+  as `x_i = vⁱ · y` with the reciprocal frame; `"peel"` is the earlier back-substitution from the last
+  frame vector. Exact (int/Rational/symbolic) results are the same either way; float results may differ
+  in the last bits, because the default now takes a different path. An unknown name raises `ValueError`.
 - **`gacalc.frame.reciprocal_frame(vectors)`** — the reciprocal frame `a^1 … a^n` of a frame, built as
   Hestenes & Sobczyk p. 28 eqs 3.6–3.7 write it (`a^k = (−1)^(k−1) (a_1 ∧ … ǎ_k … ∧ a_n) A_n⁻¹`), with
   `a^k · a_j = δ^k_j` (eq 3.5). Returns a list, `result[k - 1] = a^k`; raises `ValueError` on a non-frame.
@@ -131,6 +136,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   unchanged; only the static return type is more precise.
 
 ### Fixed
+- **`gacalc.frame.prefix_blades` on the graded types** (`g2`/`g3`/… `Vector`) returned all-zero blades:
+  it seeded the wedge with `type(v).one()`, and a graded `Vector` type has no scalar slot, so that is the
+  zero vector. It now seeds with the scalar 1 of the algebra (`Scalar_n.one()`). This also fixes
+  `make_orthogonal_frame_hestenes` and `make_orthogonal_frame_hestenes_inverse` on the graded types,
+  which consume it. `Gn` was unaffected.
 - **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)
   instead of `cos θ == 1`. The old test wrongly returned `False` for **anti-parallel** vectors (whose
   cosine is −1) even though they are geometrically parallel. Behavior change: anti-parallel inputs now

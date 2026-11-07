@@ -34,8 +34,9 @@ from __future__ import annotations
 import dataclasses
 import functools
 import operator
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from itertools import accumulate, pairwise
+from typing import Literal
 
 import numpy as np
 import sympy
@@ -105,13 +106,25 @@ def is_frame(
     return are_linearly_independent(vectors, float_close_to_zero)
 
 
+def _scalar_one(vector: MultiVectorBase) -> MultiVectorBase:
+    """The scalar 1, in a representation of ``vector``'s algebra that can hold it.
+
+    ``type(vector).one()`` is not enough: a graded ``Vector_n`` type has no scalar
+    slot, so its ``one()`` is the zero vector, and a wedge seeded with it is zero.
+    ``vector · vector`` is a scalar, so its type is one that holds scalars:
+    ``Scalar_n`` for the graded types, and ``Gn`` itself for ``Gn``.
+    """
+    return type(vector.dot(vector)).one()
+
+
 def prefix_blades(
     vectors: Sequence[MultiVectorBase],
 ) -> Iterator[MultiVectorBase]:
     """The prefix outer products of a frame -- ``A_0 := 1``, ``A_k := A_{k-1} ∧ v_k``
     (H&S p. 27, eq 3.1).
 
-    Yields ``A_0 = 1`` (the scalar one, in the operands' own representation) first,
+    Yields ``A_0 = 1`` (the scalar one, in a representation of the operands' algebra
+    that holds scalars) first,
     then each prefix wedge: ``A_1 = v_1``, ``A_2 = v_1 ∧ v_2``, …,
     ``A_k = v_1 ∧ … ∧ v_k`` -- ``k + 1`` blades for ``k`` vectors.  The fold reuses the
     blade yielded just before (``accumulate`` carries it), so the whole prefix costs
@@ -135,7 +148,7 @@ def prefix_blades(
         )
     # accumulate(seq, ∧, initial=1) folds the wedge over the prefix, seeding with the
     # scalar one: yields A_0 = 1, A_1 = 1 ∧ v_1 = v_1, A_2 = A_1 ∧ v_2, …
-    return accumulate(vectors, operator.xor, initial=type(vectors[0]).one())
+    return accumulate(vectors, operator.xor, initial=_scalar_one(vectors[0]))
 
 
 def make_orthogonal_frame(
@@ -329,7 +342,7 @@ def all_wedged_except_the_kth(
             f"vectors); got k = {k}"
         )
     others: list[MultiVectorBase] = [*vectors[: k - 1], *vectors[k:]]
-    return functools.reduce(operator.xor, others, type(vectors[0]).one())
+    return functools.reduce(operator.xor, others, _scalar_one(vectors[0]))
 
 
 def reciprocal_frame(
@@ -391,7 +404,7 @@ def reciprocal_frame(
         )
     # A_n⁻¹, the inverse of the wedge of every frame vector (eq 3.6).
     A_n_inverse: MultiVectorBase = functools.reduce(
-        operator.xor, vectors, type(vectors[0]).one()
+        operator.xor, vectors, _scalar_one(vectors[0])
     ).inverse()
     # eq 3.7: enumerate(start=1) makes the loop variable the book's k, so the sign is
     # literally (-1)^(k-1).
@@ -524,14 +537,33 @@ class Frame:
         """
         return tuple(reciprocal_frame(self.vectors))
 
-    def to_invertible_function(self) -> InvertibleFunction[MultiVectorBase]:
+    def to_invertible_function(
+        self,
+        *,
+        inverse_method: Literal["reciprocal", "peel"] = "reciprocal",
+    ) -> InvertibleFunction[MultiVectorBase]:
         """The linear map sending each standard basis vector ``e_i`` to ``v_i``.
 
         Forward: project the input onto ``e_1 … e_k`` and use the components as
         weights on the frame vectors, ``f(x) = Σ_i (x · e_i) * v_i``.
 
         Inverse: given ``y = f(x) = Σ_i x_i * v_i``, recover the coordinates
-        ``x_1 … x_k`` by **peeling the frame from its last vector**.  Each step:
+        ``x_1 … x_k``.  ``inverse_method`` chooses how; both give the same
+        coordinates (the solution is unique for a frame), which
+        ``tests/test_frame_class.py`` checks symbolically.
+
+        ``inverse_method="reciprocal"`` (the default) reads every coordinate off with
+        one dot product, using the **reciprocal frame** ``v¹ … vᵏ``
+        (:meth:`reciprocal_vectors`, H&S p. 28): ``x_i = vⁱ · y``.  That holds because
+        ``vⁱ · y = Σ_j x_j * (vⁱ · v_j)``, and ``vⁱ · v_j`` is 1 when ``j = i`` and 0
+        otherwise (eq 3.5).  The coordinates are independent of one another, so the
+        inverse is a plain map over the frame; the reciprocal vectors are computed
+        once, when the map is built.  For the frame below, ``v¹ = 1/2 * e_1 - 1/6 *
+        e_2`` and ``v² = 1/3 * e_2``, so for ``y = 3 * e_1 + 3 * e_2``,
+        ``x_1 = 3/2 - 1/2 = 1`` and ``x_2 = 1``.
+
+        ``inverse_method="peel"`` **peels the frame from its last vector**, using the
+        stored orthogonal set.  Each step:
 
         1. **Read the last coordinate.**  ``w_k`` is ``v_k`` with the span of
            ``v_1 … v_{k-1}`` rejected out of it, so ``w_k`` is perpendicular to every
@@ -551,20 +583,25 @@ class Frame:
         (orthogonal set ``w_1 = 2 * e_1``, ``w_2 = 3 * e_2``) and
         ``y = 3 * e_1 + 3 * e_2``: ``x_2 = (w_2 · y) / |w_2|² = 9 / 9 = 1``; the
         remainder is ``y - 1 * v_2 = 2 * e_1``; then ``x_1 = (w_1 · 2 * e_1) / |w_1|² =
-        4 / 4 = 1``.  So ``x = 1 * e_1 + 1 * e_2`` (the doctest below).
+        4 / 4 = 1``.  So ``x = 1 * e_1 + 1 * e_2``, as with the reciprocal frame.
 
-        The order is forced: with the frame orthogonalized first-to-last, only the
-        last orthogonal vector is perpendicular to *all* the others, so the first
+        The peel's order is forced: with the frame orthogonalized first-to-last, only
+        the last orthogonal vector is perpendicular to *all* the others, so the first
         coordinate that can be read off directly is the last one.  This is
         back-substitution (``x = R⁻¹ Qᵀ y`` in QR terms), read geometrically, with no
         row reduction and no coefficient table; see
-        ``tasks/reference/frames-qr-and-reciprocal-frames.md``, "The peel inverse,
-        step by step".
+        ``tasks/reference/frames-qr-and-reciprocal-frames.md``, "The peel inverse, step
+        by step".
 
         The frame must span the whole space (``k = n``), or the forward map would
         discard the components along ``e_{k+1} …`` and could not be inverted.  ``n``
         is the class's ``DIMENSION`` for the specialized types; ``Gn`` has no fixed
         dimension, so there ``n`` is the highest basis index the frame vectors use.
+
+        Args:
+            inverse_method: how the inverse recovers the coordinates:
+                ``"reciprocal"`` (default; ``x_i = vⁱ · y``) or ``"peel"``
+                (back-substitution from the last frame vector).  Keyword-only.
 
         Returns:
             InvertibleFunction[MultiVectorBase]: the map ``e_i ↦ v_i`` and its
@@ -575,9 +612,10 @@ class Frame:
         familiar dot product read out as a number.
 
         Raises:
-            ValueError: if ``k ≠ n`` (the frame does not span the space).  The
-                returned map and its inverse raise ``ValueError`` when called on a
-                non-vector: they are defined on vectors only.
+            ValueError: if ``k ≠ n`` (the frame does not span the space), or
+                ``inverse_method`` is not one of the two names.  The returned map and
+                its inverse raise ``ValueError`` when called on a non-vector: they are
+                defined on vectors only.
 
         Examples:
             >>> from gacalc.gn import e_1, e_2
@@ -585,6 +623,11 @@ class Frame:
             >>> f(1 * e_1 + 1 * e_2) == 3 * e_1 + 3 * e_2
             True
             >>> f.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
+            True
+            >>> g = Frame([2 * e_1, 1 * e_1 + 3 * e_2]).to_invertible_function(
+            ...     inverse_method="peel"
+            ... )
+            >>> g.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
             True
         """
         # n is the dimension of the space.  type(self.vectors[0]) is the frame's
@@ -613,7 +656,21 @@ class Frame:
                 start=cls.zero(),
             )
 
-        def backward(y: MultiVectorBase) -> MultiVectorBase:
+        def backward_by_reciprocal(y: MultiVectorBase) -> MultiVectorBase:
+            MultiVectorBase.require_vector(y, "a frame's map")
+            cls: type[MultiVectorBase] = type(y)
+            # x_i = vⁱ · y.  reciprocal_vectors is bound in the match below, which runs
+            # before this can be called.  basis_vector numbers the basis from 1, hence
+            # enumerate(start=1).
+            return sum(
+                (
+                    v_upper.dot(y).scalar_part() * cls.basis_vector(i)
+                    for i, v_upper in enumerate(reciprocal_vectors, start=1)
+                ),
+                start=cls.zero(),
+            )
+
+        def backward_by_peel(y: MultiVectorBase) -> MultiVectorBase:
             def peel(
                 remaining: Sequence[tuple[MultiVectorBase, MultiVectorBase]],
                 y: MultiVectorBase,
@@ -659,6 +716,22 @@ class Frame:
                 ),
                 start=cls.zero(),
             )
+
+        backward: Callable[[MultiVectorBase], MultiVectorBase]
+        match inverse_method:
+            case "reciprocal":
+                # Built once, here, so each call to the inverse is k dot products.
+                reciprocal_vectors: tuple[MultiVectorBase, ...] = (
+                    self.reciprocal_vectors()
+                )
+                backward = backward_by_reciprocal
+            case "peel":
+                backward = backward_by_peel
+            case _:
+                raise ValueError(
+                    "inverse_method must be 'reciprocal' or 'peel'; "
+                    f"got {inverse_method!r}"
+                )
 
         return InvertibleFunction(
             func=forward,

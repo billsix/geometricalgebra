@@ -241,7 +241,16 @@ it emits the faces in lexicographic order, which leaves out the *last* vector fi
 - the reconstruction `y = Σ (a^k · y) * a_k`;
 - `a^n = w_n / |w_n|²`.
 
-`tests/test_frame_class.py` checks that the reciprocal coordinates equal the peel inverse's.
+**Both inverses, chosen by keyword** (2026-11-07, `tasks/frame-to-invertible-function-reciprocal-inverse.md`).
+`Frame.to_invertible_function(*, inverse_method=...)` takes `"reciprocal"` (the default) or `"peel"`.
+
+- **Reciprocal:** computes the reciprocal vectors once, when the map is built, and its inverse is a plain
+  map, `x = Σ_i (vⁱ · y) * e_i`.
+- **Peel:** the back-substitution above.
+
+They agree because `vⁱ · y = Σ_j x_j (vⁱ · v_j) = x_i` (eq 3.5), and a frame's coordinates are unique.
+`tests/test_frame_class.py` runs every round trip under both methods and checks that the two inverses are
+equal on a general symbolic vector, for general 2D and 3D frames.
 
 QR connects to it directly:
 

@@ -28,6 +28,7 @@ import pytest
 import sympy
 from _helpers import random_vector
 
+from gacalc import g2, g3
 from gacalc.base import MultiVectorBase
 from gacalc.frame import (
     all_wedged_except_the_kth,
@@ -399,3 +400,29 @@ def test_all_wedged_except_the_kth_leaves_out_one_vector() -> None:
     for bad_k in (0, 3):
         with pytest.raises(ValueError):
             all_wedged_except_the_kth(frame, bad_k)
+
+
+def test_prefix_blades_on_a_graded_type() -> None:
+    """On the graded ``g2`` types the seed ``A_0`` is the scalar 1, not ``Vector``'s
+    ``one()`` (the zero vector, which would make every prefix blade zero)."""
+    blades: list[MultiVectorBase] = list(
+        prefix_blades([2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2])
+    )
+    assert blades == [g2.Scalar.one(), 2 * g2.e_1 + 0 * g2.e_2, 6 * (g2.e_1 ^ g2.e_2)]
+
+
+def test_reciprocal_frame_on_a_graded_type() -> None:
+    """A concrete oblique 3D frame on the graded ``g3`` types satisfies eq (3.5)."""
+    frame: list[MultiVectorBase] = [
+        2 * g3.e_1 + 0 * g3.e_2 + 1 * g3.e_3,
+        1 * g3.e_1 + 3 * g3.e_2 + 0 * g3.e_3,
+        1 * g3.e_1 + 1 * g3.e_2 + 4 * g3.e_3,
+    ]
+    reciprocal: list[MultiVectorBase] = reciprocal_frame(frame)
+    assert [
+        [a_upper.dot(a).scalar_part() for a in frame] for a_upper in reciprocal
+    ] == [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+    ]
