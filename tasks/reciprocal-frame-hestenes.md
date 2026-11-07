@@ -1,8 +1,8 @@
 # Reciprocal frame, implemented as Hestenes & Sobczyk write it
 
-**Status:** on hold — the maintainer said "hold off on that for now" about open question 1 (William Emerison Six <billsix@gmail.com>, 2026-11-04);
-not started.
-**Priority:** 8 (on hold)
+**Status:** proposed — formula and property confirmed from the book, H&S p. 28 eqs (3.5)-(3.7), no open
+questions (William Emerison Six <billsix@gmail.com>, 2026-11-07); not started.
+**Priority:** 5
 **Blocks:** `tasks/frame-inverse-head-first-recursion.md` (whether the frame map's inverse can run
 first-element-first; its option (B) is the reciprocal-frame map). The maintainer put that task on hold
 until this one is done (William Emerison Six <billsix@gmail.com>, 2026-11-06).
@@ -32,6 +32,56 @@ inverse checked, and the explainer folded into
   a design reference only, not code to lift.
 - `tasks/reference/contraction-and-dot-definitions.md`: gacalc's `inner_product` (Hestenes' dot) versus
   the contractions. The H&S formula uses Hestenes' inner product, so use the one the book uses.
+
+## The formula, as H&S write it (read off the book by the maintainer, 2026-11-07)
+
+Hestenes & Sobczyk, *Clifford Algebra to Geometric Calculus*, **p. 28**, in the book's notation (frame
+vectors `a_1 … a_n`; use these names in the code and docstring):
+
+- **eq (3.6):** `A_n = a_1 ∧ a_2 ∧ … ∧ a_n`, the wedge of the `n` frame vectors in order.
+- **eq (3.7):** `a^k = (−1)^(k−1) (a_1 ∧ … ∧ ǎ_k ∧ … ∧ a_n) A_n⁻¹`, where `ǎ_k` means "leave `a_k`
+  out", and the product with `A_n⁻¹` is written by juxtaposition, i.e. the **geometric product**. Because
+  the (n−1)-blade lies inside the space of `A_n`, that geometric product is a pure vector and equals the
+  inner product (the explainer below writes it as `· E⁻¹`). A test should assert the result has only a
+  grade-1 part, which pins this down instead of assuming it.
+- **The reciprocal frame is the set `{a^1, a^2, …, a^n}`.** The maintainer reads this, like the frame
+  `{a_1, a_2, …, a_n}`, as a Python **list**: `reciprocal_frame(vectors: Sequence[...]) -> list[...]`,
+  with `result[k-1]` being `a^k`.
+- **eq (3.5), the defining property:** `a^k · a_j = δ^k_j`, the **Kronecker delta**: `δ^k_j = 1` when
+  `j = k`, and `δ^k_j = 0` when `j ≠ k`. Each reciprocal vector has unit projection on its own frame
+  vector and is perpendicular to every other one. This is the property the tests cite (maintainer,
+  2026-11-07: "that's the only property I was thinking of").
+
+### Implementation shape: pair each `a_k` with "all the others" (researched 2026-11-07)
+
+The Python standard library has no single "leave-one-out" function. Two candidates, both checked:
+
+- **`itertools.combinations(vectors, n - 1)`** does produce every (n−1)-subset with each tuple in input
+  order. But it emits them in lexicographic order of positions, so it drops the **last** vector first:
+  for `[a1, a2, a3, a4]` it yields `(a1,a2,a3)`, `(a1,a2,a4)`, `(a1,a3,a4)`, `(a2,a3,a4)`, i.e. the k-th
+  tuple omits `a_(n+1−k)`. Pairing it with `a_k` therefore needs `reversed(...)`, and correctness would
+  rest on a documented-but-unobvious emission order. Rejected for that reason.
+- **`enumerate` + slicing (recommended):** `others = vectors[:k-1] + vectors[k:]` for
+  `k, a_k in enumerate(vectors, start=1)`. Each face reads as exactly what eq 3.7 says, and `start=1`
+  makes the loop variable the book's `k`, so the sign is literally `(−1)^(k−1)` with no off-by-one
+  translation. (Verified: for `[a1, a2, a3, a4]` it pairs `a1` with `[a2, a3, a4]`, …, `a4` with
+  `[a1, a2, a3]`.)
+
+The two wedges follow the module's existing fold style (`prefix_blades` uses `accumulate(vectors,
+operator.xor, initial=type(vectors[0]).one())`):
+
+```python
+one = type(vectors[0]).one()
+a_n_inverse = functools.reduce(operator.xor, vectors, one).inverse()      # A_n⁻¹, eq 3.6
+return [
+    (-1) ** (k - 1) * functools.reduce(operator.xor, vectors[: k - 1] + vectors[k:], one) * a_n_inverse
+    for k, _ in enumerate(vectors, start=1)                                  # eq 3.7
+]
+```
+
+(A sketch for the shape only: `inverse()` is `MultiVectorBase.inverse` in `src/gacalc/base.py`. Check
+how `Sequence` slices concatenate for the actual argument type, or take `list(vectors)` first. Keep the
+`is_frame` check up front so a dependent set raises `ValueError`.)
 
 ## Explainer: what a reciprocal frame is and why you want it
 
@@ -90,13 +140,14 @@ The reciprocal frame gets them all at once, from the pseudoscalar.
 
 ## Plan
 
-1. **The maintainer reads H&S** (the frames section, near the p. 27 frame definition) and confirms the
-   page, the equation number, and the exact formula, including the sign convention and whether H&S write
-   `· E⁻¹` or `E⁻¹ ·` on the left. This decides the code shape (open question 1).
-2. Implement `reciprocal_frame(vectors)` in `src/gacalc/frame.py` as a free function, matching the
-   module's style, with the H&S page in the docstring. Optionally add a `Frame.reciprocal()` pass-through.
-3. Symbolic tests in 2D and 3D:
-   - `vⁱ · v_j == δⁱ_j`;
+1. ~~The maintainer reads H&S~~ Done 2026-11-07: p. 28, eqs 3.6 and 3.7 (section above).
+2. Implement `reciprocal_frame(vectors) -> list` in `src/gacalc/frame.py` as a free function, matching
+   the module's style, citing "H&S p. 28, eqs 3.6-3.7" in the docstring, built with the enumerate+slice
+   shape above. Optionally add a `Frame.reciprocal()` pass-through.
+3. Symbolic tests in 2D and 3D (general symbolic frames, not just the numeric example):
+   - **the book's property, H&S p. 28 eq (3.5):** `a^k · a_j == δ^k_j` for every pair, i.e. `1` on
+     the diagonal (`j = k`) and `0` off it (`j ≠ k`), checked as an n×n matrix equal to the identity;
+   - each `a^k` is a pure vector (grade 1 only), which justifies reading eq 3.7's product as the dot;
    - the reconstruction `y == Σ (vⁱ · y) * v_i`;
    - `vⁿ == w_n / |w_n|²`;
    - the coordinates agree with `Frame.to_invertible_function()`'s inverse;
@@ -108,7 +159,10 @@ The reciprocal frame gets them all at once, from the pseudoscalar.
 
 ## Open questions (block implementation)
 
-1. **Page, equation, and exact formula in H&S.** Which page and equation define the reciprocal frame,
-   and does the book's formula match the shape above (sign `(−1)^(i−1)`, dot with `E⁻¹` on the right)?
-   This is yours to read off the book; I won't cite a page I haven't seen. **On hold (William Emerison Six <billsix@gmail.com>, 2026-11-04):
-   "hold off on that for now".**
+1. ~~Page, equation, and exact formula in H&S~~ **Answered (William Emerison Six <billsix@gmail.com>,
+   2026-11-07):** p. 28, eq (3.6) `A_n = a_1 ∧ … ∧ a_n`; eq (3.7)
+   `a^k = (−1)^(k−1) (a_1 ∧ … ǎ_k … ∧ a_n) A_n⁻¹`; the reciprocal frame `{a^1, …, a^n}` is a list.
+2. ~~Which p. 28 property should the tests cite?~~ **Answered (William Emerison Six
+   <billsix@gmail.com>, 2026-11-07):** eq (3.5), `a^k · a_j = δ^k_j` (Kronecker delta: 1 if `j = k`,
+   0 otherwise), the only property in scope. The other checks in the plan (reconstruction, last
+   rejection, agreement with `Frame`'s inverse) are gacalc's own consistency tests and cite no page.
