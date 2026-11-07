@@ -1,7 +1,7 @@
 # Lean proofs for the reciprocal frame and `Frame`'s two inverses
 
-**Status:** proposed — the maintainer asked for it (William Emerison Six <billsix@gmail.com>,
-2026-11-07); open question 1 below decides scope
+**Status:** ready — the maintainer asked for it and answered its open question (William Emerison Six
+<billsix@gmail.com>, 2026-11-07); not started
 **Priority:** 6
 **Difficulty:** 6
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>)
@@ -56,7 +56,7 @@ states the fact cites its Lean theorem by name.
 
 ## Plan
 
-1. Settle open question 1.
+1. Prove rejection orthogonality (`w_n` perpendicular to every earlier frame vector) first; theorems 6–8 rest on it.
 2. G2 first: the face is a single vector and `A_2⁻¹` is a pseudoscalar, so theorems 1–8 are short and
    show the proof shape. Then G3.
 3. Cite each theorem by name in the Python docstrings and tests listed in Context.
@@ -66,10 +66,15 @@ states the fact cites its Lean theorem by name.
 three-forms rule calls for. The symbolic Python form exists as the tests above. The book page would go
 in `book/docs/frames-qr.rst`.
 
+## Decisions
+
+1. **Scope against the on-hold Lean frame task** (William Emerison Six <billsix@gmail.com>, 2026-11-07:
+   "sure"). Theorems 6–8 need the peel, and the peel needs rejection orthogonality. This task proves
+   that result itself (theorem 1 of `tasks/lean-frame-class-invertible-function.md`) and takes over that
+   task's theorems 5 (round trip) and 6 (last reciprocal), which are theorems 7 and 6 here. That task's
+   theorems 2–4 (triangular coefficients, rebuild, volume) stay on hold there, and
+   `tasks/lean-frame-coverage.md` stays parked.
+
 ## Open questions
 
-1. Theorems 6–8 need the peel, and the peel needs the rejection-orthogonality result that is theorem 1 of
-   the on-hold `tasks/lean-frame-class-invertible-function.md`. Should this task prove that result here
-   and also take over that task's theorems 5 and 6 (round trip, last reciprocal), leaving its theorems
-   2–4 (triangular coefficients, rebuild, volume) on hold there? I recommend yes: those two are the same
-   statements as theorems 6–7 here, and the rest stay on hold.
+None.
