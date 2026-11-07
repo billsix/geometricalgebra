@@ -403,6 +403,13 @@ def reciprocal_frame(
     frame: ``result[k - 1]`` is ``a^k``.  For ``k``
     vectors in a larger space it is the reciprocal frame within their span.
 
+    Machine-checked for ``n = 2`` and ``3`` in
+    ``proofs/GacalcProofs/ReciprocalFrame2D.lean`` / ``ReciprocalFrame3D.lean``: each
+    ``a^k`` is a vector (``isVector_recip*``), ``a^k · a_j`` is the Kronecker delta
+    (``dot_recip_kronecker``), ``y = Σ (a^k · y) * a_k`` (``reconstruct``), and
+    ``a^i = m / (m · a_i)`` for any ``m`` perpendicular to the other frame vectors
+    (``recip*_eq_normal_div``).
+
     Examples:
         The oblique frame ``a_1 = 2 * e_1``, ``a_2 = 1 * e_1 + 3 * e_2``:
 
@@ -616,6 +623,14 @@ class Frame:
         row reduction and no coefficient table; see
         ``tasks/reference/frames-qr-and-reciprocal-frames.md``, "The peel inverse, step
         by step".
+
+        Machine-checked for ``n = 2`` and ``3``
+        (``proofs/GacalcProofs/ReciprocalFrame2D.lean`` / ``ReciprocalFrame3D.lean``):
+        both inverses undo the forward map on both sides (``invReciprocal_frameMap``,
+        ``frameMap_invReciprocal``, ``invPeel_frameMap``, ``frameMap_invPeel``) and
+        agree (``invReciprocal_eq_invPeel``); the peel's last reciprocal vector is the
+        last rejection over its squared length (``recip2_eq_reject_div`` /
+        ``recip3_eq_reject_div``).
 
         The frame must span the whole space (``k = n``), or the forward map would
         discard the components along ``e_{k+1} …`` and could not be inverted.  ``n``

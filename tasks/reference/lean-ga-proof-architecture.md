@@ -331,6 +331,21 @@ leaves are stated on `wedge u v`, not a bivector-coordinate literal. This is the
   so peel with `congr 1; ring`. (3) A `G3`/`G2` algebra-law lemma name (`mul_smul`, `smul_smul`,
   `mul_one`, `one_smul`, `mul_assoc`) **clashes with Mathlib's ℝ version** — fully-qualify the G3/G2 one
   (`GacalcProofs.G3.mul_smul`) in `rw` chains.
+- **Destructure, then atomize the denominator** (2026-11-07, `ReciprocalFrame2D/3D.lean`). Rewriting a
+  vector in place with `rw [eq_vec_of_isVector ha]` leaves `a.c1`-style terms whose order `field_simp`
+  reshuffles, so it can no longer match the nonzero hypothesis against the denominator. Instead
+  `obtain ⟨p, q, rfl⟩ : ∃ p q, a = vec p q := ⟨_, _, eq_vec_of_isVector ha⟩` (fresh variables), then
+  make the denominator an atom: `generalize hdd : p * t - q * r = d at hd ⊢` before `field_simp`, and
+  `subst hdd` before the closing `ring`; or name it with a `def` (`det3`, `crossSq`) that `field_simp`
+  cannot unfold, and `simp only [det3]` before `ring`. Give `|w|²` of a computed vector its own leaf
+  (`normSq_reject_plane_vec` = `det3²/crossSq`) so `field_simp` never sees a sum of squared fractions.
+- **`first | ring1 | linear_combination …`, not `first | ring | …`.** `ring` that cannot close a goal
+  falls back to `ring_nf` and *succeeds* with the goal open, so `first` never tries the next
+  alternative; `ring1` fails properly.
+- **Prove a back-substitution structurally, on a combination.** `invPeel_comb` states the peel on
+  `x₁*a₁ + x₂*a₂ + x₃*a₃` and reads each `x_i` back with `dot` bilinearity and the rejections'
+  orthogonality facts, instead of expanding the whole inverse in coordinates (12 variables). The round
+  trips then follow by rewriting with `reconstruct`.
 
 ### Transfer a whole proof chain by normalize + bridge + `rw` — don't duplicate it (2026-10-05)
 
@@ -618,6 +633,17 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   (`cos_between_uvec`, `signed_sin_between`, `sin_between_eq_abs_signed_vec`). `StudentTrigForms.lean` —
   the cosine-0 / sine-0 / `area = |a| * |b| * sin(θ)` corollaries with `_`-prefixed meaning gates.
 
+- `ReciprocalFrame2D.lean` / `ReciprocalFrame3D.lean` — the reciprocal frame (H&S p. 28 eq 3.7:
+  `recip1`/`recip2`(/`recip3`)) and `Frame.to_invertible_function`'s two inverses, n = 2 and 3, frame
+  hypothesis `normSq (a₁ ∧ … ∧ aₙ) ≠ 0`: `isVector_recip*`, `dot_recip_kronecker` (eq 3.5),
+  `reconstruct` (eq 3.4; 3D also `reconstruct_dual`), the similar-triangles `coord*_of_perp` and
+  `recip*_eq_normal_div` (`aⁱ = m/(m·aᵢ)`), rejection orthogonality (`dot_reject_self`;
+  `reject_plane_facts`/`reject_line_facts`), the last reciprocal as the last rejection
+  (`recip2_eq_reject_div` / `recip3_eq_reject_div`), and the round trips `invReciprocal_frameMap`,
+  `frameMap_invReciprocal`, `invPeel_frameMap`, `frameMap_invPeel`, `invReciprocal_eq_invPeel`. 2D is
+  coordinate throughout; 3D proves the peel structurally (`invPeel_comb`: the peel reads back the
+  coordinates of any `x₁*a₁ + x₂*a₂ + x₃*a₃` from the rejections' orthogonality), with coordinates only
+  in the `_vec` leaves and the atoms `det3` (signed volume) and `crossSq` (`|a₁ × a₂|²`).
 - `MathlibBridge.lean` — the "equivalence to the general case" bridges: `G2.toE`/`G3.toE` into
   `EuclideanSpace`, `dot_eq_inner`, `norm_toE`, `dot_comm_of_inner`, `abs_dot_le_magnitude_mul`
   (Cauchy–Schwarz by citing `abs_real_inner_le_norm`); `wedge_eq_det`, `wedge_c12/c13/c23_eq_det`, `toF_cross`
@@ -696,7 +722,9 @@ theorem landed 2026-10-05 (`PlaneRotation3D.lean`), and `gn` waits on a general-
 | `transforms.bivector_rotation(θ).at(t)`, `functions.at` | plumbing — no theorem | the rotor factory's interpolation law rebuilds the rotor with `t·θ`; composites interpolate component-wise |
 | `transforms.translate`, `uniform_scale`, `scale_non_uniform`, `to_matrix`, `MatrixTemplate`, `to_matrix_template` | plumbing — no theorem | affine/matrix bookkeeping; `scale_non_uniform` rests on `proj` onto `e_i` (covered) |
 | `g1.py` (𝒢₁) | HAS | `G1.lean`: `mul`/`wedge` (oracle-transcribed), `I_sq` (= **+1**), `I_sq_eq_sign`, `mul_comm`, `mul_assoc`, `vec_mul` (pure scalar), `wedge_vec` (= 0: all 1D vectors parallel), `dot_vec`, `normSq_vec`, `magnitude_vec` (`= |x|`), `dual_vec` (a scalar), `mul_vec_inverse_self` |
-| `frame.py` | NONE | `tasks/lean-frame-coverage.md` (parked); `Frame` class: `tasks/lean-frame-class-invertible-function.md` (on hold) |
+| `frame.reciprocal_frame`, `all_wedged_except_the_kth`, `kronecker_delta`, `Frame.reciprocal_vectors` | HAS | `recip*` (eq 3.7), `isVector_recip*`, `dot_recip_kronecker` (eq 3.5), `reconstruct` (ReciprocalFrame2D/3D) |
+| `Frame.to_invertible_function` (both `inverse_method`s) | HAS | `invReciprocal_frameMap`, `frameMap_invReciprocal`, `invPeel_frameMap`, `frameMap_invPeel`, `invReciprocal_eq_invPeel`; the peel's step: `recip*_eq_reject_div`, `invPeel_comb` (ReciprocalFrame2D/3D) |
+| `frame.py`, the rest (`make_orthogonal_frame*`, `prefix_blades`, `Frame.coefficients`) | NONE | `tasks/lean-frame-coverage.md` (parked); `tasks/lean-frame-class-invertible-function.md` theorems 2–4 (on hold) |
 | `gn.py` | NONE | `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` (deferred) |
 
 ## Hypotheses: what each kind is for, and how to decide

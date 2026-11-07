@@ -288,7 +288,10 @@ def test_composed_round_trip_is_identity_symbolic(
 ) -> None:
     """``(f⁻¹ ∘ f)(x) == x`` and ``(f ∘ f⁻¹)(x) == x`` for a symbolic ``x`` and a
     general symbolic frame, composed with the library's ``@`` (the maintainer's
-    requirement, 2026-11-04), under both inverse methods."""
+    requirement, 2026-11-04), under both inverse methods. Lean
+    (``proofs/GacalcProofs/ReciprocalFrame2D.lean``/``3D.lean``):
+    ``invReciprocal_frameMap``, ``frameMap_invReciprocal``, ``invPeel_frameMap``,
+    ``frameMap_invPeel``."""
     f: InvertibleFunction[MultiVectorBase] = request.getfixturevalue(function_name)
     assert (inverse(f) @ f)(x) == x
     assert (f @ inverse(f))(x) == x
@@ -373,8 +376,10 @@ def test_inverse_methods_are_equivalent_symbolic(
     reciprocal_name: str, peel_name: str, y: Gn, request: pytest.FixtureRequest
 ) -> None:
     """The reciprocal and the peel inverse give the same coordinates for a general
-    symbolic frame and a general symbolic vector ``y`` (not only for images
-    ``f(x)``): ``vⁱ · y`` equals the back-substituted ``x_i``."""
+    symbolic frame and a general symbolic vector ``y`` (not only for images ``f(x)``):
+    ``vⁱ · y`` equals the back-substituted ``x_i``. Lean
+    (``proofs/GacalcProofs/ReciprocalFrame2D.lean``/``3D.lean``):
+    ``invReciprocal_eq_invPeel``."""
     by_reciprocal: InvertibleFunction[MultiVectorBase] = request.getfixturevalue(
         reciprocal_name
     )

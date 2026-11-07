@@ -306,9 +306,11 @@ def is_zero_vector(value: MultiVectorBase) -> bool:
 def test_reciprocal_frame_is_the_kronecker_delta(
     frame: Sequence[MultiVectorBase],
 ) -> None:
-    """H&S p. 28 eq (3.5), the defining property: ``a^k · a_j = δ^k_j`` -- 1 when
-    ``j = k`` and 0 when ``j ≠ k`` -- for every pair of a general symbolic frame, i.e.
-    the matrix ``[a^k · a_j]`` is the identity."""
+    """H&S p. 28 eq (3.5), the defining property: ``a^k · a_j = δ^k_j`` -- 1 when ``j =
+    k`` and 0 when ``j ≠ k`` -- for every pair of a general symbolic frame, i.e. the
+    matrix ``[a^k · a_j]`` is the identity. Lean
+    (``proofs/GacalcProofs/ReciprocalFrame2D.lean``/``3D.lean``):
+    ``dot_recip_kronecker``."""
     reciprocal: list[MultiVectorBase] = reciprocal_frame(frame)
     k: int
     j: int
@@ -337,7 +339,8 @@ def test_reciprocal_frame_reconstructs_a_vector_symbolic(
     frame: Sequence[Gn], y: Gn
 ) -> None:
     """The coordinates of ``y`` in the frame are dot products with the reciprocal
-    vectors: ``y == Σ_k (a^k · y) * a_k``."""
+    vectors: ``y == Σ_k (a^k · y) * a_k``. Lean
+    (``proofs/GacalcProofs/ReciprocalFrame2D.lean``/``3D.lean``): ``reconstruct``."""
     rebuilt: MultiVectorBase = sum(
         (
             a_upper_k.dot(y).scalar_part() * a_k
@@ -354,7 +357,9 @@ def test_last_reciprocal_vector_is_the_last_rejection(
 ) -> None:
     """``a^n == w_n / |w_n|²``: ``w_n`` (the last vector of the rejection frame) is
     ``a_n`` with the span of the others rejected out, so it is already perpendicular to
-    every other frame vector; dividing by ``|w_n|²`` makes its dot with ``a_n`` one."""
+    every other frame vector; dividing by ``|w_n|²`` makes its dot with ``a_n`` one.
+    Lean (``proofs/GacalcProofs/ReciprocalFrame2D.lean``/``3D.lean``):
+    ``recip2_eq_reject_div`` / ``recip3_eq_reject_div``."""
     w_n: MultiVectorBase = make_orthogonal_frame(frame)[-1]
     assert is_zero_vector(reciprocal_frame(frame)[-1] - w_n / w_n.magnitude_squared())
 
