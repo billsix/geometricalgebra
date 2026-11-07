@@ -12,6 +12,8 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`gacalc.frame.kronecker_delta(k, j)`** — `δ^k_j`: 1 when `j = k`, 0 otherwise (H&S p. 28, eq 3.5's
+  notation). Additive, non-breaking.
 - **`Frame.to_invertible_function(*, inverse_method="reciprocal" | "peel")`** — a keyword-only choice of
   how the inverse recovers the coordinates. `"reciprocal"` (**the new default**) reads each coordinate
   as `x_i = vⁱ · y` with the reciprocal frame; `"peel"` is the earlier back-substitution from the last

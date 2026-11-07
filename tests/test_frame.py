@@ -34,6 +34,7 @@ from gacalc.frame import (
     all_wedged_except_the_kth,
     are_linearly_independent,
     is_frame,
+    kronecker_delta,
     make_orthogonal_frame,
     make_orthogonal_frame_hestenes,
     make_orthogonal_frame_hestenes_inverse,
@@ -331,8 +332,7 @@ def test_reciprocal_frame_is_the_kronecker_delta_symbolic(frame: Sequence[Gn]) -
     a_j: Gn
     for k, a_upper_k in enumerate(reciprocal, start=1):
         for j, a_j in enumerate(frame, start=1):
-            δ: int = 1 if j == k else 0
-            assert is_zero(a_upper_k.dot(a_j).scalar_part() - δ)
+            assert is_zero(a_upper_k.dot(a_j).scalar_part() - kronecker_delta(k, j))
 
 
 @pytest.mark.parametrize("frame", frames_2d_and_3d, ids=["2d", "3d"])
@@ -418,11 +418,22 @@ def test_reciprocal_frame_on_a_graded_type() -> None:
         1 * g3.e_1 + 3 * g3.e_2 + 0 * g3.e_3,
         1 * g3.e_1 + 1 * g3.e_2 + 4 * g3.e_3,
     ]
-    reciprocal: list[MultiVectorBase] = reciprocal_frame(frame)
-    assert [
-        [a_upper.dot(a).scalar_part() for a in frame] for a_upper in reciprocal
-    ] == [
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1],
-    ]
+    k: int
+    j: int
+    a_upper_k: MultiVectorBase
+    a_j: MultiVectorBase
+    for k, a_upper_k in enumerate(reciprocal_frame(frame), start=1):
+        for j, a_j in enumerate(frame, start=1):
+            assert a_upper_k.dot(a_j).scalar_part() == kronecker_delta(k, j)
+
+
+def test_kronecker_delta() -> None:
+    """``δ^k_j`` is 1 on the diagonal (``j = k``), 0 off it, and symmetric; over
+    ``1 … n`` it is the identity matrix."""
+    assert [kronecker_delta(k, k) for k in range(1, 5)] == [1, 1, 1, 1]
+    assert [kronecker_delta(1, j) for j in (2, 3, 4)] == [0, 0, 0]
+    assert kronecker_delta(3, 1) == kronecker_delta(1, 3) == 0
+    identity: sympy.Matrix = sympy.Matrix(
+        4, 4, lambda row, column: kronecker_delta(row + 1, column + 1)
+    )
+    assert identity == sympy.eye(4)

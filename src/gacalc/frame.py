@@ -310,6 +310,24 @@ def make_orthogonal_frame_hestenes_inverse(
     ]
 
 
+def kronecker_delta(k: int, j: int) -> int:
+    """The Kronecker delta ``δ^k_j``: ``1`` when ``j = k`` and ``0`` when ``j ≠ k``.
+
+    The notation of H&S p. 28, eq 3.5, where the reciprocal frame is defined by
+    ``a^k · a_j = δ^k_j``: ``k`` is the upper index (the reciprocal vector), ``j``
+    the lower (the frame vector).  The value is symmetric, ``δ^k_j = δ^j_k``.
+
+    Examples:
+        >>> kronecker_delta(2, 2)
+        1
+        >>> kronecker_delta(1, 2)
+        0
+        >>> [[kronecker_delta(k, j) for j in range(1, 4)] for k in range(1, 4)]
+        [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+    """
+    return 1 if j == k else 0
+
+
 def all_wedged_except_the_kth(
     vectors: Sequence[MultiVectorBase],
     k: int,
@@ -356,7 +374,8 @@ def reciprocal_frame(
 
         a^k · a_j = δ^k_j
 
-    the Kronecker delta: ``1`` when ``j = k`` and ``0`` when ``j ≠ k``.  Each ``a^k``
+    the Kronecker delta (:func:`kronecker_delta`): ``1`` when ``j = k`` and ``0`` when
+    ``j ≠ k``.  Each ``a^k``
     is perpendicular to every frame vector except ``a_k``, and its projection on
     ``a_k`` is 1.  So the coordinates of a vector ``y`` in the frame are dot products,
     ``y = Σ_k (a^k · y) * a_k``, with no system to solve.  (The upper index names the
