@@ -310,8 +310,19 @@ check-notebooks: image ## (container) pyright gate over notebooks/ (type regress
 # The generated g*.py are gitignored, so regenerate them first (into the
 # bind-mounted tree), then run pytest.  Exit 0 on success; on failure the inner
 # command's nonzero status propagates out (make reports it as a recipe failure).
+# `test` is the everyday suite: it skips the tests marked `slow` (over 10 s each,
+# mostly the 3D symbolic frame tests; the marker is registered in pytest.ini).
+# `test-full` runs everything and is what CI runs.
 .PHONY: test
-test: image ## Run the full test suite INSIDE the container; exit 0 on success, nonzero on failure
+test: image ## Run the everyday test suite (skips tests marked slow) INSIDE the container
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
+		-v $(CURDIR):/gacalc:Z \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'set -e; source /venv/bin/activate; cd /gacalc; python tools/gen_specialized.py; python -m pytest -m "not slow"'
+
+.PHONY: test-full
+test-full: image ## (CI) Run the whole test suite, slow tests included, INSIDE the container
 	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
 		-v $(CURDIR):/gacalc:Z \
 		--entrypoint /bin/bash \

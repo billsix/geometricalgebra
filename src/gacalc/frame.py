@@ -39,10 +39,10 @@ from itertools import accumulate, pairwise
 from typing import Literal
 
 import numpy as np
-import sympy
 
 from gacalc.base import MultiVectorBase, Real
 from gacalc.functions import InvertibleFunction, Linearity
+from gacalc.transforms import coordinate_along, line_to_line_projection
 
 
 def are_linearly_independent(
@@ -406,6 +406,7 @@ def reciprocal_frame(
     Examples:
         The oblique frame ``a_1 = 2 * e_1``, ``a_2 = 1 * e_1 + 3 * e_2``:
 
+        >>> import sympy
         >>> from gacalc.gn import e_1, e_2
         >>> frame = [2 * e_1, 1 * e_1 + 3 * e_2]
         >>> reciprocal = reciprocal_frame(frame)
@@ -436,17 +437,10 @@ def reciprocal_frame(
     ]
 
 
-def _exact_quotient(numerator: Real, denominator: Real) -> Real:
-    """``numerator / denominator``, keeping exact input exact.
-
-    A ``float`` on either side gives a ``float`` (numeric input stays numeric).
-    Otherwise both sides are sympified first, so ``int / int`` is an exact
-    ``Rational`` instead of a float, and symbolic input stays symbolic -- the same
-    numeric/symbolic split as :meth:`MultiVectorBase.inverse`.
-    """
-    if isinstance(numerator, float) or isinstance(denominator, float):
-        return numerator / denominator
-    return sympy.sympify(numerator) / sympy.sympify(denominator)
+def _has_float(vectors: Sequence[MultiVectorBase]) -> bool:
+    """True if any coefficient of ``vectors`` is a ``float``: the "on the line" checks
+    then need :func:`~gacalc.transforms.coordinate_along`'s tolerance."""
+    return any(isinstance(coefficient, float) for v in vectors for coefficient in v)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -522,7 +516,8 @@ class Frame:
         """The table rebuilding each ``v_i`` from the orthogonal set -- ``R`` of QR,
         with the lengths factored out.
 
-        ``coefficients()[i][j] = (w_j · v_i) / |w_j|²``, so that
+        ``coefficients()[i][j]`` is how many copies of ``w_j`` the projection of
+        ``v_i`` onto ``w_j`` is (in coordinates ``(w_j · v_i) / |w_j|²``), so that
         ``v_i = Σ_j coefficients()[i][j] * w_j``.  Zero above the diagonal, one on it.
 
         Returns:
@@ -531,7 +526,11 @@ class Frame:
         """
         return tuple(
             tuple(
-                _exact_quotient(w.dot(v).scalar_part(), w.magnitude_squared())
+                coordinate_along(
+                    v.projected_onto(w),
+                    along=w,
+                    float_close_to_zero=_has_float((v, w)),
+                )
                 for w in self.orthogonal_vectors
             )
             for v in self.vectors
@@ -574,28 +573,29 @@ class Frame:
         coordinates (the solution is unique for a frame), which
         ``tests/test_frame_class.py`` checks symbolically.
 
-        ``inverse_method="reciprocal"`` (the default) reads every coordinate off with
-        one dot product, using the **reciprocal frame** ``v¹ … vᵏ``
-        (:meth:`reciprocal_vectors`, H&S p. 28): ``x_i = vⁱ · y``.  That holds because
-        ``vⁱ · y = Σ_j x_j * (vⁱ · v_j)``, and ``vⁱ · v_j`` is 1 when ``j = i`` and 0
-        otherwise (eq 3.5).  The coordinates are independent of one another, so the
-        inverse is a plain map over the frame; the reciprocal vectors are computed
-        once, when the map is built.  For the frame below, ``v¹ = 1/2 * e_1 - 1/6 *
-        e_2`` and ``v² = 1/3 * e_2``, so for ``y = 3 * e_1 + 3 * e_2``,
-        ``x_1 = 3/2 - 1/2 = 1`` and ``x_2 = 1``.
+        Both read a coordinate the same way.  If a vector ``n`` is perpendicular to
+        every frame vector except ``v_i``, projecting ``y`` onto ``n`` sees only the
+        ``x_i * v_i`` term: ``P_n(y) = x_i * P_n(v_i)``.  The point on ``v_i``'s line
+        whose projection onto ``n`` is ``P_n(y)`` is therefore ``x_i * v_i``; that is
+        the inverse of :func:`~gacalc.transforms.line_to_line_projection` from
+        ``v_i`` to ``n``, and :func:`~gacalc.transforms.coordinate_along` reads
+        ``x_i`` off it.  (In coordinates ``x_i = (n · y) / (n · v_i)``: two heights,
+        one divided by the other.)  The methods differ in which ``n`` they use.
+
+        ``inverse_method="reciprocal"`` (the default) uses the **reciprocal frame**
+        ``v¹ … vᵏ`` (:meth:`reciprocal_vectors`, H&S p. 28): ``vⁱ`` is perpendicular
+        to every ``v_j`` with ``j ≠ i`` (eq 3.5), so ``n = vⁱ`` reads ``x_i``
+        directly, and the coordinates are independent of one another.  The
+        reciprocal vectors are computed once, when the map is built.
 
         ``inverse_method="peel"`` **peels the frame from its last vector**, using the
         stored orthogonal set.  Each step:
 
         1. **Read the last coordinate.**  ``w_k`` is ``v_k`` with the span of
-           ``v_1 … v_{k-1}`` rejected out of it, so ``w_k`` is perpendicular to every
-           earlier frame vector.  Dotting ``y`` with it therefore sees only the last
-           term, ``w_k · y = x_k * (w_k · v_k)``, and ``w_k · v_k = |w_k|²`` (the part
-           of ``v_k`` along ``w_k`` is ``w_k`` itself).  So
-           ``x_k = (w_k · y) / |w_k|²``.
-        2. **Remove the last vector's contribution.**  ``y - x_k * v_k`` equals
-           ``Σ_{i < k} x_i * v_i``: a vector in the span of the first ``k - 1`` frame
-           vectors.
+           ``v_1 … v_{k-1}`` rejected out of it, so it is perpendicular to every
+           earlier frame vector: ``n = w_k`` gives the last term, ``x_k * v_k``.
+        2. **Remove it.**  ``y - x_k * v_k`` equals ``Σ_{i < k} x_i * v_i``: a vector
+           in the span of the first ``k - 1`` frame vectors.
         3. **Repeat on the smaller frame.**  That remainder is the same problem for
            ``v_1 … v_{k-1}``, whose last orthogonal vector ``w_{k-1}`` is again
            perpendicular to every vector before it, so step 1 applies to it.  The
@@ -603,9 +603,11 @@ class Frame:
 
         Worked example, the frame ``v_1 = 2 * e_1``, ``v_2 = 1 * e_1 + 3 * e_2``
         (orthogonal set ``w_1 = 2 * e_1``, ``w_2 = 3 * e_2``) and
-        ``y = 3 * e_1 + 3 * e_2``: ``x_2 = (w_2 · y) / |w_2|² = 9 / 9 = 1``; the
-        remainder is ``y - 1 * v_2 = 2 * e_1``; then ``x_1 = (w_1 · 2 * e_1) / |w_1|² =
-        4 / 4 = 1``.  So ``x = 1 * e_1 + 1 * e_2``, as with the reciprocal frame.
+        ``y = 3 * e_1 + 3 * e_2``: ``P_{w_2}(y) = 3 * e_2``, and the point on
+        ``v_2``'s line with that projection is ``1 * v_2``, so ``x_2 = 1``; the
+        remainder is ``y - 1 * v_2 = 2 * e_1``, which is ``1 * v_1``, so ``x_1 = 1``.
+        The reciprocal frame ``v¹ = 1/2 * e_1 - 1/6 * e_2``, ``v² = 1/3 * e_2`` gives
+        the same ``x = 1 * e_1 + 1 * e_2``.
 
         The peel's order is forced: with the frame orthogonalized first-to-last, only
         the last orthogonal vector is perpendicular to *all* the others, so the first
@@ -622,7 +624,7 @@ class Frame:
 
         Args:
             inverse_method: how the inverse recovers the coordinates:
-                ``"reciprocal"`` (default; ``x_i = vⁱ · y``) or ``"peel"``
+                ``"reciprocal"`` (default; read through each ``vⁱ``) or ``"peel"``
                 (back-substitution from the last frame vector).  Keyword-only.
 
         Returns:
@@ -672,7 +674,7 @@ class Frame:
             # basis_vector numbers the basis from 1, hence enumerate(start=1).
             return sum(
                 (
-                    x.dot(cls.basis_vector(i)).scalar_part() * v
+                    x.coefficient(cls.basis_vector(i)) * v
                     for i, v in enumerate(self.vectors, start=1)
                 ),
                 start=cls.zero(),
@@ -681,16 +683,30 @@ class Frame:
         # Why one dot product per coordinate is enough (similar right triangles):
         # tasks/reference/frames-qr-and-reciprocal-frames.md, "Why one dot product
         # reads off an oblique coordinate: similar right triangles".
+        def term_and_coordinate(
+            y: MultiVectorBase, v: MultiVectorBase, n: MultiVectorBase
+        ) -> tuple[MultiVectorBase, Real]:
+            # y's term along v, x * v, and its coordinate x, for an n perpendicular to
+            # every frame vector but v: the point on v's line whose projection onto n
+            # matches y's.  Float input checks "on the line" with a tolerance.
+            tolerant: bool = _has_float((y, v, n))
+            term: MultiVectorBase = line_to_line_projection(
+                from_vector=v, to_vector=n, float_close_to_zero=tolerant
+            ).inverse(y.projected_onto(n))
+            return term, coordinate_along(term, along=v, float_close_to_zero=tolerant)
+
         def backward_by_reciprocal(y: MultiVectorBase) -> MultiVectorBase:
             MultiVectorBase.require_vector(y, "a frame's map")
             cls: type[MultiVectorBase] = type(y)
-            # x_i = vⁱ · y.  reciprocal_vectors is bound in the match below, which runs
-            # before this can be called.  basis_vector numbers the basis from 1, hence
-            # enumerate(start=1).
+            # Read x_i through vⁱ.  reciprocal_vectors is bound in the match below,
+            # which runs before this can be called.  basis_vector numbers the basis
+            # from 1, hence enumerate(start=1).
             return sum(
                 (
-                    v_upper.dot(y).scalar_part() * cls.basis_vector(i)
-                    for i, v_upper in enumerate(reciprocal_vectors, start=1)
+                    term_and_coordinate(y, v=v, n=v_upper)[1] * cls.basis_vector(i)
+                    for i, (v, v_upper) in enumerate(
+                        zip(self.vectors, reciprocal_vectors, strict=True), start=1
+                    )
                 ),
                 start=cls.zero(),
             )
@@ -706,14 +722,14 @@ class Frame:
                         return []
                     case [*earlier, (w, v)]:
                         # One or more vectors.  w is perpendicular to every vector in
-                        # earlier, so w · y sees only this vector's term: its
-                        # coordinate is (w · y) / |w|².  Subtracting that multiple of
-                        # v leaves a y built from the earlier vectors alone; solve
-                        # those coordinates the same way, and put this one after them.
-                        x_last: Real = _exact_quotient(
-                            w.dot(y).scalar_part(), w.magnitude_squared()
-                        )
-                        return [*peel(earlier, y - x_last * v), x_last]
+                        # earlier, so it reads this vector's term of y.  Subtracting
+                        # the term leaves a y built from the earlier vectors alone;
+                        # solve those coordinates the same way, and put this one
+                        # after them.
+                        term: MultiVectorBase
+                        x_last: Real
+                        term, x_last = term_and_coordinate(y, v=v, n=w)
+                        return [*peel(earlier, y - term), x_last]
                     case _:
                         # Unreachable: [] and [*earlier, last] cover every list.  Kept
                         # as the total default because ty does not prove list-pattern

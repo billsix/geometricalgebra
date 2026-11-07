@@ -26,7 +26,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 - `src/gacalc/transforms.py` — the representation-agnostic transform *factory* layer
   (`translate`/`uniform_scale`/`scale_non_uniform`/`to_matrix`/`to_matrix_template` +
   `MatrixTemplate`, plus the rotation factories `projection_rotation`/`versor_rotation`/
-  `plane_rotation`); derives any basis from the value's own type, so it preserves `Gn`/`G`.
+  `plane_rotation`, and `line_to_line_projection` (projection restricted to one line: an
+  `InvertibleFunction` that checks its input is on its line) + `coordinate_along`); derives any basis from the value's own type, so it preserves `Gn`/`G`.
   **Re-exports** the `functions` names.
 - `src/gacalc/frame.py` — **frames** (H&S p. 27): `are_linearly_independent`/`is_frame`, the
   eq-3.1 prefix-blade primitive `prefix_blades` (`A_0 = 1`, `A_k = v_1 ∧ … ∧ v_k`; a reusable
@@ -141,6 +142,12 @@ and call `self * other`, dispatched to the concrete type.
   are already known to be vectors, e.g. a `Frame`'s own). For two vectors the two products agree,
   but a reader knows the dot product. Use `scalar_product` (`A ∗ B = ⟨A * B⟩`) only where that
   operation is the one meant, as where Hestenes defines a result with it (cite the page). The maintainer's rule, William Emerison Six <billsix@gmail.com>, 2026-11-04.
+- **Write the named geometric operation where the code means it** — `project`, `reject`, `reflect`, a
+  rotation factory, `coefficient` — not the dot-product formula it reduces to, even when the formula is
+  faster. The code is read by students; the generated `g*.py` classes are where speed lives. The
+  primitives' own definitions are the exception, and so is code whose subject is the dot product (a
+  notebook teaching `a·b + a∧b = ab`, the reciprocal frame's `vⁱ · y`). (William Emerison Six
+  <billsix@gmail.com>, 2026-11-07)
 - **Check "must be a vector" with the shared guard** — `MultiVectorBase.require_vector(value,
   context)` / `require_vectors(values, context)` (`base.py`), which raise `ValueError` naming the
   caller. Never a bare `assert` (gone under `python -O`), a hand-rolled `is_vector()` loop, or a
@@ -294,10 +301,15 @@ or a dedicated `make` target wrapping `podman run`. The only step that runs on t
 `git` (commits are the author's job, outside the container). Prefer a containerized `make` target
 over a "run it on your host" instruction.
 
-- **`make test`** — regenerates the gitignored `g*.py`, then runs `pytest` inside the container
-  (exit 0/nonzero contract; ~720 tests; `pytest.ini` sets `pythonpath = src`, `testpaths = src
-  tests`, `addopts = --doctest-modules` so docstrings run as tests). Quick host run:
-  `python -m pytest -q` after `make generate`.
+- **`make test`** — the everyday suite: regenerates the gitignored `g*.py`, then runs
+  `pytest -m "not slow"` inside the container (exit 0/nonzero contract; `pytest.ini` sets
+  `pythonpath = src`, `testpaths = src tests tools`, `addopts = --doctest-modules` so docstrings run
+  as tests). **`make test-full`** runs everything, the tests marked `@pytest.mark.slow` included
+  (~800 tests, ~27 min, nearly all of it the 3D symbolic frame tests); CI runs it. **Mark a new test
+  `slow` when it takes over 10 s in the container** (the marker is registered in `pytest.ini`; mark
+  only the slow parametrized cases, with `pytest.param(..., marks=pytest.mark.slow)`), timed in `make
+  test`'s own run, not the full one, where sympy's cache can make a test look fast after a slow one. Quick host
+  run: `python -m pytest -q -m "not slow"` after `make generate`.
 - **`entrypoint/format.sh`** (via `make format`, the real gate) — `ruff check --fix`,
   `ruff format`, `ty check` (`src`/`tests`/`tools`/`book/docs/notebooks`, all clean), and
   `tools/check_changelog.py`
@@ -394,7 +406,7 @@ CI (`.github/workflows/`) is a **thin wrapper over the make/Dockerfile system**:
 (`CONTAINER_CMD` auto-detects podman→docker; runners are `ubuntu-latest`). `checks.yml` runs on
 every push + PR as three check-only jobs — **`format`** (`make check-format` = `make format` then
 `git diff --exit-code`; runs the formatter in the disposable runner and fails on a diff, never
-commits), **`test`** (`make test`), and **`generated`** (`make check-generated` then
+commits), **`test`** (`make test-full`, the whole suite), and **`generated`** (`make check-generated` then
 `make check-regions` — the codegen-determinism + doc-region gates). A separate **`lean.yml`** runs
 **`make lean`** (the Lean/Mathlib proofs) **on `v*` tags only** — not per-push, since a Mathlib build
 is heavy. If CI needs a step, add it as a

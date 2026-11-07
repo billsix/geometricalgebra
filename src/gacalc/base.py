@@ -1756,7 +1756,7 @@ class MultiVectorBase(abc.ABC):
             True
 
         Raises:
-            Exception: if ``away_from`` is neither a vector nor a bivector.
+            ValueError: if ``away_from`` is neither a vector nor a bivector.
         """
 
         def r(value: MultiVectorBase) -> MultiVectorBase:
@@ -1790,7 +1790,9 @@ class MultiVectorBase(abc.ABC):
             ):
                 return rejection(away_from_bivector)
             case _:
-                raise Exception("TODO - implement project for " + str(away_from))
+                raise ValueError(
+                    f"reject rejects away from a vector or a bivector; got {away_from}"
+                )
 
     @classmethod
     def reflect(
@@ -1837,20 +1839,22 @@ class MultiVectorBase(abc.ABC):
             True
 
         Raises:
-            Exception: if ``across`` is neither a vector nor a bivector.
+            ValueError: if ``across`` is neither a vector nor a bivector, or (when the
+                reflection is applied) if the value reflected is not a vector.
         """
-        components_in_plane: ComposableFunction[MultiVectorBase] = cls.project(across)
-        components_exterior_to_plane: ComposableFunction[MultiVectorBase] = cls.reject(
-            across
-        )
-
-        def r(value: MultiVectorBase) -> MultiVectorBase:
-            assert value.is_vector()  # TODO - can this be generalized?
-            assert isinstance(across, MultiVectorBase)  # to satisfy type checking
-
-            return components_in_plane(value) - components_exterior_to_plane(value)
 
         def reflection(blade: MultiVectorBase) -> InvertibleFunction[MultiVectorBase]:
+            components_in_plane: ComposableFunction[MultiVectorBase] = cls.project(
+                blade
+            )
+            components_exterior_to_plane: ComposableFunction[MultiVectorBase] = (
+                cls.reject(blade)
+            )
+
+            def r(value: MultiVectorBase) -> MultiVectorBase:
+                MultiVectorBase.require_vector(value, "reflect")
+                return components_in_plane(value) - components_exterior_to_plane(value)
+
             label: str = "\\mathrm{refl}_{" + blade._repr_latex_().strip("$") + "}"
             # an involution: r is its own inverse, same label for both directions.
             return InvertibleFunction(
@@ -1869,7 +1873,9 @@ class MultiVectorBase(abc.ABC):
             case MultiVectorBase() as across_bivector if across_bivector.is_bivector():
                 return reflection(across_bivector)
             case _:
-                raise Exception("TODO - implement project for " + str(across))
+                raise ValueError(
+                    f"reflect reflects across a vector or a bivector; got {across}"
+                )
 
     # -- project/reject/reflect pass-through sugar (apply the factory to this value) --
     # ``project``/``reject``/``reflect`` are *factories* returning a function; these

@@ -237,6 +237,24 @@ def test_reflect(n: int, cls: type[MultiVectorBase]) -> None:
     assert cls.reflect(to(cls, b))(to(cls, a)) == Gn.reflect(b)(a)
 
 
+@pytest.mark.parametrize("n,cls", CASES)
+def test_reject_away_from_a_scalar_raises(n: int, cls: type[MultiVectorBase]) -> None:
+    with pytest.raises(ValueError, match="reject"):
+        cls.reject(to(cls, 3 * gn.one))
+
+
+@pytest.mark.parametrize("n,cls", CASES)
+def test_reflect_across_a_scalar_raises(n: int, cls: type[MultiVectorBase]) -> None:
+    with pytest.raises(ValueError, match="reflect"):
+        cls.reflect(to(cls, 3 * gn.one))
+
+
+@pytest.mark.parametrize("n,cls", [(n, cls) for (n, cls) in CASES if n >= 2])
+def test_reflect_of_a_non_vector_raises(n: int, cls: type[MultiVectorBase]) -> None:
+    with pytest.raises(ValueError, match="reflect"):
+        cls.reflect(to(cls, gn.e_1))(to(cls, 2 * gn.e_1 * gn.e_2))
+
+
 @pytest.mark.parametrize("n,cls", [(n, cls) for (n, cls) in CASES if n >= 2])
 def test_rotate(n: int, cls: type[MultiVectorBase]) -> None:
     a: Gn = vec(n, 0)

@@ -15,6 +15,8 @@ import math
 
 from _scene2d import Point, polar
 
+from gacalc.g2 import Vector, e_1, e_2
+
 A_LENGTH: float = 1.25  # |a|: the rotation sequence's a
 A_ANGLE: float = math.radians(66)
 B_LENGTH: float = 1.0  # b is a unit vector
@@ -25,10 +27,16 @@ B: Point = polar(radius=B_LENGTH, angle=B_ANGLE)
 
 
 def _project_point(a: Point, b: Point) -> Point:
-    """The foot of the perpendicular from ``a`` to the line through ``b``: the point
-    ``((a·b)/(b·b)) b``, i.e. the head of the projection vector."""
-    scale: float = (a.x1() * b.x1() + a.x2() * b.x2()) / (b.x1() ** 2 + b.x2() ** 2)
-    return Point(x=scale * b.x1(), y=scale * b.x2())
+    """The foot of the perpendicular from ``a`` to the line through ``b``: the head
+    of gacalc's projection of ``a`` onto ``b``, drawn by the operation the figures
+    illustrate."""
+    projection: Vector = (a.x1() * e_1 + a.x2() * e_2).projected_onto(
+        onto=b.x1() * e_1 + b.x2() * e_2
+    )
+    return Point(
+        x=float(projection.coefficient(blade=e_1)),
+        y=float(projection.coefficient(blade=e_2)),
+    )
 
 
 PROJ: Point = _project_point(a=A, b=B)  # project(a, b): along b

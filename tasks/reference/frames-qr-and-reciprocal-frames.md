@@ -147,6 +147,15 @@ The coefficients were stored in `Frame`'s first version, and `__iter__` rebuilt 
 Once the inverse became the peel recursion (above), nothing read them, so `Frame` stores the originals
 instead and computes the coefficients on demand (William Emerison Six <billsix@gmail.com>, 2026-11-04).
 
+The code reads each coefficient as a projection: `coordinate_along(v.projected_onto(w), along=w)`
+(`src/gacalc/transforms.py`), "how many copies of `w` the projection of `v` onto `w` is", which raises if
+its input is off the line. In coordinates that is `(w · v) / |w|²`; the two are equal. The inverses are
+described in "The code form: one line-to-line projection" below. The projection forms are slower on symbolic
+`Gn` input, because `Gn` simplifies after each inverse and product; the timings are in that section. The
+maintainer prefers the form a student reads over the faster one (CLAUDE.md, "Write the named geometric
+operation"; records: `tasks/archive/2026/11/07/name-the-geometric-operation-over-its-formula.md`,
+`tasks/archive/2026/11/07/line-to-line-projection-invertible-function.md`).
+
 **What was tried first, and why it failed (2026-11-04).** The first design followed the original
 request: normalize in `__post_init__`, store `u_j`, and use `c_ij = u_j · v_i`. A prototype on fully
 symbolic frames (every component its own symbol) gave:
@@ -326,6 +335,29 @@ unit normal is `w_k / |w_k|`, and the height of `v_k` above it is `|w_k|`. So
 `x_k = (w_k · y) / |w_k|²`, which is the peel's step 1 ("The peel inverse, step by step"). The peel finds
 one face normal by rejection and then shrinks the frame. The reciprocal frame finds every face normal at
 once, so no coordinate waits on another.
+
+### The code form: one line-to-line projection
+
+Steps 3–4 say: for an `n` perpendicular to every frame vector but `v_i`, `P_n(y) = x_i * P_n(v_i)`. So
+`x_i * v_i` is the point on `v_i`'s line whose projection onto `n` is `P_n(y)`. Projection restricted to
+the line of `v_i` is a bijection onto the line of `P_n(v_i)` whenever `v_i · n ≠ 0`, so it has an
+inverse, and `transforms.line_to_line_projection(from_vector=v_i, to_vector=n)` is that
+`InvertibleFunction` (each direction raises `ValueError` on input off its line). Both of
+`Frame.to_invertible_function`'s inverses are this one statement:
+
+    x_i * v_i = line_to_line_projection(from_vector=v_i, to_vector=n).inverse(P_n(y))
+    x_i       = coordinate_along(x_i * v_i, along=v_i)
+
+with `n = vⁱ` for the reciprocal inverse and `n = w_k` for the peel's last vector (then subtract the term
+and recurse). On the worked example, `n = w_2`, `v²` and `v¹` each give `x = 1`; `n = w_1`, which is not
+perpendicular to `v_2`, gives `3/2`.
+
+**Cost (measured 2026-11-07, symbolic `Gn`).** The full `pytest` suite took 6:19 with the dot-product
+forms, 12:15 once the coefficients were read as projections, and 26:38 with both inverses written as
+above. The 3D symbolic tests carry all of it: `test_inverse_methods_are_equivalent_symbolic[3d]` 38 s → 151 s
+→ 475 s, `test_composed_round_trip_is_identity_symbolic[3d-peel]` 64 s → 200 s → 415 s, and `[3d-reciprocal]`
+under 20 s → 282 s. Each inverse call now runs the on-the-line checks (`is_orthogonal_to`,
+`is_parallel_to`) and an extra projection, and `Gn` simplifies after each.
 
 ## Floating point
 

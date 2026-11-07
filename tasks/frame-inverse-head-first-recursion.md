@@ -61,7 +61,7 @@ starts at the end. The order is a property of how the `w_j` were built, not of o
 1. Verify the analysis: a small symbolic 2D/3D check that `w_1 · y` mixes coordinates, and that the
    (A) set `u_j` isolates `x_1` (`u_1 · v_j = 0` for `j > 1`, `u_1 · v_1 = |u_1|²`).
 2. Settle the open questions, then implement the chosen form in `backward`, keeping the existing
-   exact-quotient behaviour (`_exact_quotient`), symbolic results, and the docstring's worked example
+   exact coefficients (`transforms.coordinate_along` of the projection), symbolic results, and the docstring's worked example
    (rewritten for the new order).
 3. Update the docstring ("The order is forced" paragraph) and
    `tasks/reference/frames-qr-and-reciprocal-frames.md`.
