@@ -265,19 +265,16 @@ def coordinate_along(
         ValueError: coordinate_along: ... is not on the line of ...
     """
     MultiVectorBase.require_vectors((vector, along), "coordinate_along")
-    match vector, along:
-        case _, _ if along == type(along).zero():
-            raise ValueError("coordinate_along: the zero vector spans no line")
-        case _, _ if vector == type(vector).zero():
-            # The origin is on every line, at coordinate 0.
-            return 0
-        case _, _ if not vector.is_parallel_to(along, float_close_to_zero):
-            raise ValueError(
-                f"coordinate_along: {vector} is not on the line of {along}"
-            )
-        case _:
-            # vector = c * along, so dividing by along leaves the scalar c.
-            return (vector / along).scalar_part()
+    if along == type(along).zero():
+        raise ValueError("coordinate_along: the zero vector spans no line")
+    elif vector == type(vector).zero():
+        # The origin is on every line, at coordinate 0.
+        return 0
+    elif not vector.is_parallel_to(along, float_close_to_zero):
+        raise ValueError(f"coordinate_along: {vector} is not on the line of {along}")
+    else:
+        # vector = c * along, so dividing by along leaves the scalar c.
+        return (vector / along).scalar_part()
 
 
 def line_to_line_projection(
@@ -995,7 +992,7 @@ def to_matrix_template(
                     f"{tuple(map(str, symbols))}; every symbol the transform "
                     "was built over must be a parameter"
                 )
-            if not free:
+            elif not free:
                 constants[row, col] = float(entry)
             elif entry.is_Symbol:
                 slots.append(
