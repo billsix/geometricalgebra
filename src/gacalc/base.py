@@ -1756,7 +1756,7 @@ class MultiVectorBase(abc.ABC):
             True
 
         Raises:
-            Exception: if ``away_from`` is neither a vector nor a bivector.
+            ValueError: if ``away_from`` is neither a vector nor a bivector.
         """
 
         def r(value: MultiVectorBase) -> MultiVectorBase:
@@ -1790,7 +1790,9 @@ class MultiVectorBase(abc.ABC):
             ):
                 return rejection(away_from_bivector)
             case _:
-                raise Exception("TODO - implement project for " + str(away_from))
+                raise ValueError(
+                    f"reject rejects away from a vector or a bivector; got {away_from}"
+                )
 
     @classmethod
     def reflect(

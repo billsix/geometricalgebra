@@ -73,8 +73,10 @@ the reciprocal inverse `vⁱ · y` (that dot product is eq 3.5, explained in
 sine/cosine presentation rule); notebooks whose subject is the dot product; `standardposition.py` (the
 deliberate standard-position duplicate); the generated `g1`–`g3` modules (the fast path by design).
 
-## Found, not fixed
+## Decisions after the work
 
-`reject` (`src/gacalc/base.py`) has the same bare `raise Exception("TODO - implement project for " + …)`
-that `reflect` had: wrong function name, bare `Exception`. Outside this task's list; raised with the
-maintainer.
+1. **Keep the projection form in `frame.py` despite the doubled 3D symbolic test time** (William Emerison
+   Six <billsix@gmail.com>, 2026-11-07: "yes").
+2. **`reject` had the same bare `raise Exception("TODO - implement project for " + …)` as `reflect`**;
+   fixed the same way on the maintainer's "sure" (2026-11-07): `ValueError` naming `reject`,
+   `test_reject_away_from_a_scalar_raises`, and a `CHANGELOG.md` breaking entry.

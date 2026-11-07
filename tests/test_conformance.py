@@ -238,6 +238,12 @@ def test_reflect(n: int, cls: type[MultiVectorBase]) -> None:
 
 
 @pytest.mark.parametrize("n,cls", CASES)
+def test_reject_away_from_a_scalar_raises(n: int, cls: type[MultiVectorBase]) -> None:
+    with pytest.raises(ValueError, match="reject"):
+        cls.reject(to(cls, 3 * gn.one))
+
+
+@pytest.mark.parametrize("n,cls", CASES)
 def test_reflect_across_a_scalar_raises(n: int, cls: type[MultiVectorBase]) -> None:
     with pytest.raises(ValueError, match="reflect"):
         cls.reflect(to(cls, 3 * gn.one))

@@ -79,6 +79,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **BREAKING — `reject` raises `ValueError` instead of a bare `Exception`.** `reject(away_from=…)` with
+  `away_from` neither a vector nor a bivector raised `Exception` with a message naming `project`; it now
+  raises `ValueError` naming `reject`. Code catching `Exception` still works.
 - **BREAKING — `reflect` raises `ValueError` instead of a bare `Exception` / `AssertionError`.**
   `reflect(across=…)` with `across` neither a vector nor a bivector now raises `ValueError` (it raised
   `Exception` with a message naming `project`), and applying a reflection to a non-vector raises
