@@ -1,0 +1,9 @@
+format rc=0
+........................................................................ [100%]
+============================= slowest 5 durations ==============================
+9.48s call     tests/test_frame_class.py::test_iter_yields_the_original_vectors[frame_3d-vectors1]
+8.61s call     tests/test_frame.py::test_reciprocal_frame_is_the_kronecker_delta[gn-3d-symbolic]
+5.41s call     tests/test_frame.py::test_reciprocal_frame_reconstructs_a_vector_symbolic[3d]
+5.19s call     tests/test_frame_class.py::test_inverse_methods_are_equivalent_symbolic[2d]
+5.00s call     tests/test_frame_class.py::test_composed_round_trip_is_identity_symbolic[2d-reciprocal]
+792 passed, 11 deselected in 71.24s (0:01:11)

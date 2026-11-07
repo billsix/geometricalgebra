@@ -155,7 +155,11 @@ def test_coefficients_are_triangular_with_unit_diagonal(
     assert all(is_zero(coefficients[i][i] - 1) for i in range(k))
 
 
-@pytest.mark.parametrize("frame_name", ["frame_2d", "frame_3d"])
+# frame_3d is slow alone (the 3D coefficients, about 220 s); it ran in 4 s only after
+# the triangular test above had warmed sympy's cache.
+@pytest.mark.parametrize(
+    "frame_name", ["frame_2d", pytest.param("frame_3d", marks=pytest.mark.slow)]
+)
 def test_coefficients_rebuild_the_vectors(
     frame_name: str, request: pytest.FixtureRequest
 ) -> None:
