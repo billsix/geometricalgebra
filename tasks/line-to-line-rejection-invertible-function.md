@@ -24,8 +24,8 @@ changelog entry.
 ## Context
 
 - The projection version and its checks: `src/gacalc/transforms.py` (`line_to_line_projection`,
-  `coordinate_along`), tests in `tests/test_line_to_line_projection.py`. Its record will be
-  `tasks/archive/2026/11/07/line-to-line-projection-invertible-function.md` once archived.
+  `coordinate_along`), tests in `tests/test_line_to_line_projection.py`. Its record:
+  `tasks/archive/2026/11/07/line-to-line-projection-invertible-function.md`.
 - `MultiVectorBase.reject` (`src/gacalc/base.py`), H&S eq 2.9's complement `P^⊥_B(A) = A − P_B(A)`; the
   dot/wedge reading: `tasks/reference/dot-wedge-projection-rejection.md`.
 - The checks: `is_parallel_to` (the domain check and the "parallel ⇒ not invertible" guard; its zero
