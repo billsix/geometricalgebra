@@ -1,6 +1,7 @@
 # A checked, invertible projection from one line to another, and the frame inverses rewritten with it
 
-**Status:** proposed — needs go-ahead
+**Status:** in progress — the maintainer approved it and answered the open questions (William Emerison
+Six <billsix@gmail.com>, 2026-11-07)
 **Priority:** 6
 **Difficulty:** 4
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>): "might there be value in making an
@@ -89,17 +90,19 @@ above). Measure, as last time.
 5. Update `tasks/reference/frames-qr-and-reciprocal-frames.md` (the similar-triangles section gains the
    code form) and `CLAUDE.md`'s `transforms.py` line; `CHANGELOG.md` `[Unreleased]` › Added.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-07: "1) whatever you recommend 2) sure 3) sure")
+
+1. **Name and home:** `transforms.line_to_line_projection(from_vector=, to_vector=)`, matching
+   `projection_rotation`'s keywords.
+2. **A checked coordinate reader:** yes, `transforms.coordinate_along(…)`, returning `c` for `c * a` and
+   raising `ValueError` off the line; it replaces `_projection_coefficient`.
+3. **Both inverses** are rewritten with the line-to-line projection, the reciprocal one included.
+
+The maintainer asked for a commit after each step.
+
 ## Open questions
 
-1. **Name and home.** Recommended: `transforms.line_to_line_projection(from_vector=, to_vector=)`,
-   matching `projection_rotation`'s keywords. The alternative is a classmethod beside
-   `MultiVectorBase.project`.
-2. **A checked coordinate reader.** Recommended: yes, a small `coordinate_along(a)` (or a method) that
-   returns `c` for `c * a` and raises off the line, used by both inverses in place of
-   `_projection_coefficient`. The alternative keeps the unchecked helper.
-3. **Rewrite the reciprocal inverse too, or only the peel?** Recommended: both, since showing that they
-   are one statement with two normals is the payoff; it replaces the `vⁱ · y` dot product that the
-   named-operation task deliberately left alone.
+None.
 
 ## Related question answered while scoping (2026-11-07)
 
