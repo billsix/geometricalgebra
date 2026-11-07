@@ -32,3 +32,4 @@ import GacalcProofs.StudentTrigForms
 import GacalcProofs.MathlibBridge
 
 import GacalcProofs.ReciprocalFrame2D
+import GacalcProofs.ReciprocalFrame3D
