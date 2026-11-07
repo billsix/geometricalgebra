@@ -25,8 +25,10 @@ to build, so it is built once per module.  Concrete oblique frames exercise the
 graded ``g2``/``g3`` types.
 """
 
+import inspect
 import math
 from collections.abc import Sequence
+from typing import Literal
 
 import numpy as np
 import pytest
@@ -80,6 +82,15 @@ def frame_3d() -> Frame:
 @pytest.fixture(scope="module")
 def function_3d(frame_3d: Frame) -> InvertibleFunction[MultiVectorBase]:
     return frame_3d.to_invertible_function()
+
+
+@pytest.fixture(scope="module")
+def function_3d_peel(frame_3d: Frame) -> InvertibleFunction[MultiVectorBase]:
+    return frame_3d.to_invertible_function(inverse_method="peel")
+
+
+# The two ways to_invertible_function's inverse recovers the coordinates.
+INVERSE_METHODS: list[str] = ["reciprocal", "peel"]
 
 
 # coefficients() is computed on each call (about a minute for the 3D symbolic
@@ -228,28 +239,40 @@ def test_forward_sends_basis_to_frame_3d(
     assert [function_3d(e) for e in (1 * e_1, 1 * e_2, 1 * e_3)] == [a_3d, b_3d, c_3d]
 
 
-def test_composed_round_trip_is_identity_2d_symbolic(frame_2d: Frame) -> None:
+@pytest.mark.parametrize("inverse_method", INVERSE_METHODS)
+def test_composed_round_trip_is_identity_2d_symbolic(
+    frame_2d: Frame, inverse_method: Literal["reciprocal", "peel"]
+) -> None:
     """``(f⁻¹ ∘ f)(x) == x`` and ``(f ∘ f⁻¹)(x) == x`` for a symbolic ``x``, composed
-    with the library's ``@`` (the maintainer's requirement, 2026-11-04)."""
-    f: InvertibleFunction[MultiVectorBase] = frame_2d.to_invertible_function()
+    with the library's ``@`` (the maintainer's requirement, 2026-11-04), under both
+    inverse methods."""
+    f: InvertibleFunction[MultiVectorBase] = frame_2d.to_invertible_function(
+        inverse_method=inverse_method
+    )
     assert (inverse(f) @ f)(x_2d) == x_2d
     assert (f @ inverse(f))(x_2d) == x_2d
 
 
+@pytest.mark.parametrize("function_name", ["function_3d", "function_3d_peel"])
 def test_composed_round_trip_is_identity_3d_symbolic(
-    function_3d: InvertibleFunction[MultiVectorBase],
+    function_name: str, request: pytest.FixtureRequest
 ) -> None:
-    assert (inverse(function_3d) @ function_3d)(x_3d) == x_3d
-    assert (function_3d @ inverse(function_3d))(x_3d) == x_3d
+    """The 3D round trip, under the reciprocal (default) and the peel inverse."""
+    f: InvertibleFunction[MultiVectorBase] = request.getfixturevalue(function_name)
+    assert (inverse(f) @ f)(x_3d) == x_3d
+    assert (f @ inverse(f))(x_3d) == x_3d
 
 
-def test_composed_round_trip_concrete_frames_symbolic_input() -> None:
+@pytest.mark.parametrize("inverse_method", INVERSE_METHODS)
+def test_composed_round_trip_concrete_frames_symbolic_input(
+    inverse_method: Literal["reciprocal", "peel"],
+) -> None:
     """A concrete oblique frame with a symbolic input, on the graded types."""
     x_1, x_2, x_3 = sympy.symbols("x_1 x_2 x_3")
     x_2d_graded: g2.Vector = x_1 * g2.e_1 + x_2 * g2.e_2
     f_2d: InvertibleFunction[MultiVectorBase] = Frame(
         [2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2]
-    ).to_invertible_function()
+    ).to_invertible_function(inverse_method=inverse_method)
     assert (inverse(f_2d) @ f_2d)(x_2d_graded) == x_2d_graded
     assert (f_2d @ inverse(f_2d))(x_2d_graded) == x_2d_graded
     x_3d_graded: g3.Vector = x_1 * g3.e_1 + x_2 * g3.e_2 + x_3 * g3.e_3
@@ -259,12 +282,15 @@ def test_composed_round_trip_concrete_frames_symbolic_input() -> None:
             1 * g3.e_1 + 3 * g3.e_2 + 0 * g3.e_3,
             1 * g3.e_1 + 1 * g3.e_2 + 4 * g3.e_3,
         ]
-    ).to_invertible_function()
+    ).to_invertible_function(inverse_method=inverse_method)
     assert (inverse(f_3d) @ f_3d)(x_3d_graded) == x_3d_graded
     assert (f_3d @ inverse(f_3d))(x_3d_graded) == x_3d_graded
 
 
-def test_round_trip_numeric_float() -> None:
+@pytest.mark.parametrize("inverse_method", INVERSE_METHODS)
+def test_round_trip_numeric_float(
+    inverse_method: Literal["reciprocal", "peel"],
+) -> None:
     """Float input: equal up to rounding (inexactness accepted, 2026-11-04)."""
     f: InvertibleFunction[MultiVectorBase] = Frame(
         [
@@ -272,7 +298,7 @@ def test_round_trip_numeric_float() -> None:
             1.0 * g3.e_1 + 3.0 * g3.e_2 + 0.0 * g3.e_3,
             1.0 * g3.e_1 + 1.0 * g3.e_2 + 4.0 * g3.e_3,
         ]
-    ).to_invertible_function()
+    ).to_invertible_function(inverse_method=inverse_method)
     x: g3.Vector = 0.3 * g3.e_1 - 1.7 * g3.e_2 + 2.2 * g3.e_3
     assert inverse(f)(f(x)).isclose(x, abs_tol=1e-12)
 
@@ -287,15 +313,46 @@ def test_matrix_columns_are_the_frame_vectors_2d(frame_2d: Frame) -> None:
     )
 
 
-def test_last_reciprocal_vector_is_the_last_rejection(frame_3d: Frame) -> None:
-    """``vⁿ = w_n / |w_n|²`` satisfies ``vⁿ · v_j = δⁿ_j`` (the reciprocal frame's last
-    member; see ``tasks/reciprocal-frame-hestenes.md``)."""
-    w_n: MultiVectorBase = frame_3d.orthogonal_vectors[-1]
-    v_upper_n: MultiVectorBase = w_n / w_n.magnitude_squared()
-    assert all(
-        is_zero(v_upper_n.dot(v).scalar_part() - δ)
-        for v, δ in zip((a_3d, b_3d, c_3d), (0, 0, 1), strict=True)
+def is_zero_vector(value: MultiVectorBase) -> bool:
+    """Whether every coefficient of ``value`` simplifies to zero."""
+    return all(is_zero(c) for c in value.to_blade_dict().values())
+
+
+def test_inverse_methods_are_equivalent_2d_symbolic(frame_2d: Frame) -> None:
+    """The reciprocal and the peel inverse give the same coordinates for a general
+    symbolic frame and a general symbolic vector ``y`` (not only for images
+    ``f(x)``): ``vⁱ · y`` equals the back-substituted ``x_i``."""
+    by_reciprocal: InvertibleFunction[MultiVectorBase] = (
+        frame_2d.to_invertible_function(inverse_method="reciprocal")
     )
+    by_peel: InvertibleFunction[MultiVectorBase] = frame_2d.to_invertible_function(
+        inverse_method="peel"
+    )
+    assert is_zero_vector(by_reciprocal.inverse(x_2d) - by_peel.inverse(x_2d))
+
+
+def test_inverse_methods_are_equivalent_3d_symbolic(
+    function_3d: InvertibleFunction[MultiVectorBase],
+    function_3d_peel: InvertibleFunction[MultiVectorBase],
+) -> None:
+    """3D: the two inverses agree on a general symbolic vector, for a general
+    symbolic frame."""
+    assert is_zero_vector(function_3d.inverse(x_3d) - function_3d_peel.inverse(x_3d))
+
+
+def test_reciprocal_is_the_default_inverse_method() -> None:
+    """``inverse_method`` is keyword-only and defaults to ``"reciprocal"``."""
+    parameter: inspect.Parameter = inspect.signature(
+        Frame.to_invertible_function
+    ).parameters["inverse_method"]
+    assert parameter.default == "reciprocal"
+    assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
+
+
+def test_unknown_inverse_method_raises() -> None:
+    frame: Frame = Frame([2 * e_1, 1 * e_1 + 3 * e_2])
+    with pytest.raises(ValueError, match="inverse_method"):
+        frame.to_invertible_function(inverse_method="gauss")  # ty: ignore[invalid-argument-type]
 
 
 def test_frame_smaller_than_space_raises() -> None:

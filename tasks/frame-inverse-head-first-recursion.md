@@ -1,12 +1,8 @@
 # Can `Frame.to_invertible_function`'s inverse recurse head-first instead of peeling from the end?
 
-**Status:** blocked — the maintainer said to hold off until the Hestenes reciprocal frame is defined
-(William Emerison Six <billsix@gmail.com>, 2026-11-06)
-**Blocked on:** `tasks/reciprocal-frame-hestenes.md` being done (itself on hold), so that option (B)
-below, the reciprocal-frame map, is available to weigh against (A).
-**Recheck:** `ls tasks/reciprocal-frame-hestenes.md` fails (the task was archived) and
-`grep -n 'def reciprocal_frame' src/gacalc/frame.py` finds it. Both mean cleared.
-**Priority:** 8 (blocked)
+**Status:** proposed — needs go-ahead. Unblocked 2026-11-07: the reciprocal frame exists
+(`tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`), and the maintainer's request that day settled questions 1 and 3 (below).
+**Priority:** 7
 **Difficulty:** 4
 **Created:** 2026-11-06 (William Emerison Six <billsix@gmail.com>): "I want to know if 'peel' or
 whatever really has to start at the end. I'd like the recursion to go forwards if it can. Given that we
@@ -56,7 +52,7 @@ starts at the end. The order is a property of how the `w_j` were built, not of o
 - **(B) Use the reciprocal frame, and drop the recursion.** With the reciprocal vectors `vⁱ`
   (`vⁱ · v_j = δⁱ_j`), each coordinate is independent: `x_i = vⁱ · y`. The inverse becomes a plain
   **map** over the frame, which `recursive-design.md` ranks above any hand-written recursion. This is
-  the on-hold `tasks/reciprocal-frame-hestenes.md`.
+  done: `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`.
 - **(C) Keep the tail-first math but spell it head-first over a reversed list.** Rejected up front:
   it is the same recursion with the list reversed, so it changes only the appearance.
 
@@ -86,12 +82,16 @@ starts at the end. The order is a property of how the `w_j` were built, not of o
 
 ## Open questions
 
-1. **(A) or (B)?** (A) keeps a recursion, now head-first, and is self-contained. (B) removes the
-   recursion entirely and uses the reciprocal frame, which this task now waits for. Decide once the
-   reciprocal frame exists and both can be compared on real code.
+1. ~~(A) or (B)?~~ **Answered (William Emerison Six <billsix@gmail.com>, 2026-11-07): both, with (B) the
+   default.** "make that one have two ways of doing it, specified by a keyword argument and a default
+   value. I want an option to use the reciprocal frame … and I want it to be the default option." Done
+   in `tasks/archive/2026/11/07/frame-to-invertible-function-reciprocal-inverse.md`
+   (`to_invertible_function(inverse_method="reciprocal" | "peel")`). What remains here is only whether the
+   `"peel"` method should be rewritten head-first, as (A).
 2. **Under (A), where does the second orthogonal set live?** Computed inside `to_invertible_function`
    (no new public surface), or stored on `Frame` beside `orthogonal_vectors` (visible, costs every
    `Frame` an extra orthogonalization)? Recommended: compute it inside `to_invertible_function`.
-3. **Keep the current tail-first peel as a documented alternative?** gacalc keeps parallel
+3. ~~Keep the current tail-first peel as a documented alternative?~~ **Answered (same request): yes, as
+   `inverse_method="peel"`.** The original text: gacalc keeps parallel
    formulations side by side for teaching (the three orthogonalizations). Recommended: no; replace it,
    and keep the explanation of why the head-first `w_j` force tail-first order in the reference doc.

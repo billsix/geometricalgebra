@@ -5,7 +5,7 @@ recording its coefficients *is* QR, how that gives an inverse without row reduct
 Hestenes' reciprocal frame and to the SVD, and why gacalc's implementation stores the frame orthogonal
 rather than orthonormal. gacalc implements it as `gacalc.frame.Frame` (`src/gacalc/frame.py`, tests in
 `tests/test_frame_class.py`); the build record is `tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`.
-Open follow-ups: `tasks/reciprocal-frame-hestenes.md`, `tasks/frame-svd-investigation.md`, and
+The reciprocal frame's build record is `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`. Open follow-ups: `tasks/frame-svd-investigation.md` and
 `tasks/frame-inverse-head-first-recursion.md` (whether the peel can run first-element-first). The
 book notebooks (`book/docs/frames-qr.rst`) are recorded in
 `tasks/archive/2026/11/04/frame-notebooks-epix.md`. Created 2026-11-04 (William Emerison Six
@@ -132,7 +132,7 @@ coordinate. Two head-first alternatives were considered and rejected (William Em
   frame, so nothing is gained mathematically.
 
 The order-free version is the reciprocal frame: `x_i = vⁱ · y`, each coordinate one dot product (below,
-and `tasks/reciprocal-frame-hestenes.md`).
+and `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`).
 
 ## Why gacalc's `Frame` is stored orthogonal, not orthonormal
 
@@ -193,12 +193,64 @@ variant was slightly faster on `Gn`, but not enough to give that up.
 
 ## The relation to Hestenes' reciprocal frame
 
-The reciprocal frame `v¹ … vᵏ` is defined by `vⁱ · v_j = δⁱ_j`. It gives coordinates in one step:
-`x_i = vⁱ · y`. galgebra (and H&S) build it from the pseudoscalar `E = v_1 ∧ … ∧ v_n`:
-`vⁱ = (−1)^(i−1) * (v_1 ∧ … ∧ v̌_i ∧ … ∧ v_n) · E⁻¹`, where `v̌_i` means "leave `v_i` out". With gacalc's
-`inner_product` and `inverse`, this gave `[vⁱ · v_j]` = the identity on concrete 2D and 3D frames
-(2026-11-04). The exact H&S page and equation are not yet confirmed; see
-`tasks/reciprocal-frame-hestenes.md`, which also has a longer explainer.
+**The problem it solves.** In the standard basis a coordinate is a dot product, `x_1 = x · e_1`, but only
+because the `e_i` are orthonormal. In an **oblique** frame, say `v_1 = 2 * e_1` and
+`v_2 = 1 * e_1 + 3 * e_2`, with `y = x_1 * v_1 + x_2 * v_2`, dotting with a frame vector mixes the
+coordinates: `y · v_1 = x_1 * (v_1 · v_1) + x_2 * (v_2 · v_1)`.
+
+**The fix.** The reciprocal frame `v¹ … vⁿ` is defined by Hestenes & Sobczyk's **eq (3.5)**,
+`vⁱ · v_j = δⁱ_j` (the Kronecker delta: 1 when `i = j`, 0 otherwise). Each `vⁱ` is perpendicular to every
+frame vector except `v_i`, and its projection on `v_i` is 1. So coordinates are dot products again, one
+per coordinate, with nothing to solve: `y = Σ_i (vⁱ · y) * v_i`. The upper index names the reciprocal;
+it is not an exponent. In the example, `v¹ = 1/2 * e_1 − 1/6 * e_2` and `v² = 1/3 * e_2`.
+
+**The 2D picture.** `v¹` must be perpendicular to `v_2`, so it lies along `v_2` turned 90°, with its length
+set so its shadow on `v_1` is 1. A long, thin parallelogram (frame vectors nearly parallel) therefore gives
+long reciprocal vectors: **`|vⁱ|` is 1 divided by the height of `v_i` above the span of the other frame
+vectors.**
+
+**The formula, H&S p. 28.** In the book's notation (frame `a_1 … a_n`):
+
+```
+A_n = a_1 ∧ a_2 ∧ … ∧ a_n                                (eq 3.6)
+a^k = (−1)^(k−1) (a_1 ∧ … ∧ ǎ_k ∧ … ∧ a_n) A_n⁻¹          (eq 3.7)
+```
+
+`ǎ_k` means "leave `a_k` out", and the product with `A_n⁻¹` is the geometric product. Read it in three
+pieces:
+
+1. The wedge of the others is the **face** of the parallelotope opposite `a_k`.
+2. Multiplying by `A_n⁻¹` takes the face's dual inside the frame's space. That is a vector perpendicular to
+   the face, so perpendicular to every `a_j` with `j ≠ k`, and dividing by the volume sets its length to
+   face / volume = 1 / height.
+3. `(−1)^(k−1)` fixes the orientation, so that `a^k · a_k` is `+1` rather than `−1`.
+
+The face lies inside the space of `A_n`, so the geometric product is a pure vector, and it equals the
+inner product with `A_n⁻¹`.
+
+**In gacalc** (2026-11-07): `gacalc.frame.reciprocal_frame(vectors) -> list`, with `result[k - 1] = a^k`,
+and `Frame.reciprocal_vectors()`. It is built literally from eq 3.7, with `enumerate(start=1)` so the loop
+variable is the book's `k`, and the face is `all_wedged_except_the_kth(vectors, k)` (slice out `a_k`, fold
+the rest with `functools.reduce(operator.xor, …)`). `itertools.combinations(vectors, n - 1)` was rejected:
+it emits the faces in lexicographic order, which leaves out the *last* vector first, so pairing them with
+`a_k` would rest on an unobvious emission order. `tests/test_frame.py` checks, on general symbolic 2D and
+3D frames:
+
+- eq 3.5 as the identity matrix `[a^k · a_j]`;
+- that each `a^k` has grade 1 only;
+- the reconstruction `y = Σ (a^k · y) * a_k`;
+- `a^n = w_n / |w_n|²`.
+
+**Both inverses, chosen by keyword** (2026-11-07, `tasks/archive/2026/11/07/frame-to-invertible-function-reciprocal-inverse.md`).
+`Frame.to_invertible_function(*, inverse_method=...)` takes `"reciprocal"` (the default) or `"peel"`.
+
+- **Reciprocal:** computes the reciprocal vectors once, when the map is built, and its inverse is a plain
+  map, `x = Σ_i (vⁱ · y) * e_i`.
+- **Peel:** the back-substitution above.
+
+They agree because `vⁱ · y = Σ_j x_j (vⁱ · v_j) = x_i` (eq 3.5), and a frame's coordinates are unique.
+`tests/test_frame_class.py` runs every round trip under both methods and checks that the two inverses are
+equal on a general symbolic vector, for general 2D and 3D frames.
 
 QR connects to it directly:
 

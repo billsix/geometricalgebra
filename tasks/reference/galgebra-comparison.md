@@ -123,7 +123,7 @@ Consequences galgebra gets "for free" from the general metric, all **absent in g
   `make_orthogonal_frame` (Gram–Schmidt by rejection, the Hestenes way), and (2026-11-04) the `Frame`
   class (the original vectors + their orthogonal set, `coefficients()`, `to_invertible_function()`; see
   `tasks/reference/frames-qr-and-reciprocal-frames.md`). Reciprocal frames are the next step,
-  `tasks/reciprocal-frame-hestenes.md` (on hold).
+  `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md` (done 2026-11-07).
 - **Coordinates, manifolds, submanifolds.** `class Sm(Ga)` builds a submanifold algebra
   (e.g. the unit sphere) with an induced metric; Christoffel symbols, connections, basis-
   vector derivatives all hang off `coords`. This is the substrate for geometric calculus.

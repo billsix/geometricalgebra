@@ -22,19 +22,24 @@ random vectors (float-tolerant).
 """
 
 import random
+from collections.abc import Sequence
 
 import pytest
 import sympy
 from _helpers import random_vector
 
+from gacalc import g2, g3
 from gacalc.base import MultiVectorBase
 from gacalc.frame import (
+    all_wedged_except_the_kth,
     are_linearly_independent,
     is_frame,
+    kronecker_delta,
     make_orthogonal_frame,
     make_orthogonal_frame_hestenes,
     make_orthogonal_frame_hestenes_inverse,
     prefix_blades,
+    reciprocal_frame,
 )
 from gacalc.gn import (
     Gn,
@@ -289,3 +294,146 @@ def test_prefix_blades_empty_raises() -> None:
     representation for ``A_0 = 1``, so it raises (rather than invent one)."""
     with pytest.raises(ValueError, match="nonempty"):
         list(prefix_blades([]))
+
+
+# --- reciprocal_frame (H&S p. 28, eqs 3.5-3.7) -----------------------------
+
+# A general symbolic vector to take coordinates of, in 2D and 3D.
+y_1, y_2, y_3 = sympy.symbols("y_1 y_2 y_3")
+sym_y2: Gn = y_1 * e_1 + y_2 * e_2
+sym_y3: Gn = y_1 * e_1 + y_2 * e_2 + y_3 * e_3
+
+# The general symbolic frames: every component its own symbol.
+frames_2d_and_3d: list[list[Gn]] = [
+    [sym_vec2_1, sym_vec2_2],
+    [sym_vec3_1, sym_vec3_2, sym_vec3_3],
+]
+
+
+def is_zero(value: object) -> bool:
+    """Exact symbolic zero test (``simplify(value) == 0``)."""
+    return sympy.simplify(sympy.sympify(value)) == 0
+
+
+def is_zero_vector(value: MultiVectorBase) -> bool:
+    """Whether every coefficient of ``value`` simplifies to zero."""
+    return all(is_zero(c) for c in value.to_blade_dict().values())
+
+
+@pytest.mark.parametrize("frame", frames_2d_and_3d, ids=["2d", "3d"])
+def test_reciprocal_frame_is_the_kronecker_delta_symbolic(frame: Sequence[Gn]) -> None:
+    """H&S p. 28 eq (3.5), the defining property: ``a^k · a_j = δ^k_j`` -- 1 when
+    ``j = k`` and 0 when ``j ≠ k`` -- for every pair of a general symbolic frame, i.e.
+    the matrix ``[a^k · a_j]`` is the identity."""
+    reciprocal: list[MultiVectorBase] = reciprocal_frame(frame)
+    k: int
+    j: int
+    a_upper_k: MultiVectorBase
+    a_j: Gn
+    for k, a_upper_k in enumerate(reciprocal, start=1):
+        for j, a_j in enumerate(frame, start=1):
+            assert is_zero(a_upper_k.dot(a_j).scalar_part() - kronecker_delta(k, j))
+
+
+@pytest.mark.parametrize("frame", frames_2d_and_3d, ids=["2d", "3d"])
+def test_reciprocal_vectors_are_pure_vectors_symbolic(frame: Sequence[Gn]) -> None:
+    """Eq (3.7)'s product with ``A_n⁻¹`` is a geometric product; it is a pure vector
+    (grade 1 only), which is why it can also be read as the dot product."""
+    a_upper: MultiVectorBase
+    for a_upper in reciprocal_frame(frame):
+        assert a_upper.grades() == [1]
+
+
+@pytest.mark.parametrize(
+    ("frame", "y"),
+    [(frames_2d_and_3d[0], sym_y2), (frames_2d_and_3d[1], sym_y3)],
+    ids=["2d", "3d"],
+)
+def test_reciprocal_frame_reconstructs_a_vector_symbolic(
+    frame: Sequence[Gn], y: Gn
+) -> None:
+    """The coordinates of ``y`` in the frame are dot products with the reciprocal
+    vectors: ``y == Σ_k (a^k · y) * a_k``."""
+    rebuilt: MultiVectorBase = sum(
+        (
+            a_upper_k.dot(y).scalar_part() * a_k
+            for a_upper_k, a_k in zip(reciprocal_frame(frame), frame, strict=True)
+        ),
+        start=Gn.zero(),
+    )
+    assert is_zero_vector(rebuilt - y)
+
+
+@pytest.mark.parametrize("frame", frames_2d_and_3d, ids=["2d", "3d"])
+def test_last_reciprocal_vector_is_the_last_rejection_symbolic(
+    frame: Sequence[Gn],
+) -> None:
+    """``a^n == w_n / |w_n|²``: ``w_n`` (the last vector of the rejection frame) is
+    ``a_n`` with the span of the others rejected out, so it is already perpendicular to
+    every other frame vector; dividing by ``|w_n|²`` makes its dot with ``a_n`` one."""
+    w_n: MultiVectorBase = make_orthogonal_frame(frame)[-1]
+    assert is_zero_vector(reciprocal_frame(frame)[-1] - w_n / w_n.magnitude_squared())
+
+
+def test_reciprocal_frame_of_the_standard_basis_is_itself() -> None:
+    """An orthonormal frame is its own reciprocal."""
+    basis: list[Gn] = [1 * e_1, 1 * e_2, 1 * e_3]
+    assert reciprocal_frame(basis) == basis
+
+
+def test_reciprocal_frame_raises_on_a_non_frame() -> None:
+    """A dependent set has ``A_n = 0``, which has no inverse."""
+    with pytest.raises(ValueError):
+        reciprocal_frame([1 * e_1, 2 * e_1])
+    with pytest.raises(ValueError):
+        reciprocal_frame([])
+
+
+def test_all_wedged_except_the_kth_leaves_out_one_vector() -> None:
+    """``a_1 ∧ … ∧ ǎ_k ∧ … ∧ a_n``, k counted from 1: one vector leaves the empty
+    wedge (the scalar 1), and a ``k`` outside ``1 … n`` raises."""
+    frame: list[Gn] = [sym_vec2_1, sym_vec2_2]
+    assert all_wedged_except_the_kth(frame, 1) == sym_vec2_2
+    assert all_wedged_except_the_kth(frame, 2) == sym_vec2_1
+    assert all_wedged_except_the_kth([sym_vec2_1], 1) == Gn.one()
+    bad_k: int
+    for bad_k in (0, 3):
+        with pytest.raises(ValueError):
+            all_wedged_except_the_kth(frame, bad_k)
+
+
+def test_prefix_blades_on_a_graded_type() -> None:
+    """On the graded ``g2`` types the seed ``A_0`` is the scalar 1, not ``Vector``'s
+    ``one()`` (the zero vector, which would make every prefix blade zero)."""
+    blades: list[MultiVectorBase] = list(
+        prefix_blades([2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2])
+    )
+    assert blades == [g2.Scalar.one(), 2 * g2.e_1 + 0 * g2.e_2, 6 * (g2.e_1 ^ g2.e_2)]
+
+
+def test_reciprocal_frame_on_a_graded_type() -> None:
+    """A concrete oblique 3D frame on the graded ``g3`` types satisfies eq (3.5)."""
+    frame: list[MultiVectorBase] = [
+        2 * g3.e_1 + 0 * g3.e_2 + 1 * g3.e_3,
+        1 * g3.e_1 + 3 * g3.e_2 + 0 * g3.e_3,
+        1 * g3.e_1 + 1 * g3.e_2 + 4 * g3.e_3,
+    ]
+    k: int
+    j: int
+    a_upper_k: MultiVectorBase
+    a_j: MultiVectorBase
+    for k, a_upper_k in enumerate(reciprocal_frame(frame), start=1):
+        for j, a_j in enumerate(frame, start=1):
+            assert a_upper_k.dot(a_j).scalar_part() == kronecker_delta(k, j)
+
+
+def test_kronecker_delta() -> None:
+    """``δ^k_j`` is 1 on the diagonal (``j = k``), 0 off it, and symmetric; over
+    ``1 … n`` it is the identity matrix."""
+    assert [kronecker_delta(k, k) for k in range(1, 5)] == [1, 1, 1, 1]
+    assert [kronecker_delta(1, j) for j in (2, 3, 4)] == [0, 0, 0]
+    assert kronecker_delta(3, 1) == kronecker_delta(1, 3) == 0
+    identity: sympy.Matrix = sympy.Matrix(
+        4, 4, lambda row, column: kronecker_delta(row + 1, column + 1)
+    )
+    assert identity == sympy.eye(4)
