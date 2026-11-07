@@ -286,6 +286,16 @@ make image MINIMAL_IMAGE=1  # lean image (~2.4 GB vs ~7 GB): only what `make tes
 make shell                  # dev shell in the image; make test / make docs / make lean
 ```
 
+Two test targets, both `[HOST]`, each running pytest (with doctests) in the image:
+
+```sh
+make test        # everyday suite: skips tests marked slow (~1 minute)
+make test-full   # everything, slow tests included (~27 minutes); what CI runs
+```
+
+> A test is marked `@pytest.mark.slow` when it takes over 10 s, today the 3D symbolic frame
+> tests; mark a new one the same way (CLAUDE.md, "Dev workflow").
+
 The optional features are build flags. The **Makefile defaults every one to on**, and
 `MINIMAL_IMAGE=1` flips them all off; any single flag can be overridden on the command line
 (`make image USE_LEAN=0`, or `make image MINIMAL_IMAGE=1 USE_EPIX=1`).
@@ -314,10 +324,10 @@ Coding standards (naming, idioms, the mutate-vs-return rule, type-annotation pol
 function shape) live in **`CLAUDE.md` › "Coding standard (Python)"** — the canonical
 source. Most of PEP 8 is enforced mechanically by `ruff` (see `pyproject.toml`); that
 section covers the judgment calls ruff can't. Run `make format` (ruff + ty) and
-`make test` before sending a change.
+`make test` before sending a change (CI runs `make test-full`).
 
 GitHub Actions runs the same gates on every push and PR (`.github/workflows/checks.yml`,
-three check-only jobs: `make check-format`, `make test`, and `generated` — `make
+three check-only jobs: `make check-format`, `make test-full`, and `generated` — `make
 check-generated` + `make check-regions`). CI is a thin wrapper — each job is `checkout` →
 `make <target>` — so what CI runs is exactly what you run locally. Releases are manual
 (`make dist` → `make upload`/`make release` to PyPI).
