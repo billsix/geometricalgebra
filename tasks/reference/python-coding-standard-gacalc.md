@@ -144,6 +144,26 @@ What each change shows:
 
 Record: `tasks/archive/2026/11/06/refactor-frame-to-invertible-function.md`.
 
+## Tests: parametrize over the variants — gacalc worked examples (2026-11-07)
+
+The shared standard's "Tests: parametrize over the variants, don't copy the test" applied here (record:
+`tasks/archive/2026/11/07/tests-parametrize-variants-and-dimensions.md`):
+
+- `tests/test_frame.py` `FRAMES` / `FRAME_IDS`: one list of frames (symbolic 2D/3D on `Gn`, a concrete
+  3D frame, concrete frames on graded `g2`/`g3`) that every orthogonalization and reciprocal-frame test
+  runs over. Each frame list is annotated `list[MultiVectorBase]` so the mixed list type-checks.
+- `tests/test_frame.py` `PREFIX_BLADE_CASES`: `(vectors, expected)` pairs with the expected prefix
+  blades written out, so the test does not restate `prefix_blades`' own fold.
+- `tests/test_frame_class.py`: the 2D and 3D maps under each inverse method are module-scoped fixtures
+  (`function_2d`, `function_2d_peel`, `function_3d`, `function_3d_peel`) picked by name with
+  `request.getfixturevalue`, because a 3D symbolic map takes about a minute to build. The graded round
+  trip stacks a frame `parametrize` on an `INVERSE_METHODS` one.
+- **Kept apart on purpose:** `tests/test_dot_wedge_projection_split.py`'s
+  `test_geometric_product_splits_into_dot_and_wedge_{2d,3d}` (each spells out its own formula as a
+  worked example), the `typing.assert_type` tests in that file, and
+  `tests/test_sandwich_grades.py`'s `test_versor_sandwich_fixes_pseudoscalar_{2d,3d}` (each annotates
+  its own static return type).
+
 ## Cross-links (gacalc)
 
 - `tasks/reference/conditional-refactoring-rules.md` — the Rules A–E worked examples.
