@@ -12,6 +12,12 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`transforms.line_to_line_projection(from_vector=, to_vector=, *, float_close_to_zero=False)`** — the
+  projection onto the line of `to_vector`, restricted to the line of `from_vector`, as an
+  `InvertibleFunction`; each direction raises `ValueError` on input off its line, and perpendicular lines
+  raise at construction. **`transforms.coordinate_along(vector, along, *, float_close_to_zero=False)`** —
+  the `c` with `vector = c * along`, raising `ValueError` off the line. Additive. `Frame`'s two inverses
+  use them; results are unchanged, and symbolic 3D frames are slower.
 - **`gacalc.frame.kronecker_delta(k, j)`** — `δ^k_j`: 1 when `j = k`, 0 otherwise (H&S p. 28, eq 3.5's
   notation). Additive, non-breaking.
 - **`Frame.to_invertible_function(*, inverse_method="reciprocal" | "peel")`** — a keyword-only choice of

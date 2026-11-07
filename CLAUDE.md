@@ -26,7 +26,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 - `src/gacalc/transforms.py` — the representation-agnostic transform *factory* layer
   (`translate`/`uniform_scale`/`scale_non_uniform`/`to_matrix`/`to_matrix_template` +
   `MatrixTemplate`, plus the rotation factories `projection_rotation`/`versor_rotation`/
-  `plane_rotation`); derives any basis from the value's own type, so it preserves `Gn`/`G`.
+  `plane_rotation`, and `line_to_line_projection` (projection restricted to one line: an
+  `InvertibleFunction` that checks its input is on its line) + `coordinate_along`); derives any basis from the value's own type, so it preserves `Gn`/`G`.
   **Re-exports** the `functions` names.
 - `src/gacalc/frame.py` — **frames** (H&S p. 27): `are_linearly_independent`/`is_frame`, the
   eq-3.1 prefix-blade primitive `prefix_blades` (`A_0 = 1`, `A_k = v_1 ∧ … ∧ v_k`; a reusable
