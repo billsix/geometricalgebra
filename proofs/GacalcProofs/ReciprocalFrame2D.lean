@@ -90,25 +90,26 @@ theorem normSq_reject_vec {p q r t : ℝ} (hn : p ^ 2 + q ^ 2 ≠ 0) :
   field_simp
   ring
 
-/-- The frame hypothesis on two vectors, as a nonzero signed area. -/
-theorem area_ne_zero {a1 a2 : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
-    (hA : normSq (wedge a1 a2) ≠ 0) : a1.c1 * a2.c2 - a1.c2 * a2.c1 ≠ 0 := by
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2, normSq_wedge_vec'] at hA
-  simpa [vec] using hA
+/-- The frame hypothesis on two coordinate vectors, as a nonzero signed area. -/
+theorem area_ne_zero_vec {p q r t : ℝ} (hA : normSq (wedge (vec p q) (vec r t)) ≠ 0) :
+    p * t - q * r ≠ 0 :=
+  fun h => hA (by rw [normSq_wedge_vec', h]; ring)
 
 /-! ### The reciprocal frame (eqs 3.5, 3.4) -/
 
 /-- **Each reciprocal vector is a vector** (grade 1), as eq 3.7 promises. -/
 theorem isVector_recip1 {a1 a2 : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
     (hA : normSq (wedge a1 a2) ≠ 0) : IsVector (recip1 a1 a2) := by
-  have hd := area_ne_zero ha1 ha2 hA
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2, recip1_vec hd]
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  rw [recip1_vec (area_ne_zero_vec hA)]
   exact isVector_vec _ _
 
 theorem isVector_recip2 {a1 a2 : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
     (hA : normSq (wedge a1 a2) ≠ 0) : IsVector (recip2 a1 a2) := by
-  have hd := area_ne_zero ha1 ha2 hA
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2, recip2_vec hd]
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  rw [recip2_vec (area_ne_zero_vec hA)]
   exact isVector_vec _ _
 
 /-- **Eq 3.5, the Kronecker delta:** `aᵏ·a_j = 1` when `j = k` and `0` otherwise, all four cases. -/
@@ -116,19 +117,25 @@ theorem dot_recip_kronecker {a1 a2 : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
     (hA : normSq (wedge a1 a2) ≠ 0) :
     dot (recip1 a1 a2) a1 = 1 ∧ dot (recip1 a1 a2) a2 = 0 ∧
       dot (recip2 a1 a2) a1 = 0 ∧ dot (recip2 a1 a2) a2 = 1 := by
-  have hd := area_ne_zero ha1 ha2 hA
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2, recip1_vec hd, recip2_vec hd]
-  refine ⟨?_, ?_, ?_, ?_⟩ <;> simp only [dot_vec] <;> field_simp <;> ring
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  have hd := area_ne_zero_vec hA
+  rw [recip1_vec hd, recip2_vec hd]
+  generalize hdd : p * t - q * r = d at hd ⊢
+  refine ⟨?_, ?_, ?_, ?_⟩ <;> simp only [dot_vec] <;> field_simp <;> subst hdd <;> ring
 
 /-- **Eq 3.4, reconstruction:** a vector is the sum of its reciprocal-frame coordinates times the frame,
     `y = (a¹·y)*a₁ + (a²·y)*a₂`. -/
 theorem reconstruct {a1 a2 y : G2} (ha1 : IsVector a1) (ha2 : IsVector a2) (hy : IsVector y)
     (hA : normSq (wedge a1 a2) ≠ 0) :
     add (smul (dot (recip1 a1 a2) y) a1) (smul (dot (recip2 a1 a2) y) a2) = y := by
-  have hd := area_ne_zero ha1 ha2 hA
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2, eq_vec_of_isVector hy, recip1_vec hd,
-    recip2_vec hd]
-  ext <;> simp only [add, smul, dot_vec, vec] <;> field_simp <;> ring
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  obtain ⟨y1, y2, rfl⟩ : ∃ y1 y2, y = vec y1 y2 := ⟨_, _, eq_vec_of_isVector hy⟩
+  have hd := area_ne_zero_vec hA
+  rw [recip1_vec hd, recip2_vec hd]
+  generalize hdd : p * t - q * r = d at hd ⊢
+  ext <;> simp only [add, smul, dot, mul, vec] <;> field_simp <;> subst hdd <;> ring
 
 /-! ### Similar triangles -/
 
@@ -154,25 +161,35 @@ theorem recip1_eq_normal_div {a1 a2 m : G2} (ha1 : IsVector a1) (ha2 : IsVector 
     (hm : IsVector m) (hA : normSq (wedge a1 a2) ≠ 0) (hm2 : dot m a2 = 0)
     (hm1 : dot m a1 ≠ 0) :
     recip1 a1 a2 = smul (1 / dot m a1) m := by
-  have hd := area_ne_zero ha1 ha2 hA
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2, eq_vec_of_isVector hm] at hm1 hm2 ⊢
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  obtain ⟨u, v, rfl⟩ : ∃ u v, m = vec u v := ⟨_, _, eq_vec_of_isVector hm⟩
+  have hd := area_ne_zero_vec hA
+  rw [dot_vec] at hm1 hm2 ⊢
   rw [recip1_vec hd]
-  simp only [dot_vec] at hm1 hm2
-  ext <;> simp only [smul, vec, dot_vec] <;> field_simp
-  · linear_combination (-a1.c2) * hm2
-  · linear_combination a1.c1 * hm2
+  generalize hdd : p * t - q * r = d at hd ⊢
+  ext <;> simp only [smul, vec] <;> field_simp <;> subst hdd <;>
+    first
+    | ring1
+    | linear_combination q * hm2 | linear_combination (-q) * hm2
+    | linear_combination p * hm2 | linear_combination (-p) * hm2
 
 theorem recip2_eq_normal_div {a1 a2 m : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
     (hm : IsVector m) (hA : normSq (wedge a1 a2) ≠ 0) (hm1 : dot m a1 = 0)
     (hm2 : dot m a2 ≠ 0) :
     recip2 a1 a2 = smul (1 / dot m a2) m := by
-  have hd := area_ne_zero ha1 ha2 hA
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2, eq_vec_of_isVector hm] at hm1 hm2 ⊢
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  obtain ⟨u, v, rfl⟩ : ∃ u v, m = vec u v := ⟨_, _, eq_vec_of_isVector hm⟩
+  have hd := area_ne_zero_vec hA
+  rw [dot_vec] at hm1 hm2 ⊢
   rw [recip2_vec hd]
-  simp only [dot_vec] at hm1 hm2
-  ext <;> simp only [smul, vec, dot_vec] <;> field_simp
-  · linear_combination a2.c2 * hm1
-  · linear_combination (-a2.c1) * hm1
+  generalize hdd : p * t - q * r = d at hd ⊢
+  ext <;> simp only [smul, vec] <;> field_simp <;> subst hdd <;>
+    first
+    | ring1
+    | linear_combination t * hm1 | linear_combination (-t) * hm1
+    | linear_combination r * hm1
 
 /-! ### The peel: rejection orthogonality, and the last reciprocal vector -/
 
@@ -180,9 +197,11 @@ theorem recip2_eq_normal_div {a1 a2 m : G2} (ha1 : IsVector a1) (ha2 : IsVector 
     The peel's first step rests on it. -/
 theorem dot_reject_self {a1 a2 : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
     (hA : normSq (wedge a1 a2) ≠ 0) : dot (reject a1 a2) a1 = 0 := by
-  have hn := sumSq_ne_zero_of_area (area_ne_zero ha1 ha2 hA)
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2] at hn ⊢
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  have hn := sumSq_ne_zero_of_area (area_ne_zero_vec hA)
   rw [reject_vec hn, dot_vec]
+  generalize hnn : p ^ 2 + q ^ 2 = n at hn ⊢
   field_simp
   ring
 
@@ -191,10 +210,13 @@ theorem dot_reject_self {a1 a2 : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
 theorem recip2_eq_reject_div {a1 a2 : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
     (hA : normSq (wedge a1 a2) ≠ 0) :
     recip2 a1 a2 = smul (1 / normSq (reject a1 a2)) (reject a1 a2) := by
-  have hd := area_ne_zero ha1 ha2 hA
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  have hd := area_ne_zero_vec hA
   have hn := sumSq_ne_zero_of_area hd
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2] at hn ⊢
   rw [normSq_reject_vec hn, reject_vec hn, recip2_vec hd]
+  generalize hdd : p * t - q * r = d at hd ⊢
+  generalize hnn : p ^ 2 + q ^ 2 = n at hn ⊢
   ext <;> simp only [smul, vec] <;> field_simp <;> ring
 
 /-! ### Both inverses undo the forward map, and agree -/
@@ -202,48 +224,66 @@ theorem recip2_eq_reject_div {a1 a2 : G2} (ha1 : IsVector a1) (ha2 : IsVector a2
 theorem invReciprocal_frameMap {a1 a2 x : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
     (hx : IsVector x) (hA : normSq (wedge a1 a2) ≠ 0) :
     invReciprocal a1 a2 (frameMap a1 a2 x) = x := by
-  have hd := area_ne_zero ha1 ha2 hA
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2, eq_vec_of_isVector hx]
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  obtain ⟨x1, x2, rfl⟩ : ∃ x1 x2, x = vec x1 x2 := ⟨_, _, eq_vec_of_isVector hx⟩
+  have hd := area_ne_zero_vec hA
   simp only [invReciprocal, frameMap, recip1_vec hd, recip2_vec hd]
-  ext <;> simp only [add, smul, dot, mul, vec, e_1, e_2] <;> field_simp <;> ring
+  generalize hdd : p * t - q * r = d at hd ⊢
+  ext <;> simp only [add, smul, dot, mul, vec, e_1, e_2] <;> field_simp <;> subst hdd <;> ring
 
 theorem frameMap_invReciprocal {a1 a2 y : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
     (hy : IsVector y) (hA : normSq (wedge a1 a2) ≠ 0) :
     frameMap a1 a2 (invReciprocal a1 a2 y) = y := by
-  have hd := area_ne_zero ha1 ha2 hA
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2, eq_vec_of_isVector hy]
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  obtain ⟨y1, y2, rfl⟩ : ∃ y1 y2, y = vec y1 y2 := ⟨_, _, eq_vec_of_isVector hy⟩
+  have hd := area_ne_zero_vec hA
   simp only [invReciprocal, frameMap, recip1_vec hd, recip2_vec hd]
-  ext <;> simp only [add, smul, dot, mul, vec, e_1, e_2] <;> field_simp <;> ring
+  generalize hdd : p * t - q * r = d at hd ⊢
+  ext <;> simp only [add, smul, dot, mul, vec, e_1, e_2] <;> field_simp <;> subst hdd <;> ring
 
 theorem invPeel_frameMap {a1 a2 x : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
     (hx : IsVector x) (hA : normSq (wedge a1 a2) ≠ 0) :
     invPeel a1 a2 (frameMap a1 a2 x) = x := by
-  have hd := area_ne_zero ha1 ha2 hA
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  obtain ⟨x1, x2, rfl⟩ : ∃ x1 x2, x = vec x1 x2 := ⟨_, _, eq_vec_of_isVector hx⟩
+  have hd := area_ne_zero_vec hA
   have hn := sumSq_ne_zero_of_area hd
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2, eq_vec_of_isVector hx] at *
-  simp only [invPeel, peelFirst, peelLast, frameMap, normSq_reject_vec hn, reject_vec hn,
-    normSq_vec]
-  ext <;> simp only [add, sub, smul, dot, mul, vec, e_1, e_2] <;> field_simp <;> ring
+  simp only [invPeel, peelFirst, peelLast, frameMap]
+  rw [normSq_reject_vec hn, reject_vec hn, normSq_vec]
+  generalize hdd : p * t - q * r = d at hd ⊢
+  generalize hnn : p ^ 2 + q ^ 2 = n at hn ⊢
+  ext <;> simp only [add, sub, smul, dot, mul, vec, e_1, e_2] <;> field_simp <;>
+    (subst hdd; subst hnn; ring)
 
 theorem frameMap_invPeel {a1 a2 y : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
     (hy : IsVector y) (hA : normSq (wedge a1 a2) ≠ 0) :
     frameMap a1 a2 (invPeel a1 a2 y) = y := by
-  have hd := area_ne_zero ha1 ha2 hA
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  obtain ⟨y1, y2, rfl⟩ : ∃ y1 y2, y = vec y1 y2 := ⟨_, _, eq_vec_of_isVector hy⟩
+  have hd := area_ne_zero_vec hA
   have hn := sumSq_ne_zero_of_area hd
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2, eq_vec_of_isVector hy] at *
-  simp only [invPeel, peelFirst, peelLast, frameMap, normSq_reject_vec hn, reject_vec hn,
-    normSq_vec]
-  ext <;> simp only [add, sub, smul, dot, mul, vec, e_1, e_2] <;> field_simp <;> ring
+  simp only [invPeel, peelFirst, peelLast, frameMap]
+  rw [normSq_reject_vec hn, reject_vec hn, normSq_vec]
+  generalize hdd : p * t - q * r = d at hd ⊢
+  generalize hnn : p ^ 2 + q ^ 2 = n at hn ⊢
+  ext <;> simp only [add, sub, smul, dot, mul, vec, e_1, e_2] <;> field_simp <;>
+    (subst hdd; subst hnn; ring)
 
-/-- **The two inverses agree** on every vector: both recover the unique coordinates. -/
+/-- **The two inverses agree** on every vector: both recover the unique coordinates. A corollary of
+    the round trips: `g_reciprocal y = g_reciprocal (f (g_peel y)) = g_peel y`. -/
 theorem invReciprocal_eq_invPeel {a1 a2 y : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
     (hy : IsVector y) (hA : normSq (wedge a1 a2) ≠ 0) :
     invReciprocal a1 a2 y = invPeel a1 a2 y := by
-  have hd := area_ne_zero ha1 ha2 hA
-  have hn := sumSq_ne_zero_of_area hd
-  rw [eq_vec_of_isVector ha1, eq_vec_of_isVector ha2, eq_vec_of_isVector hy] at *
-  simp only [invReciprocal, invPeel, peelFirst, peelLast, recip1_vec hd, recip2_vec hd,
-    normSq_reject_vec hn, reject_vec hn, normSq_vec]
-  ext <;> simp only [add, sub, smul, dot, mul, vec, e_1, e_2] <;> field_simp <;> ring
+  have hpeel : IsVector (invPeel a1 a2 y) := by
+    simp only [invPeel]
+    exact ⟨by simp [add, smul, e_1, e_2], by simp [add, smul, e_1, e_2]⟩
+  calc invReciprocal a1 a2 y
+      = invReciprocal a1 a2 (frameMap a1 a2 (invPeel a1 a2 y)) := by
+        rw [frameMap_invPeel ha1 ha2 hy hA]
+    _ = invPeel a1 a2 y := invReciprocal_frameMap ha1 ha2 hpeel hA
 
 end GacalcProofs.G2
