@@ -6,7 +6,7 @@
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>): "make a follow up for doing something
 similar for reject, making an invertible function. … And as part of those tasks, add them to be coordinate
 versions in the generated code for g1 g2 g3 etc"
-**Depends on:** `tasks/line-to-line-projection-invertible-function.md` (it adds
+**Depends on:** `tasks/archive/2026/11/07/line-to-line-projection-invertible-function.md` (done; it added
 `transforms.line_to_line_projection` and `transforms.coordinate_along`; build this on that shape).
 **Next:** `tasks/vector-and-plane-invertible-project-reject.md`.
 
