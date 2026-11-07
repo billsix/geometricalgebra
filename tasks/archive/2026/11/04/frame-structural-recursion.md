@@ -21,7 +21,7 @@ file that's possible to do that for too."
   use `enumerate(..., start=1)` with `basis_vector(i)`, each with a one-line comment: the index is
   `basis_vector`'s 1-based external numbering.
 - **Kept as-is, with reasons:** the `len(vectors) == 0` guards (cheap top-of-function guards);
-  `prefix_blades`' `vectors[0]` (left to `tasks/frame-prefix-blades-graded-zero-seed.md`); the
+  `prefix_blades`' `vectors[0]` (left to `tasks/archive/2026/11/07/frame-prefix-blades-graded-zero-seed.md`); the
   `make_orthogonal_frame*` and `prefix_blades` bodies (already `match` / `accumulate` / `pairwise`); the
   `k = len(...)` + `n` derivation (needed for the `k = n` check).
 
@@ -48,7 +48,7 @@ file that's possible to do that for too."
      added to share one computation per frame.
    - The annotation checker flagged `peel`'s `list` parameter, which became a `Sequence`.
    - Mid-task, the maintainer asked whether the graded-input `prefix_blades` bug had a task. It already
-     did (`tasks/frame-prefix-blades-graded-zero-seed.md`), so nothing was created.
+     did (`tasks/archive/2026/11/07/frame-prefix-blades-graded-zero-seed.md`), so nothing was created.
 
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-04)
 

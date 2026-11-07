@@ -184,12 +184,11 @@ runs in about 3.5 minutes. With the peel inverse, the 3D symbolic round-trip tes
 against about 50 s for the coefficient back-substitution. The maintainer prefers correctness to runtime (2026-11-04), so the fully symbolic 3D
 tests stay in the default suite rather than being replaced by numeric spot checks.
 
-**Why rejection rather than a Hestenes closed form.** Both Hestenes forms rest on `prefix_blades`,
-which seeds `A_0` with `type(v).one()`. For the graded `g2`/`g3` `Vector` types that value is the
-**zero vector** (a Vector type cannot hold a scalar), so both forms return zeros on graded input. That
-is tracked in `tasks/frame-prefix-blades-graded-zero-seed.md`. Rejection (`make_orthogonal_frame`)
-works on every representation, and it is the orthogonalization the maintainer wrote. The `inverse`
-variant was slightly faster on `Gn`, but not enough to give that up.
+**Why rejection rather than a Hestenes closed form.** When `Frame` was built, both Hestenes forms
+returned zeros on the graded `g2`/`g3` types (`prefix_blades` seeded `A_0` with a graded `Vector`'s
+`one()`, the zero vector; fixed 2026-11-07, `tasks/archive/2026/11/07/frame-prefix-blades-graded-zero-seed.md`). Rejection (`make_orthogonal_frame`) is the
+orthogonalization the maintainer wrote and needs no prefix blades. The `inverse` variant was slightly
+faster on `Gn`, but not enough to switch.
 
 ## The relation to Hestenes' reciprocal frame
 
