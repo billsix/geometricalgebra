@@ -1,6 +1,7 @@
 # Split the tests into a fast everyday suite (`make test`) and a full suite (`make test-full`) for CI
 
-**Status:** proposed — needs go-ahead
+**Status:** in progress — the maintainer approved it and answered the open questions (William Emerison
+Six <billsix@gmail.com>, 2026-11-07)
 **Priority:** 3
 **Difficulty:** 3
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>): "make a task to investigate breaking
@@ -47,12 +48,14 @@ updated.
 5. CLAUDE.md: the dev-workflow bullet for `make test` / `make test-full` and the CI section;
    `tasks/reference/` if a testing reference doc covers the targets.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-07: "1) sure 2) sure 3) sure")
+
+1. **Threshold:** a test is slow if it takes over 10 s in the container.
+2. **CI runs the full suite on every push and PR**, replacing today's `make test` in `checks.yml`.
+3. **Target name:** `test-full`.
+
+The maintainer asked for a commit after each step.
+
 ## Open questions
 
-1. **Threshold.** Recommended: mark a test slow if it takes over 10 s in the container. That catches the
-   3D symbolic frame tests (20–475 s) and leaves everyday `make test` at roughly 2–3 minutes (to be
-   confirmed by step 1).
-2. **When CI runs the full suite.** Recommended: on every push and PR, replacing today's `make test` in
-   `checks.yml`, so nothing merges untested; the alternative is tags only, like `lean.yml`.
-3. **Target name.** You wrote both `test-full` and `unit-test-full`. Recommended: `test-full`, next to
-   `test` and `test-all-dims`.
+None.
