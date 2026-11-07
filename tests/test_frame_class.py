@@ -287,15 +287,44 @@ def test_matrix_columns_are_the_frame_vectors_2d(frame_2d: Frame) -> None:
     )
 
 
-def test_last_reciprocal_vector_is_the_last_rejection(frame_3d: Frame) -> None:
-    """``vⁿ = w_n / |w_n|²`` satisfies ``vⁿ · v_j = δⁿ_j`` (the reciprocal frame's last
-    member; see ``tasks/reciprocal-frame-hestenes.md``)."""
-    w_n: MultiVectorBase = frame_3d.orthogonal_vectors[-1]
-    v_upper_n: MultiVectorBase = w_n / w_n.magnitude_squared()
-    assert all(
-        is_zero(v_upper_n.dot(v).scalar_part() - δ)
-        for v, δ in zip((a_3d, b_3d, c_3d), (0, 0, 1), strict=True)
+def test_reciprocal_vectors_are_the_inverse_coordinates_2d_symbolic(
+    frame_2d: Frame,
+) -> None:
+    """The reciprocal frame and the peel inverse give the same coordinates: the
+    inverse's ``x_i`` is ``vⁱ · y``
+    (``tasks/reference/frames-qr-and-reciprocal-frames.md``)."""
+    y: MultiVectorBase = frame_2d.to_invertible_function()(x_2d)
+    coordinates: MultiVectorBase = sum(
+        (
+            v_upper.dot(y).scalar_part() * e
+            for v_upper, e in zip(
+                frame_2d.reciprocal_vectors(), (e_1, e_2), strict=True
+            )
+        ),
+        start=Gn.zero(),
     )
+    peeled: MultiVectorBase = frame_2d.to_invertible_function().inverse(y)
+    assert all(is_zero(c) for c in (coordinates - peeled).to_blade_dict().values())
+    assert all(is_zero(c) for c in (coordinates - x_2d).to_blade_dict().values())
+
+
+def test_reciprocal_vectors_are_the_inverse_coordinates_3d_symbolic(
+    frame_3d: Frame, function_3d: InvertibleFunction[MultiVectorBase]
+) -> None:
+    """3D: the peel inverse's coordinates equal the dot products with the reciprocal
+    frame, for a general symbolic frame and a general symbolic vector."""
+    y: MultiVectorBase = function_3d(x_3d)
+    coordinates: MultiVectorBase = sum(
+        (
+            v_upper.dot(y).scalar_part() * e
+            for v_upper, e in zip(
+                frame_3d.reciprocal_vectors(), (e_1, e_2, e_3), strict=True
+            )
+        ),
+        start=Gn.zero(),
+    )
+    peeled: MultiVectorBase = function_3d.inverse(y)
+    assert all(is_zero(c) for c in (coordinates - peeled).to_blade_dict().values())
 
 
 def test_frame_smaller_than_space_raises() -> None:

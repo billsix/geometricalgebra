@@ -32,6 +32,7 @@ in ``tasks/reference/frames-qr-and-reciprocal-frames.md``.
 from __future__ import annotations
 
 import dataclasses
+import functools
 import operator
 from collections.abc import Iterator, Sequence
 from itertools import accumulate, pairwise
@@ -296,6 +297,110 @@ def make_orthogonal_frame_hestenes_inverse(
     ]
 
 
+def all_wedged_except_the_kth(
+    vectors: Sequence[MultiVectorBase],
+    k: int,
+) -> MultiVectorBase:
+    """The outer product of every vector but the ``k``-th, in order --
+    ``a_1 ∧ … ∧ ǎ_k ∧ … ∧ a_n`` (H&S p. 28, eq 3.7), where ``ǎ_k`` means "leave ``a_k``
+    out".
+
+    ``k`` counts from 1, as the book does.  For a frame this is the face of the
+    parallelotope opposite ``a_k``, the (n−1)-blade :func:`reciprocal_frame` turns into
+    ``a^k``.  With a single vector, leaving it out gives the empty wedge, the scalar 1.
+
+    Examples:
+        >>> from gacalc.gn import e_1, e_2, e_3
+        >>> frame = [1 * e_1, 1 * e_2, 1 * e_3]
+        >>> all_wedged_except_the_kth(frame, 1) == e_2 ^ e_3
+        True
+        >>> all_wedged_except_the_kth(frame, 2) == e_1 ^ e_3
+        True
+        >>> all_wedged_except_the_kth(frame, 3) == e_1 ^ e_2
+        True
+
+    Raises:
+        ValueError: if ``k`` is not between 1 and ``len(vectors)`` (there is no
+            ``k``-th vector to leave out).
+    """
+    if not 1 <= k <= len(vectors):
+        raise ValueError(
+            f"all_wedged_except_the_kth needs 1 <= k <= {len(vectors)} (the number of "
+            f"vectors); got k = {k}"
+        )
+    others: list[MultiVectorBase] = [*vectors[: k - 1], *vectors[k:]]
+    return functools.reduce(operator.xor, others, type(vectors[0]).one())
+
+
+def reciprocal_frame(
+    vectors: Sequence[MultiVectorBase],
+) -> list[MultiVectorBase]:
+    """The **reciprocal frame** ``a^1 … a^n`` of the frame ``a_1 … a_n`` (H&S p. 28).
+
+    The reciprocal vectors are defined by the property (eq 3.5)
+
+    ::
+
+        a^k · a_j = δ^k_j
+
+    the Kronecker delta: ``1`` when ``j = k`` and ``0`` when ``j ≠ k``.  Each ``a^k``
+    is perpendicular to every frame vector except ``a_k``, and its projection on
+    ``a_k`` is 1.  So the coordinates of a vector ``y`` in the frame are dot products,
+    ``y = Σ_k (a^k · y) * a_k``, with no system to solve.  (The upper index names the
+    reciprocal; it is not an exponent.)
+
+    Hestenes and Sobczyk build them from the frame's pseudoscalar, eqs 3.6 and 3.7:
+
+    ::
+
+        A_n := a_1 ∧ a_2 ∧ … ∧ a_n                              (eq 3.6)
+        a^k := (-1)^(k-1) (a_1 ∧ … ∧ ǎ_k ∧ … ∧ a_n) A_n⁻¹        (eq 3.7)
+
+    where ``ǎ_k`` means "leave ``a_k`` out" and the product with ``A_n⁻¹`` is the
+    geometric product.  The wedge of the others is the face of the parallelotope
+    opposite ``a_k``; multiplying it by ``A_n⁻¹`` gives the vector perpendicular to
+    that face with length face / volume = 1 / (the height of ``a_k`` above the face);
+    ``(-1)^(k-1)`` makes ``a^k · a_k`` come out ``+1``.  Because the face lies inside
+    the space of ``A_n``, the product is a pure vector (``tests/test_frame.py`` checks
+    that it has no other grade).
+
+    The face is :func:`all_wedged_except_the_kth`.  The result is a list, like the
+    frame: ``result[k - 1]`` is ``a^k``.  For ``k``
+    vectors in a larger space it is the reciprocal frame within their span.
+
+    Examples:
+        The oblique frame ``a_1 = 2 * e_1``, ``a_2 = 1 * e_1 + 3 * e_2``:
+
+        >>> from gacalc.gn import e_1, e_2
+        >>> frame = [2 * e_1, 1 * e_1 + 3 * e_2]
+        >>> reciprocal = reciprocal_frame(frame)
+        >>> reciprocal == [sympy.Rational(1, 2) * e_1 - sympy.Rational(1, 6) * e_2,
+        ...                sympy.Rational(1, 3) * e_2]
+        True
+        >>> [[a_upper.dot(a).scalar_part() for a in frame] for a_upper in reciprocal]
+        [[1, 0], [0, 1]]
+
+    Raises:
+        ValueError: if ``vectors`` is not a frame (linearly dependent, empty, or
+            containing a non-vector), so that ``A_n = 0`` has no inverse.
+    """
+    if not is_frame(vectors):
+        raise ValueError(
+            "reciprocal_frame requires a frame (linearly independent vectors: "
+            "a_1 ∧ … ∧ a_n ≠ 0); the given vectors are dependent"
+        )
+    # A_n⁻¹, the inverse of the wedge of every frame vector (eq 3.6).
+    A_n_inverse: MultiVectorBase = functools.reduce(
+        operator.xor, vectors, type(vectors[0]).one()
+    ).inverse()
+    # eq 3.7: enumerate(start=1) makes the loop variable the book's k, so the sign is
+    # literally (-1)^(k-1).
+    return [
+        (-1) ** (k - 1) * all_wedged_except_the_kth(vectors, k) * A_n_inverse
+        for k, _ in enumerate(vectors, start=1)
+    ]
+
+
 def _exact_quotient(numerator: Real, denominator: Real) -> Real:
     """``numerator / denominator``, keeping exact input exact.
 
@@ -408,6 +513,16 @@ class Frame:
             orthogonal.
         """
         return tuple(w.normalize() for w in self.orthogonal_vectors)
+
+    def reciprocal_vectors(self) -> tuple[MultiVectorBase, ...]:
+        """The reciprocal frame ``v¹ … vᵏ`` (H&S p. 28): ``vⁱ · v_j = δⁱ_j``.
+
+        Computed on demand by :func:`reciprocal_frame`.
+
+        Returns:
+            tuple[MultiVectorBase, ...]: ``v¹ … vᵏ``, in frame order.
+        """
+        return tuple(reciprocal_frame(self.vectors))
 
     def to_invertible_function(self) -> InvertibleFunction[MultiVectorBase]:
         """The linear map sending each standard basis vector ``e_i`` to ``v_i``.

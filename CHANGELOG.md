@@ -12,6 +12,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`gacalc.frame.reciprocal_frame(vectors)`** — the reciprocal frame `a^1 … a^n` of a frame, built as
+  Hestenes & Sobczyk p. 28 eqs 3.6–3.7 write it (`a^k = (−1)^(k−1) (a_1 ∧ … ǎ_k … ∧ a_n) A_n⁻¹`), with
+  `a^k · a_j = δ^k_j` (eq 3.5). Returns a list, `result[k - 1] = a^k`; raises `ValueError` on a non-frame.
+  **`Frame.reciprocal_vectors()`** returns the same as a tuple, and **`all_wedged_except_the_kth(vectors, k)`**
+  is the eq-3.7 face `a_1 ∧ … ∧ ǎ_k ∧ … ∧ a_n` (k from 1). Additive, non-breaking.
 - **`MultiVectorBase.require_vector(value, context)` / `require_vectors(vectors, context)`** — the
   shared "must be a vector (grade 1)" checks, raising `ValueError` (see the BREAKING entry under
   Changed). They replace the private `measure._require_vectors`.
