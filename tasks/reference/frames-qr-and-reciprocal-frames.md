@@ -241,7 +241,7 @@ it emits the faces in lexicographic order, which leaves out the *last* vector fi
 - the reconstruction `y = Σ (a^k · y) * a_k`;
 - `a^n = w_n / |w_n|²`.
 
-**Both inverses, chosen by keyword** (2026-11-07, `tasks/frame-to-invertible-function-reciprocal-inverse.md`).
+**Both inverses, chosen by keyword** (2026-11-07, `tasks/archive/2026/11/07/frame-to-invertible-function-reciprocal-inverse.md`).
 `Frame.to_invertible_function(*, inverse_method=...)` takes `"reciprocal"` (the default) or `"peel"`.
 
 - **Reciprocal:** computes the reciprocal vectors once, when the map is built, and its inverse is a plain

@@ -85,7 +85,7 @@ starts at the end. The order is a property of how the `w_j` were built, not of o
 1. ~~(A) or (B)?~~ **Answered (William Emerison Six <billsix@gmail.com>, 2026-11-07): both, with (B) the
    default.** "make that one have two ways of doing it, specified by a keyword argument and a default
    value. I want an option to use the reciprocal frame … and I want it to be the default option." Done
-   in `tasks/frame-to-invertible-function-reciprocal-inverse.md`
+   in `tasks/archive/2026/11/07/frame-to-invertible-function-reciprocal-inverse.md`
    (`to_invertible_function(inverse_method="reciprocal" | "peel")`). What remains here is only whether the
    `"peel"` method should be rewritten head-first, as (A).
 2. **Under (A), where does the second orthogonal set live?** Computed inside `to_invertible_function`
