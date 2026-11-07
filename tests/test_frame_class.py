@@ -102,6 +102,9 @@ def function_3d_peel(frame_3d: Frame) -> InvertibleFunction[MultiVectorBase]:
     return frame_3d.to_invertible_function(inverse_method="peel")
 
 
+# The 3D symbolic cases marked slow take over 10 s each: `make test` skips them and
+# `make test-full` (CI) runs them (pytest.ini registers the marker).
+
 # The two ways to_invertible_function's inverse recovers the coordinates.
 INVERSE_METHODS: list[str] = ["reciprocal", "peel"]
 
@@ -121,7 +124,9 @@ def frame_3d_coefficients(frame_3d: Frame) -> tuple[tuple[Real, ...], ...]:
 # --- The representation: orthogonal set + triangular coefficients ---------
 
 
-@pytest.mark.parametrize("frame_name", ["frame_2d", "frame_3d"])
+@pytest.mark.parametrize(
+    "frame_name", ["frame_2d", pytest.param("frame_3d", marks=pytest.mark.slow)]
+)
 def test_orthogonal_vectors_are_mutually_orthogonal(
     frame_name: str, request: pytest.FixtureRequest
 ) -> None:
@@ -134,7 +139,9 @@ def test_orthogonal_vectors_are_mutually_orthogonal(
     )
 
 
-@pytest.mark.parametrize("frame_name", ["frame_2d", "frame_3d"])
+@pytest.mark.parametrize(
+    "frame_name", ["frame_2d", pytest.param("frame_3d", marks=pytest.mark.slow)]
+)
 def test_coefficients_are_triangular_with_unit_diagonal(
     frame_name: str, request: pytest.FixtureRequest
 ) -> None:
@@ -181,7 +188,10 @@ def test_iter_yields_the_original_vectors(
 
 @pytest.mark.parametrize(
     ("frame_name", "vectors"),
-    [("frame_2d", [a_2d, b_2d]), ("frame_3d", [a_3d, b_3d, c_3d])],
+    [
+        ("frame_2d", [a_2d, b_2d]),
+        pytest.param("frame_3d", [a_3d, b_3d, c_3d], marks=pytest.mark.slow),
+    ],
 )
 def test_squared_lengths_are_ratios_of_span_volumes(
     frame_name: str, vectors: Sequence[Gn], request: pytest.FixtureRequest
@@ -264,8 +274,8 @@ def test_forward_sends_basis_to_frame(
     [
         ("function_2d", x_2d),
         ("function_2d_peel", x_2d),
-        ("function_3d", x_3d),
-        ("function_3d_peel", x_3d),
+        pytest.param("function_3d", x_3d, marks=pytest.mark.slow),
+        pytest.param("function_3d_peel", x_3d, marks=pytest.mark.slow),
     ],
     ids=["2d-reciprocal", "2d-peel", "3d-reciprocal", "3d-peel"],
 )
@@ -351,7 +361,7 @@ def is_zero_vector(value: MultiVectorBase) -> bool:
     ("reciprocal_name", "peel_name", "y"),
     [
         ("function_2d", "function_2d_peel", x_2d),
-        ("function_3d", "function_3d_peel", x_3d),
+        pytest.param("function_3d", "function_3d_peel", x_3d, marks=pytest.mark.slow),
     ],
     ids=["2d", "3d"],
 )

@@ -29,6 +29,9 @@ import pytest
 import sympy
 from _helpers import random_vector
 
+# pytest.param returns a ParameterSet, which pytest does not export publicly.
+from _pytest.mark.structures import ParameterSet
+
 from gacalc import g2, g3
 from gacalc.base import MultiVectorBase
 from gacalc.frame import (
@@ -85,6 +88,15 @@ FRAME_IDS: list[str] = [
     "g3-concrete",
 ]
 
+# FRAMES for the tests whose general 3D symbolic case takes over 10 s: that case is
+# marked slow, so `make test` skips it and `make test-full` (CI) runs it.
+FRAMES_WITH_SLOW_3D_SYMBOLIC: list[ParameterSet] = [
+    pytest.param(frame, id=frame_id, marks=pytest.mark.slow)
+    if frame_id == "gn-3d-symbolic"
+    else pytest.param(frame, id=frame_id)
+    for frame, frame_id in zip(FRAMES, FRAME_IDS, strict=True)
+]
+
 # --- is_frame / are_linearly_independent -----------------------------------
 
 
@@ -114,7 +126,7 @@ def test_orthogonal_frame_keeps_first_vector() -> None:
     assert frame[0] == a
 
 
-@pytest.mark.parametrize("frame", FRAMES, ids=FRAME_IDS)
+@pytest.mark.parametrize("frame", FRAMES_WITH_SLOW_3D_SYMBOLIC)
 def test_orthogonal_frame_keeps_the_first_and_orthogonalizes_the_rest(
     frame: list[MultiVectorBase],
 ) -> None:
@@ -164,7 +176,7 @@ def test_make_orthogonal_frame_raises_on_dependent() -> None:
 # parallelism.  See ``tasks/define-frame.md`` Part 1c.
 
 
-@pytest.mark.parametrize("frame", FRAMES, ids=FRAME_IDS)
+@pytest.mark.parametrize("frame", FRAMES_WITH_SLOW_3D_SYMBOLIC)
 def test_hestenes_parallel_to_rejection(frame: list[MultiVectorBase]) -> None:
     """Hestenes' reverse-based ``c_k`` points the same way as the rejection ``w_k``
     (``c_k ∥ w_k``, the scale-independent geometric fact), and is exactly
@@ -202,7 +214,7 @@ def test_hestenes_parallel_to_rejection_numeric(dim: int) -> None:
 # difference eager-simplifying to the zero vector, as the reverse tests do.
 
 
-@pytest.mark.parametrize("frame", FRAMES, ids=FRAME_IDS)
+@pytest.mark.parametrize("frame", FRAMES_WITH_SLOW_3D_SYMBOLIC)
 def test_hestenes_inverse_equals_rejection_exactly(
     frame: list[MultiVectorBase],
 ) -> None:
@@ -336,7 +348,7 @@ def test_reciprocal_frame_reconstructs_a_vector_symbolic(
     assert is_zero_vector(rebuilt - y)
 
 
-@pytest.mark.parametrize("frame", FRAMES, ids=FRAME_IDS)
+@pytest.mark.parametrize("frame", FRAMES_WITH_SLOW_3D_SYMBOLIC)
 def test_last_reciprocal_vector_is_the_last_rejection(
     frame: Sequence[MultiVectorBase],
 ) -> None:
