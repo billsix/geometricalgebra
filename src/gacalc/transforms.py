@@ -228,6 +228,135 @@ def projection_rotation(
     return r
 
 
+def coordinate_along(
+    vector: MultiVectorBase,
+    along: MultiVectorBase,
+    *,
+    float_close_to_zero: bool = False,
+) -> Real:
+    """The coordinate ``c`` of ``vector`` on the line of ``along``: ``c * along``.
+
+    ``vector`` must lie on that line; dividing it by ``along`` then leaves the
+    scalar ``c``.  Exact input stays exact (ints become exact rationals) and float
+    stays float, because ``/`` divides through ``inverse``.
+
+    Args:
+        vector: a vector on the line of ``along`` (the zero vector gives 0).
+        along: the nonzero vector spanning the line.
+        float_close_to_zero: when ``True``, test "on the line" with the tolerance
+            of :meth:`~gacalc.base.MultiVectorBase.is_parallel_to`, for float input.
+
+    Returns:
+        Real: the scalar ``c`` with ``vector = c * along``.
+
+    Raises:
+        ValueError: if either argument is not a vector, ``along`` is zero, or
+            ``vector`` is off the line of ``along``.
+
+    Examples:
+        >>> from gacalc.g2 import e_1, e_2
+        >>> coordinate_along(6 * e_1 + 3 * e_2, along=2 * e_1 + 1 * e_2)
+        3
+        >>> coordinate_along(1 * e_1, along=2 * e_1)
+        1/2
+        >>> coordinate_along(1 * e_2, along=2 * e_1)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+        ...
+        ValueError: coordinate_along: ... is not on the line of ...
+    """
+    MultiVectorBase.require_vectors((vector, along), "coordinate_along")
+    if along == type(along).zero():
+        raise ValueError("coordinate_along: the zero vector spans no line")
+    if vector == type(vector).zero():
+        return 0
+    if not vector.is_parallel_to(along, float_close_to_zero):
+        raise ValueError(f"coordinate_along: {vector} is not on the line of {along}")
+    return (vector / along).scalar_part()
+
+
+def line_to_line_projection(
+    from_vector: MultiVectorBase,
+    to_vector: MultiVectorBase,
+    *,
+    float_close_to_zero: bool = False,
+) -> InvertibleFunction[MultiVectorBase]:
+    """Projection onto the line of ``to_vector``, restricted to the line of
+    ``from_vector``: invertible, because it sends one line onto the other.
+
+    Projecting the whole space onto a line throws the rejected part away, so
+    :meth:`~gacalc.base.MultiVectorBase.project` has no inverse.  On the single line
+    of ``from_vector`` nothing is thrown away: ``c * from_vector`` goes to
+    ``c * P(from_vector)``, with ``P`` the projection onto ``to_vector``, and the
+    inverse sends ``d * P(from_vector)`` back to ``d * from_vector``.  Each direction
+    checks that its input is on its line.  ``from_vector`` and ``to_vector`` must
+    not be perpendicular, or the projection squashes the line to a point.
+
+    Args:
+        from_vector: spans the line the function takes input on.
+        to_vector: spans the line the function projects onto.
+        float_close_to_zero: when ``True``, test "on the line" and "perpendicular"
+            with a floating-point tolerance, for float input.
+
+    Returns:
+        gacalc.functions.InvertibleFunction[MultiVectorBase]: the projection from
+        one line to the other, and its inverse.
+
+    Raises:
+        ValueError: if either argument is not a vector or is zero, or they are
+            perpendicular; and, when the function or its inverse is applied, if the
+            input is off its line.
+
+    Examples:
+        The frame ``v_1 = 2 * e_1``, ``v_2 = 1 * e_1 + 3 * e_2``, and ``y = 1 * v_1 +
+        1 * v_2``.  ``e_2`` is perpendicular to ``v_1``, so ``y``'s projection onto
+        it comes from ``v_2`` alone, and the inverse returns ``y``'s ``v_2`` part:
+
+        >>> from gacalc.g2 import e_1, e_2
+        >>> v_2 = 1 * e_1 + 3 * e_2
+        >>> y = 3 * e_1 + 3 * e_2
+        >>> P = line_to_line_projection(from_vector=v_2, to_vector=1 * e_2)
+        >>> P(v_2) == 3 * e_2
+        True
+        >>> P.inverse(y.projected_onto(1 * e_2)) == v_2
+        True
+        >>> P(y)  # y is not on v_2's line  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+        ...
+        ValueError: coordinate_along: ... is not on the line of ...
+    """
+    MultiVectorBase.require_vectors((from_vector, to_vector), "line_to_line_projection")
+    if from_vector.is_orthogonal_to(to_vector, float_close_to_zero):
+        raise ValueError(
+            "line_to_line_projection: from_vector and to_vector are perpendicular, "
+            "so the projection squashes the line to a point"
+        )
+    # The projection of from_vector: it spans the line the function maps onto.
+    shadow: MultiVectorBase = from_vector.projected_onto(to_vector)
+
+    def forward(x: MultiVectorBase) -> MultiVectorBase:
+        return (
+            coordinate_along(
+                x, along=from_vector, float_close_to_zero=float_close_to_zero
+            )
+            * shadow
+        )
+
+    def backward(z: MultiVectorBase) -> MultiVectorBase:
+        return (
+            coordinate_along(z, along=shadow, float_close_to_zero=float_close_to_zero)
+            * from_vector
+        )
+
+    label: str = "P_{" + to_vector._repr_latex_().strip("$") + "}"
+    return InvertibleFunction(
+        func=forward,
+        latex_repr=label,
+        inverse=backward,
+        latex_repr_inv=label + "^{-1}",
+        linearity=Linearity.LINEAR,
+    )
+
+
 def versor_rotation(
     from_vector: V,
     to_vector: V,
@@ -894,6 +1023,8 @@ __all__ = [
     "identity",
     "translate",
     "projection_rotation",
+    "coordinate_along",
+    "line_to_line_projection",
     "versor_rotation",
     "plane_rotation",
     "bivector_rotation",
