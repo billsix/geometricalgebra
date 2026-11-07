@@ -64,8 +64,8 @@ sym_vec3_3: Gn = c_1 * e_1 + c_2 * e_2 + c_3 * e_3
 # proof for every 2D or 3D frame), a concrete oblique 3D frame whose values are
 # readable numbers, and concrete oblique frames on the graded g2/g3 types (a graded
 # Vector's one() is the zero vector, which folds seeded with 1 must not use).
-symbolic_2d_frame: list[Gn] = [sym_vec2_1, sym_vec2_2]
-symbolic_3d_frame: list[Gn] = [sym_vec3_1, sym_vec3_2, sym_vec3_3]
+symbolic_2d_frame: list[MultiVectorBase] = [sym_vec2_1, sym_vec2_2]
+symbolic_3d_frame: list[MultiVectorBase] = [sym_vec3_1, sym_vec3_2, sym_vec3_3]
 FRAMES: list[list[MultiVectorBase]] = [
     symbolic_2d_frame,
     [1 * e_1 + 1 * e_2, 1 * e_2 + 1 * e_3, 1 * e_1 + 1 * e_3],
@@ -203,7 +203,9 @@ def test_hestenes_parallel_to_rejection_numeric(dim: int) -> None:
 
 
 @pytest.mark.parametrize("frame", FRAMES, ids=FRAME_IDS)
-def test_hestenes_inverse_equals_rejection_exactly(frame: list[MultiVectorBase]) -> None:
+def test_hestenes_inverse_equals_rejection_exactly(
+    frame: list[MultiVectorBase],
+) -> None:
     """The inverse-based closed form equals the rejection frame exactly:
     ``c_k^inv == w_k`` for every k (no ``|A_{k-1}|^2`` factor)."""
     w: list[MultiVectorBase] = make_orthogonal_frame(frame)
@@ -277,6 +279,7 @@ y_1, y_2, y_3 = sympy.symbols("y_1 y_2 y_3")
 sym_y2: Gn = y_1 * e_1 + y_2 * e_2
 sym_y3: Gn = y_1 * e_1 + y_2 * e_2 + y_3 * e_3
 
+
 def is_zero(value: object) -> bool:
     """Exact symbolic zero test (``simplify(value) == 0``)."""
     return sympy.simplify(sympy.sympify(value)) == 0
@@ -288,7 +291,9 @@ def is_zero_vector(value: MultiVectorBase) -> bool:
 
 
 @pytest.mark.parametrize("frame", FRAMES, ids=FRAME_IDS)
-def test_reciprocal_frame_is_the_kronecker_delta(frame: Sequence[MultiVectorBase]) -> None:
+def test_reciprocal_frame_is_the_kronecker_delta(
+    frame: Sequence[MultiVectorBase],
+) -> None:
     """H&S p. 28 eq (3.5), the defining property: ``a^k · a_j = δ^k_j`` -- 1 when
     ``j = k`` and 0 when ``j ≠ k`` -- for every pair of a general symbolic frame, i.e.
     the matrix ``[a^k · a_j]`` is the identity."""

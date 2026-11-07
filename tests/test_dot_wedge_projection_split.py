@@ -73,14 +73,26 @@ def test_geometric_product_splits_into_dot_and_wedge_3d() -> None:
     assert a * b == a.dot(b) + a.wedge(b)
 
 
-def test_projection_and_rejection_split_the_product_2d() -> None:
+# General symbolic vectors a and b, in 2D and 3D, for the projection/rejection split.
+a_1: sympy.Symbol
+a_2: sympy.Symbol
+a_3: sympy.Symbol
+b_1: sympy.Symbol
+b_2: sympy.Symbol
+b_3: sympy.Symbol
+a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3")
+GENERAL_VECTOR_PAIRS: list[tuple[Gn, Gn]] = [
+    (a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2),
+    (a_1 * e_1 + a_2 * e_2 + a_3 * e_3, b_1 * e_1 + b_2 * e_2 + b_3 * e_3),
+]
+
+
+@pytest.mark.parametrize(("a", "b"), GENERAL_VECTOR_PAIRS, ids=["2d", "3d"])
+def test_projection_and_rejection_split_the_product(a: Gn, b: Gn) -> None:
     """Split ``a`` relative to ``b`` into the part parallel to ``b``
     (``a_par = proj_b(a)``) and the part perpendicular (``a_perp = rej_b(a)``).
     Multiplying each by ``b`` isolates one face of the product: ``a_par b = a·b``
     (parallel, so no wedge), ``a_perp b = a∧b`` (perpendicular, so no dot)."""
-    a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
-    a: Gn = a_1 * e_1 + a_2 * e_2
-    b: Gn = b_1 * e_1 + b_2 * e_2
     a_par: MultiVectorBase = Gn.project(onto=b)(a)  # part of a along b
     a_perp: MultiVectorBase = Gn.reject(away_from=b)(a)  # part of a perp to b
     assert a_par + a_perp == a  # the two parts reconstruct a
@@ -88,19 +100,7 @@ def test_projection_and_rejection_split_the_product_2d() -> None:
     assert a_perp * b == a.wedge(b)  # perpendicular part times b is the wedge
 
 
-def test_projection_and_rejection_split_the_product_3d() -> None:
-    """The same projection/rejection split, over general 3D vectors."""
-    a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3")
-    a: Gn = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    b: Gn = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
-    a_par: MultiVectorBase = Gn.project(onto=b)(a)
-    a_perp: MultiVectorBase = Gn.reject(away_from=b)(a)
-    assert a_par + a_perp == a
-    assert a_par * b == a.dot(b)
-    assert a_perp * b == a.wedge(b)
-
-
-@pytest.mark.parametrize("dim", [2, 3])
+@pytest.mark.parametrize("dim", [2, 3], ids=["2d", "3d"])
 def test_projection_rejection_split_numeric(dim: int) -> None:
     random.seed(20260803)
     tol: float = 1e-9

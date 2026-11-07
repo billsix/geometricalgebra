@@ -133,18 +133,17 @@ def test_area_of_two_vectors_in_3d_is_the_gram_determinant() -> None:
     assert sympy.expand(area(_A3, _B3) ** 2) == sympy.expand(gram_determinant)
 
 
-def test_content_equals_content_by_rejection_numeric() -> None:
+@pytest.mark.parametrize("dim", [2, 3], ids=["2d", "3d"])
+def test_content_equals_content_by_rejection_numeric(dim: int) -> None:
     random.seed(20260823)
-    dim: int
-    for dim in (2, 3):
-        for _ in range(100):
-            vectors: list[Gn] = [random_vector(dim) for _ in range(dim)]
-            assert math.isclose(
-                float(content(vectors)),
-                float(content_by_rejection(vectors)),
-                rel_tol=1e-9,
-                abs_tol=1e-9,
-            )
+    for _ in range(100):
+        vectors: list[Gn] = [random_vector(dim) for _ in range(dim)]
+        assert math.isclose(
+            float(content(vectors)),
+            float(content_by_rejection(vectors)),
+            rel_tol=1e-9,
+            abs_tol=1e-9,
+        )
 
 
 def test_content_by_rejection_requires_a_frame() -> None:

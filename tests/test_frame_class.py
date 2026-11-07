@@ -300,9 +300,7 @@ GRADED_FRAMES_AND_INPUTS: list[tuple[list[MultiVectorBase], MultiVectorBase]] = 
 
 # Two stacked parametrize decorators run every combination: 2 frames x 2 methods.
 @pytest.mark.parametrize("inverse_method", INVERSE_METHODS)
-@pytest.mark.parametrize(
-    ("vectors", "x"), GRADED_FRAMES_AND_INPUTS, ids=["g2", "g3"]
-)
+@pytest.mark.parametrize(("vectors", "x"), GRADED_FRAMES_AND_INPUTS, ids=["g2", "g3"])
 def test_composed_round_trip_concrete_frames_symbolic_input(
     vectors: list[MultiVectorBase],
     x: MultiVectorBase,
@@ -351,7 +349,10 @@ def is_zero_vector(value: MultiVectorBase) -> bool:
 # rather than parametrizing over the method.
 @pytest.mark.parametrize(
     ("reciprocal_name", "peel_name", "y"),
-    [("function_2d", "function_2d_peel", x_2d), ("function_3d", "function_3d_peel", x_3d)],
+    [
+        ("function_2d", "function_2d_peel", x_2d),
+        ("function_3d", "function_3d_peel", x_3d),
+    ],
     ids=["2d", "3d"],
 )
 def test_inverse_methods_are_equivalent_symbolic(

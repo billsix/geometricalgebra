@@ -29,6 +29,7 @@ root.
 
 import math
 
+import pytest
 import sympy
 
 import gacalc.g2 as g2
@@ -45,34 +46,28 @@ def _lagrange_closed_form(a: MultiVectorBase, b: MultiVectorBase) -> Real:
     return 2 * ab * (ab + a.scalar_product(b))
 
 
-def test_versor_magnitude_squared_has_the_lagrange_closed_form_2d_symbolic() -> None:
-    a1: sympy.Symbol
-    a2: sympy.Symbol
-    b1: sympy.Symbol
-    b2: sympy.Symbol
-    a1, a2, b1, b2 = sympy.symbols("a1 a2 b1 b2", real=True, positive=True)
-    a: g2.Vector = a1 * g2.Vector.e_1 + a2 * g2.Vector.e_2
-    b: g2.Vector = b1 * g2.Vector.e_1 + b2 * g2.Vector.e_2
-    R: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=a, to_vector=b)
-    assert (
-        sympy.simplify(
-            sympy.sympify(R.magnitude_squared()) - _lagrange_closed_form(a, b)
-        )
-        == 0
-    )
+# General positive symbolic vectors a, b on the graded g2 and g3 types.
+a1: sympy.Symbol
+a2: sympy.Symbol
+a3: sympy.Symbol
+b1: sympy.Symbol
+b2: sympy.Symbol
+b3: sympy.Symbol
+a1, a2, a3, b1, b2, b3 = sympy.symbols("a1 a2 a3 b1 b2 b3", real=True, positive=True)
+GENERAL_VECTOR_PAIRS: list[tuple[MultiVectorBase, MultiVectorBase]] = [
+    (a1 * g2.Vector.e_1 + a2 * g2.Vector.e_2, b1 * g2.Vector.e_1 + b2 * g2.Vector.e_2),
+    (
+        a1 * g3.Vector.e_1 + a2 * g3.Vector.e_2 + a3 * g3.Vector.e_3,
+        b1 * g3.Vector.e_1 + b2 * g3.Vector.e_2 + b3 * g3.Vector.e_3,
+    ),
+]
 
 
-def test_versor_magnitude_squared_has_the_lagrange_closed_form_3d_symbolic() -> None:
-    syms: list[sympy.Symbol] = list(
-        sympy.symbols("a1 a2 a3 b1 b2 b3", real=True, positive=True)
-    )
-    a: g3.Vector = (
-        syms[0] * g3.Vector.e_1 + syms[1] * g3.Vector.e_2 + syms[2] * g3.Vector.e_3
-    )
-    b: g3.Vector = (
-        syms[3] * g3.Vector.e_1 + syms[4] * g3.Vector.e_2 + syms[5] * g3.Vector.e_3
-    )
-    R: MultiVectorBase = g3.Vector.versor_from_vectors(from_vector=a, to_vector=b)
+@pytest.mark.parametrize(("a", "b"), GENERAL_VECTOR_PAIRS, ids=["g2", "g3"])
+def test_versor_magnitude_squared_has_the_lagrange_closed_form_symbolic(
+    a: MultiVectorBase, b: MultiVectorBase
+) -> None:
+    R: MultiVectorBase = type(a).versor_from_vectors(from_vector=a, to_vector=b)
     assert (
         sympy.simplify(
             sympy.sympify(R.magnitude_squared()) - _lagrange_closed_form(a, b)
@@ -164,21 +159,21 @@ def test_rotor_from_unit_vectors_is_the_half_angle_rotor_symbolic() -> None:
     assert Rhat.symbolically_equal(half_angle_rotor, subs=pythagoras)
 
 
-def test_rotor_from_unit_vectors_matches_plane_rotation_numerically() -> None:
+@pytest.mark.parametrize("θ", [0.3, 1.0, math.radians(90), 2.5])
+def test_rotor_from_unit_vectors_matches_plane_rotation_numerically(θ: float) -> None:
     # the same identity at sample angles, against the half-angle rotor factory
     v: g2.Vector = g2.Vector(coeff_e_1=1.0, coeff_e_2=3.0)
-    rotate_in_plane: InvertibleFunction[g2.Vector]
-    θ: float
-    for θ in (0.3, 1.0, math.radians(90), 2.5):
-        b: g2.Vector = math.cos(θ) * g2.Vector.e_1 + math.sin(θ) * g2.Vector.e_2
-        Rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(
-            from_vector=1.0 * g2.Vector.e_1, to_vector=b
-        )
-        expected: g2.Versor = g2.Versor(
-            coeff_scalar=math.cos(θ / 2), coeff_e_12=-math.sin(θ / 2)
-        )
-        assert Rhat.isclose(expected, rel_tol=1e-9, abs_tol=1e-9)
-        rotate_in_plane = plane_rotation(1.0 * g2.Vector.e_1, 1.0 * g2.Vector.e_2)(θ)
-        assert (Rhat * v * Rhat.reverse()).isclose(
-            rotate_in_plane(v), rel_tol=1e-9, abs_tol=1e-9
-        )
+    b: g2.Vector = math.cos(θ) * g2.Vector.e_1 + math.sin(θ) * g2.Vector.e_2
+    Rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(
+        from_vector=1.0 * g2.Vector.e_1, to_vector=b
+    )
+    expected: g2.Versor = g2.Versor(
+        coeff_scalar=math.cos(θ / 2), coeff_e_12=-math.sin(θ / 2)
+    )
+    assert Rhat.isclose(expected, rel_tol=1e-9, abs_tol=1e-9)
+    rotate_in_plane: InvertibleFunction[g2.Vector] = plane_rotation(
+        1.0 * g2.Vector.e_1, 1.0 * g2.Vector.e_2
+    )(θ)
+    assert (Rhat * v * Rhat.reverse()).isclose(
+        rotate_in_plane(v), rel_tol=1e-9, abs_tol=1e-9
+    )
