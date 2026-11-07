@@ -39,9 +39,13 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   Also the **`Frame`** dataclass: the original `vectors` (what `iter()` yields) + their
   orthogonal set `w_j` (orthogonal, not orthonormal, so symbolic 3D stays sqrt-free and
   decidable); `coefficients()` computes the triangular `(w_j · v_i) / |w_j|²` table (QR with the
-  lengths factored out); `to_invertible_function()` maps `e_i ↦ v_i` and inverts by a `match`
-  recursion that peels the frame from its last vector. Math + the orthonormal-vs-orthogonal
-  measurements: `tasks/reference/frames-qr-and-reciprocal-frames.md`.
+  lengths factored out) as projections read with `transforms.coordinate_along`;
+  `to_invertible_function(inverse_method="reciprocal" | "peel")` maps `e_i ↦ v_i` and inverts it
+  either through the reciprocal frame (`reciprocal_frame`, H&S eq 3.7; the default) or by a `match`
+  recursion that peels the frame from its last vector. Both read each term with
+  `transforms.line_to_line_projection` (the point on `v_i`'s line whose projection onto a normal `n`
+  matches `y`'s). Math, the orthonormal-vs-orthogonal measurements and the symbolic-cost timings:
+  `tasks/reference/frames-qr-and-reciprocal-frames.md`.
 - `src/gacalc/measure.py` — the named **measures** (Williamson & Trotter 1979):
   `area`/`volume`/`content` (+ `content_by_rejection`) and the **signed** determinants
   `signed_area`/`signed_volume`/`signed_content` (full-space `k = n`); free functions over
@@ -74,7 +78,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 - `tests/` — `test_multivector.py` (`Gn`), `test_conformance.py` (parametrized over `[Gn, G]`),
   `test_graded.py` (graded subtypes), `test_generator.py` (the generator's own logic),
   `test_vectorcalc.py` (cross product), `test_blade_symbols.py` (display-symbol map), and more.
-  **~720 tests** (incl. doctests via `--doctest-modules`).
+  **~800 tests** (incl. doctests via `--doctest-modules`); `make test` skips the ones marked `slow`.
 - `tools/gen_specialized.py` — the code generator (builds each module as Python `ast` nodes,
   rendered with `ast.unparse`); `tools/astbuild.py` — its domain-agnostic node-builder DSL;
   `tools/bench.py` — `Gn`-vs-specialized benchmark.

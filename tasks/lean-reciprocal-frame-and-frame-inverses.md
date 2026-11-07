@@ -1,7 +1,9 @@
 # Lean proofs for the reciprocal frame and `Frame`'s two inverses
 
-**Status:** ready — the maintainer asked for it and answered its open question (William Emerison Six
-<billsix@gmail.com>, 2026-11-07); not started
+**Status:** in progress (2026-11-07) — the maintainer asked for it, answered its open question, and said to
+start. The 𝒢₂ theorems 1–8 are drafted in `proofs/GacalcProofs/ReciprocalFrame2D.lean` (not yet in
+`GacalcProofs.lean`, and **not yet built**: the local image had no Lean; a `USE_LEAN=1` image was building
+with `--network=host`). Next: build it with `make lean` (add the import), fix what fails, then 𝒢₃.
 **Priority:** 6
 **Difficulty:** 6
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>)
