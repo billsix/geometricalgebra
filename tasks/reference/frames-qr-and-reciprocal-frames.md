@@ -5,7 +5,7 @@ recording its coefficients *is* QR, how that gives an inverse without row reduct
 Hestenes' reciprocal frame and to the SVD, and why gacalc's implementation stores the frame orthogonal
 rather than orthonormal. gacalc implements it as `gacalc.frame.Frame` (`src/gacalc/frame.py`, tests in
 `tests/test_frame_class.py`); the build record is `tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`.
-Open follow-ups: `tasks/reciprocal-frame-hestenes.md`, `tasks/frame-svd-investigation.md`, and
+The reciprocal frame's build record is `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`. Open follow-ups: `tasks/frame-svd-investigation.md` and
 `tasks/frame-inverse-head-first-recursion.md` (whether the peel can run first-element-first). The
 book notebooks (`book/docs/frames-qr.rst`) are recorded in
 `tasks/archive/2026/11/04/frame-notebooks-epix.md`. Created 2026-11-04 (William Emerison Six
@@ -132,7 +132,7 @@ coordinate. Two head-first alternatives were considered and rejected (William Em
   frame, so nothing is gained mathematically.
 
 The order-free version is the reciprocal frame: `x_i = vⁱ · y`, each coordinate one dot product (below,
-and `tasks/reciprocal-frame-hestenes.md`).
+and `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`).
 
 ## Why gacalc's `Frame` is stored orthogonal, not orthonormal
 
