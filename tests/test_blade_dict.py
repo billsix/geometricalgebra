@@ -104,27 +104,30 @@ def test_arithmetic_through_interchange_agrees() -> None:
     assert gn_sum == g3_sum == {(): 5, (1,): 11, (1, 2): 2}
 
 
-def test_canonical_keys_are_sorted_index_tuples() -> None:
+@pytest.mark.parametrize(
+    ("cls", "n"), [(Gn, 3), (g2.G, 2), (g3.G, 3)], ids=["Gn", "g2.G", "g3.G"]
+)
+def test_canonical_keys_are_sorted_index_tuples(
+    cls: type[MultiVectorBase], n: int
+) -> None:
     # every key any representation ever EMITS is a strictly increasing tuple of
     # basis-vector indices (the writer-side precondition, held by construction)
-    cls: type[MultiVectorBase]
-    for cls in (Gn, g2.G, g3.G):
-        n: int = 3 if cls in (Gn, g3.G) else 2
-        dense: MultiVectorBase = sum(
-            ((i + 1) * b for i, b in enumerate(cls.bases(n))), start=cls.zero()
-        )
-        blade: Blade
-        for blade in (dense * dense).to_blade_dict():
-            assert list(blade) == sorted(set(blade))
+    dense: MultiVectorBase = sum(
+        ((i + 1) * b for i, b in enumerate(cls.bases(n))), start=cls.zero()
+    )
+    blade: Blade
+    for blade in (dense * dense).to_blade_dict():
+        assert list(blade) == sorted(set(blade))
 
 
-def test_zero_coefficients_omitted_missing_reads_zero() -> None:
+@pytest.mark.parametrize("cls", [Gn, g2.G], ids=["Gn", "g2.G"])
+def test_zero_coefficients_omitted_missing_reads_zero(
+    cls: type[MultiVectorBase],
+) -> None:
     # readers omit exact zeros; a missing blade reads as 0
-    cls: type[MultiVectorBase]
-    for cls in (Gn, g2.G):
-        x: MultiVectorBase = cls.from_blade_dict({(1,): 0, (2,): 3})
-        assert x.to_blade_dict() == {(2,): 3}
-        assert x.coefficient(cls.basis_vector(1)) == 0
+    x: MultiVectorBase = cls.from_blade_dict({(1,): 0, (2,): 3})
+    assert x.to_blade_dict() == {(2,): 3}
+    assert x.coefficient(cls.basis_vector(1)) == 0
 
 
 def test_hidden_zero_eager_vs_lazy() -> None:
@@ -156,15 +159,16 @@ def test_graded_from_blade_dict_keeps_only_own_blades() -> None:
     }
 
 
-def test_non_canonical_keys_raise() -> None:
+@pytest.mark.parametrize(
+    "cls", [Gn, g2.G, g2.Bivector], ids=["Gn", "g2.G", "g2.Bivector"]
+)
+def test_non_canonical_keys_raise(cls: type[MultiVectorBase]) -> None:
     # every representation rejects an unsorted or repeated-index key loudly;
     # (2, 1) is NOT read as the signed permutation -e1e2
-    cls: type[MultiVectorBase]
-    for cls in (Gn, g2.G, g2.Bivector):
-        with pytest.raises(ValueError, match="not canonical"):
-            cls.from_blade_dict({(2, 1): 5})
-        with pytest.raises(ValueError, match="not canonical"):
-            cls.from_blade_dict({(1, 1): 5})
+    with pytest.raises(ValueError, match="not canonical"):
+        cls.from_blade_dict({(2, 1): 5})
+    with pytest.raises(ValueError, match="not canonical"):
+        cls.from_blade_dict({(1, 1): 5})
 
 
 def test_coef_types_survive_lazy_roundtrip() -> None:

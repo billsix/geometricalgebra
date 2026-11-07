@@ -25,11 +25,12 @@ fixed-grade → coordinate-free — proved equal.  See
 ``tasks/archive/2026/10/01/per-type-fixed-grade-dot-wedge-sine-cosine.md``.
 """
 
+import pytest
+
 import gacalc.g2 as g2
 import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase
 from gacalc.gn import (
-    MultiVector,
     a_1,
     a_2,
     a_3,
@@ -46,44 +47,36 @@ _DOT_GRADE: int = 0
 _WEDGE_GRADE: int = 2
 
 
-def test_fixed_grade_equals_canonical_2d_symbolic() -> None:
-    a: MultiVector = a_1 * e_1 + a_2 * e_2
-    b: MultiVector = b_1 * e_1 + b_2 * e_2
-    product: MultiVector = a * b
+# The vector pairs: general symbolic vectors on Gn, and numeric vectors on the fast
+# generated g2/g3 classes.
+VECTOR_PAIRS: list[tuple[MultiVectorBase, MultiVectorBase]] = [
+    (a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2),
+    (a_1 * e_1 + a_2 * e_2 + a_3 * e_3, b_1 * e_1 + b_2 * e_2 + b_3 * e_3),
+    (3.0 * g2.e_1 + 4.0 * g2.e_2, 1.0 * g2.e_1 + 2.0 * g2.e_2),
+    (
+        1.0 * g3.e_1 + 2.0 * g3.e_2 + 3.0 * g3.e_3,
+        4.0 * g3.e_1 + 5.0 * g3.e_2 + 6.0 * g3.e_3,
+    ),
+]
+VECTOR_PAIR_IDS: list[str] = [
+    "gn-2d-symbolic",
+    "gn-3d-symbolic",
+    "g2-numeric",
+    "g3-numeric",
+]
+
+
+@pytest.mark.parametrize(("a", "b"), VECTOR_PAIRS, ids=VECTOR_PAIR_IDS)
+def test_fixed_grade_equals_canonical(a: MultiVectorBase, b: MultiVectorBase) -> None:
+    product: MultiVectorBase = a * b
     assert product.r_vector_part(_DOT_GRADE) == a.inner_product(b)
     assert product.r_vector_part(_WEDGE_GRADE) == a.outer_product(b)
 
 
-def test_fixed_grade_equals_canonical_3d_symbolic() -> None:
-    a: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    b: MultiVector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
-    product: MultiVector = a * b
-    assert product.r_vector_part(_DOT_GRADE) == a.inner_product(b)
-    assert product.r_vector_part(_WEDGE_GRADE) == a.outer_product(b)
-
-
-def test_product_is_dot_plus_wedge_2d_symbolic() -> None:
+@pytest.mark.parametrize(("a", "b"), VECTOR_PAIRS, ids=VECTOR_PAIR_IDS)
+def test_product_is_dot_plus_wedge(a: MultiVectorBase, b: MultiVectorBase) -> None:
     # The two bound-grade parts reassemble the whole product: ab = a·b + a∧b.
-    a: MultiVector = a_1 * e_1 + a_2 * e_2
-    b: MultiVector = b_1 * e_1 + b_2 * e_2
-    product: MultiVector = a * b
+    product: MultiVectorBase = a * b
     assert product == product.r_vector_part(_DOT_GRADE) + product.r_vector_part(
         _WEDGE_GRADE
     )
-
-
-def test_fixed_grade_equals_canonical_g2_generated() -> None:
-    # Same identity on the fast generated 𝒢₂ classes (numeric).
-    a: g2.Vector = 3.0 * g2.e_1 + 4.0 * g2.e_2
-    b: g2.Vector = 1.0 * g2.e_1 + 2.0 * g2.e_2
-    product: MultiVectorBase = a * b
-    assert product.r_vector_part(_DOT_GRADE) == a.inner_product(b)
-    assert product.r_vector_part(_WEDGE_GRADE) == a.outer_product(b)
-
-
-def test_fixed_grade_equals_canonical_g3_generated() -> None:
-    a: g3.Vector = 1.0 * g3.e_1 + 2.0 * g3.e_2 + 3.0 * g3.e_3
-    b: g3.Vector = 4.0 * g3.e_1 + 5.0 * g3.e_2 + 6.0 * g3.e_3
-    product: MultiVectorBase = a * b
-    assert product.r_vector_part(_DOT_GRADE) == a.inner_product(b)
-    assert product.r_vector_part(_WEDGE_GRADE) == a.outer_product(b)

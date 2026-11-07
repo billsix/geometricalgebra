@@ -111,13 +111,12 @@ def test_known_scale_values(cls: type[MultiVectorBase]) -> None:
     assert uniform_scale(2.0)(v).isclose(vec(cls, 6, 8), rel_tol=1e-5, abs_tol=1e-5)
 
 
-def test_nd_scale_preserves_type_and_value() -> None:
-    cls: type[MultiVectorBase]
-    for cls in (Gn, g3.G):
-        v: MultiVectorBase = vec(cls, 1, 1, 1)
-        scaled: MultiVectorBase = scale_non_uniform(2.0, 3.0, 4.0)(v)
-        assert type(scaled) is cls
-        assert scaled.isclose(vec(cls, 2, 3, 4), rel_tol=1e-5, abs_tol=1e-5)
+@pytest.mark.parametrize("cls", [Gn, g3.G], ids=["Gn", "g3.G"])
+def test_nd_scale_preserves_type_and_value(cls: type[MultiVectorBase]) -> None:
+    v: MultiVectorBase = vec(cls, 1, 1, 1)
+    scaled: MultiVectorBase = scale_non_uniform(2.0, 3.0, 4.0)(v)
+    assert type(scaled) is cls
+    assert scaled.isclose(vec(cls, 2, 3, 4), rel_tol=1e-5, abs_tol=1e-5)
 
 
 @pytest.mark.parametrize("cls,coords", DIM_GENERAL)
@@ -358,17 +357,18 @@ def test_linearity_is_a_total_order() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_to_matrix_translate_puts_b_in_last_column() -> None:
-    cls: type[MultiVectorBase]
-    n: int | None
-    for cls, n in ((g3.G, None), (Gn, 3)):
-        m: np.ndarray | sympy.Matrix = to_matrix(translate(vec(cls, 2, 3, 4)), cls, n)
-        assert m.shape == (4, 4)
-        # identity 3x3 linear block
-        assert np.allclose(m[:3, :3], np.eye(3))
-        # translation in the last column
-        assert np.allclose(m[:, 3], [2, 3, 4, 1])
-        assert np.allclose(m[3, :], [0, 0, 0, 1])
+# n is None for g3.G (its DIMENSION fixes it) and explicit for Gn, which has none.
+@pytest.mark.parametrize(("cls", "n"), [(g3.G, None), (Gn, 3)], ids=["g3.G", "Gn"])
+def test_to_matrix_translate_puts_b_in_last_column(
+    cls: type[MultiVectorBase], n: int | None
+) -> None:
+    m: np.ndarray | sympy.Matrix = to_matrix(translate(vec(cls, 2, 3, 4)), cls, n)
+    assert m.shape == (4, 4)
+    # identity 3x3 linear block
+    assert np.allclose(m[:3, :3], np.eye(3))
+    # translation in the last column
+    assert np.allclose(m[:, 3], [2, 3, 4, 1])
+    assert np.allclose(m[3, :], [0, 0, 0, 1])
 
 
 def test_to_matrix_linear_has_zero_translation_column() -> None:

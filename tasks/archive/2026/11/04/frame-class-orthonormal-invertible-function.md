@@ -7,7 +7,7 @@ implemented by the agent.
 **Follow-ups:** `tasks/frame-notebooks-epix.md` (the 2D/3D ePiX notebooks; blocked on the ePiX reset),
 `tasks/lean-frame-class-invertible-function.md` (Lean equivalents; on hold),
 `tasks/reciprocal-frame-hestenes.md` (on hold), `tasks/frame-svd-investigation.md`, and
-`tasks/frame-prefix-blades-graded-zero-seed.md` (a pre-existing bug found along the way).
+`tasks/archive/2026/11/07/frame-prefix-blades-graded-zero-seed.md` (a pre-existing bug found along the way).
 
 ## What was built
 

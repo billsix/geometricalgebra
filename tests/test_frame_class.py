@@ -79,6 +79,19 @@ def frame_3d() -> Frame:
     return Frame([a_3d, b_3d, c_3d])
 
 
+# The map of each general frame under each inverse method, built once per module (the
+# 3D reciprocal vectors take a while to compute symbolically).  The tests pick one by
+# fixture name with request.getfixturevalue.
+@pytest.fixture(scope="module")
+def function_2d(frame_2d: Frame) -> InvertibleFunction[MultiVectorBase]:
+    return frame_2d.to_invertible_function()
+
+
+@pytest.fixture(scope="module")
+def function_2d_peel(frame_2d: Frame) -> InvertibleFunction[MultiVectorBase]:
+    return frame_2d.to_invertible_function(inverse_method="peel")
+
+
 @pytest.fixture(scope="module")
 def function_3d(frame_3d: Frame) -> InvertibleFunction[MultiVectorBase]:
     return frame_3d.to_invertible_function()
@@ -226,65 +239,79 @@ def test_non_frame_raises() -> None:
 # --- to_invertible_function --------------------------------------------------
 
 
-def test_forward_sends_basis_to_frame_2d(frame_2d: Frame) -> None:
-    f: InvertibleFunction[MultiVectorBase] = frame_2d.to_invertible_function()
-    assert f(1 * e_1) == a_2d
-    assert f(1 * e_2) == b_2d
+@pytest.mark.parametrize(
+    ("function_name", "basis", "frame_vectors"),
+    [
+        ("function_2d", [1 * e_1, 1 * e_2], [a_2d, b_2d]),
+        ("function_3d", [1 * e_1, 1 * e_2, 1 * e_3], [a_3d, b_3d, c_3d]),
+    ],
+    ids=["2d", "3d"],
+)
+def test_forward_sends_basis_to_frame(
+    function_name: str,
+    basis: list[Gn],
+    frame_vectors: list[Gn],
+    request: pytest.FixtureRequest,
+) -> None:
+    """``f(e_i) == v_i`` for every basis vector, and the map is tagged linear."""
+    f: InvertibleFunction[MultiVectorBase] = request.getfixturevalue(function_name)
+    assert [f(e) for e in basis] == frame_vectors
     assert f.linearity == Linearity.LINEAR
 
 
-def test_forward_sends_basis_to_frame_3d(
-    function_3d: InvertibleFunction[MultiVectorBase],
+@pytest.mark.parametrize(
+    ("function_name", "x"),
+    [
+        ("function_2d", x_2d),
+        ("function_2d_peel", x_2d),
+        ("function_3d", x_3d),
+        ("function_3d_peel", x_3d),
+    ],
+    ids=["2d-reciprocal", "2d-peel", "3d-reciprocal", "3d-peel"],
+)
+def test_composed_round_trip_is_identity_symbolic(
+    function_name: str, x: Gn, request: pytest.FixtureRequest
 ) -> None:
-    assert [function_3d(e) for e in (1 * e_1, 1 * e_2, 1 * e_3)] == [a_3d, b_3d, c_3d]
-
-
-@pytest.mark.parametrize("inverse_method", INVERSE_METHODS)
-def test_composed_round_trip_is_identity_2d_symbolic(
-    frame_2d: Frame, inverse_method: Literal["reciprocal", "peel"]
-) -> None:
-    """``(f⁻¹ ∘ f)(x) == x`` and ``(f ∘ f⁻¹)(x) == x`` for a symbolic ``x``, composed
-    with the library's ``@`` (the maintainer's requirement, 2026-11-04), under both
-    inverse methods."""
-    f: InvertibleFunction[MultiVectorBase] = frame_2d.to_invertible_function(
-        inverse_method=inverse_method
-    )
-    assert (inverse(f) @ f)(x_2d) == x_2d
-    assert (f @ inverse(f))(x_2d) == x_2d
-
-
-@pytest.mark.parametrize("function_name", ["function_3d", "function_3d_peel"])
-def test_composed_round_trip_is_identity_3d_symbolic(
-    function_name: str, request: pytest.FixtureRequest
-) -> None:
-    """The 3D round trip, under the reciprocal (default) and the peel inverse."""
+    """``(f⁻¹ ∘ f)(x) == x`` and ``(f ∘ f⁻¹)(x) == x`` for a symbolic ``x`` and a
+    general symbolic frame, composed with the library's ``@`` (the maintainer's
+    requirement, 2026-11-04), under both inverse methods."""
     f: InvertibleFunction[MultiVectorBase] = request.getfixturevalue(function_name)
-    assert (inverse(f) @ f)(x_3d) == x_3d
-    assert (f @ inverse(f))(x_3d) == x_3d
+    assert (inverse(f) @ f)(x) == x
+    assert (f @ inverse(f))(x) == x
 
 
-@pytest.mark.parametrize("inverse_method", INVERSE_METHODS)
-def test_composed_round_trip_concrete_frames_symbolic_input(
-    inverse_method: Literal["reciprocal", "peel"],
-) -> None:
-    """A concrete oblique frame with a symbolic input, on the graded types."""
-    x_1, x_2, x_3 = sympy.symbols("x_1 x_2 x_3")
-    x_2d_graded: g2.Vector = x_1 * g2.e_1 + x_2 * g2.e_2
-    f_2d: InvertibleFunction[MultiVectorBase] = Frame(
-        [2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2]
-    ).to_invertible_function(inverse_method=inverse_method)
-    assert (inverse(f_2d) @ f_2d)(x_2d_graded) == x_2d_graded
-    assert (f_2d @ inverse(f_2d))(x_2d_graded) == x_2d_graded
-    x_3d_graded: g3.Vector = x_1 * g3.e_1 + x_2 * g3.e_2 + x_3 * g3.e_3
-    f_3d: InvertibleFunction[MultiVectorBase] = Frame(
+# Concrete oblique frames on the graded types, each with a symbolic input vector.
+x_1, x_2, x_3 = sympy.symbols("x_1 x_2 x_3")
+GRADED_FRAMES_AND_INPUTS: list[tuple[list[MultiVectorBase], MultiVectorBase]] = [
+    (
+        [2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2],
+        x_1 * g2.e_1 + x_2 * g2.e_2,
+    ),
+    (
         [
             2 * g3.e_1 + 0 * g3.e_2 + 1 * g3.e_3,
             1 * g3.e_1 + 3 * g3.e_2 + 0 * g3.e_3,
             1 * g3.e_1 + 1 * g3.e_2 + 4 * g3.e_3,
-        ]
-    ).to_invertible_function(inverse_method=inverse_method)
-    assert (inverse(f_3d) @ f_3d)(x_3d_graded) == x_3d_graded
-    assert (f_3d @ inverse(f_3d))(x_3d_graded) == x_3d_graded
+        ],
+        x_1 * g3.e_1 + x_2 * g3.e_2 + x_3 * g3.e_3,
+    ),
+]
+
+
+# Two stacked parametrize decorators run every combination: 2 frames x 2 methods.
+@pytest.mark.parametrize("inverse_method", INVERSE_METHODS)
+@pytest.mark.parametrize(("vectors", "x"), GRADED_FRAMES_AND_INPUTS, ids=["g2", "g3"])
+def test_composed_round_trip_concrete_frames_symbolic_input(
+    vectors: list[MultiVectorBase],
+    x: MultiVectorBase,
+    inverse_method: Literal["reciprocal", "peel"],
+) -> None:
+    """A concrete oblique frame with a symbolic input, on the graded types."""
+    f: InvertibleFunction[MultiVectorBase] = Frame(vectors).to_invertible_function(
+        inverse_method=inverse_method
+    )
+    assert (inverse(f) @ f)(x) == x
+    assert (f @ inverse(f))(x) == x
 
 
 @pytest.mark.parametrize("inverse_method", INVERSE_METHODS)
@@ -318,26 +345,27 @@ def is_zero_vector(value: MultiVectorBase) -> bool:
     return all(is_zero(c) for c in value.to_blade_dict().values())
 
 
-def test_inverse_methods_are_equivalent_2d_symbolic(frame_2d: Frame) -> None:
+# This compares the two methods with each other, so it takes both functions at once
+# rather than parametrizing over the method.
+@pytest.mark.parametrize(
+    ("reciprocal_name", "peel_name", "y"),
+    [
+        ("function_2d", "function_2d_peel", x_2d),
+        ("function_3d", "function_3d_peel", x_3d),
+    ],
+    ids=["2d", "3d"],
+)
+def test_inverse_methods_are_equivalent_symbolic(
+    reciprocal_name: str, peel_name: str, y: Gn, request: pytest.FixtureRequest
+) -> None:
     """The reciprocal and the peel inverse give the same coordinates for a general
     symbolic frame and a general symbolic vector ``y`` (not only for images
     ``f(x)``): ``vⁱ · y`` equals the back-substituted ``x_i``."""
-    by_reciprocal: InvertibleFunction[MultiVectorBase] = (
-        frame_2d.to_invertible_function(inverse_method="reciprocal")
+    by_reciprocal: InvertibleFunction[MultiVectorBase] = request.getfixturevalue(
+        reciprocal_name
     )
-    by_peel: InvertibleFunction[MultiVectorBase] = frame_2d.to_invertible_function(
-        inverse_method="peel"
-    )
-    assert is_zero_vector(by_reciprocal.inverse(x_2d) - by_peel.inverse(x_2d))
-
-
-def test_inverse_methods_are_equivalent_3d_symbolic(
-    function_3d: InvertibleFunction[MultiVectorBase],
-    function_3d_peel: InvertibleFunction[MultiVectorBase],
-) -> None:
-    """3D: the two inverses agree on a general symbolic vector, for a general
-    symbolic frame."""
-    assert is_zero_vector(function_3d.inverse(x_3d) - function_3d_peel.inverse(x_3d))
+    by_peel: InvertibleFunction[MultiVectorBase] = request.getfixturevalue(peel_name)
+    assert is_zero_vector(by_reciprocal.inverse(y) - by_peel.inverse(y))
 
 
 def test_reciprocal_is_the_default_inverse_method() -> None:
