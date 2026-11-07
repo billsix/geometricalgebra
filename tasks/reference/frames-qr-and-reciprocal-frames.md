@@ -207,7 +207,8 @@ it is not an exponent. In the example, `v¹ = 1/2 * e_1 − 1/6 * e_2` and `v² 
 **The 2D picture.** `v¹` must be perpendicular to `v_2`, so it lies along `v_2` turned 90°, with its length
 set so its shadow on `v_1` is 1. A long, thin parallelogram (frame vectors nearly parallel) therefore gives
 long reciprocal vectors: **`|vⁱ|` is 1 divided by the height of `v_i` above the span of the other frame
-vectors.**
+vectors.** Why a dot product with that vector gives the coordinate, as proportional right triangles, is
+"Why one dot product reads off an oblique coordinate: similar right triangles" below.
 
 **The formula, H&S p. 28.** In the book's notation (frame `a_1 … a_n`):
 
@@ -260,6 +261,72 @@ QR connects to it directly:
 - More generally, the reciprocal frame is the columns of `V⁻ᵀ = Q R⁻ᵀ`. Back-substitution builds the
   reciprocal frame one vector at a time, from the end backwards.
 - A corollary: orthogonalizing with `v_i` placed **last** yields `vⁱ` directly as `w/|w|²`.
+
+## Why one dot product reads off an oblique coordinate: similar right triangles
+
+The maintainer asked for this section (William Emerison Six <billsix@gmail.com>, 2026-11-07). It explains
+why `x_i = vⁱ · y` works, which is what `Frame.to_invertible_function(inverse_method="reciprocal")` and
+`reciprocal_frame` in `src/gacalc/frame.py` rely on. The argument is proportional right triangles. The
+one thing to get right is **which** right angle.
+
+**Setup.** Take a frame `v_1 … v_n` and `y = x_1 * v_1 + … + x_n * v_n`. Fix one coordinate `x_i`. Call
+`H_i` the span of every frame vector except `v_i`: the face of the parallelotope opposite `v_i` (a line in
+2D, a plane in 3D). Let `n̂` be a unit vector perpendicular to `H_i`.
+
+**1. Orthonormal frame.** Drop a perpendicular from the tip of `y` to the line of `e_i`. The leg along
+`e_i` has length `e_i · y`, and that is the coordinate. This is the familiar right triangle with `y` as the
+hypotenuse.
+
+**2. Orthogonal frame, not unit length.** The same triangle, against the line of `v_i`. The shadow of
+`y` on that line is `(v_i · y) / |v_i|` long. `v_i`'s shadow on its own line is `|v_i|`. The coordinate
+is the ratio of the two shadows, `x_i = (v_i · y) / |v_i|²`. This is already a proportional-triangles
+argument: `x_i * v_i` is `v_i` scaled by `x_i`, so every length in its triangle is scaled by `x_i` too.
+
+**3. Oblique frame: the right angle is against the face, not against `v_i`.** Dotting with `v_i` stops
+working, because the other frame vectors are no longer perpendicular to `v_i` and their shadows leak in
+(`y · v_1 = x_1 * (v_1 · v_1) + x_2 * (v_2 · v_1)` in the example below). Measure **heights above
+the face `H_i`** instead, along `n̂`:
+
+- Every term `x_j * v_j` with `j ≠ i` lies inside `H_i`, so it adds no height. The height of `y` is
+  the height of `x_i * v_i` alone: `n̂ · y = x_i * (n̂ · v_i)`.
+- Draw two right triangles, each with its right angle on the face `H_i`. One has `v_i` as its
+  hypotenuse, with leg `n̂ · v_i` (the height of `v_i`). The other has `x_i * v_i` as its hypotenuse, with
+  leg `n̂ · y` (the height of `y`). The two hypotenuses lie on one line, so the angle between hypotenuse
+  and normal is the same in both triangles. The triangles are therefore similar, with ratio `x_i`.
+- So `x_i = (n̂ · y) / (n̂ · v_i)`: **the height of `y` above the face, divided by the height of `v_i`
+  above the face.**
+
+Case 2 is the special case where the face is perpendicular to `v_i`, so `n̂` points along `v_i`. The
+maintainer's intuition, "right triangles are proportional", is correct. In an oblique frame, though, the
+triangles stand on the face of the other vectors, not on `v_i`'s own line.
+
+**4. Fold the division into the vector.** Set `vⁱ = n̂ / (n̂ · v_i)`, the unit normal divided by the height
+of `v_i`. Then `vⁱ · y = (n̂ · y) / (n̂ · v_i) = x_i`, a single dot product. The same construction gives
+`vⁱ · v_i = 1`, and `vⁱ · v_j = 0` for `j ≠ i` (because `v_j` lies in the face). That is eq 3.5,
+`vⁱ · v_j = δⁱ_j`. The length `|vⁱ| = 1 / (n̂ · v_i)` is one divided by the height, the "long, thin
+parallelogram gives long reciprocal vectors" fact in "The relation to Hestenes' reciprocal frame".
+
+**5. Where eq 3.7 does each step.** In `a^k = (−1)^(k−1) (a_1 ∧ … ∧ ǎ_k ∧ … ∧ a_n) A_n⁻¹`, the wedge of
+the others is the face `H_k` as a blade. Its dual (the product with the pseudoscalar) is the normal
+direction `n̂`, so no explicit perpendicular has to be found. Its length divided by `|A_n|` is
+`face / volume = 1 / height`, because a parallelotope's volume is its face times its height. The sign makes
+the height positive. So eq 3.7 builds `n̂ / (n̂ · v_k)` in one product.
+
+**Worked example** (the frame used throughout this doc): `v_1 = 2 * e_1`, `v_2 = 1 * e_1 + 3 * e_2`,
+`y = 3 * e_1 + 3 * e_2`, so `x_1 = x_2 = 1`.
+
+- `x_1`: the face `H_1` is the line of `v_2`, and `3 * e_1 − 1 * e_2` is perpendicular to it (take it
+  unnormalized, since the length cancels in the ratio). The height of `y` is `9 − 3 = 6`, and the height
+  of `v_1` is `6 − 0 = 6`. So `x_1 = 6 / 6 = 1`, and `v¹ = (3 * e_1 − 1 * e_2) / 6 = 1/2 * e_1 − 1/6 * e_2`,
+  as eq 3.7 gives.
+- `x_2`: the face `H_2` is the line of `v_1`, the `e_1` axis, with normal `e_2`. The height of `y` is 3,
+  and the height of `v_2` is 3. So `x_2 = 1` and `v² = 1/3 * e_2`.
+
+**The peel is the same triangle, for the last vector.** For `v_k`, the face is `span(v_1 … v_{k-1})`. Its
+unit normal is `w_k / |w_k|`, and the height of `v_k` above it is `|w_k|`. So
+`x_k = (w_k · y) / |w_k|²`, which is the peel's step 1 ("The peel inverse, step by step"). The peel finds
+one face normal by rejection and then shrinks the frame. The reciprocal frame finds every face normal at
+once, so no coordinate waits on another.
 
 ## Floating point
 

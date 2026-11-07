@@ -363,6 +363,9 @@ def all_wedged_except_the_kth(
     return functools.reduce(operator.xor, others, _scalar_one(vectors[0]))
 
 
+# Why x_i = a^i · y reads off a coordinate (similar right triangles standing on the
+# face opposite a_i): tasks/reference/frames-qr-and-reciprocal-frames.md, "Why one
+# dot product reads off an oblique coordinate: similar right triangles".
 def reciprocal_frame(
     vectors: Sequence[MultiVectorBase],
 ) -> list[MultiVectorBase]:
@@ -675,6 +678,9 @@ class Frame:
                 start=cls.zero(),
             )
 
+        # Why one dot product per coordinate is enough (similar right triangles):
+        # tasks/reference/frames-qr-and-reciprocal-frames.md, "Why one dot product
+        # reads off an oblique coordinate: similar right triangles".
         def backward_by_reciprocal(y: MultiVectorBase) -> MultiVectorBase:
             MultiVectorBase.require_vector(y, "a frame's map")
             cls: type[MultiVectorBase] = type(y)
