@@ -1,6 +1,6 @@
 # A `ty` gate for the generated modules (`make test-all-dims`)
 
-**Status:** proposed — needs go-ahead (approved in session 2026-11-08; in progress)
+**Status:** in progress — blocked on open question 2 (the fix turned out larger than estimated)
 **Priority:** 3
 **Difficulty:** 3 for the gate alone; ~6 with the fixes it needs to pass
 **Created:** 2026-11-08
@@ -75,6 +75,50 @@ Depends on open question 1.
 
 1. Open question 1 was answered **(a) add the `ty` step and fix the 121 `invalid-method-override` errors so it passes.** (William Emerison Six <billsix@gmail.com>, 2026-11-08.)
 
+## Findings (2026-11-08)
+
+**What the 121 errors are.**
+
+- They come from 15 methods: `_geometric_product`, `__mul__` and `__add__` (12 each); `r_vector_part`,
+  `inner_product` and `dot` (9 each); `wedge`, `outer_product`, `left_contraction`,
+  `right_contraction`, `__xor__`, `__radd__`, `__lt__` and `__gt__` (7 each); `plane_of_rotation` (2).
+- All of them are generated graded overrides whose **return** type differs from the base.
+- `MultiVectorBase` declares every one of these as `-> typing.Self`, and has since the June typing
+  work (`git log -L` on `base.py`).
+- The graded types legitimately return a different type: `Vector * Vector` is a `Versor`, and
+  `Scalar + Vector` is a `G`. ty 0.0.91 reports each as a Liskov violation (e.g. "element `Vector` of
+  union `Scalar | Vector | Bivector | Versor | G` is not assignable to `Scalar`").
+- The 2026-08-22 cleanup recorded g1–g3 as clean, so this check is newer in `ty`; the code didn't
+  change.
+
+**Experiment: widen the 15 base return types to `MultiVectorBase`** (reverted afterwards).
+
+- The generated modules drop from 121 errors to 1.
+- But the false `Self` claim moves elsewhere: about 120 new errors.
+  - `src/` 14: `base.py`'s `reverse`, `inverse`, `__sub__`, `__rmul__` and `__truediv__` all
+    return compositions typed `Self`; `gn.py`; and `transforms.py`, whose generic `translate(b)` is
+    typed `V → V`.
+  - `tests/` 41, mostly `x: Gn = a * b` assignments in `test_multivector.py`.
+  - `tools/` 45, nearly all in `gen_specialized.py`.
+- `transforms.py`'s generic typing is the deep one. `V → V` is genuinely false for the graded
+  types: `Scalar + Vector` is a `G`.
+
+So option (a) as approved is a typing redesign of the base and transforms layers, not a generator
+fix. That is about D8, not the D6 estimated.
+
 ## Open questions
 
-None.
+1. *(answered: (a), gate and fix; see Decisions.)*
+2. **Given the findings above, which fix?**
+   - (a1) Widen the 15 base return types to `MultiVectorBase` and fix the cascade: about 120 sites,
+     including re-typing `transforms.py`'s generic `V → V` factories and adding `Self`-typed
+     overrides on `Gn` (~D8). The type claims become true everywhere.
+   - (a2) Keep `-> Self` as the base contract, which holds for the full representations `Gn`/`G`.
+     Each generated graded override that returns a narrower or different type gets a narrow
+     `# ty: ignore[invalid-method-override]`, with the reason at the site; the graded types return
+     the resolved product type on purpose (`tasks/reference/generated-product-typing.md`). Then add
+     the `ty` gate, so any *other* error fails it (~D3). Park (a1) as its own task.
+
+   Recommendation: (a2) now, with (a1) parked. The gate starts protecting g1–g5 today, the
+   suppression is explicit and explained at each site rather than a hidden baseline, and the
+   redesign gets its own decision.
