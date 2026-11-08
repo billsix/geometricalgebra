@@ -63,7 +63,12 @@ FILES_TO_MOUNT = -v $(shell pwd):/gacalc/:Z \
                 $(GNUPG_MOUNT) \
                 $(GITCONFIG_MOUNT)
 
-EXPOSE_PORT = -p 8888:8888
+# Publish JupyterLab's port on the host's loopback interface only. jupyter.sh runs
+# the server with no token, no password and XSRF checks off, so a publish on every
+# interface (-p 8888:8888) would let anyone who can reach this host run code in the
+# container, which has the repo mounted read-write. Inside the container the server
+# still listens on 0.0.0.0, which the published port needs.
+EXPOSE_PORT = -p 127.0.0.1:8888:8888
 
 
 X_FLAGS_FOR_CONTAINER = -e DISPLAY=$(DISPLAY) \
