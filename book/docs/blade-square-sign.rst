@@ -235,5 +235,5 @@ This one sign is not a curiosity — the library leans on it constantly. Reversi
 multivector gives its grade-:math:`r` part exactly the sign :math:`(-1)^{\,r * (r-1)/2}`, and
 the exponential map that builds rotors uses it to tell a "turning" plane
 (:math:`e_{12}{}^2 = -1`) apart from a plain stretch. In gacalc it is the little function
-``pseudoscalar_squared_sign(r)``, and it returns precisely the count of flips you just
-learned to do by hand.
+``pseudoscalar_squared_sign(r)``. It returns the sign itself, :math:`+1` or :math:`-1`: the
+count of flips you just learned to do by hand is the exponent.
