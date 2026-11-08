@@ -162,6 +162,10 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   cosine is −1) even though they are geometrically parallel. Behavior change: anti-parallel inputs now
   return `True`. The equivalence `A ∧ B = 0 ⟺ A ∥ B` is machine-checked in
   `proofs/GacalcProofs/Predicates3D.lean`.
+- **`MultiVectorBase.project(onto=B)` returned a higher-grade blade unchanged** when projecting it onto
+  a lower-grade blade: `project(onto=e_1)(e_1 ^ e_2)` gave `e_12`. It now returns 0, because a grade-r
+  blade has no part inside a grade-s blade when r > s. Behavior change for those inputs, in `Gn` and in
+  every generated class; projections with r ≤ s are unchanged.
 
 ## [0.1.0] — 2026-09-28
 

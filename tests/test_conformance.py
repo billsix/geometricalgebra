@@ -475,6 +475,35 @@ def test_project_vector_onto_bivector_and_trivector_3d() -> None:
     assert g3.G.project(onto=g3.G.e_123)(e1 + e3) == e1 + e3
 
 
+@pytest.mark.parametrize(
+    ("blade", "onto"),
+    [
+        pytest.param(gn.e_1 ^ gn.e_2, gn.e_1, id="bivector-onto-vector-2d"),
+        pytest.param(
+            gn.e_1 ^ gn.e_3, 1 * gn.e_1 + 1 * gn.e_2, id="bivector-onto-vector-3d"
+        ),
+        pytest.param(
+            gn.e_1 ^ gn.e_2 ^ gn.e_3, gn.e_1 ^ gn.e_2, id="trivector-onto-bivector"
+        ),
+    ],
+)
+@pytest.mark.parametrize("module", [g2, g3], ids=["g2", "g3"])
+def test_project_higher_grade_onto_lower_grade_is_zero(
+    blade: Gn, onto: Gn, module: ModuleType
+) -> None:
+    # A blade of grade r has no part inside a blade of grade s < r: P_B(A) = 0.
+    # Eq. 2.9c's (A · B) * B⁻¹ is not zero there, so `project` must not use it.
+    dims: int = max(
+        i for key in chain(blade.to_blade_dict(), onto.to_blade_dict()) for i in key
+    )
+    if dims > module.G.DIMENSION:
+        pytest.skip("blade needs more dimensions than this algebra has")
+    assert Gn.project(onto=onto)(blade) == Gn.zero()
+    cls: type[MultiVectorBase] = module.G
+    projected: MultiVectorBase = cls.project(onto=to(cls, onto))(to(cls, blade))
+    assert projected == cls.zero()
+
+
 def test_repr_latex_shows_simplified() -> None:
     # the lazy classes don't eager-simplify, but the display (_repr_latex_) renders
     # the simplified coefficient (sin^2 + cos^2 -> 1), not the raw stored form
