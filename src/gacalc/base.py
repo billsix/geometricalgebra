@@ -1336,8 +1336,10 @@ class MultiVectorBase(abc.ABC):
         The test is implemented with the outer product ``A ∧ B`` — the robust,
         division-free primitive — since ``sin(θ) = 0 ⟺ A ∧ B = 0``.  ``A ∧ B = 0``
         iff A and B span no area, so this holds for both same-direction and
-        anti-parallel vectors. The equivalence ``A ∧ B = 0 ⟺ A ∥ B`` is
-        machine-checked in ``proofs/GacalcProofs/Predicates3D.lean``.
+        anti-parallel vectors. For vectors with ``A ≠ 0``, the equivalence
+        ``A ∧ B = 0 ⟺ B = k * A`` is machine-checked as ``wedge_eq_zero_iff_parallel``
+        in ``proofs/GacalcProofs/Predicates3D.lean`` (and its 2D twin in
+        ``Predicates2D.lean``).
 
         Args:
             other: the other vector.

@@ -160,8 +160,8 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 - **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)
   instead of `cos θ == 1`. The old test wrongly returned `False` for **anti-parallel** vectors (whose
   cosine is −1) even though they are geometrically parallel. Behavior change: anti-parallel inputs now
-  return `True`. The equivalence `A ∧ B = 0 ⟺ A ∥ B` is machine-checked in
-  `proofs/GacalcProofs/Predicates3D.lean`.
+  return `True`. For vectors with `A ≠ 0`, the equivalence `A ∧ B = 0 ⟺ B = k * A` is machine-checked
+  as `wedge_eq_zero_iff_parallel` in `proofs/GacalcProofs/Predicates3D.lean` and `Predicates2D.lean`.
 - **`MultiVectorBase.project(onto=B)` returned a higher-grade blade unchanged** when projecting it onto
   a lower-grade blade: `project(onto=e_1)(e_1 ^ e_2)` gave `e_12`. It now returns 0, because a grade-r
   blade has no part inside a grade-s blade when r > s. Behavior change for those inputs, in `Gn` and in

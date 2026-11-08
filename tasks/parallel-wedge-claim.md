@@ -1,70 +1,56 @@
-# The `A ∧ B = 0 ⟺ A ∥ B` claim: prove the converse, or reword it
+# Prove `a ∧ b = 0 ⟺ a ∥ b` in Lean, so the library's claim is true
 
-**Status:** proposed — needs go-ahead (approved in session 2026-11-08; in progress)
-**Priority:** 3
-**Difficulty:** 1 if reworded; ~5 if the converse is proved
-**Created:** 2026-11-08
+**Created:** 2026-11-08 · **Completed:** 2026-11-08
 **Source:** `tasks/review/2026/11/08/repo-review.md` §7.1, §2.2
+**Decision:** prove the converse rather than reword the claims. William Emerison Six
+<billsix@gmail.com>, 2026-11-08, choosing option (a) over (b).
 
-## BLUF
+## What was wrong
 
-Three places say Lean machine-checks the equivalence `A ∧ B = 0 ⟺ A ∥ B`:
+Three places said Lean machine-checks `A ∧ B = 0 ⟺ A ∥ B`:
 
-- the `is_parallel_to` docstring;
+- the `MultiVectorBase.is_parallel_to` docstring (`src/gacalc/base.py`);
 - `CLAUDE.md` › "Assessment / known issues" item 2;
 - a `CHANGELOG.md` `[Unreleased]` › Fixed entry.
 
-Lean proves only one direction. Done means those claims match what is proved: either the converse
-is proved in Lean, or the three claims are reworded to the direction that is proved.
+`proofs/GacalcProofs/Predicates3D.lean` proved only parallel ⟹ wedge zero (`wedge_parallel_smul`),
+and said so in its header ("The converse … is not yet stated here"). There was nothing in 2D.
 
-## Context
+## What changed
 
-**What is proved.** `proofs/GacalcProofs/Predicates3D.lean` proves `wedge_parallel_smul`: for a
-vector `a` and a real `k`, `a ∧ (k·a) = 0`, i.e. parallel ⟹ wedge zero. Its header (:11) says: "The
-converse (`a ∧ b = 0 ⟹ b = k·a` for `a ≠ 0`) is not yet stated here."
+- **`Predicates3D.lean` (namespace `GacalcProofs.G3`)** gains two theorems, in the object style
+  (`IsVector` hypotheses, coordinates only in the body):
+  - `parallel_of_wedge_eq_zero`: for vectors `a`, `b` with `a ≠ zero`, `wedge a b = zero` implies
+    `∃ k, b = smul k a`. The proof reads the three bivector components of `a ∧ b`, splits on which
+    component of `a` is nonzero, takes `k` as the ratio, and gets each remaining component from one
+    of the equations.
+  - `wedge_eq_zero_iff_parallel`: the `⟺`, from it and `wedge_parallel_smul`.
 
-**Where the claim is made** (re-checked 2026-11-08):
+  The module header now states the equivalence.
+- **`Predicates2D.lean` (namespace `GacalcProofs.G2`)** gains the 2D twins: `wedge_parallel_smul`,
+  `parallel_of_wedge_eq_zero` and `wedge_eq_zero_iff_parallel`. G2 has no `zero` definition, so they
+  use the literal `⟨0, 0, 0, 0⟩`, as `G2.wedge_isVector_isBivector_eq_zero` does. Its header now
+  covers parallelism too.
+- **The three claims** now say what is proved, naming `wedge_eq_zero_iff_parallel`: for vectors with
+  `A ≠ 0`, `A ∧ B = 0 ⟺ B = k * A`.
+- **`tasks/reference/lean-ga-proof-architecture.md`**: the `is_parallel_to` coverage row is now HAS,
+  and the Predicates bullet names the new theorems.
+- **`tasks/lean-frame-coverage.md`** (parked) notes that its planned k = 2 converse is done and can be
+  reused.
 
-- `src/gacalc/base.py`, `is_parallel_to` docstring: "The equivalence ``A ∧ B = 0 ⟺ A ∥ B`` is
-  machine-checked in ``proofs/GacalcProofs/Predicates3D.lean``."
-- `CLAUDE.md` › "Assessment / known issues" item 2: "now uses the wedge-zero test `A ∧ B = 0`,
-  machine-checked in `proofs/GacalcProofs/Predicates3D.lean`."
-- `CHANGELOG.md` `[Unreleased]` › Fixed, the `is_parallel_to` entry, says the same.
+## Forms
 
-**What the converse would take.** In 𝒢₃ with `a ≠ 0`, `a ∧ b = 0` gives three equations,
-`a₁ * b₂ = a₂ * b₁` and so on, and the converse is that they force `b = k * a`. This is the standard
-proof:
+This adds the Lean form of a result the Python already implements and tests. No new symbolic-Python
+cell or book page was added. The book has no parallelism page yet, and the Python `is_parallel_to`
+tests are unchanged.
 
-- pick a nonzero component of `a`, say `a₁`;
-- set `k = b₁ / a₁`;
-- each other component follows from one of the three equations.
+## Verification
 
-In Lean that is a `by_cases` on which component is nonzero, then `field_simp` and `linarith` or
-`linear_combination`. The house style is "Coordinates only when needed": objects in, coordinates in
-the body (`CLAUDE.md`), so the statement is about `{a b : G3} (ha : IsVector a) (hb : IsVector b)
-(h0 : a ≠ 0)`. A 2D twin in `Predicates2D.lean` would be the same argument with two components.
-The new theorem must pass `proofs/check.sh`, including the axioms gate added by
-`tasks/archive/2026/11/08/lean-check-sh-axioms-gate.md`.
-
-## Plan
-
-Depends on open question 1.
-
-- **If (a) prove:**
-  - [ ] State and prove `parallel_of_wedge_eq_zero` (3D, and 2D) in object form.
-  - [ ] Add the `⟺` corollary that combines it with `wedge_parallel_smul`.
-  - [ ] Update `Predicates3D.lean`'s header.
-  - [ ] Check that the three claims now name the right theorems.
-  - [ ] Gate: `bash proofs/check.sh`.
-- **If (b) reword:**
-  - [ ] Change the three claims to "the direction parallel ⟹ `A ∧ B = 0` is machine-checked
-    (`wedge_parallel_smul`); the converse is not yet proved".
-  - [ ] Gate: `ruff`/doctests unaffected.
-
-## Decisions
-
-1. Open question 1 was answered **(a) prove the converse in Lean (3D and 2D), so the three `⟺` claims become true.** (William Emerison Six <billsix@gmail.com>, 2026-11-08.)
-
-## Open questions
-
-None.
+- The proofs were first developed in scratch files with no warnings: each zero component is closed
+  by `simp` with `mul_zero`, and each remaining component by an exact
+  `field_simp`/`linear_combination` step, so no unused-tactic lints are added.
+- `lake build`: success. The only warnings are the pre-existing ones tracked by
+  `tasks/lean-proofs-remove-extras.md`.
+- `bash proofs/check.sh`: "axioms gate: 1031 declarations rest only on propext, Classical.choice,
+  Quot.sound" (1024 before), `[lean] OK`.
+- The `is_parallel_to` doctest passes; `ruff`: clean.

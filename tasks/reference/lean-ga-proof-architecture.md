@@ -629,7 +629,8 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   form, `|a∧b∧c|² = signedVolume²`, `signedArea`.
 - `Normalize.lean` — `normalizeVec` has unit `normSq`/`magnitude` (𝒢₃ vectors; 𝒢₂'s lives in `ProjectionRotation2D`).
 - `Predicates2D.lean` / `Predicates3D.lean` — `dual_perp_dot` (2D); `perp_iff_mul_eq_wedge`
-  (`a·b = 0 ⟺ ab = a∧b`), `wedge_parallel_smul` (3D).
+  (`a·b = 0 ⟺ ab = a∧b`), `wedge_parallel_smul` and its converse, combined as
+  `wedge_eq_zero_iff_parallel` (3D and 2D).
 - `Reflect.lean` (𝒢₃) — `reflectVec d v = proj − reject = 2 * proj − v`, an isometry (across a vector only).
 - `Trig.lean` — `cos_between`/`sin_between`, `lagrange_property`, `cos_sq_add_sin_sq`, both preserved by
   the sandwich (for ANY `u`, `v`). `TrigEquiv.lean` — the angle-form equivalences
@@ -680,7 +681,7 @@ The modules outside this table are in the subsection that follows it.
 | `right_contraction` | HAS | `rightContraction_vec_vec` (Contractions.lean) |
 | `r_vector_part` | HAS | `rVectorPart`, `rVectorPart_idem`, `rVectorPart_complete` (GradeProjection.lean) |
 | `is_orthogonal_to` | HAS | `perp_iff_mul_eq_wedge` (`a·b=0 ⟺ ab=a∧b`) (Predicates3D.lean) |
-| `is_parallel_to` | PARTIAL | `wedge_parallel_smul` (`a ∧ ka = 0`) + the wedge-zero criterion (Predicates3D.lean); the converse (`a ∧ b = 0 ∧ a ≠ 0 ⟹ ∃ k, b = k·a`) is not stated — `tasks/lean-frame-coverage.md`; Python `is_parallel_to` fixed to the wedge-zero form |
+| `is_parallel_to` | HAS | `wedge_eq_zero_iff_parallel` (for vectors with `a ≠ 0`: `a ∧ b = 0 ⟺ ∃ k, b = k*a`), from `wedge_parallel_smul` and its converse `parallel_of_wedge_eq_zero`, in Predicates3D.lean and Predicates2D.lean (2026-11-08); Python `is_parallel_to` uses the wedge-zero form |
 | `reverse` | HAS | `reverse_reverse`, `reverse_mul` (anti-automorphism), `reverse_vec`, `reverse_of_isVector`, `reverse_mul_vec` |
 | `inverse` | PARTIAL | blade/versor cases: `mul_vec_inverse_self`, `mul_biv_inverse_self`, `mul_triv_inverse_self`, `versorFromVectors_mul_inverse`, `inverse_mul`; general mixed-grade owned by existing `lean-general-multivector-inverse` |
 | `dual` | HAS | G2 `dual_vec`; G3 `dual`, `dual_vec` (Cross.lean), `dual_wedge_perp_left`/`_right` |
