@@ -1,50 +1,34 @@
-# `tools/reorder_lean.py`: retire it, or update it, before anyone runs it
+# Retire `tools/reorder_lean.py`
 
-**Status:** proposed — needs go-ahead (approved in session 2026-11-08; in progress)
-**Priority:** 3
-**Difficulty:** 1 to retire; ~3 to update and wire in
-**Created:** 2026-11-08
+**Created:** 2026-11-08 · **Completed:** 2026-11-08
 **Source:** `tasks/review/2026/11/08/repo-review.md` §5.1
+**Decision:** retire the tool, not update it. William Emerison Six <billsix@gmail.com>, 2026-11-08,
+choosing option (a) over (b) "update its PLANs and wire `--check` in".
 
-## BLUF
+## What was wrong
 
-`tools/reorder_lean.py` reorders declarations in the `G1`/`G3` Lean files to a stored PLAN. The
-PLANs date from before the 2026-10-29 teaching-order reorder, so running it would undo that work.
-Done means the tool can no longer mislead: either it is removed, or its PLANs match the files and
-its `--check` runs as a gate.
+`tools/reorder_lean.py` reorders declarations in the `G1`/`G3` Lean files to a stored per-file PLAN.
+It did its one job in `tasks/archive/2026/10/29/reorder-gn-lean-to-teaching-order.md`, then went
+stale:
 
-## Context
+- `G1 --check` reported "WOULD change", because its PLAN was the pre-2026-10-29 order (`mul, wedge,
+  add, smul`). Applying it would have undone the teaching order.
+- The `G3` PLAN aborted on 18 names it didn't place.
+- There was no `G2` PLAN.
+- Nothing ran its `--check`, although its docstring said it "can gate drift".
 
-What the review found (re-check before acting):
+## What changed
 
-- `python tools/reorder_lean.py G1 --check` reports "WOULD change". Its PLAN orders
-  `mul, wedge, add, smul`, but the files now put `add`/`sub`/`neg`/`smul` before `mul`
-  (`tasks/reference/algebra-teaching-order.md` Part III).
-- The `G3` PLAN aborts on 18 names it doesn't place.
-- There is no `G2` PLAN.
-- Its docstring says `--check` "can gate drift", but no `make` target or script runs it.
-- `pyproject.toml` carries a per-file ruff exemption for it (`E501`, `T201`).
-- Its last commit is `2076c75` ("extracted to tools").
+- `git rm tools/reorder_lean.py`. `git log --all -- tools/reorder_lean.py` recovers it.
+- Its per-file ruff exemption (`E501`, `T201`) and the comment above it are gone from
+  `pyproject.toml`.
+- `tasks/reference/lean-ga-proof-architecture.md` no longer tells readers to run its `--check`. It
+  records that the reorder used this one-shot tool, which is now removed. New declarations keep the
+  order by hand, per `CLAUDE.md` and `tasks/reference/algebra-teaching-order.md`.
+- `tasks/annotation-auditor-floor-drift.md` notes that the tool's audit rows are gone.
 
-Its job was done by `tasks/archive/2026/10/29/reorder-gn-lean-to-teaching-order.md`, and nothing
-calls it.
+## Verification
 
-## Plan
-
-Depends on open question 1.
-
-- **If (a) retire:**
-  - [ ] `git rm tools/reorder_lean.py`, and remove its `pyproject.toml` exemption.
-  - [ ] Fix any doc that names it (`git grep reorder_lean`).
-  - [ ] The archived reorder task keeps the history; `git log` recovers the script.
-- **If (b) update:**
-  - [ ] Regenerate the G1/G2/G3 PLANs from the current files.
-  - [ ] Wire `--check` for all three into `proofs/check.sh` or a `make` target.
-
-## Decisions
-
-1. Open question 1 was answered **(a) retire the tool (`git rm`, drop its ruff exemption).** (William Emerison Six <billsix@gmail.com>, 2026-11-08.)
-
-## Open questions
-
-None.
+- `pyproject.toml` parses (`tomllib`), and `ruff check .` is clean.
+- `git grep reorder_lean` outside the archive and the review finds only the two updated docs.
+- `tools/check_annotations.py` now reports 42 findings in 15 files.

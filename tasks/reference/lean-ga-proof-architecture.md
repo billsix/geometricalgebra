@@ -218,9 +218,12 @@ docstring, which introduces the basis before the product (maintainer, 2026-10-28
 files were audited at the same time and already conformed (docstring → def(s) → concept-grouped
 lemmas), so only the core files were reordered. The reorder was content-preserving — only relocations
 and `/-! -/` headers changed, proven by an identical multiset of declaration blocks before vs. after.
-The tool that does it (and verifies that invariant) is **`tools/reorder_lean.py`** — a reusable
-block-reassembler driven by a per-file PLAN; run `python tools/reorder_lean.py G1 G3 --check` to detect
-later within-file drift in those files (G2 was reordered by hand and has no PLAN). Every proof file now
+The reorder was done by a one-shot block-reassembler driven by a per-file PLAN,
+`tools/reorder_lean.py` (G2 was reordered by hand). Its PLANs went stale, and running it would have
+undone the 2026-10-29 teaching-order reorder, so it was removed
+(`tasks/archive/2026/11/08/reorder-lean-tool-stale-plans.md`; `git log --all -- tools/reorder_lean.py`
+recovers it). New declarations keep the order by hand, per `CLAUDE.md` › "Dev workflow" (`make lean`)
+and `tasks/reference/algebra-teaching-order.md`. Every proof file now
 carries `/-! -/` navigation headers; the four that still lacked them — the top of `Rotation2D.lean`
 (which already had two `## ` sections) and all of `Rotation3D`/`StudentTrigForms`/`PlaneRotation3D` —
 were sectioned 2026-10-28 (header lines only, `make lean` green).
