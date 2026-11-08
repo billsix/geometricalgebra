@@ -10,11 +10,13 @@ entrypoint/dotfiles/.emacs.d/elpa
 
 # build artifacts / caches
 .git
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.ruff_cache/
-*.egg-info/
+# Patterns are anchored at the context root (unlike .gitignore), so a cache that
+# appears below the root needs a leading **/.
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.ruff_cache/
+**/*.egg-info/
 build/
 dist/
-.ipynb_checkpoints/
+**/.ipynb_checkpoints/
