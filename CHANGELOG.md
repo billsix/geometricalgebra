@@ -176,6 +176,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 - **The closed-form `Versor.sandwich` turned integer input into floats.** It divided by `|R|²` with
   Python's `/`; `(1 + 1 * Versor.e_12).sandwich(1 * e_1)` now gives the exact `-1 * e_2` rather than
   `Vector(0.0, -1.0)`. Float input still gives floats.
+- **`standardposition.project_sp` / `reject_sp` returned `Vector(nan, nan, nan)` when `b` lay along
+  e₃**, and crashed on `Gn` input. They now raise `ValueError` for a `b` along e₃ or a non-vector
+  input, and read coordinates by blade, so `Gn` input works.
 
 ## [0.1.0] — 2026-09-28
 
