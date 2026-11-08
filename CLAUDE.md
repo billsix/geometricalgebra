@@ -10,6 +10,10 @@ docs live in `README.md` (quick-start + how to generate a new algebra); this fil
 contributor/architecture overview. Design rationale, deep mechanics, and history live in
 `tasks/reference/` (read on demand); this file stays lean and points there.
 
+**Latest repository review:** `tasks/review/2026/11/08/repo-review.md`. It is a frozen,
+dated snapshot of every dimension (the docs, book, code, tests, proofs, build/CI, backlog
+and archive). Re-check a finding against the tree before acting on it.
+
 ## Module layout
 
 The library is split one-concept-per-file so a newcomer can import just the algebra they need:
