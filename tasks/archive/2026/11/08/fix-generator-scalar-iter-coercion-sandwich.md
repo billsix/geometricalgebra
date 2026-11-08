@@ -49,5 +49,5 @@ Three bugs in `tools/gen_specialized.py`, present in every generated `g1`–`g3`
 - `tools/check_doc_regions.py`: OK.
 - **`ty` on the generated g1–g3 + `base.py`:** 121 diagnostics, the same count as on the old
   generator, so no new ones. That pre-existing count is the gap tracked by
-  `tasks/test-all-dims-ty-gate.md`.
+  `tasks/archive/2026/11/08/test-all-dims-ty-gate.md`.
 - `ruff check`/`ruff format`: clean.
