@@ -801,8 +801,12 @@ becomes syntactically `a = a`. Ordering matters — a lemma must be defined abov
 - `proofs/lakefile.toml` sets `autoImplicit = false`: with the default `true`, a typo'd
   identifier in a *statement* becomes a silently bound variable and the theorem may still prove — a
   proof corpus wants the error.
-- The completeness gate in `check.sh` is a `sorry`/`admit` grep over the sources; it would not catch
-  `native_decide`/`axiom` (none present). A `#print axioms` sweep is the gold standard if that ever matters.
+- The completeness gate in `check.sh` has two parts.
+  - A quick `sorry`/`admit` grep over the sources.
+  - The axioms gate, `proofs/scripts/CheckAxioms.lean`. It runs `collectAxioms` on every
+    `GacalcProofs.*` declaration and allows only `propext`/`Classical.choice`/`Quot.sound`, so
+    `sorryAx`, a user `axiom` and `native_decide` all fail it. A probe module with an `axiom` and a
+    `sorry` was confirmed to fail it, on 2026-11-08.
 - Reviewing the corpus: three parallel read-only passes (commit-by-commit statement audit, Python→Lean
   coverage with `tools/derive_lean_algebra.py` parity re-derivation, goals/status from the docs) plus a
   build experiment for any "needed" claim worked well; record: `lean-proof-corpus-review-2026-10-04.md`.

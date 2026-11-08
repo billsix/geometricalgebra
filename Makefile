@@ -335,7 +335,7 @@ test-full: image ## (CI) Run the whole test suite, slow tests included, INSIDE t
 		-c 'set -e; source /venv/bin/activate; cd /gacalc; python tools/gen_specialized.py; python -m pytest'
 
 .PHONY: lean
-lean: image ## Build + verify the Lean proofs (proofs/); nonzero if any proof is incomplete (sorryAx). Needs an image with USE_LEAN=1 (the default full image).
+lean: image ## Build + verify the Lean proofs (proofs/); nonzero if any proof rests on an axiom beyond propext/Classical.choice/Quot.sound (e.g. sorryAx). Needs an image with USE_LEAN=1 (the default full image).
 	@[ "$(USE_LEAN)" = 1 ] || { \
 	  echo 'ERROR: make lean needs the Lean 4 / Mathlib toolchain,'; \
 	  echo '       gated by the build-time flag USE_LEAN (currently USE_LEAN=$(USE_LEAN)).'; \

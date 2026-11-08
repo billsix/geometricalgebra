@@ -2,7 +2,7 @@
 #
 # Same governing principle as checks.yml: CI is a THIN WRAPPER over make -- this
 # job is just `checkout` -> `make lean`, which builds the image (USE_LEAN=1 is the
-# default) and runs proofs/check.sh (lake build + the sorryAx axioms gate) inside
+# default) and runs proofs/check.sh (lake build + the axioms gate) inside
 # it. CONTAINER_CMD auto-detects podman->docker, so the identical target runs on
 # ubuntu-latest and on the maintainer's podman host.
 #

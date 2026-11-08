@@ -334,7 +334,8 @@ over a "run it on your host" instruction.
   full-context ty gate).
 - **`make lean`** — build + verify the Lean 4 / Mathlib proofs in `proofs/` (machine-checked math
   behind the GA derivations; an independent oracle, NOT a check of the Python). Runs `proofs/check.sh`
-  (`lake build` + a `sorry`/`admit` completeness gate) in the container; needs an image with
+  (`lake build`, a `sorry`/`admit` source grep, and the axioms gate `proofs/scripts/CheckAxioms.lean`:
+  only `propext`/`Classical.choice`/`Quot.sound` allowed) in the container; needs an image with
   `USE_LEAN=1` (the default full image). Mathlib is **baked into the image** under `USE_LEAN` so this
   runs offline (adds several GB — Lean images only). See `proofs/README.md`,
   `tasks/reference/lean-for-gacalc.md` (beginner orientation) and `tasks/reference/lean-ga-proof-architecture.md`
