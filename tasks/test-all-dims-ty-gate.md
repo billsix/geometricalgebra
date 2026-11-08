@@ -1,124 +1,91 @@
-# A `ty` gate for the generated modules (`make test-all-dims`)
+# A `ty` gate for the generated modules
 
-**Status:** in progress — blocked on open question 2 (the fix turned out larger than estimated)
-**Priority:** 3
-**Difficulty:** 3 for the gate alone; ~6 with the fixes it needs to pass
-**Created:** 2026-11-08
+**Created:** 2026-11-08 · **Completed:** 2026-11-08
 **Source:** `tasks/review/2026/11/08/repo-review.md` §2.1, §8.1
+**Decisions** (William Emerison Six <billsix@gmail.com>, 2026-11-08):
 
-## BLUF
+1. Add the gate and make it pass, rather than adopting a baseline or correcting the docs only.
+2. Once the findings below showed the full fix was a redesign, take option (a2): keep the base's
+   `-> Self`, suppress narrowly at each conflicting generated override, and add the gate. Park
+   (a1), the redesign, as `tasks/typing-base-return-types-redesign.md`.
 
-Three docs say `make test-all-dims` is "the full-dim + full-context ty gate", but it runs no `ty`:
+## What was wrong
+
+Three docs called `make test-all-dims` "the full-dim + full-context ty gate", but it ran no `ty`:
 
 - `CLAUDE.md` › "Dev workflow";
-- `tasks/reference/design-decisions.md:172`;
-- `tasks/reference/generated-product-typing.md:306`.
+- `tasks/reference/design-decisions.md`;
+- `tasks/reference/generated-product-typing.md`.
 
-So nothing type-checks the generated `g1`–`g5`. On 2026-11-08, `ty` reports **121 errors** in
-`g1`–`g3`, which were clean on 2026-08-22.
+`entrypoint/format.sh`'s `ty check src` respected `.gitignore`, so it skipped the generated
+`g*.py`. Nothing type-checked them. The target also lacked the `: image` prerequisite.
 
-Done means one of two outcomes:
+On 2026-11-08 (ty 0.0.91), the generated g1–g3 had **121 `invalid-method-override` errors**. g1–g3
+had been recorded clean on 2026-08-22, so this check is newer in `ty`.
 
-- a real gate exists and passes;
-- or the docs stop claiming one.
+## Findings
 
-## Context
+**The cause.**
 
-**What the target runs.** `Makefile` `test-all-dims` runs the generator with
-`GACALC_DIMS=1,2,3,4,5` and then `python -m pytest`, and nothing else. It also lacks the `: image`
-prerequisite that every other container target has, and that `CLAUDE.md` › "Continuous integration"
-requires.
+- `MultiVectorBase` declares 15 methods `-> typing.Self`: `_geometric_product`, `__mul__`,
+  `__add__`, `__radd__`, `wedge`/`outer_product`/`__xor__`, `dot`/`inner_product`, the contractions,
+  `__lt__`/`__gt__`, `r_vector_part`, `plane_of_rotation`.
+- The graded types return the resolved product type instead (`Vector * Vector` is a `Versor`).
 
-**Why nothing else catches it.** `entrypoint/format.sh` runs `ty check src`. That respects
-`.gitignore`, which lists the generated `g*.py`, so it never sees them.
+**Widening the 15 base returns to `MultiVectorBase`** (tried, then reverted) cleared the generated
+modules but surfaced about 120 errors elsewhere:
 
-**Measured 2026-11-08** (`ty 0.0.91`, sandbox):
+- `base.py` compositions;
+- `transforms.py`'s `V → V` generics;
+- `Gn`-typed tests.
 
-- `ty check src/gacalc/g1.py src/gacalc/g2.py src/gacalc/g3.py` gives **121 diagnostics, all
-  `error[invalid-method-override]`**.
-- They are generated overrides that `ty` finds incompatible with `MultiVectorBase`: `__mul__`,
-  `_geometric_product`, `__add__` and others, e.g. `g1.py:814` `__mul__`.
-- The count is the same before and after the generator fixes of
-  `tasks/archive/2026/11/08/fix-generator-scalar-iter-coercion-sandwich.md`, so those fixes didn't
-  cause them.
-- `tasks/archive/2026/08/23/generator-ty-clean-high-dim.md` recorded g1/g2/g3 as "fully clean" and
-  fixed 179 diagnostics in g4. It also named `invalid-method-override` as a class it handled for
-  `__radd__`.
-- So either a newer `ty` added the check, or later generator changes reintroduced it. Finding out
-  which is part of the fix.
+That is a typing redesign, about D8. Hence decision 2.
 
-**The manual commands in the docs disagree.** The two reference docs give different file lists;
-only one includes `nbplotutils.py`.
+**How ty matches the base signature:**
 
-Read first: `tasks/reference/generated-product-typing.md` › "High-dimension ty findings", and
-`CLAUDE.md` › "Code generation" (generate, read the real output, then fix the generator).
+- for a base method taking `rhs: Self`, the override conflicts only when its own-type `@overload`
+  returns another type (`Vector.wedge(Vector) -> Bivector`);
+- for an any-operand method, the override conflicts when the implementation returns another type.
 
-## Plan
+A first rule that marked every non-own-type return gave 162 comments, 41 of which ty reported as
+unused. The refined rule gives exactly 121, with none unused.
 
-Depends on open question 1.
+## What changed
 
-- **If (a) gate and fix:**
-  - [ ] Classify the 121 errors by method and cause.
-  - [ ] Fix them in `tools/gen_specialized.py` (or in `base.py`'s signatures, if the base is what's
-    too narrow).
-  - [ ] Add the full-context `ty check` step and `: image` to `test-all-dims`.
-  - [ ] Give `make` a fast g1–g3 variant (`make type-check`, the template's standard read-only gate)
-    and run that in CI.
-  - [ ] Keep one documented command.
-- **If (b) gate only, with a baseline:**
-  - [ ] Add the step with the 121 known errors recorded as a baseline, so new errors fail and the
-    baseline is fixed later.
-- **If (c) docs only:**
-  - [ ] Correct the three docs to say the full-context check is manual, and give the one command.
+- **`tools/astbuild.py`:** `header_comment(text)`, a sentinel decorator that `module_source` rewrites
+  into a trailing `# <text>` on the `def` line. It works like `marker`, because comments can't live
+  in an AST, and ty accepts the comment at the end of a ruff-wrapped header.
+- **`tools/gen_specialized.py`:**
+  - `SELF_OPERAND_RETURN_OVERRIDES` / `ANY_OPERAND_RETURN_OVERRIDES`, which hold the reason;
+  - `mark_graded_return_overrides`, run after the docstring pass. It gives each conflicting graded
+    implementation `# ty: ignore[invalid-method-override]`: 17 in g1, 38 in g2, 66 in g3.
+- **`entrypoint/format.sh`** runs `ty check --no-respect-ignore-files src`, so `make format` (which
+  regenerates g1–g3 first) and CI's `check-format` type-check the generated modules in full context.
+- **`Makefile` `test-all-dims`:** `: image`, plus the same `ty` step after generating g1–g5. Its help
+  text says so.
+- **Tests (`tests/test_generator.py`):**
+  - `test_header_comment_renders_at_the_end_of_the_def_line`;
+  - `test_mark_graded_return_overrides_marks_only_conflicting_overrides`, which checks the own-type
+    overload rule, the any-operand rule, and the full class being skipped.
+- **Docs:**
+  - `CLAUDE.md` (the `format.sh` and `test-all-dims` bullets);
+  - `tasks/reference/design-decisions.md`: the generated-module bullet now says ruff skips them and
+    ty checks them;
+  - `tasks/reference/generated-product-typing.md`: "Verification method", and a new section, "Graded
+    overrides of the base's `-> Self`".
+- **The parked redesign, `tasks/typing-base-return-types-redesign.md`.** It records the
+  maintainer's question, "a Protocol, or `typing.overload`?", investigated with a toy model in
+  `tasks/adhoc/typing-base-return-types-redesign/`:
+  - honest overloads in the base fix the contract;
+  - a `LinearSpace` Protocol makes the transforms' `V → V` true;
+  - a Protocol alone can't type the products.
 
-## Decisions
+## Verification
 
-1. Open question 1 was answered **(a) add the `ty` step and fix the 121 `invalid-method-override` errors so it passes.** (William Emerison Six <billsix@gmail.com>, 2026-11-08.)
-
-## Findings (2026-11-08)
-
-**What the 121 errors are.**
-
-- They come from 15 methods: `_geometric_product`, `__mul__` and `__add__` (12 each); `r_vector_part`,
-  `inner_product` and `dot` (9 each); `wedge`, `outer_product`, `left_contraction`,
-  `right_contraction`, `__xor__`, `__radd__`, `__lt__` and `__gt__` (7 each); `plane_of_rotation` (2).
-- All of them are generated graded overrides whose **return** type differs from the base.
-- `MultiVectorBase` declares every one of these as `-> typing.Self`, and has since the June typing
-  work (`git log -L` on `base.py`).
-- The graded types legitimately return a different type: `Vector * Vector` is a `Versor`, and
-  `Scalar + Vector` is a `G`. ty 0.0.91 reports each as a Liskov violation (e.g. "element `Vector` of
-  union `Scalar | Vector | Bivector | Versor | G` is not assignable to `Scalar`").
-- The 2026-08-22 cleanup recorded g1–g3 as clean, so this check is newer in `ty`; the code didn't
-  change.
-
-**Experiment: widen the 15 base return types to `MultiVectorBase`** (reverted afterwards).
-
-- The generated modules drop from 121 errors to 1.
-- But the false `Self` claim moves elsewhere: about 120 new errors.
-  - `src/` 14: `base.py`'s `reverse`, `inverse`, `__sub__`, `__rmul__` and `__truediv__` all
-    return compositions typed `Self`; `gn.py`; and `transforms.py`, whose generic `translate(b)` is
-    typed `V → V`.
-  - `tests/` 41, mostly `x: Gn = a * b` assignments in `test_multivector.py`.
-  - `tools/` 45, nearly all in `gen_specialized.py`.
-- `transforms.py`'s generic typing is the deep one. `V → V` is genuinely false for the graded
-  types: `Scalar + Vector` is a `G`.
-
-So option (a) as approved is a typing redesign of the base and transforms layers, not a generator
-fix. That is about D8, not the D6 estimated.
-
-## Open questions
-
-1. *(answered: (a), gate and fix; see Decisions.)*
-2. **Given the findings above, which fix?**
-   - (a1) Widen the 15 base return types to `MultiVectorBase` and fix the cascade: about 120 sites,
-     including re-typing `transforms.py`'s generic `V → V` factories and adding `Self`-typed
-     overrides on `Gn` (~D8). The type claims become true everywhere.
-   - (a2) Keep `-> Self` as the base contract, which holds for the full representations `Gn`/`G`.
-     Each generated graded override that returns a narrower or different type gets a narrow
-     `# ty: ignore[invalid-method-override]`, with the reason at the site; the graded types return
-     the resolved product type on purpose (`tasks/reference/generated-product-typing.md`). Then add
-     the `ty` gate, so any *other* error fails it (~D3). Park (a1) as its own task.
-
-   Recommendation: (a2) now, with (a1) parked. The gate starts protecting g1–g5 today, the
-   suppression is explicit and explained at each site rather than a hidden baseline, and the
-   redesign gets its own decision.
+- `ty check --no-respect-ignore-files src`, `tests`, `tools`, `book/docs/notebooks`: all clean, with
+  no unused-suppression warnings.
+- Determinism (regenerated twice, `cmp`) and `tools/check_doc_regions.py`: OK.
+- `ruff check .` and `ruff format --check .`: clean.
+- `pytest -m "not slow"`: 813 passed, 2 skipped.
+- `make help` shows the new `test-all-dims` text. The full `make test-all-dims` (about 1.5 h,
+  generating g5) was not run in this session.

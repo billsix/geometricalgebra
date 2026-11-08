@@ -67,6 +67,33 @@ _MARKER_RE: typing.Final = re.compile(
 )
 
 
+# A trailing comment on a ``def`` line (e.g. a ty suppression comment) is emitted
+# the same way: a sentinel string literal used as the function's last decorator,
+# rewritten by ``module_source`` into ``<def line>  # <text>`` (see
+# ``header_comment``).  ``ast.unparse`` writes the ``def`` header on one line.
+_HEADER_COMMENT_OPEN: str = "@@header-comment@@"
+_HEADER_COMMENT_CLOSE: str = "@@/header-comment@@"
+_HEADER_COMMENT_RE: typing.Final = re.compile(
+    r"^(?P<indent>[ \t]*)@(?:'|\")"
+    + re.escape(_HEADER_COMMENT_OPEN)
+    + r"(?P<text>.*?)"
+    + re.escape(_HEADER_COMMENT_CLOSE)
+    + r"(?:'|\")\n(?P=indent)(?P<header>(?:async )?def .*:)$",
+    re.MULTILINE,
+)
+
+
+def header_comment(text: str) -> ast.expr:
+    """A trailing comment for a ``def`` line, as a sentinel decorator.
+
+    Append the result to a ``FunctionDef``'s ``decorator_list`` (last, so it sits
+    directly above the ``def``); ``module_source`` removes it and writes
+    ``# <text>`` at the end of the ``def`` line.  ``text`` is e.g.
+    ``"ty: ignore[invalid-method-override]"``.
+    """
+    return ast.Constant(_HEADER_COMMENT_OPEN + text + _HEADER_COMMENT_CLOSE)
+
+
 def parse_expr(src: str) -> ast.expr:
     """Parse a source snippet into a single expression node."""
     return ast.parse(src, mode="eval").body
@@ -261,13 +288,15 @@ def module_source(body: list[ast.stmt]) -> str:
     ``ast.Module(body=...)``, whose own stdlib signature demands ``list[stmt]``.
     Widening it here would only move the error one line down.
 
-    Any ``marker`` sentinels are rewritten to ``# doc-region-...`` comments, and
-    each class's ``declaration`` region is closed after its ``class`` line (both
-    a no-op when there are no markers).
+    Any ``marker`` sentinels are rewritten to ``# doc-region-...`` comments, any
+    ``header_comment`` sentinel becomes a trailing comment on its ``def`` line, and
+    each class's ``declaration`` region is closed after its ``class`` line (all
+    no-ops when there are no sentinels).
     """
     module: ast.Module = ast.Module(body=body, type_ignores=[])
     rendered: str = ast.unparse(ast.fix_missing_locations(module))
     commented: str = _MARKER_RE.sub(r"\g<indent># \g<text>", rendered)
+    commented = _HEADER_COMMENT_RE.sub(r"\g<indent>\g<header>  # \g<text>", commented)
     return _insert_declaration_ends(commented)
 
 

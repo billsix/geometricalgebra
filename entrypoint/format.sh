@@ -17,7 +17,9 @@ status=0
 ruff check . --fix || status=1
 ruff format --line-length=88 || status=1
 
-ty check src || status=1
+# --no-respect-ignore-files: the generated g*.py are gitignored, so a plain `ty check src`
+# would skip them; `make format` regenerates g1--g3 first, so this type-checks them too.
+ty check --no-respect-ignore-files src || status=1
 ty check tests || status=1
 ty check tools || status=1
 # The book's companion notebooks are hand-written, fully-typed Python too (CLAUDE.md,

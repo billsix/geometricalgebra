@@ -257,12 +257,14 @@ generate-all: ## Generate ALL algebras incl. g4/g5 (SLOW: g5 ~87 min) -- release
 	GACALC_DIMS=$(ALL_DIMS) python tools/gen_specialized.py
 
 .PHONY: test-all-dims
-test-all-dims: ## (container) full-dim gate: generate g1..g5 then run the suite (SLOW ~1.5h)
+# The full-dim gate: generate every algebra (g1--g5), type-check them in full context
+# (ty over src/ including the gitignored generated modules), then run the suite.
+test-all-dims: image ## (container) full-dim gate: generate g1..g5, ty-check them, run the suite (SLOW ~1.5h)
 	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
 		-v $(CURDIR):/gacalc:Z \
 		--entrypoint /bin/bash \
 		$(CONTAINER_NAME) \
-		-c 'set -e; source /venv/bin/activate; cd /gacalc; GACALC_DIMS=$(ALL_DIMS) python tools/gen_specialized.py; python -m pytest'
+		-c 'set -e; source /venv/bin/activate; cd /gacalc; GACALC_DIMS=$(ALL_DIMS) python tools/gen_specialized.py; ty check --no-respect-ignore-files src; python -m pytest'
 
 # Run INSIDE the container (like `test`): both steps need sympy to regenerate the
 # g*.py, which a bare CI runner lacks -- so `image` is a prerequisite and the work
