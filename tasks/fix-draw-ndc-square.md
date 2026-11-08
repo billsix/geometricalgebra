@@ -1,45 +1,29 @@
 # `nbplotutils.draw_ndc`: draw the square, not a pentagon
 
-**Status:** proposed — needs go-ahead (approved in session 2026-11-08; in progress)
-**Priority:** 3
-**Difficulty:** 1
-**Created:** 2026-11-08
+**Created:** 2026-11-08 · **Completed:** 2026-11-08
 **Source:** `tasks/review/2026/11/08/repo-review.md` §4.1
 
-## BLUF
+## What was wrong
 
-`draw_ndc` is meant to draw the normalized-device-coordinate square [−1, 1]². A stray comma in its
-vertex list makes it draw five points instead. Done means it draws the four corners, its labels sit
-on them, and a test pins it.
+`draw_ndc` (`src/gacalc/nbplotutils.py`) is meant to draw the normalized-device-coordinate square
+[−1, 1]². A stray comma split `(1.0) * ex + (1.0) * ey` into two list items, `(1.0) * ex,` and
+`+(1.0) * ey,`. So:
 
-## Context
+- the polygon had five vertices, (−1,−1), (1,−1), (1,0), (0,1), (−1,1), and was missing the (1,1)
+  corner;
+- the corner labels, drawn by index, sat on the wrong points.
 
-In `src/gacalc/nbplotutils.py`, `draw_ndc`'s vertex list reads:
+## What changed
 
-```python
-(1.0) * ex,
-+(1.0) * ey,
-```
+- The two items are joined into `(1.0) * ex + (1.0) * ey`.
+- **`tests/test_nbplotutils.py`** (new; `nbplotutils` had no tests). Using the `Agg` backend, it
+  draws inside `create_graphs()` and checks that the one `Polygon` added has exactly the corners
+  (−1,−1), (1,−1), (1,1), (−1,1), in order. It fails on the old code and passes on the new. It
+  carries the project's LGPL header.
 
-where `(1.0) * ex + (1.0) * ey,` was meant. The list therefore has five vertices: (−1,−1), (1,−1),
-(1,0), (0,1), (−1,1). So:
+There is no changelog entry: `nbplotutils` is the notebooks' plotting helper, not consumer API.
 
-- the (1,1) corner is missing;
-- the polygon is a pentagon;
-- the four corner labels, drawn by index, land on the wrong points: "(1,1)" sits at (1,0).
+## Verification
 
-`nbplotutils.py` has no tests (review §6.5), so a new `tests/test_nbplotutils.py` holds the
-regression test. It uses matplotlib's non-interactive `Agg` backend. matplotlib comes with the image
-through the `notebooks` extra.
-
-## Plan
-
-- [ ] Join the two list items into `(1.0) * ex + (1.0) * ey`.
-- [ ] Add `tests/test_nbplotutils.py`: after `draw_ndc()`, the axes' polygon has exactly the four
-  corners of [−1, 1]², in order. It carries the LGPL header copied from
-  `tests/test_rotate_90_degrees.py`.
-- [ ] Gate: the new test (fails on the old code), `ruff`, `ty`, `pytest -m "not slow"`.
-
-## Open questions
-
-None.
+- `pytest -m "not slow"`: 811 passed, 2 skipped.
+- `ruff` and `ty`: clean.
