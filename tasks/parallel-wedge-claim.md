@@ -1,6 +1,6 @@
 # The `A ∧ B = 0 ⟺ A ∥ B` claim: prove the converse, or reword it
 
-**Status:** proposed — needs go-ahead (blocked on open question 1)
+**Status:** proposed — needs go-ahead (approved in session 2026-11-08; in progress)
 **Priority:** 3
 **Difficulty:** 1 if reworded; ~5 if the converse is proved
 **Created:** 2026-11-08
@@ -61,9 +61,10 @@ Depends on open question 1.
     (`wedge_parallel_smul`); the converse is not yet proved".
   - [ ] Gate: `ruff`/doctests unaffected.
 
+## Decisions
+
+1. Open question 1 was answered **(a) prove the converse in Lean (3D and 2D), so the three `⟺` claims become true.** (William Emerison Six <billsix@gmail.com>, 2026-11-08.)
+
 ## Open questions
 
-1. **(a) prove the converse** (`a ∧ b = 0` and `a ≠ 0` ⟹ `b = k * a`, in 3D and 2D, ~D5) so the three
-   `⟺` claims become true; or **(b) reword** the three claims to the one direction Lean proves (~D1)?
-   Recommendation: (a). The library's predicate rests on this equivalence, and the proof is a
-   standard case split.
+None.
