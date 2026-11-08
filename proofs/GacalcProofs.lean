@@ -30,3 +30,6 @@ import GacalcProofs.Rotor
 import GacalcProofs.PlaneRotation3D
 import GacalcProofs.StudentTrigForms
 import GacalcProofs.MathlibBridge
+
+import GacalcProofs.ReciprocalFrame2D
+import GacalcProofs.ReciprocalFrame3D
