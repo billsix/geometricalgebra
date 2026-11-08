@@ -321,6 +321,25 @@ def test_mixing_with_gn_coerces_to_gn(n: int, cls: type[MultiVectorBase]) -> Non
     assert mixed == a * b
 
 
+@pytest.mark.parametrize("module", [g1, g2, g3], ids=["g1", "g2", "g3"])
+def test_full_class_with_a_graded_operand_stays_the_full_class(
+    module: ModuleType,
+) -> None:
+    # A graded operand of the same algebra is rebuilt as G, not sent to the slow
+    # Gn reference: G * Vector, G + Vector and G - Vector are all G.
+    g: MultiVectorBase = module.G.e_1
+    v: MultiVectorBase = module.Vector.e_1
+    product: MultiVectorBase = g * v
+    total: MultiVectorBase = g + v
+    difference: MultiVectorBase = g - v
+    assert type(product) is module.G
+    assert type(total) is module.G
+    assert type(difference) is module.G
+    assert product == module.G.from_real(1)
+    assert total == 2 * module.G.e_1
+    assert difference == module.G.zero()
+
+
 @pytest.mark.parametrize("n,cls", [(1, g1.G), (2, g2.G), (3, g3.G)])
 def test_basis_constants(n: int, cls: type[MultiVectorBase]) -> None:
     # Module constants carry the GRADED type of their blade (reversed 2026-08-04:

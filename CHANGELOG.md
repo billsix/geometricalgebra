@@ -166,6 +166,16 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   a lower-grade blade: `project(onto=e_1)(e_1 ^ e_2)` gave `e_12`. It now returns 0, because a grade-r
   blade has no part inside a grade-s blade when r > s. Behavior change for those inputs, in `Gn` and in
   every generated class; projections with r ≤ s are unchanged.
+- **Iterating a generated `Scalar` yielded the `Scalar` itself, and nothing when it was zero.** It now
+  yields its coefficient, like every other type: `list(Scalar.from_real(3)) == [3]` and
+  `list(Scalar.from_real(0)) == [0]`. Behavior change.
+- **The full class `G` sent a graded operand of its own algebra to the slow `Gn` reference.**
+  `G.e_1 * Vector.e_1`, `G.e_1 + Vector.e_1` and `G.e_1 - Vector.e_1` returned a `Gn`; they now return
+  a `G`, as the reverse order (`Vector * G`) already did. Values are unchanged; the result type changes.
+  An operand of another representation (`Gn`, another algebra) still goes through `Gn`.
+- **The closed-form `Versor.sandwich` turned integer input into floats.** It divided by `|R|²` with
+  Python's `/`; `(1 + 1 * Versor.e_12).sandwich(1 * e_1)` now gives the exact `-1 * e_2` rather than
+  `Vector(0.0, -1.0)`. Float input still gives floats.
 
 ## [0.1.0] — 2026-09-28
 

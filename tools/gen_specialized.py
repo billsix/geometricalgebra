@@ -217,10 +217,29 @@ from gacalc.gn import Gn  # noqa: E402
 # ==========================================================================
 
 
+class ReciprocalToCall(ast.NodeTransformer):
+    """``1 / x`` -> ``_reciprocal(x)``.
+
+    ``sympy.sstr`` writes a reciprocal (``Pow(x, -1)``, e.g. a cse'd ``1/|R|²``) as
+    ``1/x``, which Python evaluates as float division, so integer input would come
+    out as floats.  ``gacalc.base._reciprocal`` keeps an ``int`` exact.
+    """
+
+    def visit_BinOp(self, node: ast.BinOp) -> ast.expr:
+        self.generic_visit(node)
+        match node:
+            case ast.BinOp(left=ast.Constant(value=1), op=ast.Div(), right=right):
+                return call("_reciprocal", [right])
+            case _:
+                return node
+
+
 def expr_to_ast(expr: sympy.Expr, rename: Mapping[str, tuple[str, str]]) -> ast.expr:
-    """sympy expression -> AST expression with operand symbols as attribute access."""
+    """sympy expression -> AST expression with operand symbols as attribute access,
+    and every reciprocal ``1 / x`` as the exact ``_reciprocal(x)``."""
     tree: ast.expr = parse_expr(sympy.sstr(expr))
-    return ast.fix_missing_locations(SymbolToAttr(rename).visit(tree))
+    tree = ReciprocalToCall().visit(SymbolToAttr(rename).visit(tree))
+    return ast.fix_missing_locations(tree)
 
 
 # ==========================================================================
@@ -3197,6 +3216,29 @@ def coerce_pair_gn() -> list[ast.stmt]:
     ]
 
 
+def widen_same_algebra_rhs(n: int, full_name: str) -> ast.If:
+    """``if isinstance(rhs, (Scalar, Vector, …)): rhs = G.from_blade_dict(…)``.
+
+    A graded operand of the same algebra is rebuilt as the full class, so the
+    closed form below handles it.  Only an operand of another representation
+    (``Gn``, another algebra) reaches the ``Gn`` fallback after this.
+    """
+    graded: list[str] = [scalar_spec(n).name, *(t.name for t in graded_specs(n))]
+    return ast.If(
+        isinstance_(name_ref("rhs"), [name_ref(g) for g in graded]),
+        [
+            assign(
+                "rhs",
+                call(
+                    attribute(full_name, "from_blade_dict"),
+                    [call(attribute("rhs", "to_blade_dict"))],
+                ),
+            )
+        ],
+        [],
+    )
+
+
 def eq_method(fields: Sequence[str]) -> ast.FunctionDef:
     """The generated simplify-aware ``__eq__`` as nodes.
 
@@ -4458,22 +4500,7 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             defaults=[constant(0.0), constant(0.0)],
             returns=name_ref("bool"),
         ),
-        function_def(
-            "__iter__",
-            [
-                ast.If(
-                    ne_zero(self_scalar_field),
-                    [
-                        ast.Expr(
-                            ast.Yield(
-                                construct(name, [(field_name(()), self_scalar_field)])
-                            )
-                        )
-                    ],
-                    [],
-                )
-            ],
-        ),
+        iter_method([()]),
         function_def(
             "even_part",
             [return_stmt(scalar_const(self_scalar_field))],
@@ -4556,11 +4583,12 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
             [sympy.sympify(result_coeffs.get(b, 0)) for b in blades]
         )
         body: list[ast.stmt] = method_doc_stmts(method) + [
+            widen_same_algebra_rhs(n, name),
             ast.If(
                 not_(isinstance_(name_ref("rhs"), name_ref(name))),
                 coerce_pair_gn() + [return_stmt(cast_self(cross_node))],
                 [],
-            )
+            ),
         ]
         body += [assign(str(t), expr_to_ast(e, rename)) for t, e in replacements]
         pairs: list[tuple[str, ast.expr]] = [
@@ -4602,6 +4630,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
                     ],
                     [],
                 ),
+                widen_same_algebra_rhs(n, name),
                 ast.If(
                     not_(isinstance_(name_ref("rhs"), name_ref(name))),
                     coerce_pair_gn()
@@ -6007,6 +6036,7 @@ from gacalc.base import (
     Real,
     _coef_eq,
     _coerce,
+    _reciprocal,
     _require_canonical_blades,
     _require_float,{operand_import}
 )

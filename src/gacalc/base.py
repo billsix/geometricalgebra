@@ -2636,6 +2636,38 @@ def _coerce[T: MultiVectorBase](x: MultiVectorBase | Real, cls: type[T]) -> T:
             return cls.from_real(x)
 
 
+def _reciprocal(x: Real) -> Real:
+    """``1 / x``, keeping an ``int`` exact.
+
+    The shared reciprocal for the generated closed forms (g1/g2/g3 import it):
+    a ``float`` stays a float, an ``int`` becomes an exact ``sympy.Rational``
+    (so integer input never degrades to a float), and a symbolic value stays
+    symbolic -- the same numeric/exact split as :meth:`MultiVectorBase.inverse`.
+
+    Args:
+        x: the value to invert.
+
+    Returns:
+        Real: ``1 / x``.
+
+    Raises:
+        ZeroDivisionError: if ``x`` is the integer 0.
+
+    Examples:
+        >>> _reciprocal(2)
+        1/2
+        >>> _reciprocal(0.5)
+        2.0
+    """
+    match x:
+        case int():
+            if x == 0:
+                raise ZeroDivisionError("division by zero")
+            return sympy.Rational(1, x)
+        case _:
+            return 1 / x
+
+
 def _require_canonical_blades(blade_coef: Mapping[Blade, object]) -> None:
     """Raise ``ValueError`` on a non-canonical blade key (see ``BladeReal``).
     Only the keys are read, so any blade-keyed mapping qualifies (a ``BladeReal``,

@@ -27,7 +27,9 @@ annotation (scaling goes through ``__rmul__``, which casts internally).
 
 import typing
 from collections.abc import Callable
+from types import ModuleType
 
+import pytest
 import sympy
 
 import gacalc.g1 as g1
@@ -453,3 +455,11 @@ def test_project_vector_onto_bivector_trivector_subtypes() -> None:
     assert g3.Vector.project(onto=g3.Bivector.e_12)(e3) == g3.Vector.zero()
     # g3.Vector onto the trivector (all of 3-space) -> itself
     assert g3.Vector.project(onto=g3.Trivector.e_123)(e1 + e3) == e1 + e3
+
+
+@pytest.mark.parametrize("module", [g1, g2, g3], ids=["g1", "g2", "g3"])
+def test_scalar_iteration_yields_its_coefficient(module: ModuleType) -> None:
+    # Iteration yields coefficient VALUES in blade order, for every type: a
+    # scalar yields its one number, including 0.
+    assert list(module.Scalar.from_real(3)) == [3]
+    assert list(module.Scalar.from_real(0)) == [0]
