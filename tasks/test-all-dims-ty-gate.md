@@ -1,6 +1,6 @@
 # A `ty` gate for the generated modules (`make test-all-dims`)
 
-**Status:** proposed — needs go-ahead (blocked on open question 1)
+**Status:** proposed — needs go-ahead (approved in session 2026-11-08; in progress)
 **Priority:** 3
 **Difficulty:** 3 for the gate alone; ~6 with the fixes it needs to pass
 **Created:** 2026-11-08
@@ -71,12 +71,10 @@ Depends on open question 1.
 - **If (c) docs only:**
   - [ ] Correct the three docs to say the full-context check is manual, and give the one command.
 
+## Decisions
+
+1. Open question 1 was answered **(a) add the `ty` step and fix the 121 `invalid-method-override` errors so it passes.** (William Emerison Six <billsix@gmail.com>, 2026-11-08.)
+
 ## Open questions
 
-1. **Which outcome:**
-   - (a) add the `ty` step and fix the 121 `invalid-method-override` errors so it passes (~D6);
-   - (b) add the step with the 121 recorded as a baseline (~D3);
-   - (c) correct the three docs only (~D1)?
-
-   Recommendation: (a). The point of the gate is that g1–g3 stay clean, and a baseline would keep
-   121 real override mismatches as accepted.
+None.
