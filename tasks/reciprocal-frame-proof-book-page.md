@@ -1,6 +1,6 @@
 # Book page (prose + LaTeX) and notebook for the reciprocal-frame and frame-inverse proofs
 
-**Status:** proposed — needs go-ahead
+**Status:** proposed — needs go-ahead (open questions answered)
 **Priority:** 5
 **Difficulty:** 4
 **Created:** 2026-11-08 (William Emerison Six <billsix@gmail.com>): "make a task for the book page"
@@ -46,8 +46,9 @@ notebook that checks them with gacalc + sympy, both reachable from the toctree, 
    pull the notebook's verification in via doc regions.
 4. Add it to the toctree; run `make docs` and `make check-regions`.
 
-## Open questions
+## Decisions
 
-1. Page placement: (a) a new `book/docs/proof-reciprocal-frame.rst` beside the other `proof-*.rst`
-   pages, linked from `frames-qr.rst`, or (b) a section inside `frames-qr.rst`. Recommend (a), matching
-   the existing proof pages.
+- **Page placement (William Emerison Six <billsix@gmail.com>, 2026-11-08): a new
+  `book/docs/proof-reciprocal-frame.rst`** beside the other `proof-*.rst` pages, linked from
+  `book/docs/frames-qr.rst`. This matches the existing proof pages and leaves `frames-qr.rst` for the
+  maintainer-voice narrative its TODO describes.
