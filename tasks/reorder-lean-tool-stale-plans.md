@@ -1,6 +1,6 @@
 # `tools/reorder_lean.py`: retire it, or update it, before anyone runs it
 
-**Status:** proposed — needs go-ahead (blocked on open question 1)
+**Status:** proposed — needs go-ahead (approved in session 2026-11-08; in progress)
 **Priority:** 3
 **Difficulty:** 1 to retire; ~3 to update and wire in
 **Created:** 2026-11-08
@@ -41,8 +41,10 @@ Depends on open question 1.
   - [ ] Regenerate the G1/G2/G3 PLANs from the current files.
   - [ ] Wire `--check` for all three into `proofs/check.sh` or a `make` target.
 
+## Decisions
+
+1. Open question 1 was answered **(a) retire the tool (`git rm`, drop its ruff exemption).** (William Emerison Six <billsix@gmail.com>, 2026-11-08.)
+
 ## Open questions
 
-1. **(a) retire the tool** (`git rm`, drop its ruff exemption) or **(b) update its PLANs to the current
-   files and wire `--check` in** as a drift gate? Recommendation: (a). It is a finished one-shot
-   codemod, and `CLAUDE.md` already records the order to keep new declarations in.
+None.
