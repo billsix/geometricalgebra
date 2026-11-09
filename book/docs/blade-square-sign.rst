@@ -12,6 +12,10 @@
 Squaring a Blade: The Sign, by Counting Flips
 =============================================
 
+.. note::
+
+   Draft. The prose is agent-drafted; the maintainer's voice pass is pending.
+
 In :doc:`geometric-product` you met the full-angle rotor :math:`R = \cos(\theta) + \sin(\theta) * e_{12}`,
 and along the way a small surprise: the object :math:`e_{12} = e_1 * e_2` **squares to**
 :math:`-1`, exactly like the imaginary unit :math:`i` from precalculus. Why :math:`-1`,

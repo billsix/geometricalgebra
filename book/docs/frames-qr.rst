@@ -1,6 +1,10 @@
 Frames and QR
 =============
 
+.. note::
+
+   Draft. The prose is agent-drafted; the maintainer's voice pass is pending.
+
 ..
    TODO prose (maintainer's voice): frames, their orthogonal set, QR as "orthogonalize, then
    write each vector in the new directions", and the peel inverse. The two notebooks below
