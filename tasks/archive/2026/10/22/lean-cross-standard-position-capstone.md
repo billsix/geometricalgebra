@@ -1,9 +1,6 @@
 # Lean: assemble the CrossStandardPosition step-lemmas into a capstone (cross via reduction = canonical)
 
-**Status:** done — 2026-10-22 (William Emerison Six <billsix@gmail.com>). All three forms delivered;
-`make lean` green (`[lean] OK`); the previously-stranded step-lemmas are all cited now.
-**Priority:** 6 **Difficulty:** 7
-**Created:** 2026-10-03 **Updated:** 2026-10-22 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-03 · **Completed:** 2026-10-22 (William Emerison Six <billsix@gmail.com>)
 
 ## What this was
 
@@ -15,9 +12,12 @@ capstone, and per the standing "Lean + symbolic Python + prose/LaTeX" default, i
 
 ## Decision (2026-10-22, William Emerison Six <billsix@gmail.com>)
 
-GO, and in ALL THREE FORMS (this overrode the task's original "Lean only" recommendation in Q2):
-the Lean capstone (over geometric objects, not free scalars — Q1), a symbolic-Python check, and a
-book page citing the Lean theorem by name.
+GO, and in ALL THREE FORMS: the Lean capstone, a symbolic-Python check, and a book page citing the
+Lean theorem by name. That settled the task's two questions:
+
+1. Objects vs coordinates in the statement → **objects**, as recommended (`cross_via_reduction` is
+   stated over `{a b : G3}` + `IsVector`, angles introduced via `reduceToPlane`).
+2. A Python/notebook companion → **yes**, overriding the task's original "Lean only" recommendation.
 
 ## What was done
 
@@ -46,15 +46,10 @@ theorems by name; wired into `index.rst` + the companion-notebook toctree. The a
 `tasks/reference/reduction-to-standard-position.md` updated (cross capstone no longer "not yet
 assembled").
 
-## Open questions — both resolved by the decision
+## Verification
 
-1. Objects vs coordinates in the statement → **objects** (`cross_via_reduction` is stated over
-   `{a b : G3}` + `IsVector`, angles introduced via `reduceToPlane`, as recommended).
-2. Python/notebook companion wanted? → **yes** (the decision required all three forms).
-
-## Verification note (for the maintainer)
-
-`make lean` was run green this session. The book page + notebook were validated piecewise (ruff/ty/
-annotations, the notebook executed), but a full `make docs` (Sphinx/TeX) was **not** run here — worth
-a `make docs` on the host to confirm `proof-cross.rst` + the notebook render. The new page/notebook
-also join the voice-pass queue in `tasks/proof-projection-book-voice-pass.md`.
+`make lean` was green (`[lean] OK`). The book page + notebook were validated piecewise (ruff/ty/
+annotations, the notebook executed), but a full `make docs` (Sphinx/TeX) was **not** run in this
+session; confirming that `proof-cross.rst` + the notebook render was left to a later host
+`make docs`. The new page/notebook joined the voice-pass queue in
+`tasks/proof-projection-book-voice-pass.md`.

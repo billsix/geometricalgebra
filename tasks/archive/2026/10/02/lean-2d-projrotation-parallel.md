@@ -1,11 +1,8 @@
 # 2D `projRotation` parallel — mirror the 3D rotation-from-project/reject triple in 𝒢₂
 
-**Status:** DONE 2026-10-02
-**Priority:** 7
-**Difficulty:** 3
-**Created:** 2026-10-02 **Updated:** 2026-10-02 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-02 · **Completed:** 2026-10-02 (William Emerison Six <billsix@gmail.com>)
 
-## BLUF
+## Summary
 
 Added a named 𝒢₂ `projRotation` mirroring the 3D triple in `proofs/GacalcProofs/ProjectionRotation.lean`,
 with the degenerate base case made explicit — in 𝒢₂ the `f∧t` plane is the whole space, so
@@ -34,17 +31,17 @@ and for route-equivalence `versorFromVectors_mul_vec_eq`, `reverse_versorFromVec
 √-bearing identity stays confined to `key_reverse_sq` (`|f||t|·R̃² = |R|²·(f t)`) and never expands
 per-coordinate.
 
-## Note on implementation vs. the original plan
+## Implementation note
 
-The original plan expected to cite `Rotation.lean`'s `rot_normSq` / `sandwich_versor_eq_vec_mul_rotor` /
+The task had expected to cite `Rotation.lean`'s `rot_normSq` / `sandwich_versor_eq_vec_mul_rotor` /
 `rotorFromTo_carry` directly. In practice the clean route was `Versor2D`/`Sandwich`/`Projection2D` plus a
 few small in-namespace helpers mirroring the 3D proof's structure — same result, slightly different
-lemma basis. No new mathematics; the 2D case stays the degenerate base case of the 3D construction.
+lemma basis. No new mathematics; the 2D case stayed the degenerate base case of the 3D construction.
 
 ## Cross-references
 
 - `proofs/GacalcProofs/ProjectionRotation.lean` — the 3D triple this mirrors.
 - `tasks/reference/reduction-to-standard-position.md` — the full arc + the "2D specialization" entry.
 - `tasks/reference/lean-ga-proof-architecture.md` — the `Projection2DRotation.lean` inventory entry.
-- `tasks/lean-proof-rotation-from-scratch.md` — the versor-sandwich route (route V); this showed route
+- `tasks/archive/2026/10/04/lean-proof-rotation-from-scratch.md` — the versor-sandwich route (route V); this showed route
   P = route V also holds in 2D.

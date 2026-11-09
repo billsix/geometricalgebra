@@ -1,6 +1,6 @@
 # One shared "must be a vector (grade 1)" check, used everywhere gacalc hand-rolled one
 
-**Done 2026-11-06.** Requested by William Emerison Six <billsix@gmail.com> twice: 2026-10-22 ("there is
+**Completed:** 2026-11-06. Requested by William Emerison Six <billsix@gmail.com> twice: 2026-10-22 ("there is
 some procedure somewhere that ensures the parameters are vectors … call the procedure instead, if it
 makes sense") and 2026-11-04 (reuse an existing check instead of the nested `require_vector` in
 `Frame.to_invertible_function`, and call it out in `CLAUDE.md`). The two task docs were merged on

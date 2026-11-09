@@ -1,9 +1,6 @@
 # Finalize the `exp()` book citation
 
-**Status:** done — 2026-10-22 (William Emerison Six <billsix@gmail.com>).
-**Priority:** 6
-**Difficulty:** 1
-**Created:** 2026-08-14 **Updated:** 2026-10-22 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-08-14 · **Completed:** 2026-10-22 (William Emerison Six <billsix@gmail.com>)
 
 ## What this was
 
@@ -12,7 +9,7 @@ The `exp()` slim-down (subtask 3 of the archived
 citation: the docstring and three reference/proof files cited Dorst, Fontijne & Mann,
 *Geometric Algebra for Computer Science*, §7.4 as a *research recommendation* the maintainer
 had not personally verified, hedged with "the maintainer may not own it — cite a maintainer-owned
-book instead". This task was to settle the anchor once the maintainer had read the geometry.
+book instead". This task settled the anchor once the maintainer had read the geometry.
 
 ## Decision (2026-10-22, William Emerison Six <billsix@gmail.com>)
 
@@ -40,6 +37,6 @@ The durable rationale lives in `tasks/reference/unit-bivector-and-rotors.md` (th
 
 `unit-bivector-and-rotors.md` §6 (line ~239) still carries a Dorst **versor/operators chapter**
 citation hedged "(Reference of record; the maintainer may not own it.)". That is a separate
-citation from the §7.4 exp anchor, so this task's decision did not cover it. If the maintainer
-wants the same ownership hedge dropped there (now that Dorst is accepted as a reference of record),
-it is a one-line follow-up.
+citation from the §7.4 exp anchor, so this task's decision did not cover it. Dropping the same
+ownership hedge there (now that Dorst is accepted as a reference of record) was left to the maintainer
+as a possible one-line follow-up.

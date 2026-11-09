@@ -1,13 +1,6 @@
 # Re-baseline the annotation auditor: classify the rows added since the September sweep
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 6
-**Difficulty:** 3
-**Created:** 2026-10-09 (agent, from a finding in the coordinate-proofs task; go-ahead
-William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-09 (agent, from a finding in the coordinate-proofs task; go-ahead William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-09
 
 `python tools/check_annotations.py` reported 47 rows against a documented 29-row floor; the 18
 extra rows were loop targets and locals in files written after the 2026-09-09 sweep that had
@@ -43,7 +36,3 @@ exemptions (9 `Any`, 2 returns, 1 param, 3 invariant params, 4 locals).
 
 `make format` green (ruff + ty, so every new annotation type-checks); `make test` unaffected (no
 runtime logic changed); `python tools/check_annotations.py` = 32 rows, matching the restated floor.
-
-## Open questions
-
-None.

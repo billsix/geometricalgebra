@@ -1,7 +1,7 @@
 # `prefix_blades` returned zeros on graded `Vector` input (the `A_0 = 1` seed was dropped)
 
 **Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>), found while prototyping
-`tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`. **Done:** 2026-11-07.
+`tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`. **Completed:** 2026-11-07.
 
 ## Outcome
 

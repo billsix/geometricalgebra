@@ -1,14 +1,8 @@
 # Lean sweep: find ℝ-scalar statements that should be geometric-object statements
 
-**Status:** done 2026-10-20 — recon complete; the one clean A-site lifted and verified
-(`make lean` green, sorry-free); the rest classified C/B/borderline per the approved recommendation.
-**Priority:** 6
-**Difficulty:** 5
 **Created:** 2026-10-19 (William Emerison Six <billsix@gmail.com>: "sweep the lean proofs and find
-places where Real numbers are used that really could use geometric objects like g2 and g3")
-**Done:** 2026-10-20 (William Emerison Six <billsix@gmail.com>: "I go with your recommendations")
-
-## BLUF
+places where Real numbers are used that really could use geometric objects like g2 and g3") ·
+**Completed:** 2026-10-20 (William Emerison Six <billsix@gmail.com>: "I go with your recommendations")
 
 Continuation of the 2026-10-04 polynomial-tier object-lift (the house rule "Coordinates only when
 needed / geometric objects in, scalars in the body, geometric objects out"). Walked every `ℝ`-binder
@@ -38,12 +32,12 @@ definitional `vec`/`bivector`/`trivector` unfold leaves (`normSq_vec`, `dot_vec`
 `ProjectionRotation3D`, `Rotation3D`, `Sandwich`, `Versor2D`, `StandardPosition2D`, `TrigEquiv`) —
 the sanctioned pattern, left in place.
 
-**Borderline — listed for a per-site call, NOT converted (recommendation, approved):**
+**Borderline — listed for a per-site call, NOT converted (the agent's recommendation, approved by the maintainer):**
 - `Exp.lean` `expBivectorGeneral (p q r : ℝ)` + `normSq_expBivectorGeneral` + `isRotor_expBivectorGeneral`:
   `(p,q,r)` are a bivector's components and the `def` builds `bivector p q r`. Lifting it means a NEW
   object-level `exp (B : G3) (hB : IsBivector B)` def plus its rotor theorems (new theory, not a
   mechanical statement lift — closer to a new project), and there is no object-level Lean `exp` to lift
-  into yet. Left as-is; revisit if/when an object-level `exp` is wanted.
+  into yet. Left as-is, to revisit if an object-level `exp` is ever wanted.
 - `Projection2D.lean` `vec_wedge_I_eq_zero (x y : ℝ)` / `reject_from_I_eq_zero (x y : ℝ)` and
   `Projection3D.lean` `wedge_reject (a1 a2 a3 : ℝ) (b : G3)`: non-`_coord` scalar-taking theorems that
   *could* take `IsVector` objects, but each is a single-use leaf whose lift buys little.

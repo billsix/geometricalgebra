@@ -1,11 +1,11 @@
 # Lean proof — dot product (2D and 3D), from scratch + equivalence to general
 
+**Completed:** 2026-10-04 (`make lean` green)
 **Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella).
-**Status:** DONE 2026-10-04, archived 2026-10-04 (`make lean` green). **Priority:** 7. **Difficulty:** 5.
 **Durable record:** `tasks/reference/lean-ga-proof-architecture.md` (inventory: `G2.lean`, `G3.lean`,
 `MathlibBridge.lean`; coverage map row `dot`; "Program decisions").
 
-## BLUF
+## Summary
 
 The dot product was proved to be the symmetric part of the geometric product in 2D and 3D, derived via
 the book's rotation methods, and bridged to the general case: the from-scratch `dot` equals Mathlib's
@@ -33,4 +33,4 @@ Cauchy–Schwarz) provably apply to it.
 
 - "Equivalence to the general case" for the dot = the `EuclideanSpace`/`inner` bridge (maintainer,
   2026-10-04: "that sounds perfect"), not merely the coordinate sum.
-- The bridge is a separate module; the constructions stay standalone (decision 2026-09-28).
+- The bridge was a separate module; the constructions stayed standalone (decision 2026-09-28).

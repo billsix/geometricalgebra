@@ -1,14 +1,6 @@
 # Math notation sweep: parentheses for function application, `*` for scalar multiplication, every angle named
 
-**Status:** complete
-**Completed:** 2026-10-09 (archived in its own commit, with the one-shot codemod removed; the
-pre-squash quick-saves "added parenthesis and use * for multiplication" / "tigthen mult without
-spaces" collapse into one at squash)
-**Priority:** 3
-**Difficulty:** 4
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-09
 
 Three notation rules the maintainer set on 2026-10-08 and sharpened on 2026-10-09 — parentheses
 show function application (`cos(θ)`, never `cos θ`); every multiplication, scalar or geometric,
@@ -21,7 +13,7 @@ reference docs, README. The maintainer's review of the first result caught two i
 turned into `*`; the codemod was fixed at the root and the whole span re-audited. `make format`'s
 steps, `make test`, `make lean` and `make docs` passed on the result.
 
-## Context (still true of the repo)
+## Background
 
 - **The rules, their rationale and their exemptions** are `CLAUDE.md` › "Math notation for
   readers" (the book-facing bullet is `tasks/reference/book-outline.md` › "Notation & prose
@@ -73,7 +65,7 @@ steps, `make test`, `make lean` and `make docs` passed on the result.
 multiplies, every angle is named"; the outline gained its bullet. Both quote the rejected
 spellings, hence the markers.
 
-**Discovery.** `tasks/adhoc/math-notation-parens-star-named-angles/discover.sh`, one grep per
+**Discovery.** `discover.sh` (removed at archive; in git history), one grep per
 rule over every reader-facing group; `data/hits-before.txt` held 1079 lines (rule 1: 183,
 rule 3: 40, rule 2 candidates: 856 — a list to read, not a to-do list, because the middle dot is
 usually the dot product). The counts exceeded the filed table because the two tasks archived
@@ -158,7 +150,3 @@ text, Lean code and the prose "cos/sin (§3)"; rule 2's residue is the deliberat
 **Not changed.** The public API and the generated modules (the generator's docstring table was
 edited; the emitted `g*.py` regenerate). No `CHANGELOG` entry: docstring wording, nothing a
 consumer pins. The subscript sweep (archived 2026-10-09) had already run; this one ran on top of it.
-
-## Open questions
-
-None.

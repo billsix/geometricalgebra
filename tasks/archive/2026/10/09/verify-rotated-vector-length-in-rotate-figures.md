@@ -1,12 +1,6 @@
 # Verify the rotated `a` vector is drawn at the same length as the original `a` in the rotate figures
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 4
-**Difficulty:** 2
-**Started:** 2026-10-09
-
-## BLUF
+**Created:** 2026-10-09 · **Completed:** 2026-10-09
 
 **Verified correct — no fix needed.** Every rotate figure draws the rotated `a` with the **same radius
 constant** as the original `a`, so the two are equal length by construction. The rotated point has
@@ -48,7 +42,3 @@ original-vs-rotated `polar` radius:
 
 Read-only — no figure changed, so no re-render was needed. The conclusion is a direct read of the
 `polar(...)` calls plus `git show dcc4ba3:…` on the first version.
-
-## Open questions
-
-None.

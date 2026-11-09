@@ -1,4 +1,6 @@
-# `Frame.to_invertible_function`: a reciprocal-frame inverse, chosen by keyword, as the default (done 2026-11-07)
+# `Frame.to_invertible_function`: a reciprocal-frame inverse, chosen by keyword, as the default 
+
+**Completed:** 2026-11-07
 
 Requested by William Emerison Six <billsix@gmail.com>, 2026-11-07:
 

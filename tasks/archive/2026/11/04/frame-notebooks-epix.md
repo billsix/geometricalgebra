@@ -8,8 +8,8 @@ maintainer's request ("graphically show what's happening at each step"). Impleme
 
 ## What was built
 
-- **The ePiX pin.** The Dockerfile's `EPIX_COMMIT` moved from `ebf3ca6…` to
-  `275adefe5ced0abdba30a5efd443955c8370fb48`, the epix-mirror merge that added the per-figure reset
+- **The ePiX pin.** The Dockerfile's `EPIX_COMMIT` moved from epix-mirror commit `ebf3ca6…` to
+  epix-mirror commit `275adefe5ced0abdba30a5efd443955c8370fb48`, the merge that added the per-figure reset
   (github.com/billsix/epix-mirror `tasks/archive/2026/11/04/reset-global-state-between-figures.md`). It
   was confirmed as `master` on epix-mirror's `github` remote (`git ls-remote`), and the image build
   logged `epix-mirror at 275adef…`.
@@ -59,9 +59,9 @@ maintainer's request ("graphically show what's happening at each step"). Impleme
    file and the CC0 `book/figures/epix/` helpers.
 7. **No `CHANGELOG.md` entry:** the changelog covers the library, and book pages aren't changelogged.
 
-## Verification (2026-11-04, the rebuilt image `b294e77bfbc7`)
+## Verification (2026-11-04, the rebuilt image, image ID `b294e77bfbc7`)
 
-- **Reset, checked on the gacalc side before any notebook** (a one-shot script, `tasks/adhoc/frame-notebooks-epix/verify_epix_reset.py`, removed at archive):
+- **Reset, checked on the gacalc side before any notebook** (a one-shot script, `verify_epix_reset.py`, removed at archive; in git history):
   a plain figure drawn after a red, dashed one that also moved the camera, and a 3D figure drawn after
   the same, each equal the same figure drawn in a fresh process. Both PASS.
 - `tools/render_epix_figures.py`: every existing book figure rendered, none failed.
@@ -80,5 +80,6 @@ maintainer's request ("graphically show what's happening at each step"). Impleme
 - **Optional:** some code lines near 88 columns wrap in the PDF listings (e.g.
   `with scene_2d(lower_left=PEEL_LOWER_LEFT, upper_right=PEEL_UPPER_RIGHT) as fig_step_1:`). The
   pipeline doc's advice is to shorten the cell; it is cosmetic and was left.
-- The full reciprocal frame figure waits on `tasks/reciprocal-frame-hestenes.md` (on hold); only the
-  last reciprocal vector is drawn.
+- The full reciprocal frame figure was left for the reciprocal-frame work
+  (`tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`, done 2026-11-07); these notebooks draw only
+  the last reciprocal vector.

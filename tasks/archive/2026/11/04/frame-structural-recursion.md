@@ -9,7 +9,7 @@ file that's possible to do that for too."
 
 - **The inverse became a structural recursion with no indices.** `to_invertible_function()`'s
   `backward` previously solved the triangular system with `back_substitute(j)`, `range(j + 1, k)`,
-  `coefficients[i][j]`, and `along[j]`. It now calls a nested `peel` over the `(w_i, v_i)` pairs, with
+  `coefficients[i][j]`, and `along[j]`. It was changed to call a nested `peel` over the `(w_i, v_i)` pairs, with
   `case []` / `case [*earlier, (w, v)]` / `case _`. `peel` reads the last coordinate as
   `x_k = (w_k · y) / |w_k|²` (exact, because `w_k` is orthogonal to every earlier `v_i`), subtracts
   `x_k * v_k`, and recurses on the earlier pairs. It reads no coefficient table, and the unit-diagonal
@@ -82,5 +82,6 @@ file that's possible to do that for too."
 
 `CHANGELOG.md` (the existing `[Unreleased]` "Added: `Frame`" entry, amended in place); `CLAUDE.md` (the
 `Frame` module-layout line); `tasks/reference/frames-qr-and-reciprocal-frames.md` (the L0 note, gacalc's
-peel form under "Inverting without row reduction", and the storage section); `tasks/frame-notebooks-epix.md`
-(its Context, and the inverse figure now shows the peel steps).
+peel form under "Inverting without row reduction", and the storage section);
+`tasks/archive/2026/11/04/frame-notebooks-epix.md` (its Context, and the inverse figure showing the
+peel steps).

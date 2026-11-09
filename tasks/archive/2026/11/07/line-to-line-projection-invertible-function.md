@@ -3,15 +3,13 @@
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>): "might there be value in making an
 InvertibleFunction for project, given an from vector and to vector, that throws an ValueError forwards if
 the input isn't on the from vector … and the same idea for the inverse? if we were to make that, could we
-simplify the code we were just making?" · **Done:** 2026-11-07
-
-## BLUF
+simplify the code we were just making?" · **Completed:** 2026-11-07
 
 Projection onto the line of `to`, restricted to the line of `from`, is invertible when the two are not
 perpendicular, so it became `transforms.line_to_line_projection`, an `InvertibleFunction` that raises
 `ValueError` on input off its line in either direction, with `transforms.coordinate_along` as the checked
-reader for a vector's coordinate on a line. Both of `Frame`'s inverses are now the same statement with
-different normals. All 803 tests pass, but the full suite takes 26:38 instead of 12:15. The math and the
+reader for a vector's coordinate on a line. Both of `Frame`'s inverses became the same statement with
+different normals. All 803 tests passed, but the full suite took 26:38 instead of 12:15. The math and the
 timings are in `tasks/reference/frames-qr-and-reciprocal-frames.md`, "The code form: one line-to-line
 projection".
 
@@ -54,7 +52,7 @@ guard `if`s to become one `match` with guarded cases and a total default (done).
 | `test_composed_round_trip_is_identity_symbolic[3d-reciprocal]` | < 20 s | < 20 s | 282 s |
 | `test_coefficients_are_triangular_with_unit_diagonal[frame_3d]` | 70 s | 190 s | 212 s |
 
-Each inverse call now runs `is_orthogonal_to` and `is_parallel_to` and one more projection, and `Gn`
+Each inverse call then ran `is_orthogonal_to` and `is_parallel_to` and one more projection, and `Gn`
 simplifies after each product and inverse. Raised with the maintainer.
 
 ## Gates

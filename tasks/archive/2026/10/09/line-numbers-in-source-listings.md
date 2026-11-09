@@ -1,12 +1,6 @@
 # Show line numbers on every code listing in the book
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 4
-**Difficulty:** 1
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-09
 
 The maintainer wanted every code listing in the book to show line numbers in HTML and PDF, the
 way *Model View Projection* does. One `conf.py` setting does it for the notebook code cells (the
@@ -30,7 +24,3 @@ fight `fancyvrb`) is recorded in the same bullet.
 
 `make docs` green; the rendered notebook pages carry line-number markup in the HTML, and the PDF
 shows numbered cells. (`proof-projection.html` had 71 line-number markers after the change, 0 before.)
-
-## Open questions
-
-None.

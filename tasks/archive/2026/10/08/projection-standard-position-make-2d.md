@@ -1,11 +1,6 @@
 # Make the "projection by reduction to standard position" proof 2D (Lean + book + figures)
 
-**Status:** done — 2026-10-08 (gates green; archived; normalized pre-squash)
-**Priority:** 4
-**Difficulty:** 5
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-08
 
 The reduction-to-standard-position derivation of **projection** — rotate `b` onto the x-axis, keep
 the x-component, rotate back — had been built and machine-checked **only in 𝒢₃** (`StandardPosition.lean`,
@@ -62,7 +57,7 @@ conventions for proof pages"):
 - **Default angle symbol θ.** Replaced `φ` (`\varphi`) with `θ` throughout the prose and the figures
   (`sp2` label + `sp2`/`sp3`/`sp5` comments); recorded "default to θ for a rotation angle" in
   `book-outline.md`.
-- **Filed `tasks/book-rotation-from-vectors-no-angle.md`** (proposed, not started) — a future book
+- **Filed `tasks/archive/2026/10/19/book-rotation-from-vectors-no-angle.md`** (done 2026-10-19) — a book
   section for an angle-free rotate-from-`a`-to-`b`, with the 2D case as the headline (built from the
   geometric product / project / `r(v;θ)`); it records that gacalc already implements this
   (`versor_from_vectors`/`rotor_from_vectors`, `transforms.projection_rotation`/`versor_rotation`; Lean
@@ -79,21 +74,21 @@ conventions for proof pages"):
    This is the book's structural principle (`book-outline.md` §"Two halves: 2D first, 3D second").
 4. **Python standardposition stays 𝒢₃-only for now** — the 2D library path is deferred with the 3D work.
 
-## History (commit chronology, `origin/master..HEAD` — for the maintainer's squash)
+## History (commit chronology)
 
-The maintainer squashes these; this is the harvested record.
+The six quick-save commits below were squashed into `000c759`; their own hashes are on no branch, so they are not cited.
 
-1. `f85a178` *added task* — filed this task (then proposed) with the finding and plan.
-2. `279c84c` *2d projection* — the work: `StandardPosition2D.lean` (the `reject_vec_eq_coord` proof
+1. *added task* — filed this task (then proposed) with the finding and plan.
+2. *2d projection* — the work: `StandardPosition2D.lean` (the `reject_vec_eq_coord` proof
    first attempted with `ext <;> field_simp <;> ring`, which would **not** clear the summed
    `(a₁²+a₂²)⁻¹` denominator regardless of the hypothesis form; replaced with the division-free
    structural proof via `sub_mul`/`mul_assoc`/`mul_vec_inverse_self`), the 2D-lead `proof-projection.rst`,
    the 2D-primary notebook, and the reference-doc harvest; all gates green.
-3. `a518621` *archived* — moved the task doc to `tasks/archive/2026/10/08/`.
-4. `6e59f4c` *updated* — post-archive prose: grounded the rotation in `r(v;θ)`, `R_{from}^{to}` naming,
+3. *archived* — moved the task doc to `tasks/archive/2026/10/08/`.
+4. *updated* — post-archive prose: grounded the rotation in `r(v;θ)`, `R_{from}^{to}` naming,
    compose-not-nest.
-5. `a23f20b` *updated* — wrote the undo step as the explicit inverse of the first rotation.
-6. `d13bb43` *updated* — θ as the default angle (prose + figures), the `book-outline.md` conventions,
+5. *updated* — wrote the undo step as the explicit inverse of the first rotation.
+6. *updated* — θ as the default angle (prose + figures), the `book-outline.md` conventions,
    and the new `book-rotation-from-vectors-no-angle.md` task.
 
 ## Related
@@ -101,5 +96,5 @@ The maintainer squashes these; this is the harvested record.
 - `tasks/reference/reduction-to-standard-position.md` — the durable account (2D + 3D).
 - `tasks/reference/book-outline.md` — the book's structure and the proof-page notation conventions.
 - `tasks/proof-projection-book-voice-pass.md` — the maintainer's remaining (pure) voice pass.
-- `tasks/book-rotation-from-vectors-no-angle.md` — the follow-on angle-free from→to rotation section.
-- `multivariate-math/proofs/crossproduct.tex` (github.com/billsix/multivariate-math) — the archetype.
+- `tasks/archive/2026/10/19/book-rotation-from-vectors-no-angle.md` — the follow-on angle-free from→to rotation section.
+- github.com/billsix/multivariate-math `proofs/crossproduct.tex` — the archetype.

@@ -1,19 +1,19 @@
 # Fold near-duplicate tests into `pytest.mark.parametrize`, and write the technique into the Python standard
 
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>, who asked for it and for it to be done
-in the same session). **Done:** 2026-11-07.
+in the same session). **Completed:** 2026-11-07.
 
 ## Outcome
 
 The survey found test families worth folding, so they were folded, and the technique went into the
-shared Python coding standard (github.com/billsix/runClaudeInContainer
-`tasks/reference/python-coding-standard.md`, section "Tests: parametrize over the variants, don't copy
+shared Python coding standard
+(github.com/billsix/runClaudeInContainer `tasks/reference/python-coding-standard.md`, section "Tests: parametrize over the variants, don't copy
 the test", mirrored byte-identically to github.com/billsix/runCrushInContainer's two copies). The
 gacalc worked examples are in `tasks/reference/python-coding-standard-gacalc.md`. The standard went to
 the shared doc, not the personal overlay in the dotfiles repo, because the rule is portable.
 
-**Discovery.** A one-shot script, `tasks/adhoc/tests-parametrize-variants-and-dimensions/discover.sh`
-(removed at archive, in git history with its `data/` worklog), listed test-name families that collide
+**Discovery.** A one-shot script, `discover.sh` (removed at archive; in git history with its `data/`
+worklog), listed test-name families that collide
 once a variant token (`_2d`, `_3d`, `_gn`, `_g2`, …) is stripped; it found 13. A `git grep` for loops over representations, dimensions and sample values inside
 a test found 7 more.
 

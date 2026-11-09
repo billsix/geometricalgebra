@@ -1,20 +1,15 @@
 # A Hestenes orthogonalize variant using the inverse (not the reverse) — equals rejection exactly
 
-**Status:** done — 2026-10-29. The hypothesis was **confirmed**: the inverse form equals the
-rejection frame exactly. Work commit subject:
-"frame: add make_orthogonal_frame_hestenes_inverse (equals rejection exactly)".
-**Priority:** 5
-**Difficulty:** 4  (new function + an equivalence test; the hypothesis was verified, not assumed)
-**Created:** 2026-10-29 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-29 · **Completed:** 2026-10-29 (William Emerison Six <billsix@gmail.com>)
 
-## BLUF
+Work commit subject: "frame: add make_orthogonal_frame_hestenes_inverse (equals rejection exactly)".
 
 Added `make_orthogonal_frame_hestenes_inverse` (`src/gacalc/frame.py`): a copy of
 `make_orthogonal_frame_hestenes` that uses the **inverse** of the prefix blade where the original
 uses the **reverse** — `c_k := inverse(A_{k-1}) * A_k` instead of `reverse(A_{k-1}) * A_k`. As the
 maintainer expected, this gives the **same directions** as the reverse form but **without the extra
 per-vector scaling**: it equals `make_orthogonal_frame` (rejection) **exactly**, not merely up to a
-positive scalar. Confirmed by two new symbolic tests.
+positive scalar. The hypothesis was confirmed by two new symbolic tests.
 
 ## What was done
 
@@ -52,12 +47,11 @@ invertible blades, so `inverse` is valid (`inverse(1) = 1`, hence `c_1 = v_1` un
 
 Kept all **three** siblings side by side for teaching (rejection / reverse-closed-form /
 inverse-closed-form), not replacing the reverse variant — consistent with how the first two already
-coexisted. The exact-equality test lives here; the reverse variant's tests move to parallelism in
-`tasks/hestenes-orthogonalize-test-parallelism.md`.
+coexisted. The exact-equality test lives here; the reverse variant's tests moved to parallelism in
+`tasks/archive/2026/10/29/hestenes-orthogonalize-test-parallelism.md`.
 
-## Possible follow-on (not in scope — the maintainer asked only for the Python variant)
+## Skipped forms
 
 Per the gacalc standing default "every piece of math comes in three forms", the exact
-`inverse(A_{k-1}) * A_k == w_k` equivalence could later also get a Lean theorem and a book/notebook
-cell. Deliberately skipped here (the request was the Python copy + test); noted rather than silently
-dropped.
+`inverse(A_{k-1}) * A_k == w_k` equivalence could also get a Lean theorem and a book/notebook cell.
+Those were deliberately skipped: the maintainer asked only for the Python copy + test.

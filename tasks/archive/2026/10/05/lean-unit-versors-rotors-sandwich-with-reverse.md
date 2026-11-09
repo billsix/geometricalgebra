@@ -1,15 +1,14 @@
 # Lean: unit-length rotors, so the sandwich can use reverse instead of inverse
 
-**Status:** done 2026-10-05 (gate `[lean] OK`); archived 2026-10-05
-**Priority:** 6 **Difficulty:** 5
-**Created:** 2026-10-03 **Completed:** 2026-10-05 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-03 · **Completed:** 2026-10-05 (William Emerison Six <billsix@gmail.com>); gate `[lean] OK`
 **Harvested to:** `tasks/reference/lean-ga-proof-architecture.md` (the `IsRotor` paragraph of the versor/sandwich
 section, the coverage rows, the "transfer a chain" recipe) and `tasks/reference/unit-bivector-and-rotors.md`
 (§6 vocabulary, §7 the rotor chain, §8 the 2D pedagogy).
-**Follow-ons, all done the same day:** `lean-rot-on-g2-named-components.md`, `python-book-rotor-naming-after-lean.md`,
-`lean-rotor-from-vectors-chain.md`, `python-rotor-from-vectors-lagrange.md` (this directory).
+**Follow-ons, all done the same day:** `tasks/archive/2026/10/05/lean-rot-on-g2-named-components.md`,
+`tasks/archive/2026/10/05/python-book-rotor-naming-after-lean.md`, `tasks/archive/2026/10/05/lean-rotor-from-vectors-chain.md`,
+`tasks/archive/2026/10/05/python-rotor-from-vectors-lagrange.md`.
 
-## BLUF
+## Summary
 
 Added a **rotor** layer to the Lean proofs — `IsRotor R := IsEvenVersor R ∧ normSq R = 1` in both grades, with
 `inverse_eq_reverse_of_isRotor` (`R⁻¹ = R̃`) and the headline `sandwich_eq_reverse_sandwich_of_isRotor`
@@ -17,9 +16,9 @@ Added a **rotor** layer to the Lean proofs — `IsRotor R := IsEvenVersor R ∧ 
 magnitude; **rotor** = unit versor, the sandwich object): the half-angle sandwich object became `Rotation2D.rotor θ`
 and the one-sided full-angle teaching operator became `fullAngleRotor θ`. No versor theorem was removed or weakened.
 
-## Context
+## Background
 
-- Spun off from the ℝ→object sweep (`tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md`, Open Q2).
+- Spun off from the ℝ→object sweep (`tasks/archive/2026/10/04/lean-lift-theorem-statements-to-objects.md`, its open question 2).
   That sweep lifted the `sandwich_preserves_*` family to an object versor `{R} (hR : IsEvenVersor R) (hr : normSq R ≠ 0)`;
   `IsEvenVersor` says nothing about magnitude, so the sandwich had to stay in the inverse form `R v R⁻¹`.
 - For a unit versor the inverse is the reverse, so `R v R⁻¹` becomes the textbook `R v R̃`. The Python package already
@@ -47,7 +46,7 @@ and the one-sided full-angle teaching operator became `fullAngleRotor θ`. No ve
    throwaway name. Five candidates were offered (`fullAngleRotor`, `oneSidedRotor`, `rightRotor`, `complexRotor`,
    `turn`); the maintainer chose **`fullAngleRotor`**, applied also to `rotorFromTo` → `fullAngleRotorFromTo`.
 5. **Python naming was checked after the Lean work, not before** (the maintainer's ordering) — filed as
-   `python-book-rotor-naming-after-lean.md`.
+   `tasks/archive/2026/10/05/python-book-rotor-naming-after-lean.md`.
 
 ## What was done
 
@@ -62,21 +61,21 @@ and the one-sided full-angle teaching operator became `fullAngleRotor θ`. No ve
    `rotor_sandwich_eq_rotation`. Full-angle: `rotor θ` → `fullAngleRotor θ`, `vec_mul_rotor` →
    `vec_mul_fullAngleRotor`, `rotorFromTo(_carry)` → `fullAngleRotorFromTo(_carry)`,
    `sandwich_versor_eq_vec_mul_rotor` → `sandwich_rotor_eq_vec_mul_fullAngleRotor`. Applied in `Rotation2D`,
-   `MathlibBridge`, and the three files whose docstrings cite `sandwich_rotor`; the `Rotation2D` header now explains
+   `MathlibBridge`, and the three files whose docstrings cite `sandwich_rotor`; the `Rotation2D` header was made to explain
    the two-object pedagogy. Docs: `proofs/README.md`, the architecture doc, the corpus review.
 3. `CHANGELOG.md` `[Unreleased]` → Changed, a Lean-only entry.
 
 Gate: `proofs/check.sh` nested against the host image → `[lean] OK`, the edited modules with no warnings. The
-maintainer committed the layer and the rename as two commits (`d7b9727`, `9d834c5`).
+maintainer committed the layer and the rename as two commits, since squashed into `310d692`.
 
 ## A question that became its own task
 
 Reading `G2.vec (rot θ (x, y)).1 (rot θ (x, y)).2`, the maintainer asked what `.1`/`.2` were and why they had no
 names. They were pair projections of a bare `ℝ × ℝ`, because `rot` predated the algebra. Fixed the same day in
-`lean-rot-on-g2-named-components.md`.
+`tasks/archive/2026/10/05/lean-rot-on-g2-named-components.md`.
 
 ## Related
 
 - `tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md` (parent sweep)
 - `tasks/reference/lean-ga-proof-architecture.md`, `tasks/reference/unit-bivector-and-rotors.md`
-- `tasks/lean-rotor-3d-angle-theorem.md` (the 3D angle theorem, started 2026-10-05 from this layer)
+- `tasks/archive/2026/10/05/lean-rotor-3d-angle-theorem.md` (the 3D angle theorem, started 2026-10-05 from this layer)

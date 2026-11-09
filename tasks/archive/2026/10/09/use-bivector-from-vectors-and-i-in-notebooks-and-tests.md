@@ -1,12 +1,6 @@
 # Use `bivector_from_vectors` / `i` in the notebooks and unit tests
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 6
-**Difficulty:** 3
-**Created:** 2026-08-14 **Updated:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-08-14 · **Completed:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
 
 Adopted `bivector_from_vectors` / `i` at the genuine "plane as a means to an end" sites (the only two
 the 2026-08-27 finding verified), and added one teaching cell introducing the helpers. The Gn-narrowing
@@ -46,7 +40,3 @@ with a long trailing comment). Cause: the **host venv ruff is 0.16.9 but the con
 which `make check-format` (container) would have reflowed. Committing the container-canonical form here
 fixes the one affected file; the container `ruff format --check` now reports the tree clean. Root-cause
 guidance: always run the format gate in-container, or bump the host venv ruff to 0.17.0.
-
-## Open questions
-
-None.

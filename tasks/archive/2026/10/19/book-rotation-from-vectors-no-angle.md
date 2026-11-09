@@ -1,121 +1,74 @@
 # Book section: a rotation that takes vector a to vector b, without naming an angle
 
-**Status:** implemented 2026-10-19 — `rotation-from-vectors.rst` + companion notebook written and
-verified (host-side ruff/ty clean, notebook executes to zeros, in-sandbox `make docs` — see Work
-record). Prose carries a `Draft` banner for the maintainer's voice pass.
-**Priority:** 8
-**Difficulty:** 4
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
-**Done by:** William Emerison Six <billsix@gmail.com> (agent, unattended batch), 2026-10-19
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-19 (agent, unattended batch)
 
-## BLUF
+Wrote the book section that presents a rotation defined by a **from-vector and a to-vector** —
+"rotate the direction of :math:`\vec{a}` onto the direction of :math:`\vec{b}`" — with **no angle
+ever named**. The machinery already existed in gacalc (Python and the Lean proofs), so this was a
+write-up, not new math. It is deliberately **not** used in the standard-position projection proof
+(`book/docs/proof-projection.rst`, `tasks/archive/2026/10/08/projection-standard-position-make-2d.md`),
+which is grounded in the angle-based `r(v; θ)` rotation on purpose; this is the complementary "you
+don't even need the angle" story. The prose carries a `Draft` banner for the maintainer's voice pass.
 
-A book idea to pursue **later**: present a rotation defined by a **from-vector and a
-to-vector** — "rotate the direction of :math:`\vec{a}` onto the direction of :math:`\vec{b}`"
-— with **no angle ever named**. The machinery already exists in gacalc (both Python and the
-Lean proofs); this task is only about *writing the book section that teaches it*. It is
-deliberately **not** used in the standard-position projection proof
-(`book/docs/proof-projection.rst`, archived task
-`tasks/archive/2026/10/08/projection-standard-position-make-2d.md`), which is grounded in the
-angle-based `r(v; θ)` rotation on purpose — this is the complementary "you don't even need the
-angle" story, for a later chapter.
+## Why it earned a section
 
-**Do the 2D case first (maintainer, 2026-10-08):** the primary deliverable is a **2D**
-rotate-from-:math:`\vec{a}`-to-:math:`\vec{b}`, **derived from the book's own building
-blocks** — the rotation `r(v; θ)` of `proof-rotate.rst`, projection/rejection, and the
-geometric product — rather than presented as a library call. In the book's 2D-first-then-3D
-structure (`tasks/reference/book-outline.md`) this is a Part I section; the 3D version is the
-later step-up.
+The projection proof needed the angle because it reduces to standard position. The geometric-algebra
+way to rotate "from here to there" never mentions an angle: the geometric product `b a / |b||a|` (or
+the versor from the two vectors) already encodes the rotation that takes one direction to the other.
+Shown side by side with the angle-based rotation of `proof-rotate.rst`, the angle turns out to be
+scaffolding; the vectors are enough.
 
-## The 2D construction (do first), from our own building blocks
+## Decisions
 
-Candidate derivations, all strictly 2D and angle-free, to pick among / sequence when writing:
+- **2D first** (the maintainer, 2026-10-08): the deliverable was a **2D** rotate-from-`a`-to-`b`,
+  **derived from the book's own building blocks** — `r(v; θ)` of `proof-rotate.rst`,
+  projection/rejection, and the geometric product — rather than presented as a library call; a Part I
+  section in the book's 2D-first-then-3D structure (`tasks/reference/book-outline.md`), with 3D as the
+  later step-up.
+- The agent took the task's own recommendations for the two questions it had raised (unattended batch,
+  2026-10-19):
+  1. **Home:** a new page `book/docs/rotation-from-vectors.rst`, a child of `geometric-product.rst`'s
+     toctree (it needs the product), not folded into an existing chapter.
+  2. **Lead derivation:** the geometric-product route — the product of two unit vectors `â * b̂` is the
+     full-angle rotor, and `â * (â * b̂) = b̂` by associativity + `â * â = 1`, no angle named
+     (`uvec_mul_uvec`: `(uvec α)(uvec β) = fullAngleRotor(β − α)`; the vectors supply the cosine and
+     sine directly via `uvec_dot`/`uvec_wedge`). The project/reject route (`projRotation`) was shown
+     second (shorter), and the angle-based `proof-rotate-from-a-to-b` contrasted as "the angle was
+     scaffolding."
+- **Draft banner** (`.. note:: Draft`) on the prose, matching the `levels-of-abstraction` /
+  `vector-addition` voice-pass pattern; the notebook and the cited Lean are not draft.
 
-- **From the geometric product (the cleanest):** for unit vectors :math:`\hat a, \hat b`, the
-  product :math:`\hat a\,\hat b` *is* the full-angle rotor that carries :math:`\hat a` to
-  :math:`\hat b` — right-multiplying by it rotates. This is exactly `uvec_mul_uvec`
-  (`(uvec α)(uvec β) = fullAngleRotor(β − α)`) and `fullAngleRotorFromTo` /
-  `fullAngleRotorFromTo_carry` in `proofs/GacalcProofs/Rotation2D.lean`, and the one-sided
-  2D rotor is the students' first encounter there. No angle is ever named — the two vectors
-  supply the cosine and sine directly (`uvec_dot` / `uvec_wedge`).
-- **From project/reject:** `projRotation f t v` in 𝒢₂
-  (`proofs/GacalcProofs/ProjectionRotation2D.lean`) builds the same rotation from
-  projection/rejection; proven to carry from→to, be an isometry, and equal the versor sandwich.
-- **From `r(v; θ)` (the contrast):** the angle-based rotation needs the angle; showing that the
-  product/project routes give the *same* map without ever naming it is the payoff to highlight.
+## What was done
 
-The Python side for the 2D case: `g2`'s `versor_from_vectors` / `rotor_from_vectors` and
-`transforms.versor_rotation` / `projection_rotation`.
-
-## What already exists (so the section is write-up, not new math)
-
-- **Python (gacalc):**
-  - `MultiVectorBase.versor_from_vectors(from, to)` and `rotor_from_vectors(from, to)`
-    (`src/gacalc/base.py`; specialized in `g2`/`g3`) — the versor / unit-versor that carries
-    `from` to `to`.
-  - `transforms.projection_rotation(from, to)`, `transforms.versor_rotation(from, to)`,
-    `transforms.plane_rotation(a, b)` (`src/gacalc/transforms.py`) — `InvertibleFunction`
-    rotation factories keyed by two vectors, no angle argument.
-- **Lean (machine-checked):** `projRotation f t v` in `proofs/GacalcProofs/ProjectionRotation2D.lean`
-  and `ProjectionRotation3D.lean` — "a general rotation defined from project/reject," proven to
-  carry from→to (`projRotation_carries_from_to`), to be an isometry (`projRotation_isometry`),
-  and to equal the versor sandwich (`projRotation_eq_sandwich`). The durable account is in
-  `tasks/reference/reduction-to-standard-position.md` ("Step 3 — the general rotation from
-  project/reject", "2D specialization").
-- **modelviewprojection** has no distinct construct of its own — it only vendors gacalc's
-  `rotor_from_vectors` (`book/docs/_gacalc_src/base.py`). So this is a gacalc story.
-
-## Why it is worth a section
-
-The projection proof needed the angle because it reduces to standard position. But the
-*geometric-algebra* way to rotate "from here to there" never mentions an angle: the geometric
-product `b a / |b||a|` (or the versor from the two vectors) already encodes the rotation that
-takes one direction to the other. Teaching that — side by side with the angle-based rotation
-of `proof-rotate.rst` — is a payoff moment: the angle was scaffolding; the vectors are enough.
-
-## Decisions (agent, unattended batch, 2026-10-19 — the task's own recommendations, taken)
-
-1. **Home:** a new page `book/docs/rotation-from-vectors.rst`, added as a child of
-   `geometric-product.rst`'s toctree (it needs the product). Not folded into an existing chapter.
-   (Resolves old open question 1 with its recommendation.)
-2. **Lead derivation:** the geometric-product route — the product of two unit vectors `â * b̂` is
-   the full-angle rotor, and `â * (â * b̂) = b̂` by associativity + `â * â = 1`, no angle named.
-   The project/reject route is shown second (shorter), and the angle-based `proof-rotate-from-a-to-b`
-   is contrasted as "the angle was scaffolding." (Resolves old open question 2 with its recommendation.)
-3. **Draft banner** added to the prose (`.. note:: Draft`), matching the recent voice-pass pattern
-   (`levels-of-abstraction` / `vector-addition`); the notebook and the cited Lean are not draft.
-
-## Work record (2026-10-19)
-
-Write-up only, as the BLUF scoped it — no new math. Delivered:
-
-- **Prose:** `book/docs/rotation-from-vectors.rst` — "A Rotation from Two Vectors — No Angle." Wired
-  into `geometric-product.rst`'s nested toctree. References no ePiX figures (none added).
+- **Prose:** `book/docs/rotation-from-vectors.rst` — "A Rotation from Two Vectors — No Angle," wired
+  into `geometric-product.rst`'s nested toctree. No ePiX figures.
 - **Notebook:** `book/docs/notebooks/rotation-from-vectors.py` (percent-format, every binding typed)
-  — checks, symbolically in gacalc: the product of two unit vectors is the rotor
-  (`cos(α−β) − sin(α−β) e₁₂`), the carry `â * (â * b̂) − b̂ == 0`, the versor and projection routes
-  agree, and the rotation carries `frm` onto `(|frm|/|to|) * to`. All four checks executed to the
-  zero vector / equality host-side.
-- **Lean / Python already existed** (cited, not written): `uvec_mul_uvec`, `uvec_dot`, `uvec_wedge`,
+  checks symbolically: the product of two unit vectors is the rotor (`cos(α−β) − sin(α−β) e₁₂`), the
+  carry `â * (â * b̂) − b̂ == 0`, the versor and projection routes agree, and the rotation carries
+  `frm` onto `(|frm|/|to|) * to`.
+- **Cited, not written** (already existed): Lean `uvec_mul_uvec`, `uvec_dot`, `uvec_wedge`,
   `fullAngleRotorFromTo_carry` (`proofs/GacalcProofs/Rotation2D.lean`); `projRotation_carries_from_to`,
-  `projRotation_isometry`, `projRotation_eq_sandwich` (`ProjectionRotation2D.lean`);
-  `versor_from_vectors`/`rotor_from_vectors` (`base.py`), `versor_rotation`/`projection_rotation`
-  (`transforms.py`).
-- **Doc delta:** `tasks/reference/book-outline.md` updated (new page + notebook listed).
+  `projRotation_isometry`, `projRotation_eq_sandwich` (`ProjectionRotation2D.lean`, also
+  `ProjectionRotation3D.lean`); Python `versor_from_vectors`/`rotor_from_vectors` (`base.py`),
+  `versor_rotation`/`projection_rotation`/`plane_rotation` (`transforms.py`). modelviewprojection has no
+  construct of its own (it only vendors gacalc's `rotor_from_vectors`), so this is a gacalc story.
+- **Doc delta:** `tasks/reference/book-outline.md` lists the new page + notebook.
 
-**Gate status:** `ruff check`/`ruff format --check` clean, `ty check book/docs/notebooks` clean,
-`tools/check_annotations.py` reports no row for the new notebook, and the notebook's computations
-were executed on the host (all collapse to zero/equality). The full `make docs` (Sphinx HTML +
-lualatex PDF) was run **in-sandbox against the existing `gacalc:latest` BUILD_DOCS image** via
-`docs.sh`'s own `podman run` (avoiding the `: image` nested rebuild) — see the session report for
-the result; the build is not `-W`, so unresolved cross-refs (if any) are warnings, not errors.
+## Verification
+
+`ruff check`/`ruff format --check` clean, `ty check book/docs/notebooks` clean,
+`tools/check_annotations.py` reported no row for the new notebook, and the notebook's four checks
+executed host-side to the zero vector / equality. The full `make docs` (Sphinx HTML + lualatex PDF) was
+run in-sandbox against the existing `gacalc:latest` BUILD_DOCS image via `docs.sh`'s own `podman run`
+(avoiding the `: image` nested rebuild); its result went to the session report and was not recorded
+here. The build is not `-W`, so unresolved cross-refs would be warnings, not errors.
 
 ## See also
 
-- `tasks/book-proof-rotate-from-a-to-b.md` — the **angle-based** rotate-from-a-to-b proof
-  (reduction-to-standard-position, cos/sin, per-step diagrams), the companion to this angle-free
-  version. That one comes first (right after "Proof: Rotate"); this is the later "you don't even need
-  the angle" payoff.
-- `tasks/reference/reduction-to-standard-position.md` — the proven `projRotation` account.
+- `tasks/archive/2026/10/08/book-proof-rotate-from-a-to-b.md` — the **angle-based** rotate-from-a-to-b
+  proof (reduction to standard position, cos/sin, per-step diagrams), which comes first (right after
+  "Proof: Rotate"); this is the later payoff.
+- `tasks/reference/reduction-to-standard-position.md` — the proven `projRotation` account ("Step 3 — the
+  general rotation from project/reject", "2D specialization").
 - `tasks/reference/transform-and-composable-function-layer.md` — the rotation factories.
 - `tasks/reference/unit-bivector-and-rotors.md` — the versor / rotor math.

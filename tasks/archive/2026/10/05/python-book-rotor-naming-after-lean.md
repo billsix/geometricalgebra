@@ -1,19 +1,18 @@
 # Python + book: check the rotor/versor names against the Lean vocabulary
 
-**Status:** done 2026-10-05 (`make test` 672 passed, format gate green); archived 2026-10-05
-**Priority:** 7 **Difficulty:** 2
-**Created / completed:** 2026-10-05 (William Emerison Six <billsix@gmail.com>) — the follow-on filed by Decision 5 of
-`lean-unit-versors-rotors-sandwich-with-reverse.md` (this directory).
+**Created:** 2026-10-05 · **Completed:** 2026-10-05 (William Emerison Six <billsix@gmail.com>); `make test` 672 passed,
+format gate green. The follow-on filed by Decision 5 of
+`tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md`.
 **Harvested to:** `tasks/reference/unit-bivector-and-rotors.md` §6 (vocabulary) and §8 (the 2D pedagogy in the book).
 
-## BLUF
+## Summary
 
 With Lean on the vocabulary *versor = even, any magnitude; rotor = unit versor, the sandwich object;
 `fullAngleRotor` = the 2D one-sided full-angle teaching operator*, audited the Python package and the book for the
 same words on the same objects. **No public Python name changed** (the package already matched), so there was no
 `CHANGELOG` entry and no version bump; the book, a dozen test names, and several docstrings were brought into line.
 
-## Context
+## Background
 
 - The maintainer's ordering: Python naming is checked **after** the Lean work landed. A pre-check during the Lean
   task had already found the package consistent: class `Versor`; `versor_from_vectors` / `versor_rotation` use the
@@ -33,14 +32,14 @@ same words on the same objects. **No public Python name changed** (the package a
 | tests on `versor_from_vectors` / `versor_rotation` named `test_rotor_*` | — | `test_graded` ×4, `test_transforms` ×3 (+ `rotor_fn`), `test_numeric_magnitude`, `test_plane_rotation`, `test_generator` | **fixed**: renamed to `versor` (`test_rotor_is_complex_2d`/`_quaternion_3d` → `test_versors_are_complex_numbers_2d`/`_quaternions_3d`); this also made `symbolic-equality.md`'s citation `test_versor_sandwich_equals_rotate_*` resolve (it had dangled) |
 | docstrings calling the from-vectors versor a "rotor" | — | `base.py` (`versor_from_vectors` "builds the *rotor*"), `transforms.py` ×3 | **fixed** → versor |
 | "unit rotor" / "rotation rotor" | — | generator → `g2.py`/`g3.py` `reverse`/`magnitude_squared` docstrings | **fixed** → "a rotor (a unit versor)" |
-| `test_unit_bivector_i.py` cited `tasks/reference/unit-bivector-and-versors.md` | — | the file is `…-and-rotors.md` | **fixed** pointer |
+| `test_unit_bivector_i.py` cited a misspelled `unit-bivector-and-versors.md` | — | the real file is `tasks/reference/unit-bivector-and-rotors.md` | **fixed** pointer |
 | exp of a bivector "is a rotor" | `isRotor_expBivector*` | rotor | match (unit by construction) |
 
 Gates, nested against the existing image: the `make test` command (672 passed) and the `make format` command
 (ruff + ty clean). `make docs` was not run (prose-only `.rst`/notebook-markdown edits, no new roles or links); the
-next docs build is the check. Committed by the maintainer in `6ab8028`.
+next docs build is the check. Committed by the maintainer in `ffa4c70`.
 
 ## Related
 
-- `lean-unit-versors-rotors-sandwich-with-reverse.md` (this directory)
+- `tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md`
 - `tasks/reference/unit-bivector-and-rotors.md`

@@ -1,11 +1,6 @@
 # Make the rotate3 figure the same width as its sibling rotate figures
 
-**Status:** done — 2026-10-08 (gates green; normalized pre-squash)
-**Priority:** 6
-**Difficulty:** 3
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-08
 
 The `rotate3` figure (in `book/docs/proof-rotate.rst`, after "rotate by 90°") rendered **much wider**
 than its siblings — its long upper-left label `(\cos(\beta+\pi/2),\ \sin(\beta+\pi/2))` had forced a
@@ -29,10 +24,10 @@ as a column vector so it fits: `rotate3` now renders **537×457 px**, matching t
   (`upper_right.y = 1.9`/`2.1`) to show the result vector reaching up, and their width comes from the
   inherently-wide *sum* label `r(\cos\theta\,\vec{x'}+\sin\theta\,\vec{y'})` (not a coordinate pair that
   column-stacks cleanly). Left as-is: larger by design for the content, and `rotate3` was the flagged
-  egregious outlier. Normalizing `rotate7`/`8` too would be a follow-on (relocate/reformat the
-  result-sum label).
+  egregious outlier. Normalizing `rotate7`/`8` too (relocating/reformatting the result-sum label) was
+  left undone as a possible follow-on.
 
-## History (commit chronology — for the squash)
+## History (commit chronology)
 
 1. `b28faa5` *added tasks* — filed this task (then proposed; committed alongside other task-adds).
 2. `e8e56cc` *made image smaller* — the `rotate3.py` fix + this task doc's done record (on `master`,

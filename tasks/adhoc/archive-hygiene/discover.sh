@@ -22,10 +22,14 @@ docs | xargs rg -n '^#+ (Plan|Open questions)|^\s*- \[ \]|\*\*Status:\*\*|origin
   > "$out/scaffolding.txt"
 # Bare first name (authorship credits are reviewed by hand).
 docs | xargs rg -n '\bBill\b' > "$out/bill.txt"
-# Hex strings that look like short SHAs and do not resolve in this repo.
+# Hex strings that look like short SHAs and are not commits reachable from HEAD. An object that
+# exists but is unreachable (left over from a squash) passes `cat-file -e` locally yet is absent
+# from a fresh clone, so it counts as dead too. Hits that are another repo's SHA, a doc-region
+# hash or an image ID are expected and must be labelled as such in their sentence.
 docs | xargs rg -on '\b[0-9a-f]{7,40}\b' | while IFS=: read -r f l sha; do
   case "$sha" in *[a-f]*) ;; *) continue ;; esac
-  git cat-file -e "$sha^{commit}" 2>/dev/null || echo "$f:$l:$sha"
+  { git cat-file -e "$sha^{commit}" 2>/dev/null && git merge-base --is-ancestor "$sha" HEAD; } \
+    || echo "$f:$l:$sha"
 done > "$out/dead-shas.txt"
 # tasks/... paths cited that do not exist.
 docs | xargs rg -on 'tasks/[A-Za-z0-9_./-]+\.(md|py|sh|txt|lean)' | while IFS=: read -r f l p; do

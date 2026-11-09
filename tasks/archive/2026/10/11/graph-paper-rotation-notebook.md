@@ -1,12 +1,6 @@
 # Rotation as rotating the graph paper (a grid of points, then deformed paper with f(x)=x²)
 
-**Status:** complete
-**Completed:** 2026-10-11
-**Priority:** 5
-**Difficulty:** 6
-**Started:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-09 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-11
 
 Built a book page, **"Rotation is turning the graph paper"** (`book/docs/rotation-graph-paper.rst`), as
 a five-figure ePiX sequence that rotates a 4×4 grid `{0,1,2,3}²` about the origin by 30°, point by point
@@ -41,8 +35,3 @@ vectors turn and everything drawn on it comes along. `make docs` builds clean.
 Each figure rendered and eyeballed (graphpaper4 shows the sheet turned, graphpaper5 the parabola on it).
 `ruff`/`ruff format`/`check_epix_keywords` clean on the figures and scene module; `make docs` builds
 HTML + PDF, the new page and all five figures included, no broken references.
-
-## Open questions
-
-None — all four were answered by the maintainer (2026-10-11): figure sequence; `{0,1,2,3}²`; `y=x²` in
-the rotated frame; 30°.

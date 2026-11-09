@@ -1,12 +1,6 @@
 # Reshape the orthogonal-frame recursion (nil / one / two-or-more / default) and rewrite its comment
 
-**Status:** DONE 2026-10-27 (William Emerison Six <billsix@gmail.com>). Ready to archive after the
-work commit.
-**Priority:** 5
-**Difficulty:** 3
-**Created:** 2026-10-27 **Updated:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-27 · **Completed:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
 
 `make_orthogonal_frame`'s inner `orthogonalize` recursion (`src/gacalc/frame.py`) was reshaped so
 every list shape is its own `match` case — `[]` (base), `[v]` (one), `[v, *rest]` (two or more), and
@@ -18,12 +12,12 @@ than an invariant that only parses once you are already inside the recursion. Be
 ## What was done
 
 - **Four data-shaped cases.** The old form had only `case [v, *rest]` plus a wildcard standing in for
-  the base. Now `[]` returns `[]` (base — nothing to orthogonalize), `[v]` returns `[v]` (a single
+  the base. After the change, `[]` returns `[]` (base — nothing to orthogonalize), `[v]` returns `[v]` (a single
   vector is already an orthogonal frame on its own), and `[v, *rest]` is the two-or-more recursive
   case. `case _` stays as the **total default**: it is unreachable (the three shapes cover every
   list), but `ty` does not prove list-pattern exhaustiveness, so the match needs an explicit
   catch-all — which also honours the "prefer total dispatch" convention.
-- **Operation-first comment.** The recursive case now reads "remove from each later vector its
+- **Operation-first comment.** The recursive case comment became "remove from each later vector its
   component parallel to the first (reject the first out of the rest), keep the first, and recurse on
   the rest"; the first-is-already-orthogonal-to-every-earlier-head fact is a trailing justification,
   not the lead.
@@ -34,7 +28,8 @@ than an invariant that only parses once you are already inside the recursion. Be
 ## Follow-up (done)
 
 The generalizable lesson was folded into the shared `recursive-design.md` reference doc in **both**
-sandboxes (`runClaudeInContainer` canonical + byte-identical `runCrushInContainer` mirror): spell
+sandboxes (github.com/billsix/runClaudeInContainer canonical + byte-identical
+github.com/billsix/runCrushInContainer mirror): spell
 each data shape its own case (`[]` / `[v]` / `[v, *rest]`), keep `case _` as the total default rather
 than overloading it to mean the base case, and write each per-case comment to describe the operation
 standalone. That doc already carried this frame example as a worked case, so its AFTER block and

@@ -1,21 +1,15 @@
 # Audit where each Lean declaration is defined and in what order; move each to its logical home, then reorder
 
-**Status:** done — 2026-10-28. Both axes complete and `make lean`-verified (8958 jobs; completeness
-gate OK). The durable within-file rubric now lives in `tasks/reference/lean-ga-proof-architecture.md`
-("Within-file order of the algebra-core files"); this doc is the work record.
-**Priority:** 7
-**Difficulty:** 7
-**Created:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
-**Updated:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-28 · **Completed:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
 
 Reorganized the from-scratch Lean proofs (`proofs/GacalcProofs/*.lean`) along two axes: (1) each
 declaration's **logical home** (which file), and (2) the **order within** each file. A
 **content-preserving** change — `make lean` stayed green and only relocations + `/-! ### -/` section
 headers changed, no proof/statement/def body touched. Outcome: `dot`/`wedge` were consolidated into
 `G2.lean` (Axis 1), and `G1`/`G2`/`G3` were normalized to one basis-first within-file shape (Axis 2);
-the ~28 concept files were audited and already conformed, so were left unchanged.
+the ~28 concept files were audited and already conformed, so were left unchanged. Both axes were
+`make lean`-verified (8958 jobs; completeness gate OK). The durable within-file rubric lives in
+`tasks/reference/lean-ga-proof-architecture.md` ("Within-file order of the algebra-core files").
 
 ## What was done
 
@@ -24,7 +18,7 @@ lemmas, the split `mul_eq_dot_add_wedge`/`mul_eq_wedge_of_perp`, `normSq_wedge_v
 lemmas `isBivector_wedge_of_isVector`/`wedge_isVector_isBivector_eq_zero` (from `Projection2D.lean`)
 were moved into `G2.lean`, alongside `mul`/`reverse` — matching `G3`/`G1`, which always defined
 `dot`/`wedge` in-file. Both are pure coordinate formulas depending only on `mul`/fields, so the move
-kept `G2.lean`'s Mathlib-only import discipline and added no import. `Versor2D.lean` now holds only the
+kept `G2.lean`'s Mathlib-only import discipline and added no import. After the move `Versor2D.lean` held only the
 versor-from-vectors construction; `Projection2D.lean` only `proj`/`reject`/`reject_perp_dot` and the
 sandwich-wedge lemmas.
 
@@ -55,8 +49,8 @@ discretion, not a deferral.
 
 ## Decisions & judgment calls
 
-- **Fold G1 into the same normalization** (maintainer's go-ahead): done — all three algebra-core files
-  now share the one shape.
+- **Fold G1 into the same normalization** (the maintainer's go-ahead): done — all three algebra-core
+  files share the one shape.
 - **Section headers are a deliberate content addition** (new comment lines), the mechanism that makes
   the order legible; the diff is otherwise relocations only.
 - **Two *content* improvements the maintainer surfaced while reviewing G2 were split out, not done here**
@@ -79,12 +73,13 @@ place as a single debatable leaf used only by `Versor2D`.
 - `tools/reorder_lean.py` — the reorder tool; a generic block-reassembler + per-file PLANs. It lived
   under `tasks/adhoc/` during the task and was promoted to `tools/` on completion (sibling of
   `gen_specialized.py`, with a `tools/reorder_lean.py` E501/T201 per-file-ignore in `pyproject.toml`);
-  `python tools/reorder_lean.py G1 G3 --check` re-checks for within-file drift.
+  `python tools/reorder_lean.py G1 G3 --check` re-checked for within-file drift. It was later retired
+  from `tools/` (commit `5b21627`, 2026-11-08) and survives in git history.
 
-## Follow-ups
+## Follow-ups (all done the same day)
 
-- `tasks/archive/2026/10/28/add-section-headers-to-headerless-lean-files.md` — add `/-! ### -/` navigation headers to the
-  four concept files that have none (`Rotation2D`/`Rotation3D`/`StudentTrigForms`/`PlaneRotation3D`);
-  additive, no reorder.
-- `tasks/archive/2026/10/28/lean-basis-constants-self-documenting.md` and `tasks/archive/2026/10/28/lean-g2-object-out-parity.md` — the two
-  deferred content improvements above.
+- `tasks/archive/2026/10/28/add-section-headers-to-headerless-lean-files.md` — added `/-! ### -/`
+  navigation headers to the four concept files that had none
+  (`Rotation2D`/`Rotation3D`/`StudentTrigForms`/`PlaneRotation3D`); additive, no reorder.
+- `tasks/archive/2026/10/28/lean-basis-constants-self-documenting.md` and
+  `tasks/archive/2026/10/28/lean-g2-object-out-parity.md` — the two deferred content improvements above.

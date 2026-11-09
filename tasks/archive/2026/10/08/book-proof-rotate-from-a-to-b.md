@@ -1,21 +1,16 @@
 # Book proof: rotate from the direction of a to the direction of b (2D, standard position)
 
-**Status:** done — 2026-10-08 (gates green; normalized pre-squash)
-**Priority:** 5
-**Difficulty:** 4
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-08
 
 A new Part I book page, `book/docs/proof-rotate-from-a-to-b.rst` (after "Proof: Rotate"), deriving how
 to **rotate the direction of `a` onto the direction of `b`** in 2D by **reduction to standard
 position** — the same change-of-frame style the projection proof uses — then collapsing it to a closed
 coordinate formula with no angle named. Delivered as Lean (machine-checked), the prose page, and four
 ePiX diagrams with `a`, `b` **not** unit length. This is the **angle-based** construction (reads cos/sin
-off the vectors); the **angle-free** geometric-product version (`â b̂` *is* the rotor) stays a separate
-later payoff (`tasks/book-rotation-from-vectors-no-angle.md`). The follow-up —
-reusing this in the projection proof — is `tasks/projection-proof-use-rotate-from-a-to-b.md`, blocked on
-the maintainer's approval. Durable account: `tasks/reference/reduction-to-standard-position.md` ("2D —
+off the vectors); the **angle-free** geometric-product version (`â b̂` *is* the rotor) was kept as a
+separate later payoff (`tasks/archive/2026/10/19/book-rotation-from-vectors-no-angle.md`). The follow-up —
+reusing this in the projection proof — was done once the maintainer approved this page
+(`tasks/archive/2026/10/08/projection-proof-use-rotate-from-a-to-b.md`). Durable account: `tasks/reference/reduction-to-standard-position.md` ("2D —
 rotate from direction `a` to direction `b`").
 
 ## The construction
@@ -66,12 +61,12 @@ area. Applied to `a`, it lands on `(|a|/|b|)·b` — `b`'s direction with `a`'s 
    punchline).
 3. **Distinct from the angle-free geometric-product version** — keep both; that one is the later payoff.
 
-## History (commit chronology, `origin/master..HEAD` on branch `rotateFromAToB` — for the squash)
+## History (commit chronology)
 
-1. `2704af1` *added tasks to rotate from a to b* — filed this task (then proposed) + the follow-up
+1. `95a941e` *added tasks to rotate from a to b* — filed this task (then proposed) + the follow-up
    `projection-proof-use-rotate-from-a-to-b.md`, cross-linked to the angle-free task.
-2. `bc5b32f` *updated tasks* — recorded the two maintainer decisions (new page; show-then-collapse).
-3. `59763ee` *implemented rotate from a to b* — the Lean file, the book page + toctree, the four
+2. *updated tasks* (a commit since squashed away) — recorded the two maintainer decisions (new page; show-then-collapse).
+3. `d7a067e` *implemented rotate from a to b* — the Lean file, the book page + toctree, the four
    figures, the reference-doc harvest; and removed this task doc from its working path (archiving).
 
 ## Related
@@ -79,5 +74,5 @@ area. Applied to `a`, it lands on `(|a|/|b|)·b` — `b`'s direction with `a`'s 
 - `book/docs/proof-rotate.rst` — the rotation-by-an-angle this builds on (comes right before).
 - `book/docs/proof-projection.rst` — the change-of-frame proof whose style this mirrors.
 - `tasks/reference/reduction-to-standard-position.md` — the theme + the harvested account.
-- `tasks/book-rotation-from-vectors-no-angle.md` — the complementary angle-free version.
-- `tasks/projection-proof-use-rotate-from-a-to-b.md` — the follow-up, blocked on approval.
+- `tasks/archive/2026/10/19/book-rotation-from-vectors-no-angle.md` — the complementary angle-free version.
+- `tasks/archive/2026/10/08/projection-proof-use-rotate-from-a-to-b.md` — the follow-up.

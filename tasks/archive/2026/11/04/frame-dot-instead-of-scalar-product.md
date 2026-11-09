@@ -21,15 +21,15 @@ grades they differ (`tasks/reference/contraction-and-dot-definitions.md`).
   (Hestenes & Sobczyk p. 4, `⟨A⟩₀`) reads the number out, so no `typing.cast` was needed. A bare cast
   would have been wrong: `dot`'s value really is a multivector. Three inline uses did not earn a helper.
   The same spelling replaced `scalar_product` in `tests/test_frame_class.py` and in the in-progress book
-  notebooks `book/docs/notebooks/frame-qr-2d.py` / `frame-qr-3d.py` (`tasks/frame-notebooks-epix.md`).
+  notebooks `book/docs/notebooks/frame-qr-2d.py` / `frame-qr-3d.py` (`tasks/archive/2026/11/04/frame-notebooks-epix.md`).
 - **Vector checks.** The frame's own vectors were already checked (`are_linearly_independent` raises on
-  a non-vector). The map and its inverse now raise `ValueError` on a non-vector argument, through a
+  a non-vector). The map and its inverse were made to raise `ValueError` on a non-vector argument, through a
   nested `require_vector` shared by `forward` and `backward`. `test_map_rejects_a_non_vector` covers a
   bivector and a scalar in both directions. The `to_invertible_function()` docstring says so.
 - **`CLAUDE.md`** › "Conventions the agent must obey while writing code" gained the rule: dot product for
   vectors (`a.dot(b).scalar_part()`, operands checked as vectors), `scalar_product` only where that
   operation is meant, as in Hestenes' own definitions (with the page cited).
-- **`CHANGELOG.md`:** the `[Unreleased]` `Frame` entry now says the map takes vectors only.
+- **`CHANGELOG.md`:** the `[Unreleased]` `Frame` entry was amended to say the map takes vectors only.
 
 ## Decisions
 
@@ -39,7 +39,7 @@ grades they differ (`tasks/reference/contraction-and-dot-definitions.md`).
    `[Unreleased] › Added` (never released), so no consumer can break. The existing entry was amended.
 2. **The project-wide convention in `CLAUDE.md`** (William Emerison Six <billsix@gmail.com>, 2026-11-04):
    for vectors, a reader knows the dot product, not the scalar product.
-3. **The other `scalar_product` calls in `src/` stay.** Excluding the generated modules there are two,
+3. **The other `scalar_product` calls in `src/` stayed.** Excluding the generated modules there are two,
    both in `base.py`: `magnitude_squared` (`self.reverse().scalar_product(self)`) and `cosine`
    (`(Ã ∗ B) / (|A| * |B|)`, H&S eq 1.53b). Both are Hestenes' general-multivector formulas, where the
    scalar product is the operation meant, so no follow-up task was needed.
@@ -52,4 +52,5 @@ grades they differ (`tasks/reference/contraction-and-dot-definitions.md`).
   clean.
 - `tools/check_annotations.py`: 43 findings in 14 files, none in `frame.py`, `test_frame_class.py` or the
   notebooks, so all are in files this change did not touch.
-- The full `make test` / `make format` gate runs with the notebook work, on the rebuilt image.
+- The full `make test` / `make format` gate was run with the notebook work, on the rebuilt image
+  (`tasks/archive/2026/11/04/frame-notebooks-epix.md`).

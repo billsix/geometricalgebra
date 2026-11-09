@@ -1,12 +1,14 @@
 # Emit doc-region markers for the generated basis constants (`Cls.e_1 = …`)
 
-**Done 2026-11-04** (branch `mark-basis-constants-for-doc-regions`; agent under William Emerison
-Six's batch authorization). Filed 2026-09-08 from modelviewprojection's side as the one residual of
-its archived `dangling-book-code-includes.md`.
+**Created:** 2026-09-08 · **Completed:** 2026-11-04 (branch `mark-basis-constants-for-doc-regions`;
+an agent under William Emerison Six <billsix@gmail.com>'s batch authorization)
+
+Filed from modelviewprojection's side as the one residual of its archived
+`dangling-book-code-includes.md` (github.com/billsix/modelviewprojection).
 
 ## What was done
 
-The generator now wraps each class's post-class basis-constant assignments
+The generator was changed to wrap each class's post-class basis-constant assignments
 (`Vector.e_1 = Vector.from_blade_dict(...)`, one per blade) in a **`<Class> basis constants`**
 doc-region, one region per class, so modelviewprojection's book can `literalinclude` "here is what
 the basis vectors are" (the existing `<Class> cls variables` region covers only the value-less
@@ -20,11 +22,11 @@ the basis vectors are" (the existing `<Class> cls variables` region covers only 
 - **Golden-rule shape:** the only tracked diff is `tools/` (+ the reference doc); the regenerated
   `src/gacalc/g*.py` are gitignored, so they change on disk but not in `git status`.
 
-## Decisions (the task's two open questions, both taken on the recommendation)
+## Decisions (both taken on the recommendation)
 
 1. **Exclusion was treated as incidental, not intentional** — nothing in the archive argued for it,
-   and the recommendation was to proceed unless the maintainer recalls a reason. (If there was a
-   deliberate reason to keep them unmarked, this is the thing to object to at review.)
+   and the recommendation was to proceed unless the maintainer recalled a reason; a deliberate reason
+   to keep them unmarked was left for the maintainer to raise at review.
 2. **One region per class**, covering all of that class's constants — what the book wants, and it
    keeps the marker count flat as the dimension grows (𝒢₅ would otherwise add 32 markers per class).
 
@@ -40,14 +42,13 @@ their `: image` prerequisite re-runs the whole 16 GB `podman build` (the documen
   / `instance variables` / `<method> method` names.)
 - **Determinism:** regenerated twice, g1/g2/g3 byte-identical — green.
 
-## Follow-up (cross-repo; required for the consumer to benefit — not startable by me now)
+## Follow-up (cross-repo, left gated on a gacalc release)
 
-modelviewprojection's book can only pick these up through a **published gacalc sdist**. Once gacalc
-cuts a release that carries these markers, mvp can restore the two dropped listings (ch05 "vector2d
+modelviewprojection's book can only pick these up through a **published gacalc sdist**. Once a
+gacalc release carries these markers, mvp can restore the two dropped listings (ch05 "vector2d
 basis", ch14 "vector3d basis") and bump its pin + its Dockerfile `ARG GACALC_VERSION` together. That
-is gated on a gacalc release (the maintainer's step), so it's noted here rather than scaffolded as an
-mvp task. mvp's record of the drop: `github.com/billsix/modelviewprojection`
-`tasks/archive/2026/09/08/dangling-book-code-includes.md`.
+was gated on a gacalc release (the maintainer's step), so it was noted here rather than scaffolded as
+an mvp task. mvp's record of the drop: github.com/billsix/modelviewprojection `tasks/archive/2026/09/08/dangling-book-code-includes.md`.
 
 ## Related
 

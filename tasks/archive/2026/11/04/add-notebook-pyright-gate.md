@@ -1,7 +1,9 @@
 # Add a container `pyright` gate for the notebooks
 
-**Done 2026-11-04** (branch `add-notebook-pyright-gate`; agent under William Emerison Six's batch
-authorization). The notebooks are pyright-clean and a `make check-notebooks` gate now guards them.
+**Completed:** 2026-11-04 (branch `add-notebook-pyright-gate`; an agent under William Emerison Six
+<billsix@gmail.com>'s batch authorization)
+
+The notebooks were pyright-clean and a `make check-notebooks` gate was added to guard them.
 
 ## What was done
 
@@ -15,9 +17,9 @@ authorization). The notebooks are pyright-clean and a `make check-notebooks` gat
   `make test` so a pyright-version bump can't redden the test gate.
 - `CLAUDE.md` › Dev workflow: added the `make check-notebooks` bullet.
 
-## The trap that cost the most time (so it isn't repeated)
+## The trap that cost the most time
 
-**Do NOT hardcode `pythonVersion` in `pyrightconfig.json`.** The first version of the config set
+**`pythonVersion` must not be hardcoded in `pyrightconfig.json`.** The first version of the config set
 `"pythonVersion": "3.13"`, but the image's Python is **3.15.0**. That mismatch sent pyright into
 spurious circular-inference and reported two false `reportGeneralTypeIssues` errors
 (`displayrotations.py:170` `R3`, `displayg2.py:521` `lagrange_residual`, both "could not be
@@ -27,8 +29,9 @@ venv is correct and won't rot as the image's Python moves. The notebooks themsel
 were **not** edited.
 
 A second red herring: a **stale cached image** (7-day-old `gacalc:latest`) shipped a non-functional
-`pyright` (pip wrapper, no node, `nodeenv` couldn't bootstrap). A fresh `make image` build has a
-working pyright — **no Dockerfile/node change is needed**. (The nested `: image` gotcha means `make
+`pyright` (pip wrapper, no node, `nodeenv` couldn't bootstrap). A fresh `make image` build had a
+working pyright, so no Dockerfile/node change was made here (the pip launcher was later replaced by an
+npm pyright in `tasks/archive/2026/11/04/dockerfile-lean-layers-first.md`). (The nested `: image` gotcha means `make
 check-notebooks` via `make` rebuilds the whole image when run in a sandbox; test it by running the
 inner `podman run` line directly, as the verification below did.)
 
@@ -37,9 +40,9 @@ inner `podman run` line directly, as the verification below did.)
 - **Scope: notebooks only** (the gap `ty` doesn't cover). Not adding pyright over `src`/`tests` — `ty`
   covers those; a second checker there is maintenance/divergence for no gain.
 - **Separate target, not folded into `make test`** — a pyright-version bump stays isolated.
-- **pyright left unpinned** (matches the Dockerfile's existing unpinned `pyright`). A future pyright
-  bump can change diagnostics on unchanged code; if that reddens the gate, pin pyright then rather
-  than pre-emptively. Noted so the choice is deliberate.
+- **pyright left unpinned** (matches the Dockerfile's existing unpinned `pyright`). A pyright bump can
+  change diagnostics on unchanged code; the decision was to pin only if that ever reddens the gate,
+  not pre-emptively.
 
 ## Verification (direct `podman run` against the fresh `gacalc:latest`, 2026-11-04)
 
