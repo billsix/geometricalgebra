@@ -53,7 +53,7 @@ def test_odd3_product_types_static() -> None:
 
 def test_odd3_product_types_runtime() -> None:
     assert type(g3.Vector.e_1 * g3.Bivector.e_12) is g3.Odd_3
-    odd = g3.Bivector.e_12 * g3.Vector.e_1
+    odd: g3.Odd_3 = g3.Bivector.e_12 * g3.Vector.e_1
     assert type(odd * odd) is g3.Versor  # odd * odd = even
 
 
@@ -118,15 +118,22 @@ def test_sandwich_grade_preservation_is_one_coefficient() -> None:
     form.  It holds for a GENERAL symbolic versor, not just a unit one (the versor is
     grade-preserving).
     """
+    a: sympy.Symbol
+    b: sympy.Symbol
+    c: sympy.Symbol
+    d: sympy.Symbol
     a, b, c, d = sympy.symbols("a b c d", real=True)
+    x: sympy.Symbol
+    y: sympy.Symbol
+    z: sympy.Symbol
     x, y, z = sympy.symbols("x y z", real=True)
+    # `versor` and `conjugated` are left inferred.  Declaring them (`g3.Versor`,
+    # `g3.Odd_3`) is correct at runtime (the assert below checks the second), but
+    # it widens `coeff_e_123` to the full `Real = int | float | sympy.Expr`, and
+    # sympy's stubs have no `simplify` overload taking a bare int/float -- so
+    # either annotation fails the last line without making anything clearer.
     versor = a + b * g3.Bivector.e_12 + c * g3.Bivector.e_13 + d * g3.Bivector.e_23
     v: g3.Vector = x * g3.Vector.e_1 + y * g3.Vector.e_2 + z * g3.Vector.e_3
-    # Left inferred: declaring `g3.Odd_3` is correct at runtime (the next line
-    # asserts exactly that), but it widens `coeff_e_123` to the full
-    # `Real = int | float | sympy.Expr`, and sympy's stubs have no
-    # `simplify` overload taking a bare int/float -- so the annotation would
-    # fail the line below without making anything clearer.
     conjugated = versor * v * versor.inverse()
     assert type(conjugated) is g3.Odd_3  # a named type now, not G3
     assert sympy.simplify(conjugated.coeff_e_123) == 0  # grade-3 vanishes -> a vector

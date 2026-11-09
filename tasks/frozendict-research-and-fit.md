@@ -25,14 +25,24 @@ Done means a recommendation is written into this doc for each phase, a reference
 the durable findings, and any adoption is scaffolded as its own `proposed` task. This task changes
 no code.
 
+## Decisions
+
+1. **If gacalc adopts `frozendict`, raise `requires-python` to `>=3.15`.** There is no fallback
+   for 3.13/3.14 (William Emerison Six <billsix@gmail.com>, 2026-11-09: "update the task to upgrade
+   pyproject.toml for python 3.15.0, if we decide to implement frozendict in our codebase").
+   Dropping 3.13 and 3.14 is a breaking change for consumers, so the adoption task carries a
+   `CHANGELOG.md` `[Unreleased]` BREAKING entry for it, and checks the CI workflows and
+   `entrypoint/` for anything that assumes an older Python.
+2. **Making `Gn`'s storage immutable is the wanted outcome** (the same, 2026-11-09: "regarding the
+   concrete use, that sounds like a win!"). Phase 2 still measures its cost, but it starts from
+   "adopt unless the cost is prohibitive", not from a neutral survey.
+
 ## Context
 
 **Versions in play** (re-check; these are snapshots):
 - The sandbox and the image run **Python 3.15.0** (`python3 --version`, 2026-11-09).
-- `pyproject.toml` says `requires-python = ">=3.13"`. gacalc is published on PyPI, so a 3.15-only
-  built-in in the library either needs `requires-python` raised to `>=3.15` (a consumer-visible,
-  breaking change, which needs a `CHANGELOG.md` BREAKING entry) or a fallback for 3.13 and 3.14
-  (`types.MappingProxyType`, or a small read-only `Mapping` subclass). Weigh this in phase 2.
+- `pyproject.toml` says `requires-python = ">=3.13"`. gacalc is published on PyPI. Decision 1
+  settles the floor: adopting `frozendict` raises it to `>=3.15`, with no fallback.
 
 **What was said in conversation (unverified; phase 1 checks it):** PEP 814 ("Add frozendict built-in
 type") was believed accepted for 3.15, but this was not checked against a source. Only a dict
@@ -76,10 +86,23 @@ version is proposed; there is no frozen list. PEP 712 (dataclass field converter
   `coefficient_of_blade` reads and writes, and module-level dict constants in `src/` and `tools/`.
   Save the discovery command and its output under
   `tasks/adhoc/frozendict-research-and-fit/` (the bulk-op convention).
-- [ ] For each candidate, judge what it fixes (a bug class, an invariant), what it costs (a copy per
-  operation, a `requires-python` bump, API churn for consumers who build `BladeReal` dicts), and the
-  alternative available today (`Mapping` in signatures, `MappingProxyType`, `Final`).
-- [ ] If anything is worth adopting, scaffold it as its own `proposed — needs go-ahead` task.
+- [ ] **`Gn.coefficient_of_blade` first** (decision 2). Make it a `frozendict[Blade, Real]`, then
+  check three things:
+  - every write site in `gn.py` builds a new mapping instead of mutating one;
+  - `to_blade_dict()` can return the stored mapping with no copy, and its return type and
+    `BladeReal`'s meaning are settled: does `BladeReal` become the frozen type, or stay `dict` for
+    what callers build?
+  - the cost: time `make test` and the 3D symbolic frame tests before and after, since `Gn`
+    builds a new dict per operation.
+- [ ] For each other candidate, judge what it fixes (a bug class, an invariant), what it costs (a
+  copy per operation, API churn for consumers who build `BladeReal` dicts), and the alternative
+  available today (`Mapping` in signatures, `MappingProxyType`, `Final`).
+- [ ] Scaffold the adoption as its own `proposed — needs go-ahead` task (or one per independent
+  part). Its plan includes the `requires-python = ">=3.15"` bump in `pyproject.toml`, the
+  `CHANGELOG.md` BREAKING entry for dropping 3.13 and 3.14, and a check of `.github/workflows/`
+  and `entrypoint/` for older Python versions (decision 1). It also includes removing the copy in
+  `Gn.to_blade_dict()`, keeping `test_to_blade_dict_is_a_copy`'s guarantee: a caller still cannot
+  corrupt `e_1` (the test then checks that the mapping is immutable).
 
 ### Phase 3: re-analyze the `Frame` task
 
@@ -96,5 +119,5 @@ version is proposed; there is no frozen list. PEP 712 (dataclass field converter
 
 ## Open questions
 
-None yet. Phase 1's answer decides whether phase 2 is about adopting now, or about a fallback until
-`requires-python` can rise.
+None. If phase 1 finds `frozendict` is not in 3.15.0, stop after phase 1 and report; the
+decisions above assume it is.

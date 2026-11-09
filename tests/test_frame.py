@@ -59,6 +59,9 @@ from gacalc.gn import (
 # A third fully general 3D vector, so the symbolic 3D tests exercise a complete
 # 3-vector frame (gn only ships ``sym_vec2_*`` / ``sym_vec3_1`` / ``sym_vec3_2``).
 # Same ``symbol * basis`` form as gn's symbolic vectors.
+c_1: sympy.Symbol
+c_2: sympy.Symbol
+c_3: sympy.Symbol
 c_1, c_2, c_3 = sympy.symbols("c_1 c_2 c_3")
 sym_vec3_3: Gn = c_1 * e_1 + c_2 * e_2 + c_3 * e_3
 
@@ -124,13 +127,13 @@ def test_non_vector_input_raises() -> None:
 
 def test_orthogonal_frame_keeps_first_vector() -> None:
     a: Gn = 1 * e_1 + 1 * e_2
-    frame: list = make_orthogonal_frame([a, 1 * e_2])
+    frame: list[MultiVectorBase] = make_orthogonal_frame([a, 1 * e_2])
     assert frame[0] == a
 
 
 @pytest.mark.parametrize("frame", FRAMES_WITH_SLOW_3D_SYMBOLIC)
 def test_orthogonal_frame_keeps_the_first_and_orthogonalizes_the_rest(
-    frame: list[MultiVectorBase],
+    frame: Sequence[MultiVectorBase],
 ) -> None:
     """Orthogonalize a frame: the first vector is kept, every pair of the results is
     orthogonal (exactly, so on the symbolic frames this holds for every 2D or 3D
@@ -150,7 +153,7 @@ def test_orthogonal_frame_orthogonal_numeric_3d() -> None:
         vectors: list[Gn] = [random_vector(3) for _ in range(3)]
         # three random vectors are independent with probability 1
         assert is_frame(vectors, float_close_to_zero=True)
-        frame: list = make_orthogonal_frame(vectors)
+        frame: list[MultiVectorBase] = make_orthogonal_frame(vectors)
         assert is_frame(frame, float_close_to_zero=True)
         i: int
         j: int
@@ -179,7 +182,7 @@ def test_make_orthogonal_frame_raises_on_dependent() -> None:
 
 
 @pytest.mark.parametrize("frame", FRAMES_WITH_SLOW_3D_SYMBOLIC)
-def test_hestenes_parallel_to_rejection(frame: list[MultiVectorBase]) -> None:
+def test_hestenes_parallel_to_rejection(frame: Sequence[MultiVectorBase]) -> None:
     """Hestenes' reverse-based ``c_k`` points the same way as the rejection ``w_k``
     (``c_k ∥ w_k``, the scale-independent geometric fact), and is exactly
     ``|A_{k-1}|² * w_k``, a positive multiple. ``c_1 = w_1``."""
@@ -202,6 +205,7 @@ def test_hestenes_parallel_to_rejection_numeric(dim: int) -> None:
         vectors: list[Gn] = [random_vector(dim) for _ in range(dim)]
         rejection: list[MultiVectorBase] = make_orthogonal_frame(vectors)
         hestenes: list[MultiVectorBase] = make_orthogonal_frame_hestenes(vectors)
+        k: int
         for k in range(dim):
             assert hestenes[k].is_parallel_to(rejection[k], float_close_to_zero=True)
 
@@ -218,7 +222,7 @@ def test_hestenes_parallel_to_rejection_numeric(dim: int) -> None:
 
 @pytest.mark.parametrize("frame", FRAMES_WITH_SLOW_3D_SYMBOLIC)
 def test_hestenes_inverse_equals_rejection_exactly(
-    frame: list[MultiVectorBase],
+    frame: Sequence[MultiVectorBase],
 ) -> None:
     """The inverse-based closed form equals the rejection frame exactly:
     ``c_k^inv == w_k`` for every k (no ``|A_{k-1}|^2`` factor)."""
@@ -259,7 +263,7 @@ PREFIX_BLADE_CASES: list[tuple[list[MultiVectorBase], list[MultiVectorBase]]] = 
     ids=["gn-2d-symbolic", "gn-3d-symbolic", "g2-concrete"],
 )
 def test_prefix_blades(
-    vectors: list[MultiVectorBase], expected: list[MultiVectorBase]
+    vectors: Sequence[MultiVectorBase], expected: Sequence[MultiVectorBase]
 ) -> None:
     """``prefix_blades`` yields ``A_0 = 1``, ``A_1 = v_1``, ``A_2 = v_1 ∧ v_2``, …:
     ``k + 1`` blades for ``k`` vectors, the running wedge, exact."""
@@ -289,6 +293,9 @@ def test_prefix_blades_empty_raises() -> None:
 # --- reciprocal_frame (H&S p. 28, eqs 3.5-3.7) -----------------------------
 
 # A general symbolic vector to take coordinates of, in 2D and 3D.
+y_1: sympy.Symbol
+y_2: sympy.Symbol
+y_3: sympy.Symbol
 y_1, y_2, y_3 = sympy.symbols("y_1 y_2 y_3")
 sym_y2: Gn = y_1 * e_1 + y_2 * e_2
 sym_y3: Gn = y_1 * e_1 + y_2 * e_2 + y_3 * e_3

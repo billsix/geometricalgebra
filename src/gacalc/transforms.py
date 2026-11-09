@@ -662,7 +662,7 @@ def plane_rotation(
 
 
 # doc-region-begin uniform scale signature
-def uniform_scale(m: float) -> InvertibleFunction[V]:
+def uniform_scale(m: Real) -> InvertibleFunction[V]:
     # doc-region-end uniform scale signature
     """Scale uniformly by ``m`` (representation preserving -- just ``vector * m``).
 
@@ -702,7 +702,7 @@ def uniform_scale(m: float) -> InvertibleFunction[V]:
 
 
 # doc-region-begin scale non-uniform signature
-def scale_non_uniform(*factors: float) -> InvertibleFunction[V]:
+def scale_non_uniform(*factors: Real) -> InvertibleFunction[V]:
     # doc-region-end scale non-uniform signature
     """Scale axis ``i`` by ``factors[i]`` (1-indexed e_1, e_2, ...), in any dimension.
 

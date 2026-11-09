@@ -108,6 +108,7 @@ def scan(path: Path) -> tuple[list[tuple[int, int, str]], list[str]]:
     tree: ast.Module = ast.parse(path.read_text())
     edits: list[tuple[int, int, str]] = []
     unknown: list[str] = []
+    node: ast.AST
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call) or not node.args:
             continue
@@ -115,6 +116,8 @@ def scan(path: Path) -> tuple[list[tuple[int, int, str]], list[str]]:
         if key is None:
             # method calls (fig.save(...), Path(...).draw()): none take args here
             continue
+        module: str
+        name: str
         module, name = key
         if module in EXEMPT_MODULES or (module == "" and name in EXEMPT_BUILTINS):
             continue
@@ -164,7 +167,10 @@ def main() -> int:
     ]
 
     status: int = 0
+    path: Path
     for path in paths:
+        edits: list[tuple[int, int, str]]
+        unknown: list[str]
         edits, unknown = scan(path)
         report: str
         # a notebook's other calls are gacalc code, not figure code

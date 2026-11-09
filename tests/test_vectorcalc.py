@@ -52,8 +52,17 @@ def test_matches_numpy_cross() -> None:
 def test_scalar_triple_product_is_signed_volume() -> None:
     """a · (b × c) == signed_volume(a, b, c) -- why measure.signed_volume needs
     no vector-calc alias (see gacalc/vectorcalc.py's module docstring)."""
+    a_1: sympy.Symbol
+    a_2: sympy.Symbol
+    a_3: sympy.Symbol
     a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
+    b_1: sympy.Symbol
+    b_2: sympy.Symbol
+    b_3: sympy.Symbol
     b_1, b_2, b_3 = sympy.symbols("b_1 b_2 b_3")
+    c_1: sympy.Symbol
+    c_2: sympy.Symbol
+    c_3: sympy.Symbol
     c_1, c_2, c_3 = sympy.symbols("c_1 c_2 c_3")
     a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
     b: Vector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
@@ -78,7 +87,13 @@ def test_generated_closed_form_matches_definition() -> None:
     widened ``G``/``Gn``); the ``generated: Vector`` annotation is verified
     statically by the ``ty`` gate over tests, checking the ``Vector -> Vector``
     overload resolution."""
+    a_1: sympy.Symbol
+    a_2: sympy.Symbol
+    a_3: sympy.Symbol
     a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
+    b_1: sympy.Symbol
+    b_2: sympy.Symbol
+    b_3: sympy.Symbol
     b_1, b_2, b_3 = sympy.symbols("b_1 b_2 b_3")
     a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
     b: Vector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3

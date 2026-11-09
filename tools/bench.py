@@ -73,7 +73,11 @@ def main() -> None:
 
     for n in (1, 2, 3):
         cls: type[MultiVectorBase] = SPECIALIZED[n]
+        a: Gn
+        b: Gn
         a, b = num_full(n, 0), num_full(n, 10)
+        ga: MultiVectorBase
+        gb: MultiVectorBase
         ga, gb = to(cls, a), to(cls, b)
 
         # numeric full geometric product
@@ -104,6 +108,8 @@ def main() -> None:
         cls: type[MultiVectorBase] = SPECIALIZED[n]
         sa: Gn = Gn.symbolic_multivector(n, "a")
         sb: Gn = Gn.symbolic_multivector(n, "b")
+        gsa: MultiVectorBase
+        gsb: MultiVectorBase
         gsa, gsb = to(cls, sa), to(cls, sb)
         gn_reps: int = 1 if n == 3 else 5
         report(
@@ -122,7 +128,11 @@ def main() -> None:
     for n, vector_cls in ((2, g2.Vector), (3, g3.Vector)):
         gva: Gn = Gn.from_blade_dict({(i,): i for i in range(1, n + 1)})
         gvb: Gn = Gn.from_blade_dict({(i,): i + 1 for i in range(1, n + 1)})
+        va: MultiVectorBase
+        vb: MultiVectorBase
         va, vb = to(vector_cls, gva), to(vector_cls, gvb)
+        fa: MultiVectorBase
+        fb: MultiVectorBase
         fa, fb = to(SPECIALIZED[n], gva), to(SPECIALIZED[n], gvb)
         t_typed: float = time_ms(lambda va=va, vb=vb: va * vb, 5000)
         t_full: float = time_ms(lambda fa=fa, fb=fb: fa * fb, 5000)

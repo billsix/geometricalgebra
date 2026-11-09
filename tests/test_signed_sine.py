@@ -38,6 +38,10 @@ def test_abs_of_signed_sine_equals_abs_sin() -> None:
 
 
 def test_signed_sine_symbolic_is_the_signed_area_over_magnitudes() -> None:
+    a_1: sympy.Symbol
+    a_2: sympy.Symbol
+    b_1: sympy.Symbol
+    b_2: sympy.Symbol
     a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
     u: Vector = a_1 * e_1 + a_2 * e_2
     v: Vector = b_1 * e_1 + b_2 * e_2
@@ -53,6 +57,10 @@ def test_signed_sine_symbolic_is_the_signed_area_over_magnitudes() -> None:
 
 def test_cosine_squared_plus_signed_sine_squared_is_one() -> None:
     # Lagrange's identity, with the SIGNED sine (sin² is unaffected by the sign).
+    a_1: sympy.Symbol
+    a_2: sympy.Symbol
+    b_1: sympy.Symbol
+    b_2: sympy.Symbol
     a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
     u: Vector = a_1 * e_1 + a_2 * e_2
     v: Vector = b_1 * e_1 + b_2 * e_2

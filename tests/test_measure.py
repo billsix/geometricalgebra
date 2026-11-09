@@ -68,6 +68,15 @@ def test_non_vector_and_empty_raise() -> None:
 # ``g2``/``g3`` (not the dimensionless ``Gn``) so the ``signed_*`` measures,
 # which need a fixed dimension, work.
 
+_a1: sympy.Symbol
+_a2: sympy.Symbol
+_a3: sympy.Symbol
+_b1: sympy.Symbol
+_b2: sympy.Symbol
+_b3: sympy.Symbol
+_c1: sympy.Symbol
+_c2: sympy.Symbol
+_c3: sympy.Symbol
 _a1, _a2, _a3, _b1, _b2, _b3, _c1, _c2, _c3 = sympy.symbols(
     "a1 a2 a3 b1 b2 b3 c1 c2 c3"
 )
@@ -185,6 +194,10 @@ def test_signed_content_on_gn_full_space() -> None:
 
 
 def test_signed_content_on_gn_symbolic_is_the_determinant() -> None:
+    a_1: sympy.Symbol
+    a_2: sympy.Symbol
+    b_1: sympy.Symbol
+    b_2: sympy.Symbol
     a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
     a: MultiVectorBase = a_1 * e_1 + a_2 * e_2
     b: MultiVectorBase = b_1 * e_1 + b_2 * e_2

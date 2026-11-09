@@ -66,6 +66,9 @@ _B_EXACT: Vector = 3 * e_1 + 4 * e_2 + 12 * e_3
 def test_project_sp_matches_canonical_symbolic() -> None:
     """Symbolic ``a`` with an exact-magnitude ``b`` (k = 5, |b| = 13): the
     standard-position projection equals the canonical Hestenes projection."""
+    a_1: sympy.Symbol
+    a_2: sympy.Symbol
+    a_3: sympy.Symbol
     a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
     a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
     difference: MultiVectorBase = project_sp(a, _B_EXACT) - a.projected_onto(_B_EXACT)
@@ -75,6 +78,9 @@ def test_project_sp_matches_canonical_symbolic() -> None:
 
 
 def test_reject_sp_matches_canonical_symbolic() -> None:
+    a_1: sympy.Symbol
+    a_2: sympy.Symbol
+    a_3: sympy.Symbol
     a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
     a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
     difference: MultiVectorBase = reject_sp(a, _B_EXACT) - a.rejected_away_from(

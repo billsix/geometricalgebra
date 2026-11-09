@@ -480,6 +480,8 @@ for f in compose_intermediate_fns(
 # (Symbols are declared **real** so that $\sqrt{x^2}=|x|$ behaves.)
 
 # %%
+# Left undeclared: typed `sympy.Symbol`, pyright would read `symbol * e_1` as
+# sympy's `Expr.__mul__` (an `Expr`), not the multivector's `__rmul__`.
 a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
 a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2
 b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2

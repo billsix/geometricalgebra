@@ -85,6 +85,8 @@ b: Gn = e_1 * sympy.cos(θ) + e_2 * sympy.sin(θ)
 # A symbolic vector $v = v_1 * e_1 + v_2 * e_2$.
 
 # %%
+# Left undeclared: typed `sympy.Symbol`, pyright would read `symbol * e_1` as
+# sympy's `Expr.__mul__` (an `Expr`), not the multivector's `__rmul__`.
 v1, v2 = sympy.symbols("v1 v2", real=True)
 v_2d: Gn = v1 * e_1 + v2 * e_2
 
@@ -121,6 +123,8 @@ sandwich_2d - projection_2d  # pyright: ignore[reportUnusedExpression]
 # plane, so a correct rotation must leave it untouched -- both formulas do.
 
 # %%
+# Left undeclared: typed `sympy.Symbol`, pyright would read `symbol * e_1` as
+# sympy's `Expr.__mul__` (an `Expr`), not the multivector's `__rmul__`.
 v1, v2, v3 = sympy.symbols("v1 v2 v3", real=True)
 v_3d: Gn = v1 * e_1 + v2 * e_2 + v3 * e_3
 

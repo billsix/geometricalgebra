@@ -22,6 +22,7 @@ import sympy
 
 from gacalc import g2, g3
 from gacalc.base import MultiVectorBase, Real
+from gacalc.functions import InvertibleFunction
 from gacalc.gn import Gn, e_1, e_2, e_3
 from gacalc.transforms import coordinate_along, line_to_line_projection
 
@@ -50,7 +51,7 @@ def tolerant(v: MultiVectorBase) -> bool:
 def test_round_trip_on_each_line(
     from_vector: MultiVectorBase, to_vector: MultiVectorBase, c: Real
 ) -> None:
-    P = line_to_line_projection(
+    P: InvertibleFunction[MultiVectorBase] = line_to_line_projection(
         from_vector=from_vector,
         to_vector=to_vector,
         float_close_to_zero=tolerant(from_vector),
@@ -68,7 +69,7 @@ def test_round_trip_on_each_line(
 
 
 def test_off_the_line_raises_in_each_direction() -> None:
-    P = line_to_line_projection(
+    P: InvertibleFunction[MultiVectorBase] = line_to_line_projection(
         from_vector=1 * g2.e_1 + 3 * g2.e_2, to_vector=1 * g2.e_2
     )
     with pytest.raises(ValueError, match="not on the line"):

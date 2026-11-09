@@ -85,6 +85,8 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **`uniform_scale(m)` and `scale_non_uniform(*factors)` annotate their factors as `Real`** (was
+  `float`), matching the symbolic factors they already accepted at runtime. No behavior change.
 - **`unit_pseudoscalar`, `bases` and `symbolic_multivector` raise `ValueError` on a graded type that
   cannot hold the blade** (e.g. `g3.Vector.unit_pseudoscalar(3)`), instead of returning a silent zero.
   Behavior change; use the full class (`g3.G`).

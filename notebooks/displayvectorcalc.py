@@ -86,6 +86,8 @@ display(cross(1 * k, 1 * i))  # = j
 # Symbolically, the classic coordinate formula falls out:
 
 # %%
+# Left undeclared: typed `sympy.Symbol`, pyright would read `symbol * e_1` as
+# sympy's `Expr.__mul__` (an `Expr`), not the multivector's `__rmul__`.
 a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
 b_1, b_2, b_3 = sympy.symbols("b_1 b_2 b_3")
 sym_a: Vector = a_1 * i + a_2 * j + a_3 * k

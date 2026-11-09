@@ -16,34 +16,32 @@ forces edits to unrelated logic, or breaks flow-narrowing, is not worth it.
 
 **`python tools/check_annotations.py`** — the auditor built for the sweep, promoted out of
 `tasks/adhoc/` because it answers "has coverage regressed?" on any future change. It walks
-`src/`, `tools/`, `tests/`, `notebooks/` and (since 2026-10-09) the book's companion notebooks
+`src/`, `tools/`, `tests/`, `notebooks/` and the book's companion notebooks
 `book/docs/notebooks/` with `ast` reporting: `def`s without a return
-annotation, params without one, assignments to a bare name, `for`-targets, bare generics,
-`Any`, and invariant `dict`/`list`/`set` params. It excludes the generated
+annotation, params without one, unannotated assignments (to a bare name, or each name of an
+unpacking such as `a_1, a_2 = sympy.symbols(...)`), `for`-targets, bare generics,
+`Any`, and invariant `dict`/`list`/`set` params. A name counts as annotated only within its own
+scope (the module, a class body, or one `def`). It excludes the generated
 `src/gacalc/g*.py` (the generator owns their annotations — fix
-`tools/gen_specialized.py`, never the output), and classifies type aliases, `Enum` members
-and `_` discards out of the count, since annotating one of those changes what it means.
+`tools/gen_specialized.py`, never the output) and anything gitignored, and classifies type
+aliases, `Enum` members and `_` discards out of the count, since annotating one of those changes
+what it means.
 
 `--full` prints every row, `--kind` and `--path` narrow it.
 
-**It is informational, not a gate**, and deliberately not wired into `make` — deciding
-whether a row is an exemption needs a human. Wiring it in is the maintainer's call.
+**It is a report, not a gate**: it always exits 0 and no `make` target runs it, because
+deciding whether a row is an exemption needs a human (the maintainer's decision, William
+Emerison Six <billsix@gmail.com>, 2026-11-09).
 
-As of 2026-09-09 it reported **29 rows in 10 files, all of them listed below**: 9 `Any`,
-7 aliases, 3 enum members, 3 invariant params, 3 locals, 2 returns, 1 param, 1 loop target.
-Anything *not* on this list is a genuine gap: annotate it, or add it here with its reason.
-
-**Floor (re-baselined 2026-10-09):** the auditor reports **32 rows in 12 files** — every one
+**Floor (re-baselined 2026-11-09):** the auditor reports **39 rows in 16 files** — every one
 either a listed exemption below or a *classified-out* row (a type alias or an `Enum` member,
 which the auditor prints but does not treat as a gap). The split: **13 classified-out** (10
-type aliases, 3 enum members) and **19 listed exemptions** (9 `Any` §1, 2 returns §2, 1 param
-§3, 3 invariant params §4, 4 locals §5). The 18 rows that had been beyond the old 29-floor —
-loop targets and locals in files written after the 2026-09-09 sweep (`check_epix_keywords.py`,
-`detect_unused_hypotheses.py`, `derive_lean_algebra.py`, `standardposition.py`) — were resolved
-by annotating each loop target (a declaration above the `for`), typing the `standardposition`
-locals, and widening two read-only `list` params to `Sequence`; only `test_odd3`'s
-`conjugated` joined the exemptions (§5). Record:
-`tasks/archive/2026/10/09/re-baseline-annotation-auditor.md`.
+type aliases, 3 enum members) and **26 listed exemptions** (9 `Any` §1, 2 returns §2, 1 param
+§3, 3 invariant params §4, 5 locals and loop targets §5, 6 symbol unpacks §6). Anything *not* on this list is a
+genuine gap: annotate it, or add it here with its reason. Records:
+`tasks/archive/2026/10/09/re-baseline-annotation-auditor.md` (the earlier 32-row floor) and
+`tasks/annotation-auditor-floor-drift.md` (the per-scope and unpacking
+detection, and the 66 gaps it found and fixed).
 
 ## The exemptions
 
@@ -98,22 +96,31 @@ of them produced errors in exactly one test; the other 21 are now typed.
 
 ### 5. Locals whose declared type would lose information
 
-- **`tests/test_graded.py`** — `cases`, and the `val`/`d` derived from it. The inferred
-  concrete union keeps `val.dual()` (dimension-defaulting) and `val.DIMENSION` resolvable;
-  `MultiVectorBase` does not. Same root cause as §2 and §3.
-- **`tests/test_odd3.py`** — `conjugated = versor * v * versor.inverse()`. Annotating it
-  widens `coeff_e_123` to `Real` (`int | float | sympy.Expr`), and sympy's stubs carry no
-  `simplify` overload for a bare `int`/`float`, so the annotation fails the next line
-  (`sympy.simplify(conjugated.coeff_e_123)`) without clarifying anything; the in-code comment
-  already says so.
-- **`tests/test_odd3.py`** — `conjugated`. Declaring `g3.Odd_3` is correct at runtime (the
-  next line asserts exactly that), but it widens `coeff_e_123` to the full
-  `Real = int | float | sympy.Expr`, and sympy's stubs have no `simplify` overload taking
-  a bare `int`/`float`.
+- **`tests/test_graded.py`** — `cases`, the loop's `val`/`expected` drawn from it, and the
+  `d` derived from `val` (3 LOCAL rows and 1 LOOP row). The inferred concrete union keeps
+  `val.dual()` (dimension-defaulting) and `val.DIMENSION` resolvable; `MultiVectorBase` does
+  not. Same root cause as §2 and §3.
+- **`tests/test_odd3.py`** — `versor` and `conjugated = versor * v * versor.inverse()`.
+  Declaring them `g3.Versor` and `g3.Odd_3` is correct at runtime (the test asserts the
+  second), but either one widens `conjugated.coeff_e_123` to `Real` (`int | float |
+  sympy.Expr`), and sympy's stubs carry no `simplify` overload for a bare `int`/`float`, so
+  the annotation fails `sympy.simplify(conjugated.coeff_e_123)` without clarifying anything;
+  the in-code comment says so.
 
-Note the shape these share: **the abstract base is less capable than every concrete
-subclass**, because dimension-defaulting overrides drop a required parameter. Any
-exemption of this family traces back to that.
+The `test_graded` rows share their shape with §2 and §3: **the abstract base is less capable
+than every concrete subclass**, because dimension-defaulting overrides drop a required
+parameter. Any exemption of this family traces back to that.
+
+### 6. `sympy.symbols` unpacks in the pyright-checked notebooks (6 sites)
+
+`notebooks/displayg2.py`, `displayg3.py`, `displayrotations.py` (2) and `displayvectorcalc.py`
+(2, one row per unpack line) leave their `a_1, a_2 = sympy.symbols(...)` names undeclared.
+`notebooks/` is type-checked by **pyright** (`make check-notebooks`), not `ty`. Once a name is
+declared `sympy.Symbol`, pyright resolves `a_1 * e_1` through sympy's own `Expr.__mul__`,
+which returns `Expr`, instead of the multivector's `__rmul__`, so `v: Vector = a_1 * e_1 + …`
+fails with `reportAssignmentType` (9 errors when tried, 2026-11-09). `ty` resolves the same
+expression to the multivector, so the declarations stay everywhere `ty` checks: `tests/`,
+`src/` and `book/docs/notebooks/`. A comment above each unpack says so.
 
 ## What is NOT an exemption
 

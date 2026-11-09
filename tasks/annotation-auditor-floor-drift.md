@@ -1,6 +1,5 @@
-# Annotation auditor reports 43 findings; the exemptions doc says the floor is 32 — fix the code or the doc
+# Annotation auditor: fix its blind spots, then re-baseline the floor
 
-**Status:** proposed — needs go-ahead
 **Priority:** 4
 **Difficulty:** 2
 **Source:** tasks/review/2026/11/08/repo-review.md §5.2, §4.3, §5.4 (the unannotated bindings the auditor misses)
@@ -9,88 +8,64 @@ tools/check_annotations.py reports 43 findings, but tasks/reference/type-annotat
 says the floor is 32, and to make a decision to either fix something that's broken, or update the md
 file to reflect the reality".
 
-## BLUF
+## Summary
 
-`python tools/check_annotations.py` reports **42 findings in 15 files** (re-run 2026-11-09; 43 in 14
-when this task was filed), while
-`tasks/reference/type-annotation-exemptions.md` says the floor (re-baselined 2026-10-09) is **32 rows in
-12 files**, every one a listed exemption or a classified-out alias/enum. Its rule is that "a row it
-reports that is not in that doc is a genuine gap". For each of the 10 extra rows, decide: **annotate the
-code** (a real gap) or **add it to the doc with its reason** (a real exemption). Done = the auditor's
-count equals the doc's stated floor, every row is accounted for in the doc, and the doc's duplicated §5
-bullet is fixed.
+`tools/check_annotations.py` reported 43 rows against a documented floor of 32, and the review's
+§5.2 found it blind to whole classes of unannotated binding. The auditor was fixed to see them
+(which raised the count to 105 rows in 31 files), 66 of those rows were real gaps and were
+annotated, and the remaining 39 rows in 16 files are the new documented floor in
+`tasks/reference/type-annotation-exemptions.md`: 13 classified-out (10 aliases, 3 enum members)
+and 26 listed exemptions.
 
-## Context (read first)
+## Decisions
 
-- `tasks/reference/type-annotation-exemptions.md` — the exemption catalogue and the floor.
-- `tools/check_annotations.py` — the auditor (`--full` prints every row; `--kind`, `--path` narrow
-  it). Informational, not a gate.
-- `tasks/reference/python-coding-standard-gacalc.md` "Annotation sweep" and the shared
-  `python-coding-standard.md` "annotate every binding" rule (a loop target is annotated by declaring it
-  on the line above the `for`).
-- The 2026-10-09 re-baseline record: `tasks/archive/2026/10/09/re-baseline-annotation-auditor.md`.
+1. The auditor stays a report, not a gate: it always exits 0 and no `make` target runs it.
+   `CLAUDE.md` › "Coding standard (Python)" no longer calls it enforcement (William Emerison Six
+   <billsix@gmail.com>, 2026-11-09: "change the wording to not call it enforcement").
+2. `uniform_scale(m)` and `scale_non_uniform(*factors)` were widened from `float` to `Real`. Typing
+   `tests/test_matrix_template.py`'s symbols as `sympy.Symbol` showed the tests pass symbolic factors,
+   which the functions already handled; `plane_rotation` already typed its angle as `Real`. A
+   `CHANGELOG.md` `[Unreleased]` › Changed entry records it.
+3. `tests/test_odd3.py`'s `versor` joined the §5 exemption next to `conjugated`: declaring it
+   `g3.Versor` breaks the same `sympy.simplify` line. The in-code comment covers both.
+4. The six `sympy.symbols` unpacks in the pyright-checked `notebooks/` stay undeclared (new
+   exemption §6). The first full `make check-notebooks` run after the codemod failed with 9
+   pyright errors: once the names are typed `sympy.Symbol`, pyright resolves `a_1 * e_1` through
+   sympy's `Expr.__mul__` (an `Expr`) instead of the multivector's `__rmul__`. The codemod's edits
+   to `notebooks/displayg2.py`, `displayg3.py`, `displayrotations.py` and `displayvectorcalc.py`
+   were reverted, and a comment above each unpack gives the reason. `ty` doesn't make this
+   mistake, so the declarations stay in `tests/`, `src/` and `book/docs/notebooks/`.
 
-## Snapshot (agent, 2026-11-06; re-run before acting)
+## What was done
 
-By kind, against the doc's floor:
+- **The auditor (`tools/check_annotations.py`)**, the four §5.2 defects:
+  - annotated names are tracked per scope (module, class body, each `def`), not per file, so an
+    annotated `x` in one function no longer hides an unannotated `x` in another;
+  - unpacking and chained assignments (`a_1, a_2 = sympy.symbols(...)`) are reported as LOCAL,
+    and unpacked `for` targets name every unannotated name (nested and starred targets included);
+  - gitignored files are excluded (via `git ls-files`), as its docstring had claimed;
+  - the docstring says it is a report that no `make` target runs.
+- **The 66 gaps**, fixed across 22 files in `src/`, `tools/`, `tests/`, `notebooks/` and
+  `book/docs/notebooks/`:
+  - the `sympy.symbols` unpack names declared `sympy.Symbol` on the lines above, by the
+    idempotent codemod `tasks/adhoc/annotation-auditor-floor-drift/declare_symbol_unpacks.py`
+    (a second run changed nothing), then reverted in the four pyright-checked notebooks
+    (decision 4);
+  - the rest by hand: loop-target declarations, `Figure`/`Axes` for `plt.subplots`,
+    `sympy.cse`/`sympy.fraction` results, the generator's closure locals, and nine read-only
+    `list`/`set` parameters widened to `Sequence`/`AbstractSet` (`tests/test_frame.py`,
+    `tests/test_frame_class.py`, `tools/render_epix_figures.py`). Two bare `frame: list`
+    annotations in `tests/test_frame.py` gained their element type.
+- **The reference doc** was re-baselined to 39 rows in 16 files, its §5 duplicate `conjugated`
+  bullet was merged, §6 was added, and the floor paragraph names this record.
 
-| kind | now | doc floor | difference |
-|---|---|---|---|
-| ALIAS | 10 | 10 | — |
-| ENUM | 3 | 3 | — |
-| ANY | 9 | 9 | — |
-| RET | 2 | 2 | — |
-| PARAM | 1 | 1 | — |
-| LOCAL | 4 | 4 | — |
-| INVAR | 6 | 3 | +3 |
-| LOOP | 8 | 0 | +8 |
+## Verification
 
-The 11 extra rows (all added after the 2026-10-09 re-baseline):
-
-- `tools/reorder_lean.py` (added 2026-10-28, commit `2076c75`): INVAR `_has_decl(buf)`,
-  `split_blocks(body_lines)`, `reorder(plan)`; LOOP `group`, `k`, `key`. **These rows are gone:** the
-  tool was removed on 2026-11-08 (`tasks/archive/2026/11/08/reorder-lean-tool-stale-plans.md`).
-- `tests/test_frame.py`: LOOP `k` at four sites (tests added 2026-10-26 to 2026-10-29).
-- `tests/test_graded.py`: LOOP `val`. The doc's §5 lists `test_graded`'s `cases`/`val`/`d` as LOCAL
-  exemptions, so check whether this row is that exemption in a new shape or a new site.
-
-**The duplicated §5 bullet:** §5 lists `tests/test_odd3.py`'s `conjugated` twice, in two wordings.
-Merge them into one.
-
-## Plan
-
-1. Re-run `python tools/check_annotations.py --full` and refresh the snapshot.
-2. For each extra row, decide and record:
-   - **LOOP rows:** most likely real gaps. Annotate by declaring the loop target on the line above the
-     `for` (the house fix used in the 2026-10-09 re-baseline). Only exempt one if the declaration would
-     lose type information (the §5 pattern).
-   - **INVAR rows in `reorder_lean.py`:** none remain; the tool was removed on 2026-11-08 (see the
-     row list above).
-3. Fix the code for the gaps; add the true exemptions to the doc with their reasons; merge the
-   duplicated §5 bullet; update the floor paragraph (count, file count, split, date, and this task as
-   the record).
-4. Gates: `make test`, `make format` (ruff + ty). Confirm the auditor's count equals the new floor.
-
-## Also: the auditor's §5.2 defects (added 2026-11-09)
-
-From `tasks/review/2026/11/08/repo-review.md` §5.2. The maintainer put this here rather than in a new
-task (2026-11-09). `tools/check_annotations.py` does not do what its docs said it does:
-
-- **It always exits 0, and nothing runs it, but `CLAUDE.md` called it enforcement.** Decided: it
-  stays a report, not a gate, and `CLAUDE.md` › "Coding standard (Python)" was reworded to say so
-  (William Emerison Six <billsix@gmail.com>, 2026-11-09: "change the wording to not call it
-  enforcement"). Done; staged with this task doc.
-- **Its docstring says gitignored files are excluded; they aren't.** Implement the exclusion, or
-  correct the docstring.
-- **The `annotated` set is built per file**, so one annotated `x` exempts every unannotated `x` in
-  the same file. Track annotations per scope (per function).
-- **Tuple-unpack assignments are never reported.** That includes the `sympy.symbols` unpack
-  `CLAUDE.md` requires to be declared on the lines above (`a_1: sympy.Symbol`). Examples the review
-  found: `tests/test_odd3.py:43,110` and `tests/test_matrix_template.py:57,329`.
-
-Once these are fixed, the reported count will rise (the new detections), and the floor this task
-re-baselines must be re-measured with them.
-
-## Open questions
-
-None yet. If any row has no clear answer once read, raise it here before deciding.
+- `python tools/check_annotations.py`: 39 findings in 16 files, every one classified out or listed.
+- On the host: `ruff check` and `ruff format --check` clean; `ty check` clean on
+  `--no-respect-ignore-files src`, `tests`, `tools` and `book/docs/notebooks`.
+- The generator's g1–g3 output is byte-identical before and after its annotation edits (the HEAD
+  generator and the edited one, run on the host and compared with `cmp`).
+- Container gates: `make test` 775 passed, 2 skipped; `make format` exit 0. `make check-notebooks`
+  first failed (decision 4), then passed after the revert: 0 errors and the same 42 warnings as
+  before, re-run with the target's own `podman run` line against the built image.

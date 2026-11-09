@@ -50,6 +50,14 @@ from gacalc.transforms import (
     uniform_scale,
 )
 
+TX: sympy.Symbol
+TY: sympy.Symbol
+TZ: sympy.Symbol
+W: sympy.Symbol
+H: sympy.Symbol
+D: sympy.Symbol
+S: sympy.Symbol
+THETA: sympy.Symbol
 TX, TY, TZ, W, H, D, S, THETA = sympy.symbols("tx ty tz w h d s theta")
 
 # the random parameter sets every "equals to_matrix" test is run over -- a
@@ -326,7 +334,7 @@ def test_to_matrix_accepts_a_plain_composable_function() -> None:
     double: ComposableFunction[MultiVectorBase] = ComposableFunction(
         lambda x: 2 * x, "D", linearity=Linearity.LINEAR
     )
-    m = numeric(to_matrix(double, g2.Vector))
+    m: np.ndarray = numeric(to_matrix(double, g2.Vector))
     assert np.array_equal(m, np.diag([2.0, 2.0, 1.0]).astype(np.float32))
     t: MatrixTemplate = to_matrix_template(double, g2.Vector, ())
     assert np.array_equal(t.fill(), m)

@@ -31,6 +31,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from collections.abc import Set as AbstractSet
 from pathlib import Path
 
 REPO: Path = Path(__file__).resolve().parents[1]
@@ -137,6 +138,7 @@ def main() -> int:
             p for p in sources if p.stem in wanted or p.stem.replace("_", "-") in wanted
         ]
     status: int = 0
+    src: Path
     for src in sources:
         try:
             render_one(src, args.dpi)
@@ -153,7 +155,7 @@ def main() -> int:
     return status
 
 
-def remove_orphans(names: set[str]) -> None:
+def remove_orphans(names: AbstractSet[str]) -> None:
     """Delete rendered outputs whose figure file no longer exists."""
     output: Path
     for output in sorted(OUT.glob("*.pdf")) + sorted(OUT.glob("*.png")):

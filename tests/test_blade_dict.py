@@ -78,6 +78,8 @@ SAMPLES: list[tuple[type[MultiVectorBase], BladeReal]] = [
 def test_roundtrip_identity() -> None:
     # from_blade_dict(x.to_blade_dict()) == x, and the dict itself round-trips
     # verbatim, for every representation.
+    cls: type[MultiVectorBase]
+    d: BladeReal
     for cls, d in SAMPLES:
         x: MultiVectorBase = cls.from_blade_dict(d)
         assert cls.from_blade_dict(x.to_blade_dict()) == x

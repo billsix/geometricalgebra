@@ -809,6 +809,7 @@ class MultiVectorBase(abc.ABC):
             >>> (5 * g3.Trivector.e_123).coefficient(g3.Trivector.e_123)
             5
         """
+        key: Blade
         (key,) = blade.to_blade_dict()  # the single blade of a unit basis blade
         return self.to_blade_dict().get(key, 0)
 

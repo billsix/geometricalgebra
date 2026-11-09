@@ -39,6 +39,7 @@ def closed_form_sign(r: int) -> int:
 
 def test_pseudoscalar_square_matches_closed_form() -> None:
     """Squaring I_r in Gn agrees with (-1)^(r(r-1)/2) for every grade 0..N."""
+    r: int
     for r in range(MAX_GRADE + 1):
         squared: int = int(Gn.unit_pseudoscalar_squared(r).scalar_part())
         assert squared == closed_form_sign(r), (
@@ -53,6 +54,7 @@ def test_helper_agrees_with_independent_squaring() -> None:
     carries (the slow squaring now, the closed form after Phase 2), it must equal
     actually squaring the pseudoscalar in ``Gn``.
     """
+    r: int
     for r in range(MAX_GRADE + 1):
         assert pseudoscalar_squared_sign(r) == int(
             Gn.unit_pseudoscalar_squared(r).scalar_part()

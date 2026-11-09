@@ -123,6 +123,9 @@ def cross_via_standard_position(a: Vector, b: Vector) -> Vector:
 
 # %%
 a_exact: Vector = 3 * e_1 + 4 * e_2 + 12 * e_3
+b_1: sympy.Symbol
+b_2: sympy.Symbol
+b_3: sympy.Symbol
 b_1, b_2, b_3 = sympy.symbols("b_1 b_2 b_3")
 b_symbolic: Vector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
 

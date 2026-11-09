@@ -47,6 +47,10 @@ from gacalc.gn import Gn, e_1, e_2, e_3
 
 def test_geometric_product_splits_into_dot_and_wedge_2d() -> None:
     """``ab = a·b + a∧b`` for general 2D vectors -- both parts read off explicitly."""
+    a_1: sympy.Symbol
+    a_2: sympy.Symbol
+    b_1: sympy.Symbol
+    b_2: sympy.Symbol
     a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
     a: Gn = a_1 * e_1 + a_2 * e_2
     b: Gn = b_1 * e_1 + b_2 * e_2
@@ -61,6 +65,12 @@ def test_geometric_product_splits_into_dot_and_wedge_2d() -> None:
 def test_geometric_product_splits_into_dot_and_wedge_3d() -> None:
     """``ab = a·b + a∧b`` for general 3D vectors -- the wedge now has three
     bivector components, one per pair of axes."""
+    a_1: sympy.Symbol
+    a_2: sympy.Symbol
+    a_3: sympy.Symbol
+    b_1: sympy.Symbol
+    b_2: sympy.Symbol
+    b_3: sympy.Symbol
     a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3")
     a: Gn = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
     b: Gn = b_1 * e_1 + b_2 * e_2 + b_3 * e_3

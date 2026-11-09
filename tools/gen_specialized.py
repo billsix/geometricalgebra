@@ -3302,6 +3302,7 @@ def rename_map(
 ) -> dict[str, tuple[str, str]]:
     """Operand-symbol rename map for ``expr_to_ast`` (a_<f>->self, b_<f>-><rhs>)."""
     r: dict[str, tuple[str, str]] = {}
+    b: Blade
     for b in blades_self:
         r["a_" + blade_label(b)] = ("self", field_name(b))
     for b in blades_rhs:
@@ -3771,6 +3772,8 @@ def result_block_stmts(
     documents as "returns a value of x's own type"), so its arms build via
     ``type(x)`` and an operand subclass keeps its type.
     """
+    replacements: list[tuple[sympy.Symbol, sympy.Expr]]
+    reduced: list[sympy.Expr]
     replacements, reduced = sympy.cse(out_exprs)
     stmts: list[ast.stmt] = [
         annotated_assign(str(t), name_ref("Real"), expr_to_ast(e, rename))
@@ -4686,6 +4689,8 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
         the closed form over ALL blades (cse'd), with an isinstance guard that
         coerces a foreign rhs to ``Gn`` and delegates via ``cross_node``."""
         result_coeffs: BladeReal = result_mv.to_blade_dict()
+        replacements: list[tuple[sympy.Symbol, sympy.Expr]]
+        reduced: list[sympy.Expr]
         replacements, reduced = sympy.cse(
             [sympy.sympify(result_coeffs.get(b, 0)) for b in blades]
         )
@@ -5109,6 +5114,8 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         gn_unary: Callable[[Gn], MultiVectorBase],
         cast: Callable[[ast.expr], ast.expr] = cast_self,
     ) -> ast.stmt:
+        result_spec: TypeSpec
+        out_exprs: list[sympy.Expr]
         result_spec, out_exprs = unary_result(spec, gn_unary, n, full_name)
         return unary_stmt(
             result_spec, out_exprs, unary_rename, owner=spec.name, cast=cast
@@ -5121,6 +5128,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         # simply *declares* its resolved return type (e.g. Vector.even_part ->
         # Scalar) -- a valid narrowing of base's MultiVectorBase.  The impl
         # constructs that type directly (identity cast -> no unsound Self cast).
+        result_spec: TypeSpec
         result_spec, _ = unary_result(spec, gn_unary, n, full_name)
         return function_def(
             method,
@@ -5134,6 +5142,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         # DEFAULTS to this algebra's dimension (g2 -> 2, g3 -> 3), so ``x.dual()``
         # just works.  It is dimension-fixed, so any OTHER ``n`` raises rather than
         # falling back to G_n (no ``_coerce(self, G_n).dual(n)`` branch).
+        result_spec: TypeSpec
         result_spec, _ = unary_result(spec, lambda a: a.dual(n), n, full_name)
         return function_def(
             "dual",
@@ -5175,6 +5184,7 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         )
 
     rvp_overload_stubs: list[ast.stmt] = []
+    r: int
     for r in range(n + 1):
         rvp_spec: TypeSpec
         rvp_spec, _ = unary_result(

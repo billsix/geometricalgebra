@@ -8,8 +8,7 @@ row a deliberate exemption -- and the current count live in
 is a genuine gap -- annotate it, or add it to the list with its reason.
 
 Informational, not a gate: judging whether a row is an exemption needs a human,
-so this reports and never fails the build.  Wiring it into ``make`` would need
-the maintainer's go-ahead and a decision about what "clean" means.
+so this reports and never fails the build, and no ``make`` target runs it.
 
 Walks the hand-written Python in ``src/``, ``tools/``, ``tests/``, ``notebooks/`` and
 the book's companion notebooks ``book/docs/notebooks/`` with the ``ast`` module and
@@ -17,13 +16,19 @@ reports, per file:
 
 * ``RET``    -- a ``def`` with no return annotation.
 * ``PARAM``  -- a parameter with no annotation (``self``/``cls`` excluded).
-* ``LOCAL``  -- an assignment to a single bare name with no annotation, where a
-  concrete type is plausibly knowable.  Noise-prone by nature, so the report is a
-  *candidate* list to read, not a to-do list to apply blindly.
-* ``LOOP``   -- an unannotated ``for``-loop target (which cannot be annotated
-  inline; the convention is a declaration on the line above).  Comprehension and
-  generator targets are deliberately skipped: they are a separate scope and stay
-  inferred.
+* ``LOCAL``  -- an assignment with no annotation, where a concrete type is
+  plausibly knowable: to a bare name, or each name of an unpacking
+  (``a_1, a_2 = sympy.symbols(...)``, whose names the convention declares on the
+  lines above).  Noise-prone by nature, so the report is a *candidate* list to
+  read, not a to-do list to apply blindly.
+* ``LOOP``   -- an unannotated ``for``-loop target, unpacked names included (it
+  cannot be annotated inline; the convention is a declaration on the line
+  above).  Comprehension and generator targets are deliberately skipped: they are
+  a separate scope and stay inferred.
+
+A name counts as annotated only within its own scope (the module, a class body,
+or one ``def``): an annotated ``x`` in one function says nothing about an ``x``
+in another.  A parameter's annotation covers rebinds of it in its body.
 * ``BARE``   -- a bare generic annotation (``ComposableFunction`` rather than
   ``ComposableFunction[...]``), which silently degrades the parameter to ``Any``.
 * ``ANY``    -- an explicit ``typing.Any``/``Any`` in an annotation.
@@ -31,7 +36,8 @@ reports, per file:
   where a read-only use wants the covariant ``Mapping``/``Sequence``/``AbstractSet``.
 
 The generated ``src/gacalc/g*.py`` are build artifacts owned by the generator and
-are excluded; so is anything ``.gitignore``d.
+are excluded; so is anything ``.gitignore``d (asked of ``git ls-files``; outside a
+git checkout nothing is filtered).
 
 Run from anywhere::
 
@@ -47,6 +53,7 @@ import argparse
 import ast
 import pathlib
 import re
+import subprocess
 import sys
 from collections.abc import Iterator
 
@@ -91,8 +98,28 @@ class Finding:
         return f"{self.path}:{self.line}: {self.kind:<5} {self.name}{tail}"
 
 
+def not_ignored() -> set[str] | None:
+    """Repo-relative paths git does not ignore (tracked or untracked), or None.
+
+    None means git is unavailable here (no ``git``, or not a checkout), and then
+    nothing is filtered.
+    """
+    try:
+        listing: subprocess.CompletedProcess[str] = subprocess.run(
+            ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return set(listing.stdout.splitlines())
+
+
 def in_scope() -> Iterator[pathlib.Path]:
-    """Every hand-written .py file under the four in-scope directories."""
+    """Every hand-written .py file under the in-scope directories, minus gitignored."""
+    visible: set[str] | None = not_ignored()
     d: str
     for d in SCOPE_DIRS:
         root: pathlib.Path = REPO / d
@@ -101,7 +128,7 @@ def in_scope() -> Iterator[pathlib.Path]:
         p: pathlib.Path
         for p in sorted(root.rglob("*.py")):
             rel: str = p.relative_to(REPO).as_posix()
-            if GENERATED.match(rel):
+            if GENERATED.match(rel) or (visible is not None and rel not in visible):
                 continue
             yield p
 
@@ -224,26 +251,6 @@ def check_file(path: pathlib.Path) -> list[Finding]:
         return [Finding(rel, exc.lineno or 0, "PARSE", str(exc))]
 
     out: list[Finding] = []
-    # Names bound by an annotated assignment anywhere in the file; an unannotated
-    # rebind of such a name is already typed and is not a finding.
-    annotated: set[str] = {
-        n.target.id
-        for n in ast.walk(tree)
-        if isinstance(n, ast.AnnAssign) and isinstance(n.target, ast.Name)
-    }
-    # A parameter carries its type in the signature, so a later rebind of that
-    # name inside the body is already typed -- annotating it again would be
-    # redundant, and where the rebind narrows a union it would fight the checker's
-    # flow analysis (``base.__add__`` rebinding its ``rhs`` is the case in point).
-    annotated |= {
-        a.arg
-        for fn in ast.walk(tree)
-        if isinstance(fn, ast.FunctionDef | ast.AsyncFunctionDef)
-        for a in (
-            list(fn.args.posonlyargs) + list(fn.args.args) + list(fn.args.kwonlyargs)
-        )
-        if a.annotation is not None
-    }
 
     # Assignments in an Enum class body are members, not annotation candidates:
     # ``LINEAR = 0`` declares an enum value, and annotating it would make it a
@@ -278,36 +285,132 @@ def check_file(path: pathlib.Path) -> list[Finding]:
         if isinstance(child, ast.FunctionDef | ast.AsyncFunctionDef)
     }
 
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
-            check_function(node, rel, out, is_method=id(node) in methods)
-        elif isinstance(node, ast.Assign):
-            if len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
-                name: str = node.targets[0].id
-                if name in annotated or name.startswith("_"):
-                    continue
-                kind: str = (
-                    "ALIAS"
-                    if (name in module_level and is_type_definition(node.value))
-                    else ("ENUM" if id(node) in enum_members else "LOCAL")
+    fn: ast.AST
+    for fn in ast.walk(tree):
+        if isinstance(fn, ast.FunctionDef | ast.AsyncFunctionDef):
+            check_function(fn, rel, out, is_method=id(fn) in methods)
+
+    # Bindings are judged per scope -- the module, each class body, each def --
+    # because a name annotated in one function says nothing about the same name
+    # in another.
+    scope: ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef
+    for scope in [tree] + [
+        n
+        for n in ast.walk(tree)
+        if isinstance(n, ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef)
+    ]:
+        nodes: list[ast.AST] = list(scope_nodes(scope))
+        # Names bound by an annotated assignment in this scope; an unannotated
+        # rebind of such a name is already typed and is not a finding.  Names
+        # declared global/nonlocal belong to an outer scope, so they are skipped.
+        annotated: set[str] = {
+            n.target.id
+            for n in nodes
+            if isinstance(n, ast.AnnAssign) and isinstance(n.target, ast.Name)
+        } | {
+            name
+            for n in nodes
+            if isinstance(n, ast.Global | ast.Nonlocal)
+            for name in n.names
+        }
+        # A parameter carries its type in the signature, so a later rebind of
+        # that name inside the body is already typed -- annotating it again
+        # would be redundant, and where the rebind narrows a union it would fight
+        # the checker's flow analysis (``base.__add__`` rebinding its ``rhs``).
+        if isinstance(scope, ast.FunctionDef | ast.AsyncFunctionDef):
+            annotated |= {
+                a.arg
+                for a in (
+                    list(scope.args.posonlyargs)
+                    + list(scope.args.args)
+                    + list(scope.args.kwonlyargs)
                 )
-                out.append(Finding(rel, node.lineno, kind, name))
-        elif isinstance(node, ast.For):
-            # `_` is the conventional discard: the value is never read, so a type
-            # for it would be noise, not documentation.
-            targets: list[ast.Name] = (
-                [node.target]
-                if isinstance(node.target, ast.Name)
-                else [e for e in node.target.elts if isinstance(e, ast.Name)]
-                if isinstance(node.target, ast.Tuple)
-                else []
-            )
-            names: list[str] = [
-                t.id for t in targets if t.id not in annotated and t.id.strip("_") != ""
-            ]
-            if names:
-                out.append(Finding(rel, node.lineno, "LOOP", ", ".join(names)))
+                if a.annotation is not None
+            }
+
+        node: ast.AST
+        for node in nodes:
+            if isinstance(node, ast.Assign):
+                if len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+                    name: str = node.targets[0].id
+                    if name in annotated or name.startswith("_"):
+                        continue
+                    kind: str = (
+                        "ALIAS"
+                        if (
+                            scope is tree
+                            and name in module_level
+                            and is_type_definition(node.value)
+                        )
+                        else ("ENUM" if id(node) in enum_members else "LOCAL")
+                    )
+                    out.append(Finding(rel, node.lineno, kind, name))
+                    continue
+                # Unpacking (``a, b = ...``) and chained (``a = b = ...``)
+                # assignments: each bare name in them needs a declaration above.
+                unpacked: list[str] = [
+                    t
+                    for target in node.targets
+                    for t in bound_names(target)
+                    if t not in annotated and not t.startswith("_")
+                ]
+                if unpacked:
+                    out.append(Finding(rel, node.lineno, "LOCAL", ", ".join(unpacked)))
+            elif isinstance(node, ast.For | ast.AsyncFor):
+                # `_` is the conventional discard: the value is never read, so a
+                # type for it would be noise, not documentation.
+                names: list[str] = [
+                    t
+                    for t in bound_names(node.target)
+                    if t not in annotated and t.strip("_") != ""
+                ]
+                if names:
+                    out.append(Finding(rel, node.lineno, "LOOP", ", ".join(names)))
     return out
+
+
+def scope_nodes(
+    scope: ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef,
+) -> Iterator[ast.AST]:
+    """Every node in one scope's body, not descending into nested scopes.
+
+    A nested ``def``/``class``/``lambda`` or a comprehension is its own scope (a
+    comprehension's targets stay inferred), so its bindings are not this scope's.
+    """
+    pending: list[ast.AST] = list(reversed(scope.body))
+    while pending:
+        node: ast.AST = pending.pop()
+        yield node
+        if isinstance(
+            node,
+            ast.FunctionDef
+            | ast.AsyncFunctionDef
+            | ast.ClassDef
+            | ast.Lambda
+            | ast.ListComp
+            | ast.SetComp
+            | ast.DictComp
+            | ast.GeneratorExp,
+        ):
+            continue
+        pending.extend(reversed(list(ast.iter_child_nodes(node))))
+
+
+def bound_names(target: ast.expr) -> list[str]:
+    """The bare names an assignment or ``for`` target binds, unpacking included.
+
+    Attribute and subscript targets (``self.x = ...``, ``d[k] = ...``) bind no
+    new name, so they contribute nothing.
+    """
+    match target:
+        case ast.Name(id=name):
+            return [name]
+        case ast.Tuple(elts=elts) | ast.List(elts=elts):
+            return [n for e in elts for n in bound_names(e)]
+        case ast.Starred(value=value):
+            return bound_names(value)
+        case _:
+            return []
 
 
 def main() -> int:
@@ -317,7 +420,7 @@ def main() -> int:
     )
     ap.add_argument("--kind", help="restrict to one kind (RET, PARAM, LOCAL, ...)")
     ap.add_argument("--path", help="restrict to paths containing this substring")
-    args = ap.parse_args()
+    args: argparse.Namespace = ap.parse_args()
 
     findings: list[Finding] = []
     p: pathlib.Path

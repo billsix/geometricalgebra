@@ -175,6 +175,8 @@ def create_graphs(
     helpers need no explicit axes argument). Nestable — nested blocks restore the
     enclosing axes rather than clobbering it.
     """
+    fig: Figure
+    axes: Axes
     fig, axes = plt.subplots(figsize=graph_bounds)
     token: contextvars.Token[Axes] = _axes.set(axes)
     axes.set_xlim((-graph_bounds[0], graph_bounds[0]))
@@ -486,7 +488,7 @@ def draw_ndc(
     )  # zorder ensures dots are on top
 
     # Label each vertex
-    labels = ["(-1,-1)", "(1,-1)", "(1,1)", "(-1,1)"]
+    labels: list[str] = ["(-1,-1)", "(1,-1)", "(1,1)", "(-1,1)"]
     i: int
     label: str
     for i, label in enumerate(labels):
@@ -590,14 +592,19 @@ def plot_multivector(
             x if x is not None else float(rng.uniform(-symbolic_range, symbolic_range))
         )
 
+    xmin: float
+    xmax: float
     if x_range is not None:
         xmin, xmax = x_range
     else:
         m: float = max(max(abs(x) for x in xs), 1.0)
         xmin, xmax = -1.2 * m, 1.2 * m
 
+    fig: Figure
+    ax: Axes
     fig, ax = plt.subplots(figsize=figsize or (8, max(2.0, 0.7 * n)))
 
+    i: int
     blade: Blade
     coef: Real
     for i, (blade, coef, x) in enumerate(zip(blades, coefs, xs)):
@@ -673,7 +680,11 @@ def _expand_numerators_dict(mv: MultiVectorBase) -> BladeReal:
     Expanding the dict directly keeps the distributed form on every representation.
     """
     out: BladeReal = {}
+    blade: Blade
+    coef: Real
     for blade, coef in mv.to_blade_dict().items():
+        numerator: sympy.Expr
+        denominator: sympy.Expr
         numerator, denominator = sympy.fraction(sympy.together(coef))
         out[blade] = sympy.expand(numerator) / denominator
     return out

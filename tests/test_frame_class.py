@@ -263,8 +263,8 @@ def test_non_frame_raises() -> None:
 )
 def test_forward_sends_basis_to_frame(
     function_name: str,
-    basis: list[Gn],
-    frame_vectors: list[Gn],
+    basis: Sequence[Gn],
+    frame_vectors: Sequence[Gn],
     request: pytest.FixtureRequest,
 ) -> None:
     """``f(e_i) == v_i`` for every basis vector, and the map is tagged linear."""
@@ -298,6 +298,9 @@ def test_composed_round_trip_is_identity_symbolic(
 
 
 # Concrete oblique frames on the graded types, each with a symbolic input vector.
+x_1: sympy.Symbol
+x_2: sympy.Symbol
+x_3: sympy.Symbol
 x_1, x_2, x_3 = sympy.symbols("x_1 x_2 x_3")
 GRADED_FRAMES_AND_INPUTS: list[tuple[list[MultiVectorBase], MultiVectorBase]] = [
     (
@@ -319,7 +322,7 @@ GRADED_FRAMES_AND_INPUTS: list[tuple[list[MultiVectorBase], MultiVectorBase]] = 
 @pytest.mark.parametrize("inverse_method", INVERSE_METHODS)
 @pytest.mark.parametrize(("vectors", "x"), GRADED_FRAMES_AND_INPUTS, ids=["g2", "g3"])
 def test_composed_round_trip_concrete_frames_symbolic_input(
-    vectors: list[MultiVectorBase],
+    vectors: Sequence[MultiVectorBase],
     x: MultiVectorBase,
     inverse_method: Literal["reciprocal", "peel"],
 ) -> None:

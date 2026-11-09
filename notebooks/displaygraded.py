@@ -68,6 +68,7 @@ def kind(x: MultiVectorBase) -> str:
 
 def show(*values: MultiVectorBase) -> None:
     """Display each value as 'Type:  <latex>' -- the type is the point here."""
+    x: MultiVectorBase
     for x in values:
         display(Math(f"{kind(x)}:\\quad " + x._repr_latex_().strip("$")))
 
@@ -171,6 +172,8 @@ show(quarter.plane_of_rotation())
 # rotation — provably, even symbolically (see `tests/test_graded.py`).
 
 # %%
+frm: g2.Vector
+to: g2.Vector
 frm, to = 1 * e_1, 1 * e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
 R: g2.Versor = g2.Vector.versor_from_vectors(from_vector=frm, to_vector=to)
 show(R)  # an (un-normalized) g2.Versor
