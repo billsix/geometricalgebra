@@ -16,13 +16,14 @@ over geometric-algebra machinery that already computes it:
 
 - :func:`cross` -- the cross product, the **dual of the wedge**:
   ``a × b = (a ∧ b) I₃⁻¹``.
-- the **dot product** needs no alias here: it is
-  :meth:`gacalc.base.MultiVectorBase.scalar_product` (``a · b = ⟨a b⟩``).
+- the **dot product** needs no alias here: for two vectors it is
+  ``a.dot(b).scalar_part()`` (``a · b``, read out as a number).
 - the **scalar triple product** ``a · (b × c)`` needs no alias either: it is
   :func:`gacalc.measure.signed_volume` -- the 3-D determinant.  The identity is
   gated by ``tests/test_vectorcalc.py``.
 - **grad / div / curl** are deliberately absent: they need multivector *fields*
-  and a derivative operator (see ``tasks/custom-symbols-and-vector-calc.md``).
+  and a derivative operator (see
+  ``tasks/archive/2026/08/31/custom-symbols-and-vector-calc.md``).
 """
 
 from __future__ import annotations

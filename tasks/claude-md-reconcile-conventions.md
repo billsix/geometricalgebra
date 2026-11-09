@@ -1,45 +1,35 @@
 # Reconcile `CLAUDE.md`'s dot-product rule, and record the unrecorded decisions
 
-**Status:** proposed — needs go-ahead (approved in session 2026-11-09; in progress)
-**Priority:** 3
-**Difficulty:** 2
-**Created:** 2026-11-09
+**Created:** 2026-11-09 · **Completed:** 2026-11-09
 **Source:** `tasks/review/2026/11/08/repo-review.md` §1.1, §2.3
 
-## BLUF
+## What changed
 
-`CLAUDE.md` says both "write `a.dot(b).scalar_part()` for vectors" (2026-11-04) and "dot =
-`scalar_product`" (two older bullets), and some code follows the older wording. Several decisions
-still in force are recorded nowhere. Done means one dot-product rule throughout, the code following
-it, and each decision written where a reader looks for it.
+- **One dot-product rule.**
+  - `CLAUDE.md`'s `vectorcalc` module bullet and its Operators "cross product" line said "dot =
+    `scalar_product`". They now say `a.dot(b).scalar_part()` for two vectors, matching the
+    2026-11-04 convention.
+  - So does `src/gacalc/vectorcalc.py`'s module docstring, which also now points at the archived
+    path of the task it cites.
+  - The code that followed the old wording now uses `.dot(...).scalar_part()`:
+    `notebooks/displayvectorcalc.py` (prose and cell), `tests/test_vectorcalc.py`, and
+    `tests/test_rotor_from_vectors.py`.
+- **Decisions recorded:**
+  - `CLAUDE.md` › "Build vectors from the basis constants" now states its scope: teaching-facing
+    code; tests may call the constructor, and product tests keep blade-dict literals.
+  - `CLAUDE.md` names `bivector_rotation` among the rotation factories, in the module layout and in
+    Operators.
+  - `CLAUDE.md`'s alias carve-out adds `displayvectorcalc`'s `i, j, k`.
+  - `tasks/reference/python-coding-standard-gacalc.md` gains "Symbolic tests write their vectors
+    inline": no shared `sym_vec_*` fixtures, and parametrize only over named variants written out
+    inline. That is the reviewer's recommendation, which the maintainer took on 2026-11-09.
+  - The same doc gains "Notebooks show values with `display(...)`, never `print`".
+  - `README.md` › "Contributing" points at `CHANGELOG.md`. (The README's other changes in this
+    batch, its math spacing, belong to `tasks/archive/2026/11/09/book-notation-sweep.md`.)
 
-## Context
+## Verification
 
-- **The dot-product contradiction:**
-  - the rule is `CLAUDE.md` › "Conventions" (2026-11-04);
-  - the old wording is in the `vectorcalc` module bullet, the Operators "cross product" line, and
-    `src/gacalc/vectorcalc.py`'s module docstring;
-  - code using `scalar_product` for two vectors: `notebooks/displayvectorcalc.py`,
-    `tests/test_vectorcalc.py`, `tests/test_rotor_from_vectors.py`.
-- **Decisions to record** (review §2.3):
-  - the scope of "build vectors from basis constants" (teaching-facing code; tests may use the
-    constructor);
-  - `bivector_rotation` among the rotation factories;
-  - the `displayvectorcalc` `i, j, k` alias;
-  - "symbolic tests write their vectors inline" (and how that sits with the `FRAMES` parametrize;
-    the maintainer took the reviewer's recommendation, 2026-11-09);
-  - "notebooks use `display`, not `print`";
-  - a `CHANGELOG.md` pointer in the README.
-
-## Plan
-
-- [ ] Make the two old `CLAUDE.md` bullets and `vectorcalc.py`'s docstring say
-  `a.dot(b).scalar_part()`; change the three code sites.
-- [ ] Add the scope clause, the factory, and the alias carve-out to `CLAUDE.md`. Add the inline-tests
-  and `display` sections to `tasks/reference/python-coding-standard-gacalc.md`. Add the README
-  pointer.
-- [ ] Gate: `pytest` on the touched tests, the notebook runs, `ruff`, `ty`.
-
-## Open questions
-
-None.
+- `tests/test_vectorcalc.py` and `tests/test_rotor_from_vectors.py`, plus `vectorcalc`'s doctests:
+  19 passed.
+- `notebooks/displayvectorcalc.py` runs.
+- `ruff`: clean.

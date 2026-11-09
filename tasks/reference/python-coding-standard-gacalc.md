@@ -164,6 +164,26 @@ The shared standard's "Tests: parametrize over the variants, don't copy the test
   `tests/test_sandwich_grades.py`'s `test_versor_sandwich_fixes_pseudoscalar_{2d,3d}` (each annotates
   its own static return type).
 
+## Symbolic tests write their vectors inline (2026-08-25; scope settled 2026-11-09)
+
+A symbolic test writes its general vectors inline, with the exact expected formula next to them
+(`a: Vector = a_1 * e_1 + a_2 * e_2`, then the expected coefficients spelled out), so a reader sees
+what is being checked. It does not import shared `sym_vec_*` fixtures from `gacalc.gn` or hide its
+inputs behind module-level constants (decided in
+`tasks/archive/2026/08/25/explicit-symbolic-tests-and-helper-cleanup.md`).
+
+A `parametrize` over **named variants** is still fine (the 2026-11-07 section above), as long as each
+variant is written out inline in the parameter list or in one list beside the test, like
+`tests/test_frame.py`'s `FRAMES`. The rule is against inputs a reader has to look up elsewhere, not
+against running one test over several inputs. (William Emerison Six <billsix@gmail.com>, 2026-11-09,
+choosing the reviewer's recommendation in `tasks/review/2026/11/08/repo-review.md` §1.1.)
+
+## Notebooks show values with `display(...)`, never `print`
+
+The demo and book notebooks render a value with IPython's `display(...)` (or a cell's last expression),
+not `print`. `display` shows the LaTeX form (`_repr_latex_`); `print` shows the plain repr. ruff's
+`T201` enforces it (`tasks/archive/2026/09/05/fix-make-format-ruff-errors.md`).
+
 ## Cross-links (gacalc)
 
 - `tasks/reference/conditional-refactoring-rules.md` — the Rules A–E worked examples.

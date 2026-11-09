@@ -96,13 +96,14 @@ cross(sym_a, sym_b)  # pyright: ignore[reportUnusedExpression]
 # Dot and the scalar triple product — already here under their GA names
 # ---------------------------------------------------------------------
 #
-# The **dot product** is `scalar_product` (`a · b = ⟨a b⟩`), and the **scalar
-# triple product** `a · (b × c)` is `measure.signed_volume(a, b, c)` — the 3-D
+# The **dot product** of two vectors is `a.dot(b).scalar_part()` (`a · b`, read out
+# as a number), and the **scalar triple product** `a · (b × c)` is
+# `measure.signed_volume(a, b, c)` — the 3-D
 # determinant. No aliases needed; the identity holds on the nose:
 
 # %%
 b: Vector = 1 * i + 1 * j
 c: Vector = 1 * j + 2 * k
 # b.cross(c) is g3.Vector's generated closed form, typed Vector -> Vector.
-display(a.scalar_product(b.cross(c)))
+display(a.dot(b.cross(c)).scalar_part())
 display(signed_volume(a, b, c))

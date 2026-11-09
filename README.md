@@ -330,7 +330,8 @@ GitHub Actions runs the same gates on every push and PR (`.github/workflows/chec
 four check-only jobs on the lean image: `make check-format`, `make test-full`, `generated` — `make
 check-generated` + `make check-regions` — and `make check-notebooks`). CI is a thin wrapper — each job is `checkout` →
 `make <target>` — so what CI runs is exactly what you run locally. Releases are manual
-(`make dist` → `make upload`/`make release` to PyPI).
+(`make dist` → `make upload`/`make release` to PyPI). Breaking and notable changes are listed in
+`CHANGELOG.md`.
 
 ## License
 
