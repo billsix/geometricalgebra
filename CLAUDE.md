@@ -337,6 +337,9 @@ over a "run it on your host" instruction.
   not the notebooks). Kept separate from `make test` so a pyright-version bump can't redden it;
   `pyrightconfig.json` scopes it to `notebooks/` and must **not** hardcode `pythonVersion` (a mismatch
   with the image's Python makes pyright emit spurious "refers to itself" errors — let it auto-detect).
+- **`make notebooks-ipynb`** — converts every `notebooks/*.py` (jupytext percent format, the committed
+  source) to a gitignored `.ipynb`. **`make spyder`** opens the Spyder IDE; it needs an image built with
+  `USE_SPYDER=1` (default 0) and says so if not.
 - **Pinned image dependencies** — the image installs every Python package at the exact version in
   `constraints.txt` (`uv pip compile` of `pyproject.toml`'s dependencies + extras and
   `entrypoint/image-requirements.in`), applied in the Dockerfile's late dependency layer;
@@ -389,7 +392,8 @@ over a "run it on your host" instruction.
   `_static/epix/<name>.*`. **Every argument in a figure file is passed by keyword** — `polar(radius=1,
   angle=BETA)`, `epix.pen(color=..., width=...)`, `epix.black(intensity=0.45)` — so a figure reads as a
   scene description; the only exceptions are positional-only builtins (`math.cos(x)`). Checked and fixed
-  by `python tools/check_epix_keywords.py [--fix]`, a `make format` gate step (the maintainer's rule,
+  by `python tools/check_epix_keywords.py [--fix]` (which also checks the known epix calls in the book
+  notebooks that mention `epix`), a `make format` gate step (the maintainer's rule,
   2026-10-07). Every binding in a figure file is typed, as everywhere else (`fig: PendingFigure`
   declared above the `with`; `PendingFigure` is `_rotation_scene`'s alias for what `epix.figure()` yields).
   **A label's colour matches the line/vector it labels** (the maintainer's rule, 2026-10-09) so a reader

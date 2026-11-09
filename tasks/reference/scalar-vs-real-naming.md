@@ -50,7 +50,7 @@ for what goes in; the part/product methods keep the literature's word for the gr
 ## Compatibility
 
 A hard break (no deprecation alias): `CHANGELOG` BREAKING entry and a version bump, the same mechanism as
-rotor → versor in 0.1.0 (`tasks/archive/2026/10/04/rename-rotor-to-versor.md`). Checked 2026-10-05: no
+rotor → versor (in `[Unreleased]`, slated for 0.1.0; `tasks/archive/2026/10/04/rename-rotor-to-versor.md`). Checked 2026-10-05: no
 in-house consumer calls `from_scalar`/`from_coef` or imports `Coef`/`BladeCoef` (mvp has zero hits).
 
 ## Related

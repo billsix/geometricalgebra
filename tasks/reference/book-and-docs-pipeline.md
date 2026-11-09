@@ -92,7 +92,8 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   `label_angle`, `size` for `font_size`, `at`/`offset`/`text`/`align`, `tail`/`head`/`scale`,
   `center`/`radius`/`normal`, `data`/`closed`/`filled`). Positional-only builtins (`math.*`) are the one
   exemption. `tools/check_epix_keywords.py` reports violations (exit 1) and `--fix` inserts the names
-  from its per-function table — extend the table when a new epix call is used, never guess a name.
+  from its per-function table (it also checks the book notebooks that mention `epix`, reporting
+  only the calls its table knows) — extend the table when a new epix call is used, never guess a name.
   It runs in `entrypoint/format.sh` (wired 2026-10-07 on the maintainer's go-ahead).
 - **Types everywhere, as in the rest of the repo:** module-level points are `name: Point = polar(...)`;
   the `with … as fig` target is declared on the line above as `fig: PendingFigure` —
