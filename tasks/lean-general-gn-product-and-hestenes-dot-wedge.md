@@ -1,6 +1,6 @@
 # Lean — a dimension-agnostic `Gn`-style product, and Hestenes-style dot/wedge (future)
 
-**Relates to:** the Lean-proofs program (umbrella archived: `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`) and the
+**Relates to:** the Lean-proofs program (its umbrella is done: `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`; the live map is `tasks/reference/lean-ga-proof-architecture.md`) and the
 per-component algebras `proofs/GacalcProofs/G2.lean`, `G3.lean`.
 
 **Status:** proposed — **deliberately deferred** (do NOT start now; William Emerison Six

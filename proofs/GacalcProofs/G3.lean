@@ -3,7 +3,7 @@ import Mathlib
 /-! # 𝒢₃ from scratch: the 8-dimensional Euclidean geometric algebra
 
     A self-contained construction of the 3D geometric algebra over ℝ in the basis
-    {1, e₁, e₂, e₃, e₁*e₂, e₁*e₃, e₂*e₃, e₁*e₂*e₃}, Euclidean signature (eᵢ²=1, eᵢeⱼ=−eⱼeᵢ).
+    {1, e₁, e₂, e₃, e₁*e₂, e₁*e₃, e₂*e₃, e₁*e₂*e₃}, Euclidean signature (eᵢ²=1, eᵢ*eⱼ=−eⱼ*eᵢ).
     Built the same way as `G2`: a coordinate struct whose fields are the eight real
     **coefficients**, with the basis blades exposed as genuine `G3` **elements**
     (`one`/`e_1`/…/`e_123`) — a basis vector is a vector, not a real.
@@ -55,11 +55,11 @@ def vec (x y z : ℝ) : G3 := { s := 0, c1 := x, c2 := y, c3 := z, c12 := 0, c13
 /-- The unit pseudoscalar I₃ = e₁*e₂*e₃. -/
 def I : G3 := e_123
 
-/-- A **bivector** `p·e₁₂ + q·e₁₃ + r·e₂₃` (grade 2), naming just the three bivector coefficients on
+/-- A **bivector** `p*e₁₂ + q*e₁₃ + r*e₂₃` (grade 2), naming just the three bivector coefficients on
     top of `zero` — self-documenting in place of the raw literal `⟨0,0,0,0,p,q,r,0⟩`. -/
 def bivector (p q r : ℝ) : G3 := { zero with c12 := p, c13 := q, c23 := r }
 
-/-- A **trivector** (pseudoscalar) `t·e₁₂₃` (grade 3), in place of `⟨0,0,0,0,0,0,0,t⟩`. -/
+/-- A **trivector** (pseudoscalar) `t*e₁₂₃` (grade 3), in place of `⟨0,0,0,0,0,0,0,t⟩`. -/
 def trivector (t : ℝ) : G3 := { zero with c123 := t }
 
 /-- A **scalar** `a` (grade 0) as a 𝒢₃ element, in place of `⟨a,0,0,0,0,0,0,0⟩`. -/
@@ -274,7 +274,7 @@ theorem e_12_mul_e_3 : mul e_12 e_3 = e_123 := by
 /-- **The pseudoscalar squares to −1:** I₃² = −1 = (−1)^(3*2/2). -/
 theorem I_sq : mul I I = neg one := by simp only [mul, I, e_123, neg, one]; ext <;> ring
 
-/-- `I₃² = (−1)^(r(r−1)/2)` with `r = 3`: the 3D case of the general sign formula
+/-- `I₃² = (−1)^(r*(r−1)/2)` with `r = 3`: the 3D case of the general sign formula
     (`tasks/reference/pseudoscalar-square-sign.md`), read off `I_sq`. -/
 theorem I_sq_eq_sign : (mul I I).s = (-1 : ℝ) ^ (3 * (3 - 1) / 2) := by
   simp only [mul, I, e_123]; norm_num

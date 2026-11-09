@@ -1,0 +1,9 @@
+# Packages the Dockerfile installs into /venv by name, beyond pyproject.toml's own
+# dependencies and extras. `make update-pins` compiles this file together with
+# pyproject.toml into constraints.txt, which pins every package the image installs.
+setuptools
+wheel
+sphinx
+furo
+nbsphinx
+myst-nb

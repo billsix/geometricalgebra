@@ -1,35 +1,12 @@
 # Add `image-export` / `image-import` Makefile targets
 
-**Status:** done — implemented 2026-06-16
-**Created:** 2026-06-13
+**Created:** 2026-06-13 · **Completed:** 2026-06-16
 
-## Goal
+## What was done
 
-Add the OCI-image save/load convenience targets that **modelviewprojection** already has, so the built
-image can be archived to a tar (e.g. to move it to an offline/air-gapped machine, or snapshot a known-good
-build) and reloaded later without a rebuild.
-
-## Reference implementation
-
-`modelviewprojection/modelviewprojection/Makefile`:
-
-```make
-image-export: ## export the OCI image
-	podman save $(CONTAINER_NAME) -o $(CONTAINER_NAME)-$(shell date +%m-%d-%Y_%H-%M-%S).tar
-
-image-import: ## import the OCI image, "make image-import FILE=foo.tar"
-	podman load -i $(FILE)
-```
-
-## Current state
-
-geometricalgebra has **neither** target. `CONTAINER_CMD = podman`, `CONTAINER_NAME = gacalc`.
-
-## Proposed targets (improved over mvp's)
-
-Add near the other image targets. Three improvements over the mvp original: use `$(CONTAINER_CMD)`
-(not a hardcoded `podman`, matching the rest of the Makefile), mark both `.PHONY`, and tighten the
-help text.
+The OCI-image save/load targets that modelviewprojection already had were added, so the built image
+can be archived to a tar (to move it to an offline machine, or snapshot a known-good build) and
+reloaded without a rebuild:
 
 ```make
 .PHONY: image-export
@@ -41,23 +18,15 @@ image-import: ## import an OCI image tar: make image-import FILE=foo.tar
 	$(CONTAINER_CMD) load -i $(FILE)
 ```
 
-## Notes / decisions
+## Decisions
 
-- **Gitignore the artifacts.** `podman save` drops a multi-hundred-MB `gacalc-MM-DD-YYYY_HH-MM-SS.tar`
-  in the repo root. Add `$(CONTAINER_NAME)-*.tar` (i.e. `gacalc-*.tar`) — or just `*.tar` — to
-  `.gitignore` so these never get committed. (mvp's copy omits this; don't inherit that gap.)
-- **No `image` dependency by default.** `podman save` needs the image to already exist. Leaving
-  `image-export` without an `image` prerequisite (as mvp does) means it errors clearly if you haven't
-  built yet, rather than silently triggering a long rebuild. Optionally make it `image-export: image`
-  if you'd rather it always builds first.
-- **Nested podman:** `podman save`/`load` don't start a container, so they need **no**
-  `--cgroups=disabled` and run fine nested.
-- **`image-import` requires `FILE=`** — `make image-import FILE=gacalc-06-13-2026_12-00-00.tar`. With
-  no `FILE`, `podman load -i` errors; that's acceptable, but a guard
-  (`@test -n "$(FILE)" || { echo 'set FILE=foo.tar'; exit 1; }`) is a nice-to-have.
-
-## Acceptance
-
-- `make help` lists `image-export` and `image-import` with `##` descriptions.
-- `make image-export` writes `gacalc-<timestamp>.tar`; `make image-import FILE=…` reloads it.
-- The exported tar pattern is gitignored.
+- **Three improvements over mvp's copy** (github.com/billsix/modelviewprojection `Makefile`):
+  `$(CONTAINER_CMD)` instead of a hardcoded `podman`, both targets `.PHONY`, and tighter help text.
+- **The artifacts are gitignored** (`gacalc-*.tar` in `.gitignore`, commented "large, never commit");
+  `podman save` writes a multi-hundred-MB tar to the repo root, and mvp's copy had lacked this.
+- **No `image` prerequisite**, as in mvp: `make image-export` errors clearly when no image is built
+  instead of silently starting a long rebuild.
+- `podman save`/`load` start no container, so they need no `--cgroups=disabled` and run nested.
+- `image-import` requires `FILE=` (`make image-import FILE=gacalc-06-13-2026_12-00-00.tar`); without it
+  `podman load -i` errors, which was judged acceptable, and the optional empty-`FILE` guard was not
+  added.

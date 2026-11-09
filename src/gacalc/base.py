@@ -219,11 +219,15 @@ def pseudoscalar_squared_sign(r: int) -> int:
 
     Returns:
         int: the sign factor ``(−1)^(r * (r−1)/2)`` (``+1`` or ``−1``).
+
+    Examples:
+        >>> [pseudoscalar_squared_sign(r) for r in range(1, 6)]  # +, -, -, +, +
+        [1, -1, -1, 1, 1]
     """
     # Proven equal to squaring the unit pseudoscalar the slow, obviously-correct way
     # — the SAME calculation, kept here as a comment so it reads as a proof for a
-    # student.  Phase 1 (2026-08-15) computed exactly this value like so, which
-    # needed a deferred ``from gacalc.gn import Gn`` (a graded type can't build the
+    # student.  Computing it that way needs a deferred ``from gacalc.gn import Gn``
+    # (a graded type can't build the
     # grade-1 vectors the pseudoscalar is made of, so only the full algebra Gn can):
     #
     #     from gacalc.gn import Gn
@@ -368,6 +372,10 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: the unit pseudoscalar e₁ * e₂ * … * e_n.
 
+        Raises:
+            ValueError: if ``cls`` cannot hold the grade-``n`` blade (a graded type
+                such as ``g3.Vector``), rather than returning a silent zero.
+
         Examples:
             >>> from gacalc.gn import e_1, e_2, e_3, MultiVector
             >>> MultiVector.unit_pseudoscalar(1) == e_1
@@ -377,8 +385,8 @@ class MultiVectorBase(abc.ABC):
             >>> MultiVector.unit_pseudoscalar(3) == e_1 * e_2 * e_3
             True
 
-            Its square ``i^2`` is the scalar ``(-1)^(n(n-1)/2)`` -- ``+1`` for ``n`` in
-            1, 4, 5, 8, 9, … and ``-1`` for ``n`` in 2, 3, 6, 7, 10, … (the sign that
+            Its square ``i^2`` is the scalar ``(-1)^(n * (n-1)/2)`` -- ``+1`` for ``n``
+            in 1, 4, 5, 8, 9, … and ``-1`` for ``n`` in 2, 3, 6, 7, 10, … (the sign that
             makes ``i`` a complex or quaternionic imaginary; see
             :meth:`unit_pseudoscalar_squared`):
 
@@ -386,10 +394,33 @@ class MultiVectorBase(abc.ABC):
             ...  for n in range(1, 16)]
             [1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1]
         """
-        return math.prod(
+        pseudoscalar: typing.Self = math.prod(
             [cls.basis_vector(x) for x in range(1, n + 1)],
             start=cls.one(),
         )
+        cls._require_holds_blade(pseudoscalar, tuple(range(1, n + 1)))
+        return pseudoscalar
+
+    @classmethod
+    def _require_holds_blade(cls, value: "MultiVectorBase", blade: Blade) -> None:
+        """Raise ``ValueError`` unless ``value`` is the unit ``blade`` itself.
+
+        A graded type silently drops the blades it has no field for (its ``one()``
+        is zero on a type with no scalar), so a basis blade built in it comes back
+        as zero; this turns that into an error naming the type.
+
+        >>> import gacalc.g3 as g3
+        >>> g3.Vector.unit_pseudoscalar(3)
+        Traceback (most recent call last):
+            ...
+        ValueError: Vector cannot hold the basis blade e_123; use the full class
+        """
+        if value.to_blade_dict().get(blade) != 1:
+            label: str = "1" if blade == () else "e_" + "".join(map(str, blade))
+            raise ValueError(
+                f"{cls.__name__} cannot hold the basis blade {label}; "
+                "use the full class"
+            )
 
     @classmethod
     def bases(cls, n: int) -> Generator[typing.Self]:
@@ -403,6 +434,11 @@ class MultiVectorBase(abc.ABC):
         Yields:
             Self: each unit basis blade of 𝒢ₙ in grade order, from the scalar 1
             to the pseudoscalar.
+
+        Raises:
+            ValueError: if ``cls`` cannot hold one of the blades (a graded type),
+                rather than yielding a silent zero.  ``symbolic_multivector`` is
+                built from these blades, so it raises the same way.
         """
 
         def powerset(iterable: Sequence[int]) -> chain[Blade]:
@@ -410,18 +446,19 @@ class MultiVectorBase(abc.ABC):
             # chain.from_iterable flattens the list of combinations
             return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
-        yield from (
-            math.prod(
+        b: Blade
+        for b in powerset(range(1, n + 1)):
+            blade: typing.Self = math.prod(
                 [cls.basis_vector(x) for x in b],
                 start=cls.one(),
             )
-            for b in powerset(range(1, n + 1))
-        )
+            cls._require_holds_blade(blade, b)
+            yield blade
 
     @classmethod
     def symbolic_multivector(cls, n: int, prefix: str) -> typing.Self:
         """A general multivector of 𝒢ₙ with a distinct symbolic coefficient on every
-        basis blade — ``prefix0``·1 + ``prefix1``·e₁ + … over all  2ⁿ  blades.
+        basis blade — ``prefix0`` * 1 + ``prefix1`` * e₁ + … over all  2ⁿ  blades.
 
         The workhorse for proving an identity symbolically: build one of these,
         run the operation, and check the result simplifies to the expected form.
@@ -526,8 +563,8 @@ class MultiVectorBase(abc.ABC):
             case _:
                 # multivector*multivector is handled by __mul__; any other left
                 # operand is unsupported -- defer so Python raises a clean
-                # TypeError (the previous `-self._geometric_product(lhs)` was dead
-                # and wrongly negated: the geometric product is not anticommutative).
+                # TypeError.  (Negating `self * lhs` would be wrong: the geometric
+                # product is not anticommutative.)
                 return NotImplemented
 
     # ------------------------------------------------------------------
@@ -717,9 +754,9 @@ class MultiVectorBase(abc.ABC):
         """Unit multivector  Â  =  A / ``|A|``  — A rescaled to magnitude 1.
 
         Raises ``ZeroDivisionError`` if ``A`` has zero magnitude (e.g. the zero
-        vector), for **any** coefficient kind. A float-zero already raised; without
-        this guard an int/symbolic zero silently returned a ``nan``-poisoned value
-        (sympy ``0 ** -1`` → ``zoo``, ``0 * zoo`` → ``nan``).
+        vector), for **any** coefficient kind, so an int or symbolic zero never
+        yields a ``nan``-poisoned value (sympy ``0 ** -1`` → ``zoo``,
+        ``0 * zoo`` → ``nan``).
 
         Returns:
             Self: the unit multivector ``A / |A|`` (magnitude 1).
@@ -988,9 +1025,8 @@ class MultiVectorBase(abc.ABC):
         Grade-0 caveat: UNLIKE the Hestenes dot product (``inner_product``), the
         loop over source components INCLUDES grade 0 — Taylor (and galgebra's
         contraction) do; Hestenes' dot is undefined for scalars.  Taylor also calls
-        grade 0 part of the plain dot product, which conflicts with Hestenes; this
-        discrepancy may warrant further investigation (see
-        tasks/investigate-dot-product-grade-0.md).
+        grade 0 part of the plain dot product, which conflicts with Hestenes (see
+        ``tasks/reference/contraction-and-dot-definitions.md``).
 
         Args:
             rhs: the right operand.
@@ -1032,7 +1068,7 @@ class MultiVectorBase(abc.ABC):
 
         Grade-0 caveat: like the left contraction, the loop INCLUDES grade 0,
         unlike the Hestenes dot (``inner_product``) — see ``left_contraction`` and
-        tasks/investigate-dot-product-grade-0.md.
+        ``tasks/reference/contraction-and-dot-definitions.md``.
 
         Args:
             rhs: the right operand.
@@ -1487,9 +1523,8 @@ class MultiVectorBase(abc.ABC):
         machine-checked for the vector, versor, bivector and trivector cases in
         the Lean proof layer (``proofs/GacalcProofs/``).
 
-        (This replaces the older "not sure if I'm doing this correctly" flag:
-        the method is correct for the subset above; the general case is
-        unimplemented and now **guarded** — a mixed-grade ``A`` raises
+        (The method is correct for the subset above; the general case is
+        unimplemented and **guarded** — a mixed-grade ``A`` raises
         ``RuntimeError`` instead of returning a wrong answer.  The guard is the
         exact condition "``Ã * A`` is a scalar", which subsumes scalar/vector/blade/
         versor in every dimension — unlike a grade-shape test, which cannot spot a
@@ -1659,7 +1694,7 @@ class MultiVectorBase(abc.ABC):
         cls,
         onto: MultiVectorBase | Sequence[MultiVectorBase],
     ) -> ComposableFunction[MultiVectorBase]:
-        """Projection  P_B(A)  =  (A · B) B⁻¹  — the component of A lying in the
+        """Projection  P_B(A)  =  (A · B) * B⁻¹  — the component of A lying in the
         subspace represented by the blade B (``onto``).
 
         A projection discards the rejected part, so it is **not invertible**: this
@@ -1679,7 +1714,7 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             gacalc.functions.ComposableFunction[MultiVectorBase]: the
-            (non-invertible) projection ``A ↦ (A · B) B⁻¹``.
+            (non-invertible) projection ``A ↦ (A · B) * B⁻¹``.
 
         Examples:
             >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2, MultiVector
@@ -2089,8 +2124,8 @@ class MultiVectorBase(abc.ABC):
         to_vector: MultiVectorBase,
     ) -> MultiVectorBase:
         r"""The versor ``R`` taking ``from_vector`` toward ``to_vector``, built from
-        the angle bisector.  (Geometric products are juxtaposition, as elsewhere;
-        ``A * B`` is *not* an inner product.)
+        the angle bisector.  (``A * B`` is the geometric product, not an
+        inner product.)
 
         Derivation (write ``a = from_vector``, ``b = to_vector``).  Scale each
         input by the *other's* length and add -- this is the half-angle, or
@@ -2194,7 +2229,7 @@ class MultiVectorBase(abc.ABC):
         so ``R`` is zero exactly when ``a``, ``b`` are antiparallel (or one is
         zero), and for unit ``a``, ``b`` at angle θ the rotor is the half-angle
         ``cos(θ/2) - sin(θ/2) * i`` that ``transforms.plane_rotation`` builds
-        (``|R|² = 2 + 2cos θ = 4cos²(θ/2)``).  With symbolic inputs ``normalize``
+        (``|R|² = 2 + 2 * cos(θ) = 4 * cos²(θ/2)``).  With symbolic inputs ``normalize``
         leaves ``sqrt(|R|²)`` unevaluated; substitute this closed form to simplify
         (see ``tests/test_rotor_from_vectors.py``).
 
@@ -2372,18 +2407,16 @@ class MultiVectorBase(abc.ABC):
         A² > 0 (a **vector**, the case
         :func:`~gacalc.base.pseudoscalar_squared_is_positive` guards).  A
         positive-square blade would exponentiate by
-        the hyperbolic ``cosh|A| + sinh|A| Â``, which is a *Minkowski boost*: it
+        the hyperbolic ``cosh(|A|) + sinh(|A|) * Â``, which is a *Minkowski boost*: it
         has no meaning in this Euclidean library (early Hestenes; no
         conformal / projective / spacetime signature), so ``exp`` rejects it
         rather than silently applying a spacetime formula to a Euclidean vector.
-        (An earlier version returned the hyperbolic form for vectors; it was
-        lifted from galgebra with no Euclidean justification and was removed.)
 
         Follows the numeric-preservation convention of ``magnitude`` /
         ``inverse``: float coefficients use ``math`` trig and stay float; int
         coefficients go through sympy exactly; symbolic stays symbolic.
 
-        The result is built with *dispatching arithmetic* (``A·k + c``), never
+        The result is built with *dispatching arithmetic* (``A * k + c``), never
         ``from_blade_dict``, so a graded operand returns the resolved type
         that can hold the scalar part (Bivector → Versor; a Bivector cannot
         represent its own exponential).
@@ -2428,7 +2461,7 @@ class MultiVectorBase(abc.ABC):
         r: int = self.max_grade()
         if pseudoscalar_squared_is_positive(r):
             # A**2 > 0 (a vector, or any positive-square blade): the series
-            # would sum to the hyperbolic cosh|A| + sinh|A| Â -- the Minkowski
+            # would sum to the hyperbolic cosh(|A|) + sinh(|A|) * Â -- the Minkowski
             # boost, meaningful only in a spacetime metric this Euclidean
             # library does not have.  Rejected rather than silently applied
             # (see the docstring); exp needs A**2 < 0.
@@ -2458,7 +2491,7 @@ class MultiVectorBase(abc.ABC):
         when ``simplify(left - right) == 0``.  This is value equality independent of
         the *form* a coefficient happens to be in (``(x + 1)**2`` vs
         ``x**2 + 2*x + 1``), the test the structural ``==`` cannot make; it is the
-        one home for the ``simplify(a - b) == 0`` idiom the tests used to re-roll.
+        one home for the ``simplify(a - b) == 0`` idiom, so tests don't re-roll it.
 
         Representation-agnostic: ``other`` may be any gacalc multivector (``Gn`` vs a
         generated ``g2``/``g3`` value), compared through the blade-dict interchange.
@@ -2645,8 +2678,6 @@ def _coerce[T: MultiVectorBase](x: MultiVectorBase | Real, cls: type[T]) -> T:
     match x:
         case MultiVectorBase():
             return cls.from_blade_dict(x.to_blade_dict())
-        case sympy.Expr():
-            return cls.from_real(x)
         case _:
             return cls.from_real(x)
 
@@ -2693,10 +2724,9 @@ def _require_canonical_blades(blade_coef: Mapping[Blade, object]) -> None:
     a legal *key*: it equals ``−e₁ * e₂``, so it belongs under the sorted key
     with the sign folded into the coefficient (and a repeated index contracts
     away entirely, ``eᵢeᵢ = 1``).  Shared by every representation's
-    ``from_blade_dict`` (the generated modules import it), replacing two old
-    *silent* failure modes -- ``Gn`` storing the bad key raw, the specialized
-    classes dropping it -- with one loud error (decision (a) of
-    tasks/validate-blade-dict-keys.md, 2026-07-29).
+    ``from_blade_dict`` (the generated modules import it), so a bad key is one loud
+    error rather than ``Gn`` storing it raw or a specialized class dropping it
+    (decision (a) of ``tasks/archive/2026/07/29/validate-blade-dict-keys.md``).
     """
     blade: Blade
     for blade in blade_coef:

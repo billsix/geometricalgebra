@@ -4,11 +4,10 @@ import GacalcProofs.G3
 
     The maintainer's own construction of the rotation versor in 𝒢₃, built directly from
     two vectors with **no angle parameter** (mirroring `versor_from_vectors` in `base.py`).
-    An earlier attempt parameterized the rotation by an explicit angle θ and defined the
-    versor as `cos(θ/2)*1 − sin(θ/2)*e₁₂`; that dragged in `cos`/`sin` and the double-angle
-    identities (and an instance-diamond fight with Mathlib's `sin_sq_add_cos_sq`) for no
-    geometric gain. This file follows the maintainer's Python instead: the half-angle is
-    *implicit* in the two vectors, so the whole story is polynomial algebra closed by `ring`.
+    Parameterizing the rotation by an explicit angle θ (the versor `cos(θ/2)*1 − sin(θ/2)*e₁₂`)
+    would drag in `cos`/`sin` and the double-angle identities for no geometric gain. This file
+    follows the maintainer's Python instead: the half-angle is *implicit* in the two vectors, so
+    the whole story is polynomial algebra closed by `ring`.
 
     The pieces (write `a = from`, `b = to`, both vectors):
 
@@ -121,7 +120,7 @@ theorem versor_mul_from_eq_bisector {fromV toV : G3} (hf : IsVector fromV) (ht :
 /-- **Companion identity: the to-vector times the versor is the (scaled) bisector**, `b*R = |b|*h`
     (multiplying `R` on the LEFT by `b`). Symmetric to `versor_mul_from_eq_bisector` (`R*a = |a|*h`).
     Together the pair drives the capstone `R*a*R⁻¹ = (|a|/|b|)*b` (the versor carries `a` to `b`): from
-    `R a = |a| h` and `b R = |b| h`, associativity, and `R R̃ = |R|²`, `R*a*R⁻¹ = (|a|/|b|)*b`. -/
+    `R a = |a| h` and `b R = |b| h`, associativity, and `R*R̃ = |R|²`, `R*a*R⁻¹ = (|a|/|b|)*b`. -/
 theorem from_mul_versor_eq_bisector_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
     mul (vec b1 b2 b3) (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
       = smul (magnitude (vec b1 b2 b3)) (bisector (vec a1 a2 a3) (vec b1 b2 b3)) := by

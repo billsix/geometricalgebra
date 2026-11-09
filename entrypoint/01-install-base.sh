@@ -41,6 +41,6 @@ dnf install -y pinentry || status=1
 # runs offline. (The pip `pyright` package is only a launcher that downloads Node and
 # the server on first use in every fresh container, and fails without network.)
 dnf install -y nodejs npm || status=1
-npm install -g pyright || status=1
+npm install -g pyright@1.1.414 || status=1
 
 exit $status

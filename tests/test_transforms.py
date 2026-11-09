@@ -251,13 +251,11 @@ def test_against_arrow_inverse_matches_negated_param() -> None:
 def test_at_default_is_step_for_handbuilt_function() -> None:
     # neither a law nor components -> identity until t>=1, then itself.
     f: InvertibleFunction[MultiVectorBase] = InvertibleFunction(
-        lambda v: v + g3.G.basis_vector(1), "", lambda v: v - g3.G.basis_vector(1), ""
+        lambda v: v + g3.G.e_1, "", lambda v: v - g3.G.e_1, ""
     )
     o: g3.G = g3.G.zero()
     assert f.at(0.5)(o).isclose(o, rel_tol=1e-5, abs_tol=1e-5)  # step: identity
-    assert f.at(1.0)(o).isclose(
-        g3.G.basis_vector(1), rel_tol=1e-5, abs_tol=1e-5
-    )  # step: full
+    assert f.at(1.0)(o).isclose(g3.G.e_1, rel_tol=1e-5, abs_tol=1e-5)  # step: full
 
 
 def test_inverse_commutes_with_at_for_primitive_and_composite() -> None:
@@ -467,30 +465,24 @@ def test_sandwich_of_zero_is_zero() -> None:
 
 
 def _to3(angle: float) -> MultiVectorBase:
-    return math.cos(angle) * g3.G.basis_vector(1) + math.sin(angle) * g3.G.basis_vector(
-        2
-    )
+    return math.cos(angle) * g3.G.e_1 + math.sin(angle) * g3.G.e_2
 
 
 def test_versor_rotation_is_linear_and_round_trips() -> None:
-    r: InvertibleFunction[MultiVectorBase] = versor_rotation(
-        g3.G.basis_vector(1), _to3(0.7)
-    )
+    r: InvertibleFunction[MultiVectorBase] = versor_rotation(g3.G.e_1, _to3(0.7))
     assert r.linearity is Linearity.LINEAR
     v: MultiVectorBase
     for v in (
-        g3.G.basis_vector(1),
-        g3.G.basis_vector(2),
-        g3.G.basis_vector(3),
+        g3.G.e_1,
+        g3.G.e_2,
+        g3.G.e_3,
         vec(g3.G, 1, 2, 3),
     ):
         assert r.inverse(r(v)).isclose(v, rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_versor_rotation_handles_zero() -> None:
-    r: InvertibleFunction[MultiVectorBase] = versor_rotation(
-        g3.G.basis_vector(1), _to3(0.7)
-    )
+    r: InvertibleFunction[MultiVectorBase] = versor_rotation(g3.G.e_1, _to3(0.7))
     assert r(g3.G.zero()).isclose(g3.G.zero(), rel_tol=1e-5, abs_tol=1e-5)
 
 
@@ -498,17 +490,13 @@ def test_versor_rotation_matches_projection_rotate() -> None:
     # the two formulations of a rotation agree (versor sandwich vs projection),
     # including the perpendicular axis being fixed
     to: MultiVectorBase = _to3(0.7)
-    versor_fn: InvertibleFunction[MultiVectorBase] = versor_rotation(
-        g3.G.basis_vector(1), to
-    )
-    proj_fn: MultiVectorFn = projection_rotation(
-        from_vector=g3.G.basis_vector(1), to_vector=to
-    )
+    versor_fn: InvertibleFunction[MultiVectorBase] = versor_rotation(g3.G.e_1, to)
+    proj_fn: MultiVectorFn = projection_rotation(from_vector=g3.G.e_1, to_vector=to)
     v: MultiVectorBase
     for v in (
-        g3.G.basis_vector(1),
-        g3.G.basis_vector(2),
-        g3.G.basis_vector(3),
+        g3.G.e_1,
+        g3.G.e_2,
+        g3.G.e_3,
         vec(g3.G, 2, -1, 3),
     ):
         assert versor_fn(v).isclose(proj_fn(v), rel_tol=1e-5, abs_tol=1e-5)

@@ -27,7 +27,7 @@ import contextvars
 import itertools
 import math
 from collections.abc import Generator, Sequence
-from typing import Any, cast
+from typing import Any
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -38,7 +38,6 @@ import sympy
 from IPython import get_ipython
 from IPython.display import Markdown, Math, display
 from matplotlib.axes import Axes
-from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
@@ -85,9 +84,7 @@ def _coord(mv: MultiVectorBase, blade: tuple[int, ...]) -> Real:
 def _to_xy(mv: MultiVectorBase) -> list[float]:
     """``mv``'s (e_1, e_2) coefficients as a plain ``[x, y]`` for matplotlib.
 
-    Was written inline as ``lambda mv: [float(_coord(mv, (1,))), float(_coord(mv,
-    (2,)))]`` in nine places across five ``draw_*`` helpers.  It lives at module
-    scope rather than inside each of them because all five need it.
+    Module scope, not inside one helper, because all five ``draw_*`` helpers use it.
     """
     return [float(_coord(mv, (1,))), float(_coord(mv, (2,)))]
 
@@ -144,8 +141,8 @@ def generategridlines(
 #:
 #: A :class:`contextvars.ContextVar` rather than a plain module global for two
 #: reasons.  ``set()`` returns a token and ``reset(token)`` restores the
-#: *previous* value, so nested ``create_graphs()`` blocks no longer clobber each
-#: other (a bare global left the outer block with ``None``).  And an unset
+#: *previous* value, so nested ``create_graphs()`` blocks don't clobber each
+#: other (a bare global would leave the outer block with ``None``).  And an unset
 #: ContextVar raises at the point of use, which is how ``_current_axes()`` can
 #: report the real mistake instead of an ``AttributeError`` further downstream.
 _axes: contextvars.ContextVar[Axes] = contextvars.ContextVar("axes")
@@ -155,7 +152,7 @@ def _current_axes() -> Axes:
     """The axes of the enclosing ``create_graphs()`` block.
 
     Raises :class:`RuntimeError` naming the actual mistake if there is no such
-    block -- this replaced scattered ``assert axes is not None`` checks.
+    block, in one place rather than an ``assert axes is not None`` per caller.
     """
     try:
         return _axes.get()
@@ -198,7 +195,6 @@ def create_graphs(
     axes.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
     axes.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
     fig.canvas.draw()
-    np.array(cast(FigureCanvasAgg, fig.canvas).renderer.buffer_rgba())
     display(fig)
     plt.close()
 
@@ -440,12 +436,6 @@ def draw_right_triangle(
         color,
         cls,
     )
-
-
-#         # Annotate with a 45-degree rotation
-# ax.annotate('Rotated Annotation', xy=(0.5, 0.5), xytext=(0.7, 0.3),
-#             arrowprops=dict(facecolor='black', shrink=0.05),
-#             rotation=45)
 
 
 def draw_ndc(
@@ -698,7 +688,7 @@ def show_mult(a: MultiVectorBase, b: MultiVectorBase) -> None:
     display(Markdown("**We want to evaluate**"))
     # print the values as latex before they are multiplied
     display(Math("$($" + a._repr_latex_() + "$)*($" + b._repr_latex_() + "$)$"))
-    display(Markdown("**Multivector Multiplication is distributive over additon**"))
+    display(Markdown("**Multivector Multiplication is distributive over addition**"))
 
     data: list[tuple[MultiVectorBase, MultiVectorBase]] = list(
         itertools.product(_blade_terms(a), _blade_terms(b))

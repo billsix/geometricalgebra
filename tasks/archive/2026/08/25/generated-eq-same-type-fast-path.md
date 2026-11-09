@@ -1,130 +1,62 @@
 # Generated `__eq__` — same-type field comparison instead of always via blade dict
 
-**Status:** DONE 2026-08-25 (William Emerison Six <billsix@gmail.com>) — see Outcome.
+**Created:** 2026-08-24 · **Completed:** 2026-08-25
 
-## Outcome (2026-08-25)
+## Background
 
-Implemented in `tools/gen_specialized.py` (`eq_method` now takes `fields`; wired at both call sites —
-`class_header_stmts` for the full `G` + graded types, and `generate_scalar` for the per-algebra
-`Scalar`). Regenerated (g1–g3), full suite **405 passed** incl. the new regression test
-`tests/test_graded.py::test_same_type_eq_fast_path_stays_simplify_aware`; generator **byte-identical
-across regen**.
+Every generated value type (the full `G` and the graded subtypes) shared one `__eq__`, emitted by
+`eq_method()` in `tools/gen_specialized.py`. It always round-tripped both operands through the
+blade-dict interchange, unioned the key sets, and tested each blade with
+`sympy.simplify(sympify(l) - sympify(r)) == 0`. For the common same-type case (`Vector == Vector`,
+`G == G`) the fields are known at generation time and line up one-to-one, so the dicts and key unions
+were pure overhead. A generated-class fast path fits the performance convention: keep `Gn`/`base` clean
+and put speed in the generated code.
 
-**Decision 2 was REVERSED by measurement.** The plain simplify-per-field version (what Decision 2 said
-to ship) was benchmarked to *regress*: **2.3× slower** for a low-grade value held in the full `G`
-(sparse), because dense per-field `simplify(0-0)` runs on the zero fields the *sparse* blade-dict path
-skips — sympy dominates, and the fast path did more of it. Bill's insight closed it: **sympy dominates
-only because the old `__eq__` forces every field through `sympify`+`simplify`, even plain int/float** —
-the numeric case (the specialized classes' whole point) should use a native `==`. So the fast path emits
-the **cheap-structural-first shortcut** (Decision 2's own deferred follow-up, now justified): per field
-`self.coeff_X == other.coeff_X` **or** `simplify(sympify(l)-sympify(r)) == 0` — native `==` first
-(exact + instant for numeric and same-form symbolic), simplify only on a structural mismatch.
-
-- **Bench:** numeric same-type `==` **0.34 µs** vs ~18.5 µs all-sympy (~54×) and 5.7 µs sparse-dict
-  fallback (~17×); symbolic different-form unchanged (~1.2 ms) and still correct.
-- **Floats stay EXACT** (`0.1+0.2 != 0.3`) — a native `==`, **not** tolerance. Tolerance is `isclose`'s
-  job (which the generator already emits on every type + `MultiVectorBase.isclose`; confirmed, no gap).
-  A tolerant `==` would also not be transitive.
-- Semantics unchanged from the old all-sympy `__eq__`; the blade-dict path remains the cross-type /
-  cross-representation fallback.
-
-Original plan/decisions below (Decision 2 superseded as noted).
-
-**Status (original):** proposed — needs go-ahead
-**Priority:** 5
-**Difficulty:** 4
-**Created:** 2026-08-24 (William Emerison Six <billsix@gmail.com>)
-
-## Context
-
-Every generated value type (the full `G` and the graded subtypes) shares one `__eq__`,
-emitted by `eq_method()` in `tools/gen_specialized.py:872`. It **always** round-trips both
-operands through the blade-dict interchange, unions the key sets, and does a per-blade
-`sympy.simplify(sympify(l) - sympify(r)) == 0`:
-
-```python
-def __eq__(self, other) -> bool:
-    if not isinstance(other, MultiVectorBase):
-        return NotImplemented
-    left: BladeCoef = self.to_blade_dict()
-    right: BladeCoef = other.to_blade_dict()
-    return all(
-        sympy.simplify(sympify(left.get(blade, 0)) - sympify(right.get(blade, 0))) == 0
-        for blade in set(left.keys()) | set(right.keys())
-    )
-```
-
-For the common case — comparing two values of the **same** specialized type
-(`Vector == Vector`, `G == G`) — building two dicts, allocating two key-sets, and unioning
-them is pure overhead. The fields are known at generation time and line up one-to-one, so
-we can compare them directly. This is a **generated-class fast path**, exactly the kind of
-optimization the perf convention allows (keep `Gn`/`base` clean; put speed in the generated
-code — see the `perf-work-priorities` memory).
-
-## The critical constraint — do NOT regress symbolic equality
-
-The current path is **simplify-aware**: it treats coefficients as *mathematically* equal,
-not *structurally* equal. A naive field comparison would break this, because `==` on
-`sympy.Expr` is **structural**:
-
-- `sympy` auto-canonicalizes some forms, so `sympify("a + b") == sympify("b + a")` is
-  `True` — fine.
-- But `(x + 1)**2 == x**2 + 2*x + 1` is **`False`** under bare `==` (needs `expand`/
-  `simplify`). The generated classes don't eagerly simplify (that's their whole point), so
-  same-type operands *can* hold structurally-different-but-equal symbolic coefficients — the
-  README even calls this out (`.simplified()` / `.expanded()` exist for exactly this).
-
-So the same-type fast path must apply the **same** `simplify(sympify(l) - sympify(r)) == 0`
-test **per field** — it just skips the dict construction and key-union, not the
-simplify-awareness.
-
-## Plan
-
-1. **Give `eq_method()` the field list** (like `iter_method(blades)` /
-   `is_close_method(type_name, fields)` already take). `is_close_method` is the closest
-   model — it already emits a `type(self) is type(other)` same-type, field-wise body; mirror
-   its shape.
-2. **Emit a same-type fast branch** at the top of `__eq__`, using `all([...])` over the
-   fields (see decision 1):
-   ```python
-   if type(self) is type(other):
-       return all(
-           [
-               sympy.simplify(sympify(self.coeff_e_1) - sympify(other.coeff_e_1)) == 0,
-               ...,  # one per field
-           ]
-       )
-   ```
-   Use `type(self) is type(other)` (exact identity — every generated type is
-   `@typing.final`, so no subclassing to worry about).
-3. **Keep the existing blade-dict path as the fallback** for the cross-type / cross-
-   representation cases (`Vector == G`, specialized `== Gn`, etc.) and keep the
-   `isinstance(other, MultiVectorBase)` / `NotImplemented` guard first.
-4. **Regenerate** (`make generate`) and re-run the suite + the determinism guard
-   (`make check-generated`).
-
-## Deferred follow-up — cheap-structural-first shortcut
-
-**Not part of this task** (see decision 2). A later optimization: for each field, try the
-cheap structural `self.coeff_e_1 == other.coeff_e_1` first and fall back to the
-`simplify(...)==0` test only on mismatch — fast for equal-numeric/equal-structural cases,
-still correct for the symbolic-but-unsimplified case. Ship the plain simplify-per-field
-version first, measure, then decide whether this shortcut earns its complexity.
-
-## Verification
-
-- **Conformance/graded suites** (`test_conformance.py`, `test_graded.py`) exercise `==`
-  broadly — they must stay green.
-- **Add a targeted symbolic test**: two same-type values whose coefficients are
-  mathematically equal but **structurally different** (e.g. one field `(x+1)**2`, the other
-  `x**2 + 2*x + 1`) must still compare **equal** through the fast path. This is the
-  regression the whole task hinges on — without it, the fast path silently weakens `==`.
-- **Bench** (`tools/bench.py` or an ad-hoc `timeit`): confirm the same-type path is
-  actually faster (and record the number), so the added generator complexity is justified.
+**The constraint: do not regress symbolic equality.** The existing path is simplify-aware
+(mathematical, not structural, equality). `==` on `sympy.Expr` is structural, so
+`(x + 1)**2 == x**2 + 2*x + 1` is `False`, and the generated classes don't eagerly simplify, so
+same-type operands can hold structurally different but equal coefficients (the README's
+`.simplified()` / `.expanded()` exist for this).
 
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-08-24)
 
-1. **Emit `all([...])`** over the fields (not a chained `and`) — consistent across
-   dimensions, tidy for 𝒢₅'s 32-field `G`.
-2. **Ship the plain simplify-per-field version only.** The cheap-structural-first shortcut
-   is a deferred follow-up (above), to be measured before adding.
+1. **Emit `all([...])` over the fields**, not a chained `and`: consistent across dimensions and tidy
+   for 𝒢₅'s 32-field `G`.
+2. **Ship plain simplify-per-field first** and defer a cheap-structural-first shortcut until
+   measured. **This was reversed by measurement** (below).
+
+## What changed
+
+- `eq_method` takes the field list (modelled on `is_close_method`, which already emitted a same-type,
+  field-wise body) and is wired at both call sites: `class_header_stmts` (the full `G` and graded
+  types) and `generate_scalar` (each algebra's `Scalar`).
+- The emitted `__eq__` keeps the `isinstance(other, MultiVectorBase)` / `NotImplemented` guard first,
+  then a `type(self) is type(other)` branch (exact identity is safe, since every generated type is
+  `@typing.final`), then the blade-dict path as the cross-type / cross-representation fallback
+  (`Vector == G`, specialized `== Gn`).
+- **The same-type branch uses the cheap-structural-first shortcut:** per field,
+  `self.coeff_X == other.coeff_X` **or** `simplify(sympify(l) - sympify(r)) == 0`. Native `==` comes
+  first (exact and instant for numeric and same-form symbolic values); simplify runs only on a
+  structural mismatch.
+
+## Why decision 2 was reversed
+
+The plain simplify-per-field version benchmarked **2.3× slower** for a low-grade value held in the full
+`G` (sparse): the dense per-field `simplify(0-0)` ran on zero fields that the sparse blade-dict path
+skipped, and sympy dominated. The maintainer's insight resolved it: sympy dominated only because every
+field went through `sympify` + `simplify`, even plain int/float, while the numeric case (the
+specialized classes' whole point) should use native `==`.
+
+- **Bench:** numeric same-type `==` **0.34 µs**, vs ~18.5 µs all-sympy (~54×) and 5.7 µs for the sparse
+  dict fallback (~17×). Symbolic different-form comparison was unchanged (~1.2 ms) and still correct.
+- **Floats stay exact** (`0.1+0.2 != 0.3`): a native `==`, not a tolerance. Tolerance is `isclose`'s job
+  (the generator already emits it on every type, plus `MultiVectorBase.isclose`; no gap), and a
+  tolerant `==` would not be transitive.
+- Semantics were unchanged from the old all-sympy `__eq__`.
+
+## Verification
+
+Regenerated g1–g3; full suite **405 passed**, including the new regression test
+`tests/test_graded.py::test_same_type_eq_fast_path_stays_simplify_aware` (structurally different but
+equal coefficients, such as `(x+1)**2` and `x**2 + 2*x + 1`, still compare equal); conformance and
+graded suites green; generator output byte-identical across regeneration.

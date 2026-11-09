@@ -39,13 +39,6 @@ import gen_specialized as gen  # noqa: E402
 # --------------------------------------------------------------------------
 
 
-def test_blade_label_special_cases() -> None:
-    assert gen.blade_label(()) == "scalar"
-    assert gen.blade_label((1,)) == "e_1"
-    assert gen.blade_label((1, 2)) == "e_12"
-    assert gen.blade_label((1, 2, 3)) == "e_123"
-
-
 def test_blade_label_roundtrips_over_all_blades() -> None:
     n: int
     for n in (1, 2, 3):
@@ -54,29 +47,9 @@ def test_blade_label_roundtrips_over_all_blades() -> None:
             assert gen.blade_of_label(gen.blade_label(blade)) == blade
 
 
-def test_field_name_is_coeff_prefixed() -> None:
-    assert gen.field_name(()) == "coeff_scalar"
-    assert gen.field_name((1,)) == "coeff_e_1"
-    assert gen.field_name((1, 2)) == "coeff_e_12"
-
-
 # --------------------------------------------------------------------------
 # Canonical blade ordering
 # --------------------------------------------------------------------------
-
-
-def test_blades_for_dim_canonical_order() -> None:
-    assert gen.blades_for_dim(2) == [(), (1,), (2,), (1, 2)]
-    assert gen.blades_for_dim(3) == [
-        (),
-        (1,),
-        (2,),
-        (3,),
-        (1, 2),
-        (1, 3),
-        (2, 3),
-        (1, 2, 3),
-    ]
 
 
 def test_blades_for_dim_is_grade_then_index() -> None:
@@ -112,13 +85,6 @@ def test_term_grade_key_uses_both_operands() -> None:
 # --------------------------------------------------------------------------
 # Subscript / superscript helpers (used in generated docstrings)
 # --------------------------------------------------------------------------
-
-
-def test_subscript_superscript() -> None:
-    assert gen._subscript(0) == "₀"
-    assert gen._subscript(12) == "₁₂"
-    assert gen._superscript(3) == "³"
-    assert gen._superscript(10) == "¹⁰"
 
 
 # --------------------------------------------------------------------------

@@ -1,11 +1,6 @@
 # Name a's standing angle β in the rotate-from-a-to-b proof (prose + figure)
 
-**Status:** done — 2026-10-08 (gates green; normalized pre-squash)
-**Priority:** 6
-**Difficulty:** 2
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-08
 
 Step 1 of `book/docs/proof-rotate-from-a-to-b.rst` ("swing `a` onto the x-axis") had written the
 rotation's cosine and sine as `cos = a_x/|a|`, `sin = -a_y/|a|` **without naming the angle**. Named it
@@ -23,11 +18,11 @@ green.
   (radius 0.3) alongside the existing θ wedge (bumped to radius 0.55 so the two read as nested angles);
   verified by render→view, keyword-only and typed (`check_epix_keywords` green).
 
-## History (commit chronology, branch `rotateFromAToB` — for the squash)
+## History (commit chronology)
 
-1. `ad0fabb` *added task* — filed this task (then proposed).
-2. `aa3b563` *implemented name angle beta* — the prose + figure edits; gates green.
-3. `4dfe3f0` *archived name angle beta* — `git mv` to `tasks/archive/2026/10/08/` (a proper staged
+1. `b28faa5` *added task* — filed this task (then proposed).
+2. `c23de63` *implemented name angle beta* — the prose + figure edits; gates green.
+3. `26c9c8d` *archived name angle beta* — `git mv` to `tasks/archive/2026/10/08/` (a proper staged
    rename — the first archive under the corrected "always `git mv`, never leave it untracked"
    convention).
 

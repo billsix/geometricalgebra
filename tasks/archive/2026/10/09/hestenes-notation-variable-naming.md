@@ -1,12 +1,6 @@
 # Adopt Hestenes notation for variable names (Greek scalars, lowercase vectors, CAPITAL multivectors)
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 6
-**Difficulty:** 6
-**Created:** 2026-09-30 **Updated:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-09-30 · **Completed:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
 
 Swept locals and private-helper bindings across `src/`, `tests/`, and the demo `notebooks/` so
 variable names follow the Hestenes grade-class convention: **Greek** for a scalar (angles → `θ`/`φ`),
@@ -18,7 +12,7 @@ gates (`make format`, `make test` = 697 passed) green.
 
 ## What was done
 
-A token-position codemod (`tasks/adhoc/hestenes-notation/apply_renames.py`) rewrote only NAME tokens,
+A token-position codemod (`apply_renames.py`, removed at archive; in git history) rewrote only NAME tokens,
 scoped per enclosing function (src/tests) or per file (the shared-namespace notebooks), so string
 labels (`sympy.symbols("theta")`) and comments were untouched. ~130 NAME tokens across 23 files:
 
@@ -94,7 +88,3 @@ convention-clean:
 that emitted-code names follow the Hestenes convention (pointer to the reference doc), so a future
 emitter keeps a terse multivector local CAPITAL and an angle scalar Greek. Regenerated (`make generate`
 equivalent) and reran the gates: generated output unchanged, `ruff`/`ty` clean, `pytest` 697 passed.
-
-## Open questions
-
-None.

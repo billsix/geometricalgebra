@@ -1,15 +1,14 @@
 # Lean: the 3D half-angle rotor rotates by its angle (`bivector_rotation` / `plane_rotation`)
 
-**Status:** done 2026-10-05 (gate `[lean] OK`, `PlaneRotation3D.lean` built with no warnings); archived 2026-10-05
-**Priority:** 6 **Difficulty:** 6
-**Created:** 2026-10-04 (William Emerison Six <billsix@gmail.com>), spun out of
-`tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md`. **Completed:** 2026-10-05.
+**Created:** 2026-10-04 · **Completed:** 2026-10-05 (William Emerison Six <billsix@gmail.com>); gate `[lean] OK`,
+`PlaneRotation3D.lean` built with no warnings. Spun out of
+`tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md`.
 **Harvested to:** `tasks/reference/lean-ga-proof-architecture.md` (the rotor paragraph + the coverage row),
 `tasks/reference/unit-bivector-and-rotors.md` §7 item 5.
-**Ad-hoc script:** `tasks/adhoc/lean-rotor-3d-angle-theorem/cofactors.py` (one-shot; removed in the archive commit —
-its output is baked into the proof, and the technique is described in the module header and the architecture doc).
+**Ad-hoc script:** `cofactors.py` (one-shot; removed at archive; in git history). Its output is baked into the
+proof, and the technique is described in the module header and the architecture doc.
 
-## BLUF
+## Summary
 
 Python's `transforms.bivector_rotation(B)(θ)` / `plane_rotation(a, b)(θ)` build the half-angle rotor
 `R = cos(θ/2) − sin(θ/2)·i` for a unit bivector `i` and apply `R v R̃`. Lean had proven this rotates by θ only in
@@ -19,7 +18,7 @@ the **angle** to the sandwich for a general plane. Proved it: `PlaneRotation3D.r
 part fixed, in-plane part rotated by θ with orientation — plus the student-facing
 `cos_between (R v R̃) v = cos θ` for in-plane `v` and "the normal is fixed".
 
-## Context
+## Background
 
 - Lean's `G3` is a coordinate struct; rotors are the predicate `IsRotor` (`Sandwich.lean`, 2026-10-05), and the
   reverse sandwich is `Rotor.rotorSandwich`. `project_onto i v = (v ⌋ i) i⁻¹`, `reject i v = (v ∧ i) i⁻¹`,
@@ -47,8 +46,8 @@ as the corollary, because (a) alone does not fix the direction of rotation. The 
   They were found with sympy's `reduced` (multivariate division) over gacalc's own 𝒢₃ product — the product
   Lean's `G3.mul` was transcribed from, so the polynomial difference is identical — and came out small
   (e.g. for `c1`: `(−p²x + prz − q²x − qry + x)·hcs + x(s − 1)(s + 1)·hpqr`). Zero remainder in sympy is the
-  proof the identity holds; Lean's `ring` then checks the pasted combination. The harness is
-  `tasks/adhoc/lean-rotor-3d-angle-theorem/cofactors.py`.
+  proof the identity holds; Lean's `ring` then checks the pasted combination. The harness was
+  `cofactors.py` (removed at archive).
 - **"⊥ fixed" stated on the normal itself** (`smul k (vec i.c23 (−i.c13) i.c12)`, the vector that commutes
   with `i`), the same shape as `sandwich_fixes_own_normal`; the cofactors there are by hand
   (`v_comp · hcs + v_comp · sin²(θ/2) · hpqr`, from `(c − s i) v (c + s i) = v(c² + s²|i|²)` for commuting `v`).

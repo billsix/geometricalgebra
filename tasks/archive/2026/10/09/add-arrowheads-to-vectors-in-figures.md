@@ -1,12 +1,6 @@
 # Add arrow heads to the vectors in the ePiX figures
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 5
-**Difficulty:** 2
-**Started:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-09 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-09
 
 Vectors in the book's ePiX figures now draw with a visible **arrow head**. The three shared vector
 helpers (`_scene2d.py`'s `vector()` and `dashed_vector()`, `_scene3d.py`'s `vector3()`) switched from
@@ -27,7 +21,3 @@ already use. One change in the helpers covers every figure. `make docs` rebuilds
 
 - Full `make docs` (nested) green — every figure re-rendered with arrow heads, HTML + PDF both built.
 - `ruff check` / `ruff format --check` / `check_epix_keywords` clean on the two scene files.
-
-## Open questions
-
-None.

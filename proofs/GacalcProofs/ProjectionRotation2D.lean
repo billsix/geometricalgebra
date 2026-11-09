@@ -22,7 +22,7 @@ import GacalcProofs.Sandwich
     zero. Nothing new is proven here that the existing 𝒢₂ lemmas did not already give; this is the named,
     side-by-side 3D↔2D parallel.
 
-    Getter-native since 2026-10-05: no coordinate `_coord` scaffold — the `√` tier rests on the object
+    Getter-native: no coordinate `_coord` scaffold — the `√` tier rests on the object
     lemmas `magnitude_sq_eq_normSq` / `magnitude_ne_zero_of_normSq_ne_zero` (`G2.lean`). -/
 namespace GacalcProofs.G2
 
@@ -30,13 +30,6 @@ open Real
 
 /-- Normalize a vector to unit length: `v̂ = (1/|v|)*v` (the 𝒢₂ twin of `Normalize.lean`'s `normalizeVec`). -/
 noncomputable def normalizeVec (a : G2) : G2 := smul (1 / magnitude a) a
-
-/-- A vector squares to its squared magnitude: `a a = |a|²*1` (2D twin of `G3.mul_vec_self`). -/
-theorem mul_vec_self {a : G2} (ha : IsVector a) :
-    mul a a = scalar (normSq a) := by
-  obtain ⟨has, ha12⟩ := ha
-  simp only [mul, normSq, reverse, scalar, has, ha12]
-  ext <;> ring
 
 /-- **The rejection of a vector from the `f∧t` plane is zero** (2D): the plane is the whole space, so a
     vector has no perpendicular component. Generalizes `Projection2D.reject_from_I_eq_zero` from `I₂` to

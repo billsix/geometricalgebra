@@ -1,17 +1,11 @@
 # Add `/-! ### -/` navigation section headers to the four header-less Lean proof files
 
-**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK). 10 section headers
-added across four files; purely additive (25 insertions, 0 deletions — no declaration moved).
-**Priority:** 8
-**Difficulty:** 2
-**Created:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
-**Updated:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-28 · **Completed:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
 
-## BLUF
-
-Four proof files had no `/-! ### … -/` navigation waypoints despite being 100–275 lines. Added headers
-grouping the existing declarations by phase — a **purely additive** change (new comment lines only, no
-reorder, no body touched); `git diff` is 25 inserted lines, 0 deletions, and `make lean` stayed green.
+Four proof files had no `/-! ### … -/` navigation waypoints despite being 100–275 lines. Ten headers
+were added grouping the existing declarations by phase — a **purely additive** change (new comment
+lines only, no reorder, no body touched); `git diff` was 25 inserted lines, 0 deletions, and `make lean`
+stayed green (8958 jobs; completeness gate OK).
 
 ## Audit correction
 
@@ -33,9 +27,5 @@ header-less and got `### ` headers matching `G2`/`G3`/`Projection3D`.
   `R*v*R̃ = v⊥ + cos(θ)*v∥ + sin(θ)*(v ⌋ i)`"; "Corollaries: rotates by θ in-plane, and fixes the normal".
 - **`Rotation2D.lean`** (1 `## `, matching its existing section style): "Rotation `rot θ`, the
   full-angle rotor, and the geometric product from rotation" over the previously un-headed top group.
-
-## Deliverables
-
-- The four files sectioned; `make lean` green; diff = additive header lines only. ✓
 
 See also: `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`, `tasks/reference/lean-ga-proof-architecture.md`.

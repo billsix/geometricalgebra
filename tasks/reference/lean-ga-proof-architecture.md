@@ -199,8 +199,9 @@ lemmas now live in **`G2.lean`** alongside `mul`/`reverse`, matching `G3`/`G1` (
 `dot`/`wedge` in-file). The earlier split (`dot` in `Versor2D.lean`, `wedge` in `Projection2D.lean`) was
 reversed because both are pure coordinate formulas depending only on `mul`/fields, so `G2.lean` keeps
 its Mathlib-only import discipline — the move added no import. `Versor2D.lean` now holds only the
-versor-from-vectors construction; `Projection2D.lean` only `proj`/`reject` and the sandwich-wedge
-isometry lemmas. The `dot`-form perpendicularity lemmas over `IsVector` objects still go in
+versor-from-vectors construction; `Projection2D.lean` only `proj`/`reject`. The 2D sandwich-wedge
+isometry lemmas sit in `Sandwich.lean` beside their G3 twins, and `G2.mul_vec_self` in `G2.lean` beside
+`G3.mul_vec_self` (moved 2026-11-09). The `dot`-form perpendicularity lemmas over `IsVector` objects still go in
 `Predicates2D.lean` (the 2D twin of `Predicates3D.lean`): e.g. `dual_perp_dot` — `dot (dual v) v = 0` —
 the object form of the coordinate leaf `G2.dual_vec_perp`. (Part of the file-structure pass
 `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`, now complete.)
@@ -435,7 +436,8 @@ A getter proof's `simp only [defs, zeros]` list says nothing about what the proo
 silently ignores a listed fact that never fires, and a hypothesis named nowhere in the body may still be
 consumed by `field_simp`/`simp` from the local context. The 2026-10-04 minimizer trimmed 73 vacuous
 components so each list now documents exactly the components its proof touches
-(`tasks/archive/2026/10/04/trim-unused-simp-components.md`; detector: `tools/detect_unused_hypotheses.py`).
+(`tasks/archive/2026/10/04/trim-unused-simp-components.md`). The text-search detector it produced was
+deleted on 2026-11-09: Lean's `unusedVariables` lint and delete-and-rebuild cover it.
 How to decide whether a hypothesis is needed — and how to read a failed delete-and-rebuild — is the
 "Hypotheses" section below.
 

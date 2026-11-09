@@ -9,7 +9,7 @@
    A copy of the license is available at
    https://www.gnu.org/licenses/fdl-1.3.html.
 
-Rotation is turning the graph paper
+Rotation Is Turning the Graph Paper
 ===================================
 
 .. note::
@@ -62,5 +62,5 @@ paper that has simply been turned by :math:`30°`.
    :align: center
    :alt: y = x squared plotted on the rotated graph paper
 
-That is the picture: a rotation is **deformed graph paper**, and whatever we draw — points, vectors,
+That is the picture: a rotation is **turned graph paper**, and whatever we draw — points, vectors,
 a parabola — comes along for the ride.

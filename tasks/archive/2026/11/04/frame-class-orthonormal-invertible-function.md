@@ -4,9 +4,10 @@
 implemented by the agent.
 **Resolved:** the "representation decision" in `tasks/define-frame.md`: a dedicated `Frame` class.
 **Math and design rationale:** `tasks/reference/frames-qr-and-reciprocal-frames.md`.
-**Follow-ups:** `tasks/frame-notebooks-epix.md` (the 2D/3D ePiX notebooks; blocked on the ePiX reset),
-`tasks/lean-frame-class-invertible-function.md` (Lean equivalents; on hold),
-`tasks/reciprocal-frame-hestenes.md` (on hold), `tasks/frame-svd-investigation.md`, and
+**Follow-ups:** `tasks/archive/2026/11/04/frame-notebooks-epix.md` (the 2D/3D ePiX notebooks, done
+after the ePiX reset landed), `tasks/lean-frame-class-invertible-function.md` (Lean equivalents),
+`tasks/archive/2026/11/07/reciprocal-frame-hestenes.md` (done 2026-11-07),
+`tasks/frame-svd-investigation.md`, and
 `tasks/archive/2026/11/07/frame-prefix-blades-graded-zero-seed.md` (a pre-existing bug found along the way).
 
 ## What was built
@@ -75,9 +76,9 @@ factored out.
    A spike showed two `epix.figure()` blocks in one process leaked state: the second figure's eepic was
    byte-identical to the first's. Resetting pen, line style, fill and labels by hand fixed the drawing
    but not the palette. A gacalc-side workaround was rejected in favour of an upstream fix
-   (github.com/billsix/epix-mirror `tasks/reset-global-state-between-figures.md`; the maintainer
-   accepted the explicit `reset_state()` recommendation), and the notebooks moved to
-   `tasks/frame-notebooks-epix.md`, blocked until that fix is pushed.
+   (github.com/billsix/epix-mirror `tasks/archive/2026/11/04/reset-global-state-between-figures.md`; the
+   maintainer accepted the explicit `reset_state()` recommendation), and the notebooks moved to
+   `tasks/archive/2026/11/04/frame-notebooks-epix.md`, blocked until that fix was pushed.
 6. **Later decisions.** The reciprocal-frame page/equation question and the Lean scope question were put
    on hold by the maintainer ("hold off on that for now").
 
@@ -88,10 +89,10 @@ factored out.
    is accepted.
 3. Stored orthogonal, not orthonormal (see the chronology, step 4, and the reference doc's section
    "Why gacalc's `Frame` is stored orthogonal, not orthonormal").
-4. Correctness over runtime: the slow fully symbolic 3D tests stay in the default suite.
-5. The three-forms rule (`CLAUDE.md`) was overridden: sympy first. Lean and the prose + LaTeX page are
+4. Correctness over runtime: the slow fully symbolic 3D tests stayed in the default suite.
+5. The three-forms rule (`CLAUDE.md`) was overridden: sympy first. Lean and the prose + LaTeX page were left as
    follow-ups.
-6. The notebooks are book notebooks with figures rendered live, after the ePiX reset lands.
+6. The notebooks were to be book notebooks with figures rendered live, after the ePiX reset landed.
 7. The SVD question is its own task.
 
 ## Verification

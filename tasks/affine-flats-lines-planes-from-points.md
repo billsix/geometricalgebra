@@ -11,7 +11,7 @@ lightweight pedagogical representation. **This is the most under-specified bulle
 largest (architectural).**
 **Recheck:** the Open questions below are answered (maintainer-gated; `/recheck-blocked` surfaces it).
 
-## Goal
+## BLUF
 
 Maintainer's idea, verbatim: *"Take descriptions of lines, planes in calc 3, and make them into
 geometric objects. These ones don't have to be oriented around the origin. Make examples in graded

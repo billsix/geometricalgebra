@@ -1,7 +1,7 @@
 # Refactor `Frame.to_invertible_function`: inline single-use locals, narrow scopes, name the implied dimension
 
-**Done 2026-11-06.** Requested by William Emerison Six <billsix@gmail.com>; implemented on branch
-`refactor-frame-to-invertible-function`.
+**Completed:** 2026-11-06. Requested by William Emerison Six <billsix@gmail.com>; implemented on
+branch `refactor-frame-to-invertible-function`.
 
 ## What was done
 
@@ -47,20 +47,23 @@ standards. The before/after code and what each change illustrates are in
    and its other names bind nothing in the enclosing scopes.
 8. The rules are portable, so they went into the shared layer, not the personal overlay.
 
-## Knowledge extracted to the shared layer (staged, not committed, in both sandbox repos)
+## Knowledge extracted to the shared layer (in both sandbox repos)
 
-- github.com/billsix/runClaudeInContainer: `tasks/reference/python-coding-standard.md` (the inline-once
-  section rewritten around decisions 1, 2 and 6; two bullets for decisions 3 and 7),
-  `tasks/reference/code-style-conventions.md` (new language-agnostic section "Names: inline what is
-  used once, declare at the point of use, nest and shadow"), and the shared `CLAUDE.md`
-  (`entrypoint/dotfiles/.claude/CLAUDE.md`: a "Names" paragraph and the doc's read trigger).
+- github.com/billsix/runClaudeInContainer:
+  - github.com/billsix/runClaudeInContainer `tasks/reference/python-coding-standard.md`: the
+    inline-once section rewritten around decisions 1, 2 and 6; two bullets for decisions 3 and 7.
+  - github.com/billsix/runClaudeInContainer `tasks/reference/code-style-conventions.md`: a new
+    language-agnostic section "Names: inline what is used once, declare at the point of use, nest and
+    shadow".
+  - the shared `CLAUDE.md` (`entrypoint/dotfiles/.claude/CLAUDE.md`): a "Names" paragraph and the
+    doc's read trigger.
 - github.com/billsix/runCrushInContainer: both copies of `python-coding-standard.md` re-copied
   byte-identical from the canonical (the baked crush-client copy had also been missing the
   pin-dependencies section), and a "Names" bullet in the crush `CLAUDE.md` "Code conventions" section.
 
 ## Follow-ons
 
-- `tasks/archive/2026/11/06/reuse-existing-vector-check.md` — one shared vector check; replaces the nested `require_vector`
-  this task kept and the check inside the new method.
-- `tasks/frame-inverse-head-first-recursion.md` — whether `peel` can run first-element-first; blocked
-  on `tasks/reciprocal-frame-hestenes.md`.
+- `tasks/archive/2026/11/06/reuse-existing-vector-check.md` — one shared vector check; it replaced the
+  nested `require_vector` this task kept and the check inside the new method.
+- `tasks/frame-inverse-head-first-recursion.md` — whether `peel` can run first-element-first; it waited
+  on `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`, which was done 2026-11-07.

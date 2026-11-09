@@ -14,9 +14,13 @@ Exempt: calls whose parameters are positional-only (``math.*`` and the other C
 builtins) and calls this table does not know (reported as "unknown", never
 rewritten -- extend the table instead of guessing).
 
+The book notebooks that draw ePiX figures live (``book/docs/notebooks/*.py`` that
+mention ``epix``) are checked too, but only their calls this table knows: the rest
+of a notebook is ordinary gacalc code, so its unknown callees are not reported.
+
 Usage: ``python tools/check_epix_keywords.py [--fix] [PATH ...]``
-(default: every ``*.py`` under book/figures/epix). Exit 1 if any positional
-argument remains.
+(default: every ``*.py`` under book/figures/epix, plus those notebooks). Exit 1 if
+any positional argument remains.
 """
 
 from __future__ import annotations
@@ -28,6 +32,7 @@ from pathlib import Path
 
 REPO: Path = Path(__file__).resolve().parents[1]
 FIGURES: Path = REPO / "book" / "figures" / "epix"
+NOTEBOOKS: Path = REPO / "book" / "docs" / "notebooks"
 
 # (module, function) -> parameter names in positional order; a dict keyed by arity
 # where the binding has overloads with different parameter lists.
@@ -151,13 +156,20 @@ def main() -> int:
         "paths", nargs="*", type=Path, help="files (default: the figures)"
     )
     args: argparse.Namespace = parser.parse_args()
-    paths: list[Path] = args.paths or sorted(FIGURES.glob("*.py"))
+    paths: list[Path] = args.paths or [
+        *sorted(FIGURES.glob("*.py")),
+        *sorted(
+            p for p in NOTEBOOKS.glob("*.py") if "epix" in p.read_text(encoding="utf-8")
+        ),
+    ]
 
     status: int = 0
     for path in paths:
         edits, unknown = scan(path)
         report: str
-        for report in unknown:
+        # a notebook's other calls are gacalc code, not figure code
+        figure_file: bool = path.resolve().is_relative_to(FIGURES)
+        for report in unknown if figure_file else []:
             print(f"unknown callee (not rewritten): {report}")
             status = 1
         if not edits:

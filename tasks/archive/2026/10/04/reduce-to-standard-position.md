@@ -1,10 +1,7 @@
 # Reduction to standard position: define project/reject from trusted simpler ops via change-of-frame
 
-**Status:** done — archived 2026-10-04 (the book voice pass continues in
-`tasks/proof-projection-book-voice-pass.md`)
-**Priority:** 6
-**Difficulty:** 7
-**Created:** 2026-09-30 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-09-30 · **Completed:** 2026-10-04 (William Emerison Six <billsix@gmail.com>); the book
+voice pass was spun off to `tasks/proof-projection-book-voice-pass.md`.
 
 > **Naming:** "bootstrap" was rejected; the theme is **reduction to standard position** (synonym:
 > *frame reduction*). Derived-operation variants carry an **`SP` / `_sp` suffix** in both languages —
@@ -13,7 +10,7 @@
 > the derived route." (The note originally said Lean would use primes; the suffix was chosen when the
 > Lean definitions were written, 2026-10-04 — primed names read badly inside `simp only` lists.)
 
-## BLUF
+## Summary
 
 This established **reduction to standard position** — defining or justifying a hard operation from
 already-trusted simpler ones by a change-of-frame (rotate the figure into a standard frame, do the
@@ -24,15 +21,13 @@ single theorem `projectSP_eq_proj` that the derived route equals the Hestenes on
 The rotations are **elementary coordinate-plane rotations, not versors** — a versor is itself a
 geometric product, so using one would make the bootstrap circular. The arc it opens is **3 elementary
 plane rotations → project/reject (+ product/cross/dot/wedge via reduce-to-2-D) → a general rotation
-defined from project/reject** (`transforms.projection_rotation`). "Done" = all of that gate-verified
+defined from project/reject** (`transforms.projection_rotation`). All of it was gate-verified
 (`make lean` green, tests passing, the notebook executes); the maintainer's voice pass on the book
-draft is its own task.
-
-## Context
+draft became its own task.
 
 The durable account — what the theme is, why it is sound and non-circular, the archetype, the naming
 convention, and the per-lemma "what is proven" — is `tasks/reference/reduction-to-standard-position.md`;
-this file is the work record. The archetype is `multivariate-math/proofs/crossproduct.tex`
+this file was the work record. The archetype is `multivariate-math/proofs/crossproduct.tex`
 (github.com/billsix/multivariate-math), a hand-written derivation of the cross product by composing
 plane rotations, computing in the aligned frame, and composing the inverse rotations back.
 
@@ -54,7 +49,7 @@ plane rotations, computing in the aligned frame, and composing the inverse rotat
    already does.
 7. **The in-frame step is "keep the x-component", literally** (2026-10-04). The first `projectSP` and
    `project_sp` projected in the aligned frame by calling the Hestenes `proj`/`projected_onto` — so the
-   "no geometric product" claim in the docstrings and book draft was not true of the code. Both now
+   "no geometric product" claim in the docstrings and book draft was not true of the code. Both were changed to
    keep the aligned `a`'s x-component; the one new lemma `proj_onto_x_axis` (`proj (m·e₁) v =
    (v₁,0,0)`, any multivector `v`) plus `alignSP_self` close `projectSP_eq_proj` as before.
 
@@ -72,8 +67,8 @@ the reference doc's "What is proven" — this is a pointer, not a copy.
   corpus review's "proven by ingredients only" finding).
 - **Uniform 3-rotation tool** (`CrossStandardPosition.lean`): `rotYZ` + `reduceToPlane` bring both
   vectors into the e₁e₂ plane; equivariance of proj/reject/cross under all three rotations; the
-  reduced-frame evaluations. The cross *capstone* (equality assembled) is
-  `tasks/lean-cross-standard-position-capstone.md`.
+  reduced-frame evaluations. The cross *capstone* (equality assembled) went to
+  `tasks/archive/2026/10/22/lean-cross-standard-position-capstone.md`.
 - **Step 3 — a general rotation from project/reject** (`ProjectionRotation3D.lean`): `projRotation`
   carries from→to, fixes ⊥, is an isometry, and equals the versor sandwich (`projRotation_eq_sandwich`);
   the 𝒢₂ degenerate base case in `ProjectionRotation2D.lean`.
@@ -97,13 +92,13 @@ asked for elementary coordinate-plane rotations instead. The versor version was 
 
 ## Harvested ideas list (from the 2026-09-30 repo scan, deleted with this archive)
 
-The scan's done items are the deliverables above. Still-open ideas, each now owned elsewhere:
+The scan's done items are the deliverables above. Still-open ideas were each handed to another task:
 
 - **B2** a 3D projection-rejection book page by the literal e₁-alignment chain, **B3** cross-link
   `rotate.rst` as the trusted 2D building block, **N1** a `notebooks/`-side `show_mult` demo of `a`
   rotating to standard position → `tasks/proof-projection-book-voice-pass.md` (follow-ons).
 - **C2** a standard-position `cross` in Python (the most faithful port of `crossproduct.tex`) →
-  `tasks/lean-cross-standard-position-capstone.md`, open question 2.
+  `tasks/archive/2026/10/22/lean-cross-standard-position-capstone.md`, open question 2.
 
 ## Overlap (cross-referenced, not duplicated)
 

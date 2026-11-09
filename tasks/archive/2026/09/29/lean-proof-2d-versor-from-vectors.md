@@ -1,16 +1,13 @@
 # Lean proof — the half-angle versor-from-two-vectors technique, shown in 2D
 
-**Part of:** `tasks/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
-**Status:** DONE 2026-09-29 (William Emerison Six <billsix@gmail.com>)
-**Priority:** 7 · **Difficulty:** 4
-
-## BLUF
+**Completed:** 2026-09-29 (William Emerison Six <billsix@gmail.com>)
+**Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
 
 Showed the maintainer's angle-free, versor-from-two-vectors rotation technique in **𝒢₂**, the
 pedagogical warm-up for the 3D sandwich — the *same* construction in the simplest algebra. Landed in
 `proofs/GacalcProofs/Versor2D.lean` + `Sandwich.lean`, `make lean` green.
 
-## What landed
+## What was proved
 
 - **`Versor2D.lean`:** `dot`/`mag`/`bisector`/`versorFromVectors` for 𝒢₂, `mag_sq_vec`, and the
   identity `versor_mul_from_eq_bisector` (`R·a = |a|·h`) + the companion `from_mul_versor_eq_bisector`
@@ -28,8 +25,8 @@ the rotation. In 𝒢₃ (`Rotation3D.lean` + `Sandwich.lean`) the *identical* c
 vectors in-plane (`sandwich_plane_invariant`). So the 2D and 3D `sandwich_carries_from_to` proofs are
 structurally identical; 3D only adds "which plane, leave the orthogonal complement fixed."
 
-## Resolved
+## Decision
 
-- **Open Q1 (carries `a` to a positive multiple of `b` vs. unit-normalized `a ↦ b`):** proved the
+- **Carries `a` to a positive multiple of `b`, not a unit-normalized `a ↦ b`:** the proof states the
   **scalar-multiple** form `R a R⁻¹ = (|a|/|b|)·b` — matches the scale-invariant `R v R⁻¹`, no unit
   hypothesis (just `|b| ≠ 0`, `|R|² ≠ 0`).

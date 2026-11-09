@@ -1,22 +1,14 @@
 # Migrate unit tests into doctests where they read well
 
-**Status:** DONE — exhaustive pass complete (William Emerison Six <billsix@gmail.com>, 2026-10-27).
-Every test with a clean doctest home is now a doctest; suite **711 → 690**, `make test` / `make
-format` green after each batch (the generator was unchanged after the rotate_90 batch, so
-`make check-generated` is unaffected since the maintainer last ran it). The tests that remain pytest
-**lack a clean doctest home** (documented below), not pending work.
-**Priority:** 5
-**Difficulty:** 4
-**Created:** 2026-10-27 **Updated:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-27 · **Completed:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
 
 Every `tests/` unit test with a clean doctest home was pushed into a **doctest** in the library
 source, and the redundant pytest test deleted. The suite went **711 → 690**, with **~46 pytest tests
 consolidated into doctests** across `vectorcalc`, `measure`, `frame`, `base.py`, `gn.py`, and the g2
 code generator; gates green. The doctest wiring already existed (`pytest.ini`: `testpaths = src tests
 tools`, `addopts = --doctest-modules`), so a `>>>` example in `src`/`tools` runs automatically — the
-work was migration, not plumbing.
+work was migration, not plumbing. `make test` / `make format` were green after each batch; the
+generator was unchanged after the rotate_90 batch.
 
 ## Decision — consolidate
 
@@ -63,8 +55,8 @@ over keep-both; the repo had been carrying both.)
 ## gacalc-specific gotchas
 
 The general, cross-project version of these lessons lives in
-`~/.claude/reference/doctests-by-default.md` (github.com/billsix/runClaudeInContainer); the
-gacalc-specific points:
+github.com/billsix/runClaudeInContainer `tasks/reference/doctests-by-default.md`; the gacalc-specific
+points:
 
 - Doctests on the specialized classes are authored in `tools/gen_specialized.py` and **regenerated**
   — never hand-edited into the gitignored `g*.py`. A grade-1 `Vector` exposes `e_1` but not the
@@ -80,7 +72,7 @@ gacalc-specific points:
 - A LaTeX doctest needs a **raw** docstring (`r"""`) so `\vec` / `\mathbf` survive as literal
   backslashes (`blade_dict_latex` was converted to raw).
 
-## Kept as pytest (no clean doctest home — not pending)
+## Kept as pytest (no clean doctest home)
 
 What remains pytest after the exhaustive pass, each because a doctest cannot cleanly live where it
 would need to:

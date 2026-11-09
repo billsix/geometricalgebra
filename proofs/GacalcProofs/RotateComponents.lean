@@ -4,7 +4,7 @@ import GacalcProofs.Cross
 
 /-! # The 3D sandwich rotates in-plane components correctly (sin/cos from dot & wedge)
 
-    Extends the sandwich beyond "carries `a` to `b`" (see `tasks/lean-proof-sandwich-rotates-components.md`):
+    Extends the sandwich beyond "carries `a` to `b`" (see `tasks/archive/2026/09/29/lean-proof-sandwich-rotates-components.md`):
     in the orthonormal frame `{â, r̂}` of the rotation plane (`â = a/|a|`, `r̂ = r/|r|`,
     `r = b − proj_a b`), the sandwich `R*v*R⁻¹` acts as the 2D rotation matrix `[[c, −s], [s, c]]`, with
     `c = cos(θ) = (a·b)/(|a|*|b|)` and `s = sin(θ)` read off the **dot and wedge** of `a` and `b`, and the

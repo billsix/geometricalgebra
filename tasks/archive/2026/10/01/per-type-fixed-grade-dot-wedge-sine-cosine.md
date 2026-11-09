@@ -1,12 +1,11 @@
 # Per-type fixed-grade dot/wedge (via r_vector_part) and per-type sine/cosine, each proved equivalent to the general form
 
-**Status:** DONE 2026-10-01 (William Emerison Six <billsix@gmail.com>) — all five phases landed; gates
-green (`make format` ruff+ty, `make test` 671, `make lean` sorry-free). Remaining book voice pass spun
-off to `tasks/levels-of-abstraction-book-voice-pass.md`.
-**Priority:** 6 **Difficulty:** 7
-**Created:** 2026-09-30 **Completed:** 2026-10-01
+**Created:** 2026-09-30 · **Completed:** 2026-10-01 (William Emerison Six <billsix@gmail.com>)
 
-## BLUF
+## Summary
+
+All five phases were done and the gates were green (`make format` ruff+ty, `make test` 671, `make lean`
+sorry-free). The remaining book voice pass was spun off to `tasks/levels-of-abstraction-book-voice-pass.md`.
 
 This added special-case, per-type *presentations* of the core operations as teaching artifacts beside
 the canonical coordinate-free ones, each pinned equal by a check: an unsigned any-dimension `abs_sin`
@@ -69,7 +68,7 @@ for the maintainer's voice pass — spun off to `tasks/levels-of-abstraction-boo
 
 **Other:** the new public API was recorded in `CHANGELOG.md` `[Unreleased]`. A pre-existing `ty` failure
 in `tests/test_standardposition.py` surfaced during the gate runs and was fixed (recorded in
-`tasks/reduce-to-standard-position.md`), and gacalc's `Dockerfile` got a uv cache mount — both unrelated
+`tasks/archive/2026/10/04/reduce-to-standard-position.md`), and gacalc's `Dockerfile` got a uv cache mount — both unrelated
 to the sine work.
 
 ## Decisions (maintainer; 1–5 on 2026-09-30, 6–8 on 2026-10-01)
@@ -91,17 +90,17 @@ to the sine work.
    The GA-native bivector alternative (`(a∧b)/(|a||b|) = sin θ·î`, making `cosine + sine` the rotor) was
    considered and not chosen; the bivector/rotor view stays available via the wedge and the product.
 
-## Context that shaped it (as of 2026-09-30)
+## Background (as of 2026-09-30)
 
 The codebase already had two rungs of dot/wedge — the coordinate-free Hestenes `inner_product`
 (`base.py:735`) / `outer_product` (`:787`), and the generated per-type closed forms (proved == `Gn`
 by the conformance suite via `product_result`/`resolve`/`dispatch_method`; see
-`archive/2026/06/06/graded-blade-subtypes.md`, `archive/2026/07/22/add-left-right-contraction.md`). The
+`tasks/archive/2026/06/06/graded-blade-subtypes.md`, `tasks/archive/2026/07/22/add-left-right-contraction.md`). The
 fixed-grade middle rung and the trig methods were what was missing. The Lean side already had
 `Trig.cos_between`/`sin_between` and the angle-form `Rotation.uvec_dot`/`uvec_wedge` with no bridge
 between them (the Phase-4 gap); `uvec_wedge` was already the signed 𝒢₂ sine, the ready-made target. The
-"no abstract `⟨⟩_k` in Lean" decision (`archive/2026/09/30/lean-proofs-make-coordinate-free.md`) agreed
-with binding the grade per type. The whole effort is an instance of the duplicate-definition theme
+"no abstract `⟨⟩_k` in Lean" decision (`tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md`) agreed
+with binding the grade per type. The whole effort was an instance of the duplicate-definition theme
 (`tasks/reference/reduction-to-standard-position.md`).
 
 ## Cross-references

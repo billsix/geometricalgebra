@@ -18,10 +18,10 @@ the Python implementation.
   the fetched Mathlib — gitignored, never committed.
 - **What's here** (34 modules under `GacalcProofs/`, grouped; every file is 𝒢₂+𝒢₃ unless noted):
   - *Algebras:* `G1.lean` (𝒢₁ for teaching: `I² = +1`, commutative, every vector pair parallel so
-    `u v = u·v`), `G2.lean`, `G3.lean` — coordinate structs; product/wedge/reverse (𝒢₃'s transcribed
+    `u*v = u·v`), `G2.lean`, `G3.lean` — coordinate structs; product/wedge/reverse (𝒢₃'s transcribed
     verbatim from gacalc's `Gn` oracle by `tools/derive_lean_algebra.py`), the basis blades as genuine
     elements with their multiplication table, `I² = −1`, `dot` (the scalar part of the product),
-    `dual = A·I⁻¹`, `normSq`/`magnitude`, the **algebra laws stated with each algebra** (associativity,
+    `dual = A*I⁻¹`, `normSq`/`magnitude`, the **algebra laws stated with each algebra** (associativity,
     two-sided distributivity, identity, scalar laws, ⊥ vectors anticommute), the grade predicates
     `IsVector`/`IsBivector`/`IsTrivector`;
     `Lagrange.lean` (the real-number Lagrange identity 2D/3D); `GradeProjection.lean`
@@ -35,16 +35,16 @@ the Python implementation.
   - *Versors and rotation:* `Versor2D.lean` / `Rotation3D.lean` (angle-free versor from two vectors:
     bisector `h`, `R = b * a + |a| * |b|`, `R * a = |a| * h`); `Sandwich.lean` (`inverse`, `sandwich`,
     `IsEvenVersor` (even, any magnitude) and `IsRotor` (unit versor: `R⁻¹ = R̃`, so `sandwich R v = R v R̃`);
-    `R R̃ = |R|²·1`; the reverse-sandwich scalings of dot/normSq/wedge for ANY multivector;
+    `R*R̃ = |R|²*1`; the reverse-sandwich scalings of dot/normSq/wedge for ANY multivector;
     the sandwich is an isometry — dot, length, wedge, hence angles; carries `a` to `b`; fixes its own
     plane bivector and normal; rotations compose by multiplying versors; reverse is an anti-automorphism;
     blade inverses); `RotateComponents.lean` (the three matrix-free rotation goals for the a→b rotation);
     `Exp.lean` (the closed-form bivector exponential is a rotor, `IsRotor`); `Rotor.lean` (the versor chain
     re-done with the reverse sandwich: `rotorFromVectors = normalize ∘ versorFromVectors` is a rotor, the
     bridge `(R/|R|) v (R/|R|)~ = R v R⁻¹` for every `R`, hence the rotor sandwich = `projRotation`, carries
-    `a` to `b`, isometry; Lagrange gives `|versorFromVectors a b|² = 2|a||b|(|a||b| + a·b)`; 2D coda: the
+    `a` to `b`, isometry; Lagrange gives `|versorFromVectors a b|² = 2*|a|*|b|*(|a|*|b| + a·b)`; 2D coda: the
     from-vectors rotor of two unit directions IS the half-angle `rotor θ`); `PlaneRotation3D.lean` (𝒢₃: the
-    half-angle rotor `planeRotor θ i = cos(θ/2) − sin(θ/2)·i` of a unit bivector is a rotor and
+    half-angle rotor `planeRotor θ i = cos(θ/2) − sin(θ/2)*i` of a unit bivector is a rotor and
     `R v R̃ = v⊥ + cos θ·v∥ + sin θ·(v ⌋ i)` — the perpendicular part fixed, the in-plane part rotated by θ,
     orientation included; corollaries `cos_between (R v R̃) v = cos θ` for in-plane `v`, the normal fixed —
     what `plane_rotation`/`bivector_rotation` do).

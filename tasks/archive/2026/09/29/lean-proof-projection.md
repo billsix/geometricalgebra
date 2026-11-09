@@ -1,17 +1,14 @@
 # Lean proof — projection correctness (2D and 3D; onto vectors and onto planes)
 
-**Part of:** `tasks/investigate-lean-proofs-for-ga.md`
-**Status:** DONE 2026-09-29 (William Emerison Six <billsix@gmail.com>), `make lean` green.
-**Priority:** 6 · **Difficulty:** 7
-
-## BLUF
+**Completed:** 2026-09-29 (William Emerison Six <billsix@gmail.com>); `make lean` green
+**Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`
 
 Proved that gacalc's projection/rejection work via the **uniform Hestenes forms** — `project_B A =
 (A·B)B⁻¹`, `reject_B A = (A∧B)B⁻¹` (base.py; H&S p.18) — for a vector or bivector blade `B`, in 2D and
 3D. Landed in `proofs/GacalcProofs/Projection.lean` and `Projection2D.lean`. Durable architecture,
 techniques, and the terminology note live in `tasks/reference/lean-ga-proof-architecture.md`.
 
-## What landed
+## What was proved
 
 - **3D `proj` (onto a vector)** `= (b·a/a·a)·a` + `reject_perp` (the rejection ⊥ `a`); `wedge_reject`;
   `dual_wedge_perp_left`/`_right` (the plane normal ⊥ both spanning vectors); `plane_eq_wedge`
@@ -29,7 +26,7 @@ techniques, and the terminology note live in `tasks/reference/lean-ga-proof-arch
 - **`tools/derive_lean_algebra.py`** — promoted from the adhoc G3-derivation script; emits any 𝒢ₙ's
   product/wedge/reverse formulas from the `Gn` oracle for verbatim Lean transcription.
 
-## Resolved decisions
+## Decisions
 
 - **Blade inverse** `B⁻¹` = `Sandwich.inverse` (`B̃/(B B̃)`), works for a simple bivector.
 - **Terminology:** the inner product in `(A·B)B⁻¹` is **Hestenes' inner product** `⟨AB⟩_{|r−s|}`, NOT the
@@ -39,5 +36,5 @@ techniques, and the terminology note live in `tasks/reference/lean-ga-proof-arch
 
 ## Follow-on
 
-The audit of how much more of the proof layer can be made coordinate-free is its own task:
-`tasks/lean-proofs-make-coordinate-free.md`.
+The audit of how much more of the proof layer could be made coordinate-free was split into its own
+task: `tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md`.

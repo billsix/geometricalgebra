@@ -1,25 +1,18 @@
 # Lean proofs — collapse self-dot / two-magnitudes into one idea (conciseness sweep)
 
-**Part of:** `tasks/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
-**Related:** `tasks/lean-proofs-make-coordinate-free.md` (the leaf/structural refactor; this was its
+**Completed:** 2026-09-29 (William Emerison Six <billsix@gmail.com>)
+**Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
+**Related:** `tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md` (the leaf/structural refactor; this was its
 "collapse to a simpler idea" companion — same spirit, focused on the magnitude concept).
-**Depends on:** the leaf layer (`normSq`, `magnitude`, `normSq_vec`, `normSq_evenVersor`, `dot_vec`)
+**Built on:** the leaf layer (`normSq`, `magnitude`, `normSq_vec`, `normSq_evenVersor`, `dot_vec`)
 in `proofs/GacalcProofs/`.
-
-**Status:** done (2026-09-29, William Emerison Six <billsix@gmail.com>) — every collapse applied or
-declined-with-reason; `make lean` green (no warnings); one magnitude concept (`magnitude = √normSq`)
-throughout, and no raw coordinate sum left in a hypothesis.
-**Priority:** 7
-**Difficulty:** 5
-
-## BLUF
 
 A readability sweep. The squared magnitude `normSq` (and its root `magnitude = √normSq`) was the one
 primitive, and several places in the proofs were longer, redundant restatements of it — the maintainer's
 example: *a vector dotted with itself is its magnitude squared*. Every such place was collapsed to the
 simple idea (or explicitly declined with a reason). The outcome: one magnitude concept in the code, no
 raw coordinate polynomial standing in a lemma's interface, each touched proof no longer than before, and
-`make lean` green. Detail lives in git (commits `c07aa63`…`a9321d5` on `leanProofs`) and in
+`make lean` green. Detail lives in git (the `leanProofs` step commits were squashed into `babdcb2`) and in
 `tasks/reference/lean-ga-proof-architecture.md`.
 
 ## What was done
@@ -65,16 +58,16 @@ raw coordinate polynomial standing in a lemma's interface, each touched proof no
   for any `a`, and tightening it to `normSq a ≠ 0` would break the non-vector case. Comments recording this
   were added at all four sites (G2 + G3).
 
-## Open questions (resolved)
+## Decision
 
-1. ~~`mag` unification: a thin abbreviation or replace-and-delete?~~ **Resolved** — replaced all `mag` uses
+- **`mag` unification — replace-and-delete, not a thin abbreviation:** replaced all `mag` uses
    with `magnitude` and deleted `mag` (and `magnitude_vec`). An abbreviation was impossible anyway: `mag`
    lived in `Rotation3D`/`Versor2D`, imported *by* `Sandwich` where `magnitude` lived, so the defs had to
    move down into `G2`/`G3` regardless — once moved, a straight rename read cleanly, so no alias was kept.
 
-## Follow-ups noted (not part of this task)
+## Follow-up noted (not done here)
 
 - The bivector literals `⟨0,0,0,0,p,q,r,0⟩` could read as `{ zero with c12 := p, c13 := q, c23 := r }`
   (Lean structure-update syntax) for clarity, at the cost of a `simp only [zero]` unfold where the
   low-degree `field_simp` needs the literal. Parked for the coordinate-free readability pass
-  (`tasks/lean-proofs-make-coordinate-free.md`).
+  (`tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md`).

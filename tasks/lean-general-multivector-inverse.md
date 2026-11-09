@@ -1,6 +1,6 @@
 # Lean proofs — the GENERAL multivector inverse for 𝒢₂ and 𝒢₃
 
-**Part of:** the Lean-proofs program (umbrella archived: `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`)
+**Part of:** the Lean-proofs program (its umbrella is done: `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`; the live map is `tasks/reference/lean-ga-proof-architecture.md`)
 **Grew out of:** `tasks/archive/2026/09/30/lean-inverses-g2-g3.md` (the investigation; the per-blade subset is done there).
 
 **Status:** proposed — needs go-ahead (2026-09-29, William Emerison Six <billsix@gmail.com>)

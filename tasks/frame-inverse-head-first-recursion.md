@@ -92,6 +92,6 @@ starts at the end. The order is a property of how the `w_j` were built, not of o
    (no new public surface), or stored on `Frame` beside `orthogonal_vectors` (visible, costs every
    `Frame` an extra orthogonalization)? Recommended: compute it inside `to_invertible_function`.
 3. ~~Keep the current tail-first peel as a documented alternative?~~ **Answered (same request): yes, as
-   `inverse_method="peel"`.** The original text: gacalc keeps parallel
+   `inverse_method="peel"`, overruling the original recommendation.** The original text: gacalc keeps parallel
    formulations side by side for teaching (the three orthogonalizations). Recommended: no; replace it,
    and keep the explanation of why the head-first `w_j` force tail-first order in the reference doc.

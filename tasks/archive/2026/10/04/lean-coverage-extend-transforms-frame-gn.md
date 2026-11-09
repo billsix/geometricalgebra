@@ -1,45 +1,31 @@
 # Extend Lean coverage to `transforms`, `standardposition`, `functions`, `g1` (and, later, `gn`)
 
-**Status:** done — archived 2026-10-04. Phases 1–3 delivered (`make lean` green); the former phase 4
-(`gn.py`) is not this task's to wait on — it depends on a dimension-general algebra and now lives as
-scope in `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` (deferred, P9). Frames and the 3D
-rotor angle theorem were split out into their own tasks (`tasks/lean-frame-coverage.md`, parked;
-`tasks/lean-rotor-3d-angle-theorem.md`, proposed).
-**Priority:** 5 **Difficulty:** 5 (the finished phases were D4–5 each).
-**Created:** 2026-10-04 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>). **Owner:**
-William Emerison Six <billsix@gmail.com>.
+**Created:** 2026-10-04 · **Completed:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
 **See also:** `tasks/review/2026/10/04/lean-proof-corpus-review.md` (the coverage map that found these
 gaps, §3), `tasks/reference/lean-ga-proof-architecture.md` (how proofs are written here; its coverage map
-now has a subsection for these modules), `tasks/reference/lean-for-gacalc.md` (orientation),
+gained a subsection for these modules), `tasks/reference/lean-for-gacalc.md` (orientation),
 `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the earlier audit, same method).
 
-## BLUF
+## Summary
 
 The Lean corpus (`proofs/GacalcProofs/`) covered the vector-level math of `base.py`, `vectorcalc.py` and
-`measure.py` in 𝒢₂/𝒢₃, but six Python modules were never in the audited surface: `transforms.py`,
-`standardposition.py`, `frame.py`, `functions.py`, `g1.py`, `gn.py`. This task brings them in: for each
-public math function, either a Lean theorem stating its defining property (objects in, scalars in the
-body, objects out), or a recorded decision that it is plumbing with no GA content. "Done" = every
-function in the tables below has a theorem name or a "plumbing — no theorem" decision, `make lean`
-green, and the architecture doc's coverage map extended. Four of the six modules are covered; `frame.py`
-moved to its own (parked) task; `gn.py` moved into the deferred general-`Gn` task.
+`measure.py` in 𝒢₂/𝒢₃, but six Python modules had never been in the audited surface: `transforms.py`,
+`standardposition.py`, `frame.py`, `functions.py`, `g1.py`, `gn.py`. For each public math function this
+task recorded either a Lean theorem stating its defining property (objects in, scalars in the body,
+objects out) or a "plumbing — no theorem" decision. Phases 1–3 (four of the six modules) were delivered
+with `make lean` green and the architecture doc's coverage map extended. The former phase 4 (`gn.py`)
+needs a dimension-general algebra and moved as scope into `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md`
+(deferred). Frames and the 3D rotor angle theorem were split into their own tasks
+(`tasks/lean-frame-coverage.md`, parked; `tasks/archive/2026/10/05/lean-rotor-3d-angle-theorem.md`, done
+2026-10-05).
 
-## Context — how to read this cold
-
-- **What Lean models.** `G1`/`G2`/`G3` are coordinate structs with hand-written `mul`/`wedge`/`reverse`
-  (𝒢₁'s and 𝒢₃'s transcribed from the Python `Gn` oracle by `tools/derive_lean_algebra.py`). There is no
-  dimension-general algebra. Lean proves identities about its own definitions; the Python is matched by
-  formula, by hand (the review's §3 coverage map and its Method section — the definition-parity
-  re-derivation via `tools/derive_lean_algebra.py` — are the parity evidence).
-- **How a theorem is written here.** Take the object and a grade predicate (`{a : G3} (ha : IsVector a)`),
-  conclude about objects; in the body either `obtain ⟨zeros⟩ := ha; simp only [defs, zeros]; ring`
-  (polynomial tier) or a structural `rw` chain through the leaf lemmas. Rules: `CLAUDE.md` "Coordinates
-  only when needed"; recipes, the hypotheses section and build discipline: `lean-ga-proof-architecture.md`.
-  A new file is one topic, suffixed `2D`/`3D` when grade-specific, and must be imported from the root
-  module `proofs/GacalcProofs.lean` or it is not built.
-- **Build.** `make lean` from the repo root. Inside a nested sandbox run `proofs/check.sh` directly
-  against the existing image (recipe in the architecture doc), since `make lean` depends on `image` and
-  would rebuild it. A full incremental gate takes 2–5 minutes.
+How the work was done: `G1`/`G2`/`G3` are coordinate structs with hand-written `mul`/`wedge`/`reverse`
+(𝒢₁'s and 𝒢₃'s transcribed from the Python `Gn` oracle by `tools/derive_lean_algebra.py`), with no
+dimension-general algebra; the Python is matched by formula, by hand (the review's §3 map and its
+definition-parity re-derivation are the parity evidence). Each theorem takes the object and a grade
+predicate and concludes about objects; new files are one topic, suffixed `2D`/`3D` when grade-specific,
+imported from `proofs/GacalcProofs.lean`. In the nested sandbox the gate was run as `proofs/check.sh`
+against the existing image (2–5 minutes incremental), since `make lean` depends on `image`.
 
 ## Phase 1 — `standardposition.py` and `functions.py` (done 2026-10-04)
 
@@ -56,7 +42,7 @@ moved to its own (parked) task; `gn.py` moved into the deferred general-`Gn` tas
 |---|---|
 | `projection_rotation` | already covered: `projRotation_*`, `projRotation_eq_sandwich`. |
 | `versor_rotation` (forward / `backward`) | forward already covered (`sandwich_*`); backward = `sandwich_inverse_sandwich` (phase 1). |
-| `bivector_rotation` / `plane_rotation` (half-angle rotor by `θ` in a general 3D plane) | **partial**, unchanged here: unit-ness and plane/normal fixed are proven; the angle theorem is `tasks/lean-rotor-3d-angle-theorem.md`. |
+| `bivector_rotation` / `plane_rotation` (half-angle rotor by `θ` in a general 3D plane) | **partial**, unchanged here: unit-ness and plane/normal fixed are proven; the angle theorem went to `tasks/archive/2026/10/05/lean-rotor-3d-angle-theorem.md`. |
 | `bivector_rotation(θ).at(t)` | **plumbing — no theorem.** The rotor factory supplies the interpolation law as "rebuild the rotor with `t·θ`", and a composite's `at` interpolates each component (`functions.py`); nothing GA-specific beyond the rotor theorems themselves. |
 | `translate`, `uniform_scale`, `scale_non_uniform`, `to_matrix`, `MatrixTemplate`, `to_matrix_template` | **plumbing — no theorem** (affine/matrix bookkeeping); `scale_non_uniform` rests on `proj` onto `e_i`, already covered. |
 
@@ -75,8 +61,8 @@ identity with its wedge term vanishing), `dot_vec`, `normSq_vec`, `magnitude_vec
 `Gn`, `bases(n)`, `basis_vector`, `unit_pseudoscalar(n)`, `dual(n)` for `n ∉ {2,3}`,
 `symbolic_multivector` need a dimension-general representation, which is the whole subject of
 `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md`; once that exists the remaining step is only
-"prove `G1`/`G2`/`G3` ≃ the `n = 1, 2, 3` instances", which that task's open question 3 already names.
-That scope was moved there at this archive, so this task closes with its own deliverables. `Gn` is the
+"prove `G1`/`G2`/`G3` ≃ the `n = 1, 2, 3` instances", which that task's open question 3 names.
+That scope was moved there at this archive, so this task closed with its own deliverables. `Gn` is the
 oracle the Lean algebras were transcribed from, which is why there is nothing to prove about it yet.
 
 ## Decisions
@@ -100,7 +86,3 @@ oracle the Lean algebras were transcribed from, which is why there is nothing to
 - `6c08225` — archive of the preceding trim task (separate lifecycle).
 - (The SHAs above are the post-squash commits on `master`; the pre-squash quick-saves this record first
   cited are unreachable from `master`.)
-
-## Open questions
-
-None.

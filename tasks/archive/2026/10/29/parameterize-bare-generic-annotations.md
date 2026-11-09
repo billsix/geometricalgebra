@@ -1,23 +1,16 @@
 # Parameterize bare generic type annotations
 
-**Status:** done (2026-10-29). **Priority:** 5  **Difficulty:** 1
-
-## BLUF
+**Completed:** 2026-10-29
 
 Five annotations (four in `src/gacalc/nbplotutils.py`, one in
-`tools/gen_specialized.py`) use a bare `dict`/`list`/`type` where the parameters
-are knowable from the surrounding code; a bare generic silently degrades its
+`tools/gen_specialized.py`) used a bare `dict`/`list`/`type` where the parameters
+were knowable from the surrounding code; a bare generic silently degrades its
 parameters to implicit `Any` (shared Python standard, "Parameterize generic
-types"). Give each its real domain parameters (`BladeReal`, `MultiVectorBase`,
-…). "Done" = the five sites parameterized and `make format` (ruff + `ty`) green.
-
-## Context (cold-start)
-
-Found by an AST scan for annotations whose value is a generic container left
-unsubscripted. gacalc's own domain aliases make the exact parameters clear:
-`BladeReal = dict[Blade, Real]`, `Blade = tuple[int, ...]`,
-`Real = int | float | sympy.Expr` (`src/gacalc/base.py`), all already imported in
-`nbplotutils.py`.
+types"). Each got its real domain parameters. The sites were found by an AST scan
+for annotations whose value is a generic container left unsubscripted; gacalc's
+own domain aliases made the parameters clear: `BladeReal = dict[Blade, Real]`,
+`Blade = tuple[int, ...]`, `Real = int | float | sympy.Expr`
+(`src/gacalc/base.py`), all already imported in `nbplotutils.py`.
 
 ## The sites and their fixes
 
@@ -38,14 +31,14 @@ unsubscripted. gacalc's own domain aliases make the exact parameters clear:
 
 - `src/gacalc/nbplotutils.py` `rng: np.random.Generator = np.random.default_rng(...)`
   — `np.random.Generator` is a concrete numpy class, **not** `collections.abc.Generator`;
-  it is not a bare generic. Leave as-is.
+  it is not a bare generic. Left as-is.
 - `tools/gen_specialized.py` `pairs_iter: ast.Tuple = ast.Tuple(...)` — `ast.Tuple`
   is an AST node class, **not** `typing.Tuple`; not subscriptable as a generic.
-  Leave as-is.
+  Left as-is.
 
 ## Verification
 
-`make format` (containerized: regenerate specialized modules, then ruff + `ty`);
-annotation-only, no runtime behaviour change. `gen_specialized.py` is the
+`make format` (containerized: regenerate specialized modules, then ruff + `ty`)
+was green; annotation-only, no runtime behaviour change. `gen_specialized.py` is the
 *generator* (hand-written source), so editing its own annotation is correct — this
 does not touch any generated output.

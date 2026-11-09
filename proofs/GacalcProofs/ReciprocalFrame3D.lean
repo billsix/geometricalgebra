@@ -14,7 +14,7 @@ import GacalcProofs.Projection3D
       `x_i = (m·y)/(m·a_i)` and `aⁱ = m/(m·a_i)`;
     * the **last reciprocal vector is the last rejection** over its squared length, `a³ = w₃/|w₃|²`,
       with `w₃` the rejection of `a₃` from the plane `a₁ ∧ a₂`;
-    * **both inverses** of `Frame.to_invertible_function` undo `f(x) = Σ (x·e_i)*a_i` on both sides and
+    * **both inverses** of `Frame.to_invertible_function` undo `f(x) = Σ (x*e_i)*a_i` on both sides and
       agree. The peel is proved structurally: on `y = x₁*a₁ + x₂*a₂ + x₃*a₃` it reads back `x₃`, `x₂`,
       `x₁` in turn, because each rejection is perpendicular to the frame vectors before it.
 
@@ -42,7 +42,7 @@ noncomputable def recip3 (a1 a2 a3 : G3) : G3 := mul (wedge a1 a2) (inverse (vol
 noncomputable def comb (a1 a2 a3 : G3) (x1 x2 x3 : ℝ) : G3 :=
   add (add (smul x1 a1) (smul x2 a2)) (smul x3 a3)
 
-/-- The forward map of `Frame.to_invertible_function`: `f(x) = Σ (x·e_i)*a_i`, sending `e_i ↦ a_i`. -/
+/-- The forward map of `Frame.to_invertible_function`: `f(x) = Σ (x*e_i)*a_i`, sending `e_i ↦ a_i`. -/
 noncomputable def frameMap (a1 a2 a3 x : G3) : G3 := comb a1 a2 a3 (dot x e_1) (dot x e_2) (dot x e_3)
 
 /-- The `"reciprocal"` inverse: `g(y) = Σ (aⁱ·y)*e_i`. -/
@@ -378,7 +378,7 @@ theorem invPeel_comb {a1 a2 a3 : G3} (ha1 : IsVector a1) (ha2 : IsVector a2) (ha
     ring
   simp only [invPeel, hf, hm, hl]
 
-/-- `Σ (x·e_i)*e_i = x` for a vector. -/
+/-- `Σ (x*e_i)*e_i = x` for a vector. -/
 theorem comb_basis_dot {x : G3} (hx : IsVector x) :
     comb e_1 e_2 e_3 (dot x e_1) (dot x e_2) (dot x e_3) = x := by
   obtain ⟨x1, x2, x3, rfl⟩ : ∃ a b c, x = vec a b c := ⟨_, _, _, eq_vec_of_isVector hx⟩

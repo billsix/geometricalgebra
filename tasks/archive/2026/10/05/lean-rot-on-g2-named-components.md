@@ -1,11 +1,9 @@
 # Lean: define 2D rotation on 𝒢₂ vectors (named components), not on bare `ℝ × ℝ` pairs
 
-**Status:** done 2026-10-05 (gate `[lean] OK`); archived 2026-10-05
-**Priority:** 5 **Difficulty:** 3
-**Created / completed:** 2026-10-05 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-05 · **Completed:** 2026-10-05 (William Emerison Six <billsix@gmail.com>); gate `[lean] OK`
 **Harvested to:** `tasks/reference/lean-ga-proof-architecture.md` ("state on the algebra, not on bare tuples").
 
-## BLUF
+## Summary
 
 `Rotation2D.rot θ` had been defined on a bare coordinate pair `ℝ × ℝ`, so every 2D theorem that landed in the
 algebra read `G2.vec (rot θ (x, y)).1 (rot θ (x, y)).2` — anonymous pair projections the maintainer could not read
@@ -13,10 +11,10 @@ algebra read `G2.vec (rot θ (x, y)).1 (rot θ (x, y)).2` — anonymous pair pro
 components** `c1`/`c2`, restated the 2D theorems on 𝒢₂ vectors, and pointed the Mathlib bridge's `toC` at a 𝒢₂
 vector. No `ℝ × ℝ` and no `.1`/`.2` remain in `Rotation2D.lean` or `MathlibBridge.lean`.
 
-## Context
+## Background
 
-- Spun out of `lean-unit-versors-rotors-sandwich-with-reverse.md` (this directory) from the maintainer's mid-session
-  question. The "from scratch" spine was unaffected: `rot` is still defined from sin/cos on two real coordinates —
+- Spun out of `tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md` from the maintainer's mid-session
+  question. The "from scratch" spine was unaffected: `rot` was still defined from sin/cos on two real coordinates —
   they are the named fields of a `G2` vector instead of a tuple. `G2` is a coordinate struct, so this cost nothing
   and removed the pair type from the 2D story entirely.
 
@@ -37,9 +35,9 @@ vector. No `ℝ × ℝ` and no `.1`/`.2` remain in `Rotation2D.lean` or `Mathlib
 Rewrote `Rotation2D.lean` and the rotation section of `MathlibBridge.lean` as above. One proof needed a change
 after the retype: `rot_from_to` on components is `ext <;> field_simp <;> ring` (the pair version had been
 `constructor <;> field_simp`). Gate `[lean] OK`, both modules with no warnings. `CHANGELOG` Lean entry extended.
-Committed by the maintainer in `9d834c5`.
+Committed by the maintainer in `dd68f6f`.
 
 ## Related
 
-- `lean-unit-versors-rotors-sandwich-with-reverse.md` (this directory)
+- `tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md`
 - `tasks/reference/lean-ga-proof-architecture.md` ("geometric objects in, scalars in the body")

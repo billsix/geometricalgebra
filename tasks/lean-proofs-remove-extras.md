@@ -8,7 +8,7 @@
 ## BLUF
 
 The maintainer asked whether the Lean proofs carry things their goals don't need (hypotheses like `ha`/`hab`
-that never seem to be referenced). An audit on 2026-11-05 checked all 32 files and 571 theorems with extra
+that never seem to be referenced). An audit on 2026-11-05 checked all 32 files (there are 34 as of 2026-11-09) and 571 theorems with extra
 linters and a `clear` test. **Very little is extra:** most name-absent hypotheses are consumed silently by
 `field_simp`/`simp`/`linarith`. What is extra: 4 statement hypotheses, 2 no-op `ring`s, and 2 cosmetic
 `ring`→`ring_nf` spellings. There are also 4 false-positive warnings to silence. Done means those are fixed,
@@ -34,7 +34,7 @@ linters and a `clear` test. **Very little is extra:** most name-absent hypothese
 2. The `clear` test: for each hypothesis whose name never appears in its proof, insert `clear <name>` as the
    first tactic and compile that file alone. A pass means this proof doesn't need it.
 3. Already clean: no `sorry`, no unused `have`, zero unused `simp` arguments (the 2026-10-04 minimizer
-   removed 73; `tools/detect_unused_hypotheses.py`).
+   removed 73).
 
 ## Findings to fix
 
@@ -76,7 +76,7 @@ at `|R|² = 0` too, because in Lean `1/0 = 0`, so `inverse R = 0` and both sides
    changed. Mention a dropped hypothesis in `CHANGELOG.md` only if the Python side cites these theorems in a
    way a reader would notice (the Lean proofs are not a published API).
 7. Optional, as a reusable tool: promote the `clear`-test script to `tools/` (e.g.
-   `tools/lean_clear_test.py`) next to `tools/detect_unused_hypotheses.py`, and note it in the reference doc.
+   `tools/lean_clear_test.py`), and note it in the reference doc.
 
 ## Open questions
 

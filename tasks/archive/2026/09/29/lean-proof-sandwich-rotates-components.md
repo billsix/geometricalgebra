@@ -1,17 +1,14 @@
 # Lean proof — the 3D sandwich rotates correctly in its plane (matrix-free)
 
-**Part of:** `tasks/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
-**Status:** DONE 2026-09-29 (William Emerison Six <billsix@gmail.com>) — matrix-free reframing
-**Priority:** 6 · **Difficulty:** 7
-
-## BLUF
+**Completed:** 2026-09-29 (William Emerison Six <billsix@gmail.com>)
+**Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
 
 Proved, for the actual a→b rotation `R = versorFromVectors a b` in 𝒢₃, the maintainer's three goals —
 **matrix-free, no angle computed**: (1) it rotates in the plane defined by a→b; (2) it rotates the
 *oriented* angle correctly; (3) components perpendicular to the plane are unchanged. Landed in
 `proofs/GacalcProofs/RotateComponents.lean` + `Sandwich.lean`, `make lean` green.
 
-## What landed (the three goals)
+## What was proved (the three goals)
 
 For `R = versorFromVectors a b`:
 
@@ -33,13 +30,13 @@ Supporting (in `Sandwich.lean`): `sandwich_add`/`sandwich_smul` (linearity), `sa
 
 ## Decisions / notes
 
-- **Matrix-free reframing (maintainer, 2026-09-29):** the goal is the three geometric properties above,
+- **Matrix-free reframing (the maintainer, 2026-09-29):** the goal is the three geometric properties above,
   NOT a rotation matrix. This made the double-angle "second column" and the `{â, r̂}` rotation-matrix
   theorem **unnecessary** — dropped. The Stage-1 `sandwich_ahat` (â↦b̂) is kept as the concrete
   "carries the frame vector," but the full 2×2 matrix / `c²+s²=1` route was not needed.
-- **Frame/orientation decisions (kept for context):** orthonormal `{â, r̂}`, `sin θ ≥ 0` oriented by
+- **Frame/orientation decisions:** orthonormal `{â, r̂}`, `sin θ ≥ 0` oriented by
   `a∧b`. In the matrix-free formulation these live implicitly in `rotation_fixes_plane_bivector`
   (orientation `a∧b`) rather than in explicit `sin`/`cos` symbols.
-- Possible future strengthening (not needed for the goals): the sandwich preserves the wedge of two
+- A possible strengthening, not needed for the goals and not done: the sandwich preserves the wedge of two
   in-plane vectors (a sharper "oriented angle between any two vectors is preserved"); the plane
   bivector being fixed already gives the orientation content.

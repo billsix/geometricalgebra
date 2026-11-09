@@ -1,9 +1,8 @@
 # Lean proof — grade projection (`r_vector_part`, `even_part`, `odd_part`)
 
-**Part of:** `tasks/investigate-lean-proofs-for-ga.md`
+**Completed:** 2026-10-02
+**Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`
 **From:** `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the coverage-map gap audit)
-
-**Status:** DONE 2026-10-02. **Priority:** 6 **Difficulty:** 4
 
 ## Summary
 

@@ -24,10 +24,9 @@ nothing was switched, since gacalc never left pyright (below).
    breaks the "self-contained image" convention, and is one way completion can silently degrade.
 4. **The ty switch the maintainer may be remembering happened in other repos.**
    - github.com/billsix/modelviewprojection switched its Emacs LSP from pyright to `ty server` on
-     2026-08-23, deliberately (its `tasks/archive/2026/08/23/switch-typechecker-pyright-to-ty.md`), and
-     removed pyright from its image.
+     2026-08-23, deliberately, and removed pyright from its image (record: github.com/billsix/modelviewprojection `tasks/archive/2026/08/23/switch-typechecker-pyright-to-ty.md`).
    - github.com/billsix/multivariate-math still configures `lsp-pyright`, but its image stopped
-     installing pyright on 2025-12-06 (its commit `e9b088a`, "try debian again"). The same probe in its
+     installing pyright on 2025-12-06 (multivariate-math commit `e9b088a`, "try debian again"). The same probe in its
      image attached `ruff` + **`ty-ls`**: lsp-mode quietly fell back to ty, and after `math.sq` it
      offered only `sqrt` and `isqrt`.
    - Still on pyright, installed with `npm install -g pyright` at image build so it works offline:
@@ -45,10 +44,11 @@ nothing was switched, since gacalc never left pyright (below).
 - `pyright --version` in the gacalc image: `1.1.414` with network; `RuntimeError: nodeenv failed`
   without.
 
-## Follow-ups (each waits on the maintainer)
+## Follow-ups
 
-- **Recommended:** make gacalc's pyright work offline by baking it into the image, e.g.
-  `uv pip install 'pyright[nodejs]'` and a build-time `pyright --version` so the download lands in a
-  committed layer. This changes what the image ships, so it needs a yes.
-- **Recommended:** decide per repo whether modelviewprojection should go back to pyright, and make
-  multivariate-math's config match its image (install pyright, or name ty explicitly).
+- Making gacalc's pyright work offline (it changed what the image ships, so it needed the maintainer's
+  yes) was recommended and then done with `npm install -g pyright` at image build, in
+  `tasks/archive/2026/11/04/dockerfile-lean-layers-first.md`.
+- Whether modelviewprojection should go back to pyright, and making multivariate-math's config match
+  its image (install pyright, or name ty explicitly), were recommended and left to the maintainer
+  per repo.

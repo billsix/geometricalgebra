@@ -45,41 +45,4 @@ theorem reject_from_I_eq_zero {a : G2} (ha : IsVector a) : reject I a = (⟨0, 0
   rw [reject, wedge_I_eq_zero ha]
   ext <;> simp only [mul, inverse, smul, reverse, normSq, I, e_12] <;> ring
 
-/-- **The reverse-sandwich is an outermorphism up to `|R|²`** (2D): `(R*u*R̃) ∧ (R*v*R̃) = |R|²*R (u∧v) R̃`.
-    A pure polynomial identity (atomic `normSq R`) — the unnormalized core of the 2D
-    `sandwich_preserves_wedge`. -/
-theorem wedge_reverse_sandwich {R : G2} (hR : IsEvenVersor R) {u v : G2} :
-    wedge (mul (mul R u) (reverse R)) (mul (mul R v) (reverse R))
-      = smul (normSq R) (mul (mul R (wedge u v)) (reverse R)) := by
-  obtain ⟨hR1, hR2⟩ := hR
-  simp only [normSq, wedge, mul, reverse, smul, hR1, hR2]
-  ext <;> ring
-
-/-- **The sandwich preserves the outer product** (object form, 2D outermorphism):
-    `(R*u*R⁻¹) ∧ (R*v*R⁻¹) = R (u∧v) R⁻¹` for an even versor `R` with `|R|² ≠ 0` and ANY `u`, `v`.
-    In 𝒢₂ the wedge is the pseudoscalar (signed area), so this is "a rotation preserves signed area." -/
-theorem sandwich_preserves_wedge {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G2} :
-    wedge (sandwich R u) (sandwich R v) = sandwich R (wedge u v) := by
-  simp only [sandwich, inverse, GacalcProofs.G2.mul_smul, GacalcProofs.G2.wedge_smul_left,
-             GacalcProofs.G2.wedge_smul_right, GacalcProofs.G2.smul_smul]
-  rw [wedge_reverse_sandwich hR, GacalcProofs.G2.smul_smul]
-  congr 1
-  field_simp
-
-/-- **The reverse sandwich scales the wedge's norm by `|R|²`** (2D): `|R (u∧v) R̃|² = |R|⁴ |u∧v|²`,
-    stated on the pseudoscalar `u∧v` itself (atomic `normSq R`). Pure polynomial. -/
-theorem normSq_reverse_sandwich_wedge {R : G2} (hR : IsEvenVersor R) {u v : G2} :
-    normSq (mul (mul R (wedge u v)) (reverse R)) = normSq R ^ 2 * normSq (wedge u v) := by
-  obtain ⟨hR1, hR2⟩ := hR
-  simp only [normSq, wedge, mul, reverse, hR1, hR2]
-  ring
-
-/-- **The sandwich preserves the wedge's squared magnitude** (object form, 2D): `|R (u∧v) R⁻¹|² = |u∧v|²`
-    for an even versor `R` with `|R|² ≠ 0` and ANY `u`, `v` — a rotation preserves signed area. -/
-theorem sandwich_preserves_normSq_of_wedge {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0)
-    {u v : G2} :
-    normSq (sandwich R (wedge u v)) = normSq (wedge u v) := by
-  rw [sandwich, inverse, GacalcProofs.G2.mul_smul, normSq_smul, normSq_reverse_sandwich_wedge hR]
-  field_simp [hr]
-
 end GacalcProofs.G2

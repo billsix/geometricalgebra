@@ -447,14 +447,20 @@ def test_project_vector_onto_bivector_trivector_subtypes() -> None:
     assert proj2 == v2 and type(proj2) is g2.Vector
     # g3.Vector onto a bivector plane -> the in-plane part, AS a g3.Vector: project is
     # grade-preserving, so it narrows back to the input's type (no widening to g3.G).
-    e1: g3.Vector
-    e3: g3.Vector
-    e1, e3 = 1 * g3.Vector.e_1, 1 * g3.Vector.e_3
-    proj3: MultiVectorBase = g3.Vector.project(onto=g3.Bivector.e_12)(e1 + e3)
-    assert proj3 == e1 and type(proj3) is g3.Vector
-    assert g3.Vector.project(onto=g3.Bivector.e_12)(e3) == g3.Vector.zero()
+    proj3: MultiVectorBase = g3.Vector.project(onto=g3.Bivector.e_12)(
+        1 * g3.Vector.e_1 + 1 * g3.Vector.e_3
+    )
+    assert proj3 == 1 * g3.Vector.e_1 and type(proj3) is g3.Vector
+    assert (
+        g3.Vector.project(onto=g3.Bivector.e_12)(1 * g3.Vector.e_3) == g3.Vector.zero()
+    )
     # g3.Vector onto the trivector (all of 3-space) -> itself
-    assert g3.Vector.project(onto=g3.Trivector.e_123)(e1 + e3) == e1 + e3
+    assert (
+        g3.Vector.project(onto=g3.Trivector.e_123)(
+            1 * g3.Vector.e_1 + 1 * g3.Vector.e_3
+        )
+        == 1 * g3.Vector.e_1 + 1 * g3.Vector.e_3
+    )
 
 
 @pytest.mark.parametrize("module", [g1, g2, g3], ids=["g1", "g2", "g3"])
@@ -463,3 +469,27 @@ def test_scalar_iteration_yields_its_coefficient(module: ModuleType) -> None:
     # scalar yields its one number, including 0.
     assert list(module.Scalar.from_real(3)) == [3]
     assert list(module.Scalar.from_real(0)) == [0]
+
+
+@pytest.mark.parametrize(
+    "build",
+    [
+        lambda: g3.Vector.unit_pseudoscalar(3),
+        lambda: list(g3.Vector.bases(3)),
+        lambda: g3.Vector.symbolic_multivector(3, "a"),
+        lambda: g2.Bivector.unit_pseudoscalar(1),
+    ],
+    ids=["unit_pseudoscalar", "bases", "symbolic_multivector", "bivector-e_1"],
+)
+def test_graded_type_raises_on_a_blade_it_cannot_hold(
+    build: typing.Callable[[], object],
+) -> None:
+    # A graded type drops the blades it has no field for, so building one there
+    # would silently give zero; it raises instead, naming the type.
+    with pytest.raises(ValueError, match="cannot hold the basis blade"):
+        build()
+
+
+def test_full_class_builds_every_blade() -> None:
+    assert g3.G.unit_pseudoscalar(3) == g3.G.e_123
+    assert len(list(g3.G.bases())) == 8

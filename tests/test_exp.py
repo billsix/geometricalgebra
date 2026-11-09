@@ -60,8 +60,7 @@ def test_exp_int_stays_exact() -> None:
 def test_exp_of_a_vector_is_rejected() -> None:
     # a vector squares to +|v|^2 (A**2 > 0): the series would sum to the
     # hyperbolic cosh + sinh -- a Minkowski boost with no Euclidean meaning, so
-    # exp rejects it rather than silently applying a spacetime formula.  (An
-    # earlier version returned the hyperbolic form; it was removed.)
+    # exp rejects it rather than silently applying a spacetime formula.
     v: g2.Vector = 2 * g2.Vector.e_1
     with pytest.raises(ValueError, match="A\\*\\*2 < 0"):
         v.exp()

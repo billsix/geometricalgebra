@@ -1,12 +1,25 @@
-"""Operators on the generated graded types type *precisely* (added 2026-07-21).
+# Copyright (c) 2025-2026 William Emerison Six
+# SPDX-License-Identifier: LGPL-2.1-only
+#
+# This library is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License, version
+# 2.1, as published by the Free Software Foundation.
+#
+# This library is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License (the LICENSE file in this repository)
+# for more details.
 
-The geometric/outer/inner products and their operators used to be declared
-``-> typing.Self`` and cast, so ``v2 * v2`` mistyped as ``g2.Vector`` though it is a
-``g2.Versor`` at runtime.  ``@typing.overload`` signatures now give the true type.
+"""Operators on the generated graded types type *precisely*.
+
+The geometric/outer/inner products and their operators carry ``@typing.overload``
+signatures that give each result's true type: ``v2 * v2`` is a ``g2.Versor``, both
+statically and at runtime.
 
 ``typing.assert_type`` guards the STATIC types (checked by ``ty`` -- a regression
 makes ``ty check tests`` fail); the runtime block guards values/runtime types under
-pytest.  See ``tasks/typed-product-helper-functions.md``.
+pytest.  See ``tasks/archive/2026/07/21/typed-product-helper-functions.md``.
 """
 
 import typing

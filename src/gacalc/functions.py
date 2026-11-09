@@ -84,8 +84,8 @@ class Linearity(IntEnum):
     NONLINEAR``.  Int-backed so the *join* (the class of a composite) is just
     ``max(...)``: a composite is as general as its most-general part.
 
-    * ``LINEAR``    -- fixes the origin, ``f(x) = A x`` (rotations, scales).
-    * ``AFFINE``    -- linear + a translation, ``f(x) = A x + b``.
+    * ``LINEAR``    -- fixes the origin, ``f(x) = A * x`` (rotations, scales).
+    * ``AFFINE``    -- linear + a translation, ``f(x) = A * x + b``.
     * ``NONLINEAR`` -- anything else (e.g. a perspective divide).  Also the
       conservative default for a hand-built function with no declared class.
     """

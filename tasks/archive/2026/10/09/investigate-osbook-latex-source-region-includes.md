@@ -1,12 +1,6 @@
 # Investigation: can OpenStax/`osbook` LaTeX include marked source regions like Sphinx?
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 8
-**Difficulty:** 3
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-09
 
 Investigated the maintainer's question — can impo's `osbook` LaTeX pull a *marked* source region
 into the book the way this book's (and modelviewprojection's) Sphinx `literalinclude` does
@@ -32,6 +26,4 @@ recommendation: `tasks/reference/osbook-latex-source-includes.md`.
   `\lstinputlisting` is LaTeX-only so the pandoc HTML/EPUB path needs include-resolution), and the
   recommended follow-ups (impo toolchain work; the parked `tasks/port-book-to-osbook-latex.md`).
 
-## Open questions
-
-None. (The decision whether to pursue the LaTeX port stays the maintainer's, in the port task.)
+Whether to pursue the LaTeX port was left as the maintainer's decision, in the port task.

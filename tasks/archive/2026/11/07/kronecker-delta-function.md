@@ -1,4 +1,6 @@
-# Extract the Kronecker delta into its own function (done 2026-11-07)
+# Extract the Kronecker delta into its own function 
+
+**Completed:** 2026-11-07
 
 Requested by William Emerison Six <billsix@gmail.com>, 2026-11-07: "could you extract Kronecker delta to
 it's own function, with tests? and then use that as a function?"

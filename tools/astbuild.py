@@ -304,8 +304,8 @@ class SymbolToAttr(ast.NodeTransformer):
     """Rewrite operand-symbol ``Name`` nodes to attribute access.
 
     ``rename`` maps a sympy symbol name (e.g. ``a_e_1``) to an ``(object, attr)``
-    pair (e.g. ``("self", "e_1")``).  Replaces the old word-boundary regex on
-    rendered source with a structural, correct-by-construction transform.
+    pair (e.g. ``("self", "e_1")``): a structural, correct-by-construction
+    transform rather than a regex over rendered source.
     """
 
     def __init__(self, rename: Mapping[str, tuple[str, str]]) -> None:
@@ -526,33 +526,23 @@ def construct_type_of(var: str, pairs: Iterable[tuple[str, ast.expr]]) -> ast.Ca
     )
 
 
-def construct_type_self(pairs: Iterable[tuple[str, ast.expr]]) -> ast.Call:
-    """``type(self)(field=value, ...)`` -- subclass-preserving construction."""
-    return construct_type_of("self", pairs)
-
-
 def return_construct(
     name_: str,
     pairs: Iterable[tuple[str, ast.expr]],
     owner: str | None = None,
-    final: bool = False,
 ) -> ast.stmt:
     """``return cast(Self, Name(field=value, ...))`` (the no-local return idiom).
 
-    When ``owner`` names the class being generated and the result type equals
-    it (a same-type op), emit the class directly: ``return Name(...)`` when the
-    class is ``final`` (not subclassable — the concrete class is exact), else
-    ``return type(self)(...)`` so a subclass gets its own type back (no cast
-    needed either way: for a same-type result the value already is that type)."""
+    When ``owner`` names the class being generated and the result type equals it
+    (a same-type op), emit ``return Name(...)``: every generated class is
+    ``@typing.final``, so the concrete class is exact and no cast is needed."""
     if owner is not None and owner == name_:
-        if final:
-            return return_stmt(construct(name_, pairs))
-        return return_stmt(construct_type_self(pairs))
+        return return_stmt(construct(name_, pairs))
     return return_stmt(cast_self(construct(name_, pairs)))
 
 
 def bool_or(tests: Sequence[ast.expr]) -> ast.expr:
-    """``a or b or ...`` (a single test is returned bare, matching the string gen)."""
+    """``a or b or ...`` (a single test is returned bare)."""
     return tests[0] if len(tests) == 1 else ast.BoolOp(op=ast.Or(), values=list(tests))
 
 

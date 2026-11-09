@@ -1,6 +1,6 @@
 [project]
 name = "gacalc"
-version = "0.1.0"
+version = "0.0.20"
 authors = [{name="William Emerison Six", email="billsix@gmail.com"}]
 description = "Geometric Algebra"
 readme = "README.md"
@@ -37,8 +37,6 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.pytest]
-testpaths = ["tests"]
 
 [tool.ruff]
 # The intentionally-vendored Emacs tree under entrypoint/ (.emacs.d/elpa/) is

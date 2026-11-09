@@ -1,6 +1,7 @@
 # Write a reference doc: the Lean → symbolic-test → student-proof-notebook workflow
 
 **Status:** proposed — needs go-ahead
+**Part of:** `tasks/proof-notebooks-student-math-notation-style.md` (the proof-notebook umbrella; this is the author-facing rationale step)
 **Priority:** 6
 **Difficulty:** 4
 **Created:** 2026-09-30 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)

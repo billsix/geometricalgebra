@@ -1,12 +1,6 @@
 # Prove 2D rotation is distributive (linear): prose + Lean (+ the symbolic Python form)
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 4
-**Difficulty:** 4
-**Started:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-09 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-09
 
 Proved that 2D rotation is **distributive / linear** — `R(u + v) = R(u) + R(v)` and `R(k·v) = k·R(v)`
 — in all three forms, so a rotation is fixed by what it does to the two natural-basis vectors
@@ -43,7 +37,3 @@ notebook and a permanent test (`make test` green). All gates green.
 
 `make lean` (no sorry/admit), `make test` (698 passed, +1), `make format` (ruff/ty clean), `make docs`
 (HTML + PDF; the section and numbered equation render, the notebook's distributivity cells execute).
-
-## Open questions
-
-None.

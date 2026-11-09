@@ -1,9 +1,8 @@
 # Lean proof — orthogonality / parallelism predicates (`is_orthogonal_to`, `is_parallel_to`)
 
-**Part of:** `tasks/investigate-lean-proofs-for-ga.md`
+**Completed:** 2026-10-02
+**Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`
 **From:** `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the coverage-map gap audit)
-
-**Status:** DONE 2026-10-02. **Priority:** 5 **Difficulty:** 3
 
 ## Summary
 

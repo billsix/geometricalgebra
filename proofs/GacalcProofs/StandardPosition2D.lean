@@ -105,7 +105,7 @@ theorem rotPlane_inv (c s s' : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (h : s' + s = 0) (
     linear_combination v.c2 * hcs + (c * v.c1 - s * v.c2) * h
   · rfl
 
-/-- **Projection onto the x-axis is "keep the x-component":** `proj (m·e₁) v = (v₁, 0)` for any
+/-- **Projection onto the x-axis is "keep the x-component":** `proj (m*e₁) v = (v₁, 0)` for any
     multivector `v` and `m ≠ 0` — the elementary step done in standard position, where no product is
     needed to project. -/
 theorem proj_onto_x_axis (m : ℝ) (hm : m ≠ 0) (v : G2) : proj (vec m 0) v = vec v.c1 0 := by

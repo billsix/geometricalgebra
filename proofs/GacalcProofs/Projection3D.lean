@@ -6,7 +6,7 @@ import GacalcProofs.Sandwich
     The chain that builds 3D projection from vector projections + the dual, feeding the
     3D versor sandwich (see `tasks/reference/lean-ga-proof-architecture.md`):
 
-      * `proj a b = (b·a / a·a) · a` — vector projection; the rejection `b − proj_a b` is
+      * `proj a b = (b·a / a·a)*a` — vector projection; the rejection `b − proj_a b` is
         perpendicular to `a` (`reject_perp_dot`).
       * The wedge sees only the rejection: `a ∧ b = a ∧ (b − proj_a b)` (`wedge_reject`).
       * The dual of `a ∧ b` (the plane normal, gacalc's `cross`) is ⊥ both spanning
@@ -16,7 +16,7 @@ import GacalcProofs.Sandwich
     3D sandwich as a corollary of the G2 `sandwich_rotor`. -/
 namespace GacalcProofs.G3
 
-/-- Vector projection of `b` onto `a`: `proj_a b = (b·a / a·a) · a`. Lies along `a`.
+/-- Vector projection of `b` onto `a`: `proj_a b = (b·a / a·a)*a`. Lies along `a`.
 
     The denominator is the self-inner-product `a·a` (Hestenes `dot`), **not** `normSq a`. They agree
     for a vector (`a·a = |a|²`), but this def is stated for a general `a : G3`, where `a·a ≠ normSq a`
@@ -143,8 +143,8 @@ noncomputable def inner_vb (a b : G3) : G3 := vec (mul a b).c1 (mul a b).c2 (mul
     product `inner_vb` and the blade inverse. The bivector counterpart of `proj` (onto a vector). -/
 noncomputable def project_onto (onto a : G3) : G3 := mul (inner_vb a onto) (inverse onto)
 
-/-- **Projection + rejection = identity**, for a vector onto a plane (bivector `B = p·e₁₂ + q·e₁₃ +
-    r·e₂₃`, `|B|² ≠ 0`): `(A·B)B⁻¹ + (A∧B)B⁻¹ = A`. Because `(A·B) + (A∧B) = A B` (the grade-1 and
+/-- **Projection + rejection = identity**, for a vector onto a plane (bivector `B = p*e₁₂ + q*e₁₃ +
+    r*e₂₃`, `|B|² ≠ 0`): `(A·B)B⁻¹ + (A∧B)B⁻¹ = A`. Because `(A·B) + (A∧B) = A B` (the grade-1 and
     grade-3 parts are the whole product for a vector·bivector) and `B B⁻¹ = 1`. This validates the
     Hestenes `project`/`reject` pair — the in-plane part plus the perpendicular part reconstruct the
     vector. -/
@@ -177,8 +177,8 @@ theorem project_add_reject {B : G3} (hB : IsBivector B) (hBn : normSq B ≠ 0) {
 theorem add_eq_left_sub (x y z : G3) (h : add x y = z) : x = sub z y := by
   rw [← h]; ext <;> simp only [add, sub] <;> ring
 
-/-- **Rejection from a plane = projection onto its normal** (for a bivector `B = p·e₁₂ + q·e₁₃ +
-    r·e₂₃`, `|B|² ≠ 0`): `(c ∧ B) B⁻¹ = proj_{dual B} c`. Both are the perpendicular component of `c`.
+/-- **Rejection from a plane = projection onto its normal** (for a bivector `B = p*e₁₂ + q*e₁₃ +
+    r*e₂₃`, `|B|² ≠ 0`): `(c ∧ B) B⁻¹ = proj_{dual B} c`. Both are the perpendicular component of `c`.
     Stated for a literal bivector so the degrees stay low. -/
 theorem reject_eq_proj_normal_coord (p q r c1 c2 c3 : ℝ)
     (h : normSq (bivector p q r) ≠ 0) :

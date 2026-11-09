@@ -132,7 +132,7 @@ theorem rotorSandwich_rotorFromVectors_carries_from_to {a b : G2} (ha : IsVector
     versor is `(|a|*|b| + a·b) + b∧a`, so its squared magnitude is `(|a|*|b| + a·b)² + |a∧b|²`, and
     Lagrange collapses `(a·b)² + |a∧b|²` to `|a|²*|b|²`. Hence the versor vanishes exactly when `a` and
     `b` are antiparallel (`a·b = −|a|*|b|`) or one is zero — the normalization is well-defined otherwise.
-    (This is the identity the earlier Python-side attempt to normalize the versor was missing.) -/
+    (Normalizing the versor in Python needs exactly this identity.) -/
 theorem normSq_versorFromVectors {a b : G2} (ha : IsVector a) (hb : IsVector b) :
     normSq (versorFromVectors a b)
       = 2 * magnitude a * magnitude b * (magnitude a * magnitude b + dot a b) := by
@@ -265,7 +265,7 @@ theorem rotorSandwich_rotorFromVectors_carries_from_to {a b : G3} (ha : IsVector
     versor is `(|a|*|b| + a·b) + b∧a`, so its squared magnitude is `(|a|*|b| + a·b)² + |a∧b|²`, and
     Lagrange collapses `(a·b)² + |a∧b|²` to `|a|²*|b|²`. Hence the versor vanishes exactly when `a` and
     `b` are antiparallel (`a·b = −|a|*|b|`) or one is zero — the normalization is well-defined otherwise.
-    (This is the identity the earlier Python-side attempt to normalize the versor was missing.) -/
+    (Normalizing the versor in Python needs exactly this identity.) -/
 theorem normSq_versorFromVectors {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     normSq (versorFromVectors a b)
       = 2 * magnitude a * magnitude b * (magnitude a * magnitude b + dot a b) := by
@@ -303,9 +303,9 @@ theorem normSq_uvec (α : ℝ) : G2.normSq (uvec α) = 1 := by
 theorem magnitude_uvec (α : ℝ) : G2.magnitude (uvec α) = 1 := by
   simp only [G2.magnitude]; rw [normSq_uvec, Real.sqrt_one]
 
-/-- **The from-vectors versor of two unit directions is `2cos(θ/2)` times the half-angle rotor**,
-    `θ = β − α`: `uvec β*uvec α + 1 = (1 + cos(θ)) − sin(θ)*e₁₂ = 2cos(θ/2)*(cos(θ/2) − sin(θ/2)*e₁₂)`
-    — the half-angle appears through `1 + cos(θ) = 2cos²(θ/2)` and `sin(θ) = 2 sin(θ/2) cos(θ/2)`. -/
+/-- **The from-vectors versor of two unit directions is `2*cos(θ/2)` times the half-angle rotor**,
+    `θ = β − α`: `uvec β*uvec α + 1 = (1 + cos(θ)) − sin(θ)*e₁₂ = 2*cos(θ/2)*(cos(θ/2) − sin(θ/2)*e₁₂)`
+    — the half-angle appears through `1 + cos(θ) = 2cos²(θ/2)` and `sin(θ) = 2*sin(θ/2)*cos(θ/2)`. -/
 theorem versorFromVectors_uvec (α β : ℝ) :
     G2.versorFromVectors (uvec α) (uvec β) = G2.smul (2 * cos ((β - α) / 2)) (rotor (β - α)) := by
   have hc : cos (β - α) = 2 * cos ((β - α) / 2) ^ 2 - 1 := by

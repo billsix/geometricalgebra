@@ -1,4 +1,4 @@
-# Copyright (c) 2026 William Emerison Six
+# Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #
 # This library is free software; you can redistribute it and/or modify
@@ -55,9 +55,13 @@ def test_quarter_turn_maps_e1_to_e2_and_fixes_perpendicular() -> None:
         g3.Vector.i(g3.Vector.e_1, g3.Vector.e_2)
     )
     quarter: InvertibleFunction[MultiVectorBase] = turn(math.radians(90))
-    assert quarter(g3.Vector.e_1).isclose(g3.Vector.e_2, rel_tol=1e-6, abs_tol=1e-6)
+    assert quarter(1 * g3.Vector.e_1).isclose(
+        1 * g3.Vector.e_2, rel_tol=1e-6, abs_tol=1e-6
+    )
     # e_3 is perpendicular to the e_1 * e_2 plane -> left fixed.
-    assert quarter(g3.Vector.e_3).isclose(g3.Vector.e_3, rel_tol=1e-6, abs_tol=1e-6)
+    assert quarter(1 * g3.Vector.e_3).isclose(
+        1 * g3.Vector.e_3, rel_tol=1e-6, abs_tol=1e-6
+    )
 
 
 def test_normalizes_the_bivector_internally() -> None:

@@ -1,12 +1,6 @@
 # Make the book's cross-references usable in print: section numbers and page numbers in the PDF
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 3
-**Difficulty:** 2
-**Created:** 2026-10-08 **Updated:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-08 · **Completed:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
 
 A printed PDF can't follow a hyperlink, so the maintainer asked (2026-10-08) whether Sphinx can put
 section numbers or page numbers in the text. Done: `index.rst`'s toctree is now `:numbered:` (every
@@ -47,7 +41,3 @@ would additionally need per-link `:numref:` against section labels — `:numref:
 is voice-sensitive prose surgery, and the task's own plan marked it selective ("where a number
 helps"), so it is **left for the maintainer's voice pass**, not done mechanically here. The core ask
 — section numbers and page numbers present in the printed text — is delivered.
-
-## Open questions
-
-None.

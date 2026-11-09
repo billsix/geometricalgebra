@@ -1,6 +1,5 @@
 # Express grade projection as basis-blade combinations in the Lean proofs
 
-**Status:** done. **Priority:** 7. **Difficulty:** 5.
 **Completed:** 2026-10-03 (William Emerison Six <billsix@gmail.com>).
 
 Rewrote G2's `rVectorPart` (`proofs/GacalcProofs/GradeProjection.lean`) from positional coordinate

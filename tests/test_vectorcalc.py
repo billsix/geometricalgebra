@@ -18,7 +18,8 @@ pinned by the doctests in ``cross``'s docstring; this file covers what a doctest
 cannot: the numeric check against ``numpy.cross``, the **scalar-triple-product
 identity** ``a · (b × c) = signed_volume(a, b, c)``, the generated closed-form
 ``g3.Vector.cross`` against both the wedge/dual path and the ``Gn`` oracle, and
-the 3-D / non-vector guards.  See ``tasks/custom-symbols-and-vector-calc.md``.
+the 3-D / non-vector guards.  See
+``tasks/archive/2026/08/31/custom-symbols-and-vector-calc.md``.
 """
 
 import numpy as np

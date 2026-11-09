@@ -102,8 +102,10 @@ FRAMES_WITH_SLOW_3D_SYMBOLIC: list[ParameterSet] = [
 
 def test_is_frame_is_are_linearly_independent() -> None:
     """``is_frame`` is a pass-through to ``are_linearly_independent``."""
-    assert is_frame([1 * e_1, 1 * e_2]) == are_linearly_independent([1 * e_1, 1 * e_2])
-    assert is_frame([1 * e_1, 2 * e_1]) == are_linearly_independent([1 * e_1, 2 * e_1])
+    assert is_frame([1 * e_1, 1 * e_2]) is True
+    assert are_linearly_independent([1 * e_1, 1 * e_2]) is True
+    assert is_frame([1 * e_1, 2 * e_1]) is False
+    assert are_linearly_independent([1 * e_1, 2 * e_1]) is False
 
 
 def test_symbolic_general_vectors_are_a_frame() -> None:
@@ -389,15 +391,3 @@ def test_all_wedged_except_the_kth_leaves_out_one_vector() -> None:
     for bad_k in (0, 3):
         with pytest.raises(ValueError):
             all_wedged_except_the_kth(frame, bad_k)
-
-
-def test_kronecker_delta() -> None:
-    """``δ^k_j`` is 1 on the diagonal (``j = k``), 0 off it, and symmetric; over
-    ``1 … n`` it is the identity matrix."""
-    assert [kronecker_delta(k, k) for k in range(1, 5)] == [1, 1, 1, 1]
-    assert [kronecker_delta(1, j) for j in (2, 3, 4)] == [0, 0, 0]
-    assert kronecker_delta(3, 1) == kronecker_delta(1, 3) == 0
-    identity: sympy.Matrix = sympy.Matrix(
-        4, 4, lambda row, column: kronecker_delta(row + 1, column + 1)
-    )
-    assert identity == sympy.eye(4)

@@ -307,7 +307,7 @@ The optional features are build flags. The **Makefile defaults every one to on**
 | `USE_JUPYTER` | 1 | pandoc + XeLaTeX for notebook "Export to PDF" | notebook PDF export |
 | `USE_LEAN` | 1 | Lean 4 + a baked Mathlib (several GB, the slow layer) | `make lean` |
 | `USE_EPIX` | 1 | ePiX (github.com/billsix/epix-mirror) + its Python package, for the book's figures | `make docs` |
-| `USE_SPYDER` | 0 | the Spyder IDE | — |
+| `USE_SPYDER` | 0 | the Spyder IDE | `make spyder` |
 
 The `Dockerfile`'s own `ARG`s all default to **0**, so a bare `podman build` that bypasses
 the Makefile produces the lean image; the Makefile passes the real values with

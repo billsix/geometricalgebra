@@ -1,4 +1,4 @@
-# Copyright (c) 2026 William Emerison Six
+# Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #
 # This library is free software; you can redistribute it and/or modify
@@ -14,7 +14,7 @@
 """plane_rotation: plane established once from two vectors, any angle after.
 
 Covers the design recorded in
-tasks/upgrade-rotation-and-ctc-vector-mapping.md (Task 1): grade-1
+tasks/archive/2026/07/09/upgrade-rotation-and-ctc-vector-mapping.md (Task 1): grade-1
 verification, the wedge-is-zero (parallel) error, from-a-toward-b
 orientation, perpendicular-part fixedness, representation and subclass
 preservation, inversion, interpolation, symbolic angles, and agreement
@@ -29,6 +29,7 @@ import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
+import gacalc.gn as gn
 from gacalc.base import MultiVectorBase, Real
 from gacalc.gn import Gn, plane_rotation
 from gacalc.transforms import (
@@ -38,22 +39,19 @@ from gacalc.transforms import (
     versor_rotation,
 )
 
-E1: g2.Vector = g2.Vector.e_1
-E2: g2.Vector = g2.Vector.e_2
-
 
 def test_rotates_a_toward_b() -> None:
     # positive theta turns from a toward b: 90 degrees sends e_1 to e_2.
-    f: InvertibleFunction[g2.Vector] = plane_rotation(E1, E2)(math.radians(90))
-    assert f(E1).isclose(E2, rel_tol=1e-5, abs_tol=1e-5)
+    f: InvertibleFunction[g2.Vector] = plane_rotation(g2.e_1, g2.e_2)(math.radians(90))
+    assert f(g2.e_1).isclose(g2.e_2, rel_tol=1e-5, abs_tol=1e-5)
     # ...and argument order flips the direction.
-    g: InvertibleFunction[g2.Vector] = plane_rotation(E2, E1)(math.radians(90))
-    assert g(E1).isclose(-E2, rel_tol=1e-5, abs_tol=1e-5)
+    g: InvertibleFunction[g2.Vector] = plane_rotation(g2.e_2, g2.e_1)(math.radians(90))
+    assert g(g2.e_1).isclose(-g2.e_2, rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_angle_values_match_trig() -> None:
     turn: typing.Callable[[Real], InvertibleFunction[g2.Vector]] = plane_rotation(
-        E1, E2
+        g2.e_1, g2.e_2
     )
     deg: int
     for deg in (0, 30, 90, 120, 180, 240, -90):
@@ -68,7 +66,7 @@ def test_plane_vectors_need_not_be_unit_or_orthogonal() -> None:
     a: g2.Vector = g2.Vector(coeff_e_1=3.0, coeff_e_2=0.0)
     b: g2.Vector = g2.Vector(coeff_e_1=1.0, coeff_e_2=2.0)  # oriented like e_1 ^ e_2
     f: InvertibleFunction[g2.Vector] = plane_rotation(a, b)(math.radians(90))
-    assert f(E1).isclose(E2, rel_tol=1e-5, abs_tol=1e-5)
+    assert f(g2.e_1).isclose(g2.e_2, rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_perpendicular_part_fixed_in_g3() -> None:
@@ -88,12 +86,10 @@ def test_perpendicular_part_fixed_in_g3() -> None:
 
 
 def test_representation_preserved() -> None:
-    f2: InvertibleFunction[g2.Vector] = plane_rotation(E1, E2)(1.0)
-    assert type(f2(E1)) is g2.Vector
-    fn: InvertibleFunction[Gn] = plane_rotation(Gn.basis_vector(1), Gn.basis_vector(2))(
-        1.0
-    )
-    assert type(fn(Gn.basis_vector(1))) is Gn
+    f2: InvertibleFunction[g2.Vector] = plane_rotation(g2.e_1, g2.e_2)(1.0)
+    assert type(f2(g2.e_1)) is g2.Vector
+    fn: InvertibleFunction[Gn] = plane_rotation(gn.e_1, gn.e_2)(1.0)
+    assert type(fn(gn.e_1)) is Gn
     f3: InvertibleFunction[g3.Vector] = plane_rotation(g3.Vector.e_2, g3.Vector.e_3)(
         1.0
     )
@@ -101,13 +97,13 @@ def test_representation_preserved() -> None:
 
 
 def test_zero_rotates_to_zero() -> None:
-    f: InvertibleFunction[g2.Vector] = plane_rotation(E1, E2)(1.0)
+    f: InvertibleFunction[g2.Vector] = plane_rotation(g2.e_1, g2.e_2)(1.0)
     assert f(g2.Vector.zero()).isclose(g2.Vector.zero(), rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_inverse_and_composition() -> None:
     turn: typing.Callable[[Real], InvertibleFunction[g2.Vector]] = plane_rotation(
-        E1, E2
+        g2.e_1, g2.e_2
     )
     f: InvertibleFunction[g2.Vector] = turn(0.7)
     v: g2.Vector = g2.Vector(coeff_e_1=2.0, coeff_e_2=-1.0)
@@ -119,18 +115,20 @@ def test_inverse_and_composition() -> None:
 
 def test_interpolation() -> None:
     turn: typing.Callable[[Real], InvertibleFunction[g2.Vector]] = plane_rotation(
-        E1, E2
+        g2.e_1, g2.e_2
     )
     f: InvertibleFunction[g2.Vector] = turn(math.radians(90))
-    assert f.at(0.0)(E1).isclose(E1, rel_tol=1e-5, abs_tol=1e-5)
-    assert f.at(0.5)(E1).isclose(turn(math.radians(45))(E1), rel_tol=1e-5, abs_tol=1e-5)
-    assert f.at(1.0)(E1).isclose(f(E1), rel_tol=1e-5, abs_tol=1e-5)
+    assert f.at(0.0)(g2.e_1).isclose(g2.e_1, rel_tol=1e-5, abs_tol=1e-5)
+    assert f.at(0.5)(g2.e_1).isclose(
+        turn(math.radians(45))(g2.e_1), rel_tol=1e-5, abs_tol=1e-5
+    )
+    assert f.at(1.0)(g2.e_1).isclose(f(g2.e_1), rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_symbolic_theta() -> None:
     θ: Real = sympy.Symbol("theta", real=True)
-    f: InvertibleFunction[g2.Vector] = plane_rotation(E1, E2)(θ)
-    got: MultiVectorBase = f(E1).simplified()
+    f: InvertibleFunction[g2.Vector] = plane_rotation(g2.e_1, g2.e_2)(θ)
+    got: MultiVectorBase = f(g2.e_1).simplified()
     want: dict[tuple[int, ...], Real] = {
         (1,): sympy.cos(θ),
         (2,): sympy.sin(θ),
@@ -150,10 +148,10 @@ def test_agrees_with_from_to_versor_formulation() -> None:
     # rotating BY the angle between from and to, in their plane, is the
     # same rotation versor_rotation performs.
     t: float = math.radians(40)
-    to: g2.Vector = math.cos(t) * E1 + math.sin(t) * E2
+    to: g2.Vector = math.cos(t) * g2.e_1 + math.sin(t) * g2.e_2
     v: g2.Vector = g2.Vector(coeff_e_1=1.0, coeff_e_2=3.0)
-    assert plane_rotation(E1, E2)(t)(v).isclose(
-        versor_rotation(E1, to)(v), rel_tol=1e-5, abs_tol=1e-5
+    assert plane_rotation(g2.e_1, g2.e_2)(t)(v).isclose(
+        versor_rotation(g2.e_1, to)(v), rel_tol=1e-5, abs_tol=1e-5
     )
 
 
@@ -162,7 +160,7 @@ def test_numeric_theta_stays_numeric() -> None:
     # constants make the unit bivector sympy-exact; a numeric theta must
     # nonetheless yield float rotors and float rotated coefficients, or
     # every downstream game/demo operation drops into sympy object math.
-    f: InvertibleFunction[g2.Vector] = plane_rotation(E1, E2)(math.radians(120))
+    f: InvertibleFunction[g2.Vector] = plane_rotation(g2.e_1, g2.e_2)(math.radians(120))
     got: g2.Vector = f(g2.Vector(coeff_e_1=1.0, coeff_e_2=0.0))
     assert type(got.coeff_e_1) is float
     assert type(got.coeff_e_2) is float
@@ -172,7 +170,7 @@ def test_symbolic_theta_stays_exact() -> None:
     # ...while a symbolic theta keeps the exact plane: cos(theta), not
     # 1.0*cos(theta).
     θ: Real = sympy.Symbol("theta", real=True)
-    got: MultiVectorBase = plane_rotation(E1, E2)(θ)(
+    got: MultiVectorBase = plane_rotation(g2.e_1, g2.e_2)(θ)(
         g2.Vector(coeff_e_1=1, coeff_e_2=0)
     ).simplified()
     assert got.to_blade_dict() == {
@@ -183,8 +181,8 @@ def test_symbolic_theta_stays_exact() -> None:
 
 def test_latex_label_hooks() -> None:
     turn: typing.Callable[[Real], InvertibleFunction[g2.Vector]] = plane_rotation(
-        E1,
-        E2,
+        g2.e_1,
+        g2.e_2,
         latex_repr=lambda t: f"RZ_{{<{t}>}}",
         latex_repr_inv=lambda t: f"RZ_{{<{t}>}}^{{-1}}",
     )
@@ -195,16 +193,16 @@ def test_latex_label_hooks() -> None:
 
 def test_non_vector_operands_rejected() -> None:
     with pytest.raises(ValueError, match="grade 1"):
-        plane_rotation(g2.Bivector.e_12, E2)
+        plane_rotation(g2.Bivector.e_12, g2.e_2)
     with pytest.raises(ValueError, match="grade 1"):
-        plane_rotation(E1, g2.G(coeff_scalar=1.0, coeff_e_1=1.0))
+        plane_rotation(g2.e_1, g2.G(coeff_scalar=1.0, coeff_e_1=1.0))
 
 
 def test_parallel_vectors_rejected() -> None:
     with pytest.raises(ValueError, match="parallel"):
-        plane_rotation(E1, 3 * E1)
+        plane_rotation(g2.e_1, 3 * g2.e_1)
     with pytest.raises(ValueError, match="parallel"):
-        plane_rotation(E1, -E1)
+        plane_rotation(g2.e_1, -g2.e_1)
 
 
 def test_rotation_is_distributive_over_addition_symbolic_2d() -> None:

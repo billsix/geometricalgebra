@@ -1,7 +1,7 @@
 # Lean equivalents of `Frame` and its `InvertibleFunction`
 
-**Status:** on hold — the maintainer said "hold off on that for now" about open question 1 (William Emerison Six <billsix@gmail.com>, 2026-11-04)
-**Priority:** 8 (on hold)
+**Status:** parked — the maintainer said "hold off on that for now" about open question 1 (William Emerison Six <billsix@gmail.com>, 2026-11-04)
+**Priority:** 8 (parked)
 **Difficulty:** 6
 **Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>). This is the follow-up the maintainer
 asked for once the sympy version worked ("If it works symbolically in python now, then make a follow up

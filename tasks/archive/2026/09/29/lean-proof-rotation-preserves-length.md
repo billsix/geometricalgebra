@@ -1,15 +1,12 @@
 # Lean proof — a rotation preserves length (2D and 3D)
 
-**Part of:** `tasks/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
-**Status:** DONE 2026-09-29 (William Emerison Six <billsix@gmail.com>)
-**Priority:** 7 · **Difficulty:** 6
-
-## BLUF
+**Completed:** 2026-09-29 (William Emerison Six <billsix@gmail.com>)
+**Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
 
 Proved that the versor sandwich `R v R⁻¹` **does not change length**, in 𝒢₂ and 𝒢₃ — the isometry
 property. Landed in `proofs/GacalcProofs/Sandwich.lean`, `make lean` green.
 
-## What landed
+## What was proved
 
 `proofs/GacalcProofs/Sandwich.lean` defines, for both `G2` and `G3`: `normSq` (`|R|² = ⟨R R̃⟩₀`),
 `inverse` (`R⁻¹ = R̃/|R|²`), `sandwich` (`R v R⁻¹`), and an `evenVersor` constructor (the elements of
@@ -21,11 +18,11 @@ Then:
 
 Proof method: unfold + `field_simp [hr]` (clears the `1/|R|²`) + `ring`.
 
-## Resolved
+## Decisions
 
-- **Open Q1 (general versor vs. `versor_from_vectors`):** proved for a **general even versor**
+- **A general versor, not only `versor_from_vectors`:** proved for a **general even versor**
   (`evenVersor`) — the real theorem; the from-vectors versor is an instance.
-- **Open Q2 (√ vs. squared):** used the **magnitude-squared** (`dot`) form throughout, so the proof is
+- **Squared rather than √:** used the **magnitude-squared** (`dot`) form throughout, so the proof is
   `√`-free; the `mag`-with-`√` version is a trivial `Real.sqrt` corollary if ever wanted.
 - The earlier `Rotation.lean` `rot_normSq` (the coordinate `rot θ` preserves magnitude in 2D) is the
   angle-parameterized cousin; this is the GA/versor-sandwich form that also covers 3D.

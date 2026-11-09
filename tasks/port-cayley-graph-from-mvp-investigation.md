@@ -1,6 +1,6 @@
 # Should mvp's Cayley-graph and graphing-calculator code move to gacalc?
 
-**Status:** investigated 2026-11-05 — needs the maintainer's decision (open question 1)
+**Status:** proposed — investigated 2026-11-05; needs the maintainer's decision (open question 1)
 **Priority:** 7
 **Difficulty:** 2 (decision) / 4 (option c, if chosen)
 **Created:** 2026-11-05 (William Emerison Six <billsix@gmail.com>)

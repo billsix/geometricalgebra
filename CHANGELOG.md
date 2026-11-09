@@ -85,6 +85,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **`unit_pseudoscalar`, `bases` and `symbolic_multivector` raise `ValueError` on a graded type that
+  cannot hold the blade** (e.g. `g3.Vector.unit_pseudoscalar(3)`), instead of returning a silent zero.
+  Behavior change; use the full class (`g3.G`).
 - **BREAKING — `reject` raises `ValueError` instead of a bare `Exception`.** `reject(away_from=…)` with
   `away_from` neither a vector nor a bivector raised `Exception` with a message naming `project`; it now
   raises `ValueError` naming `reject`. Code catching `Exception` still works.
@@ -150,8 +153,26 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   plane helpers in `Gn`-typed code downgraded the binding; it now narrows to `Gn`, matching how the
   generated graded classes narrow to `Bivector`. Runtime behavior and the Python names are
   unchanged; only the static return type is more precise.
+- **BREAKING — the "rotor" API is renamed to "versor".** Strictly, a *rotor* is the unit
+  special case (`R R̃ = 1`) of a *versor*; gacalc's objects are generally un-normalized versors
+  (e.g. `versor_from_vectors` builds `|a||b| + b a`, applied via the scale-invariant inverse
+  sandwich `R v R⁻¹`), so the general term is now used. Renamed public names: the graded type
+  **`Rotor` → `Versor`**; **`MultiVectorBase.rotor_from_vectors` → `versor_from_vectors`**;
+  **`transforms.rotor_rotation` → `versor_rotation`**. `Bivector.exp()` now returns a `Versor`
+  (its value is still a unit rotor at runtime). The word "rotor" is retained only where an object
+  is genuinely unit — the `exp` / `plane_rotation` / `bivector_rotation` half-angle rotor
+  `cos(θ/2) − sin(θ/2) i`. Consumers pinning gacalc must update these names. Rationale:
+  `tasks/reference/unit-bivector-and-rotors.md` §6; work record: `tasks/archive/2026/10/04/rename-rotor-to-versor.md`.
+- **Read-only container parameters widened to their covariant supertypes.**
+  `transforms.compose_intermediate_fns` and `compose_intermediate_fns_and_fn` now take
+  `Sequence[InvertibleFunction[V]]` rather than `list[...]`, so any sequence is accepted.
+  Purely permissive — existing calls passing a list are unaffected. Part of the repo-wide
+  type-annotation sweep, whose deliberate exemptions are recorded in
+  `tasks/reference/type-annotation-exemptions.md`.
 
 ### Fixed
+- **`Gn.to_blade_dict()` returns a copy.** Changing the returned dict no longer changes the value
+  it came from, or a shared constant such as `gn.e_1`.
 - **`gacalc.frame.prefix_blades` on the graded types** (`g2`/`g3`/… `Vector`) returned all-zero blades:
   it seeded the wedge with `type(v).one()`, and a graded `Vector` type has no scalar slot, so that is the
   zero vector. It now seeds with the scalar 1 of the algebra (`Scalar_n.one()`). This also fixes
@@ -191,28 +212,6 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 - **`transforms.bivector_rotation` raises `ValueError`, not `TypeError`, for a non-bivector.** Behavior
   change for code that catches `TypeError`.
 - **`uniform_scale(m)`'s inverse is labelled `S_{1/m}`**, not `S_{-m}`.
-
-## [0.1.0] — 2026-09-28
-
-### Changed
-- **BREAKING — the "rotor" API is renamed to "versor".** Strictly, a *rotor* is the unit
-  special case (`R R̃ = 1`) of a *versor*; gacalc's objects are generally un-normalized versors
-  (e.g. `versor_from_vectors` builds `|a||b| + b a`, applied via the scale-invariant inverse
-  sandwich `R v R⁻¹`), so the general term is now used. Renamed public names: the graded type
-  **`Rotor` → `Versor`**; **`MultiVectorBase.rotor_from_vectors` → `versor_from_vectors`**;
-  **`transforms.rotor_rotation` → `versor_rotation`**. `Bivector.exp()` now returns a `Versor`
-  (its value is still a unit rotor at runtime). The word "rotor" is retained only where an object
-  is genuinely unit — the `exp` / `plane_rotation` / `bivector_rotation` half-angle rotor
-  `cos(θ/2) − sin(θ/2) i`. Consumers pinning gacalc must update these names. Rationale:
-  `tasks/reference/unit-bivector-and-rotors.md` §6; work record: `tasks/archive/2026/10/04/rename-rotor-to-versor.md`.
-- **Read-only container parameters widened to their covariant supertypes.**
-  `transforms.compose_intermediate_fns` and `compose_intermediate_fns_and_fn` now take
-  `Sequence[InvertibleFunction[V]]` rather than `list[...]`, so any sequence is accepted.
-  Purely permissive — existing calls passing a list are unaffected. Part of the repo-wide
-  type-annotation sweep, whose deliberate exemptions are recorded in
-  `tasks/reference/type-annotation-exemptions.md`.
-
-### Fixed
 - **Numeric `==` no longer calls `sympy.simplify`.** Comparing two multivectors whose
   coefficients are plain numbers now short-circuits on the native `==` in both outcomes;
   sympy is reached only when a coefficient is symbolic. `simplify` can never make two

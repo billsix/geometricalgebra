@@ -1,8 +1,7 @@
 # Trim unused destructured component hypotheses from the getter-native proofs
 
-**Status:** DONE 2026-10-04, archived 2026-10-04 (`make lean` / full `check.sh` green at every step).
-**Priority:** 7 (cosmetic/readability; no correctness or performance effect). **Difficulty:** 4.
-**Created:** 2026-10-04 (William Emerison Six <billsix@gmail.com>).
+**Created:** 2026-10-04 · **Completed:** 2026-10-04 (William Emerison Six <billsix@gmail.com>); `make lean` /
+full `check.sh` green at every step. Cosmetic/readability work, with no correctness or performance effect.
 **Followed:** `tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md` (the conversion these
 proofs came from). **Successor (exploratory):** `tasks/grade-simp-tactic-reduce-proof-boilerplate.md`.
 **Durable record:** `tasks/reference/lean-ga-proof-architecture.md` — "Trimming vacuous `simp` args and
@@ -10,7 +9,7 @@ dropping unused hypotheses", "Hypotheses: what each kind is for, and how to deci
 proofs over brute `ring`" — and the independent review
 `tasks/review/2026/10/04/lean-proof-corpus-review.md` (§1, §5).
 
-## BLUF
+## Summary
 
 The getter-native proofs destructured a grade predicate into its component zeros and handed them all to
 `simp only`, e.g. `obtain ⟨hR1, hR2⟩ := hR; …; simp only [dot, normSq, mul, reverse, hR1, hR2, hus, hu12, …];
@@ -20,7 +19,7 @@ produced — generalized the theorems whose grade hypotheses had become vacuous 
 
 ## What was done
 
-1. **The minimizer** (`tasks/adhoc/trim-unused-simp-components/trim.py`, one-shot, deleted at archive)
+1. **The minimizer** (`trim.py`, one-shot; removed at archive; in git history)
    snapshotted the eight converted files, asserted the baseline build green, and for every `obtain`+`simp
    only` block tried each component that appeared only in the `simp` list: remove it, rebuild, keep the
    edit iff green, else restore; a failed full gate at the end would have restored every snapshot. Greedy,

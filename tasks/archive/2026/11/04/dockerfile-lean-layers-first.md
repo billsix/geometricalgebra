@@ -54,9 +54,9 @@ after the maintainer's "go".
 - `make lean`: OK (proofs build, no `sorry`/`admit`). `make test`: 717 passed.
 - `make format` was not run: no Python changed.
 
-## Follow-ups
+## Left to the maintainer
 
-- **Maintainer:** rebuild on the host and try Emacs. If it works as wanted, record the convention
-  (npm pyright, never the pip launcher; declare each `ARG` where it is first used) in this repo's
-  `CLAUDE.md`, the runClaudeInContainer/runCrushInContainer shared conventions, or the personal
-  overlay, whichever fits.
+A host rebuild and an Emacs try-out, and then recording the convention (npm pyright, never the pip
+launcher; declare each `ARG` where it is first used) wherever it fits — this repo's `CLAUDE.md`, the
+github.com/billsix/runClaudeInContainer / github.com/billsix/runCrushInContainer shared conventions,
+or the maintainer's personal overlay.

@@ -1,6 +1,5 @@
 # Notebook: rotations two ways (rotor sandwich vs projection)
 
-**Status:** complete
 **Completed:** 2026-06-08
 
 ## What was done
@@ -25,9 +24,9 @@
   a plain script / pytest, while still configuring the inline SVG backend in
   Jupyter. ty + ruff clean.
 
-## Follow-up (optional, not done)
+## Left undone
 
-`pytest.ini` still `--ignore`s `src/gacalc/nbplotutils.py` (added when it
-couldn't import headless). Now that it can, that ignore could be removed so the
-module is collected — left for later to avoid surfacing unrelated matplotlib
+`pytest.ini` still `--ignore`d `src/gacalc/nbplotutils.py` (added when it
+couldn't import headless). Removing that ignore, now that the module imports,
+was deliberately left for later, to avoid surfacing unrelated matplotlib
 warnings-as-errors in the headless suite.

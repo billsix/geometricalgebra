@@ -1,84 +1,36 @@
 # Build multivectors from basis vectors, not blade-dict literals
 
-**Status:** complete (test_graded.py) · others deliberately left
-**Completed:** 2026-06-06
-**Started:** 2026-06-06
+**Created:** 2026-06-06 · **Completed:** 2026-06-06
 
-> **Completion note (2026-06-06).** Did **`tests/test_graded.py`** — the primary, high-value target.
-> Replaced the local `def gn(d)` dict→Gn helper with `import geometricalgebra.gn as gn` (module-
-> qualified style, as confirmed) and rewrote every `gn({...})` expected value as a basis combination:
-> `3 * gn.e_1 + 4 * gn.e_2`, blades via the wedge `(gn.e_1 ^ gn.e_2)` (always parenthesized — `^` has
-> low precedence in Python), scalars via `k * gn.one`. The expected values stay **general `Gn`
-> references** (so the cross-representation `typed == Gn` check is preserved), just readable. `ty`/`ruff`
-> clean on tests; 141 tests pass.
->
-> **Deliberately left as dict literals** (the task's own "judgement per case" exceptions):
-> - **`tests/test_multivector.py`** — its `MultiVector({...})` are expected values *in geometric-product
->   tests*. Rebuilding them from basis vectors uses a product/wedge (the wedge itself routes through the
->   geometric product in the ABC), i.e. the operation under test — circular ground truth. Dict literals
->   are the correct independent reference there.
-> - **`tools/bench.py`** and **`tests/test_conformance.py`** dense/generated dicts
->   (`{b: base+i+1 for b in blades(n)}`, `{(i,): i for i in range(1, n+1)}`) read *worse* as basis
->   combinations — these are the "dense full multivector" case to leave alone. The couple of trivial
->   `Gn.from_blade_dict({(1,): 1})` spots in conformance are already clear; not worth the churn.
+Blade-dict literals such as `gn({(1,): 1, (2,): 2, (3,): 3})` were replaced, where it helped, by
+linear combinations of the basis vectors (`1 * gn.e_1 + 2 * gn.e_2 + 3 * gn.e_3`). This reads like
+the mathematics, matches how `displaygraded.py` / `displayg2.py` already build values, and for the
+typed classes goes through `__rmul__`/`__add__`, sidestepping the `numbers.Real` field-annotation
+friction that bare constructors hit. Generated code was out of scope: its `from_blade_dict` bodies
+are the interchange primitive, and `gn.py`/`g*.py` define the `e_*` constants through it.
 
-## Goal
+## Decisions
 
-Across the codebase (and especially the tests), replace `from_blade_dict` / `gn({...})`-style dict
-literals such as
+- **Module-qualified style** (confirmed by the maintainer): `import geometricalgebra.gn as gn`, then
+  `gn.e_1`, so a file does not import a pile of names.
+- **Blades** are built with the wedge, always parenthesized because `^` binds loosely in Python:
+  `(gn.e_1 ^ gn.e_2)`. `gn` exports only vector constants `e_1 … e_10` plus `zero`/`one`; scalars
+  are `k * gn.one`.
+- **Scope: `tests/test_graded.py` only**, the primary, high-value target. Left as dict literals, by
+  the per-case judgement the task called for:
+  - `tests/test_multivector.py` — its `MultiVector({...})` values are expectations in
+    geometric-product tests; building them from basis vectors uses the product (the wedge routes
+    through it in the ABC), which would make the ground truth circular.
+  - `tools/bench.py` and the dense/generated dicts in `tests/test_conformance.py`
+    (`{b: base+i+1 for b in blades(n)}`, `{(i,): i for i in range(1, n+1)}`) read worse as basis
+    combinations; the few trivial `Gn.from_blade_dict({(1,): 1})` spots there were already clear.
 
-```python
-gn({(1,): 1, (2,): 2, (3,): 3})
-gn({(): 2, (1, 2): 3})
-```
+## What changed
 
-with readable **linear combinations of the standard basis vectors**, e.g.
+In `tests/test_graded.py` the local `def gn(d)` dict→`Gn` helper was replaced by the module import,
+and every `gn({...})` expected value became a basis combination (`3 * gn.e_1 + 4 * gn.e_2`). The
+expectations stayed general `Gn` values, so the cross-representation `typed == Gn` check is kept.
 
-```python
-1 * gn.e_1 + 2 * gn.e_2 + 3 * gn.e_3
-2 * gn.one + 3 * (gn.e_1 * gn.e_2)
-```
+## Verification
 
-Per the user, prefer the **module-qualified** form (`gn.e_1`, `g2.e_1`, …) so a file doesn't have to
-import a pile of names into its namespace — `import geometricalgebra.gn as gn` then `gn.e_1`.
-
-## Why
-
-Reads like the mathematics, matches how `displaygraded.py` / `displayg2.py` already build values, and
-(for the typed classes) goes through `__rmul__`/`__add__`, which sidesteps the `numbers.Real`
-field-annotation friction that bare constructors trip.
-
-## Scope / where to change
-
-- **Primary: the tests.** `tests/test_graded.py` (expected values still use `gn({...})`),
-  `tests/test_conformance.py`, `tests/test_multivector.py`.
-- **`tools/bench.py`** sample inputs, where it doesn't obscure intent.
-- **Notebooks**, if any remaining dict literals read worse than a basis combination.
-- **Do NOT touch generated code** (`g1/g2/g3.py`, `scalar.py`) — their `from_blade_dict` bodies are
-  the interchange primitive and are emitted by the generator. And `gn.py`/`g*.py` *define* the
-  `e_*` constants via `from_blade_dict`, which obviously can't be rewritten in terms of themselves.
-
-## Notes / considerations
-
-- **Basis coverage:** `gn` exports vector constants `e_1 … e_10` plus `zero`/`one`, but **not** named
-  blade constants like `e_12`. Build higher blades as products: bivector `gn.e_1 * gn.e_2`, trivector
-  `gn.e_1 * gn.e_2 * gn.e_3`, scalar `k * gn.one`. (The specialized modules `g2`/`g3` *do* export
-  `e_12` etc., so within those a named constant is available.)
-- **Geometric vs. wedge for blades:** for orthogonal basis vectors `e_i * e_j == e_i ^ e_j`, so the
-  product is fine for constructing a basis blade; use `^` if you want to be explicit that it's a
-  blade.
-- **Mild circularity:** building an *expected* value via the geometric product uses the very
-  operation some tests exercise. It's fine for simple vector/scalar expectations, but for a test
-  whose subject *is* the product, keep the expected side as a basis combination that doesn't depend
-  on the product under test (or leave a dict literal there) — judgement per case.
-- **Equality still works** across representations via the simplify-aware `__eq__` (e.g. a `Vector2`
-  built from `g2.e_1`/`g2.e_2` compares equal to a `gn(...)` or `Gn`-built value).
-- Keep `ty check tests` + ruff clean; re-run the suite (currently 135 tests).
-
-## Open questions
-
-- Confirm the **module-qualified** style (`import geometricalgebra.gn as gn`; `gn.e_1`) as the
-  convention, vs. importing the names.
-- How far to take it — all three test files + bench, or start with `test_graded.py` and `bench.py`?
-- Any spots where a dict literal is genuinely clearer (e.g. a dense full multivector with all 2ⁿ
-  coefficients) and should be left as-is?
+`ty` and `ruff` clean on tests; 141 tests pass.

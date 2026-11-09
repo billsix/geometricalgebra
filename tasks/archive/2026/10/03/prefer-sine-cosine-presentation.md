@@ -1,19 +1,18 @@
 # Present student-facing facts in sine/cosine, not dot/wedge (Lean proofs + Python)
 
-**Status:** done. **Priority:** 5. **Difficulty:** 5.
 **Completed:** 2026-10-03 (William Emerison Six <billsix@gmail.com>).
 **Durable knowledge harvested to:** `CLAUDE.md` › "Presenting to students" and "Coordinates only when
 needed"; `tasks/reference/lean-ga-proof-architecture.md` (naming, the nonzero-guard convention, the
 `0/0` rationale). **Follow-ups:** `tasks/archive/2026/10/09/prefer-sine-cosine-presentation-followups.md` (deferred Lean
-candidates, maintainer to review), `tasks/lean-cross-standard-position-capstone.md`.
+candidates, maintainer to review), `tasks/archive/2026/10/22/lean-cross-standard-position-capstone.md`.
 
 ## What this was
 
-Establish and apply the principle: when a result is **shown to a student** (a Lean proof's stated
+This established and applied the principle: when a result is **shown to a student** (a Lean proof's stated
 form, a Python docstring, a notebook, the book), prefer the **sine/cosine-of-the-angle** phrasing over
 raw **dot/wedge** where a faithful option exists — "perpendicular ⇒ cos = 0", "parallel ⇒ sin = 0",
-"area = |a||b| sin θ" are what a geometry/trig student can picture. The dot/wedge form stays the
-**primitive**; the trig form is layered on top. Recorded as a standing rule in `CLAUDE.md`.
+"area = |a||b| sin θ" are what a geometry/trig student can picture. The dot/wedge form stayed the
+**primitive**; the trig form was layered on top. Recorded as a standing rule in `CLAUDE.md`.
 
 ## What was done
 

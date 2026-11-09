@@ -1,4 +1,4 @@
-# Copyright (c) 2026 William Emerison Six
+# Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #
 # This library is free software; you can redistribute it and/or modify
@@ -15,9 +15,9 @@
 
 x/y/z read-only coordinate properties on the grade-1 types (the value types are
 frozen/immutable), and the quotient ``A / B = A * B**-1`` (division IS
-multiplication by the inverse -- Bill's definition, 2026-07-09; a bare number's
-inverse is its reciprocal).
-See tasks/upgrade-rotation-and-ctc-vector-mapping.md (Task 2).
+multiplication by the inverse -- the maintainer's definition, 2026-07-09; a bare
+number's inverse is its reciprocal). See
+tasks/archive/2026/07/09/upgrade-rotation-and-ctc-vector-mapping.md (Task 2).
 """
 
 import dataclasses

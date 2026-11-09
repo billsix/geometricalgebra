@@ -1,21 +1,20 @@
 # Python: `rotor_from_vectors` (the normalized versor) + a sympy proof that uses the Lagrange closed form
 
-**Status:** done 2026-10-05 (679 tests, format/ty, check-generated, check-regions all green); archived 2026-10-05
-**Priority:** 5 **Difficulty:** 3
-**Created / completed:** 2026-10-05 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-05 · **Completed:** 2026-10-05 (William Emerison Six <billsix@gmail.com>); 679 tests, format/ty,
+check-generated, check-regions all green
 **Harvested to:** `tasks/reference/symbolic-equality.md` (square roots: hand sympy the relation) and
 `tasks/reference/unit-bivector-and-rotors.md` §7.
 
-## BLUF
+## Summary
 
 Mirrored `proofs/GacalcProofs/Rotor.lean` on the Python side: added `MultiVectorBase.rotor_from_vectors(from, to)`
 = `versor_from_vectors(from, to).normalize()` (a true unit rotor, for the textbook reverse sandwich), typed `Versor`
 on `g2`/`g3` vectors through the generator, and tests that prove **symbolically** what the Lean module proves —
 including the half-angle identification where the earlier Python attempt had stalled.
 
-## Context
+## Background
 
-- Followed `lean-rotor-from-vectors-chain.md` (this directory). The maintainer: "I know we did some proof of this
+- Followed `tasks/archive/2026/10/05/lean-rotor-from-vectors-chain.md`. The maintainer: "I know we did some proof of this
   for the python code in the past, but it had gotten stuck trying to do rotor as a unit … I didn't know the name of
   Lagrange, so we couldn't use his theorem."
 - Why sympy stalls: `normalize` divides by `sqrt(|R|²)` with `|R|²` the raw polynomial `(|a||b| + a·b)² + |a∧b|²`.
@@ -45,9 +44,9 @@ including the half-angle identification where the earlier Python attempt had sta
 - README, `CLAUDE.md` rotation bullet, `CHANGELOG` `[Unreleased]` → Added.
 
 Gates nested against the existing image: 679 tests, ruff + ty clean, generator deterministic, doc-region markers OK.
-Committed by the maintainer in `b27345d`.
+Committed by the maintainer in `0ce631d`.
 
 ## Related
 
-- `lean-rotor-from-vectors-chain.md` (this directory), `proofs/GacalcProofs/Rotor.lean`
+- `tasks/archive/2026/10/05/lean-rotor-from-vectors-chain.md`, `proofs/GacalcProofs/Rotor.lean`
 - `tasks/reference/unit-bivector-and-rotors.md`, `tasks/reference/symbolic-equality.md`

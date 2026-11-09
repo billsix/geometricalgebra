@@ -16,7 +16,8 @@
 A ``float`` |A|² yields a Python ``float`` magnitude, so the versor path stays
 float-typed end to end and downstream numeric pipelines don't get sympy-typed
 coefficients (which would become numpy ``dtype=object`` arrays). ``int`` and
-symbolic inputs keep exactness. See tasks/magnitude-numeric-for-numeric-input.md.
+symbolic inputs keep exactness. See
+tasks/archive/2026/06/13/magnitude-numeric-for-numeric-input.md.
 """
 
 import pytest
@@ -64,10 +65,9 @@ def test_symbolic_magnitude_stays_symbolic() -> None:
 
 
 def test_normalize_and_inverse_of_zero_raise_for_every_coefficient_kind() -> None:
-    # A zero-magnitude multivector can't be normalized or inverted. Guard added
-    # 2026-08-13: a float zero already raised, but an int/symbolic zero used to
-    # return nan-poisoned coefficients (sympy 0 ** -1 -> zoo, 0 * zoo -> nan).
-    # Now every coefficient kind raises loudly.
+    # A zero-magnitude multivector can't be normalized or inverted, whatever its
+    # coefficient kind: a float, int or symbolic zero each raises, instead of
+    # returning nan-poisoned coefficients (sympy 0 ** -1 -> zoo, 0 * zoo -> nan).
     zero_float: g3.Vector = g3.Vector(coeff_e_1=0.0, coeff_e_2=0.0, coeff_e_3=0.0)
     zero_int: g3.Vector = g3.Vector(coeff_e_1=0, coeff_e_2=0, coeff_e_3=0)
     z: g3.Vector
@@ -84,4 +84,4 @@ def test_normalize_and_inverse_of_zero_raise_for_every_coefficient_kind() -> Non
     symbolic: g3.Vector = (
         a_1 * g3.Vector.e_1 + a_2 * g3.Vector.e_2 + a_3 * g3.Vector.e_3
     )
-    assert symbolic.inverse() is not None
+    assert symbolic * symbolic.inverse() == g3.G.one()

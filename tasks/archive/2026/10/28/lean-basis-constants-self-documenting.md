@@ -1,20 +1,12 @@
 # Make the Lean basis-constant definitions self-documenting (named fields, not positional tuples)
 
-**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK). 21 positional
-basis-constant defs across G1/G2/G3 converted to named-all-fields; aliases and parameterized
-constructors left as-is.
-**Priority:** 7
-**Difficulty:** 3
-**Created:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
-**Updated:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-28 · **Completed:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
 
 The basis-constant `def`s in `G1.lean`/`G2.lean`/`G3.lean` were **positional** anonymous-constructor
 literals (`def one : G2 := ⟨1, 0, 0, 0⟩`), forcing a reader to track the field order from the
-`structure` to see which coefficient is the `1`. Rewrote them in self-documenting **named-all-fields**
+`structure` to see which coefficient is the `1`. 21 of them were rewritten in self-documenting **named-all-fields**
 form (`def e_1 : G2 := { s := 0, c1 := 1, c2 := 0, c12 := 0 }`). Definitionally equal to the old
-literals, so every proof passed unchanged — verified by `make lean`; `git diff` was the converted
+literals, so every proof passed unchanged — verified by `make lean` (8958 jobs; completeness gate OK); `git diff` was the converted
 `def` lines only (no proof body touched).
 
 ## Decision (2026-10-28)
@@ -50,5 +42,5 @@ not kept as a script (it only reproduces a mechanical file edit).
 - `proofs/GacalcProofs/G1.lean`, `proofs/GacalcProofs/G2.lean`, `proofs/GacalcProofs/G3.lean` — the
   converted basis-constant / `vec` / `I_inv` defs. Diff = those def lines only.
 
-See also: [[lean-g2-object-out-parity]], `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`,
+See also: `tasks/archive/2026/10/28/lean-g2-object-out-parity.md`, `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`,
 `tasks/reference/lean-ga-proof-architecture.md`.

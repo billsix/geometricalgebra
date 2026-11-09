@@ -346,7 +346,7 @@ def test_basis_constants(n: int, cls: type[MultiVectorBase]) -> None:
     # Module constants carry the GRADED type of their blade (reversed 2026-08-04:
     # they used to be the full class cls) -- zero/one -> Scalar_n, a vector blade
     # -> Vector_n, e_12 -> Bivector_n, e_123 -> g3.Trivector.  See
-    # tasks/graded-typed-module-basis-constants.md.
+    # tasks/archive/2026/08/04/graded-typed-module-basis-constants.md.
     mod: ModuleType = MODULES[n]
     grade_prefix: dict[int, str] = {
         0: "Scalar",
@@ -476,7 +476,7 @@ def test_simplified_and_expanded_preserve_value(
 
 def test_project_vector_onto_bivector_2d() -> None:
     # the bivector e_12 spans the whole plane, so any 2D vector projects to itself
-    v: g2.G = 3 * g2.G.basis_vector(1) + 4 * g2.G.basis_vector(2)
+    v: g2.G = 3 * g2.G.e_1 + 4 * g2.G.e_2
     assert g2.G.project(onto=g2.G.e_12)(v) == v
     # Gn reference: same result onto the e_1 * e_2 bivector
     gv: Gn = 3 * gn.e_1 + 4 * gn.e_2
@@ -484,15 +484,14 @@ def test_project_vector_onto_bivector_2d() -> None:
 
 
 def test_project_vector_onto_bivector_and_trivector_3d() -> None:
-    e1: g3.G
-    e2: g3.G
-    e3: g3.G
-    e1, e2, e3 = (g3.G.basis_vector(i) for i in (1, 2, 3))
     # onto the e_12 plane: keep the in-plane part, drop the perpendicular e_3
-    assert g3.G.project(onto=g3.G.e_12)(e1 + e3) == e1
-    assert g3.G.project(onto=g3.G.e_12)(e3) == g3.G.zero()
+    assert g3.G.project(onto=g3.G.e_12)(1 * g3.G.e_1 + 1 * g3.G.e_3) == 1 * g3.G.e_1
+    assert g3.G.project(onto=g3.G.e_12)(1 * g3.G.e_3) == g3.G.zero()
     # onto the trivector e_123 (all of 3-space): a vector projects to itself
-    assert g3.G.project(onto=g3.G.e_123)(e1 + e3) == e1 + e3
+    assert (
+        g3.G.project(onto=g3.G.e_123)(1 * g3.G.e_1 + 1 * g3.G.e_3)
+        == 1 * g3.G.e_1 + 1 * g3.G.e_3
+    )
 
 
 @pytest.mark.parametrize(

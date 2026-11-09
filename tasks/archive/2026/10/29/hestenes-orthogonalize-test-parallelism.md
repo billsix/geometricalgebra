@@ -1,17 +1,13 @@
 # Test the reverse-based Hestenes orthogonalize by parallelism, not by the scaling factor
 
-**Status:** done — 2026-10-29. Work commit subject:
-"frame tests: assert the reverse Hestenes frame is PARALLEL to rejection".
-**Priority:** 5
-**Difficulty:** 3  (test rewrite; the geometric assertion is still exact/symbolic)
-**Created:** 2026-10-29 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-29 · **Completed:** 2026-10-29 (William Emerison Six <billsix@gmail.com>)
 
-## BLUF
+Work commit subject: "frame tests: assert the reverse Hestenes frame is PARALLEL to rejection".
 
 The tests for the reverse-based `make_orthogonal_frame_hestenes` asserted the **exact scaling
 relationship** `c_k == |A_{k-1}|² * w_k` against the rejection `w_k` — which obscured the geometric
 point (the two produce the **same directions**) behind a magnitude factor a reader had to compute
-and reverse-engineer. Those assertions now test that each `c_k` is **parallel** to `w_k`
+and reverse-engineer. Those assertions were changed to test that each `c_k` is **parallel** to `w_k`
 (scale-independent), stating the geometric fact directly; the exact scale moved to the inverse
 variant's tests.
 
@@ -19,7 +15,7 @@ variant's tests.
 
 In `tests/test_frame.py`, the four reverse-variant tests were renamed
 `test_hestenes_equals_rejection_*` → `test_hestenes_parallel_to_rejection_*`
-(`2d_symbolic` / `3d_concrete` / `3d_symbolic` / `numeric`) and now assert parallelism via
+(`2d_symbolic` / `3d_concrete` / `3d_symbolic` / `numeric`) and assert parallelism via
 `A.is_parallel_to(B)` (the wedge-zero test `A ∧ B = 0`, machine-checked in
 `proofs/GacalcProofs/Predicates3D.lean`):
 
@@ -36,10 +32,10 @@ session-end sweep.
 
 ## Decision
 
-Resolved the "keep one scaling test, or go pure parallelism?" question in favour of **pure
+The "keep one scaling test, or go pure parallelism?" question was settled in favour of **pure
 parallelism** for the reverse variant — the exact (factor-1) equality is the inverse variant's job
 (`test_hestenes_inverse_equals_rejection_exactly_*`), a clean division of labour between the two.
-This task and `hestenes-orthogonalize-via-inverse` were done together, as anticipated.
+This task and `tasks/archive/2026/10/29/hestenes-orthogonalize-via-inverse.md` were done together.
 
 ## Verification
 

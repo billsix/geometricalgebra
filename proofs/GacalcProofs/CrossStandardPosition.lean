@@ -298,7 +298,7 @@ theorem cross_eq_unreduce_cross_reduce {a b : G3} (ha : IsVector a) (hb : IsVect
 /-- **The cross capstone (standard-position form).** Given a reduction (unit angle pairs) that puts
     `a` on `e₁` (`ha_on_e1`) and lands `b` in the `e₁*e₂` plane (`hb_c3 : reduced b's e₃ = 0`), the
     cross product is recovered by crossing in that frame — where it is the pure-`e₃` vector
-    `(0, 0, |a| * (reduced b).e₂)` (`cross_reduced`) — and rotating back
+    `(0, 0, |a|*(reduced b).e₂)` (`cross_reduced`) — and rotating back
     (`cross_eq_unreduce_cross_reduce`). This is the cross analogue of
     `StandardPosition.projectSP_eq_proj`: stated over vector objects, with the angles supplied as the
     reduction that standardizes `a` and `b`. `cross_via_reduction_of_vectors` discharges `ha_on_e1`/

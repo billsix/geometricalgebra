@@ -10,7 +10,7 @@ counts/dates dropped.
 reader/book-facing explainer).
 **Recheck:** the Open question below is answered (maintainer-gated; `/recheck-blocked` surfaces it).
 
-## Goal
+## BLUF
 
 Maintainer's idea, verbatim: *"For the reference docs, as an example for the code generation. I'm
 familiar with lisp macros, and I had you make that code with this idea. I want the reference docs to
@@ -32,9 +32,9 @@ the begin doc region and doc region sort of way that I have done other code."*
   module docstring (narrative front door with an ASCII pipeline diagram + doctest'd worked trace). The
   explicit "generates from sympy, does not read code Lisp-style" sentence is still absent from the
   contributor map (verified 2026-10-04: no "Lisp" in that doc), so the Plan below is still open. The
-  string→AST rationale (the "Lisp/code-as-data" idea) is archived at `2026/06/07/codegen-via-python-ast.md`.
+  string→AST rationale (the "Lisp/code-as-data" idea) is archived at `tasks/archive/2026/06/07/codegen-via-python-ast.md`.
   Doc-region marker machinery: `astbuild.py` + `check_doc_regions.py`; markers emitted per
-  `2026/07/21/emit-doc-region-markers.md`.
+  `tasks/archive/2026/07/21/emit-doc-region-markers.md`.
 
 ## Plan (draft)
 

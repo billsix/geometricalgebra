@@ -1,8 +1,6 @@
 # Lean proofs for the reciprocal frame and `Frame`'s two inverses
 
-**Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>) · **Done:** 2026-11-07
-
-## BLUF
+**Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-11-07
 
 The 2026-11-07 frame work is machine-checked for 𝒢₂ and 𝒢₃ in `proofs/GacalcProofs/ReciprocalFrame2D.lean`
 and `ReciprocalFrame3D.lean`: the reciprocal frame of H&S p. 28 (eqs 3.4, 3.5, 3.7), the similar-triangles
@@ -16,10 +14,10 @@ techniques this needed.
 
 1. **Scope against the on-hold Lean frame task** (William Emerison Six <billsix@gmail.com>, 2026-11-07:
    "sure"). This task proved rejection orthogonality and took over theorems 5 (round trip) and 6 (last
-   reciprocal) of `tasks/lean-frame-class-invertible-function.md`; its theorems 2–4 stay on hold there, and
-   `tasks/lean-frame-coverage.md` stays parked.
+   reciprocal) of `tasks/lean-frame-class-invertible-function.md`; its theorems 2–4 stayed on hold there, and
+   `tasks/lean-frame-coverage.md` stayed parked.
 2. **Lean only** (the maintainer's request). The prose + LaTeX book page that CLAUDE.md's three-forms rule
-   calls for was not written; it would go in `book/docs/frames-qr.rst`. The symbolic Python form is the
+   calls for was not written; its home would be `book/docs/frames-qr.rst`. The symbolic Python form is the
    tests in `tests/test_frame.py` and `tests/test_frame_class.py`.
 
 ## The theorems
@@ -59,5 +57,5 @@ bilinearity and the rejections' orthogonality, and the round trips follow by rew
 ## Gates
 
 `proofs/check.sh`: `Build completed successfully`, no `sorry`/`admit`, `[lean] OK`. No warnings in the two
-new files. `entrypoint/format.sh` green; `make test`'s frame tests (76, slow ones skipped) pass after the
+new files. `entrypoint/format.sh` green; `make test`'s frame tests (76, slow ones skipped) passed after the
 docstring changes.

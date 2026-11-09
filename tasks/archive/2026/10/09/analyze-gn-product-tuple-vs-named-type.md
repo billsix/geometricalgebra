@@ -1,12 +1,6 @@
 # Analyze the structure/naming of the Gn geometric product: named type vs. passing tuples
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 5
-**Difficulty:** 3
-**Started:** 2026-10-09
-
-## BLUF
+**Created:** 2026-10-09 · **Completed:** 2026-10-09
 
 Analyzed how `Gn._geometric_product` carries a `(blade, coefficient)` term through its `decrease_grade`
 canonicalization, compared the current `BladeDictionaryEntry(NamedTuple)` against the earlier plain
@@ -42,7 +36,6 @@ Either keep the `NamedTuple` (field names earn their keep; no work) or adopt **o
 the old terseness while naming the return type. Options A (bare tuple, opaque annotation) and D (frozen
 dataclass, heavier for no gain) are not recommended. The pick is the maintainer's taste.
 
-## Open questions
+## Decision (William Emerison Six <billsix@gmail.com>, 2026-10-09)
 
-None. The one decision — keep the NamedTuple or switch to option C — was answered by the maintainer
-(2026-10-09): **keep the NamedTuple**. See `tasks/reference/gn-product-structure-options.md`.
+**Keep the NamedTuple**; option C was declined. See `tasks/reference/gn-product-structure-options.md`.

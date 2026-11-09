@@ -1,13 +1,8 @@
 # Inline `insert_into_canonical` — it is a binary test (identity vs recursion), not a helper
 
-**Status:** done — 2026-10-29. William Emerison Six <billsix@gmail.com> confirmed the spot and chose
-form (b) (`(identity() if … else decrease_grade)(…)`). Work commit subject:
-"gn: inline insert_into_canonical as a binary test (identity vs recursion)".
-**Priority:** 5  (readability of the Gn oracle; nothing was broken)
-**Difficulty:** 3  (a few lines in one hand-written method; every test stayed green)
-**Created:** 2026-10-29 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-29 · **Completed:** 2026-10-29 (William Emerison Six <billsix@gmail.com>)
 
-## BLUF
+Work commit subject: "gn: inline insert_into_canonical as a binary test (identity vs recursion)".
 
 The 2026-10-27 recursion audit (`tasks/archive/2026/10/27/audit-recursion-and-iteration-design.md`,
 commit `95f2779`) had extracted the `a < c` re-insertion step of `_geometric_product`'s
@@ -16,7 +11,7 @@ extraction was unnecessary: the helper was just a **two-way test** — if the re
 already in place, keep the blade unchanged (**identity**); otherwise reduce the recombined blade
 again (**recursion**, `decrease_grade`). This folded that back into the `a < c` case as a plain
 binary expression `(identity() if … else decrease_grade)(prepended)`. Pure readability change —
-`Gn` is the slow correct-by-construction oracle, so behaviour is identical and all 690 tests stay
+`Gn` is the slow correct-by-construction oracle, so behaviour is identical and all 690 tests stayed
 green.
 
 ## What was done
@@ -39,7 +34,8 @@ return (
 
 The re-prepended blade is built **inline** in the call rather than bound to a single-use
 `prepended` local (the maintainer asked for this inlining — the same default as the sibling
-`tasks/inline-single-use-rest-orthogonal-variable.md`). `decrease_grade`'s own `match` stays — its cases are genuine *structural* patterns on the tuple
+`tasks/archive/2026/10/29/inline-single-use-rest-orthogonal-variable.md`). `decrease_grade`'s own
+`match` stayed — its cases are genuine *structural* patterns on the tuple
 (`()` / `(_,)` / `(a, c, *rest)` guards, plus the total `case _:` ty needs); only the extracted
 boolean sub-test collapsed to the inline expression.
 
@@ -62,11 +58,12 @@ is falsy → recursion), so behaviour matches the old helper on every input.
 - `gn.py` is hand-written, not emitted by `tools/gen_specialized.py`, so `make check-generated` is
   unaffected.
 
-## Follow-on — convention-doc updates (pending the maintainer's satisfaction check)
+## Follow-on — convention-doc updates (deferred)
 
-The generalizable lessons are to be recorded in **both** `runClaudeInContainer` and
-`runCrushInContainer` (canonical + byte-identical mirror); the maintainer named the recursive-design
-doc, the python coding standard, and the personal AI-conventions file in dotfiles as candidate homes:
+The generalizable lessons were slated for **both** github.com/billsix/runClaudeInContainer and
+github.com/billsix/runCrushInContainer (canonical + byte-identical mirror); the maintainer named the
+recursive-design doc, the Python coding standard, and the personal AI-conventions file as candidate
+homes:
 
 1. **Prefer a simple `if` expression over `match`** when the test is a two-branch boolean (reinforces
    the existing "match earns its keep on *structural* patterns" note with this worked case).
@@ -76,14 +73,13 @@ doc, the python coding standard, and the personal AI-conventions file in dotfile
    call in the other" — collapse it to the inline binary test.
 
 Per the maintainer's framing ("once you implement to my satisfaction, we will update the docs"), this
-is deferred to a single cross-repo pass after the four Gn/frame tasks land and the implementations are
-accepted. The recursive-design + python-coding-standard docs are at `tasks/reference/` in each
-sandbox; the personal file at `~/.claude/ai-coding-conventions.personal.md` (example in
-`entrypoint/dotfiles/.claude/`).
+was deferred to a single cross-repo pass after the four Gn/frame tasks were accepted, outside this
+task. The recursive-design and Python-coding-standard docs are under `tasks/reference/` in each
+sandbox repo.
 
-## Decision — resolved 2026-10-29 (William Emerison Six <billsix@gmail.com>)
+## Decision (William Emerison Six <billsix@gmail.com>, 2026-10-29)
 
-Confirmed `insert_into_canonical` was the extracted helper meant, and chose **form (b)**
+The maintainer confirmed `insert_into_canonical` was the extracted helper meant, and chose **form (b)**
 (`(identity() if … else decrease_grade)(prepended)`, the "functions are expressions too" form that
 uses `identity` literally) over form (a) (the plain `prepended if … else decrease_grade(prepended)`
 conditional value).

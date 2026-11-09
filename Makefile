@@ -158,6 +158,38 @@ jupyter: image ## Launch JupyterLab (gacalc kernel) on http://127.0.0.1:8888/lab
 		$(CONTAINER_NAME) \
 		/usr/local/bin/jupyter.sh
 
+.PHONY: spyder
+spyder: image ## Launch the Spyder IDE on the repo (needs an image built with USE_SPYDER=1)
+	@[ "$(USE_SPYDER)" = 1 ] || { \
+	  echo 'ERROR: make spyder needs Spyder,'; \
+	  echo '       gated by the build-time flag USE_SPYDER (currently USE_SPYDER=$(USE_SPYDER)).'; \
+	  echo ''; \
+	  echo 'Enable it persistently, then rebuild and run:'; \
+	  echo "  echo 'export USE_SPYDER=1' >> ~/.bashrc && source ~/.bashrc"; \
+	  echo '  make image'; \
+	  echo '  make spyder'; \
+	  echo ''; \
+	  echo '(This session only: run  export USE_SPYDER=1  instead of the echo/source line.)'; \
+	  exit 2; }
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) -it --rm \
+		--entrypoint /bin/bash \
+		$(FILES_TO_MOUNT) \
+		$(X_FLAGS_FOR_CONTAINER) \
+		$(WAYLAND_FLAGS_FOR_CONTAINER) \
+		$(CONTAINER_NAME) \
+		/usr/local/bin/spyder.sh
+
+# Convert the demo notebooks (jupytext percent-format .py) to .ipynb, beside the
+# sources, for sharing or exporting. JupyterLab opens the .py files directly, so
+# this is only needed to hand someone an .ipynb. NOTEBOOKS= limits it to some files.
+.PHONY: notebooks-ipynb
+notebooks-ipynb: image ## (container) convert notebooks/*.py to .ipynb; NOTEBOOKS='displaymv.py ...' for a subset
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
+		--entrypoint /bin/bash \
+		$(FILES_TO_MOUNT) \
+		$(CONTAINER_NAME) \
+		/usr/local/bin/percentToIpynb.sh $(NOTEBOOKS)
+
 
 # Run ruff + ty over the source INSIDE the container (the image's pinned toolchain).
 # The g*.py are gitignored, so regenerate them first (so ty can resolve
@@ -304,7 +336,18 @@ check-generated: image ## (container) verify tools/gen_specialized.py is determi
 # to a warning (the display cells emit those deliberately); pyright exits nonzero
 # on ERRORS only, so a type regression fails the build while those warnings don't.
 # Kept SEPARATE from `make test` so a pyright-version bump can't redden the test
-# gate.  (pyright is unpinned: entrypoint/01-install-base.sh npm-installs the latest.)
+# gate.  (pyright is pinned in entrypoint/01-install-base.sh; bump it there.)
+# Regenerate constraints.txt, the exact versions the image installs into /venv (from
+# pyproject.toml's dependencies + extras and entrypoint/image-requirements.in), resolved
+# for the image's own Python. Needs the network; then `make image` and the gates.
+.PHONY: update-pins
+update-pins: image ## (container, network) re-resolve constraints.txt, the image's pinned Python versions
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
+		-v $(CURDIR):/gacalc:Z \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'source /venv/bin/activate && cd /gacalc && uv pip compile pyproject.toml entrypoint/image-requirements.in --extra dev --extra notebooks --extra jupyter --python /venv/bin/python -o constraints.txt'
+
 .PHONY: check-notebooks
 check-notebooks: image ## (container) pyright gate over notebooks/ (type regressions fail the build)
 	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \

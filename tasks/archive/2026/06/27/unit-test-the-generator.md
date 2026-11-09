@@ -1,17 +1,14 @@
 # Decide what of the code generator to unit-test, and add those tests
 
-**Status:** complete (2026-06-27) — determination made + tests added (`tests/test_generator.py`).
-Ready to archive.
-**Proposed:** 2026-06-27
-**Completed:** 2026-06-27
+**Created:** 2026-06-27 · **Completed:** 2026-06-27
 
 ## Question
 
 The generator (`tools/gen_specialized.py` + `tools/astbuild.py`) had **no direct unit tests**. Its
 *output* is well covered (conformance + graded suites exercise `G1/G2/G3` and the graded subtypes), and
 determinism is guarded by `make check-generated`. But the generator's own **pure logic** — blade
-naming, the type-resolution registry, term ordering — was only tested transitively. This task decides
-what is worth testing directly and adds those tests.
+naming, the type-resolution registry, term ordering — was only tested transitively. This task decided
+what was worth testing directly and added those tests.
 
 ## Determination — what to unit-test (and what not)
 
@@ -49,7 +46,7 @@ non-trivial or only *transitively* covered today):
   round-trip and by the generator running at all; only the non-trivial `cast_coef`/`SymbolToAttr` get
   their own tests.
 
-## Done (2026-06-27)
+## What was done (2026-06-27)
 
 Added **`tests/test_generator.py`** (imports `astbuild` + `gen_specialized` by putting `tools/` on
 `sys.path`; importing the generator has no side effects — `main()` is `__main__`-guarded). Covers all
@@ -60,7 +57,7 @@ six categories above. All assertions were verified against the live generator be
 ## Notes / cross-refs
 
 - Builds on `tasks/archive/2026/06/07/gen-specialized-structure-refactor.md` (generator structure) and
-  the just-completed `tasks/add-types-signatures-and-tools.md` (which made `tools/` ty-clean, so the
+  the just-completed `tasks/archive/2026/06/27/add-types-signatures-and-tools.md` (which made `tools/` ty-clean, so the
   test module's imports type-check).
 - Per CLAUDE.md, the generated `g*.py` are gitignored build artifacts; these tests target the
   generator *logic*, not the emitted files.

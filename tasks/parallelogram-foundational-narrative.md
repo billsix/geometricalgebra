@@ -10,7 +10,7 @@ still has no parallelogram narrative); line-number anchor replaced by section na
 which primitives).
 **Recheck:** the Open questions below are answered (maintainer-gated; `/recheck-blocked` surfaces it).
 
-## Goal
+## BLUF
 
 Maintainer's idea, verbatim: *"Make sure to put in somewhere that the parallelogram is the most important
 shape in this series, show that the parallelograms area is the same as a rectangle, with the base times
@@ -29,8 +29,9 @@ geometry, and note that two vectors implicitly define a parallelogram.
   already states "area of the parallelogram on a and
   b," `|v₁||v₂|sinθ`, and "base × height = the parallelogram" (height = V₂ rejected from V₁). Pedagogy
   lives in `openstax-math-pedagogy.md` and `book-outline.md`.
-- Archived: `2026/08/24/area-volume-content.md`, `2026/06/27/wedge-magnitude-sin-notebook.md`,
-  `2026/08/25/name-perpendicular-vector-not-height.md`.
+- Archived: `tasks/archive/2026/08/24/area-volume-content.md`,
+  `tasks/archive/2026/06/27/wedge-magnitude-sin-notebook.md`,
+  `tasks/archive/2026/08/25/name-perpendicular-vector-not-height.md`.
 - `displaygraded-geometric-plots.md` (active) covers the oriented-parallelogram = bivector = signed-area
   plot — the *code* side of this.
 

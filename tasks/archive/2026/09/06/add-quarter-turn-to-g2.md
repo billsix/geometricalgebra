@@ -1,11 +1,9 @@
 # Add a g2 `rotate_90_degrees` — a 90° turn in the e₁e₂ plane (= × pseudoscalar)
 
-**Status:** done — implemented 2026-09-06 (Fable session), gates green, awaiting the maintainer's
-release (0.0.20, a PATCH bump — additive; changelog entry under `## [0.0.20]`).
-**Priority:** 7
-**Difficulty:** 3
+**Created:** 2026-09-04 · **Completed:** 2026-09-06 (shipped in 0.0.20, a PATCH bump — additive;
+changelog entry under `## [0.0.20]`)
 
-## BLUF
+## Summary
 
 𝒢₂ now has a named quarter turn in two forms that share one generated closed form: the method
 `g2.Vector.rotate_90_degrees()` and the module-level factory `g2.rotate_90_degrees()` returning an
@@ -14,7 +12,7 @@ release (0.0.20, a PATCH bump — additive; changelog entry under `## [0.0.20]`)
 composes (four turns are the identity), inverts (the −90° turn, `v * -e_12`), and interpolates
 (`at(t)` runs `plane_rotation(e_1, e_2)(t·π/2)`, the exact turn at `t >= 1`). 𝒢₂ only.
 
-## Context
+## Background
 
 - Researched 2026-09-04 as a standalone design question: does the library want a named convenience
   over the raw `v * e_12`? The pedagogical value is that the name is a labelled doorway to a
@@ -67,6 +65,6 @@ Implementation choices made by the agent within those decisions:
 
 ## Consumer
 
-modelviewprojection's `tasks/swap-myriapod-rotate90-to-gacalc.md` (github.com/billsix/modelviewprojection)
-stays blocked on a *release* containing this; once cut and the pin bumped there, myriapod deletes
-its local copy and imports `gacalc.g2.rotate_90_degrees`.
+github.com/billsix/modelviewprojection `tasks/archive/2026/09/06/swap-myriapod-rotate90-to-gacalc.md`
+waited on a release containing this; with the pin bumped there, myriapod deleted its local copy in
+favour of `gacalc.g2.rotate_90_degrees`.

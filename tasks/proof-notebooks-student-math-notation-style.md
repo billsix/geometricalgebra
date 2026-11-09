@@ -20,6 +20,24 @@ each printed as math**). Scope is **not** future-only:
 
 This doc captures the preference, the convention to adopt, and the backlog to work through.
 
+## Context
+
+This is the **umbrella** for the proof-notebook work. Its children:
+
+- `tasks/reference-doc-lean-workflow-and-proof-notebooks.md` — the reference doc stating the
+  Lean → symbolic test → student notebook method and its purpose (the *why*);
+- `tasks/investigate-lean-to-python-proof-notebooks.md` — whether a notebook can be generated from, or
+  kept honest by, the Lean proof (the *how*).
+
+**Shared requirement** (the maintainer, 2026-09-30; both children used to state it): a proof notebook
+shows the **cancellation**, not a bare `0`. Lay the two expansions out term by term with labels, and
+mark matching `+t`/`−t` pairs with LaTeX `\underbrace{…}_{cancel}`, through a `show_cancellation`
+display helper beside `show_mult` (`src/gacalc/nbplotutils.py`). myst_nb/MathJax render `\underbrace`.
+
+The model trio for a finished proof is `book/docs/proof-projection.rst` +
+`book/docs/notebooks/proof-projection.py` + `proofs/GacalcProofs/StandardPosition.lean` (`CLAUDE.md` ›
+"Every piece of math comes in three forms").
+
 ## What the maintainer asked for (verbatim intent)
 
 - "I want all proofs ... to have python notebooks that do the same thing, symbolically, in a way that

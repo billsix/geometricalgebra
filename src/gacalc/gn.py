@@ -73,8 +73,8 @@ class Gn(MultiVectorBase):
 
     𝒢ₙ has 2ⁿ basis blades.  This is the general, dimension-agnostic
     representation, storing a dict from blade (a tuple of basis-vector indices,
-    e.g. ``(1, 2)`` ≙ e₁ * e₂) to coefficient.  G and G will be specialized,
-    faster representations of 𝒢₂ and 𝒢₃.
+    e.g. ``(1, 2)`` ≙ e₁ * e₂) to coefficient.  The generated ``g1.G``/``g2.G``/
+    ``g3.G`` are the specialized, faster representations of 𝒢₁, 𝒢₂ and 𝒢₃.
 
     Terminology: 𝒢ₙ denotes the *algebra*; an instance of this class is an
     *element of* 𝒢ₙ.  The class is named after its algebra as a shorthand.
@@ -193,13 +193,14 @@ class Gn(MultiVectorBase):
         return plane.normalize()
 
     def to_blade_dict(self) -> BladeReal:
-        """Return the canonical blade → coefficient mapping (``Gn`` stores exactly
-        this, so it is returned directly, not rebuilt).
+        """Return the canonical blade → coefficient mapping, as a copy of what ``Gn``
+        stores, so a caller that changes it can't corrupt this value (or a shared
+        constant like ``e_1``).
 
         Returns:
-            BladeReal: the stored blade -> coefficient dict.
+            BladeReal: a copy of the stored blade -> coefficient dict.
         """
-        return self.coefficient_of_blade
+        return dict(self.coefficient_of_blade)
 
     def _geometric_product(self, rhs: MultiVectorBase) -> typing.Self:
         """Reference geometric product  A * B  for ``Gn``.
@@ -261,16 +262,13 @@ class Gn(MultiVectorBase):
                             coefficient=basis_blade.coefficient,
                         )
                     )
-                    return (
-                        identity()
-                        if sorted_tail.blade and a < sorted_tail.blade[0]
-                        else decrease_grade
-                    )(
-                        BladeDictionaryEntry(
-                            blade=(a, *sorted_tail.blade),
-                            coefficient=sorted_tail.coefficient,
-                        )
+                    recombined: BladeDictionaryEntry = BladeDictionaryEntry(
+                        blade=(a, *sorted_tail.blade),
+                        coefficient=sorted_tail.coefficient,
                     )
+                    if sorted_tail.blade and a < sorted_tail.blade[0]:
+                        return recombined
+                    return decrease_grade(recombined)
                 case _:
                     # Unreachable: a tuple is empty, a singleton, or has a head pair
                     # a/c with a == c / a > c / a < c (trichotomy).  Kept as the total
