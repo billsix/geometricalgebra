@@ -2678,8 +2678,6 @@ def _coerce[T: MultiVectorBase](x: MultiVectorBase | Real, cls: type[T]) -> T:
     match x:
         case MultiVectorBase():
             return cls.from_blade_dict(x.to_blade_dict())
-        case sympy.Expr():
-            return cls.from_real(x)
         case _:
             return cls.from_real(x)
 
