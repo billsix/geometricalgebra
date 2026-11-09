@@ -47,7 +47,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `to_invertible_function(inverse_method="reciprocal" | "peel")` maps `e_i ↦ v_i` and inverts it
   either through the reciprocal frame (`reciprocal_frame`, H&S eq 3.7; the default) or by a `match`
   recursion that peels the frame from its last vector. Both read each term with
-  `transforms.line_to_line_projection` (the point on `v_i`'s line whose projection onto a normal `n`
+  `transforms.line_to_line_projection` (the point on `v_i`'s line whose projection onto a normal `m`
   matches `y`'s). Math, the orthonormal-vs-orthogonal measurements and the symbolic-cost timings:
   `tasks/reference/frames-qr-and-reciprocal-frames.md`.
 - `src/gacalc/measure.py` — the named **measures** (Williamson & Trotter 1979):

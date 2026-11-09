@@ -610,8 +610,9 @@ class MultiVectorBase(abc.ABC):
                 a bare number / ``sympy`` expression (its reciprocal).
 
         Returns:
-            Self: the quotient ``self * rhs.inverse()`` (or ``self * (1 / rhs)``
-            for a number).
+            Self: the quotient ``self * rhs.inverse()``, or for a number each
+            coefficient divided by it (an int divided by an int stays an exact
+            ``Rational``; a float stays a float).
 
         Examples:
             >>> from gacalc.g2 import e_1, e_2
@@ -624,11 +625,23 @@ class MultiVectorBase(abc.ABC):
             ZeroDivisionError: if ``rhs`` is a zero-magnitude multivector (via
                 ``inverse``) or a zero number.
         """
-        return (
-            self * (1 / rhs)
-            if isinstance(rhs, (int, float, sympy.Expr))
-            else self * rhs.inverse()
-        )
+        if isinstance(rhs, (int, float, sympy.Expr)):
+            if rhs == 0:
+                raise ZeroDivisionError("cannot divide a multivector by zero")
+
+            def divide(coefficient: Real) -> Real:
+                # int / int stays an exact Rational; a float stays a float, and a
+                # symbolic coefficient stays symbolic.
+                match coefficient:
+                    case int() if isinstance(rhs, int):
+                        return sympy.Rational(coefficient, rhs)
+                    case _:
+                        return coefficient / rhs
+
+            return type(self).from_blade_dict(
+                {blade: divide(c) for blade, c in self.to_blade_dict().items()}
+            )
+        return self * rhs.inverse()
 
     def __abs__(self) -> Real:
         """Magnitude  \\|A\\|  =  ``abs(A)``  — the norm √⟨A A˜⟩; see ``magnitude``.
@@ -1776,7 +1789,7 @@ class MultiVectorBase(abc.ABC):
         """
 
         def r(value: MultiVectorBase) -> MultiVectorBase:
-            assert value.is_vector()  # TODO - can this be generalized?
+            MultiVectorBase.require_vector(value, "reject")
             assert isinstance(away_from, MultiVectorBase)  # to satisfy type checking
             rejected: MultiVectorBase = (value.wedge(away_from)) * away_from.inverse()
             # Rejection of a vector is a vector, but the raw product widens the

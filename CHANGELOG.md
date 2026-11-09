@@ -179,6 +179,18 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 - **`standardposition.project_sp` / `reject_sp` returned `Vector(nan, nan, nan)` when `b` lay along
   e₃**, and crashed on `Gn` input. They now raise `ValueError` for a `b` along e₃ or a non-vector
   input, and read coordinates by blade, so `Gn` input works.
+- **Dividing a multivector by an int gave floats, and dividing by `sympy.Integer(0)` gave `zoo`/`nan`.**
+  `(1 * e_1) / 3` now has the exact coefficient `1/3` (a float coefficient stays a float), and dividing
+  by any zero number raises `ZeroDivisionError`, as documented. Behavior change.
+- **`transforms.projection_rotation(a, a)` raised `ZeroDivisionError`;** it is now the identity, as
+  `versor_rotation(a, a)` is. For opposite vectors, where no plane of rotation is defined, it raises
+  `ValueError` naming that. Both rotation functions now check their operand with `require_vector`
+  (a `ValueError`, not an `assert`).
+- **`transforms.scale_non_uniform` with fewer factors than the dimension zeroed the remaining axes;**
+  `scale_non_uniform(2, 3)` on a 𝒢₃ vector now leaves `e_3` unchanged. Behavior change.
+- **`transforms.bivector_rotation` raises `ValueError`, not `TypeError`, for a non-bivector.** Behavior
+  change for code that catches `TypeError`.
+- **`uniform_scale(m)`'s inverse is labelled `S_{1/m}`**, not `S_{-m}`.
 
 ## [0.1.0] — 2026-09-28
 

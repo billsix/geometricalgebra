@@ -213,6 +213,24 @@ def projection_rotation(
     MultiVectorBase.require_vectors((from_vector, to_vector), "projection_rotation")
     plane: MultiVectorBase = from_vector ^ to_vector
     cls: type[V] = type(from_vector)
+    if plane == type(plane).zero():
+        # Parallel vectors span no plane. Pointing the same way, the rotation is the
+        # identity (as versor_rotation gives); pointing opposite ways, no plane of
+        # rotation is singled out.
+        same_way: bool | None = sympy.sympify(
+            from_vector.dot(to_vector).scalar_part()
+        ).is_positive
+        if same_way is not True:
+            raise ValueError(
+                "projection_rotation: from_vector and to_vector point in opposite "
+                "directions, so no plane of rotation is defined"
+            )
+
+        def identity_on_vectors(value: MultiVectorBase) -> MultiVectorBase:
+            MultiVectorBase.require_vector(value, "projection_rotation")
+            return value
+
+        return identity_on_vectors
 
     components_in_plane: ComposableFunction[MultiVectorBase] = cls.project(plane)
     components_exterior_to_plane: ComposableFunction[MultiVectorBase] = cls.reject(
@@ -220,7 +238,7 @@ def projection_rotation(
     )
 
     def r(value: MultiVectorBase) -> MultiVectorBase:
-        assert value.is_vector()  # TODO - can this be generalized?
+        MultiVectorBase.require_vector(value, "projection_rotation")
         return (
             components_in_plane(value) * from_vector.normalize() * to_vector.normalize()
         ) + components_exterior_to_plane(value)
@@ -518,7 +536,7 @@ def bivector_rotation(
     if i == type(i).zero():
         raise ValueError("the bivector is zero: it spans no plane of rotation")
     if not i.is_bivector():
-        raise TypeError(
+        raise ValueError(
             f"bivector_rotation takes a bivector (grade-2); got grades {i.grades()}"
         )
     rotor_for: typing.Callable[[Real], MultiVectorBase] = _unit_bivector_rotor_factory(
@@ -678,7 +696,7 @@ def uniform_scale(m: float) -> InvertibleFunction[V]:
             func=f,
             latex_repr=f"S_{{{m}}}",
             inverse=f_inv,
-            latex_repr_inv=f"S_{{{-m}}}",
+            latex_repr_inv=rf"S_{{\frac{{1}}{{{m}}}}}",
             interpolate=lambda t: uniform_scale(1.0 + (m - 1.0) * t),
             linearity=Linearity.LINEAR,
         ),
@@ -693,15 +711,25 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction[V]:
 
     Representation preserving: the basis vectors are taken from the type of the
     value being transformed, so a ``G``/``Gn`` value scales to its own
-    type.  Pass two factors for the 2D case (``scale_non_uniform(m_x, m_y)``).
+    type.  Pass two factors for the 2D case (``scale_non_uniform(m_x, m_y)``); an
+    axis with no factor (``e_3`` of a 𝒢₃ vector, there) is left unchanged.
+
+    Example:
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> scale_non_uniform(2, 3)(1 * e_1 + 2 * e_2 + 3 * e_3) == (
+        ...     2 * e_1 + 6 * e_2 + 3 * e_3
+        ... )
+        True
     """
 
     # doc-region-begin scale non-uniform body
     def f(vector: MultiVectorBase) -> MultiVectorBase:
+        # Start from the vector; scaling axis i by m adds (m - 1) times its own
+        # component, so an axis with no factor keeps its component.
         cls: type[MultiVectorBase] = type(vector)
-        return sum(
+        return vector + sum(
             (
-                m * cls.project(onto=cls.basis_vector(i + 1))(vector)
+                (m - 1) * cls.project(onto=cls.basis_vector(i + 1))(vector)
                 for i, m in enumerate(factors)
             ),
             start=cls.zero(),
@@ -712,9 +740,9 @@ def scale_non_uniform(*factors: float) -> InvertibleFunction[V]:
             raise ValueError("Not invertible.  Scaling factors cannot be zero.")
 
         cls: type[MultiVectorBase] = type(vector)
-        return sum(
+        return vector + sum(
             (
-                (1.0 / m) * cls.project(onto=cls.basis_vector(i + 1))(vector)
+                (1.0 / m - 1.0) * cls.project(onto=cls.basis_vector(i + 1))(vector)
                 for i, m in enumerate(factors)
             ),
             start=cls.zero(),

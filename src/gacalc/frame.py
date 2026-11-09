@@ -699,15 +699,15 @@ class Frame:
         # tasks/reference/frames-qr-and-reciprocal-frames.md, "Why one dot product
         # reads off an oblique coordinate: similar right triangles".
         def term_and_coordinate(
-            y: MultiVectorBase, v: MultiVectorBase, n: MultiVectorBase
+            y: MultiVectorBase, v: MultiVectorBase, m: MultiVectorBase
         ) -> tuple[MultiVectorBase, Real]:
-            # y's term along v, x * v, and its coordinate x, for an n perpendicular to
-            # every frame vector but v: the point on v's line whose projection onto n
+            # y's term along v, x * v, and its coordinate x, for an m perpendicular to
+            # every frame vector but v: the point on v's line whose projection onto m
             # matches y's.  Float input checks "on the line" with a tolerance.
-            tolerant: bool = _has_float((y, v, n))
+            tolerant: bool = _has_float((y, v, m))
             term: MultiVectorBase = line_to_line_projection(
-                from_vector=v, to_vector=n, float_close_to_zero=tolerant
-            ).inverse(y.projected_onto(n))
+                from_vector=v, to_vector=m, float_close_to_zero=tolerant
+            ).inverse(y.projected_onto(m))
             return term, coordinate_along(term, along=v, float_close_to_zero=tolerant)
 
         def backward_by_reciprocal(y: MultiVectorBase) -> MultiVectorBase:
@@ -718,7 +718,7 @@ class Frame:
             # from 1, hence enumerate(start=1).
             return sum(
                 (
-                    term_and_coordinate(y, v=v, n=v_upper)[1] * cls.basis_vector(i)
+                    term_and_coordinate(y, v=v, m=v_upper)[1] * cls.basis_vector(i)
                     for i, (v, v_upper) in enumerate(
                         zip(self.vectors, reciprocal_vectors, strict=True), start=1
                     )
@@ -743,7 +743,7 @@ class Frame:
                         # after them.
                         term: MultiVectorBase
                         x_last: Real
-                        term, x_last = term_and_coordinate(y, v=v, n=w)
+                        term, x_last = term_and_coordinate(y, v=v, m=w)
                         return [*peel(earlier, y - term), x_last]
                     case _:
                         # Unreachable: [] and [*earlier, last] cover every list.  Kept

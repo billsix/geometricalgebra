@@ -108,7 +108,7 @@ def test_symbolic_angle_keeps_clean_half_angle_form() -> None:
 
 
 def test_rejects_a_non_bivector() -> None:
-    with pytest.raises(TypeError, match="grade-2"):
+    with pytest.raises(ValueError, match="grade-2"):
         bivector_rotation(g3.Vector.e_1)  # a vector, not a bivector
 
 

@@ -592,3 +592,40 @@ def test_invertible_function_with_real_inverse_roundtrips() -> None:
     assert m.latex_repr_inv == "M_{B}^{-1}"
     v: g3.Vector = 1 * g3.Vector.e_1 + 1 * g3.Vector.e_3
     assert inverse(m)(m(v)).isclose(v, rel_tol=1e-5, abs_tol=1e-5)
+
+
+def test_uniform_scale_inverse_label_is_the_reciprocal() -> None:
+    # The inverse of scaling by m is scaling by 1/m, not by -m.
+    assert uniform_scale(m=2).latex_repr_inv == r"S_{\frac{1}{2}}"
+
+
+def test_scale_non_uniform_leaves_axes_without_a_factor_unchanged() -> None:
+    v: g3.Vector = 1 * g3.e_1 + 2 * g3.e_2 + 3 * g3.e_3
+    scaled: MultiVectorBase = scale_non_uniform(2, 3)(v)
+    assert scaled == 2 * g3.e_1 + 6 * g3.e_2 + 3 * g3.e_3
+    assert (
+        scale_non_uniform(2, 3).inverse(scaled).isclose(v, rel_tol=1e-9, abs_tol=1e-9)
+    )
+
+
+def test_projection_rotation_from_a_vector_to_itself_is_the_identity() -> None:
+    # Parallel vectors span no plane; pointing the same way, the rotation is the
+    # identity, as versor_rotation gives.
+    a: g3.Vector = 1 * g3.e_1 + 2 * g3.e_2
+    w: g3.Vector = 1 * g3.e_2 + 1 * g3.e_3
+    assert projection_rotation(a, a)(w) == w
+    assert projection_rotation(a, 3 * a)(w) == versor_rotation(
+        from_vector=a, to_vector=3 * a
+    )(w)
+
+
+def test_projection_rotation_between_opposite_vectors_raises() -> None:
+    a: g3.Vector = 1 * g3.e_1 + 2 * g3.e_2
+    with pytest.raises(ValueError, match="opposite directions"):
+        projection_rotation(a, -1 * a)
+
+
+def test_projection_rotation_requires_a_vector_operand() -> None:
+    f: MultiVectorFn = projection_rotation(1 * g3.e_1, 1 * g3.e_2)
+    with pytest.raises(ValueError):
+        f(g3.Bivector.e_12)
