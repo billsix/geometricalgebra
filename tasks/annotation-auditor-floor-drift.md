@@ -69,6 +69,26 @@ Merge them into one.
    the record).
 4. Gates: `make test`, `make format` (ruff + ty). Confirm the auditor's count equals the new floor.
 
+## Also: make the auditor an enforcing gate (added 2026-11-09)
+
+From `tasks/review/2026/11/08/repo-review.md` §5.2. The maintainer put this here rather than in a new
+task (2026-11-09). `tools/check_annotations.py` does not do what `CLAUDE.md` says it does:
+
+- **It always exits 0, and nothing runs it.** `CLAUDE.md` › "Coding standard (Python)" calls it
+  enforcement for the book notebooks ("a missing annotation shows up as a row"). Make it exit
+  nonzero on any row that is not in `tasks/reference/type-annotation-exemptions.md`, and run it from
+  `entrypoint/format.sh`, so `make format` and CI's `check-format` run it.
+- **Its docstring says gitignored files are excluded; they aren't.** Implement the exclusion, or
+  correct the docstring.
+- **The `annotated` set is built per file**, so one annotated `x` exempts every unannotated `x` in
+  the same file. Track annotations per scope (per function).
+- **Tuple-unpack assignments are never reported.** That includes the `sympy.symbols` unpack
+  `CLAUDE.md` requires to be declared on the lines above (`a_1: sympy.Symbol`). Examples the review
+  found: `tests/test_odd3.py:43,110` and `tests/test_matrix_template.py:57,329`.
+
+Once these are fixed, the reported count will rise (the new detections), and the floor this task
+re-baselines must be re-measured with them.
+
 ## Open questions
 
 None yet. If any row has no clear answer once read, raise it here before deciding.
