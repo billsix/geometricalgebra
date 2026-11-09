@@ -53,7 +53,7 @@ class Frame:
 
 **`__post_init__` does a second job: validation.** Building the orthogonal set is what rejects a
 non-frame (`make_orthogonal_frame` raises `ValueError`). With no stored set, `__post_init__` needs
-an explicit check. Use the shared guard from `tasks/require-frame-guard.md`
+an explicit check. Use the shared guard from `tasks/archive/2026/11/09/require-frame-guard.md`
 (`require_frame(self.vectors, "Frame")`), so do that task first.
 
 ### (1) The orthogonal set: the standard Python options
@@ -125,7 +125,7 @@ as computations. Bind it once to a local where `coefficients()` and the peel inv
 
 ## Plan
 
-- [ ] Do `tasks/require-frame-guard.md` first (`require_frame` replaces the validation that
+- [ ] Do `tasks/archive/2026/11/09/require-frame-guard.md` first (`require_frame` replaces the validation that
   building the orthogonal set did).
 - [ ] Measure the current cost of the 3D symbolic `Frame` cases.
 - [ ] (1) Replace the `orthogonal_vectors` field with the chosen accessor. In `__post_init__`, call
