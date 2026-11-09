@@ -62,11 +62,11 @@ from gacalc.g3 import G, Vector, e_1, e_2, e_3
 v_1: Vector = 2 * e_1 + 0 * e_2 + 0 * e_3
 v_2: Vector = 1 * e_1 + 2 * e_2 + 0 * e_3
 v_3: Vector = 1 * e_1 + 1 * e_2 + 2 * e_3
-frame: Frame = Frame([v_1, v_2, v_3])
+frame: Frame = Frame((v_1, v_2, v_3))
 w_1: MultiVectorBase
 w_2: MultiVectorBase
 w_3: MultiVectorBase
-w_1, w_2, w_3 = frame.orthogonal_vectors
+w_1, w_2, w_3 = frame.orthogonal_vectors()
 (w_1, w_2, w_3), frame.coefficients()
 
 # %%

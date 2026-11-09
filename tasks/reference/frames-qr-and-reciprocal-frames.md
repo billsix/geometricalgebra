@@ -2,8 +2,8 @@
 
 **Reference document.** This explains what the QR decomposition is, why orthonormalizing a frame and
 recording its coefficients *is* QR, how that gives an inverse without row reduction, and how it relates to
-Hestenes' reciprocal frame and to the SVD, and why gacalc's implementation stores the frame orthogonal
-rather than orthonormal. gacalc implements it as `gacalc.frame.Frame` (`src/gacalc/frame.py`, tests in
+Hestenes' reciprocal frame and to the SVD, and why gacalc's implementation works from the orthogonal
+set rather than the orthonormal one. gacalc implements it as `gacalc.frame.Frame` (`src/gacalc/frame.py`, tests in
 `tests/test_frame_class.py`); the build record is `tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`.
 The reciprocal frame's build record is `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`. Open follow-ups: `tasks/frame-svd-investigation.md` and
 `tasks/frame-inverse-head-first-recursion.md` (whether the peel can run first-element-first). The
@@ -19,10 +19,10 @@ linear algebra calls this pair the **QR decomposition** `V = Q R`. Q is the orth
 columns. R is the coefficients, and it is **upper triangular**: `v_i` needs only `u_1 … u_i`. To invert
 the map `x ↦ Σ x_i v_i`, dot the output with each `u_j`, then undo the triangle from the last coordinate
 backwards. That is the standard numerical way to solve linear systems and least-squares problems. GA adds
-a geometric reading of every piece. gacalc's `Frame` keeps the original vectors and the orthogonal
-`w_j`, and computes the coefficients `(w_j · v_i) / |w_j|²` on demand: the same decomposition with the
-lengths factored out, so symbolic results stay free of square roots; see "Why gacalc's `Frame` is stored
-orthogonal, not orthonormal".
+a geometric reading of every piece. gacalc's `Frame` keeps the original vectors and computes the
+orthogonal `w_j` and the coefficients `(w_j · v_i) / |w_j|²` on demand: the same decomposition with the
+lengths factored out, so symbolic results stay free of square roots; see "Why gacalc's `Frame` uses the
+orthogonal set, not the orthonormal one".
 
 ## What "QR" means, plainly
 
@@ -134,9 +134,10 @@ coordinate. Two head-first alternatives were considered and rejected (William Em
 The order-free version is the reciprocal frame: `x_i = vⁱ · y`, each coordinate one dot product (below,
 and `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`).
 
-## Why gacalc's `Frame` is stored orthogonal, not orthonormal
+## Why gacalc's `Frame` uses the orthogonal set, not the orthonormal one
 
-`Frame` (`src/gacalc/frame.py`) stores the original `vectors` and their **orthogonal** set `w_j`.
+`Frame` (`src/gacalc/frame.py`) stores the original `vectors` (a tuple) and computes their
+**orthogonal** set `w_j` on demand (`Frame.orthogonal_vectors()`).
 `Frame.coefficients()` computes `coefficients()[i][j] = (w_j · v_i) / |w_j|²`, so
 `v_i = Σ_j coefficients()[i][j] * w_j`, and `Frame.orthonormal_vectors()` computes
 `u_j = w_j / |w_j|`. Indexed as `coefficients()[original i][orthogonal j]`, the table is zero above its
@@ -146,6 +147,9 @@ moved out of Q: R's entries are `coefficients()[i][j] * |w_j|`.
 The coefficients were stored in `Frame`'s first version, and `__iter__` rebuilt the originals from them.
 Once the inverse became the peel recursion (above), nothing read them, so `Frame` stores the originals
 instead and computes the coefficients on demand (William Emerison Six <billsix@gmail.com>, 2026-11-04).
+The orthogonal set itself was a stored field until 2026-11-09; it is now the method
+`orthogonal_vectors()`, spelled like `orthonormal_vectors()` and `reciprocal_vectors()`, and `Frame`
+takes its vectors as a tuple (`tasks/archive/2026/11/09/frame-derived-orthogonal-set-and-tuple-field.md`).
 
 The code reads each coefficient as a projection: `coordinate_along(v.projected_onto(w), along=w)`
 (`src/gacalc/transforms.py`), "how many copies of `w` the projection of `v` onto `w` is", which raises if

@@ -40,9 +40,9 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `reverse(A_{k-1}) * A_k`, equal to rejection up to the positive scalar `|A_{k-1}|²`), and
   `make_orthogonal_frame_hestenes_inverse` (same closed form with `inverse` for `reverse`, so the
   scalar cancels and it equals rejection **exactly**). See `tasks/define-frame.md`.
-  Also the **`Frame`** dataclass: the original `vectors` (what `iter()` yields) + their
-  orthogonal set `w_j` (orthogonal, not orthonormal, so symbolic 3D stays sqrt-free and
-  decidable); `coefficients()` computes the triangular `(w_j · v_i) / |w_j|²` table (QR with the
+  Also the **`Frame`** dataclass: built from a **tuple** of vectors, stored as `vectors` (what
+  `iter()` yields); `orthogonal_vectors()` computes their orthogonal set `w_j` (orthogonal, not
+  orthonormal, so symbolic 3D stays sqrt-free and decidable); `coefficients()` computes the triangular `(w_j · v_i) / |w_j|²` table (QR with the
   lengths factored out) as projections read with `transforms.coordinate_along`;
   `to_invertible_function(inverse_method="reciprocal" | "peel")` maps `e_i ↦ v_i` and inverts it
   either through the reciprocal frame (`reciprocal_frame`, H&S eq 3.7; the default) or by a `match`

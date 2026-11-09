@@ -26,7 +26,7 @@ works**, the shared recursion guidance states head-first as a strong preference 
   The docstring's "The order is forced" paragraph states the current reasoning.
 - **The math:** `tasks/reference/frames-qr-and-reciprocal-frames.md` ("The peel inverse, step by
   step"; "The relation to Hestenes' reciprocal frame").
-- **The orthogonal set:** `Frame.orthogonal_vectors` is `make_orthogonal_frame(vectors)`, which
+- **The orthogonal set:** `Frame.orthogonal_vectors()` returns `make_orthogonal_frame(vectors)`, which
   keeps the head and rejects it out of everything after it (head-first already).
 - **Recursion guidance to follow:** the `recursive-design.md` reference doc (nil/cons, map over the
   tail; github.com/billsix/runClaudeInContainer `tasks/reference/`).
@@ -47,8 +47,8 @@ starts at the end. The order is a property of how the `w_j` were built, not of o
   `x_1 = (u_1 · y) / |u_1|²`, subtract `x_1 * v_1`, and recurse on the tail: a true head-first
   nil/cons recursion. The set can likely be had from the existing function as
   `reversed(make_orthogonal_frame(reversed(vectors)))`, so nothing new is written. Cost: a second
-  orthogonalization when the map is built (`Frame` stores only the head-first `w_j`; decide whether to
-  compute it in `to_invertible_function` or store it on `Frame`).
+  orthogonalization when the map is built (`Frame` computes only the head-first `w_j`, on demand;
+  decide whether to compute the second set in `to_invertible_function` or add a method for it).
 - **(B) Use the reciprocal frame, and drop the recursion.** With the reciprocal vectors `vⁱ`
   (`vⁱ · v_j = δⁱ_j`), each coordinate is independent: `x_i = vⁱ · y`. The inverse becomes a plain
   **map** over the frame, which `recursive-design.md` ranks above any hand-written recursion. This is
@@ -89,8 +89,9 @@ starts at the end. The order is a property of how the `w_j` were built, not of o
    (`to_invertible_function(inverse_method="reciprocal" | "peel")`). What remains here is only whether the
    `"peel"` method should be rewritten head-first, as (A).
 2. **Under (A), where does the second orthogonal set live?** Computed inside `to_invertible_function`
-   (no new public surface), or stored on `Frame` beside `orthogonal_vectors` (visible, costs every
-   `Frame` an extra orthogonalization)? Recommended: compute it inside `to_invertible_function`.
+   (no new public surface), or a second method on `Frame` beside `orthogonal_vectors()` (visible;
+   `Frame` stores neither set, so neither costs anything until it is called)? Recommended: compute
+   it inside `to_invertible_function`.
 3. ~~Keep the current tail-first peel as a documented alternative?~~ **Answered (same request): yes, as
    `inverse_method="peel"`, overruling the original recommendation.** The original text: gacalc keeps parallel
    formulations side by side for teaching (the three orthogonalizations). Recommended: no; replace it,

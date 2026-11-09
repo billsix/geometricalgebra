@@ -54,17 +54,17 @@ from gacalc.g2 import G, Vector, e_1, e_2
 # ## A frame and its orthogonal set
 #
 # Two vectors that are neither perpendicular nor of unit length. `Frame` keeps them
-# as they are and builds the orthogonal set beside them: $w_1 = v_1$, and $w_2$ is
-# $v_2$ with its part along $v_1$ rejected. The unit vectors $u_i = w_i / |w_i|$
-# (purple, short) are the orthonormal set.
+# as they are, and `orthogonal_vectors()` computes the orthogonal set from them:
+# $w_1 = v_1$, and $w_2$ is $v_2$ with its part along $v_1$ rejected. The unit
+# vectors $u_i = w_i / |w_i|$ (purple, short) are the orthonormal set.
 
 # %%
 v_1: Vector = 2 * e_1 + 1 * e_2
 v_2: Vector = 1 * e_1 + 2 * e_2
-frame: Frame = Frame([v_1, v_2])
+frame: Frame = Frame((v_1, v_2))
 w_1: MultiVectorBase
 w_2: MultiVectorBase
-w_1, w_2 = frame.orthogonal_vectors
+w_1, w_2 = frame.orthogonal_vectors()
 u_1: MultiVectorBase
 u_2: MultiVectorBase
 u_1, u_2 = frame.orthonormal_vectors()
@@ -216,7 +216,7 @@ fig_forward
 # $R = Q^{-1} \circ f$.
 
 # %%
-Q: InvertibleFunction[MultiVectorBase] = Frame([u_1, u_2]).to_invertible_function()
+Q: InvertibleFunction[MultiVectorBase] = Frame((u_1, u_2)).to_invertible_function()
 R: InvertibleFunction[MultiVectorBase] = inverse(Q) @ f
 Q_matrix: sympy.Matrix = sympy.Matrix(Q.to_matrix(G, n=2, backend="sympy"))[:2, :2]
 R_matrix: sympy.Matrix = sympy.Matrix(R.to_matrix(G, n=2, backend="sympy"))[
@@ -292,10 +292,10 @@ fig_qr
 # %%
 a_1: Vector = 2 * e_1 + 0 * e_2
 a_2: Vector = 1 * e_1 + 3 * e_2
-peel_frame: Frame = Frame([a_1, a_2])
+peel_frame: Frame = Frame((a_1, a_2))
 b_1: MultiVectorBase
 b_2: MultiVectorBase
-b_1, b_2 = peel_frame.orthogonal_vectors
+b_1, b_2 = peel_frame.orthogonal_vectors()
 y: Vector = 3 * e_1 + 3 * e_2
 g: InvertibleFunction[MultiVectorBase] = peel_frame.to_invertible_function()
 (b_1, b_2), b_1.dot(a_2).scalar_part()

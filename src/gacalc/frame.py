@@ -481,13 +481,11 @@ def _has_float(vectors: Sequence[MultiVectorBase]) -> bool:
 class Frame:
     """A frame ``v_1 … v_k`` (H&S p. 27), held together with its **orthogonal** set.
 
-    The constructor takes the frame's vectors and keeps two things:
-
-    - ``vectors`` -- the original ``v_1 … v_k``, as a tuple.  Iterating a ``Frame``
-      (``iter(frame)``, ``list(frame)``) yields them.
-    - ``orthogonal_vectors`` -- ``w_1 … w_k``, the frame orthogonalized by rejection
-      (:func:`make_orthogonal_frame`): each ``w_i`` is ``v_i`` with the span of the
-      earlier vectors rejected out of it.
+    The constructor takes the frame's vectors as a tuple, ``vectors`` (the original
+    ``v_1 … v_k``); iterating a ``Frame`` (``iter(frame)``, ``list(frame)``) yields
+    them.  :meth:`orthogonal_vectors` computes ``w_1 … w_k``, the frame
+    orthogonalized by rejection (:func:`make_orthogonal_frame`): each ``w_i`` is
+    ``v_i`` with the span of the earlier vectors rejected out of it.
 
     :meth:`coefficients` gives the table that rebuilds each ``v_i`` from the
     ``w_j``, ``coefficients()[i][j] = (w_j · v_i) / |w_j|²`` with
@@ -498,18 +496,18 @@ class Frame:
     This is the **QR decomposition** of the matrix whose columns are the ``v_i``,
     with the lengths factored out of ``Q``: the orthonormal ``u_j = w_j / |w_j|``
     are ``Q``'s columns (:meth:`orthonormal_vectors`), and ``R``'s entries are
-    ``coefficients()[i][j] * |w_j|``.  The orthogonal set is kept rather than the
-    orthonormal one because normalizing introduces a square root of every
-    ``|w_j|²``; dividing by ``|w_j|²`` instead keeps every value a rational function
-    of the inputs, which sympy can verify exactly in 3D (see
+    ``coefficients()[i][j] * |w_j|``.  The frame works from the orthogonal set
+    rather than the orthonormal one because normalizing introduces a square root
+    of every ``|w_j|²``; dividing by ``|w_j|²`` instead keeps every value a rational
+    function of the inputs, which sympy can verify exactly in 3D (see
     ``tasks/reference/frames-qr-and-reciprocal-frames.md``, "Why gacalc's ``Frame``
-    is stored orthogonal, not orthonormal").  Float input is subject to the usual
-    Gram–Schmidt rounding.
+    uses the orthogonal set, not the orthonormal one").  Float input is subject to
+    the usual Gram–Schmidt rounding.
 
     Examples:
         >>> from gacalc.gn import e_1, e_2
-        >>> frame = Frame([2 * e_1, 1 * e_1 + 3 * e_2])
-        >>> frame.orthogonal_vectors == (2 * e_1, 3 * e_2)
+        >>> frame = Frame((2 * e_1, 1 * e_1 + 3 * e_2))
+        >>> frame.orthogonal_vectors() == (2 * e_1, 3 * e_2)
         True
         >>> frame.coefficients()
         ((1, 0), (1/2, 1))
@@ -517,22 +515,21 @@ class Frame:
         True
 
     Raises:
+        TypeError: if ``vectors`` is not a tuple (a list could still be changed
+            through the caller's reference after the frame is built).
         ValueError: if the vectors are not a frame (linearly dependent, empty, or
             containing a non-vector).
     """
 
-    vectors: Sequence[MultiVectorBase]
-    orthogonal_vectors: tuple[MultiVectorBase, ...] = dataclasses.field(init=False)
+    vectors: tuple[MultiVectorBase, ...]
 
     def __post_init__(self) -> None:
-        # make_orthogonal_frame raises ValueError on a non-frame.
-        orthogonal_vectors: tuple[MultiVectorBase, ...] = tuple(
-            make_orthogonal_frame(self.vectors)
-        )
-        # A frozen dataclass sets its fields through object.__setattr__; the
-        # vectors are stored as a tuple whatever sequence was passed.
-        object.__setattr__(self, "vectors", tuple(self.vectors))
-        object.__setattr__(self, "orthogonal_vectors", orthogonal_vectors)
+        if not isinstance(self.vectors, tuple):
+            raise TypeError(
+                "Frame takes its vectors as a tuple; "
+                f"got {type(self.vectors).__name__}"
+            )
+        require_frame(self.vectors, "Frame")
 
     def __iter__(self) -> Iterator[MultiVectorBase]:
         """The original frame vectors ``v_1 … v_k``.
@@ -546,6 +543,18 @@ class Frame:
         """The number of vectors ``k`` in the frame."""
         return len(self.vectors)
 
+    def orthogonal_vectors(self) -> tuple[MultiVectorBase, ...]:
+        """The orthogonal set ``w_1 … w_k``: the frame orthogonalized by rejection.
+
+        Computed on demand by :func:`make_orthogonal_frame`; each ``w_i`` is ``v_i``
+        with the span of ``v_1 … v_{i-1}`` rejected out of it, so ``w_1 = v_1``.
+
+        Returns:
+            tuple[MultiVectorBase, ...]: ``w_1 … w_k``, mutually orthogonal, in frame
+            order.
+        """
+        return tuple(make_orthogonal_frame(self.vectors))
+
     def coefficients(self) -> tuple[tuple[Real, ...], ...]:
         """The table rebuilding each ``v_i`` from the orthogonal set -- ``R`` of QR,
         with the lengths factored out.
@@ -558,6 +567,8 @@ class Frame:
             tuple[tuple[Real, ...], ...]: one row per original vector, one entry per
             orthogonal vector.
         """
+        # Computed once, not once per row.
+        orthogonal_vectors: tuple[MultiVectorBase, ...] = self.orthogonal_vectors()
         return tuple(
             tuple(
                 coordinate_along(
@@ -565,7 +576,7 @@ class Frame:
                     along=w,
                     float_close_to_zero=_has_float((v, w)),
                 )
-                for w in self.orthogonal_vectors
+                for w in orthogonal_vectors
             )
             for v in self.vectors
         )
@@ -573,14 +584,14 @@ class Frame:
     def orthonormal_vectors(self) -> tuple[MultiVectorBase, ...]:
         """The orthonormal set ``u_j = w_j / |w_j|`` -- the columns of ``Q`` in QR.
 
-        Computed on demand (it introduces square roots); the frame itself stores the
-        orthogonal ``w_j``.
+        Computed on demand from :meth:`orthogonal_vectors`; normalizing introduces
+        square roots, which the frame's other computations avoid.
 
         Returns:
             tuple[MultiVectorBase, ...]: ``u_1 … u_k``, unit length and mutually
             orthogonal.
         """
-        return tuple(w.normalize() for w in self.orthogonal_vectors)
+        return tuple(w.normalize() for w in self.orthogonal_vectors())
 
     def reciprocal_vectors(self) -> tuple[MultiVectorBase, ...]:
         """The reciprocal frame ``v¹ … vᵏ`` (H&S p. 28): ``vⁱ · v_j = δⁱ_j``.
@@ -623,7 +634,8 @@ class Frame:
         reciprocal vectors are computed once, when the map is built.
 
         ``inverse_method="peel"`` **peels the frame from its last vector**, using the
-        stored orthogonal set.  Each step:
+        orthogonal set (:meth:`orthogonal_vectors`, computed once, when the map is
+        built).  Each step:
 
         1. **Read the last coordinate.**  ``w_k`` is ``v_k`` with the span of
            ``v_1 … v_{k-1}`` rejected out of it, so it is perpendicular to every
@@ -685,12 +697,12 @@ class Frame:
 
         Examples:
             >>> from gacalc.gn import e_1, e_2
-            >>> f = Frame([2 * e_1, 1 * e_1 + 3 * e_2]).to_invertible_function()
+            >>> f = Frame((2 * e_1, 1 * e_1 + 3 * e_2)).to_invertible_function()
             >>> f(1 * e_1 + 1 * e_2) == 3 * e_1 + 3 * e_2
             True
             >>> f.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
             True
-            >>> g = Frame([2 * e_1, 1 * e_1 + 3 * e_2]).to_invertible_function(
+            >>> g = Frame((2 * e_1, 1 * e_1 + 3 * e_2)).to_invertible_function(
             ...     inverse_method="peel"
             ... )
             >>> g.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
@@ -780,18 +792,17 @@ class Frame:
 
             MultiVectorBase.require_vector(y, "a frame's map")
             cls: type[MultiVectorBase] = type(y)
-            # basis_vector numbers the basis from 1, hence enumerate(start=1).  The
-            # tuple(zip(...)) argument to peel is the pairs: each orthogonal vector
-            # with the frame vector it came from, (w_i, v_i), in frame order; peel
-            # consumes them from the end.
+            # orthogonal_vectors is bound in the match below, which runs before this
+            # can be called.  basis_vector numbers the basis from 1, hence
+            # enumerate(start=1).  The tuple(zip(...)) argument to peel is the
+            # pairs: each orthogonal vector with the frame vector it came from,
+            # (w_i, v_i), in frame order; peel consumes them from the end.
             return sum(
                 (
                     x_i * cls.basis_vector(i)
                     for i, x_i in enumerate(
                         peel(
-                            tuple(
-                                zip(self.orthogonal_vectors, self.vectors, strict=True)
-                            ),
+                            tuple(zip(orthogonal_vectors, self.vectors, strict=True)),
                             y,
                         ),
                         start=1,
@@ -809,6 +820,10 @@ class Frame:
                 )
                 backward = backward_by_reciprocal
             case "peel":
+                # Built once, here, so each call to the inverse reuses it.
+                orthogonal_vectors: tuple[MultiVectorBase, ...] = (
+                    self.orthogonal_vectors()
+                )
                 backward = backward_by_peel
             case _:
                 raise ValueError(
