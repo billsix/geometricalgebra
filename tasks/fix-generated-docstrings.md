@@ -1,41 +1,31 @@
 # Fix the generated docstrings that state the math wrongly
 
-**Status:** proposed — needs go-ahead (approved in session 2026-11-09; in progress)
-**Priority:** 3
-**Difficulty:** 3
-**Created:** 2026-11-09
+**Created:** 2026-11-09 · **Completed:** 2026-11-09
 **Source:** `tasks/review/2026/11/08/repo-review.md` §5.3
 
-## BLUF
+## What was wrong, and what changed
 
-Several docstrings that `tools/gen_specialized.py` emits into g1–g5 contradict what the methods do.
-Done means each says what the method returns, the math follows `CLAUDE.md`'s notation rules, the
-generator stays deterministic, and the doctests pass.
+Each claim was checked against the method on 2026-11-09 before the text was changed; all edits are in
+`tools/gen_specialized.py`.
 
-## Context
+- **`scalar|right_contraction`** said "x ⌊ s … the operand scaled". The method is `s ⌊ x`
+  (`Scalar(2).right_contraction(e_1) == 0`, `Scalar(2).right_contraction(Scalar(3)) == 6`). It now
+  says: grade `0 − |x|`, so scalar multiplication for a scalar `x`, and 0 otherwise.
+- **`bivector|right_contraction`** said "grade |C|−|B|". It is |B|−|C| (`e₁₂ ⌊ e₁ = −e₂`).
+- **The `scalar|dual` builder (`_scalar_dual_doc`)** said "the scalar times the pseudoscalar". It is
+  `s * i⁻¹`; its own example, `Scalar(1).dual() == -1 * Bivector.e_12`, shows that.
+- **`versor|sandwich`**'s Returns said `R * x * R̃`. It now says `R * x * R⁻¹`, matching the summary
+  and correct for a non-unit versor.
+- **`PLANE_DOC` and `I_DOC`** said the rotor `cos(t/2) − sin(t/2) * i` returns `i`. It returns `−i`
+  (measured: `Versor(cos 0.5 − sin 0.5 * e₁₂).i() == −e₁₂`). Both now state the convention,
+  `R = r * (cos(θ) + I * sin(θ))` returns `I`, and give the `−i` case. This also matches `CLAUDE.md`'s
+  Operators line.
+- **Notation** (`CLAUDE.md` › "Math notation for readers"): `R R̃ = 1` → `R * R̃ = 1`; `a b = a·b + a∧b`
+  → `a * b = …` (two docstrings); `(a ∧ b) I₃⁻¹` → `(a ∧ b) * I₃⁻¹`.
 
-Each was checked by running it (review §5.3), and re-checked on 2026-11-09:
+## Verification
 
-- **`scalar|right_contraction`** says "x ⌊ s … the operand scaled". The method computes `s ⌊ x`,
-  which is 0 for a vector and `s * x` for a scalar.
-- **`bivector|right_contraction`** says "grade |C|−|B|". `B ⌊ C` has grade |B|−|C|
-  (`e₁₂ ⌊ e₁ = −e₂`).
-- **`scalar|dual`** says "the scalar times the pseudoscalar". It is `s * i⁻¹`
-  (`Scalar(1).dual() == −e₁₂` in 𝒢₂).
-- **`versor|sandwich`** has `R * x * R⁻¹` in the summary and `R * x * R̃` under Returns. For a
-  non-unit versor only the first is right.
-- **`I_DOC`/`PLANE_DOC`** say a versor `cos(t/2) − sin(t/2) * i` returns `i`. It returns `−i`: the
-  plane `I` of `R = r * (cos(θ) + I * sin(θ))`.
-- **Juxtaposition:** `a b = a·b + a∧b`, `R R̃ = 1`, `(a ∧ b) I₃⁻¹`.
-
-`tasks/reference/generated-docstrings.md` describes the `CUSTOM_METHOD_DOCS` machinery.
-
-## Plan
-
-- [ ] Correct each text in the generator. Regenerate g1–g3.
-- [ ] Gate: the doctests in `--doctest-modules`; determinism (regenerate twice, `cmp`);
-  `tools/check_doc_regions.py`; `ty` with the generated modules.
-
-## Open questions
-
-None.
+- Regenerated g1–g3 twice: `cmp` identical.
+- `tools/check_doc_regions.py`: OK.
+- The generated modules' doctests (`--doctest-modules` on g1–g3): 170 passed.
+- `ty check --no-respect-ignore-files src`: clean. `ruff`: clean.

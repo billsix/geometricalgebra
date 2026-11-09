@@ -465,9 +465,10 @@ def scalar_doc(n: int) -> str:
 PLANE_DOC: str = (
     "The unit bivector (2-blade) this versor rotates in.\n"
     "\n"
-    "        A rotor is ``cos(t/2) - sin(t/2) * B`` for a unit bivector B --\n"
-    "        the oriented plane of rotation.  This returns B, the normalized\n"
-    "        bivector part.  In 2D that 2-blade is also the pseudoscalar; in 3D\n"
+    "        A versor is ``r * (cos(θ) + I * sin(θ))`` for a unit bivector I --\n"
+    "        the oriented plane of rotation.  This returns I, the normalized\n"
+    "        bivector part; for the rotor ``cos(t/2) - sin(t/2) * B`` that is\n"
+    "        ``-B``.  In 2D that 2-blade is also the pseudoscalar; in 3D\n"
     "        it is a bivector plane, not the trivector.  Undefined for the\n"
     "        identity rotor (no rotation)."
 )
@@ -740,10 +741,10 @@ def _scalar_dual_doc(role: str, n: int) -> str:
     kind: str = {1: "vector", 2: "bivector", 3: "trivector"}[n]
     return (
         f"Dual  s* = s / i  in 𝒢{_subscript(n)}: a scalar duals to the top-grade\n"
-        f"blade (the {kind}), i.e. the scalar times the pseudoscalar.\n"
+        f"blade (the {kind}), i.e. the scalar times the inverse pseudoscalar, s * i⁻¹.\n"
         "\n"
         "Returns:\n"
-        f"    the top-grade blade (the {kind}): the scalar times the pseudoscalar.\n"
+        f"    the top-grade blade (the {kind}): the scalar times the inverse pseudoscalar.\n"
         "\n"
         "Example:\n"
         f"    >>> Scalar.from_real(1).dual() == {top}\n"
@@ -823,7 +824,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
     ),
     "versor|reverse": (
         "Reverse  R̃  of a versor keeps the scalar part and negates the bivector\n"
-        "part.  For a rotor (a unit versor)  R̃  is its inverse, so  R R̃ = 1  -- reversing a\n"
+        "part.  For a rotor (a unit versor)  R̃  is its inverse, so  R * R̃ = 1  -- reversing a\n"
         "rotor undoes its rotation.\n"
         "\n"
         "Returns:\n"
@@ -943,13 +944,13 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    True"
     ),
     "bivector|right_contraction": (
-        "Right contraction  B ⌊ C  (the ``>`` operator); grade |C|−|B|.\n"
+        "Right contraction  B ⌊ C  (the ``>`` operator); grade |B|−|C|.\n"
         "\n"
         "Args:\n"
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the right contraction (grade |C|−|B|)."
+        "    the right contraction (grade |B|−|C|)."
     ),
     "bivector|outer_product": (
         "Outer (wedge) product.  A bivector wedged with another bivector is 0 --\n"
@@ -1266,13 +1267,15 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the operand scaled by this scalar."
     ),
     "scalar|right_contraction": (
-        "Right contraction  x ⌊ s  -- plain scalar multiplication.\n"
+        "Right contraction  s ⌊ x  (the ``>`` operator, this scalar on the left) -- grade\n"
+        "0 − |x|, so it is plain scalar multiplication when x is a scalar and 0 for any\n"
+        "higher grade.\n"
         "\n"
         "Args:\n"
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the operand scaled by this scalar."
+        "    this scalar times ``rhs`` when ``rhs`` is a scalar; otherwise 0."
     ),
     "scalar|dual": _scalar_dual_doc,
     "scalar|even_part": (
@@ -1434,7 +1437,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    True"
     ),
     "vector|__mul__": (
-        "Geometric product of two vectors  a b = a·b + a∧b  -- a scalar (their\n"
+        "Geometric product of two vectors  a * b = a·b + a∧b  -- a scalar (their\n"
         "dot) plus a bivector (their wedge).  A unit vector squares to 1.\n"
         "\n"
         "Args:\n"
@@ -1449,7 +1452,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    True"
     ),
     "vector|_geometric_product": (
-        "The geometric-product primitive (use ``*``):  a b = a·b + a∧b.\n"
+        "The geometric-product primitive (use ``*``):  a * b = a·b + a∧b.\n"
         "\n"
         "Args:\n"
         "    rhs: the right operand.\n"
@@ -1613,7 +1616,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Versor: the unit rotor taking ``from_vector`` toward ``to_vector``."
     ),
     "vector|cross": (
-        "Cross product (𝒢₃ only)  a × b = (a ∧ b) I₃⁻¹ -- the vector dual of the\n"
+        "Cross product (𝒢₃ only)  a × b = (a ∧ b) * I₃⁻¹ -- the vector dual of the\n"
         "wedge, right-handed:  e₁ × e₂ = e₃.\n"
         "\n"
         "Args:\n"
@@ -2095,7 +2098,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    x: the value to rotate; the result has ``x``'s own type.\n"
         "\n"
         "Returns:\n"
-        "    the rotated value  R * x * R̃, of ``x``'s own type.\n"
+        "    the rotated value  R * x * R⁻¹, of ``x``'s own type.\n"
         "\n"
         "Example:\n"
         "    >>> Versor.from_real(1).sandwich(1 * Vector.e_1) == 1 * Vector.e_1\n"
@@ -2898,7 +2901,8 @@ I_DOC: str = (
     "The unit bivector ``i`` of this value's plane (``i * i == -1``).\n"
     "\n"
     "        The normalized grade-2 (plane) part -- for a versor\n"
-    "        ``cos(t/2) - sin(t/2) * i`` this returns ``i``; for a bivector it is\n"
+    "        ``r * (cos(θ) + I * sin(θ))`` this returns ``I`` (so for the rotor\n"
+    "        ``cos(t/2) - sin(t/2) * i`` it is ``-i``); for a bivector it is\n"
     "        the bivector normalized.  A bivector, never a versor.  Undefined\n"
     "        (raises) for a zero bivector part."
 )
