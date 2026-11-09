@@ -1,67 +1,38 @@
 # Unit tests: transforms are representation-preserving (type round-trip)
 
-**Status:** complete
-**Completed:** 2026-06-06
-**Started:** 2026-06-04
+**Created:** 2026-06-04 · **Completed:** 2026-06-06
 
-> **Completion note (2026-06-06).** Added **`tests/test_transforms.py`** (new file — transforms are
-> functions, not methods on the parametrized classes; reused the `[Gn, G1, G2, G3]` representation
-> approach). 23 tests, suite now 164. `ty check tests` + `ruff` clean. Covers:
-> - **Type round-trip** — dimension-general transforms (`translate`/`uniform_scale`/`scale_non_uniform`/
->   `identity`/`compose`) preserve type on Gn/G1/G2/G3; planar transforms (`rotate`/`rotate_90_degrees`/
->   `rotate_around`/`scale_non_uniform_2d`) preserve type on Gn/G2/G3.
-> - **Known values** — `rotate_90_degrees`/`rotate(pi/2)`: `3e₁+4e₂ → −4e₁+3e₂`; `scale_non_uniform_2d(2,3)`
->   of `e₁+e₂ → 2e₁+3e₂`; `uniform_scale(2)`; `basis_vector(i)` is the i-th unit. (`is_close`, float-tolerant.)
-> - **n-D scale** — `scale_non_uniform(2,3,4)` on a 3-vector (Gn/G3) scales each axis, stays the type.
-> - **Invertibility** — `inverse(fn)(fn(v)) == v` for scale/translate/compose.
-> - **Error paths** — the *inverse* of `uniform_scale(0)` / `scale_non_uniform(…,0,…)` raises (the
->   forward of a zero scale is valid; only the inverse is undefined).
->
-> Resolved open questions: **new `test_transforms.py`** (not folded into conformance); **G1 included
-> for dimension-general only** (skipped planar rotations / 2-D scale for 1-D). Value tests for the
-> *planar* transforms use purely-e₁e₂ vectors (the #3 hazard — a G3/Gn vector with an e₃ part — is
-> what `clarify-2d-only-transforms` guards next).
+The representation-preserving transform layer in `geometricalgebra.transforms` had only been checked
+with a throwaway smoke script during
+`tasks/archive/2026/06/05/investigate-how-to-extract-translate-etc.md`; this task added the committed
+tests owed by that task.
 
-## Goal
+## Decisions
 
-Add committed tests asserting the transform layer in `geometricalgebra.transforms` is
-representation-preserving: a `G1`/`G2`/`G3`/`Gn` value in yields the **same concrete type** out, with
-correct values. This was verified manually with a throwaway smoke script during the
-`investigate-how-to-extract-translate-etc` work, but no tests were committed — this task owes that
-coverage. (Tracks the leftover "add unit tests" TODO from that task.)
+- **A new `tests/test_transforms.py`**, not an extension of `tests/test_conformance.py`: transforms
+  are functions, not methods on the parametrized classes. It reuses the `[Gn, G1, G2, G3]`
+  representation list.
+- **`G1` is included for the dimension-general transforms only**; the planar rotations and the 2-D
+  scale skip it.
+- Value tests for the planar transforms use purely e₁e₂ vectors. Rotations were intentionally 2D,
+  so no 3D rotation semantics were asserted; the hazard of a `G3`/`Gn` vector with an e₃ part was
+  left to `tasks/archive/2026/06/06/clarify-2d-only-transforms.md`, which then removed the planar
+  transforms (and their cases in this file).
+- Comparisons use `is_close` (float-tolerant, simplify-aware), as the lazy-simplify classes require.
 
-## Plan
+## What was tested (23 tests)
 
-- [ ] Decide home + style: a new `tests/test_transforms.py`, or extend `tests/test_conformance.py`
-      (which already parametrizes over `[Gn, G1, G2, G3]` and is the natural fixture for "same in,
-      same out").
-- [ ] **Type round-trip** — for each representation, assert `type(fn(v)) is type(v)` for:
-      `translate(b)` (with `b` of the same type), `uniform_scale(m)`, `scale_non_uniform(*factors)`,
-      `scale_non_uniform_2d`, `rotate(angle)`, `rotate_90_degrees()`, `rotate_around(angle, center)`,
-      `identity()`, and `compose([...])` of a few. (Rotations are 2D — test on `G2`/`Gn`; for `G3`
-      restrict to the planar interpretation or just the non-rotation transforms per the 2D scope.)
-- [ ] **Value correctness** — spot-check known results, e.g. `rotate(pi/2)` of `3e₁+4e₂` → `−4e₁+3e₂`;
-      `scale_non_uniform(2,3)` of `e₁+e₂` → `2e₁+3e₂`; `uniform_scale(2)` of `v` → `2v`;
-      `inverse(fn)(fn(v)) == v`. Use `is_close` / simplify-aware comparison for the specialized
-      classes (per the lazy-simplify policy).
-- [ ] **Invertibility / error paths** — `uniform_scale(0)` and `scale_non_uniform(…, 0, …)` raise;
-      `inverse(compose([...]))` round-trips.
-- [ ] **`n-D scale`** — `scale_non_uniform(2,3,4)` on a `G3`/`Gn` 3-vector scales each axis; confirm
-      it stays the input type.
-- [ ] **`basis_vector`** — quick test that `cls.basis_vector(i)` is the i-th unit vector for each rep.
-- [ ] Run `python -m pytest -q` (expect the count to rise from 118) and keep `ty check tests` clean.
+- **Type round-trip:** `translate`/`uniform_scale`/`scale_non_uniform`/`identity`/`compose` preserve
+  type on Gn/G1/G2/G3; `rotate`/`rotate_90_degrees`/`rotate_around`/`scale_non_uniform_2d` on
+  Gn/G2/G3.
+- **Known values:** `rotate_90_degrees` and `rotate(pi/2)` take `3e₁+4e₂` to `−4e₁+3e₂`;
+  `scale_non_uniform_2d(2,3)` takes `e₁+e₂` to `2e₁+3e₂`; `uniform_scale(2)`; `basis_vector(i)` is the
+  i-th unit vector.
+- **n-D scale:** `scale_non_uniform(2,3,4)` on a 3-vector (Gn/G3) scales each axis and keeps the type.
+- **Invertibility:** `inverse(fn)(fn(v)) == v` for scale, translate and compose.
+- **Error paths:** the *inverse* of `uniform_scale(0)` / `scale_non_uniform(…, 0, …)` raises. A zero
+  scale is a valid forward map; only its inverse is undefined.
 
-## Notes / decisions
+## Verification
 
-- Specialized classes don't eagerly simplify, so equality/`is_close` must be simplify-aware — follow
-  the existing pattern in `tests/test_conformance.py`.
-- Rotations are intentionally 2D (planar e₁e₂); don't assert 3D rotation semantics here (a general
-  vector→vector rotate is a separate future task).
-
-## Open questions
-
-- New `test_transforms.py` vs. fold into `test_conformance.py`? (Leaning: new file for the transform
-  layer, since transforms are functions, not methods on the parametrized classes — but reuse the
-  representation list.)
-- Include `G1` (1D) in the round-trip checks where it makes sense (translate/uniform_scale), skipping
-  the planar rotations and 2-D scale?
+Suite 164; `ty check tests` and `ruff` clean.

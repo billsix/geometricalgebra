@@ -1,6 +1,6 @@
 # project: narrow to the operand's grade/type (was widening to G_n)
 
-Status: **DONE 2026-06-12** (Bill spotted it) · no prior task doc — recorded here.
+**Completed:** 2026-06-12 (the maintainer spotted it; there was no prior task doc, so it was recorded here).
 
 ## Symptom
 
@@ -48,7 +48,7 @@ Full suite (219) + ty + ruff green.
 
 ## Related
 
-- The widening was the odd-`{1,3}` gap (`tasks/model-odd-graded-type.md`) showing
+- The widening was the odd-`{1,3}` gap (`tasks/archive/2026/09/05/model-odd-graded-type.md`) showing
   up in `project`; this fixes `project` specifically (grade-preserving narrowing),
   independent of whether that odd type is ever modeled.
 - `reject` (`(A∧B)B⁻¹`) is also grade-preserving but still only implemented for

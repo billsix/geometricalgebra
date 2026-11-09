@@ -1,109 +1,58 @@
 # Port the InvertibleFunction animation layer from mvp into gacalc
 
-**Status:** complete
 **Completed:** 2026-06-08
-(Code landed in gacalc and **consumed by mvp** — the rebuilt rotations carry their
-interpolation laws via `interpolate=`, driving `at()`/`steps()`; confirmed working
-on mvp 2026-06-08. Only the formal PyPI wheel release remains — Bill's separate step.)
-
-**Landed:** `interpolate`/`components` fields + `at()`/`steps()` methods on
-`InvertibleFunction`, factories attach laws, `compose` stores `components`,
-`inverse` commutes with `at` — all **in `transforms.py`** (module-shape decided:
-on the class, replicating mvp, *not* a separate module). Tests in
-`tests/test_transforms.py` (ported mvp interpolation suite + new). `ty`/`ruff`
-clean, full suite green (200). **Also restored** `InvertibleFunction` as
-`Generic[V]` (bound to `AbstractMultiVector`) — it was generic in mvp but gacalc's
-plainer version wasn't; type-preserving ops (`__call__`/`at`/`steps`/`@`/`inverse`/
-`compose`/`translate`/`compose_intermediate_fns`) are parameterized.
 
 ## Background
 
-The `modelviewprojection` (mvp) project is migrating its math onto gacalc (see
-`/mvp/tasks/gacalc-math-migration.md`). mvp's `InvertibleFunction` is a **strict
-superset** of gacalc's: mvp added an *animation layer* — the ability to
-interpolate a transform from identity (`t=0`) to its full effect (`t=1`) and to
-iterate a composite's leaf steps. gacalc's `transforms.InvertibleFunction` is the
-older, plainer `(func, inverse, latex_repr, latex_repr_inv)` with none of this.
+modelviewprojection (mvp) was migrating its math onto gacalc (github.com/billsix/modelviewprojection
+`tasks/archive/2026/07/09/gacalc-math-migration.md`). mvp's `InvertibleFunction` was a strict superset
+of gacalc's plainer `(func, inverse, latex_repr, latex_repr_inv)`: it added an animation layer that
+interpolates a transform from identity (`t=0`) to its full effect (`t=1`) and iterates a composite's
+leaf steps. For mvp to delete its own class and import gacalc's, the layer had to live in gacalc first,
+and mvp depends on gacalc from PyPI (then `0.0.3`), so it also needed a release.
 
-For mvp to delete its own `InvertibleFunction` and import gacalc's, this layer
-must live in gacalc first. Bill wants it in **a new module under `gacalc`** (not
-bolted onto `transforms.py` ad hoc).
+## What landed
 
-**This blocks the mvp migration AND requires a PyPI release** — mvp depends on
-gacalc from PyPI (currently `0.0.3`), so this lands here, gets released (bump,
-e.g. `0.0.4`), and only then can mvp pin `gacalc>=0.0.4`.
+All in `transforms.py`, ported from mvp's `src/modelviewprojection/mathutils.py`:
 
-## What to port (from mvp `src/modelviewprojection/mathutils.py`)
+- Two optional fields on `InvertibleFunction`: `interpolate` (a primitive's law mapping `t∈[0,1]` to
+  the partial function) and `components` (a composite's constituents).
+- `at(t)` with three-tier resolution: use the `interpolate` law; else
+  `compose([c.at(t) for c in components])`; else (hand-built) a step — identity until `t≥1`, then the
+  function itself.
+- `steps()` yields the leaf primitives in application order, flattening nested composites.
+- The factories attach laws: `translate(b)` → `translate(b * t)`; `uniform_scale(m)` → linear `1→m`;
+  `scale_non_uniform(*f)` → per-factor linear `1→fᵢ`; `identity()` → identity.
+- `compose(...)` always stores `components=list(functions)`, without which `at`/`steps` cannot recurse.
+- **`inverse` commutes with `at` at every `t`**, not just the endpoints, so an against-the-arrow edge
+  (world→camera) animates smoothly instead of snapping: `inverse(f).interpolate(t) =
+  inverse(f.interpolate(t))`, and `inverse(f).components = [inverse(c) for c in reversed(...)]` — the
+  inverse-of-a-composition rule applied to the interpolation structure.
+- `InvertibleFunction` became `Generic[V]` again (bound to `AbstractMultiVector`), as it was in mvp;
+  the type-preserving operations (`__call__`, `at`, `steps`, `@`, `inverse`, `compose`, `translate`,
+  `compose_intermediate_fns`) are parameterized.
 
-1. **Two optional fields** on `InvertibleFunction`:
-   - `interpolate: Callable[[float], InvertibleFunction] | None` — a primitive's
-     law mapping `t∈[0,1]` to the partially-applied function.
-   - `components: list[InvertibleFunction] | None` — a composite's constituent
-     functions, so interpolation/iteration can recurse without a stored law.
-2. **`at(t)`** — three-tier resolution:
-   - has an `interpolate` law → use it;
-   - else has `components` → `compose([c.at(t) for c in components])`;
-   - else (hand-built, neither) → a step: identity until `t≥1`, then itself.
-3. **`steps()`** — yield leaf primitives in application order, flattening nested
-   composites (`components is None` → yield self; else recurse).
-4. **Factories attach laws.** The interpolating factories set `interpolate`:
-   - `translate(b)` → `lambda t: translate(b * t)`
-   - `uniform_scale(m)` → `lambda t: uniform_scale(1 + (m-1)*t)` (linear 1→m)
-   - `scale_non_uniform(*f)` → per-factor linear 1→fᵢ
-   - `identity()` → `lambda t: identity()`
-5. **`compose(...)` must store `components=list(functions)`.** gacalc's current
-   `compose` does **not** — without it, `at`/`steps` can't recurse through a
-   composite. This is a change to `transforms.compose`.
-6. **The hard part — `inverse` must commute with `at` at *every* t**, not just the
-   endpoints (so an against-the-arrow composite edge, e.g. world→camera, animates
-   smoothly instead of snapping). Port mvp's logic:
-   - if `f.interpolate` set → `f_inverse.interpolate = lambda t: inverse(f.interpolate(t))`
-   - if `f.components` set → `f_inverse.components = [inverse(c) for c in reversed(f.components)]`
-   This is the inverse-of-a-composition rule applied to the interpolation
-   structure. **Bring mvp's guard test across** verbatim:
-   `inverse(f).at(t)(p) == inverse(f.at(t))(p)` for all `t`, for both a primitive
-   and a 3-deep composite.
+Tests in `tests/test_transforms.py` ported mvp's interpolation suite and added more: `at(0)` is
+identity and `at(1)` the full function; midpoints for translate and scale; invertibility at every `t`;
+composites recurse without a stored law; `steps()` counts leaves and an inverted composite decomposes
+into inverted leaves; the headline guard `inverse(f).at(t)(p) == inverse(f.at(t))(p)` for a primitive
+and a 3-deep composite; against-the-arrow equals the negated parameter
+(`inverse(T.at(t)) == translate(-b*t)`). `ty`/`ruff` were clean and the full suite passed (200).
 
-## Module-shape decision (Bill's call as gacalc's architect)
+mvp consumed it: its rebuilt rotations carry their laws via `interpolate=`, driving `at()`/`steps()`,
+confirmed working on 2026-06-08. The formal PyPI wheel release was left to the maintainer as a separate
+step.
 
-Two viable designs — the instruction is "another module under gacalc":
+## Decisions
 
-- **(A)** Keep the enriched `InvertibleFunction` (with the two optional fields +
-  `at`/`steps`) in `transforms.py` so the factories naturally produce the richer
-  type, and put only thin helpers / re-exports in a new `gacalc/animation.py`.
-  Pro: no circular import; the type is one thing. Con: the feature isn't really
-  "in another module."
-- **(B)** Put the animation-capable `InvertibleFunction` (or a subclass / mixin)
-  *and* interpolating versions of the factories in a new `gacalc/animation.py`;
-  `transforms.py` stays the plain core. Pro: cleanly separated, matches "another
-  module." Con: two flavors of factory, and `compose` storing `components` is
-  needed in both or pushed down to core.
-
-Recommend deciding this before writing — it shapes imports across gacalc and mvp.
-Whatever the choice, the **public import path mvp will use** must be settled (mvp
-will `from gacalc.<module> import InvertibleFunction, translate, compose, …`).
-
-## Tests to bring / write
-
-- `at(0)=identity`, `at(1)=full`, midpoint correctness for translate / scale /
-  (and on the mvp side) rotations.
-- invertibility preserved at every `t` (`inverse(f.at(t))(f.at(t)(p)) == p`).
-- composite recurses (no stored law); `steps()` flattens nested composites and
-  counts leaves; inverted composite decomposes into inverted leaves.
-- **inverse-commutes-with-at** for primitive and composite (the headline guard).
-- against-arrow == negated-param for a primitive (`inverse(T.at(t)) == translate(-b*t)`).
-- doctest the new module (gacalc runs `--doctest-modules`).
-
-## Open questions
-
-- Module shape: (A) vs (B) above.
-- Naming of the new module (`animation.py`? `interpolation.py`?).
-- Should `compose` *always* store `components` (tiny memory cost, simplest), or
-  only when animation is in play? Leaning always.
-- Coordinate with the linearity-tag work (`tasks/classify-functions-linear-affine-nonlinear.md`)
-  and the matrix work (`tasks/invertiblefunction-to-matrix.md`) — all three touch
-  the same `InvertibleFunction` / `compose` surface; ideally land their field
-  additions together to avoid churning the dataclass three times.
-- Release: confirm the version bump + that mvp's pin matches the released number.
-```
-```
+- **Module shape: on the class in `transforms.py`, replicating mvp — not a separate module.** The
+  maintainer had first asked for a new module under `gacalc`. Two designs were weighed: (A) the enriched
+  class in `transforms.py`, so the factories naturally produce it, with no circular import and one type;
+  (B) an animation-capable class and interpolating factories in a new `gacalc/animation.py`, cleanly
+  separated but with two flavours of every factory. The maintainer decided on the class, keeping one
+  type and one import path for mvp.
+- `compose` stores `components` always (tiny memory cost, simplest), not only when animation is used.
+- The field additions were coordinated with the linearity tag
+  (`tasks/archive/2026/06/08/classify-functions-linear-affine-nonlinear.md`) and the matrix work
+  (`tasks/archive/2026/06/08/invertiblefunction-to-matrix.md`), which touch the same
+  `InvertibleFunction` / `compose` surface.

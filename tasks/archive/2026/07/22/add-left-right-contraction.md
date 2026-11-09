@@ -1,110 +1,65 @@
 # Add left & right contraction (named methods + `<` / `>` operators)
 
-**Status:** complete
-**Completed:** 2026-07-22
-Created 2026-07-22. Promotes Finding 2A of `tasks/reference/galgebra-comparison.md` (the single
-biggest *operation* gap). Domain detail lives in `tasks/reference/contraction-and-dot-definitions.md`.
-All gates green (295 tests incl. 8 new contraction tests, `ty` src/tests/tools clean, ruff clean,
-`check-regions` clean, deterministic; generated-vs-`Gn` parity verified over 200 random cases).
+**Created:** 2026-07-22 · **Completed:** 2026-07-22
 
-## Outcome (what shipped)
+Promoted Finding 2A of `tasks/reference/galgebra-comparison.md` (the single biggest *operation*
+gap). Domain detail lives in `tasks/reference/contraction-and-dot-definitions.md`. All gates green
+(295 tests incl. 8 new contraction tests, `ty` src/tests/tools clean, ruff clean, `check-regions`
+clean, deterministic; generated-vs-`Gn` parity verified over 200 random cases).
 
-- **`base.py`** — `left_contraction`/`right_contraction` (bilinear sum, grade `m−k` / `k−m` via
-  `r_vector_part`, **no grade-0 filter**), and `__lt__`/`__gt__` delegating to them. Docstrings cite
-  Taylor 2021 p.103 + galgebra and carry the grade-0 caveat + pointer to the investigation. (No
-  `cast` needed — the `r_vector_part` chain already types as `Self`, so `return sum(...)` directly.)
-- **Generator (per Bill: "add these to the generators too")** — the full class `G_n` gets
-  `bilinear` closed forms for both; the graded types get the **same `product_overload_stubs` +
-  `dispatch_method` treatment as `inner_product`/`outer_product`** (precise per-rhs overloads, fast
-  closed-form dispatch), plus `__lt__`/`__gt__` operators overloaded and delegating (mirroring
-  `__xor__`). So `Vector2.left_contraction(Bivector2) -> Vector2`, `Vector2 < Vector2 -> Scalar`,
-  etc., are precise for `ty`.
-- **Tests** — `test_conformance.py::test_left_right_contraction` (parity over `[Gn,G1,G2,G3]`,
-  methods + operators); `test_operator_typing.py` static `assert_type` + runtime known-value tests.
-- **Docs** — `README` + `CLAUDE.md` operator lists (`<` / `>`); `galgebra-comparison.md` Finding 2A
-  marked done; `contraction-and-dot-definitions.md` status updated.
-
-**`__lt__`/`__gt__` returning a multivector (not `bool`)** is intentional and matches galgebra
-(`Mv.__lt__`/`__gt__`); `ty` accepts it, and nothing sorts multivectors (dataclass `eq=False`, no
-`order=`), so no comparison semantics were broken.
-
-Open question 1 resolved: names are `left_contraction`/`right_contraction` (Bill's pick).
-
----
-
-## Original plan (below, for reference)
-
-## Goal
-
-Add the **left contraction** `A ⌋ B` and **right contraction** `A ⌊ B` as first-class named
-methods, and overload `<` / `>` to call them — mirroring how `^` / `wedge` / `outer_product` relate,
-and matching **galgebra** (`Mv.__lt__` = left contraction `<`, `Mv.__gt__` = right contraction `>`,
-`galgebra/mv.py:852,872`).
-
-## The definitions (cite these in the docstrings)
+## The definitions
 
 **M.D. Taylor, *An Introduction to Geometric Algebra and Geometric Calculus*, 2021, p. 103.** For
-homogeneous parts `A_k` (grade `k`, left) and `B_m` (grade `m`, right):
+homogeneous parts `A_k` (grade `k`) and `B_m` (grade `m`), summed bilinearly over all parts:
 
-- **Left contraction:** `A_k ⌋ B_m = ⟨A_k B_m⟩_{m−k}` — the grade-`(m−k)` part of the geometric
-  product; zero when `m − k < 0`.
-- **Right contraction:** `A_k ⌊ B_m = ⟨A_k B_m⟩_{k−m}` — the grade-`(k−m)` part; zero when
-  `k − m < 0`.
-
-Summed bilinearly over all homogeneous parts of `A` and `B`.
+- **Left contraction:** `A_k ⌋ B_m = ⟨A_k B_m⟩_{m−k}`, zero when `m − k < 0`.
+- **Right contraction:** `A_k ⌊ B_m = ⟨A_k B_m⟩_{k−m}`, zero when `k − m < 0`.
 
 **galgebra 0.6.0 confirms these exactly** (`galgebra/ga.py`): `_LeftContractFunction._result_grade
 = grade2 − grade1` (None→0 if negative); `_RightContractFunction._result_grade = grade1 − grade2`.
-Neither special-cases grade 0.
+galgebra's `Mv.__lt__` / `Mv.__gt__` are the left / right contraction (`galgebra/mv.py`).
 
-## The grade-0 caveat (must be in the docstrings + flagged for investigation)
+## The grade-0 caveat
 
-Taylor's definitions **include grade 0** in the source-component loop, and so does galgebra
-(its contraction `_result_grade` has no `grade==0` guard). But the **Hestenes dot / gacalc
-`inner_product` EXCLUDES grade 0** — Hestenes 1.21b, implemented as `if lg > 0 and rg > 0` in
-`base.inner_product`, and galgebra's own `_HestenesDotFunction._result_grade` literally does
-`if grade1 == 0 or grade2 == 0: return None`. So the contractions are **not** the same operation as
-gacalc's existing `inner_product`, and they treat scalars differently. The docstrings must:
-- cite Taylor p. 103 and note galgebra agrees;
-- state plainly that the contractions **include grade 0**, unlike the Hestenes dot (`inner_product`),
-  which does not — and that Taylor also calls grade 0 part of the *dot* product, conflicting with
-  Hestenes' "dot undefined for scalars";
-- say **this discrepancy may warrant further investigation** → see
-  `tasks/investigate-dot-product-grade-0.md` and
-  `tasks/reference/contraction-and-dot-definitions.md`.
+Taylor's definitions **include grade 0**, and so does galgebra (no `grade==0` guard). The **Hestenes
+dot / gacalc `inner_product` EXCLUDES grade 0** (Hestenes 1.21b, implemented as
+`if lg > 0 and rg > 0` in `base.inner_product`; galgebra's own `_HestenesDotFunction` returns None
+when either grade is 0). So the contractions are not the same operation as `inner_product`, and
+they treat scalars differently. Taylor also calls grade 0 part of the *dot* product, conflicting with
+Hestenes' "dot undefined for scalars". The docstrings say so and point at
+`tasks/archive/2026/07/22/investigate-dot-product-grade-0.md` and
+`tasks/reference/contraction-and-dot-definitions.md`.
 
-## Plan (sketch)
+## What shipped
 
-1. **`base.py` (`MultiVectorBase`)** — add `left_contraction`/`right_contraction`, structured exactly
-   like `inner_product`/`outer_product` (a `_of_homogeneous` inner helper using `max_grade()` +
-   `r_vector_part(m − k)` / `r_vector_part(k − m)`; `r_vector_part` of a negative grade already
-   returns zero, so no explicit sign guard needed). **Do NOT filter grade 0** (unlike
-   `inner_product`) — loop over `itertools.product(self.grades(), rhs.grades())` with no `>0` guard.
-   Names: `left_contraction`/`right_contraction` (noun form, matching `outer_product`); reconsider
-   vs galgebra's `left_contract` if Bill prefers.
-2. **Operators on `base.py`** — `__lt__` → `left_contraction`, `__gt__` → `right_contraction`
-   (parallel to `__xor__` → `wedge`). Docstring the operator form (`a < b == a.left_contraction(b)`).
-   Verify nothing relied on `<`/`>` for multivectors (dataclass `eq=False`, no `order=` → they
-   currently raise `TypeError`, so this is safe — confirm at implementation time).
-3. **Generated classes** — they inherit the base methods/operators for free (MVP). A **closed-form
-   fast path + precise `@overload` typing** in the generator is an *optional follow-up* (perf is
-   opportunistic; fast paths only in generated classes — see memory). Not required for correctness.
-4. **Docstrings** — Taylor p. 103 reference + the grade-0 caveat above, on both methods.
-5. **Tests** — a `test_contraction.py`: symmetry/known-value checks (e.g. for vectors `a ⌋ b ==
-   a · b`; `a ⌋ B` for a bivector; contraction asymmetry: `bivector ⌋ vector == 0`), across
-   `[Gn, G1, G2, G3]` (conformance-style), incl. the grade-0 behaviour that distinguishes it from
-   `inner_product`.
-6. **Docs** — update `tasks/reference/galgebra-comparison.md` Finding 2A / the table row (mark
-   contractions as done, cross-link) and `README`/`CLAUDE.md` operator list (`<` / `>`).
-7. Regenerate; `ty`/ruff/pytest/`check-regions`/determinism all green.
+- **`base.py`**: `left_contraction`/`right_contraction` (bilinear sum over
+  `itertools.product(self.grades(), rhs.grades())`, grade `m−k` / `k−m` via `r_vector_part`, which
+  already returns zero for a negative grade; **no grade-0 filter**), and `__lt__`/`__gt__`
+  delegating to them (parallel to `__xor__` → `wedge`). Docstrings cite Taylor 2021 p.103 + galgebra
+  and carry the grade-0 caveat. No `cast` was needed: the `r_vector_part` chain already types as
+  `Self`, so `return sum(...)` directly.
+- **Generator** (per the maintainer: "add these to the generators too"): the full class `G_n` got
+  `bilinear` closed forms for both; the graded types got the **same `product_overload_stubs` +
+  `dispatch_method` treatment as `inner_product`/`outer_product`** (precise per-rhs overloads, fast
+  closed-form dispatch), plus overloaded, delegating `__lt__`/`__gt__` (mirroring `__xor__`). So
+  `Vector2.left_contraction(Bivector2) -> Vector2`, `Vector2 < Vector2 -> Scalar`, etc., are precise
+  for `ty`. (The original sketch had left the generator fast path as an optional follow-up.)
+- **Tests**: `test_conformance.py::test_left_right_contraction` (parity over `[Gn,G1,G2,G3]`,
+  methods + operators, incl. the grade-0 behaviour that distinguishes it from `inner_product`);
+  `test_operator_typing.py` static `assert_type` + runtime known-value tests.
+- **Docs**: `README` + `CLAUDE.md` operator lists (`<` / `>`); `galgebra-comparison.md` Finding 2A
+  marked done; `contraction-and-dot-definitions.md` status updated.
 
-## Open question
+## Decisions
 
-1. Method names: `left_contraction`/`right_contraction` (gacalc `*_product` noun style, my rec) vs
-   galgebra's `left_contract`/`right_contract`?
+- **Names: `left_contraction`/`right_contraction`** (the maintainer's pick), the gacalc `*_product`
+  noun style, over galgebra's `left_contract`/`right_contract`.
+- **`__lt__`/`__gt__` return a multivector, not `bool`**, intentionally, matching galgebra. `ty`
+  accepts it, and nothing sorts multivectors (dataclass `eq=False`, no `order=`; `<`/`>` had raised
+  `TypeError` before), so no comparison semantics were broken.
 
-## Relationships
+## Related
 
-- `tasks/reference/contraction-and-dot-definitions.md` — the domain note (definitions + grade-0).
-- `tasks/investigate-dot-product-grade-0.md` — the deferred definitional investigation.
-- `tasks/reference/galgebra-comparison.md` — Finding 2A (origin).
+- `tasks/reference/contraction-and-dot-definitions.md`: the domain note (definitions + grade-0).
+- `tasks/archive/2026/07/22/investigate-dot-product-grade-0.md`: the definitional investigation.
+- `tasks/reference/galgebra-comparison.md`: Finding 2A (origin).

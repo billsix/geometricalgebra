@@ -1,18 +1,13 @@
 # Fix broken notebook `rotate`; use `plane_rotation` instead
 
-**Status:** complete
-**Completed:** 2026-07-18
-**Created:** 2026-07-18 (retroactive — documenting work already done)
+**Created:** 2026-07-18 (retroactively, after the fix) · **Completed:** 2026-07-18
 
-> Retroactive record of a fix completed 2026-07-18. Verified in-container; the two
-> notebook edits are in the working tree for Bill to commit.
-
-## Problem (what Bill hit)
+## Problem (what the maintainer hit)
 
 A notebook's inner `rotate(angle)` "didn't work because it was a function and
 didn't have a latex expr." Root cause: the hand-rolled `rotate` constructed its
 `InvertibleFunction` with **positional args in the wrong order**. The constructor
-is `(func, latex_repr, inverse, latex_repr_inv)`, but the call passed
+was `(func, latex_repr, inverse, latex_repr_inv)`, but the call passed
 `(func, inverse_lambda, latex_str, latex_str)` — so:
 
 - the **`latex_repr` field held a lambda**, and `_repr_latex_` does
@@ -52,19 +47,20 @@ For both notebooks' actual usage patterns:
 - `ruff check` on both notebooks: **no new errors** (the 6 `E501` it reports are
   pre-existing prose lines in `displaymv.py`, unrelated); both `py_compile` clean.
 
-## Follow-up discovered — real library bug (separate task)
+## Follow-up discovered — real library bug (separate)
 
-`plane_rotation` **fails on full specialized `G1`/`G2`/`G3` operands** because the
-**generated full-class `__add__` rejects a bare scalar** on both sides:
+`plane_rotation` **failed on full specialized `G1`/`G2`/`G3` operands** because the
+**generated full-class `__add__` rejected a bare scalar** on both sides:
 `(3*e_1) + 5` *and* `5 + (3*e_1)` both raise
 `AttributeError: 'int' object has no attribute 'to_blade_dict'`. The base
-`MultiVectorBase.__add__` handles scalars; the generated override
-(`tools/gen_specialized.py`) drops that guard. `plane_rotation`'s rotor build does
-`bivector*scalar + scalar`, so with a full-`G2` plane it hits this. `Gn` and the
-graded `Vector`/`Bivector` types are fine.
+`MultiVectorBase.__add__` handled scalars; the generated override
+(`tools/gen_specialized.py`) dropped that guard. `plane_rotation`'s rotor build does
+`bivector*scalar + scalar`, so a full-`G2` plane hit it. `Gn` and the graded
+`Vector`/`Bivector` types were fine.
 
-This **contradicts CLAUDE.md's claim that `plane_rotation` "preserves
-Gn/G1/G2/G3."** It is why `displayg2.py` had to use the `Vector2` basis rather than
-the full-`G2` module constants. **Fix is in `tools/gen_specialized.py`** (add scalar
-handling to the generated `__add__`, then regenerate + gate) — out of scope for the
-notebook fix; see [[fix-generated-fullclass-add-scalar]] (proposed, if opened).
+This **contradicted CLAUDE.md's claim that `plane_rotation` "preserves
+Gn/G1/G2/G3"**, and is why `displayg2.py` used the `Vector2` basis rather than the
+full-`G2` module constants. The fix belonged in `tools/gen_specialized.py` (scalar
+handling in the generated `__add__`, then regenerate + gate) and was out of scope
+for the notebook fix; a `fix-generated-fullclass-add-scalar` task was proposed
+(no longer exists).

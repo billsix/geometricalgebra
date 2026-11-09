@@ -1,88 +1,68 @@
 # plane_rotation: pre-tag fixes + mvp facade adoption plan
 
-**Status:** pre-tag gacalc changes DONE 2026-07-09 (Bill: "that sounds
-great to me, and document it in comments at the call site") — staged,
-uncommitted; **ready to tag v0.0.8 after Bill commits**. The mvp facade
-adoption below happens after the release.
+**Created:** 2026-07-09 · **Completed:** 2026-07-09
 
-Implementation notes: `plane_rotation` keeps TWO copies of the unit
-bivector — exact, and float-coerced when every coefficient is a numeric
-value — and picks per theta (numeric theta -> float plane -> float
-rotors/results; symbolic theta -> exact plane, so notebooks show
-``cos(theta)``, not ``1.0*cos(theta)``; a symbolic plane never coerces).
-The why is documented in comments at the coercion site in
-`transforms.py`, per Bill. Label hooks: optional keyword-only
-``latex_repr`` / ``latex_repr_inv`` callables mapping theta -> label
-(default unchanged ``R_{theta}``). Three new regression tests
-(numeric-stays-float, symbolic-stays-exact, label hooks); gates green
-2026-07-09: 280 in-container tests, check-generated, format.sh clean;
-kinetix's `_turn` pattern verified float again.
-**Created:** 2026-07-09 (review Bill requested before tagging gacalc)
+A review the maintainer requested before tagging gacalc v0.0.8. It found a numeric leak in
+`plane_rotation` and a missing label hook, fixed both in gacalc before the tag (the maintainer: "that
+sounds great to me, and document it in comments at the call site"), and relocated the mvp-side
+adoption to modelviewprojection.
 
 ## Findings (mvp demos, mvpvisualization, cayley layer — 2026-07-09)
 
-- `mathutils`' facades (`rotate`, `rotate_90_degrees`, `rotate_x/y/z`)
-  each hand-build `to_vector = cos θ·a + sin θ·b` and call
-  `rotor_rotation(a, to_vector, …, interpolate=lambda t: rotate(θ·t))`
-  — inlining exactly the job `plane_rotation` now does in the library.
-- Interpolation is where it hurts: nothing calls `interpolate` directly;
-  `cayleyscene.py` calls `edge.fn.at(t)` per edge **per animation
-  frame**, and `.at(t)` re-runs the facade — fresh cos/sin, fresh
-  `rotor_from_vectors`, fresh `normalize`, every frame.
-- **Numeric leak (measured)**: the basis constants carry exact `int`
-  coefficients, so wedge→`normalize` routes through sympy for exactness
-  (a unit blade normalizes to `Rational`s) and the rotor's coefficients
-  come out sympy — a numeric-θ `plane_rotation` returns vectors with
-  **sympy Float** coefficients. Downstream arithmetic on a contaminated
-  vector: 3.71 µs/add vs 0.60 µs clean — **~6×**. Every animated demo
-  frame pays it, and ctc kinetix's `_turn` pays it today (a regression
-  shipped with Task 2; fixed for free by pre-tag change 1).
+- `mathutils`' facades (`rotate`, `rotate_90_degrees`, `rotate_x/y/z`) each hand-built
+  `to_vector = cos(θ) * a + sin(θ) * b` and called
+  `rotor_rotation(a, to_vector, …, interpolate=lambda t: rotate(θ * t))`, inlining exactly the job
+  `plane_rotation` does in the library.
+- Interpolation was where it hurt: nothing called `interpolate` directly; `cayleyscene.py` called
+  `edge.fn.at(t)` per edge **per animation frame**, and `.at(t)` re-ran the facade — fresh cos/sin,
+  fresh `rotor_from_vectors`, fresh `normalize`, every frame.
+- **Numeric leak (measured)**: the basis constants carry exact `int` coefficients, so
+  wedge→`normalize` routed through sympy for exactness (a unit blade normalizes to `Rational`s) and
+  the rotor's coefficients came out sympy — a numeric-θ `plane_rotation` returned vectors with
+  **sympy Float** coefficients. Downstream arithmetic on a contaminated vector: 3.71 µs/add vs
+  0.60 µs clean, **~6×**. Every animated demo frame paid it, and ctc kinetix's `_turn` paid it too (a
+  regression shipped with Task 2, fixed by pre-tag change 1).
 
-## The slowdown question ("all we want is a new theta, correct?")
+## Cost model ("all we want is a new theta, correct?")
 
-Correct — and that separation is the whole design. Cost model:
+Correct — and that separation is the design:
 
-- **Once, at factory time** (`plane_rotation(a, b)`): grade checks,
-  wedge, zero test, normalize. This is the only place
-  `rotor_from_vectors`-class work happens, and it never repeats.
-- **Per θ** (`rotation(θ)`, which is also what `.at(t)` calls via the
-  closure): two trig calls + assembling one small rotor from the cached
-  unit bivector + wrapping two closures in an `InvertibleFunction`.
-- **Per application** (`f(v)`): one sandwich — the generated closed form
-  on `Rotor2`/`Rotor3`.
+- **Once, at factory time** (`plane_rotation(a, b)`): grade checks, wedge, zero test, normalize. The
+  only place `rotor_from_vectors`-class work happens.
+- **Per θ** (`rotation(θ)`, also what `.at(t)` calls via the closure): two trig calls + one small
+  rotor from the cached unit bivector + two closures wrapped in an `InvertibleFunction`.
+- **Per application** (`f(v)`): one sandwich, the generated closed form on `Rotor2`/`Rotor3`.
 
-So after mvp's facades switch to module-level factories, the per-frame
-animation cost drops from re-deriving-the-plane to
-trig + rotor + sandwich. No caching layer is needed: animation θ varies
-continuously, so a θ-keyed cache can't hit (kinetix-style fixed angles
-are the exception, and `functools.cache` at the call site covers those).
-The only remaining fat was the sympy contagion — pre-tag change 1.
+No caching layer was added: animation θ varies continuously, so a θ-keyed cache can't hit
+(kinetix-style fixed angles are the exception, and `functools.cache` at the call site covers those).
+The only remaining fat was the sympy contagion.
 
 ## Pre-tag gacalc changes (both backwards-compatible for `plane_rotation(a, b)(θ)`)
 
-1. **Numeric preservation** (bug-level, base.py's own convention:
-   float in → float out): inside `plane_rotation`, coerce the cached
-   unit bivector's coefficients to `float` when they are numeric
-   (sympy numbers / ints); a symbolic plane or symbolic θ stays
-   symbolic. Numeric θ then yields pure-float rotors and rotated
-   vectors. Gate: a regression test asserting
-   `type(plane_rotation(e_1, e_2)(1.0)(Vector2(1.0, 0.0)).coeff_e_1) is float`.
-2. **LaTeX label hooks** (additive API): `plane_rotation` hardcodes
-   `R_{θ}`; mvp's facades need `R_{<θ>}` / `RX_{<θ>}` / `RY` / `RZ`.
-   Add optional label parameters (mirroring `rotor_rotation`'s existing
-   `latex_repr`/`latex_repr_inv` hooks), defaulting to current behavior.
+1. **Numeric preservation** (base.py's own convention: float in → float out). `plane_rotation`
+   keeps TWO copies of the unit bivector — exact, and float-coerced when every coefficient is a
+   numeric value — and picks per θ: numeric θ → float plane → float rotors/results; symbolic θ →
+   exact plane, so notebooks show `cos(θ)`, not `1.0 * cos(θ)`; a symbolic plane never coerces. The
+   why is documented in comments at the coercion site in `transforms.py`, per the maintainer.
+2. **LaTeX label hooks** (additive API): `plane_rotation` had hardcoded `R_{θ}`; mvp's facades need
+   `R_{<θ>}` / `RX_{<θ>}` / `RY` / `RZ`. Optional keyword-only `latex_repr` / `latex_repr_inv`
+   callables mapping θ → label were added (mirroring `rotor_rotation`'s hooks), defaulting to the
+   unchanged `R_{θ}`.
 
-## mvp adoption (after gacalc 0.0.8 releases)
+## Verification (2026-07-09)
 
-RELOCATED on archival (2026-07-09) to modelviewprojection
-`tasks/plane-rotation-mathutils-adoption.md` — the remaining work is
-mvp-side and is tracked where it executes. Summary: mathutils facades
-become module-level `plane_rotation` factories (labels via the new
-hooks); mvpvisualization/cayleyscene/demos need no changes (`.at(t)`
-serves from the cached plane); book prose folds into
-gacalc-math-migration Phase 4; kinetix needs nothing.
+Three new regression tests (numeric-stays-float, symbolic-stays-exact, label hooks); 280
+in-container tests passed, `make check-generated` deterministic, `format.sh` clean; kinetix's `_turn`
+pattern verified float again. v0.0.8 was then tagged by the maintainer.
+
+## mvp adoption (relocated)
+
+The remaining work was mvp-side and moved to github.com/billsix/modelviewprojection
+`tasks/archive/2026/07/09/plane-rotation-mathutils-adoption.md`: mathutils facades become
+module-level `plane_rotation` factories (labels via the new hooks); mvpvisualization/cayleyscene/demos
+need no changes (`.at(t)` serves from the cached plane); book prose folds into the gacalc-math
+migration's Phase 4; kinetix needs nothing.
 
 ## Related
 
-[[generated-dispatch-fast-paths]] — the broader dispatch-cost work,
-metrics to be generated from Code the Classics in 2D.
+`tasks/archive/2026/07/18/generated-dispatch-fast-paths.md` — the broader dispatch-cost work.

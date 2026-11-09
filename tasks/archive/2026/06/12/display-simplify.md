@@ -1,62 +1,41 @@
 # Display simplification for G1/G2/G3
 
-> **UPDATE (2026-06-11): the shared `.simplified()` / `.expanded()` primitive is BUILT** —
-> `MultiVectorBase._map_coefficients` + `.simplified()` / `.expanded()` in `base.py` (map a
-> sympy op over the coefficients via the blade-dict interchange; inherited by `Gn`/`G1`/`G2`/`G3`
-> and the graded subtypes). Tested in `tests/test_conformance.py`. This task can now just *use*
-> them rather than build the helper.
-
-Status: **DONE 2026-06-12** · proposed 2026-06-04
-
-> **Done.** `AbstractMultiVector._repr_latex_` (base.py, inherited by every
-> representation — no regeneration) now renders the **simplified** view: it reads
-> `self.simplified().to_blade_dict()` instead of `self.to_blade_dict()`, so the
-> lazy classes (G1/G2/G3, graded subtypes) display coefficients in lowest terms
-> (e.g. `sin²+cos² → 1`, or a bivector times its dual whose terms cancel) while the
-> **stored fields stay untouched** (still lazy). The zero-check became `not d` (an
-> empty simplified blade-dict ⇒ the value simplified to zero). `Gn` already
-> eager-simplifies, so it's a cheap no-op there; display is not hot. Test:
-> `test_repr_latex_shows_simplified` (stored stays raw, displayed is simplified).
-> Full suite **221**, ty + ruff clean.
->
-> **Decisions (the open questions):**
-> - *Display only, or a `.simplified()` helper too?* — the helper already exists
->   (built earlier); this task just uses it. Display now simplifies via it.
-> - *`__repr__` too?* — **No.** Left `__repr__` as the raw dataclass repr
->   (`Vector2(coeff_e_1=…, …)`) — it's the honest stored state for debugging;
->   `_repr_latex_` is the pretty, user-facing render. Only the latter simplifies.
-> - *Cost acceptable?* — yes (display-only; one simplify pass per shown value).
->
-> **Overlap:** this largely covers the *display* half of
-> `tasks/graded-bivector-dual-simplify.md` — a bivector×dual now renders cancelled
-> automatically in any notebook cell, with no explicit `.simplified()` call. That
-> task is now mostly the symbolic-confirmation + an optional explicit cell.
+**Created:** 2026-06-04 · **Completed:** 2026-06-12
 
 ## Background
 
-In the specialized-multivector work (see `tasks/archive/specialized-multivectors.md`) the coefficient
-policy was "symbolic, but lazy simplify": `Gn` eager-simplifies; `G1`/`G2`/`G3` simplify lazily.
-Decision 1 said the specialized classes should "simplify **on display**" as well as on equality.
+The specialized-multivector work (`tasks/archive/2026/06/03/specialized-multivectors.md`) set the
+coefficient policy "symbolic, but lazy simplify": `Gn` eager-simplifies, `G1`/`G2`/`G3` simplify
+lazily, and its Decision 1 said the specialized classes should simplify on display as well as on
+equality. Equality had been done (their `__eq__` simplifies the per-blade difference), but display had
+not: `G1`/`G2`/`G3` inherited `_repr_latex_` from `base.py`, which rendered the raw coefficients — not
+wrong, but not always in lowest terms.
 
-We implemented lazy simplify on **equality** (their `__eq__` simplifies the per-blade difference),
-but **display was never done**: `G1`/`G2`/`G3` inherit `AbstractMultiVector._repr_latex_` (in
-`base.py`), which renders the raw, lazily-unsimplified coefficients. (sympy still auto-simplifies
-trivially, so it's not wrong — just potentially not in lowest terms.)
+## What was done
 
-## The decision
+`AbstractMultiVector._repr_latex_` in `base.py` (inherited by every representation, so no
+regeneration) renders the **simplified** view: it reads `self.simplified().to_blade_dict()` instead of
+`self.to_blade_dict()`. The lazy classes (G1/G2/G3 and the graded subtypes) display coefficients in
+lowest terms (`sin²+cos² → 1`, a bivector times its dual whose terms cancel) while the stored fields stay
+lazy. The zero check became `not d` (an empty simplified blade-dict means the value simplified to zero).
+On `Gn`, which already eager-simplifies, it is a cheap no-op.
 
-Do we want specialized values to fully `sympy.simplify` their coefficients when displayed
-(`_repr_latex_`, and maybe `__repr__`)?
+It used the shared primitive built on 2026-06-11: `MultiVectorBase._map_coefficients` +
+`.simplified()` / `.expanded()` in `base.py`, which map a sympy op over the coefficients via the
+blade-dict interchange, are inherited by every representation, and are tested in
+`tests/test_conformance.py`.
 
-## Sketch if yes
+Test: `test_repr_latex_shows_simplified` (stored stays raw, displayed is simplified). The full suite
+passed (221), ty and ruff clean.
 
-- Override `_repr_latex_` on `G1`/`G2`/`G3` (generated) to render a simplified view — e.g. build a
-  blade-dict with `sympy.simplify` applied, then reuse the base rendering logic. Keep the stored
-  fields untouched (still lazy); only the displayed form is simplified.
-- Alternatively, give the ABC `_repr_latex_` a small hook (e.g. simplify `to_blade_dict()` values
-  before formatting) controlled by a class flag, so only the specialized classes opt in.
+## Decisions
 
-## Open questions
+- **A `.simplified()` helper as well as display:** the helper already existed; display uses it.
+- **`__repr__` not simplified.** It stays the raw dataclass repr (`Vector2(coeff_e_1=…, …)`), the honest
+  stored state for debugging; `_repr_latex_` is the user-facing render. The alternatives sketched first
+  — a generated `_repr_latex_` override on G1/G2/G3, or a class-flag hook in the ABC — were unnecessary
+  once the base method could call `.simplified()`.
+- **Cost accepted:** display is not hot; one simplify pass per shown value.
 
-- Display only, or also a `.simplified()` helper returning a new fully-simplified instance?
-- Is the extra simplify cost acceptable on display (display is not hot, so almost certainly yes)?
+This covered the display half of `tasks/archive/2026/06/12/graded-bivector-dual-simplify.md`: a
+bivector × dual renders cancelled in any notebook cell without an explicit `.simplified()` call.

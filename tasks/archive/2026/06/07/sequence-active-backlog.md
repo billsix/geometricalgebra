@@ -1,162 +1,76 @@
 # Sequence the active tasks/ backlog (dependencies + line-churn coordination)
 
-**Status:** complete — the sequenced backlog was executed; the items it coordinated are all done and
-archived. Remaining independent work (display-simplify, displaygraded-plots, reject/reflect higher
-grade, build-time-codegen-dist→done) lives in its own task docs. Archived as the coordination job is
-finished.
-**Started:** 2026-06-06
-**Completed:** 2026-06-07
+**Created:** 2026-06-06 · **Completed:** 2026-06-07
 
-## Goal
+## What it was
 
-There are nine in-flight task docs in `tasks/`. Several have **hard dependencies** on each other (one
-is an open decision that gates another) and several **edit overlapping lines** in the same files
-(`base.py`, the generator, the test suite), where their own notes already warn about churning the
-same code twice. Decide an order so we don't (a) build something a pending decision might moot, or
-(b) have two annotation/refactor passes fight over the same lines. Output is a decided sequence
-recorded here; no source changes in this task itself.
+Nine task docs were in flight on 2026-06-06, several with hard dependencies (an open decision gating
+another) and several editing the same lines of `base.py`, the generator and the tests. This task decided
+an order so nothing was built that a pending decision might moot, and so no two annotation/refactor
+passes churned the same lines. It changed no source itself, and it served as the living execution
+tracker while the backlog ran; it was archived once that coordination job was finished. The sequence
+was kept here rather than promoted into CLAUDE.md or a `tasks/README.md` (no longer exists): it was
+working state, not a stable convention.
 
-## The active backlog (snapshot 2026-06-06)
+## The backlog (snapshot 2026-06-06) and its records
 
-1. `add-python-types.md` — **in-progress** — annotate local variables in source + generator.
-2. `basis-vector-construction.md` — proposed — rewrite test/bench dict-literals as basis combinations.
-3. `clarify-2d-only-transforms.md` — not started, low pri — guard/clarify the planar 2D transforms.
-4. `codegen-checkin-strategy.md` — **open decision** — check in generated code vs. generate at runtime.
-5. `display-simplify.md` — not started — simplify G1/G2/G3 coefficients on display.
-6. `future-annotations-drop-forward-ref-quotes.md` — not started — `from __future__ import
-   annotations`, drop forward-ref quotes.
-7. `generalize-reject-reflect-higher-grade.md` — not started — reject/reflect for grade-3+ blades.
-8. `regen-diff-ci-guard.md` — **ready to implement** — CI guard that committed `g*.py` matches the
+1. `tasks/archive/2026/06/06/add-python-types.md` — annotate local variables in source + generator.
+2. `tasks/archive/2026/06/06/basis-vector-construction.md` — rewrite test/bench dict literals as basis
+   combinations.
+3. `tasks/archive/2026/06/06/clarify-2d-only-transforms.md` — the planar 2D transforms.
+4. `tasks/archive/2026/06/06/codegen-checkin-strategy.md` — check in generated code or not.
+5. `tasks/archive/2026/06/12/display-simplify.md` — simplify G1/G2/G3 coefficients on display.
+6. `tasks/archive/2026/06/06/future-annotations-drop-forward-ref-quotes.md`.
+7. `tasks/generalize-reject-reflect-higher-grade.md` — reject/reflect for grade-3+ blades.
+8. `tasks/archive/2026/06/06/regen-diff-ci-guard.md` — CI guard that committed `g*.py` matches the
    generator.
-9. `transform-type-roundtrip-tests.md` — not started — tests that transforms preserve representation.
+9. `tasks/archive/2026/06/06/transform-type-roundtrip-tests.md`.
 
-(Plus the two doc tasks created alongside this one: `refresh-claudemd-known-issues.md` and
-`document-rotor-methods.md` — pure docs, can land anytime, but both edit CLAUDE.md so do them together.)
+Plus two doc tasks created alongside: `tasks/archive/2026/06/06/refresh-claudemd-known-issues.md` and
+`tasks/archive/2026/06/06/document-rotor-methods.md`, both editing CLAUDE.md, so done together.
 
-## Dependencies & conflicts found
+## Dependencies found
 
-### A. Decision gate: #4 blocks #8
-`regen-diff-ci-guard` (#8) is "ready to implement" but its whole premise is that generated code is
-**checked in** — it regenerates and `git diff --exit-code`s `g1/g2/g3.py` + `scalar.py`.
-`codegen-checkin-strategy` (#4) is an open decision about whether to *keep* checking generated code in
-at all (vs. generate at runtime/build time). If #4 flips to runtime generation, #8 becomes
-meaningless. **#4 must be decided before #8 is built.** (#8's own doc already says it "assumes" the
-checked-in model.)
+- **#4 gated #8.** The regen-diff guard assumed generated code was checked in; if #4 chose runtime
+  generation, #8 would be meaningless.
+- **#6 → #1 → #2 line-churn cluster.** #6 changed annotation semantics module-wide, so it went first
+  and #1 annotated the final form; #2 rewrote the same test lines #1 annotated, so it followed #1.
+- **Generator-touching work before #8.** #1 (and #5, if done through the generator) changed the
+  generated `g*.py`, so they had to settle before the guard was switched on.
+- **Independent:** #7 (localized to `reject`/`reflect`, but gated on the author re-reading Hestenes
+  p. 18 — a content gate); #9 paired with #3 (shared transform test fixtures); #5.
 
-### B. Line-churn cluster on annotations/syntax: #1, #6, #2
-These three rewrite overlapping regions and each flags the coordination risk in its own notes:
-- `add-python-types` (#1) adds local-variable annotations across `base.py` / `gn.py` /
-  `transforms.py` and the generator's emitted locals.
-- `future-annotations-drop-forward-ref-quotes` (#6) adds `from __future__ import annotations` and
-  strips `"AbstractMultiVector"` quotes — changes annotation *semantics* module-wide.
-- `basis-vector-construction` (#2) rewrites test/bench value construction; touches the same test
-  lines #1 would annotate.
-`#1`'s notes explicitly say "coordinate with use-match-and-modern-python so the two passes stay
-consistent and don't churn the same lines twice"; `#6` was *split out* of that same modern-python
-pass. **Order within the cluster matters:** do the semantics change (#6) first so #1 annotates the
-final form, and decide #1-vs-#2 ordering for the test files.
+## Order and what happened (2026-06-06)
 
-### C. Anything touching the generator must precede #8
-#1 modifies `tools/gen_specialized.py` (emitted-local annotations) and therefore the generated
-`g*.py`. If the regen-diff guard (#8) lands first, #1's regen will trip it (expected, but noisy).
-Any generator-affecting task (#1, and #5 if it overrides `_repr_latex_` via the generator) should
-settle **before** #8 is switched on, or #8's first run will demand a regen commit.
+1. **The two doc tasks** — done, archived.
+2. **#4 → Option 1, keep generated code checked in.** The library is pedagogical, and a `pip install`ed
+   student must be able to read the specialized closed forms; runtime generation produces no readable
+   source. This unblocked #8. (It was revisited the next day by
+   `tasks/archive/2026/06/07/build-time-codegen-dist.md`, which moved to build-time generation.)
+3. **#6 — done for `base.py`:** `from __future__ import annotations`, forward-ref quotes dropped (the
+   alias stays quoted, being runtime); 141 tests and `ty` clean. The `gn.py` + generator part was folded
+   into #1.
+4. **#1 — done:** light-touch local annotations across `base.py` / `gn.py` / `transforms.py` /
+   `nbplotutils.py` / the generator, plus the folded-in future-annotations in both generated headers;
+   141 tests, `ty`, `ruff` clean.
+5. **#2 — done:** `test_graded.py`'s `gn({...})` expected values became module-qualified basis
+   combinations (`3 * gn.e_1 + 4 * gn.e_2`, wedges for blades); `test_multivector.py` (circular product
+   ground truth) and the dense bench/conformance dicts were left as they were. 141 tests.
+6. **#8 — done:** `make check-generated` (regenerate, then `git diff --exit-code` the committed files);
+   verified exit 0 when clean and 1 on drift; documented in CLAUDE.md and README.
+7. **#9 — done:** new `tests/test_transforms.py` (type round-trip over Gn/G1/G2/G3, plus value,
+   invertibility and error-path tests).
+   **#3 — resolved by removal:** the author chose to delete the planar 2D factories (`rotate`,
+   `rotate_90_degrees`, `rotate_around`, `scale_non_uniform_2d`, and the unused
+   `is_clockwise`/`is_counter_clockwise`) instead of guarding them — they were modelviewprojection
+   artifacts, and GA rotation is the rotor. The two notebooks got a local rotor-based `rotate` helper;
+   161 tests.
+   **`tasks/archive/2026/06/06/rotor-callers-keyword-args.md` — done:** positional
+   `rotor_from_vectors(...)` / `rotate(...)` calls became keyword form across the tests and three
+   notebooks. Renaming `create_rotor` was declined; keyword calls gave the readability.
+8. **#5 and #7** were left to their own task docs, to be scheduled by appetite (#5 needed a go/no-go;
+   #7 waited on the Hestenes re-read). `build-time-codegen-dist` ran as a parallel investigation
+   requested by the author on 2026-06-06, and was completed.
 
-### D. Independent / low-coupling (can slot anywhere)
-- `generalize-reject-reflect-higher-grade` (#7) — localized to `base.py` `reject`/`reflect` + new
-  tests; user wants to re-read Hestenes first (a *content* gate, not a code dependency).
-- `transform-type-roundtrip-tests` (#9) — adds a new test file; only collides with #2 if both edit
-  the same fixtures. Pairs naturally with `clarify-2d-only-transforms` (#3), which also wants
-  transform tests (planar guard round-trips).
-- `display-simplify` (#5) — generated-code change (override `_repr_latex_` on G1/G2/G3) → see C.
-
-## Proposed sequence (for discussion, not yet approved)
-
-1. **Land the two doc tasks** (`refresh-claudemd-known-issues`, `document-rotor-methods`) — zero code
-   risk, removes misleading docs first.
-2. **Decide #4** (codegen check-in strategy). Everything generator-related hangs off this.
-3. **#6** (future annotations) — the module-wide semantics change, done before annotating locals.
-4. **#1** (local annotations) — annotate the post-#6 form; includes the generator's emitted locals.
-5. **#2** (basis-vector construction in tests/bench) — after #1 so test annotations and value
-   rewrites don't collide; or interleave per-file if that reads better.
-6. **#8** (regen-diff guard) — only after #4 is "keep checked-in" and after generator-touching tasks
-   (#1, #5) settle, so the first guard run is clean.
-7. **#9 + #3** (transform round-trip tests, then planar-guard + its tests) — share fixtures; do #9's
-   type round-trips first, then #3 adds the planarity-guard tests on top.
-8. **#5** (display simplify) and **#7** (reject/reflect higher grade) — independent; schedule by
-   appetite. #7 waits on the author's Hestenes re-read.
-
-## Decisions & progress (2026-06-06)
-
-Gates resolved; order locked. (Numbers below are the "active backlog" indices above.)
-
-- **Done — the two doc tasks** (`refresh-claudemd-known-issues`, `document-rotor-methods`): complete,
-  archived under `tasks/archive/2026/06/06/`.
-- **#4 codegen-checkin → Option 1 (keep generated code checked in).** Decided because the library is
-  *pedagogical* and a `pip install`ed student must be able to read the specialized closed forms;
-  runtime generation (option 2) produces no readable source. Archived. **This unblocks #8.**
-- **#6 future-annotations → do it; `base.py` complete.** `from __future__ import annotations` added,
-  forward-ref quotes dropped (alias stays quoted — runtime), 141 tests + `ty` clean. The `gn.py` +
-  generator portion is **folded into #1** (recorded in that task's notes). Archived.
-
-- **#1 add-python-types → complete (2026-06-06).** Light-touch local annotations across `base.py` /
-  `gn.py` / `transforms.py` / `nbplotutils.py` / the generator, plus the folded-in `gn.py` + generated
-  `g*.py` future-annotations (emitted into both headers). Regenerated; `ty`/`ruff`/141 tests clean.
-  Archived.
-
-- **#2 basis-vector-construction → complete (2026-06-06).** Rewrote `test_graded.py`'s `gn({...})`
-  expected values as module-qualified basis combinations (`3 * gn.e_1 + 4 * gn.e_2`, wedges for
-  blades); left `test_multivector.py` (circular product ground truth) and the dense `bench`/conformance
-  dicts as-is. 141 tests pass. Archived.
-
-- **#8 regen-diff-ci-guard → complete (2026-06-06).** Added a `make check-generated` target
-  (regenerate, then `git diff --exit-code` the committed `g*.py` + `scalar.py`). Verified clean→exit 0
-  and drift→exit 1; documented in CLAUDE.md + README. Archived.
-
-- **#9 transform-type-roundtrip-tests → complete (2026-06-06).** New `tests/test_transforms.py` —
-  type round-trip (Gn/G1/G2/G3) + value / invertibility / error-path tests for the transform layer.
-  Archived.
-
-- **#3 clarify-2d-only-transforms → complete (2026-06-06), resolved by REMOVAL.** Author decided to
-  delete the planar 2D factories (`rotate`/`rotate_90_degrees`/`rotate_around`/`scale_non_uniform_2d` +
-  the unused `is_clockwise`/`is_counter_clockwise`) rather than guard them — they were
-  modelviewprojection artifacts and GA rotation is the rotor (`AbstractMultiVector.rotate`). Kept the
-  dimension-general transform layer; rewrote the two notebooks to use a local rotor-based `rotate`
-  helper + `scale_non_uniform`. 161 tests. Archived.
-
-- **`rotor-callers-keyword-args` → complete (2026-06-06).** Converted positional
-  `rotor_from_vectors(...)` / `rotate(...)` calls to keyword form (`from_vector=…, to_vector=…`)
-  across `test_graded.py`, `test_conformance.py`, and the three notebooks. No rename, no regen. 161
-  tests. Archived. (`create_rotor` rename declined — keyword calls give the readability.)
-
-**Remaining order:** **#5 / #7.**  (doc tasks, #4, #6, #1, #2, #8, #9, #3, rotor-keyword-args
-all complete.)
-
-Then (independent, schedule by appetite):
-- **#5 `display-simplify`** — should G1/G2/G3 fully `sympy.simplify` their coefficients on display
-  (`_repr_latex_`)? Needs a go/no-go (it's a "do we want this?" decision, plus a small generated-code
-  change if yes).
-- **#7 `generalize-reject-reflect-higher-grade`** — extend `reject`/`reflect` to grade-3+ blades; the
-  author wanted to re-read Hestenes p.18 first (a content gate, not a code dependency).
-
-**Parallel investigation (not in the order above):** `build-time-codegen-dist` — revisit checking in
-generated code now that a `make` target can produce it; investigate build-time generation +
-`make dist` + `make shell`. Author-requested 2026-06-06; produce proposals, then decide. Pick up
-independently of the #9→#3→#5/#7 thread.
-
-Answering this task's own meta-question: the sequence **stays here** as the living execution tracker
-(updated as tasks land), rather than being promoted into CLAUDE.md — it's working state, not a stable
-convention.
-
-## Open questions
-
-- Is the #4 decision actually ready to make now, or does it need a runtime-generation prototype first
-  (its own doc offers to prototype `g2.py` as a dynamic builder for comparison)? That prototype, if
-  wanted, is the real blocker.
-- Within cluster B, is #6 worth doing at all? Its own "Open questions" asks exactly that (the
-  forward-ref quotes are already few). If #6 is dropped, #1 proceeds without waiting.
-- Do #2 and #9 actually collide in practice, or are they in different test files (`test_graded` /
-  `test_conformance` / `test_multivector` vs. a new `test_transforms.py`)? If disjoint, they
-  parallelize.
-- Should this sequencing live here as a task, or be promoted into a short "backlog order" note at the
-  top of CLAUDE.md / a `tasks/README.md` so it's visible without opening this file?
+Questions raised while sequencing were settled by events: #4 was decided without a runtime-generation
+prototype; #6 was done; #2 and #9 turned out to touch different test files.

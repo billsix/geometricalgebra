@@ -1,102 +1,74 @@
 # Make the `f(x) = m·x + b` connection explicit at call sites
 
-**Status:** **teaching-facing conversion DONE 2026-07-18.** Docstrings for
-`translate`/`uniform_scale` now state the `f(x) = m*x + b` link; call sites converted in
-gacalc `notebooks/` (19) and mvp `demos`/`notebooksrc`/`assignments` (139) plus 8 inline
-`book/docs/*.rst` examples. Library internals deliberately left positional per Bill's
-scope call. The `m`/`b` exception is recorded in both repos' `CLAUDE.md` so a future
-naming pass does not "fix" it to `offset`/`factor`.
-**Created:** 2026-07-18
-**Requested by:** Bill, 2026-07-18 — "I want to make a connection to `f(x) = m*x + b`,
+**Created:** 2026-07-18 · **Completed:** 2026-07-18
+**Requested by:** the maintainer, 2026-07-18: "I want to make a connection to `f(x) = m*x + b`,
 and for the callers of translate and uniform scale to call them using the named
 parameter, i.e. `translate(b=e_1 + 3*e_2)`"
 
+## Outcome
+
+The teaching-facing conversion was done. The docstrings of `translate`/`uniform_scale` state the
+`f(x) = m*x + b` link; call sites were converted in gacalc `notebooks/` (19) and in mvp's
+(github.com/billsix/modelviewprojection) `demos`/`notebooksrc`/`assignments` (139), plus 8 inline
+`book/docs/*.rst` examples. Library internals were deliberately left positional, per the
+maintainer's scope call. The `m`/`b` exception was recorded in both repos' `CLAUDE.md` so a
+later naming pass does not "fix" it to `offset`/`factor`.
+
 ## The pedagogical point
 
-Every student arrives already knowing the equation of a line, `f(x) = m·x + b`: `m`
-scales, `b` shifts. This library's two most basic transforms are exactly those two
-halves — so naming them `m` and `b`, *and using those names at the call site*, turns an
-unfamiliar API into something already understood.
+Every student arrives knowing the equation of a line, `f(x) = m·x + b`: `m` scales, `b` shifts.
+The library's two most basic transforms are exactly those two halves, so naming them `m` and `b`,
+*and using those names at the call site*, turns an unfamiliar API into something already
+understood.
 
-## Good news: the parameters are already named that way
+## Not an API change
 
-`src/gacalc/transforms.py` already reads:
+`src/gacalc/transforms.py` already had `translate(b: V)` and `uniform_scale(m: float)`. The work
+was two smaller things:
 
-```python
-def translate(b: V) -> InvertibleFunction[V]: ...
-def uniform_scale(m: float) -> InvertibleFunction: ...
-```
+1. **The docstrings were made explicit**: they had said "Translate by ``b``" / "Scale uniformly
+   by ``m``" without the reason; they now say `b` is the intercept and `m` the slope of
+   `f(x) = m·x + b`.
+2. **Call sites were converted to keyword form**: `translate(b=e_1 + 3 * e_2)` rather than
+   `translate(e_1 + 3 * e_2)`.
 
-So this task is **not** an API change. It is two smaller things:
+## Scope
 
-1. **Make the connection explicit in the docstrings.** Right now they say "Translate by
-   ``b``" and "Scale uniformly by ``m``" — the names are there but the *reason* is not.
-   Say outright that `b` is the intercept and `m` the slope of `f(x) = m·x + b`, so a
-   reader meeting `b` knows why it is called that and doesn't "improve" it to `offset`.
-2. **Convert call sites to keyword form**, so the teaching lands where the code is read:
-   `translate(b=e_1 + 3 * e_2)` rather than `translate(e_1 + 3 * e_2)`.
+Measured 2026-07-18, none of ~300 call sites used keywords: gacalc `src`/`tests`/`notebooks` 62
+(23 in `notebooks/`); mvp `src`/`tests` 214 (25 in `notebooksrc/`), `assignments/` 26, and 6
+inline `book/docs/*.rst` examples. Each repo's conversion went in its own commit, separate from
+any behavioural change.
 
-## Scope (measured 2026-07-18)
+Decisions (the maintainer, 2026-07-18):
 
-| repo / area | call sites | already keyword |
-|---|---|---|
-| geometricalgebra — `src`, `tests`, `notebooks` | 62 | 0 |
-| ...of which **`notebooks/`** | **23** | 0 |
-| modelviewprojection — `src`, `tests` | 214 | 0 |
-| ...of which **`notebooksrc/`** | **25** | 0 |
-| modelviewprojection — **`assignments/`** | **26** | 0 |
-| modelviewprojection — `book/docs/*.rst` inline examples | 6 | 0 |
+- **Teaching-facing only.** Demos, notebooks, assignments, docstrings and the `.rst` inline
+  examples were converted; library internals (the Cayley-graph engine, `_pipeline`,
+  `transforms.py`'s own plumbing) stayed positional, since `translate(b=...)` inside the engine
+  adds noise without teaching anyone. This roughly halved the diff.
+- **Notebooks and assignments were explicitly in scope** ("make it also look through the
+  notebooks and the assignments, and make sure that the keyword arguments are used in the
+  callers") as the highest-value sites: a student meets the API there first. The `.rst` inline
+  examples are not caught by editing Python files, so they were grepped separately.
 
-**~300 call sites**, none currently keyword. Purely mechanical, easy to land and noisy to
-review, so: its own commit per repo, separate from any behavioural change.
+Two related points raised during the work:
 
-### Notebooks and assignments are explicitly in scope (Bill, 2026-07-18)
-
-"make it also look through the notebooks and the assignments, and make sure that the
-keyword arguments are used in the callers." These are the **highest-value** sites, not an
-afterthought — a notebook or an assignment is read by a student who is meeting the API
-for the first time, which is exactly the moment the `m`/`b` link should land. Do not skip
-them because they are not `src/`:
-
-- gacalc `notebooks/` — 23 sites (jupytext percent-format `.py` files).
-- mvp `src/modelviewprojection/notebooksrc/` — 25 sites.
-- mvp `assignments/` — 26 sites, student-facing exercises.
-- mvp `book/docs/*.rst` — 6 sites written inline in prose rather than excerpted from
-  source; these are **not** caught by editing Python files, so grep the `.rst` too.
-
-**Verification for these areas is different from `src/`:** notebooks and assignments are
-scripts, not imported modules, so a passing test suite proves nothing about them. Execute
-each notebook and assignment after converting (mvp's notebooks run headless with
-`MPLBACKEND=Agg`; the GL assignments need Xvfb — see the recipe in
-`github.com/billsix/runClaudeInContainer:entrypoint/dotfiles/.claude/CLAUDE.md` › nested containers).
-
-## Open questions to settle before starting
-
-- ~~Does this apply to every call site, or only teaching-facing ones?~~ **SETTLED
-  (Bill, 2026-07-18): teaching-facing only.** Convert the places a student reads —
-  **demos, notebooks, assignments, docstrings, and the `.rst` inline examples** — and
-  leave library internals positional (the Cayley-graph engine, `_pipeline`,
-  `transforms.py`'s own plumbing). `translate(b=...)` inside the engine adds noise
-  without teaching anyone. This roughly halves the diff and puts all of it where it
-  earns something.
-- **What about `scale_non_uniform(*factors)`?** It is variadic, so there is no single `m`
-  to name; its docstring already writes `scale_non_uniform(m_x, m_y)`. Either leave it
-  positional (recommended — you cannot pass `*args` by keyword) or document the `m_x`,
-  `m_y` naming as the per-axis slopes.
-- **`rotate` has no `m`/`b` analogue.** Worth a sentence in the docs saying so, so the
-  pattern is not over-generalized: rotation is not part of `f(x) = m·x + b`, which is
-  precisely why the book introduces it separately.
+- `scale_non_uniform(*factors)` is variadic, so there is no single `m` and `*args` cannot be
+  passed by keyword; its docstring already wrote `scale_non_uniform(m_x, m_y)`. The
+  recommendation was to leave it positional.
+- `rotate` has no `m`/`b` analogue: rotation is not part of `f(x) = m·x + b`, which is why the
+  book introduces it separately.
 
 ## Interaction with the coding standard
 
-Both repos' standards say "descriptive over terse" and warn off single-letter names.
-`m` and `b` are a **deliberate, documented exception** justified by the `f(x) = m·x + b`
-link — the same category as gacalc's `n` for dimension. **Record the exception in both
-`CLAUDE.md`s** when this lands, or a future naming pass will "fix" it back to
-`offset`/`factor`. (Note ruff will not complain: `N803` only requires lowercase, which
-`m` and `b` already are.)
+Both repos' standards say "descriptive over terse" and warn off single-letter names. `m` and `b`
+are a deliberate, documented exception justified by the `f(x) = m·x + b` link, in the same
+category as gacalc's `n` for dimension; hence the `CLAUDE.md` entries. ruff does not complain:
+`N803` only requires lowercase.
 
-## Gates
+## Verification
 
-Both repos: `make format` clean, full test suite green. In mvp additionally run the demos
-under Xvfb — the call-site conversion touches demo code that only a real run exercises.
+Both repos: `make format` clean and the full test suite green. Notebooks and assignments are
+scripts, not imported modules, so a passing suite proves nothing about them; each was executed
+after converting (mvp's notebooks headless with `MPLBACKEND=Agg`, the GL assignments and demos
+under Xvfb, per the nested-container recipe in github.com/billsix/runClaudeInContainer
+`entrypoint/dotfiles/.claude/CLAUDE.md`).

@@ -1,14 +1,12 @@
 # Notebook: derive the cross product as a composed projection-rotation pipeline
 
-**Status:** complete
-**Completed:** 2026-07-17
-**Created:** 2026-07-17 (retroactive — work was already done when the doc was written)
+**Created:** 2026-07-17 (retroactively, after the work) · **Completed:** 2026-07-17
 
 ## Goal
 
-Add a cell to one of the gacalc notebooks that *builds* the 3D cross product out of
+A cell was added to one of the gacalc notebooks that *builds* the 3D cross product out of
 nothing but `projection_rotation` and `project`, composed — no cross-product formula
-hand-written — starting from two symbolic 3D vectors, to demonstrate the composable-function
+hand-written — starting from two symbolic 3D vectors, demonstrating the composable-function
 layer (`ComposableFunction` / `@`) shipped in gacalc 0.0.9.
 
 ## What was done
@@ -16,7 +14,7 @@ layer (`ComposableFunction` / `@`) shipped in gacalc 0.0.9.
 Added a section to **`notebooks/displayrotations.py`** (the natural home — it already uses
 `Gn` + `projection_rotation`); imported `ComposableFunction` from `gacalc.transforms`.
 
-Construction (Bill's design):
+Construction (the maintainer's design):
 - `a`, `b` = `Gn.symbolic_multivector(3, "a").r_vector_part(1)` (and `"b"`) — the grade-1
   part of a symbolic multivector, i.e. two symbolic 3D vectors.
 - Four steps, composed with `@` (written reverse of application order):
@@ -28,7 +26,7 @@ Construction (Bill's design):
 
 ## Result (verified)
 
-`cross_over_norm_a(b)` comes out as **(a × b) / |a|** exactly:
+`cross_over_norm_a(b)` came out as **(a × b) / |a|** exactly:
 
 ```
 (a2*b3 - a3*b2)/sqrt(a1**2+a2**2+a3**2) e_1
@@ -44,9 +42,9 @@ dual of the wedge).
 
 ## Follow-on tweak
 
-Relabelled the four functions per Bill's convention — **subscript = "from", superscript =
+The four functions were relabelled per the maintainer's convention — **subscript = "from", superscript =
 "to"**: `R_{a}^{e_1}`, `P_{e_2 e_3}`, `R_{e_2}^{e_3}`, `R_{e_1}^{a}` (the projection was wrapped
-in a `ComposableFunction` to replace its auto-generated `P_{1 e₂ e₃}` label). Pipeline renders
+in a `ComposableFunction` to replace its auto-generated `P_{1 e₂ e₃}` label). The pipeline rendered
 as `R_{e_1}^{a} ∘ R_{e_2}^{e_3} ∘ P_{e_2 e_3} ∘ R_{a}^{e_1}`.
 
 ## Verification
@@ -57,6 +55,6 @@ as `R_{e_1}^{a} ∘ R_{e_2}^{e_3} ∘ P_{e_2 e_3} ∘ R_{a}^{e_1}`.
 
 ## Notes
 
-- The section reuses the local names `a`/`b`, shadowing the earlier rotation-demo `a`/`b` in the
-  same notebook — harmless (cells run top-to-bottom; the earlier ones are done being used).
-  Flagged to Bill; rename to `u`/`v` if the shadow is undesirable.
+- The section reused the local names `a`/`b`, shadowing the earlier rotation-demo `a`/`b` in the
+  same notebook — harmless (cells run top-to-bottom; the earlier ones are done being used). This was
+  flagged to the maintainer, with renaming to `u`/`v` offered if the shadow was unwanted.

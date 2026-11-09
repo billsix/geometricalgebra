@@ -1,6 +1,6 @@
 # gacalc: structural venv consistency with mvp
 
-**Status:** DONE — 2026-06-14 (Bill directed; verified on rebuilt image)
+**Completed:** 2026-06-14 (directed by the maintainer; verified on the rebuilt image)
 
 ## Why
 
@@ -17,36 +17,35 @@ so it never sees the `/usr/local` half. mvp doesn't have this problem because it
 builds a **`--system-site-packages` venv** and every script/target activates it,
 so ty keys off `VIRTUAL_ENV` and resolves everything.
 
-A stopgap (`--extra-search-path /usr/local/...` in `format.sh`) worked, but Bill
-wants gacalc structurally consistent with mvp instead. (It also fixes a latent
+A stopgap (`--extra-search-path /usr/local/...` in `format.sh`) worked, but the maintainer
+wanted gacalc structurally consistent with mvp instead. (It also fixes a latent
 bug: `percentToIpynb.sh` already `source`s `/venv/bin/activate`, a `/venv` that
 didn't exist.)
 
-## Plan (mirror mvp exactly)
+## What was done (mirroring mvp exactly)
 
-mvp idiom: every entrypoint script begins
+mvp's idiom: every entrypoint script begins
 `export VIRTUAL_ENV_DISABLE_PROMPT=1; source /venv/bin/activate`; deps are
 `uv pip install --python $(which python)` into the activated venv; `which` is a
 dnf package.
 
 1. **Dockerfile**
-   - add `which` to the dnf install list (needed for `$(which python)`).
-   - first RUN: create `python3 -m venv --system-site-packages /venv/`, activate,
-     and install setuptools/wheel/numpy/sympy + pyright into it (drop `--system`).
-   - second RUN: re-activate `/venv` (env doesn't persist across RUN), install
-     `.[dev,notebooks,jupyter]` into it (drop `--system`).
-2. **entrypoint scripts** — prepend the activate idiom to `shell.sh`,
-   `jupyter.sh`, `spyder.sh`, `entrypoint.sh`, `format.sh`; switch shell.sh's
-   editable install to `--python $(which python)`; `percentToIpynb.sh` already
-   activates (add the DISABLE_PROMPT export for uniformity).
-3. **format.sh** — revert the `--extra-search-path` stopgap (venv makes ty find
-   everything).
-4. **Makefile** — the containerized `format` / `test` / `dist` recipes run
-   `python` directly; prepend `source /venv/bin/activate;` to each. (`generate` /
-   `check-generated` / the `VERSION :=` shell-out run on the host — leave.)
-5. **CLAUDE.md** — update the dev-workflow notes that say `--system`.
+   - added `which` to the dnf install list (needed for `$(which python)`).
+   - first RUN: creates `python3 -m venv --system-site-packages /venv/`, activates
+     it, and installs setuptools/wheel/numpy/sympy + pyright into it (no `--system`).
+   - second RUN: re-activates `/venv` (env doesn't persist across RUN) and installs
+     `.[dev,notebooks,jupyter]` into it (no `--system`).
+2. **entrypoint scripts** — the activate idiom was prepended to `shell.sh`,
+   `jupyter.sh`, `spyder.sh`, `entrypoint.sh`, `format.sh`; shell.sh's editable
+   install switched to `--python $(which python)`; `percentToIpynb.sh` already
+   activated (the DISABLE_PROMPT export was added for uniformity).
+3. **format.sh** — the `--extra-search-path` stopgap was reverted (the venv makes ty
+   find everything).
+4. **Makefile** — the containerized `format` / `test` / `dist` recipes ran
+   `python` directly; `source /venv/bin/activate;` was prepended to each. (`generate` /
+   `check-generated` / the `VERSION :=` shell-out run on the host and were left.)
 
-## Verify — all green (2026-06-14, rebuilt image)
+## Verification (2026-06-14, rebuilt image)
 
 - `make format` → 3× "All checks passed!" with **no flags** in format.sh.
 - `make test` → **225 passed**.
