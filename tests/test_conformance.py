@@ -49,9 +49,10 @@ for _n in (4, 5):
 
 SPECIALIZED: dict[int, type[MultiVectorBase]] = {n: mod.G for n, mod in MODULES.items()}
 
-# Every (dimension, implementation) pair, including Gn itself as a sanity check.
+# Every (dimension, specialized class) pair. Each test compares the class against the
+# Gn reference, so a Gn row would only compare Gn with itself.
 CASES: list[tuple[int, type[MultiVectorBase]]] = [
-    (n, cls) for n in sorted(MODULES) for cls in (Gn, SPECIALIZED[n])
+    (n, SPECIALIZED[n]) for n in sorted(MODULES)
 ]
 
 

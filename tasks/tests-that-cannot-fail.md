@@ -1,37 +1,28 @@
 # Tests that cannot fail: make them check something
 
-**Status:** proposed — needs go-ahead (approved in session 2026-11-09; in progress)
-**Priority:** 3
-**Difficulty:** 3
-**Created:** 2026-11-09
+**Created:** 2026-11-09 · **Completed:** 2026-11-09
 **Source:** `tasks/review/2026/11/08/repo-review.md` §6.1, §6.2
 
-## BLUF
+## What was wrong, and what changed
 
-Several tests compare a value with itself or check nothing that could break. Done means each one
-asserts a property that a wrong implementation would fail, and the suite stays green.
+- **`tests/test_sandwich_grades.py::test_versor_sandwich_of_bivector_matches_gn_3d`** checked only
+  the result's type. It now compares the specialized sandwich with the `Gn` reference, and with the
+  value the quarter turn must give (`e_12 − 3 * e_13 + 2 * e_23` for `e_12 + 2 * e_13 + 3 * e_23`).
+- **`tests/test_versor_extraction.py`** asserted `R.conjugate() == R.reverse()`, which is
+  `conjugate`'s body. Both sites now assert the definition: the scalar part kept and the bivector
+  part negated, `R.r_vector_part(0) - R.r_vector_part(2)`.
+- **`tests/test_multivector.py::test_normalize`** asserted `normalize`'s own formula. It now asserts
+  the properties: magnitude 1, and scaling back up by the original magnitude gives the original
+  vector (2D and 3D, symbolic).
+- **`tests/test_conformance.py`:** `CASES` lists only the specialized classes. The `(n, Gn)` rows
+  compared `Gn` with itself.
+- **`tests/test_transforms.py`'s reflect-then-project pipeline** now also asserts the reflection's own
+  step (`e_1 + e_3 → e_1 − e_3`). Projecting onto the plane discards what the reflection flips, so
+  the pipeline's result alone could not see a broken reflect.
 
-## Context
+## Verification
 
-- `tests/test_sandwich_grades.py::test_versor_sandwich_of_bivector_matches_gn_3d` checks only the
-  result's type; its docstring promises a comparison with `Gn`.
-- `tests/test_versor_extraction.py` asserts `R.conjugate() == R.reverse()`, and `conjugate` *is*
-  `return self.reverse()` (`base.py`).
-- `tests/test_multivector.py::test_normalize` asserts `u.normalize() == u * abs(u)**-1`, which is
-  `normalize`'s own body.
-- `tests/test_conformance.py`'s `CASES` include `(n, Gn)` rows, which compare `Gn` with `Gn`.
-- `tests/test_transforms.py`'s reflect-then-project pipeline can't see a broken reflect, because
-  projecting onto the plane discards exactly what the reflection flips.
-
-## Plan
-
-- [ ] Compare the bivector sandwich with the `Gn` reference and with the expected value.
-- [ ] State `conjugate` by its definition (keep the scalar part, negate the bivector part).
-- [ ] State `normalize` by its properties (magnitude 1; scaled back up, the original vector).
-- [ ] Drop the `Gn` rows from `CASES`.
-- [ ] Assert the reflection's own step in the pipeline test.
-- [ ] Gate: `pytest -m "not slow"`, `ruff`, `ty`.
-
-## Open questions
-
-None.
+- The five touched files: 188 passed, 2 skipped.
+- The full `make test` (lean image): 752 passed, 2 skipped. The count fell because of the dropped
+  `Gn` rows.
+- `ruff` and `ty`: clean.

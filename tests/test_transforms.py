@@ -551,10 +551,13 @@ def test_composable_functions_compose_into_pipeline_latex() -> None:
     # the whole pipeline renders as one combined LaTeX expression
     assert pipe.latex_repr == "P_{B} \\circ M_{B}"
     # applies M (reflect across the plane) first, then P (project onto it):
-    # e_1 + e_3  --reflect-->  e_1 - e_3  --project-->  e_1
-    assert pipe(1 * g3.Vector.e_1 + 1 * g3.Vector.e_3).isclose(
-        g3.Vector.e_1, rel_tol=1e-5, abs_tol=1e-5
+    # e_1 + e_3  --reflect-->  e_1 - e_3  --project-->  e_1.  Projecting discards
+    # the part the reflection flips, so P @ M equals P alone; check M's step too.
+    x: MultiVectorBase = 1 * g3.Vector.e_1 + 1 * g3.Vector.e_3
+    assert m(x).isclose(
+        1 * g3.Vector.e_1 + (-1) * g3.Vector.e_3, rel_tol=1e-5, abs_tol=1e-5
     )
+    assert pipe(x).isclose(g3.Vector.e_1, rel_tol=1e-5, abs_tol=1e-5)
 
 
 def test_composable_function_is_not_invertible() -> None:

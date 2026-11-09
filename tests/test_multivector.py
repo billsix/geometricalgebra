@@ -336,11 +336,14 @@ def test_inverse_rejects_general_multivector() -> None:
 
 
 def test_normalize() -> None:
-    # normalizing a vector divides it by its own magnitude:
+    # the normalized vector has magnitude 1 and points the same way: scaling it
+    # back up by the original magnitude gives the original vector.
     u2: MultiVector = a_1 * e_1 + a_2 * e_2
-    assert u2.normalize() == u2 * (abs(u2) ** (-1))
+    assert u2.normalize().magnitude() == 1
+    assert u2.normalize() * u2.magnitude() == u2
     u3: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    assert u3.normalize() == u3 * (abs(u3) ** (-1))
+    assert u3.normalize().magnitude() == 1
+    assert u3.normalize() * u3.magnitude() == u3
 
 
 def test_rotate() -> None:
