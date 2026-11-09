@@ -71,10 +71,10 @@ namespace G3
 /-- Grade-r projection `⟨a⟩_r` on 𝒢₃ (grades 0,1,2,3; higher r gives 0). -/
 noncomputable def rVectorPart (r : ℕ) (a : G3) : G3 :=
   match r with
-  | 0 => smul a.s one
-  | 1 => add (add (smul a.c1 e_1) (smul a.c2 e_2)) (smul a.c3 e_3)
-  | 2 => add (add (smul a.c12 e_12) (smul a.c13 e_13)) (smul a.c23 e_23)
-  | 3 => smul a.c123 e_123
+  | 0 => ⟨a.s, 0, 0, 0, 0, 0, 0, 0⟩
+  | 1 => ⟨0, a.c1, a.c2, a.c3, 0, 0, 0, 0⟩
+  | 2 => ⟨0, 0, 0, 0, a.c12, a.c13, a.c23, 0⟩
+  | 3 => ⟨0, 0, 0, 0, 0, 0, 0, a.c123⟩
   | _ => ⟨0, 0, 0, 0, 0, 0, 0, 0⟩
 
 /-- Even part `⟨a⟩₀ + ⟨a⟩₂`. -/
