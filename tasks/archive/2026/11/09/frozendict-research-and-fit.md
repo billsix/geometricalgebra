@@ -18,7 +18,7 @@ corrupt `e_1`) impossible by construction, and lets `to_blade_dict()` return the
 no copy. Measured, this costs nothing: every `Gn` operation, the code generator and the test suite
 ran within noise of the baseline, and `to_blade_dict()` itself got 4× faster. Nothing else in the
 codebase gains from it. The adoption is scaffolded as
-`tasks/gn-frozendict-coefficient-storage.md`. The `Frame` task needs no change.
+`tasks/archive/2026/11/09/gn-frozendict-coefficient-storage.md`. The `Frame` task needs no change.
 
 ## Decisions
 
@@ -155,13 +155,14 @@ to that task's Context.
 - The phase 1 sources and runtime checks above.
 - The phase 2 survey (`discover.sh` and `data/`), the scratch-worktree typing trials, and the
   measurement harness, patches and results under `tasks/adhoc/frozendict-research-and-fit/`.
-- Scaffolded `tasks/gn-frozendict-coefficient-storage.md` (the adoption, `proposed — needs
+- Scaffolded `tasks/archive/2026/11/09/gn-frozendict-coefficient-storage.md` (the adoption, `proposed — needs
   go-ahead`).
 - Added an "Immutable storage" section to `tasks/reference/blade-dict-interchange.md` with the
   durable findings.
 - No source change: `src/gacalc/gn.py` is back at `HEAD` (the driver's `trap` restores it, checked
   with `git status`).
-- **`tasks/adhoc/frozendict-research-and-fit/` was kept at archive**, not deleted with `git rm` as
-  one-shot scripts usually are. The maintainer asked for that folder to hold the performance
-  metrics for review, and `tasks/gn-frozendict-coefficient-storage.md` points at it as the
-  measurement record. Delete it once that adoption task is archived.
+- **`tasks/adhoc/frozendict-research-and-fit/` was kept at this archive** so the maintainer could
+  review the performance metrics, and removed with `git rm` when the adoption task
+  (`tasks/archive/2026/11/09/gn-frozendict-coefficient-storage.md`) was archived, 2026-11-09. The
+  numbers are in the table above. Recover the harness, patches and raw `data/results.csv` from git
+  history: `git log --diff-filter=D --name-only -- tasks/adhoc/frozendict-research-and-fit`.
