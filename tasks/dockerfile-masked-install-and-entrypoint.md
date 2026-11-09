@@ -1,67 +1,56 @@
-# Dockerfile: fail on a failed base install, ship the entrypoint, fix stale comments
+# Dockerfile: fail on a failed base install, ship a working entrypoint, fix stale comments
 
-**Status:** proposed — needs go-ahead (approved in session 2026-11-09; in progress)
-**Priority:** 3
-**Difficulty:** 2
-**Created:** 2026-11-09
+**Created:** 2026-11-09 · **Completed:** 2026-11-09
 **Source:** `tasks/review/2026/11/08/repo-review.md` §8.1
 
-## BLUF
+## What was wrong
 
-Done means:
-
-- a failing `01-install-base.sh` fails `make image`;
-- the image starts without a `--entrypoint` override;
-- `make image` no longer bind-mounts the vendored Emacs tree into the build;
-- the stale comments and script headers in the image/entrypoint files say what is true.
-
-## Context
-
-All re-checked on 2026-11-09.
-
-- **The masked base install.** `Dockerfile` runs `/usr/local/bin/01-install-base.sh ;` then the
-  optional groups with `;`. The `RUN`'s status is the final `uv pip install`'s, so a failed base
-  install is masked. The template convention is to dispatch group scripts with `&&`.
-- **The missing entrypoint.** `ENTRYPOINT ["/entrypoint.sh"]` names a file that is only bind-mounted
-  (`FILES_TO_MOUNT`), never `COPY`'d. So a bare `podman run gacalc` fails, although the Dockerfile
-  bakes the source for exactly that non-mounted use.
-- **The elpa mount on the build.** `make image` passes `$(ELPA_MOUNT)` to `podman build`. With the
-  default `USE_EMACS=1` that bind-mounts `entrypoint/dotfiles/.emacs.d/elpa` into the build with
-  `:U`, which can chown the host tree. No build step reads it: the packages are never baked, and
-  `.dockerignore` excludes them. The comment above `ELPA_MOUNT` says "Default is off", which went
-  stale when `USE_EMACS` became `?= … 1`.
+- **The masked base install.** The base-install `RUN` chained `01-install-base.sh ;` and the optional
+  groups with `;`, so a failed base install didn't fail the build. The `RUN`'s status was the final
+  `uv pip install`'s.
+- **The entrypoint.** `ENTRYPOINT ["/entrypoint.sh"]` named a file that was only bind-mounted, never
+  baked, so a bare `podman run gacalc` couldn't start. Once baked, a second bug showed: it ended in
+  `exec bash` without `"$@"`, so `podman run gacalc -c '…'` silently ignored the command and exited 0.
+  (Found while verifying this task.)
+- **The elpa mount on the build.** `make image` passed `$(ELPA_MOUNT)` to `podman build`, which
+  bind-mounted the vendored Emacs tree into every default build with `:U`. No build step reads it.
+  Its comment said "Default is off".
 - **Stale comments:**
-  - `Dockerfile:8-10`: "lean when built nested". Since 2026-09-27, nested builds are full unless
-    `MINIMAL_IMAGE=1`.
-  - `Dockerfile:186`: "dnf/MELPA/TeX". MELPA is not baked.
-  - `entrypoint/05-install-emacs.sh`: "skips it in a lean nested image".
-  - `entrypoint/03-install-notebook-tex.sh`: "Always installed … unconditionally". It is gated on
-    `USE_JUPYTER || BUILD_DOCS`.
-  - `entrypoint/jupyter.sh` and `shell.sh`: "(scalar/g1/g2/g3.py)". There is no `scalar.py`.
-  - `pyproject.toml`'s licence comment: `gacalc.g2.Vector2`, now `Vector`.
-- **Script modes and shebangs:**
-  - `entrypoint/docs.sh` is `100644`;
-  - `docs.sh`, `entrypoint.sh`, `format.sh` and `percentToIpynb.sh` use `#!/bin/env bash`, which is
-    not present on every host;
-  - `shell.sh`, `jupyter.sh` and `spyder.sh` have no shebang.
-- **Not changed:**
-  - `spyder.sh` and `percentToIpynb.sh` look vestigial (no target runs them), but the maintainer may
-    use them by hand. They stay, and the done-record notes it.
-  - The image's unpinned dependencies are a separate optional follow-up (§8.1).
+  - `Dockerfile` said flags are "lean when built nested";
+  - `Dockerfile` listed "dnf/MELPA/TeX";
+  - `05-install-emacs.sh` said "a lean nested image";
+  - `03-install-notebook-tex.sh` said "Always installed … unconditionally";
+  - `shell.sh` and `jupyter.sh` mentioned a `scalar.py`;
+  - `pyproject.toml` cited `gacalc.g2.Vector2`.
+- **Script modes and shebangs:** `docs.sh` was `100644`; four scripts used `#!/bin/env bash`; three
+  had no shebang.
 
-## Plan
+## What changed
 
-- [ ] Chain the base RUN with `&&` (the `if` blocks return 0 when their flag is off).
-- [ ] `COPY entrypoint/entrypoint.sh /entrypoint.sh` before `ENTRYPOINT`.
-- [ ] Drop `$(ELPA_MOUNT)` from the `image` recipe, and correct the `ELPA_MOUNT` comment.
-- [ ] Fix the comments listed above.
-- [ ] Use `#!/usr/bin/env bash` throughout; add shebangs where missing; `docs.sh` +x.
-- [ ] Verify:
-  - `make image MINIMAL_IMAGE=1`;
-  - `podman run --rm gacalc -c 'echo ok'` with no `--entrypoint`;
-  - a shell check that a failing first command now fails the chain;
-  - `make test MINIMAL_IMAGE=1`.
+- **`Dockerfile`:**
+  - the base `RUN` dispatches with `&&` (the `if … fi` blocks return 0 when a flag is off, so only a
+    real failure stops the chain);
+  - `COPY entrypoint/entrypoint.sh /entrypoint.sh` before `ENTRYPOINT`, with a comment that the
+    Makefile's bind mount still overrides it;
+  - the two stale comments fixed.
+- **`entrypoint/entrypoint.sh`** ends `exec bash "$@"`: an interactive shell with no arguments, and
+  the given command otherwise.
+- **`Makefile`:** `$(ELPA_MOUNT)` is gone from the `image` recipe, and its comment now says the mount
+  serves the `shell`/`shell-exec`/`jupyter` containers, not the build.
+- **Comments:** `05-install-emacs.sh`, `03-install-notebook-tex.sh` (reflowed), `shell.sh`,
+  `jupyter.sh`, `pyproject.toml`.
+- **Shebangs and modes:** `#!/usr/bin/env bash` throughout, added to `shell.sh`/`jupyter.sh`/
+  `spyder.sh`; `docs.sh` is `100755`.
+- **Left alone on purpose:** `spyder.sh` and `percentToIpynb.sh` look vestigial (no target runs
+  them), but they may be used by hand.
 
-## Open questions
+## Verification
 
-None.
+- `bash -n` on every `entrypoint/*.sh`: clean. Every script is `100755`.
+- The chain shape: `false && if [ 0 = 1 ]; then …; fi && echo reached` exits 1 without printing, so a
+  failed first command fails the chain.
+- `make image MINIMAL_IMAGE=1` (nested): built. `podman image inspect gacalc` shows the
+  `/entrypoint.sh` entrypoint.
+- `podman run --rm gacalc -c 'echo entrypoint-ok; python -c "import gacalc.g2; …"'`, with no
+  `--entrypoint`, prints `entrypoint-ok` and `e_1`'s repr.
+- `make test MINIMAL_IMAGE=1`: 752 passed, 2 skipped.

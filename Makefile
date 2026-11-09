@@ -80,9 +80,10 @@ WAYLAND_FLAGS_FOR_CONTAINER = -e "WAYLAND_DISPLAY=${WAYLAND_DISPLAY}" \
                               -v "${XDG_RUNTIME_DIR}:${XDG_RUNTIME_DIR}"
 
 
-# USE_EMACS=1 bind-mounts the vendored host elpa tree into the container so an
-# interactive `make shell USE_EMACS=1` can *use* the vendored packages (:U chowns
-# it to the container user, :z relabels for SELinux). Default is off (no mount).
+# USE_EMACS=1 (the default) bind-mounts the vendored host elpa tree into the
+# `shell`/`shell-exec`/`jupyter` containers so Emacs can *use* the vendored packages
+# (:U chowns it to the container user, :z relabels for SELinux). The image build
+# never mounts it: the packages are not baked (.dockerignore excludes them).
 # To *refresh* the vendored packages, use `make update-emacs-packages` below.
 ifeq ($(USE_EMACS), 1)
   ELPA_MOUNT= -v $(CURDIR)/entrypoint/dotfiles/.emacs.d/elpa:/root/.emacs.d/elpa:U,z
@@ -102,7 +103,6 @@ image: ## Build the OCI image
                          --build-arg USE_JUPYTER=$(USE_JUPYTER) \
                          --build-arg USE_LEAN=$(USE_LEAN) \
                          --build-arg USE_EPIX=$(USE_EPIX) \
-                         $(ELPA_MOUNT) \
                          .
 
 

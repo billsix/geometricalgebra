@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Fail-fast setup: a failed step (venv activate, codegen, editable install) aborts
 # rather than dropping you into / running a shell-exec script against a half-set-up
 # tree. The final `exec bash` is a FRESH bash not under -e, so interactive/script
@@ -6,7 +7,7 @@ set -e
 export VIRTUAL_ENV_DISABLE_PROMPT=1
 source /venv/bin/activate
 cd /gacalc/
-# The specialized algebras (scalar/g1/g2/g3.py) are generated, not tracked in
+# The specialized algebras (g1/g2/g3.py) are generated, not tracked in
 # git -- produce them into the (bind-mounted) tree before the editable install
 # and before the user gets a prompt, so tests/IDE/ty/ruff all see real files.
 # Only the dev-default dims (g1--g3) are built here; g4/g5 are release-only (they

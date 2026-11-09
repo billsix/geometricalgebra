@@ -6,8 +6,8 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     dnf upgrade -y
 
 # Every optional-feature ARG defaults to 0 so a bare `podman build` stays lean; the
-# Makefile passes each flag's real value (full on a host, lean when built nested --
-# see the Makefile flag block and runClaudeInContainer
+# Makefile passes each flag's real value (full by default, host or nested; lean with
+# `make image MINIMAL_IMAGE=1` -- see the Makefile flag block and runClaudeInContainer
 # tasks/reference/minimal-nested-images.md). Each ARG is declared just before the
 # first layer that reads it, never all at the top: a build-arg's value is part of
 # the cache key of EVERY later RUN (used or not), so a top-of-file ARG makes
@@ -75,8 +75,8 @@ COPY entrypoint/01-install-base.sh \
 
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
-    /usr/local/bin/01-install-base.sh ; \
-    if [ "$USE_EMACS" = "1" ]; then /usr/local/bin/05-install-emacs.sh ; fi ; \
+    /usr/local/bin/01-install-base.sh && \
+    if [ "$USE_EMACS" = "1" ]; then /usr/local/bin/05-install-emacs.sh ; fi && \
     if [ "$USE_SPYDER" = "1" ]; then \
       /usr/local/bin/02-install-spyder.sh && \
       mkdir -p ~/.config/spyder-py3/config && \
@@ -90,7 +90,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
       echo "[appearance]" >> ~/.config/spyder-py3/config/spyder.ini && \
       echo "font/family = Adwaita Mono" >> ~/.config/spyder-py3/config/spyder.ini && \
       echo "font/size = 18" >> ~/.config/spyder-py3/config/spyder.ini; \
-    fi ; \
+    fi && \
     echo "/usr/local/bin/jupyter.sh # on http://127.0.0.1:8888/lab" >> ~/.bash_history && \
     echo "emacs src/gacalc/gn.py tests/test_multivector.py &" >> ~/.bash_history && \
     echo "source ~/.extrabashrc" >> ~/.bashrc && \
@@ -183,7 +183,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
 # requirements.txt, no hardcoded list). `-r pyproject.toml` installs the DEPENDENCIES,
 # NOT the gacalc package, so this layer neither builds gacalc nor needs src/ or tools/,
 # and is placed BEFORE `COPY src`/`COPY tools` so a code edit never rebusts it. It also
-# sits after every slow source-independent layer (dnf/MELPA/TeX + the Lean/Mathlib bake
+# sits after every slow source-independent layer (dnf/TeX + the Lean/Mathlib bake
 # above). The uv CACHE MOUNT only speeds a rebuild (it is discarded, not in the image);
 # the deps still land in the committed /venv, so an exported image stays self-contained.
 COPY pyproject.toml setup.py README.md /gacalc/
@@ -211,4 +211,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     export VIRTUAL_ENV_DISABLE_PROMPT=1 && source /venv/bin/activate && \
     cd /gacalc && uv pip install --python $(which python) --no-deps --no-build-isolation .
 
+# The entrypoint is baked so a pulled or non-mounted image starts on its own; the
+# Makefile also bind-mounts it, so an edit takes effect without a rebuild.
+COPY entrypoint/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

@@ -1,7 +1,8 @@
+#!/usr/bin/env bash
 export VIRTUAL_ENV_DISABLE_PROMPT=1
 source /venv/bin/activate
 cd /gacalc
-# The specialized algebras (scalar/g1/g2/g3.py) are generated, not tracked in
+# The specialized algebras (g1/g2/g3.py) are generated, not tracked in
 # git -- produce them and install editable so the notebooks can import gacalc
 # against the live source, whether launched via `make jupyter` or from a shell
 # (mirrors shell.sh).

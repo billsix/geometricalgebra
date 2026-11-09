@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 #
 # 03-install-notebook-tex.sh -- pandoc + the XeLaTeX toolchain that nbconvert's
-# "Export to PDF" path renders through. Always installed (the Dockerfile calls it
-# unconditionally); kept as its own group because it is a distinct, documented set
-# separate from the base toolchain. No options -- see 01-install-base.sh for the design.
+# "Export to PDF" path renders through. The Dockerfile runs it when USE_JUPYTER=1 or
+# BUILD_DOCS=1 (the book's LaTeX build relies on its collections). Kept as its own
+# group because it is a distinct, documented set separate from the base toolchain.
+# No options -- see 01-install-base.sh for the design.
 #
 # Single dnf call, so its own exit status is this script's exit status.
 set -uo pipefail

@@ -2,7 +2,7 @@
 #
 # 05-install-emacs.sh -- Emacs (the maintainer's editor) + its GTK/pgtk builds. Its
 # own package group, gated by the Dockerfile's USE_EMACS ARG (the Makefile builds it
-# in on a host and skips it in a lean nested image). No options -- WHICH optional
+# in by default and skips it in a `MINIMAL_IMAGE=1` image). No options -- WHICH optional
 # groups run is decided by the Dockerfile's `if` blocks; see 01-install-base.sh for
 # the design. Host-runnable: on a bare Fedora host, run this to add Emacs.
 #
