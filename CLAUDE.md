@@ -294,9 +294,10 @@ Repo-specific invariants the agent must obey (rationale in the shared doc + the 
   (`a: Vector = a_1 * e_1 + a_2 * e_2`, `R: Versor = …`, `magnitude: Real = b.magnitude()`),
   declare each name on the line above a `sympy.symbols` unpack (`a_1: sympy.Symbol`), and
   annotate every `def`'s parameters and return — exactly as `tests/` and `notebooks/` do; a
-  `1 + 1` placeholder has nothing to type. Enforcement: `make format` runs
-  `ty check book/docs/notebooks`, and `tools/check_annotations.py` walks `book/docs/notebooks/`
-  so a missing annotation shows up as a row (none expected).
+  `1 + 1` placeholder has nothing to type. `make format` runs `ty check book/docs/notebooks`, which
+  catches wrong types but not missing ones. For those, run `tools/check_annotations.py` by hand: it
+  walks `book/docs/notebooks/` too and lists each missing annotation as a row (none expected). It is
+  a report, not a gate; it never fails a build.
 - **Prefer `match` / total dispatch for structural case analysis** — the cross-project "Prefer total
   dispatch over an open-ended conditional chain" convention, and it applies to the **Lean proofs**
   (`proofs/`) as much as the Python. Where a definition dispatches on structure (a grade/`n`, a

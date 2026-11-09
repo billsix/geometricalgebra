@@ -71,15 +71,15 @@ Merge them into one.
    the record).
 4. Gates: `make test`, `make format` (ruff + ty). Confirm the auditor's count equals the new floor.
 
-## Also: make the auditor an enforcing gate (added 2026-11-09)
+## Also: the auditor's §5.2 defects (added 2026-11-09)
 
 From `tasks/review/2026/11/08/repo-review.md` §5.2. The maintainer put this here rather than in a new
-task (2026-11-09). `tools/check_annotations.py` does not do what `CLAUDE.md` says it does:
+task (2026-11-09). `tools/check_annotations.py` does not do what its docs said it does:
 
-- **It always exits 0, and nothing runs it.** `CLAUDE.md` › "Coding standard (Python)" calls it
-  enforcement for the book notebooks ("a missing annotation shows up as a row"). Make it exit
-  nonzero on any row that is not in `tasks/reference/type-annotation-exemptions.md`, and run it from
-  `entrypoint/format.sh`, so `make format` and CI's `check-format` run it.
+- **It always exits 0, and nothing runs it, but `CLAUDE.md` called it enforcement.** Decided: it
+  stays a report, not a gate, and `CLAUDE.md` › "Coding standard (Python)" was reworded to say so
+  (William Emerison Six <billsix@gmail.com>, 2026-11-09: "change the wording to not call it
+  enforcement"). Done; staged with this task doc.
 - **Its docstring says gitignored files are excluded; they aren't.** Implement the exclusion, or
   correct the docstring.
 - **The `annotated` set is built per file**, so one annotated `x` exempts every unannotated `x` in
