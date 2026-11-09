@@ -90,7 +90,7 @@ with a dispatching `+`, not `from_blade_dict` (see its docstring).
 ## Immutable storage (`frozendict`, Python 3.15)
 
 `frozendict` is a built-in since Python 3.15.0 (PEP 814, Final). gacalc's measured findings
-(2026-11-09, `tasks/frozendict-research-and-fit.md`):
+(2026-11-09, `tasks/archive/2026/11/09/frozendict-research-and-fit.md`):
 
 - **It fits `Gn`'s storage and nothing else.** Storing `Gn.coefficient_of_blade` as a
   `frozendict` makes a caller's edit of a `to_blade_dict()` result impossible (the `e_1`

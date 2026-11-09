@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Discovery for tasks/frozendict-research-and-fit.md phase 2: every dict-typed
+# Discovery for tasks/archive/2026/11/09/frozendict-research-and-fit.md phase 2: every dict-typed
 # annotation, BladeReal use, Gn storage access and module-level dict constant in
 # the hand-written source.  Run from the repo root; writes data/*.txt.
 set -u

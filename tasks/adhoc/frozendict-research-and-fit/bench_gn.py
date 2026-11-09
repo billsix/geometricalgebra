@@ -17,6 +17,7 @@ import sys
 import timeit
 from collections.abc import Callable
 
+from gacalc.base import BladeReal
 from gacalc.gn import Gn
 
 LABEL: str = sys.argv[1] if len(sys.argv) > 1 else "run"
@@ -32,7 +33,7 @@ def full(n: int, base: int) -> Gn:
 
 a3: Gn = full(3, 0)
 b3: Gn = full(3, 10)
-d8: dict[tuple[int, ...], int] = dict(a3.to_blade_dict())
+d8: BladeReal = dict(a3.to_blade_dict())
 sa: Gn = Gn.symbolic_multivector(3, "a")
 sb: Gn = Gn.symbolic_multivector(3, "b")
 

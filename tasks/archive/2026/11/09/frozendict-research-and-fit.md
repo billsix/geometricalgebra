@@ -161,3 +161,7 @@ to that task's Context.
   durable findings.
 - No source change: `src/gacalc/gn.py` is back at `HEAD` (the driver's `trap` restores it, checked
   with `git status`).
+- **`tasks/adhoc/frozendict-research-and-fit/` was kept at archive**, not deleted with `git rm` as
+  one-shot scripts usually are. The maintainer asked for that folder to hold the performance
+  metrics for review, and `tasks/gn-frozendict-coefficient-storage.md` points at it as the
+  measurement record. Delete it once that adoption task is archived.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Measure baseline Gn against the two frozendict variants (tasks/frozendict-research-and-fit.md).
+# Measure baseline Gn against the two frozendict variants (tasks/archive/2026/11/09/frozendict-research-and-fit.md).
 # For each variant: the Gn micro-benchmark, the code generator's wall time (best of 3) with its
 # g1-g3 output compared byte-for-byte to the baseline's, and the host `pytest -m "not slow"` wall
 # time (best of 3) with its exit status.  Restores src/gacalc/gn.py to HEAD on exit.

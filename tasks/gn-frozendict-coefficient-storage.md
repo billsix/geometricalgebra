@@ -5,7 +5,7 @@
 **Difficulty:** 3
 **Created:** 2026-11-09
 **Source:** `tasks/archive/2026/11/09/frozendict-research-and-fit.md` (the research and
-measurements; until that task is archived, `tasks/frozendict-research-and-fit.md`)
+measurements; the harness and raw numbers are in `tasks/adhoc/frozendict-research-and-fit/`)
 
 ## BLUF
 
