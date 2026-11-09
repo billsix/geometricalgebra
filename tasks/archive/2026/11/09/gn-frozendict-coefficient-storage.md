@@ -66,7 +66,7 @@ use now writes `Mapping[Blade, Real]`. The current state and its rationale are i
 
 ## Decisions
 
-1. Go ahead, as part of a committed batch with `tasks/frame-derived-orthogonal-set-and-tuple-field.md`
+1. Go ahead, as part of a committed batch with `tasks/archive/2026/11/09/frame-derived-orthogonal-set-and-tuple-field.md`
    (William Emerison Six <billsix@gmail.com>, 2026-11-09: "make a branch do the
    gn-frozendict-coefficient-storage task, commit it, archive it"). The research task made the two
    design decisions (raise `requires-python` to 3.15 with no fallback; immutable `Gn` storage).

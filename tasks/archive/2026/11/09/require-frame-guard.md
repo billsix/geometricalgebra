@@ -44,7 +44,7 @@ raising, and a non-vector raising.
 1. `require_frame` is public, like `is_frame` and `require_vector`/`require_vectors` (William
    Emerison Six <billsix@gmail.com>, 2026-11-09: "yes public").
 2. It was done in the committed batch on branch `gn-frozendict-and-frame-tuple`, before
-   `tasks/frame-derived-orthogonal-set-and-tuple-field.md`, whose plan named this task as its
+   `tasks/archive/2026/11/09/frame-derived-orthogonal-set-and-tuple-field.md`, whose plan named this task as its
    first step. The maintainer had authorized the Frame task and was away, so the order was the
    agent's call (2026-11-09).
 3. `require_frame` calls `require_vectors` first, so an empty sequence or a non-vector member

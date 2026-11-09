@@ -140,7 +140,7 @@ Host: the sandbox's Python 3.15.0 and sympy 1.14.0, run 2026-11-09 with nothing 
 
 ## Phase 3: the `Frame` task, re-analyzed
 
-`tasks/frame-derived-orthogonal-set-and-tuple-field.md` is unchanged in substance:
+`tasks/archive/2026/11/09/frame-derived-orthogonal-set-and-tuple-field.md` is unchanged in substance:
 - `frozendict` has no sequence counterpart, so the tuple field stays the idiomatic immutable
   sequence;
 - `Frame` stays unhashable: its elements are multivectors, and `Gn` won't gain a `__hash__` even
