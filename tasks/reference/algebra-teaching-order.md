@@ -124,9 +124,13 @@ Distilled from Part I, in priority order:
 `proofs/GacalcProofs/`): the files now **follow** this teaching order. `G1.lean`/`G2.lean`/
 `G3.lean` each read: representation scaffolding → **addition and the vector-space operations**
 (`add`/`sub`/`neg`/`smul`) → **the geometric product, the wedge, and the dot** → reverse and
-magnitude → **the algebra laws, stated with each algebra** (associativity, two-sided
-distributivity, identity, the scalar laws), with `vec_anticomm_perp` placed beside the
-wedge/anticommutativity material it rests on.
+magnitude → **the algebra laws, stated with each algebra**, with `vec_anticomm_perp` placed
+beside the wedge/anticommutativity material it rests on. Since 2026-11-09 the G2/G3 laws follow
+Part II's order: addition first (`add_comm`, `add_assoc`, `add_zero`/`zero_add`, `add_neg_cancel`),
+then the product (`mul_assoc`, `one_mul`/`mul_one`, `zero_mul`, then `mul_add`/`add_mul`/`sub_mul`/
+`mul_sub`, distributivity last), then the scalar laws. `G2` gained `zero`, and `G3`'s `dot` moved
+into its product section, as in `G2`. Laws that had lived in other files moved in: `G2.sub_mul` (from
+`StandardPosition2D`), and `G3.zero_mul`/`add_zero`/`zero_add` (from `ProjectionRotation3D`).
 
 What changed (a pure relocation — no statement, proof, or name altered; `make lean` green before
 and after, the 232-declaration set byte-identical):

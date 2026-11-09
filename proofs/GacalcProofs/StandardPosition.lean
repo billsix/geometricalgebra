@@ -132,7 +132,7 @@ theorem mul_eq_proj_dot_add_reject_wedge {a b : G3} (ha_isv : IsVector a) (hb_is
     congr 1
     simp only [proj, add, sub, smul, vec]; ext <;> ring
   rw [hsplit, mul_proj_eq_dot (isVector_vec a.c1 a.c2 a.c3) (isVector_vec b.c1 b.c2 b.c3) ha',
-      plane_eq_wedge a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 ha']
+      plane_eq_wedge (isVector_vec a.c1 a.c2 a.c3) (isVector_vec b.c1 b.c2 b.c3) ha']
 
 /-! ### The explicit alignment: rotate `b` onto the x-axis by composing plane rotations
 

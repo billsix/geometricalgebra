@@ -29,14 +29,6 @@ noncomputable def projRotation (f t v : G3) : G3 :=
   add (mul (mul (project_onto (wedge f t) v) (normalizeVec f)) (normalizeVec t))
       (reject (wedge f t) v)
 
-/-! ### Small algebra helpers (absent elsewhere) -/
-
-theorem zero_mul (a : G3) : mul zero a = zero := by simp only [mul, zero]; ext <;> ring
-
-theorem add_zero (a : G3) : add a zero = a := by simp only [add, zero]; ext <;> ring
-
-theorem zero_add (a : G3) : add zero a = a := by simp only [add, zero]; ext <;> ring
-
 /-! ### `from` lies in the `from ∧ to` plane -/
 
 /-- A vector wedged with a plane that contains it vanishes: `f ∧ (f ∧ t) = 0`. -/

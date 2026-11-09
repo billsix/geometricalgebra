@@ -179,10 +179,6 @@ theorem projectSP_eq_proj {b : G2} (hbv : IsVector b) (hb : magnitude b ≠ 0) (
   rw [proj_rotPlane_equivariant _ _ (cs_unit hbv hb),
       rotPlane_inv _ _ _ (cs_unit hbv hb) (by ring)]
 
-/-- The geometric product distributes over subtraction on the left (2D). -/
-theorem sub_mul (a b c : G2) : mul (sub a b) c = sub (mul a c) (mul b c) := by
-  simp only [mul, sub]; ext <;> ring
-
 /-- **Hestenes rejection onto a vector equals the projection-complement** (coordinates): `(b∧a)a⁻¹ =
     b − proj_a b`, for `a·a ≠ 0`. Structural (Hestenes), division-free: `b∧a = ba − (b·a)·1`, so
     `(b∧a)a⁻¹ = b(a a⁻¹) − (b·a)a⁻¹ = b − proj_a b`. -/

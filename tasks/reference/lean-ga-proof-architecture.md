@@ -132,8 +132,8 @@ mirroring Python's `is_*` (`base.py`): **`IsScalar`** (grade 0), **`IsVector`** 
 `eq_vec_of_isVector` →`vec`, `eq_smul_e12_of_isBivector` →`c*e₁₂`) and `is…_…` recognizer
 (`isScalar_scalar`/`isScalar_one`, `isVector_vec`, `isBivector_e12`/`isBivector_I`). Two **grade-of-result** lemmas show the
 typed-object use: `isScalar_mul_self_of_isVector` (`a a` is a scalar, `G2.lean`) and
-`isBivector_wedge_of_isVector` (`a∧b` is a bivector, `G2.lean`); `vec_wedge_I_eq_zero` was refactored
-into a corollary of the object-form `wedge_isVector_isBivector_eq_zero`. **Object-out parity with G3
+`isBivector_wedge_of_isVector` (`a∧b` is a bivector, `G2.lean`); `wedge_I_eq_zero` (over `IsVector`
+since 2026-11-09) is a corollary of the object-form `wedge_isVector_isBivector_eq_zero`. **Object-out parity with G3
 (2026-10-28):** `G2.dot_is_sym_part` (`½(ab+ba) = scalar(a·b)`), `wedge_is_antisym_part` (`½(ab−ba) = a∧b`)
 and `I_sq` (`= neg one`) now conclude about *objects*, matching their G3 twins — no G2 public statement
 leaks raw coordinates except the deliberate equivalence bridge `dot_eq_coord_sum` and the reals-in
@@ -275,13 +275,16 @@ Every proof should reach for a *named* leaf, not a fresh `ext <;> ring`. The lea
   (`a∧b` = the plane-bivector literal in coordinates).
 - **The split:** `vec_mul_eq_dot_add_wedge` (`ab = a·b + a∧b`, coordinate-literal form) and its
   arbitrary-vector form `mul_eq_dot_add_wedge` (over the `IsVector` grade-1 predicate, with
-  `eq_vec_of_isVector` the bridge to a literal); the orthogonal corollaries `vec_mul_perp` /
-  `mul_eq_wedge_of_perp` (`a⊥b ⟹ ab = a∧b`). G2 + G3 (G2's split lives in `Projection2D.lean`, where
+  `eq_vec_of_isVector` the bridge to a literal); the orthogonal corollary
+  `mul_eq_wedge_of_perp` (`a⊥b ⟹ a*b = a∧b`; its coordinate twin `vec_mul_perp` was removed 2026-11-09). G2 + G3 (G2's split lives in `Projection2D.lean`, where
   `dot` and `wedge` are both in scope). `IsVector` is closed under the operations used to build a
   rejection: `isVector_vec`, `IsVector.smul`, `IsVector.sub`.
+- **Statement shape (2026-11-09):** `wedge_reject`, `plane_eq_wedge` and `mul_vec_inverse_self`
+  (`Projection3D`) and `wedge_I_eq_zero`/`reject_from_I_eq_zero` (`Projection2D`) take `IsVector`
+  objects; they used to take free coordinates and build `vec …` inside.
 - **Blade inverse (vectors):** `reverse_vec` (`reverse` fixes a vector), `mul_vec_self` (`a a = |a|² * 1`),
-  and `mul_vec_inverse_self` (`a a⁻¹ = 1` for `|a|² ≠ 0`) — the `B B⁻¹ = 1` identity that turns a
-  Hestenes `(…)a⁻¹` proof structural. With these, `plane_eq_wedge` (`a (b − proj_a b) = a∧b`) and
+  and `mul_vec_inverse_self` (`a*a⁻¹ = 1` for `|a|² ≠ 0`) — the `B*B⁻¹ = 1` identity that turns a
+  Hestenes `(…)*a⁻¹` proof structural. With these, `plane_eq_wedge` (`a*(b − proj_a b) = a∧b`) and
   `reject_vec_eq` (`(b∧a)a⁻¹ = b − proj_a b`) are now structural `rw`-chains on the split, not
   `field_simp` bashes.
 - **Magnitude (squared is the primitive):** `normSq_vec` (`|a|² = a₁²+…`), `normSq_wedge_vec`
@@ -549,7 +552,7 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 - `Lagrange.lean` — Lagrange identity 2D/3D (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) (`|a|² * |b|² = (a·b)² + |a∧b|²`).
 - `G2.lean` / `G3.lean` — the algebras: product/wedge/reverse, basis elements, multiplication table,
   `I² = −1`, dot, dual, `I⁻¹`; `normSq`/`magnitude` (+ `normSq_vec`, and `normSq_wedge_vec` in `G3`);
-  `G3` also the fundamental identity `ab = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`), `vec_mul_perp`, and the
+  `G3` also the fundamental identity `a*b = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`), `mul_eq_wedge_of_perp`, and the
   object-form `dot_is_sym_part`/`wedge_is_antisym_part` (dot and wedge as the two parts of the product);
   both have `I_sq_eq_sign` (the pseudoscalar sign for r = 2, 3). `G1.lean` is the 1D teaching twin
   (`I² = +1`, commutative, every vector pair parallel).

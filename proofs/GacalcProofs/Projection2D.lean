@@ -36,13 +36,13 @@ theorem reject_perp_dot (a b : G2) (ha : dot a a ≠ 0) :
 /-- **A 2D vector wedged with the pseudoscalar is zero**: `v ∧ I₂ = 0` (grade 1 + 2 = 3 exceeds the
     dimension). So a vector has no part outside the plane. A corollary of the object-form
     `wedge_isVector_isBivector_eq_zero`, with `isBivector_I` discharging the bivector side. -/
-theorem vec_wedge_I_eq_zero (x y : ℝ) : wedge (vec x y) I = (⟨0, 0, 0, 0⟩ : G2) :=
-  wedge_isVector_isBivector_eq_zero (isVector_vec x y) isBivector_I
+theorem wedge_I_eq_zero {a : G2} (ha : IsVector a) : wedge a I = (⟨0, 0, 0, 0⟩ : G2) :=
+  wedge_isVector_isBivector_eq_zero ha isBivector_I
 
 /-- **The rejection of a vector from the pseudoscalar plane is zero** — a 2D vector lies entirely in
     the plane, so nothing is rejected. `reject I₂ v = (v ∧ I₂) I₂⁻¹ = 0`. -/
-theorem reject_from_I_eq_zero (x y : ℝ) : reject I (vec x y) = (⟨0, 0, 0, 0⟩ : G2) := by
-  rw [reject, vec_wedge_I_eq_zero]
+theorem reject_from_I_eq_zero {a : G2} (ha : IsVector a) : reject I a = (⟨0, 0, 0, 0⟩ : G2) := by
+  rw [reject, wedge_I_eq_zero ha]
   ext <;> simp only [mul, inverse, smul, reverse, normSq, I, e_12] <;> ring
 
 /-- **The reverse-sandwich is an outermorphism up to `|R|²`** (2D): `(R*u*R̃) ∧ (R*v*R̃) = |R|²*R (u∧v) R̃`.

@@ -57,6 +57,9 @@ namespace G2
 
 /-! ### The basis blades as elements, and the vector constructor -/
 
+/-- The zero multivector — an element of 𝒢₂, the additive identity. -/
+def zero : G2 := { s := 0, c1 := 0, c2 := 0, c12 := 0 }
+
 /-- The scalar unit `1` (grade 0) — an element of 𝒢₂. -/
 def one : G2 := { s := 1, c1 := 0, c2 := 0, c12 := 0 }
 
@@ -134,16 +137,43 @@ noncomputable def magnitude (a : G2) : ℝ := Real.sqrt (normSq a)
 
 /-! ### The algebra laws
 
-    `G2` is an **associative, unital ℝ-algebra**: the geometric product is associative and
-    distributes over addition (both sides), `one` is a two-sided identity, and scalars pull through
-    the product. Each is a polynomial identity in the coordinate fields, so the proof is
-    `ext <;> ring`. These are the axioms everything built on the product (the sandwich, projection,
-    the rotation proofs) rests on. The GA-specific `vec_anticomm_perp` (orthogonal vectors
+    `G2` is an **associative, unital ℝ-algebra**. The laws come in the order a student meets them
+    (`tasks/reference/algebra-teaching-order.md`): addition first (commutative, associative, the
+    identity `zero`, the inverse `neg`), then the geometric product (associative, the identity `one`,
+    `zero` annihilates, then distributivity over addition and subtraction, which links the two
+    operations), then the scalar laws. Each is a polynomial identity in the coordinate fields, so the
+    proof is `ext <;> ring`. The GA-specific `vec_anticomm_perp` (orthogonal vectors
     anticommute) is stated further down, beside the wedge/anticommutativity material it rests on. -/
+
+/-- Addition is **commutative**. -/
+theorem add_comm (a b : G2) : add a b = add b a := by simp only [add]; ext <;> ring
+
+/-- Addition is **associative**. -/
+theorem add_assoc (a b c : G2) : add (add a b) c = add a (add b c) := by
+  simp only [add]; ext <;> ring
+
+/-- `zero` is a **right identity** for addition. -/
+theorem add_zero (a : G2) : add a zero = a := by simp only [add, zero]; ext <;> ring
+
+/-- `zero` is a **left identity** for addition. -/
+theorem zero_add (a : G2) : add zero a = a := by simp only [add, zero]; ext <;> ring
+
+/-- `neg a` is the **additive inverse**: `a + (−a) = 0`. -/
+theorem add_neg_cancel (a : G2) : add a (neg a) = zero := by
+  simp only [add, neg, zero]; ext <;> ring
 
 /-- The geometric product is **associative**. -/
 theorem mul_assoc (a b c : G2) : mul (mul a b) c = mul a (mul b c) := by
   simp only [mul]; ext <;> ring
+
+/-- `one` is a **left identity**. -/
+theorem one_mul (a : G2) : mul one a = a := by simp only [mul, one]; ext <;> ring
+
+/-- `one` is a **right identity**. -/
+theorem mul_one (a : G2) : mul a one = a := by simp only [mul, one]; ext <;> ring
+
+/-- `zero` **annihilates** from the left: `0 * a = 0`. -/
+theorem zero_mul (a : G2) : mul zero a = zero := by simp only [mul, zero]; ext <;> ring
 
 /-- The product **distributes over addition on the left**. -/
 theorem mul_add (a b c : G2) : mul a (add b c) = add (mul a b) (mul a c) := by
@@ -153,11 +183,13 @@ theorem mul_add (a b c : G2) : mul a (add b c) = add (mul a b) (mul a c) := by
 theorem add_mul (a b c : G2) : mul (add a b) c = add (mul a c) (mul b c) := by
   simp only [mul, add]; ext <;> ring
 
-/-- `one` is a **left identity**. -/
-theorem one_mul (a : G2) : mul one a = a := by simp only [mul, one]; ext <;> ring
+/-- The product **distributes over subtraction on the right**. -/
+theorem sub_mul (a b c : G2) : mul (sub a b) c = sub (mul a c) (mul b c) := by
+  simp only [mul, sub]; ext <;> ring
 
-/-- `one` is a **right identity**. -/
-theorem mul_one (a : G2) : mul a one = a := by simp only [mul, one]; ext <;> ring
+/-- The product **distributes over subtraction on the left**. -/
+theorem mul_sub (a b c : G2) : mul a (sub b c) = sub (mul a b) (mul a c) := by
+  simp only [mul, sub]; ext <;> ring
 
 /-- A scalar pulls out of the **left** factor. -/
 theorem smul_mul (k : ℝ) (a b : G2) : mul (smul k a) b = smul k (mul a b) := by
