@@ -1,7 +1,9 @@
 # Lean coverage of `frame.py` — linear independence, Gram–Schmidt, the Hestenes closed form
 
 **Status:** proposed — parked by the maintainer ("I'm not ready for frames yet", 2026-10-04); do not
-start without a go-ahead. **Priority:** 8 (parked). **Difficulty:** 5.
+start without a go-ahead.
+**Priority:** 8 (parked)
+**Difficulty:** 5
 **Created:** 2026-10-04 (William Emerison Six <billsix@gmail.com>), spun out of
 `tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md`. **Owner:** William Emerison Six <billsix@gmail.com>.
 **See also:** `tasks/review/2026/10/04/lean-proof-corpus-review.md` §3, `tasks/define-frame.md` (the
@@ -10,9 +12,12 @@ Lean side of the 2026-11-04 `Frame` class; its theorem 1 overlaps this task's re
 
 ## BLUF
 
-`src/gacalc/frame.py` has no Lean coverage: `are_linearly_independent`/`is_frame` (`a₁∧…∧a_k ≠ 0`),
-`make_orthogonal_frame` (Gram–Schmidt by rejection), `make_orthogonal_frame_hestenes` (`c_k = Ã_{k−1} A_k`),
-and their equivalence `c_k = |A_{k−1}|²·w_k` (today only tested, `tests/test_frame.py`). "Done" = a
+Most of `src/gacalc/frame.py` has no Lean coverage: `are_linearly_independent`/`is_frame`
+(`a₁∧…∧a_k ≠ 0`), `make_orthogonal_frame_hestenes` (`c_k = Ã_{k−1} A_k`), and its equivalence with
+rejection Gram–Schmidt (`c_k = |A_{k−1}|²·w_k`; tested in `tests/test_frame.py` as parallelism, with an
+exact inverse-based sibling, since 2026-10-29). The reciprocal frame and the rejection steps are
+covered since 2026-11-07 (`ReciprocalFrame2D/3D.lean`: each rejection is perpendicular to what it was
+rejected from, which is most of the rejection Gram–Schmidt orthogonality). "Done" = a
 `Frame.lean` (𝒢₃, k ≤ 3; k = 2 also in 𝒢₂ if cheap) with: dependence ⟺ wedge zero (k = 2: the converse of
 `Predicates3D.wedge_parallel_smul`, `a ∧ b = 0 ∧ a ≠ 0 ⟹ ∃ k, b = k·a` — this also closes the
 `is_parallel_to` half-gap; k = 3 as `signedVolume ≠ 0`), Gram–Schmidt pairwise orthogonality (compose

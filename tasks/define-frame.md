@@ -1,19 +1,27 @@
 # Define a `frame` (a set/basis of vectors) as a first-class concept
 
-**Status:** in-progress — **Phase 1 DONE 2026-09-02** (`are_linearly_independent`/`is_frame`,
-`make_orthogonal_frame` + `make_orthogonal_frame_hestenes` in `src/gacalc/frame.py`, and the equivalence
-tests `c_k = |A_{k-1}|² w_k` in `tests/test_frame.py`, 16 tests). Remaining: **(a)** the `Frame`-class
-representation decision (open — the maintainer's call; see "The representation decision"); **(b)** the
-codebase sweep, gated on (a); **(c)** the optional prose proof of H&S eqs 3.1–3.2. The Lean side is its
-own task, `tasks/lean-frame-coverage.md`, **parked by the maintainer 2026-10-04** ("not ready for frames
-yet"). The pre-2026-10-04 status narrative is kept verbatim under "History" below.
-**Priority:** 8 (raised from 4 on 2026-10-04, William Emerison Six <billsix@gmail.com>: frames are
-parked on the Lean side and the remaining work waits on the representation decision; restore a low
-number when frames are picked back up)
-**Difficulty:** 7
-**Created:** 2026-07-22 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
-Prerequisite for reciprocal frames / outermorphisms / geometric calculus — see
-`tasks/reference/galgebra-comparison.md` (Findings 1, 3b, 5).
+**Status:** in progress — Phase 1 done 2026-09-02; the representation decision made 2026-11-04 (a
+`Frame` dataclass, built). Remaining: **(b)** the codebase sweep, and **(c)** the optional prose proof
+of H&S eqs 3.1–3.2.
+**Priority:** 6 (re-rated 2026-11-09 from 8, whose reason was the representation decision, now made;
+`tasks/review/2026/11/08/repo-review.md` §9.1)
+**Difficulty:** 5 (only the sweep and an optional proof remain)
+**Created:** 2026-07-22 **Updated:** 2026-11-09 (William Emerison Six <billsix@gmail.com>)
+
+## BLUF
+
+Frames are first-class: `src/gacalc/frame.py` has the predicates, three orthogonalizations, the
+reciprocal frame and the `Frame` class with its `InvertibleFunction`. What remains is (b) reading the
+codebase for what should integrate with `Frame` (the checklist under "Subtask — codebase sweep"),
+and (c) optionally, the prose proof of H&S eqs 3.1–3.2. Done = the sweep's findings are recorded
+(each either done or promoted to its own task), and (c) is either written or explicitly dropped.
+
+## Context
+
+Read `tasks/reference/frames-qr-and-reciprocal-frames.md` (the math and the stored-orthogonal
+design) and `src/gacalc/frame.py`. The Lean side is `tasks/lean-frame-coverage.md` (parked) and
+`tasks/lean-frame-class-invertible-function.md` (on hold). The history below records how Phase 1
+went.
 
 ## History — the Phase-1 status narrative as it stood 2026-09-02 (moved out of the header 2026-10-04)
 
@@ -300,8 +308,8 @@ Should any of Phase 1 be added to the **generated** per-algebra classes (`g1`/`g
 
 ## Subtask — codebase sweep (UNBLOCKED 2026-11-04: `Frame` exists in `src/gacalc/frame.py`)
 
-**Once the representation is chosen, read the whole codebase to see what should change or integrate
-with it** — do not start this before the decision, since the answers depend on the representation.
+**Read the whole codebase to see what should change or integrate with `Frame`** (the representation
+was chosen on 2026-11-04).
 Things to look at (non-exhaustive, to be filled in during the sweep):
 
 - Should the existing **class constants / `basis_vector`** be reframed as (or produce) a standard

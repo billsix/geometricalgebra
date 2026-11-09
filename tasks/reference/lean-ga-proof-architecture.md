@@ -731,7 +731,7 @@ theorem landed 2026-10-05 (`PlaneRotation3D.lean`), and `gn` waits on a general-
 | `g1.py` (𝒢₁) | HAS | `G1.lean`: `mul`/`wedge` (oracle-transcribed), `I_sq` (= **+1**), `I_sq_eq_sign`, `mul_comm`, `mul_assoc`, `vec_mul` (pure scalar), `wedge_vec` (= 0: all 1D vectors parallel), `dot_vec`, `normSq_vec`, `magnitude_vec` (`= |x|`), `dual_vec` (a scalar), `mul_vec_inverse_self` |
 | `frame.reciprocal_frame`, `all_wedged_except_the_kth`, `kronecker_delta`, `Frame.reciprocal_vectors` | HAS | `recip*` (eq 3.7), `isVector_recip*`, `dot_recip_kronecker` (eq 3.5), `reconstruct` (ReciprocalFrame2D/3D) |
 | `Frame.to_invertible_function` (both `inverse_method`s) | HAS | `invReciprocal_frameMap`, `frameMap_invReciprocal`, `invPeel_frameMap`, `frameMap_invPeel`, `invReciprocal_eq_invPeel`; the peel's step: `recip*_eq_reject_div`, `invPeel_comb` (ReciprocalFrame2D/3D) |
-| `frame.py`, the rest (`make_orthogonal_frame*`, `prefix_blades`, `Frame.coefficients`) | NONE | `tasks/lean-frame-coverage.md` (parked); `tasks/lean-frame-class-invertible-function.md` theorems 2–4 (on hold) |
+| `frame.py`, the rest (`make_orthogonal_frame*`, `prefix_blades`, `Frame.coefficients`) | PARTIAL | rejection orthogonality for n = 2, 3 (`G2.dot_reject_self`; `G3.reject_line_facts`/`reject_plane_facts`: each `w_k` ⟂ the vectors before it), in `ReciprocalFrame2D/3D.lean`; not stated: `w₃·w₂ = 0`, the Hestenes closed form, `prefix_blades`, the coefficient table — `tasks/lean-frame-coverage.md` (parked); `tasks/lean-frame-class-invertible-function.md` theorems 2–4 (on hold) |
 | `gn.py` | NONE | `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` (deferred) |
 
 ## Hypotheses: what each kind is for, and how to decide
