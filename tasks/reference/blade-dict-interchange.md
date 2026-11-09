@@ -1,9 +1,9 @@
-# The blade-dict interchange — `BladeReal`
+# The blade-dict interchange — `Mapping[Blade, Real]`
 
-**Reference document** — the contract for `BladeReal` (`dict[Blade, Real]`), THE canonical
+**Reference document** — the contract for the blade dict (`Mapping[Blade, Real]`), THE canonical
 interchange format of gacalc: every representation converts to and from it, and all shared
 arithmetic in `base.py` routes through it. Not a task; update in place if the contract
-changes. Last updated 2026-08-13. Authoritative source: the `BladeReal` docstring and
+changes. Last updated 2026-11-09. Authoritative source: the `MultiVectorBase` docstring and
 `_require_canonical_blades` in `src/gacalc/base.py` — this doc consolidates and explains
 what lives there (and what was scattered across archived task docs). Read alongside
 CLAUDE.md's "Architecture" (the interchange protocol) and `design-decisions.md`.
@@ -16,7 +16,7 @@ the specialized `G`, and the graded subtypes (`Vector`, `Bivector`, `Versor`,
 
     Blade      = tuple[int, ...]        # basis-vector indices; () is the scalar blade
     Real       = int | float | sympy.Expr
-    BladeReal  = dict[Blade, Real]      # e.g. {(): 3, (1, 2): -4}  ==  3 − 4 * e₁ * e₂
+    Mapping[Blade, Real]                # e.g. {(): 3, (1, 2): -4}  ==  3 − 4 * e₁ * e₂
 
 Two methods are the whole protocol: `to_blade_dict()` (this value → the dict) and the
 `from_blade_dict()` classmethod (the dict → this representation). Mixing two representations
@@ -95,7 +95,7 @@ can read it but not write it (`TypeError`), so editing a result can't corrupt th
 shared constant such as `e_1`. `tests/test_multivector.py::test_to_blade_dict_is_immutable` pins
 this. Copy with `dict(...)` to edit one.
 
-- **`BladeReal` is `Mapping[Blade, Real]`**, read-only, so a `dict` and a `frozendict` both
+- **The blade dict is typed `Mapping[Blade, Real]`**, read-only, so a `dict` and a `frozendict` both
   satisfy it. The `Gn` field keeps that type so `Gn({...})` still accepts a dict literal (typing
   the field `frozendict[...]` would force every constructor call to pass one). Code that builds a
   blade dict by writing into it types it `dict[Blade, Real]` (`nbplotutils._expand_numerators_dict`).
@@ -111,7 +111,7 @@ this. Copy with `dict(...)` to edit one.
 
 ## Where it lives
 
-- **`src/gacalc/base.py`** — the `Blade` / `Real` / `BladeReal` aliases and the `BladeReal`
+- **`src/gacalc/base.py`** — the `Blade` / `Real` aliases and the `MultiVectorBase`
   docstring (the authoritative contract); `_require_canonical_blades` (the shared validator);
   the abstract `from_blade_dict` / `to_blade_dict` on `MultiVectorBase`.
 - **`src/gacalc/gn.py`** — `Gn.from_blade_dict` / `to_blade_dict` (calls the validator;
@@ -122,7 +122,7 @@ this. Copy with `dict(...)` to edit one.
 
 ## Sources
 
-- `src/gacalc/base.py` (`BladeReal` docstring + `_require_canonical_blades`) — authoritative.
+- `src/gacalc/base.py` (`MultiVectorBase` docstring + `_require_canonical_blades`) — authoritative.
 - `tasks/archive/2026/07/29/validate-blade-dict-keys.md` — the raise-vs-canonicalize decision.
 - `tasks/archive/2026/07/29/blade-dict-tests-and-comments.md` — the consolidated contract + tests.
 - Related: `tasks/reference/design-decisions.md`, `tasks/reference/code-generator-architecture.md`.

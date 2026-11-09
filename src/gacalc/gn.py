@@ -24,7 +24,6 @@ import sympy
 
 from gacalc.base import (
     Blade,
-    BladeReal,
     MultiVectorBase,
     Real,
     _require_canonical_blades,
@@ -90,7 +89,7 @@ class Gn(MultiVectorBase):
     ``tools/gen_specialized.py`` for that pipeline.
     """
 
-    coefficient_of_blade: BladeReal
+    coefficient_of_blade: Mapping[Blade, Real]
 
     def __post_init__(self) -> None:
         """Normalize the stored coefficients: eagerly ``sympy.simplify`` every one
@@ -195,7 +194,7 @@ class Gn(MultiVectorBase):
             )
         return plane.normalize()
 
-    def to_blade_dict(self) -> BladeReal:
+    def to_blade_dict(self) -> Mapping[Blade, Real]:
         """Return the canonical blade → coefficient mapping ``Gn`` stores.
 
         It is the stored ``frozendict`` itself, not a copy: it is immutable, so a
@@ -203,7 +202,7 @@ class Gn(MultiVectorBase):
         it.  Copy it with ``dict(...)`` to edit one.
 
         Returns:
-            BladeReal: the stored, immutable blade -> coefficient mapping.
+            Mapping[Blade, Real]: the stored, immutable blade -> coefficient mapping.
         """
         return self.coefficient_of_blade
 

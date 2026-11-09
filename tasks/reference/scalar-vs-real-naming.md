@@ -33,7 +33,7 @@ grade 0 (`A * B`, projections, `exp`) return the typed element `Scalar`. That as
 | name | sense | decision |
 |---|---|---|
 | `Coef` (type alias `int \| float \| sympy.Expr`) | the Python real, in and out | **→ `Real`** |
-| `BladeCoef` (blade → coefficient dict) | the interchange of reals | **→ `BladeReal`** |
+| `BladeCoef` (blade → coefficient dict) | the interchange of reals | **removed**: written `Mapping[Blade, Real]` (2026-11-09) |
 | `MultiVectorBase.from_scalar(scalar)` | lift a number into the algebra | **→ `from_real(real: Real)`** |
 | `MultiVectorBase.from_coef(expr)` | the symbolic sibling of the above | **folded into `from_real`** (removed) |
 | `Scalar` / `Scalar_n` (generated grade-0 class) | the algebra element | **keep** |

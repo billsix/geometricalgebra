@@ -23,7 +23,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `Linearity`, `NotInvertibleError`, `compose`/`inverse`/`identity`. **Imports nothing internal**
   (unbounded `TypeVar`) — the one module `base` is allowed to import.
 - `src/gacalc/base.py` — `MultiVectorBase` (the abstract base) + the type aliases `Blade`,
-  `BladeReal`, `MultiVectorFn`. Imports only the `functions` leaf.
+  `Real`, `MultiVectorFn`. Imports only the `functions` leaf.
 - `src/gacalc/gn.py` — `Gn`, the general dimension-agnostic representation, plus the
   `e_1..e_10` / `zero` / `one` constants, the symbolic vectors (`sym_vec2_1`, …), and the
   `MultiVector = Gn` alias.

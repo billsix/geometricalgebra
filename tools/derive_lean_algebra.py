@@ -27,11 +27,11 @@ or, from the host via the project's container:
 
 import itertools
 import sys
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 import sympy
 
-from gacalc.base import BladeReal
+from gacalc.base import Blade, Real
 from gacalc.gn import Gn
 
 
@@ -55,7 +55,7 @@ def dump(
     title: str, value: Gn, prefix: str, all_blades: Sequence[tuple[int, ...]]
 ) -> None:
     """Print each coefficient of `value` as `<prefix><blade> = <expanded formula>`."""
-    coefs: BladeReal = value.to_blade_dict()
+    coefs: Mapping[Blade, Real] = value.to_blade_dict()
     print(f"\n=== {title} ===")  # noqa: T201 -- derived formulas are the tool's output
     bl: tuple[int, ...]
     for bl in all_blades:

@@ -89,8 +89,8 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `Gn` stores its coefficients in the built-in `frozendict` (PEP 814), new in 3.15.
 - **BREAKING — `Gn.to_blade_dict()` returns an immutable `frozendict`**, the mapping `Gn` stores,
   instead of a `dict`. Writing into it raises `TypeError`; copy it with `dict(...)` to edit one.
-  `BladeReal` is now the read-only `Mapping[Blade, Real]` (a `dict` still satisfies it, and the
-  specialized classes still return a fresh `dict`).
+  Every `to_blade_dict()` returns the read-only `Mapping[Blade, Real]` (a `dict` still satisfies
+  it, and the specialized classes still return a fresh `dict`).
 - **`uniform_scale(m)` and `scale_non_uniform(*factors)` annotate their factors as `Real`** (was
   `float`), matching the symbolic factors they already accepted at runtime. No behavior change.
 - **`unit_pseudoscalar`, `bases` and `symbolic_multivector` raise `ValueError` on a graded type that
@@ -113,12 +113,14 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   names the caller. Migrate: catch `ValueError` instead of `TypeError`/`AssertionError`. Unchanged:
   `g2.rotate_90_degrees` and `bivector_rotation` still raise `TypeError` (a type check and a bivector
   check, respectively).
-- **BREAKING — `Coef` → `Real`, `BladeCoef` → `BladeReal`, `from_scalar`/`from_coef` → `from_real`.** The
+- **BREAKING — `Coef` → `Real`, `BladeCoef` removed, `from_scalar`/`from_coef` → `from_real`.** The
   Python real number (`int | float | sympy.Expr`) that goes into the algebra and comes back out of every
   extraction is now named `Real`; the one constructor `from_real(real)` lifts any real, numeric or
   symbolic, into the grade-0 element (`from_coef` is gone). The grade-0 *class* stays `Scalar`, its field
   `coeff_scalar`, and `scalar_part`/`scalar_product`/`is_scalar`/`pseudoscalar` keep the literature's
-  word. Migration: rename the imports and the two constructors; nothing else changes. Rationale and
+  word. The blade-dict alias `BladeCoef` is gone with no replacement alias: write
+  `Mapping[Blade, Real]` (`Mapping` from `collections.abc`, `Blade` and `Real` from `gacalc.base`).
+  Migration: rename the imports and the two constructors; nothing else changes. Rationale and
   the full keep/rename map: `tasks/reference/scalar-vs-real-naming.md`.
 - **`MultiVectorBase.inverse` now rejects a general mixed-grade multivector.** The formula
   `A⁻¹ = Ã/|A|²` is a correct inverse only when `Ã A` is a scalar — i.e. for a **blade** (a
