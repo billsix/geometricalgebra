@@ -40,7 +40,7 @@ type aliases, 3 enum members) and **26 listed exemptions** (9 `Any` §1, 2 retur
 §3, 3 invariant params §4, 5 locals and loop targets §5, 6 symbol unpacks §6). Anything *not* on this list is a
 genuine gap: annotate it, or add it here with its reason. Records:
 `tasks/archive/2026/10/09/re-baseline-annotation-auditor.md` (the earlier 32-row floor) and
-`tasks/annotation-auditor-floor-drift.md` (the per-scope and unpacking
+`tasks/archive/2026/11/09/annotation-auditor-floor-drift.md` (the per-scope and unpacking
 detection, and the 66 gaps it found and fixed).
 
 ## The exemptions
