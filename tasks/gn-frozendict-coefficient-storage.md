@@ -79,7 +79,13 @@ structural hash would break the hash contract. See the research task.
   mentions the copy.
 - [ ] Gates: `make test`, `make format`, `make check-notebooks`, `make check-generated`, `make docs`.
 
+## Decisions
+
+1. Go ahead, as part of a committed batch with `tasks/frame-derived-orthogonal-set-and-tuple-field.md`
+   (William Emerison Six <billsix@gmail.com>, 2026-11-09: "make a branch do the
+   gn-frozendict-coefficient-storage task, commit it, archive it"). The research task made the two
+   design decisions (raise `requires-python` to 3.15 with no fallback; immutable `Gn` storage).
+
 ## Open questions
 
-None. Both decisions were made in the research task (William Emerison Six <billsix@gmail.com>,
-2026-11-09).
+None.
