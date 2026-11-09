@@ -336,7 +336,18 @@ check-generated: image ## (container) verify tools/gen_specialized.py is determi
 # to a warning (the display cells emit those deliberately); pyright exits nonzero
 # on ERRORS only, so a type regression fails the build while those warnings don't.
 # Kept SEPARATE from `make test` so a pyright-version bump can't redden the test
-# gate.  (pyright is unpinned: entrypoint/01-install-base.sh npm-installs the latest.)
+# gate.  (pyright is pinned in entrypoint/01-install-base.sh; bump it there.)
+# Regenerate constraints.txt, the exact versions the image installs into /venv (from
+# pyproject.toml's dependencies + extras and entrypoint/image-requirements.in), resolved
+# for the image's own Python. Needs the network; then `make image` and the gates.
+.PHONY: update-pins
+update-pins: image ## (container, network) re-resolve constraints.txt, the image's pinned Python versions
+	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \
+		-v $(CURDIR):/gacalc:Z \
+		--entrypoint /bin/bash \
+		$(CONTAINER_NAME) \
+		-c 'source /venv/bin/activate && cd /gacalc && uv pip compile pyproject.toml entrypoint/image-requirements.in --extra dev --extra notebooks --extra jupyter --python /venv/bin/python -o constraints.txt'
+
 .PHONY: check-notebooks
 check-notebooks: image ## (container) pyright gate over notebooks/ (type regressions fail the build)
 	$(CONTAINER_CMD) run $(PODMAN_RUN_FLAGS) --rm \

@@ -337,6 +337,12 @@ over a "run it on your host" instruction.
   not the notebooks). Kept separate from `make test` so a pyright-version bump can't redden it;
   `pyrightconfig.json` scopes it to `notebooks/` and must **not** hardcode `pythonVersion` (a mismatch
   with the image's Python makes pyright emit spurious "refers to itself" errors — let it auto-detect).
+- **Pinned image dependencies** — the image installs every Python package at the exact version in
+  `constraints.txt` (`uv pip compile` of `pyproject.toml`'s dependencies + extras and
+  `entrypoint/image-requirements.in`), applied in the Dockerfile's late dependency layer;
+  `pyproject.toml` stays loose for the library's consumers. pyright is pinned in
+  `entrypoint/01-install-base.sh`. To bump: `make update-pins` (needs the network), then `make image`
+  and the gates.
 - **`make generate`** / **`make generate-all`** (g1–g5) / **`make test-all-dims`** (the full-dim gate:
   generates g1–g5, runs `ty check --no-respect-ignore-files src` over them in full context, then the suite).
 - **`make lean`** — build + verify the Lean 4 / Mathlib proofs in `proofs/` (machine-checked math
