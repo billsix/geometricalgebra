@@ -526,8 +526,7 @@ class Frame:
     def __post_init__(self) -> None:
         if not isinstance(self.vectors, tuple):
             raise TypeError(
-                "Frame takes its vectors as a tuple; "
-                f"got {type(self.vectors).__name__}"
+                f"Frame takes its vectors as a tuple; got {type(self.vectors).__name__}"
             )
         require_frame(self.vectors, "Frame")
 

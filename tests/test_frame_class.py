@@ -168,9 +168,10 @@ def test_coefficients_rebuild_the_vectors(
     coefficients: tuple[tuple[Real, ...], ...] = request.getfixturevalue(
         f"{frame_name}_coefficients"
     )
+    orthogonal_vectors: tuple[MultiVectorBase, ...] = frame.orthogonal_vectors()
     rebuilt: list[MultiVectorBase] = [
         sum(
-            (c * w for c, w in zip(row, frame.orthogonal_vectors(), strict=True)),
+            (c * w for c, w in zip(row, orthogonal_vectors, strict=True)),
             start=Gn.zero(),
         )
         for row in coefficients
@@ -204,15 +205,16 @@ def test_squared_lengths_are_ratios_of_span_volumes(
     so the product of the ``|w_i|²`` is the squared volume ``|v_1 ∧ … ∧ v_k|²``."""
     frame: Frame = request.getfixturevalue(frame_name)
     A_list: list[MultiVectorBase] = list(prefix_blades(vectors))
+    orthogonal_vectors: tuple[MultiVectorBase, ...] = frame.orthogonal_vectors()
     assert all(
         is_zero(
             w.magnitude_squared() * A_list[i].magnitude_squared()
             - A_list[i + 1].magnitude_squared()
         )
-        for i, w in enumerate(frame.orthogonal_vectors())
+        for i, w in enumerate(orthogonal_vectors)
     )
     assert is_zero(
-        math.prod(w.magnitude_squared() for w in frame.orthogonal_vectors())
+        math.prod(w.magnitude_squared() for w in orthogonal_vectors)
         - A_list[-1].magnitude_squared()
     )
 

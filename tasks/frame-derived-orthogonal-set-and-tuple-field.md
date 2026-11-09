@@ -1,9 +1,7 @@
 # `Frame`: derive the orthogonal set instead of storing it, and make `vectors` a tuple field
 
-**Status:** in progress (2026-11-09)
-**Priority:** 6
-**Difficulty:** 3
 **Created:** 2026-11-09
+**Completed:** 2026-11-09, on branch `gn-frozendict-and-frame-tuple` (a committed batch)
 **Source:** conversation, 2026-11-09 (William Emerison Six <billsix@gmail.com>: "investigate what
 it would take to 1) not store orthogonal vectors as an instance variable, but instead make it a
 derived property, or whatever is standard python, like a method. 2) given this in the post init,
@@ -11,153 +9,76 @@ derived property, or whatever is standard python, like a method. 2) given this i
 field on the class should be a tuple, make that the type of the object, and update all callers to
 make it a tuple")
 
-## BLUF
+## Outcome
 
-`Frame` (`src/gacalc/frame.py`) is a frozen dataclass whose `__post_init__` makes two
-`object.__setattr__` calls. One stores the computed `orthogonal_vectors`; the other turns the
-caller's `vectors` sequence into a tuple. This task first investigates, then removes both:
+`Frame` (`src/gacalc/frame.py`) is a frozen dataclass with one field,
+`vectors: tuple[MultiVectorBase, ...]`. Its `__post_init__` makes no `object.__setattr__` call. It
+raises `TypeError` on a non-tuple and then calls `require_frame(self.vectors, "Frame")`, the shared
+guard from `tasks/archive/2026/11/09/require-frame-guard.md`. That guard took over the validation
+that building the stored orthogonal set used to do.
 
-- **(1)** derive the orthogonal set (a method or a cached property, whichever the investigation
-  picks) instead of storing it in a field;
-- **(2)** declare `vectors: tuple[MultiVectorBase, ...]` and make every caller pass a tuple.
+The orthogonal set is the method `orthogonal_vectors()`, which returns
+`tuple(make_orthogonal_frame(self.vectors))`. It is spelled like the class's other two derived
+sets, `orthonormal_vectors()` and `reciprocal_vectors()`. `coefficients()`, `orthonormal_vectors()`
+and the peel branch of `to_invertible_function` each compute it once and reuse it.
 
-Done means `__post_init__` has no `object.__setattr__`, there is no `orthogonal_vectors` field, the
-chosen accessor is used everywhere, every `Frame(...)` call passes a tuple, and `make test` and
-`make format` pass.
+Every caller passes a tuple: the doctests, `tests/test_frame_class.py` (including `Frame(())` and the
+new `test_non_tuple_raises`), and the two book notebooks `book/docs/notebooks/frame-qr-2d.py` and
+`frame-qr-3d.py`. Also updated:
 
-## Context
-
-Read first:
-- `src/gacalc/frame.py` › `class Frame`: the docstring, `__post_init__`, `coefficients`,
-  `orthonormal_vectors`, `reciprocal_vectors` and `to_invertible_function`.
-- `tasks/reference/frames-qr-and-reciprocal-frames.md` › "Why gacalc's `Frame` is stored orthogonal,
-  not orthonormal". That section is about orthogonal versus orthonormal, not about storing versus
-  deriving, so it stays true either way. Check its wording, though.
-
-**The code today:**
-
-```python
-@dataclasses.dataclass(frozen=True)
-class Frame:
-    vectors: Sequence[MultiVectorBase]
-    orthogonal_vectors: tuple[MultiVectorBase, ...] = dataclasses.field(init=False)
-
-    def __post_init__(self) -> None:
-        # make_orthogonal_frame raises ValueError on a non-frame.
-        orthogonal_vectors: tuple[MultiVectorBase, ...] = tuple(
-            make_orthogonal_frame(self.vectors)
-        )
-        object.__setattr__(self, "vectors", tuple(self.vectors))
-        object.__setattr__(self, "orthogonal_vectors", orthogonal_vectors)
-```
-
-**`__post_init__` does a second job: validation.** Building the orthogonal set is what rejects a
-non-frame (`make_orthogonal_frame` raises `ValueError`). With no stored set, `__post_init__` needs
-an explicit check. Use the shared guard from `tasks/archive/2026/11/09/require-frame-guard.md`
-(`require_frame(self.vectors, "Frame")`), so do that task first.
-
-### (1) The orthogonal set: the standard Python options
-
-| Option | Spelling at use sites | Cost | Notes |
-|---|---|---|---|
-| **Method** `orthogonal_vectors()` | `frame.orthogonal_vectors()` | recomputed per call | Matches the class's two other derived sets, `orthonormal_vectors()` and `reciprocal_vectors()`, which are already methods "computed on demand". |
-| **`@property`** | `frame.orthogonal_vectors` | recomputed per access | Use sites keep their spelling, but a property hides an O(k²) symbolic orthogonalization behind attribute syntax, which a reader would expect to be cheap. |
-| **`functools.cached_property`** | `frame.orthogonal_vectors` | computed once, on first access | Works on a frozen dataclass without `slots=True`: it writes the instance `__dict__` directly, bypassing the frozen `__setattr__`. It is not a field, so it doesn't change `__eq__`, `__hash__` or `__repr__`. Nothing in `src/` uses it yet. |
-
-**Where recomputing would cost:**
-- `coefficients()` reads `self.orthogonal_vectors` inside a nested comprehension, once per row
-  (k recomputations).
-- `to_invertible_function`'s "peel" inverse closes over `zip(self.orthogonal_vectors, self.vectors)`,
-  once per application of the inverse.
-
-With a method or a plain property, bind the set once to a local in each of these. Measure the 3D
-symbolic case (`tests/test_frame_class.py`'s slow 3D cases, and `book/docs/notebooks/frame-qr-3d.py`)
-before and after, and record the timings here.
-
-**Users of `orthogonal_vectors` outside the class** (`git grep -n orthogonal_vectors`, excluding
-`tasks/archive/`):
-- `tests/test_frame_class.py`: 5 sites;
-- `book/docs/notebooks/frame-qr-2d.py:67, 298` and `frame-qr-3d.py:69`, which unpack it
-  (`w_1, w_2 = frame.orthogonal_vectors`). These pages are rendered in the book
-  (`book/docs/frames-qr.rst`);
-- the class docstring and its doctest (`frame.orthogonal_vectors == (2 * e_1, 3 * e_2)`);
-- `tasks/reference/python-coding-standard-gacalc.md:103, 127` quotes it in examples;
-- `tasks/frame-inverse-head-first-recursion.md` (open) discusses storing a second set "beside
-  `orthogonal_vectors`". Update its wording to match whatever this task decides.
-
-**Preliminary recommendation (the investigation confirms or overturns it):** make it a method,
-`orthogonal_vectors()`, so all three derived sets are spelled the same way and are equally visible
-as computations. Bind it once to a local where `coefficients()` and the peel inverse need it.
-`cached_property` is the fallback if the measured cost of recomputing matters.
-
-### (2) `vectors` as a tuple field
-
-- Declare `vectors: tuple[MultiVectorBase, ...]` and drop the `object.__setattr__` conversion.
-- **What the tuple is for: immutability, not hashing.** `Frame` is not hashable, with or without the
-  tuple. Every multivector class defines `__eq__` without `__hash__`, so Python sets their `__hash__`
-  to `None`, and the dataclass's generated hash fails on the elements. Checked 2026-11-09:
-  `hash(Frame([2 * e_1, 1 * e_1 + 3 * e_2]))` raises `TypeError: unhashable type: 'Gn'`, and a `g2`
-  frame raises it for `'Vector'`. The conversion protects the frozen frame from its caller instead.
-  A stored list could still be changed through the caller's reference (`vs.append(...)`,
-  `vs[0] = ...`), leaving the frame with vectors that no longer match its orthogonal set, or that no
-  longer form a frame at all. Making the orthogonal set derived (part 1) removes the mismatch, but
-  the vectors themselves could still change underneath the frame.
-- **`frozendict` (Python 3.15) changes nothing here** (`tasks/archive/2026/11/09/frozendict-research-and-fit.md`,
-  phase 3). It has no sequence counterpart, so a tuple is still the immutable sequence, and
-  `Frame` stays unhashable because multivectors are (`Gn` must not gain a `__hash__`, even with
-  frozen storage). `Gn` now stores a `frozendict` (`tasks/archive/2026/11/09/gn-frozendict-coefficient-storage.md`),
-  so a `Frame` of `Gn` vectors holds values whose contents can't change, which completes "frozen" alongside the tuple field.
-- **No newer Python feature does this conversion for you** (checked against 3.13–3.15). Field
-  converters for `dataclasses` (PEP 712) were rejected; only the third-party `attrs` has them. There
-  is no built-in frozen list. So the tuple annotation, with callers passing tuples, is the idiomatic
-  shape, and `ty` catches a list passed by typed code. Decide whether `__post_init__` should also
-  raise on a non-tuple, for untyped callers.
-- **Callers that pass a list today** (`git grep -n "Frame(" -- src tests notebooks book`):
-  - `src/gacalc/frame.py` doctests: 3;
-  - `book/docs/notebooks/frame-qr-2d.py`: 3; `frame-qr-3d.py`: 1;
-  - `tests/test_frame_class.py`: about 12. These include `Frame([])` in `test_non_frame_raises`,
-    and `list(Frame(vectors_3d)) == vectors_3d`, which compares against a list variable that becomes
-    a tuple.
-  - `nbplotutils.py`'s match is a `pd.DataFrame(`, not a caller.
-- **Changelog:** `Frame` is in `CHANGELOG.md` `[Unreleased]` › Added (not released yet), so no
-  BREAKING entry is needed. Correct the Added entry instead: it shows `Frame([v_1, …, v_k])`, and
-  should name the tuple argument and the accessor chosen in (1).
-
-## Plan
-
-- [ ] Do `tasks/archive/2026/11/09/require-frame-guard.md` first (`require_frame` replaces the validation that
-  building the orthogonal set did).
-- [ ] Measure the current cost of the 3D symbolic `Frame` cases.
-- [ ] (1) Replace the `orthogonal_vectors` field with the chosen accessor. In `__post_init__`, call
-  `require_frame(self.vectors, "Frame")`. Bind the set to a local in `coefficients()` and in the
-  peel inverse. Update the docstring, its doctest, the tests, the two book notebooks and
-  `python-coding-standard-gacalc.md`'s examples. Re-measure.
-- [ ] (2) Annotate `vectors: tuple[MultiVectorBase, ...]` and delete the
-  `object.__setattr__(self, "vectors", …)` line (with (1), the whole `object.__setattr__` pair goes).
-  Make every caller listed above pass a tuple.
-- [ ] Update the `CHANGELOG.md` `[Unreleased]` › Added entry for `Frame`, the wording in
-  `tasks/frame-inverse-head-first-recursion.md`, and the reference doc's `Frame` description if it
-  names the field.
-- [ ] Gates: `make test`, `make test-full` (the slow 3D frame tests), `make format` (ruff + ty), and
-  `make docs` (the two book notebooks run).
+- the `CHANGELOG.md` `[Unreleased]` › Added entry for `Frame`;
+- `CLAUDE.md`'s `Frame` description;
+- `book/docs/frames-qr.rst`;
+- `tasks/reference/frames-qr-and-reciprocal-frames.md`: its heading is now "Why gacalc's `Frame`
+  uses the orthogonal set, not the orthonormal one", and the three citations of it were updated;
+- the examples in `tasks/reference/python-coding-standard-gacalc.md` and
+  `tasks/reference/symbolic-equality.md`;
+- the wording in `tasks/frame-inverse-head-first-recursion.md` and
+  `tasks/lean-frame-class-invertible-function.md`.
 
 ## Decisions
 
-1. Go ahead, in the committed batch on branch `gn-frozendict-and-frame-tuple`. **`Frame` takes a
-   tuple, and every caller passes one explicitly** (William Emerison Six <billsix@gmail.com>,
-   2026-11-09: "make the dataclass Frame take a tuple as an argument, so that you don't need to wrap
-   it in a a tuple, and then update all callers to pass in a tuple explicitly").
-2. **The orthogonal set is a method, `orthogonal_vectors()`**, the preliminary recommendation
-   above. It is spelled like the class's other two derived sets, and it is bound once to a local in
-   `coefficients()` and in the peel branch of `to_invertible_function`, so neither recomputes it
-   per row or per call. `cached_property` stays the fallback if the before/after measurement shows
-   a cost that matters (agent's call, 2026-11-09, under the maintainer's "or whatever is standard
-   python, like a method").
-3. **`__post_init__` rejects a non-tuple at run time** with `TypeError`, for untyped callers (a
-   notebook, a REPL) that would otherwise store a list the caller can still mutate. This is a
-   genuine `isinstance` type check, the one case CLAUDE.md reserves `TypeError` for (agent's call,
+1. **`Frame` takes a tuple, and every caller passes one explicitly** (William Emerison Six
+   <billsix@gmail.com>, 2026-11-09: "make the dataclass Frame take a tuple as an argument, so that
+   you don't need to wrap it in a a tuple, and then update all callers to pass in a tuple
+   explicitly"). The tuple is there for immutability, not hashing. `Frame` stays unhashable because
+   multivectors define `__eq__` without `__hash__`. No Python 3.13–3.15 feature converts a field
+   (PEP 712 was rejected), and `frozendict` has no sequence counterpart.
+2. **The orthogonal set is a method, not a `property` or a `cached_property`.** A `property` would
+   hide an O(k²) symbolic orthogonalization behind attribute syntax. `cached_property` was the
+   fallback, kept for the case where the measurement below showed a cost that mattered. It didn't
+   (agent's call, 2026-11-09).
+3. **`__post_init__` rejects a non-tuple with `TypeError`**, for untyped callers (a notebook, a
+   REPL). A list stored in the frame could still be changed through the caller's reference. This is
+   a genuine `isinstance` type check, the one case CLAUDE.md reserves `TypeError` for (agent's call,
    2026-11-09).
 
-## Open questions
+## Measurement
 
-None.
+Host, `python -m pytest tests/test_frame_class.py -m slow --durations=0`, the seven slow 3D cases:
+
+| Test | Before (stored field) | After, first run | After, tests bind once |
+|---|---|---|---|
+| `inverse_methods_are_equivalent_symbolic[3d]` | 470.5 s | 475.9 s | 468.9 s |
+| `composed_round_trip…[3d-peel]` | 410.5 s | 424.4 s | 418.7 s |
+| `composed_round_trip…[3d-reciprocal]` | 275.8 s | 279.5 s | 275.5 s |
+| `coefficients_are_triangular…[frame_3d]` | 207.5 s | 217.1 s | 214.5 s |
+| `squared_lengths…[frame_3d-vectors1]` | 35.9 s | 54.1 s | 44.5 s |
+| `orthogonal_vectors_are_mutually_orthogonal[frame_3d]` | 22.1 s | 22.5 s | 22.3 s |
+| `coefficients_rebuild_the_vectors[frame_3d]` | 3.8 s | 31.2 s | 13.0 s |
+| **Total** | **1426.5 s** | **1505.2 s** | **1457.9 s (+2.2%)** |
+
+The first run's regression came almost entirely from two tests that called
+`frame.orthogonal_vectors()` once per row, or twice in one test. Both now bind it once to a local,
+as the library methods do. Those two tests still cost about 18 s more than before. With the
+stored field, the shared `frame_3d` fixture computed the set once for every test; now each test that
+reads the set computes it once. Over a 24-minute run that is not a cost that matters, so
+`cached_property` was not adopted. The other five tests changed by under 4%.
+
+Gates, run on commit `92aa57f` plus the ruff reformat:
+
+- `make test-full`: 793 passed, 2 skipped, 27:43;
+- `make format`: clean;
+- `make docs`: the book built, including both notebooks.
+
+`ruff check` and `ruff format --check` passed on the test rebinding afterwards.
