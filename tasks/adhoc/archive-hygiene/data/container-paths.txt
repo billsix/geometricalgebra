@@ -1,9 +1,0 @@
-tasks/archive/2026/10/24/make-orthogonal-frame-map-not-reduce.md:159:Done across the repos (all mounted this session under `/foo/opt/`):
-tasks/archive/2026/07/16/relocate-rotate-and-rename-rotations.md:11:   at all: `/foo/opt/modelviewprojection` only imports `plane_rotation` (kept unchanged)
-tasks/archive/2026/08/15/redo-exp-book-referenced.md:122:  **`/foo/opt/galgebra`** (a sibling of this repo, `v0.6.1rc1`, HEAD `ff0a938`),
-tasks/archive/2026/08/15/redo-exp-book-referenced.md:150:- **galgebra confirmed.** `Mv.exp` (`/foo/opt/galgebra/galgebra/mv.py:1218-1270`) is the power
-tasks/archive/2026/06/08/port-animation-layer-from-mvp.md:22:`/mvp/tasks/gacalc-math-migration.md`). mvp's `InvertibleFunction` is a **strict
-tasks/archive/2026/10/09/emacs-lsp-not-working-in-geometricalgebra.md:13:must equal the in-container repo **mount path**; modelviewprojection's matches (`/mvp/`) so LSP works,
-tasks/archive/2026/06/08/derived-sandwich-operation.md:5:(Landed in gacalc's working tree at version 0.0.3 and installed into `/mvp/venv`.
-tasks/archive/2026/06/08/classify-functions-linear-affine-nonlinear.md:80:`/mvp/tasks/gacalc-math-migration.md` — but the tag rules are defined here so both
-tasks/archive/2026/08/03/openstax-math-pedagogy-survey.md:27:- [x] Locate repos; confirm all four on `latex` branch under /foo/opt/openstax.
