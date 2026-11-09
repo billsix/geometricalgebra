@@ -34,7 +34,7 @@ linters and a `clear` test. **Very little is extra:** most name-absent hypothese
 2. The `clear` test: for each hypothesis whose name never appears in its proof, insert `clear <name>` as the
    first tactic and compile that file alone. A pass means this proof doesn't need it.
 3. Already clean: no `sorry`, no unused `have`, zero unused `simp` arguments (the 2026-10-04 minimizer
-   removed 73; `tools/detect_unused_hypotheses.py`).
+   removed 73).
 
 ## Findings to fix
 
@@ -76,7 +76,7 @@ at `|R|² = 0` too, because in Lean `1/0 = 0`, so `inverse R = 0` and both sides
    changed. Mention a dropped hypothesis in `CHANGELOG.md` only if the Python side cites these theorems in a
    way a reader would notice (the Lean proofs are not a published API).
 7. Optional, as a reusable tool: promote the `clear`-test script to `tools/` (e.g.
-   `tools/lean_clear_test.py`) next to `tools/detect_unused_hypotheses.py`, and note it in the reference doc.
+   `tools/lean_clear_test.py`), and note it in the reference doc.
 
 ## Open questions
 

@@ -145,7 +145,21 @@ def main() -> int:
             print(f"FAILED {src.relative_to(REPO)}: {exc}", file=sys.stderr)
             if exc.stderr:
                 print(exc.stderr[-2000:], file=sys.stderr)
+        except FileNotFoundError as exc:  # a missing tool or output file, not a crash
+            status = 1
+            print(f"FAILED {src.relative_to(REPO)}: {exc}", file=sys.stderr)
+    if not args.names:
+        remove_orphans({p.stem.replace("_", "-") for p in sources})
     return status
+
+
+def remove_orphans(names: set[str]) -> None:
+    """Delete rendered outputs whose figure file no longer exists."""
+    output: Path
+    for output in sorted(OUT.glob("*.pdf")) + sorted(OUT.glob("*.png")):
+        if output.stem not in names:
+            output.unlink()
+            print(f"removed {output.relative_to(REPO)} (its figure file is gone)")
 
 
 if __name__ == "__main__":

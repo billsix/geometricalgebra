@@ -435,7 +435,8 @@ A getter proof's `simp only [defs, zeros]` list says nothing about what the proo
 silently ignores a listed fact that never fires, and a hypothesis named nowhere in the body may still be
 consumed by `field_simp`/`simp` from the local context. The 2026-10-04 minimizer trimmed 73 vacuous
 components so each list now documents exactly the components its proof touches
-(`tasks/archive/2026/10/04/trim-unused-simp-components.md`; detector: `tools/detect_unused_hypotheses.py`).
+(`tasks/archive/2026/10/04/trim-unused-simp-components.md`). The text-search detector it produced was
+deleted on 2026-11-09: Lean's `unusedVariables` lint and delete-and-rebuild cover it.
 How to decide whether a hypothesis is needed — and how to read a failed delete-and-rebuild — is the
 "Hypotheses" section below.
 
