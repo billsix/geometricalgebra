@@ -102,6 +102,11 @@ as computations. Bind it once to a local where `coefficients()` and the peel inv
   `vs[0] = ...`), leaving the frame with vectors that no longer match its orthogonal set, or that no
   longer form a frame at all. Making the orthogonal set derived (part 1) removes the mismatch, but
   the vectors themselves could still change underneath the frame.
+- **`frozendict` (Python 3.15) changes nothing here** (`tasks/frozendict-research-and-fit.md`,
+  phase 3). It has no sequence counterpart, so a tuple is still the immutable sequence, and
+  `Frame` stays unhashable because multivectors are (`Gn` must not gain a `__hash__`, even with
+  frozen storage). If `tasks/gn-frozendict-coefficient-storage.md` lands, a `Frame` of `Gn` vectors
+  holds values whose contents can't change, which completes "frozen" alongside the tuple field.
 - **No newer Python feature does this conversion for you** (checked against 3.13–3.15). Field
   converters for `dataclasses` (PEP 712) were rejected; only the third-party `attrs` has them. There
   is no built-in frozen list. So the tuple annotation, with callers passing tuples, is the idiomatic

@@ -1,0 +1,23 @@
+diff --git a/src/gacalc/gn.py b/src/gacalc/gn.py
+index bc30d37..05ed73b 100644
+--- a/src/gacalc/gn.py
++++ b/src/gacalc/gn.py
+@@ -106,11 +106,13 @@ class Gn(MultiVectorBase):
+             for blade in self.coefficient_of_blade.keys()
+         }
+         # prune zero coefficient_of_blade
+-        self.coefficient_of_blade = {
+-            blade: self.coefficient_of_blade[blade]
+-            for blade in self.coefficient_of_blade.keys()
+-            if self.coefficient_of_blade[blade] != 0
+-        }
++        self.coefficient_of_blade = frozendict(
++            {
++                blade: self.coefficient_of_blade[blade]
++                for blade in self.coefficient_of_blade.keys()
++                if self.coefficient_of_blade[blade] != 0
++            }
++        )
+ 
+     @classmethod
+     def from_blade_dict(cls, blade_coef: Mapping[Blade, Real]) -> Gn:
