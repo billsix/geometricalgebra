@@ -158,3 +158,15 @@ etc.) plus the form-D `vec`-literal bridges kept by Decision 1.
   recipe, the clean-`^2`-denominator derivation, and the "paths that don't work" dead-ends.
 - `tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md` — the unit-versor `R⁻¹ = R̃` layer (overlaps
   the prerequisite).
+
+## Also in this sweep's scope (added 2026-11-09)
+
+`tasks/archive/2026/11/09/lean-teaching-order-and-scalars-in.md` restated five "scalars in"
+theorems over `IsVector`. These three remain, each needing a judgment about its object form:
+
+- `Sandwich.sandwich_fixes_orthogonal (s c12 z : ℝ)` and `Sandwich.sandwich_plane_invariant
+  (s c12 x y : ℝ)`. They build `evenVersor s c12 0 0` and `vec 0 0 z` / `vec x y 0` inside. Neither
+  is used anywhere; the first is cited only in a nearby doc comment. The object form needs "a versor
+  in the e₁₂ plane", i.e. `IsEvenVersor R` plus `R.c13 = 0 ∧ R.c23 = 0`.
+- `Sandwich.normSq_mul (s1 p1 q1 t1 s2 p2 q2 t2 : ℝ)`. It takes two versors' components. The
+  architecture doc says these lift to `IsEvenVersor`.

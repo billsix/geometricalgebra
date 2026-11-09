@@ -1,6 +1,10 @@
 Projection
 ==========
 
+.. note::
+
+   Draft. The prose is agent-drafted; the maintainer's voice pass is pending.
+
 ..
    TODO prose (maintainer's voice): introduce projection and rejection in 2D. The figures
    below are drafted and render via `make docs`; the narrative around them is still to be

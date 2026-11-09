@@ -30,8 +30,8 @@ The product of two unit vectors is the rotor
 --------------------------------------------
 
 Take two **unit** vectors :math:`\hat{a}` and :math:`\hat{b}`, with :math:`\theta` the angle between
-them. Multiply them. From :doc:`geometric-product`, a vector times a vector in 𝒢₂ is a scalar plus a
-bivector, and the two pieces are exactly the dot and the wedge:
+them. Multiply them. From :doc:`product-from-projection`, a vector times a vector in 𝒢₂ is a
+scalar plus a bivector, and the two pieces are exactly the dot and the wedge:
 
 .. math::
 

@@ -122,7 +122,7 @@ relations sympy does not discover: Lagrange's (<https://en.wikipedia.org/wiki/La
   `s² → 1 − c²`. Then `|b| → 1`, `|R|² → 4c²`, `sqrt(4c²) → 2c` (positivity lets sympy take the root), and the
   rotor simplifies to exactly `c − s * e₁₂`.
 - **Substitute before simplifying, blade-wise.** The comparison helper takes an optional substitution and
-  applies it to each blade's *difference* before `simplify` (`_simplify_equal(a, b, subs=…)`). Substituting
+  applies it to each blade's *difference* before `simplify` (`a.symbolically_equal(b, subs=…)`). Substituting
   `s**2` hits it inside the `sqrt` argument too.
 - **Prove the closed form itself as its own assertion** (`simplify(R.magnitude_squared() − 2 * |a| * |b| * (|a| * |b| +
   a·b)) == 0`, fully symbolic in 2D and 3D) — it is a plain polynomial identity once `sqrt(x)**2 → x`.

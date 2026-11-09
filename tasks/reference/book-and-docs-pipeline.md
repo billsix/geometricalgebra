@@ -11,8 +11,8 @@ doesn't need.
 - **`book/docs/`** — the Sphinx source: `conf.py`, `index.rst`, `api.rst`,
   `_static/custom.css`, and the stock quickstart `Makefile`. The **outline skeleton is
   scaffolded** (2026-08-03): one `.rst` prose page per section + `api.rst` (autodoc over
-  every package module — `gacalc.base`/`gn`/`functions`/`transforms`/`measure`/`vectorcalc`/
-  `frame`; expanded from the original three 2026-09-26 so cross-refs resolve), and
+  `gacalc.base`/`gn`/`functions`/`transforms`/`measure`/`vectorcalc`/`frame` — not
+  `standardposition` or `nbplotutils`, nor the generated `g1`–`g5`), and
   **percent-format notebooks** under `book/docs/notebooks/*.py` (stubs at first; which
   ones have content is tracked in `book-outline.md` › "File layout"). Structure and the
   prose-vs-notebook split live in `book-outline.md`.
@@ -171,9 +171,10 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
 
 The book's notebooks `import gacalc`, and myst_nb runs them in a Jupyter kernel. For
 that kernel to import gacalc, **three things must line up** — each was a real failure
-while standing this up, and the symptom is silent (myst_nb does NOT fail the build on a
-cell error, so `make docs` exits 0 with empty notebook pages and `ModuleNotFoundError`
-only in `_build/html/reports/notebooks/*.err.log`):
+while standing this up. (`book/docs/conf.py` sets `nb_execution_raise_on_error = True`, so a
+notebook cell that raises now fails `make docs`; before that gate, decided in
+`tasks/archive/2026/08/29/gate-book-notebook-execution-errors.md`, the symptom was silent: empty
+notebook pages, with the `ModuleNotFoundError` only in `_build/html/reports/notebooks/*.err.log`):
 
 1. **Sphinx lives in the VENV, not system — this is the load-bearing one.** myst_nb
    launches its kernel from **Sphinx's own `sys.prefix`**. So `sphinx-build` must run as
@@ -210,8 +211,8 @@ the PDF build dies with `LaTeX Error: Unknown graphics extension: .svg`. Note: a
 ## Notebook PDF export (nbconvert — separate from the Sphinx PDF)
 
 Jupyter's "Save and Export As → PDF" (nbconvert) is a **different** pipeline from the Sphinx
-book above, and its toolchain is installed **unconditionally** (not gated by `BUILD_DOCS`) by
-`entrypoint/03-install-notebook-tex.sh`:
+book above. Its toolchain is installed by `entrypoint/03-install-notebook-tex.sh`, which the
+Dockerfile runs when `USE_JUPYTER=1` or `BUILD_DOCS=1` (the Sphinx PDF relies on its collections):
 
 - **XeLaTeX**, chosen over the WebPDF route — WebPDF needs Chromium, which the image doesn't
   ship.
@@ -273,11 +274,12 @@ book above, and its toolchain is installed **unconditionally** (not gated by `BU
 
 ## Package set (Dockerfile `BUILD_DOCS` block)
 
-`python3-sphinx`, `python3-furo`, `python3-nbsphinx`, `myst-nb`, `latexmk`,
-`texlive-luahbtex`, `texlive-luatex85`, `texlive-lualatex-math`, `texlive-fontspec`,
-`texlive-gnu-freefont`, plus the support set above. (gacalc already installs the
-`collection-latexrecommended`/`-fontsrecommended` collections unconditionally for
-nbconvert.) The same set was added to `runClaudeInContainer` so the sandbox can build
+dnf (`entrypoint/04-install-docs.sh`): `ImageMagick`, `latexmk`, `texlive-luahbtex`,
+`texlive-luatex85`, `texlive-lualatex-math`, `texlive-fontspec`, `texlive-gnu-freefont`, plus the
+support set above. The venv (`uv pip`, in the Dockerfile): `sphinx`, `furo`, `nbsphinx`, `myst-nb`
+(see "Executable notebooks" for why Sphinx must be in the venv). The
+`collection-latexrecommended`/`-fontsrecommended` collections come from
+`03-install-notebook-tex.sh`, which runs whenever `BUILD_DOCS=1`. The same set was added to `runClaudeInContainer` so the sandbox can build
 the book directly.
 
 ## Autodoc rendering warnings — RESOLVED 2026-09-26
@@ -293,8 +295,8 @@ The follow-ups that were open here are fixed (work record: the archived
    were wrapped in the `` `` `` code-role. `make docs` → **0** substitution warnings.
 2. **`ₙ` (U+2099) missing from FreeSerif** — a luaotfload fallback to DejaVu Sans (by file)
    supplies it, FreeSerif kept as main (it has 𝒢). **0** `Missing character`.
-3. **Undefined hyperrefs 169 → 0** — `autodoc_typehints = "none"` + `api.rst` now `automodule`s
-   every package module. (Earlier notes said "~7 residual"; a converged build measures **0**.)
+3. **Undefined hyperrefs 169 → 0** — `autodoc_typehints = "none"` + `api.rst` `automodule`s
+   the hand-written modules the book cites (see "What exists" for the list). (Earlier notes said "~7 residual"; a converged build measures **0**.)
 4. **Full Google/napoleon docstrings across the hand-written AND generated API** (done 2026-09-26):
    every `MultiVectorBase` method, the `gn.py` methods, the public module-level functions, AND the
    ~185 grade-specialized generated docstrings (`CUSTOM_METHOD_DOCS` + the 7 `_*_doc` callables in

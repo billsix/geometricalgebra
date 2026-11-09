@@ -30,7 +30,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 - `src/gacalc/transforms.py` — the representation-agnostic transform *factory* layer
   (`translate`/`uniform_scale`/`scale_non_uniform`/`to_matrix`/`to_matrix_template` +
   `MatrixTemplate`, plus the rotation factories `projection_rotation`/`versor_rotation`/
-  `plane_rotation`, and `line_to_line_projection` (projection restricted to one line: an
+  `plane_rotation`/`bivector_rotation`, and `line_to_line_projection` (projection restricted to one line: an
   `InvertibleFunction` that checks its input is on its line) + `coordinate_along`); derives any basis from the value's own type, so it preserves `Gn`/`G`.
   **Re-exports** the `functions` names.
 - `src/gacalc/frame.py` — **frames** (H&S p. 27): `are_linearly_independent`/`is_frame`, the
@@ -47,7 +47,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `to_invertible_function(inverse_method="reciprocal" | "peel")` maps `e_i ↦ v_i` and inverts it
   either through the reciprocal frame (`reciprocal_frame`, H&S eq 3.7; the default) or by a `match`
   recursion that peels the frame from its last vector. Both read each term with
-  `transforms.line_to_line_projection` (the point on `v_i`'s line whose projection onto a normal `n`
+  `transforms.line_to_line_projection` (the point on `v_i`'s line whose projection onto a normal `m`
   matches `y`'s). Math, the orthonormal-vs-orthogonal measurements and the symbolic-cost timings:
   `tasks/reference/frames-qr-and-reciprocal-frames.md`.
 - `src/gacalc/measure.py` — the named **measures** (Williamson & Trotter 1979):
@@ -57,7 +57,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 - `src/gacalc/vectorcalc.py` — **vector calculus in 𝒢₃**: `cross(a, b) = (a ∧ b) I₃⁻¹`, the
   dual of the wedge, 𝒢₃ only. Free function + `MultiVectorBase.cross` method; 𝒢₃'s generated
   `Vector` carries a closed-form `cross` typed `Vector -> Vector`. Deliberately NO dot/triple
-  aliases (dot = `scalar_product`, triple = `measure.signed_volume`); grad/div/curl out of scope.
+  aliases (the dot of two vectors is `a.dot(b).scalar_part()`, the triple product
+  `measure.signed_volume`); grad/div/curl out of scope.
 - `src/gacalc/standardposition.py` — **standard-position (frame-reduction) `project_sp`/`reject_sp`**:
   project/reject a vector onto another by rotating `b` onto the `e_1` axis with elementary
   coordinate-plane rotations, projecting there, and rotating back — a deliberate *duplicate* of the
@@ -134,15 +135,20 @@ and call `self * other`, dispatched to the concrete type.
   **coordinate vector** (every term of a sum, every element of a vector list, the coordinate args
   of `area`/`volume`/`signed_*`). A blade used as a **direction** stays bare — the plane/axis args
   of `cls.i(e_1, e_2)`, `plane_rotation(e_1, e_2)`, `versor_from_vectors(…)`, `project(onto=e_1)`,
-  `coefficient(e_1)`.
+  `coefficient(e_1)`. **Scope:** teaching-facing code (`src/` examples and docstrings, notebooks, the
+  book). Tests may also call the public positional/keyword constructor, which is API under test, and
+  product tests keep blade-dict literals as their expected values so the ground truth is not built with
+  the operation under test (`tasks/reference/design-decisions.md`).
 - **Use the predefined basis constant** (`e_1`, `g3.e_3`, `Vector.e_1`, `gn.e_2`) in
   tests/examples/notebooks/docs — never `cls.basis_vector(i)` when a constant exists
   (`basis_vector` is for representation-agnostic library code where `cls` is a parameter).
   Module-level constants are the *graded* type (`from gacalc.g2 import e_1` is a `Vector`); a class
   exposes its own basis blades at that class's type (`Vector.e_1`, `G.e_1`); `Gn` has none.
 - **No local aliases** for a value that already has a canonical name (reference `Vector.e_1` /
-  `Bivector.e_12` directly, never `E1 = Vector.basis_vector(1)`). Carve-out: the full-`G` demo
-  notebooks (`displayg2`/`displayg3`) may alias full-class constants to bare names.
+  `Bivector.e_12` directly, never `E1 = Vector.basis_vector(1)`). Carve-outs: the full-`G` demo
+  notebooks (`displayg2`/`displayg3`) may alias full-class constants to bare names, and
+  `displayvectorcalc` binds `i, j, k = e_1, e_2, e_3` (the vector-calculus names it teaches;
+  the maintainer, 2026-08-31).
 - **Dot product for vectors, scalar product only where it is meant** — when the operands are vectors
   and a number is wanted, write `a.dot(b).scalar_part()` (the familiar `a · b`, read out as a `Real`),
   not `a.scalar_product(b)`, and make sure the operands are vectors (call
@@ -204,13 +210,14 @@ composable-function hierarchy, rotations/versors + the versor sandwich derivatio
 - `abs(mv)` → magnitude · inverse via `.inverse()` · `A / B` quotient (`= A * B.inverse()`;
   a bare number's inverse is its reciprocal, so `v / s` divides every coefficient)
 - rotations: `transforms.projection_rotation(from, to)` / `versor_rotation(from, to)` /
-  `plane_rotation(a, b)` (free-function factories); `MultiVectorBase.versor_from_vectors(from, to)`
+  `plane_rotation(a, b)` / `bivector_rotation(i)` (plane from a bivector; free-function factories); `MultiVectorBase.versor_from_vectors(from, to)`
   (the versor builder) and `rotor_from_vectors(from, to)` (= that versor normalized: a rotor, i.e. a unit versor,
   reverse sandwich) — any plane / representation; a versor's `magnitude()`/`plane_of_rotation()`/`angle()`/`conjugate()` read
   `r`, `I`, `θ`, `R̄` back out of `R = r * (cos(θ) + I * sin(θ))`
 - cross product (𝒢₃ only): `vectorcalc.cross(a, b)` = `(a ∧ b) I₃⁻¹` (the dual of the wedge;
   right-handed, `e₁ × e₂ = e₃`) / `a.cross(b)` (on 𝒢₃'s generated `Vector` a closed form typed
-  `Vector -> Vector`). Dot = `scalar_product`; scalar triple product = `measure.signed_volume` — no aliases
+  `Vector -> Vector`). Dot of two vectors = `a.dot(b).scalar_part()`; scalar triple product =
+  `measure.signed_volume` — no aliases
 - quarter turn (𝒢₂ only): `g2.Vector.rotate_90_degrees()` / the `g2.rotate_90_degrees()`
   `InvertibleFunction` factory — `= v * e_12` (+90° e₁→e₂, exact); the inverse is `v * -e_12`
 - plane helpers: `cls.bivector_from_vectors(a, b)` builds the raw wedge `a ∧ b`; `cls.i(a, b)`
@@ -412,13 +419,14 @@ lualatex/no-EPUB/`texlive-luahbtex` details and content guide: `tasks/reference/
 
 CI (`.github/workflows/`) is a **thin wrapper over the make/Dockerfile system**: each job is
 `checkout` → `make <target>`, all logic in make targets, so the same command runs locally
-(`CONTAINER_CMD` auto-detects podman→docker; runners are `ubuntu-latest`). `checks.yml` runs on
-every push + PR as three check-only jobs — **`format`** (`make check-format` = `make format` then
-`git diff --exit-code`; runs the formatter in the disposable runner and fails on a diff, never
-commits), **`test`** (`make test-full`, the whole suite), and **`generated`** (`make check-generated` then
-`make check-regions` — the codegen-determinism + doc-region gates). A separate **`lean.yml`** runs
-**`make lean`** (the Lean/Mathlib proofs) **on `v*` tags only** — not per-push, since a Mathlib build
-is heavy. If CI needs a step, add it as a
+(`CONTAINER_CMD` auto-detects podman→docker; runners are `ubuntu-latest`). Every job builds the lean
+image (`MINIMAL_IMAGE=1`). `checks.yml` runs on every push + PR as four check-only jobs — **`format`**
+(`make check-format` = `make format` then `git diff --exit-code`; runs the formatter in the disposable
+runner and fails on a diff, never commits), **`test`** (`make test-full`, the whole suite),
+**`generated`** (`make check-generated` then `make check-regions` — the codegen-determinism + doc-region
+gates), and **`notebooks`** (`make check-notebooks`, pyright over `notebooks/`). A separate **`lean.yml`**
+runs **`make lean MINIMAL_IMAGE=1 USE_LEAN=1`** (the Lean/Mathlib proofs) **on `v*` tags only** — not
+per-push, since a Mathlib build is heavy. If CI needs a step, add it as a
 `make` target first (runnable locally), never inline YAML. Pin actions at Node 24
 (`actions/checkout@v5`; `@v4` is the deprecated Node 20). Releases are **manual** by decision
 (`make dist`/`upload`/`release` → PyPI); a tag-triggered PyPI publish was **declined** 2026-10-22

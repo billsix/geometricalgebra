@@ -20,7 +20,7 @@ import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
-from gacalc.base import MultiVectorBase
+from gacalc.base import MultiVectorBase, Real
 from gacalc.gn import (
     MultiVector,
     a_1,
@@ -336,11 +336,14 @@ def test_inverse_rejects_general_multivector() -> None:
 
 
 def test_normalize() -> None:
-    # normalizing a vector divides it by its own magnitude:
+    # the normalized vector has magnitude 1 and points the same way: scaling it
+    # back up by the original magnitude gives the original vector.
     u2: MultiVector = a_1 * e_1 + a_2 * e_2
-    assert u2.normalize() == u2 * (abs(u2) ** (-1))
+    assert u2.normalize().magnitude() == 1
+    assert u2.normalize() * u2.magnitude() == u2
     u3: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    assert u3.normalize() == u3 * (abs(u3) ** (-1))
+    assert u3.normalize().magnitude() == 1
+    assert u3.normalize() * u3.magnitude() == u3
 
 
 def test_rotate() -> None:
@@ -418,3 +421,18 @@ def test_symbolic_equality_still_simplifies() -> None:
     assert g2.Vector(x, 0) != g2.Vector(x + 1, 0)
     # A symbolic coefficient paired with a numeric one still reaches sympy.
     assert g2.Vector(sympy.sympify(2), 0) == g2.Vector(2.0, 0)
+
+
+def test_division_by_an_int_stays_exact() -> None:
+    # Integer input stays exact: 1 * e_1 / 3 has the coefficient 1/3, not 0.333...
+    v: g2.Vector = (1 * g2.e_1) / 3
+    assert v.coefficient(g2.e_1) == sympy.Rational(1, 3)
+    assert ((3.0 * g2.e_1) / 2).coefficient(g2.e_1) == 1.5
+
+
+@pytest.mark.parametrize(
+    "zero", [0, 0.0, sympy.Integer(0)], ids=["int", "float", "sympy"]
+)
+def test_division_by_zero_raises(zero: Real) -> None:
+    with pytest.raises(ZeroDivisionError):
+        (1 * g2.e_1) / zero

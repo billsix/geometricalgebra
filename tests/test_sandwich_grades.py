@@ -35,6 +35,7 @@ import pytest
 import gacalc.g2 as g2
 import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase
+from gacalc.gn import Gn
 
 _TOL: dict[str, float] = {"rel_tol": 1e-6, "abs_tol": 1e-6}
 
@@ -72,6 +73,14 @@ def test_versor_sandwich_of_bivector_matches_gn_3d() -> None:
     )
     specialized: MultiVectorBase = rotation.sandwich(plane)
     assert type(specialized) is g3.Bivector
+    reference: Gn = Gn.from_blade_dict(rotation.to_blade_dict()).sandwich(
+        Gn.from_blade_dict(plane.to_blade_dict())
+    )
+    assert Gn.from_blade_dict(specialized.to_blade_dict()) == reference
+    # the quarter turn e_1 -> e_2 sends e_13 to e_23 and e_23 to -e_13
+    assert specialized == (
+        1 * g3.Bivector.e_12 + (-3) * g3.Bivector.e_13 + 2 * g3.Bivector.e_23
+    )
 
 
 # --- Versor sandwich on a TRIVECTOR operand (the pseudoscalar is invariant) ---

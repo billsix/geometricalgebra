@@ -446,7 +446,7 @@ between altitudes on purpose:
 
 ## Part II — Applying this to the GA book
 
-### 9. Where the GA book stands today (from the code survey)
+### 9. Where the GA book stood on 2026-08-03 (from the code survey; a snapshot)
 
 - The book *"Geometry 2"* (`book/docs/`, Sphinx) is **~85% placeholder**.
   Only three prose chapters are written: `rotate.rst`, `geometric-product.rst`,

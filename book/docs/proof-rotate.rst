@@ -12,6 +12,10 @@
 Proof: Rotate
 =============
 
+.. note::
+
+   Draft. The prose is agent-drafted; the maintainer's voice pass is pending.
+
 This is the precalculus-level derivation of what it means to **rotate a point about
 the origin (0, 0)** by an angle :math:`\theta`. It is the foundation the rest of the
 book is built on — the bridge from what you already know in high-school math. We reduce

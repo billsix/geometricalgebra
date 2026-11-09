@@ -1,7 +1,10 @@
 Relative Graph Paper
 ====================
 
-Placeholder — content to come. Two vectors make relative graph paper (kept at 90° for most of the book): coordinates, the natural basis, and why a ruler only means something relative to something else.
+..
+   TODO prose (maintainer's voice): two vectors make relative graph paper (kept at 90° for most of
+   the book): coordinates, the natural basis, and why a ruler only means something relative to
+   something else. Only the coordinates subsection below is drafted.
 
 How we write coordinates
 ------------------------

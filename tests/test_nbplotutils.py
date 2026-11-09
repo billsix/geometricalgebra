@@ -22,10 +22,16 @@ import matplotlib
 matplotlib.use("Agg")
 
 import numpy as np  # noqa: E402
+import pytest  # noqa: E402
+import sympy  # noqa: E402
 from matplotlib.axes import Axes  # noqa: E402
 from matplotlib.patches import Polygon  # noqa: E402
 
-from gacalc.nbplotutils import create_graphs, draw_ndc  # noqa: E402
+import gacalc.g2 as g2  # noqa: E402
+import gacalc.g3 as g3  # noqa: E402
+import gacalc.gn as gn  # noqa: E402
+from gacalc.base import MultiVectorBase  # noqa: E402
+from gacalc.nbplotutils import create_graphs, draw_ndc, sine  # noqa: E402
 
 
 def test_draw_ndc_draws_the_four_corners_of_the_square() -> None:
@@ -39,3 +45,31 @@ def test_draw_ndc_draws_the_four_corners_of_the_square() -> None:
     corners: np.ndarray = squares[0].get_xy()[:-1]
     expected: np.ndarray = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]])
     assert np.allclose(corners, expected)
+
+
+@pytest.mark.parametrize(
+    ("e_1", "e_2"),
+    [
+        pytest.param(gn.e_1, gn.e_2, id="gn"),
+        pytest.param(g2.Vector.e_1, g2.Vector.e_2, id="g2-vector"),
+        pytest.param(g2.G.e_1, g2.G.e_2, id="g2-full"),
+    ],
+)
+def test_sine_is_the_signed_sine_in_the_plane(
+    e_1: MultiVectorBase, e_2: MultiVectorBase
+) -> None:
+    # A quarter turn counterclockwise has sine 1; the other way, -1.
+    assert sine(1 * e_1, 1 * e_2) == 1
+    assert sine(1 * e_2, 1 * e_1) == -1
+    assert sine(3 * e_1, 2 * e_1 + 2 * e_2) == sympy.sqrt(2) / 2
+
+
+def test_sine_raises_off_the_plane() -> None:
+    # A signed sine exists only in 2-D; two 3-D vectors raise instead of giving 0.
+    with pytest.raises(ValueError):
+        sine(1 * g3.e_1, 1 * g3.e_3)
+
+
+def test_sine_raises_for_a_non_vector() -> None:
+    with pytest.raises(ValueError):
+        sine(g2.Bivector.e_12, 1 * g2.e_1)

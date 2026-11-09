@@ -80,9 +80,10 @@ WAYLAND_FLAGS_FOR_CONTAINER = -e "WAYLAND_DISPLAY=${WAYLAND_DISPLAY}" \
                               -v "${XDG_RUNTIME_DIR}:${XDG_RUNTIME_DIR}"
 
 
-# USE_EMACS=1 bind-mounts the vendored host elpa tree into the container so an
-# interactive `make shell USE_EMACS=1` can *use* the vendored packages (:U chowns
-# it to the container user, :z relabels for SELinux). Default is off (no mount).
+# USE_EMACS=1 (the default) bind-mounts the vendored host elpa tree into the
+# `shell`/`shell-exec`/`jupyter` containers so Emacs can *use* the vendored packages
+# (:U chowns it to the container user, :z relabels for SELinux). The image build
+# never mounts it: the packages are not baked (.dockerignore excludes them).
 # To *refresh* the vendored packages, use `make update-emacs-packages` below.
 ifeq ($(USE_EMACS), 1)
   ELPA_MOUNT= -v $(CURDIR)/entrypoint/dotfiles/.emacs.d/elpa:/root/.emacs.d/elpa:U,z
@@ -102,7 +103,6 @@ image: ## Build the OCI image
                          --build-arg USE_JUPYTER=$(USE_JUPYTER) \
                          --build-arg USE_LEAN=$(USE_LEAN) \
                          --build-arg USE_EPIX=$(USE_EPIX) \
-                         $(ELPA_MOUNT) \
                          .
 
 
@@ -175,7 +175,7 @@ format: image ## (container) regenerate, then ruff + ty over the source (entrypo
 # formatted.  The generated modules are gitignored, so they don't trip the diff.
 # One make target = the whole format gate, so CI is a thin wrapper (checkout ->
 # `make check-format`) and it reproduces exactly what CI does locally.  Run lean:
-# `make check-format BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0`.
+# `make check-format MINIMAL_IMAGE=1` (what CI runs).
 .PHONY: check-format
 check-format: format ## (CI) run format, then fail if it changed any tracked file
 	git diff --exit-code

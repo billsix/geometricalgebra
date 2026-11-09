@@ -7,9 +7,14 @@
 asked for once the sympy version worked ("If it works symbolically in python now, then make a follow up
 task to make lean equivalent versions"). The Python side is in `src/gacalc/frame.py` `Frame`, and the
 design record is `tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`.
-**Moved out (2026-11-07):** theorems 1, 5 and 6 were proved, for n = 2 and 3, by
+**Moved out (2026-11-07):** theorems 5 and 6 were proved, for n = 2 and 3, by
 `tasks/archive/2026/11/07/lean-reciprocal-frame-and-frame-inverses.md` (`proofs/GacalcProofs/ReciprocalFrame2D.lean`,
-`ReciprocalFrame3D.lean`); theorems 2–4 remain here, on hold.
+`ReciprocalFrame3D.lean`). Theorem 1 is proved in substance there too: each rejection is
+perpendicular to the vectors it was rejected from (`G2.dot_reject_self`; `G3.reject_line_facts`,
+`G3.reject_plane_facts`), which gives `w₂·w₁ = 0` and `w₃·w₁ = 0` directly. The remaining pair,
+`w₃·w₂ = 0`, follows because `w₂` lies in the plane of `a₁, a₂`, but it is not stated as its own
+theorem. (Reconciled 2026-11-09, `tasks/review/2026/11/08/repo-review.md` §9.1.) Theorems 2–4 remain
+here, on hold, plus that one-line corollary of theorem 1.
 **Overlaps:** `tasks/lean-frame-coverage.md` (Lean coverage of the rest of `frame.py`: linear
 independence, rejection Gram–Schmidt, and the Hestenes closed form; parked by the maintainer
 2026-10-04). This task needs that one's rejection-orthogonality result, so do that part first or
@@ -58,6 +63,7 @@ needed" (vectors in, scalars only in the proof body). Done = the theorems below 
 
 ## Open questions
 
-1. Un-park `tasks/lean-frame-coverage.md` together with this task, or keep that one parked and prove
-   theorem 1 here? I recommend proving it here: it is the only part this task needs, and it keeps the
-   parked task's other items parked. **On hold (William Emerison Six <billsix@gmail.com>, 2026-11-04): "hold off on that for now".**
+1. *(Mostly moot since 2026-11-07: theorem 1's substance is proved, see the header. Only the
+   `w₃·w₂ = 0` corollary is left, which can be stated here.)* Un-park `tasks/lean-frame-coverage.md`
+   together with this task, or keep that one parked? **On hold (William Emerison Six
+   <billsix@gmail.com>, 2026-11-04): "hold off on that for now".**

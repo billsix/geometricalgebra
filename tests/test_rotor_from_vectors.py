@@ -43,7 +43,7 @@ def _lagrange_closed_form(a: MultiVectorBase, b: MultiVectorBase) -> Real:
     """``2 * |a| * |b| * (|a| * |b| + a·b)`` -- the versor's squared magnitude, by
     Lagrange."""
     ab: Real = a.magnitude() * b.magnitude()
-    return 2 * ab * (ab + a.scalar_product(b))
+    return 2 * ab * (ab + a.dot(b).scalar_part())
 
 
 # General positive symbolic vectors a, b on the graded g2 and g3 types.

@@ -12,9 +12,13 @@
 Rotation is turning the graph paper
 ===================================
 
+.. note::
+
+   Draft. The prose is agent-drafted; the maintainer's voice pass is pending.
+
 We just saw (:doc:`geometric-product`) that rotation is **distributive**: rotating a sum is
 rotating each piece and adding, so a rotation is fixed by what it does to the two basis vectors
-:math:`\vec{e_1}` and :math:`\vec{e_2}`. There is a picture that makes this feel obvious — and it
+:math:`e_1` and :math:`e_2`. There is a picture that makes this feel obvious — and it
 is the picture to keep for the rest of the book.
 
 Start with ordinary graph paper and a grid of points.
@@ -46,7 +50,7 @@ along with it. That is all a rotation is.
    :alt: the whole graph paper rotated by 30 degrees
 
 This is why distributivity was the whole game: once the sheet turns, the two axes
-:math:`\vec{e_1}` and :math:`\vec{e_2}` turn, and *everything drawn on the paper* turns with them —
+:math:`e_1` and :math:`e_2` turn, and *everything drawn on the paper* turns with them —
 you never rotate points one by one. A rotation is not something you do to a vector; it is something
 you do to the plane the vector lives in.
 

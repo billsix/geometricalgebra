@@ -168,7 +168,7 @@ the **collapse**: the 3-step sandwich equals its middle rotation (`rotateFromTo_
 `rotPlane ((a·b)/(|a| * |b|)) ((a∧b)/(|a| * |b|))` — the cos/sin of the `a→b` angle as coordinate formulas,
 no angle named. Applied to `a` it lands on `(|a|/|b|) * b` (`rotateFromTo_carries`). The dot and the 2D
 wedge fall out as the two numerators. This is the standard-position version; the angle-free
-geometric-product version (`â b̂` *is* the rotor) is the later payoff (`tasks/book-rotation-from-vectors-no-angle.md`).
+geometric-product version (`â b̂` *is* the rotor) is the later payoff, written up in `book/docs/rotation-from-vectors.rst` (`tasks/archive/2026/10/19/book-rotation-from-vectors-no-angle.md`).
 
 **The uniform 3-rotation tool** (`CrossStandardPosition.lean`): `rotYZ` (the third plane rotation,
 e₂ * e₃ about `e₁`) + its toolkit (`rotYZ_smul`/`rotYZ_sub`/`rotYZ_preserves_dot`/`rotYZ_vec`/

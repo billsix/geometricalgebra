@@ -53,4 +53,4 @@ the sanctioned pattern, left in place.
 - `tasks/reference/lean-ga-proof-architecture.md` — "Coordinates only when needed" (the A/B/C
   judgment) and the leaf-node index (updated: `vec_anticomm_perp` is now object-form in both `G2`/`G3`).
 - `tasks/archive/2026/10/04/lean-lift-theorem-statements-to-objects.md` — the polynomial-tier sweep
-  this continues; `tasks/reference/lean-proof-corpus-review-2026-10-04.md` — the corpus map.
+  this continues; `tasks/review/2026/10/04/lean-proof-corpus-review.md` — the corpus map.

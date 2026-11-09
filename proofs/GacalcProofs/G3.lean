@@ -86,7 +86,7 @@ noncomputable def smul (r : ℝ) (a : G3) : G3 :=
   ⟨r * a.s, r * a.c1, r * a.c2, r * a.c3,
    r * a.c12, r * a.c13, r * a.c23, r * a.c123⟩
 
-/-! ### The geometric product and the wedge -/
+/-! ### The geometric product, the wedge, and the dot -/
 
 /-- The Euclidean geometric product in 𝒢₃ (transcribed from gacalc's `Gn` via
     `tools/derive_lean_algebra.py`). `noncomputable` (ℝ field ops). -/
@@ -129,6 +129,10 @@ noncomputable def wedge (a b : G3) : G3 where
     a.c1 * b.c23 + a.c12 * b.c3 + a.c123 * b.s - a.c13 * b.c2 - a.c2 * b.c13
       + a.c23 * b.c1 + a.c3 * b.c12 + a.s * b.c123
 
+/-- The scalar product ⟨A B⟩₀ — the scalar part of the geometric product. For two
+    vectors this is the Euclidean dot product `a₁*b₁ + a₂*b₂ + a₃*b₃`. -/
+noncomputable def dot (a b : G3) : ℝ := (mul a b).s
+
 /-- Reverse `R̃` — grade sign (−1)^(k(k−1)/2): grades 0,1 fixed, grades 2,3 negated
     (transcribed from gacalc; matches the G2 reverse pattern extended to grade 3). -/
 noncomputable def reverse (a : G3) : G3 :=
@@ -145,17 +149,43 @@ noncomputable def magnitude (a : G3) : ℝ := Real.sqrt (normSq a)
 
 /-! ### The algebra laws
 
-    `G3` is an **associative, unital ℝ-algebra**: the geometric product is associative and
-    distributes over addition and subtraction (both sides), `one` is a two-sided identity, and
-    scalars pull through the product. Each is a polynomial identity in the coordinate fields, so the
-    proof is `ext <;> ring` (a large but automatic expansion over the eight fields). These are the
-    axioms everything built on the product (the sandwich, projection, the rotation proofs) rests on.
-    The GA-specific `vec_anticomm_perp` (orthogonal vectors anticommute) is stated further down,
-    beside the wedge/anticommutativity material it rests on. -/
+    `G3` is an **associative, unital ℝ-algebra**. The laws come in the order a student meets them
+    (`tasks/reference/algebra-teaching-order.md`): addition first (commutative, associative, the
+    identity `zero`, the inverse `neg`), then the geometric product (associative, the identity `one`,
+    `zero` annihilates, then distributivity over addition and subtraction, which links the two
+    operations), then the scalar laws. Each is a polynomial identity in the coordinate fields, so the
+    proof is `ext <;> ring`. The GA-specific `vec_anticomm_perp` (orthogonal vectors
+    anticommute) is stated further down, beside the wedge/anticommutativity material it rests on. -/
+
+/-- Addition is **commutative**. -/
+theorem add_comm (a b : G3) : add a b = add b a := by simp only [add]; ext <;> ring
+
+/-- Addition is **associative**. -/
+theorem add_assoc (a b c : G3) : add (add a b) c = add a (add b c) := by
+  simp only [add]; ext <;> ring
+
+/-- `zero` is a **right identity** for addition. -/
+theorem add_zero (a : G3) : add a zero = a := by simp only [add, zero]; ext <;> ring
+
+/-- `zero` is a **left identity** for addition. -/
+theorem zero_add (a : G3) : add zero a = a := by simp only [add, zero]; ext <;> ring
+
+/-- `neg a` is the **additive inverse**: `a + (−a) = 0`. -/
+theorem add_neg_cancel (a : G3) : add a (neg a) = zero := by
+  simp only [add, neg, zero]; ext <;> ring
 
 /-- The geometric product is **associative**. -/
 theorem mul_assoc (a b c : G3) : mul (mul a b) c = mul a (mul b c) := by
   simp only [mul]; ext <;> ring
+
+/-- `one` is a **left identity**. -/
+theorem one_mul (a : G3) : mul one a = a := by simp only [mul, one]; ext <;> ring
+
+/-- `one` is a **right identity**. -/
+theorem mul_one (a : G3) : mul a one = a := by simp only [mul, one]; ext <;> ring
+
+/-- `zero` **annihilates** from the left: `0 * a = 0`. -/
+theorem zero_mul (a : G3) : mul zero a = zero := by simp only [mul, zero]; ext <;> ring
 
 /-- The product **distributes over addition on the left**. -/
 theorem mul_add (a b c : G3) : mul a (add b c) = add (mul a b) (mul a c) := by
@@ -169,15 +199,9 @@ theorem add_mul (a b c : G3) : mul (add a b) c = add (mul a c) (mul b c) := by
 theorem sub_mul (a b c : G3) : mul (sub a b) c = sub (mul a c) (mul b c) := by
   simp only [mul, sub]; ext <;> ring
 
-/-- Left distributivity over subtraction (the `mul_sub` twin of `sub_mul`). -/
+/-- The product **distributes over subtraction on the left**. -/
 theorem mul_sub (a b c : G3) : mul a (sub b c) = sub (mul a b) (mul a c) := by
   simp only [mul, sub]; ext <;> ring
-
-/-- `one` is a **left identity**. -/
-theorem one_mul (a : G3) : mul one a = a := by simp only [mul, one]; ext <;> ring
-
-/-- `one` is a **right identity**. -/
-theorem mul_one (a : G3) : mul a one = a := by simp only [mul, one]; ext <;> ring
 
 /-- A scalar pulls out of the **left** factor. -/
 theorem smul_mul (k : ℝ) (a b : G3) : mul (smul k a) b = smul k (mul a b) := by
@@ -215,11 +239,7 @@ theorem magnitude_ne_zero_of_normSq_ne_zero {a : G3} (h : normSq a ≠ 0) : magn
   simp only [magnitude]
   exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne (normSq_nonneg a) (Ne.symm h))
 
-/-! ### The scalar product (dot), the inverse pseudoscalar, and the dual -/
-
-/-- The scalar product ⟨A B⟩₀ — the scalar part of the geometric product. For two
-    vectors this is the Euclidean dot product `a₁*b₁ + a₂*b₂ + a₃*b₃`. -/
-noncomputable def dot (a b : G3) : ℝ := (mul a b).s
+/-! ### The inverse pseudoscalar and the dual -/
 
 /-- The inverse unit pseudoscalar I₃⁻¹ = −e₁₂₃ (since I₃² = −1). -/
 def I_inv : G3 := { s := 0, c1 := 0, c2 := 0, c3 := 0, c12 := 0, c13 := 0, c23 := 0, c123 := -1 }
@@ -377,16 +397,6 @@ theorem vec_mul_eq_dot_add_wedge (a1 a2 a3 b1 b2 b3 : ℝ) :
             (wedge (vec a1 a2 a3) (vec b1 b2 b3)) := by
   simp only [mul, wedge, scalar, zero, dot, add, vec]; ext <;> ring
 
-/-- **Orthogonal vectors' geometric product is their wedge:** for vectors with `a · b = 0`,
-    `a b = a ∧ b`. A corollary of the fundamental identity — orthogonality kills the scalar part,
-    leaving only the bivector. This is what turns `a (b − proj_a b)` into the plane bivector
-    `a ∧ b` (with `r = b − proj_a b ⊥ a`) — the step that reduces the 3D versor sandwich to 2D. -/
-theorem vec_mul_perp (a1 a2 a3 b1 b2 b3 : ℝ)
-    (h : dot (vec a1 a2 a3) (vec b1 b2 b3) = 0) :
-    mul (vec a1 a2 a3) (vec b1 b2 b3) = wedge (vec a1 a2 a3) (vec b1 b2 b3) := by
-  rw [vec_mul_eq_dot_add_wedge, h]
-  simp only [scalar, zero, add]; ext <;> ring
-
 /-! ### Grade-structure predicates (vector / bivector / trivector) with their bridges -/
 
 /-- A multivector is a **vector** (grade 1) exactly when its scalar, bivector and pseudoscalar parts
@@ -480,8 +490,10 @@ theorem mul_eq_dot_add_wedge {a b : G3} (ha : IsVector a) (hb : IsVector b) :
   simp only [mul, wedge, scalar, zero, dot, add]
   ext <;> simp only [ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123] <;> ring
 
-/-- **Orthogonal vectors' geometric product is their wedge** (arbitrary vectors): `a·b = 0 ⟹ a b = a∧b`.
-    The general-`IsVector` form of `vec_mul_perp`, a corollary of the split. -/
+/-- **Orthogonal vectors' geometric product is their wedge:** for vectors with `a·b = 0`,
+    `a*b = a∧b`. A corollary of the split: orthogonality kills the scalar part, leaving only the
+    bivector. This is what turns `a*(b − proj_a b)` into the plane bivector `a∧b`, the step that
+    reduces the 3D versor sandwich to 2D. -/
 theorem mul_eq_wedge_of_perp {a b : G3} (ha : IsVector a) (hb : IsVector b) (h : dot a b = 0) :
     mul a b = wedge a b := by
   rw [mul_eq_dot_add_wedge ha hb, h]
@@ -493,8 +505,8 @@ theorem wedge_antisymm {a b : G3} (ha : IsVector a) (hb : IsVector b) :
   rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb]
   simp only [wedge, vec, neg]; ext <;> ring
 
-/-- **Orthogonal vectors anticommute:** if `a·b = 0` then `a b = −(b a)`. A corollary of
-    `vec_mul_perp` (`a b = a∧b`) plus the antisymmetry of the wedge. -/
+/-- **Orthogonal vectors anticommute:** if `a·b = 0` then `a*b = −(b*a)`. A corollary of
+    `mul_eq_wedge_of_perp` (`a*b = a∧b`) plus the antisymmetry of the wedge. -/
 theorem vec_anticomm_perp {a b : G3} (ha : IsVector a) (hb : IsVector b) (h : dot a b = 0) :
     mul a b = neg (mul b a) := by
   have hba : dot b a = 0 := by rw [dot_comm b a]; exact h

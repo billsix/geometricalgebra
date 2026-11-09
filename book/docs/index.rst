@@ -1,13 +1,14 @@
 Geometry 2
 ==========
 
-The gacalc book. This is the skeleton — prose, graphs, and notebooks fill in
-later, and sections may be written out of order.
+The book's two halves follow the plane first and space second. Part I stays in two dimensions:
+rotation, the geometric product, projection, reflection, and the algebra behind them. Part II
+starts again from the geometric product in three dimensions.
 
 .. toctree::
    :maxdepth: 2
    :numbered:
-   :caption: Contents:
+   :caption: Part I — The plane
 
    hook
    canonical-form
@@ -21,16 +22,27 @@ later, and sections may be written out of order.
    rotate
    geometric-product
    rotation-graph-paper
-   levels-of-abstraction
-   blade-square-sign
    projection
+   product-from-projection
    reflection
    orthogonal
    dual
    defining-g2
+   levels-of-abstraction
    interactive-calculator
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :caption: Part II — Space
+
    three-dimensions
+   blade-square-sign
    projection-rejection-3d
    frames-qr
-   proof-cross
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Reference
+
    api

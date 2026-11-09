@@ -88,7 +88,8 @@ def test_conjugate_is_the_reverse_and_multiplies_to_magnitude_squared() -> None:
     R: MultiVectorBase = (1.0 * g3.Vector.e_1 + 2.0 * g3.Vector.e_3) * (
         3.0 * g3.Vector.e_2 + 1.0 * g3.Vector.e_1
     )
-    assert R.conjugate() == R.reverse()
+    # the conjugate keeps the scalar part and negates the bivector part
+    assert R.conjugate() == R.r_vector_part(0) - R.r_vector_part(2)
     product: MultiVectorBase = R * R.conjugate()
     assert product.is_scalar()
     assert math.isclose(product.scalar_part(), R.magnitude_squared(), rel_tol=1e-12)
@@ -103,7 +104,7 @@ def test_works_on_gn() -> None:
     assert R.plane_of_rotation().isclose(
         1.0 * (gn.e_1 ^ gn.e_2), rel_tol=1e-12, abs_tol=1e-12
     )
-    assert R.conjugate() == R.reverse()
+    assert R.conjugate() == R.r_vector_part(0) - R.r_vector_part(2)
 
 
 def test_angle_and_conjugate_reject_non_versors() -> None:

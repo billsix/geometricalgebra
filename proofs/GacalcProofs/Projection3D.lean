@@ -36,9 +36,9 @@ theorem reject_perp_dot (a b : G3) (ha : dot a a ≠ 0) :
 
 /-- **The wedge sees only the rejection**: for a vector `a`, `a ∧ b = a ∧ (b − proj_a b)`
     (the parallel part `proj_a b` wedges to zero, so only the perpendicular part remains). -/
-theorem wedge_reject (a1 a2 a3 : ℝ) (b : G3) :
-    wedge (vec a1 a2 a3) (sub b (proj (vec a1 a2 a3) b)) = wedge (vec a1 a2 a3) b := by
-  rw [wedge_sub_right, proj, wedge_smul_right, wedge_self_vec_coord]
+theorem wedge_reject {a : G3} (ha : IsVector a) (b : G3) :
+    wedge a (sub b (proj a b)) = wedge a b := by
+  rw [eq_vec_of_isVector ha, wedge_sub_right, proj, wedge_smul_right, wedge_self_vec_coord]
   simp only [smul, zero, sub]; ext <;> ring
 
 /-- **The dual of `a ∧ b` (the plane normal) is ⊥ `a`** — for vectors `a`, `b`. The dual of
@@ -64,22 +64,21 @@ theorem dual_wedge_perp_right_dot {a b : G3} (hb : IsVector b) :
     product loses its scalar (inner) part and only the bivector survives, and the wedge ignores the
     rejection — exhibiting the plane of rotation as the pure bivector `a ∧ b`, built from `a` and
     `b`. This is the step that reduces the 3D versor sandwich to the 2D case. -/
-theorem plane_eq_wedge (a1 a2 a3 b1 b2 b3 : ℝ)
-    (ha : normSq (vec a1 a2 a3) ≠ 0) :
-    mul (vec a1 a2 a3) (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3)))
-      = wedge (vec a1 a2 a3) (vec b1 b2 b3) := by
+theorem plane_eq_wedge {a b : G3} (hav : IsVector a) (hbv : IsVector b) (ha : normSq a ≠ 0) :
+    mul a (sub b (proj a b)) = wedge a b := by
   -- Structural, on the fundamental split: `a r = a·r + a∧r` with `r = b − proj_a b` the rejection.
   -- The rejection is ⊥ `a` (`reject_perp_dot`), so the scalar part dies; and the wedge ignores the
   -- parallel part (`wedge_reject`), so the bivector part is `a∧b`.
-  have hdaa : dot (vec a1 a2 a3) (vec a1 a2 a3) ≠ 0 := by
-    rw [dot_self_vec_eq_normSq_coord]; exact ha
-  have hpv : IsVector (proj (vec a1 a2 a3) (vec b1 b2 b3)) := by
-    rw [proj]; exact (isVector_vec a1 a2 a3).smul _
-  have hrv : IsVector (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3))) :=
-    (isVector_vec b1 b2 b3).sub hpv
-  have hd0 : dot (vec a1 a2 a3) (sub (vec b1 b2 b3) (proj (vec a1 a2 a3) (vec b1 b2 b3))) = 0 := by
-    rw [dot_comm]; exact reject_perp_dot (vec a1 a2 a3) (vec b1 b2 b3) hdaa
-  rw [mul_eq_dot_add_wedge (isVector_vec a1 a2 a3) hrv, wedge_reject, hd0]
+  have hdaa : dot a a ≠ 0 := by
+    have ha' := ha
+    rw [eq_vec_of_isVector hav] at ha' ⊢
+    rw [dot_self_vec_eq_normSq_coord]; exact ha'
+  have hpv : IsVector (proj a b) := by
+    rw [proj]; exact hav.smul _
+  have hrv : IsVector (sub b (proj a b)) := hbv.sub hpv
+  have hd0 : dot a (sub b (proj a b)) = 0 := by
+    rw [dot_comm]; exact reject_perp_dot a b hdaa
+  rw [mul_eq_dot_add_wedge hav hrv, wedge_reject hav, hd0]
   simp only [scalar, zero, add]; ext <;> ring
 
 /-- **Hestenes rejection** `reject_B A = (A ∧ B) · B⁻¹` — the component of `A` orthogonal to the
@@ -91,10 +90,12 @@ noncomputable def reject (awayFrom a : G3) : G3 := mul (wedge a awayFrom) (inver
 
 /-- **A vector times its own inverse is `1`** (the blade-inverse identity `B B⁻¹ = 1` for a vector,
     `a·a ≠ 0`): `a⁻¹ = ã/|a|² = a/|a|²`, and `a a = |a|²`, so `a a⁻¹ = |a|²/|a|² = 1`. -/
-theorem mul_vec_inverse_self (a1 a2 a3 : ℝ) (ha : normSq (vec a1 a2 a3) ≠ 0) :
-    mul (vec a1 a2 a3) (inverse (vec a1 a2 a3)) = one := by
+theorem mul_vec_inverse_self {a : G3} (hav : IsVector a) (ha : normSq a ≠ 0) :
+    mul a (inverse a) = one := by
+  have ha' := ha
+  rw [eq_vec_of_isVector hav] at ha' ⊢
   rw [inverse, reverse_vec, GacalcProofs.G3.mul_smul, mul_vec_self_coord, GacalcProofs.G3.smul_smul,
-      one_div_mul_cancel ha, GacalcProofs.G3.one_smul]
+      one_div_mul_cancel ha', GacalcProofs.G3.one_smul]
 
 /-- **Hestenes rejection onto a vector equals the projection-complement:** `reject_a b = b − proj_a b`,
     for a nonzero vector `a` (`|a|² ≠ 0`) and a vector `b`. Structural (Hestenes): `b∧a = ba − (b·a)·1`,
@@ -108,7 +109,7 @@ theorem reject_vec_eq {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b) (ha
             (scalar (dot (vec b.c1 b.c2 b.c3) (vec a.c1 a.c2 a.c3))) := by
     rw [vec_mul_eq_dot_add_wedge]; simp only [sub, add, scalar, zero]; ext <;> ring
   rw [reject, hsplit, GacalcProofs.G3.sub_mul, GacalcProofs.G3.mul_assoc,
-      mul_vec_inverse_self a.c1 a.c2 a.c3 ha, GacalcProofs.G3.mul_one, GacalcProofs.G3.scalar_mul]
+      mul_vec_inverse_self (isVector_vec a.c1 a.c2 a.c3) ha, GacalcProofs.G3.mul_one, GacalcProofs.G3.scalar_mul]
   -- Left with `b − (b·a)a⁻¹ = b − proj_a b`; the two rejection terms agree once `a⁻¹`'s scalar is folded.
   congr 1
   rw [proj, inverse, reverse_vec, GacalcProofs.G3.smul_smul]

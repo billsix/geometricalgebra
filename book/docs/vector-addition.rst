@@ -61,11 +61,11 @@ So far :math:`\vec{a} + \vec{b}` has been a **one-off**: hand it two vectors, ge
 watch what happens if we hold one of them still. Fix :math:`\vec{b}`, and let the *other* input
 vary over every point of the plane. What used to be a two-input operation, :math:`\Box + \Box`, is
 now a **one-input machine**, :math:`\Box + \vec{b}` — feed it any point :math:`\vec{v}` and it hands
-back :math:`\vec{v} + \vec{b}`. That machine is a function. gacalc calls it ``translate(b)``:
+back :math:`\vec{v} + \vec{b}`. That machine is a function. gacalc calls it ``translate(b=b)``:
 
 .. math::
 
-   \text{translate}(\vec{b})(\vec{v}) = \vec{v} + \vec{b}.
+   \text{translate}(b = \vec{b})(\vec{v}) = \vec{v} + \vec{b}.
 
 Filling in one of the two blanks of a formula to turn it into a smaller function has a name:
 **partial binding**. Addition takes two arguments; bind the second to :math:`\vec{b}` and one blank
@@ -73,7 +73,7 @@ is left. (In Python the same idea is ``functools.partial(operator.add, b)``; in 
 transform ``translate(b=...)``, called by keyword because the ``b`` is the intercept of
 :math:`f(x) = m*x + b` — the ``+ b`` half of that line, in two dimensions.)
 
-Here is the point worth the picture. ``translate(b)`` does not move one arrow — it moves **every
+Here is the point worth the picture. ``translate(b=b)`` does not move one arrow — it moves **every
 point at once**. Apply it to the whole plane and the entire sheet of graph paper slides by
 :math:`\vec{b}`: every point, the origin, the grid lines, all shifted together, their spacing and
 directions unchanged.
@@ -86,13 +86,13 @@ directions unchanged.
    :align: center
    :alt: the whole graph paper slid by b; the origin moves to b and every point follows the same displacement
 
-The faint grid is where the paper started; the solid grid is where ``translate(b)`` put it. The
+The faint grid is where the paper started; the solid grid is where ``translate(b=b)`` put it. The
 origin has moved to :math:`\vec{b}`, and :math:`P` and :math:`Q` have each followed the *same*
 displacement :math:`\vec{b}` to :math:`P + \vec{b}` and :math:`Q + \vec{b}` — one function, applied
 to everything.
 
-Sliding the paper the other way just binds the opposite vector: the inverse of ``translate(b)`` is
-``translate(-b)``, which undoes the slide by moving every point back by :math:`\vec{b}`. That is
+Sliding the paper the other way just binds the opposite vector: the inverse of ``translate(b=b)`` is
+``translate(b=-b)``, which undoes the slide by moving every point back by :math:`\vec{b}`. That is
 exactly subtraction — the subject of the next section.
 
 Subtracting vectors

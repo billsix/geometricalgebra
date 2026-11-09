@@ -61,7 +61,7 @@ def test_scalar_triple_product_is_signed_volume() -> None:
     # overloads take only sympy types (here the values are symbolic anyway).
     assert (
         sympy.simplify(
-            sympy.sympify(a.scalar_product(cross(b, c)) - signed_volume(a, b, c))
+            sympy.sympify(a.dot(cross(b, c)).scalar_part() - signed_volume(a, b, c))
         )
         == 0
     )

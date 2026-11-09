@@ -36,7 +36,7 @@ from gacalc.vectorcalc import cross
 # x-axis, then its `z` part down — as in the projection chapter. A third rotation
 # about the fixed `e_1` axis (read off `b`'s image) swings `b` into the `e_1 e_2` plane.
 # Both vectors ride along with the graph paper. In that frame `a = (|a|, 0, 0)` and
-# `b = (b_1', b_2', 0)`, so `a x b = (0, 0, |a| * b_2')` is a pure `e_3` vector — the
+# `b = (b'_1, b'_2, 0)`, so `a x b = (0, 0, |a| * b'_2)` is a pure `e_3` vector — the
 # easy value. Rotating it back recovers the true cross product.
 
 
@@ -104,8 +104,8 @@ def cross_via_standard_position(a: Vector, b: Vector) -> Vector:
         )
 
     a_reduced: Vector = reduce_to_plane(a)  # (|a|, 0, 0)
-    b_reduced: Vector = reduce_to_plane(b)  # (b_1', b_2', 0)
-    # In the reduced frame the cross product is the pure e_3 vector (0, 0, |a| * b_2').
+    b_reduced: Vector = reduce_to_plane(b)  # (b'_1, b'_2, 0)
+    # In the reduced frame the cross product is the pure e_3 vector (0, 0, |a| * b'_2).
     reduced_x: Real = a_reduced.coefficient(e_1)
     reduced_y: Real = b_reduced.coefficient(e_2)
     cross_in_frame: Vector = (reduced_x * reduced_y) * e_3
@@ -117,7 +117,7 @@ def cross_via_standard_position(a: Vector, b: Vector) -> Vector:
 #
 # We take an **exact-magnitude** `a` (the Pythagorean quadruple `3, 4, 12`, with
 # `|a_xy| = 5` and `|a| = 13`, so the alignment rotations stay rational) and a fully
-# **symbolic** `b`. The swing's `sqrt(b_2'^2 + b_3'^2)` cancels in the round trip, so
+# **symbolic** `b`. The swing's `sqrt(b'_2^2 + b'_3^2)` cancels in the round trip, so
 # difference simplifies to zero — the standard-position cross product equals the
 # geometric-algebra cross product `a x b`.
 

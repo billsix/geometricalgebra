@@ -1,14 +1,13 @@
 # Generalize the derived sandwich to other grades (Versor·Bivector → Bivector, …)
 
-**Status:** in progress — reflections + the 𝒢₂/𝒢₃ grade tests DONE 2026-10-22; the **𝒢₄/𝒢₅ half is
-UNBLOCKED 2026-10-23**: g4/g5 now generate (fix archived at
-`tasks/archive/2026/10/23/gacalc-g4-g5-generation-sandwich-inverse.md`), and by that fix 𝒢₄/𝒢₅
-`Versor.sandwich` is the inherited `MultiVectorBase.sandwich` (no specialized closed form), already
-covered by the base tests. Remaining (optional): a few 𝒢₄/𝒢₅ tests exercising the inherited sandwich
-on bivector/trivector operands.
-**Priority:** 8
-**Difficulty:** 5
-**Created:** 2026-06-07 **Updated:** 2026-10-22 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-06-07 · **Completed:** 2026-10-22 (archived 2026-11-09, William Emerison Six
+<billsix@gmail.com>, per `tasks/review/2026/11/08/repo-review.md` §9.1)
+
+The reflections and the 𝒢₂/𝒢₃ bivector/trivector/versor operand tests were done on 2026-10-22, and the
+𝒢₄/𝒢₅ half needs no specialized code: since 2026-10-23, 𝒢₄/𝒢₅ `Versor.sandwich` is the inherited,
+generically tested `MultiVectorBase.sandwich`. The two optional leftovers (𝒢₄/𝒢₅ operand tests, and a
+reflection docstring for `Vector.sandwich`) moved to `tasks/sandwich-followups-g4-g5-and-reflection-doc.md`.
+The record below is as it stood on 2026-10-22, plus the 2026-10-23 unblocking.
 
 ## Work record (2026-10-22)
 

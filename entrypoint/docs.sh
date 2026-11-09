@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 # Build the gacalc Sphinx book (HTML + PDF) inside the container and copy the
 # results to the bind-mounted /output tree on the host.
 #

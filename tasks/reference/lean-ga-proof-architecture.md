@@ -7,7 +7,7 @@ Read this before extending the proofs. Updated in place (never archived).
 
 **Status:** living document, updated in place. Written 2026-09-29 (William Emerison Six
 <billsix@gmail.com>) from the versor / projection / algebra-law session; reconciled 2026-10-04 after the
-Mathlib bridges completed the original program (29 modules at completion, 31 with `Rotor.lean` + `PlaneRotation3D.lean`; `make lean` green).
+Mathlib bridges completed the original program (29 modules at completion; 34 as of 2026-11-09, with `Rotor.lean`, `PlaneRotation3D.lean` and `ReciprocalFrame2D/3D.lean`; `make lean` green).
 
 ## The representation (settled)
 
@@ -132,8 +132,8 @@ mirroring Python's `is_*` (`base.py`): **`IsScalar`** (grade 0), **`IsVector`** 
 `eq_vec_of_isVector` →`vec`, `eq_smul_e12_of_isBivector` →`c*e₁₂`) and `is…_…` recognizer
 (`isScalar_scalar`/`isScalar_one`, `isVector_vec`, `isBivector_e12`/`isBivector_I`). Two **grade-of-result** lemmas show the
 typed-object use: `isScalar_mul_self_of_isVector` (`a a` is a scalar, `G2.lean`) and
-`isBivector_wedge_of_isVector` (`a∧b` is a bivector, `G2.lean`); `vec_wedge_I_eq_zero` was refactored
-into a corollary of the object-form `wedge_isVector_isBivector_eq_zero`. **Object-out parity with G3
+`isBivector_wedge_of_isVector` (`a∧b` is a bivector, `G2.lean`); `wedge_I_eq_zero` (over `IsVector`
+since 2026-11-09) is a corollary of the object-form `wedge_isVector_isBivector_eq_zero`. **Object-out parity with G3
 (2026-10-28):** `G2.dot_is_sym_part` (`½(ab+ba) = scalar(a·b)`), `wedge_is_antisym_part` (`½(ab−ba) = a∧b`)
 and `I_sq` (`= neg one`) now conclude about *objects*, matching their G3 twins — no G2 public statement
 leaks raw coordinates except the deliberate equivalence bridge `dot_eq_coord_sum` and the reals-in
@@ -206,9 +206,11 @@ the object form of the coordinate leaf `G2.dual_vec_perp`. (Part of the file-str
 `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`, now complete.)
 
 **Within-file order of the algebra-core files (`G1`/`G2`/`G3`, normalized 2026-10-28).** All three
-share one top-to-bottom shape: basis blades & grade constructors (right after the inner `namespace`)
-→ the elementary operations (`mul`/`wedge`/`add`/`sub`/`neg`/`smul`/`reverse`) → magnitude
-(`normSq`/`magnitude` + its √ facts) → the scalar product (`dot`), `I_inv`, `dual` → the
+share one top-to-bottom shape, in the algebra teaching order (`tasks/reference/algebra-teaching-order.md`,
+reordered 2026-10-29): basis blades & grade constructors (right after the inner `namespace`) → addition
+and the vector-space operations (`add`/`sub`/`neg`/`smul`) → the geometric product and the wedge
+(`mul`/`wedge`, and `dot` in G2) and `reverse` → magnitude (`normSq`/`magnitude` + its √ facts) → the
+algebra laws (`### The algebra laws`) → the scalar product (`dot`, in G1/G3), `I_inv`, `dual` → the
 geometric-product multiplication table (packed as a visual table) → the `dot` leaf lemmas → the
 `wedge` leaf lemmas → the coordinate-vector leaves (`normSq_vec`, `reverse_vec`, …) → the split
 `a b = a·b + a∧b` → the grade-structure predicates with their `eq_…_of_is…` bridges → the
@@ -273,13 +275,16 @@ Every proof should reach for a *named* leaf, not a fresh `ext <;> ring`. The lea
   (`a∧b` = the plane-bivector literal in coordinates).
 - **The split:** `vec_mul_eq_dot_add_wedge` (`ab = a·b + a∧b`, coordinate-literal form) and its
   arbitrary-vector form `mul_eq_dot_add_wedge` (over the `IsVector` grade-1 predicate, with
-  `eq_vec_of_isVector` the bridge to a literal); the orthogonal corollaries `vec_mul_perp` /
-  `mul_eq_wedge_of_perp` (`a⊥b ⟹ ab = a∧b`). G2 + G3 (G2's split lives in `Projection2D.lean`, where
+  `eq_vec_of_isVector` the bridge to a literal); the orthogonal corollary
+  `mul_eq_wedge_of_perp` (`a⊥b ⟹ a*b = a∧b`; its coordinate twin `vec_mul_perp` was removed 2026-11-09). G2 + G3 (G2's split lives in `Projection2D.lean`, where
   `dot` and `wedge` are both in scope). `IsVector` is closed under the operations used to build a
   rejection: `isVector_vec`, `IsVector.smul`, `IsVector.sub`.
+- **Statement shape (2026-11-09):** `wedge_reject`, `plane_eq_wedge` and `mul_vec_inverse_self`
+  (`Projection3D`) and `wedge_I_eq_zero`/`reject_from_I_eq_zero` (`Projection2D`) take `IsVector`
+  objects; they used to take free coordinates and build `vec …` inside.
 - **Blade inverse (vectors):** `reverse_vec` (`reverse` fixes a vector), `mul_vec_self` (`a a = |a|² * 1`),
-  and `mul_vec_inverse_self` (`a a⁻¹ = 1` for `|a|² ≠ 0`) — the `B B⁻¹ = 1` identity that turns a
-  Hestenes `(…)a⁻¹` proof structural. With these, `plane_eq_wedge` (`a (b − proj_a b) = a∧b`) and
+  and `mul_vec_inverse_self` (`a*a⁻¹ = 1` for `|a|² ≠ 0`) — the `B*B⁻¹ = 1` identity that turns a
+  Hestenes `(…)*a⁻¹` proof structural. With these, `plane_eq_wedge` (`a*(b − proj_a b) = a∧b`) and
   `reject_vec_eq` (`(b∧a)a⁻¹ = b − proj_a b`) are now structural `rw`-chains on the split, not
   `field_simp` bashes.
 - **Magnitude (squared is the primitive):** `normSq_vec` (`|a|² = a₁²+…`), `normSq_wedge_vec`
@@ -547,7 +552,7 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 - `Lagrange.lean` — Lagrange identity 2D/3D (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) (`|a|² * |b|² = (a·b)² + |a∧b|²`).
 - `G2.lean` / `G3.lean` — the algebras: product/wedge/reverse, basis elements, multiplication table,
   `I² = −1`, dot, dual, `I⁻¹`; `normSq`/`magnitude` (+ `normSq_vec`, and `normSq_wedge_vec` in `G3`);
-  `G3` also the fundamental identity `ab = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`), `vec_mul_perp`, and the
+  `G3` also the fundamental identity `a*b = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`), `mul_eq_wedge_of_perp`, and the
   object-form `dot_is_sym_part`/`wedge_is_antisym_part` (dot and wedge as the two parts of the product);
   both have `I_sq_eq_sign` (the pseudoscalar sign for r = 2, 3). `G1.lean` is the 1D teaching twin
   (`I² = +1`, commutative, every vector pair parallel).
@@ -656,8 +661,9 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 
 Remaining (the umbrella is archived, `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`): the
 general-n algebra with the general pseudoscalar sign and Hestenes dot/wedge (deferred), the general
-multivector inverse, frames, the Lean→notebook pipeline — each its own task (the 3D rotor angle theorem landed
-2026-10-05, `PlaneRotation3D.lean`).
+multivector inverse, the `Frame` class's orthogonalization and invertible-function facts, and the
+Lean→notebook pipeline — each its own task. Landed: the 3D rotor angle theorem (2026-10-05,
+`PlaneRotation3D.lean`) and the reciprocal frame (2026-11-07, `ReciprocalFrame2D/3D.lean`).
 
 ## Coverage map (public method → Lean coverage)
 
@@ -674,7 +680,7 @@ The modules outside this table are in the subsection that follows it.
 | `magnitude` / `magnitude_squared` | HAS | `magnitude`, `normSq`, `normSq_vec`, `magnitude_sq_vec`, `normSq_wedge_vec`, `normSq_mul`, `magnitude_sandwich` (G2/G3, Sandwich); = Mathlib's norm: `norm_toE` (MathlibBridge) |
 | `normalize` | HAS | `normalizeVec`, `magnitude_normalizeVec`/`normSq_normalizeVec` (= 1) (Normalize.lean); any multivector: `Rotor.normalize`, `normSq_normalize`, `isRotor_normalize` |
 | `inner_product` (general graded) | PARTIAL | only vector·bivector `inner_vb` (Projection3D.lean); general `⟨AB⟩_{\|r−s\|}` owned by existing `lean-general-gn-product-and-hestenes-dot-wedge` |
-| `dot` | HAS | `dot`/`dot_vec`/`dot_comm` + bilinearity, `dot_is_sym_part` (G2 coordinate form, G3 object form), `dot_eq_coord_sum`; = Mathlib's `inner`: `dot_eq_inner`, with `dot_comm_of_inner` and Cauchy–Schwarz `abs_dot_le_magnitude_mul` by citation (MathlibBridge) |
+| `dot` | HAS | `dot`/`dot_vec`/`dot_comm` + bilinearity, `dot_is_sym_part` (object form in both G2 and G3), `dot_eq_coord_sum`; = Mathlib's `inner`: `dot_eq_inner`, with `dot_comm_of_inner` and Cauchy–Schwarz `abs_dot_le_magnitude_mul` by citation (MathlibBridge) |
 | `outer_product` / `wedge` | HAS | `wedge`, `wedge_vec_eq_biv`, `wedge_antisymm`, full bilinearity, `wedge_is_antisym_part` (G2/G3); = determinant / minors: `wedge_eq_det`, `wedge_c12/c13/c23_eq_det` (MathlibBridge) |
 | `scalar_product` | HAS | the scalar part `⟨AB⟩₀`; vector case via `dot` / `dot_is_sym_part` |
 | `left_contraction` | HAS | `leftContraction_vec_vec` (= dot), `leftContraction_scalar_vec` (grade-0 inclusion) (Contractions.lean) |
@@ -689,7 +695,7 @@ The modules outside this table are in the subsection that follows it.
 | `odd_part` | HAS | `oddPart`, `even_add_odd` (GradeProjection.lean) |
 | `cosine` | HAS | `cos_between`, `cos_sq_add_sin_sq`, `sandwich_preserves_cos`, `cos_between_uvec` (TrigEquiv) |
 | `abs_sin` | HAS | `sin_between`, `sin_between_eq_abs_signed_vec`, `signed_sin_between`(`_uvec`) (TrigEquiv), `sandwich_preserves_sin` |
-| `project` / `projected_onto` | HAS | `proj`, `project_onto`, `project_add_reject`, `proj_plane_eq_project_onto` (Projection/Projection2D) |
+| `project` / `projected_onto` | HAS | `proj`, `project_onto`, `project_add_reject`, `proj_plane_eq_project_onto` (Projection2D/Projection3D) |
 | `reject` / `rejected_away_from` | HAS | `reject`, `reject_perp`, `reject_vec_eq`, `project_add_reject` |
 | `reflect` / `reflected_across` | HAS | `reflectVec` (= proj − reject), `reflectVec_eq`, `normSq_reflectVec` (isometry) (Reflect.lean) |
 | `versor_from_vectors` | HAS | `versorFromVectors`, `versorFromVectors_mul_reverse`/`_inverse`, `sandwich_carries_from_to`, `bisector` (Rotation3D/Sandwich); `normSq_versorFromVectors` (Lagrange closed form), `rotorFromVectors` = its normalization, `isRotor_rotorFromVectors`, `rotorSandwich_rotorFromVectors(_eq_projRotation/_carries_from_to)`, 2D `rotorFromVectors_uvec = rotor (β−α)` (Rotor.lean) |
@@ -728,7 +734,7 @@ theorem landed 2026-10-05 (`PlaneRotation3D.lean`), and `gn` waits on a general-
 | `g1.py` (𝒢₁) | HAS | `G1.lean`: `mul`/`wedge` (oracle-transcribed), `I_sq` (= **+1**), `I_sq_eq_sign`, `mul_comm`, `mul_assoc`, `vec_mul` (pure scalar), `wedge_vec` (= 0: all 1D vectors parallel), `dot_vec`, `normSq_vec`, `magnitude_vec` (`= |x|`), `dual_vec` (a scalar), `mul_vec_inverse_self` |
 | `frame.reciprocal_frame`, `all_wedged_except_the_kth`, `kronecker_delta`, `Frame.reciprocal_vectors` | HAS | `recip*` (eq 3.7), `isVector_recip*`, `dot_recip_kronecker` (eq 3.5), `reconstruct` (ReciprocalFrame2D/3D) |
 | `Frame.to_invertible_function` (both `inverse_method`s) | HAS | `invReciprocal_frameMap`, `frameMap_invReciprocal`, `invPeel_frameMap`, `frameMap_invPeel`, `invReciprocal_eq_invPeel`; the peel's step: `recip*_eq_reject_div`, `invPeel_comb` (ReciprocalFrame2D/3D) |
-| `frame.py`, the rest (`make_orthogonal_frame*`, `prefix_blades`, `Frame.coefficients`) | NONE | `tasks/lean-frame-coverage.md` (parked); `tasks/lean-frame-class-invertible-function.md` theorems 2–4 (on hold) |
+| `frame.py`, the rest (`make_orthogonal_frame*`, `prefix_blades`, `Frame.coefficients`) | PARTIAL | rejection orthogonality for n = 2, 3 (`G2.dot_reject_self`; `G3.reject_line_facts`/`reject_plane_facts`: each `w_k` ⟂ the vectors before it), in `ReciprocalFrame2D/3D.lean`; not stated: `w₃·w₂ = 0`, the Hestenes closed form, `prefix_blades`, the coefficient table — `tasks/lean-frame-coverage.md` (parked); `tasks/lean-frame-class-invertible-function.md` theorems 2–4 (on hold) |
 | `gn.py` | NONE | `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` (deferred) |
 
 ## Hypotheses: what each kind is for, and how to decide
@@ -813,7 +819,7 @@ becomes syntactically `a = a`. Ordering matters — a lemma must be defined abov
     `sorry` was confirmed to fail it, on 2026-11-08.
 - Reviewing the corpus: three parallel read-only passes (commit-by-commit statement audit, Python→Lean
   coverage with `tools/derive_lean_algebra.py` parity re-derivation, goals/status from the docs) plus a
-  build experiment for any "needed" claim worked well; record: `lean-proof-corpus-review-2026-10-04.md`.
+  build experiment for any "needed" claim worked well; record: `tasks/review/2026/10/04/lean-proof-corpus-review.md`.
 
 ## Program decisions
 

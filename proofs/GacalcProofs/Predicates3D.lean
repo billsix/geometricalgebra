@@ -27,7 +27,7 @@ theorem perp_iff_mul_eq_wedge {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     rw [hs]
     -- (a ∧ b).s = a.s*b.s (the outer product keeps the scalar×scalar part); a.s = 0 for a vector.
     simp only [wedge]
-    rw [ha.1, zero_mul]
+    rw [ha.1, MulZeroClass.zero_mul]
 
 /-- **A vector is parallel to its scalar multiples**: `a ∧ (k·a) = 0` — the correct geometric
     "parallel" (the outer product / linear dependence vanishes), including the anti-parallel `k < 0`

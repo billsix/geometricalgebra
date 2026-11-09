@@ -307,23 +307,30 @@ def create_x_and_y(
 
 
 def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Real:
-    """sin of the angle between two **vectors** — ``v1`` turned 90° in the e₁ * e₂
-    plane, projected onto ``v2``, over ``|v1| * |v2|``.  The sine companion to
-    ``MultiVectorBase.cosine``; vectors only (it uses ``|ab| = |a| * |b|``).
+    """The signed sine of the angle from ``v1`` to ``v2``, two vectors in the e₁e₂
+    plane: the signed area of their parallelogram (the ``e₁₂`` coefficient of
+    ``v1 ∧ v2``) over ``|v1| * |v2|``.  Positive when ``v2`` is a counterclockwise
+    turn from ``v1``.  The sine companion to ``MultiVectorBase.cosine``; works for
+    ``Gn`` and every representation, as long as both vectors lie in the e₁e₂ plane.
 
     Raises:
-        ValueError: if ``v1`` or ``v2`` is the zero vector — the angle (hence its
-            sine) is undefined there (matches ``MultiVectorBase.cosine`` / ``abs_sin``).
+        ValueError: if ``v1`` or ``v2`` is not a vector, is the zero vector (the
+            angle is undefined there, as for ``cosine``), or ``v1 ∧ v2`` has a part
+            outside the e₁e₂ plane (a signed sine exists only in a plane).
     """
-    # v1, v2 must be VECTORS: the ``abs(v1 * v2)`` below is used as |v1| * |v2|, which
-    # holds only for vectors (|ab| = |a| * |b| when a, b are vectors).
+    MultiVectorBase.require_vectors([v1, v2], "sine")
     if v1 == type(v1).zero() or v2 == type(v2).zero():
         raise ValueError("sine (the angle) is undefined for the zero vector")
-    assert v1.is_vector() and v2.is_vector()
-    # rotate v1 by 90 degrees in the e_1 * e_2 plane (v1 * e_1 * e_2), then project
-    # on v2
-    rot90: MultiVectorBase = v1 * type(v1).from_blade_dict({(1, 2): 1})
-    return (rot90.dot(v2) * (abs(v1 * v2) ** (-1))).scalar_part()
+    cls: type[MultiVectorBase] = type(v1)
+    e_12: MultiVectorBase = cls.basis_vector(1) ^ cls.basis_vector(2)
+    wedge: MultiVectorBase = v1 ^ v2
+    signed_area: Real = wedge.coefficient(e_12)
+    if wedge != signed_area * e_12:
+        raise ValueError(
+            "sine: the vectors are not in the e_1 e_2 plane; a signed sine exists "
+            "only in a plane"
+        )
+    return signed_area / (v1.magnitude() * v2.magnitude())
 
 
 def _draw_labelled_triangle(

@@ -179,10 +179,6 @@ theorem projectSP_eq_proj {b : G2} (hbv : IsVector b) (hb : magnitude b ≠ 0) (
   rw [proj_rotPlane_equivariant _ _ (cs_unit hbv hb),
       rotPlane_inv _ _ _ (cs_unit hbv hb) (by ring)]
 
-/-- The geometric product distributes over subtraction on the left (2D). -/
-theorem sub_mul (a b c : G2) : mul (sub a b) c = sub (mul a c) (mul b c) := by
-  simp only [mul, sub]; ext <;> ring
-
 /-- **Hestenes rejection onto a vector equals the projection-complement** (coordinates): `(b∧a)a⁻¹ =
     b − proj_a b`, for `a·a ≠ 0`. Structural (Hestenes), division-free: `b∧a = ba − (b·a)·1`, so
     `(b∧a)a⁻¹ = b(a a⁻¹) − (b·a)a⁻¹ = b − proj_a b`. -/
@@ -228,5 +224,23 @@ theorem rejectSP_eq_vecReject {b : G2} (hbv : IsVector b) (hb : magnitude b ≠ 
 theorem rejectSP_eq_reject {a b : G2} (hav : IsVector a) (hbv : IsVector b) (hb : magnitude b ≠ 0)
     (hbn : normSq b ≠ 0) : rejectSP a b = reject b a := by
   rw [rejectSP_eq_vecReject hbv hb, vecReject, reject_vec_eq hbv hav hbn]
+
+/-! ### The geometric product from projection and rejection -/
+
+/-- **The product of two vectors, read off standard position:** rotate `b` onto the x-axis
+    (`alignSP`), and let `a` land at `(x, y)`. Then `b*a = |b|*(x + y*e₁₂)`: the plain-number part is
+    `|b|` times how far `a` reaches along `b` (its projection coordinate), and the `e₁₂` part is `|b|`
+    times how far it reaches across `b` (its rejection coordinate). The book's
+    `product-from-projection` page builds the product this way. -/
+theorem mul_eq_magnitude_smul_alignSP {a b : G2} (hav : IsVector a) (hbv : IsVector b)
+    (hb : magnitude b ≠ 0) :
+    mul b a = smul (magnitude b) (add (scalar (alignSP b a).c1) (smul (alignSP b a).c2 e_12)) := by
+  obtain ⟨has, ha12⟩ := hav
+  obtain ⟨hbs, hb12⟩ := hbv
+  ext <;> simp only [mul, alignSP, rotPlane, smul, add, scalar, e_12, has, ha12, hbs, hb12]
+  · field_simp; ring
+  · ring
+  · ring
+  · field_simp; ring
 
 end GacalcProofs.G2
