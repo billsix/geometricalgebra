@@ -3,6 +3,7 @@
 **Status:** proposed — needs go-ahead
 **Priority:** 4
 **Difficulty:** 2
+**Source:** tasks/review/2026/11/08/repo-review.md §5.2, §4.3, §5.4 (the unannotated bindings the auditor misses)
 **Created:** 2026-11-06 (William Emerison Six <billsix@gmail.com>): "make a task to investigate
 tools/check_annotations.py reports 43 findings, but tasks/reference/type-annotation-exemptions.md still
 says the floor is 32, and to make a decision to either fix something that's broken, or update the md
