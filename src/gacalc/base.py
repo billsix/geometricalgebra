@@ -35,13 +35,18 @@ from gacalc.functions import ComposableFunction, InvertibleFunction, Linearity
 # and then rejects `+`/`/`/`**` on it, which broke the generated versor sandwich.
 Real = int | float | sympy.Expr
 #: A basis blade: a tuple of basis-vector indices, e.g. ``(1, 2)`` ≙ e₁ * e₂ (``()`` is
-#: the scalar blade).  The key type of the ``BladeReal`` interchange dict.
+#: the scalar blade).  The key type of the ``BladeReal`` interchange mapping.
 Blade = tuple[int, ...]
 #: THE interchange format of the library.  Every representation (``Gn``,
-#: ``G``, the graded subtypes) converts to and from this dict via
+#: ``G``, the graded subtypes) converts to and from this mapping via
 #: ``to_blade_dict``/``from_blade_dict``, and all shared arithmetic in this
 #: module routes through it.  The contract (pinned by tests/test_blade_dict.py):
 #:
+#: - **It is read-only**: a ``Mapping``, so a ``dict`` and a ``frozendict`` both
+#:   satisfy it.  ``Gn.to_blade_dict`` returns its stored ``frozendict``, which
+#:   raises ``TypeError`` on a write; a caller that wants to edit one copies it
+#:   with ``dict(...)``.  Code that builds a blade dict by writing into it types
+#:   it ``dict[Blade, Real]``.
 #: - **Keys are canonical**: strictly increasing index tuples; ``()`` is the
 #:   scalar blade.  ``from_blade_dict`` (every representation, via
 #:   ``_require_canonical_blades``) raises ``ValueError`` on a non-canonical
@@ -53,7 +58,7 @@ Blade = tuple[int, ...]
 #:   foreign keys are silently dropped, so a result carrying a new grade must
 #:   be built via dispatching arithmetic (``Bivector + scalar -> Versor``),
 #:   never via ``from_blade_dict`` on the operand's type (see ``exp``).
-BladeReal = dict[Blade, Real]
+BladeReal = Mapping[Blade, Real]
 
 #: A substitution handed to :meth:`MultiVectorBase.symbolically_equal` -- the relations
 # sympy
@@ -298,8 +303,8 @@ class MultiVectorBase(abc.ABC):
         """Return this multivector as a canonical blade -> coefficient mapping.
 
         Returns:
-            BladeReal: the blade -> coefficient interchange dict (canonical keys,
-            exact-zero coefficients omitted).
+            BladeReal: the read-only blade -> coefficient interchange mapping
+            (canonical keys, exact-zero coefficients omitted).
         """
 
     @classmethod

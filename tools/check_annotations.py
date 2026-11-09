@@ -112,7 +112,7 @@ def not_ignored() -> set[str] | None:
             text=True,
             check=True,
         )
-    except (OSError, subprocess.CalledProcessError):
+    except OSError, subprocess.CalledProcessError:
         return None
     return set(listing.stdout.splitlines())
 

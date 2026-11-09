@@ -85,6 +85,12 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **BREAKING — Python 3.15 or later is required** (`requires-python = ">=3.15"`, was `>=3.13`).
+  `Gn` stores its coefficients in the built-in `frozendict` (PEP 814), new in 3.15.
+- **BREAKING — `Gn.to_blade_dict()` returns an immutable `frozendict`**, the mapping `Gn` stores,
+  instead of a `dict`. Writing into it raises `TypeError`; copy it with `dict(...)` to edit one.
+  `BladeReal` is now the read-only `Mapping[Blade, Real]` (a `dict` still satisfies it, and the
+  specialized classes still return a fresh `dict`).
 - **`uniform_scale(m)` and `scale_non_uniform(*factors)` annotate their factors as `Real`** (was
   `float`), matching the symbolic factors they already accepted at runtime. No behavior change.
 - **`unit_pseudoscalar`, `bases` and `symbolic_multivector` raise `ValueError` on a graded type that
@@ -173,8 +179,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `tasks/reference/type-annotation-exemptions.md`.
 
 ### Fixed
-- **`Gn.to_blade_dict()` returns a copy.** Changing the returned dict no longer changes the value
-  it came from, or a shared constant such as `gn.e_1`.
+- **A caller can no longer corrupt a `Gn` through `to_blade_dict()`.** Writing into the returned
+  dict changed the value it came from, or a shared constant such as `gn.e_1`; the mapping is now
+  immutable (see Changed).
 - **`gacalc.frame.prefix_blades` on the graded types** (`g2`/`g3`/… `Vector`) returned all-zero blades:
   it seeded the wedge with `type(v).one()`, and a graded `Vector` type has no scalar slot, so that is the
   zero vector. It now seeds with the scalar 1 of the algebra (`Scalar_n.one()`). This also fixes

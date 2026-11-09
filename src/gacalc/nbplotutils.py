@@ -554,7 +554,7 @@ def _coef_as_float(coef: Real) -> float | None:
     """``coef`` as a ``float``, or ``None`` when it is symbolic (not convertible)."""
     try:
         return float(coef)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None
 
 
@@ -679,7 +679,7 @@ def _expand_numerators_dict(mv: MultiVectorBase) -> BladeReal:
     would re-factor the just-distributed numerator (e.g. back to ``a0*(b0*c0 + ...)``).
     Expanding the dict directly keeps the distributed form on every representation.
     """
-    out: BladeReal = {}
+    out: dict[Blade, Real] = {}
     blade: Blade
     coef: Real
     for blade, coef in mv.to_blade_dict().items():

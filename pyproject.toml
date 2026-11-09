@@ -8,8 +8,9 @@ readme = "README.md"
 # pgzero_gl shim, whose Vector2 work-alike subclasses gacalc.g2.Vector.
 license = "LGPL-2.1-only"
 license-files = ["LICENSE"]
-# Floor is 3.13: the code uses typing.TypeIs (added in 3.13). The dev container runs 3.14.
-requires-python = ">=3.13"
+# Floor is 3.15: Gn stores its coefficients in the built-in frozendict (PEP 814, new in
+# 3.15). The dev container runs 3.15.
+requires-python = ">=3.15"
 
 # Runtime dependencies -- only what the library needs to import and run.
 dependencies = ["numpy", "sympy"]
