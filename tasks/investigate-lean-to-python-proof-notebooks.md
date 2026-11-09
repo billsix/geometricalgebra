@@ -1,6 +1,6 @@
 # Investigate: generate percent-formatted Python proof notebooks from Lean proofs
 
-**Part of:** the Lean-proofs program (umbrella archived: `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`)
+**Part of:** `tasks/proof-notebooks-student-math-notation-style.md` (the proof-notebook umbrella; this is the generate-from-Lean mechanism step)
 **Related:** the codegen conventions (`github.com/billsix/runClaudeInContainer:tasks/reference/codegen-conventions.md` — prefer structured
 output over string concatenation; build a parity harness); the existing demo notebooks
 (`notebooks/displayg2.py`/`displayg3.py`, jupytext percent format).
@@ -27,7 +27,8 @@ much of Lean's reasoning can actually be surfaced.
   associativity cells (`show_mult(g2_1, g2_2)` … `((g2_1*g2_2)*g2_3) - (g2_1*(g2_2*g2_3))`); the
   helper is `show_mult` in `src/gacalc/nbplotutils.py`. Use its *presentation* as the target style — a
   college-level symbolic expansion, not Lean tactic jargon.
-- **Requirement folded in from the sibling doc task (maintainer, 2026-09-30):** that demo ends by
+- **The cancellation requirement is the umbrella's** (`tasks/proof-notebooks-student-math-notation-style.md` › "Shared requirement"); restated here
+  because this task builds it: that demo ends by
   evaluating the difference and printing `0` — "it doesn't show shit, it just shows 0." The notebook
   must show the **cancellation**, not a bare zero: lay the two expansions out term by term, side by
   side with labels, and mark the matching `+t`/`−t` pairs with LaTeX `\underbrace{…}_{cancel}` so the

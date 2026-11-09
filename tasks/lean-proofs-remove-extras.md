@@ -8,7 +8,7 @@
 ## BLUF
 
 The maintainer asked whether the Lean proofs carry things their goals don't need (hypotheses like `ha`/`hab`
-that never seem to be referenced). An audit on 2026-11-05 checked all 32 files and 571 theorems with extra
+that never seem to be referenced). An audit on 2026-11-05 checked all 32 files (there are 34 as of 2026-11-09) and 571 theorems with extra
 linters and a `clear` test. **Very little is extra:** most name-absent hypotheses are consumed silently by
 `field_simp`/`simp`/`linarith`. What is extra: 4 statement hypotheses, 2 no-op `ring`s, and 2 cosmetic
 `ring`→`ring_nf` spellings. There are also 4 false-positive warnings to silence. Done means those are fixed,

@@ -1,15 +1,20 @@
 # Grassmann absolute/relative units — concept, citation, and runtime tests
 
-**Status:** blocked — citation and definitions OBTAINED 2026-08-31 (see below); still gated on the
-maintainer confirming the interpretation and choosing the predicate/tests.
+**Status:** proposed — waiting on the maintainer's answers to the open questions. Citation and
+definitions obtained 2026-08-31 (see below); the maintainer must confirm the proposed interpretation
+(absolute unit = the scalar 1, NOT `1*e_1`) and choose the predicate/tests. Not `blocked`: the gate is
+a decision, not an external condition.
 **Priority:** 7
 **Difficulty:** 3
 **Started:** 2026-08-27 (William Emerison Six <billsix@gmail.com>)
 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — citations re-verified.
-**Blocked on:** maintainer confirms the proposed interpretation (absolute unit = the scalar 1, NOT
-`1*e_1`) and decides what predicate/tests to build.
-**Recheck:** the remaining Open questions below are answered (maintainer-gated; `/recheck-blocked`
-surfaces it).
+
+## BLUF
+
+Define Grassmann's absolute unit, relative unit and reference in gacalc's terms, citing the 1800s source
+the maintainer provided, and add runtime tests for them. Done means the maintainer has confirmed the
+interpretation (see "Proposed interpretation"), the chosen predicate exists with tests, and the
+definition is cited. Nothing is built until the open questions are answered.
 
 ## The citation and quote (provided by the maintainer, 2026-08-31)
 
@@ -127,7 +132,7 @@ runtime tests for them.
 
 - **Genuine gap** — no reference doc or code mentions "absolute unit"/"relative unit"/Grassmann's
   terminology (confirmed by repeated greps across active/reference/archive).
-- The only adjacent work is display convention: `2026/08/26/explicit-unit-coefficients.md` made
+- The only adjacent work is display convention: `tasks/archive/2026/08/26/explicit-unit-coefficients.md` made
   `e_1` render as `1*e_1` (~235 sites) — that's *display*, not the Grassmann *concept* or tests for it.
 - The maintainer's own examples: `1*e_1` = absolute unit; `3*e_1 + 4*e_2` = relative unit; "base types
   with coefficient 1 are absolute units." A third category, "reference," is named but not defined.

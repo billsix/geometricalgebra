@@ -1,91 +1,52 @@
-# Backlog structure and repo tidy: merge the proof-notebook tasks, fix stale task claims, add missing BLUF/Context, remove leftovers
+# Backlog structure and repo tidy: proof-notebook umbrella, stale task claims, BLUF/Context everywhere, leftovers removed
 
-**Status:** proposed — needs go-ahead
-**Priority:** 5
-**Difficulty:** 3
-**Created:** 2026-11-09
+**Created:** 2026-11-09 · **Completed:** 2026-11-09
 **Source:** tasks/review/2026/11/08/repo-review.md §9.1, §9.2, §10.4, §1.2
 
-## BLUF
+## What changed
 
-Bring the open backlog (`tasks/*.md`) to the task-doc conventions and remove three leftover files.
-Done means:
+- **Proof-notebook umbrella.** `tasks/proof-notebooks-student-math-notation-style.md` (already
+  self-described as an umbrella, and the lowest priority number of the three) is the parent. It gained
+  a `## Context` naming its two children and holding the **shared requirement** both used to state:
+  show the cancellation with `\underbrace{…}_{cancel}` through a `show_cancellation` helper, not a bare
+  `0`.
+  - `tasks/reference-doc-lean-workflow-and-proof-notebooks.md` (the *why*) has a `Part of:` header.
+  - `tasks/investigate-lean-to-python-proof-notebooks.md` (the *how*) has a `Part of:` header instead
+    of the archived Lean umbrella, and now points at the umbrella for the requirement.
+- **Stale claims fixed:**
+  - `frame-inverse-head-first-recursion` Q3 now says the "yes" overruled the original "no";
+  - `apply-2026-11-06-naming-and-scope-rules` no longer calls that task blocked;
+  - `annotation-auditor-floor-drift` has the current auditor count (42 findings in 15 files, 10 above
+    the floor);
+  - `generalize-reject-reflect-higher-grade` Q6 cross-links its two overlapping tasks;
+  - `lean-proofs-remove-extras` notes 34 files now;
+  - `port-book-to-osbook-latex` says its revisit condition is met (still parked), and its table row
+    gives the investigation's answer;
+  - `displaygraded-geometric-plots` points at the archived `epix-plot-integration.md`.
+- **Structure:**
+  - Every open task now has `## BLUF` and `## Context`. Six tasks whose `## Goal` already stated the
+    task and its deliverable had it renamed to BLUF. `branded-coordinate-space-types`,
+    `composable-function-followups` and `grassmann-absolute-relative-units` got new BLUFs.
+    `displaygraded-geometric-plots` ("Why" renamed), `generalize-reject-reflect-higher-grade`,
+    `branded-coordinate-space-types` and `push-delicate-coordinate-core-tier` got Context sections.
+  - Statuses: "on hold" became `parked`, and "investigated" became `proposed — investigated …`.
+    `grassmann` is no longer `blocked`, since its gate is the maintainer's answers, not an external
+    condition. Its `Blocked on:`/`Recheck:` lines are gone, which ends the conflict with "do not
+    re-raise".
+  - The two "Part of" pointers to the archived Lean umbrella now say it is done and name
+    `tasks/reference/lean-ga-proof-architecture.md`. The `2026/…` paths are repo-root-relative.
+- **Removed:** `TODO.org` (every item done), and the two leftover codemods of the archived
+  drop-graded-type-dimension-suffixes task. `tasks/adhoc/typing-base-return-types-redesign/` belongs
+  to an open task and stays.
 
-- the three proof-notebook tasks are one umbrella with its children;
-- the stale claims listed below are corrected;
-- every open task has `## BLUF` and `## Context` and a standard status;
-- `TODO.org` and the two leftover codemods are `git rm`'d.
+## Dropped as not reproduced
 
-## Context
+- `frame-svd-investigation`'s status already said its prerequisite was done.
+- `push-delicate-coordinate-core-tier`: every `_coord` lemma it lists as retained still exists
+  (checked by name with `grep -rw` in `proofs/GacalcProofs`).
 
-Read first: the task-doc conventions (github.com/billsix/runClaudeInContainer
-`tasks/reference/task-doc-conventions.md`) and the record's §9.1 and §9.2. The earlier
-`tasks/archive/2026/11/09/backlog-hygiene.md` already did §9.1's first three items (it archived
-`generalize-sandwich-other-grades`, re-rated `define-frame`, and reconciled frame coverage). Don't
-redo them.
+## Verification
 
-**Still open from §9.1** (re-check each before editing):
-
-- **Three proof-notebook tasks overlap**, two stating the same `show_cancellation` / `\underbrace`
-  requirement: `tasks/investigate-lean-to-python-proof-notebooks.md`,
-  `tasks/reference-doc-lean-workflow-and-proof-notebooks.md` and
-  `tasks/proof-notebooks-student-math-notation-style.md`. Make one the umbrella, per "Step tasks" in
-  the conventions.
-- **`tasks/frame-inverse-head-first-recursion.md`**: Q3 is marked "yes" while the next sentence
-  recommends "no".
-- **`tasks/apply-2026-11-06-naming-and-scope-rules.md`** still calls the frame-inverse task blocked;
-  it was unblocked on 2026-11-07.
-- **`tasks/frame-svd-investigation.md`** waits on a task that finished on 2026-11-04.
-- **`tasks/annotation-auditor-floor-drift.md`** says 43 findings in 14 files; re-run
-  `python tools/check_annotations.py` and use the current count.
-- **`tasks/generalize-reject-reflect-higher-grade.md`** Q6 overlaps
-  `tasks/line-to-line-rejection-invertible-function.md` and
-  `tasks/vector-and-plane-invertible-project-reject.md`. Cross-link them, or move Q6.
-- **`tasks/push-delicate-coordinate-core-tier.md`** lists deleted `_coord` lemmas as retained.
-  Re-count the live ones with `grep -rn "_coord" proofs/GacalcProofs`.
-- **`tasks/lean-proofs-remove-extras.md`** says it audited 32 files; there are now more. Correct the
-  count. Its own fixes are its own work, not this task's.
-- **`tasks/port-book-to-osbook-latex.md`**: its "revisit after" investigation was archived on
-  2026-10-09. Say the condition is met and re-rate it.
-- **`tasks/displaygraded-geometric-plots.md`** points at the archived `epix-plot-integration.md`.
-
-**§9.2, re-checked 2026-11-09:**
-
-- **No `## BLUF`:** affine-flats-lines-planes-from-points, branded-coordinate-space-types,
-  composable-function-followups, displaygraded-geometric-plots, document-codegen-flow-pedagogical,
-  generalize-reject-reflect-higher-grade, grassmann-absolute-relative-units,
-  notebook-dot-wedge-projection-demo, parallelogram-foundational-narrative.
-- **No `## Context`:** branded-coordinate-space-types, displaygraded-geometric-plots,
-  generalize-reject-reflect-higher-grade, proof-notebooks-student-math-notation-style,
-  push-delicate-coordinate-core-tier.
-- **Non-standard statuses** ("on hold", "investigated"): `grep -ln "on hold\|investigated"
-  tasks/*.md` finds lean-frame-class-invertible-function, port-cayley-graph-from-mvp-investigation,
-  port-book-to-osbook-latex and define-frame. Check each hit, since the words may be prose.
-- Two tasks say "Part of" the archived `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`.
-- Four tasks use `2026/…/x.md` paths instead of repo-root-relative ones.
-- grassmann's "do not re-raise unprompted" conflicts with its `Recheck:` field.
-
-**Leftover files:**
-
-- `TODO.org` (repo root): every item is done (§1.2).
-- `tasks/adhoc/drop-graded-type-dimension-suffixes/codemod.py` and `prose_codemod.py` belong to the
-  archived `tasks/archive/2026/08/13/drop-graded-type-dimension-suffixes.md` and should have been
-  removed in its archive commit (§10.4). The other adhoc directory,
-  `tasks/adhoc/typing-base-return-types-redesign/`, belongs to an open task; keep it.
-
-## Plan
-
-- [ ] Pick the proof-notebook umbrella, move the shared requirement into it, and give the children
-  `Part of:` / `Depends on:` headers.
-- [ ] Fix each §9.1 claim listed above, re-checking it first.
-- [ ] Add BLUF and Context to the tasks listed. Write them from each task's own content, not
-  placeholders.
-- [ ] Normalize the statuses, the dead "Part of" pointers, the relative paths, and grassmann's Recheck.
-- [ ] `git rm TODO.org tasks/adhoc/drop-graded-type-dimension-suffixes/codemod.py
-  tasks/adhoc/drop-graded-type-dimension-suffixes/prose_codemod.py`.
-- [ ] Gate: `grep -L "^## BLUF" tasks/*.md` and `grep -L "^## Context" tasks/*.md` print nothing.
-  Every path cited in an edited task exists.
-
-## Open questions
-
-None.
+`grep -L "^## BLUF" tasks/*.md` and `grep -L "^## Context" tasks/*.md` print nothing. Every
+`tasks/….md` path cited in an edited task exists, except two that the tasks name as files still to be
+written: `tasks/reference/grassmann-units.md` and `tasks/reference/lean-python-notebook-workflow.md`.

@@ -50,6 +50,12 @@ optional push to make that remaining tier getter-native too. It is **not require
 Expect higher risk and lower marginal value. "Done" = the targets below are getter-native (no scalar
 `_coord` scaffold feeding them), `make lean` green.
 
+## Context
+
+Read first: `tasks/reference/lean-ga-proof-architecture.md` ("Coordinates only when needed", the recipes)
+and `CLAUDE.md` › "Coordinates only when needed". The work records below say what was converted and
+what is left; "Left on `_coord` bridges" in the 2026-10-22 record is where to resume. Gate: `make lean`.
+
 ## Why it was deferred (the obstruction)
 
 These proofs are **not polynomial**, so `obtain`-getters + `ring` doesn't close them:

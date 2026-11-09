@@ -11,10 +11,11 @@ file to reflect the reality".
 
 ## BLUF
 
-`python tools/check_annotations.py` reports **43 findings in 14 files**, while
+`python tools/check_annotations.py` reports **42 findings in 15 files** (re-run 2026-11-09; 43 in 14
+when this task was filed), while
 `tasks/reference/type-annotation-exemptions.md` says the floor (re-baselined 2026-10-09) is **32 rows in
 12 files**, every one a listed exemption or a classified-out alias/enum. Its rule is that "a row it
-reports that is not in that doc is a genuine gap". For each of the 11 extra rows, decide: **annotate the
+reports that is not in that doc is a genuine gap". For each of the 10 extra rows, decide: **annotate the
 code** (a real gap) or **add it to the doc with its reason** (a real exemption). Done = the auditor's
 count equals the doc's stated floor, every row is accounted for in the doc, and the doc's duplicated §5
 bullet is fixed.

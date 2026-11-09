@@ -1,7 +1,9 @@
 # Consider porting the book from Sphinx to impo's `osbook` LaTeX house style
 
 **Status:** parked — maintainer: "hold off on this for now, low priority" (2026-10-08). Do not
-start. Revisit after `tasks/investigate-osbook-latex-source-region-includes.md` reports.
+start. Its revisit condition is met: the investigation reported
+(`tasks/archive/2026/10/09/investigate-osbook-latex-source-region-includes.md`); still parked until the
+maintainer picks it up.
 **Priority:** 10
 **Difficulty:** 9
 **Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
@@ -24,7 +26,7 @@ collect the feasibility findings; it is not a go-ahead.
 |---|---|---|
 | `.rst` prose, `:math:` | plain LaTeX — a mechanical port (Sphinx's own `latex` builder output is a starting point, not the product) | known |
 | ePiX figures (`book/figures/epix/*.py` → `_static/epix/*.pdf`) | native: the figures are already `elaps`-rendered PDFs; `\includegraphics` | known |
-| `literalinclude` by doc-region, `:linenos:` + `:lineno-match:` | **unknown** — `tasks/investigate-osbook-latex-source-region-includes.md` | pending |
+| `literalinclude` by doc-region, `:linenos:` + `:lineno-match:` | **yes for the PDF** — `listings` `rangebeginprefix`/`rangeendprefix` selects the region; `:lineno-match:` needs a per-include `firstnumber` (`tasks/archive/2026/10/09/investigate-osbook-latex-source-region-includes.md`) | investigated |
 | executed notebooks (myst_nb) | `jupyter nbconvert --to latex` per notebook, or run them at build and splice outputs; must also reach pandoc's HTML/EPUB | not investigated |
 | `api.rst` autodoc | no equivalent; drop, or generate a LaTeX API appendix from docstrings (sphinx `latex` builder of just `api.rst`?) | not investigated |
 | `:ref:`/`:numref:`/`:eq:` numbering | native LaTeX (`\ref`, `\pageref`, `equation`) — strictly better for print | known |

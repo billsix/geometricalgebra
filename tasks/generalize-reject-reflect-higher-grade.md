@@ -7,7 +7,7 @@ the mixed-grade-value scope (Open questions 1–4). No book re-read is needed fo
 **Difficulty:** 4
 **Created:** 2026-06-04 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
 
-## Goal
+## BLUF
 
 `MultiVectorBase.reject` and `.reflect` (in `base.py`) currently only implement the case where the
 blade argument is a **vector or a bivector**. Any higher-grade blade falls through their `match` to
@@ -16,6 +16,13 @@ sequence-arity bug (see `tasks/archive/2026/06/05/correctness-bugs.md`): a 3-ele
 (`reject(away_from=[e_1, e_2, e_3])`) reduces via `outer_product_of_vectors` to the trivector
 `e_123`, which then hits the unimplemented branch. Goal: support rejection/reflection across a blade
 of **any grade** (at least up to the pseudoscalar of `Gn`/`G3`).
+
+## Context
+
+Read first: "Reference" (the Hestenes & Sobczyk formulas) and "Current behaviour, exercised in G3"
+below, then `tasks/reference/generated-product-typing.md` (project/reject grade-narrowing). The code is
+`MultiVectorBase.reject` and `.reflect` in `src/gacalc/base.py`. Open questions 1–4 are design decisions
+that must be answered before any code changes; question 6 overlaps two other open tasks (see there).
 
 ## Reference (Hestenes & Sobczyk, *Clifford Algebra to Geometric Calculus*)
 
@@ -177,7 +184,9 @@ verify-after step once `reject` generalizes.
 6. **Line/plane projections (folded in 2026-08-27, below)** — confirm "line"/"plane" mean
    **origin-through** subspaces (grade-1/grade-2), distinct from the affine flats of
    `affine-flats-lines-planes-from-points.md`, and whether the symbolic checks + graded-notebook demos
-   are tracked here or split into a notebook task.
+   are tracked here or split into a notebook task. Overlaps
+   `tasks/line-to-line-rejection-invertible-function.md` and
+   `tasks/vector-and-plane-invertible-project-reject.md`; settle it with those two.
 
 ## Folded-in idea (2026-08-27, William Emerison Six <billsix@gmail.com>) — projections line→line / line→plane / plane→plane
 

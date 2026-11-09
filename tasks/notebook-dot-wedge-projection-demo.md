@@ -10,7 +10,7 @@ done in `notebooks/displayg2.py`; Context and Q1 re-posed accordingly.
 wording). The math is already proved — do NOT re-prove it.
 **Recheck:** the Open questions below are answered (maintainer-gated; `/recheck-blocked` surfaces it).
 
-## Goal
+## BLUF
 
 Maintainer's idea, verbatim: *"See if in the notebooks, for at least 2D and 3d, see if I can show that
 the dot product of a and b is the geometric product of a and b projected onto a. Same thing for wedge,
@@ -22,7 +22,7 @@ product and the perpendicular part is the wedge.
 ## Context (investigation 2026-08-27)
 
 - **Already proved and boxed — this is a notebook *demonstration* task, not a proof task.** Archived
-  `2026/08/03/verify-dot-wedge-as-projection-rejection-products.md` proved exactly `a_∥ b = a·b` and
+  `tasks/archive/2026/08/03/verify-dot-wedge-as-projection-rejection-products.md` proved exactly `a_∥ b = a·b` and
   `a_⊥ b = a∧b` symbolically; the boxed theorem lives in
   `tasks/reference/dot-wedge-projection-rejection.md`.
 - **The 2D demonstration is already DONE** (found 2026-10-04): `notebooks/displayg2.py`, section

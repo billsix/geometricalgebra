@@ -7,7 +7,7 @@
 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — citations re-verified after the
 rotor→versor rename; line-number anchors replaced by names.
 
-## Goal
+## BLUF
 
 `displaygraded.py` now prints each result cleanly (the `show()` helper renders `Type: <latex>`, and the
 two table cells render as a Math list / Markdown table). But the *geometric meaning* is still only
@@ -15,7 +15,7 @@ implied by coefficients. Add **matplotlib plots** alongside the key cells so a r
 operation does to vectors/planes — arrows for vectors, an oriented area for a bivector, before/after
 arrows for a rotation, etc.
 
-## Why
+## Context
 
 This is a geometric-algebra teaching notebook; the payoff is *geometric intuition*. A versor that turns
 `e_1 → e_2`, a wedge that sweeps an oriented parallelogram, the dual of a plane that points along its
@@ -101,5 +101,5 @@ Two maintainer bullets were triaged into this task because it already owns the n
 **New open questions (block these additions):**
 - **Is 3D plotting in scope now** (this bullet asks for it explicitly), or still deferred as the
   "fast-follow" the 3D §/concept-6 question already contemplates? 3D may motivate
-  `epix-plot-integration.md`.
+  `tasks/archive/2026/10/07/epix-plot-integration.md` (done).
 - **Scalar·vector** — extend `show_mult` with a geometry panel, or a standalone scaling plot?

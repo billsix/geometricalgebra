@@ -8,6 +8,13 @@
 map of the exact public API surface (`functions.py`/`transforms.py`) this naming/placement reassessment
 would rename or relocate. Read it first.
 
+## BLUF
+
+Two deferred polish questions on the composable-function layer: (1) whether the `functions` and
+`transforms` module names read well to a newcomer, and (2) whether an animation layer belongs on
+`ComposableFunction` or only on `InvertibleFunction`. Done means each has a recorded decision, and any
+rename or move it calls for is made with a `CHANGELOG.md` entry (a public rename is breaking).
+
 ## Context
 
 The composable-function interface refactor landed in gacalc 0.0.9 (see the archived

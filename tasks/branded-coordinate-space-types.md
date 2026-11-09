@@ -9,6 +9,19 @@ Six <billsix@gmail.com>, 2026-08-28). Do not start without a fresh go-ahead.
 **See also:** `tasks/archive/2026/08/29/document-composable-function-math-identity.md` (archived — the docs-only sibling — the
 investigation that produced both tasks), `tasks/reference/transform-and-composable-function-layer.md`.
 
+## BLUF
+
+A parked idea, kept so it isn't lost: give `ComposableFunction` two type parameters (`Morphism[A, B]`)
+and brand each coordinate space as its own static type, so a type checker rejects a transform applied
+in the wrong space. Nothing is to be built without a fresh go-ahead. If it is un-parked, done means the
+experiment in "If ever un-parked" has a written go/no-go.
+
+## Context
+
+Read first: `tasks/reference/transform-and-composable-function-layer.md` (the current
+`ComposableFunction`/`InvertibleFunction` hierarchy and its invariance) and the archived sibling named
+in "See also". "Why it's parked" below records the cost side from the 2026-08-28 investigation.
+
 ## The idea
 
 Give `ComposableFunction` two type parameters — `Morphism[A, B]` for `A → B`, with

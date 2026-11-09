@@ -38,7 +38,7 @@ refactored or recorded as left alone with its reason, `make test` and `make form
   - The shared "must be a vector" check (`MultiVectorBase.require_vector`/`require_vectors`) was already
     applied everywhere (`tasks/archive/2026/11/06/reuse-existing-vector-check.md`).
   - Head-first recursion is not yet a rule; it waits on `tasks/frame-inverse-head-first-recursion.md`
-    (blocked).
+    (unblocked 2026-11-07, not yet done).
 - **Rules that compete with these, and win:** an externally-defined name is never renamed; "annotate
   every binding" still applies to every name that survives; `m`/`b`/`n`/`cls` naming; Hestenes
   variable notation (`tasks/reference/hestenes-variable-notation.md`).
