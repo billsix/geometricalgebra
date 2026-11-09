@@ -8,7 +8,7 @@ proofs came from). **Successor (exploratory):** `tasks/grade-simp-tactic-reduce-
 **Durable record:** `tasks/reference/lean-ga-proof-architecture.md` — "Trimming vacuous `simp` args and
 dropping unused hypotheses", "Hypotheses: what each kind is for, and how to decide", and "Structural
 proofs over brute `ring`" — and the independent review
-`tasks/reference/lean-proof-corpus-review-2026-10-04.md` (§1, §5).
+`tasks/review/2026/10/04/lean-proof-corpus-review.md` (§1, §5).
 
 ## BLUF
 

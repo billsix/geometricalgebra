@@ -8,7 +8,7 @@ rotor angle theorem were split out into their own tasks (`tasks/lean-frame-cover
 **Priority:** 5 **Difficulty:** 5 (the finished phases were D4–5 each).
 **Created:** 2026-10-04 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>). **Owner:**
 William Emerison Six <billsix@gmail.com>.
-**See also:** `tasks/reference/lean-proof-corpus-review-2026-10-04.md` (the coverage map that found these
+**See also:** `tasks/review/2026/10/04/lean-proof-corpus-review.md` (the coverage map that found these
 gaps, §3), `tasks/reference/lean-ga-proof-architecture.md` (how proofs are written here; its coverage map
 now has a subsection for these modules), `tasks/reference/lean-for-gacalc.md` (orientation),
 `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the earlier audit, same method).

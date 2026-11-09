@@ -4,7 +4,7 @@
 start without a go-ahead. **Priority:** 8 (parked). **Difficulty:** 5.
 **Created:** 2026-10-04 (William Emerison Six <billsix@gmail.com>), spun out of
 `tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md`. **Owner:** William Emerison Six <billsix@gmail.com>.
-**See also:** `tasks/reference/lean-proof-corpus-review-2026-10-04.md` §3, `tasks/define-frame.md` (the
+**See also:** `tasks/review/2026/10/04/lean-proof-corpus-review.md` §3, `tasks/define-frame.md` (the
 Python-side frame work), `tasks/reference/lean-ga-proof-architecture.md`, `tasks/lean-frame-class-invertible-function.md` (the
 Lean side of the 2026-11-04 `Frame` class; its theorem 1 overlaps this task's rejection-orthogonality).
 

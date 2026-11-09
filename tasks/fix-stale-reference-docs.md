@@ -1,45 +1,44 @@
 # Fix the stale and false claims in the reference docs
 
-**Status:** proposed — needs go-ahead (approved in session 2026-11-09; in progress)
-**Priority:** 3
-**Difficulty:** 3
-**Created:** 2026-11-09
+**Created:** 2026-11-09 · **Completed:** 2026-11-09
 **Source:** `tasks/review/2026/11/08/repo-review.md` §1.1, §1.2, §2.1
 
-## BLUF
+## What changed
 
-Several `tasks/reference/` docs state things the tree contradicts. Done means each listed claim is
-corrected, and the dated 2026-10-04 Lean corpus review leaves `tasks/reference/` for
-`tasks/review/2026/10/04/`, under the deep-review convention.
+- **`tasks/reference/lean-ga-proof-architecture.md`:**
+  - the module count (34, with the ReciprocalFrame files);
+  - the G1/G2/G3 section order, rewritten to the post-2026-10-29 teaching order as the files show it;
+  - "Remaining" no longer lists frames as wholly open, and names what landed;
+  - `dot_is_sym_part` is the object form in both algebras;
+  - "Projection/Projection2D" → "Projection2D/Projection3D";
+  - the corpus-review pointer.
+- **`tasks/reference/lean-for-gacalc.md`:** ~800 tests; "32 (now 34)" files; the extra linters are
+  turned on per run (`lakefile.toml` sets none of them).
+- **`tasks/reference/design-decisions.md`:**
+  - the notebooks' gate is `make check-notebooks` (in CI since 2026-11-09);
+  - `cross` is no longer listed as declined;
+  - the `.dockerignore` sentence says what it now excludes.
+- **`tasks/reference/book-and-docs-pipeline.md`:**
+  - `api.rst`'s actual module list;
+  - the nbconvert TeX is gated on `USE_JUPYTER || BUILD_DOCS`;
+  - the package set split into dnf (`04-install-docs.sh`) and venv (`sphinx`, `furo`, `nbsphinx`,
+    `myst-nb`);
+  - the `nb_execution_raise_on_error = True` gate.
+- **`tasks/reference/generated-algebra-generation-cost.md`:** g4/g5 have their own grade types
+  (`GRADE_NAMES`/`grade_name`); `check-generated` runs on g1–g3.
+- **`tasks/reference/symbolic-equality.md`:** `a.symbolically_equal(b, subs=…)`.
+- **`tasks/reference/openstax-math-pedagogy.md` §9:** marked as a 2026-08-03 snapshot.
+- **`tasks/reference/reduction-to-standard-position.md`:** the angle-free payoff is
+  `book/docs/rotation-from-vectors.rst`, with the task's archived path.
+- **`proofs/README.md`:** 34 modules; the reciprocal frame covered; the parallel predicate is the
+  iff; the corpus review's new path.
+- **`tasks/reference/lean-proof-corpus-review-2026-10-04.md`** moved, with `git mv`, to
+  `tasks/review/2026/10/04/lean-proof-corpus-review.md`, under the deep-review convention for dated
+  records. It has a banner saying what in it is out of date, and is otherwise unedited. Every
+  reference was repointed: two live docs (one hunk of `tasks/lean-frame-coverage.md`) and five
+  archived ones.
 
-## Context
+## Verification
 
-The claims, each verified by the review:
-
-- `lean-ga-proof-architecture.md`: the G1/G2/G3 order (pre-2026-10-29); "31 modules"; frames
-  listed as remaining; `dot_is_sym_part` called a coordinate form; "Projection/Projection2D".
-- `lean-for-gacalc.md`: "~650 tests"; "32 files"; extra linters "set in `proofs/lakefile.toml`"
-  (none are).
-- `design-decisions.md`: the notebooks have "no execution gate"; `cross` among the declined
-  features; a `.dockerignore` "can't fix" the elpa duplication.
-- `book-and-docs-pipeline.md`: Sphinx as dnf packages; the nbconvert TeX installed
-  "unconditionally"; `api.rst` covering "every package module"; the
-  `nb_execution_raise_on_error` gate unmentioned.
-- `generated-algebra-generation-cost.md`: the registry "only defines up to Trivector"; a done
-  to-do about scoping `check-generated`.
-- `symbolic-equality.md`: recommends the removed `_simplify_equal`.
-- `openstax-math-pedagogy.md` §9: a 2026-08-03 snapshot in the present tense.
-- `reduction-to-standard-position.md`: cites an archived task as future work.
-- `proofs/README.md`: "31 modules"; `frame.py` uncovered; the parallel predicate's one direction.
-- `lean-proof-corpus-review-2026-10-04.md`: a dated record sitting in `tasks/reference/`.
-
-## Plan
-
-- [ ] Correct each claim.
-- [ ] `git mv` the corpus review to `tasks/review/2026/10/04/lean-proof-corpus-review.md`, with a
-  banner saying what is out of date, and repoint every reference to it.
-- [ ] Verify that every path cited in the changed docs exists.
-
-## Open questions
-
-None.
+- Every path cited in the changed docs exists.
+- `git grep lean-proof-corpus-review-2026-10-04` outside the dated records finds nothing.

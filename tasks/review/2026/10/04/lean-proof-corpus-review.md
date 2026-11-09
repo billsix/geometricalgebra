@@ -1,5 +1,11 @@
 # Lean proof corpus — independent review of the 2026-09-29 → 2026-10-04 work
 
+> **Dated review record (2026-10-04), moved from `tasks/reference/` on 2026-11-09.** It describes the
+> proof corpus as of that date, and parts are now out of date (its §3 coverage table predates `G1.lean`,
+> `ReciprocalFrame*.lean` and `PlaneRotation3D.lean`; `autoImplicit` is now `false`). The current
+> coverage map is `tasks/reference/lean-ga-proof-architecture.md`. Left otherwise unedited, per the
+> review-record convention.
+
 **What this is:** a read-only audit of the week's Lean commits (branch `leanProofs`, HEAD `c53fd7d`),
 a Python → Lean coverage map, and a plain-language explanation of what the proofs' *hypotheses* mean,
 written for the maintainer, who does not read Lean fluently. It states what is TRUE of the corpus on

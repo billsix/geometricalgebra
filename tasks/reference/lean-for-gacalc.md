@@ -19,7 +19,7 @@ program (the **kernel**) has verified every step down to the axioms; there is no
 
 What a Lean proof does **not** do: it says nothing about whether gacalc's **Python** code implements
 that mathematics. Lean checks the *idea* (e.g. "the wedge magnitude squared equals
-‖a‖²‖b‖² − (a·b)²"); the Python tests (`Gn` vs the generated `G`, ~650 of them) check the *code*.
+‖a‖²‖b‖² − (a·b)²"); the Python tests (`Gn` vs the generated `G`, ~800 of them) check the *code*.
 For gacalc, Lean is a **second, independent source of truth for the derivations** — a way for the
 author to check his own math on paper — sitting alongside, not replacing, the test suite. Verifying
 that the Python matches the Lean is a much larger, separate effort and is out of scope.
@@ -257,7 +257,7 @@ version resolution is lake's own, not hand-picked):
 
 ## Reading a theorem's hypotheses, and spotting what is extra
 
-*(Written 2026-11-05 after a corpus audit with Lean v4.34.1: extra linters plus a `clear`-test over all 32
+*(Written 2026-11-05 after a corpus audit with Lean v4.34.1: extra linters plus a `clear`-test over all 32 (now 34)
 files and 571 theorems in `proofs/GacalcProofs/`. The fixes it found are tracked in
 `tasks/lean-proofs-remove-extras.md`.)*
 
@@ -279,7 +279,8 @@ found about 20 such hypotheses, never named in their proofs and all still needed
    explicitly referenced" when a hypothesis doesn't appear in the finished proof at all. Read the build
    warnings. One known false alarm: `rw [...] at hn` creates a new `hn` that shadows the original, so a
    hypothesis that *is* used gets flagged (the four `hn` warnings in `ProjectionRotation3D.lean`).
-2. **More linters**, set in `proofs/lakefile.toml`: `linter.unusedTactic` (a tactic that does nothing, like a
+2. **More linters**, which you can turn on per run (`proofs/lakefile.toml` sets none of them; it only turns
+   `weak.linter.mathlibStandardSet` off): `linter.unusedTactic` (a tactic that does nothing, like a
    `<;> ring` after a step that already closed the goal), `linter.unnecessarySimpa`,
    `linter.unusedSimpArgs` (a `simp [...]` entry that never fires).
 3. **The `clear` test**, which is the definitive check. Put `clear h` at the very start of the proof and

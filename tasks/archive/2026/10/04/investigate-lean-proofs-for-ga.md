@@ -6,7 +6,7 @@ inverse`, `lean-general-gn-product-and-hestenes-dot-wedge`) stand on their own. 
 **Difficulty:** 7. **Started:** 2026-09-27 (William Emerison Six <billsix@gmail.com>).
 **Durable record:** `tasks/reference/lean-for-gacalc.md` (orientation, the spikes, the gate),
 `tasks/reference/lean-ga-proof-architecture.md` (architecture, inventory, coverage map, and the
-"Program decisions" section harvested from this umbrella), `tasks/reference/lean-proof-corpus-review-2026-10-04.md`
+"Program decisions" section harvested from this umbrella), `tasks/review/2026/10/04/lean-proof-corpus-review.md`
 (the independent audit of the corpus).
 
 ## BLUF

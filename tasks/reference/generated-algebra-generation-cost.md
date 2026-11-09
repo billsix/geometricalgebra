@@ -43,10 +43,10 @@ Known and fixed / to-check:
   `Vector` type by indexing `AXIS_NAMES = ("x","y","z")`. In 𝒢₄ a `Vector` has an `e_4` coordinate
   with no axis letter → `IndexError`. Fix (2026-08-22): skip the letter property for `e_4`+; those
   coordinates are reached via `coeff_e_4` / `.coefficient(...)`. Only grades 1–3 get `x`/`y`/`z`.
-- **TO CHECK when actually adding g4/g5:** any *other* hard-coded grade-≤3 spot — the graded-type
-  registry only defines up to `Trivector` + `Versor` (`graded_specs`), so grade-4/5 blades
-  currently widen to the full `G`; dual/product result resolution, the `i`/`plane_of_rotation`
-  extractors, and dispatch tables should be re-verified against real generated g4/g5 output.
+- **Grade-4/5 types exist:** `graded_specs` emits one grade-pure type per grade up to the
+  pseudoscalar, named by `grade_name(k)` (`FourVector`, …, from `GRADE_NAMES`), so g4/g5 blades
+  resolve to their own types, not the full `G`. `make test-all-dims` (g1–g5, with full-context `ty`)
+  is the gate that exercises them.
 
 ## Why g4/g5 are NOT in the default build (and what would change that)
 
@@ -73,8 +73,8 @@ higher dims to `ALGEBRAS`:
    `R * x * R.inverse()` inverts a generic even element, only versor-invertible through 𝒢₃; fixed
    by gating the specialized sandwich to dims ≤3 so 𝒢₄/𝒢₅ inherit the base `sandwich`). This is the one real cost of release-only: g4/g5 aren't
    exercised in the normal dev loop, so a separate slow gate must exercise them.
-4. **Scope `make check-generated`** to a cheap dimension (or make high-dim determinism opt-in), since
-   it regenerates twice (g5 twice ≈ 3 hr).
+4. **`make check-generated` uses the dev dimensions** (g1–g3, the generator's default
+   `GACALC_DIMS`), so it regenerates twice in about a minute; g4/g5 determinism is not gated.
 
 Rejected alternative — **incremental / only-if-missing generation** (regenerate a dimension only when
 its `gN.py` is absent): keeps g4/g5 locally testable, but still makes the first `make shell` on a

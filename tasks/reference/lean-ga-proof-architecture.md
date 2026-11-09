@@ -7,7 +7,7 @@ Read this before extending the proofs. Updated in place (never archived).
 
 **Status:** living document, updated in place. Written 2026-09-29 (William Emerison Six
 <billsix@gmail.com>) from the versor / projection / algebra-law session; reconciled 2026-10-04 after the
-Mathlib bridges completed the original program (29 modules at completion, 31 with `Rotor.lean` + `PlaneRotation3D.lean`; `make lean` green).
+Mathlib bridges completed the original program (29 modules at completion; 34 as of 2026-11-09, with `Rotor.lean`, `PlaneRotation3D.lean` and `ReciprocalFrame2D/3D.lean`; `make lean` green).
 
 ## The representation (settled)
 
@@ -206,9 +206,11 @@ the object form of the coordinate leaf `G2.dual_vec_perp`. (Part of the file-str
 `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`, now complete.)
 
 **Within-file order of the algebra-core files (`G1`/`G2`/`G3`, normalized 2026-10-28).** All three
-share one top-to-bottom shape: basis blades & grade constructors (right after the inner `namespace`)
-→ the elementary operations (`mul`/`wedge`/`add`/`sub`/`neg`/`smul`/`reverse`) → magnitude
-(`normSq`/`magnitude` + its √ facts) → the scalar product (`dot`), `I_inv`, `dual` → the
+share one top-to-bottom shape, in the algebra teaching order (`tasks/reference/algebra-teaching-order.md`,
+reordered 2026-10-29): basis blades & grade constructors (right after the inner `namespace`) → addition
+and the vector-space operations (`add`/`sub`/`neg`/`smul`) → the geometric product and the wedge
+(`mul`/`wedge`, and `dot` in G2) and `reverse` → magnitude (`normSq`/`magnitude` + its √ facts) → the
+algebra laws (`### The algebra laws`) → the scalar product (`dot`, in G1/G3), `I_inv`, `dual` → the
 geometric-product multiplication table (packed as a visual table) → the `dot` leaf lemmas → the
 `wedge` leaf lemmas → the coordinate-vector leaves (`normSq_vec`, `reverse_vec`, …) → the split
 `a b = a·b + a∧b` → the grade-structure predicates with their `eq_…_of_is…` bridges → the
@@ -656,8 +658,9 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 
 Remaining (the umbrella is archived, `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`): the
 general-n algebra with the general pseudoscalar sign and Hestenes dot/wedge (deferred), the general
-multivector inverse, frames, the Lean→notebook pipeline — each its own task (the 3D rotor angle theorem landed
-2026-10-05, `PlaneRotation3D.lean`).
+multivector inverse, the `Frame` class's orthogonalization and invertible-function facts, and the
+Lean→notebook pipeline — each its own task. Landed: the 3D rotor angle theorem (2026-10-05,
+`PlaneRotation3D.lean`) and the reciprocal frame (2026-11-07, `ReciprocalFrame2D/3D.lean`).
 
 ## Coverage map (public method → Lean coverage)
 
@@ -674,7 +677,7 @@ The modules outside this table are in the subsection that follows it.
 | `magnitude` / `magnitude_squared` | HAS | `magnitude`, `normSq`, `normSq_vec`, `magnitude_sq_vec`, `normSq_wedge_vec`, `normSq_mul`, `magnitude_sandwich` (G2/G3, Sandwich); = Mathlib's norm: `norm_toE` (MathlibBridge) |
 | `normalize` | HAS | `normalizeVec`, `magnitude_normalizeVec`/`normSq_normalizeVec` (= 1) (Normalize.lean); any multivector: `Rotor.normalize`, `normSq_normalize`, `isRotor_normalize` |
 | `inner_product` (general graded) | PARTIAL | only vector·bivector `inner_vb` (Projection3D.lean); general `⟨AB⟩_{\|r−s\|}` owned by existing `lean-general-gn-product-and-hestenes-dot-wedge` |
-| `dot` | HAS | `dot`/`dot_vec`/`dot_comm` + bilinearity, `dot_is_sym_part` (G2 coordinate form, G3 object form), `dot_eq_coord_sum`; = Mathlib's `inner`: `dot_eq_inner`, with `dot_comm_of_inner` and Cauchy–Schwarz `abs_dot_le_magnitude_mul` by citation (MathlibBridge) |
+| `dot` | HAS | `dot`/`dot_vec`/`dot_comm` + bilinearity, `dot_is_sym_part` (object form in both G2 and G3), `dot_eq_coord_sum`; = Mathlib's `inner`: `dot_eq_inner`, with `dot_comm_of_inner` and Cauchy–Schwarz `abs_dot_le_magnitude_mul` by citation (MathlibBridge) |
 | `outer_product` / `wedge` | HAS | `wedge`, `wedge_vec_eq_biv`, `wedge_antisymm`, full bilinearity, `wedge_is_antisym_part` (G2/G3); = determinant / minors: `wedge_eq_det`, `wedge_c12/c13/c23_eq_det` (MathlibBridge) |
 | `scalar_product` | HAS | the scalar part `⟨AB⟩₀`; vector case via `dot` / `dot_is_sym_part` |
 | `left_contraction` | HAS | `leftContraction_vec_vec` (= dot), `leftContraction_scalar_vec` (grade-0 inclusion) (Contractions.lean) |
@@ -689,7 +692,7 @@ The modules outside this table are in the subsection that follows it.
 | `odd_part` | HAS | `oddPart`, `even_add_odd` (GradeProjection.lean) |
 | `cosine` | HAS | `cos_between`, `cos_sq_add_sin_sq`, `sandwich_preserves_cos`, `cos_between_uvec` (TrigEquiv) |
 | `abs_sin` | HAS | `sin_between`, `sin_between_eq_abs_signed_vec`, `signed_sin_between`(`_uvec`) (TrigEquiv), `sandwich_preserves_sin` |
-| `project` / `projected_onto` | HAS | `proj`, `project_onto`, `project_add_reject`, `proj_plane_eq_project_onto` (Projection/Projection2D) |
+| `project` / `projected_onto` | HAS | `proj`, `project_onto`, `project_add_reject`, `proj_plane_eq_project_onto` (Projection2D/Projection3D) |
 | `reject` / `rejected_away_from` | HAS | `reject`, `reject_perp`, `reject_vec_eq`, `project_add_reject` |
 | `reflect` / `reflected_across` | HAS | `reflectVec` (= proj − reject), `reflectVec_eq`, `normSq_reflectVec` (isometry) (Reflect.lean) |
 | `versor_from_vectors` | HAS | `versorFromVectors`, `versorFromVectors_mul_reverse`/`_inverse`, `sandwich_carries_from_to`, `bisector` (Rotation3D/Sandwich); `normSq_versorFromVectors` (Lagrange closed form), `rotorFromVectors` = its normalization, `isRotor_rotorFromVectors`, `rotorSandwich_rotorFromVectors(_eq_projRotation/_carries_from_to)`, 2D `rotorFromVectors_uvec = rotor (β−α)` (Rotor.lean) |
@@ -813,7 +816,7 @@ becomes syntactically `a = a`. Ordering matters — a lemma must be defined abov
     `sorry` was confirmed to fail it, on 2026-11-08.
 - Reviewing the corpus: three parallel read-only passes (commit-by-commit statement audit, Python→Lean
   coverage with `tools/derive_lean_algebra.py` parity re-derivation, goals/status from the docs) plus a
-  build experiment for any "needed" claim worked well; record: `lean-proof-corpus-review-2026-10-04.md`.
+  build experiment for any "needed" claim worked well; record: `tasks/review/2026/10/04/lean-proof-corpus-review.md`.
 
 ## Program decisions
 

@@ -72,4 +72,4 @@ one-line definitional unfolding away if ever wanted, not needed for the coverage
 
 - `tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md`,
   `tasks/archive/2026/10/05/lean-rotor-from-vectors-chain.md` (the layer this builds on)
-- `tasks/reference/lean-proof-corpus-review-2026-10-04.md` §3 (gap #4, now closed)
+- `tasks/review/2026/10/04/lean-proof-corpus-review.md` §3 (gap #4, now closed)
