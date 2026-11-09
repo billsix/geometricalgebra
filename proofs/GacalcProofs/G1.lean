@@ -9,7 +9,7 @@ import Mathlib
       * the unit pseudoscalar is the vector `e₁` itself and `I² = +1` (not `−1` as in 𝒢₂/𝒢₃: the sign
         `(−1)^{r(r−1)/2}` is `+1` for `r = 1`);
       * the wedge of two vectors is **always zero** (any two 1D vectors are parallel), so the geometric
-        product of vectors is pure scalar, `u v = u·v`;
+        product of vectors is pure scalar, `u*v = u·v`;
       * the algebra is **commutative** (𝒢₁ ≅ ℝ ⊕ ℝe₁; `mul_comm`), and the reverse is the identity.
 
     Same representation as the higher algebras: coefficients as fields, basis blades as elements
@@ -33,7 +33,7 @@ def one : G1 := { s := 1, c1 := 0 }
 /-- The basis vector `e₁` — an element of the algebra, not a real. -/
 def e_1 : G1 := { s := 0, c1 := 1 }
 
-/-- A vector `x·e₁`. -/
+/-- A vector `x*e₁`. -/
 def vec (x : ℝ) : G1 := { s := 0, c1 := x }
 
 /-- The unit pseudoscalar of 𝒢₁ is the vector `e₁` itself. -/

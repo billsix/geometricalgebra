@@ -75,7 +75,7 @@ theorem isRotor_planeRotor (θ : ℝ) {i : G3} (hi : IsBivector i) (hu : normSq 
     `v⊥ = reject i v` — the perpendicular part is fixed, the in-plane part is rotated by θ (orientation
     included: `v ⌋ i` is `v∥` turned +90° in the plane). Coordinate leaf: after unfolding (`|i|² = 1`
     makes `i⁻¹ = ĩ`), each vector component is a polynomial identity modulo `cos²(θ/2) + sin²(θ/2) = 1`
-    and `|i|² = 1`, with the double-angle `cos(θ) = cos²(θ/2) − sin²(θ/2)`, `sin(θ) = 2 sin(θ/2) cos(θ/2)`
+    and `|i|² = 1`, with the double-angle `cos(θ) = cos²(θ/2) − sin²(θ/2)`, `sin(θ) = 2*sin(θ/2)*cos(θ/2)`
     substituted first; the scalar/bivector/trivector components vanish identically. -/
 theorem rotorSandwich_planeRotor (θ : ℝ) {i v : G3} (hi : IsBivector i) (hu : normSq i = 1)
     (hv : IsVector v) :

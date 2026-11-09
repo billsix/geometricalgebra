@@ -6,10 +6,10 @@ import Mathlib
     {1, e₁, e₂, e₁*e₂}, with the Euclidean geometric product (e₁²=e₂²=1,
     e₁*e₂=−e₂*e₁). It proves the facts the book derives from rotation:
 
-      * for vectors u, v:  u v = (u·v) + (u∧v)*e₁*e₂,
-      * the **dot product** is the symmetric part  ½(uv + vu)  (its scalar part), and
-      * the **wedge product** is the antisymmetric part  ½(uv − vu)  (its e₁*e₂ part),
-      * the unit pseudoscalar squares to −1:  I² = −1 = (−1)^(r(r−1)/2) with r = 2.
+      * for vectors u, v:  u*v = (u·v) + (u∧v)*e₁*e₂,
+      * the **dot product** is the symmetric part  ½*(u*v + v*u)  (its scalar part), and
+      * the **wedge product** is the antisymmetric part  ½*(u*v − v*u)  (its e₁*e₂ part),
+      * the unit pseudoscalar squares to −1:  I² = −1 = (−1)^(r*(r−1)/2) with r = 2.
 
     ## Representation: coordinates as fields, basis blades as *elements*
 
@@ -74,7 +74,7 @@ def e_2 : G2 := { s := 0, c1 := 0, c2 := 1, c12 := 0 }
 def e_12 : G2 := { s := 0, c1 := 0, c2 := 0, c12 := 1 }
 
 /-- A grade-1 vector from its two coordinates (its e₁ and e₂ coefficients); equals
-    `x·e₁ + y·e₂` (`vec_eq_smul`). -/
+    `x*e₁ + y*e₂` (`vec_eq_smul`). -/
 def vec (x y : ℝ) : G2 := { s := 0, c1 := x, c2 := y, c12 := 0 }
 
 /-- A **scalar** `a` (grade 0) as a 𝒢₂ element, in place of `⟨a,0,0,0⟩` — the embedding ℝ ↪ 𝒢₂
@@ -205,7 +205,7 @@ theorem smul_smul (k m : ℝ) (a : G2) : smul k (smul m a) = smul (k * m) a := b
 
 /-- Multiplying by an embedded scalar is scalar multiplication: `(scalar k) b = k • b` — the algebra
     companion of the `scalar` constructor, so a `scalar k` factor pulls straight out as a `smul`
-    (replacing the old `smul k one` factor + `smul_mul`/`one_mul`). -/
+    (one rewrite, not a `smul k one` factor plus `smul_mul`/`one_mul`). -/
 theorem scalar_mul (k : ℝ) (b : G2) : mul (scalar k) b = smul k b := by
   simp only [mul, scalar, smul]; ext <;> ring
 
@@ -239,7 +239,7 @@ theorem eq_smul_basis (g : G2) :
     g = add (add (smul g.s one) (smul g.c1 e_1)) (add (smul g.c2 e_2) (smul g.c12 e_12)) := by
   simp only [add, smul, one, e_1, e_2, e_12]; ext <;> ring
 
-/-- A vector is `x·e₁ + y·e₂`. -/
+/-- A vector is `x*e₁ + y*e₂`. -/
 theorem vec_eq_smul (x y : ℝ) : vec x y = add (smul x e_1) (smul y e_2) := by
   simp only [vec, add, smul, e_1, e_2]; ext <;> ring
 
@@ -263,7 +263,7 @@ theorem e_12_sq : mul e_12 e_12 = neg one := by simp only [mul, e_12, neg, one];
 /-! ### Dot and wedge as the parts of the geometric product -/
 
 /-- The geometric product of two vectors splits into a scalar (dot) plus an e₁*e₂
-    (wedge) part: u v = (u·v) + (u∧v)*e₁*e₂. -/
+    (wedge) part: u*v = (u·v) + (u∧v)*e₁*e₂. -/
 theorem vec_mul (u1 u2 v1 v2 : ℝ) :
     mul (vec u1 u2) (vec v1 v2)
       = ⟨u1 * v1 + u2 * v2, 0, 0, u1 * v2 - u2 * v1⟩ := by
@@ -479,7 +479,7 @@ theorem wedge_isVector_isBivector_eq_zero {a B : G2} (ha : IsVector a) (hB : IsB
 theorem I_sq : mul I I = neg one := by
   simp only [mul, I, e_12, neg, one]; ext <;> ring
 
-/-- I² = (−1)^(r(r−1)/2) with r = 2 — the special case of the general
+/-- I² = (−1)^(r*(r−1)/2) with r = 2 — the special case of the general
     pseudoscalar-square sign (`tasks/reference/pseudoscalar-square-sign.md`). -/
 theorem I_sq_eq_sign : (mul I I).s = (-1 : ℝ) ^ (2 * (2 - 1) / 2) := by
   simp only [mul, I, e_12]; norm_num
@@ -526,6 +526,13 @@ theorem reverse_of_isVector {a : G2} (ha : IsVector a) : reverse a = a := by
 theorem reverse_mul_vec {a b : G2} (ha : IsVector a) (hb : IsVector b) :
     reverse (mul a b) = mul b a := by
   rw [reverse_mul, reverse_of_isVector ha, reverse_of_isVector hb]
+
+/-- A vector squares to its squared magnitude: `a*a = |a|²*1` (2D twin of `G3.mul_vec_self`). -/
+theorem mul_vec_self {a : G2} (ha : IsVector a) :
+    mul a a = scalar (normSq a) := by
+  obtain ⟨has, ha12⟩ := ha
+  simp only [mul, normSq, reverse, scalar, has, ha12]
+  ext <;> ring
 
 end G2
 

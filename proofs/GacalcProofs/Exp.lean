@@ -12,7 +12,7 @@ import GacalcProofs.Sandwich
     `⟨cos(θ), …, sin(θ), …⟩`, and its squared magnitude is 1.
 
     The 𝒢₃ section also proves the GENERAL case `exp B = cos(|B|)*1 + sin(|B|)*B̂` for any nonzero
-    bivector `B = p·e₁₂ + q·e₁₃ + r·e₂₃` (every 𝒢₃ bivector is simple): a unit versor, `normSq = 1`. -/
+    bivector `B = p*e₁₂ + q*e₁₃ + r*e₂₃` (every 𝒢₃ bivector is simple): a unit versor, `normSq = 1`. -/
 namespace GacalcProofs
 
 namespace G2
@@ -58,7 +58,7 @@ theorem normSq_expBivector12 (θ : ℝ) : normSq (expBivector12 θ) = 1 := by
 theorem isRotor_expBivector12 (θ : ℝ) : IsRotor (expBivector12 θ) :=
   ⟨by rw [expBivector12_eq_evenVersor]; exact isEvenVersor_evenVersor _ _ _ _, normSq_expBivector12 θ⟩
 
-/-- `exp B` for a **general** nonzero 𝒢₃ bivector `B = p·e₁₂ + q·e₁₃ + r·e₂₃`, by the closed form
+/-- `exp B` for a **general** nonzero 𝒢₃ bivector `B = p*e₁₂ + q*e₁₃ + r*e₂₃`, by the closed form
     `cos(|B|)*1 + sin(|B|)*B̂` with `B̂ = B/|B|` and `|B| = √(p²+q²+r²)` — i.e. `cos(|B|)*1 + (sin(|B|)/|B|)·B`.
     In 𝒢₃ every bivector is simple (`B² = −|B|²`), so this is the full bivector case. -/
 noncomputable def expBivectorGeneral (p q r : ℝ) : G3 :=
@@ -67,7 +67,7 @@ noncomputable def expBivectorGeneral (p q r : ℝ) : G3 :=
         (bivector p q r))
 
 /-- **exp of a general bivector is a unit versor (rotor):** `|exp B|² = 1` for `B ≠ 0`
-    (`p²+q²+r² ≠ 0`). `|exp B|² = cos²|B| + (sin(|B|)/|B|)²*(p²+q²+r²) = cos²|B| + sin²|B| = 1`,
+    (`p²+q²+r² ≠ 0`). `|exp B|² = cos²(|B|) + (sin(|B|)/|B|)²*(p²+q²+r²) = cos²(|B|) + sin²(|B|) = 1`,
     using `|B|² = p²+q²+r²`. -/
 theorem normSq_expBivectorGeneral (p q r : ℝ) (h : p ^ 2 + q ^ 2 + r ^ 2 ≠ 0) :
     normSq (expBivectorGeneral p q r) = 1 := by

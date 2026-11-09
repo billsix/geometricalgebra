@@ -255,7 +255,7 @@ noncomputable def unalignSP (b v : G3) : G3 :=
   rotXY (b.c1 / xyMagnitude b) (b.c2 / xyMagnitude b)
     (rotXZ (xyMagnitude b / magnitude b) (b.c3 / magnitude b) v)
 
-/-- **Projection onto the x-axis is "keep the x-component":** `proj (m·e₁) v = (v₁, 0, 0)` for any
+/-- **Projection onto the x-axis is "keep the x-component":** `proj (m*e₁) v = (v₁, 0, 0)` for any
     multivector `v` and `m ≠ 0` — the elementary step done in standard position, where no product is
     needed to project. -/
 theorem proj_onto_x_axis (m : ℝ) (hm : m ≠ 0) (v : G3) : proj (vec m 0 0) v = vec v.c1 0 0 := by

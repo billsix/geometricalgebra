@@ -4,7 +4,7 @@ import GacalcProofs.GradeProjection
 /-! # The cross product, the vector dual, and the scalar triple product (𝒢₃)
 
     Promotes three symbolic-unit-test identities to Lean theorems (see
-    `tasks/lean-candidates-from-symbolic-tests.md`), all in 𝒢₃:
+    `tasks/archive/2026/09/30/lean-candidates-from-symbolic-tests.md`), all in 𝒢₃:
 
       * the **cross product** `a × b = (a ∧ b) I₃⁻¹` — the dual of the wedge (gacalc
         `vectorcalc.cross`): its coordinate formula, anticommutativity, and ⊥-ness
@@ -59,7 +59,7 @@ theorem cross_perp_right_dot {a b : G3} (ha : IsVector a) (hb : IsVector b) :
   ring
 
 /-- **The dual of a 3D vector is a bivector — the perpendicular plane:**
-    `(x, y, z)* = −z·e₁₂ + y·e₁₃ − x·e₂₃` (grade 2; its scalar, vector and pseudoscalar parts all
+    `(x, y, z)* = −z*e₁₂ + y*e₁₃ − x*e₂₃` (grade 2; its scalar, vector and pseudoscalar parts all
     vanish). This is the 3D companion of the 2D `G2.dual_vec` (which is the −90° turn). -/
 theorem dual_vec (x y z : ℝ) :
     dual (vec x y z) = bivector (-z) y (-x) := by

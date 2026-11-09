@@ -206,7 +206,7 @@ theorem fullAngleRotorFromTo_carry (α β : ℝ) :
     The general GA rotation (the one that generalizes to 3D) is the **sandwich**
     `v ↦ R*v*R̃` by a rotor `R` — a *unit* versor. gacalc's rotor uses the **half angle**:
     `R = cos(θ/2)*1 − sin(θ/2)*e₁₂`, and sandwiching a vector by it rotates by the *full*
-    angle θ (`sandwich_rotor`). For a rotor `R R̃ = 1` (`rotor_unit`/`rotor_unit'`), so `R̃`
+    angle θ (`sandwich_rotor`). For a rotor `R*R̃ = 1` (`rotor_unit`/`rotor_unit'`), so `R̃`
     is the two-sided inverse and the reverse sandwich `R*v*R̃` equals the inverse sandwich
     `R*v*R⁻¹` that gacalc's `MultiVectorBase.sandwich` implements (`sandwich_rotor_eq_rot`,
     through `Sandwich.IsRotor`). The un-normalized *versor* + inverse-sandwich form
@@ -220,7 +220,7 @@ theorem fullAngleRotorFromTo_carry (α β : ℝ) :
 noncomputable def rotor (θ : ℝ) : G2 :=
   G2.add (G2.smul (cos (θ / 2)) G2.one) (G2.smul (-(sin (θ / 2))) G2.e_12)
 
-/-- `rotor θ` is **unit**: `R R̃ = 1`. -/
+/-- `rotor θ` is **unit**: `R*R̃ = 1`. -/
 theorem rotor_unit (θ : ℝ) : G2.mul (rotor θ) (G2.reverse (rotor θ)) = G2.one := by
   simp only [rotor, G2.reverse, G2.mul, G2.add, G2.smul, G2.one, G2.e_12]
   ext <;> first | linear_combination sin_sq_add_cos_sq (θ / 2) | ring
@@ -241,7 +241,7 @@ theorem isRotor_rotor (θ : ℝ) : G2.IsRotor (rotor θ) :=
 /-- **The half-angle sandwich equals the full rotation** — the equivalence to check:
     sandwiching a vector between the half-angle rotor and its reverse rotates it by the
     full angle θ, exactly the map `rot θ`. (The `cos(θ) = cos²(θ/2) − sin²(θ/2)` and
-    `sin(θ) = 2 sin(θ/2) cos(θ/2)` double-angle identities are where the half turns whole.) -/
+    `sin(θ) = 2*sin(θ/2)*cos(θ/2)` double-angle identities are where the half turns whole.) -/
 theorem sandwich_rotor (θ : ℝ) {v : G2} (hv : G2.IsVector v) :
     G2.mul (G2.mul (rotor θ) v) (G2.reverse (rotor θ)) = rot θ v := by
   obtain ⟨hv0, hv12⟩ := hv
@@ -270,7 +270,7 @@ theorem sandwich_rotor_eq_rot (θ : ℝ) {v : G2} (hv : G2.IsVector v) :
     G2.sandwich (rotor θ) v = rot θ v := by
   rw [G2.sandwich_eq_reverse_sandwich_of_isRotor (isRotor_rotor θ), sandwich_rotor θ hv]
 
-/-- **Rotors compose by multiplication, and half-angles add:** `R θ₂ · R θ₁ = R (θ₁+θ₂)`,
+/-- **Rotors compose by multiplication, and half-angles add:** `(R θ₂)*(R θ₁) = R (θ₁+θ₂)`,
     so composing two sandwich rotations is a single sandwich by the product rotor (the
     total rotation angle is θ₁ + θ₂). -/
 theorem rotor_mul (θ₁ θ₂ : ℝ) : G2.mul (rotor θ₂) (rotor θ₁) = rotor (θ₁ + θ₂) := by

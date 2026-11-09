@@ -15,7 +15,7 @@ import GacalcProofs.Projection2D
     * that the **last reciprocal vector is the last rejection** divided by its squared length, and that
       the rejection is perpendicular to `a₁`;
     * that **both inverses** of `Frame.to_invertible_function` (`"reciprocal"` and `"peel"`) undo the
-      forward map `f(x) = (x·e₁)*a₁ + (x·e₂)*a₂` on both sides, and agree.
+      forward map `f(x) = (x*e₁)*a₁ + (x*e₂)*a₂` on both sides, and agree.
 
     The frame hypothesis is "the wedge of all frame vectors is nonzero", written `normSq (a₁ ∧ a₂) ≠ 0`.
     Statements take vectors with `IsVector` hypotheses; coordinates appear only inside proofs and in the
@@ -33,7 +33,7 @@ noncomputable def recip1 (a1 a2 : G2) : G2 := mul a2 (inverse (wedge a1 a2))
     `a₁`). -/
 noncomputable def recip2 (a1 a2 : G2) : G2 := smul (-1) (mul a1 (inverse (wedge a1 a2)))
 
-/-- The forward map of `Frame.to_invertible_function`: `f(x) = (x·e₁)*a₁ + (x·e₂)*a₂`, sending
+/-- The forward map of `Frame.to_invertible_function`: `f(x) = (x*e₁)*a₁ + (x*e₂)*a₂`, sending
     `e_i ↦ a_i`. -/
 noncomputable def frameMap (a1 a2 x : G2) : G2 :=
   add (smul (dot x e_1) a1) (smul (dot x e_2) a2)
