@@ -38,9 +38,10 @@ full_angle_result: Vector = (a * R).simplified()
 full_angle_result
 
 # %%
-# The coordinate formula from *Proof: Rotate*, written out component by component:
-# (a_1 cos(theta) - a_2 sin(theta), a_1 sin(theta) + a_2 cos(theta)). The one-sided
-# multiplication lands on exactly those two coordinates.
+# The coordinate formula from *Proof: Rotate*, written out component by
+# component: (a_1 * cos(theta) - a_2 * sin(theta),
+# a_1 * sin(theta) + a_2 * cos(theta)). The one-sided multiplication lands on
+# exactly those two coordinates.
 coordinate_formula: Vector = (
     a_1 * sympy.cos(theta) - a_2 * sympy.sin(theta)
 ) * Vector.e_1 + (a_1 * sympy.sin(theta) + a_2 * sympy.cos(theta)) * Vector.e_2

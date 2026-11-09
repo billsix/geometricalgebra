@@ -59,9 +59,9 @@ a.coefficient(e_1)  # 3   (the stored coefficient on a unit blade — a thin
 Each `g*` module exports its own basis constants (`zero`, `one`, `e_1`, …, and the
 pseudoscalar `e_12` / `e_123`) **at their graded type** — `g2.e_1` is a `Vector`,
 `g2.e_12` a `Bivector`, `zero` / `one` a `Scalar` — so unqualified code keeps the
-precise graded type (`3*e_1 + 4*e_2` is a `Vector`, and `g2.e_1 * g2.e_2` is a
+precise graded type (`3 * e_1 + 4 * e_2` is a `Vector`, and `g2.e_1 * g2.e_2` is a
 `Versor` valued as the unit bivector `e_12`). To build the full `G` concisely, use
-the class's own constant instead (`G.e_1`, so `3*G.e_1 + 4*G.e_2` is a `G`). 2D vs
+the class's own constant instead (`G.e_1`, so `3 * G.e_1 + 4 * G.e_2` is a `G`). 2D vs
 3D `e_1` are simply in different modules.
 
 ## Graded subtypes (Vector, Bivector, Versor, …)
@@ -142,7 +142,7 @@ Return-type table for the geometric product `*` (𝒢₂ shown):
 A result that spans grades no single type covers widens to the full `G_n` — this
 doesn't arise in the 𝒢₂ table above (every product is covered), but in 𝒢₃ a
 `Vector * Bivector` spans grades 1 and 3, so it widens to `G`. Build values by linear combination of the basis
-(`3*e_1 + 4*e_2`; a bivector via `e_1 ^ e_2`; a versor via `scalar + bivector` — `+`/`-`
+(`3 * e_1 + 4 * e_2`; a bivector via `e_1 ^ e_2`; a versor via `scalar + bivector` — `+`/`-`
 also narrow to the tightest type). Versors carry `plane_of_rotation()`, and
 `versor_from_vectors(from, to)` builds the versor whose sandwich `R * v * R.inverse()` equals
 `projection_rotation(from, to)(v)` (a free function in `gacalc.transforms`). `rotor_from_vectors(from, to)` is that versor normalized — a unit *rotor*, applied with the
