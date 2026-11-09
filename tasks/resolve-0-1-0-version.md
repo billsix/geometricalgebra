@@ -1,49 +1,34 @@
-# Resolve the unreleased `0.1.0`: the changelog heading has no tag or PyPI release
+# Resolved the unreleased `0.1.0`: its changelog section folded into `[Unreleased]`, version back to `0.0.20`
 
-**Status:** proposed — needs go-ahead
-**Priority:** 5
-**Difficulty:** 2
-**Created:** 2026-11-09
+**Created:** 2026-11-09 · **Completed:** 2026-11-09
 **Source:** tasks/review/2026/11/08/repo-review.md §8.3
+**Decision** (William Emerison Six <billsix@gmail.com>, 2026-11-09): fold `0.1.0` into `[Unreleased]`
+and release the combined changes as `0.1.0`, since 0.1.0 was never published.
 
-## BLUF
+## What was found
 
-`pyproject.toml` says `version = "0.1.0"` and `CHANGELOG.md` has `## [0.1.0] — 2026-09-28`, but 0.1.0
-was never tagged or released. The newest tag and the newest PyPI release are both `0.0.20`. Done means
-the version, the changelog and the next release agree: `## [0.1.0]` is folded back into
-`[Unreleased]`, or released, and the next version number is decided.
+`pyproject.toml` said `version = "0.1.0"` and `CHANGELOG.md` had `## [0.1.0] — 2026-09-28`, but 0.1.0
+was never tagged or released. Sorted as versions (`git tag --sort=v:refname`), the newest tag is
+`v0.0.20`. PyPI's JSON API (`https://pypi.org/pypi/gacalc/json`) also reports `0.0.20` as the latest.
+The heading had been promoted without a release.
 
-## Context
+## What changed
 
-Read first: `CLAUDE.md` › "Dev workflow" (`make dist` / `upload` / `release`) and the cross-project
-`versioning-and-changelogs.md` (github.com/billsix/runClaudeInContainer `tasks/reference/`). Re-checked
-2026-11-09:
+- **`CHANGELOG.md`:** the `## [0.1.0]` section's two "Changed" entries (the BREAKING rotor → versor
+  rename, and the widened `Sequence` parameters) and its one "Fixed" entry (numeric `==` no longer
+  calls `sympy.simplify`) moved to the ends of `[Unreleased]`'s "Changed" and "Fixed". The heading is
+  gone.
+- **`pyproject.toml`:** `version` went from `0.1.0` back to `0.0.20`, the version actually released.
+  - This departs from the plan, which kept `0.1.0`. `tools/check_changelog.py` (run by `make format`)
+    requires a `## [<version>]` heading for the declared version, so `0.1.0` with no heading would
+    fail the gate.
+  - At `0.0.20`, `make release` refuses (the tag `v0.0.20` exists), which forces the bump.
+- **The release path:** in one commit, bump `version` to `0.1.0` and promote `[Unreleased]` to
+  `## [0.1.0] — <date>`; then run `make release`. That is the order the guard and the release target
+  already enforce. `proofs/lakefile.toml`'s `version = "0.1.0"` is the Lean package's own version,
+  unrelated, and was left alone.
 
-- `git tag --sort=v:refname | tail -1` → `v0.0.20`. A text sort puts `v0.0.9` last, so always sort as
-  versions.
-- PyPI JSON API (`https://pypi.org/pypi/gacalc/json`): `info.version` is `0.0.20`; there is no 0.1.0.
-- `CHANGELOG.md`: `[Unreleased]` starts at line 12, `## [0.1.0] — 2026-09-28` at 195,
-  `## [0.0.20] — 2026-09-06` at 224. The heading was promoted without a release.
-- `[Unreleased]` holds ~180 lines, including a changed default (`Frame.to_invertible_function` now
-  defaults to `"reciprocal"`). That is breaking, so pre-1.0 the next version is a minor bump.
-- Split of work: the agent stages the version bump and the changelog edit; the maintainer tags and
-  publishes.
+## Verification
 
-## Plan
-
-- [ ] Merge `## [0.1.0]`'s entries into `[Unreleased]`, keeping their categories and breaking-change
-  callouts.
-- [ ] Keep `pyproject.toml` at `version = "0.1.0"`. Leave `[Unreleased]` unpromoted until release
-  time, when it becomes `## [0.1.0] — <release date>`.
-- [ ] Run `make check-changelog` (the version↔changelog guard), and update it if it expects a promoted
-  heading for the current version.
-- [ ] Hand off: the maintainer runs `make release` when ready.
-
-## Decisions
-
-1. Fold `0.1.0` into `[Unreleased]` and release the combined changes as `0.1.0`, since 0.1.0 was
-   never published (William Emerison Six <billsix@gmail.com>, 2026-11-09).
-
-## Open questions
-
-None.
+`python3 tools/check_changelog.py` passes. The changelog now runs `## [Unreleased]` → `## [0.0.20]`,
+and both moved entries are under `[Unreleased]`.
