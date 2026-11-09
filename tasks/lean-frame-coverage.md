@@ -19,6 +19,11 @@ and their equivalence `c_k = |A_{k−1}|²·w_k` (today only tested, `tests/test
 `reject_perp_dot`; the k = 3 step rejects from a bivector via `Projection3D.project_add_reject`), and the
 Hestenes-form equality for k = 2, 3; `make lean` green; coverage table rows added.
 
+**Update (2026-11-08):** the k = 2 dependence converse is done: `parallel_of_wedge_eq_zero` and
+`wedge_eq_zero_iff_parallel` in `Predicates3D.lean` and `Predicates2D.lean`, which also closed the
+`is_parallel_to` half-gap (`tasks/archive/2026/11/08/parallel-wedge-claim.md`). A `Frame.lean` k = 2
+case can reuse them.
+
 ## Context — how to read this cold
 
 - Lean today: `wedge_self_vec`, `wedge_parallel_smul`, `reject_perp_dot`, `project_add_reject`,

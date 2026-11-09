@@ -160,8 +160,25 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 - **`MultiVectorBase.is_parallel_to` now tests `A ∧ B = 0`** (the wedge/linear-dependence criterion)
   instead of `cos θ == 1`. The old test wrongly returned `False` for **anti-parallel** vectors (whose
   cosine is −1) even though they are geometrically parallel. Behavior change: anti-parallel inputs now
-  return `True`. The equivalence `A ∧ B = 0 ⟺ A ∥ B` is machine-checked in
-  `proofs/GacalcProofs/Predicates3D.lean`.
+  return `True`. For vectors with `A ≠ 0`, the equivalence `A ∧ B = 0 ⟺ B = k * A` is machine-checked
+  as `wedge_eq_zero_iff_parallel` in `proofs/GacalcProofs/Predicates3D.lean` and `Predicates2D.lean`.
+- **`MultiVectorBase.project(onto=B)` returned a higher-grade blade unchanged** when projecting it onto
+  a lower-grade blade: `project(onto=e_1)(e_1 ^ e_2)` gave `e_12`. It now returns 0, because a grade-r
+  blade has no part inside a grade-s blade when r > s. Behavior change for those inputs, in `Gn` and in
+  every generated class; projections with r ≤ s are unchanged.
+- **Iterating a generated `Scalar` yielded the `Scalar` itself, and nothing when it was zero.** It now
+  yields its coefficient, like every other type: `list(Scalar.from_real(3)) == [3]` and
+  `list(Scalar.from_real(0)) == [0]`. Behavior change.
+- **The full class `G` sent a graded operand of its own algebra to the slow `Gn` reference.**
+  `G.e_1 * Vector.e_1`, `G.e_1 + Vector.e_1` and `G.e_1 - Vector.e_1` returned a `Gn`; they now return
+  a `G`, as the reverse order (`Vector * G`) already did. Values are unchanged; the result type changes.
+  An operand of another representation (`Gn`, another algebra) still goes through `Gn`.
+- **The closed-form `Versor.sandwich` turned integer input into floats.** It divided by `|R|²` with
+  Python's `/`; `(1 + 1 * Versor.e_12).sandwich(1 * e_1)` now gives the exact `-1 * e_2` rather than
+  `Vector(0.0, -1.0)`. Float input still gives floats.
+- **`standardposition.project_sp` / `reject_sp` returned `Vector(nan, nan, nan)` when `b` lay along
+  e₃**, and crashed on `Gn` input. They now raise `ValueError` for a `b` along e₃ or a non-vector
+  input, and read coordinates by blade, so `Gn` input works.
 
 ## [0.1.0] — 2026-09-28
 

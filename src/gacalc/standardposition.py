@@ -28,10 +28,11 @@ projection-equivariance under each plane rotation, and the rotations' inverses. 
 derived variants carry an ``_sp`` / ``SP`` suffix in both languages (the stand-in for a
 prime, which is not a legal Python identifier character).
 
-Caveat: the ``e_1`` alignment is undefined when ``b`` lies along the ``z`` axis
+The ``e_1`` alignment is undefined when ``b`` lies along the ``z`` axis
 (``b_x = b_y = 0``), because the first plane rotation would divide by ``|xy-part| =
-0``.  The canonical ``project`` has no such restriction; use it, or align to a
-different axis, in that case.
+0``; ``project_sp`` / ``reject_sp`` raise ``ValueError`` there.  The canonical
+``project`` has no such restriction; use it, or align to a different axis, in that
+case.
 """
 
 from gacalc.base import MultiVectorBase, Real
@@ -40,32 +41,48 @@ from gacalc.base import MultiVectorBase, Real
 def _project_via_standard_position(
     a: MultiVectorBase, b: MultiVectorBase
 ) -> MultiVectorBase:
+    MultiVectorBase.require_vectors([a, b], "project_sp")
     cls: type[MultiVectorBase] = type(b)
     e_1: MultiVectorBase = cls.basis_vector(1)
     e_2: MultiVectorBase = cls.basis_vector(2)
     e_3: MultiVectorBase = cls.basis_vector(3)
 
-    # b's coordinates (iteration yields the coefficient values in blade order)
-    b_x, b_y, b_z = list(b)
+    def coordinates(v: MultiVectorBase) -> tuple[Real, Real, Real]:
+        # The three coordinates, zeros included (iterating a Gn omits them).
+        return v.coefficient(e_1), v.coefficient(e_2), v.coefficient(e_3)
+
+    b_x: Real
+    b_y: Real
+    b_z: Real
+    b_x, b_y, b_z = coordinates(b)
+    if b_x == 0 and b_y == 0:
+        raise ValueError(
+            "project_sp: b lies along the e_3 axis, where the standard-position "
+            "alignment is undefined; use the canonical a.projected_onto(b)"
+        )
     # magnitude of b's xy-part (numeric-preserving), and of b itself
     xy_magnitude: Real = (b_x * e_1 + b_y * e_2).magnitude()
     magnitude: Real = b.magnitude()
 
     # (cos, sin) read off b's own coordinates: the xy rotation that zeroes b_y,
     # then the xz rotation that zeroes b_z -- so align(b) = magnitude * e_1.
-    cos_xy, sin_xy = b_x / xy_magnitude, -b_y / xy_magnitude
-    cos_xz, sin_xz = xy_magnitude / magnitude, -b_z / magnitude
+    cos_xy: Real = b_x / xy_magnitude
+    sin_xy: Real = -b_y / xy_magnitude
+    cos_xz: Real = xy_magnitude / magnitude
+    sin_xz: Real = -b_z / magnitude
 
-    def rotate_in_xy_plane(
-        cos: object, sin: object, v: MultiVectorBase
-    ) -> MultiVectorBase:
-        x, y, z = list(v)
+    def rotate_in_xy_plane(cos: Real, sin: Real, v: MultiVectorBase) -> MultiVectorBase:
+        x: Real
+        y: Real
+        z: Real
+        x, y, z = coordinates(v)
         return (cos * x - sin * y) * e_1 + (sin * x + cos * y) * e_2 + z * e_3
 
-    def rotate_in_xz_plane(
-        cos: object, sin: object, v: MultiVectorBase
-    ) -> MultiVectorBase:
-        x, y, z = list(v)
+    def rotate_in_xz_plane(cos: Real, sin: Real, v: MultiVectorBase) -> MultiVectorBase:
+        x: Real
+        y: Real
+        z: Real
+        x, y, z = coordinates(v)
         return (cos * x - sin * z) * e_1 + y * e_2 + (sin * x + cos * z) * e_3
 
     def align(v: MultiVectorBase) -> MultiVectorBase:
@@ -77,11 +94,9 @@ def _project_via_standard_position(
             cos_xy, -sin_xy, rotate_in_xz_plane(cos_xz, -sin_xz, v)
         )
 
-    a_aligned: MultiVectorBase = align(a)
     # align(b) = magnitude * e_1, so projecting onto it is "keep the x-component":
     # no dot product, no geometric product -- just read off a coordinate.
-    a_aligned_x, _a_aligned_y, _a_aligned_z = list(a_aligned)
-    projected_in_standard_position: MultiVectorBase = a_aligned_x * e_1
+    projected_in_standard_position: MultiVectorBase = align(a).coefficient(e_1) * e_1
     return rotate_back(projected_in_standard_position)
 
 
@@ -101,6 +116,21 @@ def project_sp(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
     Returns:
         MultiVectorBase: the component of ``a`` along ``b`` — equal to
         ``a.projected_onto(b)``.
+
+    Raises:
+        ValueError: if ``a`` or ``b`` is not a vector, or ``b`` lies along the ``z``
+            axis.
+
+    Examples:
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> b = 3 * e_1 + 4 * e_2 + 12 * e_3
+        >>> a = 1 * e_1 + 2 * e_2 + 3 * e_3
+        >>> project_sp(a, b) == a.projected_onto(b)
+        True
+        >>> project_sp(a, 1 * e_3)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: project_sp: b lies along the e_3 axis, ...
     """
     return _project_via_standard_position(a, b)
 
@@ -119,5 +149,9 @@ def reject_sp(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
 
     Returns:
         MultiVectorBase: the component of ``a`` orthogonal to ``b``.
+
+    Raises:
+        ValueError: if ``a`` or ``b`` is not a vector, or ``b`` lies along the ``z``
+            axis.
     """
     return a - project_sp(a, b)

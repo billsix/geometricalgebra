@@ -1336,8 +1336,10 @@ class MultiVectorBase(abc.ABC):
         The test is implemented with the outer product ``A ∧ B`` — the robust,
         division-free primitive — since ``sin(θ) = 0 ⟺ A ∧ B = 0``.  ``A ∧ B = 0``
         iff A and B span no area, so this holds for both same-direction and
-        anti-parallel vectors. The equivalence ``A ∧ B = 0 ⟺ A ∥ B`` is
-        machine-checked in ``proofs/GacalcProofs/Predicates3D.lean``.
+        anti-parallel vectors. For vectors with ``A ≠ 0``, the equivalence
+        ``A ∧ B = 0 ⟺ B = k * A`` is machine-checked as ``wedge_eq_zero_iff_parallel``
+        in ``proofs/GacalcProofs/Predicates3D.lean`` (and its 2D twin in
+        ``Predicates2D.lean``).
 
         Args:
             other: the other vector.
@@ -1654,7 +1656,9 @@ class MultiVectorBase(abc.ABC):
         concrete type (``ComposableFunction[Vector]``) can cast at the use site.
 
         from Hestenes and Sobczyk, Clifford Algebra to Geometric Calculus, page 18,
-        equations 2.9a, 2.9b, 2.9c
+        equations 2.9a, 2.9b, 2.9c.  For an r-vector A and an s-blade B, the
+        closed form 2.9c ``(A · B) * B⁻¹`` holds when ``r ≤ s``; when ``r > s``, A has
+        no part inside B and the projection is 0.
 
         Args:
             onto: the blade B to project onto — a multivector, or a sequence of
@@ -1678,6 +1682,11 @@ class MultiVectorBase(abc.ABC):
             >>> MultiVector.project(onto=[1 * e_1, 1 * e_2])(a) == a  # whole plane
             True
 
+            A blade of higher grade than B has no part inside B, so it projects to 0:
+
+            >>> MultiVector.project(onto=e_1)(e_1 ^ e_2) == MultiVector.zero()
+            True
+
             Projection and rejection split a vector into its parallel and
             perpendicular parts, which sum back to it (shown for general 2-D vectors):
 
@@ -1699,15 +1708,22 @@ class MultiVectorBase(abc.ABC):
         def fn(value: MultiVectorBase) -> MultiVectorBase:
             if value.is_scalar():  # 2.9b
                 return value
-            elif value.is_r_vector():  # 2.9c
+            elif value.is_r_vector():  # 2.9c, for r <= s
+                grades: list[int] = list(value.grades())
+                r: int = max(grades) if grades else 0
+                if r > onto.max_grade():
+                    # An r-vector has no part inside a blade of lower grade s: the
+                    # projection is an outermorphism, so it maps the r-vector to a
+                    # wedge of r vectors in an s-dimensional subspace, which is 0.
+                    # Eq. 2.9c does not apply here, because the Hestenes inner
+                    # product A · B is the nonzero grade-(r - s) part of A * B.
+                    return type(value).zero()
                 projected: MultiVectorBase = (value.dot(onto)) * onto.inverse()
                 # P_B(A) preserves A's grade r, so the result is a grade-r blade.
                 # The generic product type can widen (e.g. Vector * Bivector ->
                 # G, since vector * bivector *could* carry a grade-3 part -- which
                 # is identically zero for a projection): keep grade r and stay in
                 # A's own type.
-                grades: list[int] = list(value.grades())
-                r: int = max(grades) if grades else 0
                 return type(value).from_blade_dict(
                     projected.r_vector_part(r).to_blade_dict()
                 )
@@ -2620,6 +2636,38 @@ def _coerce[T: MultiVectorBase](x: MultiVectorBase | Real, cls: type[T]) -> T:
             return cls.from_real(x)
         case _:
             return cls.from_real(x)
+
+
+def _reciprocal(x: Real) -> Real:
+    """``1 / x``, keeping an ``int`` exact.
+
+    The shared reciprocal for the generated closed forms (g1/g2/g3 import it):
+    a ``float`` stays a float, an ``int`` becomes an exact ``sympy.Rational``
+    (so integer input never degrades to a float), and a symbolic value stays
+    symbolic -- the same numeric/exact split as :meth:`MultiVectorBase.inverse`.
+
+    Args:
+        x: the value to invert.
+
+    Returns:
+        Real: ``1 / x``.
+
+    Raises:
+        ZeroDivisionError: if ``x`` is the integer 0.
+
+    Examples:
+        >>> _reciprocal(2)
+        1/2
+        >>> _reciprocal(0.5)
+        2.0
+    """
+    match x:
+        case int():
+            if x == 0:
+                raise ZeroDivisionError("division by zero")
+            return sympy.Rational(1, x)
+        case _:
+            return 1 / x
 
 
 def _require_canonical_blades(blade_coef: Mapping[Blade, object]) -> None:

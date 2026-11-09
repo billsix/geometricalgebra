@@ -46,7 +46,8 @@ By kind, against the doc's floor:
 The 11 extra rows (all added after the 2026-10-09 re-baseline):
 
 - `tools/reorder_lean.py` (added 2026-10-28, commit `2076c75`): INVAR `_has_decl(buf)`,
-  `split_blocks(body_lines)`, `reorder(plan)`; LOOP `group`, `k`, `key`.
+  `split_blocks(body_lines)`, `reorder(plan)`; LOOP `group`, `k`, `key`. **These rows are gone:** the
+  tool was removed on 2026-11-08 (`tasks/archive/2026/11/08/reorder-lean-tool-stale-plans.md`).
 - `tests/test_frame.py`: LOOP `k` at four sites (tests added 2026-10-26 to 2026-10-29).
 - `tests/test_graded.py`: LOOP `val`. The doc's §5 lists `test_graded`'s `cases`/`val`/`d` as LOCAL
   exemptions, so check whether this row is that exemption in a new shape or a new site.
@@ -61,9 +62,8 @@ Merge them into one.
    - **LOOP rows:** most likely real gaps. Annotate by declaring the loop target on the line above the
      `for` (the house fix used in the 2026-10-09 re-baseline). Only exempt one if the declaration would
      lose type information (the §5 pattern).
-   - **INVAR rows in `reorder_lean.py`:** a `list` parameter only read should widen to `Sequence`
-     (house style; the re-baseline did the same); one that is appended to (an out-parameter) or handed
-     to an API demanding `list` is a §4 exemption.
+   - **INVAR rows in `reorder_lean.py`:** none remain; the tool was removed on 2026-11-08 (see the
+     row list above).
 3. Fix the code for the gaps; add the true exemptions to the doc with their reasons; merge the
    duplicated §5 bullet; update the floor paragraph (count, file count, split, date, and this task as
    the record).

@@ -321,6 +321,25 @@ def test_mixing_with_gn_coerces_to_gn(n: int, cls: type[MultiVectorBase]) -> Non
     assert mixed == a * b
 
 
+@pytest.mark.parametrize("module", [g1, g2, g3], ids=["g1", "g2", "g3"])
+def test_full_class_with_a_graded_operand_stays_the_full_class(
+    module: ModuleType,
+) -> None:
+    # A graded operand of the same algebra is rebuilt as G, not sent to the slow
+    # Gn reference: G * Vector, G + Vector and G - Vector are all G.
+    g: MultiVectorBase = module.G.e_1
+    v: MultiVectorBase = module.Vector.e_1
+    product: MultiVectorBase = g * v
+    total: MultiVectorBase = g + v
+    difference: MultiVectorBase = g - v
+    assert type(product) is module.G
+    assert type(total) is module.G
+    assert type(difference) is module.G
+    assert product == module.G.from_real(1)
+    assert total == 2 * module.G.e_1
+    assert difference == module.G.zero()
+
+
 @pytest.mark.parametrize("n,cls", [(1, g1.G), (2, g2.G), (3, g3.G)])
 def test_basis_constants(n: int, cls: type[MultiVectorBase]) -> None:
     # Module constants carry the GRADED type of their blade (reversed 2026-08-04:
@@ -473,6 +492,35 @@ def test_project_vector_onto_bivector_and_trivector_3d() -> None:
     assert g3.G.project(onto=g3.G.e_12)(e3) == g3.G.zero()
     # onto the trivector e_123 (all of 3-space): a vector projects to itself
     assert g3.G.project(onto=g3.G.e_123)(e1 + e3) == e1 + e3
+
+
+@pytest.mark.parametrize(
+    ("blade", "onto"),
+    [
+        pytest.param(gn.e_1 ^ gn.e_2, gn.e_1, id="bivector-onto-vector-2d"),
+        pytest.param(
+            gn.e_1 ^ gn.e_3, 1 * gn.e_1 + 1 * gn.e_2, id="bivector-onto-vector-3d"
+        ),
+        pytest.param(
+            gn.e_1 ^ gn.e_2 ^ gn.e_3, gn.e_1 ^ gn.e_2, id="trivector-onto-bivector"
+        ),
+    ],
+)
+@pytest.mark.parametrize("module", [g2, g3], ids=["g2", "g3"])
+def test_project_higher_grade_onto_lower_grade_is_zero(
+    blade: Gn, onto: Gn, module: ModuleType
+) -> None:
+    # A blade of grade r has no part inside a blade of grade s < r: P_B(A) = 0.
+    # Eq. 2.9c's (A · B) * B⁻¹ is not zero there, so `project` must not use it.
+    dims: int = max(
+        i for key in chain(blade.to_blade_dict(), onto.to_blade_dict()) for i in key
+    )
+    if dims > module.G.DIMENSION:
+        pytest.skip("blade needs more dimensions than this algebra has")
+    assert Gn.project(onto=onto)(blade) == Gn.zero()
+    cls: type[MultiVectorBase] = module.G
+    projected: MultiVectorBase = cls.project(onto=to(cls, onto))(to(cls, blade))
+    assert projected == cls.zero()
 
 
 def test_repr_latex_shows_simplified() -> None:

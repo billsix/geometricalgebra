@@ -82,12 +82,6 @@ ignore = ["N806"]
 # content ruff cannot wrap.  conf.py is Sphinx config (strings/paths/prose), so
 # there is no reformattable code E501 would usefully guard here.
 "book/docs/conf.py" = ["E501"]
-# tools/reorder_lean.py is a dev utility that reorders the Lean proof files. Its PLANS hold the
-# fixed `/-! ### ... -/` section-header text emitted verbatim into the .lean files -- string
-# literals `ruff format` cannot reflow (same class as the gen_specialized.py E501 exemption above)
-# -- and its progress/`already in order` lines ARE its command-line output (same class as the epix
-# CLI tools' T201 exemption).
-"tools/reorder_lean.py" = ["E501", "T201"]
 # The frame / QR book notebooks import their ePiX scene helpers from book/figures/epix/,
 # which is not a package, so each puts that directory on sys.path first. The imports
 # after that line are the point of the line (E402 would have them before it).

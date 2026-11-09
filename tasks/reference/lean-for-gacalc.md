@@ -204,11 +204,17 @@ version resolution is lake's own, not hand-picked):
 - **Pins:** `proofs/lean-toolchain` → `leanprover/lean4:v4.34.1`; `proofs/lakefile.toml` requires
   mathlib `rev = "v4.34.1"`; `proofs/lake-manifest.json` records the exact Mathlib commit +
   transitive deps. `.lake/` (build output + the multi-GB Mathlib) is gitignored.
-- **Gate:** `make lean` (from the repo root) runs `proofs/check.sh` in the container —
-  `lake build` **plus** an axioms gate that auto-discovers every `theorem`/`lemma` under
-  `GacalcProofs/` and fails if any depends on `sorryAx`. The script runs both checks and propagates
-  either failure (never `set -e`), and is portable (container + host). It assumes declarations live
-  in `namespace GacalcProofs`.
+- **Gate:** `make lean` (from the repo root) runs `proofs/check.sh` in the container. It runs
+  three steps:
+  - `lake build`;
+  - a quick source grep for `sorry`/`admit`;
+  - the axioms gate, `lake env lean scripts/CheckAxioms.lean`. That script walks every declaration
+    from a `GacalcProofs.*` module and fails if any rests on an axiom other than `propext`,
+    `Classical.choice` and `Quot.sound`. That catches `sorryAx`, a user `axiom`, and
+    `native_decide`'s `Lean.ofReduceBool`.
+
+  The script runs every step and propagates any failure (never `set -e`), and it is portable
+  (container + host). The axioms step takes about 3 minutes.
 - **Landed proofs:** `GacalcProofs/Lagrange.lean` (Lagrange 2D + 3D, by `ring`),
   `GacalcProofs/G2.lean` (a from-scratch 𝒢₂: geometric product, dot = symmetric part, wedge =
   antisymmetric part, dot ≡ coordinate sum, pseudoscalar `I₂² = −1 = (−1)^(r(r−1)/2)`, the basis

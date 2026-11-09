@@ -319,7 +319,7 @@ over a "run it on your host" instruction.
   test`'s own run, not the full one, where sympy's cache can make a test look fast after a slow one. Quick host
   run: `python -m pytest -q -m "not slow"` after `make generate`.
 - **`entrypoint/format.sh`** (via `make format`, the real gate) — `ruff check --fix`,
-  `ruff format`, `ty check` (`src`/`tests`/`tools`/`book/docs/notebooks`, all clean), and
+  `ruff format`, `ty check` (`src` including the generated g1–g3, `tests`/`tools`/`book/docs/notebooks`, all clean), and
   `tools/check_changelog.py`
   (the version↔changelog guard). `make check-changelog` runs that guard alone on the host. The
   vendored Emacs tree is excluded via `extend-exclude` in `pyproject.toml [tool.ruff]`, **not** a
@@ -330,11 +330,12 @@ over a "run it on your host" instruction.
   not the notebooks). Kept separate from `make test` so a pyright-version bump can't redden it;
   `pyrightconfig.json` scopes it to `notebooks/` and must **not** hardcode `pythonVersion` (a mismatch
   with the image's Python makes pyright emit spurious "refers to itself" errors — let it auto-detect).
-- **`make generate`** / **`make generate-all`** (g1–g5) / **`make test-all-dims`** (the full-dim +
-  full-context ty gate).
+- **`make generate`** / **`make generate-all`** (g1–g5) / **`make test-all-dims`** (the full-dim gate:
+  generates g1–g5, runs `ty check --no-respect-ignore-files src` over them in full context, then the suite).
 - **`make lean`** — build + verify the Lean 4 / Mathlib proofs in `proofs/` (machine-checked math
   behind the GA derivations; an independent oracle, NOT a check of the Python). Runs `proofs/check.sh`
-  (`lake build` + a `sorry`/`admit` completeness gate) in the container; needs an image with
+  (`lake build`, a `sorry`/`admit` source grep, and the axioms gate `proofs/scripts/CheckAxioms.lean`:
+  only `propext`/`Classical.choice`/`Quot.sound` allowed) in the container; needs an image with
   `USE_LEAN=1` (the default full image). Mathlib is **baked into the image** under `USE_LEAN` so this
   runs offline (adds several GB — Lean images only). See `proofs/README.md`,
   `tasks/reference/lean-for-gacalc.md` (beginner orientation) and `tasks/reference/lean-ga-proof-architecture.md`
@@ -576,7 +577,8 @@ Open issues (genuinely open; resolution history lives in git + archived task doc
    NOT the general multivector inverse (it raises on a mixed-grade `A`); the general low-dim closed
    form is tracked in `tasks/lean-general-multivector-inverse.md`.
    (The former `is_parallel_to` self-flagged-uncertainty is resolved — it now uses the wedge-zero
-   test `A ∧ B = 0`, machine-checked in `proofs/GacalcProofs/Predicates3D.lean`.)
+   test `A ∧ B = 0`. For vectors with `A ≠ 0`, `A ∧ B = 0 ⟺ B = k * A` is machine-checked as
+   `wedge_eq_zero_iff_parallel` in `proofs/GacalcProofs/Predicates3D.lean` and `Predicates2D.lean`.)
 
 ## Future directions (not yet decided)
 

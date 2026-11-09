@@ -23,10 +23,14 @@ the standard-position result equals the canonical Hestenes ``projected_onto`` /
 """
 
 import numpy as np
+import pytest
 import sympy
 
+import gacalc.g3 as g3
+import gacalc.gn as gn
 from gacalc.base import MultiVectorBase
 from gacalc.g3 import Vector, e_1, e_2, e_3
+from gacalc.gn import Gn
 from gacalc.standardposition import project_sp, reject_sp
 
 
@@ -79,3 +83,33 @@ def test_reject_sp_matches_canonical_symbolic() -> None:
     assert all(
         sympy.simplify(sympy.sympify(coefficient)) == 0 for coefficient in difference
     )
+
+
+def test_project_sp_raises_when_b_lies_along_e_3() -> None:
+    # The first plane rotation divides by |b's xy-part|, which is 0 here.
+    a: Vector = 1 * e_1 + 2 * e_2 + 3 * e_3
+    with pytest.raises(ValueError, match="e_3 axis"):
+        project_sp(a, 2 * e_3)
+    with pytest.raises(ValueError, match="e_3 axis"):
+        reject_sp(a, 2 * e_3)
+
+
+def test_project_sp_raises_for_symbolic_b_along_e_3() -> None:
+    b_3: sympy.Symbol = sympy.Symbol("b_3", positive=True)
+    a: Vector = 1 * e_1 + 2 * e_2 + 3 * e_3
+    with pytest.raises(ValueError, match="e_3 axis"):
+        project_sp(a, b_3 * e_3)
+
+
+def test_project_sp_requires_vectors() -> None:
+    a: Vector = 1 * e_1 + 2 * e_2 + 3 * e_3
+    with pytest.raises(ValueError):
+        project_sp(a, g3.Bivector.e_12)
+
+
+def test_project_sp_accepts_gn_input() -> None:
+    # Gn's iteration omits zero coefficients, so the coordinates are read by blade.
+    a: Gn = 1 * gn.e_1 + 0 * gn.e_2 + 3 * gn.e_3
+    b: Gn = 3 * gn.e_1 + 4 * gn.e_2 + 12 * gn.e_3
+    assert project_sp(a, b) == a.projected_onto(b)
+    assert reject_sp(a, b) == a.rejected_away_from(b)

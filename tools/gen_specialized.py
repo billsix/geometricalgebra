@@ -190,6 +190,7 @@ from astbuild import (  # noqa: E402
     construct_type_of,
     dataclass_decorator,
     function_def,
+    header_comment,
     inject_region_markers,
     isinstance_,
     marker,
@@ -217,10 +218,29 @@ from gacalc.gn import Gn  # noqa: E402
 # ==========================================================================
 
 
+class ReciprocalToCall(ast.NodeTransformer):
+    """``1 / x`` -> ``_reciprocal(x)``.
+
+    ``sympy.sstr`` writes a reciprocal (``Pow(x, -1)``, e.g. a cse'd ``1/|R|²``) as
+    ``1/x``, which Python evaluates as float division, so integer input would come
+    out as floats.  ``gacalc.base._reciprocal`` keeps an ``int`` exact.
+    """
+
+    def visit_BinOp(self, node: ast.BinOp) -> ast.expr:
+        self.generic_visit(node)
+        match node:
+            case ast.BinOp(left=ast.Constant(value=1), op=ast.Div(), right=right):
+                return call("_reciprocal", [right])
+            case _:
+                return node
+
+
 def expr_to_ast(expr: sympy.Expr, rename: Mapping[str, tuple[str, str]]) -> ast.expr:
-    """sympy expression -> AST expression with operand symbols as attribute access."""
+    """sympy expression -> AST expression with operand symbols as attribute access,
+    and every reciprocal ``1 / x`` as the exact ``_reciprocal(x)``."""
     tree: ast.expr = parse_expr(sympy.sstr(expr))
-    return ast.fix_missing_locations(SymbolToAttr(rename).visit(tree))
+    tree = ReciprocalToCall().visit(SymbolToAttr(rename).visit(tree))
+    return ast.fix_missing_locations(tree)
 
 
 # ==========================================================================
@@ -2645,6 +2665,98 @@ def _set_method_docstring(func: ast.FunctionDef, text: str) -> None:
         func.body.insert(0, expr)
 
 
+# The ``MultiVectorBase`` methods that a graded type may override with a
+# *different* return type.  The base declares each as returning ``Self``, which
+# holds for the full representations (``Gn``, the full ``G``); a graded type returns
+# the resolved product type instead (``Vector * Vector`` is a ``Versor``,
+# ``Scalar + Vector`` a ``G``), as tasks/reference/generated-product-typing.md
+# describes.  ty reports such an override as ``invalid-method-override``.
+#
+# Two groups, because ty matches the base signature differently:
+# * the base takes ``rhs: Self`` -- the override conflicts only when its
+#   ``@overload`` for an operand of the class's own type returns another type
+#   (``Vector.wedge(Vector) -> Bivector``; ``Scalar.wedge(Scalar) -> Scalar`` is fine);
+# * the base takes any operand (``MultiVectorBase | Real``) or none -- the override
+#   conflicts whenever its implementation returns something other than the class.
+SELF_OPERAND_RETURN_OVERRIDES: frozenset[str] = frozenset(
+    {
+        "inner_product",
+        "outer_product",
+        "dot",
+        "wedge",
+        "left_contraction",
+        "right_contraction",
+        "__xor__",
+        "__lt__",
+        "__gt__",
+    }
+)
+ANY_OPERAND_RETURN_OVERRIDES: frozenset[str] = frozenset(
+    {
+        "_geometric_product",
+        "__mul__",
+        "__add__",
+        "__radd__",
+        "r_vector_part",
+        "plane_of_rotation",
+    }
+)
+
+
+def _decorator_names(function: ast.FunctionDef) -> set[str | None]:
+    """The bare names of a function's decorators (``typing.overload`` -> ``overload``)."""
+    return {getattr(d, "attr", getattr(d, "id", None)) for d in function.decorator_list}
+
+
+def _annotation_name(annotation: ast.expr | None) -> str | None:
+    """The class name a ``Name`` annotation refers to, else ``None``."""
+    return annotation.id if isinstance(annotation, ast.Name) else None
+
+
+def mark_graded_return_overrides(nodes: Sequence[ast.stmt], full_name: str) -> None:
+    """Suppress ``invalid-method-override`` on each graded type's resolved-type override.
+
+    Mutates the class ``ast`` nodes in place.  In every graded class (not the full
+    class), the implementation (not an ``@overload`` stub) of each method that ty
+    finds incompatible with the base's ``-> Self`` -- per the two groups above --
+    gets a trailing ``# ty: ignore[invalid-method-override]`` on its ``def`` line.
+    The reason is at ``SELF_OPERAND_RETURN_OVERRIDES``: the base's ``-> Self`` is the
+    full representations' contract, and the graded types change the return type on
+    purpose.  Every other ty rule still applies to these methods.
+    """
+    node: ast.stmt
+    for node in nodes:
+        if not isinstance(node, ast.ClassDef) or node.name == full_name:
+            continue
+        functions: list[ast.FunctionDef] = [
+            item for item in node.body if isinstance(item, ast.FunctionDef)
+        ]
+        # For each method, the return type of its overload for an own-type operand.
+        own_operand_return: dict[str, str | None] = {
+            f.name: _annotation_name(f.returns)
+            for f in functions
+            if "overload" in _decorator_names(f)
+            and len(f.args.args) == 2
+            and _annotation_name(f.args.args[1].annotation) == node.name
+        }
+        function: ast.FunctionDef
+        for function in functions:
+            if "overload" in _decorator_names(function):
+                continue
+            conflicts: bool
+            match function.name:
+                case name if name in SELF_OPERAND_RETURN_OVERRIDES:
+                    conflicts = own_operand_return.get(name, node.name) != node.name
+                case name if name in ANY_OPERAND_RETURN_OVERRIDES:
+                    conflicts = _annotation_name(function.returns) != node.name
+                case _:
+                    conflicts = False
+            if conflicts:
+                function.decorator_list.append(
+                    header_comment("ty: ignore[invalid-method-override]")
+                )
+
+
 def inject_method_docstrings(nodes: Sequence[ast.stmt], n: int, full_name: str) -> None:
     """Give every method of every generated class a docstring.
 
@@ -3195,6 +3307,29 @@ def coerce_pair_gn() -> list[ast.stmt]:
             ),
         ),
     ]
+
+
+def widen_same_algebra_rhs(n: int, full_name: str) -> ast.If:
+    """``if isinstance(rhs, (Scalar, Vector, …)): rhs = G.from_blade_dict(…)``.
+
+    A graded operand of the same algebra is rebuilt as the full class, so the
+    closed form below handles it.  Only an operand of another representation
+    (``Gn``, another algebra) reaches the ``Gn`` fallback after this.
+    """
+    graded: list[str] = [scalar_spec(n).name, *(t.name for t in graded_specs(n))]
+    return ast.If(
+        isinstance_(name_ref("rhs"), [name_ref(g) for g in graded]),
+        [
+            assign(
+                "rhs",
+                call(
+                    attribute(full_name, "from_blade_dict"),
+                    [call(attribute("rhs", "to_blade_dict"))],
+                ),
+            )
+        ],
+        [],
+    )
 
 
 def eq_method(fields: Sequence[str]) -> ast.FunctionDef:
@@ -4458,22 +4593,7 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             defaults=[constant(0.0), constant(0.0)],
             returns=name_ref("bool"),
         ),
-        function_def(
-            "__iter__",
-            [
-                ast.If(
-                    ne_zero(self_scalar_field),
-                    [
-                        ast.Expr(
-                            ast.Yield(
-                                construct(name, [(field_name(()), self_scalar_field)])
-                            )
-                        )
-                    ],
-                    [],
-                )
-            ],
-        ),
+        iter_method([()]),
         function_def(
             "even_part",
             [return_stmt(scalar_const(self_scalar_field))],
@@ -4556,11 +4676,12 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
             [sympy.sympify(result_coeffs.get(b, 0)) for b in blades]
         )
         body: list[ast.stmt] = method_doc_stmts(method) + [
+            widen_same_algebra_rhs(n, name),
             ast.If(
                 not_(isinstance_(name_ref("rhs"), name_ref(name))),
                 coerce_pair_gn() + [return_stmt(cast_self(cross_node))],
                 [],
-            )
+            ),
         ]
         body += [assign(str(t), expr_to_ast(e, rename)) for t, e in replacements]
         pairs: list[tuple[str, ast.expr]] = [
@@ -4602,6 +4723,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
                     ],
                     [],
                 ),
+                widen_same_algebra_rhs(n, name),
                 ast.If(
                     not_(isinstance_(name_ref("rhs"), name_ref(name))),
                     coerce_pair_gn()
@@ -6007,6 +6129,7 @@ from gacalc.base import (
     Real,
     _coef_eq,
     _coerce,
+    _reciprocal,
     _require_canonical_blades,
     _require_float,{operand_import}
 )
@@ -6108,6 +6231,7 @@ def main() -> None:
         # CUSTOM_METHOD_DOCS): specialized text for g1--g3, copied base docstrings
         # otherwise.  Runs before marker injection / rendering.
         inject_method_docstrings(nodes, n, name)
+        mark_graded_return_overrides(nodes, name)
         module_body: str = module_source(inject_region_markers(nodes))
         source: str = header(name, n) + "\n\n" + module_body + "\n"
         with open(out_path(filename), "w") as f:

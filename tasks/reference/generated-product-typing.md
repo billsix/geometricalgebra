@@ -299,15 +299,36 @@ g1–g3 more sound. Work record + full tally: `tasks/archive/2026/08/23/generato
 - **`cast_coef` skips a bare field, a negated field, AND a single `field ** constant`** — all are
   already `Real`; casting warns (`redundant-cast`). Multi-term sympy *sums* still cast.
 
-**Verification method (important): ty and ruff both respect `.gitignore`, and the generated
-`g*.py` are gitignored, so the dev gate `ty check src` / `ruff check src` SKIP every generated
-module** — they only check the hand-written code. To check generated-module typing you must pass the
-files **explicitly and together** (full context):
-`ty check src/gacalc/g1.py … g5.py gn.py base.py functions.py transforms.py nbplotutils.py`. A
-**single-file** `ty check src/gacalc/g3.py` is NOT valid — it gives ~119 *isolation* false positives
-(unresolved cross-module types). This full-context check is what should be wired into the opt-in
-full-dim gate (`make test-all-dims`), since the dev gate cannot see generated-module regressions.
+**Verification method.** ty and ruff both respect `.gitignore`, and the generated `g*.py` are
+gitignored, so a plain `ty check src` skips every generated module. The gates therefore run
+`ty check --no-respect-ignore-files src`, which checks the generated modules **together with** the
+hand-written ones (full context): `make format` (via `entrypoint/format.sh`, after regenerating g1–g3)
+and `make test-all-dims` (after generating g1–g5). A **single-file** `ty check src/gacalc/g3.py` is NOT
+valid — it gives ~119 *isolation* false positives (unresolved cross-module types).
 `.gitignore` uses the glob `/src/gacalc/g[0-9]*.py` (covers g1..g10+, spares the tracked `gn.py`).
+
+## Graded overrides of the base's `-> Self` (2026-11-08)
+
+`MultiVectorBase` declares its products and sums as returning `Self`: `_geometric_product`,
+`__mul__`, `__add__`, `__radd__`, `wedge`/`outer_product`/`__xor__`, `dot`/`inner_product`, the
+contractions and `__lt__`/`__gt__`, `r_vector_part`, and `plane_of_rotation`. That is the contract
+of the full representations (`Gn`, the full `G`). The graded types return the resolved product type
+instead (`Vector * Vector` is a `Versor`, `Scalar + Vector` a `G`), so ty (0.0.91) reports those
+overrides as `invalid-method-override`: 121 in g1–g3.
+
+The generator marks exactly those overrides with a trailing
+`# ty: ignore[invalid-method-override]` on the implementation's `def` line
+(`mark_graded_return_overrides` in `tools/gen_specialized.py`, rendered through
+`astbuild.header_comment`). It follows ty's rule:
+
+- for a method whose base takes `rhs: Self` (`wedge`, `dot`, the contractions, …), the override
+  conflicts when its `@overload` for an operand of the class's own type returns another type
+  (`Vector.wedge(Vector) -> Bivector`; `Scalar.wedge(Scalar) -> Scalar` doesn't conflict);
+- for the others, it conflicts when the implementation returns something other than the class.
+
+ty reports no unused suppression, so the comments match its findings one for one. Every other rule
+still applies to these methods. Making the base's types true instead is parked as
+`tasks/typing-base-return-types-redesign.md`.
 
 ## The generated `Vector.cross` — a single-arm product override (2026-08-31)
 

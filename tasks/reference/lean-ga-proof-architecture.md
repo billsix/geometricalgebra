@@ -218,9 +218,12 @@ docstring, which introduces the basis before the product (maintainer, 2026-10-28
 files were audited at the same time and already conformed (docstring → def(s) → concept-grouped
 lemmas), so only the core files were reordered. The reorder was content-preserving — only relocations
 and `/-! -/` headers changed, proven by an identical multiset of declaration blocks before vs. after.
-The tool that does it (and verifies that invariant) is **`tools/reorder_lean.py`** — a reusable
-block-reassembler driven by a per-file PLAN; run `python tools/reorder_lean.py G1 G3 --check` to detect
-later within-file drift in those files (G2 was reordered by hand and has no PLAN). Every proof file now
+The reorder was done by a one-shot block-reassembler driven by a per-file PLAN,
+`tools/reorder_lean.py` (G2 was reordered by hand). Its PLANs went stale, and running it would have
+undone the 2026-10-29 teaching-order reorder, so it was removed
+(`tasks/archive/2026/11/08/reorder-lean-tool-stale-plans.md`; `git log --all -- tools/reorder_lean.py`
+recovers it). New declarations keep the order by hand, per `CLAUDE.md` › "Dev workflow" (`make lean`)
+and `tasks/reference/algebra-teaching-order.md`. Every proof file now
 carries `/-! -/` navigation headers; the four that still lacked them — the top of `Rotation2D.lean`
 (which already had two `## ` sections) and all of `Rotation3D`/`StudentTrigForms`/`PlaneRotation3D` —
 were sectioned 2026-10-28 (header lines only, `make lean` green).
@@ -626,7 +629,8 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   form, `|a∧b∧c|² = signedVolume²`, `signedArea`.
 - `Normalize.lean` — `normalizeVec` has unit `normSq`/`magnitude` (𝒢₃ vectors; 𝒢₂'s lives in `ProjectionRotation2D`).
 - `Predicates2D.lean` / `Predicates3D.lean` — `dual_perp_dot` (2D); `perp_iff_mul_eq_wedge`
-  (`a·b = 0 ⟺ ab = a∧b`), `wedge_parallel_smul` (3D).
+  (`a·b = 0 ⟺ ab = a∧b`), `wedge_parallel_smul` and its converse, combined as
+  `wedge_eq_zero_iff_parallel` (3D and 2D).
 - `Reflect.lean` (𝒢₃) — `reflectVec d v = proj − reject = 2 * proj − v`, an isometry (across a vector only).
 - `Trig.lean` — `cos_between`/`sin_between`, `lagrange_property`, `cos_sq_add_sin_sq`, both preserved by
   the sandwich (for ANY `u`, `v`). `TrigEquiv.lean` — the angle-form equivalences
@@ -677,7 +681,7 @@ The modules outside this table are in the subsection that follows it.
 | `right_contraction` | HAS | `rightContraction_vec_vec` (Contractions.lean) |
 | `r_vector_part` | HAS | `rVectorPart`, `rVectorPart_idem`, `rVectorPart_complete` (GradeProjection.lean) |
 | `is_orthogonal_to` | HAS | `perp_iff_mul_eq_wedge` (`a·b=0 ⟺ ab=a∧b`) (Predicates3D.lean) |
-| `is_parallel_to` | PARTIAL | `wedge_parallel_smul` (`a ∧ ka = 0`) + the wedge-zero criterion (Predicates3D.lean); the converse (`a ∧ b = 0 ∧ a ≠ 0 ⟹ ∃ k, b = k·a`) is not stated — `tasks/lean-frame-coverage.md`; Python `is_parallel_to` fixed to the wedge-zero form |
+| `is_parallel_to` | HAS | `wedge_eq_zero_iff_parallel` (for vectors with `a ≠ 0`: `a ∧ b = 0 ⟺ ∃ k, b = k*a`), from `wedge_parallel_smul` and its converse `parallel_of_wedge_eq_zero`, in Predicates3D.lean and Predicates2D.lean (2026-11-08); Python `is_parallel_to` uses the wedge-zero form |
 | `reverse` | HAS | `reverse_reverse`, `reverse_mul` (anti-automorphism), `reverse_vec`, `reverse_of_isVector`, `reverse_mul_vec` |
 | `inverse` | PARTIAL | blade/versor cases: `mul_vec_inverse_self`, `mul_biv_inverse_self`, `mul_triv_inverse_self`, `versorFromVectors_mul_inverse`, `inverse_mul`; general mixed-grade owned by existing `lean-general-multivector-inverse` |
 | `dual` | HAS | G2 `dual_vec`; G3 `dual`, `dual_vec` (Cross.lean), `dual_wedge_perp_left`/`_right` |
@@ -801,8 +805,12 @@ becomes syntactically `a = a`. Ordering matters — a lemma must be defined abov
 - `proofs/lakefile.toml` sets `autoImplicit = false`: with the default `true`, a typo'd
   identifier in a *statement* becomes a silently bound variable and the theorem may still prove — a
   proof corpus wants the error.
-- The completeness gate in `check.sh` is a `sorry`/`admit` grep over the sources; it would not catch
-  `native_decide`/`axiom` (none present). A `#print axioms` sweep is the gold standard if that ever matters.
+- The completeness gate in `check.sh` has two parts.
+  - A quick `sorry`/`admit` grep over the sources.
+  - The axioms gate, `proofs/scripts/CheckAxioms.lean`. It runs `collectAxioms` on every
+    `GacalcProofs.*` declaration and allows only `propext`/`Classical.choice`/`Quot.sound`, so
+    `sorryAx`, a user `axiom` and `native_decide` all fail it. A probe module with an `axiom` and a
+    `sorry` was confirmed to fail it, on 2026-11-08.
 - Reviewing the corpus: three parallel read-only passes (commit-by-commit statement audit, Python→Lean
   coverage with `tools/derive_lean_algebra.py` parity re-derivation, goals/status from the docs) plus a
   build experiment for any "needed" claim worked well; record: `lean-proof-corpus-review-2026-10-04.md`.

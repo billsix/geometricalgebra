@@ -98,7 +98,10 @@ the angle was the organizing idea even though we never evaluated it, and the pay
 
    \cos(\theta) = \frac{\vec{a} \cdot \vec{b}}{|\vec{a}| * |\vec{b}|},
    \qquad
-   \sin(\theta) = \frac{\vec{a} \wedge \vec{b}}{|\vec{a}| * |\vec{b}|}.
+   \vec{a} \wedge \vec{b} = |\vec{a}| * |\vec{b}| * \sin(\theta) * e_{12}.
+
+(The wedge is a bivector, a multiple of :math:`e_{12}`; the number multiplying :math:`e_{12}` is the
+signed area :math:`|\vec{a}| * |\vec{b}| * \sin(\theta)`.)
 
 Here those same two quantities are not the *answer* to a calculation about an angle — they *are* the
 rotation, handed to us as the single object :math:`\vec{a} * \vec{b}`. The angle was scaffolding we

@@ -28,6 +28,10 @@ These are the runnable twin of ``proofs/GacalcProofs/Sandwich.lean``'s
 ``sandwich_fixes_own_bivector`` / ``sandwich_preserves_dot`` / grade coverage.
 """
 
+from types import ModuleType
+
+import pytest
+
 import gacalc.g2 as g2
 import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase
@@ -149,3 +153,13 @@ def test_vector_sandwich_reflection_2d() -> None:
     assert type(reflected) is g2.Vector
     assert reflected.isclose(3 * g2.Vector.e_1 - 5 * g2.Vector.e_2, **_TOL)
     assert reflected.isclose(x.reflected_across(across=mirror), **_TOL)
+
+
+@pytest.mark.parametrize("module", [g2, g3], ids=["g2", "g3"])
+def test_versor_sandwich_keeps_integer_input_exact(module: ModuleType) -> None:
+    # The closed-form sandwich divides by |R|²; integer input must stay exact
+    # (no float), matching the Gn reference.
+    R: MultiVectorBase = 1 + 1 * module.Versor.e_12
+    rotated: MultiVectorBase = R.sandwich(1 * module.e_1)
+    assert rotated == -1 * module.e_2
+    assert all(not isinstance(c, float) for c in rotated)

@@ -6,8 +6,13 @@ derivations, in **Lean 4** on **Mathlib**. These are an independent check of the
 the Python implementation.
 
 - **Build + verify:** `make lean` from the repo root (runs `proofs/check.sh` in the
-  container: `lake build` + a completeness gate that fails on any `sorry`/`admit` in the
-  sources). Needs an image built with `USE_LEAN=1` (the default full image).
+  container). It runs three steps:
+  - `lake build`;
+  - a quick `sorry`/`admit` source grep;
+  - the axioms gate, `scripts/CheckAxioms.lean`, which fails if any `GacalcProofs.*`
+    declaration rests on an axiom other than `propext`, `Classical.choice` and `Quot.sound`.
+
+  Needs an image built with `USE_LEAN=1` (the default full image).
 - **Toolchain / deps:** pinned in `lean-toolchain` (Lean `v4.34.1`) and
   `lake-manifest.json` (the exact Mathlib revision). `.lake/` is build output +
   the fetched Mathlib — gitignored, never committed.

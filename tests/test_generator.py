@@ -225,3 +225,47 @@ def test_cast_coef_wraps_compound_expression() -> None:
     )
     wrapped: ast.expr = astbuild.cast_coef(compound)
     assert ast.unparse(wrapped) == "typing.cast(Real, a + b)"
+
+
+def test_header_comment_renders_at_the_end_of_the_def_line() -> None:
+    # A header_comment decorator becomes a trailing comment on the `def` line.
+    function: ast.stmt = ast.parse("def f(x):\n    return x\n").body[0]
+    assert isinstance(function, ast.FunctionDef)
+    function.decorator_list.append(astbuild.header_comment("ty: ignore[some-rule]"))
+    source: str = astbuild.module_source([function])
+    assert source.splitlines()[0] == "def f(x):  # ty: ignore[some-rule]"
+    assert "@@" not in source
+
+
+def test_mark_graded_return_overrides_marks_only_conflicting_overrides() -> None:
+    # A graded override conflicts with the base's `-> Self` when its own-type
+    # overload returns another type (Vector.wedge(Vector) -> Bivector), or, for an
+    # any-operand method, when its implementation returns another type.  An
+    # own-type overload returning the class itself (Scalar.wedge) does not.
+    module: ast.Module = ast.parse(
+        "import typing\n"
+        "class G:\n"
+        "    def __mul__(self, rhs) -> MultiVectorBase: ...\n"
+        "class Vector:\n"
+        "    @typing.overload\n"
+        "    def wedge(self, rhs: Vector) -> Bivector: ...\n"
+        "    def wedge(self, rhs) -> MultiVectorBase: ...\n"
+        "    def __mul__(self, rhs) -> MultiVectorBase: ...\n"
+        "    def r_vector_part(self, r) -> Vector: ...\n"
+        "class Scalar:\n"
+        "    @typing.overload\n"
+        "    def wedge(self, rhs: Scalar) -> Scalar: ...\n"
+        "    def wedge(self, rhs) -> MultiVectorBase: ...\n"
+    )
+    gen.mark_graded_return_overrides(module.body, "G")
+    source: str = astbuild.module_source(module.body)
+    suppression: str = "  # ty: ignore[invalid-method-override]"
+    marked: list[str] = [
+        line.strip().removesuffix(suppression)
+        for line in source.splitlines()
+        if line.endswith(suppression)
+    ]
+    assert marked == [
+        "def wedge(self, rhs) -> MultiVectorBase:",
+        "def __mul__(self, rhs) -> MultiVectorBase:",
+    ]
