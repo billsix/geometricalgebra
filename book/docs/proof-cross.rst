@@ -12,8 +12,12 @@
 Proof: The Cross Product by Rotating to Standard Position
 =========================================================
 
-In :doc:`projection-rejection-3d` we reduced one vector to the :math:`\vec{e}_1` axis to
-project in space. The **cross product** :math:`\vec{a} \times \vec{b}` yields to the same
+.. note::
+
+   Draft. The prose is agent-drafted; the maintainer's voice pass is pending.
+
+In :doc:`proof-projection-3d` we reduced one vector to the :math:`e_1` axis to project in
+space. The **cross product** :math:`\vec{a} \times \vec{b}` yields to the same
 move, done to *both* vectors at once — and this is the last step of the reduce-to-standard-position
 story, the one the rest of the book promised but had not yet assembled.
 
@@ -25,22 +29,22 @@ The goal
 
 Given two vectors :math:`\vec{a}` and :math:`\vec{b}` in space, we want their cross product
 :math:`\vec{a} \times \vec{b}` — the vector perpendicular to both, with length
-:math:`\lvert\vec{a}\rvert\,\lvert\vec{b}\rvert\sin(\theta)`. As with projection, a general cross
+:math:`|\vec{a}| * |\vec{b}| * \sin(\theta)`. As with projection, a general cross
 product is annoying, but a cross product **in standard position** is trivial: if
-:math:`\vec{a} = (m, 0, 0)` lies on the x-axis and :math:`\vec{b} = (b_1', b_2', 0)` lies in the
-:math:`\vec{e}_1\vec{e}_2` plane, then
+:math:`\vec{a} = (m, 0, 0)` lies on the x-axis and :math:`\vec{b} = (b'_1, b'_2, 0)` lies in the
+:math:`e_{12}` plane, then
 
 .. math::
 
-   \vec{a} \times \vec{b} = (0,\ 0,\ m \, b_2'),
+   \vec{a} \times \vec{b} = (0,\ 0,\ m * b'_2),
 
-a pure :math:`\vec{e}_3` vector — the x-axis length times :math:`\vec{b}`'s height in the plane.
+a pure :math:`e_3` vector — the x-axis length times :math:`\vec{b}`'s height in the plane.
 
 The idea: move *both* vectors into the plane
 ---------------------------------------------
 
 So we cheat exactly as before. We **rotate the whole picture** until :math:`\vec{a}` lies on the
-x-axis and :math:`\vec{b}` lies flat in the :math:`\vec{e}_1\vec{e}_2` plane, take the trivial
+x-axis and :math:`\vec{b}` lies flat in the :math:`e_{12}` plane, take the trivial
 cross product there, and rotate back. Whatever we do to one vector we do to both — we are turning
 the graph paper, and they ride along.
 
@@ -48,15 +52,15 @@ One rotation no longer suffices in space, so we go **one plane at a time**, each
 that leaves the third coordinate alone:
 
 #. **Swing** :math:`\vec{a}`\ **'s** :math:`xy` **shadow onto the x-axis**, then **swing its**
-   :math:`z` **part down** — the two rotations of :doc:`projection-rejection-3d`, read off
-   :math:`\vec{a}`'s coordinates, which land :math:`\vec{a}` on :math:`\lvert\vec{a}\rvert\,\vec{e}_1`.
+   :math:`z` **part down** — the two rotations of :doc:`proof-projection-3d`, read off
+   :math:`\vec{a}`'s coordinates, which land :math:`\vec{a}` on :math:`|\vec{a}| * e_1`.
    Both vectors are rotated.
 #. **Swing** :math:`\vec{b}` **into the plane** with a third rotation, this time about the fixed
-   :math:`\vec{e}_1` axis (in the :math:`\vec{e}_2\vec{e}_3` plane), read off :math:`\vec{b}`'s
-   image — zeroing its :math:`\vec{e}_3` component. Now :math:`\vec{b}` lies in the plane and
-   :math:`\vec{a}` is untouched (a rotation about :math:`\vec{e}_1` fixes a vector already on it).
+   :math:`e_1` axis (in the :math:`e_{23}` plane), read off :math:`\vec{b}`'s
+   image — zeroing its :math:`e_3` component. Now :math:`\vec{b}` lies in the plane and
+   :math:`\vec{a}` is untouched (a rotation about :math:`e_1` fixes a vector already on it).
 
-In that frame the cross product is the pure :math:`\vec{e}_3` vector above. Rotate it back by the
+In that frame the cross product is the pure :math:`e_3` vector above. Rotate it back by the
 three rotations undone, and it lands on the true :math:`\vec{a} \times \vec{b}`.
 
 Why we are allowed to do this
@@ -64,7 +68,7 @@ Why we are allowed to do this
 
 A rotation carries a cross product to the cross product of the rotated vectors:
 :math:`R(\vec{a}) \times R(\vec{b}) = R(\vec{a} \times \vec{b})` — the cross product is
-*equivariant* under each elementary plane rotation (for :math:`\cos^2 + \sin^2 = 1`). So
+*equivariant* under each elementary plane rotation (for :math:`\cos(\theta)^2 + \sin(\theta)^2 = 1`). So
 crossing in the rotated frame and rotating back is the **same map** as crossing in place. Writing
 :math:`\mathcal{R}` for the whole three-rotation reduction,
 
@@ -74,7 +78,7 @@ crossing in the rotated frame and rotating back is the **same map** as crossing 
      = \mathcal{R}^{-1}\!\big(\, \mathcal{R}(\vec{a}) \times \mathcal{R}(\vec{b}) \,\big),
 
 read right to left: reduce both vectors, cross in standard position, rotate back. This is the cross
-analogue of the projection capstone :math:`P_{\vec{b}} = R^{-1}\circ P_{\vec{e}_1}\circ R`.
+analogue of the projection capstone :math:`P_{\vec{b}} = R^{-1}\circ P_{e_1}\circ R`.
 
 This is all machine-checked in ``proofs/GacalcProofs/CrossStandardPosition.lean``. The equivariance
 engine is ``cross_reduceToPlane_equivariant`` (the three elementary equivariances
@@ -94,6 +98,6 @@ You can run the whole construction — and check, symbolically, that it lands on
 ``gacalc.vectorcalc.cross`` — in the companion calculation notebook.
 
 .. toctree::
-   :hidden:
+   :maxdepth: 1
 
    notebooks/proof-cross

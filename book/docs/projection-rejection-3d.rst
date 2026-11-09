@@ -1,11 +1,14 @@
 Projection and Rejection in 3D
 ==============================
 
+.. note::
+
+   Draft. The prose is agent-drafted; the maintainer's voice pass is pending.
+
 ..
    TODO prose (maintainer's voice): projection and rejection in three dimensions. The figures
-   below are drafted and render via `make docs`; the narrative is still to be written. (The
-   rotate-to-standard-position derivation pictures for 3D — one plane at a time — are a
-   follow-on, after :doc:`proof-projection` is restructured as 2D-then-3D.)
+   below are drafted and render via `make docs`; the narrative is still to be written. The
+   one-plane-at-a-time derivation is :doc:`proof-projection-3d`.
 
 In three dimensions a vector :math:`\vec{a}` can be projected onto any of the three coordinate
 planes :math:`e_{12}` (the xy-plane), :math:`e_{23}` (yz) and :math:`e_{31}` (zx).
@@ -37,4 +40,6 @@ remainder.
 .. toctree::
    :maxdepth: 1
 
+   proof-projection-3d
+   proof-cross
    notebooks/projection-rejection-3d
