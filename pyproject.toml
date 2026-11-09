@@ -37,8 +37,6 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.pytest]
-testpaths = ["tests"]
 
 [tool.ruff]
 # The intentionally-vendored Emacs tree under entrypoint/ (.emacs.d/elpa/) is
