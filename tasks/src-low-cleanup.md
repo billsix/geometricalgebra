@@ -1,85 +1,52 @@
-# `src/` low cleanup: history-narrating docstrings, docstring notation, dead code, moved-task citations
+# `src/` low cleanup: present-tense docstrings, docstring notation, dead code, moved-task citations
 
-**Status:** proposed — needs go-ahead
-**Priority:** 6
-**Difficulty:** 3
-**Created:** 2026-11-09
+**Created:** 2026-11-09 · **Completed:** 2026-11-09
 **Source:** tasks/review/2026/11/08/repo-review.md §4.3, §2.4
 
-## BLUF
+## What changed
 
-Fix the low-severity, behaviour-preserving findings in the hand-written library. These are docstrings
-and comments that narrate history, docstring math that breaks the notation rules, dead code, a few
-wrong comments, and citations of tasks that have moved to the archive. Done means each item below is
-fixed or dropped with a reason, and `make format` and `make test` pass. The behaviour-changing §4.3
-findings are a separate task, `tasks/library-low-behavior-traps.md`.
+- **History narration rewritten to describe current behaviour:**
+  - `base.py`: the `pseudoscalar_squared_sign` proof comment ("Phase 1 …"), `normalize`'s "already
+    raised / without this guard", `inverse`'s "This replaces the older … flag", the `__rmul__`
+    comment's "the previous …", `exp`'s "An earlier version …", `isclose`'s "the tests used to
+    re-roll", and `_require_canonical_blades`' "replacing two old … failure modes";
+  - the `transforms.py` module docstring: "backward compatibility" became what the re-export
+    enables, and the "removed long before" parenthetical became a present-tense statement;
+  - `frame.py` and `measure.py`: the "contrast the blade-square-sign task" asides are gone;
+  - `nbplotutils.py`: `_to_xy` ("Was written inline …"), `_current_axes` ("this replaced …") and the
+    `_axes` comment ("no longer clobber").
+- **Docstring notation** (`CLAUDE.md` › "Math notation for readers"):
+  - `prefix0 * 1 + prefix1 * e₁`, `(-1)^(n * (n-1)/2)`, `|R|² = 2 + 2 * cos(θ) = 4 * cos²(θ/2)`,
+    `cosh(|A|) + sinh(|A|) * Â` (twice), `(A · B) * B⁻¹` (twice) and `A * k + c` in `base.py`;
+  - `a_1 * b_2 - a_2 * b_1` in `measure.py`;
+  - `reverse(A_{k-1}) * A_k`, `(-1)^(k-1) * (…) * A_n⁻¹` and `R⁻¹ * Qᵀ * y` in `frame.py`;
+  - `A * x` (twice) in `functions.py`;
+  - `versor_from_vectors` no longer says products are juxtaposition.
 
-## Context
+  The `⟨a b⟩` the review cited in `vectorcalc.py` was already gone. Docstrings in `base.py` reach the
+  generated `g*.py` through the docstring injection.
+- **Dead code removed:** `_coerce`'s `case sympy.Expr()` arm (identical to its default arm), the
+  discarded `np.array(…buffer_rgba())` and its two now-unused imports, and the commented-out
+  `ax.annotate` block.
+- **Wrong text fixed:**
+  - `gn.py`'s "G and G will be specialized" now names `g1.G`/`g2.G`/`g3.G`;
+  - `measure.py`'s comment says `max_grade()` is 0 on zero, not that it raises;
+  - "additon" became "addition";
+  - `gn.py`'s `decrease_grade` uses a plain `if` instead of selecting `identity()` as a function.
+- **Moved-task citations** now point at `tasks/reference/contraction-and-dot-definitions.md` (in place
+  of the archived `investigate-dot-product-grade-0.md`) and `tasks/archive/2026/07/29/validate-blade-dict-keys.md`.
 
-Read first:
-- `CLAUDE.md` › "Math notation for readers" and "Coding standard";
-- the cross-project rule "Comments and docstrings describe the present, not the history".
+## Deliberately not changed
 
-Docstrings in `base.py` are copied into the generated `g*.py` by `inject_method_docstrings`
-(`tasks/reference/generated-docstrings.md`), so a fix in `base.py` also fixes `g1.py`–`g3.py`. Never
-edit the generated files.
+- **`MultiVectorBase.identity`** is public API (documented in `api.rst`). It duplicates
+  `functions.identity`, but deleting it would break a consumer for no behaviour gain.
+- **The unused `xcolor`/`ycolor` on `create_basis` and `color` on `draw_ndc`/`draw_screen`** are
+  public keyword parameters the demo notebooks pass (`notebooks/displayg2.py`, `displaymv.py`).
+  Removing them would break those calls.
+- **`draw_ndc` duplicating `_draw_labelled_triangle`:** left for a plotting pass of its own.
 
-**History narration** (re-checked 2026-11-09; line numbers drift, so match on content):
-- `base.py:225` "Phase 1 (2026-08-15) computed…"
-- `base.py:1490` "This replaces the older…"
-- `base.py:2379` "An earlier version returned the hyperbolic form…"
-- the `normalize` docstring and "the previous…" (record: `base.py:529`)
-- the `transforms.py` module docstring ("removed long before…", "backward compatibility")
-- `frame.py`/`measure.py` "contrast the blade-square-sign task"
-- the `nbplotutils` helpers `_to_xy`, `_draw_labelled_triangle`, `_current_axes`, `_blade_terms`
-  ("Was written inline…")
+## Verification
 
-**Docstring notation:**
-- `base.py` `2 + 2cos θ = 4cos²(θ/2)` (record: `:2168`), and the middle dot used as multiplication
-  (record: `:424`)
-- `unit_pseudoscalar`'s `n(n-1)`
-- `exp`'s `cosh|A| + sinh|A| Â`
-- `measure.py` `a_1 b_2 - a_2 b_1`
-- `frame.py` eq 3.2 written `reverse(A_{k-1}) · A_k` although the code uses `*`; eq 3.7 and
-  `R⁻¹ Qᵀ y` use juxtaposition
-- `functions.py` `Linearity`'s `A x`
-- `vectorcalc.py`'s `⟨a b⟩`
-- `versor_from_vectors` says "Geometric products are juxtaposition, as elsewhere"
-
-**Dead code:**
-- `MultiVectorBase.identity` (`base.py:2066`) is unused and duplicates `functions.identity`. Grep
-  `notebooks/`, `book/` and `tests/` before deleting it.
-- `_coerce`'s `case sympy.Expr()` arm is identical to its default arm.
-- `nbplotutils.py` builds and discards `np.array(...buffer_rgba())`.
-- a commented-out `ax.annotate` block
-- unused `color`/`xcolor`/`ycolor` parameters in the triangle/ndc/screen/basis helpers
-- `draw_ndc` duplicates `_draw_labelled_triangle`
-
-**Wrong text:**
-- `gn.py:76` "G and G will be specialized…" is garbled and in the future tense.
-- `measure.py` (record: `:239`) says `max_grade()` raises on zero, but it returns 0.
-- `nbplotutils.py` shows students "additon".
-- `gn.py`'s `decrease_grade` picks `identity()` as a function, where a plain `if` reads better for a
-  student.
-
-**Moved-task citations (§2.4, `src/` part):** `base.py:993,1035` →
-`tasks/investigate-dot-product-grade-0.md`, `base.py:2699` → `tasks/validate-blade-dict-keys.md`, and
-`vectorcalc.py` → `tasks/custom-symbols-and-vector-calc.md`. Repoint each to its archive path, or to
-the reference doc that now holds the decision.
-
-**Out of scope:** the unannotated bindings in §4.3 belong to `tasks/annotation-auditor-floor-drift.md`.
-
-## Plan
-
-- [ ] Rewrite the history docstrings and comments to describe current behaviour. Where the history
-  matters, it goes in the commit message.
-- [ ] Fix the docstring notation per the rules. Doctest lines are exempt.
-- [ ] Remove the dead code, checking each for callers first.
-- [ ] Fix the wrong text and repoint the citations (`grep -rn "tasks/[a-z0-9-]*\.md" src` and check
-  that each path exists).
-- [ ] `make generate`, then `make format` and `make test`. Spot-check that a fixed docstring reaches
-  `g3.py`.
-
-## Open questions
-
-None.
+`ruff check` and `ruff format --check` are clean, and every `tasks/…` path cited in `src/` exists.
+Container gates: `make test` (775 passed, 2 skipped), `make format`, `make check-generated`,
+`make check-regions`, `make check-notebooks` and `make docs` all pass.
