@@ -1,6 +1,6 @@
 # `Frame`: derive the orthogonal set instead of storing it, and make `vectors` a tuple field
 
-**Status:** proposed — needs go-ahead
+**Status:** in progress (2026-11-09)
 **Priority:** 6
 **Difficulty:** 3
 **Created:** 2026-11-09
@@ -141,7 +141,23 @@ as computations. Bind it once to a local where `coefficients()` and the peel inv
 - [ ] Gates: `make test`, `make test-full` (the slow 3D frame tests), `make format` (ruff + ty), and
   `make docs` (the two book notebooks run).
 
+## Decisions
+
+1. Go ahead, in the committed batch on branch `gn-frozendict-and-frame-tuple`. **`Frame` takes a
+   tuple, and every caller passes one explicitly** (William Emerison Six <billsix@gmail.com>,
+   2026-11-09: "make the dataclass Frame take a tuple as an argument, so that you don't need to wrap
+   it in a a tuple, and then update all callers to pass in a tuple explicitly").
+2. **The orthogonal set is a method, `orthogonal_vectors()`**, the preliminary recommendation
+   above. It is spelled like the class's other two derived sets, and it is bound once to a local in
+   `coefficients()` and in the peel branch of `to_invertible_function`, so neither recomputes it
+   per row or per call. `cached_property` stays the fallback if the before/after measurement shows
+   a cost that matters (agent's call, 2026-11-09, under the maintainer's "or whatever is standard
+   python, like a method").
+3. **`__post_init__` rejects a non-tuple at run time** with `TypeError`, for untyped callers (a
+   notebook, a REPL) that would otherwise store a list the caller can still mutate. This is a
+   genuine `isinstance` type check, the one case CLAUDE.md reserves `TypeError` for (agent's call,
+   2026-11-09).
+
 ## Open questions
 
-None yet. The investigation's choice between a method and `cached_property`, and whether to
-reject a non-tuple at run time, will come back as questions if the measurements don't settle them.
+None.
