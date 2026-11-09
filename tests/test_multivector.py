@@ -20,7 +20,7 @@ import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
-from gacalc.base import MultiVectorBase, Real
+from gacalc.base import BladeReal, MultiVectorBase, Real
 from gacalc.gn import (
     MultiVector,
     a_1,
@@ -435,3 +435,11 @@ def test_division_by_an_int_stays_exact() -> None:
 def test_division_by_zero_raises(zero: Real) -> None:
     with pytest.raises(ZeroDivisionError):
         (1 * g2.e_1) / zero
+
+
+def test_to_blade_dict_is_a_copy() -> None:
+    # Changing the returned mapping must not change the value it came from (or a
+    # shared constant like e_1).
+    blades: BladeReal = e_1.to_blade_dict()
+    blades[(2,)] = 5
+    assert e_1.to_blade_dict() == {(1,): 1}

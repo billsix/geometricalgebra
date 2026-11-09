@@ -193,13 +193,14 @@ class Gn(MultiVectorBase):
         return plane.normalize()
 
     def to_blade_dict(self) -> BladeReal:
-        """Return the canonical blade → coefficient mapping (``Gn`` stores exactly
-        this, so it is returned directly, not rebuilt).
+        """Return the canonical blade → coefficient mapping, as a copy of what ``Gn``
+        stores, so a caller that changes it can't corrupt this value (or a shared
+        constant like ``e_1``).
 
         Returns:
-            BladeReal: the stored blade -> coefficient dict.
+            BladeReal: a copy of the stored blade -> coefficient dict.
         """
-        return self.coefficient_of_blade
+        return dict(self.coefficient_of_blade)
 
     def _geometric_product(self, rhs: MultiVectorBase) -> typing.Self:
         """Reference geometric product  A * B  for ``Gn``.

@@ -85,6 +85,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **`unit_pseudoscalar`, `bases` and `symbolic_multivector` raise `ValueError` on a graded type that
+  cannot hold the blade** (e.g. `g3.Vector.unit_pseudoscalar(3)`), instead of returning a silent zero.
+  Behavior change; use the full class (`g3.G`).
 - **BREAKING — `reject` raises `ValueError` instead of a bare `Exception`.** `reject(away_from=…)` with
   `away_from` neither a vector nor a bivector raised `Exception` with a message naming `project`; it now
   raises `ValueError` naming `reject`. Code catching `Exception` still works.
@@ -168,6 +171,8 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `tasks/reference/type-annotation-exemptions.md`.
 
 ### Fixed
+- **`Gn.to_blade_dict()` returns a copy.** Changing the returned dict no longer changes the value
+  it came from, or a shared constant such as `gn.e_1`.
 - **`gacalc.frame.prefix_blades` on the graded types** (`g2`/`g3`/… `Vector`) returned all-zero blades:
   it seeded the wedge with `type(v).one()`, and a graded `Vector` type has no scalar slot, so that is the
   zero vector. It now seeds with the scalar 1 of the algebra (`Scalar_n.one()`). This also fixes

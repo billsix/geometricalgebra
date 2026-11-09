@@ -372,6 +372,10 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: the unit pseudoscalar e₁ * e₂ * … * e_n.
 
+        Raises:
+            ValueError: if ``cls`` cannot hold the grade-``n`` blade (a graded type
+                such as ``g3.Vector``), rather than returning a silent zero.
+
         Examples:
             >>> from gacalc.gn import e_1, e_2, e_3, MultiVector
             >>> MultiVector.unit_pseudoscalar(1) == e_1
@@ -390,10 +394,33 @@ class MultiVectorBase(abc.ABC):
             ...  for n in range(1, 16)]
             [1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1]
         """
-        return math.prod(
+        pseudoscalar: typing.Self = math.prod(
             [cls.basis_vector(x) for x in range(1, n + 1)],
             start=cls.one(),
         )
+        cls._require_holds_blade(pseudoscalar, tuple(range(1, n + 1)))
+        return pseudoscalar
+
+    @classmethod
+    def _require_holds_blade(cls, value: "MultiVectorBase", blade: Blade) -> None:
+        """Raise ``ValueError`` unless ``value`` is the unit ``blade`` itself.
+
+        A graded type silently drops the blades it has no field for (its ``one()``
+        is zero on a type with no scalar), so a basis blade built in it comes back
+        as zero; this turns that into an error naming the type.
+
+        >>> import gacalc.g3 as g3
+        >>> g3.Vector.unit_pseudoscalar(3)
+        Traceback (most recent call last):
+            ...
+        ValueError: Vector cannot hold the basis blade e_123; use the full class
+        """
+        if value.to_blade_dict().get(blade) != 1:
+            label: str = "1" if blade == () else "e_" + "".join(map(str, blade))
+            raise ValueError(
+                f"{cls.__name__} cannot hold the basis blade {label}; "
+                "use the full class"
+            )
 
     @classmethod
     def bases(cls, n: int) -> Generator[typing.Self]:
@@ -407,6 +434,11 @@ class MultiVectorBase(abc.ABC):
         Yields:
             Self: each unit basis blade of 𝒢ₙ in grade order, from the scalar 1
             to the pseudoscalar.
+
+        Raises:
+            ValueError: if ``cls`` cannot hold one of the blades (a graded type),
+                rather than yielding a silent zero.  ``symbolic_multivector`` is
+                built from these blades, so it raises the same way.
         """
 
         def powerset(iterable: Sequence[int]) -> chain[Blade]:
@@ -414,13 +446,14 @@ class MultiVectorBase(abc.ABC):
             # chain.from_iterable flattens the list of combinations
             return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
-        yield from (
-            math.prod(
+        b: Blade
+        for b in powerset(range(1, n + 1)):
+            blade: typing.Self = math.prod(
                 [cls.basis_vector(x) for x in b],
                 start=cls.one(),
             )
-            for b in powerset(range(1, n + 1))
-        )
+            cls._require_holds_blade(blade, b)
+            yield blade
 
     @classmethod
     def symbolic_multivector(cls, n: int, prefix: str) -> typing.Self:
