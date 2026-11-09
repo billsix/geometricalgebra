@@ -14,8 +14,8 @@
 r"""Custom blade **display** symbols (``set_blade_symbols`` / ``blade_latex`` /
 ``blade_dict_latex``'s ``symbols`` parameter) -- LaTeX rendering only.
 
-The layered design (``tasks/custom-symbols-and-vector-calc.md``): a pure
-``symbols`` parameter underneath (what these tests mostly use, so they stay
+The layered design (``tasks/archive/2026/08/31/custom-symbols-and-vector-calc.md``):
+a pure ``symbols`` parameter underneath (what these tests mostly use, so they stay
 deterministic), one module-global session map on top -- required because Jupyter
 invokes ``_repr_latex_()`` with no arguments, so plain cell output can only be
 customized through state the method can reach.  Rename-only, canonical keys,

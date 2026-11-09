@@ -1,3 +1,16 @@
+# Copyright (c) 2025-2026 William Emerison Six
+# SPDX-License-Identifier: LGPL-2.1-only
+#
+# This library is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License, version
+# 2.1, as published by the Free Software Foundation.
+#
+# This library is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License (the LICENSE file in this repository)
+# for more details.
+
 """The ``Odd_3`` graded type (the odd part {1,3} of 𝒢₃) and its opt-in cast API.
 
 ``typing.assert_type`` pins the STATIC types (checked by ``ty`` -- a regression fails

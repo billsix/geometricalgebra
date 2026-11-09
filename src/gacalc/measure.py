@@ -198,7 +198,7 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Real:
     there.
 
     Examples:
-        >>> import gacalc.gn as gn  # signed content works on the general Gn now
+        >>> import gacalc.gn as gn  # signed content also works on the general Gn
         >>> signed_content([1 * gn.e_1, 1 * gn.e_2])          # oriented unit square
         1
         >>> signed_content([1 * gn.e_2, 1 * gn.e_1])          # swap flips the sign

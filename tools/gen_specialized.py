@@ -253,7 +253,13 @@ def out_path(filename: str) -> str:
 
 
 def blades_for_dim(n: int) -> list[Blade]:
-    """All 2**n basis blades of 𝒢ₙ in canonical (grade, then index) order."""
+    """All 2**n basis blades of 𝒢ₙ in canonical (grade, then index) order.
+
+    >>> blades_for_dim(2)
+    [(), (1,), (2,), (1, 2)]
+    >>> blades_for_dim(3)
+    [(), (1,), (2,), (3,), (1, 2), (1, 3), (2, 3), (1, 2, 3)]
+    """
     idx: list[int] = list(range(1, n + 1))
     powerset: Iterable[Blade] = chain.from_iterable(
         combinations(idx, r) for r in range(n + 1)
@@ -268,13 +274,18 @@ def blade_label(blade: Blade) -> str:
     The dataclass *field* that stores a blade's coefficient is ``field_name`` (a
     ``coeff_``-prefixed form), kept distinct so the basis-blade names ``e_1`` ...
     stay free to denote the basis-vector constants on each class.
+
+    >>> [blade_label(b) for b in [(), (1,), (1, 2), (1, 2, 3)]]
+    ['scalar', 'e_1', 'e_12', 'e_123']
     """
     return "scalar" if blade == () else "e_" + "".join(str(i) for i in blade)
 
 
 def field_name(blade: Blade) -> str:
-    """The dataclass field storing a blade's coefficient:
-    () -> 'coeff_scalar', (1,) -> 'coeff_e_1', (1, 2) -> 'coeff_e_12'.
+    """The dataclass field storing a blade's coefficient: ``coeff_`` + its label.
+
+    >>> [field_name(b) for b in [(), (1,), (1, 2)]]
+    ['coeff_scalar', 'coeff_e_1', 'coeff_e_12']
     """
     return "coeff_" + blade_label(blade)
 
@@ -329,10 +340,20 @@ def term_grade_key(
 
 
 def _subscript(number: int) -> str:
+    """``number`` in Unicode subscript digits.
+
+    >>> _subscript(0), _subscript(12)
+    ('₀', '₁₂')
+    """
     return "".join("₀₁₂₃₄₅₆₇₈₉"[int(d)] for d in str(number))
 
 
 def _superscript(number: int) -> str:
+    """``number`` in Unicode superscript digits.
+
+    >>> _superscript(3), _superscript(10)
+    ('³', '¹⁰')
+    """
     return "".join("⁰¹²³⁴⁵⁶⁷⁸⁹"[int(d)] for d in str(number))
 
 

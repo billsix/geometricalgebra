@@ -1,3 +1,16 @@
+# Copyright (c) 2025-2026 William Emerison Six
+# SPDX-License-Identifier: LGPL-2.1-only
+#
+# This library is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License, version
+# 2.1, as published by the Free Software Foundation.
+#
+# This library is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License (the LICENSE file in this repository)
+# for more details.
+
 """The r-dimensional unit pseudoscalar squares to (-1)^(r(r-1)/2), Euclidean.
 
 This is the permanent, executable half of the hand proof in
@@ -8,7 +21,7 @@ literally builds ``I_r = e_1 * e_2 * ... * e_r`` and squares it in ``Gn``, then 
 the scalar.  Because the check re-squares the pseudoscalar rather than
 re-deriving the formula, it keeps guarding the equivalence even after the Phase-2
 optimization makes the helper *be* the closed form (see
-``tasks/prove-blade-square-sign-equals-pseudoscalar-squared.md``).
+``tasks/archive/2026/08/16/prove-blade-square-sign-equals-pseudoscalar-squared.md``).
 """
 
 from gacalc.base import pseudoscalar_squared_sign

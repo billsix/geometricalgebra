@@ -53,7 +53,6 @@ def test_multivector_add() -> None:
 def test_multivector_subtract() -> None:
     a: MultiVector = 5 * e_1 + 6 * e_2
     b: MultiVector = 7 * e_1 + 9 * e_2
-    # doc-region-end test add
     assert (b - a) == (2 * e_1 + 3 * e_2)
 
 

@@ -64,9 +64,9 @@ def test_non_vector_and_empty_raise() -> None:
 # --- explicit symbolic tests: the measures ARE the familiar determinants -----
 #
 # General symbolic vectors, written out so each test reads like the math you
-# already know -- Bill's ``a1*e_1 + a2*e_2`` style.  These use ``g2``/``g3`` (not
-# the dimensionless ``Gn``) so the ``signed_*`` measures, which need a fixed
-# dimension, work.
+# already know -- the maintainer's ``a1*e_1 + a2*e_2`` style.  These use
+# ``g2``/``g3`` (not the dimensionless ``Gn``) so the ``signed_*`` measures,
+# which need a fixed dimension, work.
 
 _a1, _a2, _a3, _b1, _b2, _b3, _c1, _c2, _c3 = sympy.symbols(
     "a1 a2 a3 b1 b2 b3 c1 c2 c3"
@@ -172,10 +172,9 @@ def test_signed_content_wrong_count_raises() -> None:
 
 
 def test_signed_content_on_gn_full_space() -> None:
-    # Gn now supports signed content when the vectors span their own space (k = n),
-    # matching the fixed-dimension g2/g3 result exactly.
-    assert signed_content([1 * e_1, 1 * e_2]) == 1  # oriented unit square
-    assert signed_content([1 * e_2, 1 * e_1]) == -1  # swap flips the orientation
+    # Gn's signed content when the vectors span their own space (k = n) matches the
+    # fixed-dimension g2/g3 result.  The unit square and the swap are doctests on
+    # measure.signed_content.
     assert signed_content([1 * e_1, 1 * e_2, 1 * e_3]) == 1  # oriented unit cube
     assert (
         signed_content([2 * e_1 + 1 * e_2, 1 * e_1 + 3 * e_2]) == 5
@@ -202,8 +201,8 @@ def test_measure_methods_delegate_to_free_functions() -> None:
     b: MultiVectorBase = 1 * g2.e_1 + 3 * g2.e_2
     assert a.area(b) == area(a, b)
     assert a.signed_area(b) == signed_area(a, b)
-    x: MultiVectorBase = g3.e_1
-    y: MultiVectorBase = g3.e_2
-    z: MultiVectorBase = g3.e_3
+    x: MultiVectorBase = 1 * g3.e_1
+    y: MultiVectorBase = 1 * g3.e_2
+    z: MultiVectorBase = 1 * g3.e_3
     assert x.volume(y, z) == volume(x, y, z)
     assert x.signed_volume(y, z) == signed_volume(x, y, z)

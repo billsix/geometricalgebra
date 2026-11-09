@@ -322,6 +322,8 @@ def kronecker_delta(k: int, j: int) -> int:
         1
         >>> kronecker_delta(1, 2)
         0
+        >>> kronecker_delta(3, 1) == kronecker_delta(1, 3) == 0  # symmetric
+        True
         >>> [[kronecker_delta(k, j) for j in range(1, 4)] for k in range(1, 4)]
         [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
     """

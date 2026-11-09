@@ -219,6 +219,10 @@ def pseudoscalar_squared_sign(r: int) -> int:
 
     Returns:
         int: the sign factor ``(−1)^(r * (r−1)/2)`` (``+1`` or ``−1``).
+
+    Examples:
+        >>> [pseudoscalar_squared_sign(r) for r in range(1, 6)]  # +, -, -, +, +
+        [1, -1, -1, 1, 1]
     """
     # Proven equal to squaring the unit pseudoscalar the slow, obviously-correct way
     # — the SAME calculation, kept here as a comment so it reads as a proof for a
