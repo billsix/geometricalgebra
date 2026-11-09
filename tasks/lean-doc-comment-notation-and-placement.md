@@ -1,64 +1,40 @@
-# Lean low cleanup: doc-comment notation, history comments, moved-task citations, misplaced theorems
+# Lean low cleanup: doc-comment notation, history comments, moved-task citations, misplaced lemmas
 
-**Status:** proposed — needs go-ahead
-**Priority:** 7
-**Difficulty:** 3
-**Created:** 2026-11-09
+**Created:** 2026-11-09 · **Completed:** 2026-11-09
 **Source:** tasks/review/2026/11/08/repo-review.md §7.3, §2.4
 
-## BLUF
+## What changed
 
-Fix the low findings in `proofs/`:
-- Lean doc comments that break the notation rules;
-- history comments;
-- citations of tasks that have moved;
-- three declarations that sit in the wrong file.
+- **Notation in doc comments and `proofs/README.md`** (`CLAUDE.md` › "Math notation for readers"; in
+  Lean doc comments the star has no spaces):
+  - 45 coefficient·basis products such as `x·e₁` became `x*e₁`, replaced by a codemod limited to
+    `/- … -/` regions;
+  - by hand: `u*v = (u·v) + …`, `½*(u*v + v*u)`, `(−1)^(r*(r−1)/2)`, `eᵢ*eⱼ=−eⱼ*eᵢ`,
+    `(b·a / a·a)*a`, `2*sin(θ/2)*cos(θ/2)`, `(R θ₂)*(R θ₁)`, `2*cos(θ/2)`, `cos²(|B|)`/`sin²(|B|)`,
+    `|a|*(reduced b).e₂`, `R*R̃` (23 places), `A*I⁻¹`, `sin(θ/2)*i`, and
+    `2*|a|*|b|*(|a|*|b| + a·b)`;
+  - every dot that is a dot product (`u·v`, `a·b`) stays.
+- **History comments** in `G2.lean`, `Rotation3D.lean`, `ProjectionRotation2D.lean` and `Rotor.lean`
+  (two) describe the present.
+- **Moved-task citations** in `Cross.lean`, `Sandwich.lean` and `RotateComponents.lean` point at their
+  `tasks/archive/2026/09/…` paths.
+- **Moved lemmas:**
+  - the four 2D sandwich-wedge lemmas (`wedge_reverse_sandwich`, `sandwich_preserves_wedge`,
+    `normSq_reverse_sandwich_wedge`, `sandwich_preserves_normSq_of_wedge`) went from
+    `Projection2D.lean` to `Sandwich.lean`, beside their G3 twins. Their doc comments' juxtaposition
+    was fixed on the way.
+  - `G2.mul_vec_self` went from `ProjectionRotation2D.lean` to `G2.lean`, beside `G3.mul_vec_self` in
+    `G3.lean`.
+  - `tasks/reference/lean-ga-proof-architecture.md` says where they live now.
 
-Done means `make lean` passes (build, `sorry` grep, axioms gate) and a re-grep finds none of the
-listed patterns.
+## Tried and reverted
 
-## Context
+Rewriting G3's `rVectorPart` with the basis constants (`smul a.c1 e_1 + …`), to match G2's, broke eight
+`GradeProjection.lean` proofs that unfold the struct-literal form by `rfl`/`simp`. The struct literals
+stay; matching G2's style isn't worth reworking those proofs.
 
-Read first:
-- `CLAUDE.md` › "Math notation for readers": in Lean doc comments the star has no spaces (`|a|*|b|`),
-  every product is a `*`, and the middle dot is the dot product only;
-- `tasks/reference/algebra-teaching-order.md`, for where moved declarations go;
-- `tasks/reference/lean-ga-proof-architecture.md`.
+## Verification
 
-Lean *code* is exempt; only doc comments and `proofs/README.md` change.
-
-- **Juxtaposition** (record lines): G2:9-12, G3:6, Sandwich `R R̃`, Rotor:306 `2cos(θ/2)`,
-  Rotation2D:244. Re-checked: `proofs/GacalcProofs/G2.lean:9` still reads `u v = (u·v) + (u∧v)*e₁*e₂`.
-- **Middle dot used as multiplication:**
-  - G1:36;
-  - G2:74,170,210,460,464 (e.g. `x·e₁ + y·e₂`, G2.lean:77);
-  - G3:58,62,190,227,231;
-  - Cross:62; Exp:15,61,144; Projection3D:9,145,179; Rotation2D:273.
-
-  Keep every dot that really is a dot product (`(u·v)` above is one).
-- **A spaced star** at CrossStandardPosition:301; **`cos²|B|`** at Exp:152.
-- **History comments:** G2:176, Rotor:135,268, ProjectionRotation2D:25, Rotation3D:7-11.
-- **Moved-task citations (§2.4, proofs):**
-  - Cross → `tasks/lean-candidates-from-symbolic-tests.md`;
-  - Sandwich → `tasks/lean-proof-rotation-preserves-length.md` and `-angles.md`;
-  - RotateComponents → `tasks/lean-proof-sandwich-rotates-components.md`.
-
-  Repoint each to its archive path.
-- **Misplaced code:**
-  - the G2 wedge-preservation theorems sit in `Projection2D`;
-  - G2's `mul_vec_self` sits in `ProjectionRotation2D`;
-  - G3's `rVectorPart` uses struct literals where G2's uses the basis constants.
-
-  Moving a theorem changes import order; follow the teaching order and rebuild.
-
-## Plan
-
-- [ ] Fix the notation and history comments file by file, re-grepping each pattern at the end.
-- [ ] Repoint the citations.
-- [ ] Move the three misplaced pieces. Update any book page that cites them by file (`grep -rn
-  "Projection2D\|ProjectionRotation2D" book/docs tasks/reference`).
-- [ ] `make lean` (needs a `USE_LEAN=1` image).
-
-## Open questions
-
-None.
+`make lean`: the build, the `sorry`/`admit` grep, and the axioms gate (1043 declarations rest only on
+`propext`, `Classical.choice`, `Quot.sound`) all pass. Trig.lean, which uses the moved lemmas, builds
+unchanged.
