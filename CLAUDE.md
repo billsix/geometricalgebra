@@ -412,13 +412,14 @@ lualatex/no-EPUB/`texlive-luahbtex` details and content guide: `tasks/reference/
 
 CI (`.github/workflows/`) is a **thin wrapper over the make/Dockerfile system**: each job is
 `checkout` → `make <target>`, all logic in make targets, so the same command runs locally
-(`CONTAINER_CMD` auto-detects podman→docker; runners are `ubuntu-latest`). `checks.yml` runs on
-every push + PR as three check-only jobs — **`format`** (`make check-format` = `make format` then
-`git diff --exit-code`; runs the formatter in the disposable runner and fails on a diff, never
-commits), **`test`** (`make test-full`, the whole suite), and **`generated`** (`make check-generated` then
-`make check-regions` — the codegen-determinism + doc-region gates). A separate **`lean.yml`** runs
-**`make lean`** (the Lean/Mathlib proofs) **on `v*` tags only** — not per-push, since a Mathlib build
-is heavy. If CI needs a step, add it as a
+(`CONTAINER_CMD` auto-detects podman→docker; runners are `ubuntu-latest`). Every job builds the lean
+image (`MINIMAL_IMAGE=1`). `checks.yml` runs on every push + PR as four check-only jobs — **`format`**
+(`make check-format` = `make format` then `git diff --exit-code`; runs the formatter in the disposable
+runner and fails on a diff, never commits), **`test`** (`make test-full`, the whole suite),
+**`generated`** (`make check-generated` then `make check-regions` — the codegen-determinism + doc-region
+gates), and **`notebooks`** (`make check-notebooks`, pyright over `notebooks/`). A separate **`lean.yml`**
+runs **`make lean MINIMAL_IMAGE=1 USE_LEAN=1`** (the Lean/Mathlib proofs) **on `v*` tags only** — not
+per-push, since a Mathlib build is heavy. If CI needs a step, add it as a
 `make` target first (runnable locally), never inline YAML. Pin actions at Node 24
 (`actions/checkout@v5`; `@v4` is the deprecated Node 20). Releases are **manual** by decision
 (`make dist`/`upload`/`release` → PyPI); a tag-triggered PyPI publish was **declined** 2026-10-22

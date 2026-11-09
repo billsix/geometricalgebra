@@ -175,7 +175,7 @@ format: image ## (container) regenerate, then ruff + ty over the source (entrypo
 # formatted.  The generated modules are gitignored, so they don't trip the diff.
 # One make target = the whole format gate, so CI is a thin wrapper (checkout ->
 # `make check-format`) and it reproduces exactly what CI does locally.  Run lean:
-# `make check-format BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0`.
+# `make check-format MINIMAL_IMAGE=1` (what CI runs).
 .PHONY: check-format
 check-format: format ## (CI) run format, then fail if it changed any tracked file
 	git diff --exit-code

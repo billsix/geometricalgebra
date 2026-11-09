@@ -327,8 +327,8 @@ section covers the judgment calls ruff can't. Run `make format` (ruff + ty) and
 `make test` before sending a change (CI runs `make test-full`).
 
 GitHub Actions runs the same gates on every push and PR (`.github/workflows/checks.yml`,
-three check-only jobs: `make check-format`, `make test-full`, and `generated` — `make
-check-generated` + `make check-regions`). CI is a thin wrapper — each job is `checkout` →
+four check-only jobs on the lean image: `make check-format`, `make test-full`, `generated` — `make
+check-generated` + `make check-regions` — and `make check-notebooks`). CI is a thin wrapper — each job is `checkout` →
 `make <target>` — so what CI runs is exactly what you run locally. Releases are manual
 (`make dist` → `make upload`/`make release` to PyPI).
 

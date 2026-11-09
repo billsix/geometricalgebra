@@ -6,6 +6,9 @@
 # locally. CONTAINER_CMD auto-detects podman->docker, so the identical target
 # runs on the ubuntu-latest runner (Docker) and on the maintainer's podman host.
 #
+# Every job builds the lean image (MINIMAL_IMAGE=1): the base toolchain these gates
+# need, without Lean/Mathlib, ePiX, TeX, Sphinx or Emacs.
+#
 # These jobs NEVER modify the repo: `make check-format` runs the formatter inside
 # the disposable runner and then FAILS on any `git diff` (no commit/push), and
 # `make test-full` / `make check-generated` / `make check-regions` are read-only. The
@@ -24,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: make check-format
-        run: make check-format BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0
+        run: make check-format MINIMAL_IMAGE=1
 
   # The whole suite, slow tests included (`make test` skips the ones marked slow
   # for everyday development; CI is where they run).
@@ -33,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: make test-full
-        run: make test-full BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0
+        run: make test-full MINIMAL_IMAGE=1
 
   # The two generator gates: the codegen is deterministic (regen twice, compare)
   # and the doc-region markers are well-formed. Both regenerate the g*.py inside
@@ -44,6 +47,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: make check-generated
-        run: make check-generated BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0
+        run: make check-generated MINIMAL_IMAGE=1
       - name: make check-regions
-        run: make check-regions BUILD_DOCS=0 USE_EMACS=0 USE_SPYDER=0
+        run: make check-regions MINIMAL_IMAGE=1
+
+  # pyright over the demo notebooks/ (ty covers src, tests, tools and the book's
+  # notebooks; the demo notebooks are pyright's). pyright is in the base image group.
+  notebooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: make check-notebooks
+        run: make check-notebooks MINIMAL_IMAGE=1
