@@ -1,48 +1,35 @@
 # Fast path for numeric `__eq__`: don't call `sympy.simplify` when both coefficients are plain numbers
 
-**Status:** **DONE 2026-09-09.** Implemented as `base._coef_eq` — one hand-written predicate the generated `__eq__` calls from both its same-type and blade-dict paths, rather than the inline `isinstance` guard the plan sketched (both call sites needed the rule, so it belongs in `base.py`, not emitted twice as AST). Measured 48 µs → **0.391 µs** (~123×) on `Vector(3.0, 4.0) == Vector(1.5, -2.0)`, beating the "well under 1 µs" bar. Three tests added to `tests/test_multivector.py` (simplify patched to raise, int/float by value, `(x+1)**2` still equals `x**2+2*x+1`). Gates green: `make format`, `make test` (564 passed), `check-generated`, `check-regions`. Changelog entry under `[Unreleased]` — **not** 0.0.20 as this doc originally said, since 0.0.20 was tagged 2026-09-06 before the fix. Rationale harvested to `tasks/reference/symbolic-equality.md`.
-**Priority:** 4
-**Difficulty:** 2
-**Related:** `tasks/consolidate-symbolic-equality-predicate.md` (the symbolic half; this task is about the numeric case that never needed sympy), `tasks/reference/symbolic-equality.md`.
+**Created:** 2026-09-06 · **Completed:** 2026-09-09
+**Related:** `tasks/archive/2026/10/05/consolidate-symbolic-equality-predicate.md` (the symbolic
+half; this task was the numeric case that never needed sympy), `tasks/reference/symbolic-equality.md`
+(where the rationale was harvested).
 
-## BLUF
+## The problem
 
-The generated `__eq__` (`tools/gen_specialized.py`, per field `a == b or sympy.simplify(sympify(a) -
-sympify(b)) == 0`) pays `sympy.simplify` whenever two **plain float** coefficients *differ* — the
-common case for a game comparing positions. Measured in `github.com/billsix/modelviewprojection`
-(gacalc 0.0.19, Python 3.14): `Vector(3.0, 4.0) == Vector(1.5, -2.0)` costs **48 µs** (a tuple
-comparison: 0.018 µs); beatstreets' `target != self.vpos` per fighter per frame made `__eq__` 71 ms of
-a 173 ms profile (1189 calls). Fix: when both coefficients are `int`/`float` (not sympy objects),
-return `a == b` directly — the simplify branch exists to prove symbolic equality and can never turn two
-unequal floats into equal ones. Expected: ~0.2 µs per comparison; symbolic behaviour unchanged.
+The generated `__eq__` (`field_equal` in `tools/gen_specialized.py`) compared each coefficient field
+as `a == b or sympy.simplify(sympy.sympify(a) - sympy.sympify(b)) == 0`. Its docstring said native
+`==` "is exact and instant for numeric `Coef`", which held only when coefficients were equal: when two
+floats differed, the `or` fell into `simplify`. Measured in github.com/billsix/modelviewprojection
+(gacalc 0.0.19, Python 3.14): `Vector(3.0, 4.0) == Vector(1.5, -2.0)` cost **48 µs** (a tuple
+comparison costs 0.018 µs), and beatstreets' per-fighter-per-frame `target != self.vpos` made
+`__eq__` 71 ms of a 173 ms profile (1189 calls). The simplify branch exists to prove symbolic
+equality and can never make two unequal floats equal, so plain numbers can be compared directly.
+The cross-type blade-dict fallback had the same shape.
 
-## Where it lives (verified 2026-09-06 against the checkout at 0.0.18; the generated code is the same in the 0.0.19 wheel)
+## What changed
 
-- `tools/gen_specialized.py:885-935` — `field_equal` builds, per coefficient field,
-  `self.<f> == other.<f> or sympy.simplify(sympy.sympify(self.<f>) - sympy.sympify(other.<f>)) == 0`.
-  Its docstring (lines 887-896) says the native `==` "is exact and instant for numeric `Coef` (a numeric
-  multivector never touches sympy)" — true only when the coefficients are **equal**; when two floats
-  differ the `or` falls into `simplify`, which is the measured 48 µs (`Vector(3.0, 4.0) == Vector(1.5, -2.0)`).
-- The generated result is visible in `src/gacalc/g2.py:1211` (`Vector.__eq__`), `g3.py:1756`, and
-  every other specialized type (`grep -n "def __eq__" src/gacalc/g*.py`); regenerate, don't hand-edit.
-- The cross-type fallback (`gen_specialized.py:937-960`, blade-dict generator) has the same shape and
-  the same fix.
-- Tests: `tests/test_multivector.py` / `tests/test_graded.py` hold the equality tests; the symbolic
-  cases that must keep passing are listed in `tasks/reference/symbolic-equality.md` ("Limits").
-- `CHANGELOG.md` `## [Unreleased]` (line 12) takes the entry: Fixed — numeric `==` no longer calls
-  `sympy.simplify` when two plain-number coefficients differ (perf only; results unchanged).
+- **`base._coef_eq`**: one hand-written predicate that the generated `__eq__` calls from both its
+  same-type and blade-dict paths, comparing `int`/`float` pairs directly and using `simplify` only
+  otherwise. The plan had sketched an inline `isinstance` guard emitted into the generator template;
+  since both call sites needed the rule, it went into `base.py` instead of being emitted twice as AST.
+- Three tests in `tests/test_multivector.py`: differing numeric vectors compare unequal with
+  `sympy.simplify` patched to raise; an int/float pair still compares by value (`1 * e_1 == 1.0 * e_1`);
+  `(x + 1)**2` still equals `x**2 + 2*x + 1` through `simplify`.
+- `CHANGELOG.md` entry under `[Unreleased]` (Fixed; a behaviour-preserving speedup, not breaking) —
+  not under 0.0.20 as first planned, because 0.0.20 was tagged 2026-09-06 before the fix.
 
-## Plan
+## Verification
 
-- In the generator's `__eq__` template (`field_equal`, and the blade-dict fallback): `if isinstance(a, (int, float)) and isinstance(b, (int, float)):
-  compare directly` before the sympy branch (or `if not (isinstance(a, sympy.Basic) or isinstance(b,
-  sympy.Basic))`). Regenerate; the existing symbolic tests must still pass.
-- Add a test (`tests/test_multivector.py`): two differing numeric vectors compare unequal **without**
-  `sympy.simplify` being called (`unittest.mock.patch("sympy.simplify")` asserting `not called`), an
-  int-vs-float pair still compares by value (`1 * e_1 == 1.0 * e_1`), and a structurally-different
-  symbolic pair (`(x + 1)**2` vs `x**2 + 2*x + 1`) still compares equal through `simplify`.
-- Acceptance: `python -c` timing of the differing-float comparison drops from ~48 µs to well under 1 µs;
-  `tests/` green; 0.0.20 entry in the changelog; modelviewprojection re-profiles beatstreets with
-  `tools/ctc_profile_update.py` after bumping its pin (its `__eq__` share should vanish).
-- `ruff` + `ty check src tests` + full suite; changelog entry (a behaviour-preserving speedup; not
-  breaking).
+48 µs → **0.391 µs** (~123×) on `Vector(3.0, 4.0) == Vector(1.5, -2.0)`, beating the "well under
+1 µs" bar. `make format`, `make test` (564 passed), `make check-generated`, `make check-regions` green.
