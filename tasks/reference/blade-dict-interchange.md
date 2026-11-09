@@ -87,6 +87,28 @@ must be built with `+` / `*`, which dispatches to the type that can hold the res
 (`Bivector + scalar → Versor`). This is exactly why `MultiVectorBase.exp` builds its result
 with a dispatching `+`, not `from_blade_dict` (see its docstring).
 
+## Immutable storage (`frozendict`, Python 3.15)
+
+`frozendict` is a built-in since Python 3.15.0 (PEP 814, Final). gacalc's measured findings
+(2026-11-09, `tasks/archive/2026/11/09/frozendict-research-and-fit.md`):
+
+- **It fits `Gn`'s storage and nothing else.** Storing `Gn.coefficient_of_blade` as a
+  `frozendict` makes a caller's edit of a `to_blade_dict()` result impossible (the `e_1`
+  corruption fixed 2026-11-09 by copying), and lets `to_blade_dict()` return the stored mapping
+  with no copy. The specialized classes store fields and build a fresh dict per call. The
+  display-symbol registry and the tools' tables are never mutated by anyone who could misuse them.
+- **The type that works is `BladeReal = Mapping[Blade, Real]`.** It is read-only, and both `dict`
+  and `frozendict` satisfy it. The `Gn` field keeps that type so `Gn({...})` still accepts a dict
+  literal. Typing the field `frozendict[...]` would force every constructor call to pass one.
+- **It costs nothing measurable.** Building a `frozendict` from a dict costs the same as
+  `dict(d)`. Every `Gn` operation, the code generator and the test suite ran within noise of the
+  `dict` baseline, and `to_blade_dict()` got 4× faster without its copy. `sympy.simplify`
+  dominates all real `Gn` work.
+- **It does not make multivectors hashable, and must not.** `__eq__` is value equality (it
+  simplifies the difference), so a structural hash would break the hash contract.
+- **It needs `requires-python >= 3.15`**; `ty` treats the name as undefined under `>=3.13`. The
+  adoption is `tasks/gn-frozendict-coefficient-storage.md`.
+
 ## Where it lives
 
 - **`src/gacalc/base.py`** — the `Blade` / `Real` / `BladeReal` aliases and the `BladeReal`

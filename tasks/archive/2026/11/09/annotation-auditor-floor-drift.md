@@ -48,7 +48,7 @@ and 26 listed exemptions.
 - **The 66 gaps**, fixed across 22 files in `src/`, `tools/`, `tests/`, `notebooks/` and
   `book/docs/notebooks/`:
   - the `sympy.symbols` unpack names declared `sympy.Symbol` on the lines above, by the
-    idempotent codemod `tasks/adhoc/annotation-auditor-floor-drift/declare_symbol_unpacks.py`
+    idempotent one-shot codemod `declare_symbol_unpacks.py` (removed at archive; in git history)
     (a second run changed nothing), then reverted in the four pyright-checked notebooks
     (decision 4);
   - the rest by hand: loop-target declarations, `Figure`/`Axes` for `plt.subplots`,

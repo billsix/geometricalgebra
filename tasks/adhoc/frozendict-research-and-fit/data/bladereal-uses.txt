@@ -1,0 +1,63 @@
+src/gacalc/base.py:38:#: the scalar blade).  The key type of the ``BladeReal`` interchange dict.
+src/gacalc/base.py:56:BladeReal = dict[Blade, Real]
+src/gacalc/base.py:151:def blade_dict_latex(d: BladeReal, symbols: Mapping[Blade, str] | None = None) -> str:
+src/gacalc/base.py:261:    ``_geometric_product``.  The blade dict (``BladeReal``, documented at its
+src/gacalc/base.py:285:                strictly-increasing index tuples; see ``BladeReal``).
+src/gacalc/base.py:297:    def to_blade_dict(self) -> BladeReal:
+src/gacalc/base.py:301:            BladeReal: the blade -> coefficient interchange dict (canonical keys,
+src/gacalc/base.py:591:        left: BladeReal = self.to_blade_dict()
+src/gacalc/base.py:592:        right: BladeReal = rhs.to_blade_dict()
+src/gacalc/base.py:708:        d: BladeReal = self.to_blade_dict()
+src/gacalc/base.py:1150:        d: BladeReal = self.to_blade_dict()
+src/gacalc/base.py:2527:        left: BladeReal = self.to_blade_dict()
+src/gacalc/base.py:2528:        right: BladeReal = other.to_blade_dict()
+src/gacalc/base.py:2572:        left: BladeReal = self.to_blade_dict()
+src/gacalc/base.py:2573:        right: BladeReal = other.to_blade_dict()
+src/gacalc/base.py:2719:    """Raise ``ValueError`` on a non-canonical blade key (see ``BladeReal``).
+src/gacalc/base.py:2720:    Only the keys are read, so any blade-keyed mapping qualifies (a ``BladeReal``,
+src/gacalc/gn.py:27:    BladeReal,
+src/gacalc/gn.py:93:    coefficient_of_blade: BladeReal
+src/gacalc/gn.py:195:    def to_blade_dict(self) -> BladeReal:
+src/gacalc/gn.py:201:            BladeReal: a copy of the stored blade -> coefficient dict.
+src/gacalc/nbplotutils.py:47:    BladeReal,
+src/gacalc/nbplotutils.py:581:    blade_dict: BladeReal = mv.to_blade_dict()
+src/gacalc/nbplotutils.py:672:def _expand_numerators_dict(mv: MultiVectorBase) -> BladeReal:
+src/gacalc/nbplotutils.py:682:    out: BladeReal = {}
+src/gacalc/transforms.py:57:from gacalc.base import BladeReal, MultiVectorBase, MultiVectorFn, Real
+src/gacalc/transforms.py:457:    i_coefs: BladeReal = i.to_blade_dict()
+src/gacalc/transforms.py:843:        d: BladeReal = v.to_blade_dict()
+tests/test_blade_dict.py:17:to and from ``BladeReal`` (``dict[Blade, Real]``), and all shared arithmetic in
+tests/test_blade_dict.py:46:from gacalc.base import Blade, BladeReal, MultiVectorBase
+tests/test_blade_dict.py:50:SAMPLES: list[tuple[type[MultiVectorBase], BladeReal]] = [
+tests/test_blade_dict.py:82:    d: BladeReal
+tests/test_blade_dict.py:91:    d: BladeReal = {(): 1, (1,): 2, (2,): 3, (1, 2): 4}
+tests/test_blade_dict.py:100:    a: BladeReal = {(1,): 1, (1, 2): 2}
+tests/test_blade_dict.py:101:    b: BladeReal = {(): 5, (1,): 10}
+tests/test_blade_dict.py:102:    gn_sum: BladeReal = (Gn.from_blade_dict(a) + Gn.from_blade_dict(b)).to_blade_dict()
+tests/test_blade_dict.py:103:    g3_sum: BladeReal = (
+tests/test_blade_dict.py:179:    d: BladeReal = g2.Vector.from_blade_dict({(1,): 1.5, (2,): 2}).to_blade_dict()
+tests/test_blade_dict.py:181:    sym: BladeReal = g2.Vector.from_blade_dict(
+tests/test_conformance.py:34:from gacalc.base import Blade, BladeReal, MultiVectorBase, Real
+tests/test_conformance.py:291:    coefs: BladeReal = g.to_blade_dict()
+tests/test_multivector.py:23:from gacalc.base import BladeReal, MultiVectorBase, Real
+tests/test_multivector.py:443:    blades: BladeReal = e_1.to_blade_dict()
+tools/derive_lean_algebra.py:34:from gacalc.base import BladeReal
+tools/derive_lean_algebra.py:58:    coefs: BladeReal = value.to_blade_dict()
+tools/gen_specialized.py:210:    BladeReal,
+tools/gen_specialized.py:1123:        "    BladeReal: the grade-2 blade -> coefficient mapping."
+tools/gen_specialized.py:1382:        "    BladeReal: the ``{(): value}`` mapping."
+tools/gen_specialized.py:1738:        "    BladeReal: the grade-1 blade -> coefficient mapping."
+tools/gen_specialized.py:2016:        "    BladeReal: the grade-3 blade -> coefficient mapping."
+tools/gen_specialized.py:2300:        "    BladeReal: the grade-0 + grade-2 blade -> coefficient mapping."
+tools/gen_specialized.py:2588:        "    BladeReal: the grade-1 + grade-3 blade -> coefficient mapping."
+tools/gen_specialized.py:3168:    result_coeffs: BladeReal = result_mv.to_blade_dict()
+tools/gen_specialized.py:3194:    result_coeffs: BladeReal = result_mv.to_blade_dict()
+tools/gen_specialized.py:3441:            "left", name_ref("BladeReal"), call(attribute("self", "to_blade_dict"))
+tools/gen_specialized.py:3444:            "right", name_ref("BladeReal"), call(attribute("other", "to_blade_dict"))
+tools/gen_specialized.py:3531:            # No ``cast(Real, ...)`` here: ``d`` is a ``BladeReal`` (= dict[Blade,
+tools/gen_specialized.py:3542:            "d", name_ref("BladeReal"), call("dict", [name_ref("blade_coef")])
+tools/gen_specialized.py:3580:        "to_blade_dict", [return_stmt(dictcomp)], returns=name_ref("BladeReal")
+tools/gen_specialized.py:4295:            returns=name_ref("BladeReal"),
+tools/gen_specialized.py:4691:        result_coeffs: BladeReal = result_mv.to_blade_dict()
+tools/gen_specialized.py:4842:        dual_coeffs: BladeReal = a_mv.dual(n).to_blade_dict()
+tools/gen_specialized.py:6151:    BladeReal,
