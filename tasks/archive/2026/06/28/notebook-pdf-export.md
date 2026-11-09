@@ -1,9 +1,8 @@
 # Notebook "Export to PDF" should work in the container
 
-**Status:** DONE (2026-06-28)
-**Created:** 2026-06-28
+**Created:** 2026-06-28 · **Completed:** 2026-06-28
 
-## Goal
+## What it was
 
 When running the JupyterLab notebooks in the container (`make jupyter`, or
 `/usr/local/bin/jupyter.sh` from `make shell`), JupyterLab's
@@ -58,8 +57,8 @@ from the two recommended collections + the named helper packages.
   `nbconvert --to pdf --execute` inside it using geo's own `/venv` →
   **20,843-byte `geotest.pdf`**, exit 0. Throwaway images cleaned up afterward.
 
-## Follow-ups (optional, not blocking)
+## Left for later
 
-- If a notebook later uses a LaTeX feature outside this set, the failure names the
-  exact missing `.sty` → add the matching `texlive-*` package.
-- Consider the `ARG`-gating above only if image size becomes a problem.
+If a notebook uses a LaTeX feature outside this set, the failure names the exact
+missing `.sty`, and the matching `texlive-*` package is the fix. The `ARG`-gating
+above was left for if image size became a problem.

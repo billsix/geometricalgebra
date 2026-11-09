@@ -1,9 +1,8 @@
 # Lean proof — exponential map (`exp`)
 
-**Part of:** `tasks/investigate-lean-proofs-for-ga.md`
+**Completed:** 2026-10-02
+**Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`
 **From:** `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the coverage-map gap audit)
-
-**Status:** DONE 2026-10-02. **Priority:** 7 **Difficulty:** 6
 
 ## Summary
 
@@ -19,4 +18,4 @@ and `normSq_* = 1` (unit versor, via `cos²+sin² = 1`); and the general
 `cos`/`sin` are Mathlib's; the GA content is the `Â² = −1` reduction (cf. `I_sq`, `cos_sq_add_sin_sq`).
 
 Coverage map: `tasks/reference/lean-ga-proof-architecture.md`;
-semantics: `tasks/reference/unit-bivector-and-rotors.md`, `design-decisions.md`.
+semantics: `tasks/reference/unit-bivector-and-rotors.md`, `tasks/reference/design-decisions.md`.

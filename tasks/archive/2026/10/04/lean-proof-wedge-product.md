@@ -1,11 +1,11 @@
 # Lean proof — wedge product (2D and 3D), from scratch + equivalence to general
 
+**Completed:** 2026-10-04 (`make lean` green)
 **Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`.
-**Status:** DONE 2026-10-04, archived 2026-10-04 (`make lean` green). **Priority:** 7. **Difficulty:** 5.
 **Durable record:** `tasks/reference/lean-ga-proof-architecture.md` (inventory; coverage rows `wedge`,
 `vectorcalc.cross`, `measure.signed_volume`).
 
-## BLUF
+## Summary
 
 The wedge product was proved to be the antisymmetric part of the geometric product in 2D and 3D, and
 bridged to Mathlib: the 2D wedge is the `2×2` determinant, the 3D wedge's components are the three
@@ -25,7 +25,7 @@ the three coordinate rows.
   `Fin 3 → ℝ`) with `toF_cross` (`toF (cross a b) = toF a ⨯₃ toF b`, Mathlib's `crossProduct`) and
   `signedVolume_eq_det` (`signedVolume a b c = det ![toF a, toF b, toF c]`, through Mathlib's
   `triple_product_eq_det`). Mathlib's `cross_anticomm`, `dot_self_cross`, `dot_cross_self` therefore
-  apply to the from-scratch cross product through `toF_cross`.
+  applied to the from-scratch cross product through `toF_cross`.
 
 ## Decisions
 

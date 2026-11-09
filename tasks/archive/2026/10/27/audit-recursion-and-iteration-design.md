@@ -1,17 +1,12 @@
 # Audit the source for recursion / iteration to align with the recursive-design pattern
 
-**Status:** DONE 2026-10-27 (William Emerison Six <billsix@gmail.com>). Ready to archive after the
-work commit.
-**Priority:** 6
-**Difficulty:** 4
-**Created:** 2026-10-27 **Updated:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-27 · **Completed:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
 
 A full read of every hand-written module in `src/gacalc/` for (a) recursions to align to the
-`~/.claude/reference/recursive-design.md` pattern and (b) iterative code that should be recursive.
+recursive-design pattern (github.com/billsix/runClaudeInContainer `tasks/reference/recursive-design.md`)
+and (b) iterative code that should be recursive.
 The code was already largely aligned; the one actionable item was polishing `decrease_grade` (the
-geometric product's blade canonicalizer in `gn.py`). Done: its base case split (`case ():` /
+geometric product's blade canonicalizer in `gn.py`). It got its base case split (`case ():` /
 `case (_,):`), operation-first comments, and the `a<c` re-insertion extracted as a named
 `insert_into_canonical` helper — behavior unchanged (it is the slow `Gn` oracle): 690 pytest passed,
 ty + ruff clean. Two long-standing `# type: ignore` suppressions were removed as a side-item. No
@@ -27,8 +22,8 @@ regenerated, never hand-edited).
 ## What was found and done
 
 - **`decrease_grade` (geometric product, `gn.py`) — polished.** It was already a clean `match`-based
-  structural recursion (a base case, three `(a, c, *rest)` guard cases, a total default). Split the
-  base into `case ():` (the scalar 1) and `case (_,):` (a lone basis vector); rewrote each case
+  structural recursion (a base case, three `(a, c, *rest)` guard cases, a total default). The
+  base was split into `case ():` (the scalar 1) and `case (_,):` (a lone basis vector); rewrote each case
   comment **operation-first** (equal adjacent indices square to 1 and cancel; an out-of-order pair
   swaps and negates; `a<c` canonicalizes the tail then re-inserts `a`); and extracted the intricate
   `a<c` re-insertion as a named `insert_into_canonical` helper so the branch reads plainly.

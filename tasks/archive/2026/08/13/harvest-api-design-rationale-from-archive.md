@@ -1,64 +1,49 @@
 # Harvest archived API/design rationale into the live docs
 
-**Status:** COMPLETED 2026-08-13 — all six items applied (each verified against source first).
-Five went to `design-decisions.md` (to_matrix backends/convention; declined vector-API
-additions; `__matmul__` overloads + rejected generic-bound; rotation-normalize + sandwich-
-scaling rationale; the animation-layer `at`/`inverse` invariant); one to CLAUDE.md (x/y/z
-coordinate props are grade-1-only). **Correction found while verifying:** the archived "no
-zero-safe normalize → raises" claim is only half true — a *float*-zero vector raises
-`ZeroDivisionError`, but an *int/symbolic*-zero vector yields silent `nan` (sympy `0**-1 →
-zoo`); documented accurately rather than repeated. Ready to commit, then archive.
-**Priority:** 5
-**Difficulty:** 3
-**Created:** 2026-08-13
-**Origin:** the 2026-08-13 archive gap-analysis sweep (Group B — medium-confidence
-design/API rationale, mostly rejected-alternatives). Siblings: the other `harvest-*`
-tasks + `blade-dict-interchange-reference.md`.
+**Created:** 2026-08-13 · **Completed:** 2026-08-13
 
-**Verify each item against current source before writing** — durable, but a couple carry
-"confirm it still holds" caveats. Target is mostly `design-decisions.md` (the "why, and
-where settled" harvest), with two CLAUDE.md architecture notes.
+Group B of the 2026-08-13 archive gap-analysis sweep (medium-confidence design/API rationale,
+mostly rejected alternatives). Siblings: the other `harvest-*` tasks in this folder and
+`tasks/archive/2026/08/13/blade-dict-interchange-reference.md`.
 
-## Items
+## What was harvested, and where
 
-- [ ] **`to_matrix` two backends + convention.** `backend="numpy"` (float32, default, for
-      GL) vs `"sympy"` (exact/symbolic); column-vector / premultiply convention with the
-      translation in the **last column**, matching mvp's `pyMatrixStack` (a cross-repo
-      contract); `Gn` needs an explicit `n` (specialized classes read `DIMENSION`).
-      *Source:* archive `2026/06/08/invertiblefunction-to-matrix.md`,
-      `2026/06/12/to-matrix-build-by-columns.md`. *Home:* design-decisions `to_matrix` entry.
-- [ ] **`x`/`y`/`z` coordinate properties are grade-1-only** (Vector1/2/3), deliberately
-      not on rotors/bivectors/full types ("a vector's coordinates ARE its coefficients").
-      *Source:* `2026/07/09/upgrade-rotation-and-ctc-vector-mapping.md`. *Home:* CLAUDE.md
-      Architecture (near the frozen/coordinate-property note).
-- [ ] **Declined vector-API additions + rationale:** no `cross` (it's `(a∧b).dual()`,
-      zero call sites), no `__getitem__`/`__len__` (`__iter__` already yields blade-order
-      coefficients), no zero-safe `normalize` (a zero vector *should* raise, matching
-      pygame; the old shim's `(0,0)` was over-defensive). *Source:*
-      `2026/07/09/upgrade-rotation-and-ctc-vector-mapping.md`. *Home:* design-decisions
-      (API › rejected alternatives).
-- [ ] **`InvertibleFunction.__matmul__` overloads preserve invertibility in the type**
-      (invertible @ invertible → invertible; @ composable → composable), and the
-      generic-TypeVar-bound alternative was **tried and rejected** — ty rejects a generic
-      bound (`invalid-type-variable-bound`), and bounding by the bare base is unsound for
-      subclasses (`Rotation @ Rotation` would falsely type as `Rotation`, while `compose`
-      only ever returns a plain `InvertibleFunction`). *Source:*
-      `2026/07/18/release-0-0-10-and-bump-mvp.md`. *Home:* design-decisions
-      (composable-function hierarchy).
-- [ ] **Rotation "why normalize from/to"** — un-normalized rotate "works" only in 2D; in
-      3D it scales the in-plane component by `|from||to|` and leaves the perpendicular
-      component unscaled (a non-uniform distortion no single rotor sandwich reproduces).
-      Plus the rotor-sandwich scaling three-way distinction: recover the pure rotation by
-      dividing by the *scalar* `R R̃` (= `magnitude_squared`); dividing by the *sandwich's
-      own* `magnitude_squared` gives the geometric inverse; normalizing `R` needs
-      `sqrt(R R̃)`, a nested radical sympy chokes on. *Source:*
-      `2026/06/06/graded-blade-subtypes.md`. *Home:* design-decisions (near derived-sandwich).
-- [ ] **Animation-layer semantics** — the `at(t)` three-tier resolution (own `interpolate`
-      law → recurse through `components` → else step at t≥1), that `compose` must store
-      `components` for `at`/`steps` to recurse, the per-factory interpolation laws
-      (`translate(b)` → `translate(b·t)`, `uniform_scale(m)` → linear 1→m), and the
-      invariant **`inverse(f).at(t) == inverse(f.at(t))` at every t** (what lets an
-      against-the-arrow edge animate smoothly rather than snap). **Verify against the
-      2026-07-17 composable-function reassessment first.** *Source:*
-      `2026/06/08/port-animation-layer-from-mvp.md`. *Home:* design-decisions
-      (API › composable-function), or promote `composable-function-followups` to reference.
+All six items were verified against the current source before writing. Five went to
+`tasks/reference/design-decisions.md`, one to CLAUDE.md. (Source docs are under
+`tasks/archive/`.)
+
+- **`to_matrix` two backends + convention** → design-decisions `to_matrix` entry.
+  `backend="numpy"` (float32, default, for GL) vs `"sympy"` (exact/symbolic); column-vector /
+  premultiply convention with the translation in the **last column**, matching mvp's
+  `pyMatrixStack` (a cross-repo contract); `Gn` needs an explicit `n` (specialized classes read
+  `DIMENSION`). From `2026/06/08/invertiblefunction-to-matrix.md` and
+  `2026/06/12/to-matrix-build-by-columns.md`.
+- **`x`/`y`/`z` coordinate properties are grade-1-only** (Vector1/2/3), deliberately not on
+  rotors/bivectors/full types ("a vector's coordinates ARE its coefficients") → CLAUDE.md
+  Architecture. From `2026/07/09/upgrade-rotation-and-ctc-vector-mapping.md`.
+- **Declined vector-API additions** → design-decisions (API › rejected alternatives): no `cross`
+  (it is `(a∧b).dual()`, zero call sites), no `__getitem__`/`__len__` (`__iter__` already yields
+  blade-order coefficients), no zero-safe `normalize`. Same source.
+  - **Correction found while verifying:** the archived "a zero vector raises" claim was only half
+    true. A *float*-zero vector raises `ZeroDivisionError`, but an *int/symbolic*-zero vector
+    yields a silent `nan` (sympy `0**-1 → zoo`). The doc recorded the accurate behavior.
+- **`InvertibleFunction.__matmul__` overloads preserve invertibility in the type** (invertible @
+  invertible → invertible; @ composable → composable) → design-decisions (composable-function
+  hierarchy). The generic-TypeVar-bound alternative was tried and rejected: ty rejects a generic
+  bound (`invalid-type-variable-bound`), and bounding by the bare base is unsound for subclasses
+  (`Rotation @ Rotation` would falsely type as `Rotation`, while `compose` only returns a plain
+  `InvertibleFunction`). From `2026/07/18/release-0-0-10-and-bump-mvp.md`.
+- **Why rotation normalizes from/to, and rotor-sandwich scaling** → design-decisions (near
+  derived-sandwich). Un-normalized rotate "works" only in 2D; in 3D it scales the in-plane
+  component by `|from||to|` and leaves the perpendicular component unscaled, a non-uniform
+  distortion no single rotor sandwich reproduces. The three-way distinction: dividing by the
+  scalar `R R̃` (= `magnitude_squared`) recovers the pure rotation; dividing by the sandwich's own
+  `magnitude_squared` gives the geometric inverse; normalizing `R` needs `sqrt(R R̃)`, a nested
+  radical sympy chokes on. From `2026/06/06/graded-blade-subtypes.md`.
+- **Animation-layer semantics** → design-decisions (API › composable-function), checked against
+  the 2026-07-17 composable-function reassessment first: the `at(t)` three-tier resolution (own
+  `interpolate` law → recurse through `components` → else step at t≥1); `compose` must store
+  `components` for `at`/`steps` to recurse; per-factory laws (`translate(b)` → `translate(b·t)`,
+  `uniform_scale(m)` → linear 1→m); and the invariant **`inverse(f).at(t) == inverse(f.at(t))`
+  at every t**, which lets an against-the-arrow edge animate smoothly rather than snap. From
+  `2026/06/08/port-animation-layer-from-mvp.md`.

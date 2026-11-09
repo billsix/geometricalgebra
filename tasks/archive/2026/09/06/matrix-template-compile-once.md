@@ -1,15 +1,15 @@
 # Compile-once matrix templates: make `to_matrix` over symbols a library feature (a method on the function types)
 
-**Status:** done — implemented 2026-09-06 (Fable session) on the maintainer's go-ahead ("go ahead and
-… implement the composition of functions to matrix task. Make sure to make plenty of unit tests, and
-this function should work in 2d, 2d affine (rotation and translation 3x3), 3d, and 3d affine (4x4)").
-Gates green; ships in 0.0.20 (`CHANGELOG.md` `## [0.0.20]` › Added / Changed).
-**Priority:** 6
-**Difficulty:** 4
-**Consumer:** `github.com/billsix/modelviewprojection` `tasks/ctc-use-gacalc-matrix-template.md`
-(deletes ten hand copies of the same code from its Code-the-Classics games once a release carries this).
+**Created:** 2026-09-06 · **Completed:** 2026-09-06 (shipped in 0.0.20, `CHANGELOG.md`
+`## [0.0.20]` › Added / Changed)
+**Consumer:** github.com/billsix/modelviewprojection `tasks/archive/2026/09/06/ctc-use-gacalc-matrix-template.md`
+(to delete ten hand copies of the same code from its Code-the-Classics games once a release carried this).
 
-## BLUF
+Implemented on the maintainer's go-ahead ("go ahead and … implement the composition of functions to
+matrix task. Make sure to make plenty of unit tests, and this function should work in 2d, 2d affine
+(rotation and translation 3x3), 3d, and 3d affine (4x4)").
+
+## Summary
 
 `gacalc.transforms` now has `to_matrix_template(fn, cls, params, n=None)` returning a
 `MatrixTemplate`, plus method forms `fn.to_matrix(...)` and `fn.to_matrix_template(...)` on
@@ -19,10 +19,10 @@ stored, bare-parameter entries recorded as `(row, col, k)` slots, compound entri
 evaluates them in one call), returning a fresh `(n+1)×(n+1)` `np.float32` with translation in the last
 column. Verified in 𝒢₂ linear + affine (3×3), 𝒢₃ linear + affine (4×4), and `Gn` with explicit `n`.
 
-## Context
+## Background
 
 - Filed 2026-09-06 at the maintainer's request after modelviewprojection measured the pattern
-  (`to_matrix` per call ≈ 514 µs; compile-once fill 0.47 µs; hand-built numpy 3.19 µs — its
+  (`to_matrix` per call ≈ 514 µs; compile-once fill 0.47 µs; hand-built numpy 3.19 µs — github.com/billsix/modelviewprojection
   `tasks/reference/gacalc-transforms-in-the-renderer.md`). The consumer's `MatrixTemplate`
   (constants + slots + `fill`) was the code to lift; it was verified bit-identical to hand-built numpy
   on 5000 inputs and gated frame-identical in all ten games.

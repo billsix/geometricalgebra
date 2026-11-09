@@ -1,25 +1,17 @@
 # Lean: products as functions, grade predicates for every type, narrow ℝ→G2 (2D)
 
-**Status:** done — 2026-10-28 (2D scope, per the "2D now, 3D later" go-ahead). `make lean` green
-(8958 jobs; completeness gate OK). 3D parity is the follow-up `tasks/archive/2026/10/28/lean-grade-predicates-3d.md`.
-**Priority:** 5
-**Difficulty:** 6
-**Created:** 2026-10-27 (William Emerison Six <billsix@gmail.com>)
-**Updated:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-27 · **Completed:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
 
-> **Later move (file-structure task, 2026-10-28):** `dot`/`wedge` and their lemmas were subsequently
-> relocated into `G2.lean` (`tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`). The `Projection2D.lean`
-> / `Versor2D.lean` locations cited below — including "where `wedge` currently lives" — were correct at
-> the time of this task; `isBivector_wedge_of_isVector` and `wedge_isVector_isBivector_eq_zero` now live
-> in `G2.lean`.
-
-## BLUF
+2D scope, per the maintainer's "2D now, 3D later" go-ahead; 3D parity followed in
+`tasks/archive/2026/10/28/lean-grade-predicates-3d.md`. Later the same day `dot`/`wedge` and their
+lemmas were relocated into `G2.lean` (`tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`);
+the `Projection2D.lean` / `Versor2D.lean` locations cited below were correct at the time of this task.
 
 Three-part task on the 2D Lean proofs: (1) the geometric & wedge products should be **functions** with
 their characterizing properties; (2) grade **predicates** should exist for every 2D type; (3) 2D proofs
 taking **reals** that are really a G2 object should be narrowed. On inspection, (1) and (3) were already
 satisfied; the genuine delta was (2), the missing grade-pure predicates `IsScalar` and `IsBivector`.
-Those were added with bridges, recognizers, and grade-of-result lemmas, and verified with `make lean`.
+Those were added with bridges, recognizers, and grade-of-result lemmas, and verified with `make lean` (8958 jobs; completeness gate OK).
 Durable record: `tasks/reference/lean-ga-proof-architecture.md` → "The 2D grade-pure predicate set".
 
 ## What each part turned out to need
@@ -39,7 +31,7 @@ existing `IsVector` (grade 1) and its `eq_vec_of_isVector` bridge / `isVector_ve
   `isBivector_e12` + `isBivector_I` (the pseudoscalar `I` *is* `e₁₂`).
 - Grade-of-result lemmas so the predicates aren't dead API: `isScalar_mul_self_of_isVector` — `a a` is a
   scalar (`G2.lean`); `isBivector_wedge_of_isVector` — `a∧b` is a bivector (`Projection2D.lean`, where
-  `wedge` currently lives).
+  `wedge` lived then).
 - Refactored `vec_wedge_I_eq_zero` into a corollary of the new object-form
   `wedge_isVector_isBivector_eq_zero` (a vector ∧ a bivector = 0 in 2D), discharged by `isVector_vec` +
   `isBivector_I` — its signature is unchanged, so `reject_from_I_eq_zero` is unaffected.
@@ -72,4 +64,4 @@ polynomial-tier sweep and the 2026-10-20 follow-up (`lean-ga-proof-architecture.
 
 ## Follow-up
 
-- `tasks/archive/2026/10/28/lean-grade-predicates-3d.md` — add `IsScalar` + grade-of-result lemmas to `G3` (3D parity).
+- `tasks/archive/2026/10/28/lean-grade-predicates-3d.md` — added `IsScalar` + grade-of-result lemmas to `G3` (3D parity).

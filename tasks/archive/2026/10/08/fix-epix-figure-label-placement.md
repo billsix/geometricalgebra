@@ -1,11 +1,6 @@
 # Fix label placement / overlap in the ePiX book figures
 
-**Status:** done — 2026-10-08 (per-figure pixel tuning; gates green; normalized pre-squash)
-**Priority:** 5
-**Difficulty:** 4
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-08
 
 Several of the book's ePiX-generated figures had labels that overlapped or sat in the wrong place —
 not beside the item they named. The worst cases: `proj3` drew the identity `a = proj_b a + rej_b a`
@@ -50,13 +45,13 @@ The clean figures left untouched: `add1`–`3`, `sub1`–`2`, `rotate1`–`8`, `
 2. **Placement only** — no geometry/scene/color/background change (the dark-mode `BACKGROUND` flatten
    stays intact).
 
-## History (commit chronology, `origin/master..HEAD` — for the maintainer's squash)
+## History (commit chronology)
 
 1. `03443f8` *added task to fix epix labels* — filed this task (then proposed) with the visual audit
    and defect checklist.
 2. `8e955f5` *updated figures* — the seven label-placement fixes above; `make format` + `make docs`
    green.
-3. `d596b09` *archived* — moved the task doc to `tasks/archive/2026/10/08/`.
+3. `cfa2476` *archived* — moved the task doc to `tasks/archive/2026/10/08/`.
 
 ## Related
 

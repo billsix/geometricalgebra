@@ -1,0 +1,641 @@
+tasks/archive/2026/06/05/investigate-how-to-extract-translate-etc.md:3:**Status:** complete
+tasks/archive/2026/06/05/investigate-how-to-extract-translate-etc.md:140:## Plan
+tasks/archive/2026/06/05/investigate-how-to-extract-translate-etc.md:160:- [ ] **TODO (split out): add unit tests** asserting each transform round-trips type + value checks.
+tasks/archive/2026/06/05/investigate-how-to-extract-translate-etc.md:162:- [ ] **TODO (split out): demo the 2D `rotate` / n-D `scale` in the G2 notebook** → folded into the
+tasks/archive/2026/06/05/investigate-how-to-extract-translate-etc.md:202:## Open questions (all resolved 2026-06-04)
+tasks/archive/2026/06/06/merge-abstractbaseclass-into-master.md:3:**Status:** complete
+tasks/archive/2026/06/06/merge-abstractbaseclass-into-master.md:98:## Open questions
+tasks/archive/2026/06/05/g2-notebook.md:3:**Status:** complete — user ran the notebook (2026-06-05) and confirmed it looks good
+tasks/archive/2026/06/05/g2-notebook.md:20:## Plan
+tasks/archive/2026/06/05/g2-notebook.md:63:## Open questions
+tasks/archive/2026/06/07/sequence-active-backlog.md:3:**Status:** complete — the sequenced backlog was executed; the items it coordinated are all done and
+tasks/archive/2026/06/07/sequence-active-backlog.md:151:## Open questions
+tasks/archive/2026/06/05/correctness-bugs.md:55:## Open questions
+tasks/archive/2026/06/06/inverse-exact-reciprocal-fix.md:3:**Status:** complete
+tasks/archive/2026/06/06/graded-blade-subtypes.md:3:**Status:** complete
+tasks/archive/2026/06/07/graded-class-e_n-zero-vs-basis-vector.md:3:**Status:** complete
+tasks/archive/2026/06/07/graded-class-e_n-zero-vs-basis-vector.md:135:## Plan
+tasks/archive/2026/06/07/graded-class-e_n-zero-vs-basis-vector.md:137:- [ ] `make generate` (or `python tools/gen_specialized.py`) to materialize `g2.py` etc.
+tasks/archive/2026/06/07/graded-class-e_n-zero-vs-basis-vector.md:138:- [ ] Reproduce the shell session; confirm `e_1` is the dataclass field default.
+tasks/archive/2026/06/07/graded-class-e_n-zero-vs-basis-vector.md:139:- [ ] Study mechanism + search for any reliance on the current behavior (codegen, tests, base ops).
+tasks/archive/2026/06/07/graded-class-e_n-zero-vs-basis-vector.md:140:- [ ] Write up: does anything rely on the current behavior? Recommendation.
+tasks/archive/2026/06/07/graded-class-e_n-zero-vs-basis-vector.md:141:- [ ] **Stop for go-ahead** before changing any source/generator.
+tasks/archive/2026/06/07/graded-class-e_n-zero-vs-basis-vector.md:286:## Open questions for the author
+tasks/archive/2026/06/12/show-mult-improvements.md:109:## Open questions
+tasks/archive/2026/06/27/unit-test-the-generator.md:3:**Status:** complete (2026-06-27) — determination made + tests added (`tests/test_generator.py`).
+tasks/archive/2026/06/27/wedge-magnitude-sin-notebook.md:3:**Status:** **complete** (2026-06-27) — Phases 1, 2 done (notebooks); Phase 3 **determined: do not
+tasks/archive/2026/06/27/wedge-magnitude-sin-notebook.md:163:## Open questions
+tasks/archive/2026/06/07/gen-specialized-structure-refactor.md:3:**Status:** complete — **#1–#8 all done + verified; CLAUDE.md refreshed.** #1–#4 committed
+tasks/archive/2026/06/07/gen-specialized-structure-refactor.md:199:## Plan (once approved)
+tasks/archive/2026/06/07/gen-specialized-structure-refactor.md:201:- [ ] #5/#6/#7 polish first (cheap, sets naming/sections), or interleave with the reorder.
+tasks/archive/2026/06/07/gen-specialized-structure-refactor.md:202:- [ ] #1 + #2: move `generate_scalar`; reorder file into the target sections (pure code movement —
+tasks/archive/2026/06/07/gen-specialized-structure-refactor.md:204:- [ ] #3: extract `class_header`/`is_close_method`/`iter_method`/`grades_method` (+ `return_construct`
+tasks/archive/2026/06/07/gen-specialized-structure-refactor.md:206:- [ ] #8 (optional): move the DSL to `tools/astbuild.py`, import it. Re-run gates; update CLAUDE.md
+tasks/archive/2026/06/07/gen-specialized-structure-refactor.md:208:- [ ] Final: `make check-generated` (determinism), full `pytest -q` (161), `ruff`/`ty` clean. Confirm
+tasks/archive/2026/07/18/fix-notebook-rotate-use-plane-rotation.md:3:**Status:** complete
+tasks/archive/2026/07/18/annotate-local-variable-types.md:3:**Status:** complete
+tasks/archive/2026/07/18/annotate-local-variable-types.md:164:- [ ] **Mechanical, low-risk first:** add missing test `-> None` in the 4 files
+tasks/archive/2026/07/18/annotate-local-variable-types.md:166:- [ ] **Notebooks:** type the helper-function params (`kind`, `show`, `rotate`)
+tasks/archive/2026/07/18/annotate-local-variable-types.md:169:- [ ] **tests/ locals:** annotate where the type isn't obvious from the RHS,
+tasks/archive/2026/07/18/annotate-local-variable-types.md:171:- [ ] **src/gacalc/ bare sigs:** `from_blade_dict` param (`BladeCoef`),
+tasks/archive/2026/07/18/annotate-local-variable-types.md:175:- [ ] **src/gacalc/ locals + nbplotutils:** light touch — only genuinely
+tasks/archive/2026/07/18/annotate-local-variable-types.md:177:- [ ] **Gate:** `make test` and `make format` (ruff + ty) stay green in the
+tasks/archive/2026/07/18/annotate-local-variable-types.md:181:## Open questions
+tasks/archive/2026/06/03/specialized-multivectors.md:288:## Open questions (resolved 2026-06-04)
+tasks/archive/2026/06/27/graded-subtypes-slots-true.md:3:**Status:** complete (2026-06-27) — `slots=True` added to the graded subtypes + `Scalar`; verified.
+tasks/archive/2026/06/27/graded-subtypes-slots-true.md:85:## Plan (once approved)
+tasks/archive/2026/06/27/graded-subtypes-slots-true.md:87:- [ ] In `tools/gen_specialized.py`: change `generate_graded_type`'s decorator (~1536) and
+tasks/archive/2026/06/27/graded-subtypes-slots-true.md:90:- [ ] `make generate` (or `python tools/gen_specialized.py`); spot-check that `Vector2`/`Scalar`
+tasks/archive/2026/06/27/graded-subtypes-slots-true.md:92:- [ ] `make test` (full suite incl. conformance + graded + doctests) green.
+tasks/archive/2026/06/27/graded-subtypes-slots-true.md:93:- [ ] `make check-generated` (regenerate twice, byte-identical) green.
+tasks/archive/2026/06/27/graded-subtypes-slots-true.md:94:- [ ] `ruff` + `ty check src tests` clean.
+tasks/archive/2026/06/27/graded-subtypes-slots-true.md:95:- [ ] Optional: a one-line note could go under CLAUDE.md "Architecture" that *all* generated value
+tasks/archive/2026/07/17/reassess-composable-function-interface.md:3:**Status:** complete
+tasks/archive/2026/06/07/codegen-via-python-ast.md:3:**Status:** complete — A/B/C all built and verified; **C chosen and committed** as the approach (the
+tasks/archive/2026/06/07/codegen-via-python-ast.md:162:## Plan if "go" (proposed — adjust per chosen option)
+tasks/archive/2026/06/07/codegen-via-python-ast.md:164:- [ ] Confirm the option (1 hybrid / 2 full) and the acceptance definition (AST-equivalence + suite, vs
+tasks/archive/2026/06/07/codegen-via-python-ast.md:166:- [ ] Build a **parity harness** first: a script that runs the *current* generator and the *new* one
+tasks/archive/2026/06/07/codegen-via-python-ast.md:169:- [ ] Implement incrementally, smallest scope first (the rename transform), re-running the harness at
+tasks/archive/2026/06/07/codegen-via-python-ast.md:172:- [ ] Reproduce `term_grade_key` ordering in `BinOp` construction so AST dumps match.
+tasks/archive/2026/06/07/codegen-via-python-ast.md:173:- [ ] Keep `header()`/`SCALAR_HEADER` (copyright + imports + comments) as raw prepended text — comments
+tasks/archive/2026/06/07/codegen-via-python-ast.md:175:- [ ] Final gates: `make check-generated` (determinism), full `pytest` (incl. conformance + doctests),
+tasks/archive/2026/06/07/codegen-via-python-ast.md:384:## Open questions / live reminders
+tasks/archive/2026/07/21/typed-product-helper-functions.md:3:**Status:** DONE 2026-07-21. The operators and named products/sums on the generated graded types
+tasks/archive/2026/07/22/doc-regions-on-class-variables.md:3:**Status:** complete
+tasks/archive/2026/07/22/doc-regions-on-class-variables.md:15:Two corrections to the task's original plan surfaced during investigation, both confirmed against
+tasks/archive/2026/07/22/doc-regions-on-class-variables.md:51:## Plan (sketch)
+tasks/archive/2026/06/05/cleanups-and-hygiene.md:80:## Open questions
+tasks/archive/2026/07/22/add-left-right-contraction.md:3:**Status:** complete
+tasks/archive/2026/07/22/add-left-right-contraction.md:76:## Plan (sketch)
+tasks/archive/2026/06/12/display-simplify.md:59:## Open questions
+tasks/archive/2026/07/23/investigate-final-full-classes.md:3:**Status:** complete
+tasks/archive/2026/07/23/match-destructure-components.md:3:**Status:** investigated — **declined** (Bill, 2026-07-23). Feasible, but a net-neutral-to-negative
+tasks/archive/2026/07/23/investigate-frozen-generated-classes.md:3:**Status:** **implemented 2026-07-23** (Bill said go) — gacalc value types are now
+tasks/archive/2026/07/29/validate-blade-dict-keys.md:3:**Status:** DONE 2026-07-29 — Bill chose **(a) raise**; implemented and
+tasks/archive/2026/06/27/add-types-signatures-and-tools.md:3:**Status:** complete (2026-06-27) — option 1 done; signatures added across `tools/` + `nbplotutils.py`;
+tasks/archive/2026/06/27/add-types-signatures-and-tools.md:52:## (original plan below)
+tasks/archive/2026/06/27/add-types-signatures-and-tools.md:124:## Plan (once approved + option chosen)
+tasks/archive/2026/06/27/add-types-signatures-and-tools.md:126:- [ ] Decide the `tools/`-under-`ty` option above.
+tasks/archive/2026/06/27/add-types-signatures-and-tools.md:127:- [ ] Snapshot the generated-file baseline (for the byte-identity checks on generator-internal edits).
+tasks/archive/2026/06/27/add-types-signatures-and-tools.md:128:- [ ] `astbuild.py` signatures (high-yield, mechanical AST types).
+tasks/archive/2026/06/27/add-types-signatures-and-tools.md:129:- [ ] `gen_specialized.py` own signatures (params + returns).
+tasks/archive/2026/06/27/add-types-signatures-and-tools.md:130:- [ ] Emitted annotations in the generator (type generated methods honestly; mind the broad-operand
+tasks/archive/2026/06/27/add-types-signatures-and-tools.md:132:- [ ] `nbplotutils.py` signatures + return types; `bench.py` (small).
+tasks/archive/2026/06/27/add-types-signatures-and-tools.md:133:- [ ] notebooks/display*.py (optional, low priority).
+tasks/archive/2026/06/27/add-types-signatures-and-tools.md:134:- [ ] If option 1: add `ty check tools` to `format.sh` (+ CI) and clear/scope the sympy errors.
+tasks/archive/2026/06/27/add-types-signatures-and-tools.md:135:- [ ] Final: `make test` (226+), `ruff`, `ty` (chosen scope) all clean; `make check-generated`.
+tasks/archive/2026/06/06/future-annotations-drop-forward-ref-quotes.md:3:**Status:** complete (base.py) · 2026-06-06 · gn.py + generator deferred to #1
+tasks/archive/2026/06/06/future-annotations-drop-forward-ref-quotes.md:37:## Plan
+tasks/archive/2026/06/06/future-annotations-drop-forward-ref-quotes.md:39:- [ ] Add `from __future__ import annotations` at the top of `base.py`.
+tasks/archive/2026/06/06/future-annotations-drop-forward-ref-quotes.md:40:- [ ] Remove now-unneeded quotes from forward-ref annotations (`"AbstractMultiVector"` →
+tasks/archive/2026/06/06/future-annotations-drop-forward-ref-quotes.md:44:- [ ] Decide whether to also apply it to `gn.py`. **Caution:** `Gn` is a `@dataclass(slots=True)`.
+tasks/archive/2026/06/06/future-annotations-drop-forward-ref-quotes.md:49:- [ ] `ruff check`, `ty check src` + `tests`, full suite (124) green. Regenerate if the generator
+tasks/archive/2026/06/06/future-annotations-drop-forward-ref-quotes.md:61:## Open questions
+tasks/archive/2026/08/02/sphinx-book-pipeline.md:3:**Status:** complete
+tasks/archive/2026/08/02/is-numerically-close-symmetric-float.md:3:**Status:** DONE 2026-08-02. Work record; the durable rationale + the standard-
+tasks/archive/2026/08/02/is-numerically-close-symmetric-float.md:97:## Open questions
+tasks/archive/2026/08/13/harvest-build-and-dev-workflow-gotchas.md:3:**Status:** COMPLETED 2026-08-13 — five items applied (each verified against source first):
+tasks/archive/2026/08/13/harvest-build-and-dev-workflow-gotchas.md:22:- [ ] **Book prose is licensed GFDL-1.3**, distinct from the LGPL-2.1-only code.
+tasks/archive/2026/08/13/harvest-build-and-dev-workflow-gotchas.md:25:- [ ] **Notebook PDF export**: XeLaTeX chosen over WebPDF (no Chromium), installed
+tasks/archive/2026/08/13/harvest-build-and-dev-workflow-gotchas.md:29:- [ ] **`ruff format` does not accept `--extend-exclude` on the CLI** (only `ruff check`
+tasks/archive/2026/08/13/harvest-build-and-dev-workflow-gotchas.md:34:- [ ] **Baked JupyterLab settings**: `jupytext-config set-default-viewer python`
+tasks/archive/2026/08/13/harvest-build-and-dev-workflow-gotchas.md:40:- [ ] **Pixel-verification footgun**: when confirming a notebook/plot change is
+tasks/archive/2026/08/13/harvest-build-and-dev-workflow-gotchas.md:47:- [ ] *(freshness nit, optional)* CLAUDE.md frames numpy purely as a runtime dep; note
+tasks/archive/2026/08/13/harvest-truediv-operator-and-frozen-hashability.md:3:**Status:** COMPLETED 2026-08-13 — both facts added (verified against source); ready to
+tasks/archive/2026/07/16/latex-labels-for-project-reject-in-pipeline.md:3:**Status:** complete
+tasks/archive/2026/07/16/latex-labels-for-project-reject-in-pipeline.md:95:## Plan (Option 4)
+tasks/archive/2026/07/16/latex-labels-for-project-reject-in-pipeline.md:97:- [ ] Settle the compose detail above: `labeled(...)` returns an `InvertibleFunction` with a
+tasks/archive/2026/07/16/latex-labels-for-project-reject-in-pipeline.md:100:- [ ] Add `labeled(fn, latex_repr, *, latex_repr_inv=None, linearity=Linearity.NONLINEAR,
+tasks/archive/2026/07/16/latex-labels-for-project-reject-in-pipeline.md:104:- [ ] Leave `project`/`reject`/`reflect`/`identity`/`projection_rotation` **unchanged** (still
+tasks/archive/2026/07/16/latex-labels-for-project-reject-in-pipeline.md:106:- [ ] Doctest/tests on `labeled`: it renders its LaTeX (`_repr_latex_`), composes with a real
+tasks/archive/2026/07/16/latex-labels-for-project-reject-in-pipeline.md:109:- [ ] A notebook cell (displaygraded / displayrotations) wrapping e.g. `Vector3.project(B)` with a
+tasks/archive/2026/07/16/latex-labels-for-project-reject-in-pipeline.md:111:- [ ] `make test` + `ruff`/`ty` clean. (Shared-layer check: nothing here changes existing
+tasks/archive/2026/07/16/latex-labels-for-project-reject-in-pipeline.md:126:## Open questions
+tasks/archive/2026/06/07/emacs-package-install-strategy.md:3:**Status:** complete — documented the workflow, excluded elpa from the image build, dropped the
+tasks/archive/2026/06/07/emacs-package-install-strategy.md:123:## Open questions
+tasks/archive/2026/08/13/harvest-minor-doc-and-notebook-nits.md:3:**Status:** ARCHIVED 2026-08-13 — not pursued. These P8 nits were judged low-value and set
+tasks/archive/2026/08/13/harvest-minor-doc-and-notebook-nits.md:16:- [ ] **Notebook `show()` convention** *(the one most worth keeping)*. A cell ending in a
+tasks/archive/2026/08/13/harvest-minor-doc-and-notebook-nits.md:21:- [ ] **Rotation LaTeX-label convention**: subscript = "from", superscript = "to"
+tasks/archive/2026/08/13/harvest-minor-doc-and-notebook-nits.md:24:- [ ] **Symbolic-proof gotchas** for the `|a∧b|=|a||b|sinθ` / `|ab|=|a||b|` identities:
+tasks/archive/2026/08/13/harvest-minor-doc-and-notebook-nits.md:30:- [ ] **Zero-scale asymmetry**: `uniform_scale(0)` / `scale_non_uniform(…,0,…)` forward is
+tasks/archive/2026/08/13/harvest-minor-doc-and-notebook-nits.md:33:- [ ] **`from_sympy_expr` → `from_coef` rename** — the old name implied a sympy cast it
+tasks/archive/2026/08/23/precise-blade-typing-and-g4-g5-default.md:3:**Status:** Parts 1, 2 & 3 DONE + verified 2026-08-22. g4/g5 ship (release-only), have precise
+tasks/archive/2026/08/23/precise-blade-typing-and-g4-g5-default.md:102:## Plan
+tasks/archive/2026/08/23/precise-blade-typing-and-g4-g5-default.md:106:- [ ] Rewrite `transform_factory_overrides` (`:1488`) to emit **one precise `@overload` per
+tasks/archive/2026/08/23/precise-blade-typing-and-g4-g5-default.md:111:- [ ] Gate per method: `project` → all blade grades; `reject`/`reflect` → grades where the
+tasks/archive/2026/08/23/precise-blade-typing-and-g4-g5-default.md:114:- [ ] Keep the runtime bodies unchanged (still `return super().<method>(...)`).
+tasks/archive/2026/08/23/precise-blade-typing-and-g4-g5-default.md:115:- [ ] `make check-regions` (the `Vector <method> method` doc-regions must stay balanced),
+tasks/archive/2026/08/23/precise-blade-typing-and-g4-g5-default.md:121:- [ ] Extend `graded_specs(n)` to add grade-4 (and grade-5) types for `n >= 4` / `n >= 5`,
+tasks/archive/2026/08/23/precise-blade-typing-and-g4-g5-default.md:124:- [ ] **Fix the known n≥4 generator bug FIRST** (see Timing below): `coordinate_property_defs`
+tasks/archive/2026/08/23/precise-blade-typing-and-g4-g5-default.md:129:- [ ] Then sweep for any *other* hidden grade-≤3 assumption (dual/product result resolution,
+tasks/archive/2026/08/23/precise-blade-typing-and-g4-g5-default.md:132:- [ ] Wire the new types into the precise overloads from Part 1.
+tasks/archive/2026/08/23/precise-blade-typing-and-g4-g5-default.md:162:- [ ] **Scope `make check-generated`** to a cheap dimension (or make high-dim determinism opt-in) —
+tasks/archive/2026/08/23/precise-blade-typing-and-g4-g5-default.md:246:## Open questions
+tasks/archive/2026/08/24/area-volume-content.md:3:**Status:** complete
+tasks/archive/2026/08/24/area-volume-content.md:88:## Plan
+tasks/archive/2026/08/24/area-volume-content.md:136:## Subtask — wedge-rewrite sweep (original plan; superseded by the DONE result above)
+tasks/archive/2026/08/24/area-volume-content.md:151:## Open questions — resolved 2026-08-23
+tasks/archive/2026/07/21/annotate-generated-doc-regions.md:3:**Status:** **DONE 2026-07-20.** Generated + hand-written doc-region markers implemented
+tasks/archive/2026/08/23/rename-book-to-geometry-2.md:3:**Status:** complete
+tasks/archive/2026/08/23/rename-book-to-geometry-2.md:41:## Plan
+tasks/archive/2026/08/23/rename-book-to-geometry-2.md:55:- [ ] Rebuild verify with `make docs` NOT run (containerized/heavy; nbsphinx executes notebooks). The
+tasks/archive/2026/08/23/rename-book-to-geometry-2.md:59:## Open questions
+tasks/archive/2026/08/26/precise-typing-remaining-methods.md:3:**Status:** in-progress (2026-08-03) — **project/reject/reflect DONE** (type-precise on the
+tasks/archive/2026/08/26/precise-typing-remaining-methods.md:136:## Plan
+tasks/archive/2026/08/26/sum-prod-in-test-folds.md:3:**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — see Outcome.
+tasks/archive/2026/06/27/geometric-product-magnitude-proof.md:3:**Status:** resolved (2026-06-27) — proof demonstrated in the notebooks; the rotor `abs(from*to)`
+tasks/archive/2026/06/27/geometric-product-magnitude-proof.md:89:## Plan
+tasks/archive/2026/06/27/geometric-product-magnitude-proof.md:91:- [ ] **Write the 2D proof precisely** (scalar + bivector parts → Pythagorean
+tasks/archive/2026/06/27/geometric-product-magnitude-proof.md:93:- [ ] **Recursive 3D proof** — reduce to the 2-plane spanned by `a`, `b`.
+tasks/archive/2026/06/27/geometric-product-magnitude-proof.md:94:- [ ] **General n-D proof** — state + prove for arbitrary dimension. gacalc's
+tasks/archive/2026/06/27/geometric-product-magnitude-proof.md:99:- [ ] **Decide the proof's form** — a symbolic check in `tests/` and/or a worked
+tasks/archive/2026/06/27/geometric-product-magnitude-proof.md:102:- [ ] **Apply to `rotor_from_vectors`** — use `abs(from_vec * to_vec)` in place of
+tasks/archive/2026/06/27/geometric-product-magnitude-proof.md:106:- [ ] **Regression-verify** against the current implementation (the system works
+tasks/archive/2026/06/27/geometric-product-magnitude-proof.md:119:## Open questions
+tasks/archive/2026/06/05/add-math-notation.md:3:**Status:** complete
+tasks/archive/2026/06/05/add-math-notation.md:19:## Plan
+tasks/archive/2026/06/05/add-math-notation.md:21:- [ ] Inventory the math-notation docstrings already present (the products in `gn.py` / generated
+tasks/archive/2026/06/05/add-math-notation.md:23:- [ ] Enumerate every public method in `base.py`, `gn.py`, and the generated `g*.py`.
+tasks/archive/2026/06/05/add-math-notation.md:24:- [ ] For each, decide whether Hestenes defines a notation (e.g. ⟨A⟩ᵣ for r-vector part, A∗B or
+tasks/archive/2026/06/05/add-math-notation.md:27:- [ ] Add the notation + explanation to docstrings: shared methods in `base.py`/`gn.py` directly;
+tasks/archive/2026/06/05/add-math-notation.md:29:- [ ] Regenerate `g1/g2/g3.py`, run ruff + ty + the full suite; confirm clean and green.
+tasks/archive/2026/06/05/add-math-notation.md:50:## Open questions (resolved)
+tasks/archive/2026/09/05/model-odd-graded-type.md:3:**Status:** COMPLETE 2026-09-05 — all steps done & verified (449 tests, ty clean, notebook executes);
+tasks/archive/2026/09/05/model-odd-graded-type.md:179:   original plan.
+tasks/archive/2026/07/22/precise-dual-typing.md:3:**Status:** complete
+tasks/archive/2026/07/17/cross-product-derivation-notebook.md:3:**Status:** complete
+tasks/archive/2026/08/26/signed-content-on-gn-via-dual.md:3:**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — see Outcome.
+tasks/archive/2026/06/06/document-rotor-methods.md:3:**Status:** complete
+tasks/archive/2026/06/06/document-rotor-methods.md:56:## Plan
+tasks/archive/2026/06/06/document-rotor-methods.md:58:- [ ] **CLAUDE.md:** add the two methods to the Operators/Architecture coverage — a short
+tasks/archive/2026/06/06/document-rotor-methods.md:62:- [ ] **`transforms.py` module docstring:** change "a separate, future addition" to present tense —
+tasks/archive/2026/06/06/document-rotor-methods.md:65:- [ ] **`tasks/clarify-2d-only-transforms.md`:** reframe. Its core hazard (applying a *planar*
+tasks/archive/2026/06/06/document-rotor-methods.md:71:- [ ] **Consistency check vs. README:** confirm CLAUDE.md's wording for `rotor_from_vectors` /
+tasks/archive/2026/06/06/document-rotor-methods.md:73:- [ ] Verify there's test coverage of the general `AbstractMultiVector.rotate` (`test_multivector.py`
+tasks/archive/2026/06/06/document-rotor-methods.md:76:- [ ] `python -m pytest -q` (expect 141; docs/comments don't change it) + `entrypoint/format.sh`.
+tasks/archive/2026/06/06/document-rotor-methods.md:87:## Open questions
+tasks/archive/2026/09/26/github-actions-ci.md:3:**Status:** complete
+tasks/archive/2026/09/26/github-actions-ci.md:100:## Plan (phased)
+tasks/archive/2026/09/26/github-actions-ci.md:113:## Open questions
+tasks/archive/2026/07/21/mx-plus-b-named-parameters.md:3:**Status:** **teaching-facing conversion DONE 2026-07-18.** Docstrings for
+tasks/archive/2026/07/21/mx-plus-b-named-parameters.md:73:## Open questions to settle before starting
+tasks/archive/2026/09/05/fix-make-format-ruff-errors.md:3:**Status:** DONE 2026-09-05 — `make format` green (ruff + `ty` clean); archived
+tasks/archive/2026/09/05/fix-make-format-ruff-errors.md:67:## Open questions
+tasks/archive/2026/08/31/release-0.0.18.md:3:**Status:** DONE — released 2026-08-31: 0.0.18 wheel+sdist verified on PyPI, host tag v0.0.18 pushed, changelog promoted. Archived same day.
+tasks/archive/2026/06/07/dockerfile-bake-dev-tools.md:3:**Status:** complete
+tasks/archive/2026/06/07/dockerfile-bake-dev-tools.md:68:## Plan
+tasks/archive/2026/09/30/lean-per-grade-type-constructors.md:3:**Status:** DONE 2026-09-30 (committed `43ab4c7`) — builders added + swept, gate-verified
+tasks/archive/2026/09/30/lean-per-grade-type-constructors.md:79:## Open questions
+tasks/archive/2026/07/23/contractions-nested-fn-assert.md:3:**Status:** complete
+tasks/archive/2026/09/26/generate-missing-docstrings.md:3:**Status:** complete (2026-09-26, branch `docstrings`; author William Emerison Six
+tasks/archive/2026/06/06/clarify-2d-only-transforms.md:3:**Status:** complete (resolved by **removal**, not a guard)
+tasks/archive/2026/06/06/clarify-2d-only-transforms.md:81:## Plan
+tasks/archive/2026/06/06/clarify-2d-only-transforms.md:83:- [ ] Decide scope: guard only (A), or guard + rename (A+B)
+tasks/archive/2026/06/06/clarify-2d-only-transforms.md:84:- [ ] Add a shared planarity check (no grade-1 components beyond e₁/e₂) and apply it inside the
+tasks/archive/2026/06/06/clarify-2d-only-transforms.md:86:- [ ] (If B) rename the planar factories and update re-exports in `gn.py`, callers, and notebooks
+tasks/archive/2026/06/06/clarify-2d-only-transforms.md:87:- [ ] Add conformance tests: planar input round-trips; non-planar G3/Gn input raises a clear error
+tasks/archive/2026/06/06/clarify-2d-only-transforms.md:88:- [ ] Run `python -m pytest -q` and `entrypoint/format.sh` (ruff + ty clean)
+tasks/archive/2026/06/06/clarify-2d-only-transforms.md:92:## Open questions
+tasks/archive/2026/06/05/use-match-and-modern-python.md:3:**Status:** complete — A–F applied & verified; G split into its own task
+tasks/archive/2026/06/05/use-match-and-modern-python.md:18:## Plan
+tasks/archive/2026/06/05/use-match-and-modern-python.md:20:- [ ] Inventory `if/elif/else` chains across `src/` (base.py, gn.py, transforms.py, nbplotutils.py)
+tasks/archive/2026/06/05/use-match-and-modern-python.md:23:- [ ] For each candidate, sketch the `match` rewrite and judge: clearer? same behavior? worth it?
+tasks/archive/2026/06/05/use-match-and-modern-python.md:24:- [ ] Survey for other modern-Python opportunities (see Notes for the menu) — list sites, don't apply.
+tasks/archive/2026/06/05/use-match-and-modern-python.md:25:- [ ] Present the findings as a per-item list for go-ahead. Apply only what's approved.
+tasks/archive/2026/06/05/use-match-and-modern-python.md:26:- [ ] After any edits: `ruff check`, `ty check src`, full suite (124) green; re-run the generator if
+tasks/archive/2026/06/05/use-match-and-modern-python.md:92:## Open questions
+tasks/archive/2026/09/30/lean-inverses-g2-g3.md:6:**Status:** done (2026-09-29, William Emerison Six <billsix@gmail.com>) — investigation resolved; the
+tasks/archive/2026/09/30/lean-inverses-g2-g3.md:83:## Open questions
+tasks/archive/2026/07/29/suppress-jupyter-news-prompt.md:3:**Status:** DONE 2026-07-29 — implemented and gate-verified; ready to archive
+tasks/archive/2026/06/05/port-displaymv-2d-to-displayg2.md:3:**Status:** complete
+tasks/archive/2026/06/05/port-displaymv-2d-to-displayg2.md:54:## Plan
+tasks/archive/2026/06/05/port-displaymv-2d-to-displayg2.md:91:## Open questions
+tasks/archive/2026/06/07/build-time-codegen-dist.md:3:**Status:** complete — implemented 2026-06-07 (Option 3, build-time generation; files removed from git)
+tasks/archive/2026/06/07/build-time-codegen-dist.md:82:## Open questions for the author
+tasks/archive/2026/10/02/lean-proof-predicates.md:6:**Status:** DONE 2026-10-02. **Priority:** 5 **Difficulty:** 3
+tasks/archive/2026/06/06/basis-vector-construction.md:3:**Status:** complete (test_graded.py) · others deliberately left
+tasks/archive/2026/06/06/basis-vector-construction.md:78:## Open questions
+tasks/archive/2026/06/06/add-python-types.md:3:**Status:** complete
+tasks/archive/2026/06/06/add-python-types.md:46:## Plan
+tasks/archive/2026/06/06/add-python-types.md:48:- [ ] Survey locals lacking annotations across `src/` (base.py, gn.py, transforms.py, nbplotutils.py)
+tasks/archive/2026/06/06/add-python-types.md:51:- [ ] For the generator's *emitted* locals (e.g. the `cse` temporaries / `result = G2(...)` in
+tasks/archive/2026/06/06/add-python-types.md:54:- [ ] Present candidate sites as a reviewable list (file:line, proposed annotation) for go-ahead.
+tasks/archive/2026/06/06/add-python-types.md:55:- [ ] Apply approved annotations. For generated code, change the **generator**, never `g*.py`; then
+tasks/archive/2026/06/06/add-python-types.md:57:- [ ] `ruff check`, `ty check src` + `ty check tests`, full suite (124) green.
+tasks/archive/2026/06/06/add-python-types.md:77:## Open questions
+tasks/archive/2026/06/05/modify-generated-code.md:3:**Status:** complete
+tasks/archive/2026/06/05/modify-generated-code.md:42:## Plan
+tasks/archive/2026/06/05/modify-generated-code.md:44:- [ ] Locate the term ordering: `format_assignment` in `tools/gen_specialized.py` uses
+tasks/archive/2026/06/05/modify-generated-code.md:46:- [ ] Decide the sort key. Each term is a product of one `self.<field>` and one `rhs.<field>`
+tasks/archive/2026/06/05/modify-generated-code.md:51:- [ ] Parse each term back to its component fields. Options: regex the rendered string for
+tasks/archive/2026/06/05/modify-generated-code.md:54:- [ ] Apply the ordering in `format_assignment` (replace/augment `as_ordered_terms()` with a sorted
+tasks/archive/2026/06/05/modify-generated-code.md:56:- [ ] Regenerate `g1/g2/g3.py`, run `ruff` + `ty` + the full suite (118 tests) — must stay green.
+tasks/archive/2026/06/05/modify-generated-code.md:57:- [ ] Eyeball the diff to confirm the new ordering reads as intended across all components.
+tasks/archive/2026/06/05/modify-generated-code.md:67:## Open questions
+tasks/archive/2026/06/06/refresh-claudemd-known-issues.md:3:**Status:** complete
+tasks/archive/2026/06/06/refresh-claudemd-known-issues.md:79:## Plan
+tasks/archive/2026/06/06/refresh-claudemd-known-issues.md:81:- [ ] **CLAUDE.md "Open issues" list:** delete #2, #3, #4; rewrite #8 down to the single remaining
+tasks/archive/2026/06/06/refresh-claudemd-known-issues.md:84:- [ ] **CLAUDE.md consistency:** fix the "`InvertibleFunction` (in `gn.py`)" spots to say
+tasks/archive/2026/06/06/refresh-claudemd-known-issues.md:86:- [ ] **CLAUDE.md Dev workflow:** note `testpaths` + `--doctest-modules` (and the `nbplotutils`
+tasks/archive/2026/06/06/refresh-claudemd-known-issues.md:88:- [ ] **CLAUDE.md header:** update "(updated 2026-06-04)" → today.
+tasks/archive/2026/06/06/refresh-claudemd-known-issues.md:89:- [ ] **One code edit:** `base.py:410` "Note sure" → "Not sure" (keep the self-flag; just fix the
+tasks/archive/2026/06/06/refresh-claudemd-known-issues.md:91:- [ ] Re-run `python -m pytest -q` (expect 141) and `entrypoint/format.sh` (ruff + ty clean) — the
+tasks/archive/2026/06/06/refresh-claudemd-known-issues.md:103:## Open questions
+tasks/archive/2026/07/29/jupytext-default-viewer.md:3:**Status:** DONE 2026-07-29 — implemented and gate-verified; ready to archive
+tasks/archive/2026/10/02/lean-proof-reflect.md:6:**Status:** DONE 2026-10-02. **Priority:** 3 **Difficulty:** 2
+tasks/archive/2026/06/06/rotor-callers-keyword-args.md:3:**Status:** complete
+tasks/archive/2026/06/06/rotor-callers-keyword-args.md:53:## Plan
+tasks/archive/2026/06/06/rotor-callers-keyword-args.md:55:- [ ] Convert the positional `rotor_from_vectors(...)` calls above to
+tasks/archive/2026/06/06/rotor-callers-keyword-args.md:57:- [ ] Convert the positional `rotate(...)` calls likewise (consistency with `test_multivector`).
+tasks/archive/2026/06/06/rotor-callers-keyword-args.md:58:- [ ] `python -m pytest -q` (expect 161) + `entrypoint/format.sh` (ruff + ty clean). No regen.
+tasks/archive/2026/06/06/rotor-callers-keyword-args.md:66:## Open questions
+tasks/archive/2026/06/06/regen-diff-ci-guard.md:66:## Open questions
+tasks/archive/2026/06/06/notebook-display-cells.md:3:**Status:** complete
+tasks/archive/2026/06/06/notebook-display-cells.md:106:## Plan
+tasks/archive/2026/06/06/notebook-display-cells.md:108:- [ ] Add the `show` helper to `displaygraded.py`.
+tasks/archive/2026/06/06/notebook-display-cells.md:109:- [ ] Convert the 13 tuple-cells per the table.
+tasks/archive/2026/06/06/notebook-display-cells.md:110:- [ ] Replace the `from_blade_dict` literal with `3 * e_1 + 4 * e_2`.
+tasks/archive/2026/06/06/notebook-display-cells.md:111:- [ ] Sweep `displayg2` / `displayg3` / `displaymv` for stray bare-tuple cells; fix by the rule.
+tasks/archive/2026/06/06/notebook-display-cells.md:112:- [ ] Spot-check headless that `x._repr_latex_().strip("$")` yields sane LaTeX for the value types used
+tasks/archive/2026/06/06/notebook-display-cells.md:114:- [ ] `entrypoint/format.sh` (ruff + ty) clean. Notebooks aren't run by the suite, so no test delta;
+tasks/archive/2026/06/06/notebook-display-cells.md:123:## Open questions
+tasks/archive/2026/06/08/derived-sandwich-operation.md:3:**Status:** complete
+tasks/archive/2026/06/08/derived-sandwich-operation.md:135:## Open questions
+tasks/archive/2026/06/27/descriptive-names-in-generator.md:3:**Status:** complete — Batches 1–3 applied & verified (2026-06-27); ready to archive
+tasks/archive/2026/06/27/descriptive-names-in-generator.md:31:## (original plan below)
+tasks/archive/2026/06/27/descriptive-names-in-generator.md:92:## Plan (once approved)
+tasks/archive/2026/06/27/descriptive-names-in-generator.md:94:- [ ] `make generate`; snapshot the four generated files as the byte-baseline.
+tasks/archive/2026/06/27/descriptive-names-in-generator.md:95:- [ ] Rename in `tools/gen_specialized.py` (and `astbuild.py` only if a specific name is confusing),
+tasks/archive/2026/06/27/descriptive-names-in-generator.md:97:- [ ] After each batch: regenerate, `diff` against baseline (must be empty), `make check-generated`,
+tasks/archive/2026/06/27/descriptive-names-in-generator.md:99:- [ ] Final: full `make test`; confirm no stale names remain and CLAUDE.md's generator references
+tasks/archive/2026/06/08/invertiblefunction-to-matrix.md:3:**Status:** complete
+tasks/archive/2026/10/04/lean-proof-pseudoscalar-square-sign.md:4:**Status:** DONE for n = 1, 2, 3 on 2026-10-04, archived 2026-10-04; the general-n statement lives in
+tasks/archive/2026/06/08/display-rotations-notebook.md:3:**Status:** complete
+tasks/archive/2026/06/08/classify-functions-linear-affine-nonlinear.md:3:**Status:** complete
+tasks/archive/2026/06/08/classify-functions-linear-affine-nonlinear.md:96:## Open questions
+tasks/archive/2026/07/16/relocate-rotate-and-rename-rotations.md:3:**Status:** complete
+tasks/archive/2026/07/16/relocate-rotate-and-rename-rotations.md:41:## Plan
+tasks/archive/2026/07/16/relocate-rotate-and-rename-rotations.md:120:## Open questions
+tasks/archive/2026/09/26/docstrings-reference-pseudoscalar-squared-sign.md:3:**Status:** DONE 2026-09-26 (branch `unitPseudoscalarReferences`; maintainer merges). See Outcome.
+tasks/archive/2026/06/16/image-export-import-targets.md:3:**Status:** done — implemented 2026-06-16
+tasks/archive/2026/06/06/transform-type-roundtrip-tests.md:3:**Status:** complete
+tasks/archive/2026/06/06/transform-type-roundtrip-tests.md:33:## Plan
+tasks/archive/2026/06/06/transform-type-roundtrip-tests.md:35:- [ ] Decide home + style: a new `tests/test_transforms.py`, or extend `tests/test_conformance.py`
+tasks/archive/2026/06/06/transform-type-roundtrip-tests.md:38:- [ ] **Type round-trip** — for each representation, assert `type(fn(v)) is type(v)` for:
+tasks/archive/2026/06/06/transform-type-roundtrip-tests.md:43:- [ ] **Value correctness** — spot-check known results, e.g. `rotate(pi/2)` of `3e₁+4e₂` → `−4e₁+3e₂`;
+tasks/archive/2026/06/06/transform-type-roundtrip-tests.md:47:- [ ] **Invertibility / error paths** — `uniform_scale(0)` and `scale_non_uniform(…, 0, …)` raise;
+tasks/archive/2026/06/06/transform-type-roundtrip-tests.md:49:- [ ] **`n-D scale`** — `scale_non_uniform(2,3,4)` on a `G3`/`Gn` 3-vector scales each axis; confirm
+tasks/archive/2026/06/06/transform-type-roundtrip-tests.md:51:- [ ] **`basis_vector`** — quick test that `cls.basis_vector(i)` is the i-th unit vector for each rep.
+tasks/archive/2026/06/06/transform-type-roundtrip-tests.md:52:- [ ] Run `python -m pytest -q` (expect the count to rise from 118) and keep `ty check tests` clean.
+tasks/archive/2026/06/06/transform-type-roundtrip-tests.md:61:## Open questions
+tasks/archive/2026/07/21/emit-doc-region-markers.md:3:**Status:** **DONE 2026-07-20 — superseded.** Implemented as two halves, both complete: the
+tasks/archive/2026/07/21/emit-doc-region-markers.md:188:## Open questions
+tasks/archive/2026/08/13/changelog-for-breaking-api-changes.md:3:**Status:** COMPLETED 2026-08-13 — created `CHANGELOG.md` (Keep-a-Changelog style, breaking-
+tasks/archive/2026/10/04/lean-proof-rotation-from-scratch.md:4:**Status:** DONE 2026-10-04, archived 2026-10-04 (`make lean` green). **Priority:** 7. **Difficulty:** 8.
+tasks/archive/2026/07/16/drop-unused-latex-args-from-rotor-rotation.md:3:**Status:** complete
+tasks/archive/2026/07/16/drop-unused-latex-args-from-rotor-rotation.md:28:## Plan
+tasks/archive/2026/07/16/drop-unused-latex-args-from-rotor-rotation.md:52:## Open questions
+tasks/archive/2026/07/22/retype-even-odd-part-off-self.md:3:**Status:** complete
+tasks/archive/2026/07/22/retype-even-odd-part-off-self.md:72:## Plan (sketch)
+tasks/archive/2026/06/08/port-animation-layer-from-mvp.md:3:**Status:** complete
+tasks/archive/2026/06/08/port-animation-layer-from-mvp.md:97:## Open questions
+tasks/archive/2026/06/14/venv-consistency-with-mvp.md:3:**Status:** DONE — 2026-06-14 (Bill directed; verified on rebuilt image)
+tasks/archive/2026/06/14/venv-consistency-with-mvp.md:25:## Plan (mirror mvp exactly)
+tasks/archive/2026/07/19/dedup-draw-ndc-plot-helper.md:3:**Status:** **CLOSED — decided against, 2026-07-19.** Investigated with the criteria
+tasks/archive/2026/10/05/lean-unit-versors-rotors-sandwich-with-reverse.md:3:**Status:** done 2026-10-05 (gate `[lean] OK`); archived 2026-10-05
+tasks/archive/2026/06/13/magnitude-sympy-cast-to-coef.md:3:**Status:** complete
+tasks/archive/2026/06/13/magnitude-sympy-cast-to-coef.md:46:## Plan
+tasks/archive/2026/06/13/magnitude-sympy-cast-to-coef.md:48:- [ ] **Pin down the exact cast Bill means.** Trace where two magnitudes get
+tasks/archive/2026/06/13/magnitude-sympy-cast-to-coef.md:53:- [ ] **Recover the history.** Confirm *why* the sympy cast was introduced —
+tasks/archive/2026/06/13/magnitude-sympy-cast-to-coef.md:57:- [ ] **Test the "just cast to Coef" hypothesis.** Given current types, try keeping
+tasks/archive/2026/06/13/magnitude-sympy-cast-to-coef.md:61:- [ ] **Simplify if safe**, and verify: run the suite (regression + the
+tasks/archive/2026/06/13/magnitude-sympy-cast-to-coef.md:74:## Open questions
+tasks/archive/2026/09/30/lean-candidates-from-symbolic-tests.md:3:**Status:** DONE (cheap high-value items) 2026-09-30 — items 1/2/3/5 proven; 4/6 deferred
+tasks/archive/2026/09/30/lean-candidates-from-symbolic-tests.md:40:## Context (read first)
+tasks/archive/2026/09/30/lean-candidates-from-symbolic-tests.md:91:## Open questions
+tasks/archive/2026/07/09/plane-rotation-pretag-and-mvp-adoption.md:3:**Status:** pre-tag gacalc changes DONE 2026-07-09 (Bill: "that sounds
+tasks/archive/2026/07/22/per-algebra-scalar-types.md:3:**Status:** complete
+tasks/archive/2026/07/22/per-algebra-scalar-types.md:63:## Plan
+tasks/archive/2026/10/08/projection-proof-use-rotate-from-a-to-b.md:3:**Status:** done — 2026-10-08 (approved and recast; gates green; normalized pre-squash)
+tasks/archive/2026/08/13/harvest-api-design-rationale-from-archive.md:3:**Status:** COMPLETED 2026-08-13 — all six items applied (each verified against source first).
+tasks/archive/2026/08/13/harvest-api-design-rationale-from-archive.md:24:- [ ] **`to_matrix` two backends + convention.** `backend="numpy"` (float32, default, for
+tasks/archive/2026/08/13/harvest-api-design-rationale-from-archive.md:30:- [ ] **`x`/`y`/`z` coordinate properties are grade-1-only** (Vector1/2/3), deliberately
+tasks/archive/2026/08/13/harvest-api-design-rationale-from-archive.md:34:- [ ] **Declined vector-API additions + rationale:** no `cross` (it's `(a∧b).dual()`,
+tasks/archive/2026/08/13/harvest-api-design-rationale-from-archive.md:40:- [ ] **`InvertibleFunction.__matmul__` overloads preserve invertibility in the type**
+tasks/archive/2026/08/13/harvest-api-design-rationale-from-archive.md:48:- [ ] **Rotation "why normalize from/to"** — un-normalized rotate "works" only in 2D; in
+tasks/archive/2026/08/13/harvest-api-design-rationale-from-archive.md:56:- [ ] **Animation-layer semantics** — the `at(t)` three-tier resolution (own `interpolate`
+tasks/archive/2026/10/05/python-book-rotor-naming-after-lean.md:3:**Status:** done 2026-10-05 (`make test` 672 passed, format gate green); archived 2026-10-05
+tasks/archive/2026/10/02/lean-proof-normalize.md:6:**Status:** DONE 2026-10-01. **Priority:** 4 **Difficulty:** 2
+tasks/archive/2026/08/16/prove-blade-square-sign-equals-pseudoscalar-squared.md:3:**Status:** in-progress. **Phase 1 (`tasks/archive/2026/08/15/name-blade-square-sign.md`)
+tasks/archive/2026/08/16/prove-blade-square-sign-equals-pseudoscalar-squared.md:107:## Open questions (for Bill) — RESOLVED 2026-08-16
+tasks/archive/2026/07/29/extract-generated-coerce.md:3:**Status:** DONE 2026-07-29 — implemented and gate-verified (`make test` 302 passed, `check-generated`, `check-regions`, `format` all green); archived.
+tasks/archive/2026/07/18/python-programming-standard.md:3:**Status:** complete
+tasks/archive/2026/07/18/python-programming-standard.md:365:## Plan (superseded by the Rollout above; kept for reference)
+tasks/archive/2026/07/18/python-programming-standard.md:367:- [ ] Resolve Q1–Q8; settle the canonical home and the CLAUDE.md shape.
+tasks/archive/2026/07/18/python-programming-standard.md:368:- [ ] Draft the standard: intro + rule sections (A–D + the codified house style),
+tasks/archive/2026/07/18/python-programming-standard.md:370:- [ ] Add to `README.md` (and create/populate `CLAUDE.md` per Q1), keeping a single
+tasks/archive/2026/07/18/python-programming-standard.md:372:- [ ] (Separate future task, if Bill wants) refactor passes to bring code toward
+tasks/archive/2026/06/12/to-matrix-build-by-columns.md:71:## Open questions
+tasks/archive/2026/10/08/projection-standard-position-make-2d.md:3:**Status:** done — 2026-10-08 (gates green; archived; normalized pre-squash)
+tasks/archive/2026/06/15/show-mult-expand-numerators-not-denominators.md:3:**Status:** complete
+tasks/archive/2026/06/15/show-mult-expand-numerators-not-denominators.md:85:## Open questions / things to check
+tasks/archive/2026/08/13/blade-dict-interchange-reference.md:3:**Status:** COMPLETED 2026-08-13 — created `tasks/reference/blade-dict-interchange.md`
+tasks/archive/2026/08/26/explicit-unit-coefficients.md:3:**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — see Outcome.
+tasks/archive/2026/06/13/magnitude-numeric-for-numeric-input.md:3:**Status:** complete (implemented + verified — full suite 225 passed)
+tasks/archive/2026/06/13/magnitude-numeric-for-numeric-input.md:59:## Plan
+tasks/archive/2026/06/13/magnitude-numeric-for-numeric-input.md:61:- [ ] **Reproduce in gacalc.** Confirm `magnitude()` / `abs()` of an all-numeric
+tasks/archive/2026/06/13/magnitude-numeric-for-numeric-input.md:64:- [ ] **Decide the approach.** Likely a numeric fast-path in `magnitude()`: if all
+tasks/archive/2026/06/13/magnitude-numeric-for-numeric-input.md:69:- [ ] **Trace the whole rotor path.** `rotor_from_vectors` (`base.py:686`),
+tasks/archive/2026/06/13/magnitude-numeric-for-numeric-input.md:72:- [ ] **Respect codegen + doctests.** Specialized reps (`g2`/`g3`) are generated —
+tasks/archive/2026/06/13/magnitude-numeric-for-numeric-input.md:75:- [ ] **Add tests.** Assert `type(abs(numeric_vector)) is float` (and the rotated
+tasks/archive/2026/06/13/magnitude-numeric-for-numeric-input.md:93:## Open questions
+tasks/archive/2026/06/28/notebook-pdf-export.md:3:**Status:** DONE (2026-06-28)
+tasks/archive/2026/10/09/line-numbers-in-source-listings.md:3:**Status:** complete
+tasks/archive/2026/10/09/line-numbers-in-source-listings.md:34:## Open questions
+tasks/archive/2026/07/29/plane-rotation-via-exp.md:3:**Status:** DROPPED 2026-07-29 (Bill's explicit say-so) — kept as an
+tasks/archive/2026/10/09/investigate-osbook-latex-source-region-includes.md:3:**Status:** complete
+tasks/archive/2026/10/09/investigate-osbook-latex-source-region-includes.md:35:## Open questions
+tasks/archive/2026/08/15/redo-exp-book-referenced.md:3:**Status:** in progress. **Subtask 1 DONE (2026-08-14):** `bivector_from_vectors` (on
+tasks/archive/2026/08/15/redo-exp-book-referenced.md:348:**Correction to the original plan below: this does NOT unblock `plane_rotation` reuse** —
+tasks/archive/2026/08/15/redo-exp-book-referenced.md:417:## Open questions (for Bill)
+tasks/archive/2026/07/18/generated-dispatch-fast-paths.md:3:**Status:** complete
+tasks/archive/2026/10/11/graph-paper-rotation-notebook.md:3:**Status:** complete
+tasks/archive/2026/10/11/graph-paper-rotation-notebook.md:45:## Open questions
+tasks/archive/2026/10/04/lean-proof-dot-product.md:4:**Status:** DONE 2026-10-04, archived 2026-10-04 (`make lean` green). **Priority:** 7. **Difficulty:** 5.
+tasks/archive/2026/07/22/overload-r-vector-part.md:3:**Status:** complete
+tasks/archive/2026/07/22/overload-r-vector-part.md:46:## Plan (sketch — mirrors the product overloads)
+tasks/archive/2026/08/25/pseudoscalar-coefficient-via-unit-pseudoscalar.md:3:**Status:** DONE 2026-08-25 (William Emerison Six <billsix@gmail.com>) — see Outcome.
+tasks/archive/2026/10/27/audit-recursion-and-iteration-design.md:3:**Status:** DONE 2026-10-27 (William Emerison Six <billsix@gmail.com>). Ready to archive after the
+tasks/archive/2026/07/08/relicense-to-lgpl.md:3:**Status:** DONE 2026-07-08 (authorized by Bill: "go ahead and do the
+tasks/archive/2026/07/09/upgrade-rotation-and-ctc-vector-mapping.md:3:**Status:** DONE — Task 1 committed by Bill 2026-07-09 (gacalc
+tasks/archive/2026/08/29/gate-book-notebook-execution-errors.md:3:**Status:** DONE 2026-08-29 — wired and verified. `nb_execution_raise_on_error = True` added to
+tasks/archive/2026/08/29/gate-book-notebook-execution-errors.md:77:## Open questions
+tasks/archive/2026/10/29/hestenes-orthogonalize-via-inverse.md:3:**Status:** done — 2026-10-29. The hypothesis was **confirmed**: the inverse form equals the
+tasks/archive/2026/08/23/generator-ty-clean-high-dim.md:3:**Status:** DONE + verified 2026-08-22 — all 179 g4 ty diagnostics resolved by real fixes (not
+tasks/archive/2026/08/23/generator-ty-clean-high-dim.md:47:- [ ] **Tighten `cast_coef`** (`tools/astbuild.py`) so it doesn't wrap an expression ty already sees
+tasks/archive/2026/08/23/generator-ty-clean-high-dim.md:97:## Plan for the residual — ALL FIXED (2026-08-22)
+tasks/archive/2026/08/23/generator-ty-clean-high-dim.md:110:- [ ] Final `GACALC_DIMS=1,2,3,4` confirmation (`ty check src` exit 0) — RUNNING; g1/g2/g3 already
+tasks/archive/2026/07/18/prefer-basis-vector-construction.md:3:**Status:** teaching-facing portion **DONE** (2026-07-18). Remaining sites
+tasks/archive/2026/07/18/prefer-basis-vector-construction.md:97:## Open questions
+tasks/archive/2026/08/13/drop-graded-type-dimension-suffixes.md:3:**Status:** COMPLETED 2026-08-13 (gacalc side) — generator renamed (unsuffixed `Vector`/
+tasks/archive/2026/10/09/verify-rotated-vector-length-in-rotate-figures.md:3:**Status:** complete
+tasks/archive/2026/10/09/verify-rotated-vector-length-in-rotate-figures.md:52:## Open questions
+tasks/archive/2026/09/09/wire-changelog-guard.md:3:**Status:** **DONE 2026-09-09** — wired into both places the task proposed: `entrypoint/format.sh` (the real gate) and a host-side `make check-changelog` target, plus the gate line in `CLAUDE.md`. Verified passing on the current tree (0.0.20) and failing with a clear message on a changelog copy with that heading removed; `make format` green in-container. Rationale lives in `tasks/reference/design-decisions.md`.
+tasks/archive/2026/07/18/release-0-0-10-and-bump-mvp.md:3:**Status:** **COMPLETE 2026-07-18.** gacalc **0.0.10** released (tagged `v0.0.10`,
+tasks/archive/2026/07/08/subclass-preserving-generated-ops.md:3:**Status:** DONE 2026-07-08 (authorized by Bill: "go ahead and do the
+tasks/archive/2026/07/22/generated-dimension-known-methods.md:3:**Status:** complete
+tasks/archive/2026/07/22/generated-dimension-known-methods.md:77:## Plan (sketch — decide per method)
+tasks/archive/2026/07/22/generated-dimension-known-methods.md:92:## Open questions
+tasks/archive/2026/10/05/lean-rotor-from-vectors-chain.md:3:**Status:** done 2026-10-05 (gate `[lean] OK`, `Rotor.lean` built with no warnings); archived 2026-10-05
+tasks/archive/2026/09/29/lean-proof-rotation-preserves-length.md:4:**Status:** DONE 2026-09-29 (William Emerison Six <billsix@gmail.com>)
+tasks/archive/2026/08/29/fix-broken-book-notebooks-vector2-rename.md:3:**Status:** DONE 2026-08-28 — rename applied to both notebook sources; verified. Ready to archive.
+tasks/archive/2026/08/29/fix-broken-book-notebooks-vector2-rename.md:70:## Open questions
+tasks/archive/2026/10/24/make-orthogonal-frame-map-not-reduce.md:19:**Status:** complete
+tasks/archive/2026/08/26/passthrough-project-reject-methods.md:3:**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — this spec's
+tasks/archive/2026/07/22/finalize-graded-types.md:3:**Status:** complete
+tasks/archive/2026/07/22/finalize-graded-types.md:69:## Plan (sketch)
+tasks/archive/2026/07/22/finalize-graded-types.md:85:## Open questions
+tasks/archive/2026/10/08/match-prose-algebra-symbols-to-diagrams.md:3:**Status:** done — 2026-10-08 (normalized pre-squash)
+tasks/archive/2026/09/09/fast-numeric-equality.md:3:**Status:** **DONE 2026-09-09.** Implemented as `base._coef_eq` — one hand-written predicate the generated `__eq__` calls from both its same-type and blade-dict paths, rather than the inline `isinstance` guard the plan sketched (both call sites needed the rule, so it belongs in `base.py`, not emitted twice as AST). Measured 48 µs → **0.391 µs** (~123×) on `Vector(3.0, 4.0) == Vector(1.5, -2.0)`, beating the "well under 1 µs" bar. Three tests added to `tests/test_multivector.py` (simplify patched to raise, int/float by value, `(x+1)**2` still equals `x**2+2*x+1`). Gates green: `make format`, `make test` (564 passed), `check-generated`, `check-regions`. Changelog entry under `[Unreleased]` — **not** 0.0.20 as this doc originally said, since 0.0.20 was tagged 2026-09-06 before the fix. Rationale harvested to `tasks/reference/symbolic-equality.md`.
+tasks/archive/2026/09/09/fast-numeric-equality.md:35:## Plan
+tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md:3:**Status:** done — 2026-10-28. Both axes complete and `make lean`-verified (8958 jobs; completeness
+tasks/archive/2026/07/29/drop-dead-same-type-match-arm.md:3:**Status:** DONE 2026-07-29 — implemented and gate-verified (`make test` 302 passed, `check-generated`, `check-regions`, `format` all green); archived.
+tasks/archive/2026/07/23/reflected-operator-typing-overloads.md:3:**Status:** complete (investigation — no code change warranted)
+tasks/archive/2026/10/09/hestenes-notation-variable-naming.md:3:**Status:** complete
+tasks/archive/2026/10/09/hestenes-notation-variable-naming.md:98:## Open questions
+tasks/archive/2026/09/29/lean-proof-rotation-preserves-angles.md:4:**Status:** DONE 2026-09-29 (William Emerison Six <billsix@gmail.com>)
+tasks/archive/2026/07/23/scalar-product-typing-overloads.md:3:**Status:** complete
+tasks/archive/2026/08/22/generated-dual-default-dimension.md:3:**Status:** DONE 2026-08-22 (implemented + verified; interpretation confirmed by the maintainer)
+tasks/archive/2026/08/22/generated-dual-default-dimension.md:70:## Plan (pending confirmation of intent)
+tasks/archive/2026/08/22/generated-dual-default-dimension.md:72:- [ ] Confirm the interpretation with the maintainer (see Open questions) before editing.
+tasks/archive/2026/08/22/generated-dual-default-dimension.md:73:- [ ] In `tools/gen_specialized.py`, change `dual_method` to emit `n: int = <dim>` (the algebra
+tasks/archive/2026/08/22/generated-dual-default-dimension.md:76:- [ ] Decide whether `Gn.dual` in `base.py` should gain a default too. It **cannot** default to a
+tasks/archive/2026/08/22/generated-dual-default-dimension.md:78:- [ ] Regenerate (`make generate`), re-run the doctest/conformance suite, `make check-regions`
+tasks/archive/2026/08/22/generated-dual-default-dimension.md:80:- [ ] Update the CLAUDE.md / reference note about the `n` param being "optional for Liskov compat"
+tasks/archive/2026/10/29/hestenes-orthogonalize-test-parallelism.md:3:**Status:** done — 2026-10-29. Work commit subject:
+tasks/archive/2026/10/02/lean-proof-contractions.md:6:**Status:** DONE 2026-10-02. **Priority:** 6 **Difficulty:** 5
+tasks/archive/2026/10/02/lean-proof-exp.md:6:**Status:** DONE 2026-10-02. **Priority:** 7 **Difficulty:** 6
+tasks/archive/2026/08/31/generated-vector-cross.md:3:**Status:** DONE — implemented, verified, and archived 2026-08-31; ships in 0.0.18
+tasks/archive/2026/08/26/max-grade-on-zero-crashes.md:3:**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — see Outcome.
+tasks/archive/2026/07/22/overloads-and-drop-cast-on-product-primitives.md:3:**Status:** complete
+tasks/archive/2026/07/22/overloads-and-drop-cast-on-product-primitives.md:55:## Plan (sketch)
+tasks/archive/2026/10/09/fix-bold-nested-math-step-headings.md:3:**Status:** complete
+tasks/archive/2026/10/09/fix-bold-nested-math-step-headings.md:38:## Open questions
+tasks/archive/2026/08/03/verify-dot-wedge-as-projection-rejection-products.md:3:**Status:** complete (2026-08-03)
+tasks/archive/2026/09/26/docstrings-for-sphinx.md:3:**Status:** DONE 2026-09-26 (branch `sphinxDocstringUpdates`; maintainer merges to master).
+tasks/archive/2026/10/09/use-bivector-from-vectors-and-i-in-notebooks-and-tests.md:3:**Status:** complete
+tasks/archive/2026/10/09/use-bivector-from-vectors-and-i-in-notebooks-and-tests.md:50:## Open questions
+tasks/archive/2026/10/09/rotate-figure-similar-triangle-for-a.md:3:**Status:** complete
+tasks/archive/2026/10/09/rotate-figure-similar-triangle-for-a.md:44:## Open questions
+tasks/archive/2026/07/29/exp-for-rotors.md:3:**Status:** DONE 2026-07-29 — implemented, all four gates green, archived.
+tasks/archive/2026/08/14/explain-gn-multiplication-for-highschoolers.md:3:**Status:** DONE — content written + headless-verified 2026-08-14 (Bill also eyeballed it in
+tasks/archive/2026/08/14/explain-gn-multiplication-for-highschoolers.md:21:## Plan
+tasks/archive/2026/08/14/explain-gn-multiplication-for-highschoolers.md:55:## Open questions
+tasks/archive/2026/07/18/profile-gacalc-op-mix-in-mvp.md:3:**Status:** complete
+tasks/archive/2026/07/18/profile-gacalc-op-mix-in-mvp.md:166:## Open questions
+tasks/archive/2026/09/29/lean-proofs-magnitude-and-conciseness-sweep.md:9:**Status:** done (2026-09-29, William Emerison Six <billsix@gmail.com>) — every collapse applied or
+tasks/archive/2026/09/29/lean-proofs-magnitude-and-conciseness-sweep.md:68:## Open questions (resolved)
+tasks/archive/2026/10/23/gacalc-g4-g5-generation-sandwich-inverse.md:3:**Status:** done 2026-10-23 (fix committed; archived). **Priority:** 3 **Difficulty:** 5
+tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md:3:**Status:** DONE, archived 2026-10-04 — every step task closed (the last four on 2026-10-04); the
+tasks/archive/2026/10/05/lean-rotor-3d-angle-theorem.md:3:**Status:** done 2026-10-05 (gate `[lean] OK`, `PlaneRotation3D.lean` built with no warnings); archived 2026-10-05
+tasks/archive/2026/08/31/custom-symbols-and-vector-calc.md:3:**Status:** DONE — implemented, verified (containerized gate, ruff/ty, pyright), and archived
+tasks/archive/2026/08/31/custom-symbols-and-vector-calc.md:95:## Plan
+tasks/archive/2026/08/31/custom-symbols-and-vector-calc.md:126:## Open questions
+tasks/archive/2026/08/04/graded-typed-module-basis-constants.md:3:**Status:** DONE (2026-08-04) — Option A implemented (Bill approved). See "What landed" below.
+tasks/archive/2026/10/02/lean-proof-measures.md:6:**Status:** DONE 2026-10-02 (general `content` deferred — see below). **Priority:** 5 **Difficulty:** 5
+tasks/archive/2026/10/23/lift-prefix-blades-to-top-level.md:3:**Status:** done 2026-10-23 (William Emerison Six <billsix@gmail.com>). A pure extraction — no
+tasks/archive/2026/08/03/port-rotation-explanation-from-mvp.md:3:**Status:** complete — ported and verified (HTML + PDF both build; the identity notebook
+tasks/archive/2026/08/03/openstax-math-pedagogy-survey.md:3:**Status:** complete — deliverable at `tasks/reference/openstax-math-pedagogy.md`
+tasks/archive/2026/08/03/openstax-math-pedagogy-survey.md:25:## Plan
+tasks/archive/2026/08/03/openstax-math-pedagogy-survey.md:51:## Open questions
+tasks/archive/2026/10/08/fix-epix-figure-label-placement.md:3:**Status:** done — 2026-10-08 (per-figure pixel tuning; gates green; normalized pre-squash)
+tasks/archive/2026/08/25/notebook-import-basis-constants.md:3:**Status:** DONE 2026-08-25 (William Emerison Six <billsix@gmail.com>) — see Outcome below.
+tasks/archive/2026/08/25/notebook-import-basis-constants.md:78:## Plan
+tasks/archive/2026/09/14/trim-claude-md.md:3:**Status:** Done — trimmed 2026-09-13 (archived 2026-09-14)
+tasks/archive/2026/09/14/trim-claude-md.md:128:## Open questions (for the maintainer)
+tasks/archive/2026/10/09/emacs-lsp-not-working-in-geometricalgebra.md:3:**Status:** complete
+tasks/archive/2026/10/09/emacs-lsp-not-working-in-geometricalgebra.md:58:## Open questions
+tasks/archive/2026/08/15/name-blade-square-sign.md:3:**Status:** DONE 2026-08-15 (William Emerison Six <billsix@gmail.com>). **Corrected direction
+tasks/archive/2026/08/15/name-blade-square-sign.md:62:## Plan (Phase 1 — naming only; decisions locked)
+tasks/archive/2026/08/15/name-blade-square-sign.md:84:## Open questions (for Bill)
+tasks/archive/2026/08/13/normalize-zero-vector-returns-nan.md:3:**Status:** COMPLETED 2026-08-13 — implemented **option 1 (raise uniformly)**: `normalize()`
+tasks/archive/2026/08/27/symbolic-equality-reference-and-tests.md:3:**Status:** DONE / split 2026-08-27 (William Emerison Six <billsix@gmail.com>). Archived lean record.
+tasks/archive/2026/09/29/lean-proof-sandwich-rotates-components.md:4:**Status:** DONE 2026-09-29 (William Emerison Six <billsix@gmail.com>) — matrix-free reframing
+tasks/archive/2026/10/09/redo-gn-multiplication-explanation-as-markdown.md:3:**Status:** complete
+tasks/archive/2026/10/09/redo-gn-multiplication-explanation-as-markdown.md:48:## Open questions
+tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md:3:**Status:** done — archived 2026-10-04. Phases 1–3 delivered (`make lean` green); the former phase 4
+tasks/archive/2026/10/04/lean-coverage-extend-transforms-frame-gn.md:104:## Open questions
+tasks/archive/2026/10/28/lean-product-wedge-functions-and-grade-predicates.md:3:**Status:** done — 2026-10-28 (2D scope, per the "2D now, 3D later" go-ahead). `make lean` green
+tasks/archive/2026/10/02/lean-proof-grade-projection.md:6:**Status:** DONE 2026-10-02. **Priority:** 6 **Difficulty:** 4
+tasks/archive/2026/10/04/lean-object-in-getters-out-proof-style.md:3:**Status:** DONE & ARCHIVED 2026-10-04 (`make lean` green). Polynomial tier converted; coordinate core
+tasks/archive/2026/07/22/investigate-dot-product-grade-0.md:3:**Status:** resolved
+tasks/archive/2026/10/22/refactor-orthogonal-frame-recursive-generators.md:16:**Status:** DONE 2026-10-22 — both functions rewritten in `src/gacalc/frame.py` as designed
+tasks/archive/2026/10/22/refactor-orthogonal-frame-recursive-generators.md:161:## Open questions
+tasks/archive/2026/10/04/lean-lift-theorem-statements-to-objects.md:25:**Status:** SUPERSEDED & ARCHIVED 2026-10-04 — the statement-lift phase landed (the `sandwich_*` and
+tasks/archive/2026/10/04/lean-lift-theorem-statements-to-objects.md:565:## Open questions
+tasks/archive/2026/10/05/consider-renaming-scalar-to-real.md:3:**Status:** done 2026-10-05 (the rename shipped: 696 tests, format/ty, check-generated, check-regions green); archived 2026-10-05
+tasks/archive/2026/10/05/consider-renaming-scalar-to-real.md:23:## Context (read first)
+tasks/archive/2026/10/05/consider-renaming-scalar-to-real.md:206:## Plan (as executed)
+tasks/archive/2026/10/05/consider-renaming-scalar-to-real.md:216:## Open questions (answered 2026-10-05 — kept for the record)
+tasks/archive/2026/08/25/generated-eq-same-type-fast-path.md:3:**Status:** DONE 2026-08-25 (William Emerison Six <billsix@gmail.com>) — see Outcome.
+tasks/archive/2026/08/25/generated-eq-same-type-fast-path.md:81:## Plan
+tasks/archive/2026/08/25/prove-associativity-of-multiplication.md:3:**Status:** DONE 2026-08-25 — the proof is complete and now lives as a living reference doc:
+tasks/archive/2026/08/25/prove-associativity-of-multiplication.md:124:## Plan
+tasks/archive/2026/08/25/prove-associativity-of-multiplication.md:129:- [ ] (Optional) Add a symbolic `(AB)C == A(BC)` demonstration in `notebooks/displaymv.py`
+tasks/archive/2026/08/25/prove-associativity-of-multiplication.md:142:## Open questions
+tasks/archive/2026/09/06/ty-invariance-transform-factories-bind-v.md:3:**Status:** DONE + ARCHIVED 2026-09-06 — implemented 2026-09-05 (ty-clean, 441 tests), released by the maintainer as **gacalc 0.0.19** the same day (PyPI 2026-09-05; the `v0.0.19` tag was not yet created in this checkout when archived), and confirmed downstream on 2026-09-06: modelviewprojection pinned 0.0.19 and its 36 invariance errors cleared (`make format` green) — its `tasks/archive/2026/09/06/ty-0072-strictness-sweep.md`.
+tasks/archive/2026/09/06/ty-invariance-transform-factories-bind-v.md:56:## Open questions
+tasks/archive/2026/08/13/narrate-code-generator-in-docstrings.md:3:**Status:** COMPLETED 2026-08-13 — narrative + docstrings landed and committed; archived.
+tasks/archive/2026/10/28/lean-grade-predicates-3d.md:3:**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK). `G3.IsScalar` +
+tasks/archive/2026/10/05/lean-rot-on-g2-named-components.md:3:**Status:** done 2026-10-05 (gate `[lean] OK`); archived 2026-10-05
+tasks/archive/2026/10/22/lean-cross-standard-position-capstone.md:3:**Status:** done — 2026-10-22 (William Emerison Six <billsix@gmail.com>). All three forms delivered;
+tasks/archive/2026/10/22/lean-cross-standard-position-capstone.md:49:## Open questions — both resolved by the decision
+tasks/archive/2026/10/28/lean-g2-object-out-parity.md:3:**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK). Three G2 theorems
+tasks/archive/2026/08/27/fix-notebook-pyright-type-errors.md:3:**Status:** DONE 2026-08-27 (William Emerison Six <billsix@gmail.com>) — see Outcome.
+tasks/archive/2026/08/29/document-composable-function-math-identity.md:3:**Status:** DONE 2026-08-28 — all plan items complete, all gates passed. Ready to archive.
+tasks/archive/2026/08/29/document-composable-function-math-identity.md:137:## Plan
+tasks/archive/2026/08/29/document-composable-function-math-identity.md:154:## Open questions
+tasks/archive/2026/10/05/consolidate-symbolic-equality-predicate.md:3:**Status:** done 2026-10-05 (Q1 (a), Q2 (a) decided by the maintainer; 695 tests, format/ty green); archived 2026-10-05
+tasks/archive/2026/10/05/consolidate-symbolic-equality-predicate.md:39:## Plan (draft — after Q1)
+tasks/archive/2026/10/05/consolidate-symbolic-equality-predicate.md:41:- [ ] Add a public predicate (e.g. `MultiVectorBase.symbolically_equal(other)`) that does the blade-dict
+tasks/archive/2026/10/05/consolidate-symbolic-equality-predicate.md:43:- [ ] Replace `_same_value` / `simplify_equal` / the inline idioms in tests with it.
+tasks/archive/2026/10/05/consolidate-symbolic-equality-predicate.md:44:- [ ] Expand symbolic-equality tests (the `simplify`-can't-prove-it false-negative cases from the
+tasks/archive/2026/10/05/consolidate-symbolic-equality-predicate.md:46:- [ ] `ruff` + `ty check src tests` + full suite green.
+tasks/archive/2026/10/05/consolidate-symbolic-equality-predicate.md:48:## Open questions
+tasks/archive/2026/10/08/book-proof-rotate-from-a-to-b.md:3:**Status:** done — 2026-10-08 (gates green; normalized pre-squash)
+tasks/archive/2026/08/25/explicit-symbolic-tests-and-helper-cleanup.md:3:**Status:** DONE 2026-08-25. Both remainders finished: `test_numeric_magnitude.py` now inlines its two
+tasks/archive/2026/08/25/explicit-symbolic-tests-and-helper-cleanup.md:71:## Open questions
+tasks/archive/2026/10/07/epix-plot-integration.md:3:**Status:** DONE (2026-10-07); archived 2026-10-07 on the maintainer's say-so ("looks great both in HTML and
+tasks/archive/2026/10/07/epix-plot-integration.md:30:## Plan
+tasks/archive/2026/10/07/epix-plot-integration.md:69:- [ ] **Keep both doc paths in mind.** Usable from a future Sphinx build *and* a
+tasks/archive/2026/10/07/epix-plot-integration.md:143:## Open questions
+tasks/archive/2026/09/29/lean-proof-algebra-laws-g2-g3.md:4:**Status:** DONE 2026-09-29 (William Emerison Six <billsix@gmail.com>)
+tasks/archive/2026/07/29/blade-dict-tests-and-comments.md:3:**Status:** DONE 2026-07-29 — implemented and gate-verified (`make test` 311 passed,
+tasks/archive/2026/07/29/blade-dict-tests-and-comments.md:53:## Plan
+tasks/archive/2026/07/29/blade-dict-tests-and-comments.md:55:- [ ] **Audit existing coverage.** See what `tests/test_multivector.py`,
+tasks/archive/2026/07/29/blade-dict-tests-and-comments.md:59:- [ ] **Add interchange unit tests:**
+tasks/archive/2026/07/29/blade-dict-tests-and-comments.md:71:- [ ] **Strengthen the comments/docs.** `MultiVectorBase`'s docstring already calls
+tasks/archive/2026/07/29/blade-dict-tests-and-comments.md:78:- [ ] **Run the suite** (in the container) to confirm green.
+tasks/archive/2026/07/29/blade-dict-tests-and-comments.md:92:## Open questions
+tasks/archive/2026/09/09/add-more-type-annotations.md:3:**Status:** **DONE 2026-09-09.** Applied across all four in-scope directories at the
+tasks/archive/2026/09/09/add-more-type-annotations.md:144:## Open questions — all RESOLVED 2026-09-05
+tasks/archive/2026/10/09/re-baseline-annotation-auditor.md:3:**Status:** complete
+tasks/archive/2026/10/09/re-baseline-annotation-auditor.md:47:## Open questions
+tasks/archive/2026/10/09/prove-rotation-is-distributive-2d.md:3:**Status:** complete
+tasks/archive/2026/10/09/prove-rotation-is-distributive-2d.md:47:## Open questions
+tasks/archive/2026/10/28/lean-dot-wedge-grade-projection-faithfulness.md:3:**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK).
+tasks/archive/2026/10/01/per-type-fixed-grade-dot-wedge-sine-cosine.md:3:**Status:** DONE 2026-10-01 (William Emerison Six <billsix@gmail.com>) — all five phases landed; gates
+tasks/archive/2026/09/06/add-quarter-turn-to-g2.md:3:**Status:** done — implemented 2026-09-06 (Fable session), gates green, awaiting the maintainer's
+tasks/archive/2026/10/09/dockerfile-missing-ci-packages.md:3:**Status:** complete
+tasks/archive/2026/10/09/dockerfile-missing-ci-packages.md:65:## Open questions
+tasks/archive/2026/09/29/lean-proof-projection.md:4:**Status:** DONE 2026-09-29 (William Emerison Six <billsix@gmail.com>), `make lean` green.
+tasks/archive/2026/10/07/book-epix-figures.md:3:**Status:** DONE 2026-10-07 (overnight autonomous run) — all three steps built, gate green, full html+PDF clean. Archived with its steps.
+tasks/archive/2026/10/07/book-epix-figures.md:77:## Open questions
+tasks/archive/2026/10/09/coordinate-proofs-alongside-early-results.md:3:**Status:** complete
+tasks/archive/2026/10/09/coordinate-proofs-alongside-early-results.md:125:## Open questions
+tasks/archive/2026/08/26/symbolic-vector-doctests-for-measures.md:3:**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — see Outcome.
+tasks/archive/2026/10/22/github-actions-pypi-publish-on-tag.md:15:**Status:** DECLINED 2026-10-22 (William Emerison Six <billsix@gmail.com>) — releases stay
+tasks/archive/2026/10/22/github-actions-pypi-publish-on-tag.md:47:## Plan
+tasks/archive/2026/10/22/github-actions-pypi-publish-on-tag.md:49:- [ ] Decide the approach (Open question 1): Trusted Publishing (OIDC) vs. keep manual `make release`.
+tasks/archive/2026/10/22/github-actions-pypi-publish-on-tag.md:50:- [ ] If automating: add a `release.yml` triggered on `v*` tags, thin-wrapper style:
+tasks/archive/2026/10/22/github-actions-pypi-publish-on-tag.md:55:- [ ] Keep all build logic in `make` targets (add one only if a needed step isn't already a target);
+tasks/archive/2026/10/22/github-actions-pypi-publish-on-tag.md:58:- [ ] Optionally attach `dist/*` (and possibly the `make docs` HTML/PDF) to a GitHub Release via
+tasks/archive/2026/10/22/github-actions-pypi-publish-on-tag.md:60:- [ ] Pin `actions/checkout@v5` (Node 24). Agent stages the YAML; the maintainer commits.
+tasks/archive/2026/10/22/github-actions-pypi-publish-on-tag.md:61:- [ ] **Verification caveat:** a real publish can't be dry-run safely (PyPI permanently rejects a
+tasks/archive/2026/10/22/github-actions-pypi-publish-on-tag.md:65:## Open questions
+tasks/archive/2026/08/03/scaffold-book-placeholders.md:3:**Status:** complete — scaffolded and verified (full book builds; all 14 notebooks
+tasks/archive/2026/10/28/lean-basis-constants-self-documenting.md:3:**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK). 21 positional
+tasks/archive/2026/10/22/finalize-exp-citation.md:3:**Status:** done — 2026-10-22 (William Emerison Six <billsix@gmail.com>).
+tasks/archive/2026/10/09/prefer-sine-cosine-presentation-followups.md:3:**Status:** complete
+tasks/archive/2026/10/09/prefer-sine-cosine-presentation-followups.md:78:## Open questions
+tasks/archive/2026/10/03/lean-proofs-dead-code-audit.md:3:**Status:** DONE 2026-10-03 — audit run; **no genuine dead code found** (see Findings). Archivable.
+tasks/archive/2026/10/07/book-epix-figures-step-3-projection-3d.md:5:**Status:** DONE 2026-10-07 (overnight autonomous run) — figures render, page wired, gate green, full html+PDF build clean.
+tasks/archive/2026/10/07/book-epix-figures-step-3-projection-3d.md:33:## Plan
+tasks/archive/2026/10/07/book-epix-figures-step-3-projection-3d.md:59:## Open questions
+tasks/archive/2026/10/02/lean-2d-projrotation-parallel.md:3:**Status:** DONE 2026-10-02
+tasks/archive/2026/10/02/lean-2d-projrotation-parallel.md:37:## Note on implementation vs. the original plan
+tasks/archive/2026/10/02/lean-2d-projrotation-parallel.md:39:The original plan expected to cite `Rotation.lean`'s `rot_normSq` / `sandwich_versor_eq_vec_mul_rotor` /
+tasks/archive/2026/10/09/analyze-gn-product-tuple-vs-named-type.md:3:**Status:** complete
+tasks/archive/2026/10/09/analyze-gn-product-tuple-vs-named-type.md:45:## Open questions
+tasks/archive/2026/10/20/prove-2d-rotations-commute.md:3:**Status:** done 2026-10-20 — all four deliverables already present in the repo (the 2026-10-08 spec
+tasks/archive/2026/09/29/lean-proof-2d-dual-perpendicular.md:4:**Status:** DONE 2026-09-29 (`make lean` green). Archived.
+tasks/archive/2026/10/29/reorder-gn-lean-to-teaching-order.md:3:**Status:** done — 2026-10-29. William Emerison Six <billsix@gmail.com> gave the go-ahead by
+tasks/archive/2026/10/07/book-epix-figures-step-2-projection-2d.md:5:**Status:** DONE 2026-10-07 (overnight autonomous run) — figures render, both pages wired, gate green, HTML clean.
+tasks/archive/2026/10/07/book-epix-figures-step-2-projection-2d.md:34:## Plan
+tasks/archive/2026/10/07/book-epix-figures-step-2-projection-2d.md:57:## Open questions
+tasks/archive/2026/10/03/prefer-sine-cosine-presentation.md:3:**Status:** done. **Priority:** 5. **Difficulty:** 5.
+tasks/archive/2026/08/13/reorder-generated-class-emission.md:3:**Status:** COMPLETED 2026-08-13 — done as part of (bundled into) the suffix-drop rename
+tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md:8:**Status:** done (2026-09-30, William Emerison Six <billsix@gmail.com>) — ready for the pre-squash tense
+tasks/archive/2026/09/30/lean-proofs-make-coordinate-free.md:101:## Open questions (resolved)
+tasks/archive/2026/10/28/add-section-headers-to-headerless-lean-files.md:3:**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK). 10 section headers
+tasks/archive/2026/09/05/refactor-conditionals-match-and-ternary-returns.md:3:**Status:** COMPLETE 2026-09-05 — pilot + project-wide sweep done, Rules A–E codified, real
+tasks/archive/2026/09/05/refactor-conditionals-match-and-ternary-returns.md:291:## Open questions — both RESOLVED 2026-09-05
+tasks/archive/2026/10/04/trim-unused-simp-components.md:3:**Status:** DONE 2026-10-04, archived 2026-10-04 (`make lean` / full `check.sh` green at every step).
+tasks/archive/2026/10/29/parameterize-bare-generic-annotations.md:3:**Status:** done (2026-10-29). **Priority:** 5  **Difficulty:** 1
+tasks/archive/2026/10/09/pdf-section-and-page-numbers-for-print.md:3:**Status:** complete
+tasks/archive/2026/10/09/pdf-section-and-page-numbers-for-print.md:51:## Open questions
+tasks/archive/2026/10/28/gn-graded-typing-subclasses.md:3:**Status:** done (investigation) — 2026-10-28. Verdict + design recommendation delivered; no library
+tasks/archive/2026/10/09/add-arrowheads-to-vectors-in-figures.md:3:**Status:** complete
+tasks/archive/2026/10/09/add-arrowheads-to-vectors-in-figures.md:31:## Open questions
+tasks/archive/2026/10/09/coordinate-subscripts-indices-not-xyz.md:3:**Status:** complete
+tasks/archive/2026/10/09/coordinate-subscripts-indices-not-xyz.md:94:## Open questions
+tasks/archive/2026/10/09/number-equations-with-labels.md:3:**Status:** complete
+tasks/archive/2026/10/09/number-equations-with-labels.md:62:## Open questions
+tasks/archive/2026/09/06/matrix-template-compile-once.md:3:**Status:** done — implemented 2026-09-06 (Fable session) on the maintainer's go-ahead ("go ahead and
+tasks/archive/2026/10/01/lean-coverage-gap-audit.md:3:**Status:** DONE 2026-10-01. **Priority:** 7 **Difficulty:** 3
+tasks/archive/2026/10/29/inline-single-use-rest-orthogonal-variable.md:3:**Status:** done — 2026-10-29. William Emerison Six <billsix@gmail.com> asked for the inline directly.
+tasks/archive/2026/10/07/book-epix-figures-step-1-vector-addition.md:5:**Status:** DONE 2026-10-07 (overnight autonomous run) — figures render, page wired, gate green.
+tasks/archive/2026/10/07/book-epix-figures-step-1-vector-addition.md:30:## Plan
+tasks/archive/2026/10/07/book-epix-figures-step-1-vector-addition.md:56:## Open questions
+tasks/archive/2026/10/04/rename-rotor-to-versor.md:3:**Status:** DONE 2026-09-28 (full gate green; released as `0.1.0`), archived 2026-10-04 together with
+tasks/archive/2026/10/03/lean-grade-projection-as-basis-combination.md:3:**Status:** done. **Priority:** 7. **Difficulty:** 5.
+tasks/archive/2026/10/20/lean-sweep-scalars-to-geometric-objects.md:3:**Status:** done 2026-10-20 — recon complete; the one clean A-site lifted and verified
+tasks/archive/2026/09/27/minimal-nested-image.md:3:**Status:** DONE 2026-09-27 (William Emerison Six <billsix@gmail.com>) — implemented, gate-verified,
+tasks/archive/2026/09/27/minimal-nested-image.md:74:## Plan
+tasks/archive/2026/09/27/minimal-nested-image.md:76:- [ ] `01-install-base.sh`: drop `emacs`, `emacs-gtk+x11`; new `02-install-emacs.sh` (or reuse the Spyder pattern) run under `USE_EMACS=1` — this makes the existing ARG live.
+tasks/archive/2026/09/27/minimal-nested-image.md:77:- [ ] Dockerfile: run `03-install-notebook-tex.sh` under a flag (`USE_JUPYTER`, Makefile default 1 on host); document which feature it serves.
+tasks/archive/2026/09/27/minimal-nested-image.md:78:- [ ] Makefile: `BUILD_DOCS`, `USE_EMACS`, `USE_JUPYTER` get the nested-aware default (`USE_SPYDER` stays 0 everywhere).
+tasks/archive/2026/09/27/minimal-nested-image.md:79:- [ ] Gate check: `make test` (the CLAUDE.md gate) must pass in the lean image; `make html` is a docs-only path and is what `BUILD_DOCS=1` is for.
+tasks/archive/2026/09/27/minimal-nested-image.md:80:- [ ] Measure both images; record in `CLAUDE.md`.
+tasks/archive/2026/09/27/minimal-nested-image.md:81:- [ ] Record both sizes (host full vs nested lean) here and in `CLAUDE.md`; add the standard's one-line
+tasks/archive/2026/09/27/minimal-nested-image.md:84:## Open questions
+tasks/archive/2026/10/27/orthogonal-frame-recursion-structure-and-comment.md:3:**Status:** DONE 2026-10-27 (William Emerison Six <billsix@gmail.com>). Ready to archive after the
+tasks/archive/2026/08/27/parameterize-composable-function-annotations.md:3:**Status:** DONE 2026-08-27 (William Emerison Six <billsix@gmail.com>) — see Outcome.
+tasks/archive/2026/08/25/name-perpendicular-vector-not-height.md:3:**Status:** DONE 2026-08-25 (William Emerison Six <billsix@gmail.com>) — renamed the
+tasks/archive/2026/10/04/reduce-to-standard-position.md:3:**Status:** done — archived 2026-10-04 (the book voice pass continues in
+tasks/archive/2026/09/29/lean-proof-2d-versor-from-vectors.md:4:**Status:** DONE 2026-09-29 (William Emerison Six <billsix@gmail.com>)
+tasks/archive/2026/10/05/rotor-extract-r-i-theta-a-b.md:3:**Status:** done 2026-10-05 for `r`, `I`, `θ`, conjugate (Q1 methods, Q2 yes — maintainer 2026-10-05); `a and b` and the Macdonald citation remain open, see the record; archived 2026-10-05
+tasks/archive/2026/10/05/rotor-extract-r-i-theta-a-b.md:50:## Plan (draft — after questions)
+tasks/archive/2026/10/05/rotor-extract-r-i-theta-a-b.md:52:- [ ] Reconcile with the book-outline "θ is a property, not solved-for" stance.
+tasks/archive/2026/10/05/rotor-extract-r-i-theta-a-b.md:53:- [ ] Add extractors (`r`, `theta`/`angle`, `I` via existing `plane_of_rotation`, `conjugate`) — as
+tasks/archive/2026/10/05/rotor-extract-r-i-theta-a-b.md:55:- [ ] Symbolic checks; generate on all versor implementations (`gn`).
+tasks/archive/2026/10/05/rotor-extract-r-i-theta-a-b.md:57:## Open questions
+tasks/archive/2026/10/05/python-rotor-from-vectors-lagrange.md:3:**Status:** done 2026-10-05 (679 tests, format/ty, check-generated, check-regions all green); archived 2026-10-05
+tasks/archive/2026/10/04/lean-proof-wedge-product.md:4:**Status:** DONE 2026-10-04, archived 2026-10-04 (`make lean` green). **Priority:** 7. **Difficulty:** 5.
+tasks/archive/2026/10/03/lean-expand-match-usage.md:3:**Status:** done (no-op). **Priority:** 7. **Difficulty:** 3.
+tasks/archive/2026/10/09/narrow-gn-bivector-from-vectors-and-i.md:3:**Status:** complete
+tasks/archive/2026/10/09/narrow-gn-bivector-from-vectors-and-i.md:39:## Open questions
+tasks/archive/2026/09/30/lean-proof-reverse-anti-automorphism.md:3:**Status:** DONE 2026-09-30 (committed `b6c5bc5`) — verified `sorry`-free by the Lean gate
+tasks/archive/2026/09/30/lean-proof-reverse-anti-automorphism.md:28:## Context (read first)
+tasks/archive/2026/09/30/lean-proof-reverse-anti-automorphism.md:52:## Plan (on go-ahead)
+tasks/archive/2026/09/30/lean-proof-reverse-anti-automorphism.md:69:## Open questions
+tasks/archive/2026/10/19/book-rotation-from-vectors-no-angle.md:3:**Status:** implemented 2026-10-19 — `rotation-from-vectors.rst` + companion notebook written and
+tasks/archive/2026/10/09/math-notation-parens-star-named-angles.md:3:**Status:** complete
+tasks/archive/2026/10/09/math-notation-parens-star-named-angles.md:162:## Open questions
+tasks/archive/2026/10/03/lean-proof-file-organization-cleanup.md:3:**Status:** done. **Priority:** 6. **Difficulty:** 4.
+tasks/archive/2026/10/05/add-lagrange-identity-references.md:3:**Status:** done 2026-10-05 (format gate green; citation-only change); archived 2026-10-05
+tasks/archive/2026/10/05/add-lagrange-identity-references.md:74:## Plan
+tasks/archive/2026/10/05/add-lagrange-identity-references.md:78:- [ ] Re-run `git grep -niI lagrange` and confirm the sites above (the inventory drifts).
+tasks/archive/2026/10/05/add-lagrange-identity-references.md:79:- [ ] Add the name + link to `notebooks/displayg2.py` and `displayg3.py` Lagrange cells.
+tasks/archive/2026/10/05/add-lagrange-identity-references.md:80:- [ ] Audit the "by another name" candidates (`measure.py`, `base.py`, `vectorcalc.py`, and the three
+tasks/archive/2026/10/05/add-lagrange-identity-references.md:82:- [ ] Decide whether any *generated* docstring should cite it → if so, edit `tools/gen_specialized.py`
+tasks/archive/2026/10/05/add-lagrange-identity-references.md:84:- [ ] `make format`; if notebook markdown changed, re-execute the notebooks; stage by path.
+tasks/archive/2026/10/05/add-lagrange-identity-references.md:93:## Open questions
+tasks/archive/2026/10/19/vector-addition-translate-partial-binding.md:3:**Status:** implemented 2026-10-19 — "Translate" subsection + `trans1`/`trans2` figures + notebook
+tasks/archive/2026/10/19/vector-addition-translate-partial-binding.md:23:## Context (read first)
+tasks/archive/2026/10/19/vector-addition-translate-partial-binding.md:51:## Plan
+tasks/archive/2026/10/19/vector-addition-translate-partial-binding.md:120:## Open questions
+tasks/archive/2026/10/29/inline-insert-into-canonical-binary-test.md:3:**Status:** done — 2026-10-29. William Emerison Six <billsix@gmail.com> confirmed the spot and chose
+tasks/archive/2026/10/08/rotate3-figure-width-consistency.md:3:**Status:** done — 2026-10-08 (gates green; normalized pre-squash)
+tasks/archive/2026/10/08/rotate-ab-name-angle-beta.md:3:**Status:** done — 2026-10-08 (gates green; normalized pre-squash)
+tasks/archive/2026/10/27/migrate-unit-tests-to-doctests.md:3:**Status:** DONE — exhaustive pass complete (William Emerison Six <billsix@gmail.com>, 2026-10-27).

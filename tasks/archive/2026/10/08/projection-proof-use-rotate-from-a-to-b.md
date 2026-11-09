@@ -1,11 +1,6 @@
 # Follow-up: recast the projection proof to use "rotate from a to b"
 
-**Status:** done — 2026-10-08 (approved and recast; gates green; normalized pre-squash)
-**Priority:** 7
-**Difficulty:** 4
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-08
 
 A "see-if-it-improves-it" follow-up to `book-proof-rotate-from-a-to-b`: the projection proof's rotation
 is the special case "rotate `b` onto `e₁`" (`R_b^{e₁}`), which is exactly step 1 of the new
@@ -37,11 +32,11 @@ back-references in rotate-from-a-to-b were themselves forward-references to a la
 The feared downside (pulling in the full 3-step sandwich just for its one-rotation special case) did not
 materialize, because projection cites only step 1's align move, not the whole construction.
 
-## History (commit chronology, branch `rotateFromAToB` — for the squash)
+## History (commit chronology)
 
-1. `2704af1` *added tasks to rotate from a to b* — filed this follow-up (then blocked on
+1. `95a941e` *added tasks to rotate from a to b* — filed this follow-up (then blocked on
    `book-proof-rotate-from-a-to-b` + approval), alongside that task.
-2. `d91837a` *rewrite project proof* — the recast: `proof-projection.rst` cites the align move,
+2. `dbb8a1a` *rewrite project proof* — the recast: `proof-projection.rst` cites the align move,
    `proof-rotate-from-a-to-b.rst` made self-contained (forward-refs flipped, step 1 fully derived); and
    removed this task doc from its working path (archiving).
 

@@ -1,15 +1,15 @@
 # Rename "rotor" → "versor" across gacalc (breaking API change)
 
-**Status:** DONE 2026-09-28 (full gate green; released as `0.1.0`), archived 2026-10-04 together with
-`lean-proof-rotation-from-scratch.md` at the maintainer's request (the two share the "a rotor is really a
-unit versor" thread). **Priority:** 4. **Difficulty:** 7.
+**Completed:** 2026-09-28 (full gate green; released as `0.1.0`) · archived 2026-10-04 together with
+`tasks/archive/2026/10/04/lean-proof-rotation-from-scratch.md` at the maintainer's request (the two share
+the "a rotor is really a unit versor" thread).
 **Durable record:** `tasks/reference/unit-bivector-and-rotors.md` §6 (the analysis), `CHANGELOG.md`
 `[0.1.0]` (the BREAKING entry listing every renamed public name).
 
-## BLUF
+## Summary
 
-gacalc's "rotor" objects are un-normalized even versors; a rotor is the unit special case (`R R̃ = 1`),
-which gacalc does not require. The maintainer renamed the general object rotor → versor library-wide,
+gacalc's "rotor" objects were un-normalized even versors; a rotor is the unit special case (`R R̃ = 1`),
+which gacalc did not require. The maintainer renamed the general object rotor → versor library-wide,
 accepting the breaking change ("nobody but me uses my library"), with the rule: **rename except where the
 object is known unit-magnitude** — there "rotor" stays (the `exp`/`plane_rotation` half-angle rotor
 `cos(θ/2) − sin(θ/2) i`, the unit-bivector rotor factory, `R R̃ = 1`).

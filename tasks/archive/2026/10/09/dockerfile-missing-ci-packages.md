@@ -1,12 +1,6 @@
 # Audit the Dockerfile package list for CLI tools the gates/CI need
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 3
-**Difficulty:** 2
-**Created:** 2026-09-30 **Updated:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-09-30 · **Completed:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
 
 A GitHub Actions job died with `cmp: command not found` — the image did not install `cmp` (from
 **`diffutils`**), which `make check-generated` uses to compare the twice-generated `g*.py`. That
@@ -61,7 +55,3 @@ a generalized rule added to `CLAUDE.md` › Continuous integration: *every CLI t
 gate shells out to must be installed by an `entrypoint/0N-install-*.sh` group; a missing one fails
 only on the clean runner* — the diffutils lesson, next to the sibling `: image`-prereq gotcha, with
 this task's gate → tool → group map cited.
-
-## Open questions
-
-None.

@@ -1,12 +1,6 @@
 # Show vector `a` as a similar (scaled-up) right triangle in the rotate figures
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 5
-**Difficulty:** 4
-**Started:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-09 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-09
 
 Added a new final step to the `proof-rotate` figure sequence — **`rotate9`** — that overlays the unit
 right triangle (`cos θ`, `sin θ`) and `a`'s scaled-up **similar** triangle (`r * cos θ`, `r * sin θ`,
@@ -40,7 +34,3 @@ triangles' labels separate. `make docs` builds clean (HTML + PDF), the new figur
   referenced once in `proof-rotate.html`. All figures re-rendered at `R = 1.7` without error.
 - `ruff check` / `ruff format --check` / `check_epix_keywords` clean on `rotate9.py` and the touched
   scene files.
-
-## Open questions
-
-None.

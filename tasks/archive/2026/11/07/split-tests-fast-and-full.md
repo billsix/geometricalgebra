@@ -3,11 +3,9 @@
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>): "make a task to investigate breaking
 the unit tests up into two suites, with two make targets, like the existing test target would do the
 non-slow tests, and a make test-full, where the make unit-test-full would be part of the github cicd
-suite, but not part of every day development" · **Done:** 2026-11-07
+suite, but not part of every day development" · **Completed:** 2026-11-07
 
-## BLUF
-
-`make test` now skips the tests marked `slow` and runs in **1:11** (792 tests); `make test-full` runs all
+After this work `make test` skips the tests marked `slow` and runs in **1:11** (792 tests); `make test-full` runs all
 803 in about 26:30 and is what CI's `test` job runs. Eleven 3D symbolic frame cases carry the mark, chosen
 from measured times. CLAUDE.md's dev-workflow and CI sections describe both targets and when to mark a
 test slow.
@@ -44,10 +42,10 @@ The maintainer asked for a commit after each step.
 - First `make test` run after marking those ten: 4:40, because
   `test_coefficients_rebuild_the_vectors[frame_3d]` took 223 s. In the full run it had taken 4 s only
   because the triangular test before it had already simplified the same 3D coefficients, and sympy
-  caches. Marked it too; `make test` then took 1:11, slowest remaining test 9.5 s. CLAUDE.md now says to
+  caches. Marked it too; `make test` then took 1:11, slowest remaining test 9.5 s. CLAUDE.md was updated to say to
   time a candidate in `make test`'s own run.
-- The per-test data and the discovery script were in `tasks/adhoc/split-tests-fast-and-full/`, removed at
-  archive (in git history).
+- The per-test data and the discovery script were one-shot adhoc files, removed at archive (in git
+  history).
 
 ## Gates
 

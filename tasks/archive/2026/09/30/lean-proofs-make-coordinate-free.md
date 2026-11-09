@@ -1,16 +1,10 @@
 # Lean proofs — made coordinate-free via a leaf/structural property algebra
 
-**Part of:** `tasks/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
-**Depends on:** the proof layer in `proofs/GacalcProofs/` — `AlgebraLaws.lean` (assoc, distributivity,
+**Completed:** 2026-09-30 (William Emerison Six <billsix@gmail.com>); `make lean` green throughout
+**Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md` (the Lean-proofs umbrella)
+**Built on:** the proof layer in `proofs/GacalcProofs/` — `AlgebraLaws.lean` (assoc, distributivity,
 `one_mul`/`mul_one`, `smul_mul`/`mul_smul`/`smul_smul`/`one_smul`, ⊥-anticommutation) and the
 `normSq`/`inverse`/`magnitude` abstractions (`Sandwich.lean`).
-
-**Status:** done (2026-09-30, William Emerison Six <billsix@gmail.com>) — ready for the pre-squash tense
-rewrite (this doc) and archival. `make lean` green throughout.
-**Priority:** 7
-**Difficulty:** 5
-
-## BLUF
 
 An audit + refactor: given the algebra-law, bilinearity, and magnitude(-squared) abstractions, the goal
 was to re-prove as many coordinate proofs (`ext <;> ring` / `field_simp`) as cleanly reduced into short
@@ -85,7 +79,8 @@ inline in more than one proof were promoted to named leaves and reused: `dot_sel
 plane-bivector literal — was inline in `proj_plane_eq_project_onto` and `RotateComponents`).
 
 **Cross-project distillation:** the coordinates-first-then-leaves workflow and its gotchas were written
-up in `runClaudeInContainer` / `runCrushInContainer` `tasks/reference/lean-proof-methodology.md`.
+up in github.com/billsix/runClaudeInContainer `tasks/reference/lean-proof-methodology.md` (mirrored in
+github.com/billsix/runCrushInContainer).
 
 ## Limits and decisions
 
@@ -98,14 +93,14 @@ up in `runClaudeInContainer` / `runCrushInContainer` `tasks/reference/lean-proof
   proofs) were left as-is: routing them through `normSq_evenVersor` leaves a `0²` residue and does not
   shorten the proof.
 
-## Open questions (resolved)
+## Decisions
 
-1. ~~How far to push conversions that are "structural but not shorter"?~~ **Resolved** — only converted
-   when both coordinate-free *and* no longer than the `ext <;> ring`; a one-line coordinate leaf was left
-   as-is (legibility/generality was the goal, not coordinate-freeness for its own sake).
-2. ~~Add a general `grade`-projection abstraction to unify the graded inner/outer products?~~
-   **Resolved: no** — kept the per-grade-pair forms; a general graded-projection is a bigger design that
-   only pays off with more grades.
+- **How far to push conversions that are "structural but not shorter":** only converted when both
+  coordinate-free *and* no longer than the `ext <;> ring`; a one-line coordinate leaf was left as-is
+  (legibility/generality was the goal, not coordinate-freeness for its own sake).
+- **A general `grade`-projection abstraction to unify the graded inner/outer products: no** — kept the
+  per-grade-pair forms; a general graded projection is a bigger design that only pays off with more
+  grades.
 
 ## Pointers
 

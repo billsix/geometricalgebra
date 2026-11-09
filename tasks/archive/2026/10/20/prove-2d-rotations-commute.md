@@ -1,13 +1,7 @@
 # Prove the composition of two 2D rotations commutes (Lean + prose), and cite it in the rotate-from-a-to-b collapse
 
-**Status:** done 2026-10-20 — all four deliverables already present in the repo (the 2026-10-08 spec
-was implemented since, as part of the rotate-from-a-to-b proof pages); verified and archived.
-**Priority:** 5
-**Difficulty:** 2
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
-**Done:** 2026-10-20 (William Emerison Six <billsix@gmail.com>: "I go with your recommendations")
-
-## BLUF
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-20
+(William Emerison Six <billsix@gmail.com>: "I go with your recommendations")
 
 The "rotate from a to b" collapse relies on **2D rotations commuting** (`R₁ ∘ R₂ = R₂ ∘ R₁`). This
 task specified backing that in all three forms + citing it. On pickup, **all four deliverables were

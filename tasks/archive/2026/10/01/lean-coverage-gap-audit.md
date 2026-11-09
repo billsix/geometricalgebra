@@ -1,7 +1,6 @@
 # Audit which gacalc math operations have no Lean coverage, then decide what to add
 
-**Status:** DONE 2026-10-01. **Priority:** 7 **Difficulty:** 3
-**Created:** 2026-09-30 **Completed:** 2026-10-01 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-09-30 · **Completed:** 2026-10-01 (William Emerison Six <billsix@gmail.com>)
 
 ## Summary
 
@@ -24,12 +23,12 @@ proved both, and `signed_volume` was likewise already covered (`dot_cross_eq_sig
 
 Filed 7 gap tasks (grouped to avoid stub-spam): reflect, normalize, predicates, grade-projection,
 contractions, measures, exp. All were subsequently proven in Lean and archived
-(`tasks/archive/2026/10/02/lean-proof-*.md`); the only gap still open is general `content` (blocked on
+(`tasks/archive/2026/10/02/lean-proof-*.md`); the only gap left open was general `content` (blocked on
 the dimension-general `Gn` layer, `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md`). Gaps
 already owned by an existing task were NOT re-filed: general graded `inner_product`
 (`lean-general-gn-product-and-hestenes-dot-wedge`), general mixed-grade `inverse`
 (`lean-general-multivector-inverse`), and the dot/wedge/pseudoscalar 3D-from-rotation derivations
 (`lean-proof-dot-product`/`-wedge-product`/`-pseudoscalar-square-sign`/`-rotation-from-scratch`).
 
-This was an audit + decision task; the proving was the follow-on. Complements the umbrella
-`tasks/investigate-lean-proofs-for-ga.md`.
+This was an audit + decision task; the proving was the follow-on. It complemented the umbrella
+`tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`.

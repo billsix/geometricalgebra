@@ -1,9 +1,9 @@
 # Make generated ops subclass-preserving (construct via type(self))
 
-**Status:** DONE 2026-07-08 (authorized by Bill: "go ahead and do the
-subclass-preserving generated ops task in gacalc"). Changes staged,
-uncommitted — Bill commits.
-**Created:** 2026-07-09
+**Created:** 2026-07-08 · **Completed:** 2026-07-08
+
+Authorized by the maintainer: "go ahead and do the subclass-preserving
+generated ops task in gacalc".
 
 ## Problem (found during mvp ctc-vector2-deferral experiment)
 
@@ -47,17 +47,19 @@ pygame-`Vector2` work-alike with `gacalc.g2.Vector2`.
   convention); grade-changing results stay the registered types; values
   identical to the base-class path.
 
-## Gates (all green, 2026-07-08, in container)
+## Verification (all green, 2026-07-08, in container)
 
 - `make test` — 253 passed (incl. conformance suite + the new tests).
 - `make check-generated` — deterministic.
 - `make format` — ruff + ty all-checks-passed (3×). NB: the image's ruff
   also rewrapped three long comment lines in `notebooks/displaymv.py` —
-  unrelated formatter drift, left unstaged for Bill to take or drop.
+  unrelated formatter drift, left unstaged for the maintainer to take or drop.
 - Downstream: mvp's shim-Vector2 experiment rerun against this tree —
   all 10 checks pass (`type(sub+sub) is ShimV2`, scalar mul both sides,
   neg, property access on results, mutation, iteration order,
   magnitude, `normalize()` preserves type).
 
-Unblocks mvp `tasks/ctc-vector2-deferral.md` Phase B (its remaining
-gacalc blocker is the relicense task, [[relicense-to-lgpl]] here).
+This unblocked Phase B of modelviewprojection's Vector2 deferral
+(github.com/billsix/modelviewprojection
+`tasks/archive/2026/07/08/ctc-vector2-deferral.md`); its remaining gacalc
+blocker was the relicense, `tasks/archive/2026/07/08/relicense-to-lgpl.md`.

@@ -1,7 +1,7 @@
-# Lean proof — the dual of a vector is perpendicular to it (2D) [DONE]
+# Lean proof — the dual of a vector is perpendicular to it (2D)
 
-**Part of:** `tasks/investigate-lean-proofs-for-ga.md`
-**Status:** DONE 2026-09-29 (`make lean` green). Archived.
+**Completed:** 2026-09-29
+**Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`
 
 ## What was done
 
@@ -15,10 +15,10 @@ Proved in 𝒢₂ (`proofs/GacalcProofs/G2.lean`) that the dual of a vector is p
   `dual v` and `v` (the scalar part of their geometric product, per `dot_eq_coord_sum`) is zero, since
   `dual(v) = (y, −x)` gives `xy − xy = 0`. One-line `simp` + `ring`; no trig, no Pythagorean identity.
 
-Verified by `make lean`. No adhoc scripts (direct edits in `G2.lean`); noted in `proofs/README.md`.
+Verified by `make lean` (green). No adhoc scripts (direct edits in `G2.lean`); noted in `proofs/README.md`.
 
 ## Why it mattered
 
 The grade-1 ↔ grade-1 warm-up for the 3D "dual of a bivector ⊥ the plane" step in
-`tasks/lean-proof-projection.md`. gacalc's `dual` convention (`A · I⁻¹`) was matched exactly, so this
+`tasks/archive/2026/09/29/lean-proof-projection.md`. gacalc's `dual` convention (`A · I⁻¹`) was matched exactly, so this
 doubles as a small second-oracle check of that operation in 2D.

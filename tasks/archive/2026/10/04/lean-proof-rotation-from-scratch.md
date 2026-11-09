@@ -1,7 +1,7 @@
 # Lean proof — rotation from scratch (sin/cos → geometric product → dot & wedge)
 
+**Created:** 2026-09-28 · **Completed:** 2026-10-04 (`make lean` green)
 **Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md` (the foundation step).
-**Status:** DONE 2026-10-04, archived 2026-10-04 (`make lean` green). **Priority:** 7. **Difficulty:** 8.
 **Archived together with** `tasks/archive/2026/10/04/rename-rotor-to-versor.md` (the maintainer's coupling:
 both grew from "a rotor is really a unit versor").
 **Durable record:** `tasks/reference/lean-ga-proof-architecture.md` (the versor layer, the leaf/structural
@@ -9,7 +9,7 @@ technique, inventory of `Rotation2D`/`Rotation3D`/`Versor2D`/`Sandwich`/`RotateC
 "Program decisions"); `tasks/reference/unit-bivector-and-rotors.md` (the rotor math);
 `tasks/reference/reduction-to-standard-position.md` (the complementary route P).
 
-## BLUF
+## Summary
 
 The book's foundational derivation was formalized from scratch and bridged to Mathlib: sine/cosine →
 rotation → the geometric product → dot and wedge as its parts, in 2D; the angle-free 3D versor from two
@@ -48,7 +48,7 @@ product); and finally the equivalence to the general case — the from-scratch `
 ## Decisions
 
 - Route V (versor sandwich, product-based) and route P (project/reject via standard position,
-  non-circular) are kept distinct; this task is route V.
+  non-circular) were kept distinct; this task was route V.
 - gacalc rotates with the inverse sandwich `R v R⁻¹` (scale-invariant), the textbook `R v R̃` needs a unit
   rotor; both agree when `R` is unit — which is why the general object was renamed "versor"
-  (`rename-rotor-to-versor`).
+  (`tasks/archive/2026/10/04/rename-rotor-to-versor.md`).

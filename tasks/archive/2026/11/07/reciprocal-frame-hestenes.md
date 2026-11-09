@@ -1,8 +1,10 @@
-# Reciprocal frame, implemented as Hestenes & Sobczyk write it (done 2026-11-07)
+# Reciprocal frame, implemented as Hestenes & Sobczyk write it 
+
+**Created:** 2026-11-04 · **Completed:** 2026-11-07
 
 Implemented the **reciprocal frame** `a^1 … a^n` of a frame `a_1 … a_n`, the vectors with
-`a^k · a_j = δ^k_j`. Requested by William Emerison Six <billsix@gmail.com> (created 2026-11-04). The
-math, the explainer, and the design choices now live in `tasks/reference/frames-qr-and-reciprocal-frames.md`,
+`a^k · a_j = δ^k_j`. Requested by William Emerison Six <billsix@gmail.com>. The math, the explainer,
+and the design choices live in `tasks/reference/frames-qr-and-reciprocal-frames.md`,
 section "The relation to Hestenes' reciprocal frame".
 
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-07)
@@ -47,4 +49,4 @@ section "The relation to Hestenes' reciprocal frame".
 
 ## Follow-ons
 
-- `tasks/frame-inverse-head-first-recursion.md` was blocked on this task and is unblocked.
+- `tasks/frame-inverse-head-first-recursion.md` was blocked on this task and was unblocked by it.

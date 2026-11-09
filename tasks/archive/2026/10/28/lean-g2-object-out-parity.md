@@ -1,13 +1,6 @@
 # Lift G2's coordinate-leaking theorem conclusions to G3's object-out form
 
-**Status:** done — 2026-10-28. `make lean` green (8958 jobs; completeness gate OK). Three G2 theorems
-lifted to object-equality form matching their G3 twins; the deliberate coordinate cases kept.
-**Priority:** 6
-**Difficulty:** 4
-**Created:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
-**Updated:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-28 · **Completed:** 2026-10-28 (William Emerison Six <billsix@gmail.com>)
 
 Some `G2.lean` theorems took geometric objects in (`{a b : G2} (ha : IsVector a) …`) but **concluded
 with a raw coordinate expression / literal**, where the `G3.lean` twin concludes about the object —
@@ -15,7 +8,7 @@ violating the house rule *"geometric objects in, scalars in the body, geometric 
 (`CLAUDE.md`, `tasks/reference/lean-ga-proof-architecture.md`). Audited all of G2 (maintainer's "lift
 every genuine case") and lifted the three genuine cases to their G3-twin object form; verified `make
 lean` green. No consumer needed updating — the three had only doc-comment mentions, no `rw`/`simp`
-call sites.
+call sites. `make lean` green (8958 jobs; completeness gate OK).
 
 ## What was done (`proofs/GacalcProofs/G2.lean`)
 
@@ -45,14 +38,14 @@ exactly what its docstring already promised.
   coordinates is their job.
 - **`wedge_self_vec` and `wedge_isVector_isBivector_eq_zero`** — conclude `= (⟨0,0,0,0⟩ : G2)`. G3's
   twins use `zero`, but G2 has **no `zero`** (the sibling task
-  [[lean-basis-constants-self-documenting]] deliberately did not add one). Left as the `⟨0,0,0,0⟩`
-  literal; not a component-arithmetic leak, just the zero value. (If a `G2.zero` is ever added, these
-  two could use it.)
+  `tasks/archive/2026/10/28/lean-basis-constants-self-documenting.md` deliberately did not add one). Left as the `⟨0,0,0,0⟩`
+  literal; not a component-arithmetic leak, just the zero value. (A future `G2.zero` would let these
+  two use it.)
 
 ## Files touched
 
 - `proofs/GacalcProofs/G2.lean` — the three lifts (statements + proofs + docstrings). Diff is those
   three theorems only; no other declaration changed.
 
-See also: [[lean-basis-constants-self-documenting]], `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`,
+See also: `tasks/archive/2026/10/28/lean-basis-constants-self-documenting.md`, `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`,
 `tasks/reference/lean-ga-proof-architecture.md` (the A/B/C judgment + "objects in, scalars in the body").

@@ -1,22 +1,15 @@
 # Write coordinates as `a_1`, `a_2`, not `a_x`, `a_y` — and introduce the notation for high-school readers
 
-**Status:** complete
-**Completed:** 2026-10-09 (work committed by the maintainer as `7d6e873` after the squash; archived,
-with the one-shot codemod removed, in its own commit)
-**Priority:** 4
-**Difficulty:** 4
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-09 (work committed by the maintainer as `7d6e873`)
 
 The maintainer's ask (2026-10-08, verbatim): *"Use things like `a_1` instead of `a_x`, introduce the
-notation for students familiar with high school geometry. Bill will likely need to consult a high
+notation for students familiar with high school geometry. [the maintainer] will likely need to consult a high
 school text book for more context of what they would know."* The task swept every axis-letter
 coordinate subscript out of the book's pages, companion notebooks and figure labels (106 hits, now
 0), wrote the "How we write coordinates" passage that bridges from the reader's `(x, y)` and
 `⟨a, b⟩ = a i + b j` to `a_1 e_1 + a_2 e_2`, and put the rule in the outline. `make docs` passed.
 
-## Context (still true of the repo)
+## Background
 
 - **The rule and its rationale** live in `tasks/reference/book-outline.md` › "Notation & prose
   conventions for proof pages" (coordinates are `a_1`, `a_2`, `a_3`; the subscript names the basis
@@ -61,7 +54,7 @@ their sources, `a = a_1 e_1 + a_2 e_2`, the two reasons for indices, "no arrow o
 `.x`/`.y` wrinkle). The outline gained the convention bullet. Foreshadowing in
 `vectors-as-number-lines`/`trigonometry` was left to their own prose passes (both placeholders).
 
-**The sweep.** `tasks/adhoc/coordinate-subscripts-indices-not-xyz/discover.sh` logged 106 hits to
+**The sweep.** `discover.sh` (removed at archive; in git history) logged 106 hits to
 `data/hits-before.txt`; every hit was read — no false positives (an ePiX `Point(x=…)` keyword never
 matched). `fix.py`, a content-matching codemod, rewrote `\vec{a}_x` → `a_1`, `\vec{b}'_y` → `b'_2`,
 `\vec{b}_z` → `b_3`, and plain `a_x` → `a_1` in notebook code, markdown, `sympy.symbols("…")` strings
@@ -69,8 +62,8 @@ and the `sp4` figure labels; a second run changed nothing; `data/hits-after.txt`
 edits followed: the `proof-projection` notebook's locals for the *aligned* vector's coordinates
 became `a_aligned_1`/`a_aligned_2` (the mechanical rename would have shadowed the module-level
 symbols), and the passage and outline spell the rejected form `a_{x}` so the sweep's zero stays
-meaningful. **Ordering:** this ran before `tasks/archive/2026/10/09/math-notation-parens-star-named-angles.md` (still
-proposed), which touches the same equations and can run on top.
+meaningful. **Ordering:** this ran before `tasks/archive/2026/10/09/math-notation-parens-star-named-angles.md` (then
+proposed), which touched the same equations and ran on top.
 
 **The codemod bug, caught by the gate.** The first `make docs` failed in the PDF step
 (`! Paragraph ended before \split was complete`): the codemod's optional closing brace after a
@@ -89,8 +82,4 @@ Locally: `ruff check .` / `ruff format --check .` clean, `ty check book/docs/not
 
 The rotate-from-a-to-b page's bold step headings wrap `:math:` roles, which reStructuredText cannot
 nest, so their LaTeX prints literally in HTML and PDF. Filed as
-`tasks/archive/2026/10/09/fix-bold-nested-math-step-headings.md` (proposed — needs go-ahead).
-
-## Open questions
-
-None.
+`tasks/archive/2026/10/09/fix-bold-nested-math-step-headings.md` (done the same day).

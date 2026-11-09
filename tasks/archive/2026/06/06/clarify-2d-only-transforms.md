@@ -1,96 +1,59 @@
 # Make the 2D-only transforms clearly 2D-only to users
 
-**Status:** complete (resolved by **removal**, not a guard)
-**Completed:** 2026-06-06
-**Started:** 2026-06-05 (proposed)
+**Created:** 2026-06-05 · **Completed:** 2026-06-06
+**Superseded:** `rotate_90_degrees` came back, 𝒢₂-only, on 2026-09-06 (see `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`).
 
-> **Outcome (2026-06-06): removed the planar transforms entirely** rather than guarding them.
-> The author observed these are modelviewprojection artifacts and that geometric-algebra rotation is
-> already covered by the rotor (`AbstractMultiVector.rotate(from, to)` / `rotor_from_vectors`), so the
-> planar 2D `transforms.py` factories carried no GA-pedagogy weight — and removing them moots the
-> whole "silently mis-transforms an e₃ vector" hazard this task was about.
->
-> **Done:**
-> - `transforms.py`: deleted `rotate`, `rotate_90_degrees`, `rotate_around`, `scale_non_uniform_2d`,
->   `is_clockwise`, `is_counter_clockwise` (the last two only called `rotate_90_degrees` and were
->   unused); trimmed `__all__`; dropped the now-unused `math`/`sympy` imports; rewrote the module +
->   `scale_non_uniform` docstrings. The **dimension-general** layer
->   (`translate`/`uniform_scale`/`scale_non_uniform`/`compose`/`inverse`/`identity`/`InvertibleFunction`)
->   is kept.
-> - `gn.py`: dropped the 5 re-exports + fixed the example comment.
-> - `nbplotutils.py`: `sine()` rewritten (`rotate_90_degrees()(v)` → `v * e₁₂` directly).
-> - `tests/test_transforms.py`: dropped the planar cases (dimension-general round-trip / scale-value /
->   invertibility / error-path tests stay). Suite 161.
-> - **Notebooks** (`displayg2.py`, `displaymv.py`): `scale_non_uniform_2d` → `scale_non_uniform`
->   (identical); `rotate(angle)` → a small **notebook-local** `InvertibleFunction` built on the GA
->   rotor (`R = cos(a/2) − sin(a/2)·e₁e₂`, sandwich `R v R̃`) — verified it reproduces the old
->   `rotate` exactly (`rotate(π/2)` of `3e₁+4e₂ → −4e₁+3e₂`, type-preserving, composes/inverts).
->   `rotate_around` would inline as `compose([translate(c), rotate, translate(-c)])` (no notebook
->   actually used it). Notebooks aren't run by the suite; the rotor helper was spot-checked directly.
+Some `InvertibleFunction` factories in `src/geometricalgebra/transforms.py` were inherently planar
+(e₁e₂ plane only), yet nothing stopped a user from applying them to a `G3`/`Gn` vector with an e₃
+component, which silently produced a wrong, mixed-grade result. The task was resolved by
+**removing** the planar transforms rather than guarding them.
 
-## Goal
+## Findings (2026-06-05)
 
-Some of the `InvertibleFunction` transform factories in `src/geometricalgebra/transforms.py` are
-**inherently planar (act only in the e₁e₂ plane)**, but nothing stops a user from applying them to a
-`G3`/`Gn` vector that has an e₃⁺ component — which silently produces a wrong, mixed-grade result.
-Make the 2D-only nature obvious and/or enforced, so users don't get garbage out. This is a
-clarity/safety improvement, not a new feature — **low priority.**
-
-## Background / findings (2026-06-05)
-
-Transforms split into two groups:
-
-- **Dimension-general (correct in any *n*) — leave alone:** `translate`, `uniform_scale`,
-  `scale_non_uniform`, `compose`, `inverse`, `identity`.
-- **Inherently 2D (e₁e₂ plane only):** `rotate_90_degrees`, `rotate`, `rotate_around`,
-  `scale_non_uniform_2d` (only 2 factors; silently drops e₃⁺), and `is_clockwise` /
-  `is_counter_clockwise` (these two already `assert` the inputs lie in the (1,2) plane).
-
-The real hazard is correctness, not just naming: applying `rotate(θ)` to a G3/Gn vector with an e₃
-component turns e₃ into the trivector e₁e₂e₃ (`v * e₁e₂`), so the result is mixed-grade, not a
-rotated vector.
-
-For a genuine any-plane rotation of a 3D vector, the right tool already exists — the general
-`AbstractMultiVector.rotate(from, to)` / `rotor_from_vectors(from, to)` on the algebra. This task is
-only about making the **planar** `transforms.py` factories fail loudly (or read unambiguously) rather
-than silently mis-transforming; it is not blocked on building a general rotation.
-
-**Why types can't fully solve this (user's own intuition, confirmed):** `Gn` is a single type
-spanning every dimension — there is no `n` in its type — so a type checker cannot distinguish a 2D
-`Gn` from a 3D `Gn`. Type-restricting `rotate` to `InvertibleFunction[G2]` would (a) defeat the
-representation-preserving design (these are meant to run on `Gn` too), (b) force `transforms.py` to
-import a concrete class, breaking its `base`-only layering, and (c) still not constrain `Gn` at all.
-So static typing gives partial coverage at best, and not for the representation where the trap is
-most likely.
+- **Dimension-general** (correct in any n): `translate`, `uniform_scale`, `scale_non_uniform`,
+  `compose`, `inverse`, `identity`.
+- **Inherently 2D:** `rotate_90_degrees`, `rotate`, `rotate_around`, `scale_non_uniform_2d` (two
+  factors only; silently drops e₃⁺), and `is_clockwise`/`is_counter_clockwise` (which already
+  asserted planar input).
+- The hazard was correctness: `rotate(θ)` on a vector with an e₃ part turns e₃ into the trivector
+  e₁e₂e₃ (`v * e₁e₂`).
+- **Types cannot solve it** (the maintainer's intuition, confirmed): `Gn` is one type for every
+  dimension, so a checker cannot tell 2D `Gn` from 3D `Gn`. Restricting `rotate` to
+  `InvertibleFunction[G2]` would defeat the representation-preserving design, force `transforms.py`
+  to import a concrete class (breaking its `base`-only layering), and still not constrain `Gn`.
 
 ## Options considered
 
-- **A. Runtime planarity guard (preferred):** at apply-time, assert the input has no grade-1
-  component outside e₁/e₂ (generalize what `is_clockwise` already does), raising a clear error.
-  Catches `Gn` misuse; small per-call cost; fully honest.
-- **B. Clearer naming:** rename to e.g. `rotate_in_e1e2_plane` / `rotate_90_in_e1e2_plane`; documents
-  only, churns the API.
-- **C. Generic `InvertibleFunction[T]`:** doesn't help `Gn`, breaks layering — rejected (this is the
-  approach the user's instinct correctly flagged as not working).
-- **D. Docstring-only:** already partly done (module + per-fn docstrings say "inherently 2D /
-  planar"); no enforcement.
+- **A. Runtime planarity guard** at apply time — the only option that protected a `Gn` user; was the
+  recommendation, together with B.
+- **B. Clearer naming** (`rotate_in_e1e2_plane`, …) — documents only, churns the API.
+- **C. Generic `InvertibleFunction[T]`** — rejected: does not help `Gn` and breaks layering.
+- **D. Docstring-only** — already partly in place; no enforcement.
 
-Recommended direction: **A + B** — the runtime guard is the only thing that actually protects the
-`Gn` user, with clearer naming as a complementary nicety.
+## Decision (the author, 2026-06-06): remove them
 
-## Plan
+These factories were modelviewprojection artifacts, and geometric-algebra rotation was already
+covered by the rotor (`AbstractMultiVector.rotate(from, to)` / `rotor_from_vectors`), so the planar
+factories carried no GA-teaching weight. Removing them made the mis-transform hazard (and the open
+questions about guarding `scale_non_uniform_2d` and making the guard opt-out) moot.
 
-- [ ] Decide scope: guard only (A), or guard + rename (A+B)
-- [ ] Add a shared planarity check (no grade-1 components beyond e₁/e₂) and apply it inside the
-      forward + inverse of `rotate_90_degrees`, `rotate`, `rotate_around`, `scale_non_uniform_2d`
-- [ ] (If B) rename the planar factories and update re-exports in `gn.py`, callers, and notebooks
-- [ ] Add conformance tests: planar input round-trips; non-planar G3/Gn input raises a clear error
-- [ ] Run `python -m pytest -q` and `entrypoint/format.sh` (ruff + ty clean)
+## What changed
 
-## Notes / decisions
+- `transforms.py`: deleted `rotate`, `rotate_90_degrees`, `rotate_around`, `scale_non_uniform_2d`,
+  `is_clockwise`, `is_counter_clockwise` (the last two were unused); trimmed `__all__`; dropped the
+  unused `math`/`sympy` imports; rewrote the module and `scale_non_uniform` docstrings. The
+  dimension-general layer was kept.
+- `gn.py`: dropped the five re-exports and fixed the example comment.
+- `nbplotutils.py`: `sine()` computes `v * e₁₂` directly instead of `rotate_90_degrees()(v)`.
+- `tests/test_transforms.py`: the planar cases were dropped; the dimension-general round-trip,
+  scale-value, invertibility and error-path tests stayed.
+- Notebooks (`displayg2.py`, `displaymv.py`): `scale_non_uniform_2d` → `scale_non_uniform`
+  (identical); `rotate(angle)` → a small notebook-local `InvertibleFunction` on the GA rotor
+  (`R = cos(a/2) − sin(a/2)·e₁e₂`, sandwich `R v R̃`). `rotate_around` would inline as
+  `compose([translate(c), rotate, translate(-c)])`; no notebook used it.
 
-## Open questions
+## Verification
 
-- For `scale_non_uniform_2d` on a 3D value, should the guard reject, or is "drop e₃" acceptable
-  documented behavior? (Differs from the rotations, which produce genuine garbage.)
-- Should the guard be opt-out for power users (perf), or always on?
+Suite 161 passing. The notebook rotor helper was spot-checked directly (notebooks are not run by the
+suite): it reproduces the old `rotate` exactly (`rotate(π/2)` of `3e₁+4e₂` → `−4e₁+3e₂`), preserves
+type, and composes/inverts.

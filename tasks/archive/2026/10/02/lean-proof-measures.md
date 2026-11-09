@@ -1,9 +1,8 @@
 # Lean proof — measures (`area`, `volume`, `signed_area`, `content`)
 
-**Part of:** `tasks/investigate-lean-proofs-for-ga.md`
+**Completed:** 2026-10-02
+**Part of:** `tasks/archive/2026/10/04/investigate-lean-proofs-for-ga.md`
 **From:** `tasks/archive/2026/10/01/lean-coverage-gap-audit.md` (the coverage-map gap audit)
-
-**Status:** DONE 2026-10-02 (general `content` deferred — see below). **Priority:** 5 **Difficulty:** 5
 
 ## Summary
 
@@ -18,6 +17,6 @@ gacalc's named measures (`measure.py`, Williamson & Trotter 1979) lacked Lean th
 The general `content` (`|a₁∧…∧aₖ|`, arbitrary `k`) was deferred: it needs a dimension-general `Gn` Lean
 representation that does not exist (these proofs use concrete G2/G3 structs). Its prerequisite is
 `tasks/lean-general-gn-product-and-hestenes-dot-wedge.md` (deliberately deferred); `area` (k=2) and
-`volume` (k=3) are its concrete instances, and a `-- TODO` pointing at that task sits in `Measures.lean`.
+`volume` (k=3) are its concrete instances, and a `-- TODO` pointing at that task was left in `Measures.lean`.
 
 Coverage map: `tasks/reference/lean-ga-proof-architecture.md`.

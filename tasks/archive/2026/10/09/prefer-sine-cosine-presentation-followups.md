@@ -1,29 +1,21 @@
-# Sine/cosine presentation — deferred candidates (both deferred items BUILT 2026-10-09)
+# Sine/cosine presentation — the deferred candidates
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 7.
-**Difficulty:** 4. **Created:** 2026-10-03 (William Emerison Six <billsix@gmail.com>).
-**Updated:** 2026-10-09 (William Emerison Six <billsix@gmail.com>) — maintainer chose "build both"
-(2026-10-09), overriding the recommended SKIPs; both items landed in `StudentTrigForms.lean`.
-**Part of:** the "present in sin/cos" initiative — the first pass is
-`tasks/archive/2026/10/03/prefer-sine-cosine-presentation.md` (perpendicularity / parallelism / area families);
-principle in `CLAUDE.md` › "Presenting to students".
-
-## BLUF
+**Created:** 2026-10-03 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-09
+**Part of:** the "present in sin/cos" initiative — the first pass is `tasks/archive/2026/10/03/prefer-sine-cosine-presentation.md` (perpendicularity / parallelism / area families); principle in `CLAUDE.md` › "Presenting to students"
 
 The first-pass task converted the three clear families (perpendicularity `cos=0`, parallelism
-`sin=0`, area `|a||b|sinθ`). This task held three deferred candidate groups. Of those, the **niche
-perpendicularity corollaries are DONE** (2026-10-03, on the maintainer's "continue"; see Progress).
-The two that remain — the *hypothesis-side* `(h : dot a b = 0)` entry points and a trig form of
-volume — were **SKIPPED** by discretion (restating a hypothesis in trig terms forces a
-nonzero-magnitude side condition and extra plumbing; a trig volume reads as noise). "Done" = the
-maintainer confirms both SKIPs (Q1), after which this task archives; if he wants either, it becomes
-the work.
+`sin=0`, area `|a||b|sinθ`). This task held the three deferred candidate groups, and all three were
+built: the **niche perpendicularity corollaries** on 2026-10-03 (on the maintainer's "continue"), and
+the *hypothesis-side* `(h : dot a b = 0)` entry points plus a trig form of volume on 2026-10-09.
 
-**Do not start either skipped item until the maintainer has answered Q1.**
+## Decision (William Emerison Six <billsix@gmail.com>, 2026-10-09)
 
-## Candidates (deferred from the first-pass inventory)
+The agent had recommended SKIPPING the last two (restating a hypothesis in trig terms forces a
+nonzero-magnitude side condition and extra plumbing; a trig volume could read as noise). The maintainer
+chose **build both**, overriding the SKIPs. Since this is a Lean presentation layer on results whose
+Python and prose forms already exist, the other two of the "three forms" were intentionally not added.
+
+## The candidates (as deferred from the first-pass inventory)
 
 - **Hypothesis-side `(h : dot a b = 0)` → offer a `cos_between a b = 0` entry point:**
   `vec_anticomm_perp` in `AlgebraLaws.lean` (perpendicular ⇒ vectors anticommute; the file holds
@@ -36,15 +28,14 @@ the work.
   has in dot form.
 - **Niche perpendicularity facts** (clean `cos=0` corollaries, just lower-priority than the headline
   ones done in the first pass): the dot-form leaves `dual_wedge_perp_left_dot` /
-  `dual_wedge_perp_right_dot` / `proj_plane_perp_normal_dot` in `Projection3D.lean`. (Decide whether
-  these are "student-facing" enough to warrant the trig form.) — **DONE, see Progress.**
+  `dual_wedge_perp_right_dot` / `proj_plane_perp_normal_dot` in `Projection3D.lean`.
 - **Volume** (`volume` / `volume_sq_vec` in `Measures.lean`): a `|a||b||c|`·(trig) form for the
-  scalar triple product is less standard than area = |a||b|sinθ; decide whether a trig restatement
-  helps a student or just adds noise.
+  scalar triple product is less standard than area = |a||b|sinθ, so whether it helps a student or
+  just adds noise was the open judgment.
 
-## Progress (2026-10-03)
+## What was built
 
-- **Niche perpendicularity corollaries — DONE** (maintainer said "continue"): added the trig forms
+- **Niche perpendicularity corollaries** (2026-10-03, maintainer said "continue"): added the trig forms
   `dual_wedge_perp_left`, `dual_wedge_perp_right`, `proj_plane_perp_normal` to
   `proofs/GacalcProofs/StudentTrigForms.lean` (each `cos_between … = 0`, named for the geometry — no
   `_cos` suffix, per the first pass's naming rule), each resting on its renamed `dot … = 0` leaf
@@ -74,10 +65,3 @@ the work.
 - Pre-existing, unrelated: the build log shows a recovered `ring`-failed note and two `hn`
   unused-variable warnings in `ProjectionRotation3D.lean` (a file this task did not touch; build still
   green).
-
-## Open questions
-
-None — the maintainer answered the one open question (2026-10-09): **build both**, overriding the
-recommended SKIPs. Both items are built and gate-verified. Since this is a Lean presentation layer on
-results whose Python and prose forms already exist, the other two of the "three forms" are
-intentionally not added here.

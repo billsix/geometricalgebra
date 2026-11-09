@@ -1,12 +1,6 @@
 # Narrow `Gn.bivector_from_vectors` / `Gn.i` to return `Gn`
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 6
-**Difficulty:** 2
-**Created:** 2026-10-04 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-09
 
 `MultiVectorBase.bivector_from_vectors(a, b)` and the `i(a, b)` classmethod were typed
 `-> MultiVectorBase`. The generated graded classes narrow them (to `Bivector`), but the
@@ -35,7 +29,3 @@ no breaking keyword-arg change).
 ## Gate
 
 `make format` (ruff + ty, so the `assert_type` narrowing is checked) and `make test` (the new test runs) both green.
-
-## Open questions
-
-None.

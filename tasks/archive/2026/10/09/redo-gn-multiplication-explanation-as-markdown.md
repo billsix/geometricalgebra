@@ -1,12 +1,6 @@
 # Redo the "explain Gn multiplication" explanation as markdown, in the swap/annihilate style
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 4
-**Difficulty:** 3
-**Created:** 2026-08-16 **Updated:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-08-16 · **Completed:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
 
 Wrote `tasks/reference/gn-multiplication-by-hand.md` — the general, hand-countable
 slide/flip/annihilate account of the geometric product, move-by-move in ASCII with a running sign, in
@@ -44,7 +38,3 @@ verified against a live `Gn` REPL; all cited artifacts (`pseudoscalar-square-sig
 `geometric-product-associativity.md`, `blade-square-sign.rst`, `displaymv.py`, `test_conformance.py`,
 `test_multivector.py`, `proofs/GacalcProofs/`, `gn.py`'s `_geometric_product`/`decrease_grade`) were
 confirmed to exist.
-
-## Open questions
-
-None.

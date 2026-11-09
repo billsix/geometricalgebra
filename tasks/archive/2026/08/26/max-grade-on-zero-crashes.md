@@ -1,117 +1,49 @@
 # `max_grade()` (and the grade predicates) crash on the zero multivector
 
-**Status:** DONE 2026-08-26 (William Emerison Six <billsix@gmail.com>) — see Outcome.
-**Priority:** 4
-**Difficulty:** 2
-
-## Outcome (2026-08-26)
-
-Fixed in `src/gacalc/base.py`, 410 tests green (1 new), ruff + ty clean. Two small edits, the
-**every-grade** convention (Bill's decision):
-
-- `max_grade()` → `max(self.grades(), default=0)` (no more `max([])` crash on zero).
-- `is_homogeneous_of_grade_r(r)` → `not grades or (max(grades) == r and self.is_r_vector())`, so the
-  zero multivector is homogeneous of every grade.
-
-Result (verified across `Gn`, a graded `Vector`, the full `G`, and another graded type): `max_grade
-== 0` and `is_scalar == is_vector == is_bivector == is_trivector == is_r_vector == True` on zero,
-consistent with the pre-existing `is_scalar(zero) == True`; products with a zero operand still return
-zero (unchanged). Consumer win: `content([Gn.zero()])` now returns `0` instead of crashing, and an
-all-zero `signed_content` now raises via its own clean `k != n` guard (`n = 0`) rather than the
-`is_vector` crash — the archived signed-content task's all-zero test stays green.
-
-New regression test: `tests/test_multivector.py::test_zero_multivector_is_homogeneous_of_every_grade`.
+**Created:** 2026-08-26 · **Completed:** 2026-08-26
 
 ## The bug
 
-`max_grade()` is `max(self.grades())`, and `grades()` returns `[]` for a **zero** multivector
-(empty blade dict), so `max([])` raises `ValueError: max() iterable argument is empty`
-(`src/gacalc/base.py:664-668`):
+`max_grade()` was `max(self.grades())`, and `grades()` returns `[]` for a zero multivector (empty
+blade dict), so `max([])` raised `ValueError: max() iterable argument is empty`. Everything routed
+through `max_grade` crashed on zero: `is_r_vector()`, `is_homogeneous_of_grade_r()`, and so
+`is_vector()` / `is_bivector()` / `is_trivector()`. It lived in the shared base, so every
+representation crashed (`Gn.zero()`, `g2.Vector.zero()`, `g2.G.zero()` all raised from
+`.is_vector()`, verified 2026-08-26).
 
-```python
-def grades(self) -> list[int]:
-    return list(set(len(blade) for blade in self.to_blade_dict().keys()))  # [] for zero
+Blast radius was narrower than it looked: products with a zero operand were safe (no blades, so the
+product loop short-circuits before any `max_grade()` call), so it was not a silent wrong-answer bug.
+The exposure was the predicates: `measure._require_vectors` (so `content` / `area` / `volume` /
+`signed_content` crashed on a zero-vector input), `frame.py` (`if not v.is_vector()`), and the
+`assert *.is_vector()` checks in `transforms.py`. It was surfaced by
+`tasks/archive/2026/08/26/signed-content-on-gn-via-dual.md`.
 
+The inconsistency that pointed at the fix: `is_scalar()` is `self == self.r_vector_part(0)`, does not
+use `max_grade`, and already returned `True` for zero, so `Gn.zero().is_scalar()` was `True` while
+`Gn.zero().is_vector()` crashed.
 
-def max_grade(self) -> int:
-    return max(self.grades())  # max([]) -> ValueError on zero
-```
+## Decision (William Emerison Six <billsix@gmail.com>, 2026-08-26)
 
-Everything that routes through `max_grade` therefore **crashes on a zero value**:
+**Zero is homogeneous of every grade** — the maintainer: "go with your recommendation, whatever
+makes a cleaner API." This is the mathematical convention (zero lies in every grade subspace) and
+matches `is_scalar(0) == True`. The rejected alternative was treating zero as grade-0 only (or no
+grade), so `is_vector(0) == False`: it would give `_require_vectors` a clean rejection, but it
+contradicts `is_scalar(0)` and the math, and makes `content([0])` raise instead of returning `0`.
 
-- `is_r_vector()` (`base.py:604`, `self == self.r_vector_part(self.max_grade())`);
-- `is_homogeneous_of_grade_r()` (`base.py:594`, `self.max_grade() == r and self.is_r_vector()`);
-- and thus **`is_vector()` / `is_bivector()` / `is_trivector()`** (`base.py:606-613`).
+## What changed
 
-It's in the shared base, so **every representation crashes** — verified `Gn.zero()`,
-`g2.Vector.zero()`, `g2.G.zero()` all raise from `.is_vector()` (2026-08-26).
+Two edits in `src/gacalc/base.py`:
 
-## Blast radius (verified 2026-08-26 — narrower than it looks)
+- `max_grade()` → `max(self.grades(), default=0)`.
+- `is_homogeneous_of_grade_r(r)` → `not grades or (max(grades) == r and self.is_r_vector())`.
 
-- **Products are SAFE.** `x ^ 0`, `0 ^ x`, `x * 0`, `x.inner_product(0)`, `0.left_contraction(x)`
-  all return zero correctly — a zero operand has no blades, so the product loop short-circuits
-  before the `max_grade()` calls in `inner_product`/`outer_product`/the contractions
-  (`base.py:423,456,512,547`). So this is **not** a silent-wrong-answer bug in the algebra.
-- **The predicates are the exposure.** Any code that asks "is this a vector?" of a possibly-zero
-  value crashes with the cryptic `max() ... empty` instead of a sensible answer. Real consumers:
-  - `measure._require_vectors` → **`content` / `area` / `volume` / `signed_content` crash on a
-    zero-vector input** (this is how the signed-content-on-Gn task surfaced it — an all-zero
-    `signed_content` raises here rather than at its own `k != n` guard).
-  - `frame.py:60` (`if not v.is_vector()`), `transforms.py:208-217,469` (`assert *.is_vector()`).
+On zero, `max_grade == 0` and `is_scalar == is_vector == is_bivector == is_trivector == is_r_vector
+== True` (verified across `Gn`, a graded `Vector`, the full `G`, and another graded type); products
+with a zero operand still return zero. `content([Gn.zero()])` now returns `0`, and an all-zero
+`signed_content` raises via its own `k != n` guard (`n = 0`) instead of the `is_vector` crash, so the
+signed-content task's all-zero test stayed green.
 
-## The inconsistency that points at the fix
+## Verification
 
-`is_scalar()` (`base.py:596-598`) is `self == self.r_vector_part(0)` — it does **not** use
-`max_grade`, and it already returns **`True`** for zero. So today `Gn.zero().is_scalar()` is `True`
-but `Gn.zero().is_vector()` **crashes** — the predicates disagree about zero. Making them consistent
-is the crux.
-
-## Proposed fix + the one design decision
-
-**Decision — what grade is the zero multivector?** The mathematical convention (and the one
-consistent with `is_scalar(zero) == True`) is that **zero is homogeneous of *every* grade** (it lies
-in every grade subspace). Recommend adopting that:
-
-- `max_grade()` → stop crashing: `return max(self.grades(), default=0)` (a value, so `is_r_vector`
-  and the product paths never blow up; `default=-1` is the alternative if a "no grade present"
-  sentinel reads better — decide during implementation).
-- `is_homogeneous_of_grade_r(r)` → **True for zero, any `r`**: e.g.
-  `grades = self.grades(); return (not grades) or (max(grades) == r and self.is_r_vector())`.
-  Then `is_vector(0) == is_bivector(0) == is_scalar(0) == True`, matching the convention and each
-  other.
-
-**Alternative (state it, don't silently pick):** treat zero as grade-0 only (or no grade), so
-`is_vector(0) == False`. That gives `_require_vectors` a clean "not a vector" rejection of a zero
-vector — but it contradicts `is_scalar(0) == True` and the math, and makes `content([0])` raise
-rather than return `0`. **Recommend the every-grade option** unless Bill prefers rejecting zero
-vectors outright.
-
-Downstream effect of the recommended fix: `content([Gn.zero()])` returns `0` (magnitude of the zero
-vector), and an all-zero `signed_content` then raises cleanly at its own `k != n` guard (`n = 0`,
-`k != 0`) instead of at the `max_grade` crash — the archived signed-content task's all-zero test
-stays green either way (still a `ValueError`).
-
-## Verify
-
-- Add `tests/` coverage: `max_grade` / `is_r_vector` / `is_vector` / `is_bivector` / `is_trivector`
-  / `is_homogeneous_of_grade_r` on `.zero()` for `Gn`, a graded `Vector`, and the full `G` — none
-  crash, all agree with the chosen convention (and with `is_scalar(zero) == True`).
-- Re-confirm products with a zero operand still return zero (regression guard).
-- `make test` green; `make format` clean (`ruff` + `ty check src`).
-- Spot-check the consumers: `content([Gn.zero()])`, `make_orthogonal_frame` with a zero member.
-
-## Cross-links
-
-- `src/gacalc/base.py:664-668` (`grades`/`max_grade`), `:590-613` (`is_homogeneous_of_grade_r`,
-  `is_scalar`, `is_r_vector`, `is_vector`/`is_bivector`/`is_trivector`).
-- Discovered by `tasks/archive/2026/08/26/signed-content-on-gn-via-dual.md` (its Outcome flags this).
-- Consumers: `src/gacalc/measure.py` (`_require_vectors`), `src/gacalc/frame.py:60`,
-  `src/gacalc/transforms.py:208-217,469`.
-
-## Decision (Bill, 2026-08-26)
-
-1. **Zero is homogeneous of *every* grade** — Bill: "go with your recommendation, whatever makes a
-   cleaner API." So implement the every-grade option in "Proposed fix" above: `is_vector(0) ==
-   is_bivector(0) == is_scalar(0) == True`, `max_grade()` stops crashing (`max(self.grades(),
-   default=...)`), and `is_homogeneous_of_grade_r(r)` returns `True` for zero at any `r`. This makes
-   the grade predicates consistent with each other and with the existing `is_scalar(0) == True`.
+410 tests green, including the new regression test
+`tests/test_multivector.py::test_zero_multivector_is_homogeneous_of_every_grade`; ruff + ty clean.

@@ -1,13 +1,8 @@
 # Match prose/algebra variable names to the adjacent diagram (not to a source proof)
 
-**Status:** done — 2026-10-08 (normalized pre-squash)
-**Priority:** 4
-**Difficulty:** 2
-**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-10-08 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-08
 
-## BLUF
-
-The algebra and symbols in the book's prose should match the **diagram the reader is looking at** —
+The algebra and symbols in the book's prose match the **diagram the reader is looking at** —
 when prose explains a figure, its variable names should be the figure's labels, not names carried in
 from a source proof or an earlier section. One page violated this: `book/docs/rotate.rst` introduced
 the from→to rotation with :math:`\vec{v_1}`/:math:`\vec{v_2}` (imported from *Model View Projection*'s
@@ -47,7 +42,7 @@ in `rotate.rst` — it had imported *MVP*'s names instead of matching its diagra
    payoff — that component form is exactly what `geometric-product.rst` recognizes as
    :math:`\vec{a}\,e_{12}`, so the names earn their place; not rephrased in :math:`\beta`-terms.
 
-## History (commit chronology, `origin/master..HEAD` on branch `proseUpdates` — for the squash)
+## History (commit chronology)
 
 1. `21e8218` *made task for changing variable names to match diagrams* — filed this task (then proposed)
    with the finding, sweep plan, and the convention text.
@@ -58,5 +53,5 @@ in `rotate.rst` — it had imported *MVP*'s names instead of matching its diagra
 
 - `tasks/reference/book-outline.md` — the proof-page notation conventions (home of the new rule).
 - `book/docs/rotate.rst`, `book/figures/epix/rotate_goal.py` — the fix site and its diagram.
-- `tasks/book-rotation-from-vectors-no-angle.md` — the future from→to rotation section (same
+- `tasks/archive/2026/10/19/book-rotation-from-vectors-no-angle.md` — the later from→to rotation section (same
   `\vec{a}`/`\vec{b}` names).

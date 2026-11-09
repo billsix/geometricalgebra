@@ -1,12 +1,6 @@
 # Fix the two bold step headings that print their `:math:` source literally
 
-**Status:** complete
-**Completed:** 2026-10-09
-**Priority:** 3
-**Difficulty:** 1
-**Created:** 2026-10-09 (William Emerison Six <billsix@gmail.com>)
-
-## BLUF
+**Created:** 2026-10-09 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-10-09
 
 Two run-in step headings in `book/docs/proof-rotate-from-a-to-b.rst` wrapped a `:math:` role
 inside `**bold**`. reStructuredText does not nest inline markup, so the reader saw the literal
@@ -34,7 +28,3 @@ This is the split `proof-projection.rst` lines ~164/170 (`**First, swing the** :
 `make docs` green; the rendered `output/gacalc/html/proof-rotate-from-a-to-b.html` shows **0**
 literal `:math:`/`\vec{...}` role strings (it showed 2 before), and the PDF typesets the two
 vectors. No other page changed.
-
-## Open questions
-
-None.
