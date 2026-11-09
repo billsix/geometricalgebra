@@ -1,6 +1,6 @@
 # A shared `require_frame` guard, used everywhere a frame is required
 
-**Status:** proposed — needs go-ahead
+**Status:** in progress (2026-11-09)
 **Priority:** 5
 **Difficulty:** 2
 **Created:** 2026-11-09
@@ -85,6 +85,15 @@ are dependent"`. `reciprocal_frame`'s message then says `a_k` instead of `a_n`.
 
 1. `require_frame` is public, like `is_frame` and `require_vector`/`require_vectors` (William
    Emerison Six <billsix@gmail.com>, 2026-11-09: "yes public").
+2. Done in the committed batch on branch `gn-frozendict-and-frame-tuple`, before
+   `tasks/frame-derived-orthogonal-set-and-tuple-field.md`, whose plan names this task as its first
+   step. The maintainer authorized the Frame task and was away. Doing its prerequisite first is
+   the agent's ordering call, logged here (2026-11-09).
+3. `require_frame` first calls `MultiVectorBase.require_vectors(vectors, context)`, so an empty
+   sequence or a non-vector member raises with the caller named (`"<context> needs at least one
+   vector"`), the same as every other vector-taking function. Before this change, an empty
+   sequence reached the "the given vectors are dependent" message. The exception type is unchanged
+   (agent's call, 2026-11-09).
 
 ## Open questions
 
