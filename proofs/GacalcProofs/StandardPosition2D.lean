@@ -221,6 +221,10 @@ theorem rejectSP_eq_vecReject {b : G2} (hbv : IsVector b) (hb : magnitude b ≠ 
     rejectSP a b = vecReject b a := by
   simp only [rejectSP, vecReject, projectSP_eq_proj hbv hb]
 
+theorem rejectSP_eq_reject {a b : G2} (hav : IsVector a) (hbv : IsVector b) (hb : magnitude b ≠ 0)
+    (hbn : normSq b ≠ 0) : rejectSP a b = reject b a := by
+  rw [rejectSP_eq_vecReject hbv hb, vecReject, reject_vec_eq hbv hav hbn]
+
 /-! ### The geometric product from projection and rejection -/
 
 /-- **The product of two vectors, read off standard position:** rotate `b` onto the x-axis
@@ -238,9 +242,5 @@ theorem mul_eq_magnitude_smul_alignSP {a b : G2} (hav : IsVector a) (hbv : IsVec
   · ring
   · ring
   · field_simp; ring
-
-theorem rejectSP_eq_reject {a b : G2} (hav : IsVector a) (hbv : IsVector b) (hb : magnitude b ≠ 0)
-    (hbn : normSq b ≠ 0) : rejectSP a b = reject b a := by
-  rw [rejectSP_eq_vecReject hbv hb, vecReject, reject_vec_eq hbv hav hbn]
 
 end GacalcProofs.G2
