@@ -97,7 +97,7 @@ def content_by_rejection(vectors: Sequence[MultiVectorBase]) -> Real:
     this returns ``∏_j |w_j|``.  On a **frame** this equals :func:`content`
     (``∏|w_j| = |wedge| = √det(Gram)``) -- proved in ``tests/test_measure.py``, exactly
     (symbolic) and numerically, in 2D and 3D.  Kept alongside :func:`content` for
-    teaching (contrast the blade-square-sign task, which optimized to one form).
+    teaching.
 
     Defined only on a **frame** -- a dependent set has a zero height and no full
     parallelotope, so this raises there; use :func:`content` (which returns ``0``) for
@@ -236,7 +236,7 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Real:
     # k = n: the wedge is c * I_n (or 0 when the vectors are dependent), so its dual by
     # I_n is the scalar c -- the signed content.  A non-scalar dual would mean the
     # vectors don't span the full space; is_scalar() states that invariant (it holds
-    # for k = n, and is correct on the zero/degenerate case, where max_grade() raises).
+    # for k = n, and is correct on the zero/degenerate case, where max_grade() is 0).
     wedge: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(*vectors)
     oriented: MultiVectorBase = wedge.dual(n)
     if not oriented.is_scalar():
@@ -249,7 +249,7 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Real:
 
 def signed_area(a: MultiVectorBase, b: MultiVectorBase) -> Real:
     """The **signed** area of the parallelogram on ``a``, ``b`` --
-    ``signed_content([a, b])``, the 2-D determinant ``a_1 b_2 - a_2 b_1`` (needs 2-D
+    ``signed_content([a, b])``, the 2-D determinant ``a_1 * b_2 - a_2 * b_1`` (needs 2-D
     vectors; see :func:`signed_content`).
 
     Examples:

@@ -24,7 +24,7 @@ representation's basis constants.
 
 This module imports only ``base`` (the abstract base), never a concrete
 representation, so it stays free of any single algebra.  ``gn.py`` re-exports
-these names for backward compatibility.
+these names, so ``from gacalc.gn import translate`` also works.
 
 Rotation is *derived from* the algebra, and packaged here three ways, all
 free functions:  :func:`projection_rotation` is the from-vector/to-vector
@@ -36,11 +36,8 @@ same from/to rotation as a *versor* sandwich (one fixed rotation);  and
 plane's unit bivector ``i``) and returns a function of the angle, so one plane
 established once yields any rotation angle on demand (and interpolation for
 free).  The versor *builder* ``MultiVectorBase.versor_from_vectors(from, to)``
-remains the algebra-level primitive.  (The very old planar 2D
-``rotate(angle)`` / ``rotate_90_degrees`` / ``rotate_around`` factories were
-removed long before: they acted only in the e_1 * e_2 plane and silently
-mis-transformed a vector with an e_3+ component -- ``plane_rotation`` is the
-plane-explicit replacement.)
+remains the algebra-level primitive.  Every rotation here names its plane, so a
+vector with an ``e_3`` (or higher) component is never silently mis-transformed.
 
 This module also carries an *animation* layer (``InvertibleFunction.at`` /
 ``steps`` plus the ``interpolate`` / ``components`` fields, ported from the

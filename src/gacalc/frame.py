@@ -174,9 +174,8 @@ def make_orthogonal_frame(
     See also :func:`make_orthogonal_frame_hestenes` -- the *same* orthogonalization
     computed a different way (Hestenes' closed-form blade product), kept side by side
     for teaching. The two agree up to a positive scalar per vector
-    (``c_k == |A_{k-1}|² * w_k``; proved by ``tests/test_frame.py``). Unlike the
-    archived blade-square-sign task -- where one form was strictly optimal and replaced
-    the other -- neither is "better" here, so both stay.
+    (``c_k == |A_{k-1}|² * w_k``; proved by ``tests/test_frame.py``). Neither is
+    "better", so both stay.
 
     Raises:
         ValueError: if ``vectors`` is not a frame (linearly dependent -- a later
@@ -229,7 +228,7 @@ def make_orthogonal_frame_hestenes(
 
     ::
 
-        c_k := reverse(A_{k-1}) · A_k                 (eq 3.2)
+        c_k := reverse(A_{k-1}) * A_k                 (eq 3.2)
 
     a **closed form**: every ``c_k`` is built directly from the original prefix
     ``v_1 … v_k`` (build the blades, reverse, multiply), so -- unlike
@@ -243,7 +242,7 @@ def make_orthogonal_frame_hestenes(
     the later ``c_k`` are *longer*).  ``tests/test_frame.py`` verifies this exactly
     (symbolic) and numerically, in 2D and 3D.  Neither method is "better" -- rejection
     reads as the geometric idea, the blade product reads as a closed formula -- so both
-    stay (contrast the blade-square-sign task, which optimized to one form).
+    stay.
 
     Raises:
         ValueError: if ``vectors`` is not a frame (linearly dependent -- some
@@ -391,7 +390,7 @@ def reciprocal_frame(
     ::
 
         A_n := a_1 ∧ a_2 ∧ … ∧ a_n                              (eq 3.6)
-        a^k := (-1)^(k-1) (a_1 ∧ … ∧ ǎ_k ∧ … ∧ a_n) A_n⁻¹        (eq 3.7)
+        a^k := (-1)^(k-1) * (a_1 ∧ … ∧ ǎ_k ∧ … ∧ a_n) * A_n⁻¹        (eq 3.7)
 
     where ``ǎ_k`` means "leave ``a_k`` out" and the product with ``A_n⁻¹`` is the
     geometric product.  The wedge of the others is the face of the parallelotope
@@ -621,8 +620,8 @@ class Frame:
         The peel's order is forced: with the frame orthogonalized first-to-last, only
         the last orthogonal vector is perpendicular to *all* the others, so the first
         coordinate that can be read off directly is the last one.  This is
-        back-substitution (``x = R⁻¹ Qᵀ y`` in QR terms), read geometrically, with no
-        row reduction and no coefficient table; see
+        back-substitution (``x = R⁻¹ * Qᵀ * y`` in QR terms), read geometrically, with
+        no row reduction and no coefficient table; see
         ``tasks/reference/frames-qr-and-reciprocal-frames.md``, "The peel inverse, step
         by step".
 
