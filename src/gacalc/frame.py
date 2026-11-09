@@ -106,6 +106,48 @@ def is_frame(
     return are_linearly_independent(vectors, float_close_to_zero)
 
 
+def require_frame(
+    vectors: Sequence[MultiVectorBase],
+    context: str,
+    float_close_to_zero: bool = False,
+) -> None:
+    """Raise ``ValueError`` unless ``vectors`` form a frame (H&S p. 27).
+
+    The shared "must be a frame" guard, the frame counterpart of
+    :meth:`MultiVectorBase.require_vectors`: it first requires a non-empty
+    sequence of vectors (via ``require_vectors``), then that they are linearly
+    independent (:func:`is_frame`).  Each message names the caller.
+
+    Args:
+        vectors: the values to check.
+        context: what is being called, for the message.
+        float_close_to_zero: test the wedge for zero with a tolerance, as
+            :func:`is_frame` does.
+
+    Raises:
+        ValueError: on an empty sequence, on a member that is not a vector, or
+            when the vectors are linearly dependent (``a_1 ∧ … ∧ a_k = 0``).
+
+    Examples:
+        >>> from gacalc.gn import e_1, e_2
+        >>> require_frame([1 * e_1, 1 * e_2], "an example")
+        >>> require_frame([1 * e_1, 2 * e_1], "an example")  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: an example requires a frame (...); the given vectors are dependent
+        >>> require_frame([1 * e_1, e_1 ^ e_2], "an example")  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: an example takes a vector (grade 1); got a non-vector: ...
+    """
+    MultiVectorBase.require_vectors(vectors, context)
+    if not is_frame(vectors, float_close_to_zero):
+        raise ValueError(
+            f"{context} requires a frame (linearly independent vectors: "
+            "a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
+        )
+
+
 def _scalar_one(vector: MultiVectorBase) -> MultiVectorBase:
     """The scalar 1, in a representation of ``vector``'s algebra that can hold it.
 
@@ -181,11 +223,7 @@ def make_orthogonal_frame(
         ValueError: if ``vectors`` is not a frame (linearly dependent -- a later
             vector would reject to zero and the result could not be a frame).
     """
-    if not is_frame(vectors):
-        raise ValueError(
-            "make_orthogonal_frame requires a frame (linearly independent "
-            "vectors: a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
-        )
+    require_frame(vectors, "make_orthogonal_frame")
 
     def orthogonalize(
         remaining: Sequence[MultiVectorBase],
@@ -248,18 +286,14 @@ def make_orthogonal_frame_hestenes(
         ValueError: if ``vectors`` is not a frame (linearly dependent -- some
             ``A_k = 0``, making ``c_k`` degenerate).
     """
-    if not is_frame(vectors):
-        raise ValueError(
-            "make_orthogonal_frame_hestenes requires a frame (linearly independent "
-            "vectors: a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
-        )
+    require_frame(vectors, "make_orthogonal_frame_hestenes")
 
     # c_k := reverse(A_{k-1}) A_k (eq 3.2), pairing each prefix blade with the
     # one before it.  pairwise(prefix_blades(...)) yields the adjacent
     # (A_{k-1}, A_k) pairs -- (A_0, A_1), (A_1, A_2), … -- the single-pass-safe
     # form of zip(blades, blades[1:]), since prefix_blades is a lazy iterator.
     # c_1 needs no special case: A_0 = 1 and A_1 = 1 ∧ v_1 = v_1, so
-    # c_1 = reverse(1) v_1 = v_1.  vectors is nonempty here (the is_frame guard
+    # c_1 = reverse(1) v_1 = v_1.  vectors is nonempty here (the require_frame guard
     # above rejects the empty set).  reverse(A_{k-1}) A_k is grade 1 algebraically;
     # narrow, as base.reject does, to drop any identically-zero widened term.
     return [
@@ -294,11 +328,7 @@ def make_orthogonal_frame_hestenes_inverse(
         ValueError: if ``vectors`` is not a frame (linearly dependent -- some
             ``A_k = 0``, whose inverse is undefined).
     """
-    if not is_frame(vectors):
-        raise ValueError(
-            "make_orthogonal_frame_hestenes_inverse requires a frame (linearly "
-            "independent vectors: a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
-        )
+    require_frame(vectors, "make_orthogonal_frame_hestenes_inverse")
 
     # c_k := inverse(A_{k-1}) A_k -- the reverse form divided by |A_{k-1}|^2, which
     # cancels the scaling and reproduces the rejection frame w_k exactly.  Same
@@ -428,11 +458,7 @@ def reciprocal_frame(
         ValueError: if ``vectors`` is not a frame (linearly dependent, empty, or
             containing a non-vector), so that ``A_n = 0`` has no inverse.
     """
-    if not is_frame(vectors):
-        raise ValueError(
-            "reciprocal_frame requires a frame (linearly independent vectors: "
-            "a_1 ∧ … ∧ a_n ≠ 0); the given vectors are dependent"
-        )
+    require_frame(vectors, "reciprocal_frame")
     # A_n⁻¹, the inverse of the wedge of every frame vector (eq 3.6).
     A_n_inverse: MultiVectorBase = functools.reduce(
         operator.xor, vectors, _scalar_one(vectors[0])

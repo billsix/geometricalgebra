@@ -166,6 +166,8 @@ and call `self * other`, dispatched to the concrete type.
   context)` / `require_vectors(values, context)` (`base.py`), which raise `ValueError` naming the
   caller. Never a bare `assert` (gone under `python -O`), a hand-rolled `is_vector()` loop, or a
   `TypeError` (reserved for a genuine `isinstance` type check, like `g2.rotate_90_degrees`).
+  "Must be a frame" has its own guard, `require_frame(vectors, context)` (`frame.py`): it requires
+  vectors and then their independence. Never hand-roll an `if not is_frame(...): raise`.
 - **Express rotations via the factories, never hand-built** — `plane_rotation(a, b)(θ)` (plane +
   angle), `projection_rotation`/`versor_rotation`/`versor_from_vectors` (from/to, keyword args), or
   the 𝒢₂ `rotate_90_degrees()` for quarter turns. A versor built by trigonometry as a data literal

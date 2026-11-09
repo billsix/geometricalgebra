@@ -12,6 +12,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`frame.require_frame(vectors, context, float_close_to_zero=False)`** — the shared "must be a
+  frame" guard: raises `ValueError` naming `context` on an empty sequence, a non-vector, or
+  linearly dependent vectors. `make_orthogonal_frame`, its two Hestenes variants and
+  `reciprocal_frame` raise through it; an empty input now gets the "needs at least one vector"
+  message, and `reciprocal_frame`'s message says `a_k` instead of `a_n`.
 - **`transforms.line_to_line_projection(from_vector=, to_vector=, *, float_close_to_zero=False)`** — the
   projection onto the line of `to_vector`, restricted to the line of `from_vector`, as an
   `InvertibleFunction`; each direction raises `ValueError` on input off its line, and perpendicular lines
