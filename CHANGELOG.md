@@ -100,6 +100,12 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **BREAKING — a graded type with no scalar slot returns its algebra's `Scalar` from `one()`.**
+  `Vector.one()`, `Bivector.one()`, `Trivector.one()` and `Odd_3.one()` (g1–g3, and g4/g5 when
+  generated) used to return the zero value of their own type, because they cannot hold 1; they now
+  return the unit `Scalar`, typed `-> Scalar`. Migrate: code that relied on `Vector.one()` being a
+  `Vector` should use `Vector.zero()` or `Scalar.one()` as meant. The private helper
+  `frame._scalar_one` is gone; the frame folds seed with `type(v).one()`.
 - **BREAKING — Python 3.15 or later is required** (`requires-python = ">=3.15"`, was `>=3.13`).
   `Gn` stores its coefficients in the built-in `frozendict` (PEP 814), new in 3.15.
 - **BREAKING — `Gn.to_blade_dict()` returns an immutable `frozendict`**, the mapping `Gn` stores,

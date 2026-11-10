@@ -2720,6 +2720,9 @@ ANY_OPERAND_RETURN_OVERRIDES: frozenset[str] = frozenset(
         "__radd__",
         "r_vector_part",
         "plane_of_rotation",
+        # Not an operand method: the classmethod one() of a graded type with no
+        # scalar slot returns that algebra's Scalar, not Self.
+        "one",
     }
 )
 
@@ -5075,6 +5078,24 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
     ]
 
 
+def one_docstring(type_name: str) -> str:
+    """The docstring of a scalar-less graded type's ``one()`` classmethod."""
+    return (
+        "The multiplicative identity  1  — returned as this algebra's ``Scalar``.\n"
+        "\n"
+        f"A ``{type_name}`` has no scalar slot, so it cannot hold 1 itself; ``one()``\n"
+        "returns the unit ``Scalar`` instead, the value every product starts from\n"
+        f"(``{type_name}.one() * x == x``).\n"
+        "\n"
+        "Returns:\n"
+        "    Scalar: the unit scalar 1.\n"
+        "\n"
+        "Example:\n"
+        f"    >>> {type_name}.one() == Scalar.one()\n"
+        "    True\n"
+    )
+
+
 def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stmt]:
     """A graded subtype (Vector/Bivector/Trivector/Versor), as nodes (level C)."""
     blades: list[Blade] = list(spec.blades)
@@ -5475,6 +5496,29 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             method_doc_stmts("magnitude_squared")
             + [return_stmt(cast_coef(expr_to_ast(msq_expr, unary_rename)))],
             returns=name_ref("Real"),
+        ),
+        # one(): a type with no scalar slot cannot hold 1 (base's from_real(1)
+        # would silently drop it to the zero value), so it returns this algebra's
+        # Scalar instead -- the multiplicative identity, as Scalar.one() is.
+        *(
+            []
+            if has_scalar
+            else [
+                function_def(
+                    "one",
+                    [
+                        doc_expr(one_docstring(spec.name)),
+                        return_stmt(
+                            construct(
+                                "Scalar", [(field_name(()), cast_coef(constant(1)))]
+                            )
+                        ),
+                    ],
+                    params=[argument("cls")],
+                    decorators=[name_ref("classmethod")],
+                    returns=name_ref("Scalar"),
+                )
+            ]
         ),
         grades_method(
             [

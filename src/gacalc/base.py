@@ -454,9 +454,12 @@ class MultiVectorBase(abc.ABC):
             ...  for n in range(1, 16)]
             [1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1]
         """
+        # Seed with the scalar 1 at cls's own type: cls.from_real(1), not cls.one()
+        # (a scalar-less graded type's one() is its algebra's Scalar).  A blade cls
+        # cannot hold then comes back zero and _require_holds_blade names the type.
         pseudoscalar: typing.Self = math.prod(
             [cls.basis_vector(x) for x in range(1, n + 1)],
-            start=cls.one(),
+            start=cls.from_real(1),
         )
         cls._require_holds_blade(pseudoscalar, tuple(range(1, n + 1)))
         return pseudoscalar
@@ -465,9 +468,9 @@ class MultiVectorBase(abc.ABC):
     def _require_holds_blade(cls, value: "MultiVectorBase", blade: Blade) -> None:
         """Raise ``ValueError`` unless ``value`` is the unit ``blade`` itself.
 
-        A graded type silently drops the blades it has no field for (its ``one()``
-        is zero on a type with no scalar), so a basis blade built in it comes back
-        as zero; this turns that into an error naming the type.
+        A graded type silently drops the blades it has no field for (its
+        ``from_real(1)`` is zero on a type with no scalar), so a basis blade built
+        in it comes back as zero; this turns that into an error naming the type.
 
         >>> import gacalc.g3 as g3
         >>> g3.Vector.unit_pseudoscalar(3)
@@ -508,9 +511,10 @@ class MultiVectorBase(abc.ABC):
 
         b: Blade
         for b in powerset(range(1, n + 1)):
+            # Seeded at cls's own type, as in unit_pseudoscalar.
             blade: typing.Self = math.prod(
                 [cls.basis_vector(x) for x in b],
-                start=cls.one(),
+                start=cls.from_real(1),
             )
             cls._require_holds_blade(blade, b)
             yield blade

@@ -187,17 +187,6 @@ def require_spanning_frame(vectors: Sequence[MultiVectorBase]) -> None:
         )
 
 
-def _scalar_one(vector: MultiVectorBase) -> MultiVectorBase:
-    """The scalar 1, in a representation of ``vector``'s algebra that can hold it.
-
-    ``type(vector).one()`` is not enough: a graded ``Vector_n`` type has no scalar
-    slot, so its ``one()`` is the zero vector, and a wedge seeded with it is zero.
-    ``vector · vector`` is a scalar, so its type is one that holds scalars:
-    ``Scalar_n`` for the graded types, and ``Gn`` itself for ``Gn``.
-    """
-    return type(vector.dot(vector)).one()
-
-
 def prefix_blades(
     vectors: Sequence[MultiVectorBase],
 ) -> Iterator[MultiVectorBase]:
@@ -229,7 +218,7 @@ def prefix_blades(
         )
     # accumulate(seq, ∧, initial=1) folds the wedge over the prefix, seeding with the
     # scalar one: yields A_0 = 1, A_1 = 1 ∧ v_1 = v_1, A_2 = A_1 ∧ v_2, …
-    return accumulate(vectors, operator.xor, initial=_scalar_one(vectors[0]))
+    return accumulate(vectors, operator.xor, initial=type(vectors[0]).one())
 
 
 def make_orthogonal_frame(
@@ -430,7 +419,7 @@ def all_wedged_except_the_kth(
             f"vectors); got k = {k}"
         )
     others: list[MultiVectorBase] = [*vectors[: k - 1], *vectors[k:]]
-    return functools.reduce(operator.xor, others, _scalar_one(vectors[0]))
+    return functools.reduce(operator.xor, others, type(vectors[0]).one())
 
 
 # Why x_i = a^i · y reads off a coordinate (similar right triangles standing on the
@@ -500,7 +489,7 @@ def reciprocal_frame(
     require_frame(vectors)
     # A_n⁻¹, the inverse of the wedge of every frame vector (eq 3.6).
     A_n_inverse: MultiVectorBase = functools.reduce(
-        operator.xor, vectors, _scalar_one(vectors[0])
+        operator.xor, vectors, type(vectors[0]).one()
     ).inverse()
     # eq 3.7: enumerate(start=1) makes the loop variable the book's k, so the sign is
     # literally (-1)^(k-1).

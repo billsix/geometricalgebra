@@ -1,41 +1,32 @@
 # Every class has a usable `one()`; remove `frame._scalar_one`
 
-**Status:** in progress — questions answered (see Decisions)
-**Priority:** 3
-**Difficulty:** 5
-**Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
-**Branch:** `sp-rotations-guards-enums-examples`
+**Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>) · **Done:** 2026-11-10
 
-## BLUF
+`MultiVectorBase.one()` is `cls.from_real(1)`, and a graded type with no scalar slot silently dropped
+the 1, so `Vector.one()` was the zero vector. `frame._scalar_one` worked around it with
+`type(v.dot(v)).one()`. Every class now carries the scalar 1 as `one()`, and the helper is gone.
 
-`frame._scalar_one(vector)` exists because a graded type's `one()` is wrong: `MultiVectorBase.one()`
-is `cls.from_real(1)` returning `Self`, and a graded `Vector_n` has no scalar slot, so
-`Vector.one()` silently drops to the zero vector (the "exp() trap"). The helper works around it with
-`type(vector.dot(vector)).one()`. The maintainer wants each class to carry the notion of one, as it
-carries zero, so the helper is not needed. Then investigate what else belongs on the class the same
-way (candidates: the pseudoscalar `I`, `basis_vector`/basis constants, an identity
-`InvertibleFunction`, the scalar type itself). Done means: `X.one()` is the scalar 1 for every class
-(typed as the scalar type for graded classes), `_scalar_one` is gone and its three call sites in
-`frame.py` use the class, the investigation's findings are recorded with a decision each, gate green,
-CHANGELOG entry.
-
-## Context (read first)
-
-- `src/gacalc/base.py` `zero`/`one`/`from_real`; `src/gacalc/frame.py` `_scalar_one` and its callers
-  (`prefix_blades` and the two wedge reductions).
-- `tasks/reference/blade-dict-interchange.md` (graded silent-drop); generated classes:
-  `tools/gen_specialized.py`, `tasks/reference/code-generator-architecture.md`,
-  `generated-product-typing.md`.
-- Typing: a graded `Vector.one()` returning `Scalar` changes its return type from `Self`; ties into
-  `tasks/typing-base-return-types-redesign.md` (parked).
-
-## Plan
-
-1. Generator emits `one()` on each graded class returning that algebra's `Scalar` (and `Odd_3` etc.
-   likewise); `Gn`/full `G` keep `Self`.
-2. Replace `_scalar_one(v)` with `type(v).one()`; delete the helper; doctests.
-3. Investigation of other class-level notions; implement only those decided.
-
-## Decisions
-
-- A graded class's `one()` returns **that algebra's `Scalar`** (its return type changes from `Self`) (William Emerison Six <billsix@gmail.com>, 2026-11-10).
+- **Generator** (`tools/gen_specialized.py`, `generate_graded_type`, helper `one_docstring`): each
+  graded type without the `()` blade (`Vector`, `Bivector`, `Trivector`, `Odd_3`; any dimension)
+  emits `one()` as a classmethod returning `Scalar(coeff_scalar=1)`, typed `-> Scalar`. Types with a
+  scalar slot (`Scalar`, `Versor`, the full `G`, `Gn`) keep the base `one() -> Self`. The override's
+  return conflicts with the base's `Self`, so `one` joined `ANY_OPERAND_RETURN_OVERRIDES` and gets the
+  generated `# ty: ignore[invalid-method-override]`, like the other resolved-type overrides.
+- **Decision** (William Emerison Six <billsix@gmail.com>, 2026-11-10): the graded `one()` returns that
+  algebra's `Scalar`.
+- **frame.py:** the three seeds became `type(vectors[0]).one()`.
+- **A dependency found by the tests:** `unit_pseudoscalar` and `bases` (`base.py`) seeded their
+  basis-blade products with `cls.one()` and relied on it staying at `cls`'s type, so
+  `_require_holds_blade` could reject a blade the type cannot hold. With the new `one()`,
+  `g3.Vector.unit_pseudoscalar(3)` came back as an `Odd_3` instead of raising
+  (`tests/test_graded.py::test_graded_type_raises_on_a_blade_it_cannot_hold`). Both now seed with
+  `cls.from_real(1)`, the old value, with a comment saying why.
+- **Investigation — other class-level notions.** `zero()` is right on every type, and the basis
+  constants, `unit_pseudoscalar` (raises on a type that cannot hold it) and the identity function
+  (`functions.identity`) already exist. Two more have the trap `one()` had, and are left as the
+  follow-on `tasks/graded-scalar-constructors-silent-drop.md` (proposed): `from_real(x)` on a
+  scalar-less graded type silently returns zero (`g2.Vector.from_real(3)` is the zero vector), and
+  `unit_pseudoscalar_squared` on a graded type raises although its value is a scalar.
+- **Docs:** CHANGELOG `[Unreleased]` → Changed (BREAKING), `tasks/reference/design-decisions.md`
+  (the frame-fold seed).
+- **Gate (host):** ruff + ty clean; `pytest -m "not slow"` 794 passed.
