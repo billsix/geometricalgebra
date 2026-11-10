@@ -24,7 +24,6 @@ import sympy
 
 from gacalc.base import (
     Blade,
-    BladeReal,
     MultiVectorBase,
     Real,
     _require_canonical_blades,
@@ -90,7 +89,7 @@ class Gn(MultiVectorBase):
     ``tools/gen_specialized.py`` for that pipeline.
     """
 
-    coefficient_of_blade: BladeReal
+    coefficient_of_blade: Mapping[Blade, Real]
 
     def __post_init__(self) -> None:
         """Normalize the stored coefficients: eagerly ``sympy.simplify`` every one
@@ -105,12 +104,15 @@ class Gn(MultiVectorBase):
             blade: sympy.simplify(sympy.sympify(self.coefficient_of_blade[blade]))
             for blade in self.coefficient_of_blade.keys()
         }
-        # prune zero coefficient_of_blade
-        self.coefficient_of_blade = {
-            blade: self.coefficient_of_blade[blade]
-            for blade in self.coefficient_of_blade.keys()
-            if self.coefficient_of_blade[blade] != 0
-        }
+        # prune zero coefficient_of_blade, and store the result immutably: every
+        # Gn, and every to_blade_dict() handed out, shares this one frozendict
+        self.coefficient_of_blade = frozendict(
+            {
+                blade: self.coefficient_of_blade[blade]
+                for blade in self.coefficient_of_blade.keys()
+                if self.coefficient_of_blade[blade] != 0
+            }
+        )
 
     @classmethod
     def from_blade_dict(cls, blade_coef: Mapping[Blade, Real]) -> Gn:
@@ -192,15 +194,17 @@ class Gn(MultiVectorBase):
             )
         return plane.normalize()
 
-    def to_blade_dict(self) -> BladeReal:
-        """Return the canonical blade → coefficient mapping, as a copy of what ``Gn``
-        stores, so a caller that changes it can't corrupt this value (or a shared
-        constant like ``e_1``).
+    def to_blade_dict(self) -> Mapping[Blade, Real]:
+        """Return the canonical blade → coefficient mapping ``Gn`` stores.
+
+        It is the stored ``frozendict`` itself, not a copy: it is immutable, so a
+        caller can't change this value (or a shared constant like ``e_1``) through
+        it.  Copy it with ``dict(...)`` to edit one.
 
         Returns:
-            BladeReal: a copy of the stored blade -> coefficient dict.
+            Mapping[Blade, Real]: the stored, immutable blade -> coefficient mapping.
         """
-        return dict(self.coefficient_of_blade)
+        return self.coefficient_of_blade
 
     def _geometric_product(self, rhs: MultiVectorBase) -> typing.Self:
         """Reference geometric product  A * B  for ``Gn``.

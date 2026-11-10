@@ -1,9 +1,9 @@
-# The blade-dict interchange — `BladeReal`
+# The blade-dict interchange — `Mapping[Blade, Real]`
 
-**Reference document** — the contract for `BladeReal` (`dict[Blade, Real]`), THE canonical
+**Reference document** — the contract for the blade dict (`Mapping[Blade, Real]`), THE canonical
 interchange format of gacalc: every representation converts to and from it, and all shared
 arithmetic in `base.py` routes through it. Not a task; update in place if the contract
-changes. Last updated 2026-08-13. Authoritative source: the `BladeReal` docstring and
+changes. Last updated 2026-11-09. Authoritative source: the `MultiVectorBase` docstring and
 `_require_canonical_blades` in `src/gacalc/base.py` — this doc consolidates and explains
 what lives there (and what was scattered across archived task docs). Read alongside
 CLAUDE.md's "Architecture" (the interchange protocol) and `design-decisions.md`.
@@ -16,7 +16,7 @@ the specialized `G`, and the graded subtypes (`Vector`, `Bivector`, `Versor`,
 
     Blade      = tuple[int, ...]        # basis-vector indices; () is the scalar blade
     Real       = int | float | sympy.Expr
-    BladeReal  = dict[Blade, Real]      # e.g. {(): 3, (1, 2): -4}  ==  3 − 4 * e₁ * e₂
+    Mapping[Blade, Real]                # e.g. {(): 3, (1, 2): -4}  ==  3 − 4 * e₁ * e₂
 
 Two methods are the whole protocol: `to_blade_dict()` (this value → the dict) and the
 `from_blade_dict()` classmethod (the dict → this representation). Mixing two representations
@@ -89,40 +89,40 @@ with a dispatching `+`, not `from_blade_dict` (see its docstring).
 
 ## Immutable storage (`frozendict`, Python 3.15)
 
-`frozendict` is a built-in since Python 3.15.0 (PEP 814, Final). gacalc's measured findings
-(2026-11-09, `tasks/archive/2026/11/09/frozendict-research-and-fit.md`):
+`Gn` stores its coefficients in the built-in `frozendict` (PEP 814, new in Python 3.15, so
+gacalc requires `>=3.15`), and `Gn.to_blade_dict()` returns that stored mapping itself. A caller
+can read it but not write it (`TypeError`), so editing a result can't corrupt the value or a
+shared constant such as `e_1`. `tests/test_multivector.py::test_to_blade_dict_is_immutable` pins
+this. Copy with `dict(...)` to edit one.
 
-- **It fits `Gn`'s storage and nothing else.** Storing `Gn.coefficient_of_blade` as a
-  `frozendict` makes a caller's edit of a `to_blade_dict()` result impossible (the `e_1`
-  corruption fixed 2026-11-09 by copying), and lets `to_blade_dict()` return the stored mapping
-  with no copy. The specialized classes store fields and build a fresh dict per call. The
-  display-symbol registry and the tools' tables are never mutated by anyone who could misuse them.
-- **The type that works is `BladeReal = Mapping[Blade, Real]`.** It is read-only, and both `dict`
-  and `frozendict` satisfy it. The `Gn` field keeps that type so `Gn({...})` still accepts a dict
-  literal. Typing the field `frozendict[...]` would force every constructor call to pass one.
-- **It costs nothing measurable.** Building a `frozendict` from a dict costs the same as
-  `dict(d)`. Every `Gn` operation, the code generator and the test suite ran within noise of the
-  `dict` baseline, and `to_blade_dict()` got 4× faster without its copy. `sympy.simplify`
-  dominates all real `Gn` work.
+- **The blade dict is typed `Mapping[Blade, Real]`**, read-only, so a `dict` and a `frozendict` both
+  satisfy it. The `Gn` field keeps that type so `Gn({...})` still accepts a dict literal (typing
+  the field `frozendict[...]` would force every constructor call to pass one). Code that builds a
+  blade dict by writing into it types it `dict[Blade, Real]` (`nbplotutils._expand_numerators_dict`).
+- **Only `Gn` stores one.** The specialized classes store fields and build a fresh `dict` per
+  `to_blade_dict()` call. The display-symbol registry and the tools' lookup tables stay `dict`:
+  nothing that could misuse them mutates them.
+- **It cost nothing measurable** (2026-11-09). Building a `frozendict` from a dict costs the same
+  as `dict(d)`. Every `Gn` operation, the code generator and the test suite ran within noise of
+  the `dict` baseline, and `to_blade_dict()` got 4× faster without its copy. `sympy.simplify`
+  dominates all real `Gn` work. Measurements: `tasks/archive/2026/11/09/frozendict-research-and-fit.md`.
 - **It does not make multivectors hashable, and must not.** `__eq__` is value equality (it
   simplifies the difference), so a structural hash would break the hash contract.
-- **It needs `requires-python >= 3.15`**; `ty` treats the name as undefined under `>=3.13`. The
-  adoption is `tasks/gn-frozendict-coefficient-storage.md`.
 
 ## Where it lives
 
-- **`src/gacalc/base.py`** — the `Blade` / `Real` / `BladeReal` aliases and the `BladeReal`
+- **`src/gacalc/base.py`** — the `Blade` / `Real` aliases and the `MultiVectorBase`
   docstring (the authoritative contract); `_require_canonical_blades` (the shared validator);
   the abstract `from_blade_dict` / `to_blade_dict` on `MultiVectorBase`.
 - **`src/gacalc/gn.py`** — `Gn.from_blade_dict` / `to_blade_dict` (calls the validator;
-  the eager `sympy.simplify` in `__post_init__`).
+  the eager `sympy.simplify` and the stored `frozendict` in `__post_init__`).
 - **The generated modules** — `from_blade_dict_method` in `tools/gen_specialized.py` emits
   each specialized class's `from_blade_dict`, which calls `_require_canonical_blades` then
   keeps only its own blades (the silent-drop in §4).
 
 ## Sources
 
-- `src/gacalc/base.py` (`BladeReal` docstring + `_require_canonical_blades`) — authoritative.
+- `src/gacalc/base.py` (`MultiVectorBase` docstring + `_require_canonical_blades`) — authoritative.
 - `tasks/archive/2026/07/29/validate-blade-dict-keys.md` — the raise-vs-canonicalize decision.
 - `tasks/archive/2026/07/29/blade-dict-tests-and-comments.md` — the consolidated contract + tests.
 - Related: `tasks/reference/design-decisions.md`, `tasks/reference/code-generator-architecture.md`.

@@ -23,7 +23,7 @@ random vectors (float-tolerant).
 
 import itertools
 import random
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 import pytest
 import sympy
@@ -44,6 +44,7 @@ from gacalc.frame import (
     make_orthogonal_frame_hestenes_inverse,
     prefix_blades,
     reciprocal_frame,
+    require_frame,
 )
 from gacalc.gn import (
     Gn,
@@ -120,6 +121,36 @@ def test_non_vector_input_raises() -> None:
     """A frame is a set of *vectors*; a bivector member is a category error."""
     with pytest.raises(ValueError):
         is_frame([1 * e_1, e_1 ^ e_2])  # e_1 ∧ e_2 is a bivector
+
+
+# --- require_frame ---------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("name", "frame_function"),
+    [
+        ("make_orthogonal_frame", make_orthogonal_frame),
+        ("make_orthogonal_frame_hestenes", make_orthogonal_frame_hestenes),
+        (
+            "make_orthogonal_frame_hestenes_inverse",
+            make_orthogonal_frame_hestenes_inverse,
+        ),
+        ("reciprocal_frame", reciprocal_frame),
+    ],
+)
+def test_frame_functions_share_the_require_frame_message(
+    name: str,
+    frame_function: Callable[[list[MultiVectorBase]], Sequence[MultiVectorBase]],
+) -> None:
+    """Every frame-requiring function rejects a dependent set through
+    ``require_frame``, so each message names the function the same way."""
+    with pytest.raises(ValueError, match=f"^{name} requires a frame"):
+        frame_function([1 * e_1, 2 * e_1])
+
+
+def test_require_frame_names_the_caller_for_an_empty_set() -> None:
+    with pytest.raises(ValueError, match="^a caller needs at least one vector"):
+        require_frame([], "a caller")
 
 
 # --- make_orthogonal_frame -------------------------------------------------

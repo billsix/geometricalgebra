@@ -207,8 +207,8 @@ from astbuild import (  # noqa: E402
 
 from gacalc.base import (  # noqa: E402
     Blade,
-    BladeReal,
     MultiVectorBase,
+    Real,
     pseudoscalar_squared_sign,
 )
 from gacalc.gn import Gn  # noqa: E402
@@ -1120,7 +1120,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "This bivector as a blade→coefficient dict (grade-2 blades only).\n"
         "\n"
         "Returns:\n"
-        "    BladeReal: the grade-2 blade -> coefficient mapping."
+        "    Mapping[Blade, Real]: the grade-2 blade -> coefficient mapping."
     ),
     "bivector|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -1379,7 +1379,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "This scalar as a blade→coefficient dict (the scalar blade only).\n"
         "\n"
         "Returns:\n"
-        "    BladeReal: the ``{(): value}`` mapping."
+        "    Mapping[Blade, Real]: the ``{(): value}`` mapping."
     ),
     "scalar|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -1735,7 +1735,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "This vector as a blade→coefficient dict (grade-1 blades only).\n"
         "\n"
         "Returns:\n"
-        "    BladeReal: the grade-1 blade -> coefficient mapping."
+        "    Mapping[Blade, Real]: the grade-1 blade -> coefficient mapping."
     ),
     "vector|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -2013,7 +2013,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "This trivector as a blade→coefficient dict (grade-3 blade only).\n"
         "\n"
         "Returns:\n"
-        "    BladeReal: the grade-3 blade -> coefficient mapping."
+        "    Mapping[Blade, Real]: the grade-3 blade -> coefficient mapping."
     ),
     "trivector|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -2297,7 +2297,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "This versor as a blade→coefficient dict (scalar + bivector blades).\n"
         "\n"
         "Returns:\n"
-        "    BladeReal: the grade-0 + grade-2 blade -> coefficient mapping."
+        "    Mapping[Blade, Real]: the grade-0 + grade-2 blade -> coefficient mapping."
     ),
     "versor|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -2585,7 +2585,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "blades).\n"
         "\n"
         "Returns:\n"
-        "    BladeReal: the grade-1 + grade-3 blade -> coefficient mapping."
+        "    Mapping[Blade, Real]: the grade-1 + grade-3 blade -> coefficient mapping."
     ),
     "odd|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -3165,7 +3165,7 @@ def product_result(
     result_mv: Gn = gn_product(
         Gn.from_blade_dict(lhs_symbols), Gn.from_blade_dict(rhs_symbols)
     )
-    result_coeffs: BladeReal = result_mv.to_blade_dict()
+    result_coeffs: Mapping[Blade, Real] = result_mv.to_blade_dict()
     support: list[Blade] = [
         b for b in blades_for_dim(n) if sympy.sympify(result_coeffs.get(b, 0)) != 0
     ]
@@ -3191,7 +3191,7 @@ def unary_result(
         b: sympy.Symbol("a_" + blade_label(b)) for b in operand_spec.blades
     }
     result_mv: MultiVectorBase = gn_unary(Gn.from_blade_dict(operand_symbols))
-    result_coeffs: BladeReal = result_mv.to_blade_dict()
+    result_coeffs: Mapping[Blade, Real] = result_mv.to_blade_dict()
     support: list[Blade] = [
         b for b in blades_for_dim(n) if sympy.sympify(result_coeffs.get(b, 0)) != 0
     ]
@@ -3438,10 +3438,14 @@ def eq_method(fields: Sequence[str]) -> ast.FunctionDef:
             orelse=[],
         ),
         annotated_assign(
-            "left", name_ref("BladeReal"), call(attribute("self", "to_blade_dict"))
+            "left",
+            parse_expr("Mapping[Blade, Real]"),
+            call(attribute("self", "to_blade_dict")),
         ),
         annotated_assign(
-            "right", name_ref("BladeReal"), call(attribute("other", "to_blade_dict"))
+            "right",
+            parse_expr("Mapping[Blade, Real]"),
+            call(attribute("other", "to_blade_dict")),
         ),
         return_stmt(call("all", [gen])),
     ]
@@ -3528,18 +3532,20 @@ def from_blade_dict_method(blades: Sequence[Blade]) -> ast.FunctionDef:
     keywords: list[ast.keyword] = [
         ast.keyword(
             arg=field_name(b),
-            # No ``cast(Real, ...)`` here: ``d`` is a ``BladeReal`` (= dict[Blade,
-            # Real]) and the default is ``0`` (an int, ⊆ Real), so ``d.get(b, 0)``
-            # is already ``Real``.  Casting is redundant -- and ty flags it as such
-            # on the large generated modules (harmless warning, but it fails the
-            # ``ty check`` gate once g4/g5 are generated).
+            # No ``cast(Real, ...)`` here: ``d`` is a ``Mapping[Blade, Real]`` and
+            # the default is ``0`` (an int, ⊆ Real), so ``d.get(b, 0)`` is already
+            # ``Real``.  Casting is redundant -- and ty flags it as such on the
+            # large generated modules (harmless warning, but it fails the ``ty
+            # check`` gate once g4/g5 are generated).
             value=call(attribute("d", "get"), [constant(b), constant(0)]),
         )
         for b in blades
     ]
     body: list[ast.stmt] = [
         annotated_assign(
-            "d", name_ref("BladeReal"), call("dict", [name_ref("blade_coef")])
+            "d",
+            parse_expr("Mapping[Blade, Real]"),
+            call("dict", [name_ref("blade_coef")]),
         ),
         # loud rejection of a non-canonical key (base's shared validator) --
         # canonical-but-foreign keys still fall through the ``d.get``s below
@@ -3577,7 +3583,9 @@ def to_blade_dict_method(blades: Sequence[Blade]) -> ast.FunctionDef:
         key=name_ref("blade"), value=name_ref("coef"), generators=[comp]
     )
     return function_def(
-        "to_blade_dict", [return_stmt(dictcomp)], returns=name_ref("BladeReal")
+        "to_blade_dict",
+        [return_stmt(dictcomp)],
+        returns=parse_expr("Mapping[Blade, Real]"),
     )
 
 
@@ -4292,7 +4300,7 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
                     )
                 )
             ],
-            returns=name_ref("BladeReal"),
+            returns=parse_expr("Mapping[Blade, Real]"),
         ),
         eq_method([field_name(())]),
         # The products/sums are the same machinery the graded types use
@@ -4688,7 +4696,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
         """A dense full-class product method (geometric/inner/outer/contraction):
         the closed form over ALL blades (cse'd), with an isinstance guard that
         coerces a foreign rhs to ``Gn`` and delegates via ``cross_node``."""
-        result_coeffs: BladeReal = result_mv.to_blade_dict()
+        result_coeffs: Mapping[Blade, Real] = result_mv.to_blade_dict()
         replacements: list[tuple[sympy.Symbol, sympy.Expr]]
         reduced: list[sympy.Expr]
         replacements, reduced = sympy.cse(
@@ -4839,7 +4847,7 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
         # / its square / bases / symbolic_multivector emit the closed form or
         # constant directly instead of running base's general n-parametrized
         # algorithm (products of basis vectors, powersets).
-        dual_coeffs: BladeReal = a_mv.dual(n).to_blade_dict()
+        dual_coeffs: Mapping[Blade, Real] = a_mv.dual(n).to_blade_dict()
         top_blade: Blade = blades[-1]
         pseudoscalar: Gn = Gn.from_blade_dict({top_blade: 1})
         i_squared: int = int(
@@ -6139,16 +6147,16 @@ from __future__ import annotations
 import dataclasses
 import math
 import typing
-from collections.abc import Generator, Sequence
+from collections.abc import Generator, Mapping, Sequence
 
 import numpy as np
 import sympy
 
 from gacalc.base import (
+    Blade,
     ComposableFunction,
     InvertibleFunction,
     MultiVectorBase,
-    BladeReal,
     Real,
     _coef_eq,
     _coerce,

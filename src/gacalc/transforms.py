@@ -49,12 +49,12 @@ classification (:class:`Linearity`, joined by ``compose``), and
 import dataclasses
 import math
 import typing
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 import numpy as np
 import sympy
 
-from gacalc.base import BladeReal, MultiVectorBase, MultiVectorFn, Real
+from gacalc.base import Blade, MultiVectorBase, MultiVectorFn, Real
 from gacalc.functions import (
     ComposableFunction,
     InvertibleFunction,
@@ -454,7 +454,7 @@ def _unit_bivector_rotor_factory(
     ``cos(theta)``, not ``1.0*cos(theta)``.  A purely symbolic plane never
     coerces.  ``i`` is assumed already unit -- callers normalize before calling.
     """
-    i_coefs: BladeReal = i.to_blade_dict()
+    i_coefs: Mapping[Blade, Real] = i.to_blade_dict()
     i_numeric: MultiVectorBase | None = None
     if all(
         isinstance(c, (int, float)) or bool(getattr(c, "is_number", False))
@@ -840,7 +840,7 @@ def to_matrix(
         # blade-dict (the coefficient each representation already stores; no
         # product to compute, no dependence on component/scalar_product) -- plus
         # the column's bottom entry (0 for a direction column, 1 for translation).
-        d: BladeReal = v.to_blade_dict()
+        d: Mapping[Blade, Real] = v.to_blade_dict()
         return [d.get((j + 1,), 0) for j in range(n)] + [bottom]
 
     # the matrix's columns: each unit-direction image (bottom 0), then the origin

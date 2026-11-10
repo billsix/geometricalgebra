@@ -29,7 +29,7 @@ needed" (vectors in, scalars only in the proof body). Done = the theorems below 
 
 ## Context (read first)
 
-- `tasks/reference/frames-qr-and-reciprocal-frames.md`: the math, and why the frame is stored orthogonal
+- `tasks/reference/frames-qr-and-reciprocal-frames.md`: the math, and why the frame uses the orthogonal set
   (`w_j`, coefficients `(w_j · v_i) / |w_j|²`) rather than orthonormal.
 - `tasks/reference/lean-ga-proof-architecture.md` and `tasks/reference/lean-for-gacalc.md`: proof
   architecture, the object-in/scalars-in-the-body style, the teaching order of the `G2`/`G3` files.

@@ -35,25 +35,8 @@ from gacalc.functions import ComposableFunction, InvertibleFunction, Linearity
 # and then rejects `+`/`/`/`**` on it, which broke the generated versor sandwich.
 Real = int | float | sympy.Expr
 #: A basis blade: a tuple of basis-vector indices, e.g. ``(1, 2)`` ≙ e₁ * e₂ (``()`` is
-#: the scalar blade).  The key type of the ``BladeReal`` interchange dict.
+#: the scalar blade).  The key type of the blade-dict interchange mapping.
 Blade = tuple[int, ...]
-#: THE interchange format of the library.  Every representation (``Gn``,
-#: ``G``, the graded subtypes) converts to and from this dict via
-#: ``to_blade_dict``/``from_blade_dict``, and all shared arithmetic in this
-#: module routes through it.  The contract (pinned by tests/test_blade_dict.py):
-#:
-#: - **Keys are canonical**: strictly increasing index tuples; ``()`` is the
-#:   scalar blade.  ``from_blade_dict`` (every representation, via
-#:   ``_require_canonical_blades``) raises ``ValueError`` on a non-canonical
-#:   key (``(2, 1)``, duplicates) -- it is NOT read as a signed permutation.
-#: - **Readers omit exact-zero coefficients** and a missing blade reads as 0
-#:   (``.get(blade, 0)``).  The eager/lazy split shows here: ``Gn`` simplifies
-#:   a hidden zero away; the lazy classes prune only a structural ``0``.
-#: - **A graded type's ``from_blade_dict`` keeps ONLY its own blades** --
-#:   foreign keys are silently dropped, so a result carrying a new grade must
-#:   be built via dispatching arithmetic (``Bivector + scalar -> Versor``),
-#:   never via ``from_blade_dict`` on the operand's type (see ``exp``).
-BladeReal = dict[Blade, Real]
 
 #: A substitution handed to :meth:`MultiVectorBase.symbolically_equal` -- the relations
 # sympy
@@ -148,7 +131,9 @@ def blade_latex(blade: Blade, symbols: Mapping[Blade, str] | None = None) -> str
     )
 
 
-def blade_dict_latex(d: BladeReal, symbols: Mapping[Blade, str] | None = None) -> str:
+def blade_dict_latex(
+    d: Mapping[Blade, Real], symbols: Mapping[Blade, str] | None = None
+) -> str:
     r"""Render a blade -> coefficient dict as a LaTeX string (the body of
     ``_repr_latex_``, factored out so callers can render a chosen *view*).
 
@@ -258,13 +243,35 @@ class MultiVectorBase(abc.ABC):
 
     Concrete representations (Gn, and later G) implement a tiny interchange
     protocol -- ``from_blade_dict`` / ``to_blade_dict`` -- plus the core
-    ``_geometric_product``.  The blade dict (``BladeReal``, documented at its
-    definition above) is **the canonical interchange representation**: every
-    type converts through it, and all the shared arithmetic below routes
-    through it.  Every representation-independent method here is
-    written against that protocol, constructing results of the caller's own
-    concrete type via ``type(self)``.  This is the abstraction boundary: only
-    methods that touch the raw representation are reimplemented per subclass.
+    ``_geometric_product``.  The blade dict (``Mapping[Blade, Real]``) is **the
+    canonical interchange representation**: every type converts through it, and
+    all the shared arithmetic below routes through it.  Every
+    representation-independent method here is written against that protocol,
+    constructing results of the caller's own concrete type via ``type(self)``.
+    This is the abstraction boundary: only methods that touch the raw
+    representation are reimplemented per subclass.
+
+    The blade-dict contract (pinned by tests/test_blade_dict.py):
+
+    - **It is read-only**: a ``Mapping``, so a ``dict`` and a ``frozendict``
+      both satisfy it.  ``Gn.to_blade_dict`` returns its stored
+      ``frozendict``, which raises ``TypeError`` on a write; a caller that
+      wants to edit one copies it with ``dict(...)``.  Code that builds a
+      blade dict by writing into it types it ``dict[Blade, Real]``.
+    - **Keys are canonical**: strictly increasing index tuples; ``()`` is
+      the scalar blade.  ``from_blade_dict`` (every representation, via
+      ``_require_canonical_blades``) raises ``ValueError`` on a
+      non-canonical key (``(2, 1)``, duplicates) -- it is NOT read as a
+      signed permutation.
+    - **Readers omit exact-zero coefficients** and a missing blade reads as
+      0 (``.get(blade, 0)``).  The eager/lazy split shows here: ``Gn``
+      simplifies a hidden zero away; the lazy classes prune only a
+      structural ``0``.
+    - **A graded type's ``from_blade_dict`` keeps ONLY its own blades** --
+      foreign keys are silently dropped, so a result carrying a new grade
+      must be built via dispatching arithmetic (``Bivector + scalar ->
+      Versor``), never via ``from_blade_dict`` on the operand's type (see
+      ``exp``).
     """
 
     # No instance state of its own; empty slots so slotted subclasses (Gn,
@@ -282,7 +289,7 @@ class MultiVectorBase(abc.ABC):
 
         Args:
             blade_coef: a canonical blade -> coefficient mapping (keys are
-                strictly-increasing index tuples; see ``BladeReal``).
+                strictly-increasing index tuples; see ``MultiVectorBase``).
 
         Returns:
             Self: an instance of this concrete representation holding those
@@ -294,12 +301,14 @@ class MultiVectorBase(abc.ABC):
         """
 
     @abc.abstractmethod
-    def to_blade_dict(self) -> BladeReal:
+    def to_blade_dict(self) -> Mapping[Blade, Real]:
         """Return this multivector as a canonical blade -> coefficient mapping.
 
+        The contract the mapping meets is in the ``MultiVectorBase`` docstring.
+
         Returns:
-            BladeReal: the blade -> coefficient interchange dict (canonical keys,
-            exact-zero coefficients omitted).
+            Mapping[Blade, Real]: the read-only blade -> coefficient interchange
+            mapping (canonical keys, exact-zero coefficients omitted).
         """
 
     @classmethod
@@ -588,8 +597,8 @@ class MultiVectorBase(abc.ABC):
         # every representation.
         if isinstance(rhs, (int, float, sympy.Expr)):
             rhs = type(self).from_blade_dict({(): rhs})
-        left: BladeReal = self.to_blade_dict()
-        right: BladeReal = rhs.to_blade_dict()
+        left: Mapping[Blade, Real] = self.to_blade_dict()
+        right: Mapping[Blade, Real] = rhs.to_blade_dict()
         return type(self).from_blade_dict(
             {
                 blade: (left.get(blade, 0) + right.get(blade, 0))
@@ -705,7 +714,7 @@ class MultiVectorBase(abc.ABC):
         Yields:
             Real: each coefficient value, in grade-then-index blade order.
         """
-        d: BladeReal = self.to_blade_dict()
+        d: Mapping[Blade, Real] = self.to_blade_dict()
         yield from (d[key] for key in sorted(d.keys(), key=lambda b: (len(b), b)))
 
     def magnitude(self) -> Real:
@@ -1147,7 +1156,7 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: the grade-``r`` part of A (zero if A has no grade-``r`` blades).
         """
-        d: BladeReal = self.to_blade_dict()
+        d: Mapping[Blade, Real] = self.to_blade_dict()
         return type(self).from_blade_dict(
             {blade: d[blade] for blade in d.keys() if len(blade) == r}
         )
@@ -2524,8 +2533,8 @@ class MultiVectorBase(abc.ABC):
             ... )
             True
         """
-        left: BladeReal = self.to_blade_dict()
-        right: BladeReal = other.to_blade_dict()
+        left: Mapping[Blade, Real] = self.to_blade_dict()
+        right: Mapping[Blade, Real] = other.to_blade_dict()
         blade: tuple[int, ...]
         for blade in set(left) | set(right):
             left_coef: Real = left.get(blade, 0)
@@ -2569,8 +2578,8 @@ class MultiVectorBase(abc.ABC):
             TypeError: if any coefficient is symbolic (non-numeric) — use ``==``
                 for exact/symbolic equality.
         """
-        left: BladeReal = self.to_blade_dict()
-        right: BladeReal = other.to_blade_dict()
+        left: Mapping[Blade, Real] = self.to_blade_dict()
+        right: Mapping[Blade, Real] = other.to_blade_dict()
         # ``blade`` is a genexpr var (separate scope) so it stays inferred.
         return all(
             math.isclose(
@@ -2716,8 +2725,8 @@ def _reciprocal(x: Real) -> Real:
 
 
 def _require_canonical_blades(blade_coef: Mapping[Blade, object]) -> None:
-    """Raise ``ValueError`` on a non-canonical blade key (see ``BladeReal``).
-    Only the keys are read, so any blade-keyed mapping qualifies (a ``BladeReal``,
+    """Raise ``ValueError`` on a non-canonical blade key (see ``MultiVectorBase``).
+    Only the keys are read, so any blade-keyed mapping qualifies (a blade dict,
     or ``set_blade_symbols``'s blade -> LaTeX-string map).
 
     A canonical key's indices are strictly increasing (``(1, 2)``, never

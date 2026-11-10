@@ -21,6 +21,7 @@ the specialized classes do not eagerly simplify.
 """
 
 import importlib
+from collections.abc import Mapping
 from itertools import chain, combinations
 from types import ModuleType
 
@@ -31,7 +32,7 @@ import gacalc.g1 as g1
 import gacalc.g2 as g2
 import gacalc.g3 as g3
 import gacalc.gn as gn
-from gacalc.base import Blade, BladeReal, MultiVectorBase, Real
+from gacalc.base import Blade, MultiVectorBase, Real
 from gacalc.gn import Gn
 from gacalc.transforms import projection_rotation
 
@@ -288,7 +289,7 @@ def test_coefficient_readback(n: int, cls: type[MultiVectorBase]) -> None:
     # coefficient * blade over the basis reconstructs the value (decomposition)
     g: Gn = full(n, 0)
     x: MultiVectorBase = to(cls, g)
-    coefs: BladeReal = g.to_blade_dict()
+    coefs: Mapping[Blade, Real] = g.to_blade_dict()
     recon: MultiVectorBase = cls.zero()
     b: Blade
     for b in blades(n):

@@ -12,6 +12,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`frame.require_frame(vectors, context, float_close_to_zero=False)`** — the shared "must be a
+  frame" guard: raises `ValueError` naming `context` on an empty sequence, a non-vector, or
+  linearly dependent vectors. `make_orthogonal_frame`, its two Hestenes variants and
+  `reciprocal_frame` raise through it; an empty input now gets the "needs at least one vector"
+  message, and `reciprocal_frame`'s message says `a_k` instead of `a_n`.
 - **`transforms.line_to_line_projection(from_vector=, to_vector=, *, float_close_to_zero=False)`** — the
   projection onto the line of `to_vector`, restricted to the line of `from_vector`, as an
   `InvertibleFunction`; each direction raises `ValueError` on input off its line, and perpendicular lines
@@ -38,15 +43,16 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   zero vector). Raises `ValueError` on a non-vector. Works on every representation; `measure` and
   `vectorcalc` now use it for `Gn`'s implied dimension in place of their private helper. Additive,
   non-breaking.
-- **`gacalc.frame.Frame`** — a frozen dataclass built from a frame's vectors (`Frame([v_1, …, v_k])`;
-  `ValueError` on a non-frame). It stores the original `vectors` (yielded by `iter(frame)`) and their
-  orthogonal set `orthogonal_vectors` (`w_j`, by rejection). `coefficients()` computes the triangular
+- **`gacalc.frame.Frame`** — a frozen dataclass built from a tuple of a frame's vectors
+  (`Frame((v_1, …, v_k))`; `TypeError` on a non-tuple, `ValueError` on a non-frame). It stores the
+  original `vectors` (yielded by `iter(frame)`); `orthogonal_vectors()` computes their orthogonal set
+  (`w_j`, by rejection). `coefficients()` computes the triangular
   table `coefficients()[i][j] = (w_j · v_i) / |w_j|²`, so `v_i = Σ_j coefficients()[i][j] * w_j` (the QR
   decomposition with the lengths factored out; `tasks/reference/frames-qr-and-reciprocal-frames.md`);
   `orthonormal_vectors()` gives the `u_j`; and `to_invertible_function()` returns a `LINEAR`
-  `InvertibleFunction` sending `e_i ↦ v_i`, inverted by peeling the frame from its last vector
-  (`x_k = (w_k · y) / |w_k|²`, subtract `x_k * v_k`, repeat; raises `ValueError` unless the frame spans
-  the space). The map and its inverse take vectors only and raise `ValueError` on any other grade.
+  `InvertibleFunction` sending `e_i ↦ v_i`, inverted through the reciprocal frame by default or by
+  peeling the frame from its last vector (the `inverse_method` entry above; raises `ValueError` unless
+  the frame spans the space). The map and its inverse take vectors only and raise `ValueError` on any other grade.
   Additive, non-breaking.
 - **`gacalc.frame.prefix_blades(vectors)`** — the prefix outer products of a frame, `A_0 = 1`,
   `A_k = v_1 ∧ … ∧ v_k` (Hestenes & Sobczyk p. 27, eq 3.1), lifted from a private closure inside
@@ -85,6 +91,12 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **BREAKING — Python 3.15 or later is required** (`requires-python = ">=3.15"`, was `>=3.13`).
+  `Gn` stores its coefficients in the built-in `frozendict` (PEP 814), new in 3.15.
+- **BREAKING — `Gn.to_blade_dict()` returns an immutable `frozendict`**, the mapping `Gn` stores,
+  instead of a `dict`. Writing into it raises `TypeError`; copy it with `dict(...)` to edit one.
+  Every `to_blade_dict()` returns the read-only `Mapping[Blade, Real]` (a `dict` still satisfies
+  it, and the specialized classes still return a fresh `dict`).
 - **`uniform_scale(m)` and `scale_non_uniform(*factors)` annotate their factors as `Real`** (was
   `float`), matching the symbolic factors they already accepted at runtime. No behavior change.
 - **`unit_pseudoscalar`, `bases` and `symbolic_multivector` raise `ValueError` on a graded type that
@@ -107,12 +119,14 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   names the caller. Migrate: catch `ValueError` instead of `TypeError`/`AssertionError`. Unchanged:
   `g2.rotate_90_degrees` and `bivector_rotation` still raise `TypeError` (a type check and a bivector
   check, respectively).
-- **BREAKING — `Coef` → `Real`, `BladeCoef` → `BladeReal`, `from_scalar`/`from_coef` → `from_real`.** The
+- **BREAKING — `Coef` → `Real`, `BladeCoef` removed, `from_scalar`/`from_coef` → `from_real`.** The
   Python real number (`int | float | sympy.Expr`) that goes into the algebra and comes back out of every
   extraction is now named `Real`; the one constructor `from_real(real)` lifts any real, numeric or
   symbolic, into the grade-0 element (`from_coef` is gone). The grade-0 *class* stays `Scalar`, its field
   `coeff_scalar`, and `scalar_part`/`scalar_product`/`is_scalar`/`pseudoscalar` keep the literature's
-  word. Migration: rename the imports and the two constructors; nothing else changes. Rationale and
+  word. The blade-dict alias `BladeCoef` is gone with no replacement alias: write
+  `Mapping[Blade, Real]` (`Mapping` from `collections.abc`, `Blade` and `Real` from `gacalc.base`).
+  Migration: rename the imports and the two constructors; nothing else changes. Rationale and
   the full keep/rename map: `tasks/reference/scalar-vs-real-naming.md`.
 - **`MultiVectorBase.inverse` now rejects a general mixed-grade multivector.** The formula
   `A⁻¹ = Ã/|A|²` is a correct inverse only when `Ã A` is a scalar — i.e. for a **blade** (a
@@ -173,8 +187,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `tasks/reference/type-annotation-exemptions.md`.
 
 ### Fixed
-- **`Gn.to_blade_dict()` returns a copy.** Changing the returned dict no longer changes the value
-  it came from, or a shared constant such as `gn.e_1`.
+- **A caller can no longer corrupt a `Gn` through `to_blade_dict()`.** Writing into the returned
+  dict changed the value it came from, or a shared constant such as `gn.e_1`; the mapping is now
+  immutable (see Changed).
 - **`gacalc.frame.prefix_blades` on the graded types** (`g2`/`g3`/… `Vector`) returned all-zero blades:
   it seeded the wedge with `type(v).one()`, and a graded `Vector` type has no scalar slot, so that is the
   zero vector. It now seeds with the scalar 1 of the algebra (`Scalar_n.one()`). This also fixes

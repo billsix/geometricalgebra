@@ -23,7 +23,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `Linearity`, `NotInvertibleError`, `compose`/`inverse`/`identity`. **Imports nothing internal**
   (unbounded `TypeVar`) — the one module `base` is allowed to import.
 - `src/gacalc/base.py` — `MultiVectorBase` (the abstract base) + the type aliases `Blade`,
-  `BladeReal`, `MultiVectorFn`. Imports only the `functions` leaf.
+  `Real`, `MultiVectorFn`. Imports only the `functions` leaf.
 - `src/gacalc/gn.py` — `Gn`, the general dimension-agnostic representation, plus the
   `e_1..e_10` / `zero` / `one` constants, the symbolic vectors (`sym_vec2_1`, …), and the
   `MultiVector = Gn` alias.
@@ -40,9 +40,9 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `reverse(A_{k-1}) * A_k`, equal to rejection up to the positive scalar `|A_{k-1}|²`), and
   `make_orthogonal_frame_hestenes_inverse` (same closed form with `inverse` for `reverse`, so the
   scalar cancels and it equals rejection **exactly**). See `tasks/define-frame.md`.
-  Also the **`Frame`** dataclass: the original `vectors` (what `iter()` yields) + their
-  orthogonal set `w_j` (orthogonal, not orthonormal, so symbolic 3D stays sqrt-free and
-  decidable); `coefficients()` computes the triangular `(w_j · v_i) / |w_j|²` table (QR with the
+  Also the **`Frame`** dataclass: built from a **tuple** of vectors, stored as `vectors` (what
+  `iter()` yields); `orthogonal_vectors()` computes their orthogonal set `w_j` (orthogonal, not
+  orthonormal, so symbolic 3D stays sqrt-free and decidable); `coefficients()` computes the triangular `(w_j · v_i) / |w_j|²` table (QR with the
   lengths factored out) as projections read with `transforms.coordinate_along`;
   `to_invertible_function(inverse_method="reciprocal" | "peel")` maps `e_i ↦ v_i` and inverts it
   either through the reciprocal frame (`reciprocal_frame`, H&S eq 3.7; the default) or by a `match`
@@ -166,6 +166,8 @@ and call `self * other`, dispatched to the concrete type.
   context)` / `require_vectors(values, context)` (`base.py`), which raise `ValueError` naming the
   caller. Never a bare `assert` (gone under `python -O`), a hand-rolled `is_vector()` loop, or a
   `TypeError` (reserved for a genuine `isinstance` type check, like `g2.rotate_90_degrees`).
+  "Must be a frame" has its own guard, `require_frame(vectors, context)` (`frame.py`): it requires
+  vectors and then their independence. Never hand-roll an `if not is_frame(...): raise`.
 - **Express rotations via the factories, never hand-built** — `plane_rotation(a, b)(θ)` (plane +
   angle), `projection_rotation`/`versor_rotation`/`versor_from_vectors` (from/to, keyword args), or
   the 𝒢₂ `rotate_90_degrees()` for quarter turns. A versor built by trigonometry as a data literal

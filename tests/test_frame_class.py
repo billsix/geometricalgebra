@@ -65,7 +65,7 @@ x_2d: Gn = general_vector("x", 2)
 
 @pytest.fixture(scope="module")
 def frame_2d() -> Frame:
-    return Frame([a_2d, b_2d])
+    return Frame((a_2d, b_2d))
 
 
 a_3d: Gn = general_vector("a", 3)
@@ -76,7 +76,7 @@ x_3d: Gn = general_vector("x", 3)
 
 @pytest.fixture(scope="module")
 def frame_3d() -> Frame:
-    return Frame([a_3d, b_3d, c_3d])
+    return Frame((a_3d, b_3d, c_3d))
 
 
 # The map of each general frame under each inverse method, built once per module (the
@@ -131,7 +131,7 @@ def test_orthogonal_vectors_are_mutually_orthogonal(
     frame_name: str, request: pytest.FixtureRequest
 ) -> None:
     frame: Frame = request.getfixturevalue(frame_name)
-    w_list: tuple[MultiVectorBase, ...] = frame.orthogonal_vectors
+    w_list: tuple[MultiVectorBase, ...] = frame.orthogonal_vectors()
     assert all(
         is_zero(w_list[i].dot(w_list[j]).scalar_part())
         for i in range(len(w_list))
@@ -168,9 +168,10 @@ def test_coefficients_rebuild_the_vectors(
     coefficients: tuple[tuple[Real, ...], ...] = request.getfixturevalue(
         f"{frame_name}_coefficients"
     )
+    orthogonal_vectors: tuple[MultiVectorBase, ...] = frame.orthogonal_vectors()
     rebuilt: list[MultiVectorBase] = [
         sum(
-            (c * w for c, w in zip(row, frame.orthogonal_vectors, strict=True)),
+            (c * w for c, w in zip(row, orthogonal_vectors, strict=True)),
             start=Gn.zero(),
         )
         for row in coefficients
@@ -204,15 +205,16 @@ def test_squared_lengths_are_ratios_of_span_volumes(
     so the product of the ``|w_i|²`` is the squared volume ``|v_1 ∧ … ∧ v_k|²``."""
     frame: Frame = request.getfixturevalue(frame_name)
     A_list: list[MultiVectorBase] = list(prefix_blades(vectors))
+    orthogonal_vectors: tuple[MultiVectorBase, ...] = frame.orthogonal_vectors()
     assert all(
         is_zero(
             w.magnitude_squared() * A_list[i].magnitude_squared()
             - A_list[i + 1].magnitude_squared()
         )
-        for i, w in enumerate(frame.orthogonal_vectors)
+        for i, w in enumerate(orthogonal_vectors)
     )
     assert is_zero(
-        math.prod(w.magnitude_squared() for w in frame.orthogonal_vectors)
+        math.prod(w.magnitude_squared() for w in orthogonal_vectors)
         - A_list[-1].magnitude_squared()
     )
 
@@ -225,29 +227,39 @@ def test_orthonormal_vectors_2d_symbolic(frame_2d: Frame) -> None:
 
 def test_concrete_oblique_frames_on_graded_types() -> None:
     """The graded ``g2.Vector`` / ``g3.Vector`` types, exact integer input."""
-    vectors_2d: list[g2.Vector] = [2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2]
+    vectors_2d: tuple[g2.Vector, ...] = (
+        2 * g2.e_1 + 0 * g2.e_2,
+        1 * g2.e_1 + 3 * g2.e_2,
+    )
     frame_2d: Frame = Frame(vectors_2d)
-    assert frame_2d.orthogonal_vectors == (
+    assert frame_2d.orthogonal_vectors() == (
         2 * g2.e_1 + 0 * g2.e_2,
         0 * g2.e_1 + 3 * g2.e_2,
     )
     assert frame_2d.coefficients() == ((1, 0), (sympy.Rational(1, 2), 1))
-    assert list(frame_2d) == vectors_2d
-    vectors_3d: list[g3.Vector] = [
+    assert tuple(frame_2d) == vectors_2d
+    vectors_3d: tuple[g3.Vector, ...] = (
         2 * g3.e_1 + 0 * g3.e_2 + 1 * g3.e_3,
         1 * g3.e_1 + 3 * g3.e_2 + 0 * g3.e_3,
         1 * g3.e_1 + 1 * g3.e_2 + 4 * g3.e_3,
-    ]
-    assert list(Frame(vectors_3d)) == vectors_3d
+    )
+    assert tuple(Frame(vectors_3d)) == vectors_3d
 
 
 def test_non_frame_raises() -> None:
     with pytest.raises(ValueError):
-        Frame([1 * e_1, 2 * e_1])  # parallel
+        Frame((1 * e_1, 2 * e_1))  # parallel
     with pytest.raises(ValueError):
-        Frame([1 * e_1, 1 * e_2, 1 * e_1 + 1 * e_2])  # third in the span
+        Frame((1 * e_1, 1 * e_2, 1 * e_1 + 1 * e_2))  # third in the span
     with pytest.raises(ValueError):
-        Frame([])
+        Frame(())
+
+
+def test_non_tuple_raises() -> None:
+    """``Frame`` takes a tuple; a list (which its caller could still change) is
+    rejected at run time for untyped callers."""
+    with pytest.raises(TypeError, match="tuple"):
+        Frame([1 * e_1, 1 * e_2])  # ty: ignore[invalid-argument-type]
 
 
 # --- to_invertible_function --------------------------------------------------
@@ -302,17 +314,17 @@ x_1: sympy.Symbol
 x_2: sympy.Symbol
 x_3: sympy.Symbol
 x_1, x_2, x_3 = sympy.symbols("x_1 x_2 x_3")
-GRADED_FRAMES_AND_INPUTS: list[tuple[list[MultiVectorBase], MultiVectorBase]] = [
+GRADED_FRAMES_AND_INPUTS: list[tuple[tuple[MultiVectorBase, ...], MultiVectorBase]] = [
     (
-        [2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2],
+        (2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2),
         x_1 * g2.e_1 + x_2 * g2.e_2,
     ),
     (
-        [
+        (
             2 * g3.e_1 + 0 * g3.e_2 + 1 * g3.e_3,
             1 * g3.e_1 + 3 * g3.e_2 + 0 * g3.e_3,
             1 * g3.e_1 + 1 * g3.e_2 + 4 * g3.e_3,
-        ],
+        ),
         x_1 * g3.e_1 + x_2 * g3.e_2 + x_3 * g3.e_3,
     ),
 ]
@@ -322,7 +334,7 @@ GRADED_FRAMES_AND_INPUTS: list[tuple[list[MultiVectorBase], MultiVectorBase]] = 
 @pytest.mark.parametrize("inverse_method", INVERSE_METHODS)
 @pytest.mark.parametrize(("vectors", "x"), GRADED_FRAMES_AND_INPUTS, ids=["g2", "g3"])
 def test_composed_round_trip_concrete_frames_symbolic_input(
-    vectors: Sequence[MultiVectorBase],
+    vectors: tuple[MultiVectorBase, ...],
     x: MultiVectorBase,
     inverse_method: Literal["reciprocal", "peel"],
 ) -> None:
@@ -340,11 +352,11 @@ def test_round_trip_numeric_float(
 ) -> None:
     """Float input: equal up to rounding (inexactness accepted, 2026-11-04)."""
     f: InvertibleFunction[MultiVectorBase] = Frame(
-        [
+        (
             2.0 * g3.e_1 + 0.5 * g3.e_2 + 1.0 * g3.e_3,
             1.0 * g3.e_1 + 3.0 * g3.e_2 + 0.0 * g3.e_3,
             1.0 * g3.e_1 + 1.0 * g3.e_2 + 4.0 * g3.e_3,
-        ]
+        )
     ).to_invertible_function(inverse_method=inverse_method)
     x: g3.Vector = 0.3 * g3.e_1 - 1.7 * g3.e_2 + 2.2 * g3.e_3
     assert inverse(f)(f(x)).isclose(x, abs_tol=1e-12)
@@ -400,7 +412,7 @@ def test_reciprocal_is_the_default_inverse_method() -> None:
 
 
 def test_unknown_inverse_method_raises() -> None:
-    frame: Frame = Frame([2 * e_1, 1 * e_1 + 3 * e_2])
+    frame: Frame = Frame((2 * e_1, 1 * e_1 + 3 * e_2))
     with pytest.raises(ValueError, match="inverse_method"):
         frame.to_invertible_function(inverse_method="gauss")  # ty: ignore[invalid-argument-type]
 
@@ -408,16 +420,16 @@ def test_unknown_inverse_method_raises() -> None:
 def test_frame_smaller_than_space_raises() -> None:
     """``k < n``: the forward map would drop components, so no inverse."""
     with pytest.raises(ValueError):
-        Frame([1 * g3.e_1 + 0 * g3.e_2 + 0 * g3.e_3]).to_invertible_function()
+        Frame((1 * g3.e_1 + 0 * g3.e_2 + 0 * g3.e_3,)).to_invertible_function()
     with pytest.raises(ValueError):
-        Frame([1 * e_1, 1 * e_3]).to_invertible_function()  # Gn: highest index is 3
+        Frame((1 * e_1, 1 * e_3)).to_invertible_function()  # Gn: highest index is 3
 
 
 def test_map_rejects_a_non_vector() -> None:
     """The frame's map and its inverse are defined on vectors only: a bivector or a
     scalar raises ``ValueError`` in either direction."""
     f: InvertibleFunction[MultiVectorBase] = Frame(
-        [2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2]
+        (2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2)
     ).to_invertible_function()
     non_vector: MultiVectorBase
     for non_vector in (g2.e_1 ^ g2.e_2, g2.G.from_real(3)):

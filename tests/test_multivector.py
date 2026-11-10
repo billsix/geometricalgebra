@@ -14,13 +14,14 @@
 
 import itertools
 import unittest.mock
+from collections.abc import Mapping
 
 import pytest
 import sympy
 
 import gacalc.g2 as g2
 import gacalc.g3 as g3
-from gacalc.base import BladeReal, MultiVectorBase, Real
+from gacalc.base import Blade, MultiVectorBase, Real
 from gacalc.gn import (
     MultiVector,
     a_1,
@@ -437,9 +438,11 @@ def test_division_by_zero_raises(zero: Real) -> None:
         (1 * g2.e_1) / zero
 
 
-def test_to_blade_dict_is_a_copy() -> None:
-    # Changing the returned mapping must not change the value it came from (or a
-    # shared constant like e_1).
-    blades: BladeReal = e_1.to_blade_dict()
-    blades[(2,)] = 5
+def test_to_blade_dict_is_immutable() -> None:
+    # Gn hands out its stored frozendict: a write into it raises, so it can't
+    # change the value it came from (or a shared constant like e_1).
+    blades: Mapping[Blade, Real] = e_1.to_blade_dict()
+    with pytest.raises(TypeError):
+        # the write ty rejects (a Mapping is read-only) is the one under test
+        blades[(2,)] = 5  # ty: ignore[invalid-assignment]
     assert e_1.to_blade_dict() == {(1,): 1}

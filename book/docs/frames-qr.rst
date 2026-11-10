@@ -24,7 +24,7 @@ Frames and QR
    ``tasks/reference/frames-qr-and-reciprocal-frames.md``.
 
 A frame is a set of linearly independent vectors. gacalc's ``Frame`` keeps the vectors as
-given and builds an orthogonal set beside them, which turns the frame's linear map into
+given and computes an orthogonal set from them, which turns the frame's linear map into
 something that can be undone one coordinate at a time.
 
 .. toctree::

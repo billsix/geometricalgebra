@@ -1,5 +1,0 @@
-tools/bench.py:38:SPECIALIZED: dict[int, type[MultiVectorBase]] = {1: g1.G, 2: g2.G, 3: g3.G}
-tools/check_epix_keywords.py:40:KNOWN: dict[tuple[str, str], Names] = {
-tools/gen_specialized.py:393:DOCSTRINGS: dict[int, str] = {
-tools/gen_specialized.py:775:CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
-tools/gen_specialized.py:3081:GRADE_NAMES: dict[int, str] = {

@@ -124,7 +124,7 @@ expression to the multivector, so the declarations stay everywhere `ty` checks: 
 
 ## What is NOT an exemption
 
-Type aliases (`Real`, `Blade`, `BladeReal`, `MultiVectorFn`, `MultiVector = Gn`), `TypeVar`
+Type aliases (`Real`, `Blade`, `MultiVectorFn`, `MultiVector = Gn`), `TypeVar`
 definitions, `Enum` members, and `_` discards are not annotation candidates at all —
 annotating one changes what it means. They are excluded from the audit rather than
 exempted from it.

@@ -26,7 +26,7 @@ import contextlib
 import contextvars
 import itertools
 import math
-from collections.abc import Generator, Sequence
+from collections.abc import Generator, Mapping, Sequence
 from typing import Any
 
 import matplotlib
@@ -44,7 +44,6 @@ from matplotlib_inline.backend_inline import set_matplotlib_formats
 
 from gacalc.base import (
     Blade,
-    BladeReal,
     MultiVectorBase,
     Real,
     blade_dict_latex,
@@ -554,7 +553,7 @@ def _coef_as_float(coef: Real) -> float | None:
     """``coef`` as a ``float``, or ``None`` when it is symbolic (not convertible)."""
     try:
         return float(coef)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None
 
 
@@ -578,7 +577,7 @@ def plot_multivector(
     ``random_seed`` defaults to 0 for reproducibility — pass ``None`` for
     fresh randomness on every call.
     """
-    blade_dict: BladeReal = mv.to_blade_dict()
+    blade_dict: Mapping[Blade, Real] = mv.to_blade_dict()
     blades: list[Blade] = sorted(blade_dict.keys(), key=lambda b: (len(b), b)) or [()]
     n: int = len(blades)
 
@@ -669,7 +668,7 @@ def _blade_terms(mv: MultiVectorBase) -> list[MultiVectorBase]:
     ]
 
 
-def _expand_numerators_dict(mv: MultiVectorBase) -> BladeReal:
+def _expand_numerators_dict(mv: MultiVectorBase) -> Mapping[Blade, Real]:
     """``mv``'s blade dict with each coefficient's NUMERATOR expanded and its
     denominator left factored — for display.
 
@@ -679,7 +678,7 @@ def _expand_numerators_dict(mv: MultiVectorBase) -> BladeReal:
     would re-factor the just-distributed numerator (e.g. back to ``a0*(b0*c0 + ...)``).
     Expanding the dict directly keeps the distributed form on every representation.
     """
-    out: BladeReal = {}
+    out: dict[Blade, Real] = {}
     blade: Blade
     coef: Real
     for blade, coef in mv.to_blade_dict().items():
