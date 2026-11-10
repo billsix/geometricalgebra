@@ -192,6 +192,10 @@ Method form: `(3 * e_1 + 4 * e_2).rotate_90_degrees()`, a generated closed form 
 so there is deliberately no general-dimension version; `plane_rotation` is the any-angle,
 any-plane tool.
 
+**Rotation by an angle in 𝒢₂** (0.1.0) is the book's blend of a vector and its quarter turn,
+`v.rotate(θ) == cos(θ) * v + sin(θ) * v.rotate_90_degrees()`: `(1 * e_1).rotate(sympy.pi / 2) ==
+1 * e_2`. A float angle gives floats; an int or sympy angle stays exact. 𝒢₂ only, for the same reason.
+
 **Compile-once matrix templates** (0.0.20): build a transform over sympy symbols once, then
 get its homogeneous `np.float32` matrix per call by filling in numbers — a copy plus a few
 assignments, no basis probing. A game's per-sprite model matrix is the motivating case:

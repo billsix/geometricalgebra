@@ -173,7 +173,8 @@ and call `self * other`, dispatched to the concrete type.
   vectors and then their independence. Never hand-roll an `if not is_frame(...): raise`.
 - **Express rotations via the factories, never hand-built** — `plane_rotation(a, b)(θ)` (plane +
   angle), `projection_rotation`/`versor_rotation`/`versor_from_vectors` (from/to, keyword args), or
-  the 𝒢₂ `rotate_90_degrees()` for quarter turns. A versor built by trigonometry as a data literal
+  the 𝒢₂ `rotate_90_degrees()` for quarter turns (and `g2.Vector.rotate(θ)` for a 𝒢₂ turn by an
+  angle). A versor built by trigonometry as a data literal
   is treated as a regression.
 - **`magnitude`/`inverse` preserve numeric input** — float-in → float-out; int routes through
   sympy for exactness; symbolic stays symbolic. Don't reintroduce an unconditional
