@@ -11,10 +11,23 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+## [0.1.0] — 2026-11-10
+
 ### Added
-- **`frame.require_frame(vectors, context, float_close_to_zero=False)`** — the shared "must be a
-  frame" guard: raises `ValueError` naming `context` on an empty sequence, a non-vector, or
-  linearly dependent vectors. `make_orthogonal_frame`, its two Hestenes variants and
+- **`g2.Vector.rotate(angle_in_radians)`** — rotation by an angle in 𝒢₂, written as the book's
+  `cos(θ) * v + sin(θ) * v.rotate_90_degrees()`. A float angle gives floats; an int or `sympy`
+  angle stays exact. 𝒢₂ only, like `rotate_90_degrees`; `plane_rotation(a, b)(θ)` stays the rotor
+  for any plane. (Restores, 𝒢₂-only, the planar `transforms.rotate(angle)` removed in `2081e18`.)
+- **Validation guards for matrices and frames** — `transforms.require_linear_or_affine(fn)`,
+  `transforms.require_dimension(cls, n) -> int`, `transforms.require_distinct_params(params)`,
+  `transforms.require_params_cover(matrix, params)` and `frame.require_spanning_frame(vectors)`.
+  `to_matrix`, `to_matrix_template` and `Frame.to_invertible_function` (and the
+  `ComposableFunction.to_matrix`/`.to_matrix_template` methods that forward to them) open with these
+  one-line guards. Same `ValueError`s as before, but each message now starts with the calling function
+  and call site.
+- **`frame.require_frame(vectors, float_close_to_zero=False)`** — the shared "must be a
+  frame" guard: raises `ValueError` naming the calling function and its call site (read from the
+  Python stack) on an empty sequence, a non-vector, or linearly dependent vectors. `make_orthogonal_frame`, its two Hestenes variants and
   `reciprocal_frame` raise through it; an empty input now gets the "needs at least one vector"
   message, and `reciprocal_frame`'s message says `a_k` instead of `a_n`.
 - **`transforms.line_to_line_projection(from_vector=, to_vector=, *, float_close_to_zero=False)`** — the
@@ -35,9 +48,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `a^k · a_j = δ^k_j` (eq 3.5). Returns a list, `result[k - 1] = a^k`; raises `ValueError` on a non-frame.
   **`Frame.reciprocal_vectors()`** returns the same as a tuple, and **`all_wedged_except_the_kth(vectors, k)`**
   is the eq-3.7 face `a_1 ∧ … ∧ ǎ_k ∧ … ∧ a_n` (k from 1). Additive, non-breaking.
-- **`MultiVectorBase.require_vector(value, context)` / `require_vectors(vectors, context)`** — the
-  shared "must be a vector (grade 1)" checks, raising `ValueError` (see the BREAKING entry under
-  Changed). They replace the private `measure._require_vectors`.
+- **`MultiVectorBase.require_vector(value)` / `require_vectors(vectors)`** — the
+  shared "must be a vector (grade 1)" checks, raising `ValueError` that names the calling function
+  and its call site, read from the Python stack (see the BREAKING entry under Changed). Also
+  **`base.validation_guard`** (marks a guard so a guard calling a guard still names the real
+  caller) and **`base.describe_caller()`**. They replace the private `measure._require_vectors`.
 - **`MultiVectorBase.implied_minimal_number_of_dimensions()`** — the dimension of the smallest
   coordinate space holding a vector: its highest basis index with a nonzero coefficient (0 for the
   zero vector). Raises `ValueError` on a non-vector. Works on every representation; `measure` and
@@ -91,6 +106,24 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **Rotations from the zero vector.** `transforms.projection_rotation`, `transforms.versor_rotation`,
+  `versor_from_vectors` and `rotor_from_vectors` now treat zero → zero as the identity (versor `1`)
+  and raise `ValueError` from zero to a nonzero vector or back (the new guard
+  `MultiVectorBase.require_rotation_endpoints`). Before, all of them failed on a zero vector
+  (`ValueError` "opposite directions", `ZeroDivisionError`, or a zero versor).
+- **BREAKING — option parameters are enums; strings are rejected with `TypeError`.**
+  `Frame.to_invertible_function(inverse_method=...)` takes `frame.InverseMethod.RECIPROCAL` (the
+  default) or `InverseMethod.PEEL`, not `"reciprocal"`/`"peel"`. `transforms.to_matrix(...,
+  backend=...)` and `ComposableFunction.to_matrix(..., backend=...)` take
+  `functions.MatrixBackend.NUMPY` (the default) or `MatrixBackend.SYMPY` (also re-exported from
+  `gacalc.transforms`), not `"numpy"`/`"sympy"`. Migrate: `backend="sympy"` →
+  `backend=MatrixBackend.SYMPY`, `inverse_method="peel"` → `inverse_method=InverseMethod.PEEL`.
+- **BREAKING — a graded type with no scalar slot returns its algebra's `Scalar` from `one()`.**
+  `Vector.one()`, `Bivector.one()`, `Trivector.one()` and `Odd_3.one()` (g1–g3, and g4/g5 when
+  generated) used to return the zero value of their own type, because they cannot hold 1; they now
+  return the unit `Scalar`, typed `-> Scalar`. Migrate: code that relied on `Vector.one()` being a
+  `Vector` should use `Vector.zero()` or `Scalar.one()` as meant. The private helper
+  `frame._scalar_one` is gone; the frame folds seed with `type(v).one()`.
 - **BREAKING — Python 3.15 or later is required** (`requires-python = ">=3.15"`, was `>=3.13`).
   `Gn` stores its coefficients in the built-in `frozendict` (PEP 814), new in 3.15.
 - **BREAKING — `Gn.to_blade_dict()` returns an immutable `frozendict`**, the mapping `Gn` stores,
@@ -115,7 +148,7 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `is_parallel_to`, `versor_from_vectors`, `rotor_from_vectors` and `transforms.projection_rotation`
   used bare `assert`s (an `AssertionError`, and no check at all under `python -O`). All of them, and
   `measure`, `frame` and `vectorcalc.cross`, now go through the new shared checks
-  `MultiVectorBase.require_vector(value, context)` / `require_vectors(vectors, context)`, whose message
+  `MultiVectorBase.require_vector(value)` / `require_vectors(vectors)`, whose message
   names the caller. Migrate: catch `ValueError` instead of `TypeError`/`AssertionError`. Unchanged:
   `g2.rotate_90_degrees` and `bivector_rotation` still raise `TypeError` (a type check and a bivector
   check, respectively).

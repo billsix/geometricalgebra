@@ -61,6 +61,13 @@ class BladeDictionaryEntry(NamedTuple):
 
         Returns:
             Gn: a ``Gn`` carrying just this blade's coefficient.
+
+        Example:
+            >>> from gacalc.gn import e_1
+            >>> BladeDictionaryEntry(blade=(1,), coefficient=3).as_multivector() == (
+            ...     3 * e_1
+            ... )
+            True
         """
         return Gn(coefficient_of_blade=dict([(self.blade, self.coefficient)]))
 
@@ -87,6 +94,24 @@ class Gn(MultiVectorBase):
     derive those specialized closed forms -- so the fast paths are provably
     consistent with this reference.  See the module docstring of
     ``tools/gen_specialized.py`` for that pipeline.
+
+    Example:
+        Build elements from the basis constants.  A basis vector squares to ``1``,
+        and two different ones anticommute; their product is the plane ``e_1 ^ e_2``:
+
+        >>> from gacalc.gn import e_1, e_2, one
+        >>> e_1 * e_1 == one
+        True
+        >>> e_1 * e_2 == -1 * (e_2 * e_1)
+        True
+        >>> e_1 * e_2 == e_1 ^ e_2
+        True
+
+        Any basis index works, with no dimension fixed in advance:
+
+        >>> from gacalc.gn import e_7
+        >>> (1 * e_1 + 2 * e_7).to_blade_dict()
+        frozendict({(1,): 1, (7,): 2})
     """
 
     coefficient_of_blade: Mapping[Blade, Real]
@@ -129,6 +154,20 @@ class Gn(MultiVectorBase):
 
         Raises:
             ValueError: on a non-canonical blade key.
+
+        Examples:
+            A blade is a tuple of basis indices, so ``(1,)`` is ``e_1`` and
+            ``(1, 2)`` is ``e_1 ^ e_2``:
+
+            >>> from gacalc.gn import e_1, e_2
+            >>> Gn.from_blade_dict({(1,): 3}) == 3 * e_1
+            True
+            >>> Gn.from_blade_dict({(1,): 1, (1, 2): 2}) == 1 * e_1 + 2 * (e_1 ^ e_2)
+            True
+            >>> Gn.from_blade_dict({(2, 1): 1})  # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+            ...
+            ValueError: ...
         """
         _require_canonical_blades(blade_coef)
         return cls(coefficient_of_blade=dict(blade_coef))
@@ -150,13 +189,27 @@ class Gn(MultiVectorBase):
             Gn: the bivector ``a ∧ b`` (zero if ``a`` and ``b`` are parallel).
 
         Examples:
+            The unit square on ``e_1`` and ``e_2`` is the unit bivector, and scaling
+            the sides scales the area:
+
             >>> from gacalc.gn import e_1, e_2
+            >>> Gn.bivector_from_vectors(1 * e_1, 1 * e_2) == 1 * (e_1 ^ e_2)
+            True
             >>> biv = Gn.bivector_from_vectors(3 * e_1, 4 * e_2)
             >>> biv == 12 * (e_1 ^ e_2)      # the area bivector
             True
             >>> abs(biv) == 12               # magnitude = the parallelogram area
             True
             >>> Gn.bivector_from_vectors(e_1, 2 * e_1) == Gn.zero()  # parallel -> zero
+            True
+
+            General symbolic vectors give the 2-D determinant times ``e_1 ^ e_2``:
+
+            >>> import sympy
+            >>> a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
+            >>> Gn.bivector_from_vectors(
+            ...     a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2
+            ... ) == (a_1 * b_2 - a_2 * b_1) * (e_1 ^ e_2)
             True
 
         Raises:
@@ -185,6 +238,31 @@ class Gn(MultiVectorBase):
         Raises:
             ValueError: if ``a`` and ``b`` are parallel (their wedge is zero, so
                 they span no plane).
+
+        Examples:
+            The plane of ``e_1`` and ``e_2`` is ``e_1 ^ e_2``, whatever the lengths
+            of the two vectors; swapping them flips the orientation, and ``i``
+            squares to ``-1``:
+
+            >>> from gacalc.gn import e_1, e_2, one
+            >>> Gn.i(e_1, e_2) == 1 * (e_1 ^ e_2)
+            True
+            >>> Gn.i(3 * e_1, 5 * e_2) == 1 * (e_1 ^ e_2)
+            True
+            >>> Gn.i(e_2, e_1) == -1 * (e_1 ^ e_2)
+            True
+            >>> Gn.i(e_1, e_2) * Gn.i(e_1, e_2) == -1 * one
+            True
+
+            Any two non-parallel vectors in the plane give the same ``i``; parallel
+            vectors give none:
+
+            >>> Gn.i(1 * e_1, 1 * e_1 + 1 * e_2) == 1 * (e_1 ^ e_2)
+            True
+            >>> Gn.i(e_1, 2 * e_1)  # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+            ...
+            ValueError: the two vectors are parallel ...
         """
         plane: Gn = cls.bivector_from_vectors(a, b)
         if plane == type(plane).zero():
@@ -203,6 +281,16 @@ class Gn(MultiVectorBase):
 
         Returns:
             Mapping[Blade, Real]: the stored, immutable blade -> coefficient mapping.
+
+        Example:
+            Each blade maps to its coefficient; blades with a zero coefficient are
+            left out:
+
+            >>> from gacalc.gn import e_1, e_2
+            >>> (3 * e_1 + 4 * e_2).to_blade_dict() == {(1,): 3, (2,): 4}
+            True
+            >>> (3 * e_1 + 0 * e_2).to_blade_dict() == {(1,): 3}
+            True
         """
         return self.coefficient_of_blade
 

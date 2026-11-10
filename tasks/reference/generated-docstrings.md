@@ -62,6 +62,15 @@ All of it lives in the `Method docstrings on the generated classes` section of
   function can serve a method across every role and emit a **dimension-appropriate**
   example (used for `dual`, the vector wedge/projection/`i`, etc., whose result or validity
   depends on `n`).
+- `role` is the enum `DocRole` (its value is the key's first half). A `(role, n)` callable whose
+  only difference across dimensions is the example uses **`_by_dimension(text, {n: example})`**,
+  which picks the example keyed by the largest dimension `≤ n` (e.g. `{1: …, 2: …}`: 𝒢₁ alone, 𝒢₂/𝒢₃
+  shared); `*|__eq__`/`*|__rsub__` are callables that use each class's own unit blade
+  (`_ROLE_UNIT`).
+- **Every example-bearing entry leads with a simple basis-blade case** (projection onto `e_1`, then
+  onto `3 * e_1`, before the general/symbolic example), the maintainer's rule from 2026-11-10
+  (`tasks/archive/2026/11/10/docstring-simple-before-complex-examples.md`). Since then every entry
+  renders an example in each dimension its class exists in, except `vector|i` in 𝒢₁ (no plane).
 - **`custom_method_doc(role, method, n)`** resolves an entry, but only for
   `n in _CUSTOM_DOC_DIMS` (= {1, 2, 3}); otherwise returns `None` (→ generic base copy).
 - **`_own_docstring(method)`** is the generic fallback: the docstring `method` actually

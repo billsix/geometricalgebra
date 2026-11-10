@@ -54,11 +54,19 @@ from collections.abc import Mapping, Sequence
 import numpy as np
 import sympy
 
-from gacalc.base import Blade, MultiVectorBase, MultiVectorFn, Real
+from gacalc.base import (
+    Blade,
+    MultiVectorBase,
+    MultiVectorFn,
+    Real,
+    describe_caller,
+    validation_guard,
+)
 from gacalc.functions import (
     ComposableFunction,
     InvertibleFunction,
     Linearity,
+    MatrixBackend,
     NotInvertibleError,
     compose,
     identity,
@@ -156,6 +164,27 @@ def translate(b: V) -> InvertibleFunction[V]:
     (``translate(b=3 * e_1)``) in teaching code, so the line-equation link is
     visible where the transform is used.  See also :func:`uniform_scale` for the
     ``m`` half.
+
+    Examples:
+        Translating by ``3 * e_1`` moves the origin to ``3 * e_1`` and shifts every
+        other point by the same amount; the inverse shifts it back:
+
+        >>> from gacalc.g2 import Vector, e_1, e_2
+        >>> translate(b=3 * e_1)(Vector.zero()) == 3 * e_1
+        True
+        >>> translate(b=3 * e_1)(1 * e_2) == 3 * e_1 + 1 * e_2
+        True
+        >>> inverse(translate(b=3 * e_1))(3 * e_1) == Vector.zero()
+        True
+
+        General symbolic vectors show it adds coordinate by coordinate:
+
+        >>> import sympy
+        >>> x_1, x_2, b_1, b_2 = sympy.symbols("x_1 x_2 b_1 b_2")
+        >>> translate(b=b_1 * e_1 + b_2 * e_2)(x_1 * e_1 + x_2 * e_2) == (
+        ...     (x_1 + b_1) * e_1 + (x_2 + b_2) * e_2
+        ... )
+        True
     """
 
     # doc-region-begin translate body
@@ -196,7 +225,31 @@ def projection_rotation(
     Like every factory here it is representation-agnostic: the operand's own type
     supplies the basis, so a ``G`` in yields a ``G`` out, ``Gn`` yields ``Gn``.
 
+    A rotation from the zero vector to the zero vector is the identity; from zero
+    to a nonzero vector (or back) raises ``ValueError``
+    (:meth:`~gacalc.base.MultiVectorBase.require_rotation_endpoints`).
+
     Example:
+        A quarter turn from ``e_1`` to ``e_2`` sends ``e_1`` to ``e_2`` and ``e_2``
+        to ``-e_1``; the lengths of the two vectors do not matter, only their
+        directions:
+
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> f = projection_rotation(e_1, e_2)
+        >>> f(1 * e_1) == 1 * e_2, f(1 * e_2) == -1 * e_1, f(1 * e_3) == 1 * e_3
+        (True, True, True)
+        >>> projection_rotation(5 * e_1, 2 * e_2)(1 * e_1) == 1 * e_2
+        True
+        >>> zero = 0 * e_1
+        >>> projection_rotation(zero, zero)(3 * e_1) == 3 * e_1  # 0 -> 0: identity
+        True
+        >>> projection_rotation(zero, 1 * e_2)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: projection_rotation (...): cannot rotate between the zero ...
+
+        A general angle:
+
         >>> import math
         >>> from gacalc.transforms import projection_rotation
         >>> from gacalc.g3 import Vector
@@ -207,16 +260,18 @@ def projection_rotation(
         >>> f(Vector.e_3).isclose(Vector.e_3, rel_tol=1e-5, abs_tol=1e-5)
         True
     """
-    MultiVectorBase.require_vectors((from_vector, to_vector), "projection_rotation")
+    MultiVectorBase.require_rotation_endpoints(from_vector, to_vector)
     plane: MultiVectorBase = from_vector ^ to_vector
     cls: type[V] = type(from_vector)
     if plane == type(plane).zero():
-        # Parallel vectors span no plane. Pointing the same way, the rotation is the
-        # identity (as versor_rotation gives); pointing opposite ways, no plane of
-        # rotation is singled out.
-        same_way: bool | None = sympy.sympify(
-            from_vector.dot(to_vector).scalar_part()
-        ).is_positive
+        # Parallel vectors span no plane. Both zero, or pointing the same way, the
+        # rotation is the identity (as versor_rotation gives); pointing opposite
+        # ways, no plane of rotation is singled out.
+        both_zero: bool = from_vector == cls.zero()
+        same_way: bool | None = (
+            both_zero
+            or sympy.sympify(from_vector.dot(to_vector).scalar_part()).is_positive
+        )
         if same_way is not True:
             raise ValueError(
                 "projection_rotation: from_vector and to_vector point in opposite "
@@ -224,7 +279,7 @@ def projection_rotation(
             )
 
         def identity_on_vectors(value: MultiVectorBase) -> MultiVectorBase:
-            MultiVectorBase.require_vector(value, "projection_rotation")
+            MultiVectorBase.require_vector(value)
             return value
 
         return identity_on_vectors
@@ -235,7 +290,7 @@ def projection_rotation(
     )
 
     def r(value: MultiVectorBase) -> MultiVectorBase:
-        MultiVectorBase.require_vector(value, "projection_rotation")
+        MultiVectorBase.require_vector(value)
         return (
             components_in_plane(value) * from_vector.normalize() * to_vector.normalize()
         ) + components_exterior_to_plane(value)
@@ -269,7 +324,19 @@ def coordinate_along(
             ``vector`` is off the line of ``along``.
 
     Examples:
+        Along a basis direction the coordinate is just the coefficient; along a
+        longer vector on the same line it is smaller, in proportion:
+
         >>> from gacalc.g2 import e_1, e_2
+        >>> coordinate_along(3 * e_1, along=e_1)
+        3
+        >>> coordinate_along(-2 * e_2, along=e_2)
+        -2
+        >>> coordinate_along(3 * e_1, along=3 * e_1)
+        1
+
+        A line in a general direction:
+
         >>> coordinate_along(6 * e_1 + 3 * e_2, along=2 * e_1 + 1 * e_2)
         3
         >>> coordinate_along(1 * e_1, along=2 * e_1)
@@ -279,7 +346,7 @@ def coordinate_along(
         ...
         ValueError: coordinate_along: ... is not on the line of ...
     """
-    MultiVectorBase.require_vectors((vector, along), "coordinate_along")
+    MultiVectorBase.require_vectors((vector, along))
     if along == type(along).zero():
         raise ValueError("coordinate_along: the zero vector spans no line")
     elif vector == type(vector).zero():
@@ -325,6 +392,21 @@ def line_to_line_projection(
             input is off its line.
 
     Examples:
+        From the diagonal line of ``1 * e_1 + 1 * e_2`` onto the ``e_1`` axis: each
+        point of the diagonal drops straight down to the axis, and the inverse
+        climbs back up to the diagonal:
+
+        >>> from gacalc.g2 import e_1, e_2
+        >>> P = line_to_line_projection(
+        ...     from_vector=1 * e_1 + 1 * e_2, to_vector=1 * e_1
+        ... )
+        >>> P(1 * e_1 + 1 * e_2) == 1 * e_1
+        True
+        >>> P(2 * e_1 + 2 * e_2) == 2 * e_1
+        True
+        >>> P.inverse(3 * e_1) == 3 * e_1 + 3 * e_2
+        True
+
         The frame ``v_1 = 2 * e_1``, ``v_2 = 1 * e_1 + 3 * e_2``, and ``y = 1 * v_1 +
         1 * v_2``.  ``e_2`` is perpendicular to ``v_1``, so ``y``'s projection onto
         it comes from ``v_2`` alone, and the inverse returns ``y``'s ``v_2`` part:
@@ -342,7 +424,7 @@ def line_to_line_projection(
         ...
         ValueError: coordinate_along: ... is not on the line of ...
     """
-    MultiVectorBase.require_vectors((from_vector, to_vector), "line_to_line_projection")
+    MultiVectorBase.require_vectors((from_vector, to_vector))
     if from_vector.is_orthogonal_to(to_vector, float_close_to_zero):
         raise ValueError(
             "line_to_line_projection: from_vector and to_vector are perpendicular, "
@@ -394,7 +476,21 @@ def versor_rotation(
     ``interpolate`` lets a caller (e.g. an angle-parameterized rotation) supply
     an interpolation law that from/to vectors alone can't express.
 
+    From the zero vector to the zero vector is the identity; from zero to a
+    nonzero vector (or back) raises ``ValueError``.
+
     Example:
+        A quarter turn from ``e_1`` to ``e_2``, and the zero-to-zero identity:
+
+        >>> from gacalc.g3 import e_1, e_2
+        >>> versor_rotation(e_1, e_2)(1 * e_1) == 1 * e_2
+        True
+        >>> zero = 0 * e_1
+        >>> versor_rotation(zero, zero)(3 * e_1) == 3 * e_1
+        True
+
+        A general angle:
+
         >>> import math
         >>> from gacalc.transforms import versor_rotation
         >>> from gacalc.g3 import Vector
@@ -518,6 +614,22 @@ def bivector_rotation(
     ``theta`` stays symbolic; a ``float`` theta stays numeric.
 
     Example:
+        A quarter turn in the ``e_1 ^ e_2`` plane sends ``e_1`` to ``e_2`` and keeps
+        lengths; the bivector's size does not matter, only its plane and
+        orientation:
+
+        >>> import sympy
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> quarter_turn = bivector_rotation(e_1 ^ e_2)(sympy.pi / 2)
+        >>> quarter_turn(1 * e_1) == 1 * e_2, quarter_turn(3 * e_1) == 3 * e_2
+        (True, True)
+        >>> quarter_turn(1 * e_3) == 1 * e_3                # off the plane: fixed
+        True
+        >>> bivector_rotation(2 * (e_1 ^ e_2))(sympy.pi / 2)(1 * e_1) == 1 * e_2
+        True
+
+        A float angle and the inverse:
+
         >>> import math
         >>> from gacalc.transforms import bivector_rotation
         >>> from gacalc.g3 import Vector
@@ -604,6 +716,22 @@ def plane_rotation(
     e.g. mvp's ``RX_{<theta>}``); the default is ``R_{theta}``.
 
     Example:
+        A quarter turn in the plane of ``e_1`` and ``e_2`` sends ``e_1`` to ``e_2``
+        and ``e_2`` to ``-e_1``, keeps lengths, and leaves ``e_3`` alone; the two
+        vectors only name the plane, so their lengths do not matter:
+
+        >>> import sympy
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> quarter_turn = plane_rotation(e_1, e_2)(sympy.pi / 2)
+        >>> quarter_turn(1 * e_1) == 1 * e_2, quarter_turn(1 * e_2) == -1 * e_1
+        (True, True)
+        >>> quarter_turn(3 * e_1) == 3 * e_2, quarter_turn(1 * e_3) == 1 * e_3
+        (True, True)
+        >>> plane_rotation(2 * e_1, 5 * e_2)(sympy.pi / 2)(1 * e_1) == 1 * e_2
+        True
+
+        A float angle, the inverse, and interpolation:
+
         >>> import math
         >>> from gacalc.transforms import plane_rotation
         >>> from gacalc.g3 import Vector
@@ -619,7 +747,7 @@ def plane_rotation(
         ...     turn(math.radians(45))(Vector.e_1), rel_tol=1e-5, abs_tol=1e-5)
         True
     """
-    MultiVectorBase.require_vectors((a, b), "plane_rotation")
+    MultiVectorBase.require_vectors((a, b))
     plane: MultiVectorBase = a.outer_product(b)
     if plane == type(plane).zero():
         raise ValueError(
@@ -671,6 +799,27 @@ def uniform_scale(m: Real) -> InvertibleFunction[V]:
     (``uniform_scale(m=2.0)``) in teaching code.  See also :func:`translate` for
     the ``b`` half.  (Rotation has no counterpart in ``m*x + b``, which is
     exactly why it is introduced separately.)
+
+    Examples:
+        Scaling by ``m=2`` doubles every vector and keeps the origin where it is;
+        the inverse halves:
+
+        >>> from gacalc.g2 import Vector, e_1, e_2
+        >>> uniform_scale(m=2)(1 * e_1) == 2 * e_1
+        True
+        >>> uniform_scale(m=2)(1 * e_1 + 3 * e_2) == 2 * e_1 + 6 * e_2
+        True
+        >>> uniform_scale(m=2)(Vector.zero()) == Vector.zero()
+        True
+        >>> inverse(uniform_scale(m=2))(2 * e_1) == 1 * e_1
+        True
+
+        A symbolic factor multiplies every coordinate:
+
+        >>> import sympy
+        >>> m, x_1, x_2 = sympy.symbols("m x_1 x_2")
+        >>> uniform_scale(m=m)(x_1 * e_1 + x_2 * e_2) == m * x_1 * e_1 + m * x_2 * e_2
+        True
     """
 
     # doc-region-begin uniform scale body
@@ -712,7 +861,16 @@ def scale_non_uniform(*factors: Real) -> InvertibleFunction[V]:
     axis with no factor (``e_3`` of a 𝒢₃ vector, there) is left unchanged.
 
     Example:
+        Each basis vector is stretched by its own factor:
+
         >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> scale_non_uniform(2, 3)(1 * e_1) == 2 * e_1
+        True
+        >>> scale_non_uniform(2, 3)(1 * e_2) == 3 * e_2
+        True
+
+        A vector mixing all three axes, the third left unchanged:
+
         >>> scale_non_uniform(2, 3)(1 * e_1 + 2 * e_2 + 3 * e_3) == (
         ...     2 * e_1 + 6 * e_2 + 3 * e_3
         ... )
@@ -765,12 +923,151 @@ def scale_non_uniform(*factors: Real) -> InvertibleFunction[V]:
     # doc-region-end scale non-uniform body
 
 
+@validation_guard
+def require_linear_or_affine(fn: ComposableFunction[typing.Any]) -> None:
+    """Raise ``ValueError`` unless ``fn`` is linear or affine.
+
+    The guard for building a matrix from a function: a non-linear ``fn`` (a
+    perspective divide, say) has a projective part that probing points in R^n
+    cannot recover.
+
+    Args:
+        fn: the function a matrix is wanted for.
+
+    Raises:
+        ValueError: if ``fn.linearity`` is ``Linearity.NONLINEAR``.
+
+    Examples:
+        >>> from gacalc.g3 import Vector
+        >>> require_linear_or_affine(uniform_scale(m=2.0))
+        >>> perspective = ComposableFunction(func=lambda v: v, latex_repr="P")
+        >>> perspective.linearity  # the default: nothing promised
+        <Linearity.NONLINEAR: ...>
+        >>> to_matrix(perspective, Vector)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: to_matrix (...) is defined for linear/affine functions only; ...
+    """
+    if fn.linearity == Linearity.NONLINEAR:
+        raise ValueError(
+            f"{describe_caller()} is defined for linear/affine functions only; this "
+            "one is non-linear (e.g. a perspective divide) -- its projective "
+            "matrix cannot be recovered by probing points in R^n."
+        )
+
+
+@validation_guard
+def require_dimension(cls: type[MultiVectorBase], n: int | None) -> int:
+    """The dimension ``n`` to probe ``cls`` in; ``ValueError`` if it is unknown.
+
+    A specialized class fixes its dimension as ``cls.DIMENSION``; the
+    dimension-agnostic ``Gn`` has none, so its caller must pass ``n``.
+
+    Args:
+        cls: the representation to probe in.
+        n: the dimension the caller passed, or ``None`` to take ``cls.DIMENSION``.
+
+    Returns:
+        int: ``n`` when given, else ``cls.DIMENSION``.
+
+    Raises:
+        ValueError: if ``n`` is ``None`` and ``cls`` has no ``DIMENSION``.
+
+    Examples:
+        >>> from gacalc.g3 import Vector
+        >>> from gacalc.gn import Gn
+        >>> require_dimension(Vector, None)
+        3
+        >>> require_dimension(Gn, 2)
+        2
+        >>> to_matrix(uniform_scale(m=2.0), Gn)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: to_matrix (...): n could not be inferred (Gn has no fixed ...
+    """
+    resolved: int | None = n if n is not None else getattr(cls, "DIMENSION", None)
+    if resolved is None:
+        raise ValueError(
+            f"{describe_caller()}: n could not be inferred (Gn has no fixed "
+            "DIMENSION); pass n explicitly, e.g. to_matrix(fn, Gn, n=3)."
+        )
+    return resolved
+
+
+@validation_guard
+def require_distinct_params(params: typing.Sequence[sympy.Symbol]) -> None:
+    """Raise ``ValueError`` if a symbol appears twice in ``params``.
+
+    Args:
+        params: the parameter symbols, in fill order.
+
+    Raises:
+        ValueError: if ``params`` repeats a symbol.
+
+    Examples:
+        >>> import sympy
+        >>> X, Y = sympy.symbols("x y")
+        >>> require_distinct_params((X, Y))
+        >>> require_distinct_params((X, X))  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: <module> (...): params has a repeated symbol: (x, x)
+    """
+    if len(set(params)) != len(params):
+        raise ValueError(
+            f"{describe_caller()}: params has a repeated symbol: {tuple(params)}"
+        )
+
+
+@validation_guard
+def require_params_cover(
+    matrix: sympy.Matrix, params: typing.Sequence[sympy.Symbol]
+) -> None:
+    """Raise ``ValueError`` unless every symbol in ``matrix`` is one of ``params``.
+
+    A template can only be filled with the parameters it was given, so a matrix
+    entry over a symbol not among them could never be evaluated.
+
+    Args:
+        matrix: the symbolic matrix the template is compiled from.
+        params: the parameter symbols.
+
+    Raises:
+        ValueError: naming the first entry (row-major) with a symbol not in
+            ``params``.
+
+    Examples:
+        >>> import sympy
+        >>> X, Y = sympy.symbols("x y")
+        >>> require_params_cover(sympy.Matrix([[X, 1], [0, 1]]), (X,))
+        >>> require_params_cover(sympy.Matrix([[X, Y], [0, 1]]), (X,))
+        ... # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: <module> (...): matrix entry (0, 1) = y depends on ['y'], ...
+    """
+    known: set[sympy.Basic] = set(params)
+    row: int
+    col: int
+    for row in range(matrix.rows):
+        for col in range(matrix.cols):
+            entry: sympy.Expr = sympy.sympify(matrix[row, col])
+            stray: set[sympy.Basic] = entry.free_symbols - known
+            if stray:
+                raise ValueError(
+                    f"{describe_caller()}: matrix entry ({row}, {col}) = {entry} "
+                    f"depends on {sorted(map(str, stray))}, not among params "
+                    f"{tuple(map(str, params))}; every symbol the transform was "
+                    "built over must be a parameter"
+                )
+
+
 def to_matrix(
     fn: ComposableFunction[typing.Any],
     cls: type[MultiVectorBase],
     n: int | None = None,
     *,
-    backend: str = "numpy",
+    backend: MatrixBackend = MatrixBackend.NUMPY,
 ) -> "np.ndarray | sympy.Matrix":
     r"""The homogeneous ``(n+1) x (n+1)`` matrix of a linear or affine ``fn``.
 
@@ -792,42 +1089,50 @@ def to_matrix(
     ``n`` is taken from ``cls.DIMENSION`` for the specialized classes; pass it
     explicitly for the dimension-agnostic ``Gn``.
 
-    ``backend="numpy"`` (default) returns an ``np.float32`` array for GL;
-    ``backend="sympy"`` returns an exact ``sympy.Matrix`` (stays symbolic for a
-    symbolic ``fn``).
+    ``backend=MatrixBackend.NUMPY`` (default) returns an ``np.float32`` array for
+    GL; ``backend=MatrixBackend.SYMPY`` returns an exact ``sympy.Matrix`` (stays
+    symbolic for a symbolic ``fn``).  Any other value raises ``TypeError``.
 
     Raises ``ValueError`` if ``fn`` is non-linear: its projective part (e.g. a
     perspective divide) is not recoverable by probing points in R^n.
 
     Example:
+        In 𝒢₂ the matrix is ``3 x 3``.  A uniform scale is diagonal (the factor on
+        the diagonal, ``1`` in the corner); a translation is the identity with the
+        offset in the last column:
+
+        >>> from gacalc.g2 import Vector, e_1, e_2
+        >>> to_matrix(uniform_scale(m=2), Vector, backend=MatrixBackend.SYMPY)
+        Matrix([
+        [2, 0, 0],
+        [0, 2, 0],
+        [0, 0, 1]])
+        >>> T = translate(b=3 * e_1 + 4 * e_2)
+        >>> to_matrix(T, Vector, backend=MatrixBackend.SYMPY)
+        Matrix([
+        [1, 0, 3],
+        [0, 1, 4],
+        [0, 0, 1]])
+
+        The default ``np.float32`` backend in 𝒢₃, ``4 x 4``:
+
         >>> from gacalc.transforms import translate, uniform_scale, to_matrix
         >>> from gacalc.g3 import Vector
-        >>> T = translate(2 * Vector.e_1 + 3 * Vector.e_2 + 4 * Vector.e_3)
+        >>> T = translate(b=2 * Vector.e_1 + 3 * Vector.e_2 + 4 * Vector.e_3)
         >>> M = to_matrix(T, Vector)
         >>> M.shape
         (4, 4)
         >>> [float(M[i, 3]) for i in range(4)]   # translation in the last column
         [2.0, 3.0, 4.0, 1.0]
         >>> # a linear map (scale) -> 4x4 with a ZERO translation column
-        >>> S = to_matrix(uniform_scale(2.0), Vector)
+        >>> S = to_matrix(uniform_scale(m=2.0), Vector)
         >>> [float(S[i, 3]) for i in range(4)]
         [0.0, 0.0, 0.0, 1.0]
         >>> [float(S[i, i]) for i in range(4)]
         [2.0, 2.0, 2.0, 1.0]
     """
-    if fn.linearity == Linearity.NONLINEAR:
-        raise ValueError(
-            "to_matrix is defined for linear/affine functions only; this one "
-            "is non-linear (e.g. a perspective divide) -- its projective "
-            "matrix cannot be recovered by probing points in R^n."
-        )
-    if n is None:
-        n = getattr(cls, "DIMENSION", None)
-        if n is None:
-            raise ValueError(
-                "n could not be inferred (Gn has no fixed DIMENSION); pass n "
-                "explicitly, e.g. to_matrix(fn, Gn, n=3)."
-            )
+    require_linear_or_affine(fn)
+    n = require_dimension(cls, n)
 
     origin: MultiVectorBase = fn(cls.zero())  # image of the origin -> translation col
     # images of the unit directions -> the first columns (the linear part)
@@ -848,14 +1153,14 @@ def to_matrix(
     columns: list[list[Real]] = [coords(d, 0) for d in directions] + [coords(origin, 1)]
 
     match backend:
-        case "sympy":
+        case MatrixBackend.SYMPY:
             return sympy.Matrix.hstack(*(sympy.Matrix(c) for c in columns))
-        case "numpy":
+        case MatrixBackend.NUMPY:
             return np.column_stack(
                 [np.array([float(x) for x in c], dtype=np.float32) for c in columns]
             )
         case _:
-            raise ValueError(f"unknown backend {backend!r}; use 'numpy' or 'sympy'.")
+            raise TypeError(f"backend must be a MatrixBackend; got {backend!r}")
 
 
 # doc-region-begin matrix template class
@@ -947,10 +1252,10 @@ def to_matrix_template(
 ) -> MatrixTemplate:
     r"""Compile a linear or affine ``fn``, built over the sympy symbols
     ``params``, into a :class:`MatrixTemplate` -- ``to_matrix(fn, cls,
-    backend="sympy")`` read off once, so that ``template.fill(*numbers)`` is a
-    few array assignments instead of a fresh probe of the basis (roughly a
-    thousand times cheaper per call; the per-sprite model matrix of a 2-D game
-    is the motivating case).
+    backend=MatrixBackend.SYMPY)`` read off once, so that
+    ``template.fill(*numbers)`` is a few array assignments instead of a fresh probe
+    of the basis (roughly a thousand times cheaper per call; the per-sprite model
+    matrix of a 2-D game is the motivating case).
 
     Works in any dimension ``to_matrix`` does: 𝒢₂ gives a ``3 x 3`` (linear or
     affine -- the shape is always homogeneous, a linear map just has a zero
@@ -964,6 +1269,16 @@ def to_matrix_template(
     the matrix depends on must be listed (``ValueError`` otherwise, naming the
     stray symbol); a listed symbol the matrix does not use is simply ignored.
     Raises ``ValueError`` for a non-linear ``fn``, like ``to_matrix``.
+
+    Example (the simplest template: a uniform scale by a symbol ``m``, filled with
+    ``3.0``, gives the ``3 x 3`` diagonal matrix of a scale by 3):
+
+        >>> import sympy
+        >>> from gacalc.g2 import Vector
+        >>> m = sympy.Symbol("m")
+        >>> SCALE = to_matrix_template(uniform_scale(m=m), Vector, (m,))
+        >>> SCALE.fill(3.0).tolist()
+        [[3.0, 0.0, 0.0], [0.0, 3.0, 0.0], [0.0, 0.0, 1.0]]
 
     Example (a sprite's model matrix: scale the unit quad to ``w x h``, then
     move it to ``(tx, ty)`` -- translation as a linear combination of basis
@@ -994,10 +1309,12 @@ def to_matrix_template(
     """
     # doc-region-end to matrix template function
     symbols: tuple[sympy.Symbol, ...] = tuple(params)
-    if len(set(symbols)) != len(symbols):
-        raise ValueError(f"params has a repeated symbol: {symbols}")
-    matrix: sympy.Matrix | np.ndarray = to_matrix(fn, cls, n, backend="sympy")
+    require_distinct_params(symbols)
+    matrix: sympy.Matrix | np.ndarray = to_matrix(
+        fn, cls, n, backend=MatrixBackend.SYMPY
+    )
     assert isinstance(matrix, sympy.Matrix)  # the sympy backend's return
+    require_params_cover(matrix, symbols)
     size: int = matrix.rows
     constants: np.ndarray = np.zeros((size, size), dtype=np.float32)
     slots: list[tuple[int, int, int]] = []
@@ -1009,15 +1326,7 @@ def to_matrix_template(
         for col in range(size):
             entry: sympy.Expr = sympy.sympify(matrix[row, col])
             free: set[sympy.Basic] = entry.free_symbols
-            stray: set[sympy.Basic] = free - set(symbols)
-            if stray:
-                raise ValueError(
-                    f"matrix entry ({row}, {col}) = {entry} depends on "
-                    f"{sorted(map(str, stray))}, not among params "
-                    f"{tuple(map(str, symbols))}; every symbol the transform "
-                    "was built over must be a parameter"
-                )
-            elif not free:
+            if not free:
                 constants[row, col] = float(entry)
             elif entry.is_Symbol:
                 slots.append(
@@ -1043,6 +1352,7 @@ __all__ = [
     "ComposableFunction",
     "InvertibleFunction",
     "Linearity",
+    "MatrixBackend",
     "NotInvertibleError",
     "inverse",
     "compose",

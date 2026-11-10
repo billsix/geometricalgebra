@@ -255,7 +255,7 @@ it emits the faces in lexicographic order, which leaves out the *last* vector fi
 - `a^n = w_n / |w_n|²`.
 
 **Both inverses, chosen by keyword** (2026-11-07, `tasks/archive/2026/11/07/frame-to-invertible-function-reciprocal-inverse.md`).
-`Frame.to_invertible_function(*, inverse_method=...)` takes `"reciprocal"` (the default) or `"peel"`.
+`Frame.to_invertible_function(*, inverse_method=...)` takes the enum `frame.InverseMethod`: `RECIPROCAL` (the default) or `PEEL`.
 
 - **Reciprocal:** computes the reciprocal vectors once, when the map is built, and its inverse is a plain
   map, `x = Σ_i (vⁱ · y) * e_i`.
@@ -277,7 +277,7 @@ QR connects to it directly:
 ## Why one dot product reads off an oblique coordinate: similar right triangles
 
 The maintainer asked for this section (William Emerison Six <billsix@gmail.com>, 2026-11-07). It explains
-why `x_i = vⁱ · y` works, which is what `Frame.to_invertible_function(inverse_method="reciprocal")` and
+why `x_i = vⁱ · y` works, which is what `Frame.to_invertible_function(inverse_method=InverseMethod.RECIPROCAL)` and
 `reciprocal_frame` in `src/gacalc/frame.py` rely on. The argument is proportional right triangles. The
 one thing to get right is **which** right angle.
 

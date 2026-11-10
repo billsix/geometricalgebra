@@ -33,6 +33,7 @@ import gacalc.g1 as g1
 import gacalc.g2 as g2
 import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase, MultiVectorFn
+from gacalc.functions import MatrixBackend
 from gacalc.gn import Gn
 from gacalc.transforms import (
     ComposableFunction,
@@ -417,13 +418,19 @@ def test_to_matrix_gn_requires_explicit_n() -> None:
 
 def test_to_matrix_sympy_backend_is_exact() -> None:
     m: np.ndarray | sympy.Matrix = to_matrix(
-        translate(vec(g3.G, 2, 3, 4)), g3.G, backend="sympy"
+        translate(vec(g3.G, 2, 3, 4)), g3.G, backend=MatrixBackend.SYMPY
     )
     assert isinstance(m, sympy.Matrix)
     assert m.shape == (4, 4)
     # exact integer entries, translation in the last column
     assert m[0, 3] == 2 and m[1, 3] == 3 and m[2, 3] == 4 and m[3, 3] == 1
     assert m[:3, :3] == sympy.eye(3)
+
+
+def test_to_matrix_string_backend_raises() -> None:
+    """A string (the pre-enum spelling) is rejected with a ``TypeError``."""
+    with pytest.raises(TypeError, match="must be a MatrixBackend"):
+        to_matrix(translate(vec(g3.G, 2, 3, 4)), g3.G, backend="sympy")  # ty: ignore[invalid-argument-type]
 
 
 # ---------------------------------------------------------------------------

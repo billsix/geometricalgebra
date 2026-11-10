@@ -41,7 +41,7 @@ from gacalc.base import MultiVectorBase, Real
 def _project_via_standard_position(
     a: MultiVectorBase, b: MultiVectorBase
 ) -> MultiVectorBase:
-    MultiVectorBase.require_vectors([a, b], "project_sp")
+    MultiVectorBase.require_vectors([a, b])
     cls: type[MultiVectorBase] = type(b)
     e_1: MultiVectorBase = cls.basis_vector(1)
     e_2: MultiVectorBase = cls.basis_vector(2)
@@ -122,7 +122,19 @@ def project_sp(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
             axis.
 
     Examples:
+        Projecting onto a coordinate axis keeps that one coordinate; only the
+        direction of ``b`` matters, not its length:
+
         >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> project_sp(3 * e_1 + 4 * e_2, 1 * e_1) == 3 * e_1
+        True
+        >>> project_sp(3 * e_1 + 4 * e_2, 5 * e_1) == 3 * e_1
+        True
+        >>> project_sp(3 * e_1 + 4 * e_2 + 5 * e_3, 2 * e_2) == 4 * e_2
+        True
+
+        A general ``b`` agrees with the canonical projection:
+
         >>> b = 3 * e_1 + 4 * e_2 + 12 * e_3
         >>> a = 1 * e_1 + 2 * e_2 + 3 * e_3
         >>> project_sp(a, b) == a.projected_onto(b)
@@ -153,5 +165,22 @@ def reject_sp(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
     Raises:
         ValueError: if ``a`` or ``b`` is not a vector, or ``b`` lies along the ``z``
             axis.
+
+    Examples:
+        Rejecting from a coordinate axis drops that one coordinate and keeps the
+        rest; as with projection, the length of ``b`` does not matter:
+
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> reject_sp(3 * e_1 + 4 * e_2, 1 * e_1) == 4 * e_2
+        True
+        >>> reject_sp(3 * e_1 + 4 * e_2, 5 * e_1) == 4 * e_2
+        True
+
+        A general ``b`` agrees with the canonical rejection:
+
+        >>> b = 3 * e_1 + 4 * e_2 + 12 * e_3
+        >>> a = 1 * e_1 + 2 * e_2 + 3 * e_3
+        >>> reject_sp(a, b) == a.rejected_away_from(b)
+        True
     """
     return a - project_sp(a, b)

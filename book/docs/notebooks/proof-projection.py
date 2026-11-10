@@ -40,10 +40,8 @@ def project_and_reject_sp(a: Vector, b: Vector) -> tuple[Vector, Vector]:
     sin: Real = -b_2 / magnitude
 
     def rotate(cos: Real, sin: Real, v: Vector) -> Vector:
-        """The plain 2D rotation on the (e_1, e_2) components."""
-        x: Real = v.coefficient(e_1)
-        y: Real = v.coefficient(e_2)
-        return (cos * x - sin * y) * e_1 + (sin * x + cos * y) * e_2
+        """The plain 2D rotation: a blend of v and its quarter turn."""
+        return cos * v + sin * v.rotate_90_degrees()
 
     a_aligned: Vector = rotate(cos, sin, a)  # b is now on the x-axis; a rides along
     a_aligned_1: Real = a_aligned.coefficient(e_1)

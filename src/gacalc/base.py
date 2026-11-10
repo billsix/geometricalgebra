@@ -19,6 +19,9 @@ import dataclasses
 import functools
 import itertools
 import math
+import os
+import sys
+import types
 import typing
 from collections.abc import Callable, Generator, Mapping, Sequence
 from itertools import chain, combinations
@@ -45,6 +48,54 @@ Blade = tuple[int, ...]
 #: ``simplify``. Typed to match ``sympy.Expr.subs``'s mapping overload.
 SymbolicSubstitution = Mapping[sympy.Basic | complex, sympy.Expr | complex]
 MultiVectorFn = Callable[["MultiVectorBase"], "MultiVectorBase"]
+
+#: The code objects of every validation guard (``require_vector``, ``require_frame``,
+#: …), so :func:`describe_caller` can step past guards that call other guards.
+_GUARD_CODES: set[types.CodeType] = set()
+
+
+def validation_guard[F: types.FunctionType](guard: F) -> F:
+    """Mark ``guard`` as a validation guard, so error messages name its caller.
+
+    A guard checks its arguments and raises ``ValueError`` naming the function that
+    called it (via :func:`describe_caller`).  A guard may call another guard
+    (``require_frame`` calls ``require_vectors``, which calls ``require_vector``);
+    marking each one lets the innermost skip all of them and still name the real
+    caller.
+
+    Args:
+        guard: the guard function (decorate it before any ``@staticmethod``).
+
+    Returns:
+        F: ``guard`` itself, unchanged.
+    """
+    _GUARD_CODES.add(guard.__code__)
+    return guard
+
+
+def describe_caller() -> str:
+    """Name the function that called the current validation guard, and where.
+
+    Called from inside a guard, while raising: walks up the Python stack past every
+    frame belonging to a :func:`validation_guard` and describes the first frame that
+    does not, as its qualified name and call site, e.g.
+    ``"make_orthogonal_frame (frame.py:226)"``.  ``sys._getframe`` is a pointer walk
+    (no source is read), and a guard calls this only when it is about to raise, so a
+    check that passes costs nothing extra.
+
+    Returns:
+        str: ``"<qualified name> (<file name>:<line>)"`` for the guard's caller.
+    """
+    frame: types.FrameType | None = sys._getframe(1)
+    while frame is not None and frame.f_code in _GUARD_CODES:
+        frame = frame.f_back
+    if frame is None:
+        return "<unknown caller>"
+    return (
+        f"{frame.f_code.co_qualname} "
+        f"({os.path.basename(frame.f_code.co_filename)}:{frame.f_lineno})"
+    )
+
 
 #: Type variable for the operand of a versor sandwich -- the result has the
 #: operand's own type (see ``MultiVectorBase.sandwich``).
@@ -206,6 +257,15 @@ def pseudoscalar_squared_sign(r: int) -> int:
         int: the sign factor ``(−1)^(r * (r−1)/2)`` (``+1`` or ``−1``).
 
     Examples:
+        Notice the sign matches squaring the basis blades by hand: a vector
+        squares to ``+1``, the unit bivector ``e_1 * e_2`` to ``-1``:
+
+        >>> from gacalc.gn import e_1, e_2
+        >>> pseudoscalar_squared_sign(1) == ((1 * e_1) * (1 * e_1)).scalar_part()
+        True
+        >>> pseudoscalar_squared_sign(2) == ((e_1 * e_2) * (e_1 * e_2)).scalar_part()
+        True
+
         >>> [pseudoscalar_squared_sign(r) for r in range(1, 6)]  # +, -, -, +, +
         [1, -1, -1, 1, 1]
     """
@@ -234,6 +294,17 @@ def pseudoscalar_squared_is_positive(r: int) -> bool:
 
     Returns:
         bool: ``True`` iff a grade-``r`` blade squares to a positive scalar.
+
+    Examples:
+        A vector squares to a positive number (``e_1 * e_1 = 1``); a bivector
+        squares to a negative one (``(e_1 * e_2) * (e_1 * e_2) = -1``):
+
+        >>> pseudoscalar_squared_is_positive(1)
+        True
+        >>> pseudoscalar_squared_is_positive(2)
+        False
+        >>> [pseudoscalar_squared_is_positive(r) for r in range(1, 6)]
+        [True, False, False, True, True]
     """
     return pseudoscalar_squared_sign(r) == 1
 
@@ -341,6 +412,15 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: the multivector with every coefficient zero.
+
+        Examples:
+            Adding zero changes nothing:
+
+            >>> from gacalc.g3 import Vector, e_1, e_2
+            >>> Vector.zero() + (1 * e_1 + 2 * e_2) == 1 * e_1 + 2 * e_2
+            True
+            >>> list(Vector.zero())  # every coordinate is 0
+            [0, 0, 0]
         """
         return cls.from_real(0)
 
@@ -350,6 +430,15 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: the unit scalar (scalar part 1, every other blade zero).
+
+        Examples:
+            Multiplying by one changes nothing:
+
+            >>> from gacalc.g3 import Scalar, e_1, e_2
+            >>> Scalar.one() * (1 * e_1 + 2 * e_2) == 1 * e_1 + 2 * e_2
+            True
+            >>> Scalar.one().scalar_part()
+            1
         """
         return cls.from_real(1)
 
@@ -403,9 +492,12 @@ class MultiVectorBase(abc.ABC):
             ...  for n in range(1, 16)]
             [1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1]
         """
+        # Seed with the scalar 1 at cls's own type: cls.from_real(1), not cls.one()
+        # (a scalar-less graded type's one() is its algebra's Scalar).  A blade cls
+        # cannot hold then comes back zero and _require_holds_blade names the type.
         pseudoscalar: typing.Self = math.prod(
             [cls.basis_vector(x) for x in range(1, n + 1)],
-            start=cls.one(),
+            start=cls.from_real(1),
         )
         cls._require_holds_blade(pseudoscalar, tuple(range(1, n + 1)))
         return pseudoscalar
@@ -414,9 +506,9 @@ class MultiVectorBase(abc.ABC):
     def _require_holds_blade(cls, value: "MultiVectorBase", blade: Blade) -> None:
         """Raise ``ValueError`` unless ``value`` is the unit ``blade`` itself.
 
-        A graded type silently drops the blades it has no field for (its ``one()``
-        is zero on a type with no scalar), so a basis blade built in it comes back
-        as zero; this turns that into an error naming the type.
+        A graded type silently drops the blades it has no field for (its
+        ``from_real(1)`` is zero on a type with no scalar), so a basis blade built
+        in it comes back as zero; this turns that into an error naming the type.
 
         >>> import gacalc.g3 as g3
         >>> g3.Vector.unit_pseudoscalar(3)
@@ -448,6 +540,19 @@ class MultiVectorBase(abc.ABC):
             ValueError: if ``cls`` cannot hold one of the blades (a graded type),
                 rather than yielding a silent zero.  ``symbolic_multivector`` is
                 built from these blades, so it raises the same way.
+
+        Examples:
+            The plane 𝒢₂ has four basis blades: the scalar, two vectors, and the
+            unit bivector:
+
+            >>> from gacalc.gn import e_1, e_2, MultiVector
+            >>> list(MultiVector.bases(2)) == [MultiVector.one(), e_1, e_2, e_1 * e_2]
+            True
+
+            In general there are 2ⁿ of them, one per subset of {e₁, …, e_n}:
+
+            >>> [len(list(MultiVector.bases(n))) for n in range(1, 5)]
+            [2, 4, 8, 16]
         """
 
         def powerset(iterable: Sequence[int]) -> chain[Blade]:
@@ -457,9 +562,10 @@ class MultiVectorBase(abc.ABC):
 
         b: Blade
         for b in powerset(range(1, n + 1)):
+            # Seeded at cls's own type, as in unit_pseudoscalar.
             blade: typing.Self = math.prod(
                 [cls.basis_vector(x) for x in b],
-                start=cls.one(),
+                start=cls.from_real(1),
             )
             cls._require_holds_blade(blade, b)
             yield blade
@@ -479,6 +585,20 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: a multivector carrying one distinct symbol per basis blade.
+
+        Examples:
+            In one dimension there are two blades, 1 and e₁, so two symbols:
+
+            >>> import sympy
+            >>> from gacalc.gn import e_1, MultiVector
+            >>> a0, a1 = sympy.symbols("a0 a1")
+            >>> MultiVector.symbolic_multivector(1, "a") == a0 + a1 * e_1
+            True
+
+            In the plane every grade is present -- scalar, vector and bivector:
+
+            >>> MultiVector.symbolic_multivector(2, "b").grades()
+            [0, 1, 2]
         """
         mv: list[MultiVectorBase] = list(cls.bases(n))
         symbols: list[sympy.Symbol] = sympy.symbols(prefix + ":" + str(len(mv)))
@@ -498,6 +618,19 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: the scalar multivector ``i²`` whose value is
             :func:`~gacalc.base.pseudoscalar_squared_sign` (``±1``).
+
+        Examples:
+            On a line the pseudoscalar is ``e_1``, which squares to ``+1``; in the
+            plane it is ``e_1 * e_2``, which squares to ``-1`` like the imaginary
+            unit:
+
+            >>> from gacalc.gn import MultiVector
+            >>> MultiVector.unit_pseudoscalar_squared(1) == MultiVector.one()
+            True
+            >>> MultiVector.unit_pseudoscalar_squared(2) == MultiVector.from_real(-1)
+            True
+            >>> MultiVector.unit_pseudoscalar_squared(3) == MultiVector.from_real(-1)
+            True
         """
         unit_pseudoscalar: MultiVectorBase = cls.unit_pseudoscalar(n)
         return unit_pseudoscalar * unit_pseudoscalar
@@ -533,7 +666,15 @@ class MultiVectorBase(abc.ABC):
             Self: the geometric product ``self * rhs``.
 
         Examples:
+            A bare number scales; two parallel vectors multiply to a plain number:
+
             >>> from gacalc.gn import e_1, e_2, e_3
+            >>> from gacalc.gn import a_1, a_2, b_1, b_2, MultiVector
+            >>> (1 * e_1 + 2 * e_2) * 3 == 3 * e_1 + 6 * e_2
+            True
+            >>> (2 * e_1) * (3 * e_1) == MultiVector.from_real(6)
+            True
+
             >>> e_1 * e_2 == -(e_2 * e_1)  # distinct basis vectors anticommute
             True
             >>> (e_1 * e_1).scalar_part() == 1  # and square to +1 (Euclidean)
@@ -541,6 +682,13 @@ class MultiVectorBase(abc.ABC):
             >>> e_1 * e_3 * e_2 == -(e_1 * e_2 * e_3)  # one swap flips the sign
             True
             >>> e_3 * e_1 * e_2 == e_1 * e_2 * e_3  # two swaps restore it
+            True
+
+            For general vectors the product is the dot plus the wedge:
+
+            >>> u = a_1 * e_1 + a_2 * e_2
+            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> u * v == u.dot(v) + u.wedge(v)
             True
         """
         match rhs:
@@ -563,6 +711,19 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: the geometric product ``lhs * self``, or ``NotImplemented`` for
             an unsupported left type.
+
+        Examples:
+            A number on the left stretches every coordinate:
+
+            >>> import sympy
+            >>> from gacalc.g3 import e_1, e_2
+            >>> 3 * (1 * e_1 + 2 * e_2) == 3 * e_1 + 6 * e_2
+            True
+            >>> list(-1 * (1 * e_1 + 2 * e_2))  # -1 reverses the direction
+            [-1, -2, 0]
+            >>> k = sympy.Symbol("k")
+            >>> list(k * (1 * e_1 + 2 * e_2))
+            [k, 2*k, 0]
         """
         match lhs:
             case int() | float() as n:
@@ -590,6 +751,24 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: the coefficient-wise sum ``self + rhs``.
+
+        Examples:
+            Vectors add coordinate by coordinate, head to tail:
+
+            >>> import sympy
+            >>> from gacalc.g3 import e_1, e_2
+            >>> (1 * e_1 + 2 * e_2) + (3 * e_1 + 4 * e_2) == 4 * e_1 + 6 * e_2
+            True
+
+            Adding a number puts it in the scalar part, beside the vector:
+
+            >>> ((1 * e_1) + 2).grades()
+            [0, 1]
+            >>> a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
+            >>> (a_1 * e_1 + a_2 * e_2) + (b_1 * e_1 + b_2 * e_2) == (
+            ...     (a_1 + b_1) * e_1 + (a_2 + b_2) * e_2
+            ... )
+            True
         """
         # A bare number is the scalar (grade-0) part -- the generated
         # specialized classes already accept ``mv + 2``; the shared base
@@ -616,6 +795,15 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: the sum ``lhs + self``.
+
+        Examples:
+            The order does not matter:
+
+            >>> from gacalc.g3 import e_1
+            >>> 2 + (1 * e_1) == (1 * e_1) + 2
+            True
+            >>> (2 + (1 * e_1)).scalar_part()
+            2
         """
         # addition commutes; gives ``2 + mv`` for free.  ``lhs`` is a bare number,
         # never a multivector: Python only calls ``__radd__`` when the left operand
@@ -634,6 +822,16 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: the difference ``self - rhs``.
+
+        Examples:
+            The difference ``b - a`` is the arrow from the tip of ``a`` to the tip
+            of ``b``; anything minus itself is zero:
+
+            >>> from gacalc.g3 import Vector, e_1, e_2
+            >>> (3 * e_1 + 4 * e_2) - (1 * e_1 + 1 * e_2) == 2 * e_1 + 3 * e_2
+            True
+            >>> (1 * e_1 + 2 * e_2) - (1 * e_1 + 2 * e_2) == Vector.zero()
+            True
         """
         return self + -rhs
 
@@ -642,6 +840,15 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: ``self`` with every coefficient negated.
+
+        Examples:
+            Negation turns a vector around; doing it twice turns it back:
+
+            >>> from gacalc.g3 import e_1, e_2
+            >>> -(1 * e_1 + 2 * e_2) == -1 * e_1 - 2 * e_2
+            True
+            >>> -(-(1 * e_1 + 2 * e_2)) == 1 * e_1 + 2 * e_2
+            True
         """
         return -1 * self
 
@@ -661,6 +868,20 @@ class MultiVectorBase(abc.ABC):
             ``Rational``; a float stays a float).
 
         Examples:
+            Dividing by a number shrinks; dividing a vector by a parallel vector
+            gives the ratio of their lengths, a plain number:
+
+            >>> import sympy
+            >>> from gacalc.gn import MultiVector
+            >>> import gacalc.gn as gn
+            >>> (6 * gn.e_1) / 2 == 3 * gn.e_1
+            True
+            >>> half = sympy.Rational(1, 2)
+            >>> (1 * gn.e_1) / (2 * gn.e_1) == MultiVector.from_real(half)
+            True
+            >>> (1 * gn.e_2) / (1 * gn.e_1) == gn.e_2 * gn.e_1  # e_1 to e_2: a bivector
+            True
+
             >>> from gacalc.g2 import e_1, e_2
             >>> (3.0 * e_1 + 4.0 * e_2) / 2 == 1.5 * e_1 + 2.0 * e_2
             True
@@ -694,6 +915,15 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Real: the magnitude ``|A|`` (see :meth:`magnitude`).
+
+        Examples:
+            The length of ``2 * e_3`` is 2; the 3-4-5 triangle gives 5:
+
+            >>> from gacalc.g3 import e_1, e_2, e_3
+            >>> abs(2 * e_3)
+            2
+            >>> abs(3 * e_1 + 4 * e_2)
+            5
         """
         return self.magnitude()
 
@@ -713,6 +943,15 @@ class MultiVectorBase(abc.ABC):
 
         Yields:
             Real: each coefficient value, in grade-then-index blade order.
+
+        Examples:
+            A vector reads as its coordinate tuple, zeros included:
+
+            >>> from gacalc.g3 import e_1, e_2, e_3
+            >>> list(1 * e_1 + 2 * e_2 + 3 * e_3)
+            [1, 2, 3]
+            >>> list(3 * e_1)
+            [3, 0, 0]
         """
         d: Mapping[Blade, Real] = self.to_blade_dict()
         yield from (d[key] for key in sorted(d.keys(), key=lambda b: (len(b), b)))
@@ -738,10 +977,24 @@ class MultiVectorBase(abc.ABC):
             an exact ``sympy`` value.
 
         Examples:
+            A scaled basis vector is as long as its scale, whichever way it points:
+
             >>> from gacalc.gn import e_1, e_2, e_3
+            >>> (2 * e_3).magnitude() == 2
+            True
+            >>> (-2 * e_1).magnitude() == 2
+            True
+
             >>> (3 * e_1 + 4 * e_2).magnitude() == 5
             True
             >>> (1 * e_1 + 2 * e_2 + 2 * e_3).magnitude() == 3
+            True
+
+            For a general vector it is the Pythagorean length:
+
+            >>> import sympy
+            >>> from gacalc.gn import a_1, a_2
+            >>> (a_1 * e_1 + a_2 * e_2).magnitude() == sympy.sqrt(a_1**2 + a_2**2)
             True
         """
         magnitude_squared: Real = self.magnitude_squared()
@@ -756,6 +1009,17 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Real: the scalar ``|A|²`` (the scalar product of the reverse with A).
+
+        Examples:
+            The square of the length, with no square root:
+
+            >>> from gacalc.gn import e_1, e_2, a_1, a_2
+            >>> (2 * e_1).magnitude_squared() == 4
+            True
+            >>> (3 * e_1 + 4 * e_2).magnitude_squared() == 25
+            True
+            >>> (a_1 * e_1 + a_2 * e_2).magnitude_squared() == a_1**2 + a_2**2
+            True
         """
         return self.reverse().scalar_product(self)
 
@@ -771,8 +1035,16 @@ class MultiVectorBase(abc.ABC):
             Self: the unit multivector ``A / |A|`` (magnitude 1).
 
         Examples:
+            Normalizing keeps the direction and drops the length, so a scaled
+            basis vector becomes the basis vector (pointing the same way):
+
             >>> import sympy
             >>> from gacalc.gn import e_1, e_2
+            >>> (5 * e_2).normalize() == 1 * e_2
+            True
+            >>> (-3 * e_1).normalize() == -1 * e_1
+            True
+
             >>> (3 * e_1 + 4 * e_2).normalize() == (
             ...     sympy.Rational(3, 5) * e_1 + sympy.Rational(4, 5) * e_2
             ... )
@@ -852,6 +1124,18 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: an equal multivector with every coefficient ``sympy.simplify``'d.
+
+        Examples:
+            Plain numbers are already as simple as they get; a symbolic
+            coefficient is reduced (here by ``sin(x)**2 + cos(x)**2 = 1``):
+
+            >>> import sympy
+            >>> from gacalc.g3 import e_1
+            >>> (3 * e_1).simplified() == 3 * e_1
+            True
+            >>> x = sympy.Symbol("x")
+            >>> ((sympy.sin(x) ** 2 + sympy.cos(x) ** 2) * e_1).simplified() == 1 * e_1
+            True
         """
         return self._map_coefficients(lambda c: sympy.simplify(sympy.sympify(c)))
 
@@ -864,6 +1148,17 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: an equal multivector with every coefficient ``sympy.expand``'d.
+
+        Examples:
+            A product of sums is multiplied out:
+
+            >>> import sympy
+            >>> from gacalc.g3 import e_1
+            >>> (2 * e_1).expanded() == 2 * e_1
+            True
+            >>> x = sympy.Symbol("x")
+            >>> ((x + 1) * (x - 1) * e_1).expanded() == (x**2 - 1) * e_1
+            True
         """
         return self._map_coefficients(lambda c: sympy.expand(c))
 
@@ -880,6 +1175,26 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: the inner product ``A · B`` (the lowest-grade part of the
             geometric product).
+
+        Examples:
+            Perpendicular basis vectors have inner product 0; parallel ones
+            multiply their lengths:
+
+            >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2, MultiVector
+            >>> (1 * e_1).inner_product(1 * e_2) == MultiVector.zero()
+            True
+            >>> (2 * e_1).inner_product(3 * e_1) == MultiVector.from_real(6)
+            True
+
+            A vector dotted into a plane it lies in turns a quarter turn inside
+            that plane, so ``e_1 · (e_1 * e_2) = e_2``:
+
+            >>> (1 * e_1).inner_product(e_1 * e_2) == 1 * e_2
+            True
+            >>> u = a_1 * e_1 + a_2 * e_2
+            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> u.inner_product(v) == MultiVector.from_real(a_1 * b_1 + a_2 * b_2)
+            True
         """
 
         def inner_product_of_homogenous_multivectors(
@@ -918,7 +1233,17 @@ class MultiVectorBase(abc.ABC):
             Self: the inner product ``A · B`` (see :meth:`inner_product`).
 
         Examples:
+            Perpendicular basis vectors dot to 0; a basis vector with itself to 1,
+            and scaling either side scales the result:
+
             >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2, MultiVector
+            >>> (1 * e_1).dot(1 * e_2) == MultiVector.zero()
+            True
+            >>> (1 * e_1).dot(1 * e_1) == MultiVector.one()
+            True
+            >>> (2 * e_1).dot(3 * e_1) == MultiVector.from_real(6)
+            True
+
             >>> a = 3 * e_1 + 4 * e_2
             >>> a.dot(a) == MultiVector.from_real(25)      # |a|^2 = 3^2 + 4^2
             True
@@ -946,6 +1271,22 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: the outer product ``A ∧ B`` (the highest-grade part of the
             geometric product).
+
+        Examples:
+            Parallel vectors span no area, so their outer product is 0; two
+            perpendicular basis vectors span the unit square ``e_1 * e_2``:
+
+            >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2, MultiVector
+            >>> (1 * e_1).outer_product(2 * e_1) == MultiVector.zero()
+            True
+            >>> (1 * e_1).outer_product(1 * e_2) == e_1 * e_2
+            True
+            >>> (2 * e_1).outer_product(3 * e_2) == 6 * e_1 * e_2  # a 2-by-3 rectangle
+            True
+            >>> u = a_1 * e_1 + a_2 * e_2
+            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> u.outer_product(v) == (a_1 * b_2 - a_2 * b_1) * e_1 * e_2
+            True
         """
 
         def outer_product_of_homogenous_multivectors(
@@ -983,6 +1324,26 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Real: the scalar product ``⟨A * B⟩`` (the grade-0 part of the product).
+
+        Examples:
+            For vectors it agrees with the dot product: 0 when perpendicular, the
+            product of the lengths when parallel:
+
+            >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2
+            >>> (1 * e_1).scalar_product(1 * e_2) == 0
+            True
+            >>> (2 * e_1).scalar_product(3 * e_1) == 6
+            True
+
+            A unit bivector squares to -1, so its scalar product with itself is -1
+            even though its stored coefficient is +1:
+
+            >>> (e_1 * e_2).scalar_product(e_1 * e_2) == -1
+            True
+            >>> u = a_1 * e_1 + a_2 * e_2
+            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> u.scalar_product(v) == a_1 * b_1 + a_2 * b_2
+            True
         """
         return (self * other).scalar_part()
 
@@ -996,7 +1357,17 @@ class MultiVectorBase(abc.ABC):
             Self: the outer product ``A ∧ B`` (see :meth:`outer_product`).
 
         Examples:
+            Parallel vectors wedge to 0 whatever their lengths; perpendicular basis
+            vectors give the unit plane, and swapping them flips its orientation:
+
             >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2, MultiVector
+            >>> (1 * e_1).wedge(2 * e_1) == MultiVector.zero()
+            True
+            >>> (1 * e_1).wedge(1 * e_2) == e_1 * e_2
+            True
+            >>> (1 * e_2).wedge(1 * e_1) == -(e_1 * e_2)
+            True
+
             >>> a = 3 * e_1 + 4 * e_2
             >>> a.wedge(a) == MultiVector.zero()  # a vector wedged with itself is 0
             True
@@ -1020,6 +1391,13 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: the outer product ``a ∧ b``.
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2, MultiVector
+            >>> (1 * e_1) ^ (1 * e_2) == e_1 * e_2
+            True
+            >>> (1 * e_1) ^ (3 * e_1) == MultiVector.zero()  # parallel: no area
+            True
         """
         return self.wedge(other)
 
@@ -1044,6 +1422,26 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: the left contraction ``A ⌋ B`` (grade m−k per homogeneous
             part; zero where m−k < 0).
+
+        Examples:
+            Contracting ``e_1`` out of the plane ``e_1 * e_2`` leaves ``e_2``; the
+            bigger blade cannot be contracted out of the smaller one (0); and a
+            scalar on the left just scales (grade 0 counts here):
+
+            >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2, MultiVector
+            >>> (1 * e_1).left_contraction(e_1 * e_2) == 1 * e_2
+            True
+            >>> (e_1 * e_2).left_contraction(1 * e_1) == MultiVector.zero()
+            True
+            >>> MultiVector.from_real(2).left_contraction(1 * e_1) == 2 * e_1
+            True
+
+            For two vectors it is the dot product:
+
+            >>> u = a_1 * e_1 + a_2 * e_2
+            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> u.left_contraction(v) == u.dot(v)
+            True
         """
 
         def left_contraction_of_homogenous_multivectors(
@@ -1086,6 +1484,20 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Self: the right contraction ``A ⌊ B`` (grade k−m per homogeneous
             part; zero where k−m < 0).
+
+        Examples:
+            The mirror image of :meth:`left_contraction`: contracting ``e_2`` off
+            the right of ``e_1 * e_2`` leaves ``e_1``:
+
+            >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2, MultiVector
+            >>> (e_1 * e_2).right_contraction(1 * e_2) == 1 * e_1
+            True
+            >>> (1 * e_1).right_contraction(e_1 * e_2) == MultiVector.zero()
+            True
+            >>> u = a_1 * e_1 + a_2 * e_2
+            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> u.right_contraction(v) == u.dot(v)
+            True
         """
 
         def right_contraction_of_homogenous_multivectors(
@@ -1117,6 +1529,13 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: the left contraction ``a ⌋ b``.
+
+        Examples:
+            Parenthesize the ``<``: Python would otherwise chain it with ``==``.
+
+            >>> from gacalc.gn import e_1, e_2
+            >>> ((1 * e_1) < (e_1 * e_2)) == 1 * e_2
+            True
         """
         return self.left_contraction(other)
 
@@ -1128,6 +1547,13 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: the right contraction ``a ⌊ b``.
+
+        Examples:
+            Parenthesize the ``>``: Python would otherwise chain it with ``==``.
+
+            >>> from gacalc.gn import e_1, e_2
+            >>> ((e_1 * e_2) > (1 * e_2)) == 1 * e_1
+            True
         """
         return self.right_contraction(other)
 
@@ -1142,6 +1568,22 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             MultiVectorBase: the simple r-blade ``a₁ ∧ … ∧ a_r``.
+
+        Examples:
+            The three basis vectors span the unit cube ``e_1 * e_2 * e_3``; scaling
+            the edges scales the volume; three vectors in one plane give 0:
+
+            >>> from gacalc.gn import e_1, e_2, e_3, MultiVector
+            >>> MultiVector.outer_product_of_vectors(1 * e_1, 1 * e_2, 1 * e_3) == (
+            ...     e_1 * e_2 * e_3
+            ... )
+            True
+            >>> MultiVector.outer_product_of_vectors(2 * e_1, 3 * e_2) == 6 * e_1 * e_2
+            True
+            >>> MultiVector.outer_product_of_vectors(
+            ...     1 * e_1, 1 * e_2, 1 * e_1 + 1 * e_2
+            ... ) == MultiVector.zero()
+            True
         """
         return functools.reduce(lambda a, b: a ^ b, vectors)
 
@@ -1155,6 +1597,28 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Self: the grade-``r`` part of A (zero if A has no grade-``r`` blades).
+
+        Examples:
+            Each grade is picked out separately; a missing grade gives 0:
+
+            >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2, MultiVector
+            >>> M = 2 + 3 * e_1 + 4 * e_1 * e_2
+            >>> M.r_vector_part(0) == MultiVector.from_real(2)
+            True
+            >>> M.r_vector_part(1) == 3 * e_1
+            True
+            >>> M.r_vector_part(2) == 4 * e_1 * e_2
+            True
+            >>> M.r_vector_part(3) == MultiVector.zero()
+            True
+
+            The product of two vectors has a grade-0 part (the dot) and a grade-2
+            part (the wedge):
+
+            >>> u = a_1 * e_1 + a_2 * e_2
+            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> (u * v).r_vector_part(2) == u.wedge(v)
+            True
         """
         d: Mapping[Blade, Real] = self.to_blade_dict()
         return type(self).from_blade_dict(
@@ -1175,6 +1639,15 @@ class MultiVectorBase(abc.ABC):
         Returns:
             bool: ``True`` iff every present blade has grade ``r`` (``zero`` is
             homogeneous of every grade).
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2, MultiVector
+            >>> (1 * e_1 + 2 * e_2).is_homogeneous_of_grade_r(1)  # all grade 1
+            True
+            >>> (2 + 1 * e_1).is_homogeneous_of_grade_r(1)  # a scalar part too
+            False
+            >>> [MultiVector.zero().is_homogeneous_of_grade_r(r) for r in range(3)]
+            [True, True, True]
         """
         grades: list[int] = self.grades()
         return not grades or (max(grades) == r and self.is_r_vector())
@@ -1185,6 +1658,17 @@ class MultiVectorBase(abc.ABC):
         Returns:
             bool: ``True`` iff A has only a grade-0 (scalar) part (``zero``
             qualifies).
+
+        Examples:
+            A vector is not a scalar, but a vector times itself is:
+
+            >>> from gacalc.gn import e_1, MultiVector
+            >>> MultiVector.from_real(5).is_scalar()
+            True
+            >>> (1 * e_1).is_scalar()
+            False
+            >>> ((2 * e_1) * (2 * e_1)).is_scalar()
+            True
         """
         return self == self.r_vector_part(0)
 
@@ -1197,6 +1681,15 @@ class MultiVectorBase(abc.ABC):
         Returns:
             bool: ``True`` iff A is homogeneous of a single grade (``zero``
             qualifies).
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2
+            >>> (e_1 * e_2).is_r_vector()  # a pure bivector
+            True
+            >>> (2 + 1 * e_1 * e_2).is_r_vector()  # grades 0 and 2 mixed
+            False
+            >>> ((1 * e_1) * (1 * e_1 + 1 * e_2)).is_r_vector()  # dot + wedge
+            False
         """
         return self == self.r_vector_part(self.max_grade())
 
@@ -1208,6 +1701,11 @@ class MultiVectorBase(abc.ABC):
 
         Examples:
             >>> from gacalc.gn import e_1, e_2
+            >>> (1 * e_1).is_vector()
+            True
+            >>> (e_1 * e_2).is_vector()  # a bivector is not
+            False
+
             >>> a = 3 * e_1 + 4 * e_2
             >>> a.is_vector()
             True
@@ -1217,44 +1715,51 @@ class MultiVectorBase(abc.ABC):
         return self.is_homogeneous_of_grade_r(r=1)
 
     @staticmethod
-    def require_vector(value: MultiVectorBase, context: str) -> None:
+    @validation_guard
+    def require_vector(value: MultiVectorBase) -> None:
         """Raise ``ValueError`` unless ``value`` is a vector (grade 1).
 
         The shared guard for every operation defined on vectors only: it raises
-        instead of asserting, so it still guards under ``python -O``.
+        instead of asserting, so it still guards under ``python -O``.  The message
+        names the calling function and its call site, read from the Python stack
+        (:func:`describe_caller`): ``"<caller> (<file>:<line>) takes a vector
+        (grade 1); got a non-vector: …"``.
 
         Args:
             value: the value to check.
-            context: what is being called, for the message (``"cross"``,
-                ``"a frame's map"``); the message reads ``"<context> takes a vector
-                (grade 1); got a non-vector: …"``.
 
         Raises:
             ValueError: if ``value`` is not homogeneous of grade 1.
 
         Examples:
             >>> from gacalc.gn import Gn, e_1, e_2
-            >>> Gn.require_vector(3 * e_1 + 4 * e_2, "an example")
-            >>> Gn.require_vector(e_1 ^ e_2, "an example")  # doctest: +ELLIPSIS
+            >>> def double(v: Gn) -> Gn:
+            ...     Gn.require_vector(v)
+            ...     return 2 * v
+            >>> double(1 * e_1) == 2 * e_1
+            True
+            >>> double(e_1 ^ e_2)  # doctest: +ELLIPSIS
             Traceback (most recent call last):
                 ...
-            ValueError: an example takes a vector (grade 1); got a non-vector: ...
+            ValueError: double (...) takes a vector (grade 1); got a non-vector: ...
         """
         if not value.is_vector():
             raise ValueError(
-                f"{context} takes a vector (grade 1); got a non-vector: {value!r}"
+                f"{describe_caller()} takes a vector (grade 1); "
+                f"got a non-vector: {value!r}"
             )
 
     @staticmethod
-    def require_vectors(vectors: Sequence[MultiVectorBase], context: str) -> None:
+    @validation_guard
+    def require_vectors(vectors: Sequence[MultiVectorBase]) -> None:
         """Raise ``ValueError`` unless ``vectors`` is a non-empty sequence of vectors.
 
         :meth:`require_vector` applied to each member, after a check that the
-        sequence is not empty.
+        sequence is not empty.  The message names the calling function, as
+        :meth:`require_vector`'s does.
 
         Args:
             vectors: the values to check.
-            context: what is being called, for the message.
 
         Raises:
             ValueError: on an empty sequence, or on the first member that is not
@@ -1262,17 +1767,61 @@ class MultiVectorBase(abc.ABC):
 
         Examples:
             >>> from gacalc.gn import Gn, e_1, e_2
-            >>> Gn.require_vectors([1 * e_1, 1 * e_2], "an example")
-            >>> Gn.require_vectors([], "an example")
+            >>> def total(vectors: list[Gn]) -> Gn:
+            ...     Gn.require_vectors(vectors)
+            ...     return sum(vectors, start=Gn.zero())
+            >>> total([1 * e_1, 1 * e_2]) == 1 * e_1 + 1 * e_2
+            True
+            >>> total([])  # doctest: +ELLIPSIS
             Traceback (most recent call last):
                 ...
-            ValueError: an example needs at least one vector
+            ValueError: total (...) needs at least one vector
         """
         if len(vectors) == 0:
-            raise ValueError(f"{context} needs at least one vector")
+            raise ValueError(f"{describe_caller()} needs at least one vector")
         value: MultiVectorBase
         for value in vectors:
-            MultiVectorBase.require_vector(value, context)
+            MultiVectorBase.require_vector(value)
+
+    @staticmethod
+    @validation_guard
+    def require_rotation_endpoints(
+        from_vector: MultiVectorBase, to_vector: MultiVectorBase
+    ) -> None:
+        """Raise ``ValueError`` unless ``from_vector`` and ``to_vector`` can bound a
+        rotation: both vectors, and either both zero or both nonzero.
+
+        The shared rule for every "rotate ``a`` to ``b``" factory.  A rotation from
+        the zero vector to the zero vector is the identity (each factory handles that
+        case).  A rotation from the zero vector to a nonzero vector, or from a nonzero
+        vector to zero, has no direction at one end, so it is an error.
+
+        Args:
+            from_vector: the vector the rotation starts from.
+            to_vector: the vector the rotation ends at.
+
+        Raises:
+            ValueError: if either is not a vector, or exactly one of them is zero.
+
+        Examples:
+            >>> from gacalc.g3 import Vector, e_1
+            >>> Vector.require_rotation_endpoints(1 * e_1, 2 * e_1)
+            >>> Vector.require_rotation_endpoints(Vector.zero(), Vector.zero())
+            >>> Vector.require_rotation_endpoints(Vector.zero(), 1 * e_1)
+            ... # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+                ...
+            ValueError: <module> (...): cannot rotate between the zero vector and ...
+        """
+        MultiVectorBase.require_vectors((from_vector, to_vector))
+        from_is_zero: bool = from_vector == type(from_vector).zero()
+        to_is_zero: bool = to_vector == type(to_vector).zero()
+        if from_is_zero != to_is_zero:
+            raise ValueError(
+                f"{describe_caller()}: cannot rotate between the zero vector and a "
+                "nonzero vector -- the zero vector has no direction (a rotation from "
+                "zero to zero is the identity)"
+            )
 
     def implied_minimal_number_of_dimensions(self) -> int:
         """The dimension of the smallest coordinate space that holds this vector.
@@ -1298,9 +1847,9 @@ class MultiVectorBase(abc.ABC):
             >>> (e_1 * e_2).implied_minimal_number_of_dimensions()  # doctest: +ELLIPSIS
             Traceback (most recent call last):
                 ...
-            ValueError: implied_minimal_number_of_dimensions takes a vector ...
+            ValueError: ...implied_minimal_number_of_dimensions (...) takes a vector ...
         """
-        MultiVectorBase.require_vector(self, "implied_minimal_number_of_dimensions")
+        MultiVectorBase.require_vector(self)
         # A vector's blades are the one-index tuples (i,), one per nonzero coefficient.
         return max((index for (index,) in self.to_blade_dict()), default=0)
 
@@ -1312,6 +1861,11 @@ class MultiVectorBase(abc.ABC):
 
         Examples:
             >>> from gacalc.gn import e_1, e_2
+            >>> (e_1 * e_2).is_bivector()  # the unit plane
+            True
+            >>> (1 * e_1).is_bivector()
+            False
+
             >>> a = 3 * e_1 + 4 * e_2
             >>> (a * e_2).is_bivector()  # the geometric product is scalar + bivector
             False
@@ -1325,6 +1879,15 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             bool: ``True`` iff A is homogeneous of grade 3.
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2, e_3
+            >>> (e_1 * e_2 * e_3).is_trivector()  # the unit volume
+            True
+            >>> (e_1 * e_2).is_trivector()
+            False
+            >>> (1 * e_1).wedge(1 * e_1 + 1 * e_2).wedge(1 * e_3).is_trivector()
+            True
         """
         return self.is_homogeneous_of_grade_r(r=3)
 
@@ -1352,7 +1915,16 @@ class MultiVectorBase(abc.ABC):
             bool: ``True`` iff ``A · B`` is (approximately) zero.
 
         Examples:
+            Perpendicular basis vectors are orthogonal whatever their lengths:
+
             >>> from gacalc.gn import e_1, e_2
+            >>> (1 * e_1).is_orthogonal_to(1 * e_2)
+            True
+            >>> (1 * e_1).is_orthogonal_to(5 * e_2)
+            True
+            >>> (1 * e_1).is_orthogonal_to(1 * e_1 + 1 * e_2)  # 45 degrees apart
+            False
+
             >>> (3 * e_1 + 4 * e_2).is_orthogonal_to(-4 * e_1 + 3 * e_2)  # right angle
             True
             >>> (3 * e_1 + 4 * e_2).is_orthogonal_to(1 * e_1)  # not perpendicular
@@ -1366,7 +1938,7 @@ class MultiVectorBase(abc.ABC):
 
         # TODO - defined for vectors only right now, it's probably defined more
         # generally later in the book
-        MultiVectorBase.require_vectors((self, other), "is_orthogonal_to")
+        MultiVectorBase.require_vectors((self, other))
         if self == type(self).zero() or other == type(other).zero():
             raise ValueError(
                 "orthogonality (the angle) is undefined for the zero vector"
@@ -1409,7 +1981,17 @@ class MultiVectorBase(abc.ABC):
             bool: ``True`` iff ``A ∧ B`` is (approximately) zero.
 
         Examples:
+            A basis vector is parallel to any multiple of itself, and not to a
+            different basis vector:
+
             >>> from gacalc.gn import e_1, e_2
+            >>> (1 * e_1).is_parallel_to(3 * e_1)
+            True
+            >>> (1 * e_1).is_parallel_to(-2 * e_1)
+            True
+            >>> (1 * e_1).is_parallel_to(1 * e_2)
+            False
+
             >>> a = 3 * e_1 + 4 * e_2
             >>> a.is_parallel_to(2 * a)        # same direction
             True
@@ -1430,7 +2012,7 @@ class MultiVectorBase(abc.ABC):
 
         # TODO - defined for vectors only right now, it's probably defined more
         # generally later in the book
-        MultiVectorBase.require_vectors((self, other), "is_parallel_to")
+        MultiVectorBase.require_vectors((self, other))
         if self == type(self).zero() or other == type(other).zero():
             raise ValueError("parallelism (the angle) is undefined for the zero vector")
 
@@ -1446,6 +2028,25 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Real: the grade-0 coefficient of A (0 if absent).
+
+        Examples:
+            A vector has no scalar part; the product of two parallel vectors is
+            all scalar part:
+
+            >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2
+            >>> (2 + 3 * e_1).scalar_part() == 2
+            True
+            >>> (1 * e_1).scalar_part() == 0
+            True
+            >>> ((2 * e_1) * (3 * e_1)).scalar_part() == 6
+            True
+
+            In general the scalar part of ``u * v`` is the dot product:
+
+            >>> u = a_1 * e_1 + a_2 * e_2
+            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> (u * v).scalar_part() == a_1 * b_1 + a_2 * b_2
+            True
         """
         return self.to_blade_dict().get(tuple(), 0)
 
@@ -1456,6 +2057,15 @@ class MultiVectorBase(abc.ABC):
         Returns:
             list[int]: the distinct grades present (blade lengths with a nonzero
             coefficient); empty for ``zero``.
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2, MultiVector
+            >>> (1 * e_1).grades()
+            [1]
+            >>> (2 + 3 * e_1 * e_2).grades()
+            [0, 2]
+            >>> MultiVector.zero().grades()
+            []
         """
         return list(set(len(blade) for blade in self.to_blade_dict().keys()))
 
@@ -1464,6 +2074,15 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             int: the highest grade present (0 for ``zero``).
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2, e_3, MultiVector
+            >>> (2 + 3 * e_1 * e_2).max_grade()
+            2
+            >>> (1 * e_1 + 1 * e_1 * e_2 * e_3).max_grade()
+            3
+            >>> MultiVector.zero().max_grade()
+            0
         """
         # The zero multivector has no present blades; its max grade is 0 (it is
         # homogeneous of every grade -- see is_homogeneous_of_grade_r) rather than a
@@ -1484,7 +2103,17 @@ class MultiVectorBase(abc.ABC):
             :func:`~gacalc.base.pseudoscalar_squared_sign`).
 
         Examples:
+            A vector is unchanged; the unit plane ``e_1 * e_2`` reverses to
+            ``e_2 * e_1``, which is its negative:
+
             >>> from gacalc.gn import e_1, e_2, e_3, a_1, a_2, a_3, b_1, b_2, b_3
+            >>> (1 * e_1).reverse() == 1 * e_1
+            True
+            >>> (e_1 * e_2).reverse() == e_2 * e_1
+            True
+            >>> (e_1 * e_2).reverse() == -(e_1 * e_2)
+            True
+
             >>> a = 3 * e_1 + 4 * e_2
             >>> (a * a).reverse() == a * a      # a scalar is its own reverse
             True
@@ -1552,6 +2181,36 @@ class MultiVectorBase(abc.ABC):
             ZeroDivisionError: if ``|A|²`` is zero (A has no inverse).
             RuntimeError: if ``A`` is a mixed-grade multivector (``Ã * A`` not a
                 scalar) — the general inverse is not implemented.
+
+        Examples:
+            A unit basis vector is its own inverse; the inverse of ``2 * e_1``
+            points the same way with length 1/2; the unit plane inverts to its
+            negative, because it squares to -1:
+
+            >>> import sympy
+            >>> from gacalc.gn import e_1, e_2, a_1, a_2, MultiVector
+            >>> (1 * e_1).inverse() == 1 * e_1
+            True
+            >>> (2 * e_1).inverse() == sympy.Rational(1, 2) * e_1
+            True
+            >>> (e_1 * e_2).inverse() == -(e_1 * e_2)
+            True
+
+            A vector's inverse is the vector divided by its squared length, and
+            multiplying back gives 1:
+
+            >>> a = 3 * e_1 + 4 * e_2
+            >>> a.inverse() == (
+            ...     sympy.Rational(3, 25) * e_1 + sympy.Rational(4, 25) * e_2
+            ... )
+            True
+            >>> u = a_1 * e_1 + a_2 * e_2
+            >>> u * u.inverse() == MultiVector.one()
+            True
+            >>> (2 + 1 * e_1).inverse()  # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+                ...
+            RuntimeError: inverse() supports a blade or versor ...
         """
         # Compute the full product Ã * A once — reverse on the LEFT, matching
         # :meth:`magnitude_squared` (= ``self.reverse().scalar_product(self)``
@@ -1597,6 +2256,21 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             MultiVectorBase: the dual ``A * I⁻¹`` (grade r ↦ grade n−r).
+
+        Examples:
+            In 3-D the dual of the plane ``e_1 * e_2`` is its normal ``e_3``, and
+            the dual of a vector is the plane perpendicular to it:
+
+            >>> from gacalc.gn import e_1, e_2, e_3
+            >>> (e_1 * e_2).dual(3) == 1 * e_3
+            True
+            >>> (1 * e_1).dual(3) == -(e_2 * e_3)
+            True
+
+            In 2-D the dual of a vector is again a vector, turned a quarter turn:
+
+            >>> (1 * e_1).dual(2) == -1 * e_2
+            True
         """
         return self * type(self).unit_pseudoscalar(n).inverse()
 
@@ -1612,6 +2286,17 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             MultiVectorBase: the sum of the even-grade (0, 2, …) parts of A.
+
+        Examples:
+            The scalar and bivector parts are kept, the vector part dropped; the
+            product of two vectors is all even:
+
+            >>> from gacalc.gn import e_1, e_2
+            >>> (2 + 3 * e_1 + 4 * e_1 * e_2).even_part() == 2 + 4 * e_1 * e_2
+            True
+            >>> R = (1 * e_1) * (1 * e_1 + 1 * e_2)
+            >>> R.even_part() == R
+            True
         """
         return sum(
             [self.r_vector_part(g) for g in self.grades() if g % 2 == 0],
@@ -1625,6 +2310,19 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             MultiVectorBase: the sum of the odd-grade (1, 3, …) parts of A.
+
+        Examples:
+            Only the vector (and trivector) parts are kept:
+
+            >>> from gacalc.gn import e_1, e_2, e_3, MultiVector
+            >>> (2 + 3 * e_1 + 4 * e_1 * e_2).odd_part() == 3 * e_1
+            True
+            >>> ((1 * e_1) * (1 * e_1 + 1 * e_2)).odd_part() == MultiVector.zero()
+            True
+            >>> (1 * e_1 + 5 * e_1 * e_2 * e_3).odd_part() == (
+            ...     1 * e_1 + 5 * e_1 * e_2 * e_3
+            ... )
+            True
         """
         return sum(
             [self.r_vector_part(g) for g in self.grades() if g % 2 == 1],
@@ -1644,7 +2342,20 @@ class MultiVectorBase(abc.ABC):
             Real: the cosine ``cos(θ) = (Ã ∗ B) / (|A| * |B|)``.
 
         Examples:
+            Only the directions matter, not the lengths: perpendicular gives 0,
+            same direction 1, opposite -1, and 45 degrees ``sqrt(2)/2``:
+
+            >>> import sympy
             >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2, MultiVector
+            >>> (1 * e_1).cosine(1 * e_2) == 0
+            True
+            >>> (1 * e_1).cosine(5 * e_1) == 1
+            True
+            >>> (1 * e_1).cosine(-2 * e_1) == -1
+            True
+            >>> (1 * e_1).cosine(1 * e_1 + 1 * e_2) == sympy.sqrt(2) / 2
+            True
+
             >>> a = 3 * e_1 + 4 * e_2
             >>> a.cosine(a) == 1                    # a vector with itself -> 1
             True
@@ -1688,6 +2399,26 @@ class MultiVectorBase(abc.ABC):
         Returns:
             Real: the unsigned sine ``|A ∧ B| / (|A| * |B|)``.
 
+        Examples:
+            Only the directions matter: perpendicular gives 1, parallel 0, and
+            45 degrees ``sqrt(2)/2``:
+
+            >>> import sympy
+            >>> from gacalc.gn import e_1, e_2
+            >>> (1 * e_1).abs_sin(3 * e_2) == 1
+            True
+            >>> (1 * e_1).abs_sin(4 * e_1) == 0
+            True
+            >>> (1 * e_1).abs_sin(1 * e_1 + 1 * e_2) == sympy.sqrt(2) / 2
+            True
+
+            With :meth:`cosine` it satisfies ``cos(θ)**2 + sin(θ)**2 = 1``:
+
+            >>> a = 3 * e_1 + 4 * e_2
+            >>> b = 1 * e_1 + 2 * e_2
+            >>> sympy.simplify(a.cosine(b) ** 2 + a.abs_sin(b) ** 2) == 1
+            True
+
         Raises:
             ValueError: if ``self`` or ``other`` is the zero vector — the angle (hence
                 its sine) is undefined there (matches :meth:`cosine` and the Lean
@@ -1727,7 +2458,20 @@ class MultiVectorBase(abc.ABC):
             (non-invertible) projection ``A ↦ (A · B) * B⁻¹``.
 
         Examples:
+            Projecting onto the natural basis keeps one coordinate. Only the
+            direction of ``onto`` matters, not its length (or its sign), so
+            projecting onto ``3 * e_1`` or ``-1 * e_1`` gives the same result:
+
             >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2, MultiVector
+            >>> MultiVector.project(onto=e_1)(1 * e_1 + 2 * e_2) == 1 * e_1
+            True
+            >>> MultiVector.project(onto=3 * e_1)(1 * e_1 + 2 * e_2) == 1 * e_1
+            True
+            >>> MultiVector.project(onto=-1 * e_1)(1 * e_1 + 2 * e_2) == 1 * e_1
+            True
+            >>> MultiVector.project(onto=e_2)(1 * e_1 + 2 * e_2) == 2 * e_2
+            True
+
             >>> a = 3 * e_1 + 4 * e_2
             >>> MultiVector.project(onto=e_1)(a) == 3 * e_1       # the e_1 component
             True
@@ -1816,7 +2560,20 @@ class MultiVectorBase(abc.ABC):
             (non-invertible) rejection ``A ↦ (A ∧ B) B⁻¹``.
 
         Examples:
+            Rejecting from a basis vector drops that coordinate and keeps the
+            perpendicular rest. As with :meth:`project`, only the direction of
+            ``away_from`` matters, so ``e_1`` and ``3 * e_1`` agree:
+
             >>> from gacalc.gn import e_1, e_2, MultiVector
+            >>> MultiVector.reject(away_from=e_1)(1 * e_1 + 2 * e_2) == 2 * e_2
+            True
+            >>> MultiVector.reject(away_from=3 * e_1)(1 * e_1 + 2 * e_2) == 2 * e_2
+            True
+            >>> MultiVector.reject(away_from=e_1)(1 * e_1 + 2 * e_2).is_orthogonal_to(
+            ...     1 * e_1
+            ... )
+            True
+
             >>> a = 3 * e_1 + 4 * e_2
             >>> MultiVector.reject(away_from=e_1)(a) == 4 * e_2  # orthogonal to e_1
             True
@@ -1829,12 +2586,20 @@ class MultiVectorBase(abc.ABC):
             ... )(a) == MultiVector.zero()
             True
 
+            For general 2-D vectors the rejection is perpendicular to ``away_from``:
+
+            >>> from gacalc.gn import a_1, a_2, b_1, b_2
+            >>> u = a_1 * e_1 + a_2 * e_2
+            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> MultiVector.reject(away_from=u)(v).dot(u) == MultiVector.zero()
+            True
+
         Raises:
             ValueError: if ``away_from`` is neither a vector nor a bivector.
         """
 
         def r(value: MultiVectorBase) -> MultiVectorBase:
-            MultiVectorBase.require_vector(value, "reject")
+            MultiVectorBase.require_vector(value)
             assert isinstance(away_from, MultiVectorBase)  # to satisfy type checking
             rejected: MultiVectorBase = (value.wedge(away_from)) * away_from.inverse()
             # Rejection of a vector is a vector, but the raw product widens the
@@ -1889,7 +2654,20 @@ class MultiVectorBase(abc.ABC):
             ``P_B(A) − P_B^⊥(A)``, an involution (its own inverse).
 
         Examples:
+            Reflecting across ``e_1`` in the plane flips the other component; only
+            the direction of ``across`` matters, and reflecting twice gives back
+            the original:
+
             >>> from gacalc.gn import e_1, e_2, e_3, MultiVector
+            >>> MultiVector.reflect(across=e_1)(1 * e_1 + 2 * e_2) == 1 * e_1 - 2 * e_2
+            True
+            >>> MultiVector.reflect(across=5 * e_1)(1 * e_1 + 2 * e_2) == (
+            ...     1 * e_1 - 2 * e_2
+            ... )
+            True
+            >>> MultiVector.reflect(across=e_1)(1 * e_1 - 2 * e_2) == 1 * e_1 + 2 * e_2
+            True
+
             >>> a = 3 * e_1 + 4 * e_2 + 5 * e_3
             >>> MultiVector.reflect(across=e_1)(a) == 3 * e_1 - 4 * e_2 - 5 * e_3
             True
@@ -1912,6 +2690,15 @@ class MultiVectorBase(abc.ABC):
             ... )(a)
             True
 
+            For general 2-D vectors a reflection keeps the length:
+
+            >>> from gacalc.gn import a_1, a_2, b_1, b_2
+            >>> u = a_1 * e_1 + a_2 * e_2
+            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> w = MultiVector.reflect(across=u)(v)
+            >>> w.dot(w) == v.dot(v)
+            True
+
         Raises:
             ValueError: if ``across`` is neither a vector nor a bivector, or (when the
                 reflection is applied) if the value reflected is not a vector.
@@ -1926,7 +2713,7 @@ class MultiVectorBase(abc.ABC):
             )
 
             def r(value: MultiVectorBase) -> MultiVectorBase:
-                MultiVectorBase.require_vector(value, "reflect")
+                MultiVectorBase.require_vector(value)
                 return components_in_plane(value) - components_exterior_to_plane(value)
 
             label: str = "\\mathrm{refl}_{" + blade._repr_latex_().strip("$") + "}"
@@ -1971,6 +2758,19 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             MultiVectorBase: the projection of ``self`` onto ``onto``.
+
+        Examples:
+            Only the direction of ``onto`` matters, not its length:
+
+            >>> from gacalc.g3 import e_1, e_2, e_3
+            >>> (1 * e_1 + 2 * e_2).projected_onto(e_1) == 1 * e_1
+            True
+            >>> (1 * e_1 + 2 * e_2).projected_onto(3 * e_1) == 1 * e_1
+            True
+            >>> (1 * e_1 + 2 * e_2 + 3 * e_3).projected_onto([1 * e_1, 1 * e_2]) == (
+            ...     1 * e_1 + 2 * e_2
+            ... )
+            True
         """
         return type(self).project(onto)(self)
 
@@ -1986,6 +2786,20 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             MultiVectorBase: the rejection of ``self`` from ``away_from``.
+
+        Examples:
+            What is left after removing the ``away_from`` direction; its length
+            does not matter:
+
+            >>> from gacalc.g3 import e_1, e_2, e_3
+            >>> (1 * e_1 + 2 * e_2).rejected_away_from(e_1) == 2 * e_2
+            True
+            >>> (1 * e_1 + 2 * e_2).rejected_away_from(3 * e_1) == 2 * e_2
+            True
+            >>> (1 * e_1 + 2 * e_2 + 3 * e_3).rejected_away_from(
+            ...     [1 * e_1, 1 * e_2]
+            ... ) == 3 * e_3
+            True
         """
         return type(self).reject(away_from)(self)
 
@@ -2001,6 +2815,19 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             MultiVectorBase: ``self`` reflected across ``across``.
+
+        Examples:
+            The component along ``across`` stays, the rest flips sign:
+
+            >>> from gacalc.g3 import e_1, e_2, e_3
+            >>> (1 * e_1 + 2 * e_2).reflected_across(e_1) == 1 * e_1 - 2 * e_2
+            True
+            >>> (1 * e_1 + 2 * e_2).reflected_across(5 * e_1) == 1 * e_1 - 2 * e_2
+            True
+            >>> (1 * e_1 + 2 * e_2 + 3 * e_3).reflected_across(
+            ...     [1 * e_1, 1 * e_2]
+            ... ) == 1 * e_1 + 2 * e_2 - 3 * e_3
+            True
         """
         return type(self).reflect(across)(self)
 
@@ -2022,7 +2849,14 @@ class MultiVectorBase(abc.ABC):
             Real: the (unsigned) area ``|a ∧ b|``.
 
         Example:
+            The unit square has area 1; parallel vectors enclose no area:
+
             >>> from gacalc.g2 import e_1, e_2
+            >>> (1 * e_1).area(1 * e_2)
+            1
+            >>> (1 * e_1).area(4 * e_1)
+            0
+
             >>> (3 * e_1).area(2 * e_2)
             6
             >>> (3 * e_1).area(2 * e_2) == (2 * e_2).area(3 * e_1)  # unsigned
@@ -2042,6 +2876,23 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Real: the (unsigned) volume of the parallelepiped.
+
+        Examples:
+            The unit cube has volume 1, a 2-by-3-by-4 box 24, and three vectors in
+            one plane enclose no volume:
+
+            >>> from gacalc.g3 import e_1, e_2, e_3
+            >>> (1 * e_1).volume(1 * e_2, 1 * e_3)
+            1
+            >>> (2 * e_1).volume(3 * e_2, 4 * e_3)
+            24
+            >>> (1 * e_1).volume(1 * e_2, 1 * e_1 + 1 * e_2)
+            0
+
+            Shearing an edge along another does not change the volume:
+
+            >>> (1 * e_1).volume(1 * e_1 + 1 * e_2, 1 * e_3)
+            1
         """
         from gacalc import measure
 
@@ -2059,7 +2910,15 @@ class MultiVectorBase(abc.ABC):
             clockwise from ``self``).
 
         Example:
+            Counterclockwise from ``e_1`` to ``e_2`` is positive; the other way
+            round is negative:
+
             >>> from gacalc.g2 import e_1, e_2
+            >>> (1 * e_1).signed_area(1 * e_2)
+            1
+            >>> (1 * e_2).signed_area(1 * e_1)
+            -1
+
             >>> a = 2 * e_1 + 1 * e_2
             >>> b = 1 * e_1 + 3 * e_2
             >>> a.signed_area(b)
@@ -2081,6 +2940,18 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             Real: the signed volume (the 3-D determinant).
+
+        Examples:
+            The right-handed order ``e_1, e_2, e_3`` is positive; swapping two edges
+            flips the sign:
+
+            >>> from gacalc.g3 import e_1, e_2, e_3
+            >>> (1 * e_1).signed_volume(1 * e_2, 1 * e_3)
+            1
+            >>> (1 * e_2).signed_volume(1 * e_1, 1 * e_3)
+            -1
+            >>> (1 * e_1 + 2 * e_2).signed_volume(3 * e_2, 1 * e_1 + 4 * e_3)
+            12
         """
         from gacalc import measure
 
@@ -2102,6 +2973,18 @@ class MultiVectorBase(abc.ABC):
             >>> from gacalc.g3 import e_1, e_2, e_3
             >>> (1 * e_1).cross(1 * e_2) == 1 * e_3
             True
+
+            Swapping the order flips the result, and parallel vectors give zero:
+
+            >>> from gacalc.g3 import Vector
+            >>> (1 * e_2).cross(1 * e_1) == -1 * e_3
+            True
+            >>> (1 * e_1).cross(2 * e_1) == Vector.zero()
+            True
+            >>> (1 * e_1 + 2 * e_2 + 3 * e_3).cross(4 * e_1 + 5 * e_2 + 6 * e_3) == (
+            ...     -3 * e_1 + 6 * e_2 - 3 * e_3
+            ... )
+            True
         """
         from gacalc import vectorcalc
 
@@ -2114,6 +2997,15 @@ class MultiVectorBase(abc.ABC):
         Returns:
             gacalc.functions.InvertibleFunction[MultiVectorBase]: the identity map
             (its own inverse).
+
+        Examples:
+            Every input comes back unchanged:
+
+            >>> from gacalc.gn import e_1, e_2, MultiVector
+            >>> MultiVector.identity()(1 * e_1 + 2 * e_2) == 1 * e_1 + 2 * e_2
+            True
+            >>> MultiVector.identity()(e_1 * e_2) == e_1 * e_2
+            True
         """
 
         def i(value: MultiVectorBase) -> MultiVectorBase:
@@ -2185,18 +3077,55 @@ class MultiVectorBase(abc.ABC):
         (Assumes ``from``/``to`` are not antiparallel; the construction
         degenerates only on that measure-zero case.)
 
+        A rotation from the zero vector to the zero vector is the identity, so its
+        versor is ``1``; from zero to a nonzero vector (or back) is an error
+        (:meth:`require_rotation_endpoints`).
+
         Args:
             from_vector: the vector the versor rotates *from*.
             to_vector: the vector the versor rotates *toward*.
 
         Returns:
             MultiVectorBase: the un-normalized versor ``|a| * |b| + b * a`` (scalar +
-            bivector); apply it with ``R * v * R.inverse()``.
+            bivector); apply it with ``R * v * R.inverse()``.  ``1`` when both
+            vectors are zero.
 
         Raises:
-            ValueError: if either argument is not a vector (grade 1).
+            ValueError: if either argument is not a vector (grade 1), or exactly one
+                of them is zero.
+
+        Examples:
+            A quarter turn, ``e_1`` to ``e_2``: the versor is ``1 + e_2 * e_1``, and
+            it carries ``e_1`` onto ``e_2``:
+
+            >>> from gacalc.g3 import Vector, Versor, e_1, e_2
+            >>> R = Vector.versor_from_vectors(1 * e_1, 1 * e_2)
+            >>> R == Versor.one() + (1 * e_2) * (1 * e_1)
+            True
+            >>> R * (1 * e_1) * R.inverse() == 1 * e_2
+            True
+
+            Only the directions matter: aiming at ``3 * e_2`` still carries ``e_1``
+            onto ``e_2`` (a rotation does not stretch):
+
+            >>> R = Vector.versor_from_vectors(1 * e_1, 3 * e_2)
+            >>> R * (1 * e_1) * R.inverse() == 1 * e_2
+            True
+
+            From zero to zero is the identity; from zero to a direction is an error:
+
+            >>> Vector.versor_from_vectors(Vector.zero(), Vector.zero()) == Versor.one()
+            True
+            >>> Vector.versor_from_vectors(Vector.zero(), 1 * e_2)  # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+                ...
+            ValueError: ...versor_from_vectors (...): cannot rotate between the zero ...
         """
-        MultiVectorBase.require_vectors((from_vector, to_vector), "versor_from_vectors")
+        MultiVectorBase.require_rotation_endpoints(from_vector, to_vector)
+        if from_vector == type(from_vector).zero():
+            # From zero to zero: the identity rotation, whose versor is 1 (at the
+            # versor's own type, the type of the product of two vectors).
+            return type(to_vector * from_vector).one()
         # |from| * |to| -- the versor's scalar part, making it the half-angle versor.
         # Kept as the *product of two magnitudes* (two simple sqrts), NOT
         # |to from| = sqrt(|to|^2 * |from|^2): the latter is mathematically equal
@@ -2252,8 +3181,32 @@ class MultiVectorBase(abc.ABC):
             (or ``sandwich`` -- for a rotor the inverse is the reverse).
 
         Raises:
-            ValueError: if either argument is not a vector (grade 1).
+            ValueError: if either argument is not a vector (grade 1), or exactly one
+                of them is zero (from zero to zero is the identity rotor 1).
             ZeroDivisionError: if the vectors are antiparallel (the versor is zero).
+
+        Examples:
+            The quarter-turn rotor from ``e_1`` to ``e_2`` has length 1 and needs
+            only the reverse to undo; it keeps lengths, so ``3 * e_1`` lands on
+            ``3 * e_2``:
+
+            >>> from gacalc.g3 import Vector, e_1, e_2, e_3
+            >>> R = Vector.rotor_from_vectors(1 * e_1, 1 * e_2)
+            >>> R.magnitude()
+            1
+            >>> R * (1 * e_1) * R.reverse() == 1 * e_2
+            True
+            >>> R * (3 * e_1) * R.reverse() == 3 * e_2
+            True
+
+            The lengths of the two inputs do not matter, only their directions:
+
+            >>> Vector.rotor_from_vectors(2 * e_1, 5 * e_2) == R
+            True
+            >>> import sympy
+            >>> S = Vector.rotor_from_vectors(1 * e_1, 1 * e_1 + 1 * e_2 + 1 * e_3)
+            >>> sympy.simplify(S.magnitude()) == 1  # a unit rotor, once simplified
+            True
         """
         return cls.versor_from_vectors(
             from_vector=from_vector, to_vector=to_vector
@@ -2270,6 +3223,24 @@ class MultiVectorBase(abc.ABC):
         Raises:
             ZeroDivisionError: if the bivector part is zero (a pure scalar has no
             plane).
+
+        Examples:
+            A turn from ``e_1`` toward ``e_2`` happens in the ``e_1 * e_2`` plane
+            (here with the orientation ``e_2 * e_1 = -e_12``), whatever the
+            vectors' lengths:
+
+            >>> from gacalc.g3 import Bivector, Vector, e_1, e_2, e_3
+            >>> R = Vector.versor_from_vectors(1 * e_1, 1 * e_2)
+            >>> R.plane_of_rotation() == -1 * Bivector.e_12
+            True
+            >>> Vector.versor_from_vectors(2 * e_1, 5 * e_2).plane_of_rotation() == (
+            ...     -1 * Bivector.e_12
+            ... )
+            True
+            >>> Vector.versor_from_vectors(1 * e_2, 1 * e_3).plane_of_rotation() == (
+            ...     -1 * Bivector.e_23
+            ... )
+            True
         """
         return self.r_vector_part(2).normalize()
 
@@ -2293,6 +3264,23 @@ class MultiVectorBase(abc.ABC):
 
         Raises:
             ValueError: if ``R`` has a grade other than 0 or 2.
+
+        Examples:
+            The product ``u * v`` remembers the angle between ``u`` and ``v``:
+            perpendicular basis vectors give π/2, parallel ones 0, and the lengths
+            do not matter:
+
+            >>> import math
+            >>> import sympy
+            >>> from gacalc.g3 import e_1, e_2
+            >>> ((1 * e_1) * (1 * e_2)).angle() == sympy.pi / 2
+            True
+            >>> ((1 * e_1) * (3 * e_1)).angle() == 0
+            True
+            >>> ((1 * e_1) * (1 * e_1 + 1 * e_2)).angle() == sympy.pi / 4
+            True
+            >>> math.isclose(((2.0 * e_1) * (5.0 * e_2)).angle(), math.pi / 2)
+            True
         """
         self._require_scalar_plus_bivector("angle")
         scalar: Real = self.scalar_part()
@@ -2316,6 +3304,16 @@ class MultiVectorBase(abc.ABC):
 
         Raises:
             ValueError: if ``R`` has a grade other than 0 or 2.
+
+        Examples:
+            Like ``3 + 4i ↦ 3 - 4i``, and ``(3 + 4i) * (3 - 4i) = 25``:
+
+            >>> from gacalc.g2 import Bivector
+            >>> R = 3 + 4 * Bivector.e_12
+            >>> R.conjugate() == 3 - 4 * Bivector.e_12
+            True
+            >>> (R * R.conjugate()).scalar_part()
+            25
         """
         self._require_scalar_plus_bivector("conjugate")
         return self.reverse()
@@ -2356,8 +3354,24 @@ class MultiVectorBase(abc.ABC):
 
         Raises:
             ValueError: if either argument is not a vector (grade 1).
+
+        Examples:
+            Two perpendicular basis vectors span the unit plane; parallel vectors
+            span nothing; the magnitude is the parallelogram's area:
+
+            >>> from gacalc.gn import e_1, e_2, MultiVector
+            >>> MultiVector.bivector_from_vectors(1 * e_1, 1 * e_2) == e_1 * e_2
+            True
+            >>> MultiVector.bivector_from_vectors(1 * e_1, 2 * e_1) == (
+            ...     MultiVector.zero()
+            ... )
+            True
+            >>> abs(MultiVector.bivector_from_vectors(2 * e_1, 3 * e_2)) == 6
+            True
+            >>> abs(MultiVector.bivector_from_vectors(2 * e_1, 1 * e_1 + 3 * e_2)) == 6
+            True
         """
-        MultiVectorBase.require_vectors((a, b), "bivector_from_vectors")
+        MultiVectorBase.require_vectors((a, b))
         return a.outer_product(b)
 
     def sandwich(self, x: _OperandT) -> _OperandT:
@@ -2385,6 +3399,25 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             _OperandT: the conjugate ``R * x * R⁻¹``, of ``x``'s own type.
+
+        Examples:
+            The quarter turn from ``e_1`` to ``e_2`` keeps lengths and leaves the
+            axis ``e_3`` alone:
+
+            >>> from gacalc.g3 import Bivector, Vector, e_1, e_2, e_3
+            >>> R = Vector.rotor_from_vectors(1 * e_1, 1 * e_2)
+            >>> R.sandwich(1 * e_1) == 1 * e_2
+            True
+            >>> R.sandwich(3 * e_1) == 3 * e_2
+            True
+            >>> R.sandwich(1 * e_3) == 1 * e_3
+            True
+
+            A bivector stays a bivector: the plane ``e_1 * e_3`` turns into
+            ``e_2 * e_3``:
+
+            >>> R.sandwich(Bivector.e_13) == Bivector.e_23
+            True
         """
         conjugated: MultiVectorBase = self * x * self.inverse()
         return type(x).from_blade_dict(conjugated.to_blade_dict())
@@ -2441,8 +3474,16 @@ class MultiVectorBase(abc.ABC):
                 this Euclidean library).
 
         Example:
+            ``exp`` of ``θ * e_12`` is ``cos(θ) + sin(θ) * e_12``, like Euler's
+            formula; at θ = π/2 only the bivector is left:
+
             >>> import sympy
             >>> from gacalc.g2 import Bivector, Versor
+            >>> (sympy.pi / 2 * Bivector.e_12).exp() == Versor.e_12
+            True
+            >>> (sympy.pi * Bivector.e_12).exp() == Versor(coeff_scalar=-1)
+            True
+
             >>> (0 * Bivector.e_12).exp()
             g2.Versor(coeff_scalar=1, coeff_e_12=0)
             >>> (0 * Bivector.e_12).exp() == Versor(coeff_scalar=1)
@@ -2577,6 +3618,20 @@ class MultiVectorBase(abc.ABC):
         Raises:
             TypeError: if any coefficient is symbolic (non-numeric) — use ``==``
                 for exact/symbolic equality.
+
+        Examples:
+            ``0.1 + 0.2`` is not exactly ``0.3`` in floating point, so ``==`` and
+            the default (exact) ``isclose`` say no; a tolerance says yes:
+
+            >>> from gacalc.g2 import e_1, e_2
+            >>> (0.1 * e_1 + 0.2 * e_1) == 0.3 * e_1
+            False
+            >>> (0.1 * e_1 + 0.2 * e_1).isclose(0.3 * e_1)
+            False
+            >>> (0.1 * e_1 + 0.2 * e_1).isclose(0.3 * e_1, rel_tol=1e-9)
+            True
+            >>> (1.0 * e_1 + 1e-12 * e_2).isclose(1.0 * e_1, abs_tol=1e-9)
+            True
         """
         left: Mapping[Blade, Real] = self.to_blade_dict()
         right: Mapping[Blade, Real] = other.to_blade_dict()
@@ -2602,6 +3657,13 @@ class MultiVectorBase(abc.ABC):
 
         Returns:
             str: a module-qualified constructor-style repr.
+
+        Examples:
+            >>> import gacalc.g2 as g2
+            >>> 1 * g2.e_1 + 2 * g2.e_2
+            g2.Vector(coeff_e_1=1, coeff_e_2=2)
+            >>> 3 + 4 * g2.Bivector.e_12
+            g2.Versor(coeff_scalar=3, coeff_e_12=4)
         """
         module: str = type(self).__module__.rsplit(".", 1)[-1]
         # every concrete representation is a dataclass; base itself is abstract, so

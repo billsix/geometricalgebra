@@ -37,6 +37,14 @@ These return `InvertibleFunction`s and are **representation-preserving** — the
   **`bivector_rotation`** — different *specifications* of a rotation, all funnelling through the
   shared **`_unit_bivector_rotor_factory`** (the default `rotor_for` of `plane_rotation` and
   `bivector_rotation`). (The naming distinguishes the rotation *spec* from its rotor *formulation*.)
+- **The zero-vector rule** (2026-11-10) — every from/to factory (`projection_rotation`,
+  `versor_rotation`, `MultiVectorBase.versor_from_vectors`, `rotor_from_vectors`) treats a rotation
+  from the zero vector to the zero vector as the identity (versor `1`) and raises `ValueError` from
+  zero to a nonzero vector or back, through the shared guard
+  `MultiVectorBase.require_rotation_endpoints`. Before, all of them failed on a zero vector, with a
+  misleading "opposite directions" message or a `ZeroDivisionError`. Record:
+  `tasks/archive/2026/11/10/rotation-factories-zero-vector-rule.md`;
+  `tests/test_rotation_zero_vector_rule.py`.
 - **`g2.rotate_90_degrees()`** (2026-09-06) — the one rotation factory that lives in a *generated*
   module, not `transforms.py`, because it is 𝒢₂-only: the quarter turn is `v * e_12` in closed form
   (exact; no rotor), wrapped as an `InvertibleFunction[Vector]` with `linearity=LINEAR`, a `TypeError`
@@ -45,6 +53,13 @@ These return `InvertibleFunction`s and are **representation-preserving** — the
   layering invariant below (`transforms` depends only on `base`/`functions`, never on a generated
   module). Emitter: `generate_quarter_turn` in `tools/gen_specialized.py`; design record
   `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`.
+
+- **`g2.Vector.rotate(angle_in_radians)`** (2026-11-10) — the 𝒢₂ rotation by an angle, generated next
+  to the quarter turn and written as the book's `eq-rotate-formula`,
+  `cos(θ) * v + sin(θ) * v.rotate_90_degrees()` (both bodies are coordinates only, no geometric
+  product at run time). A method, not a factory: `plane_rotation(e_1, e_2)(θ)` is the composable
+  rotor form, and a dimension-general coordinate `rotate` is what `2081e18` removed (it sent e₃ to a
+  trivector). Record: `tasks/archive/2026/11/10/g2-rotate-by-angle-restore.md`.
 
 ### `to_matrix` (`transforms.py`)
 Renders a function as a **homogeneous `(n+1)×(n+1)` matrix**, with numpy/sympy backends. A NONLINEAR
@@ -56,20 +71,20 @@ function raises (per its `Linearity` tag); a `Gn` value needs its `n` supplied e
 ### `to_matrix_template` / `MatrixTemplate` (`transforms.py`, right after `to_matrix`; 2026-09-06)
 The compile-once / fill-per-frame pattern modelviewprojection's renderers had hand-copied ten times,
 lifted into the library. `to_matrix_template(fn, cls, params, n=None)` runs `to_matrix(...,
-backend="sympy")` once over a function built over the sympy symbols `params` and classifies every entry:
+backend=MatrixBackend.SYMPY)` once over a function built over the sympy symbols `params` and classifies every entry:
 **constant** (stored in `constants`, an `np.float32` matrix with the varying entries zeroed), **slot**
 (an entry that *is* parameter `k`: `(row, col, k)`, filled by plain assignment), or **expression**
 (anything else, e.g. `cos(theta)`: all such entries go through ONE `sympy.lambdify` per fill). So the
 model matrix `translate(tx e_1 + ty e_2) @ scale_non_uniform(w, h, 1)` fills without touching sympy
 (a copy + four assignments), while a template with a symbolic rotation angle pays one lambdified call.
 `fill(*values)` (also `__call__`) returns a fresh `(n+1)×(n+1)` `np.float32`, translation in the last
-column, bit-identical to `to_matrix(backend="numpy")` of the numeric transform when every varying entry
+column, bit-identical to `to_matrix(backend=MatrixBackend.NUMPY)` of the numeric transform when every varying entry
 is a slot (gated in `tests/test_matrix_template.py`, 24 tests: 𝒢₂ and 𝒢₃, linear and affine, `Gn`, the
 method forms, the error paths). Design choices and the record:
 `tasks/archive/2026/09/06/matrix-template-compile-once.md`.
 
 **Method forms on `ComposableFunction`** (inherited by `InvertibleFunction`): `fn.to_matrix(cls, n=None,
-*, backend="numpy")` and `fn.to_matrix_template(cls, params, n=None)` — thin delegations that import
+*, backend=MatrixBackend.NUMPY)` and `fn.to_matrix_template(cls, params, n=None)` — thin delegations that import
 `gacalc.transforms` *inside the method body*. See the layering note below.
 
 ## `@` vs `compose([...])` — a formatting rule, not a semantic one (2026-09-06)

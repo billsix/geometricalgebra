@@ -14,13 +14,13 @@
 """Compile-once matrix templates (``to_matrix_template`` / ``MatrixTemplate``).
 
 The contract under test: a template compiled from a transform built over sympy
-symbols, filled with numbers, equals ``to_matrix(backend="numpy")`` of the same
-transform built directly over those numbers -- **bit-identical** when every
-varying entry is a bare parameter (slots are plain copies), ``allclose`` when
-an entry is an expression (a symbolic rotation angle -> ``cos``/``sin``, one
-lambdified call per fill).  Covered in all four shapes the maintainer asked for:
-𝒢₂ linear and affine (3 x 3), 𝒢₃ linear and affine (4 x 4) -- plus ``Gn`` with
-an explicit ``n`` -- and the error paths.
+symbols, filled with numbers, equals ``to_matrix(backend=MatrixBackend.NUMPY)``
+of the same transform built directly over those numbers -- **bit-identical**
+when every varying entry is a bare parameter (slots are plain copies),
+``allclose`` when an entry is an expression (a symbolic rotation angle ->
+``cos``/``sin``, one lambdified call per fill).  Covered in all four shapes the
+maintainer asked for: 𝒢₂ linear and affine (3 x 3), 𝒢₃ linear and affine
+(4 x 4) -- plus ``Gn`` with an explicit ``n`` -- and the error paths.
 """
 
 import math
@@ -35,6 +35,7 @@ import gacalc.g2 as g2
 import gacalc.g3 as g3
 import gacalc.gn as gn
 from gacalc.base import MultiVectorBase
+from gacalc.functions import MatrixBackend
 from gacalc.gn import Gn
 from gacalc.transforms import (
     ComposableFunction,
@@ -324,7 +325,9 @@ def test_to_matrix_method_form() -> None:
     assert np.array_equal(
         numeric(fn.to_matrix(g3.Vector)), numeric(to_matrix(fn, g3.Vector))
     )
-    sym: sympy.Matrix | np.ndarray = fn.to_matrix(g3.Vector, backend="sympy")
+    sym: sympy.Matrix | np.ndarray = fn.to_matrix(
+        g3.Vector, backend=MatrixBackend.SYMPY
+    )
     assert isinstance(sym, sympy.Matrix)
     assert [sym[i, 3] for i in range(4)] == [2, 3, 4, 1]
 

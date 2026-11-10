@@ -160,6 +160,7 @@ import os
 import subprocess
 import sys
 from collections.abc import Callable, Iterable, Mapping, Sequence
+from enum import Enum
 from itertools import chain, combinations
 from typing import NamedTuple, cast
 
@@ -545,10 +546,26 @@ _CUSTOM_DOC_DIMS: frozenset[int] = frozenset({1, 2, 3})
 # A custom-docstring entry: literal text, or a ``(role, n) -> str`` callable for
 # grade-/dimension-aware wording (so one function serves every role and the doctest
 # example fits the algebra it lands in).
-DocEntry = str | Callable[[str, int], str]
 
 
-def _bivector_dual_doc(role: str, n: int) -> str:
+class DocRole(Enum):
+    """A generated class's grade identity, the first half of a ``CUSTOM_METHOD_DOCS``
+    key (``"<role>|<method>"``, with the value below as ``<role>``)."""
+
+    SCALAR = "scalar"
+    VECTOR = "vector"
+    BIVECTOR = "bivector"
+    TRIVECTOR = "trivector"
+    VERSOR = "versor"
+    ODD = "odd"
+    FULL = "full"
+    GENERIC = "generic"
+
+
+DocEntry = str | Callable[[DocRole, int], str]
+
+
+def _bivector_dual_doc(role: DocRole, n: int) -> str:
     """Grade-2 ``dual`` -- dimension-dependent (𝒢₂: bivector→scalar; 𝒢₃:
     bivector→the vector normal to its plane)."""
     if n == 2:
@@ -576,7 +593,7 @@ def _bivector_dual_doc(role: str, n: int) -> str:
     )
 
 
-def _vector_dual_doc(role: str, n: int) -> str:
+def _vector_dual_doc(role: DocRole, n: int) -> str:
     """Grade-1 ``dual`` -- dimension-dependent (𝒢₁: →scalar; 𝒢₂: →the
     perpendicular vector, a 90° turn; 𝒢₃: →the plane ⟂ to the vector)."""
     if n == 1:
@@ -615,7 +632,7 @@ def _vector_dual_doc(role: str, n: int) -> str:
     )
 
 
-def _vector_outer_doc(role: str, n: int) -> str:
+def _vector_outer_doc(role: DocRole, n: int) -> str:
     """Grade-1 ∧ grade-1 -- 0 in 𝒢₁ (all vectors parallel), else the bivector
     spanning the two vectors."""
     if n == 1:
@@ -644,12 +661,19 @@ def _vector_outer_doc(role: str, n: int) -> str:
         "    Bivector: the oriented plane the two vectors span.\n"
         "\n"
         "Example:\n"
+        "    The wedge of e₁ and e₂ is their unit plane; swapping them flips its\n"
+        "    orientation, and a vector wedged with a multiple of itself is zero:\n"
+        "\n"
         "    >>> (1 * Vector.e_1) ^ (1 * Vector.e_2) == 1 * Bivector.e_12\n"
+        "    True\n"
+        "    >>> (1 * Vector.e_2) ^ (1 * Vector.e_1) == -1 * Bivector.e_12\n"
+        "    True\n"
+        "    >>> (2 * Vector.e_1) ^ (3 * Vector.e_1) == Bivector.zero()\n"
         "    True"
     )
 
 
-def _vector_i_doc(role: str, n: int) -> str:
+def _vector_i_doc(role: DocRole, n: int) -> str:
     """Grade-1 ``i`` classmethod -- needs a 2-D plane, so 𝒢₁ has no example."""
     if n == 1:
         return (
@@ -685,7 +709,7 @@ def _vector_i_doc(role: str, n: int) -> str:
     )
 
 
-def _vector_proj_doc(role: str, n: int) -> str:
+def _vector_proj_doc(role: DocRole, n: int) -> str:
     """Grade-1 ``projected_onto`` -- the parallel component."""
     if n == 1:
         return (
@@ -698,7 +722,19 @@ def _vector_proj_doc(role: str, n: int) -> str:
             "    Vector: the component of this vector along ``onto``.\n"
             "\n"
             "Example:\n"
+            "    In 𝒢₁ every vector lies along e₁, so projecting changes nothing --\n"
+            "    and only the direction of ``onto`` matters, not its length:\n"
+            "\n"
             "    >>> (3 * Vector.e_1).projected_onto(Vector.e_1) == 3 * Vector.e_1\n"
+            "    True\n"
+            "    >>> (3 * Vector.e_1).projected_onto(5 * Vector.e_1) == 3 * Vector.e_1\n"
+            "    True\n"
+            "\n"
+            "    The same holds symbolically, for any coordinate x and nonzero k:\n"
+            "\n"
+            "    >>> import sympy\n"
+            '    >>> x, k = sympy.symbols("x k")\n'
+            "    >>> (x * Vector.e_1).projected_onto(k * Vector.e_1) == x * Vector.e_1\n"
             "    True"
         )
     return (
@@ -711,12 +747,34 @@ def _vector_proj_doc(role: str, n: int) -> str:
         "    Vector: the component of this vector along ``onto``.\n"
         "\n"
         "Example:\n"
+        "    Projecting onto e₁ keeps just the e₁ coordinate.  Projecting onto 3 * e₁\n"
+        "    gives the same answer: only the direction of ``onto`` matters, not its\n"
+        "    length.\n"
+        "\n"
+        "    >>> v: Vector = 2 * Vector.e_1 + 3 * Vector.e_2\n"
+        "    >>> v.projected_onto(Vector.e_1) == 2 * Vector.e_1\n"
+        "    True\n"
+        "    >>> v.projected_onto(3 * Vector.e_1) == 2 * Vector.e_1\n"
+        "    True\n"
         "    >>> (1 * Vector.e_1 + 1 * Vector.e_2).projected_onto(Vector.e_1) == Vector.e_1\n"
+        "    True\n"
+        "\n"
+        "    For arbitrary vectors a and b the projection is  (a · b / b · b) * b,\n"
+        "    and scaling b by any nonzero k leaves it unchanged:\n"
+        "\n"
+        "    >>> import sympy\n"
+        '    >>> a_1, a_2, b_1, b_2, k = sympy.symbols("a_1 a_2 b_1 b_2 k")\n'
+        "    >>> a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2\n"
+        "    >>> b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2\n"
+        "    >>> λ: Real = a.dot(b).scalar_part() / b.dot(b).scalar_part()\n"
+        "    >>> a.projected_onto(b) == λ * b\n"
+        "    True\n"
+        "    >>> a.projected_onto(k * b) == a.projected_onto(b)\n"
         "    True"
     )
 
 
-def _vector_rej_doc(role: str, n: int) -> str:
+def _vector_rej_doc(role: DocRole, n: int) -> str:
     """Grade-1 ``rejected_away_from`` -- the perpendicular component."""
     if n == 1:
         return (
@@ -730,7 +788,12 @@ def _vector_rej_doc(role: str, n: int) -> str:
             "    Vector: the component of this vector perpendicular to ``away_from``.\n"
             "\n"
             "Example:\n"
+            "    Rejecting e₁ or 5 * e₁ leaves nothing: the length of ``away_from``\n"
+            "    does not matter, only its direction.\n"
+            "\n"
             "    >>> (3 * Vector.e_1).rejected_away_from(Vector.e_1) == Vector.zero()\n"
+            "    True\n"
+            "    >>> (3 * Vector.e_1).rejected_away_from(5 * Vector.e_1) == Vector.zero()\n"
             "    True"
         )
     return (
@@ -743,12 +806,33 @@ def _vector_rej_doc(role: str, n: int) -> str:
         "    Vector: the component of this vector perpendicular to ``away_from``.\n"
         "\n"
         "Example:\n"
+        "    Rejecting e₁ drops the e₁ coordinate and keeps the rest.  Rejecting\n"
+        "    3 * e₁ gives the same answer: only the direction of ``away_from``\n"
+        "    matters, not its length.\n"
+        "\n"
+        "    >>> v: Vector = 2 * Vector.e_1 + 3 * Vector.e_2\n"
+        "    >>> v.rejected_away_from(Vector.e_1) == 3 * Vector.e_2\n"
+        "    True\n"
+        "    >>> v.rejected_away_from(3 * Vector.e_1) == 3 * Vector.e_2\n"
+        "    True\n"
         "    >>> (1 * Vector.e_1 + 1 * Vector.e_2).rejected_away_from(Vector.e_1) == Vector.e_2\n"
+        "    True\n"
+        "\n"
+        "    For arbitrary vectors a and b the rejection is what the projection\n"
+        "    leaves over, and scaling b by any nonzero k leaves it unchanged:\n"
+        "\n"
+        "    >>> import sympy\n"
+        '    >>> a_1, a_2, b_1, b_2, k = sympy.symbols("a_1 a_2 b_1 b_2 k")\n'
+        "    >>> a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2\n"
+        "    >>> b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2\n"
+        "    >>> a.rejected_away_from(b) == a - a.projected_onto(b)\n"
+        "    True\n"
+        "    >>> a.rejected_away_from(k * b) == a.rejected_away_from(b)\n"
         "    True"
     )
 
 
-def _scalar_dual_doc(role: str, n: int) -> str:
+def _scalar_dual_doc(role: DocRole, n: int) -> str:
     """Grade-0 ``dual`` -- a scalar duals to the top-grade blade (× the
     pseudoscalar): a vector in 𝒢₁, a bivector in 𝒢₂, a trivector in 𝒢₃."""
     top: str = {
@@ -770,12 +854,36 @@ def _scalar_dual_doc(role: str, n: int) -> str:
     )
 
 
-# role, method -> a DocEntry.  A ``role|method`` key wins over the role-agnostic
-# ``*|method``; both are consulted by ``custom_method_doc``.
-CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
-    # ``__eq__`` is dataclass/representation-specific, so it has no hand-written
-    # base counterpart -- give it a one-liner rather than copying object's.
-    "*|__eq__": (
+def _by_dimension(text: str, examples: dict[int, str]) -> Callable[[DocRole, int], str]:
+    """A ``DocEntry`` for an example that depends on the dimension: ``text``
+    followed by an ``Example:`` section holding, in 𝒢ₙ, the example keyed by the
+    largest dimension ``<= n`` (each example already indented under the header),
+    so ``{1: ..., 2: ...}`` gives 𝒢₁ its own example and 𝒢₂/𝒢₃ a shared one."""
+
+    def render(role: DocRole, n: int) -> str:
+        example: str = examples[max(d for d in examples if d <= n)]
+        return f"{text}\n\nExample:\n{example}"
+
+    return render
+
+
+# A unit basis blade of each role's class, the subject of the role-agnostic
+# ``*|`` examples (``__eq__``/``__rsub__``) so each class's example uses its own type.
+_ROLE_UNIT: dict[DocRole, str] = {
+    DocRole.SCALAR: "Scalar.one()",
+    DocRole.VECTOR: "Vector.e_1",
+    DocRole.BIVECTOR: "Bivector.e_12",
+    DocRole.TRIVECTOR: "Trivector.e_123",
+    DocRole.VERSOR: "Versor.e_12",
+    DocRole.ODD: "Odd_3.e_1",
+    DocRole.FULL: "G.e_1",
+}
+
+
+def _eq_doc(role: DocRole, n: int) -> str:
+    """``__eq__`` on every role -- exact equality, with an example in the role's
+    own type (a role with no unit blade gets the text alone)."""
+    text: str = (
         "Equality  A == B.  Exact for plain-number coefficients; symbolic\n"
         "coefficients compare via ``sympy.simplify`` (see ``base._coef_eq``).\n"
         "\n"
@@ -785,10 +893,34 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Returns:\n"
         "    bool: ``True`` iff the two multivectors are equal (``NotImplemented``\n"
         "    for a non-multivector, so a bare number never compares equal)."
-    ),
-    # Reflected subtraction: ``number - A``.  Generated-only (the base has
-    # ``__sub__`` but no ``__rsub__``), so there is nothing to copy.
-    "*|__rsub__": (
+    )
+    if role not in _ROLE_UNIT:
+        return text
+    u: str = _ROLE_UNIT[role]
+    return (
+        f"{text}\n"
+        "\n"
+        "Example:\n"
+        "    Two spellings of the same value are equal; a bare number never is:\n"
+        "\n"
+        f"    >>> 1 * {u} + 1 * {u} == 2 * {u}\n"
+        "    True\n"
+        f"    >>> 2 * {u} == 2\n"
+        "    False\n"
+        "\n"
+        "    Symbolic coefficients are compared after simplifying:\n"
+        "\n"
+        "    >>> import sympy\n"
+        '    >>> x = sympy.Symbol("x")\n'
+        f"    >>> (x + 1) ** 2 * {u} == (x ** 2 + 2 * x + 1) * {u}\n"
+        "    True"
+    )
+
+
+def _rsub_doc(role: DocRole, n: int) -> str:
+    """``__rsub__`` on every role -- ``number - A``, with an example in the
+    role's own type (a role with no unit blade gets the text alone)."""
+    text: str = (
         "Reflected difference  (number) - A  =  -A + number.\n"
         "\n"
         "Args:\n"
@@ -796,7 +928,55 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "\n"
         "Returns:\n"
         "    the difference ``lhs - self``."
-    ),
+    )
+    if role not in _ROLE_UNIT:
+        return text
+    u: str = _ROLE_UNIT[role]
+    return f"{text}\n\nExample:\n    >>> 3 - 1 * {u} == -1 * {u} + 3\n    True"
+
+
+def _versor_dual_doc(role: DocRole, n: int) -> str:
+    """Even-versor ``dual`` -- dimension-dependent (𝒢₂: the scalar and
+    bivector parts swap, so the dual is a versor; 𝒢₃: the scalar part duals
+    to a trivector and the bivector part to a vector, so the dual is odd)."""
+    if n == 2:
+        return (
+            "Dual  R* = R / i  in 𝒢₂: the scalar part becomes the bivector part and\n"
+            "the bivector part the scalar part, so the dual is again a versor.\n"
+            "\n"
+            "Returns:\n"
+            "    Versor: the dual, with the scalar and bivector parts swapped.\n"
+            "\n"
+            "Example:\n"
+            "    >>> Versor.from_real(1).dual() == -1 * Versor.e_12\n"
+            "    True\n"
+            "    >>> (1 * Versor.e_12).dual() == Versor.from_real(1)\n"
+            "    True"
+        )
+    return (
+        "Dual  R* = R / i  in 𝒢₃: the scalar part becomes a trivector and each\n"
+        "bivector the vector normal to its plane, so the dual is ODD.\n"
+        "\n"
+        "Returns:\n"
+        "    Odd_3: the dual (an odd multivector).\n"
+        "\n"
+        "Example:\n"
+        "    >>> Versor.from_real(1).dual() == -1 * Odd_3.e_123\n"
+        "    True\n"
+        "    >>> (1 * Versor.e_12).dual() == 1 * Odd_3.e_3\n"
+        "    True"
+    )
+
+
+# role, method -> a DocEntry.  A ``role|method`` key wins over the role-agnostic
+# ``*|method``; both are consulted by ``custom_method_doc``.
+CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
+    # ``__eq__`` is dataclass/representation-specific, so it has no hand-written
+    # base counterpart -- give it a one-liner rather than copying object's.
+    "*|__eq__": _eq_doc,
+    # Reflected subtraction: ``number - A``.  Generated-only (the base has
+    # ``__sub__`` but no ``__rsub__``), so there is nothing to copy.
+    "*|__rsub__": _rsub_doc,
     # ``reverse`` -- the flagship grade-specialized docstrings: reversion is the
     # identity on grades 0/1 and a sign flip on grades 2/3, so the generic base
     # text ("sign (−1)^(r(r−1)/2)") is far less useful than the per-grade fact.
@@ -805,7 +985,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "reversion).\n"
         "\n"
         "Returns:\n"
-        "    Scalar: the scalar unchanged."
+        "    Scalar: the scalar unchanged.\n"
+        "\n"
+        "Example:\n"
+        "    >>> Scalar.from_real(3).reverse() == Scalar.from_real(3)\n"
+        "    True"
     ),
     "vector|reverse": (
         "Reverse  Ã  of a vector is the vector itself: reversing a single vector\n"
@@ -849,6 +1033,10 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Versor: the reverse (scalar part kept, bivector part negated).\n"
         "\n"
         "Example:\n"
+        "    The scalar 1 stays; the e₁ * e₂ part changes sign:\n"
+        "\n"
+        "    >>> (1 + 1 * Versor.e_12).reverse() == 1 - 1 * Versor.e_12\n"
+        "    True\n"
         "    >>> R: Versor = (1 * Bivector.e_12).exp()\n"
         "    >>> R * R.reverse() == Versor.from_real(1)\n"
         "    True"
@@ -858,7 +1046,18 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "part is unchanged and the trivector (grade-3) part is negated.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: the reverse (grade-1 part kept, grade-3 part negated)."
+        "    Odd_3: the reverse (grade-1 part kept, grade-3 part negated).\n"
+        "\n"
+        "Example:\n"
+        "    The vector part stays and the trivector part changes sign:\n"
+        "\n"
+        "    >>> (1 * Odd_3.e_1).reverse() == 1 * Odd_3.e_1\n"
+        "    True\n"
+        "    >>> (1 * Odd_3.e_123).reverse() == -1 * Odd_3.e_123\n"
+        "    True\n"
+        "    >>> O: Odd_3 = 2 * Odd_3.e_1 + 3 * Odd_3.e_123\n"
+        "    >>> O.reverse() == 2 * Odd_3.e_1 - 3 * Odd_3.e_123\n"
+        "    True"
     ),
     # ------------------------------------------------------------------
     # Bivector (grade 2) -- the oriented plane element; squares to −1, so it
@@ -885,7 +1084,13 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the bivector to subtract.\n"
         "\n"
         "Returns:\n"
-        "    Bivector: the component-wise difference."
+        "    Bivector: the component-wise difference.\n"
+        "\n"
+        "Example:\n"
+        "    >>> 3 * Bivector.e_12 - 1 * Bivector.e_12 == 2 * Bivector.e_12\n"
+        "    True\n"
+        "    >>> 1 * Bivector.e_12 - 1 * Bivector.e_12 == Bivector.zero()\n"
+        "    True"
     ),
     "bivector|__neg__": (
         "Negation -- reverses the orientation of the plane (every component\n"
@@ -921,7 +1126,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the geometric product ``self * rhs``."
+        "    the geometric product ``self * rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> B: Bivector = 1 * Bivector.e_12\n"
+        "    >>> B._geometric_product(B) == Scalar.from_real(-1)\n"
+        "    True"
     ),
     "bivector|dot": (
         "Inner product of two bivectors -- a scalar.  For a unit bivector,\n"
@@ -945,7 +1155,14 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    Scalar: the inner product (a scalar)."
+        "    Scalar: the inner product (a scalar).\n"
+        "\n"
+        "Example:\n"
+        "    >>> B: Bivector = 1 * Bivector.e_12\n"
+        "    >>> B.inner_product(B) == Scalar.from_real(-1)\n"
+        "    True\n"
+        "    >>> (2 * B).inner_product(3 * B) == Scalar.from_real(-6)\n"
+        "    True"
     ),
     "bivector|left_contraction": (
         "Left contraction  B ⌋ C  (the ``<`` operator).  For two unit bivectors\n"
@@ -968,7 +1185,16 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the right contraction (grade |B|−|C|)."
+        "    the right contraction (grade |B|−|C|).\n"
+        "\n"
+        "Example:\n"
+        "    Contracting the e₁ * e₂ plane by e₂ leaves e₁; by e₁ it leaves −e₂:\n"
+        "\n"
+        "    >>> B: Bivector = 1 * Bivector.e_12\n"
+        "    >>> B.right_contraction(1 * Vector.e_2) == 1 * Vector.e_1\n"
+        "    True\n"
+        "    >>> B.right_contraction(1 * Vector.e_1) == -1 * Vector.e_2\n"
+        "    True"
     ),
     "bivector|outer_product": (
         "Outer (wedge) product.  A bivector wedged with another bivector is 0 --\n"
@@ -991,7 +1217,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the outer product (0 for two bivectors in 𝒢₂/𝒢₃)."
+        "    the outer product (0 for two bivectors in 𝒢₂/𝒢₃).\n"
+        "\n"
+        "Example:\n"
+        "    >>> (1 * Bivector.e_12).wedge(1 * Bivector.e_12) == Scalar.zero()\n"
+        "    True"
     ),
     "bivector|__xor__": (
         "Outer (wedge) product operator ``^``; see ``wedge``.\n"
@@ -1000,7 +1230,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the outer product ``self ^ other``."
+        "    the outer product ``self ^ other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (1 * Bivector.e_12) ^ (2 * Bivector.e_12) == Scalar.zero()\n"
+        "    True"
     ),
     "bivector|dual": _bivector_dual_doc,
     "bivector|even_part": (
@@ -1076,6 +1310,13 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "\n"
         "Example:\n"
         "    >>> (0 * Bivector.e_12).exp() == Versor.from_real(1)\n"
+        "    True\n"
+        "\n"
+        "    With |B| = π / 2 the cosine is 0 and the sine is 1, so the rotor is the\n"
+        "    unit plane itself:\n"
+        "\n"
+        "    >>> import sympy\n"
+        "    >>> (sympy.pi / 2 * Bivector.e_12).exp() == 1 * Versor.e_12\n"
         "    True"
     ),
     "bivector|i": (
@@ -1089,12 +1330,18 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    >>> (1 * Bivector.e_12).i() == 1 * Bivector.e_12\n"
         "    True"
     ),
-    "bivector|__iter__": (
-        "Iterating a bivector yields its plane-component values in blade order\n"
-        "(one value in 𝒢₂; the e₁ * e₂, e₁ * e₃, e₂ * e₃ components in 𝒢₃).\n"
-        "\n"
-        "Yields:\n"
-        "    Real: each plane-component value, in blade order."
+    "bivector|__iter__": _by_dimension(
+        (
+            "Iterating a bivector yields its plane-component values in blade order\n"
+            "(one value in 𝒢₂; the e₁ * e₂, e₁ * e₃, e₂ * e₃ components in 𝒢₃).\n"
+            "\n"
+            "Yields:\n"
+            "    Real: each plane-component value, in blade order."
+        ),
+        {
+            2: ("    >>> list(2 * Bivector.e_12)\n    [2]"),
+            3: ("    >>> list(2 * Bivector.e_12 + 3 * Bivector.e_23)\n    [2, 0, 3]"),
+        },
     ),
     "bivector|isclose": (
         "Numeric near-equality of two bivectors, component-wise (see the base\n"
@@ -1102,9 +1349,20 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "\n"
         "Args:\n"
         "    other: the bivector to compare against.\n"
+        "    rel_tol: relative tolerance (default ``0.0`` -- exact).\n"
+        "    abs_tol: absolute tolerance, for values near zero (default ``0.0``).\n"
         "\n"
         "Returns:\n"
-        "    bool: ``True`` iff every component is within tolerance."
+        "    bool: ``True`` iff every component is within tolerance.\n"
+        "\n"
+        "Example:\n"
+        "    Equal up to a relative tolerance (the default tolerance is 0, exact):\n"
+        "\n"
+        "    >>> A: Bivector = 1.0 * Bivector.e_12\n"
+        "    >>> A.isclose(1.0000000001 * Bivector.e_12, rel_tol=1e-9)\n"
+        "    True\n"
+        "    >>> A.isclose(1.0000000001 * Bivector.e_12)\n"
+        "    False"
     ),
     "bivector|from_blade_dict": (
         "Build a bivector from a blade→coefficient dict (only grade-2 blades\n"
@@ -1114,13 +1372,21 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    blade_coef: a canonical blade -> coefficient mapping.\n"
         "\n"
         "Returns:\n"
-        "    Bivector: a bivector holding the grade-2 coefficients."
+        "    Bivector: a bivector holding the grade-2 coefficients.\n"
+        "\n"
+        "Example:\n"
+        "    >>> Bivector.from_blade_dict({(1, 2): 2}) == 2 * Bivector.e_12\n"
+        "    True"
     ),
     "bivector|to_blade_dict": (
         "This bivector as a blade→coefficient dict (grade-2 blades only).\n"
         "\n"
         "Returns:\n"
-        "    Mapping[Blade, Real]: the grade-2 blade -> coefficient mapping."
+        "    Mapping[Blade, Real]: the grade-2 blade -> coefficient mapping.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (2 * Bivector.e_12).to_blade_dict()\n"
+        "    {(1, 2): 2}"
     ),
     "bivector|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -1129,7 +1395,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the left contraction ``self < other``."
+        "    the left contraction ``self < other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> ((1 * Bivector.e_12) < (1 * Bivector.e_12)) == Scalar.from_real(-1)\n"
+        "    True"
     ),
     "bivector|__gt__": (
         "Right contraction operator ``>``; see ``right_contraction``.\n"
@@ -1138,7 +1408,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the right contraction ``self > other``."
+        "    the right contraction ``self > other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> ((1 * Bivector.e_12) > (1 * Vector.e_2)) == 1 * Vector.e_1\n"
+        "    True"
     ),
     "bivector|__radd__": (
         "Reflected sum  (number) + B  -- builds the versor  number + B.\n"
@@ -1147,7 +1421,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    Versor: the versor ``lhs + B``."
+        "    Versor: the versor ``lhs + B``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> R: Versor = 1 + 1 * Bivector.e_12\n"
+        "    >>> R == 1 + 1 * Versor.e_12\n"
+        "    True"
     ),
     "bivector|__rmul__": (
         "Reflected product  (number) * B  -- scales the bivector.\n"
@@ -1156,7 +1435,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    Bivector: the scaled bivector."
+        "    Bivector: the scaled bivector.\n"
+        "\n"
+        "Example:\n"
+        "    >>> 3 * (2 * Bivector.e_12) == 6 * Bivector.e_12\n"
+        "    True"
     ),
     # ------------------------------------------------------------------
     # Scalar (grade 0) -- a plain number living in the algebra.  Present in
@@ -1182,7 +1465,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the scalar to subtract.\n"
         "\n"
         "Returns:\n"
-        "    Scalar: the difference."
+        "    Scalar: the difference.\n"
+        "\n"
+        "Example:\n"
+        "    >>> Scalar.from_real(5) - Scalar.from_real(3) == Scalar.from_real(2)\n"
+        "    True"
     ),
     "scalar|__neg__": (
         "Negation -- ordinary sign change.\n"
@@ -1215,7 +1502,14 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the product ``self * rhs``."
+        "    the product ``self * rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> α: Scalar = Scalar.from_real(2)\n"
+        "    >>> α._geometric_product(Scalar.from_real(3)) == Scalar.from_real(6)\n"
+        "    True\n"
+        "    >>> α._geometric_product(1 * Vector.e_1) == 2 * Vector.e_1\n"
+        "    True"
     ),
     "scalar|dot": (
         "Inner (dot) product.  The Hestenes dot EXCLUDES grade 0, so the dot of\n"
@@ -1239,7 +1533,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    Scalar: 0 on scalars."
+        "    Scalar: 0 on scalars.\n"
+        "\n"
+        "Example:\n"
+        "    >>> α: Scalar = Scalar.from_real(2)\n"
+        "    >>> α.inner_product(Scalar.from_real(3)) == Scalar.zero()\n"
+        "    True"
     ),
     "scalar|outer_product": (
         "Outer (wedge) product.  A scalar wedges by ordinary multiplication (it\n"
@@ -1263,7 +1562,14 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the wedge (scalar multiplication)."
+        "    the wedge (scalar multiplication).\n"
+        "\n"
+        "Example:\n"
+        "    >>> α: Scalar = Scalar.from_real(2)\n"
+        "    >>> α.wedge(Scalar.from_real(3)) == Scalar.from_real(6)\n"
+        "    True\n"
+        "    >>> α.wedge(1 * Vector.e_1) == 2 * Vector.e_1\n"
+        "    True"
     ),
     "scalar|__xor__": (
         "Outer (wedge) product operator ``^``; on scalars it is multiplication.\n"
@@ -1272,7 +1578,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the outer product ``self ^ other``."
+        "    the outer product ``self ^ other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> Scalar.from_real(2) ^ Scalar.from_real(3) == Scalar.from_real(6)\n"
+        "    True"
     ),
     "scalar|left_contraction": (
         "Left contraction  s ⌋ x  -- a scalar contracts as plain scalar\n"
@@ -1282,7 +1592,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the operand scaled by this scalar."
+        "    the operand scaled by this scalar.\n"
+        "\n"
+        "Example:\n"
+        "    >>> α: Scalar = Scalar.from_real(2)\n"
+        "    >>> α.left_contraction(1 * Vector.e_1) == 2 * Vector.e_1\n"
+        "    True"
     ),
     "scalar|right_contraction": (
         "Right contraction  s ⌊ x  (the ``>`` operator, this scalar on the left) -- grade\n"
@@ -1293,7 +1608,16 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    this scalar times ``rhs`` when ``rhs`` is a scalar; otherwise 0."
+        "    this scalar times ``rhs`` when ``rhs`` is a scalar; otherwise 0.\n"
+        "\n"
+        "Example:\n"
+        "    A scalar on the left keeps only a scalar on the right:\n"
+        "\n"
+        "    >>> α: Scalar = Scalar.from_real(2)\n"
+        "    >>> α.right_contraction(Scalar.from_real(3)) == Scalar.from_real(6)\n"
+        "    True\n"
+        "    >>> α.right_contraction(1 * Vector.e_1) == Scalar.zero()\n"
+        "    True"
     ),
     "scalar|dual": _scalar_dual_doc,
     "scalar|even_part": (
@@ -1354,16 +1678,32 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Iterating a scalar yields its single grade-0 component.\n"
         "\n"
         "Yields:\n"
-        "    Real: the single grade-0 component value."
+        "    Real: the single grade-0 component value.\n"
+        "\n"
+        "Example:\n"
+        "    >>> list(Scalar.from_real(3))\n"
+        "    [3]"
     ),
     "scalar|isclose": (
         "Numeric near-equality of two scalars (see the base ``isclose``).\n"
         "\n"
         "Args:\n"
         "    other: the scalar to compare against.\n"
+        "    rel_tol: relative tolerance (default ``0.0`` -- exact).\n"
+        "    abs_tol: absolute tolerance, for values near zero (default ``0.0``).\n"
         "\n"
         "Returns:\n"
-        "    bool: ``True`` iff the two are within tolerance."
+        "    bool: ``True`` iff the two are within tolerance.\n"
+        "\n"
+        "Example:\n"
+        "    ``0.1 + 0.2`` is not exactly ``0.3`` in floating point; a tolerance says\n"
+        "    they are close:\n"
+        "\n"
+        "    >>> α: Scalar = Scalar.from_real(0.1 + 0.2)\n"
+        "    >>> α == Scalar.from_real(0.3)\n"
+        "    False\n"
+        "    >>> α.isclose(Scalar.from_real(0.3), rel_tol=1e-9)\n"
+        "    True"
     ),
     "scalar|from_blade_dict": (
         "Build a scalar from a blade→coefficient dict (only the grade-0 blade\n"
@@ -1373,13 +1713,21 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    blade_coef: a canonical blade -> coefficient mapping.\n"
         "\n"
         "Returns:\n"
-        "    Scalar: a scalar holding the grade-0 coefficient."
+        "    Scalar: a scalar holding the grade-0 coefficient.\n"
+        "\n"
+        "Example:\n"
+        "    >>> Scalar.from_blade_dict({(): 3}) == Scalar.from_real(3)\n"
+        "    True"
     ),
     "scalar|to_blade_dict": (
         "This scalar as a blade→coefficient dict (the scalar blade only).\n"
         "\n"
         "Returns:\n"
-        "    Mapping[Blade, Real]: the ``{(): value}`` mapping."
+        "    Mapping[Blade, Real]: the ``{(): value}`` mapping.\n"
+        "\n"
+        "Example:\n"
+        "    >>> Scalar.from_real(3).to_blade_dict()\n"
+        "    {(): 3}"
     ),
     "scalar|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -1388,7 +1736,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the left contraction ``self < other``."
+        "    the left contraction ``self < other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (Scalar.from_real(2) < (1 * Vector.e_1)) == 2 * Vector.e_1\n"
+        "    True"
     ),
     "scalar|__gt__": (
         "Right contraction operator ``>``; see ``right_contraction``.\n"
@@ -1397,7 +1749,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the right contraction ``self > other``."
+        "    the right contraction ``self > other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (Scalar.from_real(2) > Scalar.from_real(3)) == Scalar.from_real(6)\n"
+        "    True"
     ),
     "scalar|__radd__": (
         "Reflected sum  (number) + s  -- ordinary addition.\n"
@@ -1406,7 +1762,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    Scalar: the sum ``lhs + s``."
+        "    Scalar: the sum ``lhs + s``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> 1 + Scalar.from_real(2) == Scalar.from_real(3)\n"
+        "    True"
     ),
     "scalar|__rmul__": (
         "Reflected product  (number) * s  -- ordinary multiplication.\n"
@@ -1415,7 +1775,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    Scalar: the scaled scalar."
+        "    Scalar: the scaled scalar.\n"
+        "\n"
+        "Example:\n"
+        "    >>> 3 * Scalar.from_real(2) == Scalar.from_real(6)\n"
+        "    True"
     ),
     # ------------------------------------------------------------------
     # Vector (grade 1) -- the arrow students already know.  Present in every
@@ -1442,7 +1806,13 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the vector to subtract.\n"
         "\n"
         "Returns:\n"
-        "    Vector: the coordinate-wise difference."
+        "    Vector: the coordinate-wise difference.\n"
+        "\n"
+        "Example:\n"
+        "    >>> 3 * Vector.e_1 - 1 * Vector.e_1 == 2 * Vector.e_1\n"
+        "    True\n"
+        "    >>> 1 * Vector.e_1 - 1 * Vector.e_1 == Vector.zero()\n"
+        "    True"
     ),
     "vector|__neg__": (
         "Negation -- the arrow reversed (every coordinate sign-flipped).\n"
@@ -1469,14 +1839,37 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    >>> (1 * Vector.e_1) * (1 * Vector.e_1) == Scalar.from_real(1)\n"
         "    True"
     ),
-    "vector|_geometric_product": (
-        "The geometric-product primitive (use ``*``):  a * b = a·b + a∧b.\n"
-        "\n"
-        "Args:\n"
-        "    rhs: the right operand.\n"
-        "\n"
-        "Returns:\n"
-        "    the geometric product ``self * rhs``."
+    "vector|_geometric_product": _by_dimension(
+        (
+            "The geometric-product primitive (use ``*``):  a * b = a·b + a∧b.\n"
+            "\n"
+            "Args:\n"
+            "    rhs: the right operand.\n"
+            "\n"
+            "Returns:\n"
+            "    the geometric product ``self * rhs``."
+        ),
+        {
+            1: (
+                "    Two parallel vectors multiply to a plain number, the product of their\n"
+                "    lengths:\n"
+                "\n"
+                "    >>> a: Vector = 2 * Vector.e_1\n"
+                "    >>> a._geometric_product(3 * Vector.e_1) == Scalar.from_real(6)\n"
+                "    True"
+            ),
+            2: (
+                "    Parallel vectors give only the dot (a scalar); perpendicular ones only\n"
+                "    the wedge (a bivector):\n"
+                "\n"
+                "    >>> a: Vector = 2 * Vector.e_1\n"
+                "    >>> a._geometric_product(3 * Vector.e_1) == Scalar.from_real(6)\n"
+                "    True\n"
+                "    >>> b: Vector = 1 * Vector.e_1\n"
+                "    >>> b._geometric_product(1 * Vector.e_2) == 1 * Bivector.e_12\n"
+                "    True"
+            ),
+        },
     ),
     "vector|dot": (
         "Inner (dot) product of two vectors -- the scalar  a·b = |a| * |b| * cos(θ).\n"
@@ -1492,34 +1885,88 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    >>> (1 * Vector.e_1).dot(1 * Vector.e_1) == Scalar.from_real(1)\n"
         "    True"
     ),
-    "vector|inner_product": (
-        "The dot product of two vectors,  a·b = |a| * |b| * cos(θ) (see ``dot``).\n"
-        "\n"
-        "Args:\n"
-        "    rhs: the other vector.\n"
-        "\n"
-        "Returns:\n"
-        "    Scalar: the dot product."
+    "vector|inner_product": _by_dimension(
+        (
+            "The dot product of two vectors,  a·b = |a| * |b| * cos(θ) (see ``dot``).\n"
+            "\n"
+            "Args:\n"
+            "    rhs: the other vector.\n"
+            "\n"
+            "Returns:\n"
+            "    Scalar: the dot product."
+        ),
+        {
+            1: (
+                "    >>> a: Vector = 2 * Vector.e_1\n"
+                "    >>> a.inner_product(3 * Vector.e_1) == Scalar.from_real(6)\n"
+                "    True"
+            ),
+            2: (
+                "    Parallel vectors give the product of their lengths; perpendicular ones\n"
+                "    give 0 (cos(θ) = 0):\n"
+                "\n"
+                "    >>> a: Vector = 2 * Vector.e_1\n"
+                "    >>> a.inner_product(3 * Vector.e_1) == Scalar.from_real(6)\n"
+                "    True\n"
+                "    >>> (1 * Vector.e_1).inner_product(1 * Vector.e_2) == Scalar.zero()\n"
+                "    True"
+            ),
+        },
     ),
     "vector|outer_product": _vector_outer_doc,
     "vector|wedge": _vector_outer_doc,
-    "vector|__xor__": (
-        "Outer (wedge) product operator ``^`` -- the bivector two vectors span.\n"
-        "\n"
-        "Args:\n"
-        "    other: the other vector.\n"
-        "\n"
-        "Returns:\n"
-        "    Bivector: the oriented plane the two vectors span."
+    "vector|__xor__": _by_dimension(
+        (
+            "Outer (wedge) product operator ``^`` -- the bivector two vectors span.\n"
+            "\n"
+            "Args:\n"
+            "    other: the other vector.\n"
+            "\n"
+            "Returns:\n"
+            "    Bivector: the oriented plane the two vectors span."
+        ),
+        {
+            1: (
+                "    In 𝒢₁ every pair of vectors is parallel, so the wedge is 0:\n"
+                "\n"
+                "    >>> (2 * Vector.e_1) ^ (3 * Vector.e_1) == Scalar.zero()\n"
+                "    True"
+            ),
+            2: (
+                "    >>> (1 * Vector.e_1) ^ (1 * Vector.e_2) == 1 * Bivector.e_12\n"
+                "    True\n"
+                "    >>> (2 * Vector.e_1) ^ (3 * Vector.e_1) == Bivector.zero()\n"
+                "    True"
+            ),
+        },
     ),
-    "vector|left_contraction": (
-        "Left contraction  a ⌋ B  (the ``<`` operator); lowers B's grade by 1.\n"
-        "\n"
-        "Args:\n"
-        "    rhs: the right operand.\n"
-        "\n"
-        "Returns:\n"
-        "    the left contraction (grade |B|−1)."
+    "vector|left_contraction": _by_dimension(
+        (
+            "Left contraction  a ⌋ B  (the ``<`` operator); lowers B's grade by 1.\n"
+            "\n"
+            "Args:\n"
+            "    rhs: the right operand.\n"
+            "\n"
+            "Returns:\n"
+            "    the left contraction (grade |B|−1)."
+        ),
+        {
+            1: (
+                "    >>> a: Vector = 1 * Vector.e_1\n"
+                "    >>> a.left_contraction(3 * Vector.e_1) == Scalar.from_real(3)\n"
+                "    True"
+            ),
+            2: (
+                "    Contracting e₁ into the e₁ * e₂ plane leaves the direction in the plane\n"
+                "    perpendicular to e₁:\n"
+                "\n"
+                "    >>> a: Vector = 1 * Vector.e_1\n"
+                "    >>> a.left_contraction(1 * Bivector.e_12) == 1 * Vector.e_2\n"
+                "    True\n"
+                "    >>> a.left_contraction(3 * Vector.e_1) == Scalar.from_real(3)\n"
+                "    True"
+            ),
+        },
     ),
     "vector|right_contraction": (
         "Right contraction  a ⌊ b  (the ``>`` operator); for two vectors, the\n"
@@ -1529,7 +1976,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the right contraction (the dot for two vectors)."
+        "    the right contraction (the dot for two vectors).\n"
+        "\n"
+        "Example:\n"
+        "    >>> a: Vector = 2 * Vector.e_1\n"
+        "    >>> a.right_contraction(3 * Vector.e_1) == Scalar.from_real(6)\n"
+        "    True"
     ),
     "vector|dual": _vector_dual_doc,
     "vector|even_part": (
@@ -1597,41 +2049,109 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    9"
     ),
     "vector|i": _vector_i_doc,
-    "vector|bivector_from_vectors": (
-        "The (unnormalized) bivector  a ∧ b  spanning two vectors -- their\n"
-        "oriented area; a classmethod.  Normalize with ``i`` for a unit plane.\n"
-        "\n"
-        "Args:\n"
-        "    a: the first vector.\n"
-        "    b: the second vector.\n"
-        "\n"
-        "Returns:\n"
-        "    Bivector: the oriented plane  a ∧ b  (zero if parallel)."
+    "vector|bivector_from_vectors": _by_dimension(
+        (
+            "The (unnormalized) bivector  a ∧ b  spanning two vectors -- their\n"
+            "oriented area; a classmethod.  Normalize with ``i`` for a unit plane.\n"
+            "\n"
+            "Args:\n"
+            "    a: the first vector.\n"
+            "    b: the second vector.\n"
+            "\n"
+            "Returns:\n"
+            "    Bivector: the oriented plane  a ∧ b  (zero if parallel)."
+        ),
+        {
+            1: (
+                "    In 𝒢₁ there is no plane, so the wedge of two vectors is 0:\n"
+                "\n"
+                "    >>> a: Vector = 1 * Vector.e_1\n"
+                "    >>> b: Vector = 2 * Vector.e_1\n"
+                "    >>> Vector.bivector_from_vectors(a, b) == Scalar.zero()\n"
+                "    True"
+            ),
+            2: (
+                "    e₁ and e₂ span the unit plane; 2 * e₁ and 3 * e₂ span the same plane\n"
+                "    with area 6 (the bivector is not normalized):\n"
+                "\n"
+                "    >>> a: Vector = 1 * Vector.e_1\n"
+                "    >>> b: Vector = 1 * Vector.e_2\n"
+                "    >>> Vector.bivector_from_vectors(a, b) == 1 * Bivector.e_12\n"
+                "    True\n"
+                "    >>> Vector.bivector_from_vectors(2 * a, 3 * b) == 6 * Bivector.e_12\n"
+                "    True"
+            ),
+        },
     ),
-    "vector|versor_from_vectors": (
-        "The versor that rotates ``a`` to ``b`` in the a-b plane (a classmethod);\n"
-        "apply it with ``sandwich``.  Express rotations via factories, not by\n"
-        "hand.\n"
-        "\n"
-        "Args:\n"
-        "    from_vector: the vector to rotate from.\n"
-        "    to_vector: the vector to rotate toward.\n"
-        "\n"
-        "Returns:\n"
-        "    Versor: the versor taking ``from_vector`` toward ``to_vector``."
+    "vector|versor_from_vectors": _by_dimension(
+        (
+            "The versor that rotates ``a`` to ``b`` in the a-b plane (a classmethod);\n"
+            "apply it with ``sandwich``.  Express rotations via factories, not by\n"
+            "hand.\n"
+            "\n"
+            "Args:\n"
+            "    from_vector: the vector to rotate from.\n"
+            "    to_vector: the vector to rotate toward.\n"
+            "\n"
+            "Returns:\n"
+            "    Versor: the versor taking ``from_vector`` toward ``to_vector``."
+        ),
+        {
+            1: (
+                "    In 𝒢₁ there is no plane to turn in, so every vector stays put:\n"
+                "\n"
+                "    >>> R: Scalar = Vector.versor_from_vectors(Vector.e_1, Vector.e_1)\n"
+                "    >>> R.sandwich(3 * Vector.e_1) == 3 * Vector.e_1\n"
+                "    True"
+            ),
+            2: (
+                "    The versor from e₁ to e₂ turns e₁ onto e₂ and e₂ onto −e₁ (the whole\n"
+                "    plane turns); the length of ``to_vector`` does not matter:\n"
+                "\n"
+                "    >>> R: Versor = Vector.versor_from_vectors(Vector.e_1, Vector.e_2)\n"
+                "    >>> R.sandwich(1 * Vector.e_1) == 1 * Vector.e_2\n"
+                "    True\n"
+                "    >>> R.sandwich(2 * Vector.e_2) == -2 * Vector.e_1\n"
+                "    True\n"
+                "    >>> S: Versor = Vector.versor_from_vectors(Vector.e_1, 5 * Vector.e_2)\n"
+                "    >>> S.sandwich(1 * Vector.e_1) == 1 * Vector.e_2\n"
+                "    True"
+            ),
+        },
     ),
-    "vector|rotor_from_vectors": (
-        "The unit **rotor** that rotates ``a`` to ``b`` in the a-b plane (a\n"
-        "classmethod): ``versor_from_vectors`` normalized, so the textbook reverse\n"
-        "sandwich ``R * v * R.reverse()`` rotates with no division (the inverse of a\n"
-        "rotor is its reverse).\n"
-        "\n"
-        "Args:\n"
-        "    from_vector: the vector to rotate from.\n"
-        "    to_vector: the vector to rotate toward.\n"
-        "\n"
-        "Returns:\n"
-        "    Versor: the unit rotor taking ``from_vector`` toward ``to_vector``."
+    "vector|rotor_from_vectors": _by_dimension(
+        (
+            "The unit **rotor** that rotates ``a`` to ``b`` in the a-b plane (a\n"
+            "classmethod): ``versor_from_vectors`` normalized, so the textbook reverse\n"
+            "sandwich ``R * v * R.reverse()`` rotates with no division (the inverse of a\n"
+            "rotor is its reverse).\n"
+            "\n"
+            "Args:\n"
+            "    from_vector: the vector to rotate from.\n"
+            "    to_vector: the vector to rotate toward.\n"
+            "\n"
+            "Returns:\n"
+            "    Versor: the unit rotor taking ``from_vector`` toward ``to_vector``."
+        ),
+        {
+            1: (
+                "    In 𝒢₁ there is no plane to turn in, so the rotor is the identity 1:\n"
+                "\n"
+                "    >>> R: Scalar = Vector.rotor_from_vectors(Vector.e_1, 2 * Vector.e_1)\n"
+                "    >>> R == Scalar.from_real(1)\n"
+                "    True"
+            ),
+            2: (
+                "    The rotor from e₁ to e₂ turns e₁ onto e₂ with the reverse sandwich, and\n"
+                "    its reverse undoes it:\n"
+                "\n"
+                "    >>> R: Versor = Vector.rotor_from_vectors(Vector.e_1, Vector.e_2)\n"
+                "    >>> R * (1 * Vector.e_1) * R.reverse() == 1 * Vector.e_2\n"
+                "    True\n"
+                "    >>> R * R.reverse() == Versor.from_real(1)\n"
+                "    True"
+            ),
+        },
     ),
     "vector|cross": (
         "Cross product (𝒢₃ only)  a × b = (a ∧ b) * I₃⁻¹ -- the vector dual of the\n"
@@ -1665,51 +2185,185 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    >>> (x * Vector.e_1 + y * Vector.e_2).rotate_90_degrees() == Vector(coeff_e_1=-y, coeff_e_2=x)\n"
         "    True"
     ),
+    "vector|rotate": (
+        "Rotation by an angle (𝒢₂ only), + from e₁ toward e₂: a blend of this vector\n"
+        "and its quarter turn, ``cos(θ) * v + sin(θ) * v.rotate_90_degrees()`` (the\n"
+        "book's ``eq-rotate-formula``).  A float angle gives float coefficients; an\n"
+        "int or ``sympy`` angle stays exact.\n"
+        "\n"
+        "Args:\n"
+        "    angle_in_radians: the angle θ to rotate by.\n"
+        "\n"
+        "Returns:\n"
+        "    Vector: this vector rotated by θ.\n"
+        "\n"
+        "Example:\n"
+        "    >>> import sympy\n"
+        "    >>> (1 * Vector.e_1).rotate(0) == 1 * Vector.e_1\n"
+        "    True\n"
+        "    >>> (1 * Vector.e_1).rotate(sympy.pi / 2) == 1 * Vector.e_2\n"
+        "    True\n"
+        "    >>> v = 3 * Vector.e_1 + 4 * Vector.e_2\n"
+        "    >>> v.rotate(sympy.pi) == -v\n"
+        "    True\n"
+        "    >>> v.rotate(sympy.pi / 2) == v.rotate_90_degrees()\n"
+        "    True\n"
+        "    >>> x, y, theta = sympy.symbols('x y theta')\n"
+        "    >>> (x * Vector.e_1 + y * Vector.e_2).rotate(theta) == Vector(\n"
+        "    ...     coeff_e_1=x * sympy.cos(theta) - y * sympy.sin(theta),\n"
+        "    ...     coeff_e_2=x * sympy.sin(theta) + y * sympy.cos(theta),\n"
+        "    ... )\n"
+        "    True"
+    ),
     "vector|projected_onto": _vector_proj_doc,
     "vector|rejected_away_from": _vector_rej_doc,
-    "vector|reflected_across": (
-        "This vector reflected across the line of another vector (the ``reflect``\n"
-        "classmethod's ergonomic form).\n"
-        "\n"
-        "Args:\n"
-        "    across: the vector (or blade) to reflect across.\n"
-        "\n"
-        "Returns:\n"
-        "    Vector: this vector reflected across ``across``."
+    "vector|reflected_across": _by_dimension(
+        (
+            "This vector reflected across the line of another vector (the ``reflect``\n"
+            "classmethod's ergonomic form).\n"
+            "\n"
+            "Args:\n"
+            "    across: the vector (or blade) to reflect across.\n"
+            "\n"
+            "Returns:\n"
+            "    Vector: this vector reflected across ``across``."
+        ),
+        {
+            1: (
+                "    In 𝒢₁ every vector lies on the e₁ line, so reflecting changes nothing:\n"
+                "\n"
+                "    >>> (3 * Vector.e_1).reflected_across(Vector.e_1) == 3 * Vector.e_1\n"
+                "    True\n"
+                "    >>> (3 * Vector.e_1).reflected_across(5 * Vector.e_1) == 3 * Vector.e_1\n"
+                "    True"
+            ),
+            2: (
+                "    Reflecting across the e₁ line keeps the e₁ coordinate and flips the e₂\n"
+                "    one.  Reflecting across 3 * e₁ gives the same answer: only the direction\n"
+                "    of ``across`` matters, not its length.\n"
+                "\n"
+                "    >>> v: Vector = 1 * Vector.e_1 + 2 * Vector.e_2\n"
+                "    >>> w: Vector = 1 * Vector.e_1 - 2 * Vector.e_2\n"
+                "    >>> v.reflected_across(Vector.e_1) == w\n"
+                "    True\n"
+                "    >>> v.reflected_across(3 * Vector.e_1) == w\n"
+                "    True\n"
+                "\n"
+                "    For arbitrary vectors a and b the reflection is twice the projection\n"
+                "    minus a, and scaling b by any nonzero k leaves it unchanged:\n"
+                "\n"
+                "    >>> import sympy\n"
+                '    >>> a_1, a_2, b_1, b_2, k = sympy.symbols("a_1 a_2 b_1 b_2 k")\n'
+                "    >>> a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2\n"
+                "    >>> b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2\n"
+                "    >>> a.reflected_across(b) == 2 * a.projected_onto(b) - a\n"
+                "    True\n"
+                "    >>> a.reflected_across(k * b) == a.reflected_across(b)\n"
+                "    True"
+            ),
+        },
     ),
-    "vector|project": (
-        "Classmethod form of the projection; see ``projected_onto``.\n"
-        "\n"
-        "Args:\n"
-        "    onto: the vector (or blade) to project onto.\n"
-        "\n"
-        "Returns:\n"
-        "    ComposableFunction: the projection map onto ``onto``."
+    "vector|project": _by_dimension(
+        (
+            "Classmethod form of the projection; see ``projected_onto``.\n"
+            "\n"
+            "Args:\n"
+            "    onto: the vector (or blade) to project onto.\n"
+            "\n"
+            "Returns:\n"
+            "    ComposableFunction: the projection map onto ``onto``."
+        ),
+        {
+            1: (
+                "    >>> Vector.project(onto=Vector.e_1)(3 * Vector.e_1) == 3 * Vector.e_1\n"
+                "    True"
+            ),
+            2: (
+                "    Projecting onto e₁ or onto 3 * e₁ keeps just the e₁ coordinate, and\n"
+                "    projecting twice is the same as projecting once:\n"
+                "\n"
+                "    >>> v: Vector = 2 * Vector.e_1 + 3 * Vector.e_2\n"
+                "    >>> Vector.project(onto=Vector.e_1)(v) == 2 * Vector.e_1\n"
+                "    True\n"
+                "    >>> Vector.project(onto=3 * Vector.e_1)(v) == 2 * Vector.e_1\n"
+                "    True\n"
+                "    >>> p = Vector.project(onto=Vector.e_1)\n"
+                "    >>> (p @ p)(v) == p(v)\n"
+                "    True"
+            ),
+        },
     ),
-    "vector|reject": (
-        "Classmethod form of the rejection; see ``rejected_away_from``.\n"
-        "\n"
-        "Args:\n"
-        "    away_from: the vector (or blade) to reject from.\n"
-        "\n"
-        "Returns:\n"
-        "    ComposableFunction: the rejection map from ``away_from``."
+    "vector|reject": _by_dimension(
+        (
+            "Classmethod form of the rejection; see ``rejected_away_from``.\n"
+            "\n"
+            "Args:\n"
+            "    away_from: the vector (or blade) to reject from.\n"
+            "\n"
+            "Returns:\n"
+            "    ComposableFunction: the rejection map from ``away_from``."
+        ),
+        {
+            1: (
+                "    In 𝒢₁ nothing is perpendicular to e₁, so the rejection is 0:\n"
+                "\n"
+                "    >>> Vector.reject(away_from=Vector.e_1)(3 * Vector.e_1) == Vector.zero()\n"
+                "    True"
+            ),
+            2: (
+                "    Rejecting e₁ or 3 * e₁ drops the e₁ coordinate and keeps the rest:\n"
+                "\n"
+                "    >>> v: Vector = 2 * Vector.e_1 + 3 * Vector.e_2\n"
+                "    >>> Vector.reject(away_from=Vector.e_1)(v) == 3 * Vector.e_2\n"
+                "    True\n"
+                "    >>> Vector.reject(away_from=3 * Vector.e_1)(v) == 3 * Vector.e_2\n"
+                "    True"
+            ),
+        },
     ),
-    "vector|reflect": (
-        "Classmethod form of the reflection; see ``reflected_across``.\n"
-        "\n"
-        "Args:\n"
-        "    across: the vector (or blade) to reflect across.\n"
-        "\n"
-        "Returns:\n"
-        "    InvertibleFunction: the reflection map across ``across``."
+    "vector|reflect": _by_dimension(
+        (
+            "Classmethod form of the reflection; see ``reflected_across``.\n"
+            "\n"
+            "Args:\n"
+            "    across: the vector (or blade) to reflect across.\n"
+            "\n"
+            "Returns:\n"
+            "    InvertibleFunction: the reflection map across ``across``."
+        ),
+        {
+            1: (
+                "    >>> Vector.reflect(across=Vector.e_1)(3 * Vector.e_1) == 3 * Vector.e_1\n"
+                "    True"
+            ),
+            2: (
+                "    Reflecting across the e₁ line flips the e₂ coordinate; reflecting twice\n"
+                "    gives back the original, so the reflection is its own inverse:\n"
+                "\n"
+                "    >>> f = Vector.reflect(across=Vector.e_1)\n"
+                "    >>> v: Vector = 1 * Vector.e_1 + 2 * Vector.e_2\n"
+                "    >>> f(v) == 1 * Vector.e_1 - 2 * Vector.e_2\n"
+                "    True\n"
+                "    >>> (f @ f)(v) == v\n"
+                "    True\n"
+                "    >>> f.inverse(v) == f(v)\n"
+                "    True"
+            ),
+        },
     ),
-    "vector|__iter__": (
-        "Iterating a vector yields its coordinate values in order -- ``list(v)``\n"
-        "is the coordinate tuple that feeds numpy / plotting.\n"
-        "\n"
-        "Yields:\n"
-        "    Real: each coordinate value, in order."
+    "vector|__iter__": _by_dimension(
+        (
+            "Iterating a vector yields its coordinate values in order -- ``list(v)``\n"
+            "is the coordinate tuple that feeds numpy / plotting.\n"
+            "\n"
+            "Yields:\n"
+            "    Real: each coordinate value, in order."
+        ),
+        {
+            1: ("    >>> list(3 * Vector.e_1)\n    [3]"),
+            2: ("    >>> list(3 * Vector.e_1 + 4 * Vector.e_2)\n    [3, 4]"),
+            3: ("    >>> list(3 * Vector.e_1 + 4 * Vector.e_2)\n    [3, 4, 0]"),
+        },
     ),
     "vector|isclose": (
         "Numeric near-equality of two vectors, coordinate-wise (see the base\n"
@@ -1717,9 +2371,20 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "\n"
         "Args:\n"
         "    other: the vector to compare against.\n"
+        "    rel_tol: relative tolerance (default ``0.0`` -- exact).\n"
+        "    abs_tol: absolute tolerance, for values near zero (default ``0.0``).\n"
         "\n"
         "Returns:\n"
-        "    bool: ``True`` iff every coordinate is within tolerance."
+        "    bool: ``True`` iff every coordinate is within tolerance.\n"
+        "\n"
+        "Example:\n"
+        "    Equal up to a relative tolerance (the default tolerance is 0, exact):\n"
+        "\n"
+        "    >>> a: Vector = 1.0 * Vector.e_1\n"
+        "    >>> a.isclose(1.0000000001 * Vector.e_1, rel_tol=1e-9)\n"
+        "    True\n"
+        "    >>> a.isclose(1.0000000001 * Vector.e_1)\n"
+        "    False"
     ),
     "vector|from_blade_dict": (
         "Build a vector from a blade→coefficient dict (only grade-1 blades\n"
@@ -1729,13 +2394,21 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    blade_coef: a canonical blade -> coefficient mapping.\n"
         "\n"
         "Returns:\n"
-        "    Vector: a vector holding the grade-1 coefficients."
+        "    Vector: a vector holding the grade-1 coefficients.\n"
+        "\n"
+        "Example:\n"
+        "    >>> Vector.from_blade_dict({(1,): 3}) == 3 * Vector.e_1\n"
+        "    True"
     ),
     "vector|to_blade_dict": (
         "This vector as a blade→coefficient dict (grade-1 blades only).\n"
         "\n"
         "Returns:\n"
-        "    Mapping[Blade, Real]: the grade-1 blade -> coefficient mapping."
+        "    Mapping[Blade, Real]: the grade-1 blade -> coefficient mapping.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (3 * Vector.e_1).to_blade_dict()\n"
+        "    {(1,): 3}"
     ),
     "vector|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -1744,7 +2417,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the left contraction ``self < other``."
+        "    the left contraction ``self < other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> ((1 * Vector.e_1) < (3 * Vector.e_1)) == Scalar.from_real(3)\n"
+        "    True"
     ),
     "vector|__gt__": (
         "Right contraction operator ``>``; see ``right_contraction``.\n"
@@ -1753,7 +2430,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the right contraction ``self > other``."
+        "    the right contraction ``self > other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> ((1 * Vector.e_1) > (3 * Vector.e_1)) == Scalar.from_real(3)\n"
+        "    True"
     ),
     "vector|__radd__": (
         "Reflected sum  (number) + a  -- adds a scalar part, giving a mixed\n"
@@ -1763,7 +2444,13 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    the mixed multivector ``lhs + a`` (scalar + vector)."
+        "    the mixed multivector ``lhs + a`` (scalar + vector).\n"
+        "\n"
+        "Example:\n"
+        "    >>> (2 + 1 * Vector.e_1).grades()\n"
+        "    [0, 1]\n"
+        "    >>> (2 + 1 * Vector.e_1).scalar_part()\n"
+        "    2"
     ),
     "vector|__rmul__": (
         "Reflected product  (number) * a  -- scales the vector.\n"
@@ -1772,7 +2459,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    Vector: the scaled vector."
+        "    Vector: the scaled vector.\n"
+        "\n"
+        "Example:\n"
+        "    >>> 3 * (2 * Vector.e_1) == 6 * Vector.e_1\n"
+        "    True"
     ),
     # ------------------------------------------------------------------
     # Trivector (grade 3) -- the oriented VOLUME element and the pseudoscalar
@@ -1799,7 +2490,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the trivector to subtract.\n"
         "\n"
         "Returns:\n"
-        "    Trivector: the component-wise difference."
+        "    Trivector: the component-wise difference.\n"
+        "\n"
+        "Example:\n"
+        "    >>> 3 * Trivector.e_123 - 1 * Trivector.e_123 == 2 * Trivector.e_123\n"
+        "    True"
     ),
     "trivector|__neg__": (
         "Negation -- reverses the orientation of the volume.\n"
@@ -1834,7 +2529,16 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the geometric product ``self * rhs``."
+        "    the geometric product ``self * rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    The pseudoscalar squares to −1; times e₃ it leaves the e₁ * e₂ plane:\n"
+        "\n"
+        "    >>> I: Trivector = 1 * Trivector.e_123\n"
+        "    >>> I._geometric_product(I) == Scalar.from_real(-1)\n"
+        "    True\n"
+        "    >>> I._geometric_product(1 * Vector.e_3) == 1 * Bivector.e_12\n"
+        "    True"
     ),
     "trivector|dot": (
         "Inner product with another trivector -- a scalar; for the unit\n"
@@ -1858,7 +2562,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    Scalar: the inner product (a scalar)."
+        "    Scalar: the inner product (a scalar).\n"
+        "\n"
+        "Example:\n"
+        "    >>> I: Trivector = 1 * Trivector.e_123\n"
+        "    >>> I.inner_product(I) == Scalar.from_real(-1)\n"
+        "    True"
     ),
     "trivector|left_contraction": (
         "Left contraction (the ``<`` operator); lowers grade.\n"
@@ -1867,7 +2576,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the left contraction (lowers grade)."
+        "    the left contraction (lowers grade).\n"
+        "\n"
+        "Example:\n"
+        "    >>> I: Trivector = 1 * Trivector.e_123\n"
+        "    >>> I.left_contraction(I) == Scalar.from_real(-1)\n"
+        "    True"
     ),
     "trivector|right_contraction": (
         "Right contraction (the ``>`` operator); lowers grade.\n"
@@ -1876,7 +2590,14 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the right contraction (lowers grade)."
+        "    the right contraction (lowers grade).\n"
+        "\n"
+        "Example:\n"
+        "    Contracting the volume by e₃ leaves the e₁ * e₂ plane:\n"
+        "\n"
+        "    >>> I: Trivector = 1 * Trivector.e_123\n"
+        "    >>> I.right_contraction(1 * Vector.e_3) == 1 * Bivector.e_12\n"
+        "    True"
     ),
     "trivector|outer_product": (
         "Outer product.  A trivector wedged with anything of grade ≥ 1 is 0 --\n"
@@ -1900,7 +2621,14 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the outer product (0 with any grade ≥ 1)."
+        "    the outer product (0 with any grade ≥ 1).\n"
+        "\n"
+        "Example:\n"
+        "    >>> I: Trivector = 1 * Trivector.e_123\n"
+        "    >>> I.wedge(1 * Vector.e_1) == Scalar.zero()\n"
+        "    True\n"
+        "    >>> I.wedge(Scalar.from_real(2)) == 2 * Trivector.e_123\n"
+        "    True"
     ),
     "trivector|__xor__": (
         "Outer (wedge) product operator ``^``; see ``wedge``.\n"
@@ -1909,7 +2637,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the outer product ``self ^ other``."
+        "    the outer product ``self ^ other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (1 * Trivector.e_123) ^ (1 * Vector.e_1) == Scalar.zero()\n"
+        "    True"
     ),
     "trivector|dual": (
         "Dual in 𝒢₃: the trivector (pseudoscalar) duals to a scalar.\n"
@@ -1989,16 +2721,31 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Iterating a trivector yields its single grade-3 component value.\n"
         "\n"
         "Yields:\n"
-        "    Real: the single grade-3 component value."
+        "    Real: the single grade-3 component value.\n"
+        "\n"
+        "Example:\n"
+        "    >>> list(2 * Trivector.e_123)\n"
+        "    [2]"
     ),
     "trivector|isclose": (
         "Numeric near-equality of two trivectors (see the base ``isclose``).\n"
         "\n"
         "Args:\n"
         "    other: the trivector to compare against.\n"
+        "    rel_tol: relative tolerance (default ``0.0`` -- exact).\n"
+        "    abs_tol: absolute tolerance, for values near zero (default ``0.0``).\n"
         "\n"
         "Returns:\n"
-        "    bool: ``True`` iff the two are within tolerance."
+        "    bool: ``True`` iff the two are within tolerance.\n"
+        "\n"
+        "Example:\n"
+        "    Equal up to a relative tolerance (the default tolerance is 0, exact):\n"
+        "\n"
+        "    >>> A: Trivector = 1.0 * Trivector.e_123\n"
+        "    >>> A.isclose(1.0000000001 * Trivector.e_123, rel_tol=1e-9)\n"
+        "    True\n"
+        "    >>> A.isclose(1.0000000001 * Trivector.e_123)\n"
+        "    False"
     ),
     "trivector|from_blade_dict": (
         "Build a trivector from a blade→coefficient dict (grade-3 blade only).\n"
@@ -2007,13 +2754,21 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    blade_coef: a canonical blade -> coefficient mapping.\n"
         "\n"
         "Returns:\n"
-        "    Trivector: a trivector holding the grade-3 coefficient."
+        "    Trivector: a trivector holding the grade-3 coefficient.\n"
+        "\n"
+        "Example:\n"
+        "    >>> Trivector.from_blade_dict({(1, 2, 3): 2}) == 2 * Trivector.e_123\n"
+        "    True"
     ),
     "trivector|to_blade_dict": (
         "This trivector as a blade→coefficient dict (grade-3 blade only).\n"
         "\n"
         "Returns:\n"
-        "    Mapping[Blade, Real]: the grade-3 blade -> coefficient mapping."
+        "    Mapping[Blade, Real]: the grade-3 blade -> coefficient mapping.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (2 * Trivector.e_123).to_blade_dict()\n"
+        "    {(1, 2, 3): 2}"
     ),
     "trivector|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -2022,7 +2777,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the left contraction ``self < other``."
+        "    the left contraction ``self < other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> I: Trivector = 1 * Trivector.e_123\n"
+        "    >>> (I < I) == Scalar.from_real(-1)\n"
+        "    True"
     ),
     "trivector|__gt__": (
         "Right contraction operator ``>``; see ``right_contraction``.\n"
@@ -2031,7 +2791,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the right contraction ``self > other``."
+        "    the right contraction ``self > other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> ((1 * Trivector.e_123) > (1 * Vector.e_3)) == 1 * Bivector.e_12\n"
+        "    True"
     ),
     "trivector|__radd__": (
         "Reflected sum  (number) + T  -- adds a scalar part.\n"
@@ -2040,7 +2804,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    the mixed multivector ``lhs + T`` (scalar + trivector)."
+        "    the mixed multivector ``lhs + T`` (scalar + trivector).\n"
+        "\n"
+        "Example:\n"
+        "    >>> (2 + 1 * Trivector.e_123).grades()\n"
+        "    [0, 3]"
     ),
     "trivector|__rmul__": (
         "Reflected product  (number) * T  -- scales the trivector.\n"
@@ -2049,7 +2817,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    Trivector: the scaled trivector."
+        "    Trivector: the scaled trivector.\n"
+        "\n"
+        "Example:\n"
+        "    >>> 3 * (2 * Trivector.e_123) == 6 * Trivector.e_123\n"
+        "    True"
     ),
     # ------------------------------------------------------------------
     # Versor (the even subalgebra {0, 2}) -- what actually rotates.  A versor is
@@ -2076,13 +2848,21 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the versor to subtract.\n"
         "\n"
         "Returns:\n"
-        "    Versor: the component-wise difference."
+        "    Versor: the component-wise difference.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (3 + 1 * Versor.e_12) - (1 + 1 * Versor.e_12) == Versor.from_real(2)\n"
+        "    True"
     ),
     "versor|__neg__": (
         "Negation -- flips both the scalar and bivector parts.\n"
         "\n"
         "Returns:\n"
-        "    Versor: the negated versor."
+        "    Versor: the negated versor.\n"
+        "\n"
+        "Example:\n"
+        "    >>> -(1 + 2 * Versor.e_12) == -1 - 2 * Versor.e_12\n"
+        "    True"
     ),
     "versor|__mul__": (
         "Geometric product of two versors COMPOSES their rotations.  A rotor times\n"
@@ -2095,6 +2875,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Versor: the composed rotation (for two versors).\n"
         "\n"
         "Example:\n"
+        "    Scalars multiply as numbers, and the unit plane e₁ * e₂ squares to −1:\n"
+        "\n"
+        "    >>> Versor.from_real(2) * Versor.from_real(3) == Versor.from_real(6)\n"
+        "    True\n"
+        "    >>> (1 * Versor.e_12) * (1 * Versor.e_12) == Versor.from_real(-1)\n"
+        "    True\n"
         "    >>> R: Versor = (1 * Bivector.e_12).exp()\n"
         "    >>> R * R.reverse() == Versor.from_real(1)\n"
         "    True"
@@ -2106,7 +2892,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the geometric product ``self * rhs``."
+        "    the geometric product ``self * rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> R: Versor = 1 * Versor.e_12\n"
+        "    >>> R._geometric_product(R) == Versor.from_real(-1)\n"
+        "    True"
     ),
     "versor|sandwich": (
         "Apply this versor to a value:  R * x * R⁻¹  (the sandwich) -- this is how a\n"
@@ -2120,6 +2911,15 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "\n"
         "Example:\n"
         "    >>> Versor.from_real(1).sandwich(1 * Vector.e_1) == 1 * Vector.e_1\n"
+        "    True\n"
+        "\n"
+        "    The versor from e₁ to e₂ turns e₁ onto e₂, and turns 3 * e₁ onto\n"
+        "    3 * e₂ (a rotation keeps lengths):\n"
+        "\n"
+        "    >>> R: Versor = Vector.versor_from_vectors(Vector.e_1, Vector.e_2)\n"
+        "    >>> R.sandwich(1 * Vector.e_1) == 1 * Vector.e_2\n"
+        "    True\n"
+        "    >>> R.sandwich(3 * Vector.e_1) == 3 * Vector.e_2\n"
         "    True"
     ),
     "versor|plane_of_rotation": (
@@ -2205,7 +3005,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    Scalar: the inner product (a scalar)."
+        "    Scalar: the inner product (a scalar).\n"
+        "\n"
+        "Example:\n"
+        "    >>> (1 * Versor.e_12).dot(1 * Versor.e_12) == Scalar.from_real(-1)\n"
+        "    True"
     ),
     "versor|inner_product": (
         "Inner product of two versors -- a scalar (see ``dot``).\n"
@@ -2214,7 +3018,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    Scalar: the inner product (a scalar)."
+        "    Scalar: the inner product (a scalar).\n"
+        "\n"
+        "Example:\n"
+        "    >>> R: Versor = 1 * Versor.e_12\n"
+        "    >>> R.inner_product(R) == Scalar.from_real(-1)\n"
+        "    True"
     ),
     "versor|left_contraction": (
         "Left contraction (the ``<`` operator).\n"
@@ -2223,7 +3032,17 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the left contraction ``self < rhs``."
+        "    the left contraction ``self < rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    A scalar contracts as plain multiplication; the unit plane contracts\n"
+        "    with itself to −1:\n"
+        "\n"
+        "    >>> R: Versor = 1 * Versor.e_12\n"
+        "    >>> Versor.from_real(2).left_contraction(R) == 2 * Bivector.e_12\n"
+        "    True\n"
+        "    >>> R.left_contraction(R) == Scalar.from_real(-1)\n"
+        "    True"
     ),
     "versor|right_contraction": (
         "Right contraction (the ``>`` operator).\n"
@@ -2232,7 +3051,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the right contraction ``self > rhs``."
+        "    the right contraction ``self > rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> R: Versor = 1 * Versor.e_12\n"
+        "    >>> R.right_contraction(Versor.from_real(2)) == 2 * Bivector.e_12\n"
+        "    True"
     ),
     "versor|outer_product": (
         "Outer (wedge) product.\n"
@@ -2241,7 +3065,14 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the outer product ``self ∧ rhs``."
+        "    the outer product ``self ∧ rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> R: Versor = Versor.from_real(2)\n"
+        "    >>> R.outer_product(3 * Versor.e_12) == 6 * Bivector.e_12\n"
+        "    True\n"
+        "    >>> (1 * Versor.e_12).outer_product(1 * Versor.e_12) == Scalar.zero()\n"
+        "    True"
     ),
     "versor|wedge": (
         "Outer (wedge) product.\n"
@@ -2250,7 +3081,13 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the outer product ``self ∧ rhs``."
+        "    the outer product ``self ∧ rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> Versor.from_real(2).wedge(3 * Versor.e_12) == 6 * Bivector.e_12\n"
+        "    True\n"
+        "    >>> (1 * Versor.e_12).wedge(1 * Versor.e_12) == Scalar.zero()\n"
+        "    True"
     ),
     "versor|__xor__": (
         "Outer (wedge) product operator ``^``.\n"
@@ -2259,29 +3096,45 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the outer product ``self ^ other``."
-    ),
-    "versor|dual": (
-        "Dual  R* = R / i (a versor is even, so its dual is even too).\n"
+        "    the outer product ``self ^ other``.\n"
         "\n"
-        "Returns:\n"
-        "    the dual (an even multivector)."
+        "Example:\n"
+        "    >>> (1 * Versor.e_12) ^ (1 * Versor.e_12) == Scalar.zero()\n"
+        "    True"
     ),
-    "versor|__iter__": (
-        "Iterating a versor yields its component values (scalar then bivector\n"
-        "parts).\n"
-        "\n"
-        "Yields:\n"
-        "    Real: each component value (scalar then bivector parts)."
+    "versor|dual": _versor_dual_doc,
+    "versor|__iter__": _by_dimension(
+        (
+            "Iterating a versor yields its component values (scalar then bivector\n"
+            "parts).\n"
+            "\n"
+            "Yields:\n"
+            "    Real: each component value (scalar then bivector parts)."
+        ),
+        {
+            2: ("    >>> list(1 + 2 * Versor.e_12)\n    [1, 2]"),
+            3: ("    >>> list(1 + 2 * Versor.e_12)\n    [1, 2, 0, 0]"),
+        },
     ),
     "versor|isclose": (
         "Numeric near-equality of two versors (see the base ``isclose``).\n"
         "\n"
         "Args:\n"
         "    other: the versor to compare against.\n"
+        "    rel_tol: relative tolerance (default ``0.0`` -- exact).\n"
+        "    abs_tol: absolute tolerance, for values near zero (default ``0.0``).\n"
         "\n"
         "Returns:\n"
-        "    bool: ``True`` iff the two are within tolerance."
+        "    bool: ``True`` iff the two are within tolerance.\n"
+        "\n"
+        "Example:\n"
+        "    Equal up to a relative tolerance (the default tolerance is 0, exact):\n"
+        "\n"
+        "    >>> A: Versor = 1.0 * Versor.e_12\n"
+        "    >>> A.isclose(1.0000000001 * Versor.e_12, rel_tol=1e-9)\n"
+        "    True\n"
+        "    >>> A.isclose(1.0000000001 * Versor.e_12)\n"
+        "    False"
     ),
     "versor|from_blade_dict": (
         "Build a versor from a blade→coefficient dict (grade-0 and grade-2 blades\n"
@@ -2291,13 +3144,21 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    blade_coef: a canonical blade -> coefficient mapping.\n"
         "\n"
         "Returns:\n"
-        "    Versor: a versor holding the grade-0 and grade-2 coefficients."
+        "    Versor: a versor holding the grade-0 and grade-2 coefficients.\n"
+        "\n"
+        "Example:\n"
+        "    >>> Versor.from_blade_dict({(): 1, (1, 2): 2}) == 1 + 2 * Versor.e_12\n"
+        "    True"
     ),
     "versor|to_blade_dict": (
         "This versor as a blade→coefficient dict (scalar + bivector blades).\n"
         "\n"
         "Returns:\n"
-        "    Mapping[Blade, Real]: the grade-0 + grade-2 blade -> coefficient mapping."
+        "    Mapping[Blade, Real]: the grade-0 + grade-2 blade -> coefficient mapping.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (1 + 2 * Versor.e_12).to_blade_dict()\n"
+        "    {(): 1, (1, 2): 2}"
     ),
     "versor|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -2306,7 +3167,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the left contraction ``self < other``."
+        "    the left contraction ``self < other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> ((1 * Versor.e_12) < (1 * Versor.e_12)) == Scalar.from_real(-1)\n"
+        "    True"
     ),
     "versor|__gt__": (
         "Right contraction operator ``>``; see ``right_contraction``.\n"
@@ -2315,7 +3180,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the right contraction ``self > other``."
+        "    the right contraction ``self > other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> ((1 * Versor.e_12) > Versor.from_real(2)) == 2 * Bivector.e_12\n"
+        "    True"
     ),
     "versor|__radd__": (
         "Reflected sum  (number) + R  -- adds to the versor's scalar part.\n"
@@ -2324,7 +3193,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    Versor: the versor with ``lhs`` added to its scalar part."
+        "    Versor: the versor with ``lhs`` added to its scalar part.\n"
+        "\n"
+        "Example:\n"
+        "    >>> 2 + (1 + 1 * Versor.e_12) == 3 + 1 * Versor.e_12\n"
+        "    True"
     ),
     "versor|__rmul__": (
         "Reflected product  (number) * R  -- scales the versor.\n"
@@ -2333,7 +3206,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    Versor: the scaled versor."
+        "    Versor: the scaled versor.\n"
+        "\n"
+        "Example:\n"
+        "    >>> 2 * (1 + 1 * Versor.e_12) == 2 + 2 * Versor.e_12\n"
+        "    True"
     ),
     # ------------------------------------------------------------------
     # Odd_3 (the odd part {1, 3} of 𝒢₃) -- vectors + trivectors.  A subspace
@@ -2359,13 +3236,22 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the odd multivector to subtract.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: the component-wise difference."
+        "    Odd_3: the component-wise difference.\n"
+        "\n"
+        "Example:\n"
+        "    >>> 3 * Odd_3.e_1 - 1 * Odd_3.e_1 == 2 * Odd_3.e_1\n"
+        "    True"
     ),
     "odd|__neg__": (
         "Negation -- every component sign-flipped.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: the negated odd multivector."
+        "    Odd_3: the negated odd multivector.\n"
+        "\n"
+        "Example:\n"
+        "    >>> O: Odd_3 = 1 * Odd_3.e_1 + 2 * Odd_3.e_123\n"
+        "    >>> -O == -1 * Odd_3.e_1 - 2 * Odd_3.e_123\n"
+        "    True"
     ),
     "odd|__mul__": (
         "Geometric product.  The product of two ODD multivectors is EVEN (a\n"
@@ -2389,7 +3275,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the geometric product ``self * rhs``."
+        "    the geometric product ``self * rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (1 * Odd_3.e_1)._geometric_product(1 * Odd_3.e_2) == 1 * Versor.e_12\n"
+        "    True"
     ),
     "odd|to_vector": (
         "The grade-1 (vector) part, as a ``Vector`` -- raises if the grade-3 part\n"
@@ -2491,7 +3381,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    Scalar: the inner product (a scalar)."
+        "    Scalar: the inner product (a scalar).\n"
+        "\n"
+        "Example:\n"
+        "    >>> (2 * Odd_3.e_1).dot(3 * Odd_3.e_1) == Scalar.from_real(6)\n"
+        "    True"
     ),
     "odd|inner_product": (
         "Inner product of two odd multivectors -- a scalar (see ``dot``).\n"
@@ -2500,7 +3394,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    Scalar: the inner product (a scalar)."
+        "    Scalar: the inner product (a scalar).\n"
+        "\n"
+        "Example:\n"
+        "    >>> (2 * Odd_3.e_1).inner_product(3 * Odd_3.e_1) == Scalar.from_real(6)\n"
+        "    True"
     ),
     "odd|left_contraction": (
         "Left contraction (the ``<`` operator).\n"
@@ -2509,7 +3407,14 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the left contraction ``self < rhs``."
+        "    the left contraction ``self < rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    Contracting e₁ into the volume leaves the e₂ * e₃ plane:\n"
+        "\n"
+        "    >>> O: Odd_3 = 1 * Odd_3.e_1\n"
+        "    >>> O.left_contraction(1 * Odd_3.e_123) == 1 * Bivector.e_23\n"
+        "    True"
     ),
     "odd|right_contraction": (
         "Right contraction (the ``>`` operator).\n"
@@ -2518,7 +3423,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the right contraction ``self > rhs``."
+        "    the right contraction ``self > rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> O: Odd_3 = 1 * Odd_3.e_123\n"
+        "    >>> O.right_contraction(1 * Odd_3.e_3) == 1 * Bivector.e_12\n"
+        "    True"
     ),
     "odd|outer_product": (
         "Outer (wedge) product.\n"
@@ -2527,7 +3437,13 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the outer product ``self ∧ rhs``."
+        "    the outer product ``self ∧ rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (1 * Odd_3.e_1).outer_product(1 * Odd_3.e_2) == 1 * Bivector.e_12\n"
+        "    True\n"
+        "    >>> (1 * Odd_3.e_1).outer_product(1 * Odd_3.e_1) == Scalar.zero()\n"
+        "    True"
     ),
     "odd|wedge": (
         "Outer (wedge) product.\n"
@@ -2536,7 +3452,13 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the outer product ``self ∧ rhs``."
+        "    the outer product ``self ∧ rhs``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (1 * Odd_3.e_1).wedge(1 * Odd_3.e_2) == 1 * Bivector.e_12\n"
+        "    True\n"
+        "    >>> (1 * Odd_3.e_1).wedge(1 * Odd_3.e_1) == Scalar.zero()\n"
+        "    True"
     ),
     "odd|__xor__": (
         "Outer (wedge) product operator ``^``.\n"
@@ -2545,20 +3467,36 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the outer product ``self ^ other``."
+        "    the outer product ``self ^ other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (1 * Odd_3.e_1) ^ (1 * Odd_3.e_2) == 1 * Bivector.e_12\n"
+        "    True"
     ),
     "odd|dual": (
         "Dual  O* = O / i -- maps the odd part to the even part (a versor).\n"
         "\n"
         "Returns:\n"
-        "    Versor: the dual (maps the odd part to the even part)."
+        "    Versor: the dual (maps the odd part to the even part).\n"
+        "\n"
+        "Example:\n"
+        "    The vector part duals to a plane, the trivector part to a scalar:\n"
+        "\n"
+        "    >>> (1 * Odd_3.e_1).dual() == -1 * Bivector.e_23\n"
+        "    True\n"
+        "    >>> (1 * Odd_3.e_123).dual() == Scalar.from_real(1)\n"
+        "    True"
     ),
     "odd|__iter__": (
         "Iterating an odd multivector yields its component values (grade-1 then\n"
         "grade-3).\n"
         "\n"
         "Yields:\n"
-        "    Real: each component value (grade-1 then grade-3)."
+        "    Real: each component value (grade-1 then grade-3).\n"
+        "\n"
+        "Example:\n"
+        "    >>> list(1 * Odd_3.e_1 + 2 * Odd_3.e_123)\n"
+        "    [1, 0, 0, 2]"
     ),
     "odd|isclose": (
         "Numeric near-equality of two odd multivectors (see the base\n"
@@ -2566,9 +3504,20 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "\n"
         "Args:\n"
         "    other: the odd multivector to compare against.\n"
+        "    rel_tol: relative tolerance (default ``0.0`` -- exact).\n"
+        "    abs_tol: absolute tolerance, for values near zero (default ``0.0``).\n"
         "\n"
         "Returns:\n"
-        "    bool: ``True`` iff every component is within tolerance."
+        "    bool: ``True`` iff every component is within tolerance.\n"
+        "\n"
+        "Example:\n"
+        "    Equal up to a relative tolerance (the default tolerance is 0, exact):\n"
+        "\n"
+        "    >>> A: Odd_3 = 1.0 * Odd_3.e_1\n"
+        "    >>> A.isclose(1.0000000001 * Odd_3.e_1, rel_tol=1e-9)\n"
+        "    True\n"
+        "    >>> A.isclose(1.0000000001 * Odd_3.e_1)\n"
+        "    False"
     ),
     "odd|from_blade_dict": (
         "Build an odd multivector from a blade→coefficient dict (grade-1 and\n"
@@ -2578,14 +3527,23 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    blade_coef: a canonical blade -> coefficient mapping.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: an odd multivector holding the grade-1 and grade-3 coefficients."
+        "    Odd_3: an odd multivector holding the grade-1 and grade-3 coefficients.\n"
+        "\n"
+        "Example:\n"
+        "    >>> O: Odd_3 = Odd_3.from_blade_dict({(1,): 1, (1, 2, 3): 2})\n"
+        "    >>> O == 1 * Odd_3.e_1 + 2 * Odd_3.e_123\n"
+        "    True"
     ),
     "odd|to_blade_dict": (
         "This odd multivector as a blade→coefficient dict (grade-1 and grade-3\n"
         "blades).\n"
         "\n"
         "Returns:\n"
-        "    Mapping[Blade, Real]: the grade-1 + grade-3 blade -> coefficient mapping."
+        "    Mapping[Blade, Real]: the grade-1 + grade-3 blade -> coefficient mapping.\n"
+        "\n"
+        "Example:\n"
+        "    >>> (1 * Odd_3.e_1 + 2 * Odd_3.e_123).to_blade_dict()\n"
+        "    {(1,): 1, (1, 2, 3): 2}"
     ),
     "odd|__lt__": (
         "Left contraction operator ``<``; see ``left_contraction``.\n"
@@ -2594,7 +3552,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the left contraction ``self < other``."
+        "    the left contraction ``self < other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> ((1 * Odd_3.e_1) < (1 * Odd_3.e_123)) == 1 * Bivector.e_23\n"
+        "    True"
     ),
     "odd|__gt__": (
         "Right contraction operator ``>``; see ``right_contraction``.\n"
@@ -2603,7 +3565,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    other: the right operand.\n"
         "\n"
         "Returns:\n"
-        "    the right contraction ``self > other``."
+        "    the right contraction ``self > other``.\n"
+        "\n"
+        "Example:\n"
+        "    >>> ((1 * Odd_3.e_123) > (1 * Odd_3.e_3)) == 1 * Bivector.e_12\n"
+        "    True"
     ),
     "odd|__radd__": (
         "Reflected sum  (number) + O -- adds a scalar part (giving a mixed\n"
@@ -2613,7 +3579,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    the mixed multivector ``lhs + O`` (scalar + odd)."
+        "    the mixed multivector ``lhs + O`` (scalar + odd).\n"
+        "\n"
+        "Example:\n"
+        "    >>> (2 + 1 * Odd_3.e_1).grades()\n"
+        "    [0, 1]"
     ),
     "odd|__rmul__": (
         "Reflected product  (number) * O -- scales the odd multivector.\n"
@@ -2622,24 +3592,29 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: the scaled odd multivector."
+        "    Odd_3: the scaled odd multivector.\n"
+        "\n"
+        "Example:\n"
+        "    >>> O: Odd_3 = 1 * Odd_3.e_1 + 1 * Odd_3.e_123\n"
+        "    >>> 3 * O == 3 * Odd_3.e_1 + 3 * Odd_3.e_123\n"
+        "    True"
     ),
 }
 
 
-def _role_for_class(class_name: str, full_name: str) -> str:
+def _role_for_class(class_name: str, full_name: str) -> DocRole:
     """The grade identity used to key ``CUSTOM_METHOD_DOCS`` for ``class_name``."""
     if class_name == full_name:
-        return "full"
-    known: dict[str, str] = {
-        "Scalar": "scalar",
-        "Vector": "vector",
-        "Bivector": "bivector",
-        "Trivector": "trivector",
-        "Versor": "versor",
-        "Odd_3": "odd",
+        return DocRole.FULL
+    known: dict[str, DocRole] = {
+        "Scalar": DocRole.SCALAR,
+        "Vector": DocRole.VECTOR,
+        "Bivector": DocRole.BIVECTOR,
+        "Trivector": DocRole.TRIVECTOR,
+        "Versor": DocRole.VERSOR,
+        "Odd_3": DocRole.ODD,
     }
-    return known.get(class_name, "generic")
+    return known.get(class_name, DocRole.GENERIC)
 
 
 def _own_docstring(method: str) -> str | None:
@@ -2657,7 +3632,7 @@ def _own_docstring(method: str) -> str | None:
     return None
 
 
-def custom_method_doc(role: str, method: str, n: int) -> str | None:
+def custom_method_doc(role: DocRole, method: str, n: int) -> str | None:
     """A specialized ``CUSTOM_METHOD_DOCS`` entry for ``method`` on a ``role`` class
     of 𝒢ₙ, or ``None`` if there is none (or n is a generic-only dimension).
 
@@ -2668,7 +3643,7 @@ def custom_method_doc(role: str, method: str, n: int) -> str | None:
     if n not in _CUSTOM_DOC_DIMS:
         return None
     entry: DocEntry | None = CUSTOM_METHOD_DOCS.get(
-        f"{role}|{method}"
+        f"{role.value}|{method}"
     ) or CUSTOM_METHOD_DOCS.get(f"*|{method}")
     if isinstance(entry, str):
         return entry
@@ -2720,6 +3695,9 @@ ANY_OPERAND_RETURN_OVERRIDES: frozenset[str] = frozenset(
         "__radd__",
         "r_vector_part",
         "plane_of_rotation",
+        # Not an operand method: the classmethod one() of a graded type with no
+        # scalar slot returns that algebra's Scalar, not Self.
+        "one",
     }
 )
 
@@ -2791,7 +3769,7 @@ def inject_method_docstrings(nodes: Sequence[ast.stmt], n: int, full_name: str) 
     for node in nodes:
         if not isinstance(node, ast.ClassDef):
             continue
-        role: str = _role_for_class(node.name, full_name)
+        role: DocRole = _role_for_class(node.name, full_name)
         item: ast.stmt
         for item in node.body:
             if not isinstance(item, ast.FunctionDef):
@@ -2849,6 +3827,10 @@ ROTATE_90_FACTORY_DOC: str = (
     "    Example:\n"
     "        >>> from gacalc.g2 import e_1, e_2, e_12, rotate_90_degrees\n"
     "        >>> turn = rotate_90_degrees()\n"
+    "        >>> turn(1 * e_1) == 1 * e_2            # e_1 turns onto e_2 ...\n"
+    "        True\n"
+    "        >>> turn(1 * e_2) == -1 * e_1           # ... and e_2 onto -e_1\n"
+    "        True\n"
     "        >>> v = 3 * e_1 + 4 * e_2\n"
     "        >>> turn(v) == -4 * e_1 + 3 * e_2\n"
     "        True\n"
@@ -2874,6 +3856,15 @@ ROTATE_90_FACTORY_DOC: str = (
 # The 𝒢₂ signed sine (the scalar, oriented companion to the unsigned, any-dimension
 # ``MultiVectorBase.abs_sin``).  Decision 8 in the task: ``sine`` returns a SIGNED
 # SCALAR, not a bivector -- "sometimes we just want to know the sine and cosine."
+# The 𝒢₂ rotation by an angle, ``Vector.rotate(angle_in_radians)``: the
+# book's eq-rotate-formula, cos(θ) * v + sin(θ) * v.rotate_90_degrees().
+ROTATE_METHOD_DOC: str = (
+    "Rotate this vector by ``angle_in_radians`` (+ is e₁ toward e₂).\n"
+    "\n"
+    "        ``cos(θ) * v + sin(θ) * v.rotate_90_degrees()``: a rotation is a blend\n"
+    "        of the vector and its quarter turn.  𝒢₂ only."
+)
+
 SINE_METHOD_DOC: str = (
     "Signed sine of the angle from this vector to ``other`` (𝒢₂ only).\n"
     "\n"
@@ -3054,6 +4045,14 @@ def i_extractor(inner_method: str, precise_ret: str) -> ast.FunctionDef:
 # ==========================================================================
 
 
+class TypeKind(Enum):
+    """Which family a generated value type belongs to."""
+
+    SCALAR = "scalar"  #: the grade-0 ``Scalar``
+    GRADED = "graded"  #: a grade-pure type, ``Versor``, or ``Odd_3``
+    FULL = "full"  #: the full algebra class ``G``
+
+
 class TypeSpec(NamedTuple):
     """A generated value type's spec: its name, its basis blades (each a tuple of
     basis-vector indices), the algebra dimension, and its kind."""
@@ -3061,7 +4060,7 @@ class TypeSpec(NamedTuple):
     name: str
     blades: tuple[Blade, ...]
     dim: int
-    kind: str
+    kind: TypeKind
 
 
 def scalar_spec(n: int) -> TypeSpec:
@@ -3071,7 +4070,7 @@ def scalar_spec(n: int) -> TypeSpec:
     is that algebra's pseudoscalar (``Scalar.dual -> Vector``, ``Scalar ->
     Bivector``, ``Scalar -> Trivector``), which lives in the same module.  Its
     ``dim`` is n (the shared ``Scalar`` was dimensionless, dim 0)."""
-    return TypeSpec("Scalar", ((),), n, "scalar")
+    return TypeSpec("Scalar", ((),), n, TypeKind.SCALAR)
 
 
 # Class name for each grade-pure blade type.  The three entrenched low-grade
@@ -3109,12 +4108,12 @@ def graded_specs(n: int) -> list[TypeSpec]:
     # One grade-pure type per grade 1..n (Vector, Bivector, …, grade_name(n) = the
     # pseudoscalar); grade 0 (Scalar) is emitted separately by generate_scalar.
     specs: list[TypeSpec] = [
-        TypeSpec(grade_name(grade), blades_of_grade(grade), n, "graded")
+        TypeSpec(grade_name(grade), blades_of_grade(grade), n, TypeKind.GRADED)
         for grade in range(1, n + 1)
     ]
     if n >= 2:  # even subalgebra (Versor); for n==1 the even part is just the scalar
         even: tuple[Blade, ...] = tuple(b for b in blades if len(b) % 2 == 0)
-        specs.append(TypeSpec("Versor", even, n, "graded"))
+        specs.append(TypeSpec("Versor", even, n, TypeKind.GRADED))
     if n == 3:
         # The odd part {1,3} of 𝒢₃ -- the mirror of Versor (the even part {0,2}), but a
         # *subspace*, NOT a subalgebra: odd * odd = even, so Odd_3 * Odd_3 -> Versor,
@@ -3123,12 +4122,12 @@ def graded_specs(n: int) -> list[TypeSpec]:
         # the literal name stays honest; the general higher-dim odd/mixed types are a
         # follow-up (tasks/model-odd-graded-type.md).
         odd_1_3: tuple[Blade, ...] = tuple(b for b in blades if len(b) in (1, 3))
-        specs.append(TypeSpec("Odd_3", odd_1_3, n, "graded"))
+        specs.append(TypeSpec("Odd_3", odd_1_3, n, TypeKind.GRADED))
     return specs
 
 
 def full_spec(n: int, full_name: str) -> TypeSpec:
-    return TypeSpec(full_name, tuple(blades_for_dim(n)), n, "full")
+    return TypeSpec(full_name, tuple(blades_for_dim(n)), n, TypeKind.FULL)
 
 
 def registry_for_dim(n: int, full_name: str) -> list[TypeSpec]:
@@ -3144,7 +4143,7 @@ def resolve(support: Sequence[Blade], n: int, full_name: str) -> TypeSpec:
     ]
     return min(
         candidates,
-        key=lambda t: (len(t.blades), 0 if t.kind == "scalar" else 1, t.name),
+        key=lambda t: (len(t.blades), 0 if t.kind is TypeKind.SCALAR else 1, t.name),
     )
 
 
@@ -5075,6 +6074,30 @@ def generate_class(n: int, name: str) -> list[ast.stmt]:
     ]
 
 
+def one_docstring(type_name: str, blade: Blade) -> str:
+    """The docstring of a scalar-less graded type's ``one()`` classmethod; its
+    example multiplies ``one()`` by ``blade``, one of the type's own basis blades."""
+    x: str = f"1 * {type_name}.{blade_label(blade)}"
+    return (
+        "The multiplicative identity  1  — returned as this algebra's ``Scalar``.\n"
+        "\n"
+        f"A ``{type_name}`` has no scalar slot, so it cannot hold 1 itself; ``one()``\n"
+        "returns the unit ``Scalar`` instead, the value every product starts from\n"
+        f"(``{type_name}.one() * x == x``).\n"
+        "\n"
+        "Returns:\n"
+        "    Scalar: the unit scalar 1.\n"
+        "\n"
+        "Example:\n"
+        "    Multiplying by one() changes nothing:\n"
+        "\n"
+        f"    >>> {type_name}.one() * ({x}) == {x}\n"
+        "    True\n"
+        f"    >>> {type_name}.one() == Scalar.one()\n"
+        "    True\n"
+    )
+
+
 def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stmt]:
     """A graded subtype (Vector/Bivector/Trivector/Versor), as nodes (level C)."""
     blades: list[Blade] = list(spec.blades)
@@ -5476,6 +6499,29 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             + [return_stmt(cast_coef(expr_to_ast(msq_expr, unary_rename)))],
             returns=name_ref("Real"),
         ),
+        # one(): a type with no scalar slot cannot hold 1 (base's from_real(1)
+        # would silently drop it to the zero value), so it returns this algebra's
+        # Scalar instead -- the multiplicative identity, as Scalar.one() is.
+        *(
+            []
+            if has_scalar
+            else [
+                function_def(
+                    "one",
+                    [
+                        doc_expr(one_docstring(spec.name, spec.blades[0])),
+                        return_stmt(
+                            construct(
+                                "Scalar", [(field_name(()), cast_coef(constant(1)))]
+                            )
+                        ),
+                    ],
+                    params=[argument("cls")],
+                    decorators=[name_ref("classmethod")],
+                    returns=name_ref("Scalar"),
+                )
+            ]
+        ),
         grades_method(
             [
                 (g, [field_name(b) for b in blades if len(b) == g])
@@ -5757,6 +6803,51 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                         rename_map(spec.blades, []),
                     ),
                     returns=name_ref(turn_spec.name),
+                )
+            )
+            # rotate(θ) = cos(θ) * v + sin(θ) * v.rotate_90_degrees() -- 𝒢₂ only,
+            # the book's eq-rotate-formula (book/docs/proof-rotate.rst): a rotation
+            # is a blend of the vector and its quarter turn.  A float angle keeps
+            # float arithmetic (math.cos/sin); an int or symbolic angle goes through
+            # sympy, so it stays exact (the same split as MultiVectorBase.exp).
+            extras.append(
+                function_def(
+                    "rotate",
+                    [
+                        class_doc_stmt(ROTATE_METHOD_DOC),
+                        annotated_assign(
+                            "numeric",
+                            name_ref("bool"),
+                            parse_expr("isinstance(angle_in_radians, float)"),
+                        ),
+                        annotated_assign(
+                            "cos_angle",
+                            name_ref("Real"),
+                            parse_expr(
+                                "math.cos(angle_in_radians) if numeric"
+                                " else sympy.cos(angle_in_radians)"
+                            ),
+                        ),
+                        annotated_assign(
+                            "sin_angle",
+                            name_ref("Real"),
+                            parse_expr(
+                                "math.sin(angle_in_radians) if numeric"
+                                " else sympy.sin(angle_in_radians)"
+                            ),
+                        ),
+                        return_stmt(
+                            parse_expr(
+                                "Scalar(cos_angle) * self"
+                                " + Scalar(sin_angle) * self.rotate_90_degrees()"
+                            )
+                        ),
+                    ],
+                    params=[
+                        argument("self"),
+                        argument("angle_in_radians", name_ref("Real")),
+                    ],
+                    returns=name_ref(spec.name),
                 )
             )
             # sine(a, b) = (a ∧ b).coeff_e_12 / (|a| * |b|) -- the SIGNED sine of

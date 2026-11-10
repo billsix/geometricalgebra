@@ -60,7 +60,7 @@ domain-agnostic anyway (the doctests below run it on plain ``int``s).  See the
 
 import dataclasses
 import typing
-from enum import IntEnum
+from enum import Enum, IntEnum
 
 if typing.TYPE_CHECKING:
     # Type-only names for the to_matrix / to_matrix_template method forms.  A
@@ -95,6 +95,18 @@ class Linearity(IntEnum):
     NONLINEAR = 2
 
 
+class MatrixBackend(Enum):
+    """Which library :func:`gacalc.transforms.to_matrix` builds its matrix with.
+
+    * ``NUMPY`` -- an ``np.float32`` array, the shape OpenGL wants (the default).
+    * ``SYMPY`` -- an exact ``sympy.Matrix``, which stays symbolic for a symbolic
+      function.
+    """
+
+    NUMPY = "numpy"
+    SYMPY = "sympy"
+
+
 class NotInvertibleError(Exception):
     """Raised when :func:`inverse` is asked for the inverse of a function that
     does not have one -- a bare :class:`ComposableFunction` (e.g. a labelled
@@ -121,6 +133,16 @@ class ComposableFunction(typing.Generic[V]):
     linear-algebra *projections*, which is why they cannot be
     ``InvertibleFunction``\\ s.  See the module docstring's "Algebraic
     identity" note.
+
+    Example:
+        Wrap a function and a label; calling the wrapper calls the function, and
+        ``@`` chains two of them:
+
+        >>> double = ComposableFunction(lambda x: 2 * x, "D")
+        >>> double(3)
+        6
+        >>> (double @ double)(3)
+        12
     """
 
     # doc-region-begin composable function members
@@ -162,6 +184,18 @@ class ComposableFunction(typing.Generic[V]):
         """Override ``@`` for function composition (``self`` after ``f2``).
 
         Example:
+            ``f @ g`` applies ``g`` first: scale ``1 * e_1`` by 2, then move it by
+            ``1 * e_1``, to land on ``3 * e_1``:
+
+            >>> from gacalc.g2 import e_1
+            >>> from gacalc.transforms import translate, uniform_scale
+            >>> (translate(b=1 * e_1) @ uniform_scale(m=2))(1 * e_1) == 3 * e_1
+            True
+            >>> (uniform_scale(m=2) @ translate(b=1 * e_1))(1 * e_1) == 4 * e_1
+            True
+
+            Composition with inverses:
+
             >>> from gacalc.functions import InvertibleFunction, inverse
             >>> foo = InvertibleFunction(lambda x: 2 + x, "", lambda x: x - 2, "")
             >>> (foo @ foo)(5)
@@ -198,9 +232,22 @@ class ComposableFunction(typing.Generic[V]):
         ``t >= 1``, then the function itself.
 
         Example:
+            ``at(0)`` leaves the origin where it is and ``at(1)`` moves it all the
+            way to ``2 * e_1``:
+
+            >>> from gacalc.g3 import Vector, e_1
+            >>> from gacalc.transforms import translate
+            >>> translate(b=2 * e_1).at(0)(Vector.zero()) == Vector.zero()
+            True
+            >>> translate(b=2 * e_1).at(1)(Vector.zero()) == 2 * e_1
+            True
+
+            Halfway, a translation by ``10 * e_1`` has moved the origin by
+            ``5 * e_1``:
+
             >>> from gacalc.transforms import translate, compose, uniform_scale
             >>> from gacalc.g3 import Vector
-            >>> T = translate(10 * Vector.e_1)
+            >>> T = translate(b=10 * Vector.e_1)
             >>> got = T.at(0.5)(Vector.zero())
             >>> got.isclose(5 * Vector.e_1, rel_tol=1e-5, abs_tol=1e-5)
             True
@@ -216,12 +263,24 @@ class ComposableFunction(typing.Generic[V]):
         cls: "type[MultiVectorBase]",
         n: int | None = None,
         *,
-        backend: str = "numpy",
+        backend: MatrixBackend = MatrixBackend.NUMPY,
     ) -> "np.ndarray | sympy.Matrix":
         """Method form of :func:`gacalc.transforms.to_matrix`: this (linear or
         affine) function as a homogeneous ``(n+1) x (n+1)`` matrix, probed in
         the representation ``cls``.  See that function for the conventions
-        (translation in the last column; ``backend="sympy"`` stays symbolic).
+        (translation in the last column; ``backend=MatrixBackend.SYMPY`` stays
+        symbolic).
+
+        Example:
+            A uniform scale by 2 in 𝒢₂ is the diagonal ``3 x 3`` matrix:
+
+            >>> from gacalc.g2 import Vector
+            >>> from gacalc.transforms import uniform_scale
+            >>> uniform_scale(m=2).to_matrix(Vector, backend=MatrixBackend.SYMPY)
+            Matrix([
+            [2, 0, 0],
+            [0, 2, 0],
+            [0, 0, 1]])
         """
         # Imported here, not at module level: this module is an import-free
         # leaf (see the module docstring) and transforms builds ON it; the
@@ -242,8 +301,17 @@ class ComposableFunction(typing.Generic[V]):
         few array assignments per call.  See that function for the details.
 
         Example:
+            A scale by the symbol ``m``, filled with ``3.0``, is diagonal:
+
             >>> import sympy
             >>> from gacalc.g2 import Vector
+            >>> from gacalc.transforms import uniform_scale
+            >>> m = sympy.Symbol("m")
+            >>> uniform_scale(m=m).to_matrix_template(Vector, (m,)).fill(3.0).tolist()
+            [[3.0, 0.0, 0.0], [0.0, 3.0, 0.0], [0.0, 0.0, 1.0]]
+
+            A translation by two symbols, filled per call:
+
             >>> from gacalc.transforms import translate
             >>> TX, TY = sympy.symbols("tx ty")
             >>> move = translate(b=TX * Vector.e_1 + TY * Vector.e_2)
@@ -261,9 +329,16 @@ class ComposableFunction(typing.Generic[V]):
         components' leaves recursively.
 
         Example:
+            A primitive is one step; a composite of two primitives is two:
+
+            >>> from gacalc.g3 import e_1
+            >>> from gacalc.transforms import translate
+            >>> len(list(translate(b=1 * e_1).steps()))
+            1
+
             >>> from gacalc.transforms import compose, translate, uniform_scale
             >>> from gacalc.g3 import Vector
-            >>> f = compose([translate(Vector.e_1), uniform_scale(2.0)])
+            >>> f = compose([translate(b=1 * Vector.e_1), uniform_scale(m=2.0)])
             >>> len(list(f.steps()))
             2
         """
@@ -294,6 +369,18 @@ class InvertibleFunction(ComposableFunction[V]):
     ``InvertibleFunction(func=..., latex_repr=..., inverse=..., latex_repr_inv=...)``;
     positionally the order is ``(func, latex_repr, inverse, latex_repr_inv)`` with
     ``linearity`` / ``interpolate`` / ``components`` keyword-only.
+
+    Example:
+        Adding 1 and subtracting 1 undo each other:
+
+        >>> add1 = InvertibleFunction(
+        ...     func=lambda x: x + 1,
+        ...     latex_repr="A",
+        ...     inverse=lambda x: x - 1,
+        ...     latex_repr_inv="A^{-1}",
+        ... )
+        >>> add1(1), add1.inverse(add1(1))
+        (2, 1)
     """
 
     # doc-region-begin invertible function members
@@ -342,6 +429,16 @@ def inverse(f: InvertibleFunction[V]) -> InvertibleFunction[V]:
     :func:`compose` pipeline that contains one.
 
     Example:
+        The inverse of moving by ``2 * e_1`` moves back by ``2 * e_1``; the inverse
+        of doubling halves:
+
+        >>> from gacalc.g2 import Vector, e_1
+        >>> from gacalc.transforms import translate, uniform_scale
+        >>> inverse(translate(b=2 * e_1))(2 * e_1) == Vector.zero()
+        True
+        >>> inverse(uniform_scale(m=2))(2 * e_1) == 1 * e_1
+        True
+
         >>> from gacalc.functions import InvertibleFunction, inverse
         >>> foo = InvertibleFunction(lambda x: 2 + x, "", lambda x: x - 2, "")
         >>> inverse(foo)(foo(5))
@@ -397,6 +494,17 @@ def compose(
     composite is one too (it has no inverse).
 
     Example:
+        The last function in the list runs first, so order matters: doubling
+        ``1 * e_1`` then moving it by ``1 * e_1`` gives ``3 * e_1``, the other order
+        ``4 * e_1``:
+
+        >>> from gacalc.g2 import e_1
+        >>> from gacalc.transforms import translate, uniform_scale
+        >>> compose([translate(b=1 * e_1), uniform_scale(m=2)])(1 * e_1) == 3 * e_1
+        True
+        >>> compose([uniform_scale(m=2), translate(b=1 * e_1)])(1 * e_1) == 4 * e_1
+        True
+
         >>> from gacalc.functions import compose, InvertibleFunction, inverse
         >>> add2 = InvertibleFunction(lambda x: x + 2, "", lambda x: x - 2, "")
         >>> scale3 = InvertibleFunction(lambda x: x * 3, "", lambda x: x / 3, "")
@@ -452,7 +560,17 @@ def compose(
 
 
 def identity() -> InvertibleFunction[V]:
-    """The identity function -- its own inverse, ``LINEAR``, labelled ``I``."""
+    """The identity function -- its own inverse, ``LINEAR``, labelled ``I``.
+
+    Example:
+        It returns its input unchanged, and so does its inverse:
+
+        >>> from gacalc.g2 import e_1, e_2
+        >>> identity()(1 * e_1 + 2 * e_2) == 1 * e_1 + 2 * e_2
+        True
+        >>> inverse(identity())(1 * e_1) == 1 * e_1
+        True
+    """
 
     def f(vector: V) -> V:
         return vector

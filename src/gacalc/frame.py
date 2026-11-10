@@ -35,12 +35,12 @@ import dataclasses
 import functools
 import operator
 from collections.abc import Callable, Iterator, Sequence
+from enum import Enum
 from itertools import accumulate, pairwise
-from typing import Literal
 
 import numpy as np
 
-from gacalc.base import MultiVectorBase, Real
+from gacalc.base import MultiVectorBase, Real, describe_caller, validation_guard
 from gacalc.functions import InvertibleFunction, Linearity
 from gacalc.transforms import coordinate_along, line_to_line_projection
 
@@ -63,10 +63,30 @@ def are_linearly_independent(
     raises ``ValueError`` -- a frame is a set of *vectors*, and a bivector (say) in
     the list is a category error, not "a dependent frame."  An empty sequence is not
     a frame (returns ``False``).
+
+    Examples:
+        Two basis vectors are independent; a vector and a multiple of it are not:
+
+        >>> from gacalc.gn import e_1, e_2
+        >>> are_linearly_independent([1 * e_1, 1 * e_2])
+        True
+        >>> are_linearly_independent([1 * e_1, 2 * e_1])
+        False
+        >>> are_linearly_independent([1 * e_1 + 1 * e_2, 1 * e_2])  # oblique
+        True
+
+        Two float vectors a hair apart are exactly independent, but dependent within
+        the float tolerance:
+
+        >>> nearly_parallel = [1.0 * e_1, 1.0 * e_1 + 1e-9 * e_2]
+        >>> are_linearly_independent(nearly_parallel)
+        True
+        >>> are_linearly_independent(nearly_parallel, float_close_to_zero=True)
+        False
     """
     if len(vectors) == 0:
         return False
-    MultiVectorBase.require_vectors(vectors, "a frame")
+    MultiVectorBase.require_vectors(vectors)
     blade: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(*vectors)
     return (
         not bool(np.isclose(float(blade.magnitude()), 0.0, rtol=1e-5, atol=1e-5))
@@ -106,9 +126,9 @@ def is_frame(
     return are_linearly_independent(vectors, float_close_to_zero)
 
 
+@validation_guard
 def require_frame(
     vectors: Sequence[MultiVectorBase],
-    context: str,
     float_close_to_zero: bool = False,
 ) -> None:
     """Raise ``ValueError`` unless ``vectors`` form a frame (H&S p. 27).
@@ -116,11 +136,11 @@ def require_frame(
     The shared "must be a frame" guard, the frame counterpart of
     :meth:`MultiVectorBase.require_vectors`: it first requires a non-empty
     sequence of vectors (via ``require_vectors``), then that they are linearly
-    independent (:func:`is_frame`).  Each message names the caller.
+    independent (:func:`is_frame`).  Each message names the calling function and
+    its call site, read from the Python stack (:func:`~gacalc.base.describe_caller`).
 
     Args:
         vectors: the values to check.
-        context: what is being called, for the message.
         float_close_to_zero: test the wedge for zero with a tolerance, as
             :func:`is_frame` does.
 
@@ -129,34 +149,62 @@ def require_frame(
             when the vectors are linearly dependent (``a_1 ∧ … ∧ a_k = 0``).
 
     Examples:
-        >>> from gacalc.gn import e_1, e_2
-        >>> require_frame([1 * e_1, 1 * e_2], "an example")
-        >>> require_frame([1 * e_1, 2 * e_1], "an example")  # doctest: +ELLIPSIS
+        >>> from gacalc.gn import Gn, e_1, e_2
+        >>> def first_of_frame(vectors: list[Gn]) -> Gn:
+        ...     require_frame(vectors)
+        ...     return vectors[0]
+        >>> first_of_frame([1 * e_1, 1 * e_2]) == 1 * e_1
+        True
+        >>> first_of_frame([1 * e_1, 2 * e_1])  # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
-        ValueError: an example requires a frame (...); the given vectors are dependent
-        >>> require_frame([1 * e_1, e_1 ^ e_2], "an example")  # doctest: +ELLIPSIS
+        ValueError: first_of_frame (...) requires a frame ... are dependent
+        >>> first_of_frame([1 * e_1, e_1 ^ e_2])  # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
-        ValueError: an example takes a vector (grade 1); got a non-vector: ...
+        ValueError: first_of_frame (...) takes a vector (grade 1); got a non-vector: ...
     """
-    MultiVectorBase.require_vectors(vectors, context)
+    MultiVectorBase.require_vectors(vectors)
     if not is_frame(vectors, float_close_to_zero):
         raise ValueError(
-            f"{context} requires a frame (linearly independent vectors: "
+            f"{describe_caller()} requires a frame (linearly independent vectors: "
             "a_1 ∧ … ∧ a_k ≠ 0); the given vectors are dependent"
         )
 
 
-def _scalar_one(vector: MultiVectorBase) -> MultiVectorBase:
-    """The scalar 1, in a representation of ``vector``'s algebra that can hold it.
+@validation_guard
+def require_spanning_frame(vectors: Sequence[MultiVectorBase]) -> None:
+    """Raise ``ValueError`` unless the frame ``vectors`` spans its space (``k = n``).
 
-    ``type(vector).one()`` is not enough: a graded ``Vector_n`` type has no scalar
-    slot, so its ``one()`` is the zero vector, and a wedge seeded with it is zero.
-    ``vector · vector`` is a scalar, so its type is one that holds scalars:
-    ``Scalar_n`` for the graded types, and ``Gn`` itself for ``Gn``.
+    ``n`` is the dimension of the space: a specialized type fixes it as its
+    ``DIMENSION``; ``Gn`` has none, so ``n`` is the smallest dimension holding every
+    frame vector.  The vectors are assumed to be a frame already (a :class:`Frame`'s
+    own, checked by :func:`require_frame`).
+
+    Args:
+        vectors: the frame's vectors ``v_1 … v_k``.
+
+    Raises:
+        ValueError: if ``k ≠ n``.
+
+    Examples:
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> require_spanning_frame([1 * e_1, 1 * e_2, 1 * e_3])
+        >>> Frame((1 * e_1, 1 * e_2)).to_invertible_function()  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: Frame.to_invertible_function (...) needs a frame that spans ...
     """
-    return type(vector.dot(vector)).one()
+    n: int = getattr(
+        type(vectors[0]),
+        "DIMENSION",
+        max(v.implied_minimal_number_of_dimensions() for v in vectors),
+    )
+    if len(vectors) != n:
+        raise ValueError(
+            f"{describe_caller()} needs a frame that spans the space (k = n); "
+            f"got k = {len(vectors)} vectors in n = {n} dimensions"
+        )
 
 
 def prefix_blades(
@@ -182,6 +230,28 @@ def prefix_blades(
         ValueError: if ``vectors`` is empty -- there is no operand from which to take
             the representation of the scalar ``A_0 = 1`` (a frame is a nonempty,
             linearly independent set of vectors).
+
+    Examples:
+        On the standard basis the prefixes are ``1``, ``e_1``, ``e_1 ^ e_2``, then
+        ``e_1 ^ e_2 ^ e_3``:
+
+        >>> from gacalc.gn import e_1, e_2, e_3, one
+        >>> list(prefix_blades([1 * e_1, 1 * e_2, 1 * e_3])) == [
+        ...     one,
+        ...     1 * e_1,
+        ...     1 * (e_1 ^ e_2),
+        ...     1 * (e_1 ^ e_2 ^ e_3),
+        ... ]
+        True
+
+        An oblique frame: ``A_2`` is its parallelogram, area ``2 * 3 = 6``:
+
+        >>> list(prefix_blades([2 * e_1, 1 * e_1 + 3 * e_2])) == [
+        ...     one,
+        ...     2 * e_1,
+        ...     6 * (e_1 ^ e_2),
+        ... ]
+        True
     """
     if len(vectors) == 0:
         raise ValueError(
@@ -190,7 +260,7 @@ def prefix_blades(
         )
     # accumulate(seq, ∧, initial=1) folds the wedge over the prefix, seeding with the
     # scalar one: yields A_0 = 1, A_1 = 1 ∧ v_1 = v_1, A_2 = A_1 ∧ v_2, …
-    return accumulate(vectors, operator.xor, initial=_scalar_one(vectors[0]))
+    return accumulate(vectors, operator.xor, initial=type(vectors[0]).one())
 
 
 def make_orthogonal_frame(
@@ -222,8 +292,24 @@ def make_orthogonal_frame(
     Raises:
         ValueError: if ``vectors`` is not a frame (linearly dependent -- a later
             vector would reject to zero and the result could not be a frame).
+
+    Examples:
+        An already-orthogonal frame comes back unchanged, lengths and all:
+
+        >>> from gacalc.gn import e_1, e_2
+        >>> make_orthogonal_frame([1 * e_1, 1 * e_2]) == [1 * e_1, 1 * e_2]
+        True
+        >>> make_orthogonal_frame([2 * e_1, 3 * e_2]) == [2 * e_1, 3 * e_2]
+        True
+
+        An oblique second vector loses its part along the first:
+
+        >>> make_orthogonal_frame([1 * e_1, 1 * e_1 + 1 * e_2]) == [1 * e_1, 1 * e_2]
+        True
+        >>> make_orthogonal_frame([2 * e_1, 1 * e_1 + 3 * e_2]) == [2 * e_1, 3 * e_2]
+        True
     """
-    require_frame(vectors, "make_orthogonal_frame")
+    require_frame(vectors)
 
     def orthogonalize(
         remaining: Sequence[MultiVectorBase],
@@ -285,8 +371,24 @@ def make_orthogonal_frame_hestenes(
     Raises:
         ValueError: if ``vectors`` is not a frame (linearly dependent -- some
             ``A_k = 0``, making ``c_k`` degenerate).
+
+    Examples:
+        On the standard basis every ``|A_{k-1}|²`` is 1, so the result is the basis:
+
+        >>> from gacalc.gn import e_1, e_2
+        >>> make_orthogonal_frame_hestenes([1 * e_1, 1 * e_2]) == [1 * e_1, 1 * e_2]
+        True
+
+        On an oblique frame, ``c_2`` is the rejection ``3 * e_2`` scaled by
+        ``|A_1|² = |2 * e_1|² = 4``:
+
+        >>> make_orthogonal_frame_hestenes([2 * e_1, 1 * e_1 + 3 * e_2]) == [
+        ...     2 * e_1,
+        ...     12 * e_2,
+        ... ]
+        True
     """
-    require_frame(vectors, "make_orthogonal_frame_hestenes")
+    require_frame(vectors)
 
     # c_k := reverse(A_{k-1}) A_k (eq 3.2), pairing each prefix blade with the
     # one before it.  pairwise(prefix_blades(...)) yields the adjacent
@@ -327,8 +429,24 @@ def make_orthogonal_frame_hestenes_inverse(
     Raises:
         ValueError: if ``vectors`` is not a frame (linearly dependent -- some
             ``A_k = 0``, whose inverse is undefined).
+
+    Examples:
+        The standard basis comes back unchanged, and an oblique frame gives the
+        rejection frame exactly (compare :func:`make_orthogonal_frame_hestenes`):
+
+        >>> from gacalc.gn import e_1, e_2
+        >>> make_orthogonal_frame_hestenes_inverse([1 * e_1, 1 * e_2]) == [
+        ...     1 * e_1,
+        ...     1 * e_2,
+        ... ]
+        True
+        >>> make_orthogonal_frame_hestenes_inverse([2 * e_1, 1 * e_1 + 3 * e_2]) == [
+        ...     2 * e_1,
+        ...     3 * e_2,
+        ... ]
+        True
     """
-    require_frame(vectors, "make_orthogonal_frame_hestenes_inverse")
+    require_frame(vectors)
 
     # c_k := inverse(A_{k-1}) A_k -- the reverse form divided by |A_{k-1}|^2, which
     # cancels the scaling and reproduces the rejection frame w_k exactly.  Same
@@ -381,6 +499,14 @@ def all_wedged_except_the_kth(
         >>> all_wedged_except_the_kth(frame, 3) == e_1 ^ e_2
         True
 
+        In an oblique 2-D frame, leaving one vector out leaves the other:
+
+        >>> oblique = [2 * e_1, 1 * e_1 + 3 * e_2]
+        >>> all_wedged_except_the_kth(oblique, 1) == 1 * e_1 + 3 * e_2
+        True
+        >>> all_wedged_except_the_kth(oblique, 2) == 2 * e_1
+        True
+
     Raises:
         ValueError: if ``k`` is not between 1 and ``len(vectors)`` (there is no
             ``k``-th vector to leave out).
@@ -391,7 +517,7 @@ def all_wedged_except_the_kth(
             f"vectors); got k = {k}"
         )
     others: list[MultiVectorBase] = [*vectors[: k - 1], *vectors[k:]]
-    return functools.reduce(operator.xor, others, _scalar_one(vectors[0]))
+    return functools.reduce(operator.xor, others, type(vectors[0]).one())
 
 
 # Why x_i = a^i · y reads off a coordinate (similar right triangles standing on the
@@ -442,10 +568,22 @@ def reciprocal_frame(
     (``recip*_eq_normal_div``).
 
     Examples:
-        The oblique frame ``a_1 = 2 * e_1``, ``a_2 = 1 * e_1 + 3 * e_2``:
+        The standard basis is its own reciprocal frame; an orthogonal frame's
+        reciprocal points the same way with the inverse length, so that
+        ``a^k · a_k = 1``:
 
         >>> import sympy
         >>> from gacalc.gn import e_1, e_2
+        >>> reciprocal_frame([1 * e_1, 1 * e_2]) == [1 * e_1, 1 * e_2]
+        True
+        >>> reciprocal_frame([2 * e_1, 3 * e_2]) == [
+        ...     sympy.Rational(1, 2) * e_1,
+        ...     sympy.Rational(1, 3) * e_2,
+        ... ]
+        True
+
+        The oblique frame ``a_1 = 2 * e_1``, ``a_2 = 1 * e_1 + 3 * e_2``:
+
         >>> frame = [2 * e_1, 1 * e_1 + 3 * e_2]
         >>> reciprocal = reciprocal_frame(frame)
         >>> reciprocal == [sympy.Rational(1, 2) * e_1 - sympy.Rational(1, 6) * e_2,
@@ -458,10 +596,10 @@ def reciprocal_frame(
         ValueError: if ``vectors`` is not a frame (linearly dependent, empty, or
             containing a non-vector), so that ``A_n = 0`` has no inverse.
     """
-    require_frame(vectors, "reciprocal_frame")
+    require_frame(vectors)
     # A_n⁻¹, the inverse of the wedge of every frame vector (eq 3.6).
     A_n_inverse: MultiVectorBase = functools.reduce(
-        operator.xor, vectors, _scalar_one(vectors[0])
+        operator.xor, vectors, type(vectors[0]).one()
     ).inverse()
     # eq 3.7: enumerate(start=1) makes the loop variable the book's k, so the sign is
     # literally (-1)^(k-1).
@@ -475,6 +613,19 @@ def _has_float(vectors: Sequence[MultiVectorBase]) -> bool:
     """True if any coefficient of ``vectors`` is a ``float``: the "on the line" checks
     then need :func:`~gacalc.transforms.coordinate_along`'s tolerance."""
     return any(isinstance(coefficient, float) for v in vectors for coefficient in v)
+
+
+class InverseMethod(Enum):
+    """How :meth:`Frame.to_invertible_function`'s inverse recovers the coordinates.
+
+    * ``RECIPROCAL`` -- read each coordinate with the reciprocal frame,
+      ``x_i = vⁱ · y`` (H&S p. 28).  The default.
+    * ``PEEL`` -- peel the frame from its last vector, with the orthogonal set
+      (back-substitution, read geometrically).
+    """
+
+    RECIPROCAL = "reciprocal"
+    PEEL = "peel"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -505,7 +656,18 @@ class Frame:
     the usual Gram–Schmidt rounding.
 
     Examples:
+        The standard basis is already orthogonal, and each ``v_i`` is just its own
+        ``w_i``, so the table is the identity:
+
         >>> from gacalc.gn import e_1, e_2
+        >>> standard = Frame((1 * e_1, 1 * e_2))
+        >>> standard.orthogonal_vectors() == (1 * e_1, 1 * e_2)
+        True
+        >>> standard.coefficients()
+        ((1, 0), (0, 1))
+
+        An oblique frame:
+
         >>> frame = Frame((2 * e_1, 1 * e_1 + 3 * e_2))
         >>> frame.orthogonal_vectors() == (2 * e_1, 3 * e_2)
         True
@@ -528,7 +690,7 @@ class Frame:
             raise TypeError(
                 f"Frame takes its vectors as a tuple; got {type(self.vectors).__name__}"
             )
-        require_frame(self.vectors, "Frame")
+        require_frame(self.vectors)
 
     def __iter__(self) -> Iterator[MultiVectorBase]:
         """The original frame vectors ``v_1 … v_k``.
@@ -551,6 +713,16 @@ class Frame:
         Returns:
             tuple[MultiVectorBase, ...]: ``w_1 … w_k``, mutually orthogonal, in frame
             order.
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2
+            >>> Frame((1 * e_1, 1 * e_2)).orthogonal_vectors() == (1 * e_1, 1 * e_2)
+            True
+            >>> Frame((1 * e_1, 1 * e_1 + 1 * e_2)).orthogonal_vectors() == (
+            ...     1 * e_1,
+            ...     1 * e_2,
+            ... )
+            True
         """
         return tuple(make_orthogonal_frame(self.vectors))
 
@@ -565,6 +737,18 @@ class Frame:
         Returns:
             tuple[tuple[Real, ...], ...]: one row per original vector, one entry per
             orthogonal vector.
+
+        Examples:
+            The standard basis gives the identity table; ``v_2 = 1 * e_1 + 1 * e_2``
+            is one copy of ``w_1 = e_1`` plus one of ``w_2 = e_2``:
+
+            >>> from gacalc.gn import e_1, e_2
+            >>> Frame((1 * e_1, 1 * e_2)).coefficients()
+            ((1, 0), (0, 1))
+            >>> Frame((1 * e_1, 1 * e_1 + 1 * e_2)).coefficients()
+            ((1, 0), (1, 1))
+            >>> Frame((2 * e_1, 1 * e_1 + 3 * e_2)).coefficients()
+            ((1, 0), (1/2, 1))
         """
         # Computed once, not once per row.
         orthogonal_vectors: tuple[MultiVectorBase, ...] = self.orthogonal_vectors()
@@ -589,6 +773,18 @@ class Frame:
         Returns:
             tuple[MultiVectorBase, ...]: ``u_1 … u_k``, unit length and mutually
             orthogonal.
+
+        Examples:
+            Normalizing keeps the directions and drops the lengths:
+
+            >>> import sympy
+            >>> from gacalc.gn import e_1, e_2
+            >>> Frame((2 * e_1, 3 * e_2)).orthonormal_vectors() == (1 * e_1, 1 * e_2)
+            True
+            >>> Frame((3 * e_1 + 4 * e_2,)).orthonormal_vectors() == (
+            ...     sympy.Rational(3, 5) * e_1 + sympy.Rational(4, 5) * e_2,
+            ... )
+            True
         """
         return tuple(w.normalize() for w in self.orthogonal_vectors())
 
@@ -599,13 +795,24 @@ class Frame:
 
         Returns:
             tuple[MultiVectorBase, ...]: ``v¹ … vᵏ``, in frame order.
+
+        Examples:
+            >>> import sympy
+            >>> from gacalc.gn import e_1, e_2
+            >>> Frame((1 * e_1, 1 * e_2)).reciprocal_vectors() == (1 * e_1, 1 * e_2)
+            True
+            >>> Frame((2 * e_1, 3 * e_2)).reciprocal_vectors() == (
+            ...     sympy.Rational(1, 2) * e_1,
+            ...     sympy.Rational(1, 3) * e_2,
+            ... )
+            True
         """
         return tuple(reciprocal_frame(self.vectors))
 
     def to_invertible_function(
         self,
         *,
-        inverse_method: Literal["reciprocal", "peel"] = "reciprocal",
+        inverse_method: InverseMethod = InverseMethod.RECIPROCAL,
     ) -> InvertibleFunction[MultiVectorBase]:
         """The linear map sending each standard basis vector ``e_i`` to ``v_i``.
 
@@ -626,15 +833,16 @@ class Frame:
         ``x_i`` off it.  (In coordinates ``x_i = (n · y) / (n · v_i)``: two heights,
         one divided by the other.)  The methods differ in which ``n`` they use.
 
-        ``inverse_method="reciprocal"`` (the default) uses the **reciprocal frame**
-        ``v¹ … vᵏ`` (:meth:`reciprocal_vectors`, H&S p. 28): ``vⁱ`` is perpendicular
-        to every ``v_j`` with ``j ≠ i`` (eq 3.5), so ``n = vⁱ`` reads ``x_i``
-        directly, and the coordinates are independent of one another.  The
-        reciprocal vectors are computed once, when the map is built.
+        ``inverse_method=InverseMethod.RECIPROCAL`` (the default) uses the
+        **reciprocal frame** ``v¹ … vᵏ`` (:meth:`reciprocal_vectors`, H&S p. 28):
+        ``vⁱ`` is perpendicular to every ``v_j`` with ``j ≠ i`` (eq 3.5), so
+        ``n = vⁱ`` reads ``x_i`` directly, and the coordinates are independent of
+        one another.  The reciprocal vectors are computed once, when the map is
+        built.
 
-        ``inverse_method="peel"`` **peels the frame from its last vector**, using the
-        orthogonal set (:meth:`orthogonal_vectors`, computed once, when the map is
-        built).  Each step:
+        ``inverse_method=InverseMethod.PEEL`` **peels the frame from its last
+        vector**, using the orthogonal set (:meth:`orthogonal_vectors`, computed
+        once, when the map is built).  Each step:
 
         1. **Read the last coordinate.**  ``w_k`` is ``v_k`` with the span of
            ``v_1 … v_{k-1}`` rejected out of it, so it is perpendicular to every
@@ -677,8 +885,9 @@ class Frame:
 
         Args:
             inverse_method: how the inverse recovers the coordinates:
-                ``"reciprocal"`` (default; read through each ``vⁱ``) or ``"peel"``
-                (back-substitution from the last frame vector).  Keyword-only.
+                ``InverseMethod.RECIPROCAL`` (default; read through each ``vⁱ``) or
+                ``InverseMethod.PEEL`` (back-substitution from the last frame
+                vector).  Keyword-only.
 
         Returns:
             InvertibleFunction[MultiVectorBase]: the map ``e_i ↦ v_i`` and its
@@ -689,40 +898,44 @@ class Frame:
         familiar dot product read out as a number.
 
         Raises:
-            ValueError: if ``k ≠ n`` (the frame does not span the space), or
-                ``inverse_method`` is not one of the two names.  The returned map and
-                its inverse raise ``ValueError`` when called on a non-vector: they are
-                defined on vectors only.
+            ValueError: if ``k ≠ n`` (the frame does not span the space).  The
+                returned map and its inverse raise ``ValueError`` when called on a
+                non-vector: they are defined on vectors only.
+            TypeError: if ``inverse_method`` is not an :class:`InverseMethod` (a
+                string, the pre-enum spelling, included).
 
         Examples:
+            The frame of the standard basis maps each ``e_i`` to itself (the
+            identity); the frame ``2 * e_1``, ``3 * e_2`` stretches each axis by
+            its own factor, and the inverse undoes it:
+
             >>> from gacalc.gn import e_1, e_2
+            >>> identity_map = Frame((1 * e_1, 1 * e_2)).to_invertible_function()
+            >>> identity_map(1 * e_1) == 1 * e_1, identity_map(1 * e_2) == 1 * e_2
+            (True, True)
+            >>> stretch = Frame((2 * e_1, 3 * e_2)).to_invertible_function()
+            >>> stretch(1 * e_1) == 2 * e_1, stretch(1 * e_2) == 3 * e_2
+            (True, True)
+            >>> stretch.inverse(2 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
+            True
+
+            An oblique frame, inverted both ways:
+
             >>> f = Frame((2 * e_1, 1 * e_1 + 3 * e_2)).to_invertible_function()
             >>> f(1 * e_1 + 1 * e_2) == 3 * e_1 + 3 * e_2
             True
             >>> f.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
             True
             >>> g = Frame((2 * e_1, 1 * e_1 + 3 * e_2)).to_invertible_function(
-            ...     inverse_method="peel"
+            ...     inverse_method=InverseMethod.PEEL
             ... )
             >>> g.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
             True
         """
-        # n is the dimension of the space.  type(self.vectors[0]) is the frame's
-        # representation: a specialized type fixes n as its DIMENSION; Gn has none, so
-        # the getattr default gives the smallest dimension holding every frame vector.
-        n: int = getattr(
-            type(self.vectors[0]),
-            "DIMENSION",
-            max(v.implied_minimal_number_of_dimensions() for v in self.vectors),
-        )
-        if len(self.vectors) != n:
-            raise ValueError(
-                f"to_invertible_function needs a frame that spans the space (k = n); "
-                f"got k = {len(self.vectors)} vectors in n = {n} dimensions"
-            )
+        require_spanning_frame(self.vectors)
 
         def forward(x: MultiVectorBase) -> MultiVectorBase:
-            MultiVectorBase.require_vector(x, "a frame's map")
+            MultiVectorBase.require_vector(x)
             cls: type[MultiVectorBase] = type(x)
             # basis_vector numbers the basis from 1, hence enumerate(start=1).
             return sum(
@@ -749,7 +962,7 @@ class Frame:
             return term, coordinate_along(term, along=v, float_close_to_zero=tolerant)
 
         def backward_by_reciprocal(y: MultiVectorBase) -> MultiVectorBase:
-            MultiVectorBase.require_vector(y, "a frame's map")
+            MultiVectorBase.require_vector(y)
             cls: type[MultiVectorBase] = type(y)
             # Read x_i through vⁱ.  reciprocal_vectors is bound in the match below,
             # which runs before this can be called.  basis_vector numbers the basis
@@ -789,7 +1002,7 @@ class Frame:
                         # exhaustiveness, so the match needs an explicit catch-all.
                         return []
 
-            MultiVectorBase.require_vector(y, "a frame's map")
+            MultiVectorBase.require_vector(y)
             cls: type[MultiVectorBase] = type(y)
             # orthogonal_vectors is bound in the match below, which runs before this
             # can be called.  basis_vector numbers the basis from 1, hence
@@ -812,22 +1025,21 @@ class Frame:
 
         backward: Callable[[MultiVectorBase], MultiVectorBase]
         match inverse_method:
-            case "reciprocal":
+            case InverseMethod.RECIPROCAL:
                 # Built once, here, so each call to the inverse is k dot products.
                 reciprocal_vectors: tuple[MultiVectorBase, ...] = (
                     self.reciprocal_vectors()
                 )
                 backward = backward_by_reciprocal
-            case "peel":
+            case InverseMethod.PEEL:
                 # Built once, here, so each call to the inverse reuses it.
                 orthogonal_vectors: tuple[MultiVectorBase, ...] = (
                     self.orthogonal_vectors()
                 )
                 backward = backward_by_peel
             case _:
-                raise ValueError(
-                    "inverse_method must be 'reciprocal' or 'peel'; "
-                    f"got {inverse_method!r}"
+                raise TypeError(
+                    f"inverse_method must be an InverseMethod; got {inverse_method!r}"
                 )
 
         return InvertibleFunction(

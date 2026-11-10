@@ -44,7 +44,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `iter()` yields); `orthogonal_vectors()` computes their orthogonal set `w_j` (orthogonal, not
   orthonormal, so symbolic 3D stays sqrt-free and decidable); `coefficients()` computes the triangular `(w_j · v_i) / |w_j|²` table (QR with the
   lengths factored out) as projections read with `transforms.coordinate_along`;
-  `to_invertible_function(inverse_method="reciprocal" | "peel")` maps `e_i ↦ v_i` and inverts it
+  `to_invertible_function(inverse_method=InverseMethod.RECIPROCAL | InverseMethod.PEEL)` maps `e_i ↦ v_i` and inverts it
   either through the reciprocal frame (`reciprocal_frame`, H&S eq 3.7; the default) or by a `match`
   recursion that peels the frame from its last vector. Both read each term with
   `transforms.line_to_line_projection` (the point on `v_i`'s line whose projection onto a normal `m`
@@ -68,6 +68,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   module-level `rotate_90_degrees()` factory — both `= v * e_12` (the unit pseudoscalar,
   `(x, y) -> (-y, x)`), exact, 𝒢₂-only. Rationale: `tasks/reference/design-decisions.md`,
   `transform-and-composable-function-layer.md`; `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`.
+  Next to it, `Vector.rotate(θ)` = `cos(θ) * v + sin(θ) * v.rotate_90_degrees()`, 𝒢₂-only
+  (`tasks/archive/2026/11/10/g2-rotate-by-angle-restore.md`).
 - `src/gacalc/g1.py`, `g2.py`, `g3.py` (and, **release-only**, `g4.py`/`g5.py`) — **generated**,
   **gitignored**, self-contained modules holding the full specialized class `G` **and** that
   algebra's graded subtypes (`Scalar_n`/`Vector_n`/`Bivector_n`/`Trivector`/`Versor_n`, one
@@ -152,7 +154,7 @@ and call `self * other`, dispatched to the concrete type.
 - **Dot product for vectors, scalar product only where it is meant** — when the operands are vectors
   and a number is wanted, write `a.dot(b).scalar_part()` (the familiar `a · b`, read out as a `Real`),
   not `a.scalar_product(b)`, and make sure the operands are vectors (call
-  `MultiVectorBase.require_vector(value, context)` / `require_vectors(values, context)`, unless they
+  `MultiVectorBase.require_vector(value)` / `require_vectors(values)`, unless they
   are already known to be vectors, e.g. a `Frame`'s own). For two vectors the two products agree,
   but a reader knows the dot product. Use `scalar_product` (`A ∗ B = ⟨A * B⟩`) only where that
   operation is the one meant, as where Hestenes defines a result with it (cite the page). The maintainer's rule, William Emerison Six <billsix@gmail.com>, 2026-11-04.
@@ -162,15 +164,17 @@ and call `self * other`, dispatched to the concrete type.
   primitives' own definitions are the exception, and so is code whose subject is the dot product (a
   notebook teaching `a·b + a∧b = ab`, the reciprocal frame's `vⁱ · y`). (William Emerison Six
   <billsix@gmail.com>, 2026-11-07)
-- **Check "must be a vector" with the shared guard** — `MultiVectorBase.require_vector(value,
-  context)` / `require_vectors(values, context)` (`base.py`), which raise `ValueError` naming the
-  caller. Never a bare `assert` (gone under `python -O`), a hand-rolled `is_vector()` loop, or a
+- **Check "must be a vector" with the shared guard** — `MultiVectorBase.require_vector(value)` /
+  `require_vectors(values)` (`base.py`), which raise `ValueError` naming the caller and its call
+  site, read from the Python stack (`describe_caller`; no context string). A new guard is marked
+  `@validation_guard` so a guard calling a guard still names the real caller. Never a bare `assert` (gone under `python -O`), a hand-rolled `is_vector()` loop, or a
   `TypeError` (reserved for a genuine `isinstance` type check, like `g2.rotate_90_degrees`).
-  "Must be a frame" has its own guard, `require_frame(vectors, context)` (`frame.py`): it requires
+  "Must be a frame" has its own guard, `require_frame(vectors)` (`frame.py`): it requires
   vectors and then their independence. Never hand-roll an `if not is_frame(...): raise`.
 - **Express rotations via the factories, never hand-built** — `plane_rotation(a, b)(θ)` (plane +
   angle), `projection_rotation`/`versor_rotation`/`versor_from_vectors` (from/to, keyword args), or
-  the 𝒢₂ `rotate_90_degrees()` for quarter turns. A versor built by trigonometry as a data literal
+  the 𝒢₂ `rotate_90_degrees()` for quarter turns (and `g2.Vector.rotate(θ)` for a 𝒢₂ turn by an
+  angle). A versor built by trigonometry as a data literal
   is treated as a regression.
 - **`magnitude`/`inverse` preserve numeric input** — float-in → float-out; int routes through
   sympy for exactness; symbolic stays symbolic. Don't reintroduce an unconditional
@@ -222,6 +226,8 @@ composable-function hierarchy, rotations/versors + the versor sandwich derivatio
   `measure.signed_volume` — no aliases
 - quarter turn (𝒢₂ only): `g2.Vector.rotate_90_degrees()` / the `g2.rotate_90_degrees()`
   `InvertibleFunction` factory — `= v * e_12` (+90° e₁→e₂, exact); the inverse is `v * -e_12`
+- rotation by an angle (𝒢₂ only): `g2.Vector.rotate(θ)` = `cos(θ) * v + sin(θ) * v.rotate_90_degrees()`
+  (the book's `eq-rotate-formula`); any plane / representation: `plane_rotation(a, b)(θ)`
 - plane helpers: `cls.bivector_from_vectors(a, b)` builds the raw wedge `a ∧ b`; `cls.i(a, b)`
   normalizes it to the plane's **unit** bivector (`i² = −1`) — a classmethod on the full types;
   `.i()` (no args) gets a value's own unit plane (`Bivector.i()` = normalize, `Versor.i()` = plane
