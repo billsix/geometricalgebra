@@ -1,0 +1,141 @@
+base.py:57 validation_guard examples=0 first=-
+base.py:76 describe_caller examples=0 first=-
+base.py:116 set_blade_symbols examples=4 first=set_blade_symbols({(1,): r"\mathbf{i}", (2,): r"\mathbf{j}"})
+base.py:151 blade_latex examples=4 first=blade_latex((1,), symbols={(1,): r"\mathbf{i}"})
+base.py:185 blade_dict_latex examples=4 first=blade_dict_latex({(1,): 2}) == r"$2\mathbf{\vec{e}}_{1}$"
+base.py:237 pseudoscalar_squared_sign examples=1 first=[pseudoscalar_squared_sign(r) for r in range(1, 6)]  # +, -, -, +, +
+base.py:277 pseudoscalar_squared_is_positive examples=0 first=-
+base.py:338 MultiVectorBase.from_blade_dict examples=0 first=-
+base.py:355 MultiVectorBase.to_blade_dict examples=0 first=-
+base.py:366 MultiVectorBase.from_real examples=2 first=Scalar.from_real(3).scalar_part()
+base.py:390 MultiVectorBase.zero examples=0 first=-
+base.py:399 MultiVectorBase.one examples=0 first=-
+base.py:408 MultiVectorBase.basis_vector examples=0 first=-
+base.py:424 MultiVectorBase.unit_pseudoscalar examples=4 first=MultiVector.unit_pseudoscalar(1) == e_1
+base.py:489 MultiVectorBase.bases examples=0 first=-
+base.py:523 MultiVectorBase.symbolic_multivector examples=0 first=-
+base.py:543 MultiVectorBase.unit_pseudoscalar_squared examples=0 first=-
+base.py:578 MultiVectorBase.__mul__ examples=4 first=e_1 * e_2 == -(e_2 * e_1)  # distinct basis vectors anticommute
+base.py:703 MultiVectorBase.__truediv__ examples=2 first=(3.0 * e_1 + 4.0 * e_2) / 2 == 1.5 * e_1 + 2.0 * e_2
+base.py:775 MultiVectorBase.magnitude examples=2 first=(3 * e_1 + 4 * e_2).magnitude() == 5
+base.py:809 MultiVectorBase.magnitude_squared examples=0 first=-
+base.py:817 MultiVectorBase.normalize examples=1 first=(3 * e_1 + 4 * e_2).normalize() == (
+base.py:844 MultiVectorBase.coefficient examples=6 first=v = 3 * Vector.e_1 + 4 * Vector.e_2
+base.py:898 MultiVectorBase.simplified examples=0 first=-
+base.py:913 MultiVectorBase.expanded examples=0 first=-
+base.py:925 MultiVectorBase.inner_product examples=0 first=-
+base.py:962 MultiVectorBase.dot examples=7 first=a = 3 * e_1 + 4 * e_2
+base.py:991 MultiVectorBase.outer_product examples=0 first=-
+base.py:1029 MultiVectorBase.scalar_product examples=0 first=-
+base.py:1044 MultiVectorBase.wedge examples=8 first=a = 3 * e_1 + 4 * e_2
+base.py:1070 MultiVectorBase.__xor__ examples=0 first=-
+base.py:1081 MultiVectorBase.left_contraction examples=0 first=-
+base.py:1125 MultiVectorBase.right_contraction examples=0 first=-
+base.py:1167 MultiVectorBase.__lt__ examples=0 first=-
+base.py:1178 MultiVectorBase.__gt__ examples=0 first=-
+base.py:1190 MultiVectorBase.outer_product_of_vectors examples=0 first=-
+base.py:1203 MultiVectorBase.r_vector_part examples=0 first=-
+base.py:1219 MultiVectorBase.is_homogeneous_of_grade_r examples=0 first=-
+base.py:1237 MultiVectorBase.is_scalar examples=0 first=-
+base.py:1246 MultiVectorBase.is_r_vector examples=0 first=-
+base.py:1258 MultiVectorBase.is_vector examples=3 first=a = 3 * e_1 + 4 * e_2
+base.py:1276 MultiVectorBase.require_vector examples=3 first=def double(v: Gn) -> Gn:
+base.py:1311 MultiVectorBase.require_vectors examples=3 first=def total(vectors: list[Gn]) -> Gn:
+base.py:1345 MultiVectorBase.require_rotation_endpoints examples=3 first=Vector.require_rotation_endpoints(1 * e_1, 2 * e_1)
+base.py:1383 MultiVectorBase.implied_minimal_number_of_dimensions examples=3 first=(3 * e_1 + 4 * e_3).implied_minimal_number_of_dimensions()
+base.py:1413 MultiVectorBase.is_bivector examples=3 first=a = 3 * e_1 + 4 * e_2
+base.py:1429 MultiVectorBase.is_trivector examples=0 first=-
+base.py:1437 MultiVectorBase.is_orthogonal_to examples=2 first=(3 * e_1 + 4 * e_2).is_orthogonal_to(-4 * e_1 + 3 * e_2)  # right angl
+base.py:1492 MultiVectorBase.is_parallel_to examples=6 first=a = 3 * e_1 + 4 * e_2
+base.py:1548 MultiVectorBase.scalar_part examples=0 first=-
+base.py:1558 MultiVectorBase.grades examples=0 first=-
+base.py:1568 MultiVectorBase.max_grade examples=0 first=-
+base.py:1579 MultiVectorBase.reverse examples=10 first=a = 3 * e_1 + 4 * e_2
+base.py:1624 MultiVectorBase.inverse examples=0 first=-
+base.py:1697 MultiVectorBase.dual examples=0 first=-
+base.py:1714 MultiVectorBase.even_part examples=0 first=-
+base.py:1727 MultiVectorBase.odd_part examples=0 first=-
+base.py:1740 MultiVectorBase.cosine examples=6 first=a = 3 * e_1 + 4 * e_2
+base.py:1777 MultiVectorBase.abs_sin examples=0 first=-
+base.py:1809 MultiVectorBase.project examples=10 first=a = 3 * e_1 + 4 * e_2
+base.py:1904 MultiVectorBase.reject examples=5 first=a = 3 * e_1 + 4 * e_2
+base.py:1978 MultiVectorBase.reflect examples=7 first=a = 3 * e_1 + 4 * e_2 + 5 * e_3
+base.py:2068 MultiVectorBase.projected_onto examples=0 first=-
+base.py:2083 MultiVectorBase.rejected_away_from examples=0 first=-
+base.py:2098 MultiVectorBase.reflected_across examples=0 first=-
+base.py:2119 MultiVectorBase.area examples=2 first=(3 * e_1).area(2 * e_2)
+base.py:2141 MultiVectorBase.volume examples=0 first=-
+base.py:2156 MultiVectorBase.signed_area examples=4 first=a = 2 * e_1 + 1 * e_2
+base.py:2180 MultiVectorBase.signed_volume examples=0 first=-
+base.py:2197 MultiVectorBase.cross examples=1 first=(1 * e_1).cross(1 * e_2) == 1 * e_3
+base.py:2217 MultiVectorBase.identity examples=0 first=-
+base.py:2237 MultiVectorBase.versor_from_vectors examples=5 first=R = Vector.versor_from_vectors(1 * e_1, 1 * e_2)
+base.py:2352 MultiVectorBase.rotor_from_vectors examples=0 first=-
+base.py:2399 MultiVectorBase.plane_of_rotation examples=0 first=-
+base.py:2413 MultiVectorBase.angle examples=0 first=-
+base.py:2443 MultiVectorBase.conjugate examples=0 first=-
+base.py:2470 MultiVectorBase.bivector_from_vectors examples=0 first=-
+base.py:2500 MultiVectorBase.sandwich examples=0 first=-
+base.py:2529 MultiVectorBase.exp examples=8 first=(0 * Bivector.e_12).exp()
+base.py:2629 MultiVectorBase.symbolically_equal examples=2 first=x = sympy.Symbol("x")
+base.py:2690 MultiVectorBase.isclose examples=0 first=-
+transforms.py:82 compose_intermediate_fns examples=9 first=add2 = InvertibleFunction(lambda x: x + 2, "", lambda x: x - 2, "")
+transforms.py:128 compose_intermediate_fns_and_fn examples=3 first=add2 = InvertibleFunction(lambda x: x + 2, "", lambda x: x - 2, "")
+transforms.py:158 translate examples=0 first=-
+transforms.py:187 projection_rotation examples=10 first=f = projection_rotation(e_1, e_2)
+transforms.py:280 coordinate_along examples=3 first=coordinate_along(6 * e_1 + 3 * e_2, along=2 * e_1 + 1 * e_2)
+transforms.py:329 line_to_line_projection examples=6 first=v_2 = 1 * e_1 + 3 * e_2
+transforms.py:412 versor_rotation examples=8 first=versor_rotation(e_1, e_2)(1 * e_1) == 1 * e_2
+transforms.py:535 bivector_rotation examples=5 first=turn = bivector_rotation(Vector.i(Vector.e_1, Vector.e_2))
+transforms.py:616 plane_rotation examples=6 first=turn = plane_rotation(Vector.e_1, Vector.e_2)
+transforms.py:713 uniform_scale examples=0 first=-
+transforms.py:753 scale_non_uniform examples=1 first=scale_non_uniform(2, 3)(1 * e_1 + 2 * e_2 + 3 * e_3) == (
+transforms.py:817 require_linear_or_affine examples=4 first=require_linear_or_affine(uniform_scale(2.0))
+transforms.py:850 require_dimension examples=3 first=require_dimension(Vector, None)
+transforms.py:888 require_distinct_params examples=3 first=X, Y = sympy.symbols("x y")
+transforms.py:913 require_params_cover examples=3 first=X, Y = sympy.symbols("x y")
+transforms.py:955 to_matrix examples=8 first=T = translate(2 * Vector.e_1 + 3 * Vector.e_2 + 4 * Vector.e_3)
+transforms.py:1079 MatrixTemplate.shape examples=0 first=-
+transforms.py:1084 MatrixTemplate.fill examples=0 first=-
+transforms.py:1118 to_matrix_template examples=6 first=TX, TY, W, H = sympy.symbols("tx ty w h")
+frame.py:48 are_linearly_independent examples=0 first=-
+frame.py:78 is_frame examples=8 first=is_frame([1 * e_1])                            # a single nonzero vect
+frame.py:110 require_frame examples=4 first=def first_of_frame(vectors: list[Gn]) -> Gn:
+frame.py:156 require_spanning_frame examples=2 first=require_spanning_frame([1 * e_1, 1 * e_2, 1 * e_3])
+frame.py:190 prefix_blades examples=0 first=-
+frame.py:224 make_orthogonal_frame examples=0 first=-
+frame.py:286 make_orthogonal_frame_hestenes examples=0 first=-
+frame.py:333 make_orthogonal_frame_hestenes_inverse examples=0 first=-
+frame.py:370 kronecker_delta examples=4 first=kronecker_delta(2, 2)
+frame.py:390 all_wedged_except_the_kth examples=4 first=frame = [1 * e_1, 1 * e_2, 1 * e_3]
+frame.py:428 reciprocal_frame examples=4 first=frame = [2 * e_1, 1 * e_1 + 3 * e_2]
+frame.py:586 Frame.orthogonal_vectors examples=0 first=-
+frame.py:598 Frame.coefficients examples=0 first=-
+frame.py:624 Frame.orthonormal_vectors examples=0 first=-
+frame.py:636 Frame.reciprocal_vectors examples=0 first=-
+frame.py:646 Frame.to_invertible_function examples=5 first=f = Frame((2 * e_1, 1 * e_1 + 3 * e_2)).to_invertible_function()
+measure.py:48 content examples=7 first=content([1 * e_1])                   # length
+measure.py:91 content_by_rejection examples=2 first=vectors = [1 * e_1, 1 * e_1 + 1 * e_2]
+measure.py:127 area examples=7 first=area(1 * e_1, 1 * e_2)               # the unit square
+measure.py:154 volume examples=3 first=volume(1 * e_1, 1 * e_2, 1 * e_3)    # the unit cube
+measure.py:170 signed_content examples=4 first=signed_content([1 * gn.e_1, 1 * gn.e_2])          # oriented unit squa
+measure.py:250 signed_area examples=8 first=a = 2 * e_1 + 1 * e_2
+measure.py:278 signed_volume examples=10 first=signed_volume(1 * e_1, 1 * e_2, 1 * e_3)      # right-handed
+vectorcalc.py:34 cross examples=11 first=cross(1 * e_1, 1 * e_2) == 1 * e_3
+standardposition.py:103 project_sp examples=4 first=b = 3 * e_1 + 4 * e_2 + 12 * e_3
+standardposition.py:138 reject_sp examples=0 first=-
+functions.py:202 ComposableFunction.at examples=3 first=T = translate(10 * Vector.e_1)
+functions.py:226 ComposableFunction.to_matrix examples=0 first=-
+functions.py:246 ComposableFunction.to_matrix_template examples=4 first=TX, TY = sympy.symbols("tx ty")
+functions.py:271 ComposableFunction.steps examples=2 first=f = compose([translate(Vector.e_1), uniform_scale(2.0)])
+functions.py:317 InvertibleFunction.at examples=0 first=-
+functions.py:349 inverse examples=2 first=foo = InvertibleFunction(lambda x: 2 + x, "", lambda x: x - 2, "")
+functions.py:398 compose examples=0 first=-
+functions.py:400 compose examples=0 first=-
+functions.py:401 compose examples=5 first=add2 = InvertibleFunction(lambda x: x + 2, "", lambda x: x - 2, "")
+functions.py:467 identity examples=0 first=-
+gn.py:59 BladeDictionaryEntry.as_multivector examples=0 first=-
+gn.py:118 Gn.from_blade_dict examples=0 first=-
+gn.py:137 Gn.bivector_from_vectors examples=4 first=biv = Gn.bivector_from_vectors(3 * e_1, 4 * e_2)
+gn.py:168 Gn.i examples=0 first=-
+gn.py:197 Gn.to_blade_dict examples=0 first=-
