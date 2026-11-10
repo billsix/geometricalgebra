@@ -1,32 +1,28 @@
 # Pull validation out of `Frame.to_invertible_function` and `to_matrix` into one-line guards
 
-**Status:** in progress — questions answered (see Decisions)
-**Priority:** 4
-**Difficulty:** 3
-**Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
-**Branch:** `sp-rotations-guards-enums-examples`
+**Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>) · **Done:** 2026-11-10
 
-## BLUF
+The checks that opened `Frame.to_invertible_function`, `transforms.to_matrix` and
+`transforms.to_matrix_template` moved into named `@validation_guard` functions, so each body opens
+with one-line calls and reads as the task at hand:
 
-Like `require_vectors`, the checks that open `Frame.to_invertible_function` (`src/gacalc/frame.py`:
-the frame must span the space, `k = n`, and the `inverse_method` must be known) and
-`transforms.to_matrix` (`fn` must be linear/affine; `n` must be inferable from `cls.DIMENSION`) move
-into named guard functions, so each body opens with a one-line call and reads as the task at hand.
-Done means: the guards exist with doctests, both bodies call them in one line each, messages are
-unchanged in meaning, the gate is green.
+- `frame.require_spanning_frame(vectors)` — the `k = n` check (`n` from `DIMENSION`, or the smallest
+  dimension holding the vectors for `Gn`).
+- `transforms.require_linear_or_affine(fn)` — a non-linear `fn` has no recoverable matrix.
+- `transforms.require_dimension(cls, n) -> int` — returns `n` or `cls.DIMENSION`, raising when
+  neither is known. It returns a value so the body stays `n = require_dimension(cls, n)` instead of
+  repeating the `getattr` after a separate check.
+- `transforms.require_distinct_params(params)` and `transforms.require_params_cover(matrix, params)` —
+  the template's repeated-symbol and stray-symbol checks. The stray-symbol check used to raise from
+  inside the matrix-reading loop; it now runs over the matrix once before the loop, which no longer
+  raises.
 
-## Context (read first)
+Decision (William Emerison Six <billsix@gmail.com>, 2026-11-10): "update to matrix. Matrix" meant
+`to_matrix`, `to_matrix_template` and the `ComposableFunction.to_matrix`/`.to_matrix_template`
+methods. The methods forward to the `transforms` functions, so they get the guards with no code of
+their own. The `inverse_method` default branch stayed in its `match`; the enum change
+(`tasks/options-as-enums.md`) owns it.
 
-- Existing guard shape: `MultiVectorBase.require_vector(s)` (`src/gacalc/base.py`),
-  `require_frame` (`src/gacalc/frame.py`); after `tasks/require-guards-caller-frame-context.md` they
-  take no context string — do that task first and follow its shape.
-- `ComposableFunction.to_matrix` / `.to_matrix_template` (`src/gacalc/functions.py`) forward to
-  `transforms.to_matrix` / `to_matrix_template`; the layering rule (import `transforms` inside the
-  method body only) must hold.
-- The `inverse_method` check disappears if `tasks/options-as-enums.md` makes it an enum matched
-  exhaustively.
-- The request said "update to matrix. Matrix" (resolved in Decisions).
-
-## Decisions
-
-- "update to matrix. Matrix" means: apply the new guards to `to_matrix`, `to_matrix_template`, and the `ComposableFunction.to_matrix` / `.to_matrix_template` methods (William Emerison Six <billsix@gmail.com>, 2026-11-10).
+Messages keep their meaning and start with the caller via `describe_caller()`. CHANGELOG `[Unreleased]`
+→ Added. Gate (host): ruff + ty clean; the transforms/frame/functions doctests and
+`tests/test_matrix_template.py`, `tests/test_frame.py`, `tests/test_transforms*.py` passed (168).

@@ -54,7 +54,14 @@ from collections.abc import Mapping, Sequence
 import numpy as np
 import sympy
 
-from gacalc.base import Blade, MultiVectorBase, MultiVectorFn, Real
+from gacalc.base import (
+    Blade,
+    MultiVectorBase,
+    MultiVectorFn,
+    Real,
+    describe_caller,
+    validation_guard,
+)
 from gacalc.functions import (
     ComposableFunction,
     InvertibleFunction,
@@ -765,6 +772,145 @@ def scale_non_uniform(*factors: Real) -> InvertibleFunction[V]:
     # doc-region-end scale non-uniform body
 
 
+@validation_guard
+def require_linear_or_affine(fn: ComposableFunction[typing.Any]) -> None:
+    """Raise ``ValueError`` unless ``fn`` is linear or affine.
+
+    The guard for building a matrix from a function: a non-linear ``fn`` (a
+    perspective divide, say) has a projective part that probing points in R^n
+    cannot recover.
+
+    Args:
+        fn: the function a matrix is wanted for.
+
+    Raises:
+        ValueError: if ``fn.linearity`` is ``Linearity.NONLINEAR``.
+
+    Examples:
+        >>> from gacalc.g3 import Vector
+        >>> require_linear_or_affine(uniform_scale(2.0))
+        >>> perspective = ComposableFunction(func=lambda v: v, latex_repr="P")
+        >>> perspective.linearity  # the default: nothing promised
+        <Linearity.NONLINEAR: ...>
+        >>> to_matrix(perspective, Vector)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: to_matrix (...) is defined for linear/affine functions only; ...
+    """
+    if fn.linearity == Linearity.NONLINEAR:
+        raise ValueError(
+            f"{describe_caller()} is defined for linear/affine functions only; this "
+            "one is non-linear (e.g. a perspective divide) -- its projective "
+            "matrix cannot be recovered by probing points in R^n."
+        )
+
+
+@validation_guard
+def require_dimension(cls: type[MultiVectorBase], n: int | None) -> int:
+    """The dimension ``n`` to probe ``cls`` in; ``ValueError`` if it is unknown.
+
+    A specialized class fixes its dimension as ``cls.DIMENSION``; the
+    dimension-agnostic ``Gn`` has none, so its caller must pass ``n``.
+
+    Args:
+        cls: the representation to probe in.
+        n: the dimension the caller passed, or ``None`` to take ``cls.DIMENSION``.
+
+    Returns:
+        int: ``n`` when given, else ``cls.DIMENSION``.
+
+    Raises:
+        ValueError: if ``n`` is ``None`` and ``cls`` has no ``DIMENSION``.
+
+    Examples:
+        >>> from gacalc.g3 import Vector
+        >>> from gacalc.gn import Gn
+        >>> require_dimension(Vector, None)
+        3
+        >>> require_dimension(Gn, 2)
+        2
+        >>> to_matrix(uniform_scale(2.0), Gn)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: to_matrix (...): n could not be inferred (Gn has no fixed ...
+    """
+    resolved: int | None = n if n is not None else getattr(cls, "DIMENSION", None)
+    if resolved is None:
+        raise ValueError(
+            f"{describe_caller()}: n could not be inferred (Gn has no fixed "
+            "DIMENSION); pass n explicitly, e.g. to_matrix(fn, Gn, n=3)."
+        )
+    return resolved
+
+
+@validation_guard
+def require_distinct_params(params: typing.Sequence[sympy.Symbol]) -> None:
+    """Raise ``ValueError`` if a symbol appears twice in ``params``.
+
+    Args:
+        params: the parameter symbols, in fill order.
+
+    Raises:
+        ValueError: if ``params`` repeats a symbol.
+
+    Examples:
+        >>> import sympy
+        >>> X, Y = sympy.symbols("x y")
+        >>> require_distinct_params((X, Y))
+        >>> require_distinct_params((X, X))  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: <module> (...): params has a repeated symbol: (x, x)
+    """
+    if len(set(params)) != len(params):
+        raise ValueError(
+            f"{describe_caller()}: params has a repeated symbol: {tuple(params)}"
+        )
+
+
+@validation_guard
+def require_params_cover(
+    matrix: sympy.Matrix, params: typing.Sequence[sympy.Symbol]
+) -> None:
+    """Raise ``ValueError`` unless every symbol in ``matrix`` is one of ``params``.
+
+    A template can only be filled with the parameters it was given, so a matrix
+    entry over a symbol not among them could never be evaluated.
+
+    Args:
+        matrix: the symbolic matrix the template is compiled from.
+        params: the parameter symbols.
+
+    Raises:
+        ValueError: naming the first entry (row-major) with a symbol not in
+            ``params``.
+
+    Examples:
+        >>> import sympy
+        >>> X, Y = sympy.symbols("x y")
+        >>> require_params_cover(sympy.Matrix([[X, 1], [0, 1]]), (X,))
+        >>> require_params_cover(sympy.Matrix([[X, Y], [0, 1]]), (X,))
+        ... # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: <module> (...): matrix entry (0, 1) = y depends on ['y'], ...
+    """
+    known: set[sympy.Basic] = set(params)
+    row: int
+    col: int
+    for row in range(matrix.rows):
+        for col in range(matrix.cols):
+            entry: sympy.Expr = sympy.sympify(matrix[row, col])
+            stray: set[sympy.Basic] = entry.free_symbols - known
+            if stray:
+                raise ValueError(
+                    f"{describe_caller()}: matrix entry ({row}, {col}) = {entry} "
+                    f"depends on {sorted(map(str, stray))}, not among params "
+                    f"{tuple(map(str, params))}; every symbol the transform was "
+                    "built over must be a parameter"
+                )
+
+
 def to_matrix(
     fn: ComposableFunction[typing.Any],
     cls: type[MultiVectorBase],
@@ -815,19 +961,8 @@ def to_matrix(
         >>> [float(S[i, i]) for i in range(4)]
         [2.0, 2.0, 2.0, 1.0]
     """
-    if fn.linearity == Linearity.NONLINEAR:
-        raise ValueError(
-            "to_matrix is defined for linear/affine functions only; this one "
-            "is non-linear (e.g. a perspective divide) -- its projective "
-            "matrix cannot be recovered by probing points in R^n."
-        )
-    if n is None:
-        n = getattr(cls, "DIMENSION", None)
-        if n is None:
-            raise ValueError(
-                "n could not be inferred (Gn has no fixed DIMENSION); pass n "
-                "explicitly, e.g. to_matrix(fn, Gn, n=3)."
-            )
+    require_linear_or_affine(fn)
+    n = require_dimension(cls, n)
 
     origin: MultiVectorBase = fn(cls.zero())  # image of the origin -> translation col
     # images of the unit directions -> the first columns (the linear part)
@@ -994,10 +1129,10 @@ def to_matrix_template(
     """
     # doc-region-end to matrix template function
     symbols: tuple[sympy.Symbol, ...] = tuple(params)
-    if len(set(symbols)) != len(symbols):
-        raise ValueError(f"params has a repeated symbol: {symbols}")
+    require_distinct_params(symbols)
     matrix: sympy.Matrix | np.ndarray = to_matrix(fn, cls, n, backend="sympy")
     assert isinstance(matrix, sympy.Matrix)  # the sympy backend's return
+    require_params_cover(matrix, symbols)
     size: int = matrix.rows
     constants: np.ndarray = np.zeros((size, size), dtype=np.float32)
     slots: list[tuple[int, int, int]] = []
@@ -1009,15 +1144,7 @@ def to_matrix_template(
         for col in range(size):
             entry: sympy.Expr = sympy.sympify(matrix[row, col])
             free: set[sympy.Basic] = entry.free_symbols
-            stray: set[sympy.Basic] = free - set(symbols)
-            if stray:
-                raise ValueError(
-                    f"matrix entry ({row}, {col}) = {entry} depends on "
-                    f"{sorted(map(str, stray))}, not among params "
-                    f"{tuple(map(str, symbols))}; every symbol the transform "
-                    "was built over must be a parameter"
-                )
-            elif not free:
+            if not free:
                 constants[row, col] = float(entry)
             elif entry.is_Symbol:
                 slots.append(

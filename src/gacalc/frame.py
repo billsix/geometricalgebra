@@ -152,6 +152,41 @@ def require_frame(
         )
 
 
+@validation_guard
+def require_spanning_frame(vectors: Sequence[MultiVectorBase]) -> None:
+    """Raise ``ValueError`` unless the frame ``vectors`` spans its space (``k = n``).
+
+    ``n`` is the dimension of the space: a specialized type fixes it as its
+    ``DIMENSION``; ``Gn`` has none, so ``n`` is the smallest dimension holding every
+    frame vector.  The vectors are assumed to be a frame already (a :class:`Frame`'s
+    own, checked by :func:`require_frame`).
+
+    Args:
+        vectors: the frame's vectors ``v_1 … v_k``.
+
+    Raises:
+        ValueError: if ``k ≠ n``.
+
+    Examples:
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> require_spanning_frame([1 * e_1, 1 * e_2, 1 * e_3])
+        >>> Frame((1 * e_1, 1 * e_2)).to_invertible_function()  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: Frame.to_invertible_function (...) needs a frame that spans ...
+    """
+    n: int = getattr(
+        type(vectors[0]),
+        "DIMENSION",
+        max(v.implied_minimal_number_of_dimensions() for v in vectors),
+    )
+    if len(vectors) != n:
+        raise ValueError(
+            f"{describe_caller()} needs a frame that spans the space (k = n); "
+            f"got k = {len(vectors)} vectors in n = {n} dimensions"
+        )
+
+
 def _scalar_one(vector: MultiVectorBase) -> MultiVectorBase:
     """The scalar 1, in a representation of ``vector``'s algebra that can hold it.
 
@@ -711,19 +746,7 @@ class Frame:
             >>> g.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
             True
         """
-        # n is the dimension of the space.  type(self.vectors[0]) is the frame's
-        # representation: a specialized type fixes n as its DIMENSION; Gn has none, so
-        # the getattr default gives the smallest dimension holding every frame vector.
-        n: int = getattr(
-            type(self.vectors[0]),
-            "DIMENSION",
-            max(v.implied_minimal_number_of_dimensions() for v in self.vectors),
-        )
-        if len(self.vectors) != n:
-            raise ValueError(
-                f"to_invertible_function needs a frame that spans the space (k = n); "
-                f"got k = {len(self.vectors)} vectors in n = {n} dimensions"
-            )
+        require_spanning_frame(self.vectors)
 
         def forward(x: MultiVectorBase) -> MultiVectorBase:
             MultiVectorBase.require_vector(x)

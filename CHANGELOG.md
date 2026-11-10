@@ -12,6 +12,13 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **Validation guards for matrices and frames** — `transforms.require_linear_or_affine(fn)`,
+  `transforms.require_dimension(cls, n) -> int`, `transforms.require_distinct_params(params)`,
+  `transforms.require_params_cover(matrix, params)` and `frame.require_spanning_frame(vectors)`.
+  `to_matrix`, `to_matrix_template` and `Frame.to_invertible_function` (and the
+  `ComposableFunction.to_matrix`/`.to_matrix_template` methods that forward to them) open with these
+  one-line guards. Same `ValueError`s as before, but each message now starts with the calling function
+  and call site.
 - **`frame.require_frame(vectors, float_close_to_zero=False)`** — the shared "must be a
   frame" guard: raises `ValueError` naming the calling function and its call site (read from the
   Python stack) on an empty sequence, a non-vector, or linearly dependent vectors. `make_orthogonal_frame`, its two Hestenes variants and
