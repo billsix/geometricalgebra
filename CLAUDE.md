@@ -68,6 +68,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   module-level `rotate_90_degrees()` factory — both `= v * e_12` (the unit pseudoscalar,
   `(x, y) -> (-y, x)`), exact, 𝒢₂-only. Rationale: `tasks/reference/design-decisions.md`,
   `transform-and-composable-function-layer.md`; `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`.
+  Next to it, `Vector.rotate(θ)` = `cos(θ) * v + sin(θ) * v.rotate_90_degrees()`, 𝒢₂-only
+  (`tasks/archive/2026/11/10/g2-rotate-by-angle-restore.md`).
 - `src/gacalc/g1.py`, `g2.py`, `g3.py` (and, **release-only**, `g4.py`/`g5.py`) — **generated**,
   **gitignored**, self-contained modules holding the full specialized class `G` **and** that
   algebra's graded subtypes (`Scalar_n`/`Vector_n`/`Bivector_n`/`Trivector`/`Versor_n`, one
@@ -223,6 +225,8 @@ composable-function hierarchy, rotations/versors + the versor sandwich derivatio
   `measure.signed_volume` — no aliases
 - quarter turn (𝒢₂ only): `g2.Vector.rotate_90_degrees()` / the `g2.rotate_90_degrees()`
   `InvertibleFunction` factory — `= v * e_12` (+90° e₁→e₂, exact); the inverse is `v * -e_12`
+- rotation by an angle (𝒢₂ only): `g2.Vector.rotate(θ)` = `cos(θ) * v + sin(θ) * v.rotate_90_degrees()`
+  (the book's `eq-rotate-formula`); any plane / representation: `plane_rotation(a, b)(θ)`
 - plane helpers: `cls.bivector_from_vectors(a, b)` builds the raw wedge `a ∧ b`; `cls.i(a, b)`
   normalizes it to the plane's **unit** bivector (`i² = −1`) — a classmethod on the full types;
   `.i()` (no args) gets a value's own unit plane (`Bivector.i()` = normalize, `Versor.i()` = plane

@@ -37,12 +37,8 @@ v: Vector = v_1 * e_1 + v_2 * e_2
 
 
 def rotate(v: Vector, theta: Real) -> Vector:
-    """The rotation of *Proof: Rotate* on the (e_1, e_2) components: r(v; theta)."""
-    x: Real = v.coefficient(e_1)
-    y: Real = v.coefficient(e_2)
-    return (sympy.cos(theta) * x - sympy.sin(theta) * y) * e_1 + (
-        sympy.sin(theta) * x + sympy.cos(theta) * y
-    ) * e_2
+    """*Proof: Rotate*: r(v; theta) = cos(theta) * v + sin(theta) * r(v; pi/2)."""
+    return v.rotate(theta)
 
 
 # %% [markdown]
@@ -80,9 +76,7 @@ c_1, s_1, c_2, s_2 = sympy.symbols("c_1 s_1 c_2 s_2", real=True)
 
 def rotate_cs(v: Vector, cos: Real, sin: Real) -> Vector:
     """The same rotation, given its cosine and sine instead of its angle."""
-    x: Real = v.coefficient(e_1)
-    y: Real = v.coefficient(e_2)
-    return (cos * x - sin * y) * e_1 + (sin * x + cos * y) * e_2
+    return cos * v + sin * v.rotate_90_degrees()
 
 
 rotate_cs(rotate_cs(v, c_1, s_1), c_2, s_2) == rotate_cs(

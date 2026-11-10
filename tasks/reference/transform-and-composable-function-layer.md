@@ -54,6 +54,13 @@ These return `InvertibleFunction`s and are **representation-preserving** — the
   module). Emitter: `generate_quarter_turn` in `tools/gen_specialized.py`; design record
   `tasks/archive/2026/09/06/add-quarter-turn-to-g2.md`.
 
+- **`g2.Vector.rotate(angle_in_radians)`** (2026-11-10) — the 𝒢₂ rotation by an angle, generated next
+  to the quarter turn and written as the book's `eq-rotate-formula`,
+  `cos(θ) * v + sin(θ) * v.rotate_90_degrees()` (both bodies are coordinates only, no geometric
+  product at run time). A method, not a factory: `plane_rotation(e_1, e_2)(θ)` is the composable
+  rotor form, and a dimension-general coordinate `rotate` is what `2081e18` removed (it sent e₃ to a
+  trivector). Record: `tasks/archive/2026/11/10/g2-rotate-by-angle-restore.md`.
+
 ### `to_matrix` (`transforms.py`)
 Renders a function as a **homogeneous `(n+1)×(n+1)` matrix**, with numpy/sympy backends. A NONLINEAR
 function raises (per its `Linearity` tag); a `Gn` value needs its `n` supplied explicitly (unlike

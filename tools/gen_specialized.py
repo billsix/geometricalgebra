@@ -2185,6 +2185,36 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    >>> (x * Vector.e_1 + y * Vector.e_2).rotate_90_degrees() == Vector(coeff_e_1=-y, coeff_e_2=x)\n"
         "    True"
     ),
+    "vector|rotate": (
+        "Rotation by an angle (𝒢₂ only), + from e₁ toward e₂: a blend of this vector\n"
+        "and its quarter turn, ``cos(θ) * v + sin(θ) * v.rotate_90_degrees()`` (the\n"
+        "book's ``eq-rotate-formula``).  A float angle gives float coefficients; an\n"
+        "int or ``sympy`` angle stays exact.\n"
+        "\n"
+        "Args:\n"
+        "    angle_in_radians: the angle θ to rotate by.\n"
+        "\n"
+        "Returns:\n"
+        "    Vector: this vector rotated by θ.\n"
+        "\n"
+        "Example:\n"
+        "    >>> import sympy\n"
+        "    >>> (1 * Vector.e_1).rotate(0) == 1 * Vector.e_1\n"
+        "    True\n"
+        "    >>> (1 * Vector.e_1).rotate(sympy.pi / 2) == 1 * Vector.e_2\n"
+        "    True\n"
+        "    >>> v = 3 * Vector.e_1 + 4 * Vector.e_2\n"
+        "    >>> v.rotate(sympy.pi) == -v\n"
+        "    True\n"
+        "    >>> v.rotate(sympy.pi / 2) == v.rotate_90_degrees()\n"
+        "    True\n"
+        "    >>> x, y, theta = sympy.symbols('x y theta')\n"
+        "    >>> (x * Vector.e_1 + y * Vector.e_2).rotate(theta) == Vector(\n"
+        "    ...     coeff_e_1=x * sympy.cos(theta) - y * sympy.sin(theta),\n"
+        "    ...     coeff_e_2=x * sympy.sin(theta) + y * sympy.cos(theta),\n"
+        "    ... )\n"
+        "    True"
+    ),
     "vector|projected_onto": _vector_proj_doc,
     "vector|rejected_away_from": _vector_rej_doc,
     "vector|reflected_across": _by_dimension(
@@ -3826,6 +3856,15 @@ ROTATE_90_FACTORY_DOC: str = (
 # The 𝒢₂ signed sine (the scalar, oriented companion to the unsigned, any-dimension
 # ``MultiVectorBase.abs_sin``).  Decision 8 in the task: ``sine`` returns a SIGNED
 # SCALAR, not a bivector -- "sometimes we just want to know the sine and cosine."
+# The 𝒢₂ rotation by an angle, ``Vector.rotate(angle_in_radians)``: the
+# book's eq-rotate-formula, cos(θ) * v + sin(θ) * v.rotate_90_degrees().
+ROTATE_METHOD_DOC: str = (
+    "Rotate this vector by ``angle_in_radians`` (+ is e₁ toward e₂).\n"
+    "\n"
+    "        ``cos(θ) * v + sin(θ) * v.rotate_90_degrees()``: a rotation is a blend\n"
+    "        of the vector and its quarter turn.  𝒢₂ only."
+)
+
 SINE_METHOD_DOC: str = (
     "Signed sine of the angle from this vector to ``other`` (𝒢₂ only).\n"
     "\n"
@@ -6764,6 +6803,51 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                         rename_map(spec.blades, []),
                     ),
                     returns=name_ref(turn_spec.name),
+                )
+            )
+            # rotate(θ) = cos(θ) * v + sin(θ) * v.rotate_90_degrees() -- 𝒢₂ only,
+            # the book's eq-rotate-formula (book/docs/proof-rotate.rst): a rotation
+            # is a blend of the vector and its quarter turn.  A float angle keeps
+            # float arithmetic (math.cos/sin); an int or symbolic angle goes through
+            # sympy, so it stays exact (the same split as MultiVectorBase.exp).
+            extras.append(
+                function_def(
+                    "rotate",
+                    [
+                        class_doc_stmt(ROTATE_METHOD_DOC),
+                        annotated_assign(
+                            "numeric",
+                            name_ref("bool"),
+                            parse_expr("isinstance(angle_in_radians, float)"),
+                        ),
+                        annotated_assign(
+                            "cos_angle",
+                            name_ref("Real"),
+                            parse_expr(
+                                "math.cos(angle_in_radians) if numeric"
+                                " else sympy.cos(angle_in_radians)"
+                            ),
+                        ),
+                        annotated_assign(
+                            "sin_angle",
+                            name_ref("Real"),
+                            parse_expr(
+                                "math.sin(angle_in_radians) if numeric"
+                                " else sympy.sin(angle_in_radians)"
+                            ),
+                        ),
+                        return_stmt(
+                            parse_expr(
+                                "Scalar(cos_angle) * self"
+                                " + Scalar(sin_angle) * self.rotate_90_degrees()"
+                            )
+                        ),
+                    ],
+                    params=[
+                        argument("self"),
+                        argument("angle_in_radians", name_ref("Real")),
+                    ],
+                    returns=name_ref(spec.name),
                 )
             )
             # sine(a, b) = (a ∧ b).coeff_e_12 / (|a| * |b|) -- the SIGNED sine of

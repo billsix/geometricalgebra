@@ -46,8 +46,13 @@ writes it back, leaving the third coordinate alone. Done means:
   emitted by `tools/gen_specialized.py`): its body is `Vector(coeff_e_1=-self.coeff_e_2,
   coeff_e_2=self.coeff_e_1)`, coordinates only; the `== v * Bivector.e_12` line is a doctest, not
   the definition. So 𝒢₂'s quarter turn bootstraps the 3-D plane rotations with no self-reference.
-  **Not** the module-level factory `g2.rotate_90_degrees()`, which computes `v * e_12` (a geometric
-  product) and returns an `InvertibleFunction`. `g2` imports `base`, `functions`, `gn` and
+  The generator derives that body from `v * e_12` at generation time, but the emitted code is the
+  coordinate swap. (The module-level factory `g2.rotate_90_degrees()` wraps the same method as an
+  `InvertibleFunction`; the method is all this task needs.) For a turn by an angle there is now
+  `g2.Vector.rotate(θ)` (`tasks/archive/2026/11/10/g2-rotate-by-angle-restore.md`); this task reads
+  `cos`/`sin` off coordinates instead, so it writes the same blend inline.
+- `book/docs/notebooks/proof-cross.py` hand-writes `rotate_xy`/`rotate_xz`/`rotate_yz` in the
+  expanded form; rewrite them the same way (copy the pair into a `g2.Vector`, blend, write back). `g2` imports `base`, `functions`, `gn` and
   `transforms`, never `standardposition`, so the new import has no cycle.
 - History, gacalc: the first version (`80f44ae`) and today's (`e6b2f96`, `126ce69`) both use the
   expanded `(cos * x - sin * y, sin * x + cos * y)` components; none used the scalar-times-vector form.

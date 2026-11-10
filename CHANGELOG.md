@@ -14,6 +14,10 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [0.1.0] — 2026-11-10
 
 ### Added
+- **`g2.Vector.rotate(angle_in_radians)`** — rotation by an angle in 𝒢₂, written as the book's
+  `cos(θ) * v + sin(θ) * v.rotate_90_degrees()`. A float angle gives floats; an int or `sympy`
+  angle stays exact. 𝒢₂ only, like `rotate_90_degrees`; `plane_rotation(a, b)(θ)` stays the rotor
+  for any plane. (Restores, 𝒢₂-only, the planar `transforms.rotate(angle)` removed in `2081e18`.)
 - **Validation guards for matrices and frames** — `transforms.require_linear_or_affine(fn)`,
   `transforms.require_dimension(cls, n) -> int`, `transforms.require_distinct_params(params)`,
   `transforms.require_params_cover(matrix, params)` and `frame.require_spanning_frame(vectors)`.
