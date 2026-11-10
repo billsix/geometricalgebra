@@ -1340,6 +1340,46 @@ class MultiVectorBase(abc.ABC):
         for value in vectors:
             MultiVectorBase.require_vector(value)
 
+    @staticmethod
+    @validation_guard
+    def require_rotation_endpoints(
+        from_vector: MultiVectorBase, to_vector: MultiVectorBase
+    ) -> None:
+        """Raise ``ValueError`` unless ``from_vector`` and ``to_vector`` can bound a
+        rotation: both vectors, and either both zero or both nonzero.
+
+        The shared rule for every "rotate ``a`` to ``b``" factory.  A rotation from
+        the zero vector to the zero vector is the identity (each factory handles that
+        case).  A rotation from the zero vector to a nonzero vector, or from a nonzero
+        vector to zero, has no direction at one end, so it is an error.
+
+        Args:
+            from_vector: the vector the rotation starts from.
+            to_vector: the vector the rotation ends at.
+
+        Raises:
+            ValueError: if either is not a vector, or exactly one of them is zero.
+
+        Examples:
+            >>> from gacalc.g3 import Vector, e_1
+            >>> Vector.require_rotation_endpoints(1 * e_1, 2 * e_1)
+            >>> Vector.require_rotation_endpoints(Vector.zero(), Vector.zero())
+            >>> Vector.require_rotation_endpoints(Vector.zero(), 1 * e_1)
+            ... # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+                ...
+            ValueError: <module> (...): cannot rotate between the zero vector and ...
+        """
+        MultiVectorBase.require_vectors((from_vector, to_vector))
+        from_is_zero: bool = from_vector == type(from_vector).zero()
+        to_is_zero: bool = to_vector == type(to_vector).zero()
+        if from_is_zero != to_is_zero:
+            raise ValueError(
+                f"{describe_caller()}: cannot rotate between the zero vector and a "
+                "nonzero vector -- the zero vector has no direction (a rotation from "
+                "zero to zero is the identity)"
+            )
+
     def implied_minimal_number_of_dimensions(self) -> int:
         """The dimension of the smallest coordinate space that holds this vector.
 
@@ -2251,18 +2291,48 @@ class MultiVectorBase(abc.ABC):
         (Assumes ``from``/``to`` are not antiparallel; the construction
         degenerates only on that measure-zero case.)
 
+        A rotation from the zero vector to the zero vector is the identity, so its
+        versor is ``1``; from zero to a nonzero vector (or back) is an error
+        (:meth:`require_rotation_endpoints`).
+
         Args:
             from_vector: the vector the versor rotates *from*.
             to_vector: the vector the versor rotates *toward*.
 
         Returns:
             MultiVectorBase: the un-normalized versor ``|a| * |b| + b * a`` (scalar +
-            bivector); apply it with ``R * v * R.inverse()``.
+            bivector); apply it with ``R * v * R.inverse()``.  ``1`` when both
+            vectors are zero.
 
         Raises:
-            ValueError: if either argument is not a vector (grade 1).
+            ValueError: if either argument is not a vector (grade 1), or exactly one
+                of them is zero.
+
+        Examples:
+            A quarter turn, ``e_1`` to ``e_2``: the versor is ``1 + e_2 * e_1``, and
+            it carries ``e_1`` onto ``e_2``:
+
+            >>> from gacalc.g3 import Vector, Versor, e_1, e_2
+            >>> R = Vector.versor_from_vectors(1 * e_1, 1 * e_2)
+            >>> R == Versor.one() + (1 * e_2) * (1 * e_1)
+            True
+            >>> R * (1 * e_1) * R.inverse() == 1 * e_2
+            True
+
+            From zero to zero is the identity; from zero to a direction is an error:
+
+            >>> Vector.versor_from_vectors(Vector.zero(), Vector.zero()) == Versor.one()
+            True
+            >>> Vector.versor_from_vectors(Vector.zero(), 1 * e_2)  # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+                ...
+            ValueError: ...versor_from_vectors (...): cannot rotate between the zero ...
         """
-        MultiVectorBase.require_vectors((from_vector, to_vector))
+        MultiVectorBase.require_rotation_endpoints(from_vector, to_vector)
+        if from_vector == type(from_vector).zero():
+            # From zero to zero: the identity rotation, whose versor is 1 (at the
+            # versor's own type, the type of the product of two vectors).
+            return type(to_vector * from_vector).one()
         # |from| * |to| -- the versor's scalar part, making it the half-angle versor.
         # Kept as the *product of two magnitudes* (two simple sqrts), NOT
         # |to from| = sqrt(|to|^2 * |from|^2): the latter is mathematically equal
@@ -2318,7 +2388,8 @@ class MultiVectorBase(abc.ABC):
             (or ``sandwich`` -- for a rotor the inverse is the reverse).
 
         Raises:
-            ValueError: if either argument is not a vector (grade 1).
+            ValueError: if either argument is not a vector (grade 1), or exactly one
+                of them is zero (from zero to zero is the identity rotor 1).
             ZeroDivisionError: if the vectors are antiparallel (the versor is zero).
         """
         return cls.versor_from_vectors(

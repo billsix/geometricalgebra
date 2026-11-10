@@ -100,6 +100,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **Rotations from the zero vector.** `transforms.projection_rotation`, `transforms.versor_rotation`,
+  `versor_from_vectors` and `rotor_from_vectors` now treat zero → zero as the identity (versor `1`)
+  and raise `ValueError` from zero to a nonzero vector or back (the new guard
+  `MultiVectorBase.require_rotation_endpoints`). Before, all of them failed on a zero vector
+  (`ValueError` "opposite directions", `ZeroDivisionError`, or a zero versor).
 - **BREAKING — option parameters are enums; strings are rejected with `TypeError`.**
   `Frame.to_invertible_function(inverse_method=...)` takes `frame.InverseMethod.RECIPROCAL` (the
   default) or `InverseMethod.PEEL`, not `"reciprocal"`/`"peel"`. `transforms.to_matrix(...,

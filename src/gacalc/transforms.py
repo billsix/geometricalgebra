@@ -204,7 +204,31 @@ def projection_rotation(
     Like every factory here it is representation-agnostic: the operand's own type
     supplies the basis, so a ``G`` in yields a ``G`` out, ``Gn`` yields ``Gn``.
 
+    A rotation from the zero vector to the zero vector is the identity; from zero
+    to a nonzero vector (or back) raises ``ValueError``
+    (:meth:`~gacalc.base.MultiVectorBase.require_rotation_endpoints`).
+
     Example:
+        A quarter turn from ``e_1`` to ``e_2`` sends ``e_1`` to ``e_2`` and ``e_2``
+        to ``-e_1``; the lengths of the two vectors do not matter, only their
+        directions:
+
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> f = projection_rotation(e_1, e_2)
+        >>> f(1 * e_1) == 1 * e_2, f(1 * e_2) == -1 * e_1, f(1 * e_3) == 1 * e_3
+        (True, True, True)
+        >>> projection_rotation(5 * e_1, 2 * e_2)(1 * e_1) == 1 * e_2
+        True
+        >>> zero = 0 * e_1
+        >>> projection_rotation(zero, zero)(3 * e_1) == 3 * e_1  # 0 -> 0: identity
+        True
+        >>> projection_rotation(zero, 1 * e_2)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: projection_rotation (...): cannot rotate between the zero ...
+
+        A general angle:
+
         >>> import math
         >>> from gacalc.transforms import projection_rotation
         >>> from gacalc.g3 import Vector
@@ -215,16 +239,18 @@ def projection_rotation(
         >>> f(Vector.e_3).isclose(Vector.e_3, rel_tol=1e-5, abs_tol=1e-5)
         True
     """
-    MultiVectorBase.require_vectors((from_vector, to_vector))
+    MultiVectorBase.require_rotation_endpoints(from_vector, to_vector)
     plane: MultiVectorBase = from_vector ^ to_vector
     cls: type[V] = type(from_vector)
     if plane == type(plane).zero():
-        # Parallel vectors span no plane. Pointing the same way, the rotation is the
-        # identity (as versor_rotation gives); pointing opposite ways, no plane of
-        # rotation is singled out.
-        same_way: bool | None = sympy.sympify(
-            from_vector.dot(to_vector).scalar_part()
-        ).is_positive
+        # Parallel vectors span no plane. Both zero, or pointing the same way, the
+        # rotation is the identity (as versor_rotation gives); pointing opposite
+        # ways, no plane of rotation is singled out.
+        both_zero: bool = from_vector == cls.zero()
+        same_way: bool | None = (
+            both_zero
+            or sympy.sympify(from_vector.dot(to_vector).scalar_part()).is_positive
+        )
         if same_way is not True:
             raise ValueError(
                 "projection_rotation: from_vector and to_vector point in opposite "
@@ -402,7 +428,21 @@ def versor_rotation(
     ``interpolate`` lets a caller (e.g. an angle-parameterized rotation) supply
     an interpolation law that from/to vectors alone can't express.
 
+    From the zero vector to the zero vector is the identity; from zero to a
+    nonzero vector (or back) raises ``ValueError``.
+
     Example:
+        A quarter turn from ``e_1`` to ``e_2``, and the zero-to-zero identity:
+
+        >>> from gacalc.g3 import e_1, e_2
+        >>> versor_rotation(e_1, e_2)(1 * e_1) == 1 * e_2
+        True
+        >>> zero = 0 * e_1
+        >>> versor_rotation(zero, zero)(3 * e_1) == 3 * e_1
+        True
+
+        A general angle:
+
         >>> import math
         >>> from gacalc.transforms import versor_rotation
         >>> from gacalc.g3 import Vector

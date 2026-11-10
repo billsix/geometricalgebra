@@ -37,6 +37,14 @@ These return `InvertibleFunction`s and are **representation-preserving** — the
   **`bivector_rotation`** — different *specifications* of a rotation, all funnelling through the
   shared **`_unit_bivector_rotor_factory`** (the default `rotor_for` of `plane_rotation` and
   `bivector_rotation`). (The naming distinguishes the rotation *spec* from its rotor *formulation*.)
+- **The zero-vector rule** (2026-11-10) — every from/to factory (`projection_rotation`,
+  `versor_rotation`, `MultiVectorBase.versor_from_vectors`, `rotor_from_vectors`) treats a rotation
+  from the zero vector to the zero vector as the identity (versor `1`) and raises `ValueError` from
+  zero to a nonzero vector or back, through the shared guard
+  `MultiVectorBase.require_rotation_endpoints`. Before, all of them failed on a zero vector, with a
+  misleading "opposite directions" message or a `ZeroDivisionError`. Record:
+  `tasks/archive/2026/11/10/rotation-factories-zero-vector-rule.md`;
+  `tests/test_rotation_zero_vector_rule.py`.
 - **`g2.rotate_90_degrees()`** (2026-09-06) — the one rotation factory that lives in a *generated*
   module, not `transforms.py`, because it is 𝒢₂-only: the quarter turn is `v * e_12` in closed form
   (exact; no rotor), wrapped as an `InvertibleFunction[Vector]` with `linearity=LINEAR`, a `TypeError`
