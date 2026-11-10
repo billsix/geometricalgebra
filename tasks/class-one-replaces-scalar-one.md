@@ -1,6 +1,6 @@
 # Every class has a usable `one()`; remove `frame._scalar_one`
 
-**Status:** proposed — open questions below
+**Status:** in progress — questions answered (see Decisions)
 **Priority:** 3
 **Difficulty:** 5
 **Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
@@ -35,3 +35,7 @@ CHANGELOG entry.
    likewise); `Gn`/full `G` keep `Self`.
 2. Replace `_scalar_one(v)` with `type(v).one()`; delete the helper; doctests.
 3. Investigation of other class-level notions; implement only those decided.
+
+## Decisions
+
+- A graded class's `one()` returns **that algebra's `Scalar`** (its return type changes from `Self`) (William Emerison Six <billsix@gmail.com>, 2026-11-10).

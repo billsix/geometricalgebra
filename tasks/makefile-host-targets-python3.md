@@ -1,6 +1,6 @@
 # Host-run Makefile targets call `python3`, not `python`
 
-**Status:** proposed — ready
+**Status:** in progress
 **Priority:** 2
 **Difficulty:** 1
 **Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)

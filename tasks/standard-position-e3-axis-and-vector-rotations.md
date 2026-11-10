@@ -1,7 +1,7 @@
 # Standard-position project/reject: defined on the e_3 axis, built from 2-D vector-to-vector rotations
 
-**Status:** proposed — open questions below
-**Priority:** 3
+**Status:** parked — the 2-D rotation design is on hold (see Decisions)
+**Priority:** 7
 **Difficulty:** 5
 **Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
 **Branch:** `sp-rotations-guards-enums-examples`
@@ -31,12 +31,12 @@ and doctested, the Lean `StandardPosition.lean` transcription matches the new Py
   (elementary plane rotations → project/reject → `projection_rotation`). The module docstring says no
   versors / geometric product / matrices, so the 2-D vector-to-vector rotation used here must itself
   be elementary (built from coordinates), **not** `transforms.projection_rotation`, which is defined
-  from project/reject. Pending question 1.
+  from project/reject. On hold (Decisions).
 - `proofs/GacalcProofs/StandardPosition.lean` (`projectSP_eq_proj`, `rejectSP_eq_reject`) transcribes
   the current `(cos, sin)` formulas; it must follow the change.
 - `transforms.projection_rotation` already treats parallel same-direction vectors as the identity and
   opposite ones as a `ValueError`; whether the zero rule also applies to the public rotation factories
-  is pending question 2.
+  is decided: yes, all of them (Decisions).
 
 ## Plan
 
@@ -46,3 +46,8 @@ and doctested, the Lean `StandardPosition.lean` transcription matches the new Py
    doctests.
 3. Update the Lean transcription and proofs; update the reference doc and the book page if it quotes
    the old formulas; CHANGELOG entry (behavior change: no longer raises on the e_3 axis).
+
+## Decisions
+
+- Whether the 2-D vector-to-vector rotation inside `project_sp` is built from coordinates or from `projection_rotation` (circularity, Lean proof): **on hold for the 2026-11-10 night** (William Emerison Six <billsix@gmail.com>, 2026-11-10). This task stays parked until that is decided.
+- The zero-vector rule (0 → 0 is the identity, 0 → nonzero and nonzero → 0 raise `ValueError`) applies to **all the public rotation factories** too (William Emerison Six <billsix@gmail.com>, 2026-11-10). That part does not depend on the hold, so it was split into `tasks/rotation-factories-zero-vector-rule.md`.

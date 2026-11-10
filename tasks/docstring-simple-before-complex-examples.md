@@ -1,6 +1,6 @@
 # Every example shows a simple case first, then the general one
 
-**Status:** proposed — open questions below
+**Status:** in progress — questions answered (see Decisions)
 **Priority:** 4
 **Difficulty:** 6
 **Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
@@ -24,7 +24,7 @@ classes' docstrings (via the generator), and the gate is green.
   every unit coefficient explicitly", "Use the predefined basis constant").
 - Doctests are the default unit test (`--doctest-modules`); generated docstrings come from
   `tools/gen_specialized.py` (never edit `g*.py`).
-- Scope (docstrings only, or also `tests/` and `notebooks/`) is pending question.
+- Scope: see Decisions.
 
 ## Plan
 
@@ -33,3 +33,7 @@ classes' docstrings (via the generator), and the gate is green.
    simple example.
 2. Per operation, choose the property the simple example shows; write it; one module per commit.
 3. Regenerate; `make test` + `make type-check`.
+
+## Decisions
+
+- Scope: the hand-written docstrings and the generator-emitted docstrings. `tests/` and the notebooks are left unchanged (William Emerison Six <billsix@gmail.com>, 2026-11-10).

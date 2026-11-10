@@ -1,6 +1,6 @@
 # Guards report the caller from the Python frame instead of a `context` string
 
-**Status:** proposed — open questions below
+**Status:** in progress — questions answered (see Decisions)
 **Priority:** 4
 **Difficulty:** 4
 **Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
@@ -23,7 +23,7 @@ string, messages name the caller, doctests updated, gate green, CHANGELOG entry 
   (`require_frame`); the new guards from `tasks/extract-validation-guards-frame-and-to-matrix.md`
   follow the same pattern, so do this one first.
 - Some contexts are not function names (`"a frame's map"` for the closure `forward`); the frame gives
-  `Frame.to_invertible_function.<locals>.forward`, which is accurate but less friendly. Pending question.
+  `Frame.to_invertible_function.<locals>.forward`, which is accurate but less friendly (accepted; see Decisions).
 - The generator may emit guard calls into `g*.py`: grep `tools/gen_specialized.py` for `require_`.
 
 ## Plan
@@ -31,3 +31,7 @@ string, messages name the caller, doctests updated, gate green, CHANGELOG entry 
 1. Implement the frame lookup in one private helper; measure the success-path cost (should be zero).
 2. Update every call site (`rg -n 'require_(vector|vectors|frame)\('`), generator included; regenerate.
 3. Doctests + messages; CHANGELOG; gate.
+
+## Decisions
+
+- Drop the `context` parameter entirely; the message names the caller from the stack (`co_qualname`, file, line), read only when raising (William Emerison Six <billsix@gmail.com>, 2026-11-10: "whatever you recommend").

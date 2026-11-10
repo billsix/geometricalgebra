@@ -1,6 +1,6 @@
 # Pull validation out of `Frame.to_invertible_function` and `to_matrix` into one-line guards
 
-**Status:** proposed — open questions below
+**Status:** in progress — questions answered (see Decisions)
 **Priority:** 4
 **Difficulty:** 3
 **Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
@@ -25,4 +25,8 @@ unchanged in meaning, the gate is green.
   method body only) must hold.
 - The `inverse_method` check disappears if `tasks/options-as-enums.md` makes it an enum matched
   exhaustively.
-- The request said "update to matrix. Matrix" — pending question.
+- The request said "update to matrix. Matrix" (resolved in Decisions).
+
+## Decisions
+
+- "update to matrix. Matrix" means: apply the new guards to `to_matrix`, `to_matrix_template`, and the `ComposableFunction.to_matrix` / `.to_matrix_template` methods (William Emerison Six <billsix@gmail.com>, 2026-11-10).

@@ -1,6 +1,6 @@
 # Options and mode parameters are enums, not strings
 
-**Status:** proposed — open questions below
+**Status:** in progress — questions answered (see Decisions)
 **Priority:** 4
 **Difficulty:** 4
 **Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
@@ -30,3 +30,8 @@ enum, CHANGELOG lists the breaking change, version bumped (pre-1.0: `0.1.0`), ga
 1. Discover + log to `tasks/adhoc/options-as-enums/data/`.
 2. Per option, define the enum next to the function that uses it (exported); convert; doctests.
 3. CHANGELOG + version; gate.
+
+## Decisions
+
+- Plain `enum.Enum`; strings are no longer accepted. This is a breaking change: CHANGELOG `### Changed` / breaking callout and version `0.0.20` → `0.1.0` (William Emerison Six <billsix@gmail.com>, 2026-11-10).
+- Scope includes `tools/` (the generator) and `nbplotutils.py`, not only the library modules (William Emerison Six <billsix@gmail.com>, 2026-11-10).

@@ -1,6 +1,6 @@
 # Investigate the type errors Emacs (pyright) reports for reals and sympy times multivectors
 
-**Status:** proposed — investigation first, fix after
+**Status:** in progress — investigation first, fix after
 **Priority:** 4
 **Difficulty:** 5
 **Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
