@@ -1,11 +1,9 @@
 # Investigate the type errors Emacs (pyright) reports for reals and sympy times multivectors
 
-**Status:** blocked — investigation done; the fix waits on the maintainer's choice of spelling (Findings)
+**Status:** ready — spelling decided (Decisions): option 1, `Scalar(s_1) * e_1`
 **Priority:** 4
 **Difficulty:** 5
 **Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
-**Blocked on:** the maintainer choosing option 1–4 in `tasks/reference/pyright-sympy-coefficient-typing.md` (how symbolic coefficients are written in teaching code).
-**Recheck:** the task's Decisions section names an option.
 **Branch:** `sp-rotations-guards-enums-examples`
 
 ## BLUF
@@ -49,3 +47,8 @@ as does `e_1 * s_1`. No code was changed: the fix rewrites how ~160 symbolic lin
 and `src/` read, which is a teaching-style decision. The generated modules' 215 pyright errors (mostly
 `reportOverlappingOverload` on the product overloads) are a separate matter, close to
 `tasks/typing-base-return-types-redesign.md`.
+
+## Decisions
+- Symbolic coefficients are written with the scalar constructor, `Scalar(s_1) * e_1` in the graded
+  modules and `Gn.from_real(a_1) * e_1` for `Gn` (option 1 of
+  `tasks/reference/pyright-sympy-coefficient-typing.md`), in `src/`, `tests/` and the book (William Emerison Six <billsix@gmail.com>, 2026-11-10).
