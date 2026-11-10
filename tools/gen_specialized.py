@@ -160,6 +160,7 @@ import os
 import subprocess
 import sys
 from collections.abc import Callable, Iterable, Mapping, Sequence
+from enum import Enum
 from itertools import chain, combinations
 from typing import NamedTuple, cast
 
@@ -545,10 +546,26 @@ _CUSTOM_DOC_DIMS: frozenset[int] = frozenset({1, 2, 3})
 # A custom-docstring entry: literal text, or a ``(role, n) -> str`` callable for
 # grade-/dimension-aware wording (so one function serves every role and the doctest
 # example fits the algebra it lands in).
-DocEntry = str | Callable[[str, int], str]
 
 
-def _bivector_dual_doc(role: str, n: int) -> str:
+class DocRole(Enum):
+    """A generated class's grade identity, the first half of a ``CUSTOM_METHOD_DOCS``
+    key (``"<role>|<method>"``, with the value below as ``<role>``)."""
+
+    SCALAR = "scalar"
+    VECTOR = "vector"
+    BIVECTOR = "bivector"
+    TRIVECTOR = "trivector"
+    VERSOR = "versor"
+    ODD = "odd"
+    FULL = "full"
+    GENERIC = "generic"
+
+
+DocEntry = str | Callable[[DocRole, int], str]
+
+
+def _bivector_dual_doc(role: DocRole, n: int) -> str:
     """Grade-2 ``dual`` -- dimension-dependent (𝒢₂: bivector→scalar; 𝒢₃:
     bivector→the vector normal to its plane)."""
     if n == 2:
@@ -576,7 +593,7 @@ def _bivector_dual_doc(role: str, n: int) -> str:
     )
 
 
-def _vector_dual_doc(role: str, n: int) -> str:
+def _vector_dual_doc(role: DocRole, n: int) -> str:
     """Grade-1 ``dual`` -- dimension-dependent (𝒢₁: →scalar; 𝒢₂: →the
     perpendicular vector, a 90° turn; 𝒢₃: →the plane ⟂ to the vector)."""
     if n == 1:
@@ -615,7 +632,7 @@ def _vector_dual_doc(role: str, n: int) -> str:
     )
 
 
-def _vector_outer_doc(role: str, n: int) -> str:
+def _vector_outer_doc(role: DocRole, n: int) -> str:
     """Grade-1 ∧ grade-1 -- 0 in 𝒢₁ (all vectors parallel), else the bivector
     spanning the two vectors."""
     if n == 1:
@@ -649,7 +666,7 @@ def _vector_outer_doc(role: str, n: int) -> str:
     )
 
 
-def _vector_i_doc(role: str, n: int) -> str:
+def _vector_i_doc(role: DocRole, n: int) -> str:
     """Grade-1 ``i`` classmethod -- needs a 2-D plane, so 𝒢₁ has no example."""
     if n == 1:
         return (
@@ -685,7 +702,7 @@ def _vector_i_doc(role: str, n: int) -> str:
     )
 
 
-def _vector_proj_doc(role: str, n: int) -> str:
+def _vector_proj_doc(role: DocRole, n: int) -> str:
     """Grade-1 ``projected_onto`` -- the parallel component."""
     if n == 1:
         return (
@@ -716,7 +733,7 @@ def _vector_proj_doc(role: str, n: int) -> str:
     )
 
 
-def _vector_rej_doc(role: str, n: int) -> str:
+def _vector_rej_doc(role: DocRole, n: int) -> str:
     """Grade-1 ``rejected_away_from`` -- the perpendicular component."""
     if n == 1:
         return (
@@ -748,7 +765,7 @@ def _vector_rej_doc(role: str, n: int) -> str:
     )
 
 
-def _scalar_dual_doc(role: str, n: int) -> str:
+def _scalar_dual_doc(role: DocRole, n: int) -> str:
     """Grade-0 ``dual`` -- a scalar duals to the top-grade blade (× the
     pseudoscalar): a vector in 𝒢₁, a bivector in 𝒢₂, a trivector in 𝒢₃."""
     top: str = {
@@ -2627,19 +2644,19 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
 }
 
 
-def _role_for_class(class_name: str, full_name: str) -> str:
+def _role_for_class(class_name: str, full_name: str) -> DocRole:
     """The grade identity used to key ``CUSTOM_METHOD_DOCS`` for ``class_name``."""
     if class_name == full_name:
-        return "full"
-    known: dict[str, str] = {
-        "Scalar": "scalar",
-        "Vector": "vector",
-        "Bivector": "bivector",
-        "Trivector": "trivector",
-        "Versor": "versor",
-        "Odd_3": "odd",
+        return DocRole.FULL
+    known: dict[str, DocRole] = {
+        "Scalar": DocRole.SCALAR,
+        "Vector": DocRole.VECTOR,
+        "Bivector": DocRole.BIVECTOR,
+        "Trivector": DocRole.TRIVECTOR,
+        "Versor": DocRole.VERSOR,
+        "Odd_3": DocRole.ODD,
     }
-    return known.get(class_name, "generic")
+    return known.get(class_name, DocRole.GENERIC)
 
 
 def _own_docstring(method: str) -> str | None:
@@ -2657,7 +2674,7 @@ def _own_docstring(method: str) -> str | None:
     return None
 
 
-def custom_method_doc(role: str, method: str, n: int) -> str | None:
+def custom_method_doc(role: DocRole, method: str, n: int) -> str | None:
     """A specialized ``CUSTOM_METHOD_DOCS`` entry for ``method`` on a ``role`` class
     of 𝒢ₙ, or ``None`` if there is none (or n is a generic-only dimension).
 
@@ -2668,7 +2685,7 @@ def custom_method_doc(role: str, method: str, n: int) -> str | None:
     if n not in _CUSTOM_DOC_DIMS:
         return None
     entry: DocEntry | None = CUSTOM_METHOD_DOCS.get(
-        f"{role}|{method}"
+        f"{role.value}|{method}"
     ) or CUSTOM_METHOD_DOCS.get(f"*|{method}")
     if isinstance(entry, str):
         return entry
@@ -2794,7 +2811,7 @@ def inject_method_docstrings(nodes: Sequence[ast.stmt], n: int, full_name: str) 
     for node in nodes:
         if not isinstance(node, ast.ClassDef):
             continue
-        role: str = _role_for_class(node.name, full_name)
+        role: DocRole = _role_for_class(node.name, full_name)
         item: ast.stmt
         for item in node.body:
             if not isinstance(item, ast.FunctionDef):
@@ -3057,6 +3074,14 @@ def i_extractor(inner_method: str, precise_ret: str) -> ast.FunctionDef:
 # ==========================================================================
 
 
+class TypeKind(Enum):
+    """Which family a generated value type belongs to."""
+
+    SCALAR = "scalar"  #: the grade-0 ``Scalar``
+    GRADED = "graded"  #: a grade-pure type, ``Versor``, or ``Odd_3``
+    FULL = "full"  #: the full algebra class ``G``
+
+
 class TypeSpec(NamedTuple):
     """A generated value type's spec: its name, its basis blades (each a tuple of
     basis-vector indices), the algebra dimension, and its kind."""
@@ -3064,7 +3089,7 @@ class TypeSpec(NamedTuple):
     name: str
     blades: tuple[Blade, ...]
     dim: int
-    kind: str
+    kind: TypeKind
 
 
 def scalar_spec(n: int) -> TypeSpec:
@@ -3074,7 +3099,7 @@ def scalar_spec(n: int) -> TypeSpec:
     is that algebra's pseudoscalar (``Scalar.dual -> Vector``, ``Scalar ->
     Bivector``, ``Scalar -> Trivector``), which lives in the same module.  Its
     ``dim`` is n (the shared ``Scalar`` was dimensionless, dim 0)."""
-    return TypeSpec("Scalar", ((),), n, "scalar")
+    return TypeSpec("Scalar", ((),), n, TypeKind.SCALAR)
 
 
 # Class name for each grade-pure blade type.  The three entrenched low-grade
@@ -3112,12 +3137,12 @@ def graded_specs(n: int) -> list[TypeSpec]:
     # One grade-pure type per grade 1..n (Vector, Bivector, …, grade_name(n) = the
     # pseudoscalar); grade 0 (Scalar) is emitted separately by generate_scalar.
     specs: list[TypeSpec] = [
-        TypeSpec(grade_name(grade), blades_of_grade(grade), n, "graded")
+        TypeSpec(grade_name(grade), blades_of_grade(grade), n, TypeKind.GRADED)
         for grade in range(1, n + 1)
     ]
     if n >= 2:  # even subalgebra (Versor); for n==1 the even part is just the scalar
         even: tuple[Blade, ...] = tuple(b for b in blades if len(b) % 2 == 0)
-        specs.append(TypeSpec("Versor", even, n, "graded"))
+        specs.append(TypeSpec("Versor", even, n, TypeKind.GRADED))
     if n == 3:
         # The odd part {1,3} of 𝒢₃ -- the mirror of Versor (the even part {0,2}), but a
         # *subspace*, NOT a subalgebra: odd * odd = even, so Odd_3 * Odd_3 -> Versor,
@@ -3126,12 +3151,12 @@ def graded_specs(n: int) -> list[TypeSpec]:
         # the literal name stays honest; the general higher-dim odd/mixed types are a
         # follow-up (tasks/model-odd-graded-type.md).
         odd_1_3: tuple[Blade, ...] = tuple(b for b in blades if len(b) in (1, 3))
-        specs.append(TypeSpec("Odd_3", odd_1_3, n, "graded"))
+        specs.append(TypeSpec("Odd_3", odd_1_3, n, TypeKind.GRADED))
     return specs
 
 
 def full_spec(n: int, full_name: str) -> TypeSpec:
-    return TypeSpec(full_name, tuple(blades_for_dim(n)), n, "full")
+    return TypeSpec(full_name, tuple(blades_for_dim(n)), n, TypeKind.FULL)
 
 
 def registry_for_dim(n: int, full_name: str) -> list[TypeSpec]:
@@ -3147,7 +3172,7 @@ def resolve(support: Sequence[Blade], n: int, full_name: str) -> TypeSpec:
     ]
     return min(
         candidates,
-        key=lambda t: (len(t.blades), 0 if t.kind == "scalar" else 1, t.name),
+        key=lambda t: (len(t.blades), 0 if t.kind is TypeKind.SCALAR else 1, t.name),
     )
 
 

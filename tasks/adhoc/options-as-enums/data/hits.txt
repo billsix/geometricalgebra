@@ -1,0 +1,53 @@
+tools/render_epix_figures.py:45:DEFAULT_BACKGROUND: str = "#f2f2f2"
+tools/render_epix_figures.py:167:if __name__ == "__main__":
+notebooks/displaygraded.py:220:header: str = "| `*` | " + " | ".join(na for na, _ in named) + " |"
+notebooks/displaygraded.py:221:sep: str = "| --- " * (len(named) + 1) + "|"
+src/gacalc/transforms.py:375:    label: str = "P_{" + to_vector._repr_latex_().strip("$") + "}"
+src/gacalc/transforms.py:919:    backend: str = "numpy",
+src/gacalc/transforms.py:986:        case "sympy":
+src/gacalc/transforms.py:988:        case "numpy":
+tools/gen_specialized.py:299:    return () if label == "scalar" else tuple(int(c) for c in label[2:])
+tools/gen_specialized.py:327:            case "a":
+tools/gen_specialized.py:329:            case "b":
+tools/gen_specialized.py:364:    grades: str = "\n".join(
+tools/gen_specialized.py:452:    labels: str = ", ".join(blade_label(b) for b in spec.blades)
+tools/gen_specialized.py:495:def doc_expr(doc: str, indent: str = "        ") -> ast.Expr:
+tools/gen_specialized.py:502:    body: str = "\n".join(f"{indent}{line}".rstrip() for line in doc.splitlines())
+tools/gen_specialized.py:506:def method_doc_stmts(method_name: str, indent: str = "        ") -> list[ast.stmt]:
+tools/gen_specialized.py:3150:        key=lambda t: (len(t.blades), 0 if t.kind == "scalar" else 1, t.name),
+tools/gen_specialized.py:3304:    rhs_name: str = "rhs",
+tools/gen_specialized.py:3711:def isclose_call(field: str, other: str = "other") -> ast.expr:
+tools/gen_specialized.py:3848:    param_name: str = "rhs",
+tools/gen_specialized.py:3998:    param_name: str = "rhs",
+tools/gen_specialized.py:4047:    param_name: str = "rhs",
+tools/gen_specialized.py:5201:    # r_vector_part: an @overload per grade maps ``r: Literal[<grade>]`` to the
+tools/gen_specialized.py:5753:        precise_bivector: str | None = "Bivector" if n >= 2 else None
+tools/gen_specialized.py:6160:    operand_import: str = "\n    _OperandT," if 2 <= n <= 3 else ""
+tools/gen_specialized.py:6165:    functions_import: str = "from gacalc.functions import Linearity\n" if n == 2 else ""
+tools/gen_specialized.py:6319:if __name__ == "__main__":
+tools/derive_lean_algebra.py:50:    suffix: str = "s" if bl == () else "".join(str(i) for i in bl)
+tools/derive_lean_algebra.py:82:if __name__ == "__main__":
+tools/check_epix_keywords.py:75:for tint in ("black", "white", "red", "green", "blue", "yellow", "cyan", "magenta"):
+tools/check_epix_keywords.py:199:if __name__ == "__main__":
+tools/check_annotations.py:88:        self, path: str, line: int, kind: str, name: str, detail: str = ""
+tools/check_annotations.py:473:if __name__ == "__main__":
+src/gacalc/base.py:482:            label: str = "1" if blade == () else "e_" + "".join(map(str, blade))
+src/gacalc/base.py:1998:            label: str = "\\mathrm{refl}_{" + blade._repr_latex_().strip("$") + "}"
+src/gacalc/base.py:2676:        fields: str = ", ".join(
+tools/astbuild.py:55:_MARKER_OPEN: str = "@@doc-region@@"
+tools/astbuild.py:56:_MARKER_CLOSE: str = "@@/doc-region@@"
+tools/astbuild.py:74:_HEADER_COMMENT_OPEN: str = "@@header-comment@@"
+tools/astbuild.py:75:_HEADER_COMMENT_CLOSE: str = "@@/header-comment@@"
+tools/astbuild.py:137:        if isinstance(decorator, ast.Attribute) and decorator.attr == "overload":
+tools/astbuild.py:139:        if isinstance(decorator, ast.Name) and decorator.id == "overload":
+tools/astbuild.py:155:    accessor: str = ""
+tools/check_doc_regions.py:120:if __name__ == "__main__":
+tools/bench.py:177:if __name__ == "__main__":
+tools/check_changelog.py:45:if __name__ == "__main__":
+src/gacalc/frame.py:636:        inverse_method: Literal["reciprocal", "peel"] = "reciprocal",
+src/gacalc/frame.py:831:            case "reciprocal":
+src/gacalc/frame.py:837:            case "peel":
+src/gacalc/functions.py:219:        backend: str = "numpy",
+src/gacalc/functions.py:417:    tex_str: str = ""
+src/gacalc/functions.py:438:    inv_str: str = ""
+src/gacalc/nbplotutils.py:646:    for side in ("top", "right", "left"):

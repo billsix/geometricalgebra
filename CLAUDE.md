@@ -44,7 +44,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `iter()` yields); `orthogonal_vectors()` computes their orthogonal set `w_j` (orthogonal, not
   orthonormal, so symbolic 3D stays sqrt-free and decidable); `coefficients()` computes the triangular `(w_j · v_i) / |w_j|²` table (QR with the
   lengths factored out) as projections read with `transforms.coordinate_along`;
-  `to_invertible_function(inverse_method="reciprocal" | "peel")` maps `e_i ↦ v_i` and inverts it
+  `to_invertible_function(inverse_method=InverseMethod.RECIPROCAL | InverseMethod.PEEL)` maps `e_i ↦ v_i` and inverts it
   either through the reciprocal frame (`reciprocal_frame`, H&S eq 3.7; the default) or by a `match`
   recursion that peels the frame from its last vector. Both read each term with
   `transforms.line_to_line_projection` (the point on `v_i`'s line whose projection onto a normal `m`

@@ -66,6 +66,7 @@ from gacalc.functions import (
     ComposableFunction,
     InvertibleFunction,
     Linearity,
+    MatrixBackend,
     NotInvertibleError,
     compose,
     identity,
@@ -916,7 +917,7 @@ def to_matrix(
     cls: type[MultiVectorBase],
     n: int | None = None,
     *,
-    backend: str = "numpy",
+    backend: MatrixBackend = MatrixBackend.NUMPY,
 ) -> "np.ndarray | sympy.Matrix":
     r"""The homogeneous ``(n+1) x (n+1)`` matrix of a linear or affine ``fn``.
 
@@ -938,9 +939,9 @@ def to_matrix(
     ``n`` is taken from ``cls.DIMENSION`` for the specialized classes; pass it
     explicitly for the dimension-agnostic ``Gn``.
 
-    ``backend="numpy"`` (default) returns an ``np.float32`` array for GL;
-    ``backend="sympy"`` returns an exact ``sympy.Matrix`` (stays symbolic for a
-    symbolic ``fn``).
+    ``backend=MatrixBackend.NUMPY`` (default) returns an ``np.float32`` array for
+    GL; ``backend=MatrixBackend.SYMPY`` returns an exact ``sympy.Matrix`` (stays
+    symbolic for a symbolic ``fn``).  Any other value raises ``TypeError``.
 
     Raises ``ValueError`` if ``fn`` is non-linear: its projective part (e.g. a
     perspective divide) is not recoverable by probing points in R^n.
@@ -983,14 +984,14 @@ def to_matrix(
     columns: list[list[Real]] = [coords(d, 0) for d in directions] + [coords(origin, 1)]
 
     match backend:
-        case "sympy":
+        case MatrixBackend.SYMPY:
             return sympy.Matrix.hstack(*(sympy.Matrix(c) for c in columns))
-        case "numpy":
+        case MatrixBackend.NUMPY:
             return np.column_stack(
                 [np.array([float(x) for x in c], dtype=np.float32) for c in columns]
             )
         case _:
-            raise ValueError(f"unknown backend {backend!r}; use 'numpy' or 'sympy'.")
+            raise TypeError(f"backend must be a MatrixBackend; got {backend!r}")
 
 
 # doc-region-begin matrix template class
@@ -1082,10 +1083,10 @@ def to_matrix_template(
 ) -> MatrixTemplate:
     r"""Compile a linear or affine ``fn``, built over the sympy symbols
     ``params``, into a :class:`MatrixTemplate` -- ``to_matrix(fn, cls,
-    backend="sympy")`` read off once, so that ``template.fill(*numbers)`` is a
-    few array assignments instead of a fresh probe of the basis (roughly a
-    thousand times cheaper per call; the per-sprite model matrix of a 2-D game
-    is the motivating case).
+    backend=MatrixBackend.SYMPY)`` read off once, so that
+    ``template.fill(*numbers)`` is a few array assignments instead of a fresh probe
+    of the basis (roughly a thousand times cheaper per call; the per-sprite model
+    matrix of a 2-D game is the motivating case).
 
     Works in any dimension ``to_matrix`` does: 𝒢₂ gives a ``3 x 3`` (linear or
     affine -- the shape is always homogeneous, a linear map just has a zero
@@ -1130,7 +1131,9 @@ def to_matrix_template(
     # doc-region-end to matrix template function
     symbols: tuple[sympy.Symbol, ...] = tuple(params)
     require_distinct_params(symbols)
-    matrix: sympy.Matrix | np.ndarray = to_matrix(fn, cls, n, backend="sympy")
+    matrix: sympy.Matrix | np.ndarray = to_matrix(
+        fn, cls, n, backend=MatrixBackend.SYMPY
+    )
     assert isinstance(matrix, sympy.Matrix)  # the sympy backend's return
     require_params_cover(matrix, symbols)
     size: int = matrix.rows
@@ -1170,6 +1173,7 @@ __all__ = [
     "ComposableFunction",
     "InvertibleFunction",
     "Linearity",
+    "MatrixBackend",
     "NotInvertibleError",
     "inverse",
     "compose",

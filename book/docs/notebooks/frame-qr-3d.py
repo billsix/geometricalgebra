@@ -46,7 +46,7 @@ from _frame_scene import (
 
 from gacalc.base import MultiVectorBase, Real
 from gacalc.frame import Frame
-from gacalc.functions import InvertibleFunction, inverse
+from gacalc.functions import InvertibleFunction, MatrixBackend, inverse
 from gacalc.g3 import G, Vector, e_1, e_2, e_3
 
 # %% [markdown]
@@ -147,7 +147,7 @@ fig_volume
 
 # %%
 f: InvertibleFunction[MultiVectorBase] = frame.to_invertible_function()
-sympy.Matrix(f.to_matrix(G, n=3, backend="sympy"))[:3, :3]
+sympy.Matrix(f.to_matrix(G, n=3, backend=MatrixBackend.SYMPY))[:3, :3]
 
 # %%
 fig_forward: PendingFigure

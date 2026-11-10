@@ -47,7 +47,7 @@ from _frame_scene import (
 
 from gacalc.base import MultiVectorBase, Real
 from gacalc.frame import Frame
-from gacalc.functions import InvertibleFunction, inverse
+from gacalc.functions import InvertibleFunction, MatrixBackend, inverse
 from gacalc.g2 import G, Vector, e_1, e_2
 
 # %% [markdown]
@@ -182,7 +182,7 @@ fig_area
 
 # %%
 f: InvertibleFunction[MultiVectorBase] = frame.to_invertible_function()
-F: sympy.Matrix = sympy.Matrix(f.to_matrix(G, n=2, backend="sympy"))[:2, :2]
+F: sympy.Matrix = sympy.Matrix(f.to_matrix(G, n=2, backend=MatrixBackend.SYMPY))[:2, :2]
 f(1 * e_1 + 0 * e_2) == v_1, f(0 * e_1 + 1 * e_2) == v_2, F
 
 # %%
@@ -218,8 +218,10 @@ fig_forward
 # %%
 Q: InvertibleFunction[MultiVectorBase] = Frame((u_1, u_2)).to_invertible_function()
 R: InvertibleFunction[MultiVectorBase] = inverse(Q) @ f
-Q_matrix: sympy.Matrix = sympy.Matrix(Q.to_matrix(G, n=2, backend="sympy"))[:2, :2]
-R_matrix: sympy.Matrix = sympy.Matrix(R.to_matrix(G, n=2, backend="sympy"))[
+Q_matrix: sympy.Matrix = sympy.Matrix(Q.to_matrix(G, n=2, backend=MatrixBackend.SYMPY))[
+    :2, :2
+]
+R_matrix: sympy.Matrix = sympy.Matrix(R.to_matrix(G, n=2, backend=MatrixBackend.SYMPY))[
     :2, :2
 ].applyfunc(sympy.simplify)
 R_matrix, Q_matrix, (Q_matrix * R_matrix - F).applyfunc(sympy.simplify).is_zero_matrix

@@ -56,20 +56,20 @@ function raises (per its `Linearity` tag); a `Gn` value needs its `n` supplied e
 ### `to_matrix_template` / `MatrixTemplate` (`transforms.py`, right after `to_matrix`; 2026-09-06)
 The compile-once / fill-per-frame pattern modelviewprojection's renderers had hand-copied ten times,
 lifted into the library. `to_matrix_template(fn, cls, params, n=None)` runs `to_matrix(...,
-backend="sympy")` once over a function built over the sympy symbols `params` and classifies every entry:
+backend=MatrixBackend.SYMPY)` once over a function built over the sympy symbols `params` and classifies every entry:
 **constant** (stored in `constants`, an `np.float32` matrix with the varying entries zeroed), **slot**
 (an entry that *is* parameter `k`: `(row, col, k)`, filled by plain assignment), or **expression**
 (anything else, e.g. `cos(theta)`: all such entries go through ONE `sympy.lambdify` per fill). So the
 model matrix `translate(tx e_1 + ty e_2) @ scale_non_uniform(w, h, 1)` fills without touching sympy
 (a copy + four assignments), while a template with a symbolic rotation angle pays one lambdified call.
 `fill(*values)` (also `__call__`) returns a fresh `(n+1)×(n+1)` `np.float32`, translation in the last
-column, bit-identical to `to_matrix(backend="numpy")` of the numeric transform when every varying entry
+column, bit-identical to `to_matrix(backend=MatrixBackend.NUMPY)` of the numeric transform when every varying entry
 is a slot (gated in `tests/test_matrix_template.py`, 24 tests: 𝒢₂ and 𝒢₃, linear and affine, `Gn`, the
 method forms, the error paths). Design choices and the record:
 `tasks/archive/2026/09/06/matrix-template-compile-once.md`.
 
 **Method forms on `ComposableFunction`** (inherited by `InvertibleFunction`): `fn.to_matrix(cls, n=None,
-*, backend="numpy")` and `fn.to_matrix_template(cls, params, n=None)` — thin delegations that import
+*, backend=MatrixBackend.NUMPY)` and `fn.to_matrix_template(cls, params, n=None)` — thin delegations that import
 `gacalc.transforms` *inside the method body*. See the layering note below.
 
 ## `@` vs `compose([...])` — a formatting rule, not a semantic one (2026-09-06)

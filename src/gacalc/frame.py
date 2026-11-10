@@ -35,8 +35,8 @@ import dataclasses
 import functools
 import operator
 from collections.abc import Callable, Iterator, Sequence
+from enum import Enum
 from itertools import accumulate, pairwise
-from typing import Literal
 
 import numpy as np
 
@@ -505,6 +505,19 @@ def _has_float(vectors: Sequence[MultiVectorBase]) -> bool:
     return any(isinstance(coefficient, float) for v in vectors for coefficient in v)
 
 
+class InverseMethod(Enum):
+    """How :meth:`Frame.to_invertible_function`'s inverse recovers the coordinates.
+
+    * ``RECIPROCAL`` -- read each coordinate with the reciprocal frame,
+      ``x_i = vⁱ · y`` (H&S p. 28).  The default.
+    * ``PEEL`` -- peel the frame from its last vector, with the orthogonal set
+      (back-substitution, read geometrically).
+    """
+
+    RECIPROCAL = "reciprocal"
+    PEEL = "peel"
+
+
 @dataclasses.dataclass(frozen=True)
 class Frame:
     """A frame ``v_1 … v_k`` (H&S p. 27), held together with its **orthogonal** set.
@@ -633,7 +646,7 @@ class Frame:
     def to_invertible_function(
         self,
         *,
-        inverse_method: Literal["reciprocal", "peel"] = "reciprocal",
+        inverse_method: InverseMethod = InverseMethod.RECIPROCAL,
     ) -> InvertibleFunction[MultiVectorBase]:
         """The linear map sending each standard basis vector ``e_i`` to ``v_i``.
 
@@ -654,15 +667,16 @@ class Frame:
         ``x_i`` off it.  (In coordinates ``x_i = (n · y) / (n · v_i)``: two heights,
         one divided by the other.)  The methods differ in which ``n`` they use.
 
-        ``inverse_method="reciprocal"`` (the default) uses the **reciprocal frame**
-        ``v¹ … vᵏ`` (:meth:`reciprocal_vectors`, H&S p. 28): ``vⁱ`` is perpendicular
-        to every ``v_j`` with ``j ≠ i`` (eq 3.5), so ``n = vⁱ`` reads ``x_i``
-        directly, and the coordinates are independent of one another.  The
-        reciprocal vectors are computed once, when the map is built.
+        ``inverse_method=InverseMethod.RECIPROCAL`` (the default) uses the
+        **reciprocal frame** ``v¹ … vᵏ`` (:meth:`reciprocal_vectors`, H&S p. 28):
+        ``vⁱ`` is perpendicular to every ``v_j`` with ``j ≠ i`` (eq 3.5), so
+        ``n = vⁱ`` reads ``x_i`` directly, and the coordinates are independent of
+        one another.  The reciprocal vectors are computed once, when the map is
+        built.
 
-        ``inverse_method="peel"`` **peels the frame from its last vector**, using the
-        orthogonal set (:meth:`orthogonal_vectors`, computed once, when the map is
-        built).  Each step:
+        ``inverse_method=InverseMethod.PEEL`` **peels the frame from its last
+        vector**, using the orthogonal set (:meth:`orthogonal_vectors`, computed
+        once, when the map is built).  Each step:
 
         1. **Read the last coordinate.**  ``w_k`` is ``v_k`` with the span of
            ``v_1 … v_{k-1}`` rejected out of it, so it is perpendicular to every
@@ -705,8 +719,9 @@ class Frame:
 
         Args:
             inverse_method: how the inverse recovers the coordinates:
-                ``"reciprocal"`` (default; read through each ``vⁱ``) or ``"peel"``
-                (back-substitution from the last frame vector).  Keyword-only.
+                ``InverseMethod.RECIPROCAL`` (default; read through each ``vⁱ``) or
+                ``InverseMethod.PEEL`` (back-substitution from the last frame
+                vector).  Keyword-only.
 
         Returns:
             InvertibleFunction[MultiVectorBase]: the map ``e_i ↦ v_i`` and its
@@ -717,10 +732,11 @@ class Frame:
         familiar dot product read out as a number.
 
         Raises:
-            ValueError: if ``k ≠ n`` (the frame does not span the space), or
-                ``inverse_method`` is not one of the two names.  The returned map and
-                its inverse raise ``ValueError`` when called on a non-vector: they are
-                defined on vectors only.
+            ValueError: if ``k ≠ n`` (the frame does not span the space).  The
+                returned map and its inverse raise ``ValueError`` when called on a
+                non-vector: they are defined on vectors only.
+            TypeError: if ``inverse_method`` is not an :class:`InverseMethod` (a
+                string, the pre-enum spelling, included).
 
         Examples:
             >>> from gacalc.gn import e_1, e_2
@@ -730,7 +746,7 @@ class Frame:
             >>> f.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
             True
             >>> g = Frame((2 * e_1, 1 * e_1 + 3 * e_2)).to_invertible_function(
-            ...     inverse_method="peel"
+            ...     inverse_method=InverseMethod.PEEL
             ... )
             >>> g.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
             True
@@ -828,22 +844,21 @@ class Frame:
 
         backward: Callable[[MultiVectorBase], MultiVectorBase]
         match inverse_method:
-            case "reciprocal":
+            case InverseMethod.RECIPROCAL:
                 # Built once, here, so each call to the inverse is k dot products.
                 reciprocal_vectors: tuple[MultiVectorBase, ...] = (
                     self.reciprocal_vectors()
                 )
                 backward = backward_by_reciprocal
-            case "peel":
+            case InverseMethod.PEEL:
                 # Built once, here, so each call to the inverse reuses it.
                 orthogonal_vectors: tuple[MultiVectorBase, ...] = (
                     self.orthogonal_vectors()
                 )
                 backward = backward_by_peel
             case _:
-                raise ValueError(
-                    "inverse_method must be 'reciprocal' or 'peel'; "
-                    f"got {inverse_method!r}"
+                raise TypeError(
+                    f"inverse_method must be an InverseMethod; got {inverse_method!r}"
                 )
 
         return InvertibleFunction(

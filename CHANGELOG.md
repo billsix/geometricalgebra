@@ -100,6 +100,13 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `proofs/GacalcProofs/TrigEquiv.lean`.
 
 ### Changed
+- **BREAKING — option parameters are enums; strings are rejected with `TypeError`.**
+  `Frame.to_invertible_function(inverse_method=...)` takes `frame.InverseMethod.RECIPROCAL` (the
+  default) or `InverseMethod.PEEL`, not `"reciprocal"`/`"peel"`. `transforms.to_matrix(...,
+  backend=...)` and `ComposableFunction.to_matrix(..., backend=...)` take
+  `functions.MatrixBackend.NUMPY` (the default) or `MatrixBackend.SYMPY` (also re-exported from
+  `gacalc.transforms`), not `"numpy"`/`"sympy"`. Migrate: `backend="sympy"` →
+  `backend=MatrixBackend.SYMPY`, `inverse_method="peel"` → `inverse_method=InverseMethod.PEEL`.
 - **BREAKING — a graded type with no scalar slot returns its algebra's `Scalar` from `one()`.**
   `Vector.one()`, `Bivector.one()`, `Trivector.one()` and `Odd_3.one()` (g1–g3, and g4/g5 when
   generated) used to return the zero value of their own type, because they cannot hold 1; they now

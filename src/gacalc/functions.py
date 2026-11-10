@@ -60,7 +60,7 @@ domain-agnostic anyway (the doctests below run it on plain ``int``s).  See the
 
 import dataclasses
 import typing
-from enum import IntEnum
+from enum import Enum, IntEnum
 
 if typing.TYPE_CHECKING:
     # Type-only names for the to_matrix / to_matrix_template method forms.  A
@@ -93,6 +93,18 @@ class Linearity(IntEnum):
     LINEAR = 0
     AFFINE = 1
     NONLINEAR = 2
+
+
+class MatrixBackend(Enum):
+    """Which library :func:`gacalc.transforms.to_matrix` builds its matrix with.
+
+    * ``NUMPY`` -- an ``np.float32`` array, the shape OpenGL wants (the default).
+    * ``SYMPY`` -- an exact ``sympy.Matrix``, which stays symbolic for a symbolic
+      function.
+    """
+
+    NUMPY = "numpy"
+    SYMPY = "sympy"
 
 
 class NotInvertibleError(Exception):
@@ -216,12 +228,13 @@ class ComposableFunction(typing.Generic[V]):
         cls: "type[MultiVectorBase]",
         n: int | None = None,
         *,
-        backend: str = "numpy",
+        backend: MatrixBackend = MatrixBackend.NUMPY,
     ) -> "np.ndarray | sympy.Matrix":
         """Method form of :func:`gacalc.transforms.to_matrix`: this (linear or
         affine) function as a homogeneous ``(n+1) x (n+1)`` matrix, probed in
         the representation ``cls``.  See that function for the conventions
-        (translation in the last column; ``backend="sympy"`` stays symbolic).
+        (translation in the last column; ``backend=MatrixBackend.SYMPY`` stays
+        symbolic).
         """
         # Imported here, not at module level: this module is an import-free
         # leaf (see the module docstring) and transforms builds ON it; the

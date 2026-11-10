@@ -28,7 +28,6 @@ graded ``g2``/``g3`` types.
 import inspect
 import math
 from collections.abc import Sequence
-from typing import Literal
 
 import numpy as np
 import pytest
@@ -36,8 +35,8 @@ import sympy
 
 from gacalc import g2, g3
 from gacalc.base import MultiVectorBase, Real
-from gacalc.frame import Frame, prefix_blades
-from gacalc.functions import InvertibleFunction, Linearity, inverse
+from gacalc.frame import Frame, InverseMethod, prefix_blades
+from gacalc.functions import InvertibleFunction, Linearity, MatrixBackend, inverse
 from gacalc.gn import Gn, e_1, e_2, e_3
 from gacalc.transforms import to_matrix
 
@@ -89,7 +88,7 @@ def function_2d(frame_2d: Frame) -> InvertibleFunction[MultiVectorBase]:
 
 @pytest.fixture(scope="module")
 def function_2d_peel(frame_2d: Frame) -> InvertibleFunction[MultiVectorBase]:
-    return frame_2d.to_invertible_function(inverse_method="peel")
+    return frame_2d.to_invertible_function(inverse_method=InverseMethod.PEEL)
 
 
 @pytest.fixture(scope="module")
@@ -99,14 +98,14 @@ def function_3d(frame_3d: Frame) -> InvertibleFunction[MultiVectorBase]:
 
 @pytest.fixture(scope="module")
 def function_3d_peel(frame_3d: Frame) -> InvertibleFunction[MultiVectorBase]:
-    return frame_3d.to_invertible_function(inverse_method="peel")
+    return frame_3d.to_invertible_function(inverse_method=InverseMethod.PEEL)
 
 
 # The 3D symbolic cases marked slow take over 10 s each: `make test` skips them and
 # `make test-full` (CI) runs them (pytest.ini registers the marker).
 
 # The two ways to_invertible_function's inverse recovers the coordinates.
-INVERSE_METHODS: list[str] = ["reciprocal", "peel"]
+INVERSE_METHODS: list[InverseMethod] = list(InverseMethod)
 
 
 # coefficients() is computed on each call (about a minute for the 3D symbolic
@@ -336,7 +335,7 @@ GRADED_FRAMES_AND_INPUTS: list[tuple[tuple[MultiVectorBase, ...], MultiVectorBas
 def test_composed_round_trip_concrete_frames_symbolic_input(
     vectors: tuple[MultiVectorBase, ...],
     x: MultiVectorBase,
-    inverse_method: Literal["reciprocal", "peel"],
+    inverse_method: InverseMethod,
 ) -> None:
     """A concrete oblique frame with a symbolic input, on the graded types."""
     f: InvertibleFunction[MultiVectorBase] = Frame(vectors).to_invertible_function(
@@ -348,7 +347,7 @@ def test_composed_round_trip_concrete_frames_symbolic_input(
 
 @pytest.mark.parametrize("inverse_method", INVERSE_METHODS)
 def test_round_trip_numeric_float(
-    inverse_method: Literal["reciprocal", "peel"],
+    inverse_method: InverseMethod,
 ) -> None:
     """Float input: equal up to rounding (inexactness accepted, 2026-11-04)."""
     f: InvertibleFunction[MultiVectorBase] = Frame(
@@ -364,7 +363,9 @@ def test_round_trip_numeric_float(
 
 def test_matrix_columns_are_the_frame_vectors_2d(frame_2d: Frame) -> None:
     f: InvertibleFunction[MultiVectorBase] = frame_2d.to_invertible_function()
-    matrix: sympy.Matrix | np.ndarray = to_matrix(f, Gn, n=2, backend="sympy")
+    matrix: sympy.Matrix | np.ndarray = to_matrix(
+        f, Gn, n=2, backend=MatrixBackend.SYMPY
+    )
     assert all(
         is_zero(matrix[row, column] - v.coefficient(basis))
         for column, v in enumerate([a_2d, b_2d])
@@ -403,18 +404,19 @@ def test_inverse_methods_are_equivalent_symbolic(
 
 
 def test_reciprocal_is_the_default_inverse_method() -> None:
-    """``inverse_method`` is keyword-only and defaults to ``"reciprocal"``."""
+    """``inverse_method`` is keyword-only and defaults to ``RECIPROCAL``."""
     parameter: inspect.Parameter = inspect.signature(
         Frame.to_invertible_function
     ).parameters["inverse_method"]
-    assert parameter.default == "reciprocal"
+    assert parameter.default is InverseMethod.RECIPROCAL
     assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
 
 
-def test_unknown_inverse_method_raises() -> None:
+def test_string_inverse_method_raises() -> None:
+    """A string (the pre-enum spelling) is rejected with a ``TypeError``."""
     frame: Frame = Frame((2 * e_1, 1 * e_1 + 3 * e_2))
-    with pytest.raises(ValueError, match="inverse_method"):
-        frame.to_invertible_function(inverse_method="gauss")  # ty: ignore[invalid-argument-type]
+    with pytest.raises(TypeError, match="must be an InverseMethod"):
+        frame.to_invertible_function(inverse_method="peel")  # ty: ignore[invalid-argument-type]
 
 
 def test_frame_smaller_than_space_raises() -> None:
