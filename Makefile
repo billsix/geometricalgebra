@@ -282,11 +282,11 @@ ALL_DIMS := 1,2,3,4,5
 
 .PHONY: generate
 generate: ## Generate the specialized algebras (g1/g2/g3.py -- the dev default) -- needs sympy
-	python tools/gen_specialized.py
+	python3 tools/gen_specialized.py
 
 .PHONY: generate-all
 generate-all: ## Generate ALL algebras incl. g4/g5 (SLOW: g5 ~87 min) -- release/CI
-	GACALC_DIMS=$(ALL_DIMS) python tools/gen_specialized.py
+	GACALC_DIMS=$(ALL_DIMS) python3 tools/gen_specialized.py
 
 .PHONY: test-all-dims
 # The full-dim gate: generate every algebra (g1--g5), type-check them in full context
@@ -311,7 +311,7 @@ check-regions: image ## (container) verify doc-region markers are unique/prefix-
 
 .PHONY: check-changelog
 check-changelog: ## Verify CHANGELOG.md has a heading for pyproject.toml's version
-	python tools/check_changelog.py
+	python3 tools/check_changelog.py
 
 # Run INSIDE the container (like `test`): regenerating the g*.py needs sympy, absent
 # on a bare CI runner -- hence the `image` prerequisite. The regen-twice + cmp loop
@@ -417,7 +417,7 @@ lean: image ## Build + verify the Lean proofs (proofs/); nonzero if any proof re
 # accounts/tokens).  Re-run the recipe's twine command with --verbose for the
 # server's exact reason.
 DIST_DIR ?= $(CURDIR)/dist
-VERSION := $(shell python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+VERSION := $(shell python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
 
 # `make upload VERBOSE=1` (or upload-test / release) appends --verbose to twine,
 # which prints the full request/response -- use it to see the server's exact

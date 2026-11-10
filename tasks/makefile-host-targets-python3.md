@@ -1,16 +1,13 @@
 # Host-run Makefile targets call `python3`, not `python`
 
-**Status:** in progress
-**Priority:** 2
-**Difficulty:** 1
-**Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
-**Branch:** `sp-rotations-guards-enums-examples`
+**Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>) · **Done:** 2026-11-10
 
-## BLUF
+On one of the maintainer's machines `make shell` failed with "python: not found": the host had
+`python3` but no `python`. The cause was the parse-time `VERSION := $(shell python -c …)` near the
+`dist`/`release` targets, which make evaluates on **every** invocation, `make shell` included. That
+line and the three host-run recipes (`generate`, `generate-all`, `check-changelog`) now call
+`python3`. Recipes inside `podman run … -c '… source /venv/bin/activate …'` still call the venv's
+`python`, which always exists there.
 
-On one of the maintainer's machines `make shell` fails with "python: not found": the host has
-`python3` but no `python`. Change the Makefile recipes that run **on the host** (`generate`,
-`generate-all`, `check-changelog`, and whatever `make shell`'s prerequisites invoke) to `python3`.
-Recipes inside `podman run … -c '… source /venv/bin/activate …'` run the venv's `python`, which
-always exists, and can stay. Done means: `rg -n '\bpython\b' Makefile` shows only in-container
-uses, `make shell` works on a host without `python`, and `make help` is unchanged.
+Verified by running make with a `PATH` holding only `make` and `python3`: `VERSION` resolved to
+`0.0.20` with no "not found", and `make help` was unchanged.
