@@ -152,7 +152,7 @@ and call `self * other`, dispatched to the concrete type.
 - **Dot product for vectors, scalar product only where it is meant** — when the operands are vectors
   and a number is wanted, write `a.dot(b).scalar_part()` (the familiar `a · b`, read out as a `Real`),
   not `a.scalar_product(b)`, and make sure the operands are vectors (call
-  `MultiVectorBase.require_vector(value, context)` / `require_vectors(values, context)`, unless they
+  `MultiVectorBase.require_vector(value)` / `require_vectors(values)`, unless they
   are already known to be vectors, e.g. a `Frame`'s own). For two vectors the two products agree,
   but a reader knows the dot product. Use `scalar_product` (`A ∗ B = ⟨A * B⟩`) only where that
   operation is the one meant, as where Hestenes defines a result with it (cite the page). The maintainer's rule, William Emerison Six <billsix@gmail.com>, 2026-11-04.
@@ -162,11 +162,12 @@ and call `self * other`, dispatched to the concrete type.
   primitives' own definitions are the exception, and so is code whose subject is the dot product (a
   notebook teaching `a·b + a∧b = ab`, the reciprocal frame's `vⁱ · y`). (William Emerison Six
   <billsix@gmail.com>, 2026-11-07)
-- **Check "must be a vector" with the shared guard** — `MultiVectorBase.require_vector(value,
-  context)` / `require_vectors(values, context)` (`base.py`), which raise `ValueError` naming the
-  caller. Never a bare `assert` (gone under `python -O`), a hand-rolled `is_vector()` loop, or a
+- **Check "must be a vector" with the shared guard** — `MultiVectorBase.require_vector(value)` /
+  `require_vectors(values)` (`base.py`), which raise `ValueError` naming the caller and its call
+  site, read from the Python stack (`describe_caller`; no context string). A new guard is marked
+  `@validation_guard` so a guard calling a guard still names the real caller. Never a bare `assert` (gone under `python -O`), a hand-rolled `is_vector()` loop, or a
   `TypeError` (reserved for a genuine `isinstance` type check, like `g2.rotate_90_degrees`).
-  "Must be a frame" has its own guard, `require_frame(vectors, context)` (`frame.py`): it requires
+  "Must be a frame" has its own guard, `require_frame(vectors)` (`frame.py`): it requires
   vectors and then their independence. Never hand-roll an `if not is_frame(...): raise`.
 - **Express rotations via the factories, never hand-built** — `plane_rotation(a, b)(θ)` (plane +
   angle), `projection_rotation`/`versor_rotation`/`versor_from_vectors` (from/to, keyword args), or

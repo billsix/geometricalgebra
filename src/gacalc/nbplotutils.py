@@ -315,7 +315,7 @@ def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Real:
             angle is undefined there, as for ``cosine``), or ``v1 ∧ v2`` has a part
             outside the e₁e₂ plane (a signed sine exists only in a plane).
     """
-    MultiVectorBase.require_vectors([v1, v2], "sine")
+    MultiVectorBase.require_vectors([v1, v2])
     if v1 == type(v1).zero() or v2 == type(v2).zero():
         raise ValueError("sine (the angle) is undefined for the zero vector")
     cls: type[MultiVectorBase] = type(v1)

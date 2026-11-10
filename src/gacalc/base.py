@@ -19,6 +19,9 @@ import dataclasses
 import functools
 import itertools
 import math
+import os
+import sys
+import types
 import typing
 from collections.abc import Callable, Generator, Mapping, Sequence
 from itertools import chain, combinations
@@ -45,6 +48,54 @@ Blade = tuple[int, ...]
 #: ``simplify``. Typed to match ``sympy.Expr.subs``'s mapping overload.
 SymbolicSubstitution = Mapping[sympy.Basic | complex, sympy.Expr | complex]
 MultiVectorFn = Callable[["MultiVectorBase"], "MultiVectorBase"]
+
+#: The code objects of every validation guard (``require_vector``, ``require_frame``,
+#: …), so :func:`describe_caller` can step past guards that call other guards.
+_GUARD_CODES: set[types.CodeType] = set()
+
+
+def validation_guard[F: types.FunctionType](guard: F) -> F:
+    """Mark ``guard`` as a validation guard, so error messages name its caller.
+
+    A guard checks its arguments and raises ``ValueError`` naming the function that
+    called it (via :func:`describe_caller`).  A guard may call another guard
+    (``require_frame`` calls ``require_vectors``, which calls ``require_vector``);
+    marking each one lets the innermost skip all of them and still name the real
+    caller.
+
+    Args:
+        guard: the guard function (decorate it before any ``@staticmethod``).
+
+    Returns:
+        F: ``guard`` itself, unchanged.
+    """
+    _GUARD_CODES.add(guard.__code__)
+    return guard
+
+
+def describe_caller() -> str:
+    """Name the function that called the current validation guard, and where.
+
+    Called from inside a guard, while raising: walks up the Python stack past every
+    frame belonging to a :func:`validation_guard` and describes the first frame that
+    does not, as its qualified name and call site, e.g.
+    ``"make_orthogonal_frame (frame.py:226)"``.  ``sys._getframe`` is a pointer walk
+    (no source is read), and a guard calls this only when it is about to raise, so a
+    check that passes costs nothing extra.
+
+    Returns:
+        str: ``"<qualified name> (<file name>:<line>)"`` for the guard's caller.
+    """
+    frame: types.FrameType | None = sys._getframe(1)
+    while frame is not None and frame.f_code in _GUARD_CODES:
+        frame = frame.f_back
+    if frame is None:
+        return "<unknown caller>"
+    return (
+        f"{frame.f_code.co_qualname} "
+        f"({os.path.basename(frame.f_code.co_filename)}:{frame.f_lineno})"
+    )
+
 
 #: Type variable for the operand of a versor sandwich -- the result has the
 #: operand's own type (see ``MultiVectorBase.sandwich``).
@@ -1217,44 +1268,51 @@ class MultiVectorBase(abc.ABC):
         return self.is_homogeneous_of_grade_r(r=1)
 
     @staticmethod
-    def require_vector(value: MultiVectorBase, context: str) -> None:
+    @validation_guard
+    def require_vector(value: MultiVectorBase) -> None:
         """Raise ``ValueError`` unless ``value`` is a vector (grade 1).
 
         The shared guard for every operation defined on vectors only: it raises
-        instead of asserting, so it still guards under ``python -O``.
+        instead of asserting, so it still guards under ``python -O``.  The message
+        names the calling function and its call site, read from the Python stack
+        (:func:`describe_caller`): ``"<caller> (<file>:<line>) takes a vector
+        (grade 1); got a non-vector: …"``.
 
         Args:
             value: the value to check.
-            context: what is being called, for the message (``"cross"``,
-                ``"a frame's map"``); the message reads ``"<context> takes a vector
-                (grade 1); got a non-vector: …"``.
 
         Raises:
             ValueError: if ``value`` is not homogeneous of grade 1.
 
         Examples:
             >>> from gacalc.gn import Gn, e_1, e_2
-            >>> Gn.require_vector(3 * e_1 + 4 * e_2, "an example")
-            >>> Gn.require_vector(e_1 ^ e_2, "an example")  # doctest: +ELLIPSIS
+            >>> def double(v: Gn) -> Gn:
+            ...     Gn.require_vector(v)
+            ...     return 2 * v
+            >>> double(1 * e_1) == 2 * e_1
+            True
+            >>> double(e_1 ^ e_2)  # doctest: +ELLIPSIS
             Traceback (most recent call last):
                 ...
-            ValueError: an example takes a vector (grade 1); got a non-vector: ...
+            ValueError: double (...) takes a vector (grade 1); got a non-vector: ...
         """
         if not value.is_vector():
             raise ValueError(
-                f"{context} takes a vector (grade 1); got a non-vector: {value!r}"
+                f"{describe_caller()} takes a vector (grade 1); "
+                f"got a non-vector: {value!r}"
             )
 
     @staticmethod
-    def require_vectors(vectors: Sequence[MultiVectorBase], context: str) -> None:
+    @validation_guard
+    def require_vectors(vectors: Sequence[MultiVectorBase]) -> None:
         """Raise ``ValueError`` unless ``vectors`` is a non-empty sequence of vectors.
 
         :meth:`require_vector` applied to each member, after a check that the
-        sequence is not empty.
+        sequence is not empty.  The message names the calling function, as
+        :meth:`require_vector`'s does.
 
         Args:
             vectors: the values to check.
-            context: what is being called, for the message.
 
         Raises:
             ValueError: on an empty sequence, or on the first member that is not
@@ -1262,17 +1320,21 @@ class MultiVectorBase(abc.ABC):
 
         Examples:
             >>> from gacalc.gn import Gn, e_1, e_2
-            >>> Gn.require_vectors([1 * e_1, 1 * e_2], "an example")
-            >>> Gn.require_vectors([], "an example")
+            >>> def total(vectors: list[Gn]) -> Gn:
+            ...     Gn.require_vectors(vectors)
+            ...     return sum(vectors, start=Gn.zero())
+            >>> total([1 * e_1, 1 * e_2]) == 1 * e_1 + 1 * e_2
+            True
+            >>> total([])  # doctest: +ELLIPSIS
             Traceback (most recent call last):
                 ...
-            ValueError: an example needs at least one vector
+            ValueError: total (...) needs at least one vector
         """
         if len(vectors) == 0:
-            raise ValueError(f"{context} needs at least one vector")
+            raise ValueError(f"{describe_caller()} needs at least one vector")
         value: MultiVectorBase
         for value in vectors:
-            MultiVectorBase.require_vector(value, context)
+            MultiVectorBase.require_vector(value)
 
     def implied_minimal_number_of_dimensions(self) -> int:
         """The dimension of the smallest coordinate space that holds this vector.
@@ -1298,9 +1360,9 @@ class MultiVectorBase(abc.ABC):
             >>> (e_1 * e_2).implied_minimal_number_of_dimensions()  # doctest: +ELLIPSIS
             Traceback (most recent call last):
                 ...
-            ValueError: implied_minimal_number_of_dimensions takes a vector ...
+            ValueError: ...implied_minimal_number_of_dimensions (...) takes a vector ...
         """
-        MultiVectorBase.require_vector(self, "implied_minimal_number_of_dimensions")
+        MultiVectorBase.require_vector(self)
         # A vector's blades are the one-index tuples (i,), one per nonzero coefficient.
         return max((index for (index,) in self.to_blade_dict()), default=0)
 
@@ -1366,7 +1428,7 @@ class MultiVectorBase(abc.ABC):
 
         # TODO - defined for vectors only right now, it's probably defined more
         # generally later in the book
-        MultiVectorBase.require_vectors((self, other), "is_orthogonal_to")
+        MultiVectorBase.require_vectors((self, other))
         if self == type(self).zero() or other == type(other).zero():
             raise ValueError(
                 "orthogonality (the angle) is undefined for the zero vector"
@@ -1430,7 +1492,7 @@ class MultiVectorBase(abc.ABC):
 
         # TODO - defined for vectors only right now, it's probably defined more
         # generally later in the book
-        MultiVectorBase.require_vectors((self, other), "is_parallel_to")
+        MultiVectorBase.require_vectors((self, other))
         if self == type(self).zero() or other == type(other).zero():
             raise ValueError("parallelism (the angle) is undefined for the zero vector")
 
@@ -1834,7 +1896,7 @@ class MultiVectorBase(abc.ABC):
         """
 
         def r(value: MultiVectorBase) -> MultiVectorBase:
-            MultiVectorBase.require_vector(value, "reject")
+            MultiVectorBase.require_vector(value)
             assert isinstance(away_from, MultiVectorBase)  # to satisfy type checking
             rejected: MultiVectorBase = (value.wedge(away_from)) * away_from.inverse()
             # Rejection of a vector is a vector, but the raw product widens the
@@ -1926,7 +1988,7 @@ class MultiVectorBase(abc.ABC):
             )
 
             def r(value: MultiVectorBase) -> MultiVectorBase:
-                MultiVectorBase.require_vector(value, "reflect")
+                MultiVectorBase.require_vector(value)
                 return components_in_plane(value) - components_exterior_to_plane(value)
 
             label: str = "\\mathrm{refl}_{" + blade._repr_latex_().strip("$") + "}"
@@ -2196,7 +2258,7 @@ class MultiVectorBase(abc.ABC):
         Raises:
             ValueError: if either argument is not a vector (grade 1).
         """
-        MultiVectorBase.require_vectors((from_vector, to_vector), "versor_from_vectors")
+        MultiVectorBase.require_vectors((from_vector, to_vector))
         # |from| * |to| -- the versor's scalar part, making it the half-angle versor.
         # Kept as the *product of two magnitudes* (two simple sqrts), NOT
         # |to from| = sqrt(|to|^2 * |from|^2): the latter is mathematically equal
@@ -2357,7 +2419,7 @@ class MultiVectorBase(abc.ABC):
         Raises:
             ValueError: if either argument is not a vector (grade 1).
         """
-        MultiVectorBase.require_vectors((a, b), "bivector_from_vectors")
+        MultiVectorBase.require_vectors((a, b))
         return a.outer_product(b)
 
     def sandwich(self, x: _OperandT) -> _OperandT:

@@ -144,13 +144,19 @@ def test_frame_functions_share_the_require_frame_message(
 ) -> None:
     """Every frame-requiring function rejects a dependent set through
     ``require_frame``, so each message names the function the same way."""
-    with pytest.raises(ValueError, match=f"^{name} requires a frame"):
+    with pytest.raises(
+        ValueError, match=rf"^{name} \(frame\.py:\d+\) requires a frame"
+    ):
         frame_function([1 * e_1, 2 * e_1])
 
 
 def test_require_frame_names_the_caller_for_an_empty_set() -> None:
-    with pytest.raises(ValueError, match="^a caller needs at least one vector"):
-        require_frame([], "a caller")
+    with pytest.raises(
+        ValueError,
+        match=r"^test_require_frame_names_the_caller_for_an_empty_set "
+        r"\(test_frame\.py:\d+\) needs at least one vector",
+    ):
+        require_frame([])
 
 
 # --- make_orthogonal_frame -------------------------------------------------

@@ -84,7 +84,7 @@ def content(vectors: Sequence[MultiVectorBase]) -> Real:
     Raises:
         ValueError: on an empty sequence, or any non-vector (grade != 1) member.
     """
-    MultiVectorBase.require_vectors(vectors, "area/volume/content")
+    MultiVectorBase.require_vectors(vectors)
     return MultiVectorBase.outer_product_of_vectors(*vectors).magnitude()
 
 
@@ -114,7 +114,7 @@ def content_by_rejection(vectors: Sequence[MultiVectorBase]) -> Real:
             dependent set (not a frame -- via
             :func:`~gacalc.frame.make_orthogonal_frame`).
     """
-    MultiVectorBase.require_vectors(vectors, "area/volume/content")
+    MultiVectorBase.require_vectors(vectors)
     return math.prod(
         (
             perpendicular_vector.magnitude()
@@ -218,7 +218,7 @@ def signed_content(vectors: Sequence[MultiVectorBase]) -> Real:
             -- the wrong number of vectors to span the space (too few, or too many /
             over-determined).
     """
-    MultiVectorBase.require_vectors(vectors, "area/volume/content")
+    MultiVectorBase.require_vectors(vectors)
     # type(vectors[0]) is the representation.  A fixed type declares the ambient
     # dimension as DIMENSION (and its dual is locked to it); the dimension-agnostic Gn
     # has none, so the getattr default takes the smallest space containing the vectors.

@@ -207,7 +207,7 @@ def projection_rotation(
         >>> f(Vector.e_3).isclose(Vector.e_3, rel_tol=1e-5, abs_tol=1e-5)
         True
     """
-    MultiVectorBase.require_vectors((from_vector, to_vector), "projection_rotation")
+    MultiVectorBase.require_vectors((from_vector, to_vector))
     plane: MultiVectorBase = from_vector ^ to_vector
     cls: type[V] = type(from_vector)
     if plane == type(plane).zero():
@@ -224,7 +224,7 @@ def projection_rotation(
             )
 
         def identity_on_vectors(value: MultiVectorBase) -> MultiVectorBase:
-            MultiVectorBase.require_vector(value, "projection_rotation")
+            MultiVectorBase.require_vector(value)
             return value
 
         return identity_on_vectors
@@ -235,7 +235,7 @@ def projection_rotation(
     )
 
     def r(value: MultiVectorBase) -> MultiVectorBase:
-        MultiVectorBase.require_vector(value, "projection_rotation")
+        MultiVectorBase.require_vector(value)
         return (
             components_in_plane(value) * from_vector.normalize() * to_vector.normalize()
         ) + components_exterior_to_plane(value)
@@ -279,7 +279,7 @@ def coordinate_along(
         ...
         ValueError: coordinate_along: ... is not on the line of ...
     """
-    MultiVectorBase.require_vectors((vector, along), "coordinate_along")
+    MultiVectorBase.require_vectors((vector, along))
     if along == type(along).zero():
         raise ValueError("coordinate_along: the zero vector spans no line")
     elif vector == type(vector).zero():
@@ -342,7 +342,7 @@ def line_to_line_projection(
         ...
         ValueError: coordinate_along: ... is not on the line of ...
     """
-    MultiVectorBase.require_vectors((from_vector, to_vector), "line_to_line_projection")
+    MultiVectorBase.require_vectors((from_vector, to_vector))
     if from_vector.is_orthogonal_to(to_vector, float_close_to_zero):
         raise ValueError(
             "line_to_line_projection: from_vector and to_vector are perpendicular, "
@@ -619,7 +619,7 @@ def plane_rotation(
         ...     turn(math.radians(45))(Vector.e_1), rel_tol=1e-5, abs_tol=1e-5)
         True
     """
-    MultiVectorBase.require_vectors((a, b), "plane_rotation")
+    MultiVectorBase.require_vectors((a, b))
     plane: MultiVectorBase = a.outer_product(b)
     if plane == type(plane).zero():
         raise ValueError(

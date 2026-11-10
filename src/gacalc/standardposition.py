@@ -41,7 +41,7 @@ from gacalc.base import MultiVectorBase, Real
 def _project_via_standard_position(
     a: MultiVectorBase, b: MultiVectorBase
 ) -> MultiVectorBase:
-    MultiVectorBase.require_vectors([a, b], "project_sp")
+    MultiVectorBase.require_vectors([a, b])
     cls: type[MultiVectorBase] = type(b)
     e_1: MultiVectorBase = cls.basis_vector(1)
     e_2: MultiVectorBase = cls.basis_vector(2)

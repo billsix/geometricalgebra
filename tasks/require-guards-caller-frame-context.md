@@ -1,37 +1,26 @@
 # Guards report the caller from the Python frame instead of a `context` string
 
-**Status:** in progress — questions answered (see Decisions)
-**Priority:** 4
-**Difficulty:** 4
-**Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
-**Branch:** `sp-rotations-guards-enums-examples`
+**Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>) · **Done:** 2026-11-10
 
-## BLUF
+`MultiVectorBase.require_vector(value)`, `require_vectors(values)` and `frame.require_frame(vectors,
+float_close_to_zero=False)` lost their `context` string. Each message now names the calling function
+and its call site, e.g. `make_orthogonal_frame (frame.py:230) requires a frame …`, read from the
+Python stack by `base.describe_caller()`.
 
-`MultiVectorBase.require_vector(value, context)`, `require_vectors(values, context)` and
-`frame.require_frame(vectors, context)` take a hand-written `context` string for the error message.
-Replace it with caller information taken from the Python stack (function qualname, file, line), so
-the message names the real call site with no string to keep in sync. Cost must stay negligible:
-`sys._getframe(1)` (or `inspect.currentframe().f_back`) is a pointer walk; `inspect.stack()` reads
-source files and is far too slow for a guard on the hot path — use it never. Read the frame **only
-when raising**, so the success path costs nothing. Done means: every guard call site drops its
-string, messages name the caller, doctests updated, gate green, CHANGELOG entry (signature change).
-
-## Context (read first)
-
-- Guards: `src/gacalc/base.py` (`require_vector`, `require_vectors`), `src/gacalc/frame.py`
-  (`require_frame`); the new guards from `tasks/extract-validation-guards-frame-and-to-matrix.md`
-  follow the same pattern, so do this one first.
-- Some contexts are not function names (`"a frame's map"` for the closure `forward`); the frame gives
-  `Frame.to_invertible_function.<locals>.forward`, which is accurate but less friendly (accepted; see Decisions).
-- The generator may emit guard calls into `g*.py`: grep `tools/gen_specialized.py` for `require_`.
-
-## Plan
-
-1. Implement the frame lookup in one private helper; measure the success-path cost (should be zero).
-2. Update every call site (`rg -n 'require_(vector|vectors|frame)\('`), generator included; regenerate.
-3. Doctests + messages; CHANGELOG; gate.
-
-## Decisions
-
-- Drop the `context` parameter entirely; the message names the caller from the stack (`co_qualname`, file, line), read only when raising (William Emerison Six <billsix@gmail.com>, 2026-11-10: "whatever you recommend").
+- **Mechanism.** `describe_caller()` starts at `sys._getframe(1)` and walks up past every frame whose
+  code object is registered by the `@validation_guard` decorator, so `require_frame` →
+  `require_vectors` → `require_vector` still names the real caller. It runs only when a guard is about
+  to raise, so a passing check costs nothing; `inspect.stack()` was rejected because it reads source
+  files on every call.
+- **Decision** (William Emerison Six <billsix@gmail.com>, 2026-11-10, "whatever you recommend"): drop
+  the parameter entirely, with no optional override. Closures are named by their qualified name, e.g.
+  `Frame.to_invertible_function.<locals>.forward` where the old message said "a frame's map".
+- **Call sites:** 30, in `base.py`, `frame.py`, `measure.py`, `nbplotutils.py`, `standardposition.py`,
+  `transforms.py`, `vectorcalc.py`. The generator emits none. The doctests show the guard inside a
+  small function (`double`, `total`, `first_of_frame`), so the message visibly names it.
+  `tests/test_frame.py` matches the `name (file:line)` form.
+- **Docs:** project `CLAUDE.md` (the guard convention) and the `[Unreleased]` CHANGELOG entries, edited
+  in place because the guards were never released.
+- **Gate:** host `ruff check`, `ruff format --check`, `ty check src tests tools` clean; host
+  `pytest -m "not slow"` 782 passed. The containerized `make format` + `make test` gate ran once for the
+  whole 2026-11-10 batch, after its last task.

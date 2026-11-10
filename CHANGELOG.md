@@ -12,9 +12,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
-- **`frame.require_frame(vectors, context, float_close_to_zero=False)`** — the shared "must be a
-  frame" guard: raises `ValueError` naming `context` on an empty sequence, a non-vector, or
-  linearly dependent vectors. `make_orthogonal_frame`, its two Hestenes variants and
+- **`frame.require_frame(vectors, float_close_to_zero=False)`** — the shared "must be a
+  frame" guard: raises `ValueError` naming the calling function and its call site (read from the
+  Python stack) on an empty sequence, a non-vector, or linearly dependent vectors. `make_orthogonal_frame`, its two Hestenes variants and
   `reciprocal_frame` raise through it; an empty input now gets the "needs at least one vector"
   message, and `reciprocal_frame`'s message says `a_k` instead of `a_n`.
 - **`transforms.line_to_line_projection(from_vector=, to_vector=, *, float_close_to_zero=False)`** — the
@@ -35,9 +35,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `a^k · a_j = δ^k_j` (eq 3.5). Returns a list, `result[k - 1] = a^k`; raises `ValueError` on a non-frame.
   **`Frame.reciprocal_vectors()`** returns the same as a tuple, and **`all_wedged_except_the_kth(vectors, k)`**
   is the eq-3.7 face `a_1 ∧ … ∧ ǎ_k ∧ … ∧ a_n` (k from 1). Additive, non-breaking.
-- **`MultiVectorBase.require_vector(value, context)` / `require_vectors(vectors, context)`** — the
-  shared "must be a vector (grade 1)" checks, raising `ValueError` (see the BREAKING entry under
-  Changed). They replace the private `measure._require_vectors`.
+- **`MultiVectorBase.require_vector(value)` / `require_vectors(vectors)`** — the
+  shared "must be a vector (grade 1)" checks, raising `ValueError` that names the calling function
+  and its call site, read from the Python stack (see the BREAKING entry under Changed). Also
+  **`base.validation_guard`** (marks a guard so a guard calling a guard still names the real
+  caller) and **`base.describe_caller()`**. They replace the private `measure._require_vectors`.
 - **`MultiVectorBase.implied_minimal_number_of_dimensions()`** — the dimension of the smallest
   coordinate space holding a vector: its highest basis index with a nonzero coefficient (0 for the
   zero vector). Raises `ValueError` on a non-vector. Works on every representation; `measure` and
@@ -115,7 +117,7 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `is_parallel_to`, `versor_from_vectors`, `rotor_from_vectors` and `transforms.projection_rotation`
   used bare `assert`s (an `AssertionError`, and no check at all under `python -O`). All of them, and
   `measure`, `frame` and `vectorcalc.cross`, now go through the new shared checks
-  `MultiVectorBase.require_vector(value, context)` / `require_vectors(vectors, context)`, whose message
+  `MultiVectorBase.require_vector(value)` / `require_vectors(vectors)`, whose message
   names the caller. Migrate: catch `ValueError` instead of `TypeError`/`AssertionError`. Unchanged:
   `g2.rotate_90_degrees` and `bivector_rotation` still raise `TypeError` (a type check and a bivector
   check, respectively).
