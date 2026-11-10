@@ -13,7 +13,7 @@ on the precise product overloads, 38 `reportAttributeAccessIssue`, 12 `reportRet
 ```python
 s_1: sympy.Symbol
 s_1, s_2 = sympy.symbols("s_1 s_2")
-symbolic: Vector = s_1 * e_1 + s_2 * e_2   # pyright: "Expr" is not assignable to "Vector"
+symbolic: Vector = s_1 * e_1 + s_2 * e_2  # pyright: "Expr" is not assignable to "Vector"
 ```
 
 `ty` (the CI gate) says nothing here: it types `s_1 * e_1` as `Any`.

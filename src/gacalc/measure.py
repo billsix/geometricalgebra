@@ -104,7 +104,19 @@ def content_by_rejection(vectors: Sequence[MultiVectorBase]) -> Real:
     the degenerate case.
 
     Examples:
+        For perpendicular vectors each height is the vector itself, so the content is
+        the product of the lengths; shearing the second vector keeps its height:
+
         >>> from gacalc.g2 import e_1, e_2
+        >>> content_by_rejection([1 * e_1, 1 * e_2])            # the unit square
+        1
+        >>> content_by_rejection([2 * e_1, 3 * e_2])            # 2 * 3
+        6
+        >>> content_by_rejection([2 * e_1, 1 * e_1 + 3 * e_2])  # sheared: height 3
+        6
+
+        A general frame agrees with :func:`content`:
+
         >>> vectors = [1 * e_1, 1 * e_1 + 1 * e_2]
         >>> content_by_rejection(vectors) == content(vectors)
         True
@@ -253,7 +265,19 @@ def signed_area(a: MultiVectorBase, b: MultiVectorBase) -> Real:
     vectors; see :func:`signed_content`).
 
     Examples:
+        The unit square is ``+1`` in the counterclockwise order ``e_1`` then ``e_2``,
+        and ``-1`` the other way round:
+
         >>> from gacalc.g2 import e_1, e_2
+        >>> signed_area(1 * e_1, 1 * e_2)
+        1
+        >>> signed_area(1 * e_2, 1 * e_1)
+        -1
+        >>> signed_area(2 * e_1, 3 * e_2)
+        6
+
+        Oblique vectors give the 2-D determinant:
+
         >>> a = 2 * e_1 + 1 * e_2
         >>> b = 1 * e_1 + 3 * e_2
         >>> signed_area(a, b)      # determinant 2*3 - 1*1

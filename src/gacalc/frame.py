@@ -63,6 +63,26 @@ def are_linearly_independent(
     raises ``ValueError`` -- a frame is a set of *vectors*, and a bivector (say) in
     the list is a category error, not "a dependent frame."  An empty sequence is not
     a frame (returns ``False``).
+
+    Examples:
+        Two basis vectors are independent; a vector and a multiple of it are not:
+
+        >>> from gacalc.gn import e_1, e_2
+        >>> are_linearly_independent([1 * e_1, 1 * e_2])
+        True
+        >>> are_linearly_independent([1 * e_1, 2 * e_1])
+        False
+        >>> are_linearly_independent([1 * e_1 + 1 * e_2, 1 * e_2])  # oblique
+        True
+
+        Two float vectors a hair apart are exactly independent, but dependent within
+        the float tolerance:
+
+        >>> nearly_parallel = [1.0 * e_1, 1.0 * e_1 + 1e-9 * e_2]
+        >>> are_linearly_independent(nearly_parallel)
+        True
+        >>> are_linearly_independent(nearly_parallel, float_close_to_zero=True)
+        False
     """
     if len(vectors) == 0:
         return False
@@ -210,6 +230,28 @@ def prefix_blades(
         ValueError: if ``vectors`` is empty -- there is no operand from which to take
             the representation of the scalar ``A_0 = 1`` (a frame is a nonempty,
             linearly independent set of vectors).
+
+    Examples:
+        On the standard basis the prefixes are ``1``, ``e_1``, ``e_1 ^ e_2``, then
+        ``e_1 ^ e_2 ^ e_3``:
+
+        >>> from gacalc.gn import e_1, e_2, e_3, one
+        >>> list(prefix_blades([1 * e_1, 1 * e_2, 1 * e_3])) == [
+        ...     one,
+        ...     1 * e_1,
+        ...     1 * (e_1 ^ e_2),
+        ...     1 * (e_1 ^ e_2 ^ e_3),
+        ... ]
+        True
+
+        An oblique frame: ``A_2`` is its parallelogram, area ``2 * 3 = 6``:
+
+        >>> list(prefix_blades([2 * e_1, 1 * e_1 + 3 * e_2])) == [
+        ...     one,
+        ...     2 * e_1,
+        ...     6 * (e_1 ^ e_2),
+        ... ]
+        True
     """
     if len(vectors) == 0:
         raise ValueError(
@@ -250,6 +292,22 @@ def make_orthogonal_frame(
     Raises:
         ValueError: if ``vectors`` is not a frame (linearly dependent -- a later
             vector would reject to zero and the result could not be a frame).
+
+    Examples:
+        An already-orthogonal frame comes back unchanged, lengths and all:
+
+        >>> from gacalc.gn import e_1, e_2
+        >>> make_orthogonal_frame([1 * e_1, 1 * e_2]) == [1 * e_1, 1 * e_2]
+        True
+        >>> make_orthogonal_frame([2 * e_1, 3 * e_2]) == [2 * e_1, 3 * e_2]
+        True
+
+        An oblique second vector loses its part along the first:
+
+        >>> make_orthogonal_frame([1 * e_1, 1 * e_1 + 1 * e_2]) == [1 * e_1, 1 * e_2]
+        True
+        >>> make_orthogonal_frame([2 * e_1, 1 * e_1 + 3 * e_2]) == [2 * e_1, 3 * e_2]
+        True
     """
     require_frame(vectors)
 
@@ -313,6 +371,22 @@ def make_orthogonal_frame_hestenes(
     Raises:
         ValueError: if ``vectors`` is not a frame (linearly dependent -- some
             ``A_k = 0``, making ``c_k`` degenerate).
+
+    Examples:
+        On the standard basis every ``|A_{k-1}|²`` is 1, so the result is the basis:
+
+        >>> from gacalc.gn import e_1, e_2
+        >>> make_orthogonal_frame_hestenes([1 * e_1, 1 * e_2]) == [1 * e_1, 1 * e_2]
+        True
+
+        On an oblique frame, ``c_2`` is the rejection ``3 * e_2`` scaled by
+        ``|A_1|² = |2 * e_1|² = 4``:
+
+        >>> make_orthogonal_frame_hestenes([2 * e_1, 1 * e_1 + 3 * e_2]) == [
+        ...     2 * e_1,
+        ...     12 * e_2,
+        ... ]
+        True
     """
     require_frame(vectors)
 
@@ -355,6 +429,22 @@ def make_orthogonal_frame_hestenes_inverse(
     Raises:
         ValueError: if ``vectors`` is not a frame (linearly dependent -- some
             ``A_k = 0``, whose inverse is undefined).
+
+    Examples:
+        The standard basis comes back unchanged, and an oblique frame gives the
+        rejection frame exactly (compare :func:`make_orthogonal_frame_hestenes`):
+
+        >>> from gacalc.gn import e_1, e_2
+        >>> make_orthogonal_frame_hestenes_inverse([1 * e_1, 1 * e_2]) == [
+        ...     1 * e_1,
+        ...     1 * e_2,
+        ... ]
+        True
+        >>> make_orthogonal_frame_hestenes_inverse([2 * e_1, 1 * e_1 + 3 * e_2]) == [
+        ...     2 * e_1,
+        ...     3 * e_2,
+        ... ]
+        True
     """
     require_frame(vectors)
 
@@ -407,6 +497,14 @@ def all_wedged_except_the_kth(
         >>> all_wedged_except_the_kth(frame, 2) == e_1 ^ e_3
         True
         >>> all_wedged_except_the_kth(frame, 3) == e_1 ^ e_2
+        True
+
+        In an oblique 2-D frame, leaving one vector out leaves the other:
+
+        >>> oblique = [2 * e_1, 1 * e_1 + 3 * e_2]
+        >>> all_wedged_except_the_kth(oblique, 1) == 1 * e_1 + 3 * e_2
+        True
+        >>> all_wedged_except_the_kth(oblique, 2) == 2 * e_1
         True
 
     Raises:
@@ -470,10 +568,22 @@ def reciprocal_frame(
     (``recip*_eq_normal_div``).
 
     Examples:
-        The oblique frame ``a_1 = 2 * e_1``, ``a_2 = 1 * e_1 + 3 * e_2``:
+        The standard basis is its own reciprocal frame; an orthogonal frame's
+        reciprocal points the same way with the inverse length, so that
+        ``a^k · a_k = 1``:
 
         >>> import sympy
         >>> from gacalc.gn import e_1, e_2
+        >>> reciprocal_frame([1 * e_1, 1 * e_2]) == [1 * e_1, 1 * e_2]
+        True
+        >>> reciprocal_frame([2 * e_1, 3 * e_2]) == [
+        ...     sympy.Rational(1, 2) * e_1,
+        ...     sympy.Rational(1, 3) * e_2,
+        ... ]
+        True
+
+        The oblique frame ``a_1 = 2 * e_1``, ``a_2 = 1 * e_1 + 3 * e_2``:
+
         >>> frame = [2 * e_1, 1 * e_1 + 3 * e_2]
         >>> reciprocal = reciprocal_frame(frame)
         >>> reciprocal == [sympy.Rational(1, 2) * e_1 - sympy.Rational(1, 6) * e_2,
@@ -546,7 +656,18 @@ class Frame:
     the usual Gram–Schmidt rounding.
 
     Examples:
+        The standard basis is already orthogonal, and each ``v_i`` is just its own
+        ``w_i``, so the table is the identity:
+
         >>> from gacalc.gn import e_1, e_2
+        >>> standard = Frame((1 * e_1, 1 * e_2))
+        >>> standard.orthogonal_vectors() == (1 * e_1, 1 * e_2)
+        True
+        >>> standard.coefficients()
+        ((1, 0), (0, 1))
+
+        An oblique frame:
+
         >>> frame = Frame((2 * e_1, 1 * e_1 + 3 * e_2))
         >>> frame.orthogonal_vectors() == (2 * e_1, 3 * e_2)
         True
@@ -592,6 +713,16 @@ class Frame:
         Returns:
             tuple[MultiVectorBase, ...]: ``w_1 … w_k``, mutually orthogonal, in frame
             order.
+
+        Examples:
+            >>> from gacalc.gn import e_1, e_2
+            >>> Frame((1 * e_1, 1 * e_2)).orthogonal_vectors() == (1 * e_1, 1 * e_2)
+            True
+            >>> Frame((1 * e_1, 1 * e_1 + 1 * e_2)).orthogonal_vectors() == (
+            ...     1 * e_1,
+            ...     1 * e_2,
+            ... )
+            True
         """
         return tuple(make_orthogonal_frame(self.vectors))
 
@@ -606,6 +737,18 @@ class Frame:
         Returns:
             tuple[tuple[Real, ...], ...]: one row per original vector, one entry per
             orthogonal vector.
+
+        Examples:
+            The standard basis gives the identity table; ``v_2 = 1 * e_1 + 1 * e_2``
+            is one copy of ``w_1 = e_1`` plus one of ``w_2 = e_2``:
+
+            >>> from gacalc.gn import e_1, e_2
+            >>> Frame((1 * e_1, 1 * e_2)).coefficients()
+            ((1, 0), (0, 1))
+            >>> Frame((1 * e_1, 1 * e_1 + 1 * e_2)).coefficients()
+            ((1, 0), (1, 1))
+            >>> Frame((2 * e_1, 1 * e_1 + 3 * e_2)).coefficients()
+            ((1, 0), (1/2, 1))
         """
         # Computed once, not once per row.
         orthogonal_vectors: tuple[MultiVectorBase, ...] = self.orthogonal_vectors()
@@ -630,6 +773,18 @@ class Frame:
         Returns:
             tuple[MultiVectorBase, ...]: ``u_1 … u_k``, unit length and mutually
             orthogonal.
+
+        Examples:
+            Normalizing keeps the directions and drops the lengths:
+
+            >>> import sympy
+            >>> from gacalc.gn import e_1, e_2
+            >>> Frame((2 * e_1, 3 * e_2)).orthonormal_vectors() == (1 * e_1, 1 * e_2)
+            True
+            >>> Frame((3 * e_1 + 4 * e_2,)).orthonormal_vectors() == (
+            ...     sympy.Rational(3, 5) * e_1 + sympy.Rational(4, 5) * e_2,
+            ... )
+            True
         """
         return tuple(w.normalize() for w in self.orthogonal_vectors())
 
@@ -640,6 +795,17 @@ class Frame:
 
         Returns:
             tuple[MultiVectorBase, ...]: ``v¹ … vᵏ``, in frame order.
+
+        Examples:
+            >>> import sympy
+            >>> from gacalc.gn import e_1, e_2
+            >>> Frame((1 * e_1, 1 * e_2)).reciprocal_vectors() == (1 * e_1, 1 * e_2)
+            True
+            >>> Frame((2 * e_1, 3 * e_2)).reciprocal_vectors() == (
+            ...     sympy.Rational(1, 2) * e_1,
+            ...     sympy.Rational(1, 3) * e_2,
+            ... )
+            True
         """
         return tuple(reciprocal_frame(self.vectors))
 
@@ -739,7 +905,22 @@ class Frame:
                 string, the pre-enum spelling, included).
 
         Examples:
+            The frame of the standard basis maps each ``e_i`` to itself (the
+            identity); the frame ``2 * e_1``, ``3 * e_2`` stretches each axis by
+            its own factor, and the inverse undoes it:
+
             >>> from gacalc.gn import e_1, e_2
+            >>> identity_map = Frame((1 * e_1, 1 * e_2)).to_invertible_function()
+            >>> identity_map(1 * e_1) == 1 * e_1, identity_map(1 * e_2) == 1 * e_2
+            (True, True)
+            >>> stretch = Frame((2 * e_1, 3 * e_2)).to_invertible_function()
+            >>> stretch(1 * e_1) == 2 * e_1, stretch(1 * e_2) == 3 * e_2
+            (True, True)
+            >>> stretch.inverse(2 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
+            True
+
+            An oblique frame, inverted both ways:
+
             >>> f = Frame((2 * e_1, 1 * e_1 + 3 * e_2)).to_invertible_function()
             >>> f(1 * e_1 + 1 * e_2) == 3 * e_1 + 3 * e_2
             True

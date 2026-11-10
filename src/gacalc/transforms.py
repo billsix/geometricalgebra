@@ -164,6 +164,27 @@ def translate(b: V) -> InvertibleFunction[V]:
     (``translate(b=3 * e_1)``) in teaching code, so the line-equation link is
     visible where the transform is used.  See also :func:`uniform_scale` for the
     ``m`` half.
+
+    Examples:
+        Translating by ``3 * e_1`` moves the origin to ``3 * e_1`` and shifts every
+        other point by the same amount; the inverse shifts it back:
+
+        >>> from gacalc.g2 import Vector, e_1, e_2
+        >>> translate(b=3 * e_1)(Vector.zero()) == 3 * e_1
+        True
+        >>> translate(b=3 * e_1)(1 * e_2) == 3 * e_1 + 1 * e_2
+        True
+        >>> inverse(translate(b=3 * e_1))(3 * e_1) == Vector.zero()
+        True
+
+        General symbolic vectors show it adds coordinate by coordinate:
+
+        >>> import sympy
+        >>> x_1, x_2, b_1, b_2 = sympy.symbols("x_1 x_2 b_1 b_2")
+        >>> translate(b=b_1 * e_1 + b_2 * e_2)(x_1 * e_1 + x_2 * e_2) == (
+        ...     (x_1 + b_1) * e_1 + (x_2 + b_2) * e_2
+        ... )
+        True
     """
 
     # doc-region-begin translate body
@@ -303,7 +324,19 @@ def coordinate_along(
             ``vector`` is off the line of ``along``.
 
     Examples:
+        Along a basis direction the coordinate is just the coefficient; along a
+        longer vector on the same line it is smaller, in proportion:
+
         >>> from gacalc.g2 import e_1, e_2
+        >>> coordinate_along(3 * e_1, along=e_1)
+        3
+        >>> coordinate_along(-2 * e_2, along=e_2)
+        -2
+        >>> coordinate_along(3 * e_1, along=3 * e_1)
+        1
+
+        A line in a general direction:
+
         >>> coordinate_along(6 * e_1 + 3 * e_2, along=2 * e_1 + 1 * e_2)
         3
         >>> coordinate_along(1 * e_1, along=2 * e_1)
@@ -359,6 +392,21 @@ def line_to_line_projection(
             input is off its line.
 
     Examples:
+        From the diagonal line of ``1 * e_1 + 1 * e_2`` onto the ``e_1`` axis: each
+        point of the diagonal drops straight down to the axis, and the inverse
+        climbs back up to the diagonal:
+
+        >>> from gacalc.g2 import e_1, e_2
+        >>> P = line_to_line_projection(
+        ...     from_vector=1 * e_1 + 1 * e_2, to_vector=1 * e_1
+        ... )
+        >>> P(1 * e_1 + 1 * e_2) == 1 * e_1
+        True
+        >>> P(2 * e_1 + 2 * e_2) == 2 * e_1
+        True
+        >>> P.inverse(3 * e_1) == 3 * e_1 + 3 * e_2
+        True
+
         The frame ``v_1 = 2 * e_1``, ``v_2 = 1 * e_1 + 3 * e_2``, and ``y = 1 * v_1 +
         1 * v_2``.  ``e_2`` is perpendicular to ``v_1``, so ``y``'s projection onto
         it comes from ``v_2`` alone, and the inverse returns ``y``'s ``v_2`` part:
@@ -566,6 +614,22 @@ def bivector_rotation(
     ``theta`` stays symbolic; a ``float`` theta stays numeric.
 
     Example:
+        A quarter turn in the ``e_1 ^ e_2`` plane sends ``e_1`` to ``e_2`` and keeps
+        lengths; the bivector's size does not matter, only its plane and
+        orientation:
+
+        >>> import sympy
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> quarter_turn = bivector_rotation(e_1 ^ e_2)(sympy.pi / 2)
+        >>> quarter_turn(1 * e_1) == 1 * e_2, quarter_turn(3 * e_1) == 3 * e_2
+        (True, True)
+        >>> quarter_turn(1 * e_3) == 1 * e_3                # off the plane: fixed
+        True
+        >>> bivector_rotation(2 * (e_1 ^ e_2))(sympy.pi / 2)(1 * e_1) == 1 * e_2
+        True
+
+        A float angle and the inverse:
+
         >>> import math
         >>> from gacalc.transforms import bivector_rotation
         >>> from gacalc.g3 import Vector
@@ -652,6 +716,22 @@ def plane_rotation(
     e.g. mvp's ``RX_{<theta>}``); the default is ``R_{theta}``.
 
     Example:
+        A quarter turn in the plane of ``e_1`` and ``e_2`` sends ``e_1`` to ``e_2``
+        and ``e_2`` to ``-e_1``, keeps lengths, and leaves ``e_3`` alone; the two
+        vectors only name the plane, so their lengths do not matter:
+
+        >>> import sympy
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> quarter_turn = plane_rotation(e_1, e_2)(sympy.pi / 2)
+        >>> quarter_turn(1 * e_1) == 1 * e_2, quarter_turn(1 * e_2) == -1 * e_1
+        (True, True)
+        >>> quarter_turn(3 * e_1) == 3 * e_2, quarter_turn(1 * e_3) == 1 * e_3
+        (True, True)
+        >>> plane_rotation(2 * e_1, 5 * e_2)(sympy.pi / 2)(1 * e_1) == 1 * e_2
+        True
+
+        A float angle, the inverse, and interpolation:
+
         >>> import math
         >>> from gacalc.transforms import plane_rotation
         >>> from gacalc.g3 import Vector
@@ -719,6 +799,27 @@ def uniform_scale(m: Real) -> InvertibleFunction[V]:
     (``uniform_scale(m=2.0)``) in teaching code.  See also :func:`translate` for
     the ``b`` half.  (Rotation has no counterpart in ``m*x + b``, which is
     exactly why it is introduced separately.)
+
+    Examples:
+        Scaling by ``m=2`` doubles every vector and keeps the origin where it is;
+        the inverse halves:
+
+        >>> from gacalc.g2 import Vector, e_1, e_2
+        >>> uniform_scale(m=2)(1 * e_1) == 2 * e_1
+        True
+        >>> uniform_scale(m=2)(1 * e_1 + 3 * e_2) == 2 * e_1 + 6 * e_2
+        True
+        >>> uniform_scale(m=2)(Vector.zero()) == Vector.zero()
+        True
+        >>> inverse(uniform_scale(m=2))(2 * e_1) == 1 * e_1
+        True
+
+        A symbolic factor multiplies every coordinate:
+
+        >>> import sympy
+        >>> m, x_1, x_2 = sympy.symbols("m x_1 x_2")
+        >>> uniform_scale(m=m)(x_1 * e_1 + x_2 * e_2) == m * x_1 * e_1 + m * x_2 * e_2
+        True
     """
 
     # doc-region-begin uniform scale body
@@ -760,7 +861,16 @@ def scale_non_uniform(*factors: Real) -> InvertibleFunction[V]:
     axis with no factor (``e_3`` of a 𝒢₃ vector, there) is left unchanged.
 
     Example:
+        Each basis vector is stretched by its own factor:
+
         >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> scale_non_uniform(2, 3)(1 * e_1) == 2 * e_1
+        True
+        >>> scale_non_uniform(2, 3)(1 * e_2) == 3 * e_2
+        True
+
+        A vector mixing all three axes, the third left unchanged:
+
         >>> scale_non_uniform(2, 3)(1 * e_1 + 2 * e_2 + 3 * e_3) == (
         ...     2 * e_1 + 6 * e_2 + 3 * e_3
         ... )
@@ -829,7 +939,7 @@ def require_linear_or_affine(fn: ComposableFunction[typing.Any]) -> None:
 
     Examples:
         >>> from gacalc.g3 import Vector
-        >>> require_linear_or_affine(uniform_scale(2.0))
+        >>> require_linear_or_affine(uniform_scale(m=2.0))
         >>> perspective = ComposableFunction(func=lambda v: v, latex_repr="P")
         >>> perspective.linearity  # the default: nothing promised
         <Linearity.NONLINEAR: ...>
@@ -870,7 +980,7 @@ def require_dimension(cls: type[MultiVectorBase], n: int | None) -> int:
         3
         >>> require_dimension(Gn, 2)
         2
-        >>> to_matrix(uniform_scale(2.0), Gn)  # doctest: +ELLIPSIS
+        >>> to_matrix(uniform_scale(m=2.0), Gn)  # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
         ValueError: to_matrix (...): n could not be inferred (Gn has no fixed ...
@@ -987,16 +1097,35 @@ def to_matrix(
     perspective divide) is not recoverable by probing points in R^n.
 
     Example:
+        In 𝒢₂ the matrix is ``3 x 3``.  A uniform scale is diagonal (the factor on
+        the diagonal, ``1`` in the corner); a translation is the identity with the
+        offset in the last column:
+
+        >>> from gacalc.g2 import Vector, e_1, e_2
+        >>> to_matrix(uniform_scale(m=2), Vector, backend=MatrixBackend.SYMPY)
+        Matrix([
+        [2, 0, 0],
+        [0, 2, 0],
+        [0, 0, 1]])
+        >>> T = translate(b=3 * e_1 + 4 * e_2)
+        >>> to_matrix(T, Vector, backend=MatrixBackend.SYMPY)
+        Matrix([
+        [1, 0, 3],
+        [0, 1, 4],
+        [0, 0, 1]])
+
+        The default ``np.float32`` backend in 𝒢₃, ``4 x 4``:
+
         >>> from gacalc.transforms import translate, uniform_scale, to_matrix
         >>> from gacalc.g3 import Vector
-        >>> T = translate(2 * Vector.e_1 + 3 * Vector.e_2 + 4 * Vector.e_3)
+        >>> T = translate(b=2 * Vector.e_1 + 3 * Vector.e_2 + 4 * Vector.e_3)
         >>> M = to_matrix(T, Vector)
         >>> M.shape
         (4, 4)
         >>> [float(M[i, 3]) for i in range(4)]   # translation in the last column
         [2.0, 3.0, 4.0, 1.0]
         >>> # a linear map (scale) -> 4x4 with a ZERO translation column
-        >>> S = to_matrix(uniform_scale(2.0), Vector)
+        >>> S = to_matrix(uniform_scale(m=2.0), Vector)
         >>> [float(S[i, 3]) for i in range(4)]
         [0.0, 0.0, 0.0, 1.0]
         >>> [float(S[i, i]) for i in range(4)]
@@ -1140,6 +1269,16 @@ def to_matrix_template(
     the matrix depends on must be listed (``ValueError`` otherwise, naming the
     stray symbol); a listed symbol the matrix does not use is simply ignored.
     Raises ``ValueError`` for a non-linear ``fn``, like ``to_matrix``.
+
+    Example (the simplest template: a uniform scale by a symbol ``m``, filled with
+    ``3.0``, gives the ``3 x 3`` diagonal matrix of a scale by 3):
+
+        >>> import sympy
+        >>> from gacalc.g2 import Vector
+        >>> m = sympy.Symbol("m")
+        >>> SCALE = to_matrix_template(uniform_scale(m=m), Vector, (m,))
+        >>> SCALE.fill(3.0).tolist()
+        [[3.0, 0.0, 0.0], [0.0, 3.0, 0.0], [0.0, 0.0, 1.0]]
 
     Example (a sprite's model matrix: scale the unit quad to ``w x h``, then
     move it to ``(tx, ty)`` -- translation as a linear combination of basis
