@@ -11,6 +11,8 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+## [0.1.0] — 2026-11-10
+
 ### Added
 - **Validation guards for matrices and frames** — `transforms.require_linear_or_affine(fn)`,
   `transforms.require_dimension(cls, n) -> int`, `transforms.require_distinct_params(params)`,
