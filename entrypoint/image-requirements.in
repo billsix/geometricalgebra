@@ -3,6 +3,7 @@
 # pyproject.toml into constraints.txt, which pins every package the image installs.
 setuptools
 wheel
+nanobind
 sphinx
 furo
 nbsphinx
