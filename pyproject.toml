@@ -43,6 +43,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+# gacalc.gl's shared GLSL shaders, loaded at runtime from gacalc.gl.SHADER_DIR.
+[tool.setuptools.package-data]
+"gacalc.gl" = ["*.vert", "*.frag", "*.geom", "*.glsl"]
+
 
 [tool.ruff]
 # The intentionally-vendored Emacs tree under entrypoint/ (.emacs.d/elpa/) is

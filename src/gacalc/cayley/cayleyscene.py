@@ -231,8 +231,8 @@ class GuiGroup:
 class Timeline(typing.Generic[N]):
     """Assigns every substep a ``(start, dur)`` slot by walking the
     coordinate_frames then the to_ndc operations in order (accumulating
-    ``dwell_before`` + the step durations), and answers per-node lifecycle
-    questions."""
+    ``dwell_before`` + the step durations).  It also answers each node's
+    lifecycle questions."""
 
     def __init__(self, scene: Scene[N]) -> None:
         self.scene = scene
@@ -357,8 +357,8 @@ class Animation(typing.Generic[N]):
 
     def gpu_progress(self, time: float) -> typing.List[typing.Tuple[str, float]]:
         """``(label, progress in [0,1])`` for each GPU projection substep.  The
-        shell feeds these, or their start times, to the shader's ``time``
-        uniform."""
+        shell feeds these, or their start times, to the shader's ``time`` uniform.
+        """
         return [
             (g.label, interp(time, g.start, g.dur)) for g in self.timeline.gpu_steps
         ]

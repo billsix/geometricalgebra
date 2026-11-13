@@ -83,6 +83,11 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `path(a, b)` composes edges and inverts any walked against its arrow) and `cayleyscene.py` (a graph
   + declarative `Scene` → a timed `Animation`; `to_matrix` for GL's 4×4). The name, and the
   frame-graph vs blade-table trap: `tasks/reference/composable-function-algebraic-identity.md`.
+- `src/gacalc/gl/` — **the OpenGL toolkit** (moved from modelviewprojection; needs the `gl` extra,
+  and nothing outside `gacalc.gl` imports it — `tests/test_gl_import_boundary.py`): `matrix_stack`,
+  `_pipeline` (GLFW + imgui, shaders, VAOs), `cayley_gl` (draws `gacalc.cayley` scenes), `labels`
+  (TeX billboards), and the shared shaders as package data (`gacalc.gl.SHADER_DIR`). Import order,
+  Wayland's `PYGLFW_LIBRARY`, headless runs and the GL conventions: `tasks/reference/gl-toolkit.md`.
 - `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
   `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`)

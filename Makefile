@@ -75,8 +75,15 @@ X_FLAGS_FOR_CONTAINER = -e DISPLAY=$(DISPLAY) \
 	-v /tmp/.X11-unix:/tmp/.X11-unix \
 	--security-opt label=type:container_runtime_t
 
-WAYLAND_FLAGS_FOR_CONTAINER = -e "WAYLAND_DISPLAY=${WAYLAND_DISPLAY}" \
+# PYGLFW_LIBRARY points the glfw Python package at Fedora's libglfw (one build with
+# both X11 and Wayland, from entrypoint/07-install-gl.sh). It loads first, so
+# imgui_bundle binds the same library, and GLFW picks Wayland at run time from
+# WAYLAND_DISPLAY. The glfw package's own Wayland-only library would leave
+# imgui_bundle without its X11 symbol (modelviewprojection hit this first).
+WAYLAND_FLAGS_FOR_CONTAINER = -e "XDG_SESSION_TYPE=wayland" \
+                              -e "WAYLAND_DISPLAY=${WAYLAND_DISPLAY}" \
                               -e "XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}" \
+                              -e "PYGLFW_LIBRARY=/usr/lib64/libglfw.so.3" \
                               -v "${XDG_RUNTIME_DIR}:${XDG_RUNTIME_DIR}"
 
 

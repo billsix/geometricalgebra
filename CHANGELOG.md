@@ -20,6 +20,12 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   function's 4×4. No new dependencies; neither module imports OpenGL.
 - **A `gl` extra** (`pip install "gacalc[gl]"`): glfw, PyOpenGL, imgui-bundle[glfw] and Pillow, for
   the OpenGL code in `gacalc.gl`. A plain `pip install gacalc` still needs only numpy and sympy.
+- **`gacalc.gl`** — modelviewprojection's OpenGL toolkit, moved here (needs the `gl` extra):
+  `gl.matrix_stack` (model / view / projection matrix stacks), `gl._pipeline` (GLFW + imgui setup,
+  shader compilation, VAO builders), `gl.cayley_gl` (draws `gacalc.cayley` scenes) and `gl.labels`
+  (TeX billboard labels via `texExpToPng`, a no-op without it). The eleven shared GLSL shaders
+  ship as package data; `gacalc.gl.SHADER_DIR` is their directory. `import gacalc` imports none
+  of this.
 
 ## [0.1.0] — 2026-11-10
 

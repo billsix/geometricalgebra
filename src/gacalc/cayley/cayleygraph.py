@@ -31,8 +31,8 @@ Design (the maintainer's):
   :func:`node_label` gives a readable name for either.
 
 A ``Step``'s ``fn`` stays mutable on purpose: that is a transform *parameter*
-(e.g. the editable virtual camera rewrites it in place), not the graph
-structure.
+(e.g. the editable virtual camera rewrites it in place), not the structure of
+the graph.
 
 **On the name.** A textbook *Cayley graph* has group elements as nodes and one
 fixed generating set acting at every node; a graph whose nodes are points a
@@ -114,7 +114,7 @@ class Step:
 @dataclasses.dataclass(frozen=True)
 class Edge(typing.Generic[N]):
     """An immutable directed edge ``src -> dst``: an ordered tuple of
-    :class:`Step`.
+    :class:`Step` objects.
 
     The edge's function (src coordinates -> dst coordinates) is
     ``compose([s.fn for s in steps])`` -- the *first* step is outermost,

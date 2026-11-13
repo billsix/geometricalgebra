@@ -1,61 +1,75 @@
 # Step 3: move mvp's OpenGL toolkit into `gacalc.gl`
 
-**Status:** proposed, approved (the umbrella's decisions).
-**Priority:** 4
-**Difficulty:** 6
-**Created:** 2026-11-13
+**Done:** 2026-11-13. **Created:** 2026-11-13.
 **Part of:** `tasks/move-mvp-gl-toolkit-to-gacalc.md`
-**Depends on:** step 1 (`cayley_gl` imports `cayleyscene`) and step 2 (the `gl` extra and a
-GL-capable image).
 **Next:** `tasks/move-mvp-gl-toolkit-to-gacalc-step-4-graphers-as-library.md`
 
-## BLUF
+## Outcome
 
-Copy mvp's GL toolkit into a new `src/gacalc/gl/` subpackage:
-- `matrix_stack.py`;
-- `mvpvisualization/_pipeline.py`, `cayley_gl.py` and `labels.py`;
-- the ten shaders.
+`src/gacalc/gl/` now holds, from github.com/billsix/modelviewprojection (mvp):
+- `matrix_stack.py`, from `src/modelviewprojection/`;
+- `_pipeline.py`, `cayley_gl.py` and `labels.py`, from `mvpvisualization/`;
+- all **eleven** shaders from there (`billboard.{vert,frag}`, `passthrough.frag`,
+  `passthrough_geom.frag`, `per_vertex_color.vert`, `uniform_color.vert`, `thick_lines.geom`, and
+  `project_{identity,modelview2d,ortho,perspective}.glsl`). The plan's count of ten missed
+  `thick_lines.geom`.
 
-The source is github.com/billsix/modelviewprojection, under `src/modelviewprojection/`. Done means:
-- `gacalc.gl` imports cleanly in the image;
-- the shaders load as package data;
-- `test_matrix_stack.py` passes in gacalc;
-- `import gacalc` alone still pulls in no GL module.
+`tests/test_matrix_stack.py` moved too. mvp keeps its copies until step 5. Durable knowledge from
+this step is in `tasks/reference/gl-toolkit.md`, new in this step.
 
-## Context
+- **`gacalc/gl/__init__.py`** imports no GL module. It documents the subpackage and defines
+  `SHADER_DIR`, the shaders' directory, with a doctest listing the vertex shaders.
+- **Shaders as package data:** `[tool.setuptools.package-data] "gacalc.gl" = [...]` in
+  `pyproject.toml`. A wheel built in the image contains all eleven.
+- **The import boundary is tested.** `tests/test_gl_import_boundary.py` imports `gacalc`,
+  `gacalc.g3`, `gacalc.cayley.cayleyscene` and `gacalc.gl`, each in a fresh interpreter with
+  `PYTHONPATH` set to this checkout's `src/`. Without that, the subprocess imported the image's
+  installed, non-editable gacalc. It fails if glfw, OpenGL, imgui_bundle or PIL gets imported.
+- **Mechanics:**
+  - `copy_from_mvp.sh` (from step 1) copied the Python files;
+  - `tasks/adhoc/move-mvp-gl-toolkit-to-gacalc/copy_shaders.py` copied the shaders. It replaces a
+    leading `// Copyright` block with gacalc's LGPL header as `//` comments, and adds the header
+    above any shader that had none.
+  - Its first version stripped *any* leading `//` block, which dropped the explanatory first
+    comments of the four `project_*.glsl` files. The agent's own body-equality check had ignored
+    `//` lines and missed it. An exact comparison caught it, and the script was fixed and rerun:
+    every shader body now matches mvp's byte for byte below the header.
+- **gacalc conventions applied to the moved code:**
+  - `_cross_arrays` builds its operands from basis constants (`float(a[0]) * e_1 + …`) rather than
+    `Vector(*map(float, a))`;
+  - docstrings and comments that were false in gacalc were rewritten: "the mvpvisualization demos",
+    demo numbers, mvp task paths, "in a book about matrices", and the claim that `texExpToPng` is
+    in the image;
+  - two comments that narrated history were made present-tense (the `u_time`/`u_fov` gating note
+    and `matrix_stack._not_a_stack`);
+  - paragraphs with orphaned one-word lines were reflowed. They were found with a tokenize/ast
+    scanner, and a few continuation lines that hold a single unbreakable name were left alone.
+    The same scan also fixed four in `gacalc.cayley`.
+- **Window-system libraries.** GLFW 3.4 loads its X11 and Wayland libraries with `dlopen`, so
+  Fedora's `glfw` package does not depend on them. They were in the image only through other
+  packages. `07-install-gl.sh` now names them: `libwayland-{client,cursor,egl}`, `libxkbcommon`,
+  `libX11`, `libXcursor`, `libXi`, `libXinerama`, `libXrandr`.
+- **Wayland passthrough.** The Makefile's `WAYLAND_FLAGS_FOR_CONTAINER` gained mvp's
+  `PYGLFW_LIBRARY=/usr/lib64/libglfw.so.3` and `XDG_SESSION_TYPE=wayland`. The reason (the dual
+  X11+Wayland libglfw keeps imgui_bundle's X11 symbol) is in the Makefile comment and the
+  reference doc.
+- **Docs:** `CHANGELOG.md` `[Unreleased]` "Added" for `gacalc.gl`, a `CLAUDE.md` "Module layout"
+  entry, and the new `tasks/reference/gl-toolkit.md`. That doc keeps the entries from mvp's
+  `tasks/reference/gl-and-imgui-gotchas.md` §§1, 6, 7 and 9 that apply to the moved code, plus
+  the packaging, import-boundary, Wayland and headless facts.
 
-- Imports to rewrite:
-  - `_pipeline.py` imports `modelviewprojection.matrix_stack`, plus `gacalc.g3.Vector` and
-    `gacalc.vectorcalc.cross`, which already point into gacalc;
-  - `cayley_gl.py` imports `matrix_stack`, `_pipeline` and `modelviewprojection.cayley.cayleyscene`,
-    which becomes `gacalc.cayley.cayleyscene` from step 1;
-  - `labels.py` imports only numpy, PyOpenGL and PIL;
-  - `matrix_stack.py` imports only numpy. It could live outside `gacalc.gl`, but it serves the GL
-    pipeline, so it goes with it.
-- The shaders are `billboard.{vert,frag}`, `passthrough.frag`, `passthrough_geom.frag`,
-  `per_vertex_color.vert`, `uniform_color.vert` and `project_{identity,modelview2d,ortho,perspective}.glsl`.
-  The callers find them with `os.path.dirname(os.path.abspath(cayley_gl.__file__))` (`MVP_SHADER_DIR`
-  in the graphers). Ship them as package data, using setuptools `package-data` in `pyproject.toml`,
-  so the same lookup works from an installed wheel and not only from the source tree. Check this by
-  building a wheel and listing it.
-- **Gotcha — doctest collection imports every module.** gacalc's `pytest.ini` runs `--doctest-modules`
-  over `src`, so it will import `gacalc.gl.*`. That works only where the `gl` extra and its system
-  libraries are installed, which the dev image is after step 2. Either keep it that way, or skip
-  `gacalc/gl` when the extra is absent (a `conftest.py` `collect_ignore` keyed on
-  `importlib.util.find_spec("glfw")`). A module that opens a window when imported must not exist
-  after step 4.
-- **Keep `import gacalc` GL-free.** `src/gacalc/__init__.py` must not import `gacalc.gl`. Add a test
-  that imports `gacalc` in a subprocess and checks that `glfw` is not in `sys.modules` afterwards.
+## Verification
 
-## Plan
+All checks ran against the nested image rebuilt with the expanded `07-install-gl.sh`; that
+`make image` exited 0.
+- `format.sh` (ruff, `ty` over `src`/`tests`/`tools`/notebooks, the changelog guard) passed.
+- `make test`'s run line: 1,232 passed, 2 skipped, 11 deselected. That is the previous 1,220 plus
+  the moved matrix-stack tests, the four import-boundary checks and the new doctests. The two
+  warnings are a Python 3.15 `ctypes.__version__` deprecation inside PyOpenGL.
+- Under Xvfb, `_pipeline.compile_program` compiled and linked all 17 vertex × `project_*.glsl` ×
+  (with or without `thick_lines.geom`) combinations, plus the billboard pair, from `SHADER_DIR`
+  (Mesa 26.2.6, core 3.3 context).
+- `rpm -q` in the image found the explicitly listed window-system libraries.
 
-1. Create `src/gacalc/gl/` with the four modules and the shaders. Rewrite the imports and apply
-   gacalc's LGPL-2.1-only header.
-2. Add the package-data entry and check that a built wheel contains the shaders.
-3. Move mvp's `tests/test_matrix_stack.py` into gacalc and add the GL-free-import test.
-4. Run `make test` and `make type-check` and fix what they report.
-5. Copy the gotchas that apply to this code from mvp's `tasks/reference/gl-and-imgui-gotchas.md`
-   (sections 1, 6, 7 and 9) into a new gacalc reference doc, `tasks/reference/gl-toolkit.md`. That
-   doc also covers the `gl` extra and the import rule.
-6. Add a `CHANGELOG.md` `[Unreleased]` "Added" entry for `gacalc.gl` and the `gl` extra, and update
-   `CLAUDE.md`'s "Module layout" and its Packaging line (extras `notebooks`/`jupyter`/`dev`/`gl`).
+**Not verified here:** a window on a real Wayland session with the new `PYGLFW_LIBRARY` flag. The
+sandbox has no compositor, so that needs a `make shell` on the maintainer's host.
