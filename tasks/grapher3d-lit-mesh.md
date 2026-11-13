@@ -1,7 +1,7 @@
 # 3D grapher: lit triangle-mesh surface (Blinn-Phong, the half-vector model)
 
-**Status:** proposed, needs go-ahead and the three open questions answered. It waits for the grapher
-move (William Emerison Six <billsix@gmail.com>, 2026-11-13).
+**Status:** proposed, needs go-ahead and the three open questions answered. The grapher move it
+waited for is done (2026-11-13), so the 3D grapher is now `src/gacalc/gl/grapher3d.py`.
 **Priority:** 7
 **Difficulty:** 6
 **Started:** 2026-11-03 in github.com/billsix/modelviewprojection (mvp), as
