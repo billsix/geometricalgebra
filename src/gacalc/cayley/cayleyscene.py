@@ -441,7 +441,7 @@ class Animation(typing.Generic[N]):
         return None
 
 
-def to_matrix(f: InvertibleFunction) -> np.ndarray:
+def to_matrix(f: InvertibleFunction[Vector]) -> np.ndarray:
     """Realize an **affine** ``InvertibleFunction`` on ``Vector`` as a 4x4
     (row-major, ``M @ [x, y, z, 1]``) for upload as a GL model matrix.
 

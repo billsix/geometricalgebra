@@ -26,6 +26,12 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   (TeX billboard labels via `texExpToPng`, a no-op without it). The eleven shared GLSL shaders
   ship as package data; `gacalc.gl.SHADER_DIR` is their directory. `import gacalc` imports none
   of this.
+- **Graphing calculators** `gacalc.gl.grapher2d` and `gacalc.gl.grapher3d`, from
+  modelviewprojection's run-by-path programs, now library modules: `grapher2d.run(functions)`
+  plots `PlottedFunction`s (`f(x)`) over pannable, zoomable axes, and `grapher3d.run(surfaces)`
+  plots `Surface`s (`f(x, y)`) as wireframe / height-shaded meshes under an orbit camera. Their
+  geometry builders are plain numpy and need no window. `examples/grapher2d.py` and
+  `examples/grapher3d.py` are runners whose functions gacalc computes.
 
 ## [0.1.0] — 2026-11-10
 

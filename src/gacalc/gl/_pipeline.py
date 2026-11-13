@@ -399,7 +399,7 @@ def make_vbo(data: ndarray, usage: GLenum = GL.GL_STATIC_DRAW) -> int:
     return vbo
 
 
-def make_vao(attribs: list[AttribSpec]) -> int:
+def make_vao(attribs: typing.Sequence[AttribSpec]) -> int:
     """Build a VAO that reads each ``AttribSpec`` from its VBO.  The
     handle is registered into ``all_vaos`` for cleanup."""
     vao: int = GL.glGenVertexArrays(1)
@@ -690,7 +690,9 @@ def _cross_arrays(a: np.ndarray, b: np.ndarray) -> np.ndarray:
 
 
 def build_cylinders_for_edges(
-    edges: list[tuple[tuple[float, float, float], tuple[float, float, float]]],
+    edges: typing.Sequence[
+        tuple[tuple[float, float, float], tuple[float, float, float]]
+    ],
     radius: float = 0.05,
     slices: int = 20,
 ) -> ndarray:

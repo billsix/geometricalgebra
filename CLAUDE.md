@@ -86,7 +86,10 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 - `src/gacalc/gl/` — **the OpenGL toolkit** (moved from modelviewprojection; needs the `gl` extra,
   and nothing outside `gacalc.gl` imports it — `tests/test_gl_import_boundary.py`): `matrix_stack`,
   `_pipeline` (GLFW + imgui, shaders, VAOs), `cayley_gl` (draws `gacalc.cayley` scenes), `labels`
-  (TeX billboards), and the shared shaders as package data (`gacalc.gl.SHADER_DIR`). Import order,
+  (TeX billboards), the shared shaders as package data (`gacalc.gl.SHADER_DIR`), and the graphing
+  calculators `grapher2d` / `grapher3d` (`run(functions)` / `run(surfaces)`; numpy geometry builders
+  at module level, the window and loop inside `run`). Runners live in `examples/` (outside pytest's
+  `testpaths`, so a test run never opens a window; `format.sh` type-checks them). Import order,
   Wayland's `PYGLFW_LIBRARY`, headless runs and the GL conventions: `tasks/reference/gl-toolkit.md`.
 - `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),

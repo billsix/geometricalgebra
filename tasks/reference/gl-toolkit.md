@@ -87,6 +87,30 @@ Eleven GLSL shaders ship next to them as package data. The modules need the opti
   `cayleyscene.to_matrix` casts to float64 for exactly this reason
   (`tests/test_focus_to_matrix.py`).
 
+## The graphing calculators (`gacalc.gl.grapher2d`, `grapher3d`)
+
+- **Shape.** The authored data types (`PlottedFunction`, `Surface`), view state and numpy geometry
+  builders are module-level and doctested. `run(functions)` / `run(surfaces)` opens the window and
+  owns everything GL: pipelines, meshes, input handlers and the loop, as nested functions that
+  close over the run's state (`nonlocal` for the few values they rebind). A runner (`examples/`, or
+  modelviewprojection's) is a function list plus one `run` call.
+- **2D: resample per pixel column.** Curves are resampled across the visible x range, one sample
+  per pixel column, whenever the view pans or zooms. A fixed sample set over a fixed range cannot
+  stay smooth when zoomed in and also avoid dropped sub-pixel segments (a dashed look at the peaks)
+  when zoomed out.
+- **2D: clear depth after the backdrop.** The shared GL setup leaves depth testing on (`GL_LESS`)
+  and the whole plot sits at z = 0. A curve pixel over an already-drawn grid pixel then has equal
+  depth and is rejected, punching holes in the curve where it runs along a grid line. `frame`
+  clears the depth buffer after the backdrop.
+- **2D: line smoothing needs blending on.** Thousands of tiny `GL_LINE_STRIP` segments drop pixels
+  under GL's diamond-exit rule, so `run` enables `GL_LINE_SMOOTH` with blending. That is also why
+  the label pass must restore `GL_BLEND` (below).
+- **3D: the solid mesh is unlit**, shaded by normalised height per vertex. The lit (Blinn-Phong)
+  version is `tasks/grapher3d-lit-mesh.md`.
+- **Checking them headless:** run each runner under Xvfb with `timeout -s KILL 12`. Exit 137 with
+  no traceback means it opened the window and drew frames for the whole run (2026-11-13, both
+  runners).
+
 ## TeX billboard labels (`gacalc.gl.labels`)
 
 - `LabelRenderer` shells out to `texExpToPng` (github.com/billsix/tex-expression-to-png) to render a
