@@ -65,7 +65,7 @@ the GPU projection steps and the two imgui trees), and `to_matrix` realizes an a
 `InvertibleFunction` as a 4×4 for GL. Neither module imports OpenGL. Both were written for
 [modelviewprojection](https://github.com/billsix/modelviewprojection)'s visualizations, which are
 still their main user, and moved here because the frame graph is math, not rendering
-(`tasks/move-mvp-gl-toolkit-to-gacalc.md`).
+(`tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc.md`).
 
 - **Naming trap.** This "Cayley graph" is a graph of coordinate *frames*. It is not a Cayley table
   or a graph of basis-blade multiplication; `tasks/reference/design-decisions.md` rejects a

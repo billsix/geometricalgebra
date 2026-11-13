@@ -1,7 +1,7 @@
 # Step 4: the 2D and 3D graphers as `gacalc.gl` library functions, plus gacalc's runners
 
 **Done:** 2026-11-13. **Created:** 2026-11-13.
-**Part of:** `tasks/move-mvp-gl-toolkit-to-gacalc.md`
+**Part of:** `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc.md`
 **Next:** the maintainer tags and publishes 0.1.1. Then mvp's step 5
 (github.com/billsix/modelviewprojection `tasks/move-mvp-gl-toolkit-to-gacalc-step-5-mvp-switch.md`)
 and `tasks/grapher3d-lit-mesh.md`.

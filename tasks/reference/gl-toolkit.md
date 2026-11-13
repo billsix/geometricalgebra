@@ -4,9 +4,9 @@
 before writing or debugging GL, GLFW or imgui code in gacalc. Update it in place.
 
 `gacalc.gl` came from github.com/billsix/modelviewprojection (mvp) on 2026-11-13
-(`tasks/move-mvp-gl-toolkit-to-gacalc.md`). mvp's `tasks/reference/gl-and-imgui-gotchas.md` is
-where most of these traps were found; its entries cite the debugging sessions. This doc keeps
-the ones that apply to the moved code.
+(`tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc.md`). mvp's
+`tasks/reference/gl-and-imgui-gotchas.md` is where most of these traps were found; its entries cite
+the debugging sessions. This doc keeps the ones that apply to the moved code.
 
 ## In one paragraph
 

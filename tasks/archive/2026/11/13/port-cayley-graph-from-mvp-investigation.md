@@ -1,8 +1,9 @@
 # Should mvp's Cayley-graph and graphing-calculator code move to gacalc? (investigation)
 
 **Done:** 2026-11-13. **Created:** 2026-11-05 (William Emerison Six <billsix@gmail.com>).
-**Follow-on:** `tasks/move-mvp-gl-toolkit-to-gacalc.md` (the umbrella, with steps 1 to 4 in gacalc
-and step 5 in github.com/billsix/modelviewprojection), plus `tasks/grapher3d-lit-mesh.md`.
+**Follow-on:** `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc.md` (the umbrella, with
+steps 1 to 4 in gacalc and step 5 in github.com/billsix/modelviewprojection), plus
+`tasks/grapher3d-lit-mesh.md`.
 
 ## Outcome
 

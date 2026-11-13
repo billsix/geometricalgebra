@@ -1,7 +1,7 @@
 # Step 1: move mvp's Cayley graph and scene into `gacalc.cayley`
 
 **Done:** 2026-11-13. **Created:** 2026-11-13.
-**Part of:** `tasks/move-mvp-gl-toolkit-to-gacalc.md`
+**Part of:** `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc.md`
 **Next:** `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-2-graphics-container.md`
 
 ## Outcome
