@@ -78,6 +78,11 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   sdist+wheel. Which dims are generated is set by **`GACALC_DIMS`** (default `1,2,3`; `make
   dist`/`release` set `1,2,3,4,5`). See `tasks/reference/code-generator-architecture.md`,
   `graded-subspaces-vs-subalgebras.md`, `generated-algebra-generation-cost.md`.
+- `src/gacalc/cayley/` — **coordinate frames joined by invertible functions** (moved from
+  modelviewprojection; GL-free): `cayleygraph.py` (the immutable acyclic `CayleyGraph`, whose
+  `path(a, b)` composes edges and inverts any walked against its arrow) and `cayleyscene.py` (a graph
+  + declarative `Scene` → a timed `Animation`; `to_matrix` for GL's 4×4). The name, and the
+  frame-graph vs blade-table trap: `tasks/reference/composable-function-algebraic-identity.md`.
 - `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
   `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`)

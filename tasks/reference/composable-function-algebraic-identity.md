@@ -55,12 +55,21 @@ and a reader who doesn't loses nothing.
   GL(V) ⊂ Aff(V) ⊂ (all bijections); the `max()` join (`functions.py`) computes the smallest
   class in the chain containing every factor — i.e., which group the composite lives in.
 
-## The Cayley-graph layer (modelviewprojection) — the exact terms, and why the name is fair
+## The Cayley-graph layer (`gacalc.cayley`) — the exact terms, and why the name is fair
 
-The graph lives in [modelviewprojection](https://github.com/billsix/modelviewprojection) at
-`src/modelviewprojection/cayley/cayleygraph.py`: nodes are coordinate **spaces**, directed edges
-are sequences of `InvertibleFunction` steps, and `CayleyGraph.path()` composes along a walk,
-inverting any edge traversed against its arrow.
+The graph lives in `src/gacalc/cayley/cayleygraph.py`: nodes are coordinate **spaces**, directed
+edges are sequences of `InvertibleFunction` steps, and `CayleyGraph.path()` composes along a walk,
+inverting any edge traversed against its arrow. `src/gacalc/cayley/cayleyscene.py` turns a graph
+plus a declarative scene into a timed animation (the placement tree, the world->camera inverse,
+the GPU projection steps and the two imgui trees), and `to_matrix` realizes an affine
+`InvertibleFunction` as a 4×4 for GL. Neither module imports OpenGL. Both were written for
+[modelviewprojection](https://github.com/billsix/modelviewprojection)'s visualizations, which are
+still their main user, and moved here because the frame graph is math, not rendering
+(`tasks/move-mvp-gl-toolkit-to-gacalc.md`).
+
+- **Naming trap.** This "Cayley graph" is a graph of coordinate *frames*. It is not a Cayley table
+  or a graph of basis-blade multiplication; `tasks/reference/design-decisions.md` rejects a
+  Cayley-table *representation* (`DenseEuclidean(n)`), which is unrelated.
 
 - **Strictly, that generalizes a Cayley graph.** A textbook **Cayley graph** has *group elements*
   as nodes and one fixed generating set acting at every node

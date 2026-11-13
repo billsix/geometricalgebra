@@ -11,6 +11,14 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+### Added
+- **`gacalc.cayley`** — coordinate frames joined by `InvertibleFunction`s, moved from
+  modelviewprojection (github.com/billsix/modelviewprojection). `cayley.cayleygraph` has the
+  immutable, acyclic `CayleyGraph` (`Edge`, `Step`, `Path`, `node_label`), whose `path(a, b)`
+  composes the edges and inverts any walked against its arrow. `cayley.cayleyscene` turns a graph
+  plus a declarative `Scene` into a timed `Animation`, and its `to_matrix(f)` gives an affine
+  function's 4×4. No new dependencies; neither module imports OpenGL.
+
 ## [0.1.0] — 2026-11-10
 
 ### Added
