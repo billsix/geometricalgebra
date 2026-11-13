@@ -7,7 +7,7 @@ move (William Emerison Six <billsix@gmail.com>, 2026-11-13).
 **Started:** 2026-11-03 in github.com/billsix/modelviewprojection (mvp), as
 `tasks/graphing-calculator-3d-lit-mesh.md`. Moved to gacalc on 2026-11-13, so that the triangulation
 and normals are written in gacalc from the start.
-**Depends on:** `tasks/move-mvp-gl-toolkit-to-gacalc-step-4-graphers-as-library.md`. That step puts
+**Depends on:** `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-4-graphers-as-library.md` (done 2026-11-13). That step puts
 the 3D grapher in gacalc as `src/gacalc/gl/grapher3d.py`, with `run(surfaces)`.
 **Background:** mvp's `tasks/archive/2026/11/03/graphing-calculator-2d-3d.md`, which built the base
 graphers. Read it first.

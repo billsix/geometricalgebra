@@ -1,7 +1,7 @@
 # Move modelviewprojection's Cayley graph, OpenGL toolkit and graphers into gacalc (umbrella)
 
-**Status:** proposed, approved in outline (William Emerison Six <billsix@gmail.com>, 2026-11-13);
-step 1 is next.
+**Status:** in progress. The gacalc side (steps 1 to 4) is done and committed as version 0.1.1,
+which is not yet tagged or published. Step 5, in mvp, waits for that release on PyPI.
 **Priority:** 4
 **Difficulty:** 7 (the whole initiative; each step is rated in its own doc)
 **Created:** 2026-11-13
@@ -87,9 +87,9 @@ is mvp work.
       the `gl` extra, plus gacalc's image can open a GL window. Done 2026-11-13.
 - [x] 3. `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-3-gl-toolkit.md`:
       `gacalc.gl` (matrix stack, pipeline, `cayley_gl`, labels, shaders). Done 2026-11-13.
-- [ ] 4. `tasks/move-mvp-gl-toolkit-to-gacalc-step-4-graphers-as-library.md`: `grapher2d.run` and
-      `grapher3d.run`, plus gacalc's runners. The gacalc release follows: the agent stages the
-      version bump and changelog, then the maintainer tags and publishes.
+- [x] 4. `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-4-graphers-as-library.md`:
+      `grapher2d.run` and `grapher3d.run`, plus gacalc's runners, and the 0.1.1 version bump.
+      Done 2026-11-13; the maintainer tags and publishes 0.1.1 (`make release`).
 - [ ] 5. mvp `tasks/move-mvp-gl-toolkit-to-gacalc-step-5-mvp-switch.md` (in
       github.com/billsix/modelviewprojection): pin the new gacalc, switch the imports, delete the
       moved files, and reduce the graphers to runners.

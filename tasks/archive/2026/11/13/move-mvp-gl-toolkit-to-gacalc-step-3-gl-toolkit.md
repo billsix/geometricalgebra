@@ -2,7 +2,7 @@
 
 **Done:** 2026-11-13. **Created:** 2026-11-13.
 **Part of:** `tasks/move-mvp-gl-toolkit-to-gacalc.md`
-**Next:** `tasks/move-mvp-gl-toolkit-to-gacalc-step-4-graphers-as-library.md`
+**Next:** `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-4-graphers-as-library.md`
 
 ## Outcome
 
