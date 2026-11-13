@@ -85,8 +85,8 @@ is mvp work.
       `gacalc.cayley`, GL-free, no new dependencies. Done 2026-11-13.
 - [x] 2. `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-2-graphics-container.md`:
       the `gl` extra, plus gacalc's image can open a GL window. Done 2026-11-13.
-- [ ] 3. `tasks/move-mvp-gl-toolkit-to-gacalc-step-3-gl-toolkit.md`: `gacalc.gl` (matrix stack,
-      pipeline, `cayley_gl`, labels, shaders).
+- [x] 3. `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-3-gl-toolkit.md`:
+      `gacalc.gl` (matrix stack, pipeline, `cayley_gl`, labels, shaders). Done 2026-11-13.
 - [ ] 4. `tasks/move-mvp-gl-toolkit-to-gacalc-step-4-graphers-as-library.md`: `grapher2d.run` and
       `grapher3d.run`, plus gacalc's runners. The gacalc release follows: the agent stages the
       version bump and changelog, then the maintainer tags and publishes.
