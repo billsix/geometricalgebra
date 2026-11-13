@@ -1,65 +1,72 @@
 # Step 4: the 2D and 3D graphers as `gacalc.gl` library functions, plus gacalc's runners
 
-**Status:** proposed, approved (the umbrella's decisions).
-**Priority:** 4
-**Difficulty:** 5
-**Created:** 2026-11-13
+**Done:** 2026-11-13. **Created:** 2026-11-13.
 **Part of:** `tasks/move-mvp-gl-toolkit-to-gacalc.md`
-**Depends on:** step 3 (`gacalc.gl`).
-**Next:** the gacalc release, then mvp's step 5
-(github.com/billsix/modelviewprojection `tasks/move-mvp-gl-toolkit-to-gacalc-step-5-mvp-switch.md`).
+**Next:** the maintainer tags and publishes 0.1.1. Then mvp's step 5
+(github.com/billsix/modelviewprojection `tasks/move-mvp-gl-toolkit-to-gacalc-step-5-mvp-switch.md`)
+and `tasks/grapher3d-lit-mesh.md`.
 
-## BLUF
+## Outcome
 
-mvp's `graphingcalculator/grapher2d.py` (621 lines) and `grapher3d.py` (530) are scripts. They
-`sys.exit` when imported and keep their window, view and GL objects as module-level globals. Turn
-each into a library module, `gacalc.gl.grapher2d` and `grapher3d`. Each module gets one entry
-point, `run(functions)` (2D) or `run(surfaces)` (3D), which opens the window and runs the loop.
-Then add gacalc runner scripts that pass gacalc's own function lists. Done means:
-- both modules import without opening a window;
-- the pure-geometry builders are doctested;
-- the gacalc runners plot their functions;
-- the gacalc release is staged.
+- **`src/gacalc/gl/grapher2d.py` and `grapher3d.py`** come from mvp's
+  `graphingcalculator/grapher2d.py` (621 lines) and `grapher3d.py` (530). Those were run-by-path
+  programs that `sys.exit`ed when imported and kept their window and GL objects as module
+  globals.
+  - The authored data types (`PlottedFunction`, `Surface`), view state (`View2D`, `View3D`), the
+    mesh dataclasses and the numpy geometry builders are now module-level. The builders gained
+    doctests: vertex counts for the grid, axes, wireframe, solid mesh and origin dot, the
+    arrowhead tip, and a sampled line.
+  - `run(functions, title=…)` / `run(surfaces, title=…)` holds everything GL. The program body
+    became nested functions that close over the run's state; the three globals the handlers
+    rebound (`built_spacing`, `curve_build_key`, `mouse_prev`, and `built_key` in 3D) are
+    `nonlocal`, and the function list is the parameter.
+  - Behaviour is unchanged: the same controls, menus, constants, per-pixel-column resampling and
+    depth clear.
+- **Deliberate differences from mvp's programs:**
+  - shaders load from `gacalc.gl.SHADER_DIR`;
+  - `label_renderer.cleanup()` runs at the end of `run`, before `cayley_gl.shutdown()`, while the
+    GL context still exists. mvp used `atexit`, which ran after the context was gone; `cleanup()`
+    swallowed the resulting errors;
+  - the key handlers' `if`/`elif` chains became a `match` with a `case _` default, the house rule
+    for total dispatch;
+  - `zip(..., strict=True)` where the curve meshes pair with the functions.
+- **Runners: `examples/grapher2d.py` and `examples/grapher3d.py`.** Their functions are computed with
+  gacalc:
+  - 2D: the e_1 and e_2 coefficients of `e_1.rotate(θ)`, and `|x * e_1 + 1 * e_2|`;
+  - 3D: `|x * e_1 + y * e_2|` (a cone), a dot product with `1 * e_1 + 1 * e_2` (a plane), and the
+    e_12 coefficient of `a ∧ b` for `a` and its mirror image (a saddle).
 
-## Context
+  `examples/` sits outside pytest's `testpaths`, so a test run never opens a window;
+  `entrypoint/format.sh` gained `ty check examples`. The LaTeX captions follow the book's notation
+  rules (explicit `*`, unit coefficients written out).
+- **Annotation gaps in the moved code**, found with `tools/check_annotations.py`:
+  - `cayleyscene.to_matrix` now takes `InvertibleFunction[Vector]` (it was bare);
+  - `_pipeline.make_vao` and `build_cylinders_for_edges` take a `Sequence`, not an invariant
+    `list`.
 
-- **What each script holds now** (read mvp's files first):
-  - the authored data types `PlottedFunction` (2D) and `Surface` (3D);
-  - the module-level lists `FUNCTIONS` and `SURFACES`;
-  - view state (`View2D`, `View3D`);
-  - pure numpy geometry builders (`sample_curve`, `build_grid`, `build_axes_and_ticks`,
-    `build_basis_*`, `build_origin_dot`, `build_wireframe`, `build_solid`, `build_axes`);
-  - after the `if __name__ != "__main__": sys.exit(...)` guard, the window, the GL objects, the
-    imgui menubar, the key/mouse handlers, and the event loop at module level.
-- **Shape:**
-  - the data types and builders become plain module-level definitions, importable and doctested;
-  - the window, GL objects and view state become locals of `run` or fields of a small state
-    dataclass that `run` creates, replacing the globals the handlers mutate now;
-  - the function list becomes `run`'s argument.
+  The remaining rows in the moved files are the exempt kinds (loop targets, enum members, tuple
+  unpacks, `TypeVar`s).
+- **Docs:**
+  - the README's layout lists `cayley/`, `gl/` and `examples/`, and a new "Plotting with OpenGL"
+    block gives the commands;
+  - `CHANGELOG.md`, `CLAUDE.md`'s module layout, and a graphers section in
+    `tasks/reference/gl-toolkit.md` (the 2D traps from mvp's gotchas §8).
+  - `imgui.ini` is gitignored, because the headless run left one in the repo root.
+- **Release:** version **0.1.1**, `[Unreleased]` promoted to `## [0.1.1] — 2026-11-13`, and
+  `tools/check_changelog.py` passes. It is a patch bump because everything is additive, per the
+  pre-1.0 rule (breaking → `0.Y.0`, compatible → patch). The plan had guessed 0.2.0. The release
+  is not tagged or published.
+  - **Found along the way:** the repo has no `v0.1.0` tag (the latest is `v0.0.20`), although
+    `CHANGELOG.md` records `## [0.1.0] — 2026-11-10`.
 
-  This is the one deliberate restructure in the initiative. Keep the behaviour identical:
-  - same controls and same menubar;
-  - 2D: one sample per pixel column, and the depth clear after the backdrop;
-  - same labels.
+## Verification
 
-  mvp's `tasks/reference/gl-and-imgui-gotchas.md` section 8 explains the 2D plot traps; copy what
-  applies into gacalc's `tasks/reference/gl-toolkit.md` (from step 3).
-- **Runners.** gacalc's go in a new `demos/` or `examples/` directory of gacalc. Pick whichever
-  matches the repo's existing demo layout (e.g. `notebooks/`). Each is about 20 lines: an authored
-  function list and a `run(...)` call. They can plot GA-flavoured functions, but that is optional;
-  the point is that each repo owns its own list (umbrella decision 3).
-- `imgui.ini` sits beside mvp's graphers (`graphingcalculator/imgui.ini`). Decide whether imgui
-  should write it into the working directory or nowhere (`imguiio.ini_filename = None`), and record
-  the choice.
+All on the nested image, through the targets' own `podman run` lines:
+- `format.sh` exited 0 with all six checks clean, including the new `ty check examples`;
+- 1,240 tests passed, 2 skipped, 11 deselected;
+- all 17 shader combinations compiled under Xvfb;
+- both runners ran for 12 s under Xvfb until `timeout -s KILL` (exit 137), with no traceback. Each
+  window opened, built its meshes and drew frames.
 
-## Plan
-
-1. Create `src/gacalc/gl/grapher2d.py` and `grapher3d.py` in the shape above, with the LGPL header.
-2. Add doctests for the builders, for example the vertex count from `build_grid(1.0)` and the
-   triangle count from `build_solid`.
-3. Add the two gacalc runners and check them by eye on the host (only the maintainer can see a
-   window) or under Xvfb with a screenshot.
-4. Run `make test` and `make type-check`.
-5. Add a `CHANGELOG.md` `[Unreleased]` entry. Then stage the release: bump `version` in
-   `pyproject.toml` (new features before 1.0 mean `0.Y.0`, so `0.2.0` unless `[Unreleased]` already
-   names a version) and promote `[Unreleased]`. The maintainer tags and publishes.
+**Not run:** `make test-full` (the `slow` 3D symbolic frame tests, which nothing here touches; CI
+runs it), `make dist` with g4/g5, and a look at the windows on a real display.
