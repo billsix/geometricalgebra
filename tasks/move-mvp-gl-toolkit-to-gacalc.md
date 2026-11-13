@@ -83,8 +83,8 @@ is mvp work.
 
 - [x] 1. `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-1-cayley-modules.md`:
       `gacalc.cayley`, GL-free, no new dependencies. Done 2026-11-13.
-- [ ] 2. `tasks/move-mvp-gl-toolkit-to-gacalc-step-2-graphics-container.md`: the `gl` extra, plus
-      gacalc's image and Makefile can open a GL window.
+- [x] 2. `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-2-graphics-container.md`:
+      the `gl` extra, plus gacalc's image can open a GL window. Done 2026-11-13.
 - [ ] 3. `tasks/move-mvp-gl-toolkit-to-gacalc-step-3-gl-toolkit.md`: `gacalc.gl` (matrix stack,
       pipeline, `cayley_gl`, labels, shaders).
 - [ ] 4. `tasks/move-mvp-gl-toolkit-to-gacalc-step-4-graphers-as-library.md`: `grapher2d.run` and
