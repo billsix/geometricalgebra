@@ -117,10 +117,17 @@ Eleven GLSL shaders ship next to them as package data. The modules need the opti
   LaTeX string to a transparent PNG. It uploads that as an RGBA texture and draws it as a
   camera-facing billboard (`billboard.vert` / `billboard.frag`) at a constant screen size, in
   both ortho and perspective views (`clip.xy += offset * clip.w`).
-- **gacalc's image does not ship `texExpToPng`.** There `LabelRenderer.available` is `False` and
-  every method is a no-op, so programs run without labels. mvp's image builds it.
-- texExpToPng ignores `--fg` and renders black. The shader paints the glyph using the texture's
-  **alpha** as a mask, never its RGB.
+- **The image builds `texExpToPng` when `USE_TEX_LABELS=1`** (the Makefile's default; off with
+  `MINIMAL_IMAGE=1`), pinned by the Dockerfile's `TEXEXP_COMMIT` ARG to the commit mvp builds.
+  `entrypoint/08-install-tex-labels.sh` installs the build tools and the TeX set the tool's
+  preamble loads (`standalone` with `varwidth`, `amsmath`, `xcolor`, `dvipng`);
+  `entrypoint/install-texexp.sh` fetches, builds and installs it, then renders one label, so a
+  broken TeX set fails the image build.
+- **Where `texExpToPng` is not on `PATH`, labels turn off silently.** `LabelRenderer.available` is
+  `False` and every method is a no-op, so a missing tool shows up only as a grapher with no labels.
+  Check with `which texExpToPng` in the container.
+- The shader paints the glyph using the texture's **alpha** as a mask, never its RGB, so the label
+  colour comes from the shader whatever `--fg` produced.
 - texExpToPng writes `formula.tex`/`.dvi` into the current directory, so the renderer runs it in
   its own scratch directory.
 - A label pass drawn over another program must save and restore that program's GL state

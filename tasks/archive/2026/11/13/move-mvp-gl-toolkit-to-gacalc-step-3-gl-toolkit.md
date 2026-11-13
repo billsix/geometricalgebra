@@ -39,7 +39,8 @@ this step is in `tasks/reference/gl-toolkit.md`, new in this step.
     `Vector(*map(float, a))`;
   - docstrings and comments that were false in gacalc were rewritten: "the mvpvisualization demos",
     demo numbers, mvp task paths, "in a book about matrices", and the claim that `texExpToPng` is
-    in the image;
+    in the image. The image was left without it, so the graphers drew no TeX labels until a later
+    fix built it (`tasks/move-mvp-gl-toolkit-to-gacalc.md`, History item 6);
   - two comments that narrated history were made present-tense (the `u_time`/`u_fov` gating note
     and `matrix_stack._not_a_stack`);
   - paragraphs with orphaned one-word lines were reflowed. They were found with a tokenize/ast

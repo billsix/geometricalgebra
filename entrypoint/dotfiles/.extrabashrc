@@ -2,9 +2,11 @@ alias ls='ls --color=auto'
 export GPG_TTY=$(tty)
 PS1='\[\e[36m\]┌─(\t) \[\e[32m\]\u@\h:\w\n\[\e[36m\]└─λ \[\e[0m\]'
 
+# Format on exit. format.sh uses repo-relative paths (ruff over ., `ty check src`,
+# `ty check tests`, ...), so it runs from the repo root wherever the shell is.
 exit() {
     echo "Formatting on shell exit"
-    cd /gacalc/src/
+    cd /gacalc
     /format.sh
     builtin exit "$@"
 }

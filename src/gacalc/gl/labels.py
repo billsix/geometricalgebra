@@ -22,9 +22,8 @@ The billboard keeps a constant on-screen size at any depth and works in both the
 Graceful degradation is the point of the module: where ``texExpToPng``
 (github.com/billsix/tex-expression-to-png) is not on ``PATH``, ``shutil.which``
 returns ``None``, :data:`LabelRenderer.available` is ``False``, and every method
-is a no-op -- the program runs unchanged, just without labels.
-modelviewprojection's image builds ``texExpToPng``; gacalc's image does not, so
-there the labels are off.
+is a no-op -- the program runs unchanged, just without labels. gacalc's image
+builds ``texExpToPng`` when ``USE_TEX_LABELS=1``, the Makefile's default.
 """
 
 import ctypes
@@ -96,7 +95,7 @@ class LabelRenderer:
         self._cachedir = None
         if not self.available:
             return
-        self._cachedir = tempfile.mkdtemp(prefix="mvp_grapher_labels_")
+        self._cachedir = tempfile.mkdtemp(prefix="gacalc_grapher_labels_")
         self._program = self._compile(shader_dir)
         self._u_v = GL.glGetUniformLocation(self._program, "vMatrix")
         self._u_p = GL.glGetUniformLocation(self._program, "pMatrix")

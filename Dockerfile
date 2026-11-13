@@ -184,6 +184,21 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     /usr/local/bin/07-install-gl.sh
 
+# USE_TEX_LABELS builds texExpToPng (github.com/billsix/tex-expression-to-png), pinned to
+# TEXEXP_COMMIT (the commit modelviewprojection pins), which gacalc.gl.labels runs to
+# draw the graphing calculators' TeX labels. Without it the graphers run unlabelled.
+# 08-install-tex-labels.sh installs the build tools and TeX set; install-texexp.sh
+# fetches, builds and checks it. The fetch is the only network use, at build time.
+ARG USE_TEX_LABELS=0
+ARG TEXEXP_COMMIT=67da442daf12eff07d5d8e6d57258be01492e3d0
+COPY entrypoint/08-install-tex-labels.sh entrypoint/install-texexp.sh /usr/local/bin/
+RUN --mount=type=cache,target=/var/cache/libdnf5 \
+    --mount=type=cache,target=/var/lib/dnf \
+    if [ "$USE_TEX_LABELS" = "1" ]; then \
+      /usr/local/bin/08-install-tex-labels.sh && \
+      TEXEXP_COMMIT="$TEXEXP_COMMIT" /usr/local/bin/install-texexp.sh ; \
+    fi
+
 # --- Dependencies (the slow layer) -- from pyproject, needs ONLY pyproject.toml ---
 # Install the project's runtime deps + the dev/notebooks/jupyter/gl extras straight from
 # pyproject's own [project.(optional-)dependencies] -- the single source of truth (no
