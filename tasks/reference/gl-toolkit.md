@@ -125,7 +125,10 @@ Eleven GLSL shaders ship next to them as package data. The modules need the opti
   broken TeX set fails the image build.
 - **Where `texExpToPng` is not on `PATH`, labels turn off silently.** `LabelRenderer.available` is
   `False` and every method is a no-op, so a missing tool shows up only as a grapher with no labels.
-  Check with `which texExpToPng` in the container.
+  Check with `which texExpToPng` in the container. To check that labels draw headless, open a
+  hidden GLFW window under Xvfb, call `begin` / `draw(r"\sin(x)", (0, 0, 0))` / `end` with identity
+  matrices over black, and count lit pixels with `glReadPixels` (2,503 of 400 × 200 on the image
+  built 2026-11-13).
 - The shader paints the glyph using the texture's **alpha** as a mask, never its RGB, so the label
   colour comes from the shader whatever `--fg` produced.
 - texExpToPng writes `formula.tex`/`.dvi` into the current directory, so the renderer runs it in
