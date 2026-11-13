@@ -78,8 +78,8 @@ dependencies.
 Each step is its own commit. Steps 1 to 4 are gacalc work and end in a single gacalc release. Step 5
 is mvp work.
 
-- [ ] 1. `tasks/move-mvp-gl-toolkit-to-gacalc-step-1-cayley-modules.md`: `gacalc.cayley`, GL-free,
-      no new dependencies.
+- [x] 1. `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-1-cayley-modules.md`:
+      `gacalc.cayley`, GL-free, no new dependencies. Done 2026-11-13.
 - [ ] 2. `tasks/move-mvp-gl-toolkit-to-gacalc-step-2-graphics-container.md`: the `gl` extra, plus
       gacalc's image and Makefile can open a GL window.
 - [ ] 3. `tasks/move-mvp-gl-toolkit-to-gacalc-step-3-gl-toolkit.md`: `gacalc.gl` (matrix stack,
@@ -99,11 +99,15 @@ After step 4: `tasks/grapher3d-lit-mesh.md` (not a step of this initiative; it d
   moves. So the gacalc-side steps should land in a single release, not one per step. mvp's pin is
   currently `0.0.20`, but gacalc is at `0.1.0`. That bump crosses the breaking changes in
   `CHANGELOG.md` `## [0.1.0]`, which step 5 must also absorb.
-- **Mechanics stay the same; only the imports change.** Moving a file must not change what it does.
-  Restyling or redesigning moved code is out of scope, apart from the import rewrites and licence
-  headers. Every one of the moved files is the maintainer's own, so gacalc's coding standard applies
-  in full. Run gacalc's `make type-check` on them and fix what it reports, but keep that as a
-  separate concern from the move.
+- **Moved code keeps its behaviour but follows gacalc's conventions.** Moving a file must not change
+  what it does, and redesigning it is out of scope. But once it lives in gacalc it is gacalc code,
+  so the rules in gacalc's `CLAUDE.md` ("Conventions the agent must obey") apply from the start,
+  tests included. The one the mvp code breaks most is **vectors built from the basis constants with
+  every coefficient written out** (`-9.0 * e_1 + 1.0 * e_2 + 0.0 * e_3`), never
+  `Vector(-9.0, 1.0, 0.0)` (William Emerison Six <billsix@gmail.com>, 2026-11-13).
+  `tasks/adhoc/move-mvp-gl-toolkit-to-gacalc/basis_vectors.py` does that rewrite and keeps each
+  coefficient's number type; run it on every moved file. Directions stay bare
+  (`plane_rotation(Vector.e_3, Vector.e_1)`).
 - **GL lore travels with the code.** mvp's `tasks/reference/gl-and-imgui-gotchas.md` sections 1
   (imgui/GLFW), 6 (Python-side traps), 7 (repo-wide GL conventions), 8 (flat 2D plot on the 3D
   setup) and 9 (TeX billboard labels) describe code that moves. Steps 3 and 4 copy what applies into
