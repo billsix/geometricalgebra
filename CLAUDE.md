@@ -424,7 +424,10 @@ over a "run it on your host" instruction.
   `git tag`). Bump `version` in `pyproject.toml` first — PyPI/TestPyPI permanently reject a
   re-used version, and `release` refuses if a `v<version>` tag exists.
 - Packaging: `pyproject.toml` (setuptools, `src/` layout); runtime deps are **only** `numpy` +
-  `sympy`; extras `notebooks`/`jupyter`/`dev`; there is **no `requirements.txt`**. License LGPL-2.1-only.
+  `sympy`; extras `notebooks`/`jupyter`/`dev`/`gl` (`gl` = glfw, PyOpenGL, imgui-bundle, Pillow for
+  `gacalc.gl`; the image always installs it, plus its system libraries from
+  `entrypoint/07-install-gl.sh`, so that `make test` can import `gacalc.gl`); there is **no
+  `requirements.txt`**. License LGPL-2.1-only.
 - **License headers: every `.py` file (source, tests, tools, notebooks) starts with the project's
   LGPL-2.1-only header — copy it verbatim from `tests/test_rotate_90_degrees.py` — with
   `Copyright (c) 2025-2026 William Emerison Six` (this project began in 2025). Never the MIT /

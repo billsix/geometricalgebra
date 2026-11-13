@@ -55,10 +55,13 @@ means:
 
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-13)
 
-1. **The GL dependencies are an optional extra.** glfw, PyOpenGL, PyOpenGL-accelerate,
-   imgui-bundle[glfw] and Pillow go in `[project.optional-dependencies] gl`, like the existing
-   `notebooks` extra. `pip install gacalc` still needs only numpy and sympy, so `import gacalc`
-   must never import `gacalc.gl`.
+1. **The GL dependencies are an optional extra.** glfw, PyOpenGL, imgui-bundle[glfw] and Pillow go
+   in `[project.optional-dependencies] gl`, like the existing `notebooks` extra. `pip install gacalc`
+   still needs only numpy and sympy, so `import gacalc` must never import `gacalc.gl`.
+   - PyOpenGL-accelerate, which mvp also pins, was left out in step 2 (the agent's call,
+     2026-11-13). It has no binary wheel for Python 3.15, so it would need a compiler that gacalc's
+     lean image lacks. It is optional: it speeds up array marshalling and silences an INFO log
+     line.
 2. **The whole GL toolkit moves**, not part of it, so that `cayley_gl` does not straddle two repos.
 3. **The graphers become library functions**, e.g. `gacalc.gl.grapher2d.run(functions)`. mvp and
    gacalc each keep a short runner script that passes its own function list, so the runner is not

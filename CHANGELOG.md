@@ -18,6 +18,8 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   composes the edges and inverts any walked against its arrow. `cayley.cayleyscene` turns a graph
   plus a declarative `Scene` into a timed `Animation`, and its `to_matrix(f)` gives an affine
   function's 4×4. No new dependencies; neither module imports OpenGL.
+- **A `gl` extra** (`pip install "gacalc[gl]"`): glfw, PyOpenGL, imgui-bundle[glfw] and Pillow, for
+  the OpenGL code in `gacalc.gl`. A plain `pip install gacalc` still needs only numpy and sympy.
 
 ## [0.1.0] — 2026-11-10
 

@@ -177,8 +177,15 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
       EPIX_COMMIT="$EPIX_COMMIT" /usr/local/bin/install-epix.sh ; \
     fi
 
+# OpenGL system libraries for gacalc.gl; always installed (no flag), since `make test`
+# imports gacalc.gl. See entrypoint/07-install-gl.sh.
+COPY entrypoint/07-install-gl.sh /usr/local/bin/
+RUN --mount=type=cache,target=/var/cache/libdnf5 \
+    --mount=type=cache,target=/var/lib/dnf \
+    /usr/local/bin/07-install-gl.sh
+
 # --- Dependencies (the slow layer) -- from pyproject, needs ONLY pyproject.toml ---
-# Install the project's runtime deps + the dev/notebooks/jupyter extras straight from
+# Install the project's runtime deps + the dev/notebooks/jupyter/gl extras straight from
 # pyproject's own [project.(optional-)dependencies] -- the single source of truth (no
 # requirements.txt, no hardcoded list). `-r pyproject.toml` installs the DEPENDENCIES,
 # NOT the gacalc package, so this layer neither builds gacalc nor needs src/ or tools/,
@@ -198,7 +205,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     export VIRTUAL_ENV_DISABLE_PROMPT=1 && source /venv/bin/activate && \
     cd /gacalc && \
     uv pip install --python $(which python) -c constraints.txt -r pyproject.toml \
-        --extra dev --extra notebooks --extra jupyter setuptools wheel && \
+        --extra dev --extra notebooks --extra jupyter --extra gl setuptools wheel && \
     if [ "$USE_EPIX" = "1" ]; then \
       uv pip install --python $(which python) -c constraints.txt nanobind ; \
     fi && \

@@ -26,6 +26,11 @@ notebooks = ["matplotlib", "ipython", "matplotlib-inline", "pandas", "jupytext"]
 jupyter = ["jupyterlab", "jupyter", "jupyter-lsp", "jupyterlab-mathjax3"]
 # tooling for building, linting, and publishing -- not needed at runtime
 dev = ["build", "twine", "ruff"]
+# OpenGL windows, plots and the Cayley-graph viewer (gacalc.gl); `import gacalc`
+# never needs these.  PyOpenGL-accelerate is left out: it is optional (faster
+# array marshalling) and has no binary wheel for every Python, so it would need
+# a compiler.
+gl = ["glfw", "PyOpenGL", "imgui-bundle[glfw]", "Pillow"]
 
 # numpy + sympy are *build* dependencies: the build_py hook in setup.py runs
 # tools/gen_specialized.py when the generated modules are absent, and that

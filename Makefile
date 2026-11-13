@@ -346,7 +346,7 @@ update-pins: image ## (container, network) re-resolve constraints.txt, the image
 		-v $(CURDIR):/gacalc:Z \
 		--entrypoint /bin/bash \
 		$(CONTAINER_NAME) \
-		-c 'source /venv/bin/activate && cd /gacalc && uv pip compile pyproject.toml entrypoint/image-requirements.in --extra dev --extra notebooks --extra jupyter --python /venv/bin/python -o constraints.txt'
+		-c 'source /venv/bin/activate && cd /gacalc && uv pip compile pyproject.toml entrypoint/image-requirements.in --extra dev --extra notebooks --extra jupyter --extra gl --python /venv/bin/python -o constraints.txt'
 
 .PHONY: check-notebooks
 check-notebooks: image ## (container) pyright gate over notebooks/ (type regressions fail the build)
