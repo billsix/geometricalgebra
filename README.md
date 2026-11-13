@@ -30,7 +30,21 @@ src/gacalc/
   vectorcalc.py    the cross product (the dual of the wedge, 𝒢₃)
   standardposition.py  project_sp / reject_sp via elementary plane rotations (𝒢₃)
   transforms.py    translate / scale / rotation factories, line_to_line_projection (composable, invertible)
+  cayley/          coordinate frames joined by invertible functions, as a graph (+ a timed scene)
+  gl/              OpenGL toolkit + 2D/3D graphing calculators (needs the `gl` extra)
+examples/          grapher2d.py / grapher3d.py: plot functions gacalc computes
 ```
+
+**Plotting with OpenGL** (needs a display; `make shell` passes X11 and Wayland through):
+
+```sh
+pip install "gacalc[gl]"         # [HOST] glfw, PyOpenGL, imgui-bundle, Pillow; the image has them
+python examples/grapher2d.py     # [CONTAINER] f(x) curves: pan, zoom, grid / axes / basis backdrop
+python examples/grapher3d.py     # [CONTAINER] f(x, y) surfaces: orbit, wireframe / solid mesh
+```
+
+A runner is a list of functions and one `grapher2d.run(...)` / `grapher3d.run(...)` call. The
+toolkit's import order, Wayland setup and headless use are in `tasks/reference/gl-toolkit.md`.
 
 All representations interoperate through one interchange format: the **blade
 coefficient dictionary** (`{(1, 2): 4}` means `4 * e₁ * e₂`; `()` keys the scalar),

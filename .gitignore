@@ -43,3 +43,6 @@ gacalc-*.tar
 
 # ePiX book figures, rendered at `make docs` from book/figures/epix/*.py
 book/docs/_static/epix/
+
+# imgui writes its window layout to the working directory (gacalc.gl programs)
+imgui.ini

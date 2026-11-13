@@ -78,6 +78,20 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   sdist+wheel. Which dims are generated is set by **`GACALC_DIMS`** (default `1,2,3`; `make
   dist`/`release` set `1,2,3,4,5`). See `tasks/reference/code-generator-architecture.md`,
   `graded-subspaces-vs-subalgebras.md`, `generated-algebra-generation-cost.md`.
+- `src/gacalc/cayley/` — **coordinate frames joined by invertible functions** (moved from
+  modelviewprojection; GL-free): `cayleygraph.py` (the immutable acyclic `CayleyGraph`, whose
+  `path(a, b)` composes edges and inverts any walked against its arrow) and `cayleyscene.py` (a graph
+  + declarative `Scene` → a timed `Animation`; `to_matrix` for GL's 4×4). The name, and the
+  frame-graph vs blade-table trap: `tasks/reference/composable-function-algebraic-identity.md`.
+- `src/gacalc/gl/` — **the OpenGL toolkit** (moved from modelviewprojection; needs the `gl` extra,
+  and nothing outside `gacalc.gl` imports it — `tests/test_gl_import_boundary.py`): `matrix_stack`,
+  `_pipeline` (GLFW + imgui, shaders, VAOs), `cayley_gl` (draws `gacalc.cayley` scenes), `labels`
+  (TeX billboards, drawn when the image's `USE_TEX_LABELS` built `texExpToPng`), the shared shaders
+  as package data (`gacalc.gl.SHADER_DIR`), and the graphing calculators `grapher2d` / `grapher3d`
+  (`run(functions)` / `run(surfaces)`; numpy geometry builders at module level, the window and loop
+  inside `run`). Runners live in `examples/` (outside pytest's
+  `testpaths`, so a test run never opens a window; `format.sh` type-checks them). Import order,
+  Wayland's `PYGLFW_LIBRARY`, headless runs and the GL conventions: `tasks/reference/gl-toolkit.md`.
 - `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
   `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`)
@@ -372,17 +386,18 @@ over a "run it on your host" instruction.
 - **`make image`** then **`make shell`** — containerized dev; Jupyter on port 8888.
   **`make update-emacs-packages`** — refresh the vendored Emacs packages (maintainer-only, rarely).
 - **`make image MINIMAL_IMAGE=1`** — a **lean image** (~2.42 GB vs the full ~7.21 GB) that still runs
-  the full `make test` gate. `MINIMAL_IMAGE=1` flips the five optional-feature flags off
-  (`USE_EMACS`/`BUILD_DOCS`/`USE_JUPYTER`/`USE_LEAN`/`USE_EPIX` → 0), dropping Emacs, the TeX
-  distribution (both the nbconvert-PDF `03` and the Sphinx-book `04` LaTeX), the Lean 4 theorem-prover
-  toolchain, the Sphinx doc stack, and ePiX — none of which pytest/doctests need. Use it for: the test/lint gate, fast CI, and
+  the full `make test` gate. `MINIMAL_IMAGE=1` flips the six optional-feature flags off
+  (`USE_EMACS`/`BUILD_DOCS`/`USE_JUPYTER`/`USE_LEAN`/`USE_EPIX`/`USE_TEX_LABELS` → 0), dropping Emacs,
+  the TeX distribution (both the nbconvert-PDF `03` and the Sphinx-book `04` LaTeX), the Lean 4
+  theorem-prover toolchain, the Sphinx doc stack, ePiX, and the graphers' `texExpToPng` labels — none
+  of which pytest/doctests need. Use it for: the test/lint gate, fast CI, and
   building nested inside a runClaudeInContainer/runCrushInContainer sandbox where a 7 GB image is
   wasteful. **`MINIMAL_IMAGE` is a build-content signal, deliberately separate from `NESTED_PODMAN`**
   (which is run-capability only, used by `PODMAN_RUN_FLAGS`); the sandbox does **not** auto-set it, so
   a plain nested `make image` builds the full image unless you ask for lean. What the lean image
   *cannot* do: `make docs` (needs `BUILD_DOCS=1`), notebook "Export to PDF" (`USE_JUPYTER=1`), Lean
-  proofs (`USE_LEAN=1`), ePiX figures (`USE_EPIX=1`), or an in-container Emacs (`USE_EMACS=1`) — pass
-  the specific flag to add one back (e.g. `make image MINIMAL_IMAGE=1 BUILD_DOCS=1`). Convention:
+  proofs (`USE_LEAN=1`), ePiX figures (`USE_EPIX=1`), TeX labels in the graphers (`USE_TEX_LABELS=1`),
+  or an in-container Emacs (`USE_EMACS=1`) — pass the specific flag to add one back (e.g. `make image MINIMAL_IMAGE=1 BUILD_DOCS=1`). Convention:
   runClaudeInContainer `tasks/reference/minimal-nested-images.md`.
 - **ePiX in the image (`USE_EPIX=1`, the default):** the maintainer's mirror
   github.com/billsix/epix-mirror, built from source at the commit pinned by the Dockerfile's
@@ -419,7 +434,10 @@ over a "run it on your host" instruction.
   `git tag`). Bump `version` in `pyproject.toml` first — PyPI/TestPyPI permanently reject a
   re-used version, and `release` refuses if a `v<version>` tag exists.
 - Packaging: `pyproject.toml` (setuptools, `src/` layout); runtime deps are **only** `numpy` +
-  `sympy`; extras `notebooks`/`jupyter`/`dev`; there is **no `requirements.txt`**. License LGPL-2.1-only.
+  `sympy`; extras `notebooks`/`jupyter`/`dev`/`gl` (`gl` = glfw, PyOpenGL, imgui-bundle, Pillow for
+  `gacalc.gl`; the image always installs it, plus its system libraries from
+  `entrypoint/07-install-gl.sh`, so that `make test` can import `gacalc.gl`); there is **no
+  `requirements.txt`**. License LGPL-2.1-only.
 - **License headers: every `.py` file (source, tests, tools, notebooks) starts with the project's
   LGPL-2.1-only header — copy it verbatim from `tests/test_rotate_90_degrees.py` — with
   `Copyright (c) 2025-2026 William Emerison Six` (this project began in 2025). Never the MIT /

@@ -11,6 +11,33 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-11-13
+
+Additions only, nothing breaking: modelviewprojection's Cayley graph, OpenGL toolkit and graphing
+calculators now live in gacalc. A plain `pip install gacalc` still needs only numpy and sympy.
+
+### Added
+- **`gacalc.cayley`** — coordinate frames joined by `InvertibleFunction`s, moved from
+  modelviewprojection (github.com/billsix/modelviewprojection). `cayley.cayleygraph` has the
+  immutable, acyclic `CayleyGraph` (`Edge`, `Step`, `Path`, `node_label`), whose `path(a, b)`
+  composes the edges and inverts any walked against its arrow. `cayley.cayleyscene` turns a graph
+  plus a declarative `Scene` into a timed `Animation`, and its `to_matrix(f)` gives an affine
+  function's 4×4. No new dependencies; neither module imports OpenGL.
+- **A `gl` extra** (`pip install "gacalc[gl]"`): glfw, PyOpenGL, imgui-bundle[glfw] and Pillow, for
+  the OpenGL code in `gacalc.gl`. A plain `pip install gacalc` still needs only numpy and sympy.
+- **`gacalc.gl`** — modelviewprojection's OpenGL toolkit, moved here (needs the `gl` extra):
+  `gl.matrix_stack` (model / view / projection matrix stacks), `gl._pipeline` (GLFW + imgui setup,
+  shader compilation, VAO builders), `gl.cayley_gl` (draws `gacalc.cayley` scenes) and `gl.labels`
+  (TeX billboard labels via `texExpToPng`, a no-op without it). The eleven shared GLSL shaders
+  ship as package data; `gacalc.gl.SHADER_DIR` is their directory. `import gacalc` imports none
+  of this.
+- **Graphing calculators** `gacalc.gl.grapher2d` and `gacalc.gl.grapher3d`, from
+  modelviewprojection's run-by-path programs, now library modules: `grapher2d.run(functions)`
+  plots `PlottedFunction`s (`f(x)`) over pannable, zoomable axes, and `grapher3d.run(surfaces)`
+  plots `Surface`s (`f(x, y)`) as wireframe / height-shaded meshes under an orbit camera. Their
+  geometry builders are plain numpy and need no window. `examples/grapher2d.py` and
+  `examples/grapher3d.py` are runners whose functions gacalc computes.
+
 ## [0.1.0] — 2026-11-10
 
 ### Added

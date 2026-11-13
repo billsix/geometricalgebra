@@ -19,6 +19,8 @@ USE_JUPYTER ?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)
 USE_LEAN    ?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)
 # ePiX (the book's LaTeX-native figure tool, pinned by the Dockerfile's EPIX_COMMIT ARG).
 USE_EPIX    ?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)
+# texExpToPng, for the graphing calculators' TeX labels (gacalc.gl.labels).
+USE_TEX_LABELS ?= $(if $(filter 1,$(MINIMAL_IMAGE)),0,1)
 
 
 CONTAINER_CMD ?= $(shell command -v podman >/dev/null 2>&1 && echo podman || echo docker)
@@ -75,8 +77,15 @@ X_FLAGS_FOR_CONTAINER = -e DISPLAY=$(DISPLAY) \
 	-v /tmp/.X11-unix:/tmp/.X11-unix \
 	--security-opt label=type:container_runtime_t
 
-WAYLAND_FLAGS_FOR_CONTAINER = -e "WAYLAND_DISPLAY=${WAYLAND_DISPLAY}" \
+# PYGLFW_LIBRARY points the glfw Python package at Fedora's libglfw (one build with
+# both X11 and Wayland, from entrypoint/07-install-gl.sh). It loads first, so
+# imgui_bundle binds the same library, and GLFW picks Wayland at run time from
+# WAYLAND_DISPLAY. The glfw package's own Wayland-only library would leave
+# imgui_bundle without its X11 symbol (modelviewprojection hit this first).
+WAYLAND_FLAGS_FOR_CONTAINER = -e "XDG_SESSION_TYPE=wayland" \
+                              -e "WAYLAND_DISPLAY=${WAYLAND_DISPLAY}" \
                               -e "XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}" \
+                              -e "PYGLFW_LIBRARY=/usr/lib64/libglfw.so.3" \
                               -v "${XDG_RUNTIME_DIR}:${XDG_RUNTIME_DIR}"
 
 
@@ -103,6 +112,7 @@ image: ## Build the OCI image
                          --build-arg USE_JUPYTER=$(USE_JUPYTER) \
                          --build-arg USE_LEAN=$(USE_LEAN) \
                          --build-arg USE_EPIX=$(USE_EPIX) \
+                         --build-arg USE_TEX_LABELS=$(USE_TEX_LABELS) \
                          .
 
 
@@ -346,7 +356,7 @@ update-pins: image ## (container, network) re-resolve constraints.txt, the image
 		-v $(CURDIR):/gacalc:Z \
 		--entrypoint /bin/bash \
 		$(CONTAINER_NAME) \
-		-c 'source /venv/bin/activate && cd /gacalc && uv pip compile pyproject.toml entrypoint/image-requirements.in --extra dev --extra notebooks --extra jupyter --python /venv/bin/python -o constraints.txt'
+		-c 'source /venv/bin/activate && cd /gacalc && uv pip compile pyproject.toml entrypoint/image-requirements.in --extra dev --extra notebooks --extra jupyter --extra gl --python /venv/bin/python -o constraints.txt'
 
 .PHONY: check-notebooks
 check-notebooks: image ## (container) pyright gate over notebooks/ (type regressions fail the build)
