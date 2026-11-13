@@ -11,6 +11,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-11-13
+
+Additions only, nothing breaking: modelviewprojection's Cayley graph, OpenGL toolkit and graphing
+calculators now live in gacalc. A plain `pip install gacalc` still needs only numpy and sympy.
+
 ### Added
 - **`gacalc.cayley`** — coordinate frames joined by `InvertibleFunction`s, moved from
   modelviewprojection (github.com/billsix/modelviewprojection). `cayley.cayleygraph` has the
