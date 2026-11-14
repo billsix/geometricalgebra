@@ -6,7 +6,7 @@ versions in the generated code for g1 g2 g3 etc"
 **Done:** 2026-11-14, in the unattended batch on branch `autonomous-batch-2026-11-14`
 **Built on:** `tasks/archive/2026/11/07/line-to-line-projection-invertible-function.md` and
 `tasks/archive/2026/11/14/coordinates-from-projection.md`.
-**Next:** `tasks/vector-and-plane-invertible-project-reject.md`.
+**Next:** `tasks/archive/2026/11/14/vector-and-plane-invertible-project-reject.md`.
 
 ## Outcome
 

@@ -64,4 +64,4 @@ with `+ELLIPSIS`.
 ## Follow-ups created
 
 `tasks/archive/2026/11/14/line-to-line-rejection-invertible-function.md` (the same for `reject`, with coordinate versions of
-both line maps generated into `g1`–`g3`) and `tasks/vector-and-plane-invertible-project-reject.md`.
+both line maps generated into `g1`–`g3`) and `tasks/archive/2026/11/14/vector-and-plane-invertible-project-reject.md`.
