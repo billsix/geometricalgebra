@@ -17,6 +17,13 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   the result equals `a.projected_onto(b)`. A zero `b` raises `ValueError` (it used to hit the same
   `e_3` error). Each plane rotation is now the book's 2-D blend `cos * v + sin * v.rotate_90_degrees()`
   on a copied coordinate pair.
+- **Breaking: `from_real` on a graded type with no scalar slot raises `ValueError`.**
+  `g2.Vector.from_real(3)` (also `Bivector`, `Trivector`, `Odd_3`) used to return the zero value
+  silently; use `Scalar.from_real` or the full class `G`. `zero()` is unaffected.
+- **`unit_pseudoscalar_squared` works on every graded type.** It used to raise ("cannot hold the
+  basis blade"); it now returns the scalar `i²`, typed as the type itself when it has a scalar slot
+  (`Scalar`, `Versor`) and as the algebra's `Scalar` otherwise, as `one()` does. Like the full
+  class, `n` defaults to the algebra's dimension.
 
 ## [0.1.1] — 2026-11-13
 

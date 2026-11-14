@@ -3695,9 +3695,11 @@ ANY_OPERAND_RETURN_OVERRIDES: frozenset[str] = frozenset(
         "__radd__",
         "r_vector_part",
         "plane_of_rotation",
-        # Not an operand method: the classmethod one() of a graded type with no
-        # scalar slot returns that algebra's Scalar, not Self.
+        # Not operand methods: the classmethods one() and
+        # unit_pseudoscalar_squared() of a graded type with no scalar slot return
+        # that algebra's Scalar, not Self.
         "one",
+        "unit_pseudoscalar_squared",
     }
 )
 
@@ -5658,6 +5660,8 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             defaults=[constant(n)],
             returns=name_ref(dual_spec.name),
         ),
+        # i^2 is a scalar, though Scalar cannot hold the pseudoscalar it squares.
+        unit_pseudoscalar_squared_def(name, name, n, full_name),
     ]
     return [
         class_def(
@@ -6098,6 +6102,109 @@ def one_docstring(type_name: str, blade: Blade) -> str:
     )
 
 
+def from_real_raises_def(type_name: str) -> ast.FunctionDef:
+    """``from_real`` for a graded type with no scalar slot: it raises ``ValueError``.
+
+    The base ``from_real`` builds the value through ``from_blade_dict``, which on a
+    scalar-less type drops the scalar and returns the zero value.  This override
+    makes that a named error instead.
+    """
+    doc: str = (
+        "Refuse to lift a real number into a type with no scalar slot.\n"
+        "\n"
+        f"A ``{type_name}`` has no grade-0 part, so it cannot hold a real number;\n"
+        "build the scalar with ``Scalar.from_real`` or the algebra's full class.\n"
+        "\n"
+        "Args:\n"
+        "    real: the number that was to become the scalar part.\n"
+        "\n"
+        "Raises:\n"
+        f"    ValueError: always; a ``{type_name}`` cannot hold ``real``.\n"
+        "\n"
+        "Example:\n"
+        f"    >>> {type_name}.from_real(3)\n"
+        "    Traceback (most recent call last):\n"
+        "        ...\n"
+        f"    ValueError: {type_name} has no scalar part, so it cannot hold 3; use "
+        "Scalar.from_real or the full class\n"
+    )
+    return function_def(
+        "from_real",
+        [
+            doc_expr(doc),
+            ast.Raise(
+                exc=parse_expr(
+                    f'ValueError(f"{type_name} has no scalar part, so it cannot '
+                    'hold {real}; use Scalar.from_real or the full class")'
+                ),
+                cause=None,
+            ),
+        ],
+        params=[argument("cls"), argument("real", name_ref("Real"))],
+        decorators=[name_ref("classmethod")],
+        returns=attribute("typing", "NoReturn"),
+    )
+
+
+def unit_pseudoscalar_squared_def(
+    type_name: str, result_name: str, n: int, full_name: str
+) -> ast.FunctionDef:
+    """``unit_pseudoscalar_squared`` for a graded type, returning ``result_name``.
+
+    The base method squares ``cls.unit_pseudoscalar(n)``, which a graded type cannot
+    hold.  The square is a scalar, so a graded type reads it from the full class and
+    returns it at ``result_name``: the type itself when it has a scalar slot, else
+    the algebra's ``Scalar``.
+    """
+    sign: int = (-1) ** (n * (n - 1) // 2)
+    doc: str = (
+        "The square of the unit pseudoscalar,  i²  — a scalar, ``±1``.\n"
+        "\n"
+        f"A ``{type_name}`` cannot hold the pseudoscalar itself, so the square is\n"
+        f"computed in the full class ``{full_name}`` and returned as a "
+        f"``{result_name}``.\n"
+        "\n"
+        "Args:\n"
+        f"    n: the dimension of the algebra (``None``, the default, means {n}).\n"
+        "\n"
+        "Returns:\n"
+        f"    {result_name}: the scalar ``i²`` "
+        "(``pseudoscalar_squared_sign(n)``).\n"
+        "\n"
+        "Example:\n"
+        f"    >>> {type_name}.unit_pseudoscalar_squared() == "
+        f"{result_name}.from_real({sign})\n"
+        "    True\n"
+    )
+    return function_def(
+        "unit_pseudoscalar_squared",
+        [
+            doc_expr(doc),
+            return_stmt(
+                call(
+                    attribute(result_name, "from_real"),
+                    [
+                        call(
+                            attribute(
+                                call(
+                                    attribute(full_name, "unit_pseudoscalar_squared"),
+                                    [name_ref("n")],
+                                ),
+                                "scalar_part",
+                            ),
+                            [],
+                        )
+                    ],
+                )
+            ),
+        ],
+        params=[argument("cls"), argument("n", opt_int())],
+        defaults=[constant(None)],
+        decorators=[name_ref("classmethod")],
+        returns=name_ref(result_name),
+    )
+
+
 def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stmt]:
     """A graded subtype (Vector/Bivector/Trivector/Versor), as nodes (level C)."""
     blades: list[Blade] = list(spec.blades)
@@ -6519,8 +6626,14 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                     params=[argument("cls")],
                     decorators=[name_ref("classmethod")],
                     returns=name_ref("Scalar"),
-                )
+                ),
+                # from_real: base's would drop the scalar to the zero value.
+                from_real_raises_def(spec.name),
             ]
+        ),
+        # i^2 is a scalar the graded type cannot build from its own pseudoscalar.
+        unit_pseudoscalar_squared_def(
+            spec.name, spec.name if has_scalar else "Scalar", n, full_name
         ),
         grades_method(
             [
