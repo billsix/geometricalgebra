@@ -70,6 +70,21 @@ to `|b| * e₁` — the standard position — with the `(cos, sin)` read off `b`
 frame projecting onto `|b| * e₁` is "keep the x-component" (`proj_onto_x_axis`), no product needed —
 which is what makes the derived route genuinely elementary, not a rotated copy of the Hestenes formula.
 
+**Each plane rotation is the book's 2-D rotation on a copied coordinate pair.** `rotXY`/`rotXZ`/`rotYZ`
+copy their plane's two coordinates into a 𝒢₂ vector, rotate it there with `rotPlane`, and write the
+pair back, the third coordinate untouched (as modelviewprojection's `rotate_x`/`rotate_y`/`rotate_z`
+once built 3-D rotation from its 2-D `rotate`). The 2-D rotation is the blend of `book/docs/proof-rotate.rst`'s
+`eq-rotate-formula`, `cos * v + sin * v.rotate_90_degrees()` (Lean `rotPlane_vec_eq_blend`, with the
+coordinate quarter turn `rot90`); Python's `standardposition._rotation_from_to(u, w)` reads `cos` and
+`sin` off `u` and `w` as in `book/docs/proof-rotate-from-a-to-b.rst`, so no angle is computed. The quarter
+turn is `g2.Vector.rotate_90_degrees()`, whose body swaps coordinates, `(x, y) -> (-y, x)`; it is not
+multiplication by `e₁₂`, which would make the bootstrap use the geometric product.
+
+**The `e₃` axis.** When `b` lies along `e₃` its xy shadow is the zero vector, and the first rotation
+is from zero to zero, the identity (the zero-vector rule every rotation factory follows:
+`MultiVectorBase.require_rotation_endpoints`). In Lean, `xyCos`/`xySin` give `(1, 0)` there. So
+`project_sp`/`reject_sp` and `projectSP_eq_proj` cover every nonzero `b`; only `b = 0` is an error.
+
 **Non-circular:** the rotations are elementary (precalculus), not the GA product. So one may then
 *define* the dot and wedge — and hence the vector geometric product `ab = a·b + a∧b` — from
 `project`/`reject`, because `a = a∥ + a⊥` with `a∥` ∥ `b` (⟹ `a∥b = a·b`, scalar) and `a⊥` ⊥ `b`
@@ -131,13 +146,13 @@ The whole arc is machine-checked across six Lean files, all gate-verified (`make
   versor-free.
 - **The derived route equals the canonical one, as one theorem:** `projectSP a b` (`alignSP` — the
   two rotations with `(cos, sin)` read off `b`, `xyMagnitude` — then keep the aligned `a`'s
-  x-component, then `unalignSP`) satisfies `projectSP_eq_proj` (`= proj b a`, for a vector `b` off the
-  z-axis and nonzero; `a` any multivector), via `proj_onto_x_axis` (`proj (m·e₁) v = (v₁,0,0)`),
+  x-component, then `unalignSP`) satisfies `projectSP_eq_proj` (`= proj b a`, for any nonzero vector
+  `b`, the `e₃` axis included; `a` any multivector), via `proj_onto_x_axis` (`proj (m·e₁) v = (v₁,0,0)`),
   `alignSP_self` (`alignSP b b = |b| * e₁`), the equivariance lemmas, and the inverses
   `rotXY_inv`/`rotXZ_inv` (negated sine undoes a plane rotation). `rejectSP = a − projectSP` gives
   `rejectSP_eq_vecReject` and `rejectSP_eq_reject` (= Hestenes `reject b a` for vectors).
 - The Python twin (`src/gacalc/standardposition.py`, `project_sp`/`reject_sp`) is the procedure
-  `projectSP` transcribes — same rotations, same `(cos, sin)`, keep-the-x-component — and is asserted
+  `projectSP` transcribes — the same 2-D rotations on copied coordinate pairs, keep-the-x-component — and is asserted
   equal to canonical `projected_onto`/`rejected_away_from` in `tests/test_standardposition.py`.
 - Supporting lemmas in their homes: `G3.mul_sub`, `Sandwich.sandwich_sub`.
 

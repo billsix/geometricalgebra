@@ -11,6 +11,13 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+### Changed
+- **`standardposition.project_sp` / `reject_sp` are defined for `b` along the `e_3` axis.** They
+  used to raise `ValueError` there; now the first plane rotation is zero-to-zero, the identity, and
+  the result equals `a.projected_onto(b)`. A zero `b` raises `ValueError` (it used to hit the same
+  `e_3` error). Each plane rotation is now the book's 2-D blend `cos * v + sin * v.rotate_90_degrees()`
+  on a copied coordinate pair.
+
 ## [0.1.1] — 2026-11-13
 
 Additions only, nothing breaking: modelviewprojection's Cayley graph, OpenGL toolkit and graphing
