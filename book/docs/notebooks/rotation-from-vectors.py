@@ -18,7 +18,7 @@
 import sympy
 
 from gacalc.base import MultiVectorBase
-from gacalc.g2 import Vector, Versor
+from gacalc.g2 import Scalar, Vector, Versor
 from gacalc.transforms import projection_rotation, versor_rotation
 
 # Two unit vectors, at angles alpha and beta from the x-axis.
@@ -26,8 +26,12 @@ alpha: sympy.Symbol
 beta: sympy.Symbol
 alpha, beta = sympy.symbols("alpha beta", real=True)
 
-a_hat: Vector = sympy.cos(alpha) * Vector.e_1 + sympy.sin(alpha) * Vector.e_2
-b_hat: Vector = sympy.cos(beta) * Vector.e_1 + sympy.sin(beta) * Vector.e_2
+a_hat: Vector = (
+    Scalar(sympy.cos(alpha)) * Vector.e_1 + Scalar(sympy.sin(alpha)) * Vector.e_2
+)
+b_hat: Vector = (
+    Scalar(sympy.cos(beta)) * Vector.e_1 + Scalar(sympy.sin(beta)) * Vector.e_2
+)
 
 # %%
 # Their geometric product is a scalar plus a bivector -- the dot product and the
@@ -72,7 +76,7 @@ rotated_projection: MultiVectorBase = projection_rotation(
 
 # %%
 carried: MultiVectorBase = projection_rotation(from_vector=frm, to_vector=to)(frm)
-expected: Vector = (frm.magnitude() / to.magnitude()) * to
+expected: Vector = Scalar(frm.magnitude() / to.magnitude()) * to
 
 (carried - expected).simplified()
 

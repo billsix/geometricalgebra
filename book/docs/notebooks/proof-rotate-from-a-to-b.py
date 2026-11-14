@@ -28,12 +28,12 @@
 import sympy
 
 from gacalc.base import Real
-from gacalc.g2 import Vector, e_1, e_2
+from gacalc.g2 import Scalar, Vector, e_1, e_2
 
 v_1: sympy.Symbol
 v_2: sympy.Symbol
 v_1, v_2 = sympy.symbols("v_1 v_2", real=True)
-v: Vector = v_1 * e_1 + v_2 * e_2
+v: Vector = Scalar(v_1) * e_1 + Scalar(v_2) * e_2
 
 
 def rotate(v: Vector, theta: Real) -> Vector:
@@ -76,7 +76,7 @@ c_1, s_1, c_2, s_2 = sympy.symbols("c_1 s_1 c_2 s_2", real=True)
 
 def rotate_cs(v: Vector, cos: Real, sin: Real) -> Vector:
     """The same rotation, given its cosine and sine instead of its angle."""
-    return cos * v + sin * v.rotate_90_degrees()
+    return Scalar(cos) * v + Scalar(sin) * v.rotate_90_degrees()
 
 
 rotate_cs(rotate_cs(v, c_1, s_1), c_2, s_2) == rotate_cs(
@@ -95,7 +95,7 @@ rotate_cs(rotate_cs(v, c_1, s_1), c_2, s_2) == rotate_cs(
 a_1: sympy.Symbol
 a_2: sympy.Symbol
 a_1, a_2 = sympy.symbols("a_1 a_2", real=True, positive=True)
-a: Vector = a_1 * e_1 + a_2 * e_2
+a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
 b: Vector = 3 * e_1 + 4 * e_2
 magnitude_a: Real = a.magnitude()
 magnitude_b: Real = b.magnitude()
@@ -104,7 +104,7 @@ magnitude_b: Real = b.magnitude()
 # |a| * e_1.
 cos_1: Real = a_1 / magnitude_a
 sin_1: Real = -a_2 / magnitude_a
-rotate_cs(a, cos_1, sin_1).symbolically_equal(magnitude_a * e_1)  # -> True
+rotate_cs(a, cos_1, sin_1).symbolically_equal(Scalar(magnitude_a) * e_1)  # -> True
 
 # %%
 # b rides along to b'. Step 2 reads its cosine and sine off b' (|b'| = |b|: rotations
@@ -135,4 +135,4 @@ three_turns.symbolically_equal(
 
 # %%
 carried: Vector = rotate_cs(a, cos_ab, sin_ab)
-carried.symbolically_equal((magnitude_a / magnitude_b) * b)  # -> True
+carried.symbolically_equal(Scalar(magnitude_a / magnitude_b) * b)  # -> True

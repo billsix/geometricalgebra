@@ -80,11 +80,17 @@ _c3: sympy.Symbol
 _a1, _a2, _a3, _b1, _b2, _b3, _c1, _c2, _c3 = sympy.symbols(
     "a1 a2 a3 b1 b2 b3 c1 c2 c3"
 )
-_A2: g2.Vector = _a1 * g2.e_1 + _a2 * g2.e_2
-_B2: g2.Vector = _b1 * g2.e_1 + _b2 * g2.e_2
-_A3: g3.Vector = _a1 * g3.e_1 + _a2 * g3.e_2 + _a3 * g3.e_3
-_B3: g3.Vector = _b1 * g3.e_1 + _b2 * g3.e_2 + _b3 * g3.e_3
-_C3: g3.Vector = _c1 * g3.e_1 + _c2 * g3.e_2 + _c3 * g3.e_3
+_A2: g2.Vector = g2.Scalar(_a1) * g2.e_1 + g2.Scalar(_a2) * g2.e_2
+_B2: g2.Vector = g2.Scalar(_b1) * g2.e_1 + g2.Scalar(_b2) * g2.e_2
+_A3: g3.Vector = (
+    g3.Scalar(_a1) * g3.e_1 + g3.Scalar(_a2) * g3.e_2 + g3.Scalar(_a3) * g3.e_3
+)
+_B3: g3.Vector = (
+    g3.Scalar(_b1) * g3.e_1 + g3.Scalar(_b2) * g3.e_2 + g3.Scalar(_b3) * g3.e_3
+)
+_C3: g3.Vector = (
+    g3.Scalar(_c1) * g3.e_1 + g3.Scalar(_c2) * g3.e_2 + g3.Scalar(_c3) * g3.e_3
+)
 
 # The 2x2 and 3x3 determinants, written out once.
 _DET2 = _a1 * _b2 - _a2 * _b1
@@ -199,8 +205,8 @@ def test_signed_content_on_gn_symbolic_is_the_determinant() -> None:
     b_1: sympy.Symbol
     b_2: sympy.Symbol
     a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
-    a: MultiVectorBase = a_1 * e_1 + a_2 * e_2
-    b: MultiVectorBase = b_1 * e_1 + b_2 * e_2
+    a: MultiVectorBase = Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_2
+    b: MultiVectorBase = Gn.from_real(b_1) * e_1 + Gn.from_real(b_2) * e_2
     assert signed_content([a, b]) == a_1 * b_2 - a_2 * b_1
 
 

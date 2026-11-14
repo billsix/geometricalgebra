@@ -155,6 +155,11 @@ and call `self * other`, dispatched to the concrete type.
   book). Tests may also call the public positional/keyword constructor, which is API under test, and
   product tests keep blade-dict literals as their expected values so the ground truth is not built with
   the operation under test (`tasks/reference/design-decisions.md`).
+- **Write a symbolic coefficient through the scalar constructor** — `Scalar(s_1) * e_1` (graded
+  modules), `Gn.from_real(a_1) * gn.e_1` (`Gn`), never bare `s_1 * e_1`: sympy's `Expr.__mul__`
+  makes pyright (Emacs) type the bare form as `Expr`. Number literals stay bare (`2 * e_1`).
+  Representation-agnostic library bodies put the multivector on the left instead (`cls.from_real`
+  drops a scalar on a graded type). `tasks/reference/pyright-sympy-coefficient-typing.md`.
 - **Use the predefined basis constant** (`e_1`, `g3.e_3`, `Vector.e_1`, `gn.e_2`) in
   tests/examples/notebooks/docs — never `cls.basis_vector(i)` when a constant exists
   (`basis_vector` is for representation-agnostic library code where `cls` is a parameter).

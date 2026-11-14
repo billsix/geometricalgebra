@@ -47,7 +47,7 @@ from _frame_scene import (
 from gacalc.base import MultiVectorBase, Real
 from gacalc.frame import Frame
 from gacalc.functions import InvertibleFunction, MatrixBackend, inverse
-from gacalc.g3 import G, Vector, e_1, e_2, e_3
+from gacalc.g3 import G, Scalar, Vector, e_1, e_2, e_3
 
 # %% [markdown]
 # ## A frame and its orthogonal set
@@ -336,7 +336,7 @@ fig_step_3
 # x_3 * v_3$, tip to tail (blue), ends on $y$.
 
 # %%
-x: Vector = x_1 * e_1 + x_2 * e_2 + x_3 * e_3
+x: Vector = Scalar(x_1) * e_1 + Scalar(x_2) * e_2 + Scalar(x_3) * e_3
 P_X: Point = point(coordinates=list(x))
 x, f.inverse(y) == x, f(x) == y
 
@@ -361,7 +361,7 @@ s_1: sympy.Symbol
 s_2: sympy.Symbol
 s_3: sympy.Symbol
 s_1, s_2, s_3 = sympy.symbols("x_1 x_2 x_3", real=True)
-symbolic: Vector = s_1 * e_1 + s_2 * e_2 + s_3 * e_3
+symbolic: Vector = Scalar(s_1) * e_1 + Scalar(s_2) * e_2 + Scalar(s_3) * e_3
 (inverse(f) @ f)(symbolic) == symbolic, (f @ inverse(f))(symbolic) == symbolic
 
 # %% [markdown]

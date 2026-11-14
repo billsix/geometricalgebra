@@ -64,7 +64,9 @@ c_1: sympy.Symbol
 c_2: sympy.Symbol
 c_3: sympy.Symbol
 c_1, c_2, c_3 = sympy.symbols("c_1 c_2 c_3")
-sym_vec3_3: Gn = c_1 * e_1 + c_2 * e_2 + c_3 * e_3
+sym_vec3_3: Gn = (
+    Gn.from_real(c_1) * e_1 + Gn.from_real(c_2) * e_2 + Gn.from_real(c_3) * e_3
+)
 
 # The frames the orthogonalization and reciprocal-frame tests run on, with one id each:
 # general symbolic frames (every component its own symbol, so a passing test is a
@@ -334,8 +336,8 @@ y_1: sympy.Symbol
 y_2: sympy.Symbol
 y_3: sympy.Symbol
 y_1, y_2, y_3 = sympy.symbols("y_1 y_2 y_3")
-sym_y2: Gn = y_1 * e_1 + y_2 * e_2
-sym_y3: Gn = y_1 * e_1 + y_2 * e_2 + y_3 * e_3
+sym_y2: Gn = Gn.from_real(y_1) * e_1 + Gn.from_real(y_2) * e_2
+sym_y3: Gn = Gn.from_real(y_1) * e_1 + Gn.from_real(y_2) * e_2 + Gn.from_real(y_3) * e_3
 
 
 def is_zero(value: object) -> bool:
@@ -389,7 +391,7 @@ def test_reciprocal_frame_reconstructs_a_vector_symbolic(
     (``proofs/GacalcProofs/ReciprocalFrame2D.lean``/``3D.lean``): ``reconstruct``."""
     rebuilt: MultiVectorBase = sum(
         (
-            a_upper_k.dot(y).scalar_part() * a_k
+            Gn.from_real(a_upper_k.dot(y).scalar_part()) * a_k
             for a_upper_k, a_k in zip(reciprocal_frame(frame), frame, strict=True)
         ),
         start=Gn.zero(),

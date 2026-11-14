@@ -1,7 +1,7 @@
 # Rotation factories: from 0 to 0 is the identity; 0 to nonzero is a ValueError
 
 **Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>) · **Done:** 2026-11-10
-**Split from:** `tasks/standard-position-e3-axis-and-vector-rotations.md` (parked)
+**Split from:** `tasks/archive/2026/11/14/standard-position-e3-axis-and-vector-rotations.md`
 
 Decision (William Emerison Six <billsix@gmail.com>, 2026-11-10): the zero-vector rule applies to all
 the public rotation factories. A rotation from the zero vector to the zero vector is the identity; from

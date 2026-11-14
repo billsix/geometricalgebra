@@ -31,6 +31,7 @@ import gacalc.g2 as g2
 import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase
 from gacalc.gn import (
+    Gn,
     a_1,
     a_2,
     a_3,
@@ -50,8 +51,14 @@ _WEDGE_GRADE: int = 2
 # The vector pairs: general symbolic vectors on Gn, and numeric vectors on the fast
 # generated g2/g3 classes.
 VECTOR_PAIRS: list[tuple[MultiVectorBase, MultiVectorBase]] = [
-    (a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2),
-    (a_1 * e_1 + a_2 * e_2 + a_3 * e_3, b_1 * e_1 + b_2 * e_2 + b_3 * e_3),
+    (
+        Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_2,
+        Gn.from_real(b_1) * e_1 + Gn.from_real(b_2) * e_2,
+    ),
+    (
+        Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_2 + Gn.from_real(a_3) * e_3,
+        Gn.from_real(b_1) * e_1 + Gn.from_real(b_2) * e_2 + Gn.from_real(b_3) * e_3,
+    ),
     (3.0 * g2.e_1 + 4.0 * g2.e_2, 1.0 * g2.e_1 + 2.0 * g2.e_2),
     (
         1.0 * g3.e_1 + 2.0 * g3.e_2 + 3.0 * g3.e_3,

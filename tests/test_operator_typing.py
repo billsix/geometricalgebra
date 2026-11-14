@@ -171,7 +171,9 @@ def test_reflected_operators_runtime_including_symbolic_left() -> None:
     assert type(2 + 1 * g2.Bivector.e_12) is g2.Versor
     t: sympy.Expr = sympy.Symbol("t")
     assert type(t * v) is g2.Vector  # runtime is correct though ty infers Unknown
-    assert (t * v).to_blade_dict() == {(1,): t}
+    # pyright types t * v as sympy's Expr (see the comment above); the runtime is what
+    # this line checks.
+    assert (t * v).to_blade_dict() == {(1,): t}  # pyright: ignore[reportAttributeAccessIssue]
     assert type(t + 1 * g2.Bivector.e_12) is g2.Versor
 
 

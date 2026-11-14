@@ -128,8 +128,8 @@ def test_multivector_mult() -> None:
 
     # general 2D vectors: the geometric product is the scalar dot plus the
     # bivector wedge -- read both parts off explicitly:
-    u: MultiVector = a_1 * e_1 + a_2 * e_2
-    v: MultiVector = b_1 * e_1 + b_2 * e_2
+    u: MultiVector = MultiVector.from_real(a_1) * e_1 + MultiVector.from_real(a_2) * e_2
+    v: MultiVector = MultiVector.from_real(b_1) * e_1 + MultiVector.from_real(b_2) * e_2
     assert (u * v) == (
         MultiVector.from_real(a_1 * b_1 + a_2 * b_2)  # dot: u·v
         + (a_1 * b_2 - a_2 * b_1) * e_1 * e_2  # wedge: (u∧v) * e_12
@@ -146,8 +146,16 @@ def test_multivector_mult3d() -> None:
         return proj(vec1).wedge(proj(vec2))
 
     # general 3D vectors:
-    u: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    v: MultiVector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
+    u: MultiVector = (
+        MultiVector.from_real(a_1) * e_1
+        + MultiVector.from_real(a_2) * e_2
+        + MultiVector.from_real(a_3) * e_3
+    )
+    v: MultiVector = (
+        MultiVector.from_real(b_1) * e_1
+        + MultiVector.from_real(b_2) * e_2
+        + MultiVector.from_real(b_3) * e_3
+    )
 
     # the geometric product = the scalar dot + the three bivector wedge parts:
     assert (u * v) == (
@@ -184,11 +192,17 @@ def test_multivector_mult3d() -> None:
 
 def test_multivector_dual() -> None:
     # the dual of a general 2D vector rotates it 90 degrees:
-    u2: MultiVector = a_1 * e_1 + a_2 * e_2
+    u2: MultiVector = (
+        MultiVector.from_real(a_1) * e_1 + MultiVector.from_real(a_2) * e_2
+    )
     assert u2.dual(n=2) == a_2 * e_1 - a_1 * e_2
 
     # the dual of a general 3D vector is the perpendicular bivector:
-    u3: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+    u3: MultiVector = (
+        MultiVector.from_real(a_1) * e_1
+        + MultiVector.from_real(a_2) * e_2
+        + MultiVector.from_real(a_3) * e_3
+    )
     assert u3.dual(n=3) == -a_3 * e_1 * e_2 - a_2 * e_3 * e_1 - a_1 * e_2 * e_3
 
 
@@ -255,8 +269,16 @@ def test_zero_multivector_is_homogeneous_of_every_grade() -> None:
 
 
 def test_even_part_odd_part() -> None:
-    u: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    v: MultiVector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
+    u: MultiVector = (
+        MultiVector.from_real(a_1) * e_1
+        + MultiVector.from_real(a_2) * e_2
+        + MultiVector.from_real(a_3) * e_3
+    )
+    v: MultiVector = (
+        MultiVector.from_real(b_1) * e_1
+        + MultiVector.from_real(b_2) * e_2
+        + MultiVector.from_real(b_3) * e_3
+    )
     # a vector is purely odd (grade 1):
     assert u.odd_part() == u
     assert u.even_part() == zero
@@ -274,8 +296,8 @@ def test_multivector_abs_sin() -> None:
     assert a.abs_sin(b) == 1  # perpendicular vectors
 
     # general 2D vectors: sin(θ) * |u| * |v| == |u ∧ v| (the definition of abs_sin):
-    u: MultiVector = a_1 * e_1 + a_2 * e_2
-    v: MultiVector = b_1 * e_1 + b_2 * e_2
+    u: MultiVector = MultiVector.from_real(a_1) * e_1 + MultiVector.from_real(a_2) * e_2
+    v: MultiVector = MultiVector.from_real(b_1) * e_1 + MultiVector.from_real(b_2) * e_2
     assert (
         sympy.simplify(sympy.sympify(u.abs_sin(v) * abs(u) * abs(v) - abs(u.wedge(v))))
         == 0
@@ -289,8 +311,8 @@ def test_abs_sin_cosine_pythagorean() -> None:
     b: MultiVector = 1 * e_1 + 2 * e_2
     assert sympy.simplify(sympy.sympify(a.cosine(b) ** 2 + a.abs_sin(b) ** 2)) == 1
 
-    u: MultiVector = a_1 * e_1 + a_2 * e_2
-    v: MultiVector = b_1 * e_1 + b_2 * e_2
+    u: MultiVector = MultiVector.from_real(a_1) * e_1 + MultiVector.from_real(a_2) * e_2
+    v: MultiVector = MultiVector.from_real(b_1) * e_1 + MultiVector.from_real(b_2) * e_2
     assert sympy.simplify(sympy.sympify(u.cosine(v) ** 2 + u.abs_sin(v) ** 2)) == 1
 
 
@@ -300,17 +322,27 @@ def test_multivector_inverse() -> None:
     assert a.magnitude_squared() * a.inverse() == a
 
     # a general 2D vector: |u|² * u⁻¹ == u, and u⁻¹ * u == 1
-    u2: MultiVector = a_1 * e_1 + a_2 * e_2
+    u2: MultiVector = (
+        MultiVector.from_real(a_1) * e_1 + MultiVector.from_real(a_2) * e_2
+    )
     assert u2.magnitude_squared() * u2.inverse() == u2
     assert (u2.inverse() * u2).scalar_part() == 1
 
     # a general 3D vector:
-    u3: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+    u3: MultiVector = (
+        MultiVector.from_real(a_1) * e_1
+        + MultiVector.from_real(a_2) * e_2
+        + MultiVector.from_real(a_3) * e_3
+    )
     assert u3.magnitude_squared() * u3.inverse() == u3
     assert (u3.inverse() * u3) == one
 
     # a bivector -- the plane spanned by two general 3D vectors -- is invertible too:
-    v3: MultiVector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
+    v3: MultiVector = (
+        MultiVector.from_real(b_1) * e_1
+        + MultiVector.from_real(b_2) * e_2
+        + MultiVector.from_real(b_3) * e_3
+    )
     plane: MultiVector = u3 ^ v3
     assert (plane * plane.inverse()) == one
     assert (plane.inverse() * plane) == one
@@ -338,10 +370,16 @@ def test_inverse_rejects_general_multivector() -> None:
 def test_normalize() -> None:
     # the normalized vector has magnitude 1 and points the same way: scaling it
     # back up by the original magnitude gives the original vector.
-    u2: MultiVector = a_1 * e_1 + a_2 * e_2
+    u2: MultiVector = (
+        MultiVector.from_real(a_1) * e_1 + MultiVector.from_real(a_2) * e_2
+    )
     assert u2.normalize().magnitude() == 1
     assert u2.normalize() * u2.magnitude() == u2
-    u3: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+    u3: MultiVector = (
+        MultiVector.from_real(a_1) * e_1
+        + MultiVector.from_real(a_2) * e_2
+        + MultiVector.from_real(a_3) * e_3
+    )
     assert u3.normalize().magnitude() == 1
     assert u3.normalize() * u3.magnitude() == u3
 

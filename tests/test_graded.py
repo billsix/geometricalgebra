@@ -318,8 +318,8 @@ def test_same_type_eq_fast_path_stays_simplify_aware() -> None:
     x: sympy.Symbol = sympy.symbols("x")
 
     # a fielded type (Vector) -- exercises the class_header_stmts eq_method path
-    a: g2.Vector = (x + 1) ** 2 * g2.Vector.e_1 + 1 * g2.Vector.e_2
-    b: g2.Vector = (x**2 + 2 * x + 1) * g2.Vector.e_1 + 1 * g2.Vector.e_2
+    a: g2.Vector = g2.Scalar((x + 1) ** 2) * g2.Vector.e_1 + 1 * g2.Vector.e_2
+    b: g2.Vector = (g2.Scalar(x**2 + 2 * x + 1)) * g2.Vector.e_1 + 1 * g2.Vector.e_2
     assert type(a) is type(b)  # same concrete type -> the fast path fires
     assert a.coeff_e_1 != b.coeff_e_1  # stored unsimplified, structurally different
     assert a == b  # ...yet mathematically equal: the fast path must simplify per field
@@ -355,10 +355,12 @@ def test_symbolic_product_matches_gn() -> None:
     b1: sympy.Symbol
     b2: sympy.Symbol
     a1, a2, b1, b2 = sympy.symbols("a1 a2 b1 b2")
-    got: MultiVectorBase = (a1 * g2.Vector.e_1 + a2 * g2.Vector.e_2) * (
-        b1 * g2.Vector.e_1 + b2 * g2.Vector.e_2
+    got: MultiVectorBase = (
+        g2.Scalar(a1) * g2.Vector.e_1 + g2.Scalar(a2) * g2.Vector.e_2
+    ) * (g2.Scalar(b1) * g2.Vector.e_1 + g2.Scalar(b2) * g2.Vector.e_2)
+    want: Gn = (gn.Gn.from_real(a1 * b1 + a2 * b2)) * gn.one + (a1 * b2 - a2 * b1) * (
+        gn.e_1 ^ gn.e_2
     )
-    want: Gn = (a1 * b1 + a2 * b2) * gn.one + (a1 * b2 - a2 * b1) * (gn.e_1 ^ gn.e_2)
     assert got == want and type(got) is g2.Versor
 
 
@@ -380,9 +382,9 @@ def test_versor_sandwich_equals_rotate_symbolic_2d() -> None:
     a1, a2, b1, b2, w1, w2 = sympy.symbols(
         "a1 a2 b1 b2 w1 w2", real=True, positive=True
     )
-    frm: Gn = a1 * gn.e_1 + a2 * gn.e_2
-    to: Gn = b1 * gn.e_1 + b2 * gn.e_2
-    w: Gn = w1 * gn.e_1 + w2 * gn.e_2
+    frm: Gn = gn.Gn.from_real(a1) * gn.e_1 + gn.Gn.from_real(a2) * gn.e_2
+    to: Gn = gn.Gn.from_real(b1) * gn.e_1 + gn.Gn.from_real(b2) * gn.e_2
+    w: Gn = gn.Gn.from_real(w1) * gn.e_1 + gn.Gn.from_real(w2) * gn.e_2
     R: MultiVectorBase = Gn.versor_from_vectors(from_vector=frm, to_vector=to)
     assert (R * w * R.inverse()).symbolically_equal(
         projection_rotation(from_vector=frm, to_vector=to)(w)

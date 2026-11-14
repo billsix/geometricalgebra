@@ -127,13 +127,18 @@ def test_sandwich_grade_preservation_is_one_coefficient() -> None:
     y: sympy.Symbol
     z: sympy.Symbol
     x, y, z = sympy.symbols("x y z", real=True)
-    # `versor` and `conjugated` are left inferred.  Declaring them (`g3.Versor`,
-    # `g3.Odd_3`) is correct at runtime (the assert below checks the second), but
-    # it widens `coeff_e_123` to the full `Real = int | float | sympy.Expr`, and
-    # sympy's stubs have no `simplify` overload taking a bare int/float -- so
-    # either annotation fails the last line without making anything clearer.
-    versor = a + b * g3.Bivector.e_12 + c * g3.Bivector.e_13 + d * g3.Bivector.e_23
-    v: g3.Vector = x * g3.Vector.e_1 + y * g3.Vector.e_2 + z * g3.Vector.e_3
-    conjugated = versor * v * versor.inverse()
+    versor: g3.Versor = (
+        g3.Scalar(a)
+        + g3.Scalar(b) * g3.Bivector.e_12
+        + g3.Scalar(c) * g3.Bivector.e_13
+        + g3.Scalar(d) * g3.Bivector.e_23
+    )
+    v: g3.Vector = (
+        g3.Scalar(x) * g3.Vector.e_1
+        + g3.Scalar(y) * g3.Vector.e_2
+        + g3.Scalar(z) * g3.Vector.e_3
+    )
+    conjugated: g3.Odd_3 = versor * v * versor.inverse()
     assert type(conjugated) is g3.Odd_3  # a named type now, not G3
-    assert sympy.simplify(conjugated.coeff_e_123) == 0  # grade-3 vanishes -> a vector
+    # grade 3 vanishes, so the result is a vector
+    assert sympy.simplify(sympy.sympify(conjugated.coeff_e_123)) == 0

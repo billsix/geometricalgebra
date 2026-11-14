@@ -425,10 +425,14 @@ b_2: sympy.Symbol
 b_3: sympy.Symbol
 a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3")
 
-sym_vec2_1: MultiVector = a_1 * e_1 + a_2 * e_2
-sym_vec2_2: MultiVector = b_1 * e_1 + b_2 * e_2
+sym_vec2_1: MultiVector = Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_2
+sym_vec2_2: MultiVector = Gn.from_real(b_1) * e_1 + Gn.from_real(b_2) * e_2
 
-sym_vec3_1: MultiVector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-sym_vec3_2: MultiVector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
+sym_vec3_1: MultiVector = (
+    Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_2 + Gn.from_real(a_3) * e_3
+)
+sym_vec3_2: MultiVector = (
+    Gn.from_real(b_1) * e_1 + Gn.from_real(b_2) * e_2 + Gn.from_real(b_3) * e_3
+)
 
 sym_vec_plane: MultiVector = sym_vec3_1.wedge(sym_vec3_2)

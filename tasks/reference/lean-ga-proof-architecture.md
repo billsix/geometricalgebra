@@ -724,7 +724,7 @@ theorem landed 2026-10-05 (`PlaneRotation3D.lean`), and `gn` waits on a general-
 
 | Python | Status | Lean |
 |---|---|---|
-| `standardposition.project_sp` | HAS | `projectSP` (= Python's align → keep the x-component → rotate back, same `(cos, sin)` formulas), **`projectSP_eq_proj`** (`= proj b a` for a vector `b` off the z-axis), via `proj_onto_x_axis` + `alignSP_self` + `rotXY_inv`/`rotXZ_inv` + equivariance (StandardPosition.lean) |
+| `standardposition.project_sp` | HAS | `projectSP` (= Python's align → keep the x-component → rotate back, same `(cos, sin)` formulas), **`projectSP_eq_proj`** (`= proj b a` for any nonzero vector `b`, the `e₃` axis included), via `proj_onto_x_axis` + `alignSP_self` + `rotXY_inv`/`rotXZ_inv` + equivariance (StandardPosition.lean) |
 | `standardposition.reject_sp` | HAS | `rejectSP`, `rejectSP_eq_vecReject`, `rejectSP_eq_reject` (= Hestenes `reject b a` for vectors) |
 | `standardposition.rotate_in_xy_plane` / `_xz_plane` | HAS | `rotXY`/`rotXZ` — identical formulas; `*_preserves_dot`, `*_inv` |
 | `functions.compose` / `inverse` / `identity` | plumbing — no theorem | the one GA fact they carry for versors: `sandwich_inverse_sandwich` (`sandwich R⁻¹ ∘ sandwich R = id`, both grades), on `inverse_inverse` and `inverse_mul_self_of_isEvenVersor` (Sandwich.lean) |

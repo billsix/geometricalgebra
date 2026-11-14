@@ -1,5 +1,6 @@
 import GacalcProofs.G3
 import GacalcProofs.G2
+import GacalcProofs.StandardPosition2D
 import GacalcProofs.Projection3D
 
 /-! # Reduction to standard position — elementary plane rotations, no versors
@@ -30,38 +31,52 @@ namespace GacalcProofs.G3
 /-! ### Elementary coordinate-plane rotations (procedures on the components) -/
 
 /-- Rotate the e₁,e₂ (xy-plane) components of a vector by `(cos(θ) = c, sin(θ) = s)`, leaving e₃ and the
-    scalar/bivector/pseudoscalar parts untouched. The elementary 2D rotation embedded in the xy-plane
-    — no matrices, no versors: it just recombines the components. -/
+    scalar/bivector/pseudoscalar parts untouched. As in Python (`standardposition.py`), the pair is
+    copied into a 𝒢₂ vector, rotated there by the 2D `rotPlane` (the blend `c*v + s*rot90 v`,
+    `GacalcProofs.G2.rotPlane_vec_eq_blend`), and written back — no matrices, no versors. -/
 noncomputable def rotXY (c s : ℝ) (v : G3) : G3 :=
-  ⟨v.s, c * v.c1 - s * v.c2, s * v.c1 + c * v.c2, v.c3, v.c12, v.c13, v.c23, v.c123⟩
+  let r := GacalcProofs.G2.rotPlane c s (GacalcProofs.G2.vec v.c1 v.c2)
+  ⟨v.s, r.c1, r.c2, v.c3, v.c12, v.c13, v.c23, v.c123⟩
 
-/-- Rotate the e₁,e₃ (xz-plane) components by `(cos(θ) = c, sin(θ) = s)`, leaving e₂ and the other parts. -/
+/-- Rotate the e₁,e₃ (xz-plane) components by `(cos(θ) = c, sin(θ) = s)`, leaving e₂ and the other parts:
+    the pair `(v.c1, v.c3)` is rotated in 𝒢₂ and written back. -/
 noncomputable def rotXZ (c s : ℝ) (v : G3) : G3 :=
-  ⟨v.s, c * v.c1 - s * v.c3, v.c2, s * v.c1 + c * v.c3, v.c12, v.c13, v.c23, v.c123⟩
+  let r := GacalcProofs.G2.rotPlane c s (GacalcProofs.G2.vec v.c1 v.c3)
+  ⟨v.s, r.c1, v.c2, r.c2, v.c12, v.c13, v.c23, v.c123⟩
+
+/-- `rotXY` in components: the 2D rotation formulas on `(v.c1, v.c2)`. -/
+theorem rotXY_apply (c s : ℝ) (v : G3) :
+    rotXY c s v = ⟨v.s, c * v.c1 - s * v.c2, s * v.c1 + c * v.c2, v.c3, v.c12, v.c13, v.c23, v.c123⟩ :=
+  rfl
+
+/-- `rotXZ` in components: the 2D rotation formulas on `(v.c1, v.c3)`. -/
+theorem rotXZ_apply (c s : ℝ) (v : G3) :
+    rotXZ c s v = ⟨v.s, c * v.c1 - s * v.c3, v.c2, s * v.c1 + c * v.c3, v.c12, v.c13, v.c23, v.c123⟩ :=
+  rfl
 
 /-- `rotXY` pulls out scalars (linearity). -/
 theorem rotXY_smul (c s k : ℝ) (v : G3) : rotXY c s (smul k v) = smul k (rotXY c s v) := by
-  simp only [rotXY, smul]; ext <;> ring
+  simp only [rotXY_apply, smul]; ext <;> ring
 
 /-- `rotXY` distributes over subtraction (linearity). -/
 theorem rotXY_sub (c s : ℝ) (u v : G3) : rotXY c s (sub u v) = sub (rotXY c s u) (rotXY c s v) := by
-  simp only [rotXY, sub]; ext <;> ring
+  simp only [rotXY_apply, sub]; ext <;> ring
 
 /-- `rotXZ` pulls out scalars (linearity). -/
 theorem rotXZ_smul (c s k : ℝ) (v : G3) : rotXZ c s (smul k v) = smul k (rotXZ c s v) := by
-  simp only [rotXZ, smul]; ext <;> ring
+  simp only [rotXZ_apply, smul]; ext <;> ring
 
 /-- **`rotXY` preserves the dot product** when `c² + s² = 1` (it is a rotation): the cross terms
     cancel and `(c²+s²)` scales the in-plane part back to itself. -/
 theorem rotXY_preserves_dot (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (u v : G3) :
     dot (rotXY c s u) (rotXY c s v) = dot u v := by
-  simp only [dot, rotXY, mul]
+  simp only [dot, rotXY_apply, mul]
   linear_combination (u.c1 * v.c1 + u.c2 * v.c2) * hcs
 
 /-- **`rotXZ` preserves the dot product** when `c² + s² = 1`. -/
 theorem rotXZ_preserves_dot (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (u v : G3) :
     dot (rotXZ c s u) (rotXZ c s v) = dot u v := by
-  simp only [dot, rotXZ, mul]
+  simp only [dot, rotXZ_apply, mul]
   linear_combination (u.c1 * v.c1 + u.c3 * v.c3) * hcs
 
 /-! ### Projection and rejection are equivariant under a plane rotation
@@ -146,7 +161,7 @@ theorem mul_eq_proj_dot_add_reject_wedge {a b : G3} (ha_isv : IsVector a) (hb_is
     `(k, 0, b₃)`, where `k = √(b₁²+b₂²)` (`k ≠ 0`, `k² = b₁²+b₂²`). -/
 theorem rotXY_aligns_xy (b1 b2 b3 k : ℝ) (hk : k ≠ 0) (hk2 : k ^ 2 = b1 ^ 2 + b2 ^ 2) :
     rotXY (b1 / k) (-b2 / k) (vec b1 b2 b3) = vec k 0 b3 := by
-  simp only [rotXY, vec]
+  simp only [rotXY_apply, vec]
   ext
   · rfl
   · field_simp; linear_combination -hk2
@@ -161,7 +176,7 @@ theorem rotXY_aligns_xy (b1 b2 b3 k : ℝ) (hk : k ≠ 0) (hk2 : k ^ 2 = b1 ^ 2 
     `(m, 0, 0)`, where `m = √(k²+b₃²)` (`m ≠ 0`, `m² = k²+b₃²`). -/
 theorem rotXZ_aligns_xz (k b3 m : ℝ) (hm : m ≠ 0) (hm2 : m ^ 2 = k ^ 2 + b3 ^ 2) :
     rotXZ (k / m) (-b3 / m) (vec k 0 b3) = vec m 0 0 := by
-  simp only [rotXZ, vec]
+  simp only [rotXZ_apply, vec]
   ext
   · rfl
   · field_simp; linear_combination -hm2
@@ -209,8 +224,8 @@ theorem rotate_b_to_e1_magnitude (b1 b2 b3 : ℝ)
     each sine, reverse the order). In the aligned frame that x-component IS the Hestenes projection onto
     `|b|*e₁`; the two rotations preserve the dot and are projection-equivariant, and each is undone by
     its negated-sine twin — so the whole procedure IS `proj b a`. This is the single theorem `CLAUDE.md`
-    and the Python docstring promise; the degenerate z-axis case (`k = 0`) is excluded by hypothesis, as
-    in Python. -/
+    and the Python docstring promise. On the `e₃` axis (`k = 0`) the first rotation is from zero to zero,
+    the identity (`xyCos`/`xySin`), so the theorem needs only `b ≠ 0`, as in Python. -/
 
 /-- A plane rotation is undone by the one with the opposite sine (`s' = −s`), when `c² + s² = 1`. -/
 theorem rotXY_inv (c s s' : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (h : s' + s = 0) (v : G3) :
@@ -244,16 +259,22 @@ theorem rotXZ_inv (c s s' : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (h : s' + s = 0) (v :
 /-- `k = |b's xy-part| = magnitude (vec b₁ b₂ 0)` — the first standard-position magnitude. -/
 noncomputable def xyMagnitude (b : G3) : ℝ := magnitude (vec b.c1 b.c2 0)
 
+/-- The cosine of the first (xy) alignment, `b₁/k`. When `b` lies along `e₃` its xy shadow is zero
+    (`k = 0`) and the rotation from zero to zero is the identity, cosine `1` (Python
+    `_rotation_from_to`). -/
+noncomputable def xyCos (b : G3) : ℝ := if xyMagnitude b = 0 then 1 else b.c1 / xyMagnitude b
+
+/-- The sine of the first (xy) alignment, `−b₂/k`; `0` (the identity) when the xy shadow is zero. -/
+noncomputable def xySin (b : G3) : ℝ := if xyMagnitude b = 0 then 0 else -b.c2 / xyMagnitude b
+
 /-- **Align to the x-axis** (Python `align`): `rotXY (b₁/k) (−b₂/k)` then `rotXZ (k/m) (−b₃/m)`,
     with the `(cos, sin)` read off `b`'s own coordinates, applied to any `v`. -/
 noncomputable def alignSP (b v : G3) : G3 :=
-  rotXZ (xyMagnitude b / magnitude b) (-b.c3 / magnitude b)
-    (rotXY (b.c1 / xyMagnitude b) (-b.c2 / xyMagnitude b) v)
+  rotXZ (xyMagnitude b / magnitude b) (-b.c3 / magnitude b) (rotXY (xyCos b) (xySin b) v)
 
 /-- **Rotate back** (Python `rotate_back`): negate each sine, apply in the reverse order. -/
 noncomputable def unalignSP (b v : G3) : G3 :=
-  rotXY (b.c1 / xyMagnitude b) (b.c2 / xyMagnitude b)
-    (rotXZ (xyMagnitude b / magnitude b) (b.c3 / magnitude b) v)
+  rotXY (xyCos b) (-xySin b) (rotXZ (xyMagnitude b / magnitude b) (b.c3 / magnitude b) v)
 
 /-- **Projection onto the x-axis is "keep the x-component":** `proj (m*e₁) v = (v₁, 0, 0)` for any
     multivector `v` and `m ≠ 0` — the elementary step done in standard position, where no product is
@@ -281,11 +302,31 @@ theorem magnitude_sq_of_isVector {b : G3} (hbv : IsVector b) :
     exact normSq_vec b.c1 b.c2 b.c3
   rw [magnitude, Real.sq_sqrt (by rw [hnb]; positivity), hnb]
 
-/-- The xy `(cos, sin)` read off `b` is a unit pair. -/
-theorem cs_xy_unit {b : G3} (hk : xyMagnitude b ≠ 0) :
-    (b.c1 / xyMagnitude b) ^ 2 + (-b.c2 / xyMagnitude b) ^ 2 = 1 := by
-  rw [div_pow, div_pow, neg_sq, ← add_div, ← xyMagnitude_sq]
-  exact div_self (pow_ne_zero 2 hk)
+/-- The xy `(cos, sin)` read off `b` is a unit pair (the identity's `(1, 0)` when the shadow is zero). -/
+theorem cs_xy_unit (b : G3) : xyCos b ^ 2 + xySin b ^ 2 = 1 := by
+  by_cases hk : xyMagnitude b = 0
+  · simp [xyCos, xySin, hk]
+  · simp only [xyCos, xySin, hk, ↓reduceIte]
+    rw [div_pow, div_pow, neg_sq, ← add_div, ← xyMagnitude_sq]
+    exact div_self (pow_ne_zero 2 hk)
+
+/-- **Step 1 for any vector `b`:** the xy alignment sends `b` to `(k, 0, b₃)`. Off the `e₃` axis this is
+    `rotXY_aligns_xy`; on it the shadow `(b₁, b₂)` is zero and the rotation is the identity. -/
+theorem rotXY_aligns_xy_SP {b : G3} (hbv : IsVector b) :
+    rotXY (xyCos b) (xySin b) b = vec (xyMagnitude b) 0 b.c3 := by
+  have hb' : rotXY (xyCos b) (xySin b) b = rotXY (xyCos b) (xySin b) (vec b.c1 b.c2 b.c3) := by
+    rw [← eq_vec_of_isVector hbv]
+  rw [hb']
+  by_cases hk : xyMagnitude b = 0
+  · have hsq : b.c1 ^ 2 + b.c2 ^ 2 = 0 := by rw [← xyMagnitude_sq, hk]; ring
+    have h1 : b.c1 = 0 := pow_eq_zero_iff (two_ne_zero) |>.mp
+      (by linarith [sq_nonneg b.c1, sq_nonneg b.c2])
+    have h2 : b.c2 = 0 := pow_eq_zero_iff (two_ne_zero) |>.mp
+      (by linarith [sq_nonneg b.c1, sq_nonneg b.c2])
+    simp only [xyCos, xySin, rotXY_apply, vec, h1, h2, hk, ↓reduceIte]
+    ext <;> simp
+  · simp only [xyCos, xySin, hk, ↓reduceIte]
+    exact rotXY_aligns_xy b.c1 b.c2 b.c3 _ hk (xyMagnitude_sq b)
 
 /-- The xz `(cos, sin)` read off `b` is a unit pair. -/
 theorem cs_xz_unit {b : G3} (hbv : IsVector b) (hb : magnitude b ≠ 0) :
@@ -294,43 +335,39 @@ theorem cs_xz_unit {b : G3} (hbv : IsVector b) (hb : magnitude b ≠ 0) :
   exact div_self (pow_ne_zero 2 hb)
 
 /-- Rotating back undoes the alignment. -/
-theorem unalignSP_alignSP {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
-    (hb : magnitude b ≠ 0) (v : G3) : unalignSP b (alignSP b v) = v := by
+theorem unalignSP_alignSP {b : G3} (hbv : IsVector b) (hb : magnitude b ≠ 0) (v : G3) :
+    unalignSP b (alignSP b v) = v := by
   simp only [unalignSP, alignSP]
-  rw [rotXZ_inv _ _ _ (cs_xz_unit hbv hb) (by ring), rotXY_inv _ _ _ (cs_xy_unit hk) (by ring)]
+  rw [rotXZ_inv _ _ _ (cs_xz_unit hbv hb) (by ring), rotXY_inv _ _ _ (cs_xy_unit b) (by ring)]
 
 /-- **The alignment sends `b` itself to `|b|*e₁`** — `rotate_b_to_e1` read through `alignSP`. -/
-theorem alignSP_self {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
-    (hb : magnitude b ≠ 0) : alignSP b b = vec (magnitude b) 0 0 := by
-  have h := rotate_b_to_e1 b.c1 b.c2 b.c3 (xyMagnitude b) (magnitude b) hk hb (xyMagnitude_sq b)
-    (magnitude_sq_of_isVector hbv)
-  have hb' : rotXY (b.c1 / xyMagnitude b) (-b.c2 / xyMagnitude b) b
-      = rotXY (b.c1 / xyMagnitude b) (-b.c2 / xyMagnitude b) (vec b.c1 b.c2 b.c3) := by
-    rw [← eq_vec_of_isVector hbv]
-  rw [alignSP, hb', h]
+theorem alignSP_self {b : G3} (hbv : IsVector b) (hb : magnitude b ≠ 0) :
+    alignSP b b = vec (magnitude b) 0 0 := by
+  rw [alignSP, rotXY_aligns_xy_SP hbv,
+    rotXZ_aligns_xz _ _ _ hb (by rw [magnitude_sq_of_isVector hbv, xyMagnitude_sq])]
 
 /-- **`project_sp = project`:** the standard-position projection of `a` onto `b` is the Hestenes
-    projection `proj b a`, for a vector `b` not on the z-axis (`k ≠ 0`) and nonzero (`|b| ≠ 0`);
+    projection `proj b a`, for any nonzero vector `b` (`|b| ≠ 0`), the `e₃` axis included;
     `a` may be any multivector. In the aligned frame "keep the x-component" is `proj (|b|*e₁)`
     (`proj_onto_x_axis` + `alignSP_self`); then equivariance of `proj` under both plane rotations,
     and undo them. -/
-theorem projectSP_eq_proj {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
-    (hb : magnitude b ≠ 0) (a : G3) : projectSP a b = proj b a := by
+theorem projectSP_eq_proj {b : G3} (hbv : IsVector b) (hb : magnitude b ≠ 0) (a : G3) :
+    projectSP a b = proj b a := by
   have hx : vec (alignSP b a).c1 0 0 = proj (alignSP b b) (alignSP b a) := by
-    rw [alignSP_self hbv hk hb, proj_onto_x_axis (magnitude b) hb]
+    rw [alignSP_self hbv hb, proj_onto_x_axis (magnitude b) hb]
   rw [projectSP, hx]
   simp only [alignSP, unalignSP]
-  rw [proj_rotXZ_equivariant _ _ (cs_xz_unit hbv hb), proj_rotXY_equivariant _ _ (cs_xy_unit hk),
-      rotXZ_inv _ _ _ (cs_xz_unit hbv hb) (by ring), rotXY_inv _ _ _ (cs_xy_unit hk) (by ring)]
+  rw [proj_rotXZ_equivariant _ _ (cs_xz_unit hbv hb), proj_rotXY_equivariant _ _ (cs_xy_unit b),
+      rotXZ_inv _ _ _ (cs_xz_unit hbv hb) (by ring), rotXY_inv _ _ _ (cs_xy_unit b) (by ring)]
 
 /-- **`reject_sp = reject`:** the standard-position rejection is the vector rejection
     `a − proj b a` (`vecReject`), hence the Hestenes `reject b a` for vectors (`reject_vec_eq`). -/
-theorem rejectSP_eq_vecReject {b : G3} (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
-    (hb : magnitude b ≠ 0) (a : G3) : rejectSP a b = vecReject b a := by
-  simp only [rejectSP, vecReject, projectSP_eq_proj hbv hk hb]
+theorem rejectSP_eq_vecReject {b : G3} (hbv : IsVector b) (hb : magnitude b ≠ 0) (a : G3) :
+    rejectSP a b = vecReject b a := by
+  simp only [rejectSP, vecReject, projectSP_eq_proj hbv hb]
 
-theorem rejectSP_eq_reject {a b : G3} (hav : IsVector a) (hbv : IsVector b) (hk : xyMagnitude b ≠ 0)
+theorem rejectSP_eq_reject {a b : G3} (hav : IsVector a) (hbv : IsVector b)
     (hb : magnitude b ≠ 0) (hbn : normSq b ≠ 0) : rejectSP a b = reject b a := by
-  rw [rejectSP_eq_vecReject hbv hk hb, vecReject, reject_vec_eq hbv hav hbn]
+  rw [rejectSP_eq_vecReject hbv hb, vecReject, reject_vec_eq hbv hav hbn]
 
 end GacalcProofs.G3

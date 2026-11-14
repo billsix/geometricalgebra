@@ -14,11 +14,10 @@ from github.com/billsix/modelviewprojection (mvp) into gacalc over steps 1 to 4:
   `examples/`;
 - the lit-mesh task, as `tasks/grapher3d-lit-mesh.md`.
 
-They are committed as gacalc 0.1.1, which the maintainer tags and publishes with `make release`.
-The one remaining step is mvp's: step 5 switches mvp to these copies once 0.1.1 is on PyPI. It is
-tracked in mvp (`tasks/move-mvp-gl-toolkit-to-gacalc-step-5-mvp-switch.md`, blocked on the
-release), so this umbrella was archived with the gacalc side complete. Durable knowledge is in
-`tasks/reference/gl-toolkit.md`.
+They shipped as gacalc 0.1.1. Step 5, in mvp, then switched mvp to these copies and deleted its
+own (record: mvp `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-5-mvp-switch.md`).
+This umbrella was archived when the gacalc side was complete, before step 5 ran. Durable knowledge
+is in `tasks/reference/gl-toolkit.md`.
 
 ## What moved
 
@@ -83,9 +82,9 @@ release, because mvp sees nothing from gacalc until a release is published and i
       `gacalc.gl` (matrix stack, pipeline, `cayley_gl`, labels, shaders).
 - [x] 4. `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-4-graphers-as-library.md`:
       `grapher2d.run` and `grapher3d.run`, gacalc's runners, and the 0.1.1 version bump.
-- [ ] 5. mvp `tasks/move-mvp-gl-toolkit-to-gacalc-step-5-mvp-switch.md` (in
-      github.com/billsix/modelviewprojection): pin the new gacalc, switch the imports, delete the
-      moved files, and reduce the graphers to runners. Blocked on the 0.1.1 release.
+- [x] 5. mvp `tasks/archive/2026/11/13/move-mvp-gl-toolkit-to-gacalc-step-5-mvp-switch.md` (in
+      github.com/billsix/modelviewprojection): pinned `gacalc[gl]==0.1.1`, switched the imports,
+      deleted the moved files, and reduced the graphers to runners.
 
 ## Notes for step 5
 
@@ -96,7 +95,7 @@ release, because mvp sees nothing from gacalc until a release is published and i
 - **GL lore.** mvp's `tasks/reference/gl-and-imgui-gotchas.md` sections 1 (imgui/GLFW), 6
   (Python-side traps), 7 (repo-wide GL conventions), 8 (flat 2D plot on the 3D setup) and 9 (TeX
   billboard labels) describe the moved code. What applies to gacalc was copied into
-  `tasks/reference/gl-toolkit.md`; mvp's doc gets a pointer to it in step 5.
+  `tasks/reference/gl-toolkit.md`; step 5 added a pointer to it in mvp's doc.
 
 ## Conventions the moved code follows
 

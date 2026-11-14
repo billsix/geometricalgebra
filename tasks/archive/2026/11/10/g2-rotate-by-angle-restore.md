@@ -44,7 +44,7 @@ deleted a planar `transforms.rotate(angle)` whose body was the book's rotation f
     the signed turn direction.
   - `scale_non_uniform_2d`: it is identical to `scale_non_uniform`.
 - `book/docs/notebooks/proof-cross.py` (3-D `rotate_xy`/`rotate_xz`/`rotate_yz`) was left for
-  `tasks/standard-position-e3-axis-and-vector-rotations.md`, which rewrites the 3-D plane rotations the
+  `tasks/archive/2026/11/14/standard-position-e3-axis-and-vector-rotations.md`, which rewrites the 3-D plane rotations the
   same way.
 
 ## Verification

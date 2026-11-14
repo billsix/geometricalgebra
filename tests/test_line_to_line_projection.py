@@ -38,7 +38,11 @@ LINE_PAIRS: list[tuple[MultiVectorBase, MultiVectorBase, Real]] = [
     (1 * g2.e_1 + 3 * g2.e_2, 1 * g2.e_2, 2),
     (2 * g3.e_1 + 1 * g3.e_3, 1 * g3.e_1 + 1 * g3.e_2, sympy.Rational(-1, 3)),
     (1.5 * g2.e_1 - 0.5 * g2.e_2, 1.0 * g2.e_1 + 2.0 * g2.e_2, 0.7),
-    (a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2, c),
+    (
+        Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_2,
+        Gn.from_real(b_1) * e_1 + Gn.from_real(b_2) * e_2,
+        c,
+    ),
 ]
 LINE_PAIR_IDS: list[str] = ["g2-int", "g3-rational", "g2-float", "gn-symbolic"]
 
@@ -57,8 +61,8 @@ def test_round_trip_on_each_line(
         float_close_to_zero=tolerant(from_vector),
     )
     shadow: MultiVectorBase = from_vector.projected_onto(to_vector)
-    x: MultiVectorBase = c * from_vector
-    z: MultiVectorBase = c * shadow
+    x: MultiVectorBase = from_vector * c
+    z: MultiVectorBase = shadow * c
     if tolerant(from_vector):
         assert P(x).isclose(z, rel_tol=1e-9, abs_tol=1e-9)
         assert P.inverse(z).isclose(x, rel_tol=1e-9, abs_tol=1e-9)
@@ -99,7 +103,11 @@ def test_coordinate_along() -> None:
     assert coordinate_along(6 * e_1 + 3 * e_2, along=2 * e_1 + 1 * e_2) == 3
     assert coordinate_along(0 * g3.e_1, along=1 * g3.e_2) == 0
     assert (
-        coordinate_along(c * (a_1 * e_1 + a_2 * e_3), along=a_1 * e_1 + a_2 * e_3) == c
+        coordinate_along(
+            Gn.from_real(c) * (Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_3),
+            along=Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_3,
+        )
+        == c
     )
     with pytest.raises(ValueError, match="not on the line"):
         coordinate_along(1 * e_1 + 1 * e_2, along=1 * e_1)

@@ -28,7 +28,7 @@ import sympy
 
 import gacalc.g2 as g2
 import gacalc.gn as gn
-from gacalc.g3 import Vector, e_1, e_2, e_3
+from gacalc.g3 import Scalar, Vector, e_1, e_2, e_3
 from gacalc.measure import signed_volume
 from gacalc.vectorcalc import cross
 
@@ -64,9 +64,9 @@ def test_scalar_triple_product_is_signed_volume() -> None:
     c_2: sympy.Symbol
     c_3: sympy.Symbol
     c_1, c_2, c_3 = sympy.symbols("c_1 c_2 c_3")
-    a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    b: Vector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
-    c: Vector = c_1 * e_1 + c_2 * e_2 + c_3 * e_3
+    a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2 + Scalar(a_3) * e_3
+    b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2 + Scalar(b_3) * e_3
+    c: Vector = Scalar(c_1) * e_1 + Scalar(c_2) * e_2 + Scalar(c_3) * e_3
     # sympify first: a Real difference is int | float | Expr, and simplify's
     # overloads take only sympy types (here the values are symbolic anyway).
     assert (
@@ -95,13 +95,21 @@ def test_generated_closed_form_matches_definition() -> None:
     b_2: sympy.Symbol
     b_3: sympy.Symbol
     b_1, b_2, b_3 = sympy.symbols("b_1 b_2 b_3")
-    a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    b: Vector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
+    a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2 + Scalar(a_3) * e_3
+    b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2 + Scalar(b_3) * e_3
     generated: Vector = a.cross(b)
     assert isinstance(generated, Vector)
     assert generated == cross(a, b)
-    gn_a: gn.Gn = a_1 * gn.e_1 + a_2 * gn.e_2 + a_3 * gn.e_3
-    gn_b: gn.Gn = b_1 * gn.e_1 + b_2 * gn.e_2 + b_3 * gn.e_3
+    gn_a: gn.Gn = (
+        gn.Gn.from_real(a_1) * gn.e_1
+        + gn.Gn.from_real(a_2) * gn.e_2
+        + gn.Gn.from_real(a_3) * gn.e_3
+    )
+    gn_b: gn.Gn = (
+        gn.Gn.from_real(b_1) * gn.e_1
+        + gn.Gn.from_real(b_2) * gn.e_2
+        + gn.Gn.from_real(b_3) * gn.e_3
+    )
     assert generated == cross(gn_a, gn_b)
     # the defining cyclic identities, through the closed form itself
     assert (1 * e_1).cross(1 * e_2) == 1 * e_3

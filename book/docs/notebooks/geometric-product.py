@@ -18,14 +18,14 @@
 # %%
 import sympy
 
-from gacalc.g2 import Bivector, Vector, Versor
+from gacalc.g2 import Bivector, Scalar, Vector, Versor
 from gacalc.transforms import plane_rotation
 
 theta: sympy.Symbol = sympy.Symbol("theta", real=True)
 a_1: sympy.Symbol
 a_2: sympy.Symbol
 a_1, a_2 = sympy.symbols("a_1 a_2", real=True)
-a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2
+a: Vector = Scalar(a_1) * Vector.e_1 + Scalar(a_2) * Vector.e_2
 
 # The 90-degree rotation is multiplication by the unit bivector e_12.
 a * Bivector.e_12  # -> (-a_2, a_1)
@@ -33,7 +33,7 @@ a * Bivector.e_12  # -> (-a_2, a_1)
 # %%
 # The full-angle rotor R = cos(theta) + sin(theta) * e_12, applied one-sided, by
 # multiplication on the right.
-R: Versor = sympy.cos(theta) + sympy.sin(theta) * Bivector.e_12
+R: Versor = Scalar(sympy.cos(theta)) + Scalar(sympy.sin(theta)) * Bivector.e_12
 full_angle_result: Vector = (a * R).simplified()
 full_angle_result
 
@@ -43,8 +43,8 @@ full_angle_result
 # a_1 * sin(theta) + a_2 * cos(theta)). The one-sided multiplication lands on
 # exactly those two coordinates.
 coordinate_formula: Vector = (
-    a_1 * sympy.cos(theta) - a_2 * sympy.sin(theta)
-) * Vector.e_1 + (a_1 * sympy.sin(theta) + a_2 * sympy.cos(theta)) * Vector.e_2
+    Scalar(a_1 * sympy.cos(theta) - a_2 * sympy.sin(theta))
+) * Vector.e_1 + (Scalar(a_1 * sympy.sin(theta) + a_2 * sympy.cos(theta))) * Vector.e_2
 full_angle_result == coordinate_formula  # -> True
 
 # %%
@@ -67,7 +67,7 @@ gacalc_result
 b_1: sympy.Symbol
 b_2: sympy.Symbol
 b_1, b_2 = sympy.symbols("b_1 b_2", real=True)
-b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2
+b: Vector = Scalar(b_1) * Vector.e_1 + Scalar(b_2) * Vector.e_2
 
 # rotating a sum equals rotating each piece and adding -- the difference is zero.
 (((a + b) * R) - (a * R + b * R)).simplified()
@@ -77,5 +77,7 @@ b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2
 # from the rotations of `e_1` and `e_2`.
 
 # %%
-basis_decomposition: Vector = a_1 * (Vector.e_1 * R) + a_2 * (Vector.e_2 * R)
+basis_decomposition: Vector = Scalar(a_1) * (Vector.e_1 * R) + Scalar(a_2) * (
+    Vector.e_2 * R
+)
 ((a * R) - basis_decomposition).simplified()

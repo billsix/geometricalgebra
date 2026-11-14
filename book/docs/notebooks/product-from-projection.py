@@ -22,15 +22,15 @@
 import sympy
 
 from gacalc.base import Real
-from gacalc.g2 import Bivector, Vector, Versor, e_1, e_2
+from gacalc.g2 import Bivector, Scalar, Vector, Versor, e_1, e_2
 
 a_1: sympy.Symbol
 a_2: sympy.Symbol
 b_1: sympy.Symbol
 b_2: sympy.Symbol
 a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
-a: Vector = a_1 * e_1 + a_2 * e_2
-b: Vector = b_1 * e_1 + b_2 * e_2
+a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
+b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
 
 # %% [markdown]
 # ## Where `a` lands when `b` is rotated onto the x-axis
@@ -68,7 +68,7 @@ assert sympy.simplify(magnitude * y - (b_1 * a_2 - b_2 * a_1)) == 0
 # rejection part as a multiple of `e_12`. That object is `b * a`.
 
 # %%
-built: Versor = magnitude * (Versor.from_real(x) + y * Bivector.e_12)
+built: Versor = Scalar(magnitude) * (Versor.from_real(x) + Scalar(y) * Bivector.e_12)
 product: Versor = b * a
 assert (product - built).simplified() == Versor.zero()
 product
