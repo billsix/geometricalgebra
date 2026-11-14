@@ -299,7 +299,7 @@ def projection_rotation(
 
 
 @validation_guard
-def _require_on_line(
+def require_on_line(
     vector: MultiVectorBase,
     along: MultiVectorBase,
     float_close_to_zero: bool = False,
@@ -317,6 +317,15 @@ def _require_on_line(
 
     Raises:
         ValueError: if ``vector`` is nonzero and not parallel to ``along``.
+
+    Examples:
+        >>> from gacalc.g2 import e_1, e_2
+        >>> require_on_line(2 * e_1 + 2 * e_2, along=1 * e_1 + 1 * e_2)  # on it
+        >>> require_on_line(0 * e_1, along=1 * e_2)  # the origin is on every line
+        >>> require_on_line(1 * e_2, along=1 * e_1)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+        ...
+        ValueError: ... is not on the line of ...
     """
     if vector != type(vector).zero() and not vector.is_parallel_to(
         along, float_close_to_zero
@@ -382,7 +391,7 @@ def coordinate_along(
     MultiVectorBase.require_vectors((vector, along))
     if along == type(along).zero():
         raise ValueError("coordinate_along: the zero vector spans no line")
-    _require_on_line(vector, along, float_close_to_zero)
+    require_on_line(vector, along, float_close_to_zero)
     # The factor of the projection (v · a) * a⁻¹ = (v · a⁻¹) * a, computed in the
     # algebra so each representation keeps its exact/float/symbolic arithmetic.
     return vector.dot(along.inverse()).scalar_part()
@@ -451,7 +460,7 @@ def line_to_line_projection(
         >>> P(y)  # y is not on v_2's line  # doctest: +ELLIPSIS
         Traceback (most recent call last):
         ...
-        ValueError: line_to_line_projection.<locals>.forward (...): ... is not on the line of ...
+        ValueError: ...forward (...): ... is not on the line of ...
     """
     MultiVectorBase.require_vectors((from_vector, to_vector))
     if from_vector.is_orthogonal_to(to_vector, float_close_to_zero):
@@ -464,7 +473,7 @@ def line_to_line_projection(
 
     def forward(x: MultiVectorBase) -> MultiVectorBase:
         # On the line of from_vector the restriction is the projection itself.
-        _require_on_line(x, from_vector, float_close_to_zero)
+        require_on_line(x, from_vector, float_close_to_zero)
         return x.projected_onto(to_vector)
 
     def backward(z: MultiVectorBase) -> MultiVectorBase:
@@ -473,6 +482,85 @@ def line_to_line_projection(
         )
 
     label: str = "P_{" + to_vector._repr_latex_().strip("$") + "}"
+    return InvertibleFunction(
+        func=forward,
+        latex_repr=label,
+        inverse=backward,
+        latex_repr_inv=label + "^{-1}",
+        linearity=Linearity.LINEAR,
+    )
+
+
+def line_to_line_rejection(
+    from_vector: MultiVectorBase,
+    away_from: MultiVectorBase,
+    *,
+    float_close_to_zero: bool = False,
+) -> InvertibleFunction[MultiVectorBase]:
+    """Rejection away from ``away_from``, restricted to the line of ``from_vector``:
+    invertible, because it sends one line onto the other.
+
+    Rejecting the whole space away from a vector throws the projected part away, so
+    :meth:`~gacalc.base.MultiVectorBase.reject` has no inverse.  On the single line
+    of ``from_vector`` nothing is thrown away: ``c * from_vector`` goes to
+    ``c * R(from_vector)``, with ``R`` the rejection away from ``away_from``, and the
+    inverse sends ``d * R(from_vector)`` back to ``d * from_vector``.  Each direction
+    checks that its input is on its line.  ``from_vector`` must not be parallel to
+    ``away_from``, or the rejection squashes the line to a point.
+
+    Args:
+        from_vector: spans the line the function takes input on.
+        away_from: the vector whose direction the rejection removes.
+        float_close_to_zero: when ``True``, test "on the line" and "parallel" with
+            a floating-point tolerance, for float input.
+
+    Returns:
+        gacalc.functions.InvertibleFunction[MultiVectorBase]: the rejection from
+        one line to the other, and its inverse.
+
+    Raises:
+        ValueError: if either argument is not a vector or is zero, or they are
+            parallel; and, when the function or its inverse is applied, if the
+            input is off its line.
+
+    Examples:
+        From the diagonal line of ``1 * e_1 + 1 * e_2``, rejecting away from the
+        ``e_1`` axis: each point of the diagonal keeps only its height, and the
+        inverse moves back out along the diagonal:
+
+        >>> from gacalc.g2 import e_1, e_2
+        >>> R = line_to_line_rejection(from_vector=1 * e_1 + 1 * e_2, away_from=1 * e_1)
+        >>> R(1 * e_1 + 1 * e_2) == 1 * e_2
+        True
+        >>> R(2 * e_1 + 2 * e_2) == 2 * e_2
+        True
+        >>> R.inverse(3 * e_2) == 3 * e_1 + 3 * e_2
+        True
+        >>> R(1 * e_1)  # not on the diagonal  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+        ...
+        ValueError: ...forward (...): ... is not on the line of ...
+    """
+    MultiVectorBase.require_vectors((from_vector, away_from))
+    if from_vector.is_parallel_to(away_from, float_close_to_zero):
+        raise ValueError(
+            "line_to_line_rejection: from_vector is parallel to away_from, "
+            "so the rejection squashes the line to a point"
+        )
+    # The rejection of from_vector: it spans the line the function maps onto.
+    shadow: MultiVectorBase = from_vector.rejected_away_from(away_from)
+
+    def forward(x: MultiVectorBase) -> MultiVectorBase:
+        # On the line of from_vector the restriction is the rejection itself.
+        require_on_line(x, from_vector, float_close_to_zero)
+        return x.rejected_away_from(away_from)
+
+    def backward(z: MultiVectorBase) -> MultiVectorBase:
+        return from_vector * coordinate_along(
+            z, along=shadow, float_close_to_zero=float_close_to_zero
+        )
+
+    label: str = "R_{" + away_from._repr_latex_().strip("$") + "}"
     return InvertibleFunction(
         func=forward,
         latex_repr=label,
@@ -1388,6 +1476,8 @@ __all__ = [
     "projection_rotation",
     "coordinate_along",
     "line_to_line_projection",
+    "line_to_line_rejection",
+    "require_on_line",
     "versor_rotation",
     "plane_rotation",
     "bivector_rotation",

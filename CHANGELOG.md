@@ -11,6 +11,17 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+### Added
+- **`transforms.line_to_line_rejection(from_vector=, away_from=)`** — the rejection away from
+  `away_from`, restricted to the line of `from_vector`: an `InvertibleFunction` sending
+  `c * a` to `c * R(a)` and back, raising `ValueError` on input off its line in either direction
+  and at construction when the two vectors are parallel.
+- **`transforms.require_on_line(vector, along)`** — the shared "must be on this line" guard
+  (`ValueError` naming the caller), used by `coordinate_along` and both line-to-line maps.
+- **`Vector.line_to_line_projection(to_vector=)` / `Vector.line_to_line_rejection(away_from=)`** on
+  the generated 𝒢₂ and 𝒢₃ `Vector` (𝒢₁: the projection only, since every 𝒢₁ vector is parallel to
+  every other) — the coordinate versions of the two factories, typed `InvertibleFunction[Vector]`.
+
 ### Changed
 - **`standardposition.project_sp` / `reject_sp` are defined for `b` along the `e_3` axis.** They
   used to raise `ValueError` there; now the first plane rotation is zero-to-zero, the identity, and

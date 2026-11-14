@@ -1,74 +1,60 @@
 # An invertible rejection from one line to another, with coordinate versions generated into g1–g3
 
-**Status:** approved — go-ahead given, decisions recorded (William Emerison Six <billsix@gmail.com>, 2026-11-14)
-**Priority:** 6
-**Difficulty:** 5
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>): "make a follow up for doing something
 similar for reject, making an invertible function. … And as part of those tasks, add them to be coordinate
 versions in the generated code for g1 g2 g3 etc"
-**Depends on:** `tasks/archive/2026/11/07/line-to-line-projection-invertible-function.md` (done; it added
-`transforms.line_to_line_projection` and `transforms.coordinate_along`; build this on that shape).
+**Done:** 2026-11-14, in the unattended batch on branch `autonomous-batch-2026-11-14`
+**Built on:** `tasks/archive/2026/11/07/line-to-line-projection-invertible-function.md` and
+`tasks/archive/2026/11/14/coordinates-from-projection.md`.
 **Next:** `tasks/vector-and-plane-invertible-project-reject.md`.
 
-## BLUF
+## Outcome
 
-`line_to_line_projection(from_vector=a, to_vector=n)` restricts the projection onto `n` to the line of
-`a`. The rejection has the same structure: `reject(away_from=n)` restricted to the line of `a` sends
-`c * a` to `c * R_n(a)`, a line-to-line bijection whenever `a` is **not parallel** to `n`. Add
-`transforms.line_to_line_rejection(from_vector=, away_from=)`, an `InvertibleFunction` that raises
-`ValueError` on input off its line in either direction, and generate coordinate (closed-form) versions of
-both line-to-line maps into `g1`/`g2`/`g3`. Done = the factory with doctests and tests, the generated
-methods agreeing with the `Gn` reference, `make check-generated` and `make check-regions` green, and the
-changelog entry.
-
-## Context
-
-- The projection version and its checks: `src/gacalc/transforms.py` (`line_to_line_projection`,
-  `coordinate_along`), tests in `tests/test_line_to_line_projection.py`. Its record:
-  `tasks/archive/2026/11/07/line-to-line-projection-invertible-function.md`.
-- `MultiVectorBase.reject` (`src/gacalc/base.py`), H&S eq 2.9's complement `P^⊥_B(A) = A − P_B(A)`; the
-  dot/wedge reading: `tasks/reference/dot-wedge-projection-rejection.md`.
-- The checks: `is_parallel_to` (the domain check and the "parallel ⇒ not invertible" guard; its zero
-  case raises) and `is_orthogonal_to`, both with `float_close_to_zero`.
-- Generated code: `tools/gen_specialized.py` builds each `g*.py` as `ast` nodes. Existing closed-form
-  vector methods to copy the pattern from: `cross` (𝒢₃, the `cross_stub` emitter) and 𝒢₂'s
-  `rotate_90_degrees` (method + module-level `InvertibleFunction` factory). The method docstrings come from
-  `CUSTOM_METHOD_DOCS`. Read `tasks/reference/code-generator-architecture.md` and CLAUDE.md "Code
-  generation" (generate first, read the real output, never hand-edit `g*.py`).
-
-## The math
-
-- Forward: `c * a ↦ c * R_n(a)`; inverse: `d * R_n(a) ↦ d * a`. Both read the coordinate with
-  `coordinate_along`, as the projection version does.
-- Not invertible when `a ∥ n` (`R_n(a) = 0`): raise `ValueError` at construction.
-- **𝒢₁:** every vector is parallel to every other, so the rejection version always raises there. Decide
-  whether `g1` gets the method at all (Open question 2).
-- **Coordinate versions:** in 𝒢₂ with `a = (a_1, a_2)`, `n = (n_1, n_2)`, the rejection of `a` is
-  `((a ∧ n) / n)`, a closed form in the coordinates; the generated method computes the image vector and the
-  coordinate directly, without the general inverse. Same for the projection, `((a · n) / |n|²) * n`.
-  Exactness rules as everywhere: int → exact rational, float stays float (CLAUDE.md, `magnitude`/`inverse`).
-
-## Plan
-
-1. `transforms.line_to_line_rejection(from_vector=, away_from=, *, float_close_to_zero=False)` with
-   doctests (a worked 2D example, off-the-line raises) and `tests/test_line_to_line_rejection.py`
-   (round trip on each line over int, rational, float with the flag, symbolic `Gn`; off-line raises in
-   each direction; parallel raises; zero/non-vector raise).
-2. Generator: emit the coordinate versions of `line_to_line_projection` and `line_to_line_rejection` in
-   `g2`/`g3` (and `g1` per Open question 2), per Open question 1's shape. `make generate`, read the emitted
-   code, then tests that each generated version equals the `transforms` one (and `Gn`) on symbolic input.
-3. `make check-generated`, `make check-regions`, `make format`, full `make test`; `CHANGELOG.md`
-   `[Unreleased]` › Added; CLAUDE.md's `transforms.py` and generated-modules lines.
+- **`transforms.line_to_line_rejection(from_vector=, away_from=, *, float_close_to_zero=False)`**: the
+  rejection away from `away_from` restricted to the line of `from_vector`, an `InvertibleFunction`
+  sending `c * a` to `c * R(a)` and back. It mirrors `line_to_line_projection` as reshaped by
+  `coordinates-from-projection`: the forward map is the rejection itself (`x.rejected_away_from(n)`)
+  after the on-line check, and the inverse reads the coordinate on the image line with
+  `coordinate_along`. It raises `ValueError` at construction when the vectors are parallel (the
+  rejection would squash the line to a point) or either is zero or not a vector, and on input off its
+  line in either direction. Doctests cover the worked 2D example. `tests/test_line_to_line_rejection.py`
+  covers the round trip over int, rational, float (with the flag) and symbolic `Gn`, the image's
+  perpendicularity, and every error.
+- **`transforms.require_on_line(vector, along)`**: the on-line check from `coordinates-from-projection`,
+  made public (it was `_require_on_line`) and given a doctest, so the generated modules can import it.
+  It is a `@validation_guard`, so its message names the caller and call site.
+- **Generated coordinate versions** (`tools/gen_specialized.py`, `line_to_line_method_def`):
+  `Vector.line_to_line_projection(to_vector=, *, float_close_to_zero=False)` in 𝒢₁–𝒢₃ and
+  `Vector.line_to_line_rejection(away_from=, ...)` in 𝒢₂–𝒢₃, each typed `InvertibleFunction[Vector]`.
+  Every dot product is written out over the `coeff_e_i` fields, and each division goes through
+  `_reciprocal`, so int input stays exact. Each raises `TypeError` for an operand that is not this
+  algebra's `Vector` (the `rotate_90_degrees` convention) and `ValueError` as the factory does. Every
+  generated module now imports `Linearity` and `require_on_line`. The method is emitted from a source
+  template (template-splice) because its body is two nested closures. `tests/test_line_to_line_generated.py`
+  checks both directions against the factory on the `Gn` reference with fully symbolic vectors in every
+  algebra, plus exactness, errors, the operand check, and that 𝒢₁ has no rejection.
+- Docs: CHANGELOG `[Unreleased]` › Added; CLAUDE.md's `transforms.py` and generated-modules entries.
+- Also fixed: a doctest line from `coordinates-from-projection` that broke ruff's E501 (the expected
+  `ValueError` line was 97 columns). That task's gate log had reported it, but I only searched the log for
+  `ty` errors; the line is now `ValueError: ...forward (...): ... is not on the line of ...`.
 
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-07: "3) ok 4) ok")
 
 1. **Shape of the generated version:** a method on the generated `Vector`,
    `a.line_to_line_projection(to_vector=n)` / `a.line_to_line_rejection(away_from=n)`, returning an
-   `InvertibleFunction` typed `InvertibleFunction[Vector]`, with the coordinate formulas inside; the
-   `transforms` factories stay the representation-agnostic reference.
-2. **𝒢₁:** generate the projection version only; the rejection version can never be built there (every
-   vector is parallel to every other), so `g1` leaves it out.
+   `InvertibleFunction[Vector]`, with the coordinate formulas inside; the `transforms` factories stay the
+   representation-agnostic reference.
+2. **𝒢₁:** generate the projection version only; the rejection can never be built there.
 
-## Open questions
+## Judgment calls made during the work
 
-None. Still proposed: the maintainer has not said to start it.
+- **Forward map is the rejection itself**, not `coordinate_along(x, from_vector) * shadow` as the plan
+  said. `coordinates-from-projection` (done first, same day) moved the projection version to this shape,
+  and the two factories stay parallel.
+- **`require_on_line` is public**, like `require_vector` / `require_frame`, rather than a private
+  `_require_on_line` imported across modules.
+- **The generated methods keep the on-line checks as calls to `require_on_line` and
+  `is_parallel_to` / `is_orthogonal_to`**, not as written-out wedge components. Only the maps' values
+  are closed forms; the checks stay shared so their messages and float tolerance match the factories.
+- **The symbolic test vectors are typed `typing.Any`**, with the reason in the helper's docstring: the
+  algebra is chosen at run time, and the methods exist only on the generated `Vector`.

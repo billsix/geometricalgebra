@@ -6205,6 +6205,166 @@ def unit_pseudoscalar_squared_def(
     )
 
 
+def line_to_line_method_def(n: int, kind: str) -> ast.FunctionDef:
+    """``Vector.line_to_line_projection`` or ``Vector.line_to_line_rejection`` of 𝒢ₙ.
+
+    The coordinate (closed-form) version of the ``transforms`` factory of the same
+    name: every dot product is written out over the ``coeff_e_i`` fields, and the
+    one division goes through ``_reciprocal`` so int input stays exact.  The method
+    is built from a source template (template-splice) because its body is two
+    nested closures, which the node builders would spell far less readably.
+
+    Args:
+        n: the dimension of the algebra.
+        kind: ``"projection"`` or ``"rejection"``.
+
+    Returns:
+        ast.FunctionDef: the method, docstring included.
+    """
+    fields: list[str] = [field_name((i,)) for i in range(1, n + 1)]
+
+    def dot(left: str, right: str) -> str:
+        return " + ".join(f"{left}.{f} * {right}.{f}" for f in fields)
+
+    def scaled(factor: str, vector: str) -> str:
+        return ", ".join(f"{f}={factor} * {vector}.{f}" for f in fields)
+
+    def minus_scaled(vector: str, factor: str, other: str) -> str:
+        return ", ".join(f"{f}={vector}.{f} - {factor} * {other}.{f}" for f in fields)
+
+    match kind:
+        case "projection":
+            other: str = "to_vector"
+            label: str = "P"
+            degenerate: str = (
+                "if self.is_orthogonal_to(to_vector, float_close_to_zero):\n"
+                "    raise ValueError(\n"
+                '        "line_to_line_projection: self and to_vector are perpendicular, "\n'
+                '        "so the projection squashes the line to a point"\n'
+                "    )\n"
+            )
+            # The image of x: its projection ((x · n) / |n|²) * n.
+            image: str = f"Vector({scaled('x_n', other)})"
+            summary: str = (
+                "Projection onto the line of ``to_vector``, restricted to the line of\n"
+                "``self``: invertible, because it sends one line onto the other."
+            )
+            meaning: str = "the projection onto ``to_vector``"
+            failure: str = "``self`` and ``to_vector`` are perpendicular"
+            example: str = (
+                "    >>> P = (1 * e_1 + 1 * e_2).line_to_line_projection(to_vector=1 * e_1)\n"
+                "    >>> P(2 * e_1 + 2 * e_2) == 2 * e_1\n"
+                "    True\n"
+                "    >>> P.inverse(3 * e_1) == 3 * e_1 + 3 * e_2\n"
+                "    True\n"
+                if n >= 2
+                else "    >>> P = (2 * e_1).line_to_line_projection(to_vector=3 * e_1)\n"
+                "    >>> P(4 * e_1) == 4 * e_1\n"
+                "    True\n"
+                "    >>> P.inverse(5 * e_1) == 5 * e_1\n"
+                "    True\n"
+            )
+        case "rejection":
+            other = "away_from"
+            label = "R"
+            degenerate = (
+                "if self.is_parallel_to(away_from, float_close_to_zero):\n"
+                "    raise ValueError(\n"
+                '        "line_to_line_rejection: self is parallel to away_from, "\n'
+                '        "so the rejection squashes the line to a point"\n'
+                "    )\n"
+            )
+            # The image of x: x minus its projection, x - ((x · n) / |n|²) * n.
+            image = f"Vector({minus_scaled('x', 'x_n', other)})"
+            summary = (
+                "Rejection away from ``away_from``, restricted to the line of ``self``:\n"
+                "invertible, because it sends one line onto the other."
+            )
+            meaning = "the rejection away from ``away_from``"
+            failure = "``self`` is parallel to ``away_from``"
+            example = (
+                "    >>> R = (1 * e_1 + 1 * e_2).line_to_line_rejection(away_from=1 * e_1)\n"
+                "    >>> R(2 * e_1 + 2 * e_2) == 2 * e_2\n"
+                "    True\n"
+                "    >>> R.inverse(3 * e_2) == 3 * e_1 + 3 * e_2\n"
+                "    True\n"
+            )
+        case _:
+            raise ValueError(f"line_to_line_method_def: unknown kind {kind!r}")
+
+    shadow_fields: str = (
+        scaled("a_n * inverse_nn", other)
+        if kind == "projection"
+        else minus_scaled("self", "a_n * inverse_nn", other)
+    )
+    doc: str = (
+        f"{summary}\n"
+        "\n"
+        f"The coordinate version of ``transforms.line_to_line_{kind}``, with\n"
+        f"``{label}`` {meaning}: ``c * self`` goes to\n"
+        f"``c * {label}(self)``, and the inverse sends ``d * {label}(self)`` back to\n"
+        "``d * self``.  Every dot product is written out over the coordinates, and\n"
+        "each direction checks that its input is on its line.\n"
+        "\n"
+        "Args:\n"
+        f"    {other}: the vector that defines the {kind}.\n"
+        "    float_close_to_zero: when ``True``, test the lines with a\n"
+        "        floating-point tolerance, for float input.\n"
+        "\n"
+        "Returns:\n"
+        f"    InvertibleFunction[Vector]: the {kind} from one line to the other,\n"
+        "    and its inverse.\n"
+        "\n"
+        "Raises:\n"
+        f"    TypeError: if ``{other}`` is not a ``Vector`` of this algebra.\n"
+        f"    ValueError: if {failure}, or either is zero;\n"
+        "        and, when the function or its inverse is applied, if the input\n"
+        "        is off its line.\n"
+        "\n"
+        "Example:\n"
+        f"{example}"
+    )
+    source: str = (
+        f"def line_to_line_{kind}(\n"
+        f"    self, {other}: Vector, *, float_close_to_zero: bool = False\n"
+        ") -> InvertibleFunction[Vector]:\n"
+        f"    if type({other}) is not Vector:\n"
+        "        raise TypeError(\n"
+        f'            "line_to_line_{kind} takes a Vector of this algebra; got "\n'
+        f"            + type({other}).__name__\n"
+        "        )\n"
+        + "".join("    " + line + "\n" for line in degenerate.splitlines())
+        + f"    inverse_nn: Real = _reciprocal({dot(other, other)})\n"
+        f"    a_n: Real = {dot('self', other)}\n"
+        "    # The image of self: it spans the line the function maps onto.\n"
+        f"    shadow: Vector = Vector({shadow_fields})\n"
+        f"    inverse_ss: Real = _reciprocal({dot('shadow', 'shadow')})\n"
+        "\n"
+        "    def forward(x: Vector) -> Vector:\n"
+        "        require_on_line(x, self, float_close_to_zero)\n"
+        f"        x_n: Real = ({dot('x', other)}) * inverse_nn\n"
+        f"        return {image}\n"
+        "\n"
+        "    def backward(z: Vector) -> Vector:\n"
+        "        require_on_line(z, shadow, float_close_to_zero)\n"
+        "        # z = d * shadow, so d = (z · shadow) / |shadow|².\n"
+        f"        d: Real = ({dot('z', 'shadow')}) * inverse_ss\n"
+        f"        return Vector({scaled('d', 'self')})\n"
+        "\n"
+        f'    latex: str = "{label}_{{" + {other}._repr_latex_().strip("$") + "}}"\n'
+        "    return InvertibleFunction(\n"
+        "        func=forward,\n"
+        "        latex_repr=latex,\n"
+        "        inverse=backward,\n"
+        '        latex_repr_inv=latex + "^{-1}",\n'
+        "        linearity=Linearity.LINEAR,\n"
+        "    )\n"
+    )
+    function: ast.FunctionDef = cast(ast.FunctionDef, ast.parse(source).body[0])
+    function.body.insert(0, doc_expr(doc))
+    return function
+
+
 def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stmt]:
     """A graded subtype (Vector/Bivector/Trivector/Versor), as nodes (level C)."""
     blades: list[Blade] = list(spec.blades)
@@ -6816,6 +6976,12 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
 
     def vector_extras() -> list[ast.stmt]:
         extras: list[ast.stmt] = []
+        # The coordinate versions of transforms.line_to_line_projection / _rejection.
+        # 𝒢₁ gets the projection only: there every vector is parallel to every
+        # other, so the rejection could never be built.
+        extras.append(line_to_line_method_def(n, "projection"))
+        if n >= 2:
+            extras.append(line_to_line_method_def(n, "rejection"))
         # project/reject/reflect of a vector onto a blade are grade-preserving (the
         # result is a vector), so narrow the base's MultiVectorBase-typed factory
         # classmethods to the precise vector type -- one @overload per grade-pure
@@ -7322,9 +7488,13 @@ def header(name: str, n: int) -> str:
     # and plane_rotation (for its interpolation law); importing them elsewhere
     # would be unused (F401).  transforms imports only base/functions, so g2
     # importing it is acyclic.
-    functions_import: str = "from gacalc.functions import Linearity\n" if n == 2 else ""
+    # Every Vector carries the line-to-line maps (Linearity, require_on_line); 𝒢₂
+    # also has the quarter turn's plane_rotation.
+    functions_import: str = "from gacalc.functions import Linearity\n"
     transforms_import: str = (
-        "from gacalc.transforms import plane_rotation\n" if n == 2 else ""
+        "from gacalc.transforms import plane_rotation, require_on_line\n"
+        if n == 2
+        else "from gacalc.transforms import require_on_line\n"
     )
     return f"""# Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
