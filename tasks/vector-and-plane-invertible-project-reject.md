@@ -1,63 +1,55 @@
 # Invertible project and reject between a vector and a plane, with coordinate versions in g1–g3
 
-**Status:** approved — go-ahead given, decisions recorded (William Emerison Six <billsix@gmail.com>, 2026-11-14)
-**Priority:** 7
-**Difficulty:** 6
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>): "And then make a follow up task for
 doing that to a vector and a plane, both for project, and reject. And as part of those tasks, add them to
 be coordinate versions in the generated code for g1 g2 g3 etc"
-**Depends on:** `tasks/archive/2026/11/14/line-to-line-rejection-invertible-function.md` (both line-to-line maps and their
-generated coordinate versions; this task extends the same shape to a plane).
+**Done:** 2026-11-14, in the unattended batch on branch `autonomous-batch-2026-11-14`
+**Built on:** `tasks/archive/2026/11/14/line-to-line-rejection-invertible-function.md`.
 
-## BLUF
+## Outcome
 
-Extend the checked, invertible restrictions of `project` and `reject` from "line to line" to "vector and
-plane". Each is an `InvertibleFunction` that raises `ValueError` when its input is off its domain or the
-inverse's input is off the image, built in `transforms.py` and generated with coordinate (closed-form)
-versions into the `g*.py` modules where a plane exists (𝒢₂, 𝒢₃; 𝒢₁ has no plane). Done = the factories
-with doctests and tests, the generated versions agreeing with the `Gn` reference, the generated-code
-gates green, and the changelog entry.
-
-## Context
-
-- The line versions: `transforms.line_to_line_projection` and `coordinate_along` (built 2026-11-07),
-  `transforms.line_to_line_rejection` (the previous task). Same checks, same `float_close_to_zero` flag.
-- `MultiVectorBase.project` / `reject` already take a plane (a bivector, or a sequence of vectors wedged
-  into one) and use H&S eq 2.9; the vector-against-bivector projection and rejection are machine-checked
-  in `proofs/GacalcProofs/Projection3D.lean` (`project_add_reject`, `reject_perp_dot`).
-- "On the plane `B`" is `x ∧ B = 0`; "on the line of `a`" is `is_parallel_to`. Generated code:
-  `tools/gen_specialized.py`, `tasks/reference/code-generator-architecture.md`.
-
-## The candidate maps (which ones are meant is Open question 1)
-
-| map | domain → image | invertible when |
-|---|---|---|
-| (a) project a **line onto a plane** | line of `a` → line of `P_B(a)` in `B` | `a` not perpendicular to `B` (`P_B(a) ≠ 0`) |
-| (b) reject a **line from a plane** | line of `a` → line of `R_B(a)` (normal to `B`) | `a` not in `B` (`a ∧ B ≠ 0`) |
-| (c) project a **plane onto a plane** | plane `A` → plane `B` | the planes are not at a right angle (the projection of `A` onto `B` is not squashed to a line) |
-| (d) project a **plane onto a line** / reject a plane from a line | plane → line | never: two dimensions cannot go one-to-one onto one |
-
-(a) and (b) are the line versions with a bivector in place of `n`, and reuse `coordinate_along`. (c) is a
-2D-to-2D map: its inverse needs a 2×2 solve (or the reciprocal frame of the two spanning vectors' images),
-not a single coordinate. In 𝒢₃ only one plane-to-plane rejection is non-degenerate: rejecting a plane
-from a plane lands on a line, so (c) has no rejection counterpart.
-
-## Plan
-
-1. The factories chosen in Open question 1, in `transforms.py`, with doctests and a test file each: round
-   trips over int, rational, float with the flag, symbolic `Gn`; off-domain and off-image raise; the
-   degenerate configurations raise at construction.
-2. Generator: coordinate versions in `g2`/`g3`, in the shape the previous task settles (method on the
-   generated `Vector`, or on `Bivector` for (c)). `make generate`, read the output, test against
-   `transforms` and `Gn`.
-3. `make check-generated`, `make check-regions`, `make format`, full `make test`; `CHANGELOG.md`
-   `[Unreleased]` › Added; CLAUDE.md.
+- **`transforms.line_to_plane_projection(from_vector=, to_plane=, *, float_close_to_zero=False)`**: the
+  projection onto a plane (a nonzero bivector, H&S eq 2.9), restricted to the line of `from_vector`. Map
+  (a) of the task's table.
+- **`transforms.line_from_plane_rejection(from_vector=, away_from_plane=, ...)`**: the rejection away from
+  the plane, restricted to the line. Map (b).
+- Both have the line versions' shape: the forward map is the projection / rejection itself after
+  `require_on_line`, and the inverse reads the coordinate on the image line with `coordinate_along`. Each
+  raises `ValueError` when the plane is not a nonzero bivector, `from_vector` is not a nonzero vector, or
+  the image of `from_vector` is zero (perpendicular to the plane for the projection, in the plane for the
+  rejection). The zero test uses `is_parallel_to`'s tolerance under `float_close_to_zero`. Doctests show the
+  worked 3D example. `tests/test_line_and_plane.py` covers round trips over int, rational, float and
+  symbolic `Gn` for both maps, that the projection lands in the plane and the rejection is perpendicular to
+  it, off-line input in each direction, the degenerate configurations, and bad arguments.
+- **Generated 𝒢₃ coordinate versions**: `Vector.line_to_plane_projection(to_plane: Bivector, ...)` and
+  `Vector.line_from_plane_rejection(away_from_plane: Bivector, ...)`, typed `InvertibleFunction[Vector]`.
+  A 𝒢₃ plane `b_12 * e_12 + b_13 * e_13 + b_23 * e_23` has the normal `b_23 * e_1 - b_13 * e_2 + b_12 * e_3`
+  (its dual), so projecting onto the plane is rejecting away from the normal, and the closed forms are the
+  line versions' formulas against that normal. The tests check both directions against the factories on
+  the `Gn` reference with fully symbolic vector and plane, and check exactness, the `TypeError` operand
+  check, and the degenerate errors.
+- **Generator refactor**: `line_to_line_method_def` became `line_map_method_def(n, LineMap)`, with
+  `line_to_line_map` and `line_and_plane_map` describing the four methods, so all four share one
+  template.
+- Docs: CHANGELOG `[Unreleased]` › Added; CLAUDE.md's `transforms.py` and generated-modules entries.
 
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-07: "5) ok")
 
 1. **Which maps:** (a) and (b) only, the line-onto-plane projection and rejection. Plane onto plane (c) is
    out of scope.
 
-## Open questions
+## Judgment calls made during the work
 
-None. Still proposed: the maintainer has not said to start it.
+- **Generated in 𝒢₃ only, not 𝒢₂ (or 𝒢₄/𝒢₅).** In 𝒢₂ the only plane is the whole space, so the
+  projection is the identity and the rejection can never be built, the same reasoning that kept the line
+  rejection out of 𝒢₁. In 𝒢₄ and up a plane has no single normal vector, so the 𝒢₃ closed form does not
+  apply; the `transforms` factories still cover every dimension.
+- **Names.** `line_to_plane_projection(to_plane=)` follows `line_to_line_projection(to_vector=)`. The
+  rejection's image is a line off the plane, not in it, so it is `line_from_plane_rejection(away_from_plane=)`.
+- **Degeneracy is tested on the image of `from_vector`**, not with `is_orthogonal_to` / `is_parallel_to`,
+  which accept vectors only. The image is zero exactly when the map would squash the line.
+- **One test is marked `slow`**: the symbolic-`Gn` round trip of the plane projection took 13 s in the
+  container, over CLAUDE.md's 10 s bar. Only that parametrized case is marked; the symbolic rejection and
+  the generated-versus-`Gn` checks stay in the everyday run.
+- **g4/g5 not regenerated.** The generator changes are dimension-generic for the line maps and gated to
+  `n == 3` for the plane maps, but `make test-all-dims` (about 1.5 h) was not run.

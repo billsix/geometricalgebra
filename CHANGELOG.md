@@ -21,6 +21,12 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 - **`Vector.line_to_line_projection(to_vector=)` / `Vector.line_to_line_rejection(away_from=)`** on
   the generated 𝒢₂ and 𝒢₃ `Vector` (𝒢₁: the projection only, since every 𝒢₁ vector is parallel to
   every other) — the coordinate versions of the two factories, typed `InvertibleFunction[Vector]`.
+- **`transforms.line_to_plane_projection(from_vector=, to_plane=)` /
+  `transforms.line_from_plane_rejection(from_vector=, away_from_plane=)`** — the projection onto a
+  plane (a bivector) and the rejection away from it, restricted to one line: `InvertibleFunction`s
+  that raise `ValueError` on input off their line, and at construction when the line is
+  perpendicular to the plane (projection) or lies in it (rejection). The generated 𝒢₃ `Vector` has
+  coordinate versions of both, with the plane's normal written out from its coordinates.
 
 ### Changed
 - **`standardposition.project_sp` / `reject_sp` are defined for `b` along the `e_3` axis.** They

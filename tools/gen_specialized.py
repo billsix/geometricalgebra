@@ -6205,18 +6205,43 @@ def unit_pseudoscalar_squared_def(
     )
 
 
-def line_to_line_method_def(n: int, kind: str) -> ast.FunctionDef:
-    """``Vector.line_to_line_projection`` or ``Vector.line_to_line_rejection`` of 𝒢ₙ.
+class LineMap(NamedTuple):
+    """What sets one generated line-to-line ``Vector`` method apart from the others.
+
+    Every such method restricts a projection or rejection to the line of ``self``,
+    so it maps that line onto another and back.  The image is computed against one
+    vector ``n``: ``image="projection"`` means ``x ↦ ((x · n) / |n|²) * n`` and
+    ``image="rejection"`` means ``x ↦ x - ((x · n) / |n|²) * n``.  For the line
+    versions ``n`` is the operand; for the plane versions (𝒢₃) it is the plane's
+    normal, since projecting onto a plane is rejecting away from its normal.
+    """
+
+    name: str  # the method name, also the transforms factory's name
+    param: str  # the operand's parameter name
+    param_type: str  # the operand's generated class
+    normal: str  # source of the vector n the formulas use
+    image: str  # "projection" or "rejection", relative to n
+    pre_check: str  # source of the checks run before anything is computed
+    post_check: str  # source of the checks run once the image of self is known
+    label: str  # the LaTeX letter of the map
+    summary: str  # the docstring's first paragraph
+    meaning: str  # what the label stands for, in the docstring
+    failure: str  # when construction fails, in the docstring
+    example: str  # the docstring's doctest
+
+
+def line_map_method_def(n: int, spec: LineMap) -> ast.FunctionDef:
+    """A generated line-to-line ``Vector`` method of 𝒢ₙ (see :class:`LineMap`).
 
     The coordinate (closed-form) version of the ``transforms`` factory of the same
-    name: every dot product is written out over the ``coeff_e_i`` fields, and the
-    one division goes through ``_reciprocal`` so int input stays exact.  The method
-    is built from a source template (template-splice) because its body is two
-    nested closures, which the node builders would spell far less readably.
+    name: every dot product is written out over the ``coeff_e_i`` fields, and each
+    division goes through ``_reciprocal`` so int input stays exact.  The method is
+    built from a source template (template-splice) because its body is two nested
+    closures, which the node builders would spell far less readably.
 
     Args:
         n: the dimension of the algebra.
-        kind: ``"projection"`` or ``"rejection"``.
+        spec: what sets this method apart.
 
     Returns:
         ast.FunctionDef: the method, docstring included.
@@ -6226,132 +6251,78 @@ def line_to_line_method_def(n: int, kind: str) -> ast.FunctionDef:
     def dot(left: str, right: str) -> str:
         return " + ".join(f"{left}.{f} * {right}.{f}" for f in fields)
 
-    def scaled(factor: str, vector: str) -> str:
-        return ", ".join(f"{f}={factor} * {vector}.{f}" for f in fields)
+    def image_of(vector: str, factor: str) -> str:
+        """``Vector(...)`` of the image of ``vector``, ``factor`` being its
+        ``(vector · n) / |n|²``."""
+        match spec.image:
+            case "projection":
+                pairs: str = ", ".join(f"{f}={factor} * n.{f}" for f in fields)
+            case "rejection":
+                pairs = ", ".join(
+                    f"{f}={vector}.{f} - {factor} * n.{f}" for f in fields
+                )
+            case _:
+                raise ValueError(f"line_map_method_def: unknown image {spec.image!r}")
+        return f"Vector({pairs})"
 
-    def minus_scaled(vector: str, factor: str, other: str) -> str:
-        return ", ".join(f"{f}={vector}.{f} - {factor} * {other}.{f}" for f in fields)
+    def indented(source: str) -> str:
+        return "".join("    " + line + "\n" for line in source.splitlines())
 
-    match kind:
-        case "projection":
-            other: str = "to_vector"
-            label: str = "P"
-            degenerate: str = (
-                "if self.is_orthogonal_to(to_vector, float_close_to_zero):\n"
-                "    raise ValueError(\n"
-                '        "line_to_line_projection: self and to_vector are perpendicular, "\n'
-                '        "so the projection squashes the line to a point"\n'
-                "    )\n"
-            )
-            # The image of x: its projection ((x · n) / |n|²) * n.
-            image: str = f"Vector({scaled('x_n', other)})"
-            summary: str = (
-                "Projection onto the line of ``to_vector``, restricted to the line of\n"
-                "``self``: invertible, because it sends one line onto the other."
-            )
-            meaning: str = "the projection onto ``to_vector``"
-            failure: str = "``self`` and ``to_vector`` are perpendicular"
-            example: str = (
-                "    >>> P = (1 * e_1 + 1 * e_2).line_to_line_projection(to_vector=1 * e_1)\n"
-                "    >>> P(2 * e_1 + 2 * e_2) == 2 * e_1\n"
-                "    True\n"
-                "    >>> P.inverse(3 * e_1) == 3 * e_1 + 3 * e_2\n"
-                "    True\n"
-                if n >= 2
-                else "    >>> P = (2 * e_1).line_to_line_projection(to_vector=3 * e_1)\n"
-                "    >>> P(4 * e_1) == 4 * e_1\n"
-                "    True\n"
-                "    >>> P.inverse(5 * e_1) == 5 * e_1\n"
-                "    True\n"
-            )
-        case "rejection":
-            other = "away_from"
-            label = "R"
-            degenerate = (
-                "if self.is_parallel_to(away_from, float_close_to_zero):\n"
-                "    raise ValueError(\n"
-                '        "line_to_line_rejection: self is parallel to away_from, "\n'
-                '        "so the rejection squashes the line to a point"\n'
-                "    )\n"
-            )
-            # The image of x: x minus its projection, x - ((x · n) / |n|²) * n.
-            image = f"Vector({minus_scaled('x', 'x_n', other)})"
-            summary = (
-                "Rejection away from ``away_from``, restricted to the line of ``self``:\n"
-                "invertible, because it sends one line onto the other."
-            )
-            meaning = "the rejection away from ``away_from``"
-            failure = "``self`` is parallel to ``away_from``"
-            example = (
-                "    >>> R = (1 * e_1 + 1 * e_2).line_to_line_rejection(away_from=1 * e_1)\n"
-                "    >>> R(2 * e_1 + 2 * e_2) == 2 * e_2\n"
-                "    True\n"
-                "    >>> R.inverse(3 * e_2) == 3 * e_1 + 3 * e_2\n"
-                "    True\n"
-            )
-        case _:
-            raise ValueError(f"line_to_line_method_def: unknown kind {kind!r}")
-
-    shadow_fields: str = (
-        scaled("a_n * inverse_nn", other)
-        if kind == "projection"
-        else minus_scaled("self", "a_n * inverse_nn", other)
-    )
     doc: str = (
-        f"{summary}\n"
+        f"{spec.summary}\n"
         "\n"
-        f"The coordinate version of ``transforms.line_to_line_{kind}``, with\n"
-        f"``{label}`` {meaning}: ``c * self`` goes to\n"
-        f"``c * {label}(self)``, and the inverse sends ``d * {label}(self)`` back to\n"
-        "``d * self``.  Every dot product is written out over the coordinates, and\n"
+        f"The coordinate version of ``transforms.{spec.name}``, with\n"
+        f"``{spec.label}`` {spec.meaning}: ``c * self`` goes to\n"
+        f"``c * {spec.label}(self)``, and the inverse sends ``d * {spec.label}(self)`` back\n"
+        "to ``d * self``.  Every dot product is written out over the coordinates, and\n"
         "each direction checks that its input is on its line.\n"
         "\n"
         "Args:\n"
-        f"    {other}: the vector that defines the {kind}.\n"
+        f"    {spec.param}: the {spec.param_type} that defines the map.\n"
         "    float_close_to_zero: when ``True``, test the lines with a\n"
         "        floating-point tolerance, for float input.\n"
         "\n"
         "Returns:\n"
-        f"    InvertibleFunction[Vector]: the {kind} from one line to the other,\n"
+        "    InvertibleFunction[Vector]: the map from one line to the other,\n"
         "    and its inverse.\n"
         "\n"
         "Raises:\n"
-        f"    TypeError: if ``{other}`` is not a ``Vector`` of this algebra.\n"
-        f"    ValueError: if {failure}, or either is zero;\n"
+        f"    TypeError: if ``{spec.param}`` is not a ``{spec.param_type}`` of this\n"
+        "        algebra.\n"
+        f"    ValueError: if {spec.failure}, or either is zero;\n"
         "        and, when the function or its inverse is applied, if the input\n"
         "        is off its line.\n"
         "\n"
         "Example:\n"
-        f"{example}"
+        f"{spec.example}"
     )
     source: str = (
-        f"def line_to_line_{kind}(\n"
-        f"    self, {other}: Vector, *, float_close_to_zero: bool = False\n"
+        f"def {spec.name}(\n"
+        f"    self, {spec.param}: {spec.param_type}, *, float_close_to_zero: bool = False\n"
         ") -> InvertibleFunction[Vector]:\n"
-        f"    if type({other}) is not Vector:\n"
+        f"    if type({spec.param}) is not {spec.param_type}:\n"
         "        raise TypeError(\n"
-        f'            "line_to_line_{kind} takes a Vector of this algebra; got "\n'
-        f"            + type({other}).__name__\n"
-        "        )\n"
-        + "".join("    " + line + "\n" for line in degenerate.splitlines())
-        + f"    inverse_nn: Real = _reciprocal({dot(other, other)})\n"
-        f"    a_n: Real = {dot('self', other)}\n"
+        f'            "{spec.name} takes a {spec.param_type} of this algebra; got "\n'
+        f"            + type({spec.param}).__name__\n"
+        "        )\n" + indented(spec.pre_check) + f"    n: Vector = {spec.normal}\n"
+        f"    inverse_nn: Real = _reciprocal({dot('n', 'n')})\n"
+        f"    a_n: Real = ({dot('self', 'n')}) * inverse_nn\n"
         "    # The image of self: it spans the line the function maps onto.\n"
-        f"    shadow: Vector = Vector({shadow_fields})\n"
-        f"    inverse_ss: Real = _reciprocal({dot('shadow', 'shadow')})\n"
+        f"    shadow: Vector = {image_of('self', 'a_n')}\n"
+        + indented(spec.post_check)
+        + f"    inverse_ss: Real = _reciprocal({dot('shadow', 'shadow')})\n"
         "\n"
         "    def forward(x: Vector) -> Vector:\n"
         "        require_on_line(x, self, float_close_to_zero)\n"
-        f"        x_n: Real = ({dot('x', other)}) * inverse_nn\n"
-        f"        return {image}\n"
+        f"        x_n: Real = ({dot('x', 'n')}) * inverse_nn\n"
+        f"        return {image_of('x', 'x_n')}\n"
         "\n"
         "    def backward(z: Vector) -> Vector:\n"
         "        require_on_line(z, shadow, float_close_to_zero)\n"
-        "        # z = d * shadow, so d = (z · shadow) / |shadow|².\n"
         f"        d: Real = ({dot('z', 'shadow')}) * inverse_ss\n"
-        f"        return Vector({scaled('d', 'self')})\n"
+        f"        return Vector({', '.join(f'{f}=d * self.{f}' for f in fields)})\n"
         "\n"
-        f'    latex: str = "{label}_{{" + {other}._repr_latex_().strip("$") + "}}"\n'
+        f'    latex: str = "{spec.label}_{{" + {spec.param}._repr_latex_().strip("$") + "}}"\n'
         "    return InvertibleFunction(\n"
         "        func=forward,\n"
         "        latex_repr=latex,\n"
@@ -6363,6 +6334,173 @@ def line_to_line_method_def(n: int, kind: str) -> ast.FunctionDef:
     function: ast.FunctionDef = cast(ast.FunctionDef, ast.parse(source).body[0])
     function.body.insert(0, doc_expr(doc))
     return function
+
+
+def line_to_line_map(n: int, kind: str) -> LineMap:
+    """The :class:`LineMap` of ``Vector.line_to_line_projection`` / ``_rejection``."""
+    match kind:
+        case "projection":
+            return LineMap(
+                name="line_to_line_projection",
+                param="to_vector",
+                param_type="Vector",
+                normal="to_vector",
+                image="projection",
+                pre_check=(
+                    "if self.is_orthogonal_to(to_vector, float_close_to_zero):\n"
+                    "    raise ValueError(\n"
+                    '        "line_to_line_projection: self and to_vector are perpendicular, "\n'
+                    '        "so the projection squashes the line to a point"\n'
+                    "    )\n"
+                ),
+                post_check="",
+                label="P",
+                summary=(
+                    "Projection onto the line of ``to_vector``, restricted to the line of\n"
+                    "``self``: invertible, because it sends one line onto the other."
+                ),
+                meaning="the projection onto ``to_vector``",
+                failure="``self`` and ``to_vector`` are perpendicular",
+                example=(
+                    "    >>> P = (1 * e_1 + 1 * e_2).line_to_line_projection(to_vector=1 * e_1)\n"
+                    "    >>> P(2 * e_1 + 2 * e_2) == 2 * e_1\n"
+                    "    True\n"
+                    "    >>> P.inverse(3 * e_1) == 3 * e_1 + 3 * e_2\n"
+                    "    True\n"
+                    if n >= 2
+                    else "    >>> P = (2 * e_1).line_to_line_projection(to_vector=3 * e_1)\n"
+                    "    >>> P(4 * e_1) == 4 * e_1\n"
+                    "    True\n"
+                    "    >>> P.inverse(5 * e_1) == 5 * e_1\n"
+                    "    True\n"
+                ),
+            )
+        case "rejection":
+            return LineMap(
+                name="line_to_line_rejection",
+                param="away_from",
+                param_type="Vector",
+                normal="away_from",
+                image="rejection",
+                pre_check=(
+                    "if self.is_parallel_to(away_from, float_close_to_zero):\n"
+                    "    raise ValueError(\n"
+                    '        "line_to_line_rejection: self is parallel to away_from, "\n'
+                    '        "so the rejection squashes the line to a point"\n'
+                    "    )\n"
+                ),
+                post_check="",
+                label="R",
+                summary=(
+                    "Rejection away from ``away_from``, restricted to the line of ``self``:\n"
+                    "invertible, because it sends one line onto the other."
+                ),
+                meaning="the rejection away from ``away_from``",
+                failure="``self`` is parallel to ``away_from``",
+                example=(
+                    "    >>> R = (1 * e_1 + 1 * e_2).line_to_line_rejection(away_from=1 * e_1)\n"
+                    "    >>> R(2 * e_1 + 2 * e_2) == 2 * e_2\n"
+                    "    True\n"
+                    "    >>> R.inverse(3 * e_2) == 3 * e_1 + 3 * e_2\n"
+                    "    True\n"
+                ),
+            )
+        case _:
+            raise ValueError(f"line_to_line_map: unknown kind {kind!r}")
+
+
+def line_and_plane_map(kind: str) -> LineMap:
+    """The :class:`LineMap` of 𝒢₃'s ``Vector.line_to_plane_projection`` /
+    ``line_from_plane_rejection``.
+
+    In 𝒢₃ a plane ``B = b_12 * e_12 + b_13 * e_13 + b_23 * e_23`` has the normal
+    ``b_23 * e_1 - b_13 * e_2 + b_12 * e_3`` (its dual), so projecting onto the plane
+    is rejecting away from the normal and rejecting away from the plane is projecting
+    onto it.
+    """
+    param: str = "to_plane" if kind == "projection" else "away_from_plane"
+    normal: str = (
+        f"Vector(coeff_e_1={param}.coeff_e_23, coeff_e_2=-{param}.coeff_e_13, "
+        f"coeff_e_3={param}.coeff_e_12)"
+    )
+    zero_check: str = (
+        f"if {param} == Bivector.zero():\n"
+        f'    raise ValueError("{{name}}: the zero bivector spans no plane")\n'
+    )
+    shadow_check: str = (
+        "if (\n"
+        "    shadow.isclose(Vector.zero(), rel_tol=1e-5, abs_tol=1e-5)\n"
+        "    if float_close_to_zero\n"
+        "    else shadow == Vector.zero()\n"
+        "):\n"
+        "    raise ValueError(\n"
+        '        "{name}: self {where}, "\n'
+        '        "so the map squashes the line to a point"\n'
+        "    )\n"
+    )
+    match kind:
+        case "projection":
+            name: str = "line_to_plane_projection"
+            return LineMap(
+                name=name,
+                param=param,
+                param_type="Bivector",
+                normal=normal,
+                image="rejection",
+                pre_check=zero_check.replace("{name}", name),
+                post_check=shadow_check.replace("{name}", name).replace(
+                    "{where}", "is perpendicular to the plane"
+                ),
+                label="P",
+                summary=(
+                    "Projection onto the plane ``to_plane``, restricted to the line of\n"
+                    "``self``: invertible, because it sends that line onto a line in the\n"
+                    "plane."
+                ),
+                meaning="the projection onto the plane",
+                failure="``self`` is perpendicular to the plane",
+                example=(
+                    "    >>> P = (1 * e_1 + 1 * e_3).line_to_plane_projection(\n"
+                    "    ...     to_plane=1 * Bivector.e_12\n"
+                    "    ... )\n"
+                    "    >>> P(2 * e_1 + 2 * e_3) == 2 * e_1\n"
+                    "    True\n"
+                    "    >>> P.inverse(3 * e_1) == 3 * e_1 + 3 * e_3\n"
+                    "    True\n"
+                ),
+            )
+        case "rejection":
+            name = "line_from_plane_rejection"
+            return LineMap(
+                name=name,
+                param=param,
+                param_type="Bivector",
+                normal=normal,
+                image="projection",
+                pre_check=zero_check.replace("{name}", name),
+                post_check=shadow_check.replace("{name}", name).replace(
+                    "{where}", "lies in the plane"
+                ),
+                label="R",
+                summary=(
+                    "Rejection away from the plane ``away_from_plane``, restricted to the\n"
+                    "line of ``self``: invertible, because it sends that line onto the\n"
+                    "plane's normal line."
+                ),
+                meaning="the rejection away from the plane",
+                failure="``self`` lies in the plane",
+                example=(
+                    "    >>> R = (1 * e_1 + 1 * e_3).line_from_plane_rejection(\n"
+                    "    ...     away_from_plane=1 * Bivector.e_12\n"
+                    "    ... )\n"
+                    "    >>> R(2 * e_1 + 2 * e_3) == 2 * e_3\n"
+                    "    True\n"
+                    "    >>> R.inverse(3 * e_3) == 3 * e_1 + 3 * e_3\n"
+                    "    True\n"
+                ),
+            )
+        case _:
+            raise ValueError(f"line_and_plane_map: unknown kind {kind!r}")
 
 
 def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stmt]:
@@ -6979,9 +7117,15 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         # The coordinate versions of transforms.line_to_line_projection / _rejection.
         # 𝒢₁ gets the projection only: there every vector is parallel to every
         # other, so the rejection could never be built.
-        extras.append(line_to_line_method_def(n, "projection"))
+        extras.append(line_map_method_def(n, line_to_line_map(n, "projection")))
         if n >= 2:
-            extras.append(line_to_line_method_def(n, "rejection"))
+            extras.append(line_map_method_def(n, line_to_line_map(n, "rejection")))
+        # The line-and-plane maps, 𝒢₃ only: there a plane has a normal vector (its
+        # dual), which the closed forms are written against.  In 𝒢₂ the only plane
+        # is the whole space (projection is the identity, rejection never builds).
+        if n == 3:
+            extras.append(line_map_method_def(n, line_and_plane_map("projection")))
+            extras.append(line_map_method_def(n, line_and_plane_map("rejection")))
         # project/reject/reflect of a vector onto a blade are grade-preserving (the
         # result is a vector), so narrow the base's MultiVectorBase-typed factory
         # classmethods to the precise vector type -- one @overload per grade-pure

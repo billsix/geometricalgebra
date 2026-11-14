@@ -570,6 +570,177 @@ def line_to_line_rejection(
     )
 
 
+def _require_plane(plane: MultiVectorBase, caller: str) -> None:
+    """Raise ``ValueError`` unless ``plane`` is a nonzero bivector."""
+    if plane.grades() != [2]:
+        raise ValueError(f"{caller}: the plane must be a nonzero bivector, got {plane}")
+
+
+def _is_zero(value: MultiVectorBase, float_close_to_zero: bool) -> bool:
+    """Whether ``value`` is zero, with ``is_parallel_to``'s tolerance when asked."""
+    if float_close_to_zero:
+        return value.isclose(type(value).zero(), rel_tol=1e-5, abs_tol=1e-5)
+    return value == type(value).zero()
+
+
+def line_to_plane_projection(
+    from_vector: MultiVectorBase,
+    to_plane: MultiVectorBase,
+    *,
+    float_close_to_zero: bool = False,
+) -> InvertibleFunction[MultiVectorBase]:
+    """Projection onto the plane ``to_plane``, restricted to the line of
+    ``from_vector``: invertible, because it sends that line onto a line in the plane.
+
+    Projecting the whole space onto a plane throws the part along the plane's normal
+    away, so :meth:`~gacalc.base.MultiVectorBase.project` has no inverse.  On the
+    single line of ``from_vector`` nothing is thrown away: ``c * from_vector`` goes to
+    ``c * P(from_vector)``, with ``P`` the projection onto the plane (H&S eq 2.9), and
+    the inverse sends ``d * P(from_vector)`` back to ``d * from_vector``.  Each
+    direction checks that its input is on its line.  ``from_vector`` must not be
+    perpendicular to the plane, or the projection squashes the line to a point.
+
+    Args:
+        from_vector: spans the line the function takes input on.
+        to_plane: the plane, a bivector.
+        float_close_to_zero: when ``True``, test "on the line" and "perpendicular"
+            with a floating-point tolerance, for float input.
+
+    Returns:
+        gacalc.functions.InvertibleFunction[MultiVectorBase]: the projection from
+        the line to its image in the plane, and its inverse.
+
+    Raises:
+        ValueError: if ``from_vector`` is not a nonzero vector, ``to_plane`` is not
+            a nonzero bivector, or ``from_vector`` is perpendicular to the plane;
+            and, when the function or its inverse is applied, if the input is off
+            its line.
+
+    Examples:
+        From the line of ``1 * e_1 + 1 * e_3`` onto the ``e_1``-``e_2`` plane: each
+        point drops straight down to the plane, and the inverse climbs back up:
+
+        >>> from gacalc.g3 import Bivector, e_1, e_2, e_3
+        >>> P = line_to_plane_projection(
+        ...     from_vector=1 * e_1 + 1 * e_3, to_plane=1 * Bivector.e_12
+        ... )
+        >>> P(2 * e_1 + 2 * e_3) == 2 * e_1
+        True
+        >>> P.inverse(3 * e_1) == 3 * e_1 + 3 * e_3
+        True
+        >>> line_to_plane_projection(  # doctest: +ELLIPSIS
+        ...     from_vector=1 * e_3, to_plane=1 * Bivector.e_12
+        ... )
+        Traceback (most recent call last):
+        ...
+        ValueError: line_to_plane_projection: from_vector is perpendicular ...
+    """
+    MultiVectorBase.require_vector(from_vector)
+    _require_plane(to_plane, "line_to_plane_projection")
+    # The projection of from_vector: it spans the line the function maps onto.
+    shadow: MultiVectorBase = from_vector.projected_onto(to_plane)
+    if _is_zero(shadow, float_close_to_zero):
+        raise ValueError(
+            "line_to_plane_projection: from_vector is perpendicular to the plane, "
+            "so the projection squashes the line to a point"
+        )
+
+    def forward(x: MultiVectorBase) -> MultiVectorBase:
+        # On the line of from_vector the restriction is the projection itself.
+        require_on_line(x, from_vector, float_close_to_zero)
+        return x.projected_onto(to_plane)
+
+    def backward(z: MultiVectorBase) -> MultiVectorBase:
+        return from_vector * coordinate_along(
+            z, along=shadow, float_close_to_zero=float_close_to_zero
+        )
+
+    label: str = "P_{" + to_plane._repr_latex_().strip("$") + "}"
+    return InvertibleFunction(
+        func=forward,
+        latex_repr=label,
+        inverse=backward,
+        latex_repr_inv=label + "^{-1}",
+        linearity=Linearity.LINEAR,
+    )
+
+
+def line_from_plane_rejection(
+    from_vector: MultiVectorBase,
+    away_from_plane: MultiVectorBase,
+    *,
+    float_close_to_zero: bool = False,
+) -> InvertibleFunction[MultiVectorBase]:
+    """Rejection away from the plane ``away_from_plane``, restricted to the line of
+    ``from_vector``: invertible, because it sends that line onto a line.
+
+    Rejecting the whole space away from a plane throws the part in the plane away, so
+    :meth:`~gacalc.base.MultiVectorBase.reject` has no inverse.  On the single line of
+    ``from_vector`` nothing is thrown away: ``c * from_vector`` goes to
+    ``c * R(from_vector)``, with ``R`` the rejection away from the plane, and the
+    inverse sends ``d * R(from_vector)`` back to ``d * from_vector``.  Each direction
+    checks that its input is on its line.  ``from_vector`` must not lie in the plane,
+    or the rejection squashes the line to a point.
+
+    Args:
+        from_vector: spans the line the function takes input on.
+        away_from_plane: the plane, a bivector.
+        float_close_to_zero: when ``True``, test "on the line" and "in the plane"
+            with a floating-point tolerance, for float input.
+
+    Returns:
+        gacalc.functions.InvertibleFunction[MultiVectorBase]: the rejection from
+        the line to its image, and its inverse.
+
+    Raises:
+        ValueError: if ``from_vector`` is not a nonzero vector, ``away_from_plane``
+            is not a nonzero bivector, or ``from_vector`` lies in the plane; and,
+            when the function or its inverse is applied, if the input is off its
+            line.
+
+    Examples:
+        From the line of ``1 * e_1 + 1 * e_3``, rejecting away from the
+        ``e_1``-``e_2`` plane: each point keeps only its height above the plane:
+
+        >>> from gacalc.g3 import Bivector, e_1, e_2, e_3
+        >>> R = line_from_plane_rejection(
+        ...     from_vector=1 * e_1 + 1 * e_3, away_from_plane=1 * Bivector.e_12
+        ... )
+        >>> R(2 * e_1 + 2 * e_3) == 2 * e_3
+        True
+        >>> R.inverse(3 * e_3) == 3 * e_1 + 3 * e_3
+        True
+    """
+    MultiVectorBase.require_vector(from_vector)
+    _require_plane(away_from_plane, "line_from_plane_rejection")
+    # The rejection of from_vector: it spans the line the function maps onto.
+    shadow: MultiVectorBase = from_vector.rejected_away_from(away_from_plane)
+    if _is_zero(shadow, float_close_to_zero):
+        raise ValueError(
+            "line_from_plane_rejection: from_vector lies in the plane, "
+            "so the rejection squashes the line to a point"
+        )
+
+    def forward(x: MultiVectorBase) -> MultiVectorBase:
+        # On the line of from_vector the restriction is the rejection itself.
+        require_on_line(x, from_vector, float_close_to_zero)
+        return x.rejected_away_from(away_from_plane)
+
+    def backward(z: MultiVectorBase) -> MultiVectorBase:
+        return from_vector * coordinate_along(
+            z, along=shadow, float_close_to_zero=float_close_to_zero
+        )
+
+    label: str = "R_{" + away_from_plane._repr_latex_().strip("$") + "}"
+    return InvertibleFunction(
+        func=forward,
+        latex_repr=label,
+        inverse=backward,
+        latex_repr_inv=label + "^{-1}",
+        linearity=Linearity.LINEAR,
+    )
+
+
 def versor_rotation(
     from_vector: V,
     to_vector: V,
@@ -1477,6 +1648,8 @@ __all__ = [
     "coordinate_along",
     "line_to_line_projection",
     "line_to_line_rejection",
+    "line_to_plane_projection",
+    "line_from_plane_rejection",
     "require_on_line",
     "versor_rotation",
     "plane_rotation",
