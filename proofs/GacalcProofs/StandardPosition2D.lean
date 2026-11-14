@@ -38,6 +38,18 @@ namespace GacalcProofs.G2
 noncomputable def rotPlane (c s : ℝ) (v : G2) : G2 :=
   ⟨v.s, c * v.c1 - s * v.c2, s * v.c1 + c * v.c2, v.c12⟩
 
+/-- The **quarter turn** of a vector's components, `(x, y) ↦ (−y, x)`: Python's
+    `g2.Vector.rotate_90_degrees()`, a coordinate swap rather than a product with `e₁₂`. It keeps only
+    the vector part, so it is meant for vectors. -/
+noncomputable def rot90 (v : G2) : G2 := vec (-v.c2) v.c1
+
+/-- **`rotPlane` is the book's blend** (`eq-rotate-formula`, `book/docs/proof-rotate.rst`): on a vector,
+    the rotation by `(cos(θ) = c, sin(θ) = s)` is `c*v + s*rot90 v`, the vector blended with its quarter
+    turn. This is the form Python's `standardposition.py` computes. -/
+theorem rotPlane_vec_eq_blend (c s x y : ℝ) :
+    rotPlane c s (vec x y) = add (smul c (vec x y)) (smul s (rot90 (vec x y))) := by
+  simp only [rotPlane, rot90, add, smul, vec]; ext <;> ring
+
 /-- `rotPlane` pulls out scalars (linearity). -/
 theorem rotPlane_smul (c s k : ℝ) (v : G2) : rotPlane c s (smul k v) = smul k (rotPlane c s v) := by
   simp only [rotPlane, smul]; ext <;> ring

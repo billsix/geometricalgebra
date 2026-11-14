@@ -25,43 +25,50 @@ namespace GacalcProofs.G3
 /-! ### The third elementary plane rotation `rotYZ` (about the fixed `e₁` axis) -/
 
 /-- Rotate the e₂,e₃ (yz-plane) components by `(cos(θ) = c, sin(θ) = s)`, leaving e₁ and the scalar/bivector/
-    pseudoscalar parts untouched. -/
+    pseudoscalar parts untouched: the pair `(v.c2, v.c3)` is rotated in 𝒢₂ by `rotPlane` and written
+    back, like `rotXY`/`rotXZ`. -/
 noncomputable def rotYZ (c s : ℝ) (v : G3) : G3 :=
-  ⟨v.s, v.c1, c * v.c2 - s * v.c3, s * v.c2 + c * v.c3, v.c12, v.c13, v.c23, v.c123⟩
+  let r := GacalcProofs.G2.rotPlane c s (GacalcProofs.G2.vec v.c2 v.c3)
+  ⟨v.s, v.c1, r.c1, r.c2, v.c12, v.c13, v.c23, v.c123⟩
+
+/-- `rotYZ` in components: the 2D rotation formulas on `(v.c2, v.c3)`. -/
+theorem rotYZ_apply (c s : ℝ) (v : G3) :
+    rotYZ c s v = ⟨v.s, v.c1, c * v.c2 - s * v.c3, s * v.c2 + c * v.c3, v.c12, v.c13, v.c23, v.c123⟩ :=
+  rfl
 
 theorem rotYZ_smul (c s k : ℝ) (v : G3) : rotYZ c s (smul k v) = smul k (rotYZ c s v) := by
-  simp only [rotYZ, smul]; ext <;> ring
+  simp only [rotYZ_apply, smul]; ext <;> ring
 
 theorem rotYZ_sub (c s : ℝ) (u v : G3) : rotYZ c s (sub u v) = sub (rotYZ c s u) (rotYZ c s v) := by
-  simp only [rotYZ, sub]; ext <;> ring
+  simp only [rotYZ_apply, sub]; ext <;> ring
 
 theorem rotYZ_preserves_dot (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (u v : G3) :
     dot (rotYZ c s u) (rotYZ c s v) = dot u v := by
-  simp only [dot, rotYZ, mul]
+  simp only [dot, rotYZ_apply, mul]
   linear_combination (u.c2 * v.c2 + u.c3 * v.c3) * hcs
 
 /-- `rotXZ` distributes over subtraction (the `rotXZ` twin of the existing `rotXY_sub`; needed for the
     rejection's `rotXZ`-equivariance). -/
 theorem rotXZ_sub (c s : ℝ) (u v : G3) : rotXZ c s (sub u v) = sub (rotXZ c s u) (rotXZ c s v) := by
-  simp only [rotXZ, sub]; ext <;> ring
+  simp only [rotXZ_apply, sub]; ext <;> ring
 
 /-! ### A plane rotation of a vector is a vector (with transformed coordinates) -/
 
 theorem rotXY_vec (c s x y z : ℝ) :
     rotXY c s (vec x y z) = vec (c * x - s * y) (s * x + c * y) z := by
-  simp only [rotXY, vec]
+  simp only [rotXY_apply, vec]
 
 theorem rotXZ_vec (c s x y z : ℝ) :
     rotXZ c s (vec x y z) = vec (c * x - s * z) y (s * x + c * z) := by
-  simp only [rotXZ, vec]
+  simp only [rotXZ_apply, vec]
 
 theorem rotYZ_vec (c s x y z : ℝ) :
     rotYZ c s (vec x y z) = vec x (c * y - s * z) (s * y + c * z) := by
-  simp only [rotYZ, vec]
+  simp only [rotYZ_apply, vec]
 
 /-- A plane rotation about `e₁` fixes a vector already on `e₁`. -/
 theorem rotYZ_fixes_e1 (c s m : ℝ) : rotYZ c s (vec m 0 0) = vec m 0 0 := by
-  simp only [rotYZ, vec]; ext <;> ring
+  simp only [rotYZ_apply, vec]; ext <;> ring
 
 /-! ### Projection and rejection are equivariant under the third rotation too
 
@@ -146,7 +153,7 @@ theorem cross_rotYZ_equivariant {a b : G3} (ha : IsVector a) (hb : IsVector b) (
     `rotXY_aligns_xy` for the final reduction. -/
 theorem rotYZ_aligns_yz (b1 b2 b3 k : ℝ) (hk : k ≠ 0) (hk2 : k ^ 2 = b2 ^ 2 + b3 ^ 2) :
     rotYZ (b2 / k) (-b3 / k) (vec b1 b2 b3) = vec b1 k 0 := by
-  simp only [rotYZ, vec]
+  simp only [rotYZ_apply, vec]
   ext
   · rfl
   · rfl
@@ -175,7 +182,7 @@ theorem reduceToPlane_a_on_e1 (a1 a2 a3 cy sy : ℝ)
       = smul (magnitude (vec a1 a2 a3)) (vec 1 0 0) := by
   simp only [reduceToPlane]
   rw [rotate_b_to_e1_magnitude a1 a2 a3 hk hm]
-  simp only [rotYZ, smul, vec]; ext <;> ring
+  simp only [rotYZ_apply, smul, vec]; ext <;> ring
 
 /-- **`b` lands in the `e₁*e₂` plane:** after the two `a`-rotations carry `b` to some `(P,Q,R)`, the
     third rotation `rotYZ (Q/j) (−R/j)` (`j = √(Q²+R²)`) zeroes its `e₃` component. So `b`'s reduced
