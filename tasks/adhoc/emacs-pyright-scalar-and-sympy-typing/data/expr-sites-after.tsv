@@ -1,3 +1,0 @@
-src/gacalc/base.py	605	Type "Expr | Self@MultiVectorBase" is not assignable to return type "Self@MultiVectorBase"
-src/gacalc/transforms.py	1050	Type "Basic" is not assignable to declared type "Expr"
-src/gacalc/transforms.py	1323	Type "Basic" is not assignable to declared type "Expr"

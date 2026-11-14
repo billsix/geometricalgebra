@@ -22,7 +22,8 @@ operand and returns `Expr`, so pyright types `s_1 * e_1` as `Expr` and never con
 
 ## What changed
 
-- **Discovery and codemod** in `tasks/adhoc/emacs-pyright-scalar-and-sympy-typing/`: `discover.sh`
+- **Discovery and codemod** in `tasks/adhoc/emacs-pyright-scalar-and-sympy-typing/` (removed when
+  this task was archived; it is in git history): `discover.sh`
   runs pyright in the image and `extract.py` lists the Expr-cause errors (snapshots
   `data/expr-sites-before.tsv`, 166 rows, and `data/expr-sites-after.tsv`, 3). `wrap_coefficients.py`
   splices `Scalar(` … `)` / `Gn.from_real(` … `)` around the left operand of each `coefficient * blade`
