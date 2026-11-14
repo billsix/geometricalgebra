@@ -53,8 +53,8 @@ stubs.
 | `typing.cast(Vector, s_1 * e_1)` | `Vector` | `Vector` |
 
 Caveat for representation-agnostic code: `cls.from_real(c)` is **not** a safe scalar wrapper when
-`cls` is a scalar-less graded type, because `Vector.from_real(3)` is the zero vector
-(`tasks/graded-scalar-constructors-silent-drop.md`). Wrap with the algebra's `Scalar`, or
+`cls` is a scalar-less graded type, because `Vector.from_real(3)` raises `ValueError` (it has no
+scalar part; `tasks/archive/2026/11/14/graded-scalar-constructors-silent-drop.md`). Wrap with the algebra's `Scalar`, or
 `type(v).one()` (which is that `Scalar` since 2026-11-10), or put the multivector on the left.
 
 ## Options for the teaching code
@@ -82,8 +82,8 @@ Option 1 was chosen (William Emerison Six <billsix@gmail.com>, 2026-11-10) and a
   `Scalar(|a|/|b|) * b`.
 - **Representation-agnostic library bodies** (where the class is a parameter, `cls = type(x)`), in
   `frame.py`, `transforms.py` and `standardposition.py`, put the multivector on the left
-  (`v * x.coefficient(...)`, `cls.basis_vector(i) * x_i`). `cls.from_real(c)` would drop the scalar
-  when `cls` is a graded vector type, and those bodies are not where a student reads a vector literal.
+  (`v * x.coefficient(...)`, `cls.basis_vector(i) * x_i`). `cls.from_real(c)` raises when `cls` is a
+  graded vector type, and those bodies are not where a student reads a vector literal.
 - A test that checks the raw `symbol * vector` operator at run time keeps it, with a
   `# pyright: ignore[reportAttributeAccessIssue]` and the reason (`tests/test_operator_typing.py`).
 
