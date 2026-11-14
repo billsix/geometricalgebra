@@ -19,23 +19,79 @@ position is to bootstrap the geometric product from projection/rejection using o
 operations trusted independently of it.  This mirrors the matrix-free change-of-frame
 in ``multivariate-math/proofs/crossproduct.tex``.
 
+Each plane rotation copies that plane's two coordinates into a 𝒢₂ vector, rotates it
+there, and writes the pair back, leaving the third coordinate alone.  The 2D rotation
+is the book's ``eq-rotate-formula`` (``book/docs/proof-rotate.rst``), a blend of the
+vector and its quarter turn::
+
+    rotate(v) = cos * v + sin * v.rotate_90_degrees(),
+
+with ``cos`` and ``sin`` read off the coordinates of the two vectors the rotation
+turns between (``book/docs/proof-rotate-from-a-to-b.rst``); no angle is computed.
+The quarter turn is :meth:`gacalc.g2.Vector.rotate_90_degrees`, ``(x, y) -> (-y, x)``.
+
 Proven **equal** to the canonical operations in
 ``proofs/GacalcProofs/StandardPosition.lean``: ``projectSP_eq_proj`` and
-``rejectSP_eq_reject`` transcribe this module (``projectSP`` / ``rejectSP``, the same
-``(cos, sin)`` formulas) and prove it equals the Hestenes ``proj`` / ``reject``, via
+``rejectSP_eq_reject`` transcribe this module (``projectSP`` / ``rejectSP``, built
+on the same 2D rotation) and prove it equals the Hestenes ``proj`` / ``reject``, via
 ``proj_onto_x_axis`` (keep-the-x-component IS the projection onto ``|b| * e_1``),
 projection-equivariance under each plane rotation, and the rotations' inverses.  The
 derived variants carry an ``_sp`` / ``SP`` suffix in both languages (the stand-in for a
 prime, which is not a legal Python identifier character).
 
-The ``e_1`` alignment is undefined when ``b`` lies along the ``z`` axis
-(``b_x = b_y = 0``), because the first plane rotation would divide by ``|xy-part| =
-0``; ``project_sp`` / ``reject_sp`` raise ``ValueError`` there.  The canonical
-``project`` has no such restriction; use it, or align to a different axis, in that
-case.
+When ``b`` lies along the ``e_3`` axis its xy shadow is the zero vector, and the
+first rotation, from zero to zero, is the identity; ``project_sp`` / ``reject_sp`` are
+defined for every nonzero ``b``.
 """
 
+from collections.abc import Callable
+
+from gacalc import g2
 from gacalc.base import MultiVectorBase, Real
+
+
+def _rotation_from_to(u: g2.Vector, w: g2.Vector) -> Callable[[g2.Vector], g2.Vector]:
+    """The 2D rotation turning ``u``'s direction onto ``w``'s.
+
+    Written as the book writes it, a blend of the vector and its quarter turn,
+    ``cos * v + sin * v.rotate_90_degrees()``, with ``cos`` and ``sin`` read off the
+    coordinates of ``u`` and ``w``.  From the zero vector to the zero vector is the
+    identity; from zero to nonzero, or nonzero to zero, raises ``ValueError``.
+
+    Args:
+        u: the vector the rotation starts from.
+        w: the vector whose direction it ends at.
+
+    Returns:
+        Callable[[g2.Vector], g2.Vector]: the rotation.
+
+    Raises:
+        ValueError: if exactly one of ``u`` and ``w`` is zero.
+
+    Examples:
+        >>> from gacalc.g2 import Vector, e_1, e_2
+        >>> _rotation_from_to(1 * e_1, 2 * e_2)(3 * e_1 + 4 * e_2) == -4 * e_1 + 3 * e_2
+        True
+        >>> _rotation_from_to(Vector.zero(), Vector.zero())(3 * e_1) == 3 * e_1
+        True
+        >>> _rotation_from_to(Vector.zero(), 1 * e_1)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: ...cannot rotate between the zero vector and a nonzero vector...
+    """
+    MultiVectorBase.require_rotation_endpoints(u, w)
+    if u == g2.Vector.zero():
+        return lambda v: v
+    scale: Real = u.magnitude() * w.magnitude()
+    cos: Real = (u.coeff_e_1 * w.coeff_e_1 + u.coeff_e_2 * w.coeff_e_2) / scale
+    sin: Real = (u.coeff_e_1 * w.coeff_e_2 - u.coeff_e_2 * w.coeff_e_1) / scale
+
+    def rotate(v: g2.Vector) -> g2.Vector:
+        # rotate_90_degrees swaps coordinates, (x, y) -> (-y, x); it does not
+        # multiply by e_12, so this rotation uses no geometric product.
+        return g2.Scalar(cos) * v + g2.Scalar(sin) * v.rotate_90_degrees()
+
+    return rotate
 
 
 def _project_via_standard_position(
@@ -43,6 +99,8 @@ def _project_via_standard_position(
 ) -> MultiVectorBase:
     MultiVectorBase.require_vectors([a, b])
     cls: type[MultiVectorBase] = type(b)
+    if b == cls.zero():
+        raise ValueError("project_sp: cannot project onto the zero vector")
     e_1: MultiVectorBase = cls.basis_vector(1)
     e_2: MultiVectorBase = cls.basis_vector(2)
     e_3: MultiVectorBase = cls.basis_vector(3)
@@ -51,50 +109,52 @@ def _project_via_standard_position(
         # The three coordinates, zeros included (iterating a Gn omits them).
         return v.coefficient(e_1), v.coefficient(e_2), v.coefficient(e_3)
 
+    def in_xy_plane(
+        rotation: Callable[[g2.Vector], g2.Vector], v: MultiVectorBase
+    ) -> MultiVectorBase:
+        x: Real
+        y: Real
+        z: Real
+        x, y, z = coordinates(v)
+        rotated: g2.Vector = rotation(x * g2.e_1 + y * g2.e_2)
+        return rotated.coeff_e_1 * e_1 + rotated.coeff_e_2 * e_2 + z * e_3
+
+    def in_xz_plane(
+        rotation: Callable[[g2.Vector], g2.Vector], v: MultiVectorBase
+    ) -> MultiVectorBase:
+        x: Real
+        y: Real
+        z: Real
+        x, y, z = coordinates(v)
+        rotated: g2.Vector = rotation(x * g2.e_1 + z * g2.e_2)
+        return rotated.coeff_e_1 * e_1 + y * e_2 + rotated.coeff_e_2 * e_3
+
     b_x: Real
     b_y: Real
     b_z: Real
     b_x, b_y, b_z = coordinates(b)
-    if b_x == 0 and b_y == 0:
-        raise ValueError(
-            "project_sp: b lies along the e_3 axis, where the standard-position "
-            "alignment is undefined; use the canonical a.projected_onto(b)"
-        )
-    # magnitude of b's xy-part (numeric-preserving), and of b itself
-    xy_magnitude: Real = (b_x * e_1 + b_y * e_2).magnitude()
-    magnitude: Real = b.magnitude()
-
-    # (cos, sin) read off b's own coordinates: the xy rotation that zeroes b_y,
-    # then the xz rotation that zeroes b_z -- so align(b) = magnitude * e_1.
-    cos_xy: Real = b_x / xy_magnitude
-    sin_xy: Real = -b_y / xy_magnitude
-    cos_xz: Real = xy_magnitude / magnitude
-    sin_xz: Real = -b_z / magnitude
-
-    def rotate_in_xy_plane(cos: Real, sin: Real, v: MultiVectorBase) -> MultiVectorBase:
-        x: Real
-        y: Real
-        z: Real
-        x, y, z = coordinates(v)
-        return (cos * x - sin * y) * e_1 + (sin * x + cos * y) * e_2 + z * e_3
-
-    def rotate_in_xz_plane(cos: Real, sin: Real, v: MultiVectorBase) -> MultiVectorBase:
-        x: Real
-        y: Real
-        z: Real
-        x, y, z = coordinates(v)
-        return (cos * x - sin * z) * e_1 + y * e_2 + (sin * x + cos * z) * e_3
+    # First the xy plane: b's shadow there swings onto the x axis.  Then the xz
+    # plane: the pair (|shadow|, b_z) swings onto the x axis, so align(b) = |b| * e_1.
+    shadow: g2.Vector = b_x * g2.e_1 + b_y * g2.e_2
+    shadow_on_x_axis: g2.Vector = shadow.magnitude() * g2.e_1
+    tilt: g2.Vector = shadow.magnitude() * g2.e_1 + b_z * g2.e_2
+    tilt_on_x_axis: g2.Vector = b.magnitude() * g2.e_1
 
     def align(v: MultiVectorBase) -> MultiVectorBase:
-        return rotate_in_xz_plane(cos_xz, sin_xz, rotate_in_xy_plane(cos_xy, sin_xy, v))
-
-    def rotate_back(v: MultiVectorBase) -> MultiVectorBase:
-        # inverse rotation = negate each sine, applied in the reverse order
-        return rotate_in_xy_plane(
-            cos_xy, -sin_xy, rotate_in_xz_plane(cos_xz, -sin_xz, v)
+        return in_xz_plane(
+            _rotation_from_to(tilt, tilt_on_x_axis),
+            in_xy_plane(_rotation_from_to(shadow, shadow_on_x_axis), v),
         )
 
-    # align(b) = magnitude * e_1, so projecting onto it is "keep the x-component":
+    def rotate_back(v: MultiVectorBase) -> MultiVectorBase:
+        # Each rotation is undone by the one between the same vectors, the other
+        # way round; the two are undone in the reverse order.
+        return in_xy_plane(
+            _rotation_from_to(shadow_on_x_axis, shadow),
+            in_xz_plane(_rotation_from_to(tilt_on_x_axis, tilt), v),
+        )
+
+    # align(b) = |b| * e_1, so projecting onto it is "keep the x-component":
     # no dot product, no geometric product -- just read off a coordinate.
     projected_in_standard_position: MultiVectorBase = align(a).coefficient(e_1) * e_1
     return rotate_back(projected_in_standard_position)
@@ -110,16 +170,14 @@ def project_sp(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
 
     Args:
         a: the vector being projected.
-        b: the vector projected onto (must not lie along the ``z`` axis; see the
-            module docstring).
+        b: the nonzero vector projected onto.
 
     Returns:
         MultiVectorBase: the component of ``a`` along ``b`` — equal to
         ``a.projected_onto(b)``.
 
     Raises:
-        ValueError: if ``a`` or ``b`` is not a vector, or ``b`` lies along the ``z``
-            axis.
+        ValueError: if ``a`` or ``b`` is not a vector, or ``b`` is zero.
 
     Examples:
         Projecting onto a coordinate axis keeps that one coordinate; only the
@@ -139,10 +197,16 @@ def project_sp(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
         >>> a = 1 * e_1 + 2 * e_2 + 3 * e_3
         >>> project_sp(a, b) == a.projected_onto(b)
         True
-        >>> project_sp(a, 1 * e_3)  # doctest: +ELLIPSIS
+
+        Along the ``e_3`` axis the first rotation turns zero into zero, the
+        identity, so ``b`` may lie there too:
+
+        >>> project_sp(a, 1 * e_3) == a.projected_onto(e_3)
+        True
+        >>> project_sp(a, 0 * e_3)  # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
-        ValueError: project_sp: b lies along the e_3 axis, ...
+        ValueError: project_sp: cannot project onto the zero vector
     """
     return _project_via_standard_position(a, b)
 
@@ -156,15 +220,13 @@ def reject_sp(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
 
     Args:
         a: the vector being split.
-        b: the vector rejected from (must not lie along the ``z`` axis; see the
-            module docstring).
+        b: the nonzero vector rejected from.
 
     Returns:
         MultiVectorBase: the component of ``a`` orthogonal to ``b``.
 
     Raises:
-        ValueError: if ``a`` or ``b`` is not a vector, or ``b`` lies along the ``z``
-            axis.
+        ValueError: if ``a`` or ``b`` is not a vector, or ``b`` is zero.
 
     Examples:
         Rejecting from a coordinate axis drops that one coordinate and keeps the
