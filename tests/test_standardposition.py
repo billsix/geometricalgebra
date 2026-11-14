@@ -29,7 +29,7 @@ import sympy
 import gacalc.g3 as g3
 import gacalc.gn as gn
 from gacalc.base import MultiVectorBase
-from gacalc.g3 import Vector, e_1, e_2, e_3
+from gacalc.g3 import Scalar, Vector, e_1, e_2, e_3
 from gacalc.gn import Gn
 from gacalc.standardposition import project_sp, reject_sp
 
@@ -70,7 +70,7 @@ def test_project_sp_matches_canonical_symbolic() -> None:
     a_2: sympy.Symbol
     a_3: sympy.Symbol
     a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
-    a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+    a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2 + Scalar(a_3) * e_3
     difference: MultiVectorBase = project_sp(a, _B_EXACT) - a.projected_onto(_B_EXACT)
     assert all(
         sympy.simplify(sympy.sympify(coefficient)) == 0 for coefficient in difference
@@ -82,7 +82,7 @@ def test_reject_sp_matches_canonical_symbolic() -> None:
     a_2: sympy.Symbol
     a_3: sympy.Symbol
     a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
-    a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+    a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2 + Scalar(a_3) * e_3
     difference: MultiVectorBase = reject_sp(a, _B_EXACT) - a.rejected_away_from(
         _B_EXACT
     )
@@ -103,7 +103,7 @@ def test_project_sp_along_e_3_matches_canonical() -> None:
 def test_project_sp_along_e_3_symbolic() -> None:
     b_3: sympy.Symbol = sympy.Symbol("b_3", positive=True)
     a: Vector = 1 * e_1 + 2 * e_2 + 3 * e_3
-    assert project_sp(a, b_3 * e_3) == 3 * e_3
+    assert project_sp(a, Scalar(b_3) * e_3) == 3 * e_3
 
 
 def test_project_sp_raises_for_zero_b() -> None:

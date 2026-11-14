@@ -31,15 +31,15 @@ import sympy
 
 import gacalc.g2 as g2
 from gacalc.base import Real
-from gacalc.g2 import Vector
+from gacalc.g2 import Scalar, Vector
 
 a_1: sympy.Symbol
 a_2: sympy.Symbol
 b_1: sympy.Symbol
 b_2: sympy.Symbol
 a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
-a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2
-b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2
+a: Vector = Scalar(a_1) * Vector.e_1 + Scalar(a_2) * Vector.e_2
+b: Vector = Scalar(b_1) * Vector.e_1 + Scalar(b_2) * Vector.e_2
 product: g2.Versor = a * b
 product  # the full geometric product: a scalar part + an e_12 (bivector) part
 
@@ -65,7 +65,7 @@ dot_coordinate_free
 # The same three rungs, now for `a ∧ b = ⟨a * b⟩₂`.
 
 # %%
-wedge_coordinate: g2.Bivector = (a_1 * b_2 - a_2 * b_1) * g2.Bivector.e_12
+wedge_coordinate: g2.Bivector = (g2.Scalar(a_1 * b_2 - a_2 * b_1)) * g2.Bivector.e_12
 wedge_fixed_grade: g2.Bivector = product.r_vector_part(
     2
 )  # <a * b>_2, the bound grade 2

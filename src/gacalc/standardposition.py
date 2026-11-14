@@ -116,8 +116,8 @@ def _project_via_standard_position(
         y: Real
         z: Real
         x, y, z = coordinates(v)
-        rotated: g2.Vector = rotation(x * g2.e_1 + y * g2.e_2)
-        return rotated.coeff_e_1 * e_1 + rotated.coeff_e_2 * e_2 + z * e_3
+        rotated: g2.Vector = rotation(g2.Scalar(x) * g2.e_1 + g2.Scalar(y) * g2.e_2)
+        return e_1 * rotated.coeff_e_1 + e_2 * rotated.coeff_e_2 + e_3 * z
 
     def in_xz_plane(
         rotation: Callable[[g2.Vector], g2.Vector], v: MultiVectorBase
@@ -126,8 +126,8 @@ def _project_via_standard_position(
         y: Real
         z: Real
         x, y, z = coordinates(v)
-        rotated: g2.Vector = rotation(x * g2.e_1 + z * g2.e_2)
-        return rotated.coeff_e_1 * e_1 + y * e_2 + rotated.coeff_e_2 * e_3
+        rotated: g2.Vector = rotation(g2.Scalar(x) * g2.e_1 + g2.Scalar(z) * g2.e_2)
+        return e_1 * rotated.coeff_e_1 + e_2 * y + e_3 * rotated.coeff_e_2
 
     b_x: Real
     b_y: Real
@@ -135,10 +135,10 @@ def _project_via_standard_position(
     b_x, b_y, b_z = coordinates(b)
     # First the xy plane: b's shadow there swings onto the x axis.  Then the xz
     # plane: the pair (|shadow|, b_z) swings onto the x axis, so align(b) = |b| * e_1.
-    shadow: g2.Vector = b_x * g2.e_1 + b_y * g2.e_2
-    shadow_on_x_axis: g2.Vector = shadow.magnitude() * g2.e_1
-    tilt: g2.Vector = shadow.magnitude() * g2.e_1 + b_z * g2.e_2
-    tilt_on_x_axis: g2.Vector = b.magnitude() * g2.e_1
+    shadow: g2.Vector = g2.Scalar(b_x) * g2.e_1 + g2.Scalar(b_y) * g2.e_2
+    shadow_on_x_axis: g2.Vector = g2.Scalar(shadow.magnitude()) * g2.e_1
+    tilt: g2.Vector = g2.Scalar(shadow.magnitude()) * g2.e_1 + g2.Scalar(b_z) * g2.e_2
+    tilt_on_x_axis: g2.Vector = g2.Scalar(b.magnitude()) * g2.e_1
 
     def align(v: MultiVectorBase) -> MultiVectorBase:
         return in_xz_plane(
@@ -156,7 +156,7 @@ def _project_via_standard_position(
 
     # align(b) = |b| * e_1, so projecting onto it is "keep the x-component":
     # no dot product, no geometric product -- just read off a coordinate.
-    projected_in_standard_position: MultiVectorBase = align(a).coefficient(e_1) * e_1
+    projected_in_standard_position: MultiVectorBase = e_1 * align(a).coefficient(e_1)
     return rotate_back(projected_in_standard_position)
 
 

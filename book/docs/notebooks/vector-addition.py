@@ -18,7 +18,7 @@
 import sympy
 
 from gacalc.functions import InvertibleFunction
-from gacalc.g2 import Vector, e_1, e_2
+from gacalc.g2 import Scalar, Vector, e_1, e_2
 from gacalc.transforms import translate
 
 a_1: sympy.Symbol
@@ -26,8 +26,8 @@ a_2: sympy.Symbol
 b_1: sympy.Symbol
 b_2: sympy.Symbol
 a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
-a: Vector = a_1 * e_1 + a_2 * e_2
-b: Vector = b_1 * e_1 + b_2 * e_2
+a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
+b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
 
 a + b  # the coordinates add: (a_1 + b_1) * e_1 + (a_2 + b_2) * e_2
 

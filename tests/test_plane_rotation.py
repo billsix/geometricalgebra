@@ -215,11 +215,13 @@ def test_rotation_is_distributive_over_addition_symbolic_2d() -> None:
     b_1: sympy.Symbol
     b_2: sympy.Symbol
     a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
-    a: g2.Vector = a_1 * g2.Vector.e_1 + a_2 * g2.Vector.e_2
-    b: g2.Vector = b_1 * g2.Vector.e_1 + b_2 * g2.Vector.e_2
-    rotor: g2.Versor = sympy.cos(theta) + sympy.sin(theta) * g2.Bivector.e_12
-    assert ((a + b) * rotor).simplified() == (a * rotor + b * rotor).simplified()
-    basis_decomposition: g2.Vector = a_1 * (g2.Vector.e_1 * rotor) + a_2 * (
-        g2.Vector.e_2 * rotor
+    a: g2.Vector = g2.Scalar(a_1) * g2.Vector.e_1 + g2.Scalar(a_2) * g2.Vector.e_2
+    b: g2.Vector = g2.Scalar(b_1) * g2.Vector.e_1 + g2.Scalar(b_2) * g2.Vector.e_2
+    rotor: g2.Versor = (
+        g2.Scalar(sympy.cos(theta)) + g2.Scalar(sympy.sin(theta)) * g2.Bivector.e_12
     )
+    assert ((a + b) * rotor).simplified() == (a * rotor + b * rotor).simplified()
+    basis_decomposition: g2.Vector = g2.Scalar(a_1) * (
+        g2.Vector.e_1 * rotor
+    ) + g2.Scalar(a_2) * (g2.Vector.e_2 * rotor)
     assert (a * rotor).simplified() == basis_decomposition.simplified()

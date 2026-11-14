@@ -940,7 +940,7 @@ class Frame:
             # basis_vector numbers the basis from 1, hence enumerate(start=1).
             return sum(
                 (
-                    x.coefficient(cls.basis_vector(i)) * v
+                    v * x.coefficient(cls.basis_vector(i))
                     for i, v in enumerate(self.vectors, start=1)
                 ),
                 start=cls.zero(),
@@ -969,7 +969,7 @@ class Frame:
             # from 1, hence enumerate(start=1).
             return sum(
                 (
-                    term_and_coordinate(y, v=v, m=v_upper)[1] * cls.basis_vector(i)
+                    cls.basis_vector(i) * term_and_coordinate(y, v=v, m=v_upper)[1]
                     for i, (v, v_upper) in enumerate(
                         zip(self.vectors, reciprocal_vectors, strict=True), start=1
                     )
@@ -1011,7 +1011,7 @@ class Frame:
             # (w_i, v_i), in frame order; peel consumes them from the end.
             return sum(
                 (
-                    x_i * cls.basis_vector(i)
+                    cls.basis_vector(i) * x_i
                     for i, x_i in enumerate(
                         peel(
                             tuple(zip(orthogonal_vectors, self.vectors, strict=True)),

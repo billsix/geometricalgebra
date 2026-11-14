@@ -434,17 +434,13 @@ def line_to_line_projection(
     shadow: MultiVectorBase = from_vector.projected_onto(to_vector)
 
     def forward(x: MultiVectorBase) -> MultiVectorBase:
-        return (
-            coordinate_along(
-                x, along=from_vector, float_close_to_zero=float_close_to_zero
-            )
-            * shadow
+        return shadow * coordinate_along(
+            x, along=from_vector, float_close_to_zero=float_close_to_zero
         )
 
     def backward(z: MultiVectorBase) -> MultiVectorBase:
-        return (
-            coordinate_along(z, along=shadow, float_close_to_zero=float_close_to_zero)
-            * from_vector
+        return from_vector * coordinate_along(
+            z, along=shadow, float_close_to_zero=float_close_to_zero
         )
 
     label: str = "P_{" + to_vector._repr_latex_().strip("$") + "}"

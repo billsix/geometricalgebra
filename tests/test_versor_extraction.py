@@ -47,7 +47,7 @@ def test_versor_reconstructs_from_r_i_theta_numeric() -> None:
     u: g3.Vector = 1.0 * g3.Vector.e_1 + 2.0 * g3.Vector.e_2 + 3.0 * g3.Vector.e_3
     v: g3.Vector = 4.0 * g3.Vector.e_1 + 5.0 * g3.Vector.e_2 + 6.0 * g3.Vector.e_3
     R: MultiVectorBase = u * v
-    rebuilt: MultiVectorBase = R.magnitude() * (
+    rebuilt: MultiVectorBase = g3.Scalar(R.magnitude()) * (
         math.cos(R.angle()) + math.sin(R.angle()) * R.plane_of_rotation()
     )
     assert rebuilt.isclose(R, rel_tol=1e-9, abs_tol=1e-9)
@@ -61,15 +61,15 @@ def test_versor_reconstructs_from_r_i_theta_symbolic() -> None:
     s: sympy.Symbol
     c, s = sympy.symbols("c s", positive=True)
     plane: g2.Bivector = 1 * g2.Bivector.e_12
-    versor: MultiVectorBase = c + s * plane
+    versor: MultiVectorBase = g2.Scalar(c) + g2.Scalar(s) * plane
     magnitude: sympy.Expr = sympy.sympify(versor.magnitude())
     assert sympy.simplify(magnitude - sympy.sqrt(c**2 + s**2)) == 0
     assert versor.plane_of_rotation().symbolically_equal(plane)
     angle: sympy.Expr = sympy.sympify(versor.angle())
     assert sympy.simplify(angle - sympy.atan2(s, c)) == 0
-    rebuilt: MultiVectorBase = versor.magnitude() * (
-        sympy.cos(versor.angle())
-        + sympy.sin(versor.angle()) * versor.plane_of_rotation()
+    rebuilt: MultiVectorBase = g2.Scalar(versor.magnitude()) * (
+        g2.Scalar(sympy.cos(versor.angle()))
+        + g2.Scalar(sympy.sin(versor.angle())) * versor.plane_of_rotation()
     )
     assert rebuilt.symbolically_equal(versor)
 

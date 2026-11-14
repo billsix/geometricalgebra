@@ -26,7 +26,7 @@ import sympy
 
 import gacalc.g1 as g1
 import gacalc.g3 as g3
-from gacalc.g2 import Vector, e_1, e_2
+from gacalc.g2 import Scalar, Vector, e_1, e_2
 
 
 def test_abs_of_signed_sine_equals_abs_sin() -> None:
@@ -43,8 +43,8 @@ def test_signed_sine_symbolic_is_the_signed_area_over_magnitudes() -> None:
     b_1: sympy.Symbol
     b_2: sympy.Symbol
     a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
-    u: Vector = a_1 * e_1 + a_2 * e_2
-    v: Vector = b_1 * e_1 + b_2 * e_2
+    u: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
+    v: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
     # sine * |u| * |v| == the signed area (a₁ * b₂ − a₂ * b₁), the e₁₂ coefficient of
     # u ∧ v.
     assert (
@@ -62,8 +62,8 @@ def test_cosine_squared_plus_signed_sine_squared_is_one() -> None:
     b_1: sympy.Symbol
     b_2: sympy.Symbol
     a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
-    u: Vector = a_1 * e_1 + a_2 * e_2
-    v: Vector = b_1 * e_1 + b_2 * e_2
+    u: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
+    v: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
     assert sympy.simplify(sympy.sympify(u.cosine(v) ** 2 + u.sine(v) ** 2)) == 1
 
 

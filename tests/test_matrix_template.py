@@ -104,7 +104,7 @@ def test_g2_linear_quarter_turn_has_no_parameters() -> None:
 
 def test_g2_affine_translate_scale_is_bit_identical_to_to_matrix() -> None:
     fn: InvertibleFunction[g2.Vector] = translate(
-        b=TX * g2.Vector.e_1 + TY * g2.Vector.e_2
+        b=g2.Scalar(TX) * g2.Vector.e_1 + g2.Scalar(TY) * g2.Vector.e_2
     ) @ scale_non_uniform(W, H)
     t: MatrixTemplate = to_matrix_template(fn, g2.Vector, (TX, TY, W, H))
     assert t.shape == (3, 3)
@@ -129,7 +129,7 @@ def test_g2_affine_translate_scale_is_bit_identical_to_to_matrix() -> None:
 def test_g2_affine_rotation_and_translation_uses_expression_entries() -> None:
     fn: ComposableFunction[g2.Vector] = compose(
         [
-            translate(b=TX * g2.Vector.e_1 + TY * g2.Vector.e_2),
+            translate(b=g2.Scalar(TX) * g2.Vector.e_1 + g2.Scalar(TY) * g2.Vector.e_2),
             plane_rotation(g2.e_1, g2.e_2)(THETA),
         ]
     )
@@ -199,7 +199,7 @@ def test_g3_affine_sprite_model_matrix_is_bit_identical_to_to_matrix() -> None:
     # the consumer's case: scale the unit quad to (w, h), translate to (tx, ty)
     fn: InvertibleFunction[g3.Vector] = compose(
         [
-            translate(b=TX * g3.Vector.e_1 + TY * g3.Vector.e_2),
+            translate(b=g3.Scalar(TX) * g3.Vector.e_1 + g3.Scalar(TY) * g3.Vector.e_2),
             scale_non_uniform(W, H, 1),
         ]
     )
@@ -227,7 +227,11 @@ def test_g3_affine_sprite_model_matrix_is_bit_identical_to_to_matrix() -> None:
 def test_g3_affine_rotation_and_translation_4x4() -> None:
     fn: ComposableFunction[g3.Vector] = compose(
         [
-            translate(b=TX * g3.Vector.e_1 + TY * g3.Vector.e_2 + TZ * g3.Vector.e_3),
+            translate(
+                b=g3.Scalar(TX) * g3.Vector.e_1
+                + g3.Scalar(TY) * g3.Vector.e_2
+                + g3.Scalar(TZ) * g3.Vector.e_3
+            ),
             plane_rotation(g3.e_1, g3.e_2)(THETA),
         ]
     )
@@ -254,9 +258,9 @@ def test_g3_affine_rotation_and_translation_4x4() -> None:
 
 
 def test_g3_uniform_scale_then_translate_composes_like_matrices() -> None:
-    fn: InvertibleFunction[g3.Vector] = translate(b=TX * g3.Vector.e_1) @ uniform_scale(
-        S
-    )
+    fn: InvertibleFunction[g3.Vector] = translate(
+        b=g3.Scalar(TX) * g3.Vector.e_1
+    ) @ uniform_scale(S)
     t: MatrixTemplate = to_matrix_template(fn, g3.Vector, (TX, S))
     a: MatrixTemplate = to_matrix_template(
         translate(b=TX * g3.Vector.e_1), g3.Vector, (TX,)
@@ -275,7 +279,7 @@ def test_g3_uniform_scale_then_translate_composes_like_matrices() -> None:
 
 def test_gn_with_explicit_n() -> None:
     fn: InvertibleFunction[Gn] = translate(
-        b=TX * gn.e_1 + TY * gn.e_2
+        b=gn.Gn.from_real(TX) * gn.e_1 + gn.Gn.from_real(TY) * gn.e_2
     ) @ scale_non_uniform(W, H)
     t: MatrixTemplate = to_matrix_template(fn, Gn, (TX, TY, W, H), n=2)
     assert t.shape == (3, 3)
@@ -298,7 +302,7 @@ def test_gn_requires_explicit_n() -> None:
 def test_method_form_equals_free_function() -> None:
     fn: InvertibleFunction[g3.Vector] = compose(
         [
-            translate(b=TX * g3.Vector.e_1 + TY * g3.Vector.e_2),
+            translate(b=g3.Scalar(TX) * g3.Vector.e_1 + g3.Scalar(TY) * g3.Vector.e_2),
             scale_non_uniform(W, H, 1),
         ]
     )
@@ -397,7 +401,7 @@ def dataclasses_frozen_error() -> type[Exception]:
 
 def test_missing_parameter_is_a_value_error_naming_the_symbol() -> None:
     fn: InvertibleFunction[g2.Vector] = translate(
-        b=TX * g2.Vector.e_1 + TY * g2.Vector.e_2
+        b=g2.Scalar(TX) * g2.Vector.e_1 + g2.Scalar(TY) * g2.Vector.e_2
     )
     with pytest.raises(ValueError, match=r"depends on \['ty'\]"):
         to_matrix_template(fn, g2.Vector, (TX,))

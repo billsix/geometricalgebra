@@ -25,9 +25,12 @@ from gacalc.gn import Gn
 
 def test_structurally_different_but_equal_forms_are_symbolically_equal() -> None:
     x: sympy.Symbol = sympy.Symbol("x", real=True)
-    a: g2.Vector = (x + 1) ** 2 * g2.Vector.e_1 + sympy.sin(x) ** 2 * g2.Vector.e_2
-    b: g2.Vector = (x**2 + 2 * x + 1) * g2.Vector.e_1 + (
-        1 - sympy.cos(x) ** 2
+    a: g2.Vector = (
+        g2.Scalar((x + 1) ** 2) * g2.Vector.e_1
+        + g2.Scalar(sympy.sin(x) ** 2) * g2.Vector.e_2
+    )
+    b: g2.Vector = (g2.Scalar(x**2 + 2 * x + 1)) * g2.Vector.e_1 + (
+        g2.Scalar(1 - sympy.cos(x) ** 2)
     ) * g2.Vector.e_2
     assert a.symbolically_equal(b)
     assert b.symbolically_equal(a)
@@ -35,10 +38,10 @@ def test_structurally_different_but_equal_forms_are_symbolically_equal() -> None
 
 def test_unequal_values_are_not_symbolically_equal() -> None:
     x: sympy.Symbol = sympy.Symbol("x", real=True)
-    a: g2.Vector = x * g2.Vector.e_1
-    assert not a.symbolically_equal((x + 1) * g2.Vector.e_1)
+    a: g2.Vector = g2.Scalar(x) * g2.Vector.e_1
+    assert not a.symbolically_equal((g2.Scalar(x + 1)) * g2.Vector.e_1)
     assert not a.symbolically_equal(
-        x * g2.Vector.e_2
+        g2.Scalar(x) * g2.Vector.e_2
     )  # a blade present on one side only
 
 
@@ -50,8 +53,8 @@ def test_numeric_values_compare_exactly() -> None:
 
 def test_compares_across_representations() -> None:
     x: sympy.Symbol = sympy.Symbol("x", real=True)
-    specialized: g2.Vector = (x + 1) ** 2 * g2.Vector.e_1
-    general: Gn = (x**2 + 2 * x + 1) * gn.e_1
+    specialized: g2.Vector = g2.Scalar((x + 1) ** 2) * g2.Vector.e_1
+    general: Gn = (gn.Gn.from_real(x**2 + 2 * x + 1)) * gn.e_1
     assert specialized.symbolically_equal(general)
     assert general.symbolically_equal(specialized)
 
@@ -63,7 +66,7 @@ def test_substitution_supplies_the_relation_sympy_cannot_find() -> None:
     s: sympy.Symbol
     c, s = sympy.symbols("c s", real=True, positive=True)
     pythagoras: SymbolicSubstitution = {s**2: 1 - c**2}
-    a: g2.Vector = sympy.sqrt(4 * c**4 + 4 * s**2 * c**2) * g2.Vector.e_1
-    b: g2.Vector = (2 * c) * g2.Vector.e_1
+    a: g2.Vector = g2.Scalar(sympy.sqrt(4 * c**4 + 4 * s**2 * c**2)) * g2.Vector.e_1
+    b: g2.Vector = (g2.Scalar(2 * c)) * g2.Vector.e_1
     assert not a.symbolically_equal(b)
     assert a.symbolically_equal(b, subs=pythagoras)

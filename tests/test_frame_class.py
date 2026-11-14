@@ -47,7 +47,10 @@ def general_vector(name: str, n: int) -> Gn:
         " ".join(f"{name}_{i}" for i in range(1, n + 1))
     )
     basis: tuple[Gn, ...] = (e_1, e_2, e_3)[:n]
-    return sum((s * e for s, e in zip(components, basis, strict=True)), start=Gn.zero())
+    return sum(
+        (Gn.from_real(s) * e for s, e in zip(components, basis, strict=True)),
+        start=Gn.zero(),
+    )
 
 
 def is_zero(value: Real) -> bool:
@@ -170,7 +173,7 @@ def test_coefficients_rebuild_the_vectors(
     orthogonal_vectors: tuple[MultiVectorBase, ...] = frame.orthogonal_vectors()
     rebuilt: list[MultiVectorBase] = [
         sum(
-            (c * w for c, w in zip(row, orthogonal_vectors, strict=True)),
+            (Gn.from_real(c) * w for c, w in zip(row, orthogonal_vectors, strict=True)),
             start=Gn.zero(),
         )
         for row in coefficients
@@ -316,7 +319,7 @@ x_1, x_2, x_3 = sympy.symbols("x_1 x_2 x_3")
 GRADED_FRAMES_AND_INPUTS: list[tuple[tuple[MultiVectorBase, ...], MultiVectorBase]] = [
     (
         (2 * g2.e_1 + 0 * g2.e_2, 1 * g2.e_1 + 3 * g2.e_2),
-        x_1 * g2.e_1 + x_2 * g2.e_2,
+        g2.Scalar(x_1) * g2.e_1 + g2.Scalar(x_2) * g2.e_2,
     ),
     (
         (
@@ -324,7 +327,7 @@ GRADED_FRAMES_AND_INPUTS: list[tuple[tuple[MultiVectorBase, ...], MultiVectorBas
             1 * g3.e_1 + 3 * g3.e_2 + 0 * g3.e_3,
             1 * g3.e_1 + 1 * g3.e_2 + 4 * g3.e_3,
         ),
-        x_1 * g3.e_1 + x_2 * g3.e_2 + x_3 * g3.e_3,
+        g3.Scalar(x_1) * g3.e_1 + g3.Scalar(x_2) * g3.e_2 + g3.Scalar(x_3) * g3.e_3,
     ),
 ]
 

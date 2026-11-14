@@ -48,7 +48,7 @@ from _frame_scene import (
 from gacalc.base import MultiVectorBase, Real
 from gacalc.frame import Frame
 from gacalc.functions import InvertibleFunction, MatrixBackend, inverse
-from gacalc.g2 import G, Vector, e_1, e_2
+from gacalc.g2 import G, Scalar, Vector, e_1, e_2
 
 # %% [markdown]
 # ## A frame and its orthogonal set
@@ -110,7 +110,7 @@ c_21: Real = table[1][0]
 table, v_2 == c_21 * w_1 + 1 * w_2
 
 # %%
-P_SHADOW: Point = point(coordinates=list(c_21 * w_1))
+P_SHADOW: Point = point(coordinates=list(Scalar(c_21) * w_1))
 fig_shadow: PendingFigure
 with scene_2d(
     lower_left=Point(x=-1.2, y=-0.6), upper_right=Point(x=3.0, y=2.6)
@@ -447,7 +447,7 @@ fig_step_2
 
 # %%
 x_1: Real = (r.projected_onto(onto=b_1) / b_1).scalar_part()
-x: Vector = x_1 * e_1 + x_2 * e_2
+x: Vector = Scalar(x_1) * e_1 + Scalar(x_2) * e_2
 x_1, x, g.inverse(y) == x, g(x) == y
 
 # %%
@@ -488,7 +488,7 @@ fig_step_3
 s_1: sympy.Symbol
 s_2: sympy.Symbol
 s_1, s_2 = sympy.symbols("x_1 x_2", real=True)
-symbolic: Vector = s_1 * e_1 + s_2 * e_2
+symbolic: Vector = Scalar(s_1) * e_1 + Scalar(s_2) * e_2
 (inverse(f) @ f)(symbolic) == symbolic, (f @ inverse(f))(symbolic) == symbolic
 
 # %% [markdown]

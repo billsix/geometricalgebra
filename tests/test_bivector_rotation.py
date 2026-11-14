@@ -106,7 +106,8 @@ def test_symbolic_angle_keeps_clean_half_angle_form() -> None:
     # apply to e_1 and read the coefficient forms back
     rotated: MultiVectorBase = rotor(g2.Vector.e_1)
     expected: MultiVectorBase = (
-        sympy.cos(θ) * g2.Vector.e_1 + sympy.sin(θ) * g2.Vector.e_2
+        g2.Scalar(sympy.cos(θ)) * g2.Vector.e_1
+        + g2.Scalar(sympy.sin(θ)) * g2.Vector.e_2
     )
     assert rotated == expected
 

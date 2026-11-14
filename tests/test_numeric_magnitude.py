@@ -60,7 +60,11 @@ def test_symbolic_magnitude_stays_symbolic() -> None:
     a_2: sympy.Symbol
     a_3: sympy.Symbol
     a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
-    v: g3.Vector = a_1 * g3.Vector.e_1 + a_2 * g3.Vector.e_2 + a_3 * g3.Vector.e_3
+    v: g3.Vector = (
+        g3.Scalar(a_1) * g3.Vector.e_1
+        + g3.Scalar(a_2) * g3.Vector.e_2
+        + g3.Scalar(a_3) * g3.Vector.e_3
+    )
     assert isinstance(abs(v), sympy.Expr)
 
 
@@ -82,6 +86,8 @@ def test_normalize_and_inverse_of_zero_raise_for_every_coefficient_kind() -> Non
     a_3: sympy.Symbol
     a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
     symbolic: g3.Vector = (
-        a_1 * g3.Vector.e_1 + a_2 * g3.Vector.e_2 + a_3 * g3.Vector.e_3
+        g3.Scalar(a_1) * g3.Vector.e_1
+        + g3.Scalar(a_2) * g3.Vector.e_2
+        + g3.Scalar(a_3) * g3.Vector.e_3
     )
     assert symbolic * symbolic.inverse() == g3.G.one()

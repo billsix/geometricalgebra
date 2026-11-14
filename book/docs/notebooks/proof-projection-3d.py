@@ -16,7 +16,7 @@ import sympy
 
 import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase
-from gacalc.g3 import e_1, e_2, e_3
+from gacalc.g3 import Scalar, e_1, e_2, e_3
 from gacalc.standardposition import project_sp, reject_sp
 
 a_1: sympy.Symbol
@@ -34,7 +34,7 @@ a_1, a_2 = sympy.symbols("a_1 a_2")
 
 # %%
 a_3: sympy.Symbol = sympy.symbols("a_3")
-a_3d: g3.Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+a_3d: g3.Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2 + Scalar(a_3) * e_3
 b_3d: g3.Vector = 3 * e_1 + 4 * e_2 + 12 * e_3
 difference_3d: MultiVectorBase = project_sp(a_3d, b_3d) - a_3d.projected_onto(b_3d)
 [

@@ -52,8 +52,8 @@ def test_geometric_product_splits_into_dot_and_wedge_2d() -> None:
     b_1: sympy.Symbol
     b_2: sympy.Symbol
     a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
-    a: Gn = a_1 * e_1 + a_2 * e_2
-    b: Gn = b_1 * e_1 + b_2 * e_2
+    a: Gn = Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_2
+    b: Gn = Gn.from_real(b_1) * e_1 + Gn.from_real(b_2) * e_2
     # the dot product is the symmetric scalar part:
     assert a.dot(b).scalar_part() == a_1 * b_1 + a_2 * b_2
     # the wedge is the antisymmetric bivector part:
@@ -72,8 +72,8 @@ def test_geometric_product_splits_into_dot_and_wedge_3d() -> None:
     b_2: sympy.Symbol
     b_3: sympy.Symbol
     a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3")
-    a: Gn = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    b: Gn = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
+    a: Gn = Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_2 + Gn.from_real(a_3) * e_3
+    b: Gn = Gn.from_real(b_1) * e_1 + Gn.from_real(b_2) * e_2 + Gn.from_real(b_3) * e_3
     assert a.dot(b).scalar_part() == a_1 * b_1 + a_2 * b_2 + a_3 * b_3
     assert a.wedge(b) == (
         (a_1 * b_2 - a_2 * b_1) * (e_1 ^ e_2)
@@ -92,8 +92,14 @@ b_2: sympy.Symbol
 b_3: sympy.Symbol
 a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3")
 GENERAL_VECTOR_PAIRS: list[tuple[Gn, Gn]] = [
-    (a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2),
-    (a_1 * e_1 + a_2 * e_2 + a_3 * e_3, b_1 * e_1 + b_2 * e_2 + b_3 * e_3),
+    (
+        Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_2,
+        Gn.from_real(b_1) * e_1 + Gn.from_real(b_2) * e_2,
+    ),
+    (
+        Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_2 + Gn.from_real(a_3) * e_3,
+        Gn.from_real(b_1) * e_1 + Gn.from_real(b_2) * e_2 + Gn.from_real(b_3) * e_3,
+    ),
 ]
 
 

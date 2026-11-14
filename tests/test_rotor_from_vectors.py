@@ -55,10 +55,17 @@ b2: sympy.Symbol
 b3: sympy.Symbol
 a1, a2, a3, b1, b2, b3 = sympy.symbols("a1 a2 a3 b1 b2 b3", real=True, positive=True)
 GENERAL_VECTOR_PAIRS: list[tuple[MultiVectorBase, MultiVectorBase]] = [
-    (a1 * g2.Vector.e_1 + a2 * g2.Vector.e_2, b1 * g2.Vector.e_1 + b2 * g2.Vector.e_2),
     (
-        a1 * g3.Vector.e_1 + a2 * g3.Vector.e_2 + a3 * g3.Vector.e_3,
-        b1 * g3.Vector.e_1 + b2 * g3.Vector.e_2 + b3 * g3.Vector.e_3,
+        g2.Scalar(a1) * g2.Vector.e_1 + g2.Scalar(a2) * g2.Vector.e_2,
+        g2.Scalar(b1) * g2.Vector.e_1 + g2.Scalar(b2) * g2.Vector.e_2,
+    ),
+    (
+        g3.Scalar(a1) * g3.Vector.e_1
+        + g3.Scalar(a2) * g3.Vector.e_2
+        + g3.Scalar(a3) * g3.Vector.e_3,
+        g3.Scalar(b1) * g3.Vector.e_1
+        + g3.Scalar(b2) * g3.Vector.e_2
+        + g3.Scalar(b3) * g3.Vector.e_3,
     ),
 ]
 
@@ -82,8 +89,8 @@ def test_rotor_from_vectors_is_a_unit_versor_2d_symbolic() -> None:
     b1: sympy.Symbol
     b2: sympy.Symbol
     a1, a2, b1, b2 = sympy.symbols("a1 a2 b1 b2", real=True, positive=True)
-    a: g2.Vector = a1 * g2.Vector.e_1 + a2 * g2.Vector.e_2
-    b: g2.Vector = b1 * g2.Vector.e_1 + b2 * g2.Vector.e_2
+    a: g2.Vector = g2.Scalar(a1) * g2.Vector.e_1 + g2.Scalar(a2) * g2.Vector.e_2
+    b: g2.Vector = g2.Scalar(b1) * g2.Vector.e_1 + g2.Scalar(b2) * g2.Vector.e_2
     Rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=a, to_vector=b)
     assert type(Rhat) is g2.Versor  # the generated narrowing: a Versor of this algebra
     assert sympy.simplify(sympy.sympify(Rhat.magnitude_squared()) - 1) == 0
@@ -99,9 +106,15 @@ def test_rotor_reverse_sandwich_is_versor_inverse_sandwich_2d_symbolic() -> None
     syms: list[sympy.Symbol] = list(
         sympy.symbols("a1 a2 b1 b2 v1 v2", real=True, positive=True)
     )
-    a: g2.Vector = syms[0] * g2.Vector.e_1 + syms[1] * g2.Vector.e_2
-    b: g2.Vector = syms[2] * g2.Vector.e_1 + syms[3] * g2.Vector.e_2
-    v: g2.Vector = syms[4] * g2.Vector.e_1 + syms[5] * g2.Vector.e_2
+    a: g2.Vector = (
+        g2.Scalar(syms[0]) * g2.Vector.e_1 + g2.Scalar(syms[1]) * g2.Vector.e_2
+    )
+    b: g2.Vector = (
+        g2.Scalar(syms[2]) * g2.Vector.e_1 + g2.Scalar(syms[3]) * g2.Vector.e_2
+    )
+    v: g2.Vector = (
+        g2.Scalar(syms[4]) * g2.Vector.e_1 + g2.Scalar(syms[5]) * g2.Vector.e_2
+    )
     R: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=a, to_vector=b)
     Rhat: MultiVectorBase = g2.Vector.rotor_from_vectors(from_vector=a, to_vector=b)
     rotor_sandwich: MultiVectorBase = Rhat * v * Rhat.reverse()
@@ -128,7 +141,7 @@ def test_rotor_reverse_sandwich_is_versor_inverse_sandwich_3d() -> None:
     )
     # carries a to b, scaled to |a|: R̂ a R̂~ = (|a|/|b|) b
     assert (rhat * a * rhat.reverse()).symbolically_equal(
-        (a.magnitude() / b.magnitude()) * b
+        g3.Scalar(a.magnitude() / b.magnitude()) * b
     )
 
 
@@ -145,7 +158,9 @@ def test_rotor_from_unit_vectors_is_the_half_angle_rotor_symbolic() -> None:
     c, s = sympy.symbols("c s", real=True, positive=True)
     pythagoras: SymbolicSubstitution = {s**2: 1 - c**2}
     a: g2.Vector = 1 * g2.Vector.e_1
-    b: g2.Vector = (2 * c**2 - 1) * g2.Vector.e_1 + (2 * s * c) * g2.Vector.e_2
+    b: g2.Vector = (g2.Scalar(2 * c**2 - 1)) * g2.Vector.e_1 + (
+        g2.Scalar(2 * s * c)
+    ) * g2.Vector.e_2
     R: MultiVectorBase = g2.Vector.versor_from_vectors(from_vector=a, to_vector=b)
     # |b| arrives as sqrt(4c²s² + (2c² − 1)²); it is 1 only once sympy knows
     # s² = 1 − c²

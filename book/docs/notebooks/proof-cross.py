@@ -26,7 +26,7 @@ import sympy
 
 from gacalc import g2
 from gacalc.base import MultiVectorBase, Real
-from gacalc.g3 import Vector, e_1, e_2, e_3
+from gacalc.g3 import Scalar, Vector, e_1, e_2, e_3
 from gacalc.vectorcalc import cross
 
 # %% [markdown]
@@ -57,41 +57,50 @@ def cross_via_standard_position(a: Vector, b: Vector) -> Vector:
     def rotate_xy(cos: Real, sin: Real, v: Vector) -> Vector:
         """Rotate the (e_1, e_2) pair in 2-D; the e_3 part rides along."""
         rotated: g2.Vector = rotate_2d(
-            cos, sin, v.coefficient(e_1) * g2.e_1 + v.coefficient(e_2) * g2.e_2
+            cos,
+            sin,
+            g2.Scalar(v.coefficient(e_1)) * g2.e_1
+            + g2.Scalar(v.coefficient(e_2)) * g2.e_2,
         )
         return (
-            rotated.coefficient(g2.e_1) * e_1
-            + rotated.coefficient(g2.e_2) * e_2
-            + v.coefficient(e_3) * e_3
+            Scalar(rotated.coefficient(g2.e_1)) * e_1
+            + Scalar(rotated.coefficient(g2.e_2)) * e_2
+            + Scalar(v.coefficient(e_3)) * e_3
         )
 
     def rotate_xz(cos: Real, sin: Real, v: Vector) -> Vector:
         """Rotate the (e_1, e_3) pair in 2-D; the e_2 part rides along."""
         rotated: g2.Vector = rotate_2d(
-            cos, sin, v.coefficient(e_1) * g2.e_1 + v.coefficient(e_3) * g2.e_2
+            cos,
+            sin,
+            g2.Scalar(v.coefficient(e_1)) * g2.e_1
+            + g2.Scalar(v.coefficient(e_3)) * g2.e_2,
         )
         return (
-            rotated.coefficient(g2.e_1) * e_1
-            + v.coefficient(e_2) * e_2
-            + rotated.coefficient(g2.e_2) * e_3
+            Scalar(rotated.coefficient(g2.e_1)) * e_1
+            + Scalar(v.coefficient(e_2)) * e_2
+            + Scalar(rotated.coefficient(g2.e_2)) * e_3
         )
 
     def rotate_yz(cos: Real, sin: Real, v: Vector) -> Vector:
         """Rotate the (e_2, e_3) pair in 2-D; the e_1 part rides along."""
         rotated: g2.Vector = rotate_2d(
-            cos, sin, v.coefficient(e_2) * g2.e_1 + v.coefficient(e_3) * g2.e_2
+            cos,
+            sin,
+            g2.Scalar(v.coefficient(e_2)) * g2.e_1
+            + g2.Scalar(v.coefficient(e_3)) * g2.e_2,
         )
         return (
-            v.coefficient(e_1) * e_1
-            + rotated.coefficient(g2.e_1) * e_2
-            + rotated.coefficient(g2.e_2) * e_3
+            Scalar(v.coefficient(e_1)) * e_1
+            + Scalar(rotated.coefficient(g2.e_1)) * e_2
+            + Scalar(rotated.coefficient(g2.e_2)) * e_3
         )
 
     # (cos, sin) to swing a onto e_1, read straight off a's coordinates.
     a_1: Real = a.coefficient(e_1)
     a_2: Real = a.coefficient(e_2)
     a_3: Real = a.coefficient(e_3)
-    a_xy_magnitude: Real = (a_1 * e_1 + a_2 * e_2).magnitude()
+    a_xy_magnitude: Real = (Scalar(a_1) * e_1 + Scalar(a_2) * e_2).magnitude()
     a_magnitude: Real = a.magnitude()
     cos_xy: Real = a_1 / a_xy_magnitude
     sin_xy: Real = -a_2 / a_xy_magnitude
@@ -106,7 +115,9 @@ def cross_via_standard_position(a: Vector, b: Vector) -> Vector:
     b_aligned: Vector = align_a(b)
     b_aligned_2: Real = b_aligned.coefficient(e_2)
     b_aligned_3: Real = b_aligned.coefficient(e_3)
-    yz_magnitude: Real = (b_aligned_2 * e_2 + b_aligned_3 * e_3).magnitude()
+    yz_magnitude: Real = (
+        Scalar(b_aligned_2) * e_2 + Scalar(b_aligned_3) * e_3
+    ).magnitude()
     cos_yz: Real = b_aligned_2 / yz_magnitude
     sin_yz: Real = -b_aligned_3 / yz_magnitude
 
@@ -125,7 +136,7 @@ def cross_via_standard_position(a: Vector, b: Vector) -> Vector:
     # In the reduced frame the cross product is the pure e_3 vector (0, 0, |a| * b'_2).
     reduced_x: Real = a_reduced.coefficient(e_1)
     reduced_y: Real = b_reduced.coefficient(e_2)
-    cross_in_frame: Vector = (reduced_x * reduced_y) * e_3
+    cross_in_frame: Vector = (Scalar(reduced_x * reduced_y)) * e_3
     return rotate_back(cross_in_frame)
 
 
@@ -144,7 +155,7 @@ b_1: sympy.Symbol
 b_2: sympy.Symbol
 b_3: sympy.Symbol
 b_1, b_2, b_3 = sympy.symbols("b_1 b_2 b_3")
-b_symbolic: Vector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
+b_symbolic: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2 + Scalar(b_3) * e_3
 
 difference: MultiVectorBase = cross_via_standard_position(a_exact, b_symbolic) - cross(
     a_exact, b_symbolic
