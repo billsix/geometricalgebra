@@ -298,6 +298,32 @@ def projection_rotation(
     return r
 
 
+@validation_guard
+def _require_on_line(
+    vector: MultiVectorBase,
+    along: MultiVectorBase,
+    float_close_to_zero: bool = False,
+) -> None:
+    """Raise ``ValueError`` unless ``vector`` lies on the line of ``along``.
+
+    The zero vector is on every line.  The message names the caller and its call
+    site (:func:`~gacalc.base.describe_caller`).
+
+    Args:
+        vector: the vector to check.
+        along: the nonzero vector spanning the line.
+        float_close_to_zero: when ``True``, test with the tolerance of
+            :meth:`~gacalc.base.MultiVectorBase.is_parallel_to`, for float input.
+
+    Raises:
+        ValueError: if ``vector`` is nonzero and not parallel to ``along``.
+    """
+    if vector != type(vector).zero() and not vector.is_parallel_to(
+        along, float_close_to_zero
+    ):
+        raise ValueError(f"{describe_caller()}: {vector} is not on the line of {along}")
+
+
 def coordinate_along(
     vector: MultiVectorBase,
     along: MultiVectorBase,
@@ -306,9 +332,16 @@ def coordinate_along(
 ) -> Real:
     """The coordinate ``c`` of ``vector`` on the line of ``along``: ``c * along``.
 
-    ``vector`` must lie on that line; dividing it by ``along`` then leaves the
-    scalar ``c``.  Exact input stays exact (ints become exact rationals) and float
-    stays float, because ``/`` divides through ``inverse``.
+    ``c`` is read off the projection of ``vector`` onto ``along``.  The projection
+    is ``P(v) = (v · a) * a⁻¹``, and for a vector ``a⁻¹ = a / |a|²``, so
+    ``P(v) = (v · a⁻¹) * a``.  ``vector`` lies on the line, so it is its own
+    projection, and its coordinate is that factor: ``c = v · a⁻¹ = (v · a) / |a|²``.
+    Since ``v · a = |v| * |a| * cos(θ)``, this is the signed ratio of the
+    magnitudes, ``c = (|v| / |a|) * cos(θ)``, where ``cos(θ)`` is ``+1`` when
+    ``vector`` points the same way as ``along`` and ``-1`` when it points the other
+    way.  The dot-product form needs no square root, and ``a⁻¹`` comes from
+    ``inverse``, so exact input stays exact (ints become exact rationals), float
+    stays float, and symbolic input stays a rational expression.
 
     Args:
         vector: a vector on the line of ``along`` (the zero vector gives 0).
@@ -344,19 +377,15 @@ def coordinate_along(
         >>> coordinate_along(1 * e_2, along=2 * e_1)  # doctest: +ELLIPSIS
         Traceback (most recent call last):
         ...
-        ValueError: coordinate_along: ... is not on the line of ...
+        ValueError: coordinate_along (...): ... is not on the line of ...
     """
     MultiVectorBase.require_vectors((vector, along))
     if along == type(along).zero():
         raise ValueError("coordinate_along: the zero vector spans no line")
-    elif vector == type(vector).zero():
-        # The origin is on every line, at coordinate 0.
-        return 0
-    elif not vector.is_parallel_to(along, float_close_to_zero):
-        raise ValueError(f"coordinate_along: {vector} is not on the line of {along}")
-    else:
-        # vector = c * along, so dividing by along leaves the scalar c.
-        return (vector / along).scalar_part()
+    _require_on_line(vector, along, float_close_to_zero)
+    # The factor of the projection (v · a) * a⁻¹ = (v · a⁻¹) * a, computed in the
+    # algebra so each representation keeps its exact/float/symbolic arithmetic.
+    return vector.dot(along.inverse()).scalar_part()
 
 
 def line_to_line_projection(
@@ -422,7 +451,7 @@ def line_to_line_projection(
         >>> P(y)  # y is not on v_2's line  # doctest: +ELLIPSIS
         Traceback (most recent call last):
         ...
-        ValueError: coordinate_along: ... is not on the line of ...
+        ValueError: line_to_line_projection.<locals>.forward (...): ... is not on the line of ...
     """
     MultiVectorBase.require_vectors((from_vector, to_vector))
     if from_vector.is_orthogonal_to(to_vector, float_close_to_zero):
@@ -434,9 +463,9 @@ def line_to_line_projection(
     shadow: MultiVectorBase = from_vector.projected_onto(to_vector)
 
     def forward(x: MultiVectorBase) -> MultiVectorBase:
-        return shadow * coordinate_along(
-            x, along=from_vector, float_close_to_zero=float_close_to_zero
-        )
+        # On the line of from_vector the restriction is the projection itself.
+        _require_on_line(x, from_vector, float_close_to_zero)
+        return x.projected_onto(to_vector)
 
     def backward(z: MultiVectorBase) -> MultiVectorBase:
         return from_vector * coordinate_along(

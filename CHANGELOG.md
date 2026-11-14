@@ -24,6 +24,10 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   basis blade"); it now returns the scalar `i²`, typed as the type itself when it has a scalar slot
   (`Scalar`, `Versor`) and as the algebra's `Scalar` otherwise, as `one()` does. Like the full
   class, `n` defaults to the algebra's dimension.
+- **`transforms.coordinate_along` and `line_to_line_projection`'s forward map are built from
+  projection** instead of dividing by a vector; their values are unchanged. The "not on the line"
+  `ValueError` now names the caller and its call site (`coordinate_along (transforms.py:N): …`)
+  rather than starting `coordinate_along: …`.
 
 ## [0.1.1] — 2026-11-13
 
