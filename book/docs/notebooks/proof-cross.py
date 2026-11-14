@@ -24,6 +24,7 @@
 # %%
 import sympy
 
+from gacalc import g2
 from gacalc.base import MultiVectorBase, Real
 from gacalc.g3 import Vector, e_1, e_2, e_3
 from gacalc.vectorcalc import cross
@@ -49,26 +50,42 @@ def cross_via_standard_position(a: Vector, b: Vector) -> Vector:
     geometric product, no versor, no matrix. Equal to `gacalc.vectorcalc.cross`.
     """
 
+    def rotate_2d(cos: Real, sin: Real, v: g2.Vector) -> g2.Vector:
+        """The 2-D rotation as a blend of v and its quarter turn (eq-rotate-formula)."""
+        return g2.Scalar(cos) * v + g2.Scalar(sin) * v.rotate_90_degrees()
+
     def rotate_xy(cos: Real, sin: Real, v: Vector) -> Vector:
-        """2-D rotation on the (e_1, e_2) components; the e_3 part rides along."""
-        x: Real = v.coefficient(e_1)
-        y: Real = v.coefficient(e_2)
-        z: Real = v.coefficient(e_3)
-        return (cos * x - sin * y) * e_1 + (sin * x + cos * y) * e_2 + z * e_3
+        """Rotate the (e_1, e_2) pair in 2-D; the e_3 part rides along."""
+        rotated: g2.Vector = rotate_2d(
+            cos, sin, v.coefficient(e_1) * g2.e_1 + v.coefficient(e_2) * g2.e_2
+        )
+        return (
+            rotated.coefficient(g2.e_1) * e_1
+            + rotated.coefficient(g2.e_2) * e_2
+            + v.coefficient(e_3) * e_3
+        )
 
     def rotate_xz(cos: Real, sin: Real, v: Vector) -> Vector:
-        """2-D rotation on the (e_1, e_3) components; the e_2 part rides along."""
-        x: Real = v.coefficient(e_1)
-        y: Real = v.coefficient(e_2)
-        z: Real = v.coefficient(e_3)
-        return (cos * x - sin * z) * e_1 + y * e_2 + (sin * x + cos * z) * e_3
+        """Rotate the (e_1, e_3) pair in 2-D; the e_2 part rides along."""
+        rotated: g2.Vector = rotate_2d(
+            cos, sin, v.coefficient(e_1) * g2.e_1 + v.coefficient(e_3) * g2.e_2
+        )
+        return (
+            rotated.coefficient(g2.e_1) * e_1
+            + v.coefficient(e_2) * e_2
+            + rotated.coefficient(g2.e_2) * e_3
+        )
 
     def rotate_yz(cos: Real, sin: Real, v: Vector) -> Vector:
-        """2-D rotation on the (e_2, e_3) components; the e_1 part rides along."""
-        x: Real = v.coefficient(e_1)
-        y: Real = v.coefficient(e_2)
-        z: Real = v.coefficient(e_3)
-        return x * e_1 + (cos * y - sin * z) * e_2 + (sin * y + cos * z) * e_3
+        """Rotate the (e_2, e_3) pair in 2-D; the e_1 part rides along."""
+        rotated: g2.Vector = rotate_2d(
+            cos, sin, v.coefficient(e_2) * g2.e_1 + v.coefficient(e_3) * g2.e_2
+        )
+        return (
+            v.coefficient(e_1) * e_1
+            + rotated.coefficient(g2.e_1) * e_2
+            + rotated.coefficient(g2.e_2) * e_3
+        )
 
     # (cos, sin) to swing a onto e_1, read straight off a's coordinates.
     a_1: Real = a.coefficient(e_1)
