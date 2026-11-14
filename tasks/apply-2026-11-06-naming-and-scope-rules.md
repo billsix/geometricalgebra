@@ -1,6 +1,6 @@
 # Apply the 2026-11-06 naming and scope rules across geometricalgebra
 
-**Status:** proposed — needs go-ahead (open questions below)
+**Status:** approved — go-ahead given, decisions recorded (William Emerison Six <billsix@gmail.com>, 2026-11-14)
 **Priority:** 5
 **Difficulty:** 6
 **Created:** 2026-11-06 (William Emerison Six <billsix@gmail.com>): "make a task to search through all of
@@ -80,21 +80,13 @@ refactored or recorded as left alone with its reason, `make test` and `make form
    needs a sharper wording; feed that back to the shared standard (github.com/billsix/runClaudeInContainer,
    mirrored in github.com/billsix/runCrushInContainer).
 
-## Open questions
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-14)
 
-1. **Survey first, or survey and apply?** (a) Run the discovery and triage, then stop and show you the
-   worklog before any refactor, or (b) apply the clear cases straight away and bring you only the
-   judgment calls. I recommend (a) for the first module or two, so you can calibrate the triage, then
-   (b) for the rest.
-2. **Does a nested helper need a stated reason to stay at module level?** Rule 4 says to nest a
-   one-caller helper. A module-level private helper with one caller in the library may still be imported
-   by a test, which nesting would break. Recommended: a helper a test imports counts as having a second
-   caller and stays at module level (the discovery script checks `tests/` imports before flagging).
-3. **The generator's emitted code** (`g1`–`g5`): apply the rules to what `tools/gen_specialized.py`
-   emits too, or only to the generator's own source? Recommended: only the generator's own source in
-   this task. The emitted locals are systematic CSE temporaries, and changing the emitted shape would
-   ripple through `make check-generated` and the doc regions for little reader benefit.
-4. **The book notebooks** (`book/docs/notebooks/`) are student-facing, and a name bound once can be
-   there to show the student a step (`a_par: Vector = …` printed in the next cell). Include them, or
-   exempt any binding a notebook displays or explains? Recommended: include them, but exempt a binding
-   that a notebook cell displays or the page's prose names.
+1. **Survey and apply:** option (b). Apply the clear cases straight away and record the judgment calls
+   in the worklog with their reasons; no stop for a review of the worklog first.
+2. **A one-caller helper that a test imports** counts as having a second caller and stays at module
+   level (the discovery script checks `tests/` imports before flagging).
+3. **Generator:** only `tools/gen_specialized.py`'s own source is in scope; the emitted `g1`–`g5` code
+   is left as is.
+4. **Notebooks** are included, but a binding that a notebook cell displays or the page's prose names
+   is exempt.

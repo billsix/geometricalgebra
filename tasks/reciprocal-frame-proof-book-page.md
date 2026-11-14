@@ -1,6 +1,6 @@
 # Book page (prose + LaTeX) and notebook for the reciprocal-frame and frame-inverse proofs
 
-**Status:** proposed — needs go-ahead (open questions answered)
+**Status:** approved — go-ahead given, decisions recorded (William Emerison Six <billsix@gmail.com>, 2026-11-14)
 **Priority:** 5
 **Difficulty:** 4
 **Created:** 2026-11-08 (William Emerison Six <billsix@gmail.com>): "make a task for the book page"

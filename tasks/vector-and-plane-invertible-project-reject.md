@@ -1,6 +1,6 @@
 # Invertible project and reject between a vector and a plane, with coordinate versions in g1–g3
 
-**Status:** proposed — needs go-ahead
+**Status:** approved — go-ahead given, decisions recorded (William Emerison Six <billsix@gmail.com>, 2026-11-14)
 **Priority:** 7
 **Difficulty:** 6
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>): "And then make a follow up task for

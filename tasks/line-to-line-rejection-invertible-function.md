@@ -1,6 +1,6 @@
 # An invertible rejection from one line to another, with coordinate versions generated into g1–g3
 
-**Status:** proposed — needs go-ahead
+**Status:** approved — go-ahead given, decisions recorded (William Emerison Six <billsix@gmail.com>, 2026-11-14)
 **Priority:** 6
 **Difficulty:** 5
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>): "make a follow up for doing something

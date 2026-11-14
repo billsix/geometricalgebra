@@ -1,6 +1,6 @@
 # Graded types: `from_real` and `unit_pseudoscalar_squared` on a scalar-less type
 
-**Status:** proposed — needs go-ahead
+**Status:** approved — go-ahead given, decisions recorded (William Emerison Six <billsix@gmail.com>, 2026-11-14)
 **Priority:** 5
 **Difficulty:** 3
 **Created:** 2026-11-10 (William Emerison Six <billsix@gmail.com>)
@@ -14,6 +14,14 @@ zero value: `g2.Vector.from_real(3) == g2.Vector.zero()`. (2) `unit_pseudoscalar
 graded type raises ("cannot hold the basis blade"), although its value is a scalar. Options, per
 method: return the algebra's `Scalar` (as `one()` now does), or raise a `ValueError` naming the type.
 Decide, implement in `tools/gen_specialized.py`, regenerate, and gate.
+
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-14)
+
+- **`unit_pseudoscalar_squared(n)`** on a graded type returns the algebra's `Scalar`, as `one()`
+  does, since its value is a scalar.
+- **`from_real(x)`** on a graded type with no scalar slot (`Vector`, `Bivector`, `Trivector`,
+  `Odd_3`) raises `ValueError` naming the type; silently returning zero is the bug.
+  `unit_pseudoscalar` and `bases`, which seed with `cls.from_real(1)`, get another seed (`cls.zero()`).
 
 ## Context (read first)
 

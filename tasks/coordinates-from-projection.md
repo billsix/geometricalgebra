@@ -1,6 +1,6 @@
 # Build the line-to-line function and its coordinates from projection
 
-**Status:** proposed — needs go-ahead (open questions below)
+**Status:** approved — go-ahead given, decisions recorded (William Emerison Six <billsix@gmail.com>, 2026-11-14)
 **Priority:** 5
 **Difficulty:** 4
 **Created:** 2026-11-14 (William Emerison Six <billsix@gmail.com>)
@@ -32,14 +32,13 @@ unchanged, and `make test` / `make format` pass.
   `x.projected_onto(to_vector)` (it equals `c * shadow`) and needs no coordinate at all. The
   backward map and `coordinate_along` itself still need a scalar read off a vector on a known line.
 
-## Open questions
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-14)
 
-1. `coordinate_along`: how should the scalar come out of a projection? (a) the signed ratio of
-   magnitudes, `|v| / |along|` with the sign from whether they point the same way (the cosine of
-   the angle is ±1); (b) `projected_onto` followed by the existing division; (c) something you had
-   in mind. Recommendation: (a), since it uses only magnitude and direction.
-2. The backward map (from the shadow's line back to `from_vector`'s): is it in scope, given that it
-   is not itself a projection?
-3. Should the old division form survive as a documented duplicate (the "reduction to standard
-   position" pattern of two definitions proven equal), or be replaced? Recommendation: replace, and
-   keep a test asserting the two agree.
+1. **`coordinate_along`** is the signed ratio of magnitudes, `|v| / |along|`, negated when `v` points
+   opposite to `along` (option (a)).
+2. **The backward map** is out of scope; it keeps its current form.
+3. **The division form is replaced**, not kept as a duplicate; a test asserts that the new definition
+   agrees with `vector / along`.
+
+**Ordering:** run this before `tasks/line-to-line-rejection-invertible-function.md`, which builds on
+`coordinate_along`.

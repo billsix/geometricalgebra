@@ -1,6 +1,6 @@
 # Sandwich follow-ups: 𝒢₄/𝒢₅ operand tests, and a reflection docstring for `Vector.sandwich`
 
-**Status:** proposed — needs go-ahead (optional)
+**Status:** approved — go-ahead given, decisions recorded (William Emerison Six <billsix@gmail.com>, 2026-11-14)
 **Priority:** 9
 **Difficulty:** 2
 **Created:** 2026-11-09
