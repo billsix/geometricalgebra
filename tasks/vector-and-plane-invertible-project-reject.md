@@ -6,7 +6,7 @@
 **Created:** 2026-11-07 (William Emerison Six <billsix@gmail.com>): "And then make a follow up task for
 doing that to a vector and a plane, both for project, and reject. And as part of those tasks, add them to
 be coordinate versions in the generated code for g1 g2 g3 etc"
-**Depends on:** `tasks/line-to-line-rejection-invertible-function.md` (both line-to-line maps and their
+**Depends on:** `tasks/archive/2026/11/14/line-to-line-rejection-invertible-function.md` (both line-to-line maps and their
 generated coordinate versions; this task extends the same shape to a plane).
 
 ## BLUF
