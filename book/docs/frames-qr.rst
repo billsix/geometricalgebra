@@ -32,3 +32,4 @@ something that can be undone one coordinate at a time.
 
    notebooks/frame-qr-2d
    notebooks/frame-qr-3d
+   proof-reciprocal-frame

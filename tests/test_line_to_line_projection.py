@@ -117,3 +117,29 @@ def test_coordinate_along() -> None:
     with pytest.raises(ValueError, match="not on the line"):
         coordinate_along(near, along=1.0 * e_1)
     assert coordinate_along(near, along=1.0 * e_1, float_close_to_zero=True) == 2.0
+
+
+@pytest.mark.parametrize(
+    "vector, along",
+    [
+        (6 * e_1 + 3 * e_2, 2 * e_1 + 1 * e_2),
+        (-3 * g2.e_1 + 6 * g2.e_2, 1 * g2.e_1 - 2 * g2.e_2),
+        (1 * g3.e_1 + 2 * g3.e_2 + 3 * g3.e_3, 2 * g3.e_1 + 4 * g3.e_2 + 6 * g3.e_3),
+        (0.5 * g2.e_1 + 1.5 * g2.e_2, 2.0 * g2.e_1 + 6.0 * g2.e_2),
+        (
+            Gn.from_real(c) * (Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_3),
+            Gn.from_real(a_1) * e_1 + Gn.from_real(a_2) * e_3,
+        ),
+    ],
+    ids=["gn-int", "g2-opposite", "g3-int", "g2-float", "gn-symbolic"],
+)
+def test_coordinate_along_agrees_with_division(
+    vector: MultiVectorBase, along: MultiVectorBase
+) -> None:
+    """The projection-factor coordinate equals the quotient ``vector / along``."""
+    quotient: Real = (vector / along).scalar_part()
+    coordinate: Real = coordinate_along(vector, along=along)
+    if isinstance(quotient, float):
+        assert coordinate == pytest.approx(quotient)
+    else:
+        assert sympy.simplify(sympy.sympify(coordinate - quotient)) == 0

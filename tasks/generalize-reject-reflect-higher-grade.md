@@ -185,8 +185,8 @@ verify-after step once `reject` generalizes.
    **origin-through** subspaces (grade-1/grade-2), distinct from the affine flats of
    `affine-flats-lines-planes-from-points.md`, and whether the symbolic checks + graded-notebook demos
    are tracked here or split into a notebook task. Overlaps
-   `tasks/line-to-line-rejection-invertible-function.md` and
-   `tasks/vector-and-plane-invertible-project-reject.md`; settle it with those two.
+   `tasks/archive/2026/11/14/line-to-line-rejection-invertible-function.md` and
+   `tasks/archive/2026/11/14/vector-and-plane-invertible-project-reject.md`; settle it with those two.
 
 ## Folded-in idea (2026-08-27, William Emerison Six <billsix@gmail.com>) — projections line→line / line→plane / plane→plane
 

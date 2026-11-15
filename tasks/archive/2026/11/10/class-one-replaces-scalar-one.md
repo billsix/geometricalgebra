@@ -24,7 +24,7 @@ the 1, so `Vector.one()` was the zero vector. `frame._scalar_one` worked around 
 - **Investigation — other class-level notions.** `zero()` is right on every type, and the basis
   constants, `unit_pseudoscalar` (raises on a type that cannot hold it) and the identity function
   (`functions.identity`) already exist. Two more have the trap `one()` had, and are left as the
-  follow-on `tasks/graded-scalar-constructors-silent-drop.md` (proposed): `from_real(x)` on a
+  follow-on `tasks/archive/2026/11/14/graded-scalar-constructors-silent-drop.md` (done 2026-11-14): `from_real(x)` on a
   scalar-less graded type silently returns zero (`g2.Vector.from_real(3)` is the zero vector), and
   `unit_pseudoscalar_squared` on a graded type raises although its value is a scalar.
 - **Docs:** CHANGELOG `[Unreleased]` → Changed (BREAKING), `tasks/reference/design-decisions.md`

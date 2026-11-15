@@ -2217,6 +2217,50 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
     ),
     "vector|projected_onto": _vector_proj_doc,
     "vector|rejected_away_from": _vector_rej_doc,
+    "vector|sandwich": _by_dimension(
+        (
+            "Reflect a value across the line of this vector:  v * x * v⁻¹  (the\n"
+            "sandwich with a vector).  A vector is an *improper* versor: it keeps the\n"
+            "part of a vector ``x`` along ``v`` and flips the part perpendicular to it,\n"
+            "so ``v.sandwich(x)`` equals ``x.reflected_across(across=v)``.  Only the\n"
+            "direction of ``v`` matters, not its length.  For a rotation, sandwich with\n"
+            "a versor instead (``Versor.sandwich``).\n"
+            "\n"
+            "Args:\n"
+            "    x: the value to reflect; the result has ``x``'s own type.\n"
+            "\n"
+            "Returns:\n"
+            "    the reflected value  v * x * v⁻¹, of ``x``'s own type."
+        ),
+        {
+            1: (
+                "    On a line, reflecting across the line itself changes nothing:\n"
+                "\n"
+                "    >>> (1 * Vector.e_1).sandwich(3 * Vector.e_1) == 3 * Vector.e_1\n"
+                "    True\n"
+                "    >>> (2 * Vector.e_1).sandwich(-1 * Vector.e_1) == -1 * Vector.e_1\n"
+                "    True"
+            ),
+            2: (
+                "    Across the ``e_1`` axis, ``e_1`` stays and ``e_2`` flips:\n"
+                "\n"
+                "    >>> (1 * Vector.e_1).sandwich(1 * Vector.e_1) == 1 * Vector.e_1\n"
+                "    True\n"
+                "    >>> (1 * Vector.e_1).sandwich(1 * Vector.e_2) == -1 * Vector.e_2\n"
+                "    True\n"
+                "\n"
+                "    Only the direction of the mirror matters, and the result is the\n"
+                "    reflection across its line:\n"
+                "\n"
+                "    >>> x: Vector = 2 * Vector.e_1 + 3 * Vector.e_2\n"
+                "    >>> (3 * Vector.e_1).sandwich(x) == 2 * Vector.e_1 - 3 * Vector.e_2\n"
+                "    True\n"
+                "    >>> v: Vector = 1 * Vector.e_1 + 1 * Vector.e_2\n"
+                "    >>> v.sandwich(x) == x.reflected_across(across=v)\n"
+                "    True"
+            ),
+        },
+    ),
     "vector|reflected_across": _by_dimension(
         (
             "This vector reflected across the line of another vector (the ``reflect``\n"
@@ -3695,9 +3739,11 @@ ANY_OPERAND_RETURN_OVERRIDES: frozenset[str] = frozenset(
         "__radd__",
         "r_vector_part",
         "plane_of_rotation",
-        # Not an operand method: the classmethod one() of a graded type with no
-        # scalar slot returns that algebra's Scalar, not Self.
+        # Not operand methods: the classmethods one() and
+        # unit_pseudoscalar_squared() of a graded type with no scalar slot return
+        # that algebra's Scalar, not Self.
         "one",
+        "unit_pseudoscalar_squared",
     }
 )
 
@@ -5658,6 +5704,8 @@ def generate_scalar(n: int, name: str, full_name: str) -> list[ast.stmt]:
             defaults=[constant(n)],
             returns=name_ref(dual_spec.name),
         ),
+        # i^2 is a scalar, though Scalar cannot hold the pseudoscalar it squares.
+        unit_pseudoscalar_squared_def(name, name, n, full_name),
     ]
     return [
         class_def(
@@ -6098,6 +6146,407 @@ def one_docstring(type_name: str, blade: Blade) -> str:
     )
 
 
+def from_real_raises_def(type_name: str) -> ast.FunctionDef:
+    """``from_real`` for a graded type with no scalar slot: it raises ``ValueError``.
+
+    The base ``from_real`` builds the value through ``from_blade_dict``, which on a
+    scalar-less type drops the scalar and returns the zero value.  This override
+    makes that a named error instead.
+    """
+    doc: str = (
+        "Refuse to lift a real number into a type with no scalar slot.\n"
+        "\n"
+        f"A ``{type_name}`` has no grade-0 part, so it cannot hold a real number;\n"
+        "build the scalar with ``Scalar.from_real`` or the algebra's full class.\n"
+        "\n"
+        "Args:\n"
+        "    real: the number that was to become the scalar part.\n"
+        "\n"
+        "Raises:\n"
+        f"    ValueError: always; a ``{type_name}`` cannot hold ``real``.\n"
+        "\n"
+        "Example:\n"
+        f"    >>> {type_name}.from_real(3)\n"
+        "    Traceback (most recent call last):\n"
+        "        ...\n"
+        f"    ValueError: {type_name} has no scalar part, so it cannot hold 3; use "
+        "Scalar.from_real or the full class\n"
+    )
+    return function_def(
+        "from_real",
+        [
+            doc_expr(doc),
+            ast.Raise(
+                exc=parse_expr(
+                    f'ValueError(f"{type_name} has no scalar part, so it cannot '
+                    'hold {real}; use Scalar.from_real or the full class")'
+                ),
+                cause=None,
+            ),
+        ],
+        params=[argument("cls"), argument("real", name_ref("Real"))],
+        decorators=[name_ref("classmethod")],
+        returns=attribute("typing", "NoReturn"),
+    )
+
+
+def unit_pseudoscalar_squared_def(
+    type_name: str, result_name: str, n: int, full_name: str
+) -> ast.FunctionDef:
+    """``unit_pseudoscalar_squared`` for a graded type, returning ``result_name``.
+
+    The base method squares ``cls.unit_pseudoscalar(n)``, which a graded type cannot
+    hold.  The square is a scalar, so a graded type reads it from the full class and
+    returns it at ``result_name``: the type itself when it has a scalar slot, else
+    the algebra's ``Scalar``.
+    """
+    sign: int = (-1) ** (n * (n - 1) // 2)
+    doc: str = (
+        "The square of the unit pseudoscalar,  i²  — a scalar, ``±1``.\n"
+        "\n"
+        f"A ``{type_name}`` cannot hold the pseudoscalar itself, so the square is\n"
+        f"computed in the full class ``{full_name}`` and returned as a "
+        f"``{result_name}``.\n"
+        "\n"
+        "Args:\n"
+        f"    n: the dimension of the algebra (``None``, the default, means {n}).\n"
+        "\n"
+        "Returns:\n"
+        f"    {result_name}: the scalar ``i²`` "
+        "(``pseudoscalar_squared_sign(n)``).\n"
+        "\n"
+        "Example:\n"
+        f"    >>> {type_name}.unit_pseudoscalar_squared() == "
+        f"{result_name}.from_real({sign})\n"
+        "    True\n"
+    )
+    return function_def(
+        "unit_pseudoscalar_squared",
+        [
+            doc_expr(doc),
+            return_stmt(
+                call(
+                    attribute(result_name, "from_real"),
+                    [
+                        call(
+                            attribute(
+                                call(
+                                    attribute(full_name, "unit_pseudoscalar_squared"),
+                                    [name_ref("n")],
+                                ),
+                                "scalar_part",
+                            ),
+                            [],
+                        )
+                    ],
+                )
+            ),
+        ],
+        params=[argument("cls"), argument("n", opt_int())],
+        defaults=[constant(None)],
+        decorators=[name_ref("classmethod")],
+        returns=name_ref(result_name),
+    )
+
+
+class LineMap(NamedTuple):
+    """What sets one generated line-to-line ``Vector`` method apart from the others.
+
+    Every such method restricts a projection or rejection to the line of ``self``,
+    so it maps that line onto another and back.  The image is computed against one
+    vector ``n``: ``image="projection"`` means ``x ↦ ((x · n) / |n|²) * n`` and
+    ``image="rejection"`` means ``x ↦ x - ((x · n) / |n|²) * n``.  For the line
+    versions ``n`` is the operand; for the plane versions (𝒢₃) it is the plane's
+    normal, since projecting onto a plane is rejecting away from its normal.
+    """
+
+    name: str  # the method name, also the transforms factory's name
+    param: str  # the operand's parameter name
+    param_type: str  # the operand's generated class
+    normal: str  # source of the vector n the formulas use
+    image: str  # "projection" or "rejection", relative to n
+    pre_check: str  # source of the checks run before anything is computed
+    post_check: str  # source of the checks run once the image of self is known
+    label: str  # the LaTeX letter of the map
+    summary: str  # the docstring's first paragraph
+    meaning: str  # what the label stands for, in the docstring
+    failure: str  # when construction fails, in the docstring
+    example: str  # the docstring's doctest
+
+
+def line_map_method_def(n: int, spec: LineMap) -> ast.FunctionDef:
+    """A generated line-to-line ``Vector`` method of 𝒢ₙ (see :class:`LineMap`).
+
+    The coordinate (closed-form) version of the ``transforms`` factory of the same
+    name: every dot product is written out over the ``coeff_e_i`` fields, and each
+    division goes through ``_reciprocal`` so int input stays exact.  The method is
+    built from a source template (template-splice) because its body is two nested
+    closures, which the node builders would spell far less readably.
+
+    Args:
+        n: the dimension of the algebra.
+        spec: what sets this method apart.
+
+    Returns:
+        ast.FunctionDef: the method, docstring included.
+    """
+    fields: list[str] = [field_name((i,)) for i in range(1, n + 1)]
+
+    def dot(left: str, right: str) -> str:
+        return " + ".join(f"{left}.{f} * {right}.{f}" for f in fields)
+
+    def image_of(vector: str, factor: str) -> str:
+        """``Vector(...)`` of the image of ``vector``, ``factor`` being its
+        ``(vector · n) / |n|²``."""
+        match spec.image:
+            case "projection":
+                pairs: str = ", ".join(f"{f}={factor} * n.{f}" for f in fields)
+            case "rejection":
+                pairs = ", ".join(
+                    f"{f}={vector}.{f} - {factor} * n.{f}" for f in fields
+                )
+            case _:
+                raise ValueError(f"line_map_method_def: unknown image {spec.image!r}")
+        return f"Vector({pairs})"
+
+    def indented(source: str) -> str:
+        return "".join("    " + line + "\n" for line in source.splitlines())
+
+    doc: str = (
+        f"{spec.summary}\n"
+        "\n"
+        f"The coordinate version of ``transforms.{spec.name}``, with\n"
+        f"``{spec.label}`` {spec.meaning}: ``c * self`` goes to\n"
+        f"``c * {spec.label}(self)``, and the inverse sends ``d * {spec.label}(self)`` back\n"
+        "to ``d * self``.  Every dot product is written out over the coordinates, and\n"
+        "each direction checks that its input is on its line.\n"
+        "\n"
+        "Args:\n"
+        f"    {spec.param}: the {spec.param_type} that defines the map.\n"
+        "    float_close_to_zero: when ``True``, test the lines with a\n"
+        "        floating-point tolerance, for float input.\n"
+        "\n"
+        "Returns:\n"
+        "    InvertibleFunction[Vector]: the map from one line to the other,\n"
+        "    and its inverse.\n"
+        "\n"
+        "Raises:\n"
+        f"    TypeError: if ``{spec.param}`` is not a ``{spec.param_type}`` of this\n"
+        "        algebra.\n"
+        f"    ValueError: if {spec.failure}, or either is zero;\n"
+        "        and, when the function or its inverse is applied, if the input\n"
+        "        is off its line.\n"
+        "\n"
+        "Example:\n"
+        f"{spec.example}"
+    )
+    source: str = (
+        f"def {spec.name}(\n"
+        f"    self, {spec.param}: {spec.param_type}, *, float_close_to_zero: bool = False\n"
+        ") -> InvertibleFunction[Vector]:\n"
+        f"    if type({spec.param}) is not {spec.param_type}:\n"
+        "        raise TypeError(\n"
+        f'            "{spec.name} takes a {spec.param_type} of this algebra; got "\n'
+        f"            + type({spec.param}).__name__\n"
+        "        )\n" + indented(spec.pre_check) + f"    n: Vector = {spec.normal}\n"
+        f"    inverse_nn: Real = _reciprocal({dot('n', 'n')})\n"
+        f"    a_n: Real = ({dot('self', 'n')}) * inverse_nn\n"
+        "    # The image of self: it spans the line the function maps onto.\n"
+        f"    shadow: Vector = {image_of('self', 'a_n')}\n"
+        + indented(spec.post_check)
+        + f"    inverse_ss: Real = _reciprocal({dot('shadow', 'shadow')})\n"
+        "\n"
+        "    def forward(x: Vector) -> Vector:\n"
+        "        require_on_line(x, self, float_close_to_zero)\n"
+        f"        x_n: Real = ({dot('x', 'n')}) * inverse_nn\n"
+        f"        return {image_of('x', 'x_n')}\n"
+        "\n"
+        "    def backward(z: Vector) -> Vector:\n"
+        "        require_on_line(z, shadow, float_close_to_zero)\n"
+        f"        d: Real = ({dot('z', 'shadow')}) * inverse_ss\n"
+        f"        return Vector({', '.join(f'{f}=d * self.{f}' for f in fields)})\n"
+        "\n"
+        f'    latex: str = "{spec.label}_{{" + {spec.param}._repr_latex_().strip("$") + "}}"\n'
+        "    return InvertibleFunction(\n"
+        "        func=forward,\n"
+        "        latex_repr=latex,\n"
+        "        inverse=backward,\n"
+        '        latex_repr_inv=latex + "^{-1}",\n'
+        "        linearity=Linearity.LINEAR,\n"
+        "    )\n"
+    )
+    function: ast.FunctionDef = cast(ast.FunctionDef, ast.parse(source).body[0])
+    function.body.insert(0, doc_expr(doc))
+    return function
+
+
+def line_to_line_map(n: int, kind: str) -> LineMap:
+    """The :class:`LineMap` of ``Vector.line_to_line_projection`` / ``_rejection``."""
+    match kind:
+        case "projection":
+            return LineMap(
+                name="line_to_line_projection",
+                param="to_vector",
+                param_type="Vector",
+                normal="to_vector",
+                image="projection",
+                pre_check=(
+                    "if self.is_orthogonal_to(to_vector, float_close_to_zero):\n"
+                    "    raise ValueError(\n"
+                    '        "line_to_line_projection: self and to_vector are perpendicular, "\n'
+                    '        "so the projection squashes the line to a point"\n'
+                    "    )\n"
+                ),
+                post_check="",
+                label="P",
+                summary=(
+                    "Projection onto the line of ``to_vector``, restricted to the line of\n"
+                    "``self``: invertible, because it sends one line onto the other."
+                ),
+                meaning="the projection onto ``to_vector``",
+                failure="``self`` and ``to_vector`` are perpendicular",
+                example=(
+                    "    >>> P = (1 * e_1 + 1 * e_2).line_to_line_projection(to_vector=1 * e_1)\n"
+                    "    >>> P(2 * e_1 + 2 * e_2) == 2 * e_1\n"
+                    "    True\n"
+                    "    >>> P.inverse(3 * e_1) == 3 * e_1 + 3 * e_2\n"
+                    "    True\n"
+                    if n >= 2
+                    else "    >>> P = (2 * e_1).line_to_line_projection(to_vector=3 * e_1)\n"
+                    "    >>> P(4 * e_1) == 4 * e_1\n"
+                    "    True\n"
+                    "    >>> P.inverse(5 * e_1) == 5 * e_1\n"
+                    "    True\n"
+                ),
+            )
+        case "rejection":
+            return LineMap(
+                name="line_to_line_rejection",
+                param="away_from",
+                param_type="Vector",
+                normal="away_from",
+                image="rejection",
+                pre_check=(
+                    "if self.is_parallel_to(away_from, float_close_to_zero):\n"
+                    "    raise ValueError(\n"
+                    '        "line_to_line_rejection: self is parallel to away_from, "\n'
+                    '        "so the rejection squashes the line to a point"\n'
+                    "    )\n"
+                ),
+                post_check="",
+                label="R",
+                summary=(
+                    "Rejection away from ``away_from``, restricted to the line of ``self``:\n"
+                    "invertible, because it sends one line onto the other."
+                ),
+                meaning="the rejection away from ``away_from``",
+                failure="``self`` is parallel to ``away_from``",
+                example=(
+                    "    >>> R = (1 * e_1 + 1 * e_2).line_to_line_rejection(away_from=1 * e_1)\n"
+                    "    >>> R(2 * e_1 + 2 * e_2) == 2 * e_2\n"
+                    "    True\n"
+                    "    >>> R.inverse(3 * e_2) == 3 * e_1 + 3 * e_2\n"
+                    "    True\n"
+                ),
+            )
+        case _:
+            raise ValueError(f"line_to_line_map: unknown kind {kind!r}")
+
+
+def line_and_plane_map(kind: str) -> LineMap:
+    """The :class:`LineMap` of 𝒢₃'s ``Vector.line_to_plane_projection`` /
+    ``line_from_plane_rejection``.
+
+    In 𝒢₃ a plane ``B = b_12 * e_12 + b_13 * e_13 + b_23 * e_23`` has the normal
+    ``b_23 * e_1 - b_13 * e_2 + b_12 * e_3`` (its dual), so projecting onto the plane
+    is rejecting away from the normal and rejecting away from the plane is projecting
+    onto it.
+    """
+    param: str = "to_plane" if kind == "projection" else "away_from_plane"
+    normal: str = (
+        f"Vector(coeff_e_1={param}.coeff_e_23, coeff_e_2=-{param}.coeff_e_13, "
+        f"coeff_e_3={param}.coeff_e_12)"
+    )
+    zero_check: str = (
+        f"if {param} == Bivector.zero():\n"
+        f'    raise ValueError("{{name}}: the zero bivector spans no plane")\n'
+    )
+    shadow_check: str = (
+        "if (\n"
+        "    shadow.isclose(Vector.zero(), rel_tol=1e-5, abs_tol=1e-5)\n"
+        "    if float_close_to_zero\n"
+        "    else shadow == Vector.zero()\n"
+        "):\n"
+        "    raise ValueError(\n"
+        '        "{name}: self {where}, "\n'
+        '        "so the map squashes the line to a point"\n'
+        "    )\n"
+    )
+    match kind:
+        case "projection":
+            name: str = "line_to_plane_projection"
+            return LineMap(
+                name=name,
+                param=param,
+                param_type="Bivector",
+                normal=normal,
+                image="rejection",
+                pre_check=zero_check.replace("{name}", name),
+                post_check=shadow_check.replace("{name}", name).replace(
+                    "{where}", "is perpendicular to the plane"
+                ),
+                label="P",
+                summary=(
+                    "Projection onto the plane ``to_plane``, restricted to the line of\n"
+                    "``self``: invertible, because it sends that line onto a line in the\n"
+                    "plane."
+                ),
+                meaning="the projection onto the plane",
+                failure="``self`` is perpendicular to the plane",
+                example=(
+                    "    >>> P = (1 * e_1 + 1 * e_3).line_to_plane_projection(\n"
+                    "    ...     to_plane=1 * Bivector.e_12\n"
+                    "    ... )\n"
+                    "    >>> P(2 * e_1 + 2 * e_3) == 2 * e_1\n"
+                    "    True\n"
+                    "    >>> P.inverse(3 * e_1) == 3 * e_1 + 3 * e_3\n"
+                    "    True\n"
+                ),
+            )
+        case "rejection":
+            name = "line_from_plane_rejection"
+            return LineMap(
+                name=name,
+                param=param,
+                param_type="Bivector",
+                normal=normal,
+                image="projection",
+                pre_check=zero_check.replace("{name}", name),
+                post_check=shadow_check.replace("{name}", name).replace(
+                    "{where}", "lies in the plane"
+                ),
+                label="R",
+                summary=(
+                    "Rejection away from the plane ``away_from_plane``, restricted to the\n"
+                    "line of ``self``: invertible, because it sends that line onto the\n"
+                    "plane's normal line."
+                ),
+                meaning="the rejection away from the plane",
+                failure="``self`` lies in the plane",
+                example=(
+                    "    >>> R = (1 * e_1 + 1 * e_3).line_from_plane_rejection(\n"
+                    "    ...     away_from_plane=1 * Bivector.e_12\n"
+                    "    ... )\n"
+                    "    >>> R(2 * e_1 + 2 * e_3) == 2 * e_3\n"
+                    "    True\n"
+                    "    >>> R.inverse(3 * e_3) == 3 * e_1 + 3 * e_3\n"
+                    "    True\n"
+                ),
+            )
+        case _:
+            raise ValueError(f"line_and_plane_map: unknown kind {kind!r}")
+
+
 def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stmt]:
     """A graded subtype (Vector/Bivector/Trivector/Versor), as nodes (level C)."""
     blades: list[Blade] = list(spec.blades)
@@ -6519,8 +6968,14 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
                     params=[argument("cls")],
                     decorators=[name_ref("classmethod")],
                     returns=name_ref("Scalar"),
-                )
+                ),
+                # from_real: base's would drop the scalar to the zero value.
+                from_real_raises_def(spec.name),
             ]
+        ),
+        # i^2 is a scalar the graded type cannot build from its own pseudoscalar.
+        unit_pseudoscalar_squared_def(
+            spec.name, spec.name if has_scalar else "Scalar", n, full_name
         ),
         grades_method(
             [
@@ -6703,6 +7158,38 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
 
     def vector_extras() -> list[ast.stmt]:
         extras: list[ast.stmt] = []
+        # The coordinate versions of transforms.line_to_line_projection / _rejection.
+        # 𝒢₁ gets the projection only: there every vector is parallel to every
+        # other, so the rejection could never be built.
+        extras.append(line_map_method_def(n, line_to_line_map(n, "projection")))
+        if n >= 2:
+            extras.append(line_map_method_def(n, line_to_line_map(n, "rejection")))
+        # The line-and-plane maps, 𝒢₃ only: there a plane has a normal vector (its
+        # dual), which the closed forms are written against.  In 𝒢₂ the only plane
+        # is the whole space (projection is the identity, rejection never builds).
+        if n == 3:
+            extras.append(line_map_method_def(n, line_and_plane_map("projection")))
+            extras.append(line_map_method_def(n, line_and_plane_map("rejection")))
+        # sandwich: the base method, re-declared so the "vector|sandwich" entry gives
+        # it the reflection docstring (a vector is an improper versor: v x v⁻¹
+        # reflects across v's line).  The base text describes a rotating versor.
+        # Only where the specialized docstrings exist (g1-g3).
+        if n <= 3:
+            extras.append(
+                function_def(
+                    "sandwich",
+                    [
+                        return_stmt(
+                            call(
+                                attribute("MultiVectorBase", "sandwich"),
+                                [name_ref("self"), name_ref("x")],
+                            )
+                        )
+                    ],
+                    params=[argument("self"), argument("x", name_ref("_OperandT"))],
+                    returns=name_ref("_OperandT"),
+                )
+            )
         # project/reject/reflect of a vector onto a blade are grade-preserving (the
         # result is a vector), so narrow the base's MultiVectorBase-typed factory
         # classmethods to the precise vector type -- one @overload per grade-pure
@@ -7200,18 +7687,21 @@ def generate_constants(n: int, name: str) -> list[ast.stmt]:
 
 
 def header(name: str, n: int) -> str:
-    # _OperandT (the sandwich operand TypeVar) is only used by the specialized
-    # Versor sandwich, which is derived for 2 <= n <= 3 (in 𝒢₄/𝒢₅ the Versor
-    # inherits MultiVectorBase.sandwich -- see versor_extras); importing it
-    # otherwise would be unused (F401).
-    operand_import: str = "\n    _OperandT," if 2 <= n <= 3 else ""
-    # The 𝒢₂ rotate_90_degrees() factory (generate_quarter_turn) needs Linearity
-    # and plane_rotation (for its interpolation law); importing them elsewhere
-    # would be unused (F401).  transforms imports only base/functions, so g2
-    # importing it is acyclic.
-    functions_import: str = "from gacalc.functions import Linearity\n" if n == 2 else ""
+    # _OperandT (the sandwich operand TypeVar) types the specialized Versor sandwich
+    # (derived for 2 <= n <= 3; in 𝒢₄/𝒢₅ the Versor inherits
+    # MultiVectorBase.sandwich, see versor_extras) and the Vector sandwich that
+    # carries the reflection docstring (n <= 3); importing it otherwise would be
+    # unused (F401).
+    operand_import: str = "\n    _OperandT," if n <= 3 else ""
+    # Every Vector carries the line-to-line maps (Linearity, require_on_line); the
+    # 𝒢₂ rotate_90_degrees() factory also needs plane_rotation, for its
+    # interpolation law.  transforms imports only base/functions, so importing it
+    # here is acyclic.
+    functions_import: str = "from gacalc.functions import Linearity\n"
     transforms_import: str = (
-        "from gacalc.transforms import plane_rotation\n" if n == 2 else ""
+        "from gacalc.transforms import plane_rotation, require_on_line\n"
+        if n == 2
+        else "from gacalc.transforms import require_on_line\n"
     )
     return f"""# Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only

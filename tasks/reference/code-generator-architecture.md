@@ -51,10 +51,12 @@ raw text header  +  "\n\n"  +  module_source(inject_region_markers(nodes))  +  "
   `_coerce`, which since 2026-07-29 is defined once in `base.py` and imported (it used to be
   pasted into each module). (There is no longer a separate `SCALAR_HEADER` — `ScalarN` is emitted into each
   `gN.py`, not its own module.) `header()` conditionally appends `, _OperandT` to the
-  `gacalc.base` import only for `n >= 2` (the sandwich TypeVar is used only by `Versor_n`, which
-  doesn't exist in 𝒢₁ — importing it there would be an unused-import `F401`). Likewise, for
-  `n == 2` only, it adds `from gacalc.functions import Linearity` and `from gacalc.transforms
-  import plane_rotation` — used by the 𝒢₂ `rotate_90_degrees()` factory (`generate_quarter_turn`,
+  `gacalc.base` import only for `n <= 3` (the sandwich TypeVar types the specialized `Versor_n`
+  sandwich, 𝒢₂/𝒢₃, and the `Vector.sandwich` re-declaration that carries the reflection docstring,
+  𝒢₁–𝒢₃; elsewhere it would be an unused-import `F401`). Every module imports
+  `from gacalc.functions import Linearity` and `require_on_line` from `gacalc.transforms`, for the
+  generated line-to-line maps (`line_map_method_def`); for `n == 2` it also imports
+  `plane_rotation`, used by the 𝒢₂ `rotate_90_degrees()` factory (`generate_quarter_turn`,
   emitted between the graded types and the constants; its `Vector` method comes from the
   `n == 2` arm of `vector_extras`, beside the `n == 3` `cross` arm). `transforms` never imports a
   generated module, so `g2.py` importing it is acyclic (2026-09-06).

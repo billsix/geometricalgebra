@@ -11,12 +11,40 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 
 ## [Unreleased]
 
+### Added
+- **`transforms.line_to_line_rejection(from_vector=, away_from=)`** — the rejection away from
+  `away_from`, restricted to the line of `from_vector`: an `InvertibleFunction` sending
+  `c * a` to `c * R(a)` and back, raising `ValueError` on input off its line in either direction
+  and at construction when the two vectors are parallel.
+- **`transforms.require_on_line(vector, along)`** — the shared "must be on this line" guard
+  (`ValueError` naming the caller), used by `coordinate_along` and both line-to-line maps.
+- **`Vector.line_to_line_projection(to_vector=)` / `Vector.line_to_line_rejection(away_from=)`** on
+  the generated 𝒢₂ and 𝒢₃ `Vector` (𝒢₁: the projection only, since every 𝒢₁ vector is parallel to
+  every other) — the coordinate versions of the two factories, typed `InvertibleFunction[Vector]`.
+- **`transforms.line_to_plane_projection(from_vector=, to_plane=)` /
+  `transforms.line_from_plane_rejection(from_vector=, away_from_plane=)`** — the projection onto a
+  plane (a bivector) and the rejection away from it, restricted to one line: `InvertibleFunction`s
+  that raise `ValueError` on input off their line, and at construction when the line is
+  perpendicular to the plane (projection) or lies in it (rejection). The generated 𝒢₃ `Vector` has
+  coordinate versions of both, with the plane's normal written out from its coordinates.
+
 ### Changed
 - **`standardposition.project_sp` / `reject_sp` are defined for `b` along the `e_3` axis.** They
   used to raise `ValueError` there; now the first plane rotation is zero-to-zero, the identity, and
   the result equals `a.projected_onto(b)`. A zero `b` raises `ValueError` (it used to hit the same
   `e_3` error). Each plane rotation is now the book's 2-D blend `cos * v + sin * v.rotate_90_degrees()`
   on a copied coordinate pair.
+- **Breaking: `from_real` on a graded type with no scalar slot raises `ValueError`.**
+  `g2.Vector.from_real(3)` (also `Bivector`, `Trivector`, `Odd_3`) used to return the zero value
+  silently; use `Scalar.from_real` or the full class `G`. `zero()` is unaffected.
+- **`unit_pseudoscalar_squared` works on every graded type.** It used to raise ("cannot hold the
+  basis blade"); it now returns the scalar `i²`, typed as the type itself when it has a scalar slot
+  (`Scalar`, `Versor`) and as the algebra's `Scalar` otherwise, as `one()` does. Like the full
+  class, `n` defaults to the algebra's dimension.
+- **`transforms.coordinate_along` and `line_to_line_projection`'s forward map are built from
+  projection** instead of dividing by a vector; their values are unchanged. The "not on the line"
+  `ValueError` now names the caller and its call site (`coordinate_along (transforms.py:N): …`)
+  rather than starting `coordinate_along: …`.
 
 ## [0.1.1] — 2026-11-13
 

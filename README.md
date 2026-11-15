@@ -29,7 +29,8 @@ src/gacalc/
   measure.py       area / volume / content, signed and unsigned
   vectorcalc.py    the cross product (the dual of the wedge, 𝒢₃)
   standardposition.py  project_sp / reject_sp via elementary plane rotations (𝒢₃)
-  transforms.py    translate / scale / rotation factories, line_to_line_projection (composable, invertible)
+  transforms.py    translate / scale / rotation factories, the line-to-line and line-and-plane
+                   projections / rejections (composable, invertible)
   cayley/          coordinate frames joined by invertible functions, as a graph (+ a timed scene)
   gl/              OpenGL toolkit + 2D/3D graphing calculators (needs the `gl` extra)
 examples/          grapher2d.py / grapher3d.py: plot functions gacalc computes

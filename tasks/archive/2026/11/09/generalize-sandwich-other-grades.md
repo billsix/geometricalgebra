@@ -6,7 +6,7 @@
 The reflections and the 𝒢₂/𝒢₃ bivector/trivector/versor operand tests were done on 2026-10-22, and the
 𝒢₄/𝒢₅ half needs no specialized code: since 2026-10-23, 𝒢₄/𝒢₅ `Versor.sandwich` is the inherited,
 generically tested `MultiVectorBase.sandwich`. The two optional leftovers (𝒢₄/𝒢₅ operand tests, and a
-reflection docstring for `Vector.sandwich`) moved to `tasks/sandwich-followups-g4-g5-and-reflection-doc.md`.
+reflection docstring for `Vector.sandwich`) moved to `tasks/archive/2026/11/14/sandwich-followups-g4-g5-and-reflection-doc.md`.
 The record below is as it stood on 2026-10-22, plus the 2026-10-23 unblocking.
 
 ## Work record (2026-10-22)

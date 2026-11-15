@@ -44,7 +44,7 @@ operand and returns `Expr`, so pyright types `s_1 * e_1` as `Expr` and never con
   `cls.basis_vector(i) * x_i` in `frame.py`, `transforms.py`, `standardposition.py`, and two tests over
   parametrized representations) instead of a scalar constructor. With `cls` a parameter there is no
   safe constructor: `cls.from_real(c)` is the zero vector when `cls` is a graded `Vector`
-  (`tasks/graded-scalar-constructors-silent-drop.md`), and `cls.one() * c * v` hides the math. The
+  (`tasks/archive/2026/11/14/graded-scalar-constructors-silent-drop.md`, which since made it raise), and `cls.one() * c * v` hides the math. The
   coefficient-times-basis convention is for teaching-facing code, which these bodies are not.
 - **`tests/test_operator_typing.py` keeps `t * v`** with a `# pyright: ignore[reportAttributeAccessIssue]`:
   that line tests the runtime operator, which is the point of the test.
