@@ -1,62 +1,175 @@
 # Bare-bones 2D book pages: rotation → projection → rotation → product → projection → rotation
 
-**Status:** approved — questions answered 2026-11-15 (Decisions below); implementation starts on the maintainer's go-ahead
+**Status:** open — first iteration merged; the maintainer will iterate on it later
 **Priority:** 5
 **Difficulty:** 6
 **Created:** 2026-11-14 (William Emerison Six <billsix@gmail.com>)
 
 ## BLUF
 
-A run of short reStructuredText pages that does the 2D bootstrap end to end, with minimal prose and
-all of the proofs, code and graphs: the precalculus rotation, then projection defined from it, then
-rotation defined from projection, then the geometric product, then projection and rotation
-redefined through the product. Duplicating material from the rest of the book is fine. Done means
-the pages build in `make docs`, every code cell runs, and each step's proof is shown.
+The book ends with "Part III — The 2D Bootstrap": six short pages that run the 2D arc end to end,
+with minimal prose and every proof shown. Each page has a sympy notebook, ePiX figures, and its
+Lean theorems cited. The first iteration (2026-11-15) is complete, gate-green and merged. The
+maintainer is content with it but it is "not exactly what I want". The task stays open for a
+later iteration, whose changes the maintainer has not yet named.
 
 ## Context
 
-- The book: `book/docs/*.rst` with notebooks in `book/docs/notebooks/*.py` (jupytext percent
-  format, executed at build) and ePiX figures in `book/figures/epix/*.py`
-  (`tasks/reference/book-and-docs-pipeline.md`, `tasks/reference/book-outline.md`).
-- Existing pages that cover pieces of the arc: `proof-rotate.rst` (`eq-rotate-formula`),
-  `proof-projection.rst` (2D projection by standard position), `proof-rotate-from-a-to-b.rst`,
-  `product-from-projection` (notebook), `geometric-product` (notebook).
-- The arc and why it is not circular: `tasks/reference/reduction-to-standard-position.md` ("The full
-  bootstrap arc"). Lean has each step in 2D: `StandardPosition2D.lean`, `RotateFromTo2D.lean`.
-- `CLAUDE.md` rules that apply: the three forms (Lean, symbolic Python, prose + LaTeX) for each piece
-  of math; the notation rules (parentheses apply, `*` multiplies, every angle named); a symbolic
-  coefficient written `Scalar(s) * e_1`.
+- Pages: `book/docs/bootstrap-rotation.rst`, `bootstrap-projection.rst`,
+  `bootstrap-rotation-from-projection.rst`, `bootstrap-product.rst`,
+  `bootstrap-projection-from-product.rst`, `bootstrap-rotation-from-product.rst`. They form the
+  captioned, numbered toctree "Part III — The 2D Bootstrap" at the end of `book/docs/index.rst`.
+- Notebooks: `book/docs/notebooks/bootstrap-*.py`, same names, jupytext percent format.
+- Figures: `book/figures/epix/_bootstrap_scene.py`, `boot_*.py`. Step 2 uses `boot_sp2`–`boot_sp5`.
+- Lean: `proofs/GacalcProofs/Bootstrap2D.lean`, plus the existing theorems each page cites.
+- The current design rules, and the page → Lean table, are in
+  `tasks/reference/reduction-to-standard-position.md` ("The 2D bootstrap in the book"). This doc
+  holds the history: what was tried, kept and dropped.
+- Gates: `make lean`, `make format`, `make docs`. Look at the PDF pages, not just the build status.
+- `CLAUDE.md` rules that apply:
+  - the three forms (Lean, symbolic Python, prose + LaTeX);
+  - the notation rules (parentheses apply, `*` multiplies, every angle named);
+  - `Scalar(s) * e_1`;
+  - every binding typed;
+  - every ePiX argument by keyword.
 
-## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-15)
+## The six steps as they stand
 
-1. **Placement:** a new top-level section at the **end** of the book: its own captioned, numbered
-   toctree in `book/docs/index.rst`, after Part II and before the unnumbered Reference toctree.
-   The other placement considered was a separate short document built alongside the book.
-2. **Projection through the product:** `(a · b) * b⁻¹`, where `a · b` is the scalar part of
-   `a * b`.
-3. **Rotation through the product:** both forms, **one-sided first**. First the 2D-only one-sided
-   form `v * (â * b̂)` (Lean `projRotation_eq_vec_mul`), then the half-angle sandwich `R * v * R⁻¹`
-   (Lean `projRotation_eq_sandwich`), with a short proof that the two agree.
-4. **Graphs:** ePiX figures in `book/figures/epix/*.py`, as elsewhere in the book, not matplotlib.
-5. **Lean:** cite the existing 2D theorems, at least in comments if nowhere else. Add a theorem
-   only where a step has none. The likely gap is projection stated through the product
-   (`(a · b) * b⁻¹`); check for an existing one first.
-6. **Granularity:** one short `.rst` page plus one jupytext notebook per step, six in all:
-   1. the precalculus rotation;
-   2. projection defined from rotation;
-   3. rotation defined from projection;
-   4. the geometric product;
-   5. projection through the product;
-   6. rotation through the product.
+1. **Rotation, from precalculus:** `r(v; θ) = cos(θ) * v + sin(θ) * r(v; π/2)` from the
+   angle-addition identities. It keeps length, angles add, and it is linear.
+2. **Projection of `b` onto `a`, from rotation:**
+   `P_a = (R_a^{e₁})⁻¹ ∘ P_{e₁} ∘ R_a^{e₁}`, which gives
+   `x = (a₁*b₁ + a₂*b₂)/|a|`, `y = (a₁*b₂ − a₂*b₁)/|a|` and
+   `P_a(b) = (a₁*b₁ + a₂*b₂)/(a₁² + a₂²) * a`.
+3. **Rotation from `a` to `b`, from projection, for every `v`:** one right triangle drawn twice.
+   - First, `b` measured against `a`: `cos(θ) = x/|b|`, `sin(θ) = y/|b|`.
+   - Then the same triangle on `v`: `v' = cos(θ) * v + sin(θ) * r(v; π/2)`.
+   - The page also shows:
+     - the composition `(R_b^{e₁})⁻¹ ∘ R_a^{e₁}`;
+     - that it is a rotation and linear;
+     - that only directions matter;
+     - `â ↦ b̂`.
+4. **The geometric product, from projection:** `a * b = |a| * (x + y * e₁₂)`. It equals the
+   product of the multiplication rules, splits as `a · b + a ∧ b`, and `â * b̂ = cos(θ) + sin(θ) * e₁₂`.
+5. **Projection through the product:** `P_a(b) = (b · a) * a⁻¹`, and the rejection
+   `(b ∧ a) * a⁻¹`.
+6. **Rotation through the product:** the one-sided `v * (â * b̂)` (2D only), then the sandwich
+   `R * v * R⁻¹` with `R = b * a + |a| * |b|`, and a proof that the two agree.
 
-## Lean theorems already covering the arc (checked 2026-11-15)
+## History: what we tried, what we kept, what we dropped
 
-- The precalculus rotation: `Rotation2D.lean` (`rot_vec`, `rot_add`, `rot_normSq`);
-  `StandardPosition2D.lean` (`rotPlane_*`).
-- Projection by standard position: `StandardPosition2D.lean` (`projectSP_eq_proj`,
-  `rejectSP_eq_reject`, `proj_onto_x_axis`).
-- Rotation from projection: `RotateFromTo2D.lean` (`rotateFromTo_carries`);
-  `ProjectionRotation2D.lean` (`projRotation_carries_from_to`, `projRotation_isometry`).
-- The product: `StandardPosition2D.lean` (`mul_eq_magnitude_smul_alignSP`).
-- Rotation through the product: `ProjectionRotation2D.lean` (`projRotation_eq_vec_mul`,
-  `projRotation_eq_sandwich`); `Versor2D.lean`.
+All decisions are William Emerison Six <billsix@gmail.com>, 2026-11-15, unless noted.
+
+### First pass: the six pages
+
+Before starting we settled four questions:
+- **Placement:** a top-level part at the end of the book, not a separate document.
+- **Projection through the product:** `(a · b) * b⁻¹`.
+- **Rotation through the product:** both forms, the one-sided one first.
+- **Figures, Lean, granularity:** ePiX rather than matplotlib; cite the existing Lean and add only
+  what is missing; one page plus one notebook per step.
+
+We built the six pages and notebooks and six ePiX figures. Step 2 reused Part I's `sp2`–`sp5`. Two
+Lean theorems were added for steps that had none: projection through the product and "the
+projection-built rotation is `v * (â * b̂)`". Steps 4–6 measured `b` against `a`
+(`a * b = |a| * (x + y * e₁₂)`). Lean's `mul_eq_magnitude_smul_alignSP` states the mirror form,
+`b * a`.
+
+Problems found and fixed on the way:
+- black vectors drawn over the coloured segments along them;
+- overlapping labels in three figures;
+- `\v` read as an escape when generating text;
+- E501 lines in the notebooks;
+- `sympy.simplify` on a `Real` union (ty).
+
+### Step 3, second attempt: a map on every vector
+
+The maintainer's review: "the point is supposed to be that you define the rotation of anything in
+the plane, where the rotation is the amount it would take to rotate from a to b, regardless of
+their length. It's not just rotating vector a itself." The first Step 3 had computed a cosine and
+sine from projection and spent its proof on where `a` lands.
+
+We weighed three constructions of the same map:
+- **(a)** lay `v`'s projection and rejection lengths on `a` along and across `b`:
+  `x * b̂ + y * b̂⊥`;
+- **(b)** the composition `(R_b^{e₁})⁻¹ ∘ R_a^{e₁}`;
+- **(c)** keep the cosine-and-sine blend and reframe it.
+
+We took (a) as the definition and showed (b) as the same map. Lean gained `rotateFromToProj` with
+these theorems:
+- `_eq_unalign_align` (the composition);
+- `_eq_vec_mul` (`v * (â * b̂)`, a pure `ring` identity);
+- `_preserves_dot`;
+- `_smul_smul` (only directions matter);
+- `_normalize` (`â ↦ b̂`).
+
+The figure showed a third vector `v` with its parts rebuilt along `b`. Step 4 switched to taking its
+numbers from Step 2 directly, and Step 6 compared against the new map. A bold span containing math
+(`**… :math:`…`**`) rendered raw in the PDF and was fixed.
+
+### Third pass: from `a` to `b` everywhere, and one triangle twice
+
+The maintainer's review of the second attempt had two parts.
+
+**Rotations always go from `a` to `b`.** Step 2 is not a rotation, but its names were backwards
+relative to the rest. We flipped Step 2 to project `b` onto `a`, in its math, figures and notebook.
+Everything that used it followed:
+- Step 3 cites Step 2's coordinates directly;
+- Step 4 cites them with no name swap;
+- Step 5 became `(b · a) * a⁻¹`;
+- Lean `proj_eq_dot_mul_inverse` was restated as `proj a b = (b·a)*a⁻¹`.
+
+Part I's `sp*` figures are shared with `proof-projection.rst` and `product-from-projection.rst`.
+Rather than flip them and rewrite Part I, we made Part-III-only copies, `boot_sp2`–`boot_sp5`.
+
+**Step 3's figure.** The second triangle had been built on `b`'s line, and the maintainer's verdict
+was: "The second triangle is supposed to show that the rotation is the same idea with the same
+triangle. the first triangle shows the rotation and angles from a to b. the second is from v to
+v', which is a combination of v and rot 90 v. wtf does b have to do with the second triangle?" So
+Step 3 became one right triangle drawn twice:
+- `b` measured against `a`, giving `cos(θ)`, `sin(θ)`;
+- the same triangle on `v`: `cos(θ) * v` along, `sin(θ) * r(v; π/2)` across, hypotenuse `v'`.
+
+`v` sits outside the angle from `a` to `b`, and `θ` is marked between `a` and `b` and between `v`
+and `v'`. This made the two-triangle construction the page's definition. Construction (a),
+`x * b̂ + y * b̂⊥`, left the page; it survives only in Lean, where
+`rotPlane_fromTo_eq_rotateFromToProj` ties `rotateFromToProj` to the page's definition so all of
+its theorems still apply. The composition (b) stayed on the page as the same map.
+
+### What was kept and what was dropped
+
+- **Kept:**
+  - all six pages and notebooks;
+  - the figures `boot_rotate`, `boot_rotate_from_projection` (two triangles), `boot_product`,
+    `boot_project_product` (`a⁻¹`), `boot_rotate_onesided`, `boot_rotate_sandwich`,
+    `boot_sp2`–`boot_sp5`;
+  - every Lean theorem in `Bootstrap2D.lean`.
+- **Dropped:**
+  - Step 2's use of Part I's `sp*` figures;
+  - the `a`-onto-`b` naming in Steps 2 and 5;
+  - Step 3's first form (cosine and sine, then where `a` lands);
+  - Step 3's second form (`x * b̂ + y * b̂⊥` as the definition, and its figure). Lean still has it
+    as `rotateFromToProj`.
+- **Process:** when the maintainer says "update the task", update the existing task. A follow-up
+  task was once created instead. The three task records were merged back into this one before the
+  squash.
+
+## Verification (first iteration, final state)
+
+- `make lean`: green, no `sorry`/`admit`. The axioms gate passed on 1065 declarations
+  (`propext`, `Classical.choice`, `Quot.sound` only).
+- `make format`: green (ruff, ty over `book/docs/notebooks`, `check_epix_keywords`, the changelog
+  guard).
+- Every notebook was run cell by cell, and each zero-check printed zero.
+- `make docs`: green.
+  - No Part III warnings, and no undefined references in the LaTeX log.
+  - No literal `:math:` in the rendered HTML.
+  - The remaining Sphinx warnings come from library docstrings and predate this work.
+  - The Step 3 and Step 6 PDF pages and the Step 2 figures were checked visually.
+- No `CHANGELOG.md` entry: no consumer-facing library change.
+
+## Next iteration
+
+The maintainer will say what to change. When work resumes, read this doc and the reference
+section above, rebuild (`make docs`), look at the six pages in the PDF, and ask what to change
+before editing.

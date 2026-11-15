@@ -622,6 +622,28 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   `Versor2D`/`Sandwich`/`Projection2D` lemmas and the `G2` algebra laws; the one √ stays confined to `key_reverse_sq`.
   The 2D isometry needs only `normSq f, normSq t ≠ 0` (from `normSq_mul_three_vec` + unit `f̂`/`t̂`,
   independent of route-equivalence). Registered via `import` in the root `GacalcProofs.lean`.
+- `Bootstrap2D.lean` — the steps of the book's Part III (`book/docs/bootstrap-*.rst`, the 2D
+  bootstrap) that had no theorem:
+  - `proj_eq_dot_mul_inverse` (`proj a b = (b·a)*a⁻¹`, projection of `b` onto `a` through the
+    product, for vectors with `normSq a ≠ 0`).
+  - Step 3's rotation from `a` to `b` of every vector, `rotateFromToProj a b v`: `v`'s coordinates
+    in `a`'s standard position (`alignSP a v`) rebuilt along `b̂` and `rot90 b̂`. Its theorems:
+    - `_eq_unalign_align` (it is `unalignSP b ∘ alignSP a`);
+    - `_eq_vec_mul` (it is `v*(â*b̂)`, a pure `ring` identity with no magnitude hypotheses);
+    - `_preserves_dot` (via `rotPlane_preserves_dot` twice);
+    - `_smul_smul` (positive rescaling of `a`, `b` changes nothing, through
+      `normalizeVec_smul_of_pos`);
+    - `_normalize` (`â ↦ b̂`).
+  - The supporting lemmas `cs_unit_unalign`, `isVector_smul_of_isVector` and
+    `magnitude_smul_of_nonneg`.
+  - `rotPlane_fromTo_eq_vec_mul`: the `rotPlane` whose cosine and sine are `(a·b)/(|a|*|b|)` and
+    `(a∧b)/(|a|*|b|)` equals `v*(â*b̂)`. This `rotPlane` is the book's Step 3 definition (Step 1's
+    blend with the cosine and sine from projection). `rotPlane_fromTo_eq_rotateFromToProj` ties
+    it to `rotateFromToProj`, whose theorems then cover it.
+
+  All are object-in, coordinates only in the body (`simp only [defs, grade zeros]; ext; ring`, with
+  `field_simp` where a magnitude divides). The page-by-page list is in
+  `tasks/reference/reduction-to-standard-position.md` ("The 2D bootstrap in the book").
 - `Cross.lean` — the 𝒢₃ `cross a b = (a∧b) I₃⁻¹`: `cross_vec` (coordinate formula), `cross_anticomm`,
   `cross_perp_left`/`_right`, `dual_vec` (3D vector dual = ⊥ bivector), and `dot_cross_eq_signedVolume`
   (scalar triple = signed volume = `det[a,b,c]`). Plus `Sandwich.sandwich_evenVersor_vec_isVector`

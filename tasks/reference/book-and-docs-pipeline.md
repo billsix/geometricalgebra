@@ -136,6 +136,15 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     own helper calls are all keyword, and it builds point lists with comprehensions, not
     `list.append` — an unknown callee with a positional arg (`.append` included) trips
     `check_epix_keywords`.
+  - `_bootstrap_scene.py` holds the fixed points of the Part III (2D bootstrap) figures `boot_*`, one
+    group per step (`ROTATE_*`, `FROM_PROJ_*`, `PRODUCT_*`, `INVERSE_*`, `ONESIDED_*`, `SANDWICH_*`),
+    plus `foot_on_line` (the projection of a point onto a line through the origin) and two
+    coloured primitives whose label takes the element's colour: `colored_vector` (an arrow) and
+    `colored_segment` (a line labelled at its midpoint). Draw the black vectors before the coloured
+    segments that lie along them, or the black hides the colour. `FROM_PROJ_*` draws Step 3's
+    one triangle twice (on `a`, then on `v` outside the angle from `a` to `b`). Step 2 uses
+    `boot_sp2`–`boot_sp5`, copies of `sp2`–`sp5` with `a` and `b` swapped so that Part III
+    projects `b` onto `a`; the Part I `sp*` figures are unchanged.
   - `_frame_scene.py` is the stage for the live-rendered frame / QR notebooks: `scene_2d` /
     `scene_3d` (light, **unlabelled** axes, because there `x` and `y` name vectors; one fixed
     `CAMERA = (5, -10, 7)`, chosen so the x and y axes project about 60° apart and the plane of

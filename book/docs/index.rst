@@ -53,6 +53,18 @@ starts again from the geometric product in three dimensions.
    frames-qr
 
 .. toctree::
+   :maxdepth: 2
+   :numbered:
+   :caption: Part III — The 2D Bootstrap
+
+   bootstrap-rotation
+   bootstrap-projection
+   bootstrap-rotation-from-projection
+   bootstrap-product
+   bootstrap-projection-from-product
+   bootstrap-rotation-from-product
+
+.. toctree::
    :maxdepth: 1
    :caption: Reference
 
