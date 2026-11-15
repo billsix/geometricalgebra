@@ -125,6 +125,46 @@ deliberate choice to run everything through one mechanism. A given operation may
 form proved below). The 3rd rotation is what makes the frame fully 2-D for operations that need *both*
 vectors reduced (e.g. the cross product); it is not a requirement of project/reject.
 
+### The 2D bootstrap in the book
+
+The book's last part, "Part III — The 2D Bootstrap" (`book/docs/index.rst`), runs the 2D arc end to
+end in six short pages, proofs and little prose, each with a sympy notebook
+(`book/docs/notebooks/bootstrap-*.py`) and the Lean theorems cited by name:
+
+| Page | Step | Lean |
+|---|---|---|
+| `bootstrap-rotation.rst` | rotation from precalculus, `cos(θ) * v + sin(θ) * r(v; π/2)` | `Rotation2D` `rot_vec`/`rot_normSq`/`rot_add`; `StandardPosition2D` `rotPlane_vec_eq_blend` |
+| `bootstrap-projection.rst` | projection of `b` onto `a` = rotate `a` to the x-axis, keep `b`'s x, rotate back | `StandardPosition2D` `projectSP_eq_proj`/`rejectSP_eq_reject`/`proj_rotPlane_equivariant` (stated `a` onto `b`) |
+| `bootstrap-rotation-from-projection.rst` | the rotation from `a` to `b` of **every** `v`, one triangle drawn twice: `b` measured against `a` gives `cos(θ)`, `sin(θ)`; the same triangle on `v` is `v' = cos(θ) * v + sin(θ) * r(v; π/2)`; equals `(R_b^{e₁})⁻¹ ∘ R_a^{e₁}`; only directions matter | `Bootstrap2D` `rotPlane_fromTo_eq_rotateFromToProj`, `rotateFromToProj_eq_unalign_align`/`_preserves_dot`/`_smul_smul`/`_normalize`; `RotateFromTo2D` `bprime_coords`/`rotateFromTo_collapse` |
+| `bootstrap-product.rst` | `a * b = \|a\| * (x + y * e₁₂)`, with `x`, `y` = `b` measured in `a`'s standard position (Step 2) | `StandardPosition2D` `mul_eq_magnitude_smul_alignSP`; `G2` `mul_eq_dot_add_wedge` |
+| `bootstrap-projection-from-product.rst` | projection of `b` onto `a` = `(b·a) * a⁻¹` | `Bootstrap2D` `proj_eq_dot_mul_inverse` |
+| `bootstrap-rotation-from-product.rst` | `v * (â * b̂)` first (equals Step 3's map), then the sandwich `R * v * R⁻¹`, and why they agree | `Bootstrap2D` `rotPlane_fromTo_eq_vec_mul`/`rotateFromToProj_eq_vec_mul`; `ProjectionRotation2D` `projRotation_eq_sandwich` |
+
+Design rules (William Emerison Six <billsix@gmail.com>, 2026-11-15):
+- **Placement:** a top-level part at the end of the book. It duplicates material from the slower
+  Part I chapters on purpose.
+- **Granularity:** one page and one notebook per step.
+- **Direction:** everything goes from `a` to `b`.
+  - Step 2 projects `b` onto `a` (rotate `a` onto the x-axis).
+  - Step 5's projection is `(b·a) * a⁻¹`.
+  - Step 2's figures are `boot_sp2`–`boot_sp5`, Part-III-only copies of Part I's `sp*` with the
+    names swapped; Part I is unchanged.
+- **Step 3** defines the rotation from `a` to `b` for **every** `v`, as one right triangle drawn
+  twice:
+  - on `a`: `b` measured against `a` gives `cos(θ)`, `sin(θ)` without naming `θ`;
+  - on `v`: `v' = cos(θ) * v + sin(θ) * r(v; π/2)`, with `θ` marked between `v` and `v'`.
+
+  `b` has no part in the second triangle. The composition `(R_b^{e₁})⁻¹ ∘ R_a^{e₁}` is shown as the
+  same map. Lean's `rotateFromToProj` writes the map through `v`'s coordinates in `a`'s standard
+  position rebuilt along `b`, and `rotPlane_fromTo_eq_rotateFromToProj` ties it to the page.
+- **Rotation through the product:** both forms, the one-sided `v * (â * b̂)` first, then the
+  sandwich.
+- **Figures:** ePiX (`book/figures/epix/boot_*.py`).
+- **Lean:** every page cites its theorems. New ones only where a step had none
+  (`proofs/GacalcProofs/Bootstrap2D.lean`).
+
+What was tried and dropped, and what is still to iterate on: `tasks/bare-2d-bootstrap-pages.md`.
+
 ## What is proven
 
 The whole arc is machine-checked across six Lean files, all gate-verified (`make lean` green,

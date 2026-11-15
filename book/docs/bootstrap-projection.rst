@@ -1,0 +1,117 @@
+..
+   Copyright (c) 2026 William Emerison Six
+
+   Permission is granted to copy, distribute and/or modify this document
+   under the terms of the GNU Free Documentation License, Version 1.3
+   or any later version published by the Free Software Foundation;
+   with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+
+   A copy of the license is available at
+   https://www.gnu.org/licenses/fdl-1.3.html.
+
+Step 2: Projection, from Rotation
+=================================
+
+.. note::
+
+   Draft. The prose is agent-drafted; the maintainer's voice pass is pending.
+
+The projection of :math:`\vec{b}` onto :math:`\vec{a}` is the part of :math:`\vec{b}` along
+the line through :math:`\vec{a}`; the rejection is the part across it. Onto the x-axis both
+are trivial: keep the x-coordinate for the projection, the y-coordinate for the rejection.
+So rotate :math:`\vec{a}` onto the x-axis, carrying :math:`\vec{b}` along, read off the two
+coordinates there, and rotate back.
+
+.. figure:: _static/epix/boot-sp2.*
+   :align: center
+   :alt: the angle theta that a makes with the x-axis
+
+The rotation onto the x-axis
+----------------------------
+
+Let :math:`\theta` be the angle of :math:`\vec{a}` from the x-axis. Rotating by
+:math:`-\theta` lays :math:`\vec{a}` on the x-axis, and its cosine and sine are read off
+:math:`\vec{a}` itself:
+
+.. math::
+
+   \cos(-\theta) = \frac{a_1}{|\vec{a}|}, \qquad \sin(-\theta) = -\frac{a_2}{|\vec{a}|}.
+
+Call that rotation :math:`R_{\vec{a}}^{e_1}` ("from :math:`\vec{a}`, to :math:`e_1`"). By
+:eq:`eq-bootstrap-rotation` it sends :math:`\vec{a}` to :math:`|\vec{a}| * e_1`, and its
+inverse, the same rotation with the sine negated, sends it back.
+
+.. figure:: _static/epix/boot-sp3.*
+   :align: center
+   :alt: a and b rotated so a lies on the x-axis
+
+The definition
+--------------
+
+Write :math:`P_{e_1}` for "keep the x-coordinate". The projection onto :math:`\vec{a}` is
+
+.. math::
+   :label: eq-bootstrap-projection-definition
+
+   P_{\vec{a}} = \big(R_{\vec{a}}^{e_1}\big)^{-1} \circ P_{e_1} \circ R_{\vec{a}}^{e_1},
+
+and the rejection is the same with "keep the y-coordinate". This is a fair definition
+because a rotation keeps lengths and angles (Step 1), and the part of :math:`\vec{b}` along
+:math:`\vec{a}` depends on nothing else.
+
+.. figure:: _static/epix/boot-sp4.*
+   :align: center
+   :alt: in standard position, the projection is the x-coordinate of b-prime and the rejection its y-coordinate
+
+The formula
+-----------
+
+Apply :eq:`eq-bootstrap-rotation` to :math:`\vec{b}` with the cosine and sine above. The
+rotated :math:`\vec{b}` has coordinates
+
+.. math::
+   :label: eq-bootstrap-projection-coordinates
+
+   x = \frac{a_1 * b_1 + a_2 * b_2}{|\vec{a}|}, \qquad
+   y = \frac{a_1 * b_2 - a_2 * b_1}{|\vec{a}|}:
+
+:math:`\vec{b}`'s coordinates in :math:`\vec{a}`'s standard position, the signed lengths of
+its projection onto :math:`\vec{a}` and of its rejection. Keep :math:`x * e_1` and rotate
+back. :math:`\big(R_{\vec{a}}^{e_1}\big)^{-1}` sends :math:`e_1` to the unit vector
+:math:`\vec{a} / |\vec{a}|`, so
+
+.. math::
+   :label: eq-bootstrap-projection
+
+   P_{\vec{a}}(\vec{b}) = x * \frac{\vec{a}}{|\vec{a}|}
+     = \frac{a_1 * b_1 + a_2 * b_2}{a_1^2 + a_2^2} * \vec{a}.
+
+The rejection is :math:`y * e_2` rotated back, which is :math:`y` times the unit vector
+:math:`\vec{r}(\vec{a}; \pi/2) / |\vec{a}|`, and
+:math:`P_{\vec{a}}(\vec{b}) + y * \vec{r}(\vec{a}; \pi/2) / |\vec{a}| = \vec{b}`, because
+:math:`x * e_1 + y * e_2` was the whole rotated :math:`\vec{b}`.
+
+.. figure:: _static/epix/boot-sp5.*
+   :align: center
+   :alt: rotated back, the projection of b along a and the rejection across a
+
+No dot product and no geometric product was used: only the rotation of Step 1. The
+numbers :math:`a_1 * b_1 + a_2 * b_2` and :math:`a_1 * b_2 - a_2 * b_1` appearing on top
+are where Steps 3 and 4 start.
+
+The companion notebook carries out the construction with symbolic coordinates, checks
+:eq:`eq-bootstrap-projection`, and checks that projecting twice changes nothing, that the
+rejection has no part along :math:`\vec{a}`, and that the two parts add back to
+:math:`\vec{b}`.
+
+Lean, in ``proofs/GacalcProofs/StandardPosition2D.lean``, where the statements project
+:math:`\vec{a}` onto :math:`\vec{b}` (read them with the names exchanged):
+``projectSP_eq_proj`` and ``rejectSP_eq_reject`` (the construction equals the projection
+and rejection), ``proj_onto_x_axis`` (projecting onto the x-axis keeps the x-coordinate),
+``proj_rotPlane_equivariant`` (rotating, then projecting, equals projecting, then rotating)
+and ``unalignSP_alignSP`` (the rotation back undoes the rotation).
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/bootstrap-projection

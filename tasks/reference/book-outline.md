@@ -309,6 +309,16 @@ explicitly after the hook)*
   **projection and rejection** in 3D (`projection-rejection-3d`, with `proof-projection-3d` and the
   cross product by reduction, `proof-cross`), then frames and QR (`frames-qr`).
 
+## Part III — The 2D Bootstrap (end of the book)
+
+A short, proof-forward run of the whole 2D arc, added 2026-11-15: six `bootstrap-*.rst` pages, each
+with a companion notebook `notebooks/bootstrap-*.py` and ePiX figures (`boot_*`, plus the projection
+chapter's `sp*`). The steps are rotation → projection → rotation from projection → the product →
+projection through the product → rotation through the product. Minimal prose, every proof shown,
+every Lean theorem cited, deliberate duplication of Part I. The six pages, their Lean, and the
+decisions: `tasks/reference/reduction-to-standard-position.md` ("The 2D bootstrap in the book").
+Equation labels are `eq-bootstrap-*`; later steps cite earlier steps' equations by number.
+
 ## Appendix — the maintainer's ideas, as given (verbatim, not re-ordered)
 
 Preserved so nothing is lost in the synthesis above. Lightly numbered for reference only.
