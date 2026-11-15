@@ -1,6 +1,6 @@
 # Bare-bones 2D book pages: rotation → projection → rotation → product → projection → rotation
 
-**Status:** proposed — needs go-ahead (open questions below)
+**Status:** approved — questions answered 2026-11-15 (Decisions below); implementation starts on the maintainer's go-ahead
 **Priority:** 5
 **Difficulty:** 6
 **Created:** 2026-11-14 (William Emerison Six <billsix@gmail.com>)
@@ -27,13 +27,36 @@ the pages build in `make docs`, every code cell runs, and each step's proof is s
   of math; the notation rules (parentheses apply, `*` multiplies, every angle named); a symbolic
   coefficient written `Scalar(s) * e_1`.
 
-## Open questions
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-15)
 
-1. Where do the pages go: (a) a new section of the existing book's toctree, (b) a separate short
-   document built alongside it? Recommendation: (a), as its own top-level section.
-2. "Redefining" projection and rotation through the geometric product: projection as
-   `(a · b) * b⁻¹` and rotation as the versor sandwich `R * v * R⁻¹`? Or something else?
-3. Graphs: ePiX figures (the book's figure source) or matplotlib in the notebooks?
-   Recommendation: ePiX, as elsewhere in the book.
-4. Lean: cite the existing 2D theorems where they exist and add only what is missing, or none on
-   these pages ("bare bones")?
+1. **Placement:** a new top-level section at the **end** of the book: its own captioned, numbered
+   toctree in `book/docs/index.rst`, after Part II and before the unnumbered Reference toctree.
+   The other placement considered was a separate short document built alongside the book.
+2. **Projection through the product:** `(a · b) * b⁻¹`, where `a · b` is the scalar part of
+   `a * b`.
+3. **Rotation through the product:** both forms, **one-sided first**. First the 2D-only one-sided
+   form `v * (â * b̂)` (Lean `projRotation_eq_vec_mul`), then the half-angle sandwich `R * v * R⁻¹`
+   (Lean `projRotation_eq_sandwich`), with a short proof that the two agree.
+4. **Graphs:** ePiX figures in `book/figures/epix/*.py`, as elsewhere in the book, not matplotlib.
+5. **Lean:** cite the existing 2D theorems, at least in comments if nowhere else. Add a theorem
+   only where a step has none. The likely gap is projection stated through the product
+   (`(a · b) * b⁻¹`); check for an existing one first.
+6. **Granularity:** one short `.rst` page plus one jupytext notebook per step, six in all:
+   1. the precalculus rotation;
+   2. projection defined from rotation;
+   3. rotation defined from projection;
+   4. the geometric product;
+   5. projection through the product;
+   6. rotation through the product.
+
+## Lean theorems already covering the arc (checked 2026-11-15)
+
+- The precalculus rotation: `Rotation2D.lean` (`rot_vec`, `rot_add`, `rot_normSq`);
+  `StandardPosition2D.lean` (`rotPlane_*`).
+- Projection by standard position: `StandardPosition2D.lean` (`projectSP_eq_proj`,
+  `rejectSP_eq_reject`, `proj_onto_x_axis`).
+- Rotation from projection: `RotateFromTo2D.lean` (`rotateFromTo_carries`);
+  `ProjectionRotation2D.lean` (`projRotation_carries_from_to`, `projRotation_isometry`).
+- The product: `StandardPosition2D.lean` (`mul_eq_magnitude_smul_alignSP`).
+- Rotation through the product: `ProjectionRotation2D.lean` (`projRotation_eq_vec_mul`,
+  `projRotation_eq_sandwich`); `Versor2D.lean`.
