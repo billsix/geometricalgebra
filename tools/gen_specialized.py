@@ -2217,6 +2217,50 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
     ),
     "vector|projected_onto": _vector_proj_doc,
     "vector|rejected_away_from": _vector_rej_doc,
+    "vector|sandwich": _by_dimension(
+        (
+            "Reflect a value across the line of this vector:  v * x * v⁻¹  (the\n"
+            "sandwich with a vector).  A vector is an *improper* versor: it keeps the\n"
+            "part of a vector ``x`` along ``v`` and flips the part perpendicular to it,\n"
+            "so ``v.sandwich(x)`` equals ``x.reflected_across(across=v)``.  Only the\n"
+            "direction of ``v`` matters, not its length.  For a rotation, sandwich with\n"
+            "a versor instead (``Versor.sandwich``).\n"
+            "\n"
+            "Args:\n"
+            "    x: the value to reflect; the result has ``x``'s own type.\n"
+            "\n"
+            "Returns:\n"
+            "    the reflected value  v * x * v⁻¹, of ``x``'s own type."
+        ),
+        {
+            1: (
+                "    On a line, reflecting across the line itself changes nothing:\n"
+                "\n"
+                "    >>> (1 * Vector.e_1).sandwich(3 * Vector.e_1) == 3 * Vector.e_1\n"
+                "    True\n"
+                "    >>> (2 * Vector.e_1).sandwich(-1 * Vector.e_1) == -1 * Vector.e_1\n"
+                "    True"
+            ),
+            2: (
+                "    Across the ``e_1`` axis, ``e_1`` stays and ``e_2`` flips:\n"
+                "\n"
+                "    >>> (1 * Vector.e_1).sandwich(1 * Vector.e_1) == 1 * Vector.e_1\n"
+                "    True\n"
+                "    >>> (1 * Vector.e_1).sandwich(1 * Vector.e_2) == -1 * Vector.e_2\n"
+                "    True\n"
+                "\n"
+                "    Only the direction of the mirror matters, and the result is the\n"
+                "    reflection across its line:\n"
+                "\n"
+                "    >>> x: Vector = 2 * Vector.e_1 + 3 * Vector.e_2\n"
+                "    >>> (3 * Vector.e_1).sandwich(x) == 2 * Vector.e_1 - 3 * Vector.e_2\n"
+                "    True\n"
+                "    >>> v: Vector = 1 * Vector.e_1 + 1 * Vector.e_2\n"
+                "    >>> v.sandwich(x) == x.reflected_across(across=v)\n"
+                "    True"
+            ),
+        },
+    ),
     "vector|reflected_across": _by_dimension(
         (
             "This vector reflected across the line of another vector (the ``reflect``\n"
@@ -7126,6 +7170,26 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         if n == 3:
             extras.append(line_map_method_def(n, line_and_plane_map("projection")))
             extras.append(line_map_method_def(n, line_and_plane_map("rejection")))
+        # sandwich: the base method, re-declared so the "vector|sandwich" entry gives
+        # it the reflection docstring (a vector is an improper versor: v x v⁻¹
+        # reflects across v's line).  The base text describes a rotating versor.
+        # Only where the specialized docstrings exist (g1-g3).
+        if n <= 3:
+            extras.append(
+                function_def(
+                    "sandwich",
+                    [
+                        return_stmt(
+                            call(
+                                attribute("MultiVectorBase", "sandwich"),
+                                [name_ref("self"), name_ref("x")],
+                            )
+                        )
+                    ],
+                    params=[argument("self"), argument("x", name_ref("_OperandT"))],
+                    returns=name_ref("_OperandT"),
+                )
+            )
         # project/reject/reflect of a vector onto a blade are grade-preserving (the
         # result is a vector), so narrow the base's MultiVectorBase-typed factory
         # classmethods to the precise vector type -- one @overload per grade-pure
@@ -7623,17 +7687,16 @@ def generate_constants(n: int, name: str) -> list[ast.stmt]:
 
 
 def header(name: str, n: int) -> str:
-    # _OperandT (the sandwich operand TypeVar) is only used by the specialized
-    # Versor sandwich, which is derived for 2 <= n <= 3 (in 𝒢₄/𝒢₅ the Versor
-    # inherits MultiVectorBase.sandwich -- see versor_extras); importing it
-    # otherwise would be unused (F401).
-    operand_import: str = "\n    _OperandT," if 2 <= n <= 3 else ""
-    # The 𝒢₂ rotate_90_degrees() factory (generate_quarter_turn) needs Linearity
-    # and plane_rotation (for its interpolation law); importing them elsewhere
-    # would be unused (F401).  transforms imports only base/functions, so g2
-    # importing it is acyclic.
-    # Every Vector carries the line-to-line maps (Linearity, require_on_line); 𝒢₂
-    # also has the quarter turn's plane_rotation.
+    # _OperandT (the sandwich operand TypeVar) types the specialized Versor sandwich
+    # (derived for 2 <= n <= 3; in 𝒢₄/𝒢₅ the Versor inherits
+    # MultiVectorBase.sandwich, see versor_extras) and the Vector sandwich that
+    # carries the reflection docstring (n <= 3); importing it otherwise would be
+    # unused (F401).
+    operand_import: str = "\n    _OperandT," if n <= 3 else ""
+    # Every Vector carries the line-to-line maps (Linearity, require_on_line); the
+    # 𝒢₂ rotate_90_degrees() factory also needs plane_rotation, for its
+    # interpolation law.  transforms imports only base/functions, so importing it
+    # here is acyclic.
     functions_import: str = "from gacalc.functions import Linearity\n"
     transforms_import: str = (
         "from gacalc.transforms import plane_rotation, require_on_line\n"
