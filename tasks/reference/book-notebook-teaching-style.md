@@ -9,8 +9,8 @@ example, and what to avoid. Update in place; never archive. Created 2026-11-16 (
 companion notebook ("Structural conventions": one values cell, live ePiX figures, one check per
 cell, a "For all vectors" symbolic section). This doc owns the *teaching voice and cell design*
 inside that structure. The notation rules (explicit `*`, parentheses for application, named angles)
-are in `CLAUDE.md` ("Math notation for readers"). The sweep that brings the existing book notebooks
-to this standard is `tasks/book-notebooks-teaching-style-sweep.md`; the backfill of a notebook for
+are in `CLAUDE.md` ("Math notation for readers"). The existing book notebooks were brought to this
+standard in `tasks/archive/2026/11/16/book-notebooks-teaching-style-sweep.md`; the backfill of a notebook for
 every proof is `tasks/proof-notebooks-student-math-notation-style.md`. The `show_mult` tables were
 added in `tasks/archive/2026/11/16/book-notebooks-show-mult-tables.md`.
 
