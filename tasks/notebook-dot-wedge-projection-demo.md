@@ -56,3 +56,8 @@ product and the perpendicular part is the wedge.
    `book/docs/notebooks/projection-rejection-3d.py` (currently a `1 + 1` stub)? *(Recommend:
    `displayg3.py`, matching where the 2D half lives; the book stub can quote it later.)*
 2. **Base vector** — the theorem projects `a` onto `b`; the bullet says "onto a". Which is intended?
+   **Answered (William Emerison Six <billsix@gmail.com>, 2026-11-16):** onto `a`, multiplied by `a`
+   on the left: `a · b = a * proj_a(b)` and `a ∧ b = a * rej_a(b)`, stated as results, not
+   definitions. The 2D bootstrap gets these first, with Lean theorems
+   (`tasks/bootstrap-dot-wedge-from-proj-rej.md`). The 3D cells should show the same form and
+   cite those theorems. Q1 is still open.

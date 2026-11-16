@@ -560,6 +560,16 @@ diagrams, whose columns a `*` would misalign (the page says so once).
 with `<!-- notation-rule: begin -->` / `<!-- notation-rule: end -->` so a re-sweep skips it.
 <!-- notation-rule: end -->
 
+## Book: one name per operation, every version an equation, simple versions first
+
+In the book, an operation keeps one name across all its versions (`proj_a(b)`, `rej_a(b)`, never
+a new letter per method). Each version is a labelled equation, and every use cites the version it
+relies on with ``:eq:`label` ``. Versions for vectors are simple cases that later chapters
+replace with the general (multivector, onto a blade) ones; they are not the definition. Results
+built on an operation, such as `a · b = a * proj_a(b)`, are stated as results, not definitions.
+Detail: `tasks/reference/book-outline.md` ("Pedagogical principles"; William Emerison Six
+<billsix@gmail.com>, 2026-11-16).
+
 ## Coordinates only when needed
 
 Prefer the **object/coordinate-free** form — a vector/multivector over its real coefficients — in a

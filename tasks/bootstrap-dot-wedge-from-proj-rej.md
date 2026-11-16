@@ -1,6 +1,6 @@
-# 2D bootstrap: name proj/rej, and define dot and wedge as `a * proj_a(b)` and `a * rej_a(b)`
+# 2D bootstrap: name proj/rej, and state dot and wedge as `a * proj_a(b)` and `a * rej_a(b)`
 
-**Status:** proposed — needs go-ahead (Open questions below block implementation)
+**Status:** proposed — needs go-ahead (Open question 1 still blocks implementation)
 **Priority:** 4
 **Difficulty:** 4
 **Created:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
@@ -11,8 +11,9 @@ notebook demo), `tasks/reference/dot-wedge-projection-rejection.md` (the boxed t
 ## BLUF
 
 The maintainer's request (2026-11-16): in the 2D bootstrap pages (book Part III), give the
-projection and rejection formulas names, `proj_a(b)` and `rej_a(b)`, and define the dot product as
-`a * proj_a(b)` (equally `b * proj_b(a)`) and the wedge as `a * rej_a(b)`. Done means: the
+projection and rejection formulas names, `proj_a(b)` and `rej_a(b)`, and show the dot product as
+`a * proj_a(b)` (equally `b * proj_b(a)`) and the wedge as `a * rej_a(b)`. These are stated as
+results about the product, not as definitions (Decision 2). Done means: the
 Part III pages use those names throughout. Step 4 states dot and wedge in those terms, and each
 statement has a notebook check and a cited Lean theorem. `make lean`, `make format` and
 `make docs` are green, and the changed PDF pages have been looked at.
@@ -82,9 +83,10 @@ change is a restatement of the definition, not a new one.
    Give the rejection its own definition (`rej_{\vec{a}}`, "keep the y-coordinate", conjugated
    by the same rotation) and its formula as a labelled equation (`eq-bootstrap-rejection`). Keep
    the `proj + rej = b` check, written with the names.
-2. **Step 4:** state the two halves as `a · b = a * proj_a(b)` and `a ∧ b = a * rej_a(b)` (where
-   per Q2). Add the symmetric `b * proj_b(a)` line and the antisymmetric `b * rej_b(a)` line (per
-   Q3), and show `a * b = a * proj_a(b) + a * rej_a(b)`.
+2. **Step 4:** keep the definition `a * b = |a| * (x + y * e₁₂)`. Then add a short section stating
+   `a · b = a * proj_a(b)` and `a ∧ b = a * rej_a(b)` as results, each citing the Step 2 equation
+   it uses (Decision 2). Add the mirror lines `b * proj_b(a) = a · b` and
+   `b * rej_b(a) = −(a ∧ b)` (Decision 3), and `a * b = a * proj_a(b) + a * rej_a(b)`.
 3. **Step 5:** write the two results as `proj_a(b) = (b · a) * a⁻¹` and
    `rej_a(b) = (b ∧ a) * a⁻¹`, and label the rejection equation.
 4. **Steps 3 and 6:** use the names wherever the prose says "the projection/rejection of `b` onto
@@ -110,7 +112,43 @@ change is a restatement of the definition, not a new one.
    by cell, `make docs`; then look at the Step 2, 4 and 5 PDF pages. No `CHANGELOG.md` entry
    (book and proofs only, no library change).
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-16)
+
+The general rule these follow is now in `tasks/reference/book-outline.md` ("Pedagogical
+principles": one name per operation, every version an equation, simple versions first), with a
+pointer in `CLAUDE.md`. They replace the five draft questions, which are kept at the end for the
+record.
+
+1. **Naming:** every formula that gives a projection is named `proj_a(b)`, and every rejection
+   formula `rej_a(b)`. There are several versions (Step 2's rotation and coordinate forms,
+   Step 5's `(b · a) * a⁻¹`), so each is a labelled equation, and every use of the projection or
+   rejection cites the version it uses with ``:eq:`label` ``.
+2. **Not a definition.** Projection and rejection are defined for multivectors onto blades
+   (`MultiVectorBase.project` / `reject`, `P_B(A) = (A · B) * B⁻¹`). The Part III pages show the
+   simple version for vectors. Later chapters replace it with the general one. Step 4 keeps its
+   definition of the product, `a * b = |a| * (x + y * e₁₂)`. A new short section then reads the two
+   parts as results: `|a| * x = a * proj_a(b)` and `|a| * y * e₁₂ = a * rej_a(b)`, each citing the
+   Step 2 equation it uses, followed by `a * b = a * proj_a(b) + a * rej_a(b)`. This replaces plan
+   step 2. The Lean statements in plan step 6 are theorems about the product, so they need no
+   change. The circularity note above no longer applies: nothing is defined from
+   `a * proj_a(b)`.
+3. **Mirror lines:** show `b * proj_b(a) = a · b` and `b * rej_b(a) = −(a ∧ b)` in Step 4, as named
+   results, not definitions.
+4. **`tasks/notebook-dot-wedge-projection-demo.md`, its Q2:** answered with the left-multiplied
+   form `a * proj_a(b)`. Recorded in that task.
+5. **Scope:** Part III only. Part I's projection pages are unchanged.
+
 ## Open questions
+
+1. **Step 2's operator symbols:** Step 2 defines projection as a composition,
+   `P_a = (R_a^{e₁})⁻¹ ∘ P_{e₁} ∘ R_a^{e₁}`, where `P_{e₁}` is "keep the x-coordinate". By
+   decision 1 that is a projection formula. Should it become
+   `proj_a = (R_a^{e₁})⁻¹ ∘ proj_{e₁} ∘ R_a^{e₁}`, with the rejection
+   `rej_a = (R_a^{e₁})⁻¹ ∘ rej_{e₁} ∘ R_a^{e₁}` beside it? *(Recommend: yes, so `P` leaves
+   Part III. I ask because you answered "no" to replacing `P` everywhere, and this is where the
+   two answers could conflict.)*
+
+## Draft questions (answered 2026-11-16; see Decisions)
 
 1. **Notation:** replace `P_{\vec{a}}` with `\operatorname{proj}_{\vec{a}}` everywhere in Part III
    (including `P_{e_1}` → `\operatorname{proj}_{e_1}`), rather than introduce `proj` alongside

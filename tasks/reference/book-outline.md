@@ -86,6 +86,27 @@ preserved verbatim in the appendix.
     `proof-rotate-from-a-to-b.rst` + `notebooks/proof-rotate-from-a-to-b.py` (rotations
     commute, by hand and by sympy, citing `rotPlane_comm`/`rot_comm`) and
     `proof-projection.rst` + `notebooks/proof-projection.py`.
+- **An operation keeps one name; the book gives simple versions first and replaces them with
+  general ones later** (William Emerison Six <billsix@gmail.com>, 2026-11-16).
+  - **One name per operation.** Every formula that gives a projection is written
+    `\operatorname{proj}_{\vec{a}}(\vec{b})` (projection of `b` onto `a`), and every one that
+    gives a rejection `\operatorname{rej}_{\vec{a}}(\vec{b})`, whatever method produced it. Don't
+    introduce a new letter for a new method of computing the same thing.
+  - **Several versions, each a labelled equation.** The book will have several versions of one
+    operation: rotating to standard position, coordinates, `(b · a) * a⁻¹`, and later the blade
+    form `(A · B) * B⁻¹`. Each is a labelled `.. math::` equation. **Wherever the operation is
+    used, cite the version used with ``:eq:`label` ``**, so the reader can see which formula
+    the step depends on.
+  - **Vector versions are simple versions, not definitions.** gacalc and Hestenes define
+    projection and rejection for any multivector onto a blade (`MultiVectorBase.project` /
+    `reject` in `src/gacalc/base.py`, `P_B(A) = (A · B) * B⁻¹`). An early page states the version
+    for vectors as the case a reader can draw, and does not call it *the* definition. A later
+    chapter that gives a more general version (onto a plane, for a bivector) says which
+    equation it replaces and cites it.
+  - **Results built on a named operation are named as results, not definitions.** For example,
+    `a · b = a * proj_a(b)`, `a ∧ b = a * rej_a(b)`, and the mirror forms `b * proj_b(a) = a · b`
+    and `b * rej_b(a) = −(a ∧ b)` are identities stated about the product. They are not new
+    definitions of dot and wedge.
 - **Canonical form over decimals.** `1 + √2` is the answer. Decimal approximation is
   outside scope — a waste of attention that focuses on the wrong thing; if one is ever
   needed, let the computer/calculator produce it. Say this early (a candidate for an
