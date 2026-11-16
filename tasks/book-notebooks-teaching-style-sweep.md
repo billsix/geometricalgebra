@@ -1,6 +1,6 @@
 # Bring every book notebook up to the teaching-style standard
 
-**Status:** proposed — needs go-ahead (open questions below)
+**Status:** proposed — needs go-ahead (questions answered 2026-11-16)
 **Priority:** 6
 **Difficulty:** 7 (22 notebooks, each a rewrite of its Markdown and cell layout, plus a book build)
 **Started:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
@@ -33,10 +33,10 @@ means: each notebook below passes that doc's checklist (recorded per notebook in
     `hook.py`, `one-dimension.py`, `projection-rejection-3d.py`, `projection.py`, `reflection.py`,
     `relative-graph-paper.py`, `vectors-as-number-lines.py`). They get the standard when written.
 - **Related open tasks:**
-  - `tasks/book-notebooks-show-mult-tables.md` adds the `show_mult` tables. Its three open questions
-    (which products, concrete or symbolic, where `show_mult` lives) decide that part of this sweep.
-  - `tasks/proof-notebooks-student-math-notation-style.md` covers the same goal for proof notebooks
-    and adds a backfill of a notebook for every proof. It overlaps the proof-companion row above.
+  - `tasks/book-notebooks-show-mult-tables.md` adds the `show_mult` tables. Its three questions, answered 2026-11-16 in its Decisions,
+    decide that part of this sweep; it is done before this one.
+  - `tasks/proof-notebooks-student-math-notation-style.md` now holds only the backfill (a notebook
+    for every proof); the style of the existing proof companions is this task's (Decision 1).
   - `tasks/live-epix-figure-background.md` edits the six bootstrap notebooks and both frame
     notebooks; do it first or after, not interleaved.
 - **Already partly there:** the bootstrap notebooks follow the structure in `book-outline.md`, and
@@ -54,9 +54,11 @@ means: each notebook below passes that doc's checklist (recorded per notebook in
    (no rows), `tools/check_epix_keywords.py`, and `make docs`, checking the rendered HTML pages.
 4. Record anything the standard did not anticipate back into the reference doc.
 
-## Open questions
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-16)
 
-1. Should this task absorb the style half of `tasks/proof-notebooks-student-math-notation-style.md`,
-   leaving that task only the backfill of missing proof notebooks? Recommended: yes.
-2. Should the `show_mult` tables be done as part of this sweep, or stay a separate task done first?
-   Recommended: separate and first, so this sweep revises the tables' lead-ins along with the rest.
+1. **This task owns the style of every book notebook**, including the proof companions; it took
+   over the style half of `tasks/proof-notebooks-student-math-notation-style.md`, which keeps only
+   the backfill of missing proof notebooks.
+2. **The `show_mult` tables stay a separate task, done first**
+   (`tasks/book-notebooks-show-mult-tables.md`); this sweep revises their lead-ins along with the
+   rest of each notebook.

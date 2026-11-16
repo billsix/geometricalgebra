@@ -6,6 +6,13 @@ from William Emerison Six <billsix@gmail.com> (2026-10-29).
 **Priority:** 5  (valuable, not blocking)
 **Difficulty:** 6  (small per notebook, but there are many proofs to backfill — see the backlog)
 
+**Scope narrowed (William Emerison Six <billsix@gmail.com>, 2026-11-16):** the *style* half of this
+task (how a proof notebook reads, and upgrading the existing proof-companion notebooks) moved to
+`tasks/book-notebooks-teaching-style-sweep.md`, under the standard in
+`tasks/reference/book-notebook-teaching-style.md`. This task keeps only the **backfill**: every
+proof gets a companion notebook, written to that standard. Open question 2 below is answered by the
+move (the sweep upgrades the existing ones).
+
 ## BLUF
 
 The maintainer wants **every proof** to have a companion **Python notebook that a student can read,

@@ -1,6 +1,6 @@
 # Add `show_mult` distribution tables to the book notebooks
 
-**Status:** proposed — needs go-ahead (open questions below)
+**Status:** proposed — needs go-ahead (questions answered 2026-11-16)
 **Priority:** 5
 **Difficulty:** 4
 **Started:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
@@ -56,16 +56,16 @@ test gate pass, and the open questions below are answered and recorded.
 4. Build the book (`make docs` or whatever the repo's `CLAUDE.md` names) and check that the tables
    render in the HTML (myst-nb renders `IPython.display.Markdown` tables). Run the test gate.
 
-## Open questions
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-16)
 
-1. Which products get a table: every product in the candidate list, or only the first appearance
-   of each kind (vector × vector, vector × rotor, sandwich)? Recommended: first appearance of each
-   kind, so a page carries one or two tables, not six.
-2. Concrete or symbolic factors? The bootstrap notebooks set concrete vectors first and repeat the
-   checks with symbols at the end, as the companion-notebook rule in `CLAUDE.md` ("Book: one name
-   per operation …") and `tasks/reference/book-outline.md` ("Pedagogical principles") require.
-   Recommended: table the concrete product (small numbers, short rows), and table the symbolic
-   product once per notebook, in its final section.
-3. Is pulling matplotlib/pandas into the book notebooks through `gacalc.nbplotutils` acceptable, or
-   should `show_mult` move to a module without the plotting imports? Recommended: move it to a
-   small display-only module and re-export it from `nbplotutils`.
+1. **Only the first product of each kind gets a table** (vector × vector, vector × rotor, the
+   sandwich), so a page carries one or two tables, not six.
+2. **Concrete first, then one symbolic table.** Table the product of the set values (small numbers,
+   short rows), and table the symbolic product once per notebook, in its "For all vectors" section.
+   This matches the companion-notebook rule in `CLAUDE.md` ("Book: one name per operation …") and
+   `tasks/reference/book-outline.md`.
+3. **`show_mult` moves to a small display-only module** with no matplotlib/pandas-plotting imports
+   (pandas stays if the table still uses `to_markdown`), and `gacalc.nbplotutils` re-exports it so
+   the `notebooks/` callers keep working.
+4. **This task stays separate and is done before** `tasks/book-notebooks-teaching-style-sweep.md`;
+   the sweep then revises the tables' lead-ins with the rest of each notebook.
