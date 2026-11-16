@@ -25,11 +25,11 @@ the student already knows, written as a chain of equalities with a reason on eac
 confirmed by a short sympy cell whose rendered LaTeX output is the evidence. Python is the engine;
 the student reads math.
 
-## The model: the first part of `notebooks/displaymv.py`
+## The model: the opening of `notebooks/displaymv.py`
 
 The sections of `notebooks/displaymv.py` from "How multiplication works in G_n" through "A longer
-example — and why grouping is about to matter" are the model to copy. (The rest of that notebook is
-not; see "Known gaps in the model" below.) What they do, as rules:
+example, and why grouping is about to matter" are the model to copy. (The whole notebook now meets
+this standard; see "History of the model" below.) What they do, as rules:
 
 1. **Start from algebra the student already knows.** Before any new rule, the notebook recalls
    multiplying `(x + 2)(x + 3)` out term by term, collecting `2x + 3y + 5x`, and the imaginary unit.
@@ -64,7 +64,7 @@ not; see "Known gaps in the model" below.) What they do, as rules:
 
 ## What to avoid
 
-Each of these is in `notebooks/displaymv.py` as of 2026-11-16 and should not be copied:
+Each of these was in `notebooks/displaymv.py` before 2026-11-16 and should not be copied:
 
 - **The narrative must not stop.** Every code cell has a Markdown lead-in or sits under one that
   covers it. A run of bare cells (dot, wedge, projections onto coordinate planes, grade parts, duals,
@@ -129,10 +129,12 @@ From `tasks/archive/2026/11/16/book-notebooks-teaching-style-sweep.md`:
 - No developer comments, pyright trailers or typing workarounds in the student's view.
 - One subject per notebook.
 
-## Known gaps in the model
+## History of the model
 
-`notebooks/displaymv.py` itself is a demo notebook under `notebooks/`, not a book notebook, and
-after the model sections it becomes a scratchpad with the problems listed under "What to avoid".
-Bringing it up to this standard is `tasks/displaymv-teaching-style.md`. `show_mult` lives in the
-display-only `gacalc.nbdisplay` (sympy and IPython, no matplotlib), so the book's ePiX-drawn
-notebooks import it from there; `gacalc.nbplotutils` re-exports it for the demo notebooks.
+`notebooks/displaymv.py` is a demo notebook under `notebooks/`, not a book notebook. Until
+2026-11-16 its second half was a scratchpad with the problems listed under "What to avoid"; it was
+brought to this standard, and its transforms and graph paper moved to
+`notebooks/displaytransforms.py`, in `tasks/archive/2026/11/16/displaymv-teaching-style.md`.
+`show_mult` lives in the display-only `gacalc.nbdisplay` (sympy and IPython, no matplotlib), so the
+book's ePiX-drawn notebooks import it from there; `gacalc.nbplotutils` re-exports it for the demo
+notebooks.

@@ -1,66 +1,65 @@
 # Bring `notebooks/displaymv.py` up to the teaching-style standard
 
-**Status:** proposed — needs go-ahead (open questions below)
-**Priority:** 6
-**Difficulty:** 4
-**Started:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
+**Completed:** 2026-11-16 (William Emerison Six <billsix@gmail.com>; done by Claude on the
+`book-notebooks-teaching-style` branch)
 
-## BLUF
+## What was done
 
-The opening sections of `notebooks/displaymv.py` are the model in
-`tasks/reference/book-notebook-teaching-style.md`, but the rest of the notebook is a scratchpad that
-breaks that standard. Bring the whole notebook up to it. Done means: the notebook passes the
-reference doc's checklist, `make check-notebooks` and `make format` pass, and the doc's "Known gaps
-in the model" section no longer lists `displaymv.py`.
+`notebooks/displaymv.py` now meets `tasks/reference/book-notebook-teaching-style.md` all the way
+through, not only in the opening sections that serve as the model.
 
-## Context
+- **The model sections kept their order and content** ("How multiplication works in G_n" through
+  "A longer example, and why grouping is about to matter"). Their prose math is now `$…$` LaTeX,
+  the hand reductions are `aligned` chains with a reason per line, the `# -> 1` answers became
+  "predict, then run" prompts, and `show_mult(v, v)` shows the Pythagoras product term by term.
+- **The scratchpad half became named sections, each cell with a lead-in:** dot and wedge of two
+  vectors; wedges in space, one coordinate plane at a time; a bivector times its inverse; units as
+  basis vectors (an aside); the basis blades; **associativity in 𝒢₂, as a proof** (the four
+  `show_mult` tables and the zero difference, now saying that symbolic coefficients make it a proof
+  for every three elements); grade parts in 𝒢₃; a bivector and its dual; vectors in any dimension
+  (the 72-row table, now with a sentence saying what to read in it); pictures of multivectors.
+- **The transforms and the graph-paper pictures moved to a new `notebooks/displaytransforms.py`**,
+  with an opening that starts from $f(x) = x + b$ and $f(x) = m * x$, a lead-in per transform cell,
+  and the duplicated heading "Draw relative graph paper" renamed for what its cell adds (the two
+  3-4-5 triangles).
+- **Noise removed:** the 24 `# pyright: ignore[reportUnusedExpression]` trailers
+  (`pyrightconfig.json` reports that rule as a warning, so they were not needed); the `typing.cast`
+  for `dual()` (the dual is bound as `MultiVectorBase` and dotted from that side instead); the
+  six-line comment on `scale_non_uniform`'s type; the stray `5` lines that kept Jupyter from showing
+  `plot_multivector` figures twice (each figure is now bound to a name); two empty cells; and a
+  `TODO` about rendering LaTeX in one Markdown command, which is recorded here instead: *in the
+  composed-functions loop, showing each step's LaTeX as Markdown broke the HTML build*.
+- **Convention fixes:** `a_1 * e_1 * e_2 * e_4` became `MultiVector.from_real(a_1) * e_1 * e_2 *
+  e_4`; the dangling "see the associativity section / task" now points at the notebook's own proof
+  section and at `tasks/reference/geometric-product-associativity.md`.
 
-- **Read first:** `tasks/reference/book-notebook-teaching-style.md` ("The model", "What to avoid",
-  the checklist). `notebooks/` notebooks are demos, not book pages, so the book's
-  companion-notebook structure (`tasks/reference/book-outline.md`) does not apply; the teaching
-  style does.
-- **What is already right:** the sections from "How multiplication works in G_n" through "A longer
-  example — and why grouping is about to matter". Keep their order and content; only the "What to
-  avoid" items below touch them.
-- **What breaks the standard (read 2026-11-16):**
-  - After the associativity discussion, a long run of cells has no Markdown: `sym_vec2_*` dot and
-    wedge, `MultiVector.i`, projections onto coordinate planes, `sym_vec3_*` products and the
-    bivector inverse, basis-blade lists, grade parts, the `G2_1`/`G2_2`/`G2_3` associativity
-    `show_mult` tables and difference, `a_1 * e_1 * e_2 * e_4`, the bivector `B` and its dual, the
-    n=8 × n=9 `show_mult` table, two empty cells.
-  - Off-subject material: `gram_fe_to_mol_fe` (a units conversion), the `T`/`S`/`R` transforms and
-    `compose`/`inverse`, and four graph-paper plot sections, one heading used twice ("Draw relative
-    graph paper").
-  - Prose math is backticked code, not LaTeX.
-  - 24 `# pyright: ignore[reportUnusedExpression]` trailers. `pyrightconfig.json` already sets
-    `reportUnusedExpression` to `"warning"`, so check whether `make check-notebooks` still passes
-    without them before deciding how to remove them.
-  - Developer comments in the student's view: the `typing.cast` note on `dual()` and the six-line
-    note on the type of `scale_non_uniform`.
-  - `# -> 1`-style answers given before the cell runs.
-  - `a_1 * e_1 * e_2 * e_4` writes a symbolic coefficient bare, against `CLAUDE.md`'s
-    scalar-constructor rule (`Gn.from_real(a_1) * e_1`).
-  - "see the associativity section / task" names nothing; the proof is
-    `tasks/reference/geometric-product-associativity.md`.
-- `make check-notebooks` runs pyright over `notebooks/`; `make format` runs ruff and ty.
+## Judgment calls
 
-## Plan
+- **The open question (where the off-subject material goes) was not answered before the batch.**
+  It was settled by discretion in the least destructive way, for the maintainer to reverse: the
+  transforms and graph paper *moved* (nothing deleted) to `notebooks/displaytransforms.py`, as
+  recommended, and the grams-to-moles example was **kept** in `displaymv.py` as a labelled aside
+  rather than deleted, since it is a use of the product and inverse. Deleting it is a one-cell
+  change if wanted.
+- The 2D `show_mult(sym_vec2_1, sym_vec2_2)` table appeared twice; the second occurrence was
+  replaced by a pointer to the first.
 
-1. Decide the split (open question 1) and move the off-subject sections there.
-2. Give every remaining code cell a Markdown lead-in, grouped into named sections (dot and wedge,
-   projection onto coordinate planes, grade parts, associativity in 𝒢₂ as a proof, duals).
-3. Rewrite the associativity tables' lead-in to say they compare the two groupings and that the zero
-   difference, over general symbolic multivectors, proves associativity for all of 𝒢₂.
-4. Convert prose math to `$…$` LaTeX per the `CLAUDE.md` notation rules; replace `# ->` answers
-   with predict-then-run prompts; remove the developer comments and pyright trailers.
-5. Shrink or explain the n=8 × n=9 table; delete the empty cells; fix the dangling pointer and the
-   bare symbolic coefficient.
-6. Run `make check-notebooks` and `make format`; open the notebook (`make notebooks-ipynb` or
-   Jupyter) and read the rendered output once. Remove `displaymv.py` from the reference doc's
-   "Known gaps in the model".
+## Verification
 
-## Open questions
-
-1. Where does the off-subject material go: a new `notebooks/displaytransforms.py` for the
-   transforms and graph paper, with `gram_fe_to_mol_fe` deleted? Recommended: yes, and drop the
-   units example unless you want it kept somewhere.
+- `ruff check` and `ruff format --check` over `notebooks/` clean; `tools/check_annotations.py`
+  reports no rows for either notebook.
+- **Found, not fixed (it predates this task):** the last graph-paper cell, "Composed functions,
+  read top down", does not finish in 30 minutes. `create_unit_circle` under the relative-basis
+  composition of `R(sympy.pi / 4)` takes over 60 s per drawing step, because every circle point
+  goes through `Gn`'s eager symbolic simplify. The code is byte-identical to the original
+  `displaymv.py` cell. A float angle (`math.pi / 4`) would make it fast but the titles would lose
+  their exact `R_{\pi/4}`; left for the maintainer.
+- Both notebooks ran cell by cell with `tools/run_notebook_cells.py` (`displaytransforms.py` up to
+  that cell, every figure before it drawn); every check cell in
+  `displaymv.py` printed a zero multivector, and the printed values match the prose (for example
+  $B \cdot B^* = 0$ and $95.8 * e_1 * (55.85 * e_1)^{-1} * e_2 \approx 1.7153 * e_2$).
+- `make check-notebooks` (pyright over `notebooks/`) in the image passed: 0 errors. Without the
+  trailers, pyright reports each bare expression cell in `displaymv.py` as a
+  `reportUnusedExpression` warning: 31 now, against 10 (of other kinds) before. The gate fails
+  only on errors; setting that rule to `"none"` in `pyrightconfig.json` would silence it for
+  every demo notebook, which was left as the maintainer's call.

@@ -101,7 +101,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `show_mult(a, b)`, the term-by-term product table and its sum; usable by the book's notebooks,
   re-exported from `nbplotutils` for the demo notebooks.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
-  `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`)
+  `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`),
+  `displaytransforms.py` (translate/scale/rotate and the graph-paper pictures)
   — jupytext (percent-format) demo notebooks.
 - `tests/` — `test_multivector.py` (`Gn`), `test_conformance.py` (parametrized over `[Gn, G]`),
   `test_graded.py` (graded subtypes), `test_generator.py` (the generator's own logic),

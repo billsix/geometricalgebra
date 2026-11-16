@@ -29,45 +29,27 @@
 
 
 # %%
-import math
-import typing
 import warnings
 
-import sympy
 from IPython.display import Math, display
+from matplotlib.figure import Figure
 
-from gacalc.base import MultiVectorFn, Real
+from gacalc.base import MultiVectorBase, MultiVectorFn
 from gacalc.gn import (
-    InvertibleFunction,
     MultiVector,
     a_1,
-    compose,
-    compose_intermediate_fns,
     e_1,
     e_2,
     e_3,
     e_4,
-    inverse,
     one,
-    plane_rotation,
-    scale_non_uniform,
     sym_vec2_1,
     sym_vec2_2,
     sym_vec3_1,
     sym_vec3_2,
-    translate,
 )
-from gacalc.nbplotutils import (
-    create_basis,
-    create_graphs,
-    create_unit_circle,
-    create_x_and_y,
-    draw_isoceles_triangle,
-    draw_right_triangle,
-    draw_second_right_triangle,
-    plot_multivector,
-    show_mult,
-)
+from gacalc.nbdisplay import show_mult
+from gacalc.nbplotutils import plot_multivector
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)
@@ -76,410 +58,570 @@ warnings.filterwarnings("error", category=RuntimeWarning)
 # How multiplication works in G_n
 # ===============================
 #
-# You already know how to multiply things like `(x + 2)(x + 3)`: you multiply
-# everything by everything and add up the pieces. Multiplying in geometric algebra
-# is the *same* idea, with just a couple of new rules for the "letters".
+# You already know how to multiply things like $(x + 2)(x + 3)$: you multiply
+# everything by everything and add up the pieces. Multiplying in geometric algebra is
+# the *same* idea, with just a couple of new rules for the "letters".
 #
-# Our letters are the **basis vectors** `e_1`, `e_2`, `e_3`, ... Think of them as
-# the arrows pointing along the x-axis, the y-axis, the z-axis, and so on. A general
-# object (a *multivector*) is any sum of these, with numbers out front — for example
-# `3*e_1 + 4*e_2`. To multiply two multivectors you "FOIL" them out (multiply every
-# term by every term) and then clean up using **three rules**:
+# Our letters are the **basis vectors** $e_1, e_2, e_3, \ldots$ Think of them as the
+# arrows pointing along the x-axis, the y-axis, the z-axis, and so on. A general object
+# (a *multivector*) is any sum of these, with numbers out front, for example
+# $3 * e_1 + 4 * e_2$. To multiply two multivectors you multiply every term by every
+# term and then clean up using **three rules**.
 #
-# **Rule 1 — an arrow times itself is 1.** `e_1*e_1 = 1`, `e_2*e_2 = 1`, and so on.
-# (Squaring a unit arrow gives you the plain number 1.)
+# **Rule 1: an arrow times itself is 1.** $e_1 * e_1 = 1$, $e_2 * e_2 = 1$, and so on.
+# Squaring a unit arrow gives the plain number 1. Before running the next cell, predict
+# its result.
 
 # %%
-e_1 * e_1  # -> 1     (Rule 1)  # pyright: ignore[reportUnusedExpression]
+e_1 * e_1
 
 # %% [markdown]
-# **Rule 2 — swapping two *different* arrows flips the sign.** `e_1*e_2 = -(e_2*e_1)`.
-# So order matters here, unlike with ordinary numbers where `3*5 = 5*3`. The combo
-# `e_1*e_2` is a brand-new object (a little piece of the e_1-e_2 *plane*); we cannot
-# simplify it to a number, but we can always reorder it at the cost of a minus sign.
+# **Rule 2: swapping two *different* arrows flips the sign.**
+# $e_1 * e_2 = -(e_2 * e_1)$. So order matters here, unlike with ordinary numbers,
+# where $3 * 5 = 5 * 3$. The combo $e_1 * e_2$ is a brand-new object, a little piece of
+# the $e_1 e_2$ *plane*, written $e_{12}$. We cannot simplify it to a number, but we can
+# always reorder it at the cost of a minus sign.
 
 # %%
-# e_1 * e_2 -> e_12 (a new "plane" object)
-e_1 * e_2  # pyright: ignore[reportUnusedExpression]
-
-# %%
-# e_2 * e_1 -> -e_12 (same thing, opposite sign -- Rule 2)
-e_2 * e_1  # pyright: ignore[reportUnusedExpression]
+e_1 * e_2
 
 # %% [markdown]
-# **Rule 3 — distribute and collect, and numbers slide freely.** Ordinary numbers
-# (the coefficients out front) multiply and move around like normal; you just
-# distribute the product across every term and add up like terms. For example
-# `2*e_1 + 3*e_2 + 5*e_1` collects into `7*e_1 + 3*e_2`, exactly like combining
-# `2x + 3y + 5x`.
+# The same two arrows in the other order: the same plane piece, with the opposite sign.
 
 # %%
-(2 * e_1 + 3 * e_2 + 5 * e_1)  # -> 7*e_1 + 3*e_2  # pyright: ignore[reportUnusedExpression]
+e_2 * e_1
+
+# %% [markdown]
+# **Rule 3: distribute and collect, and numbers slide freely.** Ordinary numbers (the
+# coefficients out front) multiply and move around as usual; you distribute the product
+# across every term and add up like terms. For example $2 * e_1 + 3 * e_2 + 5 * e_1$
+# collects into $7 * e_1 + 3 * e_2$, exactly like combining $2x + 3y + 5x$.
+
+# %%
+2 * e_1 + 3 * e_2 + 5 * e_1
 
 # %% [markdown]
 # Putting the rules together
 # --------------------------
 #
-# Any product, no matter how messy, reduces to a tidy standard form by (a) FOILing it
-# out, (b) using Rule 2 to sort the arrows into increasing order (`e_2*e_1` becomes
-# `-e_1*e_2`), and (c) using Rule 1 to cancel any arrow that meets itself.
+# Any product, no matter how messy, reduces to a tidy standard form by (a) multiplying
+# every term by every term, (b) using Rule 2 to sort the arrows into increasing order
+# ($e_2 * e_1$ becomes $-e_1 * e_2$), and (c) using Rule 1 to cancel any arrow that
+# meets itself.
 #
-# Two payoffs worth seeing:
+# Two payoffs worth seeing.
 #
-# **A vector times itself gives its length squared — that's the Pythagorean theorem.**
-# Watch the cross-terms cancel by Rule 2 and the squares collapse by Rule 1:
+# **A vector times itself gives its length squared: that's the Pythagorean theorem.**
+# Watch the cross terms cancel by Rule 2 and the squares collapse by Rule 1:
 #
-# `(3*e_1 + 4*e_2) * (3*e_1 + 4*e_2)`
-# `= 9*(e_1*e_1) + 12*(e_1*e_2) + 12*(e_2*e_1) + 16*(e_2*e_2)`
-# `= 9*1 + 12*e_12 - 12*e_12 + 16*1`
-# `= 25`   (and 25 = 3^2 + 4^2, the length squared).
+# $$
+# \begin{aligned}
+# (3 * e_1 + 4 * e_2) * (3 * e_1 + 4 * e_2)
+#   &= 9 * (e_1 * e_1) + 12 * (e_1 * e_2) + 12 * (e_2 * e_1) + 16 * (e_2 * e_2) \\
+#   &= 9 * 1 + 12 * e_{12} - 12 * e_{12} + 16 * 1 \\
+#   &= 25
+# \end{aligned}
+# $$
+#
+# and $25 = 3^2 + 4^2$, the length squared.
 
 # %%
 v: MultiVector = 3 * e_1 + 4 * e_2
-v * v  # -> 25 = 3^2 + 4^2  # pyright: ignore[reportUnusedExpression]
+v * v
 
 # %% [markdown]
-# **The unit plane `e_1*e_2` squares to -1 — just like the imaginary number i.**
-# The geometric algebra of the plane secretly *contains* the complex numbers:
+# The same product, term by term:
+
+# %%
+show_mult(v, v)
+
+# %% [markdown]
+# **The unit plane $e_1 * e_2$ squares to $-1$, just like the imaginary number $i$.**
+# The geometric algebra of the plane contains the complex numbers. Predict the result
+# before running the cell.
 
 # %%
 i: MultiVector = e_1 * e_2
-# i * i -> -1 (so e_1*e_2 behaves like the imaginary unit)
-i * i  # pyright: ignore[reportUnusedExpression]
+i * i
 
 # %% [markdown]
 # The same rules, written as math
 # -------------------------------
 #
-# *(A little more formal — the same rules, stated the way a math class would put them.)*
+# *(A little more formal: the same rules, stated the way a math class would put them.
+# Skip it if you like; nothing later depends on it.)*
 #
 # The entire geometric product is pinned down by **two identities about the basis
 # vectors**, together with the ordinary algebra you already trust: it distributes over
-# `+`, it is associative, and plain numbers factor out freely.
+# $+$, it is associative, and plain numbers factor out freely.
 #
-# > `e_i e_i = 1`  — each basis vector squares to `1`.  **(R1)**
+# > $e_i * e_i = 1$: each basis vector squares to $1$.  **(R1)**
 # >
-# > `e_i e_j = - e_j e_i`  (for `i ≠ j`)  — swapping two *different* ones
-# > flips the sign.  **(R2)**
+# > $e_i * e_j = -e_j * e_i$ for $i \neq j$: swapping two *different* ones flips the
+# > sign.  **(R2)**
 #
 # Everything else is bookkeeping. Any product of basis vectors
-# `e_{i_1} e_{i_2} ... e_{i_k}`
-# is brought to **standard form** — indices in increasing order, with no repeats — using
-# just two moves:
+# $e_{i_1} * e_{i_2} * \cdots * e_{i_k}$ is brought to **standard form** (indices in
+# increasing order, no repeats) using just two moves:
 #
 # 1. **Sort, with a sign.** By (R2), slide a smaller index to the left past a larger
-#    neighbor; each swap of two neighbors multiplies the whole term by `-1`. It is
-#    ordinary sorting, except every swap costs a factor of `-1`.
+#    neighbor; each swap of two neighbors multiplies the whole term by $-1$. It is
+#    ordinary sorting, except every swap costs a factor of $-1$.
 # 2. **Cancel repeats.** By (R1), whenever two equal indices end up next to each other,
 #    erase the pair.
 #
-# The worked example above is then just a chain of equalities:
+# A worked example is then just a chain of equalities:
 #
-# > `e_1 * e_3 * e_3 * e_1`
-# > `  = e_1 * (e_3 * e_3) * e_1`   — regroup (associativity)
-# > `  = e_1 * (1) * e_1`         — (R1) on the middle pair
-# > `  = e_1 * e_1`
-# > `  = 1`                   — (R1) again
+# $$
+# \begin{aligned}
+# e_1 * e_3 * e_3 * e_1
+#   &= e_1 * (e_3 * e_3) * e_1 && \text{regroup (associativity)} \\
+#   &= e_1 * 1 * e_1 && \text{(R1) on the middle pair} \\
+#   &= e_1 * e_1 \\
+#   &= 1 && \text{(R1) again}
+# \end{aligned}
+# $$
 #
 # and one that only sorts, with nothing to cancel:
 #
-# > `e_2 * e_1 * e_3 = - e_1 * e_2 * e_3`   — one swap of `e_2` past `e_1`, by (R2).
+# $$e_2 * e_1 * e_3 = -e_1 * e_2 * e_3 \qquad \text{one swap of } e_2 \text{ past }
+# e_1 \text{, by (R2)}$$
 #
-# (These two moves — sort with a sign, then cancel repeats — are exactly what `Gn`'s
+# These two moves, sort with a sign and then cancel repeats, are exactly what `Gn`'s
 # geometric product carries out: in the code, the recursive `decrease_grade` helper in
-# `src/gacalc/gn.py`.)
+# `src/gacalc/gn.py`.
 
 # %% [markdown]
 # Where do the plain numbers go? Scalars first.
 # ---------------------------------------------
 #
-# So far every factor was a bare basis vector like `e_1`. In real life a term also has a
-# **number** out front — `3*e_1`, `-2*e_2`, and so on. Where do those numbers go when we
-# multiply?
+# So far every factor was a bare basis vector like $e_1$. In real life a term also has
+# a **number** out front: $3 * e_1$, $-2 * e_2$, and so on. Where do those numbers go
+# when we multiply?
 #
 # The happy answer: **numbers are ordinary numbers.** They commute with everything
-# (`3*e_1 = e_1*3`) and they multiply among themselves the usual way. So
-# the recipe grows
-# just one opening step:
+# ($3 * e_1 = e_1 * 3$) and they multiply among themselves the usual way. So the recipe
+# grows just one opening step:
 #
 # 1. **Scalars first.** Sweep every numeric factor to the front and multiply them
 #    together into a single number.
-# 2. Then reduce the leftover string of basis vectors exactly as before — sort with a
+# 2. Then reduce the leftover string of basis vectors exactly as before: sort with a
 #    sign (R2), cancel repeats (R1).
 #
-# For instance, gather the four numbers up front, then reuse the very reduction we just
-# did (`e_1 * e_3 * e_3 * e_1 = 1`):
+# For instance, gather the four numbers up front, then reuse the reduction we just did
+# ($e_1 * e_3 * e_3 * e_1 = 1$):
 #
-# > `(2 * e_1) * (3 * e_3) * (4 * e_3) * (5 * e_1)`
-# > `  = (2 * 3 * 4 * 5) * (e_1 * e_3 * e_3 * e_1)`   — scalars to the front
-# > `  = 120 * 1`                       — reduce the basis vectors
-# > `  = 120`
-#
+# $$
+# \begin{aligned}
+# (2 * e_1) * (3 * e_3) * (4 * e_3) * (5 * e_1)
+#   &= (2 * 3 * 4 * 5) * (e_1 * e_3 * e_3 * e_1) && \text{scalars to the front} \\
+#   &= 120 * 1 && \text{reduce the basis vectors} \\
+#   &= 120
+# \end{aligned}
+# $$
+
+# %%
+(2 * e_1) * (3 * e_3) * (4 * e_3) * (5 * e_1)
+
+# %% [markdown]
 # The scalars ride along untouched by the sign-flipping; only the basis vectors produce
 # minus signs. A shorter one where the arrows *do* create a sign:
 #
-# > `(2 * e_2) * (3 * e_1)`
-# > `  = 6 * (e_2 * e_1)`      — scalars to the front
-# > `  = 6 * (- e_1 * e_2)`    — one swap, by (R2)
-# > `  = -6 e_12`
+# $$
+# \begin{aligned}
+# (2 * e_2) * (3 * e_1)
+#   &= 6 * (e_2 * e_1) && \text{scalars to the front} \\
+#   &= 6 * (-e_1 * e_2) && \text{one swap, by (R2)} \\
+#   &= -6 * e_{12}
+# \end{aligned}
+# $$
 
 # %%
-(2 * e_1) * (3 * e_3) * (4 * e_3) * (5 * e_1)  # -> 120  # pyright: ignore[reportUnusedExpression]
-
-# %%
-(2 * e_2) * (3 * e_1)  # -> -6*e_12  # pyright: ignore[reportUnusedExpression]
+(2 * e_2) * (3 * e_1)
 
 # %% [markdown]
-# A longer example — and why grouping is about to matter
-# ------------------------------------------------------
+# A longer example, and why grouping is about to matter
+# -----------------------------------------------------
 #
 # Let's do a messier one and reduce it by hand with the three rules:
+# $(e_1 * e_3) * (e_3 * e_1)$.
 #
-# `(e_1*e_3) * (e_3*e_1)`
-#
-# Written out, that's the four arrows `e_1 * e_3 * e_3 * e_1` in a row. Nothing here is
-# a plain number yet, so we lean on the rules. The trick is to notice the two `e_3`'s
+# Written out, that's the four arrows $e_1 * e_3 * e_3 * e_1$ in a row. Nothing here is
+# a plain number yet, so we lean on the rules. The trick is to notice the two $e_3$'s
 # sitting next to each other in the middle:
 #
-# `e_1 * (e_3 * e_3) * e_1`   ... group the middle pair
-# `= e_1 * 1 * e_1`            ... Rule 1: `e_3*e_3 = 1`
-# `= e_1 * e_1`
-# `= 1`                        ... Rule 1 again
+# $$
+# \begin{aligned}
+# e_1 * e_3 * e_3 * e_1
+#   &= e_1 * (e_3 * e_3) * e_1 && \text{group the middle pair} \\
+#   &= e_1 * 1 * e_1 && \text{Rule 1: } e_3 * e_3 = 1 \\
+#   &= e_1 * e_1 \\
+#   &= 1 && \text{Rule 1 again}
+# \end{aligned}
+# $$
 #
-# So the whole four-arrow product collapses all the way down to the number `1`.
+# So the whole four-arrow product collapses to the number $1$.
 
 # %%
-(e_1 * e_3) * (e_3 * e_1)  # -> 1  # pyright: ignore[reportUnusedExpression]
+(e_1 * e_3) * (e_3 * e_1)
 
 # %% [markdown]
-# But wait — reducing that by hand, we quietly *re-grouped* the arrows. The original
-# was `(e_1*e_3) * (e_3*e_1)`, yet we chose to first multiply the middle `e_3 * e_3`.
-# Were we *allowed* to do that? What if we had grouped it a different way — would we
-# still get `1`?
+# But wait: reducing that by hand, we quietly *re-grouped* the arrows. The original
+# was $(e_1 * e_3) * (e_3 * e_1)$, yet we chose to first multiply the middle
+# $e_3 * e_3$. Were we *allowed* to do that? What if we had grouped it a different
+# way? Would we still get $1$?
 #
-# Here are three different ways of parenthesizing the very same four arrows
-# `e_1 * e_3 * e_3 * e_1`. Every one of them gives `1`:
+# Here are three different ways of parenthesizing the same four arrows
+# $e_1 * e_3 * e_3 * e_1$. Predict each before running it. Left to right:
 
 # %%
-((e_1 * e_3) * e_3) * e_1  # left-to-right  # pyright: ignore[reportUnusedExpression]
-
-# %%
-e_1 * (e_3 * (e_3 * e_1))  # right-to-left  # pyright: ignore[reportUnusedExpression]
-
-# %%
-e_1 * ((e_3 * e_3) * e_1)  # middle-pair first (what we did by hand)  # pyright: ignore[reportUnusedExpression]
+((e_1 * e_3) * e_3) * e_1
 
 # %% [markdown]
-# They all agree. That is **associativity**: for a product of several things, *how you
-# parenthesize does not change the answer*, so we can safely write `e_1*e_3*e_3*e_1`
-# with no parentheses at all. We relied on it the moment we chose to reduce the middle
-# pair first — and we'll rely on it constantly from here on.
+# Right to left:
+
+# %%
+e_1 * (e_3 * (e_3 * e_1))
+
+# %% [markdown]
+# Middle pair first, what we did by hand:
+
+# %%
+e_1 * ((e_3 * e_3) * e_1)
+
+# %% [markdown]
+# They all agree. That is **associativity**: for a product of several things, *how
+# you parenthesize does not change the answer*, so we can safely write
+# $e_1 * e_3 * e_3 * e_1$ with no parentheses at all. We relied on it the moment we
+# chose to reduce the middle pair first, and we'll rely on it constantly from here on.
 #
 # It is worth pausing on *why* this is not obvious. Remember Rule 2: order is **not**
-# free here (`e_1*e_3` is the *negative* of `e_3*e_1`). When even the order of two
+# free here ($e_1 * e_3$ is the *negative* of $e_3 * e_1$). When even the order of two
 # things flips the sign, it is a fair question whether the *grouping* of many things
-# might change the answer too. It turns out it doesn't — but that is something we
-# should *prove* from the three rules, not just take on faith. (That proof is its own
-# story; see the associativity section / task.)
+# might change the answer too. It doesn't, but that is something to *prove* from the
+# rules, not take on faith. The section "Associativity in 𝒢₂, as a proof" below
+# proves it for every pair of elements of the plane; the proof for every dimension is
+# `tasks/reference/geometric-product-associativity.md`.
+
+# %% [markdown]
+# Dot and wedge of two vectors
+# ----------------------------
+#
+# Two general vectors in the plane, every coordinate a symbol:
 
 # %%
-sym_vec2_1  # pyright: ignore[reportUnusedExpression]
+sym_vec2_1
 
 # %%
-sym_vec2_2  # pyright: ignore[reportUnusedExpression]
+sym_vec2_2
+
+# %% [markdown]
+# Their product has a plain-number part and a plane part:
 
 # %%
-sym_vec2_1 * sym_vec2_2  # pyright: ignore[reportUnusedExpression]
+sym_vec2_1 * sym_vec2_2
+
+# %% [markdown]
+# term by term:
+
+# %%
+show_mult(sym_vec2_1, sym_vec2_2)
+
+# %% [markdown]
+# The plain-number part is the dot product,
 
 # %%
 sym_vec2_1.dot(sym_vec2_2)
 
+# %% [markdown]
+# and the plane part is the wedge:
+
 # %%
 sym_vec2_1.wedge(sym_vec2_2)
 
-# %%
+# %% [markdown]
 # Wedging two vectors just to *name the plane they span* is common enough to have
-# helpers: `bivector_from_vectors(a, b)` is exactly `a ^ b`, and `i(a, b)` is that
-# plane's UNIT bivector (i^2 = -1) -- the same as `(a ^ b).normalize()`. Reach for
-# them when the plane is a means to an end (to normalize, invert, or feed a rotation);
-# keep `^` when the wedge itself is the lesson.
-MultiVector.i(sym_vec2_1, sym_vec2_2) == (sym_vec2_1 ^ sym_vec2_2).normalize()
+# helpers: `bivector_from_vectors(a, b)` is exactly $a \wedge b$, and `i(a, b)` is that
+# plane's *unit* bivector ($i * i = -1$), the same as $a \wedge b$ divided by its size.
+# The difference of the two ways is $0$:
 
 # %%
-e1e2plane: MultiVectorFn = MultiVector.project(onto=e_1 * e_2)
-e1e2plane(sym_vec3_1) ^ e1e2plane(sym_vec3_2)  # pyright: ignore[reportUnusedExpression]
+MultiVector.i(sym_vec2_1, sym_vec2_2) - (sym_vec2_1 ^ sym_vec2_2).normalize()
+
+# %% [markdown]
+# Wedges in space, one coordinate plane at a time
+# -----------------------------------------------
+#
+# In space, the wedge of two vectors has a part in each coordinate plane. Project both
+# vectors onto one coordinate plane and wedge the shadows, and you get that plane's
+# part. Onto the $e_1 e_2$ plane:
 
 # %%
-e2e3plane: MultiVectorFn = MultiVector.project(onto=e_2 * e_3)
-e2e3plane(sym_vec3_1) ^ e2e3plane(sym_vec3_2)  # pyright: ignore[reportUnusedExpression]
+onto_e1e2: MultiVectorFn = MultiVector.project(onto=e_1 * e_2)
+onto_e1e2(sym_vec3_1) ^ onto_e1e2(sym_vec3_2)
+
+# %% [markdown]
+# onto the $e_2 e_3$ plane:
 
 # %%
-e1e3plane: MultiVectorFn = MultiVector.project(onto=e_1 * e_3)
-e1e3plane(sym_vec3_1) ^ e1e3plane(sym_vec3_2)  # pyright: ignore[reportUnusedExpression]
+onto_e2e3: MultiVectorFn = MultiVector.project(onto=e_2 * e_3)
+onto_e2e3(sym_vec3_1) ^ onto_e2e3(sym_vec3_2)
+
+# %% [markdown]
+# and onto the $e_1 e_3$ plane:
 
 # %%
-# ordering of the plane doesn't matter
-e3e1plane: MultiVectorFn = MultiVector.project(onto=e_3 * e_1)
-e3e1plane(sym_vec3_1) ^ e1e3plane(sym_vec3_2)  # pyright: ignore[reportUnusedExpression]
+onto_e1e3: MultiVectorFn = MultiVector.project(onto=e_1 * e_3)
+onto_e1e3(sym_vec3_1) ^ onto_e1e3(sym_vec3_2)
+
+# %% [markdown]
+# The order in which the plane is named does not matter: $e_3 * e_1$ is the same plane
+# as $e_1 * e_3$, so projecting onto it gives the same shadow. The difference:
 
 # %%
-sym_vec3_1 * sym_vec3_2  # pyright: ignore[reportUnusedExpression]
+onto_e3e1: MultiVectorFn = MultiVector.project(onto=e_3 * e_1)
+onto_e3e1(sym_vec3_1) - onto_e1e3(sym_vec3_1)
+
+# %% [markdown]
+# The three parts together are the wedge of the two vectors:
 
 # %%
 sym_vec3_1.wedge(sym_vec3_2)
 
+# %% [markdown]
+# and the full product adds the dot product to it:
+
+# %%
+sym_vec3_1 * sym_vec3_2
+
+# %% [markdown]
+# A bivector times its inverse
+# ----------------------------
+#
+# A bivector $B = a \wedge b$ has an inverse, $B^{-1}$:
+
 # %%
 (sym_vec3_1.wedge(sym_vec3_2)).inverse()
+
+# %% [markdown]
+# Term by term, $B^{-1} * B$: the like terms add to $1$ and every plane part cancels.
 
 # %%
 show_mult((sym_vec3_1.wedge(sym_vec3_2)).inverse(), sym_vec3_1.wedge(sym_vec3_2))
 
+# %% [markdown]
+# An aside: units as basis vectors
+# --------------------------------
+#
+# The same algebra can carry units. Let $e_1$ stand for one gram of iron and $e_2$ for
+# one mole of iron. The ratio "1 mole per 55.85 grams" is $(55.85 * e_1)^{-1} * e_2$,
+# and multiplying a mass in grams by it gives moles: the $e_1$ cancels by Rule 1, as
+# units cancel in chemistry.
 
 # %%
-def gram_fe_to_mol_fe(gram_fe: float) -> MultiVector:
-    # let gram_fe be e_1
-    # let mol_fe be e_2
-    unit_gram_fe: MultiVector = e_1
-    unit_mol_fe: MultiVector = e_2
+gram_fe: MultiVector = e_1
+mol_fe: MultiVector = e_2
+grams_to_moles: MultiVector = (55.85 * gram_fe).inverse() * (1 * mol_fe)
+95.8 * gram_fe * grams_to_moles
 
-    ratio: MultiVector = (55.85 * unit_gram_fe).inverse() * (1 * unit_mol_fe)
-    return gram_fe * unit_gram_fe * ratio
-
-
-gram_fe_to_mol_fe(gram_fe=95.8)
+# %% [markdown]
+# The basis blades
+# ----------------
+#
+# Every multivector is a sum of numbers times *blades*: products of distinct basis
+# vectors in increasing order. In one dimension there are two blades:
 
 # %%
 x: MultiVector
 for x in MultiVector.bases(1):
     display(Math(x._repr_latex_()))
 
+# %% [markdown]
+# so a general multivector in 𝒢₁ has two coefficients:
+
 # %%
 MultiVector.symbolic_multivector(n=1, prefix="a")
 
+# %% [markdown]
+# In two dimensions, four blades: a plain number, two vectors and the plane:
+
 # %%
-x: MultiVector
 for x in MultiVector.bases(2):
     display(Math(x._repr_latex_()))
 
 # %%
 MultiVector.symbolic_multivector(n=2, prefix="b")
 
+# %% [markdown]
+# Multiplying two general multivectors of 𝒢₂ uses all the rules at once:
+
 # %%
 MultiVector.symbolic_multivector(n=2, prefix="b") * MultiVector.symbolic_multivector(
     n=2, prefix="d"
-)  # pyright: ignore[reportUnusedExpression]
+)
+
+# %% [markdown]
+# `r_vector_part(r)` picks out the grade-$r$ part: the plain number (grade 0),
 
 # %%
 MultiVector.symbolic_multivector(n=2, prefix="c").r_vector_part(0)
 
+# %% [markdown]
+# the vector part (grade 1),
+
 # %%
 MultiVector.symbolic_multivector(n=2, prefix="c").r_vector_part(1)
+
+# %% [markdown]
+# and the plane part (grade 2):
 
 # %%
 MultiVector.symbolic_multivector(n=2, prefix="c").r_vector_part(2)
 
+# %% [markdown]
+# In three dimensions there are eight blades:
+
 # %%
-x: MultiVector
 for x in MultiVector.bases(3):
     display(Math(x._repr_latex_()))
 
+# %% [markdown]
+# Associativity in 𝒢₂, as a proof
+# --------------------------------
+#
+# Three general multivectors of the plane, every coefficient its own symbol:
 
 # %%
 G2_1: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="a")
 G2_1
 
-
 # %%
 G2_2: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="b")
 G2_2
-
 
 # %%
 G2_3: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="c")
 G2_3
 
+# %% [markdown]
+# **Grouping the first two first.** $G_1 * G_2$, term by term:
 
 # %%
 show_mult(G2_1, G2_2)
 
+# %% [markdown]
+# then that result times $G_3$, giving $(G_1 * G_2) * G_3$:
 
 # %%
 show_mult(G2_1 * G2_2, G2_3)
 
+# %% [markdown]
+# **Grouping the last two first.** $G_2 * G_3$:
 
 # %%
 show_mult(G2_2, G2_3)
 
+# %% [markdown]
+# then $G_1$ times that result, giving $G_1 * (G_2 * G_3)$:
 
 # %%
 show_mult(G2_1, G2_2 * G2_3)
 
+# %% [markdown]
+# The two sums are the same. Their difference is $0$, and because every coefficient
+# is a symbol, this is not one example: it is a proof that the geometric product of 𝒢₂
+# is associative for **every** three elements.
 
 # %%
 ((G2_1 * G2_2) * G2_3) - (G2_1 * (G2_2 * G2_3))
 
+# %% [markdown]
+# Grade parts in 𝒢₃
+# -----------------
+#
+# A general multivector of 𝒢₃ and its four grade parts: the plain number, the vector,
+# the bivector (three planes) and the trivector (the volume).
 
 # %%
 MultiVector.symbolic_multivector(n=3, prefix="c")
 
-
 # %%
 MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(0)
-
 
 # %%
 MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(1)
 
-
 # %%
 MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(2)
-
 
 # %%
 MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(3)
 
+# %% [markdown]
+# The rules work in any dimension. A symbolic coefficient times three distinct basis
+# vectors of 𝒢₄ is already in standard form, a grade-3 blade:
 
 # %%
-a_1 * e_1 * e_2 * e_4  # pyright: ignore[reportUnusedExpression]
+MultiVector.from_real(a_1) * e_1 * e_2 * e_4
+
+# %% [markdown]
+# A bivector and its dual
+# -----------------------
+#
+# A bivector $B$, the wedge of two general vectors of space:
 
 # %%
 vec_a: MultiVector = MultiVector.symbolic_multivector(n=3, prefix="e").r_vector_part(1)
 vec_b: MultiVector = MultiVector.symbolic_multivector(n=3, prefix="f").r_vector_part(1)
 B: MultiVector = MultiVector.bivector_from_vectors(vec_a, vec_b)
-B  # pyright: ignore[reportUnusedExpression]
+B
 
+# %% [markdown]
+# Like $e_{12}$, it squares to a negative number:
 
 # %%
 B * B
 
-# %%
-B.dual(3)
-
-
-# %%
-
+# %% [markdown]
+# Its dual in 𝒢₃ is the vector perpendicular to its plane:
 
 # %%
-# dual() is typed MultiVectorBase by design (grade-changing); cast back to the
-# concrete type so dot()'s same-type parameter accepts it.
-B.dot(typing.cast(MultiVector, B.dual(3)))
+B_dual: MultiVectorBase = B.dual(3)
+B_dual
+
+# %% [markdown]
+# That vector is perpendicular to the plane, so its dot product with $B$ is $0$:
+
+# %%
+B_dual.dot(B)
+
+# %% [markdown]
+# Term by term, $B$ times its dual: what is left is a pure volume, a multiple of
+# $e_{123}$.
 
 # %%
 show_mult(B, B.dual(3))
 
+# %% [markdown]
+# and $B$ times the inverse of its dual:
+
 # %%
 show_mult(B, B.dual(3).inverse())
 
-# %%
-B * (B.dual(3))  # pyright: ignore[reportUnusedExpression]
-
-# %%
-show_mult(sym_vec2_1, sym_vec2_2)
-
+# %% [markdown]
+# Vectors in any dimension
+# ------------------------
+#
+# The product of two vectors is a dot plus a wedge in every dimension. The 2D table is
+# in "Dot and wedge of two vectors" above. In 3D, term by term:
 
 # %%
 show_mult(sym_vec3_1, sym_vec3_2)
 
+# %% [markdown]
+# and, to see that the method scales, an 8-dimensional vector times a 9-dimensional
+# one: 72 rows. Read only the pattern: the eight rows where an index meets itself add
+# to the dot product, and every other row is one plane part of the wedge.
 
 # %%
 show_mult(
@@ -487,225 +629,42 @@ show_mult(
     MultiVector.symbolic_multivector(n=9, prefix="b").r_vector_part(1),
 )
 
+# %% [markdown]
+# Pictures of multivectors
+# ------------------------
+#
+# `plot_multivector` draws a multivector as a stack of number lines, one per blade,
+# with a dot at each coefficient. A mixed multivector of 𝒢₃:
+
 # %%
-
-
-# %%
-
-
-# rotate(angle): rotation in the e_1 * e_2 plane (positive angle turns e_1 -> e_2).
-# plane_rotation builds the half-angle rotor + sandwich internally and returns a
-# properly-labelled InvertibleFunction -- no hand-built rotor, and it renders LaTeX.
-rotate: typing.Callable[[Real], InvertibleFunction[MultiVector]] = plane_rotation(
-    e_1, e_2
+figure: Figure = plot_multivector(
+    2 * one + 3 * e_1 - 1.5 * e_2 + 4 * e_3 + 0.7 * (e_1 * e_2)
 )
 
-
-T: typing.Callable[[MultiVector], InvertibleFunction[MultiVector]] = translate
-# `scale_non_uniform` is variadic (`*factors: float`) and generic in the
-# representation; the old `Callable[[float, float], InvertibleFunction[
-# MultiVectorBase]]` described neither, and pyright rejected it.  `...` for the
-# variadic parameters, and `[Any]` for the representation -- the documented form
-# for a transform that is polymorphic in the value it acts on, since the generic
-# is invariant and an unsolved `V` cannot be pinned to one concrete type here.
-S: typing.Callable[..., InvertibleFunction[typing.Any]] = scale_non_uniform
-R: typing.Callable[[float], InvertibleFunction[MultiVector]] = rotate
-# %%
-T(5 * e_1)
-
-# %%
-S(5, 6)
-
-# %%
-inverse(T(5 * e_1))
-
-# %%
-T(5 * e_1 + 6 * e_2)
-
-# %%
-T(5 * e_1 + 6 * e_2 + 7 * e_3)
-
-# %%
-inverse(T(5 * e_1 + 6 * e_2 + 7 * e_3))
-
-# %%
-R(sympy.pi / 2)
-
-# %%
-compose([R(sympy.pi / 2), T(5 * e_1 + 6 * e_2)])
-
-# %%
-inverse(compose([R(sympy.pi / 2), T(5 * e_1 + 6 * e_2)]))
-
 # %% [markdown]
-# Draw graph paper
-# ----------------
-#
-# Just draw graph paper, where one unit in the x direction is blue,
-# and one unit in the y direction is pink.  The graph paper corresponds
-# to the numbers on the left and on the bottom.
-#
-#
+# A symbolic coefficient has no value to mark, so its dot sits at a small arbitrary
+# position near $0$, labelled with the symbol. An 8-dimensional symbolic vector:
 
 # %%
-fn: InvertibleFunction[MultiVector] = R(math.radians(53.130102))
-with create_graphs(graph_bounds=(5, 5)) as axes:
-    create_basis(fn=fn)
-    create_x_and_y(fn=fn)
-    create_unit_circle(fn=fn)
-    axes.set_title(fn._repr_latex_())
-
-
-# %% [markdown]
-# Draw relative graph paper
-# -------------------------
-#
-# Draw two relative number lines, making a relative graph paper,
-# but keep the original coordinate system on the left and bottom.
-# Any point in the plane can be described using two different
-# graph papers.
-
-# %%
-fn: InvertibleFunction[MultiVector] = R(math.radians(53.130102))
-with create_graphs(graph_bounds=(5, 5)) as axes:
-    create_basis(fn=R(0.0))
-    create_x_and_y(fn=R(0.0))
-    create_basis(
-        fn=fn,
-        xcolor=(0, 1, 0),
-        ycolor=(1, 1, 0),
-    )
-    create_x_and_y(
-        fn=fn,
-        xcolor=(0, 1, 0),
-        ycolor=(1, 1, 0),
-    )
-    create_unit_circle(fn=fn)
-    axes.set_title(fn._repr_latex_())
-
-
-# %% [markdown]
-# Draw relative graph paper
-# -------------------------
-#
-# Draw two relative number lines, making a relative graph paper,
-# but keep the original coordinate system on the left and bottom.
-# Any point in the plane can be described using two different
-# graph papers.
-
-# %%
-fn: InvertibleFunction[MultiVector] = R(math.radians(53.130102))
-with create_graphs(graph_bounds=(5, 5)) as axes:
-    create_basis(fn=R(0.0))
-    create_x_and_y(fn=R(0.0))
-    create_basis(
-        fn=fn,
-        xcolor=(0, 1, 0),
-        ycolor=(1, 1, 0),
-    )
-    create_x_and_y(
-        fn=fn,
-        xcolor=(0, 1, 0),
-        ycolor=(1, 1, 0),
-    )
-    create_unit_circle(fn=fn)
-    draw_right_triangle()
-    draw_second_right_triangle()
-    axes.set_title(fn._repr_latex_())
-
-
-# %% [markdown]
-# Draw relative graph paper, defined by composed functions
-# --------------------------------------------------------
-#
-# Draw a translated and rotated graph paper.
-# You can read the sequence of composed functions
-# in the order that they are applied, or in reverse order
-
-# %%
-fn: InvertibleFunction[MultiVector] = compose(
-    [
-        R(sympy.pi / 4),
-        T(2 * e_1),
-    ]
+figure = plot_multivector(
+    MultiVector.symbolic_multivector(n=8, prefix="a").r_vector_part(1)
 )
-with create_graphs() as axes:
-    create_basis(
-        fn=fn,
-    )
-    create_x_and_y(fn=fn)
-    create_unit_circle(fn=fn)
-    axes.set_title(fn._repr_latex_())
 
 # %% [markdown]
-# Composed functions, read bottom up
-# ----------------------------------
-#
-# The sequence of functions shown, where the translate
-# is applied first, and operations are relative to the
-# units on the left and bottom.
-
-# %%
-f: InvertibleFunction[MultiVector]
-for f in compose_intermediate_fns([R(sympy.pi / 4), T(2 * e_1)]):
-    # TODO - figure out if I can render the latex as part of one markdown command,
-    # if I were to uncomment out this line and other markdown lines,
-    # the build of HTML would fail
-
-    with create_graphs() as axes:
-        create_basis(fn=f)
-        create_x_and_y(fn=f)
-        create_x_and_y()
-        draw_isoceles_triangle(fn=f)
-        create_unit_circle(fn=f)
-        create_unit_circle()
-        axes.set_title(f._repr_latex_())
-
-# %% [markdown]
-# Composed functions, read top down
-# ---------------------------------
-#
-# The sequence of functions shown, where we visualize
-# the rotate first, and then the translate relative to
-# that relative graph paper.
-#
-
-# %%
-f: InvertibleFunction[MultiVector]
-for f in compose_intermediate_fns(
-    [
-        R(sympy.pi / 4),
-        T(2 * e_1),
-    ],
-    relative_basis=True,
-):
-    with create_graphs() as axes:
-        create_basis(fn=f)
-        create_x_and_y(fn=f)
-        draw_isoceles_triangle(fn=f)
-        create_unit_circle(fn=f)
-        axes.set_title(f._repr_latex_())
-# %%
-plot_multivector(MultiVector.symbolic_multivector(n=8, prefix="a").r_vector_part(1))
-plot_multivector(2 * one + 3 * e_1 - 1.5 * e_2 + 4 * e_3 + 0.7 * (e_1 * e_2))
-5
+# Two vectors in the plane, and their product. Before running the third cell, predict
+# which blades it has: a plain number (the dot) and $e_{12}$ (the wedge).
 
 # %%
 p: MultiVector = 3 * e_1 - 1.5 * e_2
-
-# %%
-plot_multivector(p)
-5
+figure = plot_multivector(p)
 
 # %%
 q: MultiVector = 1.5 * e_1 + 5 * e_2
+figure = plot_multivector(q)
 
 # %%
-plot_multivector(q)
-5
+figure = plot_multivector(p * q)
 
-# %%
-plot_multivector(p * q)
-5
-
-# %%
+# %% [markdown]
+# Transforms (`translate`, `scale_non_uniform`, rotations) and the graph-paper pictures
+# are in `notebooks/displaytransforms.py`.
