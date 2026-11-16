@@ -11,6 +11,9 @@ import GacalcProofs.ProjectionRotation2D
 
     * `proj_eq_dot_mul_inverse` — projection through the product: `proj_a b = (b·a)*a⁻¹`, the scalar
       `b·a` (the scalar part of `b*a`) times the inverse of `a`.
+    * `mul_proj_eq_dot`, `mul_reject_eq_wedge` — `a*proj_a b = a·b` and `a*rej_a b = a∧b`, with the
+      mirrors `mul_proj_symm` (`b*proj_b a = a*proj_a b`) and `mul_reject_antisymm`
+      (`b*rej_b a = −(a*rej_a b)`), and the split `mul_eq_mul_proj_add_mul_reject`.
     * Step 3's rotation from `a` to `b` of every `v`. The book defines it as Step 1's blend with the
       cosine and sine of the angle from `a` to `b`, read off `b`'s projection and rejection on `a`:
       the `rotPlane` of `rotPlane_fromTo_eq_vec_mul`, which shows it is `v*(â*b̂)`.
@@ -39,6 +42,57 @@ theorem proj_eq_dot_mul_inverse {a b : G2} (ha : IsVector a) (hb : IsVector b)
     simpa [normSq, mul, reverse, has, ha12] using han
   simp only [proj, inverse, normSq, reverse, mul, scalar, smul, dot, has, ha12, hbs, hb12]
   ext <;> simp only <;> field_simp <;> ring
+
+/-- **The dot product is `a` times the projection of `b` onto `a`:** `a*proj_a b = a·b`. The
+    projection lies along `a`, so its product with `a` has no area part and is the plain number
+    `a·b`. A result about the product, stated for vectors (Step 4). -/
+theorem mul_proj_eq_dot {a b : G2} (ha : IsVector a) (hb : IsVector b) (han : normSq a ≠ 0) :
+    mul a (proj a b) = scalar (dot a b) := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  have han' : a.c1 * a.c1 + a.c2 * a.c2 ≠ 0 := by
+    simpa [normSq, mul, reverse, has, ha12] using han
+  have h2 : a.c1 ^ 2 + a.c2 ^ 2 ≠ 0 := fun h => han' (by linear_combination h)
+  simp only [proj, mul, scalar, smul, dot, has, ha12, hbs, hb12]
+  ext <;> simp only <;> ring_nf <;> field_simp <;> ring
+
+/-- **The wedge is `a` times the rejection of `b` from `a`:** `a*rej_a b = a∧b`. The rejection lies
+    across `a`, so its product with `a` is pure area. A result about the product, stated for vectors
+    (Step 4). -/
+theorem mul_reject_eq_wedge {a b : G2} (ha : IsVector a) (hb : IsVector b) (han : normSq a ≠ 0) :
+    mul a (reject a b) = wedge a b := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  have han' : a.c1 * a.c1 + a.c2 * a.c2 ≠ 0 := by
+    simpa [normSq, mul, reverse, has, ha12] using han
+  have h2 : a.c1 ^ 2 + a.c2 ^ 2 ≠ 0 := fun h => han' (by linear_combination h)
+  simp only [reject, inverse, normSq, reverse, mul, wedge, smul, has, ha12, hbs, hb12]
+  ext <;> simp only <;> ring_nf <;> field_simp <;> ring
+
+/-- **The mirror of the dot:** `b*proj_b a = a*proj_a b`, both `a·b`. Projecting the other way and
+    multiplying by the other vector gives the same number. -/
+theorem mul_proj_symm {a b : G2} (ha : IsVector a) (hb : IsVector b) (han : normSq a ≠ 0)
+    (hbn : normSq b ≠ 0) :
+    mul b (proj b a) = mul a (proj a b) := by
+  rw [mul_proj_eq_dot hb ha hbn, mul_proj_eq_dot ha hb han, dot_comm]
+
+/-- **The mirror of the wedge flips its sign:** `b*rej_b a = −(a*rej_a b)`, that is `b∧a = −(a∧b)`.
+    Unlike the dot, the wedge is antisymmetric. -/
+theorem mul_reject_antisymm {a b : G2} (ha : IsVector a) (hb : IsVector b) (han : normSq a ≠ 0)
+    (hbn : normSq b ≠ 0) :
+    mul b (reject b a) = neg (mul a (reject a b)) := by
+  rw [mul_reject_eq_wedge hb ha hbn, mul_reject_eq_wedge ha hb han]
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  simp only [wedge, neg]
+  ext <;> simp only [has, ha12, hbs, hb12] <;> ring
+
+/-- **The product splits along and across `a`:** `a*b = a*proj_a b + a*rej_a b`, which is
+    `a·b + a∧b` by `mul_proj_eq_dot` and `mul_reject_eq_wedge`. -/
+theorem mul_eq_mul_proj_add_mul_reject {a b : G2} (ha : IsVector a) (hb : IsVector b)
+    (han : normSq a ≠ 0) :
+    mul a b = add (mul a (proj a b)) (mul a (reject a b)) := by
+  rw [mul_proj_eq_dot ha hb han, mul_reject_eq_wedge ha hb han, mul_eq_dot_add_wedge ha hb]
 
 /-- **The rotation from projection is the one-sided product.** The elementary rotation whose cosine
     and sine are `(a·b)/(|a|*|b|)` and `(a∧b)/(|a|*|b|)` — the projection and rejection of `b` measured
