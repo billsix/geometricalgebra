@@ -71,7 +71,10 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   upstream, github.com/billsix/epix-mirror
   `tasks/archive/2026/11/04/reset-global-state-between-figures.md`, and needs `EPIX_COMMIT` at
   `275adef…` or later (pinned 2026-11-04). Before it, a second figure in the same process
-  inherited the first one's state. The first notebooks to use this are
+  inherited the first one's state. The Part III notebooks' `book/figures/epix/_bootstrap_live.py`
+  `scene_around` also calls `epix.fit_bounds` (the box and size that fit a set of points), which
+  needs `EPIX_COMMIT` at `8cb788a…` or later (pinned 2026-11-16; epix-mirror
+  `tasks/figure-fit-to-points.md`). The first notebooks to use live figures are
   `notebooks/frame-qr-2d.py` / `frame-qr-3d.py` (`frames-qr.rst`). They add
   `book/figures/epix/` to `sys.path` to import `_frame_scene`; `pyproject.toml` lists that
   directory in ty's `extra-paths` and exempts those two files from E402. Pick per page: the

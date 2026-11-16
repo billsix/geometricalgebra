@@ -4,7 +4,8 @@ Each notebook sets its vectors in one cell, computes every step from them with
 gacalc, and draws each step **live** in its own cell, as the frame / QR notebooks do
 (see :mod:`_frame_scene`, whose primitives this module re-exports). A reader who
 changes the vectors and reruns gets new pictures, so :func:`scene_around` sizes each
-figure from the points it has to show rather than from fixed bounds.
+figure from the points it has to show (with ``epix.fit_bounds``) rather than from
+fixed bounds.
 
 The colours follow the Part III figures: the given vectors black, projections and
 the cosine parts green, rejections and the sine parts blue, results purple, and every
@@ -62,16 +63,15 @@ def scene_around(points: Sequence[Point]) -> Iterator[PendingFigure]:
     """A 2D figure that fits ``points`` and the origin, with light, unlabelled axes.
 
     The figure is always :data:`_WIDTH_IN` wide with equal scales on both axes, so a
-    long vector shrinks the picture instead of overflowing it."""
-    xs: list[float] = [0.0] + [p.x1() for p in points]
-    ys: list[float] = [0.0] + [p.x2() for p in points]
-    extent: float = max(max(xs) - min(xs), max(ys) - min(ys), 1e-9)
-    margin: float = _MARGIN * extent
-    lower_left: Point = Point(x=min(xs) - margin, y=min(ys) - margin)
-    upper_right: Point = Point(x=max(xs) + margin, y=max(ys) + margin)
-    width: float = upper_right.x1() - lower_left.x1()
-    height: float = upper_right.x2() - lower_left.x2()
-    size: str = f"{_WIDTH_IN:.2f}x{_WIDTH_IN * height / width:.2f}in"
+    long vector shrinks the picture instead of overflowing it. ``epix.fit_bounds``
+    computes the box and size; the box is needed here too, to draw the axes across
+    it."""
+    lower_left: Point
+    upper_right: Point
+    size: str
+    lower_left, upper_right, size = epix.fit_bounds(
+        points=[ORIGIN2, *points], width=_WIDTH_IN, margin=_MARGIN
+    )
     fig: PendingFigure
     with epix.figure(lower_left=lower_left, upper_right=upper_right, size=size) as fig:
         epix.font_size(size="large")
