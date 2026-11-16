@@ -190,7 +190,7 @@ def blade_dict_latex(
 
     Blades are grade-ordered (``(len, indices)``); a sum coefficient is
     parenthesized; an empty dict renders as ``0``.  ``_repr_latex_`` passes the
-    *simplified* dict (display-simplify); ``nbplotutils.show_mult`` passes the
+    *simplified* dict (display-simplify); ``nbdisplay.show_mult`` passes the
     *expanded* dict, so distribution is visible there without that simplify.
 
     Each blade renders via :func:`blade_latex`, so ``symbols`` (or, by default,
