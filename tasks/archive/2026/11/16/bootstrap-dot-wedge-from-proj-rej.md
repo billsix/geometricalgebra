@@ -4,7 +4,9 @@
 **Done:** 2026-11-16
 **Related:** `tasks/bare-2d-bootstrap-pages.md` (the Part III pages; still open);
 `tasks/quarter-turn-as-named-base-case.md` (the same rules applied to the quarter turn; proposed);
-`tasks/notebook-dot-wedge-projection-demo.md` (its Q2 was answered here)
+`tasks/notebook-dot-wedge-projection-demo.md` (its Q2 was answered here);
+`tasks/bootstrap-notebooks-show-derivations.md` (the follow-on for the Part III notebooks;
+proposed)
 
 ## What was done
 
@@ -65,10 +67,54 @@ section in `CLAUDE.md`.
    `r(v; π/2)` is the base case of rotation. The general projection can't be defined without it,
    so it is `proj_{e₁}`, stated directly as its own equation.
 
+## How it went, in order
+
+All on 2026-11-16, on branch `bootstrap-dot-wedge-from-proj-rej`.
+
+1. **Research.** No open or archived task stated dot and wedge as `a * proj_a(b)` and
+   `a * rej_a(b)`. The closest material was the mirror form `proj_b(a) * b = a · b` in
+   `tasks/reference/dot-wedge-projection-rejection.md`, demonstrated in `notebooks/displayg2.py`.
+   The Part III pages called the projection `P_a(b)` and never named the rejection. Lean's
+   `proj a b` and `reject a b` already matched the wanted names. No Lean theorem stated
+   `a * proj a b = a · b`.
+2. **First draft and review.** The draft proposed replacing `P` with `proj` everywhere and making
+   `a · b := a * proj_a(b)` Step 4's definition. The maintainer rejected both:
+   - name every projection formula, and cite each version by equation number;
+   - projection is defined for multivectors, so the vector forms are simple versions, and the
+     identities are results, not definitions.
+   These became the book rule in `tasks/reference/book-outline.md` and `CLAUDE.md`.
+3. **The base-case question.** Asked whether Step 2's `P_{e₁}` should be renamed too, the
+   maintainer answered that it is the base case of projection, as `r(v; π/2)` is of rotation, so
+   it keeps the operation's name. This became the "Base case, then general case" section of
+   `tasks/reference/reduction-to-standard-position.md`.
+4. **Lean** (commit "Lean: a*proj_a(b) = a·b …"). Six theorems were added. The first two runs
+   failed because `field_simp` did not find the nonzero denominator. That was fixed by stating the
+   hypothesis in `ring_nf`'s normal form (see Verification).
+5. **Mid-task request: the quarter turn.** The maintainer asked for a task to re-evaluate
+   `r(v; π/2)` under the same rules, noting that it is also `v * e₁₂`. Filed as
+   `tasks/quarter-turn-as-named-base-case.md`; its questions were answered the same day.
+6. **Book and notebooks** (commit "Book Part III: name proj/rej …"). Steps 2, 4 and 5 and two
+   notebooks were changed as listed under "What was done". Steps 3 and 6 needed nothing.
+7. **Reference docs** (commit "reference: Part III names …"). The page → Lean table and the naming
+   rules were added to `reduction-to-standard-position.md`, and the left-multiplied form to
+   `dot-wedge-projection-rejection.md`.
+8. **Mid-task request: the notebook style.** The maintainer pointed at "subtract and check zero"
+   notebooks as the style they don't want. This was first misread as the Part I projection and
+   rotation notebooks, and a task was filed for those (commit "tasks: add
+   part-i-notebooks-derivation-check-style"). The maintainer then clarified, over several
+   messages, that they meant the Part III "calculations" notebooks, including the cells this task
+   added. Those should become notebooks with set values and live ePiX plots that a reader can
+   change and rerun, with each check one subtraction and one result per cell. The task was renamed
+   and rescoped to `tasks/bootstrap-notebooks-show-derivations.md`. Its questions were answered
+   the same day.
+
 ## Noticed, not done
 
 - Step 1 reads its base case `r(v; π/2)` off the general derivation and shares a label with
   `r(v; θ)`. Whether to reorder it is part of `tasks/quarter-turn-as-named-base-case.md`.
+- The `[0, 0]` notebook cells this task added to `bootstrap-projection.py` and
+  `bootstrap-product.py` use the style the maintainer later said they don't want. They are
+  converted as part of `tasks/bootstrap-notebooks-show-derivations.md`.
 
 ## Verification
 

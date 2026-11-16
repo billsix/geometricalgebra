@@ -1,6 +1,6 @@
 # Re-evaluate the 2D quarter turn under the base-case and one-name rules
 
-**Status:** proposed — needs go-ahead (Open questions below block implementation)
+**Status:** proposed — needs go-ahead (all questions answered)
 **Priority:** 5
 **Difficulty:** 4
 **Created:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
@@ -55,14 +55,15 @@ each open question, followed by the page, notebook and Lean changes it implies.
 5. **Reference docs:** extend the base-case table row for 2D rotation with the product version.
 6. **Gates:** `make lean`, `make format`, `make docs`, and a look at the changed PDF pages.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-16)
+
+1. **Scope:** Part III only. Part I's `proof-rotate.rst` and `geometric-product.rst` are left as
+   they are.
+2. **Name in the product version:** `v * e₁₂`, with a one-line remark that `e₁₂` is the unit
+   bivector, also called `i`. `I₂` is not introduced.
+3. **Placement:** the product version `r(v; π/2) = v * e₁₂` first appears in Step 4, where
+   `e₁₂` is introduced. Later uses cite it.
+
 ## Open questions
 
-1. **Scope:** Part III only, or also Part I's `proof-rotate.rst` and `geometric-product.rst`,
-   which state the quarter turn in the same equation as the general rotation? *(Recommend: Part
-   III only, matching the projection task.)*
-2. **Name of the pseudoscalar in the product version:** write `v * e₁₂` (the basis-blade name
-   Part III already uses), or introduce `I₂` / `i` at that point? *(Recommend: `e₁₂`, with a
-   one-line remark that it is the unit bivector, also called `i`. Part III doesn't use `I₂`
-   anywhere yet.)*
-3. **Where the product version appears:** in Step 4 next to the product's definition, or at its
-   first use in Step 5? *(Recommend: Step 4, since `e₁₂` is introduced there.)*
+None. The task is ready to start on your go-ahead.

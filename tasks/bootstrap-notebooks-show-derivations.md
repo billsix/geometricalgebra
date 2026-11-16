@@ -1,6 +1,6 @@
 # Part III notebooks: show each derivation with set values and plots, not `[0, 0]` checks
 
-**Status:** proposed — needs go-ahead (Open questions below block implementation)
+**Status:** proposed — needs go-ahead (all questions answered)
 **Priority:** 4
 **Difficulty:** 5
 **Created:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
@@ -41,8 +41,8 @@ rendered in the book with their set values and plots, and that the style is writ
   `.. math::` blocks, with ePiX figures rendered at build time (`book/figures/epix/boot_*.py`).
 - **Plotting for notebooks:** `src/gacalc/nbplotutils.py` (matplotlib) has `create_graphs`,
   `create_basis`, `create_unit_circle`, `plot_multivector`, `draw_right_triangle`, `show_mult` and
-  more. `CLAUDE.md` ("ePiX in the image") records the 2026-10-06 decision: matplotlib for the
-  interactive notebooks, ePiX for the book's static figures. No book notebook uses matplotlib yet.
+  more. The book's notebooks don't use it: per the Decisions below, Part III plots with ePiX, as
+  `frame-qr-*.py` already does.
 - **The three-forms rule** (`CLAUDE.md`): every result has a symbolic-Python form, today the
   `[0, 0]` checks. Removing them needs a decision (Open question 1).
 
@@ -53,6 +53,7 @@ rendered in the book with their set values and plots, and that the style is writ
    - a values cell at the top;
    - each derivation step computed from those values and shown;
    - a plot per step;
+   - checks beside what they check, one subtraction and one result per cell;
    - "change the values and rerun" said once.
 2. Convert Step 2 first (`bootstrap-projection.py`) as the pilot, and get the maintainer's review
    of the rendered page before doing the rest.
@@ -69,19 +70,19 @@ rendered in the book with their set values and plots, and that the style is writ
   figure rules apply: every argument by keyword (`tools/check_epix_keywords.py`, which also checks
   the book notebooks), every binding typed, and each label in the colour of what it labels.
 
+- **Checks sit beside what they check, one result per cell** (answered Q1). There is no closing
+  section of symbolic checks. Where a step needs checking, a cell subtracts the two sides, using
+  the values just plotted or symbolic values, and shows a single result. Several things to check
+  means several cells, never one cell printing a list of results.
+- **The page keeps its LaTeX derivation** (answered Q2). The notebook repeats each step with the
+  set values beside an ePiX plot, so the PDF reads on its own.
+- **One shared set of values across all six steps** (answered Q3, left to the implementer). Pick
+  vectors that match what the Part III ePiX figures already draw
+  (`book/figures/epix/_bootstrap_scene.py`). Put them in the first code cell, which says once that
+  a reader can change them and rerun.
+- **Scope: the six Part III notebooks only** (answered Q4). The Part I notebooks are left for
+  later.
+
 ## Open questions
 
-1. **The symbolic checks:** drop the `[0, 0]` checks, or keep them as a short closing section of
-   each notebook ("for any values: …")? *(Recommend: keep them, at the end. They are the
-   symbolic-Python form the three-forms rule asks for, and `make docs` fails if one breaks.)*
-2. **Where the derivation lives:** should each derivation section move out of its `.rst` page into
-   the notebook, leaving the page as prose and a link? Or should the page keep its LaTeX derivation
-   and the notebook walk through the same steps with numbers and plots? *(Recommend: the page keeps
-   the derivation, and the notebook repeats each step with the set values beside a plot. That way
-   the PDF reads on its own.)*
-3. **The set values:** one shared set across all six steps, such as `a = 3 * e_1 + 1 * e_2`,
-   `b = 1 * e_1 + 2 * e_2`, `v = -1 * e_1 + 2 * e_2`, so the steps read as one story? *(Recommend:
-   yes, matching the vectors the ePiX figures draw, if those are close to these.)*
-4. **Scope:** the six Part III notebooks only, leaving the Part I notebooks (`rotate.py`,
-   `product-from-projection.py`, `proof-projection.py`, …) for later? *(Recommend: Part III only;
-   they are the ones you quoted.)*
+None. The task is ready to start on your go-ahead.

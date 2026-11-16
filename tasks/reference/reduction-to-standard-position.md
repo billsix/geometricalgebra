@@ -70,6 +70,9 @@ What follows from the shape:
   both exist, checking that the general case reduces to the base case at the special argument is a
   consistency check, not the base case's justification. That check is Lean's `proj_onto_x_axis`
   (`StandardPosition2D.lean`, `StandardPosition.lean`).
+- **Where the book doesn't follow this yet:** Part III's Step 1 (`book/docs/bootstrap-rotation.rst`)
+  reads `r(v; π/2)` off the general angle-addition derivation, and the two share one label;
+  `tasks/quarter-turn-as-named-base-case.md` covers it.
 - **Each case is a labelled equation**, and the general case cites the base case with
   ``:eq:`label` ``, as every use of a named operation cites its version.
 - **Code names are not book names.** Python and Lean need distinct identifiers for the base case,
