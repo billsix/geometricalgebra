@@ -44,6 +44,20 @@ v_1, v_2 = sympy.symbols("v_1 v_2", real=True)
 v: Vector = Scalar(v_1) * e_1 + Scalar(v_2) * e_2
 
 # %% [markdown]
+# ## The base case: the quarter turn
+#
+# A vector of length `r` at angle `β`, turned by `π/2`, lands at angle `β + π/2`: the
+# coordinates `(-v_2, v_1)`.
+
+# %%
+polar_quarter_turn: Vector = (
+    Scalar(r * sympy.cos(beta + sympy.pi / 2)) * e_1
+    + Scalar(r * sympy.sin(beta + sympy.pi / 2)) * e_2
+)
+polar_v: Vector = Scalar(r * sympy.cos(beta)) * e_1 + Scalar(r * sympy.sin(beta)) * e_2
+zeros(polar_v.rotate_90_degrees() - polar_quarter_turn)  # -> [0, 0]
+
+# %% [markdown]
 # ## The formula
 #
 # A vector of length `r` at angle `β`, rotated by `θ`, lands at length `r` and angle

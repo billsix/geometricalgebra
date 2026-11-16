@@ -54,7 +54,7 @@ cannot be defined, so the book states the base case first, with its own formula.
 
 | Operation | Base case (stated directly) | General case (built on it) |
 |---|---|---|
-| 2D rotation | `r(v; π/2) = (−v₂, v₁)` (`g2` `rotate_90_degrees`) | `r(v; θ) = cos(θ) * v + sin(θ) * r(v; π/2)` (`g2` `Vector.rotate`) |
+| 2D rotation | `r(v; π/2) = (−v₂, v₁)` (`g2` `rotate_90_degrees`; Lean `rot90`); later version `r(v; π/2) = v * e₁₂` (Lean `rot90_eq_mul_e12`) | `r(v; θ) = cos(θ) * v + sin(θ) * r(v; π/2)` (`g2` `Vector.rotate`) |
 | 2D projection | `proj_{e₁}(b) = b₁ * e₁` | `proj_a = (R_a^{e₁})⁻¹ ∘ proj_{e₁} ∘ R_a^{e₁}` (Lean `projectSP`) |
 | 2D rejection | `rej_{e₁}(b) = b₂ * e₂` | `rej_a = (R_a^{e₁})⁻¹ ∘ rej_{e₁} ∘ R_a^{e₁}` (Lean `rejectSP`) |
 | 3D projection / rejection | onto the `e₁` axis | rotate `a` onto `e₁` with `rotXY` / `rotXZ`, apply the base case, rotate back |
@@ -70,9 +70,6 @@ What follows from the shape:
   both exist, checking that the general case reduces to the base case at the special argument is a
   consistency check, not the base case's justification. That check is Lean's `proj_onto_x_axis`
   (`StandardPosition2D.lean`, `StandardPosition.lean`).
-- **Where the book doesn't follow this yet:** Part III's Step 1 (`book/docs/bootstrap-rotation.rst`)
-  reads `r(v; π/2)` off the general angle-addition derivation, and the two share one label;
-  `tasks/quarter-turn-as-named-base-case.md` covers it.
 - **Each case is a labelled equation**, and the general case cites the base case with
   ``:eq:`label` ``, as every use of a named operation cites its version.
 - **Code names are not book names.** Python and Lean need distinct identifiers for the base case,
@@ -168,7 +165,7 @@ end in six short pages, proofs and little prose, each with a sympy notebook
 
 | Page | Step | Lean |
 |---|---|---|
-| `bootstrap-rotation.rst` | rotation from precalculus, `cos(θ) * v + sin(θ) * r(v; π/2)` | `Rotation2D` `rot_vec`/`rot_normSq`/`rot_add`; `StandardPosition2D` `rotPlane_vec_eq_blend` |
+| `bootstrap-rotation.rst` | the base case first, the quarter turn `r(v; π/2) = (−v₂, v₁)` (`eq-bootstrap-quarter-turn`); then rotation from precalculus, `cos(θ) * v + sin(θ) * r(v; π/2)` | `StandardPosition2D` `rot90`, `rotPlane_vec_eq_blend`; `Rotation2D` `rot_vec`/`rot_normSq`/`rot_add` |
 | `bootstrap-projection.rst` | base cases `proj_{e₁}(b) = b₁ * e₁`, `rej_{e₁}(b) = b₂ * e₂`; then `proj_a`, `rej_a` = rotate `a` to the x-axis, apply the base case, rotate back | `StandardPosition2D` `proj_onto_x_axis`/`reject_onto_x_axis` (base cases), `projectSP_eq_proj`/`rejectSP_eq_reject`/`proj_rotPlane_equivariant` (stated `a` onto `b`) |
 | `bootstrap-rotation-from-projection.rst` | the rotation from `a` to `b` of **every** `v`, one triangle drawn twice: `b` measured against `a` gives `cos(θ)`, `sin(θ)`; the same triangle on `v` is `v' = cos(θ) * v + sin(θ) * r(v; π/2)`; equals `(R_b^{e₁})⁻¹ ∘ R_a^{e₁}`; only directions matter | `Bootstrap2D` `rotPlane_fromTo_eq_rotateFromToProj`, `rotateFromToProj_eq_unalign_align`/`_preserves_dot`/`_smul_smul`/`_normalize`; `RotateFromTo2D` `bprime_coords`/`rotateFromTo_collapse` |
 | `bootstrap-product.rst` | `a * b = \|a\| * (x + y * e₁₂)`, with `x`, `y` = `b` measured in `a`'s standard position (Step 2); then, as results, `a · b = a * proj_a(b)`, `a ∧ b = a * rej_a(b)`, and the mirrors `b * proj_b(a) = a · b`, `b * rej_b(a) = −(a ∧ b)` | `StandardPosition2D` `mul_eq_magnitude_smul_alignSP`; `G2` `mul_eq_dot_add_wedge`; `Bootstrap2D` `mul_proj_eq_dot`/`mul_reject_eq_wedge`/`mul_eq_mul_proj_add_mul_reject`/`mul_proj_symm`/`mul_reject_antisymm` |
@@ -197,7 +194,9 @@ Design rules (William Emerison Six <billsix@gmail.com>, 2026-11-15):
   base cases `eq-bootstrap-projection-base`, definition `eq-bootstrap-projection-definition`,
   formulas `eq-bootstrap-projection` / `eq-bootstrap-rejection`; Step 5's
   `eq-bootstrap-projection-product` / `eq-bootstrap-rejection-product`; Step 4's results
-  `eq-bootstrap-dot-wedge-proj-rej` / `eq-bootstrap-dot-wedge-mirror`. These rules come from
+  `eq-bootstrap-dot-wedge-proj-rej` / `eq-bootstrap-dot-wedge-mirror`. The quarter turn is
+  `eq-bootstrap-quarter-turn` (Step 1, the base case) and `eq-bootstrap-quarter-turn-product`
+  (Step 4, `v * e₁₂`, which Steps 5 and 6 cite). These rules come from
   `tasks/reference/book-outline.md` ("Pedagogical principles") and "Base case, then general
   case" above.
 - **Rotation through the product:** both forms, the one-sided `v * (â * b̂)` first, then the

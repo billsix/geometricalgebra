@@ -73,7 +73,8 @@ Replace the dot product by the wedge:
    \operatorname{rej}_{\vec{a}}(\vec{b}) = (\vec{b} \wedge \vec{a}) * \vec{a}^{-1}.
 
 With :math:`\vec{b} \wedge \vec{a} = (b_1 * a_2 - b_2 * a_1) * e_{12}` and
-:math:`e_{12} * \vec{a} = -\vec{r}(\vec{a}; \pi/2)` (multiply it out),
+:math:`e_{12} * \vec{a} = -\vec{a} * e_{12} = -\vec{r}(\vec{a}; \pi/2)` (the quarter turn as a
+product, :eq:`eq-bootstrap-quarter-turn-product`),
 
 .. math::
 

@@ -96,6 +96,14 @@ zeros(
 )  # -> [0, 0]
 
 # %% [markdown]
+# ## The quarter turn is a product
+#
+# `v * e_12` is Step 1's quarter turn `(-v_2, v_1)`.
+
+# %%
+zeros(b * e_12 - b.rotate_90_degrees())  # -> [0, 0]
+
+# %% [markdown]
 # ## Dot and wedge through projection and rejection
 #
 # `a * proj_a(b)` is the dot product and `a * rej_a(b)` is the wedge. gacalc's

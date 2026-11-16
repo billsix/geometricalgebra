@@ -30,14 +30,35 @@ Nothing is circular: the first step rests only on sine, cosine and the angle-add
 identities. The earlier chapters cover the same ground slowly; this part is the short
 version.
 
-The rotation
-------------
+A vector by its length and angle
+--------------------------------
 
-Rotate a vector :math:`\vec{v} = v_1 * e_1 + v_2 * e_2` about the origin by the angle
-:math:`\theta`. Write :math:`\vec{v}` by its length :math:`r` and its own angle
-:math:`\beta`: :math:`v_1 = r * \cos(\beta)`, :math:`v_2 = r * \sin(\beta)`. Rotating adds
-:math:`\theta` to :math:`\beta` and keeps :math:`r`. The angle-addition identities do the
-rest:
+Rotate a vector :math:`\vec{v} = v_1 * e_1 + v_2 * e_2` about the origin. Write
+:math:`\vec{v}` by its length :math:`r` and its own angle :math:`\beta`:
+:math:`v_1 = r * \cos(\beta)`, :math:`v_2 = r * \sin(\beta)`. Rotating by an angle adds
+that angle to :math:`\beta` and keeps :math:`r`.
+
+The base case: the quarter turn
+-------------------------------
+
+Turning by :math:`\pi/2` is the rotation whose formula can be read off at once. With
+:math:`\cos(\beta + \pi/2) = -\sin(\beta)` and :math:`\sin(\beta + \pi/2) = \cos(\beta)`,
+
+.. math::
+   :label: eq-bootstrap-quarter-turn
+
+   \vec{r}(\vec{v}; \pi/2)
+     = r * \begin{bmatrix} \cos(\beta + \pi/2) \\ \sin(\beta + \pi/2) \end{bmatrix}
+     = r * \begin{bmatrix} -\sin(\beta) \\ \cos(\beta) \end{bmatrix}
+     = \begin{bmatrix} -v_2 \\ v_1 \end{bmatrix}.
+
+The coordinates swap and the new first one changes sign. This is the base case: the
+rotation by any angle is built from it.
+
+The rotation by an angle
+------------------------
+
+Rotate by :math:`\theta`. The angle-addition identities give
 
 .. math::
 
@@ -51,14 +72,12 @@ rest:
       + \sin(\theta) * \begin{bmatrix} -v_2 \\ v_1 \end{bmatrix}.
    \end{aligned}
 
-The second vector is :math:`\vec{v}` turned by :math:`\pi/2` (the same formula with
-:math:`\cos(\pi/2) = 0`, :math:`\sin(\pi/2) = 1`), so
+The second vector is the quarter turn :eq:`eq-bootstrap-quarter-turn`, so
 
 .. math::
    :label: eq-bootstrap-rotation
 
-   \vec{r}(\vec{v}; \theta) = \cos(\theta) * \vec{v} + \sin(\theta) * \vec{r}(\vec{v}; \pi/2),
-   \qquad \vec{r}(\vec{v}; \pi/2) = \begin{bmatrix} -v_2 \\ v_1 \end{bmatrix}.
+   \vec{r}(\vec{v}; \theta) = \cos(\theta) * \vec{v} + \sin(\theta) * \vec{r}(\vec{v}; \pi/2).
 
 A rotation is a blend of the vector and its quarter turn. The formula never uses
 :math:`\beta`, only :math:`\cos(\theta)` and :math:`\sin(\theta)`, so it holds for every
@@ -81,10 +100,11 @@ What the later steps use
 - **A rotation is linear:** it carries sums to sums and scalar multiples to scalar
   multiples.
 
-The companion notebook checks the formula and these four facts with every coordinate and
+The companion notebook checks the quarter turn, the formula and these four facts with every coordinate and
 angle left as a symbol.
 
-Lean: ``rot_vec`` (the formula), ``rot_normSq`` (length), ``rot_add`` (angles add) and
+Lean: ``rot90`` (the quarter turn :eq:`eq-bootstrap-quarter-turn`) in
+``proofs/GacalcProofs/StandardPosition2D.lean``; ``rot_vec`` (the formula), ``rot_normSq`` (length), ``rot_add`` (angles add) and
 ``rot_add_vec`` / ``rot_smul`` (linearity) in ``proofs/GacalcProofs/Rotation2D.lean``; the
 cosine-and-sine form as the blend is ``rotPlane_vec_eq_blend`` in
 ``proofs/GacalcProofs/StandardPosition2D.lean``, with ``rotPlane_preserves_dot`` and

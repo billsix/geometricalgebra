@@ -92,6 +92,21 @@ of the multiplication rules are the same product. Two consequences the next step
 
   with :math:`\theta` the angle from :math:`\vec{a}` to :math:`\vec{b}`.
 
+The quarter turn is a product
+-----------------------------
+
+Step 1's base case :eq:`eq-bootstrap-quarter-turn` has a second form. Multiply out, with
+:math:`e_1 * e_{12} = e_2` and :math:`e_2 * e_{12} = -e_1`:
+
+.. math::
+   :label: eq-bootstrap-quarter-turn-product
+
+   \vec{r}(\vec{v}; \pi/2) = \vec{v} * e_{12}
+     = (v_1 * e_1 + v_2 * e_2) * e_{12} = -v_2 * e_1 + v_1 * e_2.
+
+Multiplying by :math:`e_{12}` on the right turns a vector a quarter turn. :math:`e_{12}` is
+the unit bivector, also called :math:`i`.
+
 Dot and wedge through projection and rejection
 ----------------------------------------------
 
@@ -108,8 +123,8 @@ and :math:`\vec{a} * \vec{a} = |\vec{a}|^2`:
 
 With Step 2's formula :eq:`eq-bootstrap-rejection`,
 :math:`\operatorname{rej}_{\vec{a}}(\vec{b}) = y * \vec{r}(\vec{a}; \pi/2) / |\vec{a}|`, and
-:math:`\vec{a} * \vec{r}(\vec{a}; \pi/2) = (a_1 * e_1 + a_2 * e_2) * (-a_2 * e_1 + a_1 * e_2) = |\vec{a}|^2 * e_{12}`
-(multiply it out):
+:math:`\vec{a} * \vec{r}(\vec{a}; \pi/2) = \vec{a} * \vec{a} * e_{12} = |\vec{a}|^2 * e_{12}`
+by :eq:`eq-bootstrap-quarter-turn-product`:
 
 .. math::
 
@@ -154,7 +169,8 @@ Lean: ``mul_eq_magnitude_smul_alignSP`` (:eq:`eq-bootstrap-product`, stated as
 in ``proofs/GacalcProofs/Rotation2D.lean``; ``mul_proj_eq_dot``, ``mul_reject_eq_wedge`` and
 ``mul_eq_mul_proj_add_mul_reject`` (:eq:`eq-bootstrap-dot-wedge-proj-rej`) and
 ``mul_proj_symm``, ``mul_reject_antisymm`` (:eq:`eq-bootstrap-dot-wedge-mirror`) in
-``proofs/GacalcProofs/Bootstrap2D.lean``.
+``proofs/GacalcProofs/Bootstrap2D.lean``; ``rot90_eq_mul_e12``
+(:eq:`eq-bootstrap-quarter-turn-product`) in ``proofs/GacalcProofs/StandardPosition2D.lean``.
 
 .. toctree::
    :maxdepth: 1

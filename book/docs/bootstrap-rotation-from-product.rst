@@ -24,15 +24,8 @@ sandwich, which is the form that carries over to three dimensions.
 The one-sided form
 ------------------
 
-The quarter turn is a product. Multiply out, with :math:`e_1 * e_{12} = e_2` and
-:math:`e_2 * e_{12} = -e_1`:
-
-.. math::
-
-   \vec{v} * e_{12} = (v_1 * e_1 + v_2 * e_2) * e_{12} = v_1 * e_2 - v_2 * e_1
-     = \vec{r}(\vec{v}; \pi/2).
-
-Now multiply :math:`\vec{v}` on the right by the product of the two unit vectors,
+The quarter turn is a product, :math:`\vec{v} * e_{12} = \vec{r}(\vec{v}; \pi/2)`
+(Step 4, :eq:`eq-bootstrap-quarter-turn-product`). Now multiply :math:`\vec{v}` on the right by the product of the two unit vectors,
 :eq:`eq-bootstrap-unit-product`:
 
 .. math::
