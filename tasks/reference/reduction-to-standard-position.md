@@ -166,10 +166,10 @@ end in six short pages, proofs and little prose, each with a sympy notebook
 | Page | Step | Lean |
 |---|---|---|
 | `bootstrap-rotation.rst` | rotation from precalculus, `cos(θ) * v + sin(θ) * r(v; π/2)` | `Rotation2D` `rot_vec`/`rot_normSq`/`rot_add`; `StandardPosition2D` `rotPlane_vec_eq_blend` |
-| `bootstrap-projection.rst` | projection of `b` onto `a` = rotate `a` to the x-axis, keep `b`'s x, rotate back | `StandardPosition2D` `projectSP_eq_proj`/`rejectSP_eq_reject`/`proj_rotPlane_equivariant` (stated `a` onto `b`) |
+| `bootstrap-projection.rst` | base cases `proj_{e₁}(b) = b₁ * e₁`, `rej_{e₁}(b) = b₂ * e₂`; then `proj_a`, `rej_a` = rotate `a` to the x-axis, apply the base case, rotate back | `StandardPosition2D` `proj_onto_x_axis`/`reject_onto_x_axis` (base cases), `projectSP_eq_proj`/`rejectSP_eq_reject`/`proj_rotPlane_equivariant` (stated `a` onto `b`) |
 | `bootstrap-rotation-from-projection.rst` | the rotation from `a` to `b` of **every** `v`, one triangle drawn twice: `b` measured against `a` gives `cos(θ)`, `sin(θ)`; the same triangle on `v` is `v' = cos(θ) * v + sin(θ) * r(v; π/2)`; equals `(R_b^{e₁})⁻¹ ∘ R_a^{e₁}`; only directions matter | `Bootstrap2D` `rotPlane_fromTo_eq_rotateFromToProj`, `rotateFromToProj_eq_unalign_align`/`_preserves_dot`/`_smul_smul`/`_normalize`; `RotateFromTo2D` `bprime_coords`/`rotateFromTo_collapse` |
-| `bootstrap-product.rst` | `a * b = \|a\| * (x + y * e₁₂)`, with `x`, `y` = `b` measured in `a`'s standard position (Step 2) | `StandardPosition2D` `mul_eq_magnitude_smul_alignSP`; `G2` `mul_eq_dot_add_wedge` |
-| `bootstrap-projection-from-product.rst` | projection of `b` onto `a` = `(b·a) * a⁻¹` | `Bootstrap2D` `proj_eq_dot_mul_inverse` |
+| `bootstrap-product.rst` | `a * b = \|a\| * (x + y * e₁₂)`, with `x`, `y` = `b` measured in `a`'s standard position (Step 2); then, as results, `a · b = a * proj_a(b)`, `a ∧ b = a * rej_a(b)`, and the mirrors `b * proj_b(a) = a · b`, `b * rej_b(a) = −(a ∧ b)` | `StandardPosition2D` `mul_eq_magnitude_smul_alignSP`; `G2` `mul_eq_dot_add_wedge`; `Bootstrap2D` `mul_proj_eq_dot`/`mul_reject_eq_wedge`/`mul_eq_mul_proj_add_mul_reject`/`mul_proj_symm`/`mul_reject_antisymm` |
+| `bootstrap-projection-from-product.rst` | second versions `proj_a(b) = (b·a) * a⁻¹`, `rej_a(b) = (b∧a) * a⁻¹`, each shown equal to Step 2's | `Bootstrap2D` `proj_eq_dot_mul_inverse` |
 | `bootstrap-rotation-from-product.rst` | `v * (â * b̂)` first (equals Step 3's map), then the sandwich `R * v * R⁻¹`, and why they agree | `Bootstrap2D` `rotPlane_fromTo_eq_vec_mul`/`rotateFromToProj_eq_vec_mul`; `ProjectionRotation2D` `projRotation_eq_sandwich` |
 
 Design rules (William Emerison Six <billsix@gmail.com>, 2026-11-15):
@@ -189,6 +189,14 @@ Design rules (William Emerison Six <billsix@gmail.com>, 2026-11-15):
   `b` has no part in the second triangle. The composition `(R_b^{e₁})⁻¹ ∘ R_a^{e₁}` is shown as the
   same map. Lean's `rotateFromToProj` writes the map through `v`'s coordinates in `a`'s standard
   position rebuilt along `b`, and `rotPlane_fromTo_eq_rotateFromToProj` ties it to the page.
+- **Names (2026-11-16):** projection and rejection are `proj_a(b)` and `rej_a(b)` in every
+  version, never `P`. Each version is a labelled equation, and each use cites it: Step 2's
+  base cases `eq-bootstrap-projection-base`, definition `eq-bootstrap-projection-definition`,
+  formulas `eq-bootstrap-projection` / `eq-bootstrap-rejection`; Step 5's
+  `eq-bootstrap-projection-product` / `eq-bootstrap-rejection-product`; Step 4's results
+  `eq-bootstrap-dot-wedge-proj-rej` / `eq-bootstrap-dot-wedge-mirror`. These rules come from
+  `tasks/reference/book-outline.md` ("Pedagogical principles") and "Base case, then general
+  case" above.
 - **Rotation through the product:** both forms, the one-sided `v * (â * b̂)` first, then the
   sandwich.
 - **Figures:** ePiX (`book/figures/epix/boot_*.py`).

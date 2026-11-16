@@ -23,6 +23,17 @@ term of the geometric product:
 Equivalently: **the dot product is the projection's geometric product with `b`; the wedge
 product is the rejection's.** Adding them recovers `ab = a·b + a∧b`.
 
+### The left-multiplied form (the 2D bootstrap's)
+
+The book's Part III states the same fact with the vector projected onto on the **left**, as
+`a · b = a * proj_a(b)` and `a ∧ b = a * rej_a(b)` (`book/docs/bootstrap-product.rst`,
+`eq-bootstrap-dot-wedge-proj-rej`; Lean `mul_proj_eq_dot` / `mul_reject_eq_wedge` in
+`proofs/GacalcProofs/Bootstrap2D.lean`). It is the boxed theorem with the names exchanged:
+`proj_b(a) * b = a · b` becomes `proj_a(b) * a = b · a`, and a vector along `a` commutes with
+`a`. For the wedge the side matters. `a * rej_a(b) = a ∧ b`, while `rej_a(b) * a = b ∧ a`, because
+a vector across `a` anticommutes with `a`. That is also why the mirror `b * rej_b(a)` is
+`−(a ∧ b)` (`mul_reject_antisymm`) while the dot's mirror is unchanged (`mul_proj_symm`).
+
 ## Proof (unboxed, skippable)
 
 Two facts about the geometric product of vectors, both from `uv = u·v + u∧v`:
