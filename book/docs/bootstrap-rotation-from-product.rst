@@ -116,9 +116,11 @@ The sandwich, the one-sided product, and Step 3's rotation built from projection
 rotation, defined for every vector in the plane. The arc is closed: rotation gave
 projection, projection gave the product, and the product gives back both.
 
-The companion notebook checks :eq:`eq-bootstrap-rotation-one-sided` and
-:eq:`eq-bootstrap-rotation-sandwich` against Step 3's rotation and gacalc's
-``versor_rotation``, with symbolic coordinates.
+The companion notebook works these steps for a set of vectors and draws each one; a
+reader running it can change the vectors and rerun. It checks
+:eq:`eq-bootstrap-rotation-one-sided` and :eq:`eq-bootstrap-rotation-sandwich` against
+Step 3's rotation and gacalc's ``versor_rotation``, for those vectors and with symbolic
+coordinates.
 
 Lean: ``rotPlane_fromTo_eq_vec_mul`` (Step 3's rotation, the blend with the cosine and sine
 from projection, equals :math:`\vec{v} * (\hat{a} * \hat{b})`) and

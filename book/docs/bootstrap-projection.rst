@@ -130,9 +130,11 @@ No dot product and no geometric product was used: only the rotation of Step 1. T
 numbers :math:`a_1 * b_1 + a_2 * b_2` and :math:`a_1 * b_2 - a_2 * b_1` appearing on top
 are where Steps 3 and 4 start.
 
-The companion notebook carries out the construction with symbolic coordinates, checks
-:eq:`eq-bootstrap-projection` and :eq:`eq-bootstrap-rejection`, and checks that projecting
-twice changes nothing, that the rejection has no part along :math:`\vec{a}`, and that the two
+The companion notebook works the construction for a set of vectors and draws each step;
+a reader running it can change the vectors and rerun. It checks the base cases
+:eq:`eq-bootstrap-projection-base` and the formulas :eq:`eq-bootstrap-projection` and
+:eq:`eq-bootstrap-rejection`, for those vectors and with symbolic coordinates, and that
+projecting twice changes nothing, that the rejection has no part along :math:`\vec{a}`, and that the two
 parts add back to :math:`\vec{b}`.
 
 Lean, in ``proofs/GacalcProofs/StandardPosition2D.lean``, where the statements project

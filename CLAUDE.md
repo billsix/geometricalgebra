@@ -570,7 +570,10 @@ built on an operation, such as `a · b = a * proj_a(b)`, are stated as results, 
 A base case the general operation is built from keeps the operation's name, with the special
 argument (`r(v; π/2)` before `r(v; θ)`; `proj_{e₁}(b)` before `proj_a(b)`). It is stated directly
 as its own equation, never derived from the general case
-(`tasks/reference/reduction-to-standard-position.md`, "Base case, then general case"). Detail: `tasks/reference/book-outline.md` ("Pedagogical principles"; William Emerison Six
+(`tasks/reference/reduction-to-standard-position.md`, "Base case, then general case"). A page's
+companion notebook works the derivation with set values in one cell (readers change them and rerun),
+draws each step with live ePiX, and checks one subtraction per cell, first on the values and then
+with symbolic coordinates. Detail: `tasks/reference/book-outline.md` ("Pedagogical principles"; William Emerison Six
 <billsix@gmail.com>, 2026-11-16).
 
 ## Coordinates only when needed

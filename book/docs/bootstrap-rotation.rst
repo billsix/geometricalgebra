@@ -100,8 +100,9 @@ What the later steps use
 - **A rotation is linear:** it carries sums to sums and scalar multiples to scalar
   multiples.
 
-The companion notebook checks the quarter turn, the formula and these four facts with every coordinate and
-angle left as a symbol.
+The companion notebook works these steps for a set vector and angle and draws each one;
+a reader running it can change them and rerun. It checks the quarter turn, the formula
+and these four facts, for those values and with every coordinate and angle a symbol.
 
 Lean: ``rot90`` (the quarter turn :eq:`eq-bootstrap-quarter-turn`) in
 ``proofs/GacalcProofs/StandardPosition2D.lean``; ``rot_vec`` (the formula), ``rot_normSq`` (length), ``rot_add`` (angles add) and

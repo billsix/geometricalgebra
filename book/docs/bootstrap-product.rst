@@ -156,9 +156,12 @@ dot part keeps its value and the wedge part changes sign, because
    \vec{b} * \operatorname{rej}_{\vec{b}}(\vec{a}) = \vec{b} \wedge \vec{a}
      = -(\vec{a} \wedge \vec{b}).
 
-The companion notebook checks :eq:`eq-bootstrap-product` against gacalc's product, the
-split into dot and wedge, :eq:`eq-bootstrap-unit-product`, :eq:`eq-bootstrap-dot-wedge-proj-rej`
-and :eq:`eq-bootstrap-dot-wedge-mirror`, all with symbolic coordinates.
+The companion notebook works these steps for a set of vectors and draws each one; a
+reader running it can change the vectors and rerun. It checks :eq:`eq-bootstrap-product`
+against gacalc's product, the split into dot and wedge,
+:eq:`eq-bootstrap-quarter-turn-product`, :eq:`eq-bootstrap-unit-product`,
+:eq:`eq-bootstrap-dot-wedge-proj-rej` and :eq:`eq-bootstrap-dot-wedge-mirror`, for those
+vectors and with symbolic coordinates.
 
 Lean: ``mul_eq_magnitude_smul_alignSP`` (:eq:`eq-bootstrap-product`, stated as
 :math:`\vec{b} * \vec{a} = |\vec{b}| * (x + y * e_{12})` with :math:`\vec{a}` measured in

@@ -105,8 +105,10 @@ What follows
 
   and the second works the same way, so :math:`R_{\vec{a}}^{\vec{b}}(\hat{a}) = \hat{b}`.
 
-The companion notebook checks, with every coordinate symbolic, that the two triangles have
-the same cosine and sine, that the definition equals the composition, keeps lengths, is
+The companion notebook works these steps for a set of vectors and draws both
+triangles; a reader running it can change the vectors and rerun. It checks, for those
+vectors and with every coordinate symbolic, that the two triangles have the same cosine
+and sine, that the definition equals the composition, keeps lengths, is
 linear, ignores the lengths of :math:`\vec{a}` and :math:`\vec{b}`, carries :math:`\hat{a}` to
 :math:`\hat{b}`, and equals gacalc's ``projection_rotation``.
 
