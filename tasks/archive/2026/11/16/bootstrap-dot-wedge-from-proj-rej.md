@@ -3,10 +3,10 @@
 **Created:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
 **Done:** 2026-11-16
 **Related:** `tasks/bare-2d-bootstrap-pages.md` (the Part III pages; still open);
-`tasks/quarter-turn-as-named-base-case.md` (the same rules applied to the quarter turn; proposed);
+`tasks/archive/2026/11/16/quarter-turn-as-named-base-case.md` (the same rules applied to the quarter turn; done);
 `tasks/notebook-dot-wedge-projection-demo.md` (its Q2 was answered here);
-`tasks/bootstrap-notebooks-show-derivations.md` (the follow-on for the Part III notebooks;
-proposed)
+`tasks/archive/2026/11/16/bootstrap-notebooks-show-derivations.md` (the follow-on for the Part III
+notebooks; done)
 
 ## What was done
 
@@ -92,7 +92,7 @@ All on 2026-11-16, on branch `bootstrap-dot-wedge-from-proj-rej`.
    hypothesis in `ring_nf`'s normal form (see Verification).
 5. **Mid-task request: the quarter turn.** The maintainer asked for a task to re-evaluate
    `r(v; π/2)` under the same rules, noting that it is also `v * e₁₂`. Filed as
-   `tasks/quarter-turn-as-named-base-case.md`; its questions were answered the same day.
+   `tasks/archive/2026/11/16/quarter-turn-as-named-base-case.md`; its questions were answered the same day.
 6. **Book and notebooks** (commit "Book Part III: name proj/rej …"). Steps 2, 4 and 5 and two
    notebooks were changed as listed under "What was done". Steps 3 and 6 needed nothing.
 7. **Reference docs** (commit "reference: Part III names …"). The page → Lean table and the naming
@@ -105,16 +105,16 @@ All on 2026-11-16, on branch `bootstrap-dot-wedge-from-proj-rej`.
    messages, that they meant the Part III "calculations" notebooks, including the cells this task
    added. Those should become notebooks with set values and live ePiX plots that a reader can
    change and rerun, with each check one subtraction and one result per cell. The task was renamed
-   and rescoped to `tasks/bootstrap-notebooks-show-derivations.md`. Its questions were answered
+   and rescoped to `tasks/archive/2026/11/16/bootstrap-notebooks-show-derivations.md`. Its questions were answered
    the same day.
 
 ## Noticed, not done
 
 - Step 1 reads its base case `r(v; π/2)` off the general derivation and shares a label with
-  `r(v; θ)`. Whether to reorder it is part of `tasks/quarter-turn-as-named-base-case.md`.
+  `r(v; θ)`. Whether to reorder it is part of `tasks/archive/2026/11/16/quarter-turn-as-named-base-case.md`.
 - The `[0, 0]` notebook cells this task added to `bootstrap-projection.py` and
   `bootstrap-product.py` use the style the maintainer later said they don't want. They are
-  converted as part of `tasks/bootstrap-notebooks-show-derivations.md`.
+  converted by `tasks/archive/2026/11/16/bootstrap-notebooks-show-derivations.md`.
 
 ## Verification
 

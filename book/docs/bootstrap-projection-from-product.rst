@@ -73,7 +73,8 @@ Replace the dot product by the wedge:
    \operatorname{rej}_{\vec{a}}(\vec{b}) = (\vec{b} \wedge \vec{a}) * \vec{a}^{-1}.
 
 With :math:`\vec{b} \wedge \vec{a} = (b_1 * a_2 - b_2 * a_1) * e_{12}` and
-:math:`e_{12} * \vec{a} = -\vec{r}(\vec{a}; \pi/2)` (multiply it out),
+:math:`e_{12} * \vec{a} = -\vec{a} * e_{12} = -\vec{r}(\vec{a}; \pi/2)` (the quarter turn as a
+product, :eq:`eq-bootstrap-quarter-turn-product`),
 
 .. math::
 
@@ -85,8 +86,10 @@ which is Step 2's formula :eq:`eq-bootstrap-rejection`. Adding
 :math:`\vec{b}`:
 :math:`(\vec{b} \cdot \vec{a} + \vec{b} \wedge \vec{a}) * \vec{a}^{-1} = \vec{b} * \vec{a} * \vec{a}^{-1} = \vec{b}`.
 
-The companion notebook checks both forms against Step 2's construction and against
-gacalc's ``projected_onto`` and ``rejected_away_from``, with symbolic coordinates.
+The companion notebook works these steps for a set of vectors and draws each one; a
+reader running it can change the vectors and rerun. It checks both formulas against Step
+2's construction and against gacalc's ``projected_onto`` and ``rejected_away_from``, for
+those vectors and with symbolic coordinates.
 
 Lean: ``proj_eq_dot_mul_inverse`` (:eq:`eq-bootstrap-projection-product`) in
 ``proofs/GacalcProofs/Bootstrap2D.lean``; ``projectSP_eq_proj`` and ``rejectSP_eq_reject``

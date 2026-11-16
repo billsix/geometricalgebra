@@ -7,22 +7,52 @@
 # ---
 
 # %% [markdown]
-# # Step 6, rotation through the product — calculations
+# # Step 6, rotation through the product — worked example
 #
-# Companion to *Step 6: Rotation, through the Product*. The rotation from `a` to `b`,
-# applied to any `v`, three ways: Step 3's `cos(θ) * v + sin(θ) * r(v; π/2)` (the
-# cosine and sine from `b` measured against `a`), the one-sided product
-# `v * (a_hat * b_hat)`, and the sandwich `R * v * R⁻¹` with `R = b * a + |a| * |b|`.
-# Each check prints zeros when it holds.
+# Companion to *Step 6: Rotation, through the Product*. The next cell sets three
+# vectors: `a`, `b`, and a `v` to rotate. Every step after it is computed from them and
+# drawn: the rotation from `a` to `b` applied to `v` as the one-sided product
+# `v * (a_hat * b_hat)`, then as the sandwich `R * v * R⁻¹` with
+# `R = b * a + |a| * |b|`. Both match Step 3's rotation built from projection. Change
+# the vectors and rerun the notebook to see the same steps for others. The last section
+# repeats the checks with every coordinate a symbol, so they hold for all vectors.
 
 # %%
+import pathlib
+import sys
+
+# The ePiX scene helpers live with the book's other figure sources.
+sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
+
 import sympy
+from _bootstrap_live import (
+    BLACK,
+    PURPLE,
+    LabelPos,
+    PendingFigure,
+    Point,
+    arrow,
+    dashed_arrow,
+    point,
+    scene_around,
+)
 
 from gacalc.base import MultiVectorBase, Real
-from gacalc.g2 import Scalar, Vector, Versor, e_1, e_2, e_12
+from gacalc.g2 import Scalar, Vector, Versor, e_1, e_2
 from gacalc.transforms import versor_rotation
 
+# %% [markdown]
+# ## The vectors
+#
+# Change these and rerun.
 
+# %%
+a: Vector = 2 * e_1 + 1 * e_2
+b: Vector = 1 * e_1 + 2 * e_2
+v: Vector = -1 * e_1 + 2 * e_2
+
+
+# %%
 def rotate(cos: Real, sin: Real, v: Vector) -> Vector:
     """Rotate ``v`` by the angle with cosine ``cos`` and sine ``sin`` (Step 1)."""
     return Scalar(cos) * v + Scalar(sin) * v.rotate_90_degrees()
@@ -31,92 +61,158 @@ def rotate(cos: Real, sin: Real, v: Vector) -> Vector:
 def rotation_from_to(a: Vector, b: Vector, v: Vector) -> Vector:
     """Step 3: ``b`` measured against ``a`` gives the cosine and sine of the angle from
     ``a`` to ``b``; the same angle applied to ``v``."""
-    b_measured: Vector = rotate(
+    measured: Vector = rotate(
         a.coefficient(e_1) / a.magnitude(), -a.coefficient(e_2) / a.magnitude(), b
     )
     return rotate(
-        b_measured.coefficient(e_1) / b.magnitude(),
-        b_measured.coefficient(e_2) / b.magnitude(),
+        measured.coefficient(e_1) / b.magnitude(),
+        measured.coefficient(e_2) / b.magnitude(),
         v,
     )
 
 
-def zeros(value: MultiVectorBase) -> list[sympy.Expr]:
-    """Each coefficient of ``value``, simplified -- all zeros when it is zero."""
-    return [sympy.simplify(sympy.sympify(coefficient)) for coefficient in value]
-
-
-# %%
-v_1: sympy.Symbol
-v_2: sympy.Symbol
-v_1, v_2 = sympy.symbols("v_1 v_2", real=True)
-v: Vector = Scalar(v_1) * e_1 + Scalar(v_2) * e_2
-
 # %% [markdown]
-# ## The quarter turn is a product: `v * e_12 = r(v; π/2)`
-
-# %%
-zeros(v * e_12 - v.rotate_90_degrees())  # -> [0, 0]
-
-# %% [markdown]
-# ## The one-sided form is Step 3's rotation
+# ## The one-sided form
 #
-# For any `a` and `b` (all coordinates symbolic), right-multiplying `v` by the product
-# of the unit vectors is Step 3's rotation of `v`, built from projection.
+# The product of the two unit vectors is `cos(θ) + sin(θ) * e_12`, with `θ` the angle
+# from `a` to `b`:
 
 # %%
-a_1: sympy.Symbol
-a_2: sympy.Symbol
-b_1: sympy.Symbol
-b_2: sympy.Symbol
-a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
-a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
-b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
-one_sided: MultiVectorBase = v * (a.normalize() * b.normalize())
-zeros(one_sided - rotation_from_to(a, b, v))  # -> [0, 0]
+unit_product: Versor = (a.normalize() * b.normalize()).simplified()
+unit_product
 
 # %% [markdown]
-# ## The other order turns the other way: it is the rotation from `b` to `a`
+# and multiplying `v` by it on the right rotates `v` by `θ`:
 
 # %%
-zeros((a.normalize() * b.normalize()) * v - rotation_from_to(b, a, v))  # -> [0, 0]
+one_sided: MultiVectorBase = (v * unit_product).simplified()
+one_sided
+
+# %%
+P_A: Point = point(coordinates=list(a))
+P_B: Point = point(coordinates=list(b))
+P_V: Point = point(coordinates=list(v))
+P_ROTATED: Point = point(coordinates=list(one_sided))
+fig_one_sided: PendingFigure
+with scene_around(points=[P_A, P_B, P_V, P_ROTATED]) as fig_one_sided:
+    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
+    arrow(head=P_V, color=BLACK, text=r"$\vec{v}$")
+    arrow(
+        head=P_ROTATED,
+        color=PURPLE,
+        text=r"$\vec{v} * (\hat{a} * \hat{b})$",
+        align=LabelPos.l,
+        offset=Point(x=-6, y=0),
+    )
+fig_one_sided
 
 # %% [markdown]
 # ## The sandwich
 #
 # `R = b * a + |a| * |b|` turns `a` halfway, onto the bisector
 # `h = |b| * a + |a| * b` (scaled by `|a|`), and `R * v * R⁻¹` is the whole rotation.
-# Exact vectors keep the square roots rational (`|a| = 5`, `|b| = 13`); `v` stays
-# symbolic.
 
 # %%
-a_exact: Vector = 3 * e_1 + 4 * e_2
-b_exact: Vector = 5 * e_1 + 12 * e_2
-R: Versor = b_exact * a_exact + Scalar(a_exact.magnitude() * b_exact.magnitude())
-h: Vector = (
-    Scalar(b_exact.magnitude()) * a_exact + Scalar(a_exact.magnitude()) * b_exact
-)
-zeros(R * a_exact - Scalar(a_exact.magnitude()) * h)  # -> [0, 0]
+R: Versor = b * a + Scalar(a.magnitude() * b.magnitude())
+R
 
 # %%
-sandwich: MultiVectorBase = R * v * R.inverse()
-zeros(sandwich - v * (a_exact.normalize() * b_exact.normalize()))  # -> [0, 0]
+h: Vector = Scalar(b.magnitude()) * a + Scalar(a.magnitude()) * b
+sandwich: MultiVectorBase = (R * v * R.inverse()).simplified()
+sandwich
+
+# %%
+P_H: Point = point(coordinates=list(h.normalize()))
+P_SANDWICH: Point = point(coordinates=list(sandwich))
+fig_sandwich: PendingFigure
+with scene_around(points=[P_A, P_B, P_V, P_SANDWICH]) as fig_sandwich:
+    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
+    dashed_arrow(tail=Point(x=0, y=0), head=P_H, color=PURPLE, text=r"$\hat{h}$")
+    arrow(head=P_V, color=BLACK, text=r"$\vec{v}$")
+    arrow(
+        head=P_SANDWICH,
+        color=PURPLE,
+        text=r"$R * \vec{v} * R^{-1}$",
+        align=LabelPos.l,
+        offset=Point(x=-6, y=0),
+    )
+fig_sandwich
 
 # %% [markdown]
-# ## All three agree with the library's `versor_rotation`
-
-# %%
-library: Vector = versor_rotation(from_vector=a_exact, to_vector=b_exact)(v)
-[
-    zeros(library - rotation_from_to(a_exact, b_exact, v)),
-    zeros(library - sandwich),
-]  # -> [[0, 0], [0, 0]]
-
-# %% [markdown]
-# ## The reverse-over-inverse identity, for any `a` and `b`
+# ## Checks on these vectors
 #
-# The step that makes the forms agree: `R̃ * R⁻¹ = a_hat * b_hat`, checked with unit
-# vectors at symbolic angles `α`, `β`.
+# Each cell subtracts two things and shows the difference, `0` when they agree.
+#
+# The one-sided form is Step 3's rotation, built from projection:
+
+# %%
+(one_sided - rotation_from_to(a, b, v)).simplified()
+
+# %% [markdown]
+# The other order turns the other way: it is the rotation from `b` to `a`:
+
+# %%
+(unit_product * v - rotation_from_to(b, a, v)).simplified()
+
+# %% [markdown]
+# `R` turns `a` onto the bisector: `R * a = |a| * h`:
+
+# %%
+(R * a - Scalar(a.magnitude()) * h).simplified()
+
+# %% [markdown]
+# The sandwich is the one-sided form:
+
+# %%
+(sandwich - one_sided).simplified()
+
+# %% [markdown]
+# gacalc's `versor_rotation` agrees:
+
+# %%
+(versor_rotation(from_vector=a, to_vector=b)(v) - one_sided).simplified()
+
+# %% [markdown]
+# ## For all vectors
+#
+# The same steps with every coordinate a symbol. Each cell checks one fact.
+
+# %%
+a_1: sympy.Symbol
+a_2: sympy.Symbol
+b_1: sympy.Symbol
+b_2: sympy.Symbol
+v_1: sympy.Symbol
+v_2: sympy.Symbol
+a_1, a_2, b_1, b_2, v_1, v_2 = sympy.symbols("a_1 a_2 b_1 b_2 v_1 v_2", real=True)
+a_symbolic: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
+b_symbolic: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
+v_symbolic: Vector = Scalar(v_1) * e_1 + Scalar(v_2) * e_2
+unit_product_symbolic: Versor = a_symbolic.normalize() * b_symbolic.normalize()
+
+# %% [markdown]
+# The one-sided form is Step 3's rotation:
+
+# %%
+(
+    v_symbolic * unit_product_symbolic
+    - rotation_from_to(a_symbolic, b_symbolic, v_symbolic)
+).simplified()
+
+# %% [markdown]
+# The other order is the rotation from `b` to `a`:
+
+# %%
+(
+    unit_product_symbolic * v_symbolic
+    - rotation_from_to(b_symbolic, a_symbolic, v_symbolic)
+).simplified()
+
+# %% [markdown]
+# The step that makes the sandwich agree, `R̃ * R⁻¹ = a_hat * b_hat`, checked with unit
+# vectors at angles `α` and `β`:
 
 # %%
 alpha: sympy.Symbol
@@ -125,4 +221,20 @@ alpha, beta = sympy.symbols("alpha beta", real=True)
 a_hat: Vector = Scalar(sympy.cos(alpha)) * e_1 + Scalar(sympy.sin(alpha)) * e_2
 b_hat: Vector = Scalar(sympy.cos(beta)) * e_1 + Scalar(sympy.sin(beta)) * e_2
 R_unit: Versor = b_hat * a_hat + Scalar(1)
-zeros(R_unit.reverse() * R_unit.inverse() - a_hat * b_hat)  # -> [0, 0]
+(R_unit.reverse() * R_unit.inverse() - a_hat * b_hat).simplified()
+
+# %% [markdown]
+# With the `a` and `b` set at the top (a fully symbolic `R` makes `R⁻¹` slow) and `v`
+# symbolic, the sandwich is the one-sided form for every `v`:
+
+# %%
+(R * v_symbolic * R.inverse() - v_symbolic * unit_product).simplified()
+
+# %% [markdown]
+# and gacalc's `versor_rotation` is Step 3's rotation for every `v`:
+
+# %%
+(
+    versor_rotation(from_vector=a, to_vector=b)(v_symbolic)
+    - rotation_from_to(a, b, v_symbolic)
+).simplified()

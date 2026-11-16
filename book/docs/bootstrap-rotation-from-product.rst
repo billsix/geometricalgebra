@@ -24,15 +24,8 @@ sandwich, which is the form that carries over to three dimensions.
 The one-sided form
 ------------------
 
-The quarter turn is a product. Multiply out, with :math:`e_1 * e_{12} = e_2` and
-:math:`e_2 * e_{12} = -e_1`:
-
-.. math::
-
-   \vec{v} * e_{12} = (v_1 * e_1 + v_2 * e_2) * e_{12} = v_1 * e_2 - v_2 * e_1
-     = \vec{r}(\vec{v}; \pi/2).
-
-Now multiply :math:`\vec{v}` on the right by the product of the two unit vectors,
+The quarter turn is a product, :math:`\vec{v} * e_{12} = \vec{r}(\vec{v}; \pi/2)`
+(Step 4, :eq:`eq-bootstrap-quarter-turn-product`). Now multiply :math:`\vec{v}` on the right by the product of the two unit vectors,
 :eq:`eq-bootstrap-unit-product`:
 
 .. math::
@@ -123,9 +116,11 @@ The sandwich, the one-sided product, and Step 3's rotation built from projection
 rotation, defined for every vector in the plane. The arc is closed: rotation gave
 projection, projection gave the product, and the product gives back both.
 
-The companion notebook checks :eq:`eq-bootstrap-rotation-one-sided` and
-:eq:`eq-bootstrap-rotation-sandwich` against Step 3's rotation and gacalc's
-``versor_rotation``, with symbolic coordinates.
+The companion notebook works these steps for a set of vectors and draws each one; a
+reader running it can change the vectors and rerun. It checks
+:eq:`eq-bootstrap-rotation-one-sided` and :eq:`eq-bootstrap-rotation-sandwich` against
+Step 3's rotation and gacalc's ``versor_rotation``, for those vectors and with symbolic
+coordinates.
 
 Lean: ``rotPlane_fromTo_eq_vec_mul`` (Step 3's rotation, the blend with the cosine and sine
 from projection, equals :math:`\vec{v} * (\hat{a} * \hat{b})`) and
