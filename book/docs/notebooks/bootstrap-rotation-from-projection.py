@@ -10,10 +10,10 @@
 # # Step 3, rotation from projection — worked example
 #
 # Companion to *Step 3: Rotation from One Vector to Another, from Projection*. The
-# next cell sets three vectors: `a`, `b`, and a `v` to rotate. One right triangle is
-# drawn twice. The first measures `b` against `a` (Step 2) and gives the cosine and sine
-# of the angle from `a` to `b`. The second is the same triangle on `v`, and its
-# hypotenuse is the rotated `v'`. Change the vectors and rerun the notebook to see the
+# next cell sets three vectors: $a$, $b$, and a $v$ to rotate. One right triangle is
+# drawn twice. The first measures $b$ against $a$ (Step 2) and gives the cosine and sine
+# of the angle from $a$ to $b$. The second is the same triangle on $v$, and its
+# hypotenuse is the rotated $v'$. Change the vectors and rerun the notebook to see the
 # same steps for others. The last section repeats the checks with every coordinate a
 # symbol, so they hold for all vectors.
 
@@ -47,7 +47,7 @@ from gacalc.transforms import projection_rotation
 # %% [markdown]
 # ## The vectors
 #
-# Change these and rerun. `v` is drawn outside the angle from `a` to `b`, so the two
+# Change these and rerun. $v$ is drawn outside the angle from $a$ to $b$, so the two
 # triangles don't overlap.
 
 # %%
@@ -84,11 +84,11 @@ def rotation_from_to(a: Vector, b: Vector, v: Vector) -> Vector:
 
 
 # %% [markdown]
-# ## The first triangle: `b` measured against `a`
+# ## The first triangle: $b$ measured against $a$
 #
-# Step 2 gives `x` and `y`, the signed lengths of `b`'s projection onto `a` and of its
-# rejection. Divided by `|b|` they are the cosine and sine of the angle `θ` from `a` to
-# `b`, and the angle itself is never computed.
+# Step 2 gives $x$ and $y$, the signed lengths of $b$'s projection onto $a$ and of its
+# rejection. Divided by $|b|$ they are the cosine and sine of the angle $\theta$ from
+# $a$ to $b$, and the angle itself is never computed.
 
 # %%
 measured: Vector = standard_position(a, b).simplified()
@@ -127,10 +127,10 @@ with scene_around(points=[P_A, P_B]) as fig_first:
 fig_first
 
 # %% [markdown]
-# ## The second triangle: the same angle on `v`
+# ## The second triangle: the same angle on $v$
 #
-# `v' = cos(θ) * v + sin(θ) * r(v; π/2)`: the cosine part along `v`, the sine part
-# across it. `b` has no part in this triangle; only the angle carries over.
+# $v' = \cos(\theta) * v + \sin(\theta) * r(v; \pi/2)$: the cosine part along $v$, the
+# sine part across it. $b$ has no part in this triangle; only the angle carries over.
 
 # %%
 cos_part: Vector = Scalar(cos) * v
@@ -176,7 +176,7 @@ fig_second
 # %% [markdown]
 # ## Checks on these vectors
 #
-# Each cell subtracts two things and shows the difference, `0` when they agree.
+# Each cell subtracts two things and shows the difference, $0$ when they agree.
 #
 # The cosine and sine are a unit pair:
 
@@ -184,14 +184,14 @@ fig_second
 sympy.simplify(sympy.sympify(cos**2 + sin**2 - 1))
 
 # %% [markdown]
-# The rotation keeps `v`'s length:
+# The rotation keeps $v$'s length:
 
 # %%
 sympy.simplify(sympy.sympify(rotated.magnitude_squared() - v.magnitude_squared()))
 
 # %% [markdown]
-# It is the composition `(R_b^{e_1})⁻¹ ∘ R_a^{e_1}`: into `a`'s standard position, then
-# back out of `b`'s (the sine negated):
+# It is the composition $(R_b^{e_1})^{-1} \circ R_a^{e_1}$: into $a$'s standard
+# position, then back out of $b$'s (the sine negated):
 
 # %%
 (
@@ -204,7 +204,7 @@ sympy.simplify(sympy.sympify(rotated.magnitude_squared() - v.magnitude_squared()
 ).simplified()
 
 # %% [markdown]
-# It carries `a`'s direction onto `b`'s:
+# It carries $a$'s direction onto $b$'s:
 
 # %%
 (rotate(cos, sin, a.normalize()) - b.normalize()).simplified()
@@ -247,7 +247,7 @@ sin_symbolic: Real = measured_symbolic.coefficient(e_2) / b_symbolic.magnitude()
 rotated_symbolic: Vector = rotation_from_to(a_symbolic, b_symbolic, v_symbolic)
 
 # %% [markdown]
-# The cosine is `(a_1 * b_1 + a_2 * b_2) / (|a| * |b|)`:
+# The cosine is $(a_1 * b_1 + a_2 * b_2) / (|a| * |b|)$:
 
 # %%
 sympy.simplify(
@@ -258,7 +258,7 @@ sympy.simplify(
 )
 
 # %% [markdown]
-# The sine is `(a_1 * b_2 - a_2 * b_1) / (|a| * |b|)`:
+# The sine is $(a_1 * b_2 - a_2 * b_1) / (|a| * |b|)$:
 
 # %%
 sympy.simplify(
@@ -287,7 +287,7 @@ sympy.simplify(
 )
 
 # %% [markdown]
-# It is the composition `(R_b^{e_1})⁻¹ ∘ R_a^{e_1}`:
+# It is the composition $(R_b^{e_1})^{-1} \circ R_a^{e_1}$:
 
 # %%
 (
@@ -326,7 +326,7 @@ sympy.simplify(
 ).simplified()
 
 # %% [markdown]
-# Only directions matter: rescaling `a` and `b` by positive numbers changes nothing:
+# Only directions matter: rescaling $a$ and $b$ by positive numbers changes nothing:
 
 # %%
 (
@@ -335,7 +335,7 @@ sympy.simplify(
 ).simplified()
 
 # %% [markdown]
-# It carries `a`'s direction onto `b`'s:
+# It carries $a$'s direction onto $b$'s:
 
 # %%
 (

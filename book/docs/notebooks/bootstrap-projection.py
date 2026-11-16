@@ -10,8 +10,8 @@
 # # Step 2, projection from rotation — worked example
 #
 # Companion to *Step 2: Projection, from Rotation*. The next cell sets the two vectors.
-# Every step after it is computed from them and drawn: rotate `a` onto the x-axis,
-# carrying `b` along; apply the base cases there (keep the x-coordinate for the
+# Every step after it is computed from them and drawn: rotate $a$ onto the x-axis,
+# carrying $b$ along; apply the base cases there (keep the x-coordinate for the
 # projection, the y-coordinate for the rejection); rotate back. Change the vectors and
 # rerun the notebook to see the same steps for others. The last section repeats the
 # checks with every coordinate a symbol, so they hold for all vectors.
@@ -67,10 +67,10 @@ with scene_around(points=[P_A, P_B]) as fig_given:
 fig_given
 
 # %% [markdown]
-# ## Rotate `a` onto the x-axis, carrying `b` along
+# ## Rotate $a$ onto the x-axis, carrying $b$ along
 #
-# The cosine and sine of the rotation are read off `a`: `a_1 / |a|` and `-a_2 / |a|`.
-# The rotation sends `a` to `|a| * e_1`.
+# The cosine and sine of the rotation are read off $a$: $a_1 / |a|$ and $-a_2 / |a|$.
+# The rotation sends $a$ to $|a| * e_1$.
 
 # %%
 cos: Real = a.coefficient(e_1) / a.magnitude()
@@ -96,9 +96,9 @@ fig_rotated
 # %% [markdown]
 # ## The base cases, on the x-axis
 #
-# `proj_{e_1}(b') = x * e_1` keeps `b'`'s x-coordinate and `rej_{e_1}(b') = y * e_2`
-# keeps its y-coordinate. `x` and `y` are the signed lengths of `b`'s projection onto
-# `a` and of its rejection.
+# $\operatorname{proj}_{e_1}(b') = x * e_1$ keeps $b'$'s x-coordinate and
+# $\operatorname{rej}_{e_1}(b') = y * e_2$ keeps its y-coordinate. $x$ and $y$ are the
+# signed lengths of $b$'s projection onto $a$ and of its rejection.
 
 # %%
 x: Real = b_rotated.coefficient(e_1)
@@ -133,8 +133,8 @@ fig_base
 # %% [markdown]
 # ## Rotate back
 #
-# The rotation back negates the sine. It carries `x * e_1` to the projection of `b`
-# onto `a`, and `y * e_2` to the rejection.
+# The rotation back negates the sine. It carries $x * e_1$ to the projection of $b$
+# onto $a$, and $y * e_2$ to the rejection.
 
 # %%
 projection: Vector = rotate(cos, -sin, Scalar(x) * e_1).simplified()
@@ -172,10 +172,10 @@ fig_back
 # %% [markdown]
 # ## Checks on these vectors
 #
-# Each cell subtracts two things and shows the difference, `0` when they agree.
+# Each cell subtracts two things and shows the difference, $0$ when they agree.
 #
 # The projection matches the formula
-# `(a_1 * b_1 + a_2 * b_2) / (a_1^2 + a_2^2) * a`:
+# $(a_1 * b_1 + a_2 * b_2) / (a_1^2 + a_2^2) * a$:
 
 # %%
 a_1: Real = a.coefficient(e_1)
@@ -186,7 +186,7 @@ b_2: Real = b.coefficient(e_2)
 
 # %% [markdown]
 # The rejection matches the formula
-# `(a_1 * b_2 - a_2 * b_1) / (a_1^2 + a_2^2) * r(a; π/2)`:
+# $(a_1 * b_2 - a_2 * b_1) / (a_1^2 + a_2^2) * r(a; \pi/2)$:
 
 # %%
 (
@@ -195,13 +195,13 @@ b_2: Real = b.coefficient(e_2)
 ).simplified()
 
 # %% [markdown]
-# The two parts add back to `b`:
+# The two parts add back to $b$:
 
 # %%
 (projection + rejection - b).simplified()
 
 # %% [markdown]
-# gacalc's projection, `(b · a) * a⁻¹` (Step 5's formula), agrees:
+# gacalc's projection, $(b \cdot a) * a^{-1}$ (Step 5's formula), agrees:
 
 # %%
 (projection - b.projected_onto(a)).simplified()
@@ -237,13 +237,14 @@ rejection_symbolic: Vector
 projection_symbolic, rejection_symbolic = project_and_reject(a_symbolic, b_symbolic)
 
 # %% [markdown]
-# On the x-axis the construction gives back the base case `proj_{e_1}(b) = b_1 * e_1`:
+# On the x-axis the construction gives back the base case
+# $\operatorname{proj}_{e_1}(b) = b_1 * e_1$:
 
 # %%
 (project_and_reject(1 * e_1, b_symbolic)[0] - Scalar(t_1) * e_1).simplified()
 
 # %% [markdown]
-# and the base case `rej_{e_1}(b) = b_2 * e_2`:
+# and the base case $\operatorname{rej}_{e_1}(b) = b_2 * e_2$:
 
 # %%
 (project_and_reject(1 * e_1, b_symbolic)[1] - Scalar(t_2) * e_2).simplified()
@@ -268,7 +269,7 @@ projection_symbolic, rejection_symbolic = project_and_reject(a_symbolic, b_symbo
 ).simplified()
 
 # %% [markdown]
-# The two parts add back to `b`:
+# The two parts add back to $b$:
 
 # %%
 (projection_symbolic + rejection_symbolic - b_symbolic).simplified()
@@ -282,7 +283,7 @@ projection_symbolic, rejection_symbolic = project_and_reject(a_symbolic, b_symbo
 ).simplified()
 
 # %% [markdown]
-# The rejection has no part along `a`:
+# The rejection has no part along $a$:
 
 # %%
 project_and_reject(a_symbolic, rejection_symbolic)[0].simplified()
