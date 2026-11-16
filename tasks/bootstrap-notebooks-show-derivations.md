@@ -60,6 +60,15 @@ rendered in the book with their set values and plots, and that the style is writ
 4. Gates: `make format` (ty over the notebooks), `tools/check_annotations.py`, `make docs`. Then
    look at each rendered notebook page in the HTML and PDF, plots included.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-16)
+
+- **The plots are ePiX**, drawn live in the notebook's cells, not matplotlib. The precedent is
+  `book/docs/notebooks/frame-qr-*.py`, which draws through `book/figures/epix/_frame_scene.py`.
+  It relies on `epix.figure()` resetting ePiX's global state for each figure (`CLAUDE.md`, "ePiX
+  in the image"). Part III's scene helpers are in `book/figures/epix/_bootstrap_scene.py`. The
+  figure rules apply: every argument by keyword (`tools/check_epix_keywords.py`, which also checks
+  the book notebooks), every binding typed, and each label in the colour of what it labels.
+
 ## Open questions
 
 1. **The symbolic checks:** drop the `[0, 0]` checks, or keep them as a short closing section of
@@ -70,11 +79,9 @@ rendered in the book with their set values and plots, and that the style is writ
    and the notebook walk through the same steps with numbers and plots? *(Recommend: the page keeps
    the derivation, and the notebook repeats each step with the set values beside a plot. That way
    the PDF reads on its own.)*
-3. **Plot library:** matplotlib through `nbplotutils`, which can be rerun interactively, rather
-   than ePiX? *(Recommend: matplotlib, per the 2026-10-06 decision; the page's ePiX figures stay.)*
-4. **The set values:** one shared set across all six steps, such as `a = 3 * e_1 + 1 * e_2`,
+3. **The set values:** one shared set across all six steps, such as `a = 3 * e_1 + 1 * e_2`,
    `b = 1 * e_1 + 2 * e_2`, `v = -1 * e_1 + 2 * e_2`, so the steps read as one story? *(Recommend:
    yes, matching the vectors the ePiX figures draw, if those are close to these.)*
-5. **Scope:** the six Part III notebooks only, leaving the Part I notebooks (`rotate.py`,
+4. **Scope:** the six Part III notebooks only, leaving the Part I notebooks (`rotate.py`,
    `product-from-projection.py`, `proof-projection.py`, …) for later? *(Recommend: Part III only;
    they are the ones you quoted.)*
