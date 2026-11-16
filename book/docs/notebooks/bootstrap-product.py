@@ -94,3 +94,30 @@ theta: sympy.Expr = beta - alpha
 zeros(
     a_hat * b_hat - (Scalar(sympy.cos(theta)) + Scalar(sympy.sin(theta)) * e_12)
 )  # -> [0, 0]
+
+# %% [markdown]
+# ## Dot and wedge through projection and rejection
+#
+# `a * proj_a(b)` is the dot product and `a * rej_a(b)` is the wedge. gacalc's
+# `projected_onto` and `rejected_away_from` compute the projection and rejection; the
+# Step 2 notebook checks that they agree with Step 2's construction.
+
+# %%
+projection: Vector = b.projected_onto(a)
+rejection: Vector = b.rejected_away_from(a)
+zeros(a * projection - a.dot(b))  # -> [0, 0]
+
+# %%
+zeros(a * rejection - a.wedge(b))  # -> [0, 0]
+
+# %%
+zeros(a * b - (a * projection + a * rejection))  # -> [0, 0]
+
+# %% [markdown]
+# ## Measuring the other way: the dot keeps its value, the wedge changes sign
+
+# %%
+zeros(b * a.projected_onto(b) - a.dot(b))  # -> [0, 0]
+
+# %%
+zeros(b * a.rejected_away_from(b) + a.wedge(b))  # -> [0, 0]

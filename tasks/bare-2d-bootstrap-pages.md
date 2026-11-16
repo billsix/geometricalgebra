@@ -174,6 +174,6 @@ The maintainer will say what to change. When work resumes, read this doc and the
 section above, rebuild (`make docs`), look at the six pages in the PDF, and ask what to change
 before editing.
 
-The maintainer named the first changes on 2026-11-16: name the projection and rejection
+The maintainer named the first changes on 2026-11-16, done the same day: name the projection and rejection
 `proj_a(b)` and `rej_a(b)`, and define the dot and wedge as `a * proj_a(b)` and
-`a * rej_a(b)`. That work is planned in `tasks/bootstrap-dot-wedge-from-proj-rej.md`.
+`a * rej_a(b)`. That work is recorded in `tasks/archive/2026/11/16/bootstrap-dot-wedge-from-proj-rej.md`.

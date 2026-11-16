@@ -124,6 +124,15 @@ theorem proj_onto_x_axis (m : ℝ) (hm : m ≠ 0) (v : G2) : proj (vec m 0) v = 
   simp only [proj, dot, mul, smul, vec]
   ext <;> field_simp <;> ring
 
+/-- **Rejection from the x-axis is "keep the y-component":** `reject (m*e₁) v = (0, v₂)` for a
+    vector `v` and `m ≠ 0`. The rejection twin of `proj_onto_x_axis`: the base case of rejection, in
+    standard position. -/
+theorem reject_onto_x_axis (m : ℝ) (hm : m ≠ 0) {v : G2} (hv : IsVector v) :
+    reject (vec m 0) v = vec 0 v.c2 := by
+  obtain ⟨hvs, hv12⟩ := hv
+  simp only [reject, inverse, normSq, reverse, mul, wedge, smul, vec, hvs, hv12]
+  ext <;> simp only <;> field_simp <;> ring
+
 /-! ### The standard-position projection equals the Hestenes projection
 
     `project_sp a b`: align `b` to the x-axis with `rotPlane (b₁/m) (−b₂/m)` (`m = |b|`), apply the same

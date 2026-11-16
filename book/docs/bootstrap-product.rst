@@ -92,9 +92,58 @@ of the multiplication rules are the same product. Two consequences the next step
 
   with :math:`\theta` the angle from :math:`\vec{a}` to :math:`\vec{b}`.
 
+Dot and wedge through projection and rejection
+----------------------------------------------
+
+The numbers :math:`x` and :math:`y` were the signed lengths of :math:`\vec{b}`'s projection
+onto :math:`\vec{a}` and of its rejection. So the two parts of the product are
+:math:`\vec{a}` times each of those pieces. With Step 2's formula
+:eq:`eq-bootstrap-projection`, :math:`\operatorname{proj}_{\vec{a}}(\vec{b}) = x * \vec{a} / |\vec{a}|`,
+and :math:`\vec{a} * \vec{a} = |\vec{a}|^2`:
+
+.. math::
+
+   \vec{a} * \operatorname{proj}_{\vec{a}}(\vec{b})
+     = \frac{x}{|\vec{a}|} * \vec{a} * \vec{a} = |\vec{a}| * x.
+
+With Step 2's formula :eq:`eq-bootstrap-rejection`,
+:math:`\operatorname{rej}_{\vec{a}}(\vec{b}) = y * \vec{r}(\vec{a}; \pi/2) / |\vec{a}|`, and
+:math:`\vec{a} * \vec{r}(\vec{a}; \pi/2) = (a_1 * e_1 + a_2 * e_2) * (-a_2 * e_1 + a_1 * e_2) = |\vec{a}|^2 * e_{12}`
+(multiply it out):
+
+.. math::
+
+   \vec{a} * \operatorname{rej}_{\vec{a}}(\vec{b})
+     = \frac{y}{|\vec{a}|} * \vec{a} * \vec{r}(\vec{a}; \pi/2) = |\vec{a}| * y * e_{12}.
+
+These are the two parts of :eq:`eq-bootstrap-product`, so
+
+.. math::
+   :label: eq-bootstrap-dot-wedge-proj-rej
+
+   \vec{a} \cdot \vec{b} = \vec{a} * \operatorname{proj}_{\vec{a}}(\vec{b}), \qquad
+   \vec{a} \wedge \vec{b} = \vec{a} * \operatorname{rej}_{\vec{a}}(\vec{b}), \qquad
+   \vec{a} * \vec{b} = \vec{a} * \operatorname{proj}_{\vec{a}}(\vec{b})
+     + \vec{a} * \operatorname{rej}_{\vec{a}}(\vec{b}).
+
+A vector times a vector along it is a plain number; times a vector across it, a pure area.
+These are facts about the product, shown here for vectors. Projection and rejection apply to
+more than vectors, and later chapters replace these simple forms with general ones.
+
+Measuring the other way, :math:`\vec{a}` against :math:`\vec{b}`, exchanges the names. The
+dot part keeps its value and the wedge part changes sign, because
+:math:`a_1 * b_1 + a_2 * b_2` is unchanged by the swap and :math:`a_1 * b_2 - a_2 * b_1` is negated:
+
+.. math::
+   :label: eq-bootstrap-dot-wedge-mirror
+
+   \vec{b} * \operatorname{proj}_{\vec{b}}(\vec{a}) = \vec{a} \cdot \vec{b}, \qquad
+   \vec{b} * \operatorname{rej}_{\vec{b}}(\vec{a}) = \vec{b} \wedge \vec{a}
+     = -(\vec{a} \wedge \vec{b}).
+
 The companion notebook checks :eq:`eq-bootstrap-product` against gacalc's product, the
-split into dot and wedge, and :eq:`eq-bootstrap-unit-product`, all with symbolic
-coordinates.
+split into dot and wedge, :eq:`eq-bootstrap-unit-product`, :eq:`eq-bootstrap-dot-wedge-proj-rej`
+and :eq:`eq-bootstrap-dot-wedge-mirror`, all with symbolic coordinates.
 
 Lean: ``mul_eq_magnitude_smul_alignSP`` (:eq:`eq-bootstrap-product`, stated as
 :math:`\vec{b} * \vec{a} = |\vec{b}| * (x + y * e_{12})` with :math:`\vec{a}` measured in
@@ -102,7 +151,10 @@ Lean: ``mul_eq_magnitude_smul_alignSP`` (:eq:`eq-bootstrap-product`, stated as
 ``proofs/GacalcProofs/StandardPosition2D.lean``; ``mul_eq_dot_add_wedge`` in
 ``proofs/GacalcProofs/G2.lean``; ``uvec_mul_uvec`` (two unit vectors at angles
 :math:`\alpha`, :math:`\beta` multiply to :math:`\cos(\beta - \alpha) + \sin(\beta - \alpha) * e_{12}`)
-in ``proofs/GacalcProofs/Rotation2D.lean``.
+in ``proofs/GacalcProofs/Rotation2D.lean``; ``mul_proj_eq_dot``, ``mul_reject_eq_wedge`` and
+``mul_eq_mul_proj_add_mul_reject`` (:eq:`eq-bootstrap-dot-wedge-proj-rej`) and
+``mul_proj_symm``, ``mul_reject_antisymm`` (:eq:`eq-bootstrap-dot-wedge-mirror`) in
+``proofs/GacalcProofs/Bootstrap2D.lean``.
 
 .. toctree::
    :maxdepth: 1

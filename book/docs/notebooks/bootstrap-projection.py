@@ -54,14 +54,38 @@ rejection: Vector
 projection, rejection = project_and_reject(a, b)
 
 # %% [markdown]
-# ## The formula
+# ## The base cases
+#
+# Projecting onto `e_1` keeps the x-coordinate, and rejecting from it keeps the
+# y-coordinate: `proj_{e_1}(b) = b_1 * e_1` and `rej_{e_1}(b) = b_2 * e_2`. With `a`
+# already on the x-axis the rotation does nothing, and the construction gives the base
+# cases back.
+
+# %%
+projection_e_1: Vector
+rejection_e_1: Vector
+projection_e_1, rejection_e_1 = project_and_reject(1 * e_1, b)
+zeros(projection_e_1 - Scalar(b_1) * e_1)  # -> [0, 0]
+
+# %%
+zeros(rejection_e_1 - Scalar(b_2) * e_2)  # -> [0, 0]
+
+# %% [markdown]
+# ## The formulas
 #
 # The projection of `b` onto `a` is `(a_1 * b_1 + a_2 * b_2) / (a_1^2 + a_2^2)` times
-# `a`.
+# `a`, and the rejection is `(a_1 * b_2 - a_2 * b_1) / (a_1^2 + a_2^2)` times `a`
+# turned a quarter turn.
 
 # %%
 formula: Vector = Scalar((a_1 * b_1 + a_2 * b_2) / (a_1**2 + a_2**2)) * a
 zeros(projection - formula)  # -> [0, 0]
+
+# %%
+rejection_formula: Vector = (
+    Scalar((a_1 * b_2 - a_2 * b_1) / (a_1**2 + a_2**2)) * a.rotate_90_degrees()
+)
+zeros(rejection - rejection_formula)  # -> [0, 0]
 
 # %% [markdown]
 # ## The two parts add back to `b`
