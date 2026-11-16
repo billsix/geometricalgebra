@@ -59,5 +59,5 @@ product and the perpendicular part is the wedge.
    **Answered (William Emerison Six <billsix@gmail.com>, 2026-11-16):** onto `a`, multiplied by `a`
    on the left: `a · b = a * proj_a(b)` and `a ∧ b = a * rej_a(b)`, stated as results, not
    definitions. The 2D bootstrap gets these first, with Lean theorems
-   (`tasks/bootstrap-dot-wedge-from-proj-rej.md`). The 3D cells should show the same form and
+   (`tasks/archive/2026/11/16/bootstrap-dot-wedge-from-proj-rej.md`). The 3D cells should show the same form and
    cite those theorems. Q1 is still open.

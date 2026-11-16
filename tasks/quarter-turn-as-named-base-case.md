@@ -4,7 +4,7 @@
 **Priority:** 5
 **Difficulty:** 4
 **Created:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
-**Related:** `tasks/bootstrap-dot-wedge-from-proj-rej.md` (applied the same rules to projection and
+**Related:** `tasks/archive/2026/11/16/bootstrap-dot-wedge-from-proj-rej.md` (applied the same rules to projection and
 rejection); `tasks/bare-2d-bootstrap-pages.md` (the Part III pages)
 
 ## BLUF
@@ -37,7 +37,7 @@ each open question, followed by the page, notebook and Lean changes it implies.
 - **Ordering constraint.** In Part III the product doesn't exist until Step 4. So the coordinate
   form has to be the base case in Step 1, and `v * e₁₂` can only appear later as a second version
   of `r(v; π/2)`, exactly as Step 5's `(b · a) * a⁻¹` is a later version of `proj_a(b)`.
-- **Step 1's order, as noted in `tasks/bootstrap-dot-wedge-from-proj-rej.md`:** Step 1 reads
+- **Step 1's order, as noted in `tasks/archive/2026/11/16/bootstrap-dot-wedge-from-proj-rej.md`:** Step 1 reads
   `r(v; π/2)` off the general angle-addition derivation instead of stating it first, and the two
   share the `eq-bootstrap-rotation` label.
 
