@@ -8,7 +8,7 @@ from William Emerison Six <billsix@gmail.com> (2026-10-29).
 
 **Scope narrowed (William Emerison Six <billsix@gmail.com>, 2026-11-16):** the *style* half of this
 task (how a proof notebook reads, and upgrading the existing proof-companion notebooks) moved to
-`tasks/book-notebooks-teaching-style-sweep.md`, under the standard in
+`tasks/archive/2026/11/16/book-notebooks-teaching-style-sweep.md` (done), under the standard in
 `tasks/reference/book-notebook-teaching-style.md`. This task keeps only the **backfill**: every
 proof gets a companion notebook, written to that standard. Open question 2 below is answered by the
 move (the sweep upgrades the existing ones).

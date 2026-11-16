@@ -37,6 +37,14 @@ doesn't need.
   hand-written Python under the full coding standard — **every binding typed** (`CLAUDE.md` ›
   "Coding standard (Python)", 2026-10-09); `make format` type-checks them
   (`ty check book/docs/notebooks`) and `tools/check_annotations.py` audits them.
+- **Checking a notebook without a build:** `tools/run_notebook_cells.py <notebook>.py`, run from
+  the notebook's directory with `src` on `PYTHONPATH`, executes it cell by cell and prints each
+  code cell's last value, so the check cells can be read directly. A report, not a gate.
+- **Markdown outputs render as MyST.** `conf.py` sets `nb_render_markdown_format = "myst"`, so a
+  cell's `IPython.display.Markdown(...)` output gets tables and `$…$` math; myst-nb's default,
+  CommonMark, prints a table as raw `| … |` text. `gacalc.nbdisplay.show_mult`'s product table
+  depends on it. Its `Math(...)` outputs must carry no `$` delimiters of their own: Sphinx puts
+  them in a LaTeX `equation`, and a nested `$$` stops lualatex ("Missing } inserted").
 - **Code listings carry line numbers.** `conf.py` sets `nb_number_source_lines = True`, so every
   notebook code cell is numbered in HTML and PDF (matching *Model View Projection*). **Quoting
   library source** (none in the book yet) uses `literalinclude` with `:linenos:` **and**

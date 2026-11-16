@@ -62,7 +62,7 @@ def rotate(cos: Real, sin: Real, v: Vector) -> Vector:
 # %% [markdown]
 # ## The base case: the quarter turn
 #
-# `r(v; π/2) = (-v_2, v_1)`: swap the coordinates and change the sign of the new first
+# $r(v; \pi/2) = (-v_2, v_1)$: swap the coordinates and change the sign of the new first
 # one.
 
 # %%
@@ -88,8 +88,8 @@ fig_quarter
 # %% [markdown]
 # ## The rotation by the angle
 #
-# `r(v; θ) = cos(θ) * v + sin(θ) * r(v; π/2)`: the cosine part along `v`, the sine part
-# along its quarter turn.
+# $r(v; \theta) = \cos(\theta) * v + \sin(\theta) * r(v; \pi/2)$: the cosine part along
+# $v$, the sine part along its quarter turn.
 
 # %%
 cos_part: Vector = Scalar(sympy.cos(theta)) * v
@@ -132,7 +132,7 @@ fig_rotated
 # %% [markdown]
 # ## Checks on this vector and angle
 #
-# Each cell subtracts two things and shows the difference, `0` when they agree.
+# Each cell subtracts two things and shows the difference, $0$ when they agree.
 #
 # The rotation keeps length:
 
@@ -140,7 +140,7 @@ fig_rotated
 sympy.simplify(sympy.sympify(rotated.magnitude_squared() - v.magnitude_squared()))
 
 # %% [markdown]
-# Rotating back by `-θ` (the sine negated) gives `v` again:
+# Rotating back by $-\theta$ (the sine negated) gives $v$ again:
 
 # %%
 (rotate(sympy.cos(theta), -sympy.sin(theta), rotated) - v).simplified()
@@ -176,8 +176,8 @@ s: sympy.Expr = sympy.sin(theta_symbolic)
 rotated_symbolic: Vector = rotate(c, s, v_symbolic)
 
 # %% [markdown]
-# The base case: a vector of length `r` at angle `β`, turned a quarter turn, lands at
-# angle `β + π/2`:
+# The base case: a vector of length $r$ at angle $\beta$, turned a quarter turn, lands
+# at angle $\beta + \pi/2$:
 
 # %%
 (
@@ -189,7 +189,7 @@ rotated_symbolic: Vector = rotate(c, s, v_symbolic)
 ).simplified()
 
 # %% [markdown]
-# The formula: rotated by `θ`, it lands at angle `β + θ`:
+# The formula: rotated by $\theta$, it lands at angle $\beta + \theta$:
 
 # %%
 (

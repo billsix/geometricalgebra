@@ -10,11 +10,12 @@
 # # The cross product by standard position — calculations
 #
 # Companion to the *Proof: The Cross Product by Rotating to Standard Position* chapter.
-# We check that the standard-position construction — reduce **both** vectors to the
-# `e_1 e_2` plane with three elementary plane rotations (so `a` lands on `e_1` and `b`
-# lands in the plane), take the cross product there (where it is a pure `e_3` vector),
-# then rotate back — lands on the same answer as gacalc's cross product
-# `gacalc.vectorcalc.cross`.
+# The projection chapters made a hard problem easy by turning the picture until one
+# vector lay on an axis. The cross product works the same way. Three elementary plane
+# rotations turn the pair so that $a$ lies on $e_1$ and $b$ in the $e_1 e_2$ plane;
+# there the cross product is a multiple of $e_3$ you can read off; turning back gives
+# the cross product of the original pair. This notebook checks that the result is
+# gacalc's cross product, `gacalc.vectorcalc.cross`.
 #
 # This is the runnable, symbolic twin of the Lean capstone `cross_via_reduction`
 # (and its explicit-angle form `cross_via_reduction_of_vectors`) in
@@ -32,13 +33,13 @@ from gacalc.vectorcalc import cross
 # %% [markdown]
 # ## The construction
 #
-# Three elementary plane rotations put the frame in standard position. The first two
-# (read off `a`'s coordinates) swing `a` onto the `e_1` axis — its `xy` shadow onto the
-# x-axis, then its `z` part down — as in the projection chapter. A third rotation
-# about the fixed `e_1` axis (read off `b`'s image) swings `b` into the `e_1 e_2` plane.
-# Both vectors ride along with the graph paper. In that frame `a = (|a|, 0, 0)` and
-# `b = (b'_1, b'_2, 0)`, so `a x b = (0, 0, |a| * b'_2)` is a pure `e_3` vector — the
-# easy value. Rotating it back recovers the true cross product.
+# Three elementary plane rotations put the pair in standard position. The first two,
+# read off $a$'s coordinates, swing $a$ onto the $e_1$ axis: its $xy$-shadow onto the
+# x-axis, then its $z$-part down, as in the projection chapter. The third, about the
+# fixed $e_1$ axis and read off where $b$ has moved to, swings $b$ into the $e_1 e_2$
+# plane. Both vectors ride along. In that position $a = (|a|, 0, 0)$ and
+# $b = (b'_1, b'_2, 0)$, so $a \times b = (0, 0, |a| * b'_2)$, a multiple of $e_3$.
+# Rotating it back gives the cross product of the original $a$ and $b$.
 
 
 # %%
@@ -141,13 +142,11 @@ def cross_via_standard_position(a: Vector, b: Vector) -> Vector:
 
 
 # %% [markdown]
-# ## Symbolic check: standard position equals the canonical cross
+# ## The vectors
 #
-# We take an **exact-magnitude** `a` (the Pythagorean quadruple `3, 4, 12`, with
-# `|a_xy| = 5` and `|a| = 13`, so the alignment rotations stay rational) and a fully
-# **symbolic** `b`. The swing's `sqrt(b'_2^2 + b'_3^2)` cancels in the round trip, so
-# difference simplifies to zero — the standard-position cross product equals the
-# geometric-algebra cross product `a x b`.
+# $a = 3 * e_1 + 4 * e_2 + 12 * e_3$ has an exact length: its $xy$-shadow has length
+# $5$ and $|a| = 13$, so the two rotations that align $a$ have rational cosines and
+# sines. $b$ is fully symbolic, so the check holds for every $b$.
 
 # %%
 a_exact: Vector = 3 * e_1 + 4 * e_2 + 12 * e_3
@@ -157,9 +156,21 @@ b_3: sympy.Symbol
 b_1, b_2, b_3 = sympy.symbols("b_1 b_2 b_3")
 b_symbolic: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2 + Scalar(b_3) * e_3
 
-difference: MultiVectorBase = cross_via_standard_position(a_exact, b_symbolic) - cross(
+# %% [markdown]
+# The construction's result:
+
+# %%
+by_standard_position: MultiVectorBase = cross_via_standard_position(
     a_exact, b_symbolic
-)
-[
-    sympy.simplify(sympy.sympify(coefficient)) for coefficient in difference
-]  # -> [0, 0, 0]
+).simplified()
+by_standard_position
+
+# %% [markdown]
+# ## Check
+#
+# The third rotation brings in $\sqrt{b_2'^2 + b_3'^2}$, which cancels on the way
+# back. The difference from gacalc's cross product is $0$, so the construction gives
+# $a \times b$ for every $b$:
+
+# %%
+(by_standard_position - cross(a_exact, b_symbolic)).simplified()

@@ -10,9 +10,9 @@
 # # Step 4, the geometric product — worked example
 #
 # Companion to *Step 4: The Geometric Product, from Projection*. The next cell sets two
-# vectors. Every step after it is computed from them and drawn: `b` measured against
-# `a` (Step 2) gives `x` and `y`, and the product is `|a| * (x + y * e_12)`. Then the
-# quarter turn as a product, and the dot and wedge as `a` times the projection and the
+# vectors. Every step after it is computed from them and drawn: $b$ measured against
+# $a$ (Step 2) gives $x$ and $y$, and the product is $|a| * (x + y * e_{12})$. Then the
+# quarter turn as a product, and the dot and wedge as $a$ times the projection and the
 # rejection. Change the vectors and rerun the notebook to see the same steps for others.
 # The last section repeats the checks with every coordinate a symbol, so they hold for
 # all vectors.
@@ -42,6 +42,7 @@ from _bootstrap_live import (
 
 from gacalc.base import MultiVectorBase, Real
 from gacalc.g2 import Scalar, Vector, Versor, e_1, e_2, e_12
+from gacalc.nbdisplay import show_mult
 
 # %% [markdown]
 # ## The vectors
@@ -73,9 +74,9 @@ def product_from_projection(a: Vector, b: Vector) -> Versor:
 # %% [markdown]
 # ## The product from projection
 #
-# `x` is the signed length of `b`'s shadow on `a` and `y` its height above `a`. The
-# product keeps both, times `|a|`: the plain-number part is the dot product and the
-# `e_12` part, the signed area of the parallelogram, is the wedge.
+# $x$ is the signed length of $b$'s shadow on $a$ and $y$ its height above $a$. The
+# product keeps both, times $|a|$: the plain-number part is the dot product and the
+# $e_{12}$ part, the signed area of the parallelogram, is the wedge.
 
 # %%
 product: Versor = product_from_projection(a, b).simplified()
@@ -111,10 +112,22 @@ with scene_around(points=[P_A, P_B, P_A + P_B]) as fig_product:
 fig_product
 
 # %% [markdown]
+# ## The same product, term by term
+#
+# The multiplication rules give $a * b$ the way you multiply $(x + 2) * (x + 3)$:
+# every term of $a$ times every term of $b$, then add. Each row of the table is one
+# pair of terms. $e_1 * e_1$ and $e_2 * e_2$ are $1$, and $e_2 * e_1 = -e_{12}$.
+# The sum is the product from projection above.
+
+# %%
+show_mult(a, b)
+
+# %% [markdown]
 # ## The quarter turn is a product
 #
-# Multiplying by `e_12` on the right turns a vector a quarter turn: `b * e_12` is Step
-# 1's `r(b; π/2)`.
+# Multiplying by $e_{12}$ on the right turns a vector a quarter turn: $b * e_{12}$ is
+# Step
+# 1's $r(b; \pi/2)$.
 
 # %%
 quarter_turn: MultiVectorBase = b * e_12
@@ -138,7 +151,7 @@ fig_quarter
 # %% [markdown]
 # ## Dot and wedge through projection and rejection
 #
-# `a` times the projection of `b` onto `a` is a plain number, the dot product. `a` times
+# $a$ times the projection of $b$ onto $a$ is a plain number, the dot product. $a$ times
 # the rejection is pure area, the wedge.
 
 # %%
@@ -154,7 +167,7 @@ across
 # %% [markdown]
 # ## Checks on these vectors
 #
-# Each cell subtracts two things and shows the difference, `0` when they agree.
+# Each cell subtracts two things and shows the difference, $0$ when they agree.
 #
 # The product from projection is the product of the multiplication rules:
 
@@ -180,13 +193,13 @@ across
 (quarter_turn - b.rotate_90_degrees()).simplified()
 
 # %% [markdown]
-# `a * proj_a(b)` is the dot product:
+# $a * \operatorname{proj}_a(b)$ is the dot product:
 
 # %%
 (along - a.dot(b)).simplified()
 
 # %% [markdown]
-# `a * rej_a(b)` is the wedge:
+# $a * \operatorname{rej}_a(b)$ is the wedge:
 
 # %%
 (across - a.wedge(b)).simplified()
@@ -226,6 +239,12 @@ projection_symbolic: Vector = b_symbolic.projected_onto(a_symbolic)
 rejection_symbolic: Vector = b_symbolic.rejected_away_from(a_symbolic)
 
 # %% [markdown]
+# The product by the rules, term by term, for every $a$ and $b$:
+
+# %%
+show_mult(a_symbolic, b_symbolic)
+
+# %% [markdown]
 # The product from projection is the product of the multiplication rules:
 
 # %%
@@ -253,13 +272,13 @@ rejection_symbolic: Vector = b_symbolic.rejected_away_from(a_symbolic)
 (b_symbolic * e_12 - b_symbolic.rotate_90_degrees()).simplified()
 
 # %% [markdown]
-# `a * proj_a(b)` is the dot product:
+# $a * \operatorname{proj}_a(b)$ is the dot product:
 
 # %%
 (a_symbolic * projection_symbolic - a_symbolic.dot(b_symbolic)).simplified()
 
 # %% [markdown]
-# `a * rej_a(b)` is the wedge:
+# $a * \operatorname{rej}_a(b)$ is the wedge:
 
 # %%
 (a_symbolic * rejection_symbolic - a_symbolic.wedge(b_symbolic)).simplified()
@@ -282,8 +301,8 @@ rejection_symbolic: Vector = b_symbolic.rejected_away_from(a_symbolic)
 ).simplified()
 
 # %% [markdown]
-# Two unit vectors at angles `α` and `β` multiply to the cosine and sine of the angle
-# `θ = β - α` from the first to the second:
+# Two unit vectors at angles $\alpha$ and $\beta$ multiply to the cosine and sine of the
+# angle $\theta = \beta - \alpha$ from the first to the second:
 
 # %%
 alpha: sympy.Symbol

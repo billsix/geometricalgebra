@@ -12,6 +12,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`gacalc.nbdisplay`** — display-only notebook helpers (no matplotlib): `show_mult(a, b)`
+  and `product_table_markdown(a, b)`. `gacalc.nbplotutils.show_mult` still works (re-exported);
+  the table is now built without pandas.
 - **`transforms.line_to_line_rejection(from_vector=, away_from=)`** — the rejection away from
   `away_from`, restricted to the line of `from_vector`: an `InvertibleFunction` sending
   `c * a` to `c * R(a)` and back, raising `ValueError` on input off its line in either direction

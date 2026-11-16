@@ -9,13 +9,17 @@
 # %% [markdown]
 # # Frames and QR in two dimensions — calculations
 #
-# Companion to the *Frames and QR* chapter. Each section computes with gacalc's
-# `Frame` (`gacalc.frame`), then draws the result with ePiX, live: every figure is
-# built in its cell from the numbers gacalc has just computed. The colours are the
-# same throughout: the frame $v_i$ is blue, the orthogonal $w_i$ green, the unit
-# $u_i$ purple, and the target $y$ and its remainders red.
-# The axes are drawn light and unlabelled: here $x$ and $y$ are vectors, the
-# coordinates and the target of the frame's map.
+# Companion to the *Frames and QR* chapter. On graph paper the two axes are
+# perpendicular, and a point's coordinates are read straight off them. A frame is a
+# pair of slanted axes $v_1, v_2$; this notebook builds perpendicular axes $w_1, w_2$
+# from them, then uses those to read a point's coordinates in the slanted frame.
+#
+# Each section computes with gacalc's `Frame` (`gacalc.frame`), then draws the result
+# with ePiX, live: every figure is built in its cell from the numbers gacalc has just
+# computed. The colours are the same throughout: the frame $v_i$ is blue, the orthogonal
+# $w_i$ green, the unit $u_i$ purple, and the target $y$ and its remainders red. The
+# axes are drawn light and unlabelled: here $x$ and $y$ are vectors, the coordinates and
+# the target of the frame's map.
 
 # %%
 import pathlib

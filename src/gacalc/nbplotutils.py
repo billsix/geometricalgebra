@@ -24,7 +24,6 @@ Everything is representation-agnostic — it works on any ``MultiVectorBase``
 
 import contextlib
 import contextvars
-import itertools
 import math
 from collections.abc import Generator, Mapping, Sequence
 from typing import Any
@@ -33,10 +32,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import numpy as np
-import pandas as pd
 import sympy
 from IPython import get_ipython
-from IPython.display import Markdown, Math, display
+from IPython.display import display
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.patches import Polygon
@@ -46,7 +44,6 @@ from gacalc.base import (
     Blade,
     MultiVectorBase,
     Real,
-    blade_dict_latex,
     blade_latex,
 )
 from gacalc.gn import (
@@ -54,6 +51,10 @@ from gacalc.gn import (
     MultiVector,
     identity,
 )
+
+# show_mult lives in the display-only gacalc.nbdisplay (no matplotlib), so the
+# book's notebooks can use it; re-exported here for the demo notebooks.
+from gacalc.nbdisplay import show_mult as show_mult
 
 # The inline SVG backend is only meaningful inside an IPython/Jupyter session;
 # guarding it lets this module import headless (under pytest, or a plain script)
@@ -652,72 +653,3 @@ def plot_multivector(
     display(fig)
     plt.close(fig)
     return fig
-
-
-def _blade_terms(mv: MultiVectorBase) -> list[MultiVectorBase]:
-    """The single-blade multivectors that sum to ``mv`` (its product-table terms).
-
-    ``__iter__`` now yields a multivector's coefficient *values*, so the
-    component-by-component product breakdown decomposes via ``to_blade_dict``.
-    """
-    return [
-        type(mv).from_blade_dict({blade: coef})
-        for blade, coef in sorted(
-            mv.to_blade_dict().items(), key=lambda item: (len(item[0]), item[0])
-        )
-    ]
-
-
-def _expand_numerators_dict(mv: MultiVectorBase) -> Mapping[Blade, Real]:
-    """``mv``'s blade dict with each coefficient's NUMERATOR expanded and its
-    denominator left factored — for display.
-
-    This deliberately does NOT rebuild the multivector: it expands the raw
-    ``to_blade_dict()`` coefficients in place.  That matters for the eager-simplifying
-    ``Gn`` (`displaymv.py`), whose ``from_blade_dict`` re-runs ``sympy.simplify`` and
-    would re-factor the just-distributed numerator (e.g. back to ``a0*(b0*c0 + ...)``).
-    Expanding the dict directly keeps the distributed form on every representation.
-    """
-    out: dict[Blade, Real] = {}
-    blade: Blade
-    coef: Real
-    for blade, coef in mv.to_blade_dict().items():
-        numerator: sympy.Expr
-        denominator: sympy.Expr
-        numerator, denominator = sympy.fraction(sympy.together(coef))
-        out[blade] = sympy.expand(numerator) / denominator
-    return out
-
-
-def show_mult(a: MultiVectorBase, b: MultiVectorBase) -> None:
-    """Display (in a notebook) the full distributive expansion of the geometric
-    product ``a * b``: a table of every blade-term × blade-term product, then the
-    summed result, rendered as LaTeX.  A teaching aid for *why* the product is
-    what it is.
-    """
-    display(Markdown("**We want to evaluate**"))
-    # print the values as latex before they are multiplied
-    display(Math("$($" + a._repr_latex_() + "$)*($" + b._repr_latex_() + "$)$"))
-    display(Markdown("**Multivector Multiplication is distributive over addition**"))
-
-    data: list[tuple[MultiVectorBase, MultiVectorBase]] = list(
-        itertools.product(_blade_terms(a), _blade_terms(b))
-    )
-    result: list[tuple[object, str, object, str, object]] = [
-        (left, "*", right, "=", left * right) for left, right in data
-    ]
-    df: pd.DataFrame = pd.DataFrame(
-        result,
-        columns=pd.Index(["Left Component", "*", "Right Component", "=", "Product"]),
-    )
-    # Convert to markdown string and display
-    df_latex: pd.DataFrame = df.map(
-        lambda x: (
-            blade_dict_latex(_expand_numerators_dict(x))
-            if hasattr(x, "to_blade_dict")
-            else x
-        )
-    )
-    display(Markdown(df_latex.to_markdown(index=False)))
-    display(Markdown("**Summing all the products up, we get**"))
-    display(Math("$" + blade_dict_latex(_expand_numerators_dict(a * b)) + "$"))

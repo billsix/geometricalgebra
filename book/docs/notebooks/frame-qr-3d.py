@@ -332,8 +332,8 @@ with scene_3d(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig_step_3:
 fig_step_3
 
 # %% [markdown]
-# **The result.** The recovered $x$ (black), and the check: $x_1 * v_1 + x_2 * v_2 +
-# x_3 * v_3$, tip to tail (blue), ends on $y$.
+# **The result.** The recovered $x$ (black), and the check:
+# $x_1 * v_1 + x_2 * v_2 + x_3 * v_3$, tip to tail (blue), ends on $y$.
 
 # %%
 x: Vector = Scalar(x_1) * e_1 + Scalar(x_2) * e_2 + Scalar(x_3) * e_3

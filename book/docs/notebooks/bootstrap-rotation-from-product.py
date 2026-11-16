@@ -10,10 +10,10 @@
 # # Step 6, rotation through the product — worked example
 #
 # Companion to *Step 6: Rotation, through the Product*. The next cell sets three
-# vectors: `a`, `b`, and a `v` to rotate. Every step after it is computed from them and
-# drawn: the rotation from `a` to `b` applied to `v` as the one-sided product
-# `v * (a_hat * b_hat)`, then as the sandwich `R * v * R⁻¹` with
-# `R = b * a + |a| * |b|`. Both match Step 3's rotation built from projection. Change
+# vectors: $a$, $b$, and a $v$ to rotate. Every step after it is computed from them and
+# drawn: the rotation from $a$ to $b$ applied to $v$ as the one-sided product
+# $v * (\hat{a} * \hat{b})$, then as the sandwich $R * v * R^{-1}$ with
+# $R = b * a + |a| * |b|$. Both match Step 3's rotation built from projection. Change
 # the vectors and rerun the notebook to see the same steps for others. The last section
 # repeats the checks with every coordinate a symbol, so they hold for all vectors.
 
@@ -39,6 +39,7 @@ from _bootstrap_live import (
 
 from gacalc.base import MultiVectorBase, Real
 from gacalc.g2 import Scalar, Vector, Versor, e_1, e_2
+from gacalc.nbdisplay import show_mult
 from gacalc.transforms import versor_rotation
 
 # %% [markdown]
@@ -74,15 +75,22 @@ def rotation_from_to(a: Vector, b: Vector, v: Vector) -> Vector:
 # %% [markdown]
 # ## The one-sided form
 #
-# The product of the two unit vectors is `cos(θ) + sin(θ) * e_12`, with `θ` the angle
-# from `a` to `b`:
+# The product of the two unit vectors is $\cos(\theta) + \sin(\theta) * e_{12}$, with
+# $\theta$ the angle from $a$ to $b$:
 
 # %%
 unit_product: Versor = (a.normalize() * b.normalize()).simplified()
 unit_product
 
 # %% [markdown]
-# and multiplying `v` by it on the right rotates `v` by `θ`:
+# and multiplying $v$ by it on the right rotates $v$ by $\theta$:
+
+# %% [markdown]
+# Term by term: each term of $v$ times the plain-number part keeps its direction,
+# and times the $e_{12}$ part turns a quarter turn:
+
+# %%
+show_mult(v, unit_product)
 
 # %%
 one_sided: MultiVectorBase = (v * unit_product).simplified()
@@ -110,12 +118,24 @@ fig_one_sided
 # %% [markdown]
 # ## The sandwich
 #
-# `R = b * a + |a| * |b|` turns `a` halfway, onto the bisector
-# `h = |b| * a + |a| * b` (scaled by `|a|`), and `R * v * R⁻¹` is the whole rotation.
+# $R = b * a + |a| * |b|$ turns $a$ halfway, onto the bisector
+# $h = |b| * a + |a| * b$ (scaled by $|a|$), and $R * v * R^{-1}$ is the whole rotation.
 
 # %%
 R: Versor = b * a + Scalar(a.magnitude() * b.magnitude())
 R
+
+# %% [markdown]
+# The sandwich is two products. First $R * v$, term by term:
+
+# %%
+show_mult(R, v)
+
+# %% [markdown]
+# then that result times $R^{-1}$:
+
+# %%
+show_mult((R * v).simplified(), R.inverse())
 
 # %%
 h: Vector = Scalar(b.magnitude()) * a + Scalar(a.magnitude()) * b
@@ -143,7 +163,7 @@ fig_sandwich
 # %% [markdown]
 # ## Checks on these vectors
 #
-# Each cell subtracts two things and shows the difference, `0` when they agree.
+# Each cell subtracts two things and shows the difference, $0$ when they agree.
 #
 # The one-sided form is Step 3's rotation, built from projection:
 
@@ -151,13 +171,13 @@ fig_sandwich
 (one_sided - rotation_from_to(a, b, v)).simplified()
 
 # %% [markdown]
-# The other order turns the other way: it is the rotation from `b` to `a`:
+# The other order turns the other way: it is the rotation from $b$ to $a$:
 
 # %%
 (unit_product * v - rotation_from_to(b, a, v)).simplified()
 
 # %% [markdown]
-# `R` turns `a` onto the bisector: `R * a = |a| * h`:
+# $R$ turns $a$ onto the bisector: $R * a = |a| * h$:
 
 # %%
 (R * a - Scalar(a.magnitude()) * h).simplified()
@@ -193,6 +213,13 @@ v_symbolic: Vector = Scalar(v_1) * e_1 + Scalar(v_2) * e_2
 unit_product_symbolic: Versor = a_symbolic.normalize() * b_symbolic.normalize()
 
 # %% [markdown]
+# The one-sided form term by term for every $v$, with the $a$ and $b$ set at the top:
+# each coordinate of the result is a combination of $v_1$ and $v_2$.
+
+# %%
+show_mult(v_symbolic, unit_product)
+
+# %% [markdown]
 # The one-sided form is Step 3's rotation:
 
 # %%
@@ -202,7 +229,7 @@ unit_product_symbolic: Versor = a_symbolic.normalize() * b_symbolic.normalize()
 ).simplified()
 
 # %% [markdown]
-# The other order is the rotation from `b` to `a`:
+# The other order is the rotation from $b$ to $a$:
 
 # %%
 (
@@ -211,8 +238,8 @@ unit_product_symbolic: Versor = a_symbolic.normalize() * b_symbolic.normalize()
 ).simplified()
 
 # %% [markdown]
-# The step that makes the sandwich agree, `R̃ * R⁻¹ = a_hat * b_hat`, checked with unit
-# vectors at angles `α` and `β`:
+# The step that makes the sandwich agree, $\tilde{R} * R^{-1} = \hat{a} * \hat{b}$,
+# checked with unit vectors at angles $\alpha$ and $\beta$:
 
 # %%
 alpha: sympy.Symbol
@@ -224,14 +251,14 @@ R_unit: Versor = b_hat * a_hat + Scalar(1)
 (R_unit.reverse() * R_unit.inverse() - a_hat * b_hat).simplified()
 
 # %% [markdown]
-# With the `a` and `b` set at the top (a fully symbolic `R` makes `R⁻¹` slow) and `v`
-# symbolic, the sandwich is the one-sided form for every `v`:
+# With the $a$ and $b$ set at the top (a fully symbolic $R$ makes $R^{-1}$ slow) and $v$
+# symbolic, the sandwich is the one-sided form for every $v$:
 
 # %%
 (R * v_symbolic * R.inverse() - v_symbolic * unit_product).simplified()
 
 # %% [markdown]
-# and gacalc's `versor_rotation` is Step 3's rotation for every `v`:
+# and gacalc's `versor_rotation` is Step 3's rotation for every $v$:
 
 # %%
 (

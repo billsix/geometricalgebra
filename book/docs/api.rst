@@ -60,6 +60,12 @@ API Reference
 .. automodule:: gacalc.standardposition
    :members:
 
+``gacalc.nbdisplay``
+--------------------
+
+.. automodule:: gacalc.nbdisplay
+   :members:
+
 ``gacalc.nbplotutils``
 ----------------------
 

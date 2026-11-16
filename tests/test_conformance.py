@@ -432,12 +432,12 @@ def test_simplified_and_expanded_form(cls: type[MultiVectorBase]) -> None:
 
 
 def test_expand_numerators_dict_for_display() -> None:
-    # nbplotutils._expand_numerators_dict (used by show_mult): expand each
+    # nbdisplay._expand_numerators_dict (used by show_mult): expand each
     # coefficient's NUMERATOR, keep its denominator factored, and do NOT
     # rebuild the multivector, so the distributed form survives Gn's eager
     # __post_init__ simplify (which would otherwise re-factor it, e.g. back to
     # a0*(b0 + c0) -- the regression this fixed).
-    from gacalc.nbplotutils import _expand_numerators_dict
+    from gacalc.nbdisplay import _expand_numerators_dict
 
     a: sympy.Symbol
     b: sympy.Symbol

@@ -10,11 +10,11 @@
 # # Step 5, projection through the product — worked example
 #
 # Companion to *Step 5: Projection, through the Product*. The next cell sets two
-# vectors. Every step after it is computed from them and drawn: the inverse of `a`,
-# then the projection `(b · a) * a⁻¹` and the rejection `(b ∧ a) * a⁻¹`, which match
-# Step 2's construction by rotation. Change the vectors and rerun the notebook to see
-# the same steps for others. The last section repeats the checks with every coordinate
-# a symbol, so they hold for all vectors.
+# vectors. Every step after it is computed from them and drawn: the inverse of $a$, then
+# the projection $(b \cdot a) * a^{-1}$ and the rejection $(b \wedge a) * a^{-1}$, which
+# match Step 2's construction by rotation. Change the vectors and rerun the notebook to
+# see the same steps for others. The last section repeats the checks with every
+# coordinate a symbol, so they hold for all vectors.
 
 # %%
 import pathlib
@@ -41,6 +41,7 @@ from _bootstrap_live import (
 
 from gacalc.base import MultiVectorBase, Real
 from gacalc.g2 import Scalar, Vector, e_1, e_2
+from gacalc.nbdisplay import show_mult
 
 # %% [markdown]
 # ## The vectors
@@ -73,8 +74,8 @@ def project_and_reject_by_rotation(onto: Vector, v: Vector) -> tuple[Vector, Vec
 # %% [markdown]
 # ## The inverse of a vector
 #
-# `a * a = |a|^2` is a plain number, so `a⁻¹ = a / |a|^2`: along `a`, at length
-# `1 / |a|`.
+# $a * a = |a|^2$ is a plain number, so $a^{-1} = a / |a|^2$: along $a$, at length
+# $1 / |a|$.
 
 # %%
 a_inverse: Vector = a.inverse()
@@ -83,7 +84,15 @@ a_inverse
 # %% [markdown]
 # ## The projection through the product
 #
-# `proj_a(b) = (b · a) * a⁻¹`, where `b · a` is the plain-number part of `b * a`.
+# $\operatorname{proj}_a(b) = (b \cdot a) * a^{-1}$, where $b \cdot a$ is the
+# plain-number part of $b * a$.
+
+# %% [markdown]
+# $b * a$ term by term. Its plain-number part, the sum of the $e_1 * e_1$ and
+# $e_2 * e_2$ rows, is $b \cdot a$:
+
+# %%
+show_mult(b, a)
 
 # %%
 b_dot_a: Real = (b * a).scalar_part()
@@ -93,7 +102,14 @@ projection
 # %% [markdown]
 # ## The rejection, the same way
 #
-# `rej_a(b) = (b ∧ a) * a⁻¹`.
+# $\operatorname{rej}_a(b) = (b \wedge a) * a^{-1}$.
+
+# %% [markdown]
+# $(b \wedge a) * a^{-1}$ term by term: $e_{12}$ times each term of $a^{-1}$ is a
+# quarter turn of that term, so the result is a vector again:
+
+# %%
+show_mult(b.wedge(a), a_inverse)
 
 # %%
 rejection: MultiVectorBase = (b.wedge(a) * a_inverse).simplified()
@@ -138,9 +154,9 @@ fig_product
 # %% [markdown]
 # ## Checks on these vectors
 #
-# Each cell subtracts two things and shows the difference, `0` when they agree.
+# Each cell subtracts two things and shows the difference, $0$ when they agree.
 #
-# `a * a⁻¹ = 1`:
+# $a * a^{-1} = 1$:
 
 # %%
 (a * a_inverse - Scalar(1)).simplified()
@@ -161,7 +177,7 @@ by_rotation_projection, by_rotation_rejection = project_and_reject_by_rotation(a
 (rejection - by_rotation_rejection).simplified()
 
 # %% [markdown]
-# Together they give back `b`, since `b * a * a⁻¹ = b`:
+# Together they give back $b$, since $b * a * a^{-1} = b$:
 
 # %%
 (projection + rejection - b).simplified()
@@ -204,13 +220,20 @@ by_rotation_projection_symbolic, by_rotation_rejection_symbolic = (
 )
 
 # %% [markdown]
-# `a⁻¹ = a / |a|^2`:
+# $b * a$ term by term, for every $a$ and $b$; its plain-number part is
+# $a_1 * b_1 + a_2 * b_2$:
+
+# %%
+show_mult(b_symbolic, a_symbolic)
+
+# %% [markdown]
+# $a^{-1} = a / |a|^2$:
 
 # %%
 (a_symbolic.inverse() - Scalar(1 / (a_1**2 + a_2**2)) * a_symbolic).simplified()
 
 # %% [markdown]
-# `a * a⁻¹ = 1`:
+# $a * a^{-1} = 1$:
 
 # %%
 (a_symbolic * a_symbolic.inverse() - Scalar(1)).simplified()
@@ -228,7 +251,7 @@ by_rotation_projection_symbolic, by_rotation_rejection_symbolic = (
 (rejection_symbolic - by_rotation_rejection_symbolic).simplified()
 
 # %% [markdown]
-# Together they give back `b`:
+# Together they give back $b$:
 
 # %%
 (projection_symbolic + rejection_symbolic - b_symbolic).simplified()

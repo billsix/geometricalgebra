@@ -9,10 +9,12 @@
 # %% [markdown]
 # # Vector Addition — calculations
 #
-# The chapter's pictures say that `a + b` and `b + a` land on the same corner of the
-# parallelogram. Here is the same fact in coordinates, with the coordinates left as
-# symbols so it holds for *every* `a` and `b`: adding two vectors adds their
-# coordinates, and adding two ordinary numbers gives the same answer in either order.
+# You already know that $3 + 5 = 5 + 3$. The chapter's pictures say that $a + b$ and
+# $b + a$ land on the same corner of the parallelogram. Here is the same fact in
+# coordinates: adding two vectors adds their coordinates, and each coordinate is a sum
+# of two ordinary numbers, which gives the same answer in either order. The coordinates
+# are left as symbols, so it holds for every $a$ and $b$. Each check cell subtracts two
+# things and shows the difference, $0$ when they agree.
 
 # %%
 import sympy
@@ -29,57 +31,80 @@ a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
 a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
 b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
 
-a + b  # the coordinates add: (a_1 + b_1) * e_1 + (a_2 + b_2) * e_2
+# %% [markdown]
+# ## $a + b = b + a$
+#
+# Before running the next two cells, predict each coordinate of $a + b$ and of
+# $b + a$.
 
 # %%
-b + a  # the same two coordinates — each a sum of two numbers, in the other order
+a + b
 
 # %%
-a + b == b + a  # -> True
+b + a
 
 # %% [markdown]
-# The chapter's second pair of pictures: `a - b` is what you add to `b` to get back `a`,
-# and it is the same as adding the opposite, `a + (-b)`. Both hold coordinate by
-# coordinate.
+# Each coordinate is the same two numbers added in the other order:
 
 # %%
-(a - b) + b == a  # -> True
+(a + b) - (b + a)
+
+# %% [markdown]
+# ## Subtraction
+#
+# The chapter's second pair of pictures: $a - b$ is what you add to $b$ to get back
+# $a$,
 
 # %%
-a - b == a + (-b)  # -> True
+((a - b) + b) - a
+
+# %% [markdown]
+# and it is the same as adding the opposite, $a + (-b)$:
+
+# %%
+(a - b) - (a + (-b))
 
 # %% [markdown]
 # ## Translate: adding the same vector to everything
 #
-# Fix `b` and let the other input vary, and `+` becomes a one-input machine
-# `translate(b)`: feed it any point `v`, get `v + b`. This is **partial binding** --
-# one of the two blanks of `+` filled in. It moves *every* point the same way, so
-# applying it to the whole plane slides the graph paper by `b`.
+# Fix $b$ and let the other input vary, and $+$ becomes a one-input machine,
+# `translate(b=b)`: feed it any point $v$, get $v + b$. This is **partial binding**:
+# one of the two blanks of $+$ filled in. It moves every point the same way, so
+# applying it to the whole plane slides the graph paper by $b$.
 
 # %%
 t: InvertibleFunction[Vector] = translate(b=b)
-
-# applied to a: the one-off a + b, now produced by the machine
-t(a) == a + b  # -> True
-
-# %%
-# it moves every point by the same b -- here the two basis vectors
-[t(e_1), t(e_2)]  # -> [e_1 + b, e_2 + b]
-
-# %%
-# the whole sheet of graph paper: a lattice of points, each slid by b
-grid_points: list[Vector] = [i * e_1 + j * e_2 for i in range(3) for j in range(3)]
-translated: list[Vector] = [t(point) for point in grid_points]
-all(moved == point + b for moved, point in zip(translated, grid_points))  # -> True
+t
 
 # %% [markdown]
-# Its **inverse** is `translate(-b)`: sliding the paper back undoes the slide. And
-# `.at(0.5)` is the paper slid half way (the interpolation `translate(b * t)`).
+# Applied to $a$, it gives the one-off sum $a + b$:
 
 # %%
-# `inverse` is the inverse function itself (a callable), so apply it directly.
-t.inverse(t(a)) == a  # -> True
+t(a) - (a + b)
+
+# %% [markdown]
+# It moves every point by the same $b$. The two basis vectors:
 
 # %%
-halfway: Vector = t.at(0.5)(a)
-halfway == a + b * 0.5  # -> True
+[t(1 * e_1), t(1 * e_2)]
+
+# %% [markdown]
+# A whole sheet of graph paper, a 3 by 3 lattice of points, each slid by $b$. (No
+# separate check is needed: $a$ above is symbolic, so $t(a) = a + b$ already covers
+# every point.)
+
+# %%
+grid_points: list[Vector] = [i * e_1 + j * e_2 for i in range(3) for j in range(3)]
+[t(point) for point in grid_points]
+
+# %% [markdown]
+# Its **inverse** is `translate(b=-b)`: sliding the paper back undoes the slide.
+
+# %%
+t.inverse(t(a)) - a
+
+# %% [markdown]
+# `t.at(0.5)` is the paper slid half way, $a + 0.5 * b$:
+
+# %%
+t.at(0.5)(a) - (a + b * 0.5)
