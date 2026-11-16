@@ -8,7 +8,7 @@
 ## BLUF
 
 The book ends with "Part III — The 2D Bootstrap": six short pages that run the 2D arc end to end,
-with minimal prose and every proof shown. Each page has a sympy notebook, ePiX figures, and its
+with minimal prose and every proof shown. Each page has a worked-example notebook, ePiX figures, and its
 Lean theorems cited. The first iteration (2026-11-15) is complete, gate-green and merged. The
 maintainer is content with it but it is "not exactly what I want". The task stays open for a
 later iteration, whose changes the maintainer has not yet named.
@@ -35,12 +35,17 @@ later iteration, whose changes the maintainer has not yet named.
 
 ## The six steps as they stand
 
-1. **Rotation, from precalculus:** `r(v; θ) = cos(θ) * v + sin(θ) * r(v; π/2)` from the
-   angle-addition identities. It keeps length, angles add, and it is linear.
-2. **Projection of `b` onto `a`, from rotation:**
-   `P_a = (R_a^{e₁})⁻¹ ∘ P_{e₁} ∘ R_a^{e₁}`, which gives
-   `x = (a₁*b₁ + a₂*b₂)/|a|`, `y = (a₁*b₂ − a₂*b₁)/|a|` and
-   `P_a(b) = (a₁*b₁ + a₂*b₂)/(a₁² + a₂²) * a`.
+Updated 2026-11-16 after `tasks/archive/2026/11/16/bootstrap-dot-wedge-from-proj-rej.md`,
+`quarter-turn-as-named-base-case.md` and `bootstrap-notebooks-show-derivations.md`.
+
+1. **Rotation, from precalculus:** the base case first, the quarter turn
+   `r(v; π/2) = (−v₂, v₁)` (`eq-bootstrap-quarter-turn`). Then `r(v; θ) = cos(θ) * v + sin(θ) * r(v; π/2)`
+   from the angle-addition identities. It keeps length, angles add, and it is linear.
+2. **Projection of `b` onto `a`, from rotation:** the base cases `proj_{e₁}(b) = b₁ * e₁` and
+   `rej_{e₁}(b) = b₂ * e₂`, then `proj_a = (R_a^{e₁})⁻¹ ∘ proj_{e₁} ∘ R_a^{e₁}` (and `rej_a` the
+   same way). These give `x = (a₁*b₁ + a₂*b₂)/|a|`, `y = (a₁*b₂ − a₂*b₁)/|a|`,
+   `proj_a(b) = (a₁*b₁ + a₂*b₂)/(a₁² + a₂²) * a` and
+   `rej_a(b) = (a₁*b₂ − a₂*b₁)/(a₁² + a₂²) * r(a; π/2)`.
 3. **Rotation from `a` to `b`, from projection, for every `v`:** one right triangle drawn twice.
    - First, `b` measured against `a`: `cos(θ) = x/|b|`, `sin(θ) = y/|b|`.
    - Then the same triangle on `v`: `v' = cos(θ) * v + sin(θ) * r(v; π/2)`.
@@ -50,11 +55,19 @@ later iteration, whose changes the maintainer has not yet named.
      - that only directions matter;
      - `â ↦ b̂`.
 4. **The geometric product, from projection:** `a * b = |a| * (x + y * e₁₂)`. It equals the
-   product of the multiplication rules, splits as `a · b + a ∧ b`, and `â * b̂ = cos(θ) + sin(θ) * e₁₂`.
-5. **Projection through the product:** `P_a(b) = (b · a) * a⁻¹`, and the rejection
-   `(b ∧ a) * a⁻¹`.
+   product of the multiplication rules and splits as `a · b + a ∧ b`. The page also shows:
+   - the quarter turn as a product, `r(v; π/2) = v * e₁₂`;
+   - `a · b = a * proj_a(b)` and `a ∧ b = a * rej_a(b)`, stated as results, with the mirrors
+     `b * proj_b(a) = a · b` and `b * rej_b(a) = −(a ∧ b)`;
+   - `â * b̂ = cos(θ) + sin(θ) * e₁₂`.
+5. **Projection through the product:** second versions `proj_a(b) = (b · a) * a⁻¹` and
+   `rej_a(b) = (b ∧ a) * a⁻¹`, each shown equal to Step 2's.
 6. **Rotation through the product:** the one-sided `v * (â * b̂)` (2D only), then the sandwich
    `R * v * R⁻¹` with `R = b * a + |a| * |b|`, and a proof that the two agree.
+
+Each page's notebook is a worked example: set vectors, every step drawn with live ePiX, and one
+check per cell, first on those values and then symbolically (`tasks/reference/book-outline.md`,
+"Structural conventions").
 
 ## History: what we tried, what we kept, what we dropped
 
