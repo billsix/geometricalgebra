@@ -19,6 +19,7 @@
 import sympy
 
 import gacalc.g3 as g3
+from gacalc.nbdisplay import show_mult
 
 p_1: sympy.Symbol
 p_2: sympy.Symbol
@@ -42,3 +43,11 @@ product_3d: g3.Versor = p * q
 assert product_3d.r_vector_part(0) == p.inner_product(q)  # the dot: the grade-0 part
 assert product_3d.r_vector_part(2) == p.outer_product(q)  # the wedge: the grade-2 part
 product_3d
+
+# %% [markdown]
+# The product term by term: nine pairs now, three of them a direction times
+# itself. Those three rows add to the dot; the other six pair up, `e_i * e_j` with
+# `e_j * e_i`, into the three bivector parts of the wedge.
+
+# %%
+show_mult(p, q)

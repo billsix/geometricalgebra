@@ -39,6 +39,7 @@ from _bootstrap_live import (
 
 from gacalc.base import MultiVectorBase, Real
 from gacalc.g2 import Scalar, Vector, Versor, e_1, e_2
+from gacalc.nbdisplay import show_mult
 from gacalc.transforms import versor_rotation
 
 # %% [markdown]
@@ -84,6 +85,13 @@ unit_product
 # %% [markdown]
 # and multiplying `v` by it on the right rotates `v` by `θ`:
 
+# %% [markdown]
+# Term by term: each term of `v` times the plain-number part keeps its direction,
+# and times the `e_12` part turns a quarter turn:
+
+# %%
+show_mult(v, unit_product)
+
 # %%
 one_sided: MultiVectorBase = (v * unit_product).simplified()
 one_sided
@@ -116,6 +124,18 @@ fig_one_sided
 # %%
 R: Versor = b * a + Scalar(a.magnitude() * b.magnitude())
 R
+
+# %% [markdown]
+# The sandwich is two products. First `R * v`, term by term:
+
+# %%
+show_mult(R, v)
+
+# %% [markdown]
+# then that result times `R⁻¹`:
+
+# %%
+show_mult((R * v).simplified(), R.inverse())
 
 # %%
 h: Vector = Scalar(b.magnitude()) * a + Scalar(a.magnitude()) * b
@@ -191,6 +211,13 @@ a_symbolic: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
 b_symbolic: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
 v_symbolic: Vector = Scalar(v_1) * e_1 + Scalar(v_2) * e_2
 unit_product_symbolic: Versor = a_symbolic.normalize() * b_symbolic.normalize()
+
+# %% [markdown]
+# The one-sided form term by term for every `v`, with the `a` and `b` set at the top:
+# each coordinate of the result is a combination of `v_1` and `v_2`.
+
+# %%
+show_mult(v_symbolic, unit_product)
 
 # %% [markdown]
 # The one-sided form is Step 3's rotation:

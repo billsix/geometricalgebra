@@ -19,6 +19,7 @@ import sympy
 
 from gacalc.base import MultiVectorBase
 from gacalc.g2 import Scalar, Vector, Versor
+from gacalc.nbdisplay import show_mult
 from gacalc.transforms import projection_rotation, versor_rotation
 
 # Two unit vectors, at angles alpha and beta from the x-axis.
@@ -39,6 +40,14 @@ b_hat: Vector = (
 # with theta = beta - alpha. We multiplied the vectors; the cos and sin appeared.
 R: Versor = (a_hat * b_hat).simplified()
 R
+
+# %% [markdown]
+# The same product term by term. The plain-number rows add to
+# `cos(α) * cos(β) + sin(α) * sin(β)`, which is `cos(β - α)`, and the `e_12` rows to
+# `sin(β - α)`: the angle-difference identities, from multiplying.
+
+# %%
+show_mult(a_hat, b_hat)
 
 # %% [markdown]
 # **The rotor carries `a_hat` to `b_hat`.** Right-multiply `a_hat` by the product

@@ -32,6 +32,7 @@ import sympy
 import gacalc.g2 as g2
 from gacalc.base import Real
 from gacalc.g2 import Scalar, Vector
+from gacalc.nbdisplay import show_mult
 
 a_1: sympy.Symbol
 a_2: sympy.Symbol
@@ -42,6 +43,13 @@ a: Vector = Scalar(a_1) * Vector.e_1 + Scalar(a_2) * Vector.e_2
 b: Vector = Scalar(b_1) * Vector.e_1 + Scalar(b_2) * Vector.e_2
 product: g2.Versor = a * b
 product  # the full geometric product: a scalar part + an e_12 (bivector) part
+
+# %% [markdown]
+# The product term by term: the `e_1 * e_1` and `e_2 * e_2` rows make the grade-0
+# part, the other two rows the grade-2 part.
+
+# %%
+show_mult(a, b)
 
 # %% [markdown]
 # ## Dot product — the grade-0 part

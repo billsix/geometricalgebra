@@ -19,6 +19,7 @@
 import sympy
 
 from gacalc.g2 import Bivector, Scalar, Vector, Versor
+from gacalc.nbdisplay import show_mult
 from gacalc.transforms import plane_rotation
 
 theta: sympy.Symbol = sympy.Symbol("theta", real=True)
@@ -36,6 +37,13 @@ a * Bivector.e_12  # -> (-a_2, a_1)
 R: Versor = Scalar(sympy.cos(theta)) + Scalar(sympy.sin(theta)) * Bivector.e_12
 full_angle_result: Vector = (a * R).simplified()
 full_angle_result
+
+# %% [markdown]
+# The same product term by term: each coordinate of `a` times `cos(theta)` stays
+# put, and times `sin(theta) * e_12` turns a quarter turn.
+
+# %%
+show_mult(a, R)
 
 # %%
 # The coordinate formula from *Proof: Rotate*, written out component by

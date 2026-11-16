@@ -42,6 +42,7 @@ from _bootstrap_live import (
 
 from gacalc.base import MultiVectorBase, Real
 from gacalc.g2 import Scalar, Vector, Versor, e_1, e_2, e_12
+from gacalc.nbdisplay import show_mult
 
 # %% [markdown]
 # ## The vectors
@@ -109,6 +110,17 @@ with scene_around(points=[P_A, P_B, P_A + P_B]) as fig_product:
     )
     right_angle(corner=P_FOOT, toward_a=P_A, toward_b=P_B - P_FOOT)
 fig_product
+
+# %% [markdown]
+# ## The same product, term by term
+#
+# The multiplication rules give `a * b` the way you multiply `(x + 2) * (x + 3)`:
+# every term of `a` times every term of `b`, then add. Each row of the table is one
+# pair of terms. `e_1 * e_1` and `e_2 * e_2` are `1`, and `e_2 * e_1 = -e_12`.
+# The sum is the product from projection above.
+
+# %%
+show_mult(a, b)
 
 # %% [markdown]
 # ## The quarter turn is a product
@@ -224,6 +236,12 @@ a_symbolic: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
 b_symbolic: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
 projection_symbolic: Vector = b_symbolic.projected_onto(a_symbolic)
 rejection_symbolic: Vector = b_symbolic.rejected_away_from(a_symbolic)
+
+# %% [markdown]
+# The product by the rules, term by term, for every `a` and `b`:
+
+# %%
+show_mult(a_symbolic, b_symbolic)
 
 # %% [markdown]
 # The product from projection is the product of the multiplication rules:

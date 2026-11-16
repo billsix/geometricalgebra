@@ -41,6 +41,7 @@ from _bootstrap_live import (
 
 from gacalc.base import MultiVectorBase, Real
 from gacalc.g2 import Scalar, Vector, e_1, e_2
+from gacalc.nbdisplay import show_mult
 
 # %% [markdown]
 # ## The vectors
@@ -85,6 +86,13 @@ a_inverse
 #
 # `proj_a(b) = (b · a) * a⁻¹`, where `b · a` is the plain-number part of `b * a`.
 
+# %% [markdown]
+# `b * a` term by term. Its plain-number part, the sum of the `e_1 * e_1` and
+# `e_2 * e_2` rows, is `b · a`:
+
+# %%
+show_mult(b, a)
+
 # %%
 b_dot_a: Real = (b * a).scalar_part()
 projection: Vector = (Scalar(b_dot_a) * a_inverse).simplified()
@@ -94,6 +102,13 @@ projection
 # ## The rejection, the same way
 #
 # `rej_a(b) = (b ∧ a) * a⁻¹`.
+
+# %% [markdown]
+# `(b ∧ a) * a⁻¹` term by term: `e_12` times each term of `a⁻¹` is a quarter turn of
+# that term, so the result is a vector again:
+
+# %%
+show_mult(b.wedge(a), a_inverse)
 
 # %%
 rejection: MultiVectorBase = (b.wedge(a) * a_inverse).simplified()
@@ -202,6 +217,13 @@ by_rotation_rejection_symbolic: Vector
 by_rotation_projection_symbolic, by_rotation_rejection_symbolic = (
     project_and_reject_by_rotation(a_symbolic, b_symbolic)
 )
+
+# %% [markdown]
+# `b * a` term by term, for every `a` and `b`; its plain-number part is
+# `a_1 * b_1 + a_2 * b_2`:
+
+# %%
+show_mult(b_symbolic, a_symbolic)
 
 # %% [markdown]
 # `a⁻¹ = a / |a|^2`:

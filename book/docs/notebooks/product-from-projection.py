@@ -23,6 +23,7 @@ import sympy
 
 from gacalc.base import Real
 from gacalc.g2 import Bivector, Scalar, Vector, Versor, e_1, e_2
+from gacalc.nbdisplay import show_mult
 
 a_1: sympy.Symbol
 a_2: sympy.Symbol
@@ -72,6 +73,12 @@ built: Versor = Scalar(magnitude) * (Versor.from_real(x) + Scalar(y) * Bivector.
 product: Versor = b * a
 assert (product - built).simplified() == Versor.zero()
 product
+
+# %% [markdown]
+# The same product by the multiplication rules, term by term:
+
+# %%
+show_mult(b, a)
 
 # %% [markdown]
 # ## The two parts are the dot and the wedge

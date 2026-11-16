@@ -74,6 +74,18 @@ def _latex(mv: MultiVectorBase) -> str:
     return blade_dict_latex(_expand_numerators_dict(mv))
 
 
+def _math_body(latex: str) -> str:
+    """``latex`` without its surrounding ``$`` / ``$$`` delimiters.
+
+    ``IPython.display.Math`` adds its own; a delimiter left inside breaks the
+    equation environment the book's PDF build puts it in.
+
+    >>> _math_body("$$3 e_{1}$$")
+    '3 e_{1}'
+    """
+    return latex.strip().strip("$").strip()
+
+
 def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
     """A Markdown table of every term of ``a`` times every term of ``b``.
 
@@ -106,8 +118,10 @@ def show_mult(a: MultiVectorBase, b: MultiVectorBase) -> None:
     (``product_table_markdown``), then the sum, all rendered as LaTeX.
     """
     display(Markdown("**We want to evaluate**"))
-    display(Math("$($" + a._repr_latex_() + "$)*($" + b._repr_latex_() + "$)$"))
+    left: str = _math_body(a._repr_latex_())
+    right: str = _math_body(b._repr_latex_())
+    display(Math(f"({left}) * ({right})"))
     display(Markdown("**Multivector Multiplication is distributive over addition**"))
     display(Markdown(product_table_markdown(a, b)))
     display(Markdown("**Summing all the products up, we get**"))
-    display(Math("$" + blade_dict_latex(_expand_numerators_dict(a * b)) + "$"))
+    display(Math(_math_body(_latex(a * b))))

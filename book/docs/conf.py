@@ -162,6 +162,12 @@ nb_execution_timeout = 600
 # docs.sh's `set -eu`, a non-zero sphinx-build now aborts `make docs`.
 nb_execution_raise_on_error = True
 
+# Render a notebook's Markdown *output* (IPython.display.Markdown) with the MyST parser
+# and the extensions above, not myst-nb's default CommonMark: CommonMark has no tables
+# and no $...$ math, so gacalc.nbdisplay.show_mult's product table would print as raw
+# "| ... |" text.
+nb_render_markdown_format = "myst"
+
 # Show line numbers on every notebook code cell, in HTML and the LaTeX/PDF, the way
 # Model View Projection does. Library source quoted with `literalinclude` gets its own
 # `:linenos:` + `:lineno-match:` (see tasks/reference/book-and-docs-pipeline.md).
