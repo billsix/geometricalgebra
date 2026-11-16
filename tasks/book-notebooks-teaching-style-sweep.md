@@ -1,92 +1,66 @@
 # Bring every book notebook up to the teaching-style standard
 
-**Status:** proposed — needs go-ahead (questions answered 2026-11-16)
-**Priority:** 6
-**Difficulty:** 7 (22 notebooks, each a rewrite of its Markdown and cell layout, plus a book build)
-**Started:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
+**Completed:** 2026-11-16 (William Emerison Six <billsix@gmail.com>; done by Claude on the
+`book-notebooks-teaching-style` branch)
 
-## BLUF
+## What was done
 
-`tasks/reference/book-notebook-teaching-style.md` describes how the maintainer wants the book's
-notebooks to teach: a guided lab, one idea per cell, starting from known algebra, prose math as
-LaTeX, hand reductions as justified chains, `show_mult` tables where the expansion is the point, and
-no developer noise. Revise every non-placeholder notebook in `book/docs/notebooks/` to meet it. Done
-means: each notebook below passes that doc's checklist (recorded per notebook in this task), and
-`make format`, `make test` and `make docs` pass.
+Every book notebook with content (20 of `book/docs/notebooks/*.py`; the task first said 22, a
+miscount) was revised to the standard in `tasks/reference/book-notebook-teaching-style.md`. The ten
+16-line placeholders were left alone; they get the standard when written. The `show_mult` tables
+went in first, in `tasks/archive/2026/11/16/book-notebooks-show-mult-tables.md`; the style of the
+proof companions moved here from `tasks/proof-notebooks-student-math-notation-style.md`, which keeps
+only the backfill of a notebook for every proof (decided by the maintainer 2026-11-16).
 
-## Context
+Gap survey before the revision, and what each notebook got. Codes: **L** prose math in backticks,
+not `$…$` LaTeX; **A** checks that showed nothing or gave the answer first (`assert`,
+`== … # -> True`); **D** a list of coordinate differences instead of one subtraction cell;
+**C** teaching prose in code comments; **M** several ideas in one cell; **O** an opening that did not
+start from what the reader knows.
 
-- **Read first:** `tasks/reference/book-notebook-teaching-style.md` (the standard and its
-  checklist), `tasks/reference/book-outline.md` ("Structural conventions": the companion-notebook
-  structure this sweep must keep), and `CLAUDE.md` ("Math notation for readers"; "The book's
-  notebooks are hand-written Python under the full standard").
-- **The notebooks (22 with content, counted 2026-11-16):**
-  - Part III bootstrap: `bootstrap-rotation.py`, `bootstrap-projection.py`,
-    `bootstrap-rotation-from-projection.py`, `bootstrap-product.py`,
-    `bootstrap-projection-from-product.py`, `bootstrap-rotation-from-product.py`.
-  - Proof companions: `proof-projection.py`, `proof-projection-3d.py`, `proof-rotate-from-a-to-b.py`,
-    `proof-cross.py`, `proof-reciprocal-frame.py`.
-  - Frames: `frame-qr-2d.py`, `frame-qr-3d.py`.
-  - Other chapters: `geometric-product.py`, `rotation-from-vectors.py`, `product-from-projection.py`,
-    `levels-of-abstraction.py`, `vector-addition.py`, `rotate.py`, `three-dimensions.py`.
-  - Not in scope: the ten 16-line placeholders (`canonical-form.py`, `defining-g2.py`, `dual.py`,
-    `hook.py`, `one-dimension.py`, `projection-rejection-3d.py`, `projection.py`, `reflection.py`,
-    `relative-graph-paper.py`, `vectors-as-number-lines.py`). They get the standard when written.
-- **Related open tasks:**
-  - The `show_mult` tables were added first, in
-    `tasks/archive/2026/11/16/book-notebooks-show-mult-tables.md` (14 tables in 8 notebooks).
-  - `tasks/proof-notebooks-student-math-notation-style.md` now holds only the backfill (a notebook
-    for every proof); the style of the existing proof companions is this task's (Decision 1).
-  - `tasks/live-epix-figure-background.md` edits the six bootstrap notebooks and both frame
-    notebooks; do it first or after, not interleaved.
-- **Already partly there:** the bootstrap notebooks follow the structure in `book-outline.md`, and
-  `frame-qr-2d.py` already writes its prose math as `$…$`. Book notebooks carry no
-  `# pyright: ignore` trailers.
-
-## Plan
-
-1. For each notebook, run the checklist in `tasks/reference/book-notebook-teaching-style.md` and
-   record the gaps in a table in this task (one row per notebook).
-2. Revise one group at a time (bootstrap, proofs, frames, other), smallest notebooks first in each
-   group. Keep every check cell and its result; change Markdown, split cells, add lead-ins, convert
-   prose math to LaTeX.
-3. After each group: `make format` (ty over `book/docs/notebooks`), `tools/check_annotations.py`
-   (no rows), `tools/check_epix_keywords.py`, and `make docs`, checking the rendered HTML pages.
-4. Record anything the standard did not anticipate back into the reference doc.
-
-## Gap survey (2026-11-16, before revision)
-
-Codes: **L** prose math in backticks, not `$…$` LaTeX; **A** checks that show nothing or give the
-answer first (`assert`, `== … # -> True`); **D** a list of coordinate differences instead of one
-subtraction cell; **C** teaching prose in code comments instead of Markdown; **M** several ideas
-in one cell; **O** opening does not say what the notebook shows or start from what the reader knows.
-
-| Notebook | Gaps |
+| Notebook | Gaps fixed |
 |---|---|
-| `bootstrap-rotation.py`, `bootstrap-projection.py`, `bootstrap-rotation-from-projection.py`, `bootstrap-product.py`, `bootstrap-projection-from-product.py`, `bootstrap-rotation-from-product.py` | L (structure already follows `book-outline.md`) |
-| `proof-projection.py` | L, A, D, C, M |
-| `proof-projection-3d.py` | O, L, D, A, M |
-| `proof-rotate-from-a-to-b.py` | L, A, C, M |
+| `bootstrap-rotation.py`, `bootstrap-projection.py`, `bootstrap-rotation-from-projection.py`, `bootstrap-product.py`, `bootstrap-projection-from-product.py`, `bootstrap-rotation-from-product.py` | L (they already followed `book-outline.md`'s structure) |
+| `proof-projection.py` | L, A, D, C, M; the worked example now shows where $a$ lands in standard position |
+| `proof-projection-3d.py` | O, L, D, A, M; cites `projectSP_eq_proj` / `rejectSP_eq_reject` |
+| `proof-rotate-from-a-to-b.py` | L, A, C, M; `symbolically_equal(...) # -> True` became subtraction cells |
 | `proof-cross.py` | L, D |
-| `proof-reciprocal-frame.py` | A (12 sites); prose math already LaTeX |
-| `frame-qr-2d.py`, `frame-qr-3d.py` | none found: prose math is LaTeX, checks are subtraction cells |
-| `geometric-product.py` | L, A, C |
-| `rotation-from-vectors.py` | L, C |
+| `proof-reciprocal-frame.py` | A (12 sites); the Kronecker-delta tables show as `sympy.Matrix` |
+| `frame-qr-2d.py` | O (a graph-paper opening) |
+| `frame-qr-3d.py` | one formula split across two lines |
+| `geometric-product.py` | O, L, A, C (opens from multiplying by $i$) |
+| `rotation-from-vectors.py` | O, L, C (opens from the angle-difference identity) |
 | `product-from-projection.py` | L, A, M |
 | `levels-of-abstraction.py` | L, A, C |
 | `vector-addition.py` | L, A, C |
 | `rotate.py` | L, A |
 | `three-dimensions.py` | L, A |
 
-Not in scope of this sweep: adding live ePiX figures or a values cell to the Part I and proof
-notebooks (the structure in `book-outline.md` was written for the Part III companions); recorded
-here as a possible follow-up, not done.
+## Judgment calls
 
-## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-16)
+- **Checks are subtraction cells showing $0$**, per `book-outline.md`, including where a notebook had
+  `symbolically_equal` or `==` returning `True`: `.simplified()` on the difference reduced every
+  one to $0$, trigonometric ones included.
+- **`vector-addition.py`'s lattice check was dropped, not kept as a list of nine zeros.** The
+  symbolic $t(a) = a + b$ check already covers every point, and the cell now shows the slid lattice;
+  the notebook says so.
+- **Backticked code names stayed code** (`Vector.rotate(θ)`, `versor_rotation`, Lean theorem names,
+  file paths); only math became LaTeX. In the six Part III notebooks this was done by an allowlisted
+  symbol table (`tasks/adhoc/book-notebooks-teaching-style-sweep/backticks_to_latex.py`, idempotent),
+  and the paragraphs that grew past 88 columns were reflowed without splitting a formula
+  (`reflow_long_markdown.py`).
+- **Not done, as out of scope:** adding live ePiX figures or a values cell to the Part I and proof
+  notebooks. `book-outline.md`'s companion structure was written for Part III; extending it is a
+  separate decision.
 
-1. **This task owns the style of every book notebook**, including the proof companions; it took
-   over the style half of `tasks/proof-notebooks-student-math-notation-style.md`, which keeps only
-   the backfill of missing proof notebooks.
-2. **The `show_mult` tables stay a separate task, done first**
-   (`tasks/archive/2026/11/16/book-notebooks-show-mult-tables.md`); this sweep revises their lead-ins along with the
-   rest of each notebook.
+## Verification
+
+- Each revised notebook ran cell by cell with the sweep's cell runner, promoted at the end to
+  `tools/run_notebook_cells.py` (doctested), which prints every code cell's
+  last value: in the rewritten notebooks every check cell printed a zero value. The six Part III
+  notebooks, whose code did not change, ran without error inside the `gacalc` image (they need
+  ePiX).
+- `ruff check`, `ruff format`, `ty check book/docs/notebooks` and `tools/check_annotations.py` clean;
+  a scan found no inline `$…$` split across lines.
+- In the image: the book built (HTML and PDF), `entrypoint/format.sh` passed, and
+  `pytest -m "not slow"` passed.

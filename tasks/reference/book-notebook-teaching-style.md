@@ -94,6 +94,29 @@ Each of these is in `notebooks/displaymv.py` as of 2026-11-16 and should not be 
   the proof is `tasks/reference/geometric-product-associativity.md` and its book page, once there is
   one.
 
+## Mechanics (learned in the 2026-11-16 sweep)
+
+From `tasks/archive/2026/11/16/book-notebooks-teaching-style-sweep.md`:
+
+- **Keep each inline `$…$` on one line.** A formula split across two comment lines is fragile in
+  the Markdown parser; put a long one on its own line as display math (`$$…$$`).
+- **Math in `$…$`, code in backticks.** A name the reader types (`versor_rotation`,
+  `Vector.rotate(θ)`, a Lean theorem, a file path) stays in backticks; a formula becomes LaTeX.
+- **A check is a subtraction that shows $0$.** `(left - right).simplified()` reduces to $0$ even
+  for trigonometric identities, so `symbolically_equal(...)`, `==` and `assert` are not needed in
+  a notebook. When the left side is symbolic, one check covers every value, and a list of
+  per-point differences adds nothing.
+- **A table of numbers is shown as `sympy.Matrix`**, which renders as a LaTeX matrix
+  (`proof-reciprocal-frame.py`'s Kronecker-delta tables).
+- **A cell whose helper displays a figure and also returns it** (`plot_multivector`) binds the
+  result to a name, so Jupyter does not show the figure twice; a stray trailing expression to
+  suppress it is noise.
+- **`show_mult`'s tables need `nb_render_markdown_format = "myst"`** in `book/docs/conf.py`; see
+  `tasks/reference/book-and-docs-pipeline.md`.
+- **Read the check cells without a book build:** from the notebook's directory,
+  `PYTHONPATH=<repo>/src python <repo>/tools/run_notebook_cells.py <notebook>.py` runs it cell by
+  cell and prints each code cell's last value (the ePiX notebooks need the image).
+
 ## Checklist for a new or revised book notebook
 
 - The page's structure follows `tasks/reference/book-outline.md` ("Structural conventions").
