@@ -1,6 +1,6 @@
 # 2D bootstrap: name proj/rej, and state dot and wedge as `a * proj_a(b)` and `a * rej_a(b)`
 
-**Status:** proposed — needs go-ahead (Open question 1 still blocks implementation)
+**Status:** proposed — needs go-ahead (all questions answered)
 **Priority:** 4
 **Difficulty:** 4
 **Created:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
@@ -83,6 +83,9 @@ change is a restatement of the definition, not a new one.
    Give the rejection its own definition (`rej_{\vec{a}}`, "keep the y-coordinate", conjugated
    by the same rotation) and its formula as a labelled equation (`eq-bootstrap-rejection`). Keep
    the `proj + rej = b` check, written with the names.
+   1b. **Step 2's base cases** (Decision 6): rename `P_{e₁}` to `proj_{e₁}`, add `rej_{e₁}`, state
+   both formulas as labelled equations, cite them from the general definitions, add the
+   reduces-to-the-base-case line, and add Lean `reject_onto_x_axis`.
 2. **Step 4:** keep the definition `a * b = |a| * (x + y * e₁₂)`. Then add a short section stating
    `a · b = a * proj_a(b)` and `a ∧ b = a * rej_a(b)` as results, each citing the Step 2 equation
    it uses (Decision 2). Add the mirror lines `b * proj_b(a) = a · b` and
@@ -138,15 +141,37 @@ record.
    form `a * proj_a(b)`. Recorded in that task.
 5. **Scope:** Part III only. Part I's projection pages are unchanged.
 
+6. **Step 2's base case keeps the operation's name** (answered 2026-11-16). `P_{e₁}` ("keep the
+   x-coordinate") is the *base case* of projection, as `r(v; π/2)` is the base case of rotation in
+   Step 1. The general projection can't be defined without it, so it takes the same name: Step 2
+   becomes `proj_a = (R_a^{e₁})⁻¹ ∘ proj_{e₁} ∘ R_a^{e₁}`, with
+   `rej_a = (R_a^{e₁})⁻¹ ∘ rej_{e₁} ∘ R_a^{e₁}` beside it. The general rule is in
+   `tasks/reference/reduction-to-standard-position.md` ("Base case, then general case"), with a
+   pointer in `tasks/reference/book-outline.md` and `CLAUDE.md`.
+
+   What follows for this task (folded into the Plan as step 1b):
+   - State the base cases directly, each as its own labelled equation:
+     `proj_{e₁}(b) = b₁ * e₁` (`eq-bootstrap-projection-base`) and `rej_{e₁}(b) = b₂ * e₂`
+     (`eq-bootstrap-rejection-base`). Today they exist only in words.
+   - The general definitions cite those labels.
+   - After the general formula, a one-line check that `proj_a` reduces to `proj_{e₁}` when `a` is
+     along `e₁`, citing Lean's `proj_onto_x_axis` (`StandardPosition2D.lean`). This is a
+     consistency check, not the base case's justification. **Lean has no rejection twin**: add
+     `reject_onto_x_axis` (`reject (vec m 0) v = vec 0 v.c2`) next to it.
+
 ## Open questions
 
-1. **Step 2's operator symbols:** Step 2 defines projection as a composition,
-   `P_a = (R_a^{e₁})⁻¹ ∘ P_{e₁} ∘ R_a^{e₁}`, where `P_{e₁}` is "keep the x-coordinate". By
-   decision 1 that is a projection formula. Should it become
-   `proj_a = (R_a^{e₁})⁻¹ ∘ proj_{e₁} ∘ R_a^{e₁}`, with the rejection
-   `rej_a = (R_a^{e₁})⁻¹ ∘ rej_{e₁} ∘ R_a^{e₁}` beside it? *(Recommend: yes, so `P` leaves
-   Part III. I ask because you answered "no" to replacing `P` everywhere, and this is where the
-   two answers could conflict.)*
+None. The task is ready to start on your go-ahead.
+
+## Noticed, not in scope (for a later decision)
+
+- **Step 1 derives its base case instead of stating it first.** `bootstrap-rotation.rst` reads
+  `r(v; π/2) = (−v₂, v₁)` off the general angle-addition derivation ("the same formula with
+  `cos(π/2) = 0`"), and the base case shares the `eq-bootstrap-rotation` label with the general
+  case. That isn't circular, since the angle-addition identities come first. But it runs in the
+  opposite order from the base-case-first rule. If you want Step 1 to match, it would state the
+  quarter turn first with its own label and then build `r(v; θ)` on it. This task leaves Step 1
+  alone.
 
 ## Draft questions (answered 2026-11-16; see Decisions)
 

@@ -45,6 +45,38 @@ elementary plane rotations themselves are `rotXY` / `rotXZ` / `rotYZ`. (The them
 called "bootstrapping" during design; that term was dropped. The naming note originally said Lean
 would use primes; the suffix was chosen when the Lean definitions were written, 2026-10-04.)
 
+## Base case, then general case (William Emerison Six <billsix@gmail.com>, 2026-11-16)
+
+Reduction to standard position has the shape of a recursion. The **base case** is the operation
+on an argument where it is trivial to state. The **general case** rotates the problem into that
+position, applies the base case, and rotates back. Without the base case the general operation
+cannot be defined, so the book states the base case first, with its own formula.
+
+| Operation | Base case (stated directly) | General case (built on it) |
+|---|---|---|
+| 2D rotation | `r(v; π/2) = (−v₂, v₁)` (`g2` `rotate_90_degrees`) | `r(v; θ) = cos(θ) * v + sin(θ) * r(v; π/2)` (`g2` `Vector.rotate`) |
+| 2D projection | `proj_{e₁}(b) = b₁ * e₁` | `proj_a = (R_a^{e₁})⁻¹ ∘ proj_{e₁} ∘ R_a^{e₁}` (Lean `projectSP`) |
+| 2D rejection | `rej_{e₁}(b) = b₂ * e₂` | `rej_a = (R_a^{e₁})⁻¹ ∘ rej_{e₁} ∘ R_a^{e₁}` (Lean `rejectSP`) |
+| 3D projection / rejection | onto the `e₁` axis | rotate `a` onto `e₁` with `rotXY` / `rotXZ`, apply the base case, rotate back |
+| general rotation | the elementary plane rotations `rotXY` / `rotXZ` / `rotYZ` | `transforms.projection_rotation`, defined from project / reject |
+
+What follows from the shape:
+
+- **Same name, different argument.** In the book, the base case is the operation's own name applied
+  to the special argument (`r(v; π/2)`, `proj_{e₁}(b)`), never a new letter such as `P` or `Q`.
+  The rule is in `tasks/reference/book-outline.md` ("Pedagogical principles").
+- **The base case is stated, not derived from the general case.** Its formula stands on its own
+  ("keep the x-coordinate" is `b₁ * e₁`), so the general case can cite it without circularity. Once
+  both exist, checking that the general case reduces to the base case at the special argument is a
+  consistency check, not the base case's justification. That check is Lean's `proj_onto_x_axis`
+  (`StandardPosition2D.lean`, `StandardPosition.lean`).
+- **Each case is a labelled equation**, and the general case cites the base case with
+  ``:eq:`label` ``, as every use of a named operation cites its version.
+- **Code names are not book names.** Python and Lean need distinct identifiers for the base case,
+  the general case and each method (`rotate_90_degrees` and `rotate`; `proj` and `projectSP`, the
+  `SP` suffix of "Naming and the prime convention" above). In the book these are one operation
+  under one name, told apart by argument and equation label.
+
 ## The archetype (the pattern to imitate)
 
 `multivariate-math/proofs/crossproduct.tex` (hand-written LaTeX, not code) derives the cross product

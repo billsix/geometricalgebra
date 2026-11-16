@@ -103,6 +103,15 @@ preserved verbatim in the appendix.
     for vectors as the case a reader can draw, and does not call it *the* definition. A later
     chapter that gives a more general version (onto a plane, for a bivector) says which
     equation it replaces and cites it.
+  - **A base case keeps the operation's name.** A general operation is often built from a special
+    case of itself, as recursion builds on a base case. Rotation by `π/2` comes before rotation by
+    `θ`: `r(v; θ) = cos(θ) * v + sin(θ) * r(v; π/2)`. Projection onto `e₁` ("keep the
+    x-coordinate") comes before projection onto `a`:
+    `proj_a = (R_a^{e₁})⁻¹ ∘ proj_{e₁} ∘ R_a^{e₁}`. The base case is the same operation with a
+    particular argument, so it takes the same name (`r(v; π/2)`, `proj_{e₁}(b)`, `rej_{e₁}(b)`),
+    never a new letter. Its formula is stated directly (`proj_{e₁}(b) = b₁ * e₁`), as a labelled
+    equation the general case cites. The pattern and its instances across the book are in
+    `tasks/reference/reduction-to-standard-position.md` ("Base case, then general case").
   - **Results built on a named operation are named as results, not definitions.** For example,
     `a · b = a * proj_a(b)`, `a ∧ b = a * rej_a(b)`, and the mirror forms `b * proj_b(a) = a · b`
     and `b * rej_b(a) = −(a ∧ b)` are identities stated about the product. They are not new

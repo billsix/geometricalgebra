@@ -567,7 +567,10 @@ a new letter per method). Each version is a labelled equation, and every use cit
 relies on with ``:eq:`label` ``. Versions for vectors are simple cases that later chapters
 replace with the general (multivector, onto a blade) ones; they are not the definition. Results
 built on an operation, such as `a · b = a * proj_a(b)`, are stated as results, not definitions.
-Detail: `tasks/reference/book-outline.md` ("Pedagogical principles"; William Emerison Six
+A base case the general operation is built from keeps the operation's name, with the special
+argument (`r(v; π/2)` before `r(v; θ)`; `proj_{e₁}(b)` before `proj_a(b)`). It is stated directly
+as its own equation, never derived from the general case
+(`tasks/reference/reduction-to-standard-position.md`, "Base case, then general case"). Detail: `tasks/reference/book-outline.md` ("Pedagogical principles"; William Emerison Six
 <billsix@gmail.com>, 2026-11-16).
 
 ## Coordinates only when needed
