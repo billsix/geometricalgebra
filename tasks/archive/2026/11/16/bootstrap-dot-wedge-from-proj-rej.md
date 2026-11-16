@@ -5,8 +5,8 @@
 **Related:** `tasks/bare-2d-bootstrap-pages.md` (the Part III pages; still open);
 `tasks/archive/2026/11/16/quarter-turn-as-named-base-case.md` (the same rules applied to the quarter turn; done);
 `tasks/notebook-dot-wedge-projection-demo.md` (its Q2 was answered here);
-`tasks/bootstrap-notebooks-show-derivations.md` (the follow-on for the Part III notebooks;
-proposed)
+`tasks/archive/2026/11/16/bootstrap-notebooks-show-derivations.md` (the follow-on for the Part III
+notebooks; done)
 
 ## What was done
 
@@ -105,7 +105,7 @@ All on 2026-11-16, on branch `bootstrap-dot-wedge-from-proj-rej`.
    messages, that they meant the Part III "calculations" notebooks, including the cells this task
    added. Those should become notebooks with set values and live ePiX plots that a reader can
    change and rerun, with each check one subtraction and one result per cell. The task was renamed
-   and rescoped to `tasks/bootstrap-notebooks-show-derivations.md`. Its questions were answered
+   and rescoped to `tasks/archive/2026/11/16/bootstrap-notebooks-show-derivations.md`. Its questions were answered
    the same day.
 
 ## Noticed, not done
@@ -114,7 +114,7 @@ All on 2026-11-16, on branch `bootstrap-dot-wedge-from-proj-rej`.
   `r(v; θ)`. Whether to reorder it is part of `tasks/archive/2026/11/16/quarter-turn-as-named-base-case.md`.
 - The `[0, 0]` notebook cells this task added to `bootstrap-projection.py` and
   `bootstrap-product.py` use the style the maintainer later said they don't want. They are
-  converted as part of `tasks/bootstrap-notebooks-show-derivations.md`.
+  converted by `tasks/archive/2026/11/16/bootstrap-notebooks-show-derivations.md`.
 
 ## Verification
 
