@@ -9,9 +9,10 @@ example, and what to avoid. Update in place; never archive. Created 2026-11-16 (
 companion notebook ("Structural conventions": one values cell, live ePiX figures, one check per
 cell, a "For all vectors" symbolic section). This doc owns the *teaching voice and cell design*
 inside that structure. The notation rules (explicit `*`, parentheses for application, named angles)
-are in `CLAUDE.md` ("Math notation for readers"). The open backfill that applies this style to every
-proof is `tasks/proof-notebooks-student-math-notation-style.md`; the open task that adds
-`show_mult` tables to the book is `tasks/book-notebooks-show-mult-tables.md`.
+are in `CLAUDE.md` ("Math notation for readers"). The sweep that brings the existing book notebooks
+to this standard is `tasks/book-notebooks-teaching-style-sweep.md`; the backfill of a notebook for
+every proof is `tasks/proof-notebooks-student-math-notation-style.md`. The `show_mult` tables were
+added in `tasks/archive/2026/11/16/book-notebooks-show-mult-tables.md`.
 
 ## What a notebook is
 
@@ -53,7 +54,7 @@ not; see "Known gaps in the model" below.) What they do, as rules:
    something the student just did, not from a definition.
 6. **Numbers before symbols.** `3 * e_1 + 4 * e_2` (Pythagoras: `v * v` is `25`) comes before the
    symbolic `sym_vec2_1`. A concrete case the student can check by hand earns the general one.
-7. **Make the distribution visible with `show_mult`.** `show_mult(a, b)` (`src/gacalc/nbplotutils.py`)
+7. **Make the distribution visible with `show_mult`.** `show_mult(a, b)` (`src/gacalc/nbdisplay.py`)
    prints the product to evaluate, a table of every term of `a` times every term of `b`, and the
    sum. It is the multiply-everything-by-everything grid from rule 1, so the student sees where
    each term of the answer came from instead of receiving a simplified result. For a property such
@@ -109,7 +110,6 @@ Each of these is in `notebooks/displaymv.py` as of 2026-11-16 and should not be 
 
 `notebooks/displaymv.py` itself is a demo notebook under `notebooks/`, not a book notebook, and
 after the model sections it becomes a scratchpad with the problems listed under "What to avoid".
-Bringing it up to this standard (or splitting it) is not yet a task. `show_mult` lives in
-`gacalc.nbplotutils`, which imports matplotlib and pandas at module level, while the book's
-notebooks draw with ePiX and do not use matplotlib; whether to move it is open question 3 of
-`tasks/book-notebooks-show-mult-tables.md`.
+Bringing it up to this standard is `tasks/displaymv-teaching-style.md`. `show_mult` lives in the
+display-only `gacalc.nbdisplay` (sympy and IPython, no matplotlib), so the book's ePiX-drawn
+notebooks import it from there; `gacalc.nbplotutils` re-exports it for the demo notebooks.
