@@ -16,8 +16,9 @@ Step 5: Projection, through the Product
 
    Draft. The prose is agent-drafted; the maintainer's voice pass is pending.
 
-Step 2 defined the projection of :math:`\vec{b}` onto :math:`\vec{a}` by rotating. With the
-product of Step 4 it needs no rotation at all.
+Step 2 defined the projection of :math:`\vec{b}` onto :math:`\vec{a}` by rotating,
+:eq:`eq-bootstrap-projection-definition`. With the product of Step 4, the same projection has
+a second formula that needs no rotation at all.
 
 The inverse of a vector
 -----------------------
@@ -32,8 +33,8 @@ By Step 4, :math:`\vec{a} * \vec{a} = |\vec{a}|^2`, a plain number. So for
 satisfies :math:`\vec{a} * \vec{a}^{-1} = \vec{a}^{-1} * \vec{a} = 1`. It points along
 :math:`\vec{a}`, at length :math:`1 / |\vec{a}|`.
 
-The definition
---------------
+The projection through the product
+-----------------------------------
 
 The dot product :math:`\vec{b} \cdot \vec{a}` is the plain-number part of
 :math:`\vec{b} * \vec{a}`. The projection of :math:`\vec{b}` onto :math:`\vec{a}` is
@@ -41,7 +42,7 @@ The dot product :math:`\vec{b} \cdot \vec{a}` is the plain-number part of
 .. math::
    :label: eq-bootstrap-projection-product
 
-   P_{\vec{a}}(\vec{b}) = (\vec{b} \cdot \vec{a}) * \vec{a}^{-1}.
+   \operatorname{proj}_{\vec{a}}(\vec{b}) = (\vec{b} \cdot \vec{a}) * \vec{a}^{-1}.
 
 .. figure:: _static/epix/boot-project-product.*
    :align: center
@@ -58,14 +59,20 @@ either way), :math:`\vec{b} \cdot \vec{a} = a_1 * b_1 + a_2 * b_2`, so
    (\vec{b} \cdot \vec{a}) * \vec{a}^{-1}
      = (a_1 * b_1 + a_2 * b_2) * \frac{\vec{a}}{a_1^2 + a_2^2},
 
-which is :eq:`eq-bootstrap-projection`. The rotation to the x-axis and back has
-disappeared into the product.
+which is Step 2's formula :eq:`eq-bootstrap-projection`. The rotation to the x-axis and back
+has disappeared into the product.
 
 The rejection, the same way
 ---------------------------
 
-Replace the dot product by the wedge: :math:`(\vec{b} \wedge \vec{a}) * \vec{a}^{-1}`. With
-:math:`\vec{b} \wedge \vec{a} = (b_1 * a_2 - b_2 * a_1) * e_{12}` and
+Replace the dot product by the wedge:
+
+.. math::
+   :label: eq-bootstrap-rejection-product
+
+   \operatorname{rej}_{\vec{a}}(\vec{b}) = (\vec{b} \wedge \vec{a}) * \vec{a}^{-1}.
+
+With :math:`\vec{b} \wedge \vec{a} = (b_1 * a_2 - b_2 * a_1) * e_{12}` and
 :math:`e_{12} * \vec{a} = -\vec{r}(\vec{a}; \pi/2)` (multiply it out),
 
 .. math::
@@ -73,7 +80,9 @@ Replace the dot product by the wedge: :math:`(\vec{b} \wedge \vec{a}) * \vec{a}^
    (\vec{b} \wedge \vec{a}) * \vec{a}^{-1}
      = \frac{a_1 * b_2 - a_2 * b_1}{|\vec{a}|^2} * \vec{r}(\vec{a}; \pi/2),
 
-Step 2's rejection. Adding the two gives back :math:`\vec{b}`:
+which is Step 2's formula :eq:`eq-bootstrap-rejection`. Adding
+:eq:`eq-bootstrap-projection-product` and :eq:`eq-bootstrap-rejection-product` gives back
+:math:`\vec{b}`:
 :math:`(\vec{b} \cdot \vec{a} + \vec{b} \wedge \vec{a}) * \vec{a}^{-1} = \vec{b} * \vec{a} * \vec{a}^{-1} = \vec{b}`.
 
 The companion notebook checks both forms against Step 2's construction and against
