@@ -1,6 +1,7 @@
 # Live ePiX figures in the book's notebooks get the same light background as prebuilt ones
 
-**Status:** proposed — needs go-ahead (Open questions below block implementation)
+**Status:** proposed — needs go-ahead (all questions answered); depends on epix-mirror
+`tasks/figure-background.md` being merged and pushed
 **Priority:** 4
 **Difficulty:** 3
 **Created:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
@@ -35,11 +36,12 @@ non-transparent background, like the prebuilt ePiX figures do. Done means:
   sentence); `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures", the prebuilt vs live
   paths); `tasks/reference/book-outline.md` ("Structural conventions", the notebook style).
 
-## Plan (draft; depends on Q1)
+## Plan
 
-1. Make live figures opaque by the mechanism chosen in Q1.
-2. Apply it in `scene_around`, `scene_2d` and `scene_3d`, using `#f2f2f2`, the same constant the
-   prebuilt path uses, from one shared place.
+1. After epix-mirror `tasks/figure-background.md` is merged and pushed: bump `EPIX_COMMIT` and run
+   `make image`.
+2. Pass `background=` in `scene_around`, `scene_2d` and `scene_3d`, using `#f2f2f2`, the same
+   constant the prebuilt path uses, from one shared place.
 3. Rerun the eight notebooks and check each figure's PNG has no transparent pixels. One way: an
    ImageMagick `identify -format %[opaque]`, or a PIL alpha-channel check. Then `make docs`, and
    look at the HTML notebook pages.
@@ -49,19 +51,18 @@ non-transparent background, like the prebuilt ePiX figures do. Done means:
    - **`book-and-docs-pipeline.md`:** the live path's mechanism;
    - **`book-outline.md`:** a line in the notebook style.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-16)
+
+1. **In epix-mirror.** `epix.figure` / `figure_around` / `render` gain an optional
+   `background="#rrggbb"`. The default stays transparent, so existing output doesn't change. The
+   epix-mirror half is github.com/billsix/epix-mirror `tasks/figure-background.md`; this task is
+   the geometricalgebra half: bump `EPIX_COMMIT`, then pass the background from the scene helpers.
+2. **`#f2f2f2`**, the prebuilt figures' `DEFAULT_BACKGROUND` and the disc fill. Use one shared
+   constant: the helpers import it instead of repeating the literal.
+3. **The frame-QR notebooks too.** `_frame_scene.py` `scene_2d` / `scene_3d` get the same
+   background as `_bootstrap_live.py` `scene_around`.
+
 ## Open questions
 
-1. **Where the background is applied.** Either:
-   - **(a)** in epix-mirror: an optional `background="#rrggbb"` on `epix.figure` /
-     `figure_around` / `render`, which rasterizes or flattens onto that colour. The default stays
-     transparent, so existing output doesn't change. That needs a companion epix-mirror task and
-     an `EPIX_COMMIT` bump, the same workflow as `figure-fit-to-points`.
-   - **(b)** here only: the scene helpers flatten the PNG after the `with` block, with ImageMagick
-     or PIL, on the `_Pending` object.
-
-   *(Recommend (a). Every live epix user gets it, the helpers stay drawing-only, and it matches
-   your rule that epix-side gaps get fixed in epix-mirror. (b) works today without a pin bump.)*
-2. **Colour:** `#f2f2f2` for live figures too, matching the prebuilt ones and the disc fill?
-   *(Recommend yes.)*
-3. **Scope:** fix the frame-QR notebooks' live figures in the same task? *(Recommend yes. They are
-   the same mechanism and the same problem.)*
+None. The task is ready to start on your go-ahead. It depends on the epix-mirror half being merged
+and pushed, because `EPIX_COMMIT` is fetched from GitHub.
