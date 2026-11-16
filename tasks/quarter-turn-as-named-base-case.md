@@ -1,69 +1,57 @@
-# Re-evaluate the 2D quarter turn under the base-case and one-name rules
+# The 2D quarter turn as a named base case, with its product version
 
-**Status:** proposed — needs go-ahead (all questions answered)
-**Priority:** 5
-**Difficulty:** 4
 **Created:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
-**Related:** `tasks/archive/2026/11/16/bootstrap-dot-wedge-from-proj-rej.md` (applied the same rules to projection and
-rejection); `tasks/bare-2d-bootstrap-pages.md` (the Part III pages)
+**Done:** 2026-11-16, on branch `quarter-turn-and-bootstrap-notebooks`
+**Related:** `tasks/archive/2026/11/16/bootstrap-dot-wedge-from-proj-rej.md` (applied the same
+rules to projection and rejection); `tasks/bare-2d-bootstrap-pages.md` (the Part III pages; open)
 
-## BLUF
+## What was done
 
-The maintainer's request (2026-11-16): re-evaluate whether rotation by 90° in 2D should follow the
-approach just applied to projection. That approach is: one name for the operation, the base case
-stated first under that name, and every version a labelled equation that each use cites. The
-maintainer's first thought is yes, because the quarter turn can also be shown to be a product
-with `e₁ * e₂` (`e₁₂`, the pseudoscalar `I₂`, the unit bivector `i`). Done means a decision on
-each open question, followed by the page, notebook and Lean changes it implies.
+The maintainer asked whether rotation by 90° in 2D should follow the rules just applied to
+projection: one name for the operation, the base case stated first under that name, every version
+a labelled equation that each use cites. Their first thought was yes, since the quarter turn is
+also a product with `e₁₂`. It was done for Part III:
 
-## Context
-
-- **The rules being applied** are in `tasks/reference/book-outline.md` ("Pedagogical principles":
-  one name per operation; a base case keeps the operation's name) and
-  `tasks/reference/reduction-to-standard-position.md` ("Base case, then general case"), whose table
-  already lists the quarter turn as the base case of 2D rotation.
-- **The quarter turn's versions as of 2026-11-16:**
-  - *Coordinates:* `r(v; π/2) = (−v₂, v₁)`. Part III Step 1 (`book/docs/bootstrap-rotation.rst`,
-    inside `eq-bootstrap-rotation`), Part I `proof-rotate.rst` and `geometric-product.rst` all
-    state it in the same equation as the general `r(v; θ)`. Lean: `rot90`
-    (`proofs/GacalcProofs/StandardPosition2D.lean`), documented as "a coordinate swap rather than
-    a product with `e₁₂`". Python: `g2.Vector.rotate_90_degrees()`.
-  - *Product:* `v * e₁₂`. `geometric-product.rst` introduces `e₁₂` as the thing that "turns `a`
-    90°" when multiplied on the right. The Python docstring says `rotate_90_degrees = v * e_12`.
-    Part III Step 5 uses `e₁₂ * a = −r(a; π/2)`, Step 6 has `â * b̂ = cos(θ) + sin(θ) * e₁₂`, and
-    Lean's `Exp.lean` has `exp(θ * e₁₂) = cos(θ) + sin(θ) * e₁₂`.
-  - **No Lean theorem found that `rot90 v = mul v e_12`** for a vector `v`. grep for `rot90_eq`
-    and `rot90 … mul` found nothing; confirm before adding one.
-- **Ordering constraint.** In Part III the product doesn't exist until Step 4. So the coordinate
-  form has to be the base case in Step 1, and `v * e₁₂` can only appear later as a second version
-  of `r(v; π/2)`, exactly as Step 5's `(b · a) * a⁻¹` is a later version of `proj_a(b)`.
-- **Step 1's order, as noted in `tasks/archive/2026/11/16/bootstrap-dot-wedge-from-proj-rej.md`:** Step 1 reads
-  `r(v; π/2)` off the general angle-addition derivation instead of stating it first, and the two
-  share the `eq-bootstrap-rotation` label.
-
-## Plan (draft; depends on the Open questions)
-
-1. **Step 1:** state `r(v; π/2) = (−v₂, v₁)` first, with its own label (for example
-   `eq-bootstrap-quarter-turn`). Justify it directly (from `cos(β + π/2)`, `sin(β + π/2)`, or as
-   the turn that swaps the axes), then build `r(v; θ)` on it, citing that label.
-2. **The product version:** where the product exists (Step 4 or later), state
-   `r(v; π/2) = v * e₁₂` as a labelled second version and cite whichever version each later use
-   relies on (Step 5's `e₁₂ * a = −r(a; π/2)`, Step 6).
-3. **Lean:** add `rot90_eq_mul_e12` (`IsVector v → rot90 v = mul v e_12`) and cite it. Update
-   `rot90`'s doc comment, which today contrasts the swap with the product instead of relating them.
-4. **Notebooks:** a symbolic check of `v * e₁₂ = (−v₂, v₁)` in the Step 1 or Step 4 notebook.
-5. **Reference docs:** extend the base-case table row for 2D rotation with the product version.
-6. **Gates:** `make lean`, `make format`, `make docs`, and a look at the changed PDF pages.
+- **Step 1** (`book/docs/bootstrap-rotation.rst`) now opens with "A vector by its length and
+  angle", then "The base case: the quarter turn". That section states
+  `r(v; π/2) = (−v₂, v₁)` directly from `cos(β + π/2) = −sin(β)` and `sin(β + π/2) = cos(β)`, with
+  its own label `eq-bootstrap-quarter-turn`. "The rotation by an angle" then derives `r(v; θ)` and
+  cites the base case. Before this, the quarter turn was read off the general derivation and
+  shared the `eq-bootstrap-rotation` label with it.
+- **Step 4** (`book/docs/bootstrap-product.rst`) has a new section, "The quarter turn is a
+  product": `r(v; π/2) = v * e₁₂` (`eq-bootstrap-quarter-turn-product`), with the remark that
+  `e₁₂` is the unit bivector, also called `i`. Step 4's own derivation of `a * rej_a(b)` now uses
+  it for `a * r(a; π/2) = |a|² * e₁₂`.
+- **Step 5** (`e₁₂ * a = −r(a; π/2)`) and **Step 6** (the one-sided rotation) cite the product
+  version instead of multiplying it out again.
+- **Lean:** `rot90_eq_mul_e12` (`IsVector v → rot90 v = mul v e_12`) in
+  `proofs/GacalcProofs/StandardPosition2D.lean`. `rot90`'s doc comment now calls it the base
+  case and points to the theorem; it used to contrast the swap with the product. Step 1 cites
+  `rot90`, Step 4 cites the theorem.
+- **Notebooks:** `bootstrap-rotation.py` checks the base case from the polar form;
+  `bootstrap-product.py` checks `b * e₁₂` against `b.rotate_90_degrees()`.
+- **Reference:** `tasks/reference/reduction-to-standard-position.md` has the two labels in the
+  Part III naming rules, the rotation row of the base-case table, and the Step 1 row of the
+  page → Lean table. Its note that Step 1 didn't yet follow the base-case rule was removed.
 
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-16)
 
-1. **Scope:** Part III only. Part I's `proof-rotate.rst` and `geometric-product.rst` are left as
+1. **Scope:** Part III only. Part I's `proof-rotate.rst` and `geometric-product.rst` were left as
    they are.
-2. **Name in the product version:** `v * e₁₂`, with a one-line remark that `e₁₂` is the unit
-   bivector, also called `i`. `I₂` is not introduced.
-3. **Placement:** the product version `r(v; π/2) = v * e₁₂` first appears in Step 4, where
-   `e₁₂` is introduced. Later uses cite it.
+2. **Name in the product version:** `v * e₁₂`, with a one-line remark that `e₁₂` is also called
+   `i`. `I₂` was not introduced.
+3. **Placement:** the product version first appears in Step 4, where `e₁₂` is introduced.
 
-## Open questions
+The ordering constraint behind decision 3: the product doesn't exist until Step 4, so the
+coordinate form has to be Step 1's base case and `v * e₁₂` a later version, just as Step 5's
+`(b · a) * a⁻¹` is a later version of `proj_a(b)`.
 
-None. The task is ready to start on your go-ahead.
+## Verification
+
+- `make lean` (run as its `podman run` line against the existing image): green. The axioms gate
+  passed on 1072 declarations. No new warnings.
+- `make format`: green.
+- Both changed notebooks run with every single-line check an `assert`: 7 and 9 checks, all pass.
+- `make docs` (its `podman run` line): green. No undefined references in the final LaTeX log and no
+  Sphinx warnings for Part III. The Step 1 and Step 4 PDF pages were checked visually.
+- No `CHANGELOG.md` entry: book and proofs only.
