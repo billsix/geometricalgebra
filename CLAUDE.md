@@ -574,7 +574,8 @@ as its own equation, never derived from the general case
 companion notebook works the derivation with set values in one cell (readers change them and rerun),
 draws each step with live ePiX, and checks one subtraction per cell, first on the values and then
 with symbolic coordinates. Detail: `tasks/reference/book-outline.md` ("Pedagogical principles"; William Emerison Six
-<billsix@gmail.com>, 2026-11-16).
+<billsix@gmail.com>, 2026-11-16). How a notebook's cells teach (the guided-lab style modelled on
+`notebooks/displaymv.py`'s opening sections): `tasks/reference/book-notebook-teaching-style.md`.
 
 ## Coordinates only when needed
 

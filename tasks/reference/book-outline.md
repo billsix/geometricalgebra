@@ -151,6 +151,9 @@ preserved verbatim in the appendix.
     three-forms rule in `CLAUDE.md` asks for.
   - The page keeps its own LaTeX derivation, so the PDF reads on its own. The notebook repeats the
     steps with numbers and pictures.
+  - **The teaching voice inside that structure** (one idea per cell, start from known algebra,
+    justified chains, `show_mult` tables, prose math as LaTeX, what to avoid) is in
+    `tasks/reference/book-notebook-teaching-style.md`.
 - **Important-early content can be hoisted:** if something matters early but breaks the
   flow, give it its own `.rst` and link it early.
 - **Write out of order; use placeholders.** This outline is the fixed structure; blank
