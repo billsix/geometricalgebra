@@ -54,9 +54,14 @@ extensions = [
     "sphinx.ext.viewcode",  # add a "[source]" link beside documented code
     "sphinx.ext.mathjax",  # draw the math in the HTML using MathJax
     "sphinx.ext.imgconverter",  # convert SVG pictures so the PDF can use them
+    "sphinx.ext.graphviz",  # draw .dot graphs (the proof dependencies on the first page)
     "nbsphinx",  # let Jupyter notebooks become book pages
     "myst_nb",  # kept exactly as modelviewprojection has it
 ]
+
+# The HTML gets the graphs as SVG, which stays sharp when zoomed; the PDF build uses
+# Graphviz's own PDF output either way.
+graphviz_output_format = "svg"
 
 # How autodoc behaves: document every member, keep them in source order,
 # and include the __init__ / __call__ / arithmetic operator methods that

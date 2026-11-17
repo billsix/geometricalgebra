@@ -53,6 +53,7 @@ from _bootstrap_live import (
 from gacalc.base import Real
 from gacalc.functions import InvertibleFunction, inverse
 from gacalc.g2 import Scalar, Vector, e_1, e_2
+from gacalc.nbdisplay import at_values
 from gacalc.standardposition import rotation_from_to
 
 # %% [markdown]
@@ -78,30 +79,11 @@ b
 # change, only the pictures and the substituted results.
 
 # %%
-values: list[tuple[sympy.Symbol, int]] = [(a_1, 1), (a_2, 4), (b_1, 2), (b_2, 1)]
-
-
-def number_at_values(r: Real) -> Real:
-    """``r`` with the plot values substituted for the symbols."""
-    return sympy.nsimplify(sympy.sympify(r).subs(values))
-
-
-def vector_at_values(v: Vector) -> Vector:
-    """``v`` with the plot values substituted for the symbols."""
-    return (
-        Scalar(number_at_values(v.coefficient(e_1))) * e_1
-        + Scalar(number_at_values(v.coefficient(e_2))) * e_2
-    ).simplified()
-
-
-def plot_point(v: Vector) -> Point:
-    """Where ``v`` lands in the figures, at the plot values."""
-    return point(coordinates=list(vector_at_values(v)))
-
+values: list[tuple[sympy.Symbol, Real]] = [(a_1, 1), (a_2, 4), (b_1, 2), (b_2, 1)]
 
 # %%
-P_A: Point = plot_point(a)
-P_B: Point = plot_point(b)
+P_A: Point = point(coordinates=list(at_values(a, values)))
+P_B: Point = point(coordinates=list(at_values(b, values)))
 fig_given: PendingFigure
 with scene_around(points=[P_A, P_B]) as fig_given:
     arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
@@ -138,7 +120,7 @@ b_aligned
 # At the plot values:
 
 # %%
-vector_at_values(b_aligned)
+at_values(b_aligned, values)
 
 # %% [markdown]
 # $a$ rides along. Its x-coordinate there is $a \cdot b / |b|$, how far $a$ reaches
@@ -152,11 +134,11 @@ a_aligned
 # At the plot values:
 
 # %%
-vector_at_values(a_aligned)
+at_values(a_aligned, values)
 
 # %%
-P_A_ALIGNED: Point = plot_point(a_aligned)
-P_B_ALIGNED: Point = plot_point(b_aligned)
+P_A_ALIGNED: Point = point(coordinates=list(at_values(a_aligned, values)))
+P_B_ALIGNED: Point = point(coordinates=list(at_values(b_aligned, values)))
 fig_rotated: PendingFigure
 with scene_around(points=[P_A, P_B, P_A_ALIGNED, P_B_ALIGNED]) as fig_rotated:
     dashed_arrow(tail=Point(x=0, y=0), head=P_A, color=BLACK, text=r"$\vec{a}$")
@@ -183,13 +165,13 @@ y
 # At the plot values:
 
 # %%
-number_at_values(x)
+at_values(x, values)
 
 # %%
-number_at_values(y)
+at_values(y, values)
 
 # %%
-P_X: Point = plot_point(Scalar(x) * e_1)
+P_X: Point = point(coordinates=list(at_values(Scalar(x) * e_1, values)))
 fig_base: PendingFigure
 with scene_around(points=[P_A_ALIGNED, P_B_ALIGNED]) as fig_base:
     arrow(head=P_A_ALIGNED, color=BLACK, text=r"$\vec{a}'$")
@@ -233,7 +215,7 @@ projection
 # At the plot values:
 
 # %%
-vector_at_values(projection)
+at_values(projection, values)
 
 # %% [markdown]
 # and $y * e_2$ to the rejection:
@@ -246,10 +228,10 @@ rejection
 # At the plot values:
 
 # %%
-vector_at_values(rejection)
+at_values(rejection, values)
 
 # %%
-P_PROJECTION: Point = plot_point(projection)
+P_PROJECTION: Point = point(coordinates=list(at_values(projection, values)))
 fig_back: PendingFigure
 with scene_around(points=[P_A, P_B]) as fig_back:
     arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")

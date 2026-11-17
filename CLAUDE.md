@@ -67,7 +67,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   canonical Hestenes `project`/`reject`, proven equal in `proofs/GacalcProofs/StandardPosition.lean`
   (`projectSP_eq_proj` / `rejectSP_eq_reject`). Also `rotation_from_to(from_vector, to_vector)`, the
   book's 𝒢₂ direction-to-direction rotation (no general projection, no geometric product) as an
-  `InvertibleFunction`, which the projection proof builds on. See `tasks/reference/reduction-to-standard-position.md`.
+  `InvertibleFunction`, which the projection proof builds on, and `in_plane(rotation, first, second,
+  v)`, which applies a 2D rotation in the plane of two basis vectors (one turn of the 3D constructions). See `tasks/reference/reduction-to-standard-position.md`.
 - **The 𝒢₂ quarter turn** (generated into `g2.py` only): `Vector.rotate_90_degrees()` + the
   module-level `rotate_90_degrees()` factory — both `= v * e_12` (the unit pseudoscalar,
   `(x, y) -> (-y, x)`), exact, 𝒢₂-only. Rationale: `tasks/reference/design-decisions.md`,
@@ -100,7 +101,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   Wayland's `PYGLFW_LIBRARY`, headless runs and the GL conventions: `tasks/reference/gl-toolkit.md`.
 - `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
 - `src/gacalc/nbdisplay.py` — display-only notebook helpers (sympy + IPython, no matplotlib):
-  `show_mult(a, b)`, the term-by-term product table and its sum; usable by the book's notebooks,
+  `show_mult(a, b)`, the term-by-term product table and its sum, and `at_values(value, values)`,
+  which substitutes plot values into a symbolic result; usable by the book's notebooks,
   re-exported from `nbplotutils` for the demo notebooks.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
   `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`),
@@ -577,10 +579,13 @@ A base case the general operation is built from keeps the operation's name, with
 argument (`r(v; π/2)` before `r(v; θ)`; `proj_{e₁}(b)` before `proj_a(b)`). It is stated directly
 as its own equation, never derived from the general case
 (`tasks/reference/reduction-to-standard-position.md`, "Base case, then general case"). A page's
-companion notebook works the derivation with set values in one cell (readers change them and rerun),
-draws each step with live ePiX, and checks one subtraction per cell, first on the values and then
-with symbolic coordinates. Detail: `tasks/reference/book-outline.md` ("Pedagogical principles"; William Emerison Six
-<billsix@gmail.com>, 2026-11-16). How a notebook's cells teach (the guided-lab style modelled on
+companion notebook computes every step with symbolic coordinates, uses numbers only to draw each step
+with live ePiX, and shows both sides of each check before their difference (William Emerison Six
+<billsix@gmail.com>, 2026-11-17). Every construction uses only results taught before it, and rotations
+come from the ones the book built (`Vector.rotate`, `standardposition.rotation_from_to`): the rule, the
+teaching order and the dependency graph on the book's first page are in
+`tasks/reference/teaching-order-and-dependencies.md`. Detail: `tasks/reference/book-outline.md`
+("Pedagogical principles"). How a notebook's cells teach (the guided-lab style modelled on
 `notebooks/displaymv.py`'s opening sections): `tasks/reference/book-notebook-teaching-style.md`.
 
 ## Coordinates only when needed

@@ -66,6 +66,7 @@ __all__ = [
     "arrow",
     "box_edges",
     "dashed_arrow",
+    "line",
     "note",
     "patch",
     "point",
@@ -180,6 +181,14 @@ def dashed_arrow(
         width=1.1,
     )
     epix.line_style(style="-")  # back to solid for whatever draws next
+
+
+def line(
+    tail: Point, head: Point, color: epix.Color = _BLACK, width: float = 0.8
+) -> None:
+    """A plain line ``tail`` -> ``head``, no arrowhead: graph-paper lines, edges."""
+    epix.pen(color=color, width=width)
+    epix.line(tail=tail, head=head)
 
 
 def note(

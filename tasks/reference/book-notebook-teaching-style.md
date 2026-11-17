@@ -52,8 +52,10 @@ this standard; see "History of the model" below.) What they do, as rules:
    that?"), then answers by computing three different groupings, and only then names the property
    (associativity) and says why it is not obvious when order matters. The motivation comes from
    something the student just did, not from a definition.
-6. **Numbers before symbols.** `3 * e_1 + 4 * e_2` (Pythagoras: `v * v` is `25`) comes before the
-   symbolic `sym_vec2_1`. A concrete case the student can check by hand earns the general one.
+6. **Numbers before symbols** (the demo notebooks). `3 * e_1 + 4 * e_2` (Pythagoras: `v * v` is
+   `25`) comes before the symbolic `sym_vec2_1`. A concrete case the student can check by hand
+   earns the general one. Book notebooks instead stay symbolic throughout and show the numbers
+   in the figures and the "At the plot values:" cells ("Symbolic notebooks" below).
 7. **Make the distribution visible with `show_mult`.** `show_mult(a, b)` (`src/gacalc/nbdisplay.py`)
    prints the product to evaluate, a table of every term of `a` times every term of `b`, and the
    sum. It is the multiply-everything-by-everything grid from rule 1, so the student sees where
@@ -102,10 +104,11 @@ From `tasks/archive/2026/11/16/book-notebooks-teaching-style-sweep.md`:
   the Markdown parser; put a long one on its own line as display math (`$$…$$`).
 - **Math in `$…$`, code in backticks.** A name the reader types (`versor_rotation`,
   `Vector.rotate(θ)`, a Lean theorem, a file path) stays in backticks; a formula becomes LaTeX.
-- **A check is a subtraction that shows $0$.** `(left - right).simplified()` reduces to $0$ even
-  for trigonometric identities, so `symbolically_equal(...)`, `==` and `assert` are not needed in
-  a notebook. When the left side is symbolic, one check covers every value, and a list of
-  per-point differences adds nothing.
+- **A check is both sides, then a subtraction that shows $0$.** Show the first formula in its own
+  cell, the second in the next, then `(left - right).simplified()`, which reduces to $0$ even for
+  trigonometric identities; `symbolically_equal(...)`, `==` and `assert` show nothing and are not
+  used. With symbolic coordinates one check covers every value, and a list of per-point
+  differences adds nothing.
 - **One displayed value per cell.** A tuple as a cell's last expression, `(cos, sin)`, does not
   render as math; end the cell on `cos` and put `sin` in the next cell (William Emerison Six
   <billsix@gmail.com>, 2026-11-17).
@@ -120,6 +123,36 @@ From `tasks/archive/2026/11/16/book-notebooks-teaching-style-sweep.md`:
   `PYTHONPATH=<repo>/src python <repo>/tools/run_notebook_cells.py <notebook>.py` runs it cell by
   cell and prints each code cell's last value (the ePiX notebooks need the image).
 
+## Symbolic notebooks (the `proof-projection.py` model, 2026-11-17)
+
+Set by William Emerison Six <billsix@gmail.com> while revising
+`book/docs/notebooks/proof-projection.py`, then applied to every content notebook in
+`tasks/archive/2026/11/17/book-notebooks-symbolic-proof-style.md`:
+
+- **Symbolic the whole time.** Every step uses symbolic coordinates, so each output is a formula.
+  Numbers live in one plot-values cell, `values: list[tuple[sympy.Symbol, Real]] = [(a_1, 1), …]`
+  (a list of pairs: `ty` rejects a `dict` passed to `subs`), and reach only the figures, through
+  `gacalc.nbdisplay.at_values(value, values)`: `point(coordinates=list(at_values(v, values)))`.
+- **"At the plot values:" only for what a figure draws.** A drawn step's formula is followed by a
+  cell with it at the plot values; a substituted value that nothing draws or uses has no purpose.
+- **Numbers in figure labels are computed, never typed:** a notebook-local
+  `tex(value) = sympy.latex(at_values(value, values))` fills the label, so it stays right when the
+  values change (`frame-qr-2d.py`, `frame-qr-3d.py`).
+- **Rotations are the taught ones** (`Vector.rotate`, `standardposition.rotation_from_to` with
+  `inverse(R)`, `standardposition.in_plane` for a coordinate plane in 𝒢₃), never a local function
+  taking a cosine and a sine, and every construction uses only results taught before it:
+  `tasks/reference/teaching-order-and-dependencies.md`.
+- **Where arrows meet tip to tip, draw the result first and its parts after**, so the parts' heads
+  sit on top (`tasks/archive/2026/11/17/arrowheads-past-their-points.md`).
+- **When symbolic is too slow or unreadable, keep numbers and say why in the notebook.** The cases
+  today: the 3D frames in `proof-reciprocal-frame.py` and `frame-qr-3d.py` (nine symbolic
+  coordinates make each check take minutes), and the second term-by-term table of
+  `bootstrap-rotation-from-product.py`'s sandwich (thousands of characters of nested roots), which
+  is left out.
+- **Watch for double simplification.** Simplifying an already simplified result can merge
+  `sqrt(x) * sqrt(y)` into one square root of an expanded product that sympy cannot split again
+  (`proof-projection-3d.py` builds its rejection part from coefficients for this reason).
+
 ## Checklist for a new or revised book notebook
 
 - The page's structure follows `tasks/reference/book-outline.md` ("Structural conventions").
@@ -127,7 +160,9 @@ From `tasks/archive/2026/11/16/book-notebooks-teaching-style-sweep.md`:
 - Every code cell has a Markdown lead-in; each pair states one idea and confirms it.
 - Prose math is LaTeX, following the notation rules in `CLAUDE.md`.
 - Hand reductions are chains with a reason per line, followed by the cell that computes them.
-- Concrete values come before symbols; the symbolic section says when its result is a proof.
+- Every step is symbolic; numbers appear only in the plot-values cell and the figures.
+- Each check shows both sides before the difference; each cell displays one value.
+- Every construction uses only earlier results, and rotations are the taught ones.
 - Products whose expansion is the point are shown with `show_mult`, with a lead-in.
 - No developer comments, pyright trailers or typing workarounds in the student's view.
 - One subject per notebook.

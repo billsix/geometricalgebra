@@ -44,9 +44,10 @@ first rotation, from zero to zero, is the identity; ``project_sp`` / ``reject_sp
 defined for every nonzero ``b``.
 """
 
+import typing
 from collections.abc import Callable
 
-from gacalc import g2
+from gacalc import g2, g3
 from gacalc.base import MultiVectorBase, Real
 from gacalc.functions import InvertibleFunction, Linearity
 
@@ -130,6 +131,60 @@ def rotation_from_to(
     )
 
 
+@typing.overload
+def in_plane(
+    rotation: Callable[[g2.Vector], g2.Vector],
+    first: g3.Vector,
+    second: g3.Vector,
+    v: g3.Vector,
+) -> g3.Vector: ...
+@typing.overload
+def in_plane(
+    rotation: Callable[[g2.Vector], g2.Vector],
+    first: MultiVectorBase,
+    second: MultiVectorBase,
+    v: MultiVectorBase,
+) -> MultiVectorBase: ...
+def in_plane(
+    rotation: Callable[[g2.Vector], g2.Vector],
+    first: MultiVectorBase,
+    second: MultiVectorBase,
+    v: MultiVectorBase,
+) -> MultiVectorBase:
+    """A 2D ``rotation`` applied to ``v`` in the plane of two basis vectors.
+
+    ``v``'s coordinates along ``first`` and ``second`` are copied into a 𝒢₂ vector,
+    rotated there, and written back; every other coordinate is left alone.  This is
+    how the standard-position constructions turn one coordinate plane at a time.
+
+    Args:
+        rotation: a 2D rotation, such as :func:`rotation_from_to`.
+        first: the basis vector whose coordinate plays the 2D ``e_1``.
+        second: the basis vector whose coordinate plays the 2D ``e_2``.
+        v: the vector to rotate.
+
+    Returns:
+        MultiVectorBase: ``v`` with that plane's coordinates rotated.
+
+    Examples:
+        >>> from gacalc import g2
+        >>> from gacalc.g3 import e_1, e_2, e_3
+        >>> quarter_turn = rotation_from_to(1 * g2.e_1, 1 * g2.e_2)
+        >>> in_plane(quarter_turn, e_1, e_3, 1 * e_1 + 2 * e_2) == 2 * e_2 + 1 * e_3
+        True
+    """
+    x: Real = v.coefficient(first)
+    y: Real = v.coefficient(second)
+    turned: g2.Vector = rotation(g2.Scalar(x) * g2.e_1 + g2.Scalar(y) * g2.e_2)
+    return (
+        v
+        - first * x
+        - second * y
+        + first * turned.coeff_e_1
+        + second * turned.coeff_e_2
+    )
+
+
 def _project_via_standard_position(
     a: MultiVectorBase, b: MultiVectorBase
 ) -> MultiVectorBase:
@@ -145,26 +200,6 @@ def _project_via_standard_position(
         # The three coordinates, zeros included (iterating a Gn omits them).
         return v.coefficient(e_1), v.coefficient(e_2), v.coefficient(e_3)
 
-    def in_xy_plane(
-        rotation: Callable[[g2.Vector], g2.Vector], v: MultiVectorBase
-    ) -> MultiVectorBase:
-        x: Real
-        y: Real
-        z: Real
-        x, y, z = coordinates(v)
-        rotated: g2.Vector = rotation(g2.Scalar(x) * g2.e_1 + g2.Scalar(y) * g2.e_2)
-        return e_1 * rotated.coeff_e_1 + e_2 * rotated.coeff_e_2 + e_3 * z
-
-    def in_xz_plane(
-        rotation: Callable[[g2.Vector], g2.Vector], v: MultiVectorBase
-    ) -> MultiVectorBase:
-        x: Real
-        y: Real
-        z: Real
-        x, y, z = coordinates(v)
-        rotated: g2.Vector = rotation(g2.Scalar(x) * g2.e_1 + g2.Scalar(z) * g2.e_2)
-        return e_1 * rotated.coeff_e_1 + e_2 * y + e_3 * rotated.coeff_e_2
-
     b_x: Real
     b_y: Real
     b_z: Real
@@ -177,17 +212,21 @@ def _project_via_standard_position(
     tilt_on_x_axis: g2.Vector = g2.Scalar(b.magnitude()) * g2.e_1
 
     def align(v: MultiVectorBase) -> MultiVectorBase:
-        return in_xz_plane(
+        return in_plane(
             rotation_from_to(tilt, tilt_on_x_axis),
-            in_xy_plane(rotation_from_to(shadow, shadow_on_x_axis), v),
+            e_1,
+            e_3,
+            in_plane(rotation_from_to(shadow, shadow_on_x_axis), e_1, e_2, v),
         )
 
     def rotate_back(v: MultiVectorBase) -> MultiVectorBase:
         # Each rotation is undone by the one between the same vectors, the other
         # way round; the two are undone in the reverse order.
-        return in_xy_plane(
+        return in_plane(
             rotation_from_to(shadow_on_x_axis, shadow),
-            in_xz_plane(rotation_from_to(tilt_on_x_axis, tilt), v),
+            e_1,
+            e_2,
+            in_plane(rotation_from_to(tilt_on_x_axis, tilt), e_1, e_3, v),
         )
 
     # align(b) = |b| * e_1, so projecting onto it is "keep the x-component":

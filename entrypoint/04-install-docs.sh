@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 # 04-install-docs.sh -- the LaTeX packages the Sphinx book's PDF build \usepackage's
-# (LuaLaTeX toolchain + helpers), plus ImageMagick for svg->pdf figure conversion.
+# (LuaLaTeX toolchain + helpers), plus ImageMagick for svg->pdf figure conversion and
+# Graphviz (`dot`) for the graphs `sphinx.ext.graphviz` draws.
 # Corresponds to the Dockerfile's BUILD_DOCS flag; the Dockerfile runs this only when
 # BUILD_DOCS=1. The Sphinx/doc-extension pip installs stay in the Dockerfile (they go
 # into the venv, not dnf). No options -- see 01-install-base.sh for the design.
@@ -10,6 +11,7 @@
 set -uo pipefail
 
 dnf install -y \
+    graphviz \
     ImageMagick \
     latexmk \
     texlive-luahbtex \

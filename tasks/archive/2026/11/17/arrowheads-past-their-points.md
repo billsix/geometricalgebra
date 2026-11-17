@@ -2,7 +2,7 @@
 
 **Created:** 2026-11-17 (William Emerison Six <billsix@gmail.com>)
 **Done:** 2026-11-17
-**Related:** `tasks/book-notebooks-symbolic-proof-style.md` (the notebooks whose figures showed it);
+**Related:** `tasks/archive/2026/11/17/book-notebooks-symbolic-proof-style.md` (the notebooks whose figures showed it);
 github.com/billsix/epix-mirror `tasks/archive/2026/11/17/arrowheads-end-on-their-points.md` (the fix)
 
 ## What was wrong
@@ -24,7 +24,7 @@ the corner; the shaft also ran to the tip, with round caps.
    rather than compensating in the book's helpers.
 2. **Where two arrows share a tip, the parts go on top**: draw the result first, then its parts.
    `proof-projection.py` already draws $a$ before the projection and rejection; the rule is carried
-   into `tasks/book-notebooks-symbolic-proof-style.md` (rule 5) for the other notebooks.
+   into `tasks/archive/2026/11/17/book-notebooks-symbolic-proof-style.md` (rule 5) for the other notebooks.
 
 The other options weighed: compensating in `book/figures/epix/_frame_scene.py` `arrow()` by pulling
 the tip back, or drawing the shaft and head separately there. Both needed a points-to-figure-units

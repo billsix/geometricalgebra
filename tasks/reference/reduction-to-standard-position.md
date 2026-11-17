@@ -110,7 +110,9 @@ once built 3-D rotation from its 2-D `rotate`). The 2-D rotation is the blend of
 coordinate quarter turn `rot90`); Python's public `standardposition.rotation_from_to(from_vector,
 to_vector)` reads `cos` and `sin` off the two vectors as in `book/docs/proof-rotate-from-a-to-b.rst`, so
 no angle is computed, and returns an `InvertibleFunction` whose inverse is the rotation back (the
-book's $R_{\vec{b}}^{e_1}$ and $(R_{\vec{b}}^{e_1})^{-1}$; `book/docs/notebooks/proof-projection.py` uses it). The quarter
+book's $R_{\vec{b}}^{e_1}$ and $(R_{\vec{b}}^{e_1})^{-1}$; `book/docs/notebooks/proof-projection.py` uses it).
+The copy-rotate-write-back step is the public `standardposition.in_plane(rotation, first, second, v)`,
+which `project_sp`/`reject_sp` and the 3D book notebooks (`proof-cross.py`, `proof-projection-3d.py`) share. The quarter
 turn is `g2.Vector.rotate_90_degrees()`, whose body swaps coordinates, `(x, y) -> (-y, x)`; it is not
 multiplication by `e₁₂`, which would make the bootstrap use the geometric product.
 

@@ -134,21 +134,26 @@ preserved verbatim in the appendix.
 - **A companion notebook works its page's derivation with set values, drawn, and checks it one
   result per cell** (William Emerison Six <billsix@gmail.com>, 2026-11-16; the model is the Part III
   notebooks `book/docs/notebooks/bootstrap-*.py`).
-  - **One values cell near the top** sets the vectors (or vector and angle). Everything after it is
-    computed from those values, so a reader running the notebook can change them and rerun. The
-    book renders it with the values as set. The intro says this once.
-  - **Each derivation step** is computed from the values, shown as the cell's output, and drawn
-    with a **live ePiX** figure in its own cell. Use `book/figures/epix/_bootstrap_live.py`
-    `scene_around`, which fits whatever points it is given, so changed values still frame.
-    Labels follow the usual figure rules: every argument by keyword, each label in the colour of
-    what it labels. matplotlib isn't used in the book's notebooks.
-  - **Checks sit beside what they check.** A check cell subtracts two things (from the values just
-    drawn, or from symbolic coordinates) and shows one result, `0` when they agree. Several facts
-    mean several cells. Don't print a list of differences, don't use an `assert` (it shows
-    nothing), and don't put a closing section of checks after unrelated material.
-  - **The general case:** after the worked example, a "For all vectors" section repeats the checks
-    with symbolic coordinates, still one fact per cell. This is the symbolic-Python form the
-    three-forms rule in `CLAUDE.md` asks for.
+  - **Symbolic the whole time** (William Emerison Six <billsix@gmail.com>, 2026-11-17). Every
+    step is computed with symbolic coordinates, so each displayed result is a formula for every
+    input, and one set of checks covers all vectors (no separate worked-example and "for all
+    vectors" sections). Numbers appear in one plot-values cell, a list of `(symbol, number)`
+    pairs, and are used only to draw the figures, through `gacalc.nbdisplay.at_values`. A step a
+    figure draws gets an "At the plot values:" cell after its formula; nothing else does.
+  - **Each derivation step** is shown as the cell's output and drawn with a **live ePiX** figure in
+    its own cell. Use `book/figures/epix/_bootstrap_live.py` `scene_around`, which fits whatever
+    points it is given, so changed values still frame. Labels follow the usual figure rules: every
+    argument by keyword, each label in the colour of what it labels, and a number in a label is
+    computed at the plot values, never typed. matplotlib isn't used in the book's notebooks.
+  - **Checks sit beside what they check, and show both sides first.** A check is three cells: the
+    first side, the second side, then their difference, which shows `0`. Several facts mean several
+    checks. Don't print a list of differences, don't use an `assert` or `==` (they show nothing),
+    and don't put a closing section of checks after unrelated material. This is the
+    symbolic-Python form the three-forms rule in `CLAUDE.md` asks for.
+  - **Build only on what came before:** every construction uses results taught earlier, and
+    rotations come from the ones the book built (`Vector.rotate`, `rotation_from_to`).
+    `tasks/reference/teaching-order-and-dependencies.md` has the rule, the teaching order and the
+    graph (`book/docs/proof-dependencies.dot`, drawn on the first page).
   - The page keeps its own LaTeX derivation, so the PDF reads on its own. The notebook repeats the
     steps with numbers and pictures.
   - **The teaching voice inside that structure** (one idea per cell, start from known algebra,

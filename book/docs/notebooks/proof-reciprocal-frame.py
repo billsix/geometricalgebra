@@ -20,17 +20,39 @@
 # for slanted axes $a_1, a_2$: one dot product per coordinate, $x_k = a^k \cdot y$.
 # Each section below checks one of the chapter's eight theorems, first in the plane for
 # a fully general frame (every coordinate its own symbol), then in space for one slanted
-# frame and a fully general vector. Each check cell subtracts the two sides and shows
-# the difference, $0$ when they agree.
+# frame and a fully general vector. Each check shows both sides, then their difference.
+# Numbers appear only to draw the figures.
 
 # %%
+import pathlib
+import sys
+
+# The ePiX scene helpers live with the book's other figure sources.
+sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
+
 import sympy
+from _bootstrap_live import (
+    BLACK,
+    BLUE,
+    GREEN,
+    PURPLE,
+    LabelPos,
+    PendingFigure,
+    Point,
+    arrow,
+    dashed_arrow,
+    note,
+    point,
+    scene_around,
+)
+from _frame_scene import scene_3d
 
 import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase, Real
 from gacalc.frame import Frame, InverseMethod, reciprocal_frame
 from gacalc.functions import InvertibleFunction
 from gacalc.g2 import Scalar, e_1, e_2
+from gacalc.nbdisplay import at_values
 
 # %% [markdown]
 # ## A general frame in the plane
@@ -49,37 +71,120 @@ x_1: sympy.Symbol
 x_2: sympy.Symbol
 p, q, r, t, x_1, x_2 = sympy.symbols("p q r t x_1 x_2", real=True)
 a_1: MultiVectorBase = Scalar(p) * e_1 + Scalar(q) * e_2
+a_1
+
+# %%
 a_2: MultiVectorBase = Scalar(r) * e_1 + Scalar(t) * e_2
+a_2
+
+# %%
 frame: list[MultiVectorBase] = [a_1, a_2]
 y: MultiVectorBase = Scalar(x_1) * a_1 + Scalar(x_2) * a_2
+y
+
+# %% [markdown]
+# The frame's signed area:
+
+# %%
 a_1 ^ a_2
+
+# %% [markdown]
+# The values used to draw the plane's figures. Change them and rerun.
+
+# %%
+values: list[tuple[sympy.Symbol, Real]] = [
+    (p, 2),
+    (q, 1),
+    (r, 1),
+    (t, 2),
+    (x_1, 1),
+    (x_2, 1),
+]
 
 # %% [markdown]
 # ## Theorem 1: eq 3.7, the definition
 #
 # $a^1 = a_2 * (a_1 \wedge a_2)^{-1}$ and $a^2 = -1 * a_1 * (a_1 \wedge a_2)^{-1}$:
-# each frame vector's face (the wedge of the others) divided by the area.
-# `reciprocal_frame` builds the same two vectors.
+# each frame vector's face (the wedge of the others) divided by the area. By the
+# formula, $a^1$ is:
 
 # %%
 A_2: MultiVectorBase = a_1 ^ a_2
-upper_1: MultiVectorBase = a_2 * A_2.inverse()
-upper_2: MultiVectorBase = -1 * (a_1 * A_2.inverse())
+upper_1: MultiVectorBase = (a_2 * A_2.inverse()).simplified()
+upper_1
+
+# %% [markdown]
+# gacalc's `reciprocal_frame` builds:
+
+# %%
 reciprocal: list[MultiVectorBase] = reciprocal_frame(frame)
+reciprocal[0].simplified()
+
+# %% [markdown]
+# Their difference:
+
+# %%
 (upper_1 - reciprocal[0]).simplified()
+
+# %% [markdown]
+# By the formula, $a^2$ is:
+
+# %%
+upper_2: MultiVectorBase = (-1 * (a_1 * A_2.inverse())).simplified()
+upper_2
+
+# %% [markdown]
+# `reciprocal_frame` builds:
+
+# %%
+reciprocal[1].simplified()
+
+# %% [markdown]
+# Their difference:
 
 # %%
 (upper_2 - reciprocal[1]).simplified()
+
+# %% [markdown]
+# At the plot values, $a^1$:
+
+# %%
+at_values(reciprocal[0], values)
+
+# %% [markdown]
+# and $a^2$:
+
+# %%
+at_values(reciprocal[1], values)
+
+# %%
+P_A_1: Point = point(coordinates=list(at_values(a_1, values)))
+P_A_2: Point = point(coordinates=list(at_values(a_2, values)))
+P_UPPER_1: Point = point(coordinates=list(at_values(reciprocal[0], values)))
+P_UPPER_2: Point = point(coordinates=list(at_values(reciprocal[1], values)))
+fig_frame: PendingFigure
+with scene_around(points=[P_A_1, P_A_2, P_UPPER_1, P_UPPER_2]) as fig_frame:
+    arrow(head=P_A_1, color=BLACK, text=r"$a_1$")
+    arrow(head=P_A_2, color=BLACK, text=r"$a_2$", align=LabelPos.l)
+    arrow(head=P_UPPER_1, color=GREEN, text=r"$a^1$")
+    arrow(head=P_UPPER_2, color=BLUE, text=r"$a^2$", align=LabelPos.l)
+fig_frame
 
 # %% [markdown]
 # ## Theorem 2: each reciprocal vector is a vector
 #
 # A vector times a bivector could have a grade-3 part. In the plane it cannot, and in
 # general the face lies inside the frame's space, so only grade 1 is left. The grades
-# present in $a^1$ and in $a^2$:
+# present in $a^1$:
 
 # %%
-[upper.grades() for upper in reciprocal]
+reciprocal[0].grades()
+
+# %% [markdown]
+# and in $a^2$:
+
+# %%
+reciprocal[1].grades()
 
 # %% [markdown]
 # ## Theorem 3: eq 3.5, the Kronecker delta
@@ -88,7 +193,7 @@ reciprocal: list[MultiVectorBase] = reciprocal_frame(frame)
 # products, row $k$ and column $j$:
 
 # %%
-sympy.Matrix(
+delta_table: sympy.Matrix = sympy.Matrix(
     [
         [
             sympy.simplify(sympy.sympify(upper.dot(lower).scalar_part()))
@@ -97,21 +202,51 @@ sympy.Matrix(
         for upper in reciprocal
     ]
 )
+delta_table
+
+# %% [markdown]
+# The identity:
+
+# %%
+sympy.eye(2)
+
+# %% [markdown]
+# Their difference:
+
+# %%
+delta_table - sympy.eye(2)
 
 # %% [markdown]
 # ## Theorem 4: eq 3.4, reconstruction
 #
-# Each coordinate is one dot product, $x_k = a^k \cdot y$:
+# Each coordinate is one dot product. $a^1 \cdot y$ is:
 
 # %%
-(Scalar(reciprocal[0].dot(y).scalar_part()) - Scalar(x_1)).simplified()
-
-# %%
-(Scalar(reciprocal[1].dot(y).scalar_part()) - Scalar(x_2)).simplified()
+coordinate_1: Real = sympy.simplify(sympy.sympify(reciprocal[0].dot(y).scalar_part()))
+coordinate_1
 
 # %% [markdown]
-# and the vector is the sum of its coordinates times the frame,
-# $y = \sum_k (a^k \cdot y) * a_k$:
+# Its difference from $x_1$:
+
+# %%
+coordinate_1 - x_1
+
+# %% [markdown]
+# $a^2 \cdot y$ is:
+
+# %%
+coordinate_2: Real = sympy.simplify(sympy.sympify(reciprocal[1].dot(y).scalar_part()))
+coordinate_2
+
+# %% [markdown]
+# Its difference from $x_2$:
+
+# %%
+coordinate_2 - x_2
+
+# %% [markdown]
+# The vector is the sum of its coordinates times the frame,
+# $\sum_k (a^k \cdot y) * a_k$:
 
 # %%
 rebuilt: MultiVectorBase = sum(
@@ -120,50 +255,118 @@ rebuilt: MultiVectorBase = sum(
         for upper, lower in zip(reciprocal, frame)
     ],
     start=0 * e_1,
-)
+).simplified()
+rebuilt
+
+# %% [markdown]
+# $y$ was:
+
+# %%
+y.simplified()
+
+# %% [markdown]
+# Their difference:
+
+# %%
 (rebuilt - y).simplified()
+
+# %% [markdown]
+# Drawn at the plot values: $y$ (purple) as $x_1 * a_1$ (green) plus $x_2 * a_2$
+# (blue).
+
+# %%
+P_Y: Point = point(coordinates=list(at_values(y, values)))
+P_X1_A1: Point = point(coordinates=list(at_values(Scalar(x_1) * a_1, values)))
+fig_rebuilt: PendingFigure
+with scene_around(points=[P_A_1, P_A_2, P_Y]) as fig_rebuilt:
+    arrow(head=P_Y, color=PURPLE, text=r"$y$")
+    arrow(head=P_X1_A1, color=GREEN, text=r"$x_1 * a_1$")
+    arrow(head=P_Y, tail=P_X1_A1, color=BLUE)
+    note(
+        at=0.5 * (P_X1_A1 + P_Y),
+        text=r"$x_2 * a_2$",
+        color=BLUE,
+        offset=Point(x=6, y=0),
+        align=LabelPos.r,
+    )
+    dashed_arrow(tail=Point(x=0, y=0), head=P_A_2, color=BLACK, text=r"$a_2$")
+fig_rebuilt
 
 # %% [markdown]
 # ## Theorem 5: similar right triangles
 #
 # Take any vector $m$ perpendicular to $a_2$. Every term of $y$ but $x_1 * a_1$ adds
 # no height along $m$, so $x_1 = (m \cdot y) / (m \cdot a_1)$: the height of $y$
-# above $a_2$'s line over the height of $a_1$. In the plane the quarter turn of $a_2$
-# is such an $m$. It is perpendicular to $a_2$:
+# above $a_2$'s line over the height of $a_1$. In the plane the quarter turn of $a_2$,
+# $r(a_2; \pi/2)$, is such an $m$:
 
 # %%
 m: MultiVectorBase = a_2.rotate_90_degrees()
+m
+
+# %% [markdown]
+# It is perpendicular to $a_2$, $m \cdot a_2 = 0$:
+
+# %%
 m.dot(a_2).simplified()
 
 # %% [markdown]
-# The ratio of the two heights is $x_1$:
+# The ratio of the two heights:
 
 # %%
 height_of_y: Real = m.dot(y).scalar_part()
 height_of_a_1: Real = m.dot(a_1).scalar_part()
-(Scalar(height_of_y / height_of_a_1) - Scalar(x_1)).simplified()
+height_ratio: Real = sympy.simplify(sympy.sympify(height_of_y / height_of_a_1))
+height_ratio
 
 # %% [markdown]
-# Folding that division into the vector gives the reciprocal vector,
-# $a^1 = m / (m \cdot a_1)$, whatever the length of $m$:
+# Its difference from $x_1$:
 
 # %%
-(Scalar(1 / height_of_a_1) * m - reciprocal[0]).simplified()
+height_ratio - x_1
+
+# %% [markdown]
+# Folding that division into the vector, $m / (m \cdot a_1)$:
+
+# %%
+folded: MultiVectorBase = (Scalar(1 / height_of_a_1) * m).simplified()
+folded
+
+# %% [markdown]
+# is the reciprocal vector $a^1$ whatever the length of $m$. Its difference from $a^1$:
+
+# %%
+(folded - reciprocal[0]).simplified()
 
 # %% [markdown]
 # ## Theorem 6: the last reciprocal vector is the last rejection over its length squared
 #
-# $w_2$ is $a_2$ with its part along $a_1$ rejected, so it is perpendicular to $a_1$:
+# $w_2$ is $a_2$ with its part along $a_1$ rejected:
 
 # %%
-w_2: MultiVectorBase = Frame(tuple(frame)).orthogonal_vectors()[-1]
+w_2: MultiVectorBase = Frame(tuple(frame)).orthogonal_vectors()[-1].simplified()
+w_2
+
+# %% [markdown]
+# so it is perpendicular to $a_1$, $w_2 \cdot a_1 = 0$:
+
+# %%
 w_2.dot(a_1).simplified()
 
 # %% [markdown]
-# and $a^2 = w_2 / |w_2|^2$:
+# $w_2 / |w_2|^2$:
 
 # %%
-(Scalar(1 / w_2.magnitude_squared()) * w_2 - reciprocal[1]).simplified()
+w_2_over_length: MultiVectorBase = (
+    Scalar(1 / w_2.magnitude_squared()) * w_2
+).simplified()
+w_2_over_length
+
+# %% [markdown]
+# Its difference from $a^2$:
+
+# %%
+(w_2_over_length - reciprocal[1]).simplified()
 
 # %% [markdown]
 # ## Theorems 7 and 8: both inverses undo the frame's map, and they agree
@@ -171,7 +374,7 @@ w_2.dot(a_1).simplified()
 # `Frame.to_invertible_function` sends $e_i \mapsto a_i$. Its inverse reads the
 # coordinates either with the reciprocal frame or by peeling the frame from its last
 # vector. Each round trip is the identity, and the two inverses agree on a general
-# vector.
+# vector. The coordinates $x$:
 
 # %%
 by_reciprocal: InvertibleFunction[MultiVectorBase] = Frame(
@@ -181,30 +384,70 @@ by_peel: InvertibleFunction[MultiVectorBase] = Frame(
     tuple(frame)
 ).to_invertible_function(inverse_method=InverseMethod.PEEL)
 x: MultiVectorBase = Scalar(x_1) * e_1 + Scalar(x_2) * e_2
+x
 
 # %% [markdown]
-# The map, then the reciprocal-frame inverse, gives $x$ back:
+# The map, then the reciprocal-frame inverse:
+
+# %%
+by_reciprocal.inverse(by_reciprocal(x)).simplified()
+
+# %% [markdown]
+# Its difference from $x$:
 
 # %%
 (by_reciprocal.inverse(by_reciprocal(x)) - x).simplified()
 
 # %% [markdown]
-# and so does the peeling inverse:
+# The map, then the peeling inverse:
+
+# %%
+by_peel.inverse(by_peel(x)).simplified()
+
+# %% [markdown]
+# Its difference from $x$:
 
 # %%
 (by_peel.inverse(by_peel(x)) - x).simplified()
 
 # %% [markdown]
-# The other order, inverse then map, gives $y$ back, for both inverses:
+# The other order, the reciprocal-frame inverse and then the map, on $y$:
+
+# %%
+by_reciprocal(by_reciprocal.inverse(y)).simplified()
+
+# %% [markdown]
+# Its difference from $y$:
 
 # %%
 (by_reciprocal(by_reciprocal.inverse(y)) - y).simplified()
+
+# %% [markdown]
+# The peeling inverse and then the map, on $y$:
+
+# %%
+by_peel(by_peel.inverse(y)).simplified()
+
+# %% [markdown]
+# Its difference from $y$:
 
 # %%
 (by_peel(by_peel.inverse(y)) - y).simplified()
 
 # %% [markdown]
-# The two inverses agree:
+# The two inverses agree. The reciprocal-frame inverse of $y$:
+
+# %%
+by_reciprocal.inverse(y).simplified()
+
+# %% [markdown]
+# the peeling inverse of $y$:
+
+# %%
+by_peel.inverse(y).simplified()
+
+# %% [markdown]
+# Their difference:
 
 # %%
 (by_reciprocal.inverse(y) - by_peel.inverse(y)).simplified()
@@ -213,8 +456,10 @@ x: MultiVectorBase = Scalar(x_1) * e_1 + Scalar(x_2) * e_2
 # ## In space
 #
 # The same checks for the slanted frame $b_1 = 2 * e_1$, $b_2 = 1 * e_1 + 3 * e_2$,
-# $b_3 = 1 * e_1 + 1 * e_2 + 2 * e_3$ and a fully general vector $z$. Now the face of
-# each frame vector is a plane, eq 3.7 divides it by the volume
+# $b_3 = 1 * e_1 + 1 * e_2 + 2 * e_3$ and a fully general vector $z$. Here the frame
+# has numbers, not symbols: with all nine frame coordinates symbolic, the round trips
+# take minutes each (`tasks/reference/frames-qr-and-reciprocal-frames.md`). Now the face
+# of each frame vector is a plane, eq 3.7 divides it by the volume
 # $b_1 \wedge b_2 \wedge b_3$, and the last rejection $w_3$ is $b_3$'s height above
 # the plane of $b_1$ and $b_2$.
 
@@ -230,25 +475,63 @@ space_frame: list[MultiVectorBase] = [b_1, b_2, b_3]
 z: MultiVectorBase = (
     g3.Scalar(z_1) * g3.e_1 + g3.Scalar(z_2) * g3.e_2 + g3.Scalar(z_3) * g3.e_3
 )
+z
 
 # %% [markdown]
-# Theorem 1, eq 3.7: the reciprocal frame.
+# Theorem 1, eq 3.7: the reciprocal frame. $b^1$:
 
 # %%
 space_reciprocal: list[MultiVectorBase] = reciprocal_frame(space_frame)
-space_reciprocal
+space_reciprocal[0]
 
 # %% [markdown]
-# Theorem 2: each is a vector. The grades present in each:
+# $b^2$:
 
 # %%
-[upper.grades() for upper in space_reciprocal]
+space_reciprocal[1]
 
 # %% [markdown]
-# Theorem 3: the table of dot products $b^k \cdot b_j$ is the identity:
+# $b^3$:
 
 # %%
-sympy.Matrix(
+space_reciprocal[2]
+
+# %%
+P_B: list[Point] = [point(coordinates=list(lower)) for lower in space_frame]
+P_B_UPPER: list[Point] = [point(coordinates=list(upper)) for upper in space_reciprocal]
+fig_space: PendingFigure
+with scene_3d(
+    lower_left=Point(x=-1.0, y=-1.6), upper_right=Point(x=5.4, y=3.6)
+) as fig_space:
+    index: int
+    for index in range(3):
+        arrow(head=P_B[index], color=BLACK, text=rf"$b_{index + 1}$")
+        arrow(head=P_B_UPPER[index], color=GREEN, text=rf"$b^{index + 1}$")
+fig_space
+
+# %% [markdown]
+# Theorem 2: each is a vector. The grades present in $b^1$:
+
+# %%
+space_reciprocal[0].grades()
+
+# %% [markdown]
+# in $b^2$:
+
+# %%
+space_reciprocal[1].grades()
+
+# %% [markdown]
+# and in $b^3$:
+
+# %%
+space_reciprocal[2].grades()
+
+# %% [markdown]
+# Theorem 3: the table of dot products $b^k \cdot b_j$:
+
+# %%
+space_delta_table: sympy.Matrix = sympy.Matrix(
     [
         [
             sympy.simplify(sympy.sympify(upper.dot(lower).scalar_part()))
@@ -257,9 +540,16 @@ sympy.Matrix(
         for upper in space_reciprocal
     ]
 )
+space_delta_table
 
 # %% [markdown]
-# Theorem 4: the coordinates times the frame rebuild $z$:
+# Its difference from the identity:
+
+# %%
+space_delta_table - sympy.eye(3)
+
+# %% [markdown]
+# Theorem 4: the coordinates times the frame:
 
 # %%
 space_rebuilt: MultiVectorBase = sum(
@@ -268,30 +558,51 @@ space_rebuilt: MultiVectorBase = sum(
         for upper, lower in zip(space_reciprocal, space_frame)
     ],
     start=0 * g3.e_1,
-)
+).simplified()
+space_rebuilt
+
+# %% [markdown]
+# Its difference from $z$:
+
+# %%
 (space_rebuilt - z).simplified()
 
 # %% [markdown]
 # Theorem 5: with $n$ a normal to $b_1$'s face (the dual of $b_2 \wedge b_3$),
-# $b^1 = n / (n \cdot b_1)$:
+# $n / (n \cdot b_1)$ is:
 
 # %%
 n: MultiVectorBase = (b_2 ^ b_3).dual()
-(
-    g3.Scalar(sympy.Integer(1) / n.dot(b_1).scalar_part()) * n - space_reciprocal[0]
+space_folded: MultiVectorBase = (
+    g3.Scalar(sympy.Integer(1) / n.dot(b_1).scalar_part()) * n
 ).simplified()
+space_folded
 
 # %% [markdown]
-# Theorem 6: $b^3 = w_3 / |w_3|^2$:
+# Its difference from $b^1$:
+
+# %%
+(space_folded - space_reciprocal[0]).simplified()
+
+# %% [markdown]
+# Theorem 6: $w_3 / |w_3|^2$ is:
 
 # %%
 w_3: MultiVectorBase = Frame(tuple(space_frame)).orthogonal_vectors()[-1]
-(
-    g3.Scalar(sympy.Integer(1) / w_3.magnitude_squared()) * w_3 - space_reciprocal[2]
+w_3_over_length: MultiVectorBase = (
+    g3.Scalar(sympy.Integer(1) / w_3.magnitude_squared()) * w_3
 ).simplified()
+w_3_over_length
 
 # %% [markdown]
-# Theorems 7 and 8: both inverses undo the map, in both orders, and they agree.
+# Its difference from $b^3$:
+
+# %%
+(w_3_over_length - space_reciprocal[2]).simplified()
+
+# %% [markdown]
+# Theorems 7 and 8: both inverses undo the map, in both orders, and they agree. The map,
+# then the reciprocal-frame inverse, on $z$:
 
 # %%
 space_by_reciprocal: InvertibleFunction[MultiVectorBase] = Frame(
@@ -300,16 +611,64 @@ space_by_reciprocal: InvertibleFunction[MultiVectorBase] = Frame(
 space_by_peel: InvertibleFunction[MultiVectorBase] = Frame(
     tuple(space_frame)
 ).to_invertible_function(inverse_method=InverseMethod.PEEL)
+space_by_reciprocal.inverse(space_by_reciprocal(z)).simplified()
+
+# %% [markdown]
+# Its difference from $z$:
+
+# %%
 (space_by_reciprocal.inverse(space_by_reciprocal(z)) - z).simplified()
+
+# %% [markdown]
+# The map, then the peeling inverse:
+
+# %%
+space_by_peel.inverse(space_by_peel(z)).simplified()
+
+# %% [markdown]
+# Its difference from $z$:
 
 # %%
 (space_by_peel.inverse(space_by_peel(z)) - z).simplified()
 
+# %% [markdown]
+# The reciprocal-frame inverse, then the map:
+
+# %%
+space_by_reciprocal(space_by_reciprocal.inverse(z)).simplified()
+
+# %% [markdown]
+# Its difference from $z$:
+
 # %%
 (space_by_reciprocal(space_by_reciprocal.inverse(z)) - z).simplified()
 
+# %% [markdown]
+# The peeling inverse, then the map:
+
+# %%
+space_by_peel(space_by_peel.inverse(z)).simplified()
+
+# %% [markdown]
+# Its difference from $z$:
+
 # %%
 (space_by_peel(space_by_peel.inverse(z)) - z).simplified()
+
+# %% [markdown]
+# The two inverses agree. The reciprocal-frame inverse of $z$:
+
+# %%
+space_by_reciprocal.inverse(z).simplified()
+
+# %% [markdown]
+# the peeling inverse of $z$:
+
+# %%
+space_by_peel.inverse(z).simplified()
+
+# %% [markdown]
+# Their difference:
 
 # %%
 (space_by_reciprocal.inverse(z) - space_by_peel.inverse(z)).simplified()
