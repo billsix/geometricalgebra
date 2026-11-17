@@ -143,9 +143,9 @@ rotate_scaled(1 * e_1).simplified()
 # %% [markdown]
 # ## The angle is still there, as a property
 #
-# The same rotation, given by the angle $\theta$ from $a$ to $b$, agrees. We never needed
-# $\theta$ to build the rotation above; here we compute it only to check, as the angle
-# of $b$ minus the angle of $a$:
+# The same rotation, given by the angle $\theta$ from $a$ to $b$, agrees. We never
+# needed $\theta$ to build the rotation above; here we compute it only to check, as the
+# angle of $b$ minus the angle of $a$:
 
 # %%
 theta: Real = sympy.atan2(b_2, b_1) - sympy.atan2(a_2, a_1)
