@@ -211,12 +211,17 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 #
 # Draw a translated and rotated graph paper.
 # You can read the sequence of composed functions
-# in the order that they are applied, or in reverse order
+# in the order that they are applied, or in reverse order.
+#
+# The angle in this cell and the next two is the float
+# `math.pi / 4`, not the exact `sympy.pi / 4`: drawing the unit
+# circle through a symbolic rotation takes minutes per frame, so
+# the titles show $0.785\ldots$ instead.
 
 # %%
 fn: InvertibleFunction[MultiVector] = compose(
     [
-        R(sympy.pi / 4),
+        R(math.pi / 4),
         T(2 * e_1),
     ]
 )
@@ -238,7 +243,7 @@ with create_graphs() as axes:
 
 # %%
 f: InvertibleFunction[MultiVector]
-for f in compose_intermediate_fns([R(sympy.pi / 4), T(2 * e_1)]):
+for f in compose_intermediate_fns([R(math.pi / 4), T(2 * e_1)]):
     with create_graphs() as axes:
         create_basis(fn=f)
         create_x_and_y(fn=f)
@@ -255,11 +260,6 @@ for f in compose_intermediate_fns([R(sympy.pi / 4), T(2 * e_1)]):
 # The sequence of functions shown, where we visualize
 # the rotate first, and then the translate relative to
 # that relative graph paper.
-#
-# The angle here is the float `math.pi / 4`, not the exact
-# `sympy.pi / 4`: drawing the unit circle through the
-# relative-basis composition with the exact angle takes
-# minutes per frame, so the titles show $0.785\ldots$ instead.
 
 # %%
 f: InvertibleFunction[MultiVector]
