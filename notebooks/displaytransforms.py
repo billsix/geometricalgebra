@@ -256,12 +256,16 @@ for f in compose_intermediate_fns([R(sympy.pi / 4), T(2 * e_1)]):
 # the rotate first, and then the translate relative to
 # that relative graph paper.
 #
+# The angle here is the float `math.pi / 4`, not the exact
+# `sympy.pi / 4`: drawing the unit circle through the
+# relative-basis composition with the exact angle takes
+# minutes per frame, so the titles show $0.785\ldots$ instead.
 
 # %%
 f: InvertibleFunction[MultiVector]
 for f in compose_intermediate_fns(
     [
-        R(sympy.pi / 4),
+        R(math.pi / 4),
         T(2 * e_1),
     ],
     relative_basis=True,

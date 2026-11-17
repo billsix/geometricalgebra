@@ -1,4 +1,4 @@
 {
   "include": ["notebooks"],
-  "reportUnusedExpression": "warning"
+  "reportUnusedExpression": "none"
 }
