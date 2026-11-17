@@ -88,7 +88,13 @@ at_values(a_inverse, values)
 #
 # $\operatorname{proj}_a(b) = (b \cdot a) * a^{-1}$, where $b \cdot a$ is the
 # plain-number part of $b * a$. $b * a$ term by term; its plain-number part, the sum of
-# the $e_1 * e_1$ and $e_2 * e_2$ rows, is $b \cdot a$:
+# the $e_1 * e_1$ and $e_2 * e_2$ rows, is $b \cdot a$. First at the plot values:
+
+# %%
+show_mult(at_values(b, values), at_values(a, values))
+
+# %% [markdown]
+# Then with every coordinate a symbol:
 
 # %%
 show_mult(b, a)
@@ -112,6 +118,13 @@ at_values(projection, values)
 #
 # $\operatorname{rej}_a(b) = (b \wedge a) * a^{-1}$. Term by term: $e_{12}$ times each
 # term of $a^{-1}$ is a quarter turn of that term, so the result is a vector again.
+# First at the plot values:
+
+# %%
+show_mult(at_values(b.wedge(a), values), at_values(a_inverse, values))
+
+# %% [markdown]
+# Then with every coordinate a symbol:
 
 # %%
 show_mult(b.wedge(a), a_inverse)

@@ -136,7 +136,14 @@ fig_product
 #
 # The multiplication rules give $a * b$ the way you multiply $(x + 2) * (x + 3)$:
 # every term of $a$ times every term of $b$, then add. Each row of the table is one
-# pair of terms. $e_1 * e_1$ and $e_2 * e_2$ are $1$, and $e_2 * e_1 = -e_{12}$.
+# pair of terms. $e_1 * e_1$ and $e_2 * e_2$ are $1$, and $e_2 * e_1 = -e_{12}$. First
+# at the plot values:
+
+# %%
+show_mult(at_values(a, values), at_values(b, values))
+
+# %% [markdown]
+# Then with every coordinate a symbol:
 
 # %%
 show_mult(a, b)

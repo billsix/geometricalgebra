@@ -92,7 +92,13 @@ unit_product
 # %% [markdown]
 # Multiplying $v$ by it on the right rotates $v$ by $\theta$. Term by term: each term of
 # $v$ times the plain-number part keeps its direction, and times the $e_{12}$ part turns
-# a quarter turn:
+# a quarter turn. First at the plot values:
+
+# %%
+show_mult(at_values(v, values), at_values(unit_product, values))
+
+# %% [markdown]
+# Then with every coordinate a symbol:
 
 # %%
 show_mult(v, unit_product)
@@ -140,15 +146,27 @@ R: Versor = (b * a + Scalar(a.magnitude() * b.magnitude())).simplified()
 R
 
 # %% [markdown]
-# The sandwich is two products. First $R * v$, term by term:
+# The sandwich is two products. First $R * v$, term by term, at the plot values:
+
+# %%
+show_mult(at_values(R, values), at_values(v, values))
+
+# %% [markdown]
+# Then with every coordinate a symbol:
 
 # %%
 show_mult(R, v)
 
 # %% [markdown]
-# then that result times $R^{-1}$. With every coordinate a symbol, the table for this
-# second product is pages of nested square roots, so it is left out; the sandwich's
-# result is below, and the checks compare it with the one-sided form.
+# Then that result times $R^{-1}$, at the plot values:
+
+# %%
+show_mult(at_values(R * v, values), at_values(R.inverse(), values))
+
+# %% [markdown]
+# With every coordinate a symbol, the table for this second product is pages of nested
+# square roots, so it is left out; the sandwich's result is below, and the checks
+# compare it with the one-sided form.
 
 # %%
 sandwich: MultiVectorBase = (R * v * R.inverse()).simplified()
