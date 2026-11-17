@@ -100,7 +100,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   Wayland's `PYGLFW_LIBRARY`, headless runs and the GL conventions: `tasks/reference/gl-toolkit.md`.
 - `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
 - `src/gacalc/nbdisplay.py` — display-only notebook helpers (sympy + IPython, no matplotlib):
-  `show_mult(a, b)`, the term-by-term product table and its sum; usable by the book's notebooks,
+  `show_mult(a, b)`, the term-by-term product table and its sum, and `at_values(value, values)`,
+  which substitutes plot values into a symbolic result; usable by the book's notebooks,
   re-exported from `nbplotutils` for the demo notebooks.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
   `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`),

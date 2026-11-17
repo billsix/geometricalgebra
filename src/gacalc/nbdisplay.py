@@ -11,21 +11,69 @@
 # Lesser General Public License (the LICENSE file in this repository)
 # for more details.
 
-"""Display-only notebook helpers: show a geometric product as math, term by term.
+"""Notebook helpers for the book: show a product term by term, and plot symbolic values.
 
 ``show_mult(a, b)`` shows the distribution of ``a * b`` the way a student
 multiplies ``(x + 2) * (x + 3)`` by hand: every term of ``a`` times every term of
 ``b``, one table row per pair, then the sum. It needs only sympy and IPython, so
 the book's notebooks (which draw with ePiX, not matplotlib) can use it without
 importing the plotting helpers in ``gacalc.nbplotutils``, which re-exports it.
+
+``at_values(value, values)`` substitutes numbers for the symbols in a symbolic
+result. The book's notebooks compute every step with symbolic coordinates and use
+numbers only to draw the figures, and to show a drawn step at those numbers.
 """
 
-from collections.abc import Mapping
+import typing
+from collections.abc import Mapping, Sequence
 
 import sympy
 from IPython.display import Markdown, Math, display
 
 from gacalc.base import Blade, MultiVectorBase, Real, blade_dict_latex
+
+V = typing.TypeVar("V", bound=MultiVectorBase)
+
+
+@typing.overload
+def at_values(value: V, values: Sequence[tuple[sympy.Symbol, Real]]) -> V: ...
+@typing.overload
+def at_values(value: Real, values: Sequence[tuple[sympy.Symbol, Real]]) -> Real: ...
+def at_values(
+    value: MultiVectorBase | Real, values: Sequence[tuple[sympy.Symbol, Real]]
+) -> MultiVectorBase | Real:
+    """``value`` with each ``(symbol, number)`` pair of ``values`` substituted.
+
+    A multivector keeps its type, with every coefficient substituted and
+    simplified; a number is substituted and simplified.
+
+    Args:
+        value: a symbolic number or multivector.
+        values: the ``(symbol, number)`` pairs, e.g. ``[(a_1, 1), (a_2, 4)]``.
+
+    Returns:
+        MultiVectorBase | Real: ``value`` at those numbers.
+
+    >>> import sympy
+    >>> from gacalc.g2 import Scalar, e_1, e_2
+    >>> a_1, a_2 = sympy.symbols("a_1 a_2", real=True)
+    >>> a = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
+    >>> at_values(a, [(a_1, 1), (a_2, 4)]) == 1 * e_1 + 4 * e_2
+    True
+    >>> at_values(a.magnitude(), [(a_1, 3), (a_2, 4)])
+    5
+    """
+
+    def number_at(r: Real) -> Real:
+        return sympy.simplify(sympy.sympify(r).subs(values))
+
+    match value:
+        case MultiVectorBase():
+            return type(value).from_blade_dict(
+                {blade: number_at(c) for blade, c in value.to_blade_dict().items()}
+            )
+        case _:
+            return number_at(value)
 
 
 def _blade_terms(mv: MultiVectorBase) -> list[MultiVectorBase]:

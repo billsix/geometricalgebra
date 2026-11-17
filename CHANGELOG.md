@@ -16,6 +16,8 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   direction to another, built as `book/docs/proof-rotate-from-a-to-b.rst` builds it (cosine and sine
   read off the coordinates; no general projection, no geometric product), as an
   `InvertibleFunction` whose inverse rotates back. It was the private `_rotation_from_to`.
+- **`nbdisplay.at_values(value, values)`** — a number or multivector with `(symbol, number)` pairs
+  substituted, for drawing a symbolic notebook's figures at chosen values.
 - **`gacalc.nbdisplay`** — display-only notebook helpers (no matplotlib): `show_mult(a, b)`
   and `product_table_markdown(a, b)`. `gacalc.nbplotutils.show_mult` still works (re-exported);
   the table is now built without pandas.
