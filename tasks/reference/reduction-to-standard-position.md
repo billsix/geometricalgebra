@@ -107,8 +107,10 @@ copy their plane's two coordinates into a 𝒢₂ vector, rotate it there with `
 pair back, the third coordinate untouched (as modelviewprojection's `rotate_x`/`rotate_y`/`rotate_z`
 once built 3-D rotation from its 2-D `rotate`). The 2-D rotation is the blend of `book/docs/proof-rotate.rst`'s
 `eq-rotate-formula`, `cos * v + sin * v.rotate_90_degrees()` (Lean `rotPlane_vec_eq_blend`, with the
-coordinate quarter turn `rot90`); Python's `standardposition._rotation_from_to(u, w)` reads `cos` and
-`sin` off `u` and `w` as in `book/docs/proof-rotate-from-a-to-b.rst`, so no angle is computed. The quarter
+coordinate quarter turn `rot90`); Python's public `standardposition.rotation_from_to(from_vector,
+to_vector)` reads `cos` and `sin` off the two vectors as in `book/docs/proof-rotate-from-a-to-b.rst`, so
+no angle is computed, and returns an `InvertibleFunction` whose inverse is the rotation back (the
+book's $R_{\vec{b}}^{e_1}$ and $(R_{\vec{b}}^{e_1})^{-1}$; `book/docs/notebooks/proof-projection.py` uses it). The quarter
 turn is `g2.Vector.rotate_90_degrees()`, whose body swaps coordinates, `(x, y) -> (-y, x)`; it is not
 multiplication by `e₁₂`, which would make the bootstrap use the geometric product.
 

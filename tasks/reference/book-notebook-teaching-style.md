@@ -106,6 +106,9 @@ From `tasks/archive/2026/11/16/book-notebooks-teaching-style-sweep.md`:
   for trigonometric identities, so `symbolically_equal(...)`, `==` and `assert` are not needed in
   a notebook. When the left side is symbolic, one check covers every value, and a list of
   per-point differences adds nothing.
+- **One displayed value per cell.** A tuple as a cell's last expression, `(cos, sin)`, does not
+  render as math; end the cell on `cos` and put `sin` in the next cell (William Emerison Six
+  <billsix@gmail.com>, 2026-11-17).
 - **A table of numbers is shown as `sympy.Matrix`**, which renders as a LaTeX matrix
   (`proof-reciprocal-frame.py`'s Kronecker-delta tables).
 - **A cell whose helper displays a figure and also returns it** (`plot_multivector`) binds the

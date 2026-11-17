@@ -1,7 +1,13 @@
 # ---
 # jupyter:
+#   jupytext:
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.19.6
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -247,7 +253,7 @@ projection_symbolic, rejection_symbolic = project_and_reject(a_symbolic, b_symbo
 # and the base case $\operatorname{rej}_{e_1}(b) = b_2 * e_2$:
 
 # %%
-(project_and_reject(1 * e_1, b_symbolic)[1] - Scalar(t_2) * e_2).simplified()
+(project_and_reject(1 * e_1, b_symbolic)[1] - Scalar(t_2) * e_2)
 
 # %% [markdown]
 # The projection formula:
