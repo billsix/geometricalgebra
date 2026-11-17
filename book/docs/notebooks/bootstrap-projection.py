@@ -15,13 +15,13 @@
 # %% [markdown]
 # # Step 2, projection from rotation — worked example
 #
-# Companion to *Step 2: Projection, from Rotation*. Every step is computed with
-# symbolic coordinates, so each result is a formula for every $a$ and $b$: rotate $a$
-# onto the x-axis, carrying $b$ along; apply the base cases there (keep the
-# x-coordinate for the projection, the y-coordinate for the rejection); rotate back.
-# The only rotation used is Step 1's rotation by an angle, `Vector.rotate`. Numbers
-# appear only to draw the figures; change them and rerun. Each check shows both sides,
-# then their difference.
+# Companion to *Step 2: Projection, from Rotation*. Every step is computed with symbolic
+# coordinates, so each result is a formula for every $\vec{\mathbf{a}}$ and
+# $\vec{\mathbf{b}}$: rotate $\vec{\mathbf{a}}$ onto the x-axis, carrying
+# $\vec{\mathbf{b}}$ along; apply the base cases there (keep the x-coordinate for the
+# projection, the y-coordinate for the rejection); rotate back. The only rotation used
+# is Step 1's rotation by an angle, `Vector.rotate`. Numbers appear only to draw the
+# figures; change them and rerun. Each check shows both sides, then their difference.
 
 # %%
 import pathlib
@@ -53,7 +53,7 @@ from gacalc.nbdisplay import at_values
 # %% [markdown]
 # ## The vectors
 #
-# $a$ and $b$, every coordinate a symbol:
+# $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$, every coordinate a symbol:
 
 # %%
 a_1: sympy.Symbol
@@ -79,49 +79,50 @@ P_A: Point = point(coordinates=list(at_values(a, values)))
 P_B: Point = point(coordinates=list(at_values(b, values)))
 fig_given: PendingFigure
 with scene_around(points=[P_A, P_B]) as fig_given:
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$")
 fig_given
 
 # %% [markdown]
-# ## Rotate $a$ onto the x-axis, carrying $b$ along
+# ## Rotate $\vec{\mathbf{a}}$ onto the x-axis, carrying $\vec{\mathbf{b}}$ along
 #
-# Let $\theta$ be the angle of $a$ from the x-axis, $\operatorname{atan2}(a_2, a_1)$.
-# Rotating by $-\theta$ lays $a$ on the x-axis, and the rotation's cosine and sine come
-# straight from $a$'s coordinates. The cosine, $\cos(-\theta) = a_1 / |a|$:
+# Let $\theta$ be the angle of $\vec{\mathbf{a}}$ from the x-axis,
+# $\operatorname{atan2}(a_2, a_1)$. Rotating by $-\theta$ lays $\vec{\mathbf{a}}$ on the
+# x-axis, and the rotation's cosine and sine come straight from $\vec{\mathbf{a}}$'s
+# coordinates. The cosine, $\cos(-\theta) = a_1 / |\vec{\mathbf{a}}|$:
 
 # %%
 theta: sympy.Expr = sympy.atan2(a_2, a_1)
 sympy.cos(-theta)
 
 # %% [markdown]
-# the sine, $\sin(-\theta) = -a_2 / |a|$:
+# the sine, $\sin(-\theta) = -a_2 / |\vec{\mathbf{a}}|$:
 
 # %%
 sympy.sin(-theta)
 
 # %% [markdown]
-# $a$ lands on the x-axis at its length:
+# $\vec{\mathbf{a}}$ lands on the x-axis at its length:
 
 # %%
 a_rotated: Vector = a.rotate(-theta).simplified()
 a_rotated
 
 # %% [markdown]
-# and $b$ rides along to $b'$:
+# and $\vec{\mathbf{b}}$ rides along to $\vec{\mathbf{b}}'$:
 
 # %%
 b_rotated: Vector = b.rotate(-theta).simplified()
 b_rotated
 
 # %% [markdown]
-# At the plot values, $a$ on the x-axis:
+# At the plot values, $\vec{\mathbf{a}}$ on the x-axis:
 
 # %%
 at_values(a_rotated, values)
 
 # %% [markdown]
-# and $b'$:
+# and $\vec{\mathbf{b}}'$:
 
 # %%
 at_values(b_rotated, values)
@@ -131,18 +132,24 @@ P_A_ROTATED: Point = point(coordinates=list(at_values(a_rotated, values)))
 P_B_ROTATED: Point = point(coordinates=list(at_values(b_rotated, values)))
 fig_rotated: PendingFigure
 with scene_around(points=[P_A, P_B, P_A_ROTATED, P_B_ROTATED]) as fig_rotated:
-    dashed_arrow(tail=Point(x=0, y=0), head=P_A, color=BLACK, text=r"$\vec{a}$")
-    dashed_arrow(tail=Point(x=0, y=0), head=P_B, color=BLACK, text=r"$\vec{b}$")
-    arrow(head=P_A_ROTATED, color=BLACK, text=r"$\vec{a}'$", align=LabelPos.b)
-    arrow(head=P_B_ROTATED, color=BLACK, text=r"$\vec{b}'$")
+    dashed_arrow(
+        tail=Point(x=0, y=0), head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$"
+    )
+    dashed_arrow(
+        tail=Point(x=0, y=0), head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$"
+    )
+    arrow(head=P_A_ROTATED, color=BLACK, text=r"$\vec{\mathbf{a}}'$", align=LabelPos.b)
+    arrow(head=P_B_ROTATED, color=BLACK, text=r"$\vec{\mathbf{b}}'$")
 fig_rotated
 
 # %% [markdown]
 # ## The base cases, on the x-axis
 #
-# $\operatorname{proj}_{e_1}(b') = x * e_1$ keeps $b'$'s x-coordinate and
-# $\operatorname{rej}_{e_1}(b') = y * e_2$ keeps its y-coordinate. $x$ and $y$ are the
-# signed lengths of $b$'s projection onto $a$ and of its rejection. $x$:
+# $\operatorname{proj}_{\vec{\mathbf{e}}_1}(\vec{\mathbf{b}}') = x * \vec{\mathbf{e}}_1$
+# keeps $\vec{\mathbf{b}}'$'s x-coordinate and
+# $\operatorname{rej}_{\vec{\mathbf{e}}_1}(\vec{\mathbf{b}}') = y * \vec{\mathbf{e}}_2$
+# keeps its y-coordinate. $x$ and $y$ are the signed lengths of $\vec{\mathbf{b}}$'s
+# projection onto $\vec{\mathbf{a}}$ and of its rejection. $x$:
 
 # %%
 x: Real = b_rotated.coefficient(e_1)
@@ -171,12 +178,12 @@ at_values(y, values)
 P_X: Point = point(coordinates=list(at_values(Scalar(x) * e_1, values)))
 fig_base: PendingFigure
 with scene_around(points=[P_A_ROTATED, P_B_ROTATED]) as fig_base:
-    arrow(head=P_B_ROTATED, color=BLACK, text=r"$\vec{b}'$")
+    arrow(head=P_B_ROTATED, color=BLACK, text=r"$\vec{\mathbf{b}}'$")
     arrow(head=P_X, color=GREEN, width=2.4)
-    arrow(head=P_A_ROTATED, color=BLACK, text=r"$\vec{a}'$", align=LabelPos.b)
+    arrow(head=P_A_ROTATED, color=BLACK, text=r"$\vec{\mathbf{a}}'$", align=LabelPos.b)
     note(
         at=0.5 * P_X,
-        text=r"$x * e_1$",
+        text=r"$x * \vec{\mathbf{e}}_1$",
         color=GREEN,
         offset=Point(x=0, y=-10),
         align=LabelPos.b,
@@ -184,7 +191,7 @@ with scene_around(points=[P_A_ROTATED, P_B_ROTATED]) as fig_base:
     arrow(head=P_B_ROTATED, tail=P_X, color=BLUE)
     note(
         at=0.5 * (P_X + P_B_ROTATED),
-        text=r"$y * e_2$",
+        text=r"$y * \vec{\mathbf{e}}_2$",
         color=BLUE,
         offset=Point(x=6, y=0),
         align=LabelPos.r,
@@ -195,15 +202,15 @@ fig_base
 # %% [markdown]
 # ## Rotate back
 #
-# The rotation back is by $+\theta$. It carries $x * e_1$ to the projection of $b$ onto
-# $a$:
+# The rotation back is by $+\theta$. It carries $x * \vec{\mathbf{e}}_1$ to the
+# projection of $\vec{\mathbf{b}}$ onto $\vec{\mathbf{a}}$:
 
 # %%
 projection: Vector = (Scalar(x) * e_1).rotate(theta).simplified()
 projection
 
 # %% [markdown]
-# and $y * e_2$ to the rejection:
+# and $y * \vec{\mathbf{e}}_2$ to the rejection:
 
 # %%
 rejection: Vector = (Scalar(y) * e_2).rotate(theta).simplified()
@@ -225,12 +232,12 @@ at_values(rejection, values)
 P_PROJECTION: Point = point(coordinates=list(at_values(projection, values)))
 fig_back: PendingFigure
 with scene_around(points=[P_A, P_B]) as fig_back:
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$")
     arrow(head=P_PROJECTION, color=GREEN, width=2.4)
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
     note(
         at=0.5 * P_PROJECTION,
-        text=r"$\operatorname{proj}_{\vec{a}}(\vec{b})$",
+        text=r"$\operatorname{proj}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})$",
         color=GREEN,
         offset=Point(x=4, y=-6),
         align=LabelPos.br,
@@ -238,7 +245,7 @@ with scene_around(points=[P_A, P_B]) as fig_back:
     arrow(head=P_B, tail=P_PROJECTION, color=BLUE)
     note(
         at=0.5 * (P_PROJECTION + P_B),
-        text=r"$\operatorname{rej}_{\vec{a}}(\vec{b})$",
+        text=r"$\operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})$",
         color=BLUE,
         offset=Point(x=6, y=0),
         align=LabelPos.r,
@@ -268,14 +275,15 @@ def project_and_reject(onto: Vector, v: Vector) -> tuple[Vector, Vector]:
 # %% [markdown]
 # ### On the x-axis the construction gives back the base cases
 #
-# Projecting $b$ onto $e_1$ by the construction:
+# Projecting $\vec{\mathbf{b}}$ onto $\vec{\mathbf{e}}_1$ by the construction:
 
 # %%
 onto_e_1: tuple[Vector, Vector] = project_and_reject(1 * e_1, b)
 onto_e_1[0]
 
 # %% [markdown]
-# The base case $\operatorname{proj}_{e_1}(b) = b_1 * e_1$:
+# The base case
+# $\operatorname{proj}_{\vec{\mathbf{e}}_1}(\vec{\mathbf{b}}) = b_1 * \vec{\mathbf{e}}_1$:
 
 # %%
 Scalar(b_1) * e_1
@@ -287,13 +295,14 @@ Scalar(b_1) * e_1
 (onto_e_1[0] - Scalar(b_1) * e_1).simplified()
 
 # %% [markdown]
-# Rejecting $b$ from $e_1$ by the construction:
+# Rejecting $\vec{\mathbf{b}}$ from $\vec{\mathbf{e}}_1$ by the construction:
 
 # %%
 onto_e_1[1]
 
 # %% [markdown]
-# The base case $\operatorname{rej}_{e_1}(b) = b_2 * e_2$:
+# The base case
+# $\operatorname{rej}_{\vec{\mathbf{e}}_1}(\vec{\mathbf{b}}) = b_2 * \vec{\mathbf{e}}_2$:
 
 # %%
 Scalar(b_2) * e_2
@@ -313,7 +322,7 @@ Scalar(b_2) * e_2
 projection
 
 # %% [markdown]
-# The formula $(a_1 * b_1 + a_2 * b_2) / (a_1^2 + a_2^2) * a$:
+# The formula $(a_1 * b_1 + a_2 * b_2) / (a_1^2 + a_2^2) * \vec{\mathbf{a}}$:
 
 # %%
 projection_formula: Vector = (
@@ -336,7 +345,7 @@ projection_formula
 rejection
 
 # %% [markdown]
-# The formula $(a_1 * b_2 - a_2 * b_1) / (a_1^2 + a_2^2) * r(a; \pi/2)$:
+# The formula $(a_1 * b_2 - a_2 * b_1) / (a_1^2 + a_2^2) * r(\vec{\mathbf{a}}; \pi/2)$:
 
 # %%
 rejection_formula: Vector = (
@@ -351,7 +360,7 @@ rejection_formula
 (rejection - rejection_formula).simplified()
 
 # %% [markdown]
-# ### The two parts add back to $b$
+# ### The two parts add back to $\vec{\mathbf{b}}$
 #
 # Their sum:
 
@@ -359,7 +368,7 @@ rejection_formula
 (projection + rejection).simplified()
 
 # %% [markdown]
-# and $b$:
+# and $\vec{\mathbf{b}}$:
 
 # %%
 b
@@ -373,7 +382,7 @@ b
 # %% [markdown]
 # ### Projecting twice changes nothing
 #
-# The projection, projected onto $a$ again:
+# The projection, projected onto $\vec{\mathbf{a}}$ again:
 
 # %%
 projected_twice: Vector = project_and_reject(a, projection)[0]
@@ -386,9 +395,9 @@ projected_twice
 (projected_twice - projection).simplified()
 
 # %% [markdown]
-# ### The rejection has no part along $a$
+# ### The rejection has no part along $\vec{\mathbf{a}}$
 #
-# The rejection, projected onto $a$, is $0$:
+# The rejection, projected onto $\vec{\mathbf{a}}$, is $0$:
 
 # %%
 project_and_reject(a, rejection)[0]
@@ -396,7 +405,8 @@ project_and_reject(a, rejection)[0]
 # %% [markdown]
 # ### gacalc agrees
 #
-# gacalc's projection, $(b \cdot a) * a^{-1}$:
+# gacalc's projection,
+# $(\vec{\mathbf{b}} \cdot \vec{\mathbf{a}}) * \vec{\mathbf{a}}^{-1}$:
 
 # %%
 b.projected_onto(a).simplified()

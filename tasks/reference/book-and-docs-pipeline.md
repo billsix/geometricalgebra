@@ -108,6 +108,12 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   from its per-function table (it also checks the book notebooks that mention `epix`, reporting
   only the calls its table knows) — extend the table when a new epix call is used, never guess a name.
   It runs in `entrypoint/format.sh` (wired 2026-10-07 on the maintainer's go-ahead).
+- **Prose width in the notebooks and figure scripts.** They are exempt from E501 (`pyproject.toml`),
+  because a `\vec{\mathbf{a}}` math span or a heading cannot be broken.
+  `tools/check_notebook_prose_width.py` checks their Markdown paragraphs instead: it reports a
+  paragraph with a line over 88 columns that rewrapping would change, and `--fix` rewraps it whole,
+  never inside a `$...$` or backticked span. It runs in `entrypoint/format.sh` (William Emerison Six
+  <billsix@gmail.com>, 2026-11-17).
 - **Types everywhere, as in the rest of the repo:** module-level points are `name: Point = polar(...)`;
   the `with … as fig` target is declared on the line above as `fig: PendingFigure` —
   `_scene2d.py`'s alias for `epix.figure._Pending`, the proxy `epix.figure()` yields that becomes

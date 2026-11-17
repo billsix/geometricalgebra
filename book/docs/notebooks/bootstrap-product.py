@@ -16,11 +16,13 @@
 # # Step 4, the geometric product — worked example
 #
 # Companion to *Step 4: The Geometric Product, from Projection*. Every step is computed
-# with symbolic coordinates, so each result is a formula for every $a$ and $b$: $b$
-# measured against $a$ (Step 2) gives $x$ and $y$, and the product is
-# $|a| * (x + y * e_{12})$. Then the quarter turn as a product, and the dot and wedge as
-# $a$ times the projection and the rejection. Numbers appear only to draw the figures;
-# change them and rerun. Each check shows both sides, then their difference.
+# with symbolic coordinates, so each result is a formula for every $\vec{\mathbf{a}}$
+# and $\vec{\mathbf{b}}$: $\vec{\mathbf{b}}$ measured against $\vec{\mathbf{a}}$ (Step
+# 2) gives $x$ and $y$, and the product is
+# $|\vec{\mathbf{a}}| * (x + y * \mathbf{e}_{12})$. Then the quarter turn as a product,
+# and the dot and wedge as $\vec{\mathbf{a}}$ times the projection and the rejection.
+# Numbers appear only to draw the figures; change them and rerun. Each check shows both
+# sides, then their difference.
 
 # %%
 import pathlib
@@ -52,7 +54,7 @@ from gacalc.nbdisplay import at_values, show_mult
 # %% [markdown]
 # ## The vectors
 #
-# $a$ and $b$, every coordinate a symbol:
+# $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$, every coordinate a symbol:
 
 # %%
 a_1: sympy.Symbol
@@ -76,18 +78,20 @@ values: list[tuple[sympy.Symbol, Real]] = [(a_1, 2), (a_2, 1), (b_1, 1), (b_2, 2
 # %% [markdown]
 # ## The product from projection
 #
-# Step 2 puts $b$ in $a$'s standard position: Step 1's rotation by minus the angle of
-# $a$ carries $b$ to $(x, y)$. $x$ is the signed length of $b$'s shadow on $a$ and $y$
-# its height above $a$.
+# Step 2 puts $\vec{\mathbf{b}}$ in $\vec{\mathbf{a}}$'s standard position: Step 1's
+# rotation by minus the angle of $\vec{\mathbf{a}}$ carries $\vec{\mathbf{b}}$ to
+# $(x, y)$. $x$ is the signed length of $\vec{\mathbf{b}}$'s shadow on
+# $\vec{\mathbf{a}}$ and $y$ its height above $\vec{\mathbf{a}}$.
 
 # %%
 measured: Vector = b.rotate(-sympy.atan2(a_2, a_1)).simplified()
 measured
 
 # %% [markdown]
-# The product keeps both, times $|a|$: $|a| * (x + y * e_{12})$. The plain-number part
-# is the dot product and the $e_{12}$ part, the signed area of the parallelogram, is
-# the wedge.
+# The product keeps both, times $|\vec{\mathbf{a}}|$:
+# $|\vec{\mathbf{a}}| * (x + y * \mathbf{e}_{12})$. The plain-number part is the dot
+# product and the $\mathbf{e}_{12}$ part, the signed area of the parallelogram, is the
+# wedge.
 
 # %%
 product: Versor = (
@@ -110,8 +114,8 @@ fig_product: PendingFigure
 with scene_around(points=[P_A, P_B, P_A + P_B]) as fig_product:
     dashed_arrow(tail=P_A, head=P_A + P_B, color=BLACK)
     dashed_arrow(tail=P_B, head=P_A + P_B, color=BLACK)
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$")
     arrow(head=P_FOOT, color=GREEN, width=2.4)
     note(
         at=0.5 * P_FOOT,
@@ -134,10 +138,13 @@ fig_product
 # %% [markdown]
 # ## The same product, term by term
 #
-# The multiplication rules give $a * b$ the way you multiply $(x + 2) * (x + 3)$:
-# every term of $a$ times every term of $b$, then add. Each row of the table is one
-# pair of terms. $e_1 * e_1$ and $e_2 * e_2$ are $1$, and $e_2 * e_1 = -e_{12}$. First
-# at the plot values:
+# The multiplication rules give $\vec{\mathbf{a}} * \vec{\mathbf{b}}$ the way you
+# multiply $(x + 2) * (x + 3)$: every term of $\vec{\mathbf{a}}$ times every term of
+# $\vec{\mathbf{b}}$, then add. Each row of the table is one pair of terms.
+# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1$ and
+# $\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2$ are $1$, and
+# $\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\mathbf{e}_{12}$. First at the plot
+# values:
 
 # %%
 show_mult(at_values(a, values), at_values(b, values))
@@ -151,8 +158,8 @@ show_mult(a, b)
 # %% [markdown]
 # ## The quarter turn is a product
 #
-# Multiplying by $e_{12}$ on the right turns a vector a quarter turn: $b * e_{12}$ is
-# Step 1's $r(b; \pi/2)$.
+# Multiplying by $\mathbf{e}_{12}$ on the right turns a vector a quarter turn:
+# $\vec{\mathbf{b}} * \mathbf{e}_{12}$ is Step 1's $r(\vec{\mathbf{b}}; \pi/2)$.
 
 # %%
 quarter_turn: MultiVectorBase = b * e_12
@@ -168,11 +175,11 @@ at_values(quarter_turn, values)
 P_QUARTER: Point = point(coordinates=list(at_values(b.rotate_90_degrees(), values)))
 fig_quarter: PendingFigure
 with scene_around(points=[P_B, P_QUARTER]) as fig_quarter:
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$")
     arrow(
         head=P_QUARTER,
         color=BLACK,
-        text=r"$\vec{b} * e_{12}$",
+        text=r"$\vec{\mathbf{b}} * \mathbf{e}_{12}$",
         align=LabelPos.l,
         offset=Point(x=-6, y=0),
     )
@@ -182,14 +189,15 @@ fig_quarter
 # %% [markdown]
 # ## Dot and wedge through projection and rejection
 #
-# $a$ times the projection of $b$ onto $a$ is a plain number, the dot product:
+# $\vec{\mathbf{a}}$ times the projection of $\vec{\mathbf{b}}$ onto $\vec{\mathbf{a}}$
+# is a plain number, the dot product:
 
 # %%
 along: MultiVectorBase = (a * b.projected_onto(a)).simplified()
 along
 
 # %% [markdown]
-# $a$ times the rejection is pure area, the wedge:
+# $\vec{\mathbf{a}}$ times the rejection is pure area, the wedge:
 
 # %%
 across: MultiVectorBase = (a * b.rejected_away_from(a)).simplified()
@@ -220,13 +228,13 @@ product
 # %% [markdown]
 # ### Its parts are the dot product and the wedge
 #
-# $a \cdot b + a \wedge b$:
+# $\vec{\mathbf{a}} \cdot \vec{\mathbf{b}} + \vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$:
 
 # %%
 (a.dot(b) + a.wedge(b)).simplified()
 
 # %% [markdown]
-# Its difference from $a * b$:
+# Its difference from $\vec{\mathbf{a}} * \vec{\mathbf{b}}$:
 
 # %%
 (a * b - (a.dot(b) + a.wedge(b))).simplified()
@@ -234,13 +242,13 @@ product
 # %% [markdown]
 # ### A vector times itself is its length squared
 #
-# $b * b$:
+# $\vec{\mathbf{b}} * \vec{\mathbf{b}}$:
 
 # %%
 (b * b).simplified()
 
 # %% [markdown]
-# $|b|^2$:
+# $|\vec{\mathbf{b}}|^2$:
 
 # %%
 b.magnitude_squared()
@@ -254,13 +262,13 @@ b.magnitude_squared()
 # %% [markdown]
 # ### The quarter turn as a product matches Step 1's
 #
-# $b * e_{12}$ was:
+# $\vec{\mathbf{b}} * \mathbf{e}_{12}$ was:
 
 # %%
 quarter_turn
 
 # %% [markdown]
-# Step 1's $r(b; \pi/2)$:
+# Step 1's $r(\vec{\mathbf{b}}; \pi/2)$:
 
 # %%
 b.rotate_90_degrees()
@@ -272,15 +280,15 @@ b.rotate_90_degrees()
 (quarter_turn - b.rotate_90_degrees()).simplified()
 
 # %% [markdown]
-# ### $a * \operatorname{proj}_a(b)$ is the dot product
+# ### $\vec{\mathbf{a}} * \operatorname{proj}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})$ is the dot product
 #
-# $a * \operatorname{proj}_a(b)$ was:
+# $\vec{\mathbf{a}} * \operatorname{proj}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})$ was:
 
 # %%
 along
 
 # %% [markdown]
-# $a \cdot b$:
+# $\vec{\mathbf{a}} \cdot \vec{\mathbf{b}}$:
 
 # %%
 a.dot(b).simplified()
@@ -292,15 +300,15 @@ a.dot(b).simplified()
 (along - a.dot(b)).simplified()
 
 # %% [markdown]
-# ### $a * \operatorname{rej}_a(b)$ is the wedge
+# ### $\vec{\mathbf{a}} * \operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})$ is the wedge
 #
-# $a * \operatorname{rej}_a(b)$ was:
+# $\vec{\mathbf{a}} * \operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})$ was:
 
 # %%
 across
 
 # %% [markdown]
-# $a \wedge b$:
+# $\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$:
 
 # %%
 a.wedge(b).simplified()
@@ -314,25 +322,25 @@ a.wedge(b).simplified()
 # %% [markdown]
 # ### Measured the other way, the dot keeps its value and the wedge changes sign
 #
-# $b * \operatorname{proj}_b(a)$:
+# $\vec{\mathbf{b}} * \operatorname{proj}_{\vec{\mathbf{b}}}(\vec{\mathbf{a}})$:
 
 # %%
 (b * a.projected_onto(b)).simplified()
 
 # %% [markdown]
-# Its difference from $a \cdot b$:
+# Its difference from $\vec{\mathbf{a}} \cdot \vec{\mathbf{b}}$:
 
 # %%
 (b * a.projected_onto(b) - a.dot(b)).simplified()
 
 # %% [markdown]
-# $b * \operatorname{rej}_b(a)$:
+# $\vec{\mathbf{b}} * \operatorname{rej}_{\vec{\mathbf{b}}}(\vec{\mathbf{a}})$:
 
 # %%
 (b * a.rejected_away_from(b)).simplified()
 
 # %% [markdown]
-# Its sum with $a \wedge b$:
+# Its sum with $\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$:
 
 # %%
 (b * a.rejected_away_from(b) + a.wedge(b)).simplified()
@@ -352,7 +360,7 @@ b_hat: Vector = Scalar(sympy.cos(beta)) * e_1 + Scalar(sympy.sin(beta)) * e_2
 
 # %% [markdown]
 # The cosine and sine of the angle $\theta = \beta - \alpha$ from the first to the
-# second, $\cos(\theta) + \sin(\theta) * e_{12}$:
+# second, $\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}$:
 
 # %%
 angle_form: Versor = (

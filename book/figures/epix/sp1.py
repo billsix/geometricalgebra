@@ -12,12 +12,12 @@
 # ---
 
 # %% [markdown]
-# # sp1 — the goal: project $\vec{a}$ onto the line through $\vec{b}$
+# # sp1 — the goal: project $\vec{\mathbf{a}}$ onto the line through $\vec{\mathbf{b}}$
 #
-# The starting picture of the standard-position derivation: $\vec{a}$ and $\vec{b}$, the
-# line through $\vec{b}$ (dashed), and the shadow of $\vec{a}$ on it. Built with the
-# `epix` package; `tools/render_epix_figures.py` writes
-# `_static/epix/sp1.{pdf,png}`. CC0.
+# The starting picture of the standard-position derivation: $\vec{\mathbf{a}}$ and
+# $\vec{\mathbf{b}}$, the line through $\vec{\mathbf{b}}$ (dashed), and the shadow of
+# $\vec{\mathbf{a}}$ on it. Built with the `epix` package;
+# `tools/render_epix_figures.py` writes `_static/epix/sp1.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations
@@ -47,8 +47,18 @@ with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as 
     epix.dashed()
     epix.line(tail=LINE_LOW, head=LINE_HIGH)
     epix.line_style(style="-")
-    vector(head=A, text=r"$\vec{a}$", offset=Point(x=-6, y=7), align=epix.LabelPos.l)
-    vector(head=B, text=r"$\vec{b}$", offset=Point(x=6, y=-6), align=epix.LabelPos.r)
+    vector(
+        head=A,
+        text=r"$\vec{\mathbf{a}}$",
+        offset=Point(x=-6, y=7),
+        align=epix.LabelPos.l,
+    )
+    vector(
+        head=B,
+        text=r"$\vec{\mathbf{b}}$",
+        offset=Point(x=6, y=-6),
+        align=epix.LabelPos.r,
+    )
     dashed_vector(tail=A, head=PROJ)
 
 # %%

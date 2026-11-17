@@ -34,18 +34,19 @@ You have written coordinates two ways already. In algebra a point was an **order
 along the first axis, then so many along the second*.
 
 This book writes that idea one way, everywhere. The two axis directions are the basis vectors
-:math:`e_1` and :math:`e_2` — your :math:`\mathbf{i}` and :math:`\mathbf{j}` — and a vector is
+:math:`\vec{\mathbf{e}}_1` and :math:`\vec{\mathbf{e}}_2` — your :math:`\mathbf{i}` and :math:`\mathbf{j}` — and a vector is
 
 .. math::
 
-   \vec{a} = a_1 * e_1 + a_2 * e_2,
+   \vec{\mathbf{a}} = a_1 * \vec{\mathbf{e}}_1 + a_2 * \vec{\mathbf{e}}_2,
 
-where the plain numbers :math:`a_1` and :math:`a_2` are the **coordinates** of :math:`\vec{a}`.
+where the plain numbers :math:`a_1` and :math:`a_2` are the **coordinates** of :math:`\vec{\mathbf{a}}`.
 Compare :math:`a\,\mathbf{i} + b\,\mathbf{j}`: same thing, but the subscript now *names the axis
 the number belongs to*. We write :math:`a_1`, never :math:`a_{x}`, for two reasons. The subscript
-matches the basis vector it multiplies (:math:`a_1` goes with :math:`e_1`), and it keeps working
-when there is a third axis (:math:`a_3 * e_3`) or, later, :math:`n` of them — there is no fourth
-letter after :math:`z`. A coordinate is an ordinary number, so it carries no arrow: :math:`\vec{a}`
+matches the basis vector it multiplies (:math:`a_1` goes with :math:`\vec{\mathbf{e}}_1`), and it keeps working
+when there is a third axis (:math:`a_3 * \vec{\mathbf{e}}_3`) or, later, :math:`n` of them — there is no fourth
+letter after :math:`z`. A vector is written bold with an arrow, the way gacalc prints it in the
+notebooks; a coordinate is an ordinary number, so it is written plain: :math:`\vec{\mathbf{a}}`
 is the vector, :math:`a_1` is one of its numbers.
 
 One wrinkle you will see in the companion notebooks: in *code*, gacalc reads the first coordinate

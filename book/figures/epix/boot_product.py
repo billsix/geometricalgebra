@@ -12,11 +12,12 @@
 # ---
 
 # %% [markdown]
-# # boot_product — $\vec{b}$ measured along and across $\vec{a}$
+# # boot_product — $\vec{\mathbf{b}}$ measured along and across $\vec{\mathbf{a}}$
 #
-# The product $\vec{a} * \vec{b}$ keeps two numbers: $|\vec{a}| * x$, with $x$ how far
-# $\vec{b}$ reaches along $\vec{a}$ (green), and $|\vec{a}| * y$, with $y$ its height
-# across $\vec{a}$ (blue), which is the area of the parallelogram (purple). Built with
+# The product $\vec{\mathbf{a}} * \vec{\mathbf{b}}$ keeps two numbers:
+# $|\vec{\mathbf{a}}| * x$, with $x$ how far $\vec{\mathbf{b}}$ reaches along
+# $\vec{\mathbf{a}}$ (green), and $|\vec{\mathbf{a}}| * y$, with $y$ its height across
+# $\vec{\mathbf{a}}$ (blue), which is the area of the parallelogram (purple). Built with
 # `epix`; written to `_static/epix/boot-product.{pdf,png}`. CC0.
 
 # %%
@@ -54,13 +55,13 @@ with unit_circle_scene(
     parallelogram(corner_a=PRODUCT_A, corner_b=PRODUCT_B)
     vector(
         head=PRODUCT_A,
-        text=r"$\vec{a}$",
+        text=r"$\vec{\mathbf{a}}$",
         offset=Point(x=7, y=-2),
         align=epix.LabelPos.r,
     )
     vector(
         head=PRODUCT_B,
-        text=r"$\vec{b}$",
+        text=r"$\vec{\mathbf{b}}$",
         offset=Point(x=-5, y=6),
         align=epix.LabelPos.l,
     )

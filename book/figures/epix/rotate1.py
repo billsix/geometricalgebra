@@ -14,13 +14,12 @@
 # %% [markdown]
 # # rotate1 — a point by its length and its angle
 #
-# A Cartesian point $\vec{a}$ described by its length $r$ and the cosine and sine of
-# its angle $\beta$: the right triangle on the unit circle, scaled by $r$. One step of
-# the `proof-rotate.rst`
-# sequence; the geometry (β, θ, r) is shared with the other steps through
-# `_rotation_scene.py`, so the last step lands exactly on the goal figure's
-# $\vec{r}(\vec{a};\theta)$. Built with the `epix` Python package
-# (github.com/billsix/epix-mirror) in the style of its `notebooks/`.
+# A Cartesian point $\vec{\mathbf{a}}$ described by its length $r$ and the cosine and
+# sine of its angle $\beta$: the right triangle on the unit circle, scaled by $r$. One
+# step of the `proof-rotate.rst` sequence; the geometry (β, θ, r) is shared with the
+# other steps through `_rotation_scene.py`, so the last step lands exactly on the goal
+# figure's $\vec{\mathbf{r}}(\vec{\mathbf{a}};\theta)$. Built with the `epix` Python
+# package (github.com/billsix/epix-mirror) in the style of its `notebooks/`.
 
 # %%
 from __future__ import annotations

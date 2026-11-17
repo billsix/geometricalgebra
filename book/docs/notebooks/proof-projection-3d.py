@@ -10,14 +10,16 @@
 # # Projection in space, one plane at a time — calculations
 #
 # Companion to the *Proof: Projection in Space, One Plane at a Time* chapter. In the
-# plane, projecting $a$ onto $b$ took one rotation: turn $b$ onto the x-axis, keep the
-# x-coordinate, turn back. In space one rotation is not enough, so the construction
-# turns one plane at a time: first the $xy$-shadow of $b$ onto the x-axis, then the
-# $z$-part down. This notebook works each step with symbolic coordinates, so every
-# result is a formula for every $a$ and every nonzero $b$, and checks that the result
-# is the projection and that projection and rejection add back to $a$. Numbers appear
-# only to draw the figures. The Lean theorems are `projectSP_eq_proj` and
-# `rejectSP_eq_reject` in `proofs/GacalcProofs/StandardPosition.lean`.
+# plane, projecting $\vec{\mathbf{a}}$ onto $\vec{\mathbf{b}}$ took one rotation: turn
+# $\vec{\mathbf{b}}$ onto the x-axis, keep the x-coordinate, turn back. In space one
+# rotation is not enough, so the construction turns one plane at a time: first the
+# $xy$-shadow of $\vec{\mathbf{b}}$ onto the x-axis, then the $z$-part down. This
+# notebook works each step with symbolic coordinates, so every result is a formula for
+# every $\vec{\mathbf{a}}$ and every nonzero $\vec{\mathbf{b}}$, and checks that the
+# result is the projection and that projection and rejection add back to
+# $\vec{\mathbf{a}}$. Numbers appear only to draw the figures. The Lean theorems are
+# `projectSP_eq_proj` and `rejectSP_eq_reject` in
+# `proofs/GacalcProofs/StandardPosition.lean`.
 
 # %%
 import pathlib
@@ -51,7 +53,7 @@ from gacalc.standardposition import in_plane, rotation_from_to
 # %% [markdown]
 # ## The vectors
 #
-# $a$ and $b$, every coordinate a symbol:
+# $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$, every coordinate a symbol:
 
 # %%
 a_1: sympy.Symbol
@@ -88,17 +90,18 @@ P_A: Point = point(coordinates=list(at_values(a, values)))
 P_B: Point = point(coordinates=list(at_values(b, values)))
 fig_given: PendingFigure
 with scene_3d(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig_given:
-    arrow(head=P_A, text=r"$\vec{a}$")
-    arrow(head=P_B, text=r"$\vec{b}$")
+    arrow(head=P_A, text=r"$\vec{\mathbf{a}}$")
+    arrow(head=P_B, text=r"$\vec{\mathbf{b}}$")
 fig_given
 
 # %% [markdown]
-# ## Step 1: swing $b$'s shadow in the $e_1 e_2$ plane onto the x-axis
+# ## Step 1: swing $\vec{\mathbf{b}}$'s shadow in the $\mathbf{e}_{12}$ plane onto the x-axis
 #
 # Each turn is the rotation from one direction to another of *Proof: Rotate from the
 # Direction of a to the Direction of b* (`rotation_from_to`), applied in one coordinate
 # plane by `in_plane(rotation, first, second, v)`, which leaves the third coordinate
-# alone. The first is the rotation from $b$'s shadow $b_1 * e_1 + b_2 * e_2$ to $e_1$:
+# alone. The first is the rotation from $\vec{\mathbf{b}}$'s shadow
+# $b_1 * \vec{\mathbf{e}}_1 + b_2 * \vec{\mathbf{e}}_2$ to $\vec{\mathbf{e}}_1$:
 
 # %%
 R_xy: InvertibleFunction[g2.Vector] = rotation_from_to(
@@ -107,17 +110,18 @@ R_xy: InvertibleFunction[g2.Vector] = rotation_from_to(
 R_xy
 
 # %% [markdown]
-# It leaves $b$ in the $e_1 e_3$ plane, at $k * e_1 + b_3 * e_3$ with $k$ the length of
-# the shadow:
+# It leaves $\vec{\mathbf{b}}$ in the $\mathbf{e}_{13}$ plane, at
+# $k * \vec{\mathbf{e}}_1 + b_3 * \vec{\mathbf{e}}_3$ with $k$ the length of the shadow:
 
 # %%
 b_step_1: Vector = in_plane(R_xy, e_1, e_2, b).simplified()
 b_step_1
 
 # %% [markdown]
-# ## Step 2: swing $b$ down onto $e_1$
+# ## Step 2: swing $\vec{\mathbf{b}}$ down onto $\vec{\mathbf{e}}_1$
 #
-# The rotation, in the $e_1 e_3$ plane, from $b$'s new direction to $e_1$:
+# The rotation, in the $\mathbf{e}_{13}$ plane, from $\vec{\mathbf{b}}$'s new direction
+# to $\vec{\mathbf{e}}_1$:
 
 # %%
 R_xz: InvertibleFunction[g2.Vector] = rotation_from_to(
@@ -139,27 +143,27 @@ def align(v: Vector) -> Vector:
 
 
 # %% [markdown]
-# $b$ lands on $e_1$ at its length $|b|$:
+# $\vec{\mathbf{b}}$ lands on $\vec{\mathbf{e}}_1$ at its length $|\vec{\mathbf{b}}|$:
 
 # %%
 b_aligned: Vector = align(b).simplified()
 b_aligned
 
 # %% [markdown]
-# and $a$ rides along to $a'$:
+# and $\vec{\mathbf{a}}$ rides along to $\vec{\mathbf{a}}'$:
 
 # %%
 a_aligned: Vector = align(a).simplified()
 a_aligned
 
 # %% [markdown]
-# At the plot values, $b$ on $e_1$:
+# At the plot values, $\vec{\mathbf{b}}$ on $\vec{\mathbf{e}}_1$:
 
 # %%
 at_values(b_aligned, values)
 
 # %% [markdown]
-# and $a'$:
+# and $\vec{\mathbf{a}}'$:
 
 # %%
 at_values(a_aligned, values)
@@ -169,12 +173,12 @@ P_A_ALIGNED: Point = point(coordinates=list(at_values(a_aligned, values)))
 P_B_ALIGNED: Point = point(coordinates=list(at_values(b_aligned, values)))
 fig_aligned: PendingFigure
 with scene_3d(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig_aligned:
-    dashed_arrow(tail=ORIGIN3, head=P_A, text=r"$\vec{a}$")
-    dashed_arrow(tail=ORIGIN3, head=P_B, text=r"$\vec{b}$")
-    arrow(head=P_A_ALIGNED, text=r"$\vec{a}'$")
+    dashed_arrow(tail=ORIGIN3, head=P_A, text=r"$\vec{\mathbf{a}}$")
+    dashed_arrow(tail=ORIGIN3, head=P_B, text=r"$\vec{\mathbf{b}}$")
+    arrow(head=P_A_ALIGNED, text=r"$\vec{\mathbf{a}}'$")
     arrow(
         head=P_B_ALIGNED,
-        text=r"$|\vec{b}| * e_1$",
+        text=r"$|\vec{\mathbf{b}}| * \vec{\mathbf{e}}_1$",
         offset=Point(x=-4, y=-10),
         align=LabelPos.bl,
     )
@@ -183,8 +187,9 @@ fig_aligned
 # %% [markdown]
 # ## Step 3: on the x-axis, keep the x-coordinate
 #
-# Projecting onto $e_1$ keeps $a'$'s x-coordinate, $x * e_1$; the rest, the $e_2$ and
-# $e_3$ parts, is the rejection there:
+# Projecting onto $\vec{\mathbf{e}}_1$ keeps $\vec{\mathbf{a}}'$'s x-coordinate,
+# $x * \vec{\mathbf{e}}_1$; the rest, the $\vec{\mathbf{e}}_2$ and $\vec{\mathbf{e}}_3$
+# parts, is the rejection there:
 
 # %%
 x_part: Vector = (Scalar(a_aligned.coefficient(e_1)) * e_1).simplified()
@@ -197,7 +202,7 @@ across_part: Vector = (
 across_part
 
 # %% [markdown]
-# At the plot values, $x * e_1$:
+# At the plot values, $x * \vec{\mathbf{e}}_1$:
 
 # %%
 at_values(x_part, values)
@@ -212,12 +217,12 @@ at_values(across_part, values)
 P_X: Point = point(coordinates=list(at_values(x_part, values)))
 fig_keep_x: PendingFigure
 with scene_3d(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig_keep_x:
-    arrow(head=P_A_ALIGNED, text=r"$\vec{a}'$")
+    arrow(head=P_A_ALIGNED, text=r"$\vec{\mathbf{a}}'$")
     arrow(
         head=P_X,
         color=GREEN,
         width=2.4,
-        text=r"$x * e_1$",
+        text=r"$x * \vec{\mathbf{e}}_1$",
         offset=Point(x=-4, y=-10),
         align=LabelPos.bl,
     )
@@ -237,7 +242,8 @@ def rotate_back(v: Vector) -> Vector:
 
 
 # %% [markdown]
-# The kept x-coordinate goes back to the projection of $a$ onto $b$:
+# The kept x-coordinate goes back to the projection of $\vec{\mathbf{a}}$ onto
+# $\vec{\mathbf{b}}$:
 
 # %%
 projection: Vector = rotate_back(x_part).simplified()
@@ -266,18 +272,18 @@ at_values(rejection, values)
 P_PROJECTION: Point = point(coordinates=list(at_values(projection, values)))
 fig_back: PendingFigure
 with scene_3d(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig_back:
-    arrow(head=P_A, text=r"$\vec{a}$")
+    arrow(head=P_A, text=r"$\vec{\mathbf{a}}$")
     arrow(
         head=P_PROJECTION,
         color=GREEN,
         width=2.4,
-        text=r"$\operatorname{proj}_{\vec{b}}(\vec{a})$",
+        text=r"$\operatorname{proj}_{\vec{\mathbf{b}}}(\vec{\mathbf{a}})$",
     )
-    arrow(head=P_B, text=r"$\vec{b}$", align=LabelPos.b)
+    arrow(head=P_B, text=r"$\vec{\mathbf{b}}$", align=LabelPos.b)
     arrow(head=P_A, tail=P_PROJECTION, color=BLUE)
     note(
         at=0.5 * (P_PROJECTION + P_A),
-        text=r"$\operatorname{rej}_{\vec{b}}(\vec{a})$",
+        text=r"$\operatorname{rej}_{\vec{\mathbf{b}}}(\vec{\mathbf{a}})$",
         color=BLUE,
         offset=Point(x=6, y=0),
         align=LabelPos.r,
@@ -285,7 +291,7 @@ with scene_3d(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig_back:
 fig_back
 
 # %% [markdown]
-# ## Checks, for every $a$ and every nonzero $b$
+# ## Checks, for every $\vec{\mathbf{a}}$ and every nonzero $\vec{\mathbf{b}}$
 #
 # ### The construction is the projection
 #
@@ -295,7 +301,9 @@ fig_back
 projection
 
 # %% [markdown]
-# The projection $\operatorname{proj}_b(a) = (a \cdot b) * b^{-1}$ is:
+# The projection
+# $\operatorname{proj}_{\vec{\mathbf{b}}}(\vec{\mathbf{a}}) = (\vec{\mathbf{a}} \cdot \vec{\mathbf{b}}) * \vec{\mathbf{b}}^{-1}$
+# is:
 
 # %%
 a.projected_onto(b).simplified()
@@ -307,7 +315,7 @@ a.projected_onto(b).simplified()
 (projection - a.projected_onto(b)).simplified()
 
 # %% [markdown]
-# ### The projection plus the rejection is $a$
+# ### The projection plus the rejection is $\vec{\mathbf{a}}$
 #
 # The sum:
 
@@ -315,7 +323,7 @@ a.projected_onto(b).simplified()
 (projection + rejection).simplified()
 
 # %% [markdown]
-# and $a$:
+# and $\vec{\mathbf{a}}$:
 
 # %%
 a

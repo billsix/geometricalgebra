@@ -12,12 +12,14 @@
 # ---
 
 # %% [markdown]
-# # sub2 — subtraction as adding the opposite: $\vec{a}+(-\vec{b})$
+# # sub2 — subtraction as adding the opposite: $\vec{\mathbf{a}}+(-\vec{\mathbf{b}})$
 #
-# The same difference the other way: flip $\vec{b}$ to get $-\vec{b}$, then add it
-# tip-to-tail to $\vec{a}$. The result lands on the same point as the connector in
-# `sub1`, so $\vec{a}-\vec{b}=\vec{a}+(-\vec{b})$. Built with the `epix` package;
-# `tools/render_epix_figures.py` writes `_static/epix/sub2.{pdf,png}`. CC0.
+# The same difference the other way: flip $\vec{\mathbf{b}}$ to get $-\vec{\mathbf{b}}$,
+# then add it tip-to-tail to $\vec{\mathbf{a}}$. The result lands on the same point as
+# the connector in `sub1`, so
+# $\vec{\mathbf{a}}-\vec{\mathbf{b}}=\vec{\mathbf{a}}+(-\vec{\mathbf{b}})$. Built with
+# the `epix` package; `tools/render_epix_figures.py` writes
+# `_static/epix/sub2.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations
@@ -39,10 +41,18 @@ fig: PendingFigure
 with unit_circle_scene(
     lower_left=SUB_LOWER_LEFT, upper_right=SUB_UPPER_RIGHT, disc=False
 ) as fig:
-    vector(head=A, text=r"$\vec{a}$", offset=Point(x=7, y=-3), align=epix.LabelPos.r)
+    vector(
+        head=A,
+        text=r"$\vec{\mathbf{a}}$",
+        offset=Point(x=7, y=-3),
+        align=epix.LabelPos.r,
+    )
     # -b from the origin (the flipped b)
     vector(
-        head=NEG_B, text=r"$-\vec{b}$", offset=Point(x=-6, y=-6), align=epix.LabelPos.l
+        head=NEG_B,
+        text=r"$-\vec{\mathbf{b}}$",
+        offset=Point(x=-6, y=-6),
+        align=epix.LabelPos.l,
     )
     # -b slid onto a's head (a translated copy, so dashed)
     dashed_vector(tail=A, head=A_MINUS_B)
@@ -53,9 +63,9 @@ with unit_circle_scene(
     epix.label_color(color=GREEN)
     epix.label(
         at=A_MINUS_B,
-        offset=Point(x=6, y=-6),
-        text=r"$\vec{a}-\vec{b}$",
-        align=epix.LabelPos.l,
+        offset=Point(x=-4, y=-6),
+        text=r"$\vec{\mathbf{a}}-\vec{\mathbf{b}}$",
+        align=epix.LabelPos.bl,
     )
     epix.label_color(color=epix.black())
 

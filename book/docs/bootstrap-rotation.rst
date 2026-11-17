@@ -33,8 +33,8 @@ version.
 A vector by its length and angle
 --------------------------------
 
-Rotate a vector :math:`\vec{v} = v_1 * e_1 + v_2 * e_2` about the origin. Write
-:math:`\vec{v}` by its length :math:`r` and its own angle :math:`\beta`:
+Rotate a vector :math:`\vec{\mathbf{v}} = v_1 * \vec{\mathbf{e}}_1 + v_2 * \vec{\mathbf{e}}_2` about the origin. Write
+:math:`\vec{\mathbf{v}}` by its length :math:`r` and its own angle :math:`\beta`:
 :math:`v_1 = r * \cos(\beta)`, :math:`v_2 = r * \sin(\beta)`. Rotating by an angle adds
 that angle to :math:`\beta` and keeps :math:`r`.
 
@@ -47,7 +47,7 @@ Turning by :math:`\pi/2` is the rotation whose formula can be read off at once. 
 .. math::
    :label: eq-bootstrap-quarter-turn
 
-   \vec{r}(\vec{v}; \pi/2)
+   \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)
      = r * \begin{bmatrix} \cos(\beta + \pi/2) \\ \sin(\beta + \pi/2) \end{bmatrix}
      = r * \begin{bmatrix} -\sin(\beta) \\ \cos(\beta) \end{bmatrix}
      = \begin{bmatrix} -v_2 \\ v_1 \end{bmatrix}.
@@ -63,7 +63,7 @@ Rotate by :math:`\theta`. The angle-addition identities give
 .. math::
 
    \begin{aligned}
-   \vec{r}(\vec{v}; \theta)
+   \vec{\mathbf{r}}(\vec{\mathbf{v}}; \theta)
      &= r * \begin{bmatrix} \cos(\beta + \theta) \\ \sin(\beta + \theta) \end{bmatrix}
       = r * \begin{bmatrix} \cos(\beta) * \cos(\theta) - \sin(\beta) * \sin(\theta) \\
                             \sin(\beta) * \cos(\theta) + \cos(\beta) * \sin(\theta)
@@ -77,7 +77,7 @@ The second vector is the quarter turn :eq:`eq-bootstrap-quarter-turn`, so
 .. math::
    :label: eq-bootstrap-rotation
 
-   \vec{r}(\vec{v}; \theta) = \cos(\theta) * \vec{v} + \sin(\theta) * \vec{r}(\vec{v}; \pi/2).
+   \vec{\mathbf{r}}(\vec{\mathbf{v}}; \theta) = \cos(\theta) * \vec{\mathbf{v}} + \sin(\theta) * \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2).
 
 A rotation is a blend of the vector and its quarter turn. The formula never uses
 :math:`\beta`, only :math:`\cos(\theta)` and :math:`\sin(\theta)`, so it holds for every
@@ -92,7 +92,7 @@ What the later steps use
 
 - **Only the cosine and sine are needed, never the angle.** Any pair :math:`(c, s)` with
   :math:`c^2 + s^2 = 1` is the cosine and sine of some angle, and
-  :math:`c * \vec{v} + s * \vec{r}(\vec{v}; \pi/2)` rotates by it.
+  :math:`c * \vec{\mathbf{v}} + s * \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)` rotates by it.
 - **A rotation keeps length:**
   :math:`(c * v_1 - s * v_2)^2 + (s * v_1 + c * v_2)^2 = (c^2 + s^2) * (v_1^2 + v_2^2)`.
 - **Rotations add their angles**, so the rotation by :math:`-\theta` (the sine negated)

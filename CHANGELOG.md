@@ -41,6 +41,13 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   coordinate versions of both, with the plane's normal written out from its coordinates.
 
 ### Changed
+- **A blade of grade 2 or more typesets as one bold `\mathbf{e}_{12}`** in `_repr_latex_`,
+  `blade_latex`, `blade_dict_latex` and `nbdisplay.show_mult`. It was its vectors side by side,
+  `\mathbf{\vec{e}}_{1} \mathbf{\vec{e}}_{2}`, which reads as a product written without `*`.
+- **A basis vector typesets as `\vec{\mathbf{e}}_{1}`**, the accent outside the bold. It was
+  `\mathbf{\vec{e}}_{1}`, whose arrow lualatex draws as a garbled glyph from the bold text font, so
+  the book's PDF showed no arrow; MathJax draws both the same. Code that compares the LaTeX string
+  must update.
 - **`standardposition.project_sp` / `reject_sp` are defined for `b` along the `e_3` axis.** They
   used to raise `ValueError` there; now the first plane rotation is zero-to-zero, the identity, and
   the result equals `a.projected_onto(b)`. A zero `b` raises `ValueError` (it used to hit the same

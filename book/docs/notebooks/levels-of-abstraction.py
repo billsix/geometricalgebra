@@ -18,12 +18,13 @@
 # as teaching aids. Showing several forms is safe because we **prove them equal**,
 # here symbolically.
 #
-# The three rungs for the product of two vectors $a$, $b$:
+# The three rungs for the product of two vectors $\vec{\mathbf{a}}$, $\vec{\mathbf{b}}$:
 #
 # 1. **Coordinate**: write the numbers out, $a_1 * b_1 + a_2 * b_2$.
 # 2. **Fixed-grade**: Hestenes' definition with the grade written in. For two vectors
-#    the dot is the grade-0 part of the product, $\langle a * b \rangle_0$, and the
-#    wedge the grade-2 part, $\langle a * b \rangle_2$.
+#    the dot is the grade-0 part of the product,
+#    $\langle \vec{\mathbf{a}} * \vec{\mathbf{b}} \rangle_0$, and the wedge the grade-2
+#    part, $\langle \vec{\mathbf{a}} * \vec{\mathbf{b}} \rangle_2$.
 # 3. **Coordinate-free**: `a.inner_product(b)` / `a.outer_product(b)`, which pick the
 #    grade from the inputs, so the same code works in any dimension.
 #
@@ -79,22 +80,30 @@ b
 values: list[tuple[sympy.Symbol, Real]] = [(a_1, 2), (a_2, 1), (b_1, 1), (b_2, 2)]
 
 # %% [markdown]
-# The product term by term: the $e_1 * e_1$ and $e_2 * e_2$ rows make the grade-0
-# part, the other two rows the grade-2 part.
+# The product term by term: the $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1$ and
+# $\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2$ rows make the grade-0 part, the other two
+# rows the grade-2 part. First at the plot values:
+
+# %%
+show_mult(at_values(a, values), at_values(b, values))
+
+# %% [markdown]
+# Then with every coordinate a symbol:
 
 # %%
 show_mult(a, b)
 
 # %% [markdown]
-# The geometric product, a plain-number part plus an $e_{12}$ part:
+# The geometric product, a plain-number part plus an $\mathbf{e}_{12}$ part:
 
 # %%
 product: g2.Versor = a * b
 product
 
 # %% [markdown]
-# Drawn at the plot values: the plain-number part measures $b$'s shadow along $a$
-# (green), the $e_{12}$ part the signed area of the parallelogram (dashed).
+# Drawn at the plot values: the plain-number part measures $\vec{\mathbf{b}}$'s shadow
+# along $\vec{\mathbf{a}}$ (green), the $\mathbf{e}_{12}$ part the signed area of the
+# parallelogram (dashed).
 
 # %%
 P_A: Point = point(coordinates=list(at_values(a, values)))
@@ -104,17 +113,17 @@ fig_parts: PendingFigure
 with scene_around(points=[P_A, P_B, P_A + P_B]) as fig_parts:
     dashed_arrow(tail=P_A, head=P_A + P_B, color=BLACK)
     dashed_arrow(tail=P_B, head=P_A + P_B, color=BLACK)
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$", align=LabelPos.l)
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$", align=LabelPos.l)
     arrow(head=P_SHADOW, color=GREEN, width=2.4)
     note(
         at=0.5 * P_SHADOW,
-        text=r"$\operatorname{proj}_{\vec{a}}(\vec{b})$",
+        text=r"$\operatorname{proj}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})$",
         color=GREEN,
         offset=Point(x=4, y=-6),
         align=LabelPos.br,
     )
-    note(at=0.5 * (P_A + P_B), text=r"$\vec{a} \wedge \vec{b}$")
+    note(at=0.5 * (P_A + P_B), text=r"$\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$")
 fig_parts
 
 # %% [markdown]
@@ -155,7 +164,9 @@ dot_fixed_grade - dot_coordinate_free
 # %% [markdown]
 # ## Wedge product: the grade-2 part
 #
-# The same three rungs for $a \wedge b = \langle a * b \rangle_2$. Rung 1:
+# The same three rungs for
+# $\vec{\mathbf{a}} \wedge \vec{\mathbf{b}} = \langle \vec{\mathbf{a}} * \vec{\mathbf{b}} \rangle_2$.
+# Rung 1:
 
 # %%
 wedge_coordinate: g2.Bivector = (g2.Scalar(a_1 * b_2 - a_2 * b_1)) * g2.Bivector.e_12
@@ -200,7 +211,7 @@ a ^ b
 wedge_coordinate_free - (a ^ b)
 
 # %% [markdown]
-# ## The fundamental identity: $a * b = a \cdot b + a \wedge b$
+# ## The fundamental identity: $\vec{\mathbf{a}} * \vec{\mathbf{b}} = \vec{\mathbf{a}} \cdot \vec{\mathbf{b}} + \vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$
 #
 # The two parts put back together:
 
@@ -219,14 +230,16 @@ product - (product.r_vector_part(0) + product.r_vector_part(2))
 # `cosine` is coordinate-free and works in any dimension. For the sine there are two
 # rungs worth naming:
 #
-# - **`abs_sin`**, the unsigned sine in any dimension, $|a \wedge b| / (|a| * |b|)$,
+# - **`abs_sin`**, the unsigned sine in any dimension,
+#   $|\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}| / (|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|)$,
 #   the companion to `cosine`; and
-# - the signed **`sine`**, 𝒢₂ only, $((a \wedge b) \cdot e_{12}) / (|a| * |b|)$,
+# - the signed **`sine`**, 𝒢₂ only,
+#   $((\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}) \cdot \mathbf{e}_{12}) / (|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|)$,
 #   whose sign is the turn direction, so swapping the arguments negates it.
 #
 # They agree in size, and $\cos(\theta)^2 + \sin(\theta)^2 = 1$ (Lagrange's identity,
 # <https://en.wikipedia.org/wiki/Lagrange%27s_identity>). The cosine of the angle from
-# $a$ to $b$:
+# $\vec{\mathbf{a}}$ to $\vec{\mathbf{b}}$:
 
 # %%
 a.cosine(b)
@@ -244,7 +257,7 @@ a.abs_sin(b)
 a.sine(b)
 
 # %% [markdown]
-# and the other way round, from $b$ to $a$:
+# and the other way round, from $\vec{\mathbf{b}}$ to $\vec{\mathbf{a}}$:
 
 # %%
 b.sine(a)

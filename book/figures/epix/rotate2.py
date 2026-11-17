@@ -15,12 +15,11 @@
 # # rotate2 — the unit direction of a, remembering r
 #
 # Similar triangles: work on the unit circle and keep the length $r$ aside. The unit
-# point in the direction of $\vec{a}$ is $(\cos(\beta), \sin(\beta))$. One step of the
-# `proof-rotate.rst`
-# sequence; the geometry (β, θ, r) is shared with the other steps through
-# `_rotation_scene.py`, so the last step lands exactly on the goal figure's
-# $\vec{r}(\vec{a};\theta)$. Built with the `epix` Python package
-# (github.com/billsix/epix-mirror) in the style of its `notebooks/`.
+# point in the direction of $\vec{\mathbf{a}}$ is $(\cos(\beta), \sin(\beta))$. One step
+# of the `proof-rotate.rst` sequence; the geometry (β, θ, r) is shared with the other
+# steps through `_rotation_scene.py`, so the last step lands exactly on the goal
+# figure's $\vec{\mathbf{r}}(\vec{\mathbf{a}};\theta)$. Built with the `epix` Python
+# package (github.com/billsix/epix-mirror) in the style of its `notebooks/`.
 
 # %%
 from __future__ import annotations

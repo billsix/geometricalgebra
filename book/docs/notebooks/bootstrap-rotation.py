@@ -45,7 +45,7 @@ from gacalc.nbdisplay import at_values
 # %% [markdown]
 # ## The vector and the angle
 #
-# $v$, every coordinate a symbol, and the angle $\theta$:
+# $\vec{\mathbf{v}}$, every coordinate a symbol, and the angle $\theta$:
 
 # %%
 v_1: sympy.Symbol
@@ -64,8 +64,8 @@ values: list[tuple[sympy.Symbol, Real]] = [(v_1, 2), (v_2, 1), (theta, sympy.pi 
 # %% [markdown]
 # ## The base case: the quarter turn
 #
-# $r(v; \pi/2) = (-v_2, v_1)$: swap the coordinates and change the sign of the new first
-# one.
+# $r(\vec{\mathbf{v}}; \pi/2) = (-v_2, v_1)$: swap the coordinates and change the sign
+# of the new first one.
 
 # %%
 quarter_turn: Vector = v.rotate_90_degrees()
@@ -82,11 +82,11 @@ P_V: Point = point(coordinates=list(at_values(v, values)))
 P_QUARTER: Point = point(coordinates=list(at_values(quarter_turn, values)))
 fig_quarter: PendingFigure
 with scene_around(points=[P_V, P_QUARTER]) as fig_quarter:
-    arrow(head=P_V, color=BLACK, text=r"$\vec{v}$")
+    arrow(head=P_V, color=BLACK, text=r"$\vec{\mathbf{v}}$")
     arrow(
         head=P_QUARTER,
         color=BLACK,
-        text=r"$\vec{r}(\vec{v}; \pi/2)$",
+        text=r"$\vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)$",
         align=LabelPos.l,
         offset=Point(x=-6, y=4),
     )
@@ -96,8 +96,8 @@ fig_quarter
 # %% [markdown]
 # ## The rotation by the angle
 #
-# $r(v; \theta) = \cos(\theta) * v + \sin(\theta) * r(v; \pi/2)$: the cosine part along
-# $v$:
+# $r(\vec{\mathbf{v}}; \theta) = \cos(\theta) * \vec{\mathbf{v}} + \sin(\theta) * r(\vec{\mathbf{v}}; \pi/2)$:
+# the cosine part along $\vec{\mathbf{v}}$:
 
 # %%
 cos_part: Vector = Scalar(sympy.cos(theta)) * v
@@ -134,19 +134,23 @@ P_COS: Point = point(coordinates=list(at_values(cos_part, values)))
 P_ROTATED: Point = point(coordinates=list(at_values(rotated, values)))
 fig_rotated: PendingFigure
 with scene_around(points=[P_V, P_QUARTER, P_ROTATED]) as fig_rotated:
-    arrow(head=P_V, color=BLACK, text=r"$\vec{v}$")
+    arrow(head=P_V, color=BLACK, text=r"$\vec{\mathbf{v}}$")
     arrow(
         head=P_QUARTER,
         color=BLACK,
-        text=r"$\vec{r}(\vec{v}; \pi/2)$",
+        text=r"$\vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)$",
         align=LabelPos.l,
         offset=Point(x=-6, y=4),
     )
-    arrow(head=P_ROTATED, color=PURPLE, text=r"$\vec{r}(\vec{v}; \theta)$")
+    arrow(
+        head=P_ROTATED,
+        color=PURPLE,
+        text=r"$\vec{\mathbf{r}}(\vec{\mathbf{v}}; \theta)$",
+    )
     arrow(head=P_COS, color=GREEN, width=2.4)
     note(
         at=0.5 * P_COS,
-        text=r"$\cos(\theta) * \vec{v}$",
+        text=r"$\cos(\theta) * \vec{\mathbf{v}}$",
         color=GREEN,
         offset=Point(x=4, y=-6),
         align=LabelPos.br,
@@ -154,7 +158,7 @@ with scene_around(points=[P_V, P_QUARTER, P_ROTATED]) as fig_rotated:
     arrow(head=P_ROTATED, tail=P_COS, color=BLUE)
     note(
         at=0.5 * (P_COS + P_ROTATED),
-        text=r"$\sin(\theta) * \vec{r}(\vec{v}; \pi/2)$",
+        text=r"$\sin(\theta) * \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)$",
         color=BLUE,
         offset=Point(x=6, y=0),
         align=LabelPos.r,
@@ -255,7 +259,7 @@ rotated_length_squared: Real = sympy.simplify(
 rotated_length_squared
 
 # %% [markdown]
-# $v$'s length squared:
+# $\vec{\mathbf{v}}$'s length squared:
 
 # %%
 v.magnitude_squared()
@@ -298,7 +302,7 @@ v.rotate(theta + phi).simplified()
 v.rotate(theta).rotate(-theta).simplified()
 
 # %% [markdown]
-# Its difference from $v$:
+# Its difference from $\vec{\mathbf{v}}$:
 
 # %%
 (v.rotate(theta).rotate(-theta) - v).simplified()
@@ -306,7 +310,7 @@ v.rotate(theta).rotate(-theta).simplified()
 # %% [markdown]
 # ### A rotation carries sums to sums
 #
-# A second vector $w$:
+# A second vector $\vec{\mathbf{w}}$:
 
 # %%
 w_1: sympy.Symbol
@@ -336,7 +340,7 @@ w
 # %% [markdown]
 # ### and scalar multiples to scalar multiples
 #
-# $k * v$, rotated:
+# $k * \vec{\mathbf{v}}$, rotated:
 
 # %%
 k: sympy.Symbol
@@ -344,7 +348,7 @@ k = sympy.Symbol("k", real=True)
 (Scalar(k) * v).rotate(theta).simplified()
 
 # %% [markdown]
-# $k$ times the rotated $v$:
+# $k$ times the rotated $\vec{\mathbf{v}}$:
 
 # %%
 (Scalar(k) * v.rotate(theta)).simplified()

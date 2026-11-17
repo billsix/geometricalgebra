@@ -9,12 +9,14 @@
 # %% [markdown]
 # # Vector Addition — calculations
 #
-# You already know that $3 + 5 = 5 + 3$. The chapter's pictures say that $a + b$ and
-# $b + a$ land on the same corner of the parallelogram. Here is the same fact in
-# coordinates: adding two vectors adds their coordinates, and each coordinate is a sum
-# of two ordinary numbers, which gives the same answer in either order. The coordinates
-# are left as symbols, so every result holds for every $a$ and $b$. Numbers appear only
-# to draw the figures. Each check shows both sides, then their difference.
+# You already know that $3 + 5 = 5 + 3$. The chapter's pictures say that
+# $\vec{\mathbf{a}} + \vec{\mathbf{b}}$ and $\vec{\mathbf{b}} + \vec{\mathbf{a}}$ land
+# on the same corner of the parallelogram. Here is the same fact in coordinates: adding
+# two vectors adds their coordinates, and each coordinate is a sum of two ordinary
+# numbers, which gives the same answer in either order. The coordinates are left as
+# symbols, so every result holds for every $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$.
+# Numbers appear only to draw the figures. Each check shows both sides, then their
+# difference.
 
 # %%
 import pathlib
@@ -48,7 +50,7 @@ from gacalc.transforms import translate
 # %% [markdown]
 # ## The vectors
 #
-# $a$ and $b$, every coordinate a symbol:
+# $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$, every coordinate a symbol:
 
 # %%
 a_1: sympy.Symbol
@@ -70,16 +72,17 @@ b
 values: list[tuple[sympy.Symbol, Real]] = [(a_1, 2), (a_2, 1), (b_1, 1), (b_2, 2)]
 
 # %% [markdown]
-# ## $a + b = b + a$
+# ## $\vec{\mathbf{a}} + \vec{\mathbf{b}} = \vec{\mathbf{b}} + \vec{\mathbf{a}}$
 #
-# Before running the next two cells, predict each coordinate of $a + b$ and of
-# $b + a$. $a + b$:
+# Before running the next two cells, predict each coordinate of
+# $\vec{\mathbf{a}} + \vec{\mathbf{b}}$ and of $\vec{\mathbf{b}} + \vec{\mathbf{a}}$.
+# $\vec{\mathbf{a}} + \vec{\mathbf{b}}$:
 
 # %%
 a + b
 
 # %% [markdown]
-# $b + a$:
+# $\vec{\mathbf{b}} + \vec{\mathbf{a}}$:
 
 # %%
 b + a
@@ -91,7 +94,7 @@ b + a
 (a + b) - (b + a)
 
 # %% [markdown]
-# At the plot values, $a + b$:
+# At the plot values, $\vec{\mathbf{a}} + \vec{\mathbf{b}}$:
 
 # %%
 at_values(a + b, values)
@@ -102,48 +105,49 @@ P_B: Point = point(coordinates=list(at_values(b, values)))
 P_SUM: Point = point(coordinates=list(at_values(a + b, values)))
 fig_sum: PendingFigure
 with scene_around(points=[P_A, P_B, P_SUM]) as fig_sum:
-    arrow(head=P_SUM, color=PURPLE, text=r"$\vec{a} + \vec{b}$")
-    arrow(head=P_A, color=GREEN, text=r"$\vec{a}$")
+    arrow(head=P_SUM, color=PURPLE, text=r"$\vec{\mathbf{a}} + \vec{\mathbf{b}}$")
+    arrow(head=P_A, color=GREEN, text=r"$\vec{\mathbf{a}}$")
     arrow(head=P_SUM, tail=P_A, color=BLUE)
-    arrow(head=P_B, color=BLUE, text=r"$\vec{b}$", align=LabelPos.l)
+    arrow(head=P_B, color=BLUE, text=r"$\vec{\mathbf{b}}$", align=LabelPos.l)
     arrow(head=P_SUM, tail=P_B, color=GREEN)
 fig_sum
 
 # %% [markdown]
 # ## Subtraction
 #
-# The chapter's second pair of pictures: $a - b$ is what you add to $b$ to get back
-# $a$. $a - b$:
+# The chapter's second pair of pictures: $\vec{\mathbf{a}} - \vec{\mathbf{b}}$ is what
+# you add to $\vec{\mathbf{b}}$ to get back $\vec{\mathbf{a}}$.
+# $\vec{\mathbf{a}} - \vec{\mathbf{b}}$:
 
 # %%
 a - b
 
 # %% [markdown]
-# $(a - b) + b$:
+# $(\vec{\mathbf{a}} - \vec{\mathbf{b}}) + \vec{\mathbf{b}}$:
 
 # %%
 (a - b) + b
 
 # %% [markdown]
-# Its difference from $a$:
+# Its difference from $\vec{\mathbf{a}}$:
 
 # %%
 ((a - b) + b) - a
 
 # %% [markdown]
-# It is the same as adding the opposite. $a + (-b)$:
+# It is the same as adding the opposite. $\vec{\mathbf{a}} + (-\vec{\mathbf{b}})$:
 
 # %%
 a + (-b)
 
 # %% [markdown]
-# Its difference from $a - b$:
+# Its difference from $\vec{\mathbf{a}} - \vec{\mathbf{b}}$:
 
 # %%
 (a - b) - (a + (-b))
 
 # %% [markdown]
-# At the plot values, $a - b$:
+# At the plot values, $\vec{\mathbf{a}} - \vec{\mathbf{b}}$:
 
 # %%
 at_values(a - b, values)
@@ -152,52 +156,57 @@ at_values(a - b, values)
 P_DIFFERENCE: Point = point(coordinates=list(at_values(a - b, values)))
 fig_difference: PendingFigure
 with scene_around(points=[P_A, P_B, P_DIFFERENCE]) as fig_difference:
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
-    arrow(head=P_B, color=BLUE, text=r"$\vec{b}$", align=LabelPos.l)
-    arrow(head=P_DIFFERENCE, color=PURPLE, text=r"$\vec{a} - \vec{b}$")
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
+    arrow(head=P_B, color=BLUE, text=r"$\vec{\mathbf{b}}$", align=LabelPos.l)
+    arrow(
+        head=P_DIFFERENCE, color=PURPLE, text=r"$\vec{\mathbf{a}} - \vec{\mathbf{b}}$"
+    )
     dashed_arrow(tail=P_B, head=P_A, color=PURPLE)
 fig_difference
 
 # %% [markdown]
 # ## Translate: adding the same vector to everything
 #
-# Fix $b$ and let the other input vary, and $+$ becomes a one-input machine,
-# `translate(b=b)`: feed it any point $v$, get $v + b$. This is **partial binding**:
-# one of the two blanks of $+$ filled in. It moves every point the same way, so
-# applying it to the whole plane slides the graph paper by $b$.
+# Fix $\vec{\mathbf{b}}$ and let the other input vary, and $+$ becomes a one-input
+# machine, `translate(b=b)`: feed it any point $\vec{\mathbf{v}}$, get
+# $\vec{\mathbf{v}} + \vec{\mathbf{b}}$. This is **partial binding**: one of the two
+# blanks of $+$ filled in. It moves every point the same way, so applying it to the
+# whole plane slides the graph paper by $\vec{\mathbf{b}}$.
 
 # %%
 t: InvertibleFunction[Vector] = translate(b=b)
 t
 
 # %% [markdown]
-# Applied to $a$, it gives the one-off sum:
+# Applied to $\vec{\mathbf{a}}$, it gives the one-off sum:
 
 # %%
 t(a)
 
 # %% [markdown]
-# Its difference from $a + b$:
+# Its difference from $\vec{\mathbf{a}} + \vec{\mathbf{b}}$:
 
 # %%
 t(a) - (a + b)
 
 # %% [markdown]
-# It moves every point by the same $b$. $e_1$ goes to:
+# It moves every point by the same $\vec{\mathbf{b}}$. $\vec{\mathbf{e}}_1$ goes to:
 
 # %%
 t(1 * e_1)
 
 # %% [markdown]
-# and $e_2$ to:
+# and $\vec{\mathbf{e}}_2$ to:
 
 # %%
 t(1 * e_2)
 
 # %% [markdown]
-# A whole sheet of graph paper, a 3 by 3 lattice of points, each slid by $b$ at the
-# plot values. (No separate check is needed: $a$ above is symbolic, so $t(a) = a + b$
-# already covers every point.)
+# A whole sheet of graph paper, a 3 by 3 lattice of points, each slid by
+# $\vec{\mathbf{b}}$ at the plot values. (No separate check is needed:
+# $\vec{\mathbf{a}}$ above is symbolic, so
+# $t(\vec{\mathbf{a}}) = \vec{\mathbf{a}} + \vec{\mathbf{b}}$ already covers every
+# point.)
 
 # %%
 P_SHIFT: Point = point(coordinates=list(at_values(b, values)))
@@ -212,30 +221,30 @@ with scene_around(
         line(tail=Point(x=0, y=k), head=Point(x=2, y=k), color=GRAY_EDGE)
         line(tail=Point(x=k, y=0) + P_SHIFT, head=Point(x=k, y=2) + P_SHIFT, color=BLUE)
         line(tail=Point(x=0, y=k) + P_SHIFT, head=Point(x=2, y=k) + P_SHIFT, color=BLUE)
-    arrow(head=P_SHIFT, color=PURPLE, text=r"$\vec{b}$", align=LabelPos.l)
+    arrow(head=P_SHIFT, color=PURPLE, text=r"$\vec{\mathbf{b}}$", align=LabelPos.l)
 fig_lattice
 
 # %% [markdown]
 # Its **inverse** is `translate(b=-b)`: sliding the paper back undoes the slide.
-# $t^{-1}(t(a))$:
+# $t^{-1}(t(\vec{\mathbf{a}}))$:
 
 # %%
 t.inverse(t(a))
 
 # %% [markdown]
-# Its difference from $a$:
+# Its difference from $\vec{\mathbf{a}}$:
 
 # %%
 t.inverse(t(a)) - a
 
 # %% [markdown]
-# `t.at(0.5)` is the paper slid half way. $t_{0.5}(a)$:
+# `t.at(0.5)` is the paper slid half way. $t_{0.5}(\vec{\mathbf{a}})$:
 
 # %%
 t.at(0.5)(a)
 
 # %% [markdown]
-# $a + 0.5 * b$:
+# $\vec{\mathbf{a}} + 0.5 * \vec{\mathbf{b}}$:
 
 # %%
 a + b * 0.5

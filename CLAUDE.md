@@ -435,7 +435,8 @@ over a "run it on your host" instruction.
   scene description; the only exceptions are positional-only builtins (`math.cos(x)`). Checked and fixed
   by `python tools/check_epix_keywords.py [--fix]` (which also checks the known epix calls in the book
   notebooks that mention `epix`), a `make format` gate step (the maintainer's rule,
-  2026-10-07). Every binding in a figure file is typed, as everywhere else (`fig: PendingFigure`
+  2026-10-07). The notebooks' and figure scripts' prose width is checked by
+  `python tools/check_notebook_prose_width.py [--fix]`, also a `make format` step, since E501 skips them. Every binding in a figure file is typed, as everywhere else (`fig: PendingFigure`
   declared above the `with`; `PendingFigure` is `_rotation_scene`'s alias for what `epix.figure()` yields).
   **A label's colour matches the line/vector it labels** (the maintainer's rule, 2026-10-09) so a reader
   sees at a glance which label is which; `leg()`/`vector()` do it automatically, an explicit
@@ -535,13 +536,23 @@ sweep that applied them is `tasks/archive/2026/10/09/math-notation-parens-star-n
 - **Parentheses show function application, never multiplication** — `cos(θ)`, `\cos(\theta)`,
   not `cos θ` / `\cos\theta`. A reader from precalculus reads `cos θ` as a product.
 - **Every multiplication has an explicit `*`, scalar or geometric** — `r * (cos(θ), sin(θ))`,
-  `|a| * |b| * sin(θ)`, `\cos(\theta) * \vec{a}`, `\vec{a} * e_{12}`, `e_1 * e_2 * e_1`.
+  `|a| * |b| * sin(θ)`, `\cos(\theta) * \vec{\mathbf{a}}`, `\vec{\mathbf{a}} * \mathbf{e}_{12}`,
+  `e_1 * e_2 * e_1`.
   Juxtaposition never means a product where a reader sees math, so the typeset math reads exactly
   like the code, where `*` *is* the geometric product (Operators above). In LaTeX the symbol is a
   **literal `*`** in math mode — not `\ast`, not `\cdot` (the dot product), not `\times` (the
   cross product).
 - **Every angle is named** — `sin(θ) = y/r`, `(cos(θ) = c, sin(θ) = s)`, `cos(θ) = 0`; never
   `sin = y/r`, `(cos = c, sin = s)`, `cos = 0`.
+- **Typeset LaTeX writes vectors the way gacalc's output does** (`blade_latex` in
+  `src/gacalc/base.py`): a vector `\vec{\mathbf{a}}`, a unit vector `\hat{\mathbf{a}}`, a basis
+  vector `\vec{\mathbf{e}}_1`, and a blade of grade 2 or more one bold `\mathbf{e}_{12}`, with no
+  arrow and not written as `e_1 e_2`. Scalars, coordinates (`a_1`), angles, and capital multivectors
+  and rotors (`R`, `B`) stay plain. This covers book pages, notebook Markdown and figure labels
+  (William Emerison Six <billsix@gmail.com>, 2026-11-17). Put the accent outside the bold,
+  `\vec{\mathbf{a}}`: lualatex draws `\mathbf{\vec{a}}`'s arrow from the bold text font, as a
+  garbled glyph. Spell it out: Jupyter does not see Sphinx's MathJax macros. Python docstrings and
+  Lean comments are plain text and keep `e_1`.
 - **In Lean doc comments the star carries no surrounding spaces** — `|a|*|b|`, `R*v*R̃`,
   `a₁*b₂ − a₂*b₁` — so multiplication visually binds tighter than `+`/`−` (with spaces,
   `a₁ * b₂-a₂ * b₁` reads as if the minus bound tighter; those comments are pure monospace

@@ -19,7 +19,7 @@
 # `proof-rotate.rst`
 # sequence; the geometry (β, θ, r) is shared with the other steps through
 # `_rotation_scene.py`, so the last step lands exactly on the goal figure's
-# $\vec{r}(\vec{a};\theta)$. Built with the `epix` Python package
+# $\vec{\mathbf{r}}(\vec{\mathbf{a}};\theta)$. Built with the `epix` Python package
 # (github.com/billsix/epix-mirror) in the style of its `notebooks/`.
 
 # %%

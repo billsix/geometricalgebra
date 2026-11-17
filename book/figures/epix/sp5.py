@@ -12,12 +12,12 @@
 # ---
 
 # %% [markdown]
-# # sp5 — rotate back: the projection and rejection of the original $\vec{a}$
+# # sp5 — rotate back: the projection and rejection of the original $\vec{\mathbf{a}}$
 #
-# Undo the rotation by $+\theta$ and the coordinate split from `sp4` lands exactly
-# on the projection (blue) and rejection (green) of the original $\vec{a}$ onto
-# $\vec{b}$ — the same answer the geometric-algebra formula gives. Built with the
-# `epix` package; `tools/render_epix_figures.py` writes
+# Undo the rotation by $+\theta$ and the coordinate split from `sp4` lands exactly on
+# the projection (blue) and rejection (green) of the original $\vec{\mathbf{a}}$ onto
+# $\vec{\mathbf{b}}$ — the same answer the geometric-algebra formula gives. Built with
+# the `epix` package; `tools/render_epix_figures.py` writes
 # `_static/epix/sp5.{pdf,png}`. CC0.
 
 # %%
@@ -41,18 +41,29 @@ from _scene2d import (
 # %%
 fig: PendingFigure
 with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as fig:
-    vector(head=A, text=r"$\vec{a}$", offset=Point(x=-6, y=7), align=epix.LabelPos.l)
-    vector(head=B, text=r"$\vec{b}$", offset=Point(x=9, y=2), align=epix.LabelPos.l)
+    vector(
+        head=A,
+        text=r"$\vec{\mathbf{a}}$",
+        offset=Point(x=-6, y=7),
+        align=epix.LabelPos.l,
+    )
+    vector(
+        head=B,
+        text=r"$\vec{\mathbf{b}}$",
+        offset=Point(x=9, y=2),
+        align=epix.LabelPos.l,
+    )
     # projection along b (blue)
     epix.pen(color=BLUE, width=2.0)
     epix.arrow(tail=ORIGIN, head=PROJ, scale=0.7)
     epix.dot(at=PROJ)
     epix.label_color(color=BLUE)
+    # below and right of the foot, past b's head and above the x-axis
     epix.label(
         at=PROJ,
-        offset=Point(x=-11, y=-12),
-        text=r"$\mathrm{proj}_{\vec{b}}\,\vec{a}$",
-        align=epix.LabelPos.r,
+        offset=Point(x=8, y=-9),
+        text=r"$\mathrm{proj}_{\vec{\mathbf{b}}}\,\vec{\mathbf{a}}$",
+        align=epix.LabelPos.br,
     )
     # rejection perpendicular (green)
     epix.pen(color=GREEN, width=2.0)

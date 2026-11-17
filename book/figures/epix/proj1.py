@@ -12,12 +12,12 @@
 # ---
 
 # %% [markdown]
-# # proj1 — the shadow of $\vec{a}$ on the line through $\vec{b}$
+# # proj1 — the shadow of $\vec{\mathbf{a}}$ on the line through $\vec{\mathbf{b}}$
 #
-# The setup for projection: $\vec{a}$ and $\vec{b}$ from the origin, the line through
-# $\vec{b}$ (dashed), and the foot of the perpendicular dropped from $\vec{a}$ onto that
-# line. Built with the `epix` package; `tools/render_epix_figures.py` writes
-# `_static/epix/proj1.{pdf,png}`. CC0.
+# The setup for projection: $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$ from the origin,
+# the line through $\vec{\mathbf{b}}$ (dashed), and the foot of the perpendicular
+# dropped from $\vec{\mathbf{a}}$ onto that line. Built with the `epix` package;
+# `tools/render_epix_figures.py` writes `_static/epix/proj1.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations
@@ -50,8 +50,18 @@ with unit_circle_scene(
     epix.dashed()
     epix.line(tail=LINE_LOW, head=LINE_HIGH)
     epix.line_style(style="-")
-    vector(head=A, text=r"$\vec{a}$", offset=Point(x=-6, y=7), align=epix.LabelPos.l)
-    vector(head=B, text=r"$\vec{b}$", offset=Point(x=6, y=-6), align=epix.LabelPos.r)
+    vector(
+        head=A,
+        text=r"$\vec{\mathbf{a}}$",
+        offset=Point(x=-6, y=7),
+        align=epix.LabelPos.l,
+    )
+    vector(
+        head=B,
+        text=r"$\vec{\mathbf{b}}$",
+        offset=Point(x=6, y=-6),
+        align=epix.LabelPos.r,
+    )
     # the perpendicular dropped from a to its foot on the line
     dashed_vector(tail=A, head=PROJ)
 

@@ -12,12 +12,13 @@
 # Companion to the *Proof: The Cross Product by Rotating to Standard Position* chapter.
 # The projection chapters made a hard problem easy by turning the picture until one
 # vector lay on an axis. The cross product works the same way. Three plane rotations
-# turn the pair so that $a$ lies on $e_1$ and $b$ in the $e_1 e_2$ plane; there the
-# cross product is a multiple of $e_3$ you can read off; turning back gives the cross
-# product of the original pair. This notebook works each step with symbolic
-# coordinates, so every result is a formula for every $a$ and $b$, and compares the
-# result with gacalc's cross product, `gacalc.vectorcalc.cross`. Numbers appear only to
-# draw the figures.
+# turn the pair so that $\vec{\mathbf{a}}$ lies on $\vec{\mathbf{e}}_1$ and
+# $\vec{\mathbf{b}}$ in the $\mathbf{e}_{12}$ plane; there the cross product is a
+# multiple of $\vec{\mathbf{e}}_3$ you can read off; turning back gives the cross
+# product of the original pair. This notebook works each step with symbolic coordinates,
+# so every result is a formula for every $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$, and
+# compares the result with gacalc's cross product, `gacalc.vectorcalc.cross`. Numbers
+# appear only to draw the figures.
 #
 # This is the runnable, symbolic twin of the Lean capstone `cross_via_reduction`
 # (and its explicit-angle form `cross_via_reduction_of_vectors`) in
@@ -55,7 +56,7 @@ from gacalc.vectorcalc import cross
 # %% [markdown]
 # ## The vectors
 #
-# $a$ and $b$, every coordinate a symbol:
+# $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$, every coordinate a symbol:
 
 # %%
 a_1: sympy.Symbol
@@ -92,23 +93,24 @@ P_A: Point = point(coordinates=list(at_values(a, values)))
 P_B: Point = point(coordinates=list(at_values(b, values)))
 fig_given: PendingFigure
 with scene_3d(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig_given:
-    arrow(head=P_A, text=r"$\vec{a}$")
-    arrow(head=P_B, text=r"$\vec{b}$")
+    arrow(head=P_A, text=r"$\vec{\mathbf{a}}$")
+    arrow(head=P_B, text=r"$\vec{\mathbf{b}}$")
 fig_given
 
 # %% [markdown]
 # ## Rotating in a coordinate plane
 #
 # Each of the three turns is the rotation from one direction to another of *Proof:
-# Rotate from the Direction of a to the Direction of b* (`rotation_from_to`), applied
-# in one coordinate plane by `in_plane(rotation, first, second, v)`: it copies $v$'s
-# coordinates along the two basis vectors into a 2D vector, rotates it, and writes the
-# pair back, leaving the third coordinate alone.
+# Rotate from the Direction of a to the Direction of b* (`rotation_from_to`), applied in
+# one coordinate plane by `in_plane(rotation, first, second, v)`: it copies
+# $\vec{\mathbf{v}}$'s coordinates along the two basis vectors into a 2D vector, rotates
+# it, and writes the pair back, leaving the third coordinate alone.
 
 # %% [markdown]
-# ## Step 1: swing $a$'s shadow in the $e_1 e_2$ plane onto the x-axis
+# ## Step 1: swing $\vec{\mathbf{a}}$'s shadow in the $\mathbf{e}_{12}$ plane onto the x-axis
 #
-# The rotation from $a$'s shadow $a_1 * e_1 + a_2 * e_2$ to $e_1$:
+# The rotation from $\vec{\mathbf{a}}$'s shadow
+# $a_1 * \vec{\mathbf{e}}_1 + a_2 * \vec{\mathbf{e}}_2$ to $\vec{\mathbf{e}}_1$:
 
 # %%
 R_xy: InvertibleFunction[g2.Vector] = rotation_from_to(
@@ -117,16 +119,17 @@ R_xy: InvertibleFunction[g2.Vector] = rotation_from_to(
 R_xy
 
 # %% [markdown]
-# It leaves $a$ in the $e_1 e_3$ plane:
+# It leaves $\vec{\mathbf{a}}$ in the $\mathbf{e}_{13}$ plane:
 
 # %%
 a_step_1: Vector = in_plane(R_xy, e_1, e_2, a).simplified()
 a_step_1
 
 # %% [markdown]
-# ## Step 2: swing $a$ down onto $e_1$
+# ## Step 2: swing $\vec{\mathbf{a}}$ down onto $\vec{\mathbf{e}}_1$
 #
-# The rotation, in the $e_1 e_3$ plane, from $a$'s new direction to $e_1$:
+# The rotation, in the $\mathbf{e}_{13}$ plane, from $\vec{\mathbf{a}}$'s new direction
+# to $\vec{\mathbf{e}}_1$:
 
 # %%
 R_xz: InvertibleFunction[g2.Vector] = rotation_from_to(
@@ -148,27 +151,27 @@ def align_a(v: Vector) -> Vector:
 
 
 # %% [markdown]
-# $a$ lands on $e_1$ at its length $|a|$:
+# $\vec{\mathbf{a}}$ lands on $\vec{\mathbf{e}}_1$ at its length $|\vec{\mathbf{a}}|$:
 
 # %%
 a_aligned: Vector = align_a(a).simplified()
 a_aligned
 
 # %% [markdown]
-# and $b$ rides along to $b'$:
+# and $\vec{\mathbf{b}}$ rides along to $\vec{\mathbf{b}}'$:
 
 # %%
 b_aligned: Vector = align_a(b).simplified()
 b_aligned
 
 # %% [markdown]
-# At the plot values, $a$ on $e_1$:
+# At the plot values, $\vec{\mathbf{a}}$ on $\vec{\mathbf{e}}_1$:
 
 # %%
 at_values(a_aligned, values)
 
 # %% [markdown]
-# and $b'$:
+# and $\vec{\mathbf{b}}'$:
 
 # %%
 at_values(b_aligned, values)
@@ -178,22 +181,23 @@ P_A_ALIGNED: Point = point(coordinates=list(at_values(a_aligned, values)))
 P_B_ALIGNED: Point = point(coordinates=list(at_values(b_aligned, values)))
 fig_aligned: PendingFigure
 with scene_3d(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig_aligned:
-    dashed_arrow(tail=ORIGIN3, head=P_A, text=r"$\vec{a}$")
-    dashed_arrow(tail=ORIGIN3, head=P_B, text=r"$\vec{b}$")
+    dashed_arrow(tail=ORIGIN3, head=P_A, text=r"$\vec{\mathbf{a}}$")
+    dashed_arrow(tail=ORIGIN3, head=P_B, text=r"$\vec{\mathbf{b}}$")
     arrow(
         head=P_A_ALIGNED,
-        text=r"$|\vec{a}| * e_1$",
+        text=r"$|\vec{\mathbf{a}}| * \vec{\mathbf{e}}_1$",
         offset=Point(x=-4, y=-10),
         align=LabelPos.bl,
     )
-    arrow(head=P_B_ALIGNED, text=r"$\vec{b}'$")
+    arrow(head=P_B_ALIGNED, text=r"$\vec{\mathbf{b}}'$")
 fig_aligned
 
 # %% [markdown]
-# ## Step 3: swing $b'$ into the $e_1 e_2$ plane
+# ## Step 3: swing $\vec{\mathbf{b}}'$ into the $\mathbf{e}_{12}$ plane
 #
-# The rotation, in the $e_2 e_3$ plane, from $b'$'s shadow there to $e_2$. It leaves
-# the $e_1$ axis, and so $a$, where they are.
+# The rotation, in the $\mathbf{e}_{23}$ plane, from $\vec{\mathbf{b}}'$'s shadow there
+# to $\vec{\mathbf{e}}_2$. It leaves the $\vec{\mathbf{e}}_1$ axis, and so
+# $\vec{\mathbf{a}}$, where they are.
 
 # %%
 R_yz: InvertibleFunction[g2.Vector] = rotation_from_to(
@@ -204,7 +208,7 @@ R_yz: InvertibleFunction[g2.Vector] = rotation_from_to(
 R_yz
 
 # %% [markdown]
-# $b'$ lands in the $e_1 e_2$ plane, as $b''$:
+# $\vec{\mathbf{b}}'$ lands in the $\mathbf{e}_{12}$ plane, as $\vec{\mathbf{b}}''$:
 
 # %%
 b_reduced: Vector = in_plane(R_yz, e_2, e_3, b_aligned).simplified()
@@ -217,10 +221,12 @@ b_reduced
 at_values(b_reduced, values)
 
 # %% [markdown]
-# ## In standard position, the cross product is a multiple of $e_3$
+# ## In standard position, the cross product is a multiple of $\vec{\mathbf{e}}_3$
 #
-# With $a$ at $|a| * e_1$ and $b''$ in the $e_1 e_2$ plane, $a \times b''$ is
-# $|a| * b''_2 * e_3$:
+# With $\vec{\mathbf{a}}$ at $|\vec{\mathbf{a}}| * \vec{\mathbf{e}}_1$ and
+# $\vec{\mathbf{b}}''$ in the $\mathbf{e}_{12}$ plane,
+# $\vec{\mathbf{a}} \times \vec{\mathbf{b}}''$ is
+# $|\vec{\mathbf{a}}| * b''_2 * \vec{\mathbf{e}}_3$:
 
 # %%
 cross_reduced: Vector = (
@@ -241,15 +247,15 @@ fig_reduced: PendingFigure
 with scene_3d(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig_reduced:
     arrow(
         head=P_A_ALIGNED,
-        text=r"$|\vec{a}| * e_1$",
+        text=r"$|\vec{\mathbf{a}}| * \vec{\mathbf{e}}_1$",
         offset=Point(x=-4, y=-10),
         align=LabelPos.bl,
     )
-    arrow(head=P_B_REDUCED, text=r"$\vec{b}''$")
+    arrow(head=P_B_REDUCED, text=r"$\vec{\mathbf{b}}''$")
     arrow(
         head=P_CROSS_REDUCED,
         color=PURPLE,
-        text=r"$|\vec{a}| * b''_2 * e_3$",
+        text=r"$|\vec{\mathbf{a}}| * b''_2 * \vec{\mathbf{e}}_3$",
         align=LabelPos.l,
     )
 fig_reduced
@@ -278,15 +284,18 @@ at_values(by_standard_position, values)
 P_CROSS: Point = point(coordinates=list(at_values(by_standard_position, values)))
 fig_back: PendingFigure
 with scene_3d(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig_back:
-    arrow(head=P_A, text=r"$\vec{a}$")
-    arrow(head=P_B, text=r"$\vec{b}$")
+    arrow(head=P_A, text=r"$\vec{\mathbf{a}}$")
+    arrow(head=P_B, text=r"$\vec{\mathbf{b}}$")
     arrow(
-        head=P_CROSS, color=PURPLE, text=r"$\vec{a} \times \vec{b}$", align=LabelPos.l
+        head=P_CROSS,
+        color=PURPLE,
+        text=r"$\vec{\mathbf{a}} \times \vec{\mathbf{b}}$",
+        align=LabelPos.l,
     )
 fig_back
 
 # %% [markdown]
-# ## Check, for every $a$ and $b$
+# ## Check, for every $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$
 #
 # The construction gave:
 
@@ -294,7 +303,8 @@ fig_back
 by_standard_position
 
 # %% [markdown]
-# gacalc's cross product, $(a \wedge b) * I_3^{-1}$, gives:
+# gacalc's cross product, $(\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}) * I_3^{-1}$,
+# gives:
 
 # %%
 cross(a, b).simplified()

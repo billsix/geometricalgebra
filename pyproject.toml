@@ -90,6 +90,14 @@ ignore = ["N806"]
 # content ruff cannot wrap.  conf.py is Sphinx config (strings/paths/prose), so
 # there is no reformattable code E501 would usefully guard here.
 "book/docs/conf.py" = ["E501"]
+# The book's notebooks and figure scripts write their Markdown math the way gacalc's
+# output typesets it (\vec{\mathbf{a}}, CLAUDE.md "Math notation for readers"), so one
+# inline $...$ span or a heading can pass 88 columns and cannot be broken; an inline
+# `# noqa` would show in the student's view. Their code is still wrapped by `ruff format`,
+# and tools/check_notebook_prose_width.py (run by entrypoint/format.sh) keeps their prose
+# paragraphs at 88.
+"book/docs/notebooks/*.py" = ["E501"]
+"book/figures/epix/*.py" = ["E501"]
 # The frame / QR book notebooks import their ePiX scene helpers from book/figures/epix/,
 # which is not a package, so each puts that directory on sys.path first. The imports
 # after that line are the point of the line (E402 would have them before it).

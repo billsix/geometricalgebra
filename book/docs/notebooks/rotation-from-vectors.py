@@ -49,7 +49,7 @@ from gacalc.transforms import projection_rotation, versor_rotation
 # %% [markdown]
 # ## Two unit vectors
 #
-# $\hat{a}$ at angle $\alpha$ from the x-axis:
+# $\hat{\mathbf{a}}$ at angle $\alpha$ from the x-axis:
 
 # %%
 alpha: sympy.Symbol
@@ -61,7 +61,7 @@ a_hat: Vector = (
 a_hat
 
 # %% [markdown]
-# and $\hat{b}$ at angle $\beta$:
+# and $\hat{\mathbf{b}}$ at angle $\beta$:
 
 # %%
 b_hat: Vector = (
@@ -83,35 +83,36 @@ angle_values: list[tuple[sympy.Symbol, Real]] = [
 #
 # A plain number plus a bivector, the dot and the wedge. The product term by term: the
 # plain-number rows add to $\cos(\alpha) * \cos(\beta) + \sin(\alpha) * \sin(\beta)$,
-# which is $\cos(\beta - \alpha)$, and the $e_{12}$ rows to $\sin(\beta - \alpha)$: the
-# angle-difference identities, from multiplying.
+# which is $\cos(\beta - \alpha)$, and the $\mathbf{e}_{12}$ rows to
+# $\sin(\beta - \alpha)$: the angle-difference identities, from multiplying.
 
 # %%
 show_mult(a_hat, b_hat)
 
 # %% [markdown]
 # Before running the next cell, predict the sum: it is the full-angle rotor
-# $\cos(\theta) + \sin(\theta) * e_{12}$ with $\theta = \beta - \alpha$. We multiplied
-# the vectors, and the cosine and sine appeared.
+# $\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}$ with $\theta = \beta - \alpha$. We
+# multiplied the vectors, and the cosine and sine appeared.
 
 # %%
 R: Versor = (a_hat * b_hat).simplified()
 R
 
 # %% [markdown]
-# ## The rotor carries $\hat{a}$ to $\hat{b}$
+# ## The rotor carries $\hat{\mathbf{a}}$ to $\hat{\mathbf{b}}$
 #
-# Multiply $\hat{a}$ on the right by $\hat{a} * \hat{b}$. By associativity and
-# $\hat{a} * \hat{a} = 1$ (a unit vector squares to one), the first vector cancels and
-# $\hat{b}$ is left: $\hat{a} * (\hat{a} * \hat{b}) = \hat{b}$. No angle is named.
-# $\hat{a} * R$:
+# Multiply $\hat{\mathbf{a}}$ on the right by $\hat{\mathbf{a}} * \hat{\mathbf{b}}$. By
+# associativity and $\hat{\mathbf{a}} * \hat{\mathbf{a}} = 1$ (a unit vector squares to
+# one), the first vector cancels and $\hat{\mathbf{b}}$ is left:
+# $\hat{\mathbf{a}} * (\hat{\mathbf{a}} * \hat{\mathbf{b}}) = \hat{\mathbf{b}}$. No
+# angle is named. $\hat{\mathbf{a}} * R$:
 
 # %%
 a_hat_rotated: MultiVectorBase = (a_hat * R).simplified()
 a_hat_rotated
 
 # %% [markdown]
-# Its difference from $\hat{b}$:
+# Its difference from $\hat{\mathbf{b}}$:
 
 # %%
 (a_hat * R - b_hat).simplified()
@@ -121,19 +122,24 @@ P_A_HAT: Point = point(coordinates=list(at_values(a_hat, angle_values)))
 P_B_HAT: Point = point(coordinates=list(at_values(b_hat, angle_values)))
 fig_unit: PendingFigure
 with scene_around(points=[P_A_HAT, P_B_HAT]) as fig_unit:
-    arrow(head=P_A_HAT, color=BLACK, text=r"$\hat{a}$")
-    arrow(head=P_B_HAT, color=PURPLE, text=r"$\hat{a} * R = \hat{b}$", align=LabelPos.l)
+    arrow(head=P_A_HAT, color=BLACK, text=r"$\hat{\mathbf{a}}$")
+    arrow(
+        head=P_B_HAT,
+        color=PURPLE,
+        text=r"$\hat{\mathbf{a}} * R = \hat{\mathbf{b}}$",
+        align=LabelPos.l,
+    )
 fig_unit
 
 # %% [markdown]
 # ## Vectors of any length
 #
 # Three routes build a rotation from two vectors alone, with no angle argument:
-# `versor_rotation` (the versor sandwich $R * v * R^{-1}$),
+# `versor_rotation` (the versor sandwich $R * \vec{\mathbf{v}} * R^{-1}$),
 # `projection_rotation` (projection, rejection and the geometric product), and
 # `rotation_from_to` (the three turns of *Proof: Rotate from a to b*). They give the
-# same rotation whatever the lengths of the inputs. Take $a$, $b$ and $v$, every
-# coordinate a symbol:
+# same rotation whatever the lengths of the inputs. Take $\vec{\mathbf{a}}$,
+# $\vec{\mathbf{b}}$ and $\vec{\mathbf{v}}$, every coordinate a symbol:
 
 # %%
 a_1: sympy.Symbol
@@ -168,7 +174,7 @@ values: list[tuple[sympy.Symbol, Real]] = [
 ]
 
 # %% [markdown]
-# The versor route on $v$:
+# The versor route on $\vec{\mathbf{v}}$:
 
 # %%
 rotated_versor: Vector = versor_rotation(from_vector=a, to_vector=b)(v).simplified()
@@ -203,7 +209,7 @@ rotated_three_turns
 (rotated_versor - rotated_three_turns).simplified()
 
 # %% [markdown]
-# At the plot values, the rotated $v$:
+# At the plot values, the rotated $\vec{\mathbf{v}}$:
 
 # %%
 at_values(rotated_versor, values)
@@ -215,16 +221,28 @@ P_V: Point = point(coordinates=list(at_values(v, values)))
 P_V_ROTATED: Point = point(coordinates=list(at_values(rotated_versor, values)))
 fig_any_length: PendingFigure
 with scene_around(points=[P_A, P_B, P_V, P_V_ROTATED]) as fig_any_length:
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
-    arrow(head=P_V, color=BLACK, text=r"$\vec{v}$", align=LabelPos.b)
-    arrow(head=P_V_ROTATED, color=PURPLE, text=r"$R_{\vec{a}}^{\vec{b}}(\vec{v})$")
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$")
+    arrow(
+        head=P_V,
+        color=BLACK,
+        text=r"$\vec{\mathbf{v}}$",
+        offset=Point(x=0, y=-8),
+        align=LabelPos.b,
+    )
+    arrow(
+        head=P_V_ROTATED,
+        color=PURPLE,
+        text=r"$R_{\vec{\mathbf{a}}}^{\vec{\mathbf{b}}}(\vec{\mathbf{v}})$",
+        offset=Point(x=-6, y=4),
+        align=LabelPos.l,
+    )
 fig_any_length
 
 # %% [markdown]
-# ## It carries $a$ onto the direction of $b$
+# ## It carries $\vec{\mathbf{a}}$ onto the direction of $\vec{\mathbf{b}}$
 #
-# Applied to $a$ itself, the rotation gives:
+# Applied to $\vec{\mathbf{a}}$ itself, the rotation gives:
 
 # %%
 carried: MultiVectorBase = projection_rotation(from_vector=a, to_vector=b)(
@@ -233,7 +251,8 @@ carried: MultiVectorBase = projection_rotation(from_vector=a, to_vector=b)(
 carried
 
 # %% [markdown]
-# $b$'s direction with $a$'s length, $(|a| / |b|) * b$ (the Lean
+# $\vec{\mathbf{b}}$'s direction with $\vec{\mathbf{a}}$'s length,
+# $(|\vec{\mathbf{a}}| / |\vec{\mathbf{b}}|) * \vec{\mathbf{b}}$ (the Lean
 # `projRotation_carries_from_to`):
 
 # %%

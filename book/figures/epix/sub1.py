@@ -12,11 +12,12 @@
 # ---
 
 # %% [markdown]
-# # sub1 — subtraction as the connecting vector: $\vec{a}-\vec{b}$
+# # sub1 — subtraction as the connecting vector: $\vec{\mathbf{a}}-\vec{\mathbf{b}}$
 #
-# $\vec{a}-\vec{b}$ is the vector that runs from the head of $\vec{b}$ to the head of
-# $\vec{a}$ — the thing you add to $\vec{b}$ to get $\vec{a}$. Built with the `epix`
-# package; `tools/render_epix_figures.py` writes `_static/epix/sub1.{pdf,png}`. CC0.
+# $\vec{\mathbf{a}}-\vec{\mathbf{b}}$ is the vector that runs from the head of
+# $\vec{\mathbf{b}}$ to the head of $\vec{\mathbf{a}}$ — the thing you add to
+# $\vec{\mathbf{b}}$ to get $\vec{\mathbf{a}}$. Built with the `epix` package;
+# `tools/render_epix_figures.py` writes `_static/epix/sub1.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations
@@ -29,8 +30,18 @@ fig: PendingFigure
 with unit_circle_scene(
     lower_left=SUB_LOWER_LEFT, upper_right=SUB_UPPER_RIGHT, disc=False
 ) as fig:
-    vector(head=A, text=r"$\vec{a}$", offset=Point(x=7, y=-3), align=epix.LabelPos.r)
-    vector(head=B, text=r"$\vec{b}$", offset=Point(x=-5, y=7), align=epix.LabelPos.l)
+    vector(
+        head=A,
+        text=r"$\vec{\mathbf{a}}$",
+        offset=Point(x=7, y=-3),
+        align=epix.LabelPos.r,
+    )
+    vector(
+        head=B,
+        text=r"$\vec{\mathbf{b}}$",
+        offset=Point(x=-5, y=7),
+        align=epix.LabelPos.l,
+    )
     # a - b: the connector from b's head to a's head
     epix.pen(color=GREEN, width=1.8)
     epix.arrow(tail=B, head=A, scale=0.7)
@@ -40,7 +51,7 @@ with unit_circle_scene(
     epix.label(
         at=mid,
         offset=Point(x=4, y=10),
-        text=r"$\vec{a}-\vec{b}$",
+        text=r"$\vec{\mathbf{a}}-\vec{\mathbf{b}}$",
         align=epix.LabelPos.l,
     )
     epix.label_color(color=epix.black())

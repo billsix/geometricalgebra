@@ -80,8 +80,8 @@ values: list[tuple[sympy.Symbol, Real]] = [
 ]
 
 # %% [markdown]
-# Drawn at the plot values: $p$, $q$, and the parallelogram they span, which the wedge
-# measures.
+# Drawn at the plot values: $\vec{\mathbf{p}}$, $\vec{\mathbf{q}}$, and the
+# parallelogram they span, which the wedge measures.
 
 # %%
 P_P: Point = point(coordinates=list(at_values(p, values)))
@@ -91,16 +91,24 @@ with scene_3d(
     lower_left=Point(x=-2.6, y=-2.2), upper_right=Point(x=5.4, y=3.6)
 ) as fig_pair:
     patch(corners=[ORIGIN3, P_P, P_P + P_Q, P_Q], color=PLANE_FILL)
-    arrow(head=P_P, text=r"$\vec{p}$")
-    arrow(head=P_Q, text=r"$\vec{q}$")
+    arrow(head=P_P, text=r"$\vec{\mathbf{p}}$")
+    arrow(head=P_Q, text=r"$\vec{\mathbf{q}}$")
 fig_pair
 
 # %% [markdown]
 # ## The product
 #
 # The product term by term: nine pairs now, three of them a direction times itself.
-# Those three rows add to the dot; the other six pair up, $e_i * e_j$ with $e_j * e_i$,
-# into the three bivector parts of the wedge.
+# Those three rows add to the dot; the other six pair up,
+# $\vec{\mathbf{e}}_i * \vec{\mathbf{e}}_j$ with
+# $\vec{\mathbf{e}}_j * \vec{\mathbf{e}}_i$, into the three bivector parts of the wedge.
+# First at the plot values:
+
+# %%
+show_mult(at_values(p, values), at_values(q, values))
+
+# %% [markdown]
+# Then with every coordinate a symbol:
 
 # %%
 show_mult(p, q)
@@ -115,7 +123,7 @@ product_3d
 # %% [markdown]
 # ## The two parts
 #
-# The grade-0 part, $\langle p * q \rangle_0$:
+# The grade-0 part, $\langle \vec{\mathbf{p}} * \vec{\mathbf{q}} \rangle_0$:
 
 # %%
 product_3d.r_vector_part(0)
@@ -133,7 +141,7 @@ p.inner_product(q)
 product_3d.r_vector_part(0) - p.inner_product(q)
 
 # %% [markdown]
-# The grade-2 part, $\langle p * q \rangle_2$:
+# The grade-2 part, $\langle \vec{\mathbf{p}} * \vec{\mathbf{q}} \rangle_2$:
 
 # %%
 product_3d.r_vector_part(2)
