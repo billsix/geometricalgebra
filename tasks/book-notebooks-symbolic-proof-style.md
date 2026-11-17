@@ -8,7 +8,7 @@
 `tasks/reference/book-outline.md` ("Pedagogical principles");
 `tasks/archive/2026/11/16/book-notebooks-teaching-style-sweep.md` (the previous sweep);
 `tasks/proof-notebooks-student-math-notation-style.md` (the backfill of missing proof notebooks,
-which should be written to this standard); `tasks/arrowheads-past-their-points.md` (the figures)
+which should be written to this standard); `tasks/archive/2026/11/17/arrowheads-past-their-points.md` (the figures)
 
 ## BLUF
 
@@ -40,7 +40,7 @@ are updated.
 5. **Live ePiX figures for each step**, drawn from the symbolic results at the plot values (the
    `plot_point` helper in `proof-projection.py`; `book/figures/epix/_bootstrap_live.py` for the scene).
    Where arrows meet tip to tip, draw the result first and its parts after, so the parts' heads sit on
-   top (`tasks/arrowheads-past-their-points.md`, decision 2).
+   top (`tasks/archive/2026/11/17/arrowheads-past-their-points.md`, decision 2).
 6. **Rotations only through what the book has taught.** Use the rotation by an angle
    (`g2.Vector.rotate(θ)`, `book/docs/proof-rotate.rst`) or the rotation from one direction to another
    (`standardposition.rotation_from_to(from_vector, to_vector)`, `book/docs/proof-rotate-from-a-to-b.rst`,
