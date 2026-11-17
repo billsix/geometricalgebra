@@ -15,12 +15,13 @@
 # %% [markdown]
 # # Step 2, projection from rotation — worked example
 #
-# Companion to *Step 2: Projection, from Rotation*. The next cell sets the two vectors.
-# Every step after it is computed from them and drawn: rotate $a$ onto the x-axis,
-# carrying $b$ along; apply the base cases there (keep the x-coordinate for the
-# projection, the y-coordinate for the rejection); rotate back. Change the vectors and
-# rerun the notebook to see the same steps for others. The last section repeats the
-# checks with every coordinate a symbol, so they hold for all vectors.
+# Companion to *Step 2: Projection, from Rotation*. Every step is computed with
+# symbolic coordinates, so each result is a formula for every $a$ and $b$: rotate $a$
+# onto the x-axis, carrying $b$ along; apply the base cases there (keep the
+# x-coordinate for the projection, the y-coordinate for the rejection); rotate back.
+# The only rotation used is Step 1's rotation by an angle, `Vector.rotate`. Numbers
+# appear only to draw the figures; change them and rerun. Each check shows both sides,
+# then their difference.
 
 # %%
 import pathlib
@@ -47,25 +48,35 @@ from _bootstrap_live import (
 
 from gacalc.base import Real
 from gacalc.g2 import Scalar, Vector, e_1, e_2
+from gacalc.nbdisplay import at_values
 
 # %% [markdown]
 # ## The vectors
 #
-# Change these and rerun.
+# $a$ and $b$, every coordinate a symbol:
 
 # %%
-a: Vector = 2 * e_1 + 1 * e_2
-b: Vector = 1 * e_1 + 2 * e_2
-
+a_1: sympy.Symbol
+a_2: sympy.Symbol
+b_1: sympy.Symbol
+b_2: sympy.Symbol
+a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
+a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
+a
 
 # %%
-def rotate(cos: Real, sin: Real, v: Vector) -> Vector:
-    """Rotate ``v`` by the angle with cosine ``cos`` and sine ``sin`` (Step 1)."""
-    return Scalar(cos) * v + Scalar(sin) * v.rotate_90_degrees()
+b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
+b
 
+# %% [markdown]
+# The values used to draw the figures. Change them and rerun.
 
-P_A: Point = point(coordinates=list(a))
-P_B: Point = point(coordinates=list(b))
+# %%
+values: list[tuple[sympy.Symbol, Real]] = [(a_1, 2), (a_2, 1), (b_1, 1), (b_2, 2)]
+
+# %%
+P_A: Point = point(coordinates=list(at_values(a, values)))
+P_B: Point = point(coordinates=list(at_values(b, values)))
 fig_given: PendingFigure
 with scene_around(points=[P_A, P_B]) as fig_given:
     arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
@@ -75,22 +86,49 @@ fig_given
 # %% [markdown]
 # ## Rotate $a$ onto the x-axis, carrying $b$ along
 #
-# The cosine and sine of the rotation are read off $a$: $a_1 / |a|$ and $-a_2 / |a|$.
-# The rotation sends $a$ to $|a| * e_1$.
+# Let $\theta$ be the angle of $a$ from the x-axis, $\operatorname{atan2}(a_2, a_1)$.
+# Rotating by $-\theta$ lays $a$ on the x-axis, and the rotation's cosine and sine come
+# straight from $a$'s coordinates. The cosine, $\cos(-\theta) = a_1 / |a|$:
 
 # %%
-cos: Real = a.coefficient(e_1) / a.magnitude()
-sin: Real = -a.coefficient(e_2) / a.magnitude()
-a_rotated: Vector = rotate(cos, sin, a).simplified()
+theta: sympy.Expr = sympy.atan2(a_2, a_1)
+sympy.cos(-theta)
+
+# %% [markdown]
+# the sine, $\sin(-\theta) = -a_2 / |a|$:
+
+# %%
+sympy.sin(-theta)
+
+# %% [markdown]
+# $a$ lands on the x-axis at its length:
+
+# %%
+a_rotated: Vector = a.rotate(-theta).simplified()
 a_rotated
 
-# %%
-b_rotated: Vector = rotate(cos, sin, b).simplified()
-b_rotated
+# %% [markdown]
+# and $b$ rides along to $b'$:
 
 # %%
-P_A_ROTATED: Point = point(coordinates=list(a_rotated))
-P_B_ROTATED: Point = point(coordinates=list(b_rotated))
+b_rotated: Vector = b.rotate(-theta).simplified()
+b_rotated
+
+# %% [markdown]
+# At the plot values, $a$ on the x-axis:
+
+# %%
+at_values(a_rotated, values)
+
+# %% [markdown]
+# and $b'$:
+
+# %%
+at_values(b_rotated, values)
+
+# %%
+P_A_ROTATED: Point = point(coordinates=list(at_values(a_rotated, values)))
+P_B_ROTATED: Point = point(coordinates=list(at_values(b_rotated, values)))
 fig_rotated: PendingFigure
 with scene_around(points=[P_A, P_B, P_A_ROTATED, P_B_ROTATED]) as fig_rotated:
     dashed_arrow(tail=Point(x=0, y=0), head=P_A, color=BLACK, text=r"$\vec{a}$")
@@ -104,20 +142,38 @@ fig_rotated
 #
 # $\operatorname{proj}_{e_1}(b') = x * e_1$ keeps $b'$'s x-coordinate and
 # $\operatorname{rej}_{e_1}(b') = y * e_2$ keeps its y-coordinate. $x$ and $y$ are the
-# signed lengths of $b$'s projection onto $a$ and of its rejection.
+# signed lengths of $b$'s projection onto $a$ and of its rejection. $x$:
 
 # %%
 x: Real = b_rotated.coefficient(e_1)
-y: Real = b_rotated.coefficient(e_2)
-(x, y)
+x
+
+# %% [markdown]
+# $y$:
 
 # %%
-P_X: Point = point(coordinates=list(Scalar(x) * e_1))
+y: Real = b_rotated.coefficient(e_2)
+y
+
+# %% [markdown]
+# At the plot values, $x$:
+
+# %%
+at_values(x, values)
+
+# %% [markdown]
+# and $y$:
+
+# %%
+at_values(y, values)
+
+# %%
+P_X: Point = point(coordinates=list(at_values(Scalar(x) * e_1, values)))
 fig_base: PendingFigure
 with scene_around(points=[P_A_ROTATED, P_B_ROTATED]) as fig_base:
-    arrow(head=P_A_ROTATED, color=BLACK, text=r"$\vec{a}'$", align=LabelPos.b)
     arrow(head=P_B_ROTATED, color=BLACK, text=r"$\vec{b}'$")
     arrow(head=P_X, color=GREEN, width=2.4)
+    arrow(head=P_A_ROTATED, color=BLACK, text=r"$\vec{a}'$", align=LabelPos.b)
     note(
         at=0.5 * P_X,
         text=r"$x * e_1$",
@@ -139,24 +195,39 @@ fig_base
 # %% [markdown]
 # ## Rotate back
 #
-# The rotation back negates the sine. It carries $x * e_1$ to the projection of $b$
-# onto $a$, and $y * e_2$ to the rejection.
+# The rotation back is by $+\theta$. It carries $x * e_1$ to the projection of $b$ onto
+# $a$:
 
 # %%
-projection: Vector = rotate(cos, -sin, Scalar(x) * e_1).simplified()
+projection: Vector = (Scalar(x) * e_1).rotate(theta).simplified()
 projection
 
-# %%
-rejection: Vector = rotate(cos, -sin, Scalar(y) * e_2).simplified()
-rejection
+# %% [markdown]
+# and $y * e_2$ to the rejection:
 
 # %%
-P_PROJECTION: Point = point(coordinates=list(projection))
+rejection: Vector = (Scalar(y) * e_2).rotate(theta).simplified()
+rejection
+
+# %% [markdown]
+# At the plot values, the projection:
+
+# %%
+at_values(projection, values)
+
+# %% [markdown]
+# and the rejection:
+
+# %%
+at_values(rejection, values)
+
+# %%
+P_PROJECTION: Point = point(coordinates=list(at_values(projection, values)))
 fig_back: PendingFigure
 with scene_around(points=[P_A, P_B]) as fig_back:
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
     arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
     arrow(head=P_PROJECTION, color=GREEN, width=2.4)
+    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
     note(
         at=0.5 * P_PROJECTION,
         text=r"$\operatorname{proj}_{\vec{a}}(\vec{b})$",
@@ -176,132 +247,174 @@ with scene_around(points=[P_A, P_B]) as fig_back:
 fig_back
 
 # %% [markdown]
-# ## Checks on these vectors
+# ## Checks, for all vectors
 #
-# Each cell subtracts two things and shows the difference, $0$ when they agree.
-#
-# The projection matches the formula
-# $(a_1 * b_1 + a_2 * b_2) / (a_1^2 + a_2^2) * a$:
-
-# %%
-a_1: Real = a.coefficient(e_1)
-a_2: Real = a.coefficient(e_2)
-b_1: Real = b.coefficient(e_1)
-b_2: Real = b.coefficient(e_2)
-(projection - Scalar((a_1 * b_1 + a_2 * b_2) / (a_1**2 + a_2**2)) * a).simplified()
-
-# %% [markdown]
-# The rejection matches the formula
-# $(a_1 * b_2 - a_2 * b_1) / (a_1^2 + a_2^2) * r(a; \pi/2)$:
-
-# %%
-(
-    rejection
-    - Scalar((a_1 * b_2 - a_2 * b_1) / (a_1**2 + a_2**2)) * a.rotate_90_degrees()
-).simplified()
-
-# %% [markdown]
-# The two parts add back to $b$:
-
-# %%
-(projection + rejection - b).simplified()
-
-# %% [markdown]
-# gacalc's projection, $(b \cdot a) * a^{-1}$ (Step 5's formula), agrees:
-
-# %%
-(projection - b.projected_onto(a)).simplified()
-
-# %% [markdown]
-# ## For all vectors
-#
-# The same construction with every coordinate a symbol. Each cell checks one fact.
+# Some checks run the construction again on other vectors, so here it is as one
+# function, the steps above in order.
 
 
 # %%
 def project_and_reject(onto: Vector, v: Vector) -> tuple[Vector, Vector]:
     """Step 2's construction: rotate ``onto`` to the x-axis, apply the base cases,
     rotate back."""
-    cos_onto: Real = onto.coefficient(e_1) / onto.magnitude()
-    sin_onto: Real = -onto.coefficient(e_2) / onto.magnitude()
-    v_rotated: Vector = rotate(cos_onto, sin_onto, v)
+    angle: sympy.Expr = sympy.atan2(onto.coefficient(e_2), onto.coefficient(e_1))
+    v_rotated: Vector = v.rotate(-angle)
     return (
-        rotate(cos_onto, -sin_onto, Scalar(v_rotated.coefficient(e_1)) * e_1),
-        rotate(cos_onto, -sin_onto, Scalar(v_rotated.coefficient(e_2)) * e_2),
+        (Scalar(v_rotated.coefficient(e_1)) * e_1).rotate(angle).simplified(),
+        (Scalar(v_rotated.coefficient(e_2)) * e_2).rotate(angle).simplified(),
     )
 
 
-s_1: sympy.Symbol
-s_2: sympy.Symbol
-t_1: sympy.Symbol
-t_2: sympy.Symbol
-s_1, s_2, t_1, t_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
-a_symbolic: Vector = Scalar(s_1) * e_1 + Scalar(s_2) * e_2
-b_symbolic: Vector = Scalar(t_1) * e_1 + Scalar(t_2) * e_2
-projection_symbolic: Vector
-rejection_symbolic: Vector
-projection_symbolic, rejection_symbolic = project_and_reject(a_symbolic, b_symbolic)
-
 # %% [markdown]
-# On the x-axis the construction gives back the base case
-# $\operatorname{proj}_{e_1}(b) = b_1 * e_1$:
+# ### On the x-axis the construction gives back the base cases
+#
+# Projecting $b$ onto $e_1$ by the construction:
 
 # %%
-(project_and_reject(1 * e_1, b_symbolic)[0] - Scalar(t_1) * e_1).simplified()
+onto_e_1: tuple[Vector, Vector] = project_and_reject(1 * e_1, b)
+onto_e_1[0]
 
 # %% [markdown]
-# and the base case $\operatorname{rej}_{e_1}(b) = b_2 * e_2$:
+# The base case $\operatorname{proj}_{e_1}(b) = b_1 * e_1$:
 
 # %%
-(project_and_reject(1 * e_1, b_symbolic)[1] - Scalar(t_2) * e_2)
+Scalar(b_1) * e_1
 
 # %% [markdown]
-# The projection formula:
+# Their difference:
 
 # %%
-(
-    projection_symbolic
-    - Scalar((s_1 * t_1 + s_2 * t_2) / (s_1**2 + s_2**2)) * a_symbolic
+(onto_e_1[0] - Scalar(b_1) * e_1).simplified()
+
+# %% [markdown]
+# Rejecting $b$ from $e_1$ by the construction:
+
+# %%
+onto_e_1[1]
+
+# %% [markdown]
+# The base case $\operatorname{rej}_{e_1}(b) = b_2 * e_2$:
+
+# %%
+Scalar(b_2) * e_2
+
+# %% [markdown]
+# Their difference:
+
+# %%
+(onto_e_1[1] - Scalar(b_2) * e_2).simplified()
+
+# %% [markdown]
+# ### The projection formula
+#
+# The construction gave:
+
+# %%
+projection
+
+# %% [markdown]
+# The formula $(a_1 * b_1 + a_2 * b_2) / (a_1^2 + a_2^2) * a$:
+
+# %%
+projection_formula: Vector = (
+    Scalar((a_1 * b_1 + a_2 * b_2) / (a_1**2 + a_2**2)) * a
 ).simplified()
+projection_formula
 
 # %% [markdown]
-# The rejection formula:
+# Their difference:
 
 # %%
-(
-    rejection_symbolic
-    - Scalar((s_1 * t_2 - s_2 * t_1) / (s_1**2 + s_2**2))
-    * a_symbolic.rotate_90_degrees()
+(projection - projection_formula).simplified()
+
+# %% [markdown]
+# ### The rejection formula
+#
+# The construction gave:
+
+# %%
+rejection
+
+# %% [markdown]
+# The formula $(a_1 * b_2 - a_2 * b_1) / (a_1^2 + a_2^2) * r(a; \pi/2)$:
+
+# %%
+rejection_formula: Vector = (
+    Scalar((a_1 * b_2 - a_2 * b_1) / (a_1**2 + a_2**2)) * a.rotate_90_degrees()
 ).simplified()
+rejection_formula
 
 # %% [markdown]
-# The two parts add back to $b$:
+# Their difference:
 
 # %%
-(projection_symbolic + rejection_symbolic - b_symbolic).simplified()
+(rejection - rejection_formula).simplified()
 
 # %% [markdown]
-# Projecting twice changes nothing:
+# ### The two parts add back to $b$
+#
+# Their sum:
 
 # %%
-(
-    project_and_reject(a_symbolic, projection_symbolic)[0] - projection_symbolic
-).simplified()
+(projection + rejection).simplified()
 
 # %% [markdown]
-# The rejection has no part along $a$:
+# and $b$:
 
 # %%
-project_and_reject(a_symbolic, rejection_symbolic)[0].simplified()
+b
 
 # %% [markdown]
-# gacalc's projection agrees:
+# Their difference:
 
 # %%
-(projection_symbolic - b_symbolic.projected_onto(a_symbolic)).simplified()
+(projection + rejection - b).simplified()
 
 # %% [markdown]
-# and gacalc's rejection:
+# ### Projecting twice changes nothing
+#
+# The projection, projected onto $a$ again:
 
 # %%
-(rejection_symbolic - b_symbolic.rejected_away_from(a_symbolic)).simplified()
+projected_twice: Vector = project_and_reject(a, projection)[0]
+projected_twice
+
+# %% [markdown]
+# Its difference from the projection:
+
+# %%
+(projected_twice - projection).simplified()
+
+# %% [markdown]
+# ### The rejection has no part along $a$
+#
+# The rejection, projected onto $a$, is $0$:
+
+# %%
+project_and_reject(a, rejection)[0]
+
+# %% [markdown]
+# ### gacalc agrees
+#
+# gacalc's projection, $(b \cdot a) * a^{-1}$:
+
+# %%
+b.projected_onto(a).simplified()
+
+# %% [markdown]
+# Its difference from the construction's:
+
+# %%
+(projection - b.projected_onto(a)).simplified()
+
+# %% [markdown]
+# gacalc's rejection:
+
+# %%
+b.rejected_away_from(a).simplified()
+
+# %% [markdown]
+# Its difference from the construction's:
+
+# %%
+(rejection - b.rejected_away_from(a)).simplified()
