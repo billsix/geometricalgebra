@@ -115,3 +115,14 @@ Known violations found while writing this task:
    cosine and sine without computing an angle.
 3. **The graph is a hand-written `.dot` file.**
 4. **One node per named result** (projection and rejection separately), not one per page.
+
+## Progress
+
+- Shared helpers added: `nbdisplay.at_values(value, values)` (substitute plot values into a number or
+  multivector) and `standardposition.in_plane(rotation, first, second, v)` (one coordinate-plane turn,
+  now also used inside `project_sp`).
+- Proof companions done: `proof-projection.py` (switched to `at_values`), `proof-rotate-from-a-to-b.py`,
+  `proof-cross.py`, `proof-projection-3d.py`, `proof-reciprocal-frame.py`.
+- Exceptions kept, each with its reason in the notebook: `proof-rotate-from-a-to-b.py`'s `rotate_cs`
+  (decision 2); `proof-reciprocal-frame.py`'s space frame stays numeric (fully symbolic 3D round trips
+  take minutes each).
