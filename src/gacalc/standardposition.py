@@ -48,50 +48,86 @@ from collections.abc import Callable
 
 from gacalc import g2
 from gacalc.base import MultiVectorBase, Real
+from gacalc.functions import InvertibleFunction, Linearity
 
 
-def _rotation_from_to(u: g2.Vector, w: g2.Vector) -> Callable[[g2.Vector], g2.Vector]:
-    """The 2D rotation turning ``u``'s direction onto ``w``'s.
+def rotation_from_to(
+    from_vector: g2.Vector, to_vector: g2.Vector
+) -> InvertibleFunction[g2.Vector]:
+    """The 2D rotation turning ``from_vector``'s direction onto ``to_vector``'s.
 
-    Written as the book writes it, a blend of the vector and its quarter turn,
-    ``cos * v + sin * v.rotate_90_degrees()``, with ``cos`` and ``sin`` read off the
-    coordinates of ``u`` and ``w``.  From the zero vector to the zero vector is the
-    identity; from zero to nonzero, or nonzero to zero, raises ``ValueError``.
+    The book's rotation from one direction to another
+    (``book/docs/proof-rotate-from-a-to-b.rst``), written as the book writes it: a
+    blend of the vector and its quarter turn, ``cos * v + sin * v.rotate_90_degrees()``,
+    with ``cos`` and ``sin`` read off the coordinates of the two vectors.  No angle is
+    computed, and it uses no general projection and no geometric product, so the
+    standard-position projection can be built on it.  Only the directions matter, not
+    the lengths.  The inverse is the rotation from ``to_vector`` to ``from_vector``.
+    From the zero vector to the zero vector is the identity; from zero to nonzero, or
+    nonzero to zero, raises ``ValueError``.
 
     Args:
-        u: the vector the rotation starts from.
-        w: the vector whose direction it ends at.
+        from_vector: the vector the rotation starts from.
+        to_vector: the vector whose direction it ends at.
 
     Returns:
-        Callable[[g2.Vector], g2.Vector]: the rotation.
+        gacalc.functions.InvertibleFunction[g2.Vector]: the rotation, labelled
+        :math:`R_{from}^{to}`.
 
     Raises:
-        ValueError: if exactly one of ``u`` and ``w`` is zero.
+        ValueError: if exactly one of ``from_vector`` and ``to_vector`` is zero.
 
     Examples:
+        >>> from gacalc.functions import inverse
         >>> from gacalc.g2 import Vector, e_1, e_2
-        >>> _rotation_from_to(1 * e_1, 2 * e_2)(3 * e_1 + 4 * e_2) == -4 * e_1 + 3 * e_2
+        >>> R = rotation_from_to(1 * e_1, 2 * e_2)
+        >>> R(3 * e_1 + 4 * e_2) == -4 * e_1 + 3 * e_2
         True
-        >>> _rotation_from_to(Vector.zero(), Vector.zero())(3 * e_1) == 3 * e_1
+        >>> inverse(R)(-4 * e_1 + 3 * e_2) == 3 * e_1 + 4 * e_2
         True
-        >>> _rotation_from_to(Vector.zero(), 1 * e_1)  # doctest: +ELLIPSIS
+        >>> rotation_from_to(Vector.zero(), Vector.zero())(3 * e_1) == 3 * e_1
+        True
+        >>> rotation_from_to(Vector.zero(), 1 * e_1)  # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
         ValueError: ...cannot rotate between the zero vector and a nonzero vector...
     """
-    MultiVectorBase.require_rotation_endpoints(u, w)
-    if u == g2.Vector.zero():
-        return lambda v: v
-    scale: Real = u.magnitude() * w.magnitude()
-    cos: Real = (u.coeff_e_1 * w.coeff_e_1 + u.coeff_e_2 * w.coeff_e_2) / scale
-    sin: Real = (u.coeff_e_1 * w.coeff_e_2 - u.coeff_e_2 * w.coeff_e_1) / scale
+    MultiVectorBase.require_rotation_endpoints(from_vector, to_vector)
+    label_from: str = from_vector._repr_latex_().strip("$")
+    label_to: str = to_vector._repr_latex_().strip("$")
+    if from_vector == g2.Vector.zero():
+        return InvertibleFunction(
+            func=lambda v: v,
+            latex_repr=f"R_{{{label_from}}}^{{{label_to}}}",
+            inverse=lambda v: v,
+            latex_repr_inv=f"R_{{{label_to}}}^{{{label_from}}}",
+            linearity=Linearity.LINEAR,
+        )
+    scale: Real = from_vector.magnitude() * to_vector.magnitude()
+    cos: Real = (
+        from_vector.coeff_e_1 * to_vector.coeff_e_1
+        + from_vector.coeff_e_2 * to_vector.coeff_e_2
+    ) / scale
+    sin: Real = (
+        from_vector.coeff_e_1 * to_vector.coeff_e_2
+        - from_vector.coeff_e_2 * to_vector.coeff_e_1
+    ) / scale
 
-    def rotate(v: g2.Vector) -> g2.Vector:
-        # rotate_90_degrees swaps coordinates, (x, y) -> (-y, x); it does not
-        # multiply by e_12, so this rotation uses no geometric product.
+    # rotate_90_degrees swaps coordinates, (x, y) -> (-y, x); it does not multiply by
+    # e_12, so neither direction uses the geometric product.
+    def forward(v: g2.Vector) -> g2.Vector:
         return g2.Scalar(cos) * v + g2.Scalar(sin) * v.rotate_90_degrees()
 
-    return rotate
+    def backward(v: g2.Vector) -> g2.Vector:
+        return g2.Scalar(cos) * v - g2.Scalar(sin) * v.rotate_90_degrees()
+
+    return InvertibleFunction(
+        func=forward,
+        latex_repr=f"R_{{{label_from}}}^{{{label_to}}}",
+        inverse=backward,
+        latex_repr_inv=f"R_{{{label_to}}}^{{{label_from}}}",
+        linearity=Linearity.LINEAR,
+    )
 
 
 def _project_via_standard_position(
@@ -142,16 +178,16 @@ def _project_via_standard_position(
 
     def align(v: MultiVectorBase) -> MultiVectorBase:
         return in_xz_plane(
-            _rotation_from_to(tilt, tilt_on_x_axis),
-            in_xy_plane(_rotation_from_to(shadow, shadow_on_x_axis), v),
+            rotation_from_to(tilt, tilt_on_x_axis),
+            in_xy_plane(rotation_from_to(shadow, shadow_on_x_axis), v),
         )
 
     def rotate_back(v: MultiVectorBase) -> MultiVectorBase:
         # Each rotation is undone by the one between the same vectors, the other
         # way round; the two are undone in the reverse order.
         return in_xy_plane(
-            _rotation_from_to(shadow_on_x_axis, shadow),
-            in_xz_plane(_rotation_from_to(tilt_on_x_axis, tilt), v),
+            rotation_from_to(shadow_on_x_axis, shadow),
+            in_xz_plane(rotation_from_to(tilt_on_x_axis, tilt), v),
         )
 
     # align(b) = |b| * e_1, so projecting onto it is "keep the x-component":

@@ -12,6 +12,10 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`standardposition.rotation_from_to(from_vector, to_vector)`** — the 𝒢₂ rotation from one
+  direction to another, built as `book/docs/proof-rotate-from-a-to-b.rst` builds it (cosine and sine
+  read off the coordinates; no general projection, no geometric product), as an
+  `InvertibleFunction` whose inverse rotates back. It was the private `_rotation_from_to`.
 - **`gacalc.nbdisplay`** — display-only notebook helpers (no matplotlib): `show_mult(a, b)`
   and `product_table_markdown(a, b)`. `gacalc.nbplotutils.show_mult` still works (re-exported);
   the table is now built without pandas.
