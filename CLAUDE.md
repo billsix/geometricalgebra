@@ -579,10 +579,13 @@ A base case the general operation is built from keeps the operation's name, with
 argument (`r(v; π/2)` before `r(v; θ)`; `proj_{e₁}(b)` before `proj_a(b)`). It is stated directly
 as its own equation, never derived from the general case
 (`tasks/reference/reduction-to-standard-position.md`, "Base case, then general case"). A page's
-companion notebook works the derivation with set values in one cell (readers change them and rerun),
-draws each step with live ePiX, and checks one subtraction per cell, first on the values and then
-with symbolic coordinates. Detail: `tasks/reference/book-outline.md` ("Pedagogical principles"; William Emerison Six
-<billsix@gmail.com>, 2026-11-16). How a notebook's cells teach (the guided-lab style modelled on
+companion notebook computes every step with symbolic coordinates, uses numbers only to draw each step
+with live ePiX, and shows both sides of each check before their difference (William Emerison Six
+<billsix@gmail.com>, 2026-11-17). Every construction uses only results taught before it, and rotations
+come from the ones the book built (`Vector.rotate`, `standardposition.rotation_from_to`): the rule, the
+teaching order and the dependency graph on the book's first page are in
+`tasks/reference/teaching-order-and-dependencies.md`. Detail: `tasks/reference/book-outline.md`
+("Pedagogical principles"). How a notebook's cells teach (the guided-lab style modelled on
 `notebooks/displaymv.py`'s opening sections): `tasks/reference/book-notebook-teaching-style.md`.
 
 ## Coordinates only when needed

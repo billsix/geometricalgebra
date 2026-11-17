@@ -16,6 +16,15 @@ The book's two halves follow the plane first and space second. Part I stays in t
 rotation, the geometric product, projection, reflection, and the algebra behind them. Part II
 starts again from the geometric product in three dimensions.
 
+How the results build on each other
+-----------------------------------
+
+Each result is built only from results before it. A solid arrow from one box to another means
+the second is built from the first; a dashed arrow means the second is checked against the
+first. Part III rebuilds the plane from scratch, so it is its own chain.
+
+.. graphviz:: proof-dependencies.dot
+
 .. toctree::
    :maxdepth: 2
    :numbered:

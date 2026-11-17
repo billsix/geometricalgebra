@@ -1,0 +1,78 @@
+// Which results the book builds on which, one node per named result.
+// A solid arrow X -> Y: Y's construction uses X. A dashed arrow X -> Y: Y is checked
+// against X, but not built from it. The second line of each node is the page that
+// proves it. Kept by hand; the rules it encodes are in
+// tasks/reference/teaching-order-and-dependencies.md, which says how to update it.
+digraph proof_dependencies {
+    graph [rankdir=TB, fontname="Helvetica", fontsize=11, nodesep=0.25, ranksep=0.35];
+    node [shape=box, style="rounded", fontname="Helvetica", fontsize=10];
+    edge [color="#555555"];
+
+    subgraph cluster_part_1_2 {
+        label="Parts I and II: the plane, then space";
+        quarter [label="Quarter turn r(v; π/2)\nproof-rotate"];
+        rotation_by_angle [label="Rotation by an angle r(v; θ)\nproof-rotate"];
+        commute [label="2D rotations commute\nproof-rotate-from-a-to-b"];
+        rotation_from_to [label="Rotation from a to b, R_a^b\nproof-rotate-from-a-to-b"];
+        base_projection [label="Projection and rejection onto e₁\n(base cases), projection"];
+        projection [label="Projection proj_b(a)\nproof-projection"];
+        rejection [label="Rejection rej_b(a)\nproof-projection"];
+        rotation_as_product [label="Rotation is a product, a * R\ngeometric-product"];
+        product_from_projection [label="b * a = |b| * (x + y * e₁₂)\nproduct-from-projection"];
+        dot_and_wedge [label="a * b = a · b + a ∧ b\nproduct-from-projection,\nlevels-of-abstraction"];
+        rotor_from_vectors [label="Rotor from two vectors, â * b̂\nrotation-from-vectors"];
+        product_in_space [label="The product in space splits\ninto dot and wedge\nthree-dimensions"];
+        projection_in_space [label="Projection in space,\none plane at a time\nproof-projection-3d"];
+        cross [label="Cross product by\nstandard position\nproof-cross"];
+        frames [label="Frames: orthogonal set, QR,\nthe peel inverse\nframes-qr"];
+        reciprocal_frame [label="Reciprocal frame aᵏ\nproof-reciprocal-frame"];
+
+        quarter -> rotation_by_angle;
+        rotation_by_angle -> commute;
+        rotation_by_angle -> rotation_from_to;
+        commute -> rotation_from_to;
+        rotation_from_to -> projection;
+        rotation_from_to -> rejection;
+        base_projection -> projection;
+        base_projection -> rejection;
+        quarter -> rotation_as_product;
+        rotation_by_angle -> rotation_as_product [style=dashed];
+        rotation_from_to -> product_from_projection;
+        projection -> product_from_projection;
+        rejection -> product_from_projection;
+        rotation_as_product -> product_from_projection [style=dashed];
+        product_from_projection -> dot_and_wedge;
+        dot_and_wedge -> rotor_from_vectors;
+        rotation_as_product -> rotor_from_vectors;
+        rotation_from_to -> rotor_from_vectors [style=dashed];
+        dot_and_wedge -> product_in_space;
+        rotation_from_to -> projection_in_space;
+        base_projection -> projection_in_space;
+        projection -> projection_in_space [style=dashed];
+        rotation_from_to -> cross;
+        product_in_space -> cross [style=dashed];
+        projection -> frames;
+        rejection -> frames;
+        frames -> reciprocal_frame;
+        dot_and_wedge -> reciprocal_frame;
+    }
+
+    subgraph cluster_part_3 {
+        label="Part III: the 2D bootstrap, from scratch";
+        step_1 [label="Step 1: rotation by an angle\nbootstrap-rotation"];
+        step_2 [label="Step 2: projection,\nfrom rotation\nbootstrap-projection"];
+        step_3 [label="Step 3: rotation from\none vector to another,\nfrom projection\nbootstrap-rotation-from-projection"];
+        step_4 [label="Step 4: the product,\nfrom projection\nbootstrap-product"];
+        step_5 [label="Step 5: projection,\nthrough the product\nbootstrap-projection-from-product"];
+        step_6 [label="Step 6: rotation,\nthrough the product\nbootstrap-rotation-from-product"];
+
+        step_1 -> step_2;
+        step_1 -> step_3;
+        step_2 -> step_3;
+        step_2 -> step_4;
+        step_4 -> step_5;
+        step_2 -> step_5 [style=dashed];
+        step_4 -> step_6;
+        step_3 -> step_6 [style=dashed];
+    }
+}
