@@ -9,12 +9,12 @@
 # %% [markdown]
 # # Step 5, projection through the product — worked example
 #
-# Companion to *Step 5: Projection, through the Product*. The next cell sets two
-# vectors. Every step after it is computed from them and drawn: the inverse of $a$, then
-# the projection $(b \cdot a) * a^{-1}$ and the rejection $(b \wedge a) * a^{-1}$, which
-# match Step 2's construction by rotation. Change the vectors and rerun the notebook to
-# see the same steps for others. The last section repeats the checks with every
-# coordinate a symbol, so they hold for all vectors.
+# Companion to *Step 5: Projection, through the Product*. Every step is computed with
+# symbolic coordinates, so each result is a formula for every $a$ and $b$: the inverse
+# of $a$, then the projection $(b \cdot a) * a^{-1}$ and the rejection
+# $(b \wedge a) * a^{-1}$, which match Step 2's construction by rotation. Numbers appear
+# only to draw the figure; change them and rerun. Each check shows both sides, then
+# their difference.
 
 # %%
 import pathlib
@@ -41,35 +41,31 @@ from _bootstrap_live import (
 
 from gacalc.base import MultiVectorBase, Real
 from gacalc.g2 import Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import show_mult
+from gacalc.nbdisplay import at_values, show_mult
 
 # %% [markdown]
 # ## The vectors
 #
-# Change these and rerun.
+# $a$ and $b$, every coordinate a symbol:
 
 # %%
-a: Vector = 2 * e_1 + 1 * e_2
-b: Vector = 1 * e_1 + 2 * e_2
-
+a_1: sympy.Symbol
+a_2: sympy.Symbol
+b_1: sympy.Symbol
+b_2: sympy.Symbol
+a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
+a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
+a
 
 # %%
-def rotate(cos: Real, sin: Real, v: Vector) -> Vector:
-    """Rotate ``v`` by the angle with cosine ``cos`` and sine ``sin`` (Step 1)."""
-    return Scalar(cos) * v + Scalar(sin) * v.rotate_90_degrees()
+b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
+b
 
+# %% [markdown]
+# The values used to draw the figure. Change them and rerun.
 
-def project_and_reject_by_rotation(onto: Vector, v: Vector) -> tuple[Vector, Vector]:
-    """Step 2's construction: rotate ``onto`` to the x-axis, apply the base cases,
-    rotate back."""
-    cos: Real = onto.coefficient(e_1) / onto.magnitude()
-    sin: Real = -onto.coefficient(e_2) / onto.magnitude()
-    v_rotated: Vector = rotate(cos, sin, v)
-    return (
-        rotate(cos, -sin, Scalar(v_rotated.coefficient(e_1)) * e_1),
-        rotate(cos, -sin, Scalar(v_rotated.coefficient(e_2)) * e_2),
-    )
-
+# %%
+values: list[tuple[sympy.Symbol, Real]] = [(a_1, 2), (a_2, 1), (b_1, 1), (b_2, 2)]
 
 # %% [markdown]
 # ## The inverse of a vector
@@ -78,21 +74,27 @@ def project_and_reject_by_rotation(onto: Vector, v: Vector) -> tuple[Vector, Vec
 # $1 / |a|$.
 
 # %%
-a_inverse: Vector = a.inverse()
+a_inverse: Vector = a.inverse().simplified()
 a_inverse
+
+# %% [markdown]
+# At the plot values:
+
+# %%
+at_values(a_inverse, values)
 
 # %% [markdown]
 # ## The projection through the product
 #
 # $\operatorname{proj}_a(b) = (b \cdot a) * a^{-1}$, where $b \cdot a$ is the
-# plain-number part of $b * a$.
-
-# %% [markdown]
-# $b * a$ term by term. Its plain-number part, the sum of the $e_1 * e_1$ and
-# $e_2 * e_2$ rows, is $b \cdot a$:
+# plain-number part of $b * a$. $b * a$ term by term; its plain-number part, the sum of
+# the $e_1 * e_1$ and $e_2 * e_2$ rows, is $b \cdot a$:
 
 # %%
 show_mult(b, a)
+
+# %% [markdown]
+# The projection:
 
 # %%
 b_dot_a: Real = (b * a).scalar_part()
@@ -100,26 +102,38 @@ projection: Vector = (Scalar(b_dot_a) * a_inverse).simplified()
 projection
 
 # %% [markdown]
-# ## The rejection, the same way
-#
-# $\operatorname{rej}_a(b) = (b \wedge a) * a^{-1}$.
+# At the plot values:
+
+# %%
+at_values(projection, values)
 
 # %% [markdown]
-# $(b \wedge a) * a^{-1}$ term by term: $e_{12}$ times each term of $a^{-1}$ is a
-# quarter turn of that term, so the result is a vector again:
+# ## The rejection, the same way
+#
+# $\operatorname{rej}_a(b) = (b \wedge a) * a^{-1}$. Term by term: $e_{12}$ times each
+# term of $a^{-1}$ is a quarter turn of that term, so the result is a vector again.
 
 # %%
 show_mult(b.wedge(a), a_inverse)
+
+# %% [markdown]
+# The rejection:
 
 # %%
 rejection: MultiVectorBase = (b.wedge(a) * a_inverse).simplified()
 rejection
 
+# %% [markdown]
+# At the plot values:
+
 # %%
-P_A: Point = point(coordinates=list(a))
-P_B: Point = point(coordinates=list(b))
-P_INVERSE: Point = point(coordinates=list(a_inverse))
-P_PROJECTION: Point = point(coordinates=list(projection))
+at_values(rejection, values)
+
+# %%
+P_A: Point = point(coordinates=list(at_values(a, values)))
+P_B: Point = point(coordinates=list(at_values(b, values)))
+P_INVERSE: Point = point(coordinates=list(at_values(a_inverse, values)))
+P_PROJECTION: Point = point(coordinates=list(at_values(projection, values)))
 fig_product: PendingFigure
 with scene_around(points=[P_A, P_B]) as fig_product:
     arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
@@ -152,106 +166,135 @@ with scene_around(points=[P_A, P_B]) as fig_product:
 fig_product
 
 # %% [markdown]
-# ## Checks on these vectors
+# ## Checks, for all vectors
 #
-# Each cell subtracts two things and shows the difference, $0$ when they agree.
+# Step 2 built the projection and rejection by rotating, with Step 1's rotation by minus
+# the angle of $a$ and back. Here it is as one function, to compare against.
+
+
+# %%
+def project_and_reject_by_rotation(onto: Vector, v: Vector) -> tuple[Vector, Vector]:
+    """Step 2's construction: rotate ``onto`` to the x-axis, apply the base cases,
+    rotate back."""
+    angle: sympy.Expr = sympy.atan2(onto.coefficient(e_2), onto.coefficient(e_1))
+    v_rotated: Vector = v.rotate(-angle)
+    return (
+        (Scalar(v_rotated.coefficient(e_1)) * e_1).rotate(angle).simplified(),
+        (Scalar(v_rotated.coefficient(e_2)) * e_2).rotate(angle).simplified(),
+    )
+
+
+# %% [markdown]
+# ### $a^{-1} = a / |a|^2$
 #
-# $a * a^{-1} = 1$:
+# $a^{-1}$ was:
+
+# %%
+a_inverse
+
+# %% [markdown]
+# $a / |a|^2$:
+
+# %%
+(Scalar(1 / (a_1**2 + a_2**2)) * a).simplified()
+
+# %% [markdown]
+# Their difference:
+
+# %%
+(a_inverse - Scalar(1 / (a_1**2 + a_2**2)) * a).simplified()
+
+# %% [markdown]
+# ### $a * a^{-1} = 1$
+#
+# $a * a^{-1}$:
+
+# %%
+(a * a_inverse).simplified()
+
+# %% [markdown]
+# Its difference from $1$:
 
 # %%
 (a * a_inverse - Scalar(1)).simplified()
 
 # %% [markdown]
-# The projection through the product is Step 2's projection, built by rotating:
+# ### The product's projection and rejection are Step 2's
+#
+# Step 2's projection, by rotating:
 
 # %%
 by_rotation_projection: Vector
 by_rotation_rejection: Vector
 by_rotation_projection, by_rotation_rejection = project_and_reject_by_rotation(a, b)
+by_rotation_projection
+
+# %% [markdown]
+# The projection through the product was:
+
+# %%
+projection
+
+# %% [markdown]
+# Their difference:
+
+# %%
 (projection - by_rotation_projection).simplified()
 
 # %% [markdown]
-# The rejection through the product is Step 2's rejection:
+# Step 2's rejection, by rotating:
+
+# %%
+by_rotation_rejection
+
+# %% [markdown]
+# The rejection through the product was:
+
+# %%
+rejection
+
+# %% [markdown]
+# Their difference:
 
 # %%
 (rejection - by_rotation_rejection).simplified()
 
 # %% [markdown]
-# Together they give back $b$, since $b * a * a^{-1} = b$:
+# ### Together they give back $b$, since $b * a * a^{-1} = b$
+#
+# Their sum:
+
+# %%
+(projection + rejection).simplified()
+
+# %% [markdown]
+# Its difference from $b$:
 
 # %%
 (projection + rejection - b).simplified()
 
 # %% [markdown]
-# gacalc's projection agrees:
+# ### gacalc agrees
+#
+# gacalc's projection:
+
+# %%
+b.projected_onto(a).simplified()
+
+# %% [markdown]
+# Its difference from the product's:
 
 # %%
 (projection - b.projected_onto(a)).simplified()
 
 # %% [markdown]
-# and gacalc's rejection:
+# gacalc's rejection:
+
+# %%
+b.rejected_away_from(a).simplified()
+
+# %% [markdown]
+# Its difference from the product's:
 
 # %%
 (rejection - b.rejected_away_from(a)).simplified()
-
-# %% [markdown]
-# ## For all vectors
-#
-# The same steps with every coordinate a symbol. Each cell checks one fact.
-
-# %%
-a_1: sympy.Symbol
-a_2: sympy.Symbol
-b_1: sympy.Symbol
-b_2: sympy.Symbol
-a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
-a_symbolic: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
-b_symbolic: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
-projection_symbolic: Vector = (
-    Scalar((b_symbolic * a_symbolic).scalar_part()) * a_symbolic.inverse()
-)
-rejection_symbolic: MultiVectorBase = (
-    b_symbolic.wedge(a_symbolic) * a_symbolic.inverse()
-)
-by_rotation_projection_symbolic: Vector
-by_rotation_rejection_symbolic: Vector
-by_rotation_projection_symbolic, by_rotation_rejection_symbolic = (
-    project_and_reject_by_rotation(a_symbolic, b_symbolic)
-)
-
-# %% [markdown]
-# $b * a$ term by term, for every $a$ and $b$; its plain-number part is
-# $a_1 * b_1 + a_2 * b_2$:
-
-# %%
-show_mult(b_symbolic, a_symbolic)
-
-# %% [markdown]
-# $a^{-1} = a / |a|^2$:
-
-# %%
-(a_symbolic.inverse() - Scalar(1 / (a_1**2 + a_2**2)) * a_symbolic).simplified()
-
-# %% [markdown]
-# $a * a^{-1} = 1$:
-
-# %%
-(a_symbolic * a_symbolic.inverse() - Scalar(1)).simplified()
-
-# %% [markdown]
-# The projection through the product is Step 2's projection:
-
-# %%
-(projection_symbolic - by_rotation_projection_symbolic).simplified()
-
-# %% [markdown]
-# The rejection through the product is Step 2's rejection:
-
-# %%
-(rejection_symbolic - by_rotation_rejection_symbolic).simplified()
-
-# %% [markdown]
-# Together they give back $b$:
-
-# %%
-(projection_symbolic + rejection_symbolic - b_symbolic).simplified()
