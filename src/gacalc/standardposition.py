@@ -71,7 +71,7 @@ def rotation_from_to(
         to_vector: the vector whose direction it ends at.
 
     Returns:
-        InvertibleFunction[g2.Vector]: the rotation, labelled
+        gacalc.functions.InvertibleFunction[g2.Vector]: the rotation, labelled
         :math:`R_{from}^{to}`.
 
     Raises:

@@ -1,6 +1,6 @@
 # Bring the book notebooks to the proof-projection model: symbolic, both sides shown, taught rotations only
 
-**Status:** proposed — needs go-ahead (open questions below)
+**Status:** approved — open questions answered, not started
 **Priority:** 3
 **Difficulty:** 6
 **Created:** 2026-11-17 (William Emerison Six <billsix@gmail.com>)
@@ -39,6 +39,8 @@ are updated.
    the cell on one value and put the next in its own cell (already in the teaching-style doc).
 5. **Live ePiX figures for each step**, drawn from the symbolic results at the plot values (the
    `plot_point` helper in `proof-projection.py`; `book/figures/epix/_bootstrap_live.py` for the scene).
+   Where arrows meet tip to tip, draw the result first and its parts after, so the parts' heads sit on
+   top (`tasks/arrowheads-past-their-points.md`, decision 2).
 6. **Rotations only through what the book has taught.** Use the rotation by an angle
    (`g2.Vector.rotate(θ)`, `book/docs/proof-rotate.rst`) or the rotation from one direction to another
    (`standardposition.rotation_from_to(from_vector, to_vector)`, `book/docs/proof-rotate-from-a-to-b.rst`,
@@ -104,16 +106,12 @@ Known violations found while writing this task:
    - A new or updated reference doc holding the teaching order and the graph's source of truth, so a
      later construction can be checked against what precedes it.
 
-## Open questions
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-17)
 
-1. **Scope:** all 19 notebooks above in this task, or the proof companions and Part III first, with
-   Part I/II and the frame notebooks as a second task? Recommended: one task, worked proof companions
-   → Part III → Part I/II → frames, with a commit per notebook.
-2. **`proof-rotate-from-a-to-b.py`'s `rotate_cs`:** keep it as the one documented exception (the page
-   builds the rotation from a cosine and sine on purpose), or rewrite the notebook on
-   `Vector.rotate(θ)` with the angles named? Recommended: keep it, with a sentence in the notebook
-   saying why.
-3. **Graph format:** a hand-written `.dot` file, or one generated from a table in a reference doc?
-   Recommended: hand-written `.dot`, small enough to read and review.
-4. **Graph granularity:** one node per book page with a proof, or one per named result (several per
-   page, e.g. projection and rejection separately)? Recommended: one per named result.
+1. **One task** for all 19 notebooks, worked proof companions → Part III → Part I/II → frames, with a
+   commit per notebook.
+2. **`proof-rotate-from-a-to-b.py` keeps `rotate_cs`** as the one documented exception, with a
+   sentence in the notebook saying why: the page builds the direction-to-direction rotation from a
+   cosine and sine without computing an angle.
+3. **The graph is a hand-written `.dot` file.**
+4. **One node per named result** (projection and rejection separately), not one per page.

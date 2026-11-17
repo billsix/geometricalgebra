@@ -82,7 +82,9 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   inherited the first one's state. The Part III notebooks' `book/figures/epix/_bootstrap_live.py`
   `scene_around` also calls `epix.fit_bounds` (the box and size that fit a set of points), which
   needs `EPIX_COMMIT` at `8cb788a…` or later (pinned 2026-11-16; epix-mirror
-  `tasks/figure-fit-to-points.md`). The first notebooks to use live figures are
+  `tasks/archive/2026/11/16/figure-fit-to-points.md`). Arrowheads end exactly on their points
+  (the stroked tip was overshooting by about 2.7 pen widths) from `EPIX_COMMIT` `8fe7ff3…` on
+  (pinned 2026-11-17; epix-mirror `tasks/archive/2026/11/17/arrowheads-end-on-their-points.md`). The first notebooks to use live figures are
   `notebooks/frame-qr-2d.py` / `frame-qr-3d.py` (`frames-qr.rst`). They add
   `book/figures/epix/` to `sys.path` to import `_frame_scene`; `pyproject.toml` lists that
   directory in ty's `extra-paths` and exempts those two files from E402. Pick per page: the
