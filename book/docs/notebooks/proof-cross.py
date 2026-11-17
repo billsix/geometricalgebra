@@ -49,7 +49,7 @@ from gacalc.base import Real
 from gacalc.functions import InvertibleFunction, inverse
 from gacalc.g3 import Scalar, Vector, e_1, e_2, e_3
 from gacalc.nbdisplay import at_values
-from gacalc.standardposition import rotation_from_to
+from gacalc.standardposition import in_plane, rotation_from_to
 from gacalc.vectorcalc import cross
 
 # %% [markdown]
@@ -101,27 +101,9 @@ fig_given
 #
 # Each of the three turns is the rotation from one direction to another of *Proof:
 # Rotate from the Direction of a to the Direction of b* (`rotation_from_to`), applied
-# in one coordinate plane: copy that plane's two coordinates into a 2D vector, rotate
-# it, and write the pair back, leaving the third coordinate alone.
-
-
-# %%
-def in_plane(
-    rotation: InvertibleFunction[g2.Vector], first: Vector, second: Vector, v: Vector
-) -> Vector:
-    """``rotation`` applied to ``v``'s coordinates along ``first`` and ``second``."""
-    turned: g2.Vector = rotation(
-        g2.Scalar(v.coefficient(first)) * g2.e_1
-        + g2.Scalar(v.coefficient(second)) * g2.e_2
-    )
-    return (
-        v
-        - Scalar(v.coefficient(first)) * first
-        - Scalar(v.coefficient(second)) * second
-        + Scalar(turned.coefficient(g2.e_1)) * first
-        + Scalar(turned.coefficient(g2.e_2)) * second
-    )
-
+# in one coordinate plane by `in_plane(rotation, first, second, v)`: it copies $v$'s
+# coordinates along the two basis vectors into a 2D vector, rotates it, and writes the
+# pair back, leaving the third coordinate alone.
 
 # %% [markdown]
 # ## Step 1: swing $a$'s shadow in the $e_1 e_2$ plane onto the x-axis

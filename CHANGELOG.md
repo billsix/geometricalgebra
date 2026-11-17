@@ -16,6 +16,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   direction to another, built as `book/docs/proof-rotate-from-a-to-b.rst` builds it (cosine and sine
   read off the coordinates; no general projection, no geometric product), as an
   `InvertibleFunction` whose inverse rotates back. It was the private `_rotation_from_to`.
+- **`standardposition.in_plane(rotation, first, second, v)`** — a 2D rotation applied to a vector's
+  coordinates along two basis vectors (the rest left alone): one coordinate-plane turn of the
+  standard-position constructions, which `project_sp` / `reject_sp` now use.
 - **`nbdisplay.at_values(value, values)`** — a number or multivector with `(symbol, number)` pairs
   substituted, for drawing a symbolic notebook's figures at chosen values.
 - **`gacalc.nbdisplay`** — display-only notebook helpers (no matplotlib): `show_mult(a, b)`

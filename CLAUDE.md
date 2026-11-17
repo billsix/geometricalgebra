@@ -67,7 +67,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   canonical Hestenes `project`/`reject`, proven equal in `proofs/GacalcProofs/StandardPosition.lean`
   (`projectSP_eq_proj` / `rejectSP_eq_reject`). Also `rotation_from_to(from_vector, to_vector)`, the
   book's 𝒢₂ direction-to-direction rotation (no general projection, no geometric product) as an
-  `InvertibleFunction`, which the projection proof builds on. See `tasks/reference/reduction-to-standard-position.md`.
+  `InvertibleFunction`, which the projection proof builds on, and `in_plane(rotation, first, second,
+  v)`, which applies a 2D rotation in the plane of two basis vectors (one turn of the 3D constructions). See `tasks/reference/reduction-to-standard-position.md`.
 - **The 𝒢₂ quarter turn** (generated into `g2.py` only): `Vector.rotate_90_degrees()` + the
   module-level `rotate_90_degrees()` factory — both `= v * e_12` (the unit pseudoscalar,
   `(x, y) -> (-y, x)`), exact, 𝒢₂-only. Rationale: `tasks/reference/design-decisions.md`,
