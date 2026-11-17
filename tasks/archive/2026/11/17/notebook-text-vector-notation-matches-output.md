@@ -190,3 +190,9 @@ figure scripts:
   - The test suite (`-m "not slow"`): 1367 passed.
   - `pyright notebooks/` (`make check-notebooks`): 0 errors.
   - The book build: `docs.sh` exit 0, with the same 39 harmless skew-character lines as before.
+
+## The scripts
+
+`tasks/adhoc/notebook-text-vector-notation-matches-output/rewrite.py` and `reflow.py` were deleted at
+archive, as one-shot scripts. Their final versions are in commit `968eec6`. `reflow.py`'s logic lives
+on as `tools/check_notebook_prose_width.py`.
