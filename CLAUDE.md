@@ -48,9 +48,9 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   lengths factored out) as projections read with `transforms.coordinate_along`;
   `to_invertible_function(inverse_method=InverseMethod.RECIPROCAL | InverseMethod.PEEL)` maps `e_i ↦ v_i` and inverts it
   either through the reciprocal frame (`reciprocal_frame`, H&S eq 3.7; the default) or by a `match`
-  recursion that peels the frame from its last vector. Both read each term with
-  `transforms.line_to_line_projection` (the point on `v_i`'s line whose projection onto a normal `m`
-  matches `y`'s). Math, the orthonormal-vs-orthogonal measurements and the symbolic-cost timings:
+  recursion that peels the frame from its last vector. Both read each coordinate as
+  `transforms.coordinate_along(P_m(y), along=P_m(v_i))`, for a normal `m` perpendicular to every frame
+  vector but `v_i`. Math, the orthonormal-vs-orthogonal measurements and the symbolic-cost timings:
   `tasks/reference/frames-qr-and-reciprocal-frames.md`.
 - `src/gacalc/measure.py` — the named **measures** (Williamson & Trotter 1979):
   `area`/`volume`/`content` (+ `content_by_rejection`) and the **signed** determinants

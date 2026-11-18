@@ -42,7 +42,7 @@ import numpy as np
 
 from gacalc.base import MultiVectorBase, Real, describe_caller, validation_guard
 from gacalc.functions import InvertibleFunction, Linearity
-from gacalc.transforms import coordinate_along, line_to_line_projection
+from gacalc.transforms import coordinate_along
 
 
 def are_linearly_independent(
@@ -826,12 +826,14 @@ class Frame:
 
         Both read a coordinate the same way.  If a vector ``n`` is perpendicular to
         every frame vector except ``v_i``, projecting ``y`` onto ``n`` sees only the
-        ``x_i * v_i`` term: ``P_n(y) = x_i * P_n(v_i)``.  The point on ``v_i``'s line
-        whose projection onto ``n`` is ``P_n(y)`` is therefore ``x_i * v_i``; that is
-        the inverse of :func:`~gacalc.transforms.line_to_line_projection` from
-        ``v_i`` to ``n``, and :func:`~gacalc.transforms.coordinate_along` reads
-        ``x_i`` off it.  (In coordinates ``x_i = (n · y) / (n · v_i)``: two heights,
-        one divided by the other.)  The methods differ in which ``n`` they use.
+        ``x_i * v_i`` term: ``P_n(y) = x_i * P_n(v_i)``.  So ``x_i`` is the coordinate
+        of ``P_n(y)`` along ``P_n(v_i)``, which
+        :func:`~gacalc.transforms.coordinate_along` reads off: two heights, one
+        divided by the other, ``x_i = (n · y) / (n · v_i)``.  (Geometrically,
+        ``x_i * v_i`` is the point on ``v_i``'s line whose projection onto ``n`` is
+        ``P_n(y)``: the inverse of
+        :func:`~gacalc.transforms.line_to_line_projection` from ``v_i`` to ``n``.)
+        The methods differ in which ``n`` they use.
 
         ``inverse_method=InverseMethod.RECIPROCAL`` (the default) uses the
         **reciprocal frame** ``v¹ … vᵏ`` (:meth:`reciprocal_vectors`, H&S p. 28):
@@ -949,17 +951,18 @@ class Frame:
         # Why one dot product per coordinate is enough (similar right triangles):
         # tasks/reference/frames-qr-and-reciprocal-frames.md, "Why one dot product
         # reads off an oblique coordinate: similar right triangles".
-        def term_and_coordinate(
+        def coordinate(
             y: MultiVectorBase, v: MultiVectorBase, m: MultiVectorBase
-        ) -> tuple[MultiVectorBase, Real]:
-            # y's term along v, x * v, and its coordinate x, for an m perpendicular to
-            # every frame vector but v: the point on v's line whose projection onto m
-            # matches y's.  Float input checks "on the line" with a tolerance.
-            tolerant: bool = _has_float((y, v, m))
-            term: MultiVectorBase = line_to_line_projection(
-                from_vector=v, to_vector=m, float_close_to_zero=tolerant
-            ).inverse(y.projected_onto(m))
-            return term, coordinate_along(term, along=v, float_close_to_zero=tolerant)
+        ) -> Real:
+            # y's coordinate x along the frame vector v, for an m perpendicular to every
+            # frame vector but v: P_m(y) = x * P_m(v), so x is the coordinate of the one
+            # projection along the other.  Float input checks "on the line" with a
+            # tolerance.
+            return coordinate_along(
+                y.projected_onto(m),
+                along=v.projected_onto(m),
+                float_close_to_zero=_has_float((y, v, m)),
+            )
 
         def backward_by_reciprocal(
             reciprocal_vectors: tuple[MultiVectorBase, ...], y: MultiVectorBase
@@ -970,7 +973,7 @@ class Frame:
             # enumerate(start=1).
             return sum(
                 (
-                    cls.basis_vector(i) * term_and_coordinate(y, v=v, m=v_upper)[1]
+                    cls.basis_vector(i) * coordinate(y, v=v, m=v_upper)
                     for i, (v, v_upper) in enumerate(
                         zip(self.vectors, reciprocal_vectors, strict=True), start=1
                     )
@@ -995,10 +998,8 @@ class Frame:
                         # the term leaves a y built from the earlier vectors alone;
                         # solve those coordinates the same way, and put this one
                         # after them.
-                        term: MultiVectorBase
-                        x_last: Real
-                        term, x_last = term_and_coordinate(y, v=v, m=w)
-                        return [*peel(earlier, y - term), x_last]
+                        x_last: Real = coordinate(y, v=v, m=w)
+                        return [*peel(earlier, y - v * x_last), x_last]
                     case _:
                         # Unreachable: [] and [*earlier, last] cover every list.  Kept
                         # as the total default because ty does not prove list-pattern
