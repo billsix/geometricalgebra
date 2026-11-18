@@ -675,8 +675,9 @@ Open issues (genuinely open; resolution history lives in git + archived task doc
    signatures — a hard limit (the classes are explicitly 𝒢ₙ over ℝⁿ).
 2. **`inverse` is scoped to blades/versors**: `Ã/|A|²` is correct for a blade or versor —
    machine-checked in `proofs/GacalcProofs/` for the vector/versor/bivector/trivector cases — and is
-   NOT the general multivector inverse (it raises on a mixed-grade `A`); the general low-dim closed
-   form is tracked in `tasks/lean-general-multivector-inverse.md`.
+   NOT the general multivector inverse (it raises on a mixed-grade `A`). The general 𝒢₂/𝒢₃ closed
+   form (Hitzer & Sangwine, through the grade involution and the Clifford conjugate) is proved in
+   `proofs/GacalcProofs/GeneralInverse.lean`; whether Python adopts it is undecided.
    (The former `is_parallel_to` self-flagged-uncertainty is resolved — it now uses the wedge-zero
    test `A ∧ B = 0`. For vectors with `A ≠ 0`, `A ∧ B = 0 ⟺ B = k * A` is machine-checked as
    `wedge_eq_zero_iff_parallel` in `proofs/GacalcProofs/Predicates3D.lean` and `Predicates2D.lean`.)
