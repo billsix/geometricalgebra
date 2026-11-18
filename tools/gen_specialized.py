@@ -6325,7 +6325,8 @@ def line_map_method_def(n: int, spec: LineMap) -> ast.FunctionDef:
         "Args:\n"
         f"    {spec.param}: the {spec.param_type} that defines the map.\n"
         "    float_close_to_zero: when ``True``, test the lines with a\n"
-        "        floating-point tolerance, for float input.\n"
+        "        floating-point tolerance.  ``None`` (the default) does so when the\n"
+        "        inputs hold floats.\n"
         "\n"
         "Returns:\n"
         "    InvertibleFunction[Vector]: the map from one line to the other,\n"
@@ -6343,7 +6344,10 @@ def line_map_method_def(n: int, spec: LineMap) -> ast.FunctionDef:
     )
     source: str = (
         f"def {spec.name}(\n"
-        f"    self, {spec.param}: {spec.param_type}, *, float_close_to_zero: bool = False\n"
+        f"    self,\n"
+        f"    {spec.param}: {spec.param_type},\n"
+        "    *,\n"
+        "    float_close_to_zero: bool | None = None,\n"
         ") -> InvertibleFunction[Vector]:\n"
         f"    if type({spec.param}) is not {spec.param_type}:\n"
         "        raise TypeError(\n"
@@ -6475,7 +6479,7 @@ def line_and_plane_map(kind: str) -> LineMap:
     shadow_check: str = (
         "if (\n"
         "    shadow.isclose(Vector.zero(), rel_tol=1e-5, abs_tol=1e-5)\n"
-        "    if float_close_to_zero\n"
+        "    if resolve_float_tolerance(float_close_to_zero, (shadow,))\n"
         "    else shadow == Vector.zero()\n"
         "):\n"
         "    raise ValueError(\n"
@@ -7691,6 +7695,8 @@ def header(name: str, n: int) -> str:
     # carries the reflection docstring (n <= 3); importing it otherwise would be
     # unused (F401).
     operand_import: str = "\n    _OperandT," if n <= 3 else ""
+    # 𝒢₃'s line-to-plane maps decide their float tolerance from their inputs.
+    tolerance_import: str = "\n    resolve_float_tolerance," if n == 3 else ""
     # Every Vector carries the line-to-line maps (Linearity, require_on_line); the
     # 𝒢₂ rotate_90_degrees() factory also needs plane_rotation, for its
     # interpolation law.  transforms imports only base/functions, so importing it
@@ -7736,7 +7742,7 @@ from gacalc.base import (
     ComposableFunction,
     InvertibleFunction,
     MultiVectorBase,
-    Real,
+    Real,{tolerance_import}
     _coef_eq,
     _coerce,
     _reciprocal,

@@ -48,6 +48,14 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   coordinate versions of both, with the plane's normal written out from its coordinates.
 
 ### Changed
+- **`float_close_to_zero` defaults to `None`: float input is now compared with a tolerance unless
+  you say otherwise.** This applies to `is_orthogonal_to`, `is_parallel_to`, `require_on_line`,
+  `coordinate_along`, the line-to-line / line-to-plane factories (and the generated `Vector`
+  methods), and `are_linearly_independent` / `is_frame` / `require_frame`. `None` means "a tolerance
+  when the inputs hold a `float` or sympy `Float`, exact otherwise"
+  (`base.resolve_float_tolerance`). **Behaviour change:** a caller passing float values and relying
+  on the old exact default now gets the tolerant comparison. Pass `float_close_to_zero=False` to
+  keep exact equality. Exact and symbolic input are unchanged.
 - **Breaking: 𝒢₃'s odd-part type `Odd_3` is renamed `Odd`**, matching the bare `Vector` /
   `Bivector` / `Versor` names. Replace `g3.Odd_3` with `g3.Odd`; its `to_vector()` /
   `to_trivector()` casts are unchanged. The release-only 𝒢₄ and 𝒢₅ now have `Odd` too (the odd

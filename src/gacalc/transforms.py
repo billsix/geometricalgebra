@@ -61,6 +61,7 @@ from gacalc.base import (
     MultiVectorFn,
     Real,
     describe_caller,
+    resolve_float_tolerance,
     validation_guard,
 )
 from gacalc.functions import (
@@ -303,7 +304,7 @@ def projection_rotation(
 def require_on_line(
     vector: MultiVectorBase,
     along: MultiVectorBase,
-    float_close_to_zero: bool = False,
+    float_close_to_zero: bool | None = None,
 ) -> None:
     """Raise ``ValueError`` unless ``vector`` lies on the line of ``along``.
 
@@ -314,7 +315,8 @@ def require_on_line(
         vector: the vector to check.
         along: the nonzero vector spanning the line.
         float_close_to_zero: when ``True``, test with the tolerance of
-            :meth:`~gacalc.base.MultiVectorBase.is_parallel_to`, for float input.
+            :meth:`~gacalc.base.MultiVectorBase.is_parallel_to`.
+            ``None`` (the default) does so when the inputs hold floats.
 
     Raises:
         ValueError: if ``vector`` is nonzero and not parallel to ``along``.
@@ -338,7 +340,7 @@ def coordinate_along(
     vector: MultiVectorBase,
     along: MultiVectorBase,
     *,
-    float_close_to_zero: bool = False,
+    float_close_to_zero: bool | None = None,
 ) -> Real:
     """The coordinate ``c`` of ``vector`` on the line of ``along``: ``c * along``.
 
@@ -357,7 +359,8 @@ def coordinate_along(
         vector: a vector on the line of ``along`` (the zero vector gives 0).
         along: the nonzero vector spanning the line.
         float_close_to_zero: when ``True``, test "on the line" with the tolerance
-            of :meth:`~gacalc.base.MultiVectorBase.is_parallel_to`, for float input.
+            of :meth:`~gacalc.base.MultiVectorBase.is_parallel_to`.
+            ``None`` (the default) does so when the inputs hold floats.
 
     Returns:
         Real: the scalar ``c`` with ``vector = c * along``.
@@ -402,7 +405,7 @@ def line_to_line_projection(
     from_vector: MultiVectorBase,
     to_vector: MultiVectorBase,
     *,
-    float_close_to_zero: bool = False,
+    float_close_to_zero: bool | None = None,
 ) -> InvertibleFunction[MultiVectorBase]:
     """Projection onto the line of ``to_vector``, restricted to the line of
     ``from_vector``: invertible, because it sends one line onto the other.
@@ -419,7 +422,8 @@ def line_to_line_projection(
         from_vector: spans the line the function takes input on.
         to_vector: spans the line the function projects onto.
         float_close_to_zero: when ``True``, test "on the line" and "perpendicular"
-            with a floating-point tolerance, for float input.
+            with a floating-point tolerance.
+            ``None`` (the default) does so when the inputs hold floats.
 
     Returns:
         gacalc.functions.InvertibleFunction[MultiVectorBase]: the projection from
@@ -496,7 +500,7 @@ def line_to_line_rejection(
     from_vector: MultiVectorBase,
     away_from: MultiVectorBase,
     *,
-    float_close_to_zero: bool = False,
+    float_close_to_zero: bool | None = None,
 ) -> InvertibleFunction[MultiVectorBase]:
     """Rejection away from ``away_from``, restricted to the line of ``from_vector``:
     invertible, because it sends one line onto the other.
@@ -513,7 +517,8 @@ def line_to_line_rejection(
         from_vector: spans the line the function takes input on.
         away_from: the vector whose direction the rejection removes.
         float_close_to_zero: when ``True``, test "on the line" and "parallel" with
-            a floating-point tolerance, for float input.
+            a floating-point tolerance.
+            ``None`` (the default) does so when the inputs hold floats.
 
     Returns:
         gacalc.functions.InvertibleFunction[MultiVectorBase]: the rejection from
@@ -577,9 +582,10 @@ def _require_plane(plane: MultiVectorBase, caller: str) -> None:
         raise ValueError(f"{caller}: the plane must be a nonzero bivector, got {plane}")
 
 
-def _is_zero(value: MultiVectorBase, float_close_to_zero: bool) -> bool:
-    """Whether ``value`` is zero, with ``is_parallel_to``'s tolerance when asked."""
-    if float_close_to_zero:
+def _is_zero(value: MultiVectorBase, float_close_to_zero: bool | None) -> bool:
+    """Whether ``value`` is zero, with ``is_parallel_to``'s tolerance when asked (or,
+    for ``None``, when ``value`` holds floats)."""
+    if resolve_float_tolerance(float_close_to_zero, (value,)):
         return value.isclose(type(value).zero(), rel_tol=1e-5, abs_tol=1e-5)
     return value == type(value).zero()
 
@@ -588,7 +594,7 @@ def line_to_plane_projection(
     from_vector: MultiVectorBase,
     to_plane: MultiVectorBase,
     *,
-    float_close_to_zero: bool = False,
+    float_close_to_zero: bool | None = None,
 ) -> InvertibleFunction[MultiVectorBase]:
     """Projection onto the plane ``to_plane``, restricted to the line of
     ``from_vector``: invertible, because it sends that line onto a line in the plane.
@@ -605,7 +611,8 @@ def line_to_plane_projection(
         from_vector: spans the line the function takes input on.
         to_plane: the plane, a bivector.
         float_close_to_zero: when ``True``, test "on the line" and "perpendicular"
-            with a floating-point tolerance, for float input.
+            with a floating-point tolerance.
+            ``None`` (the default) does so when the inputs hold floats.
 
     Returns:
         gacalc.functions.InvertibleFunction[MultiVectorBase]: the projection from
@@ -670,7 +677,7 @@ def line_from_plane_rejection(
     from_vector: MultiVectorBase,
     away_from_plane: MultiVectorBase,
     *,
-    float_close_to_zero: bool = False,
+    float_close_to_zero: bool | None = None,
 ) -> InvertibleFunction[MultiVectorBase]:
     """Rejection away from the plane ``away_from_plane``, restricted to the line of
     ``from_vector``: invertible, because it sends that line onto a line.
@@ -687,7 +694,8 @@ def line_from_plane_rejection(
         from_vector: spans the line the function takes input on.
         away_from_plane: the plane, a bivector.
         float_close_to_zero: when ``True``, test "on the line" and "in the plane"
-            with a floating-point tolerance, for float input.
+            with a floating-point tolerance.
+            ``None`` (the default) does so when the inputs hold floats.
 
     Returns:
         gacalc.functions.InvertibleFunction[MultiVectorBase]: the rejection from

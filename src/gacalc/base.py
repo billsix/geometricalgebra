@@ -315,6 +315,48 @@ def pseudoscalar_squared_is_positive(r: int) -> bool:
     return pseudoscalar_squared_sign(r) == 1
 
 
+def has_float_coefficients(values: Sequence["MultiVectorBase"]) -> bool:
+    """Whether any coefficient of ``values`` is inexact: a Python ``float`` or a
+    sympy ``Float`` (what float arithmetic through sympy produces).
+
+    The library's float tolerance is decided by this when a caller passes no
+    ``float_close_to_zero``: float input is compared with a tolerance, exact and
+    symbolic input exactly (``resolve_float_tolerance``).
+
+    >>> from gacalc.g2 import e_1, e_2
+    >>> has_float_coefficients([1 * e_1, 2 * e_2])
+    False
+    >>> has_float_coefficients([1 * e_1, 0.5 * e_2])
+    True
+    """
+    return any(
+        isinstance(coefficient, float | sympy.Float)
+        for value in values
+        for coefficient in value.to_blade_dict().values()
+    )
+
+
+def resolve_float_tolerance(
+    float_close_to_zero: bool | None, values: Sequence["MultiVectorBase"]
+) -> bool:
+    """The tolerance a comparison uses: the caller's explicit ``True``/``False``, or,
+    for ``None`` (the default everywhere), whether the compared values hold floats.
+
+    >>> from gacalc.g2 import e_1
+    >>> resolve_float_tolerance(None, [0.5 * e_1])
+    True
+    >>> resolve_float_tolerance(None, [1 * e_1])
+    False
+    >>> resolve_float_tolerance(False, [0.5 * e_1])
+    False
+    """
+    return (
+        float_close_to_zero
+        if float_close_to_zero is not None
+        else has_float_coefficients(values)
+    )
+
+
 #: How small, relative to the scalar part, a float multivector's other coefficients
 #: may be and still count as rounding residue (``_is_scalar_up_to_rounding``).
 _SCALAR_RESIDUE_REL_TOL: float = 1e-9
@@ -343,7 +385,7 @@ def _is_scalar_up_to_rounding(value: "MultiVectorBase") -> bool:
     False
     """
     coefficients: Mapping[Blade, Real] = value.to_blade_dict()
-    if not any(isinstance(c, float | sympy.Float) for c in coefficients.values()):
+    if not has_float_coefficients([value]):
         return False
     try:
         scalar: float = abs(float(coefficients.get((), 0)))
@@ -1945,7 +1987,7 @@ class MultiVectorBase(abc.ABC):
         return self.is_homogeneous_of_grade_r(r=3)
 
     def is_orthogonal_to(
-        self, other: typing.Self, float_close_to_zero: bool = False
+        self, other: typing.Self, float_close_to_zero: bool | None = None
     ) -> bool:
         """True iff vectors A and B are orthogonal (perpendicular) — the cosine of
         the angle between them is zero.
@@ -1961,8 +2003,10 @@ class MultiVectorBase(abc.ABC):
 
         Args:
             other: the other vector.
-            float_close_to_zero: when ``True``, test the inner product with a
-                ``numpy`` floating-point tolerance instead of exact equality.
+            float_close_to_zero: ``True`` tests the inner product with a ``numpy``
+                floating-point tolerance, ``False`` exactly; ``None`` (the default)
+                uses the tolerance when either vector holds floats
+                (:func:`resolve_float_tolerance`).
 
         Returns:
             bool: ``True`` iff ``A · B`` is (approximately) zero.
@@ -2004,12 +2048,12 @@ class MultiVectorBase(abc.ABC):
                 rtol=1e-5,
                 atol=1e-5,
             )
-            if float_close_to_zero
+            if resolve_float_tolerance(float_close_to_zero, (self, other))
             else (self.inner_product(other) == type(self).zero())
         )
 
     def is_parallel_to(
-        self, other: typing.Self, float_close_to_zero: bool = False
+        self, other: typing.Self, float_close_to_zero: bool | None = None
     ) -> bool:
         """True iff vectors A and B are parallel — the sine of the angle between
         them is zero (equivalently, their outer product ``A ∧ B`` is zero: they are
@@ -2027,8 +2071,10 @@ class MultiVectorBase(abc.ABC):
 
         Args:
             other: the other vector.
-            float_close_to_zero: when ``True``, test the wedge with a ``numpy``
-                floating-point tolerance instead of exact equality.
+            float_close_to_zero: ``True`` tests the wedge with a floating-point
+                tolerance, ``False`` exactly; ``None`` (the default) uses the
+                tolerance when either vector holds floats
+                (:func:`resolve_float_tolerance`).
 
         Returns:
             bool: ``True`` iff ``A ∧ B`` is (approximately) zero.
@@ -2070,7 +2116,7 @@ class MultiVectorBase(abc.ABC):
             raise ValueError("parallelism (the angle) is undefined for the zero vector")
 
         wedge: typing.Self = self.outer_product(other)
-        if float_close_to_zero:
+        if resolve_float_tolerance(float_close_to_zero, (self, other)):
             return wedge.isclose(type(self).zero(), rel_tol=1e-5, abs_tol=1e-5)
         return bool(wedge == type(self).zero())
 

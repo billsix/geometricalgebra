@@ -114,9 +114,11 @@ def test_coordinate_along() -> None:
     with pytest.raises(ValueError, match="zero vector"):
         coordinate_along(1 * e_1, along=0 * e_1)
     near: Gn = 2.0 * e_1 + 1e-9 * e_2
-    with pytest.raises(ValueError, match="not on the line"):
-        coordinate_along(near, along=1.0 * e_1)
+    # float input is held to a tolerance by default; False asks for exact equality
+    assert coordinate_along(near, along=1.0 * e_1) == 2.0
     assert coordinate_along(near, along=1.0 * e_1, float_close_to_zero=True) == 2.0
+    with pytest.raises(ValueError, match="not on the line"):
+        coordinate_along(near, along=1.0 * e_1, float_close_to_zero=False)
 
 
 @pytest.mark.parametrize(
