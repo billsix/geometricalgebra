@@ -100,8 +100,12 @@ body runs gives:
 
 ```python
 with gacalc.float_tolerance():
-    f = line_to_line_projection(from_vector=a, to_vector=b)  # construction checks: tolerant
-y = f(x)  # called outside the block: the on-line check is now exact, and fails on rounding
+    f = line_to_line_projection(
+        from_vector=a, to_vector=b
+    )  # construction checks: tolerant
+y = f(
+    x
+)  # called outside the block: the on-line check is now exact, and fails on rounding
 ```
 
 To avoid this, (c) would have to capture the setting when the function is built. That is one more

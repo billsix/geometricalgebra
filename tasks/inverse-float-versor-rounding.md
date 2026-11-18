@@ -22,11 +22,12 @@ carries a rounding residue in a bivector coefficient (8.9e-16 below), so the che
 ```python
 from gacalc.g3 import e_1, e_2, e_3
 from gacalc.transforms import versor_rotation
+
 a = 2.0 * e_1 + 1.0 * e_2 + 0.5 * e_3
 b = 0.5 * e_1 + 3.0 * e_2 + 1.0 * e_3
 R = a.versor_from_vectors(from_vector=a, to_vector=b)
-R.reverse() * R   # Versor(coeff_scalar=173.646…, coeff_e_12=0.0, coeff_e_13=0.0, coeff_e_23=8.88e-16)
-versor_rotation(from_vector=a, to_vector=b)(1.0 * e_3)   # RuntimeError
+R.reverse() * R  # Versor(coeff_scalar=173.646…, coeff_e_12=0.0, coeff_e_13=0.0, coeff_e_23=8.88e-16)
+versor_rotation(from_vector=a, to_vector=b)(1.0 * e_3)  # RuntimeError
 ```
 
 In 2D the problem cannot occur, because a 𝒢₂ versor's `Ã * A` has no bivector term to round. The
