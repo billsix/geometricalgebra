@@ -152,13 +152,16 @@ drawn from an example that turned out to be the reversal in disguise. Suggested 
    - the `frame.py` doctests;
    - container `make format` and `make test`.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-18)
+
+1. **Peel order: (a)**, revert to tail-first over `orthogonal_vectors()`, aiming for the code that
+   reads best, for the reasons in the assessment above.
+2. **Use-before-binding: (a)**, `functools.partial`. This was done first and committed on its own
+   as `cd73128`.
+3. **Shared recursion rule: (a)**, soften it: head-first when the data is in that order,
+   tail-first when the construction makes the last element the solvable one, with the frame as
+   the counter-example.
+
 ## Open questions
 
-1. **Peel order:** (a) revert to tail-first over `orthogonal_vectors()` (recommended: it is the
-   frame's own set, the QR back-substitution, and the Lean twin's construction), or (b) keep
-   head-first? Either way, only the recursion changes; results stay the same.
-2. ~~The use-before-binding fix~~ **Answered:** `functools.partial`, done as step 1 (see Progress).
-3. **The shared recursion rule:** (a) soften it, keeping "prefer head-first when the data is in
-   that order" and adding that tail-first is right when the construction makes the last element
-   solvable, with this frame as the counter-example (recommended), or (b) remove the head-first
-   paragraph and the `CLAUDE.md` clause entirely?
+None.
