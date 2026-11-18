@@ -59,8 +59,8 @@ by algebra where this doc's older examples say bare `Scalar`) carries
   scalar+trivector have no covering graded type — they widen honestly to `G_n`).
 - `dual` (2026-07-22, closes the unary-op family) — same "retype `base.dual` off `-> Self` to
   `-> MultiVectorBase`, graded override narrows to the resolved grade-(n−r) type" pattern as even/odd
-  (`Bivector.dual -> Vector`, `Trivector.dual -> Scalar`, `Versor.dual -> Odd_3` — the odd part {1,3};
-  before `Odd_3` was registered (2026-09-05) this widened to `G`). Two twists: (1) `dual` keeps the `n`
+  (`Bivector.dual -> Vector`, `Trivector.dual -> Scalar`, `Versor.dual -> Odd` — the odd part {1,3};
+  before `Odd` was registered (2026-09-05) this widened to `G`). Two twists: (1) `dual` keeps the `n`
   (dimension) param, so a fixed-dimension type
   **raises on a mismatched `n`** rather than falling back to `G_n` (the old `_coerce(self, G_n).dual(n)`
   branch is gone — a `dim_mismatch_guard` helper); the full class `G_n` keeps `-> Self`. (2) The
@@ -135,20 +135,20 @@ static-typing fix, replacing an unsound `typing.cast(typing.Self, Versor(...))`.
   (`.coeff_e_12` was type-rejected on a mis-typed `Vector`). See
   `tasks/archive/2026/07/22/precise-product-types-coefficient-cleanup.md` in
   `github.com/billsix/modelviewprojection`.
-- **The odd-type gap — CLOSED 2026-09-05 by `Odd_3`.** In 𝒢₃ the *raw full geometric product* of an
+- **The odd-type gap — CLOSED 2026-09-05 by `Odd`.** In 𝒢₃ the *raw full geometric product* of an
   odd-producing pair (e.g. `Versor * Vector`, `Vector * Bivector`, `Versor.dual()`) used to widen to `G`
-  for lack of a registered `{1,3}` type. Now registered: **`Odd_3` = {1,3}** (the odd part, mirroring
-  `Versor` = even {0,2}) — a graded *subspace*, not a subalgebra (odd·odd=even → `Odd_3*Odd_3 → Versor`);
-  those products return `Odd_3` instead of `G`. Plus an **opt-in grade query + cast**
-  (`Odd_3.to_vector()`/`to_trivector()`, raising if the discarded grade is nonzero). **The return type
+  for lack of a registered `{1,3}` type. Now registered: **`Odd` = {1,3}** (the odd part, mirroring
+  `Versor` = even {0,2}) — a graded *subspace*, not a subalgebra (odd·odd=even → `Odd*Odd → Versor`);
+  those products return `Odd` instead of `G`. Plus an **opt-in grade query + cast**
+  (`Odd.to_vector()`/`to_trivector()`, raising if the discarded grade is nonzero). **The return type
   stays operation-based / value-independent** — the value-dependent alternative (products
   runtime-narrowing to the smallest actual type) was **rejected**, so "the type follows the operation,
   never runtime float values" still holds; narrowing is a deliberate caller step. The precise
   operations already reached for are unchanged (`Versor.sandwich(x) -> type(x)`,
-  `Vector.inner_product(Bivector) -> Vector`, `Vector ^ Bivector -> Trivector`); what `Odd_3` newly
+  `Vector.inner_product(Bivector) -> Vector`, `Vector ^ Bivector -> Trivector`); what `Odd` newly
   buys is a **named intermediate + a one-coefficient grade-preservation proof** for the plain-product
-  sandwich `R * v * R⁻¹` (types as `Odd_3`, so "it's a vector" == `simplify(coeff_e_123) == 0` — see
-  `design-decisions.md` › the sandwich note, and `tests/test_odd3.py`). Wiring: one gated block in
+  sandwich `R * v * R⁻¹` (types as `Odd`, so "it's a vector" == `simplify(coeff_e_123) == 0` — see
+  `design-decisions.md` › the sandwich note, and `tests/test_odd.py`). Wiring: one gated block in
   `graded_specs` (`gen_specialized.py`, `n == 3`) + a name-prefixed `to_vector`/`to_trivector`
   injection. Work: `tasks/archive/2026/09/05/model-odd-graded-type.md`; subspace rationale:
   `tasks/reference/graded-subspaces-vs-subalgebras.md`.

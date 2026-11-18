@@ -49,7 +49,7 @@ the 2nd ed. Internet Archive (borrow): `archive.org/details/multivariablemat02ed
 ## The connection to gacalc (why this book, specifically)
 
 W&T's recursive volume — `∏ |h_j|`, the heights being rejections — is **exactly gacalc's frame
-orthogonalization** (`make_orthogonal_frame`, `tasks/define-frame.md`): each `h_j` = `v_j` rejected
+orthogonalization** (`make_orthogonal_frame`, `tasks/archive/2026/11/18/define-frame.md`): each `h_j` = `v_j` rejected
 from the span of the previous vectors = the orthogonalized `w_j`. Hence
 
 >   `content([v₁,…,v_k]) = ∏_j |w_j| = |v₁ ∧ … ∧ v_k| = √det(Gram)` (for k = 2, `|a∧b|² = |a|² * |b|² − (a·b)²` is Lagrange's identity, <https://en.wikipedia.org/wiki/Lagrange%27s_identity>).
@@ -92,7 +92,7 @@ inherited by every vector type, *not* generated per-algebra). `content` / `conte
 
 - `tasks/archive/2026/08/24/area-volume-content.md` — the task that defines `area`/`volume`/`content` and sweeps the
   codebase/book for wedge-magnitude sites to rename in these terms.
-- `tasks/define-frame.md` — the frame orthogonalization whose `∏ |w_j|` *is* W&T's recursive volume.
+- `tasks/archive/2026/11/18/define-frame.md` — the frame orthogonalization whose `∏ |w_j|` *is* W&T's recursive volume.
 - `src/gacalc/vectorcalc.py` (2026-08-31) — `signed_volume(a, b, c)` **is** the scalar triple
   product `a · (b × c)`; the identity against `cross` is gated by
   `tests/test_vectorcalc.py::test_scalar_triple_product_is_signed_volume`.

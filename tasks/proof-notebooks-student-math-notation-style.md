@@ -31,10 +31,12 @@ This doc captures the preference, the convention to adopt, and the backlog to wo
 
 This is the **umbrella** for the proof-notebook work. Its children:
 
-- `tasks/reference-doc-lean-workflow-and-proof-notebooks.md` — the reference doc stating the
-  Lean → symbolic test → student notebook method and its purpose (the *why*);
-- `tasks/investigate-lean-to-python-proof-notebooks.md` — whether a notebook can be generated from, or
-  kept honest by, the Lean proof (the *how*).
+- done 2026-11-18: the reference doc stating the Lean → symbolic test → student notebook method
+  and its purpose (the *why*), `tasks/reference/lean-python-notebook-workflow.md` (record
+  `tasks/archive/2026/11/18/reference-doc-lean-workflow-and-proof-notebooks.md`);
+- done 2026-11-18: the *how*. Notebooks are checked by Lean, not generated from it, and
+  `gacalc.nbdisplay.show_cancellation` shows the cancellation (prototype `notebooks/displayproofs.py`;
+  record `tasks/archive/2026/11/18/investigate-lean-to-python-proof-notebooks.md`).
 
 **Shared requirement** (the maintainer, 2026-09-30; both children used to state it): a proof notebook
 shows the **cancellation**, not a bare `0`. Lay the two expansions out term by term with labels, and

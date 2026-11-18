@@ -12,6 +12,13 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`nbdisplay.show_cancellation(left, right, left_name, right_name)`** (and the
+  `cancellation_latex` it displays): both sides of an identity expanded, then their difference
+  blade by blade with each cancelling pair of terms marked by a shared number under an
+  `\underbrace`, instead of a bare `0`.
+- **`nbplotutils.draw_vectors`, `draw_bivector`, `draw_angle` and `create_graphs_3d`**: arrows
+  from the origin, a bivector as its shaded oriented parallelogram, and the arc from one vector
+  toward another, drawn in 2-D inside `create_graphs` or in 3-D inside `create_graphs_3d`.
 - **`standardposition.rotation_from_to(from_vector, to_vector)`** — the 𝒢₂ rotation from one
   direction to another, built as `book/docs/proof-rotate-from-a-to-b.rst` builds it (cosine and sine
   read off the coordinates; no general projection, no geometric product), as an
@@ -41,6 +48,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   coordinate versions of both, with the plane's normal written out from its coordinates.
 
 ### Changed
+- **Breaking: 𝒢₃'s odd-part type `Odd_3` is renamed `Odd`**, matching the bare `Vector` /
+  `Bivector` / `Versor` names. Replace `g3.Odd_3` with `g3.Odd`; its `to_vector()` /
+  `to_trivector()` casts are unchanged. The release-only 𝒢₄ and 𝒢₅ now have `Odd` too (the odd
+  grades {1,3} and {1,3,5}), so their odd products no longer widen to `G`; 𝒢₅'s `Odd` also has
+  `to_fivevector()`.
 - **A blade of grade 2 or more typesets as one bold `\mathbf{e}_{12}`** in `_repr_latex_`,
   `blade_latex`, `blade_dict_latex` and `nbdisplay.show_mult`. It was its vectors side by side,
   `\mathbf{\vec{e}}_{1} \mathbf{\vec{e}}_{2}`, which reads as a product written without `*`.

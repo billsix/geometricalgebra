@@ -268,7 +268,7 @@ def test_dual_narrows_by_grade() -> None:
     T3: g3.Trivector = 7.0 * g3.Trivector.e_123
     typing.assert_type(T3.dual(), g3.Scalar)  # grade 3 -> grade 0
     R3: g3.Versor = 1 + 2.0 * g3.Bivector.e_12
-    typing.assert_type(R3.dual(), g3.Odd_3)  # {0,2} -> {1,3} = the odd part, now Odd_3
+    typing.assert_type(R3.dual(), g3.Odd)  # {0,2} -> {1,3} = the odd part, now Odd
 
     # 2D duals: grade n−r with n=2.
     v2: g2.Vector = 3 * g2.Vector.e_1

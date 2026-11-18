@@ -28,6 +28,7 @@
 # `proofs/GacalcProofs/StandardPosition.lean`.
 
 # %%
+# twin: GacalcProofs.G3.projectSP_eq_proj
 import pathlib
 import sys
 

@@ -13,7 +13,7 @@ Companion: `tasks/reference/code-generator-architecture.md` (how the generator i
 Every method of every generated class carries a docstring:
 
 - The **full class `G`** and the **graded subtypes** (`Scalar`/`Vector`/`Bivector`/
-  `Trivector`/`Versor`/`Odd_3`) each get a docstring on every emitted method.
+  `Trivector`/`Versor`/`Odd`) each get a docstring on every emitted method.
 - For the **dev dimensions g1–g3**, most graded methods carry a **specialized,
   grade-aware** docstring, often with an executable doctest (e.g. `Bivector.reverse`
   documents `B̃ = −B`; `Vector.reverse` documents that reversing a vector is a no-op).
@@ -104,7 +104,7 @@ regenerate and verify (below). No other generator code needs to change.
   also teaches that "exp of a bivector is a rotor". Doctests do **not** assert types
   (`type(x).__name__ == '...'`); **type-narrowing is tested in the unit tests** via
   `typing.assert_type` (ty-checked) and runtime `type(...) is ...` — see
-  `tests/test_operator_typing.py`, `tests/test_odd3.py`, `tests/test_exp.py`. Those already
+  `tests/test_operator_typing.py`, `tests/test_odd.py`, `tests/test_exp.py`. Those already
   cover the facts the specialized docstrings illustrate (exp→Versor, odd×odd→Versor, the
   product/dual grade maps); keep them in sync there, not in doctests.
 - **Dimension validity.** A `role|method` entry applies to every dim that role exists in.

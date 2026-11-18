@@ -88,9 +88,9 @@ only one grade's components — the way mathematicians usually work:
 | --- | --- |
 | 𝒢₁ | `Scalar`, `Vector` |
 | 𝒢₂ | `Scalar`, `Vector`, `Bivector`, `Versor` (the even subalgebra, ≅ ℂ) |
-| 𝒢₃ | `Scalar`, `Vector`, `Bivector`, `Trivector`, `Versor` (even part {0,2}, ≅ ℍ), `Odd_3` (odd part {1,3}) |
-| 𝒢₄ | … `Trivector`, **`FourVector`** (the pseudoscalar), `Versor` |
-| 𝒢₅ | … `FourVector`, **`FiveVector`** (the pseudoscalar), `Versor` |
+| 𝒢₃ | `Scalar`, `Vector`, `Bivector`, `Trivector`, `Versor` (even part {0,2}, ≅ ℍ), `Odd` (odd part {1,3}) |
+| 𝒢₄ | … `Trivector`, **`FourVector`** (the pseudoscalar), `Versor`, `Odd` (odd part {1,3}) |
+| 𝒢₅ | … `FourVector`, **`FiveVector`** (the pseudoscalar), `Versor`, `Odd` (odd part {1,3,5}) |
 
 There is **one grade-pure type per grade up to the pseudoscalar**, named by the `grade_name(k)`
 scheme — `Scalar`/`Vector`/`Bivector`/`Trivector` for grades 0–3, then the number-word

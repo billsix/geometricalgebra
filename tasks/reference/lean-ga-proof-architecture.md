@@ -666,6 +666,14 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   (`cos_between_uvec`, `signed_sin_between`, `sin_between_eq_abs_signed_vec`). `StudentTrigForms.lean` —
   the cosine-0 / sine-0 / `area = |a| * |b| * sin(θ)` corollaries with `_`-prefixed meaning gates.
 
+- `GeneralInverse.lean` — the **general multivector inverse** of 𝒢₂ and 𝒢₃ (Hitzer & Sangwine
+  2017). New sign flips `gradeInvolution` / `cliffordConjugate`. In 𝒢₂, `A * Ā` is a scalar
+  (`mul_cliffordConjugate`), so `A⁻¹ = Ā / (A * Ā)`. In 𝒢₃, `N = A * Ā` has only scalar and
+  pseudoscalar parts (`conjProduct_grades`) and is central (`gradeInvolution_conjProduct_comm`),
+  and `N * N̂` is a scalar, so `A⁻¹ = Ā * N̂ / (N * N̂)`. Two-sided: `mul_generalInverse`,
+  `generalInverse_mul`. In 𝒢₂ it agrees with `inverse` on vectors
+  (`generalInverse_eq_inverse_of_isVector`). Structural proofs: `mul_assoc`/`smul` rewrites over
+  four `ring` facts.
 - `ReciprocalFrame2D.lean` / `ReciprocalFrame3D.lean` — the reciprocal frame (H&S p. 28 eq 3.7:
   `recip1`/`recip2`(/`recip3`)) and `Frame.to_invertible_function`'s two inverses, n = 2 and 3, frame
   hypothesis `normSq (a₁ ∧ … ∧ aₙ) ≠ 0`: `isVector_recip*`, `dot_recip_kronecker` (eq 3.5),
@@ -713,7 +721,7 @@ The modules outside this table are in the subsection that follows it.
 | `is_orthogonal_to` | HAS | `perp_iff_mul_eq_wedge` (`a·b=0 ⟺ ab=a∧b`) (Predicates3D.lean) |
 | `is_parallel_to` | HAS | `wedge_eq_zero_iff_parallel` (for vectors with `a ≠ 0`: `a ∧ b = 0 ⟺ ∃ k, b = k*a`), from `wedge_parallel_smul` and its converse `parallel_of_wedge_eq_zero`, in Predicates3D.lean and Predicates2D.lean (2026-11-08); Python `is_parallel_to` uses the wedge-zero form |
 | `reverse` | HAS | `reverse_reverse`, `reverse_mul` (anti-automorphism), `reverse_vec`, `reverse_of_isVector`, `reverse_mul_vec` |
-| `inverse` | PARTIAL | blade/versor cases: `mul_vec_inverse_self`, `mul_biv_inverse_self`, `mul_triv_inverse_self`, `versorFromVectors_mul_inverse`, `inverse_mul`; general mixed-grade owned by existing `lean-general-multivector-inverse` |
+| `inverse` | PARTIAL | blade/versor cases: `mul_vec_inverse_self`, `mul_biv_inverse_self`, `mul_triv_inverse_self`, `versorFromVectors_mul_inverse`, `inverse_mul`; general mixed-grade 𝒢₂/𝒢₃ in `GeneralInverse.lean` (`mul_generalInverse`, `generalInverse_mul`; Python does not implement it) |
 | `dual` | HAS | G2 `dual_vec`; G3 `dual`, `dual_vec` (Cross.lean), `dual_wedge_perp_left`/`_right` |
 | `even_part` | HAS | `evenPart`, `even_add_odd` (GradeProjection.lean) |
 | `odd_part` | HAS | `oddPart`, `even_add_odd` (GradeProjection.lean) |
@@ -734,8 +742,9 @@ The modules outside this table are in the subsection that follows it.
 | `measure.content` (general `n`) | NONE | deferred — needs the general-`Gn` layer (`lean-general-gn-product-and-hestenes-dot-wedge`); k=2,3 are the proven `area`/`volume` |
 
 Still owned by open tasks: the general graded `inner_product` and general `content`
-(`lean-general-gn-product-and-hestenes-dot-wedge`, deferred) and the general mixed-grade `inverse`
-(`lean-general-multivector-inverse`). Everything else in the table is proven; the from-rotation
+(`lean-general-gn-product-and-hestenes-dot-wedge`, deferred). The general mixed-grade `inverse` is
+proven for 𝒢₂/𝒢₃ in Lean only (`GeneralInverse.lean`, 2026-11-18). Everything else in the table is
+proven; the from-rotation
 derivations and the Mathlib bridges are recorded in the archived step tasks under `tasks/archive/2026/10/04/`.
 
 ### The modules outside the original audit — `standardposition`, `functions`, `transforms`, `g1`

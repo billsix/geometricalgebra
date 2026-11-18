@@ -875,7 +875,7 @@ _ROLE_UNIT: dict[DocRole, str] = {
     DocRole.BIVECTOR: "Bivector.e_12",
     DocRole.TRIVECTOR: "Trivector.e_123",
     DocRole.VERSOR: "Versor.e_12",
-    DocRole.ODD: "Odd_3.e_1",
+    DocRole.ODD: "Odd.e_1",
     DocRole.FULL: "G.e_1",
 }
 
@@ -958,12 +958,12 @@ def _versor_dual_doc(role: DocRole, n: int) -> str:
         "bivector the vector normal to its plane, so the dual is ODD.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: the dual (an odd multivector).\n"
+        "    Odd: the dual (an odd multivector).\n"
         "\n"
         "Example:\n"
-        "    >>> Versor.from_real(1).dual() == -1 * Odd_3.e_123\n"
+        "    >>> Versor.from_real(1).dual() == -1 * Odd.e_123\n"
         "    True\n"
-        "    >>> (1 * Versor.e_12).dual() == 1 * Odd_3.e_3\n"
+        "    >>> (1 * Versor.e_12).dual() == 1 * Odd.e_3\n"
         "    True"
     )
 
@@ -1046,17 +1046,17 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "part is unchanged and the trivector (grade-3) part is negated.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: the reverse (grade-1 part kept, grade-3 part negated).\n"
+        "    Odd: the reverse (grade-1 part kept, grade-3 part negated).\n"
         "\n"
         "Example:\n"
         "    The vector part stays and the trivector part changes sign:\n"
         "\n"
-        "    >>> (1 * Odd_3.e_1).reverse() == 1 * Odd_3.e_1\n"
+        "    >>> (1 * Odd.e_1).reverse() == 1 * Odd.e_1\n"
         "    True\n"
-        "    >>> (1 * Odd_3.e_123).reverse() == -1 * Odd_3.e_123\n"
+        "    >>> (1 * Odd.e_123).reverse() == -1 * Odd.e_123\n"
         "    True\n"
-        "    >>> O: Odd_3 = 2 * Odd_3.e_1 + 3 * Odd_3.e_123\n"
-        "    >>> O.reverse() == 2 * Odd_3.e_1 - 3 * Odd_3.e_123\n"
+        "    >>> O: Odd = 2 * Odd.e_1 + 3 * Odd.e_123\n"
+        "    >>> O.reverse() == 2 * Odd.e_1 - 3 * Odd.e_123\n"
         "    True"
     ),
     # ------------------------------------------------------------------
@@ -3257,7 +3257,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    True"
     ),
     # ------------------------------------------------------------------
-    # Odd_3 (the odd part {1, 3} of 𝒢₃) -- vectors + trivectors.  A subspace
+    # Odd (the odd part {1, 3} of 𝒢₃) -- vectors + trivectors.  A subspace
     # but NOT a subalgebra: odd × odd = even, so a product lands in Versor.
     # ------------------------------------------------------------------
     "odd|__add__": (
@@ -3267,10 +3267,10 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the odd multivector to add.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: the component-wise sum.\n"
+        "    Odd: the component-wise sum.\n"
         "\n"
         "Example:\n"
-        "    >>> 1 * Odd_3.e_1 + 1 * Odd_3.e_1 == 2 * Odd_3.e_1\n"
+        "    >>> 1 * Odd.e_1 + 1 * Odd.e_1 == 2 * Odd.e_1\n"
         "    True"
     ),
     "odd|__sub__": (
@@ -3280,26 +3280,26 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    rhs: the odd multivector to subtract.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: the component-wise difference.\n"
+        "    Odd: the component-wise difference.\n"
         "\n"
         "Example:\n"
-        "    >>> 3 * Odd_3.e_1 - 1 * Odd_3.e_1 == 2 * Odd_3.e_1\n"
+        "    >>> 3 * Odd.e_1 - 1 * Odd.e_1 == 2 * Odd.e_1\n"
         "    True"
     ),
     "odd|__neg__": (
         "Negation -- every component sign-flipped.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: the negated odd multivector.\n"
+        "    Odd: the negated odd multivector.\n"
         "\n"
         "Example:\n"
-        "    >>> O: Odd_3 = 1 * Odd_3.e_1 + 2 * Odd_3.e_123\n"
-        "    >>> -O == -1 * Odd_3.e_1 - 2 * Odd_3.e_123\n"
+        "    >>> O: Odd = 1 * Odd.e_1 + 2 * Odd.e_123\n"
+        "    >>> -O == -1 * Odd.e_1 - 2 * Odd.e_123\n"
         "    True"
     ),
     "odd|__mul__": (
         "Geometric product.  The product of two ODD multivectors is EVEN (a\n"
-        "versor): odd × odd = even, so Odd_3 is a subspace but NOT a subalgebra.\n"
+        "versor): odd × odd = even, so Odd is a subspace but NOT a subalgebra.\n"
         "\n"
         "Args:\n"
         "    rhs: the right operand.\n"
@@ -3308,7 +3308,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Versor: the product (odd × odd is even).\n"
         "\n"
         "Example:\n"
-        "    >>> product: Versor = (1 * Odd_3.e_1) * (1 * Odd_3.e_1)\n"
+        "    >>> product: Versor = (1 * Odd.e_1) * (1 * Odd.e_1)\n"
         "    >>> product == Versor.from_real(1)\n"
         "    True"
     ),
@@ -3322,7 +3322,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the geometric product ``self * rhs``.\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Odd_3.e_1)._geometric_product(1 * Odd_3.e_2) == 1 * Versor.e_12\n"
+        "    >>> (1 * Odd.e_1)._geometric_product(1 * Odd.e_2) == 1 * Versor.e_12\n"
         "    True"
     ),
     "odd|to_vector": (
@@ -3336,7 +3336,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    ValueError: if the grade-3 (trivector) part is nonzero.\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Odd_3.e_1).to_vector() == 1 * Vector.e_1\n"
+        "    >>> (1 * Odd.e_1).to_vector() == 1 * Vector.e_1\n"
         "    True"
     ),
     "odd|to_trivector": (
@@ -3350,17 +3350,17 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    ValueError: if the grade-1 (vector) part is nonzero.\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Odd_3.e_123).to_trivector() == 1 * Trivector.e_123\n"
+        "    >>> (1 * Odd.e_123).to_trivector() == 1 * Trivector.e_123\n"
         "    True"
     ),
     "odd|grades": (
         "An odd multivector of 𝒢₃ carries grades 1 and/or 3.\n"
         "\n"
         "Returns:\n"
-        "    list[int]: the present odd grades (``[1, 3]`` for a general Odd_3).\n"
+        "    list[int]: the present odd grades (``[1, 3]`` for a general Odd).\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Odd_3.e_1 + 1 * Odd_3.e_123).grades()\n"
+        "    >>> (1 * Odd.e_1 + 1 * Odd.e_123).grades()\n"
         "    [1, 3]"
     ),
     "odd|even_part": (
@@ -3370,17 +3370,17 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: 0 (an odd multivector has no even-grade part).\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Odd_3.e_1 + 1 * Odd_3.e_123).even_part() == Scalar.zero()\n"
+        "    >>> (1 * Odd.e_1 + 1 * Odd.e_123).even_part() == Scalar.zero()\n"
         "    True"
     ),
     "odd|odd_part": (
         "An odd multivector is entirely odd, so its odd part is itself.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: the odd multivector itself.\n"
+        "    Odd: the odd multivector itself.\n"
         "\n"
         "Example:\n"
-        "    >>> O: Odd_3 = 1 * Odd_3.e_1 + 1 * Odd_3.e_123\n"
+        "    >>> O: Odd = 1 * Odd.e_1 + 1 * Odd.e_123\n"
         "    >>> O.odd_part() == O\n"
         "    True"
     ),
@@ -3395,7 +3395,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the grade-``r`` part (a Vector for r=1, a Trivector for r=3).\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Odd_3.e_1 + 1 * Odd_3.e_123).r_vector_part(1) == 1 * Vector.e_1\n"
+        "    >>> (1 * Odd.e_1 + 1 * Odd.e_123).r_vector_part(1) == 1 * Vector.e_1\n"
         "    True"
     ),
     "odd|scalar_part": (
@@ -3405,7 +3405,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Real: 0 (an odd multivector has no scalar part).\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Odd_3.e_1 + 1 * Odd_3.e_123).scalar_part()\n"
+        "    >>> (1 * Odd.e_1 + 1 * Odd.e_123).scalar_part()\n"
         "    0"
     ),
     "odd|magnitude_squared": (
@@ -3415,7 +3415,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Real: the squared magnitude.\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Odd_3.e_1 + 1 * Odd_3.e_123).magnitude_squared()\n"
+        "    >>> (1 * Odd.e_1 + 1 * Odd.e_123).magnitude_squared()\n"
         "    2"
     ),
     "odd|dot": (
@@ -3428,7 +3428,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: the inner product (a scalar).\n"
         "\n"
         "Example:\n"
-        "    >>> (2 * Odd_3.e_1).dot(3 * Odd_3.e_1) == Scalar.from_real(6)\n"
+        "    >>> (2 * Odd.e_1).dot(3 * Odd.e_1) == Scalar.from_real(6)\n"
         "    True"
     ),
     "odd|inner_product": (
@@ -3441,7 +3441,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Scalar: the inner product (a scalar).\n"
         "\n"
         "Example:\n"
-        "    >>> (2 * Odd_3.e_1).inner_product(3 * Odd_3.e_1) == Scalar.from_real(6)\n"
+        "    >>> (2 * Odd.e_1).inner_product(3 * Odd.e_1) == Scalar.from_real(6)\n"
         "    True"
     ),
     "odd|left_contraction": (
@@ -3456,8 +3456,8 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Example:\n"
         "    Contracting e₁ into the volume leaves the e₂ * e₃ plane:\n"
         "\n"
-        "    >>> O: Odd_3 = 1 * Odd_3.e_1\n"
-        "    >>> O.left_contraction(1 * Odd_3.e_123) == 1 * Bivector.e_23\n"
+        "    >>> O: Odd = 1 * Odd.e_1\n"
+        "    >>> O.left_contraction(1 * Odd.e_123) == 1 * Bivector.e_23\n"
         "    True"
     ),
     "odd|right_contraction": (
@@ -3470,8 +3470,8 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the right contraction ``self > rhs``.\n"
         "\n"
         "Example:\n"
-        "    >>> O: Odd_3 = 1 * Odd_3.e_123\n"
-        "    >>> O.right_contraction(1 * Odd_3.e_3) == 1 * Bivector.e_12\n"
+        "    >>> O: Odd = 1 * Odd.e_123\n"
+        "    >>> O.right_contraction(1 * Odd.e_3) == 1 * Bivector.e_12\n"
         "    True"
     ),
     "odd|outer_product": (
@@ -3484,9 +3484,9 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the outer product ``self ∧ rhs``.\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Odd_3.e_1).outer_product(1 * Odd_3.e_2) == 1 * Bivector.e_12\n"
+        "    >>> (1 * Odd.e_1).outer_product(1 * Odd.e_2) == 1 * Bivector.e_12\n"
         "    True\n"
-        "    >>> (1 * Odd_3.e_1).outer_product(1 * Odd_3.e_1) == Scalar.zero()\n"
+        "    >>> (1 * Odd.e_1).outer_product(1 * Odd.e_1) == Scalar.zero()\n"
         "    True"
     ),
     "odd|wedge": (
@@ -3499,9 +3499,9 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the outer product ``self ∧ rhs``.\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Odd_3.e_1).wedge(1 * Odd_3.e_2) == 1 * Bivector.e_12\n"
+        "    >>> (1 * Odd.e_1).wedge(1 * Odd.e_2) == 1 * Bivector.e_12\n"
         "    True\n"
-        "    >>> (1 * Odd_3.e_1).wedge(1 * Odd_3.e_1) == Scalar.zero()\n"
+        "    >>> (1 * Odd.e_1).wedge(1 * Odd.e_1) == Scalar.zero()\n"
         "    True"
     ),
     "odd|__xor__": (
@@ -3514,7 +3514,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the outer product ``self ^ other``.\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Odd_3.e_1) ^ (1 * Odd_3.e_2) == 1 * Bivector.e_12\n"
+        "    >>> (1 * Odd.e_1) ^ (1 * Odd.e_2) == 1 * Bivector.e_12\n"
         "    True"
     ),
     "odd|dual": (
@@ -3526,9 +3526,9 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Example:\n"
         "    The vector part duals to a plane, the trivector part to a scalar:\n"
         "\n"
-        "    >>> (1 * Odd_3.e_1).dual() == -1 * Bivector.e_23\n"
+        "    >>> (1 * Odd.e_1).dual() == -1 * Bivector.e_23\n"
         "    True\n"
-        "    >>> (1 * Odd_3.e_123).dual() == Scalar.from_real(1)\n"
+        "    >>> (1 * Odd.e_123).dual() == Scalar.from_real(1)\n"
         "    True"
     ),
     "odd|__iter__": (
@@ -3539,7 +3539,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Real: each component value (grade-1 then grade-3).\n"
         "\n"
         "Example:\n"
-        "    >>> list(1 * Odd_3.e_1 + 2 * Odd_3.e_123)\n"
+        "    >>> list(1 * Odd.e_1 + 2 * Odd.e_123)\n"
         "    [1, 0, 0, 2]"
     ),
     "odd|isclose": (
@@ -3557,10 +3557,10 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Example:\n"
         "    Equal up to a relative tolerance (the default tolerance is 0, exact):\n"
         "\n"
-        "    >>> A: Odd_3 = 1.0 * Odd_3.e_1\n"
-        "    >>> A.isclose(1.0000000001 * Odd_3.e_1, rel_tol=1e-9)\n"
+        "    >>> A: Odd = 1.0 * Odd.e_1\n"
+        "    >>> A.isclose(1.0000000001 * Odd.e_1, rel_tol=1e-9)\n"
         "    True\n"
-        "    >>> A.isclose(1.0000000001 * Odd_3.e_1)\n"
+        "    >>> A.isclose(1.0000000001 * Odd.e_1)\n"
         "    False"
     ),
     "odd|from_blade_dict": (
@@ -3571,11 +3571,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    blade_coef: a canonical blade -> coefficient mapping.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: an odd multivector holding the grade-1 and grade-3 coefficients.\n"
+        "    Odd: an odd multivector holding the grade-1 and grade-3 coefficients.\n"
         "\n"
         "Example:\n"
-        "    >>> O: Odd_3 = Odd_3.from_blade_dict({(1,): 1, (1, 2, 3): 2})\n"
-        "    >>> O == 1 * Odd_3.e_1 + 2 * Odd_3.e_123\n"
+        "    >>> O: Odd = Odd.from_blade_dict({(1,): 1, (1, 2, 3): 2})\n"
+        "    >>> O == 1 * Odd.e_1 + 2 * Odd.e_123\n"
         "    True"
     ),
     "odd|to_blade_dict": (
@@ -3586,7 +3586,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    Mapping[Blade, Real]: the grade-1 + grade-3 blade -> coefficient mapping.\n"
         "\n"
         "Example:\n"
-        "    >>> (1 * Odd_3.e_1 + 2 * Odd_3.e_123).to_blade_dict()\n"
+        "    >>> (1 * Odd.e_1 + 2 * Odd.e_123).to_blade_dict()\n"
         "    {(1,): 1, (1, 2, 3): 2}"
     ),
     "odd|__lt__": (
@@ -3599,7 +3599,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the left contraction ``self < other``.\n"
         "\n"
         "Example:\n"
-        "    >>> ((1 * Odd_3.e_1) < (1 * Odd_3.e_123)) == 1 * Bivector.e_23\n"
+        "    >>> ((1 * Odd.e_1) < (1 * Odd.e_123)) == 1 * Bivector.e_23\n"
         "    True"
     ),
     "odd|__gt__": (
@@ -3612,7 +3612,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the right contraction ``self > other``.\n"
         "\n"
         "Example:\n"
-        "    >>> ((1 * Odd_3.e_123) > (1 * Odd_3.e_3)) == 1 * Bivector.e_12\n"
+        "    >>> ((1 * Odd.e_123) > (1 * Odd.e_3)) == 1 * Bivector.e_12\n"
         "    True"
     ),
     "odd|__radd__": (
@@ -3626,7 +3626,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    the mixed multivector ``lhs + O`` (scalar + odd).\n"
         "\n"
         "Example:\n"
-        "    >>> (2 + 1 * Odd_3.e_1).grades()\n"
+        "    >>> (2 + 1 * Odd.e_1).grades()\n"
         "    [0, 1]"
     ),
     "odd|__rmul__": (
@@ -3636,11 +3636,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    lhs: the bare number on the left.\n"
         "\n"
         "Returns:\n"
-        "    Odd_3: the scaled odd multivector.\n"
+        "    Odd: the scaled odd multivector.\n"
         "\n"
         "Example:\n"
-        "    >>> O: Odd_3 = 1 * Odd_3.e_1 + 1 * Odd_3.e_123\n"
-        "    >>> 3 * O == 3 * Odd_3.e_1 + 3 * Odd_3.e_123\n"
+        "    >>> O: Odd = 1 * Odd.e_1 + 1 * Odd.e_123\n"
+        "    >>> 3 * O == 3 * Odd.e_1 + 3 * Odd.e_123\n"
         "    True"
     ),
 }
@@ -3656,7 +3656,7 @@ def _role_for_class(class_name: str, full_name: str) -> DocRole:
         "Bivector": DocRole.BIVECTOR,
         "Trivector": DocRole.TRIVECTOR,
         "Versor": DocRole.VERSOR,
-        "Odd_3": DocRole.ODD,
+        "Odd": DocRole.ODD,
     }
     return known.get(class_name, DocRole.GENERIC)
 
@@ -4095,7 +4095,7 @@ class TypeKind(Enum):
     """Which family a generated value type belongs to."""
 
     SCALAR = "scalar"  #: the grade-0 ``Scalar``
-    GRADED = "graded"  #: a grade-pure type, ``Versor``, or ``Odd_3``
+    GRADED = "graded"  #: a grade-pure type, ``Versor``, or ``Odd``
     FULL = "full"  #: the full algebra class ``G``
 
 
@@ -4160,15 +4160,14 @@ def graded_specs(n: int) -> list[TypeSpec]:
     if n >= 2:  # even subalgebra (Versor); for n==1 the even part is just the scalar
         even: tuple[Blade, ...] = tuple(b for b in blades if len(b) % 2 == 0)
         specs.append(TypeSpec("Versor", even, n, TypeKind.GRADED))
-    if n == 3:
-        # The odd part {1,3} of 𝒢₃ -- the mirror of Versor (the even part {0,2}), but a
-        # *subspace*, NOT a subalgebra: odd * odd = even, so Odd_3 * Odd_3 -> Versor,
-        # landing outside Odd_3 (fine -- Vector/Bivector/Trivector aren't closed either;
-        # see tasks/reference/graded-subspaces-vs-subalgebras.md).  Gated to n == 3 so
-        # the literal name stays honest; the general higher-dim odd/mixed types are a
-        # follow-up (tasks/model-odd-graded-type.md).
-        odd_1_3: tuple[Blade, ...] = tuple(b for b in blades if len(b) in (1, 3))
-        specs.append(TypeSpec("Odd_3", odd_1_3, n, TypeKind.GRADED))
+    if n >= 3:
+        # The odd part of 𝒢ₙ ({1,3} for n = 3 and 4, {1,3,5} for n = 5) -- the mirror of
+        # Versor (the even part), but a *subspace*, NOT a subalgebra: odd * odd = even,
+        # so Odd * Odd -> Versor, landing outside Odd (fine -- Vector/Bivector/Trivector
+        # aren't closed either; see tasks/reference/graded-subspaces-vs-subalgebras.md).
+        # For n = 1 and 2 the odd part is just the vectors, already Vector.
+        odd: tuple[Blade, ...] = tuple(b for b in blades if len(b) % 2 == 1)
+        specs.append(TypeSpec("Odd", odd, n, TypeKind.GRADED))
     return specs
 
 
@@ -7087,59 +7086,56 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
         extras.append(i_extractor("plane_of_rotation", "Bivector"))
         return extras
 
-    def odd3_extras() -> list[ast.stmt]:
+    def odd_extras() -> list[ast.stmt]:
         extras: list[ast.stmt] = []
-        # The "cast" half of the opt-in query+cast: an Odd_3 value (grades {1,3}) is
-        # a Vector when its grade-3 part vanishes and a Trivector when its grade-1
-        # part vanishes.  The product return type stays Odd_3 (operation-based -- see
+        # The "cast" half of the opt-in query+cast: an Odd value is a grade-g
+        # k-vector (Vector, Trivector, FiveVector) when its other odd grades vanish.
+        # The product return type stays Odd (operation-based -- see
         # tasks/reference/generated-product-typing.md); these narrow explicitly,
-        # raising if the discarded grade is nonzero.  The "query" half is the
-        # inherited is_vector()/is_trivector()/grades().
-        cast_name: str
-        pred: str
-        target: str
-        pairs: Sequence[tuple[str, ast.expr]]
-        why: str
-        for cast_name, pred, target, pairs, why in (
-            (
-                "to_vector",
-                "is_vector",
-                "Vector",
-                [
-                    ("coeff_e_1", attribute("self", "coeff_e_1")),
-                    ("coeff_e_2", attribute("self", "coeff_e_2")),
-                    ("coeff_e_3", attribute("self", "coeff_e_3")),
-                ],
-                "grade-3 (e_123) part is nonzero",
-            ),
-            (
-                "to_trivector",
-                "is_trivector",
-                "Trivector",
-                [("coeff_e_123", attribute("self", "coeff_e_123"))],
-                "grade-1 (vector) part is nonzero",
-            ),
-        ):
+        # raising if a discarded grade is nonzero.  The "query" half is the inherited
+        # is_vector()/is_trivector()/is_homogeneous_of_grade_r()/grades().
+        odd_grades: list[int] = sorted({len(b) for b in spec.blades})
+        grade: int
+        for grade in odd_grades:
+            target: str = grade_name(grade)
+            cast_name: str = "to_" + target.lower()
+            test: ast.expr = (
+                call(attribute("self", "is_vector"), [])
+                if grade == 1
+                else call(attribute("self", "is_trivector"), [])
+                if grade == 3
+                else call(
+                    attribute("self", "is_homogeneous_of_grade_r"),
+                    [],
+                    r=constant(grade),
+                )
+            )
+            others: str = " and ".join(
+                f"grade-{other}" for other in odd_grades if other != grade
+            )
+            why: str = f"{others} part is nonzero"
+            pairs: list[tuple[str, ast.expr]] = [
+                (field_name(b), attribute("self", field_name(b)))
+                for b in spec.blades
+                if len(b) == grade
+            ]
             extras.append(
                 function_def(
                     cast_name,
                     [
                         class_doc_stmt(
-                            f"Narrow this ``Odd_3`` to ``{target}`` -- raises "
+                            f"Narrow this ``Odd`` to ``{target}`` -- raises "
                             f"``ValueError`` if the {why}."
                         ),
                         ast.If(
-                            test=ast.UnaryOp(
-                                op=ast.Not(),
-                                operand=call(attribute("self", pred), []),
-                            ),
+                            test=ast.UnaryOp(op=ast.Not(), operand=test),
                             body=[
                                 ast.Raise(
                                     exc=call(
                                         "ValueError",
                                         [
                                             constant(
-                                                f"Odd_3 is not a {target}: its {why}."
+                                                f"Odd is not a {target}: its {why}."
                                             )
                                         ],
                                     ),
@@ -7470,8 +7466,8 @@ def generate_graded_type(spec: TypeSpec, n: int, full_name: str) -> list[ast.stm
             body += bivector_extras()
         case "Versor":
             body += versor_extras()
-        case "Odd_3":
-            body += odd3_extras()
+        case "Odd":
+            body += odd_extras()
         case "Vector":
             body += vector_extras()
         case _:

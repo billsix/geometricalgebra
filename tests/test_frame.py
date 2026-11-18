@@ -217,7 +217,8 @@ def test_make_orthogonal_frame_raises_on_dependent() -> None:
 # because ``A_k = A_{k-1} v_k^⊥``, so ``c_k = (reverse(A_{k-1}) A_{k-1}) v_k^⊥ =
 # |A_{k-1}|² v_k^⊥``, a positive-scalar multiple of w_k.  The symbolic/concrete test
 # asserts both the parallelism and that exact factor; the numeric test asserts the
-# parallelism.  See ``tasks/define-frame.md`` Part 1c.
+# parallelism.  Proof: ``tasks/reference/frames-qr-and-reciprocal-frames.md``,
+# "Hestenes' orthogonalization equals rejection".
 
 
 @pytest.mark.parametrize("frame", FRAMES_WITH_SLOW_3D_SYMBOLIC)

@@ -2167,9 +2167,10 @@ class MultiVectorBase(abc.ABC):
         vectors, e.g. a rotor), where ``(Ã/|A|²) * A = Ã * A / |A|² = 1``.  For a
         **general mixed-grade multivector**, ``Ã * A`` has non-scalar parts, so
         this returns a WRONG "inverse".  A general low-dimensional closed form
-        does exist (Hitzer & Sangwine 2017, via the grade involutions) but is
-        not implemented here — it is tracked in
-        ``tasks/lean-general-multivector-inverse.md``.  ``A A⁻¹ = 1`` is
+        exists for 𝒢₂ and 𝒢₃ (Hitzer & Sangwine 2017, via the grade involution
+        and the Clifford conjugate) and is proved in
+        ``proofs/GacalcProofs/GeneralInverse.lean``, but is not implemented
+        here.  ``A A⁻¹ = 1`` is
         machine-checked for the vector, versor, bivector and trivector cases in
         the Lean proof layer (``proofs/GacalcProofs/``).
 
@@ -2182,8 +2183,8 @@ class MultiVectorBase(abc.ABC):
         A good alternative NOT used: trust the graded subtypes — a ``Vector``/
         ``Bivector``/``Trivector``/``Versor`` is a blade/versor by construction, so
         no runtime check is needed on those types; only a raw mixed-grade ``Gn``/
-        ``G`` is unsafe.  The general low-dim closed form is tracked in
-        ``tasks/lean-general-multivector-inverse.md``.)
+        ``G`` is unsafe.  The general low-dim closed form is proved in
+        ``proofs/GacalcProofs/GeneralInverse.lean``.)
 
         Returns:
             Self: the inverse ``A⁻¹ = Ã / |A|²`` (valid for a blade or versor).
@@ -2239,7 +2240,8 @@ class MultiVectorBase(abc.ABC):
             raise RuntimeError(
                 "inverse() supports a blade or versor (where Ã * A is a scalar); the "
                 "general mixed-grade multivector inverse is not implemented "
-                "(see tasks/lean-general-multivector-inverse.md)"
+                "(the general 𝒢₂/𝒢₃ form is proved in "
+                "proofs/GacalcProofs/GeneralInverse.lean)"
             )
         # Keep numeric input numeric: a ``float`` |A|² stays a float so the
         # reciprocal doesn't leak sympy into numeric pipelines.  For an ``int``
@@ -3395,8 +3397,8 @@ class MultiVectorBase(abc.ABC):
         bivector to a bivector, and so on.  The raw product
         ``self * x * self.inverse()`` carries the higher grade *structurally*
         (e.g. ``Versor * Vector`` carries a trivector when ``x`` is off the
-        versor's plane — in 𝒢₃ that is the named ``Odd_3`` type, elsewhere it
-        widens to the full ``G_n``), but for a versor those extra grades are
+        versor's plane — in the generated 𝒢₃ to 𝒢₅ that is the named ``Odd``
+        type, on ``Gn`` the full multivector), but for a versor those extra grades are
         zero, so the result is rebuilt as ``type(x)`` — whose ``from_blade_dict``
         keeps only ``x``'s blades.  ``zero`` conjugates to ``zero`` (no
         ``is_vector`` assertion, unlike the projection-based

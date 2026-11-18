@@ -162,6 +162,7 @@ theorem zero_add (a : G2) : add zero a = a := by simp only [add, zero]; ext <;> 
 theorem add_neg_cancel (a : G2) : add a (neg a) = zero := by
   simp only [add, neg, zero]; ext <;> ring
 
+-- twin: GacalcProofs.G2.mul_assoc
 /-- The geometric product is **associative**. -/
 theorem mul_assoc (a b c : G2) : mul (mul a b) c = mul a (mul b c) := by
   simp only [mul]; ext <;> ring
@@ -175,6 +176,7 @@ theorem mul_one (a : G2) : mul a one = a := by simp only [mul, one]; ext <;> rin
 /-- `zero` **annihilates** from the left: `0 * a = 0`. -/
 theorem zero_mul (a : G2) : mul zero a = zero := by simp only [mul, zero]; ext <;> ring
 
+-- twin: GacalcProofs.G2.mul_add
 /-- The product **distributes over addition on the left**. -/
 theorem mul_add (a b c : G2) : mul a (add b c) = add (mul a b) (mul a c) := by
   simp only [mul, add]; ext <;> ring

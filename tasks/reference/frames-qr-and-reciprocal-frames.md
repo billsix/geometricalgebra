@@ -5,8 +5,9 @@ recording its coefficients *is* QR, how that gives an inverse without row reduct
 Hestenes' reciprocal frame and to the SVD, and why gacalc's implementation works from the orthogonal
 set rather than the orthonormal one. gacalc implements it as `gacalc.frame.Frame` (`src/gacalc/frame.py`, tests in
 `tests/test_frame_class.py`); the build record is `tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`.
-The reciprocal frame's build record is `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`. Open follow-ups: `tasks/frame-svd-investigation.md` and
-`tasks/frame-inverse-head-first-recursion.md` (whether the peel can run first-element-first). The
+The reciprocal frame's build record is `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`. The SVD study and the head-first peel are
+`tasks/archive/2026/11/18/frame-svd-investigation.md` and
+`tasks/archive/2026/11/18/frame-inverse-head-first-recursion.md`. The
 book notebooks (`book/docs/frames-qr.rst`) are recorded in
 `tasks/archive/2026/11/04/frame-notebooks-epix.md`. Created 2026-11-04 (William Emerison Six
 <billsix@gmail.com>). Update in place.
@@ -85,54 +86,62 @@ last vector. It computes the same coordinates as the two steps above; the next s
 
 ## The peel inverse, step by step
 
-`Frame.to_invertible_function()` (`src/gacalc/frame.py`) inverts `f(x) = Σ_i x_i * v_i` with a `match`
-recursion over the pairs `(w_i, v_i)`: `case []` returns no coordinates, `case [*earlier, (w, v)]` solves
-the last one and recurses on `earlier`.
+`Frame.to_invertible_function(inverse_method=InverseMethod.PEEL)` (`src/gacalc/frame.py`) inverts
+`f(x) = Σ_i x_i * v_i` with a head-first `match` recursion over pairs `(u_i, v_i)`: `case []` returns
+no coordinates, and `case [(u, v), *later]` solves the first coordinate and recurses on `later`. The
+`u_i` are the frame **orthogonalized from its last vector**: `u_i` is `v_i` with
+`span(v_{i+1} … v_k)` rejected out of it. That is `make_orthogonal_frame` of the reversed frame,
+reversed back, computed once when the map is built. `Frame`'s own `orthogonal_vectors()` keeps the
+first-to-last order and is not changed.
 
-**One step.** Let `y = Σ_{i ≤ k} x_i * v_i`, and let `(w_k, v_k)` be the last pair.
+**One step.** Let `y = Σ_{i ≤ k} x_i * v_i`, and let `(u_1, v_1)` be the first pair.
 
-1. **Read the last coordinate.** `w_k` is `v_k` with `span(v_1 … v_{k-1})` rejected out of it, so it is
-   perpendicular to every earlier frame vector. Dotting `y` with it kills every earlier term:
-   `w_k · y = x_k * (w_k · v_k)`. And `w_k · v_k = |w_k|²`, since `v_k` is `w_k` plus a part lying in the
-   earlier span, which `w_k` is perpendicular to. So `x_k = (w_k · y) / |w_k|²`. Geometrically,
-   `(w_k · y) / |w_k|²` is the length of `y`'s shadow on the `w_k` direction, measured in units of
-   `|w_k|`: how far `y` sticks out of the plane (or line) of the earlier vectors, divided by how far
-   `v_k` does.
-2. **Remove that vector's contribution.** `y − x_k * v_k = Σ_{i < k} x_i * v_i`, which lies in
-   `span(v_1 … v_{k-1})`. Geometrically, `y` slides along `v_k` until it lands in the earlier span.
-3. **Repeat on the smaller frame.** For `v_1 … v_{k-1}`, the last orthogonal vector `w_{k-1}` is
-   perpendicular to `v_1 … v_{k-2}`, so step 1 applies again. After `k` steps the remainder is the zero
-   vector and every coordinate has been read.
+1. **Read the first coordinate.** `u_1` is perpendicular to every later frame vector, so dotting `y`
+   with it kills every later term: `u_1 · y = x_1 * (u_1 · v_1)`. And `u_1 · v_1 = |u_1|²`, since `v_1`
+   is `u_1` plus a part lying in the later span. So `x_1 = (u_1 · y) / |u_1|²`. Geometrically, that is
+   how far `y` sticks out of the plane (or line) of the later vectors, divided by how far `v_1` does.
+2. **Remove that vector's contribution.** `y − x_1 * v_1 = Σ_{i > 1} x_i * v_i`, which lies in
+   `span(v_2 … v_k)`: `y` slides along `v_1` until it lands in the span of the rest.
+3. **Repeat on the rest of the frame.** `u_2` is perpendicular to `v_3 … v_k`, so step 1 applies
+   again. After `k` steps the remainder is the zero vector and every coordinate has been read.
 
-**Worked example in 2D.** Frame `v_1 = 2 * e_1`, `v_2 = 1 * e_1 + 3 * e_2`; orthogonal set
-`w_1 = 2 * e_1`, `w_2 = 3 * e_2`; `y = 3 * e_1 + 3 * e_2`.
+**Worked example in 2D.** Frame `v_1 = 2 * e_1`, `v_2 = 1 * e_1 + 3 * e_2`. Orthogonalized from the end:
+`u_2 = v_2`, and `u_1 = v_1 − ((v_1 · v_2) / |v_2|²) * v_2 = 9/5 * e_1 − 3/5 * e_2`. Take
+`y = 3 * e_1 + 3 * e_2`.
 
-- `x_2 = (w_2 · y) / |w_2|² = 9 / 9 = 1`: `y` is 3 units above the `e_1` line, and so is `v_2`.
-- Remainder: `y − 1 * v_2 = 2 * e_1`. `y` slid down along `v_2` onto the line of `v_1`.
-- `x_1 = (w_1 · 2 * e_1) / |w_1|² = 4 / 4 = 1`.
+- `x_1 = (u_1 · y) / |u_1|² = (18/5) / (18/5) = 1`.
+- Remainder: `y − 1 * v_1 = 1 * e_1 + 3 * e_2`. `y` slid along `v_1` onto the line of `v_2`.
+- `x_2 = (u_2 · v_2) / |u_2|² = 1`.
 - So `x = 1 * e_1 + 1 * e_2`, and indeed `f(x) = 1 * v_1 + 1 * v_2 = y`.
 
-**In 3D** the first step measures `y`'s height above the plane of `v_1, v_2` (along `w_3`), slides `y`
-along `v_3` down into that plane, and the rest is the 2D example.
+**In 3D** the first step measures how far `y` sticks out of the plane of `v_2, v_3` (along `u_1`),
+slides `y` along `v_1` into that plane, and the rest is the 2D case.
 
-**Why the order is last-first.** The peel needs, at each step, a direction perpendicular to every frame
-vector except the one being solved. Orthogonalizing in frame order (as `make_orthogonal_frame` and
-Hestenes' prefix blades `A_k = v_1 ∧ … ∧ v_k` do) gives exactly one such direction, the last `w_k`. The
-first vector's `w_1` is `v_1` itself, which is not perpendicular to the others, so `w_1 · y` mixes every
-coordinate. Two head-first alternatives were considered and rejected (William Emerison Six
-<billsix@gmail.com>, 2026-11-04):
+**Why the orthogonalization runs backwards.** At each step the peel needs a direction perpendicular to
+every frame vector still to be solved except the current one. Orthogonalizing in frame order (as
+`make_orthogonal_frame` and Hestenes' prefix blades `A_k = v_1 ∧ … ∧ v_k` do) makes `w_k` perpendicular
+to everything *before* it, so a peel over the `w_k` must start at the end. Until 2026-11-18 the peel
+did exactly that, `case [*earlier, (w, v)]`. The maintainer prefers recursion that handles the head
+first (William Emerison Six <billsix@gmail.com>, 2026-11-06), so the orthogonalization was turned
+around instead of the recursion. This is the general fix for an algorithm that seems to need the tail
+first: change how its data is built so the head can go first.
 
-- **Matching `[head, *tail]` on the reversed pairs.** This only rearranges the same last-first
-  computation; it adds two reversals and changes no mathematics.
-- **Solving `x_1` first.** Orthogonalize the reversed frame (`v_k` first) and reverse the result, so that
-  `v_1`'s orthogonal vector is perpendicular to `v_2 … v_k`. A prototype recovered symbolic inputs
-  exactly, but the stored set would no longer follow the frame order (breaking the `w_1 = v_1`
-  convention, the below-diagonal zeros of `coefficients()`, and the prefix-blade volume relation), or
-  `Frame` would need a second symbolic orthogonalization. It is the same QR solve applied to the reversed
-  frame, so nothing is gained mathematically.
+Two concerns about the head-first form were raised on 2026-11-04 and no longer apply:
+- **The stored set would lose frame order.** It does not: the backward set is computed only inside
+  `to_invertible_function`, and `Frame` keeps its `w_1 = v_1` set, the below-diagonal zeros of
+  `coefficients()`, and the prefix-blade volume relation.
+- **A second symbolic orthogonalization.** The peel needs one orthogonalization either way; it is now
+  the backward one instead of `orthogonal_vectors()`.
 
-The order-free version is the reciprocal frame: `x_i = vⁱ · y`, each coordinate one dot product (below,
-and `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`).
+Matching `[head, *tail]` on the *reversed* pairs, by contrast, would only have rearranged the same
+last-first computation.
+
+The Lean model (`ReciprocalFrame2D.lean` / `ReciprocalFrame3D.lean`, `invPeel`) still peels from the
+last vector. A frame's coordinates are unique, so the two peels return the same result, and
+`invReciprocal_eq_invPeel` plus the Python round-trip tests cover both.
+
+The order-free version is the reciprocal frame, the default: `x_i = vⁱ · y`, each coordinate one dot
+product (below, and `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`).
 
 ## Why gacalc's `Frame` uses the orthogonal set, not the orthonormal one
 
@@ -334,9 +343,9 @@ the height positive. So eq 3.7 builds `n̂ / (n̂ · v_k)` in one product.
 - `x_2`: the face `H_2` is the line of `v_1`, the `e_1` axis, with normal `e_2`. The height of `y` is 3,
   and the height of `v_2` is 3. So `x_2 = 1` and `v² = 1/3 * e_2`.
 
-**The peel is the same triangle, for the last vector.** For `v_k`, the face is `span(v_1 … v_{k-1})`. Its
-unit normal is `w_k / |w_k|`, and the height of `v_k` above it is `|w_k|`. So
-`x_k = (w_k · y) / |w_k|²`, which is the peel's step 1 ("The peel inverse, step by step"). The peel finds
+**The peel is the same triangle, for the first vector still to be solved.** For `v_1`, the face is
+`span(v_2 … v_k)`. Its unit normal is `u_1 / |u_1|`, and the height of `v_1` above it is `|u_1|`. So
+`x_1 = (u_1 · y) / |u_1|²`, which is the peel's step 1 ("The peel inverse, step by step"). The peel finds
 one face normal by rejection and then shrinks the frame. The reciprocal frame finds every face normal at
 once, so no coordinate waits on another.
 
@@ -352,9 +361,9 @@ inverse, and `transforms.line_to_line_projection(from_vector=v_i, to_vector=n)` 
     x_i * v_i = line_to_line_projection(from_vector=v_i, to_vector=n).inverse(P_n(y))
     x_i       = coordinate_along(x_i * v_i, along=v_i)
 
-with `n = vⁱ` for the reciprocal inverse and `n = w_k` for the peel's last vector (then subtract the term
-and recurse). On the worked example, `n = w_2`, `v²` and `v¹` each give `x = 1`; `n = w_1`, which is not
-perpendicular to `v_2`, gives `3/2`.
+with `n = vⁱ` for the reciprocal inverse and `n = u_1` for the peel's first vector (then subtract the term
+and recurse on the rest). On the worked example, `n = w_2`, `v²` and `v¹` each give `x = 1`; `n = w_1`,
+which is not perpendicular to `v_2`, gives `3/2`.
 
 **Cost (measured 2026-11-07, symbolic `Gn`).** The full `pytest` suite took 6:19 with the dot-product
 forms, 12:15 once the coefficients were read as projections, and 26:38 with both inverses written as
@@ -362,6 +371,83 @@ above. The 3D symbolic tests carry all of it: `test_inverse_methods_are_equivale
 → 475 s, `test_composed_round_trip_is_identity_symbolic[3d-peel]` 64 s → 200 s → 415 s, and `[3d-reciprocal]`
 under 20 s → 282 s. Each inverse call now runs the on-the-line checks (`is_orthogonal_to`,
 `is_parallel_to`) and an extra projection, and `Gn` simplifies after each.
+
+## Hestenes' orthogonalization equals rejection, up to a positive scale
+
+`frame.py` keeps three orthogonalizations side by side for teaching:
+- `make_orthogonal_frame`: sequential rejection, the maintainer's Gram–Schmidt;
+- `make_orthogonal_frame_hestenes`: H&S p. 27 eq 3.2, `c_k = Ã_{k-1} * A_k`, where
+  `A_k = v_1 ∧ … ∧ v_k` and `A_0 = 1` (eq 3.1, `prefix_blades`);
+- `make_orthogonal_frame_hestenes_inverse`: the same formula with `A_{k-1}⁻¹` in place of the reverse.
+
+**Theorem.** For a frame `v_1 … v_k`, let `w_1 … w_k` be its rejection orthogonalization: `w_j` is
+`v_j` with the span of `v_1 … v_{j-1}` rejected out of it. Then
+
+    A_k = w_1 * w_2 * … * w_k,
+    c_k = Ã_{k-1} * A_k = |A_{k-1}|² * w_k,   |A_{k-1}|² = |w_1|² * … * |w_{k-1}|² > 0,
+    A_{k-1}⁻¹ * A_k = w_k.
+
+**Proof**, by induction on `k`. For `k = 0`, `A_0 = 1` is the empty product. Assume
+`A_{k-1} = w_1 * … * w_{k-1}`.
+1. Split `v_k = p + w_k`, where `p` lies in the span of `v_1 … v_{k-1}` (the subspace of `A_{k-1}`)
+   and `w_k` is perpendicular to it.
+2. Wedging a blade with a vector in its own subspace gives zero, so `A_{k-1} ∧ p = 0`. Then
+   `A_k = A_{k-1} ∧ v_k = A_{k-1} ∧ w_k`.
+3. The `w_1 … w_k` are mutually perpendicular. For perpendicular vectors the geometric product is the
+   wedge (each dot product is zero), so `w_1 * … * w_k = w_1 ∧ … ∧ w_k`. By the hypothesis this is
+   `A_{k-1} ∧ w_k`, which step 2 showed is `A_k`.
+4. Reversing a product of vectors reverses their order, so
+   `Ã_{k-1} * A_{k-1} = w_{k-1} * … * w_1 * w_1 * … * w_{k-1}`. Each `w_j * w_j = |w_j|²` is a
+   scalar, so the middle collapses pair by pair to the positive scalar `∏_{j<k} |w_j|² = |A_{k-1}|²`.
+5. Hence `c_k = Ã_{k-1} * A_{k-1} * w_k = |A_{k-1}|² * w_k`. Since
+   `A_{k-1}⁻¹ = Ã_{k-1} / |A_{k-1}|²`, also `A_{k-1}⁻¹ * A_k = w_k`. ∎
+
+What follows:
+- The Hestenes vectors point the same way as the rejection vectors (a positive factor keeps
+  direction and sign), and `c_1 = w_1` exactly. After normalization the two frames are identical.
+- The inverse form is *exactly* the rejection.
+- `|A_k|² = ∏_{j≤k} |w_j|²`: the squared volume of the parallelotope is the product of its squared
+  orthogonal heights. This is the GA form of the Gram determinant, and the reason
+  `measure.content_by_rejection` agrees with `measure.content`.
+
+The two methods compute differently. Each Hestenes `c_k` comes straight from the original prefix
+`v_1 … v_k` (closed form, independent of the other `c_j`), while each `w_k` is built from the
+already-orthogonalized `w_1 … w_{k-1}` (sequential). The theorem is the bridge between them.
+
+**Where it is checked.** `tests/test_frame.py`:
+- the reverse form is *parallel* to the rejection (`c_k ∥ w_k`, through `is_parallel_to`) in 2D and
+  3D, symbolic, concrete and numeric;
+- the inverse form *equals* the rejection.
+
+A symbolic cross-construction check must test that `c_k − w_k` (or the scaled difference) is the
+zero multivector, not `c_k == w_k`. `Gn.__eq__` is structural, and two constructions of the same
+vector give structurally different sympy expressions. Subtraction simplifies to exact zero, `==` does
+not. There is no Lean version yet: frames in Lean are `tasks/lean-frame-coverage.md`, which is
+parked.
+
+## Design facts about `frame.py` (from `tasks/archive/2026/11/18/define-frame.md`)
+
+- **Frame (H&S p. 27):** a set of vectors whose wedge is nonzero, which means linearly independent,
+  not orthogonal. `are_linearly_independent` tests the wedge, and `is_frame` passes through to it.
+  - A zero or non-vector member raises `ValueError`: a category error, not "a dependent frame".
+  - An empty sequence is not a frame.
+- **`make_orthogonal_frame` rejects one earlier vector at a time**, not the span blade. When it was
+  written, `reject` handled only grade-1 and grade-2 spans
+  (`tasks/generalize-reject-reflect-higher-grade.md`). The earlier `w_j` are mutually perpendicular,
+  so the two give the same result.
+- **Free functions over `MultiVectorBase`, not generated methods.** The generator compiles closed-form
+  arithmetic on single values. These functions are algorithms over a sequence of vectors, built from
+  primitives every representation already has, so one implementation serves `Gn`, `g2` and `g3`.
+- **The rest of the library already accepts a `Frame`** (the 2026-11-18 sweep):
+  - `v.projected_onto(frame.vectors)`, `rejected_away_from` and `reflect` take the vector tuple,
+    because they accept a sequence and wedge it;
+  - `to_matrix(frame.to_invertible_function(), cls)` gives the frame matrix, since the function is
+    `Linearity.LINEAR`;
+  - `measure.content_by_rejection` uses `make_orthogonal_frame` on a plain sequence, which is the
+    right shape for it.
+
+  No `Frame.standard(n)` was added: `Frame((1 * e_1, 1 * e_2))` already says it, and nothing needs
+  one.
 
 ## Floating point
 
@@ -372,14 +458,44 @@ where this does not arise. For floats, small inexactness is accepted (the mainta
 ## Does this give the SVD?
 
 Not from a single QR. The SVD `V = U Σ Wᵀ` is rotation ∘ axis scaling ∘ rotation. Its axes are the
-eigenvectors of `VᵀV`, which one orthogonalization does not find. Routes that do reach the SVD from
-frames:
+eigenvectors of `VᵀV`, which one orthogonalization does not find. Three routes were tried in
+`tests/test_frame_svd.py` (2026-11-18), each written with gacalc's own transforms. All three work.
 
-- **The QR algorithm:** factor `A = QR`, form `RQ`, and repeat. Applied to `VᵀV`, it converges to the
-  eigen-decomposition, so the SVD comes as a limit of repeated frame orthonormalizations.
-- **Closed form in 2D**, written as rotor ∘ `scale_non_uniform` ∘ rotor. 3D needs a cubic's roots.
+1. **`f = Q ∘ R`, the same rotate-after-deform shape.** Since
+   `v_i = Σ_j (coefficients()[i][j] * |w_j|) * u_j`:
+   - R sends `e_i` to `Σ_j coefficients()[i][j] * |w_j| * e_j`. That is a triangular frame, so
+     `Frame` builds it too.
+   - Q sends `e_j` to `u_j`. It is a chain of rotations from vectors: each turns the image of the
+     next basis vector onto the next `u_j`, in a plane perpendicular to the `u`'s already placed. A
+     left-handed frame adds an axis flip, `scale_non_uniform(1, …, −1)`, run first.
 
-These are investigated in `tasks/frame-svd-investigation.md`.
+   `compose([*Q, R])` equals `Frame.to_invertible_function()` in 2D and 3D, right- and left-handed.
+   This is not the SVD: R shears.
+2. **The QR algorithm reaches the SVD numerically.** Take the Gram matrix `M_ij = v_i · v_j`. Factor
+   `M = QR` with a `Frame` (Q from `orthonormal_vectors()`, `R_ij = u_i · m_j`), form `RQ`, and
+   repeat. `M` converges to `diag(σ_i²)`, and the accumulated `Q` columns are the right singular
+   vectors `w_i`. The images `f(w_i)` are then mutually perpendicular with lengths `σ_i`. 200
+   iterations on a 3D float frame give the lengths to a relative 1e-9 and perpendicularity to 1e-7. It needs distinct singular values and is linear in
+   their ratios: Gram–Schmidt QR with no shifts.
+3. **The closed-form 2D SVD is exact.** The squared singular values are the eigenvalues of the
+   Gram matrix: their sum is `|v_1|² + |v_2|²`, and their product is `|v_1 ∧ v_2|²` (the area
+   squared). The eigenvector for the larger one is `w_1 ∝ (g_12, λ_1 − g_11)`, with
+   `w_2 = w_1.rotate_90_degrees()`. Then `u_i = f(w_i) / σ_i`, and
+   `f = U ∘ scale_non_uniform(σ_1, σ_2) ∘ W⁻¹`, where W is
+   `versor_rotation(from_vector=e_1, to_vector=w_1)` and U is the route-1 Q of the `u_i`. A frame
+   built as `U Σ Wᵀ` from Pythagorean rotations with `σ = 5, 2` is taken apart and rebuilt exactly
+   in sympy rationals. 3D would need a cubic's roots: possible, but not done.
+
+What to take from this: the SVD in GA is two chains of rotations from vectors around a
+`scale_non_uniform`, and only the axes need a numerical method beyond 2D.
+
+**Not added to the library.** Nothing needs an `svd()` yet, so the routes stay as tests. A
+library version would be the 2D closed form plus the QR iteration for 3D, returning
+`(U parts, σ, W)` as transforms.
+
+**Bug found on the way:** `inverse()` rejects a float 𝒢₃ versor because `Ã * A` carries a 1e-16
+bivector residue, so `versor_rotation` crashes on ordinary 3D float vectors. Route 1 uses
+`projection_rotation` until `tasks/inverse-float-versor-rounding.md` is fixed.
 
 ## Sources
 
@@ -387,5 +503,6 @@ These are investigated in `tasks/frame-svd-investigation.md`.
 - [QR decomposition](https://kaweah.freedombox.rocks/kiwix/wikipedia_en_all_maxi_2023-10/QRD): solving with QR; Gram–Schmidt stability vs Householder/Givens
 - [Singular value decomposition](https://en.wikipedia.org/wiki/Singular_value_decomposition): rotation · scaling · rotation
 - [Doran, GA2015 Lecture 4](https://geometry.mrao.cam.ac.uk/wp-content/uploads/2015/10/GA2015_Lecture4.pdf): linear functions in GA (outermorphism); mentions SVD as a representation
-- `tasks/define-frame.md`: the H&S p. 27 frame definition and the `c_k = |A_{k-1}|² w_k` equivalence
+- `tasks/archive/2026/11/18/define-frame.md`: the task that built frames; its proof and design facts are
+  above ("Hestenes' orthogonalization equals rejection")
 - `tasks/reference/galgebra-comparison.md`: galgebra's `ReciprocalFrame`

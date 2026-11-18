@@ -35,4 +35,4 @@ the `.rst`/notebook prose and the `.. note:: Draft` banner is removed.
 - Equivalence proofs the page rests on: `proofs/GacalcProofs/TrigEquiv.lean`; tests
   `tests/test_fixed_grade_dot_wedge.py`, `tests/test_signed_sine.py`.
 - The theme: `tasks/reference/reduction-to-standard-position.md` (duplicate-definition); the
-  "verify, don't derive" pedagogy in `tasks/reference-doc-lean-workflow-and-proof-notebooks.md`.
+  "verify, don't derive" pedagogy in `tasks/reference/lean-python-notebook-workflow.md`.

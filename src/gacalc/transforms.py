@@ -39,10 +39,11 @@ free).  The versor *builder* ``MultiVectorBase.versor_from_vectors(from, to)``
 remains the algebra-level primitive.  Every rotation here names its plane, so a
 vector with an ``e_3`` (or higher) component is never silently mis-transformed.
 
-This module also carries an *animation* layer (``InvertibleFunction.at`` /
-``steps`` plus the ``interpolate`` / ``components`` fields, ported from the
-author's *modelviewprojection* book), a linear / affine / non-linear
-classification (:class:`Linearity`, joined by ``compose``), and
+This is the module to import from: it re-exports the leaf
+:mod:`gacalc.functions` (``ComposableFunction``, ``InvertibleFunction``,
+``compose``, ``inverse``, ``identity``, :class:`Linearity`), including their
+*animation* layer (``at`` / ``steps`` plus the ``interpolate`` / ``components``
+fields, ported from the author's *modelviewprojection* book), and adds
 :func:`to_matrix` (the homogeneous matrix of a linear/affine function).
 """
 

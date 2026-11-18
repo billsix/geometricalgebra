@@ -63,6 +63,7 @@ def test_project_plus_reject_is_identity_numeric() -> None:
 _B_EXACT: Vector = 3 * e_1 + 4 * e_2 + 12 * e_3
 
 
+# twin: GacalcProofs.G3.projectSP_eq_proj
 def test_project_sp_matches_canonical_symbolic() -> None:
     """Symbolic ``a`` with an exact-magnitude ``b`` (k = 5, |b| = 13): the
     standard-position projection equals the canonical Hestenes projection."""
@@ -77,6 +78,7 @@ def test_project_sp_matches_canonical_symbolic() -> None:
     )
 
 
+# twin: GacalcProofs.G3.rejectSP_eq_reject
 def test_reject_sp_matches_canonical_symbolic() -> None:
     a_1: sympy.Symbol
     a_2: sympy.Symbol

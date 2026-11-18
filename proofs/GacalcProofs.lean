@@ -34,3 +34,4 @@ import GacalcProofs.MathlibBridge
 
 import GacalcProofs.ReciprocalFrame2D
 import GacalcProofs.ReciprocalFrame3D
+import GacalcProofs.GeneralInverse

@@ -346,6 +346,7 @@ theorem alignSP_self {b : G3} (hbv : IsVector b) (hb : magnitude b ≠ 0) :
   rw [alignSP, rotXY_aligns_xy_SP hbv,
     rotXZ_aligns_xz _ _ _ hb (by rw [magnitude_sq_of_isVector hbv, xyMagnitude_sq])]
 
+-- twin: GacalcProofs.G3.projectSP_eq_proj
 /-- **`project_sp = project`:** the standard-position projection of `a` onto `b` is the Hestenes
     projection `proj b a`, for any nonzero vector `b` (`|b| ≠ 0`), the `e₃` axis included;
     `a` may be any multivector. In the aligned frame "keep the x-component" is `proj (|b|*e₁)`
@@ -366,6 +367,7 @@ theorem rejectSP_eq_vecReject {b : G3} (hbv : IsVector b) (hb : magnitude b ≠ 
     rejectSP a b = vecReject b a := by
   simp only [rejectSP, vecReject, projectSP_eq_proj hbv hb]
 
+-- twin: GacalcProofs.G3.rejectSP_eq_reject
 theorem rejectSP_eq_reject {a b : G3} (hav : IsVector a) (hbv : IsVector b)
     (hb : magnitude b ≠ 0) (hbn : normSq b ≠ 0) : rejectSP a b = reject b a := by
   rw [rejectSP_eq_vecReject hbv hb, vecReject, reject_vec_eq hbv hav hbn]
