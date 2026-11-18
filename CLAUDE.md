@@ -41,7 +41,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `make_orthogonal_frame` (rejection), `make_orthogonal_frame_hestenes` (closed form
   `reverse(A_{k-1}) * A_k`, equal to rejection up to the positive scalar `|A_{k-1}|²`), and
   `make_orthogonal_frame_hestenes_inverse` (same closed form with `inverse` for `reverse`, so the
-  scalar cancels and it equals rejection **exactly**). See `tasks/define-frame.md`.
+  scalar cancels and it equals rejection **exactly**; proof in `tasks/reference/frames-qr-and-reciprocal-frames.md`).
   Also the **`Frame`** dataclass: built from a **tuple** of vectors, stored as `vectors` (what
   `iter()` yields); `orthogonal_vectors()` computes their orthogonal set `w_j` (orthogonal, not
   orthonormal, so symbolic 3D stays sqrt-free and decidable); `coefficients()` computes the triangular `(w_j · v_i) / |w_j|²` table (QR with the

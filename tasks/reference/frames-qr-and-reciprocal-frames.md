@@ -363,6 +363,83 @@ above. The 3D symbolic tests carry all of it: `test_inverse_methods_are_equivale
 under 20 s → 282 s. Each inverse call now runs the on-the-line checks (`is_orthogonal_to`,
 `is_parallel_to`) and an extra projection, and `Gn` simplifies after each.
 
+## Hestenes' orthogonalization equals rejection, up to a positive scale
+
+`frame.py` keeps three orthogonalizations side by side for teaching:
+- `make_orthogonal_frame`: sequential rejection, the maintainer's Gram–Schmidt;
+- `make_orthogonal_frame_hestenes`: H&S p. 27 eq 3.2, `c_k = Ã_{k-1} * A_k`, where
+  `A_k = v_1 ∧ … ∧ v_k` and `A_0 = 1` (eq 3.1, `prefix_blades`);
+- `make_orthogonal_frame_hestenes_inverse`: the same formula with `A_{k-1}⁻¹` in place of the reverse.
+
+**Theorem.** For a frame `v_1 … v_k`, let `w_1 … w_k` be its rejection orthogonalization: `w_j` is
+`v_j` with the span of `v_1 … v_{j-1}` rejected out of it. Then
+
+    A_k = w_1 * w_2 * … * w_k,
+    c_k = Ã_{k-1} * A_k = |A_{k-1}|² * w_k,   |A_{k-1}|² = |w_1|² * … * |w_{k-1}|² > 0,
+    A_{k-1}⁻¹ * A_k = w_k.
+
+**Proof**, by induction on `k`. For `k = 0`, `A_0 = 1` is the empty product. Assume
+`A_{k-1} = w_1 * … * w_{k-1}`.
+1. Split `v_k = p + w_k`, where `p` lies in the span of `v_1 … v_{k-1}` (the subspace of `A_{k-1}`)
+   and `w_k` is perpendicular to it.
+2. Wedging a blade with a vector in its own subspace gives zero, so `A_{k-1} ∧ p = 0`. Then
+   `A_k = A_{k-1} ∧ v_k = A_{k-1} ∧ w_k`.
+3. The `w_1 … w_k` are mutually perpendicular. For perpendicular vectors the geometric product is the
+   wedge (each dot product is zero), so `w_1 * … * w_k = w_1 ∧ … ∧ w_k`. By the hypothesis this is
+   `A_{k-1} ∧ w_k`, which step 2 showed is `A_k`.
+4. Reversing a product of vectors reverses their order, so
+   `Ã_{k-1} * A_{k-1} = w_{k-1} * … * w_1 * w_1 * … * w_{k-1}`. Each `w_j * w_j = |w_j|²` is a
+   scalar, so the middle collapses pair by pair to the positive scalar `∏_{j<k} |w_j|² = |A_{k-1}|²`.
+5. Hence `c_k = Ã_{k-1} * A_{k-1} * w_k = |A_{k-1}|² * w_k`. Since
+   `A_{k-1}⁻¹ = Ã_{k-1} / |A_{k-1}|²`, also `A_{k-1}⁻¹ * A_k = w_k`. ∎
+
+What follows:
+- The Hestenes vectors point the same way as the rejection vectors (a positive factor keeps
+  direction and sign), and `c_1 = w_1` exactly. After normalization the two frames are identical.
+- The inverse form is *exactly* the rejection.
+- `|A_k|² = ∏_{j≤k} |w_j|²`: the squared volume of the parallelotope is the product of its squared
+  orthogonal heights. This is the GA form of the Gram determinant, and the reason
+  `measure.content_by_rejection` agrees with `measure.content`.
+
+The two methods compute differently. Each Hestenes `c_k` comes straight from the original prefix
+`v_1 … v_k` (closed form, independent of the other `c_j`), while each `w_k` is built from the
+already-orthogonalized `w_1 … w_{k-1}` (sequential). The theorem is the bridge between them.
+
+**Where it is checked.** `tests/test_frame.py`:
+- the reverse form is *parallel* to the rejection (`c_k ∥ w_k`, through `is_parallel_to`) in 2D and
+  3D, symbolic, concrete and numeric;
+- the inverse form *equals* the rejection.
+
+A symbolic cross-construction check must test that `c_k − w_k` (or the scaled difference) is the
+zero multivector, not `c_k == w_k`. `Gn.__eq__` is structural, and two constructions of the same
+vector give structurally different sympy expressions. Subtraction simplifies to exact zero, `==` does
+not. There is no Lean version yet: frames in Lean are `tasks/lean-frame-coverage.md`, which is
+parked.
+
+## Design facts about `frame.py` (from `tasks/archive/2026/11/18/define-frame.md`)
+
+- **Frame (H&S p. 27):** a set of vectors whose wedge is nonzero, which means linearly independent,
+  not orthogonal. `are_linearly_independent` tests the wedge, and `is_frame` passes through to it.
+  - A zero or non-vector member raises `ValueError`: a category error, not "a dependent frame".
+  - An empty sequence is not a frame.
+- **`make_orthogonal_frame` rejects one earlier vector at a time**, not the span blade. When it was
+  written, `reject` handled only grade-1 and grade-2 spans
+  (`tasks/generalize-reject-reflect-higher-grade.md`). The earlier `w_j` are mutually perpendicular,
+  so the two give the same result.
+- **Free functions over `MultiVectorBase`, not generated methods.** The generator compiles closed-form
+  arithmetic on single values. These functions are algorithms over a sequence of vectors, built from
+  primitives every representation already has, so one implementation serves `Gn`, `g2` and `g3`.
+- **The rest of the library already accepts a `Frame`** (the 2026-11-18 sweep):
+  - `v.projected_onto(frame.vectors)`, `rejected_away_from` and `reflect` take the vector tuple,
+    because they accept a sequence and wedge it;
+  - `to_matrix(frame.to_invertible_function(), cls)` gives the frame matrix, since the function is
+    `Linearity.LINEAR`;
+  - `measure.content_by_rejection` uses `make_orthogonal_frame` on a plain sequence, which is the
+    right shape for it.
+
+  No `Frame.standard(n)` was added: `Frame((1 * e_1, 1 * e_2))` already says it, and nothing needs
+  one.
+
 ## Floating point
 
 Classical Gram–Schmidt loses orthogonality on nearly-dependent frames. Modified Gram–Schmidt and
@@ -387,5 +464,6 @@ These are investigated in `tasks/frame-svd-investigation.md`.
 - [QR decomposition](https://kaweah.freedombox.rocks/kiwix/wikipedia_en_all_maxi_2023-10/QRD): solving with QR; Gram–Schmidt stability vs Householder/Givens
 - [Singular value decomposition](https://en.wikipedia.org/wiki/Singular_value_decomposition): rotation · scaling · rotation
 - [Doran, GA2015 Lecture 4](https://geometry.mrao.cam.ac.uk/wp-content/uploads/2015/10/GA2015_Lecture4.pdf): linear functions in GA (outermorphism); mentions SVD as a representation
-- `tasks/define-frame.md`: the H&S p. 27 frame definition and the `c_k = |A_{k-1}|² w_k` equivalence
+- `tasks/archive/2026/11/18/define-frame.md`: the task that built frames; its proof and design facts are
+  above ("Hestenes' orthogonalization equals rejection")
 - `tasks/reference/galgebra-comparison.md`: galgebra's `ReciprocalFrame`
