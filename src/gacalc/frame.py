@@ -966,12 +966,13 @@ class Frame:
             ).inverse(y.projected_onto(m))
             return term, coordinate_along(term, along=v, float_close_to_zero=tolerant)
 
-        def backward_by_reciprocal(y: MultiVectorBase) -> MultiVectorBase:
+        def backward_by_reciprocal(
+            reciprocal_vectors: tuple[MultiVectorBase, ...], y: MultiVectorBase
+        ) -> MultiVectorBase:
             MultiVectorBase.require_vector(y)
             cls: type[MultiVectorBase] = type(y)
-            # Read x_i through vⁱ.  reciprocal_vectors is bound in the match below,
-            # which runs before this can be called.  basis_vector numbers the basis
-            # from 1, hence enumerate(start=1).
+            # Read x_i through vⁱ.  basis_vector numbers the basis from 1, hence
+            # enumerate(start=1).
             return sum(
                 (
                     cls.basis_vector(i) * term_and_coordinate(y, v=v, m=v_upper)[1]
@@ -982,7 +983,9 @@ class Frame:
                 start=cls.zero(),
             )
 
-        def backward_by_peel(y: MultiVectorBase) -> MultiVectorBase:
+        def backward_by_peel(
+            backward_orthogonal: tuple[MultiVectorBase, ...], y: MultiVectorBase
+        ) -> MultiVectorBase:
             def peel(
                 remaining: Sequence[tuple[MultiVectorBase, MultiVectorBase]],
                 y: MultiVectorBase,
@@ -1008,11 +1011,10 @@ class Frame:
 
             MultiVectorBase.require_vector(y)
             cls: type[MultiVectorBase] = type(y)
-            # backward_orthogonal is bound in the match below, which runs before
-            # this can be called.  basis_vector numbers the basis from 1, hence
-            # enumerate(start=1).  The tuple(zip(...)) argument to peel is the
-            # pairs: each u_i with the frame vector it came from, (u_i, v_i), in
-            # frame order; peel consumes them from the front.
+            # basis_vector numbers the basis from 1, hence enumerate(start=1).  The
+            # tuple(zip(...)) argument to peel is the pairs: each u_i with the frame
+            # vector it came from, (u_i, v_i), in frame order; peel consumes them
+            # from the front.
             return sum(
                 (
                     cls.basis_vector(i) * x_i
@@ -1027,21 +1029,20 @@ class Frame:
                 start=cls.zero(),
             )
 
+        # Each method's vectors are computed once, here, and bound as the first
+        # argument of its inverse, so every call to the inverse reuses them.
         backward: Callable[[MultiVectorBase], MultiVectorBase]
         match inverse_method:
             case InverseMethod.RECIPROCAL:
-                # Built once, here, so each call to the inverse is k dot products.
-                reciprocal_vectors: tuple[MultiVectorBase, ...] = (
-                    self.reciprocal_vectors()
+                backward = functools.partial(
+                    backward_by_reciprocal, self.reciprocal_vectors()
                 )
-                backward = backward_by_reciprocal
             case InverseMethod.PEEL:
-                # Built once, here, so each call to the inverse reuses it: the frame
-                # orthogonalized from its last vector, u_i ⟂ v_{i+1} … v_k.
-                backward_orthogonal: tuple[MultiVectorBase, ...] = tuple(
-                    reversed(make_orthogonal_frame(self.vectors[::-1]))
+                # the frame orthogonalized from its last vector, u_i ⟂ v_{i+1} … v_k
+                backward = functools.partial(
+                    backward_by_peel,
+                    tuple(reversed(make_orthogonal_frame(self.vectors[::-1]))),
                 )
-                backward = backward_by_peel
             case _:
                 raise TypeError(
                     f"inverse_method must be an InverseMethod; got {inverse_method!r}"

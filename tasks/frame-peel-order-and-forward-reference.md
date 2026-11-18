@@ -118,9 +118,20 @@ drawn from an example that turned out to be the reversal in disguise. Suggested 
   construction just to recurse from the head is the reversal moved, not removed;
 - replace the worked example with this frame as the counter-example, or remove the example.
 
+## Progress
+
+- **Step 1, done 2026-11-18, before the questions, at the maintainer's request:** the
+  use-before-binding is gone, with the head-first order kept.
+  - `backward_by_reciprocal` and `backward_by_peel` take their vectors as a first parameter;
+  - the `match` binds them with `functools.partial(…, self.reciprocal_vectors())` /
+    `functools.partial(…, <the backward-orthogonalized frame>)`;
+  - the "bound in the match below" comments are gone.
+
+  This is question 2's option (a). It was committed on its own, before the order change.
+
 ## Plan
 
-1. Settle the open questions.
+1. Settle the open questions (question 2 is answered by step 1 above).
 2. `src/gacalc/frame.py`:
    - remove the use-before-binding (question 2);
    - set the peel order (question 1). If reverting: walk `orthogonal_vectors()` with
@@ -146,9 +157,7 @@ drawn from an example that turned out to be the reversal in disguise. Suggested 
 1. **Peel order:** (a) revert to tail-first over `orthogonal_vectors()` (recommended: it is the
    frame's own set, the QR back-substitution, and the Lean twin's construction), or (b) keep
    head-first? Either way, only the recursion changes; results stay the same.
-2. **The use-before-binding fix:** (a) each backward function takes its data as a parameter, bound
-   with `functools.partial` in the `match` (recommended), (b) define each closure inside its `match`
-   arm, or (c) a factory function per method?
+2. ~~The use-before-binding fix~~ **Answered:** `functools.partial`, done as step 1 (see Progress).
 3. **The shared recursion rule:** (a) soften it, keeping "prefer head-first when the data is in
    that order" and adding that tail-first is right when the construction makes the last element
    solvable, with this frame as the counter-example (recommended), or (b) remove the head-first
