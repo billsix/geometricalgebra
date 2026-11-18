@@ -1,37 +1,36 @@
 # Investigate: can the `Frame`/QR construction rederive the SVD?
 
-**Status:** proposed — needs go-ahead; its prerequisite, the `Frame` class (`tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`), is done
+**Completed:** 2026-11-18 (William Emerison Six <billsix@gmail.com>; authorized batch
+`ready-tasks-batch-2026-11-18`)
 **Priority:** 6
 **Difficulty:** 6
-**Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>); split out of the `Frame` task at the
-maintainer's request.
+**Created:** 2026-11-04 (William Emerison Six <billsix@gmail.com>); split out of the `Frame` task.
 
-## BLUF
+## Outcome
 
-Find out how far gacalc's `Frame` (orthogonal set + triangular coefficients, i.e. QR with the lengths factored out) gets toward the
-singular value decomposition, expressed as GA transforms. Done = a written finding in
-`tasks/reference/frames-qr-and-reciprocal-frames.md` ("Does this give the SVD?"), plus whichever routes
-below pan out as code and tests.
+All three routes work. They are tests, `tests/test_frame_svd.py` (6 cases, under a second). The
+finding is written in `tasks/reference/frames-qr-and-reciprocal-frames.md`, "Does this give the SVD?".
 
-## Context (read first)
+1. **`f = Q ∘ R`:** Q is a chain of rotations from vectors, with an axis flip for a left-handed
+   frame; R is the triangular shear-scale, itself a `Frame`. This equals
+   `Frame.to_invertible_function()` in 2D and 3D, both handednesses.
+2. **The QR algorithm:** repeated `Frame` orthonormalizations of the Gram matrix converge to the
+   right singular vectors. In 3D, the `f(w_i)` come out mutually perpendicular with lengths `σ_i`.
+3. **The closed-form 2D SVD:** built from dot products and the wedge (the eigenvalues have sum
+   `|v_1|² + |v_2|²` and product `|v_1 ∧ v_2|²`), the 𝒢₂ quarter turn, and rotations from vectors.
+   It is exact on a rational frame with `σ = 5, 2`. 3D, which needs a cubic's roots, was not
+   attempted.
 
-- `tasks/reference/frames-qr-and-reciprocal-frames.md`: the math, including why one QR is not the SVD.
-- `tasks/archive/2026/11/04/frame-class-orthonormal-invertible-function.md`: the record of the `Frame`
-  class this builds on (`src/gacalc/frame.py`; done 2026-11-04).
-- `tasks/reference/transform-and-composable-function-layer.md`: the `versor_rotation` /
-  `scale_non_uniform` / `compose` factories.
+## Judgment calls
 
-## Routes, cheapest first
+- **Tests, not a library `svd()`.** Nothing needs one yet; the reference doc sketches what one would
+  return.
+- **A bug found and filed rather than fixed here:** `inverse()` rejects a float 𝒢₃ versor because of
+  a 1e-16 rounding residue in `Ã * A`, so `versor_rotation` crashes on ordinary 3D float vectors. It
+  is filed as `tasks/inverse-float-versor-rounding.md`, priority 3. Route 1 uses `projection_rotation`
+  wrapped in an `InvertibleFunction` until then, with a comment naming the task.
 
-1. **`f = Q ∘ R` as GA transforms.** Q becomes a versor (a rotor, or a rotor times a reflection when
-   `det Q < 0`), R becomes a triangular shear-scale `InvertibleFunction`, and the test checks
-   `compose` equals `Frame.to_invertible_function()`. Not the SVD, but the same rotate-after-deform
-   shape.
-2. **The QR algorithm.** Iterate `A ← R Q` on `fᵀf`, using `Frame`s. It converges to the eigenvectors,
-   giving the SVD numerically.
-3. **Closed-form 2D SVD as `rotor ∘ scale_non_uniform ∘ rotor`**, checked symbolically. 3D is a stretch:
-   cubic roots.
+## Verification
 
-## Open questions
-
-None yet. Raise them once the `Frame` task is done.
+`tests/test_frame_svd.py` passed. ruff, `ty check` and `tools/check_annotations.py` (0 rows) were
+clean on the file.

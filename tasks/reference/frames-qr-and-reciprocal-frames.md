@@ -449,14 +449,44 @@ where this does not arise. For floats, small inexactness is accepted (the mainta
 ## Does this give the SVD?
 
 Not from a single QR. The SVD `V = U Σ Wᵀ` is rotation ∘ axis scaling ∘ rotation. Its axes are the
-eigenvectors of `VᵀV`, which one orthogonalization does not find. Routes that do reach the SVD from
-frames:
+eigenvectors of `VᵀV`, which one orthogonalization does not find. Three routes were tried in
+`tests/test_frame_svd.py` (2026-11-18), each written with gacalc's own transforms. All three work.
 
-- **The QR algorithm:** factor `A = QR`, form `RQ`, and repeat. Applied to `VᵀV`, it converges to the
-  eigen-decomposition, so the SVD comes as a limit of repeated frame orthonormalizations.
-- **Closed form in 2D**, written as rotor ∘ `scale_non_uniform` ∘ rotor. 3D needs a cubic's roots.
+1. **`f = Q ∘ R`, the same rotate-after-deform shape.** Since
+   `v_i = Σ_j (coefficients()[i][j] * |w_j|) * u_j`:
+   - R sends `e_i` to `Σ_j coefficients()[i][j] * |w_j| * e_j`. That is a triangular frame, so
+     `Frame` builds it too.
+   - Q sends `e_j` to `u_j`. It is a chain of rotations from vectors: each turns the image of the
+     next basis vector onto the next `u_j`, in a plane perpendicular to the `u`'s already placed. A
+     left-handed frame adds an axis flip, `scale_non_uniform(1, …, −1)`, run first.
 
-These are investigated in `tasks/frame-svd-investigation.md`.
+   `compose([*Q, R])` equals `Frame.to_invertible_function()` in 2D and 3D, right- and left-handed.
+   This is not the SVD: R shears.
+2. **The QR algorithm reaches the SVD numerically.** Take the Gram matrix `M_ij = v_i · v_j`. Factor
+   `M = QR` with a `Frame` (Q from `orthonormal_vectors()`, `R_ij = u_i · m_j`), form `RQ`, and
+   repeat. `M` converges to `diag(σ_i²)`, and the accumulated `Q` columns are the right singular
+   vectors `w_i`. The images `f(w_i)` are then mutually perpendicular with lengths `σ_i`. 200
+   iterations on a 3D float frame give the lengths to a relative 1e-9 and perpendicularity to 1e-7. It needs distinct singular values and is linear in
+   their ratios: Gram–Schmidt QR with no shifts.
+3. **The closed-form 2D SVD is exact.** The squared singular values are the eigenvalues of the
+   Gram matrix: their sum is `|v_1|² + |v_2|²`, and their product is `|v_1 ∧ v_2|²` (the area
+   squared). The eigenvector for the larger one is `w_1 ∝ (g_12, λ_1 − g_11)`, with
+   `w_2 = w_1.rotate_90_degrees()`. Then `u_i = f(w_i) / σ_i`, and
+   `f = U ∘ scale_non_uniform(σ_1, σ_2) ∘ W⁻¹`, where W is
+   `versor_rotation(from_vector=e_1, to_vector=w_1)` and U is the route-1 Q of the `u_i`. A frame
+   built as `U Σ Wᵀ` from Pythagorean rotations with `σ = 5, 2` is taken apart and rebuilt exactly
+   in sympy rationals. 3D would need a cubic's roots: possible, but not done.
+
+What to take from this: the SVD in GA is two chains of rotations from vectors around a
+`scale_non_uniform`, and only the axes need a numerical method beyond 2D.
+
+**Not added to the library.** Nothing needs an `svd()` yet, so the routes stay as tests. A
+library version would be the 2D closed form plus the QR iteration for 3D, returning
+`(U parts, σ, W)` as transforms.
+
+**Bug found on the way:** `inverse()` rejects a float 𝒢₃ versor because `Ã * A` carries a 1e-16
+bivector residue, so `versor_rotation` crashes on ordinary 3D float vectors. Route 1 uses
+`projection_rotation` until `tasks/inverse-float-versor-rounding.md` is fixed.
 
 ## Sources
 
