@@ -49,9 +49,10 @@ preserved verbatim in the appendix.
    `three-dimensions` notebook.
 4. **No page has had the maintainer's voice pass**, so every agent-written page carries the
    "agent-drafted" note until it does.
-5. **The basis vectors are written plain, `e_1`, `e_2`, `e_3`** (no arrow), as
-   `relative-graph-paper` introduces them and as the code names them. A general vector keeps its
-   arrow (`\vec{a}`).
+5. **Vectors are written the way gacalc's output typesets them** (William Emerison Six
+   <billsix@gmail.com>, 2026-11-17, replacing plain `e_1` and `\vec{a}`): a vector
+   `\vec{\mathbf{a}}`, a basis vector `\vec{\mathbf{e}}_1`, a bivector `\mathbf{e}_{12}`; the rule
+   is in `CLAUDE.md` › "Math notation for readers".
 
 ## Pedagogical principles (the through-line — these govern every section)
 
@@ -89,8 +90,9 @@ preserved verbatim in the appendix.
 - **An operation keeps one name; the book gives simple versions first and replaces them with
   general ones later** (William Emerison Six <billsix@gmail.com>, 2026-11-16).
   - **One name per operation.** Every formula that gives a projection is written
-    `\operatorname{proj}_{\vec{a}}(\vec{b})` (projection of `b` onto `a`), and every one that
-    gives a rejection `\operatorname{rej}_{\vec{a}}(\vec{b})`, whatever method produced it. Don't
+    `\operatorname{proj}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})` (projection of `b` onto `a`), and
+    every one that gives a rejection `\operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})`,
+    whatever method produced it. Don't
     introduce a new letter for a new method of computing the same thing.
   - **Several versions, each a labelled equation.** The book will have several versions of one
     operation: rotating to standard position, coordinates, `(b · a) * a⁻¹`, and later the blade
@@ -200,7 +202,7 @@ These came out of reworking `proof-projection.rst`; apply them to every proof pa
   figure and explains it, use **the figure's own variable names** — not names carried in from a
   source proof (e.g. *Model View Projection*) or an earlier section's proof. The reader is looking
   at the picture; the symbols must line up with it. The book's standing names for vectors are
-  `\vec{a}`, `\vec{b}`, `\vec{v}` (not `\vec{v_1}`/`\vec{v_2}`). If a diagram and its algebra
+  `\vec{\mathbf{a}}`, `\vec{\mathbf{b}}`, `\vec{\mathbf{v}}` (not `\vec{v_1}`/`\vec{v_2}`). If a diagram and its algebra
   genuinely need different symbols, change the **diagram** to match, not the reverse. (Origin:
   `rotate.rst` had imported *MVP*'s `\vec{v_1}`/`\vec{v_2}` for the from→to definition while its
   diagram `rotate-goal` and the whole book use `\vec{a}`/`\vec{b}`; fixed 2026-10-08.)
@@ -208,14 +210,14 @@ These came out of reworking `proof-projection.rst`; apply them to every proof pa
 - **Parentheses apply, `*` multiplies, every angle is named** (the maintainer, 2026-10-08/09;
   the standing rule and its exemptions are `CLAUDE.md` › "Math notation for readers"). In every
   page, figure label and notebook: `\cos(\theta)` never `\cos\theta`; an explicit `*` on every
-  product, scalar or geometric — `r * (\cos(\theta), \sin(\theta))`, `\cos(\theta) * \vec{a}`,
-  `\vec{a} * e_{12}`, `e_1 * e_2` — as a literal `*` in math mode, so the typeset math reads like
+  product, scalar or geometric — `r * (\cos(\theta), \sin(\theta))`,
+  `\cos(\theta) * \vec{\mathbf{a}}`, `\vec{\mathbf{a}} * \mathbf{e}_{12}`, `e_1 * e_2` — as a literal `*` in math mode, so the typeset math reads like
   the code; and never an unnamed angle (`\sin(\theta) = a_2/|a|`, not `\sin = a_2/|a|`).
 <!-- notation-rule: end -->
 - **Coordinates are `a_1`, `a_2` (and `a_3`), never `a_{x}`, `a_{y}`, `a_{z}`** (the maintainer,
   2026-10-08; swept 2026-10-09). The subscript names the basis vector the number multiplies
   (`a = a_1 * e_1 + a_2 * e_2`) and survives 3D and 𝒢ₙ; a coordinate is a scalar, so it carries no
-  arrow (`\vec{a}` is the vector, `a_1` its number; primes carry over, `b'_2`). Introduced in
+  arrow or bold (`\vec{\mathbf{a}}` is the vector, `a_1` its number; primes carry over, `b'_2`). Introduced in
   `relative-graph-paper.rst` › "How we write coordinates", which bridges from the reader's
   `(x, y)` ordered pairs (OpenStax *Algebra 1*, Unit 1 "Find Coordinates") and `⟨a, b⟩` /
   `a i + b j` (OpenStax *Precalculus 2e* §8.8 "Vectors"). Code cells still read `.x`/`.y`

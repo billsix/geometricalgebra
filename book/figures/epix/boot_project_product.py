@@ -12,12 +12,13 @@
 # ---
 
 # %% [markdown]
-# # boot_project_product — projection is $(\vec{b} \cdot \vec{a}) * \vec{a}^{-1}$
+# # boot_project_product — projection is $(\vec{\mathbf{b}} \cdot \vec{\mathbf{a}}) * \vec{\mathbf{a}}^{-1}$
 #
-# $\vec{a}^{-1} = \vec{a} / |\vec{a}|^2$ points along $\vec{a}$ (purple; shorter, since
-# $|\vec{a}| > 1$). Scaling it by the number $\vec{b} \cdot \vec{a}$ lands on the
-# projection of $\vec{b}$ onto $\vec{a}$ (green), the foot of the perpendicular from
-# $\vec{b}$. Built with `epix`; written to
+# $\vec{\mathbf{a}}^{-1} = \vec{\mathbf{a}} / |\vec{\mathbf{a}}|^2$ points along
+# $\vec{\mathbf{a}}$ (purple; shorter, since $|\vec{\mathbf{a}}| > 1$). Scaling it by
+# the number $\vec{\mathbf{b}} \cdot \vec{\mathbf{a}}$ lands on the projection of
+# $\vec{\mathbf{b}}$ onto $\vec{\mathbf{a}}$ (green), the foot of the perpendicular from
+# $\vec{\mathbf{b}}$. Built with `epix`; written to
 # `_static/epix/boot-project-product.{pdf,png}`. CC0.
 
 # %%
@@ -56,27 +57,27 @@ with unit_circle_scene(
     right_angle_at(corner=INVERSE_PROJ, angle=INVERSE_A_ANGLE + math.pi / 2)
     vector(
         head=INVERSE_A,
-        text=r"$\vec{a}$",
+        text=r"$\vec{\mathbf{a}}$",
         offset=Point(x=7, y=-2),
         align=epix.LabelPos.r,
     )
     vector(
         head=INVERSE_B,
-        text=r"$\vec{b}$",
+        text=r"$\vec{\mathbf{b}}$",
         offset=Point(x=-5, y=6),
         align=epix.LabelPos.l,
     )
     colored_vector(
         head=INVERSE_PROJ,
         color=GREEN,
-        text=r"$(\vec{b} \cdot \vec{a}) * \vec{a}^{-1}$",
+        text=r"$(\vec{\mathbf{b}} \cdot \vec{\mathbf{a}}) * \vec{\mathbf{a}}^{-1}$",
         offset=Point(x=4, y=-8),
         align=epix.LabelPos.br,
     )
     colored_vector(
         head=INVERSE_A_INV,
         color=PURPLE,
-        text=r"$\vec{a}^{-1}$",
+        text=r"$\vec{\mathbf{a}}^{-1}$",
         offset=Point(x=-6, y=-14),
         align=epix.LabelPos.b,
     )

@@ -16,10 +16,10 @@ Squaring a Blade: The Sign, by Counting Flips
 
    Draft. The prose is agent-drafted; the maintainer's voice pass is pending.
 
-In :doc:`geometric-product` you met the full-angle rotor :math:`R = \cos(\theta) + \sin(\theta) * e_{12}`,
-and along the way a small surprise: the object :math:`e_{12} = e_1 * e_2` **squares to**
+In :doc:`geometric-product` you met the full-angle rotor :math:`R = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12}`,
+and along the way a small surprise: the object :math:`\mathbf{e}_{12} = \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` **squares to**
 :math:`-1`, exactly like the imaginary unit :math:`i` from precalculus. Why :math:`-1`,
-and not :math:`+1`? And what happens if we square :math:`e_1 * e_2 * e_3`, or the product of
+and not :math:`+1`? And what happens if we square :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3`, or the product of
 *all* the basis directions at once?
 
 The answer is not mysterious, and you do not need any new machinery to find it. It comes
@@ -31,13 +31,13 @@ The two rules we are allowed to use
 -----------------------------------
 
 Everything here rests on two rules you have already seen for the geometric product. A
-**blade** is just a product of distinct basis directions, like :math:`e_1 * e_2 * e_3`.
+**blade** is just a product of distinct basis directions, like :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3`.
 
-- **Rule 1 — a direction squared is one.** :math:`e_i * e_i = 1`. A basis direction times
+- **Rule 1 — a direction squared is one.** :math:`\vec{\mathbf{e}}_i * \vec{\mathbf{e}}_i = 1`. A basis direction times
   *itself* collapses to the plain number :math:`1`. *(This is where "flat, ordinary space"
   lives; it is the one place the number* :math:`+1` *comes from.)*
 - **Rule 2 — swapping two different directions flips the sign.**
-  :math:`e_i * e_j = -\,e_j * e_i` when :math:`i \neq j`. Trading the places of two
+  :math:`\vec{\mathbf{e}}_i * \vec{\mathbf{e}}_j = -\,\vec{\mathbf{e}}_j * \vec{\mathbf{e}}_i` when :math:`i \neq j`. Trading the places of two
   neighbours that are *not* the same costs one minus sign.
 
 That is the whole toolkit: **swap neighbours (Rule 2), and cancel a repeated pair
@@ -58,7 +58,7 @@ Watch it happen, grade by grade. (In the sliding pictures below we leave out the
 By hand, grades 1 through 5
 ---------------------------
 
-Write :math:`I_r = e_1 * e_2 * \cdots * e_r` for the product of the first :math:`r` basis
+Write :math:`I_r = \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \cdots * \vec{\mathbf{e}}_r` for the product of the first :math:`r` basis
 directions. We want :math:`I_r{}^2`.
 
 **Grade 1.** Nothing to slide:
@@ -79,7 +79,7 @@ directions. We want :math:`I_r{}^2`.
             \__/  \__/    cancel both  (Rule 1)
          =  -1
 
-That is the :math:`e_{12}{}^2 = -1` you already saw — now you can see *where the minus
+That is the :math:`\mathbf{e}_{12}{}^2 = -1` you already saw — now you can see *where the minus
 came from*: exactly one flip.
 
 **Grade 3.** Slide, cancel, then repeat on what is left:
@@ -183,7 +183,7 @@ which is the triangular number again. Nothing else can happen, so the formula ho
 .. note::
 
    There is an even shorter way to see it. The **reverse** of :math:`I_r` writes its
-   directions back-to-front, :math:`\tilde{I}_r = e_r * \cdots * e_1`; untangling that ordering
+   directions back-to-front, :math:`\tilde{I}_r = \vec{\mathbf{e}}_r * \cdots * \vec{\mathbf{e}}_1`; untangling that ordering
    takes :math:`r * (r-1)/2` flips, so :math:`\tilde{I}_r = (-1)^{\,r * (r-1)/2} * I_r`. And
    :math:`I_r * \tilde{I}_r = 1`, because the two copies cancel neatly from the middle out.
    Put those together and :math:`I_r{}^2 = (-1)^{\,r * (r-1)/2}`. This is why the same sign
@@ -197,17 +197,17 @@ symbols like :math:`a`, :math:`b`, :math:`c`, out in front. That changes **nothi
 the flipping, because a plain number commutes with everything: it slides past any direction
 for free, no sign, no fuss. So resolving a messy product is three tidy steps.
 
-Take :math:`(a * e_1) * (b * e_2) * (c * e_1)` as our worked example.
+Take :math:`(a * \vec{\mathbf{e}}_1) * (b * \vec{\mathbf{e}}_2) * (c * \vec{\mathbf{e}}_1)` as our worked example.
 
 **Step 1 — send the numbers to the front, multiplied together.** Every coefficient slides
 out to the left and collects into one product:
 
 .. math::
 
-   (a * e_1) * (b * e_2) * (c * e_1) \;=\; a * b * c * e_1 * e_2 * e_1.
+   (a * \vec{\mathbf{e}}_1) * (b * \vec{\mathbf{e}}_2) * (c * \vec{\mathbf{e}}_1) \;=\; a * b * c * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1.
 
 **Step 2 — resolve the directions with the two rules, tracking the sign on the right.**
-This is the exact same flip-and-cancel game, on :math:`e_1 * e_2 * e_1`:
+This is the exact same flip-and-cancel game, on :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1`:
 
 ::
 
@@ -217,14 +217,14 @@ This is the exact same flip-and-cancel game, on :math:`e_1 * e_2 * e_1`:
    \__/  e1 e1 = 1  (cancel)
          e2                    the direction that survives
 
-So the direction part resolves to :math:`e_2`, carrying a :math:`-` sign.
+So the direction part resolves to :math:`\vec{\mathbf{e}}_2`, carrying a :math:`-` sign.
 
 **Step 3 — put the sign back in front of the numbers.** The minus we counted multiplies the
 collected coefficients:
 
 .. math::
 
-   (a * e_1) * (b * e_2) * (c * e_1) \;=\; -\,(a * b * c) * e_2 \;=\; -\,a * b * c * e_2.
+   (a * \vec{\mathbf{e}}_1) * (b * \vec{\mathbf{e}}_2) * (c * \vec{\mathbf{e}}_1) \;=\; -\,(a * b * c) * \vec{\mathbf{e}}_2 \;=\; -\,a * b * c * \vec{\mathbf{e}}_2.
 
 Notice we never had to know *what* :math:`a`, :math:`b`, :math:`c` are. A coefficient is
 just a number that commutes, so the very same three steps work whether they are whole
@@ -238,6 +238,6 @@ Where this shows up
 This one sign is not a curiosity — the library leans on it constantly. Reversing a
 multivector gives its grade-:math:`r` part exactly the sign :math:`(-1)^{\,r * (r-1)/2}`, and
 the exponential map that builds rotors uses it to tell a "turning" plane
-(:math:`e_{12}{}^2 = -1`) apart from a plain stretch. In gacalc it is the little function
+(:math:`\mathbf{e}_{12}{}^2 = -1`) apart from a plain stretch. In gacalc it is the little function
 ``pseudoscalar_squared_sign(r)``. It returns the sign itself, :math:`+1` or :math:`-1`: the
 count of flips you just learned to do by hand is the exponent.

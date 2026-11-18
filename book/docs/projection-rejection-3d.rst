@@ -21,8 +21,8 @@ Projection and Rejection in 3D
    below are drafted and render via `make docs`; the narrative is still to be written. The
    one-plane-at-a-time derivation is :doc:`proof-projection-3d`.
 
-In three dimensions a vector :math:`\vec{a}` can be projected onto any of the three coordinate
-planes :math:`e_{12}` (the xy-plane), :math:`e_{23}` (yz) and :math:`e_{31}` (zx).
+In three dimensions a vector :math:`\vec{\mathbf{a}}` can be projected onto any of the three coordinate
+planes :math:`\mathbf{e}_{12}` (the xy-plane), :math:`\mathbf{e}_{23}` (yz) and :math:`\mathbf{e}_{31}` (zx).
 
 .. figure:: _static/epix/proj3d-overview.*
    :align: center
@@ -45,8 +45,8 @@ remainder.
 
 .. note::
 
-   The third plane is written :math:`e_{31}` (cyclically, like :math:`e_{12}` and
-   :math:`e_{23}`); gacalc spells the same blade :math:`e_{13} = -e_{31}`.
+   The third plane is written :math:`\mathbf{e}_{31}` (cyclically, like :math:`\mathbf{e}_{12}` and
+   :math:`\mathbf{e}_{23}`); gacalc spells the same blade :math:`\mathbf{e}_{13} = -\mathbf{e}_{31}`.
 
 .. toctree::
    :maxdepth: 1

@@ -12,12 +12,12 @@
 # ---
 
 # %% [markdown]
-# # proj3d_overview — $\vec{a}$ and the three coordinate planes
+# # proj3d_overview — $\vec{\mathbf{a}}$ and the three coordinate planes
 #
-# The setup for projection in 3D: one vector $\vec{a}$ and the three coordinate planes
-# $e_{12}$, $e_{23}$, $e_{31}$ (faint), each of which $\vec{a}$ can be projected onto.
-# Built with the `epix` package; `tools/render_epix_figures.py` writes
-# `_static/epix/proj3d-overview.{pdf,png}`. CC0.
+# The setup for projection in 3D: one vector $\vec{\mathbf{a}}$ and the three coordinate
+# planes $\mathbf{e}_{12}$, $\mathbf{e}_{23}$, $\mathbf{e}_{31}$ (faint), each of which
+# $\vec{\mathbf{a}}$ can be projected onto. Built with the `epix` package;
+# `tools/render_epix_figures.py` writes `_static/epix/proj3d-overview.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations
@@ -40,7 +40,12 @@ with frame_scene() as fig:
     plane3(plane="e_23", faint=True)
     plane3(plane="e_31", faint=True)
     axes3()
-    vector3(head=A, text=r"$\vec{a}$", offset=Point(x=6, y=5), align=epix.LabelPos.l)
+    vector3(
+        head=A,
+        text=r"$\vec{\mathbf{a}}$",
+        offset=Point(x=6, y=5),
+        align=epix.LabelPos.l,
+    )
 
 # %%
 fig

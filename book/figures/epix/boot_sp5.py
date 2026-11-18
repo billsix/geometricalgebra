@@ -12,10 +12,10 @@
 # ---
 
 # %% [markdown]
-# # boot_sp5 — rotated back: the projection of $\vec{b}$ onto $\vec{a}$
+# # boot_sp5 — rotated back: the projection of $\vec{\mathbf{b}}$ onto $\vec{\mathbf{a}}$
 #
-# The projection along $\vec{a}$ (green) and the rejection across it (blue). The same
-# picture as `sp5` with the names swapped. Built with `epix`; written to
+# The projection along $\vec{\mathbf{a}}$ (green) and the rejection across it (blue).
+# The same picture as `sp5` with the names swapped. Built with `epix`; written to
 # `_static/epix/boot-sp5.{pdf,png}`. CC0.
 
 # %%
@@ -39,8 +39,18 @@ from _scene2d import (
 # %%
 fig: PendingFigure
 with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as fig:
-    vector(head=A, text=r"$\vec{b}$", offset=Point(x=-6, y=7), align=epix.LabelPos.l)
-    vector(head=B, text=r"$\vec{a}$", offset=Point(x=9, y=2), align=epix.LabelPos.l)
+    vector(
+        head=A,
+        text=r"$\vec{\mathbf{b}}$",
+        offset=Point(x=-6, y=7),
+        align=epix.LabelPos.l,
+    )
+    vector(
+        head=B,
+        text=r"$\vec{\mathbf{a}}$",
+        offset=Point(x=9, y=2),
+        align=epix.LabelPos.l,
+    )
     # projection along a (green)
     epix.pen(color=GREEN, width=2.0)
     epix.arrow(tail=ORIGIN, head=PROJ, scale=0.7)
@@ -49,7 +59,7 @@ with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as 
     epix.label(
         at=PROJ,
         offset=Point(x=-11, y=-12),
-        text=r"$\mathrm{proj}_{\vec{a}}\,\vec{b}$",
+        text=r"$\mathrm{proj}_{\vec{\mathbf{a}}}\,\vec{\mathbf{b}}$",
         align=epix.LabelPos.r,
     )
     # rejection perpendicular (blue)

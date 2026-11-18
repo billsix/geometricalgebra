@@ -54,14 +54,14 @@ def test_reset_restores_default_rendering() -> None:
     set_blade_symbols({})
     assert (
         2 * e_1 + 3 * e_2
-    )._repr_latex_() == r"$2\mathbf{\vec{e}}_{1} +  3\mathbf{\vec{e}}_{2}$"
+    )._repr_latex_() == r"$2\vec{\mathbf{e}}_{1} +  3\vec{\mathbf{e}}_{2}$"
 
 
 def test_explicit_parameter_bypasses_session_map() -> None:
     """``symbols={}`` means "no custom symbols" even while the session map is
     set -- the pure layer tests lean on exactly this."""
     set_blade_symbols(IJK)
-    assert blade_dict_latex({(1,): 2}, symbols={}) == r"$2\mathbf{\vec{e}}_{1}$"
+    assert blade_dict_latex({(1,): 2}, symbols={}) == r"$2\vec{\mathbf{e}}_{1}$"
 
 
 def test_non_canonical_key_raises() -> None:

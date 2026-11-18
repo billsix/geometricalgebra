@@ -10,12 +10,12 @@
 # # The geometric product from projection and rejection — calculations
 #
 # Companion to the *Geometric Product from Projection and Rejection* chapter. Measured
-# against $b$, the vector $a$ has two numbers: how far it reaches along $b$ and how far
-# across. Rotate $b$ onto the x-axis, as in the projection proof, and those are the
-# coordinates $(x, y)$ where $a$ lands. This notebook checks, with every coordinate a
-# symbol, that
+# against $\vec{\mathbf{b}}$, the vector $\vec{\mathbf{a}}$ has two numbers: how far it
+# reaches along $\vec{\mathbf{b}}$ and how far across. Rotate $\vec{\mathbf{b}}$ onto
+# the x-axis, as in the projection proof, and those are the coordinates $(x, y)$ where
+# $\vec{\mathbf{a}}$ lands. This notebook checks, with every coordinate a symbol, that
 #
-# $$b * a = |b| * (x + y * e_{12}),$$
+# $$\vec{\mathbf{b}} * \vec{\mathbf{a}} = |\vec{\mathbf{b}}| * (x + y * \mathbf{e}_{12}),$$
 #
 # and that this is the same product the multiplication rules of the geometric-product
 # chapter give. Numbers appear only to draw the figures. Each check shows both sides,
@@ -73,18 +73,19 @@ b
 values: list[tuple[sympy.Symbol, Real]] = [(a_1, 1), (a_2, 2), (b_1, 2), (b_2, 1)]
 
 # %% [markdown]
-# ## Where $a$ lands when $b$ is rotated onto the x-axis
+# ## Where $\vec{\mathbf{a}}$ lands when $\vec{\mathbf{b}}$ is rotated onto the x-axis
 #
-# The rotation is the projection proof's $R_{\vec{b}}^{e_1}$, from $b$'s direction to
-# $e_1$'s (`rotation_from_to`):
+# The rotation is the projection proof's $R_{\vec{\mathbf{b}}}^{\vec{\mathbf{e}}_1}$,
+# from $\vec{\mathbf{b}}$'s direction to $\vec{\mathbf{e}}_1$'s (`rotation_from_to`):
 
 # %%
 R: InvertibleFunction[Vector] = rotation_from_to(b, e_1)
 R
 
 # %% [markdown]
-# It carries $a$ to $(x, y)$: $x$, how far $a$ reaches along $b$ (the projection), and
-# $y$, how far it reaches across $b$ (the rejection).
+# It carries $\vec{\mathbf{a}}$ to $(x, y)$: $x$, how far $\vec{\mathbf{a}}$ reaches
+# along $\vec{\mathbf{b}}$ (the projection), and $y$, how far it reaches across
+# $\vec{\mathbf{b}}$ (the rejection).
 
 # %%
 a_landed: Vector = R(a).simplified()
@@ -105,7 +106,7 @@ y: Real = a_landed.coefficient(e_2)
 y
 
 # %% [markdown]
-# At the plot values, where $a$ lands:
+# At the plot values, where $\vec{\mathbf{a}}$ lands:
 
 # %%
 at_values(a_landed, values)
@@ -118,16 +119,20 @@ P_B_LANDED: Point = point(coordinates=list(at_values(R(b), values)))
 P_X: Point = point(coordinates=list(at_values(Scalar(x) * e_1, values)))
 fig_landed: PendingFigure
 with scene_around(points=[P_A, P_B, P_A_LANDED, P_B_LANDED]) as fig_landed:
-    dashed_arrow(tail=Point(x=0, y=0), head=P_A, color=BLACK, text=r"$\vec{a}$")
-    dashed_arrow(tail=Point(x=0, y=0), head=P_B, color=BLACK, text=r"$\vec{b}$")
+    dashed_arrow(
+        tail=Point(x=0, y=0), head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$"
+    )
+    dashed_arrow(
+        tail=Point(x=0, y=0), head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$"
+    )
     arrow(
         head=P_B_LANDED,
         color=BLACK,
-        text=r"$|\vec{b}| * e_1$",
+        text=r"$|\vec{\mathbf{b}}| * \vec{\mathbf{e}}_1$",
         offset=Point(x=0, y=-10),
         align=LabelPos.b,
     )
-    arrow(head=P_A_LANDED, color=BLACK, text=r"$\vec{a}'$")
+    arrow(head=P_A_LANDED, color=BLACK, text=r"$\vec{\mathbf{a}}'$")
     arrow(head=P_X, color=GREEN, width=2.4)
     note(
         at=0.5 * P_X,
@@ -148,9 +153,9 @@ with scene_around(points=[P_A, P_B, P_A_LANDED, P_B_LANDED]) as fig_landed:
 fig_landed
 
 # %% [markdown]
-# ## Times $|b|$, they are the dot product and the signed area
+# ## Times $|\vec{\mathbf{b}}|$, they are the dot product and the signed area
 #
-# $|b| * x$:
+# $|\vec{\mathbf{b}}| * x$:
 
 # %%
 b_times_x: Real = sympy.simplify(sympy.sympify(b.magnitude() * x))
@@ -163,7 +168,7 @@ b_times_x
 sympy.simplify(sympy.sympify(b_times_x - (a_1 * b_1 + a_2 * b_2)))
 
 # %% [markdown]
-# $|b| * y$:
+# $|\vec{\mathbf{b}}| * y$:
 
 # %%
 b_times_y: Real = sympy.simplify(sympy.sympify(b.magnitude() * y))
@@ -179,7 +184,7 @@ sympy.simplify(sympy.sympify(b_times_y - (b_1 * a_2 - b_2 * a_1)))
 # ## The product built from them is gacalc's geometric product
 #
 # Put the two numbers into one object, the projection part as a plain number and the
-# rejection part as a multiple of $e_{12}$:
+# rejection part as a multiple of $\mathbf{e}_{12}$:
 
 # %%
 built: Versor = (
@@ -188,13 +193,20 @@ built: Versor = (
 built
 
 # %% [markdown]
-# The same product by the multiplication rules, term by term:
+# The same product by the multiplication rules, term by term. First at the plot
+# values:
+
+# %%
+show_mult(at_values(b, values), at_values(a, values))
+
+# %% [markdown]
+# Then with every coordinate a symbol:
 
 # %%
 show_mult(b, a)
 
 # %% [markdown]
-# $b * a$:
+# $\vec{\mathbf{b}} * \vec{\mathbf{a}}$:
 
 # %%
 product: Versor = (b * a).simplified()
@@ -209,39 +221,40 @@ product
 # %% [markdown]
 # ## The two parts are the dot and the wedge
 #
-# The plain-number part is the dot product $b \cdot a$:
+# The plain-number part is the dot product $\vec{\mathbf{b}} \cdot \vec{\mathbf{a}}$:
 
 # %%
 dot: Real = b.dot(a).scalar_part()
 dot
 
 # %% [markdown]
-# Its difference from $|b| * x$:
+# Its difference from $|\vec{\mathbf{b}}| * x$:
 
 # %%
 sympy.simplify(sympy.sympify(dot - b.magnitude() * x))
 
 # %% [markdown]
-# The $e_{12}$ part is the wedge $b \wedge a$:
+# The $\mathbf{e}_{12}$ part is the wedge $\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}$:
 
 # %%
 wedge: Bivector = b ^ a
 wedge
 
 # %% [markdown]
-# Its difference from $|b| * y * e_{12}$:
+# Its difference from $|\vec{\mathbf{b}}| * y * \mathbf{e}_{12}$:
 
 # %%
 (wedge - Scalar(b.magnitude() * y) * Bivector.e_12).simplified()
 
 # %% [markdown]
-# Together they are the product. $b \cdot a + b \wedge a$:
+# Together they are the product.
+# $\vec{\mathbf{b}} \cdot \vec{\mathbf{a}} + \vec{\mathbf{b}} \wedge \vec{\mathbf{a}}$:
 
 # %%
 (Scalar(dot) + wedge).simplified()
 
 # %% [markdown]
-# Its difference from $b * a$:
+# Its difference from $\vec{\mathbf{b}} * \vec{\mathbf{a}}$:
 
 # %%
 (product - (Scalar(dot) + wedge)).simplified()

@@ -12,13 +12,13 @@
 # ---
 
 # %% [markdown]
-# # proj3d_e31 — projection of $\vec{a}$ onto the $e_{31}$ (zx) plane
+# # proj3d_e31 — projection of $\vec{\mathbf{a}}$ onto the $\mathbf{e}_{31}$ (zx) plane
 #
-# $\vec{a}$ split against the $e_{31}$ plane: the projection (blue) lies in the plane,
-# the rejection (green, along y) is the perpendicular remainder. (The book writes this
-# plane $e_{31}$, cyclically; gacalc's blade constant is $e_{13}=-e_{31}$.) Built with
-# the `epix` package; `tools/render_epix_figures.py` writes
-# `_static/epix/proj3d-e31.{pdf,png}`. CC0.
+# $\vec{\mathbf{a}}$ split against the $\mathbf{e}_{31}$ plane: the projection (blue)
+# lies in the plane, the rejection (green, along y) is the perpendicular remainder. (The
+# book writes this plane $\mathbf{e}_{31}$, cyclically; gacalc's blade constant is
+# $\mathbf{e}_{13}=-\mathbf{e}_{31}$.) Built with the `epix` package;
+# `tools/render_epix_figures.py` writes `_static/epix/proj3d-e31.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations
@@ -45,7 +45,12 @@ with frame_scene() as fig:
     plane3(plane="e_31")
     axes3()
     proj: Point = project_onto(plane="e_31")
-    vector3(head=A, text=r"$\vec{a}$", offset=Point(x=11, y=12), align=epix.LabelPos.l)
+    vector3(
+        head=A,
+        text=r"$\vec{\mathbf{a}}$",
+        offset=Point(x=11, y=12),
+        align=epix.LabelPos.l,
+    )
     epix.pen(color=BLUE, width=2.0)
     epix.arrow(tail=ORIGIN3, head=proj, scale=0.7)
     epix.dot(at=proj)
@@ -53,7 +58,7 @@ with frame_scene() as fig:
     epix.label(
         at=proj,
         offset=Point(x=-10, y=-20),
-        text=r"$\mathrm{proj}_{e_{31}}\,\vec{a}$",
+        text=r"$\mathrm{proj}_{\mathbf{e}_{31}}\,\vec{\mathbf{a}}$",
         align=epix.LabelPos.r,
     )
     epix.pen(color=GREEN, width=2.0)
@@ -63,7 +68,7 @@ with frame_scene() as fig:
     epix.label(
         at=mid_rej,
         offset=Point(x=14, y=12),
-        text=r"$\mathrm{rej}_{e_{31}}\,\vec{a}$",
+        text=r"$\mathrm{rej}_{\mathbf{e}_{31}}\,\vec{\mathbf{a}}$",
         align=epix.LabelPos.l,
     )
     epix.label_color(color=epix.black())

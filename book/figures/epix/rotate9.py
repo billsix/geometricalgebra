@@ -15,13 +15,14 @@
 # # rotate9 — a's triangle is the unit triangle, scaled
 #
 # The two right triangles — the one on the unit circle (legs $\cos(\theta)$,
-# $\sin(\theta)$) and $\vec{a}$'s own (legs $r * \cos(\theta)$, $r * \sin(\theta)$) —
-# have the same angles, so they are **similar**: $\vec{a}$'s legs are just the unit
-# legs scaled by $r$. That is why scaling the unit result by $r$ lands exactly on the
-# rotated $\vec{a}$. The small triangle is drawn on top (a lighter shade of its big
-# counterpart's colour) so the shared shape stays visible. Last step of the
-# `proof-rotate.rst` sequence; geometry shared through `_rotation_scene.py`. Built with
-# the `epix` Python package (github.com/billsix/epix-mirror).
+# $\sin(\theta)$) and $\vec{\mathbf{a}}$'s own (legs $r * \cos(\theta)$,
+# $r * \sin(\theta)$) — have the same angles, so they are **similar**:
+# $\vec{\mathbf{a}}$'s legs are just the unit legs scaled by $r$. That is why scaling
+# the unit result by $r$ lands exactly on the rotated $\vec{\mathbf{a}}$. The small
+# triangle is drawn on top (a lighter shade of its big counterpart's colour) so the
+# shared shape stays visible. Last step of the `proof-rotate.rst` sequence; geometry
+# shared through `_rotation_scene.py`. Built with the `epix` Python package
+# (github.com/billsix/epix-mirror).
 
 # %%
 from __future__ import annotations
@@ -69,9 +70,12 @@ with unit_circle_scene(
     lower_left=Point(x=-2.7, y=-1.3), upper_right=Point(x=2.0, y=2.7)
 ) as fig:
     wedge(start=BETA, finish=BETA + THETA, text=r"$\theta$")
-    vector(head=x_prime, text=r"$\vec{x'}$")
+    vector(head=x_prime, text=r"$\vec{\mathbf{x'}}$")
     vector(
-        head=y_prime, text=r"$\vec{y'}$", offset=Point(x=-7, y=4), align=epix.LabelPos.l
+        head=y_prime,
+        text=r"$\vec{\mathbf{y'}}$",
+        offset=Point(x=-7, y=4),
+        align=epix.LabelPos.l,
     )
 
     # a's (big) similar triangle first: bold hypotenuse = a, sin leg labelled. The two
@@ -93,7 +97,11 @@ with unit_circle_scene(
         angle=BETA - math.pi / 2,
         offset=Point(x=16, y=11),
     )
-    vector(head=result, text=r"$\vec{r}(\vec{a};\theta)$", offset=Point(x=6, y=10))
+    vector(
+        head=result,
+        text=r"$\vec{\mathbf{r}}(\vec{\mathbf{a}};\theta)$",
+        offset=Point(x=6, y=10),
+    )
 
     # the unit (small) triangle on top: dashed hypotenuse, lighter legs so it stays seen
     dashed_vector(tail=ORIGIN, head=rotated)

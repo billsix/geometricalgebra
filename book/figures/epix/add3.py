@@ -12,13 +12,14 @@
 # ---
 
 # %% [markdown]
-# # add3 — the parallelogram: $\vec{a}+\vec{b}=\vec{b}+\vec{a}$
+# # add3 — the parallelogram: $\vec{\mathbf{a}}+\vec{\mathbf{b}}=\vec{\mathbf{b}}+\vec{\mathbf{a}}$
 #
-# Both orders of the sum land on the same corner: slide $\vec{b}$ onto $\vec{a}$'s head,
-# or slide $\vec{a}$ onto $\vec{b}$'s head, and either way you reach $\vec{a}+\vec{b}$ —
-# the far corner of the parallelogram the two vectors span. This is why addition
-# commutes. Built with the `epix` package; `tools/render_epix_figures.py` writes
-# `_static/epix/add3.{pdf,png}`. CC0.
+# Both orders of the sum land on the same corner: slide $\vec{\mathbf{b}}$ onto
+# $\vec{\mathbf{a}}$'s head, or slide $\vec{\mathbf{a}}$ onto $\vec{\mathbf{b}}$'s head,
+# and either way you reach $\vec{\mathbf{a}}+\vec{\mathbf{b}}$ — the far corner of the
+# parallelogram the two vectors span. This is why addition commutes. Built with the
+# `epix` package; `tools/render_epix_figures.py` writes `_static/epix/add3.{pdf,png}`.
+# CC0.
 
 # %%
 from __future__ import annotations
@@ -41,16 +42,26 @@ with unit_circle_scene(
 ) as fig:
     parallelogram(corner_a=A, corner_b=B)
     # the two originals from the origin
-    vector(head=A, text=r"$\vec{a}$", offset=Point(x=7, y=-3), align=epix.LabelPos.r)
-    vector(head=B, text=r"$\vec{b}$", offset=Point(x=-5, y=7), align=epix.LabelPos.l)
+    vector(
+        head=A,
+        text=r"$\vec{\mathbf{a}}$",
+        offset=Point(x=7, y=-3),
+        align=epix.LabelPos.r,
+    )
+    vector(
+        head=B,
+        text=r"$\vec{\mathbf{b}}$",
+        offset=Point(x=-5, y=7),
+        align=epix.LabelPos.l,
+    )
     # the two slid copies that close the parallelogram (dashed translated copies)
     dashed_vector(tail=A, head=A_PLUS_B)  # b slid onto a's head
     dashed_vector(tail=B, head=A_PLUS_B)  # a slid onto b's head
     epix.dot(at=A_PLUS_B)
     epix.label(
         at=A_PLUS_B,
-        offset=Point(x=6, y=6),
-        text=r"$\vec{a}+\vec{b}$",
+        offset=Point(x=-12, y=10),
+        text=r"$\vec{\mathbf{a}}+\vec{\mathbf{b}}$",
         align=epix.LabelPos.l,
     )
 

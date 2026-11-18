@@ -36,9 +36,9 @@ the unit circle, a rotation starting from the positive :math:`x` axis.
 
    Sine and cosine on the unit circle (Stephan Kulla, CC0).
 
-We want to expand on that, so we can rotate **any** point :math:`\vec{a}`, wherever it
+We want to expand on that, so we can rotate **any** point :math:`\vec{\mathbf{a}}`, wherever it
 is, about the origin by some angle :math:`\theta`. Call the rotated point
-:math:`\vec{r}(\vec{a}; \theta)`.
+:math:`\vec{\mathbf{r}}(\vec{\mathbf{a}}; \theta)`.
 
 .. figure:: _static/epix/rotate-goal.*
    :align: center
@@ -56,7 +56,7 @@ The change-of-frame trick
 
 Sine and cosine are preserved when a right triangle is scaled up or down (similar
 triangles), so we work on the unit circle but **remember** the length of
-:math:`\vec{a}`, which we call :math:`r`. Call the angle of :math:`\vec{a}` itself
+:math:`\vec{\mathbf{a}}`, which we call :math:`r`. Call the angle of :math:`\vec{\mathbf{a}}` itself
 :math:`\beta` — and remember, the angle we actually want to rotate *by* is a different
 one, :math:`\theta`.
 
@@ -72,7 +72,7 @@ Before we can rotate by :math:`\theta`, we first need to rotate by 90°
    :align: center
    :alt: rotating the unit direction by 90 degrees
 
-Now give those two directions new names, :math:`\vec{x'}` and :math:`\vec{y'}`, so we
+Now give those two directions new names, :math:`\vec{\mathbf{x'}}` and :math:`\vec{\mathbf{y'}}`, so we
 can ignore their details for a moment (just as we set :math:`r` aside above).
 
 .. figure:: _static/epix/rotate4.*
@@ -81,14 +81,14 @@ can ignore their details for a moment (just as we set :math:`r` aside above).
 
 Now **forget about** :math:`\beta`, and remember our goal is to rotate by
 :math:`\theta`. Look at the picture below while tilting your head slightly to the
-left: :math:`\vec{x'}` and :math:`\vec{y'}` look just like the ordinary Cartesian
+left: :math:`\vec{\mathbf{x'}}` and :math:`\vec{\mathbf{y'}}` look just like the ordinary Cartesian
 plane and unit circle — this is exactly the high-school picture we already know.
 
 .. figure:: _static/epix/rotate5.*
    :align: center
    :alt: x-prime and y-prime as a familiar frame
 
-So in this new frame we can rotate :math:`\vec{x'}` by :math:`\theta` and read off a
+So in this new frame we can rotate :math:`\vec{\mathbf{x'}}` by :math:`\theta` and read off a
 right triangle on the unit circle.
 
 .. figure:: _static/epix/rotate6.*
@@ -110,11 +110,11 @@ and finally we scale it back to length :math:`r`.
 
 Before we turn to the algebra, look at what we just drew. There are **two** right triangles
 now: the little one on the unit circle, with legs :math:`\cos(\theta)` and :math:`\sin(\theta)`,
-and :math:`\vec{a}`'s own, with legs :math:`r * \cos(\theta)` and :math:`r * \sin(\theta)`. They
+and :math:`\vec{\mathbf{a}}`'s own, with legs :math:`r * \cos(\theta)` and :math:`r * \sin(\theta)`. They
 have the **same angles** — so, by the high-school fact that **similar triangles have proportional
-sides**, they are the same shape at two sizes, :math:`\vec{a}`'s being the unit one with every side
+sides**, they are the same shape at two sizes, :math:`\vec{\mathbf{a}}`'s being the unit one with every side
 times :math:`r`. That is exactly why the last step worked: scaling the unit answer by :math:`r`
-lands right on the rotated :math:`\vec{a}`.
+lands right on the rotated :math:`\vec{\mathbf{a}}`.
 
 .. figure:: _static/epix/rotate9.*
    :align: center
@@ -126,8 +126,8 @@ Now the algebra
 Stop thinking about geometry — from here it is only algebra. Do **not** try to draw
 these formulas.
 
-Substitute the values of :math:`\vec{x'}` and :math:`\vec{y'}` back in. The angle of
-:math:`\vec{a}` is :math:`\beta`, so :math:`\cos(\beta) = a_1 / r` and
+Substitute the values of :math:`\vec{\mathbf{x'}}` and :math:`\vec{\mathbf{y'}}` back in. The angle of
+:math:`\vec{\mathbf{a}}` is :math:`\beta`, so :math:`\cos(\beta) = a_1 / r` and
 :math:`\sin(\beta) = a_2 / r`. And by the angle-addition identities,
 :math:`\cos(\beta + \pi/2) = -\sin(\beta)` and :math:`\sin(\beta + \pi/2) = \cos(\beta)`
 — so we never need :math:`\beta` itself, only the sine and cosine we already have.
@@ -135,15 +135,15 @@ Substitute the values of :math:`\vec{x'}` and :math:`\vec{y'}` back in. The angl
 .. math::
 
    \begin{aligned}
-   \vec{r}(\vec{a}; \theta)
-     &= r * \big(\cos(\theta) * \vec{x'} + \sin(\theta) * \vec{y'}\big) \\
+   \vec{\mathbf{r}}(\vec{\mathbf{a}}; \theta)
+     &= r * \big(\cos(\theta) * \vec{\mathbf{x'}} + \sin(\theta) * \vec{\mathbf{y'}}\big) \\
      &= r * \Big(\cos(\theta) * \begin{bmatrix} \cos(\beta) \\ \sin(\beta) \end{bmatrix}
               + \sin(\theta) * \begin{bmatrix} \cos(\beta + \pi/2) \\ \sin(\beta + \pi/2) \end{bmatrix}\Big) \\
      &= r * \Big(\cos(\theta) * \begin{bmatrix} a_1 / r \\ a_2 / r \end{bmatrix}
               + \sin(\theta) * \begin{bmatrix} -a_2 / r \\ a_1 / r \end{bmatrix}\Big) \\
      &= \cos(\theta) * \begin{bmatrix} a_1 \\ a_2 \end{bmatrix}
               + \sin(\theta) * \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix} \\
-     &= \cos(\theta) * \vec{a} + \sin(\theta) * \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}
+     &= \cos(\theta) * \vec{\mathbf{a}} + \sin(\theta) * \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}
    \end{aligned}
 
 The :math:`r`'s cancel, and we are left with the whole point of this chapter:
@@ -151,8 +151,8 @@ The :math:`r`'s cancel, and we are left with the whole point of this chapter:
 .. math::
    :label: eq-rotate-formula
 
-   \vec{r}(\vec{a}; \theta) = \cos(\theta) * \vec{a} + \sin(\theta) * \vec{r}(\vec{a}; \pi/2),
-   \qquad \vec{r}(\vec{a}; \pi/2) = \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}.
+   \vec{\mathbf{r}}(\vec{\mathbf{a}}; \theta) = \cos(\theta) * \vec{\mathbf{a}} + \sin(\theta) * \vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2),
+   \qquad \vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2) = \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}.
 
 **A rotation is a blend of the point and its 90°-rotated self.** That is worth staring
 at. The next chapter, :doc:`geometric-product`, notices that the 90° rotation

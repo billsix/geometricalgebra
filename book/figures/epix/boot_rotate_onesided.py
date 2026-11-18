@@ -12,11 +12,11 @@
 # ---
 
 # %% [markdown]
-# # boot_rotate_onesided — $\vec{v} * (\hat{a} * \hat{b})$ turns $\vec{v}$ by $\theta$
+# # boot_rotate_onesided — $\vec{\mathbf{v}} * (\hat{\mathbf{a}} * \hat{\mathbf{b}})$ turns $\vec{\mathbf{v}}$ by $\theta$
 #
-# The product of the two unit vectors carries the angle $\theta$ from $\vec{a}$ to
-# $\vec{b}$; multiplying any $\vec{v}$ by it on the right turns $\vec{v}$ by the same
-# $\theta$ (purple). Built with `epix`; written to
+# The product of the two unit vectors carries the angle $\theta$ from $\vec{\mathbf{a}}$
+# to $\vec{\mathbf{b}}$; multiplying any $\vec{\mathbf{v}}$ by it on the right turns
+# $\vec{\mathbf{v}}$ by the same $\theta$ (purple). Built with `epix`; written to
 # `_static/epix/boot-rotate-onesided.{pdf,png}`. CC0.
 
 # %%
@@ -54,26 +54,26 @@ with unit_circle_scene(
     )
     vector(
         head=ONESIDED_A,
-        text=r"$\vec{a}$",
+        text=r"$\vec{\mathbf{a}}$",
         offset=Point(x=7, y=0),
         align=epix.LabelPos.r,
     )
     vector(
         head=ONESIDED_B,
-        text=r"$\vec{b}$",
+        text=r"$\vec{\mathbf{b}}$",
         offset=Point(x=5, y=5),
         align=epix.LabelPos.tr,
     )
     vector(
         head=ONESIDED_V,
-        text=r"$\vec{v}$",
+        text=r"$\vec{\mathbf{v}}$",
         offset=Point(x=4, y=6),
         align=epix.LabelPos.tr,
     )
     colored_vector(
         head=ONESIDED_V_ROT,
         color=PURPLE,
-        text=r"$\vec{v} * (\hat{a} * \hat{b})$",
+        text=r"$\vec{\mathbf{v}} * (\hat{\mathbf{a}} * \hat{\mathbf{b}})$",
         offset=Point(x=0, y=8),
         align=epix.LabelPos.t,
     )

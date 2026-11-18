@@ -12,11 +12,11 @@
 # ---
 
 # %% [markdown]
-# # proj3d_e23 — projection of $\vec{a}$ onto the $e_{23}$ (yz) plane
+# # proj3d_e23 — projection of $\vec{\mathbf{a}}$ onto the $\mathbf{e}_{23}$ (yz) plane
 #
-# $\vec{a}$ split against the $e_{23}$ plane: the projection (blue) lies in the plane,
-# the rejection (green, along x) is the perpendicular remainder. Built with the `epix`
-# package; `tools/render_epix_figures.py` writes
+# $\vec{\mathbf{a}}$ split against the $\mathbf{e}_{23}$ plane: the projection (blue)
+# lies in the plane, the rejection (green, along x) is the perpendicular remainder.
+# Built with the `epix` package; `tools/render_epix_figures.py` writes
 # `_static/epix/proj3d-e23.{pdf,png}`. CC0.
 
 # %%
@@ -44,7 +44,12 @@ with frame_scene() as fig:
     plane3(plane="e_23")
     axes3()
     proj: Point = project_onto(plane="e_23")
-    vector3(head=A, text=r"$\vec{a}$", offset=Point(x=10, y=2), align=epix.LabelPos.l)
+    vector3(
+        head=A,
+        text=r"$\vec{\mathbf{a}}$",
+        offset=Point(x=10, y=2),
+        align=epix.LabelPos.l,
+    )
     epix.pen(color=BLUE, width=2.0)
     epix.arrow(tail=ORIGIN3, head=proj, scale=0.7)
     epix.dot(at=proj)
@@ -52,7 +57,7 @@ with frame_scene() as fig:
     epix.label(
         at=proj,
         offset=Point(x=-18, y=9),
-        text=r"$\mathrm{proj}_{e_{23}}\,\vec{a}$",
+        text=r"$\mathrm{proj}_{\mathbf{e}_{23}}\,\vec{\mathbf{a}}$",
         align=epix.LabelPos.r,
     )
     epix.pen(color=GREEN, width=2.0)
@@ -62,7 +67,7 @@ with frame_scene() as fig:
     epix.label(
         at=mid_rej,
         offset=Point(x=7, y=-11),
-        text=r"$\mathrm{rej}_{e_{23}}\,\vec{a}$",
+        text=r"$\mathrm{rej}_{\mathbf{e}_{23}}\,\vec{\mathbf{a}}$",
         align=epix.LabelPos.l,
     )
     epix.label_color(color=epix.black())

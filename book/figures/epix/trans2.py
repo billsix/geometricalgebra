@@ -14,11 +14,12 @@
 # %% [markdown]
 # # trans2 — `translate(b)` slides the whole graph paper
 #
-# Applying `translate(b)` adds $\vec{b}$ to *every* point at once: the faint grid is the
-# original paper, the solid grid is the same paper slid by $\vec{b}$, and the origin has
-# moved to $O' = \vec{b}$. Each sample point follows the same displacement $\vec{b}$
-# (dashed arrows), landing on $P+\vec{b}$ and $Q+\vec{b}$. Built with the `epix`
-# package; `tools/render_epix_figures.py` writes `_static/epix/trans2.{pdf,png}`. CC0.
+# Applying `translate(b)` adds $\vec{\mathbf{b}}$ to *every* point at once: the faint
+# grid is the original paper, the solid grid is the same paper slid by
+# $\vec{\mathbf{b}}$, and the origin has moved to $O' = \vec{\mathbf{b}}$. Each sample
+# point follows the same displacement $\vec{\mathbf{b}}$ (dashed arrows), landing on
+# $P+\vec{\mathbf{b}}$ and $Q+\vec{\mathbf{b}}$. Built with the `epix` package;
+# `tools/render_epix_figures.py` writes `_static/epix/trans2.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations
@@ -53,9 +54,14 @@ with unit_circle_scene(
     grid(lower_left=TRANS_LOWER_LEFT, upper_right=TRANS_UPPER_RIGHT, offset=B)
 
     # the vector doing the sliding, and the moved origin O' = b
-    vector(head=B, text=r"$\vec{b}$", offset=Point(x=-6, y=6), align=epix.LabelPos.l)
+    vector(
+        head=B,
+        text=r"$\vec{\mathbf{b}}$",
+        offset=Point(x=-6, y=6),
+        align=epix.LabelPos.l,
+    )
     epix.dot(at=B)
-    epix.label(at=B, offset=Point(x=8, y=-2), text=r"$O'$", align=epix.LabelPos.r)
+    epix.label(at=B, offset=Point(x=3, y=-5), text=r"$O'$", align=epix.LabelPos.br)
 
     # each sample point follows the same displacement b to its image
     epix.dot(at=TRANS_P)
@@ -63,7 +69,10 @@ with unit_circle_scene(
     dashed_vector(tail=TRANS_P, head=p_image)
     epix.dot(at=p_image)
     epix.label(
-        at=p_image, offset=Point(x=6, y=6), text=r"$P+\vec{b}$", align=epix.LabelPos.l
+        at=p_image,
+        offset=Point(x=6, y=6),
+        text=r"$P+\vec{\mathbf{b}}$",
+        align=epix.LabelPos.l,
     )
 
     epix.dot(at=TRANS_Q)
@@ -71,7 +80,10 @@ with unit_circle_scene(
     dashed_vector(tail=TRANS_Q, head=q_image)
     epix.dot(at=q_image)
     epix.label(
-        at=q_image, offset=Point(x=6, y=6), text=r"$Q+\vec{b}$", align=epix.LabelPos.l
+        at=q_image,
+        offset=Point(x=6, y=6),
+        text=r"$Q+\vec{\mathbf{b}}$",
+        align=epix.LabelPos.l,
     )
 
 # %%

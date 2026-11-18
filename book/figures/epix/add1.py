@@ -12,7 +12,7 @@
 # ---
 
 # %% [markdown]
-# # add1 — two vectors $\vec{a}$ and $\vec{b}$
+# # add1 — two vectors $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$
 #
 # The starting picture of `vector-addition.rst`: two vectors drawn from the origin,
 # before we add them. Built with the `epix` Python package
@@ -31,8 +31,18 @@ fig: PendingFigure
 with unit_circle_scene(
     lower_left=ADD_LOWER_LEFT, upper_right=ADD_UPPER_RIGHT, disc=False
 ) as fig:
-    vector(head=A, text=r"$\vec{a}$", offset=Point(x=7, y=-3), align=epix.LabelPos.r)
-    vector(head=B, text=r"$\vec{b}$", offset=Point(x=-5, y=7), align=epix.LabelPos.l)
+    vector(
+        head=A,
+        text=r"$\vec{\mathbf{a}}$",
+        offset=Point(x=7, y=-3),
+        align=epix.LabelPos.r,
+    )
+    vector(
+        head=B,
+        text=r"$\vec{\mathbf{b}}$",
+        offset=Point(x=-5, y=7),
+        align=epix.LabelPos.l,
+    )
 
 # %%
 fig

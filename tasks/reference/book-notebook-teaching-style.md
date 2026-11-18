@@ -75,8 +75,13 @@ Each of these was in `notebooks/displaymv.py` before 2026-11-16 and should not b
   grams-to-moles conversion, transforms and graph paper. A second subject is a second notebook.
 - **Write the prose math as LaTeX too, not only the output.** Explanations in backticked code
   (`` `e_1*e_1 = 1` ``) make the student match a monospace `e_12` in the text to a typeset blade in
-  the output. Write Markdown math as `$e_1 * e_1 = 1$` (MathJax), with the `CLAUDE.md` notation
-  rules, so text and output look the same. `book/docs/notebooks/frame-qr-2d.py` already does this.
+  the output. Write Markdown math as `$\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 = 1$` (MathJax),
+  with the `CLAUDE.md` notation rules, so text and output look the same: a vector is
+  `\vec{\mathbf{a}}`, a unit vector `\hat{\mathbf{a}}`, a basis vector `\vec{\mathbf{e}}_1`, a
+  bivector `\mathbf{e}_{12}`, as `blade_latex` (`src/gacalc/base.py`) writes them; scalars and
+  coordinates stay plain. A long inline span may pass 88 columns (`pyproject.toml` exempts the
+  book's notebooks and figure scripts from E501); wrap the paragraph around it.
+  `tools/check_notebook_prose_width.py [--fix]` checks that (a `make format` step).
 - **Say what a table or check shows.** The associativity tables in `displaymv.py` have no lead-in,
   so the student must infer that two groupings are being compared. Say it, and say what the result
   means: with general symbolic multivectors, a zero difference is a proof for every element of the
@@ -135,6 +140,14 @@ Set by William Emerison Six <billsix@gmail.com> while revising
   `gacalc.nbdisplay.at_values(value, values)`: `point(coordinates=list(at_values(v, values)))`.
 - **"At the plot values:" only for what a figure draws.** A drawn step's formula is followed by a
   cell with it at the plot values; a substituted value that nothing draws or uses has no purpose.
+- **A `show_mult` table comes twice: at the plot values, then symbolic.** The one exception to
+  "numbers only in the figures" (William Emerison Six <billsix@gmail.com>, 2026-11-17). Each row of
+  the plot-values table is short enough to check by hand, and the symbolic table after it shows the
+  same rows for every vector. Lead in with "First at the plot values:" and "Then with every
+  coordinate a symbol:", and build the plot-values table from the symbolic factors:
+  `show_mult(at_values(a, values), at_values(b, values))`. Every table follows this except
+  `rotation-from-vectors.py`'s `a_hat * b_hat`, whose point is the angle-difference identities,
+  which numbers would hide.
 - **Numbers in figure labels are computed, never typed:** a notebook-local
   `tex(value) = sympy.latex(at_values(value, values))` fills the label, so it stays right when the
   values change (`frame-qr-2d.py`, `frame-qr-3d.py`).
@@ -147,8 +160,8 @@ Set by William Emerison Six <billsix@gmail.com> while revising
 - **When symbolic is too slow or unreadable, keep numbers and say why in the notebook.** The cases
   today: the 3D frames in `proof-reciprocal-frame.py` and `frame-qr-3d.py` (nine symbolic
   coordinates make each check take minutes), and the second term-by-term table of
-  `bootstrap-rotation-from-product.py`'s sandwich (thousands of characters of nested roots), which
-  is left out.
+  `bootstrap-rotation-from-product.py`'s sandwich, `(R * v) * R⁻¹`, which is shown only at the plot
+  values (symbolically it is thousands of characters of nested roots).
 - **Watch for double simplification.** Simplifying an already simplified result can merge
   `sqrt(x) * sqrt(y)` into one square root of an expanded product that sympy cannot split again
   (`proof-projection-3d.py` builds its rejection part from coefficients for this reason).
@@ -158,12 +171,15 @@ Set by William Emerison Six <billsix@gmail.com> while revising
 - The page's structure follows `tasks/reference/book-outline.md` ("Structural conventions").
 - It opens from something the student knows, and says what the notebook will show.
 - Every code cell has a Markdown lead-in; each pair states one idea and confirms it.
-- Prose math is LaTeX, following the notation rules in `CLAUDE.md`.
+- Prose math is LaTeX, following the notation rules in `CLAUDE.md`; vectors and blades are typeset
+  as the output typesets them (`\vec{\mathbf{a}}`, `\vec{\mathbf{e}}_1`, `\mathbf{e}_{12}`).
 - Hand reductions are chains with a reason per line, followed by the cell that computes them.
-- Every step is symbolic; numbers appear only in the plot-values cell and the figures.
+- Every step is symbolic; numbers appear only in the plot-values cell, the figures and the
+  plot-values `show_mult` tables.
 - Each check shows both sides before the difference; each cell displays one value.
 - Every construction uses only earlier results, and rotations are the taught ones.
-- Products whose expansion is the point are shown with `show_mult`, with a lead-in.
+- Products whose expansion is the point are shown with `show_mult`, with a lead-in: at the plot
+  values first, then symbolic.
 - No developer comments, pyright trailers or typing workarounds in the student's view.
 - One subject per notebook.
 

@@ -147,7 +147,7 @@ def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
     >>> len(lines)  # header, separator, then 2 * 1 = 2 term pairs
     4
     >>> print(lines[2])
-    | $1\\mathbf{\\vec{e}}_{1}$ | * | $3\\mathbf{\\vec{e}}_{1}$ | = | $3$ |
+    | $1\\vec{\\mathbf{e}}_{1}$ | * | $3\\vec{\\mathbf{e}}_{1}$ | = | $3$ |
     """
     header: str = "| Left Component | * | Right Component | = | Product |"
     separator: str = "|---|---|---|---|---|"

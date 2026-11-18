@@ -12,13 +12,14 @@
 # ---
 
 # %% [markdown]
-# # boot_rotate_from_projection — one triangle, on $\vec{a}$ and on $\vec{v}$
+# # boot_rotate_from_projection — one triangle, on $\vec{\mathbf{a}}$ and on $\vec{\mathbf{v}}$
 #
-# The first triangle measures $\vec{b}$ against $\vec{a}$: $x$ along $\vec{a}$ (green),
-# $y$ across (blue), the angle $\theta$ between them. The second is the same triangle on
-# $\vec{v}$: $\cos(\theta) * \vec{v}$ along $\vec{v}$ (green), $\sin(\theta)$ times the
-# quarter turn of $\vec{v}$ across (blue), and the rotated $\vec{v}'$ (purple), at the
-# same $\theta$ from $\vec{v}$. Built with `epix`; written to
+# The first triangle measures $\vec{\mathbf{b}}$ against $\vec{\mathbf{a}}$: $x$ along
+# $\vec{\mathbf{a}}$ (green), $y$ across (blue), the angle $\theta$ between them. The
+# second is the same triangle on $\vec{\mathbf{v}}$: $\cos(\theta) * \vec{\mathbf{v}}$
+# along $\vec{\mathbf{v}}$ (green), $\sin(\theta)$ times the quarter turn of
+# $\vec{\mathbf{v}}$ across (blue), and the rotated $\vec{\mathbf{v}}'$ (purple), at the
+# same $\theta$ from $\vec{\mathbf{v}}$. Built with `epix`; written to
 # `_static/epix/boot-rotate-from-projection.{pdf,png}`. CC0.
 
 # %%
@@ -73,19 +74,19 @@ with unit_circle_scene(
     )
     vector(
         head=FROM_PROJ_A,
-        text=r"$\vec{a}$",
+        text=r"$\vec{\mathbf{a}}$",
         offset=Point(x=7, y=0),
         align=epix.LabelPos.r,
     )
     vector(
         head=FROM_PROJ_B,
-        text=r"$\vec{b}$",
+        text=r"$\vec{\mathbf{b}}$",
         offset=Point(x=4, y=5),
         align=epix.LabelPos.tr,
     )
     vector(
         head=FROM_PROJ_V,
-        text=r"$\vec{v}$",
+        text=r"$\vec{\mathbf{v}}$",
         offset=Point(x=4, y=5),
         align=epix.LabelPos.tr,
     )
@@ -112,7 +113,7 @@ with unit_circle_scene(
         tail=ORIGIN,
         head=FROM_PROJ_V_COS_PART,
         color=GREEN,
-        text=r"$\cos(\theta) * \vec{v}$",
+        text=r"$\cos(\theta) * \vec{\mathbf{v}}$",
         offset=Point(x=-6, y=8),
         align=epix.LabelPos.l,
     )
@@ -120,7 +121,7 @@ with unit_circle_scene(
         tail=FROM_PROJ_V_COS_PART,
         head=FROM_PROJ_V_ROTATED,
         color=BLUE,
-        text=r"$\sin(\theta) * \vec{r}(\vec{v}; \pi/2)$",
+        text=r"$\sin(\theta) * \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)$",
         offset=Point(x=-4, y=12),
         align=epix.LabelPos.tl,
     )
@@ -128,7 +129,7 @@ with unit_circle_scene(
     colored_vector(
         head=FROM_PROJ_V_ROTATED,
         color=PURPLE,
-        text=r"$\vec{v}'$",
+        text=r"$\vec{\mathbf{v}}'$",
         offset=Point(x=-6, y=0),
         align=epix.LabelPos.l,
     )

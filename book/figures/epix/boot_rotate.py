@@ -12,13 +12,13 @@
 # ---
 
 # %% [markdown]
-# # boot_rotate — a rotation is a blend of $\vec{v}$ and its quarter turn
+# # boot_rotate — a rotation is a blend of $\vec{\mathbf{v}}$ and its quarter turn
 #
-# To rotate $\vec{v}$ by $\theta$, walk $\cos(\theta)$ of the way along $\vec{v}$
-# (blue), then $\sin(\theta)$ of the way along its quarter turn
-# $\vec{r}(\vec{v}; \pi/2)$ (green), and land on the rotated vector (purple). Built with
-# `epix`; `tools/render_epix_figures.py` writes `_static/epix/boot-rotate.{pdf,png}`.
-# CC0.
+# To rotate $\vec{\mathbf{v}}$ by $\theta$, walk $\cos(\theta)$ of the way along
+# $\vec{\mathbf{v}}$ (blue), then $\sin(\theta)$ of the way along its quarter turn
+# $\vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)$ (green), and land on the rotated vector
+# (purple). Built with `epix`; `tools/render_epix_figures.py` writes
+# `_static/epix/boot-rotate.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations
@@ -61,18 +61,21 @@ with unit_circle_scene(
     dashed_vector(
         tail=ORIGIN,
         head=ROTATE_V_PERP,
-        text=r"$\vec{r}(\vec{v}; \pi/2)$",
+        text=r"$\vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)$",
         offset=Point(x=-4, y=6),
         align=epix.LabelPos.l,
     )
     vector(
-        head=ROTATE_V, text=r"$\vec{v}$", offset=Point(x=7, y=-3), align=epix.LabelPos.r
+        head=ROTATE_V,
+        text=r"$\vec{\mathbf{v}}$",
+        offset=Point(x=7, y=-3),
+        align=epix.LabelPos.r,
     )
     colored_segment(
         tail=ORIGIN,
         head=ROTATE_COS_PART,
         color=BLUE,
-        text=r"$\cos(\theta) * \vec{v}$",
+        text=r"$\cos(\theta) * \vec{\mathbf{v}}$",
         offset=Point(x=4, y=-9),
         align=epix.LabelPos.br,
     )
@@ -80,14 +83,14 @@ with unit_circle_scene(
         tail=ROTATE_COS_PART,
         head=ROTATE_RESULT,
         color=GREEN,
-        text=r"$\sin(\theta) * \vec{r}(\vec{v}; \pi/2)$",
+        text=r"$\sin(\theta) * \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)$",
         offset=Point(x=8, y=0),
         align=epix.LabelPos.r,
     )
     colored_vector(
         head=ROTATE_RESULT,
         color=PURPLE,
-        text=r"$\vec{r}(\vec{v}; \theta)$",
+        text=r"$\vec{\mathbf{r}}(\vec{\mathbf{v}}; \theta)$",
         offset=Point(x=4, y=7),
         align=epix.LabelPos.tr,
     )

@@ -18,8 +18,8 @@ Rotate
 
 Rotation is the operation this whole book is built on. We will define it the way
 *Model View Projection* does: **not by an angle, but from the direction of one vector
-to another**. Rotate so that the direction of :math:`\vec{a}` is carried onto the
-direction of :math:`\vec{b}`.
+to another**. Rotate so that the direction of :math:`\vec{\mathbf{a}}` is carried onto the
+direction of :math:`\vec{\mathbf{b}}`.
 
 .. figure:: _static/epix/rotate-ab-goal.*
    :align: center
@@ -33,8 +33,8 @@ at. So the two vectors *are* the description of the rotation. The angle between 
 there, and we will draw it, but it is a property of the rotation, not the thing we start from.
 
 The **magnitudes don't matter**; only the directions set the rotation. Rotating from
-:math:`\vec{a}` toward :math:`\vec{b}` is the same rotation as rotating from
-:math:`2 * \vec{a}` toward :math:`5 * \vec{b}`, because the directions are the same.
+:math:`\vec{\mathbf{a}}` toward :math:`\vec{\mathbf{b}}` is the same rotation as rotating from
+:math:`2 * \vec{\mathbf{a}}` toward :math:`5 * \vec{\mathbf{b}}`, because the directions are the same.
 
 That leaves two questions, and the two pages below answer them in order.
 
@@ -47,8 +47,8 @@ That leaves two questions, and the two pages below answer them in order.
       :alt: the goal — rotate a-vector by an angle
 
 #. **How do we get the rotation from two vectors, without ever finding the angle?**
-   :doc:`proof-rotate-from-a-to-b` does it with three of those rotations: swing :math:`\vec{a}`
-   onto the x-axis, turn up to where :math:`\vec{b}` went, and swing back.
+   :doc:`proof-rotate-from-a-to-b` does it with three of those rotations: swing :math:`\vec{\mathbf{a}}`
+   onto the x-axis, turn up to where :math:`\vec{\mathbf{b}}` went, and swing back.
 
 Later, once we have the **geometric product**, rotation gets a coordinate-free definition: the
 product of the two vectors *is* the rotation (:doc:`geometric-product`,

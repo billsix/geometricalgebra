@@ -12,13 +12,14 @@
 # ---
 
 # %% [markdown]
-# # rotate-goal — "rotate any point $\vec{a}$ about the origin by $\theta$"
+# # rotate-goal — "rotate any point $\vec{\mathbf{a}}$ about the origin by $\theta$"
 #
-# The goal picture of `rotate.rst` / `proof-rotate.rst`: a point $\vec{a}$ in the plane
-# (drawn as a vector from the origin), its rotation $\vec{r}(\vec{a};\theta)$ by the
-# angle $\theta$, the angle marked as a wedge, and the unit circle for scale. Built with
-# the `epix` Python package (github.com/billsix/epix-mirror) in the style of its
-# `notebooks/`; `tools/render_epix_figures.py` runs this file and writes
+# The goal picture of `rotate.rst` / `proof-rotate.rst`: a point $\vec{\mathbf{a}}$ in
+# the plane (drawn as a vector from the origin), its rotation
+# $\vec{\mathbf{r}}(\vec{\mathbf{a}};\theta)$ by the angle $\theta$, the angle marked as
+# a wedge, and the unit circle for scale. Built with the `epix` Python package
+# (github.com/billsix/epix-mirror) in the style of its `notebooks/`;
+# `tools/render_epix_figures.py` runs this file and writes
 # `_static/epix/rotate-goal.{pdf,png}` for the book. CC0, like the hand-drawn SVG it
 # replaced.
 
@@ -97,11 +98,13 @@ with epix.figure(
     epix.arrow(tail=ORIGIN, head=rotated_a, scale=0.7)
     epix.dot(at=a)
     epix.dot(at=rotated_a)
-    epix.label(at=a, offset=Point(x=7, y=0), text=r"$\vec{a}$", align=epix.LabelPos.r)
+    epix.label(
+        at=a, offset=Point(x=7, y=0), text=r"$\vec{\mathbf{a}}$", align=epix.LabelPos.r
+    )
     epix.label(
         at=rotated_a,
         offset=Point(x=-7, y=2),
-        text=r"$\vec{r}(\vec{a};\theta)$",
+        text=r"$\vec{\mathbf{r}}(\vec{\mathbf{a}};\theta)$",
         align=epix.LabelPos.l,
     )
 

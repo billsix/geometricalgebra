@@ -11,15 +11,16 @@
 #
 # Companion to the *Proof: Rotate from the Direction of a to the Direction of b*
 # chapter. In precalculus, rotating by $\theta_1$ and then by $\theta_2$ is rotating by
-# $\theta_1 + \theta_2$: the angles add. The chapter builds a rotation from $a$'s
-# direction to $b$'s in three turns and uses that fact to collapse them into one. This
-# notebook works each step with the coordinates left as symbols, so every result is a
-# formula that holds for every vector and every angle:
+# $\theta_1 + \theta_2$: the angles add. The chapter builds a rotation from
+# $\vec{\mathbf{a}}$'s direction to $\vec{\mathbf{b}}$'s in three turns and uses that
+# fact to collapse them into one. This notebook works each step with the coordinates
+# left as symbols, so every result is a formula that holds for every vector and every
+# angle:
 #
 # 1. **2D rotations commute**, which lets the three turns collapse to the middle one;
 # 2. **the three turns are one rotation**, whose cosine and sine are read off the
-#    coordinates of $a$ and $b$; and
-# 3. **that rotation carries $a$ to $b$'s direction**.
+#    coordinates of $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$; and
+# 3. **that rotation carries $\vec{\mathbf{a}}$ to $\vec{\mathbf{b}}$'s direction**.
 #
 # Only the rotation of *Proof: Rotate* is used, no dot product and no geometric product.
 # Numbers appear only to draw the figures. Each check shows both sides, then their
@@ -54,7 +55,7 @@ from gacalc.nbdisplay import at_values
 # %% [markdown]
 # ## 1. Rotations commute (in 2D)
 #
-# A general vector $v$, every coordinate a symbol, and two angles:
+# A general vector $\vec{\mathbf{v}}$, every coordinate a symbol, and two angles:
 
 # %%
 v_1: sympy.Symbol
@@ -78,8 +79,8 @@ values_v: list[tuple[sympy.Symbol, Real]] = [
 
 # %% [markdown]
 # The rotation of *Proof: Rotate* is `Vector.rotate`,
-# $r(v; \theta) = \cos(\theta) * v + \sin(\theta) * r(v; \pi/2)$. Rotate by $\theta_1$,
-# then by $\theta_2$:
+# $r(\vec{\mathbf{v}}; \theta) = \cos(\theta) * \vec{\mathbf{v}} + \sin(\theta) * r(\vec{\mathbf{v}}; \pi/2)$.
+# Rotate by $\theta_1$, then by $\theta_2$:
 
 # %%
 first_then_second: Vector = v.rotate(theta_1).rotate(theta_2).simplified()
@@ -111,8 +112,8 @@ v.rotate(theta_1 + theta_2).simplified()
 (first_then_second - v.rotate(theta_1 + theta_2)).simplified()
 
 # %% [markdown]
-# Drawn at the plot values: $v$ turned by $\theta_1$ first (green) or by $\theta_2$
-# first (blue), and both orders landing on the same vector (purple).
+# Drawn at the plot values: $\vec{\mathbf{v}}$ turned by $\theta_1$ first (green) or by
+# $\theta_2$ first (blue), and both orders landing on the same vector (purple).
 
 # %%
 P_V: Point = point(coordinates=list(at_values(v, values_v)))
@@ -121,21 +122,24 @@ P_AFTER_2: Point = point(coordinates=list(at_values(v.rotate(theta_2), values_v)
 P_BOTH: Point = point(coordinates=list(at_values(first_then_second, values_v)))
 fig_commute: PendingFigure
 with scene_around(points=[P_V, P_AFTER_1, P_AFTER_2, P_BOTH]) as fig_commute:
-    arrow(head=P_V, color=BLACK, text=r"$\vec{v}$")
+    arrow(head=P_V, color=BLACK, text=r"$\vec{\mathbf{v}}$")
     arrow(
         head=P_BOTH,
         color=PURPLE,
-        text=r"$r(r(\vec{v};\theta_1);\theta_2)$",
+        text=r"$r(r(\vec{\mathbf{v}};\theta_1);\theta_2)$",
         align=LabelPos.l,
     )
     dashed_arrow(
-        tail=Point(x=0, y=0), head=P_AFTER_1, color=GREEN, text=r"$r(\vec{v};\theta_1)$"
+        tail=Point(x=0, y=0),
+        head=P_AFTER_1,
+        color=GREEN,
+        text=r"$r(\vec{\mathbf{v}};\theta_1)$",
     )
     dashed_arrow(
         tail=Point(x=0, y=0),
         head=P_AFTER_2,
         color=BLUE,
-        text=r"$r(\vec{v};\theta_2)$",
+        text=r"$r(\vec{\mathbf{v}};\theta_2)$",
         align=LabelPos.l,
     )
 fig_commute
@@ -183,7 +187,7 @@ turns_2_then_1
 # %% [markdown]
 # ## 2. The three turns are one rotation
 #
-# Now $a$ and $b$, every coordinate a symbol:
+# Now $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$, every coordinate a symbol:
 
 # %%
 a_1: sympy.Symbol
@@ -209,36 +213,37 @@ P_A: Point = point(coordinates=list(at_values(a, values)))
 P_B: Point = point(coordinates=list(at_values(b, values)))
 fig_given: PendingFigure
 with scene_around(points=[P_A, P_B]) as fig_given:
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$")
 fig_given
 
 # %% [markdown]
-# ### Turn 1: swing $a$ onto the x-axis
+# ### Turn 1: swing $\vec{\mathbf{a}}$ onto the x-axis
 #
-# The cosine and sine of $R_{\vec{a}}^{e_1}$ are read off $a$, with $\beta$ the angle
-# of $a$. The cosine, $\cos(-\beta) = a_1 / |a|$:
+# The cosine and sine of $R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}$ are read off
+# $\vec{\mathbf{a}}$, with $\beta$ the angle of $\vec{\mathbf{a}}$. The cosine,
+# $\cos(-\beta) = a_1 / |\vec{\mathbf{a}}|$:
 
 # %%
 cos_1: Real = a_1 / a.magnitude()
 cos_1
 
 # %% [markdown]
-# and the sine, $\sin(-\beta) = -a_2 / |a|$:
+# and the sine, $\sin(-\beta) = -a_2 / |\vec{\mathbf{a}}|$:
 
 # %%
 sin_1: Real = -a_2 / a.magnitude()
 sin_1
 
 # %% [markdown]
-# $R_{\vec{a}}^{e_1}(a)$:
+# $R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}(\vec{\mathbf{a}})$:
 
 # %%
 a_on_axis: Vector = rotate_cs(a, cos_1, sin_1).simplified()
 a_on_axis
 
 # %% [markdown]
-# is $|a| * e_1$:
+# is $|\vec{\mathbf{a}}| * \vec{\mathbf{e}}_1$:
 
 # %%
 Scalar(a.magnitude()) * e_1
@@ -250,20 +255,21 @@ Scalar(a.magnitude()) * e_1
 (a_on_axis - Scalar(a.magnitude()) * e_1).simplified()
 
 # %% [markdown]
-# $b$ rides along to $b' = R_{\vec{a}}^{e_1}(b)$:
+# $\vec{\mathbf{b}}$ rides along to
+# $\vec{\mathbf{b}}' = R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}(\vec{\mathbf{b}})$:
 
 # %%
 b_prime: Vector = rotate_cs(b, cos_1, sin_1).simplified()
 b_prime
 
 # %% [markdown]
-# At the plot values, $|a| * e_1$:
+# At the plot values, $|\vec{\mathbf{a}}| * \vec{\mathbf{e}}_1$:
 
 # %%
 at_values(a_on_axis, values)
 
 # %% [markdown]
-# and $b'$:
+# and $\vec{\mathbf{b}}'$:
 
 # %%
 at_values(b_prime, values)
@@ -273,23 +279,28 @@ P_A_ON_AXIS: Point = point(coordinates=list(at_values(a_on_axis, values)))
 P_B_PRIME: Point = point(coordinates=list(at_values(b_prime, values)))
 fig_turn_1: PendingFigure
 with scene_around(points=[P_A, P_B, P_A_ON_AXIS, P_B_PRIME]) as fig_turn_1:
-    dashed_arrow(tail=Point(x=0, y=0), head=P_A, color=BLACK, text=r"$\vec{a}$")
-    dashed_arrow(tail=Point(x=0, y=0), head=P_B, color=BLACK, text=r"$\vec{b}$")
+    dashed_arrow(
+        tail=Point(x=0, y=0), head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$"
+    )
+    dashed_arrow(
+        tail=Point(x=0, y=0), head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$"
+    )
     arrow(
         head=P_A_ON_AXIS,
         color=BLACK,
-        text=r"$|\vec{a}| * e_1$",
+        text=r"$|\vec{\mathbf{a}}| * \vec{\mathbf{e}}_1$",
         offset=Point(x=-6, y=-8),
         align=LabelPos.bl,
     )
-    arrow(head=P_B_PRIME, color=BLACK, text=r"$\vec{b}'$")
+    arrow(head=P_B_PRIME, color=BLACK, text=r"$\vec{\mathbf{b}}'$")
 fig_turn_1
 
 # %% [markdown]
-# ### Turn 2: in standard position, turn $e_1$ onto $b'$
+# ### Turn 2: in standard position, turn $\vec{\mathbf{e}}_1$ onto $\vec{\mathbf{b}}'$
 #
-# The cosine and sine of $R_{e_1}^{\vec{b}'}$ are read off $b'$. Rotations keep lengths,
-# so $|b'| = |b|$. The cosine:
+# The cosine and sine of $R_{\vec{\mathbf{e}}_1}^{\vec{\mathbf{b}}'}$ are read off
+# $\vec{\mathbf{b}}'$. Rotations keep lengths, so
+# $|\vec{\mathbf{b}}'| = |\vec{\mathbf{b}}|$. The cosine:
 
 # %%
 cos_2: Real = b_prime.coefficient(e_1) / b.magnitude()
@@ -303,7 +314,8 @@ sin_2: Real = b_prime.coefficient(e_2) / b.magnitude()
 sin_2
 
 # %% [markdown]
-# Turn 2 carries $|a| * e_1$ onto $b'$'s direction:
+# Turn 2 carries $|\vec{\mathbf{a}}| * \vec{\mathbf{e}}_1$ onto $\vec{\mathbf{b}}'$'s
+# direction:
 
 # %%
 a_turned: Vector = rotate_cs(a_on_axis, cos_2, sin_2).simplified()
@@ -322,24 +334,30 @@ with scene_around(points=[P_A_ON_AXIS, P_B_PRIME, P_A_TURNED]) as fig_turn_2:
     arrow(
         head=P_A_ON_AXIS,
         color=BLACK,
-        text=r"$|\vec{a}| * e_1$",
+        text=r"$|\vec{\mathbf{a}}| * \vec{\mathbf{e}}_1$",
         offset=Point(x=-6, y=-8),
         align=LabelPos.bl,
     )
     arrow(
         head=P_A_TURNED,
         color=PURPLE,
-        text=r"$R_{e_1}^{\vec{b}'}(|\vec{a}| * e_1)$",
+        text=r"$R_{\vec{\mathbf{e}}_1}^{\vec{\mathbf{b}}'}(|\vec{\mathbf{a}}| * \vec{\mathbf{e}}_1)$",
         align=LabelPos.l,
     )
-    arrow(head=P_B_PRIME, color=BLACK, text=r"$\vec{b}'$")
+    arrow(
+        head=P_B_PRIME,
+        color=BLACK,
+        text=r"$\vec{\mathbf{b}}'$",
+        offset=Point(x=8, y=-6),
+        align=LabelPos.br,
+    )
 fig_turn_2
 
 # %% [markdown]
 # ### Turn 3: undo turn 1
 #
-# $(R_{\vec{a}}^{e_1})^{-1}$ has the same cosine and the sine negated. The three turns,
-# applied to the general $v$:
+# $(R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1})^{-1}$ has the same cosine and the sine
+# negated. The three turns, applied to the general $\vec{\mathbf{v}}$:
 
 # %%
 three_turns: Vector = rotate_cs(
@@ -348,7 +366,7 @@ three_turns: Vector = rotate_cs(
 three_turns
 
 # %% [markdown]
-# Applied to $a$, they land on $b$'s direction (purple):
+# Applied to $\vec{\mathbf{a}}$, they land on $\vec{\mathbf{b}}$'s direction (purple):
 
 # %%
 a_image: Vector = rotate_cs(a_turned, cos_1, -sin_1).simplified()
@@ -364,35 +382,42 @@ at_values(a_image, values)
 P_A_IMAGE: Point = point(coordinates=list(at_values(a_image, values)))
 fig_turn_3: PendingFigure
 with scene_around(points=[P_A, P_B, P_A_IMAGE]) as fig_turn_3:
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
     arrow(
         head=P_A_IMAGE,
         color=PURPLE,
-        text=r"$R_{\vec{a}}^{\vec{b}}(\vec{a})$",
+        text=r"$R_{\vec{\mathbf{a}}}^{\vec{\mathbf{b}}}(\vec{\mathbf{a}})$",
         align=LabelPos.l,
     )
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
+    arrow(
+        head=P_B,
+        color=BLACK,
+        text=r"$\vec{\mathbf{b}}$",
+        offset=Point(x=8, y=-6),
+        align=LabelPos.br,
+    )
 fig_turn_3
 
 # %% [markdown]
 # ### The collapse
 #
 # The chapter's single rotation has its cosine and sine written in the coordinates of
-# $a$ and $b$. The cosine, $(a_1 * b_1 + a_2 * b_2) / (|a| * |b|)$:
+# $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$. The cosine,
+# $(a_1 * b_1 + a_2 * b_2) / (|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|)$:
 
 # %%
 cos_ab: Real = (a_1 * b_1 + a_2 * b_2) / (a.magnitude() * b.magnitude())
 cos_ab
 
 # %% [markdown]
-# and the sine, $(a_1 * b_2 - a_2 * b_1) / (|a| * |b|)$:
+# and the sine, $(a_1 * b_2 - a_2 * b_1) / (|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|)$:
 
 # %%
 sin_ab: Real = (a_1 * b_2 - a_2 * b_1) / (a.magnitude() * b.magnitude())
 sin_ab
 
 # %% [markdown]
-# That one rotation, applied to $v$:
+# That one rotation, applied to $\vec{\mathbf{v}}$:
 
 # %%
 one_turn: Vector = rotate_cs(v, cos_ab, sin_ab).simplified()
@@ -411,16 +436,17 @@ three_turns
 (three_turns - one_turn).simplified()
 
 # %% [markdown]
-# ## 3. The rotation carries $a$ to $b$'s direction
+# ## 3. The rotation carries $\vec{\mathbf{a}}$ to $\vec{\mathbf{b}}$'s direction
 #
-# Applied to $a$ itself, the single rotation gives:
+# Applied to $\vec{\mathbf{a}}$ itself, the single rotation gives:
 
 # %%
 a_rotated: Vector = rotate_cs(a, cos_ab, sin_ab).simplified()
 a_rotated
 
 # %% [markdown]
-# $b$'s direction with $a$'s own length is $(|a| / |b|) * b$:
+# $\vec{\mathbf{b}}$'s direction with $\vec{\mathbf{a}}$'s own length is
+# $(|\vec{\mathbf{a}}| / |\vec{\mathbf{b}}|) * \vec{\mathbf{b}}$:
 
 # %%
 a_length_along_b: Vector = (Scalar(a.magnitude() / b.magnitude()) * b).simplified()

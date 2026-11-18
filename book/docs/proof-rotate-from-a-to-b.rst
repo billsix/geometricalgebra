@@ -18,7 +18,7 @@ Proof: Rotate from the Direction of a to the Direction of b
 
 In :doc:`proof-rotate` we learned to rotate a vector **by an angle** :math:`\theta`. But the
 definition this book is built on (:doc:`rotate`) is different: rotate so that the direction of
-:math:`\vec{a}` is carried onto the direction of :math:`\vec{b}`. Here we earn that — in 2D, using
+:math:`\vec{\mathbf{a}}` is carried onto the direction of :math:`\vec{\mathbf{b}}`. Here we earn that — in 2D, using
 nothing but the rotation we already have — and, as a bonus, **without ever computing an angle**.
 
 The trick is **reduction to standard position**: rotating onto a general vector is annoying, but
@@ -28,9 +28,9 @@ back. (The same move does the work later, in :doc:`proof-projection`.)
 The goal
 --------
 
-We are handed two vectors :math:`\vec{a}` and :math:`\vec{b}` — **not** unit length; magnitudes don't
-matter, only directions set the rotation — and we want the rotation that swings :math:`\vec{a}`'s
-direction onto :math:`\vec{b}`'s, through the angle :math:`\theta` between them.
+We are handed two vectors :math:`\vec{\mathbf{a}}` and :math:`\vec{\mathbf{b}}` — **not** unit length; magnitudes don't
+matter, only directions set the rotation — and we want the rotation that swings :math:`\vec{\mathbf{a}}`'s
+direction onto :math:`\vec{\mathbf{b}}`'s, through the angle :math:`\theta` between them.
 
 .. figure:: _static/epix/rotate-ab-goal.*
    :align: center
@@ -45,53 +45,53 @@ order they are applied — **right to left**, the way a composition reads —
 
 .. math::
 
-   R_{\vec{a}}^{\vec{b}} = \big(R_{\vec{a}}^{e_1}\big)^{-1}
-     \circ R_{e_1}^{\vec{b}'} \circ R_{\vec{a}}^{e_1}.
+   R_{\vec{\mathbf{a}}}^{\vec{\mathbf{b}}} = \big(R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}\big)^{-1}
+     \circ R_{\vec{\mathbf{e}}_1}^{\vec{\mathbf{b}}'} \circ R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}.
 
-Read it right to left: swing :math:`\vec{a}` onto :math:`e_1`, rotate up to :math:`\vec{b}'` there,
+Read it right to left: swing :math:`\vec{\mathbf{a}}` onto :math:`\vec{\mathbf{e}}_1`, rotate up to :math:`\vec{\mathbf{b}}'` there,
 then undo the first swing.
 
-**Step 1 — swing** :math:`\vec{a}` **onto the x-axis.** This is the single plane rotation of
-:doc:`proof-rotate`. Call the angle :math:`\vec{a}` makes with the x-axis :math:`\beta`; its cosine and
-sine are read straight off :math:`\vec{a}`, so — as in that chapter — we never have to compute
+**Step 1 — swing** :math:`\vec{\mathbf{a}}` **onto the x-axis.** This is the single plane rotation of
+:doc:`proof-rotate`. Call the angle :math:`\vec{\mathbf{a}}` makes with the x-axis :math:`\beta`; its cosine and
+sine are read straight off :math:`\vec{\mathbf{a}}`, so — as in that chapter — we never have to compute
 :math:`\beta` itself:
 
 .. math::
 
-   \cos(\beta) = \frac{a_1}{|\vec{a}|}, \qquad \sin(\beta) = \frac{a_2}{|\vec{a}|}.
+   \cos(\beta) = \frac{a_1}{|\vec{\mathbf{a}}|}, \qquad \sin(\beta) = \frac{a_2}{|\vec{\mathbf{a}}|}.
 
-To swing :math:`\vec{a}` down onto the axis we rotate by :math:`-\beta`, and since cosine is even while
-sine is odd that rotation uses :math:`\cos(-\beta) = a_1/|\vec{a}|`,
-:math:`\sin(-\beta) = -a_2/|\vec{a}|`.
-Substitute those into :math:`\vec{r}(\,\cdot\,;\theta)` and call the result
-:math:`R_{\vec{a}}^{e_1}` — read "from :math:`\vec{a}`, to :math:`e_1`". Applied to
-:math:`\vec{a}` itself, its :math:`y`-coordinate cancels and its :math:`x`-coordinate becomes
-:math:`(a_1^2 + a_2^2)/|\vec{a}| = |\vec{a}|`:
+To swing :math:`\vec{\mathbf{a}}` down onto the axis we rotate by :math:`-\beta`, and since cosine is even while
+sine is odd that rotation uses :math:`\cos(-\beta) = a_1/|\vec{\mathbf{a}}|`,
+:math:`\sin(-\beta) = -a_2/|\vec{\mathbf{a}}|`.
+Substitute those into :math:`\vec{\mathbf{r}}(\,\cdot\,;\theta)` and call the result
+:math:`R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}` — read "from :math:`\vec{\mathbf{a}}`, to :math:`\vec{\mathbf{e}}_1`". Applied to
+:math:`\vec{\mathbf{a}}` itself, its :math:`y`-coordinate cancels and its :math:`x`-coordinate becomes
+:math:`(a_1^2 + a_2^2)/|\vec{\mathbf{a}}| = |\vec{\mathbf{a}}|`:
 
 .. math::
 
-   R_{\vec{a}}^{e_1}(\vec{a}) = |\vec{a}| * e_1.
+   R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}(\vec{\mathbf{a}}) = |\vec{\mathbf{a}}| * \vec{\mathbf{e}}_1.
 
-And it carries :math:`\vec{b}` along to a new vector :math:`\vec{b}' = R_{\vec{a}}^{e_1}(\vec{b})`.
+And it carries :math:`\vec{\mathbf{b}}` along to a new vector :math:`\vec{\mathbf{b}}' = R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}(\vec{\mathbf{b}})`.
 
 .. figure:: _static/epix/rotate-ab-step1.*
    :align: center
    :alt: a swung onto the x-axis; b carried to b-prime; faint dashed originals
 
-**Step 2 — in standard position, rotate** :math:`e_1` **onto** :math:`\vec{b}'`. Now the problem is
-easy: swing the x-axis up onto :math:`\vec{b}'` by the angle :math:`\theta` between them — and, again,
-we read its cosine and sine straight off :math:`\vec{b}'`'s coordinates
-(:math:`\cos(\theta) = b'_1/|\vec{b}'|`, :math:`\sin(\theta) = b'_2/|\vec{b}'|`). Call it
-:math:`R_{e_1}^{\vec{b}'}`.
+**Step 2 — in standard position, rotate** :math:`\vec{\mathbf{e}}_1` **onto** :math:`\vec{\mathbf{b}}'`. Now the problem is
+easy: swing the x-axis up onto :math:`\vec{\mathbf{b}}'` by the angle :math:`\theta` between them — and, again,
+we read its cosine and sine straight off :math:`\vec{\mathbf{b}}'`'s coordinates
+(:math:`\cos(\theta) = b'_1/|\vec{\mathbf{b}}'|`, :math:`\sin(\theta) = b'_2/|\vec{\mathbf{b}}'|`). Call it
+:math:`R_{\vec{\mathbf{e}}_1}^{\vec{\mathbf{b}}'}`.
 
 .. figure:: _static/epix/rotate-ab-step2.*
    :align: center
    :alt: in standard position, rotate e1 onto b-prime by theta
 
-**Step 3 — undo step 1.** Rotate back by :math:`\big(R_{\vec{a}}^{e_1}\big)^{-1}`, the same
-rotation as step 1 run backwards. Whatever was on the x-axis swings up to where :math:`\vec{a}`
-started, carrying our standard-position answer with it — so the image of :math:`\vec{a}` lands exactly
-on :math:`\vec{b}`'s direction, with :math:`\vec{a}`'s own length: :math:`(|\vec{a}|/|\vec{b}|) * \vec{b}`.
+**Step 3 — undo step 1.** Rotate back by :math:`\big(R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}\big)^{-1}`, the same
+rotation as step 1 run backwards. Whatever was on the x-axis swings up to where :math:`\vec{\mathbf{a}}`
+started, carrying our standard-position answer with it — so the image of :math:`\vec{\mathbf{a}}` lands exactly
+on :math:`\vec{\mathbf{b}}`'s direction, with :math:`\vec{\mathbf{a}}`'s own length: :math:`(|\vec{\mathbf{a}}|/|\vec{\mathbf{b}}|) * \vec{\mathbf{b}}`.
 
 .. figure:: _static/epix/rotate-ab-step3.*
    :align: center
@@ -102,13 +102,13 @@ The collapse
 
 Now the payoff. In 2D, **rotations commute** — turning by one angle and then another is the same in
 either order. That is easy to believe, and we can *check it in coordinates* with the formula
-:eq:`eq-rotate-formula` of :doc:`proof-rotate`. Rotate :math:`\vec{v}` by :math:`\theta_1`, then rotate the result by
+:eq:`eq-rotate-formula` of :doc:`proof-rotate`. Rotate :math:`\vec{\mathbf{v}}` by :math:`\theta_1`, then rotate the result by
 :math:`\theta_2`, and multiply out:
 
 .. math::
 
    \begin{aligned}
-   \vec{r}\big(\vec{r}(\vec{v};\theta_1);\theta_2\big)
+   \vec{\mathbf{r}}\big(\vec{\mathbf{r}}(\vec{\mathbf{v}};\theta_1);\theta_2\big)
      &= \begin{bmatrix}
           \cos(\theta_2) * (v_1 * \cos(\theta_1) - v_2 * \sin(\theta_1))
             - \sin(\theta_2) * (v_1 * \sin(\theta_1) + v_2 * \cos(\theta_1)) \\
@@ -125,7 +125,7 @@ either order. That is easy to believe, and we can *check it in coordinates* with
           v_1 * \cos(\theta_1 + \theta_2) - v_2 * \sin(\theta_1 + \theta_2) \\
           v_1 * \sin(\theta_1 + \theta_2) + v_2 * \cos(\theta_1 + \theta_2)
         \end{bmatrix}
-      = \vec{r}(\vec{v};\ \theta_1 + \theta_2),
+      = \vec{\mathbf{r}}(\vec{\mathbf{v}};\ \theta_1 + \theta_2),
    \end{aligned}
 
 by the angle-addition identities. The last line is the single rotation by :math:`\theta_1 + \theta_2`
@@ -142,32 +142,32 @@ inverses — slide past the middle one and **cancel**. The whole sandwich collap
 
 .. math::
 
-   R_{\vec{a}}^{\vec{b}} = R_{e_1}^{\vec{b}'}
-   \quad\text{— a single rotation, by the angle from } \vec{a} \text{ to } \vec{b}.
+   R_{\vec{\mathbf{a}}}^{\vec{\mathbf{b}}} = R_{\vec{\mathbf{e}}_1}^{\vec{\mathbf{b}}'}
+   \quad\text{— a single rotation, by the angle from } \vec{\mathbf{a}} \text{ to } \vec{\mathbf{b}}.
 
-And its cosine and sine are a tidy formula in the coordinates of :math:`\vec{a}` and :math:`\vec{b}`,
-**with no angle named** (the :math:`|\vec{a}|`'s from aligning :math:`\vec{a}` combine with the
-:math:`\vec{b}'` coordinates):
+And its cosine and sine are a tidy formula in the coordinates of :math:`\vec{\mathbf{a}}` and :math:`\vec{\mathbf{b}}`,
+**with no angle named** (the :math:`|\vec{\mathbf{a}}|`'s from aligning :math:`\vec{\mathbf{a}}` combine with the
+:math:`\vec{\mathbf{b}}'` coordinates):
 
 .. math::
 
-   \cos(\theta) = \frac{a_1 * b_1 + a_2 * b_2}{|\vec{a}| * |\vec{b}|},
+   \cos(\theta) = \frac{a_1 * b_1 + a_2 * b_2}{|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|},
    \qquad
-   \sin(\theta) = \frac{a_1 * b_2 - a_2 * b_1}{|\vec{a}| * |\vec{b}|}.
+   \sin(\theta) = \frac{a_1 * b_2 - a_2 * b_1}{|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|}.
 
-So the rotation that carries :math:`\vec{a}`'s direction to :math:`\vec{b}`'s, applied to any vector
-:math:`\vec{v}`, is just the rotation :eq:`eq-rotate-formula` of :doc:`proof-rotate` with that cosine and sine:
+So the rotation that carries :math:`\vec{\mathbf{a}}`'s direction to :math:`\vec{\mathbf{b}}`'s, applied to any vector
+:math:`\vec{\mathbf{v}}`, is just the rotation :eq:`eq-rotate-formula` of :doc:`proof-rotate` with that cosine and sine:
 
 .. math::
 
-   R_{\vec{a}}^{\vec{b}}(\vec{v}) = \cos(\theta) * \vec{v} + \sin(\theta) * \vec{r}(\vec{v};\ \pi/2).
+   R_{\vec{\mathbf{a}}}^{\vec{\mathbf{b}}}(\vec{\mathbf{v}}) = \cos(\theta) * \vec{\mathbf{v}} + \sin(\theta) * \vec{\mathbf{r}}(\vec{\mathbf{v}};\ \pi/2).
 
 (Both facts are machine-checked in ``proofs/GacalcProofs/RotateFromTo2D.lean``: the sandwich collapses
 to the middle rotation — ``rotateFromTo_collapse``, built on ``rotPlane_conj_collapse``, which rests on
-``rotPlane_comm`` above — and the whole construction carries :math:`\vec{a}` to :math:`(|\vec{a}|/|\vec{b}|) * \vec{b}` — ``rotateFromTo_carries``.)
+``rotPlane_comm`` above — and the whole construction carries :math:`\vec{\mathbf{a}}` to :math:`(|\vec{\mathbf{a}}|/|\vec{\mathbf{b}}|) * \vec{\mathbf{b}}` — ``rotateFromTo_carries``.)
 
 Look again at those two numerators. The top one, :math:`a_1 * b_1 + a_2 * b_2`, is the
-**dot product** of :math:`\vec{a}` and :math:`\vec{b}`; the bottom one,
+**dot product** of :math:`\vec{\mathbf{a}}` and :math:`\vec{\mathbf{b}}`; the bottom one,
 :math:`a_1 * b_2 - a_2 * b_1`, is the **signed area** of the parallelogram they span.
 We built the rotation from nothing but turns we already trusted, and the answer handed us the two
 quantities the rest of the book is about. That is worth staring at.

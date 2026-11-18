@@ -10,12 +10,13 @@
 # # Rotate — a first example
 #
 # In precalculus a rotation is given by an angle. The chapter gives it instead by two
-# directions: rotate from the direction of $a$ to the direction of $b$. Its two proofs
-# build both: the rotation by an angle (`Vector.rotate`), and from it the rotation from
-# one direction to another (`rotation_from_to(a, b)`), with no angle passed in. This
-# notebook applies the second to symbolic vectors, so every result holds for every $a$
-# and $b$, then checks it against the first. Numbers appear only to draw the figures.
-# Each check shows both sides, then their difference.
+# directions: rotate from the direction of $\vec{\mathbf{a}}$ to the direction of
+# $\vec{\mathbf{b}}$. Its two proofs build both: the rotation by an angle
+# (`Vector.rotate`), and from it the rotation from one direction to another
+# (`rotation_from_to(a, b)`), with no angle passed in. This notebook applies the second
+# to symbolic vectors, so every result holds for every $\vec{\mathbf{a}}$ and
+# $\vec{\mathbf{b}}$, then checks it against the first. Numbers appear only to draw the
+# figures. Each check shows both sides, then their difference.
 
 # %%
 import pathlib
@@ -45,7 +46,7 @@ from gacalc.standardposition import rotation_from_to
 # %% [markdown]
 # ## The vectors
 #
-# $a$ and $b$, every coordinate a symbol:
+# $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$, every coordinate a symbol:
 
 # %%
 a_1: sympy.Symbol
@@ -67,16 +68,17 @@ b
 values: list[tuple[sympy.Symbol, Real]] = [(a_1, 3), (a_2, 1), (b_1, 1), (b_2, 2)]
 
 # %% [markdown]
-# The rotation from $a$'s direction to $b$'s:
+# The rotation from $\vec{\mathbf{a}}$'s direction to $\vec{\mathbf{b}}$'s:
 
 # %%
 rotate_a_to_b: InvertibleFunction[Vector] = rotation_from_to(a, b)
 rotate_a_to_b
 
 # %% [markdown]
-# ## Rotating $a$ itself
+# ## Rotating $\vec{\mathbf{a}}$ itself
 #
-# Applied to $a$, the rotation lands on $b$'s direction and keeps $a$'s length:
+# Applied to $\vec{\mathbf{a}}$, the rotation lands on $\vec{\mathbf{b}}$'s direction
+# and keeps $\vec{\mathbf{a}}$'s length:
 
 # %%
 rotated: Vector = rotate_a_to_b(a).simplified()
@@ -94,20 +96,31 @@ P_B: Point = point(coordinates=list(at_values(b, values)))
 P_ROTATED: Point = point(coordinates=list(at_values(rotated, values)))
 fig_rotated: PendingFigure
 with scene_around(points=[P_A, P_B, P_ROTATED]) as fig_rotated:
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
-    arrow(head=P_ROTATED, color=PURPLE, text=r"$R_{\vec{a}}^{\vec{b}}(\vec{a})$")
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$", align=LabelPos.l)
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
+    arrow(
+        head=P_ROTATED,
+        color=PURPLE,
+        text=r"$R_{\vec{\mathbf{a}}}^{\vec{\mathbf{b}}}(\vec{\mathbf{a}})$",
+    )
+    arrow(
+        head=P_B,
+        color=BLACK,
+        text=r"$\vec{\mathbf{b}}$",
+        offset=Point(x=8, y=-6),
+        align=LabelPos.br,
+    )
 fig_rotated
 
 # %% [markdown]
-# $b$'s direction at $a$'s length is $(|a| / |b|) * b$:
+# $\vec{\mathbf{b}}$'s direction at $\vec{\mathbf{a}}$'s length is
+# $(|\vec{\mathbf{a}}| / |\vec{\mathbf{b}}|) * \vec{\mathbf{b}}$:
 
 # %%
 a_length_along_b: Vector = (Scalar(a.magnitude() / b.magnitude()) * b).simplified()
 a_length_along_b
 
 # %% [markdown]
-# Its difference from the rotated $a$:
+# Its difference from the rotated $\vec{\mathbf{a}}$:
 
 # %%
 (rotated - a_length_along_b).simplified()
@@ -115,9 +128,10 @@ a_length_along_b
 # %% [markdown]
 # ## The lengths don't matter
 #
-# Rotating from $p * a$ toward $q * b$, for positive numbers $p$ and $q$, is the same
-# rotation, so it moves any vector, here $e_1$, to the same place. The rotation from $a$
-# to $b$ moves $e_1$ to:
+# Rotating from $p * \vec{\mathbf{a}}$ toward $q * \vec{\mathbf{b}}$, for positive
+# numbers $p$ and $q$, is the same rotation, so it moves any vector, here
+# $\vec{\mathbf{e}}_1$, to the same place. The rotation from $\vec{\mathbf{a}}$ to
+# $\vec{\mathbf{b}}$ moves $\vec{\mathbf{e}}_1$ to:
 
 # %%
 p: sympy.Symbol
@@ -129,7 +143,7 @@ rotate_scaled: InvertibleFunction[Vector] = rotation_from_to(
 rotate_a_to_b(1 * e_1).simplified()
 
 # %% [markdown]
-# The rotation from $p * a$ to $q * b$ moves it to:
+# The rotation from $p * \vec{\mathbf{a}}$ to $q * \vec{\mathbf{b}}$ moves it to:
 
 # %%
 rotate_scaled(1 * e_1).simplified()
@@ -143,16 +157,17 @@ rotate_scaled(1 * e_1).simplified()
 # %% [markdown]
 # ## The angle is still there, as a property
 #
-# The same rotation, given by the angle $\theta$ from $a$ to $b$, agrees. We never
-# needed $\theta$ to build the rotation above; here we compute it only to check, as the
-# angle of $b$ minus the angle of $a$:
+# The same rotation, given by the angle $\theta$ from $\vec{\mathbf{a}}$ to
+# $\vec{\mathbf{b}}$, agrees. We never needed $\theta$ to build the rotation above; here
+# we compute it only to check, as the angle of $\vec{\mathbf{b}}$ minus the angle of
+# $\vec{\mathbf{a}}$:
 
 # %%
 theta: Real = sympy.atan2(b_2, b_1) - sympy.atan2(a_2, a_1)
 theta
 
 # %% [markdown]
-# A general vector $v$:
+# A general vector $\vec{\mathbf{v}}$:
 
 # %%
 v_1: sympy.Symbol
@@ -168,7 +183,7 @@ v
 v.rotate(theta).simplified()
 
 # %% [markdown]
-# and by the rotation from $a$ to $b$:
+# and by the rotation from $\vec{\mathbf{a}}$ to $\vec{\mathbf{b}}$:
 
 # %%
 rotate_a_to_b(v).simplified()

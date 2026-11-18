@@ -10,11 +10,12 @@
 # # Step 5, projection through the product — worked example
 #
 # Companion to *Step 5: Projection, through the Product*. Every step is computed with
-# symbolic coordinates, so each result is a formula for every $a$ and $b$: the inverse
-# of $a$, then the projection $(b \cdot a) * a^{-1}$ and the rejection
-# $(b \wedge a) * a^{-1}$, which match Step 2's construction by rotation. Numbers appear
-# only to draw the figure; change them and rerun. Each check shows both sides, then
-# their difference.
+# symbolic coordinates, so each result is a formula for every $\vec{\mathbf{a}}$ and
+# $\vec{\mathbf{b}}$: the inverse of $\vec{\mathbf{a}}$, then the projection
+# $(\vec{\mathbf{b}} \cdot \vec{\mathbf{a}}) * \vec{\mathbf{a}}^{-1}$ and the rejection
+# $(\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}) * \vec{\mathbf{a}}^{-1}$, which match Step
+# 2's construction by rotation. Numbers appear only to draw the figure; change them and
+# rerun. Each check shows both sides, then their difference.
 
 # %%
 import pathlib
@@ -46,7 +47,7 @@ from gacalc.nbdisplay import at_values, show_mult
 # %% [markdown]
 # ## The vectors
 #
-# $a$ and $b$, every coordinate a symbol:
+# $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$, every coordinate a symbol:
 
 # %%
 a_1: sympy.Symbol
@@ -70,8 +71,9 @@ values: list[tuple[sympy.Symbol, Real]] = [(a_1, 2), (a_2, 1), (b_1, 1), (b_2, 2
 # %% [markdown]
 # ## The inverse of a vector
 #
-# $a * a = |a|^2$ is a plain number, so $a^{-1} = a / |a|^2$: along $a$, at length
-# $1 / |a|$.
+# $\vec{\mathbf{a}} * \vec{\mathbf{a}} = |\vec{\mathbf{a}}|^2$ is a plain number, so
+# $\vec{\mathbf{a}}^{-1} = \vec{\mathbf{a}} / |\vec{\mathbf{a}}|^2$: along
+# $\vec{\mathbf{a}}$, at length $1 / |\vec{\mathbf{a}}|$.
 
 # %%
 a_inverse: Vector = a.inverse().simplified()
@@ -86,9 +88,12 @@ at_values(a_inverse, values)
 # %% [markdown]
 # ## The projection through the product
 #
-# $\operatorname{proj}_a(b) = (b \cdot a) * a^{-1}$, where $b \cdot a$ is the
-# plain-number part of $b * a$. $b * a$ term by term; its plain-number part, the sum of
-# the $e_1 * e_1$ and $e_2 * e_2$ rows, is $b \cdot a$. First at the plot values:
+# $\operatorname{proj}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}}) = (\vec{\mathbf{b}} \cdot \vec{\mathbf{a}}) * \vec{\mathbf{a}}^{-1}$,
+# where $\vec{\mathbf{b}} \cdot \vec{\mathbf{a}}$ is the plain-number part of
+# $\vec{\mathbf{b}} * \vec{\mathbf{a}}$. $\vec{\mathbf{b}} * \vec{\mathbf{a}}$ term by
+# term; its plain-number part, the sum of the $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1$
+# and $\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2$ rows, is
+# $\vec{\mathbf{b}} \cdot \vec{\mathbf{a}}$. First at the plot values:
 
 # %%
 show_mult(at_values(b, values), at_values(a, values))
@@ -116,9 +121,9 @@ at_values(projection, values)
 # %% [markdown]
 # ## The rejection, the same way
 #
-# $\operatorname{rej}_a(b) = (b \wedge a) * a^{-1}$. Term by term: $e_{12}$ times each
-# term of $a^{-1}$ is a quarter turn of that term, so the result is a vector again.
-# First at the plot values:
+# $\operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}}) = (\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}) * \vec{\mathbf{a}}^{-1}$.
+# Term by term: $\mathbf{e}_{12}$ times each term of $\vec{\mathbf{a}}^{-1}$ is a
+# quarter turn of that term, so the result is a vector again. First at the plot values:
 
 # %%
 show_mult(at_values(b.wedge(a), values), at_values(a_inverse, values))
@@ -149,12 +154,12 @@ P_INVERSE: Point = point(coordinates=list(at_values(a_inverse, values)))
 P_PROJECTION: Point = point(coordinates=list(at_values(projection, values)))
 fig_product: PendingFigure
 with scene_around(points=[P_A, P_B]) as fig_product:
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$")
     arrow(head=P_PROJECTION, color=GREEN, width=2.4)
     note(
         at=0.75 * P_PROJECTION,
-        text=r"$(\vec{b} \cdot \vec{a}) * \vec{a}^{-1}$",
+        text=r"$(\vec{\mathbf{b}} \cdot \vec{\mathbf{a}}) * \vec{\mathbf{a}}^{-1}$",
         color=GREEN,
         offset=Point(x=4, y=-6),
         align=LabelPos.br,
@@ -162,7 +167,7 @@ with scene_around(points=[P_A, P_B]) as fig_product:
     arrow(head=P_B, tail=P_PROJECTION, color=BLUE)
     note(
         at=0.5 * (P_PROJECTION + P_B),
-        text=r"$(\vec{b} \wedge \vec{a}) * \vec{a}^{-1}$",
+        text=r"$(\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}) * \vec{\mathbf{a}}^{-1}$",
         color=BLUE,
         offset=Point(x=6, y=0),
         align=LabelPos.r,
@@ -171,7 +176,7 @@ with scene_around(points=[P_A, P_B]) as fig_product:
     arrow(head=P_INVERSE, color=PURPLE, width=3.0)
     note(
         at=P_INVERSE,
-        text=r"$\vec{a}^{-1}$",
+        text=r"$\vec{\mathbf{a}}^{-1}$",
         color=PURPLE,
         offset=Point(x=-2, y=6),
         align=LabelPos.t,
@@ -182,7 +187,8 @@ fig_product
 # ## Checks, for all vectors
 #
 # Step 2 built the projection and rejection by rotating, with Step 1's rotation by minus
-# the angle of $a$ and back. Here it is as one function, to compare against.
+# the angle of $\vec{\mathbf{a}}$ and back. Here it is as one function, to compare
+# against.
 
 
 # %%
@@ -198,15 +204,15 @@ def project_and_reject_by_rotation(onto: Vector, v: Vector) -> tuple[Vector, Vec
 
 
 # %% [markdown]
-# ### $a^{-1} = a / |a|^2$
+# ### $\vec{\mathbf{a}}^{-1} = \vec{\mathbf{a}} / |\vec{\mathbf{a}}|^2$
 #
-# $a^{-1}$ was:
+# $\vec{\mathbf{a}}^{-1}$ was:
 
 # %%
 a_inverse
 
 # %% [markdown]
-# $a / |a|^2$:
+# $\vec{\mathbf{a}} / |\vec{\mathbf{a}}|^2$:
 
 # %%
 (Scalar(1 / (a_1**2 + a_2**2)) * a).simplified()
@@ -218,9 +224,9 @@ a_inverse
 (a_inverse - Scalar(1 / (a_1**2 + a_2**2)) * a).simplified()
 
 # %% [markdown]
-# ### $a * a^{-1} = 1$
+# ### $\vec{\mathbf{a}} * \vec{\mathbf{a}}^{-1} = 1$
 #
-# $a * a^{-1}$:
+# $\vec{\mathbf{a}} * \vec{\mathbf{a}}^{-1}$:
 
 # %%
 (a * a_inverse).simplified()
@@ -273,7 +279,7 @@ rejection
 (rejection - by_rotation_rejection).simplified()
 
 # %% [markdown]
-# ### Together they give back $b$, since $b * a * a^{-1} = b$
+# ### Together they give back $\vec{\mathbf{b}}$, since $\vec{\mathbf{b}} * \vec{\mathbf{a}} * \vec{\mathbf{a}}^{-1} = \vec{\mathbf{b}}$
 #
 # Their sum:
 
@@ -281,7 +287,7 @@ rejection
 (projection + rejection).simplified()
 
 # %% [markdown]
-# Its difference from $b$:
+# Its difference from $\vec{\mathbf{b}}$:
 
 # %%
 (projection + rejection - b).simplified()

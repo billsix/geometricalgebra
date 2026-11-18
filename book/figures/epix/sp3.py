@@ -12,13 +12,12 @@
 # ---
 
 # %% [markdown]
-# # sp3 — the whole picture rotated so $\vec{b}$ lies on the x-axis
+# # sp3 — the whole picture rotated so $\vec{\mathbf{b}}$ lies on the x-axis
 #
-# After rotating by $-\theta$: the originals $\vec{a}$, $\vec{b}$ (faint, dashed) ride
-# along to $\vec{a}'$, $\vec{b}'$ (solid), and $\vec{b}'$ now points straight along the
-# x-axis.
-# Built with the `epix` package; `tools/render_epix_figures.py` writes
-# `_static/epix/sp3.{pdf,png}`. CC0.
+# After rotating by $-\theta$: the originals $\vec{\mathbf{a}}$, $\vec{\mathbf{b}}$
+# (faint, dashed) ride along to $\vec{\mathbf{a}}'$, $\vec{\mathbf{b}}'$ (solid), and
+# $\vec{\mathbf{b}}'$ now points straight along the x-axis. Built with the `epix`
+# package; `tools/render_epix_figures.py` writes `_static/epix/sp3.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations
@@ -36,15 +35,25 @@ with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as 
     epix.arrow(tail=ORIGIN, head=B, scale=0.7)
     epix.line_style(style="-")
     epix.label_color(color=epix.black(intensity=0.55))
-    epix.label(at=A, offset=Point(x=-6, y=7), text=r"$\vec{a}$", align=epix.LabelPos.l)
-    epix.label(at=B, offset=Point(x=4, y=8), text=r"$\vec{b}$", align=epix.LabelPos.l)
+    epix.label(
+        at=A, offset=Point(x=-6, y=7), text=r"$\vec{\mathbf{a}}$", align=epix.LabelPos.l
+    )
+    epix.label(
+        at=B, offset=Point(x=4, y=8), text=r"$\vec{\mathbf{b}}$", align=epix.LabelPos.l
+    )
     epix.label_color(color=epix.black())
     # the rotated vectors, solid
     vector(
-        head=A_ROT, text=r"$\vec{a}'$", offset=Point(x=7, y=4), align=epix.LabelPos.r
+        head=A_ROT,
+        text=r"$\vec{\mathbf{a}}'$",
+        offset=Point(x=7, y=4),
+        align=epix.LabelPos.r,
     )
     vector(
-        head=B_ROT, text=r"$\vec{b}'$", offset=Point(x=2, y=-11), align=epix.LabelPos.c
+        head=B_ROT,
+        text=r"$\vec{\mathbf{b}}'$",
+        offset=Point(x=2, y=-11),
+        align=epix.LabelPos.c,
     )
 
 # %%

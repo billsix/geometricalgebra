@@ -12,13 +12,14 @@
 # ---
 
 # %% [markdown]
-# # boot_rotate_sandwich — the half-angle vector $\vec{h}$ of the sandwich
+# # boot_rotate_sandwich — the half-angle vector $\vec{\mathbf{h}}$ of the sandwich
 #
-# $\vec{h}$ (dashed) bisects the angle $\theta$ from $\vec{a}$ to $\vec{b}$, so the
-# versor $R$ built from $\vec{a}$ and $\vec{h}$ turns by $\theta / 2$. The sandwich
-# $R * \vec{v} * R^{-1}$ applies that half turn twice, once from each side, and the two
-# halves add up to $\theta$. Built with `epix`; written to
-# `_static/epix/boot-rotate-sandwich.{pdf,png}`. CC0.
+# $\vec{\mathbf{h}}$ (dashed) bisects the angle $\theta$ from $\vec{\mathbf{a}}$ to
+# $\vec{\mathbf{b}}$, so the versor $R$ built from $\vec{\mathbf{a}}$ and
+# $\vec{\mathbf{h}}$ turns by $\theta / 2$. The sandwich $R * \vec{\mathbf{v}} * R^{-1}$
+# applies that half turn twice, once from each side, and the two halves add up to
+# $\theta$. Built with `epix`; written to `_static/epix/boot-rotate-sandwich.{pdf,png}`.
+# CC0.
 
 # %%
 from __future__ import annotations
@@ -62,19 +63,19 @@ with unit_circle_scene(
     dashed_vector(
         tail=ORIGIN,
         head=SANDWICH_H,
-        text=r"$\vec{h}$",
+        text=r"$\vec{\mathbf{h}}$",
         offset=Point(x=7, y=0),
         align=epix.LabelPos.r,
     )
     vector(
         head=SANDWICH_A,
-        text=r"$\vec{a}$",
+        text=r"$\vec{\mathbf{a}}$",
         offset=Point(x=7, y=0),
         align=epix.LabelPos.r,
     )
     vector(
         head=SANDWICH_B,
-        text=r"$\vec{b}$",
+        text=r"$\vec{\mathbf{b}}$",
         offset=Point(x=5, y=5),
         align=epix.LabelPos.tr,
     )

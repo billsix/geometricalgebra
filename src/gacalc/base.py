@@ -141,7 +141,7 @@ def set_blade_symbols(symbols: Mapping[Blade, str]) -> None:
         '$2\\mathbf{i} +  3\\mathbf{j}$'
         >>> set_blade_symbols({})  # reset to the default e-notation
         >>> (2 * e_1 + 3 * e_2)._repr_latex_()
-        '$2\\mathbf{\\vec{e}}_{1} +  3\\mathbf{\\vec{e}}_{2}$'
+        '$2\\vec{\\mathbf{e}}_{1} +  3\\vec{\\mathbf{e}}_{2}$'
     """
     _require_canonical_blades(symbols)
     _blade_display_symbols.clear()
@@ -150,7 +150,9 @@ def set_blade_symbols(symbols: Mapping[Blade, str]) -> None:
 
 def blade_latex(blade: Blade, symbols: Mapping[Blade, str] | None = None) -> str:
     r"""Render one basis blade as LaTeX: its custom symbol when ``blade`` has one,
-    else ``\mathbf{\vec{e}}_{b}`` per index (``()``, the scalar blade, is ``1``).
+    else ``\vec{\mathbf{e}}_{b}`` for a vector, one bold ``\mathbf{e}`` with the indices
+    joined for a higher blade (``\mathbf{e}_{12}``: not a vector, so no arrow, and not
+    written as a product), and ``1`` for the scalar blade ``()``.
 
     Args:
         blade: the basis blade to render (a canonical index tuple).
@@ -164,9 +166,9 @@ def blade_latex(blade: Blade, symbols: Mapping[Blade, str] | None = None) -> str
         >>> blade_latex((1,), symbols={(1,): r"\mathbf{i}"})
         '\\mathbf{i}'
         >>> blade_latex((1,), symbols={})       # default e-notation
-        '\\mathbf{\\vec{e}}_{1}'
+        '\\vec{\\mathbf{e}}_{1}'
         >>> blade_latex((1, 2), symbols={})
-        '\\mathbf{\\vec{e}}_{1} \\mathbf{\\vec{e}}_{2}'
+        '\\mathbf{e}_{12}'
         >>> blade_latex((), symbols={})
         '1'
     """
@@ -175,11 +177,15 @@ def blade_latex(blade: Blade, symbols: Mapping[Blade, str] | None = None) -> str
     custom: str | None = symbols.get(blade)
     if custom is not None:
         return custom
-    return (
-        "1"
-        if blade == ()
-        else " ".join(r"\mathbf{\vec{e}}_{" + str(b) + "}" for b in blade)
-    )
+    match len(blade):
+        case 0:
+            return "1"
+        case 1:
+            return r"\vec{\mathbf{e}}_{" + str(blade[0]) + "}"
+        case _:
+            # Commas keep the indices apart once one has two digits: e_{1,10}.
+            separator: str = "" if max(blade) < 10 else ","
+            return r"\mathbf{e}_{" + separator.join(str(b) for b in blade) + "}"
 
 
 def blade_dict_latex(
@@ -205,13 +211,13 @@ def blade_dict_latex(
         str: the LaTeX string (``$...$``; ``$0$`` for an empty dict).
 
     Example:
-        >>> blade_dict_latex({(1,): 2}) == r"$2\mathbf{\vec{e}}_{1}$"
+        >>> blade_dict_latex({(1,): 2}) == r"$2\vec{\mathbf{e}}_{1}$"
         True
         >>> ijk = {(1,): r"\mathbf{i}", (2,): r"\mathbf{j}"}
         >>> blade_dict_latex({(1,): 2}, symbols=ijk) == r"$2\mathbf{i}$"
         True
         >>> blade_dict_latex({(1, 2): 5}, symbols=ijk) == (
-        ...     r"$5\mathbf{\vec{e}}_{1} \mathbf{\vec{e}}_{2}$"
+        ...     r"$5\mathbf{e}_{12}$"
         ... )
         True
     """

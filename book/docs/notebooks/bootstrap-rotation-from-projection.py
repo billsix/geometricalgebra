@@ -15,13 +15,15 @@
 # %% [markdown]
 # # Step 3, rotation from projection — worked example
 #
-# Companion to *Step 3: Rotation from One Vector to Another, from Projection*. There
-# are three vectors: $a$, $b$, and a $v$ to rotate, every coordinate a symbol, so each
-# result is a formula for all vectors. One right triangle is drawn twice. The first
-# measures $b$ against $a$ (Step 2) and gives the cosine and sine of the angle from $a$
-# to $b$. The second is the same triangle on $v$, and its hypotenuse is the rotated
-# $v'$. Numbers appear only to draw the figures; change them and rerun. Each check shows
-# both sides, then their difference.
+# Companion to *Step 3: Rotation from One Vector to Another, from Projection*. There are
+# three vectors: $\vec{\mathbf{a}}$, $\vec{\mathbf{b}}$, and a $\vec{\mathbf{v}}$ to
+# rotate, every coordinate a symbol, so each result is a formula for all vectors. One
+# right triangle is drawn twice. The first measures $\vec{\mathbf{b}}$ against
+# $\vec{\mathbf{a}}$ (Step 2) and gives the cosine and sine of the angle from
+# $\vec{\mathbf{a}}$ to $\vec{\mathbf{b}}$. The second is the same triangle on
+# $\vec{\mathbf{v}}$, and its hypotenuse is the rotated $\vec{\mathbf{v}}'$. Numbers
+# appear only to draw the figures; change them and rerun. Each check shows both sides,
+# then their difference.
 
 # %%
 import pathlib
@@ -54,7 +56,8 @@ from gacalc.transforms import projection_rotation
 # %% [markdown]
 # ## The vectors
 #
-# $a$, $b$ and $v$, every coordinate a symbol:
+# $\vec{\mathbf{a}}$, $\vec{\mathbf{b}}$ and $\vec{\mathbf{v}}$, every coordinate a
+# symbol:
 
 # %%
 a_1: sympy.Symbol
@@ -76,8 +79,9 @@ v: Vector = Scalar(v_1) * e_1 + Scalar(v_2) * e_2
 v
 
 # %% [markdown]
-# The values used to draw the figures. Change them and rerun. $v$ is drawn outside the
-# angle from $a$ to $b$, so the two triangles don't overlap.
+# The values used to draw the figures. Change them and rerun. $\vec{\mathbf{v}}$ is
+# drawn outside the angle from $\vec{\mathbf{a}}$ to $\vec{\mathbf{b}}$, so the two
+# triangles don't overlap.
 
 # %%
 values: list[tuple[sympy.Symbol, Real]] = [
@@ -91,11 +95,13 @@ values: list[tuple[sympy.Symbol, Real]] = [
 
 
 # %% [markdown]
-# ## The first triangle: $b$ measured against $a$
+# ## The first triangle: $\vec{\mathbf{b}}$ measured against $\vec{\mathbf{a}}$
 #
-# Step 2 puts $b$ in $a$'s standard position: Step 1's rotation by $-\theta_a$, with
-# $\theta_a = \operatorname{atan2}(a_2, a_1)$ the angle of $a$, carries $b$ to $(x, y)$,
-# the signed lengths of $b$'s projection onto $a$ and of its rejection.
+# Step 2 puts $\vec{\mathbf{b}}$ in $\vec{\mathbf{a}}$'s standard position: Step 1's
+# rotation by $-\theta_{\vec{\mathbf{a}}}$, with
+# $\theta_{\vec{\mathbf{a}}} = \operatorname{atan2}(a_2, a_1)$ the angle of
+# $\vec{\mathbf{a}}$, carries $\vec{\mathbf{b}}$ to $(x, y)$, the signed lengths of
+# $\vec{\mathbf{b}}$'s projection onto $\vec{\mathbf{a}}$ and of its rejection.
 
 
 # %%
@@ -106,15 +112,16 @@ def standard_position(onto: Vector, v: Vector) -> Vector:
 
 
 # %% [markdown]
-# $b$ in $a$'s standard position:
+# $\vec{\mathbf{b}}$ in $\vec{\mathbf{a}}$'s standard position:
 
 # %%
 measured: Vector = standard_position(a, b).simplified()
 measured
 
 # %% [markdown]
-# Divided by $|b|$, its coordinates are the cosine and sine of the angle $\theta$ from
-# $a$ to $b$, and the angle itself is never computed. The cosine:
+# Divided by $|\vec{\mathbf{b}}|$, its coordinates are the cosine and sine of the angle
+# $\theta$ from $\vec{\mathbf{a}}$ to $\vec{\mathbf{b}}$, and the angle itself is never
+# computed. The cosine:
 
 # %%
 cos: Real = sympy.simplify(sympy.sympify(measured.coefficient(e_1) / b.magnitude()))
@@ -145,8 +152,8 @@ P_B: Point = point(coordinates=list(at_values(b, values)))
 P_FOOT: Point = point(coordinates=list(at_values(b.projected_onto(a), values)))
 fig_first: PendingFigure
 with scene_around(points=[P_A, P_B]) as fig_first:
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$")
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
     arrow(head=P_FOOT, color=GREEN, width=2.4)
     note(
         at=0.5 * P_FOOT,
@@ -168,13 +175,14 @@ with scene_around(points=[P_A, P_B]) as fig_first:
 fig_first
 
 # %% [markdown]
-# ## The second triangle: the same angle on $v$
+# ## The second triangle: the same angle on $\vec{\mathbf{v}}$
 #
-# $v' = \cos(\theta) * v + \sin(\theta) * r(v; \pi/2)$: the cosine part along $v$, the
-# sine part across it. This step builds the rotation out of the cosine and sine the
-# first triangle measured, without computing $\theta$, so it writes the blend out
-# rather than calling `Vector.rotate`, which takes an angle. $b$ has no part in this
-# triangle; only the angle carries over. The cosine part:
+# $\vec{\mathbf{v}}' = \cos(\theta) * \vec{\mathbf{v}} + \sin(\theta) * r(\vec{\mathbf{v}}; \pi/2)$:
+# the cosine part along $\vec{\mathbf{v}}$, the sine part across it. This step builds
+# the rotation out of the cosine and sine the first triangle measured, without computing
+# $\theta$, so it writes the blend out rather than calling `Vector.rotate`, which takes
+# an angle. $\vec{\mathbf{b}}$ has no part in this triangle; only the angle carries
+# over. The cosine part:
 
 # %%
 cos_part: Vector = Scalar(cos) * v
@@ -188,7 +196,7 @@ sin_part: Vector = Scalar(sin) * v.rotate_90_degrees()
 sin_part
 
 # %% [markdown]
-# and $v'$, their sum:
+# and $\vec{\mathbf{v}}'$, their sum:
 
 # %%
 rotated: Vector = (cos_part + sin_part).simplified()
@@ -209,16 +217,16 @@ with scene_around(points=[P_V, P_ROTATED]) as fig_second:
     arrow(head=P_ROTATED, color=PURPLE)
     note(
         at=0.5 * P_ROTATED,
-        text=r"$\vec{v}'$",
+        text=r"$\vec{\mathbf{v}}'$",
         color=PURPLE,
         offset=Point(x=0, y=-10),
         align=LabelPos.b,
     )
-    arrow(head=P_V, color=BLACK, text=r"$\vec{v}$")
+    arrow(head=P_V, color=BLACK, text=r"$\vec{\mathbf{v}}$")
     arrow(head=P_COS, color=GREEN, width=2.4)
     note(
         at=0.5 * P_COS,
-        text=r"$\cos(\theta) * \vec{v}$",
+        text=r"$\cos(\theta) * \vec{\mathbf{v}}$",
         color=GREEN,
         offset=Point(x=6, y=0),
         align=LabelPos.r,
@@ -226,7 +234,7 @@ with scene_around(points=[P_V, P_ROTATED]) as fig_second:
     arrow(head=P_ROTATED, tail=P_COS, color=BLUE)
     note(
         at=0.5 * (P_COS + P_ROTATED),
-        text=r"$\sin(\theta) * \vec{r}(\vec{v}; \pi/2)$",
+        text=r"$\sin(\theta) * \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)$",
         color=BLUE,
         offset=Point(x=-4, y=18),
         align=LabelPos.tl,
@@ -261,7 +269,7 @@ def rotation_by_projection(a: Vector, b: Vector, v: Vector) -> Vector:
 cos
 
 # %% [markdown]
-# The formula $(a_1 * b_1 + a_2 * b_2) / (|a| * |b|)$:
+# The formula $(a_1 * b_1 + a_2 * b_2) / (|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|)$:
 
 # %%
 cos_formula: Real = (a_1 * b_1 + a_2 * b_2) / (a.magnitude() * b.magnitude())
@@ -280,7 +288,7 @@ sympy.simplify(sympy.sympify(cos - cos_formula))
 sin
 
 # %% [markdown]
-# The formula $(a_1 * b_2 - a_2 * b_1) / (|a| * |b|)$:
+# The formula $(a_1 * b_2 - a_2 * b_1) / (|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|)$:
 
 # %%
 sin_formula: Real = (a_1 * b_2 - a_2 * b_1) / (a.magnitude() * b.magnitude())
@@ -315,17 +323,18 @@ sympy.simplify(sympy.sympify(cos**2 + sin**2 - 1))
 sympy.simplify(sympy.sympify(cos_part.dot(sin_part).scalar_part()))
 
 # %% [markdown]
-# ### It is the composition $(R_b^{e_1})^{-1} \circ R_a^{e_1}$
+# ### It is the composition $(R_{\vec{\mathbf{b}}}^{\vec{\mathbf{e}}_1})^{-1} \circ R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}$
 #
-# Into $a$'s standard position, then back out of $b$'s: Step 1's rotation by
-# $+\theta_b$, with $\theta_b$ the angle of $b$:
+# Into $\vec{\mathbf{a}}$'s standard position, then back out of $\vec{\mathbf{b}}$'s:
+# Step 1's rotation by $+\theta_{\vec{\mathbf{b}}}$, with $\theta_{\vec{\mathbf{b}}}$
+# the angle of $\vec{\mathbf{b}}$:
 
 # %%
 composed: Vector = standard_position(a, v).rotate(sympy.atan2(b_2, b_1)).simplified()
 composed
 
 # %% [markdown]
-# $v'$ was:
+# $\vec{\mathbf{v}}'$ was:
 
 # %%
 rotated
@@ -339,13 +348,13 @@ rotated
 # %% [markdown]
 # ### It keeps length
 #
-# $|v'|^2$:
+# $|\vec{\mathbf{v}}'|^2$:
 
 # %%
 sympy.simplify(sympy.sympify(rotated.magnitude_squared()))
 
 # %% [markdown]
-# $|v|^2$:
+# $|\vec{\mathbf{v}}|^2$:
 
 # %%
 v.magnitude_squared()
@@ -359,7 +368,7 @@ sympy.simplify(sympy.sympify(rotated.magnitude_squared() - v.magnitude_squared()
 # %% [markdown]
 # ### It carries sums to sums
 #
-# A second vector $w$:
+# A second vector $\vec{\mathbf{w}}$:
 
 # %%
 w_1: sympy.Symbol
@@ -391,7 +400,7 @@ sum_of_rotated
 # %% [markdown]
 # ### and scalar multiples to scalar multiples
 #
-# $k * v$, rotated:
+# $k * \vec{\mathbf{v}}$, rotated:
 
 # %%
 k: sympy.Symbol = sympy.Symbol("k", real=True)
@@ -399,7 +408,7 @@ rotated_multiple: Vector = rotation_by_projection(a, b, Scalar(k) * v)
 rotated_multiple
 
 # %% [markdown]
-# $k * v'$:
+# $k * \vec{\mathbf{v}}'$:
 
 # %%
 (Scalar(k) * rotated).simplified()
@@ -413,7 +422,7 @@ rotated_multiple
 # %% [markdown]
 # ### Only directions matter
 #
-# Rescaling $a$ and $b$ by positive numbers $p$ and $q$:
+# Rescaling $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$ by positive numbers $p$ and $q$:
 
 # %%
 p: sympy.Symbol
@@ -423,22 +432,22 @@ rescaled: Vector = rotation_by_projection(Scalar(p) * a, Scalar(q) * b, v)
 rescaled
 
 # %% [markdown]
-# Its difference from $v'$:
+# Its difference from $\vec{\mathbf{v}}'$:
 
 # %%
 (rescaled - rotated).simplified()
 
 # %% [markdown]
-# ### It carries $a$'s direction onto $b$'s
+# ### It carries $\vec{\mathbf{a}}$'s direction onto $\vec{\mathbf{b}}$'s
 #
-# $a$'s direction, rotated:
+# $\vec{\mathbf{a}}$'s direction, rotated:
 
 # %%
 a_direction_rotated: Vector = rotation_by_projection(a, b, a.normalize())
 a_direction_rotated
 
 # %% [markdown]
-# $b$'s direction:
+# $\vec{\mathbf{b}}$'s direction:
 
 # %%
 b.normalize().simplified()
@@ -452,14 +461,14 @@ b.normalize().simplified()
 # %% [markdown]
 # ### gacalc agrees
 #
-# gacalc's `projection_rotation`, applied to $v$:
+# gacalc's `projection_rotation`, applied to $\vec{\mathbf{v}}$:
 
 # %%
 turn: MultiVectorFn = projection_rotation(from_vector=a, to_vector=b)
 turn(v).simplified()
 
 # %% [markdown]
-# Its difference from $v'$:
+# Its difference from $\vec{\mathbf{v}}'$:
 
 # %%
 (turn(v) - rotated).simplified()

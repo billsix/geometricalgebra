@@ -14,9 +14,10 @@
 # %% [markdown]
 # # boot_sp4 — in standard position, keep the x-coordinate
 #
-# With $\vec{a}$ on the x-axis, the projection of $\vec{b}'$ is its x-coordinate (green)
-# and the rejection its y-coordinate (blue). The same picture as `sp4` with the names
-# swapped. Built with `epix`; written to `_static/epix/boot-sp4.{pdf,png}`. CC0.
+# With $\vec{\mathbf{a}}$ on the x-axis, the projection of $\vec{\mathbf{b}}'$ is its
+# x-coordinate (green) and the rejection its y-coordinate (blue). The same picture as
+# `sp4` with the names swapped. Built with `epix`; written to
+# `_static/epix/boot-sp4.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations
@@ -40,18 +41,28 @@ from _scene2d import (
 fig: PendingFigure
 with unit_circle_scene(lower_left=SP_LOWER_LEFT, upper_right=SP_UPPER_RIGHT) as fig:
     vector(
-        head=A_ROT, text=r"$\vec{b}'$", offset=Point(x=7, y=4), align=epix.LabelPos.r
+        head=A_ROT,
+        text=r"$\vec{\mathbf{b}}'$",
+        offset=Point(x=7, y=4),
+        align=epix.LabelPos.r,
     )
     vector(
-        head=B_ROT, text=r"$\vec{a}'$", offset=Point(x=7, y=-10), align=epix.LabelPos.l
+        head=B_ROT,
+        text=r"$\vec{\mathbf{a}}'$",
+        offset=Point(x=7, y=-10),
+        align=epix.LabelPos.l,
     )
     # projection = x-coordinate of b', green along the x-axis
     epix.pen(color=GREEN, width=2.0)
     epix.arrow(tail=ORIGIN, head=PROJ_ROT, scale=0.7)
     epix.dot(at=PROJ_ROT)
     epix.label_color(color=GREEN)
+    # under the middle of the arrow, clear of the labels at its tip
     epix.label(
-        at=PROJ_ROT, offset=Point(x=-6, y=-12), text=r"$b'_1$", align=epix.LabelPos.r
+        at=0.5 * PROJ_ROT,
+        offset=Point(x=0, y=-6),
+        text=r"$b'_1$",
+        align=epix.LabelPos.b,
     )
     # rejection = y-coordinate of b', blue and vertical
     epix.pen(color=BLUE, width=2.0)

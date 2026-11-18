@@ -12,13 +12,12 @@
 # ---
 
 # %% [markdown]
-# # proj3 — $\vec{a}=\mathrm{proj}+\mathrm{rej}$
+# # proj3 — $\vec{\mathbf{a}}=\mathrm{proj}+\mathrm{rej}$
 #
-# Projection and rejection add up tip-to-tail to $\vec{a}$: go along $\vec{b}$ to the
-# foot (blue), then perpendicular up to $\vec{a}$ (green), and you have arrived at
-# $\vec{a}$.
-# Built with the `epix` package; `tools/render_epix_figures.py` writes
-# `_static/epix/proj3.{pdf,png}`. CC0.
+# Projection and rejection add up tip-to-tail to $\vec{\mathbf{a}}$: go along
+# $\vec{\mathbf{b}}$ to the foot (blue), then perpendicular up to $\vec{\mathbf{a}}$
+# (green), and you have arrived at $\vec{\mathbf{a}}$. Built with the `epix` package;
+# `tools/render_epix_figures.py` writes `_static/epix/proj3.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations
@@ -45,8 +44,8 @@ with unit_circle_scene(
     vector(
         head=A,
         text=(
-            r"$\vec{a}=\mathrm{proj}_{\vec{b}}\,\vec{a}"
-            r"+\mathrm{rej}_{\vec{b}}\,\vec{a}$"
+            r"$\vec{\mathbf{a}}=\mathrm{proj}_{\vec{\mathbf{b}}}\,\vec{\mathbf{a}}"
+            r"+\mathrm{rej}_{\vec{\mathbf{b}}}\,\vec{\mathbf{a}}$"
         ),
         offset=Point(x=-4, y=12),
         align=epix.LabelPos.r,

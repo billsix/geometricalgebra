@@ -34,4 +34,8 @@ python tools/check_changelog.py || status=1
 # The book's ePiX figure files pass every argument by keyword (CLAUDE.md, "ePiX in the
 # image"); the checker exits 1 on a positional argument (`--fix` inserts the names).
 python tools/check_epix_keywords.py || status=1
+
+# The book's notebooks and figure scripts are exempt from E501 (an inline math span can't
+# be broken), so this checks their Markdown prose paragraphs instead (`--fix` rewraps).
+python tools/check_notebook_prose_width.py || status=1
 exit $status

@@ -9,13 +9,15 @@
 # %% [markdown]
 # # Step 6, rotation through the product — worked example
 #
-# Companion to *Step 6: Rotation, through the Product*. There are three vectors: $a$,
-# $b$, and a $v$ to rotate, every coordinate a symbol, so each result is a formula for
-# all vectors. The rotation from $a$ to $b$ is applied to $v$ as the one-sided product
-# $v * (\hat{a} * \hat{b})$, then as the sandwich $R * v * R^{-1}$ with
-# $R = b * a + |a| * |b|$. Both match Step 3's rotation built from projection. Numbers
-# appear only to draw the figures; change them and rerun. Each check shows both sides,
-# then their difference.
+# Companion to *Step 6: Rotation, through the Product*. There are three vectors:
+# $\vec{\mathbf{a}}$, $\vec{\mathbf{b}}$, and a $\vec{\mathbf{v}}$ to rotate, every
+# coordinate a symbol, so each result is a formula for all vectors. The rotation from
+# $\vec{\mathbf{a}}$ to $\vec{\mathbf{b}}$ is applied to $\vec{\mathbf{v}}$ as the
+# one-sided product $\vec{\mathbf{v}} * (\hat{\mathbf{a}} * \hat{\mathbf{b}})$, then as
+# the sandwich $R * \vec{\mathbf{v}} * R^{-1}$ with
+# $R = \vec{\mathbf{b}} * \vec{\mathbf{a}} + |\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|$.
+# Both match Step 3's rotation built from projection. Numbers appear only to draw the
+# figures; change them and rerun. Each check shows both sides, then their difference.
 
 # %%
 import pathlib
@@ -45,7 +47,8 @@ from gacalc.transforms import versor_rotation
 # %% [markdown]
 # ## The vectors
 #
-# $a$, $b$ and $v$, every coordinate a symbol:
+# $\vec{\mathbf{a}}$, $\vec{\mathbf{b}}$ and $\vec{\mathbf{v}}$, every coordinate a
+# symbol:
 
 # %%
 a_1: sympy.Symbol
@@ -82,17 +85,19 @@ values: list[tuple[sympy.Symbol, Real]] = [
 # %% [markdown]
 # ## The one-sided form
 #
-# The product of the two unit vectors is $\cos(\theta) + \sin(\theta) * e_{12}$, with
-# $\theta$ the angle from $a$ to $b$:
+# The product of the two unit vectors is
+# $\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}$, with $\theta$ the angle from
+# $\vec{\mathbf{a}}$ to $\vec{\mathbf{b}}$:
 
 # %%
 unit_product: Versor = (a.normalize() * b.normalize()).simplified()
 unit_product
 
 # %% [markdown]
-# Multiplying $v$ by it on the right rotates $v$ by $\theta$. Term by term: each term of
-# $v$ times the plain-number part keeps its direction, and times the $e_{12}$ part turns
-# a quarter turn. First at the plot values:
+# Multiplying $\vec{\mathbf{v}}$ by it on the right rotates $\vec{\mathbf{v}}$ by
+# $\theta$. Term by term: each term of $\vec{\mathbf{v}}$ times the plain-number part
+# keeps its direction, and times the $\mathbf{e}_{12}$ part turns a quarter turn. First
+# at the plot values:
 
 # %%
 show_mult(at_values(v, values), at_values(unit_product, values))
@@ -104,7 +109,7 @@ show_mult(at_values(v, values), at_values(unit_product, values))
 show_mult(v, unit_product)
 
 # %% [markdown]
-# The sum, the rotated $v$:
+# The sum, the rotated $\vec{\mathbf{v}}$:
 
 # %%
 one_sided: MultiVectorBase = (v * unit_product).simplified()
@@ -123,13 +128,13 @@ P_V: Point = point(coordinates=list(at_values(v, values)))
 P_ROTATED: Point = point(coordinates=list(at_values(one_sided, values)))
 fig_one_sided: PendingFigure
 with scene_around(points=[P_A, P_B, P_V, P_ROTATED]) as fig_one_sided:
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
-    arrow(head=P_V, color=BLACK, text=r"$\vec{v}$")
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$")
+    arrow(head=P_V, color=BLACK, text=r"$\vec{\mathbf{v}}$")
     arrow(
         head=P_ROTATED,
         color=PURPLE,
-        text=r"$\vec{v} * (\hat{a} * \hat{b})$",
+        text=r"$\vec{\mathbf{v}} * (\hat{\mathbf{a}} * \hat{\mathbf{b}})$",
         align=LabelPos.l,
         offset=Point(x=-6, y=0),
     )
@@ -138,15 +143,19 @@ fig_one_sided
 # %% [markdown]
 # ## The sandwich
 #
-# $R = b * a + |a| * |b|$ turns $a$ halfway, onto the bisector
-# $h = |b| * a + |a| * b$ (scaled by $|a|$), and $R * v * R^{-1}$ is the whole rotation.
+# $R = \vec{\mathbf{b}} * \vec{\mathbf{a}} + |\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|$
+# turns $\vec{\mathbf{a}}$ halfway, onto the bisector
+# $\vec{\mathbf{h}} = |\vec{\mathbf{b}}| * \vec{\mathbf{a}} + |\vec{\mathbf{a}}| * \vec{\mathbf{b}}$
+# (scaled by $|\vec{\mathbf{a}}|$), and $R * \vec{\mathbf{v}} * R^{-1}$ is the whole
+# rotation.
 
 # %%
 R: Versor = (b * a + Scalar(a.magnitude() * b.magnitude())).simplified()
 R
 
 # %% [markdown]
-# The sandwich is two products. First $R * v$, term by term, at the plot values:
+# The sandwich is two products. First $R * \vec{\mathbf{v}}$, term by term, at the plot
+# values:
 
 # %%
 show_mult(at_values(R, values), at_values(v, values))
@@ -184,14 +193,16 @@ P_H: Point = point(coordinates=list(at_values(h.normalize(), values)))
 P_SANDWICH: Point = point(coordinates=list(at_values(sandwich, values)))
 fig_sandwich: PendingFigure
 with scene_around(points=[P_A, P_B, P_V, P_SANDWICH]) as fig_sandwich:
-    arrow(head=P_A, color=BLACK, text=r"$\vec{a}$")
-    arrow(head=P_B, color=BLACK, text=r"$\vec{b}$")
-    dashed_arrow(tail=Point(x=0, y=0), head=P_H, color=PURPLE, text=r"$\hat{h}$")
-    arrow(head=P_V, color=BLACK, text=r"$\vec{v}$")
+    arrow(head=P_A, color=BLACK, text=r"$\vec{\mathbf{a}}$")
+    arrow(head=P_B, color=BLACK, text=r"$\vec{\mathbf{b}}$")
+    dashed_arrow(
+        tail=Point(x=0, y=0), head=P_H, color=PURPLE, text=r"$\hat{\mathbf{h}}$"
+    )
+    arrow(head=P_V, color=BLACK, text=r"$\vec{\mathbf{v}}$")
     arrow(
         head=P_SANDWICH,
         color=PURPLE,
-        text=r"$R * \vec{v} * R^{-1}$",
+        text=r"$R * \vec{\mathbf{v}} * R^{-1}$",
         align=LabelPos.l,
         offset=Point(x=-6, y=0),
     )
@@ -200,9 +211,10 @@ fig_sandwich
 # %% [markdown]
 # ## Checks, for all vectors
 #
-# Step 3 built the rotation from projection: $b$ measured against $a$ (Step 2, by Step
-# 1's rotation by minus the angle of $a$) gives the cosine and sine, and the same angle
-# is applied to $v$. Here is that construction, to compare against.
+# Step 3 built the rotation from projection: $\vec{\mathbf{b}}$ measured against
+# $\vec{\mathbf{a}}$ (Step 2, by Step 1's rotation by minus the angle of
+# $\vec{\mathbf{a}}$) gives the cosine and sine, and the same angle is applied to
+# $\vec{\mathbf{v}}$. Here is that construction, to compare against.
 
 
 # %%
@@ -218,7 +230,7 @@ def rotation_by_projection(a: Vector, b: Vector, v: Vector) -> Vector:
 # %% [markdown]
 # ### The one-sided form is Step 3's rotation
 #
-# Step 3's rotation of $v$:
+# Step 3's rotation of $\vec{\mathbf{v}}$:
 
 # %%
 by_projection: Vector = rotation_by_projection(a, b, v)
@@ -239,13 +251,13 @@ one_sided
 # %% [markdown]
 # ### The other order turns the other way
 #
-# $(\hat{a} * \hat{b}) * v$:
+# $(\hat{\mathbf{a}} * \hat{\mathbf{b}}) * \vec{\mathbf{v}}$:
 
 # %%
 (unit_product * v).simplified()
 
 # %% [markdown]
-# Step 3's rotation from $b$ to $a$:
+# Step 3's rotation from $\vec{\mathbf{b}}$ to $\vec{\mathbf{a}}$:
 
 # %%
 rotation_by_projection(b, a, v)
@@ -257,15 +269,15 @@ rotation_by_projection(b, a, v)
 (unit_product * v - rotation_by_projection(b, a, v)).simplified()
 
 # %% [markdown]
-# ### $R$ turns $a$ onto the bisector
+# ### $R$ turns $\vec{\mathbf{a}}$ onto the bisector
 #
-# $R * a$:
+# $R * \vec{\mathbf{a}}$:
 
 # %%
 (R * a).simplified()
 
 # %% [markdown]
-# $|a| * h$:
+# $|\vec{\mathbf{a}}| * \vec{\mathbf{h}}$:
 
 # %%
 (Scalar(a.magnitude()) * h).simplified()
@@ -287,8 +299,8 @@ rotation_by_projection(b, a, v)
 # %% [markdown]
 # ### The step that makes the sandwich agree
 #
-# $\tilde{R} * R^{-1} = \hat{a} * \hat{b}$, checked with unit vectors at angles $\alpha$
-# and $\beta$, where $R = \hat{b} * \hat{a} + 1$:
+# $\tilde{R} * R^{-1} = \hat{\mathbf{a}} * \hat{\mathbf{b}}$, checked with unit vectors
+# at angles $\alpha$ and $\beta$, where $R = \hat{\mathbf{b}} * \hat{\mathbf{a}} + 1$:
 
 # %%
 alpha: sympy.Symbol
@@ -300,7 +312,7 @@ R_unit: Versor = b_hat * a_hat + Scalar(1)
 (R_unit.reverse() * R_unit.inverse()).simplified()
 
 # %% [markdown]
-# $\hat{a} * \hat{b}$:
+# $\hat{\mathbf{a}} * \hat{\mathbf{b}}$:
 
 # %%
 (a_hat * b_hat).simplified()
@@ -314,7 +326,7 @@ R_unit: Versor = b_hat * a_hat + Scalar(1)
 # %% [markdown]
 # ### gacalc agrees
 #
-# gacalc's `versor_rotation`, applied to $v$:
+# gacalc's `versor_rotation`, applied to $\vec{\mathbf{v}}$:
 
 # %%
 versor_rotation(from_vector=a, to_vector=b)(v).simplified()

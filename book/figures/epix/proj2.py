@@ -12,11 +12,12 @@
 # ---
 
 # %% [markdown]
-# # proj2 — projection (along $\vec{b}$) and rejection (perpendicular)
+# # proj2 — projection (along $\vec{\mathbf{b}}$) and rejection (perpendicular)
 #
-# The projection of $\vec{a}$ onto $\vec{b}$ (blue, along $\vec{b}$) and the rejection
-# (green, perpendicular), meeting at a right angle. Built with the `epix` package;
-# `tools/render_epix_figures.py` writes `_static/epix/proj2.{pdf,png}`. CC0.
+# The projection of $\vec{\mathbf{a}}$ onto $\vec{\mathbf{b}}$ (blue, along
+# $\vec{\mathbf{b}}$) and the rejection (green, perpendicular), meeting at a right
+# angle. Built with the `epix` package; `tools/render_epix_figures.py` writes
+# `_static/epix/proj2.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations
@@ -41,18 +42,29 @@ fig: PendingFigure
 with unit_circle_scene(
     lower_left=PROJ_LOWER_LEFT, upper_right=PROJ_UPPER_RIGHT, disc=False
 ) as fig:
-    vector(head=A, text=r"$\vec{a}$", offset=Point(x=-6, y=7), align=epix.LabelPos.l)
-    vector(head=B, text=r"$\vec{b}$", offset=Point(x=8, y=3), align=epix.LabelPos.l)
+    vector(
+        head=A,
+        text=r"$\vec{\mathbf{a}}$",
+        offset=Point(x=-6, y=7),
+        align=epix.LabelPos.l,
+    )
+    vector(
+        head=B,
+        text=r"$\vec{\mathbf{b}}$",
+        offset=Point(x=8, y=3),
+        align=epix.LabelPos.l,
+    )
     # projection: blue, from the origin along b to the foot
     epix.pen(color=BLUE, width=2.0)
     epix.arrow(tail=ORIGIN, head=PROJ, scale=0.7)
     epix.dot(at=PROJ)
     epix.label_color(color=BLUE)
+    # below and right of the foot, past b's head and above the x-axis
     epix.label(
         at=PROJ,
-        offset=Point(x=-11, y=-12),
-        text=r"$\mathrm{proj}_{\vec{b}}\,\vec{a}$",
-        align=epix.LabelPos.r,
+        offset=Point(x=8, y=-9),
+        text=r"$\mathrm{proj}_{\vec{\mathbf{b}}}\,\vec{\mathbf{a}}$",
+        align=epix.LabelPos.br,
     )
     # rejection: green, from the foot up to a (perpendicular to b)
     epix.pen(color=GREEN, width=2.0)
@@ -61,9 +73,9 @@ with unit_circle_scene(
     mid: Point = Point(x=(PROJ.x1() + A.x1()) / 2, y=(PROJ.x2() + A.x2()) / 2)
     epix.label(
         at=mid,
-        offset=Point(x=9, y=2),
-        text=r"$\mathrm{rej}_{\vec{b}}\,\vec{a}$",
-        align=epix.LabelPos.l,
+        offset=Point(x=8, y=0),
+        text=r"$\mathrm{rej}_{\vec{\mathbf{b}}}\,\vec{\mathbf{a}}$",
+        align=epix.LabelPos.r,
     )
     epix.label_color(color=epix.black())
     # the right angle at the foot, between the line (toward O) and the rejection
