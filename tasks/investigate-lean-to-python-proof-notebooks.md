@@ -34,7 +34,7 @@ much of Lean's reasoning can actually be surfaced.
   side with labels, and mark the matching `+t`/`−t` pairs with LaTeX `\underbrace{…}_{cancel}` so the
   student watches the terms disappear. That wants a `show_sub`/`show_cancellation` display helper
   beside `show_mult`. (mathjax/myst_nb render `\underbrace`.) The *why* is
-  `tasks/reference-doc-lean-workflow-and-proof-notebooks.md`; the *how* lives here.
+  `tasks/reference/lean-python-notebook-workflow.md`; the *how* lives here.
 - **The crux — can Lean "trace all its steps"?** Be honest here: a `ring`/`ext <;> ring` proof (how
   `G2`/`G3` associativity and distributivity are proved) is **opaque** — `ring` produces a single
   reflection proof, not a human-readable chain of rewrites, so there is *no* natural "trace of

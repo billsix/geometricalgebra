@@ -44,7 +44,7 @@ revised the `.rst`/notebook prose to his voice.
   reduces to.
 - **N1** — a `notebooks/`-side demo pairing `show_mult` with the standard-position projection, so a
   student watches `a` rotate to standard position, the projection happen trivially, and rotate back;
-  tied to `tasks/reference-doc-lean-workflow-and-proof-notebooks.md`.
+  tied to `tasks/reference/lean-python-notebook-workflow.md`.
 
 ## Context / cross-refs
 

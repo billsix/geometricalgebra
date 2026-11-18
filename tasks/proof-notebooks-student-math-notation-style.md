@@ -31,8 +31,9 @@ This doc captures the preference, the convention to adopt, and the backlog to wo
 
 This is the **umbrella** for the proof-notebook work. Its children:
 
-- `tasks/reference-doc-lean-workflow-and-proof-notebooks.md` — the reference doc stating the
-  Lean → symbolic test → student notebook method and its purpose (the *why*);
+- done 2026-11-18: the reference doc stating the Lean → symbolic test → student notebook method
+  and its purpose (the *why*), `tasks/reference/lean-python-notebook-workflow.md` (record
+  `tasks/archive/2026/11/18/reference-doc-lean-workflow-and-proof-notebooks.md`);
 - `tasks/investigate-lean-to-python-proof-notebooks.md` — whether a notebook can be generated from, or
   kept honest by, the Lean proof (the *how*).
 

@@ -654,7 +654,10 @@ two formulations — deliver it in **all three** forms unless the maintainer ove
    theorem by name (per `tasks/reference/book-outline.md`'s proof-page conventions).
 
 The projection proof is the model trio: `book/docs/proof-projection.rst` +
-`book/docs/notebooks/proof-projection.py` + `proofs/GacalcProofs/StandardPosition.lean`. **This is a
+`book/docs/notebooks/proof-projection.py` + `proofs/GacalcProofs/StandardPosition.lean`. A Lean theorem and its Python twins (a test, a
+notebook) carry the same `twin: <qualified Lean name>` comment, so `git grep` finds them all when one
+changes; the convention and the "verify, don't derive" notebook method are in
+`tasks/reference/lean-python-notebook-workflow.md`. **This is a
 rule for new work when asked, not a backfill order** — do not go through existing results producing
 missing forms unprompted; when a request plainly wants only one form, say which of the other two you
 are skipping and why, rather than silently dropping them. The agent's own tendency this guards
