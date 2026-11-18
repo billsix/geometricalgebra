@@ -162,4 +162,4 @@ the right thing at build time and at call time with no rule to learn.
    form to use, never a plain global. `set_blade_symbols` stays a global because it is display-only
    and Jupyter gives it no other way in.
 
-The implementation is `tasks/tolerance-from-coefficient-type.md` (proposed, needs go-ahead).
+The implementation is `tasks/archive/2026/11/18/tolerance-from-coefficient-type.md` (done 2026-11-18).
