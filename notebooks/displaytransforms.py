@@ -68,8 +68,9 @@ from gacalc.nbplotutils import (
 # *invertible function*: it carries its own inverse, and it prints as math. The
 # pictures after them draw a transform as a sheet of graph paper moved by it.
 #
-# The names used below: $T$ translates, $S$ scales each axis by its own factor, and
-# $R$ rotates in the $e_1 e_2$ plane, with a positive angle turning $e_1$ toward $e_2$.
+# The names used below: $T$ translates, $S$ scales each axis by its own factor, and $R$
+# rotates in the $\vec{\mathbf{e}}_1 \vec{\mathbf{e}}_2$ plane, with a positive angle
+# turning $\vec{\mathbf{e}}_1$ toward $\vec{\mathbf{e}}_2$.
 
 # %%
 rotate: typing.Callable[[Real], InvertibleFunction[MultiVector]] = plane_rotation(
@@ -80,13 +81,13 @@ S: typing.Callable[..., InvertibleFunction[typing.Any]] = scale_non_uniform
 R: typing.Callable[[float], InvertibleFunction[MultiVector]] = rotate
 
 # %% [markdown]
-# A translation by $5 * e_1$:
+# A translation by $5 * \vec{\mathbf{e}}_1$:
 
 # %%
 T(5 * e_1)
 
 # %% [markdown]
-# A scale by $5$ along $e_1$ and $6$ along $e_2$:
+# A scale by $5$ along $\vec{\mathbf{e}}_1$ and $6$ along $\vec{\mathbf{e}}_2$:
 
 # %%
 S(5, 6)
@@ -98,13 +99,19 @@ S(5, 6)
 inverse(T(5 * e_1))
 
 # %% [markdown]
-# Translations in two and three dimensions, and the inverse of the second:
+# A translation in two dimensions:
 
 # %%
 T(5 * e_1 + 6 * e_2)
 
+# %% [markdown]
+# In three dimensions,
+
 # %%
 T(5 * e_1 + 6 * e_2 + 7 * e_3)
+
+# %% [markdown]
+# and its inverse, the translation back:
 
 # %%
 inverse(T(5 * e_1 + 6 * e_2 + 7 * e_3))
@@ -179,10 +186,11 @@ with create_graphs(graph_bounds=(5, 5)) as axes:
 # Relative graph paper, with its right triangles
 # ----------------------------------------------
 #
-# The same two graph papers. The rotation is by the angle whose cosine is $3/5$ and
-# sine $4/5$ (about 53.13 degrees). Two 3-4-5 right triangles are drawn on the
-# original paper: the hypotenuse of the first, to $(3, 4)$, lies along the rotated
-# $e_1$ axis, and that of the second, to $(-4, 3)$, along the rotated $e_2$ axis.
+# The same two graph papers. The rotation is by the angle whose cosine is $3/5$ and sine
+# $4/5$ (about 53.13 degrees). Two 3-4-5 right triangles are drawn on the original
+# paper: the hypotenuse of the first, to $(3, 4)$, lies along the rotated
+# $\vec{\mathbf{e}}_1$ axis, and that of the second, to $(-4, 3)$, along the rotated
+# $\vec{\mathbf{e}}_2$ axis.
 
 # %%
 fn: InvertibleFunction[MultiVector] = R(math.radians(53.130102))

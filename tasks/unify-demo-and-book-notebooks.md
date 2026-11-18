@@ -6,7 +6,7 @@ own, until I tell you explicitly." A batch go-ahead for other tasks does not cov
 **Priority:** 8 (parked)
 **Difficulty:** 6
 **Created:** 2026-11-18
-**Related:** `tasks/notebooks-like-displaymv.md` (brings both sets up to `notebooks/displaymv.py`'s
+**Related:** `tasks/archive/2026/11/18/notebooks-like-displaymv.md` (brought both sets up to `notebooks/displaymv.py`'s
 style; its decision 1 spun this task off)
 
 ## BLUF

@@ -246,6 +246,9 @@ class Timeline(typing.Generic[N]):
         t: float = 0.0
 
         # 1) object-placement tree (forward edges, visit order)
+        placement: CoordinateFrame[N]
+        edge_obj: cayleygraph.Edge
+        s: cayleygraph.Step
         for placement in scene.coordinate_frames:
             t += placement.dwell_before
             ((edge_obj, _fwd),) = scene.graph.path(
@@ -259,6 +262,10 @@ class Timeline(typing.Generic[N]):
             self._window[placement.space] = (first, t)
 
         # 2) toward-NDC operations (CPU inverse, then GPU squash/ortho)
+        op: InverseOperations[N] | NonInvertibleTransformation
+        edge: cayleygraph.Edge
+        forward: bool
+        label: str
         for op in scene.to_ndc:
             t += op.dwell_before
             if isinstance(op, InverseOperations):
@@ -298,6 +305,8 @@ class Timeline(typing.Generic[N]):
         return self._window.get(space, (0.0, 0.0))[0]
 
     def axis_visible(self, space: N, time: float) -> bool:
+        start: float
+        end: float
         start, end = self._window.get(space, (0.0, 0.0))
         return start <= time < end
 
@@ -328,6 +337,8 @@ class Animation(typing.Generic[N]):
             self.scene.graph.path(space, self.scene.root).route
         )
         edge_fns: typing.List[InvertibleFunction] = []
+        edge: cayleygraph.Edge
+        forward: bool
         for edge, forward in route:
             live: InvertibleFunction = compose(
                 [s.fn.at(interp(time, *self.timeline.slot(s))) for s in edge.steps]
@@ -368,6 +379,7 @@ class Animation(typing.Generic[N]):
     def active_label(self, time: float) -> typing.Optional[str]:
         """Label of the placement substep currently animating (the imgui
         highlight), or ``None``."""
+        ts: TimedStep
         for ts in self.timeline.steps:
             if ts.start <= time < ts.start + ts.dur:
                 return ts.label
@@ -382,6 +394,7 @@ class Animation(typing.Generic[N]):
         order, nested by parent.  Returns the top-level groups."""
         groups: typing.Dict[N, GuiGroup] = {}
         tops: typing.List[GuiGroup] = []
+        placement: CoordinateFrame[N]
         for placement in self.scene.coordinate_frames:
             buttons: typing.List[GuiButton] = [
                 GuiButton(ts.label, ts.start, self._is_active(ts.start, time))
@@ -403,6 +416,7 @@ class Animation(typing.Generic[N]):
         to_ndc segment, buttons in application / outermost-first order (the
         reverse of time), inverse-marked for the CPU inverse segments."""
         out: typing.List[GuiGroup] = []
+        op: InverseOperations[N] | NonInvertibleTransformation
         for op in self.scene.to_ndc:
             if isinstance(op, InverseOperations):
                 track: typing.Optional[InverseOpsTrack] = self._track_for(op)
@@ -435,6 +449,7 @@ class Animation(typing.Generic[N]):
             f"{cayleygraph.node_label(op.from_space)}->"
             f"{cayleygraph.node_label(op.to_space)}"
         )
+        tr: InverseOpsTrack
         for tr in self.timeline.inverse_tracks:
             if tr.group_title == title:
                 return tr

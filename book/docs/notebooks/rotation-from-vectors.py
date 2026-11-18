@@ -117,6 +117,9 @@ a_hat_rotated
 # %%
 (a_hat * R - b_hat).simplified()
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_A_HAT: Point = point(coordinates=list(at_values(a_hat, angle_values)))
 P_B_HAT: Point = point(coordinates=list(at_values(b_hat, angle_values)))
@@ -152,9 +155,15 @@ a_1, a_2, b_1, b_2, v_1, v_2 = sympy.symbols("a_1 a_2 b_1 b_2 v_1 v_2", real=Tru
 a: Vector = Scalar(a_1) * Vector.e_1 + Scalar(a_2) * Vector.e_2
 a
 
+# %% [markdown]
+# and $\vec{\mathbf{b}}$:
+
 # %%
 b: Vector = Scalar(b_1) * Vector.e_1 + Scalar(b_2) * Vector.e_2
 b
+
+# %% [markdown]
+# and $\vec{\mathbf{v}}$:
 
 # %%
 v: Vector = Scalar(v_1) * Vector.e_1 + Scalar(v_2) * Vector.e_2
@@ -213,6 +222,9 @@ rotated_three_turns
 
 # %%
 at_values(rotated_versor, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_A: Point = point(coordinates=list(at_values(a, values)))

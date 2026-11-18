@@ -33,15 +33,20 @@ what it means.
 deciding whether a row is an exemption needs a human (the maintainer's decision, William
 Emerison Six <billsix@gmail.com>, 2026-11-09).
 
-**Floor (re-baselined 2026-11-09):** the auditor reports **39 rows in 16 files** — every one
+**Floor (re-baselined 2026-11-18):** the auditor reports **63 rows in 19 files** — every one
 either a listed exemption below or a *classified-out* row (a type alias or an `Enum` member,
-which the auditor prints but does not treat as a gap). The split: **13 classified-out** (10
-type aliases, 3 enum members) and **26 listed exemptions** (9 `Any` §1, 2 returns §2, 1 param
-§3, 3 invariant params §4, 5 locals and loop targets §5, 6 symbol unpacks §6). Anything *not* on this list is a
-genuine gap: annotate it, or add it here with its reason. Records:
-`tasks/archive/2026/10/09/re-baseline-annotation-auditor.md` (the earlier 32-row floor) and
+which the auditor prints but does not treat as a gap). The split: **45 classified-out** (14
+type aliases, 31 enum members, most of them from the GL and Cayley modules moved in from
+modelviewprojection) and **18 listed exemptions** (9 `Any` §1, 2 returns §2, 1 param §3, 3
+invariant params §4, 3 locals and loop targets §5). Anything *not* on this list is a genuine
+gap: annotate it, or add it here with its reason. Records:
+`tasks/archive/2026/10/09/re-baseline-annotation-auditor.md` (the earlier 32-row floor),
 `tasks/archive/2026/11/09/annotation-auditor-floor-drift.md` (the per-scope and unpacking
-detection, and the 66 gaps it found and fixed).
+detection, and the 66 gaps it found and fixed),
+`tasks/archive/2026/11/18/re-baseline-annotation-auditor-after-gl-move.md` (the moved-in GL and
+Cayley modules, 97 rows, annotated; one generator parameter widened to `Mapping`), and
+`tasks/archive/2026/11/18/notebooks-like-displaymv.md` (the 6 notebook symbol unpacks of §6,
+now declared).
 
 ## The exemptions
 
@@ -97,30 +102,21 @@ of them produced errors in exactly one test; the other 21 are now typed.
 ### 5. Locals whose declared type would lose information
 
 - **`tests/test_graded.py`** — `cases`, the loop's `val`/`expected` drawn from it, and the
-  `d` derived from `val` (3 LOCAL rows and 1 LOOP row). The inferred concrete union keeps
+  `d` derived from `val` (2 LOCAL rows and 1 LOOP row). The inferred concrete union keeps
   `val.dual()` (dimension-defaulting) and `val.DIMENSION` resolvable; `MultiVectorBase` does
   not. Same root cause as §2 and §3.
-- **`tests/test_odd.py`** — `versor` and `conjugated = versor * v * versor.inverse()`.
-  Declaring them `g3.Versor` and `g3.Odd` is correct at runtime (the test asserts the
-  second), but either one widens `conjugated.coeff_e_123` to `Real` (`int | float |
-  sympy.Expr`), and sympy's stubs carry no `simplify` overload for a bare `int`/`float`, so
-  the annotation fails `sympy.simplify(conjugated.coeff_e_123)` without clarifying anything;
-  the in-code comment says so.
 
 The `test_graded` rows share their shape with §2 and §3: **the abstract base is less capable
 than every concrete subclass**, because dimension-defaulting overrides drop a required
 parameter. Any exemption of this family traces back to that.
 
-### 6. `sympy.symbols` unpacks in the pyright-checked notebooks (6 sites)
+### 6. (gone 2026-11-18) `sympy.symbols` unpacks in the pyright-checked notebooks
 
-`notebooks/displayg2.py`, `displayg3.py`, `displayrotations.py` (2) and `displayvectorcalc.py`
-(2, one row per unpack line) leave their `a_1, a_2 = sympy.symbols(...)` names undeclared.
-`notebooks/` is type-checked by **pyright** (`make check-notebooks`), not `ty`. Once a name is
-declared `sympy.Symbol`, pyright resolves `a_1 * e_1` through sympy's own `Expr.__mul__`,
-which returns `Expr`, instead of the multivector's `__rmul__`, so `v: Vector = a_1 * e_1 + …`
-fails with `reportAssignmentType` (9 errors when tried, 2026-11-09). `ty` resolves the same
-expression to the multivector, so the declarations stay everywhere `ty` checks: `tests/`,
-`src/` and `book/docs/notebooks/`. A comment above each unpack says so.
+The demo notebooks used to leave their `a_1, a_2 = sympy.symbols(...)` names undeclared: pyright
+resolved `a_1 * e_1` through sympy's `Expr.__mul__` once `a_1` was declared `sympy.Symbol`. The
+2026-11-18 notebook rewrite (`tasks/archive/2026/11/18/notebooks-like-displaymv.md`) writes the
+coefficient through the scalar constructor instead (`Scalar(a_1) * e_1`, `Gn.from_real(v1) * e_1`,
+as `CLAUDE.md` asks), so the names are declared and the rows are gone.
 
 ## What is NOT an exemption
 

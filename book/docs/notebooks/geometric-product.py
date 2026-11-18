@@ -119,6 +119,9 @@ at_values(quarter_turn, values)
 # %%
 at_values(full_angle_result, values)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_A: Point = point(coordinates=list(at_values(a, values)))
 P_QUARTER: Point = point(coordinates=list(at_values(quarter_turn, values)))

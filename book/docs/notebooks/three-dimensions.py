@@ -58,6 +58,9 @@ p: g3.Vector = (
 )
 p
 
+# %% [markdown]
+# and $\vec{\mathbf{q}}$:
+
 # %%
 q: g3.Vector = (
     g3.Scalar(q_1) * g3.Vector.e_1

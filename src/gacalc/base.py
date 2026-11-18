@@ -315,6 +315,90 @@ def pseudoscalar_squared_is_positive(r: int) -> bool:
     return pseudoscalar_squared_sign(r) == 1
 
 
+def has_float_coefficients(values: Sequence["MultiVectorBase"]) -> bool:
+    """Whether any coefficient of ``values`` is inexact: a Python ``float`` or a
+    sympy ``Float`` (what float arithmetic through sympy produces).
+
+    The library's float tolerance is decided by this when a caller passes no
+    ``float_close_to_zero``: float input is compared with a tolerance, exact and
+    symbolic input exactly (``resolve_float_tolerance``).
+
+    >>> from gacalc.g2 import e_1, e_2
+    >>> has_float_coefficients([1 * e_1, 2 * e_2])
+    False
+    >>> has_float_coefficients([1 * e_1, 0.5 * e_2])
+    True
+    """
+    return any(
+        isinstance(coefficient, float | sympy.Float)
+        for value in values
+        for coefficient in value.to_blade_dict().values()
+    )
+
+
+def resolve_float_tolerance(
+    float_close_to_zero: bool | None, values: Sequence["MultiVectorBase"]
+) -> bool:
+    """The tolerance a comparison uses: the caller's explicit ``True``/``False``, or,
+    for ``None`` (the default everywhere), whether the compared values hold floats.
+
+    >>> from gacalc.g2 import e_1
+    >>> resolve_float_tolerance(None, [0.5 * e_1])
+    True
+    >>> resolve_float_tolerance(None, [1 * e_1])
+    False
+    >>> resolve_float_tolerance(False, [0.5 * e_1])
+    False
+    """
+    return (
+        float_close_to_zero
+        if float_close_to_zero is not None
+        else has_float_coefficients(values)
+    )
+
+
+#: How small, relative to the scalar part, a float multivector's other coefficients
+#: may be and still count as rounding residue (``_is_scalar_up_to_rounding``).
+_SCALAR_RESIDUE_REL_TOL: float = 1e-9
+
+
+def _is_scalar_up_to_rounding(value: "MultiVectorBase") -> bool:
+    """Whether a float ``value`` is a scalar except for rounding residue.
+
+    ``True`` when some coefficient is inexact (a Python ``float`` or a sympy
+    ``Float``, which float arithmetic through sympy produces), the scalar part is
+    nonzero, and every other coefficient is at most ``_SCALAR_RESIDUE_REL_TOL``
+    times the scalar part in size.  Exact (integer, rational, symbolic) input is
+    never accepted here: it must pass the exact :meth:`MultiVectorBase.is_scalar`.
+
+    >>> from gacalc.g3 import Versor
+    >>> residue = Versor(coeff_scalar=173.6, coeff_e_23=8.9e-16)
+    >>> _is_scalar_up_to_rounding(residue)
+    True
+    >>> _is_scalar_up_to_rounding(Versor(coeff_scalar=1.0, coeff_e_12=0.5))
+    False
+    >>> _is_scalar_up_to_rounding(Versor(coeff_scalar=1, coeff_e_12=0))  # exact
+    False
+    >>> import sympy
+    >>> mixed = Versor(coeff_scalar=2.0, coeff_e_12=sympy.Symbol("x"))
+    >>> _is_scalar_up_to_rounding(mixed)
+    False
+    """
+    coefficients: Mapping[Blade, Real] = value.to_blade_dict()
+    if not has_float_coefficients([value]):
+        return False
+    try:
+        scalar: float = abs(float(coefficients.get((), 0)))
+        return scalar > 0 and all(
+            abs(float(c)) <= _SCALAR_RESIDUE_REL_TOL * scalar
+            for blade, c in coefficients.items()
+            if blade != ()
+        )
+    except TypeError:
+        # a symbolic coefficient beside the float ones: not a rounding question
+        return False
+
+
 class MultiVectorBase(abc.ABC):
     """Abstract base class for an element (multivector) of a geometric algebra.
 
@@ -1903,7 +1987,7 @@ class MultiVectorBase(abc.ABC):
         return self.is_homogeneous_of_grade_r(r=3)
 
     def is_orthogonal_to(
-        self, other: typing.Self, float_close_to_zero: bool = False
+        self, other: typing.Self, float_close_to_zero: bool | None = None
     ) -> bool:
         """True iff vectors A and B are orthogonal (perpendicular) — the cosine of
         the angle between them is zero.
@@ -1919,8 +2003,10 @@ class MultiVectorBase(abc.ABC):
 
         Args:
             other: the other vector.
-            float_close_to_zero: when ``True``, test the inner product with a
-                ``numpy`` floating-point tolerance instead of exact equality.
+            float_close_to_zero: ``True`` tests the inner product with a ``numpy``
+                floating-point tolerance, ``False`` exactly; ``None`` (the default)
+                uses the tolerance when either vector holds floats
+                (:func:`resolve_float_tolerance`).
 
         Returns:
             bool: ``True`` iff ``A · B`` is (approximately) zero.
@@ -1962,12 +2048,12 @@ class MultiVectorBase(abc.ABC):
                 rtol=1e-5,
                 atol=1e-5,
             )
-            if float_close_to_zero
+            if resolve_float_tolerance(float_close_to_zero, (self, other))
             else (self.inner_product(other) == type(self).zero())
         )
 
     def is_parallel_to(
-        self, other: typing.Self, float_close_to_zero: bool = False
+        self, other: typing.Self, float_close_to_zero: bool | None = None
     ) -> bool:
         """True iff vectors A and B are parallel — the sine of the angle between
         them is zero (equivalently, their outer product ``A ∧ B`` is zero: they are
@@ -1985,8 +2071,10 @@ class MultiVectorBase(abc.ABC):
 
         Args:
             other: the other vector.
-            float_close_to_zero: when ``True``, test the wedge with a ``numpy``
-                floating-point tolerance instead of exact equality.
+            float_close_to_zero: ``True`` tests the wedge with a floating-point
+                tolerance, ``False`` exactly; ``None`` (the default) uses the
+                tolerance when either vector holds floats
+                (:func:`resolve_float_tolerance`).
 
         Returns:
             bool: ``True`` iff ``A ∧ B`` is (approximately) zero.
@@ -2028,7 +2116,7 @@ class MultiVectorBase(abc.ABC):
             raise ValueError("parallelism (the angle) is undefined for the zero vector")
 
         wedge: typing.Self = self.outer_product(other)
-        if float_close_to_zero:
+        if resolve_float_tolerance(float_close_to_zero, (self, other)):
             return wedge.isclose(type(self).zero(), rel_tol=1e-5, abs_tol=1e-5)
         return bool(wedge == type(self).zero())
 
@@ -2235,8 +2323,13 @@ class MultiVectorBase(abc.ABC):
         # Gate: ``Ã / |A|²`` is a genuine inverse iff ``Ã * A`` is a scalar — then
         # ``A⁻¹ * A = Ã * A / |A|² = 1`` — which holds for a blade or versor.  A
         # non-scalar product means A is a mixed-grade element whose (general) inverse
-        # is not implemented.  See :meth:`is_scalar`.
-        if not reverse_times_self.is_scalar():
+        # is not implemented.  See :meth:`is_scalar`.  Float input is held to a
+        # tolerance (:func:`_is_scalar_up_to_rounding`): a float versor's ``Ã * A``
+        # carries rounding residue in its non-scalar coefficients.
+        if not (
+            reverse_times_self.is_scalar()
+            or _is_scalar_up_to_rounding(reverse_times_self)
+        ):
             raise RuntimeError(
                 "inverse() supports a blade or versor (where Ã * A is a scalar); the "
                 "general mixed-grade multivector inverse is not implemented "
@@ -3147,8 +3240,9 @@ class MultiVectorBase(abc.ABC):
         # identity.  No cast
         # needed now that magnitude() is typed Real (int | float | sympy.Expr).
         # (Why the two are equal -- |ab| = |a| * |b| via |a^b| = |a| * |b| * sin(θ) --
-        # is demonstrated in notebooks/displayg2.py and displayg3.py; that the
-        # |to from| form regresses this identity was re-confirmed empirically.)
+        # is demonstrated in notebooks/displayg2areas.py and displayg3measures.py;
+        # that the |to from| form regresses this identity was re-confirmed
+        # empirically.)
         scale: Real = from_vector.magnitude() * to_vector.magnitude()
         # scalar + bivector -- the versor's grade
         product: MultiVectorBase = to_vector * from_vector

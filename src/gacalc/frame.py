@@ -40,24 +40,32 @@ from itertools import accumulate, pairwise
 
 import numpy as np
 
-from gacalc.base import MultiVectorBase, Real, describe_caller, validation_guard
+from gacalc.base import (
+    MultiVectorBase,
+    Real,
+    describe_caller,
+    resolve_float_tolerance,
+    validation_guard,
+)
 from gacalc.functions import InvertibleFunction, Linearity
-from gacalc.transforms import coordinate_along, line_to_line_projection
+from gacalc.transforms import coordinate_along
 
 
 def are_linearly_independent(
     vectors: Sequence[MultiVectorBase],
-    float_close_to_zero: bool = False,
+    float_close_to_zero: bool | None = None,
 ) -> bool:
     """Whether ``vectors`` are linearly independent -- the Hestenes frame condition
     ``a_1 ∧ a_2 ∧ … ∧ a_k ≠ 0`` (H&S p. 27).
 
     The outer product of the vectors is the (signed) volume of the parallelotope
-    they span; it vanishes iff they are linearly dependent.  With
-    ``float_close_to_zero=True`` the vanishing test is a tolerant ``np.isclose`` on
-    the blade's magnitude (for numeric vectors, where exact zero would not hold
-    after rounding); the default is the exact ``≠ 0`` (symbolic vectors, or when
-    exactness is wanted).  Mirrors :meth:`MultiVectorBase.is_orthogonal_to`.
+    they span; it vanishes iff they are linearly dependent.  For float vectors the
+    vanishing test is a tolerant ``np.isclose`` on the blade's magnitude (exact zero
+    would not hold after rounding); exact and symbolic vectors use the exact
+    ``≠ 0``.  ``float_close_to_zero`` overrides that choice: ``True`` forces the
+    tolerance, ``False`` exactness, and ``None`` (the default) decides from the
+    vectors (:func:`~gacalc.base.resolve_float_tolerance`).  Mirrors
+    :meth:`MultiVectorBase.is_orthogonal_to`.
 
     Every input must be a vector (grade 1); a non-vector member is a misuse and
     raises ``ValueError`` -- a frame is a set of *vectors*, and a bivector (say) in
@@ -75,14 +83,14 @@ def are_linearly_independent(
         >>> are_linearly_independent([1 * e_1 + 1 * e_2, 1 * e_2])  # oblique
         True
 
-        Two float vectors a hair apart are exactly independent, but dependent within
-        the float tolerance:
+        Two float vectors a hair apart are dependent within the float tolerance,
+        which float input gets by default, but exactly independent:
 
         >>> nearly_parallel = [1.0 * e_1, 1.0 * e_1 + 1e-9 * e_2]
         >>> are_linearly_independent(nearly_parallel)
-        True
-        >>> are_linearly_independent(nearly_parallel, float_close_to_zero=True)
         False
+        >>> are_linearly_independent(nearly_parallel, float_close_to_zero=False)
+        True
     """
     if len(vectors) == 0:
         return False
@@ -90,14 +98,14 @@ def are_linearly_independent(
     blade: MultiVectorBase = MultiVectorBase.outer_product_of_vectors(*vectors)
     return (
         not bool(np.isclose(float(blade.magnitude()), 0.0, rtol=1e-5, atol=1e-5))
-        if float_close_to_zero
+        if resolve_float_tolerance(float_close_to_zero, vectors)
         else blade != type(blade).zero()
     )
 
 
 def is_frame(
     vectors: Sequence[MultiVectorBase],
-    float_close_to_zero: bool = False,
+    float_close_to_zero: bool | None = None,
 ) -> bool:
     """Whether ``vectors`` form a frame -- a linearly independent set (H&S p. 27).
 
@@ -129,7 +137,7 @@ def is_frame(
 @validation_guard
 def require_frame(
     vectors: Sequence[MultiVectorBase],
-    float_close_to_zero: bool = False,
+    float_close_to_zero: bool | None = None,
 ) -> None:
     """Raise ``ValueError`` unless ``vectors`` form a frame (H&S p. 27).
 
@@ -142,7 +150,8 @@ def require_frame(
     Args:
         vectors: the values to check.
         float_close_to_zero: test the wedge for zero with a tolerance, as
-            :func:`is_frame` does.
+            :func:`is_frame` does (``None``, the default: when the vectors hold
+            floats).
 
     Raises:
         ValueError: on an empty sequence, on a member that is not a vector, or
@@ -609,12 +618,6 @@ def reciprocal_frame(
     ]
 
 
-def _has_float(vectors: Sequence[MultiVectorBase]) -> bool:
-    """True if any coefficient of ``vectors`` is a ``float``: the "on the line" checks
-    then need :func:`~gacalc.transforms.coordinate_along`'s tolerance."""
-    return any(isinstance(coefficient, float) for v in vectors for coefficient in v)
-
-
 class InverseMethod(Enum):
     """How :meth:`Frame.to_invertible_function`'s inverse recovers the coordinates.
 
@@ -754,11 +757,7 @@ class Frame:
         orthogonal_vectors: tuple[MultiVectorBase, ...] = self.orthogonal_vectors()
         return tuple(
             tuple(
-                coordinate_along(
-                    v.projected_onto(w),
-                    along=w,
-                    float_close_to_zero=_has_float((v, w)),
-                )
+                coordinate_along(v.projected_onto(w), along=w)
                 for w in orthogonal_vectors
             )
             for v in self.vectors
@@ -826,12 +825,14 @@ class Frame:
 
         Both read a coordinate the same way.  If a vector ``n`` is perpendicular to
         every frame vector except ``v_i``, projecting ``y`` onto ``n`` sees only the
-        ``x_i * v_i`` term: ``P_n(y) = x_i * P_n(v_i)``.  The point on ``v_i``'s line
-        whose projection onto ``n`` is ``P_n(y)`` is therefore ``x_i * v_i``; that is
-        the inverse of :func:`~gacalc.transforms.line_to_line_projection` from
-        ``v_i`` to ``n``, and :func:`~gacalc.transforms.coordinate_along` reads
-        ``x_i`` off it.  (In coordinates ``x_i = (n · y) / (n · v_i)``: two heights,
-        one divided by the other.)  The methods differ in which ``n`` they use.
+        ``x_i * v_i`` term: ``P_n(y) = x_i * P_n(v_i)``.  So ``x_i`` is the coordinate
+        of ``P_n(y)`` along ``P_n(v_i)``, which
+        :func:`~gacalc.transforms.coordinate_along` reads off: two heights, one
+        divided by the other, ``x_i = (n · y) / (n · v_i)``.  (Geometrically,
+        ``x_i * v_i`` is the point on ``v_i``'s line whose projection onto ``n`` is
+        ``P_n(y)``: the inverse of
+        :func:`~gacalc.transforms.line_to_line_projection` from ``v_i`` to ``n``.)
+        The methods differ in which ``n`` they use.
 
         ``inverse_method=InverseMethod.RECIPROCAL`` (the default) uses the
         **reciprocal frame** ``v¹ … vᵏ`` (:meth:`reciprocal_vectors`, H&S p. 28):
@@ -949,17 +950,14 @@ class Frame:
         # Why one dot product per coordinate is enough (similar right triangles):
         # tasks/reference/frames-qr-and-reciprocal-frames.md, "Why one dot product
         # reads off an oblique coordinate: similar right triangles".
-        def term_and_coordinate(
+        def coordinate(
             y: MultiVectorBase, v: MultiVectorBase, m: MultiVectorBase
-        ) -> tuple[MultiVectorBase, Real]:
-            # y's term along v, x * v, and its coordinate x, for an m perpendicular to
-            # every frame vector but v: the point on v's line whose projection onto m
-            # matches y's.  Float input checks "on the line" with a tolerance.
-            tolerant: bool = _has_float((y, v, m))
-            term: MultiVectorBase = line_to_line_projection(
-                from_vector=v, to_vector=m, float_close_to_zero=tolerant
-            ).inverse(y.projected_onto(m))
-            return term, coordinate_along(term, along=v, float_close_to_zero=tolerant)
+        ) -> Real:
+            # y's coordinate x along the frame vector v, for an m perpendicular to every
+            # frame vector but v: P_m(y) = x * P_m(v), so x is the coordinate of the one
+            # projection along the other.  Float input checks "on the line" with a
+            # tolerance.
+            return coordinate_along(y.projected_onto(m), along=v.projected_onto(m))
 
         def backward_by_reciprocal(
             reciprocal_vectors: tuple[MultiVectorBase, ...], y: MultiVectorBase
@@ -970,7 +968,7 @@ class Frame:
             # enumerate(start=1).
             return sum(
                 (
-                    cls.basis_vector(i) * term_and_coordinate(y, v=v, m=v_upper)[1]
+                    cls.basis_vector(i) * coordinate(y, v=v, m=v_upper)
                     for i, (v, v_upper) in enumerate(
                         zip(self.vectors, reciprocal_vectors, strict=True), start=1
                     )
@@ -995,10 +993,8 @@ class Frame:
                         # the term leaves a y built from the earlier vectors alone;
                         # solve those coordinates the same way, and put this one
                         # after them.
-                        term: MultiVectorBase
-                        x_last: Real
-                        term, x_last = term_and_coordinate(y, v=v, m=w)
-                        return [*peel(earlier, y - term), x_last]
+                        x_last: Real = coordinate(y, v=v, m=w)
+                        return [*peel(earlier, y - v * x_last), x_last]
                     case _:
                         # Unreachable: [] and [*earlier, last] cover every list.  Kept
                         # as the total default because ty does not prove list-pattern

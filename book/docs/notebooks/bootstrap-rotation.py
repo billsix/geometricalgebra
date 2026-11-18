@@ -77,6 +77,9 @@ quarter_turn
 # %%
 at_values(quarter_turn, values)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_V: Point = point(coordinates=list(at_values(v, values)))
 P_QUARTER: Point = point(coordinates=list(at_values(quarter_turn, values)))
@@ -128,6 +131,9 @@ at_values(cos_part, values)
 
 # %%
 at_values(rotated, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_COS: Point = point(coordinates=list(at_values(cos_part, values)))

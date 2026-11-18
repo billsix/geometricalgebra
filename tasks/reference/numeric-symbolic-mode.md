@@ -10,7 +10,22 @@ comes out as numpy or sympy. This doc covers:
 The research was done in `tasks/archive/2026/11/18/research-numeric-symbolic-mode-threading.md`
 (William Emerison Six <billsix@gmail.com> asked for it on 2026-11-16).
 
-## Today: three mechanisms
+## Now: the recommendation is implemented (2026-11-18)
+
+`float_close_to_zero` is `bool | None = None` everywhere it appears:
+- `is_orthogonal_to` / `is_parallel_to`;
+- `require_on_line`, `coordinate_along` and the four line-to-line and line-to-plane factories;
+- `are_linearly_independent` / `is_frame` / `require_frame`;
+- the generated `Vector` methods.
+
+`None` is resolved where a comparison happens, by `base.resolve_float_tolerance(flag, values)`.
+That uses the caller's `True`/`False`, or else `base.has_float_coefficients(values)`, which treats
+any Python `float` or sympy `Float` coefficient as float input. A factory's call-time checks resolve
+against the call's input. The record is
+`tasks/archive/2026/11/18/tolerance-from-coefficient-type.md`. The inventory below describes the
+code as the research found it.
+
+## Before: three mechanisms (as researched)
 
 Counts are from 2026-11-18, made by `git grep` and leaving out the generated `g*.py`. The discovery
 script and its output were `tasks/adhoc/research-numeric-symbolic-mode-threading/`, deleted when the
@@ -147,4 +162,4 @@ the right thing at build time and at call time with no rule to learn.
    form to use, never a plain global. `set_blade_symbols` stays a global because it is display-only
    and Jupyter gives it no other way in.
 
-The implementation is `tasks/tolerance-from-coefficient-type.md` (proposed, needs go-ahead).
+The implementation is `tasks/archive/2026/11/18/tolerance-from-coefficient-type.md` (done 2026-11-18).

@@ -5,6 +5,12 @@ to read: what a notebook is for, how its cells are shaped, what to copy from the
 example, and what to avoid. Update in place; never archive. Created 2026-11-16 (William Emerison Six
 <billsix@gmail.com>).
 
+**It covers every notebook**: the book's (`book/docs/notebooks/*.py`) and the demo notebooks under
+`notebooks/` alike (William Emerison Six <billsix@gmail.com>, 2026-11-18). Rules that only fit a
+book notebook say so (rule 6, "Symbolic notebooks"). Why the two sets still differ in tooling
+and figure library, and how to unify them, is `tasks/unify-demo-and-book-notebooks.md` (parked
+until the maintainer starts it).
+
 **Scope against the sibling docs.** `tasks/reference/book-outline.md` owns the *structure* of a
 companion notebook ("Structural conventions": one values cell, live ePiX figures, one check per
 cell, a "For all vectors" symbolic section). This doc owns the *teaching voice and cell design*
@@ -63,6 +69,28 @@ this standard; see "History of the model" below.) What they do, as rules:
    as associativity, show both sides' tables, then one cell with the difference (`0`).
 8. **Point the curious at the implementation.** One sentence names where the code does the same
    steps (`decrease_grade` in `src/gacalc/gn.py`), for the reader who wants it.
+
+**What else the maintainer likes in it** (studied 2026-11-18, confirmed by William Emerison Six
+<billsix@gmail.com>; `tasks/archive/2026/11/18/notebooks-like-displaymv.md`):
+
+9. **Sentences run across cells.** "The plain-number part is the dot product," → output → "and
+   the plane part is the wedge:" → output. The prose reads as one sentence, and each output lands
+   where its clause ends. A lead-in ending in a comma or colon is the usual sign.
+10. **Plain names before jargon.** "Arrows", "plain-number part", "piece of plane" come first;
+    "scalar", "bivector", "grade" follow, or wait for the optional formal layer.
+11. **Headings are questions or claims, not topics**: "Where do the plain numbers go? Scalars
+    first.", "Does grouping matter? A proof that it does not", rather than "Associativity".
+12. **The recipe grows one step at a time.** Each section adds exactly one move to a procedure the
+    student already holds (three rules, then "putting the rules together", then "scalars first").
+13. **Prediction prompts, a handful per notebook**: "Predict the result before running the cell",
+    only where a student can genuinely predict (a square, a swap, a length from a Pythagorean
+    triple), not on every cell.
+14. **It ends in a proof.** With general symbolic elements, a law is shown for every element, not by
+    example, and the notebook says so. When the law's cancellation is readable, show it with
+    `show_cancellation` (`src/gacalc/nbdisplay.py`). Above a few dozen terms a side, show the zero
+    difference and say why the table is skipped.
+15. **Zero developer noise**: no `pyright: ignore` trailers, no typing workarounds in sight, short
+    cells, mostly one expression.
 
 ## What to avoid
 
@@ -166,7 +194,7 @@ Set by William Emerison Six <billsix@gmail.com> while revising
   `sqrt(x) * sqrt(y)` into one square root of an expanded product that sympy cannot split again
   (`proof-projection-3d.py` builds its rejection part from coefficients for this reason).
 
-## Checklist for a new or revised book notebook
+## Checklist for a new or revised notebook
 
 - The page's structure follows `tasks/reference/book-outline.md` ("Structural conventions").
 - It opens from something the student knows, and says what the notebook will show.
@@ -181,11 +209,22 @@ Set by William Emerison Six <billsix@gmail.com> while revising
 - Products whose expansion is the point are shown with `show_mult`, with a lead-in: at the plot
   values first, then symbolic.
 - No developer comments, pyright trailers or typing workarounds in the student's view.
-- One subject per notebook.
+- One subject per notebook; a short, labelled aside (like `displaymv.py`'s units-as-arrows) is
+  fine.
+- Headings are questions or claims; plain names come before jargon; sentences may run across
+  cells.
+- A handful of prediction prompts, where a student can genuinely predict.
+- Where the subject has a law, the notebook proves it with general symbolic elements, and shows
+  the cancellation when it is readable.
 
 ## History of the model
 
-`notebooks/displaymv.py` is a demo notebook under `notebooks/`, not a book notebook. Until
+`notebooks/displaymv.py` is a demo notebook under `notebooks/`, not a book notebook.
+On 2026-11-18 the other demo notebooks were brought to it: `displayg2.py` and `displayg3.py` were
+split into one-subject notebooks (`displayg2areas.py`, `displayg2transforms.py`,
+`displayg3measures.py`) and rewritten, the rest got Markdown lead-ins for every code cell, the
+bold-arrow notation, and no `pyright: ignore` trailers. The notebooks were also exempted from
+E501 and added to `tools/check_notebook_prose_width.py`. Until
 2026-11-16 its second half was a scratchpad with the problems listed under "What to avoid"; it was
 brought to this standard, and its transforms and graph paper moved to
 `notebooks/displaytransforms.py`, in `tasks/archive/2026/11/16/displaymv-teaching-style.md`.

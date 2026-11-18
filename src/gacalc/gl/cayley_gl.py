@@ -107,6 +107,9 @@ class RectangularPrism:
 
 def setup(title: str) -> tuple["GLFWWindow", "GlfwRenderer", imgui.IO]:
     """Open a window + ImGui; returns ``(window, impl, imguiio)``."""
+    window: "GLFWWindow"
+    impl: "GlfwRenderer"
+    imguiio: imgui.IO
     window, impl, imguiio = _p.setup_window(title)
     _p.install_esc_close(window)
     return window, impl, imguiio
@@ -259,6 +262,8 @@ class StandardObjects:
             GL.glUniform1f(p.u_time, time)
 
     def draw_mesh(self, name: str, time: float = 0.0) -> None:
+        vao: GLHandle
+        n: VertexCount
         vao, n = self.meshes[name]
         GL.glUseProgram(self.triangle_pipeline.program)
         GL.glBindVertexArray(vao)
@@ -271,6 +276,8 @@ class StandardObjects:
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, n)
 
     def draw_ground(self) -> None:
+        vao: GLHandle
+        n: VertexCount
         vao, n = self.ground
         GL.glUseProgram(self.ground_pipeline.program)
         GL.glBindVertexArray(vao)
@@ -321,6 +328,8 @@ class StandardObjects:
             GL.glDrawArrays(GL.GL_TRIANGLES, 0, self.sphere[1])
 
     def draw_cube(self) -> None:
+        vao: GLHandle
+        n: VertexCount
         vao, n = self.cube
         GL.glUseProgram(self.cube_pipeline.program)
         GL.glBindVertexArray(vao)
@@ -336,6 +345,8 @@ class StandardObjects:
         self, p: _p.Pipeline, time: float, thickness: float, w: int, h: int
     ) -> None:
         assert self.volume_geo is not None
+        vao: GLHandle
+        n: VertexCount
         vao, n, _vbo = self.volume_geo
         GL.glUseProgram(p.program)
         GL.glBindVertexArray(vao)
@@ -380,6 +391,7 @@ class StandardObjects:
         assert self.frustum is not None
         assert self.volume_geo is not None
         verts: np.ndarray = frustum_lines(self.frustum)
+        vbo: GLHandle
         _vao, _n, vbo = self.volume_geo
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo)
         GL.glBufferData(
@@ -541,6 +553,9 @@ def render_tree(
     is called when a button is clicked."""
     imgui.set_next_item_open(True, imgui.Cond_.once)
     if imgui.tree_node(group.title):
+        idx: int
+        b: cayleyscene.GuiButton
+        child: cayleyscene.GuiGroup
         for idx, b in enumerate(group.buttons):
             if idx > 0:  # show composition between successive substeps
                 imgui.same_line()
@@ -587,6 +602,7 @@ def menu_action(
     right-hand column) and an optional check mark (``selected``).  ``enabled``
     False greys it out (unselectable).  Runs ``action()`` once on click.  Call
     inside a ``begin_menu`` block."""
+    clicked: bool
     clicked, _ = imgui.menu_item(label, key, selected, enabled)
     if clicked:
         action()
@@ -664,6 +680,8 @@ def begin_frame(
 def clear_viewport(window: "GLFWWindow") -> tuple[int, int]:
     """Set the viewport to the whole framebuffer and clear color + depth.
     Returns the framebuffer size ``(w, h)``."""
+    w: int
+    h: int
     w, h = glfw.get_framebuffer_size(window)
     GL.glViewport(0, 0, w, h)
     mask: int = GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT  # ty: ignore
@@ -715,6 +733,8 @@ def _volume_edges(
         ((frr, fb, n), (brr, bb, fa)),
     ]
     verts: list[float] = []
+    p0: Point3
+    p1: Point3
     for p0, p1 in edges:
         verts += [float(p0[0]), float(p0[1]), float(p0[2])]
         verts += [float(p1[0]), float(p1[1]), float(p1[2])]
@@ -759,16 +779,20 @@ def framebuffer_grid_lines(
 
     def face(zc: float) -> None:
         # vertical grid lines (constant x), spanning the full height
+        i: int
         for i in range(w_px + 1):
             x: float = -half_w + (2.0 * half_w) * i / w_px
             verts.extend([x, -half_h, zc, x, half_h, zc])
         # horizontal grid lines (constant y), spanning the full width
+        j: int
         for j in range(h_px + 1):
             y: float = -half_h + (2.0 * half_h) * j / h_px
             verts.extend([-half_w, y, zc, half_w, y, zc])
 
     face(z_front)
     face(z_back)
+    sx: float
+    sy: float
     for sx in (-half_w, half_w):  # four corner edges front <-> back
         for sy in (-half_h, half_h):
             verts.extend([sx, sy, z_front, sx, sy, z_back])

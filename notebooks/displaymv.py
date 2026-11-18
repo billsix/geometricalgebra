@@ -62,25 +62,27 @@ warnings.filterwarnings("error", category=RuntimeWarning)
 # everything by everything and add up the pieces. Multiplying in geometric algebra is
 # the *same* idea, with just a couple of new rules for the "letters".
 #
-# Our letters are the **basis vectors** $e_1, e_2, e_3, \ldots$ Think of them as the
-# arrows pointing along the x-axis, the y-axis, the z-axis, and so on. A general object
-# (a *multivector*) is any sum of these, with numbers out front, for example
-# $3 * e_1 + 4 * e_2$. To multiply two multivectors you multiply every term by every
-# term and then clean up using **three rules**.
+# Our letters are the **basis vectors**
+# $\vec{\mathbf{e}}_1, \vec{\mathbf{e}}_2, \vec{\mathbf{e}}_3, \ldots$ Think of them as
+# the arrows pointing along the x-axis, the y-axis, the z-axis, and so on. A general
+# object (a *multivector*) is any sum of these, with numbers out front, for example
+# $3 * \vec{\mathbf{e}}_1 + 4 * \vec{\mathbf{e}}_2$. To multiply two multivectors you
+# multiply every term by every term and then clean up using **three rules**.
 #
-# **Rule 1: an arrow times itself is 1.** $e_1 * e_1 = 1$, $e_2 * e_2 = 1$, and so on.
-# Squaring a unit arrow gives the plain number 1. Before running the next cell, predict
-# its result.
+# **Rule 1: an arrow times itself is 1.** $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 = 1$,
+# $\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2 = 1$, and so on. Squaring a unit arrow gives
+# the plain number 1. Before running the next cell, predict its result.
 
 # %%
 e_1 * e_1
 
 # %% [markdown]
 # **Rule 2: swapping two *different* arrows flips the sign.**
-# $e_1 * e_2 = -(e_2 * e_1)$. So order matters here, unlike with ordinary numbers,
-# where $3 * 5 = 5 * 3$. The combo $e_1 * e_2$ is a brand-new object, a little piece of
-# the $e_1 e_2$ *plane*, written $e_{12}$. We cannot simplify it to a number, but we can
-# always reorder it at the cost of a minus sign.
+# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 = -(\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1)$.
+# So order matters here, unlike with ordinary numbers, where $3 * 5 = 5 * 3$. The combo
+# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ is a brand-new object, a little piece of the
+# $\vec{\mathbf{e}}_1 \vec{\mathbf{e}}_2$ *plane*, written $\mathbf{e}_{12}$. We cannot
+# simplify it to a number, but we can always reorder it at the cost of a minus sign.
 
 # %%
 e_1 * e_2
@@ -94,8 +96,10 @@ e_2 * e_1
 # %% [markdown]
 # **Rule 3: distribute and collect, and numbers slide freely.** Ordinary numbers (the
 # coefficients out front) multiply and move around as usual; you distribute the product
-# across every term and add up like terms. For example $2 * e_1 + 3 * e_2 + 5 * e_1$
-# collects into $7 * e_1 + 3 * e_2$, exactly like combining $2x + 3y + 5x$.
+# across every term and add up like terms. For example
+# $2 * \vec{\mathbf{e}}_1 + 3 * \vec{\mathbf{e}}_2 + 5 * \vec{\mathbf{e}}_1$ collects
+# into $7 * \vec{\mathbf{e}}_1 + 3 * \vec{\mathbf{e}}_2$, exactly like combining
+# $2x + 3y + 5x$.
 
 # %%
 2 * e_1 + 3 * e_2 + 5 * e_1
@@ -106,8 +110,9 @@ e_2 * e_1
 #
 # Any product, no matter how messy, reduces to a tidy standard form by (a) multiplying
 # every term by every term, (b) using Rule 2 to sort the arrows into increasing order
-# ($e_2 * e_1$ becomes $-e_1 * e_2$), and (c) using Rule 1 to cancel any arrow that
-# meets itself.
+# ($\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1$ becomes
+# $-\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$), and (c) using Rule 1 to cancel any arrow
+# that meets itself.
 #
 # Two payoffs worth seeing.
 #
@@ -115,12 +120,12 @@ e_2 * e_1
 # Watch the cross terms cancel by Rule 2 and the squares collapse by Rule 1:
 #
 # $$
-# \begin{aligned}
-# (3 * e_1 + 4 * e_2) * (3 * e_1 + 4 * e_2)
-#   &= 9 * (e_1 * e_1) + 12 * (e_1 * e_2) + 12 * (e_2 * e_1) + 16 * (e_2 * e_2) \\
-#   &= 9 * 1 + 12 * e_{12} - 12 * e_{12} + 16 * 1 \\
-#   &= 25
-# \end{aligned}
+# \begin{aligned} (3 * \vec{\mathbf{e}}_1 + 4 * \vec{\mathbf{e}}_2) * (3 *
+# \vec{\mathbf{e}}_1 + 4 * \vec{\mathbf{e}}_2) &= 9 * (\vec{\mathbf{e}}_1 *
+# \vec{\mathbf{e}}_1) + 12 * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) + 12 *
+# (\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1) + 16 * (\vec{\mathbf{e}}_2 *
+# \vec{\mathbf{e}}_2) \\ &= 9 * 1 + 12 * \mathbf{e}_{12} - 12 * \mathbf{e}_{12} + 16 * 1
+# \\ &= 25 \end{aligned}
 # $$
 #
 # and $25 = 3^2 + 4^2$, the length squared.
@@ -136,9 +141,9 @@ v * v
 show_mult(v, v)
 
 # %% [markdown]
-# **The unit plane $e_1 * e_2$ squares to $-1$, just like the imaginary number $i$.**
-# The geometric algebra of the plane contains the complex numbers. Predict the result
-# before running the cell.
+# **The unit plane $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ squares to $-1$, just like
+# the imaginary number $i$.** The geometric algebra of the plane contains the complex
+# numbers. Predict the result before running the cell.
 
 # %%
 i: MultiVector = e_1 * e_2
@@ -155,14 +160,15 @@ i * i
 # vectors**, together with the ordinary algebra you already trust: it distributes over
 # $+$, it is associative, and plain numbers factor out freely.
 #
-# > $e_i * e_i = 1$: each basis vector squares to $1$.  **(R1)**
-# >
-# > $e_i * e_j = -e_j * e_i$ for $i \neq j$: swapping two *different* ones flips the
-# > sign.  **(R2)**
+# > $\vec{\mathbf{e}}_i * \vec{\mathbf{e}}_i = 1$: each basis vector squares to $1$.
+# **(R1)** > >
+# $\vec{\mathbf{e}}_i * \vec{\mathbf{e}}_j = -\vec{\mathbf{e}}_j * \vec{\mathbf{e}}_i$
+# for $i \neq j$: swapping two *different* ones flips the > sign.  **(R2)**
 #
 # Everything else is bookkeeping. Any product of basis vectors
-# $e_{i_1} * e_{i_2} * \cdots * e_{i_k}$ is brought to **standard form** (indices in
-# increasing order, no repeats) using just two moves:
+# $\vec{\mathbf{e}}_{i_1} * \vec{\mathbf{e}}_{i_2} * \cdots * \vec{\mathbf{e}}_{i_k}$ is
+# brought to **standard form** (indices in increasing order, no repeats) using just two
+# moves:
 #
 # 1. **Sort, with a sign.** By (R2), slide a smaller index to the left past a larger
 #    neighbor; each swap of two neighbors multiplies the whole term by $-1$. It is
@@ -173,19 +179,17 @@ i * i
 # A worked example is then just a chain of equalities:
 #
 # $$
-# \begin{aligned}
-# e_1 * e_3 * e_3 * e_1
-#   &= e_1 * (e_3 * e_3) * e_1 && \text{regroup (associativity)} \\
-#   &= e_1 * 1 * e_1 && \text{(R1) on the middle pair} \\
-#   &= e_1 * e_1 \\
-#   &= 1 && \text{(R1) again}
-# \end{aligned}
+# \begin{aligned} \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_3 *
+# \vec{\mathbf{e}}_1 &= \vec{\mathbf{e}}_1 * (\vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_3) *
+# \vec{\mathbf{e}}_1 && \text{regroup (associativity)} \\ &= \vec{\mathbf{e}}_1 * 1 *
+# \vec{\mathbf{e}}_1 && \text{(R1) on the middle pair} \\ &= \vec{\mathbf{e}}_1 *
+# \vec{\mathbf{e}}_1 \\ &= 1 && \text{(R1) again} \end{aligned}
 # $$
 #
 # and one that only sorts, with nothing to cancel:
 #
-# $$e_2 * e_1 * e_3 = -e_1 * e_2 * e_3 \qquad \text{one swap of } e_2 \text{ past }
-# e_1 \text{, by (R2)}$$
+# $$\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3 = -\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3 \qquad \text{one swap of } \vec{\mathbf{e}}_2 \text{ past }
+# \vec{\mathbf{e}}_1 \text{, by (R2)}$$
 #
 # These two moves, sort with a sign and then cancel repeats, are exactly what `Gn`'s
 # geometric product carries out: in the code, the recursive `decrease_grade` helper in
@@ -195,13 +199,13 @@ i * i
 # Where do the plain numbers go? Scalars first.
 # ---------------------------------------------
 #
-# So far every factor was a bare basis vector like $e_1$. In real life a term also has
-# a **number** out front: $3 * e_1$, $-2 * e_2$, and so on. Where do those numbers go
-# when we multiply?
+# So far every factor was a bare basis vector like $\vec{\mathbf{e}}_1$. In real life a
+# term also has a **number** out front: $3 * \vec{\mathbf{e}}_1$,
+# $-2 * \vec{\mathbf{e}}_2$, and so on. Where do those numbers go when we multiply?
 #
 # The happy answer: **numbers are ordinary numbers.** They commute with everything
-# ($3 * e_1 = e_1 * 3$) and they multiply among themselves the usual way. So the recipe
-# grows just one opening step:
+# ($3 * \vec{\mathbf{e}}_1 = \vec{\mathbf{e}}_1 * 3$) and they multiply among themselves
+# the usual way. So the recipe grows just one opening step:
 #
 # 1. **Scalars first.** Sweep every numeric factor to the front and multiply them
 #    together into a single number.
@@ -209,14 +213,13 @@ i * i
 #    sign (R2), cancel repeats (R1).
 #
 # For instance, gather the four numbers up front, then reuse the reduction we just did
-# ($e_1 * e_3 * e_3 * e_1 = 1$):
+# ($\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1 = 1$):
 #
 # $$
-# \begin{aligned}
-# (2 * e_1) * (3 * e_3) * (4 * e_3) * (5 * e_1)
-#   &= (2 * 3 * 4 * 5) * (e_1 * e_3 * e_3 * e_1) && \text{scalars to the front} \\
-#   &= 120 * 1 && \text{reduce the basis vectors} \\
-#   &= 120
+# \begin{aligned} (2 * \vec{\mathbf{e}}_1) * (3 * \vec{\mathbf{e}}_3) * (4 *
+# \vec{\mathbf{e}}_3) * (5 * \vec{\mathbf{e}}_1) &= (2 * 3 * 4 * 5) *
+# (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1) &&
+# \text{scalars to the front} \\ &= 120 * 1 && \text{reduce the basis vectors} \\ &= 120
 # \end{aligned}
 # $$
 
@@ -229,10 +232,10 @@ i * i
 #
 # $$
 # \begin{aligned}
-# (2 * e_2) * (3 * e_1)
-#   &= 6 * (e_2 * e_1) && \text{scalars to the front} \\
-#   &= 6 * (-e_1 * e_2) && \text{one swap, by (R2)} \\
-#   &= -6 * e_{12}
+# (2 * \vec{\mathbf{e}}_2) * (3 * \vec{\mathbf{e}}_1)
+#   &= 6 * (\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1) && \text{scalars to the front} \\
+#   &= 6 * (-\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) && \text{one swap, by (R2)} \\
+#   &= -6 * \mathbf{e}_{12}
 # \end{aligned}
 # $$
 
@@ -244,19 +247,19 @@ i * i
 # -----------------------------------------------------
 #
 # Let's do a messier one and reduce it by hand with the three rules:
-# $(e_1 * e_3) * (e_3 * e_1)$.
+# $(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3) * (\vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1)$.
 #
-# Written out, that's the four arrows $e_1 * e_3 * e_3 * e_1$ in a row. Nothing here is
-# a plain number yet, so we lean on the rules. The trick is to notice the two $e_3$'s
-# sitting next to each other in the middle:
+# Written out, that's the four arrows
+# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1$ in
+# a row. Nothing here is a plain number yet, so we lean on the rules. The trick is to
+# notice the two $\vec{\mathbf{e}}_3$'s sitting next to each other in the middle:
 #
 # $$
-# \begin{aligned}
-# e_1 * e_3 * e_3 * e_1
-#   &= e_1 * (e_3 * e_3) * e_1 && \text{group the middle pair} \\
-#   &= e_1 * 1 * e_1 && \text{Rule 1: } e_3 * e_3 = 1 \\
-#   &= e_1 * e_1 \\
-#   &= 1 && \text{Rule 1 again}
+# \begin{aligned} \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_3 *
+# \vec{\mathbf{e}}_1 &= \vec{\mathbf{e}}_1 * (\vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_3) *
+# \vec{\mathbf{e}}_1 && \text{group the middle pair} \\ &= \vec{\mathbf{e}}_1 * 1 *
+# \vec{\mathbf{e}}_1 && \text{Rule 1: } \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_3 = 1 \\
+# &= \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 \\ &= 1 && \text{Rule 1 again}
 # \end{aligned}
 # $$
 #
@@ -266,13 +269,15 @@ i * i
 (e_1 * e_3) * (e_3 * e_1)
 
 # %% [markdown]
-# But wait: reducing that by hand, we quietly *re-grouped* the arrows. The original
-# was $(e_1 * e_3) * (e_3 * e_1)$, yet we chose to first multiply the middle
-# $e_3 * e_3$. Were we *allowed* to do that? What if we had grouped it a different
-# way? Would we still get $1$?
+# But wait: reducing that by hand, we quietly *re-grouped* the arrows. The original was
+# $(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3) * (\vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1)$,
+# yet we chose to first multiply the middle $\vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_3$.
+# Were we *allowed* to do that? What if we had grouped it a different way? Would we
+# still get $1$?
 #
 # Here are three different ways of parenthesizing the same four arrows
-# $e_1 * e_3 * e_3 * e_1$. Predict each before running it. Left to right:
+# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1$.
+# Predict each before running it. Left to right:
 
 # %%
 ((e_1 * e_3) * e_3) * e_1
@@ -290,17 +295,19 @@ e_1 * (e_3 * (e_3 * e_1))
 e_1 * ((e_3 * e_3) * e_1)
 
 # %% [markdown]
-# They all agree. That is **associativity**: for a product of several things, *how
-# you parenthesize does not change the answer*, so we can safely write
-# $e_1 * e_3 * e_3 * e_1$ with no parentheses at all. We relied on it the moment we
-# chose to reduce the middle pair first, and we'll rely on it constantly from here on.
+# They all agree. That is **associativity**: for a product of several things, *how you
+# parenthesize does not change the answer*, so we can safely write
+# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1$
+# with no parentheses at all. We relied on it the moment we chose to reduce the middle
+# pair first, and we'll rely on it constantly from here on.
 #
 # It is worth pausing on *why* this is not obvious. Remember Rule 2: order is **not**
-# free here ($e_1 * e_3$ is the *negative* of $e_3 * e_1$). When even the order of two
-# things flips the sign, it is a fair question whether the *grouping* of many things
-# might change the answer too. It doesn't, but that is something to *prove* from the
-# rules, not take on faith. The section "Associativity in 𝒢₂, as a proof" below
-# proves it for every pair of elements of the plane; the proof for every dimension is
+# free here ($\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3$ is the *negative* of
+# $\vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1$). When even the order of two things flips
+# the sign, it is a fair question whether the *grouping* of many things might change the
+# answer too. It doesn't, but that is something to *prove* from the rules, not take on
+# faith. The section "Associativity in 𝒢₂, as a proof" below proves it for every pair of
+# elements of the plane; the proof for every dimension is
 # `tasks/reference/geometric-product-associativity.md`.
 
 # %% [markdown]
@@ -311,6 +318,9 @@ e_1 * ((e_3 * e_3) * e_1)
 
 # %%
 sym_vec2_1
+
+# %% [markdown]
+# and the second:
 
 # %%
 sym_vec2_2
@@ -341,9 +351,10 @@ sym_vec2_1.wedge(sym_vec2_2)
 
 # %% [markdown]
 # Wedging two vectors just to *name the plane they span* is common enough to have
-# helpers: `bivector_from_vectors(a, b)` is exactly $a \wedge b$, and `i(a, b)` is that
-# plane's *unit* bivector ($i * i = -1$), the same as $a \wedge b$ divided by its size.
-# The difference of the two ways is $0$:
+# helpers: `bivector_from_vectors(a, b)` is exactly
+# $\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$, and `i(a, b)` is that plane's *unit*
+# bivector ($i * i = -1$), the same as $\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$
+# divided by its size. The difference of the two ways is $0$:
 
 # %%
 MultiVector.i(sym_vec2_1, sym_vec2_2) - (sym_vec2_1 ^ sym_vec2_2).normalize()
@@ -354,29 +365,31 @@ MultiVector.i(sym_vec2_1, sym_vec2_2) - (sym_vec2_1 ^ sym_vec2_2).normalize()
 #
 # In space, the wedge of two vectors has a part in each coordinate plane. Project both
 # vectors onto one coordinate plane and wedge the shadows, and you get that plane's
-# part. Onto the $e_1 e_2$ plane:
+# part. Onto the $\vec{\mathbf{e}}_1 \vec{\mathbf{e}}_2$ plane:
 
 # %%
 onto_e1e2: MultiVectorFn = MultiVector.project(onto=e_1 * e_2)
 onto_e1e2(sym_vec3_1) ^ onto_e1e2(sym_vec3_2)
 
 # %% [markdown]
-# onto the $e_2 e_3$ plane:
+# onto the $\vec{\mathbf{e}}_2 \vec{\mathbf{e}}_3$ plane:
 
 # %%
 onto_e2e3: MultiVectorFn = MultiVector.project(onto=e_2 * e_3)
 onto_e2e3(sym_vec3_1) ^ onto_e2e3(sym_vec3_2)
 
 # %% [markdown]
-# and onto the $e_1 e_3$ plane:
+# and onto the $\vec{\mathbf{e}}_1 \vec{\mathbf{e}}_3$ plane:
 
 # %%
 onto_e1e3: MultiVectorFn = MultiVector.project(onto=e_1 * e_3)
 onto_e1e3(sym_vec3_1) ^ onto_e1e3(sym_vec3_2)
 
 # %% [markdown]
-# The order in which the plane is named does not matter: $e_3 * e_1$ is the same plane
-# as $e_1 * e_3$, so projecting onto it gives the same shadow. The difference:
+# The order in which the plane is named does not matter:
+# $\vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1$ is the same plane as
+# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3$, so projecting onto it gives the same
+# shadow. The difference:
 
 # %%
 onto_e3e1: MultiVectorFn = MultiVector.project(onto=e_3 * e_1)
@@ -398,7 +411,7 @@ sym_vec3_1 * sym_vec3_2
 # A bivector times its inverse
 # ----------------------------
 #
-# A bivector $B = a \wedge b$ has an inverse, $B^{-1}$:
+# A bivector $B = \vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$ has an inverse, $B^{-1}$:
 
 # %%
 (sym_vec3_1.wedge(sym_vec3_2)).inverse()
@@ -413,10 +426,11 @@ show_mult((sym_vec3_1.wedge(sym_vec3_2)).inverse(), sym_vec3_1.wedge(sym_vec3_2)
 # An aside: units as basis vectors
 # --------------------------------
 #
-# The same algebra can carry units. Let $e_1$ stand for one gram of iron and $e_2$ for
-# one mole of iron. The ratio "1 mole per 55.85 grams" is $(55.85 * e_1)^{-1} * e_2$,
-# and multiplying a mass in grams by it gives moles: the $e_1$ cancels by Rule 1, as
-# units cancel in chemistry.
+# The same algebra can carry units. Let $\vec{\mathbf{e}}_1$ stand for one gram of iron
+# and $\vec{\mathbf{e}}_2$ for one mole of iron. The ratio "1 mole per 55.85 grams" is
+# $(55.85 * \vec{\mathbf{e}}_1)^{-1} * \vec{\mathbf{e}}_2$, and multiplying a mass in
+# grams by it gives moles: the $\vec{\mathbf{e}}_1$ cancels by Rule 1, as units cancel
+# in chemistry.
 
 # %%
 gram_fe: MultiVector = e_1
@@ -448,6 +462,9 @@ MultiVector.symbolic_multivector(n=1, prefix="a")
 # %%
 for x in MultiVector.bases(2):
     display(Math(x._repr_latex_()))
+
+# %% [markdown]
+# so a general multivector in 𝒢₂ has four coefficients:
 
 # %%
 MultiVector.symbolic_multivector(n=2, prefix="b")
@@ -495,9 +512,15 @@ for x in MultiVector.bases(3):
 G2_1: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="a")
 G2_1
 
+# %% [markdown]
+# the second,
+
 # %%
 G2_2: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="b")
 G2_2
+
+# %% [markdown]
+# and the third:
 
 # %%
 G2_3: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="c")
@@ -548,20 +571,31 @@ show_cancellation(
 # Grade parts in 𝒢₃
 # -----------------
 #
-# A general multivector of 𝒢₃ and its four grade parts: the plain number, the vector,
-# the bivector (three planes) and the trivector (the volume).
+# A general multivector of 𝒢₃,
 
 # %%
 MultiVector.symbolic_multivector(n=3, prefix="c")
 
+# %% [markdown]
+# its plain number (grade 0),
+
 # %%
 MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(0)
+
+# %% [markdown]
+# its vector (grade 1),
 
 # %%
 MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(1)
 
+# %% [markdown]
+# its bivector, with a part in each of the three planes (grade 2),
+
 # %%
 MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(2)
+
+# %% [markdown]
+# and its trivector, the volume (grade 3):
 
 # %%
 MultiVector.symbolic_multivector(n=3, prefix="c").r_vector_part(3)
@@ -586,7 +620,7 @@ B: MultiVector = MultiVector.bivector_from_vectors(vec_a, vec_b)
 B
 
 # %% [markdown]
-# Like $e_{12}$, it squares to a negative number:
+# Like $\mathbf{e}_{12}$, it squares to a negative number:
 
 # %%
 B * B
@@ -606,7 +640,7 @@ B_dual.dot(B)
 
 # %% [markdown]
 # Term by term, $B$ times its dual: what is left is a pure volume, a multiple of
-# $e_{123}$.
+# $\mathbf{e}_{123}$.
 
 # %%
 show_mult(B, B.dual(3))
@@ -661,15 +695,21 @@ figure = plot_multivector(
 
 # %% [markdown]
 # Two vectors in the plane, and their product. Before running the third cell, predict
-# which blades it has: a plain number (the dot) and $e_{12}$ (the wedge).
+# which blades it has: a plain number (the dot) and $\mathbf{e}_{12}$ (the wedge).
 
 # %%
 p: MultiVector = 3 * e_1 - 1.5 * e_2
 figure = plot_multivector(p)
 
+# %% [markdown]
+# the second vector,
+
 # %%
 q: MultiVector = 1.5 * e_1 + 5 * e_2
 figure = plot_multivector(q)
+
+# %% [markdown]
+# and their product:
 
 # %%
 figure = plot_multivector(p * q)

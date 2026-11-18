@@ -107,6 +107,7 @@ def cleanup() -> None:
         GL.glDeleteVertexArrays(len(all_vaos), all_vaos)
     if all_vbos:
         GL.glDeleteBuffers(len(all_vbos), all_vbos)
+    prog: int
     for prog in all_programs:
         GL.glDeleteProgram(prog)
 
@@ -405,6 +406,9 @@ def make_vao(attribs: typing.Sequence[AttribSpec]) -> int:
     vao: int = GL.glGenVertexArrays(1)
     all_vaos.append(vao)
     GL.glBindVertexArray(vao)
+    a: AttribSpec
+    stride: int
+    offset: int
     for a in attribs:
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, a.vbo)
         GL.glEnableVertexAttribArray(a.location)
@@ -518,6 +522,8 @@ def build_ground_vertices() -> ndarray:
     """A 41x41 grid of perpendicular line segments at y=-5 (x and z range
     -20..20)."""
     verts: list[float] = []
+    x: int
+    z: int
     for x in range(-20, 21, 1):
         for z in range(-20, 21, 1):
             verts.append(float(-x))
@@ -566,6 +572,7 @@ def build_ground_cylinders(
     along each axis)."""
     n: int = int(extent / step)
     edges: list[tuple[tuple[float, float, float], tuple[float, float, float]]] = []
+    i: int
     for i in range(-n, n + 1):
         coord: float = i * step
         # horizontal line at z = coord, x spanning [-extent, extent]
@@ -595,6 +602,11 @@ def build_axis_arrow_solid(
     h_rod: float = rod_length
     h_tip: float = rod_length + cone_length
     verts: list[float] = []
+    i: int
+    c0: float
+    s0: float
+    c1: float
+    s1: float
     for i in range(slices):
         a0: float = 2.0 * math.pi * i / slices
         a1: float = 2.0 * math.pi * (i + 1) / slices
@@ -642,6 +654,16 @@ def build_origin_sphere_solid(
 
     Returns 2 * slices * stacks triangles."""
     verts: list[float] = []
+    i: int
+    s0: float
+    c0: float
+    s1: float
+    c1: float
+    j: int
+    cl0: float
+    sl0: float
+    cl1: float
+    sl1: float
     for i in range(stacks):
         lat0: float = math.pi * (-0.5 + float(i) / stacks)
         lat1: float = math.pi * (-0.5 + float(i + 1) / stacks)
@@ -705,6 +727,9 @@ def build_cylinders_for_edges(
     (cylinder side = 2, bottom cap = 1, top cap = 1, plus 1 spare for
     diagonal symmetry of the side strip)."""
     verts: list[float] = []
+    raw_p0: tuple[float, float, float]
+    raw_p1: tuple[float, float, float]
+    i: int
     for raw_p0, raw_p1 in edges:
         p0: ndarray = np.array(raw_p0, dtype=np.float32)
         p1: ndarray = np.array(raw_p1, dtype=np.float32)

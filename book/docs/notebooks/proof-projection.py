@@ -72,6 +72,9 @@ a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
 b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
 a
 
+# %% [markdown]
+# and $\vec{\mathbf{b}}$:
+
 # %%
 b
 
@@ -81,6 +84,9 @@ b
 
 # %%
 values: list[tuple[sympy.Symbol, Real]] = [(a_1, 1), (a_2, 4), (b_1, 2), (b_2, 1)]
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_A: Point = point(coordinates=list(at_values(a, values)))
@@ -141,6 +147,9 @@ a_aligned
 # %%
 at_values(a_aligned, values)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_A_ALIGNED: Point = point(coordinates=list(at_values(a_aligned, values)))
 P_B_ALIGNED: Point = point(coordinates=list(at_values(b_aligned, values)))
@@ -169,6 +178,9 @@ x: Real = a_aligned.coefficient(e_1)
 y: Real = a_aligned.coefficient(e_2)
 x
 
+# %% [markdown]
+# and its $y$-coordinate:
+
 # %%
 y
 
@@ -178,8 +190,14 @@ y
 # %%
 at_values(x, values)
 
+# %% [markdown]
+# and $y$ at the plot values:
+
 # %%
 at_values(y, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_X: Point = point(coordinates=list(at_values(Scalar(x) * e_1, values)))
@@ -242,6 +260,9 @@ rejection
 
 # %%
 at_values(rejection, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_PROJECTION: Point = point(coordinates=list(at_values(projection, values)))

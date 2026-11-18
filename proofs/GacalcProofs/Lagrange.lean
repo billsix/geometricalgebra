@@ -6,7 +6,7 @@ import Mathlib
 
     In coordinates the wedge magnitude is the sum of the squared 2×2 minors; each
     identity below is that statement, proved by `ring`. This is the identity the
-    book uses to derive sin/cos (`notebooks/displayg2.py`). See
+    book uses to derive sin/cos (`notebooks/displayg2areas.py`). See
     <https://en.wikipedia.org/wiki/Lagrange%27s_identity>. General reference:
     Mathlib's `inner_mul_le_norm_mul_norm` (Cauchy–Schwarz) is the ≤ half. -/
 namespace GacalcProofs

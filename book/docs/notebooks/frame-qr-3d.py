@@ -99,6 +99,9 @@ w_3
 # %%
 sympy.Matrix(frame.coefficients())
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_V1: Point = point(coordinates=list(v_1))
 P_V2: Point = point(coordinates=list(v_2))
@@ -179,6 +182,9 @@ volume
 # %%
 sympy.simplify(sympy.sympify(base_area * height - volume))
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 fig_volume: PendingFigure
 with scene_3d(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig_volume:
@@ -212,6 +218,9 @@ fig_volume
 # %%
 f: InvertibleFunction[MultiVectorBase] = frame.to_invertible_function()
 sympy.Matrix(f.to_matrix(G, n=3, backend=MatrixBackend.SYMPY))[:3, :3]
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 fig_forward: PendingFigure
@@ -342,6 +351,9 @@ x_3
 # %%
 at_values(x_3, values)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 w_3_dot_y: Real = w_3.dot(y).scalar_part()
 fig_step_1: PendingFigure
@@ -395,6 +407,9 @@ r_1
 
 # %%
 at_values(r_1, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_R1: Point = point(coordinates=list(at_values(r_1, values)))
@@ -458,6 +473,9 @@ x_1
 
 # %%
 at_values(r_2, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_R2: Point = point(coordinates=list(at_values(r_2, values)))
@@ -553,6 +571,9 @@ f(x).simplified()
 # %%
 at_values(x, values)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_X: Point = point(coordinates=list(at_values(x, values)))
 P_X1_V1: Point = point(coordinates=list(at_values(Scalar(x_1) * v_1, values)))
@@ -644,6 +665,9 @@ reciprocal_3.dot(v_2).scalar_part()
 
 # %%
 reciprocal_3.dot(v_3).scalar_part()
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 fig_reciprocal: PendingFigure

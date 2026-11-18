@@ -97,8 +97,10 @@ a: g2.Vector = 3 * e_1 + 4 * e_2
 b: g2.Vector = 1 * e_1 + 2 * e_2
 show(a)
 
+# %% [markdown]
+# Drawn as an arrow from the origin:
+
 # %%
-# the vector a as an arrow from the origin
 with create_graphs(graph_bounds=(5, 5)):
     draw_vectors([(a, r"\vec{\mathbf{a}}", "tab:blue")])
 
@@ -121,7 +123,7 @@ with create_graphs(graph_bounds=(5, 5)):
 # The geometric product of two vectors
 # ------------------------------------
 #
-# $$ ab = a\cdot b + a\wedge b $$
+# $$ \vec{\mathbf{a}} * \vec{\mathbf{b}} = \vec{\mathbf{a}} \cdot \vec{\mathbf{b}} + \vec{\mathbf{a}} \wedge \vec{\mathbf{b}} $$
 #
 # The scalar part is the dot product, the bivector part is the wedge — together
 # an element of the even subalgebra, i.e. a **versor**.
@@ -129,8 +131,11 @@ with create_graphs(graph_bounds=(5, 5)):
 # %%
 show(a * b)
 
+# %% [markdown]
+# Asked for separately, the wedge alone is a `g2.Bivector` and the dot alone a
+# `g2.Scalar`:
+
 # %%
-# the wedge alone is a g2.Bivector; the dot alone is a g2.Scalar
 show(a ^ b, a.inner_product(b))
 
 # %% [markdown]
@@ -156,6 +161,9 @@ with create_graphs(graph_bounds=(5, 5)):
 # %%
 show(e_1 * e_2)
 
+# %% [markdown]
+# The wedge of the same two vectors is the pure bivector:
+
 # %%
 show(e_1 ^ e_2)
 
@@ -178,21 +186,30 @@ show(I2 * I2)
 # narrows to `g2.Versor`), and the unit bivector squares to −1.
 
 # %%
-R0: g2.Versor = 2 + 3 * I2  # scalar + bivector  -> g2.Versor
+R0: g2.Versor = 2 + 3 * I2
 show(R0)
 
-# %%
-show(I2 * I2)  # == -1
+# %% [markdown]
+# Predict the square of the unit bivector before running the cell:
 
 # %%
-# a versor rotates a vector: the versor that turns e_1 -> e_2 is a
-# quarter turn, built from the two vectors (no hand-rolled cos/sin needed)
+show(I2 * I2)
+
+# %% [markdown]
+# A versor rotates a vector. The one that turns $\vec{\mathbf{e}}_1$ to
+# $\vec{\mathbf{e}}_2$ is a quarter turn, built from the two vectors, with no
+# cosines or sines written by hand:
+
+# %%
 quarter: g2.Versor = g2.Vector.versor_from_vectors(from_vector=e_1, to_vector=e_2)
 rotated: g2.Vector = quarter * e_1 * quarter.inverse()
 show(rotated)
 
+# %% [markdown]
+# The quarter turn carries $\vec{\mathbf{e}}_1$ to $\vec{\mathbf{e}}_2$; the arc is
+# the turn:
+
 # %%
-# the quarter turn carries e_1 to e_2; the arc is the turn
 with create_graphs(graph_bounds=(3, 3)):
     draw_angle(from_vector=e_1, to_vector=rotated, radius=0.6)
     draw_vectors(
@@ -212,8 +229,12 @@ with create_graphs(graph_bounds=(3, 3)):
 # %%
 show(quarter.plane_of_rotation())
 
+# %% [markdown]
+# The plane of rotation is the unit square $\vec{\mathbf{e}}_1$ and
+# $\vec{\mathbf{e}}_2$ span, oriented from $\vec{\mathbf{e}}_1$ toward
+# $\vec{\mathbf{e}}_2$:
+
 # %%
-# the plane of rotation: the unit square e_1 and e_2 span, oriented e_1 -> e_2
 with create_graphs(graph_bounds=(3, 3)):
     draw_bivector(e_1, e_2, label=r"\mathbf{e}_{12}")
     draw_vectors(
@@ -234,7 +255,7 @@ frm: g2.Vector
 to: g2.Vector
 frm, to = 1 * e_1, 1 * e_2  # rotate by the e_1 -> e_2 angle (a quarter turn)
 R: g2.Versor = g2.Vector.versor_from_vectors(from_vector=frm, to_vector=to)
-show(R)  # an (un-normalized) g2.Versor
+show(R)
 
 # %% [markdown]
 # Because `R` is not normalized, the bare sandwich `R * v * R̃` *scales* as well as
@@ -256,9 +277,11 @@ for label, value in [
 ]:
     display(Math(label + " = " + value._repr_latex_().strip("$")))
 
+# %% [markdown]
+# The versor sandwich minus `projection_rotation`'s answer is $0$:
+
 # %%
-# the versor sandwich and projection_rotation agree exactly
-R * w * R.inverse() == projection_rotation(from_vector=frm, to_vector=to)(w)
+R * w * R.inverse() - projection_rotation(from_vector=frm, to_vector=to)(w)
 
 # %% [markdown]
 # The picture of that cell: the bare sandwich `R * w * R̃` turns `w` and also
@@ -321,8 +344,11 @@ u: g3.Vector = 1 * g3.Vector.e_1 + 2 * g3.Vector.e_2 + 3 * g3.Vector.e_3
 v: g3.Vector = 4 * g3.Vector.e_1 + 5 * g3.Vector.e_2 + 6 * g3.Vector.e_3
 show(u * v, u ^ v)
 
+# %% [markdown]
+# The dual of a bivector (a plane) is the vector perpendicular to it, like
+# $\vec{\mathbf{u}} \times \vec{\mathbf{v}}$:
+
 # %%
-# dual of a bivector (a plane) is the orthogonal vector -- like u x v
 B: g3.Bivector = u ^ v
 show(B, B.dual())
 
@@ -342,11 +368,18 @@ with create_graphs_3d(bound=9, elevation=20, azimuth=0):
         ]
     )
 
-# %%
-B.dual()  # the components of u x v
+# %% [markdown]
+# Its coefficients are the components of $\vec{\mathbf{u}} \times
+# \vec{\mathbf{v}}$:
 
 # %%
-# each unit bivector of g3.G squares to -1 (the even subalgebra is the quaternions)
+B.dual()
+
+# %% [markdown]
+# Each unit bivector of 𝒢₃ squares to $-1$, so the even subalgebra is the
+# quaternions. Predict before running:
+
+# %%
 show((g3.Vector.e_1 ^ g3.Vector.e_2) * (g3.Vector.e_1 ^ g3.Vector.e_2))
 
 # %% [markdown]
@@ -375,7 +408,7 @@ show(B, B.dual(), B * B.dual())
 # `tasks/reference/graded-subspaces-vs-subalgebras.md`.
 
 # %%
-kind(u * B)  # g3.Odd (was g3.G)
+kind(u * B)
 
 # %% [markdown]
 # The three geometric cases. For a plane `B = a ^ b`, the product `B * v` is grade 1
@@ -388,7 +421,7 @@ a3: g3.Vector = 1 * g3.Vector.e_1 + 2 * g3.Vector.e_2
 b3: g3.Vector = 3 * g3.Vector.e_1 + 1 * g3.Vector.e_2 + 1 * g3.Vector.e_3
 plane: g3.Bivector = a3 ^ b3
 perp: g3.Vector = (a3 ^ b3).dual()  # perpendicular to the plane (dual of the wedge)
-show(plane * a3, plane * perp, plane * (a3 + perp))  # all g3.Odd: {1}, {3}, {1,3}
+show(plane * a3, plane * perp, plane * (a3 + perp))
 
 # %% [markdown]
 # Query and cast. The **query** is the inherited `grades()` / `is_vector()` /
@@ -397,16 +430,24 @@ show(plane * a3, plane * perp, plane * (a3 + perp))  # all g3.Odd: {1}, {3}, {1,
 
 # %%
 in_plane: g3.Odd = plane * a3
-kind(in_plane.to_vector())  # -> g3.Vector (its grade-3 part is zero)
+kind(in_plane.to_vector())
+
+# %% [markdown]
+# and its value, narrowed to a `g3.Vector`:
 
 # %%
-show(in_plane.to_vector())  # the narrowed g3.Vector value
+show(in_plane.to_vector())
+
+# %% [markdown]
+# The perpendicular case narrows to a `g3.Trivector`:
 
 # %%
-kind((plane * perp).to_trivector())  # the perpendicular case -> g3.Trivector
+kind((plane * perp).to_trivector())
+
+# %% [markdown]
+# Casting to the wrong type raises, because the grade it would discard is nonzero:
 
 # %%
-# casting to the wrong type raises (the grade it would discard is nonzero):
 try:
     in_plane.to_trivector()
 except ValueError as error:
@@ -422,8 +463,10 @@ except ValueError as error:
 # %%
 a == 3 * e_1 + 4 * e_2
 
+# %% [markdown]
+# A few of them, typeset:
+
 # %%
-# display a few as latex
 show(a, a * b, a ^ b, R0)
 
 # %% [markdown]
@@ -443,12 +486,14 @@ P: ComposableFunction[g3.Vector] = g3.Vector.project(
 )  # a ComposableFunction, already labelled from B3
 display(Math(P.latex_repr))
 # projects onto the plane
-P(1 * g3.Vector.e_1 + 1 * g3.Vector.e_3)  # pyright: ignore[reportUnusedExpression]
+P(1 * g3.Vector.e_1 + 1 * g3.Vector.e_3)
+
+# %% [markdown]
+# Compose the projection with a translation: the pipeline shows itself as one
+# formula and applies translate-then-project to a vector. (Wrapping $P$ in a
+# `ComposableFunction` gives it a short label for the display.)
 
 # %%
-# compose the projection with a translate: the pipeline renders as one LaTeX
-# expression, and applies translate-then-project to a vector. (Wrap in a
-# ComposableFunction to give it a tidy custom label for the display.)
 pipe: ComposableFunction[g3.Vector] = compose(
     [ComposableFunction(P, "P_{B}"), translate(b=g3.Vector.e_3)]
 )

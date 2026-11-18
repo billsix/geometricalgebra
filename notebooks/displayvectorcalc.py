@@ -46,7 +46,7 @@ import sympy
 from IPython.display import display
 
 from gacalc.base import set_blade_symbols
-from gacalc.g3 import Vector, e_1, e_2, e_3
+from gacalc.g3 import Scalar, Vector, e_1, e_2, e_3
 from gacalc.measure import signed_volume
 from gacalc.vectorcalc import cross
 
@@ -65,7 +65,7 @@ k: Vector = e_3
 
 # %%
 a: Vector = 2 * i + 3 * j + 1 * k
-a  # pyright: ignore[reportUnusedExpression]
+a
 
 # %% [markdown]
 # The cross product — the dual of the wedge
@@ -86,13 +86,17 @@ display(cross(1 * k, 1 * i))  # = j
 # Symbolically, the classic coordinate formula falls out:
 
 # %%
-# Left undeclared: typed `sympy.Symbol`, pyright would read `symbol * e_1` as
-# sympy's `Expr.__mul__` (an `Expr`), not the multivector's `__rmul__`.
+a_1: sympy.Symbol
+a_2: sympy.Symbol
+a_3: sympy.Symbol
+b_1: sympy.Symbol
+b_2: sympy.Symbol
+b_3: sympy.Symbol
 a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
 b_1, b_2, b_3 = sympy.symbols("b_1 b_2 b_3")
-sym_a: Vector = a_1 * i + a_2 * j + a_3 * k
-sym_b: Vector = b_1 * i + b_2 * j + b_3 * k
-cross(sym_a, sym_b)  # pyright: ignore[reportUnusedExpression]
+sym_a: Vector = Scalar(a_1) * i + Scalar(a_2) * j + Scalar(a_3) * k
+sym_b: Vector = Scalar(b_1) * i + Scalar(b_2) * j + Scalar(b_3) * k
+cross(sym_a, sym_b)
 
 # %% [markdown]
 # Dot and the scalar triple product — already here under their GA names

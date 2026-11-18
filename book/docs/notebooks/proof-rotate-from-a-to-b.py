@@ -198,6 +198,9 @@ a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
 a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
 a
 
+# %% [markdown]
+# and $\vec{\mathbf{b}}$:
+
 # %%
 b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
 b
@@ -207,6 +210,9 @@ b
 
 # %%
 values: list[tuple[sympy.Symbol, Real]] = [(a_1, 3), (a_2, 1), (b_1, 1), (b_2, 2)]
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_A: Point = point(coordinates=list(at_values(a, values)))
@@ -274,6 +280,9 @@ at_values(a_on_axis, values)
 # %%
 at_values(b_prime, values)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_A_ON_AXIS: Point = point(coordinates=list(at_values(a_on_axis, values)))
 P_B_PRIME: Point = point(coordinates=list(at_values(b_prime, values)))
@@ -327,6 +336,9 @@ a_turned
 # %%
 at_values(a_turned, values)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_A_TURNED: Point = point(coordinates=list(at_values(a_turned, values)))
 fig_turn_2: PendingFigure
@@ -377,6 +389,9 @@ a_image
 
 # %%
 at_values(a_image, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_A_IMAGE: Point = point(coordinates=list(at_values(a_image, values)))

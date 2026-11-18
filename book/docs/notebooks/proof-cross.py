@@ -69,6 +69,9 @@ a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3", real=Tru
 a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2 + Scalar(a_3) * e_3
 a
 
+# %% [markdown]
+# and $\vec{\mathbf{b}}$:
+
 # %%
 b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2 + Scalar(b_3) * e_3
 b
@@ -87,6 +90,9 @@ values: list[tuple[sympy.Symbol, Real]] = [
 ]
 LOWER_LEFT: Point = Point(x=-2.6, y=-2.2)
 UPPER_RIGHT: Point = Point(x=5.4, y=3.6)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_A: Point = point(coordinates=list(at_values(a, values)))
@@ -176,6 +182,9 @@ at_values(a_aligned, values)
 # %%
 at_values(b_aligned, values)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_A_ALIGNED: Point = point(coordinates=list(at_values(a_aligned, values)))
 P_B_ALIGNED: Point = point(coordinates=list(at_values(b_aligned, values)))
@@ -240,6 +249,9 @@ cross_reduced
 # %%
 at_values(cross_reduced, values)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_B_REDUCED: Point = point(coordinates=list(at_values(b_reduced, values)))
 P_CROSS_REDUCED: Point = point(coordinates=list(at_values(cross_reduced, values)))
@@ -279,6 +291,9 @@ by_standard_position
 
 # %%
 at_values(by_standard_position, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_CROSS: Point = point(coordinates=list(at_values(by_standard_position, values)))

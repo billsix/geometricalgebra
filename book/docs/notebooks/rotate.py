@@ -57,6 +57,9 @@ a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
 a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
 a
 
+# %% [markdown]
+# and $\vec{\mathbf{b}}$:
+
 # %%
 b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
 b
@@ -89,6 +92,9 @@ rotated
 
 # %%
 at_values(rotated, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_A: Point = point(coordinates=list(at_values(a, values)))

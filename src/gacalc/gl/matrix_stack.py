@@ -460,6 +460,13 @@ def planar_shadow(
     Block.py does. That is a rendering concern for the call site, not the
     math -- the matrix above is the canonical one.
     """
+    a: float
+    b: float
+    c: float
+    d: float
+    dx: float
+    dy: float
+    dz: float
     a, b, c, d = plane_eq
     dx, dy, dz = -light_pos[0], -light_pos[1], -light_pos[2]
 

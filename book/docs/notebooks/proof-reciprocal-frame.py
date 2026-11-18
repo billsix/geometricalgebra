@@ -75,9 +75,15 @@ p, q, r, t, x_1, x_2 = sympy.symbols("p q r t x_1 x_2", real=True)
 a_1: MultiVectorBase = Scalar(p) * e_1 + Scalar(q) * e_2
 a_1
 
+# %% [markdown]
+# and $\vec{\mathbf{a}}_2$:
+
 # %%
 a_2: MultiVectorBase = Scalar(r) * e_1 + Scalar(t) * e_2
 a_2
+
+# %% [markdown]
+# A vector $\vec{\mathbf{y}}$ in the frame, with coordinates $x_1$ and $x_2$:
 
 # %%
 frame: list[MultiVectorBase] = [a_1, a_2]
@@ -160,6 +166,9 @@ at_values(reciprocal[0], values)
 
 # %%
 at_values(reciprocal[1], values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_A_1: Point = point(coordinates=list(at_values(a_1, values)))
@@ -512,6 +521,9 @@ space_reciprocal[1]
 
 # %%
 space_reciprocal[2]
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_B: list[Point] = [point(coordinates=list(lower)) for lower in space_frame]
