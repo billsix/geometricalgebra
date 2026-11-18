@@ -84,7 +84,13 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   needs `EPIX_COMMIT` at `8cb788a…` or later (pinned 2026-11-16; epix-mirror
   `tasks/archive/2026/11/16/figure-fit-to-points.md`). Arrowheads end exactly on their points
   (the stroked tip was overshooting by about 2.7 pen widths) from `EPIX_COMMIT` `8fe7ff3…` on
-  (pinned 2026-11-17; epix-mirror `tasks/archive/2026/11/17/arrowheads-end-on-their-points.md`). The first notebooks to use live figures are
+  (pinned 2026-11-17; epix-mirror `tasks/archive/2026/11/17/arrowheads-end-on-their-points.md`).
+  **Live figures are opaque, like the prebuilt ones.** `scene_2d` / `scene_3d` (`_frame_scene.py`)
+  and `scene_around` (`_bootstrap_live.py`) pass `background=BACKGROUND` (`_scene2d.BACKGROUND`,
+  `#f2f2f2`, the same colour as the render tool's `DEFAULT_BACKGROUND`) to `epix.figure`, which
+  flattens the PNG onto it with ImageMagick. A transparent figure reads badly on a dark-mode page.
+  This needs `EPIX_COMMIT` `797b944…` or later (pinned 2026-11-18; epix-mirror
+  `tasks/archive/2026/11/18/figure-background.md`). The first notebooks to use live figures are
   `notebooks/frame-qr-2d.py` / `frame-qr-3d.py` (`frames-qr.rst`). They add
   `book/figures/epix/` to `sys.path` to import `_frame_scene`; `pyproject.toml` lists that
   directory in ty's `extra-paths` and exempts those two files from E402. Pick per page: the

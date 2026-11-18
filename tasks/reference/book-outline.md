@@ -146,7 +146,8 @@ preserved verbatim in the appendix.
     its own cell. Use `book/figures/epix/_bootstrap_live.py` `scene_around`, which fits whatever
     points it is given, so changed values still frame. Labels follow the usual figure rules: every
     argument by keyword, each label in the colour of what it labels, and a number in a label is
-    computed at the plot values, never typed. matplotlib isn't used in the book's notebooks.
+    computed at the plot values, never typed. The helper gives every live figure the same opaque
+    `#f2f2f2` background as the prebuilt ones. matplotlib isn't used in the book's notebooks.
   - **Checks sit beside what they check, and show both sides first.** A check is three cells: the
     first side, the second side, then their difference, which shows `0`. Several facts mean several
     checks. Don't print a list of differences, don't use an `assert` or `==` (they show nothing),

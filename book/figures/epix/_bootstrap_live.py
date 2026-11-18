@@ -35,6 +35,7 @@ from _frame_scene import (
     point,
     right_angle,
 )
+from _scene2d import BACKGROUND
 
 __all__: list[str] = [
     "BLACK",
@@ -73,7 +74,12 @@ def scene_around(points: Sequence[Point]) -> Iterator[PendingFigure]:
         points=[ORIGIN2, *points], width=_WIDTH_IN, margin=_MARGIN
     )
     fig: PendingFigure
-    with epix.figure(lower_left=lower_left, upper_right=upper_right, size=size) as fig:
+    with epix.figure(
+        lower_left=lower_left,
+        upper_right=upper_right,
+        size=size,
+        background=BACKGROUND,
+    ) as fig:
         epix.font_size(size="large")
         epix.pen(color=epix.black(intensity=0.5), width=0.8)
         epix.arrow(
