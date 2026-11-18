@@ -448,7 +448,10 @@ over a "run it on your host" instruction.
   `epix.label()` on a coloured element sets `epix.label_color(color=…)` first. A book notebook may
   also draw ePiX figures **live** in its cells (`book/docs/notebooks/frame-qr-*.py`, via
   `book/figures/epix/_frame_scene.py`), which relies on `epix.figure()` resetting ePiX's global state
-  per figure (`EPIX_COMMIT` `275adef…` or later). Details:
+  per figure (`EPIX_COMMIT` `275adef…` or later). **Every ePiX figure, prebuilt or live, has the opaque
+  `#f2f2f2` background** (`_scene2d.BACKGROUND`): the render tool flattens the prebuilt PNGs onto it,
+  and the live scene helpers pass it as `epix.figure(background=…)` (`EPIX_COMMIT` `797b944…` or
+  later). Details:
   `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
 - **`make docs`** — builds the Sphinx book ("Geometry 2", `book/docs/`) to HTML + PDF into
   `output/gacalc/` (needs an image built with `BUILD_DOCS=1`, the default).

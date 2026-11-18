@@ -63,9 +63,11 @@ PURPLE_FILL: epix.Color = epix.rgb(r=0xDD / 255, g=0xCA / 255, b=0xD4 / 255)
 GREEN: epix.Color = epix.rgb(r=0.0, g=0.5, b=0.0)
 BLUE: epix.Color = epix.rgb(r=0.0, g=0.0, b=0.75)
 GRID: epix.Color = epix.black(intensity=0.8)  # light gray graph-paper lines
-# The PNGs for the HTML book are flattened onto this, the disc's own fill
+# Every ePiX PNG in the book is opaque in this colour, the disc's own fill
 # (epix.white(0.95)), so a dark-mode page shows a uniform light panel instead of a
-# transparent sheet around the disc.
+# transparent sheet: tools/render_epix_figures.py flattens the prebuilt figures onto
+# it (its DEFAULT_BACKGROUND), and the notebooks' live figures pass it to
+# epix.figure(background=...) (_frame_scene.py, _bootstrap_live.py).
 BACKGROUND: str = "#f2f2f2"
 
 

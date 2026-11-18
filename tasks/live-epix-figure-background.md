@@ -1,68 +1,62 @@
 # Live ePiX figures in the book's notebooks get the same light background as prebuilt ones
 
-**Status:** proposed — needs go-ahead (all questions answered); depends on epix-mirror
-`tasks/figure-background.md` being merged and pushed
+**Completed:** 2026-11-18 (William Emerison Six <billsix@gmail.com>)
 **Priority:** 4
 **Difficulty:** 3
 **Created:** 2026-11-16 (William Emerison Six <billsix@gmail.com>)
-**Related:** `tasks/archive/2026/11/16/bootstrap-notebooks-show-derivations.md` (made the Part III
-live figures); github.com/billsix/epix-mirror `tasks/archive/2026/11/16/figure-fit-to-points.md`
+**Related:** github.com/billsix/epix-mirror `tasks/archive/2026/11/18/figure-background.md` (the ePiX
+half); `tasks/archive/2026/11/16/bootstrap-notebooks-show-derivations.md` (made the Part III live
+figures)
 
-## BLUF
+## Outcome
 
-The maintainer (2026-11-16): the figures the Part III notebooks draw live should have a
-non-transparent background, like the prebuilt ePiX figures do. Done means:
-- every live ePiX figure in the book's notebooks has an opaque `#f2f2f2` background in the
-  notebook and in the built HTML: the six `bootstrap-*.py` notebooks, and `frame-qr-2d.py` /
-  `frame-qr-3d.py`, which have the same problem;
-- the rule is written into `CLAUDE.md` and the reference docs;
-- the gates pass.
+Every ePiX figure the book's notebooks draw live now has the opaque `#f2f2f2` background that the
+prebuilt figures already had, so none shows as a transparent sheet on a dark-mode page.
 
-## Context
+- **epix-mirror** gained `epix.figure(…, background="#rrggbb")`, which flattens the PNG with
+  ImageMagick, and the same option on `figure_around` / `render` / `Figure`. The default stays
+  transparent. It was merged and pushed as `797b944`.
+- **`Dockerfile`:** `EPIX_COMMIT` was bumped to `797b9442…`.
+- **Scene helpers:** `scene_2d` / `scene_3d` (`book/figures/epix/_frame_scene.py`) and
+  `scene_around` (`_bootstrap_live.py`) pass `background=BACKGROUND`. The constant is imported from
+  `_scene2d.py`, whose `BACKGROUND` is the disc fill and the colour of the render tool's
+  `DEFAULT_BACKGROUND`, so the literal is not repeated. Its comment now covers both paths.
+- **Docs:**
+  - `CLAUDE.md` ("ePiX in the image"): every ePiX figure, prebuilt or live, has the opaque
+    background.
+  - `tasks/reference/book-and-docs-pipeline.md`: the live path's mechanism and the pin.
+  - `tasks/reference/book-outline.md`: the notebook-style line.
 
-- **Prebuilt figures** (`book/figures/epix/*.py`, rendered by `tools/render_epix_figures.py` at
-  `make docs`): ghostscript's `pngalpha` device leaves the PNG transparent, so the tool flattens
-  every PNG with ImageMagick onto `DEFAULT_BACKGROUND = "#f2f2f2"`. A figure can override that with
-  a module-level `BACKGROUND`. The tool's comment says why: a transparent figure reads badly on a
-  dark-mode HTML page. `#f2f2f2` matches the disc fill `epix.white(0.95)`
-  (`book/figures/epix/_scene2d.py` `BACKGROUND`).
-- **Live figures** (drawn in a notebook cell inside `epix.figure()`; helpers
-  `book/figures/epix/_bootstrap_live.py` `scene_around` and `_frame_scene.py`
-  `scene_2d`/`scene_3d`) never go through that tool. The cell's output is the `_Pending` object
-  that `epix.figure()` yields. Jupyter displays it through `_repr_png_`, and myst-nb puts that PNG
-  in the HTML and the PDF. epix-mirror's `python/epix/render.py` rasterizes with
-  `gs -sDEVICE=pngalpha`, so the PNG is transparent, and nothing flattens it.
-- **Where the rules are written today:** `CLAUDE.md` ("ePiX in the image": the live-figure
-  sentence); `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures", the prebuilt vs live
-  paths); `tasks/reference/book-outline.md` ("Structural conventions", the notebook style).
+## Decisions (William Emerison Six <billsix@gmail.com>)
 
-## Plan
+1. The option lives in epix-mirror, defaulting to transparent (2026-11-16).
+2. `#f2f2f2`, one shared constant (2026-11-16).
+3. The frame-QR notebooks are included (2026-11-16).
+4. The mechanism is to flatten with ImageMagick (2026-11-18).
 
-1. After epix-mirror `tasks/figure-background.md` is merged and pushed: bump `EPIX_COMMIT` and run
-   `make image`.
-2. Pass `background=` in `scene_around`, `scene_2d` and `scene_3d`, using `#f2f2f2`, the same
-   constant the prebuilt path uses, from one shared place.
-3. Rerun the eight notebooks and check each figure's PNG has no transparent pixels. One way: an
-   ImageMagick `identify -format %[opaque]`, or a PIL alpha-channel check. Then `make docs`, and
-   look at the HTML notebook pages.
-4. Documentation:
-   - **`CLAUDE.md`:** one sentence that every ePiX figure, prebuilt or live, has the opaque
-     `#f2f2f2` background;
-   - **`book-and-docs-pipeline.md`:** the live path's mechanism;
-   - **`book-outline.md`:** a line in the notebook style.
+## Verification
 
-## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-16)
+- `make image` rebuilt from the ePiX layer.
+- `tasks/adhoc/live-epix-figure-background/check_opaque.py` (one-shot, deleted at archive) executed
+  the eight notebooks in the container with jupytext + nbconvert. All 33 figure PNGs are opaque with
+  an `F2F2F2` corner:
 
-1. **In epix-mirror.** `epix.figure` / `figure_around` / `render` gain an optional
-   `background="#rrggbb"`. The default stays transparent, so existing output doesn't change. The
-   epix-mirror half is github.com/billsix/epix-mirror `tasks/figure-background.md`; this task is
-   the geometricalgebra half: bump `EPIX_COMMIT`, then pass the background from the scene helpers.
-2. **`#f2f2f2`**, the prebuilt figures' `DEFAULT_BACKGROUND` and the disc fill. Use one shared
-   constant: the helpers import it instead of repeating the literal.
-3. **The frame-QR notebooks too.** `_frame_scene.py` `scene_2d` / `scene_3d` get the same
-   background as `_bootstrap_live.py` `scene_around`.
+  | Notebook | Figures |
+  | --- | --- |
+  | `bootstrap-product` | 2 |
+  | `bootstrap-projection` | 4 |
+  | `bootstrap-projection-from-product` | 1 |
+  | `bootstrap-rotation` | 2 |
+  | `bootstrap-rotation-from-product` | 2 |
+  | `bootstrap-rotation-from-projection` | 2 |
+  | `frame-qr-2d` | 11 |
+  | `frame-qr-3d` | 9 |
 
-## Open questions
-
-None. The task is ready to start on your go-ahead. It depends on the epix-mirror half being merged
-and pushed, because `EPIX_COMMIT` is fetched from GitHub.
+  One `frame-qr-2d` figure was viewed.
+- ruff and `tools/check_epix_keywords.py` were clean on the helpers.
+- `make docs` passed (HTML + PDF).
+  - Every PNG the HTML pages reference is opaque: 111 images, 63 of them notebook outputs.
+  - `output/gacalc/html/_images/` also holds 219 transparent PNGs that no page references. They are
+    left over from earlier builds, because the output directory is not cleaned.
+  - The build's warnings predate this change: four short title underlines, a duplicate
+    `InvertibleFunction` cross-reference target, and the kernel's TCP notices.

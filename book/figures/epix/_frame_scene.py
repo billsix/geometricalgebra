@@ -24,7 +24,7 @@ from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 
 import epix
-from _scene2d import BLUE, GREEN, PURPLE, PURPLE_FILL, UNIT_SCALE_IN
+from _scene2d import BACKGROUND, BLUE, GREEN, PURPLE, PURPLE_FILL, UNIT_SCALE_IN
 from _scene3d import PendingFigure
 from epix import LabelPos, Point
 
@@ -98,7 +98,12 @@ def scene_2d(lower_left: Point, upper_right: Point) -> Iterator[PendingFigure]:
     height: float = upper_right.x2() - lower_left.x2()
     size: str = f"{width * UNIT_SCALE_IN:.2f}x{height * UNIT_SCALE_IN:.2f}in"
     fig: PendingFigure
-    with epix.figure(lower_left=lower_left, upper_right=upper_right, size=size) as fig:
+    with epix.figure(
+        lower_left=lower_left,
+        upper_right=upper_right,
+        size=size,
+        background=BACKGROUND,
+    ) as fig:
         epix.font_size(size="large")
         epix.pen(color=epix.black(intensity=0.5), width=0.8)
         epix.arrow(
@@ -127,7 +132,12 @@ def scene_3d(
     height: float = upper_right.x2() - lower_left.x2()
     size: str = f"{width * scale_in:.2f}x{height * scale_in:.2f}in"
     fig: PendingFigure
-    with epix.figure(lower_left=lower_left, upper_right=upper_right, size=size) as fig:
+    with epix.figure(
+        lower_left=lower_left,
+        upper_right=upper_right,
+        size=size,
+        background=BACKGROUND,
+    ) as fig:
         epix.font_size(size="large")
         epix.camera.at(CAMERA)
         epix.pen(color=epix.black(intensity=0.5), width=0.8)
