@@ -1,6 +1,6 @@
 # `Frame.to_invertible_function`: does `term_and_coordinate` still earn its place?
 
-**Status:** proposed — needs go-ahead (open questions below)
+**Status:** proposed — questions answered 2026-11-18; needs the go-ahead to start
 **Priority:** 6
 **Difficulty:** 2
 **Created:** 2026-11-18 (William Emerison Six <billsix@gmail.com> asked: "is def term_and_coordinate
@@ -80,11 +80,11 @@ reference doc matches.
    - the `frame.py` doctests;
    - container `make format` / `make test`.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-18)
+
+1. **Form (a):** one `coordinate(y, v, m)` function reading the coordinate as the ratio of the two projections, `coordinate_along(y.projected_onto(m), along=v.projected_onto(m))`; the peel forms its term as `x * v`.
+2. **Keep the line-to-line framing in the reference doc** as the geometric explanation beside the code's direct ratio.
+
 ## Open questions
 
-1. **Which form:** (a) one `coordinate` function as the ratio of two projections (recommended:
-   fewest steps, still named operations), (b) keep the line-to-line-projection inverse but return
-   only the term, or (d) a new `transforms` library function?
-2. **Under (a) or (b): keep the line-to-line framing in the reference doc** as the geometric
-   explanation, even though the code reads the ratio directly? Recommended: yes, as the "why"
-   beside the code's "how".
+None.

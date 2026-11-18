@@ -1,6 +1,6 @@
 # Bring the notebooks up to `notebooks/displaymv.py`, and sharpen the guidance from it
 
-**Status:** proposed — needs go-ahead (open questions below)
+**Status:** proposed — questions answered 2026-11-18; needs the go-ahead to start
 **Priority:** 5
 **Difficulty:** 6
 **Created:** 2026-11-18 (William Emerison Six <billsix@gmail.com>: "I love notebooks/displaymv.py …
@@ -103,29 +103,28 @@ narrative, carries developer noise, and covers many subjects in one file.
    - question or claim headings;
    - prediction prompts where they fit;
    - developer noise moved out of the student's path;
-   - a proof section where the notebook's subject has a law to prove (`show_cancellation`).
+   - a proof section where the notebook's subject has a law to prove (`show_cancellation`);
+   - the bold-arrow notation in the Markdown (`\vec{\mathbf{e}}_1`, `\mathbf{e}_{12}`), including
+     in `displaymv.py` itself (decision 4).
+
+   `displayg2.py` and `displayg3.py` are split into one-subject notebooks first (decision 5). After
+   the demo notebooks, re-sweep the book notebooks (`book/docs/notebooks/*.py`) against qualities
+   9–15 (decision 1). Unifying the two kinds of notebook is the separate, not-yet-authorized
+   `tasks/unify-demo-and-book-notebooks.md`.
 3. Gates for each notebook: a headless run (Agg), `make check-notebooks`, `make format`, and
    `tools/check_annotations.py` (no new rows).
-4. If question 5 says to split notebooks, split them first, and fix every link to the old files
-   (README, `CLAUDE.md`, other notebooks).
+4. When splitting, fix every link to the old files (README, `CLAUDE.md`, other notebooks, the
+   `make notebooks-ipynb` list if any).
+
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-18)
+
+1. **Scope: (b), the book notebooks too.** Why the demo and book notebooks differ, and a plan to unify them while they stay in the book, is a separate task, `tasks/unify-demo-and-book-notebooks.md`. That one is NOT started until the maintainer says so explicitly.
+2. **Qualities 9–15 confirmed** ("sure").
+3. **Prediction prompts as `displaymv.py` has them:** a handful per notebook, where a student can genuinely predict.
+4. **The bold-arrow notation applies to every notebook, wherever it lives**, `displaymv.py` included. `CLAUDE.md` › "Math notation for readers" now says so.
+5. **Split `displayg2.py` and `displayg3.py`** into one-subject notebooks.
+6. **Keep `displaymv.py`'s grams-to-moles aside as it is.** The guidance's "one notebook, one subject" allows a short, labelled aside like it.
 
 ## Open questions
 
-1. **Scope:** (a) the demo notebooks under `notebooks/` only (recommended; the book notebooks were
-   swept on 2026-11-16 and measure well), or (b) re-sweep the book notebooks too, against the new
-   qualities 9–15?
-2. **Are qualities 9–15 what you like?** Confirm, strike, or add. Also: what draws you to
-   `displaymv.py` that is not in 1–15?
-3. **Prediction prompts:** use them wherever a student could predict (as `displaymv.py` does, a
-   handful per notebook), or more often?
-4. **Notation in the demo notebooks:** `displaymv.py` writes plain `$e_1$` in its Markdown, while
-   `CLAUDE.md` says notebook Markdown writes a basis vector as `\vec{\mathbf{e}}_1` (the 2026-11-17
-   rule). (a) Apply the bold-arrow rule to the demo notebooks, `displaymv.py` included (recommended,
-   for consistency with the output), or (b) keep plain letters in the demo notebooks, as
-   `displaymv.py` does?
-5. **One notebook, one subject:** (a) split `displayg2.py` (718 lines) and `displayg3.py` into
-   one-subject notebooks (recommended; the doc's "What to avoid" says so), or (b) keep each file and
-   add the narrative?
-6. **`displaymv.py`'s own drift:** its "An aside: units as basis vectors" (grams to moles) is a
-   second subject, which the doc warns against. (a) Keep it as a labelled aside (you may like it),
-   or (b) move it out?
+None.

@@ -555,7 +555,8 @@ sweep that applied them is `tasks/archive/2026/10/09/math-notation-parens-star-n
   `src/gacalc/base.py`): a vector `\vec{\mathbf{a}}`, a unit vector `\hat{\mathbf{a}}`, a basis
   vector `\vec{\mathbf{e}}_1`, and a blade of grade 2 or more one bold `\mathbf{e}_{12}`, with no
   arrow and not written as `e_1 e_2`. Scalars, coordinates (`a_1`), angles, and capital multivectors
-  and rotors (`R`, `B`) stay plain. This covers book pages, notebook Markdown and figure labels
+  and rotors (`R`, `B`) stay plain. This covers book pages, the Markdown of every notebook (the book's
+  and the demo notebooks under `notebooks/` alike) and figure labels
   (William Emerison Six <billsix@gmail.com>, 2026-11-17). Put the accent outside the bold,
   `\vec{\mathbf{a}}`: lualatex draws `\mathbf{\vec{a}}`'s arrow from the bold text font, as a
   garbled glyph. Spell it out: Jupyter does not see Sphinx's MathJax macros. Python docstrings and
