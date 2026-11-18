@@ -1,59 +1,39 @@
 # Composable-function layer — follow-ups (naming + animation-layer placement)
 
-**Status:** proposed — not started (spun off from the completed composable-function refactor, 2026-07-17)
+**Completed:** 2026-11-18 (William Emerison Six <billsix@gmail.com>; authorized batch
+`ready-tasks-batch-2026-11-18`)
 **Priority:** 6
 **Difficulty:** 4
 **Created:** 2026-07-17
-**See:** `tasks/reference/transform-and-composable-function-layer.md` (added 2026-08-27) — a current-state
-map of the exact public API surface (`functions.py`/`transforms.py`) this naming/placement reassessment
-would rename or relocate. Read it first.
 
-## BLUF
+## Outcome
 
-Two deferred polish questions on the composable-function layer: (1) whether the `functions` and
-`transforms` module names read well to a newcomer, and (2) whether an animation layer belongs on
-`ComposableFunction` or only on `InvertibleFunction`. Done means each has a recorded decision, and any
-rename or move it calls for is made with a `CHANGELOG.md` entry (a public rename is breaking).
+The 0.0.9 composable-function refactor (`tasks/archive/2026/07/17/reassess-composable-function-interface.md`)
+left two questions open. Both were decided with no rename and no move, so the public API did not
+change and there is no changelog entry. The decisions and their reasons are in
+`tasks/reference/transform-and-composable-function-layer.md`, "Module names and the animation layer's
+place".
 
-## Context
+1. **Module names.** `gacalc.transforms` stays the public name and is documented as the one entry
+   point; its module docstring now says it re-exports the whole `gacalc.functions` leaf. That
+   docstring had also placed the animation layer on `InvertibleFunction`, which was wrong, and is
+   fixed. Neither module was renamed:
+   - modelviewprojection imports `gacalc.transforms`;
+   - `base.py`, `frame.py` and the generated modules import `gacalc.functions`, so underscoring it
+     would churn the generator for nothing a user sees.
 
-The composable-function interface refactor landed in gacalc 0.0.9 (see the archived
-`reassess-composable-function-interface.md`): a leaf `functions.py` with `ComposableFunction` +
-`InvertibleFunction`, `project`/`reject` returning `ComposableFunction`, `reflect`/`identity`
-returning `InvertibleFunction`, `labeled` removed, `Self` typing dropped. These two items were
-deferred out of that work as separate, non-blocking polish.
+   The type names `ComposableFunction` / `InvertibleFunction` were already settled on 2026-08-28.
+2. **Animation layer.** `at` / `steps` stay on `ComposableFunction`, as the task had leaned:
+   interpolating a projection is display, not inversion. Moving them would remove only the 4-line
+   `InvertibleFunction.at` cast override. The `@` / `compose` overloads exist for composition and
+   would stay either way.
 
-## 1. Reassess the `functions` vs `transforms` module names (newcomer's view)
+## Judgment call
 
-The leaf-vs-consumer split is an *internal* layering concern; a newcomer just wants good names and
-shouldn't need to know about leaves / import-acyclicity to find things. Since `transforms`
-re-exports everything from `functions` (`ComposableFunction`, `InvertibleFunction`, `compose`,
-`inverse`, …), a user can already `from gacalc.transforms import …` and never touch `functions`.
+These were the task's own questions, and the batch was authorized without asking them again. Both
+answers keep the current API, so nothing breaks for consumers. Undoing either one later means doing
+the rename or the move then.
 
-Assess:
-- (a) Is "transforms" still the right *public* name, or should the user-facing module be renamed
-  (e.g. `functions` / `morphisms` / `maps`), with the GA-specific *factories* under a clearer name?
-- (b) Should `functions` be treated as private/internal (underscore-prefixed, or just documented as
-  "don't import directly — use `transforms`") so there's **one** obvious public entry point?
+## Verification
 
-Goal: a newcomer sees good names and one place to import from, with the leaf split invisible.
-
-**Type names: SETTLED** (William Emerison Six <billsix@gmail.com>, 2026-08-28) —
-`ComposableFunction` / `InvertibleFunction` stay (pedagogy over vocabulary; the math names —
-endomorphism / automorphism — are documented as "also known as" in the docstrings and in
-`tasks/reference/composable-function-algebraic-identity.md`). Only the *module*-name questions
-(a)/(b) above remain open in this item.
-
-## 2. Where does the animation layer sit — base or invertible subtype?
-
-The animation layer (`interpolate` / `components` / `at` / `steps`) currently lives on the base
-`ComposableFunction`. That's what made `compose` / `at` have to thread the invertible-vs-not return
-type through interpolation (the overloads + the `InvertibleFunction.at` override). Decide whether it
-belongs on the base (interpolating a projection for display is reasonable — **lean: base, it's
-display not inversion**) or only on `InvertibleFunction`. If it moves to the subtype, some of the
-overload/override machinery may simplify.
-
-## Notes
-
-- Both are cross-repo-visible if they change public names/imports (mvp imports from
-  `gacalc.transforms`); coordinate a version bump + mvp pin as with the core change.
+ruff passed and `src/gacalc/transforms.py`'s doctests passed (21).

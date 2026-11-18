@@ -114,11 +114,23 @@ still imports nothing from gacalc and the graph stays acyclic. The maintainer as
 work to be reachable as a method on the function type; this is the cheapest shape that honours both
 that and the leaf rule. Do not promote those imports to module level.
 
-## Follow-on
+## Module names and the animation layer's place (decided 2026-11-18)
 
-`tasks/composable-function-followups.md` — the naming reassessment (`functions` vs `transforms` public
-name; animation-layer placement). That reassessment is much easier to do well against this map, which
-lays out the exact public API surface it would rename/relocate.
+Two questions were left over from the 0.0.9 refactor and were settled in
+`tasks/archive/2026/11/18/composable-function-followups.md`, with no code change:
+
+- **`gacalc.transforms` is the one public entry point.** It re-exports all of `functions.py`
+  (`ComposableFunction`, `InvertibleFunction`, `compose`, `inverse`, `identity`, `Linearity`), so a
+  user imports from `transforms` and never needs to know about the leaf split. Its module
+  docstring says so. Renaming either module was rejected:
+  - modelviewprojection imports `gacalc.transforms`, so a rename would break it;
+  - `base.py`, `frame.py` and the generated `g*.py` import the leaf `gacalc.functions`, so
+    underscoring it would churn the generator for nothing a user sees.
+- **The animation layer (`at` / `steps`, the `interpolate` / `components` fields) stays on
+  `ComposableFunction`.** Interpolating a projection for display is reasonable, because it is
+  display, not inversion. Moving the layer to `InvertibleFunction` would delete only the 4-line
+  `InvertibleFunction.at` override, which narrows the return type with a `cast`. The `@` /
+  `compose` overloads exist for composition, not for `at`, so they would stay.
 
 ## Cross-links
 
