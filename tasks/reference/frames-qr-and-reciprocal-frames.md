@@ -86,62 +86,62 @@ last vector. It computes the same coordinates as the two steps above; the next s
 
 ## The peel inverse, step by step
 
-`Frame.to_invertible_function(inverse_method=InverseMethod.PEEL)` (`src/gacalc/frame.py`) inverts
-`f(x) = Σ_i x_i * v_i` with a head-first `match` recursion over pairs `(u_i, v_i)`: `case []` returns
-no coordinates, and `case [(u, v), *later]` solves the first coordinate and recurses on `later`. The
-`u_i` are the frame **orthogonalized from its last vector**: `u_i` is `v_i` with
-`span(v_{i+1} … v_k)` rejected out of it. That is `make_orthogonal_frame` of the reversed frame,
-reversed back, computed once when the map is built. `Frame`'s own `orthogonal_vectors()` keeps the
-first-to-last order and is not changed.
+`Frame.to_invertible_function(inverse_method=InverseMethod.PEEL)` (`src/gacalc/frame.py`) inverts `f(x) = Σ_i x_i * v_i` with a `match`
+recursion over the pairs `(w_i, v_i)`: `case []` returns no coordinates, `case [*earlier, (w, v)]` solves
+the last one and recurses on `earlier`.
 
-**One step.** Let `y = Σ_{i ≤ k} x_i * v_i`, and let `(u_1, v_1)` be the first pair.
+**One step.** Let `y = Σ_{i ≤ k} x_i * v_i`, and let `(w_k, v_k)` be the last pair.
 
-1. **Read the first coordinate.** `u_1` is perpendicular to every later frame vector, so dotting `y`
-   with it kills every later term: `u_1 · y = x_1 * (u_1 · v_1)`. And `u_1 · v_1 = |u_1|²`, since `v_1`
-   is `u_1` plus a part lying in the later span. So `x_1 = (u_1 · y) / |u_1|²`. Geometrically, that is
-   how far `y` sticks out of the plane (or line) of the later vectors, divided by how far `v_1` does.
-2. **Remove that vector's contribution.** `y − x_1 * v_1 = Σ_{i > 1} x_i * v_i`, which lies in
-   `span(v_2 … v_k)`: `y` slides along `v_1` until it lands in the span of the rest.
-3. **Repeat on the rest of the frame.** `u_2` is perpendicular to `v_3 … v_k`, so step 1 applies
-   again. After `k` steps the remainder is the zero vector and every coordinate has been read.
+1. **Read the last coordinate.** `w_k` is `v_k` with `span(v_1 … v_{k-1})` rejected out of it, so it is
+   perpendicular to every earlier frame vector. Dotting `y` with it kills every earlier term:
+   `w_k · y = x_k * (w_k · v_k)`. And `w_k · v_k = |w_k|²`, since `v_k` is `w_k` plus a part lying in the
+   earlier span, which `w_k` is perpendicular to. So `x_k = (w_k · y) / |w_k|²`. Geometrically,
+   `(w_k · y) / |w_k|²` is the length of `y`'s shadow on the `w_k` direction, measured in units of
+   `|w_k|`: how far `y` sticks out of the plane (or line) of the earlier vectors, divided by how far
+   `v_k` does.
+2. **Remove that vector's contribution.** `y − x_k * v_k = Σ_{i < k} x_i * v_i`, which lies in
+   `span(v_1 … v_{k-1})`. Geometrically, `y` slides along `v_k` until it lands in the earlier span.
+3. **Repeat on the smaller frame.** For `v_1 … v_{k-1}`, the last orthogonal vector `w_{k-1}` is
+   perpendicular to `v_1 … v_{k-2}`, so step 1 applies again. After `k` steps the remainder is the zero
+   vector and every coordinate has been read.
 
-**Worked example in 2D.** Frame `v_1 = 2 * e_1`, `v_2 = 1 * e_1 + 3 * e_2`. Orthogonalized from the end:
-`u_2 = v_2`, and `u_1 = v_1 − ((v_1 · v_2) / |v_2|²) * v_2 = 9/5 * e_1 − 3/5 * e_2`. Take
-`y = 3 * e_1 + 3 * e_2`.
+**Worked example in 2D.** Frame `v_1 = 2 * e_1`, `v_2 = 1 * e_1 + 3 * e_2`; orthogonal set
+`w_1 = 2 * e_1`, `w_2 = 3 * e_2`; `y = 3 * e_1 + 3 * e_2`.
 
-- `x_1 = (u_1 · y) / |u_1|² = (18/5) / (18/5) = 1`.
-- Remainder: `y − 1 * v_1 = 1 * e_1 + 3 * e_2`. `y` slid along `v_1` onto the line of `v_2`.
-- `x_2 = (u_2 · v_2) / |u_2|² = 1`.
+- `x_2 = (w_2 · y) / |w_2|² = 9 / 9 = 1`: `y` is 3 units above the `e_1` line, and so is `v_2`.
+- Remainder: `y − 1 * v_2 = 2 * e_1`. `y` slid down along `v_2` onto the line of `v_1`.
+- `x_1 = (w_1 · 2 * e_1) / |w_1|² = 4 / 4 = 1`.
 - So `x = 1 * e_1 + 1 * e_2`, and indeed `f(x) = 1 * v_1 + 1 * v_2 = y`.
 
-**In 3D** the first step measures how far `y` sticks out of the plane of `v_2, v_3` (along `u_1`),
-slides `y` along `v_1` into that plane, and the rest is the 2D case.
+**In 3D** the first step measures `y`'s height above the plane of `v_1, v_2` (along `w_3`), slides `y`
+along `v_3` down into that plane, and the rest is the 2D example.
 
-**Why the orthogonalization runs backwards.** At each step the peel needs a direction perpendicular to
-every frame vector still to be solved except the current one. Orthogonalizing in frame order (as
-`make_orthogonal_frame` and Hestenes' prefix blades `A_k = v_1 ∧ … ∧ v_k` do) makes `w_k` perpendicular
-to everything *before* it, so a peel over the `w_k` must start at the end. Until 2026-11-18 the peel
-did exactly that, `case [*earlier, (w, v)]`. The maintainer prefers recursion that handles the head
-first (William Emerison Six <billsix@gmail.com>, 2026-11-06), so the orthogonalization was turned
-around instead of the recursion. This is the general fix for an algorithm that seems to need the tail
-first: change how its data is built so the head can go first.
+**Why the order is last-first.** The peel needs, at each step, a direction perpendicular to every frame
+vector except the one being solved. Orthogonalizing in frame order (as `make_orthogonal_frame` and
+Hestenes' prefix blades `A_k = v_1 ∧ … ∧ v_k` do) gives exactly one such direction, the last `w_k`. The
+first vector's `w_1` is `v_1` itself, which is not perpendicular to the others, so `w_1 · y` mixes every
+coordinate. So the peel is back-substitution against QR's triangular `R`, and its natural recursion is
+`[*earlier, last]`.
 
-Two concerns about the head-first form were raised on 2026-11-04 and no longer apply:
-- **The stored set would lose frame order.** It does not: the backward set is computed only inside
-  `to_invertible_function`, and `Frame` keeps its `w_1 = v_1` set, the below-diagonal zeros of
-  `coefficients()`, and the prefix-blade volume relation.
-- **A second symbolic orthogonalization.** The peel needs one orthogonalization either way; it is now
-  the backward one instead of `orthogonal_vectors()`.
+**A head-first version was tried and reverted (2026-11-18).** The peel was rewritten to match
+`[(z, v), *later]` over a second orthogonal set, `z_i`, which was the frame orthogonalized from its last
+vector (`reversed(make_orthogonal_frame(vectors[::-1]))`). It returned the same coordinates, but the
+maintainer (William Emerison Six <billsix@gmail.com>) judged the code worse, for three reasons:
+- the `z_i` exist nowhere else: not in `Frame`, the book's notebooks, this doc's QR story, or the Lean
+  model;
+- reversing, orthogonalizing and reversing back is the reversal moved into the data, not removed. It is
+  the same last-first solve run on the reversed frame;
+- it no longer mirrored the Lean `invPeel`, which peels from the last vector.
 
-Matching `[head, *tail]` on the *reversed* pairs, by contrast, would only have rearranged the same
-last-first computation.
+The tail-first peel over `orthogonal_vectors()` was restored
+(`tasks/archive/2026/11/18/frame-peel-order-and-forward-reference.md`). Two other head-first options had
+been rejected earlier (William Emerison Six <billsix@gmail.com>, 2026-11-04):
+- **matching `[head, *tail]` on the reversed pairs**, which only rearranges the same computation;
+- **storing the reversed orthogonalization in `Frame`**, which would break the `w_1 = v_1` convention,
+  the below-diagonal zeros of `coefficients()`, and the prefix-blade volume relation.
 
-The Lean model (`ReciprocalFrame2D.lean` / `ReciprocalFrame3D.lean`, `invPeel`) still peels from the
-last vector. A frame's coordinates are unique, so the two peels return the same result, and
-`invReciprocal_eq_invPeel` plus the Python round-trip tests cover both.
-
-The order-free version is the reciprocal frame, the default: `x_i = vⁱ · y`, each coordinate one dot
-product (below, and `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`).
+The order-free version is the reciprocal frame: `x_i = vⁱ · y`, each coordinate one dot product (below,
+and `tasks/archive/2026/11/07/reciprocal-frame-hestenes.md`).
 
 ## Why gacalc's `Frame` uses the orthogonal set, not the orthonormal one
 
@@ -343,9 +343,9 @@ the height positive. So eq 3.7 builds `n̂ / (n̂ · v_k)` in one product.
 - `x_2`: the face `H_2` is the line of `v_1`, the `e_1` axis, with normal `e_2`. The height of `y` is 3,
   and the height of `v_2` is 3. So `x_2 = 1` and `v² = 1/3 * e_2`.
 
-**The peel is the same triangle, for the first vector still to be solved.** For `v_1`, the face is
-`span(v_2 … v_k)`. Its unit normal is `u_1 / |u_1|`, and the height of `v_1` above it is `|u_1|`. So
-`x_1 = (u_1 · y) / |u_1|²`, which is the peel's step 1 ("The peel inverse, step by step"). The peel finds
+**The peel is the same triangle, for the last vector.** For `v_k`, the face is `span(v_1 … v_{k-1})`. Its
+unit normal is `w_k / |w_k|`, and the height of `v_k` above it is `|w_k|`. So
+`x_k = (w_k · y) / |w_k|²`, which is the peel's step 1 ("The peel inverse, step by step"). The peel finds
 one face normal by rejection and then shrinks the frame. The reciprocal frame finds every face normal at
 once, so no coordinate waits on another.
 
@@ -361,9 +361,9 @@ inverse, and `transforms.line_to_line_projection(from_vector=v_i, to_vector=n)` 
     x_i * v_i = line_to_line_projection(from_vector=v_i, to_vector=n).inverse(P_n(y))
     x_i       = coordinate_along(x_i * v_i, along=v_i)
 
-with `n = vⁱ` for the reciprocal inverse and `n = u_1` for the peel's first vector (then subtract the term
-and recurse on the rest). On the worked example, `n = w_2`, `v²` and `v¹` each give `x = 1`; `n = w_1`,
-which is not perpendicular to `v_2`, gives `3/2`.
+with `n = vⁱ` for the reciprocal inverse and `n = w_k` for the peel's last vector (then subtract the term
+and recurse). On the worked example, `n = w_2`, `v²` and `v¹` each give `x = 1`; `n = w_1`, which is not
+perpendicular to `v_2`, gives `3/2`.
 
 **Cost (measured 2026-11-07, symbolic `Gn`).** The full `pytest` suite took 6:19 with the dot-product
 forms, 12:15 once the coefficients were read as projections, and 26:38 with both inverses written as

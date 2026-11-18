@@ -840,48 +840,43 @@ class Frame:
         one another.  The reciprocal vectors are computed once, when the map is
         built.
 
-        ``inverse_method=InverseMethod.PEEL`` **peels the frame from its first
-        vector**.  It needs, for each ``v_i``, a vector perpendicular to every
-        *later* frame vector, so the frame is orthogonalized from its last vector
-        backwards: ``u_i`` is ``v_i`` with the span of ``v_{i+1} … v_k`` rejected out
-        of it (:func:`make_orthogonal_frame` of the reversed frame, reversed back;
-        computed once, when the map is built).  Each step:
+        ``inverse_method=InverseMethod.PEEL`` **peels the frame from its last
+        vector**, using the orthogonal set (:meth:`orthogonal_vectors`, computed
+        once, when the map is built).  Each step:
 
-        1. **Read the first coordinate.**  ``u_1`` is perpendicular to
-           ``v_2 … v_k``, so ``n = u_1`` gives the first term, ``x_1 * v_1``.
-        2. **Remove it.**  ``y - x_1 * v_1`` equals ``Σ_{i > 1} x_i * v_i``: a vector
-           in the span of the frame vectors after the first.
-        3. **Repeat on the rest of the frame.**  That remainder is the same problem
-           for ``v_2 … v_k``, and ``u_2`` is perpendicular to every vector after it,
-           so step 1 applies.  The recursion stops when no vectors remain.
+        1. **Read the last coordinate.**  ``w_k`` is ``v_k`` with the span of
+           ``v_1 … v_{k-1}`` rejected out of it, so it is perpendicular to every
+           earlier frame vector: ``n = w_k`` gives the last term, ``x_k * v_k``.
+        2. **Remove it.**  ``y - x_k * v_k`` equals ``Σ_{i < k} x_i * v_i``: a vector
+           in the span of the first ``k - 1`` frame vectors.
+        3. **Repeat on the smaller frame.**  That remainder is the same problem for
+           ``v_1 … v_{k-1}``, whose last orthogonal vector ``w_{k-1}`` is again
+           perpendicular to every vector before it, so step 1 applies to it.  The
+           recursion stops when no vectors remain.
 
         Worked example, the frame ``v_1 = 2 * e_1``, ``v_2 = 1 * e_1 + 3 * e_2``
-        (orthogonalized from the end: ``u_2 = v_2``, and
-        ``u_1 = 9/5 * e_1 - 3/5 * e_2``, which is ``v_1`` with ``v_2`` rejected out)
-        and ``y = 3 * e_1 + 3 * e_2``: ``P_{u_1}(y)`` is the projection of
-        ``1 * v_1`` onto ``u_1``, so ``x_1 = 1``; the remainder is
-        ``y - 1 * v_1 = 1 * e_1 + 3 * e_2``, which is ``1 * v_2``, so ``x_2 = 1``.
+        (orthogonal set ``w_1 = 2 * e_1``, ``w_2 = 3 * e_2``) and
+        ``y = 3 * e_1 + 3 * e_2``: ``P_{w_2}(y) = 3 * e_2``, and the point on
+        ``v_2``'s line with that projection is ``1 * v_2``, so ``x_2 = 1``; the
+        remainder is ``y - 1 * v_2 = 2 * e_1``, which is ``1 * v_1``, so ``x_1 = 1``.
         The reciprocal frame ``v¹ = 1/2 * e_1 - 1/6 * e_2``, ``v² = 1/3 * e_2`` gives
         the same ``x = 1 * e_1 + 1 * e_2``.
 
-        The order follows the orthogonalization.  The frame's own orthogonal set
-        (:meth:`orthogonal_vectors`) is built first-to-last, and with it only the
-        last vector is perpendicular to all the earlier ones, so a peel over it has to
-        start at the end; orthogonalizing last-to-first is what lets the peel start
-        at the head.  Either way it is back-substitution in QR terms, read
-        geometrically, with no row reduction and no coefficient table; see
-        ``tasks/reference/frames-qr-and-reciprocal-frames.md``, "The peel inverse,
-        step by step".
+        The peel's order is forced: with the frame orthogonalized first-to-last, only
+        the last orthogonal vector is perpendicular to *all* the others, so the first
+        coordinate that can be read off directly is the last one.  This is
+        back-substitution (``x = R⁻¹ * Qᵀ * y`` in QR terms), read geometrically, with
+        no row reduction and no coefficient table; see
+        ``tasks/reference/frames-qr-and-reciprocal-frames.md``, "The peel inverse, step
+        by step".
 
         Machine-checked for ``n = 2`` and ``3``
         (``proofs/GacalcProofs/ReciprocalFrame2D.lean`` / ``ReciprocalFrame3D.lean``):
         both inverses undo the forward map on both sides (``invReciprocal_frameMap``,
         ``frameMap_invReciprocal``, ``invPeel_frameMap``, ``frameMap_invPeel``) and
-        agree (``invReciprocal_eq_invPeel``); the last reciprocal vector is the last
-        rejection over its squared length (``recip2_eq_reject_div`` /
-        ``recip3_eq_reject_div``).  The Lean ``invPeel`` peels from the last vector;
-        the coordinates of ``y`` in a frame are unique, so it and this head-first
-        peel return the same result.
+        agree (``invReciprocal_eq_invPeel``); the peel's last reciprocal vector is the
+        last rejection over its squared length (``recip2_eq_reject_div`` /
+        ``recip3_eq_reject_div``).
 
         The frame must span the whole space (``k = n``), or the forward map would
         discard the components along ``e_{k+1} …`` and could not be inverted.  ``n``
@@ -891,7 +886,7 @@ class Frame:
         Args:
             inverse_method: how the inverse recovers the coordinates:
                 ``InverseMethod.RECIPROCAL`` (default; read through each ``vⁱ``) or
-                ``InverseMethod.PEEL`` (back-substitution from the first frame
+                ``InverseMethod.PEEL`` (back-substitution from the last frame
                 vector).  Keyword-only.
 
         Returns:
@@ -984,7 +979,7 @@ class Frame:
             )
 
         def backward_by_peel(
-            backward_orthogonal: tuple[MultiVectorBase, ...], y: MultiVectorBase
+            orthogonal_vectors: tuple[MultiVectorBase, ...], y: MultiVectorBase
         ) -> MultiVectorBase:
             def peel(
                 remaining: Sequence[tuple[MultiVectorBase, MultiVectorBase]],
@@ -994,17 +989,18 @@ class Frame:
                     case []:
                         # No vectors left: nothing to solve.
                         return []
-                    case [(u, v), *later]:
-                        # One or more vectors.  u is perpendicular to every vector in
-                        # later, so it reads this vector's term of y.  Subtracting
-                        # the term leaves a y built from the later vectors alone;
-                        # put this coordinate first, then solve those the same way.
+                    case [*earlier, (w, v)]:
+                        # One or more vectors.  w is perpendicular to every vector in
+                        # earlier, so it reads this vector's term of y.  Subtracting
+                        # the term leaves a y built from the earlier vectors alone;
+                        # solve those coordinates the same way, and put this one
+                        # after them.
                         term: MultiVectorBase
-                        x_first: Real
-                        term, x_first = term_and_coordinate(y, v=v, m=u)
-                        return [x_first, *peel(later, y - term)]
+                        x_last: Real
+                        term, x_last = term_and_coordinate(y, v=v, m=w)
+                        return [*peel(earlier, y - term), x_last]
                     case _:
-                        # Unreachable: [] and [first, *later] cover every list.  Kept
+                        # Unreachable: [] and [*earlier, last] cover every list.  Kept
                         # as the total default because ty does not prove list-pattern
                         # exhaustiveness, so the match needs an explicit catch-all.
                         return []
@@ -1012,15 +1008,15 @@ class Frame:
             MultiVectorBase.require_vector(y)
             cls: type[MultiVectorBase] = type(y)
             # basis_vector numbers the basis from 1, hence enumerate(start=1).  The
-            # tuple(zip(...)) argument to peel is the pairs: each u_i with the frame
-            # vector it came from, (u_i, v_i), in frame order; peel consumes them
-            # from the front.
+            # tuple(zip(...)) argument to peel is the pairs: each orthogonal vector
+            # with the frame vector it came from, (w_i, v_i), in frame order; peel
+            # consumes them from the end.
             return sum(
                 (
                     cls.basis_vector(i) * x_i
                     for i, x_i in enumerate(
                         peel(
-                            tuple(zip(backward_orthogonal, self.vectors, strict=True)),
+                            tuple(zip(orthogonal_vectors, self.vectors, strict=True)),
                             y,
                         ),
                         start=1,
@@ -1038,10 +1034,8 @@ class Frame:
                     backward_by_reciprocal, self.reciprocal_vectors()
                 )
             case InverseMethod.PEEL:
-                # the frame orthogonalized from its last vector, u_i ⟂ v_{i+1} … v_k
                 backward = functools.partial(
-                    backward_by_peel,
-                    tuple(reversed(make_orthogonal_frame(self.vectors[::-1]))),
+                    backward_by_peel, self.orthogonal_vectors()
                 )
             case _:
                 raise TypeError(
