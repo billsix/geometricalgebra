@@ -1,0 +1,6 @@
+[
+ [114, "for loc, size, off in ((0, 3, 0), (1, 2, 3), (2, 2, 5)):", ["loc: int", "size: int", "off: int"]],
+ [261, "tex_id, img_w, img_h = tex", ["tex_id: int", "img_w: int", "img_h: int"]],
+ [277, "for i, (off_x, off_y, u, v) in enumerate(corners):", ["i: int", "off_x: float", "off_y: float", "u: float", "v: float"]],
+ [305, "for entry in self._tex_cache.values():", ["entry: Label | None"]]
+]

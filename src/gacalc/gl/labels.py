@@ -111,6 +111,9 @@ class LabelRenderer:
             GL.GL_DYNAMIC_DRAW,
         )
         stride: int = _FLOATS_PER_VERT * 4
+        loc: int
+        size: int
+        off: int
         for loc, size, off in ((0, 3, 0), (1, 2, 3), (2, 2, 5)):
             GL.glEnableVertexAttribArray(loc)
             GL.glVertexAttribPointer(
@@ -258,6 +261,9 @@ class LabelRenderer:
         tex: Label | None = self._texture_for(latex)
         if tex is None:
             return
+        tex_id: int
+        img_w: int
+        img_h: int
         tex_id, img_w, img_h = tex
         c: np.ndarray = np.asarray(center_world, dtype=float).reshape(-1)[:3]
         clip: np.ndarray = self._vp @ np.array([c[0], c[1], c[2], 1.0])
@@ -274,6 +280,11 @@ class LabelRenderer:
             (-half_w, half_h, 0.0, 1.0),
         )
         buf: np.ndarray = np.empty((_VERTS, _FLOATS_PER_VERT), dtype=np.float32)
+        i: int
+        off_x: float
+        off_y: float
+        u: float
+        v: float
         for i, (off_x, off_y, u, v) in enumerate(corners):
             buf[i] = (c[0], c[1], c[2], off_x, off_y, u, v)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self._vbo)
@@ -302,6 +313,7 @@ class LabelRenderer:
         if not self.available:
             return
         try:
+            entry: Label | None
             for entry in self._tex_cache.values():
                 if entry is not None:
                     GL.glDeleteTextures([entry[0]])

@@ -163,6 +163,7 @@ def sample_curve(
     """
     xs: np.ndarray = np.linspace(x_lo, x_hi, n_samples)
     verts: list[float] = []
+    x: np.float64
     for x in xs:
         xf: float = float(x)
         verts.extend([xf, float(fn(xf)), 0.0])
@@ -179,6 +180,7 @@ def build_grid(spacing: float) -> np.ndarray:
     """
     verts: list[float] = []
     n: int = int(PLOT_HALF_RANGE / spacing)
+    i: int
     for i in range(-n, n + 1):
         c: float = i * spacing
         verts.extend([c, -PLOT_HALF_RANGE, 0.0, c, PLOT_HALF_RANGE, 0.0])
@@ -200,6 +202,7 @@ def build_axes_and_ticks(spacing: float) -> np.ndarray:
     verts.extend([-PLOT_HALF_RANGE, 0.0, 0.0, PLOT_HALF_RANGE, 0.0, 0.0])
     verts.extend([0.0, -PLOT_HALF_RANGE, 0.0, 0.0, PLOT_HALF_RANGE, 0.0])
     n: int = int(PLOT_HALF_RANGE / spacing)
+    i: int
     for i in range(-n, n + 1):
         if i == 0:
             continue
@@ -249,6 +252,7 @@ def build_origin_dot() -> np.ndarray:
     """
     verts: list[float] = [0.0, 0.0, 0.0]
     segments: int = 24
+    i: int
     for i in range(segments + 1):
         theta: float = 2.0 * math.pi * float(i) / float(segments)
         verts.extend(
@@ -281,6 +285,9 @@ def run(
     #: Previous cursor position while a left-drag pan is in progress (else None).
     mouse_prev: tuple[float, float] | None = None
 
+    window: "GLFWWindow"
+    impl: "cayley_gl.GlfwRenderer"
+    imguiio: "cayley_gl.imgui.IO"
     window, impl, imguiio = cayley_gl.setup(title)
     GL.glClearColor(0.07, 0.07, 0.09, 1.0)
 
@@ -374,6 +381,8 @@ def run(
         key: tuple[float, float, int] = (round(x_lo, 3), round(x_hi, 3), n_samples)
         if key == curve_build_key:
             return
+        lines: DynamicLines
+        pf: PlottedFunction
         for lines, pf in zip(curve_lines, functions, strict=True):
             update_dynamic_lines(lines, sample_curve(pf.fn, x_lo, x_hi, n_samples))
         curve_build_key = key
@@ -560,6 +569,7 @@ def run(
         aspect: float = float(w) / float(h) if h else 1.0
         half_w: float = view.half_height * aspect
         x_at: float = view.center_x + 0.55 * half_w
+        pf: PlottedFunction
         for pf in functions:
             label_renderer.draw(pf.latex, (x_at, float(pf.fn(x_at)), 0.0))
         label_renderer.draw("x", (view.center_x + 0.9 * half_w, 0.0, 0.0))
@@ -584,6 +594,8 @@ def run(
         # curve right where a sin/cos peak runs along the y=1 grid line.  Clear
         # depth after the backdrop so the plotted curves always draw over it.
         GL.glClear(GL.GL_DEPTH_BUFFER_BIT)
+        pf: PlottedFunction
+        lines: DynamicLines
         for pf, lines in zip(functions, curve_lines, strict=True):
             draw_lines(lines.vao, lines.count, pf.color, GL.GL_LINE_STRIP)
         if view.show_labels and label_renderer.available:
@@ -598,6 +610,8 @@ def run(
     while not glfw.window_should_close(window):
         t_prev = cayley_gl.begin_frame(impl, t_prev)
         imgui_menubar()
+        w: int
+        h: int
         w, h = cayley_gl.clear_viewport(window)
         frame(w, h)
         cayley_gl.end_frame(window, impl)

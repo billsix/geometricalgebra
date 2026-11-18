@@ -356,6 +356,7 @@ def test_full_timeline_including_morph_and_gpu() -> None:
     placement_starts: list[float] = [ts.start for ts in tl.steps]
     assert placement_starts == [2, 7, 12, 17, 22, 27, 32, 37, 47, 52, 57]
     # world->camera inverse substeps (camera edge T, R_y, R_x) at 62, 67, 72
+    track: cayleyscene.InverseOpsTrack
     ((track),) = tl.inverse_tracks
     assert [start for _s, start, _d in track.timed] == [62, 67, 72]
     assert track.forward is False

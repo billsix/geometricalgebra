@@ -136,6 +136,14 @@ def build_wireframe(surface: Surface, dx: float, dy: float) -> np.ndarray:
         z: float = -DOMAIN_HALF + j * (2.0 * DOMAIN_HALF) / ny
         return x, float(surface.fn(x, z)), z
 
+    i: int
+    j: int
+    x0: float
+    y0: float
+    z0: float
+    x1: float
+    y1: float
+    z1: float
     for j in range(ny + 1):
         for i in range(nx):
             x0, y0, z0 = height(i, j)
@@ -168,6 +176,8 @@ def build_solid(
     grid: list[list[tuple[float, float, float]]] = []
     lo: float = math.inf
     hi: float = -math.inf
+    i: int
+    j: int
     for i in range(nx + 1):
         row: list[tuple[float, float, float]] = []
         for j in range(ny + 1):
@@ -193,6 +203,7 @@ def build_solid(
             b: tuple[float, float, float] = grid[i + 1][j]
             c: tuple[float, float, float] = grid[i + 1][j + 1]
             d: tuple[float, float, float] = grid[i][j + 1]
+            p: tuple[float, float, float]
             for p in (a, b, c, a, c, d):
                 emit(p)
     return (
@@ -230,6 +241,7 @@ def build_axes() -> np.ndarray:
         AXIS_LENGTH,
     ]
     n: int = int(DOMAIN_HALF)
+    i: int
     for i in range(-n, n + 1):
         if i == 0:
             continue
@@ -261,6 +273,9 @@ def run(
     win_state: cayley_gl.WindowState = cayley_gl.WindowState()
     mouse_prev: tuple[float, float] | None = None
 
+    window: "GLFWWindow"
+    impl: "cayley_gl.GlfwRenderer"
+    imguiio: "cayley_gl.imgui.IO"
     window, impl, imguiio = cayley_gl.setup(title)
     GL.glClearColor(0.07, 0.07, 0.09, 1.0)
     GL.glEnable(GL.GL_DEPTH_TEST)
@@ -332,6 +347,15 @@ def run(
     def build_meshes() -> SurfaceMeshes:
         surface: Surface = surfaces[view.current]
         wire: np.ndarray = build_wireframe(surface, view.dx, view.dy)
+        positions: np.ndarray
+        colors: np.ndarray
+        wire_vao: int
+        wire_vbo: int
+        wire_n: int
+        solid_vao: int
+        pos_vbo: int
+        color_vbo: int
+        solid_n: int
         positions, colors = build_solid(surface, view.dx, view.dy)
         wire_vao, wire_vbo, wire_n = dynamic_lines(wire)
         solid_vao, pos_vbo, color_vbo, solid_n = dynamic_solid(positions, colors)
@@ -346,6 +370,8 @@ def run(
         )
 
     meshes: SurfaceMeshes = build_meshes()
+    axes_vao: int
+    axes_count: int
     axes_vao, axes_count = _p.make_lines_vao(build_axes(), line_pipeline.attr_position)
     # (current, dx, dy) the meshes were last built at -- rebuild when it changes.
     built_key: tuple[int, float, float] = (view.current, view.dx, view.dy)
@@ -357,6 +383,8 @@ def run(
             return
         surface: Surface = surfaces[view.current]
         wire: np.ndarray = build_wireframe(surface, view.dx, view.dy)
+        positions: np.ndarray
+        colors: np.ndarray
         positions, colors = build_solid(surface, view.dx, view.dy)
         meshes.wire_count = reupload(meshes.wire_vbo, wire) // _p.floats_per_vertex
         reupload(meshes.solid_color_vbo, colors)
@@ -401,6 +429,8 @@ def run(
             )
             imgui.end_menu()
         if imgui.begin_menu("Surface", True):
+            idx: int
+            surface: Surface
             for idx, surface in enumerate(surfaces):
                 cayley_gl.menu_action(
                     surface.label,
@@ -482,6 +512,8 @@ def run(
     while not glfw.window_should_close(window):
         t_prev = cayley_gl.begin_frame(impl, t_prev)
         imgui_menubar()
+        w: int
+        h: int
         w, h = cayley_gl.clear_viewport(window)
         frame(w, h)
         cayley_gl.end_frame(window, impl)

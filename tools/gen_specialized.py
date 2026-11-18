@@ -854,7 +854,9 @@ def _scalar_dual_doc(role: DocRole, n: int) -> str:
     )
 
 
-def _by_dimension(text: str, examples: dict[int, str]) -> Callable[[DocRole, int], str]:
+def _by_dimension(
+    text: str, examples: Mapping[int, str]
+) -> Callable[[DocRole, int], str]:
     """A ``DocEntry`` for an example that depends on the dimension: ``text``
     followed by an ``Example:`` section holding, in 𝒢ₙ, the example keyed by the
     largest dimension ``<= n`` (each example already indented under the header),

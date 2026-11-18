@@ -33,15 +33,18 @@ what it means.
 deciding whether a row is an exemption needs a human (the maintainer's decision, William
 Emerison Six <billsix@gmail.com>, 2026-11-09).
 
-**Floor (re-baselined 2026-11-09):** the auditor reports **39 rows in 16 files** — every one
+**Floor (re-baselined 2026-11-18):** the auditor reports **69 rows in 23 files** — every one
 either a listed exemption below or a *classified-out* row (a type alias or an `Enum` member,
-which the auditor prints but does not treat as a gap). The split: **13 classified-out** (10
-type aliases, 3 enum members) and **26 listed exemptions** (9 `Any` §1, 2 returns §2, 1 param
-§3, 3 invariant params §4, 5 locals and loop targets §5, 6 symbol unpacks §6). Anything *not* on this list is a
-genuine gap: annotate it, or add it here with its reason. Records:
-`tasks/archive/2026/10/09/re-baseline-annotation-auditor.md` (the earlier 32-row floor) and
+which the auditor prints but does not treat as a gap). The split: **45 classified-out** (14
+type aliases, 31 enum members, most of them from the GL and Cayley modules moved in from
+modelviewprojection) and **24 listed exemptions** (9 `Any` §1, 2 returns §2, 1 param §3, 3
+invariant params §4, 3 locals and loop targets §5, 6 symbol unpacks §6). Anything *not* on this
+list is a genuine gap: annotate it, or add it here with its reason. Records:
+`tasks/archive/2026/10/09/re-baseline-annotation-auditor.md` (the earlier 32-row floor),
 `tasks/archive/2026/11/09/annotation-auditor-floor-drift.md` (the per-scope and unpacking
-detection, and the 66 gaps it found and fixed).
+detection, and the 66 gaps it found and fixed), and
+`tasks/archive/2026/11/18/re-baseline-annotation-auditor-after-gl-move.md` (the moved-in GL and
+Cayley modules, 97 rows, annotated; one generator parameter widened to `Mapping`).
 
 ## The exemptions
 
@@ -97,15 +100,9 @@ of them produced errors in exactly one test; the other 21 are now typed.
 ### 5. Locals whose declared type would lose information
 
 - **`tests/test_graded.py`** — `cases`, the loop's `val`/`expected` drawn from it, and the
-  `d` derived from `val` (3 LOCAL rows and 1 LOOP row). The inferred concrete union keeps
+  `d` derived from `val` (2 LOCAL rows and 1 LOOP row). The inferred concrete union keeps
   `val.dual()` (dimension-defaulting) and `val.DIMENSION` resolvable; `MultiVectorBase` does
   not. Same root cause as §2 and §3.
-- **`tests/test_odd.py`** — `versor` and `conjugated = versor * v * versor.inverse()`.
-  Declaring them `g3.Versor` and `g3.Odd` is correct at runtime (the test asserts the
-  second), but either one widens `conjugated.coeff_e_123` to `Real` (`int | float |
-  sympy.Expr`), and sympy's stubs carry no `simplify` overload for a bare `int`/`float`, so
-  the annotation fails `sympy.simplify(conjugated.coeff_e_123)` without clarifying anything;
-  the in-code comment says so.
 
 The `test_graded` rows share their shape with §2 and §3: **the abstract base is less capable
 than every concrete subclass**, because dimension-defaulting overrides drop a required

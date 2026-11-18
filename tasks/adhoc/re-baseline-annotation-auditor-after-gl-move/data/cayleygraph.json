@@ -1,0 +1,10 @@
+[
+ [196, "for edge, forward in self.route:", ["edge: Edge", "forward: bool", "s: Step"]],
+ [211, "for edge, forward in self.route:", ["edge: Edge", "forward: bool"]],
+ [255, "for e in self._edges:", ["e: Edge"]],
+ [266, "for e in self._edges:", ["e: Edge"]],
+ [272, "for m in directed.get(n, []):", ["m: N"]],
+ [283, "for n in self._adj:", ["n: N"]],
+ [316, "for neighbor, edge, forward in self._adj.get(n, ()):  # type: ignore[misc]", ["neighbor: N", "edge: Edge", "forward: bool"]],
+ [333, "parent, edge, forward = step", ["parent: N", "edge: Edge", "forward: bool"]]
+]

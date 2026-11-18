@@ -43,6 +43,13 @@ def _reference_row_major(
     transposed. This is an independent transcription of the reference, so
     matching it pins ``planar_shadow`` to the working demo's matrix.
     """
+    a: float
+    b: float
+    c: float
+    d: float
+    dx: float
+    dy: float
+    dz: float
     a, b, c, d = plane_eq
     dx, dy, dz = -light_pos[0], -light_pos[1], -light_pos[2]
     # Each inner list is one column of the GL matrix (the order
@@ -84,6 +91,7 @@ def test_projects_points_onto_the_plane() -> None:
     plane_eq: tuple[float, float, float, float] = (0.0, 1.0, 0.0, 0.0)
     light_pos: tuple[float, float, float] = (0.0, 10.0, 0.0)
     m: np.ndarray = _shadow_matrix(plane_eq, light_pos)
+    point: tuple[float, float, float, float]
     for point in [(2.0, 5.0, 3.0, 1.0), (-3.0, 9.0, -1.0, 1.0)]:
         shadow: np.ndarray = m @ np.array(point, dtype=np.float64)
         shadow = shadow / shadow[3]
@@ -98,6 +106,11 @@ def test_shadow_lands_on_arbitrary_plane() -> None:
     plane_eq: tuple[float, float, float, float] = (0.3, 0.8, -0.5, 2.0)
     light_pos: tuple[float, float, float] = (4.0, 9.0, -2.0)
     m: np.ndarray = _shadow_matrix(plane_eq, light_pos)
+    a: float
+    b: float
+    c: float
+    d: float
+    point: tuple[float, float, float, float]
     a, b, c, d = plane_eq
     for point in [(1.0, 2.0, 3.0, 1.0), (-5.0, 4.0, 6.0, 1.0)]:
         shadow: np.ndarray = m @ np.array(point, dtype=np.float64)

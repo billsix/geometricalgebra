@@ -193,6 +193,9 @@ class Path:
         (``world->camera``) this yields ``[T^{-1}, R_y^{-1}, R_x^{-1}]``.
         """
         out: typing.List[OrientedStep] = []
+        edge: Edge
+        forward: bool
+        s: Step
         for edge, forward in self.route:
             for s in edge.steps:
                 if forward:
@@ -208,6 +211,8 @@ class Path:
         any against-arrow edge automatically.  The src-incident edge is applied
         first (innermost), the dst-incident edge last (outermost)."""
         edge_fns: typing.List[InvertibleFunction] = []
+        edge: Edge
+        forward: bool
         for edge, forward in self.route:
             efn: InvertibleFunction = edge.function()
             edge_fns.append(efn if forward else inverse(efn))
@@ -252,6 +257,7 @@ class CayleyGraph(typing.Generic[N]):
         self._edges: typing.Tuple[Edge, ...] = tuple(edges)
         # undirected adjacency: space -> ((neighbor, edge, walked_forward), ...)
         adj: typing.Dict[N, list[tuple[N, Edge, bool]]] = {}
+        e: Edge
         for e in self._edges:
             adj.setdefault(e.src, []).append((e.dst, e, True))
             adj.setdefault(e.dst, []).append((e.src, e, False))
@@ -263,12 +269,14 @@ class CayleyGraph(typing.Generic[N]):
     def _assert_acyclic(self) -> None:
         """Validate the DIRECTED edges have no cycle (DFS 3-coloring)."""
         directed: typing.Dict[N, list[N]] = {}
+        e: Edge
         for e in self._edges:
             directed.setdefault(e.src, []).append(e.dst)
         color: typing.Dict[N, _DfsColor] = {}
 
         def visit(n: N) -> None:
             color[n] = _DfsColor.GRAY
+            m: N
             for m in directed.get(n, []):
                 c: _DfsColor = color.get(m, _DfsColor.WHITE)
                 if c == _DfsColor.GRAY:
@@ -280,6 +288,7 @@ class CayleyGraph(typing.Generic[N]):
                     visit(m)
             color[n] = _DfsColor.BLACK
 
+        n: N
         for n in self._adj:
             if color.get(n, _DfsColor.WHITE) == _DfsColor.WHITE:
                 visit(n)
@@ -313,6 +322,9 @@ class CayleyGraph(typing.Generic[N]):
                 n: N = q.popleft()
                 if n == b:
                     break
+                neighbor: N
+                edge: Edge
+                forward: bool
                 for neighbor, edge, forward in self._adj.get(n, ()):  # type: ignore[misc]
                     if neighbor not in prev:
                         prev[neighbor] = (n, edge, forward)
@@ -330,6 +342,9 @@ class CayleyGraph(typing.Generic[N]):
             while prev[cur] is not None:
                 step: typing.Optional[typing.Tuple[N, Edge, bool]] = prev[cur]
                 assert step is not None
+                parent: N
+                edge: Edge
+                forward: bool
                 parent, edge, forward = step
                 route.append((edge, forward))
                 cur = parent
