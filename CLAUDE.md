@@ -115,7 +115,7 @@ The library is split one-concept-per-file so a newcomer can import just the alge
 - `tests/` — `test_multivector.py` (`Gn`), `test_conformance.py` (parametrized over `[Gn, G]`),
   `test_graded.py` (graded subtypes), `test_generator.py` (the generator's own logic),
   `test_vectorcalc.py` (cross product), `test_blade_symbols.py` (display-symbol map), and more.
-  **~800 tests** (incl. doctests via `--doctest-modules`); `make test` skips the ones marked `slow`.
+  **~1,600 tests** (incl. doctests via `--doctest-modules`); `make test` skips the ones marked `slow`.
 - `tools/gen_specialized.py` — the code generator (builds each module as Python `ast` nodes,
   rendered with `ast.unparse`); `tools/astbuild.py` — its domain-agnostic node-builder DSL;
   `tools/bench.py` — `Gn`-vs-specialized benchmark.
@@ -364,7 +364,7 @@ over a "run it on your host" instruction.
   `pytest -m "not slow"` inside the container (exit 0/nonzero contract; `pytest.ini` sets
   `pythonpath = src`, `testpaths = src tests tools`, `addopts = --doctest-modules` so docstrings run
   as tests). **`make test-full`** runs everything, the tests marked `@pytest.mark.slow` included
-  (~800 tests, ~27 min, nearly all of it the 3D symbolic frame tests); CI runs it. **Mark a new test
+  (~1,600 tests, ~27 min, nearly all of it the 3D symbolic frame tests); CI runs it. **Mark a new test
   `slow` when it takes over 10 s in the container** (the marker is registered in `pytest.ini`; mark
   only the slow parametrized cases, with `pytest.param(..., marks=pytest.mark.slow)`), timed in `make
   test`'s own run, not the full one, where sympy's cache can make a test look fast after a slow one. Quick host
