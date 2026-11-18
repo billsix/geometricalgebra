@@ -493,9 +493,10 @@ What to take from this: the SVD in GA is two chains of rotations from vectors ar
 library version would be the 2D closed form plus the QR iteration for 3D, returning
 `(U parts, σ, W)` as transforms.
 
-**Bug found on the way:** `inverse()` rejects a float 𝒢₃ versor because `Ã * A` carries a 1e-16
-bivector residue, so `versor_rotation` crashes on ordinary 3D float vectors. Route 1 uses
-`projection_rotation` until `tasks/inverse-float-versor-rounding.md` is fixed.
+**Bug found on the way, and fixed:** `inverse()` rejected a float 𝒢₃ versor because `Ã * A`
+carried a 1e-16 bivector residue, so `versor_rotation` crashed on ordinary 3D float vectors. It now
+tolerates rounding residue on inexact input
+(`tasks/archive/2026/11/18/inverse-float-versor-rounding.md`), and route 1 uses `versor_rotation`.
 
 ## Sources
 
