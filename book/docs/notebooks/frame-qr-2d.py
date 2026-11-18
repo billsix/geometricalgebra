@@ -72,6 +72,9 @@ p, q, r, t = sympy.symbols("p q r t", real=True)
 v_1: Vector = Scalar(p) * e_1 + Scalar(q) * e_2
 v_1
 
+# %% [markdown]
+# and $\vec{\mathbf{v}}_2$:
+
 # %%
 v_2: Vector = Scalar(r) * e_1 + Scalar(t) * e_2
 v_2
@@ -132,6 +135,9 @@ u_1
 # %%
 u_2 = u_2.simplified()
 u_2
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_V1: Point = point(coordinates=list(at_values(v_1, values)))
@@ -212,6 +218,9 @@ rebuilt_v_2
 # %%
 at_values(c_21, values)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_SHADOW: Point = point(coordinates=list(at_values(Scalar(c_21) * w_1, values)))
 fig_shadow: PendingFigure
@@ -276,6 +285,9 @@ area
 
 # %%
 sympy.simplify(sympy.sympify(base_times_height - area))
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 fig_area: PendingFigure
@@ -349,6 +361,9 @@ f(0 * e_1 + 1 * e_2)
 # %%
 (f(0 * e_1 + 1 * e_2) - v_2).simplified()
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_E1: Point = Point(x=1, y=0)
 P_E2: Point = Point(x=0, y=1)
@@ -421,6 +436,9 @@ QR_product
 # %%
 (QR_product - F).applyfunc(sympy.simplify)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_R1: Point = point(coordinates=list(at_values(R(1 * e_1 + 0 * e_2), values)))
 P_R2: Point = point(coordinates=list(at_values(R(0 * e_1 + 1 * e_2), values)))
@@ -445,6 +463,9 @@ with scene_2d(
         align=LabelPos.t,
     )
 fig_r
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 fig_qr: PendingFigure
@@ -499,9 +520,15 @@ m_1, m_2, n_1, n_2, y_1, y_2 = sympy.symbols("m_1 m_2 n_1 n_2 y_1 y_2", real=Tru
 a_1: Vector = Scalar(m_1) * e_1 + Scalar(m_2) * e_2
 a_1
 
+# %% [markdown]
+# and $\vec{\mathbf{a}}_2$:
+
 # %%
 a_2: Vector = Scalar(n_1) * e_1 + Scalar(n_2) * e_2
 a_2
+
+# %% [markdown]
+# and $\vec{\mathbf{y}}$:
 
 # %%
 y: Vector = Scalar(y_1) * e_1 + Scalar(y_2) * e_2
@@ -635,6 +662,9 @@ x_2
 # %%
 at_values(x_2, peel_values)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 w_2_dot_y: Real = b_2.dot(y).scalar_part()
 fig_step_1: PendingFigure
@@ -698,6 +728,9 @@ remainder
 
 # %%
 at_values(remainder, peel_values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_R: Point = point(coordinates=list(at_values(remainder, peel_values)))
@@ -884,6 +917,9 @@ sympy.simplify(sympy.sympify(reciprocal_2.dot(a_1).scalar_part()))
 
 # %%
 sympy.simplify(sympy.sympify(reciprocal_2.dot(a_2).scalar_part()))
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 fig_reciprocal: PendingFigure

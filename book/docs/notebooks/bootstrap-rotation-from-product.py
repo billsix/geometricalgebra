@@ -61,9 +61,15 @@ a_1, a_2, b_1, b_2, v_1, v_2 = sympy.symbols("a_1 a_2 b_1 b_2 v_1 v_2", real=Tru
 a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
 a
 
+# %% [markdown]
+# and $\vec{\mathbf{b}}$:
+
 # %%
 b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
 b
+
+# %% [markdown]
+# and $\vec{\mathbf{v}}$:
 
 # %%
 v: Vector = Scalar(v_1) * e_1 + Scalar(v_2) * e_2
@@ -120,6 +126,9 @@ one_sided
 
 # %%
 at_values(one_sided, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_A: Point = point(coordinates=list(at_values(a, values)))
@@ -186,6 +195,9 @@ sandwich
 
 # %%
 at_values(sandwich, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 h: Vector = Scalar(b.magnitude()) * a + Scalar(a.magnitude()) * b

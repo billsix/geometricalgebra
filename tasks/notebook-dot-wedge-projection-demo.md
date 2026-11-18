@@ -5,7 +5,8 @@
 **Difficulty:** 2
 **Started:** 2026-08-27 (William Emerison Six <billsix@gmail.com>)
 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — the 2D half was found already
-done in `notebooks/displayg2.py`; Context and Q1 re-posed accordingly.
+done in `notebooks/displayg2.py` (since 2026-11-18 `notebooks/displayg2areas.py`); Context and Q1
+re-posed accordingly.
 **Blocked on:** maintainer answers the Open questions below (where the 3D cells go; base-vector
 wording). The math is already proved — do NOT re-prove it.
 **Recheck:** the Open questions below are answered (maintainer-gated; `/recheck-blocked` surfaces it).
@@ -26,11 +27,14 @@ product and the perpendicular part is the wedge.
   `a_⊥ b = a∧b` symbolically; the boxed theorem lives in
   `tasks/reference/dot-wedge-projection-rejection.md`.
 - **The 2D demonstration is already DONE** (found 2026-10-04): `notebooks/displayg2.py`, section
+  (moved 2026-11-18 to `notebooks/displayg2areas.py`, "Which part of a makes the dot, and which
+  the wedge?")
   "Dot and wedge are the parallel and perpendicular parts of the product" (commit `adb4b1d`,
   2026-08-03 — it predates this task) — `a_par = Vector.project(onto=b)(a)`,
   `a_perp = Vector.reject(away_from=b)(a)`, `a_par * b == a.dot(b)`, `a_perp * b == a.wedge(b)`,
   `show_mult` of each, and `a_par * b + a_perp * b == a * b`, citing the reference doc. **The 3D
-  counterpart does not exist** — `notebooks/displayg3.py` has no projection/rejection split.
+  counterpart does not exist** — `notebooks/displayg3.py` (and its 2026-11-18 companion
+  `displayg3measures.py`) has no projection/rejection split.
   Remaining work = the 3D cells.
 - The book notebooks `book/docs/notebooks/projection.py` and
   `book/docs/notebooks/projection-rejection-3d.py` exist but are still the `1 + 1` placeholder

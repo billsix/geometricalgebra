@@ -69,6 +69,9 @@ a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
 a: Vector = Scalar(a_1) * Vector.e_1 + Scalar(a_2) * Vector.e_2
 a
 
+# %% [markdown]
+# and $\vec{\mathbf{b}}$:
+
 # %%
 b: Vector = Scalar(b_1) * Vector.e_1 + Scalar(b_2) * Vector.e_2
 b

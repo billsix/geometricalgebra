@@ -48,50 +48,65 @@ from gacalc.nbdisplay import show_cancellation, show_mult
 # The product distributes over addition
 # -------------------------------------
 #
-# The law to check: for every three multivectors $a$, $b$, $c$ of 𝒢₂,
+# The law to check: for every three multivectors $A$, $B$, $C$ of 𝒢₂,
 #
-# $$ a * (b + c) = a * b + a * c $$
+# $$ A * (B + C) = A * B + A * C $$
 #
 # Lean states it as `mul_add` in `proofs/GacalcProofs/G2.lean`. Here are three
 # general multivectors of the plane, every coefficient its own symbol, so what
 # follows holds for all of them at once:
 
 # %%
-a: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="a")
-b: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="b")
-c: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="c")
-a, b, c  # pyright: ignore[reportUnusedExpression]
+A: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="a")
+A
 
 # %% [markdown]
-# **The left side.** First add $b$ and $c$, then multiply by $a$ term by term:
+# the second,
 
 # %%
-show_mult(a, b + c)
+B: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="b")
+B
 
 # %% [markdown]
-# **The right side.** Multiply $a$ by $b$, and $a$ by $c$, term by term:
+# and the third:
 
 # %%
-show_mult(a, b)
-
-# %%
-show_mult(a, c)
+C: MultiVector = MultiVector.symbolic_multivector(n=2, prefix="c")
+C
 
 # %% [markdown]
-# **The two sides cancel.** For each blade, every term of $a * (b + c)$ meets the same
-# term in $a * b + a * c$. A pair carries the same number, and no term is left over:
+# **The left side.** First add $B$ and $C$, then multiply by $A$ term by term:
+
+# %%
+show_mult(A, B + C)
+
+# %% [markdown]
+# **The right side.** Multiply $A$ by $B$, and $A$ by $C$, term by term:
+
+# %%
+show_mult(A, B)
+
+# %% [markdown]
+# and $A$ times $C$:
+
+# %%
+show_mult(A, C)
+
+# %% [markdown]
+# **The two sides cancel.** For each blade, every term of $A * (B + C)$ meets the same
+# term in $A * B + A * C$. A pair carries the same number, and no term is left over:
 
 # %%
 show_cancellation(
-    a * (b + c),
-    a * b + a * c,
-    left_name="a * (b + c)",
-    right_name="a * b + a * c",
+    A * (B + C),
+    A * B + A * C,
+    left_name="A * (B + C)",
+    right_name="A * B + A * C",
 )
 
 # %% [markdown]
 # Every coefficient is a symbol, so this is not one example: the product of 𝒢₂
-# distributes over addition for **every** $a$, $b$ and $c$. Lean's proof of
+# distributes over addition for **every** $A$, $B$ and $C$. Lean's proof of
 # `mul_add` multiplies out the same definitions and checks the same cancellation,
 # all at once (its `ring` tactic). That is why it shows no steps, and why this
 # notebook spells them out.

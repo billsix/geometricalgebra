@@ -28,37 +28,35 @@
 # for more details.
 
 # %% [markdown]
-# 𝒢₃ — the geometric algebra of three-dimensional space
-# =====================================================
+# 𝒢₃: multiplying in space
+# ========================
 #
-# This notebook demonstrates the **specialized `g3.G` class** (𝒢₃), the fast,
-# named-field representation of the geometric algebra of ℝ³. It mirrors
-# `displaymv.py` (which uses the general `Gn`), but every value here is a `g3.G`:
-# its closed-form geometric product is code-generated from `Gn`, so it is
-# provably consistent with the reference while being much faster.
+# `displayg2.py` ran the multiplication rules in the plane. This notebook adds a third
+# arrow, $\vec{\mathbf{e}}_3$, and runs them in space with `g3.G`, the class written
+# for three dimensions. Nothing in the rules changes; there are just more pieces.
 #
-# 𝒢₃ has 2³ = 8 basis blades: the scalar `1`, three vectors `e_1`, `e_2`, `e_3`,
-# three bivectors `e_12`, `e_13`, `e_23`, and the trivector / pseudoscalar
-# `e_123 = e_1 * e_2 * e_3`.
+# Space has eight building blocks: a plain number $1$; three arrows
+# $\vec{\mathbf{e}}_1, \vec{\mathbf{e}}_2, \vec{\mathbf{e}}_3$; three pieces of plane
+# $\mathbf{e}_{12}, \mathbf{e}_{13}, \mathbf{e}_{23}$, one for each pair of arrows; and
+# one piece of space, $\mathbf{e}_{123} = \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 *
+# \vec{\mathbf{e}}_3$. The companion `displayg3measures.py` turns the wedges into
+# areas and volumes.
 
 # %%
 import warnings
-from typing import cast
 
-import sympy
 from IPython.display import Math, display
 
-from gacalc.base import Real
-from gacalc.g3 import G, Vector
-from gacalc.measure import area, signed_volume, volume
-from gacalc.nbplotutils import plot_multivector, show_mult
+from gacalc.g3 import G
+from gacalc.nbdisplay import show_mult
+from gacalc.nbplotutils import plot_multivector
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)
 
 # Bare names for the full-G basis constants, so the code reads like the math.
-# These are the FULL 𝒢₃ constants (e_1 here is G.e_1) -- not the graded Vector
-# that `from gacalc.g3 import e_1` gives; every value in this notebook is a G.
+# These are the FULL 𝒢₃ constants (e_1 here is G.e_1), not the graded Vector that
+# `from gacalc.g3 import e_1` gives; every value in this notebook is a G.
 e_1: G = G.e_1
 e_2: G = G.e_2
 e_3: G = G.e_3
@@ -68,157 +66,130 @@ e_23: G = G.e_23
 e_123: G = G.e_123
 
 # %% [markdown]
-# Basis blades and the pseudoscalar
-# ---------------------------------
+# What does the piece of space square to?
+# ---------------------------------------
 #
-# The product of the three basis vectors is the trivector `e_123`, the
-# pseudoscalar of 𝒢₃. Like the bivector in 𝒢₂, it squares to −1.
+# Multiply all three arrows:
 
 # %%
 pseudoscalar: G = e_1 * e_2 * e_3
-pseudoscalar  # pyright: ignore[reportUnusedExpression]
-
-# %%
-pseudoscalar * pseudoscalar  # pyright: ignore[reportUnusedExpression]
-
-# %%
-e_123 == e_1 * e_2 * e_3
-
-# %%
-# the three unit bivectors
-e_12  # pyright: ignore[reportUnusedExpression]
-
-# %%
-# the three unit bivectors
-e_13  # pyright: ignore[reportUnusedExpression]
-
-# %%
-# the three unit bivectors
-e_23  # pyright: ignore[reportUnusedExpression]
+pseudoscalar
 
 # %% [markdown]
-# Linear combinations
-# -------------------
+# Squaring it means sorting six arrows with a sign and cancelling pairs. Predict the
+# answer before running the cell:
 
 # %%
-2 * e_1 + 3 * e_2 + 4 * e_3 + 5 * e_1  # pyright: ignore[reportUnusedExpression]
-
-# %%
-G.from_real(0)  # pyright: ignore[reportUnusedExpression]
-
-# %%
-G.from_real(1)  # pyright: ignore[reportUnusedExpression]
+pseudoscalar * pseudoscalar
 
 # %% [markdown]
-# Symbolic vectors
-# ----------------
+# It is $-1$, like the plane's $\mathbf{e}_{12}$ in `displayg2.py`. The class names it
+# `e_123`, and the difference between the two is $0$:
+
+# %%
+e_123 - e_1 * e_2 * e_3
+
+# %% [markdown]
+# The three pieces of plane, one per pair of arrows. The $\vec{\mathbf{e}}_1
+# \vec{\mathbf{e}}_2$ plane,
+
+# %%
+e_12
+
+# %% [markdown]
+# the $\vec{\mathbf{e}}_1 \vec{\mathbf{e}}_3$ plane,
+
+# %%
+e_13
+
+# %% [markdown]
+# and the $\vec{\mathbf{e}}_2 \vec{\mathbf{e}}_3$ plane:
+
+# %%
+e_23
+
+# %% [markdown]
+# Sums collect like terms
+# -----------------------
 #
-# `symbolic_multivector` builds a full multivector of `sympy` symbols;
-# `r_vector_part(1)` keeps only the grade-1 (vector) part.
+# $2 * \vec{\mathbf{e}}_1 + 3 * \vec{\mathbf{e}}_2 + 4 * \vec{\mathbf{e}}_3 + 5 *
+# \vec{\mathbf{e}}_1$ collects into $7 * \vec{\mathbf{e}}_1 + 3 * \vec{\mathbf{e}}_2 +
+# 4 * \vec{\mathbf{e}}_3$:
+
+# %%
+2 * e_1 + 3 * e_2 + 4 * e_3 + 5 * e_1
+
+# %% [markdown]
+# Zero and one are in the class too. Zero,
+
+# %%
+G.from_real(0)
+
+# %% [markdown]
+# and one:
+
+# %%
+G.from_real(1)
+
+# %% [markdown]
+# Letters instead of numbers
+# --------------------------
+#
+# A general element, a symbol on each of the eight building blocks:
 
 # %%
 A_full: G = G.symbolic_multivector(prefix="a")
-A_full  # pyright: ignore[reportUnusedExpression]
+A_full
+
+# %% [markdown]
+# Its arrow part is a general vector $\vec{\mathbf{a}}$,
 
 # %%
 a_vec: G = G.symbolic_multivector(prefix="a").r_vector_part(1)
-a_vec  # pyright: ignore[reportUnusedExpression]
+a_vec
+
+# %% [markdown]
+# and a second one is $\vec{\mathbf{b}}$:
 
 # %%
 b_vec: G = G.symbolic_multivector(prefix="b").r_vector_part(1)
-b_vec  # pyright: ignore[reportUnusedExpression]
+b_vec
 
 # %% [markdown]
-# The geometric product of two vectors
-# ------------------------------------
+# What is the product of two vectors in space made of?
+# ----------------------------------------------------
 #
-# $$ ab = a\cdot b + a\wedge b $$
-#
-# In 𝒢₃ the wedge of two vectors is a bivector with three components
-# (the `e_12`, `e_13`, `e_23` planes).
+# The same two parts as in the plane: a plain number and pieces of plane. But now
+# there are three planes for the wedge to have parts in.
 
 # %%
-a_vec * b_vec  # pyright: ignore[reportUnusedExpression]
+a_vec * b_vec
+
+# %% [markdown]
+# The plain-number part is the dot product,
 
 # %%
 a_vec.dot(b_vec)
 
-# %%
-a_vec.wedge(b_vec)
+# %% [markdown]
+# and the plane parts are the wedge, one coefficient for each pair of arrows:
 
 # %%
-a_vec ^ b_vec  # pyright: ignore[reportUnusedExpression]
-
-# %%
-a_vec.dot(b_vec) + a_vec.wedge(b_vec) == a_vec * b_vec
+a_vec ^ b_vec
 
 # %% [markdown]
-# The wedge magnitudes are area and volume — `area`, `volume`, `signed_volume`
-# ---------------------------------------------------------------------------
-#
-# In 𝒢₃ the magnitudes of the wedges are the high-school measures: $|a \wedge b|$
-# is the **area** of the parallelogram on `a`, `b`, and $|a \wedge b \wedge c|$ is
-# the **volume** of the parallelepiped on `a`, `b`, `c`. `gacalc.measure` names
-# them (the general k-dimensional version is the *content*, Williamson & Trotter
-# p. 308).
+# The dot plus the wedge, minus the product, is $0$:
 
 # %%
-# area of the parallelogram on the two vectors: |a ∧ b|
-area(a_vec, b_vec)  # pyright: ignore[reportUnusedExpression]
+a_vec.dot(b_vec) + a_vec.wedge(b_vec) - a_vec * b_vec
 
 # %% [markdown]
-# **`area` is unsigned — switching the two vectors changes nothing:**
-
-# %%
-area(a_vec, b_vec) == area(b_vec, a_vec)
-
-# %% [markdown]
-# There is **no signed area in 𝒢₃**: two vectors span only a plane (`k = 2 < 3`),
-# so the orientation is the whole bivector `a ∧ b`, not a scalar `±`. A *signed*
-# scalar needs the vectors to span the full space (`k = n`) — in 𝒢₃ that means
-# **three** vectors, giving a signed **volume**. (`signed_area(a, b)` is defined
-# only in 𝒢₂; calling it here would raise.)
-
-# %%
-# a third vector, so we have a full 3-vector frame spanning 𝒢₃
-c_vec: G = G.symbolic_multivector(prefix="c").r_vector_part(1)
-c_vec  # pyright: ignore[reportUnusedExpression]
-
-# %% [markdown]
-# **`volume(a, b, c)`** is the parallelepiped volume $|a \wedge b \wedge c|$:
-
-# %%
-volume(a_vec, b_vec, c_vec)  # pyright: ignore[reportUnusedExpression]
-
-# %% [markdown]
-# **`signed_volume` keeps the orientation — it is the 3×3 determinant — and
-# switching the first two vectors flips its sign**, while the unsigned `volume`
-# above is its absolute value:
-
-# %%
-signed_volume(a_vec, b_vec, c_vec)  # pyright: ignore[reportUnusedExpression]
-
-# %%
-signed_volume(b_vec, a_vec, c_vec)  # pyright: ignore[reportUnusedExpression]
-
-# %% [markdown]
-# The two are negatives of each other. (The 3×3 determinant and its negation are
-# mathematically equal but not *structurally* identical, so we ask sympy to
-# simplify their sum to `0` rather than comparing with `==`.)
-
-# %%
-sympy.simplify(
-    # signed_volume() returns Real (int | float | Expr); cast to Expr for
-    # sympy.simplify, whose stub wants a Basic.
-    cast(
-        sympy.Expr,
-        signed_volume(b_vec, a_vec, c_vec) + signed_volume(a_vec, b_vec, c_vec),
-    )
-) == 0
-
-# %% [markdown]
-# Distributing a full product
+# Every term times every term
 # ---------------------------
+#
+# Two general elements of space: eight terms times eight terms, sixty-four rows. The
+# table shows that the method scales; reading one row is the same check as in the
+# plane.
 
 # %%
 G3_1: G = G.symbolic_multivector(prefix="a")
@@ -226,37 +197,55 @@ G3_2: G = G.symbolic_multivector(prefix="b")
 show_mult(G3_1, G3_2)
 
 # %% [markdown]
-# Associativity
-# -------------
+# Does grouping matter?
+# ---------------------
+#
+# Multiply three general elements both ways and subtract. Every coefficient is a
+# symbol, so a zero difference proves the product is associative for every three
+# elements of space. (`displayg2.py` lays the same proof out term by term in the plane;
+# in space each blade has sixty-four terms a side, too many to read.)
 
 # %%
 G3_3: G = G.symbolic_multivector(prefix="c")
 ((G3_1 * G3_2) * G3_3) - (G3_1 * (G3_2 * G3_3))
 
 # %% [markdown]
-# Grade projection
-# ----------------
+# Pulling out one kind of part
+# ----------------------------
 #
-# 𝒢₃ has grades 0–3: scalar, vector, bivector, trivector.
+# Space has four grades: plain number (0), arrows (1), pieces of plane (2) and the
+# piece of space (3). A general element,
 
 # %%
 C: G = G.symbolic_multivector(prefix="c")
+C
+
+# %% [markdown]
+# its plain-number part,
+
+# %%
 C.r_vector_part(0)
+
+# %% [markdown]
+# its arrows,
 
 # %%
 C.r_vector_part(1)
 
+# %% [markdown]
+# its pieces of plane,
+
 # %%
 C.r_vector_part(2)
+
+# %% [markdown]
+# and its piece of space:
 
 # %%
 C.r_vector_part(3)
 
 # %% [markdown]
-# The basis of 𝒢₃
-# ---------------
-#
-# All 2³ = 8 basis blades, in grade order.
+# All eight building blocks, in grade order:
 
 # %%
 x: G
@@ -264,163 +253,111 @@ for x in G.bases():
     display(Math(x._repr_latex_()))
 
 # %% [markdown]
-# Duality: the bivector and its dual axis
-# ---------------------------------------
+# Which arrow stands straight out of a plane?
+# -------------------------------------------
 #
-# In 𝒢₃ the dual of a bivector (a plane) is the vector orthogonal to it — this
-# is the geometric-algebra counterpart of the cross product. Below, the bivector
-# $a\wedge b$ and its dual; the dual is parallel to $a\times b$.
+# The *dual* multiplies by the inverse of the piece of space. In space it turns a
+# piece of plane into the arrow perpendicular to it: the geometric-algebra version of
+# the cross product. The wedge of $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$,
 
 # %%
 B: G = a_vec ^ b_vec
-B  # pyright: ignore[reportUnusedExpression]
+B
+
+# %% [markdown]
+# and its dual, an arrow pointing the way $\vec{\mathbf{a}} \times \vec{\mathbf{b}}$
+# does:
 
 # %%
 B.dual()
 
-# %%
-B * B.dual()  # pyright: ignore[reportUnusedExpression]
+# %% [markdown]
+# A plane times its own dual is a piece of space,
 
 # %%
-# a bivector squares to a (negative) scalar — it has a magnitude
-B * B  # pyright: ignore[reportUnusedExpression]
+B * B.dual()
 
 # %% [markdown]
-# Magnitude, inverse, reverse, dual of a vector
+# and a plane times itself is a plain number, negative, like
+# $\mathbf{e}_{12} * \mathbf{e}_{12} = -1$:
+
+# %%
+B * B
+
+# %% [markdown]
+# Length, inverse, reverse and dual of a vector
 # ---------------------------------------------
+#
+# Take $\vec{\mathbf{m}} = 1 * \vec{\mathbf{e}}_1 + 2 * \vec{\mathbf{e}}_2 + 2 *
+# \vec{\mathbf{e}}_3$. Predict its length from $1 + 4 + 4$:
 
 # %%
 m: G = 1 * e_1 + 2 * e_2 + 2 * e_3
 m.magnitude()
 
+# %% [markdown]
+# Its square is the length squared,
+
 # %%
-m * m  # pyright: ignore[reportUnusedExpression]
+m * m
+
+# %% [markdown]
+# its unit vector $\hat{\mathbf{m}}$ has length $1$,
 
 # %%
 m.normalize()
 
+# %% [markdown]
+# and its inverse is itself over its length squared:
+
 # %%
 m.inverse()
 
-# %%
-m * m.inverse() == G.from_real(1)
+# %% [markdown]
+# A vector times its inverse, minus $1$, is $0$:
 
 # %%
-# reverse of the pseudoscalar
+m * m.inverse() - G.from_real(1)
+
+# %% [markdown]
+# The reverse writes $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3$
+# backwards, which takes three swaps, so it flips the sign:
+
+# %%
 pseudoscalar.reverse()
 
+# %% [markdown]
+# The dual of a vector is the piece of plane perpendicular to it:
+
 # %%
-# the dual of a vector is a bivector (the orthogonal plane)
 m.dual()
 
 # %% [markdown]
-# Plotting a multivector
-# ----------------------
+# Each part on its own number line
+# --------------------------------
 #
-# `plot_multivector` draws each blade's coefficient on its own number line. It
-# accepts any representation — here, `g3.G` values.
+# `plot_multivector` draws each building block's coefficient on its own number line.
+# An element with a number, three arrows and one plane part,
 
 # %%
 plot_multivector(2 * G.from_real(1) + 3 * e_1 - 1.5 * e_2 + 4 * e_3 + 0.7 * (e_1 * e_2))
+
+# %% [markdown]
+# a vector,
 
 # %%
 u: G = 3 * e_1 - 1.5 * e_2 + 2 * e_3
 plot_multivector(u)
 
+# %% [markdown]
+# a second vector,
+
 # %%
 v: G = 1.5 * e_1 + 5 * e_2 - 1 * e_3
 plot_multivector(v)
 
+# %% [markdown]
+# and their product, a number and three plane parts:
+
 # %%
 plot_multivector(u * v)
-
-# %% [markdown]
-# The wedge magnitude: $|a \wedge b| = |a| * |b| * \sin(\theta)$ (in 𝒢₃)
-# ================================================================
-#
-# The 𝒢₂ derivation carries over: two vectors always span a single 2-plane, so
-# $|a\wedge b| = |a| * |b| * \sin(\theta)$ holds in 𝒢₃ too. The only difference is that
-# $a\wedge b$ is now a **three-component** bivector, and the Lagrange identity
-# (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) is
-# a *sum* of squares
-#
-# $$|a|^2 * |b|^2 - (a\cdot b)^2
-#   = (a_1 * b_2 - a_2 * b_1)^2 + (a_1 * b_3 - a_3 * b_1)^2
-#   + (a_2 * b_3 - a_3 * b_2)^2 = |a\wedge b|^2 .$$
-#
-# Symbols are declared **real** so that $\sqrt{x^2}=|x|$ behaves.
-
-# %%
-# Left undeclared: typed `sympy.Symbol`, pyright would read `symbol * e_1` as
-# sympy's `Expr.__mul__` (an `Expr`), not the multivector's `__rmul__`.
-a_1, a_2, a_3, b_1, b_2, b_3 = sympy.symbols("a_1 a_2 a_3 b_1 b_2 b_3", real=True)
-a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2 + a_3 * Vector.e_3
-b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2 + b_3 * Vector.e_3
-
-# %% [markdown]
-# The dot product (a scalar) and the wedge (a three-component bivector):
-
-# %%
-a.inner_product(b)
-
-# %%
-a ^ b
-
-# %% [markdown]
-# **The Lagrange step.** The residual collapses to $0$ symbolically:
-
-# %%
-dot: Real = a.inner_product(b).scalar_part()
-lagrange_residual: sympy.Expr = sympy.simplify(
-    cast(
-        sympy.Expr,
-        a.magnitude_squared() * b.magnitude_squared()
-        - dot**2
-        - (a ^ b).magnitude_squared(),
-    )
-)
-lagrange_residual
-
-# %%
-assert lagrange_residual == 0
-
-# %% [markdown]
-# **From the squared form to the magnitude.** With
-# $\cos(\theta) = a\cdot b/(|a| * |b|)$ and
-# $\sin(\theta) = \sqrt{1-\cos^2(\theta)}\ge 0$, both $|a\wedge b|$ and
-# $|a| * |b| * \sin(\theta)$ are the square root of the *same* sum of squares. So,
-# unlike the 𝒢₂ case (a single perfect square needing `factor`),
-# sympy closes the difference directly:
-
-# %%
-cos: Real = a.cosine(b)
-sin: sympy.Expr = sympy.sqrt(1 - cos**2)  # sin(θ) ≥ 0 for θ in [0, π]
-wedge_magnitude_from_sin: Real = a.magnitude() * b.magnitude() * sin
-wedge_magnitude_from_sin
-
-# %%
-(a ^ b).magnitude()
-
-# %%
-assert sympy.simplify(wedge_magnitude_from_sin - (a ^ b).magnitude()) == 0
-
-# %% [markdown]
-# **Versor capstone.** As in 𝒢₂, $ab = a\cdot b + a\wedge b$ splits into
-# orthogonal grades, so $|ab|^2 = (a\cdot b)^2 + |a\wedge b|^2 = |a|^2 * |b|^2$ and
-# $|ab| = |a| * |b|$. Here $ab$ is a `g3.Versor` (scalar + bivector):
-
-# %%
-a * b
-
-# %%
-assert (
-    sympy.simplify(
-        cast(
-            sympy.Expr,
-            (a * b).magnitude_squared() - a.magnitude_squared() * b.magnitude_squared(),
-        )
-    )
-    == 0
-)
-
-# %%

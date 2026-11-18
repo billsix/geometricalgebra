@@ -3240,8 +3240,9 @@ class MultiVectorBase(abc.ABC):
         # identity.  No cast
         # needed now that magnitude() is typed Real (int | float | sympy.Expr).
         # (Why the two are equal -- |ab| = |a| * |b| via |a^b| = |a| * |b| * sin(θ) --
-        # is demonstrated in notebooks/displayg2.py and displayg3.py; that the
-        # |to from| form regresses this identity was re-confirmed empirically.)
+        # is demonstrated in notebooks/displayg2areas.py and displayg3measures.py;
+        # that the |to from| form regresses this identity was re-confirmed
+        # empirically.)
         scale: Real = from_vector.magnitude() * to_vector.magnitude()
         # scalar + bivector -- the versor's grade
         product: MultiVectorBase = to_vector * from_vector

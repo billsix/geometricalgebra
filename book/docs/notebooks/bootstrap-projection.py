@@ -64,6 +64,9 @@ a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2", real=True)
 a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
 a
 
+# %% [markdown]
+# and $\vec{\mathbf{b}}$:
+
 # %%
 b: Vector = Scalar(b_1) * e_1 + Scalar(b_2) * e_2
 b
@@ -73,6 +76,9 @@ b
 
 # %%
 values: list[tuple[sympy.Symbol, Real]] = [(a_1, 2), (a_2, 1), (b_1, 1), (b_2, 2)]
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_A: Point = point(coordinates=list(at_values(a, values)))
@@ -127,6 +133,9 @@ at_values(a_rotated, values)
 # %%
 at_values(b_rotated, values)
 
+# %% [markdown]
+# Drawn at the plot values:
+
 # %%
 P_A_ROTATED: Point = point(coordinates=list(at_values(a_rotated, values)))
 P_B_ROTATED: Point = point(coordinates=list(at_values(b_rotated, values)))
@@ -173,6 +182,9 @@ at_values(x, values)
 
 # %%
 at_values(y, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_X: Point = point(coordinates=list(at_values(Scalar(x) * e_1, values)))
@@ -227,6 +239,9 @@ at_values(projection, values)
 
 # %%
 at_values(rejection, values)
+
+# %% [markdown]
+# Drawn at the plot values:
 
 # %%
 P_PROJECTION: Point = point(coordinates=list(at_values(projection, values)))

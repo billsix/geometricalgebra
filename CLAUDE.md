@@ -107,7 +107,9 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   both sides of an identity cancelling term by term, and `at_values(value, values)`,
   which substitutes plot values into a symbolic result; usable by the book's notebooks,
   re-exported from `nbplotutils` for the demo notebooks.
-- `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
+- `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (the product with the
+  specialized classes) and their companions `displayg2areas.py`, `displayg2transforms.py`,
+  `displayg3measures.py`,
   `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`),
   `displaytransforms.py` (translate/scale/rotate and the graph-paper pictures), `displayproofs.py`
   (laws checked term by term, each tagged with its Lean twin)
@@ -183,7 +185,8 @@ and call `self * other`, dispatched to the concrete type.
   exposes its own basis blades at that class's type (`Vector.e_1`, `G.e_1`); `Gn` has none.
 - **No local aliases** for a value that already has a canonical name (reference `Vector.e_1` /
   `Bivector.e_12` directly, never `E1 = Vector.basis_vector(1)`). Carve-outs: the full-`G` demo
-  notebooks (`displayg2`/`displayg3`) may alias full-class constants to bare names, and
+  notebooks (`displayg2`, `displayg2transforms`, `displayg3`) may alias full-class constants to
+  bare names, and
   `displayvectorcalc` binds `i, j, k = e_1, e_2, e_3` (the vector-calculus names it teaches;
   the maintainer, 2026-08-31).
 - **Dot product for vectors, scalar product only where it is meant** — when the operands are vectors
@@ -439,7 +442,7 @@ over a "run it on your host" instruction.
   scene description; the only exceptions are positional-only builtins (`math.cos(x)`). Checked and fixed
   by `python tools/check_epix_keywords.py [--fix]` (which also checks the known epix calls in the book
   notebooks that mention `epix`), a `make format` gate step (the maintainer's rule,
-  2026-10-07). The notebooks' and figure scripts' prose width is checked by
+  2026-10-07). The prose width of the notebooks (the book's and `notebooks/`) and figure scripts is checked by
   `python tools/check_notebook_prose_width.py [--fix]`, also a `make format` step, since E501 skips them. Every binding in a figure file is typed, as everywhere else (`fig: PendingFigure`
   declared above the `with`; `PendingFigure` is `_rotation_scene`'s alias for what `epix.figure()` yields).
   **A label's colour matches the line/vector it labels** (the maintainer's rule, 2026-10-09) so a reader
