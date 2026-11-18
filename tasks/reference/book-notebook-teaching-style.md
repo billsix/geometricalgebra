@@ -90,7 +90,8 @@ this standard; see "History of the model" below.) What they do, as rules:
     `show_cancellation` (`src/gacalc/nbdisplay.py`). Above a few dozen terms a side, show the zero
     difference and say why the table is skipped.
 15. **Zero developer noise**: no `pyright: ignore` trailers, no typing workarounds in sight, short
-    cells, mostly one expression.
+    cells, mostly one expression. A cell's bare last expression needs no comment: `pyrightconfig.json`
+    turns `reportUnusedExpression` off for `notebooks/` and `book/docs/notebooks/`.
 
 ## What to avoid
 

@@ -1,4 +1,7 @@
 {
   "include": ["notebooks"],
-  "reportUnusedExpression": "none"
+  "executionEnvironments": [
+    { "root": "notebooks", "reportUnusedExpression": "none" },
+    { "root": "book/docs/notebooks", "reportUnusedExpression": "none" }
+  ]
 }

@@ -382,7 +382,9 @@ over a "run it on your host" instruction.
   make/CI target, not part of the default `pytest`).
 - **`make check-notebooks`** — runs `pyright notebooks/` in the container (`ty` covers src/tests but
   not the notebooks). Kept separate from `make test` so a pyright-version bump can't redden it;
-  `pyrightconfig.json` scopes it to `notebooks/` and must **not** hardcode `pythonVersion` (a mismatch
+  `pyrightconfig.json` scopes it to `notebooks/`, turns `reportUnusedExpression` off for the two notebook
+  directories only (an `executionEnvironments` entry each; a cell's last bare expression is its output,
+  and no notebook carries a per-line `pyright: ignore`), and must **not** hardcode `pythonVersion` (a mismatch
   with the image's Python makes pyright emit spurious "refers to itself" errors — let it auto-detect).
 - **`make notebooks-ipynb`** — converts every `notebooks/*.py` (jupytext percent format, the committed
   source) to a gitignored `.ipynb`. **`make spyder`** opens the Spyder IDE; it needs an image built with
