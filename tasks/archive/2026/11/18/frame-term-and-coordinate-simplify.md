@@ -19,7 +19,9 @@ the coordinate (`[1]`).
 `src/gacalc/frame.py` now has one nested `coordinate(y, v, m)`:
 
 ```python
-coordinate_along(y.projected_onto(m), along=v.projected_onto(m), float_close_to_zero=...)
+coordinate_along(
+    y.projected_onto(m), along=v.projected_onto(m), float_close_to_zero=...
+)
 ```
 
 - The reciprocal inverse uses it directly.
