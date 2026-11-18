@@ -51,6 +51,13 @@ import gacalc.g2 as g2
 import gacalc.g3 as g3
 from gacalc.base import MultiVectorBase
 from gacalc.g2 import e_1, e_2
+from gacalc.nbplotutils import (
+    create_graphs,
+    create_graphs_3d,
+    draw_angle,
+    draw_bivector,
+    draw_vectors,
+)
 from gacalc.transforms import (
     ComposableFunction,
     InvertibleFunction,
@@ -90,6 +97,26 @@ a: g2.Vector = 3 * e_1 + 4 * e_2
 b: g2.Vector = 1 * e_1 + 2 * e_2
 show(a)
 
+# %%
+# the vector a as an arrow from the origin
+with create_graphs(graph_bounds=(5, 5)):
+    draw_vectors([(a, r"\vec{\mathbf{a}}", "tab:blue")])
+
+# %% [markdown]
+# A scalar times a vector stretches it along its own line: `2 * b` is twice as
+# long, and `-1 * b` points the other way.
+
+# %%
+show(2 * b, -1 * b)
+with create_graphs(graph_bounds=(5, 5)):
+    draw_vectors(
+        [
+            (2 * b, r"2 * \vec{\mathbf{b}}", "tab:orange"),
+            (b, r"\vec{\mathbf{b}}", "tab:blue"),
+            (-1 * b, r"-1 * \vec{\mathbf{b}}", "tab:red"),
+        ]
+    )
+
 # %% [markdown]
 # The geometric product of two vectors
 # ------------------------------------
@@ -105,6 +132,18 @@ show(a * b)
 # %%
 # the wedge alone is a g2.Bivector; the dot alone is a g2.Scalar
 show(a ^ b, a.inner_product(b))
+
+# %% [markdown]
+# The wedge `a ^ b` is the parallelogram the two vectors span: its area is
+# `|a ^ b|`, and the arc from `a` toward `b` is its orientation (counterclockwise
+# here, so the `e_12` coefficient is positive).
+
+# %%
+with create_graphs(graph_bounds=(5, 5)):
+    draw_bivector(a, b, label=r"\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}")
+    draw_vectors(
+        [(a, r"\vec{\mathbf{a}}", "tab:blue"), (b, r"\vec{\mathbf{b}}", "tab:orange")]
+    )
 
 # %% [markdown]
 # Type follows the operation, not the value
@@ -152,6 +191,17 @@ quarter: g2.Versor = g2.Vector.versor_from_vectors(from_vector=e_1, to_vector=e_
 rotated: g2.Vector = quarter * e_1 * quarter.inverse()
 show(rotated)
 
+# %%
+# the quarter turn carries e_1 to e_2; the arc is the turn
+with create_graphs(graph_bounds=(3, 3)):
+    draw_angle(from_vector=e_1, to_vector=rotated, radius=0.6)
+    draw_vectors(
+        [
+            (e_1, r"\vec{\mathbf{e}}_1", "tab:blue"),
+            (rotated, r"\mathrm{rotated}", "tab:orange"),
+        ]
+    )
+
 # %% [markdown]
 # A versor's plane of rotation
 # ---------------------------
@@ -161,6 +211,14 @@ show(rotated)
 
 # %%
 show(quarter.plane_of_rotation())
+
+# %%
+# the plane of rotation: the unit square e_1 and e_2 span, oriented e_1 -> e_2
+with create_graphs(graph_bounds=(3, 3)):
+    draw_bivector(e_1, e_2, label=r"\mathbf{e}_{12}")
+    draw_vectors(
+        [(e_1, r"\vec{\mathbf{e}}_1", "black"), (e_2, r"\vec{\mathbf{e}}_2", "black")]
+    )
 
 # %% [markdown]
 # Two ways to rotate are the same thing
@@ -201,6 +259,26 @@ for label, value in [
 # %%
 # the versor sandwich and projection_rotation agree exactly
 R * w * R.inverse() == projection_rotation(from_vector=frm, to_vector=to)(w)
+
+# %% [markdown]
+# The picture of that cell: the bare sandwich `R * w * R̃` turns `w` and also
+# stretches it by `|R|² = 2`, while `R * w * R⁻¹` only turns it, and lands on
+# exactly the arrow `projection_rotation` draws (the `==` above).
+
+# %%
+with create_graphs(graph_bounds=(3, 3)):
+    draw_angle(from_vector=w, to_vector=R * w * R.inverse(), radius=0.6)
+    draw_vectors(
+        [
+            (w, r"\vec{\mathbf{w}}", "tab:blue"),
+            (R * w * R.reverse(), r"R * \vec{\mathbf{w}} * \tilde{R}", "tab:red"),
+            (
+                R * w * R.inverse(),
+                r"R * \vec{\mathbf{w}} * R^{-1}",
+                "tab:green",
+            ),
+        ]
+    )
 
 # %% [markdown]
 # The grade product table, made visible
@@ -247,6 +325,22 @@ show(u * v, u ^ v)
 # dual of a bivector (a plane) is the orthogonal vector -- like u x v
 B: g3.Bivector = u ^ v
 show(B, B.dual())
+
+# %% [markdown]
+# In a picture: `u ^ v` is the parallelogram in the plane of `u` and `v`, and its
+# dual is the arrow perpendicular to that plane, the cross product `u × v`.
+
+# %%
+# a camera that sees the plane at a slant and its normal side-on
+with create_graphs_3d(bound=9, elevation=20, azimuth=0):
+    draw_bivector(u, v, label=r"\vec{\mathbf{u}} \wedge \vec{\mathbf{v}}")
+    draw_vectors(
+        [
+            (u, r"\vec{\mathbf{u}}", "tab:blue"),
+            (v, r"\vec{\mathbf{v}}", "tab:orange"),
+            (B.dual(), r"(\vec{\mathbf{u}} \wedge \vec{\mathbf{v}})^*", "tab:red"),
+        ]
+    )
 
 # %%
 B.dual()  # the components of u x v

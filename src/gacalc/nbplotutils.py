@@ -11,13 +11,16 @@
 # Lesser General Public License (the LICENSE file in this repository)
 # for more details.
 
-"""matplotlib/LaTeX plotting helpers for the demo notebooks — 2-D pictures of
-multivectors and of transforms acting on them.
+"""matplotlib/LaTeX plotting helpers for the demo notebooks — pictures of
+multivectors (2-D and 3-D) and of transforms acting on them.
 
 The ``create_*`` / ``draw_*`` helpers draw inside a ``with create_graphs():``
 block (which sets up a square figure and renders it on exit).  Each takes an
 ``InvertibleFunction`` transform (default: the identity) and applies it to the
 geometry it draws, so the same call shows a shape before or after a transform.
+``draw_vectors`` / ``draw_bivector`` / ``draw_angle`` draw vectors, a bivector's
+oriented parallelogram and a turn, in 2-D inside ``create_graphs`` or in 3-D inside
+``create_graphs_3d``.
 Everything is representation-agnostic — it works on any ``MultiVectorBase``
 (``Gn``, ``g3.Vector``, …) via the blade-dict interchange.
 """
@@ -39,6 +42,8 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.patches import Polygon
 from matplotlib_inline.backend_inline import set_matplotlib_formats
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from mpl_toolkits.mplot3d.axes3d import Axes3D
 
 from gacalc.base import (
     Blade,
@@ -653,3 +658,218 @@ def plot_multivector(
     display(fig)
     plt.close(fig)
     return fig
+
+
+#: One vector to draw: the vector, its label (LaTeX without the ``$``), and its colour.
+LabelledVector = tuple[MultiVectorBase, str, str]
+
+
+def _components(mv: MultiVectorBase, axes: Axes) -> np.ndarray:
+    """``mv``'s vector coefficients as floats: e₁ to e₃ on 3-D axes, else e₁, e₂."""
+    dimension: int = 3 if isinstance(axes, Axes3D) else 2
+    return np.array([float(_coord(mv, (i,))) for i in range(1, dimension + 1)])
+
+
+@contextlib.contextmanager
+def create_graphs_3d(
+    bound: float = 3.0,
+    title: str | None = None,
+    elevation: float = 30.0,
+    azimuth: float = -60.0,
+) -> Generator[Axes3D, None, Figure]:
+    """The 3-D twin of ``create_graphs``: a cube of axes from ``-bound`` to ``bound``.
+
+    ``draw_vectors``, ``draw_bivector`` and ``draw_angle`` inside the block draw in
+    3-D. The figure is rendered and displayed on exit.
+
+    Args:
+        bound: the half-width of each axis.
+        title: the figure's title, if any.
+        elevation: the camera's angle above the e₁e₂ plane, in degrees.
+        azimuth: the camera's angle around the e₃ axis, in degrees.
+
+    Yields:
+        Axes3D: the 3-D axes.
+    """
+    fig: Figure = plt.figure(figsize=(6, 6))
+    axes: Axes3D = Axes3D(fig)
+    fig.add_axes(axes)
+    token: contextvars.Token[Axes] = _axes.set(axes)
+    axes.set_xlim((-bound, bound))
+    axes.set_ylim((-bound, bound))
+    axes.set_zlim((-bound, bound))
+    axes.set_box_aspect((1, 1, 1))
+    axes.view_init(elev=elevation, azim=azimuth)
+    axes.set_xlabel("$\\vec{\\mathbf{e}}_1$")
+    axes.set_ylabel("$\\vec{\\mathbf{e}}_2$")
+    axes.set_zlabel("$\\vec{\\mathbf{e}}_3$")
+    if title is not None:
+        axes.set_title(title)
+    try:
+        yield axes
+    finally:
+        _axes.reset(token)
+    fig.canvas.draw()
+    display(fig)
+    plt.close(fig)
+    return fig
+
+
+def _label(axes: Axes, at: np.ndarray, text: str, color: str) -> None:
+    """Write ``text`` (LaTeX without the ``$``) at the point ``at``, in ``color``."""
+    match axes:
+        case Axes3D():
+            axes.text(
+                x=float(at[0]),
+                y=float(at[1]),
+                z=float(at[2]),
+                s=f"${text}$",
+                color=color,
+                fontsize=12,
+            )
+        case _:
+            axes.annotate(
+                f"${text}$",
+                xy=(float(at[0]), float(at[1])),
+                xytext=(6, 6),
+                textcoords="offset points",
+                color=color,
+                fontsize=12,
+            )
+
+
+def _arrow(
+    axes: Axes,
+    tail: np.ndarray,
+    head: np.ndarray,
+    color: str,
+    width: float,
+    head_ratio: float = 0.1,
+) -> None:
+    """Draw an arrow from ``tail`` to ``head``.
+
+    ``head_ratio`` is the 3-D arrowhead's length as a fraction of the arrow's (2-D
+    arrowheads have a fixed size).
+    """
+    match axes:
+        case Axes3D():
+            axes.quiver(
+                *tail,
+                *(head - tail),
+                color=color,
+                linewidth=width,
+                arrow_length_ratio=head_ratio,
+            )
+        case _:
+            axes.annotate(
+                "",
+                xy=(float(head[0]), float(head[1])),
+                xytext=(float(tail[0]), float(tail[1])),
+                arrowprops={"arrowstyle": "-|>", "color": color, "lw": width},
+            )
+
+
+def draw_vectors(vectors: Sequence[LabelledVector]) -> None:
+    """Draw each vector as an arrow from the origin, labelled at its tip.
+
+    Works inside ``create_graphs`` (2-D, the e₁ and e₂ coefficients) and
+    ``create_graphs_3d`` (3-D, e₁ to e₃). The coefficients must be numbers.
+
+    Args:
+        vectors: ``(vector, label, colour)`` triples; the label is LaTeX without
+            the ``$``, and is drawn in the vector's colour.
+    """
+    axes: Axes = _current_axes()
+    vector: MultiVectorBase
+    label: str
+    color: str
+    for vector, label, color in vectors:
+        tip: np.ndarray = _components(vector, axes)
+        _arrow(axes, tail=np.zeros_like(tip), head=tip, color=color, width=2.0)
+        _label(axes, at=tip, text=label, color=color)
+
+
+def draw_angle(
+    from_vector: MultiVectorBase,
+    to_vector: MultiVectorBase,
+    color: str = "black",
+    radius: float | None = None,
+) -> None:
+    """Draw the arc that turns ``from_vector`` toward ``to_vector``, with an arrowhead.
+
+    The arc lies in the plane of the two vectors and sweeps the angle between them
+    (less than a half turn), so it shows which way the plane is oriented. The
+    vectors must not be parallel.
+
+    Args:
+        from_vector: where the arc starts.
+        to_vector: the direction the arc turns toward.
+        color: the arc's colour.
+        radius: the arc's radius; by default a third of the shorter vector.
+    """
+    axes: Axes = _current_axes()
+    a: np.ndarray = _components(from_vector, axes)
+    b: np.ndarray = _components(to_vector, axes)
+    a_hat: np.ndarray = a / np.linalg.norm(a)
+    # the unit vector in the plane that is perpendicular to a, on b's side
+    b_perp: np.ndarray = b - np.dot(b, a_hat) * a_hat
+    b_perp_hat: np.ndarray = b_perp / np.linalg.norm(b_perp)
+    θ: float = math.atan2(float(np.dot(b, b_perp_hat)), float(np.dot(b, a_hat)))
+    r: float = (
+        radius
+        if radius is not None
+        else min(float(np.linalg.norm(a)), float(np.linalg.norm(b))) / 3
+    )
+    t: np.ndarray = np.linspace(0.0, θ, 40)
+    arc: np.ndarray = r * (np.outer(np.cos(t), a_hat) + np.outer(np.sin(t), b_perp_hat))
+    axes.plot(*arc.T, color=color, linewidth=1.5)
+    _arrow(axes, tail=arc[-4], head=arc[-1], color=color, width=1.5, head_ratio=1.0)
+
+
+def draw_bivector(
+    a: MultiVectorBase,
+    b: MultiVectorBase,
+    label: str,
+    color: str = "tab:green",
+) -> None:
+    """Draw the bivector ``a ∧ b`` as the oriented parallelogram ``a`` and ``b`` span.
+
+    The shaded parallelogram is the bivector's plane and its area, ``|a ∧ b|``; the
+    arc from ``a`` toward ``b`` (``draw_angle``) shows its orientation. Works inside
+    ``create_graphs`` and ``create_graphs_3d``.
+
+    Args:
+        a: the first side; the orientation arc starts here.
+        b: the second side.
+        label: LaTeX without the ``$``, drawn at the parallelogram's centre.
+        color: the fill and label colour.
+    """
+    axes: Axes = _current_axes()
+    p: np.ndarray = _components(a, axes)
+    q: np.ndarray = _components(b, axes)
+    corners: np.ndarray = np.array([np.zeros_like(p), p, p + q, q])
+    match axes:
+        case Axes3D():
+            axes.add_collection3d(
+                Poly3DCollection([corners], alpha=0.3, facecolor=color, edgecolor=color)
+            )
+        case _:
+            axes.add_patch(
+                Polygon(
+                    corners, closed=True, alpha=0.3, facecolor=color, edgecolor=color
+                )
+            )
+    centre: np.ndarray = (p + q) / 2
+    match axes:
+        case Axes3D():
+            _label(axes, at=centre, text=label, color=color)
+        case _:
+            axes.annotate(
+                f"${label}$",
+                xy=(float(centre[0]), float(centre[1])),
+                ha="center",
+                va="center",
+                color=color,
+                fontsize=12,
+            )
+    draw_angle(from_vector=a, to_vector=b, color=color)

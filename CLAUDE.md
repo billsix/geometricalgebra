@@ -99,7 +99,9 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   inside `run`). Runners live in `examples/` (outside pytest's
   `testpaths`, so a test run never opens a window; `format.sh` type-checks them). Import order,
   Wayland's `PYGLFW_LIBRARY`, headless runs and the GL conventions: `tasks/reference/gl-toolkit.md`.
-- `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks.
+- `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks, including
+  `draw_vectors` / `draw_bivector` / `draw_angle`, which draw in 2-D (`create_graphs`) or 3-D
+  (`create_graphs_3d`).
 - `src/gacalc/nbdisplay.py` — display-only notebook helpers (sympy + IPython, no matplotlib):
   `show_mult(a, b)`, the term-by-term product table and its sum, and `at_values(value, values)`,
   which substitutes plot values into a symbolic result; usable by the book's notebooks,

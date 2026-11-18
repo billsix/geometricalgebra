@@ -1,108 +1,57 @@
 # Add matplotlib plots to displaygraded.py — show the geometry, not just the values
 
-**Status:** proposed — needs go-ahead
+**Completed:** 2026-11-18 (William Emerison Six <billsix@gmail.com>; authorized batch
+`ready-tasks-batch-2026-11-18`)
 **Priority:** 5
 **Difficulty:** 4
 **Started:** 2026-06-06
-**Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — citations re-verified after the
-rotor→versor rename; line-number anchors replaced by names.
 
-## BLUF
+## Outcome
 
-`displaygraded.py` now prints each result cleanly (the `show()` helper renders `Type: <latex>`, and the
-two table cells render as a Math list / Markdown table). But the *geometric meaning* is still only
-implied by coefficients. Add **matplotlib plots** alongside the key cells so a reader can see what each
-operation does to vectors/planes — arrows for vectors, an oriented area for a bivector, before/after
-arrows for a rotation, etc.
+`notebooks/displaygraded.py` printed each result's type and value but never drew the geometry.
+It now has a plot cell after each key result:
 
-## Context
+1. the vector `a` as an arrow;
+2. scalar times vector (new, from the 2026-08-27 bullet): `b`, `2 * b` and `-1 * b`;
+3. `a ∧ b` as the oriented parallelogram, with the arc from `a` toward `b`;
+4. the quarter-turn versor carrying `e_1` to `e_2`, with the turn's arc;
+5. `plane_of_rotation()` as the oriented unit square `e_12`;
+6. the un-normalized sandwich: `w`, `R * w * R̃` (stretched by `|R|² = 2`) and `R * w * R⁻¹`. The
+   Markdown cell says this last arrow is the one `projection_rotation` gives, as the `==` cell shows;
+7. 3D: `u`, `v`, the patch `u ∧ v` and its dual, the normal `u × v`.
 
-This is a geometric-algebra teaching notebook; the payoff is *geometric intuition*. A versor that turns
-`e_1 → e_2`, a wedge that sweeps an oriented parallelogram, the dual of a plane that points along its
-normal — these land far harder as pictures than as blade-dicts. The repo already has plotting
-infrastructure in `nbplotutils.py` (`create_graphs`, `create_basis`, `draw_*`, `plot_multivector`) and
-`displayg2.py` / `displaymv.py` already draw graph-paper transforms, so there's a pattern to build on.
+The helpers are in `src/gacalc/nbplotutils.py`:
+- `draw_vectors([(vector, label, colour), ...])`
+- `draw_bivector(a, b, label, color)`
+- `draw_angle(from_vector, to_vector, color, radius)`
+- `create_graphs_3d(bound, title, elevation, azimuth)`
 
-## Concepts to visualize (2D, 𝒢₂ — the bulk of the notebook)
-
-1. **A vector** (`a = 3 e_1 + 4 e_2`): an arrow from the origin.
-2. **Two vectors + their wedge** (`a`, `b`, `a ^ b`): the two arrows plus the **oriented parallelogram**
-   they span (the bivector = signed area), with an arc/arrow showing orientation. Tie it to
-   `a * b = a·b + a∧b` (the dot = projection length, the wedge = area).
-3. **A versor rotating a vector** (`quarter * e_1 * quarter.inverse()`, `quarter: g2.Versor`): `e_1` and its rotated image
-   (a quarter turn), with the swept arc.
-4. **The un-normalized versor sandwich** (the cell that compares `R w R̃` vs `R w R⁻¹` vs `rotate(w)`):
-   overlay `w = e_1`, the **scaled** result `R w R̃ = 2 e_2` (a longer arrow), the **pure** result
-   `R w R⁻¹ = e_2`, and `rotate(w) = e_2`. The picture *is* the lesson: the bare sandwich scales,
-   `R⁻¹` divides it out, and the pure result coincides with `rotate`. **Highest-value plot.**
-5. **`plane_of_rotation()`**: the e_1 e_2 plane shown as the shaded oriented unit area.
-
-## Concepts to visualize (3D, 𝒢₃ — optional, harder)
-
-6. **`u`, `v`, `biv = u ^ v`, `biv.dual()`**: 3D arrows for `u`/`v`, the spanned plane patch for the
-   bivector, and the dual as the **normal vector** — the geometric-algebra cross product. Needs
-   `mpl_toolkits.mplot3d`. Scope decision below.
-
-## Approach / building blocks
-
-- A small `draw_vectors(ax, *(vec, label, color), ...)` (arrows via `ax.annotate`/`quiver`) and a
-  `draw_bivector(ax, a, b)` (a shaded parallelogram + orientation arc) — either added to
-  `nbplotutils.py` (reusable, but that module is matplotlib-heavy and excluded from the test suite) or
-  kept **inline** in the notebook (simpler, self-contained). Decide in the plan.
-- Pull components out of a `g2.G`/`g2.Vector` via `to_blade_dict()` (e.g. `d.get((1,), 0)`, `d.get((2,), 0)`),
-  cast to `float`. (Symbolic values like the `quarter` versor's `cos/sin(pi/4)` need `float(...)`.)
-- Reuse `create_graphs` for axes/grid if it fits; otherwise a plain `plt.subplots` with equal aspect.
-
-## Plan (once approved)
-
-- [ ] Decide: helpers in `nbplotutils.py` vs inline in the notebook; and 2D-only vs include the 3D §.
-- [ ] Add `draw_vectors` / `draw_bivector` (wherever decided).
-- [ ] Insert a plot cell after each concept above (1–5, and 6 if in scope), each as its own `# %%`
-      cell right after the value it illustrates.
-- [ ] Headless-verify rendering: run the figures under the `Agg` backend (no GUI) to confirm no
-      exceptions and sane extents; the actual SVG is only seen in Jupyter.
-- [ ] `entrypoint/format.sh` clean (ruff + ty). Notebooks aren't run by the suite, so no test delta;
-      confirm the suite stays green anyway.
-
-## Notes / considerations
-
-- Notebook-/plotting-only; **no library change** expected (just reading `to_blade_dict()` / fields).
-- Keep each plot small and captioned by the markdown cell above it; the plot *complements* the
-  `show()` output, it doesn't replace it.
-- `warnings.filterwarnings("error", category=RuntimeWarning)` is set at the top of the sibling
-  notebooks — watch for matplotlib RuntimeWarnings becoming errors.
+The `draw_*` helpers draw into the axes of the enclosing block and dispatch on it with a `match`:
+2-D inside `create_graphs`, 3-D (`Axes3D`) inside `create_graphs_3d`. `draw_angle` sweeps the arc in
+the plane of the two vectors, from the first toward the second, so one function shows orientation in
+either dimension.
 
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-18)
 
-Answered when the batch started:
+1. Helpers in `nbplotutils.py`, not inline, so `displayg2`/`displaymv` can reuse them.
+2. The 3D 𝒢₃ plot is in scope now.
+3. Scalar·vector is a standalone plot; `show_mult` stays a values table.
+4. Bivector rendering: a shaded parallelogram plus an orientation arc (left to implementation).
 
-1. **Helpers live in `src/gacalc/nbplotutils.py`** (`draw_vectors`, `draw_bivector`), so `displayg2`/`displaymv` can reuse them.
-2. **The 3D 𝒢₃ plot (concept 6) is in scope now**, via `mpl_toolkits.mplot3d`.
-3. **Scalar·vector scaling is a standalone plot** in the notebook; `show_mult` stays a values table.
-4. Bivector rendering was left to implementation (the task said so): a shaded parallelogram plus an orientation arc.
+## Judgment calls
 
-## Open questions
+- **3D camera.** Matplotlib's default camera (elevation 30°, azimuth −60°) happens to look almost
+  straight down `u × v` = (−3, 6, −3), so the normal collapsed to a dot. The notebook passes
+  `elevation=20, azimuth=0`, which shows the plane at a slant and the normal side-on.
+  `create_graphs_3d` keeps matplotlib's defaults.
+- **Labels.** Labels follow the vector-notation rule (`\vec{\mathbf{a}}`, `\mathbf{e}_{12}`), which
+  matplotlib's mathtext renders. Labels too long for a small figure were shortened, and the
+  Markdown says the rest.
 
-None.
+## Verification
 
-## Folded-in ideas (2026-08-27, William Emerison Six <billsix@gmail.com>) — two batch-triage bullets map here
-
-Two maintainer bullets were triaged into this task because it already owns the notebook plotting:
-
-- **Bullet: *"Matplotlib print vectors 2d and 3d, put in the notebooks."*** — this is concept 1 (2D
-  vector arrows) plus the 3D vector case. **The 3D half is genuinely new infrastructure** — all current
-  plotting (`src/gacalc/nbplotutils.py`: `plot_multivector`, `create_graphs`, `_to_xy`) is
-  **2D only**; there is no 3D helper yet (concept 6 above already flagged `mplot3d`). See the existing
-  "include the 3D plots?" open question — this bullet raises its priority.
-- **Bullet: *"2D Plot things like scalar vector multiplication. Plot things like vector vector
-  multiplication."*** — vector·vector is already covered (concept 2: `a*b = a·b + a∧b`, dot = projection
-  length, wedge = parallelogram area). **Scalar·vector scaling is the net-new add** (an arrow and its
-  scaled image). `nbplotutils.show_mult` (`src/gacalc/nbplotutils.py`) already renders a
-  multiplication *table* (values, not geometry) — decide whether to add a geometry panel there or keep
-  these as standalone plots (Q below).
-
-**New open questions (block these additions):**
-- **Is 3D plotting in scope now** (this bullet asks for it explicitly), or still deferred as the
-  "fast-follow" the 3D §/concept-6 question already contemplates? 3D may motivate
-  `tasks/archive/2026/10/07/epix-plot-integration.md` (done).
-- **Scalar·vector** — extend `show_mult` with a geometry panel, or a standalone scaling plot?
+- The notebook ran headless (Agg backend, `RuntimeWarning` as error) with all 7 figures saved and
+  looked at.
+- ruff, `ty check` on the module and notebook, and the nbplotutils doctests/tests passed.
+- `tools/check_annotations.py` reports one new row, the `LabelledVector` type alias, which is a
+  classified-out kind.
