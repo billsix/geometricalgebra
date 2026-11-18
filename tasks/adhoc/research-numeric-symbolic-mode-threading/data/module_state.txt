@@ -1,0 +1,7 @@
+src/gacalc/base.py:107:#: is passed.  Empty by default (standard e-notation).  A module global on
+src/gacalc/base.py:113:_blade_display_symbols: dict[Blade, str] = {}
+src/gacalc/nbplotutils.py:147:#: A :class:`contextvars.ContextVar` rather than a plain module global for two
+src/gacalc/nbplotutils.py:150:#: other (a bare global would leave the outer block with ``None``).  And an unset
+src/gacalc/nbplotutils.py:151:#: ContextVar raises at the point of use, which is how ``_current_axes()`` can
+src/gacalc/nbplotutils.py:153:_axes: contextvars.ContextVar[Axes] = contextvars.ContextVar("axes")
+src/gacalc/nbplotutils.py:179:    Yields the axes (also published for ``draw_*`` via a ``ContextVar``, so those

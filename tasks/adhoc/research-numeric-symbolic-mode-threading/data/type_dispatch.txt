@@ -1,0 +1,21 @@
+src/gacalc/base.py:788:        if isinstance(rhs, (int, float, sympy.Expr)):
+src/gacalc/base.py:906:        if isinstance(rhs, (int, float, sympy.Expr)):
+src/gacalc/base.py:1014:            if isinstance(magnitude_squared, float)
+src/gacalc/base.py:2250:        if not isinstance(mag_sq, float):
+src/gacalc/base.py:3515:            exp_s: Real = math.exp(s) if isinstance(s, float) else sympy.exp(s)
+src/gacalc/base.py:3538:        numeric: bool = isinstance(θ, float)
+src/gacalc/frame.py:612:def _has_float(vectors: Sequence[MultiVectorBase]) -> bool:
+src/gacalc/frame.py:615:    return any(isinstance(coefficient, float) for v in vectors for coefficient in v)
+src/gacalc/frame.py:760:                    float_close_to_zero=_has_float((v, w)),
+src/gacalc/frame.py:958:            tolerant: bool = _has_float((y, v, m))
+src/gacalc/transforms.py:841:        isinstance(c, (int, float)) or bool(getattr(c, "is_number", False))
+tests/test_exp.py:52:    assert all(isinstance(coef, float) for coef in R.to_blade_dict().values())
+tests/test_focus_to_matrix.py:53:def test_to_matrix_is_float64_through_a_rotation() -> None:
+tests/test_line_and_plane.py:102:    return any(isinstance(coefficient, float) for coefficient in v)
+tests/test_line_and_plane.py:212:    assert all(not isinstance(coefficient, float) for coefficient in f(a))
+tests/test_line_to_line_generated.py:129:    assert all(not isinstance(coefficient, float) for coefficient in function(x))
+tests/test_line_to_line_projection.py:51:    return any(isinstance(coefficient, float) for coefficient in v)
+tests/test_line_to_line_projection.py:142:    if isinstance(quotient, float):
+tests/test_line_to_line_rejection.py:51:    return any(isinstance(coefficient, float) for coefficient in v)
+tests/test_sandwich_grades.py:175:    assert all(not isinstance(c, float) for c in rotated)
+tools/gen_specialized.py:7308:                            parse_expr("isinstance(angle_in_radians, float)"),
