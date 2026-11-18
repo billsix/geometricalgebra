@@ -315,6 +315,48 @@ def pseudoscalar_squared_is_positive(r: int) -> bool:
     return pseudoscalar_squared_sign(r) == 1
 
 
+#: How small, relative to the scalar part, a float multivector's other coefficients
+#: may be and still count as rounding residue (``_is_scalar_up_to_rounding``).
+_SCALAR_RESIDUE_REL_TOL: float = 1e-9
+
+
+def _is_scalar_up_to_rounding(value: "MultiVectorBase") -> bool:
+    """Whether a float ``value`` is a scalar except for rounding residue.
+
+    ``True`` when some coefficient is inexact (a Python ``float`` or a sympy
+    ``Float``, which float arithmetic through sympy produces), the scalar part is
+    nonzero, and every other coefficient is at most ``_SCALAR_RESIDUE_REL_TOL``
+    times the scalar part in size.  Exact (integer, rational, symbolic) input is
+    never accepted here: it must pass the exact :meth:`MultiVectorBase.is_scalar`.
+
+    >>> from gacalc.g3 import Versor
+    >>> residue = Versor(coeff_scalar=173.6, coeff_e_23=8.9e-16)
+    >>> _is_scalar_up_to_rounding(residue)
+    True
+    >>> _is_scalar_up_to_rounding(Versor(coeff_scalar=1.0, coeff_e_12=0.5))
+    False
+    >>> _is_scalar_up_to_rounding(Versor(coeff_scalar=1, coeff_e_12=0))  # exact
+    False
+    >>> import sympy
+    >>> mixed = Versor(coeff_scalar=2.0, coeff_e_12=sympy.Symbol("x"))
+    >>> _is_scalar_up_to_rounding(mixed)
+    False
+    """
+    coefficients: Mapping[Blade, Real] = value.to_blade_dict()
+    if not any(isinstance(c, float | sympy.Float) for c in coefficients.values()):
+        return False
+    try:
+        scalar: float = abs(float(coefficients.get((), 0)))
+        return scalar > 0 and all(
+            abs(float(c)) <= _SCALAR_RESIDUE_REL_TOL * scalar
+            for blade, c in coefficients.items()
+            if blade != ()
+        )
+    except TypeError:
+        # a symbolic coefficient beside the float ones: not a rounding question
+        return False
+
+
 class MultiVectorBase(abc.ABC):
     """Abstract base class for an element (multivector) of a geometric algebra.
 
@@ -2235,8 +2277,13 @@ class MultiVectorBase(abc.ABC):
         # Gate: ``Ã / |A|²`` is a genuine inverse iff ``Ã * A`` is a scalar — then
         # ``A⁻¹ * A = Ã * A / |A|² = 1`` — which holds for a blade or versor.  A
         # non-scalar product means A is a mixed-grade element whose (general) inverse
-        # is not implemented.  See :meth:`is_scalar`.
-        if not reverse_times_self.is_scalar():
+        # is not implemented.  See :meth:`is_scalar`.  Float input is held to a
+        # tolerance (:func:`_is_scalar_up_to_rounding`): a float versor's ``Ã * A``
+        # carries rounding residue in its non-scalar coefficients.
+        if not (
+            reverse_times_self.is_scalar()
+            or _is_scalar_up_to_rounding(reverse_times_self)
+        ):
             raise RuntimeError(
                 "inverse() supports a blade or versor (where Ã * A is a scalar); the "
                 "general mixed-grade multivector inverse is not implemented "

@@ -1,58 +1,55 @@
 # `inverse()` rejects a float versor because of rounding, so 3D float `versor_rotation` crashes
 
-**Status:** proposed — needs go-ahead
+**Completed:** 2026-11-18 (William Emerison Six <billsix@gmail.com>; overnight batch
+`overnight-batch-2026-11-18`)
 **Priority:** 3
 **Difficulty:** 3
-**Created:** 2026-11-18 (William Emerison Six <billsix@gmail.com>; found while writing
-`tests/test_frame_svd.py` for `tasks/archive/2026/11/18/frame-svd-investigation.md`)
+**Created:** 2026-11-18 (found while writing `tests/test_frame_svd.py` for
+`tasks/archive/2026/11/18/frame-svd-investigation.md`)
 
-## BLUF
+## Outcome
 
-`MultiVectorBase.inverse` (`src/gacalc/base.py`) raises `RuntimeError("inverse() supports a blade
-or versor …")` unless `Ã * A` is exactly a scalar. With float coefficients, a 𝒢₃ versor's `Ã * A`
-carries a rounding residue in a bivector coefficient (8.9e-16 below), so the check fails. Because
-`versor_rotation` inverts its versor, it crashes on ordinary float vectors in 3D. Done means:
-- a float versor inverts;
-- a genuinely mixed-grade float element is still rejected;
-- a test pins both;
-- the gates pass.
+`MultiVectorBase.inverse` (`src/gacalc/base.py`) used to raise `RuntimeError` unless `Ã * A` was
+exactly a scalar. A 𝒢₃ versor built from float vectors has `Ã * A` = scalar + about 1e-16 on a
+bivector blade, so `versor_rotation(from_vector=a, to_vector=b)` crashed on ordinary float 3D
+vectors.
 
-## Reproduction
+The gate now also accepts `_is_scalar_up_to_rounding(Ã * A)`, a new module-level helper in
+`base.py`. It returns `True` only when:
+- some coefficient is inexact (a Python `float` or a sympy `Float`);
+- the scalar part is nonzero;
+- every other coefficient is at most `_SCALAR_RESIDUE_REL_TOL = 1e-9` times the scalar part.
 
-```python
-from gacalc.g3 import e_1, e_2, e_3
-from gacalc.transforms import versor_rotation
+The tolerance is relative, because the scalar is `|A|²` and grows with the vectors. Exact input
+never takes this path, a symbolic coefficient beside float ones returns `False`, and a genuinely
+mixed-grade float element still raises. The inverse returned is unchanged, `Ã / |A|²`.
 
-a = 2.0 * e_1 + 1.0 * e_2 + 0.5 * e_3
-b = 0.5 * e_1 + 3.0 * e_2 + 1.0 * e_3
-R = a.versor_from_vectors(from_vector=a, to_vector=b)
-R.reverse() * R  # Versor(coeff_scalar=173.646…, coeff_e_12=0.0, coeff_e_13=0.0, coeff_e_23=8.88e-16)
-versor_rotation(from_vector=a, to_vector=b)(1.0 * e_3)  # RuntimeError
-```
+- **Tests:** `tests/test_inverse_float_versor.py` (4):
+  - the float versor inverts (`R * R⁻¹ ≈ 1`);
+  - `versor_rotation` on float 3D vectors rotates and round-trips;
+  - float scalar + vector still raises;
+  - exact input keeps exact coefficients.
 
-In 2D the problem cannot occur, because a 𝒢₂ versor's `Ã * A` has no bivector term to round. The
-3D route-1 test in `tests/test_frame_svd.py` works around it by wrapping `projection_rotation` in an
-`InvertibleFunction`, and its comment names this task.
+  The helper's doctests cover the residue, a real bivector part, exact input and a mixed symbolic
+  coefficient.
+- **The SVD test's workaround is gone.** `tests/test_frame_svd.py`'s route 1 builds Q from
+  `versor_rotation` again, instead of `projection_rotation` wrapped in an `InvertibleFunction`.
+- **`CHANGELOG.md`:** `[Unreleased]` › Fixed.
 
-## Context (read first)
+## Judgment calls
 
-- `base.py` `inverse`: the gate `if not reverse_times_self.is_scalar()`, then `Ã / |A|²`.
-- `tasks/reference/approximate-float-equality.md`: `isclose`, gacalc's tolerance model.
-- `tasks/reference/numeric-symbolic-mode.md`: the recommendation to decide float tolerance from the
-  coefficients (`tasks/tolerance-from-coefficient-type.md`). This gate is one more place that needs
-  that decision.
+- **sympy `Float` counts as inexact.** The first version checked only for Python `float`, and the
+  SVD test still failed. `Frame.orthonormal_vectors()` returns sympy `Float` coefficients for
+  Python-float input, because the orthogonalization routes through sympy. That is an observation,
+  not a bug fixed here. It bears on `tasks/tolerance-from-coefficient-type.md`, whose "is this float
+  input?" check must treat sympy `Float` the same way.
+- **The helper is local to `base.py` for now.** `tasks/tolerance-from-coefficient-type.md` plans to
+  move `frame._has_float` to `base.py` as the one shared check; this helper can use it then.
 
-## Plan
+## Verification
 
-1. When `Ã * A` has float coefficients, accept it as a scalar if its non-scalar part is small
-   relative to the scalar part. A relative tolerance is needed: here `|A|²` is 173, so an absolute
-   1e-15 would be wrong for large vectors. Keep the exact test for integer and symbolic input.
-2. Tests:
-   - the reproduction above rotates `e_3` and round-trips through `inverse`;
-   - a float mixed-grade element (scalar + vector) still raises.
-3. Decide whether this lands before or with `tasks/tolerance-from-coefficient-type.md`; it can use
-   that task's shared `_has_float` once that exists.
-
-## Open questions
-
-None yet.
+- ruff and `ty check` were clean on `base.py` and the tests.
+- `base.py` doctests, the new tests and `tests/test_frame_svd.py` passed.
+- The host fast suite passed: 1891 passed, 2 skipped (GL modules excluded on the host, since the GL
+  packages are not installed there).
+- The batch's container gate at the end covers the GL modules.

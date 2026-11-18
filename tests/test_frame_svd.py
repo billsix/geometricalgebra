@@ -35,7 +35,7 @@ from gacalc import g2, g3
 from gacalc.base import MultiVectorBase, Real
 from gacalc.frame import Frame
 from gacalc.functions import InvertibleFunction, compose, inverse
-from gacalc.transforms import projection_rotation, scale_non_uniform, versor_rotation
+from gacalc.transforms import scale_non_uniform, versor_rotation
 
 TOLERANCE: float = 1e-9
 
@@ -65,18 +65,7 @@ def q_factor(
     for e, u in zip(basis[:-1], orthonormal[:-1]):
         placed: MultiVectorBase = compose(rotations)(e) if rotations else e
         if not placed.isclose(u, abs_tol=TOLERANCE):
-            # projection_rotation, not versor_rotation: inverting a float 𝒢₃ versor
-            # trips on the rounding residue in Ã * A
-            # (tasks/inverse-float-versor-rounding.md)
-            rotations.insert(
-                0,
-                InvertibleFunction(
-                    projection_rotation(from_vector=placed, to_vector=u),
-                    "",
-                    projection_rotation(from_vector=u, to_vector=placed),
-                    "",
-                ),
-            )
+            rotations.insert(0, versor_rotation(from_vector=placed, to_vector=u))
     last: MultiVectorBase = compose(rotations)(basis[-1]) if rotations else basis[-1]
     flips: list[Real] = [1] * (len(basis) - 1) + [
         1 if last.isclose(orthonormal[-1], abs_tol=TOLERANCE) else -1

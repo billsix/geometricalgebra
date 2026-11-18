@@ -77,6 +77,14 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   `ValueError` now names the caller and its call site (`coordinate_along (transforms.py:N): …`)
   rather than starting `coordinate_along: …`.
 
+### Fixed
+- **`inverse()` accepts a float versor whose `Ã * A` carries rounding residue**, so
+  `transforms.versor_rotation` works on float 3D vectors. It raised `RuntimeError` ("supports a
+  blade or versor") when `Ã * A` had a non-scalar coefficient of about 1e-16. Inexact input (Python
+  `float` or sympy `Float`) now counts as a scalar when every non-scalar coefficient is at most
+  1e-9 times the scalar part. Exact input is still held to exact equality, and a genuinely
+  mixed-grade element still raises.
+
 ## [0.1.1] — 2026-11-13
 
 Additions only, nothing breaking: modelviewprojection's Cayley graph, OpenGL toolkit and graphing
