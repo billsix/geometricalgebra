@@ -80,19 +80,20 @@ starts at the end. The order is a property of how the `w_j` were built, not of o
    `client/entrypoint/dotfiles/.config/crush/CLAUDE.md`). It is a portable rule, so not the personal
    overlay. Stage by path in both repos.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-18)
+
+1. **(A) or (B)? Both, with (B) the default** (William Emerison Six <billsix@gmail.com>, 2026-11-07):
+   "make that one have two ways of doing it, specified by a keyword argument and a default value. I
+   want an option to use the reciprocal frame … and I want it to be the default option." Done in
+   `tasks/archive/2026/11/07/frame-to-invertible-function-reciprocal-inverse.md`
+   (`to_invertible_function(inverse_method=InverseMethod.RECIPROCAL | InverseMethod.PEEL)`). What
+   remains here is only whether the peel method is rewritten head-first, as (A).
+2. **Keep the tail-first peel as a documented alternative? Yes, as the peel method** (same request),
+   overruling the original recommendation to replace it.
+3. **Under (A), the second orthogonal set is computed inside `to_invertible_function`**; no new
+   public surface (answered at the start of the 2026-11-18 batch).
+
 ## Open questions
 
-1. ~~(A) or (B)?~~ **Answered (William Emerison Six <billsix@gmail.com>, 2026-11-07): both, with (B) the
-   default.** "make that one have two ways of doing it, specified by a keyword argument and a default
-   value. I want an option to use the reciprocal frame … and I want it to be the default option." Done
-   in `tasks/archive/2026/11/07/frame-to-invertible-function-reciprocal-inverse.md`
-   (`to_invertible_function(inverse_method="reciprocal" | "peel")`). What remains here is only whether the
-   `"peel"` method should be rewritten head-first, as (A).
-2. **Under (A), where does the second orthogonal set live?** Computed inside `to_invertible_function`
-   (no new public surface), or a second method on `Frame` beside `orthogonal_vectors()` (visible;
-   `Frame` stores neither set, so neither costs anything until it is called)? Recommended: compute
-   it inside `to_invertible_function`.
-3. ~~Keep the current tail-first peel as a documented alternative?~~ **Answered (same request): yes, as
-   `inverse_method="peel"`, overruling the original recommendation.** The original text: gacalc keeps parallel
-   formulations side by side for teaching (the three orthogonalizations). Recommended: no; replace it,
-   and keep the explanation of why the head-first `w_j` force tail-first order in the reference doc.
+None.
+

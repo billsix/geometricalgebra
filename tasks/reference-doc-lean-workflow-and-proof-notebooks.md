@@ -95,15 +95,14 @@ what is TRUE, not what to DO." Keep the *pipeline mechanics* (jupytext build, my
 `tasks/reference/book-and-docs-pipeline.md`) out of it by reference. This doc is the durable
 statement of intent + the two conventions above.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-18)
+
+Answered when the batch started:
+
+1. **One doc, two sections**: `tasks/reference/lean-python-notebook-workflow.md` (author-side drift, student-side method).
+2. **Drift tags are comment tags on both sides** (the `.lean` theorem and the `.py` check carry the same tag), found by grep; no checker script.
+
 ## Open questions
 
-1. **One doc or two?** Fold "Lean↔Python drift" and "student proof-notebook methodology" into one
-   `lean-python-notebook-workflow.md`, or split (a workflow/drift doc vs a pedagogy doc)? My lean:
-   one doc, two sections — they're the same story told author-side then student-side.
-2. **Drift-tag convention:** comment tags on both sides (my lean), a central mapping table in the
-   doc, or a checked `tools/` script that greps for orphaned tags? (A script could become a gate
-   later — don't auto-wire it.)
-3. ~~Does the "bootstrapping" theme belong in this doc or its own?~~ **Resolved by events:** it has
-   its own reference doc, `tasks/reference/reduction-to-standard-position.md` (the work is archived at
-   `tasks/archive/2026/10/04/reduce-to-standard-position.md`); this doc just links it as the
-   pedagogy's backbone.
+None.
+

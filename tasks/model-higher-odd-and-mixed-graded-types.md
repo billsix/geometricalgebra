@@ -86,10 +86,14 @@ it:
 5. Docs: extend the subspaces reference + README table + CLAUDE.md graded list; note the odd-subspace
    generalization.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-18)
+
+Answered when the batch started:
+
+1. **Rename `Odd_3` to `Odd`**, matching the bare `Vector`/`Bivector` names; a breaking change with a changelog entry, and modelviewprojection's uses updated.
+2. **Scope: odd subspaces only**; `{0,3}` and the paravector stay deferred.
+
 ## Open questions
 
-1. **Naming scheme + `Odd_3` reconciliation** — `Odd_{n}` vs bare `Odd`; rename the shipped `Odd_3` or
-   keep it as a special case? *(Recommend deciding the scheme, then renaming `Odd_3 → Odd` for
-   long-term consistency, coordinated with mvp + a changelog entry.)*
-2. **Scope** — odd subspaces only, or also `{0,3}` and/or the paravector? *(Recommend odd subspaces
-   now; `{0,3}` optional; paravector deferred/blocked on APS.)*
+None.
+

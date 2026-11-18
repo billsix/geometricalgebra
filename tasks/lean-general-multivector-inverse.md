@@ -45,7 +45,13 @@ goal of the *general* case, deferred until wanted. "Done" = the general closed f
    the subset formula with the guard. If it changes, it is a **breaking change** to a published library —
    changelog entry + version bump (maintainer publishes).
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-18)
+
+Answered when the batch started:
+
+1. **Lean first**: prove the general inverse; Python keeps the guarded blade/versor formula, and whether Python gets it is decided after the proof.
+
 ## Open questions
 
-1. Do we want the general inverse in **Python too**, or Lean-only (the machine-checked statement) with
-   Python staying on the guarded subset formula? (Rec: Lean first — prove it's right — then decide Python.)
+None.
+

@@ -65,12 +65,14 @@ much of Lean's reasoning can actually be surfaced.
       harness, determinism).
 - [ ] Write the go/no-go finding into a reference doc; if go, scaffold the generator task.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-18)
+
+Answered when the batch started:
+
+1. **Checked by Lean**: the notebook does the symbolic expansion and cites the Lean theorem that certifies it; no transcription or extractor.
+2. **The first prototype is distributivity.**
+
 ## Open questions
 
-1. **Faithfulness vs. pragmatism (the key decision):** notebook *checked by* Lean (symbolic expansion
-    in Python, Lean certifies the identity), or notebook *transcribed from* the Lean proof's own steps
-    (needs `calc`-style proofs + an extractor)? (Recommend starting with the checked-by-Lean form — it
-    reuses the existing notebook style and is far cheaper — and only pursuing transcription if the
-    maintainer specifically wants the Lean steps themselves shown.)
-2. Which law is the best first prototype — distributivity (the maintainer already likes that notebook)
-    or associativity (the motivating example)? (Recommend distributivity: an existing target to match.)
+None.
+

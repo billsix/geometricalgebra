@@ -72,15 +72,18 @@ infrastructure in `nbplotutils.py` (`create_graphs`, `create_basis`, `draw_*`, `
 - `warnings.filterwarnings("error", category=RuntimeWarning)` is set at the top of the sibling
   notebooks — watch for matplotlib RuntimeWarnings becoming errors.
 
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-18)
+
+Answered when the batch started:
+
+1. **Helpers live in `src/gacalc/nbplotutils.py`** (`draw_vectors`, `draw_bivector`), so `displayg2`/`displaymv` can reuse them.
+2. **The 3D 𝒢₃ plot (concept 6) is in scope now**, via `mpl_toolkits.mplot3d`.
+3. **Scalar·vector scaling is a standalone plot** in the notebook; `show_mult` stays a values table.
+4. Bivector rendering was left to implementation (the task said so): a shaded parallelogram plus an orientation arc.
+
 ## Open questions
 
-- **Helpers in `nbplotutils.py` or inline?** Inline keeps it self-contained and avoids touching the
-  GUI-backend module; a shared helper pays off if `displayg2`/`displaymv` would reuse it. Lean inline
-  unless reuse is obvious.
-- **Include the 3D 𝒢₃ plots (concept 6)?** They're the most striking (dual = cross product) but need
-  `mplot3d` and more fiddling. Could be a fast-follow.
-- **Bivector rendering:** parallelogram + orientation arc (concrete, ties to "signed area") vs a
-  simpler arc-only glyph. Pick during implementation.
+None.
 
 ## Folded-in ideas (2026-08-27, William Emerison Six <billsix@gmail.com>) — two batch-triage bullets map here
 
