@@ -100,8 +100,8 @@ of them produced errors in exactly one test; the other 21 are now typed.
   `d` derived from `val` (3 LOCAL rows and 1 LOOP row). The inferred concrete union keeps
   `val.dual()` (dimension-defaulting) and `val.DIMENSION` resolvable; `MultiVectorBase` does
   not. Same root cause as §2 and §3.
-- **`tests/test_odd3.py`** — `versor` and `conjugated = versor * v * versor.inverse()`.
-  Declaring them `g3.Versor` and `g3.Odd_3` is correct at runtime (the test asserts the
+- **`tests/test_odd.py`** — `versor` and `conjugated = versor * v * versor.inverse()`.
+  Declaring them `g3.Versor` and `g3.Odd` is correct at runtime (the test asserts the
   second), but either one widens `conjugated.coeff_e_123` to `Real` (`int | float |
   sympy.Expr`), and sympy's stubs carry no `simplify` overload for a bare `int`/`float`, so
   the annotation fails `sympy.simplify(conjugated.coeff_e_123)` without clarifying anything;

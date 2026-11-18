@@ -3397,8 +3397,8 @@ class MultiVectorBase(abc.ABC):
         bivector to a bivector, and so on.  The raw product
         ``self * x * self.inverse()`` carries the higher grade *structurally*
         (e.g. ``Versor * Vector`` carries a trivector when ``x`` is off the
-        versor's plane — in 𝒢₃ that is the named ``Odd_3`` type, elsewhere it
-        widens to the full ``G_n``), but for a versor those extra grades are
+        versor's plane — in the generated 𝒢₃ to 𝒢₅ that is the named ``Odd``
+        type, on ``Gn`` the full multivector), but for a versor those extra grades are
         zero, so the result is rebuilt as ``type(x)`` — whose ``from_blade_dict``
         keeps only ``x``'s blades.  ``zero`` conjugates to ``zero`` (no
         ``is_vector`` assertion, unlike the projection-based

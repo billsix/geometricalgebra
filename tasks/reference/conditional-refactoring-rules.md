@@ -240,7 +240,7 @@ of contents you can hold in your head, each chapter read by name only when neede
   this reason — it reads as a tiny diff but gives every phase a hidden side effect on a shared list.
 
 **Applied (`generate_graded_type`'s per-grade special-case injections):** a run of long, independent
-blocks — `Bivector` (exp + `.i()`), `Versor` (plane_of_rotation + sandwich + `.i()`), `Odd_3`
+blocks — `Bivector` (exp + `.i()`), `Versor` (plane_of_rotation + sandwich + `.i()`), `Odd`
 (to_vector/to_trivector casts), `Vector` (project/reject/reflect overrides + factory narrowings +
 the 𝒢₃ cross) — each well past a screen, so the dispatch structure was invisible.
 ```python
@@ -251,7 +251,7 @@ if spec.name.startswith("Bivector"):
 if spec.name.startswith("Versor"):
     body.append( ...plane_of_rotation... )   # ~40 lines
     ...
-if spec.name == "Odd_3":
+if spec.name == "Odd":
     for cast_name, ... : body.append( ...cast... )  # ~60 lines
 if spec.name.startswith("Vector"):
     body.extend( ...project/reject/reflect/cross... )  # ~130 lines
@@ -270,7 +270,7 @@ def vector_extras() -> list[ast.stmt]: ...
 match spec.name:
     case "Bivector": body += bivector_extras()
     case "Versor":    body += versor_extras()
-    case "Odd_3":    body += odd3_extras()
+    case "Odd":    body += odd3_extras()
     case "Vector":   body += vector_extras()
     case _:
         # grade-pure types with no extras (Trivector, Scalar, higher KVectors)

@@ -364,39 +364,39 @@ B: g3.Bivector = (g3.Vector.e_1 ^ g3.Vector.e_2) * sympy.cos(t) + (
 show(B, B.dual(), B * B.dual())
 
 # %% [markdown]
-# The odd part {1,3}: `g3.Odd_3`
+# The odd part {1,3}: `g3.Odd`
 # -----------------------------
 #
 # `vector * bivector` in 𝒢₃ is generally **vector + trivector** — grades {1,3}, the
 # **odd part** of 𝒢₃. That is the mirror of the even part {0,2} = `g3.Versor`, and it
-# has its own named type, **`g3.Odd_3`** (before it was registered, this widened to
+# has its own named type, **`g3.Odd`** (before it was registered, this widened to
 # the full `g3.G`). It is a graded *subspace*, **not** a subalgebra: odd·odd = even,
-# so `Odd_3 * Odd_3` is a `Versor` — see
+# so `Odd * Odd` is a `Versor` — see
 # `tasks/reference/graded-subspaces-vs-subalgebras.md`.
 
 # %%
-kind(u * B)  # g3.Odd_3 (was g3.G)
+kind(u * B)  # g3.Odd (was g3.G)
 
 # %% [markdown]
 # The three geometric cases. For a plane `B = a ^ b`, the product `B * v` is grade 1
 # when `v` is **in** the plane, grade 3 when `v` is **perpendicular** to it (the dual
 # of the wedge points that way), and both when `v` mixes them — but the *type* is
-# always `Odd_3` (it follows the operation, not the runtime coefficients).
+# always `Odd` (it follows the operation, not the runtime coefficients).
 
 # %%
 a3: g3.Vector = 1 * g3.Vector.e_1 + 2 * g3.Vector.e_2
 b3: g3.Vector = 3 * g3.Vector.e_1 + 1 * g3.Vector.e_2 + 1 * g3.Vector.e_3
 plane: g3.Bivector = a3 ^ b3
 perp: g3.Vector = (a3 ^ b3).dual()  # perpendicular to the plane (dual of the wedge)
-show(plane * a3, plane * perp, plane * (a3 + perp))  # all g3.Odd_3: {1}, {3}, {1,3}
+show(plane * a3, plane * perp, plane * (a3 + perp))  # all g3.Odd: {1}, {3}, {1,3}
 
 # %% [markdown]
 # Query and cast. The **query** is the inherited `grades()` / `is_vector()` /
-# `is_trivector()`; the **cast** `to_vector()` / `to_trivector()` narrows an `Odd_3`
+# `is_trivector()`; the **cast** `to_vector()` / `to_trivector()` narrows an `Odd`
 # to the concrete type, raising if the grade it would discard is nonzero.
 
 # %%
-in_plane: g3.Odd_3 = plane * a3
+in_plane: g3.Odd = plane * a3
 kind(in_plane.to_vector())  # -> g3.Vector (its grade-3 part is zero)
 
 # %%

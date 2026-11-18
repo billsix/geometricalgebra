@@ -11,7 +11,7 @@
 # Lesser General Public License (the LICENSE file in this repository)
 # for more details.
 
-"""The ``Odd_3`` graded type (the odd part {1,3} of 𝒢₃) and its opt-in cast API.
+"""The ``Odd`` graded type (the odd part of 𝒢₃ and up) and its opt-in cast API.
 
 ``typing.assert_type`` pins the STATIC types (checked by ``ty`` -- a regression fails
 ``ty check tests``); the runtime types/values are checked with plain asserts.
@@ -23,12 +23,16 @@ cross-product direction), ``a`` is **in** the plane, and ``a + perp`` **mixes** 
 ``tasks/reference/graded-subspaces-vs-subalgebras.md``.
 """
 
+import dataclasses
+import importlib
 import typing
+from types import ModuleType
 
 import pytest
 import sympy
 
 import gacalc.g3 as g3
+from gacalc.base import MultiVectorBase
 
 # A non-axis-aligned plane B = a ^ b, and the three operand vectors.
 _a: g3.Vector = 1 * g3.Vector.e_1 + 2 * g3.Vector.e_2
@@ -39,27 +43,27 @@ _in_plane: g3.Vector = _a  # lies in the plane
 _mixed: g3.Vector = _a + _perp  # in-plane + perpendicular
 
 
-def test_odd3_product_types_static() -> None:
-    # Vector * Bivector spans the odd part {1,3} -> Odd_3 (was G3 before Odd_3 existed).
-    typing.assert_type(g3.Vector.e_1 * g3.Bivector.e_12, g3.Odd_3)
-    typing.assert_type(g3.Bivector.e_12 * g3.Vector.e_1, g3.Odd_3)
+def test_odd_product_types_static() -> None:
+    # Vector * Bivector spans the odd part {1,3} -> Odd (was G3 before Odd existed).
+    typing.assert_type(g3.Vector.e_1 * g3.Bivector.e_12, g3.Odd)
+    typing.assert_type(g3.Bivector.e_12 * g3.Vector.e_1, g3.Odd)
     versor: g3.Versor = g3.Vector.e_1 * g3.Vector.e_2
-    typing.assert_type(versor * g3.Vector.e_1, g3.Odd_3)
-    typing.assert_type(versor * g3.Trivector.e_123, g3.Odd_3)
-    # odd * odd = even -> Versor: Odd_3 is a SUBSPACE, not a subalgebra.
-    odd: g3.Odd_3 = g3.Bivector.e_12 * g3.Vector.e_1
+    typing.assert_type(versor * g3.Vector.e_1, g3.Odd)
+    typing.assert_type(versor * g3.Trivector.e_123, g3.Odd)
+    # odd * odd = even -> Versor: Odd is a SUBSPACE, not a subalgebra.
+    odd: g3.Odd = g3.Bivector.e_12 * g3.Vector.e_1
     typing.assert_type(odd * odd, g3.Versor)
 
 
-def test_odd3_product_types_runtime() -> None:
-    assert type(g3.Vector.e_1 * g3.Bivector.e_12) is g3.Odd_3
-    odd: g3.Odd_3 = g3.Bivector.e_12 * g3.Vector.e_1
+def test_odd_product_types_runtime() -> None:
+    assert type(g3.Vector.e_1 * g3.Bivector.e_12) is g3.Odd
+    odd: g3.Odd = g3.Bivector.e_12 * g3.Vector.e_1
     assert type(odd * odd) is g3.Versor  # odd * odd = even
 
 
 def test_cast_in_plane_is_vector() -> None:
-    R: g3.Odd_3 = _B * _in_plane
-    assert type(R) is g3.Odd_3 and R.grades() == [1]
+    R: g3.Odd = _B * _in_plane
+    assert type(R) is g3.Odd and R.grades() == [1]
     typing.assert_type(R.to_vector(), g3.Vector)
     v: g3.Vector = R.to_vector()
     assert type(v) is g3.Vector
@@ -73,8 +77,8 @@ def test_cast_in_plane_is_vector() -> None:
 
 
 def test_cast_perpendicular_is_trivector() -> None:
-    R: g3.Odd_3 = _B * _perp
-    assert type(R) is g3.Odd_3 and R.grades() == [3]
+    R: g3.Odd = _B * _perp
+    assert type(R) is g3.Odd and R.grades() == [3]
     typing.assert_type(R.to_trivector(), g3.Trivector)
     T: g3.Trivector = R.to_trivector()
     assert type(T) is g3.Trivector
@@ -84,8 +88,8 @@ def test_cast_perpendicular_is_trivector() -> None:
 
 
 def test_cast_mixed_raises_both() -> None:
-    R: g3.Odd_3 = _B * _mixed
-    assert type(R) is g3.Odd_3 and R.grades() == [1, 3]
+    R: g3.Odd = _B * _mixed
+    assert type(R) is g3.Odd and R.grades() == [1, 3]
     with pytest.raises(ValueError):
         R.to_vector()
     with pytest.raises(ValueError):
@@ -104,15 +108,15 @@ def test_query_predicates() -> None:
 
 def test_sandwich_result_is_odd3_static() -> None:
     # The versor sandwich R * v * R⁻¹ as PLAIN products (not the derived sandwich() op)
-    # types as Odd_3: Versor*Vector = Odd_3, then Odd_3*Versor = Odd_3.
+    # types as Odd: Versor*Vector = Odd, then Odd*Versor = Odd.
     versor: g3.Versor = g3.Vector.e_1 * g3.Vector.e_2
-    typing.assert_type(versor * g3.Vector.e_1 * versor.inverse(), g3.Odd_3)
+    typing.assert_type(versor * g3.Vector.e_1 * versor.inverse(), g3.Odd)
 
 
 def test_sandwich_grade_preservation_is_one_coefficient() -> None:
-    """Odd_3 makes versor-sandwich grade-preservation a ONE-coefficient proof.
+    """Odd makes versor-sandwich grade-preservation a ONE-coefficient proof.
 
-    ``R * v * R⁻¹`` (as plain products) types as ``Odd_3`` -- support {1,3} -- so
+    ``R * v * R⁻¹`` (as plain products) types as ``Odd`` -- support {1,3} -- so
     proving it is a vector reduces to showing its single grade-3 coefficient
     vanishes, rather than clearing the several non-grade-1 parts of the old ``G3``
     form.  It holds for a GENERAL symbolic versor, not just a unit one (the versor is
@@ -138,7 +142,46 @@ def test_sandwich_grade_preservation_is_one_coefficient() -> None:
         + g3.Scalar(y) * g3.Vector.e_2
         + g3.Scalar(z) * g3.Vector.e_3
     )
-    conjugated: g3.Odd_3 = versor * v * versor.inverse()
-    assert type(conjugated) is g3.Odd_3  # a named type now, not G3
+    conjugated: g3.Odd = versor * v * versor.inverse()
+    assert type(conjugated) is g3.Odd  # a named type now, not G3
     # grade 3 vanishes, so the result is a vector
     assert sympy.simplify(sympy.sympify(conjugated.coeff_e_123)) == 0
+
+
+# g4/g5 are release-only (GACALC_DIMS=1,2,3,4,5): test whichever are generated, as
+# tests/test_conformance.py does.
+ODD_MODULES: dict[int, ModuleType] = {3: g3}
+_n: int
+for _n in (4, 5):
+    try:
+        ODD_MODULES[_n] = importlib.import_module(f"gacalc.g{_n}")
+    except ModuleNotFoundError:
+        pass
+
+
+CASTS: dict[int, str] = {1: "to_vector", 3: "to_trivector", 5: "to_fivevector"}
+
+
+@pytest.mark.parametrize("n", sorted(ODD_MODULES))
+def test_odd_holds_the_odd_grades_and_casts_to_each(n: int) -> None:
+    """Every generated 𝒢ₙ with n >= 3 has ``Odd``, holding exactly the odd grades,
+    with a cast to each odd grade's type; a vector times a bivector lands in it."""
+    module: ModuleType = ODD_MODULES[n]
+    odd_grades: list[int] = list(range(1, n + 1, 2))
+    assert (
+        sorted(
+            {
+                len(field.name.removeprefix("coeff_e_"))
+                for field in dataclasses.fields(module.Odd)
+            }
+        )
+        == odd_grades
+    )
+    assert type((1 * module.e_3) * (1 * module.e_12)) is module.Odd
+    grade: int
+    for grade in odd_grades:
+        blade: tuple[int, ...] = tuple(range(1, grade + 1))
+        value: MultiVectorBase = module.Odd.from_blade_dict({blade: 2})
+        cast: MultiVectorBase = getattr(value, CASTS[grade])()
+        assert cast.to_blade_dict() == {blade: 2}
+        assert cast.grades() == [grade]

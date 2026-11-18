@@ -29,7 +29,7 @@ known-grade point in dimension-agnostic code*, a narrow payoff. Recommendation:
 - **Operations widen back to `Gn`; re-narrow at the next known-grade step** (the "narrowing-view",
   Open-Q1's recommended cut). Do **not** make products auto-narrow by grade — that re-derives the
   generator's operation-driven typing on `Gn`, which the `G`-side already rejected as a
-  value-dependent design (`generated-product-typing.md` → `Odd_3`).
+  value-dependent design (`generated-product-typing.md` → `Odd`).
 - If no dimension-agnostic call site actually needs it, **do nothing** — `Gn` stays the simple,
   obviously-correct reference (its stated role in `CLAUDE.md`).
 

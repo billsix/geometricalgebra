@@ -48,6 +48,11 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   coordinate versions of both, with the plane's normal written out from its coordinates.
 
 ### Changed
+- **Breaking: 𝒢₃'s odd-part type `Odd_3` is renamed `Odd`**, matching the bare `Vector` /
+  `Bivector` / `Versor` names. Replace `g3.Odd_3` with `g3.Odd`; its `to_vector()` /
+  `to_trivector()` casts are unchanged. The release-only 𝒢₄ and 𝒢₅ now have `Odd` too (the odd
+  grades {1,3} and {1,3,5}), so their odd products no longer widen to `G`; 𝒢₅'s `Odd` also has
+  `to_fivevector()`.
 - **A blade of grade 2 or more typesets as one bold `\mathbf{e}_{12}`** in `_repr_latex_`,
   `blade_latex`, `blade_dict_latex` and `nbdisplay.show_mult`. It was its vectors side by side,
   `\mathbf{\vec{e}}_{1} \mathbf{\vec{e}}_{2}`, which reads as a product written without `*`.

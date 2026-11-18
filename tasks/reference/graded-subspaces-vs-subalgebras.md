@@ -1,4 +1,4 @@
-# Graded subspaces vs subalgebras (why `Odd_3` is a type but not a subalgebra)
+# Graded subspaces vs subalgebras (why `Odd` is a type but not a subalgebra)
 
 **Reference document** — a domain note on a distinction that pervades geometric algebra and that
 gacalc's *graded subtypes* lean on directly: most grade-defined subspaces are **linear subspaces
@@ -47,9 +47,14 @@ almost nothing else is.
   elements are exactly the rotors/spinors). In gacalc this is `Versor_n`.
 - **Odd part `𝒢⁻ = {1, 3, 5, …}`** — a perfectly good linear subspace (closed under `+`, scalar
   `·`, and `reverse`, which preserves grade), but **NOT closed under the geometric product**:
-  **odd × odd = even**. E.g. in 𝒢₃, an `Odd_3` value (a vector + a trivector) times another `Odd_3`
-  lands in `{0, 2}` = `Versor_3` — *outside* `Odd_3`. So `𝒢⁻` is a subspace, not a subalgebra. This is
-  the type we call `Odd_3` (see `tasks/archive/2026/09/05/model-odd-graded-type.md`).
+  **odd × odd = even**. E.g. in 𝒢₃, an `Odd` value (a vector + a trivector) times another `Odd`
+  lands in `{0, 2}` = `Versor_3` — *outside* `Odd`. So `𝒢⁻` is a subspace, not a subalgebra. This is
+  the type we call `Odd` (see `tasks/archive/2026/09/05/model-odd-graded-type.md`). It is
+  generated for every n ≥ 3, with the odd grades of that algebra: {1,3} in 𝒢₃ and 𝒢₄, {1,3,5} in
+  𝒢₅. For n = 1 and 2 the odd part is just the vectors. It was named `Odd_3` until 2026-11-18,
+  when it became `Odd` (bare, like `Versor`) and was extended to 𝒢₄/𝒢₅
+  (`tasks/archive/2026/11/18/model-higher-odd-and-mixed-graded-types.md`). The addition-born
+  mixed types ({0,1} the paravector, {0,3}, {1,2}, …) still widen to `G` on purpose.
 
 The odd part is not structureless, though — it is a **bimodule over the even subalgebra**:
 `even × odd → odd` and `odd × even → odd`, so `Versor_n · Odd_n ⊆ Odd_n` on both sides. The clean way
@@ -65,7 +70,7 @@ The pure-grade subspaces gacalc already types are the same story:
 - `Bivector` (grade 2): `B·B ∈ {0, 2}`, not pure grade 2.
 - `Trivector` (grade 3 in 𝒢₃): `T² = ±1` → grade 0, not grade 3.
 
-None is closed, yet all are legitimate, useful graded types. So `Odd_3` being non-closed puts it in
+None is closed, yet all are legitimate, useful graded types. So `Odd` being non-closed puts it in
 the same, well-populated company as `Vector`/`Bivector`/`Trivector` — the norm, not the exception.
 
 ## The 𝒢₃ scorecard (which grade-sets are subalgebras)
@@ -77,7 +82,7 @@ the same, well-populated company as `Vector`/`Bivector`/`Trivector` — the norm
 | `{2}` | `Bivector` | no | `B·B ∈ {0,2}` |
 | `{3}` | `Trivector` | no | `T² ∈ {0}` |
 | `{0,2}` | `Versor` | **yes** (≅ ℍ) | even × even → even |
-| **`{1,3}`** | **`Odd_3`** | **no** | **odd × odd → even** |
+| **`{1,3}`** | **`Odd`** | **no** | **odd × odd → even** |
 | `{0,3}` | (unnamed) | **yes** (≅ ℂ) | `I₃` is central in odd dim and `I₃² = −1`, so `{a + b·I₃}` is closed |
 | `{0,1,2,3}` | `G3` | **yes** | the whole algebra |
 
@@ -88,19 +93,19 @@ behaviour, not the number of grades. `{0,3}` is closed (the central pseudoscalar
 
 A gacalc **graded subtype is just a named linear subspace** — a fixed set of grades with `coeff_*`
 fields for exactly those blades. Closure under the product is **irrelevant to whether it is a valid
-type**: `Vector`/`Bivector`/`Trivector` are all non-closed and all typed. `Odd_3` is no different.
+type**: `Vector`/`Bivector`/`Trivector` are all non-closed and all typed. `Odd` is no different.
 
 What *does* matter is that the product's **return type follows the operation**, resolved from the
 symbolic result's grade support (see `tasks/reference/generated-product-typing.md`). So the generator
-types `Odd_3 * Odd_3 → Versor_3` (odd × odd = even) automatically — the non-closure surfaces as a
-*correct return type*, never as a problem. That is exactly why adding `Odd_3` is safe: the type
+types `Odd * Odd → Versor_3` (odd × odd = even) automatically — the non-closure surfaces as a
+*correct return type*, never as a problem. That is exactly why adding `Odd` is safe: the type
 records a subspace, and the generator's grade-support resolution already handles the fact that
 products leave it.
 
 ## Related
 
-- `tasks/archive/2026/09/05/model-odd-graded-type.md` — the task that registers `Odd_3 = {1,3}` and (Option B) adds a
-  grade query + cast so an `Odd_3` value can be narrowed to `Vector`/`Trivector` when a grade
+- `tasks/archive/2026/09/05/model-odd-graded-type.md` — the task that registers `Odd = {1,3}` and (Option B) adds a
+  grade query + cast so an `Odd` value can be narrowed to `Vector`/`Trivector` when a grade
   vanishes.
 - `tasks/reference/generated-product-typing.md` — how the generator resolves a product's return type
   from its grade support ("smallest covering registered type, else widen to `G_n`").
