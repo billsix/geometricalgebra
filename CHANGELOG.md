@@ -12,6 +12,10 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`nbdisplay.show_cancellation(left, right, left_name, right_name)`** (and the
+  `cancellation_latex` it displays): both sides of an identity expanded, then their difference
+  blade by blade with each cancelling pair of terms marked by a shared number under an
+  `\underbrace`, instead of a bare `0`.
 - **`nbplotutils.draw_vectors`, `draw_bivector`, `draw_angle` and `create_graphs_3d`**: arrows
   from the origin, a bivector as its shaded oriented parallelogram, and the arc from one vector
   toward another, drawn in 2-D inside `create_graphs` or in 3-D inside `create_graphs_3d`.

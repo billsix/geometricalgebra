@@ -87,14 +87,33 @@ the student watch the terms cancel. What makes a notebook checkable:
   their difference simplifying to `0` (`CLAUDE.md`, "Book: one name per operation"). A bare `0` on
   its own shows nothing.
 
-**Not built yet: showing the cancellation itself.** The maintainer (2026-09-30) noted that an
-associativity notebook that prints the two expansions and then `0` "doesn't show" the cancellation.
-The goal is to lay the two sides out term by term and mark matching terms with
-`\underbrace{…}_{\text{cancel}}`, which MathJax and myst-nb render. The display helper and the first
-prototype, on distributivity, are the job of `tasks/investigate-lean-to-python-proof-notebooks.md`.
-That task's decision is that the notebook does the symbolic expansion and cites the Lean theorem
-that certifies it; it is not transcribed from Lean's steps. A `ring` proof has no steps to
-transcribe.
+**Showing the cancellation: `show_cancellation`.** The maintainer (2026-09-30) noted that an
+associativity notebook that printed the two expansions and then `0` "doesn't show" the cancellation.
+`gacalc.nbdisplay.show_cancellation(left, right, left_name, right_name)` displays both sides expanded,
+then one line per blade (`cancellation_latex`). Each monomial of the left side that meets an equal
+monomial on the right is marked `\underbrace{…}_{k}` on both sides, with the same `k`. Whatever does
+not cancel is left unmarked, and the line ends with the residual, `0` for an identity. MathJax and
+myst-nb render `\underbrace`.
+
+**The prototype, distributivity** (`notebooks/displayproofs.py`; William Emerison Six
+<billsix@gmail.com> chose distributivity and "checked by Lean", 2026-11-18):
+1. three general symbolic multivectors of 𝒢₂;
+2. `show_mult` of `a * (b + c)`, `a * b` and `a * c`;
+3. `show_cancellation` of the two sides: 8 numbered pairs per blade, nothing left over.
+
+It carries `twin: GacalcProofs.G2.mul_add`. `notebooks/displaymv.py`'s associativity proof now ends
+the same way (16 pairs per blade, `twin: GacalcProofs.G2.mul_assoc`) instead of printing `0`.
+
+**Why "checked by Lean", not "transcribed from Lean"** (the finding of
+`tasks/archive/2026/11/18/investigate-lean-to-python-proof-notebooks.md`):
+- The `G2`/`G3` laws are proved by `simp only [mul, …]; ext <;> ring`. `ring` decides the goal by
+  normalizing both sides to one canonical polynomial form: a single reflection step, not a chain of
+  rewrites. There is no human-readable trace to extract, and tracing options print tactic internals,
+  not algebra.
+- The notebook therefore regenerates the reasoning `ring` hides (multiply out from the same
+  definitions, then match terms) and cites the theorem that certifies it.
+- Transcribing would mean re-proving each law in `calc` style and writing a Lean-to-notebook
+  extractor. The maintainer did not choose that.
 
 **Where a proof notebook lives.** The book's rule is "proofs → separate `.rst`; uses → main docs;
 calculations → notebooks" (`tasks/reference/book-outline.md`). A proof is a `proof-*.rst` page, and

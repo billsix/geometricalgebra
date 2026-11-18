@@ -103,12 +103,14 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   `draw_vectors` / `draw_bivector` / `draw_angle`, which draw in 2-D (`create_graphs`) or 3-D
   (`create_graphs_3d`).
 - `src/gacalc/nbdisplay.py` — display-only notebook helpers (sympy + IPython, no matplotlib):
-  `show_mult(a, b)`, the term-by-term product table and its sum, and `at_values(value, values)`,
+  `show_mult(a, b)`, the term-by-term product table and its sum, `show_cancellation(left, right, …)`,
+  both sides of an identity cancelling term by term, and `at_values(value, values)`,
   which substitutes plot values into a symbolic result; usable by the book's notebooks,
   re-exported from `nbplotutils` for the demo notebooks.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (specialized classes),
   `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`),
-  `displaytransforms.py` (translate/scale/rotate and the graph-paper pictures)
+  `displaytransforms.py` (translate/scale/rotate and the graph-paper pictures), `displayproofs.py`
+  (laws checked term by term, each tagged with its Lean twin)
   — jupytext (percent-format) demo notebooks.
 - `tests/` — `test_multivector.py` (`Gn`), `test_conformance.py` (parametrized over `[Gn, G]`),
   `test_graded.py` (graded subtypes), `test_generator.py` (the generator's own logic),

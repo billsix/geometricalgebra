@@ -19,6 +19,10 @@ multiplies ``(x + 2) * (x + 3)`` by hand: every term of ``a`` times every term o
 the book's notebooks (which draw with ePiX, not matplotlib) can use it without
 importing the plotting helpers in ``gacalc.nbplotutils``, which re-exports it.
 
+``show_cancellation(left, right, left_name, right_name)`` shows both sides of an
+identity, then their difference blade by blade, with each pair of cancelling terms
+marked by the same number, so a reader watches the terms disappear.
+
 ``at_values(value, values)`` substitutes numbers for the symbols in a symbolic
 result. The book's notebooks compute every step with symbolic coordinates and use
 numbers only to draw the figures, and to show a drawn step at those numbers.
@@ -30,7 +34,7 @@ from collections.abc import Mapping, Sequence
 import sympy
 from IPython.display import Markdown, Math, display
 
-from gacalc.base import Blade, MultiVectorBase, Real, blade_dict_latex
+from gacalc.base import Blade, MultiVectorBase, Real, blade_dict_latex, blade_latex
 
 V = typing.TypeVar("V", bound=MultiVectorBase)
 
@@ -173,3 +177,144 @@ def show_mult(a: MultiVectorBase, b: MultiVectorBase) -> None:
     display(Markdown(product_table_markdown(a, b)))
     display(Markdown("**Summing all the products up, we get**"))
     display(Math(_math_body(_latex(a * b))))
+
+
+def _signed_terms(coefficient: Real) -> list[sympy.Expr]:
+    """The monomials of ``coefficient`` once expanded, in sympy's order (no zeros).
+
+    >>> a, b = sympy.symbols("a b")
+    >>> _signed_terms(a * (b - 2))
+    [-2*a, a*b]
+    >>> _signed_terms(0)
+    []
+    """
+    return [
+        term for term in sympy.Add.make_args(sympy.expand(coefficient)) if term != 0
+    ]
+
+
+def _join_terms(parts: Sequence[tuple[bool, str]]) -> str:
+    """Join ``(negative, latex)`` terms into one signed sum (``0`` when empty)."""
+    if not parts:
+        return "0"
+    pieces: list[str] = [
+        ("- " if negative else "+ ") + latex for negative, latex in parts
+    ]
+    first: str = pieces[0]
+    return " ".join([first[2:] if first.startswith("+ ") else first, *pieces[1:]])
+
+
+def cancellation_latex(left: MultiVectorBase, right: MultiVectorBase) -> list[str]:
+    """One LaTeX line per blade showing ``left − right`` cancel term by term.
+
+    Each coefficient is expanded into monomials. A monomial of ``left`` that also
+    appears in ``right`` is a cancelling pair: both copies are marked
+    ``\\underbrace{…}_{k}`` with the same number ``k``, so a reader can match them.
+    Whatever does not cancel is left unmarked, and the line ends with the residual,
+    ``0`` for an identity.
+
+    Args:
+        left: the left side of the claimed identity.
+        right: the right side.
+
+    Returns:
+        list[str]: one line per blade present on either side, grade then blade
+        order: ``<blade>: (left terms) - (right terms) = residual``.
+
+    Example:
+        ``a * b + a * c`` against ``a * c + a * b``: the terms pair up across the
+        sides, and the difference is zero.
+
+        >>> from gacalc.g2 import Scalar, e_1
+        >>> a, b, c = sympy.symbols("a b c")
+        >>> [line] = cancellation_latex(
+        ...     Scalar(a * b + a * c) * e_1, Scalar(a * c + a * b) * e_1
+        ... )
+        >>> line.count("underbrace"), line.endswith("= 0")
+        (4, True)
+    """
+    left_coefficients: Mapping[Blade, Real] = left.to_blade_dict()
+    right_coefficients: Mapping[Blade, Real] = right.to_blade_dict()
+
+    def line(blade: Blade) -> str:
+        left_terms: list[sympy.Expr] = _signed_terms(left_coefficients.get(blade, 0))
+        right_terms: list[sympy.Expr] = _signed_terms(right_coefficients.get(blade, 0))
+        # pair each left term with the first equal, still-unpaired right term
+        right_labels: dict[int, int] = {}
+        left_labels: list[int | None] = []
+        term: sympy.Expr
+        for term in left_terms:
+            match_index: int | None = next(
+                (
+                    j
+                    for j, other in enumerate(right_terms)
+                    if j not in right_labels and other == term
+                ),
+                None,
+            )
+            if match_index is None:
+                left_labels.append(None)
+            else:
+                right_labels[match_index] = len(right_labels) + 1
+                left_labels.append(right_labels[match_index])
+
+        def part(term: sympy.Expr, label: int | None) -> tuple[bool, str]:
+            negative: bool = term.could_extract_minus_sign()
+            body: str = sympy.latex(-term if negative else term)
+            return negative, (
+                body if label is None else f"\\underbrace{{{body}}}_{{{label}}}"
+            )
+
+        residual: Real = sympy.expand(
+            left_coefficients.get(blade, 0) - right_coefficients.get(blade, 0)
+        )
+        name: str = "\\text{scalar}" if blade == () else blade_latex(blade)
+        left_sum: str = _join_terms(
+            [part(t, k) for t, k in zip(left_terms, left_labels, strict=True)]
+        )
+        right_sum: str = _join_terms(
+            [part(t, right_labels.get(j)) for j, t in enumerate(right_terms)]
+        )
+        return f"{name}:\\quad ({left_sum}) - ({right_sum}) = {sympy.latex(residual)}"
+
+    return [
+        line(blade)
+        for blade in sorted(
+            set(left_coefficients) | set(right_coefficients),
+            key=lambda blade: (len(blade), blade),
+        )
+    ]
+
+
+def show_cancellation(
+    left: MultiVectorBase,
+    right: MultiVectorBase,
+    left_name: str,
+    right_name: str,
+) -> None:
+    """Display (in a notebook) both sides of an identity, then their difference
+    cancelling term by term.
+
+    Shows ``left`` and ``right`` expanded, then one line per blade from
+    ``cancellation_latex``, where matching terms carry the same number under an
+    ``\\underbrace``, so the reader watches the terms disappear instead of being
+    handed a bare ``0``.
+
+    Args:
+        left: the left side, already computed.
+        right: the right side, already computed.
+        left_name: LaTeX for how the left side was built, e.g. ``a * (b + c)``.
+        right_name: LaTeX for the right side.
+    """
+    display(Markdown("**The left side**"))
+    display(Math(f"{left_name} = " + _math_body(_latex(left))))
+    display(Markdown("**The right side**"))
+    display(Math(f"{right_name} = " + _math_body(_latex(right))))
+    display(
+        Markdown(
+            "**Their difference, blade by blade.** Terms with the same number cancel:"
+        )
+    )
+    text: str
+    for text in cancellation_latex(left, right):
+        display(Math(text))

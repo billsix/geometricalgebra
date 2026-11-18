@@ -1,78 +1,48 @@
 # Investigate: generate percent-formatted Python proof notebooks from Lean proofs
 
-**Part of:** `tasks/proof-notebooks-student-math-notation-style.md` (the proof-notebook umbrella; this is the generate-from-Lean mechanism step)
-**Related:** the codegen conventions (`github.com/billsix/runClaudeInContainer:tasks/reference/codegen-conventions.md` — prefer structured
-output over string concatenation; build a parity harness); the existing demo notebooks
-(`notebooks/displayg2.py`/`displayg3.py`, jupytext percent format).
-
-**Status:** proposed — needs go-ahead (filed 2026-09-29, updated 2026-10-04, William Emerison Six
-<billsix@gmail.com>)
+**Completed:** 2026-11-18 (William Emerison Six <billsix@gmail.com>; authorized batch
+`ready-tasks-batch-2026-11-18`)
+**Part of:** `tasks/proof-notebooks-student-math-notation-style.md` (the proof-notebook umbrella)
 **Priority:** 7
 **Difficulty:** 7
 
-## BLUF
+## Outcome
 
-Investigate whether we can **auto-generate a percent-formatted (jupytext) Python notebook that shows a
-proof in normal, college-level math form, driven by / kept honest by the corresponding Lean proof** —
-e.g. render "𝒢₂ multiplication is associative" or the distributive law as a readable
-symbolic expansion, generated from the Lean development rather than hand-written. The maintainer
-already has a notebook that shows the *distribution* nicely and wants that style (a) updated and (b)
-**automated from the Lean proof**. "Done" for this investigation = a clear go/no-go with a worked
-prototype for one law (associativity or distributivity of `G2.mul`), plus a written finding on how
-much of Lean's reasoning can actually be surfaced.
+The answer is go, in the "checked by Lean" form: the notebook does the symbolic expansion and cites
+the Lean theorem that certifies it. Nothing is generated from Lean's steps, because a `ring` proof
+has none. The finding is in `tasks/reference/lean-python-notebook-workflow.md`, under
+"Showing the cancellation" and "Why 'checked by Lean'".
 
-## Context / the real question to answer first
-
-- **The existing notebook** the maintainer means is `notebooks/displaymv.py`, the `show_mult`
-  associativity cells (`show_mult(g2_1, g2_2)` … `((g2_1*g2_2)*g2_3) - (g2_1*(g2_2*g2_3))`); the
-  helper is `show_mult` in `src/gacalc/nbplotutils.py`. Use its *presentation* as the target style — a
-  college-level symbolic expansion, not Lean tactic jargon.
-- **The cancellation requirement is the umbrella's** (`tasks/proof-notebooks-student-math-notation-style.md` › "Shared requirement"); restated here
-  because this task builds it: that demo ends by
-  evaluating the difference and printing `0` — "it doesn't show shit, it just shows 0." The notebook
-  must show the **cancellation**, not a bare zero: lay the two expansions out term by term, side by
-  side with labels, and mark the matching `+t`/`−t` pairs with LaTeX `\underbrace{…}_{cancel}` so the
-  student watches the terms disappear. That wants a `show_sub`/`show_cancellation` display helper
-  beside `show_mult`. (mathjax/myst_nb render `\underbrace`.) The *why* is
-  `tasks/reference/lean-python-notebook-workflow.md`; the *how* lives here.
-- **The crux — can Lean "trace all its steps"?** Be honest here: a `ring`/`ext <;> ring` proof (how
-  `G2`/`G3` associativity and distributivity are proved) is **opaque** — `ring` produces a single
-  reflection proof, not a human-readable chain of rewrites, so there is *no* natural "trace of
-  deductions" to transcribe. Options to explore, roughly in increasing promise:
-  1. **Lean tracing options** (`set_option trace.Meta.Tactic.ring`, `trace.Debug`, proof-term
-     `#print`) — likely too low-level / not college-math-shaped. Investigate but expect it insufficient.
-  2. **Generate the *algebraic expansion* symbolically (sympy/Python), and use Lean only to
-     *certify* the identity.** The notebook shows the human-readable step-by-step distribution
-     (exactly what the maintainer likes), generated from the *definitions* (the same `mul` table the
-     Lean `G2.mul` encodes); Lean's role is the machine-check that the end identity holds. This
-     matches gacalc's existing "show the work symbolically" notebooks and the codegen conventions.
-  3. **A structured proof format:** write the Lean proof in a `calc`/step style (not `ring`) so each
-     step is a named rewrite, then extract those steps and pretty-print them to LaTeX/Python. More
-     faithful "from the Lean proof," but requires re-authoring proofs in an explicit style and a
-     Lean→notebook extractor.
-- **Decision to get from the maintainer:** is the goal "the notebook is *checked* by Lean" (option 2,
-  pragmatic) or "the notebook is literally *transcribed from* the Lean proof's steps" (option 3,
-  faithful but heavy)? These are very different projects.
-
-## Plan (once greenlit)
-
-- [x] Locate the maintainer's existing distribution notebook (`notebooks/displaymv.py`, `show_mult`
-      associativity cells) — done 2026-10-04; capture its target style when the spike starts.
-- [ ] Spike each option on ONE law (start with `G2` left-distributivity `a(b+c)=ab+ac`, then
-      associativity): what can Lean actually emit; what reads well at college level.
-- [ ] Prototype the most promising (likely option 2: sympy expansion in a percent notebook + a Lean
-      certificate cell / cross-check), following the codegen conventions (structured output, parity
-      harness, determinism).
-- [ ] Write the go/no-go finding into a reference doc; if go, scaffold the generator task.
+Built:
+- **`gacalc.nbdisplay.show_cancellation(left, right, left_name, right_name)`**, with the doctested
+  `cancellation_latex` it displays. It shows both sides expanded, then one line per blade, with each
+  cancelling pair of monomials marked `\underbrace{…}_{k}` with a shared `k` and the residual at the
+  end. This answers the maintainer's 2026-09-30 complaint that the associativity demo "just shows 0".
+- **The prototype, `notebooks/displayproofs.py`, on distributivity:** three general symbolic 𝒢₂
+  multivectors, `show_mult` of `a * (b + c)`, `a * b` and `a * c`, then `show_cancellation` (8
+  numbered pairs per blade, residual 0). It is tagged `twin: GacalcProofs.G2.mul_add`.
+- **`notebooks/displaymv.py`'s associativity proof** now ends with `show_cancellation` (16 pairs per
+  blade) instead of a bare difference. It is tagged `twin: GacalcProofs.G2.mul_assoc`.
+- The matching `-- twin:` comments are in `proofs/GacalcProofs/G2.lean`.
+- `CHANGELOG.md` (Added) and `CLAUDE.md` (the `nbdisplay` and demo-notebook lines) are updated.
 
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-18)
 
-Answered when the batch started:
+1. Checked by Lean, not transcribed (no `calc` re-proofs, no extractor).
+2. The first prototype is distributivity.
 
-1. **Checked by Lean**: the notebook does the symbolic expansion and cites the Lean theorem that certifies it; no transcription or extractor.
-2. **The first prototype is distributivity.**
+## Not done
 
-## Open questions
+- The Lean tracing options were not spiked. Decision 1 made them moot, and `ring` decides by
+  normalizing both sides to one polynomial form in a single reflection step, so there is no rewrite
+  chain to print.
+- No generator task was scaffolded, since nothing is generated. Applying `show_cancellation` to more
+  laws and to the book's proof notebooks is the umbrella task's backlog.
 
-None.
+## Verification
 
+- The `nbdisplay` doctests passed (6).
+- Both notebooks ran headless (Agg). The associativity cancellation was checked programmatically:
+  every line ends `= 0`, with 32 underbraces per blade.
+- ruff and `ty check` were clean on the module and notebooks.
+- `lake build GacalcProofs.G2` passed with the tags.

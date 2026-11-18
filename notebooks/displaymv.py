@@ -48,7 +48,7 @@ from gacalc.gn import (
     sym_vec3_1,
     sym_vec3_2,
 )
-from gacalc.nbdisplay import show_mult
+from gacalc.nbdisplay import show_cancellation, show_mult
 from gacalc.nbplotutils import plot_multivector
 
 # turn warnings into exceptions
@@ -528,12 +528,21 @@ show_mult(G2_2, G2_3)
 show_mult(G2_1, G2_2 * G2_3)
 
 # %% [markdown]
-# The two sums are the same. Their difference is $0$, and because every coefficient
-# is a symbol, this is not one example: it is a proof that the geometric product of 𝒢₂
-# is associative for **every** three elements.
+# The two sums are the same. Below, each blade's terms from the first grouping are
+# matched with the same terms from the second: a pair carries the same number, and
+# every term has a partner, so the difference is $0$. Because every coefficient is a
+# symbol, this is not one example: it is a proof that the geometric product of 𝒢₂ is
+# associative for **every** three elements. Lean proves the same law as
+# `GacalcProofs.G2.mul_assoc`.
 
 # %%
-((G2_1 * G2_2) * G2_3) - (G2_1 * (G2_2 * G2_3))
+# twin: GacalcProofs.G2.mul_assoc
+show_cancellation(
+    (G2_1 * G2_2) * G2_3,
+    G2_1 * (G2_2 * G2_3),
+    left_name="(G_1 * G_2) * G_3",
+    right_name="G_1 * (G_2 * G_3)",
+)
 
 # %% [markdown]
 # Grade parts in 𝒢₃
