@@ -39,9 +39,9 @@ scalar plus a bivector, and the two pieces are exactly the dot and the wedge:
                      = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12}.
 
 That is the **full-angle rotor** of :doc:`geometric-product` — :math:`R = \cos(\theta) + \sin(\theta)
-* e_{12}` — but we did not have to know :math:`\theta` to write it. We *multiplied the two vectors*,
-and the cosine and sine appeared on their own as :math:`\hat{\mathbf{a}} \cdot \hat{\mathbf{b}}` and :math:`\hat{a}
-\wedge \hat{b}`. (The Lean proofs state this as ``uvec_mul_uvec`` in
+* \mathbf{e}_{12}` — but we did not have to know :math:`\theta` to write it. We *multiplied the two vectors*,
+and the cosine and sine appeared on their own as :math:`\hat{\mathbf{a}} \cdot \hat{\mathbf{b}}` and :math:`\hat{\mathbf{a}}
+\wedge \hat{\mathbf{b}}`. (The Lean proofs state this as ``uvec_mul_uvec`` in
 ``proofs/GacalcProofs/Rotation2D.lean`` — the product of the unit vectors at angles :math:`\alpha`
 and :math:`\beta` is the full-angle rotor for :math:`\beta - \alpha` — with the scalar and bivector
 parts named ``uvec_dot`` and ``uvec_wedge``.)
@@ -62,8 +62,8 @@ Vectors of any length
 
 The unit case is the whole idea; the only loose end is that :math:`\vec{\mathbf{a}}` and :math:`\vec{\mathbf{b}}` are
 usually not unit length. gacalc's :meth:`~gacalc.base.MultiVectorBase.versor_from_vectors` handles the
-general case by building the rotor from the **angle bisector** :math:`\vec{h} = |\vec{b}| * \vec{a} +
-|\vec{a}| * \vec{b}`, so the magnitudes cancel and only the directions set the rotation;
+general case by building the rotor from the **angle bisector** :math:`\vec{\mathbf{h}} = |\vec{\mathbf{b}}| * \vec{\mathbf{a}} +
+|\vec{\mathbf{a}}| * \vec{\mathbf{b}}`, so the magnitudes cancel and only the directions set the rotation;
 :meth:`~gacalc.base.MultiVectorBase.rotor_from_vectors` is that versor normalized to unit length, the
 half-angle rotor that drives the sandwich :math:`R * \vec{\mathbf{v}} * \tilde{R}`. The transform factories
 :func:`~gacalc.transforms.versor_rotation` and :func:`~gacalc.transforms.projection_rotation` package

@@ -27,8 +27,8 @@ two coordinates:
 
    \vec{\mathbf{y}} \cdot \vec{\mathbf{a}}_1 = x_1 * (\vec{\mathbf{a}}_1 \cdot \vec{\mathbf{a}}_1) + x_2 * (\vec{\mathbf{a}}_2 \cdot \vec{\mathbf{a}}_1).
 
-This chapter builds, for any frame, a second set of vectors :math:`\vec{a}^1, \dots,
-\vec{a}^n`, the **reciprocal frame**, that makes every coordinate one dot product again:
+This chapter builds, for any frame, a second set of vectors :math:`\vec{\mathbf{a}}^1, \dots,
+\vec{\mathbf{a}}^n`, the **reciprocal frame**, that makes every coordinate one dot product again:
 :math:`x_k = \vec{\mathbf{a}}^k \cdot \vec{\mathbf{y}}`. The upper index names the reciprocal vector; it is not
 an exponent. This is Hestenes and Sobczyk's construction (*Clifford Algebra to Geometric
 Calculus*, p. 28, equations 3.4 to 3.7).

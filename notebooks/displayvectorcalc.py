@@ -34,9 +34,9 @@
 # Calc-3 notation, on top of the geometric algebra that computes it. Two
 # one-time moves in the setup cell give a whole notebook the familiar look:
 #
-# - `set_blade_symbols(...)` makes every LaTeX **display** render the basis
-#   vectors e₁/e₂/e₃ as **i**/**j**/**k** (display only — the stored blade
-#   tuples and `repr` never change);
+# - `set_blade_symbols(...)` makes every LaTeX **display** render the basis vectors
+#   $\vec{\mathbf{e}}_1$, $\vec{\mathbf{e}}_2$, $\vec{\mathbf{e}}_3$ as
+#   **i**/**j**/**k** (display only — the stored blade tuples and `repr` never change);
 # - `i, j, k = e_1, e_2, e_3` gives the same names on the **input** side, with
 #   no library support needed — they are ordinary Python aliases of the graded
 #   `g3.Vector` basis constants.

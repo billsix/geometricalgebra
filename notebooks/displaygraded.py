@@ -383,10 +383,11 @@ B.dual()
 show((g3.Vector.e_1 ^ g3.Vector.e_2) * (g3.Vector.e_1 ^ g3.Vector.e_2))
 
 # %% [markdown]
-# A bivector times its **own dual** collapses to the pseudoscalar scaled by
-# `|B|²`:  `B * (B*) = |B|² * I`.  For a *unit* bivector that is just the pseudoscalar
-# `I = e₁ * e₂ * e₃`.  The lazy `g3.Bivector` stores the raw `cos²(t) + sin²(t)`
-# coefficient; only the **display** simplifies it — so the cancellation shows.
+# A bivector times its **own dual** collapses to the pseudoscalar scaled by $|B|^2$:
+# $B * B^{*} = |B|^2 * I$. For a *unit* bivector that is just the pseudoscalar
+# $I = \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3$. The lazy
+# `g3.Bivector` stores the raw $\cos(t)^2 + \sin(t)^2$ coefficient; only the **display**
+# simplifies it — so the cancellation shows.
 
 # %%
 t: sympy.Symbol = sympy.symbols("t")
