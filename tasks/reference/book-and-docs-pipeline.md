@@ -180,6 +180,19 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     orthogonal `w_i` green, unit `u_i` purple, target `y` and remainders red. It re-exports
     `LabelPos`, so the notebooks never `import epix` themselves: ty cannot resolve the
     editable-installed `epix` package.
+  - Three live helpers serve single notebooks (added 2026-11-19,
+    `tasks/archive/2026/11/19/fill-placeholder-book-notebooks.md`). `_venn_scene.py`
+    `g2_subsets_scene()` draws the 𝒢₂ subsets diagram (also prebuilt as `g2subsets.py`, for
+    `defining-g2`). `_line_scene.py` draws `one-dimension`'s graph paper (`graph_paper_scene`,
+    `graph_line`) and its rows of paired number lines (`number_lines_scene`, `number_line`, `step`,
+    `tip`). `_paper_scene.py` draws graph paper carried by a function (`paper_scene`,
+    `carried_paper`) for `relative-graph-paper` and `rotation-graph-paper`. The function comes in
+    as a `Mapping` Protocol whose parameters are named, so that each call passes keywords; a plain
+    `Callable` forces positional calls, which `check_epix_keywords` fails as an "unknown callee".
+  - **Gotcha: `black(intensity=…)` is darkness.** As a pen, `epix.black(intensity=0.2)` is a light
+    gray and `0.9` nearly black (checked by rendering, 2026-11-19).
+  - **Gotcha: `epix.dot` takes the current label colour**, not the pen's, so set
+    `epix.label_color` before a dot.
   - **Gotcha: a tint of black fills dark.** `epix.black(intensity=…)` gives a gray *pen*, but as a
     `fill` it came out near-black in the eepic output; fill with an explicit `epix.rgb(…)` gray
     (`_frame_scene.GRAY_FILL`).

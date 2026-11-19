@@ -7,7 +7,7 @@
 # ---
 
 # %% [markdown]
-# # Defining the algebra 𝒢₂ — calculations
+# # Defining the algebra $\mathcal{G}_2$ — calculations
 #
 # Companion to *Defining the Algebra: G2*. Until now we have used the plane's product a
 # piece at a time: rotating by multiplying, projecting, the dot and the wedge. This
