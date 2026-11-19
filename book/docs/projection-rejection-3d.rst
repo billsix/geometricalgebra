@@ -48,6 +48,21 @@ remainder.
    The third plane is written :math:`\mathbf{e}_{31}` (cyclically, like :math:`\mathbf{e}_{12}` and
    :math:`\mathbf{e}_{23}`); gacalc spells the same blade :math:`\mathbf{e}_{13} = -\mathbf{e}_{31}`.
 
+Onto any plane, and the product split
+-------------------------------------
+
+The same split works for any plane through the origin, :math:`B = \vec{\mathbf{p}} \wedge
+\vec{\mathbf{q}}`: the projection lies in the plane, the rejection is perpendicular to both
+:math:`\vec{\mathbf{p}}` and :math:`\vec{\mathbf{q}}`, and the two add back up to
+:math:`\vec{\mathbf{a}}`. Onto a line, the split of the product from :doc:`projection` carries over
+to space unchanged: :math:`\vec{\mathbf{a}} * \operatorname{proj}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})`
+is the dot product :math:`\vec{\mathbf{a}} \cdot \vec{\mathbf{b}}`, and
+:math:`\vec{\mathbf{a}} * \operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})` is the wedge
+:math:`\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}`, now with a part in each of the three coordinate
+planes. The companion notebook computes each step with symbolic coordinates; the Lean proofs are
+``project_add_reject`` (``proofs/GacalcProofs/Projection3D.lean``) and ``mul_proj_eq_dot`` and
+``mul_eq_proj_dot_add_reject_wedge`` (``proofs/GacalcProofs/StandardPosition.lean``).
+
 .. toctree::
    :maxdepth: 1
 
