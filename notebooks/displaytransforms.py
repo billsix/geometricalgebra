@@ -12,8 +12,7 @@
 #     name: python3
 # ---
 
-# %%
-
+# %% tags=["remove-cell"]
 # Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #

@@ -121,8 +121,10 @@ latex_elements = {
 % is missing is drawn from DejaVu Sans (installed in the image; full sub/superscript
 % coverage). Referenced by FILE so it needs no luaotfload name database. This runs
 % in the preamble, AFTER Sphinx's fontpkg has loaded fontspec and chosen FreeSerif,
-% and just re-sets the three families with the fallback attached.
-\directlua{luaotfload.add_fallback("gacalcfallback", {"file:DejaVuSans.ttf:mode=harf;"})}
+% and just re-sets the three families with the fallback attached. Only FreeSerif's
+% upright face has 𝒢; the bold, sans and mono faces (headings, code comments) and DejaVu
+% Sans lack it, so XITS Math (texlive-xits) is the second fallback, for 𝒢.
+\directlua{luaotfload.add_fallback("gacalcfallback", {"file:DejaVuSans.ttf:mode=harf;", "file:XITSMath-Regular.otf:mode=harf;"})}
 \setmainfont{FreeSerif}[RawFeature={fallback=gacalcfallback}]
 \setsansfont{FreeSans}[RawFeature={fallback=gacalcfallback}]
 \setmonofont{FreeMono}[RawFeature={fallback=gacalcfallback}]

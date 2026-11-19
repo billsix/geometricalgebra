@@ -12,8 +12,7 @@
 #     name: python3
 # ---
 
-# %%
-
+# %% tags=["remove-cell"]
 # Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #
@@ -28,8 +27,8 @@
 # for more details.
 
 # %% [markdown]
-# 𝒢₃: areas and volumes
-# =====================
+# $\mathcal{G}_3$: areas and volumes
+# ==================================
 #
 # In `displayg2areas.py` the size of the wedge of two vectors was the area of their
 # parallelogram. Space adds one more step: the wedge of *three* vectors, whose size is

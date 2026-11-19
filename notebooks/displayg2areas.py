@@ -12,8 +12,7 @@
 #     name: python3
 # ---
 
-# %%
-
+# %% tags=["remove-cell"]
 # Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #
@@ -28,8 +27,8 @@
 # for more details.
 
 # %% [markdown]
-# 𝒢₂: angles and areas
-# ====================
+# $\mathcal{G}_2$: angles and areas
+# =================================
 #
 # `displayg2.py` split the product of two vectors into a plain-number part, the dot
 # product, and a piece-of-plane part, the wedge. This notebook asks what the two
