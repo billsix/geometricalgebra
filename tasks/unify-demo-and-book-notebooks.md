@@ -1,8 +1,6 @@
 # Why the demo and book notebooks differ, and a plan to unify them (both able to sit in the book)
 
-**Status:** parked — do NOT start until the maintainer explicitly says to start this task. Filed
-2026-11-18 by William Emerison Six <billsix@gmail.com>: "That task is not to be started on your
-own, until I tell you explicitly." A batch go-ahead for other tasks does not cover it.
+**Status:** finding and plan written 2026-11-19; awaiting the maintainer's review, then archive
 **Priority:** 8 (parked)
 **Difficulty:** 6
 **Created:** 2026-11-18
@@ -60,6 +58,14 @@ scaffolded implementation plan, both reviewed by the maintainer, with no noteboo
 4. Write the finding and the proposed steps; scaffold the implementation as its own task, proposed
    and needing go-ahead.
 
-## Open questions
+## Result (2026-11-19)
 
-None yet. Raise them when the task is started.
+Started by William Emerison Six <billsix@gmail.com>, 2026-11-19: "this is a book to learn from, but
+I also want the students to be able to run the notebooks themselves, like a graphic calculator. So I
+see no reason for two directories". The maintainer also asked about path management, and noted that
+not every notebook has to be in the book.
+- The finding is `tasks/reference/demo-and-book-notebooks.md`: the verified table, why each
+  difference exists, the `sys.path` finding, and why package data is not the right fix.
+- The implementation plan is `tasks/notebooks-one-directory.md`, proposed, with four open questions.
+
+Once the maintainer has reviewed both, rewrite this into a done-record and archive it.
