@@ -1,10 +1,10 @@
 # Let pyright check the live-figure notebooks once ePiX ships type information
 
-**Status:** blocked
+**Status:** in progress
 **Priority:** 7
 **Difficulty:** 3
 **Created:** 2026-11-19 (William Emerison Six <billsix@gmail.com>)
-**Blocked on:** epix-mirror's `tasks/ship-python-type-information.md` being done, committed and
+**Blocked on:** epix-mirror's `tasks/archive/2026/11/19/ship-python-type-information.md` being done, committed and
 pushed to github.com/billsix/epix-mirror (a `_epix.pyi` stub and `py.typed` in `python/epix/`).
 **Recheck:** `git -C <epix-mirror checkout> fetch github && git -C <epix-mirror checkout> cat-file
 -e github/master:python/epix/py.typed && git -C <epix-mirror checkout> cat-file -e
@@ -39,6 +39,16 @@ with zero errors and `make format` passes without the ty allowance.
 Once epix-mirror ships the stubs, drop the pyright `exclude` list rather than keep any part of it.
 The one caveat is CI's lean image, which has no ePiX: step 3 decides how it gets the types, and
 the excludes go only when the CI notebooks job passes without them.
+
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-19)
+
+- Cleared: epix-mirror's type information was merged and pushed (`33d0194` on
+  github.com/billsix/epix-mirror `master`).
+- **The lean image gets epix's types by copying its typed sources** (Plan step 3): with
+  `USE_EPIX=0`, the image fetches `python/epix/*.py`, `_epix.pyi` and `py.typed` from the pinned
+  `EPIX_COMMIT`. There is no compiler or TeX, and nothing imports them at run time. The
+  alternatives were declined: building ePiX in CI (meson, g++, ghostscript, ImageMagick and three
+  TeX Live collections on every run), and keeping the allowances in CI.
 
 ## Plan
 

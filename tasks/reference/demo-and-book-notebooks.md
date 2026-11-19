@@ -76,4 +76,4 @@ ePiX ships no `.pyi` stub and no `py.typed`. Its editable install is a setuptool
   `pyrightconfig.json` excludes those 31 notebooks.
 
 Lifting both is `tasks/epix-type-stubs-for-pyright.md`, blocked on epix-mirror's
-`tasks/ship-python-type-information.md`.
+`tasks/archive/2026/11/19/ship-python-type-information.md`.
