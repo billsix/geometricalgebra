@@ -25,7 +25,7 @@ contains `gacalc/py.typed`, and a consumer's type checker uses gacalc's own anno
 - The consumer that imports gacalc is github.com/billsix/modelviewprojection (its `pgzero_gl`
   shim subclasses `gacalc.g2.Vector`).
 - `gacalc.epixscene` imports ePiX, which has no types (geometricalgebra's
-  `tasks/epix-type-stubs-for-pyright.md`). The marker is still right for that subpackage: its own
+  `tasks/archive/2026/11/19/epix-type-stubs-for-pyright.md`). The marker is still right for that subpackage: its own
   annotations are complete, and only the ePiX-derived names stay unknown to a consumer.
 
 ## Plan

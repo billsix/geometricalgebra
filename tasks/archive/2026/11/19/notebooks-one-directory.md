@@ -19,7 +19,7 @@ and no notebook edits `sys.path`. The state and the reasons are in
 5. (During the work) pyright excludes the 31 notebooks that draw live ePiX figures, because ePiX
    ships no type information. Fixing that was split off: epix-mirror's
    `tasks/archive/2026/11/19/ship-python-type-information.md` (staged there, not committed), and
-   `tasks/epix-type-stubs-for-pyright.md` here, blocked on it being pushed. Once it is, the
+   `tasks/archive/2026/11/19/epix-type-stubs-for-pyright.md` here, blocked on it being pushed. Once it is, the
    excludes go (the maintainer agreed, 2026-11-19).
 
 ## What was done, by commit
