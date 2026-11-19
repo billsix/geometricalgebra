@@ -1,68 +1,52 @@
 # Fill the five remaining placeholder book notebooks
 
-**Status:** proposed — needs go-ahead
-**Priority:** 5
-**Difficulty:** 6
+**Status:** done (2026-11-19)
 **Created:** 2026-11-19 (William Emerison Six <billsix@gmail.com>)
 **Related:** `tasks/archive/2026/11/19/fill-placeholder-book-notebooks.md` (filled the first five
-and listed these as its follow-up); `tasks/notebook-dot-wedge-projection-demo.md` (blocked; it
-names the `projection` and `projection-rejection-3d` stubs)
+and scaffolded this task); `tasks/notebook-dot-wedge-projection-demo.md` (still blocked; it now
+records that the book has both its halves)
 
-## BLUF
+## What this did
 
-Five notebooks under `book/docs/notebooks/` are still the 16-line jupytext stub whose only code cell
-is `1 + 1`, and each is pulled into the book by its page's toctree: `canonical-form.py`, `hook.py`,
-`projection.py`, `projection-rejection-3d.py` and `vectors-as-number-lines.py`. Done means each is
-either filled with a companion lesson in the book's notebook style, or dropped from its page's
-toctree and deleted where the page does not need one. `make docs` must execute every notebook that
-remains.
+Five book notebooks were still the jupytext stub whose only code cell was `1 + 1`. After this task
+no book notebook is a stub (`grep -l '^1 + 1$' book/docs/notebooks/*.py` finds nothing).
 
-## Context
+| Page | Notebook | Outcome |
+| --- | --- | --- |
+| `hook` | `hook.py` | Dropped from the toctree and deleted (decision 1) |
+| `canonical-form` | `canonical-form.py` | Exact against decimal with sympy: the stored `√2` squared, `0.1 + 0.2`, one canonical form per answer, the cracker example ordered to stay whole, the stored decimal of `5/6` as an exact fraction, a decimal only on request |
+| `vectors-as-number-lines` | `vectors-as-number-lines.py` | Any nonzero `v` makes a number line `t * v`; `coordinate_along` reads a point's number; `3 * v` reads 3, 3/2 and −3 on the lines of `v`, `2 * v` and `−v` (`t / s` in general) |
+| `projection` | `projection.py` | Decision 2: `proj_a(b)` and `rej_a(b)` drawn and added back to `b`; `a * proj_a(b)` is a plain number, `a * rej_a(b)` a multiple of `e12`, together `a * b`; swapping roles keeps the number and flips the area |
+| `projection-rejection-3d` | `projection-rejection-3d.py` | Projection onto the three coordinate planes and onto any plane `p ∧ q`; the 3D product split `a * proj_a(b) = a · b`, `a * rej_a(b) = a ∧ b` |
 
-Read first:
-- `tasks/archive/2026/11/19/fill-placeholder-book-notebooks.md`: how the first five were done.
-  It covers the cell style, the live ePiX figure helpers (`_line_scene.py`, `_paper_scene.py`,
-  `_venn_scene.py` in `book/figures/epix/`), the run-and-check loop and the gates.
-- `tasks/reference/book-notebook-teaching-style.md`, `tasks/reference/book-outline.md`
-  ("Structural conventions" and sections A–D, F), and
-  `tasks/reference/teaching-order-and-dependencies.md`. A page may use only results taught
-  before it.
-
-Per stub, as found on 2026-11-19:
-- `hook.py` (page `hook.rst`, the book's first page): the outline's §A asks for exciting pictures
-  of rotation, projection and reflection. Nothing is taught yet, so this would be pictures only.
-  Decide whether a notebook earns its place here.
-- `canonical-form.py` (page `canonical-form.rst`): the canonical-form-over-decimals stance.
-  Exact values such as `sqrt(2)/2` against floats are natural sympy material.
-- `projection.py` (page `projection.rst`): the page also includes the real `proof-projection.py`.
-  Either fill this stub (for example with the dot/wedge view of projection, the subject of the
-  blocked `tasks/notebook-dot-wedge-projection-demo.md`) or drop it from the toctree.
-- `projection-rejection-3d.py` (page `projection-rejection-3d.rst`): the page's own proofs
-  `proof-projection-3d` and `proof-cross` are filled. Coordinate with the blocked task above,
-  whose remaining work is the 3D projection/rejection cells.
-- `vectors-as-number-lines.py` (page `vectors-as-number-lines.rst`): a vector as a relative number
-  line. It sits between `one-dimension` (which already draws number lines with
-  `_line_scene.py`) and `relative-graph-paper`.
-
-## Plan
-
-1. (Done 2026-11-19: the decisions are recorded above.)
-2. Fill or drop each stub, one commit each, running the notebook and its gates as the first task
-   did.
-3. Run `make docs` and `make format`, write the done-record, and archive.
+Each page that kept its notebook got a drafted section or Draft prose. `canonical-form.rst` and
+`vectors-as-number-lines.rst` were written in full, still marked for the maintainer's voice pass.
+`book/figures/epix/_line_scene.py` gained `slanted_number_line`, a number line along any vector,
+with an `offset` for setting two lines side by side. `tasks/reference/book-and-docs-pipeline.md`
+lists it.
 
 ## Decisions
 
-Both made by William Emerison Six <billsix@gmail.com>, 2026-11-19, each the recommended option.
+- **1 (maintainer, 2026-11-19): drop `hook.py`.** Nothing has been taught on the book's first page,
+  so it carries no companion notebook.
+- **2 (maintainer, 2026-11-19): fill `projection.py` with the dot/wedge projection demo**, in the
+  left-multiplied form the maintainer chose on 2026-11-16 (`a · b = a * proj_a(b)`,
+  `a ∧ b = a * rej_a(b)`). The `projection` page comes before `product-from-projection`, which names
+  the dot and the wedge, so the notebook calls the pieces "a plain number" and "a piece of plane"
+  and names them only by forward reference.
+- `projection-rejection-3d.py` also carries the 3D product split, which is the remaining work of the
+  blocked `tasks/notebook-dot-wedge-projection-demo.md`. That task's Q1, whether the demo notebook
+  `notebooks/displayg3.py` should also carry the cells, is left to the maintainer; the task records
+  the progress.
+- `canonical-form` comes before vectors are taught, so it uses plain sympy numbers and no gacalc.
+  Multiplying the stored decimal of `5/6` by 12 happens to round back to `10.0`; the notebook says
+  so and shows the stored fraction instead of hunting for numbers whose rounding fails.
 
-1. **Drop `hook.py`.** Remove it from `hook.rst`'s toctree and delete the file (`git rm`). Nothing is
-   taught yet on the book's first page, so the page itself carries any pictures.
-2. **Fill `projection.py` with the dot/wedge projection demo:** the dot product is the projected
-   geometric product and the wedge the rejected one. This is the 2D half of
-   `tasks/notebook-dot-wedge-projection-demo.md`. Read that task first and reuse its proved math
-   rather than re-deriving it. Note in it which part this task covered, and leave the rest of it to
-   that task.
+## Verification
 
-## Open questions
-
-None. The go-ahead to start this task is still needed.
+Each notebook was executed in the `gacalc` image and every check came out 0; every figure was
+viewed. `ruff`, `ty check book/docs/notebooks`, `tools/check_notebook_prose_width.py`,
+`tools/check_epix_keywords.py` and `tools/check_annotations.py` were clean. The full `make format`
+and the book build (`docs.sh`) ran at the end and passed. The build's only new warning was
+`hook.ipynb` "not included in any toctree": a stale, gitignored `.ipynb` left by an earlier build in
+the working tree, deleted by hand. A fresh checkout never has it.

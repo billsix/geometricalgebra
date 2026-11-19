@@ -185,7 +185,7 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     `g2_subsets_scene()` draws the 𝒢₂ subsets diagram (also prebuilt as `g2subsets.py`, for
     `defining-g2`). `_line_scene.py` draws `one-dimension`'s graph paper (`graph_paper_scene`,
     `graph_line`) and its rows of paired number lines (`number_lines_scene`, `number_line`, `step`,
-    `tip`). `_paper_scene.py` draws graph paper carried by a function (`paper_scene`,
+    `tip`), and `vectors-as-number-lines`' number line along any vector (`slanted_number_line`). `_paper_scene.py` draws graph paper carried by a function (`paper_scene`,
     `carried_paper`) for `relative-graph-paper` and `rotation-graph-paper`. The function comes in
     as a `Mapping` Protocol whose parameters are named, so that each call passes keywords; a plain
     `Callable` forces positional calls, which `check_epix_keywords` fails as an "unknown callee".
