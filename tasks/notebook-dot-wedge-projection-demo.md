@@ -49,7 +49,7 @@ product and the perpendicular part is the wedge.
 
 ## Progress elsewhere (2026-11-19)
 
-`tasks/fill-remaining-placeholder-book-notebooks.md` (William Emerison Six <billsix@gmail.com>,
+`tasks/archive/2026/11/19/fill-remaining-placeholder-book-notebooks.md` (William Emerison Six <billsix@gmail.com>,
 decision 2) filled the two book stubs this task names. Both use the left-multiplied form from the
 Q2 answer:
 - `book/docs/notebooks/projection.py` (2D) shows `a * proj_a(b)` is a plain number and
