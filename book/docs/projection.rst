@@ -42,6 +42,25 @@ Together they add back up to :math:`\vec{\mathbf{a}}`.
    :align: center
    :alt: projection plus rejection, tip-to-tail, equal to a
 
+What the two parts do to the product
+------------------------------------
+
+Multiply each part by :math:`\vec{\mathbf{a}}`. The part along :math:`\vec{\mathbf{a}}` is a number
+times :math:`\vec{\mathbf{a}}`, so its product with :math:`\vec{\mathbf{a}}` is a plain number. The
+part across is perpendicular to :math:`\vec{\mathbf{a}}`, and the product of perpendicular vectors
+is a pure piece of plane, a multiple of :math:`\mathbf{e}_{12}`. Since
+:math:`\vec{\mathbf{b}}` is the sum of its parts, the two pieces add up to the whole product:
+
+.. math::
+
+   \vec{\mathbf{a}} * \vec{\mathbf{b}}
+     = \vec{\mathbf{a}} * \operatorname{proj}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})
+     + \vec{\mathbf{a}} * \operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}}).
+
+The next chapter, :doc:`product-from-projection`, names the two pieces. The companion notebook
+computes each one with symbolic coordinates; the Lean proofs are ``mul_proj_eq_dot`` and
+``mul_reject_eq_wedge`` in ``proofs/GacalcProofs/Bootstrap2D.lean``.
+
 .. toctree::
    :maxdepth: 1
 
