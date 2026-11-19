@@ -23,7 +23,8 @@
 from __future__ import annotations
 
 from _rotate_ab_scene import A_ON_E1, B_PRIME, LOWER_LEFT, UPPER_RIGHT, A, B
-from _scene2d import (
+
+from gacalc.epixscene.scene2d import (
     ORIGIN,
     PendingFigure,
     Point,

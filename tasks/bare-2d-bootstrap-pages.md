@@ -19,7 +19,7 @@ later iteration, whose changes the maintainer has not yet named.
   `bootstrap-rotation-from-projection.rst`, `bootstrap-product.rst`,
   `bootstrap-projection-from-product.rst`, `bootstrap-rotation-from-product.rst`. They form the
   captioned, numbered toctree "Part III — The 2D Bootstrap" at the end of `book/docs/index.rst`.
-- Notebooks: `book/docs/notebooks/bootstrap-*.py`, same names, jupytext percent format.
+- Notebooks: `notebooks/bootstrap-*.py`, same names, jupytext percent format.
 - Figures: `book/figures/epix/_bootstrap_scene.py`, `boot_*.py`. Step 2 uses `boot_sp2`–`boot_sp5`.
 - Lean: `proofs/GacalcProofs/Bootstrap2D.lean`, plus the existing theorems each page cites.
 - The current design rules, and the page → Lean table, are in

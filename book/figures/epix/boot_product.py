@@ -34,7 +34,8 @@ from _bootstrap_scene import (
     PRODUCT_FOOT,
     colored_segment,
 )
-from _scene2d import (
+
+from gacalc.epixscene.scene2d import (
     ORIGIN,
     PendingFigure,
     Point,

@@ -47,7 +47,7 @@ refactored or recorded as left alone with its reason, `make test` and `make form
 ## Scope
 
 - **In:** the hand-written Python in `src/gacalc/` (except the generated `g*.py`), `tools/` (including
-  `tools/gen_specialized.py` and `tools/astbuild.py`), `tests/`, `notebooks/`, `book/docs/notebooks/`,
+  `tools/gen_specialized.py` and `tools/astbuild.py`), `tests/`, `notebooks/` (the demo and book notebooks alike),
   and `book/figures/epix/`.
 - **The generated `g1`–`g5`:** never edited by hand. A rule broken in emitted code is fixed in the
   generator, and only if the change improves the emitted source a reader sees (Open Q3).
@@ -95,7 +95,7 @@ refactored or recorded as left alone with its reason, `make test` and `make form
    emits too, or only to the generator's own source? Recommended: only the generator's own source in
    this task. The emitted locals are systematic CSE temporaries, and changing the emitted shape would
    ripple through `make check-generated` and the doc regions for little reader benefit.
-4. **The book notebooks** (`book/docs/notebooks/`) are student-facing, and a name bound once can be
+4. **The book notebooks** (the book's companions in `notebooks/`) are student-facing, and a name bound once can be
    there to show the student a step (`a_par: Vector = …` printed in the next cell). Include them, or
    exempt any binding a notebook displays or explains? Recommended: include them, but exempt a binding
    that a notebook cell displays or the page's prose names.

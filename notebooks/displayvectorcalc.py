@@ -7,13 +7,12 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.4
 #   kernelspec:
-#     display_name: gacalc
+#     display_name: Python 3
 #     language: python
-#     name: gacalc
+#     name: python3
 # ---
 
-# %%
-
+# %% tags=["remove-cell"]
 # Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #
@@ -28,8 +27,8 @@
 # for more details.
 
 # %% [markdown]
-# Vector calculus in 𝒢₃ — i, j, k and the cross product
-# ======================================================
+# Vector calculus in $\mathcal{G}_3$ — i, j, k and the cross product
+# ==================================================================
 #
 # Calc-3 notation, on top of the geometric algebra that computes it. Two
 # one-time moves in the setup cell give a whole notebook the familiar look:

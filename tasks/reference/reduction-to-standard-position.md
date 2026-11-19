@@ -110,7 +110,7 @@ once built 3-D rotation from its 2-D `rotate`). The 2-D rotation is the blend of
 coordinate quarter turn `rot90`); Python's public `standardposition.rotation_from_to(from_vector,
 to_vector)` reads `cos` and `sin` off the two vectors as in `book/docs/proof-rotate-from-a-to-b.rst`, so
 no angle is computed, and returns an `InvertibleFunction` whose inverse is the rotation back (the
-book's $R_{\vec{\mathbf{b}}}^{\vec{\mathbf{e}}_1}$ and its inverse; `book/docs/notebooks/proof-projection.py` uses it).
+book's $R_{\vec{\mathbf{b}}}^{\vec{\mathbf{e}}_1}$ and its inverse; `notebooks/proof-projection.py` uses it).
 The copy-rotate-write-back step is the public `standardposition.in_plane(rotation, first, second, v)`,
 which `project_sp`/`reject_sp` and the 3D book notebooks (`proof-cross.py`, `proof-projection-3d.py`) share. The quarter
 turn is `g2.Vector.rotate_90_degrees()`, whose body swaps coordinates, `(x, y) -> (-y, x)`; it is not
@@ -165,7 +165,7 @@ vectors reduced (e.g. the cross product); it is not a requirement of project/rej
 
 The book's last part, "Part III — The 2D Bootstrap" (`book/docs/index.rst`), runs the 2D arc end to
 end in six short pages, proofs and little prose, each with a sympy notebook
-(`book/docs/notebooks/bootstrap-*.py`) and the Lean theorems cited by name:
+(`notebooks/bootstrap-*.py`) and the Lean theorems cited by name:
 
 | Page | Step | Lean |
 |---|---|---|

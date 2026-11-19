@@ -7,13 +7,12 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.4
 #   kernelspec:
-#     display_name: gacalc
+#     display_name: Python 3
 #     language: python
-#     name: gacalc
+#     name: python3
 # ---
 
-# %%
-
+# %% tags=["remove-cell"]
 # Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #
@@ -28,8 +27,8 @@
 # for more details.
 
 # %% [markdown]
-# 𝒢₂: moving the plane
-# ====================
+# $\mathcal{G}_2$: moving the plane
+# =================================
 #
 # `displaytransforms.py` introduced transforms with the general class `Gn`: translate,
 # scale, rotate, and compositions of them. This notebook applies the same transforms

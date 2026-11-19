@@ -7,13 +7,12 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.4
 #   kernelspec:
-#     display_name: gacalc
+#     display_name: Python 3
 #     language: python
-#     name: gacalc
+#     name: python3
 # ---
 
-# %%
-
+# %% tags=["remove-cell"]
 # Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #
@@ -28,8 +27,8 @@
 # for more details.
 
 # %% [markdown]
-# 𝒢₃: multiplying in space
-# ========================
+# $\mathcal{G}_3$: multiplying in space
+# =====================================
 #
 # `displayg2.py` ran the multiplication rules in the plane. This notebook adds a third
 # arrow, $\vec{\mathbf{e}}_3$, and runs them in space with `g3.G`, the class written

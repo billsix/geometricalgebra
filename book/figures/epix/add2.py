@@ -24,7 +24,8 @@
 from __future__ import annotations
 
 from _addition_scene import A_PLUS_B, ADD_LOWER_LEFT, ADD_UPPER_RIGHT, A
-from _scene2d import (
+
+from gacalc.epixscene.scene2d import (
     PendingFigure,
     Point,
     dashed_vector,

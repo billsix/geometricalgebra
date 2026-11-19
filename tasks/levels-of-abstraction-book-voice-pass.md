@@ -15,7 +15,7 @@ the `.rst`/notebook prose and the `.. note:: Draft` banner is removed.
 
 ## What exists (drafted 2026-10-01)
 
-- `book/docs/notebooks/levels-of-abstraction.py` — runnable jupytext notebook: dot and wedge of two
+- `notebooks/levels-of-abstraction.py` — runnable jupytext notebook: dot and wedge of two
   vectors at three rungs (coordinate → fixed-grade `⟨ab⟩₀`/`⟨ab⟩₂` → coordinate-free
   `inner_product`/`outer_product`), all proved equal; coordinate-free shown dimension-independent
   (𝒢₂ and 𝒢₃); and the sine/cosine family (`cosine`, unsigned `abs_sin`, signed 𝒢₂ `sine`,

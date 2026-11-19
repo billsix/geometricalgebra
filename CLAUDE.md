@@ -107,13 +107,23 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   both sides of an identity cancelling term by term, and `at_values(value, values)`,
   which substitutes plot values into a symbolic result; usable by the book's notebooks,
   re-exported from `nbplotutils` for the demo notebooks.
-- `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (the product with the
-  specialized classes) and their companions `displayg2areas.py`, `displayg2transforms.py`,
-  `displayg3measures.py`,
+- `src/gacalc/epixscene/` — the **ePiX scene helpers** the book's figures and live-figure notebooks
+  draw with (`scene2d`, `scene3d`, `frame_scene`, `bootstrap_live`, `line_scene`, `paper_scene`,
+  `venn_scene`; CC0, each module says so). ePiX is built from source in the image and is not on
+  PyPI, so they import only where it is installed; `import gacalc` never loads them
+  (`tests/test_epixscene_import_boundary.py`), and the root `conftest.py` skips them when `epix`
+  is missing.
+- `notebooks/` — **every notebook** (jupytext percent-format `.py`; `notebooks/README.md` lists them),
+  the one directory `make jupyter` opens. Two kinds, by role
+  (`tasks/reference/book-notebook-teaching-style.md`): the book's **companions**, one per page and
+  named after it, and the **explorations** that make up the book's Part IV: `displaymv.py`
+  (general `Gn`), `displayg2.py`/`displayg3.py` (the product with the specialized classes) and their
+  follow-ons `displayg2areas.py`, `displayg2transforms.py`, `displayg3measures.py`,
   `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`),
   `displaytransforms.py` (translate/scale/rotate and the graph-paper pictures), `displayproofs.py`
-  (laws checked term by term, each tagged with its Lean twin)
-  — jupytext (percent-format) demo notebooks.
+  (laws checked term by term, each tagged with its Lean twin). `entrypoint/docs.sh` converts them
+  into `book/docs/notebooks/*.ipynb` (build output) for the book; `conf.py`'s `exclude_patterns`
+  lists any the book leaves out. Each starts with the license header in a `remove-cell` cell.
 - `tests/` — `test_multivector.py` (`Gn`), `test_conformance.py` (parametrized over `[Gn, G]`),
   `test_graded.py` (graded subtypes), `test_generator.py` (the generator's own logic),
   `test_vectorcalc.py` (cross product), `test_blade_symbols.py` (display-symbol map), and more.
@@ -335,15 +345,15 @@ Repo-specific invariants the agent must obey (rationale in the shared doc + the 
   on, N806 off). The rule table, the Greek-vs-Latin-fallback caveat (cos/sin values and descriptive
   scalar names stay Latin), the exempt-names list, and the tooling facts (Greek passes ruff/ty) are
   in `tasks/reference/hestenes-variable-notation.md`.
-- **The book's notebooks are hand-written Python under the full standard — every binding
-  typed** (the maintainer, 2026-10-09). `book/docs/notebooks/*.py` annotate every assignment
+- **The notebooks are hand-written Python under the full standard — every binding
+  typed** (the maintainer, 2026-10-09). `notebooks/*.py` annotate every assignment
   (`a: Vector = a_1 * e_1 + a_2 * e_2`, `R: Versor = …`, `magnitude: Real = b.magnitude()`),
   declare each name on the line above a `sympy.symbols` unpack (`a_1: sympy.Symbol`), and
-  annotate every `def`'s parameters and return — exactly as `tests/` and `notebooks/` do; a
-  `1 + 1` placeholder has nothing to type. `make format` runs `ty check book/docs/notebooks`, which
-  catches wrong types but not missing ones. For those, run `tools/check_annotations.py` by hand: it
-  walks `book/docs/notebooks/` too and lists each missing annotation as a row (none expected). It is
-  a report, not a gate; it never fails a build.
+  annotate every `def`'s parameters and return — exactly as `tests/` does; a `1 + 1`
+  placeholder has nothing to type. `make format` runs `ty check notebooks`, which catches wrong
+  types but not missing ones. For those, run `tools/check_annotations.py` by hand: it walks
+  `notebooks/` too and lists each missing annotation as a row. It is a report, not a gate; it
+  never fails a build.
 - **Prefer `match` / total dispatch for structural case analysis** — the cross-project "Prefer total
   dispatch over an open-ended conditional chain" convention, and it applies to the **Lean proofs**
   (`proofs/`) as much as the Python. Where a definition dispatches on structure (a grade/`n`, a
@@ -373,18 +383,19 @@ over a "run it on your host" instruction.
   test`'s own run, not the full one, where sympy's cache can make a test look fast after a slow one. Quick host
   run: `python -m pytest -q -m "not slow"` after `make generate`.
 - **`entrypoint/format.sh`** (via `make format`, the real gate) — `ruff check --fix`,
-  `ruff format`, `ty check` (`src` including the generated g1–g3, `tests`/`tools`/`book/docs/notebooks`, all clean), and
+  `ruff format`, `ty check` (`src` including the generated g1–g3, `tests`/`tools`/`notebooks`, all clean), and
   `tools/check_changelog.py`
   (the version↔changelog guard). `make check-changelog` runs that guard alone on the host. The
   vendored Emacs tree is excluded via `extend-exclude` in `pyproject.toml [tool.ruff]`, **not** a
   CLI flag (`ruff format` rejects `--extend-exclude`) — don't "fix" `format.sh` to pass it.
 - **`make check-generated`** — regenerates twice, asserts byte-identical (determinism guard; ~30s,
   make/CI target, not part of the default `pytest`).
-- **`make check-notebooks`** — runs `pyright notebooks/` in the container (`ty` covers src/tests but
-  not the notebooks). Kept separate from `make test` so a pyright-version bump can't redden it;
-  `pyrightconfig.json` scopes it to `notebooks/`, turns `reportUnusedExpression` off for the two notebook
-  directories only (an `executionEnvironments` entry each; a cell's last bare expression is its output,
-  and no notebook carries a per-line `pyright: ignore`), and must **not** hardcode `pythonVersion` (a mismatch
+- **`make check-notebooks`** — runs `pyright notebooks/` in the container (`make format`'s `ty`
+  checks the notebooks too). Kept separate from `make test` so a pyright-version bump can't redden it;
+  `pyrightconfig.json` scopes it to `notebooks/` and turns `reportUnusedExpression` off there only (a
+  cell's last bare expression is its output, and no notebook carries a per-line `pyright: ignore`). It
+  excludes the notebooks that draw live ePiX figures, because pyright cannot see ePiX's types; lifting
+  that is `tasks/epix-type-stubs-for-pyright.md`. It must **not** hardcode `pythonVersion` (a mismatch
   with the image's Python makes pyright emit spurious "refers to itself" errors — let it auto-detect).
 - **`make notebooks-ipynb`** — converts every `notebooks/*.py` (jupytext percent format, the committed
   source) to a gitignored `.ipynb`. **`make spyder`** opens the Spyder IDE; it needs an image built with
@@ -446,14 +457,14 @@ over a "run it on your host" instruction.
   notebooks that mention `epix`), a `make format` gate step (the maintainer's rule,
   2026-10-07). The prose width of the notebooks (the book's and `notebooks/`) and figure scripts is checked by
   `python tools/check_notebook_prose_width.py [--fix]`, also a `make format` step, since E501 skips them. Every binding in a figure file is typed, as everywhere else (`fig: PendingFigure`
-  declared above the `with`; `PendingFigure` is `_rotation_scene`'s alias for what `epix.figure()` yields).
+  declared above the `with`; `PendingFigure` is `gacalc.epixscene.scene2d`'s alias for what `epix.figure()` yields).
   **A label's colour matches the line/vector it labels** (the maintainer's rule, 2026-10-09) so a reader
   sees at a glance which label is which; `leg()`/`vector()` do it automatically, an explicit
   `epix.label()` on a coloured element sets `epix.label_color(color=…)` first. A book notebook may
-  also draw ePiX figures **live** in its cells (`book/docs/notebooks/frame-qr-*.py`, via
-  `book/figures/epix/_frame_scene.py`), which relies on `epix.figure()` resetting ePiX's global state
+  also draw ePiX figures **live** in its cells (`notebooks/frame-qr-*.py`, via
+  `src/gacalc/epixscene/frame_scene.py`), which relies on `epix.figure()` resetting ePiX's global state
   per figure (`EPIX_COMMIT` `275adef…` or later). **Every ePiX figure, prebuilt or live, has the opaque
-  `#f2f2f2` background** (`_scene2d.BACKGROUND`): the render tool flattens the prebuilt PNGs onto it,
+  `#f2f2f2` background** (`scene2d.BACKGROUND`): the render tool flattens the prebuilt PNGs onto it,
   and the live scene helpers pass it as `epix.figure(background=…)` (`EPIX_COMMIT` `797b944…` or
   later). Details:
   `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
@@ -659,13 +670,13 @@ two formulations — deliver it in **all three** forms unless the maintainer ove
 1. **Lean** — a machine-checked theorem in `proofs/GacalcProofs/` (`make lean`), in the house style
    of "Coordinates only when needed" above (objects in, scalars only in the body).
 2. **Symbolic Python** — the same result computed with gacalc + sympy, as a book notebook cell
-   (`book/docs/notebooks/*.py`) and/or a test, with symbolic coordinates simplified to equality —
+   (`notebooks/*.py`) and/or a test, with symbolic coordinates simplified to equality —
    the student-runnable check.
 3. **Prose + LaTeX** — the book page (`book/docs/*.rst`) stating it, deriving it, and citing the Lean
    theorem by name (per `tasks/reference/book-outline.md`'s proof-page conventions).
 
 The projection proof is the model trio: `book/docs/proof-projection.rst` +
-`book/docs/notebooks/proof-projection.py` + `proofs/GacalcProofs/StandardPosition.lean`. A Lean theorem and its Python twins (a test, a
+`notebooks/proof-projection.py` + `proofs/GacalcProofs/StandardPosition.lean`. A Lean theorem and its Python twins (a test, a
 notebook) carry the same `twin: <qualified Lean name>` comment, so `git grep` finds them all when one
 changes; the convention and the "verify, don't derive" notebook method are in
 `tasks/reference/lean-python-notebook-workflow.md`. **This is a

@@ -1,7 +1,44 @@
 {
+  // pyright covers every notebook except the ones that draw live ePiX figures (they import
+  // gacalc.epixscene). ePiX ships no type information and its editable install is an
+  // import hook pyright cannot follow, so every name those notebooks import from the
+  // helpers would be reported as an unknown import symbol. ty checks all of notebooks/
+  // (entrypoint/format.sh). Lifting this: tasks/epix-type-stubs-for-pyright.md.
   "include": ["notebooks"],
+  "exclude": [
+    "notebooks/bootstrap-product.py",
+    "notebooks/bootstrap-projection-from-product.py",
+    "notebooks/bootstrap-projection.py",
+    "notebooks/bootstrap-rotation-from-product.py",
+    "notebooks/bootstrap-rotation-from-projection.py",
+    "notebooks/bootstrap-rotation.py",
+    "notebooks/defining-g2.py",
+    "notebooks/dual-3d.py",
+    "notebooks/dual.py",
+    "notebooks/frame-qr-2d.py",
+    "notebooks/frame-qr-3d.py",
+    "notebooks/geometric-product.py",
+    "notebooks/levels-of-abstraction.py",
+    "notebooks/one-dimension.py",
+    "notebooks/product-from-projection.py",
+    "notebooks/projection-rejection-3d.py",
+    "notebooks/projection.py",
+    "notebooks/proof-cross.py",
+    "notebooks/proof-projection-3d.py",
+    "notebooks/proof-projection.py",
+    "notebooks/proof-reciprocal-frame.py",
+    "notebooks/proof-rotate-from-a-to-b.py",
+    "notebooks/reflection-3d.py",
+    "notebooks/reflection.py",
+    "notebooks/relative-graph-paper.py",
+    "notebooks/rotate.py",
+    "notebooks/rotation-from-vectors.py",
+    "notebooks/rotation-graph-paper.py",
+    "notebooks/three-dimensions.py",
+    "notebooks/vector-addition.py",
+    "notebooks/vectors-as-number-lines.py"
+  ],
   "executionEnvironments": [
-    { "root": "notebooks", "reportUnusedExpression": "none" },
-    { "root": "book/docs/notebooks", "reportUnusedExpression": "none" }
+    { "root": "notebooks", "reportUnusedExpression": "none" }
   ]
 }

@@ -6,7 +6,7 @@ the rotation angle θ, the right triangle with legs cos(θ) and sin(θ), and the
 scaled back to length r. The constants here are the single source of the geometry, so
 every figure in the sequence agrees with the goal figure (same β, same θ, same r).
 
-The generic 2D stage and primitives live in :mod:`_scene2d`; this module adds the
+The generic 2D stage and primitives live in :mod:`gacalc.epixscene.scene2d`; this module adds the
 rotation-sequence constants and re-exports the shared helpers so the ``rotate*`` figures
 import everything from one place.
 
@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import math
 
-from _scene2d import (
+from gacalc.epixscene.scene2d import (
     BACKGROUND,
     BLUE,
     GREEN,

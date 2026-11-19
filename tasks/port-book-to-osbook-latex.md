@@ -16,7 +16,7 @@ instead of Sphinx. Attraction: `osbook-envs.sty` already provides the boxed `def
 `theorem` / `example` / `tryit` / `keyconcepts` vocabulary that `tasks/reference/openstax-math-pedagogy.md`
 §0 recommends this book adopt, plus a print-grade memoir layout and HTML/EPUB editions via pandoc.
 Cost: the Sphinx pipeline's three things LaTeX does not give for free — **executed notebooks**
-(myst_nb runs `book/docs/notebooks/*.py` and pastes outputs), **source-region includes** with line
+(myst_nb runs `notebooks/*.py` and pastes outputs), **source-region includes** with line
 numbers (`literalinclude`), and the **autodoc API appendix** (`api.rst`). This task is the place to
 collect the feasibility findings; it is not a go-ahead.
 

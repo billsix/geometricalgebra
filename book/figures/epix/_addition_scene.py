@@ -3,12 +3,12 @@
 Two fixed vectors :math:`\\vec{a}` and :math:`\\vec{b}` and the points derived from
 them (:math:`\\vec{a}+\\vec{b}`, :math:`-\\vec{b}`, :math:`\\vec{a}-\\vec{b}`), so every
 figure in the pair agrees on the same geometry. The generic stage and primitives come
-from :mod:`_scene2d`. CC0, like the hand-drawn SVGs these replace.
+from :mod:`gacalc.epixscene.scene2d`. CC0, like the hand-drawn SVGs these replace.
 """
 
 from __future__ import annotations
 
-from _scene2d import Point
+from gacalc.epixscene.scene2d import Point
 
 A: Point = Point(x=1.4, y=0.4)  # a: rightish and a little up
 B: Point = Point(x=0.5, y=1.1)  # b: upish and a little right

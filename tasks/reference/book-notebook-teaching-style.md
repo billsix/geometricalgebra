@@ -1,15 +1,20 @@
 # How the book's notebooks teach — the cell-by-cell lesson style
 
-**Reference document.** How the maintainer wants the book's notebooks (`book/docs/notebooks/*.py`)
-to read: what a notebook is for, how its cells are shaped, what to copy from the best existing
+**Reference document.** How the maintainer wants the notebooks (`notebooks/*.py`) to read: what a notebook is for, how its cells are shaped, what to copy from the best existing
 example, and what to avoid. Update in place; never archive. Created 2026-11-16 (William Emerison Six
 <billsix@gmail.com>).
 
-**It covers every notebook**: the book's (`book/docs/notebooks/*.py`) and the demo notebooks under
-`notebooks/` alike (William Emerison Six <billsix@gmail.com>, 2026-11-18). Rules that only fit a
-book notebook say so (rule 6, "Symbolic notebooks"). Why the two sets still differ in tooling
-and figure library, and how to unify them, is `tasks/unify-demo-and-book-notebooks.md` (parked
-until the maintainer starts it).
+**It covers every notebook** (William Emerison Six <billsix@gmail.com>, 2026-11-18). All of them
+live in `notebooks/` (since 2026-11-19, `tasks/reference/demo-and-book-notebooks.md`), and each is
+one of two kinds, set by its role, not its directory:
+
+- a **companion** (a "book notebook") goes with one book page, is named after it, stays symbolic
+  throughout and draws with live ePiX;
+- an **exploration** (a "demo notebook", the `display*.py` files) tours part of the library, puts
+  numbers before symbols, may draw with matplotlib (`gacalc.nbplotutils`), and is a page of the
+  book's Part IV.
+
+Rules that fit only one kind say so (rule 6, "Symbolic notebooks").
 
 **Scope against the sibling docs.** `tasks/reference/book-outline.md` owns the *structure* of a
 companion notebook ("Structural conventions": one values cell, live ePiX figures, one check per
@@ -91,7 +96,7 @@ this standard; see "History of the model" below.) What they do, as rules:
     difference and say why the table is skipped.
 15. **Zero developer noise**: no `pyright: ignore` trailers, no typing workarounds in sight, short
     cells, mostly one expression. A cell's bare last expression needs no comment: `pyrightconfig.json`
-    turns `reportUnusedExpression` off for `notebooks/` and `book/docs/notebooks/`.
+    turns `reportUnusedExpression` off for `notebooks/`.
 
 ## What to avoid
 
@@ -153,14 +158,14 @@ From `tasks/archive/2026/11/16/book-notebooks-teaching-style-sweep.md`:
   suppress it is noise.
 - **`show_mult`'s tables need `nb_render_markdown_format = "myst"`** in `book/docs/conf.py`; see
   `tasks/reference/book-and-docs-pipeline.md`.
-- **Read the check cells without a book build:** from the notebook's directory,
+- **Read the check cells without a book build:** from `notebooks/`,
   `PYTHONPATH=<repo>/src python <repo>/tools/run_notebook_cells.py <notebook>.py` runs it cell by
   cell and prints each code cell's last value (the ePiX notebooks need the image).
 
 ## Symbolic notebooks (the `proof-projection.py` model, 2026-11-17)
 
 Set by William Emerison Six <billsix@gmail.com> while revising
-`book/docs/notebooks/proof-projection.py`, then applied to every content notebook in
+`notebooks/proof-projection.py`, then applied to every content notebook in
 `tasks/archive/2026/11/17/book-notebooks-symbolic-proof-style.md`:
 
 - **Symbolic the whole time.** Every step uses symbolic coordinates, so each output is a formula.
@@ -220,7 +225,7 @@ Set by William Emerison Six <billsix@gmail.com> while revising
 
 ## History of the model
 
-`notebooks/displaymv.py` is a demo notebook under `notebooks/`, not a book notebook.
+`notebooks/displaymv.py` is an exploration (a demo notebook), not a companion.
 On 2026-11-18 the other demo notebooks were brought to it: `displayg2.py` and `displayg3.py` were
 split into one-subject notebooks (`displayg2areas.py`, `displayg2transforms.py`,
 `displayg3measures.py`) and rewritten, the rest got Markdown lead-ins for every code cell, the

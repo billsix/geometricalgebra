@@ -146,7 +146,7 @@ shell-exec: image ## Run a script/command in the container env (no TTY): make sh
 
 
 .PHONY: jupyter
-jupyter: image ## Launch JupyterLab (gacalc kernel) on http://127.0.0.1:8888/lab
+jupyter: image ## Launch JupyterLab on http://127.0.0.1:8888, opened in notebooks/ (every notebook lives there)
 	@[ "$(USE_JUPYTER)" = 1 ] || { \
 	  echo 'ERROR: make jupyter needs JupyterLab,'; \
 	  echo '       gated by the build-time flag USE_JUPYTER (currently USE_JUPYTER=$(USE_JUPYTER)).'; \
@@ -189,7 +189,7 @@ spyder: image ## Launch the Spyder IDE on the repo (needs an image built with US
 		$(CONTAINER_NAME) \
 		/usr/local/bin/spyder.sh
 
-# Convert the demo notebooks (jupytext percent-format .py) to .ipynb, beside the
+# Convert the notebooks (jupytext percent-format .py) to .ipynb, beside the
 # sources, for sharing or exporting. JupyterLab opens the .py files directly, so
 # this is only needed to hand someone an .ipynb. NOTEBOOKS= limits it to some files.
 .PHONY: notebooks-ipynb

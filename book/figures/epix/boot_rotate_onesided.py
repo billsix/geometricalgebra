@@ -33,7 +33,15 @@ from _bootstrap_scene import (
     PURPLE,
     colored_vector,
 )
-from _scene2d import PendingFigure, Point, epix, unit_circle_scene, vector, wedge
+
+from gacalc.epixscene.scene2d import (
+    PendingFigure,
+    Point,
+    epix,
+    unit_circle_scene,
+    vector,
+    wedge,
+)
 
 # %%
 fig: PendingFigure

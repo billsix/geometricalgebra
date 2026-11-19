@@ -5,7 +5,7 @@ The result figures show :math:`\\vec{a}` projected onto the line through
 :math:`\\vec{b}` lies on the x-axis, read the projection off as the x-coordinate, and
 rotate back. All of them share the one :math:`\\vec{a}`, :math:`\\vec{b}` fixed here
 (``a`` is the rotation sequence's, length 1.25 at 66°; ``b`` is length 1 at 20°), so
-every figure agrees. Primitives come from :mod:`_scene2d`. CC0, like the hand-drawn
+every figure agrees. Primitives come from :mod:`gacalc.epixscene.scene2d`. CC0, like the hand-drawn
 SVGs these replace.
 """
 
@@ -13,8 +13,7 @@ from __future__ import annotations
 
 import math
 
-from _scene2d import Point, polar
-
+from gacalc.epixscene.scene2d import Point, polar
 from gacalc.g2 import Vector, e_1, e_2
 
 A_LENGTH: float = 1.25  # |a|: the rotation sequence's a

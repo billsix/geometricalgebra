@@ -10,8 +10,8 @@ is a genuine gap -- annotate it, or add it to the list with its reason.
 Informational, not a gate: judging whether a row is an exemption needs a human,
 so this reports and never fails the build, and no ``make`` target runs it.
 
-Walks the hand-written Python in ``src/``, ``tools/``, ``tests/``, ``notebooks/`` and
-the book's companion notebooks ``book/docs/notebooks/`` with the ``ast`` module and
+Walks the hand-written Python in ``src/``, ``tools/``, ``tests/`` and ``notebooks/``
+(the demo notebooks and the book's companion notebooks) with the ``ast`` module and
 reports, per file:
 
 * ``RET``    -- a ``def`` with no return annotation.
@@ -65,7 +65,6 @@ SCOPE_DIRS: tuple[str, ...] = (
     "tools",
     "tests",
     "notebooks",
-    "book/docs/notebooks",
 )
 
 # Build artifacts: the generator owns their annotations (fix tools/, never these).

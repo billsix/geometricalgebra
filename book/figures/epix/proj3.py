@@ -23,7 +23,8 @@
 from __future__ import annotations
 
 from _projection_scene import PROJ, PROJ_LOWER_LEFT, PROJ_UPPER_RIGHT, A
-from _scene2d import (
+
+from gacalc.epixscene.scene2d import (
     BLUE,
     GREEN,
     ORIGIN,

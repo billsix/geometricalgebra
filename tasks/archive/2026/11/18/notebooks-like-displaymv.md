@@ -65,7 +65,7 @@ $\vec{\mathbf{b}}$:"). The notebooks had no developer noise to remove.
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-18)
 
 1. Scope: the book notebooks too. Unifying the two sets is the parked
-   `tasks/unify-demo-and-book-notebooks.md`.
+   `tasks/archive/2026/11/19/unify-demo-and-book-notebooks.md`.
 2. Qualities 9–15 confirmed.
 3. Prediction prompts as `displaymv.py` has them.
 4. Bold-arrow notation in every notebook, `displaymv.py` included.

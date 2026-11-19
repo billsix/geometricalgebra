@@ -7,13 +7,12 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.4
 #   kernelspec:
-#     display_name: gacalc
+#     display_name: Python 3
 #     language: python
-#     name: gacalc
+#     name: python3
 # ---
 
-# %%
-
+# %% tags=["remove-cell"]
 # Copyright (c) 2025-2026 William Emerison Six
 # SPDX-License-Identifier: LGPL-2.1-only
 #
@@ -28,8 +27,8 @@
 # for more details.
 
 # %% [markdown]
-# 𝒢₂: multiplying in the plane
-# ============================
+# $\mathcal{G}_2$: multiplying in the plane
+# =========================================
 #
 # `displaymv.py` taught the rules of geometric multiplication with the general
 # class `Gn`. This notebook runs the same rules in the plane with `g2.G`, a class

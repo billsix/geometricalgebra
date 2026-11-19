@@ -22,7 +22,15 @@
 from __future__ import annotations
 
 from _rotate_ab_scene import A_ANGLE, A_ON_E1, B_ANGLE, B_PRIME, LOWER_LEFT, UPPER_RIGHT
-from _scene2d import PendingFigure, Point, epix, unit_circle_scene, vector, wedge
+
+from gacalc.epixscene.scene2d import (
+    PendingFigure,
+    Point,
+    epix,
+    unit_circle_scene,
+    vector,
+    wedge,
+)
 
 # %%
 fig: PendingFigure

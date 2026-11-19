@@ -46,7 +46,8 @@ from _rotation_scene import (
     vector,
     wedge,
 )
-from _scene2d import dashed_vector
+
+from gacalc.epixscene.scene2d import dashed_vector
 
 # %%
 # Lighter shades of BLUE/GREEN for the small (unit) triangle -- same hue as its big

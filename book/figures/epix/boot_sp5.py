@@ -24,7 +24,8 @@ from __future__ import annotations
 import math
 
 from _projection_scene import B_ANGLE, PROJ, SP_LOWER_LEFT, SP_UPPER_RIGHT, A, B
-from _scene2d import (
+
+from gacalc.epixscene.scene2d import (
     BLUE,
     GREEN,
     ORIGIN,

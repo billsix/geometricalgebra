@@ -25,7 +25,8 @@
 from __future__ import annotations
 
 from _addition_scene import A_MINUS_B, NEG_B, SUB_LOWER_LEFT, SUB_UPPER_RIGHT, A
-from _scene2d import (
+
+from gacalc.epixscene.scene2d import (
     GREEN,
     ORIGIN,
     PendingFigure,
