@@ -1,62 +1,61 @@
 # Let pyright check the live-figure notebooks once ePiX ships type information
 
-**Status:** in progress
-**Priority:** 7
-**Difficulty:** 3
-**Created:** 2026-11-19 (William Emerison Six <billsix@gmail.com>)
-**Blocked on:** epix-mirror's `tasks/archive/2026/11/19/ship-python-type-information.md` being done, committed and
-pushed to github.com/billsix/epix-mirror (a `_epix.pyi` stub and `py.typed` in `python/epix/`).
-**Recheck:** `git -C <epix-mirror checkout> fetch github && git -C <epix-mirror checkout> cat-file
--e github/master:python/epix/py.typed && git -C <epix-mirror checkout> cat-file -e
-github/master:python/epix/_epix.pyi`; both succeed = cleared (then bump `EPIX_COMMIT` to that
-commit).
+**Created:** 2026-11-19 (William Emerison Six <billsix@gmail.com>), split off from
+`tasks/archive/2026/11/19/notebooks-one-directory.md`.
+**Done:** 2026-11-19, branch `epix-type-stubs-for-pyright` (`ac90d6b`).
 
-## BLUF
-
-pyright skips the 31 notebooks that draw live ePiX figures (the `exclude` list in
-`pyrightconfig.json`), and ty allows `epix` to be unresolved (`pyproject.toml`,
-`[tool.ty.analysis] allowed-unresolved-imports`). Once epix ships type information, make it
-visible to both checkers and remove both. Done means `make check-notebooks` covers every notebook
-with zero errors and `make format` passes without the ty allowance.
-
-## Context
-
-- Why pyright skips them (measured 2026-11-19, during
-  `tasks/archive/2026/11/19/notebooks-one-directory.md`): ePiX has no stub or `py.typed`, and the image installs it
-  editable through a setuptools import hook that static checkers cannot follow. Every name the
-  notebooks import from `gacalc.epixscene` that comes from ePiX (`Point`, `PendingFigure`,
-  `LabelPos`, `Color`) was reported, 91 errors in all.
-- The lean CI image (`MINIMAL_IMAGE=1`) has no ePiX at all. Stubs inside the epix package only help
-  in an image that builds ePiX. epix-mirror's task asks (its Q2) whether a stub-only package is
-  wanted for this.
-- Three errors pyright reported in `notebooks/frame-qr-2d.py` are about sympy, not ePiX:
-  `table[1, 0]` and `sympy.Matrix(...)[:2, :2]` are typed as `MatrixElement | list`. They need
-  narrowing (see `tasks/reference/pyright-sympy-coefficient-typing.md`) once the notebook is
-  checked.
-
-## Decision (William Emerison Six <billsix@gmail.com>, 2026-11-19)
-
-Once epix-mirror ships the stubs, drop the pyright `exclude` list rather than keep any part of it.
-The one caveat is CI's lean image, which has no ePiX: step 3 decides how it gets the types, and
-the excludes go only when the CI notebooks job passes without them.
+pyright had excluded the 31 notebooks that draw live ePiX figures, and ty allowed `epix` to be
+unresolved, because ePiX shipped no type information and its editable install hid it from static
+checkers. epix-mirror now ships `py.typed` and a generated `_epix.pyi` (`33d0194`, its
+`tasks/archive/2026/11/19/ship-python-type-information.md`). Both checkers now check every
+notebook and `gacalc.epixscene`, in the full image and in CI's lean one. The resulting state is
+in `tasks/reference/demo-and-book-notebooks.md` ("ePiX and the type checkers").
 
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-19)
 
-- Cleared: epix-mirror's type information was merged and pushed (`33d0194` on
-  github.com/billsix/epix-mirror `master`).
-- **The lean image gets epix's types by copying its typed sources** (Plan step 3): with
-  `USE_EPIX=0`, the image fetches `python/epix/*.py`, `_epix.pyi` and `py.typed` from the pinned
-  `EPIX_COMMIT`. There is no compiler or TeX, and nothing imports them at run time. The
-  alternatives were declined: building ePiX in CI (meson, g++, ghostscript, ImageMagick and three
-  TeX Live collections on every run), and keeping the allowances in CI.
+- Once epix shipped stubs, the excludes go entirely; none of the list is kept.
+- **The lean image gets epix's types by copying its typed sources.** Building ePiX in CI was
+  declined, since every run would pay for meson, g++, ghostscript, ImageMagick and three TeX Live
+  collections. So was keeping the allowances in CI.
 
-## Plan
+## What was done
 
-1. Bump `EPIX_COMMIT` to the epix-mirror commit that ships the stubs, and make the editable install
-   visible to static checkers (`--config-settings editable_mode=compat` in
-   `entrypoint/install-epix.sh`, or a non-editable install).
-2. Remove the `exclude` list from `pyrightconfig.json` and `allowed-unresolved-imports` from
-   `pyproject.toml`; fix what pyright and ty then report (the sympy narrowing above included).
-3. Decide how CI's lean image gets the types (a stub-only package, or a CI notebooks job that
-   builds ePiX), following epix-mirror's answer.
-4. Gates: `make check-notebooks`, `make format`.
+- `Dockerfile`: `EPIX_COMMIT` moves from `797b944` to `33d0194`. The only changes between the two
+  are the type annotations in `figure.py` and `render.py` and the new stub; no C++ or binding
+  source changed. With `USE_EPIX=0`, the ePiX step now runs `entrypoint/install-epix-stubs.sh`.
+- `entrypoint/install-epix-stubs.sh` (new) fetches `__init__.py`, `figure.py`, `render.py` and
+  `_epix.pyi` at `EPIX_COMMIT` from raw.githubusercontent.com. It installs them as
+  `site-packages/epix-stubs/*.pyi`, a PEP 561 stub-only package: checkers read it, and
+  `import epix` still fails, so the root `conftest.py` still skips `gacalc.epixscene`.
+- `entrypoint/install-epix.sh` installs epix editable with
+  `--config-settings editable_mode=compat`, a plain path `.pth`. It runs `build_py.sh` with
+  `PYTHONPATH="$SRC/python"`, because that script's new stubgen step imports `epix._epix` before
+  the package is installed. The first full-image build failed there (exit 2,
+  `ModuleNotFoundError: No module named 'epix'`). The fix that belongs upstream, in epix-mirror's
+  `build_py.sh`, is noted below.
+- `pyrightconfig.json` lost its 31-notebook `exclude` list. `pyproject.toml` lost
+  `[tool.ty.analysis] allowed-unresolved-imports`.
+- `notebooks/frame-qr-2d.py`: sympy types `Matrix[i, j]` and `Matrix[:2, :2]` as
+  `MatrixElement | list`, which pyright rejected for a `Real` or `sympy.Matrix` binding. The
+  notebook now reads the block with `.extract([0, 1], [0, 1])` and the entry with
+  `table.row(1)[0]`, and its outputs are unchanged.
+- The CI comment in `.github/workflows/checks.yml`, `CLAUDE.md` (`make check-notebooks`), and the
+  two reference docs describe the result.
+
+## Verification
+
+- **Lean image** (`make image MINIMAL_IMAGE=1`, tagged `gacalc-lean` for the test, 3.4 GB):
+  `import epix` fails and the four stubs are installed. `make format` exited 0, `pyright
+  notebooks/` reported 0 errors, and `make test` passed (1393 passed, 3 skipped).
+- **Full image:** epix is installed through a path `.pth`. `make format` exited 0, `pyright
+  notebooks/` reported 0 errors, and `check_annotations.py` gave 63 findings, the same as master.
+  The stub the image build wrote is byte-identical to epix-mirror's committed one.
+- The 49 prebuilt figures' eepic is identical to this session's baseline. `frame-qr-2d` and
+  `vector-addition` executed with outputs identical to before.
+
+## Left for the maintainer
+
+- **epix-mirror's `entrypoint/build_py.sh` assumes `epix` is importable** when it runs
+  `nanobind.stubgen -m epix._epix`. That holds in epix-mirror's own image and failed in gacalc's
+  build. The fix is to run that step with `PYTHONPATH=python`. gacalc works around it, and the
+  workaround stays harmless once the upstream fix lands.
