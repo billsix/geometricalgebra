@@ -46,15 +46,23 @@ Per stub, as found on 2026-11-19:
 
 ## Plan
 
-1. Ask the maintainer the open questions, and record the decisions here.
+1. (Done 2026-11-19: the decisions are recorded above.)
 2. Fill or drop each stub, one commit each, running the notebook and its gates as the first task
    did.
 3. Run `make docs` and `make format`, write the done-record, and archive.
 
+## Decisions
+
+Both made by William Emerison Six <billsix@gmail.com>, 2026-11-19, each the recommended option.
+
+1. **Drop `hook.py`.** Remove it from `hook.rst`'s toctree and delete the file (`git rm`). Nothing is
+   taught yet on the book's first page, so the page itself carries any pictures.
+2. **Fill `projection.py` with the dot/wedge projection demo:** the dot product is the projected
+   geometric product and the wedge the rejected one. This is the 2D half of
+   `tasks/notebook-dot-wedge-projection-demo.md`. Read that task first and reuse its proved math
+   rather than re-deriving it. Note in it which part this task covered, and leave the rest of it to
+   that task.
+
 ## Open questions
 
-1. For `hook.py`: fill it with picture-only cells, or drop it from `hook.rst`'s toctree?
-   Recommendation: drop it. Nothing is taught yet, and the page itself can carry the pictures.
-2. For `projection.py`: fill it with the dot/wedge projection demo, which would also unblock
-   `tasks/notebook-dot-wedge-projection-demo.md`, or drop it, since `proof-projection.py` already
-   covers the page? Recommendation: fill it with the demo.
+None. The go-ahead to start this task is still needed.
