@@ -23,7 +23,15 @@
 from __future__ import annotations
 
 from _addition_scene import SUB_LOWER_LEFT, SUB_UPPER_RIGHT, A, B
-from _scene2d import GREEN, PendingFigure, Point, epix, unit_circle_scene, vector
+
+from gacalc.epixscene.scene2d import (
+    GREEN,
+    PendingFigure,
+    Point,
+    epix,
+    unit_circle_scene,
+    vector,
+)
 
 # %%
 fig: PendingFigure

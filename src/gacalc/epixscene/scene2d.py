@@ -6,15 +6,15 @@ parallelogram) that every 2D figure in the book is built from. ``_rotation_scene
 the rotation-sequence constants on top and re-exports these; the vector-addition and
 projection figures import them directly.
 
-Figure files are jupytext percent notebooks in the style of epix-mirror's
-``notebooks/``; ``tools/render_epix_figures.py`` runs each in a fresh process (and skips
-these ``_``-prefixed helpers). CC0, like the hand-drawn SVGs these replace.
+The prebuilt figure files (``book/figures/epix/``) are jupytext percent notebooks in the
+style of epix-mirror's ``notebooks/``; ``tools/render_epix_figures.py`` runs each in a
+fresh process. CC0, like the hand-drawn SVGs these replace.
 """
 
 from __future__ import annotations
 
 import math
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 
 import epix
@@ -67,7 +67,7 @@ GRID: epix.Color = epix.black(intensity=0.8)  # light gray graph-paper lines
 # (epix.white(0.95)), so a dark-mode page shows a uniform light panel instead of a
 # transparent sheet: tools/render_epix_figures.py flattens the prebuilt figures onto
 # it (its DEFAULT_BACKGROUND), and the notebooks' live figures pass it to
-# epix.figure(background=...) (_frame_scene.py, _bootstrap_live.py).
+# epix.figure(background=...) (frame_scene.py, bootstrap_live.py).
 BACKGROUND: str = "#f2f2f2"
 
 
@@ -81,7 +81,7 @@ def unit_circle_scene(
     lower_left: Point = DEFAULT_LOWER_LEFT,
     upper_right: Point = DEFAULT_UPPER_RIGHT,
     disc: bool = True,
-) -> Iterator[PendingFigure]:
+) -> Generator[PendingFigure]:
     """``epix.figure`` with the labelled axes (and, by default, the unit disc) drawn.
 
     The physical size follows the bounding box at ``UNIT_SCALE_IN`` per unit, so every

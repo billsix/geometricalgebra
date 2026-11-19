@@ -19,14 +19,11 @@
 # and versors are named pieces of it.
 
 # %%
-import pathlib
-import sys
-
-# The ePiX scene helpers live with the book's other figure sources.
-sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
-
 import sympy
-from _bootstrap_live import (
+from IPython.display import display
+
+from gacalc.base import Real
+from gacalc.epixscene.bootstrap_live import (
     BLACK,
     BLUE,
     GREEN,
@@ -38,11 +35,8 @@ from _bootstrap_live import (
     point,
     scene_around,
 )
-from _frame_scene import patch
-from _venn_scene import g2_subsets_scene
-from IPython.display import display
-
-from gacalc.base import Real
+from gacalc.epixscene.frame_scene import patch
+from gacalc.epixscene.venn_scene import g2_subsets_scene
 from gacalc.g2 import Bivector, G, Scalar, Vector, Versor, e_1, e_2, e_12
 from gacalc.nbdisplay import at_values, show_mult
 

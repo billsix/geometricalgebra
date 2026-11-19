@@ -10,17 +10,24 @@ scalars (grade 0) and the bivectors (grade 2). Each region carries one example, 
 named kind. The colours follow the book's figures, and each label is the colour of the
 region it names.
 
-``tools/render_epix_figures.py`` skips ``_``-prefixed files, so nothing here is
-rendered on its own. Every call passes its arguments by keyword (the
+Every call passes its arguments by keyword (the
 ``check_epix_keywords`` gate). CC0, like the other figure helpers.
 """
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 
-from _scene2d import BACKGROUND, BLUE, GREEN, PURPLE, PendingFigure, Point, epix
+from gacalc.epixscene.scene2d import (
+    BACKGROUND,
+    BLUE,
+    GREEN,
+    PURPLE,
+    PendingFigure,
+    Point,
+    epix,
+)
 
 __all__: list[str] = ["BACKGROUND", "PendingFigure", "g2_subsets_scene"]
 
@@ -50,8 +57,11 @@ def _text(at: Point, text: str, color: epix.Color) -> None:
 
 
 @contextmanager
-def g2_subsets_scene() -> Iterator[PendingFigure]:
-    """The subsets diagram, as an open figure (callers may draw more before it closes)."""
+def g2_subsets_scene() -> Generator[PendingFigure]:
+    """The subsets diagram, as an open figure.
+
+    Callers may draw more before it closes.
+    """
     fig: PendingFigure
     with epix.figure(
         lower_left=_LOWER_LEFT,
@@ -67,8 +77,8 @@ def g2_subsets_scene() -> Iterator[PendingFigure]:
         epix.nofill()
         _text(
             at=Point(x=5.0, y=5.85),
-            text=r"$\mathcal{G}_2$: $s + v_1 * \vec{\mathbf{e}}_1 + v_2 * \vec{\mathbf{e}}_2"
-            r" + b * \mathbf{e}_{12}$",
+            text=r"$\mathcal{G}_2$: $s + v_1 * \vec{\mathbf{e}}_1"
+            r" + v_2 * \vec{\mathbf{e}}_2 + b * \mathbf{e}_{12}$",
             color=black,
         )
 

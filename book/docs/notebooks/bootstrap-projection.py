@@ -24,14 +24,10 @@
 # figures; change them and rerun. Each check shows both sides, then their difference.
 
 # %%
-import pathlib
-import sys
-
-# The ePiX scene helpers live with the book's other figure sources.
-sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
-
 import sympy
-from _bootstrap_live import (
+
+from gacalc.base import Real
+from gacalc.epixscene.bootstrap_live import (
     BLACK,
     BLUE,
     GREEN,
@@ -45,8 +41,6 @@ from _bootstrap_live import (
     right_angle,
     scene_around,
 )
-
-from gacalc.base import Real
 from gacalc.g2 import Scalar, Vector, e_1, e_2
 from gacalc.nbdisplay import at_values
 

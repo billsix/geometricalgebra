@@ -36,7 +36,8 @@ from _bootstrap_scene import (
     PURPLE,
     colored_vector,
 )
-from _scene2d import (
+
+from gacalc.epixscene.scene2d import (
     PendingFigure,
     Point,
     epix,

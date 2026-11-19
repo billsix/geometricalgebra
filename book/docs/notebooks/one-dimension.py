@@ -18,14 +18,11 @@
 # Every formula is computed with symbols; numbers appear only to draw the figures.
 
 # %%
-import pathlib
-import sys
-
-# The ePiX scene helpers live with the book's other figure sources.
-sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
-
 import sympy
-from _line_scene import (
+from IPython.display import display
+
+from gacalc.base import Real
+from gacalc.epixscene.line_scene import (
     BLACK,
     BLUE,
     GREEN,
@@ -41,9 +38,6 @@ from _line_scene import (
     step,
     tip,
 )
-from IPython.display import display
-
-from gacalc.base import Real
 from gacalc.functions import InvertibleFunction
 from gacalc.g1 import Scalar, Vector, e_1
 from gacalc.nbdisplay import at_values

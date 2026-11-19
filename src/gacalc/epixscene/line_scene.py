@@ -14,18 +14,17 @@ Three kinds of picture:
 
 The colours follow the book's figures: inputs black, the scaling step green, the
 translation step blue, outputs purple, and every label in the colour of what it labels.
-``tools/render_epix_figures.py`` skips ``_``-prefixed files, so nothing here is rendered
-on its own. Every call passes its arguments by keyword (the ``check_epix_keywords``
+Every call passes its arguments by keyword (the ``check_epix_keywords``
 gate). CC0, like the other figure helpers.
 """
 
 from __future__ import annotations
 
 import math
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 
-from _scene2d import (
+from gacalc.epixscene.scene2d import (
     BACKGROUND,
     BLUE,
     GREEN,
@@ -65,8 +64,13 @@ _NO_SHIFT: Point = Point(x=0, y=0)
 
 
 @contextmanager
-def graph_paper_scene(lower_left: Point, upper_right: Point) -> Iterator[PendingFigure]:
-    """Graph paper with a unit grid and labelled ``x`` (input) and ``y`` (output) axes."""
+def graph_paper_scene(
+    lower_left: Point, upper_right: Point
+) -> Generator[PendingFigure]:
+    """Graph paper with a unit grid and labelled axes.
+
+    The ``x`` axis is the input and the ``y`` axis the output.
+    """
     width: float = upper_right.x1() - lower_left.x1()
     height: float = upper_right.x2() - lower_left.x2()
     size: str = f"{width * GRAPH_UNIT_IN:.2f}x{height * GRAPH_UNIT_IN:.2f}in"
@@ -110,10 +114,12 @@ def graph_line(start: Point, end: Point, color: epix.Color, text: str) -> None:
 
 
 @contextmanager
-def number_lines_scene(rows: int, low: float, high: float) -> Iterator[PendingFigure]:
-    """A figure tall enough for ``rows`` pairs of number lines, one unit apart, with
-    "input" and "output" written over the two columns. Row 0 is at the top, at
-    ``y = 0``; row ``k`` is at ``y = -k``. ``low`` and ``high`` bound the output line."""
+def number_lines_scene(rows: int, low: float, high: float) -> Generator[PendingFigure]:
+    """A figure tall enough for ``rows`` pairs of number lines, one unit apart.
+
+    "input" and "output" are written over the two columns. Row 0 is at the top, at
+    ``y = 0``; row ``k`` is at ``y = -k``. ``low`` and ``high`` bound the output line.
+    """
     lower_left: Point = Point(x=-7.0, y=-rows + 0.3)
     upper_right: Point = Point(x=OUTPUT_OFFSET + high + 2.0, y=1.7)
     width: float = upper_right.x1() - lower_left.x1()

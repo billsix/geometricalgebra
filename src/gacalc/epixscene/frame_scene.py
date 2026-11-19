@@ -14,21 +14,27 @@ vector's colour:
 - the frame ``v_i``: blue; the orthogonal ``w_i``: green; the unit ``u_i``: purple;
 - the target ``y`` and its remainders: red; the recovered coordinates ``x``: black.
 
-``tools/render_epix_figures.py`` skips ``_``-prefixed files, so nothing here is
-rendered on its own. CC0, like the other figure helpers.
+CC0, like the other figure helpers.
 """
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 
 import epix
-from _scene2d import BACKGROUND, BLUE, GREEN, PURPLE, PURPLE_FILL, UNIT_SCALE_IN
-from _scene3d import PendingFigure
 from epix import LabelPos, Point
 
 from gacalc.base import Real
+from gacalc.epixscene.scene2d import (
+    BACKGROUND,
+    BLUE,
+    GREEN,
+    PURPLE,
+    PURPLE_FILL,
+    UNIT_SCALE_IN,
+)
+from gacalc.epixscene.scene3d import PendingFigure
 
 RED: epix.Color = epix.rgb(r=0.75, g=0.0, b=0.0)
 PLANE_FILL: epix.Color = epix.rgb(r=0.80, g=0.86, b=0.95)
@@ -89,7 +95,7 @@ def point(coordinates: Sequence[Real]) -> Point:
 
 
 @contextmanager
-def scene_2d(lower_left: Point, upper_right: Point) -> Iterator[PendingFigure]:
+def scene_2d(lower_left: Point, upper_right: Point) -> Generator[PendingFigure]:
     """A 2D figure with light, unlabelled axes, at the book's 2D scale.
 
     The axes carry no ``x``/``y`` labels: in these notebooks ``x`` and ``y`` name
@@ -122,12 +128,13 @@ def scene_2d(lower_left: Point, upper_right: Point) -> Iterator[PendingFigure]:
 @contextmanager
 def scene_3d(
     lower_left: Point, upper_right: Point, scale_in: float = SCALE_3D_IN
-) -> Iterator[PendingFigure]:
+) -> Generator[PendingFigure]:
     """A 3D figure seen from :data:`CAMERA`, with light, unlabelled axes (as in
     :func:`scene_2d`, ``x`` and ``y`` name vectors here).
 
     ``scale_in`` is inches per projected unit; the 3D frames are larger than the
-    book's other 3D figures, so the default is smaller than ``_scene3d``'s."""
+    book's other 3D figures, so the default is smaller than
+    ``gacalc.epixscene.scene3d``'s."""
     width: float = upper_right.x1() - lower_left.x1()
     height: float = upper_right.x2() - lower_left.x2()
     size: str = f"{width * scale_in:.2f}x{height * scale_in:.2f}in"

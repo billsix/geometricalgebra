@@ -29,7 +29,8 @@ from _addition_scene import (
     TRANS_UPPER_RIGHT,
     B,
 )
-from _scene2d import (
+
+from gacalc.epixscene.scene2d import (
     PendingFigure,
     Point,
     epix,

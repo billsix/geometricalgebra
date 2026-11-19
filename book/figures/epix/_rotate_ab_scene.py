@@ -4,14 +4,14 @@ The chapter rotates ``a``'s direction onto ``b``'s by reduction to standard posi
 swing ``a`` onto the x-axis, rotate to ``b'`` (where ``b`` has been carried), then undo
 the first rotation. ``a`` and ``b`` are deliberately **not** unit length (``a`` longer
 than the unit circle, ``b`` shorter) — magnitudes don't set the rotation, directions do.
-All figures share the one ``a``, ``b`` fixed here. Primitives from :mod:`_scene2d`. CC0.
+All figures share the one ``a``, ``b`` fixed here. Primitives from :mod:`gacalc.epixscene.scene2d`. CC0.
 """
 
 from __future__ import annotations
 
 import math
 
-from _scene2d import Point, polar
+from gacalc.epixscene.scene2d import Point, polar
 
 A_LENGTH: float = 1.1  # |a|: longer than unit (outside the circle) — not unit length
 A_ANGLE: float = math.radians(25)

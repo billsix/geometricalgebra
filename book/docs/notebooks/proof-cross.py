@@ -26,14 +26,11 @@
 # elementary cross-equivariances assembled by `cross_reduceToPlane_equivariant`.
 
 # %%
-import pathlib
-import sys
-
-# The ePiX scene helpers live with the book's other figure sources.
-sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
-
 import sympy
-from _frame_scene import (
+
+from gacalc import g2
+from gacalc.base import Real
+from gacalc.epixscene.frame_scene import (
     ORIGIN3,
     PURPLE,
     LabelPos,
@@ -44,9 +41,6 @@ from _frame_scene import (
     point,
     scene_3d,
 )
-
-from gacalc import g2
-from gacalc.base import Real
 from gacalc.functions import InvertibleFunction, inverse
 from gacalc.g3 import Scalar, Vector, e_1, e_2, e_3
 from gacalc.nbdisplay import at_values

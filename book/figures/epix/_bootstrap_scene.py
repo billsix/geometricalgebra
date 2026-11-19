@@ -3,7 +3,7 @@
 One module per figure family, as elsewhere: each ``boot_*`` figure draws one step of the
 bootstrap arc (rotation, rotation from projection, the product, projection through the
 product, rotation through the product) from the fixed points here. The projection page
-reuses the ``sp*`` figures of :mod:`_projection_scene`. Primitives from :mod:`_scene2d`.
+reuses the ``sp*`` figures of :mod:`_projection_scene`. Primitives from :mod:`gacalc.epixscene.scene2d`.
 CC0.
 """
 
@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 
-from _scene2d import (
+from gacalc.epixscene.scene2d import (
     BLUE,
     GREEN,
     ORIGIN,

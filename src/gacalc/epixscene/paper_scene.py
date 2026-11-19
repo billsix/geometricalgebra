@@ -6,24 +6,23 @@ paper with it: its grid lines, its origin, its two unit arrows, and anything dra
 it. Each picture shows the standard graph paper faintly underneath, and the carried
 paper on top, so a reader sees where the sheet went.
 
-The function is passed in as a :class:`Mapping` ``(x, y) -> Point``: the point that the
-spot with coordinates ``(x, y)`` on the standard paper is carried to. The notebooks build
-it from a gacalc function, so this module needs only ePiX.
+The function is passed in as a :class:`Mapping` ``(x, y) -> Point``: the point that
+the spot with coordinates ``(x, y)`` on the standard paper is carried to. The notebooks
+build it from a gacalc function, so this module needs only ePiX.
 
 The colours follow the book's figures: the carried grid brown, the carried first arrow
-green, the second blue, the shape on the paper purple, and each label in the colour of what it labels.
-``tools/render_epix_figures.py`` skips ``_``-prefixed files, so nothing here is rendered
-on its own. Every call passes its arguments by keyword (the ``check_epix_keywords``
+green, the second blue, the shape on the paper purple, and each label in the colour of
+what it labels. Every call passes its arguments by keyword (the ``check_epix_keywords``
 gate). CC0, like the other figure helpers.
 """
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from typing import Protocol
 
-from _scene2d import (
+from gacalc.epixscene.scene2d import (
     BACKGROUND,
     BLUE,
     GREEN,
@@ -62,7 +61,7 @@ _CARRIED_GRID: epix.Color = epix.rgb(
 @contextmanager
 def paper_scene(
     lower_left: Point, upper_right: Point, caption: str
-) -> Iterator[PendingFigure]:
+) -> Generator[PendingFigure]:
     """A figure with the standard graph paper drawn faintly, its axes, and ``caption``
     (a LaTeX string, usually the function so far) in the top left corner."""
     width: float = upper_right.x1() - lower_left.x1()

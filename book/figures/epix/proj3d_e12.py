@@ -22,7 +22,7 @@
 # %%
 from __future__ import annotations
 
-from _scene3d import (
+from gacalc.epixscene.scene3d import (
     BLUE,
     GREEN,
     ORIGIN3,

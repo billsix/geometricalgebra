@@ -18,14 +18,11 @@
 # both sides, then their difference.
 
 # %%
-import pathlib
-import sys
-
-# The ePiX scene helpers live with the book's other figure sources.
-sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
-
 import sympy
-from _frame_scene import (
+
+import gacalc.g3 as g3
+from gacalc.base import Real
+from gacalc.epixscene.frame_scene import (
     ORIGIN3,
     PLANE_FILL,
     PendingFigure,
@@ -35,9 +32,6 @@ from _frame_scene import (
     point,
     scene_3d,
 )
-
-import gacalc.g3 as g3
-from gacalc.base import Real
 from gacalc.nbdisplay import at_values, show_mult
 
 # %% [markdown]

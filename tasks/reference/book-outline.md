@@ -143,7 +143,7 @@ preserved verbatim in the appendix.
     pairs, and are used only to draw the figures, through `gacalc.nbdisplay.at_values`. A step a
     figure draws gets an "At the plot values:" cell after its formula; nothing else does.
   - **Each derivation step** is shown as the cell's output and drawn with a **live ePiX** figure in
-    its own cell. Use `book/figures/epix/_bootstrap_live.py` `scene_around`, which fits whatever
+    its own cell. Use `src/gacalc/epixscene/bootstrap_live.py` `scene_around`, which fits whatever
     points it is given, so changed values still frame. Labels follow the usual figure rules: every
     argument by keyword, each label in the colour of what it labels, and a number in a label is
     computed at the plot values, never typed. The helper gives every live figure the same opaque

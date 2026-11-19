@@ -24,14 +24,10 @@
 # %%
 # twin: GacalcProofs.G2.dual_perp_dot
 # twin: GacalcProofs.G2.dual_perp
-import pathlib
-import sys
-
-# The ePiX scene helpers live with the book's other figure sources.
-sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
-
 import sympy
-from _bootstrap_live import (
+
+from gacalc.base import Real
+from gacalc.epixscene.bootstrap_live import (
     BLACK,
     PURPLE,
     PendingFigure,
@@ -41,8 +37,6 @@ from _bootstrap_live import (
     right_angle,
     scene_around,
 )
-
-from gacalc.base import Real
 from gacalc.functions import inverse
 from gacalc.g2 import (
     Bivector,

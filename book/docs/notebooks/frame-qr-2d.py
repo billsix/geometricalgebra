@@ -25,14 +25,10 @@
 # difference.
 
 # %%
-import pathlib
-import sys
-
-# The ePiX scene helpers live with the book's other figure sources.
-sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
-
 import sympy
-from _frame_scene import (
+
+from gacalc.base import MultiVectorBase, Real
+from gacalc.epixscene.frame_scene import (
     BLUE,
     GRAY_FILL,
     GREEN,
@@ -51,8 +47,6 @@ from _frame_scene import (
     right_angle,
     scene_2d,
 )
-
-from gacalc.base import MultiVectorBase, Real
 from gacalc.frame import Frame
 from gacalc.functions import InvertibleFunction, MatrixBackend, inverse
 from gacalc.g2 import G, Scalar, Vector, e_1, e_2

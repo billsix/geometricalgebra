@@ -10,13 +10,14 @@ these replace.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 
 import epix
-from _scene2d import BLUE, GREEN
 from epix import Point
 from epix.figure import _Pending as PendingFigure
+
+from gacalc.epixscene.scene2d import BLUE, GREEN
 
 __all__: list[str] = [
     "CAMERA",
@@ -67,7 +68,7 @@ def frame_scene(
     camera: Point = CAMERA,
     lower_left: Point = FRAME_LOWER_LEFT,
     upper_right: Point = FRAME_UPPER_RIGHT,
-) -> Iterator[PendingFigure]:
+) -> Generator[PendingFigure]:
     """``epix.figure`` with the 3D camera set. The body draws the plane patch first (so
     it sits behind), then calls ``axes3()``, then the vectors."""
     width: float = upper_right.x1() - lower_left.x1()

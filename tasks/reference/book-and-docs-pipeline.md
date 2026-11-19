@@ -79,21 +79,19 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   upstream, github.com/billsix/epix-mirror
   `tasks/archive/2026/11/04/reset-global-state-between-figures.md`, and needs `EPIX_COMMIT` at
   `275adef…` or later (pinned 2026-11-04). Before it, a second figure in the same process
-  inherited the first one's state. The Part III notebooks' `book/figures/epix/_bootstrap_live.py`
+  inherited the first one's state. The Part III notebooks' `src/gacalc/epixscene/bootstrap_live.py`
   `scene_around` also calls `epix.fit_bounds` (the box and size that fit a set of points), which
   needs `EPIX_COMMIT` at `8cb788a…` or later (pinned 2026-11-16; epix-mirror
   `tasks/archive/2026/11/16/figure-fit-to-points.md`). Arrowheads end exactly on their points
   (the stroked tip was overshooting by about 2.7 pen widths) from `EPIX_COMMIT` `8fe7ff3…` on
   (pinned 2026-11-17; epix-mirror `tasks/archive/2026/11/17/arrowheads-end-on-their-points.md`).
-  **Live figures are opaque, like the prebuilt ones.** `scene_2d` / `scene_3d` (`_frame_scene.py`)
-  and `scene_around` (`_bootstrap_live.py`) pass `background=BACKGROUND` (`_scene2d.BACKGROUND`,
+  **Live figures are opaque, like the prebuilt ones.** `scene_2d` / `scene_3d` (`gacalc.epixscene.frame_scene`)
+  and `scene_around` (`gacalc.epixscene.bootstrap_live`) pass `background=BACKGROUND` (`scene2d.BACKGROUND`,
   `#f2f2f2`, the same colour as the render tool's `DEFAULT_BACKGROUND`) to `epix.figure`, which
   flattens the PNG onto it with ImageMagick. A transparent figure reads badly on a dark-mode page.
   This needs `EPIX_COMMIT` `797b944…` or later (pinned 2026-11-18; epix-mirror
-  `tasks/archive/2026/11/18/figure-background.md`). The first notebooks to use live figures are
-  `notebooks/frame-qr-2d.py` / `frame-qr-3d.py` (`frames-qr.rst`). They add
-  `book/figures/epix/` to `sys.path` to import `_frame_scene`; `pyproject.toml` lists that
-  directory in ty's `extra-paths` and exempts those two files from E402. Pick per page: the
+  `tasks/archive/2026/11/18/figure-background.md`). The live notebooks import their helpers from the
+  installed `gacalc.epixscene` package (below), so they run from any working directory. Pick per page: the
   prebuilt path for a figure referenced from `.rst` prose, the live path for figures that sit
   beside the computation that produced them.
 - **Referencing:** `.. figure:: _static/epix/<name>.*` — the wildcard lets Sphinx pick the PDF
@@ -122,10 +120,22 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   <billsix@gmail.com>, 2026-11-17).
 - **Types everywhere, as in the rest of the repo:** module-level points are `name: Point = polar(...)`;
   the `with … as fig` target is declared on the line above as `fig: PendingFigure` —
-  `_scene2d.py`'s alias for `epix.figure._Pending`, the proxy `epix.figure()` yields that becomes
+  `gacalc.epixscene.scene2d`'s alias for `epix.figure._Pending`, the proxy `epix.figure()` yields that becomes
   the `Figure` after the block (epix keeps the class private, hence the alias).
-- **Shared helpers (all `_`-prefixed, skipped by the renderer):**
-  - `book/figures/epix/_scene2d.py` is the **generic** 2D stage and primitives every figure builds
+- **Shared helpers.** The generic ones, which the live notebooks use, are the
+  `gacalc.epixscene` package (`src/gacalc/epixscene/`: `scene2d`, `scene3d`, `frame_scene`,
+  `bootstrap_live`, `line_scene`, `paper_scene`, `venn_scene`), imported as
+  `from gacalc.epixscene.scene2d import …`. ePiX is not on PyPI, so the package imports only where
+  ePiX is installed: `import gacalc` never loads it (`tests/test_epixscene_import_boundary.py`),
+  the root `conftest.py` skips its doctest collection when `epix` is missing (the lean CI image),
+  and `pyproject.toml`'s `[tool.ty.analysis] allowed-unresolved-imports` names `epix`, which ty
+  cannot follow through its editable-install import hook even in the full image. Each module keeps
+  its CC0 dedication. The helpers that hold one prebuilt figure set's constants (`_rotation_scene`,
+  `_addition_scene`, `_projection_scene`, `_graphpaper_scene`, `_bootstrap_scene`,
+  `_rotate_ab_scene`) stay beside their figures in `book/figures/epix/`, `_`-prefixed so the
+  renderer skips them. The renderer runs each figure from that directory, so they import as
+  siblings.
+  - `src/gacalc/epixscene/scene2d.py` is the **generic** 2D stage and primitives every figure builds
     from: colours, `polar`, `unit_circle_scene` (the disc-and-axes stage, with a `disc: bool = True`
     toggle so a figure that doesn't need the circle still gets axes), `vector`, `dashed_vector` (a
     translated copy, drawn via `epix.dashed()` then reset with `epix.line_style(style="-")`),
@@ -135,17 +145,17 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     `right_angle_marker`, `leg`. The `grid` helper drives the vector-addition `trans1`/`trans2`
     figures (the `translate` / "whole graph paper slides" section).
   - `_rotation_scene.py` adds the rotation-sequence constants (β, θ, r = 1.7) and re-exports the
-    `_scene2d` helpers, so the `rotate1`–`rotate9` figures import everything from one place. `r` is 1.7
+    `scene2d` helpers, so the `rotate1`–`rotate9` figures import everything from one place. `r` is 1.7
     (not unit) so the similar-triangle step `rotate9` separates the unit and scaled triangles' labels;
     `rotate_goal.py` keeps its own `A_LENGTH` in sync with it.
   - `_addition_scene.py` holds the fixed vectors a, b (and a+b, −b, a−b, the two framing boxes) the
     vector-addition/subtraction figures (`add1`–`add3`, `sub1`–`sub2`) share.
   - `_projection_scene.py` holds a (1.25 at 66°), b (1 at 20°), the projection point, and the
     rotated-to-standard-position vectors the projection figures (`proj1`–`proj3`, the result; `sp1`–`sp5`,
-    the rotate-to-standard-position derivation) share. `_scene2d.right_angle_at(corner, angle)` draws a
+    the rotate-to-standard-position derivation) share. `scene2d.right_angle_at(corner, angle)` draws a
     right-angle square at an arbitrary corner (the origin-only `right_angle_marker` kept for the rotation
     figures' oracle).
-  - `_scene3d.py` is the **3D** stage for `proj3d_*` (projection onto the coordinate planes): one
+  - `gacalc.epixscene.scene3d` is the **3D** stage for `proj3d_*` (projection onto the coordinate planes): one
     `CAMERA` (`Point(x=9, y=-6, z=5)`), one vector `A`, `frame_scene` (figure + `epix.camera.at`), and
     helpers `axes3` (3 arrow axes + x/y/z labels), `plane3(plane, faint=)` (a light-filled `e_12`/`e_23`/
     `e_31` patch via `epix.Path` of four 3D points), `vector3`, `project_onto(plane)`, and
@@ -157,7 +167,7 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     `COORDS = [0, 1, 2, 3]` (the grid `{0,1,2,3}²`), `FAINT = black(intensity=0.35)` for the
     unrotated paper under the rotated one, and `rotate(point, angle)`, `grid_points(angle)`,
     `draw_grid(angle, color, width, dots)`, `parabola_points(angle, x_min, x_max, steps)` (places
-    `y = x²` in the rotated frame). Re-exports the `_scene2d` helpers. Per the keyword rule above its
+    `y = x²` in the rotated frame). Re-exports the `scene2d` helpers. Per the keyword rule above its
     own helper calls are all keyword, and it builds point lists with comprehensions, not
     `list.append` — an unknown callee with a positional arg (`.append` included) trips
     `check_epix_keywords`.
@@ -170,7 +180,7 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     one triangle twice (on `a`, then on `v` outside the angle from `a` to `b`). Step 2 uses
     `boot_sp2`–`boot_sp5`, copies of `sp2`–`sp5` with `a` and `b` swapped so that Part III
     projects `b` onto `a`; the Part I `sp*` figures are unchanged.
-  - `_frame_scene.py` is the stage for the live-rendered frame / QR notebooks: `scene_2d` /
+  - `gacalc.epixscene.frame_scene` is the stage for the live-rendered frame / QR notebooks: `scene_2d` /
     `scene_3d` (light, **unlabelled** axes, because there `x` and `y` name vectors; one fixed
     `CAMERA = (5, -10, 7)`, chosen so the x and y axes project about 60° apart and the plane of
     `v_1, v_2` reads as a plane), `point(coordinates=list(v))` (a gacalc vector's coefficients
@@ -181,11 +191,11 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     `LabelPos`, so the notebooks never `import epix` themselves: ty cannot resolve the
     editable-installed `epix` package.
   - Three live helpers serve single notebooks (added 2026-11-19,
-    `tasks/archive/2026/11/19/fill-placeholder-book-notebooks.md`). `_venn_scene.py`
+    `tasks/archive/2026/11/19/fill-placeholder-book-notebooks.md`). `gacalc.epixscene.venn_scene`
     `g2_subsets_scene()` draws the 𝒢₂ subsets diagram (also prebuilt as `g2subsets.py`, for
-    `defining-g2`). `_line_scene.py` draws `one-dimension`'s graph paper (`graph_paper_scene`,
+    `defining-g2`). `gacalc.epixscene.line_scene` draws `one-dimension`'s graph paper (`graph_paper_scene`,
     `graph_line`) and its rows of paired number lines (`number_lines_scene`, `number_line`, `step`,
-    `tip`), and `vectors-as-number-lines`' number line along any vector (`slanted_number_line`). `_paper_scene.py` draws graph paper carried by a function (`paper_scene`,
+    `tip`), and `vectors-as-number-lines`' number line along any vector (`slanted_number_line`). `gacalc.epixscene.paper_scene` draws graph paper carried by a function (`paper_scene`,
     `carried_paper`) for `relative-graph-paper` and `rotation-graph-paper`. The function comes in
     as a `Mapping` Protocol whose parameters are named, so that each call passes keywords; a plain
     `Callable` forces positional calls, which `check_epix_keywords` fails as an "unknown callee".
@@ -195,7 +205,7 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     `epix.label_color` before a dot.
   - **Gotcha: a tint of black fills dark.** `epix.black(intensity=…)` gives a gray *pen*, but as a
     `fill` it came out near-black in the eepic output; fill with an explicit `epix.rgb(…)` gray
-    (`_frame_scene.GRAY_FILL`).
+    (`frame_scene.GRAY_FILL`).
   - `epix.label_angle` takes **radians**.
 - **A label's colour matches the line/vector it labels** (the maintainer's standard, 2026-10-09), so a
   reader instantly sees which label goes with which element. `leg()` and `vector()` already do this

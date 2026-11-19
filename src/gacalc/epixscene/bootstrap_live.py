@@ -2,26 +2,24 @@
 
 Each notebook sets its vectors in one cell, computes every step from them with
 gacalc, and draws each step **live** in its own cell, as the frame / QR notebooks do
-(see :mod:`_frame_scene`, whose primitives this module re-exports). A reader who
-changes the vectors and reruns gets new pictures, so :func:`scene_around` sizes each
-figure from the points it has to show (with ``epix.fit_bounds``) rather than from
-fixed bounds.
+(see :mod:`gacalc.epixscene.frame_scene`, whose primitives this module re-exports). A
+reader who changes the vectors and reruns gets new pictures, so :func:`scene_around`
+sizes each figure from the points it has to show (with ``epix.fit_bounds``) rather
+than from fixed bounds.
 
 The colours follow the Part III figures: the given vectors black, projections and
 the cosine parts green, rejections and the sine parts blue, results purple, and every
-label in the colour of what it labels.
-
-``tools/render_epix_figures.py`` skips ``_``-prefixed files, so nothing here is
-rendered on its own. CC0, like the other figure helpers.
+label in the colour of what it labels. CC0, like the other figure helpers.
 """
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 
 import epix
-from _frame_scene import (
+
+from gacalc.epixscene.frame_scene import (
     BLUE,
     GREEN,
     ORIGIN2,
@@ -35,7 +33,7 @@ from _frame_scene import (
     point,
     right_angle,
 )
-from _scene2d import BACKGROUND
+from gacalc.epixscene.scene2d import BACKGROUND
 
 __all__: list[str] = [
     "BLACK",
@@ -60,7 +58,7 @@ _WIDTH_IN: float = 3.4  # every figure is this wide, whatever the vectors' size
 
 
 @contextmanager
-def scene_around(points: Sequence[Point]) -> Iterator[PendingFigure]:
+def scene_around(points: Sequence[Point]) -> Generator[PendingFigure]:
     """A 2D figure that fits ``points`` and the origin, with light, unlabelled axes.
 
     The figure is always :data:`_WIDTH_IN` wide with equal scales on both axes, so a

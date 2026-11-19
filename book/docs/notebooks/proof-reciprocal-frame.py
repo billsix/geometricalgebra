@@ -25,14 +25,11 @@
 # appear only to draw the figures.
 
 # %%
-import pathlib
-import sys
-
-# The ePiX scene helpers live with the book's other figure sources.
-sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
-
 import sympy
-from _bootstrap_live import (
+
+import gacalc.g3 as g3
+from gacalc.base import MultiVectorBase, Real
+from gacalc.epixscene.bootstrap_live import (
     BLACK,
     BLUE,
     GREEN,
@@ -46,10 +43,7 @@ from _bootstrap_live import (
     point,
     scene_around,
 )
-from _frame_scene import scene_3d
-
-import gacalc.g3 as g3
-from gacalc.base import MultiVectorBase, Real
+from gacalc.epixscene.frame_scene import scene_3d
 from gacalc.frame import Frame, InverseMethod, reciprocal_frame
 from gacalc.functions import InvertibleFunction
 from gacalc.g2 import Scalar, e_1, e_2

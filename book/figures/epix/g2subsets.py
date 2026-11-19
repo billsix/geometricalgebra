@@ -8,7 +8,7 @@
 # %%
 from __future__ import annotations
 
-from _venn_scene import (
+from gacalc.epixscene.venn_scene import (
     BACKGROUND,  # noqa: F401  (read by tools/render_epix_figures.py from the module globals)
     PendingFigure,
     g2_subsets_scene,

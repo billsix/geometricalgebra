@@ -107,6 +107,12 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   both sides of an identity cancelling term by term, and `at_values(value, values)`,
   which substitutes plot values into a symbolic result; usable by the book's notebooks,
   re-exported from `nbplotutils` for the demo notebooks.
+- `src/gacalc/epixscene/` — the **ePiX scene helpers** the book's figures and live-figure notebooks
+  draw with (`scene2d`, `scene3d`, `frame_scene`, `bootstrap_live`, `line_scene`, `paper_scene`,
+  `venn_scene`; CC0, each module says so). ePiX is built from source in the image and is not on
+  PyPI, so they import only where it is installed; `import gacalc` never loads them
+  (`tests/test_epixscene_import_boundary.py`), and the root `conftest.py` skips them when `epix`
+  is missing.
 - `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (the product with the
   specialized classes) and their companions `displayg2areas.py`, `displayg2transforms.py`,
   `displayg3measures.py`,
@@ -446,14 +452,14 @@ over a "run it on your host" instruction.
   notebooks that mention `epix`), a `make format` gate step (the maintainer's rule,
   2026-10-07). The prose width of the notebooks (the book's and `notebooks/`) and figure scripts is checked by
   `python tools/check_notebook_prose_width.py [--fix]`, also a `make format` step, since E501 skips them. Every binding in a figure file is typed, as everywhere else (`fig: PendingFigure`
-  declared above the `with`; `PendingFigure` is `_rotation_scene`'s alias for what `epix.figure()` yields).
+  declared above the `with`; `PendingFigure` is `gacalc.epixscene.scene2d`'s alias for what `epix.figure()` yields).
   **A label's colour matches the line/vector it labels** (the maintainer's rule, 2026-10-09) so a reader
   sees at a glance which label is which; `leg()`/`vector()` do it automatically, an explicit
   `epix.label()` on a coloured element sets `epix.label_color(color=…)` first. A book notebook may
   also draw ePiX figures **live** in its cells (`book/docs/notebooks/frame-qr-*.py`, via
-  `book/figures/epix/_frame_scene.py`), which relies on `epix.figure()` resetting ePiX's global state
+  `src/gacalc/epixscene/frame_scene.py`), which relies on `epix.figure()` resetting ePiX's global state
   per figure (`EPIX_COMMIT` `275adef…` or later). **Every ePiX figure, prebuilt or live, has the opaque
-  `#f2f2f2` background** (`_scene2d.BACKGROUND`): the render tool flattens the prebuilt PNGs onto it,
+  `#f2f2f2` background** (`scene2d.BACKGROUND`): the render tool flattens the prebuilt PNGs onto it,
   and the live scene helpers pass it as `epix.figure(background=…)` (`EPIX_COMMIT` `797b944…` or
   later). Details:
   `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").

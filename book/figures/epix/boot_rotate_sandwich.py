@@ -32,7 +32,8 @@ from _bootstrap_scene import (
     SANDWICH_H,
     SANDWICH_H_ANGLE,
 )
-from _scene2d import (
+
+from gacalc.epixscene.scene2d import (
     ORIGIN,
     PendingFigure,
     Point,

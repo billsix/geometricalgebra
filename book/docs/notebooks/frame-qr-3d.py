@@ -24,14 +24,10 @@
 # the figures. Each check shows both sides, then their difference.
 
 # %%
-import pathlib
-import sys
-
-# The ePiX scene helpers live with the book's other figure sources.
-sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
-
 import sympy
-from _frame_scene import (
+
+from gacalc.base import MultiVectorBase, Real
+from gacalc.epixscene.frame_scene import (
     BLUE,
     GRAY_EDGE,
     GREEN,
@@ -50,8 +46,6 @@ from _frame_scene import (
     right_angle,
     scene_3d,
 )
-
-from gacalc.base import MultiVectorBase, Real
 from gacalc.frame import Frame
 from gacalc.functions import InvertibleFunction, MatrixBackend, inverse
 from gacalc.g3 import G, Scalar, Vector, e_1, e_2, e_3

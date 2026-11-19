@@ -4,7 +4,7 @@ One picture built across the sequence: a 4×4 grid of points ``{0,1,2,3}²`` and
 graph-paper grid lines, rotated by ``ANGLE`` (30°) about the origin — rotating isn't
 moving points one by one, it's **turning the sheet of graph paper**, and the points
 come along. The last figure plots ``y = x²`` on the rotated frame, to connect to
-high-school graphing. Constants live here so every figure agrees; the ``_scene2d``
+high-school graphing. Constants live here so every figure agrees; the ``gacalc.epixscene.scene2d``
 helpers are re-exported so each figure imports from one place.
 
 Every call passes its arguments by keyword (the ``check_epix_keywords`` gate).
@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import math
 
-from _scene2d import (
+from gacalc.epixscene.scene2d import (
     BACKGROUND,
     BLUE,
     GREEN,

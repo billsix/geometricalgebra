@@ -31,7 +31,8 @@ from _projection_scene import (
     A,
     B,
 )
-from _scene2d import (
+
+from gacalc.epixscene.scene2d import (
     PendingFigure,
     Point,
     dashed_vector,

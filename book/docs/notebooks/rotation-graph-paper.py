@@ -20,18 +20,18 @@
 # The translate is symbolic; numbers appear only to draw the figures.
 
 # %%
-import pathlib
-import sys
-
-# The ePiX scene helpers live with the book's other figure sources.
-sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
-
 import sympy
-from _frame_scene import point
-from _paper_scene import Mapping, PendingFigure, Point, carried_paper, paper_scene
 from IPython.display import display
 
 from gacalc.base import Real
+from gacalc.epixscene.frame_scene import point
+from gacalc.epixscene.paper_scene import (
+    Mapping,
+    PendingFigure,
+    Point,
+    carried_paper,
+    paper_scene,
+)
 from gacalc.functions import InvertibleFunction
 from gacalc.g2 import Scalar, Vector, e_1, e_2
 from gacalc.nbdisplay import at_values

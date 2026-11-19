@@ -29,14 +29,10 @@
 # twin: GacalcProofs.G3.project_add_reject
 # twin: GacalcProofs.G3.mul_proj_eq_dot
 # twin: GacalcProofs.G3.mul_eq_proj_dot_add_reject_wedge
-import pathlib
-import sys
-
-# The ePiX scene helpers live with the book's other figure sources.
-sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))
-
 import sympy
-from _frame_scene import (
+
+from gacalc.base import Real
+from gacalc.epixscene.frame_scene import (
     BLUE,
     GREEN,
     LabelPos,
@@ -48,8 +44,6 @@ from _frame_scene import (
     point,
     scene_3d,
 )
-
-from gacalc.base import Real
 from gacalc.g3 import Bivector, Scalar, Vector, Versor, e_1, e_2, e_3, e_12, e_13, e_23
 from gacalc.nbdisplay import at_values
 
