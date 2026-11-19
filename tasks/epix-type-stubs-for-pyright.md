@@ -22,7 +22,7 @@ with zero errors and `make format` passes without the ty allowance.
 ## Context
 
 - Why pyright skips them (measured 2026-11-19, during
-  `tasks/notebooks-one-directory.md`): ePiX has no stub or `py.typed`, and the image installs it
+  `tasks/archive/2026/11/19/notebooks-one-directory.md`): ePiX has no stub or `py.typed`, and the image installs it
   editable through a setuptools import hook that static checkers cannot follow. Every name the
   notebooks import from `gacalc.epixscene` that comes from ePiX (`Point`, `PendingFigure`,
   `LabelPos`, `Color`) was reported, 91 errors in all.
