@@ -1,13 +1,16 @@
-"""Live ePiX helpers for the one-dimension notebook (``one-dimension.py``).
+"""Live ePiX helpers for the number-line notebooks (``one-dimension.py``,
+``vectors-as-number-lines.py``).
 
-Two kinds of picture:
+Three kinds of picture:
 
 - **graph paper**: the familiar high-school plot of ``y = m * x + b``, input across and
   output up, with a light unit grid (:func:`graph_paper_scene`, :func:`graph_line`);
 - **one direction**: the input ``x * e_1`` on a number line on the left and the output
   on a number line on the right, both pointing the same way
   (:func:`number_lines_scene`, :func:`number_line`, :func:`step`). Stacked one row per
-  input, the output tips trace the familiar line when the page is turned sideways.
+  input, the output tips trace the familiar line when the page is turned sideways;
+- **a vector's number line** in the plane, its multiples ``t * v`` with a tick at each
+  integer (:func:`slanted_number_line`), for ``vectors-as-number-lines.py``.
 
 The colours follow the book's figures: inputs black, the scaling step green, the
 translation step blue, outputs purple, and every label in the colour of what it labels.
@@ -47,6 +50,7 @@ __all__: list[str] = [
     "graph_paper_scene",
     "number_line",
     "number_lines_scene",
+    "slanted_number_line",
     "step",
     "tip",
 ]
@@ -57,6 +61,7 @@ GRAPH_UNIT_IN: float = 0.2  # inches per unit on the graph paper
 LINES_UNIT_IN: float = 0.13  # inches per unit on the number lines
 OUTPUT_OFFSET: float = 22.0  # how far right the output number line's 0 sits
 _TICK: float = 0.18
+_NO_SHIFT: Point = Point(x=0, y=0)
 
 
 @contextmanager
@@ -191,4 +196,37 @@ def tip(
             offset=Point(x=0, y=5),
             text=text,
             align=epix.LabelPos.t,
+        )
+
+
+def slanted_number_line(
+    unit: Point,
+    low: int,
+    high: int,
+    color: epix.Color,
+    labels: tuple[int, ...] = (),
+    side: float = 1.0,
+    offset: Point = _NO_SHIFT,
+) -> None:
+    """The number line along the vector ``unit``: its points ``t * unit`` for ``t`` from
+    ``low`` to ``high``, a tick at every integer ``t``, and the integers in ``labels``
+    written beside their ticks, on the side ``side`` (``1`` or ``-1``) of the line. The
+    whole line is shifted by ``offset``, to set two lines side by side."""
+    length: float = math.hypot(unit.x1(), unit.x2())
+    across: Point = Point(x=-unit.x2() / length, y=unit.x1() / length)
+    epix.pen(color=color, width=0.9)
+    epix.line(tail=offset + low * unit, head=offset + high * unit)
+    mark: int
+    for mark in range(low, high + 1):
+        epix.line(
+            tail=offset + mark * unit - 0.12 * across,
+            head=offset + mark * unit + 0.12 * across,
+        )
+    epix.label_color(color=color)
+    for mark in labels:
+        epix.label(
+            at=offset + mark * unit + side * 0.45 * across,
+            offset=Point(x=0, y=0),
+            text=f"${mark}$",
+            align=epix.LabelPos.c,
         )
