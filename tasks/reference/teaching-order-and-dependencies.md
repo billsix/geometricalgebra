@@ -51,7 +51,8 @@ From the toctrees in `book/docs/index.rst` and each page's own toctree:
   `rotation-from-vectors`, the rotor from the product) → `reflection` → `orthogonal` → `dual` →
   `defining-g2` → `levels-of-abstraction` → `interactive-calculator`.
 - **Part II, space:** `three-dimensions` → `blade-square-sign` → `projection-rejection-3d` (its
-  proofs `proof-projection-3d`, `proof-cross`) → `frames-qr` (its proof `proof-reciprocal-frame`).
+  proofs `proof-projection-3d`, `proof-cross`) → `dual-3d` (the dual of a plane, after `dual`) →
+  `frames-qr` (its proof `proof-reciprocal-frame`).
 - **Part III, the 2D bootstrap:** Step 1 rotation → Step 2 projection from rotation → Step 3 rotation
   from one vector to another, from projection → Step 4 product from projection → Step 5 projection
   through the product → Step 6 rotation through the product.
