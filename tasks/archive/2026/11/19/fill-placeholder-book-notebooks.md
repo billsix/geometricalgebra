@@ -2,7 +2,7 @@
 
 **Status:** done (2026-11-19)
 **Created:** 2026-11-19 (William Emerison Six <billsix@gmail.com>)
-**Follow-up:** `tasks/fill-remaining-placeholder-book-notebooks.md` (the other five `1 + 1` stubs)
+**Follow-up:** `tasks/archive/2026/11/19/fill-remaining-placeholder-book-notebooks.md` (the other five `1 + 1` stubs)
 
 ## What this did
 

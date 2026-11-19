@@ -47,6 +47,21 @@ product and the perpendicular part is the wedge.
 - Overlaps `displaygraded-geometric-plots.md` concept 2 (`a*b = a·b + a∧b` tied to projection length +
   parallelogram area).
 
+## Progress elsewhere (2026-11-19)
+
+`tasks/archive/2026/11/19/fill-remaining-placeholder-book-notebooks.md` (William Emerison Six <billsix@gmail.com>,
+decision 2) filled the two book stubs this task names. Both use the left-multiplied form from the
+Q2 answer:
+- `book/docs/notebooks/projection.py` (2D) shows `a * proj_a(b)` is a plain number and
+  `a * rej_a(b)` a multiple of `e12`, together `a * b`. It names the dot and the wedge only by
+  forward reference, because the page comes before `product-from-projection`.
+- `book/docs/notebooks/projection-rejection-3d.py` (3D) checks `a * proj_a(b) = a · b`,
+  `a * rej_a(b) = a ∧ b` and their sum, citing `G3.mul_proj_eq_dot` and
+  `G3.mul_eq_proj_dot_add_reject_wedge`.
+
+So the book now has the 3D cells. Q1 reduces to whether the demo notebook `notebooks/displayg3.py`
+should also carry them.
+
 ## Plan (draft)
 
 - [x] 2D cells demonstrating the boxed theorem, citing the reference doc — already in
