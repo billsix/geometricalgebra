@@ -39,7 +39,7 @@ so no notebook edits `sys.path`. Done means:
    - Point `tools/check_epix_keywords.py` at the new paths.
    - Before the move, render the figures with `tools/render_epix_figures.py`; render again after it
      and `cmp` every `.png`/`.pdf`. The two renders must be identical.
-2. **One directory.** `git mv book/docs/notebooks/*.py notebooks/` (the names do not collide). Then:
+2. **One directory.** `git mv notebooks/*.py notebooks/` (the names do not collide). Then:
    - `entrypoint/docs.sh` converts `notebooks/*.py` into `book/docs/notebooks/*.ipynb` (still
      gitignored build output), so the toctree entries `notebooks/<page>` stay as they are.
    - Notebooks the book leaves out go in `conf.py`'s `exclude_patterns`.

@@ -54,7 +54,7 @@ __all__: list[str] = [
     "tip",
 ]
 
-Color = epix.Color  # the colour type, for annotating a loop over colours
+type Color = epix.Color  # the colour type, for annotating a loop over colours
 BLACK: epix.Color = epix.black()
 GRAPH_UNIT_IN: float = 0.2  # inches per unit on the graph paper
 LINES_UNIT_IN: float = 0.13  # inches per unit on the number lines

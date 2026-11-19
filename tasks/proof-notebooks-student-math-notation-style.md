@@ -44,7 +44,7 @@ mark matching `+t`/`−t` pairs with LaTeX `\underbrace{…}_{cancel}`, through 
 display helper beside `show_mult` (`src/gacalc/nbplotutils.py`). myst_nb/MathJax render `\underbrace`.
 
 The model trio for a finished proof is `book/docs/proof-projection.rst` +
-`book/docs/notebooks/proof-projection.py` + `proofs/GacalcProofs/StandardPosition.lean` (`CLAUDE.md` ›
+`notebooks/proof-projection.py` + `proofs/GacalcProofs/StandardPosition.lean` (`CLAUDE.md` ›
 "Every piece of math comes in three forms").
 
 ## What the maintainer asked for (verbatim intent)
@@ -65,7 +65,7 @@ The model trio for a finished proof is `book/docs/proof-projection.rst` +
   sees `A:\quad <math>`, not a Python repr), and a **Markdown multiplication table of pairwise
   products** built with `display(Markdown(...))` (around lines 217–223) — the "print the pairwise
   multiplications out in markdown" pattern the maintainer named.
-- **`book/docs/notebooks/proof-projection.py`** (+ `proof-cross.py`, `proof-rotate-from-a-to-b.py`) —
+- **`notebooks/proof-projection.py`** (+ `proof-cross.py`, `proof-rotate-from-a-to-b.py`) —
   the existing proof-companion notebooks: they re-derive a chapter's result symbolically and check it.
   The target style **upgrades** these so the intermediate steps render as math, not just a final
   `.simplified() == …` check.

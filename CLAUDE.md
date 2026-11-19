@@ -341,15 +341,15 @@ Repo-specific invariants the agent must obey (rationale in the shared doc + the 
   on, N806 off). The rule table, the Greek-vs-Latin-fallback caveat (cos/sin values and descriptive
   scalar names stay Latin), the exempt-names list, and the tooling facts (Greek passes ruff/ty) are
   in `tasks/reference/hestenes-variable-notation.md`.
-- **The book's notebooks are hand-written Python under the full standard — every binding
-  typed** (the maintainer, 2026-10-09). `book/docs/notebooks/*.py` annotate every assignment
+- **The notebooks are hand-written Python under the full standard — every binding
+  typed** (the maintainer, 2026-10-09). `notebooks/*.py` annotate every assignment
   (`a: Vector = a_1 * e_1 + a_2 * e_2`, `R: Versor = …`, `magnitude: Real = b.magnitude()`),
   declare each name on the line above a `sympy.symbols` unpack (`a_1: sympy.Symbol`), and
-  annotate every `def`'s parameters and return — exactly as `tests/` and `notebooks/` do; a
-  `1 + 1` placeholder has nothing to type. `make format` runs `ty check book/docs/notebooks`, which
-  catches wrong types but not missing ones. For those, run `tools/check_annotations.py` by hand: it
-  walks `book/docs/notebooks/` too and lists each missing annotation as a row (none expected). It is
-  a report, not a gate; it never fails a build.
+  annotate every `def`'s parameters and return — exactly as `tests/` does; a `1 + 1`
+  placeholder has nothing to type. `make format` runs `ty check notebooks`, which catches wrong
+  types but not missing ones. For those, run `tools/check_annotations.py` by hand: it walks
+  `notebooks/` too and lists each missing annotation as a row. It is a report, not a gate; it
+  never fails a build.
 - **Prefer `match` / total dispatch for structural case analysis** — the cross-project "Prefer total
   dispatch over an open-ended conditional chain" convention, and it applies to the **Lean proofs**
   (`proofs/`) as much as the Python. Where a definition dispatches on structure (a grade/`n`, a
@@ -379,18 +379,19 @@ over a "run it on your host" instruction.
   test`'s own run, not the full one, where sympy's cache can make a test look fast after a slow one. Quick host
   run: `python -m pytest -q -m "not slow"` after `make generate`.
 - **`entrypoint/format.sh`** (via `make format`, the real gate) — `ruff check --fix`,
-  `ruff format`, `ty check` (`src` including the generated g1–g3, `tests`/`tools`/`book/docs/notebooks`, all clean), and
+  `ruff format`, `ty check` (`src` including the generated g1–g3, `tests`/`tools`/`notebooks`, all clean), and
   `tools/check_changelog.py`
   (the version↔changelog guard). `make check-changelog` runs that guard alone on the host. The
   vendored Emacs tree is excluded via `extend-exclude` in `pyproject.toml [tool.ruff]`, **not** a
   CLI flag (`ruff format` rejects `--extend-exclude`) — don't "fix" `format.sh` to pass it.
 - **`make check-generated`** — regenerates twice, asserts byte-identical (determinism guard; ~30s,
   make/CI target, not part of the default `pytest`).
-- **`make check-notebooks`** — runs `pyright notebooks/` in the container (`ty` covers src/tests but
-  not the notebooks). Kept separate from `make test` so a pyright-version bump can't redden it;
-  `pyrightconfig.json` scopes it to `notebooks/`, turns `reportUnusedExpression` off for the two notebook
-  directories only (an `executionEnvironments` entry each; a cell's last bare expression is its output,
-  and no notebook carries a per-line `pyright: ignore`), and must **not** hardcode `pythonVersion` (a mismatch
+- **`make check-notebooks`** — runs `pyright notebooks/` in the container (`make format`'s `ty`
+  checks the notebooks too). Kept separate from `make test` so a pyright-version bump can't redden it;
+  `pyrightconfig.json` scopes it to `notebooks/` and turns `reportUnusedExpression` off there only (a
+  cell's last bare expression is its output, and no notebook carries a per-line `pyright: ignore`). It
+  excludes the notebooks that draw live ePiX figures, because pyright cannot see ePiX's types; lifting
+  that is `tasks/epix-type-stubs-for-pyright.md`. It must **not** hardcode `pythonVersion` (a mismatch
   with the image's Python makes pyright emit spurious "refers to itself" errors — let it auto-detect).
 - **`make notebooks-ipynb`** — converts every `notebooks/*.py` (jupytext percent format, the committed
   source) to a gitignored `.ipynb`. **`make spyder`** opens the Spyder IDE; it needs an image built with
@@ -456,7 +457,7 @@ over a "run it on your host" instruction.
   **A label's colour matches the line/vector it labels** (the maintainer's rule, 2026-10-09) so a reader
   sees at a glance which label is which; `leg()`/`vector()` do it automatically, an explicit
   `epix.label()` on a coloured element sets `epix.label_color(color=…)` first. A book notebook may
-  also draw ePiX figures **live** in its cells (`book/docs/notebooks/frame-qr-*.py`, via
+  also draw ePiX figures **live** in its cells (`notebooks/frame-qr-*.py`, via
   `src/gacalc/epixscene/frame_scene.py`), which relies on `epix.figure()` resetting ePiX's global state
   per figure (`EPIX_COMMIT` `275adef…` or later). **Every ePiX figure, prebuilt or live, has the opaque
   `#f2f2f2` background** (`scene2d.BACKGROUND`): the render tool flattens the prebuilt PNGs onto it,
@@ -665,13 +666,13 @@ two formulations — deliver it in **all three** forms unless the maintainer ove
 1. **Lean** — a machine-checked theorem in `proofs/GacalcProofs/` (`make lean`), in the house style
    of "Coordinates only when needed" above (objects in, scalars only in the body).
 2. **Symbolic Python** — the same result computed with gacalc + sympy, as a book notebook cell
-   (`book/docs/notebooks/*.py`) and/or a test, with symbolic coordinates simplified to equality —
+   (`notebooks/*.py`) and/or a test, with symbolic coordinates simplified to equality —
    the student-runnable check.
 3. **Prose + LaTeX** — the book page (`book/docs/*.rst`) stating it, deriving it, and citing the Lean
    theorem by name (per `tasks/reference/book-outline.md`'s proof-page conventions).
 
 The projection proof is the model trio: `book/docs/proof-projection.rst` +
-`book/docs/notebooks/proof-projection.py` + `proofs/GacalcProofs/StandardPosition.lean`. A Lean theorem and its Python twins (a test, a
+`notebooks/proof-projection.py` + `proofs/GacalcProofs/StandardPosition.lean`. A Lean theorem and its Python twins (a test, a
 notebook) carry the same `twin: <qualified Lean name>` comment, so `git grep` finds them all when one
 changes; the convention and the "verify, don't derive" notebook method are in
 `tasks/reference/lean-python-notebook-workflow.md`. **This is a

@@ -19,7 +19,7 @@ early college students.
 So each result comes in three forms (`CLAUDE.md`, "Every piece of math comes in three forms"):
 
 1. **Lean** (`proofs/GacalcProofs/`) checks the *idea*: the identity holds for every input.
-2. **Symbolic Python** (a test in `tests/`, a book notebook in `book/docs/notebooks/`) checks the
+2. **Symbolic Python** (a test in `tests/`, a book notebook in `notebooks/`) checks the
    *code*: gacalc's operations, run on symbols, give the same identity.
 3. **Prose + LaTeX** (`book/docs/*.rst`) tells the student, and names the Lean theorem.
 
@@ -46,7 +46,7 @@ The worked example is the projection trio:
 | --- | --- |
 | Lean | `proofs/GacalcProofs/StandardPosition.lean` (`projectSP_eq_proj`, `rejectSP_eq_reject`) |
 | Test | `tests/test_standardposition.py` (the two `*_matches_canonical_symbolic` tests) |
-| Notebook | `book/docs/notebooks/proof-projection.py` |
+| Notebook | `notebooks/proof-projection.py` |
 
 Older pairs cite each other in prose ("the runnable twin of …" in a test module docstring, "Python
 `standardposition.project_sp`" in a Lean doc comment). Give such a pair a tag when you next touch
@@ -117,7 +117,7 @@ the same way (16 pairs per blade, `twin: GacalcProofs.G2.mul_assoc`) instead of 
 
 **Where a proof notebook lives.** The book's rule is "proofs → separate `.rst`; uses → main docs;
 calculations → notebooks" (`tasks/reference/book-outline.md`). A proof is a `proof-*.rst` page, and
-its calculations are the companion `book/docs/notebooks/proof-*.py`, linked from the page. Examples
+its calculations are the companion `notebooks/proof-*.py`, linked from the page. Examples
 are `proof-projection`, `proof-cross` and `proof-reciprocal-frame`. There is no separate
 proof-notebook directory.
 

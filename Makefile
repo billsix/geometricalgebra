@@ -189,7 +189,7 @@ spyder: image ## Launch the Spyder IDE on the repo (needs an image built with US
 		$(CONTAINER_NAME) \
 		/usr/local/bin/spyder.sh
 
-# Convert the demo notebooks (jupytext percent-format .py) to .ipynb, beside the
+# Convert the notebooks (jupytext percent-format .py) to .ipynb, beside the
 # sources, for sharing or exporting. JupyterLab opens the .py files directly, so
 # this is only needed to hand someone an .ipynb. NOTEBOOKS= limits it to some files.
 .PHONY: notebooks-ipynb

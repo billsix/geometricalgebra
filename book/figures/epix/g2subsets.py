@@ -3,7 +3,7 @@
 #
 # The whole algebra 𝒢₂ as a box, with the vectors, the versors, and inside the versors
 # the scalars and the bivectors. The same diagram is drawn live in
-# `book/docs/notebooks/defining-g2.py`. Built with the `epix` Python package.
+# `notebooks/defining-g2.py`. Built with the `epix` Python package.
 
 # %%
 from __future__ import annotations

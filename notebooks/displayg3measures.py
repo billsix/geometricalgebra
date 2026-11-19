@@ -7,9 +7,9 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.4
 #   kernelspec:
-#     display_name: gacalc
+#     display_name: Python 3
 #     language: python
-#     name: gacalc
+#     name: python3
 # ---
 
 # %%

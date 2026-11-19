@@ -51,8 +51,8 @@ jobs:
       - name: make check-regions
         run: make check-regions MINIMAL_IMAGE=1
 
-  # pyright over the demo notebooks/ (ty covers src, tests, tools and the book's
-  # notebooks; the demo notebooks are pyright's). pyright is in the base image group.
+  # pyright over notebooks/, except the ones that draw live ePiX figures (pyrightconfig.json;
+  # ty, in the format job, covers all of them). pyright is in the base image group.
   notebooks:
     runs-on: ubuntu-latest
     steps:

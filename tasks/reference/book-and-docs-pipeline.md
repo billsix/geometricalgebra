@@ -13,7 +13,7 @@ doesn't need.
   scaffolded** (2026-08-03): one `.rst` prose page per section + `api.rst` (autodoc over
   `gacalc.base`/`gn`/`functions`/`transforms`/`measure`/`vectorcalc`/`frame` — not
   `standardposition` or `nbplotutils`, nor the generated `g1`–`g5`), and
-  **percent-format notebooks** under `book/docs/notebooks/*.py` (stubs at first; which
+  **percent-format notebooks** under `notebooks/*.py` (stubs at first; which
   ones have content is tracked in `book-outline.md` › "File layout"). Structure and the
   prose-vs-notebook split live in `book-outline.md`.
 - Builds to **HTML and PDF** (no EPUB).
@@ -27,7 +27,7 @@ doesn't need.
 - **`make docs`** (Makefile) → runs the container → **`entrypoint/docs.sh`**, which:
   generates the gitignored `g*.py` and editable-installs gacalc (so autodoc can
   `import gacalc`); **converts the book's percent notebooks
-  `book/docs/notebooks/*.py` → `.ipynb` via jupytext** (so myst_nb executes them);
+  `notebooks/*.py` → `.ipynb` via jupytext** (so myst_nb executes them);
   then `make html` + `make latexpdf` in `book/docs/`, then copies the result to the
   bind-mounted **`output/gacalc/`** (+ `.nojekyll`).
 - **Book notebooks:** the percent-format `.py` are the tracked source; the `.ipynb` are
@@ -36,7 +36,7 @@ doesn't need.
   `:ref:` a subsection from elsewhere (auto heading-anchors are off by design). They are
   hand-written Python under the full coding standard — **every binding typed** (`CLAUDE.md` ›
   "Coding standard (Python)", 2026-10-09); `make format` type-checks them
-  (`ty check book/docs/notebooks`) and `tools/check_annotations.py` audits them.
+  (`ty check notebooks`) and `tools/check_annotations.py` audits them.
 - **Checking a notebook without a build:** `tools/run_notebook_cells.py <notebook>.py`, run from
   the notebook's directory with `src` on `PYTHONPATH`, executes it cell by cell and prints each
   code cell's last value, so the check cells can be read directly. A report, not a gate.
@@ -243,7 +243,7 @@ notebook pages, with the `ModuleNotFoundError` only in `_build/html/reports/note
    **sphinx/furo/nbsphinx/myst-nb into the venv** (`uv pip install --python
    /venv/bin/python`), NOT via dnf. (This is exactly how modelviewprojection does it;
    gacalc originally used dnf sphinx and every notebook silently failed.)
-2. **The notebook sources declare the kernel.** Each `book/docs/notebooks/*.py` carries
+2. **The notebook sources declare the kernel.** Each `notebooks/*.py` carries
    a jupytext header (`kernelspec: name: python3`) so the converted `.ipynb` requests
    `python3`, matching mvp. Belt-and-suspenders with (1).
 3. **`docs.sh` generates `g*.py` and editable-installs gacalc into the venv** before the

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Notebook prose stays within 88 columns -- check or fix.
 
-The notebooks (the book's and the demo ones under ``notebooks/``) and the figure scripts
-are exempt from ruff's E501 (``pyproject.toml``): their Markdown math writes vectors as
-``\\vec{\\mathbf{a}}``, so one inline ``$...$`` span or a heading can pass 88 columns
-and cannot be broken. This tool checks the rest of the prose. Within a
-``# %% [markdown]`` cell, a paragraph is a run of ``# `` lines; a list item (``# - ``,
-``# 1. ``) with its indented continuation lines is a paragraph of its own. Headings,
-tables, ``$$`` display lines and blank ``#`` lines are not paragraphs.
+The notebooks (``notebooks/``) and the figure scripts are exempt from ruff's E501
+(``pyproject.toml``): their Markdown math writes vectors as ``\\vec{\\mathbf{a}}``, so
+one inline ``$...$`` span or a heading can pass 88 columns and cannot be broken. This
+tool checks the rest of the prose. Within a ``# %% [markdown]`` cell, a paragraph is a
+run of ``# `` lines; a list item (``# - ``, ``# 1. ``) with its indented continuation
+lines is a paragraph of its own. Headings, tables, ``$$`` display lines and blank ``#``
+lines are not paragraphs.
 
 A paragraph is reported when one of its lines passes the limit and rewrapping the whole
 paragraph would change it. The rewrap never breaks inside a ``$...$`` or backticked
@@ -17,9 +17,8 @@ as a whole (never just the long line), which is idempotent: a second run reports
 nothing.
 
 Usage: ``python tools/check_notebook_prose_width.py [--fix] [PATH ...]``
-(default: ``book/docs/notebooks/*.py``, ``notebooks/*.py`` and
-``book/figures/epix/*.py``). Exit 1 if any paragraph is reported (after ``--fix``, if
-any could not be fixed).
+(default: ``notebooks/*.py`` and ``book/figures/epix/*.py``). Exit 1 if any paragraph
+is reported (after ``--fix``, if any could not be fixed).
 """
 
 from __future__ import annotations
@@ -34,7 +33,6 @@ from dataclasses import dataclass
 
 ROOT: pathlib.Path = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_GLOBS: tuple[str, ...] = (
-    "book/docs/notebooks/*.py",
     "notebooks/*.py",
     "book/figures/epix/*.py",
 )
@@ -183,7 +181,7 @@ def check_file(path: pathlib.Path, fix: bool) -> list[str]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Check (or fix) the given files, or the book's notebooks and figure scripts.
+    """Check (or fix) the given files, or the notebooks and figure scripts.
 
     Args:
         argv: the command-line arguments (``None`` reads ``sys.argv``).

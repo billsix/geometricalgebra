@@ -25,7 +25,7 @@ revised the `.rst`/notebook prose to his voice.
   the product). Cites `proj_rotPlane_equivariant` / `projectSP_eq_proj` in
   `proofs/GacalcProofs/StandardPosition2D.lean` (2D) and `StandardPosition.lean` (3D section). The
   figures `sp1`–`sp5` are in; the DRAFT/TODO banners are gone.
-- `book/docs/notebooks/proof-projection.py` — the companion notebook (jupytext percent format;
+- `notebooks/proof-projection.py` — the companion notebook (jupytext percent format;
   `.ipynb` is a build artifact), now **2D-primary**: an explicit `g2` single-rotation construction vs
   `projected_onto` (concrete + symbolic, `b = 3e₁ + 4e₂`), projection + rejection rebuild `a`, then a
   3D step-up with `project_sp` (`b = 3e₁ + 4e₂ + 12e₃`). Executes clean under `make docs`.

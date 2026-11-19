@@ -1,7 +1,7 @@
 """The 𝒢₂ subsets picture: the whole algebra, with the named kinds of element inside it.
 
 Drawn by the prebuilt figure ``g2subsets`` (on the *Defining the Algebra: G2* page) and
-live by ``book/docs/notebooks/defining-g2.py``, so both show the same diagram.
+live by ``notebooks/defining-g2.py``, so both show the same diagram.
 
 The outer box is every element of 𝒢₂, ``s + v_1 e_1 + v_2 e_2 + B e_12``. Inside it:
 the vectors (grade 1), and the versors (scalar plus bivector), which contain the

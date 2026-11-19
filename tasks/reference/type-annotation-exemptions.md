@@ -16,8 +16,8 @@ forces edits to unrelated logic, or breaks flow-narrowing, is not worth it.
 
 **`python tools/check_annotations.py`** — the auditor built for the sweep, promoted out of
 `tasks/adhoc/` because it answers "has coverage regressed?" on any future change. It walks
-`src/`, `tools/`, `tests/`, `notebooks/` and the book's companion notebooks
-`book/docs/notebooks/` with `ast` reporting: `def`s without a return
+`src/`, `tools/`, `tests/` and `notebooks/` (the demo and book notebooks alike) with `ast`
+reporting: `def`s without a return
 annotation, params without one, unannotated assignments (to a bare name, or each name of an
 unpacking such as `a_1, a_2 = sympy.symbols(...)`), `for`-targets, bare generics,
 `Any`, and invariant `dict`/`list`/`set` params. A name counts as annotated only within its own

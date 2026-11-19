@@ -1,11 +1,11 @@
 # How the book's notebooks teach — the cell-by-cell lesson style
 
-**Reference document.** How the maintainer wants the book's notebooks (`book/docs/notebooks/*.py`)
+**Reference document.** How the maintainer wants the book's notebooks (`notebooks/*.py`)
 to read: what a notebook is for, how its cells are shaped, what to copy from the best existing
 example, and what to avoid. Update in place; never archive. Created 2026-11-16 (William Emerison Six
 <billsix@gmail.com>).
 
-**It covers every notebook**: the book's (`book/docs/notebooks/*.py`) and the demo notebooks under
+**It covers every notebook**: the book's (`notebooks/*.py`) and the demo notebooks under
 `notebooks/` alike (William Emerison Six <billsix@gmail.com>, 2026-11-18). Rules that only fit a
 book notebook say so (rule 6, "Symbolic notebooks"). Why the two sets still differ in tooling
 and figure library, and how to unify them, is `tasks/unify-demo-and-book-notebooks.md` (parked
@@ -91,7 +91,7 @@ this standard; see "History of the model" below.) What they do, as rules:
     difference and say why the table is skipped.
 15. **Zero developer noise**: no `pyright: ignore` trailers, no typing workarounds in sight, short
     cells, mostly one expression. A cell's bare last expression needs no comment: `pyrightconfig.json`
-    turns `reportUnusedExpression` off for `notebooks/` and `book/docs/notebooks/`.
+    turns `reportUnusedExpression` off for `notebooks/`.
 
 ## What to avoid
 
@@ -160,7 +160,7 @@ From `tasks/archive/2026/11/16/book-notebooks-teaching-style-sweep.md`:
 ## Symbolic notebooks (the `proof-projection.py` model, 2026-11-17)
 
 Set by William Emerison Six <billsix@gmail.com> while revising
-`book/docs/notebooks/proof-projection.py`, then applied to every content notebook in
+`notebooks/proof-projection.py`, then applied to every content notebook in
 `tasks/archive/2026/11/17/book-notebooks-symbolic-proof-style.md`:
 
 - **Symbolic the whole time.** Every step uses symbolic coordinates, so each output is a formula.

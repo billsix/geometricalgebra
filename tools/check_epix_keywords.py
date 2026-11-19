@@ -15,14 +15,13 @@ Exempt: calls whose parameters are positional-only (``math.*`` and the other C
 builtins) and calls this table does not know (reported as "unknown", never
 rewritten -- extend the table instead of guessing).
 
-The book notebooks that draw ePiX figures live (``book/docs/notebooks/*.py`` that
-mention ``epix``) are checked too, but only their calls this table knows: the rest
-of a notebook is ordinary gacalc code, so its unknown callees are not reported.
+The notebooks that draw ePiX figures live (``notebooks/*.py`` that mention ``epix``)
+are checked too, but only their calls this table knows: the rest of a notebook is
+ordinary gacalc code, so its unknown callees are not reported.
 
 Usage: ``python tools/check_epix_keywords.py [--fix] [PATH ...]``
 (default: every ``*.py`` under book/figures/epix and src/gacalc/epixscene, plus those
-notebooks). Exit 1 if
-any positional argument remains.
+notebooks). Exit 1 if any positional argument remains.
 """
 
 from __future__ import annotations
@@ -35,7 +34,7 @@ from pathlib import Path
 REPO: Path = Path(__file__).resolve().parents[1]
 FIGURES: Path = REPO / "book" / "figures" / "epix"
 HELPERS: Path = REPO / "src" / "gacalc" / "epixscene"
-NOTEBOOKS: Path = REPO / "book" / "docs" / "notebooks"
+NOTEBOOKS: Path = REPO / "notebooks"
 
 # (module, function) -> parameter names in positional order; a dict keyed by arity
 # where the binding has overloads with different parameter lists.

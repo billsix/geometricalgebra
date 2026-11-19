@@ -22,11 +22,13 @@ cd /gacalc
 python tools/gen_specialized.py
 uv pip install --python "$(which python)" --no-deps --no-index --no-build-isolation -e .
 
-# Convert the book's percent-format notebooks (book/docs/notebooks/*.py) to
-# .ipynb so myst_nb can execute and render them. The .py are the tracked source;
-# the .ipynb are build artifacts (gitignored).
-for f in book/docs/notebooks/*.py; do
-    jupytext --to ipynb "$f"
+# Convert the percent-format notebooks (notebooks/*.py, the one notebook directory) to
+# .ipynb inside the book's source tree, so myst_nb can execute and render them as
+# book/docs/notebooks/<name>. The .py are the tracked source; the .ipynb are build
+# artifacts (gitignored). conf.py's exclude_patterns lists any notebook the book leaves out.
+mkdir -p book/docs/notebooks
+for f in notebooks/*.py; do
+    jupytext --to ipynb -o "book/docs/notebooks/$(basename "${f%.py}").ipynb" "$f"
 done
 
 # Render the book's ePiX figures (book/figures/epix/*.py, written with the epix Python

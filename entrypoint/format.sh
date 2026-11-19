@@ -22,9 +22,9 @@ ruff format --line-length=88 || status=1
 ty check --no-respect-ignore-files src || status=1
 ty check tests || status=1
 ty check tools || status=1
-# The book's companion notebooks are hand-written, fully-typed Python too (CLAUDE.md,
-# "Coding standard (Python)").
-ty check book/docs/notebooks || status=1
+# The notebooks (the demo ones and the book's companions) are hand-written, fully-typed
+# Python too (CLAUDE.md, "Coding standard (Python)").
+ty check notebooks || status=1
 ty check examples || status=1
 
 # Version <-> changelog consistency: fails when pyproject.toml's version has no

@@ -4,7 +4,7 @@
 construction uses only results taught before it. Updated in place. The graph of which result
 builds on which is `book/docs/proof-dependencies.dot`, drawn on the book's first page
 (`book/docs/index.rst`, "How the results build on each other"). The rule was set by William Emerison
-Six <billsix@gmail.com>, 2026-11-17, after `book/docs/notebooks/proof-projection.py` defined its own
+Six <billsix@gmail.com>, 2026-11-17, after `notebooks/proof-projection.py` defined its own
 rotation from a cosine and a sine instead of using the rotation the book had just built.
 
 ## The rule
@@ -29,8 +29,8 @@ rotation from a cosine and a sine instead of using the rotation the book had jus
 3. **Never define a new rotation that takes a cosine and a sine** unless the chapter's subject is
    building a rotation from a cosine and sine without computing an angle. Then say why in the
    notebook and tell the maintainer. The two places this holds today:
-   `book/docs/notebooks/proof-rotate-from-a-to-b.py`'s `rotate_cs` (it builds `rotation_from_to`)
-   and the second triangle of `book/docs/notebooks/bootstrap-rotation-from-projection.py` (Step 3
+   `notebooks/proof-rotate-from-a-to-b.py`'s `rotate_cs` (it builds `rotation_from_to`)
+   and the second triangle of `notebooks/bootstrap-rotation-from-projection.py` (Step 3
    builds the rotation from the cosine and sine projection measured).
 4. **Part III starts from scratch.** The bootstrap (Steps 1–6) rebuilds the plane: Step 2's
    projection may use only Step 1's rotation by an angle, so its notebooks rotate onto the x-axis
