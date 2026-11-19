@@ -47,6 +47,7 @@ import warnings
 
 from IPython.display import Math, display
 
+from gacalc.base import MultiVectorBase
 from gacalc.g3 import G
 from gacalc.nbdisplay import show_mult
 from gacalc.nbplotutils import plot_multivector
@@ -331,6 +332,106 @@ pseudoscalar.reverse()
 
 # %%
 m.dual()
+
+# %% [markdown]
+# Which part of $\vec{\mathbf{b}}$ makes the dot, and which the wedge?
+# --------------------------------------------------------------------
+#
+# `displayg2areas.py` split the product in the plane. The split works in space too. Cut
+# $\vec{\mathbf{b}}$ against $\vec{\mathbf{a}}$ into the part along $\vec{\mathbf{a}}$
+# (its projection, $\operatorname{proj}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})$) and the
+# part perpendicular to it (its rejection,
+# $\operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})$). Multiplied by
+# $\vec{\mathbf{a}}$ on the left, each part makes exactly one half of the product:
+#
+# $$\vec{\mathbf{a}} * \operatorname{proj}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}}) =
+# \vec{\mathbf{a}} \cdot \vec{\mathbf{b}} \qquad\qquad \vec{\mathbf{a}} *
+# \operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}}) = \vec{\mathbf{a}} \wedge
+# \vec{\mathbf{b}}$$
+#
+# The proof is in `tasks/reference/dot-wedge-projection-rejection.md`; the Lean
+# theorems are `G3.mul_proj_eq_dot` and `G3.mul_eq_proj_dot_add_reject_wedge`. Take
+# $\vec{\mathbf{a}} = 1 * \vec{\mathbf{e}}_1 + 2 * \vec{\mathbf{e}}_2 + 2 *
+# \vec{\mathbf{e}}_3$,
+
+# %%
+# twin: GacalcProofs.G3.mul_proj_eq_dot
+# twin: GacalcProofs.G3.mul_eq_proj_dot_add_reject_wedge
+a_num: G = 1 * e_1 + 2 * e_2 + 2 * e_3
+a_num
+
+# %% [markdown]
+# and a $\vec{\mathbf{b}}$ that leans on no axis or plane:
+
+# %%
+b_num: G = 2 * e_1 + 1 * e_2 + 3 * e_3
+b_num
+
+# %% [markdown]
+# The projection is a multiple of $\vec{\mathbf{a}}$,
+
+# %%
+b_par: MultiVectorBase = b_num.projected_onto(a_num)
+b_par
+
+# %% [markdown]
+# the rejection is the rest,
+
+# %%
+b_perp: MultiVectorBase = b_num.rejected_away_from(a_num)
+b_perp
+
+# %% [markdown]
+# and the two add back up to $\vec{\mathbf{b}}$ (their sum minus $\vec{\mathbf{b}}$ is
+# $0$):
+
+# %%
+b_par + b_perp - b_num
+
+# %% [markdown]
+# **$\vec{\mathbf{a}}$ times the projection is the dot product.** Predict the answer
+# from $\vec{\mathbf{a}} \cdot \vec{\mathbf{b}} = 1 * 2 + 2 * 1 + 2 * 3$, then run:
+
+# %%
+a_num * b_par
+
+# %% [markdown]
+# The dot product itself:
+
+# %%
+a_num.dot(b_num)
+
+# %% [markdown]
+# Term by term, the plane contributions cancel and leave only the number:
+
+# %%
+show_mult(a_num, b_par)
+
+# %% [markdown]
+# **$\vec{\mathbf{a}}$ times the rejection is the wedge.** In space the wedge has a part
+# in each of the three coordinate planes:
+
+# %%
+a_num * b_perp
+
+# %% [markdown]
+# The wedge itself:
+
+# %%
+a_num.wedge(b_num)
+
+# %% [markdown]
+# Here the number contributions cancel, leaving only the pieces of plane:
+
+# %%
+show_mult(a_num, b_perp)
+
+# %% [markdown]
+# **Putting it back together.** The two products add up to the whole product. Their sum
+# minus $\vec{\mathbf{a}} * \vec{\mathbf{b}}$:
+
+# %%
+a_num * b_par + a_num * b_perp - a_num * b_num
 
 # %% [markdown]
 # Each part on its own number line

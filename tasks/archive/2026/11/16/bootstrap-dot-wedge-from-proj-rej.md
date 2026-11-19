@@ -4,7 +4,7 @@
 **Done:** 2026-11-16
 **Related:** `tasks/bare-2d-bootstrap-pages.md` (the Part III pages; still open);
 `tasks/archive/2026/11/16/quarter-turn-as-named-base-case.md` (the same rules applied to the quarter turn; done);
-`tasks/notebook-dot-wedge-projection-demo.md` (its Q2 was answered here);
+`tasks/archive/2026/11/19/notebook-dot-wedge-projection-demo.md` (its Q2 was answered here);
 `tasks/archive/2026/11/16/bootstrap-notebooks-show-derivations.md` (the follow-on for the Part III
 notebooks; done)
 
@@ -61,7 +61,7 @@ section in `CLAUDE.md`.
    the dot and wedge identities as results. A first draft that made them Step 4's definition was
    rejected.
 3. **Mirror lines** are shown as named results.
-4. **`tasks/notebook-dot-wedge-projection-demo.md`, its Q2:** answered with the left-multiplied form.
+4. **`tasks/archive/2026/11/19/notebook-dot-wedge-projection-demo.md`, its Q2:** answered with the left-multiplied form.
 5. **Scope:** Part III only. Part I's projection pages are unchanged.
 6. **The base case keeps the operation's name.** `P_{e₁}` is the base case of projection, as
    `r(v; π/2)` is the base case of rotation. The general projection can't be defined without it,

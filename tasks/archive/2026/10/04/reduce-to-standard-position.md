@@ -104,5 +104,5 @@ The scan's done items are the deliverables above. Still-open ideas were each han
 
 - `tasks/archive/2026/10/04/lean-proof-rotation-from-scratch.md` — reduces 3D to 2D via the versor
   sandwich; product-based, so complementary to (not a bootstrap like) this route.
-- `tasks/notebook-dot-wedge-projection-demo.md` — dot = projected product, wedge = rejected (proved in
+- `tasks/archive/2026/11/19/notebook-dot-wedge-projection-demo.md` — dot = projected product, wedge = rejected (proved in
   `tasks/reference/dot-wedge-projection-rejection.md`); a related display task.

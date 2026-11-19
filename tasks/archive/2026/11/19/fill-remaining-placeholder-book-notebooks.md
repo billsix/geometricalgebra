@@ -3,7 +3,7 @@
 **Status:** done (2026-11-19)
 **Created:** 2026-11-19 (William Emerison Six <billsix@gmail.com>)
 **Related:** `tasks/archive/2026/11/19/fill-placeholder-book-notebooks.md` (filled the first five
-and scaffolded this task); `tasks/notebook-dot-wedge-projection-demo.md` (still blocked; it now
+and scaffolded this task); `tasks/archive/2026/11/19/notebook-dot-wedge-projection-demo.md` (since done; it then
 records that the book has both its halves)
 
 ## What this did
@@ -35,7 +35,7 @@ lists it.
   the dot and the wedge, so the notebook calls the pieces "a plain number" and "a piece of plane"
   and names them only by forward reference.
 - `projection-rejection-3d.py` also carries the 3D product split, which is the remaining work of the
-  blocked `tasks/notebook-dot-wedge-projection-demo.md`. That task's Q1, whether the demo notebook
+  blocked `tasks/archive/2026/11/19/notebook-dot-wedge-projection-demo.md`. That task's Q1, whether the demo notebook
   `notebooks/displayg3.py` should also carry the cells, is left to the maintainer; the task records
   the progress.
 - `canonical-form` comes before vectors are taught, so it uses plain sympy numbers and no gacalc.

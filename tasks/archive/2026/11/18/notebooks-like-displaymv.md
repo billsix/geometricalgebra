@@ -58,7 +58,7 @@ $\vec{\mathbf{b}}$:"). The notebooks had no developer noise to remove.
 - `CLAUDE.md` lists the new notebooks and extends the full-`G` aliasing carve-out to
   `displayg2transforms`. `tasks/reference/design-decisions.md` says the same.
 - References to the moved sections are repointed: `src/gacalc/base.py` (a comment),
-  `proofs/GacalcProofs/Lagrange.lean` (a doc comment), `tasks/notebook-dot-wedge-projection-demo.md`.
+  `proofs/GacalcProofs/Lagrange.lean` (a doc comment), `tasks/archive/2026/11/19/notebook-dot-wedge-projection-demo.md`.
 - `tasks/reference/type-annotation-exemptions.md`: §6 (the notebook symbol unpacks) is gone, now that
   the names are declared, and the floor is 63 rows.
 
