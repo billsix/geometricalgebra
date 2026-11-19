@@ -12,6 +12,10 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`gacalc.epixscene`** — the ePiX scene helpers the book's figures and notebooks draw with
+  (`scene2d`, `scene3d`, `frame_scene`, `bootstrap_live`, `line_scene`, `paper_scene`,
+  `venn_scene`), moved into the package from `book/figures/epix/`. It needs ePiX
+  (github.com/billsix/epix-mirror), which is not on PyPI; `import gacalc` never loads it.
 - **`nbdisplay.show_cancellation(left, right, left_name, right_name)`** (and the
   `cancellation_latex` it displays): both sides of an identity expanded, then their difference
   blade by blade with each cancelling pair of terms marked by a shared number under an
