@@ -1,15 +1,12 @@
 # Notebook demo: dot = projected geometric product, wedge = rejected (2D + 3D)
 
-**Status:** blocked
+**Status:** in progress
 **Priority:** 6
 **Difficulty:** 2
 **Started:** 2026-08-27 (William Emerison Six <billsix@gmail.com>)
 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — the 2D half was found already
 done in `notebooks/displayg2.py` (since 2026-11-18 `notebooks/displayg2areas.py`); Context and Q1
 re-posed accordingly.
-**Blocked on:** maintainer answers the Open questions below (where the 3D cells go; base-vector
-wording). The math is already proved — do NOT re-prove it.
-**Recheck:** the Open questions below are answered (maintainer-gated; `/recheck-blocked` surfaces it).
 
 ## BLUF
 
@@ -74,6 +71,8 @@ should also carry them.
    demo-notebook twin of `displayg2.py`), or seed the still-empty book notebook
    `book/docs/notebooks/projection-rejection-3d.py` (currently a `1 + 1` stub)? *(Recommend:
    `displayg3.py`, matching where the 2D half lives; the book stub can quote it later.)*
+   **Answered (William Emerison Six <billsix@gmail.com>, 2026-11-19):** yes, put the 3D cells in
+   `notebooks/displayg3.py` too, alongside the book's `projection-rejection-3d.py`.
 2. **Base vector** — the theorem projects `a` onto `b`; the bullet says "onto a". Which is intended?
    **Answered (William Emerison Six <billsix@gmail.com>, 2026-11-16):** onto `a`, multiplied by `a`
    on the left: `a · b = a * proj_a(b)` and `a ∧ b = a * rej_a(b)`, stated as results, not
