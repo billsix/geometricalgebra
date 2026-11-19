@@ -394,8 +394,9 @@ over a "run it on your host" instruction.
   checks the notebooks too). Kept separate from `make test` so a pyright-version bump can't redden it;
   `pyrightconfig.json` scopes it to `notebooks/` and turns `reportUnusedExpression` off there only (a
   cell's last bare expression is its output, and no notebook carries a per-line `pyright: ignore`). It
-  excludes the notebooks that draw live ePiX figures, because pyright cannot see ePiX's types; lifting
-  that is `tasks/epix-type-stubs-for-pyright.md`. It must **not** hardcode `pythonVersion` (a mismatch
+  checks every notebook, the ePiX ones included: an image with ePiX installs it in compat editable
+  mode so pyright and ty can follow it to its `py.typed` and `_epix.pyi`, and the lean image installs
+  only those types (`entrypoint/install-epix-stubs.sh`). It must **not** hardcode `pythonVersion` (a mismatch
   with the image's Python makes pyright emit spurious "refers to itself" errors — let it auto-detect).
 - **`make notebooks-ipynb`** — converts every `notebooks/*.py` (jupytext percent format, the committed
   source) to a gitignored `.ipynb`. **`make spyder`** opens the Spyder IDE; it needs an image built with

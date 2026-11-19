@@ -158,7 +158,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
 # drivers) for the book's LaTeX-native figures; EPIX_COMMIT is the ONE place its pin
 # lives (tasks/archive/2026/10/07/epix-plot-integration.md). `make test` needs neither.
 ARG USE_EPIX=0
-ARG EPIX_COMMIT=797b9442a9f1fa807c475dc59df8f7e50cee7c87
+ARG EPIX_COMMIT=33d01942daff0594fe95987696cab68fe95393bf
 
 # ePiX (github.com/billsix/epix-mirror), pinned to EPIX_COMMIT, built from source with
 # Meson into /usr/local -- the `epix`/`elaps`/`flix`/`laps` drivers + libepix for the
@@ -167,14 +167,18 @@ ARG EPIX_COMMIT=797b9442a9f1fa807c475dc59df8f7e50cee7c87
 # Two host-runnable scripts: 06-install-epix.sh (dnf: git, meson/g++, ghostscript,
 # ImageMagick, the TeX set epix's own render script names) then install-epix.sh (shallow
 # git fetch of the pinned commit, meson install). Gated on USE_EPIX; placed before
-# COPY src so a code edit never rebuilds it. The fetch is
-# the only network use and happens at build time; the installed tools run offline.
-COPY entrypoint/06-install-epix.sh entrypoint/install-epix.sh /usr/local/bin/
+# COPY src so a code edit never rebuilds it. Without ePiX (USE_EPIX=0, the lean image CI
+# checks in), install-epix-stubs.sh installs only epix's type stubs from the same commit,
+# so ty and pyright still check the code that draws with it. The fetch is the only
+# network use and happens at build time; the installed tools run offline.
+COPY entrypoint/06-install-epix.sh entrypoint/install-epix.sh entrypoint/install-epix-stubs.sh /usr/local/bin/
 RUN --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     if [ "$USE_EPIX" = "1" ]; then \
       /usr/local/bin/06-install-epix.sh && \
       EPIX_COMMIT="$EPIX_COMMIT" /usr/local/bin/install-epix.sh ; \
+    else \
+      EPIX_COMMIT="$EPIX_COMMIT" /usr/local/bin/install-epix-stubs.sh ; \
     fi
 
 # OpenGL system libraries for gacalc.gl; always installed (no flag), since `make test`

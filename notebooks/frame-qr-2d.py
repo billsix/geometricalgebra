@@ -203,7 +203,7 @@ table
 # $\vec{\mathbf{w}}_1$, in units of $|\vec{\mathbf{w}}_1|$:
 
 # %%
-c_21: Real = table[1, 0]
+c_21: Real = table.row(1)[0]
 c_21
 
 # %% [markdown]
@@ -342,7 +342,9 @@ fig_area
 
 # %%
 f: InvertibleFunction[MultiVectorBase] = frame.to_invertible_function()
-F: sympy.Matrix = sympy.Matrix(f.to_matrix(G, n=2, backend=MatrixBackend.SYMPY))[:2, :2]
+F: sympy.Matrix = sympy.Matrix(
+    f.to_matrix(G, n=2, backend=MatrixBackend.SYMPY)
+).extract([0, 1], [0, 1])
 F
 
 # %% [markdown]
@@ -417,18 +419,22 @@ fig_forward
 # %%
 Q: InvertibleFunction[MultiVectorBase] = Frame((u_1, u_2)).to_invertible_function()
 R: InvertibleFunction[MultiVectorBase] = inverse(Q) @ f
-R_matrix: sympy.Matrix = sympy.Matrix(R.to_matrix(G, n=2, backend=MatrixBackend.SYMPY))[
-    :2, :2
-].applyfunc(sympy.simplify)
+R_matrix: sympy.Matrix = (
+    sympy.Matrix(R.to_matrix(G, n=2, backend=MatrixBackend.SYMPY))
+    .extract([0, 1], [0, 1])
+    .applyfunc(sympy.simplify)
+)
 R_matrix
 
 # %% [markdown]
 # $Q$'s matrix:
 
 # %%
-Q_matrix: sympy.Matrix = sympy.Matrix(Q.to_matrix(G, n=2, backend=MatrixBackend.SYMPY))[
-    :2, :2
-].applyfunc(sympy.simplify)
+Q_matrix: sympy.Matrix = (
+    sympy.Matrix(Q.to_matrix(G, n=2, backend=MatrixBackend.SYMPY))
+    .extract([0, 1], [0, 1])
+    .applyfunc(sympy.simplify)
+)
 Q_matrix
 
 # %% [markdown]
