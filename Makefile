@@ -146,7 +146,7 @@ shell-exec: image ## Run a script/command in the container env (no TTY): make sh
 
 
 .PHONY: jupyter
-jupyter: image ## Launch JupyterLab (gacalc kernel) on http://127.0.0.1:8888/lab
+jupyter: image ## Launch JupyterLab on http://127.0.0.1:8888, opened in notebooks/ (every notebook lives there)
 	@[ "$(USE_JUPYTER)" = 1 ] || { \
 	  echo 'ERROR: make jupyter needs JupyterLab,'; \
 	  echo '       gated by the build-time flag USE_JUPYTER (currently USE_JUPYTER=$(USE_JUPYTER)).'; \

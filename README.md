@@ -34,6 +34,7 @@ src/gacalc/
   cayley/          coordinate frames joined by invertible functions, as a graph (+ a timed scene)
   gl/              OpenGL toolkit + 2D/3D graphing calculators (needs the `gl` extra)
 examples/          grapher2d.py / grapher3d.py: plot functions gacalc computes
+notebooks/         every notebook: the book's companions and the explorations (README.md lists them)
 ```
 
 **Plotting with OpenGL** (needs a display; `make shell` passes X11 and Wayland through):
@@ -293,6 +294,21 @@ automatically.
 specialized geometric product is ~15–34× faster numerically and thousands of
 times faster symbolically (the general `Gn` eagerly `sympy.simplify`s every
 intermediate; the closed form does a single simplify-free pass).
+
+## Notebooks
+
+Every notebook is in `notebooks/`: the companion of each page of the book, *Geometry 2*, and
+the explorations that make up its Part IV. Open one, change its values and run it again, like
+a graphing calculator. `notebooks/README.md` lists each notebook with its book page.
+
+```sh
+make image      # [HOST] build the container image, once
+make jupyter    # [HOST] JupyterLab at http://127.0.0.1:8888, opened in notebooks/
+```
+
+> The notebooks that draw figures use ePiX, which the image builds from source; it is not on
+> PyPI. `make notebooks-ipynb` writes `.ipynb` copies beside the `.py` sources, to hand to
+> someone.
 
 ## Building the container image
 

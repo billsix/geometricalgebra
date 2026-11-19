@@ -10,7 +10,9 @@ python tools/gen_specialized.py
 uv pip install --python $(which python) --no-deps --no-index --no-build-isolation -e .
 # in general this is super dangerous, but for our purposes,
 # it's fine
-python -m ipykernel install --user --name=gacalc
+# JupyterLab opens in notebooks/, where every notebook lives (notebooks/README.md lists
+# them); the rest of the repository stays browsable. Every notebook asks for the venv's
+# python3 kernel, which imports the editable gacalc installed above.
 exec jupyter lab \
          --allow-root \
          --ip=0.0.0.0 \
@@ -18,5 +20,6 @@ exec jupyter lab \
          --ServerApp.token='' \
          --ServerApp.password='' \
          --ServerApp.disable_check_xsrf=True \
+         --LabApp.default_url=/lab/tree/notebooks \
          --no-browser \
-         --MultiKernelManager.default_kernel_name=gacalc
+         --MultiKernelManager.default_kernel_name=python3

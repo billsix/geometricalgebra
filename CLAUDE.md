@@ -113,13 +113,17 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   PyPI, so they import only where it is installed; `import gacalc` never loads them
   (`tests/test_epixscene_import_boundary.py`), and the root `conftest.py` skips them when `epix`
   is missing.
-- `notebooks/displaymv.py` (general `Gn`), `displayg2.py`/`displayg3.py` (the product with the
-  specialized classes) and their companions `displayg2areas.py`, `displayg2transforms.py`,
-  `displayg3measures.py`,
+- `notebooks/` — **every notebook** (jupytext percent-format `.py`; `notebooks/README.md` lists them),
+  the one directory `make jupyter` opens. Two kinds, by role
+  (`tasks/reference/book-notebook-teaching-style.md`): the book's **companions**, one per page and
+  named after it, and the **explorations** that make up the book's Part IV: `displaymv.py`
+  (general `Gn`), `displayg2.py`/`displayg3.py` (the product with the specialized classes) and their
+  follow-ons `displayg2areas.py`, `displayg2transforms.py`, `displayg3measures.py`,
   `displaygraded.py` (graded subtypes), `displayvectorcalc.py` (i/j/k display symbols + `cross`),
   `displaytransforms.py` (translate/scale/rotate and the graph-paper pictures), `displayproofs.py`
-  (laws checked term by term, each tagged with its Lean twin)
-  — jupytext (percent-format) demo notebooks.
+  (laws checked term by term, each tagged with its Lean twin). `entrypoint/docs.sh` converts them
+  into `book/docs/notebooks/*.ipynb` (build output) for the book; `conf.py`'s `exclude_patterns`
+  lists any the book leaves out. Each starts with the license header in a `remove-cell` cell.
 - `tests/` — `test_multivector.py` (`Gn`), `test_conformance.py` (parametrized over `[Gn, G]`),
   `test_graded.py` (graded subtypes), `test_generator.py` (the generator's own logic),
   `test_vectorcalc.py` (cross product), `test_blade_symbols.py` (display-symbol map), and more.

@@ -26,13 +26,17 @@ doesn't need.
 
 - **`make docs`** (Makefile) → runs the container → **`entrypoint/docs.sh`**, which:
   generates the gitignored `g*.py` and editable-installs gacalc (so autodoc can
-  `import gacalc`); **converts the book's percent notebooks
-  `notebooks/*.py` → `.ipynb` via jupytext** (so myst_nb executes them);
+  `import gacalc`); **converts every percent notebook `notebooks/*.py` →
+  `book/docs/notebooks/<name>.ipynb` via jupytext** (so myst_nb executes them);
   then `make html` + `make latexpdf` in `book/docs/`, then copies the result to the
   bind-mounted **`output/gacalc/`** (+ `.nojekyll`).
-- **Book notebooks:** the percent-format `.py` are the tracked source; the `.ipynb` are
-  build artifacts (gitignored, regenerated each build). A notebook is a sub-page of its
-  prose page (`.. toctree:: notebooks/<name>`); label a heading with MyST `(label)=` to
+- **Notebooks:** the percent-format `.py` in `notebooks/` are the tracked source, the one
+  directory for the book's companions and the explorations; `book/docs/notebooks/` holds only
+  their `.ipynb`, build artifacts (gitignored, regenerated each build). A companion is a sub-page
+  of its prose page (`.. toctree:: notebooks/<name>`), and the explorations are listed by
+  `index.rst`'s Part IV toctree; a notebook the book leaves out goes in `conf.py`'s
+  `exclude_patterns`. Each notebook's license header is a code cell tagged `remove-cell`, which
+  myst-nb leaves off the page; label a heading with MyST `(label)=` to
   `:ref:` a subsection from elsewhere (auto heading-anchors are off by design). They are
   hand-written Python under the full coding standard — **every binding typed** (`CLAUDE.md` ›
   "Coding standard (Python)", 2026-10-09); `make format` type-checks them
