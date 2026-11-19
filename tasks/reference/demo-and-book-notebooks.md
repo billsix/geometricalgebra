@@ -1,69 +1,79 @@
-# The demo notebooks and the book notebooks: how they differ, and why
+# The notebooks: one directory, two kinds
 
-gacalc has two directories of jupytext percent-format notebooks. The **demo notebooks** in
-`notebooks/` (11 files, `displaymv.py`, `displayg2.py`, …) explore the library. The **book
-notebooks** in `book/docs/notebooks/` (32 files) are each the companion of one book page, rendered
-into the book by myst-nb. The maintainer wants one directory that students open with `make jupyter`,
-with the book able to include any of its notebooks (William Emerison Six <billsix@gmail.com>,
-2026-11-19). The plan to get there is `tasks/notebooks-one-directory.md`. This doc records the state
-it starts from, measured 2026-11-19.
+Every gacalc notebook is a jupytext percent-format `.py` in `notebooks/`, the directory
+`make jupyter` opens and `notebooks/README.md` indexes. The maintainer's aim (William Emerison Six
+<billsix@gmail.com>, 2026-11-19): the book is for learning from, and a student also runs its
+notebooks like a graphing calculator, so there is one place to find them. The book's 32 companion
+notebooks and the 11 demo notebooks were two directories (`book/docs/notebooks/` and `notebooks/`)
+until `tasks/archive/2026/11/19/notebooks-one-directory.md` merged them.
 
-## The differences
+## Two kinds, by role
 
-| | Demo `notebooks/` | Book `book/docs/notebooks/` | Essential or history? |
-| --- | --- | --- | --- |
-| Started | 2025-12-01, with the first Jupyter image | 2026-08-02, with the book scaffolding (myst-nb set up the way modelviewprojection has it) | history: the book came eight months later and got its own directory beside its `.rst` pages |
-| Role | an exploration of one part of the library | the companion of one page, named after it | essential, but it is a property of the notebook, not the directory |
-| Values | numbers before symbols | symbolic throughout; numbers only in one plot-values cell and the figures | essential to the role (`tasks/reference/book-notebook-teaching-style.md` rule 6) |
-| Figures | matplotlib via `gacalc.nbplotutils` | live ePiX via the helpers in `book/figures/epix/` | partly essential: ePiX gives the print-quality figures the PDF needs, and matplotlib needs no extra install |
-| Classes | the full `G` classes, with bare-name aliases (the `CLAUDE.md` carve-out) | the graded `g2`/`g3` types | role: the demos show the full class |
-| Kernel in the header | `gacalc` (registered by `entrypoint/jupyter.sh`) | `python3` | history. Both are `/venv`'s Python. `entrypoint/docs.sh` registers no `gacalc` kernel, so the book needs `python3` |
-| License header | the LGPL-2.1-only cell | **none** in any of the 32, contrary to `CLAUDE.md`'s "every `.py` file" rule | history: an omission |
-| Type gate | pyright (`make check-notebooks`, the CI `notebooks` job) | `ty` (`entrypoint/format.sh`) | history: each gate was added for one directory |
-| Lint | E501 exempt; prose width by `tools/check_notebook_prose_width.py` | the same, plus an E402 exemption for `frame-qr-*.py` (the `sys.path` line) | the E402 is a symptom of the import paths below |
-| Executed | by nobody automatically | by myst-nb at `make docs`, which fails on an error | history |
-| `.ipynb` | `make notebooks-ipynb` (`entrypoint/percentToIpynb.sh`), gitignored | `entrypoint/docs.sh`, gitignored | history |
+| | Companion ("book notebook") | Exploration ("demo notebook", `display*.py`) |
+| --- | --- | --- |
+| Role | goes with one book page, named after it | tours one part of the library |
+| In the book | a sub-page of its page's toctree | a page of Part IV — Explorations (`index.rst`) |
+| Values | symbolic throughout; numbers only in one plot-values cell and the figures | numbers before symbols |
+| Figures | live ePiX, through `gacalc.epixscene` | matplotlib, through `gacalc.nbplotutils` |
+| Classes | the graded `g2`/`g3` types | the full `G` classes, with bare-name aliases (the `CLAUDE.md` carve-out) |
 
-Nothing in the table needs two directories. Every essential difference follows from a notebook's
-role, which can be recorded per notebook.
+The differences are the notebook's role, not its location: the teaching rules for each kind are in
+`tasks/reference/book-notebook-teaching-style.md`. The two sets began apart because of history,
+not design. The demo notebooks came with the first Jupyter image (2025-12-01). The book, set up
+the way modelviewprojection has it, came on 2026-08-02 and put its notebooks beside its `.rst`
+pages.
 
-All 11 demo notebooks execute headless under nbconvert: about 95 s in total, `displaytransforms.py`
-the slowest at 31 s. None opens a window or reads a file, so myst-nb could execute them as book pages.
+## What every notebook shares
 
-## Import paths
+- **Kernel:** each header asks for `python3`, the image's `/venv` Python
+  (`/venv/share/jupyter/kernels/python3`), which imports the editable gacalc. `make jupyter`
+  defaults to it.
+- **License:** the LGPL-2.1-only header, in a code cell tagged `remove-cell` so myst-nb leaves it
+  off the page.
+- **Gates:** `ty check notebooks` in `make format`; `tools/check_notebook_prose_width.py` (E501 is
+  exempt for `notebooks/*.py`); `tools/check_annotations.py`; `tools/check_epix_keywords.py` for
+  the ePiX calls. pyright (`make check-notebooks`) checks all but the 31 notebooks that draw live
+  ePiX figures (below).
+- **In the book:** `entrypoint/docs.sh` converts every `notebooks/*.py` into
+  `book/docs/notebooks/<name>.ipynb`, which is build output (gitignored), and myst-nb executes each
+  one, failing the build on an error. A notebook the book should leave out goes in `conf.py`'s
+  `exclude_patterns`. All 11 explorations run headless in about 95 s (measured 2026-11-19;
+  `displaytransforms.py` is the slowest at 31 s). None opens a window or reads a file.
 
-- **The demo notebooks** import only the installed `gacalc` (the image's editable install), so they
-  run from any working directory.
-- **31 of the 32 book notebooks** start with
-  `sys.path.insert(0, str(pathlib.Path("../../figures/epix").resolve()))` and then import a helper
-  module (`_bootstrap_live`, `_frame_scene`, `_line_scene`, `_paper_scene`, `_venn_scene`). The path
-  resolves against the kernel's **working directory**, not the notebook file. It works only because
-  JupyterLab and myst-nb both start the kernel in `book/docs/notebooks/`. It breaks if the notebook
-  moves, if a kernel is started elsewhere, or if the file runs as a script. It also costs a
-  `ty` `extra-paths` entry and the E402 exemption.
-- **Package data is not the right mechanism.** `[tool.setuptools.package-data]` (used for the
-  `gacalc.gl` shaders) ships non-Python files read with `importlib.resources`. These helpers are
-  Python modules, and the standard way to import a module from any directory is to put it in an
-  installed package.
-- **The helpers split in two.** Seven are generic drawing tools that the notebooks use, directly or
-  through each other: `_scene2d`, `_scene3d`, `_frame_scene`, `_bootstrap_live`, `_line_scene`,
-  `_paper_scene` and `_venn_scene`. Six hold the constants of one prebuilt figure set and are imported
-  only by the figure scripts beside them: `_addition_scene`, `_bootstrap_scene`, `_graphpaper_scene`,
-  `_projection_scene`, `_rotate_ab_scene` and `_rotation_scene`. `tools/render_epix_figures.py` runs
-  each figure script in a child interpreter whose working directory is the script's directory, so
-  sibling imports work there without a path change.
+## Imports: installed packages only
+
+A notebook imports nothing by path, so it runs from any working directory: the kernel JupyterLab
+starts in `notebooks/` and the one myst-nb starts in `book/docs/notebooks/` both work.
+
+- **The ePiX scene helpers are the `gacalc.epixscene` package**, not files found through
+  `sys.path`. The book notebooks used to push `../../figures/epix` onto `sys.path`. That path
+  resolved against the kernel's working directory, not the file, so it worked only where both
+  tools happened to start the kernel. **Package data would not have been the fix:**
+  `[tool.setuptools.package-data]` (the `gacalc.gl` shaders) ships non-Python files read with
+  `importlib.resources`. Importable code belongs in a package.
+- **The split.** The seven generic helpers are in the package: `scene2d`, `scene3d`,
+  `frame_scene`, `bootstrap_live`, `line_scene`, `paper_scene` and `venn_scene`. The six that hold
+  one prebuilt figure set's constants stay beside their figures in `book/figures/epix/`,
+  `_`-prefixed: `_addition_scene`, `_bootstrap_scene`, `_graphpaper_scene`, `_projection_scene`,
+  `_rotate_ab_scene` and `_rotation_scene`. `tools/render_epix_figures.py` runs each figure from
+  that directory, so they import as siblings.
 - **ePiX is not a PyPI dependency.** The image builds it from github.com/billsix/epix-mirror and
-  installs its Python package editable from `/opt/epix-src/python`. Any module importing `epix` can
-  therefore run only in the image (or wherever ePiX was built), the same limit `gacalc.gl` has with
-  its `gl` extra, except that `pip` cannot install ePiX at all.
+  installs its Python package editable from `/opt/epix-src/python`. So `gacalc.epixscene` imports
+  only where ePiX is installed. `import gacalc` never loads it
+  (`tests/test_epixscene_import_boundary.py`), and the root `conftest.py` skips its doctest
+  collection where `epix` is missing (the lean CI image).
 
-## Facts the plan relies on
+## ePiX and the type checkers
 
-- Sphinx finds source files with `os.walk(..., followlinks=True)` (`sphinx.util.matching`), so a
-  symlinked notebook directory would be read. The plan does not need a symlink, because
-  `entrypoint/docs.sh` already generates every `.ipynb` the book reads.
-- `make jupyter` starts JupyterLab rooted at the repository (`cd /gacalc` in
-  `entrypoint/jupyter.sh`), and neither the README nor the book says where the notebooks are. The
-  book's `interactive-calculator.rst` is still a placeholder.
-- The image's `python3` kernelspec (`/venv/share/jupyter/kernels/python3`) runs `/venv`'s Python, the
-  same interpreter as the `gacalc` kernel.
+ePiX ships no `.pyi` stub and no `py.typed`. Its editable install is a setuptools import hook
+(`__editable___epix_*_finder.py`), which static checkers cannot follow even in the full image. So:
+
+- ty is told `epix` and its submodules may be unresolved (`pyproject.toml`,
+  `[tool.ty.analysis] allowed-unresolved-imports`). The ePiX-derived names are then Unknown and
+  raise no errors.
+- pyright reports every name imported from a module it cannot resolve, re-exports included
+  ("is unknown import symbol", 91 errors over the live-figure notebooks), so
+  `pyrightconfig.json` excludes those 31 notebooks.
+
+Lifting both is `tasks/epix-type-stubs-for-pyright.md`, blocked on epix-mirror's
+`tasks/ship-python-type-information.md`.
