@@ -59,6 +59,8 @@ first. Part III rebuilds the plane from scratch, so it is its own chain.
    three-dimensions
    blade-square-sign
    projection-rejection-3d
+   dual-3d
+   reflection-3d
    frames-qr
 
 .. toctree::

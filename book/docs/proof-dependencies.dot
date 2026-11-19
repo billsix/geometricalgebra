@@ -26,6 +26,10 @@ digraph proof_dependencies {
         cross [label="Cross product by\nstandard position\nproof-cross"];
         frames [label="Frames: orthogonal set, QR,\nthe peel inverse\nframes-qr"];
         reciprocal_frame [label="Reciprocal frame aᵏ\nproof-reciprocal-frame"];
+        dual_perp [label="A vector's dual is\nperpendicular to it\ndual"];
+        reflection [label="Reflection across a vector\nproj − rej = b * a * b⁻¹\nreflection"];
+        reflection_plane [label="Mirror in a plane is minus\nthe reflection across its normal\nreflection-3d"];
+        dual_of_plane [label="The dual of a ∧ b is\nperpendicular to a and b\ndual-3d"];
 
         quarter -> rotation_by_angle;
         rotation_by_angle -> commute;
@@ -55,6 +59,16 @@ digraph proof_dependencies {
         rejection -> frames;
         frames -> reciprocal_frame;
         dot_and_wedge -> reciprocal_frame;
+        dot_and_wedge -> dual_perp;
+        product_in_space -> dual_of_plane;
+        rejection -> dual_of_plane;
+        dual_perp -> dual_of_plane;
+        cross -> dual_of_plane [style=dashed];
+        rotation_from_to -> reflection;
+        projection -> reflection;
+        rejection -> reflection;
+        reflection -> reflection_plane;
+        dual_of_plane -> reflection_plane;
     }
 
     subgraph cluster_part_3 {

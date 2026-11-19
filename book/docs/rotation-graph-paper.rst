@@ -64,3 +64,19 @@ paper that has simply been turned by :math:`30°`.
 
 That is the picture: a rotation is **turned graph paper**, and whatever we draw — points, vectors,
 a parabola — comes along for the ride.
+
+Turning, then sliding
+---------------------
+
+A rotation composes with a translate like any other function of the plane, and
+:doc:`relative-graph-paper`'s two readings apply. For :math:`T_b \circ R`, read right to left,
+the sheet turns about the standard origin and then slides by :math:`\vec{\mathbf{b}}` along the
+standard arrows. Read left to right, the sheet slides first and then turns about its *own*
+origin, now at :math:`\vec{\mathbf{b}}`: the drawing turns in place. Both end on the same sheet.
+Swapping the functions, :math:`R \circ T_b`, turns the slide too, and the sheet lands at
+:math:`R(\vec{\mathbf{b}})` instead. The companion notebook draws each sequence.
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/rotation-graph-paper

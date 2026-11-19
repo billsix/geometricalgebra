@@ -136,8 +136,8 @@ the same check with symbolic coordinates, and the Lean proofs state it twice: ``
 ``proofs/GacalcProofs/RotateFromTo2D.lean`` for the cosine-and-sine form the three turns above are
 written in.)
 
-So in :math:`\big(R_{\vec{a}}^{e_1}\big)^{-1} \circ R_{e_1}^{\vec{b}'} \circ
-R_{\vec{a}}^{e_1}`, the outer rotation and the inner rotation — step 3 and step 1, which are
+So in :math:`\big(R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}\big)^{-1} \circ R_{\vec{\mathbf{e}}_1}^{\vec{\mathbf{b}}'} \circ
+R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}`, the outer rotation and the inner rotation — step 3 and step 1, which are
 inverses — slide past the middle one and **cancel**. The whole sandwich collapses to its middle turn:
 
 .. math::

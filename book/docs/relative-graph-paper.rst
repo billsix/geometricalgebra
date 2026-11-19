@@ -53,6 +53,42 @@ One wrinkle you will see in the companion notebooks: in *code*, gacalc reads the
 as ``a.x`` and the second as ``a.y``. The math says :math:`a_1`; the code says ``.x``. They are the
 same number.
 
+Graph paper that moves
+----------------------
+
+.. note::
+
+   Draft. This section and the next are agent-drafted; maintainer's voice pass pending.
+
+A function of the plane carries every point somewhere, so it carries the whole sheet of graph
+paper too: its grid lines, its origin and its two unit arrows. The carried sheet is graph paper
+again. A point keeps its coordinates *on the carried sheet*, so many steps of the carried first
+arrow and so many of the second, from the carried origin, while its coordinates on the standard
+sheet change. The translate :math:`T_b` slides the sheet so that its origin lands on
+:math:`\vec{\mathbf{b}}`; the uniform scale :math:`S_m` stretches it about the origin by :math:`m`.
+A ruler works the same way: a length means nothing until you say what it is laid against.
+
+Two ways to read a composition
+------------------------------
+
+Compose them: :math:`f = T_b \circ S_m`, scale then slide. There are two ways to watch it.
+
+- **Right to left**, the inner function first, the way you evaluate :math:`\sin(\cos(x))`. The
+  sheet is stretched about the standard origin, then slid by :math:`\vec{\mathbf{b}}` measured with
+  the standard arrows. Every step is measured on the **standard** sheet.
+- **Left to right**, the outer function first. The sheet is slid by :math:`\vec{\mathbf{b}}`, then
+  stretched about *its own* origin, in *its own* units. Every step is measured on the
+  **relative** sheet that the earlier steps left behind.
+
+The middle pictures differ, but both readings end on the same sheet, because they describe the
+same function. Reading direction is a choice of story. The order of the functions is not:
+:math:`S_m \circ T_b` scales the slide too, and puts the sheet somewhere else. This is how
+*Model View Projection* (github.com/billsix/modelviewprojection) reads its sequences of
+transformations, top to bottom or bottom to top. Rotation joins translate and scale in
+:doc:`rotation-graph-paper`.
+
+The companion notebook draws both sequences and checks that they end on the same function.
+
 .. toctree::
    :maxdepth: 1
 
