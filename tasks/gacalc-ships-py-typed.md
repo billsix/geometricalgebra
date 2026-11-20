@@ -1,41 +1,30 @@
 # gacalc ships a `py.typed` marker
 
-**Status:** proposed — needs go-ahead
-**Priority:** 4
-**Difficulty:** 1
-**Created:** 2026-11-19 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-11-19 (William Emerison Six <billsix@gmail.com>) · **Done:** 2026-11-20
 
-## BLUF
+gacalc's code was fully annotated, but without the PEP 561 marker a consumer's mypy ignored those
+annotations. Found while separating out the ePiX type problem
+(`tasks/archive/2026/11/19/notebooks-one-directory.md`); the shared rule is runClaudeInContainer's
+`tasks/python-packages-ship-type-information.md` (github.com/billsix/runClaudeInContainer).
 
-gacalc's code is fully annotated, and its generated `g*.py` carry precise `@typing.overload`
-signatures, but the package does not say so: there is no `src/gacalc/py.typed`. Without that PEP 561
-marker, mypy ignores gacalc's annotations in a consumer, and pyright falls back to inferring types
-from the source. Add the marker and ship it in the sdist and wheel. Done means `make dist`'s wheel
-contains `gacalc/py.typed`, and a consumer's type checker uses gacalc's own annotations.
+## What was done
 
-## Context
+- Added an empty `src/gacalc/py.typed`, plus `"gacalc" = ["py.typed"]` in `pyproject.toml`'s
+  `[tool.setuptools.package-data]`. The marker covers every subpackage, `gacalc.epixscene` included
+  (ePiX ships its own types since epix-mirror `33d0194`).
+- Added a `CHANGELOG.md` `[Unreleased]` "Added" entry: a consumer's checker now reads gacalc's
+  annotations, which can surface new errors in their code. Also a one-line note in `CLAUDE.md`'s
+  Packaging bullet.
 
-- Found 2026-11-19 while separating out the ePiX type problem
-  (`tasks/archive/2026/11/19/notebooks-one-directory.md`). The shared rule is runClaudeInContainer's
-  `tasks/python-packages-ship-type-information.md` (github.com/billsix/runClaudeInContainer), which
-  adds "a package others install ships `py.typed`" to the shared Python standard.
-- Packaging is setuptools with the `src/` layout. `pyproject.toml` already has a
-  `[tool.setuptools.package-data]` table, with `"gacalc.gl"` listing the shaders. `setup.py`'s
-  `build_py` hook generates the `g*.py` before the copy.
-- The consumer that imports gacalc is github.com/billsix/modelviewprojection (its `pgzero_gl`
-  shim subclasses `gacalc.g2.Vector`).
-- `gacalc.epixscene` imports ePiX, which ships its own types since epix-mirror `33d0194`
-  (`tasks/archive/2026/11/19/epix-type-stubs-for-pyright.md`), so the marker covers that
-  subpackage too.
+## Verification
 
-## Plan
-
-1. Add an empty `src/gacalc/py.typed`, and `"gacalc" = ["py.typed"]` to
-   `[tool.setuptools.package-data]`.
-2. `make dist`, then `unzip -l dist/gacalc-*.whl | grep py.typed` and
-   `tar tzf dist/gacalc-*.tar.gz | grep py.typed`.
-3. Consumer check: in a scratch venv with the built wheel installed, a file
-   `from gacalc.g2 import e_1; reveal_type(3 * e_1)` reports `Vector` under mypy (which needs the
-   marker) and pyright.
-4. A `CHANGELOG.md` `[Unreleased]` entry (a consumer's type checker starts reading gacalc's
-   annotations, which can surface new errors in their code). Gates: `make format`, `make test`.
+- `python -m build --no-isolation` in the `gacalc` image, with the default dims 1–3 instead of
+  `make dist`'s 1–5, because the marker does not depend on which dims are generated. The wheel
+  lists `gacalc/py.typed`; the sdist has `gacalc-0.1.1/src/gacalc/py.typed`.
+- Consumer check: a fresh venv with the wheel, numpy, sympy and mypy installed, checking
+  `from gacalc.g2 import e_1; reveal_type(3 * e_1)`:
+  - mypy: `Revealed type is "gacalc.g2.Vector"`, no issues.
+  - pyright (the image's): `Type of "3 * e_1" is "Vector"`.
+  - mypy with the marker deleted from site-packages: `import-untyped` error and `Any`. So the
+    marker is what makes the difference.
+- `entrypoint/format.sh` exited 0.

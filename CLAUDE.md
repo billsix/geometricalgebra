@@ -485,7 +485,8 @@ over a "run it on your host" instruction.
   `sympy`; extras `notebooks`/`jupyter`/`dev`/`gl` (`gl` = glfw, PyOpenGL, imgui-bundle, Pillow for
   `gacalc.gl`; the image always installs it, plus its system libraries from
   `entrypoint/07-install-gl.sh`, so that `make test` can import `gacalc.gl`); there is **no
-  `requirements.txt`**. License LGPL-2.1-only.
+  `requirements.txt`**. The package ships the PEP 561 `py.typed` marker (package data), so a
+  consumer's mypy/pyright reads gacalc's annotations. License LGPL-2.1-only.
 - **License headers: every `.py` file (source, tests, tools, notebooks) starts with the project's
   LGPL-2.1-only header — copy it verbatim from `tests/test_rotate_90_degrees.py` — with
   `Copyright (c) 2025-2026 William Emerison Six` (this project began in 2025). Never the MIT /

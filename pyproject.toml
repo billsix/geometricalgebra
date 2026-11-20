@@ -43,8 +43,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-# gacalc.gl's shared GLSL shaders, loaded at runtime from gacalc.gl.SHADER_DIR.
+# The PEP 561 py.typed marker, and gacalc.gl's shared GLSL shaders (loaded at runtime from
+# gacalc.gl.SHADER_DIR).
 [tool.setuptools.package-data]
+"gacalc" = ["py.typed"]
 "gacalc.gl" = ["*.vert", "*.frag", "*.geom", "*.glsl"]
 
 

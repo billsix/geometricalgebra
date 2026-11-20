@@ -12,6 +12,10 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`gacalc/py.typed`** (PEP 561): the package now says it ships its own type annotations,
+  so mypy and pyright in a consumer read gacalc's signatures (the generated `@typing.overload`
+  products included) instead of ignoring or inferring them. This can surface new type errors in
+  code that uses gacalc.
 - **`gacalc.epixscene`** — the ePiX scene helpers the book's figures and notebooks draw with
   (`scene2d`, `scene3d`, `frame_scene`, `bootstrap_live`, `line_scene`, `paper_scene`,
   `venn_scene`), moved into the package from `book/figures/epix/`. It needs ePiX
