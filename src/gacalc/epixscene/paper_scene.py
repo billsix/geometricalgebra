@@ -1,10 +1,9 @@
 """Live ePiX helpers for the relative-graph-paper pictures.
 
-Used by ``notebooks/relative-graph-paper.py`` and
-``rotation-graph-paper.py``. A function of the plane carries the whole sheet of graph
-paper with it: its grid lines, its origin, its two unit arrows, and anything drawn on
-it. Each picture shows the standard graph paper faintly underneath, and the carried
-paper on top, so a reader sees where the sheet went.
+Used by ``notebooks/relative-graph-paper.py``. A function of the plane carries the
+whole sheet of graph paper with it: its grid lines, its origin, its two unit arrows, and
+anything drawn on it. Each picture shows the standard graph paper faintly underneath,
+and the carried paper on top, so a reader sees where the sheet went.
 
 The function is passed in as a :class:`Mapping` ``(x, y) -> Point``: the point that
 the spot with coordinates ``(x, y)`` on the standard paper is carried to. The notebooks

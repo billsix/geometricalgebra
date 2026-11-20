@@ -200,7 +200,7 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     `defining-g2`). `gacalc.epixscene.line_scene` draws `one-dimension`'s graph paper (`graph_paper_scene`,
     `graph_line`) and its rows of paired number lines (`number_lines_scene`, `number_line`, `step`,
     `tip`), and `vectors-as-number-lines`' number line along any vector (`slanted_number_line`). `gacalc.epixscene.paper_scene` draws graph paper carried by a function (`paper_scene`,
-    `carried_paper`) for `relative-graph-paper` and `rotation-graph-paper`. The function comes in
+    `carried_paper`) for `relative-graph-paper`. The function comes in
     as a `Mapping` Protocol whose parameters are named, so that each call passes keywords; a plain
     `Callable` forces positional calls, which `check_epix_keywords` fails as an "unknown callee".
   - **Gotcha: `black(intensity=…)` is darkness.** As a pen, `epix.black(intensity=0.2)` is a light

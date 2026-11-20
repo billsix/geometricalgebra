@@ -46,6 +46,7 @@ From the toctrees in `book/docs/index.rst` and each page's own toctree:
 - **Part I, the plane:** … `rotate` (its proofs: `proof-rotate`, the quarter turn and the rotation
   by an angle; then `proof-rotate-from-a-to-b`, the rotation from one direction to another) →
   `geometric-product` (rotation as multiplication by a rotor) → `rotation-graph-paper` →
+  `relative-graph-paper` (a rotation then a translate, read two ways) →
   `projection` (its proof `proof-projection`, built on `rotation_from_to` and the base cases onto
   `e₁`) → `product-from-projection` (the product from projection and rejection; its child page
   `rotation-from-vectors`, the rotor from the product) → `reflection` → `orthogonal` → `dual` →

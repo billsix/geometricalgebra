@@ -201,4 +201,5 @@ fig_axes
 
 # %% [markdown]
 # Two number lines together make graph paper: a point is so many steps along the first
-# and so many along the second. That is the next chapter, *Relative Graph Paper*.
+# and so many along the second. *Relative Graph Paper*, after rotation, moves that graph
+# paper.

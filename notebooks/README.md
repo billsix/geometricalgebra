@@ -23,12 +23,11 @@ is not on PyPI.
 | `canonical-form.py` | Exact Answers, Not Decimals |
 | `one-dimension.py` | One Dimension: m·x + b |
 | `vectors-as-number-lines.py` | Vectors as Relative Number Lines |
-| `relative-graph-paper.py` | Relative Graph Paper |
 | `vector-addition.py` | Vector Addition |
 | `rotate.py` | Rotate |
 | `proof-rotate-from-a-to-b.py` | Proof: Rotate from the Direction of a to the Direction of b |
 | `geometric-product.py` | The Geometric Product |
-| `rotation-graph-paper.py` | Rotation Is Turning the Graph Paper |
+| `relative-graph-paper.py` | Relative Graph Paper |
 | `projection.py` | Projection |
 | `proof-projection.py` | Proof: Projection by Rotating to Standard Position |
 | `product-from-projection.py` | The Geometric Product from Projection and Rejection |

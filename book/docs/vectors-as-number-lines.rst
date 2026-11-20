@@ -32,9 +32,45 @@ point :math:`t * \vec{\mathbf{v}}` reads :math:`t / s` on the line of :math:`s *
 A point has no number of its own, only a number relative to some vector. A ruler works the same
 way: a length of 3 means nothing until you say what the ruler is laid against. Two arrows,
 :math:`\vec{\mathbf{e}}_1` across and :math:`\vec{\mathbf{e}}_2` up, give two number lines, and two
-number lines make graph paper, the subject of :doc:`relative-graph-paper`.
+number lines make graph paper. :doc:`relative-graph-paper`, after rotation, moves that graph
+paper.
 
 The companion notebook draws these number lines and reads the numbers with gacalc.
+
+How we write coordinates
+------------------------
+
+.. note::
+
+   Draft. This passage is agent-drafted; maintainer's voice pass pending.
+
+You have written coordinates two ways already. In algebra a point was an **ordered pair**
+:math:`(x, y)` — the first number its :math:`x`-coordinate, the second its :math:`y`-coordinate
+(OpenStax *Algebra 1*, Unit 1, "Find Coordinates"). In precalculus a vector was written in
+**component form**, :math:`\langle a, b \rangle`, or as :math:`a\,\mathbf{i} + b\,\mathbf{j}`, with
+:math:`\mathbf{i}` and :math:`\mathbf{j}` the unit vectors along the two axes (OpenStax
+*Precalculus 2e*, §8.8 "Vectors"). Those are the same idea: a point or a vector is *so many steps
+along the first axis, then so many along the second*.
+
+This book writes that idea one way, everywhere. The two axis directions are the basis vectors
+:math:`\vec{\mathbf{e}}_1` and :math:`\vec{\mathbf{e}}_2` — your :math:`\mathbf{i}` and :math:`\mathbf{j}` — and a vector is
+
+.. math::
+
+   \vec{\mathbf{a}} = a_1 * \vec{\mathbf{e}}_1 + a_2 * \vec{\mathbf{e}}_2,
+
+where the plain numbers :math:`a_1` and :math:`a_2` are the **coordinates** of :math:`\vec{\mathbf{a}}`.
+Compare :math:`a\,\mathbf{i} + b\,\mathbf{j}`: same thing, but the subscript now *names the axis
+the number belongs to*. We write :math:`a_1`, never :math:`a_{x}`, for two reasons. The subscript
+matches the basis vector it multiplies (:math:`a_1` goes with :math:`\vec{\mathbf{e}}_1`), and it keeps working
+when there is a third axis (:math:`a_3 * \vec{\mathbf{e}}_3`) or, later, :math:`n` of them — there is no fourth
+letter after :math:`z`. A vector is written bold with an arrow, the way gacalc prints it in the
+notebooks; a coordinate is an ordinary number, so it is written plain: :math:`\vec{\mathbf{a}}`
+is the vector, :math:`a_1` is one of its numbers.
+
+One wrinkle you will see in the companion notebooks: in *code*, gacalc reads the first coordinate
+as ``a.x`` and the second as ``a.y``. The math says :math:`a_1`; the code says ``.x``. They are the
+same number.
 
 .. toctree::
    :maxdepth: 1

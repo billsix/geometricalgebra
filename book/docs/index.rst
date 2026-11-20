@@ -48,11 +48,11 @@ first. Part III rebuilds the plane from scratch, so it is its own chain.
    trigonometry
    sets
    vectors-as-number-lines
-   relative-graph-paper
    vector-addition
    rotate
    geometric-product
    rotation-graph-paper
+   relative-graph-paper
    projection
    product-from-projection
    reflection
