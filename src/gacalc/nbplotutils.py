@@ -61,11 +61,14 @@ from gacalc.gn import (
 # book's notebooks can use it; re-exported here for the demo notebooks.
 from gacalc.nbdisplay import show_mult as show_mult
 
-# The inline SVG backend is only meaningful inside an IPython/Jupyter session;
-# guarding it lets this module import headless (under pytest, or a plain script)
-# instead of raising when there is no shell to enable a GUI for.
+# Each figure is emitted as SVG and as PDF. HTML and Jupyter show the SVG; the book's
+# LaTeX build takes the PDF, since myst_nb's LaTeX output cannot use SVG and would
+# otherwise fall back to the figure's text repr, ``<Figure size … with 1 Axes>``.
+# The inline backend is only meaningful inside an IPython/Jupyter session; guarding it
+# lets this module import headless (under pytest, or a plain script) instead of
+# raising when there is no shell to enable a GUI for.
 if get_ipython() is not None:
-    set_matplotlib_formats("svg")
+    set_matplotlib_formats("svg", "pdf")
 
 # These plotting helpers accept an ``InvertibleFunction`` over ANY multivector
 # representation (``Gn``, ``g3.Vector``, …) and apply it internally to

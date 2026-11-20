@@ -90,6 +90,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   rather than starting `coordinate_along: …`.
 
 ### Fixed
+- **`nbplotutils` figures appear in a notebook's PDF/LaTeX output.** The inline backend now emits
+  each figure as PDF as well as SVG; with SVG alone, myst-nb's LaTeX output fell back to the text
+  `<Figure size … with 1 Axes>`.
 - **`inverse()` accepts a float versor whose `Ã * A` carries rounding residue**, so
   `transforms.versor_rotation` works on float 3D vectors. It raised `RuntimeError` ("supports a
   blade or versor") when `Ã * A` had a non-scalar coefficient of about 1e-16. Inexact input (Python
