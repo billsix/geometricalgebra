@@ -25,3 +25,9 @@ the executed `.ipynb`'s MIME bundle. After the fix, the book built with `entrypo
 image (exit 0, no new Sphinx warnings): `pdftotext geometry2.pdf - | grep -c "<Figure size"` gave
 0, and page 394 (`displaymv`'s `plot_multivector` cells) shows the three number-line plots. This
 build also carried `tasks/archive/2026/11/20/cancellation-underbrace-everywhere.md`'s changes.
+
+## Follow-up: the figure PDFs leaked into `output/`
+
+A later build showed about 200 hash-named PDFs in `output/gacalc/`: `entrypoint/docs.sh` copied
+every PDF in `_build/latex/` except the ePiX figures, and the notebooks' matplotlib figures are now
+PDFs there too. `docs.sh` now copies only `geometry2.pdf`.

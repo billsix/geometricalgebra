@@ -48,10 +48,9 @@ make latexpdf
 mkdir -p /output/gacalc
 rm -rf /output/gacalc/html
 cp -r _build/html /output/gacalc/html
-# Only the book itself: Sphinx also copies the ePiX figure PDFs into _build/latex/.
-for f in _build/latex/*.pdf; do
-    [ -e "_static/epix/$(basename "$f")" ] || cp "$f" /output/gacalc/
-done
+# Only the book itself: _build/latex/ also holds every figure the PDF includes (the
+# ePiX figures, the notebooks' matplotlib figures, the Graphviz graph).
+cp _build/latex/geometry2.pdf /output/gacalc/
 touch /output/gacalc/.nojekyll
 
 echo "Book built: /output/gacalc/html/ and /output/gacalc/*.pdf"
