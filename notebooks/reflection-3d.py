@@ -59,7 +59,7 @@ from gacalc.epixscene.frame_scene import (
     scene_3d,
 )
 from gacalc.g3 import Bivector, Scalar, Vector, e_1, e_2, e_3
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 
 # %% [markdown]
 # ## The vector to reflect
@@ -114,7 +114,7 @@ across_a
 # gacalc's `reflected_across(a)` gives the same; their difference:
 
 # %%
-(v.reflected_across(a) - across_a).simplified()
+show_difference(v.reflected_across(a), across_a)
 
 # %% [markdown]
 # As in the plane, it is also one product,
@@ -122,7 +122,7 @@ across_a
 # reflection:
 
 # %%
-(a * v * a.inverse() - across_a).simplified()
+show_difference(a * v * a.inverse(), across_a)
 
 # %% [markdown]
 # The values used to draw the figures. Change them and rerun.
@@ -204,7 +204,7 @@ mirror
 # gacalc's `reflected_across(B)` gives the same; their difference:
 
 # %%
-(v.reflected_across(B) - mirror).simplified()
+show_difference(v.reflected_across(B), mirror)
 
 # %% [markdown]
 # Values for $\vec{\mathbf{p}}$ and $\vec{\mathbf{q}}$, so the plane can be drawn: here
@@ -339,7 +339,7 @@ fig_normal
 # cancel. Their difference:
 
 # %%
-(B * v * B.inverse() - n * v * n.inverse()).simplified()
+show_difference(B * v * B.inverse(), n * v * n.inverse())
 
 # %% [markdown]
 # Both are the reflection across the normal, and the mirror in the plane is minus

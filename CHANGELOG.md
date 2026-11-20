@@ -19,7 +19,12 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 - **`nbdisplay.show_cancellation(left, right, left_name, right_name)`** (and the
   `cancellation_latex` it displays): both sides of an identity expanded, then their difference
   blade by blade with each cancelling pair of terms marked by a shared number under an
-  `\underbrace`, instead of a bare `0`.
+  `\underbrace`, instead of a bare `0`. Either side may be a multivector or a number.
+- **`nbdisplay.show_difference(left, right)`**: just that numbered cancellation, for a check
+  whose two sides were already shown. Each side is simplified first; a line too long to read
+  term by term (`nbdisplay.LONGEST_CANCELLATION_LINE`) shows only what the difference simplifies to.
+- **`nbdisplay.product_table_markdown` / `show_mult`** number the terms of the products that
+  cancel in the sum, the same way.
 - **`nbplotutils.draw_vectors`, `draw_bivector`, `draw_angle` and `create_graphs_3d`**: arrows
   from the origin, a bivector as its shaded oriented parallelogram, and the arc from one vector
   toward another, drawn in 2-D inside `create_graphs` or in 3-D inside `create_graphs_3d`.

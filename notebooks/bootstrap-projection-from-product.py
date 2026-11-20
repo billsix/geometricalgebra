@@ -50,7 +50,7 @@ from gacalc.epixscene.bootstrap_live import (
     scene_around,
 )
 from gacalc.g2 import Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 
 # %% [markdown]
 # ## The vectors
@@ -235,7 +235,7 @@ a_inverse
 # Their difference:
 
 # %%
-(a_inverse - Scalar(1 / (a_1**2 + a_2**2)) * a).simplified()
+show_difference(a_inverse, Scalar(1 / (a_1**2 + a_2**2)) * a)
 
 # %% [markdown]
 # ### $\vec{\mathbf{a}} * \vec{\mathbf{a}}^{-1} = 1$
@@ -249,7 +249,7 @@ a_inverse
 # Its difference from $1$:
 
 # %%
-(a * a_inverse - Scalar(1)).simplified()
+show_difference(a * a_inverse, Scalar(1))
 
 # %% [markdown]
 # ### The product's projection and rejection are Step 2's
@@ -272,7 +272,7 @@ projection
 # Their difference:
 
 # %%
-(projection - by_rotation_projection).simplified()
+show_difference(projection, by_rotation_projection)
 
 # %% [markdown]
 # Step 2's rejection, by rotating:
@@ -290,7 +290,7 @@ rejection
 # Their difference:
 
 # %%
-(rejection - by_rotation_rejection).simplified()
+show_difference(rejection, by_rotation_rejection)
 
 # %% [markdown]
 # ### Together they give back $\vec{\mathbf{b}}$, since $\vec{\mathbf{b}} * \vec{\mathbf{a}} * \vec{\mathbf{a}}^{-1} = \vec{\mathbf{b}}$
@@ -304,7 +304,7 @@ rejection
 # Its difference from $\vec{\mathbf{b}}$:
 
 # %%
-(projection + rejection - b).simplified()
+show_difference(projection + rejection, b)
 
 # %% [markdown]
 # ### gacalc agrees
@@ -318,7 +318,7 @@ b.projected_onto(a).simplified()
 # Its difference from the product's:
 
 # %%
-(projection - b.projected_onto(a)).simplified()
+show_difference(projection, b.projected_onto(a))
 
 # %% [markdown]
 # gacalc's rejection:
@@ -330,4 +330,4 @@ b.rejected_away_from(a).simplified()
 # Its difference from the product's:
 
 # %%
-(rejection - b.rejected_away_from(a)).simplified()
+show_difference(rejection, b.rejected_away_from(a))

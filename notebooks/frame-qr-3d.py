@@ -63,7 +63,7 @@ from gacalc.epixscene.frame_scene import (
 from gacalc.frame import Frame
 from gacalc.functions import InvertibleFunction, MatrixBackend, inverse
 from gacalc.g3 import G, Scalar, Vector, e_1, e_2, e_3
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 
 # %% [markdown]
 # ## A frame and its orthogonal set
@@ -188,7 +188,7 @@ volume
 # Their difference:
 
 # %%
-sympy.simplify(sympy.sympify(base_area * height - volume))
+show_difference(base_area * height, volume)
 
 # %% [markdown]
 # Drawn at the plot values:
@@ -557,7 +557,7 @@ f.inverse(y).simplified()
 # Its difference from the peeled $\vec{\mathbf{x}}$:
 
 # %%
-(f.inverse(y) - x).simplified()
+show_difference(f.inverse(y), x)
 
 # %% [markdown]
 # The map sends $\vec{\mathbf{x}}$ back to:
@@ -569,7 +569,7 @@ f(x).simplified()
 # Its difference from $\vec{\mathbf{y}}$:
 
 # %%
-(f(x) - y).simplified()
+show_difference(f(x), y)
 
 # %% [markdown]
 # At the plot values, $\vec{\mathbf{x}}$ (black);

@@ -48,7 +48,7 @@ from gacalc.epixscene.bootstrap_live import (
     scene_around,
 )
 from gacalc.g2 import Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 
 # %% [markdown]
 # ## The vector and the angle
@@ -197,7 +197,7 @@ rotated
 # Their difference:
 
 # %%
-(v.rotate(theta) - rotated).simplified()
+show_difference(v.rotate(theta), rotated)
 
 # %% [markdown]
 # So from here on the checks use `Vector.rotate`.
@@ -235,7 +235,7 @@ at_quarter_further
 # Their difference:
 
 # %%
-(polar.rotate_90_degrees() - at_quarter_further).simplified()
+show_difference(polar.rotate_90_degrees(), at_quarter_further)
 
 # %% [markdown]
 # ### The formula lands $\theta$ further round
@@ -259,7 +259,7 @@ at_theta_further
 # Their difference:
 
 # %%
-(polar.rotate(theta) - at_theta_further).simplified()
+show_difference(polar.rotate(theta), at_theta_further)
 
 # %% [markdown]
 # ### A rotation keeps length
@@ -282,7 +282,7 @@ v.magnitude_squared()
 # Their difference:
 
 # %%
-sympy.simplify(sympy.sympify(rotated_length_squared - v.magnitude_squared()))
+show_difference(rotated_length_squared, v.magnitude_squared())
 
 # %% [markdown]
 # ### Rotations add their angles
@@ -305,7 +305,7 @@ v.rotate(theta + phi).simplified()
 # Their difference:
 
 # %%
-(theta_then_phi - v.rotate(theta + phi)).simplified()
+show_difference(theta_then_phi, v.rotate(theta + phi))
 
 # %% [markdown]
 # ### Rotating by $-\theta$ undoes a rotation
@@ -319,7 +319,7 @@ v.rotate(theta).rotate(-theta).simplified()
 # Its difference from $\vec{\mathbf{v}}$:
 
 # %%
-(v.rotate(theta).rotate(-theta) - v).simplified()
+show_difference(v.rotate(theta).rotate(-theta), v)
 
 # %% [markdown]
 # ### A rotation carries sums to sums
@@ -349,7 +349,7 @@ w
 # Their difference:
 
 # %%
-((v + w).rotate(theta) - (v.rotate(theta) + w.rotate(theta))).simplified()
+show_difference((v + w).rotate(theta), v.rotate(theta) + w.rotate(theta))
 
 # %% [markdown]
 # ### and scalar multiples to scalar multiples
@@ -371,4 +371,4 @@ k = sympy.Symbol("k", real=True)
 # Their difference:
 
 # %%
-((Scalar(k) * v).rotate(theta) - Scalar(k) * v.rotate(theta)).simplified()
+show_difference((Scalar(k) * v).rotate(theta), Scalar(k) * v.rotate(theta))

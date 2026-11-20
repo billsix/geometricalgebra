@@ -63,9 +63,16 @@ The geometric product gives the reflection with no rotation at all:
      = \vec{\mathbf{b}} * \vec{\mathbf{a}} * \vec{\mathbf{b}}^{-1}.
 
 The part of :math:`\vec{\mathbf{a}}` along :math:`\vec{\mathbf{b}}` commutes with :math:`\vec{\mathbf{b}}`, so
-:math:`\vec{\mathbf{b}}` and :math:`\vec{\mathbf{b}}^{-1}` cancel around it and it stays. The part across
-anticommutes with :math:`\vec{\mathbf{b}}` (swapping two perpendicular vectors flips the sign), so it
-comes out negated. Along kept, across flipped: :eq:`eq-reflect-vector` again. In the easy case
+:math:`\vec{\mathbf{b}}` and :math:`\vec{\mathbf{b}}^{-1}` (the pair numbered alike) cancel around it and it stays:
+
+.. math::
+
+   \underbrace{\vec{\mathbf{b}}}_{1} * \operatorname{proj}_{\vec{\mathbf{b}}}(\vec{\mathbf{a}}) * \underbrace{\vec{\mathbf{b}}^{-1}}_{1}
+   = \operatorname{proj}_{\vec{\mathbf{b}}}(\vec{\mathbf{a}}) * \underbrace{\vec{\mathbf{b}}}_{1} * \underbrace{\vec{\mathbf{b}}^{-1}}_{1}
+   = \operatorname{proj}_{\vec{\mathbf{b}}}(\vec{\mathbf{a}}).
+
+The part across anticommutes with :math:`\vec{\mathbf{b}}` (swapping two perpendicular vectors flips
+the sign), so it comes out negated. Along kept, across flipped: :eq:`eq-reflect-vector` again. In the easy case
 :math:`\vec{\mathbf{b}} = \vec{\mathbf{e}}_1` the product is
 :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{a}} * \vec{\mathbf{e}}_1`, and multiplying it out gives
 :eq:`eq-reflect-e1`.

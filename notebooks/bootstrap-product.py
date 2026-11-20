@@ -57,7 +57,7 @@ from gacalc.epixscene.bootstrap_live import (
     scene_around,
 )
 from gacalc.g2 import Scalar, Vector, Versor, e_1, e_2, e_12
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 
 # %% [markdown]
 # ## The vectors
@@ -240,7 +240,7 @@ product
 # Their difference:
 
 # %%
-(product - a * b).simplified()
+show_difference(product, a * b)
 
 # %% [markdown]
 # ### Its parts are the dot product and the wedge
@@ -254,7 +254,7 @@ product
 # Its difference from $\vec{\mathbf{a}} * \vec{\mathbf{b}}$:
 
 # %%
-(a * b - (a.dot(b) + a.wedge(b))).simplified()
+show_difference(a * b, a.dot(b) + a.wedge(b))
 
 # %% [markdown]
 # ### A vector times itself is its length squared
@@ -274,7 +274,7 @@ b.magnitude_squared()
 # Their difference:
 
 # %%
-(b * b - Scalar(b.magnitude_squared())).simplified()
+show_difference(b * b, Scalar(b.magnitude_squared()))
 
 # %% [markdown]
 # ### The quarter turn as a product matches Step 1's
@@ -294,7 +294,7 @@ b.rotate_90_degrees()
 # Their difference:
 
 # %%
-(quarter_turn - b.rotate_90_degrees()).simplified()
+show_difference(quarter_turn, b.rotate_90_degrees())
 
 # %% [markdown]
 # ### $\vec{\mathbf{a}} * \operatorname{proj}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})$ is the dot product
@@ -314,7 +314,7 @@ a.dot(b).simplified()
 # Their difference:
 
 # %%
-(along - a.dot(b)).simplified()
+show_difference(along, a.dot(b))
 
 # %% [markdown]
 # ### $\vec{\mathbf{a}} * \operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})$ is the wedge
@@ -334,7 +334,7 @@ a.wedge(b).simplified()
 # Their difference:
 
 # %%
-(across - a.wedge(b)).simplified()
+show_difference(across, a.wedge(b))
 
 # %% [markdown]
 # ### Measured the other way, the dot keeps its value and the wedge changes sign
@@ -348,7 +348,7 @@ a.wedge(b).simplified()
 # Its difference from $\vec{\mathbf{a}} \cdot \vec{\mathbf{b}}$:
 
 # %%
-(b * a.projected_onto(b) - a.dot(b)).simplified()
+show_difference(b * a.projected_onto(b), a.dot(b))
 
 # %% [markdown]
 # $\vec{\mathbf{b}} * \operatorname{rej}_{\vec{\mathbf{b}}}(\vec{\mathbf{a}})$:
@@ -389,4 +389,4 @@ angle_form
 # Their difference:
 
 # %%
-(a_hat * b_hat - angle_form).simplified()
+show_difference(a_hat * b_hat, angle_form)

@@ -56,7 +56,7 @@ from gacalc.epixscene.bootstrap_live import (
     scene_around,
 )
 from gacalc.g2 import Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 
 # %% [markdown]
 # ## The vectors
@@ -315,7 +315,7 @@ Scalar(b_1) * e_1
 # Their difference:
 
 # %%
-(onto_e_1[0] - Scalar(b_1) * e_1).simplified()
+show_difference(onto_e_1[0], Scalar(b_1) * e_1)
 
 # %% [markdown]
 # Rejecting $\vec{\mathbf{b}}$ from $\vec{\mathbf{e}}_1$ by the construction:
@@ -334,7 +334,7 @@ Scalar(b_2) * e_2
 # Their difference:
 
 # %%
-(onto_e_1[1] - Scalar(b_2) * e_2).simplified()
+show_difference(onto_e_1[1], Scalar(b_2) * e_2)
 
 # %% [markdown]
 # ### The projection formula
@@ -357,7 +357,7 @@ projection_formula
 # Their difference:
 
 # %%
-(projection - projection_formula).simplified()
+show_difference(projection, projection_formula)
 
 # %% [markdown]
 # ### The rejection formula
@@ -380,7 +380,7 @@ rejection_formula
 # Their difference:
 
 # %%
-(rejection - rejection_formula).simplified()
+show_difference(rejection, rejection_formula)
 
 # %% [markdown]
 # ### The two parts add back to $\vec{\mathbf{b}}$
@@ -400,7 +400,7 @@ b
 # Their difference:
 
 # %%
-(projection + rejection - b).simplified()
+show_difference(projection + rejection, b)
 
 # %% [markdown]
 # ### Projecting twice changes nothing
@@ -415,7 +415,7 @@ projected_twice
 # Its difference from the projection:
 
 # %%
-(projected_twice - projection).simplified()
+show_difference(projected_twice, projection)
 
 # %% [markdown]
 # ### The rejection has no part along $\vec{\mathbf{a}}$
@@ -438,7 +438,7 @@ b.projected_onto(a).simplified()
 # Its difference from the construction's:
 
 # %%
-(projection - b.projected_onto(a)).simplified()
+show_difference(projection, b.projected_onto(a))
 
 # %% [markdown]
 # gacalc's rejection:
@@ -450,4 +450,4 @@ b.rejected_away_from(a).simplified()
 # Its difference from the construction's:
 
 # %%
-(rejection - b.rejected_away_from(a)).simplified()
+show_difference(rejection, b.rejected_away_from(a))

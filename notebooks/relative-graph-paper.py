@@ -57,7 +57,7 @@ from gacalc.epixscene.paper_scene import (
 )
 from gacalc.functions import InvertibleFunction, identity
 from gacalc.g2 import Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 from gacalc.transforms import compose_intermediate_fns, translate, uniform_scale
 
 # %% [markdown]
@@ -243,7 +243,7 @@ f_swapped(p)
 # Its difference from $T_b \circ S_m$ is the slide scaled by $m - 1$:
 
 # %%
-(f_swapped(p) - f(p)).simplified()
+show_difference(f_swapped(p), f(p))
 
 # %% [markdown]
 # Drawn at the plot values: the sheet lands somewhere else.
@@ -266,4 +266,4 @@ draw(f_swapped)
 # $(x, y)$; the difference:
 
 # %%
-(f.inverse(f(p)) - p).simplified()
+show_difference(f.inverse(f(p)), p)

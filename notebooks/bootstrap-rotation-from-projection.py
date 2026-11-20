@@ -58,7 +58,7 @@ from gacalc.epixscene.bootstrap_live import (
     scene_around,
 )
 from gacalc.g2 import Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 from gacalc.transforms import projection_rotation
 
 # %% [markdown]
@@ -299,7 +299,7 @@ cos_formula
 # Their difference:
 
 # %%
-sympy.simplify(sympy.sympify(cos - cos_formula))
+show_difference(cos, cos_formula)
 
 # %% [markdown]
 # The sine was:
@@ -318,7 +318,7 @@ sin_formula
 # Their difference:
 
 # %%
-sympy.simplify(sympy.sympify(sin - sin_formula))
+show_difference(sin, sin_formula)
 
 # %% [markdown]
 # ### They are a unit pair
@@ -332,7 +332,7 @@ sympy.simplify(sympy.sympify(cos**2 + sin**2))
 # Its difference from $1$:
 
 # %%
-sympy.simplify(sympy.sympify(cos**2 + sin**2 - 1))
+show_difference(cos**2 + sin**2, 1)
 
 # %% [markdown]
 # ### The second triangle's legs are perpendicular
@@ -363,7 +363,7 @@ rotated
 # Their difference:
 
 # %%
-(rotated - composed).simplified()
+show_difference(rotated, composed)
 
 # %% [markdown]
 # ### It keeps length
@@ -383,7 +383,7 @@ v.magnitude_squared()
 # Their difference:
 
 # %%
-sympy.simplify(sympy.sympify(rotated.magnitude_squared() - v.magnitude_squared()))
+show_difference(rotated.magnitude_squared(), v.magnitude_squared())
 
 # %% [markdown]
 # ### It carries sums to sums
@@ -415,7 +415,7 @@ sum_of_rotated
 # Their difference:
 
 # %%
-(rotated_sum - sum_of_rotated).simplified()
+show_difference(rotated_sum, sum_of_rotated)
 
 # %% [markdown]
 # ### and scalar multiples to scalar multiples
@@ -437,7 +437,7 @@ rotated_multiple
 # Their difference:
 
 # %%
-(rotated_multiple - Scalar(k) * rotated).simplified()
+show_difference(rotated_multiple, Scalar(k) * rotated)
 
 # %% [markdown]
 # ### Only directions matter
@@ -455,7 +455,7 @@ rescaled
 # Its difference from $\vec{\mathbf{v}}'$:
 
 # %%
-(rescaled - rotated).simplified()
+show_difference(rescaled, rotated)
 
 # %% [markdown]
 # ### It carries $\vec{\mathbf{a}}$'s direction onto $\vec{\mathbf{b}}$'s
@@ -476,7 +476,7 @@ b.normalize().simplified()
 # Their difference:
 
 # %%
-(a_direction_rotated - b.normalize()).simplified()
+show_difference(a_direction_rotated, b.normalize())
 
 # %% [markdown]
 # ### gacalc agrees
@@ -491,4 +491,4 @@ turn(v).simplified()
 # Its difference from $\vec{\mathbf{v}}'$:
 
 # %%
-(turn(v) - rotated).simplified()
+show_difference(turn(v), rotated)

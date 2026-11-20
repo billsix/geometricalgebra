@@ -56,7 +56,7 @@ from gacalc.epixscene.bootstrap_live import (
 )
 from gacalc.functions import InvertibleFunction, inverse
 from gacalc.g2 import Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 from gacalc.standardposition import rotation_from_to
 
 # %% [markdown]
@@ -262,14 +262,14 @@ fig_parts
 # Its difference from the reflection built by rotating:
 
 # %%
-(projection - rejection - reflection).simplified()
+show_difference(projection - rejection, reflection)
 
 # %% [markdown]
 # gacalc's `reflected_across` is defined as the projection minus the rejection. Its
 # difference from the reflection built by rotating:
 
 # %%
-(a.reflected_across(b) - reflection).simplified()
+show_difference(a.reflected_across(b), reflection)
 
 # %% [markdown]
 # ## The same reflection: one product
@@ -316,7 +316,7 @@ sandwich
 # Its difference from the reflection built by rotating:
 
 # %%
-(sandwich - reflection).simplified()
+show_difference(sandwich, reflection)
 
 # %% [markdown]
 # ## Checks, for every $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$
@@ -338,7 +338,7 @@ a.magnitude_squared()
 # Their difference:
 
 # %%
-sympy.simplify(sympy.sympify(reflection.magnitude_squared() - a.magnitude_squared()))
+show_difference(reflection.magnitude_squared(), a.magnitude_squared())
 
 # %% [markdown]
 # ### Reflecting twice gives back $\vec{\mathbf{a}}$
@@ -353,7 +353,7 @@ twice
 # Its difference from $\vec{\mathbf{a}}$:
 
 # %%
-(twice - a).simplified()
+show_difference(twice, a)
 
 # %% [markdown]
 # Reflection in space, across a vector and across a plane, is *Reflection in Space*.

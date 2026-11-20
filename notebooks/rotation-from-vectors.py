@@ -50,7 +50,7 @@ from gacalc.epixscene.bootstrap_live import (
     scene_around,
 )
 from gacalc.g2 import Scalar, Vector, Versor
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 from gacalc.standardposition import rotation_from_to
 from gacalc.transforms import projection_rotation, versor_rotation
 
@@ -123,7 +123,7 @@ a_hat_rotated
 # Its difference from $\hat{\mathbf{b}}$:
 
 # %%
-(a_hat * R - b_hat).simplified()
+show_difference(a_hat * R, b_hat)
 
 # %% [markdown]
 # Drawn at the plot values:
@@ -283,7 +283,7 @@ expected
 # Their difference:
 
 # %%
-(carried - expected).simplified()
+show_difference(carried, expected)
 
 # %% [markdown]
 # So the versor route, the projection route, and the angle-free three-turn

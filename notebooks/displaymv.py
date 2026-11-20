@@ -47,7 +47,7 @@ from gacalc.gn import (
     sym_vec3_1,
     sym_vec3_2,
 )
-from gacalc.nbdisplay import show_cancellation, show_mult
+from gacalc.nbdisplay import show_cancellation, show_difference, show_mult
 from gacalc.nbplotutils import plot_multivector
 
 # turn warnings into exceptions
@@ -356,7 +356,9 @@ sym_vec2_1.wedge(sym_vec2_2)
 # divided by its size. The difference of the two ways is $0$:
 
 # %%
-MultiVector.i(sym_vec2_1, sym_vec2_2) - (sym_vec2_1 ^ sym_vec2_2).normalize()
+show_difference(
+    MultiVector.i(sym_vec2_1, sym_vec2_2), (sym_vec2_1 ^ sym_vec2_2).normalize()
+)
 
 # %% [markdown]
 # Wedges in space, one coordinate plane at a time
@@ -392,7 +394,7 @@ onto_e1e3(sym_vec3_1) ^ onto_e1e3(sym_vec3_2)
 
 # %%
 onto_e3e1: MultiVectorFn = MultiVector.project(onto=e_3 * e_1)
-onto_e3e1(sym_vec3_1) - onto_e1e3(sym_vec3_1)
+show_difference(onto_e3e1(sym_vec3_1), onto_e1e3(sym_vec3_1))
 
 # %% [markdown]
 # The three parts together are the wedge of the two vectors:

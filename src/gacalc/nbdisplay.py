@@ -138,11 +138,104 @@ def _math_body(latex: str) -> str:
     return latex.strip().strip("$").strip()
 
 
+def _row_products(
+    a: MultiVectorBase, b: MultiVectorBase
+) -> list[tuple[MultiVectorBase, MultiVectorBase, dict[Blade, list[sympy.Expr]]]]:
+    """Every (left term, right term, product) of ``a * b``, the product as its
+    expanded monomials per blade."""
+    rows: list[
+        tuple[MultiVectorBase, MultiVectorBase, dict[Blade, list[sympy.Expr]]]
+    ] = []
+    left: MultiVectorBase
+    right: MultiVectorBase
+    for left in _blade_terms(a):
+        for right in _blade_terms(b):
+            rows.append(
+                (
+                    left,
+                    right,
+                    {
+                        blade: _signed_terms(coefficient)
+                        for blade, coefficient in sorted(
+                            (left * right).to_blade_dict().items(),
+                            key=lambda item: (len(item[0]), item[0]),
+                        )
+                    },
+                )
+            )
+    return rows
+
+
+def _cancelling_labels(
+    products: Sequence[Mapping[Blade, Sequence[sympy.Expr]]],
+) -> dict[tuple[int, Blade, int], int]:
+    """Number the monomials of the table's products that cancel in the sum.
+
+    A monomial cancels a monomial of the same blade, in another row or the same
+    one, that is its negative. Each pair gets the next number, the same on both;
+    the key is ``(row, blade, index of the monomial)``.
+
+    >>> a, b = sympy.symbols("a b")
+    >>> _cancelling_labels([{(1, 2): [a * b]}, {(1, 2): [-a * b]}, {(): [a]}])
+    {(0, (1, 2), 0): 1, (1, (1, 2), 0): 1}
+    """
+    entries: list[tuple[tuple[int, Blade, int], sympy.Expr]] = [
+        ((row, blade, index), term)
+        for row, product in enumerate(products)
+        for blade, terms in product.items()
+        for index, term in enumerate(terms)
+    ]
+    labels: dict[tuple[int, Blade, int], int] = {}
+    key: tuple[int, Blade, int]
+    term: sympy.Expr
+    for key, term in entries:
+        if key in labels:
+            continue
+        partner: tuple[int, Blade, int] | None = next(
+            (
+                other_key
+                for other_key, other in entries
+                if other_key not in labels
+                and other_key != key
+                and other_key[1] == key[1]
+                and other == -term
+            ),
+            None,
+        )
+        if partner is not None:
+            label: int = len(labels) // 2 + 1
+            labels[key] = label
+            labels[partner] = label
+    return labels
+
+
+def _marked_product_latex(
+    row: int,
+    product: Mapping[Blade, Sequence[sympy.Expr]],
+    labels: Mapping[tuple[int, Blade, int], int],
+) -> str:
+    """One table product as inline LaTeX, each cancelling monomial under its
+    numbered ``\\underbrace``."""
+    pieces: list[str] = []
+    blade: Blade
+    terms: Sequence[sympy.Expr]
+    for blade, terms in product.items():
+        coefficient: str = _marked_sum(
+            terms, [labels.get((row, blade, index)) for index in range(len(terms))]
+        )
+        pieces.append(
+            coefficient if blade == () else f"({coefficient}) {blade_latex(blade)}"
+        )
+    return "$" + " + ".join(pieces) + "$"
+
+
 def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
     """A Markdown table of every term of ``a`` times every term of ``b``.
 
     One row per pair (left term, right term, their product), terms in grade-then-
-    blade order. Summing the last column gives ``a * b``.
+    blade order. Summing the last column gives ``a * b``. Terms of the products that
+    cancel in that sum (a term and its negative, of the same blade) carry the same
+    number under an ``\\underbrace``, so a reader sees which products drop out.
 
     >>> from gacalc.g2 import e_1, e_2
     >>> lines = product_table_markdown(1 * e_1 + 2 * e_2, 3 * e_1).splitlines()
@@ -152,29 +245,51 @@ def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
     4
     >>> print(lines[2])
     | $1\\vec{\\mathbf{e}}_{1}$ | * | $3\\vec{\\mathbf{e}}_{1}$ | = | $3$ |
+
+    The two cross terms of ``(e_1 + e_2) * (e_1 + e_2)`` cancel:
+
+    >>> table = product_table_markdown(1 * e_1 + 1 * e_2, 1 * e_1 + 1 * e_2)
+    >>> table.count("underbrace{1}_{1}")
+    2
     """
     header: str = "| Left Component | * | Right Component | = | Product |"
     separator: str = "|---|---|---|---|---|"
-    rows: list[str] = [
-        f"| {_latex(left)} | * | {_latex(right)} | = | {_latex(left * right)} |"
-        for left in _blade_terms(a)
-        for right in _blade_terms(b)
+    rows: list[
+        tuple[MultiVectorBase, MultiVectorBase, dict[Blade, list[sympy.Expr]]]
+    ] = _row_products(a, b)
+    labels: dict[tuple[int, Blade, int], int] = _cancelling_labels(
+        [product for _, _, product in rows]
+    )
+    marked_rows: set[int] = {row for row, _, _ in labels}
+    lines: list[str] = [
+        f"| {_latex(left)} | * | {_latex(right)} | = | "
+        + (
+            _marked_product_latex(row, product, labels)
+            if row in marked_rows
+            else _latex(left * right)
+        )
+        + " |"
+        for row, (left, right, product) in enumerate(rows)
     ]
-    return "\n".join([header, separator, *rows])
+    return "\n".join([header, separator, *lines])
 
 
 def show_mult(a: MultiVectorBase, b: MultiVectorBase) -> None:
     """Display (in a notebook) the full distributive expansion of ``a * b``.
 
     Shows the product to evaluate, the table of every term-by-term product
-    (``product_table_markdown``), then the sum, all rendered as LaTeX.
+    (``product_table_markdown``, where terms that cancel in the sum carry the same
+    number), then the sum, all rendered as LaTeX.
     """
     display(Markdown("**We want to evaluate**"))
     left: str = _math_body(a._repr_latex_())
     right: str = _math_body(b._repr_latex_())
     display(Math(f"({left}) * ({right})"))
     display(Markdown("**Multivector Multiplication is distributive over addition**"))
-    display(Markdown(product_table_markdown(a, b)))
+    table: str = product_table_markdown(a, b)
+    display(Markdown(table))
+    if "underbrace" in table:
+        display(Markdown("Terms with the same number cancel in the sum."))
     display(Markdown("**Summing all the products up, we get**"))
     display(Math(_math_body(_latex(a * b))))
 
@@ -204,14 +319,177 @@ def _join_terms(parts: Sequence[tuple[bool, str]]) -> str:
     return " ".join([first[2:] if first.startswith("+ ") else first, *pieces[1:]])
 
 
-def cancellation_latex(left: MultiVectorBase, right: MultiVectorBase) -> list[str]:
-    """One LaTeX line per blade showing ``left − right`` cancel term by term.
+def _pair_labels(
+    left_terms: Sequence[sympy.Expr], right_terms: Sequence[sympy.Expr]
+) -> tuple[list[int | None], list[int | None]]:
+    """Number the pairs of equal terms that cancel in ``(left) - (right)``.
+
+    Each left term is paired with the first equal, still-unpaired right term; a
+    pair gets the next number, the same on both of its terms. A term left over
+    gets ``None``. (Terms on one side never cancel each other: sympy has already
+    combined them when it expanded the side.)
+
+    >>> a, b, c = sympy.symbols("a b c")
+    >>> _pair_labels([a, b], [b, a])
+    ([1, 2], [2, 1])
+    >>> _pair_labels([a, c], [b])
+    ([None, None], [None])
+    """
+    right_labels: dict[int, int] = {}
+    left_labels: list[int | None] = []
+    term: sympy.Expr
+    for term in left_terms:
+        match_index: int | None = next(
+            (
+                index
+                for index, other in enumerate(right_terms)
+                if index not in right_labels
+                and (other == term or sympy.expand(other - term) == 0)
+            ),
+            None,
+        )
+        if match_index is None:
+            left_labels.append(None)
+        else:
+            right_labels[match_index] = len(right_labels) + 1
+            left_labels.append(right_labels[match_index])
+    return left_labels, [right_labels.get(index) for index in range(len(right_terms))]
+
+
+def _marked_sum(terms: Sequence[sympy.Expr], labels: Sequence[int | None]) -> str:
+    """``terms`` as one signed LaTeX sum, each labelled term under a numbered
+    ``\\underbrace``."""
+
+    def part(term: sympy.Expr, label: int | None) -> tuple[bool, str]:
+        negative: bool = term.could_extract_minus_sign()
+        body: str = sympy.latex(-term if negative else term)
+        return negative, (
+            body if label is None else f"\\underbrace{{{body}}}_{{{label}}}"
+        )
+
+    return _join_terms([part(t, k) for t, k in zip(terms, labels, strict=True)])
+
+
+def _common_denominator(left: Real, right: Real) -> sympy.Expr:
+    """The least common multiple of the denominators of the expanded terms of
+    ``left`` and ``right``.
+
+    >>> a, b = sympy.symbols("a b", positive=True)
+    >>> _common_denominator(a / b, 1 / (a * b))
+    a*b
+    >>> _common_denominator(a / (a + b) + b / (a + b), 1)
+    a + b
+    >>> _common_denominator(a, b)
+    1
+    """
+    return sympy.lcm(
+        [
+            sympy.fraction(term)[1]
+            for term in [*_signed_terms(left), *_signed_terms(right)]
+        ]
+        or [sympy.Integer(1)]
+    )
+
+
+#: The longest cancellation line, in LaTeX characters, worth showing term by term.
+#: A longer one (sides that cancel only through a square-root or trigonometric
+#: identity, expanded into hundreds of terms) is shown by its residual alone.
+LONGEST_CANCELLATION_LINE: int = 3000
+
+
+def _paired_line(
+    left: sympy.Expr, right: sympy.Expr, prefix: str
+) -> tuple[str, sympy.Expr]:
+    """``(left terms) - (right terms) = residual`` with the cancelling pairs
+    numbered, and the residual of the expansion."""
+    left_terms: list[sympy.Expr] = _signed_terms(left)
+    right_terms: list[sympy.Expr] = _signed_terms(right)
+    left_labels: list[int | None]
+    right_labels: list[int | None]
+    left_labels, right_labels = _pair_labels(left_terms, right_terms)
+    residual: sympy.Expr = sympy.expand(left - right)
+    result: str = sympy.latex(residual)
+    simplest: sympy.Expr = sympy.simplify(residual)
+    if simplest != residual:
+        result += " = " + sympy.latex(simplest)
+    left_sum: str = _marked_sum(left_terms, left_labels)
+    if not right_terms:
+        return f"{prefix}{left_sum} = {result}", residual
+    right_sum: str = _marked_sum(right_terms, right_labels)
+    return f"{prefix}({left_sum}) - ({right_sum}) = {result}", residual
+
+
+def _difference_latex(left: Real, right: Real, name: str) -> str:
+    """One LaTeX line showing the number ``left - right`` cancel term by term.
+
+    Each side is simplified, then both are expanded into monomials and the
+    cancelling pairs numbered (``_pair_labels``). If the terms do not cancel as
+    written because the sides are fractions, both sides are first multiplied by
+    their common denominator ``D``, and the line says so. Whatever is left is the
+    residual; when it is not visibly ``0``, the line also shows what it simplifies
+    to. A line longer than ``LONGEST_CANCELLATION_LINE`` shows only the residual and
+    what it simplifies to. ``name`` (the blade, or empty for a number) starts the
+    line.
+    """
+    # each side in its simplest form first: a computed side (a round trip through
+    # a frame, say) can be a large unsimplified expression whose expansion is slow
+    left = sympy.simplify(sympy.sympify(left))
+    right = sympy.simplify(sympy.sympify(right))
+    prefix: str = name + ":\\quad " if name else ""
+    line: str
+    residual: sympy.Expr
+    line, residual = _paired_line(left, right, prefix)
+    if residual != 0:
+        denominator: sympy.Expr = _common_denominator(left, right)
+        if denominator != 1:
+            factor: str = sympy.latex(denominator)
+            if denominator.is_Add:
+                factor = f"({factor})"
+            scaled_prefix: str = (
+                ",\\ ".join(
+                    [*([name] if name else []), f"\\text{{both sides}} * {factor}"]
+                )
+                + ":\\quad "
+            )
+            scaled_line: str
+            scaled_residual: sympy.Expr
+            scaled_line, scaled_residual = _paired_line(
+                sympy.cancel(left * denominator),
+                sympy.cancel(right * denominator),
+                scaled_prefix,
+            )
+            if scaled_residual == 0:
+                line = scaled_line
+    if len(line) > LONGEST_CANCELLATION_LINE:
+        difference: sympy.Expr = sympy.simplify(left - right)
+        line = f"{prefix}\\text{{left}} - \\text{{right}} = {sympy.latex(difference)}"
+    return line
+
+
+def _coefficients(value: MultiVectorBase | Real) -> Mapping[Blade, Real]:
+    """``value``'s blade dict; a number is a scalar-blade dict (empty for ``0``)."""
+    match value:
+        case MultiVectorBase():
+            return value.to_blade_dict()
+        case _:
+            return {} if sympy.sympify(value) == 0 else {(): value}
+
+
+def cancellation_latex(
+    left: MultiVectorBase | Real, right: MultiVectorBase | Real
+) -> list[str]:
+    """LaTeX lines showing ``left − right`` cancel term by term.
 
     Each coefficient is expanded into monomials. A monomial of ``left`` that also
     appears in ``right`` is a cancelling pair: both copies are marked
-    ``\\underbrace{…}_{k}`` with the same number ``k``, so a reader can match them.
-    Whatever does not cancel is left unmarked, and the line ends with the residual,
-    ``0`` for an identity.
+    ``\\underbrace{…}_{k}`` with the same number ``k``, so a reader can match them
+    (and, on paper, cross them off). Whatever does not cancel is left unmarked, and
+    the line ends with the residual, ``0`` for an identity. Each side is simplified
+    first, and sides that are fractions may be multiplied by their common
+    denominator (``_difference_latex``).
+
+    Either side may be a multivector or a number. Two numbers give one line; a
+    multivector gives one line per blade, named by the blade.
 
     Args:
         left: the left side of the claimed identity.
@@ -232,63 +510,76 @@ def cancellation_latex(left: MultiVectorBase, right: MultiVectorBase) -> list[st
         ... )
         >>> line.count("underbrace"), line.endswith("= 0")
         (4, True)
+
+        Two numbers: each side is simplified first, so a sum of fractions that is
+        ``1`` shows as ``1``.
+
+        >>> cancellation_latex(a / (a + b) + b / (a + b), 1)
+        ['(\\\\underbrace{1}_{1}) - (\\\\underbrace{1}_{1}) = 0']
     """
-    left_coefficients: Mapping[Blade, Real] = left.to_blade_dict()
-    right_coefficients: Mapping[Blade, Real] = right.to_blade_dict()
-
-    def line(blade: Blade) -> str:
-        left_terms: list[sympy.Expr] = _signed_terms(left_coefficients.get(blade, 0))
-        right_terms: list[sympy.Expr] = _signed_terms(right_coefficients.get(blade, 0))
-        # pair each left term with the first equal, still-unpaired right term
-        right_labels: dict[int, int] = {}
-        left_labels: list[int | None] = []
-        term: sympy.Expr
-        for term in left_terms:
-            match_index: int | None = next(
-                (
-                    j
-                    for j, other in enumerate(right_terms)
-                    if j not in right_labels and other == term
-                ),
-                None,
-            )
-            if match_index is None:
-                left_labels.append(None)
-            else:
-                right_labels[match_index] = len(right_labels) + 1
-                left_labels.append(right_labels[match_index])
-
-        def part(term: sympy.Expr, label: int | None) -> tuple[bool, str]:
-            negative: bool = term.could_extract_minus_sign()
-            body: str = sympy.latex(-term if negative else term)
-            return negative, (
-                body if label is None else f"\\underbrace{{{body}}}_{{{label}}}"
-            )
-
-        residual: Real = sympy.expand(
-            left_coefficients.get(blade, 0) - right_coefficients.get(blade, 0)
-        )
-        name: str = "\\text{scalar}" if blade == () else blade_latex(blade)
-        left_sum: str = _join_terms(
-            [part(t, k) for t, k in zip(left_terms, left_labels, strict=True)]
-        )
-        right_sum: str = _join_terms(
-            [part(t, right_labels.get(j)) for j, t in enumerate(right_terms)]
-        )
-        return f"{name}:\\quad ({left_sum}) - ({right_sum}) = {sympy.latex(residual)}"
-
-    return [
-        line(blade)
+    if not isinstance(left, MultiVectorBase) and not isinstance(right, MultiVectorBase):
+        return [_difference_latex(left, right, "")]
+    left_coefficients: Mapping[Blade, Real] = _coefficients(left)
+    right_coefficients: Mapping[Blade, Real] = _coefficients(right)
+    # a blade whose coefficient is 0 on both sides (stored, but simplifying to 0)
+    # has nothing to show
+    blades: list[Blade] = [
+        blade
         for blade in sorted(
             set(left_coefficients) | set(right_coefficients),
             key=lambda blade: (len(blade), blade),
         )
+        if sympy.simplify(sympy.sympify(left_coefficients.get(blade, 0))) != 0
+        or sympy.simplify(sympy.sympify(right_coefficients.get(blade, 0))) != 0
     ]
+    return [
+        _difference_latex(
+            left_coefficients.get(blade, 0),
+            right_coefficients.get(blade, 0),
+            "\\text{scalar}" if blade == () else blade_latex(blade),
+        )
+        for blade in blades
+    ] or ["0 - 0 = 0"]
+
+
+def _side_latex(value: MultiVectorBase | Real) -> str:
+    """``value`` as LaTeX without delimiters: a multivector through ``_latex``, a
+    number with each numerator expanded."""
+    match value:
+        case MultiVectorBase():
+            return _math_body(_latex(value))
+        case _:
+            numerator: sympy.Expr
+            denominator: sympy.Expr
+            numerator, denominator = sympy.fraction(
+                sympy.together(sympy.sympify(value))
+            )
+            return sympy.latex(sympy.expand(numerator) / denominator)
+
+
+def show_difference(
+    left: MultiVectorBase | Real, right: MultiVectorBase | Real
+) -> None:
+    """Display (in a notebook) ``left − right`` cancelling term by term.
+
+    For a check whose two sides the notebook has just shown: one line per blade
+    (a single line for numbers) from ``cancellation_latex``, where matching terms
+    carry the same number under an ``\\underbrace``, so the reader watches the
+    terms disappear instead of being handed a bare ``0``.
+
+    Args:
+        left: the left side, already computed.
+        right: the right side.
+    """
+    display(Markdown("Terms with the same number cancel:"))
+    text: str
+    for text in cancellation_latex(left, right):
+        display(Math(text))
 
 
 def show_cancellation(
-    left: MultiVectorBase,
-    right: MultiVectorBase,
+    left: MultiVectorBase | Real,
+    right: MultiVectorBase | Real,
     left_name: str,
     right_name: str,
 ) -> None:
@@ -298,7 +589,7 @@ def show_cancellation(
     Shows ``left`` and ``right`` expanded, then one line per blade from
     ``cancellation_latex``, where matching terms carry the same number under an
     ``\\underbrace``, so the reader watches the terms disappear instead of being
-    handed a bare ``0``.
+    handed a bare ``0``. Either side may be a multivector or a number.
 
     Args:
         left: the left side, already computed.
@@ -307,9 +598,9 @@ def show_cancellation(
         right_name: LaTeX for the right side.
     """
     display(Markdown("**The left side**"))
-    display(Math(f"{left_name} = " + _math_body(_latex(left))))
+    display(Math(f"{left_name} = " + _side_latex(left)))
     display(Markdown("**The right side**"))
-    display(Math(f"{right_name} = " + _math_body(_latex(right))))
+    display(Math(f"{right_name} = " + _side_latex(right)))
     display(
         Markdown(
             "**Their difference, blade by blade.** Terms with the same number cancel:"

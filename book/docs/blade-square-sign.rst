@@ -52,8 +52,9 @@ of the second copy** and slide it leftward, one flip at a time, until it bumps i
 twin in the first copy — at which point Rule 1 cancels the pair to :math:`1`. What is left
 is *the same problem, one direction shorter*. Repeat until nothing is left but a sign.
 
-Watch it happen, grade by grade. (In the sliding pictures below we leave out the
-:math:`*` between neighbours so the columns line up — every gap is a product.)
+Watch it happen, grade by grade. Each line says which rule it used. When Rule 1 cancels a
+pair, both directions of the pair carry the same number under a bracket, so you can match them
+up, and on paper cross them off one pair at a time.
 
 By hand, grades 1 through 5
 ---------------------------
@@ -63,39 +64,45 @@ directions. We want :math:`I_r{}^2`.
 
 **Grade 1.** Nothing to slide:
 
-::
+.. math::
 
-   I_1^2 =  e1 e1                      sign = +1
-            \__/  e1 e1 = 1  (cancel, Rule 1)
-         =  +1
+   \begin{aligned}
+   I_1{}^2 &= \underbrace{\vec{\mathbf{e}}_1}_{1} * \underbrace{\vec{\mathbf{e}}_1}_{1} && \text{pair 1 cancels to } 1 \text{ (Rule 1)} \\
+           &= +1
+   \end{aligned}
 
 **Grade 2.** One flip:
 
-::
+.. math::
 
-   I_2^2 =  e1 e2 | e1 e2              sign = +1
-                    ^^ slide this e1 left
-            e1 e1 e2 e2   (past e2)    flip  ->  sign = -1
-            \__/  \__/    cancel both  (Rule 1)
-         =  -1
+   \begin{aligned}
+   I_2{}^2 &= \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 \\
+           &= -\,\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2
+             && \text{slide the second } \vec{\mathbf{e}}_1 \text{ past } \vec{\mathbf{e}}_2\text{: one flip (Rule 2)} \\
+           &= -\,\underbrace{\vec{\mathbf{e}}_1}_{1} * \underbrace{\vec{\mathbf{e}}_1}_{1} * \underbrace{\vec{\mathbf{e}}_2}_{2} * \underbrace{\vec{\mathbf{e}}_2}_{2}
+             && \text{pairs 1 and 2 cancel to } 1 \text{ (Rule 1)} \\
+           &= -1
+   \end{aligned}
 
 That is the :math:`\mathbf{e}_{12}{}^2 = -1` you already saw — now you can see *where the minus
 came from*: exactly one flip.
 
 **Grade 3.** Slide, cancel, then repeat on what is left:
 
-::
+.. math::
 
-   I_3^2 =  e1 e2 e3 | e1 e2 e3               sign = +1
-                       ^^ slide this e1 left
-            e1 e2 e1 e3 e2 e3   (past e3)     flip  ->  sign = -1
-            e1 e1 e2 e3 e2 e3   (past e2)     flip  ->  sign = +1
-            \__/  e1 e1 = 1     cancel
-                  e2 e3 | e2 e3          <-- same shape, one direction shorter
-                          ^^ slide this e2 left
-                  e2 e2 e3 e3   (past e3)     flip  ->  sign = -1
-                  \__/  \__/    cancel both
-         =  -1
+   \begin{aligned}
+   I_3{}^2 &= \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3 \\
+           &= -\,\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3
+             && \text{slide the second } \vec{\mathbf{e}}_1 \text{ past } \vec{\mathbf{e}}_3\text{: flip (Rule 2)} \\
+           &= +\,\underbrace{\vec{\mathbf{e}}_1}_{1} * \underbrace{\vec{\mathbf{e}}_1}_{1} * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3
+             && \text{past } \vec{\mathbf{e}}_2\text{: flip; pair 1 cancels (Rule 1)} \\
+           &= +\,\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3
+             && \text{the same shape, one direction shorter} \\
+           &= -\,\underbrace{\vec{\mathbf{e}}_2}_{2} * \underbrace{\vec{\mathbf{e}}_2}_{2} * \underbrace{\vec{\mathbf{e}}_3}_{3} * \underbrace{\vec{\mathbf{e}}_3}_{3}
+             && \text{slide } \vec{\mathbf{e}}_2 \text{ past } \vec{\mathbf{e}}_3\text{: flip; pairs 2 and 3 cancel} \\
+           &= -1
+   \end{aligned}
 
 Count the flips: :math:`2 + 1 + 0 = 3`, so the sign is :math:`(-1)^3 = -1`.
 
@@ -209,13 +216,17 @@ out to the left and collects into one product:
 **Step 2 — resolve the directions with the two rules, tracking the sign on the right.**
 This is the exact same flip-and-cancel game, on :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1`:
 
-::
+.. math::
 
-   e1 e2 e1                    sign = +1
-         ^^ slide this e1 left
-   e1 e1 e2   (past e2)        flip  ->  sign = -1
-   \__/  e1 e1 = 1  (cancel)
-         e2                    the direction that survives
+   \begin{aligned}
+   \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1
+     &= -\,\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2
+       && \text{slide the second } \vec{\mathbf{e}}_1 \text{ past } \vec{\mathbf{e}}_2\text{: flip (Rule 2)} \\
+     &= -\,\underbrace{\vec{\mathbf{e}}_1}_{1} * \underbrace{\vec{\mathbf{e}}_1}_{1} * \vec{\mathbf{e}}_2
+       && \text{pair 1 cancels to } 1 \text{ (Rule 1)} \\
+     &= -\,\vec{\mathbf{e}}_2
+       && \text{the direction that survives}
+   \end{aligned}
 
 So the direction part resolves to :math:`\vec{\mathbf{e}}_2`, carrying a :math:`-` sign.
 

@@ -1,0 +1,304 @@
+== prose and markdown mentioning cancel
+book/docs/blade-square-sign.rst:43:That is the whole toolkit: **swap neighbours (Rule 2), and cancel a repeated pair
+book/docs/blade-square-sign.rst:47:The trick: line up two copies, slide, and cancel
+book/docs/blade-square-sign.rst:52:twin in the first copy — at which point Rule 1 cancels the pair to :math:`1`. What is left
+book/docs/blade-square-sign.rst:69:            \__/  e1 e1 = 1  (cancel, Rule 1)
+book/docs/blade-square-sign.rst:79:            \__/  \__/    cancel both  (Rule 1)
+book/docs/blade-square-sign.rst:85:**Grade 3.** Slide, cancel, then repeat on what is left:
+book/docs/blade-square-sign.rst:93:            \__/  e1 e1 = 1     cancel
+book/docs/blade-square-sign.rst:97:                  \__/  \__/    cancel both
+book/docs/blade-square-sign.rst:133:     - flips to cancel
+book/docs/blade-square-sign.rst:175:The "slide and cancel" picture already *is* the proof — it just repeats itself. Peeling one
+book/docs/blade-square-sign.rst:188:   :math:`I_r * \tilde{I}_r = 1`, because the two copies cancel neatly from the middle out.
+book/docs/blade-square-sign.rst:210:This is the exact same flip-and-cancel game, on :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1`:
+book/docs/blade-square-sign.rst:217:   \__/  e1 e1 = 1  (cancel)
+book/docs/proof-rotate-from-a-to-b.rst:68::math:`\vec{\mathbf{a}}` itself, its :math:`y`-coordinate cancels and its :math:`x`-coordinate becomes
+book/docs/proof-rotate-from-a-to-b.rst:141:inverses — slide past the middle one and **cancel**. The whole sandwich collapses to its middle turn:
+book/docs/proof-rotate.rst:149:The :math:`r`'s cancel, and we are left with the whole point of this chapter:
+book/docs/reflection.rst:66::math:`\vec{\mathbf{b}}` and :math:`\vec{\mathbf{b}}^{-1}` cancel around it and it stays. The part across
+book/docs/rotation-from-vectors.rst:66:|\vec{\mathbf{a}}| * \vec{\mathbf{b}}`, so the magnitudes cancel and only the directions set the rotation;
+notebooks/defining-g2.py:221:# terms cancel by Rule 2 and the squares collapse by Rule 1. First at the values
+notebooks/displayg2.py:50:from gacalc.nbdisplay import show_cancellation, show_mult
+notebooks/displayg2.py:74:# (swap the middle pair with a sign, then cancel each arrow against itself), predict
+notebooks/displayg2.py:194:show_cancellation(
+notebooks/displayg2.py:297:# a mass by it cancels the grams by Rule 1, as units cancel in chemistry.
+notebooks/displayg2areas.py:279:# Term by term, the two piece-of-plane contributions cancel and leave only the
+notebooks/displayg2areas.py:298:# Here the two number contributions cancel, leaving only the piece of plane:
+notebooks/displayg3.py:79:# Squaring it means sorting six arrows with a sign and cancelling pairs. Predict the
+notebooks/displayg3.py:404:# Term by term, the plane contributions cancel and leave only the number:
+notebooks/displayg3.py:423:# Here the number contributions cancel, leaving only the pieces of plane:
+notebooks/displaygraded.py:389:# simplifies it — so the cancellation shows.
+notebooks/displaymv.py:50:from gacalc.nbdisplay import show_cancellation, show_mult
+notebooks/displaymv.py:113:# $-\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$), and (c) using Rule 1 to cancel any arrow
+notebooks/displaymv.py:119:# Watch the cross terms cancel by Rule 2 and the squares collapse by Rule 1:
+notebooks/displaymv.py:175:# 2. **Cancel repeats.** By (R1), whenever two equal indices end up next to each other,
+notebooks/displaymv.py:188:# and one that only sorts, with nothing to cancel:
+notebooks/displaymv.py:193:# These two moves, sort with a sign and then cancel repeats, are exactly what `Gn`'s
+notebooks/displaymv.py:212:#    sign (R2), cancel repeats (R1).
+notebooks/displaymv.py:419:# Term by term, $B^{-1} * B$: the like terms add to $1$ and every plane part cancels.
+notebooks/displaymv.py:431:# grams by it gives moles: the $\vec{\mathbf{e}}_1$ cancels by Rule 1, as units cancel
+notebooks/displaymv.py:562:show_cancellation(
+notebooks/displayproofs.py:35:# term. The reader checks each row and watches the two sides cancel. Lean, a proof
+notebooks/displayproofs.py:44:from gacalc.nbdisplay import show_cancellation, show_mult
+notebooks/displayproofs.py:95:# **The two sides cancel.** For each blade, every term of $A * (B + C)$ meets the same
+notebooks/displayproofs.py:99:show_cancellation(
+notebooks/displayproofs.py:109:# `mul_add` multiplies out the same definitions and checks the same cancellation,
+notebooks/displayrotations.py:159:# well as a vector, and the second product makes that trivector **cancel**, leaving a
+notebooks/displayrotations.py:169:# **Step 2 --- $(R * \vec{\mathbf{v}}) * R^{-1}$** (the trivector cancels; a pure vector
+notebooks/reflection-3d.py:339:# cancel. Their difference:
+notebooks/reflection.py:285:# cancel and it stays. The part across anticommutes with $\vec{\mathbf{b}}$ (swapping
+notebooks/rotation-from-vectors.py:114:# one), the first vector cancels and $\hat{\mathbf{b}}$ is left:
+== notebook cells after a 'difference' markdown cell
+notebooks/bootstrap-product.py:39:# sides, then their difference.
+notebooks/bootstrap-product.py:240:# Their difference:
+notebooks/bootstrap-product.py:254:# Its difference from $\vec{\mathbf{a}} * \vec{\mathbf{b}}$:
+notebooks/bootstrap-product.py:274:# Their difference:
+notebooks/bootstrap-product.py:294:# Their difference:
+notebooks/bootstrap-product.py:314:# Their difference:
+notebooks/bootstrap-product.py:334:# Their difference:
+notebooks/bootstrap-product.py:348:# Its difference from $\vec{\mathbf{a}} \cdot \vec{\mathbf{b}}$:
+notebooks/bootstrap-product.py:389:# Their difference:
+notebooks/bootstrap-projection-from-product.py:32:# rerun. Each check shows both sides, then their difference.
+notebooks/bootstrap-projection-from-product.py:235:# Their difference:
+notebooks/bootstrap-projection-from-product.py:249:# Its difference from $1$:
+notebooks/bootstrap-projection-from-product.py:272:# Their difference:
+notebooks/bootstrap-projection-from-product.py:290:# Their difference:
+notebooks/bootstrap-projection-from-product.py:304:# Its difference from $\vec{\mathbf{b}}$:
+notebooks/bootstrap-projection-from-product.py:318:# Its difference from the product's:
+notebooks/bootstrap-projection-from-product.py:330:# Its difference from the product's:
+notebooks/bootstrap-projection.py:38:# figures; change them and rerun. Each check shows both sides, then their difference.
+notebooks/bootstrap-projection.py:315:# Their difference:
+notebooks/bootstrap-projection.py:334:# Their difference:
+notebooks/bootstrap-projection.py:357:# Their difference:
+notebooks/bootstrap-projection.py:380:# Their difference:
+notebooks/bootstrap-projection.py:400:# Their difference:
+notebooks/bootstrap-projection.py:415:# Its difference from the projection:
+notebooks/bootstrap-projection.py:438:# Its difference from the construction's:
+notebooks/bootstrap-projection.py:450:# Its difference from the construction's:
+notebooks/bootstrap-rotation-from-product.py:34:# figures; change them and rerun. Each check shows both sides, then their difference.
+notebooks/bootstrap-rotation-from-product.py:266:# Their difference:
+notebooks/bootstrap-rotation-from-product.py:286:# Their difference:
+notebooks/bootstrap-rotation-from-product.py:306:# Their difference:
+notebooks/bootstrap-rotation-from-product.py:314:# The sandwich and the one-sided form were shown above. Their difference:
+notebooks/bootstrap-rotation-from-product.py:341:# Their difference:
+notebooks/bootstrap-rotation-from-product.py:355:# Its difference from the one-sided form:
+notebooks/bootstrap-rotation-from-projection.py:40:# then their difference.
+notebooks/bootstrap-rotation-from-projection.py:299:# Their difference:
+notebooks/bootstrap-rotation-from-projection.py:318:# Their difference:
+notebooks/bootstrap-rotation-from-projection.py:332:# Its difference from $1$:
+notebooks/bootstrap-rotation-from-projection.py:363:# Their difference:
+notebooks/bootstrap-rotation-from-projection.py:383:# Their difference:
+notebooks/bootstrap-rotation-from-projection.py:415:# Their difference:
+notebooks/bootstrap-rotation-from-projection.py:437:# Their difference:
+notebooks/bootstrap-rotation-from-projection.py:455:# Its difference from $\vec{\mathbf{v}}'$:
+notebooks/bootstrap-rotation-from-projection.py:476:# Their difference:
+notebooks/bootstrap-rotation-from-projection.py:491:# Its difference from $\vec{\mathbf{v}}'$:
+notebooks/bootstrap-rotation.py:30:# rerun. Each check shows both sides, then their difference.
+notebooks/bootstrap-rotation.py:197:# Their difference:
+notebooks/bootstrap-rotation.py:235:# Their difference:
+notebooks/bootstrap-rotation.py:259:# Their difference:
+notebooks/bootstrap-rotation.py:282:# Their difference:
+notebooks/bootstrap-rotation.py:305:# Their difference:
+notebooks/bootstrap-rotation.py:319:# Its difference from $\vec{\mathbf{v}}$:
+notebooks/bootstrap-rotation.py:349:# Their difference:
+notebooks/bootstrap-rotation.py:371:# Their difference:
+notebooks/canonical-form.py:97:# Both come out as $2\sqrt{2}$, so their difference is $0$:
+notebooks/canonical-form.py:150:# Its difference from $\frac{5}{6}$:
+notebooks/defining-g2.py:137:# and their difference subtracts them:
+notebooks/defining-g2.py:275:# Their difference:
+notebooks/defining-g2.py:403:# The parts add back up to $A$; the difference:
+notebooks/displayg2.py:83:# of plane `e_12`; it is the same value as the product, so their difference is $0$:
+notebooks/displayg2.py:163:# \vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$. Both sides, then their difference, which
+notebooks/displayg2areas.py:210:# and the unsigned area is its absolute value; their difference is $0$:
+notebooks/displayg3.py:87:# `e_123`, and the difference between the two is $0$:
+notebooks/displayg3.py:204:# symbol, so a zero difference proves the product is associative for every three
+notebooks/displayg3measures.py:70:# An area has no direction, so swapping the sides changes nothing; the difference is
+notebooks/displayg3measures.py:196:# and their difference:
+notebooks/displaymv.py:356:# divided by its size. The difference of the two ways is $0$:
+notebooks/displaymv.py:391:# shadow. The difference:
+notebooks/displaymv.py:555:# every term has a partner, so the difference is $0$. Because every coefficient is a
+notebooks/displayrotations.py:109:# They are equal -- their difference is the **zero** multivector:
+notebooks/displayrotations.py:145:# Again equal -- the difference is the zero multivector:
+notebooks/displayrotations.py:285:# plane and angle (their difference is $0$):
+notebooks/dual-3d.py:122:# Their difference:
+notebooks/dual-3d.py:171:# perpendicular pair. Its difference from the dual:
+notebooks/dual-3d.py:250:# Their difference:
+notebooks/dual-3d.py:293:# Their difference:
+notebooks/dual-3d.py:317:# The projection plus the rejection is $\vec{\mathbf{b}}$; their difference:
+notebooks/dual-3d.py:358:# Its difference from the dual:
+notebooks/dual.py:171:# Their difference:
+notebooks/dual.py:216:# Their difference:
+notebooks/dual.py:262:# Its difference from the dual:
+notebooks/frame-qr-2d.py:39:# difference.
+notebooks/frame-qr-2d.py:218:# Its difference from $\vec{\mathbf{v}}_2$:
+notebooks/frame-qr-2d.py:292:# Their difference:
+notebooks/frame-qr-2d.py:811:# Its difference from the peeled $\vec{\mathbf{x}}$:
+notebooks/frame-qr-2d.py:823:# Its difference from $\vec{\mathbf{y}}$:
+notebooks/frame-qr-3d.py:38:# the figures. Each check shows both sides, then their difference.
+notebooks/frame-qr-3d.py:188:# Their difference:
+notebooks/frame-qr-3d.py:557:# Its difference from the peeled $\vec{\mathbf{x}}$:
+notebooks/frame-qr-3d.py:569:# Its difference from $\vec{\mathbf{y}}$:
+notebooks/geometric-product.py:39:# appear only to draw the figure. Each check shows both sides, then their difference.
+notebooks/geometric-product.py:171:# Their difference:
+notebooks/geometric-product.py:186:# Its difference from $\vec{\mathbf{a}} * R$:
+notebooks/geometric-product.py:219:# Their difference:
+notebooks/geometric-product.py:236:# Its difference from $\vec{\mathbf{a}} * R$:
+notebooks/levels-of-abstraction.py:46:# only to draw the figure. Each check shows the forms, then their difference.
+notebooks/levels-of-abstraction.py:233:# Their difference from the whole product:
+notebooks/one-dimension.py:281:# difference is
+notebooks/product-from-projection.py:36:# then their difference.
+notebooks/product-from-projection.py:179:# Its difference from $a_1 * b_1 + a_2 * b_2$:
+notebooks/product-from-projection.py:192:# Its difference from $b_1 * a_2 - b_2 * a_1$:
+notebooks/product-from-projection.py:230:# Its difference from the built object:
+notebooks/product-from-projection.py:245:# Its difference from $|\vec{\mathbf{b}}| * x$:
+notebooks/product-from-projection.py:258:# Its difference from $|\vec{\mathbf{b}}| * y * \mathbf{e}_{12}$:
+notebooks/product-from-projection.py:271:# Its difference from $\vec{\mathbf{b}} * \vec{\mathbf{a}}$:
+notebooks/projection-rejection-3d.py:150:# They add back to $\vec{\mathbf{a}}$; the difference:
+notebooks/projection-rejection-3d.py:242:# and it is the dot product; the difference:
+notebooks/projection-rejection-3d.py:256:# and it is the wedge; the difference:
+notebooks/projection-rejection-3d.py:263:# difference:
+notebooks/projection.py:100:# They add back to $\vec{\mathbf{b}}$; the difference:
+notebooks/proof-cross.py:336:# Their difference:
+notebooks/proof-projection-3d.py:338:# Their difference:
+notebooks/proof-projection-3d.py:358:# Their difference:
+notebooks/proof-projection.py:303:# Each check shows both formulas, then their difference. The coordinates are symbols, so
+notebooks/proof-projection.py:304:# a difference of $0$ holds for every $\vec{\mathbf{a}}$ and every nonzero
+notebooks/proof-projection.py:322:# Their difference:
+notebooks/proof-projection.py:342:# Their difference:
+notebooks/proof-reciprocal-frame.py:38:# fully general vector. Each check shows both sides, then their difference. Numbers
+notebooks/proof-reciprocal-frame.py:142:# Their difference:
+notebooks/proof-reciprocal-frame.py:161:# Their difference:
+notebooks/proof-reciprocal-frame.py:235:# Their difference:
+notebooks/proof-reciprocal-frame.py:250:# Its difference from $x_1$:
+notebooks/proof-reciprocal-frame.py:263:# Its difference from $x_2$:
+notebooks/proof-reciprocal-frame.py:289:# Their difference:
+notebooks/proof-reciprocal-frame.py:350:# Its difference from $x_1$:
+notebooks/proof-reciprocal-frame.py:365:# $\vec{\mathbf{m}}$. Its difference from $\vec{\mathbf{a}}^1$:
+notebooks/proof-reciprocal-frame.py:397:# Its difference from $\vec{\mathbf{a}}^2$:
+notebooks/proof-reciprocal-frame.py:427:# Its difference from $\vec{\mathbf{x}}$:
+notebooks/proof-reciprocal-frame.py:439:# Its difference from $\vec{\mathbf{x}}$:
+notebooks/proof-reciprocal-frame.py:451:# Its difference from $\vec{\mathbf{y}}$:
+notebooks/proof-reciprocal-frame.py:463:# Its difference from $\vec{\mathbf{y}}$:
+notebooks/proof-reciprocal-frame.py:481:# Their difference:
+notebooks/proof-reciprocal-frame.py:595:# Its difference from the identity:
+notebooks/proof-reciprocal-frame.py:614:# Its difference from $\vec{\mathbf{z}}$:
+notebooks/proof-reciprocal-frame.py:632:# Its difference from $\vec{\mathbf{b}}^1$:
+notebooks/proof-reciprocal-frame.py:648:# Its difference from $\vec{\mathbf{b}}^3$:
+notebooks/proof-reciprocal-frame.py:667:# Its difference from $\vec{\mathbf{z}}$:
+notebooks/proof-reciprocal-frame.py:679:# Its difference from $\vec{\mathbf{z}}$:
+notebooks/proof-reciprocal-frame.py:691:# Its difference from $\vec{\mathbf{z}}$:
+notebooks/proof-reciprocal-frame.py:703:# Its difference from $\vec{\mathbf{z}}$:
+notebooks/proof-reciprocal-frame.py:721:# Their difference:
+notebooks/proof-rotate-from-a-to-b.py:41:# difference.
+notebooks/proof-rotate-from-a-to-b.py:105:# Their difference:
+notebooks/proof-rotate-from-a-to-b.py:117:# The difference from the first order:
+notebooks/proof-rotate-from-a-to-b.py:190:# Their difference:
+notebooks/proof-rotate-from-a-to-b.py:266:# Their difference:
+notebooks/proof-rotate-from-a-to-b.py:456:# Their difference:
+notebooks/proof-rotate-from-a-to-b.py:479:# Their difference:
+notebooks/reflection-3d.py:107:# and their difference, the reflection:
+notebooks/reflection-3d.py:114:# gacalc's `reflected_across(a)` gives the same; their difference:
+notebooks/reflection-3d.py:121:# $\vec{\mathbf{a}} * \vec{\mathbf{v}} * \vec{\mathbf{a}}^{-1}$. Its difference from the
+notebooks/reflection-3d.py:204:# gacalc's `reflected_across(B)` gives the same; their difference:
+notebooks/reflection-3d.py:339:# cancel. Their difference:
+notebooks/reflection.py:262:# Its difference from the reflection built by rotating:
+notebooks/reflection.py:269:# difference from the reflection built by rotating:
+notebooks/reflection.py:316:# Its difference from the reflection built by rotating:
+notebooks/reflection.py:338:# Their difference:
+notebooks/reflection.py:353:# Its difference from $\vec{\mathbf{a}}$:
+notebooks/relative-graph-paper.py:243:# Its difference from $T_b \circ S_m$ is the slide scaled by $m - 1$:
+notebooks/relative-graph-paper.py:266:# $(x, y)$; the difference:
+notebooks/rotate.py:33:# figures. Each check shows both sides, then their difference.
+notebooks/rotate.py:137:# Its difference from the rotated $\vec{\mathbf{a}}$:
+notebooks/rotate.py:166:# Their difference:
+notebooks/rotate.py:206:# Their difference:
+notebooks/rotation-from-vectors.py:36:# figures. Each check shows both sides, then their difference.
+notebooks/rotation-from-vectors.py:95:# $\sin(\beta - \alpha)$: the angle-difference identities, from multiplying.
+notebooks/rotation-from-vectors.py:123:# Its difference from $\hat{\mathbf{b}}$:
+notebooks/rotation-from-vectors.py:283:# Their difference:
+notebooks/three-dimensions.py:32:# both sides, then their difference.
+notebooks/three-dimensions.py:149:# Their difference:
+notebooks/three-dimensions.py:167:# Their difference:
+notebooks/vector-addition.py:33:# difference.
+notebooks/vector-addition.py:102:# Each coordinate is the same two numbers added in the other order. Their difference:
+notebooks/vector-addition.py:146:# Its difference from $\vec{\mathbf{a}}$:
+notebooks/vector-addition.py:158:# Its difference from $\vec{\mathbf{a}} - \vec{\mathbf{b}}$:
+notebooks/vector-addition.py:204:# Its difference from $\vec{\mathbf{a}} + \vec{\mathbf{b}}$:
+notebooks/vector-addition.py:252:# Its difference from $\vec{\mathbf{a}}$:
+notebooks/vector-addition.py:270:# Their difference:
+== simplify / zero checks in notebook code
+notebooks/bootstrap-rotation-from-projection.py:141:cos: Real = sympy.simplify(sympy.sympify(measured.coefficient(e_1) / b.magnitude()))
+notebooks/bootstrap-rotation-from-projection.py:148:sin: Real = sympy.simplify(sympy.sympify(measured.coefficient(e_2) / b.magnitude()))
+notebooks/bootstrap-rotation-from-projection.py:302:sympy.simplify(sympy.sympify(cos - cos_formula))
+notebooks/bootstrap-rotation-from-projection.py:321:sympy.simplify(sympy.sympify(sin - sin_formula))
+notebooks/bootstrap-rotation-from-projection.py:329:sympy.simplify(sympy.sympify(cos**2 + sin**2))
+notebooks/bootstrap-rotation-from-projection.py:335:sympy.simplify(sympy.sympify(cos**2 + sin**2 - 1))
+notebooks/bootstrap-rotation-from-projection.py:343:sympy.simplify(sympy.sympify(cos_part.dot(sin_part).scalar_part()))
+notebooks/bootstrap-rotation-from-projection.py:374:sympy.simplify(sympy.sympify(rotated.magnitude_squared()))
+notebooks/bootstrap-rotation-from-projection.py:386:sympy.simplify(sympy.sympify(rotated.magnitude_squared() - v.magnitude_squared()))
+notebooks/bootstrap-rotation.py:270:rotated_length_squared: Real = sympy.simplify(
+notebooks/bootstrap-rotation.py:285:sympy.simplify(sympy.sympify(rotated_length_squared - v.magnitude_squared()))
+notebooks/canonical-form.py:111:sympy.expand((1 + root_2) ** 2)
+notebooks/displayg2areas.py:100:sympy.simplify(
+notebooks/displayg2areas.py:124:        sympy.simplify(sympy.sympify((a.magnitude() * b.magnitude() * sin) ** 2))
+notebooks/displayg2areas.py:139:sympy.simplify(sympy.sympify(wedge_magnitude_from_sin - (a ^ b).magnitude()))
+notebooks/displayg2areas.py:159:sympy.simplify(
+notebooks/displayg3measures.py:114:sympy.simplify(
+notebooks/displayg3measures.py:169:sympy.simplify(
+notebooks/displayg3measures.py:199:sympy.simplify(sympy.sympify(wedge_magnitude_from_sin - (a ^ b).magnitude()))
+notebooks/displayg3measures.py:214:sympy.simplify(
+notebooks/displayrotations.py:59:    coefficients carry a ``/ |R|^2`` factor; ``expand_trig`` then ``simplify``
+notebooks/displayrotations.py:64:            blade: sympy.simplify(sympy.expand_trig(coef))
+notebooks/dual-3d.py:103:sympy.simplify(sympy.sympify(a.dot(r).scalar_part()))
+notebooks/dual-3d.py:259:sympy.simplify(sympy.sympify(a.dot(d).scalar_part()))
+notebooks/dual-3d.py:302:sympy.simplify(sympy.sympify(r.dot(d).scalar_part()))
+notebooks/dual-3d.py:326:sympy.simplify(sympy.sympify(b.dot(d).scalar_part()))
+notebooks/dual-3d.py:335:sympy.simplify(sympy.sympify(d.cosine(a)))
+notebooks/dual-3d.py:341:sympy.simplify(sympy.sympify(d.cosine(b)))
+notebooks/dual.py:174:sympy.simplify(sympy.sympify(a_dual.magnitude_squared() - a.magnitude_squared()))
+notebooks/dual.py:248:sympy.simplify(sympy.sympify(a.cosine(a_dual)))
+notebooks/frame-qr-2d.py:127:sympy.simplify(sympy.sympify(w_1.dot(w_2).scalar_part()))
+notebooks/frame-qr-2d.py:198:table: sympy.Matrix = sympy.Matrix(frame.coefficients()).applyfunc(sympy.simplify)
+notebooks/frame-qr-2d.py:274:height: Real = sympy.simplify(sympy.sympify(w_2.magnitude()))
+notebooks/frame-qr-2d.py:281:base_times_height: Real = sympy.simplify(sympy.sympify(base * height))
+notebooks/frame-qr-2d.py:295:sympy.simplify(sympy.sympify(base_times_height - area))
+notebooks/frame-qr-2d.py:425:    .applyfunc(sympy.simplify)
+notebooks/frame-qr-2d.py:436:    .applyfunc(sympy.simplify)
+notebooks/frame-qr-2d.py:444:QR_product: sympy.Matrix = (Q_matrix * R_matrix).applyfunc(sympy.simplify)
+notebooks/frame-qr-2d.py:451:(QR_product - F).applyfunc(sympy.simplify)
+notebooks/frame-qr-2d.py:596:sympy.simplify(sympy.sympify(b_2.dot(a_1).scalar_part()))
+notebooks/frame-qr-2d.py:670:x_2: Real = sympy.simplify(sympy.sympify((y_onto_w_2 / b_2).scalar_part()))
+notebooks/frame-qr-2d.py:785:x_1: Real = sympy.simplify(
+notebooks/frame-qr-2d.py:927:sympy.simplify(sympy.sympify(reciprocal_2.dot(a_1).scalar_part()))
+notebooks/frame-qr-2d.py:933:sympy.simplify(sympy.sympify(reciprocal_2.dot(a_2).scalar_part()))
+notebooks/frame-qr-3d.py:191:sympy.simplify(sympy.sympify(base_area * height - volume))
+notebooks/frame-qr-3d.py:353:x_3: Real = sympy.simplify(sympy.sympify((y_onto_w_3 / w_3).scalar_part()))
+notebooks/frame-qr-3d.py:457:x_2: Real = sympy.simplify(
+notebooks/frame-qr-3d.py:474:x_1: Real = sympy.simplify(
+notebooks/levels-of-abstraction.py:280:sympy.simplify(sympy.sympify(a.sine(b) + b.sine(a)))
+notebooks/levels-of-abstraction.py:286:sympy.simplify(sympy.sympify(abs(a.sine(b)) - a.abs_sin(b)))
+notebooks/levels-of-abstraction.py:292:sympy.simplify(sympy.sympify(a.cosine(b) ** 2 + a.sine(b) ** 2))
+notebooks/levels-of-abstraction.py:298:sympy.simplify(sympy.sympify(a.cosine(b) ** 2 + a.sine(b) ** 2 - 1))
+notebooks/one-dimension.py:246:        text=f"${sympy.latex(sympy.nsimplify(result))}$" if labelled else "",
+notebooks/one-dimension.py:284:sympy.simplify(sympy.sympify(f(x_input).coefficient(e_1) - (m * x + b)))
+notebooks/product-from-projection.py:175:b_times_x: Real = sympy.simplify(sympy.sympify(b.magnitude() * x))
+notebooks/product-from-projection.py:182:sympy.simplify(sympy.sympify(b_times_x - (a_1 * b_1 + a_2 * b_2)))
+notebooks/product-from-projection.py:188:b_times_y: Real = sympy.simplify(sympy.sympify(b.magnitude() * y))
+notebooks/product-from-projection.py:195:sympy.simplify(sympy.sympify(b_times_y - (b_1 * a_2 - b_2 * a_1)))
+notebooks/product-from-projection.py:248:sympy.simplify(sympy.sympify(dot - b.magnitude() * x))
+notebooks/projection-rejection-3d.py:160:sympy.simplify(sympy.sympify(rejection_plane.dot(p).scalar_part()))
+notebooks/projection-rejection-3d.py:166:sympy.simplify(sympy.sympify(rejection_plane.dot(q).scalar_part()))
+notebooks/projection-rejection-3d.py:245:sympy.simplify(sympy.sympify(along.scalar_part() - a.dot(b).scalar_part()))
+notebooks/proof-reciprocal-frame.py:220:            sympy.simplify(sympy.sympify(upper.dot(lower).scalar_part()))
+notebooks/proof-reciprocal-frame.py:246:coordinate_1: Real = sympy.simplify(sympy.sympify(reciprocal[0].dot(y).scalar_part()))
+notebooks/proof-reciprocal-frame.py:259:coordinate_2: Real = sympy.simplify(sympy.sympify(reciprocal[1].dot(y).scalar_part()))
+notebooks/proof-reciprocal-frame.py:346:height_ratio: Real = sympy.simplify(sympy.sympify(height_of_y / height_of_a_1))
+notebooks/proof-reciprocal-frame.py:586:            sympy.simplify(sympy.sympify(upper.dot(lower).scalar_part()))
+notebooks/reflection-3d.py:359:sympy.simplify(sympy.sympify(mirror.magnitude_squared() - v.magnitude_squared()))
+notebooks/reflection.py:329:sympy.simplify(sympy.sympify(reflection.magnitude_squared()))
+notebooks/reflection.py:341:sympy.simplify(sympy.sympify(reflection.magnitude_squared() - a.magnitude_squared()))
+notebooks/vectors-as-number-lines.py:104:sympy.simplify(sympy.sympify(coordinate_along(on_line, along=v)))
+notebooks/vectors-as-number-lines.py:122:sympy.simplify(sympy.sympify(coordinate_along(p, along=v)))
+notebooks/vectors-as-number-lines.py:129:sympy.simplify(sympy.sympify(coordinate_along(p, along=2 * v)))
+notebooks/vectors-as-number-lines.py:136:sympy.simplify(sympy.sympify(coordinate_along(p, along=-1 * v)))
+notebooks/vectors-as-number-lines.py:144:sympy.simplify(sympy.sympify(coordinate_along(on_line, along=Scalar(s) * v)))

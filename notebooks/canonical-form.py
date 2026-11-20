@@ -35,6 +35,8 @@
 # %%
 import sympy
 
+from gacalc.nbdisplay import show_difference
+
 # %% [markdown]
 # ## A decimal is a nearby number
 #
@@ -97,7 +99,7 @@ sympy.sqrt(8)
 # Both come out as $2\sqrt{2}$, so their difference is $0$:
 
 # %%
-sympy.sqrt(8) - 4 / sympy.sqrt(2)
+show_difference(sympy.sqrt(8), 4 / sympy.sqrt(2))
 
 # %% [markdown]
 # Multiplying out is part of the form too. $(1 + \sqrt{2})^2$, expanded the way you
@@ -150,7 +152,7 @@ sympy.Rational(cracker_decimal)
 # Its difference from $\frac{5}{6}$:
 
 # %%
-sympy.Rational(cracker_decimal) - sympy.Rational(5, 6)
+show_difference(sympy.Rational(cracker_decimal), sympy.Rational(5, 6))
 
 # %% [markdown]
 # Times $12$ crackers, the rounding happens to land back on $10$:

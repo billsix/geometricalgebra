@@ -52,7 +52,7 @@ from gacalc.epixscene.bootstrap_live import (
 from gacalc.epixscene.frame_scene import patch
 from gacalc.epixscene.venn_scene import g2_subsets_scene
 from gacalc.g2 import Bivector, G, Scalar, Vector, Versor, e_1, e_2, e_12
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 
 # %% [markdown]
 # ## The kinds of element, at a glance
@@ -275,7 +275,7 @@ B_1 * (C * D)
 # Their difference:
 
 # %%
-((B_1 * C) * D - B_1 * (C * D)).expanded()
+show_difference((B_1 * C) * D, B_1 * (C * D))
 
 # %% [markdown]
 # So we may write a product of several elements with no parentheses at all. (That this
@@ -403,7 +403,7 @@ A.r_vector_part(2)
 # The parts add back up to $A$; the difference:
 
 # %%
-(A.r_vector_part(0) + A.r_vector_part(1) + A.r_vector_part(2) - A).expanded()
+show_difference(A.r_vector_part(0) + A.r_vector_part(1) + A.r_vector_part(2), A)
 
 # %% [markdown]
 # ## How the blades resolve when we plot
