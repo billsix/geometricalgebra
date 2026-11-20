@@ -158,7 +158,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
 # drivers) for the book's LaTeX-native figures; EPIX_COMMIT is the ONE place its pin
 # lives (tasks/archive/2026/10/07/epix-plot-integration.md). `make test` needs neither.
 ARG USE_EPIX=0
-ARG EPIX_COMMIT=33d01942daff0594fe95987696cab68fe95393bf
+ARG EPIX_COMMIT=5f7a8c29f86c26dcc9fc1670cc99b0b32878a399
 
 # ePiX (github.com/billsix/epix-mirror), pinned to EPIX_COMMIT, built from source with
 # Meson into /usr/local -- the `epix`/`elaps`/`flix`/`laps` drivers + libepix for the
