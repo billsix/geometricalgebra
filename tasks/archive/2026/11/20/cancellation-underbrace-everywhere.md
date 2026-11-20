@@ -32,7 +32,7 @@ in `CLAUDE.md` ("Book: one name per operation…": a check's difference is shown
   `left - right = <simplified>`. `product_table_markdown` (so `show_mult`) numbers the
   monomials of the table's products that cancel in the sum (a term and its negative of the same
   blade), and `show_mult` then says "Terms with the same number cancel in the sum".
-- **Notebooks: 152 check cells converted.** `tasks/adhoc/cancellation-underbrace-everywhere/convert_difference_cells.py`
+- **Notebooks: 152 check cells converted.** The one-shot codemod `convert_difference_cells.py` (in 5ecae03, removed at archive)
   rewrote 149 cells: each code cell after a Markdown cell mentioning a difference whose body was
   `sympy.simplify(sympy.sympify(L - R))`, `sympy.simplify(L - R)`, `(L - R).simplified()`,
   `(L - R).expanded()` or bare `L - R` became `show_difference(L, R)`, with the import added.
@@ -65,7 +65,7 @@ in `CLAUDE.md` ("Book: one name per operation…": a check's difference is shown
 
 ## Verification
 
-- `tasks/adhoc/cancellation-underbrace-everywhere/execute_notebooks.sh` ran all 43 notebooks in
+- `execute_notebooks.sh` (`tasks/adhoc/cancellation-underbrace-everywhere/` in 5ecae03) ran all 43 notebooks in
   the image: all executed; `scan_outputs.py` listed 319 cancellation lines, 14 flagged, which
   led to the simplify-first step (a 3D round trip in `proof-reciprocal-frame.py` had stalled
   expanding unsimplified sides), the length limit (two 38k-character lines), the zero-blade skip
