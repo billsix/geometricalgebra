@@ -91,9 +91,10 @@ this standard; see "History of the model" below.) What they do, as rules:
     only where a student can genuinely predict (a square, a swap, a length from a Pythagorean
     triple), not on every cell.
 14. **It ends in a proof.** With general symbolic elements, a law is shown for every element, not by
-    example, and the notebook says so. When the law's cancellation is readable, show it with
-    `show_cancellation` (`src/gacalc/nbdisplay.py`). Above a few dozen terms a side, show the zero
-    difference and say why the table is skipped.
+    example, and the notebook says so. Show the law's cancellation with `show_cancellation`, or,
+    after cells that already showed both sides, `show_difference` (`src/gacalc/nbdisplay.py`): every
+    cancelling pair is numbered alike under an `\underbrace`. A line too long to read term by term
+    (`nbdisplay.LONGEST_CANCELLATION_LINE`) shows only what the difference simplifies to.
 15. **Zero developer noise**: no `pyright: ignore` trailers, no typing workarounds in sight, short
     cells, mostly one expression. A cell's bare last expression needs no comment: `pyrightconfig.json`
     turns `reportUnusedExpression` off for `notebooks/`.

@@ -150,10 +150,12 @@ preserved verbatim in the appendix.
     computed at the plot values, never typed. The helper gives every live figure the same opaque
     `#f2f2f2` background as the prebuilt ones. matplotlib isn't used in the book's notebooks.
   - **Checks sit beside what they check, and show both sides first.** A check is three cells: the
-    first side, the second side, then their difference, which shows `0`. Several facts mean several
-    checks. Don't print a list of differences, don't use an `assert` or `==` (they show nothing),
-    and don't put a closing section of checks after unrelated material. This is the
-    symbolic-Python form the three-forms rule in `CLAUDE.md` asks for.
+    first side, the second side, then their difference, shown with `show_difference(first, second)`
+    so each cancelling pair is numbered under an `\underbrace`, never a bare `0` from
+    `simplify(first - second)`. Several facts mean several checks. Don't print a list of
+    differences, don't use an `assert` or `==` (they show nothing), and don't put a closing section
+    of checks after unrelated material. This is the symbolic-Python form the three-forms rule in
+    `CLAUDE.md` asks for.
   - **Build only on what came before:** every construction uses results taught earlier, and
     rotations come from the ones the book built (`Vector.rotate`, `rotation_from_to`).
     `tasks/reference/teaching-order-and-dependencies.md` has the rule, the teaching order and the

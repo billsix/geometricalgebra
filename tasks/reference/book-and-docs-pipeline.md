@@ -142,7 +142,11 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   siblings.
   - `src/gacalc/epixscene/scene2d.py` is the **generic** 2D stage and primitives every figure builds
     from: colours, `polar`, `unit_circle_scene` (the disc-and-axes stage, with a `disc: bool = True`
-    toggle so a figure that doesn't need the circle still gets axes), `vector`, `dashed_vector` (a
+    toggle so a figure that doesn't need the circle still gets axes, and a `basis: bool = True` toggle;
+    the axes are light, unlabelled lines and `basis_vectors()` draws the labelled unit `e₁`, `e₂`
+    after the figure's body, never `x`/`y`: only `line_scene.graph_paper_scene`, the high-school graph
+    of `y = m * x + b` in `one-dimension`, labels its axes `x` and `y`;
+    `tasks/archive/2026/11/20/plots-label-basis-vectors-not-xy.md`), `vector`, `dashed_vector` (a
     translated copy, drawn via `epix.dashed()` then reset with `epix.line_style(style="-")`),
     `parallelogram`, `grid` (a light unit graph-paper grid across the box, every line shifted by an
     `offset` — `offset=b` draws the paper slid by `b`; `faint` dashes it for the pre-slide copy; the
@@ -352,6 +356,17 @@ Dockerfile runs when `USE_JUPYTER=1` or `BUILD_DOCS=1` (the Sphinx PDF relies on
   `fncychap`, `wrapfig`, `capt-of`, `needspace`, `tabulary`, `framed`, `titlesec`,
   `varwidth`, `fancyhdr`, `multirow`, `threeparttable`, `eqparbox` — install them
   explicitly (the recommended collections alone don't cover `wrapfig`/`capt-of`/…).
+- **Don't edit `src/` or `notebooks/` while a `make docs` (or a notebook execution run) is going.**
+  The build bind-mounts the live tree, and each notebook kernel imports gacalc when it starts, so
+  an edit made mid-build lands in the notebooks run after it. A half-written edit to
+  `nbdisplay.py` failed a 2026-11-20 build that way; `book/docs/*.rst` and `tasks/` are safe once
+  Sphinx has read them.
+- **`tools/render_epix_figures.py` takes figure stems** (`proj3d_e12`), not paths: given
+  `book/figures/epix/proj3d_e12.py` it rendered nothing and printed nothing, leaving the old PNG
+  (2026-11-20).
+- **`docs.sh` does not delete stale converted notebooks.** A notebook removed from `notebooks/`
+  keeps its gitignored `book/docs/notebooks/<name>.ipynb`, which Sphinx then warns is in no
+  toctree; delete it by hand.
 
 ## Package set (Dockerfile `BUILD_DOCS` block)
 

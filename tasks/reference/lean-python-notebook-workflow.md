@@ -84,8 +84,8 @@ the student watch the terms cancel. What makes a notebook checkable:
   distributive or anticommuting move per row, so each row can be checked alone. It is shown first at
   the plot values, short enough to check by hand, then symbolically.
 - **Both sides before their difference.** A check prints the left side and the right side, then
-  their difference simplifying to `0` (`CLAUDE.md`, "Book: one name per operation"). A bare `0` on
-  its own shows nothing.
+  their difference with `show_difference(left, right)`, each cancelling pair numbered
+  (`CLAUDE.md`, "Book: one name per operation"). A bare `0` on its own shows nothing.
 
 **Showing the cancellation: `show_cancellation`.** The maintainer (2026-09-30) noted that an
 associativity notebook that printed the two expansions and then `0` "doesn't show" the cancellation.
@@ -93,7 +93,9 @@ associativity notebook that printed the two expansions and then `0` "doesn't sho
 then one line per blade (`cancellation_latex`). Each monomial of the left side that meets an equal
 monomial on the right is marked `\underbrace{…}_{k}` on both sides, with the same `k`. Whatever does
 not cancel is left unmarked, and the line ends with the residual, `0` for an identity. MathJax and
-myst-nb render `\underbrace`.
+myst-nb render `\underbrace`. Since 2026-11-20 it also takes numbers, simplifies each side first,
+and has a sibling, `show_difference(left, right)`, that shows only the numbered lines
+(`tasks/archive/2026/11/20/cancellation-underbrace-everywhere.md`).
 
 **The prototype, distributivity** (`notebooks/displayproofs.py`; William Emerison Six
 <billsix@gmail.com> chose distributivity and "checked by Lean", 2026-11-18):
