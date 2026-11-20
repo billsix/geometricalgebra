@@ -473,8 +473,8 @@ over a "run it on your host" instruction.
   `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
 - **`make docs`** — builds the Sphinx book ("Geometry 2", `book/docs/`) to HTML + PDF into
   `output/gacalc/` (needs an image built with `BUILD_DOCS=1`, the default). It ends by running
-  `tools/check_math_overflow.py`, a report (not a gate) of the equations and tables that run past
-  the PDF's margin, and leaves the LaTeX log at `output/gacalc/geometry2.log`. Long computed math
+  `tools/check_math_overflow.py`, and **fails** if an equation or table runs past the PDF's
+  margin, or a box (a table) is taller than a page (after copying the PDF and the LaTeX log, `output/gacalc/geometry2.log`). Long computed math
   breaks itself into rows (`base.LATEX_LINE_WIDTH`); a hand-written `.. math::` block needs `\\`
   at each line break (`tasks/reference/book-and-docs-pipeline.md`).
 - **`make dist`** (build sdist+wheel, `GACALC_DIMS=1,2,3,4,5`) → **`make upload`** /
@@ -485,7 +485,8 @@ over a "run it on your host" instruction.
   `sympy`; extras `notebooks`/`jupyter`/`dev`/`gl` (`gl` = glfw, PyOpenGL, imgui-bundle, Pillow for
   `gacalc.gl`; the image always installs it, plus its system libraries from
   `entrypoint/07-install-gl.sh`, so that `make test` can import `gacalc.gl`); there is **no
-  `requirements.txt`**. License LGPL-2.1-only.
+  `requirements.txt`**. The package ships the PEP 561 `py.typed` marker (package data), so a
+  consumer's mypy/pyright reads gacalc's annotations. License LGPL-2.1-only.
 - **License headers: every `.py` file (source, tests, tools, notebooks) starts with the project's
   LGPL-2.1-only header — copy it verbatim from `tests/test_rotate_90_degrees.py` — with
   `Copyright (c) 2025-2026 William Emerison Six` (this project began in 2025). Never the MIT /

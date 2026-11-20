@@ -288,10 +288,29 @@ the PDF build dies with `LaTeX Error: Unknown graphics extension: .svg`. Note: a
   `LATEX_LINE_WIDTH` / `TABLE_CELL_WIDTH` visible characters (`base.latex_visible_length`).
   A hand-written `.. math::` block needs `\\` (and `&`) at each line break: source newlines
   alone set it on one line.
+- **Line breaks cannot split a single term.** A term wider than its space (a fraction over a
+  long denominator in a table cell) needs a shorter form: name the long part. The 3D bivector
+  inverse in `notebooks/displaymv.py` writes `|B|²` as a symbol, `B̃ * (1/|B|²)`, checks it
+  against `inverse()` with a short `show_difference` (`|B|² * B⁻¹ = B̃`), and puts the value back
+  with `nbdisplay.at_values` at the end. A long radical may simplify (`sympy.simplify` turns the
+  3D `volume` into `√(det²)`). A `show_difference` of the long forms themselves would overflow
+  again (`tasks/archive/2026/11/20/pdf-overflow-remaining-3d-terms.md`).
+- **A bare `|` ends a Markdown table cell, even inside `$...$`.** `show_mult`'s table is
+  Markdown, so `nbdisplay._table_cell` writes each bar as `\vert` (`\|` as `\Vert`). A broken
+  cell prints raw LaTeX in the PDF, and the overflow check then sees nothing too wide, so a 0
+  from it is not proof the table is right: look at the page.
+- **A table cannot break across pages.** A Markdown table of fewer than 30 rows becomes a
+  `tabulary`, one box; taller than the page, its last rows are not printed (`Overfull \vbox
+  (Npt too high) has occurred while \output is active`, with no `.tex` line). The 3D
+  `show_mult` tables hit this when every cancelling term took its own row, because
+  `latex_visible_length` counted a fraction's numerator plus its denominator; it now counts the
+  wider of the two, so two or three such terms share a row.
 - **`tools/check_math_overflow.py`** reads `_build/latex/geometry2.log` and lists every equation
-  and table more than 10pt too wide; `entrypoint/docs.sh` runs it after `make latexpdf` as a
-  report (the build still succeeds) and copies the log to `output/gacalc/geometry2.log`.
-  What it still lists and why: `tasks/archive/2026/11/20/pdf-long-math-overflow.md`.
+  and table more than 10pt too wide, and every box more than 10pt taller than the page.
+  `entrypoint/docs.sh` runs it after `make latexpdf`, copies
+  the PDF and log to `output/gacalc/` either way, and then **fails the build** (exit 1) if the
+  check found one, so a new long value is caught when it is added. Run it on the host after a
+  build with `python tools/check_math_overflow.py`.
 
 ## Notebook PDF export (nbconvert — separate from the Sphinx PDF)
 

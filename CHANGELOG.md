@@ -12,6 +12,10 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`gacalc/py.typed`** (PEP 561): the package now says it ships its own type annotations,
+  so mypy and pyright in a consumer read gacalc's signatures (the generated `@typing.overload`
+  products included) instead of ignoring or inferring them. This can surface new type errors in
+  code that uses gacalc.
 - **`gacalc.epixscene`** — the ePiX scene helpers the book's figures and notebooks draw with
   (`scene2d`, `scene3d`, `frame_scene`, `bootstrap_live`, `line_scene`, `paper_scene`,
   `venn_scene`), moved into the package from `book/figures/epix/`. It needs ePiX
@@ -57,6 +61,8 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   coordinate versions of both, with the plane's normal written out from its coordinates.
 
 ### Changed
+- **`base.latex_visible_length`** counts a `\frac` as the wider of its numerator and
+  denominator (they stack), not both, so a long value with fractions breaks into fewer rows.
 - **A long value's LaTeX breaks into rows.** `_repr_latex_` / `blade_dict_latex` (new `width`
   argument, default `base.LATEX_LINE_WIDTH`, 60 visible characters) set a value that fits on one
   line as before, and a longer one as an `aligned` block broken between whole terms: the monomials
@@ -116,6 +122,8 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   rather than starting `coordinate_along: …`.
 
 ### Fixed
+- **`nbdisplay.product_table_markdown` / `show_mult`**: a bar in a cell (`|B|^2`, sympy's
+  `\left|x\right|`) is written `\vert`, so it no longer ends the Markdown table cell early.
 - **`nbplotutils` figures appear in a notebook's PDF/LaTeX output.** The inline backend now emits
   each figure as PDF as well as SVG; with SVG alone, myst-nb's LaTeX output fell back to the text
   `<Figure size … with 1 Axes>`.
