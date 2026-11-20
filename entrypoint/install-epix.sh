@@ -53,8 +53,13 @@ source /venv/bin/activate
 # nanobind is pinned in the repo's constraints.txt; set CONSTRAINTS to that
 # file's path to install the pinned version (unset installs the newest).
 uv pip install --python /venv/bin/python ${CONSTRAINTS:+-c "$CONSTRAINTS"} nanobind
-bash "$SRC/entrypoint/build_py.sh"
+# build_py.sh also writes the type stub with nanobind.stubgen, which imports epix._epix;
+# epix is installed only below, so put the package's own directory on the path for it.
+PYTHONPATH="$SRC/python" bash "$SRC/entrypoint/build_py.sh"
 rm -rf "$DEST"
 mv "$SRC" "$DEST"
-uv pip install --python /venv/bin/python --no-deps --no-build-isolation -e "$DEST/python"
+# compat mode writes a plain path .pth, which ty and pyright follow to epix's py.typed and
+# _epix.pyi; the default editable mode is an import hook they cannot read.
+uv pip install --python /venv/bin/python --no-deps --no-build-isolation \
+    --config-settings editable_mode=compat -e "$DEST/python"
 (cd / && python -c 'import epix; epix.Point(x=1, y=2); print("epix python front-end OK:", epix.__file__)')

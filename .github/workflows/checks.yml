@@ -51,8 +51,9 @@ jobs:
       - name: make check-regions
         run: make check-regions MINIMAL_IMAGE=1
 
-  # pyright over notebooks/, except the ones that draw live ePiX figures (pyrightconfig.json;
-  # ty, in the format job, covers all of them). pyright is in the base image group.
+  # pyright over notebooks/. The lean image has no ePiX, but it carries epix's type stubs
+  # (entrypoint/install-epix-stubs.sh), so the notebooks that draw with it are checked too.
+  # pyright is in the base image group.
   notebooks:
     runs-on: ubuntu-latest
     steps:

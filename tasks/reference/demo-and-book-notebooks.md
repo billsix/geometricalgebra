@@ -32,8 +32,8 @@ pages.
   off the page.
 - **Gates:** `ty check notebooks` in `make format`; `tools/check_notebook_prose_width.py` (E501 is
   exempt for `notebooks/*.py`); `tools/check_annotations.py`; `tools/check_epix_keywords.py` for
-  the ePiX calls. pyright (`make check-notebooks`) checks all but the 31 notebooks that draw live
-  ePiX figures (below).
+  the ePiX calls; and pyright (`make check-notebooks`), over every notebook (the ePiX types,
+  below).
 - **In the book:** `entrypoint/docs.sh` converts every `notebooks/*.py` into
   `book/docs/notebooks/<name>.ipynb`, which is build output (gitignored), and myst-nb executes each
   one, failing the build on an error. A notebook the book should leave out goes in `conf.py`'s
@@ -65,15 +65,18 @@ starts in `notebooks/` and the one myst-nb starts in `book/docs/notebooks/` both
 
 ## ePiX and the type checkers
 
-ePiX ships no `.pyi` stub and no `py.typed`. Its editable install is a setuptools import hook
-(`__editable___epix_*_finder.py`), which static checkers cannot follow even in the full image. So:
+Since epix-mirror `33d0194` (its `tasks/archive/2026/11/19/ship-python-type-information.md`), epix
+ships `py.typed` and a generated `_epix.pyi`. Both checkers see those types in both images:
 
-- ty is told `epix` and its submodules may be unresolved (`pyproject.toml`,
-  `[tool.ty.analysis] allowed-unresolved-imports`). The ePiX-derived names are then Unknown and
-  raise no errors.
-- pyright reports every name imported from a module it cannot resolve, re-exports included
-  ("is unknown import symbol", 91 errors over the live-figure notebooks), so
-  `pyrightconfig.json` excludes those 31 notebooks.
+- **Full image (`USE_EPIX=1`):** `entrypoint/install-epix.sh` installs epix editable in
+  `--config-settings editable_mode=compat`, a plain path `.pth` the checkers follow. The default
+  editable mode is a setuptools import hook (`__editable___epix_*_finder.py`), which static
+  checkers cannot read.
+- **Lean image (`USE_EPIX=0`, CI):** `entrypoint/install-epix-stubs.sh` fetches epix's typed
+  sources at the pinned `EPIX_COMMIT` into a PEP 561 stub-only package, `epix-stubs`, in the
+  venv. Python never imports it, so `import epix` still fails there (the conftest relies on that).
 
-Lifting both is `tasks/epix-type-stubs-for-pyright.md`, blocked on epix-mirror's
-`tasks/ship-python-type-information.md`.
+Before that, pyright excluded the 31 live-figure notebooks, and ty allowed `epix` to be unresolved
+(`tasks/archive/2026/11/19/epix-type-stubs-for-pyright.md`). Without the types, pyright reports
+every name imported from a module it cannot resolve, re-exports included ("is unknown import
+symbol").

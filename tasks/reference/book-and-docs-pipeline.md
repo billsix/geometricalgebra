@@ -131,9 +131,10 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
   `bootstrap_live`, `line_scene`, `paper_scene`, `venn_scene`), imported as
   `from gacalc.epixscene.scene2d import …`. ePiX is not on PyPI, so the package imports only where
   ePiX is installed: `import gacalc` never loads it (`tests/test_epixscene_import_boundary.py`),
-  the root `conftest.py` skips its doctest collection when `epix` is missing (the lean CI image),
-  and `pyproject.toml`'s `[tool.ty.analysis] allowed-unresolved-imports` names `epix`, which ty
-  cannot follow through its editable-install import hook even in the full image. Each module keeps
+  and the root `conftest.py` skips its doctest collection when `epix` is missing (the lean CI
+  image). The type checkers see ePiX's types either way: a `USE_EPIX=1` image installs it in compat
+  editable mode, and a `USE_EPIX=0` image installs only its stubs (`entrypoint/install-epix-stubs.sh`).
+  Each module keeps
   its CC0 dedication. The helpers that hold one prebuilt figure set's constants (`_rotation_scene`,
   `_addition_scene`, `_projection_scene`, `_graphpaper_scene`, `_bootstrap_scene`,
   `_rotate_ab_scene`) stay beside their figures in `book/figures/epix/`, `_`-prefixed so the
@@ -192,8 +193,7 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     `dashed_arrow` / `note` (labels in their element's colour), `patch`, `box_edges` (a
     parallelepiped's 12 edges) and `right_angle` (2D or 3D). Colours by role: frame `v_i` blue,
     orthogonal `w_i` green, unit `u_i` purple, target `y` and remainders red. It re-exports
-    `LabelPos`, so the notebooks never `import epix` themselves: ty cannot resolve the
-    editable-installed `epix` package.
+    `LabelPos`, so the notebooks never `import epix` themselves.
   - Three live helpers serve single notebooks (added 2026-11-19,
     `tasks/archive/2026/11/19/fill-placeholder-book-notebooks.md`). `gacalc.epixscene.venn_scene`
     `g2_subsets_scene()` draws the 𝒢₂ subsets diagram (also prebuilt as `g2subsets.py`, for
