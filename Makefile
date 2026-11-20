@@ -5,8 +5,8 @@ USE_SPYDER ?= 0
 # MINIMAL_IMAGE=1, which flips each feature OFF -- `make image MINIMAL_IMAGE=1`
 # drops Emacs, the TeX distribution, the Lean theorem-prover toolchain, and the
 # Sphinx-book stack, NONE of which the `make test` gate needs (pytest + doctests
-# run on the always-installed numpy/sympy/pytest venv). Measured: lean 2.42 GB vs
-# full 7.21 GB. MINIMAL_IMAGE is a BUILD-CONTENT signal and is deliberately SEPARATE
+# run on the always-installed numpy/sympy/pytest venv). Measured 2026-11-20: lean 3.4 GB vs
+# full 17.1 GB. MINIMAL_IMAGE is a BUILD-CONTENT signal and is deliberately SEPARATE
 # from NESTED_PODMAN (a RUN-capability signal, used only by PODMAN_RUN_FLAGS below):
 # the sandbox does NOT auto-set MINIMAL_IMAGE, so a nested `make image` builds the
 # full image unless you ask for lean. Override any single flag too (e.g.

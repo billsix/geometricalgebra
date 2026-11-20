@@ -423,7 +423,7 @@ over a "run it on your host" instruction.
   file); keep new declarations in that order (`tasks/reference/algebra-teaching-order.md`).
 - **`make image`** then **`make shell`** — containerized dev; Jupyter on port 8888.
   **`make update-emacs-packages`** — refresh the vendored Emacs packages (maintainer-only, rarely).
-- **`make image MINIMAL_IMAGE=1`** — a **lean image** (~2.42 GB vs the full ~7.21 GB) that still runs
+- **`make image MINIMAL_IMAGE=1`** — a **lean image** (~3.4 GB vs the full ~17.1 GB, measured 2026-11-20) that still runs
   the full `make test` gate. `MINIMAL_IMAGE=1` flips the six optional-feature flags off
   (`USE_EMACS`/`BUILD_DOCS`/`USE_JUPYTER`/`USE_LEAN`/`USE_EPIX`/`USE_TEX_LABELS` → 0), dropping Emacs,
   the TeX distribution (both the nbconvert-PDF `03` and the Sphinx-book `04` LaTeX), the Lean 4
