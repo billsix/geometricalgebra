@@ -91,10 +91,11 @@ c_vec
 
 # %% [markdown]
 # The volume of the slanted box on the three vectors,
-# $|\vec{\mathbf{a}} \wedge \vec{\mathbf{b}} \wedge \vec{\mathbf{c}}|$:
+# $|\vec{\mathbf{a}} \wedge \vec{\mathbf{b}} \wedge \vec{\mathbf{c}}|$. Simplified, it
+# is the square root of a square: the size of the signed number in the next cell.
 
 # %%
-volume(a_vec, b_vec, c_vec)
+sympy.simplify(sympy.sympify(volume(a_vec, b_vec, c_vec)))
 
 # %% [markdown]
 # **A signed volume remembers the order.** `signed_volume` is the 3-by-3 determinant:

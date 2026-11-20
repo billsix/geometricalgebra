@@ -195,21 +195,125 @@ def blade_latex(blade: Blade, symbols: Mapping[Blade, str] | None = None) -> str
 LATEX_LINE_WIDTH: int = 60
 
 
+_LATEX_MARKUP: frozenset[str] = frozenset(
+    {
+        "vec",
+        "hat",
+        "tilde",
+        "bar",
+        "mathbf",
+        "mathrm",
+        "mathit",
+        "boldsymbol",
+        "text",
+        "frac",
+        "sqrt",
+        "underbrace",
+        "overbrace",
+        "left",
+        "right",
+        "displaystyle",
+    }
+)
+"""LaTeX commands that style their argument but print no glyph of their own."""
+
+_LATEX_OPERATOR_NAMES: frozenset[str] = frozenset(
+    {"sin", "cos", "tan", "cot", "sec", "csc", "arcsin", "arccos", "arctan"}
+    | {"sinh", "cosh", "tanh", "log", "ln", "exp", "det"}
+)
+"""LaTeX commands that print their own name, upright (``\\cos`` prints "cos")."""
+
+
+def _command_glyphs(name: str | None) -> str:
+    r"""Stand-in characters, as many as the command ``\name`` prints glyphs.
+
+    ``None`` (a ``\begin{...}`` or ``\end{...}``) and markup print nothing.
+
+    Example:
+        >>> [_command_glyphs(name) for name in ("vec", "cos", "quad", "theta", None)]
+        ['', 'cos', 'xx', 'x', '']
+    """
+    match name:
+        case None:
+            return ""
+        case "quad":
+            return "xx"
+        case _ if name in _LATEX_MARKUP:
+            return ""
+        case _ if name in _LATEX_OPERATOR_NAMES:
+            return name
+        case _:
+            return "x"
+
+
+def _brace_group(latex: str, start: int) -> tuple[str, int]:
+    r"""The ``{...}`` group opening at ``latex[start]``: its contents, and the index
+    just past its closing brace.
+
+    Example:
+        >>> _brace_group(r"\frac{a_{1}}{2}", 5)
+        ('a_{1}', 12)
+    """
+    depth: int = 0
+    index: int
+    character: str
+    for index, character in enumerate(latex[start:], start):
+        match character:
+            case "{":
+                depth += 1
+            case "}":
+                depth -= 1
+                if depth == 0:
+                    return latex[start + 1 : index], index + 1
+            case _:
+                pass  # any other character leaves the depth as it is
+    raise ValueError(f"unbalanced braces in {latex!r}")
+
+
 def latex_visible_length(latex: str) -> int:
     r"""Roughly how many characters ``latex`` shows when typeset.
 
-    Commands (``\vec``, ``\frac``, ``\underbrace`` …), braces, sub- and superscript
-    marks and spaces are not counted; everything else is one character. A
-    ``\frac`` counts both its numerator and denominator, so fractions are
-    over-counted, which only breaks a line a little early.
+    Markup commands (``\vec``, ``\mathbf``, ``\underbrace``, ``\left`` …, see
+    ``_LATEX_MARKUP``), ``\begin{...}`` / ``\end{...}``, braces, sub- and
+    superscript marks and spaces are not counted. An operator name (``\cos``) counts
+    its letters, ``\quad`` two, any other command (``\theta``, ``\wedge``) one,
+    and every other character one. A ``\frac`` counts as the wider of its numerator
+    and denominator, since they stack.
 
     Example:
         >>> latex_visible_length(r"2\vec{\mathbf{e}}_{1}")
         3
         >>> latex_visible_length(r"a_{1} b_{2} - a_{2} b_{1}")
         9
+        >>> latex_visible_length(r"- \frac{a_{1} a_{2} b_{3}}{|B|^{2}}")
+        7
+        >>> latex_visible_length(r"\cos{\left(\theta \right)}")
+        6
     """
-    return len("".join(re.sub(r"\\[A-Za-z]+|[{}_^&\s]|\\[,;:!\\ ]", "", latex)))
+    start: int = latex.find("\\frac{")
+    if start < 0:
+        return len(
+            re.sub(
+                r"[{}_^&\s]|\\[,;:!\\ ]",
+                "",
+                re.sub(
+                    r"\\(?:begin|end)\{[^}]*\}|\\([A-Za-z]+)",
+                    lambda command: _command_glyphs(command.group(1)),
+                    latex,
+                ),
+            )
+        )
+    numerator: str
+    after_numerator: int
+    numerator, after_numerator = _brace_group(latex, start + len("\\frac"))
+    denominator: str
+    end: int
+    denominator, end = _brace_group(latex, after_numerator)
+    return (
+        latex_visible_length(latex[:start])
+        + max(latex_visible_length(numerator), latex_visible_length(denominator))
+        + latex_visible_length(latex[end:])
+    )
 
 
 def latex_rows(tokens: Sequence[str], width: int) -> list[str]:

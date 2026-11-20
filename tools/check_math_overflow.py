@@ -20,7 +20,9 @@ its log for every box wider than the text. This tool reads
 looks at ``.tex`` lines A to B to tell a display equation from a table from text,
 prints a count per kind, and lists every equation and table wider than the tolerance,
 widest first, with its ``.tex`` line and the start of its content. A wide equation or
-table is cut off in the printed book.
+table is cut off in the printed book. It also counts the ``Overfull \\vbox (Npt too
+high)`` boxes: one taller than the tolerance is usually a table that cannot break
+across pages and is taller than one, so its last rows are not printed.
 
 A display equation from a notebook is usually a gacalc value, a ``show_mult`` table or
 a ``show_difference`` line; ``gacalc.base.blade_dict_latex`` and ``gacalc.nbdisplay``
@@ -29,7 +31,8 @@ table). A wide hand-written equation in a ``.rst`` page needs ``\\\\`` and ``&``
 line breaks.
 
 Usage: ``python tools/check_math_overflow.py [--tolerance PT] [--latex-dir DIR]``.
-Exit 1 if an equation or a table is wider than the tolerance (default 10pt).
+Exit 1 if an equation or a table is wider than the tolerance (default 10pt), or a box
+is taller than the page by more than it.
 """
 
 from __future__ import annotations
@@ -44,6 +47,9 @@ OVERFULL: re.Pattern[str] = re.compile(
     r"Overfull \\hbox \((?P<width>[\d.]+)pt too wide\) "
     r"(?:in paragraph at lines (?P<first>\d+)--(?P<last>\d+)"
     r"|detected at line (?P<at>\d+))"
+)
+TOO_HIGH: re.Pattern[str] = re.compile(
+    r"Overfull \\vbox \((?P<height>[\d.]+)pt too high\)"
 )
 
 
@@ -66,7 +72,8 @@ def kind_of(block: list[str]) -> str:
 
 
 def main() -> int:
-    """Print the report; return 1 when an equation or table is too wide."""
+    """Print the report; return 1 when an equation or table is too wide, or a box too
+    high."""
     parser: argparse.ArgumentParser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--tolerance",
@@ -107,7 +114,18 @@ def main() -> int:
     print(
         f"{len(wide)} equations and tables more than {arguments.tolerance:g}pt too wide"
     )
-    return 1 if wide else 0
+    high: list[float] = [
+        height
+        for height in (float(found.group("height")) for found in TOO_HIGH.finditer(log))
+        if height > arguments.tolerance
+    ]
+    print(
+        f"{len(high)} boxes more than {arguments.tolerance:g}pt taller than the page"
+        + "".join(
+            f"\n{height:8.1f}pt  too high" for height in sorted(high, reverse=True)
+        )
+    )
+    return 1 if wide or high else 0
 
 
 if __name__ == "__main__":

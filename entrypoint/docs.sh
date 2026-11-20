@@ -43,10 +43,11 @@ cd book/docs
 make html
 make latexpdf
 
-# Report the math and tables wider than the page (cut off in print). A report, not a
-# gate: the build still succeeds; tools/check_math_overflow.py says what to fix.
-python /gacalc/tools/check_math_overflow.py --latex-dir _build/latex ||
-    echo "docs.sh: some equations or tables run past the margin (listed above)"
+# Check for math and tables wider than the page (cut off in print). The build fails
+# on one, after the copy below, so the PDF and its log are there to look at;
+# tools/check_math_overflow.py lists what to fix.
+overflow=0
+python /gacalc/tools/check_math_overflow.py --latex-dir _build/latex || overflow=1
 
 # Copy the finished book to the bind-mounted output tree. `.nojekyll` stops
 # GitHub Pages from mangling the _static / _images folders if these are published.
@@ -60,3 +61,7 @@ cp _build/latex/geometry2.log /output/gacalc/
 touch /output/gacalc/.nojekyll
 
 echo "Book built: /output/gacalc/html/ and /output/gacalc/*.pdf"
+if [ "$overflow" -ne 0 ]; then
+    echo "docs.sh: equations or tables run past the PDF margin (listed above)" >&2
+    exit 1
+fi

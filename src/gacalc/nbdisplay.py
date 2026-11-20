@@ -254,6 +254,19 @@ def _with_operator(operator: str, latex: str) -> str:
     return "$" + operator + " \\; " + _math_body(latex) + "$"
 
 
+def _table_cell(latex: str) -> str:
+    """``latex`` with every bar written as a command, for a Markdown table cell.
+
+    A bare ``|`` ends a Markdown table cell, even inside ``$...$``, so ``|B|^{2}``
+    or sympy's ``\\left|x\\right|`` would split the cell. ``\\vert`` and
+    ``\\Vert`` draw the same bars.
+
+    >>> print(_table_cell(r"$\\frac{1}{|B|^{2}} + \\left|x\\right| + \\|v\\|$"))
+    $\\frac{1}{\\vert B\\vert ^{2}} + \\left\\vert x\\right\\vert  + \\Vert v\\Vert $
+    """
+    return latex.replace("\\|", "\\Vert ").replace("|", "\\vert ")
+
+
 def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
     """A Markdown table of every term of ``a`` times every term of ``b``.
 
@@ -263,7 +276,7 @@ def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
     Terms of the products that cancel in that sum (a term and its negative, of the
     same blade) carry the same number under an ``\\underbrace``, so a reader sees
     which products drop out. A cell wider than ``TABLE_CELL_WIDTH`` breaks into
-    rows.
+    rows, and a bar in a cell is written ``\\vert`` so it cannot end the cell.
 
     >>> from gacalc.g2 import e_1, e_2
     >>> lines = product_table_markdown(1 * e_1 + 2 * e_2, 3 * e_1).splitlines()
@@ -290,13 +303,15 @@ def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
     )
     marked_rows: set[int] = {row for row, _, _ in labels}
     lines: list[str] = [
-        f"| {_latex(left, TABLE_CELL_WIDTH)} "
-        f"| {_with_operator('*', _latex(right, TABLE_CELL_WIDTH))} | "
-        + _with_operator(
-            "=",
-            _marked_product_latex(row, product, labels)
-            if row in marked_rows
-            else _latex(left * right, TABLE_CELL_WIDTH),
+        f"| {_table_cell(_latex(left, TABLE_CELL_WIDTH))} "
+        f"| {_table_cell(_with_operator('*', _latex(right, TABLE_CELL_WIDTH)))} | "
+        + _table_cell(
+            _with_operator(
+                "=",
+                _marked_product_latex(row, product, labels)
+                if row in marked_rows
+                else _latex(left * right, TABLE_CELL_WIDTH),
+            )
         )
         + " |"
         for row, (left, right, product) in enumerate(rows)

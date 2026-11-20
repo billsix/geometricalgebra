@@ -30,10 +30,11 @@
 # %%
 import warnings
 
+import sympy
 from IPython.display import Math, display
 from matplotlib.figure import Figure
 
-from gacalc.base import MultiVectorBase, MultiVectorFn
+from gacalc.base import MultiVectorBase, MultiVectorFn, Real
 from gacalc.gn import (
     MultiVector,
     a_1,
@@ -47,7 +48,7 @@ from gacalc.gn import (
     sym_vec3_1,
     sym_vec3_2,
 )
-from gacalc.nbdisplay import show_cancellation, show_difference, show_mult
+from gacalc.nbdisplay import at_values, show_cancellation, show_difference, show_mult
 from gacalc.nbplotutils import plot_multivector
 
 # turn warnings into exceptions
@@ -415,13 +416,43 @@ sym_vec3_1 * sym_vec3_2
 # A bivector $B = \vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$ has an inverse, $B^{-1}$:
 
 # %%
-(sym_vec3_1.wedge(sym_vec3_2)).inverse()
+B_ab: MultiVector = sym_vec3_1.wedge(sym_vec3_2)
+B_ab.inverse()
 
 # %% [markdown]
-# Term by term, $B^{-1} * B$: the like terms add to $1$ and every plane part cancels.
+# Every coefficient has the same denominator, the squared size of $B$,
+# $|B|^2 = \tilde{B} * B$ (the reverse $\tilde{B}$ of a bivector is $-B$):
 
 # %%
-show_mult((sym_vec3_1.wedge(sym_vec3_2)).inverse(), sym_vec3_1.wedge(sym_vec3_2))
+B_squared_value: Real = (B_ab.reverse() * B_ab).scalar_part()
+B_squared_value
+
+# %% [markdown]
+# Give it a name, $|B|^2$, so the inverse reads $B^{-1} = \tilde{B} / |B|^2$:
+
+# %%
+B_squared: sympy.Symbol = sympy.Symbol("|B|^2", positive=True)
+B_inverse: MultiVector = B_ab.reverse() * MultiVector.from_real(1 / B_squared)
+B_inverse
+
+# %% [markdown]
+# This is gacalc's inverse: $|B|^2 * B^{-1}$ is $\tilde{B}$, so the difference is $0$:
+
+# %%
+show_difference(B_squared_value * B_ab.inverse(), B_ab.reverse())
+
+# %% [markdown]
+# Term by term, $B^{-1} * B$: every plane part cancels, and the like terms add to
+# $|B|^2$ written out, over $|B|^2$.
+
+# %%
+show_mult(B_inverse, B_ab)
+
+# %% [markdown]
+# Put the value of $|B|^2$ back, and the product is $1$:
+
+# %%
+show_difference(at_values(B_inverse * B_ab, [(B_squared, B_squared_value)]), one)
 
 # %% [markdown]
 # An aside: units as basis vectors
@@ -647,10 +678,27 @@ B_dual.dot(B)
 show_mult(B, B.dual(3))
 
 # %% [markdown]
-# and $B$ times the inverse of its dual:
+# A vector's inverse is the vector over its squared size. The dual is as big as $B$, so
+# its inverse is the dual over $|B|^2$, with $|B|^2$ now this $B$'s squared size:
 
 # %%
-show_mult(B, B.dual(3).inverse())
+B_squared_value = (B.reverse() * B).scalar_part()
+show_difference(B_squared_value * B.dual(3).inverse(), B_dual)
+
+# %% [markdown]
+# Term by term, $B$ times the inverse of its dual, with $|B|^2$ by name:
+
+# %%
+B_dual_inverse: MultiVectorBase = B_dual * MultiVector.from_real(1 / B_squared)
+show_mult(B, B_dual_inverse)
+
+# %% [markdown]
+# With the value put back, the product is the unit volume $\mathbf{e}_{123}$:
+
+# %%
+show_difference(
+    at_values(B * B_dual_inverse, [(B_squared, B_squared_value)]), e_1 * e_2 * e_3
+)
 
 # %% [markdown]
 # Vectors in any dimension
