@@ -472,7 +472,11 @@ over a "run it on your host" instruction.
   later). Details:
   `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
 - **`make docs`** — builds the Sphinx book ("Geometry 2", `book/docs/`) to HTML + PDF into
-  `output/gacalc/` (needs an image built with `BUILD_DOCS=1`, the default).
+  `output/gacalc/` (needs an image built with `BUILD_DOCS=1`, the default). It ends by running
+  `tools/check_math_overflow.py`, a report (not a gate) of the equations and tables that run past
+  the PDF's margin, and leaves the LaTeX log at `output/gacalc/geometry2.log`. Long computed math
+  breaks itself into rows (`base.LATEX_LINE_WIDTH`); a hand-written `.. math::` block needs `\\`
+  at each line break (`tasks/reference/book-and-docs-pipeline.md`).
 - **`make dist`** (build sdist+wheel, `GACALC_DIMS=1,2,3,4,5`) → **`make upload`** /
   **`make upload-test`** (interactive `twine`) → **`make release`** (build + upload + host
   `git tag`). Bump `version` in `pyproject.toml` first — PyPI/TestPyPI permanently reject a
