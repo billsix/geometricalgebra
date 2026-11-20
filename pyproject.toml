@@ -82,6 +82,7 @@ ignore = ["N806"]
 # steps whose progress/failure lines ARE their output (same class as a CLI gate).
 "tools/render_epix_figures.py" = ["T201"]
 "tools/check_epix_keywords.py" = ["T201"]
+"tools/check_math_overflow.py" = ["T201"]
 # book/docs/conf.py's only long line is inside the r\"\"\"...\"\"\" LaTeX preamble
 # (the \directlua luaotfload-fallback line, 89 cols) -- un-reflowable LaTeX/lua
 # string content, and an inline `# noqa` is impossible there (it would inject

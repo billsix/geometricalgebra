@@ -270,6 +270,25 @@ the PDF build dies with `LaTeX Error: Unknown graphics extension: .svg`. Note: a
 `imgconverter_converters` setting in `conf.py` is **not** respected — the default
 `convert` is what runs, so the fix is the package, not config.
 
+## Notebook output in the PDF: MIME types and line width (2026-11-20)
+
+- **myst-nb's LaTeX output takes only** `application/pdf`, `image/png`, `image/jpeg`,
+  `text/latex`, `text/markdown`, `text/plain` (`myst_nb.core.render.base_render_priority()["latex"]`).
+  An output with nothing better than SVG prints its `text/plain`: that is how 47
+  `<Figure size … with 1 Axes>` lines got into the PDF. `nbplotutils` therefore emits each
+  matplotlib figure as SVG (HTML, Jupyter) and PDF (LaTeX)
+  (`tasks/archive/2026/11/20/pdf-matplotlib-figure-repr-text.md`).
+- **Display math does not wrap in LaTeX.** A computed value is one `text/latex` line, so a long
+  one ran past the margin. `base.blade_dict_latex` (hence `_repr_latex_`), the `nbdisplay`
+  cancellation lines and product-table cells break themselves into `aligned` rows past
+  `LATEX_LINE_WIDTH` / `TABLE_CELL_WIDTH` visible characters (`base.latex_visible_length`).
+  A hand-written `.. math::` block needs `\\` (and `&`) at each line break: source newlines
+  alone set it on one line.
+- **`tools/check_math_overflow.py`** reads `_build/latex/geometry2.log` and lists every equation
+  and table more than 10pt too wide; `entrypoint/docs.sh` runs it after `make latexpdf` as a
+  report (the build still succeeds) and copies the log to `output/gacalc/geometry2.log`.
+  What it still lists and why: `tasks/archive/2026/11/20/pdf-long-math-overflow.md`.
+
 ## Notebook PDF export (nbconvert — separate from the Sphinx PDF)
 
 Jupyter's "Save and Export As → PDF" (nbconvert) is a **different** pipeline from the Sphinx

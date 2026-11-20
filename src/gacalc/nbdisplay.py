@@ -34,7 +34,15 @@ from collections.abc import Mapping, Sequence
 import sympy
 from IPython.display import Markdown, Math, display
 
-from gacalc.base import Blade, MultiVectorBase, Real, blade_dict_latex, blade_latex
+from gacalc.base import (
+    LATEX_LINE_WIDTH,
+    Blade,
+    MultiVectorBase,
+    Real,
+    blade_dict_latex,
+    blade_latex,
+    latex_broken,
+)
 
 V = typing.TypeVar("V", bound=MultiVectorBase)
 
@@ -120,10 +128,15 @@ def _expand_numerators_dict(mv: MultiVectorBase) -> Mapping[Blade, Real]:
     return out
 
 
-def _latex(mv: MultiVectorBase) -> str:
+#: The visible characters a product-table cell holds before its math is broken.
+TABLE_CELL_WIDTH: int = 24
+
+
+def _latex(mv: MultiVectorBase, width: int = LATEX_LINE_WIDTH) -> str:
     """``mv`` as LaTeX with its math delimiters (from ``blade_dict_latex``), each
-    numerator expanded (``_expand_numerators_dict``)."""
-    return blade_dict_latex(_expand_numerators_dict(mv))
+    numerator expanded (``_expand_numerators_dict``), broken into rows past
+    ``width`` visible characters."""
+    return blade_dict_latex(_expand_numerators_dict(mv), width=width)
 
 
 def _math_body(latex: str) -> str:
@@ -215,36 +228,51 @@ def _marked_product_latex(
     labels: Mapping[tuple[int, Blade, int], int],
 ) -> str:
     """One table product as inline LaTeX, each cancelling monomial under its
-    numbered ``\\underbrace``."""
-    pieces: list[str] = []
+    numbered ``\\underbrace``, broken into rows past ``TABLE_CELL_WIDTH``."""
+    tokens: list[str] = []
     blade: Blade
     terms: Sequence[sympy.Expr]
     for blade, terms in product.items():
-        coefficient: str = _marked_sum(
+        coefficient: list[str] = _marked_tokens(
             terms, [labels.get((row, blade, index)) for index in range(len(terms))]
         )
-        pieces.append(
-            coefficient if blade == () else f"({coefficient}) {blade_latex(blade)}"
-        )
-    return "$" + " + ".join(pieces) + "$"
+        if blade != ():
+            coefficient[0] = "(" + coefficient[0]
+            coefficient[-1] = coefficient[-1] + ") " + blade_latex(blade)
+        if tokens:
+            coefficient[0] = "+ " + coefficient[0]
+        tokens.extend(coefficient)
+    return "$" + latex_broken(tokens, TABLE_CELL_WIDTH) + "$"
+
+
+def _with_operator(operator: str, latex: str) -> str:
+    """``latex`` (``$...$``) with ``operator`` in front, inside the same math.
+
+    >>> _with_operator("*", "$3$")
+    '$* \\\\; 3$'
+    """
+    return "$" + operator + " \\; " + _math_body(latex) + "$"
 
 
 def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
     """A Markdown table of every term of ``a`` times every term of ``b``.
 
-    One row per pair (left term, right term, their product), terms in grade-then-
-    blade order. Summing the last column gives ``a * b``. Terms of the products that
-    cancel in that sum (a term and its negative, of the same blade) carry the same
-    number under an ``\\underbrace``, so a reader sees which products drop out.
+    One row per pair: the left term, ``*`` and the right term, ``=`` and their
+    product (three columns, so the PDF's table spends no column on an operator),
+    terms in grade-then-blade order. Summing the last column gives ``a * b``.
+    Terms of the products that cancel in that sum (a term and its negative, of the
+    same blade) carry the same number under an ``\\underbrace``, so a reader sees
+    which products drop out. A cell wider than ``TABLE_CELL_WIDTH`` breaks into
+    rows.
 
     >>> from gacalc.g2 import e_1, e_2
     >>> lines = product_table_markdown(1 * e_1 + 2 * e_2, 3 * e_1).splitlines()
     >>> print(lines[0])
-    | Left Component | * | Right Component | = | Product |
+    | Left Component | * Right Component | = Product |
     >>> len(lines)  # header, separator, then 2 * 1 = 2 term pairs
     4
     >>> print(lines[2])
-    | $1\\vec{\\mathbf{e}}_{1}$ | * | $3\\vec{\\mathbf{e}}_{1}$ | = | $3$ |
+    | $1\\vec{\\mathbf{e}}_{1}$ | $* \\; 3\\vec{\\mathbf{e}}_{1}$ | $= \\; 3$ |
 
     The two cross terms of ``(e_1 + e_2) * (e_1 + e_2)`` cancel:
 
@@ -252,8 +280,8 @@ def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
     >>> table.count("underbrace{1}_{1}")
     2
     """
-    header: str = "| Left Component | * | Right Component | = | Product |"
-    separator: str = "|---|---|---|---|---|"
+    header: str = "| Left Component | * Right Component | = Product |"
+    separator: str = "|---|---|---|"
     rows: list[
         tuple[MultiVectorBase, MultiVectorBase, dict[Blade, list[sympy.Expr]]]
     ] = _row_products(a, b)
@@ -262,11 +290,13 @@ def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
     )
     marked_rows: set[int] = {row for row, _, _ in labels}
     lines: list[str] = [
-        f"| {_latex(left)} | * | {_latex(right)} | = | "
-        + (
+        f"| {_latex(left, TABLE_CELL_WIDTH)} "
+        f"| {_with_operator('*', _latex(right, TABLE_CELL_WIDTH))} | "
+        + _with_operator(
+            "=",
             _marked_product_latex(row, product, labels)
             if row in marked_rows
-            else _latex(left * right)
+            else _latex(left * right, TABLE_CELL_WIDTH),
         )
         + " |"
         for row, (left, right, product) in enumerate(rows)
@@ -282,9 +312,9 @@ def show_mult(a: MultiVectorBase, b: MultiVectorBase) -> None:
     number), then the sum, all rendered as LaTeX.
     """
     display(Markdown("**We want to evaluate**"))
-    left: str = _math_body(a._repr_latex_())
-    right: str = _math_body(b._repr_latex_())
-    display(Math(f"({left}) * ({right})"))
+    left: str = _math_body(_latex(a, LATEX_LINE_WIDTH // 2))
+    right: str = _math_body(_latex(b, LATEX_LINE_WIDTH // 2))
+    display(Math(latex_broken([f"({left})", f"* ({right})"])))
     display(Markdown("**Multivector Multiplication is distributive over addition**"))
     table: str = product_table_markdown(a, b)
     display(Markdown(table))
@@ -306,17 +336,6 @@ def _signed_terms(coefficient: Real) -> list[sympy.Expr]:
     return [
         term for term in sympy.Add.make_args(sympy.expand(coefficient)) if term != 0
     ]
-
-
-def _join_terms(parts: Sequence[tuple[bool, str]]) -> str:
-    """Join ``(negative, latex)`` terms into one signed sum (``0`` when empty)."""
-    if not parts:
-        return "0"
-    pieces: list[str] = [
-        ("- " if negative else "+ ") + latex for negative, latex in parts
-    ]
-    first: str = pieces[0]
-    return " ".join([first[2:] if first.startswith("+ ") else first, *pieces[1:]])
 
 
 def _pair_labels(
@@ -356,18 +375,27 @@ def _pair_labels(
     return left_labels, [right_labels.get(index) for index in range(len(right_terms))]
 
 
-def _marked_sum(terms: Sequence[sympy.Expr], labels: Sequence[int | None]) -> str:
-    """``terms`` as one signed LaTeX sum, each labelled term under a numbered
-    ``\\underbrace``."""
+def _marked_tokens(
+    terms: Sequence[sympy.Expr], labels: Sequence[int | None]
+) -> list[str]:
+    """``terms`` as signed LaTeX pieces of one sum (``["0"]`` when empty), each
+    labelled term under a numbered ``\\underbrace``.
 
-    def part(term: sympy.Expr, label: int | None) -> tuple[bool, str]:
+    >>> a, b = sympy.symbols("a b")
+    >>> _marked_tokens([a, -b], [1, None])
+    ['\\\\underbrace{a}_{1}', '- b']
+    """
+
+    def part(position: int, term: sympy.Expr, label: int | None) -> str:
         negative: bool = term.could_extract_minus_sign()
         body: str = sympy.latex(-term if negative else term)
-        return negative, (
-            body if label is None else f"\\underbrace{{{body}}}_{{{label}}}"
-        )
+        marked: str = body if label is None else f"\\underbrace{{{body}}}_{{{label}}}"
+        return ("- " if negative else ("" if position == 0 else "+ ")) + marked
 
-    return _join_terms([part(t, k) for t, k in zip(terms, labels, strict=True)])
+    return [
+        part(position, term, label)
+        for position, (term, label) in enumerate(zip(terms, labels, strict=True))
+    ] or ["0"]
 
 
 def _common_denominator(left: Real, right: Real) -> sympy.Expr:
@@ -408,15 +436,25 @@ def _paired_line(
     right_labels: list[int | None]
     left_labels, right_labels = _pair_labels(left_terms, right_terms)
     residual: sympy.Expr = sympy.expand(left - right)
-    result: str = sympy.latex(residual)
+    # the residual as its own terms, so a long one can break across rows too
+    result: list[str] = _marked_tokens(
+        _signed_terms(residual), [None] * len(_signed_terms(residual))
+    )
+    result[0] = "= " + result[0]
     simplest: sympy.Expr = sympy.simplify(residual)
     if simplest != residual:
-        result += " = " + sympy.latex(simplest)
-    left_sum: str = _marked_sum(left_terms, left_labels)
-    if not right_terms:
-        return f"{prefix}{left_sum} = {result}", residual
-    right_sum: str = _marked_sum(right_terms, right_labels)
-    return f"{prefix}({left_sum}) - ({right_sum}) = {result}", residual
+        result.append("= " + sympy.latex(simplest))
+    tokens: list[str] = _marked_tokens(left_terms, left_labels)
+    if right_terms:
+        right_tokens: list[str] = _marked_tokens(right_terms, right_labels)
+        tokens[0] = "(" + tokens[0]
+        tokens[-1] = tokens[-1] + ")"
+        right_tokens[0] = "- (" + right_tokens[0]
+        right_tokens[-1] = right_tokens[-1] + ")"
+        tokens.extend(right_tokens)
+    tokens.extend(result)
+    tokens[0] = prefix + tokens[0]
+    return latex_broken(tokens), residual
 
 
 def _difference_latex(left: Real, right: Real, name: str) -> str:

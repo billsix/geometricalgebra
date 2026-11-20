@@ -57,6 +57,17 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   coordinate versions of both, with the plane's normal written out from its coordinates.
 
 ### Changed
+- **A long value's LaTeX breaks into rows.** `_repr_latex_` / `blade_dict_latex` (new `width`
+  argument, default `base.LATEX_LINE_WIDTH`, 60 visible characters) set a value that fits on one
+  line as before, and a longer one as an `aligned` block broken between whole terms: the monomials
+  of each coefficient and the blades; a fraction too wide by itself, with a sum on top, is written
+  `\frac{1}{D} * (n_1 + n_2 + …)`. The `nbdisplay` cancellation lines and product-table cells
+  (`nbdisplay.TABLE_CELL_WIDTH`) break the same way. New helpers in `gacalc.base`:
+  `latex_visible_length`, `latex_rows`, `latex_broken`, `term_tokens`, `signed_term_latex`.
+  **Behaviour change:** a long value's `_repr_latex_` text is different.
+- **`nbdisplay.product_table_markdown` has three columns**, `Left Component | * Right Component |
+  = Product`, with `*` and `=` written in the cells, so the PDF's table spends no column on an
+  operator.
 - **The `gacalc.epixscene` 2D and 3D scenes label the basis vectors, not `x`/`y`/`z`.**
   `scene2d.unit_circle_scene`, `scene3d.axes3`, `frame_scene.scene_2d` / `scene_3d` and
   `bootstrap_live.scene_around` draw light, unlabelled axis lines and labelled unit arrows

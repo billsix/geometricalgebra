@@ -45,8 +45,8 @@ So the whole rotation is a single multiplication:
 
 .. math::
 
-   \vec{\mathbf{r}}(\vec{\mathbf{a}}; \theta) = \cos(\theta) * \vec{\mathbf{a}} + \sin(\theta) * (\vec{\mathbf{a}} * \mathbf{e}_{12})
-                            = \vec{\mathbf{a}} * (\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}).
+   \vec{\mathbf{r}}(\vec{\mathbf{a}}; \theta) &= \cos(\theta) * \vec{\mathbf{a}} + \sin(\theta) * (\vec{\mathbf{a}} * \mathbf{e}_{12}) \\
+                                              &= \vec{\mathbf{a}} * (\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}).
 
 Check it in coordinates. Multiply the right-hand side out, component by component, and compare
 with the formula we started from:
@@ -54,9 +54,10 @@ with the formula we started from:
 .. math::
 
    \vec{\mathbf{a}} * (\cos(\theta) + \sin(\theta) * \mathbf{e}_{12})
-     = \cos(\theta) * (a_1 * \vec{\mathbf{e}}_1 + a_2 * \vec{\mathbf{e}}_2) + \sin(\theta) * (-a_2 * \vec{\mathbf{e}}_1 + a_1 * \vec{\mathbf{e}}_2)
-     = (a_1 * \cos(\theta) - a_2 * \sin(\theta)) * \vec{\mathbf{e}}_1
-       + (a_1 * \sin(\theta) + a_2 * \cos(\theta)) * \vec{\mathbf{e}}_2,
+     &= \cos(\theta) * (a_1 * \vec{\mathbf{e}}_1 + a_2 * \vec{\mathbf{e}}_2) \\
+     &\quad + \sin(\theta) * (-a_2 * \vec{\mathbf{e}}_1 + a_1 * \vec{\mathbf{e}}_2) \\
+     &= (a_1 * \cos(\theta) - a_2 * \sin(\theta)) * \vec{\mathbf{e}}_1 \\
+     &\quad + (a_1 * \sin(\theta) + a_2 * \cos(\theta)) * \vec{\mathbf{e}}_2,
 
 exactly the two coordinates of :math:`\vec{\mathbf{r}}(\vec{\mathbf{a}}; \theta)` in :doc:`proof-rotate`,
 equation :eq:`eq-rotate-formula`. (The Lean

@@ -20,6 +20,7 @@ import functools
 import itertools
 import math
 import os
+import re
 import sys
 import types
 import typing
@@ -188,8 +189,126 @@ def blade_latex(blade: Blade, symbols: Mapping[Blade, str] | None = None) -> str
             return r"\mathbf{e}_{" + separator.join(str(b) for b in blade) + "}"
 
 
+#: How many visible characters a displayed line of math holds before it is broken
+#: (about the book's text width at the PDF's math size). A rendered value, a
+#: cancellation line, and so on, longer than this are broken between whole terms.
+LATEX_LINE_WIDTH: int = 60
+
+
+def latex_visible_length(latex: str) -> int:
+    r"""Roughly how many characters ``latex`` shows when typeset.
+
+    Commands (``\vec``, ``\frac``, ``\underbrace`` …), braces, sub- and superscript
+    marks and spaces are not counted; everything else is one character. A
+    ``\frac`` counts both its numerator and denominator, so fractions are
+    over-counted, which only breaks a line a little early.
+
+    Example:
+        >>> latex_visible_length(r"2\vec{\mathbf{e}}_{1}")
+        3
+        >>> latex_visible_length(r"a_{1} b_{2} - a_{2} b_{1}")
+        9
+    """
+    return len("".join(re.sub(r"\\[A-Za-z]+|[{}_^&\s]|\\[,;:!\\ ]", "", latex)))
+
+
+def latex_rows(tokens: Sequence[str], width: int) -> list[str]:
+    r"""``tokens`` (pieces of one sum, in order) grouped into rows no wider than
+    ``width`` visible characters.
+
+    A row takes whole tokens only, so a token wider than ``width`` gets a row of
+    its own. The tokens are joined with a space.
+
+    Example:
+        >>> latex_rows(["a", "+ b", "+ c", "- d"], width=4)
+        ['a + b', '+ c - d']
+        >>> latex_rows(["a + b"], width=1)
+        ['a + b']
+    """
+    rows: list[list[str]] = []
+    length: int = 0
+    token: str
+    for token in tokens:
+        size: int = latex_visible_length(token)
+        if rows and length + size <= width:
+            rows[-1].append(token)
+            length += size
+        else:
+            rows.append([token])
+            length = size
+    return [" ".join(row) for row in rows]
+
+
+def latex_broken(tokens: Sequence[str], width: int = LATEX_LINE_WIDTH) -> str:
+    r"""``tokens`` joined on one line when they fit in ``width`` visible
+    characters, else as an ``aligned`` block of rows (``latex_rows``), each row
+    after the first indented.
+
+    Example:
+        >>> latex_broken(["a", "+ b"])
+        'a + b'
+        >>> latex_broken(["a", "+ b", "+ c"], width=3)
+        '\\begin{aligned}&a + b \\\\ &\\quad + c\\end{aligned}'
+    """
+    rows: list[str] = latex_rows(tokens, width)
+    if len(rows) == 1:
+        return rows[0]
+    return "\\begin{aligned}&" + " \\\\ &\\quad ".join(rows) + "\\end{aligned}"
+
+
+def term_tokens(term: sympy.Expr, first: bool, width: int) -> list[str]:
+    r"""One term of a sum as tokens for :func:`latex_rows`: the signed term
+    (:func:`signed_term_latex`), or, when that is wider than ``width`` and the term
+    is a fraction whose numerator is a sum, ``\frac{1}{D} * (`` and the numerator's
+    terms, so the long numerator can break across rows.
+
+    Example:
+        >>> a, b, c = sympy.symbols("a b c")
+        >>> term_tokens((a + b) / c, first=True, width=80)
+        ['\\frac{a + b}{c}']
+        >>> term_tokens((a + b) / c, first=False, width=2)
+        ['+ \\frac{1}{c} * (a', '+ b)']
+    """
+    whole: str = signed_term_latex(term, first)
+    if latex_visible_length(whole) <= width:
+        return [whole]
+    numerator: sympy.Expr
+    denominator: sympy.Expr
+    numerator, denominator = sympy.fraction(sympy.together(term))
+    numerator = sympy.expand(numerator)
+    if denominator == 1 or not numerator.is_Add:
+        return [whole]
+    negative: bool = numerator.could_extract_minus_sign()
+    if negative:
+        numerator = sympy.expand(-numerator)
+    pieces: list[str] = [
+        signed_term_latex(piece, first=position == 0)
+        for position, piece in enumerate(numerator.as_ordered_terms())
+    ]
+    sign: str = "- " if negative else ("" if first else "+ ")
+    pieces[0] = sign + "\\frac{1}{" + sympy.latex(denominator) + "} * (" + pieces[0]
+    pieces[-1] = pieces[-1] + ")"
+    return pieces
+
+
+def signed_term_latex(term: sympy.Expr, first: bool) -> str:
+    r"""One term of a sum as LaTeX with its sign in front (``+ x``, ``- x``); the
+    first term of a sum shows only a minus.
+
+    Example:
+        >>> a, b = sympy.symbols("a b")
+        >>> signed_term_latex(-a * b, first=False), signed_term_latex(a, first=True)
+        ('- a b', 'a')
+    """
+    negative: bool = term.could_extract_minus_sign()
+    body: str = sympy.latex(-term if negative else term)
+    return ("- " if negative else ("" if first else "+ ")) + body
+
+
 def blade_dict_latex(
-    d: Mapping[Blade, Real], symbols: Mapping[Blade, str] | None = None
+    d: Mapping[Blade, Real],
+    symbols: Mapping[Blade, str] | None = None,
+    width: int = LATEX_LINE_WIDTH,
 ) -> str:
     r"""Render a blade -> coefficient dict as a LaTeX string (the body of
     ``_repr_latex_``, factored out so callers can render a chosen *view*).
@@ -206,6 +325,10 @@ def blade_dict_latex(
         d: the blade -> coefficient mapping to render.
         symbols: a blade -> LaTeX-string map; ``None`` (the default) consults the
             session-wide map set by :func:`set_blade_symbols`.
+        width: the visible characters one line holds (``LATEX_LINE_WIDTH`` by
+            default). A longer value is broken between whole terms, the monomials
+            of each coefficient and the blades, into an ``aligned`` block, so it
+            fits a printed page.
 
     Returns:
         str: the LaTeX string (``$...$``; ``$0$`` for an empty dict).
@@ -220,6 +343,12 @@ def blade_dict_latex(
         ...     r"$5\mathbf{e}_{12}$"
         ... )
         True
+
+        A value too long for one line is broken between terms:
+
+        >>> a, b, c = sympy.symbols("a b c")
+        >>> print(blade_dict_latex({(1,): a + b, (2,): c}, symbols=ijk, width=8))
+        $\begin{aligned}&(a + b)\mathbf{i} \\ &\quad + c\mathbf{j}\end{aligned}$
     """
 
     def add_parens_or_dont(x: Real) -> str:
@@ -231,13 +360,51 @@ def blade_dict_latex(
             else sympy.latex(x)
         )
 
+    ordered: list[Blade] = sorted(d.keys(), key=lambda b: (len(b), b))
     blades: list[str] = [
         add_parens_or_dont(d[blade]) + blade_latex(blade, symbols)
         if blade != tuple()
         else add_parens_or_dont(d[blade])
-        for blade in sorted(d.keys(), key=lambda b: (len(b), b))
+        for blade in ordered
     ]
-    return "$" + ("0" if not d else " +  ".join(blades)) + "$"
+    line: str = "0" if not d else " +  ".join(blades)
+    if latex_visible_length(line) <= width:
+        return "$" + line + "$"
+
+    def tokens(index: int, blade: Blade) -> list[str]:
+        """The pieces of one blade's term: each monomial of a sum coefficient,
+        parenthesized as a whole, with the blade after the last."""
+        coefficient: Real = d[blade]
+        name: str = "" if blade == tuple() else blade_latex(blade, symbols)
+        joiner: str = "" if index == 0 else "+ "
+        if not isinstance(coefficient, sympy.Expr):
+            return [joiner + sympy.latex(coefficient) + name]
+        if not coefficient.is_Add:
+            alone: list[str] = term_tokens(coefficient, first=True, width=width)
+            alone[0] = joiner + alone[0]
+            alone[-1] = alone[-1] + name
+            return alone
+        terms: list[str] = [
+            token
+            for position, term in enumerate(coefficient.as_ordered_terms())
+            for token in term_tokens(term, first=position == 0, width=width)
+        ]
+        terms[0] = joiner + "(" + terms[0]
+        terms[-1] = terms[-1] + ")" + name
+        return terms
+
+    return (
+        "$"
+        + latex_broken(
+            [
+                token
+                for index, blade in enumerate(ordered)
+                for token in tokens(index, blade)
+            ],
+            width,
+        )
+        + "$"
+    )
 
 
 def pseudoscalar_squared_sign(r: int) -> int:

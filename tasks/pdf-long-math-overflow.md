@@ -1,84 +1,69 @@
-# Long math expressions run off the PDF page
+# Long math expressions ran off the PDF page
 
-**Status:** proposed — needs go-ahead
-**Priority:** 3
-**Difficulty:** 5
-**Created:** 2026-11-20 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-11-20 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-11-20
 
-## BLUF
+The maintainer's ask (2026-11-20, verbatim): *"Take a look at the math expressions that get cut
+off in the PDF because they are too long, and come up with a strategy for fixing that."* LaTeX
+does not wrap display math, so a long computed value, cancellation line or product table ran past
+the right margin and was cut off in print. HTML was not affected (MathJax scrolls).
 
-Some math expressions in the book's PDF are too wide for the page and are cut off at the right
-margin. HTML is not affected, since MathJax scrolls. Measure every overflowing expression, sort
-each one by where it comes from, and fix each source with the mechanism that fits it (the
-strategy is below). Done means a fresh `make docs` PDF has no math past the right margin, and a
-check that keeps it that way.
+## Decision
 
-## Context
+(William Emerison Six <billsix@gmail.com>, 2026-11-20.) The one-blade-per-line layout went into
+`_repr_latex_` itself, behind a width threshold, so plain cell outputs and Jupyter get it too;
+short values keep printing on one line. It is in `CHANGELOG.md` `[Unreleased]` (a long value's
+`_repr_latex_` text changed).
 
-- The maintainer's ask (2026-11-20, verbatim): *"Take a look at the math expressions that get cut
-  off in the PDF because they are too long, and come up with a strategy for fixing that."*
-- **First measurement, 2026-11-20**, on `output/gacalc/geometry2.pdf` (built 2026-11-19): running
-  `pdftotext -bbox-layout` and counting text lines whose right edge is within 20 pt of the page
-  edge gives 80 lines on 29 pages: 69, 82, 130, 165, 210, 219, 220, 224, 226, 229, 336, 366, 367,
-  371, 378, 380, 382–385, 387, 390, 394, 395, 417, 434, 448–450. This is a rough proxy. It also
-  catches long code lines, and it misses glyphs clipped past the edge. The real list comes from
-  LaTeX's `Overfull \hbox` warnings (plan step 1). The page range 366–395 is mostly Part IV, the
-  exploration notebooks.
-- The LaTeX log is not kept: `entrypoint/docs.sh` copies only the PDFs out of `_build/latex/`.
-- **Where wide math comes from (three sources, each needing its own fix):**
-  1. **Hand-written `.rst` math** (`.. math::` and `:math:`), which a person can break.
-  2. **Notebook Markdown math** (`$$…$$` in a `# %% [markdown]` cell), also hand-written.
-  3. **Computed notebook output**: a value's `_repr_latex_` (`blade_latex` in
-     `src/gacalc/base.py`), `show_mult` / `show_cancellation` in `src/gacalc/nbdisplay.py`, and
-     sympy output. Examples: `MultiVector.symbolic_multivector(n=8, …)`, and a symbolic 𝒢₃ product
-     with 8 blades of 8-term coefficients. No one can hand-break these. They are one `$$…$$` line
-     in the `text/latex` MIME output.
-- Book config: `book/docs/conf.py` (`latex_elements`, lualatex). Pipeline and font notes:
-  `tasks/reference/book-and-docs-pipeline.md`, and the Sphinx-book reference doc
-  (`sphinx-book-conventions.md`) in github.com/billsix/runClaudeInContainer.
+## What was measured
 
-## Strategy
+`tools/check_math_overflow.py` (new) reads `book/docs/_build/latex/geometry2.log` and `.tex`, sorts
+each `Overfull \hbox` into equation, table or text, and lists the equations and tables more than
+10pt too wide. Before the work: **234**, all but one from computed notebook output: 136 product
+tables (`show_mult`), about 50 values, 51 cancellation lines (the new `show_difference` lines made
+some of those). The one hand-written case was `geometric-product.rst`, whose multi-line
+`.. math::` blocks had no `\\`, so LaTeX set each on one line.
 
-Fix each case at its source, with the least lossy mechanism first:
+## What changed
 
-1. **Measure.** Keep `_build/latex/*.log` (copy it to `output/gacalc/` in `entrypoint/docs.sh`)
-   and list every `Overfull \hbox` that is inside math, with its width and source line. Save the
-   list in `tasks/adhoc/pdf-long-math-overflow/data/`.
-2. **Hand-written math (sources 1 and 2): break it by hand,** using `aligned` / `split` at a
-   `=` or before a `+`, one term or step per line. This is the clearest result for a reader. It
-   also fits the book's "show each step" style.
-3. **Computed output (source 3): break at blade boundaries in the display code.** Teach the
-   display helpers (`blade_latex`'s caller, `show_mult`, `show_cancellation`) to print one blade
-   per line inside `\begin{aligned}`, used only when the expression is wider than a threshold
-   (term or character count). A multivector is a sum of blades, so one blade per line is the
-   natural break, and it reads the same in HTML. Within one blade, a coefficient that is still
-   too wide breaks before a `+` at monomial boundaries.
-4. **Last resort, PDF only:** a LaTeX fallback in `conf.py`'s preamble that shrinks a display
-   to `\linewidth` (e.g. `adjustbox` with `max width`). Use it only for what steps 2 and 3 cannot
-   reach, because shrunk math gets hard to read when printed.
-5. **Keep it fixed:** after `make docs`, a check that fails on any math `Overfull \hbox` wider
-   than a small tolerance (as a `tools/` script run by the docs build).
+- **`src/gacalc/base.py`:** `LATEX_LINE_WIDTH` (60 visible characters) and the helpers
+  `latex_visible_length` (characters a LaTeX string shows: commands, braces, `_`, `^` not
+  counted), `latex_rows` (whole tokens into rows), `latex_broken` (one line, or an `aligned` block
+  of rows with the later rows indented), `term_tokens` / `signed_term_latex`. `blade_dict_latex`
+  (so `_repr_latex_`) takes a `width` argument. A value that fits is rendered exactly as before.
+  A longer one breaks between the monomials of each coefficient and between blades. A single term
+  wider than a row whose numerator is a sum is written `\frac{1}{D} * (n_1 + n_2 + …)`, so the
+  numerator can break.
+- **`src/gacalc/nbdisplay.py`:** the cancellation lines break their left terms, right terms and
+  residual (the residual term by term too). `show_mult`'s "We want to evaluate" line breaks. The
+  product table has three columns (`Left Component | * Right Component | = Product`, the
+  operators in the cells, `_with_operator`) instead of five. Sphinx's tabulary gave each column
+  a fifth of the page, two of them to `*` and `=`. Its cells break past `TABLE_CELL_WIDTH` (24).
+- **`book/docs/geometric-product.rst`:** both equations got `&` and `\\`.
+- **`entrypoint/docs.sh`** runs `tools/check_math_overflow.py` after `make latexpdf` as a report
+  (the build still succeeds) and copies `geometry2.log` to `output/gacalc/`.
+  `tasks/reference/book-and-docs-pipeline.md` ("Notebook output in the PDF") records the mechanism.
 
-## Plan
+## Result, and what is still too wide
 
-1. Strategy step 1 (measure), then sort each hit by source (1, 2 or 3).
-2. Source 3 first, since one helper change fixes many pages. Add the threshold, the `aligned`
-   output and doctests to `nbdisplay` / the `_repr_latex_` path. Check HTML and PDF.
-3. Hand-break the remaining `.rst` and Markdown math.
-4. Add the overflow check, and use the fallback only where it is still needed, listing each such
-   case in this doc.
+Four builds measured it: 234, then 85 (line breaking), 89 (three-column tables, fraction split;
+the tables' rows were still too wide), then **73**: one equation and the rows of two tables. All
+three are single terms wider than the space they are in, which no break between terms can fix:
 
-## Decisions
+- `displaymv.py`, "A bivector times its inverse" and "A bivector and its dual" (36 overfull rows
+  each, about 100–160pt): the product table's terms carry the 3D denominator
+  `(e₁f₂ − e₂f₁)² + (e₁f₃ − e₃f₁)² + (e₂f₃ − e₃f₂)²`, about 70 characters, inside a third of the
+  page.
+- One 29pt equation: a `\sqrt{…}` of a long 3D expression (a magnitude in `displayg3measures.py`).
 
-(William Emerison Six <billsix@gmail.com>, 2026-11-20.)
+Fixing those means changing what the notebooks show (a name for `|B|²`, say), not how gacalc
+breaks lines; that is a content decision left to the maintainer, and `check_math_overflow.py`
+lists them after every build. Shrinking display math to the page width in LaTeX (the strategy's
+last resort, `adjustbox`) was not added: the remaining cases are table rows and one radical, and
+shrinking every display to fit would make the printed math hard to read.
 
-1. **The one-blade-per-line layout goes into `_repr_latex_` itself**, behind the width threshold,
-   so plain cell outputs and Jupyter get it too, not just `show_mult` / `show_cancellation`.
-   Short values keep printing on one line. `_repr_latex_` is on `MultiVectorBase` and also comes
-   out of the generated `g*.py`, so check both (generate first, per CLAUDE.md "Code generation").
-   Existing doctests and tests that pin the one-line LaTeX must keep passing below the threshold.
-   Because a long value's display changes, this needs a `CHANGELOG.md` `[Unreleased]` entry.
+## Verification
 
-## Open questions
-
-None.
+`format.sh` (ruff, ty) clean; `pytest -m "not slow"` 1404 passed (the new helpers' doctests
+included); the last book build exited 0, no new Sphinx warnings, 0 `<Figure size` lines; page 416
+(`displaymv.py`'s associativity check) shows both sides and the numbered cancellation broken into
+rows inside the margin.
