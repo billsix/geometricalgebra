@@ -17,6 +17,10 @@ rotation, the geometric product, projection, reflection, and the algebra behind 
 starts again from the geometric product in three dimensions. Part IV collects the explorations:
 notebooks with no page of their own, which you can run and change yourself.
 
+Two reference cards come first, one for the plane and one for space. Each lists the book's
+formulas, from the most general form down to coordinates, with a link to the page that teaches
+each one. They are for looking things up; the book itself starts at Part I.
+
 Running the notebooks yourself
 ------------------------------
 
@@ -35,6 +39,13 @@ the second is built from the first; a dashed arrow means the second is checked a
 first. Part III rebuilds the plane from scratch, so it is its own chain.
 
 .. graphviz:: proof-dependencies.dot
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Reference cards
+
+   cheat-sheet-2d
+   cheat-sheet-3d
 
 .. toctree::
    :maxdepth: 2

@@ -105,7 +105,7 @@ The grade-0 `ScalarN` is **per algebra** (not one shared type), so its dual is p
 never depends on (float-fuzzy) coefficient *values*. It is also **precise for a type checker**,
 not just at runtime: the operators and products carry `@typing.overload` signatures, so a
 static checker knows `a * b` is a `Versor` and `a ^ b` a `Bivector` (and `2 + 3*(a^b)` a
-`Versor`) — the `type(...)` calls below print the same types the checker infers:
+`Versor`; the package ships `py.typed`, so mypy and pyright in your project read them) — the `type(...)` calls below print the same types the checker infers:
 
 ```python
 from gacalc.g2 import Vector

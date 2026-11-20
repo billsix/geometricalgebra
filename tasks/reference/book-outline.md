@@ -21,8 +21,20 @@ everything else (sets, number lines, relative graph paper, orthogonal, the dual,
 definition) was inferred and is open for the maintainer to reorder. The maintainer's raw ideas are
 preserved verbatim in the appendix.
 
-**Current reading order** (`book/docs/index.rst`, two captioned, numbered toctrees):
+**Current reading order** (`book/docs/index.rst`: an unnumbered "Reference cards" toctree, then
+the captioned, numbered parts):
 
+- **Reference cards** (before Part I; not lessons): `cheat-sheet-2d` and `cheat-sheet-3d`. Each
+  operation is a chain of partial bindings: the general 𝒢ₙ form, then by the kinds of argument
+  (vectors, a bivector, a versor), then named components, then coordinates, with as many steps as
+  the operation needs. Each chain ends with "Taught in" links (`:doc:` / `:eq:`) to the pages that
+  teach it, so a card can show results before the book reaches them without breaking the teaching
+  order. Each card stands alone (the generic steps repeat). Operations gacalc has but the book
+  does not teach (even/odd parts, `exp`, the scalar product, contractions) sit in a last
+  "Also in gacalc" section that links to the API reference. When a page adds or relabels a
+  formula on a card, update the card. The coordinate forms were checked against gacalc by a
+  one-time script (`tasks/archive/2026/11/20/book-formula-cheat-sheets-2d-3d.md` says how to
+  get it back from git).
 - **Part I — The plane:** hook, canonical-form, one-dimension, multiplication, trigonometry, sets,
   vectors-as-number-lines, vector-addition, rotate (proof pages
   `proof-rotate`, `proof-rotate-from-a-to-b`), geometric-product, rotation-graph-paper,
