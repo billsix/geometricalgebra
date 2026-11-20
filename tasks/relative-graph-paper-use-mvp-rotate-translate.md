@@ -54,16 +54,30 @@ sequence read both ways, and `make docs` passes.
    update `relative-graph-paper.rst`'s "Two ways to read a composition".
 4. `make docs`; look at both readings in HTML and PDF.
 
+## Decisions
+
+(William Emerison Six <billsix@gmail.com>, 2026-11-20.)
+
+1. **Confirmed:** the unwanted figure is the translate + uniform-scale sequence on *Relative Graph
+   Paper* (`notebooks/relative-graph-paper.py`). The wanted one is modelviewprojection's "Composed
+   functions, read bottom up / read top down" (`rotate(pi/4)`, then `translate`). Plan step 1 is
+   done.
+2. **The rotate + translate sequence goes on *Relative Graph Paper*,** replacing the translate +
+   scale one. *Rotation Is Turning the Graph Paper* then has to be reconciled with it, so the two
+   pages do not show the same sequence twice.
+
+3. **Move *Relative Graph Paper* after `rotate`,** and fold *Rotation Is Turning the Graph Paper*'s
+   `T_b ∘ R` content into it, so one page carries the sequence. The reason: `book/docs/index.rst`
+   orders the pages `relative-graph-paper`, then `rotate`, then `rotation-graph-paper`, and the
+   teaching-order rule (`tasks/reference/teaching-order-and-dependencies.md`) forbids using
+   rotation before `rotate`. The work this adds to the plan: reorder `index.rst`; update the
+   dependency graph on the book's first page and `tasks/reference/book-outline.md`; fix every
+   cross-reference to the two pages (`:doc:` links, including `relative-graph-paper.rst`'s link to
+   `rotation-graph-paper`); and either retire *Rotation Is Turning the Graph Paper* (its notebook,
+   page and toctree entry) or keep only what does not duplicate the moved page (e.g. the
+   `y = x^2` parabola on the rotated frame). Decide that per section while merging, and record it
+   here.
+
 ## Open questions
 
-1. Is the unwanted figure the translate + uniform-scale sequence on *Relative Graph Paper*
-   (`notebooks/relative-graph-paper.py`), and are the wanted ones modelviewprojection's
-   "Composed functions, read bottom up / read top down" (`rotate(pi/4)` then `translate`)?
-   Recommendation: yes on both; that is what the source shows.
-2. *Rotation Is Turning the Graph Paper* (`notebooks/rotation-graph-paper.py`) already has a
-   translate + rotate sequence, placed after rotation is introduced. Should the rotate + translate
-   sequence (a) replace the translate + scale one on *Relative Graph Paper*, moving that page after
-   rotate or introducing rotation early, or (b) live only on *Rotation Is Turning the Graph Paper*,
-   rewritten to match modelviewprojection's plots, with *Relative Graph Paper* dropping its
-   sequence? Recommendation: (b), since it keeps the book's order and puts the figure where
-   rotation is already known.
+None.

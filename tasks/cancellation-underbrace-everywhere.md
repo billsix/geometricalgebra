@@ -56,12 +56,18 @@ or opted out with a written reason, and `make docs` passing.
 3. Convert, one page at a time; `make docs`; check the rendered pages and the PDF (underbraces and
    numbers must stay legible when printed).
 
+## Decisions
+
+(William Emerison Six <billsix@gmail.com>, 2026-11-20.)
+
+1. **`blade-square-sign.rst`'s ASCII `\__/` brackets become numbered `\underbrace`s**, with the
+   rule (Rule 1, Rule 2) kept as text beside each line. The page's note that a `*` would misalign
+   the sliding columns (CLAUDE.md, "Math notation for readers") must be revisited when the diagrams
+   leave ASCII.
+2. **Scalar cancellations that are not a left-vs-right identity get the same numbered
+   `\underbrace`** on each cancelling factor (e.g. `proof-rotate.rst`'s "the `r`'s cancel"), so
+   every cancellation in the book reads alike.
+
 ## Open questions
 
-1. `book/docs/blade-square-sign.rst` already draws ASCII `\__/` brackets under cancelling `e1 e1`
-   pairs, labelled with the rule, not a number. Convert those to numbered `\underbrace` too, or
-   leave them as the "slide and cancel" picture? Recommendation: convert to `\underbrace` with
-   numbers, keeping the rule as text beside each line.
-2. For scalar cancellations that are not a left-vs-right identity (e.g. `proof-rotate.rst`'s "the
-   `r`'s cancel" in a fraction), is a numbered `\underbrace` on each cancelling factor what you
-   want? Recommendation: yes, same numbering style, so every cancellation in the book reads alike.
+None.

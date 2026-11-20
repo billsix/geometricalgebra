@@ -56,11 +56,16 @@ does it. Done means no figure or notebook plot outside those comparisons labels 
 4. Check `nbplotutils` and any plotly/matplotlib cell in `notebooks/` for `x`/`y` axis titles.
 5. `make docs`; look at the HTML and PDF figures.
 
+## Decisions
+
+(William Emerison Six <billsix@gmail.com>, 2026-11-20.)
+
+1. **Faint, unlabelled axis lines stay for orientation, with bold labelled unit `e₁`, `e₂` (`e₃`)
+   arrows drawn from the origin.** A full-length arrow labelled `e₁` would suggest `e₁` is that
+   long.
+2. **`graph_paper_scene` keeps its `±5` tick numbers**: they are coordinates along `e₁`/`e₂`,
+   which is the point being made.
+
 ## Open questions
 
-1. Should the axis lines themselves stay (unlabelled), with short labelled `e₁`, `e₂` arrows on
-   top, or should the full-length axis arrows go away and only the unit basis vectors remain?
-   Recommendation: keep faint unlabelled axis lines for orientation and draw bold labelled unit
-   `e₁`, `e₂`, since a full-length arrow labelled `e₁` would wrongly suggest `e₁` is that long.
-2. `graph_paper_scene` labels ticks at `±5`. Keep those numbers once the axes lose `x`/`y`?
-   Recommendation: keep them; they are coordinates along `e₁`/`e₂`, which is the point being made.
+None.
