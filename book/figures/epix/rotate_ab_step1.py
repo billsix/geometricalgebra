@@ -36,7 +36,11 @@ from gacalc.epixscene.scene2d import (
 
 # %%
 fig: PendingFigure
-with unit_circle_scene(lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT) as fig:
+# basis=False: the figure's own |a| * e_1 arrow lies along e_1 at about unit length, so
+# a basis arrow and label would sit under it and collide with its label
+with unit_circle_scene(
+    lower_left=LOWER_LEFT, upper_right=UPPER_RIGHT, basis=False
+) as fig:
     dashed_vector(tail=ORIGIN, head=A)  # a, before
     dashed_vector(tail=ORIGIN, head=B)  # b, before
     vector(

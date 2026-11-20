@@ -57,6 +57,16 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   coordinate versions of both, with the plane's normal written out from its coordinates.
 
 ### Changed
+- **The `gacalc.epixscene` 2D and 3D scenes label the basis vectors, not `x`/`y`/`z`.**
+  `scene2d.unit_circle_scene`, `scene3d.axes3`, `frame_scene.scene_2d` / `scene_3d` and
+  `bootstrap_live.scene_around` draw light, unlabelled axis lines and labelled unit arrows
+  `\vec{\mathbf{e}}_1`, `\vec{\mathbf{e}}_2` (`\vec{\mathbf{e}}_3`), from the new
+  `scene2d.basis_vectors` / `scene3d.basis_vectors3` (colour `scene2d.BASIS`). Each scene takes
+  `basis=False` for a figure that draws them itself. `scene_around` also fits the basis vectors in
+  its box. `line_scene.graph_paper_scene`, the high-school graph of `y = m * x + b`, keeps its
+  `x`/`y` labels. **Behaviour change:** a figure built on these scenes looks different.
+- **`nbplotutils.create_x_and_y` labels its two segments** `e₁`, `e₂` (or `f(e₁)`, `f(e₂)` under a
+  transform), in their colours.
 - **`float_close_to_zero` defaults to `None`: float input is now compared with a tolerance unless
   you say otherwise.** This applies to `is_orthogonal_to`, `is_parallel_to`, `require_on_line`,
   `coordinate_along`, the line-to-line / line-to-plane factories (and the generated `Vector`

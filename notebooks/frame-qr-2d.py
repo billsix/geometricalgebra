@@ -379,7 +379,7 @@ P_E1: Point = Point(x=1, y=0)
 P_E2: Point = Point(x=0, y=1)
 fig_forward: PendingFigure
 with scene_2d(
-    lower_left=Point(x=-0.6, y=-0.6), upper_right=Point(x=3.4, y=3.4)
+    lower_left=Point(x=-0.6, y=-0.6), upper_right=Point(x=3.4, y=3.4), basis=False
 ) as fig_forward:
     patch(corners=[ORIGIN2, P_V1, P_V1 + P_V2, P_V2], color=PURPLE_FILL)
     patch(corners=[ORIGIN2, P_E1, P_E1 + P_E2, P_E2], color=GRAY_FILL)

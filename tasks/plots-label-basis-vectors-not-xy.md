@@ -1,71 +1,67 @@
 # Plots show labelled e₁ and e₂ instead of x and y axis labels
 
-**Status:** proposed — needs go-ahead
-**Priority:** 3
-**Difficulty:** 4
-**Created:** 2026-11-20 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-11-20 (William Emerison Six <billsix@gmail.com>) · **Completed:** 2026-11-20
 
-## BLUF
-
-The book's plots label their axes `x` and `y` (and `z`), which the maintainer finds confusing: in
-this book a direction is a basis vector, and `x` is only a coordinate measured along that
-direction. Every plot should instead draw and label the basis vectors `e₁`, `e₂` (`e₃` in 3D). The
-one exception is a figure that shows how high school plots things, to compare with how the book
-does it. Done means no figure or notebook plot outside those comparisons labels an axis with
-`x`/`y`/`z`, every plot shows labelled basis vectors, and `make docs` passes.
-
-## Context
-
-- The maintainer's ask (2026-11-20, verbatim): *"plots shouldn't show x and y on the axes, I think
-  that makes it confusing. The only context where it should be there, is when showing how plots
-  are done in high school, in comparison to how we do them now. Instead, the E1 and e2 vectors
-  should always be shown in labeled. Does this make sense? We are using those basis vectors to
-  show direction, The idea of x is a coordinate in that direction, etc."* It makes sense, and it
-  is the figure-level follow-on to `tasks/archive/2026/10/09/coordinate-subscripts-indices-not-xyz.md`,
-  which moved coordinates from `a_x` to `a_1`.
-- **Where the axis labels come from (studied 2026-11-20).** Almost all of them are drawn once, in
-  the shared ePiX scene helpers, so the bulk of the change is a few lines:
-  - `src/gacalc/epixscene/scene2d.py` `unit_circle_scene`: axis arrows to the box edge labelled
-    `$x$`, `$y$`.
-  - `src/gacalc/epixscene/line_scene.py` `graph_paper_scene`: grid axes labelled `$x$`, `$y$`
-    plus `±5` tick labels.
-  - `src/gacalc/epixscene/scene3d.py` `axes3`: `$x$`, `$y$`, `$z$`.
-  - About 50 files under `book/figures/epix/` and `notebooks/` use these helpers, so every
-    caller inherits the change; each caller is then checked for clutter (a figure that already
-    draws its own `e₁`/`e₂` must not get a second pair).
-  - matplotlib: `src/gacalc/nbplotutils.py` already labels the axes `\vec{\mathbf{e}}_1` /
-    `\vec{\mathbf{e}}_2` with `set_xlabel`/`set_ylabel`; whether it also draws the vectors is to
-    be checked.
-- **Not axis labels, out of scope:** `notebooks/bootstrap-product.py`,
-  `bootstrap-rotation-from-projection.py` and `product-from-projection.py` label two *segments*
-  `$x$` and `$y$` (the projection and rejection lengths). Those name quantities, not axes.
-- **Candidate high-school-comparison figures (keep `x`/`y`):** `book/docs/proof-rotate.rst` ("In
-  high school you learned about sine, cosine…", the Kulla unit-circle SVG) and
-  `book/docs/rotation-graph-paper.rst` ("the same parabola you know from high school"). To be
-  confirmed per figure.
-- Basis-vector notation is `\vec{\mathbf{e}}_1` (bold arrow, `tasks/archive/2026/11/19/basis-vector-bold-arrow-notation.md`).
-
-## Plan
-
-1. Give the scene helpers an option for the label style, defaulting to basis vectors: axis lines
-   stay (unlabelled), and unit arrows `e₁`, `e₂` (`e₃`) are drawn from the origin and labelled. A
-   `high_school=True` (name to settle) keeps today's `x`/`y` labels.
-2. Pass the high-school option only at the comparison figures found above.
-3. Walk the ~50 callers' rendered output for duplicate or overlapping basis-vector labels; fix
-   per figure.
-4. Check `nbplotutils` and any plotly/matplotlib cell in `notebooks/` for `x`/`y` axis titles.
-5. `make docs`; look at the HTML and PDF figures.
+The maintainer's ask (2026-11-20, verbatim): *"plots shouldn't show x and y on the axes, I think
+that makes it confusing. The only context where it should be there, is when showing how plots are
+done in high school, in comparison to how we do them now. Instead, the E1 and e2 vectors should
+always be shown in labeled. Does this make sense? We are using those basis vectors to show
+direction, The idea of x is a coordinate in that direction, etc."* It did: a direction is a basis
+vector, and `x` is a coordinate measured along it, the figure-level follow-on to
+`tasks/archive/2026/10/09/coordinate-subscripts-indices-not-xyz.md`.
 
 ## Decisions
 
 (William Emerison Six <billsix@gmail.com>, 2026-11-20.)
 
-1. **Faint, unlabelled axis lines stay for orientation, with bold labelled unit `e₁`, `e₂` (`e₃`)
-   arrows drawn from the origin.** A full-length arrow labelled `e₁` would suggest `e₁` is that
-   long.
-2. **`graph_paper_scene` keeps its `±5` tick numbers**: they are coordinates along `e₁`/`e₂`,
-   which is the point being made.
+1. Faint, unlabelled axis lines stay for orientation, with labelled unit `e₁`, `e₂` (`e₃`) arrows
+   from the origin. A full-length arrow labelled `e₁` would suggest `e₁` is that long.
+2. `graph_paper_scene` keeps its `±5` tick numbers. (It also kept its `x`/`y`: see below.)
 
-## Open questions
+## What changed
 
-None.
+- **`src/gacalc/epixscene/scene2d.py`:** new `basis_vectors()` (unit arrows, labelled, in the
+  new colour `BASIS`, `epix.black(intensity=0.6)`, lighter than the black subject vectors, with
+  matching labels) and `AXIS_LINE` (`intensity=0.4`; `intensity` is darkness). `unit_circle_scene`
+  draws `AXIS_LINE` lines without arrowheads or labels and, after the figure's body,
+  `basis_vectors()`, unless `basis=False`.
+- **`scene3d.py`:** `basis_vectors3()` and `axes3()` the same way in 3D. **`frame_scene.py`**
+  (`scene_2d`, `scene_3d`) and **`bootstrap_live.py`** (`scene_around`, which also fits the unit
+  arrows in its box) add the basis vectors to their existing light axes, with `basis=False`.
+- **`line_scene.graph_paper_scene` keeps `x` and `y`:** it is only used by `one-dimension`, to draw
+  the high-school graph of `y = m * x + b` beside the book's number lines, which is the comparison
+  the maintainer named. Its docstring says so.
+- **`book/figures/epix/rotate_goal.py`** drew its own `x`/`y` axes; it is the book's own goal
+  figure (the high-school picture on `proof-rotate.rst` is the Kulla SVG, left as is), so it now
+  draws `AXIS_LINE` lines and `basis_vectors()`.
+- **`nbplotutils.create_x_and_y`** labels its segments `e₁`, `e₂` (or `f(e₁)`, `f(e₂)` when
+  `fn` is not the identity) in their colours. `create_graphs_3d` already labelled its axes
+  `e₁`, `e₂`, `e₃`; `create_graphs` (2D) shows only tick numbers.
+- **`paper_scene` is unchanged:** `carried_paper` already draws the labelled `e₁'`, `e₂'` of the
+  carried sheet, which coincide with `e₁`, `e₂` before anything moves.
+
+## Opted out (`basis=False`), with the reason in a comment at each call
+
+- Figures that draw `e₁`/`e₂` themselves: `notebooks/defining-g2.py` (`fig_resolve`),
+  `notebooks/vectors-as-number-lines.py` (`fig_axes`), `notebooks/frame-qr-2d.py`
+  (`fig_forward`, which labels `e₁`, `e₂` and their images).
+- Figures whose own vector lies along `e₁` at about unit length, so the basis arrow sat under it
+  and its label collided: `rotate_ab_step1.py`, `rotate_ab_step2.py` (`|a| * e₁`), `sp3.py`,
+  `sp4.py`, `boot_sp3.py`, `boot_sp4.py` (the standard-position `a'`/`b'`), `boot_rotate.py`
+  (`cos(θ) * v`).
+- Two figure labels moved instead, to clear the 3D `e₂` label: `proj3d_e12.py`'s `rej` label
+  (now right of its arrow), `proj3d_e31.py`'s `proj` label (now above-left of its tip).
+
+Not changed: the bootstrap notebooks' `$x$`/`$y$` labels on two segments
+(`bootstrap-product.py`, `bootstrap-rotation-from-projection.py`, `product-from-projection.py`)
+name the projection and rejection lengths, not axes.
+
+## Verification
+
+All 49 prebuilt figures were rendered with `tools/render_epix_figures.py` and looked at in
+montages; the collisions above were found that way and fixed. The full book build
+(`entrypoint/docs.sh` in the image, exit 0, no new Sphinx warnings) showed one more: in the live
+3D figures the plane patch, drawn by the figure body, hid `e₂`. The scenes now draw the basis
+vectors after the body (after the context manager's `yield`), and `basis_vectors` resets the line
+style and fill first; a re-run of `three-dimensions.py` showed `e₂` on top. `format.sh` clean;
+`pytest -m "not slow"` 1396 passed.

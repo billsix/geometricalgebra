@@ -57,9 +57,9 @@ with frame_scene() as fig:
     epix.label_color(color=BLUE)
     epix.label(
         at=proj,
-        offset=Point(x=-10, y=-20),
+        offset=Point(x=-8, y=4),
         text=r"$\mathrm{proj}_{\mathbf{e}_{31}}\,\vec{\mathbf{a}}$",
-        align=epix.LabelPos.r,
+        align=epix.LabelPos.tl,
     )
     epix.pen(color=GREEN, width=2.0)
     epix.arrow(tail=proj, head=A, scale=0.7)

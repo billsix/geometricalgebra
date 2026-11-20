@@ -33,8 +33,9 @@ from gacalc.epixscene.scene2d import (
     PURPLE,
     PURPLE_FILL,
     UNIT_SCALE_IN,
+    basis_vectors,
 )
-from gacalc.epixscene.scene3d import PendingFigure
+from gacalc.epixscene.scene3d import PendingFigure, basis_vectors3
 
 RED: epix.Color = epix.rgb(r=0.75, g=0.0, b=0.0)
 PLANE_FILL: epix.Color = epix.rgb(r=0.80, g=0.86, b=0.95)
@@ -95,11 +96,15 @@ def point(coordinates: Sequence[Real]) -> Point:
 
 
 @contextmanager
-def scene_2d(lower_left: Point, upper_right: Point) -> Generator[PendingFigure]:
-    """A 2D figure with light, unlabelled axes, at the book's 2D scale.
+def scene_2d(
+    lower_left: Point, upper_right: Point, basis: bool = True
+) -> Generator[PendingFigure]:
+    """A 2D figure with light, unlabelled axes and the labelled basis vectors, at the
+    book's 2D scale.
 
-    The axes carry no ``x``/``y`` labels: in these notebooks ``x`` and ``y`` name
-    vectors (the coordinates and the target of the frame's map)."""
+    The axes carry no ``x``/``y`` labels: the basis vectors name the directions (and
+    in these notebooks ``x`` and ``y`` name vectors). Pass ``basis=False`` for a
+    figure that draws the basis vectors itself."""
     width: float = upper_right.x1() - lower_left.x1()
     height: float = upper_right.x2() - lower_left.x2()
     size: str = f"{width * UNIT_SCALE_IN:.2f}x{height * UNIT_SCALE_IN:.2f}in"
@@ -123,14 +128,21 @@ def scene_2d(lower_left: Point, upper_right: Point) -> Generator[PendingFigure]:
             scale=0.6,
         )
         yield fig
+        # after the figure's own drawing, so a filled patch cannot hide them
+        if basis:
+            basis_vectors()
 
 
 @contextmanager
 def scene_3d(
-    lower_left: Point, upper_right: Point, scale_in: float = SCALE_3D_IN
+    lower_left: Point,
+    upper_right: Point,
+    scale_in: float = SCALE_3D_IN,
+    basis: bool = True,
 ) -> Generator[PendingFigure]:
-    """A 3D figure seen from :data:`CAMERA`, with light, unlabelled axes (as in
-    :func:`scene_2d`, ``x`` and ``y`` name vectors here).
+    """A 3D figure seen from :data:`CAMERA`, with light, unlabelled axes and the
+    labelled basis vectors (as in :func:`scene_2d`, ``x`` and ``y`` name vectors
+    here). Pass ``basis=False`` for a figure that draws the basis vectors itself.
 
     ``scale_in`` is inches per projected unit; the 3D frames are larger than the
     book's other 3D figures, so the default is smaller than
@@ -156,6 +168,9 @@ def scene_3d(
         ):
             epix.arrow(tail=ORIGIN3, head=axis, scale=0.6)
         yield fig
+        # after the figure's own drawing, so a filled patch cannot hide them
+        if basis:
+            basis_vectors3()
 
 
 def arrow(

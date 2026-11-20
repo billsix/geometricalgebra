@@ -190,7 +190,9 @@ fig_two
 P_E1: Point = point(coordinates=list(e_1))
 P_E2: Point = point(coordinates=list(e_2))
 fig_axes: PendingFigure
-with scene_around(points=[-3 * P_E1, 3 * P_E1, -3 * P_E2, 3 * P_E2]) as fig_axes:
+with scene_around(
+    points=[-3 * P_E1, 3 * P_E1, -3 * P_E2, 3 * P_E2], basis=False
+) as fig_axes:
     slanted_number_line(unit=P_E1, low=-3, high=3, color=GREEN, labels=(-2, 2), side=-1)
     slanted_number_line(unit=P_E2, low=-3, high=3, color=BLUE, labels=(-2, 2), side=1)
     arrow(head=P_E1, color=GREEN, text=r"$\vec{\mathbf{e}}_1$")

@@ -431,7 +431,7 @@ P_STEP: Point = point(coordinates=list(at_values(Scalar(a_1) * e_1, plot_values)
 P_E1: Point = point(coordinates=list(e_1))
 P_E2: Point = point(coordinates=list(e_2))
 fig_resolve: PendingFigure
-with scene_around(points=[P_A, P_E2]) as fig_resolve:
+with scene_around(points=[P_A, P_E2], basis=False) as fig_resolve:
     patch(corners=[Point(x=0, y=0), P_E1, P_E1 + P_E2, P_E2])
     note(at=0.5 * (P_E1 + P_E2), text=r"$\mathbf{e}_{12}$", color=BLUE)
     dashed_arrow(tail=Point(x=0, y=0), head=P_STEP, color=GREEN)

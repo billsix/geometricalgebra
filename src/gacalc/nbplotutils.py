@@ -284,10 +284,15 @@ def create_x_and_y(
     ycolor: tuple[float, float, float] = (1.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
-    """Draw the x and y axes as coloured segments from the origin to e₁ and e₂ —
+    """Draw the basis vectors as coloured segments from the origin to e₁ and e₂ —
     their image under ``fn`` (identity by default), so a transform shows where the
-    basis vectors land.
+    basis vectors land — each labelled at its tip in its own colour: ``e₁`` and
+    ``e₂``, or ``f(e₁)`` and ``f(e₂)`` when ``fn`` is not the identity.
     """
+    axes: Axes = _current_axes()
+    prefix: str
+    suffix: str
+    prefix, suffix = ("", "") if fn is _IDENTITY else ("f(", ")")
     ex: MultiVectorBase = cls.basis_vector(1)
     ey: MultiVectorBase = cls.basis_vector(2)
     origin: MultiVectorBase = cls.zero()
@@ -310,6 +315,17 @@ def create_x_and_y(
         lw=1.0,
         color=ycolor,
     )
+    index: int
+    tip: MultiVectorBase
+    color: tuple[float, float, float]
+    for index, tip, color in ((1, ex, xcolor), (2, ey, ycolor)):
+        axes.annotate(
+            f"${prefix}\\vec{{\\mathbf{{e}}}}_{index}{suffix}$",
+            xy=(float(_coord(fn(tip), (1,))), float(_coord(fn(tip), (2,)))),
+            xytext=(4, 4),
+            textcoords="offset points",
+            color=color,
+        )
 
 
 def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Real:

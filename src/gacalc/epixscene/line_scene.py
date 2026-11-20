@@ -67,9 +67,13 @@ _NO_SHIFT: Point = Point(x=0, y=0)
 def graph_paper_scene(
     lower_left: Point, upper_right: Point
 ) -> Generator[PendingFigure]:
-    """Graph paper with a unit grid and labelled axes.
+    """Graph paper with a unit grid and axes labelled ``x`` and ``y``: the high-school
+    graph of ``y = m * x + b``.
 
-    The ``x`` axis is the input and the ``y`` axis the output.
+    The ``x`` axis is the input and the ``y`` axis the output. This is the one scene
+    whose axes say ``x`` and ``y``: ``one-dimension`` draws it to show how the reader
+    has graphed a line before, beside the book's number lines. Every other scene names
+    its directions with the basis vectors (``scene2d.basis_vectors``).
     """
     width: float = upper_right.x1() - lower_left.x1()
     height: float = upper_right.x2() - lower_left.x2()

@@ -68,9 +68,9 @@ with frame_scene() as fig:
     mid_rej: Point = 0.5 * (proj + A)
     epix.label(
         at=mid_rej,
-        offset=Point(x=18, y=-6),
+        offset=Point(x=5, y=0),
         text=r"$\mathrm{rej}_{\mathbf{e}_{12}}\,\vec{\mathbf{a}}$",
-        align=epix.LabelPos.l,
+        align=epix.LabelPos.r,
     )
     epix.label_color(color=epix.black())
     right_angle_3d(corner=proj, toward_a=A - proj, toward_b=ORIGIN3 - proj)
