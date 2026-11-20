@@ -33,7 +33,7 @@ from gacalc.epixscene.frame_scene import (
     point,
     right_angle,
 )
-from gacalc.epixscene.scene2d import BACKGROUND
+from gacalc.epixscene.scene2d import BACKGROUND, basis_vectors
 
 __all__: list[str] = [
     "BLACK",
@@ -58,8 +58,12 @@ _WIDTH_IN: float = 3.4  # every figure is this wide, whatever the vectors' size
 
 
 @contextmanager
-def scene_around(points: Sequence[Point]) -> Generator[PendingFigure]:
-    """A 2D figure that fits ``points`` and the origin, with light, unlabelled axes.
+def scene_around(
+    points: Sequence[Point], basis: bool = True
+) -> Generator[PendingFigure]:
+    """A 2D figure that fits ``points``, the origin and the basis vectors, with light,
+    unlabelled axes and the labelled basis vectors (pass ``basis=False`` for a figure
+    that draws them itself).
 
     The figure is always :data:`_WIDTH_IN` wide with equal scales on both axes, so a
     long vector shrinks the picture instead of overflowing it. ``epix.fit_bounds``
@@ -69,7 +73,9 @@ def scene_around(points: Sequence[Point]) -> Generator[PendingFigure]:
     upper_right: Point
     size: str
     lower_left, upper_right, size = epix.fit_bounds(
-        points=[ORIGIN2, *points], width=_WIDTH_IN, margin=_MARGIN
+        points=[ORIGIN2, Point(x=1, y=0), Point(x=0, y=1), *points],
+        width=_WIDTH_IN,
+        margin=_MARGIN,
     )
     fig: PendingFigure
     with epix.figure(
@@ -91,3 +97,6 @@ def scene_around(points: Sequence[Point]) -> Generator[PendingFigure]:
             scale=0.6,
         )
         yield fig
+        # after the figure's own drawing, so a filled patch cannot hide them
+        if basis:
+            basis_vectors()

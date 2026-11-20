@@ -62,7 +62,7 @@ from gacalc.g2 import (
     e_12,
     rotate_90_degrees,
 )
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 
 # %% [markdown]
 # ## The vector and its dual
@@ -171,7 +171,7 @@ a.magnitude_squared()
 # Their difference:
 
 # %%
-sympy.simplify(sympy.sympify(a_dual.magnitude_squared() - a.magnitude_squared()))
+show_difference(a_dual.magnitude_squared(), a.magnitude_squared())
 
 # %% [markdown]
 # So whenever $\vec{\mathbf{a}}$ is not zero, neither is its dual, and the cosine of the
@@ -216,7 +216,7 @@ regrouped
 # Their difference:
 
 # %%
-(product - regrouped).simplified()
+show_difference(product, regrouped)
 
 # %% [markdown]
 # The middle factor, $\vec{\mathbf{a}} * \vec{\mathbf{a}}$, is a plain number, the
@@ -262,7 +262,7 @@ inverse(rotate_90_degrees())(a)
 # Its difference from the dual:
 
 # %%
-(inverse(rotate_90_degrees())(a) - a_dual).simplified()
+show_difference(inverse(rotate_90_degrees())(a), a_dual)
 
 # %% [markdown]
 # The quarter-turn argument works only in the plane. The algebraic proof above never

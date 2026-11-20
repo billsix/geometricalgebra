@@ -61,7 +61,7 @@ from gacalc.epixscene.frame_scene import scene_3d
 from gacalc.frame import Frame, InverseMethod, reciprocal_frame
 from gacalc.functions import InvertibleFunction
 from gacalc.g2 import Scalar, e_1, e_2
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 
 # %% [markdown]
 # ## A general frame in the plane
@@ -142,7 +142,7 @@ reciprocal[0].simplified()
 # Their difference:
 
 # %%
-(upper_1 - reciprocal[0]).simplified()
+show_difference(upper_1, reciprocal[0])
 
 # %% [markdown]
 # By the formula, $\vec{\mathbf{a}}^2$ is:
@@ -161,7 +161,7 @@ reciprocal[1].simplified()
 # Their difference:
 
 # %%
-(upper_2 - reciprocal[1]).simplified()
+show_difference(upper_2, reciprocal[1])
 
 # %% [markdown]
 # At the plot values, $\vec{\mathbf{a}}^1$:
@@ -250,7 +250,7 @@ coordinate_1
 # Its difference from $x_1$:
 
 # %%
-coordinate_1 - x_1
+show_difference(coordinate_1, x_1)
 
 # %% [markdown]
 # $\vec{\mathbf{a}}^2 \cdot \vec{\mathbf{y}}$ is:
@@ -263,7 +263,7 @@ coordinate_2
 # Its difference from $x_2$:
 
 # %%
-coordinate_2 - x_2
+show_difference(coordinate_2, x_2)
 
 # %% [markdown]
 # The vector is the sum of its coordinates times the frame,
@@ -289,7 +289,7 @@ y.simplified()
 # Their difference:
 
 # %%
-(rebuilt - y).simplified()
+show_difference(rebuilt, y)
 
 # %% [markdown]
 # Drawn at the plot values: $\vec{\mathbf{y}}$ (purple) as $x_1 * \vec{\mathbf{a}}_1$
@@ -350,7 +350,7 @@ height_ratio
 # Its difference from $x_1$:
 
 # %%
-height_ratio - x_1
+show_difference(height_ratio, x_1)
 
 # %% [markdown]
 # Folding that division into the vector,
@@ -365,7 +365,7 @@ folded
 # $\vec{\mathbf{m}}$. Its difference from $\vec{\mathbf{a}}^1$:
 
 # %%
-(folded - reciprocal[0]).simplified()
+show_difference(folded, reciprocal[0])
 
 # %% [markdown]
 # ## Theorem 6: the last reciprocal vector is the last rejection over its length squared
@@ -397,7 +397,7 @@ w_2_over_length
 # Its difference from $\vec{\mathbf{a}}^2$:
 
 # %%
-(w_2_over_length - reciprocal[1]).simplified()
+show_difference(w_2_over_length, reciprocal[1])
 
 # %% [markdown]
 # ## Theorems 7 and 8: both inverses undo the frame's map, and they agree
@@ -427,7 +427,7 @@ by_reciprocal.inverse(by_reciprocal(x)).simplified()
 # Its difference from $\vec{\mathbf{x}}$:
 
 # %%
-(by_reciprocal.inverse(by_reciprocal(x)) - x).simplified()
+show_difference(by_reciprocal.inverse(by_reciprocal(x)), x)
 
 # %% [markdown]
 # The map, then the peeling inverse:
@@ -439,7 +439,7 @@ by_peel.inverse(by_peel(x)).simplified()
 # Its difference from $\vec{\mathbf{x}}$:
 
 # %%
-(by_peel.inverse(by_peel(x)) - x).simplified()
+show_difference(by_peel.inverse(by_peel(x)), x)
 
 # %% [markdown]
 # The other order, the reciprocal-frame inverse and then the map, on $\vec{\mathbf{y}}$:
@@ -451,7 +451,7 @@ by_reciprocal(by_reciprocal.inverse(y)).simplified()
 # Its difference from $\vec{\mathbf{y}}$:
 
 # %%
-(by_reciprocal(by_reciprocal.inverse(y)) - y).simplified()
+show_difference(by_reciprocal(by_reciprocal.inverse(y)), y)
 
 # %% [markdown]
 # The peeling inverse and then the map, on $\vec{\mathbf{y}}$:
@@ -463,7 +463,7 @@ by_peel(by_peel.inverse(y)).simplified()
 # Its difference from $\vec{\mathbf{y}}$:
 
 # %%
-(by_peel(by_peel.inverse(y)) - y).simplified()
+show_difference(by_peel(by_peel.inverse(y)), y)
 
 # %% [markdown]
 # The two inverses agree. The reciprocal-frame inverse of $\vec{\mathbf{y}}$:
@@ -481,7 +481,7 @@ by_peel.inverse(y).simplified()
 # Their difference:
 
 # %%
-(by_reciprocal.inverse(y) - by_peel.inverse(y)).simplified()
+show_difference(by_reciprocal.inverse(y), by_peel.inverse(y))
 
 # %% [markdown]
 # ## In space
@@ -614,7 +614,7 @@ space_rebuilt
 # Its difference from $\vec{\mathbf{z}}$:
 
 # %%
-(space_rebuilt - z).simplified()
+show_difference(space_rebuilt, z)
 
 # %% [markdown]
 # Theorem 5: with $\vec{\mathbf{n}}$ a normal to $\vec{\mathbf{b}}_1$'s face (the dual
@@ -632,7 +632,7 @@ space_folded
 # Its difference from $\vec{\mathbf{b}}^1$:
 
 # %%
-(space_folded - space_reciprocal[0]).simplified()
+show_difference(space_folded, space_reciprocal[0])
 
 # %% [markdown]
 # Theorem 6: $\vec{\mathbf{w}}_3 / |\vec{\mathbf{w}}_3|^2$ is:
@@ -648,7 +648,7 @@ w_3_over_length
 # Its difference from $\vec{\mathbf{b}}^3$:
 
 # %%
-(w_3_over_length - space_reciprocal[2]).simplified()
+show_difference(w_3_over_length, space_reciprocal[2])
 
 # %% [markdown]
 # Theorems 7 and 8: both inverses undo the map, in both orders, and they agree. The map,
@@ -667,7 +667,7 @@ space_by_reciprocal.inverse(space_by_reciprocal(z)).simplified()
 # Its difference from $\vec{\mathbf{z}}$:
 
 # %%
-(space_by_reciprocal.inverse(space_by_reciprocal(z)) - z).simplified()
+show_difference(space_by_reciprocal.inverse(space_by_reciprocal(z)), z)
 
 # %% [markdown]
 # The map, then the peeling inverse:
@@ -679,7 +679,7 @@ space_by_peel.inverse(space_by_peel(z)).simplified()
 # Its difference from $\vec{\mathbf{z}}$:
 
 # %%
-(space_by_peel.inverse(space_by_peel(z)) - z).simplified()
+show_difference(space_by_peel.inverse(space_by_peel(z)), z)
 
 # %% [markdown]
 # The reciprocal-frame inverse, then the map:
@@ -691,7 +691,7 @@ space_by_reciprocal(space_by_reciprocal.inverse(z)).simplified()
 # Its difference from $\vec{\mathbf{z}}$:
 
 # %%
-(space_by_reciprocal(space_by_reciprocal.inverse(z)) - z).simplified()
+show_difference(space_by_reciprocal(space_by_reciprocal.inverse(z)), z)
 
 # %% [markdown]
 # The peeling inverse, then the map:
@@ -703,7 +703,7 @@ space_by_peel(space_by_peel.inverse(z)).simplified()
 # Its difference from $\vec{\mathbf{z}}$:
 
 # %%
-(space_by_peel(space_by_peel.inverse(z)) - z).simplified()
+show_difference(space_by_peel(space_by_peel.inverse(z)), z)
 
 # %% [markdown]
 # The two inverses agree. The reciprocal-frame inverse of $\vec{\mathbf{z}}$:
@@ -721,4 +721,4 @@ space_by_peel.inverse(z).simplified()
 # Their difference:
 
 # %%
-(space_by_reciprocal.inverse(z) - space_by_peel.inverse(z)).simplified()
+show_difference(space_by_reciprocal.inverse(z), space_by_peel.inverse(z))

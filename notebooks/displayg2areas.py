@@ -45,7 +45,7 @@ import sympy
 from gacalc.base import Real
 from gacalc.g2 import Scalar, Vector
 from gacalc.measure import area, signed_area
-from gacalc.nbdisplay import show_mult
+from gacalc.nbdisplay import show_difference, show_mult
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)
@@ -210,7 +210,7 @@ signed_area(b, a) + signed_area(a, b)
 # and the unsigned area is its absolute value; their difference is $0$:
 
 # %%
-area(a, b) - abs(signed_area(a, b))
+show_difference(area(a, b), abs(signed_area(a, b)))
 
 # %% [markdown]
 # Which part of $\vec{\mathbf{a}}$ makes the dot, and which the wedge?

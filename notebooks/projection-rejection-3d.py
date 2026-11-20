@@ -59,7 +59,7 @@ from gacalc.epixscene.frame_scene import (
     scene_3d,
 )
 from gacalc.g3 import Bivector, Scalar, Vector, Versor, e_1, e_2, e_3, e_12, e_13, e_23
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 
 # %% [markdown]
 # ## Onto a coordinate plane: keep two coordinates
@@ -150,7 +150,7 @@ rejection_plane
 # They add back to $\vec{\mathbf{a}}$; the difference:
 
 # %%
-(projection_plane + rejection_plane - a).simplified()
+show_difference(projection_plane + rejection_plane, a)
 
 # %% [markdown]
 # The rejection sticks straight out of the plane: it is perpendicular to both
@@ -242,7 +242,7 @@ along
 # and it is the dot product; the difference:
 
 # %%
-sympy.simplify(sympy.sympify(along.scalar_part() - a.dot(b).scalar_part()))
+show_difference(along.scalar_part(), a.dot(b).scalar_part())
 
 # %% [markdown]
 # $\vec{\mathbf{a}}$ times the rejection is a piece of plane, with a part in each of the
@@ -256,11 +256,11 @@ across
 # and it is the wedge; the difference:
 
 # %%
-(across - (a ^ b)).simplified()
+show_difference(across, a ^ b)
 
 # %% [markdown]
 # Together they are the whole product $\vec{\mathbf{a}} * \vec{\mathbf{b}}$; the
 # difference:
 
 # %%
-(a * b - along - across).simplified()
+show_difference(a * b - along, across)

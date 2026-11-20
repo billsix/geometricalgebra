@@ -42,6 +42,8 @@ __all__: list[str] = [
     "epix",
     "polar",
     "unit_circle_scene",
+    "BASIS",
+    "basis_vectors",
     "vector",
     "dashed_vector",
     "parallelogram",
@@ -71,6 +73,41 @@ GRID: epix.Color = epix.black(intensity=0.8)  # light gray graph-paper lines
 BACKGROUND: str = "#f2f2f2"
 
 
+# The basis vectors are drawn in this dark gray, lighter than the black vectors a
+# figure is about, so they read as the frame, not as a subject; their labels match.
+BASIS: epix.Color = epix.black(intensity=0.6)
+# The axis lines, lighter still: they only orient the reader, and carry no label.
+AXIS_LINE: epix.Color = epix.black(intensity=0.4)
+
+
+def basis_vectors() -> None:
+    r"""The unit basis vectors :math:`\vec{\mathbf{e}}_1` and :math:`\vec{\mathbf{e}}_2`
+    as arrows from the origin, labelled.
+
+    Every 2D figure shows them: a direction is a basis vector, and a coordinate is a
+    number of steps along one, so the axes are labelled by these arrows, not by
+    ``x`` and ``y``."""
+    epix.line_style(style="-")  # solid, whatever the figure left set
+    epix.nofill()
+    epix.pen(color=BASIS, width=1.4)
+    epix.arrow(tail=ORIGIN, head=Point(x=1, y=0), scale=0.6)
+    epix.arrow(tail=ORIGIN, head=Point(x=0, y=1), scale=0.6)
+    epix.label_color(color=BASIS)
+    epix.label(
+        at=Point(x=1, y=0),
+        offset=Point(x=0, y=-5),
+        text=r"$\vec{\mathbf{e}}_1$",
+        align=epix.LabelPos.b,
+    )
+    epix.label(
+        at=Point(x=0, y=1),
+        offset=Point(x=-5, y=0),
+        text=r"$\vec{\mathbf{e}}_2$",
+        align=epix.LabelPos.l,
+    )
+    epix.label_color(color=epix.black())
+
+
 def polar(radius: float, angle: float) -> Point:
     """The point at polar coordinates (radius, angle in radians)."""
     return Point(x=radius * math.cos(angle), y=radius * math.sin(angle))
@@ -81,12 +118,17 @@ def unit_circle_scene(
     lower_left: Point = DEFAULT_LOWER_LEFT,
     upper_right: Point = DEFAULT_UPPER_RIGHT,
     disc: bool = True,
+    basis: bool = True,
 ) -> Generator[PendingFigure]:
-    """``epix.figure`` with the labelled axes (and, by default, the unit disc) drawn.
+    """``epix.figure`` with the axes, the labelled basis vectors and, by default, the
+    unit disc drawn.
 
     The physical size follows the bounding box at ``UNIT_SCALE_IN`` per unit, so every
     figure is at the same scale whatever its box. Pass ``disc=False`` for a figure that
     does not need the unit circle (e.g. vector addition) -- the axes are still drawn.
+    The axes are light and unlabelled; the directions are named by
+    :func:`basis_vectors`. Pass ``basis=False`` for a figure that draws
+    :math:`\\vec{\\mathbf{e}}_1` and :math:`\\vec{\\mathbf{e}}_2` itself.
     """
     width: float = upper_right.x1() - lower_left.x1()
     height: float = upper_right.x2() - lower_left.x2()
@@ -100,15 +142,20 @@ def unit_circle_scene(
             epix.fill(color=epix.white(intensity=0.95))
             epix.circle(center=ORIGIN, radius=1)
             epix.nofill()
-        # axes with arrowheads
-        epix.pen(color=epix.black(), width=1.1)
-        x_end: Point = Point(x=upper_right.x1() - 0.15, y=0)
-        y_end: Point = Point(x=0, y=upper_right.x2() - 0.1)
-        epix.arrow(tail=Point(x=lower_left.x1() + 0.2, y=0), head=x_end, scale=0.7)
-        epix.arrow(tail=Point(x=0, y=lower_left.x2() + 0.15), head=y_end, scale=0.7)
-        epix.label(at=x_end, offset=Point(x=5, y=0), text="$x$", align=epix.LabelPos.r)
-        epix.label(at=y_end, offset=Point(x=5, y=-2), text="$y$", align=epix.LabelPos.r)
+        # light axis lines, unlabelled: the basis vectors name the directions
+        epix.pen(color=AXIS_LINE, width=0.8)
+        epix.line(
+            tail=Point(x=lower_left.x1() + 0.2, y=0),
+            head=Point(x=upper_right.x1() - 0.15, y=0),
+        )
+        epix.line(
+            tail=Point(x=0, y=lower_left.x2() + 0.15),
+            head=Point(x=0, y=upper_right.x2() - 0.1),
+        )
         yield fig
+        # after the figure's own drawing, so a filled patch cannot hide them
+        if basis:
+            basis_vectors()
 
 
 def vector(

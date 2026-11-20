@@ -48,7 +48,7 @@ from gacalc.epixscene.bootstrap_live import (
 )
 from gacalc.functions import InvertibleFunction
 from gacalc.g2 import Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 from gacalc.standardposition import rotation_from_to
 
 # %% [markdown]
@@ -137,7 +137,7 @@ a_length_along_b
 # Its difference from the rotated $\vec{\mathbf{a}}$:
 
 # %%
-(rotated - a_length_along_b).simplified()
+show_difference(rotated, a_length_along_b)
 
 # %% [markdown]
 # ## The lengths don't matter
@@ -166,7 +166,7 @@ rotate_scaled(1 * e_1).simplified()
 # Their difference:
 
 # %%
-(rotate_a_to_b(1 * e_1) - rotate_scaled(1 * e_1)).simplified()
+show_difference(rotate_a_to_b(1 * e_1), rotate_scaled(1 * e_1))
 
 # %% [markdown]
 # ## The angle is still there, as a property
@@ -206,4 +206,4 @@ rotate_a_to_b(v).simplified()
 # Their difference:
 
 # %%
-(v.rotate(theta) - rotate_a_to_b(v)).simplified()
+show_difference(v.rotate(theta), rotate_a_to_b(v))

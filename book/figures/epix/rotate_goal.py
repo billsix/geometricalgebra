@@ -32,6 +32,8 @@ import epix
 from epix import Point
 from epix.figure import _Pending as PendingFigure  # what epix.figure() yields
 
+from gacalc.epixscene.scene2d import AXIS_LINE, basis_vectors
+
 ORIGIN: Point = Point(x=0, y=0)
 A_LENGTH: float = 1.7  # |a|: matches _rotation_scene.R so every rotate figure agrees
 A_ANGLE: float = math.radians(66)  # direction of a
@@ -66,16 +68,11 @@ with epix.figure(
     epix.circle(center=ORIGIN, radius=1)
     epix.nofill()
 
-    # axes with arrowheads
-    epix.pen(color=epix.black(), width=1.1)
-    epix.arrow(tail=Point(x=-1.15, y=0), head=Point(x=1.3, y=0), scale=1)
-    epix.arrow(tail=Point(x=0, y=-1.15), head=Point(x=0, y=1.3), scale=1)
-    epix.label(
-        at=Point(x=1.3, y=0), offset=Point(x=5, y=0), text="$x$", align=epix.LabelPos.r
-    )
-    epix.label(
-        at=Point(x=0, y=1.3), offset=Point(x=5, y=-2), text="$y$", align=epix.LabelPos.r
-    )
+    # light, unlabelled axis lines; the basis vectors name the directions
+    epix.pen(color=AXIS_LINE, width=0.8)
+    epix.line(tail=Point(x=-1.15, y=0), head=Point(x=1.3, y=0))
+    epix.line(tail=Point(x=0, y=-1.15), head=Point(x=0, y=1.3))
+    basis_vectors()
 
     # the angle theta as a filled wedge from a's direction to the rotated direction
     epix.pen(color=PURPLE, width=0.8)

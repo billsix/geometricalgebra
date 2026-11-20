@@ -56,7 +56,7 @@ from gacalc.epixscene.frame_scene import (
     scene_3d,
 )
 from gacalc.g3 import Bivector, Scalar, Trivector, Vector, Versor, e_1, e_2, e_3, e_123
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 
 # %% [markdown]
 # ## The vectors, and the plane they span
@@ -122,7 +122,7 @@ plane
 # Their difference:
 
 # %%
-((a ^ r) - plane).simplified()
+show_difference(a ^ r, plane)
 
 # %% [markdown]
 # Because $\vec{\mathbf{a}}$ and $\vec{\mathbf{r}}$ are perpendicular, their product
@@ -171,7 +171,7 @@ d.is_vector()
 # perpendicular pair. Its difference from the dual:
 
 # %%
-(a * r * I_inverse - d).simplified()
+show_difference(a * r * I_inverse, d)
 
 # %% [markdown]
 # The values used to draw the figure. Change them and rerun.
@@ -250,7 +250,7 @@ product_a
 # Their difference:
 
 # %%
-(product_a - regrouped_a).simplified()
+show_difference(product_a, regrouped_a)
 
 # %% [markdown]
 # So the plain-number part, the dot product, is $0$:
@@ -293,7 +293,7 @@ swapped_r
 # Their difference:
 
 # %%
-(product_r - swapped_r).simplified()
+show_difference(product_r, swapped_r)
 
 # %% [markdown]
 # So the dot product is $0$:
@@ -317,7 +317,7 @@ sympy.simplify(sympy.sympify(r.dot(d).scalar_part()))
 # The projection plus the rejection is $\vec{\mathbf{b}}$; their difference:
 
 # %%
-(b.projected_onto(a) + r - b).simplified()
+show_difference(b.projected_onto(a) + r, b)
 
 # %% [markdown]
 # and the dot product of $\vec{\mathbf{b}}$ with the dual:
@@ -358,7 +358,7 @@ a.cross(b)
 # Its difference from the dual:
 
 # %%
-(a.cross(b) - d).simplified()
+show_difference(a.cross(b), d)
 
 # %% [markdown]
 # ## Why the vector's dual is not a vector here

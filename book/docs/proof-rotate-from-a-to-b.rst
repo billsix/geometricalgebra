@@ -65,12 +65,19 @@ sine is odd that rotation uses :math:`\cos(-\beta) = a_1/|\vec{\mathbf{a}}|`,
 :math:`\sin(-\beta) = -a_2/|\vec{\mathbf{a}}|`.
 Substitute those into :math:`\vec{\mathbf{r}}(\,\cdot\,;\theta)` and call the result
 :math:`R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}` — read "from :math:`\vec{\mathbf{a}}`, to :math:`\vec{\mathbf{e}}_1`". Applied to
-:math:`\vec{\mathbf{a}}` itself, its :math:`y`-coordinate cancels and its :math:`x`-coordinate becomes
-:math:`(a_1^2 + a_2^2)/|\vec{\mathbf{a}}| = |\vec{\mathbf{a}}|`:
+:math:`\vec{\mathbf{a}}` itself, the two terms of its second coordinate carry the same number and
+cancel, and its first coordinate becomes :math:`(a_1^2 + a_2^2)/|\vec{\mathbf{a}}| = |\vec{\mathbf{a}}|`:
 
 .. math::
 
-   R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}(\vec{\mathbf{a}}) = |\vec{\mathbf{a}}| * \vec{\mathbf{e}}_1.
+   \begin{aligned}
+   R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}(\vec{\mathbf{a}})
+     &= \frac{a_1}{|\vec{\mathbf{a}}|} * \begin{bmatrix} a_1 \\ a_2 \end{bmatrix}
+        - \frac{a_2}{|\vec{\mathbf{a}}|} * \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}
+      = \frac{1}{|\vec{\mathbf{a}}|} * \begin{bmatrix} a_1 * a_1 + a_2 * a_2 \\
+          \underbrace{a_1 * a_2}_{1} - \underbrace{a_2 * a_1}_{1} \end{bmatrix} \\
+     &= |\vec{\mathbf{a}}| * \vec{\mathbf{e}}_1.
+   \end{aligned}
 
 And it carries :math:`\vec{\mathbf{b}}` along to a new vector :math:`\vec{\mathbf{b}}' = R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}(\vec{\mathbf{b}})`.
 
@@ -138,11 +145,17 @@ written in.)
 
 So in :math:`\big(R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}\big)^{-1} \circ R_{\vec{\mathbf{e}}_1}^{\vec{\mathbf{b}}'} \circ
 R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}`, the outer rotation and the inner rotation — step 3 and step 1, which are
-inverses — slide past the middle one and **cancel**. The whole sandwich collapses to its middle turn:
+inverses — slide past the middle one and **cancel**; the two carrying the same number below are
+that pair. The whole sandwich collapses to its middle turn:
 
 .. math::
 
-   R_{\vec{\mathbf{a}}}^{\vec{\mathbf{b}}} = R_{\vec{\mathbf{e}}_1}^{\vec{\mathbf{b}}'}
+   R_{\vec{\mathbf{a}}}^{\vec{\mathbf{b}}}
+   = \underbrace{\big(R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}\big)^{-1}}_{1} \circ R_{\vec{\mathbf{e}}_1}^{\vec{\mathbf{b}}'} \circ
+     \underbrace{R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}}_{1}
+   = R_{\vec{\mathbf{e}}_1}^{\vec{\mathbf{b}}'} \circ \underbrace{\big(R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}\big)^{-1}}_{1} \circ
+     \underbrace{R_{\vec{\mathbf{a}}}^{\vec{\mathbf{e}}_1}}_{1}
+   = R_{\vec{\mathbf{e}}_1}^{\vec{\mathbf{b}}'}
    \quad\text{— a single rotation, by the angle from } \vec{\mathbf{a}} \text{ to } \vec{\mathbf{b}}.
 
 And its cosine and sine are a tidy formula in the coordinates of :math:`\vec{\mathbf{a}}` and :math:`\vec{\mathbf{b}}`,

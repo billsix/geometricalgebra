@@ -47,7 +47,7 @@ import warnings
 from IPython.display import Math, display
 
 from gacalc.g2 import G
-from gacalc.nbdisplay import show_cancellation, show_mult
+from gacalc.nbdisplay import show_cancellation, show_difference, show_mult
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)
@@ -83,7 +83,7 @@ i * i
 # of plane `e_12`; it is the same value as the product, so their difference is $0$:
 
 # %%
-e_12 - e_1 * e_2
+show_difference(e_12, e_1 * e_2)
 
 # %% [markdown]
 # Sums collect like terms
@@ -164,7 +164,7 @@ a_vec ^ b_vec
 # is $0$:
 
 # %%
-a_vec.dot(b_vec) + a_vec.wedge(b_vec) - a_vec * b_vec
+show_difference(a_vec.dot(b_vec) + a_vec.wedge(b_vec), a_vec * b_vec)
 
 # %% [markdown]
 # Every term times every term

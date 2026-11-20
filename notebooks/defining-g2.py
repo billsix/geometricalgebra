@@ -52,7 +52,7 @@ from gacalc.epixscene.bootstrap_live import (
 from gacalc.epixscene.frame_scene import patch
 from gacalc.epixscene.venn_scene import g2_subsets_scene
 from gacalc.g2 import Bivector, G, Scalar, Vector, Versor, e_1, e_2, e_12
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 
 # %% [markdown]
 # ## The kinds of element, at a glance
@@ -275,7 +275,7 @@ B_1 * (C * D)
 # Their difference:
 
 # %%
-((B_1 * C) * D - B_1 * (C * D)).expanded()
+show_difference((B_1 * C) * D, B_1 * (C * D))
 
 # %% [markdown]
 # So we may write a product of several elements with no parentheses at all. (That this
@@ -403,7 +403,7 @@ A.r_vector_part(2)
 # The parts add back up to $A$; the difference:
 
 # %%
-(A.r_vector_part(0) + A.r_vector_part(1) + A.r_vector_part(2) - A).expanded()
+show_difference(A.r_vector_part(0) + A.r_vector_part(1) + A.r_vector_part(2), A)
 
 # %% [markdown]
 # ## How the blades resolve when we plot
@@ -431,7 +431,7 @@ P_STEP: Point = point(coordinates=list(at_values(Scalar(a_1) * e_1, plot_values)
 P_E1: Point = point(coordinates=list(e_1))
 P_E2: Point = point(coordinates=list(e_2))
 fig_resolve: PendingFigure
-with scene_around(points=[P_A, P_E2]) as fig_resolve:
+with scene_around(points=[P_A, P_E2], basis=False) as fig_resolve:
     patch(corners=[Point(x=0, y=0), P_E1, P_E1 + P_E2, P_E2])
     note(at=0.5 * (P_E1 + P_E2), text=r"$\mathbf{e}_{12}$", color=BLUE)
     dashed_arrow(tail=Point(x=0, y=0), head=P_STEP, color=GREEN)

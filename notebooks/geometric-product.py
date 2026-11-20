@@ -55,7 +55,7 @@ from gacalc.epixscene.bootstrap_live import (
     scene_around,
 )
 from gacalc.g2 import Bivector, Scalar, Vector, Versor
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 
 # %% [markdown]
 # A general vector $\vec{\mathbf{a}}$ and an angle $\theta$:
@@ -171,7 +171,7 @@ full_angle_result
 # Their difference:
 
 # %%
-(full_angle_result - coordinate_formula).simplified()
+show_difference(full_angle_result, coordinate_formula)
 
 # %% [markdown]
 # ### The rotation of *Proof: Rotate*
@@ -186,7 +186,7 @@ a.rotate(theta).simplified()
 # Its difference from $\vec{\mathbf{a}} * R$:
 
 # %%
-(full_angle_result - a.rotate(theta)).simplified()
+show_difference(full_angle_result, a.rotate(theta))
 
 # %% [markdown]
 # ### Rotation is distributive
@@ -219,7 +219,7 @@ b
 # Their difference:
 
 # %%
-(((a + b) * R) - (a * R + b * R)).simplified()
+show_difference((a + b) * R, a * R + b * R)
 
 # %% [markdown]
 # So a rotation is fixed by what it does to the two basis vectors:
@@ -236,4 +236,4 @@ basis_decomposition
 # Its difference from $\vec{\mathbf{a}} * R$:
 
 # %%
-((a * R) - basis_decomposition).simplified()
+show_difference(a * R, basis_decomposition)

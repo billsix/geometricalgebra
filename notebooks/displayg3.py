@@ -48,7 +48,7 @@ from IPython.display import Math, display
 
 from gacalc.base import MultiVectorBase
 from gacalc.g3 import G
-from gacalc.nbdisplay import show_mult
+from gacalc.nbdisplay import show_difference, show_mult
 from gacalc.nbplotutils import plot_multivector
 
 # turn warnings into exceptions
@@ -87,7 +87,7 @@ pseudoscalar * pseudoscalar
 # `e_123`, and the difference between the two is $0$:
 
 # %%
-e_123 - e_1 * e_2 * e_3
+show_difference(e_123, e_1 * e_2 * e_3)
 
 # %% [markdown]
 # The three pieces of plane, one per pair of arrows. The $\vec{\mathbf{e}}_1
@@ -207,7 +207,7 @@ show_mult(G3_1, G3_2)
 
 # %%
 G3_3: G = G.symbolic_multivector(prefix="c")
-((G3_1 * G3_2) * G3_3) - (G3_1 * (G3_2 * G3_3))
+show_difference((G3_1 * G3_2) * G3_3, G3_1 * (G3_2 * G3_3))
 
 # %% [markdown]
 # Pulling out one kind of part

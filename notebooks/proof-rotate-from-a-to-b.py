@@ -58,7 +58,7 @@ from gacalc.epixscene.bootstrap_live import (
     scene_around,
 )
 from gacalc.g2 import Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 
 # %% [markdown]
 # ## 1. Rotations commute (in 2D)
@@ -105,7 +105,7 @@ second_then_first
 # Their difference:
 
 # %%
-(first_then_second - second_then_first).simplified()
+show_difference(first_then_second, second_then_first)
 
 # %% [markdown]
 # Each order is the single rotation by $\theta_1 + \theta_2$:
@@ -117,7 +117,7 @@ v.rotate(theta_1 + theta_2).simplified()
 # The difference from the first order:
 
 # %%
-(first_then_second - v.rotate(theta_1 + theta_2)).simplified()
+show_difference(first_then_second, v.rotate(theta_1 + theta_2))
 
 # %% [markdown]
 # Drawn at the plot values: $\vec{\mathbf{v}}$ turned by $\theta_1$ first (green) or by
@@ -190,7 +190,7 @@ turns_2_then_1
 # Their difference:
 
 # %%
-(turns_1_then_2 - turns_2_then_1).simplified()
+show_difference(turns_1_then_2, turns_2_then_1)
 
 # %% [markdown]
 # ## 2. The three turns are one rotation
@@ -266,7 +266,7 @@ Scalar(a.magnitude()) * e_1
 # Their difference:
 
 # %%
-(a_on_axis - Scalar(a.magnitude()) * e_1).simplified()
+show_difference(a_on_axis, Scalar(a.magnitude()) * e_1)
 
 # %% [markdown]
 # $\vec{\mathbf{b}}$ rides along to
@@ -456,7 +456,7 @@ three_turns
 # Their difference:
 
 # %%
-(three_turns - one_turn).simplified()
+show_difference(three_turns, one_turn)
 
 # %% [markdown]
 # ## 3. The rotation carries $\vec{\mathbf{a}}$ to $\vec{\mathbf{b}}$'s direction
@@ -479,4 +479,4 @@ a_length_along_b
 # Their difference:
 
 # %%
-(a_rotated - a_length_along_b).simplified()
+show_difference(a_rotated, a_length_along_b)

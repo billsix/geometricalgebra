@@ -64,7 +64,7 @@ from gacalc.epixscene.frame_scene import (
 from gacalc.frame import Frame
 from gacalc.functions import InvertibleFunction, MatrixBackend, inverse
 from gacalc.g2 import G, Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 
 # %% [markdown]
 # ## A frame and its orthogonal set
@@ -218,7 +218,7 @@ rebuilt_v_2
 # Its difference from $\vec{\mathbf{v}}_2$:
 
 # %%
-(v_2 - rebuilt_v_2).simplified()
+show_difference(v_2, rebuilt_v_2)
 
 # %% [markdown]
 # At the plot values, $c_{21}$:
@@ -292,7 +292,7 @@ area
 # Their difference:
 
 # %%
-sympy.simplify(sympy.sympify(base_times_height - area))
+show_difference(base_times_height, area)
 
 # %% [markdown]
 # Drawn at the plot values:
@@ -379,7 +379,7 @@ P_E1: Point = Point(x=1, y=0)
 P_E2: Point = Point(x=0, y=1)
 fig_forward: PendingFigure
 with scene_2d(
-    lower_left=Point(x=-0.6, y=-0.6), upper_right=Point(x=3.4, y=3.4)
+    lower_left=Point(x=-0.6, y=-0.6), upper_right=Point(x=3.4, y=3.4), basis=False
 ) as fig_forward:
     patch(corners=[ORIGIN2, P_V1, P_V1 + P_V2, P_V2], color=PURPLE_FILL)
     patch(corners=[ORIGIN2, P_E1, P_E1 + P_E2, P_E2], color=GRAY_FILL)
@@ -811,7 +811,7 @@ g.inverse(y).simplified()
 # Its difference from the peeled $\vec{\mathbf{x}}$:
 
 # %%
-(g.inverse(y) - x).simplified()
+show_difference(g.inverse(y), x)
 
 # %% [markdown]
 # The map sends $\vec{\mathbf{x}}$ back to:
@@ -823,7 +823,7 @@ g(x).simplified()
 # Its difference from $\vec{\mathbf{y}}$:
 
 # %%
-(g(x) - y).simplified()
+show_difference(g(x), y)
 
 # %% [markdown]
 # The recovered $\vec{\mathbf{x}}$ (black) is the point $f$ sends to $\vec{\mathbf{y}}$:

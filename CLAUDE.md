@@ -104,7 +104,9 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   (`create_graphs_3d`).
 - `src/gacalc/nbdisplay.py` — display-only notebook helpers (sympy + IPython, no matplotlib):
   `show_mult(a, b)`, the term-by-term product table and its sum, `show_cancellation(left, right, …)`,
-  both sides of an identity cancelling term by term, and `at_values(value, values)`,
+  both sides of an identity cancelling term by term, `show_difference(left, right)`, just that
+  cancellation (multivectors or numbers; each cancelling pair numbered alike under an
+  `\underbrace`), and `at_values(value, values)`,
   which substitutes plot values into a symbolic result; usable by the book's notebooks,
   re-exported from `nbplotutils` for the demo notebooks.
 - `src/gacalc/epixscene/` — the **ePiX scene helpers** the book's figures and live-figure notebooks
@@ -470,7 +472,11 @@ over a "run it on your host" instruction.
   later). Details:
   `tasks/reference/book-and-docs-pipeline.md` ("ePiX figures").
 - **`make docs`** — builds the Sphinx book ("Geometry 2", `book/docs/`) to HTML + PDF into
-  `output/gacalc/` (needs an image built with `BUILD_DOCS=1`, the default).
+  `output/gacalc/` (needs an image built with `BUILD_DOCS=1`, the default). It ends by running
+  `tools/check_math_overflow.py`, a report (not a gate) of the equations and tables that run past
+  the PDF's margin, and leaves the LaTeX log at `output/gacalc/geometry2.log`. Long computed math
+  breaks itself into rows (`base.LATEX_LINE_WIDTH`); a hand-written `.. math::` block needs `\\`
+  at each line break (`tasks/reference/book-and-docs-pipeline.md`).
 - **`make dist`** (build sdist+wheel, `GACALC_DIMS=1,2,3,4,5`) → **`make upload`** /
   **`make upload-test`** (interactive `twine`) → **`make release`** (build + upload + host
   `git tag`). Bump `version` in `pyproject.toml` first — PyPI/TestPyPI permanently reject a
@@ -597,8 +603,7 @@ as `R = b * a + |a| * |b|` or `R * a = |a| * h` takes the star because its Lean 
 application syntax; doc comments are not exempt), Python code (`sympy.cos(theta)` already applies
 with parentheses; a Python local named `cos` is a name, not notation), and doctest lines.
 Juxtaposition also survives, on purpose, where it is not a product being written: a **quotation of
-the reader's prior notation** (`a i + b j`, `(x + 2)(x + 3)`), and `blade-square-sign.rst`'s sliding
-diagrams, whose columns a `*` would misalign (the page says so once).
+the reader's prior notation** (`a i + b j`, `(x + 2)(x + 3)`).
 
 **A doc that quotes a rejected spelling on purpose** — these rule paragraphs do — fences the span
 with `<!-- notation-rule: begin -->` / `<!-- notation-rule: end -->` so a re-sweep skips it.
@@ -617,7 +622,10 @@ as its own equation, never derived from the general case
 (`tasks/reference/reduction-to-standard-position.md`, "Base case, then general case"). A page's
 companion notebook computes every step with symbolic coordinates, uses numbers only to draw each step
 with live ePiX, and shows both sides of each check before their difference (William Emerison Six
-<billsix@gmail.com>, 2026-11-17). Every construction uses only results taught before it, and rotations
+<billsix@gmail.com>, 2026-11-17). That difference is shown with `show_difference(left, right)`, never a
+bare `simplify(left - right)`: every pair of cancelling terms carries the same number under an
+`\underbrace`, so a reader can match them, or cross them off on a printout; a page's hand-written
+cancellation (`.rst`) is marked the same way (William Emerison Six <billsix@gmail.com>, 2026-11-20). Every construction uses only results taught before it, and rotations
 come from the ones the book built (`Vector.rotate`, `standardposition.rotation_from_to`): the rule, the
 teaching order and the dependency graph on the book's first page are in
 `tasks/reference/teaching-order-and-dependencies.md`. Detail: `tasks/reference/book-outline.md`

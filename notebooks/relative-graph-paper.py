@@ -38,9 +38,10 @@
 #   **relative** graph paper the earlier steps left behind.
 #
 # This is the way the book *Model View Projection*
-# (github.com/billsix/modelviewprojection) reads its sequences of transformations. Here
-# the functions are a translate and a uniform scale; rotation joins them in *Rotation Is
-# Turning the Graph Paper*.
+# (github.com/billsix/modelviewprojection) reads its sequences of transformations, and
+# the composition here is the one it uses to place a paddle: turn it about its own
+# center, then move it into place. The translate is symbolic; numbers appear only to
+# draw the figures.
 
 # %%
 import sympy
@@ -57,8 +58,9 @@ from gacalc.epixscene.paper_scene import (
 )
 from gacalc.functions import InvertibleFunction, identity
 from gacalc.g2 import Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import at_values
-from gacalc.transforms import compose_intermediate_fns, translate, uniform_scale
+from gacalc.nbdisplay import at_values, show_difference
+from gacalc.standardposition import rotation_from_to
+from gacalc.transforms import compose_intermediate_fns, translate
 
 # %% [markdown]
 # ## Coordinates are relative to a sheet
@@ -101,25 +103,33 @@ T(0 * e_1)
 # %% [markdown]
 # ## The composition
 #
-# Scale the sheet by $m$ about the origin, then slide it by $\vec{\mathbf{b}}$:
+# The rotation is the one from $\vec{\mathbf{e}}_1$'s direction to the direction of
+# $\vec{\mathbf{e}}_1 + \vec{\mathbf{e}}_2$, a turn of $45°$, built in *Proof: Rotate
+# from the Direction of a to the Direction of b*:
 
 # %%
-m: sympy.Symbol = sympy.Symbol("m", positive=True)
-S: InvertibleFunction[Vector] = uniform_scale(m=m)
-f: InvertibleFunction[Vector] = T @ S
-f
+R: InvertibleFunction[Vector] = rotation_from_to(1 * e_1, 1 * e_1 + 1 * e_2)
+R
 
 # %% [markdown]
-# It carries the spot $(x, y)$ to
+# It turns $\vec{\mathbf{e}}_1$ onto that diagonal:
 
 # %%
-f(p)
+R(1 * e_1)
+
+# %% [markdown]
+# Turn, then slide: $f = T_b \circ R$. It carries the spot $(x, y)$ of the standard
+# sheet to
+
+# %%
+f: InvertibleFunction[Vector] = T @ R
+f(p).simplified()
 
 # %% [markdown]
 # The values used to draw the figures. Change them and rerun.
 
 # %%
-values: list[tuple[sympy.Symbol, Real]] = [(b_1, 3), (b_2, 1), (m, 2)]
+values: list[tuple[sympy.Symbol, Real]] = [(b_1, 4), (b_2, 1)]
 
 
 # %% [markdown]
@@ -145,7 +155,7 @@ def draw(function: InvertibleFunction[Vector]) -> PendingFigure:
     fig: PendingFigure
     with paper_scene(
         lower_left=Point(x=-4, y=-4),
-        upper_right=Point(x=10, y=8),
+        upper_right=Point(x=9, y=7),
         caption=function._repr_latex_(),
     ) as fig:
         carried_paper(mapped=mapping(function))
@@ -162,15 +172,14 @@ draw(identity())
 # %% [markdown]
 # ## Reading right to left: every step on the standard sheet
 #
-# Read $T_b \circ S_m$ the way you evaluate $\sin(\cos(x))$: the inner function first.
-# First the scale stretches the sheet away from the standard origin, by $m$ in standard
-# units; then the translate slides the stretched sheet by $\vec{\mathbf{b}}$, again
-# measured on the standard sheet. After each step, the next one is measured against the
-# standard sheet, as if nothing had moved.
+# Read $T_b \circ R$ the way you evaluate $\sin(\cos(x))$: the inner function first.
+# The sheet turns $45°$ about the standard origin; then the turned sheet slides by
+# $\vec{\mathbf{b}}$, measured with the standard arrows. After each step, the next one
+# is measured against the standard sheet, as if nothing had moved.
 
 # %%
 standard_steps: list[InvertibleFunction[Vector]] = list(
-    compose_intermediate_fns([T, S])
+    compose_intermediate_fns([T, R])
 )
 step: InvertibleFunction[Vector]
 for step in standard_steps:
@@ -179,14 +188,15 @@ for step in standard_steps:
 # %% [markdown]
 # ## Reading left to right: every step on the relative sheet
 #
-# Now read the same $T_b \circ S_m$ from the left. First the translate slides the sheet
-# by $\vec{\mathbf{b}}$. Then the scale stretches by $m$, but **relative to the slid
-# sheet**: about its own origin, at $\vec{\mathbf{b}}$, and in its own units. Each step
-# is measured against the sheet the previous steps left behind.
+# Now read the same $T_b \circ R$ from the left. The sheet slides by
+# $\vec{\mathbf{b}}$; then it turns $45°$, but about its **own** origin, now at
+# $\vec{\mathbf{b}}$. Read this way, the triangle turns in place, about the corner of
+# its own sheet. That is the reading that makes "turn the paddle about its center, then
+# move it" easy to see.
 
 # %%
 relative_steps: list[InvertibleFunction[Vector]] = list(
-    compose_intermediate_fns([T, S], relative_basis=True)
+    compose_intermediate_fns([T, R], relative_basis=True)
 )
 for step in relative_steps:
     display(draw(step))
@@ -195,28 +205,26 @@ for step in relative_steps:
 # Same last picture. Before reading on, ask yourself why: the middle pictures disagree,
 # so why do the ends agree?
 #
-# They agree because both sequences end with the same function, $T_b \circ S_m$; only
-# the stories in between differ. Measured on the standard sheet, the scale happened
-# first. Measured on the slid sheet, the slide happened first and the scale was about
+# They agree because both sequences end with the same function, $T_b \circ R$; only
+# the stories in between differ. Measured on the standard sheet, the turn happened
+# first. Measured on the slid sheet, the slide happened first and the turn was about
 # the slid origin, which is the same thing said from a different sheet.
 #
 # The check, at every spot: the last function of each sequence, applied to
-# $x * \vec{\mathbf{e}}_1 + y * \vec{\mathbf{e}}_2$, minus $f$ applied to it. Reading
-# right to left:
+# $x * \vec{\mathbf{e}}_1 + y * \vec{\mathbf{e}}_2$, against $f$ applied to it.
+# Reading right to left, their difference:
 
 # %%
-standard_last: InvertibleFunction[Vector] = standard_steps[-1]
-(standard_last(p) - f(p)).simplified()
+show_difference(standard_steps[-1](p), f(p))
 
 # %% [markdown]
-# reading left to right:
+# reading left to right, their difference:
 
 # %%
-relative_last: InvertibleFunction[Vector] = relative_steps[-1]
-(relative_last(p) - f(p)).simplified()
+show_difference(relative_steps[-1](p), f(p))
 
 # %% [markdown]
-# The middle steps differ. Right to left, the middle picture is $S_m$ alone, which
+# The middle steps differ. Right to left, the middle picture is $R$ alone, which
 # carries the origin nowhere:
 
 # %%
@@ -233,17 +241,19 @@ relative_steps[1](0 * e_1)
 # ## The order of the functions does matter
 #
 # Reading direction is a choice of story; the order of the functions is not. Slide
-# first and scale after, $S_m \circ T_b$, and the slide gets scaled too:
+# first and turn after, $R \circ T_b$, and the slide itself gets turned: the sheet's
+# origin lands at $R(\vec{\mathbf{b}})$ instead of $\vec{\mathbf{b}}$. Where each
+# composition carries the origin, first $T_b \circ R$:
 
 # %%
-f_swapped: InvertibleFunction[Vector] = S @ T
-f_swapped(p)
+f(0 * e_1).simplified()
 
 # %% [markdown]
-# Its difference from $T_b \circ S_m$ is the slide scaled by $m - 1$:
+# then $R \circ T_b$:
 
 # %%
-(f_swapped(p) - f(p)).simplified()
+f_swapped: InvertibleFunction[Vector] = R @ T
+f_swapped(0 * e_1).simplified()
 
 # %% [markdown]
 # Drawn at the plot values: the sheet lands somewhere else.
@@ -252,13 +262,19 @@ f_swapped(p)
 draw(f_swapped)
 
 # %% [markdown]
+# Read left to right, $R \circ T_b$ says: turn the sheet about the standard origin
+# first, then slide along the *turned* sheet's arrows. Read right to left it says: slide
+# along the standard arrows, then turn everything, slide included, about the standard
+# origin. Same picture either way, and a different picture from $T_b \circ R$.
+
+# %% [markdown]
 # ## The coordinates, relative to each sheet
 #
 # Finally, the coordinates. The spot of the carried sheet with coordinates $(x, y)$ on
 # that sheet has standard coordinates
 
 # %%
-(f(p).coefficient(e_1), f(p).coefficient(e_2))
+(f(p).simplified().coefficient(e_1), f(p).simplified().coefficient(e_2))
 
 # %% [markdown]
 # and the inverse function reads them back: given a spot in standard coordinates, it
@@ -266,4 +282,4 @@ draw(f_swapped)
 # $(x, y)$; the difference:
 
 # %%
-(f.inverse(f(p)) - p).simplified()
+show_difference(f.inverse(f(p)), p)

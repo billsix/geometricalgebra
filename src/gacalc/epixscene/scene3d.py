@@ -17,7 +17,7 @@ import epix
 from epix import Point
 from epix.figure import _Pending as PendingFigure
 
-from gacalc.epixscene.scene2d import BLUE, GREEN
+from gacalc.epixscene.scene2d import AXIS_LINE, BASIS, BLUE, GREEN
 
 __all__: list[str] = [
     "CAMERA",
@@ -35,6 +35,7 @@ __all__: list[str] = [
     "epix",
     "frame_scene",
     "axes3",
+    "basis_vectors3",
     "plane3",
     "vector3",
     "project_onto",
@@ -81,15 +82,50 @@ def frame_scene(
         yield fig
 
 
+def basis_vectors3() -> None:
+    r"""The unit basis vectors :math:`\vec{\mathbf{e}}_1`, :math:`\vec{\mathbf{e}}_2`,
+    :math:`\vec{\mathbf{e}}_3` as arrows from the origin, labelled (the 3D
+    :func:`gacalc.epixscene.scene2d.basis_vectors`)."""
+    epix.line_style(style="-")  # solid, whatever the figure left set
+    epix.nofill()
+    epix.pen(color=BASIS, width=1.4)
+    head: Point
+    for head in (
+        Point(x=1, y=0, z=0),
+        Point(x=0, y=1, z=0),
+        Point(x=0, y=0, z=1),
+    ):
+        epix.arrow(tail=ORIGIN3, head=head, scale=0.6)
+    epix.label_color(color=BASIS)
+    epix.label(
+        at=Point(x=1, y=0, z=0),
+        offset=Point(x=-4, y=-6),
+        text=r"$\vec{\mathbf{e}}_1$",
+        align=epix.LabelPos.bl,
+    )
+    epix.label(
+        at=Point(x=0, y=1, z=0),
+        offset=Point(x=4, y=-4),
+        text=r"$\vec{\mathbf{e}}_2$",
+        align=epix.LabelPos.br,
+    )
+    epix.label(
+        at=Point(x=0, y=0, z=1),
+        offset=Point(x=-5, y=0),
+        text=r"$\vec{\mathbf{e}}_3$",
+        align=epix.LabelPos.l,
+    )
+    epix.label_color(color=epix.black())
+
+
 def axes3() -> None:
-    """The three axes as arrows from the origin, with labels x, y, z."""
-    epix.pen(color=epix.black(), width=1.1)
-    epix.arrow(tail=ORIGIN3, head=_AXIS_X, scale=0.7)
-    epix.arrow(tail=ORIGIN3, head=_AXIS_Y, scale=0.7)
-    epix.arrow(tail=ORIGIN3, head=_AXIS_Z, scale=0.7)
-    epix.label(at=_AXIS_X, offset=Point(x=4, y=-5), text="$x$", align=epix.LabelPos.r)
-    epix.label(at=_AXIS_Y, offset=Point(x=6, y=-2), text="$y$", align=epix.LabelPos.r)
-    epix.label(at=_AXIS_Z, offset=Point(x=-2, y=7), text="$z$", align=epix.LabelPos.t)
+    """The three axes as light, unlabelled lines from the origin, and the labelled
+    basis vectors (:func:`basis_vectors3`), which name the directions."""
+    epix.pen(color=AXIS_LINE, width=0.8)
+    epix.line(tail=ORIGIN3, head=_AXIS_X)
+    epix.line(tail=ORIGIN3, head=_AXIS_Y)
+    epix.line(tail=ORIGIN3, head=_AXIS_Z)
+    basis_vectors3()
 
 
 def plane3(plane: str, faint: bool = False) -> None:

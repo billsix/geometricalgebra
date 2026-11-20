@@ -62,7 +62,7 @@ from gacalc.epixscene.bootstrap_live import (
 )
 from gacalc.functions import InvertibleFunction, inverse
 from gacalc.g2 import Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 from gacalc.standardposition import rotation_from_to
 
 # %% [markdown]
@@ -322,7 +322,7 @@ a.projected_onto(b).simplified()
 # Their difference:
 
 # %%
-(projection - a.projected_onto(b)).simplified()
+show_difference(projection, a.projected_onto(b))
 
 # %% [markdown]
 # ### The projection plus the rejection is $\vec{\mathbf{a}}$
@@ -342,4 +342,4 @@ a
 # Their difference:
 
 # %%
-(projection + rejection - a).simplified()
+show_difference(projection + rejection, a)

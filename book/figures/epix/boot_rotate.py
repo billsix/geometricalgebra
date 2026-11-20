@@ -50,8 +50,10 @@ from gacalc.epixscene.scene2d import (
 
 # %%
 fig: PendingFigure
+# basis=False: the figure's own cos(theta) * v leg lies near e_1 at about unit length,
+# so the basis label would collide with its label
 with unit_circle_scene(
-    lower_left=Point(x=-0.9, y=-0.45), upper_right=Point(x=1.55, y=1.5)
+    lower_left=Point(x=-0.9, y=-0.45), upper_right=Point(x=1.55, y=1.5), basis=False
 ) as fig:
     wedge(
         start=ROTATE_V_ANGLE,

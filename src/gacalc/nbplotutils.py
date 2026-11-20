@@ -61,11 +61,14 @@ from gacalc.gn import (
 # book's notebooks can use it; re-exported here for the demo notebooks.
 from gacalc.nbdisplay import show_mult as show_mult
 
-# The inline SVG backend is only meaningful inside an IPython/Jupyter session;
-# guarding it lets this module import headless (under pytest, or a plain script)
-# instead of raising when there is no shell to enable a GUI for.
+# Each figure is emitted as SVG and as PDF. HTML and Jupyter show the SVG; the book's
+# LaTeX build takes the PDF, since myst_nb's LaTeX output cannot use SVG and would
+# otherwise fall back to the figure's text repr, ``<Figure size … with 1 Axes>``.
+# The inline backend is only meaningful inside an IPython/Jupyter session; guarding it
+# lets this module import headless (under pytest, or a plain script) instead of
+# raising when there is no shell to enable a GUI for.
 if get_ipython() is not None:
-    set_matplotlib_formats("svg")
+    set_matplotlib_formats("svg", "pdf")
 
 # These plotting helpers accept an ``InvertibleFunction`` over ANY multivector
 # representation (``Gn``, ``g3.Vector``, …) and apply it internally to
@@ -281,10 +284,15 @@ def create_x_and_y(
     ycolor: tuple[float, float, float] = (1.0, 0.0, 1.0),
     cls: type[MultiVectorBase] = MultiVector,
 ) -> None:
-    """Draw the x and y axes as coloured segments from the origin to e₁ and e₂ —
+    """Draw the basis vectors as coloured segments from the origin to e₁ and e₂ —
     their image under ``fn`` (identity by default), so a transform shows where the
-    basis vectors land.
+    basis vectors land — each labelled at its tip in its own colour: ``e₁`` and
+    ``e₂``, or ``f(e₁)`` and ``f(e₂)`` when ``fn`` is not the identity.
     """
+    axes: Axes = _current_axes()
+    prefix: str
+    suffix: str
+    prefix, suffix = ("", "") if fn is _IDENTITY else ("f(", ")")
     ex: MultiVectorBase = cls.basis_vector(1)
     ey: MultiVectorBase = cls.basis_vector(2)
     origin: MultiVectorBase = cls.zero()
@@ -307,6 +315,17 @@ def create_x_and_y(
         lw=1.0,
         color=ycolor,
     )
+    index: int
+    tip: MultiVectorBase
+    color: tuple[float, float, float]
+    for index, tip, color in ((1, ex, xcolor), (2, ey, ycolor)):
+        axes.annotate(
+            f"${prefix}\\vec{{\\mathbf{{e}}}}_{index}{suffix}$",
+            xy=(float(_coord(fn(tip), (1,))), float(_coord(fn(tip), (2,)))),
+            xytext=(4, 4),
+            textcoords="offset points",
+            color=color,
+        )
 
 
 def sine(v1: MultiVectorBase, v2: MultiVectorBase) -> Real:

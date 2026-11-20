@@ -46,7 +46,7 @@ from gacalc.epixscene.frame_scene import (
     point,
     scene_3d,
 )
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 
 # %% [markdown]
 # Two vectors in space, every coordinate a symbol:
@@ -149,7 +149,7 @@ p.inner_product(q)
 # Their difference:
 
 # %%
-product_3d.r_vector_part(0) - p.inner_product(q)
+show_difference(product_3d.r_vector_part(0), p.inner_product(q))
 
 # %% [markdown]
 # The grade-2 part, $\langle \vec{\mathbf{p}} * \vec{\mathbf{q}} \rangle_2$:
@@ -167,4 +167,4 @@ p.outer_product(q)
 # Their difference:
 
 # %%
-product_3d.r_vector_part(2) - p.outer_product(q)
+show_difference(product_3d.r_vector_part(2), p.outer_product(q))

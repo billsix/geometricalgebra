@@ -19,7 +19,12 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 - **`nbdisplay.show_cancellation(left, right, left_name, right_name)`** (and the
   `cancellation_latex` it displays): both sides of an identity expanded, then their difference
   blade by blade with each cancelling pair of terms marked by a shared number under an
-  `\underbrace`, instead of a bare `0`.
+  `\underbrace`, instead of a bare `0`. Either side may be a multivector or a number.
+- **`nbdisplay.show_difference(left, right)`**: just that numbered cancellation, for a check
+  whose two sides were already shown. Each side is simplified first; a line too long to read
+  term by term (`nbdisplay.LONGEST_CANCELLATION_LINE`) shows only what the difference simplifies to.
+- **`nbdisplay.product_table_markdown` / `show_mult`** number the terms of the products that
+  cancel in the sum, the same way.
 - **`nbplotutils.draw_vectors`, `draw_bivector`, `draw_angle` and `create_graphs_3d`**: arrows
   from the origin, a bivector as its shaded oriented parallelogram, and the arc from one vector
   toward another, drawn in 2-D inside `create_graphs` or in 3-D inside `create_graphs_3d`.
@@ -52,6 +57,27 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   coordinate versions of both, with the plane's normal written out from its coordinates.
 
 ### Changed
+- **A long value's LaTeX breaks into rows.** `_repr_latex_` / `blade_dict_latex` (new `width`
+  argument, default `base.LATEX_LINE_WIDTH`, 60 visible characters) set a value that fits on one
+  line as before, and a longer one as an `aligned` block broken between whole terms: the monomials
+  of each coefficient and the blades; a fraction too wide by itself, with a sum on top, is written
+  `\frac{1}{D} * (n_1 + n_2 + …)`. The `nbdisplay` cancellation lines and product-table cells
+  (`nbdisplay.TABLE_CELL_WIDTH`) break the same way. New helpers in `gacalc.base`:
+  `latex_visible_length`, `latex_rows`, `latex_broken`, `term_tokens`, `signed_term_latex`.
+  **Behaviour change:** a long value's `_repr_latex_` text is different.
+- **`nbdisplay.product_table_markdown` has three columns**, `Left Component | * Right Component |
+  = Product`, with `*` and `=` written in the cells, so the PDF's table spends no column on an
+  operator.
+- **The `gacalc.epixscene` 2D and 3D scenes label the basis vectors, not `x`/`y`/`z`.**
+  `scene2d.unit_circle_scene`, `scene3d.axes3`, `frame_scene.scene_2d` / `scene_3d` and
+  `bootstrap_live.scene_around` draw light, unlabelled axis lines and labelled unit arrows
+  `\vec{\mathbf{e}}_1`, `\vec{\mathbf{e}}_2` (`\vec{\mathbf{e}}_3`), from the new
+  `scene2d.basis_vectors` / `scene3d.basis_vectors3` (colour `scene2d.BASIS`). Each scene takes
+  `basis=False` for a figure that draws them itself. `scene_around` also fits the basis vectors in
+  its box. `line_scene.graph_paper_scene`, the high-school graph of `y = m * x + b`, keeps its
+  `x`/`y` labels. **Behaviour change:** a figure built on these scenes looks different.
+- **`nbplotutils.create_x_and_y` labels its two segments** `e₁`, `e₂` (or `f(e₁)`, `f(e₂)` under a
+  transform), in their colours.
 - **`float_close_to_zero` defaults to `None`: float input is now compared with a tolerance unless
   you say otherwise.** This applies to `is_orthogonal_to`, `is_parallel_to`, `require_on_line`,
   `coordinate_along`, the line-to-line / line-to-plane factories (and the generated `Vector`
@@ -90,6 +116,9 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
   rather than starting `coordinate_along: …`.
 
 ### Fixed
+- **`nbplotutils` figures appear in a notebook's PDF/LaTeX output.** The inline backend now emits
+  each figure as PDF as well as SVG; with SVG alone, myst-nb's LaTeX output fell back to the text
+  `<Figure size … with 1 Axes>`.
 - **`inverse()` accepts a float versor whose `Ã * A` carries rounding residue**, so
   `transforms.versor_rotation` works on float 3D vectors. It raised `RuntimeError` ("supports a
   blade or versor") when `Ã * A` had a non-scalar coefficient of about 1e-16. Inexact input (Python

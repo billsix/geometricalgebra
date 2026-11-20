@@ -63,7 +63,7 @@ from gacalc.epixscene.bootstrap_live import (
     scene_around,
 )
 from gacalc.g2 import Scalar, Vector
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 
 # %% [markdown]
 # Two general vectors:
@@ -233,7 +233,7 @@ product.r_vector_part(0) + product.r_vector_part(2)
 # Their difference from the whole product:
 
 # %%
-product - (product.r_vector_part(0) + product.r_vector_part(2))
+show_difference(product, product.r_vector_part(0) + product.r_vector_part(2))
 
 # %% [markdown]
 # ## Sine and cosine: the same idea

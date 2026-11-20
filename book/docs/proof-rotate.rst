@@ -141,12 +141,17 @@ Substitute the values of :math:`\vec{\mathbf{x'}}` and :math:`\vec{\mathbf{y'}}`
               + \sin(\theta) * \begin{bmatrix} \cos(\beta + \pi/2) \\ \sin(\beta + \pi/2) \end{bmatrix}\Big) \\
      &= r * \Big(\cos(\theta) * \begin{bmatrix} a_1 / r \\ a_2 / r \end{bmatrix}
               + \sin(\theta) * \begin{bmatrix} -a_2 / r \\ a_1 / r \end{bmatrix}\Big) \\
+     &= \cos(\theta) * \begin{bmatrix} \underbrace{r}_{1} * a_1 / \underbrace{r}_{1} \\
+                                       \underbrace{r}_{2} * a_2 / \underbrace{r}_{2} \end{bmatrix}
+              + \sin(\theta) * \begin{bmatrix} -\underbrace{r}_{3} * a_2 / \underbrace{r}_{3} \\
+                                               \underbrace{r}_{4} * a_1 / \underbrace{r}_{4} \end{bmatrix} \\
      &= \cos(\theta) * \begin{bmatrix} a_1 \\ a_2 \end{bmatrix}
               + \sin(\theta) * \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix} \\
      &= \cos(\theta) * \vec{\mathbf{a}} + \sin(\theta) * \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}
    \end{aligned}
 
-The :math:`r`'s cancel, and we are left with the whole point of this chapter:
+Multiplying the :math:`r` in, each coordinate has an :math:`r` above and below; the two
+carrying the same number cancel. We are left with the whole point of this chapter:
 
 .. math::
    :label: eq-rotate-formula

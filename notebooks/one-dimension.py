@@ -54,7 +54,7 @@ from gacalc.epixscene.line_scene import (
 )
 from gacalc.functions import InvertibleFunction
 from gacalc.g1 import Scalar, Vector, e_1
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 from gacalc.transforms import translate, uniform_scale
 
 # %% [markdown]
@@ -281,7 +281,7 @@ fig_stack
 # difference is
 
 # %%
-sympy.simplify(sympy.sympify(f(x_input).coefficient(e_1) - (m * x + b)))
+show_difference(f(x_input).coefficient(e_1), m * x + b)
 
 # %% [markdown]
 # This one-direction picture is the one to keep. In the plane, inputs and outputs are

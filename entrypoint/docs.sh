@@ -43,15 +43,20 @@ cd book/docs
 make html
 make latexpdf
 
+# Report the math and tables wider than the page (cut off in print). A report, not a
+# gate: the build still succeeds; tools/check_math_overflow.py says what to fix.
+python /gacalc/tools/check_math_overflow.py --latex-dir _build/latex ||
+    echo "docs.sh: some equations or tables run past the margin (listed above)"
+
 # Copy the finished book to the bind-mounted output tree. `.nojekyll` stops
 # GitHub Pages from mangling the _static / _images folders if these are published.
 mkdir -p /output/gacalc
 rm -rf /output/gacalc/html
 cp -r _build/html /output/gacalc/html
-# Only the book itself: Sphinx also copies the ePiX figure PDFs into _build/latex/.
-for f in _build/latex/*.pdf; do
-    [ -e "_static/epix/$(basename "$f")" ] || cp "$f" /output/gacalc/
-done
+# Only the book itself: _build/latex/ also holds every figure the PDF includes (the
+# ePiX figures, the notebooks' matplotlib figures, the Graphviz graph).
+cp _build/latex/geometry2.pdf /output/gacalc/
+cp _build/latex/geometry2.log /output/gacalc/
 touch /output/gacalc/.nojekyll
 
 echo "Book built: /output/gacalc/html/ and /output/gacalc/*.pdf"

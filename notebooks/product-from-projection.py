@@ -55,7 +55,7 @@ from gacalc.epixscene.bootstrap_live import (
 )
 from gacalc.functions import InvertibleFunction
 from gacalc.g2 import Bivector, Scalar, Vector, Versor, e_1, e_2
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 from gacalc.standardposition import rotation_from_to
 
 # %% [markdown]
@@ -179,7 +179,7 @@ b_times_x
 # Its difference from $a_1 * b_1 + a_2 * b_2$:
 
 # %%
-sympy.simplify(sympy.sympify(b_times_x - (a_1 * b_1 + a_2 * b_2)))
+show_difference(b_times_x, a_1 * b_1 + a_2 * b_2)
 
 # %% [markdown]
 # $|\vec{\mathbf{b}}| * y$:
@@ -192,7 +192,7 @@ b_times_y
 # Its difference from $b_1 * a_2 - b_2 * a_1$:
 
 # %%
-sympy.simplify(sympy.sympify(b_times_y - (b_1 * a_2 - b_2 * a_1)))
+show_difference(b_times_y, b_1 * a_2 - b_2 * a_1)
 
 # %% [markdown]
 # ## The product built from them is gacalc's geometric product
@@ -230,7 +230,7 @@ product
 # Its difference from the built object:
 
 # %%
-(product - built).simplified()
+show_difference(product, built)
 
 # %% [markdown]
 # ## The two parts are the dot and the wedge
@@ -245,7 +245,7 @@ dot
 # Its difference from $|\vec{\mathbf{b}}| * x$:
 
 # %%
-sympy.simplify(sympy.sympify(dot - b.magnitude() * x))
+show_difference(dot, b.magnitude() * x)
 
 # %% [markdown]
 # The $\mathbf{e}_{12}$ part is the wedge $\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}$:
@@ -258,7 +258,7 @@ wedge
 # Its difference from $|\vec{\mathbf{b}}| * y * \mathbf{e}_{12}$:
 
 # %%
-(wedge - Scalar(b.magnitude() * y) * Bivector.e_12).simplified()
+show_difference(wedge, Scalar(b.magnitude() * y) * Bivector.e_12)
 
 # %% [markdown]
 # Together they are the product.
@@ -271,4 +271,4 @@ wedge
 # Its difference from $\vec{\mathbf{b}} * \vec{\mathbf{a}}$:
 
 # %%
-(product - (Scalar(dot) + wedge)).simplified()
+show_difference(product, Scalar(dot) + wedge)

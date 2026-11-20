@@ -49,7 +49,7 @@ from gacalc.epixscene.bootstrap_live import (
     scene_around,
 )
 from gacalc.g2 import Scalar, Vector, Versor, e_1, e_2
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 from gacalc.transforms import versor_rotation
 
 # %% [markdown]
@@ -266,7 +266,7 @@ one_sided
 # Their difference:
 
 # %%
-(one_sided - by_projection).simplified()
+show_difference(one_sided, by_projection)
 
 # %% [markdown]
 # ### The other order turns the other way
@@ -286,7 +286,7 @@ rotation_by_projection(b, a, v)
 # Their difference:
 
 # %%
-(unit_product * v - rotation_by_projection(b, a, v)).simplified()
+show_difference(unit_product * v, rotation_by_projection(b, a, v))
 
 # %% [markdown]
 # ### $R$ turns $\vec{\mathbf{a}}$ onto the bisector
@@ -306,7 +306,7 @@ rotation_by_projection(b, a, v)
 # Their difference:
 
 # %%
-(R * a - Scalar(a.magnitude()) * h).simplified()
+show_difference(R * a, Scalar(a.magnitude()) * h)
 
 # %% [markdown]
 # ### The sandwich is the one-sided form
@@ -314,7 +314,7 @@ rotation_by_projection(b, a, v)
 # The sandwich and the one-sided form were shown above. Their difference:
 
 # %%
-(sandwich - one_sided).simplified()
+show_difference(sandwich, one_sided)
 
 # %% [markdown]
 # ### The step that makes the sandwich agree
@@ -341,7 +341,7 @@ R_unit: Versor = b_hat * a_hat + Scalar(1)
 # Their difference:
 
 # %%
-(R_unit.reverse() * R_unit.inverse() - a_hat * b_hat).simplified()
+show_difference(R_unit.reverse() * R_unit.inverse(), a_hat * b_hat)
 
 # %% [markdown]
 # ### gacalc agrees
@@ -355,4 +355,4 @@ versor_rotation(from_vector=a, to_vector=b)(v).simplified()
 # Its difference from the one-sided form:
 
 # %%
-(versor_rotation(from_vector=a, to_vector=b)(v) - one_sided).simplified()
+show_difference(versor_rotation(from_vector=a, to_vector=b)(v), one_sided)

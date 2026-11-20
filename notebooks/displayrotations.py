@@ -48,6 +48,7 @@ import sympy
 import gacalc.g2 as g2
 from gacalc.base import MultiVectorBase
 from gacalc.gn import Gn, e_1, e_2, e_3, projection_rotation
+from gacalc.nbdisplay import show_difference
 from gacalc.nbplotutils import show_mult
 from gacalc.transforms import ComposableFunction, InvertibleFunction, plane_rotation
 
@@ -109,7 +110,7 @@ simplified(projection_2d)
 # They are equal -- their difference is the **zero** multivector:
 
 # %%
-sandwich_2d - projection_2d
+show_difference(sandwich_2d, projection_2d)
 
 # %% [markdown]
 # $\mathcal{G}_3$ -- space
@@ -145,7 +146,7 @@ simplified(projection_3d)
 # Again equal -- the difference is the zero multivector:
 
 # %%
-sandwich_3d - projection_3d
+show_difference(sandwich_3d, projection_3d)
 
 # %% [markdown]
 # Every intermediate product along the way
@@ -287,4 +288,4 @@ R_exp
 # %%
 f: InvertibleFunction[g2.Vector] = plane_rotation(g2.Vector.e_1, g2.Vector.e_2)(φ)
 v_exp: g2.Vector = g2.Scalar(v1) * g2.Vector.e_1 + g2.Scalar(v2) * g2.Vector.e_2
-R_exp.sandwich(v_exp) - f(v_exp)
+show_difference(R_exp.sandwich(v_exp), f(v_exp))

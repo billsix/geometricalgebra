@@ -56,7 +56,7 @@ from gacalc.epixscene.bootstrap_live import (
     scene_around,
 )
 from gacalc.g2 import Scalar, Vector, Versor, e_1, e_2
-from gacalc.nbdisplay import at_values, show_mult
+from gacalc.nbdisplay import at_values, show_difference, show_mult
 
 # %% [markdown]
 # ## The two parts
@@ -100,7 +100,7 @@ rejection
 # They add back to $\vec{\mathbf{b}}$; the difference:
 
 # %%
-(projection + rejection - b).simplified()
+show_difference(projection + rejection, b)
 
 # %% [markdown]
 # The values used to draw the figures. Change them and rerun.

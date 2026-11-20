@@ -57,7 +57,7 @@ from gacalc.epixscene.frame_scene import (
 )
 from gacalc.functions import InvertibleFunction, inverse
 from gacalc.g3 import Scalar, Vector, e_1, e_2, e_3
-from gacalc.nbdisplay import at_values
+from gacalc.nbdisplay import at_values, show_difference
 from gacalc.standardposition import in_plane, rotation_from_to
 from gacalc.vectorcalc import cross
 
@@ -336,4 +336,4 @@ cross(a, b).simplified()
 # Their difference:
 
 # %%
-(by_standard_position - cross(a, b)).simplified()
+show_difference(by_standard_position, cross(a, b))

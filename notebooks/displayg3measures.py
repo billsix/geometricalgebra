@@ -44,6 +44,7 @@ import sympy
 from gacalc.base import Real
 from gacalc.g3 import G, Scalar, Vector
 from gacalc.measure import area, signed_volume, volume
+from gacalc.nbdisplay import show_difference
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)
@@ -71,7 +72,7 @@ area(a_vec, b_vec)
 # $0$:
 
 # %%
-area(a_vec, b_vec) - area(b_vec, a_vec)
+show_difference(area(a_vec, b_vec), area(b_vec, a_vec))
 
 # %% [markdown]
 # Why is there no signed area in space?
@@ -196,7 +197,7 @@ wedge_magnitude_from_sin
 # and their difference:
 
 # %%
-sympy.simplify(sympy.sympify(wedge_magnitude_from_sin - (a ^ b).magnitude()))
+show_difference(wedge_magnitude_from_sin, (a ^ b).magnitude())
 
 # %% [markdown]
 # **The size of a product is the product of the sizes.** As in the plane, the dot and

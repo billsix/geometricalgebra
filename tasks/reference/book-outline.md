@@ -24,8 +24,9 @@ preserved verbatim in the appendix.
 **Current reading order** (`book/docs/index.rst`, two captioned, numbered toctrees):
 
 - **Part I — The plane:** hook, canonical-form, one-dimension, multiplication, trigonometry, sets,
-  vectors-as-number-lines, relative-graph-paper, vector-addition, rotate (proof pages
-  `proof-rotate`, `proof-rotate-from-a-to-b`), geometric-product, rotation-graph-paper, projection
+  vectors-as-number-lines, vector-addition, rotate (proof pages
+  `proof-rotate`, `proof-rotate-from-a-to-b`), geometric-product, rotation-graph-paper,
+  relative-graph-paper, projection
   (`proof-projection`), product-from-projection (`rotation-from-vectors`), reflection, orthogonal,
   dual, defining-g2, levels-of-abstraction, interactive-calculator.
 - **Part II — Space:** three-dimensions, blade-square-sign, projection-rejection-3d
@@ -219,7 +220,7 @@ These came out of reworking `proof-projection.rst`; apply them to every proof pa
   2026-10-08; swept 2026-10-09). The subscript names the basis vector the number multiplies
   (`a = a_1 * e_1 + a_2 * e_2`) and survives 3D and 𝒢ₙ; a coordinate is a scalar, so it carries no
   arrow or bold (`\vec{\mathbf{a}}` is the vector, `a_1` its number; primes carry over, `b'_2`). Introduced in
-  `relative-graph-paper.rst` › "How we write coordinates", which bridges from the reader's
+  `vectors-as-number-lines.rst` › "How we write coordinates", which bridges from the reader's
   `(x, y)` ordered pairs (OpenStax *Algebra 1*, Unit 1 "Find Coordinates") and `⟨a, b⟩` /
   `a i + b j` (OpenStax *Precalculus 2e* §8.8 "Vectors"). Code cells still read `.x`/`.y`
   (the public API, kept on purpose); the page says so once. The axis *names* stay ("the
@@ -272,6 +273,10 @@ route, and `versor_from_vectors`/`versor_rotation`/`projection_rotation`), citin
 - **Prose + ePiX figures, no companion notebook** (a conceptual page, not a notebook stub):
   `rotation-graph-paper` (in the toctree after `geometric-product`), the "rotation is turning the
   graph paper" picture built from the `graphpaper1`–`graphpaper5` sequence (added 2026-10-11).
+  `relative-graph-paper` follows it, after `rotate`, because its composition is a rotation then a
+  translate (modelviewprojection's rotate-and-translate sequence), and it carries the turn-then-slide
+  readings, so `rotation-graph-paper` has no companion notebook of its own (William Emerison Six
+  <billsix@gmail.com>, 2026-11-20).
 
 A notebook starts as a stub holding a single `1 + 1` cell (proves it executes) and fills in
 per the outline below. Filled so far (2026-11-09): `levels-of-abstraction`, `rotate`,
