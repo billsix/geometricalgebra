@@ -1,94 +1,90 @@
 # Formula cheat sheets for 𝒢₂ and 𝒢₃ at the front of the book
 
-**Status:** ready — decisions recorded
-**Priority:** 4
-**Difficulty:** 5
-**Created:** 2026-11-20 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-11-20 (William Emerison Six <billsix@gmail.com>) · **Done:** 2026-11-20
 
-## BLUF
+Two reference cards, `book/docs/cheat-sheet-2d.rst` ("Reference Card: The Plane") and
+`book/docs/cheat-sheet-3d.rst` ("Reference Card: Space"). They sit in an unnumbered "Reference
+cards" toctree before Part I in `book/docs/index.rst`, and the opening paragraph of the index
+says they are for looking things up. Each operation is a chain of partial bindings:
+1. the 𝒢ₙ form;
+2. by the kinds of argument (vectors, a bivector, a trivector, a versor);
+3. named components;
+4. coordinates.
 
-Add two reference pages near the front of the book, one for 𝒢₂ and one for 𝒢₃. Each lists
-the book's important operations, and each operation is a **chain of partial bindings**: start
-coordinate-free in the most general form, then specialise one step at a time by the grades of the
-arguments, then by the algebra's named components, and end in coordinates. The number of steps
-varies per operation; three is typical, not required. Done means both pages build in
-`make docs` (HTML + PDF, no overflow), each step is an equation that cites where the book teaches
-it, and the page passes the notation rules in `CLAUDE.md` ("Math notation for readers").
+There are as many steps as the operation needs. Each chain ends with "Taught in" links to its
+pages and labelled equations. How the cards fit the book: `tasks/reference/book-outline.md`
+("Current reading order").
 
-## Context
+## The request (2026-11-20, paraphrased)
 
-- **The maintainer's request (2026-11-20, paraphrased).** A cheat sheet at the beginning, two of
-  them (2D, 3D). Each formula comes coordinate-free and most generic first, then specific to its
-  types, then in coordinates. Worked example, the dot product:
-  1. Generic: from the geometric product by grade projection, `A · B = ⟨A * B⟩_{|r−s|}` for grades
-     r and s (H&S p. 6, eqs. 1.21a–c; `MultiVectorBase.inner_product`).
-  2. Vector · vector: `a * b` has grades 0 and 2 only, so `a · b = ⟨a * b⟩₀`.
-  3. Coordinates: `a · b = a₁b₁ + a₂b₂` (+ `a₃b₃` in 𝒢₃).
-
-  Think of the steps as partial bindings toward coordinates per type, not a fixed three. The
-  geometric product itself opens each sheet: defined generically for 𝒢ₙ, then for 𝒢₂ / 𝒢₃ with
-  each vector bound to its named components (`a = a₁e₁ + a₂e₂`), then the full product table in
-  coordinates.
-- **The operations the maintainer named:** grade projection, geometric product, reverse,
-  inverse (by type only: vector, versor, bivector, …; there is no generic 𝒢₂ inverse in the
-  library, see `CLAUDE.md` "Assessment / known issues" item 2), dot product, wedge product,
-  project, reject, rotate from/to, uniform scale, dual.
-- **Candidates found by scanning the repo** (which are in scope: Decisions 2–4):
-  - in `MultiVectorBase` (`src/gacalc/base.py`): `scalar_product` (`A ∗ B = ⟨A * B⟩`),
-    `magnitude` / `normalize`, `left_contraction` / `right_contraction`, `reflect`,
-    `even_part` / `odd_part` (the grade involution split), `cosine` / `abs_sin` between vectors,
-    `exp` (a bivector's exponential is a rotor), `versor_from_vectors` / `rotor_from_vectors` and
-    the sandwich `R * v * R̃`, `angle` / `plane_of_rotation`, `conjugate`, `i(a, b)` (the unit
-    bivector)
-  - the measures in `src/gacalc/measure.py`: `area`, `volume`, `signed_area` (𝒢₂), `signed_volume`
-    (𝒢₃)
-  - the transforms in `src/gacalc/transforms.py`: `translate`, `scale_non_uniform`,
-    `plane_rotation` (rotation by an angle in a plane)
-  - per algebra: the quarter turn `v * e₁₂` and `Vector.rotate(θ)` (𝒢₂); `cross` (𝒢₃,
-    `src/gacalc/vectorcalc.py`)
-  - frames (`src/gacalc/frame.py`): `reciprocal_frame` (H&S p. 28, eq. 3.5)
-  - Hestenes but **not in gacalc**: the commutator product `A × B = ½ * (A * B − B * A)` (H&S
-    ch. 1; page not checked), and the general 𝒢₂/𝒢₃ inverse (proved only in
-    `proofs/GacalcProofs/GeneralInverse.lean`)
-- **Teaching order** (`tasks/reference/teaching-order-and-dependencies.md`): every page uses only
-  results taught before it. A cheat sheet at the front shows results before they are taught, so
-  it is a reference page, not a lesson (Decision 1).
-- **Book conventions** (`CLAUDE.md` "Book: one name per operation…", and
-  `tasks/reference/book-outline.md`): one name per operation across all its versions, every
-  version a labelled equation, uses cite the version with ``:eq:`label` ``. Typeset vectors as
-  `\vec{\mathbf{a}}`, blades as `\mathbf{e}_{12}`, explicit `*` for every product, parentheses
-  only for application. Long `.. math::` blocks need `\\` and `&` at line breaks (the PDF overflow
-  check fails `make docs` otherwise; `tasks/reference/book-and-docs-pipeline.md`).
-- **Where the book starts:** `book/docs/index.rst` lists Part I starting at `hook`,
-  `canonical-form`, `one-dimension`, ….
-
-## Plan
-
-1. Placement and scope are settled (Decisions).
-2. For each operation, collect the equations the book already labels (grep `.. math::` labels in
-   `book/docs/*.rst`) and the library definition (`src/gacalc/*.py`), and write its chain of
-   bindings for 𝒢₂ and for 𝒢₃. Where a step has no labelled equation in the book, note it.
-3. Write `book/docs/cheat-sheet-2d.rst` and `book/docs/cheat-sheet-3d.rst` (names to taste), add
-   them to `index.rst`, and check every coordinate step against gacalc in a scratch run (the
-   coordinates should be what `g2` / `g3` print for symbolic vectors).
-4. `make docs`; look at both pages in the PDF; update `tasks/reference/book-outline.md`.
+The maintainer asked for two cheat sheets at the beginning of the book, one each for 2D and 3D.
+Each formula would go from coordinate-free and most general, to specific for its types, to
+coordinates. The example was the dot product: grade projection of the geometric product, then
+vector · vector as `⟨a * b⟩₀` (the product of two vectors has grades 0 and 2 only), then
+`a₁ * b₁ + a₂ * b₂`. The steps are a sequence of partial bindings, not always three. The
+geometric product opens each sheet, generic for 𝒢ₙ and then specific to 𝒢₂ / 𝒢₃ with named
+components.
 
 ## Decisions
 
 William Emerison Six <billsix@gmail.com>, 2026-11-20:
 
-1. **Placement:** the very front of the book, before Part I, titled as reference cards. Each step
-   links to the page that teaches it, so the sheet does not read as a lesson out of order.
-2. **Scope:** include the repo-scan candidates gacalc implements and the book uses: the scalar
-   product, magnitude and normalize, contractions, reflect, even/odd parts, cosine and sine
-   between vectors, exp and rotors with the sandwich, rotation by an angle, area / volume /
-   signed measures, translate and non-uniform scale, the 𝒢₂ quarter turn and `rotate(θ)`, the 𝒢₃
-   cross product, and the unit bivector `i`. Drop any that clutter a sheet, and say which in the
-   done-record.
-3. **Reciprocal frame:** on both sheets.
-4. **Hestenes operations gacalc does not implement** (the commutator product, the general
-   multivector inverse): not in this task. They stay open for a future task.
-5. **Forms:** each step cites the book's existing equation (and its Lean `twin:` where one
-   exists). No new Lean theorems or notebooks, an exception to the "three forms" default because
-   the sheet adds no new math. The coordinate steps are checked against gacalc in a scratch run.
-6. **Each sheet stands alone**, repeating the generic (𝒢ₙ) steps, so either page prints by itself.
+1. **Placement:** the very front, before Part I, as reference cards linking to the teaching pages.
+2. **Scope:** the operations named in the request, plus the repo-scan candidates gacalc implements:
+   - the scalar product, magnitude, contractions and reflect;
+   - even/odd parts, cosine and sine, and exp, rotors and the sandwich;
+   - rotation by an angle, the measures, translate and non-uniform scale;
+   - the 𝒢₂ quarter turn and `rotate(θ)`, the 𝒢₃ cross product, and the unit bivector.
+3. **The reciprocal frame:** on both sheets.
+4. **Not in this task:** Hestenes operations gacalc does not implement (the commutator product,
+   the general multivector inverse). They stay open for a future task.
+5. **Sources:** each step cites the book's existing equation. There are no new Lean theorems or
+   notebooks, an exception to the "three forms" default, since the sheet adds no new math. The
+   coordinate steps were checked against gacalc.
+6. **Standalone sheets:** each sheet repeats the generic steps.
+
+## What was done
+
+- **Operations on both cards**, in this order:
+  - the geometric product (the 𝒢ₙ rules, the basis products, `a * b = a · b + a ∧ b`, coordinates);
+  - grade projection, the reverse and magnitude;
+  - the inverse, by type only, with no general formula (Decision 4);
+  - the dot product (Hestenes' `Σ ⟨⟨A⟩_r * ⟨B⟩_s⟩_{|r−s|}`, vector · vector, vector · bivector);
+  - the wedge product;
+  - angle, area and the unit bivector `i(a, b)`;
+  - projection and rejection, then reflection;
+  - rotation: by an angle, and from `a` to `b` with the versor `R = b * a + |a| * |b|`;
+  - the dual;
+  - scaling (uniform and per axis) and translation;
+  - the reciprocal frame.
+- **3D only:** the cross product, volume and the signed volume (`det`), a vector ∧ a bivector, the
+  plane forms of projection, rejection and reflection (`ref_B(v) = −B * v * B⁻¹`), and the rotor
+  `R = cos(θ/2) − sin(θ/2) * i` with `v ↦ R * v * R̃`.
+- **Where the chain stops short of coordinates:** projection onto a general plane, because the
+  general-`B` coordinates fill several lines. The card gives the `(v · B) * B⁻¹` form, then the
+  coordinate plane `e₁₂`. A general 3D multivector is written by grade parts, `A = A₀ + a + B + T`,
+  instead of eight coefficients.
+- **Not taught in the book:** even/odd parts, `exp`, the scalar product and the left and right
+  contractions. They are in a last "Also in gacalc" section on each card, linked to their API
+  entries (`:py:meth:`), so they are listed without implying a teaching page. Nothing from
+  Decision 2 was dropped.
+- **Notation:** the scalar product is written `⟨A * B⟩₀` with no `∗` symbol of its own. In
+  print, `\ast` looks like the `*` that means the geometric product everywhere else
+  (`CLAUDE.md` "Math notation for readers"). Equation citations read "page, equation (N)", not
+  "((N))".
+- **Verification harness:** `tasks/adhoc/book-formula-cheat-sheets-2d-3d/verify_cheat_sheets.py`
+  ran 67 checks, one per formula on the cards, each comparing gacalc (`Gn`, `g2`) against the form
+  as written. It started at 65/67: the two `exp` checks need a positive angle, since `exp`
+  computes `cos(|A|) + sin(|A|) * A/|A|`. After that change, 0 failed. The script was one-shot
+  and was removed in the archive commit; get it back with
+  `git log --all -- tasks/adhoc/book-formula-cheat-sheets-2d-3d/verify_cheat_sheets.py`.
+- **Book build:** `make docs` (the `docs.sh` run) reported 0 too wide and 0 too tall. Every
+  `:doc:` and `:eq:` target was checked to exist before the build. Looked at the card pages
+  (9–16 of the PDF).
+- **Layout:** in the PDF the cards are sections 2.1 and 2.2, inside the index page's "How the
+  results build on each other" chapter. That is the book's existing LaTeX structure (Part I's
+  pages are also numbered 2.x), not something the cards introduced.
+- **Font warnings:** the build's U+007F "Missing character" lines went from about 41 to 48. They
+  are the same harmless skew-character lookup for vector accents
+  (`tasks/archive/2026/11/17/notebook-text-vector-notation-matches-output.md`); the cards add
+  more `\vec{\mathbf{…}}`.
