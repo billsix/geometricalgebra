@@ -10,8 +10,10 @@ line-number anchor replaced by section/row names.
 lightweight pedagogical representation. **This is the most under-specified bullet and potentially the
 largest (architectural).**
 **Recheck:** the Open questions below are answered (maintainer-gated; `/recheck-blocked` surfaces it).
-**Related:** `tasks/book-opening-vectors-supersede-geometry-types.md` (the book side: segments, rays and
-lines as `a + t * (b − a)` near the start of the book; it doesn't wait on this task).
+**Related:** `tasks/archive/2026/11/21/book-opening-vectors-supersede-geometry-types.md` (done: the book
+side, segments, rays and lines as `a + t * (b − a)` on `book/docs/geometry-from-vectors.rst`, right after
+vector-addition; it did not wait on this task) and its survey `tasks/reference/high-school-geometry-objects.md`,
+which lists the textbook objects (the plane, intersections) that wait on this one.
 
 ## BLUF
 

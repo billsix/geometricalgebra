@@ -36,7 +36,7 @@ the captioned, numbered parts):
   one-time script (`tasks/archive/2026/11/20/book-formula-cheat-sheets-2d-3d.md` says how to
   get it back from git).
 - **Part I — The plane:** hook, canonical-form, one-dimension, multiplication, trigonometry, sets,
-  vectors-as-number-lines, vector-addition, rotate (proof pages
+  vectors-as-number-lines, vector-addition, geometry-from-vectors, rotate (proof pages
   `proof-rotate`, `proof-rotate-from-a-to-b`), geometric-product, rotation-graph-paper,
   relative-graph-paper, projection
   (`proof-projection`), product-from-projection (`rotation-from-vectors`), reflection, orthogonal,
@@ -277,7 +277,8 @@ route, and `versor_from_vectors`/`versor_rotation`/`projection_rotation`), citin
 (`fullAngleRotorFromTo_carry`, `projRotation_*`); it has a companion notebook `notebooks/rotation-from-vectors.py`.
 
 - **Prose + companion notebook** (gacalc + sympy/plot): hook, canonical-form,
-  one-dimension, vectors-as-number-lines, relative-graph-paper, vector-addition, rotate,
+  one-dimension, vectors-as-number-lines, relative-graph-paper, vector-addition,
+  geometry-from-vectors, rotate,
   geometric-product, projection, product-from-projection, reflection, dual, defining-g2,
   levels-of-abstraction, three-dimensions, projection-rejection-3d, frames-qr (`frame-qr-2d`,
   `frame-qr-3d`), and the proof pages `proof-rotate-from-a-to-b`, `proof-projection`,
@@ -339,6 +340,12 @@ order. Sections A–D and G–I placement is inferred — reorder freely.*
   concisely: a **ruler only has meaning relative to something else** — maybe a picture of
   a ruler at an angle.
 - **Vector addition** — pictures, in 2D only to start.
+- **Geometry from vectors** (`geometry-from-vectors`, right after vector-addition; William Emerison
+  Six <billsix@gmail.com>, 2026-11-21): a high-school textbook's points, segments, rays, lines,
+  midpoints and polygons, each **built** from vectors (the textbook names stay, as names for sets of
+  vectors). Angle, perpendicular, parallel and area follow in `product-from-projection`'s last
+  section, once the dot and wedge exist. This makes appendix item 22's "look in geometry textbooks"
+  concrete; the survey of the textbook's objects is `tasks/reference/high-school-geometry-objects.md`.
 
 **E. Rotate → the geometric product → its action** *(the maintainer's explicit spine)*
 - **Define rotate like MVP:** not by an angle, but **from the direction of vec 1 to

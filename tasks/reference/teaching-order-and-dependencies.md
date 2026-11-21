@@ -43,7 +43,10 @@ rotation from a cosine and a sine instead of using the rotation the book had jus
 
 From the toctrees in `book/docs/index.rst` and each page's own toctree:
 
-- **Part I, the plane:** … `rotate` (its proofs: `proof-rotate`, the quarter turn and the rotation
+- **Part I, the plane:** … `vector-addition` → `geometry-from-vectors` (a textbook's points,
+  segments, rays, lines and polygons from adding and stretching vectors; its angle, perpendicular,
+  parallel and area wait for the dot and wedge, in `product-from-projection`'s last section) →
+  `rotate` (its proofs: `proof-rotate`, the quarter turn and the rotation
   by an angle; then `proof-rotate-from-a-to-b`, the rotation from one direction to another) →
   `geometric-product` (rotation as multiplication by a rotor) → `rotation-graph-paper` →
   `relative-graph-paper` (a rotation then a translate, read two ways) →

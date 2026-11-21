@@ -36,6 +36,7 @@
 # then their difference.
 
 # %%
+# twin: GacalcProofs.G2.wedge_sides_eq_surveyor
 import sympy
 
 from gacalc.base import Real
@@ -43,6 +44,7 @@ from gacalc.epixscene.bootstrap_live import (
     BLACK,
     BLUE,
     GREEN,
+    PURPLE,
     LabelPos,
     PendingFigure,
     Point,
@@ -53,6 +55,7 @@ from gacalc.epixscene.bootstrap_live import (
     right_angle,
     scene_around,
 )
+from gacalc.epixscene.frame_scene import line, patch
 from gacalc.functions import InvertibleFunction
 from gacalc.g2 import Bivector, Scalar, Vector, Versor, e_1, e_2
 from gacalc.nbdisplay import at_values, show_difference, show_mult
@@ -272,3 +275,138 @@ show_difference(wedge, Scalar(b.magnitude() * y) * Bivector.e_12)
 
 # %%
 show_difference(product, Scalar(dot) + wedge)
+
+# %% [markdown]
+# ## Angle, area and perpendicular, from the dot and the wedge
+#
+# The chapter's last section reads a geometry textbook's angle, perpendicular and area
+# off the two parts of the product. A third point $\vec{\mathbf{c}}$ makes a triangle
+# $\vec{\mathbf{a}}, \vec{\mathbf{b}}, \vec{\mathbf{c}}$:
+
+# %%
+c_1: sympy.Symbol
+c_2: sympy.Symbol
+c_1, c_2 = sympy.symbols("c_1 c_2", real=True)
+c: Vector = Scalar(c_1) * e_1 + Scalar(c_2) * e_2
+c
+
+# %% [markdown]
+# Its value for the figures, added to the others:
+
+# %%
+values_with_c: list[tuple[sympy.Symbol, Real]] = [*values, (c_1, 3), (c_2, 3)]
+
+# %% [markdown]
+# ### Perpendicular: the quarter turn of a side has dot product 0 with it
+#
+# The perpendicular bisector of the segment from $\vec{\mathbf{a}}$ to
+# $\vec{\mathbf{b}}$ runs along the quarter turn of
+# $\vec{\mathbf{b}} - \vec{\mathbf{a}}$. Before running the cell, predict the dot
+# product of the side with its quarter turn.
+# $(\vec{\mathbf{b}} - \vec{\mathbf{a}}) \cdot r(\vec{\mathbf{b}} - \vec{\mathbf{a}}; \pi/2)$:
+
+# %%
+side_dot_turn: Real = (b - a).dot((b - a).rotate_90_degrees()).scalar_part()
+side_dot_turn
+
+# %% [markdown]
+# Its difference from $0$, term by term:
+
+# %%
+show_difference(side_dot_turn, 0)
+
+# %% [markdown]
+# Every point of the perpendicular bisector is as far from $\vec{\mathbf{a}}$ as from
+# $\vec{\mathbf{b}}$. A point on it, $t$ steps along the quarter turn from the
+# midpoint:
+
+# %%
+t: sympy.Symbol = sympy.Symbol("t", real=True)
+on_bisector: Vector = (a + b) / 2 + Scalar(t) * (b - a).rotate_90_degrees()
+on_bisector
+
+# %% [markdown]
+# Its squared distance from $\vec{\mathbf{a}}$, the dot product of the trip with
+# itself:
+
+# %%
+from_a: Real = (on_bisector - a).dot(on_bisector - a).scalar_part()
+from_a
+
+# %% [markdown]
+# Its squared distance from $\vec{\mathbf{b}}$:
+
+# %%
+from_b: Real = (on_bisector - b).dot(on_bisector - b).scalar_part()
+from_b
+
+# %% [markdown]
+# Their difference:
+
+# %%
+show_difference(from_a, from_b)
+
+# %% [markdown]
+# ### Area: the surveyor's formula
+#
+# The wedge of two sides from $\vec{\mathbf{a}}$,
+# $(\vec{\mathbf{b}} - \vec{\mathbf{a}}) \wedge (\vec{\mathbf{c}} - \vec{\mathbf{a}})$,
+# is the parallelogram on those sides; half its size is the triangle's area:
+
+# %%
+sides_wedge: Bivector = (b - a) ^ (c - a)
+sides_wedge
+
+# %% [markdown]
+# Each corner wedged with the next,
+# $\vec{\mathbf{a}} \wedge \vec{\mathbf{b}} + \vec{\mathbf{b}} \wedge \vec{\mathbf{c}} + \vec{\mathbf{c}} \wedge \vec{\mathbf{a}}$:
+
+# %%
+surveyor: Bivector = (a ^ b) + (b ^ c) + (c ^ a)
+surveyor
+
+# %% [markdown]
+# Their difference:
+
+# %%
+show_difference(sides_wedge, surveyor)
+
+# %% [markdown]
+# At the plot values, the triangle's area,
+# $\frac{1}{2} * |(\vec{\mathbf{b}} - \vec{\mathbf{a}}) \wedge (\vec{\mathbf{c}} - \vec{\mathbf{a}})|$:
+
+# %%
+at_values(sides_wedge.magnitude() / 2, values_with_c)
+
+# %% [markdown]
+# Drawn at the plot values: the angle at $\vec{\mathbf{a}}$ between the sides
+# toward $\vec{\mathbf{b}}$ and toward $\vec{\mathbf{c}}$, and the triangle they
+# close, labelled with its area.
+
+# %%
+P_C: Point = point(coordinates=list(at_values(c, values_with_c)))
+fig_angle: PendingFigure
+with scene_around(points=[P_A, P_B, P_C], basis=False) as fig_angle:
+    patch(corners=[P_A, P_B, P_C])
+    line(tail=P_B, head=P_C)
+    arrow(
+        tail=P_A,
+        head=P_B,
+        color=GREEN,
+        text=r"$\vec{\mathbf{b}} - \vec{\mathbf{a}}$",
+    )
+    arrow(
+        tail=P_A,
+        head=P_C,
+        color=BLUE,
+        text=r"$\vec{\mathbf{c}} - \vec{\mathbf{a}}$",
+        align=LabelPos.t,
+    )
+    note(
+        at=(1 / 3) * (P_A + P_B + P_C),
+        text="$"
+        + sympy.latex(at_values(sides_wedge.magnitude() / 2, values_with_c))
+        + "$",
+        color=PURPLE,
+    )
+fig_angle

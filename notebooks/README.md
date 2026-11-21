@@ -24,6 +24,7 @@ is not on PyPI.
 | `one-dimension.py` | One Dimension: m·x + b |
 | `vectors-as-number-lines.py` | Vectors as Relative Number Lines |
 | `vector-addition.py` | Vector Addition |
+| `geometry-from-vectors.py` | Points, Segments, Lines and Polygons from Vectors |
 | `rotate.py` | Rotate |
 | `proof-rotate-from-a-to-b.py` | Proof: Rotate from the Direction of a to the Direction of b |
 | `geometric-product.py` | The Geometric Product |
