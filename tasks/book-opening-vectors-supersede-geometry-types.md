@@ -1,6 +1,6 @@
 # Open the book by showing vectors build (and supersede) every high-school geometry object
 
-**Status:** proposed — needs go-ahead (open questions below)
+**Status:** proposed — needs go-ahead (decisions recorded 2026-11-21; no open questions)
 **Priority:** 4
 **Difficulty:** 6 (a survey of a textbook, then new early book pages with figures)
 **Created:** 2026-11-21 (William Emerison Six <billsix@gmail.com>)
@@ -43,22 +43,16 @@ construction, and book pages near the start that present those constructions wit
 
 ## Plan
 
-1. Survey the chosen textbook (Open question 1): every defined object, with chapter/page, its
+1. Survey the textbook (Decisions): every defined object, with chapter/page, its
    definition, and its notation. Write it to `tasks/reference/high-school-geometry-objects.md`,
    each row paired with its vector construction and the gacalc call that computes it.
 2. Draft the book page(s) at the chosen place: per object, the textbook definition, the vector
    form, a figure, and the two-column derivation where there is one.
 3. `make` the book (the targets in `tasks/reference/book-and-docs-pipeline.md`) and check the pages.
 
-## Open questions
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-21: "go with your recommendations")
 
-1. **Which geometry textbook?** "The geometry book from high school": give the title, author and
-   edition, or whether a PDF is available to read. If none, a freely available one (e.g. a CK-12
-   Geometry edition) could stand in. *I can't do the survey without this.*
-2. **Where in the book:** (a) a new page right after vector-addition (the first point where
-   `a + t(b − a)` can be written), or (b) in §H, "The formal algebra", where book-outline already asks
-   for the comparison with geometry textbooks? *Recommend (a) for points/segments/rays/lines/
-   polygons, with angle, area and perpendicular added on the pages that introduce the dot and wedge.*
-3. **How strong a claim is "supersede":** state that vectors *replace* the separate primitives, or
-   that they *build* each one (the textbook objects stay as names for sets of vectors)? *Recommend
-   "build"; it is the accurate claim, and the textbook names stay useful.*
+- **Placement:** a new page right after vector-addition for points, segments, rays, lines and polygons; angle, area and perpendicular are added on the pages that introduce the dot and wedge.
+- **Claim:** vectors *build* each textbook object (the textbook names stay as names for sets of vectors), not "replace" them.
+
+- **The textbook** (William Emerison Six <billsix@gmail.com>, 2026-11-21): Pearson *Geometry: Common Core*, Randall I. Charles, Basia Hall, Dan Kennedy, Laurie E. Bass, Art Johnson (with Stuart J. Murphy and Grant Wiggins), copyright 2012. Bookshare lists a 2012 edition as ISBN 978-0-13-318582-9; the 2013/2015 printings are 978-0-13-328115-6 (not checked against Pearson; confirm on the maintainer's copy). Chapter outline: 1 Tools of Geometry, 2 Reasoning and Proof, 3 Parallel and Perpendicular Lines, 4 Congruent Triangles (these four checked online, 2026-11-21: mathleaks.com/study/pearson-geometry-common-core-2013); the rest, from memory of this series and to confirm: 5 Relationships Within Triangles, 6 Polygons and Quadrilaterals, 7 Similarity, 8 Right Triangles and Trigonometry, 9 Transformations, 10 Area, 11 Surface Area and Volume, 12 Circles, 13 Probability. The survey's main source is chapter 1 (point, line, plane, segment, ray, angle, midpoint, bisector, the coordinate distance and midpoint formulas), with each later chapter's new objects added. **Gotcha: the book is copyrighted, not open.** The survey paraphrases its definitions and cites chapter/section; the book page quotes nothing beyond a short definition with a citation.
