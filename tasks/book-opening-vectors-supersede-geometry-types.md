@@ -1,58 +1,93 @@
-# Open the book by showing vectors build (and supersede) every high-school geometry object
+# Open the book by showing vectors build every high-school geometry object
 
-**Status:** proposed — needs go-ahead (decisions recorded 2026-11-21; no open questions)
-**Priority:** 4
-**Difficulty:** 6 (a survey of a textbook, then new early book pages with figures)
-**Created:** 2026-11-21 (William Emerison Six <billsix@gmail.com>)
+**Created:** 2026-11-21 (William Emerison Six <billsix@gmail.com>) · **Done:** 2026-11-21
 
-## BLUF
-
-Go through a high-school geometry textbook and list every **kind of geometric object** it defines
-(point, line, segment, ray, angle, plane, polygon, circle, …). Then, near the start of the book, show
-how each one is built from **vectors**, so the student sees that one object, the vector (with
-scalars and, later, the wedge), replaces the textbook's separate primitives. Done = a
-`tasks/reference/` survey listing each textbook object with its definition and its vector
-construction, and book pages near the start that present those constructions with figures.
-
-## Context
-
-- Read first: `CLAUDE.md`, `tasks/reference/book-outline.md` (its §H "The formal algebra": "Look at
-  how **geometry textbooks** define things", and appendix item 22, the maintainer's raw idea that
-  this task makes concrete), `tasks/reference/openstax-math-pedagogy.md` (the two-column
-  statement | reason format), `tasks/reference/content-area-volume.md` ("connect back to high-school
-  math"), `tasks/reference/teaching-order-and-dependencies.md`.
-- **Overlap:** `tasks/affine-flats-lines-planes-from-points.md` (blocked) covers lines and planes
-  *through points* (not through the origin) as a library/representation question. This task is the
-  book side and, for the early pages, needs only the parametric forms (`p + t·v`), which gacalc can
-  already compute. Cross-link both ways; don't wait on that task.
-- Expected vector constructions (to confirm against the textbook's list):
-  - point = a position vector `p`; segment `AB` = `{a + t(b − a) : 0 ≤ t ≤ 1}`; ray =
-    `t ≥ 0`; line = all `t`; midpoint = `(a + b)/2`;
-  - angle = a pair of rays from a vertex; its measure from the dot product, its orientation from the
-    wedge;
-  - plane (in 3D) = `p + s·u + t·v`; parallel / perpendicular = the wedge / dot of direction vectors
-    is zero;
-  - triangle / polygon = a closed chain of vectors summing to zero; area from the wedge
-    (`measure.area`);
-  - circle = `{c + r·(cos θ e₁ + sin θ e₂)}` (gacalc's 𝒢₂ `Vector.rotate(θ)`);
-  - congruence / similarity = rotation, translation, reflection, uniform scaling
-    (`transforms.py`).
-- Placement is part of the book's ordering, which the maintainer owns (book-outline §"Current
-  reading order"). Part I begins with hook, canonical-form, one-dimension, …, vectors-as-number-lines,
-  vector-addition.
-
-## Plan
-
-1. Survey the textbook (Decisions): every defined object, with chapter/page, its
-   definition, and its notation. Write it to `tasks/reference/high-school-geometry-objects.md`,
-   each row paired with its vector construction and the gacalc call that computes it.
-2. Draft the book page(s) at the chosen place: per object, the textbook definition, the vector
-   form, a figure, and the two-column derivation where there is one.
-3. `make` the book (the targets in `tasks/reference/book-and-docs-pipeline.md`) and check the pages.
+Surveyed a high-school geometry textbook for every kind of object it defines, recorded each with its
+vector construction, and added a book page right after vector-addition that builds the textbook's
+first objects from vectors. The survey is `tasks/reference/high-school-geometry-objects.md`; read it
+for the object list, the sources and what the book builds where.
 
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-21: "go with your recommendations")
 
-- **Placement:** a new page right after vector-addition for points, segments, rays, lines and polygons; angle, area and perpendicular are added on the pages that introduce the dot and wedge.
-- **Claim:** vectors *build* each textbook object (the textbook names stay as names for sets of vectors), not "replace" them.
+- **Placement:** a new page right after vector-addition for points, segments, rays, lines and
+  polygons; angle, area and perpendicular went on the page that introduces the dot and wedge.
+- **Claim:** vectors *build* each textbook object (the textbook names stay as names for sets of
+  vectors), not "replace" them.
+- **The textbook:** Pearson *Geometry: Common Core*, Randall I. Charles, Basia Hall, Dan Kennedy,
+  Laurie E. Bass, Art Johnson (with Stuart J. Murphy and Grant Wiggins), copyright 2012
+  (2013/2015 printings ISBN 978-0-13-328115-6; confirm on the maintainer's copy). It is
+  copyrighted: the survey paraphrases definitions and cites lesson numbers, and the book page
+  quotes nothing.
 
-- **The textbook** (William Emerison Six <billsix@gmail.com>, 2026-11-21): Pearson *Geometry: Common Core*, Randall I. Charles, Basia Hall, Dan Kennedy, Laurie E. Bass, Art Johnson (with Stuart J. Murphy and Grant Wiggins), copyright 2012. Bookshare lists a 2012 edition as ISBN 978-0-13-318582-9; the 2013/2015 printings are 978-0-13-328115-6 (not checked against Pearson; confirm on the maintainer's copy). Chapter outline: 1 Tools of Geometry, 2 Reasoning and Proof, 3 Parallel and Perpendicular Lines, 4 Congruent Triangles (these four checked online, 2026-11-21: mathleaks.com/study/pearson-geometry-common-core-2013); the rest, from memory of this series and to confirm: 5 Relationships Within Triangles, 6 Polygons and Quadrilaterals, 7 Similarity, 8 Right Triangles and Trigonometry, 9 Transformations, 10 Area, 11 Surface Area and Volume, 12 Circles, 13 Probability. The survey's main source is chapter 1 (point, line, plane, segment, ray, angle, midpoint, bisector, the coordinate distance and midpoint formulas), with each later chapter's new objects added. **Gotcha: the book is copyrighted, not open.** The survey paraphrases its definitions and cites chapter/section; the book page quotes nothing beyond a short definition with a citation.
+## What was done
+
+- **Survey** (`tasks/reference/high-school-geometry-objects.md`): every chapter and lesson title came
+  from a school's public curriculum map for the book (mathleaks.com gave only chapters 1–4; the rest
+  of its page loads by JavaScript). The map confirmed the 13-chapter outline the decision recorded
+  from memory. Each object row gives the lesson, a paraphrased definition, the vector construction,
+  the gacalc call and the book page that builds it (or "not built").
+- **Book page** `book/docs/geometry-from-vectors.rst` ("Points, Segments, Lines and Polygons from
+  Vectors"), after `vector-addition` in `book/docs/index.rst`: point as position vector
+  (`eq-point`), segment `a + t * (b − a)` (`eq-segment`), midpoint with a reasoned chain
+  (`eq-midpoint`) and its two equal halves, the distance formula (`eq-distance`), rays, opposite rays
+  and the line (`eq-line`), collinear points, the triangle as a closed chain
+  (`eq-triangle-closed`), perimeter, the midsegment, the median, the parallelogram (`eq-parallelogram`)
+  iff its diagonals share a midpoint, and a "What has to wait" list (angle/area → dot and wedge,
+  circle → rotate, congruence → translate/rotate/reflect, plane → Part II).
+- **Dot and wedge page**: a new last section of `book/docs/product-from-projection.rst`, "Angle,
+  area and perpendicular": an angle as two rays, its measure (`eq-angle-measure`), acute/right/
+  obtuse/straight from the cosine, perpendicular (`u · v = 0`) and the perpendicular bisector through
+  the quarter turn, parallel (`u ∧ v = 0`), area of the parallelogram and triangle
+  (`eq-triangle-area`), the surveyor's formula, and the rectangle/rhombus/square tests. Sine and
+  cosine are stated first, dot and wedge under them (`CLAUDE.md` "Presenting to students").
+- **Figures** (ePiX, CC0): `book/figures/epix/geom_segment.py`, `geom_line.py`, `geom_triangle.py`,
+  `geom_parallelogram.py`, `geom_angle.py`, sharing `book/figures/epix/_geometry_scene.py`.
+- **Notebooks**: a new companion `notebooks/geometry-from-vectors.py` (symbolic throughout, live
+  ePiX figures, `show_difference` for every check: the segment's ends, the midpoint at `t = ½` and
+  its halves, the distance formula, ray points, the triangle's closure, the midsegment, the
+  parallelogram's midpoint gap as minus half its side gap); `notebooks/product-from-projection.py`
+  gained a section checking the side-dot-quarter-turn `= 0`, the perpendicular bisector's equal
+  distances, and the surveyor's formula, with a live triangle figure.
+- **Lean** `proofs/GacalcProofs/GeometryObjects2D.lean` (imported from `proofs/GacalcProofs.lean`):
+  `segmentMidpoint_eq_segment_half`, `segmentMidpoint_halves`, `triangle_sides_sum_zero`,
+  `parallelogram_iff_diagonals_bisect`, `midsegment_eq_half_side`, `wedge_sides_eq_surveyor`, each
+  with a `twin:` tag matched in the notebooks. Perpendicular and parallel cite the existing
+  `Predicates2D.lean` (`wedge_eq_zero_iff_parallel`).
+- **Docs kept true**: `book/docs/proof-dependencies.dot` (nodes `segment`, `polygon`, `angle_area`),
+  `tasks/reference/teaching-order-and-dependencies.md`, `tasks/reference/book-outline.md` (reading
+  order, file layout, §D), `tasks/reference/book-and-docs-pipeline.md` (`_geometry_scene.py`),
+  `notebooks/README.md`, `proofs/README.md`, and the cross-link in
+  `tasks/affine-flats-lines-planes-from-points.md` (still blocked; the plane and intersections wait
+  on it).
+
+## Three forms, and what was skipped
+
+- The six stated results have all three forms (Lean, symbolic notebook cell, page prose).
+- **Lean skipped** for the angle measure `u · v = |u| * |v| * cos(θ)` (the book defines the angle's
+  cosine through that quotient in `proof-rotate-from-a-to-b`, so it is a definition here), the
+  distance formula (the definition of `magnitude`), and the perpendicular bisector's
+  equal-distance property (a one-line consequence of the dot facts already proved; checked
+  symbolically in the notebook only).
+- **Not built**, by scope: circles, regular polygons, dilations and the plane (each named on the page
+  as waiting for `rotate` or Part II), intersections (a solving question, the blocked affine-flats
+  task), constructions, and the angle-pair vocabulary of lesson 1-5. `orthogonal.rst` is still a
+  placeholder; perpendicular is taught in `product-from-projection` instead, and the survey points
+  there.
+- The reference cards (`cheat-sheet-2d`) were not changed: none of their formulas changed, and the
+  new formulas (segment, midpoint) are not on a card.
+
+## Gates
+
+All run nested on 2026-11-21 against a freshly built full image (`make image`, every layer but the
+late dependency layer from cache):
+
+- `make format`: exit 0 (after `check_notebook_prose_width.py --fix` rewrapped one figure docstring).
+- `make test`: exit 0, 1407 passed, 3 skipped, 12 deselected.
+- `make check-notebooks`: exit 0, pyright 0 errors.
+- `make lean`: exit 0; the axioms gate reports 1117 declarations on the standard three axioms. The
+  run built the whole `GacalcProofs` library from an empty `proofs/.lake/build` (`G3.lean` alone took
+  1725 s), so expect a long first run on a fresh checkout.
+- `make docs`: exit 0, the overflow check reports 0 equations or tables too wide and 0 boxes too
+  tall; no new Sphinx warnings from the changed pages. The rendered figures and live notebook
+  figures were inspected and two labels moved off their lines.
+- `tools/check_annotations.py` lists nothing in the new or changed notebooks.

@@ -19,6 +19,7 @@ import GacalcProofs.Normalize
 import GacalcProofs.Reflect
 import GacalcProofs.Predicates3D
 import GacalcProofs.Predicates2D
+import GacalcProofs.GeometryObjects2D
 import GacalcProofs.GradeProjection
 import GacalcProofs.Contractions
 import GacalcProofs.Measures

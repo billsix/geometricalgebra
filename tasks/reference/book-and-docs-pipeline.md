@@ -159,6 +159,10 @@ scene inside `with epix.figure(...) as fig:` and leaves `fig` at module level.
     `rotate_goal.py` keeps its own `A_LENGTH` in sync with it.
   - `_addition_scene.py` holds the fixed vectors a, b (and a+b, −b, a−b, the two framing boxes) the
     vector-addition/subtraction figures (`add1`–`add3`, `sub1`–`sub2`) share.
+  - `_geometry_scene.py` holds the points of the geometry-from-vectors figures (`geom_segment`,
+    `geom_line`, `geom_triangle`, `geom_parallelogram`) and of `product-from-projection`'s `geom_angle`,
+    plus `on_segment(start, finish, t)`. A figure file `geom_segment.py` renders to
+    `_static/epix/geom-segment.*` (the render tool turns `_` into `-`).
   - `_projection_scene.py` holds a (1.25 at 66°), b (1 at 20°), the projection point, and the
     rotated-to-standard-position vectors the projection figures (`proj1`–`proj3`, the result; `sp1`–`sp5`,
     the rotate-to-standard-position derivation) share. `scene2d.right_angle_at(corner, angle)` draws a

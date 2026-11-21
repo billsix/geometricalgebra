@@ -10,6 +10,8 @@ digraph proof_dependencies {
 
     subgraph cluster_part_1_2 {
         label="Parts I and II: the plane, then space";
+        segment [label="Segment, ray, line a + t * (b − a);\nmidpoint (a + b) / 2\ngeometry-from-vectors"];
+        polygon [label="Triangle sides sum to 0; midsegment;\nparallelogram iff diagonals bisect\ngeometry-from-vectors"];
         quarter [label="Quarter turn r(v; π/2)\nproof-rotate"];
         rotation_by_angle [label="Rotation by an angle r(v; θ)\nproof-rotate"];
         commute [label="2D rotations commute\nproof-rotate-from-a-to-b"];
@@ -30,7 +32,9 @@ digraph proof_dependencies {
         reflection [label="Reflection across a vector\nproj − rej = b * a * b⁻¹\nreflection"];
         reflection_plane [label="Mirror in a plane is minus\nthe reflection across its normal\nreflection-3d"];
         dual_of_plane [label="The dual of a ∧ b is\nperpendicular to a and b\ndual-3d"];
+        angle_area [label="Angle, perpendicular, parallel,\narea from the dot and wedge\nproduct-from-projection"];
 
+        segment -> polygon;
         quarter -> rotation_by_angle;
         rotation_by_angle -> commute;
         rotation_by_angle -> rotation_from_to;
@@ -69,6 +73,11 @@ digraph proof_dependencies {
         rejection -> reflection;
         reflection -> reflection_plane;
         dual_of_plane -> reflection_plane;
+        segment -> angle_area;
+        polygon -> angle_area;
+        quarter -> angle_area;
+        rotation_from_to -> angle_area;
+        dot_and_wedge -> angle_area;
     }
 
     subgraph cluster_part_3 {

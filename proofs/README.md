@@ -63,6 +63,11 @@ the Python implementation.
     scalar triple = signed volume — 𝒢₃); `Measures.lean` (area/volume, `|a∧b|²` Lagrange form,
     `|a∧b∧c|² = signedVolume²`); `Predicates2D.lean` / `Predicates3D.lean` (dual ⊥; `a·b = 0 ⟺ ab = a∧b`;
     `a ∧ b = 0 ⟺ b = k*a` for `a ≠ 0`, `wedge_eq_zero_iff_parallel`).
+  - *High-school geometry objects:* `GeometryObjects2D.lean` (the midpoint `(a + b)/2` is the segment
+    `a + t*(b − a)` at `t = ½` and cuts it into equal halves; a triangle's sides sum to zero; the
+    midsegment is `½*(c − b)`; a quadrilateral is a parallelogram iff its diagonals share a midpoint; the
+    surveyor's area formula `(b − a) ∧ (c − a) = a∧b + b∧c + c∧a` — the book page
+    `book/docs/geometry-from-vectors.rst`).
   - *Bridges to Mathlib:* `MathlibBridge.lean` — the from-scratch objects ARE the standard ones: `dot` is
     `inner` on `EuclideanSpace` (so `real_inner_comm` and Cauchy–Schwarz apply: `abs_dot_le_magnitude_mul`),
     the wedge is the `2×2` determinant / the three minors, the dual of the 3D wedge is `crossProduct`, the

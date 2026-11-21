@@ -60,6 +60,7 @@ first. Part III rebuilds the plane from scratch, so it is its own chain.
    sets
    vectors-as-number-lines
    vector-addition
+   geometry-from-vectors
    rotate
    geometric-product
    rotation-graph-paper
