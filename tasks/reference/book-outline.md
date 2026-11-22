@@ -37,7 +37,8 @@ the captioned, numbered parts):
   get it back from git).
 - **Part I — The plane:** hook, canonical-form, one-dimension, multiplication, trigonometry, sets,
   vectors-as-number-lines, vector-addition, geometry-from-vectors, rotate (proof pages
-  `proof-rotate`, `proof-rotate-from-a-to-b`), geometric-product, rotation-graph-paper,
+  `proof-rotate`, `proof-rotate-from-a-to-b`), geometric-product, plotting-a-table,
+  rotation-graph-paper,
   relative-graph-paper, projection
   (`proof-projection`), product-from-projection (`rotation-from-vectors`), reflection, orthogonal,
   dual, defining-g2, levels-of-abstraction, interactive-calculator.
@@ -279,7 +280,7 @@ route, and `versor_from_vectors`/`versor_rotation`/`projection_rotation`), citin
 - **Prose + companion notebook** (gacalc + sympy/plot): hook, canonical-form,
   one-dimension, vectors-as-number-lines, relative-graph-paper, vector-addition,
   geometry-from-vectors, rotate,
-  geometric-product, projection, product-from-projection, reflection, dual, defining-g2,
+  geometric-product, plotting-a-table, projection, product-from-projection, reflection, dual, defining-g2,
   levels-of-abstraction, three-dimensions, projection-rejection-3d, frames-qr (`frame-qr-2d`,
   `frame-qr-3d`), and the proof pages `proof-rotate-from-a-to-b`, `proof-projection`,
   `proof-projection-3d`, `proof-cross`, `rotation-from-vectors`.

@@ -63,6 +63,7 @@ first. Part III rebuilds the plane from scratch, so it is its own chain.
    geometry-from-vectors
    rotate
    geometric-product
+   plotting-a-table
    rotation-graph-paper
    relative-graph-paper
    projection

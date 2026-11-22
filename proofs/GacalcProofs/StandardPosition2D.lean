@@ -53,6 +53,40 @@ theorem rot90_eq_mul_e12 {v : G2} (hv : IsVector v) : rot90 v = mul v e_12 := by
   simp only [rot90, vec, mul, e_12, hvs, hv12]
   ext <;> simp only <;> ring
 
+/-- **An output along `e₁`, multiplied on the right by `e₁*e₂`, points along `e₂`** (the book's
+    `eq-turned-output`, `book/docs/plotting-a-table.rst`): `(y*e₁)*(e₁*e₂) = y*e₂`. The two equal unit
+    vectors side by side multiply to `1`. `y` is a genuine scalar, the output's number. -/
+theorem smul_e1_mul_e12 (y : ℝ) : mul (smul y e_1) e_12 = smul y e_2 := by
+  simp only [mul, smul, e_1, e_2, e_12]
+  ext <;> simp only <;> ring
+
+-- twin: GacalcProofs.G2.plotted_point_eq
+/-- **A table's point, by turning the output** (the book's `eq-plotted-point`): the input `x*e₁`
+    plus its output `y*e₁` multiplied on the right by `e₁*e₂` is `x*e₁ + y*e₂`, the point `(x, y)` on
+    graph paper. -/
+theorem plotted_point_eq (x y : ℝ) :
+    add (smul x e_1) (mul (smul y e_1) e_12) = add (smul x e_1) (smul y e_2) := by
+  rw [smul_e1_mul_e12]
+
+/-- The same product sends `e₂` to `−e₁`: swapping `e₂` past `e₁` costs one sign, then the two `e₂`
+    cancel. With `smul_e1_mul_e12` it says every arrow `v₁*e₁ + v₂*e₂` goes to `−v₂*e₁ + v₁*e₂`. -/
+theorem e2_mul_e12 : mul e_2 e_12 = neg e_1 := by
+  simp only [mul, neg, e_1, e_2, e_12]
+  ext <;> simp only <;> ring
+
+/-- **The side matters:** multiplying the output on the left, `(e₁*e₂)*(y*e₁)`, turns it the other way,
+    to `(−y)*e₂`, so the plotted graph comes out upside down. -/
+theorem e12_mul_smul_e1 (y : ℝ) : mul e_12 (smul y e_1) = smul (-y) e_2 := by
+  simp only [mul, smul, e_1, e_2, e_12]
+  ext <;> simp only <;> ring
+
+/-- **Two quarter turns are a half turn:** for a vector `v`, `(v*(e₁*e₂))*(e₁*e₂) = −v`
+    (the book's `(e₁*e₂)*(e₁*e₂) = −1`). -/
+theorem mul_e12_twice {v : G2} (hv : IsVector v) : mul (mul v e_12) e_12 = neg v := by
+  obtain ⟨hvs, hv12⟩ := hv
+  simp only [mul, neg, e_12, hvs, hv12]
+  ext <;> simp only <;> ring
+
 /-- **`rotPlane` is the book's blend** (`eq-rotate-formula`, `book/docs/proof-rotate.rst`): on a vector,
     the rotation by `(cos(θ) = c, sin(θ) = s)` is `c*v + s*rot90 v`, the vector blended with its quarter
     turn. This is the form Python's `standardposition.py` computes. -/
