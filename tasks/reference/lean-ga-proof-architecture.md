@@ -30,7 +30,7 @@ The proofs split into two layers, and keeping the split clean is what makes them
   (stated with each algebra in `G2.lean`/`G3.lean`), the `dot`/`wedge` bilinearity lemmas, `normSq_evenVersor`, `versorFromVectors_mul_reverse`
   (`R R̃ = normSq·1`), `normSq_mul` (multiplicative). These are the bridge; there is nothing below them.
 - **Structural layer** — everything built on the leaves — is **coordinate-free `rw` chains**:
-  `inverse` (`R̃/normSq`), `versorFromVectors_mul_inverse` (`R * R⁻¹ = 1`), `sandwich_carries_from_to`,
+  `inverse` (`R̃/normSq`), `mul_inverse_self_of_isEvenVersor` with `isEvenVersor_versorFromVectors` (`R * R⁻¹ = 1`), `sandwich_carries_from_to`,
   `sandwich_comp`, `sandwich_add`/`_smul`, `project_eq_sub_reject`, `reject_perp` (both dims).
 
 The **squared magnitude** `normSq = ⟨A Ã⟩` (NOT the `√` magnitude — proofs stay squared to avoid `√`)
@@ -274,22 +274,22 @@ Every proof should reach for a *named* leaf, not a fresh `ext <;> ring`. The lea
 - **Outer product `∧`:** **full bilinearity** — `wedge_add`/`wedge_sub`/`wedge_smul` in both `_left` and
   `_right` forms; `wedge_antisymm` (`a∧b = −(b∧a)`), `wedge_self_vec` (`a∧a = 0`), `wedge_vec_eq_biv`
   (`a∧b` = the plane-bivector literal in coordinates).
-- **The split:** `vec_mul_eq_dot_add_wedge` (`ab = a·b + a∧b`, coordinate-literal form) and its
-  arbitrary-vector form `mul_eq_dot_add_wedge` (over the `IsVector` grade-1 predicate, with
+- **The split:** `mul_eq_dot_add_wedge` (`ab = a·b + a∧b`, over the `IsVector` grade-1 predicate; 𝒢₃'s
+  coordinate-literal twin `vec_mul_eq_dot_add_wedge` is gone, 𝒢₁ keeps its own, with
   `eq_vec_of_isVector` the bridge to a literal); the orthogonal corollary
   `mul_eq_wedge_of_perp` (`a⊥b ⟹ a*b = a∧b`; its coordinate twin `vec_mul_perp` was removed 2026-11-09). G2 + G3 (G2's split lives in `Projection2D.lean`, where
   `dot` and `wedge` are both in scope). `IsVector` is closed under the operations used to build a
   rejection: `isVector_vec`, `IsVector.smul`, `IsVector.sub`.
-- **Statement shape (2026-11-09):** `wedge_reject`, `plane_eq_wedge` and `mul_vec_inverse_self`
+- **Statement shape (2026-11-09):** `wedge_reject`, `mul_reject_eq_wedge` and `mul_vec_inverse_self`
   (`Projection3D`) and `wedge_I_eq_zero`/`reject_from_I_eq_zero` (`Projection2D`) take `IsVector`
   objects; they used to take free coordinates and build `vec …` inside.
 - **Blade inverse (vectors):** `reverse_vec` (`reverse` fixes a vector), `mul_vec_self` (`a a = |a|² * 1`),
   and `mul_vec_inverse_self` (`a*a⁻¹ = 1` for `|a|² ≠ 0`) — the `B*B⁻¹ = 1` identity that turns a
-  Hestenes `(…)*a⁻¹` proof structural. With these, `plane_eq_wedge` (`a*(b − proj_a b) = a∧b`) and
+  Hestenes `(…)*a⁻¹` proof structural. With these, `mul_reject_eq_wedge` (`a*(b − proj_a b) = a∧b`) and
   `reject_vec_eq` (`(b∧a)a⁻¹ = b − proj_a b`) are now structural `rw`-chains on the split, not
   `field_simp` bashes.
 - **Magnitude (squared is the primitive):** `normSq_vec` (`|a|² = a₁²+…`), `normSq_wedge_vec`
-  (`|a∧b|² = …`), `normSq_evenVersor`, `versorFromVectors_mul_reverse` (`R R̃ = |R|² * 1`), `normSq_mul`
+  (`|a∧b|² = …`), `normSq_evenVersor`, `mul_reverse_self_of_isEvenVersor` with `isEvenVersor_versorFromVectors` (`R R̃ = |R|² * 1`), `normSq_mul`
   (multiplicative); `magnitude_sq_vec` (`|a|² = a₁²+…` via `normSq_vec` under the `√`). There is **one**
   magnitude concept — `magnitude = √normSq`, all grades; the old vector-only `mag = √(a·a)` was deleted
   and unified into `magnitude` (2026-09-29).
@@ -465,7 +465,7 @@ decision: a named constructor + predicate reads as what it is, where `smul k one
 - **State (2026-10-28):** G3 always had `scalar` (`{ zero with s := a }`). G2 gained `scalar`
   (named-fields, since G2 has no `zero`) + `isScalar_scalar` + `eq_scalar_of_isScalar` (renamed from the
   old `eq_smul_one_of_isScalar`). All grade-0 embeddings of `dot`/`normSq` in conclusions now read
-  `scalar (…)`: `G2`/`G3` `mul_eq_dot_add_wedge`, `dot_is_sym_part`, `vec_mul_eq_dot_add_wedge`,
+  `scalar (…)`: `G2`/`G3` `mul_eq_dot_add_wedge`, `dot_is_sym_part`,
   `mul_vec_self` (G3 and `ProjectionRotation2D`), and the `hsplit`s in `Projection3D`/`StandardPosition2D`.
   **G1 was deliberately left on `smul k one`** (it has neither `scalar` nor `IsScalar`; it is the trivial
   algebra, and `GradeProjection`/the predicate set are G2/G3 only) — a small follow-up if parity is ever
@@ -554,7 +554,7 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
 - `Lagrange.lean` — Lagrange identity 2D/3D (<https://en.wikipedia.org/wiki/Lagrange%27s_identity>) (`|a|² * |b|² = (a·b)² + |a∧b|²`).
 - `G2.lean` / `G3.lean` — the algebras: product/wedge/reverse, basis elements, multiplication table,
   `I² = −1`, dot, dual, `I⁻¹`; `normSq`/`magnitude` (+ `normSq_vec`, and `normSq_wedge_vec` in `G3`);
-  `G3` also the fundamental identity `a*b = a·b + a∧b` (`vec_mul_eq_dot_add_wedge`), `mul_eq_wedge_of_perp`, and the
+  `G3` also the fundamental identity `a*b = a·b + a∧b` (`mul_eq_dot_add_wedge`), `mul_eq_wedge_of_perp`, and the
   object-form `dot_is_sym_part`/`wedge_is_antisym_part` (dot and wedge as the two parts of the product);
   both have `I_sq_eq_sign` (the pseudoscalar sign for r = 2, 3). `G1.lean` is the 1D teaching twin
   (`I² = +1`, commutative, every vector pair parallel).
@@ -726,7 +726,7 @@ The modules outside this table are in the subsection that follows it.
 | `is_orthogonal_to` | HAS | `perp_iff_mul_eq_wedge` (`a·b=0 ⟺ ab=a∧b`) (Predicates3D.lean) |
 | `is_parallel_to` | HAS | `wedge_eq_zero_iff_parallel` (for vectors with `a ≠ 0`: `a ∧ b = 0 ⟺ ∃ k, b = k*a`), from `wedge_parallel_smul` and its converse `parallel_of_wedge_eq_zero`, in Predicates3D.lean and Predicates2D.lean (2026-11-08); Python `is_parallel_to` uses the wedge-zero form |
 | `reverse` | HAS | `reverse_reverse`, `reverse_mul` (anti-automorphism), `reverse_vec`, `reverse_of_isVector`, `reverse_mul_vec` |
-| `inverse` | PARTIAL | blade/versor cases: `mul_vec_inverse_self`, `mul_biv_inverse_self`, `mul_triv_inverse_self`, `versorFromVectors_mul_inverse`, `inverse_mul`; general mixed-grade 𝒢₂/𝒢₃ in `GeneralInverse.lean` (`mul_generalInverse`, `generalInverse_mul`; Python does not implement it) |
+| `inverse` | PARTIAL | blade/versor cases: `mul_vec_inverse_self`, `mul_biv_inverse_self`, `mul_triv_inverse_self`, `mul_inverse_self_of_isEvenVersor` (the from-vectors versor is even: `isEvenVersor_versorFromVectors`), `inverse_mul`; general mixed-grade 𝒢₂/𝒢₃ in `GeneralInverse.lean` (`mul_generalInverse`, `generalInverse_mul`; Python does not implement it) |
 | `dual` | HAS | G2 `dual_vec`; G3 `dual`, `dual_vec` (Cross.lean), `dual_wedge_perp_left`/`_right` |
 | `even_part` | HAS | `evenPart`, `even_add_odd` (GradeProjection.lean) |
 | `odd_part` | HAS | `oddPart`, `even_add_odd` (GradeProjection.lean) |
@@ -735,7 +735,7 @@ The modules outside this table are in the subsection that follows it.
 | `project` / `projected_onto` | HAS | `proj`, `project_onto`, `project_add_reject`, `proj_plane_eq_project_onto` (Projection2D/Projection3D) |
 | `reject` / `rejected_away_from` | HAS | `reject`, `reject_perp`, `reject_vec_eq`, `project_add_reject` |
 | `reflect` / `reflected_across` | HAS | `reflectVec` (= proj − reject), `reflectVec_eq`, `normSq_reflectVec` (isometry) (Reflect.lean) |
-| `versor_from_vectors` | HAS | `versorFromVectors`, `versorFromVectors_mul_reverse`/`_inverse`, `sandwich_carries_from_to`, `bisector` (Rotation3D/Sandwich); `normSq_versorFromVectors` (Lagrange closed form), `rotorFromVectors` = its normalization, `isRotor_rotorFromVectors`, `rotorSandwich_rotorFromVectors(_eq_projRotation/_carries_from_to)`, 2D `rotorFromVectors_uvec = rotor (β−α)` (Rotor.lean) |
+| `versor_from_vectors` | HAS | `versorFromVectors`, `isEvenVersor_versorFromVectors` (then the general even-versor lemmas `mul_reverse_self_of_isEvenVersor`/`mul_inverse_self_of_isEvenVersor`), `sandwich_carries_from_to`, `bisector` (Rotation3D/Sandwich); `normSq_versorFromVectors` (Lagrange closed form), `rotorFromVectors` = its normalization, `isRotor_rotorFromVectors`, `rotorSandwich_rotorFromVectors(_eq_projRotation/_carries_from_to)`, 2D `rotorFromVectors_uvec = rotor (β−α)` (Rotor.lean) |
 | `bivector_from_vectors` | HAS | the raw wedge `a∧b`: `wedge`, `wedge_vec_eq_biv` |
 | `sandwich` | HAS | `sandwich`, `sandwich_preserves_dot`/`_normSq`/`_wedge`/`_cos`/`_sin` (any `u`, `v`), `sandwich_comp`, `sandwich_inverse_sandwich` (Sandwich/RotateComponents); the 2D rotor sandwich = `Orientation.rotation`: `rotor_sandwich_eq_rotation` (MathlibBridge); `IsRotor` (unit versor): `inverse_eq_reverse_of_isRotor`, `sandwich_eq_reverse_sandwich_of_isRotor` (`R * v * R⁻¹ = R * v * R̃`), `Rotation2D.sandwich_rotor_eq_rot`; the reverse sandwich as an operation: `Rotor.rotorSandwich`, bridge `rotorSandwich_normalize` (`(R/\|R\|) v (R/\|R\|)~ = R * v * R⁻¹`), `rotorSandwich_preserves_dot/normSq/magnitude` |
 | `exp` | HAS | `expBivector`/`expBivectorGeneral` (= `cos\|B\|+sin\|B\| * B̂`), `normSq_expBivectorGeneral` = 1, `isRotor_expBivector*` (`IsRotor`) (Exp.lean) |

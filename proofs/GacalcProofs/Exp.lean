@@ -1,6 +1,7 @@
 import GacalcProofs.G2
 import GacalcProofs.G3
 import GacalcProofs.Sandwich
+import GacalcProofs.Rotation2D
 
 /-! # The exponential map: exp of a bivector is a rotor
 
@@ -17,14 +18,17 @@ namespace GacalcProofs
 
 namespace G2
 
-/-- `exp(θ*e₁₂)` in 𝒢₂ by the closed form `cos(θ)*1 + sin(θ)*e₁₂`. -/
-noncomputable def expBivector (θ : ℝ) : G2 :=
-  add (smul (Real.cos θ) one) (smul (Real.sin θ) e_12)
+/-- `exp(θ*e₁₂)` in 𝒢₂ by the closed form `cos(θ)*1 + sin(θ)*e₁₂`: the full-angle rotor of
+    `Rotation2D.lean`, the one definition under both names. -/
+noncomputable def expBivector (θ : ℝ) : G2 := GacalcProofs.fullAngleRotor θ
+
+/-- `exp(θ*e₁₂)` and the book's one-sided full-angle rotor are the same element. -/
+theorem expBivector_eq_fullAngleRotor (θ : ℝ) : expBivector θ = GacalcProofs.fullAngleRotor θ := rfl
 
 /-- `exp(θ*e₁₂)` is the even versor `⟨cos(θ), 0, 0, sin(θ)⟩` — so the rotor/sandwich layer applies. -/
 theorem expBivector_eq_evenVersor (θ : ℝ) :
     expBivector θ = evenVersor (Real.cos θ) (Real.sin θ) := by
-  simp only [expBivector, evenVersor, add, smul, one, e_12]; ext <;> ring
+  simp only [expBivector, GacalcProofs.fullAngleRotor, evenVersor, add, smul, one, e_12]; ext <;> ring
 
 /-- **exp of a bivector is a unit versor (rotor):** `|exp(θ*e₁₂)|² = 1`. -/
 theorem normSq_expBivector (θ : ℝ) : normSq (expBivector θ) = 1 := by

@@ -24,15 +24,11 @@ namespace GacalcProofs
 
 open Real
 
-/-- A unit vector `uvec α` has magnitude 1 (from `cos²(θ) + sin²(θ) = 1`). -/
-theorem uvec_magnitude (α : ℝ) : G2.magnitude (uvec α) = 1 := by
-  simp only [uvec_eq_vec, G2.magnitude, G2.normSq_vec, cos_sq_add_sin_sq, Real.sqrt_one]
-
 /-- **`cos_between` of two unit vectors is the angle cosine** — ties the property-form
     `G2.cos_between` to the angle form `uvec_dot`. -/
 theorem cos_between_uvec (α β : ℝ) :
     G2.cos_between (uvec α) (uvec β) = cos (β - α) := by
-  simp only [G2.cos_between, uvec_magnitude, mul_one, div_one, G2.dot]
+  simp only [G2.cos_between, magnitude_uvec, mul_one, div_one, G2.dot]
   exact uvec_dot α β
 
 /-- The **signed** 2D sine of the angle from `a` to `b` (the Python `g2.Vector.sine`): the e₁₂
@@ -45,7 +41,7 @@ noncomputable def signed_sin_between (a b : G2) : ℝ :=
     to the angle form `uvec_wedge`. -/
 theorem signed_sin_between_uvec (α β : ℝ) :
     signed_sin_between (uvec α) (uvec β) = sin (β - α) := by
-  rw [signed_sin_between, uvec_magnitude α, uvec_magnitude β, mul_one, div_one]
+  rw [signed_sin_between, magnitude_uvec α, magnitude_uvec β, mul_one, div_one]
   simp only [uvec_eq_vec, G2.wedge, G2.vec, sin_sub]
   ring
 

@@ -87,14 +87,6 @@ theorem rotorSandwich_preserves_magnitude {R : G2} (hR : IsRotor R) {v : G2} :
 
 /-! ### The rotor from two vectors: the from-vectors versor, normalized -/
 
-/-- The from-vectors versor `b*a + |a|*|b|` is even. -/
-theorem isEvenVersor_versorFromVectors {a b : G2} (ha : IsVector a) (hb : IsVector b) :
-    IsEvenVersor (versorFromVectors a b) := by
-  obtain ⟨ha_s, ha_c12⟩ := ha
-  obtain ⟨hb_s, hb_c12⟩ := hb
-  refine ⟨?_, ?_⟩ <;>
-    simp only [versorFromVectors, add, mul, smul, one, ha_s, ha_c12, hb_s, hb_c12] <;> ring
-
 /-- **The rotor from two vectors**: `versorFromVectors a b`, normalized to unit magnitude — gacalc's
     `versor_from_vectors(a, b).normalize()`. -/
 noncomputable def rotorFromVectors (a b : G2) : G2 := normalize (versorFromVectors a b)
@@ -219,14 +211,6 @@ theorem rotorSandwich_preserves_magnitude {R : G3} (hR : IsRotor R) {v : G3} :
 
 /-! ### The rotor from two vectors: the from-vectors versor, normalized -/
 
-/-- The from-vectors versor `b*a + |a|*|b|` is even. -/
-theorem isEvenVersor_versorFromVectors {a b : G3} (ha : IsVector a) (hb : IsVector b) :
-    IsEvenVersor (versorFromVectors a b) := by
-  obtain ⟨ha_s, ha_c12, ha_c13, ha_c23, ha_c123⟩ := ha
-  obtain ⟨hb_s, hb_c12, hb_c13, hb_c23, hb_c123⟩ := hb
-  refine ⟨?_, ?_, ?_, ?_⟩ <;>
-    simp only [versorFromVectors, add, mul, smul, one, ha_s, ha_c12, ha_c13, ha_c23, ha_c123, hb_s, hb_c12, hb_c13, hb_c23, hb_c123] <;> ring
-
 /-- **The rotor from two vectors**: `versorFromVectors a b`, normalized to unit magnitude — gacalc's
     `versor_from_vectors(a, b).normalize()`. -/
 noncomputable def rotorFromVectors (a b : G3) : G3 := normalize (versorFromVectors a b)
@@ -292,16 +276,6 @@ end G3
 /-! ## 2D coda: the from-vectors rotor of two unit directions IS the half-angle rotor -/
 
 open Real
-
-/-- `|uvec α|² = 1`. -/
-theorem normSq_uvec (α : ℝ) : G2.normSq (uvec α) = 1 := by
-  rw [G2.normSq_eq_sum_sq]
-  simp only [uvec, G2.add, G2.smul, G2.e_1, G2.e_2]
-  linear_combination cos_sq_add_sin_sq α
-
-/-- `|uvec α| = 1`. -/
-theorem magnitude_uvec (α : ℝ) : G2.magnitude (uvec α) = 1 := by
-  simp only [G2.magnitude]; rw [normSq_uvec, Real.sqrt_one]
 
 /-- **The from-vectors versor of two unit directions is `2*cos(θ/2)` times the half-angle rotor**,
     `θ = β − α`: `uvec β*uvec α + 1 = (1 + cos(θ)) − sin(θ)*e₁₂ = 2*cos(θ/2)*(cos(θ/2) − sin(θ/2)*e₁₂)`

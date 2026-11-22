@@ -38,7 +38,7 @@ theorem reject_perp_dot (a b : G3) (ha : dot a a ≠ 0) :
     (the parallel part `proj_a b` wedges to zero, so only the perpendicular part remains). -/
 theorem wedge_reject {a : G3} (ha : IsVector a) (b : G3) :
     wedge a (sub b (proj a b)) = wedge a b := by
-  rw [eq_vec_of_isVector ha, wedge_sub_right, proj, wedge_smul_right, wedge_self_vec_coord]
+  rw [wedge_sub_right, proj, wedge_smul_right, wedge_self_vec ha]
   simp only [smul, zero, sub]; ext <;> ring
 
 -- twin: GacalcProofs.G3.dual_wedge_perp_left_dot
@@ -66,15 +66,13 @@ theorem dual_wedge_perp_right_dot {a b : G3} (hb : IsVector b) :
     product loses its scalar (inner) part and only the bivector survives, and the wedge ignores the
     rejection — exhibiting the plane of rotation as the pure bivector `a ∧ b`, built from `a` and
     `b`. This is the step that reduces the 3D versor sandwich to the 2D case. -/
-theorem plane_eq_wedge {a b : G3} (hav : IsVector a) (hbv : IsVector b) (ha : normSq a ≠ 0) :
+theorem mul_reject_eq_wedge {a b : G3} (hav : IsVector a) (hbv : IsVector b) (ha : normSq a ≠ 0) :
     mul a (sub b (proj a b)) = wedge a b := by
   -- Structural, on the fundamental split: `a r = a·r + a∧r` with `r = b − proj_a b` the rejection.
   -- The rejection is ⊥ `a` (`reject_perp_dot`), so the scalar part dies; and the wedge ignores the
   -- parallel part (`wedge_reject`), so the bivector part is `a∧b`.
   have hdaa : dot a a ≠ 0 := by
-    have ha' := ha
-    rw [eq_vec_of_isVector hav] at ha' ⊢
-    rw [dot_self_vec_eq_normSq_coord]; exact ha'
+    rw [dot_self_vec_eq_normSq hav]; exact ha
   have hpv : IsVector (proj a b) := by
     rw [proj]; exact hav.smul _
   have hrv : IsVector (sub b (proj a b)) := hbv.sub hpv
@@ -94,29 +92,24 @@ noncomputable def reject (awayFrom a : G3) : G3 := mul (wedge a awayFrom) (inver
     `a·a ≠ 0`): `a⁻¹ = ã/|a|² = a/|a|²`, and `a a = |a|²`, so `a a⁻¹ = |a|²/|a|² = 1`. -/
 theorem mul_vec_inverse_self {a : G3} (hav : IsVector a) (ha : normSq a ≠ 0) :
     mul a (inverse a) = one := by
-  have ha' := ha
-  rw [eq_vec_of_isVector hav] at ha' ⊢
-  rw [inverse, reverse_vec, GacalcProofs.G3.mul_smul, mul_vec_self_coord, GacalcProofs.G3.smul_smul,
-      one_div_mul_cancel ha', GacalcProofs.G3.one_smul]
+  rw [inverse, reverse_of_isVector hav, GacalcProofs.G3.mul_smul, mul_vec_self hav]
+  simp only [smul, scalar, zero, one]
+  ext <;> field_simp <;> ring
 
 /-- **Hestenes rejection onto a vector equals the projection-complement:** `reject_a b = b − proj_a b`,
     for a nonzero vector `a` (`|a|² ≠ 0`) and a vector `b`. Structural (Hestenes): `b∧a = ba − (b·a)·1`,
     so `(b∧a)a⁻¹ = b(a a⁻¹) − (b·a)a⁻¹ = b − proj_a b`. Object-in, getters in the body. -/
 theorem reject_vec_eq {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b) (ha : normSq a ≠ 0) :
     reject a b = sub b (proj a b) := by
-  rw [eq_vec_of_isVector ha_isv, eq_vec_of_isVector hb_isv]
-  rw [eq_vec_of_isVector ha_isv] at ha
-  have hsplit : wedge (vec b.c1 b.c2 b.c3) (vec a.c1 a.c2 a.c3)
-      = sub (mul (vec b.c1 b.c2 b.c3) (vec a.c1 a.c2 a.c3))
-            (scalar (dot (vec b.c1 b.c2 b.c3) (vec a.c1 a.c2 a.c3))) := by
-    rw [vec_mul_eq_dot_add_wedge]; simp only [sub, add, scalar, zero]; ext <;> ring
+  have hsplit : wedge b a = sub (mul b a) (scalar (dot b a)) := by
+    rw [mul_eq_dot_add_wedge hb_isv ha_isv]; simp only [sub, add, scalar, zero]; ext <;> ring
   rw [reject, hsplit, GacalcProofs.G3.sub_mul, GacalcProofs.G3.mul_assoc,
-      mul_vec_inverse_self (isVector_vec a.c1 a.c2 a.c3) ha, GacalcProofs.G3.mul_one, GacalcProofs.G3.scalar_mul]
+      mul_vec_inverse_self ha_isv ha, GacalcProofs.G3.mul_one, GacalcProofs.G3.scalar_mul]
   -- Left with `b − (b·a)a⁻¹ = b − proj_a b`; the two rejection terms agree once `a⁻¹`'s scalar is folded.
   congr 1
-  rw [proj, inverse, reverse_vec, GacalcProofs.G3.smul_smul]
+  rw [proj, inverse, reverse_of_isVector ha_isv, GacalcProofs.G3.smul_smul]
   congr 1
-  rw [dot_self_vec_eq_normSq_coord]; ring
+  rw [dot_self_vec_eq_normSq ha_isv]; ring
 
 /-- **Projection of `c` ONTO the `a∧b` plane** (the book's construction): project `c` away
     from the plane's normal `n = dual(a∧b)` (a vector projection) and subtract — what's

@@ -79,7 +79,9 @@ theorem projRotation_carries_from_to_coord (a1 a2 a3 b1 b2 b3 : ℝ)
     projRotation (vec a1 a2 a3) (vec b1 b2 b3) (vec a1 a2 a3)
       = smul (magnitude (vec a1 a2 a3) / magnitude (vec b1 b2 b3)) (vec b1 b2 b3) := by
   rw [projRotation, project_onto_in_plane_self_coord a1 a2 a3 b1 b2 b3 hn, reject_in_plane_self_coord, add_zero]
-  simp only [normalizeVec, GacalcProofs.G3.mul_smul, GacalcProofs.G3.mul_vec_self_coord,
+  have hvv : mul (vec a1 a2 a3) (vec a1 a2 a3) = smul (normSq (vec a1 a2 a3)) one := by
+    rw [mul_vec_self (isVector_vec a1 a2 a3)]; simp only [scalar, smul, one, zero]; ext <;> ring
+  simp only [normalizeVec, GacalcProofs.G3.mul_smul, hvv,
       GacalcProofs.G3.smul_mul, GacalcProofs.G3.one_mul, GacalcProofs.G3.smul_smul]
   congr 1
   have hpos : (0 : ℝ) ≤ normSq (vec a1 a2 a3) := by rw [normSq_vec]; positivity
@@ -368,7 +370,8 @@ theorem projRotation_eq_sandwich_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
         = mul (mul (normalizeVec (vec a1 a2 a3)) (normalizeVec (vec b1 b2 b3)))
               (mul (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
                    (inverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)))) := by
-            rw [versorFromVectors_mul_inverse_coord a1 a2 a3 b1 b2 b3 hr, GacalcProofs.G3.mul_one]
+            rw [mul_inverse_self_of_isEvenVersor
+              (isEvenVersor_versorFromVectors (isVector_vec a1 a2 a3) (isVector_vec b1 b2 b3)) hr, GacalcProofs.G3.mul_one]
       _ = mul (mul (mul (normalizeVec (vec a1 a2 a3)) (normalizeVec (vec b1 b2 b3)))
                    (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)))
               (inverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))) :=
@@ -391,7 +394,8 @@ theorem projRotation_eq_sandwich_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
       = reject (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3) := by
     simp only [sandwich]
     rw [versor_mul_reject_comm_coord a1 a2 a3 b1 b2 b3 c1 c2 c3 hn, GacalcProofs.G3.mul_assoc,
-        versorFromVectors_mul_inverse_coord a1 a2 a3 b1 b2 b3 hr, GacalcProofs.G3.mul_one]
+        mul_inverse_self_of_isEvenVersor
+              (isEvenVersor_versorFromVectors (isVector_vec a1 a2 a3) (isVector_vec b1 b2 b3)) hr, GacalcProofs.G3.mul_one]
   -- `project + reject = v`, converting the plane wedge to its bivector literal.
   have hw := wedge_vec_eq_biv a1 a2 a3 b1 b2 b3
   have hn' : normSq (bivector (a1 * b2 - a2 * b1) (a1 * b3 - a3 * b1) (a2 * b3 - a3 * b2)) ≠ 0 := by
