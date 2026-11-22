@@ -469,7 +469,7 @@ def to_matrix(f: InvertibleFunction[Vector]) -> np.ndarray:
     >>> import numpy as np
     >>> from gacalc.g3 import Vector
     >>> from gacalc.transforms import translate
-    >>> m = to_matrix(translate(b=3.0 * e_1 + 4.0 * e_2 + 5.0 * e_3))
+    >>> m: np.ndarray = to_matrix(translate(b=3.0 * e_1 + 4.0 * e_2 + 5.0 * e_3))
     >>> m[:, 3].tolist()
     [3.0, 4.0, 5.0, 1.0]
 

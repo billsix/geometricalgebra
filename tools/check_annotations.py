@@ -29,6 +29,12 @@ reports, per file:
 A name counts as annotated only within its own scope (the module, a class body,
 or one ``def``): an annotated ``x`` in one function says nothing about an ``x``
 in another.  A parameter's annotation covers rebinds of it in its body.
+* ``DOCTEST`` -- a binding in a docstring example (``>>> name = ...``) with no type,
+  or an unpacked name not declared on a ``>>>`` line above it in the same docstring
+  (``>>> a: sympy.Symbol`` before ``>>> a, b = sympy.symbols(...)``).  A doctest is
+  code under the annotate-every-binding rule, and ``ty`` does not read inside a
+  docstring, so this tool is the only check.  Names starting with ``_`` and bindings
+  nested in a ``for``/``with``/``if`` body are skipped.
 * ``BARE``   -- a bare generic annotation (``ComposableFunction`` rather than
   ``ComposableFunction[...]``), which silently degrades the parameter to ``Any``.
 * ``ANY``    -- an explicit ``typing.Any``/``Any`` in an annotation.
@@ -51,6 +57,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import doctest
 import pathlib
 import re
 import subprocess
@@ -249,7 +256,7 @@ def check_file(path: pathlib.Path) -> list[Finding]:
     except SyntaxError as exc:  # a notebook percent-script mid-edit, say
         return [Finding(rel, exc.lineno or 0, "PARSE", str(exc))]
 
-    out: list[Finding] = []
+    out: list[Finding] = check_doctests(tree, rel)
 
     # Assignments in an Enum class body are members, not annotation candidates:
     # ``LINEAR = 0`` declares an enum value, and annotating it would make it a
@@ -365,6 +372,58 @@ def check_file(path: pathlib.Path) -> list[Finding]:
                 ]
                 if names:
                     out.append(Finding(rel, node.lineno, "LOOP", ", ".join(names)))
+    return out
+
+
+def check_doctests(tree: ast.Module, rel: str) -> list[Finding]:
+    """Every untyped binding in the docstring examples of one parsed file.
+
+    Args:
+        tree: The parsed module.
+        rel: Its repo-relative path, for the report.
+
+    Returns:
+        list[Finding]: one ``DOCTEST`` row per bare binding.
+    """
+    out: list[Finding] = []
+    parser: doctest.DocTestParser = doctest.DocTestParser()
+    node: ast.AST
+    for node in ast.walk(tree):
+        if not isinstance(
+            node, ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef
+        ):
+            continue
+        body_head: ast.stmt | None = node.body[0] if node.body else None
+        if not (
+            isinstance(body_head, ast.Expr)
+            and isinstance(body_head.value, ast.Constant)
+            and isinstance(body_head.value.value, str)
+        ):
+            continue
+        declared: set[str] = set()
+        example: doctest.Example
+        for example in parser.get_examples(body_head.value.value):
+            try:
+                statements: list[ast.stmt] = ast.parse(example.source).body
+            except SyntaxError:
+                continue
+            line: int = body_head.lineno + example.lineno
+            statement: ast.stmt
+            for statement in statements:
+                if isinstance(statement, ast.AnnAssign) and isinstance(
+                    statement.target, ast.Name
+                ):
+                    declared.add(statement.target.id)
+                elif isinstance(statement, ast.Assign):
+                    names: list[str] = [
+                        n
+                        for target in statement.targets
+                        for n in bound_names(target)
+                        if n not in declared and not n.startswith("_")
+                    ]
+                    if names:
+                        out.append(Finding(rel, line, "DOCTEST", ", ".join(names)))
+                    declared.update(names)
     return out
 
 

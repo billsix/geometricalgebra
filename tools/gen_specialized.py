@@ -72,11 +72,12 @@ The middle step, run live so you can see the formula the generator captures
 
     >>> import sympy
     >>> from gacalc.gn import Gn
-    >>> a = Gn.from_blade_dict(
+    >>> a: Gn = Gn.from_blade_dict(
     ...     {(1,): sympy.Symbol("a_e_1"), (2,): sympy.Symbol("a_e_2")})
-    >>> b = Gn.from_blade_dict(
+    >>> b: Gn = Gn.from_blade_dict(
     ...     {(1,): sympy.Symbol("b_e_1"), (2,): sympy.Symbol("b_e_2")})
-    >>> d = (a * b).to_blade_dict()
+    >>> from gacalc.base import Blade, Real
+    >>> d: dict[Blade, Real] = (a * b).to_blade_dict()
     >>> d[()]                      # scalar part
     a_e_1*b_e_1 + a_e_2*b_e_2
     >>> d[(1, 2)]                  # bivector part
@@ -733,6 +734,8 @@ def _vector_proj_doc(role: DocRole, n: int) -> str:
             "    The same holds symbolically, for any coordinate x and nonzero k:\n"
             "\n"
             "    >>> import sympy\n"
+            "    >>> x: sympy.Symbol\n"
+            "    >>> k: sympy.Symbol\n"
             '    >>> x, k = sympy.symbols("x k")\n'
             "    >>> (x * Vector.e_1).projected_onto(k * Vector.e_1) == x * Vector.e_1\n"
             "    True"
@@ -763,6 +766,11 @@ def _vector_proj_doc(role: DocRole, n: int) -> str:
         "    and scaling b by any nonzero k leaves it unchanged:\n"
         "\n"
         "    >>> import sympy\n"
+        "    >>> a_1: sympy.Symbol\n"
+        "    >>> a_2: sympy.Symbol\n"
+        "    >>> b_1: sympy.Symbol\n"
+        "    >>> b_2: sympy.Symbol\n"
+        "    >>> k: sympy.Symbol\n"
         '    >>> a_1, a_2, b_1, b_2, k = sympy.symbols("a_1 a_2 b_1 b_2 k")\n'
         "    >>> a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2\n"
         "    >>> b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2\n"
@@ -822,6 +830,11 @@ def _vector_rej_doc(role: DocRole, n: int) -> str:
         "    leaves over, and scaling b by any nonzero k leaves it unchanged:\n"
         "\n"
         "    >>> import sympy\n"
+        "    >>> a_1: sympy.Symbol\n"
+        "    >>> a_2: sympy.Symbol\n"
+        "    >>> b_1: sympy.Symbol\n"
+        "    >>> b_2: sympy.Symbol\n"
+        "    >>> k: sympy.Symbol\n"
         '    >>> a_1, a_2, b_1, b_2, k = sympy.symbols("a_1 a_2 b_1 b_2 k")\n'
         "    >>> a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2\n"
         "    >>> b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2\n"
@@ -913,7 +926,7 @@ def _eq_doc(role: DocRole, n: int) -> str:
         "    Symbolic coefficients are compared after simplifying:\n"
         "\n"
         "    >>> import sympy\n"
-        '    >>> x = sympy.Symbol("x")\n'
+        '    >>> x: sympy.Symbol = sympy.Symbol("x")\n'
         f"    >>> (x + 1) ** 2 * {u} == (x ** 2 + 2 * x + 1) * {u}\n"
         "    True"
     )
@@ -2179,10 +2192,12 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "Example:\n"
         "    >>> (1 * Vector.e_1).rotate_90_degrees() == 1 * Vector.e_2\n"
         "    True\n"
-        "    >>> v = 3 * Vector.e_1 + 4 * Vector.e_2\n"
+        "    >>> v: Vector = 3 * Vector.e_1 + 4 * Vector.e_2\n"
         "    >>> v.rotate_90_degrees() == v * Bivector.e_12   # multiplication by e_12\n"
         "    True\n"
         "    >>> import sympy\n"
+        "    >>> x: sympy.Symbol\n"
+        "    >>> y: sympy.Symbol\n"
         "    >>> x, y = sympy.symbols('x y')\n"
         "    >>> (x * Vector.e_1 + y * Vector.e_2).rotate_90_degrees() == Vector(coeff_e_1=-y, coeff_e_2=x)\n"
         "    True"
@@ -2205,11 +2220,14 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
         "    True\n"
         "    >>> (1 * Vector.e_1).rotate(sympy.pi / 2) == 1 * Vector.e_2\n"
         "    True\n"
-        "    >>> v = 3 * Vector.e_1 + 4 * Vector.e_2\n"
+        "    >>> v: Vector = 3 * Vector.e_1 + 4 * Vector.e_2\n"
         "    >>> v.rotate(sympy.pi) == -v\n"
         "    True\n"
         "    >>> v.rotate(sympy.pi / 2) == v.rotate_90_degrees()\n"
         "    True\n"
+        "    >>> x: sympy.Symbol\n"
+        "    >>> y: sympy.Symbol\n"
+        "    >>> theta: sympy.Symbol\n"
         "    >>> x, y, theta = sympy.symbols('x y theta')\n"
         "    >>> (x * Vector.e_1 + y * Vector.e_2).rotate(theta) == Vector(\n"
         "    ...     coeff_e_1=x * sympy.cos(theta) - y * sympy.sin(theta),\n"
@@ -2299,6 +2317,11 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
                 "    minus a, and scaling b by any nonzero k leaves it unchanged:\n"
                 "\n"
                 "    >>> import sympy\n"
+                "    >>> a_1: sympy.Symbol\n"
+                "    >>> a_2: sympy.Symbol\n"
+                "    >>> b_1: sympy.Symbol\n"
+                "    >>> b_2: sympy.Symbol\n"
+                "    >>> k: sympy.Symbol\n"
                 '    >>> a_1, a_2, b_1, b_2, k = sympy.symbols("a_1 a_2 b_1 b_2 k")\n'
                 "    >>> a: Vector = a_1 * Vector.e_1 + a_2 * Vector.e_2\n"
                 "    >>> b: Vector = b_1 * Vector.e_1 + b_2 * Vector.e_2\n"
@@ -2333,7 +2356,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
                 "    True\n"
                 "    >>> Vector.project(onto=3 * Vector.e_1)(v) == 2 * Vector.e_1\n"
                 "    True\n"
-                "    >>> p = Vector.project(onto=Vector.e_1)\n"
+                "    >>> p: ComposableFunction[Vector] = Vector.project(onto=Vector.e_1)\n"
                 "    >>> (p @ p)(v) == p(v)\n"
                 "    True"
             ),
@@ -2386,7 +2409,7 @@ CUSTOM_METHOD_DOCS: dict[str, DocEntry] = {
                 "    Reflecting across the e₁ line flips the e₂ coordinate; reflecting twice\n"
                 "    gives back the original, so the reflection is its own inverse:\n"
                 "\n"
-                "    >>> f = Vector.reflect(across=Vector.e_1)\n"
+                "    >>> f: InvertibleFunction[Vector] = Vector.reflect(across=Vector.e_1)\n"
                 "    >>> v: Vector = 1 * Vector.e_1 + 2 * Vector.e_2\n"
                 "    >>> f(v) == 1 * Vector.e_1 - 2 * Vector.e_2\n"
                 "    True\n"
@@ -3874,12 +3897,12 @@ ROTATE_90_FACTORY_DOC: str = (
     "\n"
     "    Example:\n"
     "        >>> from gacalc.g2 import e_1, e_2, e_12, rotate_90_degrees\n"
-    "        >>> turn = rotate_90_degrees()\n"
+    "        >>> turn: InvertibleFunction[Vector] = rotate_90_degrees()\n"
     "        >>> turn(1 * e_1) == 1 * e_2            # e_1 turns onto e_2 ...\n"
     "        True\n"
     "        >>> turn(1 * e_2) == -1 * e_1           # ... and e_2 onto -e_1\n"
     "        True\n"
-    "        >>> v = 3 * e_1 + 4 * e_2\n"
+    "        >>> v: Vector = 3 * e_1 + 4 * e_2\n"
     "        >>> turn(v) == -4 * e_1 + 3 * e_2\n"
     "        True\n"
     "        >>> turn(v) == v * e_12                 # the factory is the product\n"
@@ -6411,13 +6434,13 @@ def line_to_line_map(n: int, kind: str) -> LineMap:
                 meaning="the projection onto ``to_vector``",
                 failure="``self`` and ``to_vector`` are perpendicular",
                 example=(
-                    "    >>> P = (1 * e_1 + 1 * e_2).line_to_line_projection(to_vector=1 * e_1)\n"
+                    "    >>> P: InvertibleFunction[Vector] = (1 * e_1 + 1 * e_2).line_to_line_projection(to_vector=1 * e_1)\n"
                     "    >>> P(2 * e_1 + 2 * e_2) == 2 * e_1\n"
                     "    True\n"
                     "    >>> P.inverse(3 * e_1) == 3 * e_1 + 3 * e_2\n"
                     "    True\n"
                     if n >= 2
-                    else "    >>> P = (2 * e_1).line_to_line_projection(to_vector=3 * e_1)\n"
+                    else "    >>> P: InvertibleFunction[Vector] = (2 * e_1).line_to_line_projection(to_vector=3 * e_1)\n"
                     "    >>> P(4 * e_1) == 4 * e_1\n"
                     "    True\n"
                     "    >>> P.inverse(5 * e_1) == 5 * e_1\n"
@@ -6447,7 +6470,7 @@ def line_to_line_map(n: int, kind: str) -> LineMap:
                 meaning="the rejection away from ``away_from``",
                 failure="``self`` is parallel to ``away_from``",
                 example=(
-                    "    >>> R = (1 * e_1 + 1 * e_2).line_to_line_rejection(away_from=1 * e_1)\n"
+                    "    >>> R: InvertibleFunction[Vector] = (1 * e_1 + 1 * e_2).line_to_line_rejection(away_from=1 * e_1)\n"
                     "    >>> R(2 * e_1 + 2 * e_2) == 2 * e_2\n"
                     "    True\n"
                     "    >>> R.inverse(3 * e_2) == 3 * e_1 + 3 * e_2\n"
@@ -6509,7 +6532,7 @@ def line_and_plane_map(kind: str) -> LineMap:
                 meaning="the projection onto the plane",
                 failure="``self`` is perpendicular to the plane",
                 example=(
-                    "    >>> P = (1 * e_1 + 1 * e_3).line_to_plane_projection(\n"
+                    "    >>> P: InvertibleFunction[Vector] = (1 * e_1 + 1 * e_3).line_to_plane_projection(\n"
                     "    ...     to_plane=1 * Bivector.e_12\n"
                     "    ... )\n"
                     "    >>> P(2 * e_1 + 2 * e_3) == 2 * e_1\n"
@@ -6539,7 +6562,7 @@ def line_and_plane_map(kind: str) -> LineMap:
                 meaning="the rejection away from the plane",
                 failure="``self`` lies in the plane",
                 example=(
-                    "    >>> R = (1 * e_1 + 1 * e_3).line_from_plane_rejection(\n"
+                    "    >>> R: InvertibleFunction[Vector] = (1 * e_1 + 1 * e_3).line_from_plane_rejection(\n"
                     "    ...     away_from_plane=1 * Bivector.e_12\n"
                     "    ... )\n"
                     "    >>> R(2 * e_1 + 2 * e_3) == 2 * e_3\n"

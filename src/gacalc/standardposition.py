@@ -81,7 +81,7 @@ def rotation_from_to(
     Examples:
         >>> from gacalc.functions import inverse
         >>> from gacalc.g2 import Vector, e_1, e_2
-        >>> R = rotation_from_to(1 * e_1, 2 * e_2)
+        >>> R: InvertibleFunction[g2.Vector] = rotation_from_to(1 * e_1, 2 * e_2)
         >>> R(3 * e_1 + 4 * e_2) == -4 * e_1 + 3 * e_2
         True
         >>> inverse(R)(-4 * e_1 + 3 * e_2) == 3 * e_1 + 4 * e_2
@@ -169,7 +169,9 @@ def in_plane(
     Examples:
         >>> from gacalc import g2
         >>> from gacalc.g3 import e_1, e_2, e_3
-        >>> quarter_turn = rotation_from_to(1 * g2.e_1, 1 * g2.e_2)
+        >>> quarter_turn: InvertibleFunction[g2.Vector] = (
+        ...     rotation_from_to(1 * g2.e_1, 1 * g2.e_2)
+        ... )
         >>> in_plane(quarter_turn, e_1, e_3, 1 * e_1 + 2 * e_2) == 2 * e_2 + 1 * e_3
         True
     """
@@ -268,8 +270,8 @@ def project_sp(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
 
         A general ``b`` agrees with the canonical projection:
 
-        >>> b = 3 * e_1 + 4 * e_2 + 12 * e_3
-        >>> a = 1 * e_1 + 2 * e_2 + 3 * e_3
+        >>> b: g3.Vector = 3 * e_1 + 4 * e_2 + 12 * e_3
+        >>> a: g3.Vector = 1 * e_1 + 2 * e_2 + 3 * e_3
         >>> project_sp(a, b) == a.projected_onto(b)
         True
 
@@ -315,8 +317,8 @@ def reject_sp(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
 
         A general ``b`` agrees with the canonical rejection:
 
-        >>> b = 3 * e_1 + 4 * e_2 + 12 * e_3
-        >>> a = 1 * e_1 + 2 * e_2 + 3 * e_3
+        >>> b: g3.Vector = 3 * e_1 + 4 * e_2 + 12 * e_3
+        >>> a: g3.Vector = 1 * e_1 + 2 * e_2 + 3 * e_3
         >>> reject_sp(a, b) == a.rejected_away_from(b)
         True
     """

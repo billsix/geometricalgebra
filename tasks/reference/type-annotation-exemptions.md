@@ -29,6 +29,18 @@ what it means.
 
 `--full` prints every row, `--kind` and `--path` narrow it.
 
+**Docstring examples are covered too (since 2026-11-22).** A `>>>` example is code under the same
+rule, so every binding in one carries its type (`>>> v: Vector = 2 * Vector.e_1 + 3 * Vector.e_2`),
+and an unpacked name is declared on its own `>>>` line above the unpack (`>>> a: sympy.Symbol`, then
+`>>> a, b = sympy.symbols("a b")`). The auditor reports a bare one as a `DOCTEST` row, and the floor
+for that kind is **zero**: it has no exemptions. `ty` does not read inside a docstring, so nothing
+else checks the types. To check them, write the examples to a scratch module and run `ty` on it
+(`tasks/archive/2026/11/22/annotate-doctest-bindings.md` records the method; the extractor was a
+one-shot script and is in git history). A generated module's examples come from
+`tools/gen_specialized.py`: fix the emitting string there, never `g*.py`. Parameterize a generic in
+an example as everywhere else (`InvertibleFunction[float]`, never the bare class); use the function's
+declared return type (`InvertibleFunction[MultiVectorBase]`).
+
 **It is a report, not a gate**: it always exits 0 and no `make` target runs it, because
 deciding whether a row is an exemption needs a human (the maintainer's decision, William
 Emerison Six <billsix@gmail.com>, 2026-11-09).

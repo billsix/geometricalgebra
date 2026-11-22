@@ -358,7 +358,10 @@ Repo-specific invariants the agent must obey (rationale in the shared doc + the 
   placeholder has nothing to type. `make format` runs `ty check notebooks`, which catches wrong
   types but not missing ones. For those, run `tools/check_annotations.py` by hand: it walks
   `notebooks/` too and lists each missing annotation as a row. It is a report, not a gate; it
-  never fails a build.
+  never fails a build. **A `>>>` docstring example is code under the same rule** (`>>> v: Vector = …`;
+  each unpacked name declared on a `>>>` line above, `>>> a: sympy.Symbol`): `ty` does not read
+  docstrings, so the same tool reports a bare one as a `DOCTEST` row, and the generated modules' examples
+  are fixed in `tools/gen_specialized.py` (William Emerison Six <billsix@gmail.com>, 2026-11-22).
 - **Prefer `match` / total dispatch for structural case analysis** — the cross-project "Prefer total
   dispatch over an open-ended conditional chain" convention, and it applies to the **Lean proofs**
   (`proofs/`) as much as the Python. Where a definition dispatches on structure (a grade/`n`, a

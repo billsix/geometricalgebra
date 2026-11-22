@@ -138,7 +138,7 @@ class ComposableFunction(typing.Generic[V]):
         Wrap a function and a label; calling the wrapper calls the function, and
         ``@`` chains two of them:
 
-        >>> double = ComposableFunction(lambda x: 2 * x, "D")
+        >>> double: ComposableFunction[float] = ComposableFunction(lambda x: 2 * x, "D")
         >>> double(3)
         6
         >>> (double @ double)(3)
@@ -170,7 +170,9 @@ class ComposableFunction(typing.Generic[V]):
 
         Example:
             >>> from gacalc.functions import ComposableFunction
-            >>> double = ComposableFunction(lambda x: 2 * x, "D")
+            >>> double: ComposableFunction[float] = (
+            ...     ComposableFunction(lambda x: 2 * x, "D")
+            ... )
             >>> double(5)
             10
         """
@@ -197,7 +199,9 @@ class ComposableFunction(typing.Generic[V]):
             Composition with inverses:
 
             >>> from gacalc.functions import InvertibleFunction, inverse
-            >>> foo = InvertibleFunction(lambda x: 2 + x, "", lambda x: x - 2, "")
+            >>> foo: InvertibleFunction[float] = (
+            ...     InvertibleFunction(lambda x: 2 + x, "", lambda x: x - 2, "")
+            ... )
             >>> (foo @ foo)(5)
             9
             >>> inverse(foo @ foo)(5)
@@ -247,8 +251,8 @@ class ComposableFunction(typing.Generic[V]):
 
             >>> from gacalc.transforms import translate, compose, uniform_scale
             >>> from gacalc.g3 import Vector
-            >>> T = translate(b=10 * Vector.e_1)
-            >>> got = T.at(0.5)(Vector.zero())
+            >>> T: InvertibleFunction[Vector] = translate(b=10 * Vector.e_1)
+            >>> got: Vector = T.at(0.5)(Vector.zero())
             >>> got.isclose(5 * Vector.e_1, rel_tol=1e-5, abs_tol=1e-5)
             True
         """
@@ -306,16 +310,21 @@ class ComposableFunction(typing.Generic[V]):
             >>> import sympy
             >>> from gacalc.g2 import Vector
             >>> from gacalc.transforms import uniform_scale
-            >>> m = sympy.Symbol("m")
+            >>> m: sympy.Symbol = sympy.Symbol("m")
             >>> uniform_scale(m=m).to_matrix_template(Vector, (m,)).fill(3.0).tolist()
             [[3.0, 0.0, 0.0], [0.0, 3.0, 0.0], [0.0, 0.0, 1.0]]
 
             A translation by two symbols, filled per call:
 
             >>> from gacalc.transforms import translate
+            >>> TX: sympy.Symbol
+            >>> TY: sympy.Symbol
             >>> TX, TY = sympy.symbols("tx ty")
-            >>> move = translate(b=TX * Vector.e_1 + TY * Vector.e_2)
-            >>> T = move.to_matrix_template(Vector, (TX, TY))
+            >>> move: InvertibleFunction[Vector] = (
+            ...     translate(b=TX * Vector.e_1 + TY * Vector.e_2)
+            ... )
+            >>> from gacalc.transforms import MatrixTemplate
+            >>> T: MatrixTemplate = move.to_matrix_template(Vector, (TX, TY))
             >>> [float(x) for x in T.fill(3.0, 4.0)[:, 2]]   # 3 x 3; last column
             [3.0, 4.0, 1.0]
         """
@@ -338,7 +347,9 @@ class ComposableFunction(typing.Generic[V]):
 
             >>> from gacalc.transforms import compose, translate, uniform_scale
             >>> from gacalc.g3 import Vector
-            >>> f = compose([translate(b=1 * Vector.e_1), uniform_scale(m=2.0)])
+            >>> f: InvertibleFunction[Vector] = (
+            ...     compose([translate(b=1 * Vector.e_1), uniform_scale(m=2.0)])
+            ... )
             >>> len(list(f.steps()))
             2
         """
@@ -373,7 +384,7 @@ class InvertibleFunction(ComposableFunction[V]):
     Example:
         Adding 1 and subtracting 1 undo each other:
 
-        >>> add1 = InvertibleFunction(
+        >>> add1: InvertibleFunction[float] = InvertibleFunction(
         ...     func=lambda x: x + 1,
         ...     latex_repr="A",
         ...     inverse=lambda x: x - 1,
@@ -410,7 +421,9 @@ class InvertibleFunction(ComposableFunction[V]):
 
         Example:
             >>> from gacalc.functions import InvertibleFunction, inverse
-            >>> foo = InvertibleFunction(lambda x: 2 + x, "", lambda x: x - 2, "")
+            >>> foo: InvertibleFunction[float] = (
+            ...     InvertibleFunction(lambda x: 2 + x, "", lambda x: x - 2, "")
+            ... )
             >>> isinstance(foo @ foo, InvertibleFunction)
             True
             >>> inverse(foo @ foo)(9)
@@ -440,7 +453,9 @@ def inverse(f: InvertibleFunction[V]) -> InvertibleFunction[V]:
         True
 
         >>> from gacalc.functions import InvertibleFunction, inverse
-        >>> foo = InvertibleFunction(lambda x: 2 + x, "", lambda x: x - 2, "")
+        >>> foo: InvertibleFunction[float] = (
+        ...     InvertibleFunction(lambda x: 2 + x, "", lambda x: x - 2, "")
+        ... )
         >>> inverse(foo)(foo(5))
         5
     """
@@ -506,9 +521,15 @@ def compose(
         True
 
         >>> from gacalc.functions import compose, InvertibleFunction, inverse
-        >>> add2 = InvertibleFunction(lambda x: x + 2, "", lambda x: x - 2, "")
-        >>> scale3 = InvertibleFunction(lambda x: x * 3, "", lambda x: x / 3, "")
-        >>> fn = compose([scale3, add2])   # scale3(add2(x)) = 3 * (x + 2)
+        >>> add2: InvertibleFunction[float] = (
+        ...     InvertibleFunction(lambda x: x + 2, "", lambda x: x - 2, "")
+        ... )
+        >>> scale3: InvertibleFunction[float] = (
+        ...     InvertibleFunction(lambda x: x * 3, "", lambda x: x / 3, "")
+        ... )
+        >>> fn: InvertibleFunction[float] = (
+        ...     compose([scale3, add2])
+        ... )  # scale3(add2(x)) = 3 * (x + 2)
         >>> fn(1)
         9
         >>> inverse(fn)(9)

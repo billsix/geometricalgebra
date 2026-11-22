@@ -195,7 +195,7 @@ class Gn(MultiVectorBase):
             >>> from gacalc.gn import e_1, e_2
             >>> Gn.bivector_from_vectors(1 * e_1, 1 * e_2) == 1 * (e_1 ^ e_2)
             True
-            >>> biv = Gn.bivector_from_vectors(3 * e_1, 4 * e_2)
+            >>> biv: Gn = Gn.bivector_from_vectors(3 * e_1, 4 * e_2)
             >>> biv == 12 * (e_1 ^ e_2)      # the area bivector
             True
             >>> abs(biv) == 12               # magnitude = the parallelogram area
@@ -206,6 +206,10 @@ class Gn(MultiVectorBase):
             General symbolic vectors give the 2-D determinant times ``e_1 ^ e_2``:
 
             >>> import sympy
+            >>> a_1: sympy.Symbol
+            >>> a_2: sympy.Symbol
+            >>> b_1: sympy.Symbol
+            >>> b_2: sympy.Symbol
             >>> a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
             >>> Gn.bivector_from_vectors(
             ...     a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2
