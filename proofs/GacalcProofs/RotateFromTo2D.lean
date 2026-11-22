@@ -62,48 +62,49 @@ theorem rotPlane_conj_collapse (ca sa c2 s2 : ℝ) (h : ca ^ 2 + sa ^ 2 = 1) (v 
   ext <;> ring
 
 /-- **The transported `b' = R_a^{e₁}(b)`.** Swinging `b` by the same rotation that sends `a` to the
-    `e₁` axis gives the vector whose coordinates are `(a·b)/|a|` and `(a∧b)/|a|` — so its *unit*
-    coordinates (divide by `|b'| = |b|`) are the `(cos, sin)` that step 2 reads off. -/
-theorem bprime_coords (a1 a2 b1 b2 ma : ℝ) :
-    rotPlane (a1 / ma) (-a2 / ma) (vec b1 b2)
-      = vec ((a1 * b1 + a2 * b2) / ma) ((a1 * b2 - a2 * b1) / ma) := by
-  simp only [rotPlane, vec]; ext <;> ring
+    `e₁` axis (`alignSP a`) gives the vector whose coordinates are `(a·b)/|a|` and `(a∧b)/|a|` — so its
+    *unit* coordinates (divide by `|b'| = |b|`) are the `(cos, sin)` that step 2 reads off. -/
+theorem bprime_coords {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    alignSP a b = vec (dot a b / magnitude a) ((wedge a b).c12 / magnitude a) := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  simp only [alignSP, rotPlane, vec, dot, wedge, mul, has, ha12, hbs, hb12]
+  ext <;> simp only <;> ring
 
-/-- The `(cos, sin)` read off `a` is a unit pair, given `|a|² = a₁² + a₂²` and `|a| ≠ 0`. -/
-theorem cs_a_unit (a1 a2 ma : ℝ) (hma : ma ≠ 0) (hma2 : a1 ^ 2 + a2 ^ 2 = ma ^ 2) :
-    (a1 / ma) ^ 2 + (a2 / ma) ^ 2 = 1 := by
-  rw [div_pow, div_pow, ← add_div, hma2]
-  exact div_self (pow_ne_zero 2 hma)
-
-/-- **The three-step construction collapses to a single plane rotation** — the punchline. Align `a` to
-    `e₁` (`rotPlane (a₁/|a|) (−a₂/|a|)`), rotate by the coordinate `(cos, sin)` of the `a→b` angle in
-    that frame, then un-align (`rotPlane (a₁/|a|) (a₂/|a|)`); the align/un-align cancel and only the
-    middle rotation `rotPlane ((a·b)/(|a|*|b|)) ((a∧b)/(|a|*|b|))` remains. For any `v`. -/
-theorem rotateFromTo_collapse (a1 a2 b1 b2 ma mb : ℝ)
-    (hma : ma ≠ 0) (hma2 : a1 ^ 2 + a2 ^ 2 = ma ^ 2) (v : G2) :
-    rotPlane (a1 / ma) (a2 / ma)
-        (rotPlane ((a1 * b1 + a2 * b2) / (ma * mb)) ((a1 * b2 - a2 * b1) / (ma * mb))
-          (rotPlane (a1 / ma) (-(a2 / ma)) v))
-      = rotPlane ((a1 * b1 + a2 * b2) / (ma * mb)) ((a1 * b2 - a2 * b1) / (ma * mb)) v :=
-  rotPlane_conj_collapse (a1 / ma) (a2 / ma) _ _ (cs_a_unit a1 a2 ma hma hma2) v
+/-- **The three-step construction collapses to a single plane rotation** — the punchline. Align `a`
+    to `e₁` (`alignSP a`), rotate by any `(cos, sin)` in that frame, then un-align (`unalignSP a`): the
+    align/un-align cancel and only the middle rotation `rotPlane c s` remains. For any `v`. For the
+    rotation from `a` to `b` the middle `(c, s)` is `((a·b)/(|a|*|b|), (a∧b)/(|a|*|b|))` (`bprime_coords`
+    divided by `|b|`). -/
+theorem rotateFromTo_collapse {a : G2} (ha : IsVector a) (hma : magnitude a ≠ 0) (c s : ℝ)
+    (v : G2) :
+    unalignSP a (rotPlane c s (alignSP a v)) = rotPlane c s v := by
+  have h : (a.c1 / magnitude a) ^ 2 + (a.c2 / magnitude a) ^ 2 = 1 := by
+    have h := cs_unit ha hma
+    rwa [neg_div, neg_sq] at h
+  simp only [unalignSP, alignSP, neg_div]
+  exact rotPlane_conj_collapse _ _ c s h v
 
 /-- **The construction carries `a`'s direction to `b`'s direction.** The three-step rotation applied to
     `a` is `(|a|/|b|)*b` — `b`'s direction, scaled to `a`'s magnitude (magnitudes don't set the
-    rotation). For nonzero `a`, `b` (`ma = |a|`, `mb = |b|`). -/
-theorem rotateFromTo_carries (a1 a2 b1 b2 ma mb : ℝ)
-    (hma : ma ≠ 0) (hmb : mb ≠ 0) (hma2 : a1 ^ 2 + a2 ^ 2 = ma ^ 2) :
-    rotPlane (a1 / ma) (a2 / ma)
-        (rotPlane ((a1 * b1 + a2 * b2) / (ma * mb)) ((a1 * b2 - a2 * b1) / (ma * mb))
-          (rotPlane (a1 / ma) (-(a2 / ma)) (vec a1 a2)))
-      = smul (ma / mb) (vec b1 b2) := by
-  rw [rotateFromTo_collapse a1 a2 b1 b2 ma mb hma hma2]
-  simp only [rotPlane, vec, smul]
+    rotation). For nonzero `a`, `b`. -/
+theorem rotateFromTo_carries {a b : G2} (ha : IsVector a) (hb : IsVector b)
+    (hma : magnitude a ≠ 0) (hmb : magnitude b ≠ 0) :
+    unalignSP a
+        (rotPlane (dot a b / (magnitude a * magnitude b))
+          ((wedge a b).c12 / (magnitude a * magnitude b)) (alignSP a a))
+      = smul (magnitude a / magnitude b) b := by
+  have hma2 : magnitude a ^ 2 = a.c1 ^ 2 + a.c2 ^ 2 := magnitude_sq_of_isVector ha
+  rw [rotateFromTo_collapse ha hma]
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  simp only [rotPlane, smul, dot, wedge, mul, has, ha12, hbs, hb12]
   ext
   · simp
   · field_simp
-    linear_combination b1 * hma2
+    linear_combination (-b.c1) * hma2
   · field_simp
-    linear_combination b2 * hma2
+    linear_combination (-b.c2) * hma2
   · simp
 
 end GacalcProofs.G2

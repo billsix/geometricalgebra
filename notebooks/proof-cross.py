@@ -35,7 +35,7 @@
 # appear only to draw the figures.
 #
 # This is the runnable, symbolic twin of the Lean capstone `cross_via_reduction`
-# (and its explicit-angle form `cross_via_reduction_of_vectors`) in
+# (and its form through `alignSP`, `cross_via_reduction_of_vectors`) in
 # `proofs/GacalcProofs/CrossStandardPosition.lean`, whose engine is the three
 # elementary cross-equivariances assembled by `cross_reduceToPlane_equivariant`.
 
