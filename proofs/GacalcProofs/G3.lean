@@ -344,10 +344,6 @@ theorem wedge_sub_right (a u w : G3) : wedge a (sub u w) = sub (wedge a u) (wedg
 theorem wedge_smul_right (k : ℝ) (a u : G3) : wedge a (smul k u) = smul k (wedge a u) := by
   simp only [wedge, smul]; ext <;> ring
 
-/-- A vector wedged with itself is zero. -/
-theorem wedge_self_vec_coord (x y z : ℝ) : wedge (vec x y z) (vec x y z) = zero := by
-  simp only [wedge, vec, zero]; ext <;> ring
-
 /-- **Leaf:** the wedge of two coordinate vectors is the plane bivector, in coordinates:
     `a ∧ b = (a₁*b₂−a₂*b₁)e₁₂ + (a₁*b₃−a₃*b₁)e₁₃ + (a₂*b₃−a₃*b₂)e₂₃`. Reuse instead of re-deriving the literal
     with `simp only [wedge, vec]; ext <;> ring` inline. -/
@@ -368,34 +364,11 @@ theorem normSq_wedge_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
       = (a1 * b2 - a2 * b1) ^ 2 + (a1 * b3 - a3 * b1) ^ 2 + (a2 * b3 - a3 * b2) ^ 2 := by
   simp only [normSq, wedge, mul, reverse, vec]; ring
 
-/-- **A vector's square is its squared magnitude:** `a a = |a|²*1` (`a∧a = 0`, so only the scalar
-    survives). The `B B = |B|²` half of the blade-inverse identity. -/
-theorem mul_vec_self_coord (a1 a2 a3 : ℝ) :
-    mul (vec a1 a2 a3) (vec a1 a2 a3) = smul (normSq (vec a1 a2 a3)) one := by
-  rw [normSq_vec]; simp only [mul, one, smul, vec]; ext <;> ring
-
-/-- **Leaf — self-dot IS the squared magnitude, on a vector:** `a·a = |a|²`. The formal statement of
-    "a vector dotted with itself is its magnitude squared"; the bridge that lets a `dot a a` hypothesis
-    be read as the primitive `normSq a` (`reverse` fixes a vector, so `⟨a a⟩ = ⟨a ã⟩`). Reuse instead of
-    re-deriving `rw [dot_vec, normSq_vec]; ring` inline. -/
-theorem dot_self_vec_eq_normSq_coord (a1 a2 a3 : ℝ) :
-    dot (vec a1 a2 a3) (vec a1 a2 a3) = normSq (vec a1 a2 a3) := by
-  rw [dot_vec, normSq_vec]; ring
-
 /-- `reverse` fixes a vector (it only flips the sign of grades 2 and 3, which a vector lacks). -/
 theorem reverse_vec (x y z : ℝ) : reverse (vec x y z) = vec x y z := by
   simp only [reverse, vec]; ext <;> ring
 
 /-! ### The fundamental split `a b = a·b + a∧b` (coordinate form) -/
-
-/-- **The fundamental identity `a b = a·b + a∧b` for vectors** (Hestenes' defining relation):
-    the geometric product of two vectors splits into its scalar (inner) part `a·b` and its
-    bivector (outer) part `a∧b`. Unconditional; pure `ring`. -/
-theorem vec_mul_eq_dot_add_wedge (a1 a2 a3 b1 b2 b3 : ℝ) :
-    mul (vec a1 a2 a3) (vec b1 b2 b3)
-      = add (scalar (dot (vec a1 a2 a3) (vec b1 b2 b3)))
-            (wedge (vec a1 a2 a3) (vec b1 b2 b3)) := by
-  simp only [mul, wedge, scalar, zero, dot, add, vec]; ext <;> ring
 
 /-! ### Grade-structure predicates (vector / bivector / trivector) with their bridges -/
 

@@ -57,7 +57,7 @@ noncomputable def invPeel (a1 a2 y : G2) : G2 :=
 /-! ### Coordinate leaves (each unfolds one definition on `vec` literals) -/
 
 /-- `|a ∧ b|²` of two coordinate vectors is the squared signed area. -/
-theorem normSq_wedge_vec' (p q r t : ℝ) :
+theorem normSq_wedge_vec (p q r t : ℝ) :
     normSq (wedge (vec p q) (vec r t)) = (p * t - q * r) ^ 2 := by
   simp only [normSq, mul, reverse, wedge, vec]; ring
 
@@ -70,12 +70,12 @@ theorem sumSq_ne_zero_of_area {p q r t : ℝ} (hd : p * t - q * r ≠ 0) : p ^ 2
 
 theorem recip1_vec {p q r t : ℝ} (hd : p * t - q * r ≠ 0) :
     recip1 (vec p q) (vec r t) = vec (t / (p * t - q * r)) (-r / (p * t - q * r)) := by
-  simp only [recip1, inverse, normSq_wedge_vec']
+  simp only [recip1, inverse, normSq_wedge_vec]
   ext <;> simp only [mul, smul, reverse, wedge, vec] <;> field_simp <;> ring
 
 theorem recip2_vec {p q r t : ℝ} (hd : p * t - q * r ≠ 0) :
     recip2 (vec p q) (vec r t) = vec (-q / (p * t - q * r)) (p / (p * t - q * r)) := by
-  simp only [recip2, inverse, normSq_wedge_vec']
+  simp only [recip2, inverse, normSq_wedge_vec]
   ext <;> simp only [mul, smul, reverse, wedge, vec] <;> field_simp <;> ring
 
 theorem reject_vec {p q r t : ℝ} (hn : p ^ 2 + q ^ 2 ≠ 0) :
@@ -93,7 +93,7 @@ theorem normSq_reject_vec {p q r t : ℝ} (hn : p ^ 2 + q ^ 2 ≠ 0) :
 /-- The frame hypothesis on two coordinate vectors, as a nonzero signed area. -/
 theorem area_ne_zero_vec {p q r t : ℝ} (hA : normSq (wedge (vec p q) (vec r t)) ≠ 0) :
     p * t - q * r ≠ 0 :=
-  fun h => hA (by rw [normSq_wedge_vec', h]; ring)
+  fun h => hA (by rw [normSq_wedge_vec, h]; ring)
 
 /-! ### The reciprocal frame (eqs 3.5, 3.4) -/
 

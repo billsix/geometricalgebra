@@ -127,6 +127,16 @@ theorem vec_mul_fullAngleRotor (θ : ℝ) {v : G2} (hv : G2.IsVector v) :
     and `e_2` (not a raw coordinate tuple): cos(α)*e₁ + sin(α)*e₂. -/
 noncomputable def uvec (α : ℝ) : G2 := G2.add (G2.smul (cos α) G2.e_1) (G2.smul (sin α) G2.e_2)
 
+/-- `|uvec α|² = 1`. -/
+theorem normSq_uvec (α : ℝ) : G2.normSq (uvec α) = 1 := by
+  rw [G2.normSq_eq_sum_sq]
+  simp only [uvec, G2.add, G2.smul, G2.e_1, G2.e_2]
+  linear_combination cos_sq_add_sin_sq α
+
+/-- `|uvec α| = 1`. -/
+theorem magnitude_uvec (α : ℝ) : G2.magnitude (uvec α) = 1 := by
+  simp only [G2.magnitude]; rw [normSq_uvec, Real.sqrt_one]
+
 /-- `uvec α` is a vector (grade 1) — discharges the `IsVector` hypothesis of the object-form theorems. -/
 theorem isVector_uvec (α : ℝ) : G2.IsVector (uvec α) := by
   refine ⟨?_, ?_⟩ <;> simp only [uvec, G2.add, G2.smul, G2.e_1, G2.e_2] <;> ring

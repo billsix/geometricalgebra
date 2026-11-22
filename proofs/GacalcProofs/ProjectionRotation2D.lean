@@ -123,14 +123,6 @@ theorem versorFromVectors_mul_vec_eq {f t v : G2} (hf : IsVector f) (ht : IsVect
   simp only [versorFromVectors, mul, reverse, add, smul, one, hfs, hf12, hts, ht12, hvs, hv12]
   ext <;> ring
 
-theorem reverse_versorFromVectors_mul {f t : G2} (hf : IsVector f) (ht : IsVector t) :
-    mul (reverse (versorFromVectors f t)) (versorFromVectors f t)
-      = smul (normSq (versorFromVectors f t)) one := by
-  obtain ⟨hfs, hf12⟩ := hf
-  obtain ⟨hts, ht12⟩ := ht
-  simp only [versorFromVectors, reverse, mul, add, smul, one, normSq, hfs, hf12, hts, ht12]
-  ext <;> ring
-
 /-- **The key √-bearing identity**, proven structurally: `|f|*|t|*R̃² = |R|²*(f t)`. The only analytic
     input is `(|f|*|t|)² = |f|²*|t|²`; the per-coordinate residue is pure `ring`
     (Brahmagupta–Fibonacci, `|f|²*|t|² = (f·t)² + (f∧t)²`). -/

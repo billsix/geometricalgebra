@@ -87,7 +87,7 @@ theorem det3_ne_zero_vec {p1 p2 p3 r1 r2 r3 t1 t2 t3 : ℝ}
 
 theorem normSq_wedge_vec3 (p1 p2 p3 r1 r2 r3 : ℝ) :
     normSq (wedge (vec p1 p2 p3) (vec r1 r2 r3)) = crossSq p1 p2 p3 r1 r2 r3 := by
-  simp only [normSq, mul, reverse, wedge, vec, crossSq]; ring
+  rw [normSq_wedge_vec, crossSq]; ring
 
 /-- A nonzero volume makes the plane of the first two vectors nondegenerate. -/
 theorem crossSq_ne_zero_of_det3 {p1 p2 p3 r1 r2 r3 t1 t2 t3 : ℝ}

@@ -1,6 +1,6 @@
 # Lean proofs: bring the corpus in line with the book, the Python and its own rules
 
-**Status:** in progress — phases 1 and 2 done 2026-11-22; phases 3 to 8 remain
+**Status:** in progress — phases 1 to 3 done 2026-11-22; phases 4 to 8 remain
 **Priority:** 5
 **Difficulty:** 7
 **Created:** 2026-11-22 (William Emerison Six <billsix@gmail.com>)
@@ -85,11 +85,33 @@ three standard axioms), plus `make format`, `make check-notebooks`, `make test` 
 - The helper that made the deletions was `tasks/adhoc/lean-proofs-fit-cleanup/delete_decls.py` (one-shot; `git rm`
   with the task, when it is archived).
 
-**Remaining, in order:** phase 3 (one proof per fact), 4 (prove by the reason the book gives), 5 (restate the scalars-in
+**Phase 3** (2026-11-22, one work commit; `lake build`, the `sorry` scan and the axioms gate pass, 1048 declarations):
+
+- `isEvenVersor_versorFromVectors` (2D and 3D) moved from `Rotor.lean` into `Sandwich.lean`, so the general
+  `mul_reverse_self_of_isEvenVersor` / `mul_inverse_self_of_isEvenVersor` serve everywhere. Deleted the five special
+  cases: `G2.versorFromVectors_mul_reverse`, `G3.versorFromVectors_mul_reverse`, `…_mul_reverse_coord`,
+  `…_mul_inverse_coord` and `G3.versorFromVectors_mul_inverse`; `sandwich_carries_from_to` (both) and
+  `ProjectionRotation3D` call the general lemmas.
+- The four 𝒢₃ `_coord` twins (`wedge_self_vec_coord`, `mul_vec_self_coord`, `dot_self_vec_eq_normSq_coord`,
+  `vec_mul_eq_dot_add_wedge`) are gone; their nine call sites (five in `Projection3D`, three lines of one proof in
+  `StandardPosition`, one in `ProjectionRotation3D`) use `wedge_self_vec`, `mul_vec_self`, `dot_self_vec_eq_normSq`,
+  `mul_eq_dot_add_wedge` and `reverse_of_isVector`. `G1.vec_mul_eq_dot_add_wedge` stays.
+- `Exp.expBivector` is defined as `Rotation2D.fullAngleRotor`, with `expBivector_eq_fullAngleRotor` (`rfl`).
+- 2D/3D drift: 3D `mul_proj_eq_dot` and `mul_eq_proj_dot_add_reject_wedge` end in `scalar (dot b a)` as the 2D
+  ones do; `Projection3D.plane_eq_wedge` is renamed `mul_reject_eq_wedge`, the 2D name.
+- `|uvec α| = 1` once: `normSq_uvec` and `magnitude_uvec` live next to `uvec` in `Rotation2D.lean`;
+  `TrigEquiv.uvec_magnitude` and the `Rotor` copies are gone. `ReciprocalFrame2D`'s `normSq_wedge_vec'` lost its prime
+  (the `G2` copy it duplicated went in phase 2), and `ReciprocalFrame3D.normSq_wedge_vec3` is proved through
+  `G3.normSq_wedge_vec`. `ProjectionRotation2D.reverse_versorFromVectors_mul` (unused) is deleted.
+- Left as they are, on purpose: `mul_eq_proj_dot_add_reject_wedge` is a different proof of the product split (from
+  projection and rejection, the non-circular route the book teaches), so it stays beside `mul_eq_dot_add_wedge`;
+  `ReciprocalFrame3D`'s `det3` against `signedVolume` waits for phase 5's object-form rewrite.
+
+**Remaining, in order:** phase 4 (prove by the reason the book gives), 5 (restate the scalars-in
 files over objects; the largest, `ProjectionRotation3D.lean` last), 6 (where Lean differs from the book or Python),
 7 (results the book states that Lean lacks), 8 (rewrite the inventory and coverage map from the files as they then
 stand). These are proof rewrites with a full `lake build` (about 20 minutes) per iteration. The task's own plan
-allows splitting 5 and 7 into step tasks if they grow; phases 3 to 7 together are a multi-session job.
+allows splitting 5 and 7 into step tasks if they grow; phases 4 to 7 together are a multi-session job.
 
 ## Recommendations, by phase
 
