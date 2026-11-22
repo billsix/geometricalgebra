@@ -1,6 +1,6 @@
 # Lean proofs: bring the corpus in line with the book, the Python and its own rules
 
-**Status:** in progress — phases 1 to 3 done 2026-11-22; phases 4 to 8 remain
+**Status:** in progress — phases 1 to 4 done 2026-11-22; phases 5 to 8 remain
 **Priority:** 5
 **Difficulty:** 7
 **Created:** 2026-11-22 (William Emerison Six <billsix@gmail.com>)
@@ -107,11 +107,36 @@ three standard axioms), plus `make format`, `make check-notebooks`, `make test` 
   projection and rejection, the non-circular route the book teaches), so it stays beside `mul_eq_dot_add_wedge`;
   `ReciprocalFrame3D`'s `det3` against `signedVolume` waits for phase 5's object-form rewrite.
 
-**Remaining, in order:** phase 4 (prove by the reason the book gives), 5 (restate the scalars-in
+**Phase 4** (2026-11-22, one work commit; `lake build`, the `sorry` scan and the axioms gate pass, 1050 declarations;
+the 16 build warnings are all in files and lines this phase did not touch):
+
+- `Predicates2D.dual_perp_dot` is the book's proof from `dual.rst`: `rw [dot_comm, dot, dual, ← mul_assoc,
+  mul_vec_self]`, then a number times `I⁻¹` has no plain-number part. `G2.vec_anticomm_perp` is the three-rewrite chain
+  of its 𝒢₃ twin (`mul_eq_wedge_of_perp` twice, `wedge_antisymm`).
+- `rotPlane_conj_collapse` now uses `rotPlane_comm` and `rotPlane_comp`, as the book says: commute the middle rotation
+  outward, compose the align with the un-align into `rotPlane 1 0`, which is the identity.
+- `versor_mul_from_eq_bisector` and `from_mul_versor_eq_bisector` (𝒢₃ in `Rotation3D`, 𝒢₂ in `Versor2D`) are
+  structural: `R a = (b a) a + |a||b| a`, `(b a) a = |a|² b`, then `|a|` factors out. The four `_coord` leaves and the
+  `magnitude_sq_vec`-driven `linear_combination`s are gone; `vec_mul_mul_self` (now also in 𝒢₂, and without the
+  unused `IsVector b` hypothesis) is used, with a new `vec_mul_self_mul` for the companion. Both theorems lost the
+  hypothesis they did not need (`ht` for the first, `hf` for the second); `Sandwich` and `ProjectionRotation3D` callers
+  were updated. `magnitude_sq_vec` stays (`CrossStandardPosition` uses it).
+- `Trig.lagrange_property` (𝒢₂ and 𝒢₃) is `linear_combination (-1) * lagrange_2d/3d …`, so `Lagrange.lean` is now
+  imported and used. `Rotor.normSq_versorFromVectors` (both) goes through a new `normSq_versorFromVectors_eq`
+  (`(|a||b| + a·b)² + |a∧b|²`, by `ring` on the components) and `Trig.lagrange_property`, then `linear_combination`;
+  `Rotor` imports `Trig` for it.
+- `sandwich_fixes_own_bivector` and `sandwich_fixes_own_normal` rest on a new `sandwich_of_commute` (`R x = x R` gives
+  `R x R⁻¹ = x` through `R R⁻¹ = 1`) and two commutation leaves, `evenVersor_mul_bivector_comm` and
+  `evenVersor_mul_normal_comm` (`ring`, no `field_simp`). The two `_coord` theorems are gone.
+- Not changed: `tasks/push-delicate-coordinate-core-tier.md` (proposed) still lists the deleted `_coord` leaves in its
+  "retained set"; it was already out of date after phase 3, and it is reworked, not patched, if it is ever started.
+- Docs: the architecture doc no longer names the deleted `G2.dual_vec_perp`.
+
+**Remaining, in order:** 5 (restate the scalars-in
 files over objects; the largest, `ProjectionRotation3D.lean` last), 6 (where Lean differs from the book or Python),
 7 (results the book states that Lean lacks), 8 (rewrite the inventory and coverage map from the files as they then
 stand). These are proof rewrites with a full `lake build` (about 20 minutes) per iteration. The task's own plan
-allows splitting 5 and 7 into step tasks if they grow; phases 4 to 7 together are a multi-session job.
+allows splitting 5 and 7 into step tasks if they grow; phases 5 to 7 together are a multi-session job.
 
 ## Recommendations, by phase
 

@@ -54,12 +54,12 @@ theorem rotPlane_comm (c1 s1 c2 s2 : ℝ) (v : G2) :
     `ca² + sa² = 1`. -/
 theorem rotPlane_conj_collapse (ca sa c2 s2 : ℝ) (h : ca ^ 2 + sa ^ 2 = 1) (v : G2) :
     rotPlane ca sa (rotPlane c2 s2 (rotPlane ca (-sa) v)) = rotPlane c2 s2 v := by
+  rw [rotPlane_comm c2 s2 ca (-sa), rotPlane_comp]
+  have hc : ca * ca - sa * -sa = 1 := by linear_combination h
+  have hs : sa * ca + ca * -sa = 0 := by ring
+  rw [hc, hs]
   simp only [rotPlane]
-  ext
-  · rfl
-  · linear_combination (c2 * v.c1 - s2 * v.c2) * h
-  · linear_combination (s2 * v.c1 + c2 * v.c2) * h
-  · rfl
+  ext <;> ring
 
 /-- **The transported `b' = R_a^{e₁}(b)`.** Swinging `b` by the same rotation that sends `a` to the
     `e₁` axis gives the vector whose coordinates are `(a·b)/|a|` and `(a∧b)/|a|` — so its *unit*

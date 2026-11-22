@@ -271,7 +271,7 @@ theorem normalizeVec_to_mul_versor_eq_bisector_coord (a1 a2 a3 b1 b2 b3 : ℝ)
     mul (normalizeVec (vec b1 b2 b3)) (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
       = bisector (vec a1 a2 a3) (vec b1 b2 b3) := by
   rw [normalizeVec, GacalcProofs.G3.smul_mul,
-      from_mul_versor_eq_bisector (isVector_vec a1 a2 a3) (isVector_vec b1 b2 b3),
+      from_mul_versor_eq_bisector (isVector_vec b1 b2 b3),
       GacalcProofs.G3.smul_smul, one_div_mul_cancel ht, GacalcProofs.G3.one_smul]
 
 /-- **The from-vector times the bisector is the (scaled) reverse versor:** `f h = |f|*R̃`. The

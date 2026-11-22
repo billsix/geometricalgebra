@@ -203,7 +203,7 @@ versor-from-vectors construction; `Projection2D.lean` only `proj`/`reject`. The 
 isometry lemmas sit in `Sandwich.lean` beside their G3 twins, and `G2.mul_vec_self` in `G2.lean` beside
 `G3.mul_vec_self` (moved 2026-11-09). The `dot`-form perpendicularity lemmas over `IsVector` objects still go in
 `Predicates2D.lean` (the 2D twin of `Predicates3D.lean`): e.g. `dual_perp_dot` — `dot (dual v) v = 0` —
-the object form of the coordinate leaf `G2.dual_vec_perp`. (Part of the file-structure pass
+proved as the book proves it, by regrouping `v (v I⁻¹)` as `(v v) I⁻¹`. (Part of the file-structure pass
 `tasks/archive/2026/10/28/study-and-reorder-lean-file-structure.md`, now complete.)
 
 **Within-file order of the algebra-core files (`G1`/`G2`/`G3`, normalized 2026-10-28).** All three

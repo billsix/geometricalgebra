@@ -1,4 +1,5 @@
 import GacalcProofs.G3
+import GacalcProofs.Lagrange
 import GacalcProofs.Projection2D
 
 /-! # Sine and cosine from the inner and outer products
@@ -6,8 +7,8 @@ import GacalcProofs.Projection2D
     The sin/cos characterization of two vectors, read off the **inner and outer products** (no angle
     computed): `cos(θ) = (a·b)/(|a|*|b|)`, `sin(θ) = |a∧b|/(|a|*|b|)`, with `cos²(θ) + sin²(θ) = 1` — the leaf
     property the higher (rotation/angle) proofs build on. `cos²(θ) + sin²(θ) = 1` is exactly Lagrange's
-    identity in coordinate-free form (reference: `Lagrange.lean`) (`lagrange_property`: `(a·b)² + |a∧b|² = |a|²*|b|²`). Proved for
-    both 𝒢₂ and 𝒢₃. See `tasks/reference/lean-ga-proof-architecture.md`. -/
+    identity in coordinate-free form (`lagrange_property`: `(a·b)² + |a∧b|² = |a|²*|b|²`), which
+    `Lagrange.lean` proves on the coordinates (`lagrange_2d`, `lagrange_3d`). Proved for both 𝒢₂ and 𝒢₃. See `tasks/reference/lean-ga-proof-architecture.md`. -/
 
 namespace GacalcProofs.G3
 
@@ -18,7 +19,7 @@ theorem lagrange_property {a b : G3} (ha : IsVector a) (hb : IsVector b) :
   obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
   simp only [dot, normSq, wedge, mul, reverse, ha12, ha13, ha23, ha123,
              hbs, hb12, hb13, hb23, hb123]
-  ring
+  linear_combination (-1 : ℝ) * GacalcProofs.lagrange_3d a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
 
 /-- `cos` of the angle between two vectors, from the inner product: `(a·b)/(|a|*|b|)`. -/
 noncomputable def cos_between (a b : G3) : ℝ := dot a b / (magnitude a * magnitude b)
@@ -67,7 +68,7 @@ theorem lagrange_property {a b : G2} (ha : IsVector a) (hb : IsVector b) :
   obtain ⟨has, ha12⟩ := ha
   obtain ⟨hbs, hb12⟩ := hb
   simp only [dot, normSq, wedge, mul, reverse, has, ha12, hbs, hb12]
-  ring
+  linear_combination (-1 : ℝ) * GacalcProofs.lagrange_2d a.c1 a.c2 b.c1 b.c2
 
 /-- `cos` from the inner product (2D). -/
 noncomputable def cos_between (a b : G2) : ℝ := dot a b / (magnitude a * magnitude b)
