@@ -91,16 +91,17 @@ angle_values: list[tuple[sympy.Symbol, Real]] = [
 #
 # A plain number plus a bivector, the dot and the wedge. The product term by term: the
 # plain-number rows add to $\cos(\alpha) * \cos(\beta) + \sin(\alpha) * \sin(\beta)$,
-# which is $\cos(\beta - \alpha)$, and the $\mathbf{e}_{12}$ rows to
-# $\sin(\beta - \alpha)$: the angle-difference identities, from multiplying.
+# which is $\cos(\beta - \alpha)$, and the $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$
+# rows to $\sin(\beta - \alpha)$: the angle-difference identities, from multiplying.
 
 # %%
 show_mult(a_hat, b_hat)
 
 # %% [markdown]
 # Before running the next cell, predict the sum: it is the full-angle rotor
-# $\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}$ with $\theta = \beta - \alpha$. We
-# multiplied the vectors, and the cosine and sine appeared.
+# $\cos(\theta) + \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ with
+# $\theta = \beta - \alpha$. We multiplied the vectors, and the cosine and sine
+# appeared.
 
 # %%
 R: Versor = (a_hat * b_hat).simplified()

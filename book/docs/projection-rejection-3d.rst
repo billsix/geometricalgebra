@@ -46,7 +46,8 @@ remainder.
 .. note::
 
    The third plane is written :math:`\mathbf{e}_{31}` (cyclically, like :math:`\mathbf{e}_{12}` and
-   :math:`\mathbf{e}_{23}`); gacalc spells the same blade :math:`\mathbf{e}_{13} = -\mathbf{e}_{31}`.
+   :math:`\mathbf{e}_{23}`); gacalc writes its product the other way round, and
+   :math:`\vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1 = -\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3` is the same plane.
 
 Onto any plane, and the product split
 -------------------------------------

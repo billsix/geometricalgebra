@@ -1,117 +1,11 @@
-book/docs/blade-square-sign.rst:19:In :doc:`geometric-product` you met the full-angle rotor :math:`R = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12}`,
 book/docs/blade-square-sign.rst:20:and along the way a small surprise: the object :math:`\mathbf{e}_{12} = \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` **squares to**
-book/docs/blade-square-sign.rst:87:That is the :math:`\mathbf{e}_{12}{}^2 = -1` you already saw — now you can see *where the minus
-book/docs/blade-square-sign.rst:252:(:math:`\mathbf{e}_{12}{}^2 = -1`) apart from a plain stretch. In gacalc it is the little function
-book/docs/bootstrap-product.rst:47:across-part is an area in the plane, so it carries the unit of area :math:`\mathbf{e}_{12}`:
-book/docs/bootstrap-product.rst:52:   \vec{\mathbf{a}} * \vec{\mathbf{b}} = |\vec{\mathbf{a}}| * (x + y * \mathbf{e}_{12})
-book/docs/bootstrap-product.rst:53:     = (a_1 * b_1 + a_2 * b_2) + (a_1 * b_2 - a_2 * b_1) * \mathbf{e}_{12}.
-book/docs/bootstrap-product.rst:56::math:`\mathbf{e}_{12}` part is the **wedge** :math:`\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}`, so
 book/docs/bootstrap-product.rst:66::math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 = \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2 = 1`, :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 = \mathbf{e}_{12}` and
-book/docs/bootstrap-product.rst:67::math:`\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\mathbf{e}_{12}`:
-book/docs/bootstrap-product.rst:74:     &= (a_1 * b_1 + a_2 * b_2) + (a_1 * b_2 - a_2 * b_1) * \mathbf{e}_{12},
-book/docs/bootstrap-product.rst:90:     \hat{\mathbf{a}} * \hat{\mathbf{b}} = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12},
-book/docs/bootstrap-product.rst:99::math:`\vec{\mathbf{e}}_1 * \mathbf{e}_{12} = \vec{\mathbf{e}}_2` and :math:`\vec{\mathbf{e}}_2 * \mathbf{e}_{12} = -\vec{\mathbf{e}}_1`:
-book/docs/bootstrap-product.rst:104:   \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2) = \vec{\mathbf{v}} * \mathbf{e}_{12}
-book/docs/bootstrap-product.rst:105:     = (v_1 * \vec{\mathbf{e}}_1 + v_2 * \vec{\mathbf{e}}_2) * \mathbf{e}_{12} = -v_2 * \vec{\mathbf{e}}_1 + v_1 * \vec{\mathbf{e}}_2.
-book/docs/bootstrap-product.rst:107:Multiplying by :math:`\mathbf{e}_{12}` on the right turns a vector a quarter turn. :math:`\mathbf{e}_{12}` is
-book/docs/bootstrap-product.rst:126::math:`\vec{\mathbf{a}} * \vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2) = \vec{\mathbf{a}} * \vec{\mathbf{a}} * \mathbf{e}_{12} = |\vec{\mathbf{a}}|^2 * \mathbf{e}_{12}`
-book/docs/bootstrap-product.rst:132:     = \frac{y}{|\vec{\mathbf{a}}|} * \vec{\mathbf{a}} * \vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2) = |\vec{\mathbf{a}}| * y * \mathbf{e}_{12}.
-book/docs/bootstrap-product.rst:167::math:`\vec{\mathbf{b}} * \vec{\mathbf{a}} = |\vec{\mathbf{b}}| * (x + y * \mathbf{e}_{12})` with :math:`\vec{\mathbf{a}}` measured in
-book/docs/bootstrap-product.rst:171::math:`\alpha`, :math:`\beta` multiply to :math:`\cos(\beta - \alpha) + \sin(\beta - \alpha) * \mathbf{e}_{12}`)
-book/docs/bootstrap-projection-from-product.rst:75:With :math:`\vec{\mathbf{b}} \wedge \vec{\mathbf{a}} = (b_1 * a_2 - b_2 * a_1) * \mathbf{e}_{12}` and
-book/docs/bootstrap-projection-from-product.rst:76::math:`\mathbf{e}_{12} * \vec{\mathbf{a}} = -\vec{\mathbf{a}} * \mathbf{e}_{12} = -\vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2)` (the quarter turn as a
-book/docs/bootstrap-rotation-from-product.rst:27:The quarter turn is a product, :math:`\vec{\mathbf{v}} * \mathbf{e}_{12} = \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)`
-book/docs/bootstrap-rotation-from-product.rst:35:     = \vec{\mathbf{v}} * (\cos(\theta) + \sin(\theta) * \mathbf{e}_{12})
-book/docs/bootstrap-rotation-from-product.rst:56::math:`-\theta`, because :math:`\mathbf{e}_{12} * \vec{\mathbf{v}} = -\vec{\mathbf{v}} * \mathbf{e}_{12}`. And the form is a
-book/docs/bootstrap-rotation-from-product.rst:88:Write :math:`U = \hat{\mathbf{a}} * \hat{\mathbf{b}} = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12}` and
-book/docs/bootstrap-rotation-from-product.rst:89::math:`\tilde{U} = \hat{\mathbf{b}} * \hat{\mathbf{a}} = \cos(\theta) - \sin(\theta) * \mathbf{e}_{12}`, its reverse.
-book/docs/bootstrap-rotation-from-product.rst:93:#. An element :math:`c + s * \mathbf{e}_{12}` passes through a vector with its sign of
-book/docs/bootstrap-rotation-from-product.rst:94:   :math:`\mathbf{e}_{12}` flipped: :math:`R * \vec{\mathbf{v}} = \vec{\mathbf{v}} * \tilde{R}`, because
-book/docs/bootstrap-rotation-from-product.rst:95:   :math:`\mathbf{e}_{12} * \vec{\mathbf{v}} = -\vec{\mathbf{v}} * \mathbf{e}_{12}`.
-book/docs/bootstrap-rotation-from-product.rst:129:(:math:`\vec{\mathbf{v}} * (\cos(\theta) + \sin(\theta) * \mathbf{e}_{12})` is the rotation by :math:`\theta`)
-book/docs/cheat-sheet-2d.rst:35:   B &= B_{12} * \mathbf{e}_{12} \quad \text{(a bivector)},
-book/docs/cheat-sheet-2d.rst:36:   \qquad R = r_0 + r_{12} * \mathbf{e}_{12} \quad \text{(a versor)}, \\
-book/docs/cheat-sheet-2d.rst:37:   A &= A_0 + A_1 * \vec{\mathbf{e}}_1 + A_2 * \vec{\mathbf{e}}_2 + A_{12} * \mathbf{e}_{12}
-book/docs/cheat-sheet-2d.rst:38:   \quad \text{(any multivector)}, \qquad I = \mathbf{e}_{12}.
-book/docs/cheat-sheet-2d.rst:49:   \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 = \mathbf{e}_{12}, \quad
-book/docs/cheat-sheet-2d.rst:50:   \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\mathbf{e}_{12}, \quad
-book/docs/cheat-sheet-2d.rst:51:   \mathbf{e}_{12} * \mathbf{e}_{12} = -1 \\
-book/docs/cheat-sheet-2d.rst:52:   &\quad \vec{\mathbf{e}}_1 * \mathbf{e}_{12} = \vec{\mathbf{e}}_2, \quad
-book/docs/cheat-sheet-2d.rst:53:   \vec{\mathbf{e}}_2 * \mathbf{e}_{12} = -\vec{\mathbf{e}}_1 \\
-book/docs/cheat-sheet-2d.rst:57:   = (a_1 * b_1 + a_2 * b_2) + (a_1 * b_2 - a_2 * b_1) * \mathbf{e}_{12}
-book/docs/cheat-sheet-2d.rst:71:   \langle A \rangle_2 = A_{12} * \mathbf{e}_{12}
-book/docs/cheat-sheet-2d.rst:85:   \tilde{B} = -B, \qquad \tilde{R} = r_0 - r_{12} * \mathbf{e}_{12} \\
-book/docs/cheat-sheet-2d.rst:87:   + A_2 * \vec{\mathbf{e}}_2 - A_{12} * \mathbf{e}_{12}
-book/docs/cheat-sheet-2d.rst:113:   B^{-1} = -\frac{1}{B_{12}} * \mathbf{e}_{12}, \qquad
-book/docs/cheat-sheet-2d.rst:114:   R^{-1} = \frac{r_0 - r_{12} * \mathbf{e}_{12}}{r_0^2 + r_{12}^2}
-book/docs/cheat-sheet-2d.rst:148:   = (a_1 * b_2 - a_2 * b_1) * \mathbf{e}_{12}
-book/docs/cheat-sheet-2d.rst:168:   = \pm \mathbf{e}_{12} \quad \text{(the sign of } a_1 * b_2 - a_2 * b_1\text{)}
-book/docs/cheat-sheet-2d.rst:218:   = \vec{\mathbf{v}} * \mathbf{e}_{12}
-book/docs/cheat-sheet-2d.rst:222:   = \vec{\mathbf{v}} * (\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}) \\
-book/docs/cheat-sheet-2d.rst:253:   \mathcal{G}_2: &\quad I = \mathbf{e}_{12}, \qquad I^{-1} = -\mathbf{e}_{12} \\
-book/docs/cheat-sheet-2d.rst:256:   (A_0)^{*} = -A_0 * \mathbf{e}_{12}
-book/docs/cheat-sheet-2d.rst:305:   \text{even and odd parts}: &\quad A^{+} = A_0 + A_{12} * \mathbf{e}_{12}, \qquad
-book/docs/cheat-sheet-2d.rst:307:   \text{the exponential}: &\quad e^{\theta * \mathbf{e}_{12}}
-book/docs/cheat-sheet-2d.rst:308:   = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12} \\
-book/docs/cheat-sheet-3d.rst:35:   B &= B_{12} * \mathbf{e}_{12} + B_{13} * \mathbf{e}_{13} + B_{23} * \mathbf{e}_{23}
-book/docs/cheat-sheet-3d.rst:36:   \quad \text{(a bivector)}, \qquad T = t * \mathbf{e}_{123} \quad \text{(a trivector)}, \\
-book/docs/cheat-sheet-3d.rst:37:   R &= r_0 + r_{12} * \mathbf{e}_{12} + r_{13} * \mathbf{e}_{13} + r_{23} * \mathbf{e}_{23}
-book/docs/cheat-sheet-3d.rst:40:   \qquad I = \mathbf{e}_{123}.
-book/docs/cheat-sheet-3d.rst:51:   \vec{\mathbf{e}}_i * \vec{\mathbf{e}}_j = \mathbf{e}_{ij} \ (i < j), \qquad
-book/docs/cheat-sheet-3d.rst:52:   \mathbf{e}_{12} * \vec{\mathbf{e}}_3 = \mathbf{e}_{123} = I \\
-book/docs/cheat-sheet-3d.rst:53:   &\quad \mathbf{e}_{ij} * \mathbf{e}_{ij} = -1, \qquad I * I = -1, \qquad
-book/docs/cheat-sheet-3d.rst:58:   = (a_1 * b_1 + a_2 * b_2 + a_3 * b_3) + (a_1 * b_2 - a_2 * b_1) * \mathbf{e}_{12} \\
-book/docs/cheat-sheet-3d.rst:59:   &\quad \qquad + (a_1 * b_3 - a_3 * b_1) * \mathbf{e}_{13}
-book/docs/cheat-sheet-3d.rst:60:   + (a_2 * b_3 - a_3 * b_2) * \mathbf{e}_{23}
-book/docs/cheat-sheet-3d.rst:88:   \text{coordinates}: &\quad \tilde{R} = r_0 - r_{12} * \mathbf{e}_{12}
-book/docs/cheat-sheet-3d.rst:89:   - r_{13} * \mathbf{e}_{13} - r_{23} * \mathbf{e}_{23}
-book/docs/cheat-sheet-3d.rst:116:   B^{-1} = -\frac{B}{|B|^2}, \qquad T^{-1} = -\frac{1}{t} * \mathbf{e}_{123}, \qquad
-book/docs/cheat-sheet-3d.rst:150:   = (a_1 * b_2 - a_2 * b_1) * \mathbf{e}_{12} + (a_1 * b_3 - a_3 * b_1) * \mathbf{e}_{13} \\
-book/docs/cheat-sheet-3d.rst:151:   &\quad \qquad + (a_2 * b_3 - a_3 * b_2) * \mathbf{e}_{23} \\
-book/docs/cheat-sheet-3d.rst:154:   = (a_1 * B_{23} - a_2 * B_{13} + a_3 * B_{12}) * \mathbf{e}_{123} \\
-book/docs/cheat-sheet-3d.rst:156:   = \det(\vec{\mathbf{a}}, \vec{\mathbf{b}}, \vec{\mathbf{c}}) * \mathbf{e}_{123}
-book/docs/cheat-sheet-3d.rst:213:   \text{onto } \mathbf{e}_{12}: &\quad \operatorname{proj}_{\mathbf{e}_{12}}(\vec{\mathbf{v}})
-book/docs/cheat-sheet-3d.rst:215:   \operatorname{rej}_{\mathbf{e}_{12}}(\vec{\mathbf{v}}) = v_3 * \vec{\mathbf{e}}_3
-book/docs/cheat-sheet-3d.rst:232:   \text{in } \mathbf{e}_{12}: &\quad \operatorname{ref}_{\mathbf{e}_{12}}(\vec{\mathbf{v}})
-book/docs/cheat-sheet-3d.rst:249:   \text{in } \mathbf{e}_{12}: &\quad \vec{\mathbf{v}} \mapsto
-book/docs/cheat-sheet-3d.rst:270:   \mathcal{G}_3: &\quad I = \mathbf{e}_{123}, \qquad I^{-1} = -\mathbf{e}_{123} \\
-book/docs/cheat-sheet-3d.rst:271:   \text{coordinates}: &\quad \vec{\mathbf{a}}^{*} = -a_3 * \mathbf{e}_{12}
-book/docs/cheat-sheet-3d.rst:272:   + a_2 * \mathbf{e}_{13} - a_1 * \mathbf{e}_{23} \\
-book/docs/defining-g2.rst:31:   s + v_1 * \vec{\mathbf{e}}_1 + v_2 * \vec{\mathbf{e}}_2 + b * \mathbf{e}_{12}
 book/docs/defining-g2.rst:34::math:`\vec{\mathbf{e}}_2` and :math:`\mathbf{e}_{12}`. The blades are constants: they never change,
 book/docs/defining-g2.rst:45:- A **bivector** is a multiple of :math:`\mathbf{e}_{12}`, a piece of plane: grade 2.
 book/docs/defining-g2.rst:69:   :math:`\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 = -\mathbf{e}_{12}`.
-book/docs/defining-g2.rst:75::math:`\mathbf{e}_{12} * \mathbf{e}_{12} = -1`.
-book/docs/defining-g2.rst:78:plus the wedge); a vector times :math:`\mathbf{e}_{12}` is a vector, turned a quarter turn; a
 book/docs/defining-g2.rst:89:to the arrow it names, and :math:`\mathbf{e}_{12}` to the unit square those arrows span. The numbers
-book/docs/dual-3d.rst:21::math:`I = \mathbf{e}_{123}`, which also squares to :math:`-1`, and the dual is still
-book/docs/dual-3d.rst:22:multiplication by :math:`I^{-1} = -\mathbf{e}_{123}`. But now it changes what kind of object it
-book/docs/dual.rst:19:The plane has a unit of area, :math:`I = \mathbf{e}_{12}`, the piece of plane spanned by
-book/docs/dual.rst:21:inverse, :math:`I^{-1} = -\mathbf{e}_{12}`. The **dual** of a vector :math:`\vec{\mathbf{a}}` is
-book/docs/dual.rst:41::math:`\mathbf{e}_{12}`, and :math:`\vec{\mathbf{e}}_1 * \mathbf{e}_{12} = \vec{\mathbf{e}}_2`,
-book/docs/dual.rst:42::math:`\vec{\mathbf{e}}_2 * \mathbf{e}_{12} = -\vec{\mathbf{e}}_1`: the result is a vector. Its
 book/docs/geometric-product.rst:29:product* :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` — call it :math:`\mathbf{e}_{12}`. Multiplying :math:`\vec{\mathbf{a}}` by
-book/docs/geometric-product.rst:30::math:`\mathbf{e}_{12}` on the right turns it 90°:
-book/docs/geometric-product.rst:34:   \vec{\mathbf{a}} * \mathbf{e}_{12} = (a_1 * \vec{\mathbf{e}}_1 + a_2 * \vec{\mathbf{e}}_2) * \mathbf{e}_{12}
-book/docs/geometric-product.rst:37:(The two facts used, :math:`\vec{\mathbf{e}}_1 * \mathbf{e}_{12} = \vec{\mathbf{e}}_2` and :math:`\vec{\mathbf{e}}_2 * \mathbf{e}_{12} = -\vec{\mathbf{e}}_1`, are the
-book/docs/geometric-product.rst:40:Turn by 90° twice and the vector points the other way: :math:`(\vec{\mathbf{a}} * \mathbf{e}_{12}) * \mathbf{e}_{12} = -\vec{\mathbf{a}}`.
-book/docs/geometric-product.rst:41:So :math:`\mathbf{e}_{12} * \mathbf{e}_{12} = -1`. This object squares to :math:`-1`, just like the imaginary unit
-book/docs/geometric-product.rst:48:   \vec{\mathbf{r}}(\vec{\mathbf{a}}; \theta) &= \cos(\theta) * \vec{\mathbf{a}} + \sin(\theta) * (\vec{\mathbf{a}} * \mathbf{e}_{12}) \\
-book/docs/geometric-product.rst:49:                                              &= \vec{\mathbf{a}} * (\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}).
-book/docs/geometric-product.rst:56:   \vec{\mathbf{a}} * (\cos(\theta) + \sin(\theta) * \mathbf{e}_{12})
-book/docs/geometric-product.rst:66:The object :math:`R = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12}` is a **full-angle rotor**: to
-book/docs/geometric-product.rst:71:rotor :math:`\cos(\theta/2) - \sin(\theta/2) * \mathbf{e}_{12}` applied as a sandwich
-book/docs/geometric-product.rst:107::math:`\mathbf{e}_{12}` is an exact unit bivector. This is the same discipline as buying 12
-book/docs/geometric-product.rst:111:form — a full-angle rotor built from :math:`\cos(\theta)`, :math:`\sin(\theta)`, and :math:`\mathbf{e}_{12}`,
-book/docs/geometric-product.rst:119::math:`\vec{\mathbf{a}} * (\cos(\theta) + \sin(\theta) * \mathbf{e}_{12})` equals both the coordinate formula
-book/docs/product-from-projection.rst:21:vector turned out to be a multiplication by :math:`\mathbf{e}_{12}`, and we followed the multiplication rules
-book/docs/product-from-projection.rst:72:across, in the plane", and we already have one: :math:`\mathbf{e}_{12}`, the unit of area in the plane.
-book/docs/product-from-projection.rst:78:   \vec{\mathbf{b}} * \vec{\mathbf{a}} = |\vec{\mathbf{b}}| * (x + y * \mathbf{e}_{12})
-book/docs/product-from-projection.rst:79:     = (a_1 * b_1 + a_2 * b_2) + (b_1 * a_2 - b_2 * a_1) * \mathbf{e}_{12}.
-book/docs/product-from-projection.rst:83:(:math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 = \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2 = 1`, :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 = \mathbf{e}_{12}`, :math:`\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\mathbf{e}_{12}`):
-book/docs/product-from-projection.rst:90:     &= (a_1 * b_1 + a_2 * b_2) + (b_1 * a_2 - b_2 * a_1) * \mathbf{e}_{12}.
-book/docs/product-from-projection.rst:105:- its :math:`\mathbf{e}_{12}` part is the **wedge** :math:`\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}`, which is
-book/docs/product-from-projection.rst:152:   \vec{\mathbf{u}} \wedge \vec{\mathbf{v}} = |\vec{\mathbf{u}}| * |\vec{\mathbf{v}}| * \sin(\theta) * \mathbf{e}_{12}.
+book/docs/product-from-projection.rst:83:(:math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 = \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2 = 1`, :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 = \mathbf{e}_{12}`, :math:`\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`):
 book/docs/projection-rejection-3d.rst:25:planes :math:`\mathbf{e}_{12}` (the xy-plane), :math:`\mathbf{e}_{23}` (yz) and :math:`\mathbf{e}_{31}` (zx).
 book/docs/projection-rejection-3d.rst:34:.. figure:: _static/epix/proj3d-e12.*
 book/docs/projection-rejection-3d.rst:36:   :alt: projection of a onto the e12 (xy) plane and the perpendicular rejection
@@ -120,15 +14,10 @@ book/docs/projection-rejection-3d.rst:40:   :alt: projection of a onto the e23 (
 book/docs/projection-rejection-3d.rst:42:.. figure:: _static/epix/proj3d-e31.*
 book/docs/projection-rejection-3d.rst:44:   :alt: projection of a onto the e31 (zx) plane and the perpendicular rejection
 book/docs/projection-rejection-3d.rst:48:   The third plane is written :math:`\mathbf{e}_{31}` (cyclically, like :math:`\mathbf{e}_{12}` and
-book/docs/projection-rejection-3d.rst:49:   :math:`\mathbf{e}_{23}`); gacalc spells the same blade :math:`\mathbf{e}_{13} = -\mathbf{e}_{31}`.
-book/docs/projection.rst:51:is a pure piece of plane, a multiple of :math:`\mathbf{e}_{12}`. Since
+book/docs/projection-rejection-3d.rst:49:   :math:`\mathbf{e}_{23}`); gacalc writes its product the other way round, and
 book/docs/proof-cross.rst:35::math:`\mathbf{e}_{12}` plane, then
 book/docs/proof-cross.rst:47:x-axis and :math:`\vec{\mathbf{b}}` lies flat in the :math:`\mathbf{e}_{12}` plane, take the trivial
 book/docs/proof-cross.rst:59:   :math:`\vec{\mathbf{e}}_1` axis (in the :math:`\mathbf{e}_{23}` plane), read off :math:`\vec{\mathbf{b}}`'s
-book/docs/rotation-from-vectors.rst:39:                     = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12}.
-book/docs/rotation-from-vectors.rst:42:* \mathbf{e}_{12}` — but we did not have to know :math:`\theta` to write it. We *multiplied the two vectors*,
-book/docs/rotation-from-vectors.rst:101:   \vec{\mathbf{a}} \wedge \vec{\mathbf{b}} = |\vec{\mathbf{a}}| * |\vec{\mathbf{b}}| * \sin(\theta) * \mathbf{e}_{12}.
-book/docs/rotation-from-vectors.rst:103:(The wedge is a bivector, a multiple of :math:`\mathbf{e}_{12}`; the number multiplying :math:`\mathbf{e}_{12}` is the
 book/figures/epix/proj3d_e12.py:15:# # proj3d_e12 — projection of $\vec{\mathbf{a}}$ onto the $\mathbf{e}_{12}$ (xy) plane
 book/figures/epix/proj3d_e12.py:17:# $\vec{\mathbf{a}}$ split against the $\mathbf{e}_{12}$ plane: the projection (blue)
 book/figures/epix/proj3d_e12.py:20:# `_static/epix/proj3d-e12.{pdf,png}`. CC0.
@@ -145,54 +34,26 @@ book/figures/epix/proj3d_e23.py:60:        text=r"$\mathrm{proj}_{\mathbf{e}_{23
 book/figures/epix/proj3d_e23.py:70:        text=r"$\mathrm{rej}_{\mathbf{e}_{23}}\,\vec{\mathbf{a}}$",
 book/figures/epix/proj3d_e31.py:15:# # proj3d_e31 — projection of $\vec{\mathbf{a}}$ onto the $\mathbf{e}_{31}$ (zx) plane
 book/figures/epix/proj3d_e31.py:17:# $\vec{\mathbf{a}}$ split against the $\mathbf{e}_{31}$ plane: the projection (blue)
-book/figures/epix/proj3d_e31.py:19:# book writes this plane $\mathbf{e}_{31}$, cyclically; gacalc's blade constant is
-book/figures/epix/proj3d_e31.py:20:# $\mathbf{e}_{13}=-\mathbf{e}_{31}$.) Built with the `epix` package;
-book/figures/epix/proj3d_e31.py:21:# `tools/render_epix_figures.py` writes `_static/epix/proj3d-e31.{pdf,png}`. CC0.
-book/figures/epix/proj3d_e31.py:45:    plane3(plane="e_31")
-book/figures/epix/proj3d_e31.py:47:    proj: Point = project_onto(plane="e_31")
-book/figures/epix/proj3d_e31.py:61:        text=r"$\mathrm{proj}_{\mathbf{e}_{31}}\,\vec{\mathbf{a}}$",
-book/figures/epix/proj3d_e31.py:71:        text=r"$\mathrm{rej}_{\mathbf{e}_{31}}\,\vec{\mathbf{a}}$",
+book/figures/epix/proj3d_e31.py:19:# book writes this plane $\mathbf{e}_{31}$, cyclically; gacalc writes its product the
+book/figures/epix/proj3d_e31.py:23:# `_static/epix/proj3d-e31.{pdf,png}`. CC0.
+book/figures/epix/proj3d_e31.py:47:    plane3(plane="e_31")
+book/figures/epix/proj3d_e31.py:49:    proj: Point = project_onto(plane="e_31")
+book/figures/epix/proj3d_e31.py:63:        text=r"$\mathrm{proj}_{\mathbf{e}_{31}}\,\vec{\mathbf{a}}$",
+book/figures/epix/proj3d_e31.py:73:        text=r"$\mathrm{rej}_{\mathbf{e}_{31}}\,\vec{\mathbf{a}}$",
 book/figures/epix/proj3d_overview.py:18:# planes $\mathbf{e}_{12}$, $\mathbf{e}_{23}$, $\mathbf{e}_{31}$ (faint), each of which
 book/figures/epix/proj3d_overview.py:39:    plane3(plane="e_12", faint=True)
 book/figures/epix/proj3d_overview.py:40:    plane3(plane="e_23", faint=True)
 book/figures/epix/proj3d_overview.py:41:    plane3(plane="e_31", faint=True)
-notebooks/bootstrap-product.py:36:# $|\vec{\mathbf{a}}| * (x + y * \mathbf{e}_{12})$. Then the quarter turn as a product,
-notebooks/bootstrap-product.py:59:from gacalc.g2 import Scalar, Vector, Versor, e_1, e_2, e_12
-notebooks/bootstrap-product.py:103:# $|\vec{\mathbf{a}}| * (x + y * \mathbf{e}_{12})$. The plain-number part is the dot
-notebooks/bootstrap-product.py:104:# product and the $\mathbf{e}_{12}$ part, the signed area of the parallelogram, is the
-notebooks/bootstrap-product.py:110:    * (Scalar(measured.coefficient(e_1)) + Scalar(measured.coefficient(e_2)) * e_12)
-notebooks/bootstrap-product.py:160:# $\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\mathbf{e}_{12}$. First at the plot
-notebooks/bootstrap-product.py:175:# Multiplying by $\mathbf{e}_{12}$ on the right turns a vector a quarter turn:
-notebooks/bootstrap-product.py:176:# $\vec{\mathbf{b}} * \mathbf{e}_{12}$ is Step 1's $r(\vec{\mathbf{b}}; \pi/2)$.
-notebooks/bootstrap-product.py:179:quarter_turn: MultiVectorBase = b * e_12
-notebooks/bootstrap-product.py:199:        text=r"$\vec{\mathbf{b}} * \mathbf{e}_{12}$",
-notebooks/bootstrap-product.py:282:# $\vec{\mathbf{b}} * \mathbf{e}_{12}$ was:
-notebooks/bootstrap-product.py:380:# second, $\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}$:
-notebooks/bootstrap-product.py:384:    Scalar(sympy.cos(beta - alpha)) + Scalar(sympy.sin(beta - alpha)) * e_12
-notebooks/bootstrap-projection-from-product.py:136:# Term by term: $\mathbf{e}_{12}$ times each term of $\vec{\mathbf{a}}^{-1}$ is a
-notebooks/bootstrap-rotation-from-product.py:103:# $\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}$, with $\theta$ the angle from
-notebooks/bootstrap-rotation-from-product.py:113:# keeps its direction, and times the $\mathbf{e}_{12}$ part turns a quarter turn. First
 notebooks/defining-g2.py:54:from gacalc.g2 import Bivector, G, Scalar, Vector, Versor, e_1, e_2, e_12
-notebooks/defining-g2.py:61:# $\mathbf{e}_{12}$. Some elements have only some of those parts, and those get names:
-notebooks/defining-g2.py:72:# - a **bivector** is a multiple of $\mathbf{e}_{12}$, a piece of plane (grade 2);
-notebooks/defining-g2.py:92:# of plane $\mathbf{e}_{12}$. They never change; they are constants, like the digits of
-notebooks/defining-g2.py:170:# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ is the unit plane $\mathbf{e}_{12}$:
-notebooks/defining-g2.py:184:# \vec{\mathbf{e}}_1) = -6 * \mathbf{e}_{12}$:
-notebooks/defining-g2.py:236:# $\mathbf{e}_{12} * \mathbf{e}_{12} = \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 *
-notebooks/defining-g2.py:241:e_12 * e_12
-notebooks/defining-g2.py:307:B: Bivector = 2 * e_12
-notebooks/defining-g2.py:315:R: Versor = Scalar(sympy.cos(theta)) + Scalar(sympy.sin(theta)) * e_12
-notebooks/defining-g2.py:352:type(a * e_12).__name__
-notebooks/defining-g2.py:356:# $\mathbf{e}_{12} * \mathbf{e}_{12} = -1$:
-notebooks/defining-g2.py:383:# $\vec{\mathbf{e}}_1$ and $\vec{\mathbf{e}}_2$ grade 1, $\mathbf{e}_{12}$ grade 2.
-notebooks/defining-g2.py:425:# Drawn: the two steps dashed, the vector solid, and the unit plane $\mathbf{e}_{12}$ as
-notebooks/defining-g2.py:436:    note(at=0.5 * (P_E1 + P_E2), text=r"$\mathbf{e}_{12}$", color=BLUE)
+notebooks/defining-g2.py:94:# of plane $\mathbf{e}_{12}$. They never change; they are constants, like the digits of
+notebooks/defining-g2.py:172:# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ is the unit plane $\mathbf{e}_{12}$:
+notebooks/defining-g2.py:308:B: Bivector = 2 * e_12
+notebooks/defining-g2.py:384:# $\vec{\mathbf{e}}_1$ and $\vec{\mathbf{e}}_2$ grade 1, $\mathbf{e}_{12}$ grade 2.
+notebooks/defining-g2.py:435:    note(at=0.5 * (P_E1 + P_E2), text=r"$\mathbf{e}_{12}$", color=BLUE)
 notebooks/displayg2.py:40:# $\mathbf{e}_{12} = \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$. The companion notebooks
 notebooks/displayg2.py:60:e_12: G = G.e_12
-notebooks/displayg2.py:82:# with $\mathbf{e}_{12}$ behave like the complex numbers. The class names that piece
-notebooks/displayg2.py:83:# of plane `e_12`; it is the same value as the product, so their difference is $0$:
-notebooks/displayg2.py:86:show_difference(e_12, e_1 * e_2)
-notebooks/displayg2.py:284:# The *dual* multiplies by the inverse of $\mathbf{e}_{12}$. In the plane that turns a
+notebooks/displayg2.py:82:# $\mathbf{e}_{12}$ behave like the complex numbers. The class names that piece of plane
+notebooks/displayg2.py:83:# `e_12`; it is the same value as the product $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$.
 notebooks/displayg3.py:39:# $\mathbf{e}_{12}, \mathbf{e}_{13}, \mathbf{e}_{23}$, one for each pair of arrows; and
 notebooks/displayg3.py:40:# one piece of space, $\mathbf{e}_{123} = \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 *
 notebooks/displayg3.py:63:e_12: G = G.e_12
@@ -200,54 +61,24 @@ notebooks/displayg3.py:64:e_13: G = G.e_13
 notebooks/displayg3.py:65:e_23: G = G.e_23
 notebooks/displayg3.py:66:e_123: G = G.e_123
 notebooks/displayg3.py:86:# It is $-1$, like the plane's $\mathbf{e}_{12}$ in `displayg2.py`. The class names it
-notebooks/displayg3.py:87:# `e_123`, and the difference between the two is $0$:
-notebooks/displayg3.py:90:show_difference(e_123, e_1 * e_2 * e_3)
-notebooks/displayg3.py:97:e_12
-notebooks/displayg3.py:103:e_13
-notebooks/displayg3.py:109:e_23
-notebooks/displayg3.py:282:# $\mathbf{e}_{12} * \mathbf{e}_{12} = -1$:
+notebooks/displayg3.py:87:# `e_123`, the same value as the product of the three arrows.
+notebooks/displayg3.py:94:e_12
+notebooks/displayg3.py:100:e_13
+notebooks/displayg3.py:106:e_23
 notebooks/displaygraded.py:143:# here, so the `e_12` coefficient is positive).
 notebooks/displaygraded.py:238:    draw_bivector(e_1, e_2, label=r"\mathbf{e}_{12}")
 notebooks/displaygraded.py:396:# B * B.dual() stores (cos^2 t + sin^2 t)·e_123 but displays as the trivector e_123
 notebooks/displaymv.py:84:# $\vec{\mathbf{e}}_1 \vec{\mathbf{e}}_2$ *plane*, written $\mathbf{e}_{12}$. We cannot
-notebooks/displaymv.py:127:# \vec{\mathbf{e}}_2) \\ &= 9 * 1 + 12 * \mathbf{e}_{12} - 12 * \mathbf{e}_{12} + 16 * 1
-notebooks/displaymv.py:238:#   &= -6 * \mathbf{e}_{12}
-notebooks/displaymv.py:655:# Like $\mathbf{e}_{12}$, it squares to a negative number:
-notebooks/displaymv.py:675:# $\mathbf{e}_{123}$.
-notebooks/displaymv.py:696:# With the value put back, the product is the unit volume $\mathbf{e}_{123}$:
-notebooks/displaymv.py:747:# which blades it has: a plain number (the dot) and $\mathbf{e}_{12}$ (the wedge).
+notebooks/displaymv.py:669:# $\mathbf{e}_{123}$.
+notebooks/displaymv.py:690:# With the value put back, the product is the unit volume $\mathbf{e}_{123}$:
 notebooks/displayrotations.py:230:    Gn.project(e_2 ^ e_3), r"P_{e_{23}}"
 notebooks/displayrotations.py:277:i: g2.Bivector = g2.Bivector.e_12
 notebooks/dual-3d.py:58:from gacalc.g3 import Bivector, Scalar, Trivector, Vector, Versor, e_1, e_2, e_3, e_123
 notebooks/dual-3d.py:150:I_inverse: Trivector = e_123.inverse()
-notebooks/dual-3d.py:164:# $\mathbf{e}_{12} * I^{-1} = \vec{\mathbf{e}}_3$.
-notebooks/dual.py:28:# $I = \mathbf{e}_{12}$. The chapter claims the dual always meets $\vec{\mathbf{a}}$ at
 notebooks/dual.py:62:    e_12,
-notebooks/dual.py:80:# The plane's unit area is $I = \mathbf{e}_{12}$. It squares to $-1$, so its inverse is
-notebooks/dual.py:81:# its negative, $I^{-1} = -\mathbf{e}_{12}$:
-notebooks/dual.py:84:I_inverse: Bivector = e_12.inverse()
-notebooks/dual.py:91:e_12 * I_inverse
-notebooks/dual.py:151:# Each term is a basis vector times $\mathbf{e}_{12}$, which is again a basis vector
-notebooks/dual.py:152:# ($\vec{\mathbf{e}}_1 * \mathbf{e}_{12} = \vec{\mathbf{e}}_2$), so the sum has no plain
-notebooks/dual.py:254:# by $90°$ by multiplying by $\mathbf{e}_{12}$. Multiplying by
-notebooks/dual.py:255:# $I^{-1} = -\mathbf{e}_{12}$ instead turns it $90°$ the other way, clockwise. So the
+notebooks/dual.py:85:I_inverse: Bivector = e_12.inverse()
 notebooks/frame-qr-3d.py:72:# it in the $\mathbf{e}_{12}$ plane, and $\vec{\mathbf{v}}_3$ leans over that plane.
-notebooks/geometric-product.py:36:# $R = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12}$. (This is 2D only: nothing lies
-notebooks/geometric-product.py:80:# Multiplying by the unit bivector $\mathbf{e}_{12}$, the role $i$ plays for complex
-notebooks/geometric-product.py:85:quarter_turn: Vector = a * Bivector.e_12
-notebooks/geometric-product.py:94:R: Versor = Scalar(sympy.cos(theta)) + Scalar(sympy.sin(theta)) * Bivector.e_12
-notebooks/geometric-product.py:99:# stays put, and times $\sin(\theta) * \mathbf{e}_{12}$ turns a quarter turn. First at
-notebooks/geometric-product.py:143:        text=r"$\vec{\mathbf{a}} * \mathbf{e}_{12}$",
-notebooks/levels-of-abstraction.py:108:# The geometric product, a plain-number part plus an $\mathbf{e}_{12}$ part:
-notebooks/levels-of-abstraction.py:116:# along $\vec{\mathbf{a}}$ (green), the $\mathbf{e}_{12}$ part the signed area of the
-notebooks/levels-of-abstraction.py:183:wedge_coordinate: g2.Bivector = (g2.Scalar(a_1 * b_2 - a_2 * b_1)) * g2.Bivector.e_12
-notebooks/levels-of-abstraction.py:248:#   $((\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}) \cdot \mathbf{e}_{12}) / (|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|)$,
-notebooks/product-from-projection.py:32:# $$\vec{\mathbf{b}} * \vec{\mathbf{a}} = |\vec{\mathbf{b}}| * (x + y * \mathbf{e}_{12}),$$
-notebooks/product-from-projection.py:204:# rejection part as a multiple of $\mathbf{e}_{12}$:
-notebooks/product-from-projection.py:208:    Scalar(b.magnitude()) * (Versor.from_real(x) + Scalar(y) * Bivector.e_12)
-notebooks/product-from-projection.py:254:# The $\mathbf{e}_{12}$ part is the wedge $\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}$:
-notebooks/product-from-projection.py:261:# Its difference from $|\vec{\mathbf{b}}| * y * \mathbf{e}_{12}$:
-notebooks/product-from-projection.py:264:show_difference(wedge, Scalar(b.magnitude() * y) * Bivector.e_12)
+notebooks/levels-of-abstraction.py:184:wedge_coordinate: g2.Bivector = (g2.Scalar(a_1 * b_2 - a_2 * b_1)) * g2.Bivector.e_12
 notebooks/projection-rejection-3d.py:61:from gacalc.g3 import Bivector, Scalar, Vector, Versor, e_1, e_2, e_3, e_12, e_13, e_23
 notebooks/projection-rejection-3d.py:78:# Projecting onto the floor, the $\mathbf{e}_{12}$ plane, keeps the $\vec{\mathbf{e}}_1$
 notebooks/projection-rejection-3d.py:82:a.projected_onto(e_12)
@@ -255,13 +86,9 @@ notebooks/projection-rejection-3d.py:88:a.rejected_away_from(e_12)
 notebooks/projection-rejection-3d.py:91:# Onto the $\mathbf{e}_{23}$ plane, the projection keeps $a_2$ and $a_3$:
 notebooks/projection-rejection-3d.py:94:a.projected_onto(e_23)
 notebooks/projection-rejection-3d.py:100:a.rejected_away_from(e_23)
-notebooks/projection-rejection-3d.py:103:# Onto the $\mathbf{e}_{31}$ plane (gacalc writes it
-notebooks/projection-rejection-3d.py:104:# $\mathbf{e}_{13} = -\mathbf{e}_{31}$; the sign does not change which plane it is), the
-notebooks/projection-rejection-3d.py:108:a.projected_onto(e_13)
-notebooks/projection-rejection-3d.py:114:a.rejected_away_from(e_13)
-notebooks/projection.py:173:# Simplified, it is a plain number with no $\mathbf{e}_{12}$ part:
-notebooks/projection.py:184:# a multiple of $\mathbf{e}_{12}$. First at the plot values:
-notebooks/projection.py:196:# Simplified, it is a multiple of $\mathbf{e}_{12}$ and nothing else:
+notebooks/projection-rejection-3d.py:103:# Onto the $\mathbf{e}_{31}$ plane (gacalc writes its product the other way round,
+notebooks/projection-rejection-3d.py:109:a.projected_onto(e_13)
+notebooks/projection-rejection-3d.py:115:a.rejected_away_from(e_13)
 notebooks/proof-cross.py:30:# $\vec{\mathbf{b}}$ in the $\mathbf{e}_{12}$ plane; there the cross product is a
 notebooks/proof-cross.py:124:# ## Step 1: swing $\vec{\mathbf{a}}$'s shadow in the $\mathbf{e}_{12}$ plane onto the x-axis
 notebooks/proof-cross.py:136:# It leaves $\vec{\mathbf{a}}$ in the $\mathbf{e}_{13}$ plane:
@@ -273,6 +100,4 @@ notebooks/proof-cross.py:244:# $\vec{\mathbf{b}}''$ in the $\mathbf{e}_{12}$ pla
 notebooks/proof-projection-3d.py:112:# ## Step 1: swing $\vec{\mathbf{b}}$'s shadow in the $\mathbf{e}_{12}$ plane onto the x-axis
 notebooks/proof-projection-3d.py:127:# It leaves $\vec{\mathbf{b}}$ in the $\mathbf{e}_{13}$ plane, at
 notebooks/proof-projection-3d.py:137:# The rotation, in the $\mathbf{e}_{13}$ plane, from $\vec{\mathbf{b}}$'s new direction
-notebooks/reflection-3d.py:211:# the floor, the $\mathbf{e}_{12}$ plane, so the mirror image of $\vec{\mathbf{v}}$
-notebooks/rotation-from-vectors.py:94:# which is $\cos(\beta - \alpha)$, and the $\mathbf{e}_{12}$ rows to
-notebooks/rotation-from-vectors.py:102:# $\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}$ with $\theta = \beta - \alpha$. We
+notebooks/reflection-3d.py:205:# the floor, the $\mathbf{e}_{12}$ plane, so the mirror image of $\vec{\mathbf{v}}$

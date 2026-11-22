@@ -133,8 +133,9 @@ at_values(projection, values)
 # ## The rejection, the same way
 #
 # $\operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}}) = (\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}) * \vec{\mathbf{a}}^{-1}$.
-# Term by term: $\mathbf{e}_{12}$ times each term of $\vec{\mathbf{a}}^{-1}$ is a
-# quarter turn of that term, so the result is a vector again. First at the plot values:
+# Term by term: $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ times each term of
+# $\vec{\mathbf{a}}^{-1}$ is a quarter turn of that term, so the result is a vector
+# again. First at the plot values:
 
 # %%
 show_mult(at_values(b.wedge(a), values), at_values(a_inverse, values))

@@ -100,8 +100,8 @@ values: list[tuple[sympy.Symbol, Real]] = [
 # ## The one-sided form
 #
 # The product of the two unit vectors is
-# $\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}$, with $\theta$ the angle from
-# $\vec{\mathbf{a}}$ to $\vec{\mathbf{b}}$:
+# $\cos(\theta) + \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$, with $\theta$
+# the angle from $\vec{\mathbf{a}}$ to $\vec{\mathbf{b}}$:
 
 # %%
 unit_product: Versor = (a.normalize() * b.normalize()).simplified()
@@ -110,8 +110,8 @@ unit_product
 # %% [markdown]
 # Multiplying $\vec{\mathbf{v}}$ by it on the right rotates $\vec{\mathbf{v}}$ by
 # $\theta$. Term by term: each term of $\vec{\mathbf{v}}$ times the plain-number part
-# keeps its direction, and times the $\mathbf{e}_{12}$ part turns a quarter turn. First
-# at the plot values:
+# keeps its direction, and times the $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ part
+# turns a quarter turn. First at the plot values:
 
 # %%
 show_mult(at_values(v, values), at_values(unit_product, values))

@@ -580,8 +580,16 @@ sweep that applied them is `tasks/archive/2026/10/09/math-notation-parens-star-n
   `sin = y/r`, `(cos = c, sin = s)`, `cos = 0`.
 - **Typeset LaTeX writes vectors the way gacalc's output does** (`blade_latex` in
   `src/gacalc/base.py`): a vector `\vec{\mathbf{a}}`, a unit vector `\hat{\mathbf{a}}`, a basis
-  vector `\vec{\mathbf{e}}_1`, and a blade of grade 2 or more one bold `\mathbf{e}_{12}`, with no
-  arrow and not written as `e_1 e_2`. Scalars, coordinates (`a_1`), angles, and capital multivectors
+  vector `\vec{\mathbf{e}}_1`. A blade of grade 2 or more that is a **value** is written as the
+  product of its basis vectors, `y * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` (`1 * …` when it stands
+  alone, as in `I = 1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`), parenthesized after a vector,
+  `\vec{\mathbf{a}} * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)`, so the reader sees what it is
+  (William Emerison Six <billsix@gmail.com>, 2026-11-22). The one bold `\mathbf{e}_{12}` stays where
+  it **names** the blade: where a page introduces it (`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 =
+  \mathbf{e}_{12}`, "call it"), as a plane's name ("the `\mathbf{e}_{12}` plane") or a subscript
+  (`proj_{\mathbf{e}_{12}}`), in a figure label, and where the text points at gacalc's printed output.
+  The plane `\vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1` is written as that product, since gacalc's
+  `e_13` is its negative. Scalars, coordinates (`a_1`), angles, and capital multivectors
   and rotors (`R`, `B`) stay plain. This covers book pages, the Markdown of every notebook (the book's
   and the demo notebooks under `notebooks/` alike) and figure labels
   (William Emerison Six <billsix@gmail.com>, 2026-11-17). Put the accent outside the bold,

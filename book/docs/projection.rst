@@ -48,7 +48,7 @@ What the two parts do to the product
 Multiply each part by :math:`\vec{\mathbf{a}}`. The part along :math:`\vec{\mathbf{a}}` is a number
 times :math:`\vec{\mathbf{a}}`, so its product with :math:`\vec{\mathbf{a}}` is a plain number. The
 part across is perpendicular to :math:`\vec{\mathbf{a}}`, and the product of perpendicular vectors
-is a pure piece of plane, a multiple of :math:`\mathbf{e}_{12}`. Since
+is a pure piece of plane, a multiple of :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`. Since
 :math:`\vec{\mathbf{b}}` is the sum of its parts, the two pieces add up to the whole product:
 
 .. math::

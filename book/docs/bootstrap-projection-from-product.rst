@@ -72,8 +72,8 @@ Replace the dot product by the wedge:
 
    \operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}}) = (\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}) * \vec{\mathbf{a}}^{-1}.
 
-With :math:`\vec{\mathbf{b}} \wedge \vec{\mathbf{a}} = (b_1 * a_2 - b_2 * a_1) * \mathbf{e}_{12}` and
-:math:`\mathbf{e}_{12} * \vec{\mathbf{a}} = -\vec{\mathbf{a}} * \mathbf{e}_{12} = -\vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2)` (the quarter turn as a
+With :math:`\vec{\mathbf{b}} \wedge \vec{\mathbf{a}} = (b_1 * a_2 - b_2 * a_1) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` and
+:math:`(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) * \vec{\mathbf{a}} = -\vec{\mathbf{a}} * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) = -\vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2)` (the quarter turn as a
 product, :eq:`eq-bootstrap-quarter-turn-product`),
 
 .. math::

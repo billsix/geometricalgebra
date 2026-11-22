@@ -36,10 +36,10 @@ scalar plus a bivector, and the two pieces are exactly the dot and the wedge:
 .. math::
 
    \hat{\mathbf{a}} * \hat{\mathbf{b}} = \hat{\mathbf{a}} \cdot \hat{\mathbf{b}} + \hat{\mathbf{a}} \wedge \hat{\mathbf{b}}
-                     = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12}.
+                     = \cos(\theta) + \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2.
 
 That is the **full-angle rotor** of :doc:`geometric-product` — :math:`R = \cos(\theta) + \sin(\theta)
-* \mathbf{e}_{12}` — but we did not have to know :math:`\theta` to write it. We *multiplied the two vectors*,
+* \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` — but we did not have to know :math:`\theta` to write it. We *multiplied the two vectors*,
 and the cosine and sine appeared on their own as :math:`\hat{\mathbf{a}} \cdot \hat{\mathbf{b}}` and :math:`\hat{\mathbf{a}}
 \wedge \hat{\mathbf{b}}`. (The Lean proofs state this as ``uvec_mul_uvec`` in
 ``proofs/GacalcProofs/Rotation2D.lean`` — the product of the unit vectors at angles :math:`\alpha`
@@ -98,9 +98,9 @@ the angle was the organizing idea even though we never evaluated it, and the pay
 
    \cos(\theta) = \frac{\vec{\mathbf{a}} \cdot \vec{\mathbf{b}}}{|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|},
    \qquad
-   \vec{\mathbf{a}} \wedge \vec{\mathbf{b}} = |\vec{\mathbf{a}}| * |\vec{\mathbf{b}}| * \sin(\theta) * \mathbf{e}_{12}.
+   \vec{\mathbf{a}} \wedge \vec{\mathbf{b}} = |\vec{\mathbf{a}}| * |\vec{\mathbf{b}}| * \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2.
 
-(The wedge is a bivector, a multiple of :math:`\mathbf{e}_{12}`; the number multiplying :math:`\mathbf{e}_{12}` is the
+(The wedge is a bivector, a multiple of :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`; the number multiplying :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` is the
 signed area :math:`|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}| * \sin(\theta)`.)
 
 Here those same two quantities are not the *answer* to a calculation about an angle — they *are* the

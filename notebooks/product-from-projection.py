@@ -29,7 +29,7 @@
 # the x-axis, as in the projection proof, and those are the coordinates $(x, y)$ where
 # $\vec{\mathbf{a}}$ lands. This notebook checks, with every coordinate a symbol, that
 #
-# $$\vec{\mathbf{b}} * \vec{\mathbf{a}} = |\vec{\mathbf{b}}| * (x + y * \mathbf{e}_{12}),$$
+# $$\vec{\mathbf{b}} * \vec{\mathbf{a}} = |\vec{\mathbf{b}}| * (x + y * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2),$$
 #
 # and that this is the same product the multiplication rules of the geometric-product
 # chapter give. Numbers appear only to draw the figures. Each check shows both sides,
@@ -201,11 +201,12 @@ show_difference(b_times_y, b_1 * a_2 - b_2 * a_1)
 # ## The product built from them is gacalc's geometric product
 #
 # Put the two numbers into one object, the projection part as a plain number and the
-# rejection part as a multiple of $\mathbf{e}_{12}$:
+# rejection part as a multiple of $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$:
 
 # %%
 built: Versor = (
-    Scalar(b.magnitude()) * (Versor.from_real(x) + Scalar(y) * Bivector.e_12)
+    Scalar(b.magnitude())
+    * (Versor.from_real(x) + Scalar(y) * (Vector.e_1 * Vector.e_2))
 ).simplified()
 built
 
@@ -251,17 +252,19 @@ dot
 show_difference(dot, b.magnitude() * x)
 
 # %% [markdown]
-# The $\mathbf{e}_{12}$ part is the wedge $\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}$:
+# The $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ part is the wedge
+# $\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}$:
 
 # %%
 wedge: Bivector = b ^ a
 wedge
 
 # %% [markdown]
-# Its difference from $|\vec{\mathbf{b}}| * y * \mathbf{e}_{12}$:
+# Its difference from
+# $|\vec{\mathbf{b}}| * y * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$:
 
 # %%
-show_difference(wedge, Scalar(b.magnitude() * y) * Bivector.e_12)
+show_difference(wedge, Scalar(b.magnitude() * y) * (Vector.e_1 * Vector.e_2))
 
 # %% [markdown]
 # Together they are the product.

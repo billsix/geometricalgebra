@@ -124,8 +124,8 @@ e_2 * e_1
 # \vec{\mathbf{e}}_1 + 4 * \vec{\mathbf{e}}_2) &= 9 * (\vec{\mathbf{e}}_1 *
 # \vec{\mathbf{e}}_1) + 12 * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) + 12 *
 # (\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1) + 16 * (\vec{\mathbf{e}}_2 *
-# \vec{\mathbf{e}}_2) \\ &= 9 * 1 + 12 * \mathbf{e}_{12} - 12 * \mathbf{e}_{12} + 16 * 1
-# \\ &= 25 \end{aligned}
+# \vec{\mathbf{e}}_2) \\ &= 9 * 1 + 12 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 - 12 *
+# (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) + 16 * 1 \\ &= 25 \end{aligned}
 # $$
 #
 # and $25 = 3^2 + 4^2$, the length squared.
@@ -235,7 +235,7 @@ i * i
 # (2 * \vec{\mathbf{e}}_2) * (3 * \vec{\mathbf{e}}_1)
 #   &= 6 * (\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1) && \text{scalars to the front} \\
 #   &= 6 * (-\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) && \text{one swap, by (R2)} \\
-#   &= -6 * \mathbf{e}_{12}
+#   &= -6 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2
 # \end{aligned}
 # $$
 
@@ -646,7 +646,7 @@ B: MultiVector = MultiVector.bivector_from_vectors(vec_a, vec_b)
 B
 
 # %% [markdown]
-# Like $\mathbf{e}_{12}$, it squares to a negative number:
+# Like $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$, it squares to a negative number:
 
 # %%
 B * B
@@ -738,7 +738,8 @@ figure = plot_multivector(
 
 # %% [markdown]
 # Two vectors in the plane, and their product. Before running the third cell, predict
-# which blades it has: a plain number (the dot) and $\mathbf{e}_{12}$ (the wedge).
+# which blades it has: a plain number (the dot) and
+# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ (the wedge).
 
 # %%
 p: MultiVector = 3 * e_1 - 1.5 * e_2

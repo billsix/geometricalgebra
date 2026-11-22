@@ -80,7 +80,7 @@ i * i
 # %% [markdown]
 # It is $-1$, exactly like the imaginary number $i$. So the plain numbers together with
 # $\mathbf{e}_{12}$ behave like the complex numbers. The class names that piece of plane
-# `e_12`; it is the same value as the product $\mathbf{e}_1 * \mathbf{e}_2$.
+# `e_12`; it is the same value as the product $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$.
 
 # %% [markdown]
 # Sums collect like terms
@@ -268,8 +268,8 @@ m * m.inverse() - G.from_real(1)
 i.reverse()
 
 # %% [markdown]
-# The *dual* multiplies by the inverse of $\mathbf{e}_{12}$. In the plane that turns a
-# vector a quarter turn:
+# The *dual* multiplies by the inverse of $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$. In
+# the plane that turns a vector a quarter turn:
 
 # %%
 m.dual()

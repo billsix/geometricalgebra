@@ -33,10 +33,11 @@
 # multiplying by $\cos(\theta) + \sin(\theta) * i$ turns it by $\theta$. The chapter
 # claims the same for vectors in the plane: rotating $\vec{\mathbf{a}}$ by $\theta$ is
 # multiplying it, on the right, by the full-angle rotor
-# $R = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12}$. (This is 2D only: nothing lies
-# outside the plane.) This notebook checks that claim, with the coordinates left as
-# symbols, against the coordinate formula and the rotation of *Proof: Rotate*. Numbers
-# appear only to draw the figure. Each check shows both sides, then their difference.
+# $R = \cos(\theta) + \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$. (This is
+# 2D only: nothing lies outside the plane.) This notebook checks that claim, with the
+# coordinates left as symbols, against the coordinate formula and the rotation of
+# *Proof: Rotate*. Numbers appear only to draw the figure. Each check shows both sides,
+# then their difference.
 
 # %%
 import sympy
@@ -54,7 +55,7 @@ from gacalc.epixscene.bootstrap_live import (
     right_angle,
     scene_around,
 )
-from gacalc.g2 import Bivector, Scalar, Vector, Versor
+from gacalc.g2 import Scalar, Vector, Versor
 from gacalc.nbdisplay import at_values, show_difference, show_mult
 
 # %% [markdown]
@@ -77,12 +78,12 @@ values: list[tuple[sympy.Symbol, Real]] = [(a_1, 2), (a_2, 1), (theta, sympy.pi 
 # %% [markdown]
 # ## The quarter turn
 #
-# Multiplying by the unit bivector $\mathbf{e}_{12}$, the role $i$ plays for complex
-# numbers, turns $\vec{\mathbf{a}}$ a quarter turn. Before running the cell, predict its
-# coordinates.
+# Multiplying by the unit bivector $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$, the role
+# $i$ plays for complex numbers, turns $\vec{\mathbf{a}}$ a quarter turn. Before running
+# the cell, predict its coordinates.
 
 # %%
-quarter_turn: Vector = a * Bivector.e_12
+quarter_turn: Vector = a * (Vector.e_1 * Vector.e_2)
 quarter_turn
 
 # %% [markdown]
@@ -91,13 +92,15 @@ quarter_turn
 # The full-angle rotor:
 
 # %%
-R: Versor = Scalar(sympy.cos(theta)) + Scalar(sympy.sin(theta)) * Bivector.e_12
+R: Versor = Scalar(sympy.cos(theta)) + Scalar(sympy.sin(theta)) * (
+    Vector.e_1 * Vector.e_2
+)
 R
 
 # %% [markdown]
 # The product term by term: each coordinate of $\vec{\mathbf{a}}$ times $\cos(\theta)$
-# stays put, and times $\sin(\theta) * \mathbf{e}_{12}$ turns a quarter turn. First at
-# the plot values:
+# stays put, and times $\sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ turns a
+# quarter turn. First at the plot values:
 
 # %%
 show_mult(at_values(a, values), at_values(R, values))
@@ -140,7 +143,7 @@ with scene_around(points=[P_A, P_QUARTER, P_ROTATED]) as fig_rotor:
     arrow(
         head=P_QUARTER,
         color=BLUE,
-        text=r"$\vec{\mathbf{a}} * \mathbf{e}_{12}$",
+        text=r"$\vec{\mathbf{a}} * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)$",
         align=LabelPos.l,
     )
     right_angle(corner=Point(x=0, y=0), toward_a=P_A, toward_b=P_QUARTER)

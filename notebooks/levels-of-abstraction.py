@@ -105,7 +105,8 @@ show_mult(at_values(a, values), at_values(b, values))
 show_mult(a, b)
 
 # %% [markdown]
-# The geometric product, a plain-number part plus an $\mathbf{e}_{12}$ part:
+# The geometric product, a plain-number part plus an
+# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ part:
 
 # %%
 product: g2.Versor = a * b
@@ -113,8 +114,8 @@ product
 
 # %% [markdown]
 # Drawn at the plot values: the plain-number part measures $\vec{\mathbf{b}}$'s shadow
-# along $\vec{\mathbf{a}}$ (green), the $\mathbf{e}_{12}$ part the signed area of the
-# parallelogram (dashed).
+# along $\vec{\mathbf{a}}$ (green), the $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ part
+# the signed area of the parallelogram (dashed).
 
 # %%
 P_A: Point = point(coordinates=list(at_values(a, values)))
@@ -245,7 +246,7 @@ show_difference(product, product.r_vector_part(0) + product.r_vector_part(2))
 #   $|\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}| / (|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|)$,
 #   the companion to `cosine`; and
 # - the signed **`sine`**, 𝒢₂ only,
-#   $((\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}) \cdot \mathbf{e}_{12}) / (|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|)$,
+#   $((\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}) \cdot (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)) / (|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|)$,
 #   whose sign is the turn direction, so swapping the arguments negates it.
 #
 # They agree in size, and $\cos(\theta)^2 + \sin(\theta)^2 = 1$ (Lagrange's identity,

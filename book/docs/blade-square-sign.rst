@@ -16,7 +16,7 @@ Squaring a Blade: The Sign, by Counting Flips
 
    Draft. The prose is agent-drafted; the maintainer's voice pass is pending.
 
-In :doc:`geometric-product` you met the full-angle rotor :math:`R = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12}`,
+In :doc:`geometric-product` you met the full-angle rotor :math:`R = \cos(\theta) + \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`,
 and along the way a small surprise: the object :math:`\mathbf{e}_{12} = \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` **squares to**
 :math:`-1`, exactly like the imaginary unit :math:`i` from precalculus. Why :math:`-1`,
 and not :math:`+1`? And what happens if we square :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3`, or the product of
@@ -84,7 +84,7 @@ directions. We want :math:`I_r{}^2`.
            &= -1
    \end{aligned}
 
-That is the :math:`\mathbf{e}_{12}{}^2 = -1` you already saw — now you can see *where the minus
+That is the :math:`(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2){}^2 = -1` you already saw — now you can see *where the minus
 came from*: exactly one flip.
 
 **Grade 3.** Slide, cancel, then repeat on what is left:
@@ -249,6 +249,6 @@ Where this shows up
 This one sign is not a curiosity — the library leans on it constantly. Reversing a
 multivector gives its grade-:math:`r` part exactly the sign :math:`(-1)^{\,r * (r-1)/2}`, and
 the exponential map that builds rotors uses it to tell a "turning" plane
-(:math:`\mathbf{e}_{12}{}^2 = -1`) apart from a plain stretch. In gacalc it is the little function
+(:math:`(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2){}^2 = -1`) apart from a plain stretch. In gacalc it is the little function
 ``pseudoscalar_squared_sign(r)``. It returns the sign itself, :math:`+1` or :math:`-1`: the
 count of flips you just learned to do by hand is the exponent.

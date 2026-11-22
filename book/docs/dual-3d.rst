@@ -18,8 +18,8 @@ The Dual in Space
 
 In :doc:`dual` the dual of a vector was the vector times :math:`I^{-1}`, and an algebraic proof
 showed it meets the vector at a right angle. In space the unit is a volume,
-:math:`I = \mathbf{e}_{123}`, which also squares to :math:`-1`, and the dual is still
-multiplication by :math:`I^{-1} = -\mathbf{e}_{123}`. But now it changes what kind of object it
+:math:`I = 1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3`, which also squares to :math:`-1`, and the dual is still
+multiplication by :math:`I^{-1} = -1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_3`. But now it changes what kind of object it
 gets: a vector times :math:`I^{-1}` is a plane, and a plane times :math:`I^{-1}` is a vector. So in
 space the right question is about the dual of a **plane**.
 

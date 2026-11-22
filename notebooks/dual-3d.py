@@ -161,7 +161,7 @@ d
 
 # %% [markdown]
 # It is a vector: each of the three plane parts times $I^{-1}$ is a basis vector, as in
-# $\mathbf{e}_{12} * I^{-1} = \vec{\mathbf{e}}_3$.
+# $(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) * I^{-1} = \vec{\mathbf{e}}_3$.
 
 # %%
 d.is_vector()

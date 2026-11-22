@@ -18,7 +18,7 @@ The Geometric Product from Projection and Rejection
    notebook is runnable, and the Lean theorem cited is machine-checked.
 
 We have now met the geometric product once already. In :doc:`geometric-product`, the 90° turn of a
-vector turned out to be a multiplication by :math:`\mathbf{e}_{12}`, and we followed the multiplication rules
+vector turned out to be a multiplication by :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`, and we followed the multiplication rules
 from there. This chapter finds the same product a second way, starting from nothing but the
 projection and rejection of :doc:`proof-projection`. The two routes agree, and seeing why they agree
 says what the product of two vectors *means*.
@@ -69,25 +69,25 @@ Two numbers, one object
 
 Here is the step. Instead of keeping those two numbers apart, put them into one object. The along
 part goes in as a plain number. The across part needs a label that says "this one is measured
-across, in the plane", and we already have one: :math:`\mathbf{e}_{12}`, the unit of area in the plane.
+across, in the plane", and we already have one: :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`, the unit of area in the plane.
 Define
 
 .. math::
    :label: eq-product-from-projection
 
-   \vec{\mathbf{b}} * \vec{\mathbf{a}} = |\vec{\mathbf{b}}| * (x + y * \mathbf{e}_{12})
-     = (a_1 * b_1 + a_2 * b_2) + (b_1 * a_2 - b_2 * a_1) * \mathbf{e}_{12}.
+   \vec{\mathbf{b}} * \vec{\mathbf{a}} = |\vec{\mathbf{b}}| * (x + y * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)
+     = (a_1 * b_1 + a_2 * b_2) + (b_1 * a_2 - b_2 * a_1) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2.
 
 Is this the same product as in :doc:`geometric-product`? Multiply
 :math:`(b_1 * \vec{\mathbf{e}}_1 + b_2 * \vec{\mathbf{e}}_2) * (a_1 * \vec{\mathbf{e}}_1 + a_2 * \vec{\mathbf{e}}_2)` out with the rules from that chapter
-(:math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 = \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2 = 1`, :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 = \mathbf{e}_{12}`, :math:`\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\mathbf{e}_{12}`):
+(:math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 = \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2 = 1`, :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 = \mathbf{e}_{12}`, :math:`\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`):
 
 .. math::
 
    \begin{aligned}
    (b_1 * \vec{\mathbf{e}}_1 + b_2 * \vec{\mathbf{e}}_2) * (a_1 * \vec{\mathbf{e}}_1 + a_2 * \vec{\mathbf{e}}_2)
      &= b_1 * a_1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 + b_1 * a_2 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 + b_2 * a_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 + b_2 * a_2 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2 \\
-     &= (a_1 * b_1 + a_2 * b_2) + (b_1 * a_2 - b_2 * a_1) * \mathbf{e}_{12}.
+     &= (a_1 * b_1 + a_2 * b_2) + (b_1 * a_2 - b_2 * a_1) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2.
    \end{aligned}
 
 It is. The rules we got from turning by 90° and the numbers we got from projecting and rejecting
@@ -102,7 +102,7 @@ So the product of two vectors carries two facts about them at once:
 
 - its plain-number part is the **dot product** :math:`\vec{\mathbf{b}} \cdot \vec{\mathbf{a}}`, which is
   :math:`|\vec{\mathbf{b}}|` times how far :math:`\vec{\mathbf{a}}` reaches along :math:`\vec{\mathbf{b}}`;
-- its :math:`\mathbf{e}_{12}` part is the **wedge** :math:`\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}`, which is
+- its :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` part is the **wedge** :math:`\vec{\mathbf{b}} \wedge \vec{\mathbf{a}}`, which is
   :math:`|\vec{\mathbf{b}}|` times how far :math:`\vec{\mathbf{a}}` reaches across :math:`\vec{\mathbf{b}}`.
 
 That is
@@ -149,7 +149,7 @@ cosine and sine of :doc:`proof-rotate-from-a-to-b`:
 
    \vec{\mathbf{u}} \cdot \vec{\mathbf{v}} = |\vec{\mathbf{u}}| * |\vec{\mathbf{v}}| * \cos(\theta),
    \qquad
-   \vec{\mathbf{u}} \wedge \vec{\mathbf{v}} = |\vec{\mathbf{u}}| * |\vec{\mathbf{v}}| * \sin(\theta) * \mathbf{e}_{12}.
+   \vec{\mathbf{u}} \wedge \vec{\mathbf{v}} = |\vec{\mathbf{u}}| * |\vec{\mathbf{v}}| * \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2.
 
 The textbook's kinds of angle are read off the cosine: an **acute** angle has
 :math:`\cos(\theta) > 0`, a **right** angle :math:`\cos(\theta) = 0`, an **obtuse** angle

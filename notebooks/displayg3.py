@@ -276,7 +276,7 @@ B * B.dual()
 
 # %% [markdown]
 # and a plane times itself is a plain number, negative, like
-# $\mathbf{e}_{12} * \mathbf{e}_{12} = -1$:
+# $(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) = -1$:
 
 # %%
 B * B
