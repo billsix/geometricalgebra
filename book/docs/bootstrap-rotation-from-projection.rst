@@ -28,7 +28,7 @@ drawn twice.
    :alt: on the right, b measured against a, with legs x along a and y across, and the angle theta; on the left, the same triangle on v, with legs cos(theta) times v and sin(theta) times the quarter turn of v, the rotated v-prime, and the same theta between v and v-prime
 
 The first triangle: from :math:`\vec{\mathbf{a}}` to :math:`\vec{\mathbf{b}}`
------------------------------------------------------------
+-----------------------------------------------------------------------------
 
 Measure :math:`\vec{\mathbf{b}}` against :math:`\vec{\mathbf{a}}` with Step 2. By
 :eq:`eq-bootstrap-projection-coordinates`, the signed length of :math:`\vec{\mathbf{b}}`'s projection
@@ -51,7 +51,7 @@ sine of that angle without naming it:
    \sin(\theta) = \frac{y}{|\vec{\mathbf{b}}|} = \frac{a_1 * b_2 - a_2 * b_1}{|\vec{\mathbf{a}}| * |\vec{\mathbf{b}}|}.
 
 The second triangle: from :math:`\vec{\mathbf{v}}` to :math:`\vec{\mathbf{v}}'`
--------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 Now build the same triangle on any :math:`\vec{\mathbf{v}}`: walk :math:`\cos(\theta)` of the way
 along :math:`\vec{\mathbf{v}}`, then :math:`\sin(\theta)` of the way along its quarter turn. That is

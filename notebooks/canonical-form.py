@@ -96,10 +96,7 @@ sympy.sqrt(8)
 4 / sympy.sqrt(2)
 
 # %% [markdown]
-# Both come out as $2\sqrt{2}$, so their difference is $0$:
-
-# %%
-show_difference(sympy.sqrt(8), 4 / sympy.sqrt(2))
+# Both come out as $2\sqrt{2}$, so they are equal.
 
 # %% [markdown]
 # Multiplying out is part of the form too. $(1 + \sqrt{2})^2$, expanded the way you

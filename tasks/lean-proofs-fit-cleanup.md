@@ -1,6 +1,6 @@
 # Lean proofs: bring the corpus in line with the book, the Python and its own rules
 
-**Status:** ready — decisions made, waiting for the go-ahead to execute
+**Status:** in progress — phases 1 and 2 done 2026-11-22; phases 3 to 8 remain
 **Priority:** 5
 **Difficulty:** 7
 **Created:** 2026-11-22 (William Emerison Six <billsix@gmail.com>)
@@ -50,6 +50,46 @@ reference, and phase 8 updates it.
 - The Lean proofs are a private oracle for the mathematics (the architecture doc's program
   decision 1), so removing a theorem breaks no consumer. A theorem the book, a notebook or a
   docstring cites is not removed without fixing the citation in the same change.
+
+## Done so far
+
+**Phases 1 and 2** (2026-11-22, William Emerison Six <billsix@gmail.com> authorized the batch), one work commit.
+Verified by a full `lake build` and `proofs/check.sh` (no `sorry`; the axioms gate reports 1058 declarations on the
+three standard axioms), plus `make format`, `make check-notebooks`, `make test` and `make docs`.
+
+- **Phase 1 (citations and docs):** `proofs/README.md` says 35 modules and lists `Bootstrap2D`, `GeneralInverse`,
+  `RotateFromTo2D` and `StandardPosition2D`; the architecture doc's inventory lists `Rotor` and `GeometryObjects2D`
+  and its coverage map names `in_plane` and `rotXY`/`rotXZ`/`rotYZ`/`rotPlane` instead of the vanished
+  `rotate_in_xy_plane`. `proof-projection.py` is tagged with the 2D theorem and cites `StandardPosition2D.lean`.
+  Eleven `-- twin:` tags were added on the Lean side (`G3.project_add_reject`, `G3.mul_proj_eq_dot`,
+  `G3.mul_eq_proj_dot_add_reject_wedge`, `G3.dual_wedge_perp_left_dot`/`_right_dot`, `G3.reflectVec_eq`,
+  `G3.reflectPlane_eq_neg_reflectVec_dual`, `G2.mul_proj_eq_dot`, `G2.mul_reject_eq_wedge`, `G2.dual_perp_dot`,
+  `G2.dual_perp`, `G2.projectSP_eq_proj`). Citations fixed: `rotation-from-vectors.rst` and its notebook name the
+  angle-free theorems (`rotateFromToProj_normalize`, `rotPlane_fromTo_eq_vec_mul`, `projRotation_eq_vec_mul`);
+  `proof-rotate-from-a-to-b.rst` no longer says `rotPlane_conj_collapse` rests on `rotPlane_comm`;
+  `bootstrap-rotation.rst` cites `rot_polar`; `defining-g2.py` says associativity is proved for the line, the plane
+  and space; `proof-projection-3d.rst` no longer claims a notebook runs `project_sp`; `blade-square-sign.rst` cites
+  `I_sq_eq_sign`. Doc comments: Lean's `dot` is Python's `scalar_product` (the book's dot on two vectors only), the
+  `GeneralInverse` module doc, and the stale headers of `Sandwich.lean` and `Rotation3D.lean`.
+- **Phase 2 (remove what nothing uses):** `RotateComponents.lean` and `Normalize.lean` are deleted (`normalizeVec`,
+  which `ProjectionRotation3D` still needs, moved into that file beside its 2D twin); 13 object wrappers of
+  `ProjectionRotation3D`; the nine projection/rejection lemmas of `CrossStandardPosition`; the `IsScalar` apparatus
+  and unused recognizers (2 definitions, 14 theorems); `Measures.area_sq_vec`, `normSq_wedge_eq_lagrange`,
+  `G2.dual_vec_perp`, `G2.vec_mul`, `G2.dot_eq_coord_sum`, `G2.normSq_wedge_vec`, `MathlibBridge.toC_rot_rot`,
+  `IsRotor.isEvenVersor`, `IsRotor.normSq_eq_one`, `mul_reverse_self_of_isRotor`, `reverse_mul_self_of_isRotor`,
+  `G3.reverse_mul_vec` and `Rotation2D.rotor_unit'`. Nothing else needed them: the build passed first time.
+  Kept for phase 4: `Rotation3D.vec_mul_mul_self`.
+- Not done from phase 1: the doc comments of §B.1f that sit on proofs phases 3 to 7 rewrite anyway (`Rotor`'s
+  antiparallel wording, `Rotation2D`'s header, `TrigEquiv`'s header and unused import, `PlaneRotation3D`'s
+  "Corollaries" heading, the missing comments in `Sandwich`).
+- The helper that made the deletions was `tasks/adhoc/lean-proofs-fit-cleanup/delete_decls.py` (one-shot; `git rm`
+  with the task, when it is archived).
+
+**Remaining, in order:** phase 3 (one proof per fact), 4 (prove by the reason the book gives), 5 (restate the scalars-in
+files over objects; the largest, `ProjectionRotation3D.lean` last), 6 (where Lean differs from the book or Python),
+7 (results the book states that Lean lacks), 8 (rewrite the inventory and coverage map from the files as they then
+stand). These are proof rewrites with a full `lake build` (about 20 minutes) per iteration. The task's own plan
+allows splitting 5 and 7 into step tasks if they grow; phases 3 to 7 together are a multi-session job.
 
 ## Recommendations, by phase
 

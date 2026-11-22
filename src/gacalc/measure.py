@@ -77,6 +77,10 @@ def content(vectors: Sequence[MultiVectorBase]) -> Real:
         General symbolic vectors show the formula — the magnitude of the determinant:
 
         >>> import sympy
+        >>> a_1: sympy.Symbol
+        >>> a_2: sympy.Symbol
+        >>> b_1: sympy.Symbol
+        >>> b_2: sympy.Symbol
         >>> a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
         >>> content([a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2])
         sqrt((a_1*b_2 - a_2*b_1)**2)
@@ -117,7 +121,8 @@ def content_by_rejection(vectors: Sequence[MultiVectorBase]) -> Real:
 
         A general frame agrees with :func:`content`:
 
-        >>> vectors = [1 * e_1, 1 * e_1 + 1 * e_2]
+        >>> from gacalc.g2 import Vector
+        >>> vectors: list[Vector] = [1 * e_1, 1 * e_1 + 1 * e_2]
         >>> content_by_rejection(vectors) == content(vectors)
         True
 
@@ -156,6 +161,10 @@ def area(a: MultiVectorBase, b: MultiVectorBase) -> Real:
         General symbolic vectors show the formula — the magnitude of the determinant:
 
         >>> import sympy
+        >>> a_1: sympy.Symbol
+        >>> a_2: sympy.Symbol
+        >>> b_1: sympy.Symbol
+        >>> b_2: sympy.Symbol
         >>> a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
         >>> area(a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2)
         sqrt((a_1*b_2 - a_2*b_1)**2)
@@ -278,8 +287,9 @@ def signed_area(a: MultiVectorBase, b: MultiVectorBase) -> Real:
 
         Oblique vectors give the 2-D determinant:
 
-        >>> a = 2 * e_1 + 1 * e_2
-        >>> b = 1 * e_1 + 3 * e_2
+        >>> from gacalc.g2 import Vector
+        >>> a: Vector = 2 * e_1 + 1 * e_2
+        >>> b: Vector = 1 * e_1 + 3 * e_2
         >>> signed_area(a, b)      # determinant 2*3 - 1*1
         5
         >>> signed_area(b, a)      # swapping the two flips the orientation
@@ -292,6 +302,10 @@ def signed_area(a: MultiVectorBase, b: MultiVectorBase) -> Real:
         General symbolic vectors show it *is* the 2x2 determinant:
 
         >>> import sympy
+        >>> a_1: sympy.Symbol
+        >>> a_2: sympy.Symbol
+        >>> b_1: sympy.Symbol
+        >>> b_2: sympy.Symbol
         >>> a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
         >>> signed_area(a_1 * e_1 + a_2 * e_2, b_1 * e_1 + b_2 * e_2)
         a_1*b_2 - a_2*b_1
@@ -317,12 +331,22 @@ def signed_volume(a: MultiVectorBase, b: MultiVectorBase, c: MultiVectorBase) ->
         General symbolic vectors show it *is* the 3x3 determinant (cofactor expansion):
 
         >>> import sympy
+        >>> a_1: sympy.Symbol
+        >>> a_2: sympy.Symbol
+        >>> a_3: sympy.Symbol
         >>> a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
+        >>> b_1: sympy.Symbol
+        >>> b_2: sympy.Symbol
+        >>> b_3: sympy.Symbol
         >>> b_1, b_2, b_3 = sympy.symbols("b_1 b_2 b_3")
+        >>> c_1: sympy.Symbol
+        >>> c_2: sympy.Symbol
+        >>> c_3: sympy.Symbol
         >>> c_1, c_2, c_3 = sympy.symbols("c_1 c_2 c_3")
-        >>> a = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-        >>> b = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
-        >>> c = c_1 * e_1 + c_2 * e_2 + c_3 * e_3
+        >>> from gacalc.g3 import Vector
+        >>> a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+        >>> b: Vector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
+        >>> c: Vector = c_1 * e_1 + c_2 * e_2 + c_3 * e_3
         >>> signed_volume(a, b, c)
         c_1*(a_2*b_3 - a_3*b_2) - c_2*(a_1*b_3 - a_3*b_1) + c_3*(a_1*b_2 - a_2*b_1)
     """

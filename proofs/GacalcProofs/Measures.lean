@@ -18,20 +18,6 @@ namespace G3
 /-- The **area** of the parallelogram on `a`, `b` = `|a ∧ b|` (gacalc `measure.area`). -/
 noncomputable def area (a b : G3) : ℝ := magnitude (wedge a b)
 
-/-- `area² = |a∧b|²` on vectors (squared form; `normSq (wedge ..) ≥ 0`). -/
-theorem area_sq_vec {a b : G3} (ha : IsVector a) (hb : IsVector b) :
-    area a b ^ 2 = normSq (wedge a b) := by
-  have h : (0 : ℝ) ≤ normSq (wedge a b) := by
-    rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb, normSq_wedge_vec]; positivity
-  simp only [area, magnitude]
-  exact Real.sq_sqrt h
-
-/-- **Lagrange form of the area:** `|a∧b|² = |a|²*|b|² − (a·b)²` (rearranged `lagrange_property`). -/
-theorem normSq_wedge_eq_lagrange {a b : G3} (ha : IsVector a) (hb : IsVector b) :
-    normSq (wedge a b) = normSq a * normSq b - dot a b ^ 2 := by
-  have h := lagrange_property ha hb
-  linarith
-
 /-- The **volume** of the parallelepiped on `a,b,c` = `|a ∧ b ∧ c|` (gacalc `measure.volume`). -/
 noncomputable def volume (a b c : G3) : ℝ := magnitude (wedge (wedge a b) c)
 

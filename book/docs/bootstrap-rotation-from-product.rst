@@ -24,7 +24,7 @@ sandwich, which is the form that carries over to three dimensions.
 The one-sided form
 ------------------
 
-The quarter turn is a product, :math:`\vec{\mathbf{v}} * \mathbf{e}_{12} = \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)`
+The quarter turn is a product, :math:`\vec{\mathbf{v}} * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) = \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2)`
 (Step 4, :eq:`eq-bootstrap-quarter-turn-product`). Now multiply :math:`\vec{\mathbf{v}}` on the right by the product of the two unit vectors,
 :eq:`eq-bootstrap-unit-product`:
 
@@ -32,7 +32,7 @@ The quarter turn is a product, :math:`\vec{\mathbf{v}} * \mathbf{e}_{12} = \vec{
    :label: eq-bootstrap-rotation-one-sided
 
    \vec{\mathbf{v}} * (\hat{\mathbf{a}} * \hat{\mathbf{b}})
-     = \vec{\mathbf{v}} * (\cos(\theta) + \sin(\theta) * \mathbf{e}_{12})
+     = \vec{\mathbf{v}} * (\cos(\theta) + \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)
      = \cos(\theta) * \vec{\mathbf{v}} + \sin(\theta) * \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2),
 
 with :math:`\cos(\theta)` and :math:`\sin(\theta)` those of the angle from :math:`\vec{\mathbf{a}}`
@@ -53,7 +53,7 @@ through the angle from :math:`\vec{\mathbf{a}}` to :math:`\vec{\mathbf{b}}`, wha
    :alt: a and b with the angle theta between them, and v turned by the same theta to v times (a-hat times b-hat), in purple
 
 The order matters: :math:`(\hat{\mathbf{a}} * \hat{\mathbf{b}}) * \vec{\mathbf{v}}` turns the other way, by
-:math:`-\theta`, because :math:`\mathbf{e}_{12} * \vec{\mathbf{v}} = -\vec{\mathbf{v}} * \mathbf{e}_{12}`. And the form is a
+:math:`-\theta`, because :math:`(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) * \vec{\mathbf{v}} = -\vec{\mathbf{v}} * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)`. And the form is a
 plane fact: in three dimensions a vector off the plane of :math:`\vec{\mathbf{a}}` and
 :math:`\vec{\mathbf{b}}` does not come out a vector.
 
@@ -85,14 +85,14 @@ whole turn:
 The two forms agree
 -------------------
 
-Write :math:`U = \hat{\mathbf{a}} * \hat{\mathbf{b}} = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12}` and
-:math:`\tilde{U} = \hat{\mathbf{b}} * \hat{\mathbf{a}} = \cos(\theta) - \sin(\theta) * \mathbf{e}_{12}`, its reverse.
+Write :math:`U = \hat{\mathbf{a}} * \hat{\mathbf{b}} = \cos(\theta) + \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` and
+:math:`\tilde{U} = \hat{\mathbf{b}} * \hat{\mathbf{a}} = \cos(\theta) - \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`, its reverse.
 Two facts, each from multiplying out:
 
 #. :math:`U * \tilde{U} = \cos(\theta)^2 + \sin(\theta)^2 = 1`.
-#. An element :math:`c + s * \mathbf{e}_{12}` passes through a vector with its sign of
-   :math:`\mathbf{e}_{12}` flipped: :math:`R * \vec{\mathbf{v}} = \vec{\mathbf{v}} * \tilde{R}`, because
-   :math:`\mathbf{e}_{12} * \vec{\mathbf{v}} = -\vec{\mathbf{v}} * \mathbf{e}_{12}`.
+#. An element :math:`c + s * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` passes through a vector with its sign of
+   :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` flipped: :math:`R * \vec{\mathbf{v}} = \vec{\mathbf{v}} * \tilde{R}`, because
+   :math:`(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) * \vec{\mathbf{v}} = -\vec{\mathbf{v}} * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)`.
 
 Here :math:`R = |\vec{\mathbf{a}}| * |\vec{\mathbf{b}}| * (1 + \tilde{U})` and
 :math:`\tilde{R} = |\vec{\mathbf{a}}| * |\vec{\mathbf{b}}| * (1 + U)`. By fact 2,
@@ -126,7 +126,7 @@ Lean: ``rotPlane_fromTo_eq_vec_mul`` (Step 3's rotation, the blend with the cosi
 from projection, equals :math:`\vec{\mathbf{v}} * (\hat{\mathbf{a}} * \hat{\mathbf{b}})`) and
 ``rotateFromToProj_eq_vec_mul`` in ``proofs/GacalcProofs/Bootstrap2D.lean``;
 ``vec_mul_fullAngleRotor``
-(:math:`\vec{\mathbf{v}} * (\cos(\theta) + \sin(\theta) * \mathbf{e}_{12})` is the rotation by :math:`\theta`)
+(:math:`\vec{\mathbf{v}} * (\cos(\theta) + \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)` is the rotation by :math:`\theta`)
 in ``proofs/GacalcProofs/Rotation2D.lean``; ``versor_mul_from_eq_bisector``
 (:math:`R * \vec{\mathbf{a}} = |\vec{\mathbf{a}}| * \vec{\mathbf{h}}`) in ``proofs/GacalcProofs/Versor2D.lean``;
 ``projRotation_eq_vec_mul``, ``versorFromVectors_mul_vec_eq`` (fact 2),

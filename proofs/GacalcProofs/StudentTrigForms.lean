@@ -42,6 +42,7 @@ namespace GacalcProofs.G2
 
 /-! ### 𝒢₂ student forms: perpendicularity, and product-is-wedge -/
 
+-- twin: GacalcProofs.G2.dual_perp
 /-- **The dual of a vector is perpendicular to it**, as a student sees it: the cosine of the angle
     between `v*` and `v` is 0. For a nonzero vector `v`. -/
 theorem dual_perp {v : G2} (hv : IsVector v) (_hv0 : normSq v ≠ 0) :

@@ -25,10 +25,10 @@
 #
 # Companion to *The Dual*. The dual of a vector $\vec{\mathbf{a}}$ is
 # $\vec{\mathbf{a}} * I^{-1}$, the vector times the inverse of the plane's unit area
-# $I = \mathbf{e}_{12}$. The chapter claims the dual always meets $\vec{\mathbf{a}}$ at
-# a right angle, and proves it with three facts we already have: grouping does not
-# matter (associativity), a vector times itself is a plain number, and the dot product
-# of two vectors is the plain-number part of their product.
+# $I = 1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$. The chapter claims the dual always
+# meets $\vec{\mathbf{a}}$ at a right angle, and proves it with three facts we already
+# have: grouping does not matter (associativity), a vector times itself is a plain
+# number, and the dot product of two vectors is the plain-number part of their product.
 #
 # Every coordinate is a symbol, so each result holds for every vector. Numbers appear
 # only to draw the figure and in the first product table. The Lean theorems are
@@ -77,8 +77,9 @@ a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
 a
 
 # %% [markdown]
-# The plane's unit area is $I = \mathbf{e}_{12}$. It squares to $-1$, so its inverse is
-# its negative, $I^{-1} = -\mathbf{e}_{12}$:
+# The plane's unit area is $I = 1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$. It squares
+# to $-1$, so its inverse is its negative,
+# $I^{-1} = -1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$:
 
 # %%
 I_inverse: Bivector = e_12.inverse()
@@ -88,7 +89,7 @@ I_inverse
 # Check: $I * I^{-1}$ is $1$.
 
 # %%
-e_12 * I_inverse
+(e_1 * e_2) * I_inverse
 
 # %% [markdown]
 # The dual is $\vec{\mathbf{a}} * I^{-1}$. gacalc computes it as `a.dual(2)`, the $2$
@@ -148,9 +149,10 @@ show_mult(at_values(a, values), I_inverse)
 show_mult(a, I_inverse)
 
 # %% [markdown]
-# Each term is a basis vector times $\mathbf{e}_{12}$, which is again a basis vector
-# ($\vec{\mathbf{e}}_1 * \mathbf{e}_{12} = \vec{\mathbf{e}}_2$), so the sum has no plain
-# number and no area: it is a vector.
+# Each term is a basis vector times $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$, which is
+# again a basis vector
+# ($\vec{\mathbf{e}}_1 * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) = \vec{\mathbf{e}}_2$),
+# so the sum has no plain number and no area: it is a vector.
 
 # %%
 a_dual.is_vector()
@@ -251,9 +253,10 @@ sympy.simplify(sympy.sympify(a.cosine(a_dual)))
 # ## A second look: the dual is a quarter turn
 #
 # In the plane there is a second way to see this. The chapter *Rotate* turned a vector
-# by $90°$ by multiplying by $\mathbf{e}_{12}$. Multiplying by
-# $I^{-1} = -\mathbf{e}_{12}$ instead turns it $90°$ the other way, clockwise. So the
-# dual of $\vec{\mathbf{a}}$ is $\vec{\mathbf{a}}$ turned back a quarter turn:
+# by $90°$ by multiplying by $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$. Multiplying by
+# $I^{-1} = -1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ instead turns it $90°$ the
+# other way, clockwise. So the dual of $\vec{\mathbf{a}}$ is $\vec{\mathbf{a}}$ turned
+# back a quarter turn:
 
 # %%
 inverse(rotate_90_degrees())(a)

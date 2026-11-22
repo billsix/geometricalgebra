@@ -47,7 +47,7 @@ import warnings
 from IPython.display import Math, display
 
 from gacalc.g2 import G
-from gacalc.nbdisplay import show_cancellation, show_difference, show_mult
+from gacalc.nbdisplay import show_difference, show_mult
 
 # turn warnings into exceptions
 warnings.filterwarnings("error", category=RuntimeWarning)
@@ -78,12 +78,9 @@ i
 i * i
 
 # %% [markdown]
-# It is $-1$, exactly like the imaginary number $i$. So the plain numbers together
-# with $\mathbf{e}_{12}$ behave like the complex numbers. The class names that piece
-# of plane `e_12`; it is the same value as the product, so their difference is $0$:
-
-# %%
-show_difference(e_12, e_1 * e_2)
+# It is $-1$, exactly like the imaginary number $i$. So the plain numbers together with
+# $\mathbf{e}_{12}$ behave like the complex numbers. The class names that piece of plane
+# `e_12`; it is the same value as the product $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$.
 
 # %% [markdown]
 # Sums collect like terms
@@ -179,24 +176,14 @@ G2_2: G = G.symbolic_multivector(prefix="b")
 show_mult(G2_1, G2_2)
 
 # %% [markdown]
-# Does grouping matter? A proof that it does not
-# ----------------------------------------------
+# Does grouping matter? No
+# ------------------------
 #
 # Take a third general element. Multiplying the first two first, or the last two
-# first, should give the same answer: that is associativity. Below, the two answers
-# are laid out blade by blade, and each term of one is matched with the same term of
-# the other (a pair carries the same number). Every term has a partner, and because
-# every coefficient is a symbol, this proves it for **every** three elements of the
-# plane.
-
-# %%
-G2_3: G = G.symbolic_multivector(prefix="c")
-show_cancellation(
-    (G2_1 * G2_2) * G2_3,
-    G2_1 * (G2_2 * G2_3),
-    left_name="(G_1 * G_2) * G_3",
-    right_name="G_1 * (G_2 * G_3)",
-)
+# first, gives the same answer: that is associativity. `displaymv.py` lays the two
+# answers out term by term and matches every term of one with a partner in the other,
+# and because every coefficient is a symbol, that proves it for **every** three
+# elements.
 
 # %% [markdown]
 # Pulling out one kind of part
@@ -281,8 +268,8 @@ m * m.inverse() - G.from_real(1)
 i.reverse()
 
 # %% [markdown]
-# The *dual* multiplies by the inverse of $\mathbf{e}_{12}$. In the plane that turns a
-# vector a quarter turn:
+# The *dual* multiplies by the inverse of $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$. In
+# the plane that turns a vector a quarter turn:
 
 # %%
 m.dual()

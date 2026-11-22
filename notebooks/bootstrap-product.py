@@ -33,10 +33,10 @@
 # with symbolic coordinates, so each result is a formula for every $\vec{\mathbf{a}}$
 # and $\vec{\mathbf{b}}$: $\vec{\mathbf{b}}$ measured against $\vec{\mathbf{a}}$ (Step
 # 2) gives $x$ and $y$, and the product is
-# $|\vec{\mathbf{a}}| * (x + y * \mathbf{e}_{12})$. Then the quarter turn as a product,
-# and the dot and wedge as $\vec{\mathbf{a}}$ times the projection and the rejection.
-# Numbers appear only to draw the figures; change them and rerun. Each check shows both
-# sides, then their difference.
+# $|\vec{\mathbf{a}}| * (x + y * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)$. Then the
+# quarter turn as a product, and the dot and wedge as $\vec{\mathbf{a}}$ times the
+# projection and the rejection. Numbers appear only to draw the figures; change them and
+# rerun. Each check shows both sides, then their difference.
 
 # %%
 import sympy
@@ -56,7 +56,7 @@ from gacalc.epixscene.bootstrap_live import (
     right_angle,
     scene_around,
 )
-from gacalc.g2 import Scalar, Vector, Versor, e_1, e_2, e_12
+from gacalc.g2 import Scalar, Vector, Versor, e_1, e_2
 from gacalc.nbdisplay import at_values, show_difference, show_mult
 
 # %% [markdown]
@@ -100,14 +100,17 @@ measured
 
 # %% [markdown]
 # The product keeps both, times $|\vec{\mathbf{a}}|$:
-# $|\vec{\mathbf{a}}| * (x + y * \mathbf{e}_{12})$. The plain-number part is the dot
-# product and the $\mathbf{e}_{12}$ part, the signed area of the parallelogram, is the
-# wedge.
+# $|\vec{\mathbf{a}}| * (x + y * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)$. The
+# plain-number part is the dot product and the $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$
+# part, the signed area of the parallelogram, is the wedge.
 
 # %%
 product: Versor = (
     Scalar(a.magnitude())
-    * (Scalar(measured.coefficient(e_1)) + Scalar(measured.coefficient(e_2)) * e_12)
+    * (
+        Scalar(measured.coefficient(e_1))
+        + Scalar(measured.coefficient(e_2)) * (e_1 * e_2)
+    )
 ).simplified()
 product
 
@@ -157,8 +160,8 @@ fig_product
 # $\vec{\mathbf{b}}$, then add. Each row of the table is one pair of terms.
 # $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1$ and
 # $\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2$ are $1$, and
-# $\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\mathbf{e}_{12}$. First at the plot
-# values:
+# $\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$.
+# First at the plot values:
 
 # %%
 show_mult(at_values(a, values), at_values(b, values))
@@ -172,11 +175,12 @@ show_mult(a, b)
 # %% [markdown]
 # ## The quarter turn is a product
 #
-# Multiplying by $\mathbf{e}_{12}$ on the right turns a vector a quarter turn:
-# $\vec{\mathbf{b}} * \mathbf{e}_{12}$ is Step 1's $r(\vec{\mathbf{b}}; \pi/2)$.
+# Multiplying by $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ on the right turns a vector a
+# quarter turn: $\vec{\mathbf{b}} * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)$ is Step
+# 1's $r(\vec{\mathbf{b}}; \pi/2)$.
 
 # %%
-quarter_turn: MultiVectorBase = b * e_12
+quarter_turn: MultiVectorBase = b * (e_1 * e_2)
 quarter_turn
 
 # %% [markdown]
@@ -196,7 +200,7 @@ with scene_around(points=[P_B, P_QUARTER]) as fig_quarter:
     arrow(
         head=P_QUARTER,
         color=BLACK,
-        text=r"$\vec{\mathbf{b}} * \mathbf{e}_{12}$",
+        text=r"$\vec{\mathbf{b}} * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)$",
         align=LabelPos.l,
         offset=Point(x=-6, y=0),
     )
@@ -279,7 +283,7 @@ show_difference(b * b, Scalar(b.magnitude_squared()))
 # %% [markdown]
 # ### The quarter turn as a product matches Step 1's
 #
-# $\vec{\mathbf{b}} * \mathbf{e}_{12}$ was:
+# $\vec{\mathbf{b}} * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)$ was:
 
 # %%
 quarter_turn
@@ -377,12 +381,12 @@ b_hat: Vector = Scalar(sympy.cos(beta)) * e_1 + Scalar(sympy.sin(beta)) * e_2
 
 # %% [markdown]
 # The cosine and sine of the angle $\theta = \beta - \alpha$ from the first to the
-# second, $\cos(\theta) + \sin(\theta) * \mathbf{e}_{12}$:
+# second, $\cos(\theta) + \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$:
 
 # %%
-angle_form: Versor = (
-    Scalar(sympy.cos(beta - alpha)) + Scalar(sympy.sin(beta - alpha)) * e_12
-)
+angle_form: Versor = Scalar(sympy.cos(beta - alpha)) + Scalar(
+    sympy.sin(beta - alpha)
+) * (e_1 * e_2)
 angle_form
 
 # %% [markdown]

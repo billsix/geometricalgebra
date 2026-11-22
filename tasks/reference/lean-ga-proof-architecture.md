@@ -158,7 +158,7 @@ polynomial tier** (2026-10-04) and recorded in
 statement-lift task). It was a cascade-aware, bottom-up incremental sweep (converting a signature breaks
 its callers, so `make lean`-verify each step). **Final outcome:** every *polynomial*-proof theorem is now
 object-in / getters-in-body (Sandwich, Reflect, G3 self-products, Projection2D, Projection3D 3/4, Trig
-`lagrange_property`, RotateComponents `rotation_preserves_dot`, the pure-poly ProjectionRotation scaffold);
+`lagrange_property`, the pure-poly ProjectionRotation scaffold);
 the **coordinate core is retained by decision** for the non-polynomial tier — sqrt/`magnitude`/
 `normalizeVec` proofs, the divide-by-`normSq(a∧b)` degree-blowup plane projections, the cos/sin/angle and
 literal-then-instantiate exceptions, and the delicate `calc`/`set` capstones (`projRotation_eq_sandwich`/
@@ -189,7 +189,7 @@ Naming rule: a dimension-specific file is suffixed `2D`/`3D`; a bare name means 
 concept that exists in only one dimension (no sibling to confuse it with). **Paired** concepts are
 both suffixed — `Projection2D`/`Projection3D`, `Rotation2D`/`Rotation3D`,
 `ProjectionRotation2D`/`ProjectionRotation3D`, `Predicates2D`/`Predicates3D`. Solo-dimension files stay
-bare (`Cross`, `Reflect`, `Normalize`, `StandardPosition`, … are 3D-only; `TrigEquiv`, `Versor2D` are
+bare (`Cross`, `Reflect`, `StandardPosition`, … are 3D-only; `TrigEquiv`, `Versor2D` are
 2D-only). The root `GacalcProofs.lean` imports every topic file; renaming one means updating that
 import list, any sibling `import`, **and any prose pointer in these reference docs**.
 
@@ -332,7 +332,7 @@ leaves are stated on `wedge u v`, not a bivector-coordinate literal. This is the
   `project_eq_sub_reject`).
 - **Matrix-free rotation.** "Rotates the oriented angle correctly" = *oriented isometry*: preserves the
   dot (angle magnitude) AND fixes the plane bivector (orientation). With "carries a→b" that pins the
-  rotation — **no rotation matrix, no double angle** needed. (`RotateComponents.lean`.)
+  rotation — **no rotation matrix, no double angle** needed. (`Sandwich.lean`: `sandwich_preserves_dot`, `sandwich_fixes_own_bivector`.)
 - **`field_simp` gotchas.** (1) Provide the nonzero denominator in the form `field_simp` normalizes to
   (usually `^2` sums); it matches up to `ring`-normalization but not always across two different
   denominators — **unify denominators first** (e.g. `dot(dual B)(dual B) = normSq B`) to avoid a
@@ -571,8 +571,14 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   addition, hence commute), `Rotation3D.lean` / `Versor2D.lean` (angle-free
   versor-from-vectors: bisector, `R * a = |a| * h`, `b * R = |b| * h`; the carries-a→b capstone
   `R * a * R⁻¹ = (|a|/|b|) * b`).
-- `RotateComponents.lean` — the three matrix-free rotation goals for the actual a→b rotation (in the
-  plane, oriented isometry, perpendicular fixed) + `sandwich_ahat` (â↦b̂).
+- `Rotor.lean` — the versor chain re-done with the reverse sandwich: `rotorFromVectors = normalize ∘
+  versorFromVectors` is a rotor, the bridge `(R/|R|) v (R/|R|)~ = R v R⁻¹` (`rotorSandwich_normalize`) turns each
+  versor theorem into a rotor theorem by one `rw`, and a 2D coda ties the from-vectors rotor of two unit
+  directions to the half-angle `rotor θ`.
+- `GeometryObjects2D.lean` — the high-school objects of `book/docs/geometry-from-vectors.rst` in 𝒢₂: the
+  midpoint is the segment at `t = ½` and cuts it in halves, a triangle's sides sum to zero, the midsegment is
+  `½*(c − b)`, a quadrilateral is a parallelogram iff its diagonals share a midpoint, and the surveyor's area
+  formula (the one result that uses the wedge).
 - `Projection3D.lean` / `Projection2D.lean` — Hestenes `proj`/`reject`/`project_onto`, `project_add_reject`,
   `proj_plane = project_onto`, and the 2D cases.
 - `StandardPosition.lean` — elementary coordinate-plane rotations `rotXY`/`rotXZ` (NOT versors),
@@ -656,7 +662,6 @@ Dorst–Fontijne–Mann); the two coincide for vector·bivector, hence are easy 
   components), idempotent + complete, `even_add_odd`.
 - `Measures.lean` (𝒢₃; Lagrange also 𝒢₂) — `area`/`volume` as magnitudes of wedges, `|a∧b|²` in Lagrange
   form, `|a∧b∧c|² = signedVolume²`, `signedArea`.
-- `Normalize.lean` — `normalizeVec` has unit `normSq`/`magnitude` (𝒢₃ vectors; 𝒢₂'s lives in `ProjectionRotation2D`).
 - `Predicates2D.lean` / `Predicates3D.lean` — `dual_perp_dot` (2D); `perp_iff_mul_eq_wedge`
   (`a·b = 0 ⟺ ab = a∧b`), `wedge_parallel_smul` and its converse, combined as
   `wedge_eq_zero_iff_parallel` (3D and 2D).
@@ -710,7 +715,7 @@ The modules outside this table are in the subsection that follows it.
 | Method (`base.py` unless noted) | Coverage | Theorem(s) / file — or task |
 | --- | --- | --- |
 | `magnitude` / `magnitude_squared` | HAS | `magnitude`, `normSq`, `normSq_vec`, `magnitude_sq_vec`, `normSq_wedge_vec`, `normSq_mul`, `magnitude_sandwich` (G2/G3, Sandwich); = Mathlib's norm: `norm_toE` (MathlibBridge) |
-| `normalize` | HAS | `normalizeVec`, `magnitude_normalizeVec`/`normSq_normalizeVec` (= 1) (Normalize.lean); any multivector: `Rotor.normalize`, `normSq_normalize`, `isRotor_normalize` |
+| `normalize` | HAS | `normalizeVec` (the definition, in `ProjectionRotation2D`/`ProjectionRotation3D`); unit length for any multivector: `Rotor.normalize`, `normSq_normalize`, `isRotor_normalize` |
 | `inner_product` (general graded) | PARTIAL | only vector·bivector `inner_vb` (Projection3D.lean); general `⟨AB⟩_{\|r−s\|}` owned by existing `lean-general-gn-product-and-hestenes-dot-wedge` |
 | `dot` | HAS | `dot`/`dot_vec`/`dot_comm` + bilinearity, `dot_is_sym_part` (object form in both G2 and G3), `dot_eq_coord_sum`; = Mathlib's `inner`: `dot_eq_inner`, with `dot_comm_of_inner` and Cauchy–Schwarz `abs_dot_le_magnitude_mul` by citation (MathlibBridge) |
 | `outer_product` / `wedge` | HAS | `wedge`, `wedge_vec_eq_biv`, `wedge_antisymm`, full bilinearity, `wedge_is_antisym_part` (G2/G3); = determinant / minors: `wedge_eq_det`, `wedge_c12/c13/c23_eq_det` (MathlibBridge) |
@@ -757,7 +762,7 @@ theorem landed 2026-10-05 (`PlaneRotation3D.lean`), and `gn` waits on a general-
 |---|---|---|
 | `standardposition.project_sp` | HAS | `projectSP` (= Python's align → keep the x-component → rotate back, same `(cos, sin)` formulas), **`projectSP_eq_proj`** (`= proj b a` for any nonzero vector `b`, the `e₃` axis included), via `proj_onto_x_axis` + `alignSP_self` + `rotXY_inv`/`rotXZ_inv` + equivariance (StandardPosition.lean) |
 | `standardposition.reject_sp` | HAS | `rejectSP`, `rejectSP_eq_vecReject`, `rejectSP_eq_reject` (= Hestenes `reject b a` for vectors) |
-| `standardposition.rotate_in_xy_plane` / `_xz_plane` | HAS | `rotXY`/`rotXZ` — identical formulas; `*_preserves_dot`, `*_inv` |
+| `standardposition.in_plane` (the elementary plane rotations of the 3D construction) | HAS | `rotXY`/`rotXZ`/`rotYZ` and `rotPlane` (2D) — identical formulas; `*_preserves_dot`, `*_inv` |
 | `functions.compose` / `inverse` / `identity` | plumbing — no theorem | the one GA fact they carry for versors: `sandwich_inverse_sandwich` (`sandwich R⁻¹ ∘ sandwich R = id`, both grades), on `inverse_inverse` and `inverse_mul_self_of_isEvenVersor` (Sandwich.lean) |
 | `transforms.projection_rotation` | HAS | `projRotation_*`, `projRotation_eq_sandwich` (ProjectionRotation2D/3D) |
 | `transforms.versor_rotation` (forward / `backward`) | HAS | `sandwich_*`; backward = `sandwich_inverse_sandwich` |

@@ -52,7 +52,7 @@ from gacalc.epixscene.bootstrap_live import (
 from gacalc.epixscene.frame_scene import GRAY_EDGE, line
 from gacalc.functions import InvertibleFunction
 from gacalc.g2 import Scalar, Vector, e_1, e_2
-from gacalc.nbdisplay import at_values, show_difference
+from gacalc.nbdisplay import at_values
 from gacalc.transforms import translate
 
 # %% [markdown]
@@ -99,10 +99,8 @@ a + b
 b + a
 
 # %% [markdown]
-# Each coordinate is the same two numbers added in the other order. Their difference:
-
-# %%
-show_difference(a + b, b + a)
+# Each coordinate is the same two numbers added in the other order, so the two sums are
+# equal.
 
 # %% [markdown]
 # At the plot values, $\vec{\mathbf{a}} + \vec{\mathbf{b}}$:
@@ -143,22 +141,13 @@ a - b
 (a - b) + b
 
 # %% [markdown]
-# Its difference from $\vec{\mathbf{a}}$:
-
-# %%
-show_difference((a - b) + b, a)
+# Subtracting $\vec{\mathbf{b}}$ and adding it back gives $\vec{\mathbf{a}}$ again.
 
 # %% [markdown]
 # It is the same as adding the opposite. $\vec{\mathbf{a}} + (-\vec{\mathbf{b}})$:
 
 # %%
 a + (-b)
-
-# %% [markdown]
-# Its difference from $\vec{\mathbf{a}} - \vec{\mathbf{b}}$:
-
-# %%
-show_difference(a - b, a + (-b))
 
 # %% [markdown]
 # At the plot values, $\vec{\mathbf{a}} - \vec{\mathbf{b}}$:
@@ -199,12 +188,6 @@ t
 
 # %%
 t(a)
-
-# %% [markdown]
-# Its difference from $\vec{\mathbf{a}} + \vec{\mathbf{b}}$:
-
-# %%
-show_difference(t(a), a + b)
 
 # %% [markdown]
 # It moves every point by the same $\vec{\mathbf{b}}$. $\vec{\mathbf{e}}_1$ goes to:
@@ -249,10 +232,7 @@ fig_lattice
 t.inverse(t(a))
 
 # %% [markdown]
-# Its difference from $\vec{\mathbf{a}}$:
-
-# %%
-show_difference(t.inverse(t(a)), a)
+# The inverse undoes the slide, so it gives back $\vec{\mathbf{a}}$.
 
 # %% [markdown]
 # `t.at(0.5)` is the paper slid half way. $t_{0.5}(\vec{\mathbf{a}})$:
@@ -267,7 +247,4 @@ t.at(0.5)(a)
 a + b * 0.5
 
 # %% [markdown]
-# Their difference:
-
-# %%
-show_difference(t.at(0.5)(a), a + b * 0.5)
+# It is the same point.

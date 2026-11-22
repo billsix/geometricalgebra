@@ -566,10 +566,7 @@ show_difference(f.inverse(y), x)
 f(x).simplified()
 
 # %% [markdown]
-# Its difference from $\vec{\mathbf{y}}$:
-
-# %%
-show_difference(f(x), y)
+# That is $\vec{\mathbf{y}}$ again.
 
 # %% [markdown]
 # At the plot values, $\vec{\mathbf{x}}$ (black);

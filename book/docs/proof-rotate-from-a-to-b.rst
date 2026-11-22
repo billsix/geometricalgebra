@@ -176,8 +176,8 @@ So the rotation that carries :math:`\vec{\mathbf{a}}`'s direction to :math:`\vec
    R_{\vec{\mathbf{a}}}^{\vec{\mathbf{b}}}(\vec{\mathbf{v}}) = \cos(\theta) * \vec{\mathbf{v}} + \sin(\theta) * \vec{\mathbf{r}}(\vec{\mathbf{v}};\ \pi/2).
 
 (Both facts are machine-checked in ``proofs/GacalcProofs/RotateFromTo2D.lean``: the sandwich collapses
-to the middle rotation — ``rotateFromTo_collapse``, built on ``rotPlane_conj_collapse``, which rests on
-``rotPlane_comm`` above — and the whole construction carries :math:`\vec{\mathbf{a}}` to :math:`(|\vec{\mathbf{a}}|/|\vec{\mathbf{b}}|) * \vec{\mathbf{b}}` — ``rotateFromTo_carries``.)
+to the middle rotation — ``rotateFromTo_collapse``, built on ``rotPlane_conj_collapse`` (the fact
+``rotPlane_comm`` above states, for a conjugation) — and the whole construction carries :math:`\vec{\mathbf{a}}` to :math:`(|\vec{\mathbf{a}}|/|\vec{\mathbf{b}}|) * \vec{\mathbf{b}}` — ``rotateFromTo_carries``.)
 
 Look again at those two numerators. The top one, :math:`a_1 * b_1 + a_2 * b_2`, is the
 **dot product** of :math:`\vec{\mathbf{a}}` and :math:`\vec{\mathbf{b}}`; the bottom one,

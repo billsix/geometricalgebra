@@ -28,7 +28,7 @@ namespace GacalcProofs.G2
 
 open Real
 
-/-- Normalize a vector to unit length: `v̂ = (1/|v|)*v` (the 𝒢₂ twin of `Normalize.lean`'s `normalizeVec`). -/
+/-- Normalize a vector to unit length: `v̂ = (1/|v|)*v` (the 𝒢₂ twin of `ProjectionRotation3D.normalizeVec`). -/
 noncomputable def normalizeVec (a : G2) : G2 := smul (1 / magnitude a) a
 
 /-- **The rejection of a vector from the `f∧t` plane is zero** (2D): the plane is the whole space, so a

@@ -17,9 +17,10 @@ rotation, the geometric product, projection, reflection, and the algebra behind 
 starts again from the geometric product in three dimensions. Part IV collects the explorations:
 notebooks with no page of their own, which you can run and change yourself.
 
-Two reference cards come first, one for the plane and one for space. Each lists the book's
-formulas, from the most general form down to coordinates, with a link to the page that teaches
-each one. They are for looking things up; the book itself starts at Part I.
+Three reference cards come first: one for the formulas that hold in every dimension, one for the
+plane and one for space. The plane's and space's start each formula from the general line and fill
+it in down to coordinates, with a link to the page that teaches each one. They are for looking
+things up; the book itself starts at Part I.
 
 Running the notebooks yourself
 ------------------------------
@@ -44,6 +45,7 @@ first. Part III rebuilds the plane from scratch, so it is its own chain.
    :maxdepth: 1
    :caption: Reference cards
 
+   cheat-sheet-gn
    cheat-sheet-2d
    cheat-sheet-3d
 
@@ -63,6 +65,7 @@ first. Part III rebuilds the plane from scratch, so it is its own chain.
    geometry-from-vectors
    rotate
    geometric-product
+   plotting-a-table
    rotation-graph-paper
    relative-graph-paper
    projection

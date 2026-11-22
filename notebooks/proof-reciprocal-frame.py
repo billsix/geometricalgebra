@@ -436,10 +436,7 @@ show_difference(by_reciprocal.inverse(by_reciprocal(x)), x)
 by_peel.inverse(by_peel(x)).simplified()
 
 # %% [markdown]
-# Its difference from $\vec{\mathbf{x}}$:
-
-# %%
-show_difference(by_peel.inverse(by_peel(x)), x)
+# The round trip gives $\vec{\mathbf{x}}$ back.
 
 # %% [markdown]
 # The other order, the reciprocal-frame inverse and then the map, on $\vec{\mathbf{y}}$:
@@ -460,10 +457,7 @@ show_difference(by_reciprocal(by_reciprocal.inverse(y)), y)
 by_peel(by_peel.inverse(y)).simplified()
 
 # %% [markdown]
-# Its difference from $\vec{\mathbf{y}}$:
-
-# %%
-show_difference(by_peel(by_peel.inverse(y)), y)
+# The round trip gives $\vec{\mathbf{y}}$ back.
 
 # %% [markdown]
 # The two inverses agree. The reciprocal-frame inverse of $\vec{\mathbf{y}}$:
@@ -676,10 +670,7 @@ show_difference(space_by_reciprocal.inverse(space_by_reciprocal(z)), z)
 space_by_peel.inverse(space_by_peel(z)).simplified()
 
 # %% [markdown]
-# Its difference from $\vec{\mathbf{z}}$:
-
-# %%
-show_difference(space_by_peel.inverse(space_by_peel(z)), z)
+# The round trip gives $\vec{\mathbf{z}}$ back.
 
 # %% [markdown]
 # The reciprocal-frame inverse, then the map:
@@ -700,10 +691,7 @@ show_difference(space_by_reciprocal(space_by_reciprocal.inverse(z)), z)
 space_by_peel(space_by_peel.inverse(z)).simplified()
 
 # %% [markdown]
-# Its difference from $\vec{\mathbf{z}}$:
-
-# %%
-show_difference(space_by_peel(space_by_peel.inverse(z)), z)
+# The round trip gives $\vec{\mathbf{z}}$ back.
 
 # %% [markdown]
 # The two inverses agree. The reciprocal-frame inverse of $\vec{\mathbf{z}}$:

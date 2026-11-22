@@ -41,6 +41,7 @@ theorem wedge_reject {a : G3} (ha : IsVector a) (b : G3) :
   rw [eq_vec_of_isVector ha, wedge_sub_right, proj, wedge_smul_right, wedge_self_vec_coord]
   simp only [smul, zero, sub]; ext <;> ring
 
+-- twin: GacalcProofs.G3.dual_wedge_perp_left_dot
 /-- **The dual of `a ∧ b` (the plane normal) is ⊥ `a`** — for vectors `a`, `b`. The dual of
     the wedge is `cross a b` (gacalc), and `(a × b) · a = 0`. -/
 theorem dual_wedge_perp_left_dot {a b : G3} (ha : IsVector a) (hb : IsVector b) :
@@ -51,6 +52,7 @@ theorem dual_wedge_perp_left_dot {a b : G3} (ha : IsVector a) (hb : IsVector b) 
     has, hbs]
   ring
 
+-- twin: GacalcProofs.G3.dual_wedge_perp_right_dot
 /-- …and ⊥ `b`. -/
 theorem dual_wedge_perp_right_dot {a b : G3} (hb : IsVector b) :
     dot (dual (wedge a b)) b = 0 := by
@@ -159,6 +161,7 @@ theorem project_add_reject_coord (a1 a2 a3 p q r : ℝ)
   simp only [wedge, mul, reverse, smul, add, vec, bivector, zero]
   ext <;> field_simp [hB] <;> ring
 
+-- twin: GacalcProofs.G3.project_add_reject
 /-- **Projection + rejection = identity** (object form): for a vector `a` and a plane bivector `B`
     (`|B|² ≠ 0`), `(A·B)B⁻¹ + (A∧B)B⁻¹ = A`. -/
 theorem project_add_reject {B : G3} (hB : IsBivector B) (hBn : normSq B ≠ 0) {a : G3} (ha : IsVector a) :

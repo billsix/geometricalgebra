@@ -60,6 +60,8 @@ That is the picture to keep. In the plane the inputs and outputs of a function a
 same plane, and there is no spare direction to plot an output "up" into, so the book draws a
 function as what it does to arrows.
 
+The tilt turns into a multiplication later, in :doc:`plotting-a-table`.
+
 .. toctree::
    :maxdepth: 1
 

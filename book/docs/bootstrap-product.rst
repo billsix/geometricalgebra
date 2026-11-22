@@ -44,16 +44,16 @@ The definition
 --------------
 
 Keep both numbers in one object. The along-part goes in as a plain number; the
-across-part is an area in the plane, so it carries the unit of area :math:`\mathbf{e}_{12}`:
+across-part is an area in the plane, so it carries the unit of area :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`:
 
 .. math::
    :label: eq-bootstrap-product
 
-   \vec{\mathbf{a}} * \vec{\mathbf{b}} = |\vec{\mathbf{a}}| * (x + y * \mathbf{e}_{12})
-     = (a_1 * b_1 + a_2 * b_2) + (a_1 * b_2 - a_2 * b_1) * \mathbf{e}_{12}.
+   \vec{\mathbf{a}} * \vec{\mathbf{b}} = |\vec{\mathbf{a}}| * (x + y * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)
+     = (a_1 * b_1 + a_2 * b_2) + (a_1 * b_2 - a_2 * b_1) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2.
 
 The plain-number part is the **dot product** :math:`\vec{\mathbf{a}} \cdot \vec{\mathbf{b}}` and the
-:math:`\mathbf{e}_{12}` part is the **wedge** :math:`\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}`, so
+:math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` part is the **wedge** :math:`\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}`, so
 
 .. math::
 
@@ -64,14 +64,14 @@ It is the product of the multiplication rules
 
 Multiply :math:`(a_1 * \vec{\mathbf{e}}_1 + a_2 * \vec{\mathbf{e}}_2) * (b_1 * \vec{\mathbf{e}}_1 + b_2 * \vec{\mathbf{e}}_2)` out term by term with
 :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 = \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2 = 1`, :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 = \mathbf{e}_{12}` and
-:math:`\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\mathbf{e}_{12}`:
+:math:`\vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 = -\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`:
 
 .. math::
 
    \begin{aligned}
    (a_1 * \vec{\mathbf{e}}_1 + a_2 * \vec{\mathbf{e}}_2) * (b_1 * \vec{\mathbf{e}}_1 + b_2 * \vec{\mathbf{e}}_2)
      &= a_1 * b_1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 + a_1 * b_2 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 + a_2 * b_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 + a_2 * b_2 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2 \\
-     &= (a_1 * b_1 + a_2 * b_2) + (a_1 * b_2 - a_2 * b_1) * \mathbf{e}_{12},
+     &= (a_1 * b_1 + a_2 * b_2) + (a_1 * b_2 - a_2 * b_1) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2,
    \end{aligned}
 
 which is :eq:`eq-bootstrap-product`. The product defined from projection and the product
@@ -87,7 +87,7 @@ of the multiplication rules are the same product. Two consequences the next step
   .. math::
      :label: eq-bootstrap-unit-product
 
-     \hat{\mathbf{a}} * \hat{\mathbf{b}} = \cos(\theta) + \sin(\theta) * \mathbf{e}_{12},
+     \hat{\mathbf{a}} * \hat{\mathbf{b}} = \cos(\theta) + \sin(\theta) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2,
      \qquad \hat{\mathbf{a}} = \frac{\vec{\mathbf{a}}}{|\vec{\mathbf{a}}|}, \quad \hat{\mathbf{b}} = \frac{\vec{\mathbf{b}}}{|\vec{\mathbf{b}}|},
 
   with :math:`\theta` the angle from :math:`\vec{\mathbf{a}}` to :math:`\vec{\mathbf{b}}`.
@@ -96,15 +96,15 @@ The quarter turn is a product
 -----------------------------
 
 Step 1's base case :eq:`eq-bootstrap-quarter-turn` has a second form. Multiply out, with
-:math:`\vec{\mathbf{e}}_1 * \mathbf{e}_{12} = \vec{\mathbf{e}}_2` and :math:`\vec{\mathbf{e}}_2 * \mathbf{e}_{12} = -\vec{\mathbf{e}}_1`:
+:math:`\vec{\mathbf{e}}_1 * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) = \vec{\mathbf{e}}_2` and :math:`\vec{\mathbf{e}}_2 * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) = -\vec{\mathbf{e}}_1`:
 
 .. math::
    :label: eq-bootstrap-quarter-turn-product
 
-   \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2) = \vec{\mathbf{v}} * \mathbf{e}_{12}
-     = (v_1 * \vec{\mathbf{e}}_1 + v_2 * \vec{\mathbf{e}}_2) * \mathbf{e}_{12} = -v_2 * \vec{\mathbf{e}}_1 + v_1 * \vec{\mathbf{e}}_2.
+   \vec{\mathbf{r}}(\vec{\mathbf{v}}; \pi/2) = \vec{\mathbf{v}} * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)
+     = (v_1 * \vec{\mathbf{e}}_1 + v_2 * \vec{\mathbf{e}}_2) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 = -v_2 * \vec{\mathbf{e}}_1 + v_1 * \vec{\mathbf{e}}_2.
 
-Multiplying by :math:`\mathbf{e}_{12}` on the right turns a vector a quarter turn. :math:`\mathbf{e}_{12}` is
+Multiplying by :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` on the right turns a vector a quarter turn. :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` is
 the unit bivector, also called :math:`i`.
 
 Dot and wedge through projection and rejection
@@ -123,13 +123,13 @@ and :math:`\vec{\mathbf{a}} * \vec{\mathbf{a}} = |\vec{\mathbf{a}}|^2`:
 
 With Step 2's formula :eq:`eq-bootstrap-rejection`,
 :math:`\operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}}) = y * \vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2) / |\vec{\mathbf{a}}|`, and
-:math:`\vec{\mathbf{a}} * \vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2) = \vec{\mathbf{a}} * \vec{\mathbf{a}} * \mathbf{e}_{12} = |\vec{\mathbf{a}}|^2 * \mathbf{e}_{12}`
+:math:`\vec{\mathbf{a}} * \vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2) = \vec{\mathbf{a}} * \vec{\mathbf{a}} * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) = |\vec{\mathbf{a}}|^2 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`
 by :eq:`eq-bootstrap-quarter-turn-product`:
 
 .. math::
 
    \vec{\mathbf{a}} * \operatorname{rej}_{\vec{\mathbf{a}}}(\vec{\mathbf{b}})
-     = \frac{y}{|\vec{\mathbf{a}}|} * \vec{\mathbf{a}} * \vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2) = |\vec{\mathbf{a}}| * y * \mathbf{e}_{12}.
+     = \frac{y}{|\vec{\mathbf{a}}|} * \vec{\mathbf{a}} * \vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2) = |\vec{\mathbf{a}}| * y * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2.
 
 These are the two parts of :eq:`eq-bootstrap-product`, so
 
@@ -164,11 +164,11 @@ against gacalc's product, the split into dot and wedge,
 vectors and with symbolic coordinates.
 
 Lean: ``mul_eq_magnitude_smul_alignSP`` (:eq:`eq-bootstrap-product`, stated as
-:math:`\vec{\mathbf{b}} * \vec{\mathbf{a}} = |\vec{\mathbf{b}}| * (x + y * \mathbf{e}_{12})` with :math:`\vec{\mathbf{a}}` measured in
+:math:`\vec{\mathbf{b}} * \vec{\mathbf{a}} = |\vec{\mathbf{b}}| * (x + y * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)` with :math:`\vec{\mathbf{a}}` measured in
 :math:`\vec{\mathbf{b}}`'s standard position; swap the names for the form above) in
 ``proofs/GacalcProofs/StandardPosition2D.lean``; ``mul_eq_dot_add_wedge`` in
 ``proofs/GacalcProofs/G2.lean``; ``uvec_mul_uvec`` (two unit vectors at angles
-:math:`\alpha`, :math:`\beta` multiply to :math:`\cos(\beta - \alpha) + \sin(\beta - \alpha) * \mathbf{e}_{12}`)
+:math:`\alpha`, :math:`\beta` multiply to :math:`\cos(\beta - \alpha) + \sin(\beta - \alpha) * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`)
 in ``proofs/GacalcProofs/Rotation2D.lean``; ``mul_proj_eq_dot``, ``mul_reject_eq_wedge`` and
 ``mul_eq_mul_proj_add_mul_reject`` (:eq:`eq-bootstrap-dot-wedge-proj-rej`) and
 ``mul_proj_symm``, ``mul_reject_antisymm`` (:eq:`eq-bootstrap-dot-wedge-mirror`) in

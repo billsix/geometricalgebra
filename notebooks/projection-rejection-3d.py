@@ -100,8 +100,9 @@ a.projected_onto(e_23)
 a.rejected_away_from(e_23)
 
 # %% [markdown]
-# Onto the $\mathbf{e}_{31}$ plane (gacalc writes it
-# $\mathbf{e}_{13} = -\mathbf{e}_{31}$; the sign does not change which plane it is), the
+# Onto the $\mathbf{e}_{31}$ plane (gacalc writes its product the other way round,
+# $\vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1 = -\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3$;
+# the sign does not change which plane it is), the
 # projection keeps $a_1$ and $a_3$:
 
 # %%

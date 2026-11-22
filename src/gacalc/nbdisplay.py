@@ -68,8 +68,11 @@ def at_values(
 
     >>> import sympy
     >>> from gacalc.g2 import Scalar, e_1, e_2
+    >>> a_1: sympy.Symbol
+    >>> a_2: sympy.Symbol
     >>> a_1, a_2 = sympy.symbols("a_1 a_2", real=True)
-    >>> a = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
+    >>> from gacalc.g2 import Vector
+    >>> a: Vector = Scalar(a_1) * e_1 + Scalar(a_2) * e_2
     >>> at_values(a, [(a_1, 1), (a_2, 4)]) == 1 * e_1 + 4 * e_2
     True
     >>> at_values(a.magnitude(), [(a_1, 3), (a_2, 4)])
@@ -188,6 +191,8 @@ def _cancelling_labels(
     one, that is its negative. Each pair gets the next number, the same on both;
     the key is ``(row, blade, index of the monomial)``.
 
+    >>> a: sympy.Symbol
+    >>> b: sympy.Symbol
     >>> a, b = sympy.symbols("a b")
     >>> _cancelling_labels([{(1, 2): [a * b]}, {(1, 2): [-a * b]}, {(): [a]}])
     {(0, (1, 2), 0): 1, (1, (1, 2), 0): 1}
@@ -279,7 +284,9 @@ def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
     rows, and a bar in a cell is written ``\\vert`` so it cannot end the cell.
 
     >>> from gacalc.g2 import e_1, e_2
-    >>> lines = product_table_markdown(1 * e_1 + 2 * e_2, 3 * e_1).splitlines()
+    >>> lines: list[str] = (
+    ...     product_table_markdown(1 * e_1 + 2 * e_2, 3 * e_1).splitlines()
+    ... )
     >>> print(lines[0])
     | Left Component | * Right Component | = Product |
     >>> len(lines)  # header, separator, then 2 * 1 = 2 term pairs
@@ -289,7 +296,7 @@ def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
 
     The two cross terms of ``(e_1 + e_2) * (e_1 + e_2)`` cancel:
 
-    >>> table = product_table_markdown(1 * e_1 + 1 * e_2, 1 * e_1 + 1 * e_2)
+    >>> table: str = product_table_markdown(1 * e_1 + 1 * e_2, 1 * e_1 + 1 * e_2)
     >>> table.count("underbrace{1}_{1}")
     2
     """
@@ -342,6 +349,8 @@ def show_mult(a: MultiVectorBase, b: MultiVectorBase) -> None:
 def _signed_terms(coefficient: Real) -> list[sympy.Expr]:
     """The monomials of ``coefficient`` once expanded, in sympy's order (no zeros).
 
+    >>> a: sympy.Symbol
+    >>> b: sympy.Symbol
     >>> a, b = sympy.symbols("a b")
     >>> _signed_terms(a * (b - 2))
     [-2*a, a*b]
@@ -363,6 +372,9 @@ def _pair_labels(
     gets ``None``. (Terms on one side never cancel each other: sympy has already
     combined them when it expanded the side.)
 
+    >>> a: sympy.Symbol
+    >>> b: sympy.Symbol
+    >>> c: sympy.Symbol
     >>> a, b, c = sympy.symbols("a b c")
     >>> _pair_labels([a, b], [b, a])
     ([1, 2], [2, 1])
@@ -396,6 +408,8 @@ def _marked_tokens(
     """``terms`` as signed LaTeX pieces of one sum (``["0"]`` when empty), each
     labelled term under a numbered ``\\underbrace``.
 
+    >>> a: sympy.Symbol
+    >>> b: sympy.Symbol
     >>> a, b = sympy.symbols("a b")
     >>> _marked_tokens([a, -b], [1, None])
     ['\\\\underbrace{a}_{1}', '- b']
@@ -417,6 +431,8 @@ def _common_denominator(left: Real, right: Real) -> sympy.Expr:
     """The least common multiple of the denominators of the expanded terms of
     ``left`` and ``right``.
 
+    >>> a: sympy.Symbol
+    >>> b: sympy.Symbol
     >>> a, b = sympy.symbols("a b", positive=True)
     >>> _common_denominator(a / b, 1 / (a * b))
     a*b
@@ -557,7 +573,11 @@ def cancellation_latex(
         sides, and the difference is zero.
 
         >>> from gacalc.g2 import Scalar, e_1
+        >>> a: sympy.Symbol
+        >>> b: sympy.Symbol
+        >>> c: sympy.Symbol
         >>> a, b, c = sympy.symbols("a b c")
+        >>> line: str
         >>> [line] = cancellation_latex(
         ...     Scalar(a * b + a * c) * e_1, Scalar(a * c + a * b) * e_1
         ... )

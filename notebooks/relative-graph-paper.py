@@ -279,7 +279,4 @@ draw(f_swapped)
 # %% [markdown]
 # and the inverse function reads them back: given a spot in standard coordinates, it
 # says where that spot is on the carried sheet. Applied to the carried spot, it returns
-# $(x, y)$; the difference:
-
-# %%
-show_difference(f.inverse(f(p)), p)
+# $(x, y)$.

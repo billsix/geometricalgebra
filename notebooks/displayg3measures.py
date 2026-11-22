@@ -68,11 +68,7 @@ a_vec
 area(a_vec, b_vec)
 
 # %% [markdown]
-# An area has no direction, so swapping the sides changes nothing; the difference is
-# $0$:
-
-# %%
-show_difference(area(a_vec, b_vec), area(b_vec, a_vec))
+# An area has no direction, so swapping the sides changes nothing.
 
 # %% [markdown]
 # Why is there no signed area in space?

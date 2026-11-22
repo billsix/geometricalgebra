@@ -24,20 +24,28 @@ preserved verbatim in the appendix.
 **Current reading order** (`book/docs/index.rst`: an unnumbered "Reference cards" toctree, then
 the captioned, numbered parts):
 
-- **Reference cards** (before Part I; not lessons): `cheat-sheet-2d` and `cheat-sheet-3d`. Each
-  operation is a chain of partial bindings: the general 𝒢ₙ form, then by the kinds of argument
-  (vectors, a bivector, a versor), then named components, then coordinates, with as many steps as
-  the operation needs. Each chain ends with "Taught in" links (`:doc:` / `:eq:`) to the pages that
-  teach it, so a card can show results before the book reaches them without breaking the teaching
-  order. Each card stands alone (the generic steps repeat). Operations gacalc has but the book
-  does not teach (even/odd parts, `exp`, the scalar product, contractions) sit in a last
+- **Reference cards** (before Part I; not lessons): `cheat-sheet-gn`, `cheat-sheet-2d` and
+  `cheat-sheet-3d`. `cheat-sheet-gn` holds, once, every formula that is true in every dimension
+  𝒢ₙ (product rules, grade projection, reverse, magnitude, inverse, dot, wedge, projection and
+  rejection onto a blade, reflection, dual, scalar product, contractions). The plane and space
+  cards cite it. Each of their operations is a chain of partial bindings that starts at the kinds
+  of argument (vectors, a bivector, a trivector, a versor) and ends at coordinates, with as many
+  steps as the operation needs. Each card opens with its names by kind: scalars, vectors, the unit
+  of area or volume, a bivector `B = a ∧ b`, a versor `R = a * b`, a trivector `V = a ∧ b ∧ c`
+  (space), any multivector `A`; every name is defined even where no formula uses it. The parts of
+  a multivector are written with the grade projection `⟨A⟩_r`, never a subscript (a vector's
+  coordinates `a_1`, `a_2` keep theirs), and the unit planes are written as the product
+  `e₁ * e₂`. Each chain ends with "Taught in" links (`:doc:` / `:eq:`) to the pages that teach
+  it, so a card can show results before the book reaches them without breaking the teaching
+  order. Operations gacalc has but the book does not teach (even/odd parts, `exp`) sit in a last
   "Also in gacalc" section that links to the API reference. When a page adds or relabels a
   formula on a card, update the card. The coordinate forms were checked against gacalc by a
   one-time script (`tasks/archive/2026/11/20/book-formula-cheat-sheets-2d-3d.md` says how to
   get it back from git).
 - **Part I — The plane:** hook, canonical-form, one-dimension, multiplication, trigonometry, sets,
   vectors-as-number-lines, vector-addition, geometry-from-vectors, rotate (proof pages
-  `proof-rotate`, `proof-rotate-from-a-to-b`), geometric-product, rotation-graph-paper,
+  `proof-rotate`, `proof-rotate-from-a-to-b`), geometric-product, plotting-a-table,
+  rotation-graph-paper,
   relative-graph-paper, projection
   (`proof-projection`), product-from-projection (`rotation-from-vectors`), reflection, orthogonal,
   dual, defining-g2, levels-of-abstraction, interactive-calculator.
@@ -279,7 +287,7 @@ route, and `versor_from_vectors`/`versor_rotation`/`projection_rotation`), citin
 - **Prose + companion notebook** (gacalc + sympy/plot): hook, canonical-form,
   one-dimension, vectors-as-number-lines, relative-graph-paper, vector-addition,
   geometry-from-vectors, rotate,
-  geometric-product, projection, product-from-projection, reflection, dual, defining-g2,
+  geometric-product, plotting-a-table, projection, product-from-projection, reflection, dual, defining-g2,
   levels-of-abstraction, three-dimensions, projection-rejection-3d, frames-qr (`frame-qr-2d`,
   `frame-qr-3d`), and the proof pages `proof-rotate-from-a-to-b`, `proof-projection`,
   `proof-projection-3d`, `proof-cross`, `rotation-from-vectors`.

@@ -116,8 +116,9 @@ noncomputable def wedge (a b : G2) : G2 where
   c2 := a.c2 * b.s + a.s * b.c2
   c12 := a.c1 * b.c2 - a.c2 * b.c1 + a.c12 * b.s + a.s * b.c12
 
-/-- The scalar product `a·b = ⟨a b⟩₀` in 𝒢₂ (scalar part of the geometric product; for vectors the
-    Euclidean dot `a₁*b₁ + a₂*b₂`). -/
+/-- The scalar product `a·b = ⟨a b⟩₀` in 𝒢₂ (scalar part of the geometric product): Python's
+    `scalar_product`. It equals the book's dot product, the Euclidean `a₁*b₁ + a₂*b₂`, only on two
+    vectors. -/
 noncomputable def dot (a b : G2) : ℝ := (mul a b).s
 
 /-- Reverse `R̃` — reverses the order of the vector factors in each blade. Per grade k the
@@ -264,13 +265,6 @@ theorem e_12_sq : mul e_12 e_12 = neg one := by simp only [mul, e_12, neg, one];
 
 /-! ### Dot and wedge as the parts of the geometric product -/
 
-/-- The geometric product of two vectors splits into a scalar (dot) plus an e₁*e₂
-    (wedge) part: u*v = (u·v) + (u∧v)*e₁*e₂. -/
-theorem vec_mul (u1 u2 v1 v2 : ℝ) :
-    mul (vec u1 u2) (vec v1 v2)
-      = ⟨u1 * v1 + u2 * v2, 0, 0, u1 * v2 - u2 * v1⟩ := by
-  simp only [mul, vec]; ext <;> ring
-
 /-- A multivector is a **vector** (grade 1) exactly when its scalar and bivector (pseudoscalar) parts
     vanish — how "`a` is a vector" is stated for an arbitrary `a : G2` (no vector subtype). -/
 def IsVector (a : G2) : Prop := a.s = 0 ∧ a.c12 = 0
@@ -284,47 +278,12 @@ theorem eq_vec_of_isVector {a : G2} (ha : IsVector a) : a = vec a.c1 a.c2 := by
     hypothesis of an object-level theorem when it holds a concrete `vec`. -/
 theorem isVector_vec (x y : ℝ) : IsVector (vec x y) := ⟨rfl, rfl⟩
 
-/-- A multivector is a **scalar** (grade 0) exactly when its vector and bivector (pseudoscalar) parts
-    vanish — how "`a` is a scalar" is stated for an arbitrary `a : G2`, the 𝒢₂ mirror of Python's
-    `is_scalar` (`base.py`). `zero` qualifies (it is homogeneous of every grade). The even-versor
-    (`IsEvenVersor`, grade 0+2) and rotor (`IsRotor`) predicates live in `Sandwich.lean`; there is no
-    grade-3 trivector in 2D. -/
-def IsScalar (a : G2) : Prop := a.c1 = 0 ∧ a.c2 = 0 ∧ a.c12 = 0
-
-/-- A grade-0 multivector is `scalar a.s` with `a.s` its own scalar coefficient — the scalar twin of
-    `eq_vec_of_isVector`, bridging an `IsScalar` object to the `scalar` constructor form. -/
-theorem eq_scalar_of_isScalar {a : G2} (ha : IsScalar a) : a = scalar a.s := by
-  obtain ⟨h1, h2, h12⟩ := ha
-  ext <;> simp only [scalar, h1, h2, h12] <;> ring
-
-/-- The `scalar` constructor produces a scalar — the `IsScalar` recognizer for `scalar a`
-    (mirrors `isVector_vec`). -/
-theorem isScalar_scalar (a : ℝ) : IsScalar (scalar a) := ⟨rfl, rfl, rfl⟩
-
-/-- The scalar unit `1` is a scalar — discharges `IsScalar` for a caller holding `one`. -/
-theorem isScalar_one : IsScalar one := ⟨rfl, rfl, rfl⟩
-
 /-- A multivector is a **bivector** (grade 2 — the pseudoscalar's grade in 2D) exactly when its scalar
     and vector parts vanish — the 𝒢₂ mirror of Python's `is_bivector`. `zero` qualifies. -/
 def IsBivector (B : G2) : Prop := B.s = 0 ∧ B.c1 = 0 ∧ B.c2 = 0
 
-/-- A grade-2 multivector is `c*e₁₂` with `c` its own bivector coefficient — the bivector twin of
-    `eq_vec_of_isVector`. -/
-theorem eq_smul_e12_of_isBivector {B : G2} (hB : IsBivector B) : B = smul B.c12 e_12 := by
-  obtain ⟨hs, h1, h2⟩ := hB
-  ext <;> simp only [smul, e_12, hs, h1, h2] <;> ring
-
-/-- The unit bivector `e₁₂` is a bivector. -/
-theorem isBivector_e12 : IsBivector e_12 := ⟨rfl, rfl, rfl⟩
-
 /-- The unit pseudoscalar `I₂` is a bivector (it *is* `e₁₂`). -/
 theorem isBivector_I : IsBivector I := ⟨rfl, rfl, rfl⟩
-
-/-- **The square of a vector is a scalar** (2D): `a a = |a|²*1` has only a grade-0 part — the
-    typed-object form of "`a²` is a scalar," using the `IsScalar` predicate. -/
-theorem isScalar_mul_self_of_isVector {a : G2} (ha : IsVector a) : IsScalar (mul a a) := by
-  obtain ⟨has, ha12⟩ := ha
-  refine ⟨?_, ?_, ?_⟩ <;> simp only [mul, has, ha12] <;> ring
 
 /-! ### Dot and wedge facts: bilinearity, the dot/wedge split, antisymmetry, and grade -/
 
@@ -378,14 +337,6 @@ theorem wedge_is_antisym_part {a b : G2} (ha : IsVector a) (hb : IsVector b) :
   obtain ⟨hbs, hb12⟩ := hb
   simp only [smul, sub, mul, wedge, has, ha12, hbs, hb12]
   ext <;> ring
-
-/-- Equivalence to the general case: the dot is the Euclidean coordinate sum ∑ aᵢbᵢ
-    (= `@inner ℝ (EuclideanSpace ℝ (Fin 2)) _ a b`) — for vectors. -/
-theorem dot_eq_coord_sum {a b : G2} (ha : IsVector a) (hb : IsVector b) :
-    (mul a b).s = a.c1 * b.c1 + a.c2 * b.c2 := by
-  obtain ⟨has, ha12⟩ := ha
-  obtain ⟨hbs, hb12⟩ := hb
-  simp only [mul, has, ha12, hbs, hb12]; ring
 
 /-- The wedge distributes over subtraction on the right (2D). -/
 theorem wedge_sub_right (a u w : G2) : wedge a (sub u w) = sub (wedge a u) (wedge a w) := by
@@ -453,19 +404,6 @@ theorem vec_anticomm_perp {u v : G2} (hu : IsVector u) (hv : IsVector v) (h : do
   · ring
   · ring
 
-/-- **Leaf:** `|a∧b|² = (a₁*b₂ − a₂*b₁)²` — the squared magnitude of the plane bivector of two vectors (2D). -/
-theorem normSq_wedge_vec (a1 a2 b1 b2 : ℝ) :
-    normSq (wedge (vec a1 a2) (vec b1 b2)) = (a1 * b2 - a2 * b1) ^ 2 := by
-  simp only [normSq, wedge, mul, reverse, vec]; ring
-
-/-- **The wedge of two vectors is a bivector** (2D): `a∧b` has only a grade-2 part — the typed-object
-    grade fact, stated via the `IsBivector` predicate. -/
-theorem isBivector_wedge_of_isVector {a b : G2} (ha : IsVector a) (hb : IsVector b) :
-    IsBivector (wedge a b) := by
-  obtain ⟨has, ha12⟩ := ha
-  obtain ⟨hbs, hb12⟩ := hb
-  refine ⟨?_, ?_, ?_⟩ <;> simp only [wedge, has, ha12, hbs, hb12] <;> ring
-
 /-- **A vector wedged with a bivector is zero in 𝒢₂**: grade 1 + 2 = 3 exceeds the dimension, so a
     vector has no component outside the pseudoscalar plane — object form over `IsVector`/`IsBivector`. -/
 theorem wedge_isVector_isBivector_eq_zero {a B : G2} (ha : IsVector a) (hB : IsBivector B) :
@@ -501,11 +439,6 @@ noncomputable def dual (a : G2) : G2 := mul a I_inv
 /-- The dual of a vector is again a vector — the −90° rotation `(x, y) ↦ (y, −x)`. -/
 theorem dual_vec (x y : ℝ) : dual (vec x y) = vec y (-x) := by
   simp only [dual, I_inv, mul, vec]; ext <;> ring
-
-/-- **The dual of a vector is perpendicular to it** (2D): the dot product of `dual v` and
-    `v` — the scalar part of their geometric product (`dot_eq_coord_sum`) — is zero. -/
-theorem dual_vec_perp (x y : ℝ) : (mul (dual (vec x y)) (vec x y)).s = 0 := by
-  simp only [dual, I_inv, mul, vec]; ring
 
 /-! ### Reverse is an anti-automorphism, and reverses a product of vectors -/
 

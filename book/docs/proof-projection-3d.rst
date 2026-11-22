@@ -38,8 +38,8 @@ Everything else is the same as in the plane. Each plane rotation preserves lengt
 projection commutes with it, and the rotate / keep-x / rotate-back answer is the true projection.
 This 3D construction is machine-checked in ``proofs/GacalcProofs/StandardPosition.lean``
 (``proj_rotXY_equivariant`` and ``proj_rotXZ_equivariant``, and the single theorem
-``projectSP_eq_proj``), and you can run it with ``gacalc.standardposition.project_sp``; the last
-section of the companion notebook of :doc:`proof-projection` does so symbolically.
+``projectSP_eq_proj``), and ``gacalc.standardposition.project_sp`` runs it, checked against the
+canonical projection by ``tests/test_standardposition.py``.
 
 .. toctree::
    :maxdepth: 1

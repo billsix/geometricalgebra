@@ -16,9 +16,11 @@
 #
 # $\vec{\mathbf{a}}$ split against the $\mathbf{e}_{31}$ plane: the projection (blue)
 # lies in the plane, the rejection (green, along y) is the perpendicular remainder. (The
-# book writes this plane $\mathbf{e}_{31}$, cyclically; gacalc's blade constant is
-# $\mathbf{e}_{13}=-\mathbf{e}_{31}$.) Built with the `epix` package;
-# `tools/render_epix_figures.py` writes `_static/epix/proj3d-e31.{pdf,png}`. CC0.
+# book writes this plane $\mathbf{e}_{31}$, cyclically; gacalc writes its product the
+# other way round,
+# $\vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1 = -\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_3$.)
+# Built with the `epix` package; `tools/render_epix_figures.py` writes
+# `_static/epix/proj3d-e31.{pdf,png}`. CC0.
 
 # %%
 from __future__ import annotations

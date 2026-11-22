@@ -170,7 +170,8 @@ show_mult(at_values(a, values), at_values(projection, values))
 show_mult(a, projection)
 
 # %% [markdown]
-# Simplified, it is a plain number with no $\mathbf{e}_{12}$ part:
+# Simplified, it is a plain number with no $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$
+# part:
 
 # %%
 along: Versor = (a * projection).simplified()
@@ -181,7 +182,7 @@ along
 #
 # The rejection is perpendicular to $\vec{\mathbf{a}}$. The product of two perpendicular
 # vectors has no plain-number part: the cross terms are all that is left, and they make
-# a multiple of $\mathbf{e}_{12}$. First at the plot values:
+# a multiple of $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$. First at the plot values:
 
 # %%
 show_mult(at_values(a, values), at_values(rejection, values))
@@ -193,7 +194,8 @@ show_mult(at_values(a, values), at_values(rejection, values))
 show_mult(a, rejection)
 
 # %% [markdown]
-# Simplified, it is a multiple of $\mathbf{e}_{12}$ and nothing else:
+# Simplified, it is a multiple of $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ and nothing
+# else:
 
 # %%
 across: Versor = (a * rejection).simplified()

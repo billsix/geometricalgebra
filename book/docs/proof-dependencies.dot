@@ -20,6 +20,7 @@ digraph proof_dependencies {
         projection [label="Projection proj_b(a)\nproof-projection"];
         rejection [label="Rejection rej_b(a)\nproof-projection"];
         rotation_as_product [label="Rotation is a product, a * R\ngeometric-product"];
+        plotted_table [label="A table plotted in the plane,\nx * e₁ + f(x) * e₁ * (e₁ * e₂)\nplotting-a-table"];
         product_from_projection [label="b * a = |b| * (x + y * e₁₂)\nproduct-from-projection"];
         dot_and_wedge [label="a * b = a · b + a ∧ b\nproduct-from-projection,\nlevels-of-abstraction"];
         rotor_from_vectors [label="Rotor from two vectors, â * b̂\nrotation-from-vectors"];
@@ -44,6 +45,7 @@ digraph proof_dependencies {
         base_projection -> projection;
         base_projection -> rejection;
         quarter -> rotation_as_product;
+        rotation_as_product -> plotted_table;
         rotation_by_angle -> rotation_as_product [style=dashed];
         rotation_from_to -> product_from_projection;
         projection -> product_from_projection;

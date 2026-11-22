@@ -39,10 +39,10 @@
 # result is a formula that holds for every $\vec{\mathbf{a}}$ and $\vec{\mathbf{b}}$.
 # Numbers appear only to draw the figures: one cell sets them, and each step also shows
 # its formula with those numbers substituted. The Lean theorem is `projectSP_eq_proj` in
-# `proofs/GacalcProofs/StandardPosition.lean`.
+# `proofs/GacalcProofs/StandardPosition2D.lean`.
 
 # %%
-# twin: GacalcProofs.G3.projectSP_eq_proj
+# twin: GacalcProofs.G2.projectSP_eq_proj
 import sympy
 
 from gacalc.base import Real

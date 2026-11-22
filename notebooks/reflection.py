@@ -265,11 +265,8 @@ fig_parts
 show_difference(projection - rejection, reflection)
 
 # %% [markdown]
-# gacalc's `reflected_across` is defined as the projection minus the rejection. Its
-# difference from the reflection built by rotating:
-
-# %%
-show_difference(a.reflected_across(b), reflection)
+# gacalc's `reflected_across` is defined as the projection minus the rejection, which
+# the cell above showed equal to the reflection built by rotating.
 
 # %% [markdown]
 # ## The same reflection: one product
@@ -335,10 +332,7 @@ sympy.simplify(sympy.sympify(reflection.magnitude_squared()))
 a.magnitude_squared()
 
 # %% [markdown]
-# Their difference:
-
-# %%
-show_difference(reflection.magnitude_squared(), a.magnitude_squared())
+# The two squared lengths are equal, so the reflection keeps the length.
 
 # %% [markdown]
 # ### Reflecting twice gives back $\vec{\mathbf{a}}$

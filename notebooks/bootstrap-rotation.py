@@ -316,10 +316,7 @@ show_difference(theta_then_phi, v.rotate(theta + phi))
 v.rotate(theta).rotate(-theta).simplified()
 
 # %% [markdown]
-# Its difference from $\vec{\mathbf{v}}$:
-
-# %%
-show_difference(v.rotate(theta).rotate(-theta), v)
+# Turning by $\theta$ and then by $-\theta$ gives $\vec{\mathbf{v}}$ back.
 
 # %% [markdown]
 # ### A rotation carries sums to sums

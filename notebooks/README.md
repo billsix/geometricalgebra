@@ -28,6 +28,7 @@ is not on PyPI.
 | `rotate.py` | Rotate |
 | `proof-rotate-from-a-to-b.py` | Proof: Rotate from the Direction of a to the Direction of b |
 | `geometric-product.py` | The Geometric Product |
+| `plotting-a-table.py` | Plotting a Table |
 | `relative-graph-paper.py` | Relative Graph Paper |
 | `projection.py` | Projection |
 | `proof-projection.py` | Proof: Projection by Rotating to Standard Position |

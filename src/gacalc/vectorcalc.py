@@ -53,10 +53,17 @@ def cross(a: MultiVectorBase, b: MultiVectorBase) -> MultiVectorBase:
     General symbolic vectors show it *is* the coordinate formula:
 
     >>> import sympy
+    >>> a_1: sympy.Symbol
+    >>> a_2: sympy.Symbol
+    >>> a_3: sympy.Symbol
     >>> a_1, a_2, a_3 = sympy.symbols("a_1 a_2 a_3")
+    >>> b_1: sympy.Symbol
+    >>> b_2: sympy.Symbol
+    >>> b_3: sympy.Symbol
     >>> b_1, b_2, b_3 = sympy.symbols("b_1 b_2 b_3")
-    >>> a = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-    >>> b = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
+    >>> from gacalc.g3 import Vector
+    >>> a: Vector = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+    >>> b: Vector = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
     >>> cross(a, b) == (
     ...     (a_2 * b_3 - a_3 * b_2) * e_1
     ...     + (a_3 * b_1 - a_1 * b_3) * e_2

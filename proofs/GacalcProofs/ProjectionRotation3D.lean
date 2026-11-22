@@ -2,7 +2,6 @@ import GacalcProofs.G3
 import GacalcProofs.G2
 import GacalcProofs.Projection3D
 import GacalcProofs.Sandwich
-import GacalcProofs.Normalize
 import GacalcProofs.Rotation3D
 
 /-! # A general rotation defined from project/reject (𝒢₃)
@@ -21,6 +20,9 @@ import GacalcProofs.Rotation3D
     the projection-formula sibling of the versor sandwich `R*v*R⁻¹` (`Sandwich.lean`); the two routes to
     a general rotation agree (route P here vs route V there). -/
 namespace GacalcProofs.G3
+
+/-- Normalize a vector to unit length: `v̂ = (1/|v|)*v` (the 𝒢₃ twin of `ProjectionRotation2D.normalizeVec`). -/
+noncomputable def normalizeVec (a : G3) : G3 := smul (1 / magnitude a) a
 
 /-- **General rotation from projection/rejection** (mirrors `transforms.projection_rotation`):
     `projRotation f t v = (project_{f∧t} v) · f̂ · t̂ + reject_{f∧t} v` — turn the in-plane part of `v`
@@ -415,93 +417,5 @@ theorem projRotation_eq_sandwich {f t v : G3} (hf : IsVector f) (ht : IsVector t
   rwa [← eq_vec_of_isVector hf, ← eq_vec_of_isVector ht, ← eq_vec_of_isVector hv] at h
 
 /-! ### Object-form wrappers for the scaffold lemmas (statements over vector objects) -/
-
-theorem wedge_vec_wedge_self {a b : G3} (ha : IsVector a) (hb : IsVector b) :
-    wedge a (wedge a b) = zero := by
-  obtain ⟨has, _, _, _, _⟩ := ha
-  obtain ⟨hbs, _, _, _, _⟩ := hb
-  simp only [wedge, zero, has, hbs]
-  ext <;> ring
-
-theorem reject_in_plane_self {a b : G3} (ha : IsVector a) (hb : IsVector b) :
-    reject (wedge a b) a = zero := by
-  have h := reject_in_plane_self_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
-
-theorem inner_vb_mul_reverse_self {a b : G3} (ha : IsVector a) (hb : IsVector b) :
-    mul (inner_vb a (wedge a b)) (reverse (wedge a b)) = smul (normSq (wedge a b)) a := by
-  have h := inner_vb_mul_reverse_self_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
-
-theorem project_onto_in_plane_self {a b : G3} (ha : IsVector a) (hb : IsVector b)
-    (hn : normSq (wedge a b) ≠ 0) :
-    project_onto (wedge a b) a = a := by
-  have h := project_onto_in_plane_self_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
-    (by rw [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb]; exact hn)
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
-
-theorem plane_pythagorean {a b c : G3} (ha : IsVector a) (hb : IsVector b) (hc : IsVector c)
-    (hn : normSq (wedge a b) ≠ 0) :
-    normSq (project_onto (wedge a b) c) + normSq (reject (wedge a b) c) = normSq c := by
-  have h := plane_pythagorean_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 c.c1 c.c2 c.c3
-    (by rw [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb]; exact hn)
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb, ← eq_vec_of_isVector hc] at h
-
-theorem project_perp_reject {a b c : G3} (ha : IsVector a) (hb : IsVector b) (hc : IsVector c)
-    (hn : normSq (wedge a b) ≠ 0) :
-    (mul (project_onto (wedge a b) c) (reverse (reject (wedge a b) c))).s = 0 := by
-  have h := project_perp_reject_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 c.c1 c.c2 c.c3
-    (by rw [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb]; exact hn)
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb, ← eq_vec_of_isVector hc] at h
-
-theorem inplane_perp_reject {a b c : G3} (ha : IsVector a) (hb : IsVector b) (hc : IsVector c)
-    (hn : normSq (wedge a b) ≠ 0) :
-    (mul (mul (mul (project_onto (wedge a b) c) a) b) (reverse (reject (wedge a b) c))).s = 0 := by
-  have h := inplane_perp_reject_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 c.c1 c.c2 c.c3
-    (by rw [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb]; exact hn)
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb, ← eq_vec_of_isVector hc] at h
-
-theorem normSq_mul_vec (M : G3) {a : G3} (ha : IsVector a) :
-    normSq (mul M a) = normSq a * normSq M := by
-  have h := normSq_mul_vec_coord M a.c1 a.c2 a.c3
-  rw [← normSq_vec a.c1 a.c2 a.c3, ← eq_vec_of_isVector ha] at h
-  exact h
-
-theorem normalizeVec_to_mul_versor_eq_bisector {a b : G3} (ha : IsVector a) (hb : IsVector b)
-    (ht : magnitude b ≠ 0) :
-    mul (normalizeVec b) (versorFromVectors a b) = bisector a b := by
-  have h := normalizeVec_to_mul_versor_eq_bisector_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
-    (by rw [← eq_vec_of_isVector hb]; exact ht)
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
-
-theorem vec_mul_bisector_eq {a b : G3} (ha : IsVector a) (hb : IsVector b) :
-    mul a (bisector a b) = smul (magnitude a) (reverse (versorFromVectors a b)) := by
-  have h := vec_mul_bisector_eq_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
-
-theorem normalizeVec_mul_versor_eq_reverse {a b : G3} (ha : IsVector a) (hb : IsVector b)
-    (hf : magnitude a ≠ 0) (ht : magnitude b ≠ 0) :
-    mul (mul (normalizeVec a) (normalizeVec b)) (versorFromVectors a b)
-      = reverse (versorFromVectors a b) := by
-  have h := normalizeVec_mul_versor_eq_reverse_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3
-    (by rw [← eq_vec_of_isVector ha]; exact hf)
-    (by rw [← eq_vec_of_isVector hb]; exact ht)
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb] at h
-
-theorem versor_mul_project_eq {a b c : G3} (ha : IsVector a) (hb : IsVector b) (hc : IsVector c)
-    (hn : normSq (wedge a b) ≠ 0) :
-    mul (versorFromVectors a b) (project_onto (wedge a b) c)
-      = mul (project_onto (wedge a b) c) (reverse (versorFromVectors a b)) := by
-  have h := versor_mul_project_eq_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 c.c1 c.c2 c.c3
-    (by rw [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb]; exact hn)
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb, ← eq_vec_of_isVector hc] at h
-
-theorem versor_mul_reject_comm {a b c : G3} (ha : IsVector a) (hb : IsVector b) (hc : IsVector c)
-    (hn : normSq (wedge a b) ≠ 0) :
-    mul (versorFromVectors a b) (reject (wedge a b) c)
-      = mul (reject (wedge a b) c) (versorFromVectors a b) := by
-  have h := versor_mul_reject_comm_coord a.c1 a.c2 a.c3 b.c1 b.c2 b.c3 c.c1 c.c2 c.c3
-    (by rw [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb]; exact hn)
-  rwa [← eq_vec_of_isVector ha, ← eq_vec_of_isVector hb, ← eq_vec_of_isVector hc] at h
 
 end GacalcProofs.G3

@@ -84,10 +84,7 @@ pseudoscalar * pseudoscalar
 
 # %% [markdown]
 # It is $-1$, like the plane's $\mathbf{e}_{12}$ in `displayg2.py`. The class names it
-# `e_123`, and the difference between the two is $0$:
-
-# %%
-show_difference(e_123, e_1 * e_2 * e_3)
+# `e_123`, the same value as the product of the three arrows.
 
 # %% [markdown]
 # The three pieces of plane, one per pair of arrows. The $\vec{\mathbf{e}}_1
@@ -279,7 +276,7 @@ B * B.dual()
 
 # %% [markdown]
 # and a plane times itself is a plain number, negative, like
-# $\mathbf{e}_{12} * \mathbf{e}_{12} = -1$:
+# $(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) = -1$:
 
 # %%
 B * B

@@ -105,7 +105,7 @@ a reader running it can change them and rerun. It checks the quarter turn, the f
 and these four facts, for those values and with every coordinate and angle a symbol.
 
 Lean: ``rot90`` (the quarter turn :eq:`eq-bootstrap-quarter-turn`) in
-``proofs/GacalcProofs/StandardPosition2D.lean``; ``rot_vec`` (the formula), ``rot_normSq`` (length), ``rot_add`` (angles add) and
+``proofs/GacalcProofs/StandardPosition2D.lean``; ``rot_polar`` (write a vector by length and angle; rotating adds the angle), ``rot_normSq`` (length), ``rot_add`` (angles add) and
 ``rot_add_vec`` / ``rot_smul`` (linearity) in ``proofs/GacalcProofs/Rotation2D.lean``; the
 cosine-and-sine form as the blend is ``rotPlane_vec_eq_blend`` in
 ``proofs/GacalcProofs/StandardPosition2D.lean``, with ``rotPlane_preserves_dot`` and

@@ -9,6 +9,7 @@ import GacalcProofs.Versor2D
     coordinate leaf `G2.dual_vec_perp` (`G2.lean`), which stays as the bridge it rests on. -/
 namespace GacalcProofs.G2
 
+-- twin: GacalcProofs.G2.dual_perp_dot
 /-- **The dual of a vector is perpendicular to it** (2D): for any vector `v` (`IsVector`), the dot
     product of its dual with itself is zero, `(v*) · v = 0`. The named-`dot`, object-level form of
     the coordinate leaf `dual_vec_perp`. -/

@@ -3,13 +3,13 @@ import GacalcProofs.G3
 import GacalcProofs.Versor2D
 import GacalcProofs.Rotation3D
 
-/-! # The versor sandwich is an isometry: it preserves lengths and angles (𝒢₂ pilot)
+/-! # The versor sandwich is an isometry: it preserves lengths and angles (𝒢₂ and 𝒢₃)
 
     The scale-invariant sandwich `R*v*R⁻¹` (with `R⁻¹ = R̃ / |R|²`) by an even versor `R` — the
     rotations of the plane — preserves the dot product, hence lengths and angles. Proved here in 𝒢₂
-    for a general even versor (`evenVersor s c = s + c*e₁₂`, the elements of 𝒢₂'s even subalgebra ≅ ℂ);
-    the 𝒢₃ versions follow the same shape (see `tasks/archive/2026/09/29/lean-proof-rotation-preserves-length.md` and
-    `-angles.md`). Uses the magnitude-squared (`dot`) form throughout to stay `√`-free. -/
+    for a general even versor (`evenVersor s c = s + c*e₁₂`, the elements of 𝒢₂'s even subalgebra ≅ ℂ),
+    and in 𝒢₃ for an even versor of that algebra, in the same shape. Uses the magnitude-squared (`dot`)
+    form throughout to stay `√`-free. -/
 namespace GacalcProofs.G2
 
 /-- The inverse `R⁻¹ = R̃ / |R|²` (valid when `|R|² ≠ 0`). -/
@@ -138,12 +138,6 @@ theorem mul_inverse_self_of_isEvenVersor {R : G2} (hR : IsEvenVersor R) (hr : no
 /-- `R` is a **rotor**: an even versor of unit squared magnitude. -/
 def IsRotor (R : G2) : Prop := IsEvenVersor R ∧ normSq R = 1
 
-/-- A rotor is an even versor. -/
-theorem IsRotor.isEvenVersor {R : G2} (hR : IsRotor R) : IsEvenVersor R := hR.1
-
-/-- A rotor has unit squared magnitude. -/
-theorem IsRotor.normSq_eq_one {R : G2} (hR : IsRotor R) : normSq R = 1 := hR.2
-
 /-- A rotor is invertible, `|R|² = 1 ≠ 0` — discharges the guard of every `sandwich_preserves_*`. -/
 theorem normSq_ne_zero_of_isRotor {R : G2} (hR : IsRotor R) : normSq R ≠ 0 := by
   rw [hR.2]; exact one_ne_zero
@@ -152,14 +146,6 @@ theorem normSq_ne_zero_of_isRotor {R : G2} (hR : IsRotor R) : normSq R ≠ 0 := 
     (the half-angle 2D rotor) enters the layer: `|R|²` is the scalar part of `R*R̃`. -/
 theorem isRotor_of_mul_reverse_eq_one {R : G2} (hR : IsEvenVersor R) (h : mul R (reverse R) = one) :
     IsRotor R := ⟨hR, by simp only [normSq, h, one]⟩
-
-/-- `R*R̃ = 1` for a rotor. -/
-theorem mul_reverse_self_of_isRotor {R : G2} (hR : IsRotor R) : mul R (reverse R) = one := by
-  rw [mul_reverse_self_of_isEvenVersor hR.1, hR.2, GacalcProofs.G2.one_smul]
-
-/-- `R̃*R = 1` for a rotor. -/
-theorem reverse_mul_self_of_isRotor {R : G2} (hR : IsRotor R) : mul (reverse R) R = one := by
-  rw [reverse_mul_self_of_isEvenVersor hR.1, hR.2, GacalcProofs.G2.one_smul]
 
 /-- **For a rotor the inverse IS the reverse:** `R⁻¹ = R̃/|R|² = R̃`. -/
 theorem inverse_eq_reverse_of_isRotor {R : G2} (hR : IsRotor R) : inverse R = reverse R := by
@@ -488,12 +474,6 @@ theorem mul_inverse_self_of_isEvenVersor {R : G3} (hR : IsEvenVersor R) (hr : no
 /-- `R` is a **rotor**: an even versor of unit squared magnitude. -/
 def IsRotor (R : G3) : Prop := IsEvenVersor R ∧ normSq R = 1
 
-/-- A rotor is an even versor. -/
-theorem IsRotor.isEvenVersor {R : G3} (hR : IsRotor R) : IsEvenVersor R := hR.1
-
-/-- A rotor has unit squared magnitude. -/
-theorem IsRotor.normSq_eq_one {R : G3} (hR : IsRotor R) : normSq R = 1 := hR.2
-
 /-- A rotor is invertible, `|R|² = 1 ≠ 0` — discharges the guard of every `sandwich_preserves_*`. -/
 theorem normSq_ne_zero_of_isRotor {R : G3} (hR : IsRotor R) : normSq R ≠ 0 := by
   rw [hR.2]; exact one_ne_zero
@@ -502,14 +482,6 @@ theorem normSq_ne_zero_of_isRotor {R : G3} (hR : IsRotor R) : normSq R ≠ 0 := 
     (the half-angle 2D rotor) enters the layer: `|R|²` is the scalar part of `R*R̃`. -/
 theorem isRotor_of_mul_reverse_eq_one {R : G3} (hR : IsEvenVersor R) (h : mul R (reverse R) = one) :
     IsRotor R := ⟨hR, by simp only [normSq, h, one]⟩
-
-/-- `R*R̃ = 1` for a rotor. -/
-theorem mul_reverse_self_of_isRotor {R : G3} (hR : IsRotor R) : mul R (reverse R) = one := by
-  rw [mul_reverse_self_of_isEvenVersor hR.1, hR.2, GacalcProofs.G3.one_smul]
-
-/-- `R̃*R = 1` for a rotor. -/
-theorem reverse_mul_self_of_isRotor {R : G3} (hR : IsRotor R) : mul (reverse R) R = one := by
-  rw [reverse_mul_self_of_isEvenVersor hR.1, hR.2, GacalcProofs.G3.one_smul]
 
 /-- **For a rotor the inverse IS the reverse:** `R⁻¹ = R̃/|R|² = R̃`. -/
 theorem inverse_eq_reverse_of_isRotor {R : G3} (hR : IsRotor R) : inverse R = reverse R := by
@@ -703,12 +675,6 @@ theorem sandwich_fixes_own_normal {R : G3} (hR : IsEvenVersor R) (hr : normSq R 
 theorem reverse_of_isVector {a : G3} (ha : IsVector a) : reverse a = a := by
   obtain ⟨_, h12, h13, h23, h123⟩ := ha
   simp only [reverse]; ext <;> simp [h12, h13, h23, h123]
-
-/-- **Reverse reverses a product of two vectors:** `(a b)~ = b a` for vectors `a, b`. Corollary of
-    the anti-automorphism `reverse_mul` and `reverse` fixing a vector (`reverse_of_isVector`). -/
-theorem reverse_mul_vec {a b : G3} (ha : IsVector a) (hb : IsVector b) :
-    reverse (mul a b) = mul b a := by
-  rw [reverse_mul, reverse_of_isVector ha, reverse_of_isVector hb]
 
 /-- **Reverse reverses a product of three vectors:** `(a b c)~ = c b a` for vectors `a, b, c` (3D).
     Corollary of `reverse_mul` applied twice, `reverse_of_isVector`, and associativity

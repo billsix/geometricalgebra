@@ -43,6 +43,7 @@ theorem proj_eq_dot_mul_inverse {a b : G2} (ha : IsVector a) (hb : IsVector b)
   simp only [proj, inverse, normSq, reverse, mul, scalar, smul, dot, has, ha12, hbs, hb12]
   ext <;> simp only <;> field_simp <;> ring
 
+-- twin: GacalcProofs.G2.mul_proj_eq_dot
 /-- **The dot product is `a` times the projection of `b` onto `a`:** `a*proj_a b = a·b`. The
     projection lies along `a`, so its product with `a` has no area part and is the plain number
     `a·b`. A result about the product, stated for vectors (Step 4). -/
@@ -56,6 +57,7 @@ theorem mul_proj_eq_dot {a b : G2} (ha : IsVector a) (hb : IsVector b) (han : no
   simp only [proj, mul, scalar, smul, dot, has, ha12, hbs, hb12]
   ext <;> simp only <;> ring_nf <;> field_simp <;> ring
 
+-- twin: GacalcProofs.G2.mul_reject_eq_wedge
 /-- **The wedge is `a` times the rejection of `b` from `a`:** `a*rej_a b = a∧b`. The rejection lies
     across `a`, so its product with `a` is pure area. A result about the product, stated for vectors
     (Step 4). -/

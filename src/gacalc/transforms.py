@@ -91,10 +91,16 @@ def compose_intermediate_fns(
         ...     compose_intermediate_fns,
         ...     InvertibleFunction,
         ... )
-        >>> add2 = InvertibleFunction(lambda x: x + 2, "", lambda x: x - 2, "")
-        >>> scale5 = InvertibleFunction(lambda x: x * 5, "", lambda x: x / 5, "")
+        >>> add2: InvertibleFunction[float] = (
+        ...     InvertibleFunction(lambda x: x + 2, "", lambda x: x - 2, "")
+        ... )
+        >>> scale5: InvertibleFunction[float] = (
+        ...     InvertibleFunction(lambda x: x * 5, "", lambda x: x / 5, "")
+        ... )
         >>> # natural basis: scale5(add2(x))
-        >>> fns = compose_intermediate_fns([add2, scale5])
+        >>> fns: list[InvertibleFunction[float]] = list(
+        ...     compose_intermediate_fns([add2, scale5])
+        ... )
         >>> len(fns)
         3
         >>> [fns[0](1), fns[1](1), fns[2](1)]
@@ -137,8 +143,12 @@ def compose_intermediate_fns_and_fn(
         ...     compose_intermediate_fns_and_fn,
         ...     InvertibleFunction,
         ... )
-        >>> add2 = InvertibleFunction(lambda x: x + 2, "", lambda x: x - 2, "")
-        >>> scale5 = InvertibleFunction(lambda x: x * 5, "", lambda x: x / 5, "")
+        >>> add2: InvertibleFunction[float] = (
+        ...     InvertibleFunction(lambda x: x + 2, "", lambda x: x - 2, "")
+        ... )
+        >>> scale5: InvertibleFunction[float] = (
+        ...     InvertibleFunction(lambda x: x * 5, "", lambda x: x / 5, "")
+        ... )
         >>> for aggregate_fn, current_fn in compose_intermediate_fns_and_fn(
         ...         [add2, scale5]):
         ...     print(aggregate_fn(1), current_fn(1))
@@ -182,6 +192,10 @@ def translate(b: V) -> InvertibleFunction[V]:
         General symbolic vectors show it adds coordinate by coordinate:
 
         >>> import sympy
+        >>> x_1: sympy.Symbol
+        >>> x_2: sympy.Symbol
+        >>> b_1: sympy.Symbol
+        >>> b_2: sympy.Symbol
         >>> x_1, x_2, b_1, b_2 = sympy.symbols("x_1 x_2 b_1 b_2")
         >>> translate(b=b_1 * e_1 + b_2 * e_2)(x_1 * e_1 + x_2 * e_2) == (
         ...     (x_1 + b_1) * e_1 + (x_2 + b_2) * e_2
@@ -237,12 +251,13 @@ def projection_rotation(
         directions:
 
         >>> from gacalc.g3 import e_1, e_2, e_3
-        >>> f = projection_rotation(e_1, e_2)
+        >>> f: MultiVectorFn = projection_rotation(e_1, e_2)
         >>> f(1 * e_1) == 1 * e_2, f(1 * e_2) == -1 * e_1, f(1 * e_3) == 1 * e_3
         (True, True, True)
         >>> projection_rotation(5 * e_1, 2 * e_2)(1 * e_1) == 1 * e_2
         True
-        >>> zero = 0 * e_1
+        >>> from gacalc.g3 import Vector
+        >>> zero: Vector = 0 * e_1
         >>> projection_rotation(zero, zero)(3 * e_1) == 3 * e_1  # 0 -> 0: identity
         True
         >>> projection_rotation(zero, 1 * e_2)  # doctest: +ELLIPSIS
@@ -255,7 +270,7 @@ def projection_rotation(
         >>> import math
         >>> from gacalc.transforms import projection_rotation
         >>> from gacalc.g3 import Vector
-        >>> to = math.cos(1.0) * Vector.e_1 + math.sin(1.0) * Vector.e_2
+        >>> to: Vector = math.cos(1.0) * Vector.e_1 + math.sin(1.0) * Vector.e_2
         >>> f = projection_rotation(Vector.e_1, to)
         >>> f(Vector.e_1).isclose(to, rel_tol=1e-5, abs_tol=1e-5)  # from -> to
         True
@@ -440,7 +455,7 @@ def line_to_line_projection(
         climbs back up to the diagonal:
 
         >>> from gacalc.g2 import e_1, e_2
-        >>> P = line_to_line_projection(
+        >>> P: InvertibleFunction[MultiVectorBase] = line_to_line_projection(
         ...     from_vector=1 * e_1 + 1 * e_2, to_vector=1 * e_1
         ... )
         >>> P(1 * e_1 + 1 * e_2) == 1 * e_1
@@ -455,8 +470,9 @@ def line_to_line_projection(
         it comes from ``v_2`` alone, and the inverse returns ``y``'s ``v_2`` part:
 
         >>> from gacalc.g2 import e_1, e_2
-        >>> v_2 = 1 * e_1 + 3 * e_2
-        >>> y = 3 * e_1 + 3 * e_2
+        >>> from gacalc.g2 import Vector
+        >>> v_2: Vector = 1 * e_1 + 3 * e_2
+        >>> y: Vector = 3 * e_1 + 3 * e_2
         >>> P = line_to_line_projection(from_vector=v_2, to_vector=1 * e_2)
         >>> P(v_2) == 3 * e_2
         True
@@ -535,7 +551,9 @@ def line_to_line_rejection(
         inverse moves back out along the diagonal:
 
         >>> from gacalc.g2 import e_1, e_2
-        >>> R = line_to_line_rejection(from_vector=1 * e_1 + 1 * e_2, away_from=1 * e_1)
+        >>> R: InvertibleFunction[MultiVectorBase] = (
+        ...     line_to_line_rejection(from_vector=1 * e_1 + 1 * e_2, away_from=1 * e_1)
+        ... )
         >>> R(1 * e_1 + 1 * e_2) == 1 * e_2
         True
         >>> R(2 * e_1 + 2 * e_2) == 2 * e_2
@@ -629,7 +647,7 @@ def line_to_plane_projection(
         point drops straight down to the plane, and the inverse climbs back up:
 
         >>> from gacalc.g3 import Bivector, e_1, e_2, e_3
-        >>> P = line_to_plane_projection(
+        >>> P: InvertibleFunction[MultiVectorBase] = line_to_plane_projection(
         ...     from_vector=1 * e_1 + 1 * e_3, to_plane=1 * Bivector.e_12
         ... )
         >>> P(2 * e_1 + 2 * e_3) == 2 * e_1
@@ -712,7 +730,7 @@ def line_from_plane_rejection(
         ``e_1``-``e_2`` plane: each point keeps only its height above the plane:
 
         >>> from gacalc.g3 import Bivector, e_1, e_2, e_3
-        >>> R = line_from_plane_rejection(
+        >>> R: InvertibleFunction[MultiVectorBase] = line_from_plane_rejection(
         ...     from_vector=1 * e_1 + 1 * e_3, away_from_plane=1 * Bivector.e_12
         ... )
         >>> R(2 * e_1 + 2 * e_3) == 2 * e_3
@@ -778,7 +796,8 @@ def versor_rotation(
         >>> from gacalc.g3 import e_1, e_2
         >>> versor_rotation(e_1, e_2)(1 * e_1) == 1 * e_2
         True
-        >>> zero = 0 * e_1
+        >>> from gacalc.g3 import Vector
+        >>> zero: Vector = 0 * e_1
         >>> versor_rotation(zero, zero)(3 * e_1) == 3 * e_1
         True
 
@@ -787,8 +806,8 @@ def versor_rotation(
         >>> import math
         >>> from gacalc.transforms import versor_rotation
         >>> from gacalc.g3 import Vector
-        >>> to = math.cos(1.0) * Vector.e_1 + math.sin(1.0) * Vector.e_2
-        >>> R = versor_rotation(Vector.e_1, to)
+        >>> to: Vector = math.cos(1.0) * Vector.e_1 + math.sin(1.0) * Vector.e_2
+        >>> R: InvertibleFunction[Vector] = versor_rotation(Vector.e_1, to)
         >>> R.linearity.name
         'LINEAR'
         >>> R(Vector.zero()).isclose(Vector.zero(), rel_tol=1e-5, abs_tol=1e-5)
@@ -913,7 +932,9 @@ def bivector_rotation(
 
         >>> import sympy
         >>> from gacalc.g3 import e_1, e_2, e_3
-        >>> quarter_turn = bivector_rotation(e_1 ^ e_2)(sympy.pi / 2)
+        >>> quarter_turn: InvertibleFunction[MultiVectorBase] = (
+        ...     bivector_rotation(e_1 ^ e_2)(sympy.pi / 2)
+        ... )
         >>> quarter_turn(1 * e_1) == 1 * e_2, quarter_turn(3 * e_1) == 3 * e_2
         (True, True)
         >>> quarter_turn(1 * e_3) == 1 * e_3                # off the plane: fixed
@@ -926,8 +947,10 @@ def bivector_rotation(
         >>> import math
         >>> from gacalc.transforms import bivector_rotation
         >>> from gacalc.g3 import Vector
-        >>> turn = bivector_rotation(Vector.i(Vector.e_1, Vector.e_2))
-        >>> f = turn(math.radians(90))
+        >>> turn: typing.Callable[[Real], InvertibleFunction[MultiVectorBase]] = (
+        ...     bivector_rotation(Vector.i(Vector.e_1, Vector.e_2))
+        ... )
+        >>> f: InvertibleFunction[MultiVectorBase] = turn(math.radians(90))
         >>> f(Vector.e_1).isclose(Vector.e_2, rel_tol=1e-5, abs_tol=1e-5)
         True
         >>> f(Vector.e_3).isclose(Vector.e_3, rel_tol=1e-5, abs_tol=1e-5)
@@ -1015,7 +1038,9 @@ def plane_rotation(
 
         >>> import sympy
         >>> from gacalc.g3 import e_1, e_2, e_3
-        >>> quarter_turn = plane_rotation(e_1, e_2)(sympy.pi / 2)
+        >>> quarter_turn: InvertibleFunction[typing.Any] = (
+        ...     plane_rotation(e_1, e_2)(sympy.pi / 2)
+        ... )
         >>> quarter_turn(1 * e_1) == 1 * e_2, quarter_turn(1 * e_2) == -1 * e_1
         (True, True)
         >>> quarter_turn(3 * e_1) == 3 * e_2, quarter_turn(1 * e_3) == 1 * e_3
@@ -1028,8 +1053,10 @@ def plane_rotation(
         >>> import math
         >>> from gacalc.transforms import plane_rotation
         >>> from gacalc.g3 import Vector
-        >>> turn = plane_rotation(Vector.e_1, Vector.e_2)
-        >>> f = turn(math.radians(90))
+        >>> turn: typing.Callable[[Real], InvertibleFunction[Vector]] = plane_rotation(
+        ...     Vector.e_1, Vector.e_2
+        ... )
+        >>> f: InvertibleFunction[Vector] = turn(math.radians(90))
         >>> f(Vector.e_1).isclose(Vector.e_2, rel_tol=1e-5, abs_tol=1e-5)
         True
         >>> f(Vector.e_3).isclose(Vector.e_3, rel_tol=1e-5, abs_tol=1e-5)
@@ -1110,6 +1137,9 @@ def uniform_scale(m: Real) -> InvertibleFunction[V]:
         A symbolic factor multiplies every coordinate:
 
         >>> import sympy
+        >>> m: sympy.Symbol
+        >>> x_1: sympy.Symbol
+        >>> x_2: sympy.Symbol
         >>> m, x_1, x_2 = sympy.symbols("m x_1 x_2")
         >>> uniform_scale(m=m)(x_1 * e_1 + x_2 * e_2) == m * x_1 * e_1 + m * x_2 * e_2
         True
@@ -1233,7 +1263,9 @@ def require_linear_or_affine(fn: ComposableFunction[typing.Any]) -> None:
     Examples:
         >>> from gacalc.g3 import Vector
         >>> require_linear_or_affine(uniform_scale(m=2.0))
-        >>> perspective = ComposableFunction(func=lambda v: v, latex_repr="P")
+        >>> perspective: ComposableFunction[Vector] = (
+        ...     ComposableFunction(func=lambda v: v, latex_repr="P")
+        ... )
         >>> perspective.linearity  # the default: nothing promised
         <Linearity.NONLINEAR: ...>
         >>> to_matrix(perspective, Vector)  # doctest: +ELLIPSIS
@@ -1299,6 +1331,8 @@ def require_distinct_params(params: typing.Sequence[sympy.Symbol]) -> None:
 
     Examples:
         >>> import sympy
+        >>> X: sympy.Symbol
+        >>> Y: sympy.Symbol
         >>> X, Y = sympy.symbols("x y")
         >>> require_distinct_params((X, Y))
         >>> require_distinct_params((X, X))  # doctest: +ELLIPSIS
@@ -1331,6 +1365,8 @@ def require_params_cover(
 
     Examples:
         >>> import sympy
+        >>> X: sympy.Symbol
+        >>> Y: sympy.Symbol
         >>> X, Y = sympy.symbols("x y")
         >>> require_params_cover(sympy.Matrix([[X, 1], [0, 1]]), (X,))
         >>> require_params_cover(sympy.Matrix([[X, Y], [0, 1]]), (X,))
@@ -1400,7 +1436,7 @@ def to_matrix(
         [2, 0, 0],
         [0, 2, 0],
         [0, 0, 1]])
-        >>> T = translate(b=3 * e_1 + 4 * e_2)
+        >>> T: InvertibleFunction[Vector] = translate(b=3 * e_1 + 4 * e_2)
         >>> to_matrix(T, Vector, backend=MatrixBackend.SYMPY)
         Matrix([
         [1, 0, 3],
@@ -1412,13 +1448,14 @@ def to_matrix(
         >>> from gacalc.transforms import translate, uniform_scale, to_matrix
         >>> from gacalc.g3 import Vector
         >>> T = translate(b=2 * Vector.e_1 + 3 * Vector.e_2 + 4 * Vector.e_3)
-        >>> M = to_matrix(T, Vector)
+        >>> import numpy
+        >>> M: numpy.ndarray | sympy.Matrix = to_matrix(T, Vector)
         >>> M.shape
         (4, 4)
         >>> [float(M[i, 3]) for i in range(4)]   # translation in the last column
         [2.0, 3.0, 4.0, 1.0]
         >>> # a linear map (scale) -> 4x4 with a ZERO translation column
-        >>> S = to_matrix(uniform_scale(m=2.0), Vector)
+        >>> S: numpy.ndarray | sympy.Matrix = to_matrix(uniform_scale(m=2.0), Vector)
         >>> [float(S[i, 3]) for i in range(4)]
         [0.0, 0.0, 0.0, 1.0]
         >>> [float(S[i, i]) for i in range(4)]
@@ -1568,8 +1605,8 @@ def to_matrix_template(
 
         >>> import sympy
         >>> from gacalc.g2 import Vector
-        >>> m = sympy.Symbol("m")
-        >>> SCALE = to_matrix_template(uniform_scale(m=m), Vector, (m,))
+        >>> m: sympy.Symbol = sympy.Symbol("m")
+        >>> SCALE: MatrixTemplate = to_matrix_template(uniform_scale(m=m), Vector, (m,))
         >>> SCALE.fill(3.0).tolist()
         [[3.0, 0.0, 0.0], [0.0, 3.0, 0.0], [0.0, 0.0, 1.0]]
 
@@ -1581,8 +1618,12 @@ def to_matrix_template(
         >>> from gacalc.g3 import Vector
         >>> from gacalc.transforms import compose, scale_non_uniform, translate
         >>> from gacalc.transforms import to_matrix_template
+        >>> TX: sympy.Symbol
+        >>> TY: sympy.Symbol
+        >>> W: sympy.Symbol
+        >>> H: sympy.Symbol
         >>> TX, TY, W, H = sympy.symbols("tx ty w h")
-        >>> MODEL = to_matrix_template(
+        >>> MODEL: MatrixTemplate = to_matrix_template(
         ...     compose(
         ...         [
         ...             translate(b=TX * Vector.e_1 + TY * Vector.e_2),
@@ -1594,10 +1635,10 @@ def to_matrix_template(
         ... )
         >>> MODEL.shape, len(MODEL.slots), MODEL.expressions
         ((4, 4), 4, ())
-        >>> m = MODEL.fill(100.0, 50.0, 32.0, 16.0)   # per draw
-        >>> [float(x) for x in m[:, 3]]               # translation, last column
+        >>> filled: np.ndarray = MODEL.fill(100.0, 50.0, 32.0, 16.0)   # per draw
+        >>> [float(x) for x in filled[:, 3]]               # translation, last column
         [100.0, 50.0, 0.0, 1.0]
-        >>> [float(m[i, i]) for i in range(4)]
+        >>> [float(filled[i, i]) for i in range(4)]
         [32.0, 16.0, 1.0, 1.0]
     """
     # doc-region-end to matrix template function

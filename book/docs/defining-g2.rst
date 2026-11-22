@@ -28,7 +28,7 @@ The algebra of the plane, :math:`\mathcal{G}_2`, is every sum
 
 .. math::
 
-   s + v_1 * \vec{\mathbf{e}}_1 + v_2 * \vec{\mathbf{e}}_2 + b * \mathbf{e}_{12}
+   s + v_1 * \vec{\mathbf{e}}_1 + v_2 * \vec{\mathbf{e}}_2 + b * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2
 
 of plain numbers times the four **basis blades** :math:`1`, :math:`\vec{\mathbf{e}}_1`,
 :math:`\vec{\mathbf{e}}_2` and :math:`\mathbf{e}_{12}`. The blades are constants: they never change,
@@ -72,10 +72,10 @@ Multiply everything by everything, as with :math:`(x + 2)(x + 3)`, and clean up 
 The product is associative: how a product of several elements is grouped does not change the
 answer, even though the order of factors does. Two consequences we have already used:
 a vector times itself is its squared length (the Pythagorean theorem), and
-:math:`\mathbf{e}_{12} * \mathbf{e}_{12} = -1`.
+:math:`(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) = -1`.
 
 The kind of a product follows from the rules. A vector times a vector is a versor (the dot product
-plus the wedge); a vector times :math:`\mathbf{e}_{12}` is a vector, turned a quarter turn; a
+plus the wedge); a vector times :math:`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` is a vector, turned a quarter turn; a
 bivector times a bivector is a scalar; a versor times a vector is a vector, which is how a versor
 rotates.
 

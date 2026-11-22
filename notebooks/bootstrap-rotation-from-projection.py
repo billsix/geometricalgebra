@@ -380,10 +380,7 @@ sympy.simplify(sympy.sympify(rotated.magnitude_squared()))
 v.magnitude_squared()
 
 # %% [markdown]
-# Their difference:
-
-# %%
-show_difference(rotated.magnitude_squared(), v.magnitude_squared())
+# The two are equal: the rotation keeps the length.
 
 # %% [markdown]
 # ### It carries sums to sums
@@ -412,10 +409,7 @@ sum_of_rotated: Vector = (rotated + rotation_by_projection(a, b, w)).simplified(
 sum_of_rotated
 
 # %% [markdown]
-# Their difference:
-
-# %%
-show_difference(rotated_sum, sum_of_rotated)
+# The two are equal, so the rotation of a sum is the sum of the rotations.
 
 # %% [markdown]
 # ### and scalar multiples to scalar multiples
@@ -434,10 +428,7 @@ rotated_multiple
 (Scalar(k) * rotated).simplified()
 
 # %% [markdown]
-# Their difference:
-
-# %%
-show_difference(rotated_multiple, Scalar(k) * rotated)
+# The two are equal, so the rotation of a multiple is the multiple of the rotation.
 
 # %% [markdown]
 # ### Only directions matter

@@ -86,7 +86,8 @@ def are_linearly_independent(
         Two float vectors a hair apart are dependent within the float tolerance,
         which float input gets by default, but exactly independent:
 
-        >>> nearly_parallel = [1.0 * e_1, 1.0 * e_1 + 1e-9 * e_2]
+        >>> from gacalc.gn import Gn
+        >>> nearly_parallel: list[Gn] = [1.0 * e_1, 1.0 * e_1 + 1e-9 * e_2]
         >>> are_linearly_independent(nearly_parallel)
         False
         >>> are_linearly_independent(nearly_parallel, float_close_to_zero=False)
@@ -500,7 +501,8 @@ def all_wedged_except_the_kth(
 
     Examples:
         >>> from gacalc.gn import e_1, e_2, e_3
-        >>> frame = [1 * e_1, 1 * e_2, 1 * e_3]
+        >>> from gacalc.gn import Gn
+        >>> frame: list[Gn] = [1 * e_1, 1 * e_2, 1 * e_3]
         >>> all_wedged_except_the_kth(frame, 1) == e_2 ^ e_3
         True
         >>> all_wedged_except_the_kth(frame, 2) == e_1 ^ e_3
@@ -510,7 +512,7 @@ def all_wedged_except_the_kth(
 
         In an oblique 2-D frame, leaving one vector out leaves the other:
 
-        >>> oblique = [2 * e_1, 1 * e_1 + 3 * e_2]
+        >>> oblique: list[Gn] = [2 * e_1, 1 * e_1 + 3 * e_2]
         >>> all_wedged_except_the_kth(oblique, 1) == 1 * e_1 + 3 * e_2
         True
         >>> all_wedged_except_the_kth(oblique, 2) == 2 * e_1
@@ -593,8 +595,9 @@ def reciprocal_frame(
 
         The oblique frame ``a_1 = 2 * e_1``, ``a_2 = 1 * e_1 + 3 * e_2``:
 
-        >>> frame = [2 * e_1, 1 * e_1 + 3 * e_2]
-        >>> reciprocal = reciprocal_frame(frame)
+        >>> from gacalc.gn import Gn
+        >>> frame: list[Gn] = [2 * e_1, 1 * e_1 + 3 * e_2]
+        >>> reciprocal: list[MultiVectorBase] = reciprocal_frame(frame)
         >>> reciprocal == [sympy.Rational(1, 2) * e_1 - sympy.Rational(1, 6) * e_2,
         ...                sympy.Rational(1, 3) * e_2]
         True
@@ -663,7 +666,7 @@ class Frame:
         ``w_i``, so the table is the identity:
 
         >>> from gacalc.gn import e_1, e_2
-        >>> standard = Frame((1 * e_1, 1 * e_2))
+        >>> standard: Frame = Frame((1 * e_1, 1 * e_2))
         >>> standard.orthogonal_vectors() == (1 * e_1, 1 * e_2)
         True
         >>> standard.coefficients()
@@ -671,7 +674,7 @@ class Frame:
 
         An oblique frame:
 
-        >>> frame = Frame((2 * e_1, 1 * e_1 + 3 * e_2))
+        >>> frame: Frame = Frame((2 * e_1, 1 * e_1 + 3 * e_2))
         >>> frame.orthogonal_vectors() == (2 * e_1, 3 * e_2)
         True
         >>> frame.coefficients()
@@ -911,10 +914,14 @@ class Frame:
             its own factor, and the inverse undoes it:
 
             >>> from gacalc.gn import e_1, e_2
-            >>> identity_map = Frame((1 * e_1, 1 * e_2)).to_invertible_function()
+            >>> identity_map: InvertibleFunction[MultiVectorBase] = (
+            ...     Frame((1 * e_1, 1 * e_2)).to_invertible_function()
+            ... )
             >>> identity_map(1 * e_1) == 1 * e_1, identity_map(1 * e_2) == 1 * e_2
             (True, True)
-            >>> stretch = Frame((2 * e_1, 3 * e_2)).to_invertible_function()
+            >>> stretch: InvertibleFunction[MultiVectorBase] = (
+            ...     Frame((2 * e_1, 3 * e_2)).to_invertible_function()
+            ... )
             >>> stretch(1 * e_1) == 2 * e_1, stretch(1 * e_2) == 3 * e_2
             (True, True)
             >>> stretch.inverse(2 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
@@ -922,14 +929,16 @@ class Frame:
 
             An oblique frame, inverted both ways:
 
-            >>> f = Frame((2 * e_1, 1 * e_1 + 3 * e_2)).to_invertible_function()
+            >>> f: InvertibleFunction[MultiVectorBase] = (
+            ...     Frame((2 * e_1, 1 * e_1 + 3 * e_2)).to_invertible_function()
+            ... )
             >>> f(1 * e_1 + 1 * e_2) == 3 * e_1 + 3 * e_2
             True
             >>> f.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
             True
-            >>> g = Frame((2 * e_1, 1 * e_1 + 3 * e_2)).to_invertible_function(
-            ...     inverse_method=InverseMethod.PEEL
-            ... )
+            >>> g: InvertibleFunction[MultiVectorBase] = Frame(
+            ...     (2 * e_1, 1 * e_1 + 3 * e_2)
+            ... ).to_invertible_function(inverse_method=InverseMethod.PEEL)
             >>> g.inverse(3 * e_1 + 3 * e_2) == 1 * e_1 + 1 * e_2
             True
         """

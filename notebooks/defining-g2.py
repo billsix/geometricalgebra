@@ -58,7 +58,8 @@ from gacalc.nbdisplay import at_values, show_difference, show_mult
 # ## The kinds of element, at a glance
 #
 # Every element of 𝒢₂ is a plain number plus a vector plus a multiple of the unit plane
-# $\mathbf{e}_{12}$. Some elements have only some of those parts, and those get names:
+# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$. Some elements have only some of those
+# parts, and those get names:
 
 # %%
 fig_subsets: PendingFigure
@@ -69,7 +70,8 @@ fig_subsets
 # %% [markdown]
 # - a **scalar** is a plain number (grade 0);
 # - a **vector** has only $\vec{\mathbf{e}}_1$ and $\vec{\mathbf{e}}_2$ parts (grade 1);
-# - a **bivector** is a multiple of $\mathbf{e}_{12}$, a piece of plane (grade 2);
+# - a **bivector** is a multiple of $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$, a piece
+#   of plane (grade 2);
 # - a **versor** is a scalar plus a bivector, the kind of element that rotates (chapter
 #   *The Geometric Product*). Every scalar and every bivector is a versor whose other
 #   part happens to be $0$.
@@ -181,7 +183,7 @@ e_2 * e_1
 # %% [markdown]
 # **Rule 3: numbers slide to the front and multiply as usual.**
 # $(2 * \vec{\mathbf{e}}_2) * (3 * \vec{\mathbf{e}}_1) = 6 * (\vec{\mathbf{e}}_2 *
-# \vec{\mathbf{e}}_1) = -6 * \mathbf{e}_{12}$:
+# \vec{\mathbf{e}}_1) = -6 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$:
 
 # %%
 (2 * e_2) * (3 * e_1)
@@ -233,12 +235,11 @@ show_mult(a, a)
 
 # %% [markdown]
 # **The unit plane squares to $-1$**, like the imaginary unit $i$:
-# $\mathbf{e}_{12} * \mathbf{e}_{12} = \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 *
-# \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 = -\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 *
-# \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2 = -1$. Predict, then run:
+# $(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) = \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 = -\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 * \vec{\mathbf{e}}_2 = -1$.
+# Predict, then run:
 
 # %%
-e_12 * e_12
+(e_1 * e_2) * (e_1 * e_2)
 
 # %% [markdown]
 # ## Grouping does not matter: associativity
@@ -278,8 +279,9 @@ B_1 * (C * D)
 show_difference((B_1 * C) * D, B_1 * (C * D))
 
 # %% [markdown]
-# So we may write a product of several elements with no parentheses at all. (That this
-# holds in every dimension is a theorem, proved in the Lean files and in
+# So we may write a product of several elements with no parentheses at all. (Lean proves
+# associativity for the line, the plane and space, `mul_assoc` in `G1.lean`, `G2.lean`
+# and `G3.lean`; the proof for every dimension is in
 # `tasks/reference/geometric-product-associativity.md`.)
 
 # %% [markdown]
@@ -312,7 +314,7 @@ type(B).__name__
 
 # %%
 theta: sympy.Symbol = sympy.Symbol("theta", real=True)
-R: Versor = Scalar(sympy.cos(theta)) + Scalar(sympy.sin(theta)) * e_12
+R: Versor = Scalar(sympy.cos(theta)) + Scalar(sympy.sin(theta)) * (e_1 * e_2)
 R
 
 # %% [markdown]
@@ -349,11 +351,11 @@ a * b
 # A vector times the plane is a vector again, turned a quarter turn (chapter *Rotate*):
 
 # %%
-type(a * e_12).__name__
+type(a * (e_1 * e_2)).__name__
 
 # %% [markdown]
 # A bivector times a bivector is a plain number, since
-# $\mathbf{e}_{12} * \mathbf{e}_{12} = -1$:
+# $(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) = -1$:
 
 # %%
 type(B * B).__name__
@@ -400,10 +402,7 @@ A.r_vector_part(1)
 A.r_vector_part(2)
 
 # %% [markdown]
-# The parts add back up to $A$; the difference:
-
-# %%
-show_difference(A.r_vector_part(0) + A.r_vector_part(1) + A.r_vector_part(2), A)
+# The parts add back up to $A$.
 
 # %% [markdown]
 # ## How the blades resolve when we plot
@@ -422,8 +421,9 @@ plot_values: list[tuple[sympy.Symbol, Real]] = [(a_1, 3), (a_2, 2)]
 at_values(a, plot_values)
 
 # %% [markdown]
-# Drawn: the two steps dashed, the vector solid, and the unit plane $\mathbf{e}_{12}$ as
-# the unit square that $\vec{\mathbf{e}}_1$ and $\vec{\mathbf{e}}_2$ span.
+# Drawn: the two steps dashed, the vector solid, and the unit plane
+# $\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2$ as the unit square that $\vec{\mathbf{e}}_1$
+# and $\vec{\mathbf{e}}_2$ span.
 
 # %%
 P_A: Point = point(coordinates=list(at_values(a, plot_values)))

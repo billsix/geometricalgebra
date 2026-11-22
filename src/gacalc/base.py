@@ -367,6 +367,9 @@ def term_tokens(term: sympy.Expr, first: bool, width: int) -> list[str]:
     terms, so the long numerator can break across rows.
 
     Example:
+        >>> a: sympy.Symbol
+        >>> b: sympy.Symbol
+        >>> c: sympy.Symbol
         >>> a, b, c = sympy.symbols("a b c")
         >>> term_tokens((a + b) / c, first=True, width=80)
         ['\\frac{a + b}{c}']
@@ -400,6 +403,8 @@ def signed_term_latex(term: sympy.Expr, first: bool) -> str:
     first term of a sum shows only a minus.
 
     Example:
+        >>> a: sympy.Symbol
+        >>> b: sympy.Symbol
         >>> a, b = sympy.symbols("a b")
         >>> signed_term_latex(-a * b, first=False), signed_term_latex(a, first=True)
         ('- a b', 'a')
@@ -440,7 +445,7 @@ def blade_dict_latex(
     Example:
         >>> blade_dict_latex({(1,): 2}) == r"$2\vec{\mathbf{e}}_{1}$"
         True
-        >>> ijk = {(1,): r"\mathbf{i}", (2,): r"\mathbf{j}"}
+        >>> ijk: dict[Blade, str] = {(1,): r"\mathbf{i}", (2,): r"\mathbf{j}"}
         >>> blade_dict_latex({(1,): 2}, symbols=ijk) == r"$2\mathbf{i}$"
         True
         >>> blade_dict_latex({(1, 2): 5}, symbols=ijk) == (
@@ -450,6 +455,9 @@ def blade_dict_latex(
 
         A value too long for one line is broken between terms:
 
+        >>> a: sympy.Symbol
+        >>> b: sympy.Symbol
+        >>> c: sympy.Symbol
         >>> a, b, c = sympy.symbols("a b c")
         >>> print(blade_dict_latex({(1,): a + b, (2,): c}, symbols=ijk, width=8))
         $\begin{aligned}&(a + b)\mathbf{i} \\ &\quad + c\mathbf{j}\end{aligned}$
@@ -643,7 +651,7 @@ def _is_scalar_up_to_rounding(value: "MultiVectorBase") -> bool:
     never accepted here: it must pass the exact :meth:`MultiVectorBase.is_scalar`.
 
     >>> from gacalc.g3 import Versor
-    >>> residue = Versor(coeff_scalar=173.6, coeff_e_23=8.9e-16)
+    >>> residue: Versor = Versor(coeff_scalar=173.6, coeff_e_23=8.9e-16)
     >>> _is_scalar_up_to_rounding(residue)
     True
     >>> _is_scalar_up_to_rounding(Versor(coeff_scalar=1.0, coeff_e_12=0.5))
@@ -651,7 +659,7 @@ def _is_scalar_up_to_rounding(value: "MultiVectorBase") -> bool:
     >>> _is_scalar_up_to_rounding(Versor(coeff_scalar=1, coeff_e_12=0))  # exact
     False
     >>> import sympy
-    >>> mixed = Versor(coeff_scalar=2.0, coeff_e_12=sympy.Symbol("x"))
+    >>> mixed: Versor = Versor(coeff_scalar=2.0, coeff_e_12=sympy.Symbol("x"))
     >>> _is_scalar_up_to_rounding(mixed)
     False
     """
@@ -957,6 +965,8 @@ class MultiVectorBase(abc.ABC):
 
             >>> import sympy
             >>> from gacalc.gn import e_1, MultiVector
+            >>> a0: sympy.Symbol
+            >>> a1: sympy.Symbol
             >>> a0, a1 = sympy.symbols("a0 a1")
             >>> MultiVector.symbolic_multivector(1, "a") == a0 + a1 * e_1
             True
@@ -1052,8 +1062,9 @@ class MultiVectorBase(abc.ABC):
 
             For general vectors the product is the dot plus the wedge:
 
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> from gacalc.gn import Gn
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> u * v == u.dot(v) + u.wedge(v)
             True
         """
@@ -1087,7 +1098,7 @@ class MultiVectorBase(abc.ABC):
             True
             >>> list(-1 * (1 * e_1 + 2 * e_2))  # -1 reverses the direction
             [-1, -2, 0]
-            >>> k = sympy.Symbol("k")
+            >>> k: sympy.Symbol = sympy.Symbol("k")
             >>> list(k * (1 * e_1 + 2 * e_2))
             [k, 2*k, 0]
         """
@@ -1130,6 +1141,10 @@ class MultiVectorBase(abc.ABC):
 
             >>> ((1 * e_1) + 2).grades()
             [0, 1]
+            >>> a_1: sympy.Symbol
+            >>> a_2: sympy.Symbol
+            >>> b_1: sympy.Symbol
+            >>> b_2: sympy.Symbol
             >>> a_1, a_2, b_1, b_2 = sympy.symbols("a_1 a_2 b_1 b_2")
             >>> (a_1 * e_1 + a_2 * e_2) + (b_1 * e_1 + b_2 * e_2) == (
             ...     (a_1 + b_1) * e_1 + (a_2 + b_2) * e_2
@@ -1242,7 +1257,7 @@ class MultiVectorBase(abc.ABC):
             >>> import gacalc.gn as gn
             >>> (6 * gn.e_1) / 2 == 3 * gn.e_1
             True
-            >>> half = sympy.Rational(1, 2)
+            >>> half: sympy.Rational = sympy.Rational(1, 2)
             >>> (1 * gn.e_1) / (2 * gn.e_1) == MultiVector.from_real(half)
             True
             >>> (1 * gn.e_2) / (1 * gn.e_1) == gn.e_2 * gn.e_1  # e_1 to e_2: a bivector
@@ -1444,13 +1459,15 @@ class MultiVectorBase(abc.ABC):
 
         Example:
             >>> from gacalc.g2 import Vector, Bivector
-            >>> v = 3 * Vector.e_1 + 4 * Vector.e_2
+            >>> v: Vector = 3 * Vector.e_1 + 4 * Vector.e_2
             >>> v.coefficient(Vector.e_1), v.coefficient(Vector.e_2)
             (3, 4)
             >>> (7 * Bivector.e_12).coefficient(Bivector.e_12)   # reads any grade
             7
             >>> import gacalc.g3 as g3
-            >>> B = 4 * g3.Bivector.e_12 + 5 * g3.Bivector.e_13 + 6 * g3.Bivector.e_23
+            >>> B: g3.Bivector = (
+            ...     4 * g3.Bivector.e_12 + 5 * g3.Bivector.e_13 + 6 * g3.Bivector.e_23
+            ... )
             >>> B.coefficient(g3.Bivector.e_13)
             5
             >>> (5 * g3.Trivector.e_123).coefficient(g3.Trivector.e_123)
@@ -1499,7 +1516,7 @@ class MultiVectorBase(abc.ABC):
             >>> from gacalc.g3 import e_1
             >>> (3 * e_1).simplified() == 3 * e_1
             True
-            >>> x = sympy.Symbol("x")
+            >>> x: sympy.Symbol = sympy.Symbol("x")
             >>> ((sympy.sin(x) ** 2 + sympy.cos(x) ** 2) * e_1).simplified() == 1 * e_1
             True
         """
@@ -1522,7 +1539,7 @@ class MultiVectorBase(abc.ABC):
             >>> from gacalc.g3 import e_1
             >>> (2 * e_1).expanded() == 2 * e_1
             True
-            >>> x = sympy.Symbol("x")
+            >>> x: sympy.Symbol = sympy.Symbol("x")
             >>> ((x + 1) * (x - 1) * e_1).expanded() == (x**2 - 1) * e_1
             True
         """
@@ -1557,8 +1574,9 @@ class MultiVectorBase(abc.ABC):
 
             >>> (1 * e_1).inner_product(e_1 * e_2) == 1 * e_2
             True
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> from gacalc.gn import Gn
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> u.inner_product(v) == MultiVector.from_real(a_1 * b_1 + a_2 * b_2)
             True
         """
@@ -1610,15 +1628,16 @@ class MultiVectorBase(abc.ABC):
             >>> (2 * e_1).dot(3 * e_1) == MultiVector.from_real(6)
             True
 
-            >>> a = 3 * e_1 + 4 * e_2
+            >>> from gacalc.gn import Gn
+            >>> a: Gn = 3 * e_1 + 4 * e_2
             >>> a.dot(a) == MultiVector.from_real(25)      # |a|^2 = 3^2 + 4^2
             True
             >>> a.dot(a).is_scalar()
             True
             >>> a.dot(-4 * e_1 + 3 * e_2) == MultiVector.zero()   # perpendicular -> 0
             True
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> u.dot(v) == MultiVector.from_real(a_1 * b_1 + a_2 * b_2)
             True
         """
@@ -1649,8 +1668,9 @@ class MultiVectorBase(abc.ABC):
             True
             >>> (2 * e_1).outer_product(3 * e_2) == 6 * e_1 * e_2  # a 2-by-3 rectangle
             True
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> from gacalc.gn import Gn
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> u.outer_product(v) == (a_1 * b_2 - a_2 * b_1) * e_1 * e_2
             True
         """
@@ -1706,8 +1726,9 @@ class MultiVectorBase(abc.ABC):
 
             >>> (e_1 * e_2).scalar_product(e_1 * e_2) == -1
             True
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> from gacalc.gn import Gn
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> u.scalar_product(v) == a_1 * b_1 + a_2 * b_2
             True
         """
@@ -1734,14 +1755,17 @@ class MultiVectorBase(abc.ABC):
             >>> (1 * e_2).wedge(1 * e_1) == -(e_1 * e_2)
             True
 
-            >>> a = 3 * e_1 + 4 * e_2
+            >>> from gacalc.gn import Gn
+            >>> a: Gn = 3 * e_1 + 4 * e_2
             >>> a.wedge(a) == MultiVector.zero()  # a vector wedged with itself is 0
             True
             >>> a.wedge(-4 * e_1 + 3 * e_2) == 25 * e_1 * e_2
             True
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
-            >>> expected = (a_1 * b_2 - a_2 * b_1) * e_1 * e_2  # determinant bivector
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
+            >>> expected: Gn = (
+            ...     (a_1 * b_2 - a_2 * b_1) * e_1 * e_2
+            ... )  # determinant bivector
             >>> u.wedge(v) == expected and (u ^ v) == expected
             True
             >>> MultiVector.outer_product_of_vectors(u, v) == expected
@@ -1804,8 +1828,9 @@ class MultiVectorBase(abc.ABC):
 
             For two vectors it is the dot product:
 
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> from gacalc.gn import Gn
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> u.left_contraction(v) == u.dot(v)
             True
         """
@@ -1860,8 +1885,9 @@ class MultiVectorBase(abc.ABC):
             True
             >>> (1 * e_1).right_contraction(e_1 * e_2) == MultiVector.zero()
             True
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> from gacalc.gn import Gn
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> u.right_contraction(v) == u.dot(v)
             True
         """
@@ -1968,7 +1994,8 @@ class MultiVectorBase(abc.ABC):
             Each grade is picked out separately; a missing grade gives 0:
 
             >>> from gacalc.gn import e_1, e_2, a_1, a_2, b_1, b_2, MultiVector
-            >>> M = 2 + 3 * e_1 + 4 * e_1 * e_2
+            >>> from gacalc.gn import Gn
+            >>> M: Gn = 2 + 3 * e_1 + 4 * e_1 * e_2
             >>> M.r_vector_part(0) == MultiVector.from_real(2)
             True
             >>> M.r_vector_part(1) == 3 * e_1
@@ -1981,8 +2008,8 @@ class MultiVectorBase(abc.ABC):
             The product of two vectors has a grade-0 part (the dot) and a grade-2
             part (the wedge):
 
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> (u * v).r_vector_part(2) == u.wedge(v)
             True
         """
@@ -2072,7 +2099,8 @@ class MultiVectorBase(abc.ABC):
             >>> (e_1 * e_2).is_vector()  # a bivector is not
             False
 
-            >>> a = 3 * e_1 + 4 * e_2
+            >>> from gacalc.gn import Gn
+            >>> a: Gn = 3 * e_1 + 4 * e_2
             >>> a.is_vector()
             True
             >>> (a * a).is_vector()      # a*a lands on a scalar, not a vector
@@ -2232,7 +2260,8 @@ class MultiVectorBase(abc.ABC):
             >>> (1 * e_1).is_bivector()
             False
 
-            >>> a = 3 * e_1 + 4 * e_2
+            >>> from gacalc.gn import Gn
+            >>> a: Gn = 3 * e_1 + 4 * e_2
             >>> (a * e_2).is_bivector()  # the geometric product is scalar + bivector
             False
             >>> a.wedge(e_2).is_bivector()   # but the wedge is a pure bivector
@@ -2362,14 +2391,15 @@ class MultiVectorBase(abc.ABC):
             >>> (1 * e_1).is_parallel_to(1 * e_2)
             False
 
-            >>> a = 3 * e_1 + 4 * e_2
+            >>> from gacalc.gn import Gn
+            >>> a: Gn = 3 * e_1 + 4 * e_2
             >>> a.is_parallel_to(2 * a)        # same direction
             True
             >>> a.is_parallel_to(-1 * a)       # anti-parallel still counts (sin = 0)
             True
             >>> a.is_parallel_to(-4 * e_1 + 3 * e_2)   # perpendicular -> not parallel
             False
-            >>> af = 3.0 * e_1 + 4.0 * e_2
+            >>> af: Gn = 3.0 * e_1 + 4.0 * e_2
             >>> af.is_parallel_to(-2.0 * af, float_close_to_zero=True)
             True
 
@@ -2413,8 +2443,9 @@ class MultiVectorBase(abc.ABC):
 
             In general the scalar part of ``u * v`` is the dot product:
 
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> from gacalc.gn import Gn
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> (u * v).scalar_part() == a_1 * b_1 + a_2 * b_2
             True
         """
@@ -2484,22 +2515,23 @@ class MultiVectorBase(abc.ABC):
             >>> (e_1 * e_2).reverse() == -(e_1 * e_2)
             True
 
-            >>> a = 3 * e_1 + 4 * e_2
+            >>> from gacalc.gn import Gn
+            >>> a: Gn = 3 * e_1 + 4 * e_2
             >>> (a * a).reverse() == a * a      # a scalar is its own reverse
             True
-            >>> b = 5 * e_1 + 10 * e_2
+            >>> b: Gn = 5 * e_1 + 10 * e_2
             >>> (b * a).reverse() == a * b      # reversing b*a gives a*b
             True
 
             For general vectors, reverse flips the order of the factors in every
             blade -- in 2-D and 3-D alike:
 
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> (v * u).reverse() == u * v
             True
-            >>> u3 = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
-            >>> v3 = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
+            >>> u3: Gn = a_1 * e_1 + a_2 * e_2 + a_3 * e_3
+            >>> v3: Gn = b_1 * e_1 + b_2 * e_2 + b_3 * e_3
             >>> (v3 * u3).reverse() == u3 * v3
             True
         """
@@ -2570,12 +2602,13 @@ class MultiVectorBase(abc.ABC):
             A vector's inverse is the vector divided by its squared length, and
             multiplying back gives 1:
 
-            >>> a = 3 * e_1 + 4 * e_2
+            >>> from gacalc.gn import Gn
+            >>> a: Gn = 3 * e_1 + 4 * e_2
             >>> a.inverse() == (
             ...     sympy.Rational(3, 25) * e_1 + sympy.Rational(4, 25) * e_2
             ... )
             True
-            >>> u = a_1 * e_1 + a_2 * e_2
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
             >>> u * u.inverse() == MultiVector.one()
             True
             >>> (2 + 1 * e_1).inverse()  # doctest: +ELLIPSIS
@@ -2671,7 +2704,8 @@ class MultiVectorBase(abc.ABC):
             >>> from gacalc.gn import e_1, e_2
             >>> (2 + 3 * e_1 + 4 * e_1 * e_2).even_part() == 2 + 4 * e_1 * e_2
             True
-            >>> R = (1 * e_1) * (1 * e_1 + 1 * e_2)
+            >>> from gacalc.gn import Gn
+            >>> R: Gn = (1 * e_1) * (1 * e_1 + 1 * e_2)
             >>> R.even_part() == R
             True
         """
@@ -2733,13 +2767,14 @@ class MultiVectorBase(abc.ABC):
             >>> (1 * e_1).cosine(1 * e_1 + 1 * e_2) == sympy.sqrt(2) / 2
             True
 
-            >>> a = 3 * e_1 + 4 * e_2
+            >>> from gacalc.gn import Gn
+            >>> a: Gn = 3 * e_1 + 4 * e_2
             >>> a.cosine(a) == 1                    # a vector with itself -> 1
             True
             >>> a.cosine(-4 * e_1 + 3 * e_2) == 0   # a right angle -> 0
             True
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> MultiVector.from_real(u.cosine(v) * abs(u) * abs(v)) == u.dot(v)
             True
 
@@ -2791,8 +2826,9 @@ class MultiVectorBase(abc.ABC):
 
             With :meth:`cosine` it satisfies ``cos(θ)**2 + sin(θ)**2 = 1``:
 
-            >>> a = 3 * e_1 + 4 * e_2
-            >>> b = 1 * e_1 + 2 * e_2
+            >>> from gacalc.gn import Gn
+            >>> a: Gn = 3 * e_1 + 4 * e_2
+            >>> b: Gn = 1 * e_1 + 2 * e_2
             >>> sympy.simplify(a.cosine(b) ** 2 + a.abs_sin(b) ** 2) == 1
             True
 
@@ -2849,7 +2885,8 @@ class MultiVectorBase(abc.ABC):
             >>> MultiVector.project(onto=e_2)(1 * e_1 + 2 * e_2) == 2 * e_2
             True
 
-            >>> a = 3 * e_1 + 4 * e_2
+            >>> from gacalc.gn import Gn
+            >>> a: Gn = 3 * e_1 + 4 * e_2
             >>> MultiVector.project(onto=e_1)(a) == 3 * e_1       # the e_1 component
             True
             >>> MultiVector.project(onto=2 * e_1)(a) == 3 * e_1  # axis scale ignored
@@ -2869,8 +2906,8 @@ class MultiVectorBase(abc.ABC):
             Projection and rejection split a vector into its parallel and
             perpendicular parts, which sum back to it (shown for general 2-D vectors):
 
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> v == MultiVector.project(onto=u)(v) + MultiVector.reject(away_from=u)(v)
             True
         """
@@ -2951,7 +2988,8 @@ class MultiVectorBase(abc.ABC):
             ... )
             True
 
-            >>> a = 3 * e_1 + 4 * e_2
+            >>> from gacalc.gn import Gn
+            >>> a: Gn = 3 * e_1 + 4 * e_2
             >>> MultiVector.reject(away_from=e_1)(a) == 4 * e_2  # orthogonal to e_1
             True
             >>> MultiVector.reject(away_from=e_1)(2 * a) == 8 * e_2  # linear in input
@@ -2966,8 +3004,8 @@ class MultiVectorBase(abc.ABC):
             For general 2-D vectors the rejection is perpendicular to ``away_from``:
 
             >>> from gacalc.gn import a_1, a_2, b_1, b_2
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
             >>> MultiVector.reject(away_from=u)(v).dot(u) == MultiVector.zero()
             True
 
@@ -3045,7 +3083,8 @@ class MultiVectorBase(abc.ABC):
             >>> MultiVector.reflect(across=e_1)(1 * e_1 - 2 * e_2) == 1 * e_1 + 2 * e_2
             True
 
-            >>> a = 3 * e_1 + 4 * e_2 + 5 * e_3
+            >>> from gacalc.gn import Gn
+            >>> a: Gn = 3 * e_1 + 4 * e_2 + 5 * e_3
             >>> MultiVector.reflect(across=e_1)(a) == 3 * e_1 - 4 * e_2 - 5 * e_3
             True
             >>> MultiVector.reflect(across=e_2)(a) == -3 * e_1 + 4 * e_2 - 5 * e_3
@@ -3070,9 +3109,9 @@ class MultiVectorBase(abc.ABC):
             For general 2-D vectors a reflection keeps the length:
 
             >>> from gacalc.gn import a_1, a_2, b_1, b_2
-            >>> u = a_1 * e_1 + a_2 * e_2
-            >>> v = b_1 * e_1 + b_2 * e_2
-            >>> w = MultiVector.reflect(across=u)(v)
+            >>> u: Gn = a_1 * e_1 + a_2 * e_2
+            >>> v: Gn = b_1 * e_1 + b_2 * e_2
+            >>> w: MultiVectorBase = MultiVector.reflect(across=u)(v)
             >>> w.dot(w) == v.dot(v)
             True
 
@@ -3296,8 +3335,9 @@ class MultiVectorBase(abc.ABC):
             >>> (1 * e_2).signed_area(1 * e_1)
             -1
 
-            >>> a = 2 * e_1 + 1 * e_2
-            >>> b = 1 * e_1 + 3 * e_2
+            >>> from gacalc.g2 import Vector
+            >>> a: Vector = 2 * e_1 + 1 * e_2
+            >>> b: Vector = 1 * e_1 + 3 * e_2
             >>> a.signed_area(b)
             5
             >>> b.signed_area(a)
@@ -3476,7 +3516,7 @@ class MultiVectorBase(abc.ABC):
             it carries ``e_1`` onto ``e_2``:
 
             >>> from gacalc.g3 import Vector, Versor, e_1, e_2
-            >>> R = Vector.versor_from_vectors(1 * e_1, 1 * e_2)
+            >>> R: Versor = Vector.versor_from_vectors(1 * e_1, 1 * e_2)
             >>> R == Versor.one() + (1 * e_2) * (1 * e_1)
             True
             >>> R * (1 * e_1) * R.inverse() == 1 * e_2
@@ -3569,7 +3609,8 @@ class MultiVectorBase(abc.ABC):
             ``3 * e_2``:
 
             >>> from gacalc.g3 import Vector, e_1, e_2, e_3
-            >>> R = Vector.rotor_from_vectors(1 * e_1, 1 * e_2)
+            >>> from gacalc.g3 import Versor
+            >>> R: Versor = Vector.rotor_from_vectors(1 * e_1, 1 * e_2)
             >>> R.magnitude()
             1
             >>> R * (1 * e_1) * R.reverse() == 1 * e_2
@@ -3582,7 +3623,9 @@ class MultiVectorBase(abc.ABC):
             >>> Vector.rotor_from_vectors(2 * e_1, 5 * e_2) == R
             True
             >>> import sympy
-            >>> S = Vector.rotor_from_vectors(1 * e_1, 1 * e_1 + 1 * e_2 + 1 * e_3)
+            >>> S: Versor = (
+            ...     Vector.rotor_from_vectors(1 * e_1, 1 * e_1 + 1 * e_2 + 1 * e_3)
+            ... )
             >>> sympy.simplify(S.magnitude()) == 1  # a unit rotor, once simplified
             True
         """
@@ -3608,7 +3651,8 @@ class MultiVectorBase(abc.ABC):
             vectors' lengths:
 
             >>> from gacalc.g3 import Bivector, Vector, e_1, e_2, e_3
-            >>> R = Vector.versor_from_vectors(1 * e_1, 1 * e_2)
+            >>> from gacalc.g3 import Versor
+            >>> R: Versor = Vector.versor_from_vectors(1 * e_1, 1 * e_2)
             >>> R.plane_of_rotation() == -1 * Bivector.e_12
             True
             >>> Vector.versor_from_vectors(2 * e_1, 5 * e_2).plane_of_rotation() == (
@@ -3687,7 +3731,8 @@ class MultiVectorBase(abc.ABC):
             Like ``3 + 4i ↦ 3 - 4i``, and ``(3 + 4i) * (3 - 4i) = 25``:
 
             >>> from gacalc.g2 import Bivector
-            >>> R = 3 + 4 * Bivector.e_12
+            >>> from gacalc.g2 import Versor
+            >>> R: Versor = 3 + 4 * Bivector.e_12
             >>> R.conjugate() == 3 - 4 * Bivector.e_12
             True
             >>> (R * R.conjugate()).scalar_part()
@@ -3783,7 +3828,8 @@ class MultiVectorBase(abc.ABC):
             axis ``e_3`` alone:
 
             >>> from gacalc.g3 import Bivector, Vector, e_1, e_2, e_3
-            >>> R = Vector.rotor_from_vectors(1 * e_1, 1 * e_2)
+            >>> from gacalc.g3 import Versor
+            >>> R: Versor = Vector.rotor_from_vectors(1 * e_1, 1 * e_2)
             >>> R.sandwich(1 * e_1) == 1 * e_2
             True
             >>> R.sandwich(3 * e_1) == 3 * e_2
@@ -3870,10 +3916,10 @@ class MultiVectorBase(abc.ABC):
             g2.Versor(coeff_scalar=cos(1), coeff_e_12=sin(1))
             >>> Bivector.e_12.exp() == Versor.e_12 * sympy.sin(1) + sympy.cos(1)
             True
-            >>> theta = sympy.Symbol("theta", positive=True)
+            >>> theta: sympy.Symbol = sympy.Symbol("theta", positive=True)
             >>> (Bivector.e_12 * (-theta / 2)).exp()  # the half-angle rotor
             g2.Versor(coeff_scalar=cos(theta/2), coeff_e_12=-sin(theta/2))
-            >>> R = (Bivector.e_12 * (-theta / 2)).exp()
+            >>> R: Versor = (Bivector.e_12 * (-theta / 2)).exp()
             >>> R == Versor.e_12 * -sympy.sin(theta / 2) + sympy.cos(theta / 2)
             True
         """
@@ -3946,7 +3992,7 @@ class MultiVectorBase(abc.ABC):
         Example:
             >>> import sympy
             >>> from gacalc.g2 import Vector
-            >>> x = sympy.Symbol("x")
+            >>> x: sympy.Symbol = sympy.Symbol("x")
             >>> ((x + 1) ** 2 * Vector.e_1).symbolically_equal(
             ...     (x**2 + 2 * x + 1) * Vector.e_1
             ... )

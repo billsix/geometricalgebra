@@ -358,7 +358,10 @@ Repo-specific invariants the agent must obey (rationale in the shared doc + the 
   placeholder has nothing to type. `make format` runs `ty check notebooks`, which catches wrong
   types but not missing ones. For those, run `tools/check_annotations.py` by hand: it walks
   `notebooks/` too and lists each missing annotation as a row. It is a report, not a gate; it
-  never fails a build.
+  never fails a build. **A `>>>` docstring example is code under the same rule** (`>>> v: Vector = …`;
+  each unpacked name declared on a `>>>` line above, `>>> a: sympy.Symbol`): `ty` does not read
+  docstrings, so the same tool reports a bare one as a `DOCTEST` row, and the generated modules' examples
+  are fixed in `tools/gen_specialized.py` (William Emerison Six <billsix@gmail.com>, 2026-11-22).
 - **Prefer `match` / total dispatch for structural case analysis** — the cross-project "Prefer total
   dispatch over an open-ended conditional chain" convention, and it applies to the **Lean proofs**
   (`proofs/`) as much as the Python. Where a definition dispatches on structure (a grade/`n`, a
@@ -580,8 +583,16 @@ sweep that applied them is `tasks/archive/2026/10/09/math-notation-parens-star-n
   `sin = y/r`, `(cos = c, sin = s)`, `cos = 0`.
 - **Typeset LaTeX writes vectors the way gacalc's output does** (`blade_latex` in
   `src/gacalc/base.py`): a vector `\vec{\mathbf{a}}`, a unit vector `\hat{\mathbf{a}}`, a basis
-  vector `\vec{\mathbf{e}}_1`, and a blade of grade 2 or more one bold `\mathbf{e}_{12}`, with no
-  arrow and not written as `e_1 e_2`. Scalars, coordinates (`a_1`), angles, and capital multivectors
+  vector `\vec{\mathbf{e}}_1`. A blade of grade 2 or more that is a **value** is written as the
+  product of its basis vectors, `y * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2` (`1 * …` when it stands
+  alone, as in `I = 1 * \vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2`), parenthesized after a vector,
+  `\vec{\mathbf{a}} * (\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2)`, so the reader sees what it is
+  (William Emerison Six <billsix@gmail.com>, 2026-11-22). The one bold `\mathbf{e}_{12}` stays where
+  it **names** the blade: where a page introduces it (`\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2 =
+  \mathbf{e}_{12}`, "call it"), as a plane's name ("the `\mathbf{e}_{12}` plane") or a subscript
+  (`proj_{\mathbf{e}_{12}}`), in a figure label, and where the text points at gacalc's printed output.
+  The plane `\vec{\mathbf{e}}_3 * \vec{\mathbf{e}}_1` is written as that product, since gacalc's
+  `e_13` is its negative. Scalars, coordinates (`a_1`), angles, and capital multivectors
   and rotors (`R`, `B`) stay plain. This covers book pages, the Markdown of every notebook (the book's
   and the demo notebooks under `notebooks/` alike) and figure labels
   (William Emerison Six <billsix@gmail.com>, 2026-11-17). Put the accent outside the bold,
@@ -629,7 +640,7 @@ with live ePiX, and shows both sides of each check before their difference (Will
 <billsix@gmail.com>, 2026-11-17). That difference is shown with `show_difference(left, right)`, never a
 bare `simplify(left - right)`: every pair of cancelling terms carries the same number under an
 `\underbrace`, so a reader can match them, or cross them off on a printout; a page's hand-written
-cancellation (`.rst`) is marked the same way (William Emerison Six <billsix@gmail.com>, 2026-11-20). Every construction uses only results taught before it, and rotations
+cancellation (`.rst`) is marked the same way (William Emerison Six <billsix@gmail.com>, 2026-11-20). Not every equality gets that display: one true by definition, an inverse's round trip, a repeat of an earlier check, and a property restated for each new way of writing the same rotation are stated in a sentence instead (`tasks/reference/book-notebook-teaching-style.md`, item 14). Every construction uses only results taught before it, and rotations
 come from the ones the book built (`Vector.rotate`, `standardposition.rotation_from_to`): the rule, the
 teaching order and the dependency graph on the book's first page are in
 `tasks/reference/teaching-order-and-dependencies.md`. Detail: `tasks/reference/book-outline.md`

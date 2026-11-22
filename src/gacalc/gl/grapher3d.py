@@ -123,7 +123,9 @@ def build_wireframe(surface: Surface, dx: float, dy: float) -> np.ndarray:
     direction, two vertices per segment:
 
     >>> white: Color = (1.0, 1.0, 1.0)
-    >>> flat = Surface(fn=lambda x, y: 0.0, label="flat", color=white, latex="0")
+    >>> flat: Surface = (
+    ...     Surface(fn=lambda x, y: 0.0, label="flat", color=white, latex="0")
+    ... )
     >>> build_wireframe(flat, 6.0, 6.0).reshape(-1, 3).shape
     (24, 3)
     """
@@ -166,7 +168,9 @@ def build_solid(
     A step of 6 gives 4 cells, so 8 triangles of 3 vertices, each with a colour:
 
     >>> white: Color = (1.0, 1.0, 1.0)
-    >>> tilt = Surface(fn=lambda x, y: x, label="tilt", color=white, latex="x")
+    >>> tilt: Surface = Surface(fn=lambda x, y: x, label="tilt", color=white, latex="x")
+    >>> positions: np.ndarray
+    >>> colors: np.ndarray
     >>> positions, colors = build_solid(tilt, 6.0, 6.0)
     >>> positions.reshape(-1, 3).shape, colors.reshape(-1, 3).shape
     ((24, 3), (24, 3))

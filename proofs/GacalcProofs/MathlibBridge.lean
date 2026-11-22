@@ -157,14 +157,6 @@ theorem toC_rot (θ : ℝ) (v : G2) :
       Complex.sin_ofReal_re] <;>
     ring
 
-/-- Composition of from-scratch rotations is composition of Mathlib rotations (`rot_add` ↔
-    `Orientation.rotation_rotation`). -/
-theorem toC_rot_rot (θ φ : ℝ) (v : G2) :
-    toC (rot θ (rot φ v))
-      = Complex.orientation.rotation (θ : Real.Angle)
-          (Complex.orientation.rotation (φ : Real.Angle) (toC v)) := by
-  rw [toC_rot, toC_rot]
-
 /-- **The 2D rotor sandwich IS Mathlib's rotation:** `R*v*R̃` for `R = rotor θ`
     (`cos(θ/2) − sin(θ/2)*e₁₂`) and a vector `v`, read as a complex number, is
     `Complex.orientation.rotation θ` of `v` — the from-scratch rotor rotates by exactly the Mathlib

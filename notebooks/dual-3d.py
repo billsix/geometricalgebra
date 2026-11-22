@@ -161,7 +161,7 @@ d
 
 # %% [markdown]
 # It is a vector: each of the three plane parts times $I^{-1}$ is a basis vector, as in
-# $\mathbf{e}_{12} * I^{-1} = \vec{\mathbf{e}}_3$.
+# $(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2) * I^{-1} = \vec{\mathbf{e}}_3$.
 
 # %%
 d.is_vector()
@@ -290,12 +290,6 @@ swapped_r: Versor = (-(r * r) * (a * I_inverse)).simplified()
 swapped_r
 
 # %% [markdown]
-# Their difference:
-
-# %%
-show_difference(product_r, swapped_r)
-
-# %% [markdown]
 # So the dot product is $0$:
 
 # %%
@@ -314,10 +308,7 @@ sympy.simplify(sympy.sympify(r.dot(d).scalar_part()))
 # \vec{\mathbf{d}}) + \vec{\mathbf{r}} \cdot \vec{\mathbf{d}} = \lambda * 0 + 0 = 0.
 # $$
 #
-# The projection plus the rejection is $\vec{\mathbf{b}}$; their difference:
-
-# %%
-show_difference(b.projected_onto(a) + r, b)
+# The projection plus the rejection is $\vec{\mathbf{b}}$.
 
 # %% [markdown]
 # and the dot product of $\vec{\mathbf{b}}$ with the dual:

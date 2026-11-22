@@ -233,7 +233,7 @@ class CayleyGraph(typing.Generic[N]):
     ...     world = 1
     ...     camera = 2
     ...     ndc = 3
-    >>> graph = CayleyGraph([
+    >>> graph: CayleyGraph[Space] = CayleyGraph([
     ...     Edge(Space.world, Space.camera, [("V", identity)]),
     ...     Edge(Space.camera, Space.ndc, [("P", identity)]),
     ... ])
