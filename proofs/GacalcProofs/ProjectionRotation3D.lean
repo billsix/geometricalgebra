@@ -31,33 +31,45 @@ noncomputable def projRotation (f t v : G3) : G3 :=
   add (mul (mul (project_onto (wedge f t) v) (normalizeVec f)) (normalizeVec t))
       (reject (wedge f t) v)
 
+/-- A vector is `vec` of its coordinates, for substituting in a proof body that needs them. -/
+theorem exists_vec {a : G3} (ha : IsVector a) : ∃ x y z : ℝ, a = vec x y z :=
+  ⟨a.c1, a.c2, a.c3, eq_vec_of_isVector ha⟩
+
 /-! ### `from` lies in the `from ∧ to` plane -/
 
 /-- A vector wedged with a plane that contains it vanishes: `f ∧ (f ∧ t) = 0`. -/
-theorem wedge_vec_wedge_self_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
-    wedge (vec a1 a2 a3) (wedge (vec a1 a2 a3) (vec b1 b2 b3)) = zero := by
+theorem wedge_vec_wedge_self {f t : G3} (hf : IsVector f) (ht : IsVector t) :
+    wedge f (wedge f t) = zero := by
+  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
+  obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
   simp only [wedge, vec, zero]; ext <;> ring
 
 /-- **The rejection of `f` from the `f∧t` plane is zero** — `f` lies in the plane. -/
-theorem reject_in_plane_self_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
-    reject (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec a1 a2 a3) = zero := by
-  rw [reject, wedge_vec_wedge_self_coord, zero_mul]
+theorem reject_in_plane_self {f t : G3} (hf : IsVector f) (ht : IsVector t) :
+    reject (wedge f t) f = zero := by
+  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
+  obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
+  rw [reject, wedge_vec_wedge_self hf ht, zero_mul]
 
 /-- `(f · (f∧t)) · reverse(f∧t) = |f∧t|²*f` — a polynomial identity: the in-plane projection
     numerator recovers `f` scaled by the plane's squared magnitude. -/
-theorem inner_vb_mul_reverse_self_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
-    mul (inner_vb (vec a1 a2 a3) (wedge (vec a1 a2 a3) (vec b1 b2 b3)))
-        (reverse (wedge (vec a1 a2 a3) (vec b1 b2 b3)))
-      = smul (normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3))) (vec a1 a2 a3) := by
+theorem inner_vb_mul_reverse_self {f t : G3} (hf : IsVector f) (ht : IsVector t) :
+    mul (inner_vb f (wedge f t))
+        (reverse (wedge f t))
+      = smul (normSq (wedge f t)) f := by
+  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
+  obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
   simp only [inner_vb, wedge, reverse, mul, smul, vec, normSq]
   ext <;> ring
 
 /-- **The projection of `f` onto the `f∧t` plane is `f`** (for a nondegenerate plane `|f∧t|² ≠ 0`). -/
-theorem project_onto_in_plane_self_coord (a1 a2 a3 b1 b2 b3 : ℝ)
-    (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
-    project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec a1 a2 a3) = vec a1 a2 a3 := by
+theorem project_onto_in_plane_self {f t : G3} (hf : IsVector f) (ht : IsVector t)
+    (hn : normSq (wedge f t) ≠ 0) :
+    project_onto (wedge f t) f = f := by
+  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
+  obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
   simp only [project_onto, inverse]
-  rw [GacalcProofs.G3.mul_smul, inner_vb_mul_reverse_self_coord, GacalcProofs.G3.smul_smul,
+  rw [GacalcProofs.G3.mul_smul, inner_vb_mul_reverse_self hf ht, GacalcProofs.G3.smul_smul,
       one_div_mul_cancel hn, GacalcProofs.G3.one_smul]
 
 /-! ### Properties of the rotation -/
@@ -72,38 +84,19 @@ theorem projRotation_perp (f t v : G3) (h : project_onto (wedge f t) v = zero) :
 
 /-- **The rotation carries `from` to `to`:** `projRotation f t f = (|f|/|t|)*t` (so for unit `f`, `t`
     it sends `f ↦ t`). `f` is in the plane, so its perpendicular part vanishes and its in-plane part is
-    `f` itself; then `f · f̂ · t̂ = |f|*t̂ = (|f|/|t|)*t`. The defining property of the rotation. -/
-theorem projRotation_carries_from_to_coord (a1 a2 a3 b1 b2 b3 : ℝ)
-    (hf : normSq (vec a1 a2 a3) ≠ 0) (ht : normSq (vec b1 b2 b3) ≠ 0)
-    (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
-    projRotation (vec a1 a2 a3) (vec b1 b2 b3) (vec a1 a2 a3)
-      = smul (magnitude (vec a1 a2 a3) / magnitude (vec b1 b2 b3)) (vec b1 b2 b3) := by
-  rw [projRotation, project_onto_in_plane_self_coord a1 a2 a3 b1 b2 b3 hn, reject_in_plane_self_coord, add_zero]
-  have hvv : mul (vec a1 a2 a3) (vec a1 a2 a3) = smul (normSq (vec a1 a2 a3)) one := by
-    rw [mul_vec_self (isVector_vec a1 a2 a3)]; simp only [scalar, smul, one, zero]; ext <;> ring
-  simp only [normalizeVec, GacalcProofs.G3.mul_smul, hvv,
-      GacalcProofs.G3.smul_mul, GacalcProofs.G3.one_mul, GacalcProofs.G3.smul_smul]
-  congr 1
-  have hpos : (0 : ℝ) ≤ normSq (vec a1 a2 a3) := by rw [normSq_vec]; positivity
-  have hsq : magnitude (vec a1 a2 a3) ^ 2 = normSq (vec a1 a2 a3) := by
-    simp only [magnitude]; exact Real.sq_sqrt hpos
-  have hmf : magnitude (vec a1 a2 a3) ≠ 0 := by
-    simp only [magnitude]; exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne hpos (Ne.symm hf))
-  have hmt : magnitude (vec b1 b2 b3) ≠ 0 := by
-    have hpos2 : (0 : ℝ) ≤ normSq (vec b1 b2 b3) := by rw [normSq_vec]; positivity
-    simp only [magnitude]; exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne hpos2 (Ne.symm ht))
-  rw [← hsq]; field_simp <;> ring
-
-/-- **The rotation carries `from` to `to`** (object form): `projRotation f t f = (|f|/|t|)*t`, for
-    nonzero vectors `f`, `t` with a nondegenerate plane. Thin bridge over the (delicate) `_coord` leaf. -/
+    `f` itself; then `f · f̂ · t̂ = |f|*t̂ = (|f|/|t|)*t`. The defining property of the rotation. For
+    nonzero vectors `f`, `t` with a nondegenerate plane. -/
 theorem projRotation_carries_from_to {f t : G3} (hf : IsVector f) (ht : IsVector t)
     (hfn : normSq f ≠ 0) (htn : normSq t ≠ 0) (hpn : normSq (wedge f t) ≠ 0) :
     projRotation f t f = smul (magnitude f / magnitude t) t := by
-  have h := projRotation_carries_from_to_coord f.c1 f.c2 f.c3 t.c1 t.c2 t.c3
-    (by rw [← eq_vec_of_isVector hf]; exact hfn)
-    (by rw [← eq_vec_of_isVector ht]; exact htn)
-    (by rw [← eq_vec_of_isVector hf, ← eq_vec_of_isVector ht]; exact hpn)
-  rwa [← eq_vec_of_isVector hf, ← eq_vec_of_isVector ht] at h
+  rw [projRotation, project_onto_in_plane_self hf ht hpn, reject_in_plane_self hf ht, add_zero]
+  simp only [normalizeVec, GacalcProofs.G3.mul_smul, GacalcProofs.G3.smul_mul,
+    GacalcProofs.G3.smul_smul]
+  rw [mul_vec_self hf, GacalcProofs.G3.scalar_mul, GacalcProofs.G3.smul_smul]
+  congr 1
+  have hmf := magnitude_ne_zero_of_normSq_ne_zero hfn
+  have hmt := magnitude_ne_zero_of_normSq_ne_zero htn
+  rw [← magnitude_sq_eq_normSq f]; field_simp
 
 /-! ### Scaffold for the isometry (how the `√` obstruction dissolves)
 
@@ -131,8 +124,9 @@ theorem normSq_add_of_orthogonal (x y : G3) (h : (mul x (reverse y)).s = 0) :
     `M` and a vector `a` — because `a ã = a·a = |a|²` is a scalar that rides out of the sandwich
     `(Ma)(Ma)~ = M a a M̃ = |a|² M M̃`. Pure `ring`; this is where the two unit factors each turn a
     `1/|·|²` into the matching coordinate sum. -/
-theorem normSq_mul_vec_coord (M : G3) (a1 a2 a3 : ℝ) :
-    normSq (mul M (vec a1 a2 a3)) = (a1 ^ 2 + a2 ^ 2 + a3 ^ 2) * normSq M := by
+theorem normSq_mul_vec {M a : G3} (ha : IsVector a) :
+    normSq (mul M a) = normSq a * normSq M := by
+  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec ha
   simp only [normSq, mul, reverse, vec]; ring
 
 set_option maxHeartbeats 8000000 in
@@ -142,11 +136,14 @@ set_option maxRecDepth 8000 in
     product `⟨… reverse(reject)⟩` is `0`. All three of `project`, `f`, `t` lie in the `f∧t` plane,
     so their product is in-plane, hence ⊥ the (normal) rejection. A rational identity in the
     coordinates: `field_simp; ring`. The normalized version is this times `1/(|f|*|t|)`. -/
-theorem inplane_perp_reject_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
-    (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
-    (mul (mul (mul (project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-          (vec a1 a2 a3)) (vec b1 b2 b3))
-         (reverse (reject (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3)))).s = 0 := by
+theorem inplane_perp_reject {f t v : G3} (hf : IsVector f) (ht : IsVector t) (hv : IsVector v)
+    (hn : normSq (wedge f t) ≠ 0) :
+    (mul (mul (mul (project_onto (wedge f t) v)
+          f) t)
+         (reverse (reject (wedge f t) v))).s = 0 := by
+  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
+  obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
+  obtain ⟨c1, c2, c3, rfl⟩ := exists_vec hv
   rw [wedge_vec_eq_biv] at hn ⊢
   have hd := normSq_biv (a1 * b2 - a2 * b1) (a1 * b3 - a3 * b1) (a2 * b3 - a3 * b2)
   rw [hd] at hn
@@ -160,10 +157,13 @@ set_option maxRecDepth 8000 in
 /-- **The projection and the rejection are orthogonal (`√`-free):** `⟨project_{f∧t} v · reverse(reject
     _{f∧t} v)⟩ = 0` — the in-plane and perpendicular components of `v` meet at a right angle. A rational
     identity in the coordinates (`field_simp; ring`). -/
-theorem project_perp_reject_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
-    (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
-    (mul (project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-         (reverse (reject (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3)))).s = 0 := by
+theorem project_perp_reject {f t v : G3} (hf : IsVector f) (ht : IsVector t) (hv : IsVector v)
+    (hn : normSq (wedge f t) ≠ 0) :
+    (mul (project_onto (wedge f t) v)
+         (reverse (reject (wedge f t) v))).s = 0 := by
+  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
+  obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
+  obtain ⟨c1, c2, c3, rfl⟩ := exists_vec hv
   rw [wedge_vec_eq_biv] at hn ⊢
   have hd := normSq_biv (a1 * b2 - a2 * b1) (a1 * b3 - a3 * b1) (a2 * b3 - a3 * b2)
   rw [hd] at hn
@@ -176,76 +176,53 @@ theorem project_perp_reject_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
     The in-plane and perpendicular parts split the squared length. Structural (no giant `simp`):
     `project + reject = v` (`project_add_reject`) and `project ⊥ reject` (`project_perp_reject`), so
     `normSq_add_of_orthogonal` splits `|v|²`. -/
-theorem plane_pythagorean_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
-    (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
-    normSq (project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-      + normSq (reject (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-      = normSq (vec c1 c2 c3) := by
-  rw [← normSq_add_of_orthogonal _ _ (project_perp_reject_coord a1 a2 a3 b1 b2 b3 c1 c2 c3 hn),
+theorem plane_pythagorean {f t v : G3} (hf : IsVector f) (ht : IsVector t) (hv : IsVector v)
+    (hn : normSq (wedge f t) ≠ 0) :
+    normSq (project_onto (wedge f t) v)
+      + normSq (reject (wedge f t) v)
+      = normSq v := by
+  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
+  obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
+  obtain ⟨c1, c2, c3, rfl⟩ := exists_vec hv
+  rw [← normSq_add_of_orthogonal _ _ (project_perp_reject hf ht hv hn),
       wedge_vec_eq_biv]
   have hn' : normSq (bivector (a1 * b2 - a2 * b1) (a1 * b3 - a3 * b1) (a2 * b3 - a3 * b2)) ≠ 0 := by
     rwa [wedge_vec_eq_biv] at hn
   rw [project_add_reject_coord c1 c2 c3 _ _ _ hn']
 
-/-- **The rotation is an isometry:** `|projRotation f t v|² = |v|²` (for nondegenerate `f`, `t`, and
-    the `f∧t` plane). The in-plane part is turned (length-preserving), the perpendicular part is
-    fixed, so the squared length is unchanged. Assembled from the scaffold: pull the unit scalars
-    out of the in-plane term (`hin`), split `normSq` across the ⊥ decomposition
+/-- **The rotation is an isometry:** `|projRotation f t v|² = |v|²` (for nonzero vectors `f`, `t`, a
+    nondegenerate `f∧t` plane, and any vector `v`). The in-plane part is turned (length-preserving), the
+    perpendicular part is fixed, so the squared length is unchanged. Assembled from the scaffold: pull the
+    unit scalars out of the in-plane term (`hin`), split `normSq` across the ⊥ decomposition
     (`normSq_add_of_orthogonal` + `inplane_perp_reject`), reduce the in-plane norm to `|project|²`
     (`normSq_mul_vec` twice, `magnitude² = normSq` cancelling the `1/(|f|*|t|)²`), then close with
     `plane_pythagorean`. No `√` survives. -/
-theorem projRotation_isometry_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
-    (hf : normSq (vec a1 a2 a3) ≠ 0) (ht : normSq (vec b1 b2 b3) ≠ 0)
-    (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
-    normSq (projRotation (vec a1 a2 a3) (vec b1 b2 b3) (vec c1 c2 c3))
-      = normSq (vec c1 c2 c3) := by
-  -- `magnitude² = normSq` for f and t (the only analytic facts), plus `|f|, |t| ≠ 0`.
-  have hmf2 : magnitude (vec a1 a2 a3) ^ 2 = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
-    have h0 : (0 : ℝ) ≤ normSq (vec a1 a2 a3) := by rw [normSq_vec]; positivity
-    simp only [magnitude]; rw [Real.sq_sqrt h0, normSq_vec]
-  have hmt2 : magnitude (vec b1 b2 b3) ^ 2 = b1 ^ 2 + b2 ^ 2 + b3 ^ 2 := by
-    have h0 : (0 : ℝ) ≤ normSq (vec b1 b2 b3) := by rw [normSq_vec]; positivity
-    simp only [magnitude]; rw [Real.sq_sqrt h0, normSq_vec]
-  have hmf : magnitude (vec a1 a2 a3) ≠ 0 := by
-    have h0 : (0 : ℝ) ≤ normSq (vec a1 a2 a3) := by rw [normSq_vec]; positivity
-    simp only [magnitude]; exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne h0 (Ne.symm hf))
-  have hmt : magnitude (vec b1 b2 b3) ≠ 0 := by
-    have h0 : (0 : ℝ) ≤ normSq (vec b1 b2 b3) := by rw [normSq_vec]; positivity
-    simp only [magnitude]; exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne h0 (Ne.symm ht))
-  rw [projRotation]
-  set P := project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3) with hP
-  set Rj := reject (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3) with hRj
-  -- Pull the two unit factors' scalars out of the in-plane term.
-  have hin : mul (mul P (normalizeVec (vec a1 a2 a3))) (normalizeVec (vec b1 b2 b3))
-      = smul (1 / magnitude (vec a1 a2 a3) * (1 / magnitude (vec b1 b2 b3)))
-             (mul (mul P (vec a1 a2 a3)) (vec b1 b2 b3)) := by
-    simp only [normalizeVec]
-    ext <;> simp only [mul, smul, vec] <;> ring
-  -- The in-plane term ⊥ the rejection (normalized core = scalar · un-normalized core = scalar · 0).
-  have horth : (mul (mul (mul P (normalizeVec (vec a1 a2 a3))) (normalizeVec (vec b1 b2 b3)))
-                    (reverse Rj)).s = 0 := by
-    rw [hin, GacalcProofs.G3.smul_mul]
-    simp only [smul]
-    rw [hP, hRj, inplane_perp_reject_coord a1 a2 a3 b1 b2 b3 c1 c2 c3 hn]
-    ring
-  -- The in-plane norm collapses to `|project|²` once the `1/(|f|*|t|)²` meets `magnitude² = normSq`.
-  have hcoef : (1 / magnitude (vec a1 a2 a3) * (1 / magnitude (vec b1 b2 b3))) ^ 2
-      * ((b1 ^ 2 + b2 ^ 2 + b3 ^ 2) * ((a1 ^ 2 + a2 ^ 2 + a3 ^ 2) * normSq P)) = normSq P := by
-    rw [← hmf2, ← hmt2]; field_simp [hmf, hmt]
-  rw [normSq_add_of_orthogonal _ _ horth, hin, normSq_smul, normSq_mul_vec_coord, normSq_mul_vec_coord, hcoef,
-      hP, hRj]
-  exact plane_pythagorean_coord a1 a2 a3 b1 b2 b3 c1 c2 c3 hn
-
-/-- **The rotation is an isometry** (object form): `|projRotation f t v|² = |v|²`, for nonzero vectors
-    `f`, `t` with a nondegenerate plane and any vector `v`. Thin bridge over the (delicate) `_coord` leaf. -/
 theorem projRotation_isometry {f t v : G3} (hf : IsVector f) (ht : IsVector t) (hv : IsVector v)
     (hfn : normSq f ≠ 0) (htn : normSq t ≠ 0) (hpn : normSq (wedge f t) ≠ 0) :
     normSq (projRotation f t v) = normSq v := by
-  have h := projRotation_isometry_coord f.c1 f.c2 f.c3 t.c1 t.c2 t.c3 v.c1 v.c2 v.c3
-    (by rw [← eq_vec_of_isVector hf]; exact hfn)
-    (by rw [← eq_vec_of_isVector ht]; exact htn)
-    (by rw [← eq_vec_of_isVector hf, ← eq_vec_of_isVector ht]; exact hpn)
-  rwa [← eq_vec_of_isVector hf, ← eq_vec_of_isVector ht, ← eq_vec_of_isVector hv] at h
+  have hmf := magnitude_ne_zero_of_normSq_ne_zero hfn
+  have hmt := magnitude_ne_zero_of_normSq_ne_zero htn
+  rw [projRotation]
+  set P := project_onto (wedge f t) v with hP
+  set Rj := reject (wedge f t) v with hRj
+  -- Pull the two unit factors' scalars out of the in-plane term.
+  have hin : mul (mul P (normalizeVec f)) (normalizeVec t)
+      = smul (1 / magnitude t * (1 / magnitude f)) (mul (mul P f) t) := by
+    simp only [normalizeVec, GacalcProofs.G3.mul_smul, GacalcProofs.G3.smul_mul,
+      GacalcProofs.G3.smul_smul]
+  -- The in-plane term ⊥ the rejection (normalized core = scalar · un-normalized core = scalar · 0).
+  have horth : (mul (mul (mul P (normalizeVec f)) (normalizeVec t)) (reverse Rj)).s = 0 := by
+    rw [hin, GacalcProofs.G3.smul_mul]
+    simp only [smul]
+    rw [hP, hRj, inplane_perp_reject hf ht hv hpn]
+    ring
+  -- The in-plane norm collapses to `|project|²` once the `1/(|f|*|t|)²` meets `magnitude² = normSq`.
+  have hcoef : (1 / magnitude t * (1 / magnitude f)) ^ 2 * (normSq t * (normSq f * normSq P))
+      = normSq P := by
+    rw [← magnitude_sq_eq_normSq f, ← magnitude_sq_eq_normSq t]; field_simp
+  rw [normSq_add_of_orthogonal _ _ horth, hin, normSq_smul, normSq_mul_vec ht, normSq_mul_vec hf,
+    hcoef, hP, hRj]
+  exact plane_pythagorean hf ht hv hpn
 
 /-! ### Route-equivalence: the projection route equals the versor sandwich (route P = route V)
 
@@ -266,22 +243,22 @@ theorem projRotation_isometry {f t v : G3} (hf : IsVector f) (ht : IsVector t) (
 
 /-- **The normalized to-vector times the versor is the half-angle bisector:** `t̂ R = h`. From
     `t R = |t|*h` (`from_mul_versor_eq_bisector`), scaled by `1/|t|`. -/
-theorem normalizeVec_to_mul_versor_eq_bisector_coord (a1 a2 a3 b1 b2 b3 : ℝ)
-    (ht : magnitude (vec b1 b2 b3) ≠ 0) :
-    mul (normalizeVec (vec b1 b2 b3)) (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
-      = bisector (vec a1 a2 a3) (vec b1 b2 b3) := by
-  rw [normalizeVec, GacalcProofs.G3.smul_mul,
-      from_mul_versor_eq_bisector (isVector_vec b1 b2 b3),
-      GacalcProofs.G3.smul_smul, one_div_mul_cancel ht, GacalcProofs.G3.one_smul]
+theorem normalizeVec_to_mul_versor_eq_bisector {f t : G3} (ht : IsVector t)
+    (htn : magnitude t ≠ 0) :
+    mul (normalizeVec t) (versorFromVectors f t) = bisector f t := by
+  rw [normalizeVec, GacalcProofs.G3.smul_mul, from_mul_versor_eq_bisector ht,
+      GacalcProofs.G3.smul_smul, one_div_mul_cancel htn, GacalcProofs.G3.one_smul]
 
 /-- **The from-vector times the bisector is the (scaled) reverse versor:** `f h = |f|*R̃`. The
     division-free companion to `f̂ h = R̃`. The only analytic fact is `|f|² = f·f` (`magnitude_sq_vec`),
     used on the single scalar component; every other component is pure `ring`. Mirrors
     `versor_mul_from_eq_bisector`. -/
-theorem vec_mul_bisector_eq_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
-    mul (vec a1 a2 a3) (bisector (vec a1 a2 a3) (vec b1 b2 b3))
-      = smul (magnitude (vec a1 a2 a3))
-             (reverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))) := by
+theorem vec_mul_bisector_eq {f t : G3} (hf : IsVector f) (ht : IsVector t) :
+    mul f (bisector f t)
+      = smul (magnitude f)
+             (reverse (versorFromVectors f t)) := by
+  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
+  obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
   simp only [bisector, versorFromVectors, reverse]
   set sa := magnitude (vec a1 a2 a3)
   set sb := magnitude (vec b1 b2 b3)
@@ -295,14 +272,13 @@ theorem vec_mul_bisector_eq_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
 /-- **`f̂ t̂ R = R̃`** — the key alignment identity: the product of the two unit vectors, times the
     versor, is the reverse versor. Assembled from `t̂ R = h` and `f̂ h = R̃` (via `f h = |f|*R̃`), with
     the `1/|f|`, `1/|t|` cancelling against the bisector scalings — no coordinate `√` expanded. -/
-theorem normalizeVec_mul_versor_eq_reverse_coord (a1 a2 a3 b1 b2 b3 : ℝ)
-    (hf : magnitude (vec a1 a2 a3) ≠ 0) (ht : magnitude (vec b1 b2 b3) ≠ 0) :
-    mul (mul (normalizeVec (vec a1 a2 a3)) (normalizeVec (vec b1 b2 b3)))
-        (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
-      = reverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) := by
-  rw [GacalcProofs.G3.mul_assoc, normalizeVec_to_mul_versor_eq_bisector_coord a1 a2 a3 b1 b2 b3 ht,
-      normalizeVec, GacalcProofs.G3.smul_mul, vec_mul_bisector_eq_coord, GacalcProofs.G3.smul_smul,
-      one_div_mul_cancel hf, GacalcProofs.G3.one_smul]
+theorem normalizeVec_mul_versor_eq_reverse {f t : G3} (hf : IsVector f) (ht : IsVector t)
+    (hfn : magnitude f ≠ 0) (htn : magnitude t ≠ 0) :
+    mul (mul (normalizeVec f) (normalizeVec t)) (versorFromVectors f t)
+      = reverse (versorFromVectors f t) := by
+  rw [GacalcProofs.G3.mul_assoc, normalizeVec_to_mul_versor_eq_bisector ht htn,
+      normalizeVec, GacalcProofs.G3.smul_mul, vec_mul_bisector_eq hf ht,
+      GacalcProofs.G3.smul_smul, one_div_mul_cancel hfn, GacalcProofs.G3.one_smul]
 
 set_option maxHeartbeats 8000000 in
 set_option maxRecDepth 8000 in
@@ -310,12 +286,15 @@ set_option maxRecDepth 8000 in
     `f∧t` plane). The scalar part `|f|*|t|*1` of `R` commutes trivially; the bivector part `t∧f`
     anticommutes with the in-plane `P` — so the identity has NO `√` (both sides carry the same
     `|f|*|t|*P` term, which cancels), reducing to a rational core (`field_simp; ring`). -/
-theorem versor_mul_project_eq_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
-    (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
-    mul (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
-        (project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-      = mul (project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-            (reverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))) := by
+theorem versor_mul_project_eq {f t v : G3} (hf : IsVector f) (ht : IsVector t) (hv : IsVector v)
+    (hn : normSq (wedge f t) ≠ 0) :
+    mul (versorFromVectors f t)
+        (project_onto (wedge f t) v)
+      = mul (project_onto (wedge f t) v)
+            (reverse (versorFromVectors f t)) := by
+  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
+  obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
+  obtain ⟨c1, c2, c3, rfl⟩ := exists_vec hv
   rw [wedge_vec_eq_biv] at hn ⊢
   have hd := normSq_biv (a1 * b2 - a2 * b1) (a1 * b3 - a3 * b1) (a2 * b3 - a3 * b2)
   rw [hd] at hn
@@ -329,12 +308,15 @@ set_option maxRecDepth 8000 in
     `Rⱼ = reject_{f∧t} v` (⊥ the plane). The scalar part of `R` commutes trivially; the bivector part
     `t∧f` commutes with the normal `Rⱼ` (a vector ⊥ the plane commutes with the plane bivector) — again
     `√`-free (`field_simp; ring`). -/
-theorem versor_mul_reject_comm_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
-    (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
-    mul (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
-        (reject (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-      = mul (reject (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-            (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) := by
+theorem versor_mul_reject_comm {f t v : G3} (hf : IsVector f) (ht : IsVector t) (hv : IsVector v)
+    (hn : normSq (wedge f t) ≠ 0) :
+    mul (versorFromVectors f t)
+        (reject (wedge f t) v)
+      = mul (reject (wedge f t) v)
+            (versorFromVectors f t) := by
+  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
+  obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
+  obtain ⟨c1, c2, c3, rfl⟩ := exists_vec hv
   rw [wedge_vec_eq_biv] at hn ⊢
   have hd := normSq_biv (a1 * b2 - a2 * b1) (a1 * b3 - a3 * b1) (a2 * b3 - a3 * b2)
   rw [hd] at hn
@@ -342,84 +324,55 @@ theorem versor_mul_reject_comm_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
     bivector, zero]
   ext <;> field_simp [hn] <;> ring
 
+/-- **`f̂ t̂ = R̃*R⁻¹`:** the one-sided unit-vector product equals the reverse-times-inverse of the
+    versor, from `f̂ t̂ R = R̃` and `R*R⁻¹ = 1`. -/
+theorem fhat_that_eq_reverse_mul_inverse {f t : G3} (hf : IsVector f) (ht : IsVector t)
+    (hfn : normSq f ≠ 0) (htn : normSq t ≠ 0) (hr : normSq (versorFromVectors f t) ≠ 0) :
+    mul (normalizeVec f) (normalizeVec t)
+      = mul (reverse (versorFromVectors f t)) (inverse (versorFromVectors f t)) := by
+  have hA := normalizeVec_mul_versor_eq_reverse hf ht (magnitude_ne_zero_of_normSq_ne_zero hfn)
+    (magnitude_ne_zero_of_normSq_ne_zero htn)
+  calc mul (normalizeVec f) (normalizeVec t)
+      = mul (mul (normalizeVec f) (normalizeVec t))
+            (mul (versorFromVectors f t) (inverse (versorFromVectors f t))) := by
+          rw [mul_inverse_self_of_isEvenVersor (isEvenVersor_versorFromVectors hf ht) hr,
+            GacalcProofs.G3.mul_one]
+    _ = mul (mul (mul (normalizeVec f) (normalizeVec t)) (versorFromVectors f t))
+            (inverse (versorFromVectors f t)) := (GacalcProofs.G3.mul_assoc _ _ _).symm
+    _ = mul (reverse (versorFromVectors f t)) (inverse (versorFromVectors f t)) := by rw [hA]
+
 /-- **Route-equivalence (route P = route V):** the projection-formula rotation equals the versor
-    sandwich, `projRotation f t v = sandwich (versorFromVectors f t) v`. Needs `|f|,|t| ≠ 0`, a
-    nondegenerate plane (`|f∧t|² ≠ 0`) and a nondegenerate versor (`|R|² ≠ 0`, i.e. `f`, `t` not
-    antiparallel). Structural: split `v = project + reject`, send the in-plane part through
-    `R*P*R⁻¹ = P (R̃*R⁻¹) = P f̂ t̂` (anticommutation + `f̂ t̂ = R̃*R⁻¹`) and fix the ⊥ part
+    sandwich, `projRotation f t v = sandwich (versorFromVectors f t) v`, for nonzero vectors `f`, `t`, a
+    nondegenerate plane (`|f∧t|² ≠ 0`), a nondegenerate versor (`|R|² ≠ 0`, i.e. `f`, `t` not
+    antiparallel) and any vector `v`. Structural: split `v = project + reject`, send the in-plane part
+    through `R*P*R⁻¹ = P (R̃*R⁻¹) = P f̂ t̂` (anticommutation + `f̂ t̂ = R̃*R⁻¹`) and fix the ⊥ part
     `R Rⱼ R⁻¹ = Rⱼ` (commutation). This is the projection-formula sibling of `sandwich_carries_from_to`
     (route V), confirming the Python `transforms.projection_rotation` docstring's "both agree." -/
-theorem projRotation_eq_sandwich_coord (a1 a2 a3 b1 b2 b3 c1 c2 c3 : ℝ)
-    (hf : normSq (vec a1 a2 a3) ≠ 0) (ht : normSq (vec b1 b2 b3) ≠ 0)
-    (hn : normSq (wedge (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0)
-    (hr : normSq (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) ≠ 0) :
-    projRotation (vec a1 a2 a3) (vec b1 b2 b3) (vec c1 c2 c3)
-      = sandwich (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3) := by
-  have hmf : magnitude (vec a1 a2 a3) ≠ 0 := by
-    have h0 : (0 : ℝ) ≤ normSq (vec a1 a2 a3) := by rw [normSq_vec]; positivity
-    simp only [magnitude]; exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne h0 (Ne.symm hf))
-  have hmt : magnitude (vec b1 b2 b3) ≠ 0 := by
-    have h0 : (0 : ℝ) ≤ normSq (vec b1 b2 b3) := by rw [normSq_vec]; positivity
-    simp only [magnitude]; exact Real.sqrt_ne_zero'.mpr (lt_of_le_of_ne h0 (Ne.symm ht))
-  -- `f̂ t̂ = R̃*R⁻¹`, from `f̂ t̂ R = R̃` and `R*R⁻¹ = 1`.
-  have hAt : mul (normalizeVec (vec a1 a2 a3)) (normalizeVec (vec b1 b2 b3))
-      = mul (reverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)))
-            (inverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))) := by
-    have hA := normalizeVec_mul_versor_eq_reverse_coord a1 a2 a3 b1 b2 b3 hmf hmt
-    calc mul (normalizeVec (vec a1 a2 a3)) (normalizeVec (vec b1 b2 b3))
-        = mul (mul (normalizeVec (vec a1 a2 a3)) (normalizeVec (vec b1 b2 b3)))
-              (mul (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
-                   (inverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)))) := by
-            rw [mul_inverse_self_of_isEvenVersor
-              (isEvenVersor_versorFromVectors (isVector_vec a1 a2 a3) (isVector_vec b1 b2 b3)) hr, GacalcProofs.G3.mul_one]
-      _ = mul (mul (mul (normalizeVec (vec a1 a2 a3)) (normalizeVec (vec b1 b2 b3)))
-                   (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)))
-              (inverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))) :=
-            (GacalcProofs.G3.mul_assoc _ _ _).symm
-      _ = mul (reverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)))
-              (inverse (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))) := by rw [hA]
-  -- In-plane: `sandwich R P = P f̂ t̂`.
-  have hI : sandwich (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
-                     (project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-      = mul (mul (project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-                 (normalizeVec (vec a1 a2 a3)))
-            (normalizeVec (vec b1 b2 b3)) := by
-    symm
-    rw [GacalcProofs.G3.mul_assoc, hAt, ← GacalcProofs.G3.mul_assoc,
-        ← versor_mul_project_eq_coord a1 a2 a3 b1 b2 b3 c1 c2 c3 hn]
-    simp only [sandwich]
-  -- Perpendicular: `sandwich R Rⱼ = Rⱼ`.
-  have hII : sandwich (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
-                      (reject (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-      = reject (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3) := by
-    simp only [sandwich]
-    rw [versor_mul_reject_comm_coord a1 a2 a3 b1 b2 b3 c1 c2 c3 hn, GacalcProofs.G3.mul_assoc,
-        mul_inverse_self_of_isEvenVersor
-              (isEvenVersor_versorFromVectors (isVector_vec a1 a2 a3) (isVector_vec b1 b2 b3)) hr, GacalcProofs.G3.mul_one]
-  -- `project + reject = v`, converting the plane wedge to its bivector literal.
-  have hw := wedge_vec_eq_biv a1 a2 a3 b1 b2 b3
-  have hn' : normSq (bivector (a1 * b2 - a2 * b1) (a1 * b3 - a3 * b1) (a2 * b3 - a3 * b2)) ≠ 0 := by
-    rwa [hw] at hn
-  have hsplit : add (project_onto (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-                    (reject (wedge (vec a1 a2 a3) (vec b1 b2 b3)) (vec c1 c2 c3))
-      = vec c1 c2 c3 := by
-    rw [hw]; exact project_add_reject_coord c1 c2 c3 _ _ _ hn'
-  rw [projRotation, ← hI, ← hII, ← sandwich_add, hsplit]
-
-/-- **Route-equivalence** (object form): `projRotation f t v = sandwich (versorFromVectors f t) v`, for
-    nonzero vectors `f`, `t`, a nondegenerate plane and a nondegenerate versor, and any vector `v`.
-    Thin bridge over the (delicate, √-structural) `_coord` capstone. -/
 theorem projRotation_eq_sandwich {f t v : G3} (hf : IsVector f) (ht : IsVector t) (hv : IsVector v)
     (hfn : normSq f ≠ 0) (htn : normSq t ≠ 0) (hpn : normSq (wedge f t) ≠ 0)
     (hrn : normSq (versorFromVectors f t) ≠ 0) :
     projRotation f t v = sandwich (versorFromVectors f t) v := by
-  have h := projRotation_eq_sandwich_coord f.c1 f.c2 f.c3 t.c1 t.c2 t.c3 v.c1 v.c2 v.c3
-    (by rw [← eq_vec_of_isVector hf]; exact hfn)
-    (by rw [← eq_vec_of_isVector ht]; exact htn)
-    (by rw [← eq_vec_of_isVector hf, ← eq_vec_of_isVector ht]; exact hpn)
-    (by rw [← eq_vec_of_isVector hf, ← eq_vec_of_isVector ht]; exact hrn)
-  rwa [← eq_vec_of_isVector hf, ← eq_vec_of_isVector ht, ← eq_vec_of_isVector hv] at h
-
-/-! ### Object-form wrappers for the scaffold lemmas (statements over vector objects) -/
+  have hAt := fhat_that_eq_reverse_mul_inverse hf ht hfn htn hrn
+  -- In-plane: `sandwich R P = P f̂ t̂`.
+  have hI : sandwich (versorFromVectors f t) (project_onto (wedge f t) v)
+      = mul (mul (project_onto (wedge f t) v) (normalizeVec f)) (normalizeVec t) := by
+    symm
+    rw [GacalcProofs.G3.mul_assoc, hAt, ← GacalcProofs.G3.mul_assoc,
+        ← versor_mul_project_eq hf ht hv hpn]
+    simp only [sandwich]
+  -- Perpendicular: `sandwich R Rⱼ = Rⱼ`.
+  have hII : sandwich (versorFromVectors f t) (reject (wedge f t) v) = reject (wedge f t) v := by
+    simp only [sandwich]
+    rw [versor_mul_reject_comm hf ht hv hpn, GacalcProofs.G3.mul_assoc,
+        mul_inverse_self_of_isEvenVersor (isEvenVersor_versorFromVectors hf ht) hrn,
+        GacalcProofs.G3.mul_one]
+  -- `project + reject = v`, converting the plane wedge to its bivector literal.
+  have hsplit : add (project_onto (wedge f t) v) (reject (wedge f t) v) = v := by
+    obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
+    obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
+    obtain ⟨c1, c2, c3, rfl⟩ := exists_vec hv
+    rw [wedge_vec_eq_biv]
+    exact project_add_reject_coord c1 c2 c3 _ _ _ (by rwa [wedge_vec_eq_biv] at hpn)
+  rw [projRotation, ← hI, ← hII, ← sandwich_add, hsplit]
 
 end GacalcProofs.G3
