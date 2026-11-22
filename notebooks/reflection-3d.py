@@ -111,10 +111,7 @@ across_a: Vector = (projection_a - rejection_a).simplified()
 across_a
 
 # %% [markdown]
-# gacalc's `reflected_across(a)` gives the same; their difference:
-
-# %%
-show_difference(v.reflected_across(a), across_a)
+# gacalc's `reflected_across(a)` is defined as this projection minus this rejection.
 
 # %% [markdown]
 # As in the plane, it is also one product,
@@ -201,10 +198,7 @@ mirror: Vector = (projection_plane - rejection_plane).simplified()
 mirror
 
 # %% [markdown]
-# gacalc's `reflected_across(B)` gives the same; their difference:
-
-# %%
-show_difference(v.reflected_across(B), mirror)
+# gacalc's `reflected_across(B)` is defined as this projection minus this rejection.
 
 # %% [markdown]
 # Values for $\vec{\mathbf{p}}$ and $\vec{\mathbf{q}}$, so the plane can be drawn: here

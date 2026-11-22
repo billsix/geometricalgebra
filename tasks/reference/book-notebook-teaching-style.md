@@ -95,6 +95,14 @@ this standard; see "History of the model" below.) What they do, as rules:
     after cells that already showed both sides, `show_difference` (`src/gacalc/nbdisplay.py`): every
     cancelling pair is numbered alike under an `\underbrace`. A line too long to read term by term
     (`nbdisplay.LONGEST_CANCELLATION_LINE`) shows only what the difference simplifies to.
+    **Four kinds of check are not shown**, because the display adds nothing a reader can learn
+    from: an equality true by definition (the two sides are one computation, or one names the
+    other), an inverse's round trip `f.inverse(f(x))` against `x` (kept only where the notebook
+    is teaching that inverse), a repeat of a check an earlier cell or chapter already made, and
+    a property such as linearity or length-preservation proved again for each new way of writing
+    the same rotation. State the claim in a sentence instead. A check stays when it is the
+    page's result, ties a hand construction to gacalc's own method for the first time, or has a
+    Lean twin (William Emerison Six <billsix@gmail.com>, 2026-11-22).
 15. **Zero developer noise**: no `pyright: ignore` trailers, no typing workarounds in sight, short
     cells, mostly one expression. A cell's bare last expression needs no comment: `pyrightconfig.json`
     turns `reportUnusedExpression` off for `notebooks/`.

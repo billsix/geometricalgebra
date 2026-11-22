@@ -400,10 +400,7 @@ A.r_vector_part(1)
 A.r_vector_part(2)
 
 # %% [markdown]
-# The parts add back up to $A$; the difference:
-
-# %%
-show_difference(A.r_vector_part(0) + A.r_vector_part(1) + A.r_vector_part(2), A)
+# The parts add back up to $A$.
 
 # %% [markdown]
 # ## How the blades resolve when we plot

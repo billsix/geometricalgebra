@@ -351,15 +351,9 @@ sym_vec2_1.wedge(sym_vec2_2)
 
 # %% [markdown]
 # Wedging two vectors just to *name the plane they span* is common enough to have
-# helpers: `bivector_from_vectors(a, b)` is exactly
-# $\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$, and `i(a, b)` is that plane's *unit*
-# bivector ($i * i = -1$), the same as $\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$
-# divided by its size. The difference of the two ways is $0$:
-
-# %%
-show_difference(
-    MultiVector.i(sym_vec2_1, sym_vec2_2), (sym_vec2_1 ^ sym_vec2_2).normalize()
-)
+# helpers: `bivector_from_vectors(a, b)` is exactly $\vec{\mathbf{a}} \wedge
+# \vec{\mathbf{b}}$, and `i(a, b)` is that plane's *unit* bivector ($i * i = -1$), the
+# same as $\vec{\mathbf{a}} \wedge \vec{\mathbf{b}}$ divided by its size.
 
 # %% [markdown]
 # Wedges in space, one coordinate plane at a time

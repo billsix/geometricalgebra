@@ -629,7 +629,7 @@ with live ePiX, and shows both sides of each check before their difference (Will
 <billsix@gmail.com>, 2026-11-17). That difference is shown with `show_difference(left, right)`, never a
 bare `simplify(left - right)`: every pair of cancelling terms carries the same number under an
 `\underbrace`, so a reader can match them, or cross them off on a printout; a page's hand-written
-cancellation (`.rst`) is marked the same way (William Emerison Six <billsix@gmail.com>, 2026-11-20). Every construction uses only results taught before it, and rotations
+cancellation (`.rst`) is marked the same way (William Emerison Six <billsix@gmail.com>, 2026-11-20). Not every equality gets that display: one true by definition, an inverse's round trip, a repeat of an earlier check, and a property restated for each new way of writing the same rotation are stated in a sentence instead (`tasks/reference/book-notebook-teaching-style.md`, item 14). Every construction uses only results taught before it, and rotations
 come from the ones the book built (`Vector.rotate`, `standardposition.rotation_from_to`): the rule, the
 teaching order and the dependency graph on the book's first page are in
 `tasks/reference/teaching-order-and-dependencies.md`. Detail: `tasks/reference/book-outline.md`

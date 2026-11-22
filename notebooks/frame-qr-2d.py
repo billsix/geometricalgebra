@@ -820,10 +820,7 @@ show_difference(g.inverse(y), x)
 g(x).simplified()
 
 # %% [markdown]
-# Its difference from $\vec{\mathbf{y}}$:
-
-# %%
-show_difference(g(x), y)
+# That is $\vec{\mathbf{y}}$ again.
 
 # %% [markdown]
 # The recovered $\vec{\mathbf{x}}$ (black) is the point $f$ sends to $\vec{\mathbf{y}}$:

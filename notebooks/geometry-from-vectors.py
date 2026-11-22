@@ -118,10 +118,7 @@ segment_point
 at_values(segment_point, [(t, 0)])
 
 # %% [markdown]
-# Its difference from $\vec{\mathbf{a}}$:
-
-# %%
-show_difference(at_values(segment_point, [(t, 0)]), a)
+# That is $\vec{\mathbf{a}}$, where the segment starts.
 
 # %% [markdown]
 # At $t = 1$:
@@ -130,10 +127,7 @@ show_difference(at_values(segment_point, [(t, 0)]), a)
 at_values(segment_point, [(t, 1)])
 
 # %% [markdown]
-# Its difference from $\vec{\mathbf{b}}$:
-
-# %%
-show_difference(at_values(segment_point, [(t, 1)]), b)
+# That is $\vec{\mathbf{b}}$, where the segment ends.
 
 # %% [markdown]
 # Every $t$ from $0$ to $1$ gives a point between them: the segment.

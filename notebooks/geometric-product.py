@@ -216,10 +216,7 @@ b
 (a * R + b * R).simplified()
 
 # %% [markdown]
-# Their difference:
-
-# %%
-show_difference((a + b) * R, a * R + b * R)
+# Multiplying a sum by $R$ is the same as multiplying each part by it.
 
 # %% [markdown]
 # So a rotation is fixed by what it does to the two basis vectors:

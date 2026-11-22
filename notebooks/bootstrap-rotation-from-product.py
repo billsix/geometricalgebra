@@ -283,10 +283,7 @@ show_difference(one_sided, by_projection)
 rotation_by_projection(b, a, v)
 
 # %% [markdown]
-# Their difference:
-
-# %%
-show_difference(unit_product * v, rotation_by_projection(b, a, v))
+# It is the same rotation.
 
 # %% [markdown]
 # ### $R$ turns $\vec{\mathbf{a}}$ onto the bisector
