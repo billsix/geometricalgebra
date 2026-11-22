@@ -24,7 +24,7 @@ projection and rejection of :doc:`proof-projection`. The two routes agree, and s
 says what the product of two vectors *means*.
 
 Where :math:`\vec{\mathbf{a}}` lands
----------------------------
+------------------------------------
 
 In :doc:`proof-projection` we rotated the whole picture until :math:`\vec{\mathbf{b}}` lay flat on the
 x-axis, and :math:`\vec{\mathbf{a}}` rode along to a new spot. Call that spot :math:`(x, y)`.

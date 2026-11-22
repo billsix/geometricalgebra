@@ -72,7 +72,7 @@ carrying :math:`\vec{\mathbf{a}}` along with it:
    :alt: a and b rotated so b lies on the x-axis, with the faint originals shown dashed
 
 Rotating :math:`\vec{\mathbf{b}}` onto the x-axis
-----------------------------------------
+-------------------------------------------------
 
 We already built this move, in :doc:`proof-rotate-from-a-to-b` — rotating a vector onto the
 x-axis is its **step 1**. Applied to :math:`\vec{\mathbf{b}}`, it is the rotation
