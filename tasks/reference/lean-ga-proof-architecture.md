@@ -853,6 +853,11 @@ becomes syntactically `a = a`. Ordering matters — a lemma must be defined abov
 - Reviewing the corpus: three parallel read-only passes (commit-by-commit statement audit, Python→Lean
   coverage with `tools/derive_lean_algebra.py` parity re-derivation, goals/status from the docs) plus a
   build experiment for any "needed" claim worked well; record: `tasks/review/2026/10/04/lean-proof-corpus-review.md`.
+- The latest read of the whole corpus against the book and the Python is
+  `tasks/review/2026/11/22/lean-proofs-fit-review.md` (three readers, one per third of the files;
+  nothing compiled). Its findings are worked through `tasks/lean-proofs-fit-cleanup.md`. Until that
+  task's last phase runs, the Inventory and Coverage map below are behind the files: they lack
+  `GeometryObjects2D` and `Rotor`, and list `rotate_in_xy_plane`, which no longer exists.
 
 ## Program decisions
 

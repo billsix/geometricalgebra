@@ -138,6 +138,9 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   author has a reproducible Emacs environment; do **not** read, edit, reformat, gitignore, or
   factor it into any analysis. Tooling that walks the repo (e.g. `format.sh`) is scoped away
   from it (see Dev workflow).
+- **Search with `git grep`, never `grep -r` from the repo root.** A recursive grep walks
+  `proofs/.lake` (the fetched Mathlib, 7.7 GB, gitignored) and the vendored Emacs tree, and runs
+  for minutes; `git grep` reads tracked files only.
 
 **Layering (acyclic invariant).** `base.py` may import a *leaf* — a module that imports nothing
 internal, is representation-agnostic, and is cheap to import — but nothing at or above its layer;
