@@ -3,6 +3,7 @@ import GacalcProofs.G3
 import GacalcProofs.Sandwich
 import GacalcProofs.ProjectionRotation2D
 import GacalcProofs.ProjectionRotation3D
+import GacalcProofs.Trig
 import GacalcProofs.Rotation2D
 
 /-! # Rotors from vectors: the versor chain, re-done with the reverse sandwich
@@ -119,23 +120,30 @@ theorem rotorSandwich_rotorFromVectors_carries_from_to {a b : G2} (ha : IsVector
 
 /-! ### Lagrange: the from-vectors versor's magnitude in closed form -/
 
-/-- **`|versorFromVectors a b|² = 2*|a|*|b|*(|a|*|b| + a·b)`** — by Lagrange's identity (reference: `Lagrange.lean`)
-    `(a·b)² + |a∧b|² = |a|²*|b|²` (`Trig.lagrange_property`, a `ring` identity in coordinates): the
-    versor is `(|a|*|b| + a·b) + b∧a`, so its squared magnitude is `(|a|*|b| + a·b)² + |a∧b|²`, and
-    Lagrange collapses `(a·b)² + |a∧b|²` to `|a|²*|b|²`. Hence the versor vanishes exactly when `a` and
+/-- **The versor's squared magnitude as a sum of two squares:** the versor is the number
+    `|a|*|b| + a·b` plus the bivector `b∧a`, so `|versorFromVectors a b|² = (|a|*|b| + a·b)² + |a∧b|²`. -/
+theorem normSq_versorFromVectors_eq {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    normSq (versorFromVectors a b)
+      = (magnitude a * magnitude b + dot a b) ^ 2 + normSq (wedge a b) := by
+  obtain ⟨ha_s, ha_c12⟩ := ha
+  obtain ⟨hb_s, hb_c12⟩ := hb
+  simp only [normSq, versorFromVectors, add, mul, smul, one, reverse, dot, wedge, ha_s, ha_c12, hb_s,
+    hb_c12]
+  ring
+
+/-- **`|versorFromVectors a b|² = 2*|a|*|b|*(|a|*|b| + a·b)`** — by Lagrange's identity
+    `(a·b)² + |a∧b|² = |a|²*|b|²` (`Trig.lagrange_property`): the versor is `(|a|*|b| + a·b) + b∧a`, so
+    its squared magnitude is `(|a|*|b| + a·b)² + |a∧b|²` (`normSq_versorFromVectors_eq`), and Lagrange
+    collapses `(a·b)² + |a∧b|²` to `|a|²*|b|²`. Hence the versor vanishes exactly when `a` and
     `b` are antiparallel (`a·b = −|a|*|b|`) or one is zero — the normalization is well-defined otherwise.
     (Normalizing the versor in Python needs exactly this identity.) -/
 theorem normSq_versorFromVectors {a b : G2} (ha : IsVector a) (hb : IsVector b) :
     normSq (versorFromVectors a b)
       = 2 * magnitude a * magnitude b * (magnitude a * magnitude b + dot a b) := by
-  obtain ⟨ha_s, ha_c12⟩ := ha
-  obtain ⟨hb_s, hb_c12⟩ := hb
-  have hA : magnitude a ^ 2 = a.c1 ^ 2 + a.c2 ^ 2 := by
-    rw [magnitude_sq_eq_normSq, normSq_eq_sum_sq, ha_s, ha_c12]; ring
-  have hB : magnitude b ^ 2 = b.c1 ^ 2 + b.c2 ^ 2 := by
-    rw [magnitude_sq_eq_normSq, normSq_eq_sum_sq, hb_s, hb_c12]; ring
-  simp only [normSq, versorFromVectors, add, mul, smul, one, reverse, dot, ha_s, ha_c12, hb_s, hb_c12]
-  linear_combination (-(magnitude b ^ 2)) * hA + (-(a.c1 ^ 2 + a.c2 ^ 2)) * hB
+  have hl := lagrange_property ha hb
+  rw [← magnitude_sq_eq_normSq a, ← magnitude_sq_eq_normSq b] at hl
+  rw [normSq_versorFromVectors_eq ha hb]
+  linear_combination hl
 
 /-- The from-vectors versor is nonzero when `a`, `b` are nonzero and not antiparallel — the geometric
     reading of the `normSq (versorFromVectors a b) ≠ 0` guard carried by the whole chain. -/
@@ -244,23 +252,30 @@ theorem rotorSandwich_rotorFromVectors_carries_from_to {a b : G3} (ha : IsVector
 
 /-! ### Lagrange: the from-vectors versor's magnitude in closed form -/
 
-/-- **`|versorFromVectors a b|² = 2*|a|*|b|*(|a|*|b| + a·b)`** — by Lagrange's identity (reference: `Lagrange.lean`)
-    `(a·b)² + |a∧b|² = |a|²*|b|²` (`Trig.lagrange_property`, a `ring` identity in coordinates): the
-    versor is `(|a|*|b| + a·b) + b∧a`, so its squared magnitude is `(|a|*|b| + a·b)² + |a∧b|²`, and
-    Lagrange collapses `(a·b)² + |a∧b|²` to `|a|²*|b|²`. Hence the versor vanishes exactly when `a` and
+/-- **The versor's squared magnitude as a sum of two squares:** the versor is the number
+    `|a|*|b| + a·b` plus the bivector `b∧a`, so `|versorFromVectors a b|² = (|a|*|b| + a·b)² + |a∧b|²`. -/
+theorem normSq_versorFromVectors_eq {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    normSq (versorFromVectors a b)
+      = (magnitude a * magnitude b + dot a b) ^ 2 + normSq (wedge a b) := by
+  obtain ⟨ha_s, ha_c12, ha_c13, ha_c23, ha_c123⟩ := ha
+  obtain ⟨hb_s, hb_c12, hb_c13, hb_c23, hb_c123⟩ := hb
+  simp only [normSq, versorFromVectors, add, mul, smul, one, reverse, dot, wedge, ha_s, ha_c12, ha_c13,
+    ha_c23, ha_c123, hb_s, hb_c12, hb_c13, hb_c23, hb_c123]
+  ring
+
+/-- **`|versorFromVectors a b|² = 2*|a|*|b|*(|a|*|b| + a·b)`** — by Lagrange's identity
+    `(a·b)² + |a∧b|² = |a|²*|b|²` (`Trig.lagrange_property`): the versor is `(|a|*|b| + a·b) + b∧a`, so
+    its squared magnitude is `(|a|*|b| + a·b)² + |a∧b|²` (`normSq_versorFromVectors_eq`), and Lagrange
+    collapses `(a·b)² + |a∧b|²` to `|a|²*|b|²`. Hence the versor vanishes exactly when `a` and
     `b` are antiparallel (`a·b = −|a|*|b|`) or one is zero — the normalization is well-defined otherwise.
     (Normalizing the versor in Python needs exactly this identity.) -/
 theorem normSq_versorFromVectors {a b : G3} (ha : IsVector a) (hb : IsVector b) :
     normSq (versorFromVectors a b)
       = 2 * magnitude a * magnitude b * (magnitude a * magnitude b + dot a b) := by
-  obtain ⟨ha_s, ha_c12, ha_c13, ha_c23, ha_c123⟩ := ha
-  obtain ⟨hb_s, hb_c12, hb_c13, hb_c23, hb_c123⟩ := hb
-  have hA : magnitude a ^ 2 = a.c1 ^ 2 + a.c2 ^ 2 + a.c3 ^ 2 := by
-    rw [magnitude_sq_eq_normSq, normSq_eq_sum_sq, ha_s, ha_c12, ha_c13, ha_c23, ha_c123]; ring
-  have hB : magnitude b ^ 2 = b.c1 ^ 2 + b.c2 ^ 2 + b.c3 ^ 2 := by
-    rw [magnitude_sq_eq_normSq, normSq_eq_sum_sq, hb_s, hb_c12, hb_c13, hb_c23, hb_c123]; ring
-  simp only [normSq, versorFromVectors, add, mul, smul, one, reverse, dot, ha_s, ha_c12, ha_c13, ha_c23, ha_c123, hb_s, hb_c12, hb_c13, hb_c23, hb_c123]
-  linear_combination (-(magnitude b ^ 2)) * hA + (-(a.c1 ^ 2 + a.c2 ^ 2 + a.c3 ^ 2)) * hB
+  have hl := lagrange_property ha hb
+  rw [← magnitude_sq_eq_normSq a, ← magnitude_sq_eq_normSq b] at hl
+  rw [normSq_versorFromVectors_eq ha hb]
+  linear_combination hl
 
 /-- The from-vectors versor is nonzero when `a`, `b` are nonzero and not antiparallel — the geometric
     reading of the `normSq (versorFromVectors a b) ≠ 0` guard carried by the whole chain. -/

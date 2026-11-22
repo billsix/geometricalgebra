@@ -207,7 +207,7 @@ theorem sandwich_carries_from_to {a b : G2} (ha : IsVector a) (hb : IsVector b)
     (hbn : magnitude b ≠ 0) (hr : normSq (versorFromVectors a b) ≠ 0) :
     sandwich (versorFromVectors a b) a = smul (magnitude a / magnitude b) b := by
   have hbis : bisector a b = smul (1 / magnitude b) (mul b (versorFromVectors a b)) := by
-    rw [from_mul_versor_eq_bisector ha hb, GacalcProofs.G2.smul_smul, one_div_mul_cancel hbn,
+    rw [from_mul_versor_eq_bisector hb, GacalcProofs.G2.smul_smul, one_div_mul_cancel hbn,
         GacalcProofs.G2.one_smul]
   have hkey : mul (bisector a b) (inverse (versorFromVectors a b)) = smul (1 / magnitude b) b := by
     rw [hbis, GacalcProofs.G2.smul_mul, inverse, GacalcProofs.G2.mul_smul,
@@ -216,7 +216,7 @@ theorem sandwich_carries_from_to {a b : G2} (ha : IsVector a) (hb : IsVector b)
         GacalcProofs.G2.mul_one, GacalcProofs.G2.smul_smul, GacalcProofs.G2.smul_smul]
     congr 1
     field_simp
-  rw [sandwich, versor_mul_from_eq_bisector ha hb, GacalcProofs.G2.smul_mul, hkey,
+  rw [sandwich, versor_mul_from_eq_bisector ha, GacalcProofs.G2.smul_mul, hkey,
       GacalcProofs.G2.smul_smul, mul_one_div]
 
 /-- **The reverse-sandwich is an outermorphism up to `|R|²`** (2D): `(R*u*R̃) ∧ (R*v*R̃) = |R|²*R*(u∧v)*R̃`.
@@ -401,7 +401,7 @@ theorem sandwich_carries_from_to {a b : G3} (ha : IsVector a) (hb : IsVector b)
     sandwich (versorFromVectors a b) a = smul (magnitude a / magnitude b) b := by
   -- The bisector expressed via `b R` (from `b R = |b|*h`, undone with |b| ≠ 0).
   have hbis : bisector a b = smul (1 / magnitude b) (mul b (versorFromVectors a b)) := by
-    rw [from_mul_versor_eq_bisector ha hb, GacalcProofs.G3.smul_smul, one_div_mul_cancel hbn,
+    rw [from_mul_versor_eq_bisector hb, GacalcProofs.G3.smul_smul, one_div_mul_cancel hbn,
         GacalcProofs.G3.one_smul]
   -- The heart: h R⁻¹ = (1/|b|)*b, via associativity + R R̃ = |R|² + mul_one.
   have hkey : mul (bisector a b) (inverse (versorFromVectors a b)) = smul (1 / magnitude b) b := by
@@ -412,7 +412,7 @@ theorem sandwich_carries_from_to {a b : G3} (ha : IsVector a) (hb : IsVector b)
     congr 1
     field_simp
   -- Assemble: sandwich R a = |a|*(h R⁻¹) = |a|*(1/|b|)*b = (|a|/|b|)*b.
-  rw [sandwich, versor_mul_from_eq_bisector ha hb, GacalcProofs.G3.smul_mul, hkey,
+  rw [sandwich, versor_mul_from_eq_bisector ha, GacalcProofs.G3.smul_mul, hkey,
       GacalcProofs.G3.smul_smul, mul_one_div]
 
 /-- `normSq` of a scalar multiple: `|k•a|² = k²|a|²`. -/
@@ -611,44 +611,44 @@ theorem versorFromVectors_eq_evenVersor (a1 a2 a3 b1 b2 b3 : ℝ) :
           (b1 * a2 - b2 * a1) (b1 * a3 - b3 * a1) (b2 * a3 - b3 * a2) := by
   simp only [versorFromVectors, evenVersor, mul, add, smul, one, vec]; ext <;> ring
 
-/-- **A rotation fixes its own plane bivector** (orientation preserved): for an even versor
-    `R = s + B` with `B = p*e₁₂ + q*e₁₃ + t*e₂₃`, `sandwich R B = B` (B commutes with R, so it rides
-    through `R*R⁻¹ = 1`). This is the "rotates the oriented angle correctly / it's a rotation, not a
-    reflection" content: the plane of rotation is kept, with its orientation. -/
-theorem sandwich_fixes_own_bivector_coord (s p q t : ℝ) (hr : normSq (evenVersor s p q t) ≠ 0) :
-    sandwich (evenVersor s p q t) (bivector p q t) = bivector p q t := by
-  have hd : normSq (evenVersor s p q t) = s ^ 2 + p ^ 2 + q ^ 2 + t ^ 2 := normSq_evenVersor s p q t
-  rw [hd] at hr
-  simp only [sandwich, inverse, hd]
-  simp only [evenVersor, bivector, zero, mul, reverse, smul]
-  ext <;> field_simp [hr] <;> ring
+/-- **What commutes with a rotation is fixed by it:** if `R x = x R` then `R x R⁻¹ = x`, because `x`
+    rides through `R R⁻¹ = 1`. Needs `|R|² ≠ 0` so the inverse exists. -/
+theorem sandwich_of_commute {R x : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0)
+    (h : mul R x = mul x R) : sandwich R x = x := by
+  rw [sandwich, h, mul_assoc, mul_inverse_self_of_isEvenVersor hR hr, mul_one]
 
-/-- Object form: an even versor fixes its own plane bivector, `sandwich R (grade-2 part of R) =
-    (grade-2 part of R)`, for `|R|² ≠ 0`. -/
+/-- An even versor `R = s + B` commutes with its own plane bivector `B = p*e₁₂ + q*e₁₃ + t*e₂₃`:
+    `R B = s B + B B = B R`. -/
+theorem evenVersor_mul_bivector_comm (s p q t : ℝ) :
+    mul (evenVersor s p q t) (bivector p q t) = mul (bivector p q t) (evenVersor s p q t) := by
+  simp only [evenVersor, bivector, zero, mul]; ext <;> ring
+
+/-- An even versor commutes with the normal `n = t*e₁ − q*e₂ + p*e₃` to its plane (the dual of its
+    plane bivector). -/
+theorem evenVersor_mul_normal_comm (s p q t : ℝ) :
+    mul (evenVersor s p q t) (vec t (-q) p) = mul (vec t (-q) p) (evenVersor s p q t) := by
+  simp only [evenVersor, vec, mul]; ext <;> ring
+
+/-- **A rotation fixes its own plane bivector** (orientation preserved): for an even versor
+    `R = s + B` with `B = p*e₁₂ + q*e₁₃ + t*e₂₃` and `|R|² ≠ 0`, `sandwich R B = B`, because `B`
+    commutes with `R` (`evenVersor_mul_bivector_comm`) and so rides through `R*R⁻¹ = 1`. This is the
+    "rotates the oriented angle correctly / it's a rotation, not a reflection" content: the plane of
+    rotation is kept, with its orientation. -/
 theorem sandwich_fixes_own_bivector {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) :
     sandwich R (bivector R.c12 R.c13 R.c23) = bivector R.c12 R.c13 R.c23 := by
-  have h := sandwich_fixes_own_bivector_coord R.s R.c12 R.c13 R.c23
-    (by rw [← eq_evenVersor_of_isEvenVersor hR]; exact hr)
+  refine sandwich_of_commute hR hr ?_
+  have h := evenVersor_mul_bivector_comm R.s R.c12 R.c13 R.c23
   rwa [← eq_evenVersor_of_isEvenVersor hR] at h
 
 /-- **A rotation fixes the normal to its plane** (perpendicular components unchanged): for an even
-    versor `R = s + (p*e₁₂ + q*e₁₃ + t*e₂₃)`, the vector `n = t*e₁ − q*e₂ + p*e₃` — the dual of the
-    plane bivector, i.e. the axis ⊥ the plane — satisfies `sandwich R n = n` (`n` commutes with `R`,
-    so it rides through `R*R⁻¹ = 1`). The general-plane form of `sandwich_fixes_orthogonal`. -/
-theorem sandwich_fixes_own_normal_coord (s p q t : ℝ) (hr : normSq (evenVersor s p q t) ≠ 0) :
-    sandwich (evenVersor s p q t) (vec t (-q) p) = vec t (-q) p := by
-  have hd : normSq (evenVersor s p q t) = s ^ 2 + p ^ 2 + q ^ 2 + t ^ 2 := normSq_evenVersor s p q t
-  rw [hd] at hr
-  simp only [sandwich, inverse, hd]
-  simp only [evenVersor, mul, reverse, smul, vec]
-  ext <;> field_simp [hr] <;> ring
-
-/-- Object form: an even versor fixes the normal to its plane (the dual of its grade-2 part),
-    for `|R|² ≠ 0`. -/
+    versor `R = s + (p*e₁₂ + q*e₁₃ + t*e₂₃)` with `|R|² ≠ 0`, the vector `n = t*e₁ − q*e₂ + p*e₃` — the
+    dual of the plane bivector, i.e. the axis ⊥ the plane — satisfies `sandwich R n = n`, because `n`
+    commutes with `R` (`evenVersor_mul_normal_comm`). The general-plane form of
+    `sandwich_fixes_orthogonal`. -/
 theorem sandwich_fixes_own_normal {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) :
     sandwich R (vec R.c23 (-R.c13) R.c12) = vec R.c23 (-R.c13) R.c12 := by
-  have h := sandwich_fixes_own_normal_coord R.s R.c12 R.c13 R.c23
-    (by rw [← eq_evenVersor_of_isEvenVersor hR]; exact hr)
+  refine sandwich_of_commute hR hr ?_
+  have h := evenVersor_mul_normal_comm R.s R.c12 R.c13 R.c23
   rwa [← eq_evenVersor_of_isEvenVersor hR] at h
 
 /-! ### Composition: rotations compose by multiplying versors -/

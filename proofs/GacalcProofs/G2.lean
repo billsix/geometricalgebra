@@ -391,18 +391,11 @@ theorem mul_eq_wedge_of_perp {a b : G2} (ha : IsVector a) (hb : IsVector b) (h :
 
 /-- **Orthogonal vectors anticommute:** if `u·v = 0` then `u v = −(v u)` — the 𝒢₂ twin of the 𝒢₃
     `G3.vec_anticomm_perp`. Objects in (two vectors + a perpendicularity hypothesis), object out:
-    the scalar (inner) parts cancel by orthogonality and the bivector parts are already antisymmetric. -/
+    each product is its wedge (`mul_eq_wedge_of_perp`), and the wedge is antisymmetric. -/
 theorem vec_anticomm_perp {u v : G2} (hu : IsVector u) (hv : IsVector v) (h : dot u v = 0) :
     mul u v = neg (mul v u) := by
-  obtain ⟨hus, huc12⟩ := hu
-  obtain ⟨hvs, hvc12⟩ := hv
-  simp only [dot, mul, hus, huc12, hvs, hvc12] at h
-  simp only [mul, neg, hus, huc12, hvs, hvc12]
-  ext
-  · linear_combination 2 * h
-  · ring
-  · ring
-  · ring
+  have hvu : dot v u = 0 := by rw [dot_comm v u]; exact h
+  rw [mul_eq_wedge_of_perp hu hv h, mul_eq_wedge_of_perp hv hu hvu, wedge_antisymm hu hv]
 
 /-- **A vector wedged with a bivector is zero in 𝒢₂**: grade 1 + 2 = 3 exceeds the dimension, so a
     vector has no component outside the pseudoscalar plane — object form over `IsVector`/`IsBivector`. -/

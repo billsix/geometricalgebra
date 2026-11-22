@@ -66,20 +66,26 @@ noncomputable def bisector (fromV toV : G3) : G3 :=
 noncomputable def versorFromVectors (fromV toV : G3) : G3 :=
   add (mul toV fromV) (smul (magnitude fromV * magnitude toV) one)
 
-/-! ### Supporting leaves: `|a|²` on a vector, and `(b*a)*a = |a|²*b` -/
+/-! ### Supporting facts: `|a|²` on a vector, and a vector times itself inside a product -/
 
-/-- `|a|² = a₁²+a₂²+a₃²` for a coordinate vector — the one analytic fact the identity below needs.
-    `magnitude = √normSq`, so this is `normSq_vec` under the square root. -/
+/-- `|a|² = a₁²+a₂²+a₃²` for a coordinate vector — `magnitude = √normSq`, so this is `normSq_vec`
+    under the square root. -/
 theorem magnitude_sq_vec (a1 a2 a3 : ℝ) :
     magnitude (vec a1 a2 a3) ^ 2 = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by
   rw [magnitude, Real.sq_sqrt (by rw [normSq_vec]; positivity), normSq_vec]
 
 /-- **A vector sandwiched by its own square:** `(b a) a = |a|²*b` for vectors `a`, `b`
     (the associativity fact `b(aa) = b|a|²`, since `a a = |a|²`). -/
-theorem vec_mul_mul_self {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+theorem vec_mul_mul_self {a b : G3} (ha : IsVector a) :
     mul (mul b a) a = smul (normSq a) b := by
-  rw [eq_vec_of_isVector ha, eq_vec_of_isVector hb, normSq_vec a.c1 a.c2 a.c3]
-  simp only [mul, vec, smul]; ext <;> ring
+  rw [mul_assoc, mul_vec_self ha]
+  simp only [mul, scalar, smul, zero]; ext <;> ring
+
+/-- **A vector times itself inside a product:** `a (a b) = |a|²*b`, the same associativity fact from
+    the other side. -/
+theorem vec_mul_self_mul {a b : G3} (ha : IsVector a) :
+    mul a (mul a b) = smul (normSq a) b := by
+  rw [← mul_assoc, mul_vec_self ha, scalar_mul]
 
 /-! ### The versor–vector identities: `R*a = |a|*h` and `b*R = |b|*h` -/
 
@@ -88,63 +94,22 @@ theorem vec_mul_mul_self {a b : G3} (ha : IsVector a) (hb : IsVector b) :
 
     The versor built from `a` and `b`, multiplied (geometric product) by the from-vector
     `a`, yields the half-angle bisector vector `h`, scaled by the positive `|a|` (which
-    cancels in the sandwich). Angle-free: the only non-`ring` step is `|a|² = a·a`. -/
-theorem versor_mul_from_eq_bisector_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
-    mul (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3)) (vec a1 a2 a3)
-      = smul (magnitude (vec a1 a2 a3)) (bisector (vec a1 a2 a3) (vec b1 b2 b3)) := by
-  simp only [versorFromVectors, bisector]
-  -- Abstract the two magnitudes to opaque atoms; the only fact needed is `sa² = a·a`.
-  set sa := magnitude (vec a1 a2 a3)
-  set sb := magnitude (vec b1 b2 b3)
-  have hsa : sa ^ 2 = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := magnitude_sq_vec a1 a2 a3
-  clear_value sa sb
-  simp only [mul, add, smul, one, vec]
-  -- The three vector components need `sa² = a·a`; every other component is 0 = 0.
-  ext
-  · ring
-  · linear_combination -b1 * hsa
-  · linear_combination -b2 * hsa
-  · linear_combination -b3 * hsa
-  · ring
-  · ring
-  · ring
-  · ring
-
-/-- Object form of `versor_mul_from_eq_bisector_coord`, for vectors `fromV`, `toV`:
-    `R*from = |from|*h`. -/
-theorem versor_mul_from_eq_bisector {fromV toV : G3} (hf : IsVector fromV) (ht : IsVector toV) :
+    cancels in the sandwich). The reason is the book's: `R a = (b a) a + |a||b| a`, and
+    `(b a) a = |a|² b` because `a a = |a|²`; then `|a|` factors out. -/
+theorem versor_mul_from_eq_bisector {fromV toV : G3} (hf : IsVector fromV) :
     mul (versorFromVectors fromV toV) fromV = smul (magnitude fromV) (bisector fromV toV) := by
-  have h := versor_mul_from_eq_bisector_coord fromV.c1 fromV.c2 fromV.c3 toV.c1 toV.c2 toV.c3
-  rwa [← eq_vec_of_isVector hf, ← eq_vec_of_isVector ht] at h
+  rw [versorFromVectors, add_mul, vec_mul_mul_self hf, smul_mul, one_mul, bisector,
+    ← magnitude_sq_eq_normSq fromV]
+  simp only [smul, add]; ext <;> ring
 
 /-- **Companion identity: the to-vector times the versor is the (scaled) bisector**, `b*R = |b|*h`
     (multiplying `R` on the LEFT by `b`). Symmetric to `versor_mul_from_eq_bisector` (`R*a = |a|*h`).
     Together the pair drives the capstone `R*a*R⁻¹ = (|a|/|b|)*b` (the versor carries `a` to `b`): from
     `R a = |a| h` and `b R = |b| h`, associativity, and `R*R̃ = |R|²`, `R*a*R⁻¹ = (|a|/|b|)*b`. -/
-theorem from_mul_versor_eq_bisector_coord (a1 a2 a3 b1 b2 b3 : ℝ) :
-    mul (vec b1 b2 b3) (versorFromVectors (vec a1 a2 a3) (vec b1 b2 b3))
-      = smul (magnitude (vec b1 b2 b3)) (bisector (vec a1 a2 a3) (vec b1 b2 b3)) := by
-  simp only [versorFromVectors, bisector]
-  set sa := magnitude (vec a1 a2 a3)
-  set sb := magnitude (vec b1 b2 b3)
-  have hsb : sb ^ 2 = b1 ^ 2 + b2 ^ 2 + b3 ^ 2 := magnitude_sq_vec b1 b2 b3
-  clear_value sa sb
-  simp only [mul, add, smul, one, vec]
-  ext
-  · ring
-  · linear_combination -a1 * hsb
-  · linear_combination -a2 * hsb
-  · linear_combination -a3 * hsb
-  · ring
-  · ring
-  · ring
-  · ring
-
-/-- Object form of `from_mul_versor_eq_bisector_coord`, for vectors `fromV`, `toV`:
-    `to*R = |to|*h`. -/
-theorem from_mul_versor_eq_bisector {fromV toV : G3} (hf : IsVector fromV) (ht : IsVector toV) :
+theorem from_mul_versor_eq_bisector {fromV toV : G3} (ht : IsVector toV) :
     mul toV (versorFromVectors fromV toV) = smul (magnitude toV) (bisector fromV toV) := by
-  have h := from_mul_versor_eq_bisector_coord fromV.c1 fromV.c2 fromV.c3 toV.c1 toV.c2 toV.c3
-  rwa [← eq_vec_of_isVector hf, ← eq_vec_of_isVector ht] at h
+  rw [versorFromVectors, mul_add, vec_mul_self_mul ht, mul_smul, mul_one, bisector,
+    ← magnitude_sq_eq_normSq toV]
+  simp only [smul, add]; ext <;> ring
 
 end GacalcProofs.G3

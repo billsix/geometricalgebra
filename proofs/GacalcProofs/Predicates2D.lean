@@ -5,17 +5,18 @@ import GacalcProofs.Versor2D
     The 2D twin of `Predicates3D.lean`. Parallelism is the wedge test: `a ∧ b = 0 ⟺ b = k*a` for a
     nonzero vector `a` (`wedge_eq_zero_iff_parallel`). It states perpendicularity through the named scalar
     product `dot` (⟨A B⟩₀, defined in `Versor2D.lean`) over an arbitrary vector (`IsVector`),
-    rather than by reading a raw coordinate field — the object/named-function form of the
-    coordinate leaf `G2.dual_vec_perp` (`G2.lean`), which stays as the bridge it rests on. -/
+    rather than by reading a raw coordinate field. -/
 namespace GacalcProofs.G2
 
 -- twin: GacalcProofs.G2.dual_perp_dot
 /-- **The dual of a vector is perpendicular to it** (2D): for any vector `v` (`IsVector`), the dot
-    product of its dual with itself is zero, `(v*) · v = 0`. The named-`dot`, object-level form of
-    the coordinate leaf `dual_vec_perp`. -/
+    product of its dual with itself is zero, `(v*) · v = 0`. Proved as the book does: regroup
+    `v (v I⁻¹)` as `(v v) I⁻¹`, and a number times `I⁻¹` has no plain-number part. -/
 theorem dual_perp_dot {v : G2} (hv : IsVector v) : dot (dual v) v = 0 := by
-  obtain ⟨hs, h12⟩ := hv
-  simp only [dot, dual, I_inv, mul, hs, h12]; ring
+  -- the book's proof (`dual.rst`): regroup, a vector times itself is a number, a number times
+  -- `I⁻¹` is all area
+  rw [dot_comm, dot, dual, ← mul_assoc, mul_vec_self hv]
+  simp only [scalar, mul, I_inv]; ring
 
 /-- **A vector is parallel to its scalar multiples** (2D): `a ∧ (k*a) = 0`, including the
     anti-parallel `k < 0` case. The 2D twin of `G3.wedge_parallel_smul`. -/
