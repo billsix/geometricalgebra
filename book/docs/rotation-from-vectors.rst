@@ -54,8 +54,10 @@ one, :math:`\hat{\mathbf{a}} * \hat{\mathbf{a}} = \hat{\mathbf{a}} \cdot \hat{\m
 
    \hat{\mathbf{a}} * (\hat{\mathbf{a}} * \hat{\mathbf{b}}) = (\hat{\mathbf{a}} * \hat{\mathbf{a}}) * \hat{\mathbf{b}} = 1 * \hat{\mathbf{b}} = \hat{\mathbf{b}}.
 
-No angle was named anywhere. (This is ``fullAngleRotorFromTo_carry`` in the same file:
-``uvec α`` times the rotor from :math:`\alpha` to :math:`\beta` is ``uvec β``.)
+No angle was named anywhere. (The Lean statement is ``rotateFromToProj_normalize`` in
+``proofs/GacalcProofs/Bootstrap2D.lean``: the rotation is ``v * (â * b̂)``
+(``rotateFromToProj_eq_vec_mul``) and it carries ``â`` to ``b̂``. ``fullAngleRotorFromTo_carry`` in
+``Rotation2D.lean`` is the same fact with the two angles named.)
 
 Vectors of any length
 ---------------------

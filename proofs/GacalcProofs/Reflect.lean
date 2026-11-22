@@ -12,6 +12,7 @@ namespace GacalcProofs.G3
 /-- Reflection of `v` across the vector `d`: `reflect_d v = proj_d v − reject_d v`. -/
 noncomputable def reflectVec (d v : G3) : G3 := sub (proj d v) (reject d v)
 
+-- twin: GacalcProofs.G3.reflectVec_eq
 /-- **Reflection = twice the projection minus the vector**: `reflect_d v = 2*proj_d v − v`
     (equivalently `proj − reject`), for a nonzero vector `d` and a vector `v`. The Hestenes reflection's
     defining identity. Structural over `reject_vec_eq` (`reject = v − proj`), so `proj` stays abstract. -/
@@ -53,6 +54,7 @@ theorem normSq_dual_of_isBivector {B : G3} (hB : IsBivector B) : normSq (dual B)
     `reflect(across=B)`, base.py): the in-plane part kept, the perpendicular part flipped. -/
 noncomputable def reflectPlane (B v : G3) : G3 := sub (project_onto B v) (reject B v)
 
+-- twin: GacalcProofs.G3.reflectPlane_eq_neg_reflectVec_dual
 /-- **The mirror in a plane is minus the reflection across its normal**: for a plane bivector `B`
     (`|B|² ≠ 0`) and a vector `v`, `reflect_B v = −reflect_{dual B} v`. The in-plane part of `v` is its
     rejection from the normal and the perpendicular part is its projection onto the normal

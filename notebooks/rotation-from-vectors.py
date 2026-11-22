@@ -289,6 +289,7 @@ show_difference(carried, expected)
 # %% [markdown]
 # So the versor route, the projection route, and the angle-free three-turn
 # construction of *Proof: Rotate from a to b* are one and the same rotation, a fact the
-# Lean proofs state directly (`fullAngleRotorFromTo_carry`,
-# `projRotation_carries_from_to` / `projRotation_eq_sandwich`). The angle was
+# Lean proofs state directly: the product route is `rotPlane_fromTo_eq_vec_mul`
+# (`Bootstrap2D.lean`), the projection route is `projRotation_eq_vec_mul` and
+# `projRotation_eq_sandwich` (`ProjectionRotation2D.lean`). The angle was
 # scaffolding; the two vectors, multiplied, are the rotation.

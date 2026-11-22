@@ -16,8 +16,8 @@ algebras" (2017). Two sign flips are needed beside the reverse:
 In 𝒢₂, `A * Ā` is a scalar, so `A⁻¹ = Ā / (A * Ā)`. In 𝒢₃, `N = A * Ā` is a scalar plus a
 pseudoscalar, which commutes with everything. Its grade involution `N̂` flips the pseudoscalar's
 sign, and `N * N̂ = N₀² + N₁₂₃²` is a scalar, so `A⁻¹ = Ā * N̂ / (N * N̂)`. Each is proved a two-sided
-inverse whenever its scalar denominator is nonzero, and for a vector each equals the
-`Ã / |A|²` inverse.
+inverse whenever its scalar denominator is nonzero. In 𝒢₂ the general inverse of a vector equals the
+`Ã / |A|²` inverse (`generalInverse_eq_inverse_of_isVector`); there is no 𝒢₃ counterpart.
 
 The forms were checked symbolically with gacalc before being proved here
 (`tasks/archive/2026/11/18/lean-general-multivector-inverse.md`). Python keeps the guarded

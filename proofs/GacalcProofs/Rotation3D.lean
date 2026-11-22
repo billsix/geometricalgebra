@@ -45,8 +45,8 @@ import GacalcProofs.G3
       `angle_smul_smul`): since `h = |a|*|b|*(â + b̂)`, it reduces to `angle â (â+b̂) = angle b̂ (â+b̂)`
       by symmetry (the isosceles/rhombus bisector). External reference to learn from / cite:
       LeanGeo (arXiv:2508.14644), a Lean/Mathlib formalization of competition geometry. Using
-      Mathlib's `angle` on this from-scratch `G3` first needs the (deferred) map into
-      `EuclideanSpace ℝ (Fin 3)` or a local `angle a b := arccos (a·b / (|a|*|b|))`. -/
+      Mathlib's `angle` on this from-scratch `G3` is reached through the map into
+      `EuclideanSpace ℝ (Fin 3)` in `MathlibBridge.lean`; `Trig.cos_between` is the local angle. -/
 namespace GacalcProofs.G3
 
 open Real

@@ -4,7 +4,6 @@ import GacalcProofs.G2
 import GacalcProofs.G3
 import GacalcProofs.Versor2D
 import GacalcProofs.Sandwich
-import GacalcProofs.RotateComponents
 import GacalcProofs.Projection2D
 import GacalcProofs.Trig
 import GacalcProofs.Projection3D
@@ -15,7 +14,6 @@ import GacalcProofs.StandardPosition
 import GacalcProofs.StandardPosition2D
 import GacalcProofs.RotateFromTo2D
 import GacalcProofs.Cross
-import GacalcProofs.Normalize
 import GacalcProofs.Reflect
 import GacalcProofs.Predicates3D
 import GacalcProofs.Predicates2D

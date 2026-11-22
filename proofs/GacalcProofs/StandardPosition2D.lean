@@ -231,6 +231,7 @@ theorem alignSP_self {b : G2} (hbv : IsVector b) (hb : magnitude b ≠ 0) :
     rw [← eq_vec_of_isVector hbv]
   rw [alignSP, hb', h]
 
+-- twin: GacalcProofs.G2.projectSP_eq_proj
 /-- **`project_sp = project`:** the standard-position projection of `a` onto `b` is the Hestenes
     projection `proj b a`, for a nonzero vector `b` (`|b| ≠ 0`); `a` may be any multivector. In the
     aligned frame "keep the x-component" is `proj (|b|*e₁)` (`proj_onto_x_axis` + `alignSP_self`); then

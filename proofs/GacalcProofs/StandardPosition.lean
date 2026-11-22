@@ -119,6 +119,7 @@ theorem vecReject_rotXY_equivariant (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (a b :
     already `plane_eq_wedge`; this adds the dot half and the reassembly. **Versor-free** — it uses
     only `proj`, `mul`, and the elementary product identities. -/
 
+-- twin: GacalcProofs.G3.mul_proj_eq_dot
 /-- **The projection recovers the dot** (object form): `a (proj_a b) = (b·a)·1` for a vector `a`
     (`|a|² ≠ 0`) and a vector `b`. -/
 theorem mul_proj_eq_dot {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b) (ha : normSq a ≠ 0) :
@@ -131,6 +132,7 @@ theorem mul_proj_eq_dot {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b) (
   congr 1
   field_simp
 
+-- twin: GacalcProofs.G3.mul_eq_proj_dot_add_reject_wedge
 /-- **The geometric product of two vectors, from projection + rejection:** `a b = (a·b)*1 + a∧b`,
     assembled as `a (proj_a b) + a (b − proj_a b)`. The payoff of the theme: the vector geometric
     product is built from `project`/`reject` (for `|a|² ≠ 0`). -/

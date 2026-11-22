@@ -252,3 +252,7 @@ the exponential map that builds rotors uses it to tell a "turning" plane
 (:math:`(\vec{\mathbf{e}}_1 * \vec{\mathbf{e}}_2){}^2 = -1`) apart from a plain stretch. In gacalc it is the little function
 ``pseudoscalar_squared_sign(r)``. It returns the sign itself, :math:`+1` or :math:`-1`: the
 count of flips you just learned to do by hand is the exponent.
+
+The Lean proofs state the sign for the unit blade of the plane, of the line and of space as
+``I_sq_eq_sign`` in each of ``proofs/GacalcProofs/G1.lean``, ``G2.lean`` and ``G3.lean``
+(:math:`I^2 = (-1)^{\,r * (r-1)/2}` for :math:`r = 1, 2, 3`), and the squares themselves as ``I_sq``.

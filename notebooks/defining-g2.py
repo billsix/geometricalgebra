@@ -279,8 +279,9 @@ B_1 * (C * D)
 show_difference((B_1 * C) * D, B_1 * (C * D))
 
 # %% [markdown]
-# So we may write a product of several elements with no parentheses at all. (That this
-# holds in every dimension is a theorem, proved in the Lean files and in
+# So we may write a product of several elements with no parentheses at all. (Lean proves
+# associativity for the line, the plane and space, `mul_assoc` in `G1.lean`, `G2.lean`
+# and `G3.lean`; the proof for every dimension is in
 # `tasks/reference/geometric-product-associativity.md`.)
 
 # %% [markdown]

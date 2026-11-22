@@ -36,22 +36,6 @@ theorem rotYZ_apply (c s : ℝ) (v : G3) :
     rotYZ c s v = ⟨v.s, v.c1, c * v.c2 - s * v.c3, s * v.c2 + c * v.c3, v.c12, v.c13, v.c23, v.c123⟩ :=
   rfl
 
-theorem rotYZ_smul (c s k : ℝ) (v : G3) : rotYZ c s (smul k v) = smul k (rotYZ c s v) := by
-  simp only [rotYZ_apply, smul]; ext <;> ring
-
-theorem rotYZ_sub (c s : ℝ) (u v : G3) : rotYZ c s (sub u v) = sub (rotYZ c s u) (rotYZ c s v) := by
-  simp only [rotYZ_apply, sub]; ext <;> ring
-
-theorem rotYZ_preserves_dot (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (u v : G3) :
-    dot (rotYZ c s u) (rotYZ c s v) = dot u v := by
-  simp only [dot, rotYZ_apply, mul]
-  linear_combination (u.c2 * v.c2 + u.c3 * v.c3) * hcs
-
-/-- `rotXZ` distributes over subtraction (the `rotXZ` twin of the existing `rotXY_sub`; needed for the
-    rejection's `rotXZ`-equivariance). -/
-theorem rotXZ_sub (c s : ℝ) (u v : G3) : rotXZ c s (sub u v) = sub (rotXZ c s u) (rotXZ c s v) := by
-  simp only [rotXZ_apply, sub]; ext <;> ring
-
 /-! ### A plane rotation of a vector is a vector (with transformed coordinates) -/
 
 theorem rotXY_vec (c s x y z : ℝ) :
@@ -75,21 +59,6 @@ theorem rotYZ_fixes_e1 (c s m : ℝ) : rotYZ c s (vec m 0 0) = vec m 0 0 := by
     (`proj_rotXY_equivariant`/`proj_rotXZ_equivariant` and `vecReject_rotXY_equivariant` are in
     `StandardPosition.lean`; these complete the set so all three ops are equivariant under all three
     rotations — the uniform tool.) -/
-
-theorem proj_rotYZ_equivariant (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (a b : G3) :
-    proj (rotYZ c s a) (rotYZ c s b) = rotYZ c s (proj a b) := by
-  simp only [proj, rotYZ_smul]
-  rw [rotYZ_preserves_dot c s hcs b a, rotYZ_preserves_dot c s hcs a a]
-
-theorem vecReject_rotXZ_equivariant (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (a b : G3) :
-    vecReject (rotXZ c s a) (rotXZ c s b) = rotXZ c s (vecReject a b) := by
-  simp only [vecReject]
-  rw [rotXZ_sub, proj_rotXZ_equivariant c s hcs a b]
-
-theorem vecReject_rotYZ_equivariant (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (a b : G3) :
-    vecReject (rotYZ c s a) (rotYZ c s b) = rotYZ c s (vecReject a b) := by
-  simp only [vecReject]
-  rw [rotYZ_sub, proj_rotYZ_equivariant c s hcs a b]
 
 /-! ### `cross` is equivariant under each elementary plane rotation (for `cos²(θ) + sin²(θ) = 1`)
 
@@ -203,20 +172,6 @@ theorem reduceToPlane_b_in_plane (cx sx cz sz b1 b2 b3 j : ℝ) (hj : j ≠ 0)
     definitions. Combined with the equivariance lemmas above (the operation commutes with every plane
     rotation of the reduction), this is "reduce both to the plane, do the easy 2-D operation, rotate
     back," uniformly for all three. -/
-
-/-- **Projection in the reduced frame:** `proj_a b = (b₁,0,0)` — `b`'s component along `a = e₁`. -/
-theorem proj_reduced (m b1 b2 : ℝ) (hm : m ≠ 0) :
-    proj (vec m 0 0) (vec b1 b2 0) = vec b1 0 0 := by
-  simp only [proj, dot, mul, smul, vec]
-  ext <;> field_simp [hm] <;> ring
-
-/-- **Rejection in the reduced frame:** `b − proj_a b = (0,b₂,0)` — `b`'s perpendicular component.
-    (`vecReject = b − proj_a b` equals the canonical Hestenes `reject` for vectors, `reject_vec_eq`.) -/
-theorem vecReject_reduced (m b1 b2 : ℝ) (hm : m ≠ 0) :
-    vecReject (vec m 0 0) (vec b1 b2 0) = vec 0 b2 0 := by
-  simp only [vecReject]
-  rw [proj_reduced m b1 b2 hm]
-  simp only [sub, vec]; ext <;> ring
 
 /-- **Cross product in the reduced frame:** `a × b = (0,0,m·b₂)` — a pure `e₃` vector, `a`'s
     axis-length times `b`'s in-plane height. Immediate from `cross_vec`. -/

@@ -50,9 +50,9 @@ theorem even_add_odd (a : G2) : add (evenPart a) (oddPart a) = a := by
     `dot`/`wedge` are coordinate-level for speed. These bridges record that the coordinate forms ARE the
     grade projections. See `tasks/reference/lean-ga-proof-architecture.md` → "Scalars into the algebra". -/
 
-/-- **The dot product is the grade-0 part of the geometric product** — Python's
+/-- **Lean's `dot` is the grade-0 part of the geometric product** — Python's
     `scalar_product = ⟨a*b⟩₀`: `scalar (a·b) = ⟨a b⟩₀`. (`dot` reads `(a b).s`; this names it as a grade
-    projection.) Holds for all multivectors. -/
+    projection.) Holds for all multivectors; it is the book's dot product only for two vectors. -/
 theorem dot_eq_rVectorPart_zero (a b : G2) : scalar (dot a b) = rVectorPart 0 (mul a b) := by
   simp only [scalar, dot, rVectorPart, smul, one]; ext <;> ring
 
@@ -99,8 +99,9 @@ theorem even_add_odd (a : G3) : add (evenPart a) (oddPart a) = a := by
 
 /-! ### dot and wedge as grade projections (the Python `r_vector_part` view) — see the G2 note above -/
 
-/-- **The dot product is the grade-0 part of the geometric product** (3D) — Python
-    `scalar_product = ⟨a*b⟩₀`: `scalar (a·b) = ⟨a b⟩₀`. Holds for all multivectors. -/
+/-- **Lean's `dot` is the grade-0 part of the geometric product** (3D) — Python
+    `scalar_product = ⟨a*b⟩₀`: `scalar (a·b) = ⟨a b⟩₀`. Holds for all multivectors; it is the book's dot
+    product only for two vectors. -/
 theorem dot_eq_rVectorPart_zero (a b : G3) : scalar (dot a b) = rVectorPart 0 (mul a b) := by
   simp only [scalar, dot, rVectorPart, zero]
 

@@ -129,8 +129,8 @@ noncomputable def wedge (a b : G3) : G3 where
     a.c1 * b.c23 + a.c12 * b.c3 + a.c123 * b.s - a.c13 * b.c2 - a.c2 * b.c13
       + a.c23 * b.c1 + a.c3 * b.c12 + a.s * b.c123
 
-/-- The scalar product ⟨A B⟩₀ — the scalar part of the geometric product. For two
-    vectors this is the Euclidean dot product `a₁*b₁ + a₂*b₂ + a₃*b₃`. -/
+/-- The scalar product ⟨A B⟩₀ — the scalar part of the geometric product: Python's `scalar_product`.
+    It equals the book's dot product, the Euclidean `a₁*b₁ + a₂*b₂ + a₃*b₃`, only on two vectors. -/
 noncomputable def dot (a b : G3) : ℝ := (mul a b).s
 
 /-- Reverse `R̃` — grade sign (−1)^(k(k−1)/2): grades 0,1 fixed, grades 2,3 negated
@@ -426,26 +426,6 @@ theorem IsVector.sub {a b : G3} (ha : IsVector a) (hb : IsVector b) : IsVector (
   refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;>
     simp [GacalcProofs.G3.sub, has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23, hb123]
 
-/-- `a` is a **scalar** (grade 0): every part but the scalar coefficient `s` vanishes — how "`a` is a
-    scalar" is stated for an arbitrary `a : G3`, the 𝒢₃ mirror of Python's `is_scalar` (`base.py`) and
-    of `G2.IsScalar`. The grade-0 companion of `IsVector`/`IsBivector`/`IsTrivector`. -/
-def IsScalar (a : G3) : Prop :=
-  a.c1 = 0 ∧ a.c2 = 0 ∧ a.c3 = 0 ∧ a.c12 = 0 ∧ a.c13 = 0 ∧ a.c23 = 0 ∧ a.c123 = 0
-
-/-- A grade-0 multivector is the `scalar` of its own scalar coefficient — the bridge to the `scalar …`
-    form (the `eq_vec_of_isVector` analogue, matching `eq_bivector_of_isBivector`/
-    `eq_trivector_of_isTrivector`). -/
-theorem eq_scalar_of_isScalar {a : G3} (ha : IsScalar a) : a = scalar a.s := by
-  obtain ⟨h1, h2, h3, h12, h13, h23, h123⟩ := ha
-  ext <;> simp only [scalar, zero] <;> first | rfl | assumption
-
-/-- A coordinate `scalar a` is grade-0 — discharges `IsScalar` for a caller holding a concrete `scalar`. -/
-theorem isScalar_scalar (a : ℝ) : IsScalar (scalar a) :=
-  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
-
-/-- The scalar unit `1` is a scalar. -/
-theorem isScalar_one : IsScalar one := ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
-
 /-- `B` is a **bivector** (grade 2): its scalar, vector and pseudoscalar parts vanish — how "`B` is a
     (simple, in 𝒢₃ always simple) bivector" is stated for an arbitrary `B : G3`. The plane companion of
     `IsVector`. -/
@@ -457,25 +437,10 @@ theorem eq_bivector_of_isBivector {B : G3} (hB : IsBivector B) : B = bivector B.
   obtain ⟨hs, h1, h2, h3, h123⟩ := hB
   ext <;> simp only [bivector, zero] <;> first | rfl | assumption
 
-/-- A coordinate `bivector p q r` is grade-2 — lets a caller discharge the `IsBivector` hypothesis of an
-    object-level theorem when it holds a concrete `bivector`. -/
-theorem isBivector_bivector (p q r : ℝ) : IsBivector (bivector p q r) :=
-  ⟨rfl, rfl, rfl, rfl, rfl⟩
-
 /-- `T` is a **trivector** (the pseudoscalar, grade 3): every part but `e₁₂₃` vanishes. The grade-3
     companion of `IsVector`/`IsBivector`. -/
 def IsTrivector (T : G3) : Prop :=
   T.s = 0 ∧ T.c1 = 0 ∧ T.c2 = 0 ∧ T.c3 = 0 ∧ T.c12 = 0 ∧ T.c13 = 0 ∧ T.c23 = 0
-
-/-- A grade-3 multivector is the `trivector` of its own pseudoscalar coordinate — the bridge to the
-    `trivector …` lemmas. -/
-theorem eq_trivector_of_isTrivector {T : G3} (hT : IsTrivector T) : T = trivector T.c123 := by
-  obtain ⟨hs, h1, h2, h3, h12, h13, h23⟩ := hT
-  ext <;> simp only [trivector, zero] <;> first | rfl | assumption
-
-/-- A coordinate `trivector t` is grade-3. -/
-theorem isTrivector_trivector (t : ℝ) : IsTrivector (trivector t) :=
-  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /-! ### Object-form facts: the split, antisymmetry, self-products, and dot/wedge as the two parts -/
 
@@ -529,13 +494,6 @@ theorem mul_vec_self {a : G3} (ha : IsVector a) : mul a a = scalar (normSq a) :=
   obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
   simp only [normSq, mul, reverse, scalar, zero, has, ha12, ha13, ha23, ha123]
   ext <;> ring
-
-/-- **The square of a vector is a scalar** (3D): `a a = |a|²*1` has only a grade-0 part — the
-    typed-object form of "`a²` is a scalar", via the `IsScalar` predicate. The 3D twin of
-    `G2.isScalar_mul_self_of_isVector`. -/
-theorem isScalar_mul_self_of_isVector {a : G3} (ha : IsVector a) : IsScalar (mul a a) := by
-  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> simp only [mul, has, ha12, ha13, ha23, ha123] <;> ring
 
 /-- **The dot product is the symmetric part of the geometric product** (3D): `½(ab + ba) = (a·b)*1`
     for vectors — the 3D twin of `G2.dot_is_sym_part`, in object form. -/

@@ -16,7 +16,7 @@ the Python implementation.
 - **Toolchain / deps:** pinned in `lean-toolchain` (Lean `v4.34.1`) and
   `lake-manifest.json` (the exact Mathlib revision). `.lake/` is build output +
   the fetched Mathlib — gitignored, never committed.
-- **What's here** (34 modules under `GacalcProofs/`, grouped; every file is 𝒢₂+𝒢₃ unless noted):
+- **What's here** (35 modules under `GacalcProofs/`, grouped; every file is 𝒢₂+𝒢₃ unless noted):
   - *Algebras:* `G1.lean` (𝒢₁ for teaching: `I² = +1`, commutative, every vector pair parallel so
     `u*v = u·v`), `G2.lean`, `G3.lean` — coordinate structs; product/wedge/reverse (𝒢₃'s transcribed
     verbatim from gacalc's `Gn` oracle by `tools/derive_lean_algebra.py`), the basis blades as genuine
@@ -38,8 +38,11 @@ the Python implementation.
     `R*R̃ = |R|²*1`; the reverse-sandwich scalings of dot/normSq/wedge for ANY multivector;
     the sandwich is an isometry — dot, length, wedge, hence angles; carries `a` to `b`; fixes its own
     plane bivector and normal; rotations compose by multiplying versors; reverse is an anti-automorphism;
-    blade inverses); `RotateComponents.lean` (the three matrix-free rotation goals for the a→b rotation);
-    `Exp.lean` (the closed-form bivector exponential is a rotor, `IsRotor`); `Rotor.lean` (the versor chain
+    blade inverses);
+    `Exp.lean` (the closed-form bivector exponential is a rotor, `IsRotor`); `RotateFromTo2D.lean` (𝒢₂: the book's
+    rotation from the direction of `a` to the direction of `b`, built from cosine and sine read off the two
+    vectors, with no angle named); `Bootstrap2D.lean` (𝒢₂: the book's Part III through the product — `proj_a b = (b·a)*a⁻¹`,
+    `a*proj_a b = a·b`, `a*rej_a b = a∧b`, and the rotation from `a` to `b` as `v*(â*b̂)`); `Rotor.lean` (the versor chain
     re-done with the reverse sandwich: `rotorFromVectors = normalize ∘ versorFromVectors` is a rotor, the
     bridge `(R/|R|) v (R/|R|)~ = R v R⁻¹` for every `R`, hence the rotor sandwich = `projRotation`, carries
     `a` to `b`, isometry; Lagrange gives `|versorFromVectors a b|² = 2*|a|*|b|*(|a|*|b| + a·b)`; 2D coda: the
@@ -51,18 +54,20 @@ the Python implementation.
   - *Projection, rejection, reflection:* `Projection2D.lean` / `Projection3D.lean` (Hestenes
     `proj`/`reject`/`project_onto` of a vector onto a vector or (3D) a bivector; rejection ⊥; the wedge
     sees only the rejection; `project + reject = id`; `proj_plane = project_onto`); `Reflect.lean`
-    (`reflectVec = 2·proj − v`, an isometry — 𝒢₃, across a vector); `Normalize.lean` (unit magnitude).
+    (`reflectVec = 2·proj − v`, an isometry — 𝒢₃, across a vector).
   - *Standard position (the non-circular bootstrap):* `StandardPosition.lean` (elementary plane
     rotations `rotXY`/`rotXZ`, NOT versors; preserve dot; proj/reject equivariant; align `b` to `e₁`;
     the product from projection; `projectSP`/`rejectSP` = Python `project_sp`/`reject_sp` — align, keep the
     x-component, unalign — proven equal to `proj`/`reject`); `CrossStandardPosition.lean` (`rotYZ`, `reduceToPlane`, cross
     equivariance, the reduced-frame evaluations); `ProjectionRotation3D.lean` / `ProjectionRotation2D.lean`
     (`projRotation` = Python `transforms.projection_rotation`: carries from→to, ⊥ fixed, isometry, and
-    equals the versor sandwich).
+    equals the versor sandwich); `StandardPosition2D.lean` (the 2D version, one elementary plane rotation `rotPlane`: the
+    quarter turn `rot90` is the product `v*e₁₂`, `projectSP`/`rejectSP` equal `proj`/`reject`).
   - *Cross, measures, predicates:* `Cross.lean` (`cross = dual (a∧b)`, anticommutative, ⊥ both,
     scalar triple = signed volume — 𝒢₃); `Measures.lean` (area/volume, `|a∧b|²` Lagrange form,
     `|a∧b∧c|² = signedVolume²`); `Predicates2D.lean` / `Predicates3D.lean` (dual ⊥; `a·b = 0 ⟺ ab = a∧b`;
-    `a ∧ b = 0 ⟺ b = k*a` for `a ≠ 0`, `wedge_eq_zero_iff_parallel`).
+    `a ∧ b = 0 ⟺ b = k*a` for `a ≠ 0`, `wedge_eq_zero_iff_parallel`); `GeneralInverse.lean` (the general 𝒢₂/𝒢₃ inverse
+    through the grade involution and the Clifford conjugate, Hitzer–Sangwine; equals the blade/versor inverse on a 𝒢₂ vector).
   - *High-school geometry objects:* `GeometryObjects2D.lean` (the midpoint `(a + b)/2` is the segment
     `a + t*(b − a)` at `t = ½` and cuts it into equal halves; a triangle's sides sum to zero; the
     midsegment is `½*(c − b)`; a quadrilateral is a parallelogram iff its diagonals share a midpoint; the

@@ -225,12 +225,6 @@ theorem rotor_unit (θ : ℝ) : G2.mul (rotor θ) (G2.reverse (rotor θ)) = G2.o
   simp only [rotor, G2.reverse, G2.mul, G2.add, G2.smul, G2.one, G2.e_12]
   ext <;> first | linear_combination sin_sq_add_cos_sq (θ / 2) | ring
 
-/-- …and `R̃*R = 1` too, so `R̃` is a genuine two-sided inverse. Hence for this rotor the
-    reverse sandwich `R*v*R̃` coincides with the inverse sandwich `R*v*R⁻¹`. -/
-theorem rotor_unit' (θ : ℝ) : G2.mul (G2.reverse (rotor θ)) (rotor θ) = G2.one := by
-  simp only [rotor, G2.reverse, G2.mul, G2.add, G2.smul, G2.one, G2.e_12]
-  ext <;> first | linear_combination sin_sq_add_cos_sq (θ / 2) | ring
-
 /-- `rotor θ` is a **rotor** in the sense of `Sandwich.IsRotor` (even and unit), so the general
     rotor layer — `R⁻¹ = R̃`, `sandwich R v = R*v*R̃` — applies to it. -/
 theorem isRotor_rotor (θ : ℝ) : G2.IsRotor (rotor θ) :=
