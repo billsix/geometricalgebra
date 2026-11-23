@@ -268,8 +268,11 @@ result
 #
 # $$ e^{-(\theta/2)\, i} \;=\; \cos(\theta/2) \;-\; \sin(\theta/2) * i $$
 #
-# The angle here is declared *positive*: `exp` computes $|A| = \sqrt{\theta^2}/2$,
-# which collapses to $\theta/2$ only once sympy knows the sign.
+# The angle here is declared *positive*: `exp` computes $|A| = \sqrt{\theta^2}/2$, which
+# collapses to $\theta/2$ only once sympy knows the sign. The Lean proofs state the
+# identity as `rotor_eq_expBivector` (the plane $\mathbf{e}_{12}$) and
+# `planeRotor_eq_expBivectorGeneral` (any unit bivector), in
+# `proofs/GacalcProofs/Exp.lean`.
 
 # %%
 φ: sympy.Symbol = sympy.symbols("phi", positive=True)
