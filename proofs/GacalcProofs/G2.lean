@@ -455,6 +455,12 @@ theorem reverse_mul_vec {a b : G2} (ha : IsVector a) (hb : IsVector b) :
     reverse (mul a b) = mul b a := by
   rw [reverse_mul, reverse_of_isVector ha, reverse_of_isVector hb]
 
+/-- `a · a = |a|²` for a vector `a` (2D twin of `G3.dot_self_vec_eq_normSq`). -/
+theorem dot_self_vec_eq_normSq {a : G2} (ha : IsVector a) : dot a a = normSq a := by
+  obtain ⟨has, ha12⟩ := ha
+  simp only [dot, normSq, mul, reverse, has, ha12]
+  ring
+
 /-- A vector squares to its squared magnitude: `a*a = |a|²*1` (2D twin of `G3.mul_vec_self`). -/
 theorem mul_vec_self {a : G2} (ha : IsVector a) :
     mul a a = scalar (normSq a) := by

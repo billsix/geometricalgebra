@@ -85,8 +85,8 @@ engine is ``cross_reduceToPlane_equivariant`` (the three elementary equivariance
 ``cross_rotXY_equivariant`` / ``cross_rotXZ_equivariant`` / ``cross_rotYZ_equivariant`` composed);
 the round-trip identity above is ``cross_eq_unreduce_cross_reduce``; and the standard-position
 capstone — reduced operands placed by ``reduceToPlane_a_on_e1`` / ``reduceToPlane_b_in_plane`` and
-the in-frame cross value ``cross_reduced`` — is ``cross_via_reduction`` (with its explicit-angle
-form ``cross_via_reduction_of_vectors``).
+the in-frame cross value ``cross_reduced`` — is ``cross_via_reduction`` (with its form over the
+vectors, through ``alignSP``, ``cross_via_reduction_of_vectors``).
 
 The payoff
 ----------

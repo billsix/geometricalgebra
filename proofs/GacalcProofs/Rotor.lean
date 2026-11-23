@@ -238,11 +238,10 @@ theorem rotorSandwich_rotorFromVectors (a b v : G3) :
     reverse-sandwich rotor rotation IS `transforms.projection_rotation`, through the versor result
     `projRotation_eq_sandwich`. -/
 theorem rotorSandwich_rotorFromVectors_eq_projRotation {f t v : G3} (hf : IsVector f) (ht : IsVector t)
-    (hv : IsVector v) (hfn : normSq f ≠ 0) (htn : normSq t ≠ 0)
-    (hpn : normSq (wedge f t) ≠ 0)
+    (hv : IsVector v) (hpn : normSq (wedge f t) ≠ 0)
     (hr : normSq (versorFromVectors f t) ≠ 0) :
     rotorSandwich (rotorFromVectors f t) v = projRotation f t v := by
-  rw [rotorSandwich_rotorFromVectors, projRotation_eq_sandwich hf ht hv hfn htn hpn hr]
+  rw [rotorSandwich_rotorFromVectors, projRotation_eq_sandwich hf ht hv hpn hr]
 
 /-- **The rotor from `a` to `b` carries `a` to `b`** (scaled to `a`'s length): `R̂ a R̂̃ = (|a|/|b|)*b`. -/
 theorem rotorSandwich_rotorFromVectors_carries_from_to {a b : G3} (ha : IsVector a) (hb : IsVector b)

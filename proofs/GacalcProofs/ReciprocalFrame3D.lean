@@ -338,6 +338,55 @@ theorem reject_line_facts {a1 a2 a3 : G3} (ha1 : IsVector a1) (ha2 : IsVector a2
   · rw [dot_vec]; field_simp; ring
   · rw [dot_vec]; field_simp; simp only [crossSq]; ring
 
+set_option maxHeartbeats 8000000 in
+set_option maxRecDepth 8000 in
+/-- **The plane rejection is the iterated vector rejection.** `frame.py` builds `w₃` by rejecting `a₃`
+    from the earlier orthogonal vectors one at a time, `w₃ = a₃ − proj_{w₁} a₃ − proj_{w₂} a₃` with `w₁ = a₁`
+    and `w₂ = reject a₁ a₂`; the proofs use the Hestenes rejection from the plane `a₁ ∧ a₂`. They are the
+    same vector. -/
+theorem reject_plane_eq_iterated {a1 a2 a3 : G3} (ha1 : IsVector a1) (ha2 : IsVector a2)
+    (ha3 : IsVector a3) (hA : normSq (vol3 a1 a2 a3) ≠ 0) :
+    reject (wedge a1 a2) a3 = sub (sub a3 (proj a1 a3)) (proj (reject a1 a2) a3) := by
+  obtain ⟨p1, p2, p3, rfl⟩ : ∃ x y z, a1 = vec x y z := ⟨_, _, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r1, r2, r3, rfl⟩ : ∃ x y z, a2 = vec x y z := ⟨_, _, _, eq_vec_of_isVector ha2⟩
+  obtain ⟨t1, t2, t3, rfl⟩ : ∃ x y z, a3 = vec x y z := ⟨_, _, _, eq_vec_of_isVector ha3⟩
+  have hC := crossSq_ne_zero_of_det3 (det3_ne_zero_vec hA)
+  have hn := sumSq_ne_zero_of_crossSq hC
+  have hw := normSq_reject_line_vec (r1 := r1) (r2 := r2) (r3 := r3) hn
+  have hwv : IsVector (reject (vec p1 p2 p3) (vec r1 r2 r3)) := by
+    rw [reject_line_vec hn]; exact isVector_vec _ _ _
+  have hww : dot (reject (vec p1 p2 p3) (vec r1 r2 r3)) (reject (vec p1 p2 p3) (vec r1 r2 r3))
+      = crossSq p1 p2 p3 r1 r2 r3 / (p1 ^ 2 + p2 ^ 2 + p3 ^ 2) := by
+    rw [dot_self_vec_eq_normSq hwv, hw]
+  rw [reject_plane_vec hC]
+  simp only [proj]
+  rw [hww, reject_line_vec hn]
+  simp only [dot_vec]
+  simp only [sub, smul, vec]
+  ext <;> simp only <;> field_simp <;> simp only [det3, crossSq] <;> ring
+/-- **The peel reads each coordinate the way `frame.py` does** (3D). `peel` computes `x_last` as
+    `coordinate(y, v=a₃, m=w₃) = (w₃·y)/(w₃·a₃)`; the proofs' `peelLast` divides by `|w₃|²`. They agree
+    because `w₃·a₃ = |w₃|²` (`reject_plane_facts`). -/
+theorem peelLast_eq_coordinate {a1 a2 a3 : G3} (ha1 : IsVector a1) (ha2 : IsVector a2)
+    (ha3 : IsVector a3) (hA : normSq (vol3 a1 a2 a3) ≠ 0) (y : G3) :
+    peelLast a1 a2 a3 y
+      = dot (reject (wedge a1 a2) a3) y / dot (reject (wedge a1 a2) a3) a3 := by
+  rw [peelLast, (reject_plane_facts ha1 ha2 ha3 hA).2.2.1]
+
+/-- The middle coordinate: `x₂ = (w₂·r)/(w₂·a₂)`, `w₂ = reject a₁ a₂`, `r = y − x₃*a₃`. -/
+theorem peelMid_eq_coordinate {a1 a2 a3 : G3} (ha1 : IsVector a1) (ha2 : IsVector a2)
+    (ha3 : IsVector a3) (hA : normSq (vol3 a1 a2 a3) ≠ 0) (y : G3) :
+    peelMid a1 a2 a3 y
+      = dot (reject a1 a2) (sub y (smul (peelLast a1 a2 a3 y) a3)) / dot (reject a1 a2) a2 := by
+  rw [peelMid, (reject_line_facts ha1 ha2 ha3 hA).2.1]
+
+/-- The first coordinate: `x₁ = (a₁·r)/(a₁·a₁)`, `w₁ = a₁`. -/
+theorem peelFirst_eq_coordinate {a1 a2 a3 : G3} (ha1 : IsVector a1) (y : G3) :
+    peelFirst a1 a2 a3 y
+      = dot a1 (sub (sub y (smul (peelLast a1 a2 a3 y) a3)) (smul (peelMid a1 a2 a3 y) a2))
+          / dot a1 a1 := by
+  rw [peelFirst, dot_self_vec_eq_normSq ha1]
+
 /-- **The last reciprocal vector is the last rejection over its squared length:** `a³ = w₃/|w₃|²`. -/
 theorem recip3_eq_reject_div {a1 a2 a3 : G3} (ha1 : IsVector a1) (ha2 : IsVector a2)
     (ha3 : IsVector a3) (hA : normSq (vol3 a1 a2 a3) ≠ 0) :

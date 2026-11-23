@@ -1,6 +1,6 @@
 # Lean proofs: bring the corpus in line with the book, the Python and its own rules
 
-**Status:** in progress — phases 1 to 4 done 2026-11-22; phases 5 to 8 remain
+**Status:** in progress — phases 1 to 4 done 2026-11-22; phase 5 mostly done (leftovers below); phase 6 done 2026-11-23; phases 7 and 8 remain
 **Priority:** 5
 **Difficulty:** 7
 **Created:** 2026-11-22 (William Emerison Six <billsix@gmail.com>)
@@ -132,11 +132,65 @@ the 16 build warnings are all in files and lines this phase did not touch):
   "retained set"; it was already out of date after phase 3, and it is reworked, not patched, if it is ever started.
 - Docs: the architecture doc no longer names the deleted `G2.dual_vec_perp`.
 
-**Remaining, in order:** 5 (restate the scalars-in
-files over objects; the largest, `ProjectionRotation3D.lean` last), 6 (where Lean differs from the book or Python),
-7 (results the book states that Lean lacks), 8 (rewrite the inventory and coverage map from the files as they then
-stand). These are proof rewrites with a full `lake build` (about 20 minutes) per iteration. The task's own plan
-allows splitting 5 and 7 into step tasks if they grow; phases 5 to 7 together are a multi-session job.
+**Phase 5** (2026-11-22, three work commits on `lean-phase-5`; `lake build`, the `sorry` scan and the axioms gate pass, 1068 declarations):
+
+- `RotateFromTo2D`: `bprime_coords`, `rotateFromTo_collapse` and `rotateFromTo_carries` take vectors and speak in
+  `alignSP`/`unalignSP`, `dot` and `wedge`, not free `ma`, `mb`; `cs_a_unit` is gone (`StandardPosition2D.cs_unit`
+  does it). The collapse is now `unalignSP a (rotPlane c s (alignSP a v)) = rotPlane c s v` for any `(c, s)`.
+- `CrossStandardPosition.cross_via_reduction_of_vectors` takes `a`, `b` as vectors and goes through `alignSP`: its
+  third rotation is `rotYZ` read off `alignSP a b` with `j = |(alignSP a b)₂,₃|`, and the answer is `unalignSP a` of
+  the pure-`e₃` vector. The seven reals and the three-line literal angles are gone; the book page and notebook
+  wording was adjusted ("through `alignSP`").
+- `Measures`: `G2.signedArea` takes two vectors (`(wedge a b).c12`), with `signedArea_eq` for vectors; new `G2.area`,
+  `normSq_wedge_eq_signedArea_sq` and `area_sq_vec`, the twins of the 𝒢₃ volume results.
+- `G1`: `vec_mul`, `wedge_vec`, `vec_mul_eq_dot_add_wedge`, `dual_vec` and `mul_vec_inverse_self` are stated for
+  `IsVector` objects (the predicate is now used), with `eq_vec_of_isVector`; `sub`, `neg` and the addition laws
+  (`add_comm`, `add_assoc`, `add_zero`, `zero_add`, `add_neg_cancel`) come before the product laws, and the product
+  and scalar laws `add_mul`, `mul_one`, `zero_mul`, `smul_mul`, `mul_smul`, `smul_smul`, `one_smul` match 𝒢₂/𝒢₃.
+- `ProjectionRotation3D`: the 16 `_coord` leaves and the six object bridges are folded into object theorems over
+  `IsVector f/t/v` (`obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf` in the body, so the verified coordinate proofs are
+  kept as they were). The theorems the book cites keep their names and signatures (`projRotation_carries_from_to`,
+  `projRotation_isometry`, `projRotation_eq_sandwich`). The easy leaves are structural now: carries-from-to is the
+  2D file's proof, the isometry's `hin`/`hcoef` use `normSq_mul_vec` and `magnitude_sq_eq_normSq` instead of
+  coordinate sums, `normalizeVec_to_mul_versor_eq_bisector`, `normalizeVec_mul_versor_eq_reverse` and the new
+  `fhat_that_eq_reverse_mul_inverse` are over objects. The file has no `_coord` theorem and no linter warning left.
+- Phase 5 leftovers, second pass (2026-11-23, one more work commit): `project_perp_reject` and `plane_pythagorean` are
+  stated for any plane `B` (`IsBivector B`, `|B|² ≠ 0`; the latter now two rewrites through `project_add_reject`),
+  with `isBivector_wedge` for `B = f∧t`; `projRotation_carries_from_to`, `projRotation_isometry` and
+  `projRotation_eq_sandwich` lost `hfn`/`htn` (new `normSq_ne_zero_of_wedge_left`/`_right`, by Lagrange), and
+  `Rotor.rotorSandwich_rotorFromVectors_eq_projRotation` (𝒢₃) lost them with it.
+- Still open after that: `inplane_perp_reject`, `versor_mul_project_eq` and `versor_mul_reject_comm` keep their
+  coordinate `field_simp; ring` bodies (they mention `f` and `t` themselves, not only the plane, so they do not
+  generalize to an arbitrary `B`); `hrn` (`|R|² ≠ 0`) is still a hypothesis, since dropping it needs
+  `Rotor.normSq_versorFromVectors` moved upstream and the `hr` hypotheses of `Rotor`'s theorems removed with it;
+  `Bootstrap2D`'s `mul_proj_eq_dot` and neighbours still restate part of `RotateFromTo2D`; the `G1`/`G2` section
+  order now follows the teaching order (addition laws before the product), but `G2`'s late sections (duals,
+  reverse) were not regrouped.
+- Items 2, 6 and 8 of `tasks/lean-proofs-remove-extras.md` named `ProjectionRotation3D` leaves that no longer exist;
+  its audit still stands for the other files.
+
+**Phase 6** (2026-11-23, one work commit on `lean-phase-5`; `lake build`, the `sorry` scan and the axioms gate pass,
+1094 declarations). All four items proved rather than the page changed:
+
+- `Contractions.leftContraction`/`rightContraction` are zero when the left grade exceeds the right one (and the
+  reverse), as `base.left_contraction` is; before, ℕ truncation returned the grade-0 part. New theorems:
+  `leftContraction_eq_zero_of_lt`, `rightContraction_eq_zero_of_lt`, `leftContraction_same_grade`,
+  `rightContraction_same_grade`; the three vector/scalar examples still hold.
+- `StandardPosition` (𝒢₃) and `StandardPosition2D`: `rejectSPByRotation` is the book's rotate / keep what is off
+  the x-axis / rotate back; `rejectSP_eq_rotate_keep_rest` proves it equals Python's `a − project_sp a b`, and
+  `rejectSPByRotation_eq_keep_yz` / `_keep_y` show what is kept for a vector is its `(y, z)` / `y`. The book page
+  `proof-projection.rst` cites the theorem.
+- `ReciprocalFrame2D`/`3D`: `peelLast_eq_coordinate`, `peelMid_eq_coordinate`, `peelFirst_eq_coordinate` show
+  the proofs' divide-by-`|w|²` coordinates equal `frame.py`'s `(w·y)/(w·v)`, from `dot_reject_second` (2D) and
+  `reject_plane_facts`/`reject_line_facts` (3D); `reject_plane_eq_iterated` shows the plane rejection `w₃` is the
+  iterated vector rejection `a₃ − proj_{w₁} a₃ − proj_{w₂} a₃` Python computes. New 𝒢₂ lemma
+  `dot_self_vec_eq_normSq`.
+- `Projection3D.proj_eq_dot_mul_inverse`: `proj_a b = (b·a)*a⁻¹` for 𝒢₃ (the 2D one is in `Bootstrap2D`).
+
+**Remaining, in order:** the phase 5 leftovers above, then 7 (results
+the book states that Lean lacks), 8 (rewrite the inventory and coverage map from the files as they then stand). These
+are proof rewrites with a full `lake build` (about 20 minutes) per iteration. The task's own plan allows splitting 7
+into a step task if it grows; the rest is a multi-session job.
 
 ## Recommendations, by phase
 

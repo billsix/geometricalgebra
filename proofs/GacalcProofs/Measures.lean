@@ -48,20 +48,41 @@ end G3
 
 namespace G2
 
+/-- The **area** of the parallelogram on `a`, `b` = `|a ∧ b|` (gacalc `measure.area`), the 2D twin of
+    `G3.area`. -/
+noncomputable def area (a b : G2) : ℝ := magnitude (wedge a b)
+
 /-- The **signed area** (2D) = the oriented wedge coefficient (gacalc `signed_area`), i.e. the `e₁₂`
-    part of `a b` — the signed `a₁*b₂ − a₂*b₁` (= the 2×2 determinant). -/
-noncomputable def signedArea (a1 a2 b1 b2 : ℝ) : ℝ := (mul (vec a1 a2) (vec b1 b2)).c12
+    part of `a ∧ b`. -/
+noncomputable def signedArea (a b : G2) : ℝ := (wedge a b).c12
 
-/-- The signed area is the oriented determinant `a₁*b₂ − a₂*b₁`. -/
-theorem signedArea_eq (a1 a2 b1 b2 : ℝ) :
-    signedArea a1 a2 b1 b2 = a1 * b2 - a2 * b1 := by
-  simp only [signedArea, mul, vec]; ring
+/-- The signed area of two vectors is the oriented determinant `a₁*b₂ − a₂*b₁`. -/
+theorem signedArea_eq {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    signedArea a b = a.c1 * b.c2 - a.c2 * b.c1 := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  simp only [signedArea, wedge, has, ha12, hbs, hb12]; ring
 
-/-- **The signed area is the grade-2 (pseudoscalar) part** of the product of two 2D vectors — Python
-    reads the top-grade coefficient; this records `signedArea = ⟨a b⟩₂`'s `e₁₂` component. -/
-theorem signedArea_eq_rVectorPart_two (a1 a2 b1 b2 : ℝ) :
-    signedArea a1 a2 b1 b2 = (rVectorPart 2 (mul (vec a1 a2) (vec b1 b2))).c12 := by
+/-- **The signed area is the grade-2 (pseudoscalar) part** of `a ∧ b` — Python reads the top-grade
+    coefficient; this records `signedArea = ⟨a∧b⟩₂`'s `e₁₂` component. -/
+theorem signedArea_eq_rVectorPart_two (a b : G2) :
+    signedArea a b = (rVectorPart 2 (wedge a b)).c12 := by
   simp only [signedArea, rVectorPart, smul, e_12]; ring
+
+/-- The bivector `a∧b` carries only the `e₁₂` coefficient, so `|a∧b|² = signedArea²` (the 2D twin of
+    `G3.normSq_wedge3_eq_signedVolume_sq`). -/
+theorem normSq_wedge_eq_signedArea_sq {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    normSq (wedge a b) = signedArea a b ^ 2 := by
+  obtain ⟨has, ha12⟩ := ha
+  obtain ⟨hbs, hb12⟩ := hb
+  simp only [normSq, signedArea, wedge, mul, reverse, has, ha12, hbs, hb12]; ring
+
+/-- `area² = signedArea²` — so `area = |signedArea| = |det[a,b]|`. -/
+theorem area_sq_vec {a b : G2} (ha : IsVector a) (hb : IsVector b) :
+    area a b ^ 2 = signedArea a b ^ 2 := by
+  simp only [area, magnitude]
+  rw [Real.sq_sqrt (by rw [normSq_wedge_eq_signedArea_sq ha hb]; exact sq_nonneg _)]
+  exact normSq_wedge_eq_signedArea_sq ha hb
 
 end G2
 

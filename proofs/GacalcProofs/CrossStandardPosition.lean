@@ -284,66 +284,57 @@ theorem cross_via_reduction {a b : G3} (hav : IsVector a) (hbv : IsVector b)
   conv_lhs => rw [hbform]
   rw [cross_reduced]
 
-/-- **The cross capstone over explicit vectors** — `cross_via_reduction` with the reduction angles
-    that actually standardize `a` and `b`, so it cites the placement lemmas `reduceToPlane_a_on_e1`
-    (sends `a` to `|a|*e₁`) and `reduceToPlane_b_in_plane` (lands `b` in the `e₁*e₂` plane). The
-    reduction `(cos, sin)` are read off `a`'s coordinates (align `a` to `e₁`) plus the swing that
-    puts `b` in the plane; `hk` = `a` off the z-axis, `hm` = `a` nonzero, `j` = `b`'s reduced
-    in-plane height with `hj`/`hj2` (so `b` is not aligned with `a`). This is the fully-assembled
-    "reduce → cross-in-frame → rotate back = canonical cross" for the cross arc. -/
-theorem cross_via_reduction_of_vectors (a1 a2 a3 b1 b2 b3 j : ℝ)
-    (hk : magnitude (vec a1 a2 0) ≠ 0) (hm : magnitude (vec a1 a2 a3) ≠ 0) (hj : j ≠ 0)
-    (hj2 : j ^ 2 =
-       (-a2 / magnitude (vec a1 a2 0) * b1 + a1 / magnitude (vec a1 a2 0) * b2) ^ 2 +
-       (-a3 / magnitude (vec a1 a2 a3) *
-            (a1 / magnitude (vec a1 a2 0) * b1 - -a2 / magnitude (vec a1 a2 0) * b2) +
-          magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3) * b3) ^ 2) :
-    cross (vec a1 a2 a3) (vec b1 b2 b3)
-      = unreduceToPlane (a1 / magnitude (vec a1 a2 0)) (-a2 / magnitude (vec a1 a2 0))
-          (magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3)) (-a3 / magnitude (vec a1 a2 a3))
-          ((-a2 / magnitude (vec a1 a2 0) * b1 + a1 / magnitude (vec a1 a2 0) * b2) / j)
-          (-(-a3 / magnitude (vec a1 a2 a3) *
-                (a1 / magnitude (vec a1 a2 0) * b1 - -a2 / magnitude (vec a1 a2 0) * b2) +
-              magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3) * b3) / j)
-          (vec 0 0 (magnitude (vec a1 a2 a3) *
-             (reduceToPlane (a1 / magnitude (vec a1 a2 0)) (-a2 / magnitude (vec a1 a2 0))
-                (magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3)) (-a3 / magnitude (vec a1 a2 a3))
-                ((-a2 / magnitude (vec a1 a2 0) * b1 + a1 / magnitude (vec a1 a2 0) * b2) / j)
-                (-(-a3 / magnitude (vec a1 a2 a3) *
-                      (a1 / magnitude (vec a1 a2 0) * b1 - -a2 / magnitude (vec a1 a2 0) * b2) +
-                    magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3) * b3) / j)
-                (vec b1 b2 b3)).c2)) := by
-  have hkpos : magnitude (vec a1 a2 0) ^ 2 = a1 ^ 2 + a2 ^ 2 := by rw [magnitude_sq_vec]; ring
-  have hmpos : magnitude (vec a1 a2 a3) ^ 2 = a1 ^ 2 + a2 ^ 2 + a3 ^ 2 := by rw [magnitude_sq_vec]
-  have hx : (a1 / magnitude (vec a1 a2 0)) ^ 2 + (-a2 / magnitude (vec a1 a2 0)) ^ 2 = 1 := by
-    rw [div_pow, div_pow, neg_sq, ← add_div, ← hkpos]; exact div_self (pow_ne_zero 2 hk)
-  have hz : (magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3)) ^ 2
-        + (-a3 / magnitude (vec a1 a2 a3)) ^ 2 = 1 := by
-    rw [div_pow, div_pow, neg_sq, ← add_div, hkpos, ← hmpos]; exact div_self (pow_ne_zero 2 hm)
-  have hy : ((-a2 / magnitude (vec a1 a2 0) * b1 + a1 / magnitude (vec a1 a2 0) * b2) / j) ^ 2
-        + (-(-a3 / magnitude (vec a1 a2 a3) *
-                (a1 / magnitude (vec a1 a2 0) * b1 - -a2 / magnitude (vec a1 a2 0) * b2) +
-              magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3) * b3) / j) ^ 2 = 1 := by
-    rw [div_pow, div_pow, neg_sq, ← add_div, ← hj2]; exact div_self (pow_ne_zero 2 hj)
-  have ha_on_e1 : reduceToPlane (a1 / magnitude (vec a1 a2 0)) (-a2 / magnitude (vec a1 a2 0))
-        (magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3)) (-a3 / magnitude (vec a1 a2 a3))
-        ((-a2 / magnitude (vec a1 a2 0) * b1 + a1 / magnitude (vec a1 a2 0) * b2) / j)
-        (-(-a3 / magnitude (vec a1 a2 a3) *
-              (a1 / magnitude (vec a1 a2 0) * b1 - -a2 / magnitude (vec a1 a2 0) * b2) +
-            magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3) * b3) / j)
-        (vec a1 a2 a3)
-      = vec (magnitude (vec a1 a2 a3)) 0 0 := by
-    rw [reduceToPlane_a_on_e1 a1 a2 a3 _ _ hk hm]; simp only [smul, vec]; ext <;> ring
-  have hb_c3 := reduceToPlane_b_in_plane (a1 / magnitude (vec a1 a2 0))
-      (-a2 / magnitude (vec a1 a2 0)) (magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3))
-      (-a3 / magnitude (vec a1 a2 a3)) b1 b2 b3 j hj hj2
-  exact cross_via_reduction (isVector_vec a1 a2 a3) (isVector_vec b1 b2 b3)
-    (a1 / magnitude (vec a1 a2 0)) (-a2 / magnitude (vec a1 a2 0))
-    (magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3)) (-a3 / magnitude (vec a1 a2 a3))
-    ((-a2 / magnitude (vec a1 a2 0) * b1 + a1 / magnitude (vec a1 a2 0) * b2) / j)
-    (-(-a3 / magnitude (vec a1 a2 a3) *
-          (a1 / magnitude (vec a1 a2 0) * b1 - -a2 / magnitude (vec a1 a2 0) * b2) +
-        magnitude (vec a1 a2 0) / magnitude (vec a1 a2 a3) * b3) / j)
-    hx hz hy ha_on_e1 hb_c3
+/-- **The cross capstone over vectors, through `alignSP`** — `cross_via_reduction` with the reduction
+    that actually standardizes `a` and `b`: `alignSP a` swings `a` onto `e₁` (`alignSP_self`), and one
+    more rotation about `e₁`, `rotYZ (b'₂/j) (−b'₃/j)` with `b' = alignSP a b` and `j = |b'₂,₃|`, lands
+    `b` in the `e₁*e₂` plane (`rotYZ_aligns_yz`). In that frame the cross is the pure-`e₃` vector
+    `(0, 0, |a|*(reduced b).e₂)` (`cross_reduced`), and `unalignSP a` after the inverse `rotYZ` brings it
+    back. `hk` = `a` off the `z`-axis, `hm` = `a` nonzero, `hj` = `b` not aligned with `a` (`hj2` says
+    `j` is the length of `b'`'s `(y, z)` part). This is the fully-assembled "reduce → cross-in-frame →
+    rotate back = canonical cross" for the cross arc. -/
+theorem cross_via_reduction_of_vectors {a b : G3} (ha : IsVector a) (hb : IsVector b)
+    (hk : xyMagnitude a ≠ 0) (hm : magnitude a ≠ 0) {j : ℝ} (hj : j ≠ 0)
+    (hj2 : j ^ 2 = (alignSP a b).c2 ^ 2 + (alignSP a b).c3 ^ 2) :
+    cross a b
+      = unalignSP a
+          (rotYZ ((alignSP a b).c2 / j) (-(-(alignSP a b).c3 / j))
+            (vec 0 0 (magnitude a
+              * (rotYZ ((alignSP a b).c2 / j) (-(alignSP a b).c3 / j) (alignSP a b)).c2))) := by
+  have hm2 : magnitude a ^ 2 = a.c1 ^ 2 + a.c2 ^ 2 + a.c3 ^ 2 := magnitude_sq_of_isVector ha
+  have hk2 : xyMagnitude a ^ 2 = a.c1 ^ 2 + a.c2 ^ 2 := xyMagnitude_sq a
+  have hcos : xyCos a = a.c1 / xyMagnitude a := by simp [xyCos, hk]
+  have hsin : xySin a = -a.c2 / xyMagnitude a := by simp [xySin, hk]
+  have hbv : IsVector (alignSP a b) := by
+    unfold alignSP
+    exact isVector_rotXZ (isVector_rotXY hb _ _) _ _
+  have hx : xyCos a ^ 2 + xySin a ^ 2 = 1 := by
+    rw [hcos, hsin, div_pow, div_pow, neg_sq, ← add_div, ← hk2]
+    exact div_self (pow_ne_zero 2 hk)
+  have hz : (xyMagnitude a / magnitude a) ^ 2 + (-a.c3 / magnitude a) ^ 2 = 1 := by
+    rw [div_pow, div_pow, neg_sq, ← add_div, hk2, ← hm2]
+    exact div_self (pow_ne_zero 2 hm)
+  have hy : ((alignSP a b).c2 / j) ^ 2 + (-(alignSP a b).c3 / j) ^ 2 = 1 := by
+    rw [div_pow, div_pow, neg_sq, ← add_div, ← hj2]
+    exact div_self (pow_ne_zero 2 hj)
+  have ha_on_e1 :
+      reduceToPlane (xyCos a) (xySin a) (xyMagnitude a / magnitude a) (-a.c3 / magnitude a)
+        ((alignSP a b).c2 / j) (-(alignSP a b).c3 / j) a = vec (magnitude a) 0 0 := by
+    show rotYZ _ _ (alignSP a a) = _
+    rw [alignSP_self ha hm, rotYZ_vec]
+    simp
+  have hrot := rotYZ_aligns_yz (alignSP a b).c1 (alignSP a b).c2 (alignSP a b).c3 j hj hj2
+  rw [← eq_vec_of_isVector hbv] at hrot
+  have hb_c3 :
+      (reduceToPlane (xyCos a) (xySin a) (xyMagnitude a / magnitude a) (-a.c3 / magnitude a)
+        ((alignSP a b).c2 / j) (-(alignSP a b).c3 / j) b).c3 = 0 := by
+    show (rotYZ _ _ (alignSP a b)).c3 = 0
+    rw [hrot]
+    rfl
+  refine (cross_via_reduction ha hb (xyCos a) (xySin a) (xyMagnitude a / magnitude a)
+    (-a.c3 / magnitude a) ((alignSP a b).c2 / j) (-(alignSP a b).c3 / j) hx hz hy ha_on_e1
+    hb_c3).trans ?_
+  have e : -(-a.c3 / magnitude a) = a.c3 / magnitude a := by ring
+  simp only [unreduceToPlane, reduceToPlane, unalignSP, alignSP]
+  rw [e]
 
 end GacalcProofs.G3
