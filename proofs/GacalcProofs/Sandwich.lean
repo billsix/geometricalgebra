@@ -108,6 +108,16 @@ theorem normSq_reverse (a : G2) : normSq (reverse a) = normSq a := by
 theorem reverse_smul (k : ℝ) (a : G2) : reverse (smul k a) = smul k (reverse a) := by
   simp only [reverse, smul]; ext <;> ring
 
+-- twin: GacalcProofs.G2.mul_vec_inverse_self
+/-- **A nonzero vector times its inverse is `1`** (𝒢₂): `a * a⁻¹ = 1`, because `a⁻¹ = ã/|a|² = a/|a|²` and
+    `a * a = |a|²`. -/
+theorem mul_vec_inverse_self {a : G2} (ha : IsVector a) (han : normSq a ≠ 0) :
+    mul a (inverse a) = one := by
+  rw [inverse, GacalcProofs.G2.mul_smul, GacalcProofs.G2.reverse_of_isVector ha,
+    GacalcProofs.G2.mul_vec_self ha]
+  simp only [scalar, smul, one]
+  ext <;> (try field_simp) <;> ring
+
 /-- **The inverse is an involution:** `(a⁻¹)⁻¹ = a` for `|a|² ≠ 0`. -/
 theorem inverse_inverse {a : G2} (ha : normSq a ≠ 0) : inverse (inverse a) = a := by
   rw [inverse, inverse, reverse_smul, reverse_reverse, normSq_smul, normSq_reverse,

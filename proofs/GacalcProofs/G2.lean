@@ -260,6 +260,14 @@ theorem e_1_mul_e_2 : mul e_1 e_2 = e_12 := by simp only [mul, e_1, e_2, e_12]; 
 /-- e₂*e₁ = −e₁₂ (anticommuting: the product is antisymmetric on orthogonal vectors). -/
 theorem e_2_mul_e_1 : mul e_2 e_1 = neg e_12 := by simp only [mul, e_2, e_1, e_12, neg]; ext <;> ring
 
+-- twin: GacalcProofs.G2.e_1_mul_e_12
+/-- e₁*e₁₂ = e₂ (the first basis vector times the plane: a quarter turn, `e₁ ↦ e₂`). -/
+theorem e_1_mul_e_12 : mul e_1 e_12 = e_2 := by simp only [mul, e_1, e_12, e_2]; ext <;> ring
+
+-- twin: GacalcProofs.G2.e_2_mul_e_12
+/-- e₂*e₁₂ = −e₁ (the second basis vector times the plane: a quarter turn, `e₂ ↦ −e₁`). -/
+theorem e_2_mul_e_12 : mul e_2 e_12 = neg e_1 := by simp only [mul, e_2, e_12, e_1, neg]; ext <;> ring
+
 /-- (e₁*e₂)² = −1. -/
 theorem e_12_sq : mul e_12 e_12 = neg one := by simp only [mul, e_12, neg, one]; ext <;> ring
 
@@ -432,6 +440,18 @@ noncomputable def dual (a : G2) : G2 := mul a I_inv
 /-- The dual of a vector is again a vector — the −90° rotation `(x, y) ↦ (y, −x)`. -/
 theorem dual_vec (x y : ℝ) : dual (vec x y) = vec y (-x) := by
   simp only [dual, I_inv, mul, vec]; ext <;> ring
+
+/-- **The dual of a vector is a vector** (𝒢₂). -/
+theorem isVector_dual {a : G2} (ha : IsVector a) : IsVector (dual a) := by
+  obtain ⟨hs, h12⟩ := ha
+  refine ⟨?_, ?_⟩ <;> simp only [dual, I_inv, mul, hs, h12] <;> ring
+
+-- twin: GacalcProofs.G2.normSq_dual_of_isVector
+/-- **The dual of a vector has the same length** (𝒢₂): `|v*|² = |v|²` — the quarter turn keeps lengths. -/
+theorem normSq_dual_of_isVector {a : G2} (ha : IsVector a) : normSq (dual a) = normSq a := by
+  obtain ⟨hs, h12⟩ := ha
+  simp only [normSq, dual, I_inv, mul, reverse, hs, h12]
+  ring
 
 /-! ### Reverse is an anti-automorphism, and reverses a product of vectors -/
 

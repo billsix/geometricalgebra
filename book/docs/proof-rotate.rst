@@ -160,6 +160,8 @@ carrying the same number cancel. We are left with the whole point of this chapte
    \qquad \vec{\mathbf{r}}(\vec{\mathbf{a}}; \pi/2) = \begin{bmatrix} -a_2 \\ a_1 \end{bmatrix}.
 
 **A rotation is a blend of the point and its 90°-rotated self.** That is worth staring
-at. The next chapter, :doc:`geometric-product`, notices that the 90° rotation
+at. (The Lean proofs state the blend as ``rot_eq_blend`` in ``proofs/GacalcProofs/Rotation2D.lean``, and
+``rot_eq_rotPlane`` ties the rotation by an angle to the rotation by a cosine and sine read off
+coordinates, ``rotPlane``, that later chapters use.) The next chapter, :doc:`geometric-product`, notices that the 90° rotation
 :math:`(-a_2, a_1)` is itself a *product* — and that observation is where
 the geometric product comes from.

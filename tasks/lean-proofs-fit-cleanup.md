@@ -1,6 +1,6 @@
 # Lean proofs: bring the corpus in line with the book, the Python and its own rules
 
-**Status:** in progress — phases 1 to 4 done 2026-11-22; phase 5 mostly done (leftovers below); phase 6 done 2026-11-23; phases 7 and 8 remain
+**Status:** in progress — phases 1 to 4 done 2026-11-22; phase 5 mostly done (leftovers below); phases 6 and 7 done 2026-11-23; phase 8 remains
 **Priority:** 5
 **Difficulty:** 7
 **Created:** 2026-11-22 (William Emerison Six <billsix@gmail.com>)
@@ -187,10 +187,30 @@ the 16 build warnings are all in files and lines this phase did not touch):
   `dot_self_vec_eq_normSq`.
 - `Projection3D.proj_eq_dot_mul_inverse`: `proj_a b = (b·a)*a⁻¹` for 𝒢₃ (the 2D one is in `Bootstrap2D`).
 
-**Remaining, in order:** the phase 5 leftovers above, then 7 (results
-the book states that Lean lacks), 8 (rewrite the inventory and coverage map from the files as they then stand). These
-are proof rewrites with a full `lake build` (about 20 minutes) per iteration. The task's own plan allows splitting 7
-into a step task if it grows; the rest is a multi-session job.
+**Phase 7** (2026-11-23, one work commit on `lean-phase-7`; `lake build`, the `sorry` scan and the axioms gate pass,
+1123 declarations). The results the book states and Lean lacked:
+
+- `Reflect`: `reflectVec_eq_sandwich` (`reflect_d v = d*v*d⁻¹`), `reflectVec_twice` and `isVector_reflectVec` in 𝒢₃;
+  the 𝒢₂ line reflection (`G2.reflectVec`, `reflectVec_eq`, `_eq_sandwich`, `normSq_reflectVec`, `_twice`);
+  `normSq_reflectPlane` (the plane mirror keeps lengths). Book pages `reflection.rst` and `reflection-3d.rst` cite them.
+- `Exp`: `rotor_eq_expBivector` (`rotor θ = exp(−(θ/2)*e₁₂)`), `planeRotor_eq_expBivector12` and
+  `planeRotor_eq_expBivectorGeneral` (for any unit bivector, via `|−(θ/2)*i| = |θ/2|`).
+- Bridges: `Rotation2D.rot_eq_rotPlane` and `rot_eq_blend` (the book's blend formula for `rot`; `proof-rotate.rst` cites
+  them); `PlaneRotation3D.unitPlane` (`normalize (a ∧ b)`), `isBivector_unitPlane`, `normSq_unitPlane` and
+  `isRotor_planeRotor_unitPlane`, so the angle theorem applies to `plane_rotation(a, b)`.
+- Small ones: `G2.e_1_mul_e_12`, `G2.e_2_mul_e_12` (the quarter turn as a product), `G3.I_mul_comm`,
+  `G2.isVector_dual` and `G2.normSq_dual_of_isVector`, `G3.isVector_cross`, `G2.mul_vec_inverse_self`, and
+  `reject_plane_perp` (rejection from a plane without the volume hypothesis).
+- `StudentTrigForms`: the meaning gates of `cross_perp_left`/`_right` and `dual_wedge_perp_left`/`_right` are now the
+  nondegenerate plane `normSq (wedge a b) ≠ 0` (the `0/0` case a ∥ b is excluded); `dual-3d.rst` and
+  `notebooks/dual-3d.py` cite the cosine forms next to the `_dot` ones (`dual.rst` already did).
+- Not done: the Python `exp` docstring and `notebooks/displayrotations.py` do not yet cite
+  `rotor_eq_expBivector` (a docstring edit goes through the generator's custom-docs table; left for the phase 8 doc
+  sweep).
+
+**Remaining, in order:** the phase 5 leftovers above, then 8 (rewrite the inventory and coverage map from the files as
+they then stand, and the doc sweep named under phase 7's "Not done"). Phase 8 is documentation and needs no proof work;
+a full `lake build` is only run to check the names it cites.
 
 ## Recommendations, by phase
 

@@ -17,7 +17,9 @@ import GacalcProofs.G3
     **Stated over objects, with a nonzero guard.** Each theorem takes vectors/multivectors
     (`IsVector`), not coefficient tuples ("use coordinates only when needed" — see `CLAUDE.md` and
     `lean-ga-proof-architecture.md`), and carries a nonzero hypothesis (`normSq a ≠ 0`, i.e. the input
-    is not the zero vector). The guard is what makes the trig form **faithful**: see below.
+    is not the zero vector). The guard is what makes the trig form **faithful**: see below. For a result
+    about a plane normal or a cross product the guard is the nondegenerate plane, `normSq (wedge a b) ≠
+    0`, which also keeps the normal itself from being the zero vector.
 
     ## Why the cosine form RESTS ON the dot form, and why the nonzero guard matters
 
@@ -76,14 +78,17 @@ namespace GacalcProofs.G3
 
 /-! ### 𝒢₃ student forms: perpendicularity, parallelism, and area -/
 
-/-- **The cross product is perpendicular to its left factor** (cosine 0) — for nonzero vectors. -/
+/-- **The cross product is perpendicular to its left factor** (cosine 0) — for vectors that span a
+    plane (`|a∧b|² ≠ 0`): when `a ∥ b` the cross product is the zero vector and the cosine is the
+    meaningless `0/0`, so the gate is the nondegenerate plane, not just `a, b ≠ 0`. -/
 theorem cross_perp_left {a b : G3} (ha : IsVector a) (hb : IsVector b)
-    (_ha0 : normSq a ≠ 0) (_hb0 : normSq b ≠ 0) : cos_between (cross a b) a = 0 := by
+    (_hab : normSq (wedge a b) ≠ 0) : cos_between (cross a b) a = 0 := by
   simp only [cos_between, cross_perp_left_dot ha hb, zero_div]
 
-/-- **The cross product is perpendicular to its right factor** (cosine 0) — for nonzero vectors. -/
+/-- **The cross product is perpendicular to its right factor** (cosine 0) — for vectors that span a
+    plane (`|a∧b|² ≠ 0`; see `cross_perp_left`). -/
 theorem cross_perp_right {a b : G3} (ha : IsVector a) (hb : IsVector b)
-    (_ha0 : normSq a ≠ 0) (_hb0 : normSq b ≠ 0) : cos_between (cross a b) b = 0 := by
+    (_hab : normSq (wedge a b) ≠ 0) : cos_between (cross a b) b = 0 := by
   simp only [cos_between, cross_perp_right_dot ha hb, zero_div]
 
 /-- **The rejection is perpendicular to what it was rejected from** (cosine 0), 3D — for `a` with
@@ -108,15 +113,15 @@ theorem area_eq_mag_mul_sin (a b : G3) (ha : magnitude a ≠ 0) (hb : magnitude 
   field_simp
 
 /-- **The plane normal `(a ∧ b)*` is perpendicular to each spanning vector** (cosine 0), left — for
-    nonzero vectors. -/
+    vectors that span a plane (`|a∧b|² ≠ 0`; otherwise the normal is zero and the cosine is `0/0`). -/
 theorem dual_wedge_perp_left {a b : G3} (ha : IsVector a) (hb : IsVector b)
-    (_ha0 : normSq a ≠ 0) (_hb0 : normSq b ≠ 0) :
+    (_hab : normSq (wedge a b) ≠ 0) :
     cos_between (dual (wedge a b)) a = 0 := by
   simp only [cos_between, dual_wedge_perp_left_dot ha hb, zero_div]
 
-/-- …and to the right spanning vector (cosine 0) — for a nonzero vector `b` (and ANY `a`). -/
+/-- …and to the right spanning vector (cosine 0) — for vectors that span a plane (`|a∧b|² ≠ 0`). -/
 theorem dual_wedge_perp_right {a b : G3} (hb : IsVector b)
-    (_ha0 : normSq a ≠ 0) (_hb0 : normSq b ≠ 0) :
+    (_hab : normSq (wedge a b) ≠ 0) :
     cos_between (dual (wedge a b)) b = 0 := by
   simp only [cos_between, dual_wedge_perp_right_dot hb, zero_div]
 

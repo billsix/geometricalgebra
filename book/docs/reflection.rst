@@ -78,8 +78,10 @@ the sign), so it comes out negated. Along kept, across flipped: :eq:`eq-reflect-
 :eq:`eq-reflect-e1`.
 
 A reflection keeps every length, and reflecting twice across the same line gives back the vector
-you started with. The companion notebook computes all three forms with symbolic coordinates and
-shows that they agree. Reflection in space, across a line and in a plane, is
+you started with. The Lean proofs state the product form as ``reflectVec_eq_sandwich``, the length as
+``normSq_reflectVec`` and the double reflection as ``reflectVec_twice``, for a line in the plane and in
+space, in ``proofs/GacalcProofs/Reflect.lean``. The companion notebook computes all three forms with symbolic
+coordinates and shows that they agree. Reflection in space, across a line and in a plane, is
 :doc:`reflection-3d`.
 
 .. toctree::

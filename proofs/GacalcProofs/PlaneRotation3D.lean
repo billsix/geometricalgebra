@@ -68,6 +68,31 @@ theorem isRotor_planeRotor (θ : ℝ) {i : G3} (hi : IsBivector i) (hu : normSq 
     IsRotor (planeRotor θ i) :=
   ⟨isEvenVersor_planeRotor θ hi, normSq_planeRotor θ hi hu⟩
 
+/-! ### The plane of two vectors: `normalize (a ∧ b)` is a unit bivector -/
+
+/-- The unit bivector of the plane through `a` and `b`: `i = (1/|a∧b|)*(a∧b)` — gacalc's `cls.i(a, b)`,
+    the plane `plane_rotation(a, b)` rotates in. -/
+noncomputable def unitPlane (a b : G3) : G3 := smul (1 / magnitude (wedge a b)) (wedge a b)
+
+/-- `unitPlane a b` is a bivector. -/
+theorem isBivector_unitPlane {a b : G3} (ha : IsVector a) (hb : IsVector b) :
+    IsBivector (unitPlane a b) := by
+  obtain ⟨h0, h1, h2, h3, h4⟩ := isBivector_wedge ha hb
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> simp [unitPlane, smul, h0, h1, h2, h3, h4]
+
+/-- `unitPlane a b` is **unit**, `|i|² = 1`, when the plane is nondegenerate. -/
+theorem normSq_unitPlane {a b : G3} (hn : normSq (wedge a b) ≠ 0) : normSq (unitPlane a b) = 1 := by
+  have hm : magnitude (wedge a b) ≠ 0 := magnitude_ne_zero_of_normSq_ne_zero hn
+  rw [unitPlane, normSq_smul, ← magnitude_sq_eq_normSq (wedge a b)]
+  field_simp
+
+/-- **The rotor of the plane through `a` and `b` is a rotor:** `planeRotor θ (unitPlane a b)` is even and
+    unit, so the whole `Rotor.lean` layer and the angle theorem below apply to gacalc's
+    `plane_rotation(a, b)(θ)`. -/
+theorem isRotor_planeRotor_unitPlane (θ : ℝ) {a b : G3} (ha : IsVector a) (hb : IsVector b)
+    (hn : normSq (wedge a b) ≠ 0) : IsRotor (planeRotor θ (unitPlane a b)) :=
+  isRotor_planeRotor θ (isBivector_unitPlane ha hb) (normSq_unitPlane hn)
+
 /-! ### The angle theorem: `R*v*R̃ = v⊥ + cos(θ)*v∥ + sin(θ)*(v ⌋ i)` -/
 
 /-- **The 3D rotor angle theorem (the leaf):** for a unit bivector `i` and a vector `v`,

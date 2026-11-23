@@ -36,7 +36,9 @@
 #
 # Every coordinate is a symbol. Numbers appear only to draw the figure. The Lean
 # theorems are `dual_wedge_perp_left_dot` and `dual_wedge_perp_right_dot`
-# (`proofs/GacalcProofs/Projection3D.lean`).
+# (`proofs/GacalcProofs/Projection3D.lean`), and the cosine forms
+# `dual_wedge_perp_left` and `dual_wedge_perp_right`
+# (`proofs/GacalcProofs/StudentTrigForms.lean`).
 
 # %%
 # twin: GacalcProofs.G3.dual_wedge_perp_left_dot
