@@ -154,13 +154,18 @@ the 16 build warnings are all in files and lines this phase did not touch):
   2D file's proof, the isometry's `hin`/`hcoef` use `normSq_mul_vec` and `magnitude_sq_eq_normSq` instead of
   coordinate sums, `normalizeVec_to_mul_versor_eq_bisector`, `normalizeVec_mul_versor_eq_reverse` and the new
   `fhat_that_eq_reverse_mul_inverse` are over objects. The file has no `_coord` theorem and no linter warning left.
-- Left for a later session (phase 5 leftovers): the four heavy leaves (`inplane_perp_reject`, `project_perp_reject`,
-  `versor_mul_project_eq`, `versor_mul_reject_comm`) still compute on coordinates with `field_simp; ring`, stated over
-  `IsVector`, not yet over `IsBivector B` for the plane; `hfn`, `htn` are still hypotheses of `projRotation_isometry`
-  and `projRotation_eq_sandwich` although `hpn` implies them (and `hrn` needs `Rotor`'s `normSq_versorFromVectors`,
-  which sits downstream); `Bootstrap2D`'s `mul_proj_eq_dot` and neighbours still restate part of `RotateFromTo2D`;
-  `G1`/`G2` section order against `algebra-teaching-order.md` is only partly aligned (G1's headings are not grouped
-  as G2's are).
+- Phase 5 leftovers, second pass (2026-11-23, one more work commit): `project_perp_reject` and `plane_pythagorean` are
+  stated for any plane `B` (`IsBivector B`, `|B|² ≠ 0`; the latter now two rewrites through `project_add_reject`),
+  with `isBivector_wedge` for `B = f∧t`; `projRotation_carries_from_to`, `projRotation_isometry` and
+  `projRotation_eq_sandwich` lost `hfn`/`htn` (new `normSq_ne_zero_of_wedge_left`/`_right`, by Lagrange), and
+  `Rotor.rotorSandwich_rotorFromVectors_eq_projRotation` (𝒢₃) lost them with it.
+- Still open after that: `inplane_perp_reject`, `versor_mul_project_eq` and `versor_mul_reject_comm` keep their
+  coordinate `field_simp; ring` bodies (they mention `f` and `t` themselves, not only the plane, so they do not
+  generalize to an arbitrary `B`); `hrn` (`|R|² ≠ 0`) is still a hypothesis, since dropping it needs
+  `Rotor.normSq_versorFromVectors` moved upstream and the `hr` hypotheses of `Rotor`'s theorems removed with it;
+  `Bootstrap2D`'s `mul_proj_eq_dot` and neighbours still restate part of `RotateFromTo2D`; the `G1`/`G2` section
+  order now follows the teaching order (addition laws before the product), but `G2`'s late sections (duals,
+  reverse) were not regrouped.
 - Items 2, 6 and 8 of `tasks/lean-proofs-remove-extras.md` named `ProjectionRotation3D` leaves that no longer exist;
   its audit still stands for the other files.
 
