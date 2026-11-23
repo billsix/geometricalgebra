@@ -5,8 +5,8 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dmitry@gutov.dev>
 ;; URL: http://company-mode.github.io/
-;; Package-Version: 20261112.442
-;; Package-Revision: 22cb3ff7b148
+;; Package-Version: 20261120.417
+;; Package-Revision: 7fbf9b36d332
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "26.1") (posframe "1.5.1"))
 
@@ -1382,19 +1382,21 @@ be recomputed when this value changes."
     (error (error "Company: backend %s error \"%s\" with args %s"
                   company-backend (error-message-string err) args))))
 
+(defun company--multi-available-p (backend)
+  (and (not (keywordp backend))
+       (company--maybe-init-backend backend)))
+
+(defun company--multi-first-available (backends)
+  (while (and backends
+              (not (company--multi-available-p (car backends))))
+    (setq backends (cdr backends)))
+  (car backends))
+
 (defvar-local company--multi-uncached-backends nil)
 (defvar-local company--multi-min-prefix nil)
 
 (defun company--multi-backend-adapter (backends command &rest args)
-  (let ((backends (cl-loop for b in backends
-                           when (or (keywordp b)
-                                    (company--maybe-init-backend b))
-                           collect b))
-        (separate (memq :separate backends)))
-
-    (unless (eq command 'prefix)
-      (setq backends (cl-delete-if #'keywordp backends)))
-
+  (let* ((separate (memq :separate backends)))
     (pcase command
       (`candidates
        (company--multi-backend-adapter-candidates backends
@@ -1410,6 +1412,7 @@ be recomputed when this value changes."
                       (dolist (backend backends)
                         (when
                             (and (member backend uncached)
+                                 (company--multi-available-p backend)
                                  (company--good-prefix-p
                                   (let ((company-backend backend))
                                     (company-call-backend 'prefix))
@@ -1423,8 +1426,9 @@ be recomputed when this value changes."
       ((or `ignore-case `no-cache `require-match)
        (let (value)
          (cl-dolist (backend backends)
-           (when (setq value (company--force-sync
-                              backend (cons command args) backend))
+           (when (and (company--multi-available-p backend)
+                      (setq value (company--force-sync
+                                   backend (cons command args) backend)))
              (when (and (eq command 'ignore-case)
                         (eq value 'keep-prefix))
                (setq value t))
@@ -1434,7 +1438,7 @@ be recomputed when this value changes."
        (let ((arg (car args)))
          (when (> (length arg) 0)
            (let* ((backend (or (get-text-property 0 'company-backend arg)
-                               (car backends)))
+                               (company--multi-first-available backends)))
                   (entity (company--force-sync backend '(prefix) backend))
                   (prefix (company--prefix-str entity))
                   (suffix (company--suffix-str entity))
@@ -1453,7 +1457,7 @@ be recomputed when this value changes."
        (let ((arg (car args)))
          (when (> (length arg) 0)
            (let ((backend (or (get-text-property 0 'company-backend arg)
-                              (car backends))))
+                              (company--multi-first-available backends))))
              (apply backend command args))))))))
 
 (defun company--multi-prefix (backends)
@@ -1462,7 +1466,7 @@ be recomputed when this value changes."
 
     (dolist (backend backends)
       (let* ((entity (and
-                      (not (keywordp backend))
+                      (company--multi-available-p backend)
                       (company--force-sync backend '(prefix) backend)))
              new-len)
         (when (stringp (company--prefix-str entity))
@@ -1490,8 +1494,9 @@ be recomputed when this value changes."
 (defun company--multi-expand-common (backends min-length prefix suffix)
   (let ((tuples
          (cl-loop for backend in backends
-                  for bp = (let ((company-backend backend))
-                             (company-call-backend 'prefix))
+                  for bp = (when (company--multi-available-p backend)
+                             (let ((company-backend backend))
+                               (company-call-backend 'prefix)))
                   for expansion =
                   (when (company--good-prefix-p bp min-length)
                     (let ((inhibit-redisplay t)
@@ -1570,15 +1575,18 @@ be recomputed when this value changes."
 (defun company--multi-backend-adapter-candidates (backends min-length separate)
   (let* (backend-prefix
          suffix
+         (first-backend (company--multi-first-available backends))
          (pairs (cl-loop for backend in backends
-                         when (let ((bp (let ((company-backend backend))
-                                          (company-call-backend 'prefix))))
-                                ;; One might override min-length, another not.
-                                (if (company--good-prefix-p bp min-length)
-                                    (setq backend-prefix (company--prefix-str bp)
-                                          suffix (company--suffix-str bp))
-                                  (push backend company--multi-uncached-backends)
-                                  nil))
+                         when (and
+                               (company--multi-available-p backend)
+                               (let ((bp (let ((company-backend backend))
+                                           (company-call-backend 'prefix))))
+                                 ;; One might override min-length, another not.
+                                 (if (company--good-prefix-p bp min-length)
+                                     (setq backend-prefix (company--prefix-str bp)
+                                           suffix (company--suffix-str bp))
+                                   (push backend company--multi-uncached-backends)
+                                   nil)))
                          collect (cons (funcall backend 'candidates backend-prefix suffix)
                                        (company--multi-candidates-mapper
                                         backend
@@ -1586,7 +1594,7 @@ be recomputed when this value changes."
                                         ;; Small perf optimization: don't tag the
                                         ;; candidates received from the first
                                         ;; backend in the group.
-                                        (not (eq backend (car backends))))))))
+                                        (not (eq backend first-backend)))))))
     (company--merge-async pairs (lambda (values) (apply #'append values)))))
 
 (defun company--multi-candidates-mapper (backend separate tag)
@@ -3841,7 +3849,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                   (length value)))))
         nil)))
 
-(defun company-fill-propertize (value annotation width selected left right)
+(defun company-fill-propertize ( value annotation width selected left right
+                                 &optional scrollbar)
   (let* ((margin (length left))
          (common (company--common-or-matches value))
          (_ (setq value
@@ -3874,7 +3883,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                           (company-safe-substring value 0
                                                   (- width (length annotation)))
                           annotation))
-                       right)))
+                       right
+                       scrollbar)))
     (setq width (+ width margin (length right)))
 
     (font-lock-append-text-property 0 width 'mouse-face
@@ -3948,10 +3958,13 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 (defun company--clean-string (str)
   (let* ((add-pixels 0)
          (add-length 0)
-         (new-str
-          (replace-regexp-in-string
-           "\\([^[:graph:] ]\\)\\|\\(\ufeff\\)\\|[[:multibyte:]]+"
-           (lambda (match)
+         (re "\\([^[:graph:] ]\\)\\|\\(\ufeff\\)\\|[[:multibyte:]]+"))
+    ;; Avoid duplicating pure-ASCII strings.
+    (when (string-match-p re str)
+      (setq
+       str
+       (replace-regexp-in-string
+        re (lambda (match)
              (cond
               ((match-beginning 1)
                ;; FIXME: Better char for 'non-printable'?
@@ -3976,10 +3989,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                  match
                  ))
               ))
-           str)))
+        str)))
     (if (>= 0 add-length)
-        new-str
-      (concat new-str
+        str
+      (concat str
               (propertize
                (make-string add-length ?\ufeff)
                'display `(space . (:width (,add-pixels))))))))
@@ -4254,13 +4267,14 @@ but adjust the expected values appropriately."
               (setf (gv-deref quick-access)
                     (concat qa-hint (gv-deref quick-access))))
             (cl-incf row))
-          (push (concat
-                 (company-fill-propertize str annotation
-                                          width selected
-                                          left
-                                          right)
-                 (when scrollbar-bounds
-                   (company--scrollbar i scrollbar-bounds selected)))
+          (push (company-fill-propertize str annotation
+                                         width selected
+                                         left
+                                         right
+                                         (when scrollbar-bounds
+                                           (company--scrollbar i
+                                                               scrollbar-bounds
+                                                               selected)))
                 new)))
 
       (when remainder

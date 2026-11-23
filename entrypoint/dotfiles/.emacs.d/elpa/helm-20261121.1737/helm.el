@@ -11,8 +11,8 @@
 ;;                         Thierry Volpiatto
 
 ;; Author: Thierry Volpiatto <thievol@posteo.net>
-;; Package-Version: 20261112.1637
-;; Package-Revision: 9e3877eb5d96
+;; Package-Version: 20261121.1737
+;; Package-Revision: 5241b6ae8208
 ;; URL: https://emacs-helm.github.io/helm/
 ;; Package-Requires: ((helm-core "4.0.9") (wfnames "1.2"))
 ;; Keywords: helm, convenience, files, buffers, grep, completion, lisp, matching, tools, help, package

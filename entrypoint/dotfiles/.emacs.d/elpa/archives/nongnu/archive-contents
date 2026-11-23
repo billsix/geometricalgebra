@@ -91,6 +91,15 @@
       (:keywords "languages" "arduino")
       (:maintainer "stardiviner" . "numbchild@gmail.com")
       (:commit . "b2ffd8441851659cb1cc844156073967729585e5"))])
+ (au-themes
+  . [(0 4 1) ((emacs (29 1)) (modus-themes (5 2 0)))
+     "Sensory-safe themes for autism and neurodivergence" tar
+     ((:url . "https://github.com/szymonwilczek/au-themes")
+      (:keywords "faces" "themes" "accessibility" "autism"
+		 "neurodivergence")
+      (:maintainer "Szymon Wilczek" . "swilczek.lx@gmail.com")
+      (:authors ("Szymon Wilczek" . "swilczek.lx@gmail.com"))
+      (:commit . "ac31d5ca03ce474cc6f8bc046ba77f3b51ff9530"))])
  (auto-dim-other-buffers
   . [(2 2 3) ((emacs (27 1)))
      "Makes windows without focus less prominent" tar
@@ -287,12 +296,12 @@
       (:authors ("Bozhidar Batsov" . "bozhidar@batsov.dev"))
       (:commit . "c0cab0b0423fadf63bdf0f08bd2b74eb0139b893"))])
  (csv2ledger
-  . [(1 5 5) ((emacs (29 1)) (csv-mode (1 24)))
+  . [(1 6) ((emacs (29 1)) (csv-mode (1 24)))
      "Convert csv files to ledger entries" tar
      ((:url . "https://codeberg.org/joostkremers/csv2ledger")
       (:maintainer "Joost Kremers" . "joostkremers@fastmail.fm")
       (:authors ("Joost Kremers" . "joostkremers@fastmail.fm"))
-      (:commit . "7b095112e7a0a4cbe58e665129c3b2d227f3c96e"))])
+      (:commit . "ec888b00419d9b136cf81d4fc1c2d38b02790bb5"))])
  (cyberpunk-theme
   . [(1 22) nil "Cyberpunk Color Theme" tar
      ((:url . "https://github.com/n3mo/cyberpunk-theme.el")
@@ -628,12 +637,12 @@
       (:authors ("Sylvain Benner" . "sylvain.benner@gmail.com"))
       (:commit . "3c65fecd9917a41eaf6460f22187e2323821f3ce"))])
  (evil-matchit
-  . [(5 0 0) ((emacs (27 1))) "Vim matchit ported to Evil" tar
+  . [(5 0 1) ((emacs (27 1))) "Vim matchit ported to Evil" tar
      ((:url . "http://github.com/redguardtoo/evil-matchit")
       (:keywords "matchit" "vim" "evil")
       (:maintainer "Chen Bin" . "chenbin.sh@gmail.com")
       (:authors ("Chen Bin" . "chenbin.sh@gmail.com"))
-      (:commit . "4cb8dd3d811ecb2abd774b491223ac5460dcdd5e"))])
+      (:commit . "d3777fe1984b081537f6410c3f907ff1d24c6225"))])
  (evil-nerd-commenter
   . [(3 6 1) ((emacs (26 1)))
      "Comment/uncomment lines efficiently. Like Nerd Commenter in Vim"
@@ -698,15 +707,15 @@
       (:authors ("Marty Hiatt" . "martianh@disroot.org"))
       (:commit . "a41695624789b25523904749d0c6fa2dfbb8cd93"))])
  (fj
-  . [(0 53)
-     ((emacs (29 1)) (compat (31)) (fedi (0 5)) (tp (0 8))
+  . [(0 54)
+     ((emacs (29 1)) (compat (31)) (fedi (0 6)) (tp (0 8))
       (transient (0 10 0)) (magit (4 3 8)))
      "Client for Forgejo instances" tar
      ((:url . "https://codeberg.org/martianh/fj.el")
       (:keywords "git" "convenience")
       (:maintainer "Marty Hiatt" . "martianh@disroot.org")
       (:authors ("Marty Hiatt" . "martianh@disroot.org"))
-      (:commit . "b409fa9a6c0cfd5ca2b95f0b981e5cbe4181c3c3"))])
+      (:commit . "9afc33c723cf3905d0a7701b8e74e27dfd6388b8"))])
  (flamegraph
   . [(0 2) ((emacs (30 1)))
      "Flame graphs for Emacs's native profiler and folded stacks files"
@@ -1880,11 +1889,11 @@
       (:authors ("John Olsson" . "john@cryon.se"))
       (:commit . "2d5acd143a153e16372d59000e57d76291ab81dd"))])
  (subed
-  . [(1 5 4) ((emacs (25 1))) "A major mode for editing subtitles" tar
+  . [(1 5 5) ((emacs (25 1))) "A major mode for editing subtitles" tar
      ((:url . "https://github.com/sachac/subed")
       (:keywords "convenience" "files" "hypermedia" "multimedia")
       (:maintainer "Sacha Chua" . "sacha@sachachua.com")
-      (:commit . "d9317d1de190601384528ae01468688107725c8d"))])
+      (:commit . "d500bc3c1f663719bfc9bf116914b06ababb850e"))])
  (sweeprolog
   . [(0 27 6) ((emacs (27 1)) (compat (29 1 4 2)))
      "Embedded SWI-Prolog" tar

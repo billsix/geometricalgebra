@@ -5,8 +5,8 @@
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2022
-;; Package-Version: 20260722.1411
-;; Package-Revision: 8775389d085a
+;; Package-Version: 20261116.739
+;; Package-Revision: 5cf5879b0c46
 ;; Package-Requires: ((emacs "29.1") (org "9.6") (compat "31"))
 ;; URL: https://github.com/minad/org-modern
 ;; Keywords: outlines, hypermedia, text
@@ -943,8 +943,9 @@ whole buffer; otherwise, for the line at point."
           (goto-char (point-min))
           (while (re-search-forward "\\(\\[#.\\]\\)" nil 'noerror)
             ;; For some reason the org-agenda-fontify-priorities adds overlays?!
-            (when-let* ((ov (overlays-at (match-beginning 0))))
-              (overlay-put (car ov) 'face nil))
+            (dolist (ov (overlays-at (match-beginning 0)))
+              (when (eq (overlay-get ov 'org-type) 'org-priority)
+                (overlay-put ov 'face nil)))
             (org-modern--priority)))))))
 
 ;;;###autoload
