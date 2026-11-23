@@ -63,8 +63,9 @@ reflection across its normal. The product says it too. Since :math:`B = \vec{\ma
 :math:`B * \vec{\mathbf{v}} * B^{-1} = \vec{\mathbf{n}} * \vec{\mathbf{v}} * \vec{\mathbf{n}}^{-1}`, and the mirror
 is minus either.
 
-The Lean proofs state the reflection across a vector as ``reflectVec_eq`` and the plane-versus-normal
-identity as ``reflectPlane_eq_neg_reflectVec_dual``, both in ``proofs/GacalcProofs/Reflect.lean``. The
+The Lean proofs state the reflection across a vector as ``reflectVec_eq``, the plane-versus-normal
+identity as ``reflectPlane_eq_neg_reflectVec_dual`` and the length kept by the mirror as
+``normSq_reflectPlane``, all in ``proofs/GacalcProofs/Reflect.lean``. The
 companion notebook computes each form with symbolic coordinates.
 
 .. toctree::

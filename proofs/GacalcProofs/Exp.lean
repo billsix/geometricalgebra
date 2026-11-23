@@ -2,6 +2,7 @@ import GacalcProofs.G2
 import GacalcProofs.G3
 import GacalcProofs.Sandwich
 import GacalcProofs.Rotation2D
+import GacalcProofs.PlaneRotation3D
 
 /-! # The exponential map: exp of a bivector is a rotor
 
@@ -39,6 +40,12 @@ theorem normSq_expBivector (θ : ℝ) : normSq (expBivector θ) = 1 := by
     `sandwich_eq_reverse_sandwich_of_isRotor` applies to it. -/
 theorem isRotor_expBivector (θ : ℝ) : IsRotor (expBivector θ) :=
   ⟨by rw [expBivector_eq_evenVersor]; exact isEvenVersor_evenVersor _ _, normSq_expBivector θ⟩
+
+-- twin: GacalcProofs.G2.rotor_eq_expBivector
+/-- **The half-angle rotor is an exponential:** `rotor θ = exp(−(θ/2)*e₁₂)` (the statement of
+    `MultiVectorBase.exp`'s docstring and `notebooks/displayrotations.py`, `R = exp(−(θ/2)*i)`). -/
+theorem rotor_eq_expBivector (θ : ℝ) : GacalcProofs.rotor θ = expBivector (-(θ / 2)) := by
+  simp only [GacalcProofs.rotor, expBivector, GacalcProofs.fullAngleRotor, Real.cos_neg, Real.sin_neg]
 
 end G2
 
@@ -89,6 +96,40 @@ theorem isRotor_expBivectorGeneral (p q r : ℝ) (h : p ^ 2 + q ^ 2 + r ^ 2 ≠ 
     IsRotor (expBivectorGeneral p q r) :=
   ⟨by refine ⟨?_, ?_, ?_, ?_⟩ <;> simp only [expBivectorGeneral, add, smul, one, bivector, zero] <;> ring,
    normSq_expBivectorGeneral p q r h⟩
+
+-- twin: GacalcProofs.G3.planeRotor_eq_expBivector12
+/-- **In the `e₁₂` plane the 3D half-angle rotor is an exponential:** `planeRotor θ e₁₂ = exp(−(θ/2)*e₁₂)`. -/
+theorem planeRotor_eq_expBivector12 (θ : ℝ) : planeRotor θ e_12 = expBivector12 (-(θ / 2)) := by
+  simp only [planeRotor, expBivector12, Real.cos_neg, Real.sin_neg]
+
+-- twin: GacalcProofs.G3.planeRotor_eq_expBivectorGeneral
+/-- **The half-angle rotor of any plane is an exponential:** for a unit bivector `i`,
+    `planeRotor θ i = exp(−(θ/2)*i)` (the closed form `cos(|B|) + sin(|B|)*B̂` of `expBivectorGeneral`
+    applied to `B = −(θ/2)*i`, whose length is `|θ/2|`). -/
+theorem planeRotor_eq_expBivectorGeneral (θ : ℝ) {i : G3} (hi : IsBivector i) (hu : normSq i = 1) :
+    planeRotor θ i
+      = expBivectorGeneral (-(θ / 2) * i.c12) (-(θ / 2) * i.c13) (-(θ / 2) * i.c23) := by
+  have hpqr := sum_sq_of_unit_bivector hi hu
+  have hS : (-(θ / 2) * i.c12) ^ 2 + (-(θ / 2) * i.c13) ^ 2 + (-(θ / 2) * i.c23) ^ 2
+      = (θ / 2) ^ 2 := by linear_combination (θ / 2) ^ 2 * hpqr
+  obtain ⟨his, hi1, hi2, hi3, hi123⟩ := hi
+  have hsq : Real.sqrt ((θ / 2) ^ 2) = |θ / 2| := Real.sqrt_sq_eq_abs _
+  simp only [expBivectorGeneral, planeRotor, add, smul, one, bivector, zero, hS, hsq, his, hi1, hi2,
+    hi3, hi123]
+  have hcos : Real.cos |θ / 2| = Real.cos (θ / 2) := Real.cos_abs _
+  have hsin : ∀ c : ℝ, Real.sin |θ / 2| / |θ / 2| * (-(θ / 2) * c) = -Real.sin (θ / 2) * c := by
+    intro c
+    rcases lt_trichotomy θ 0 with h | h | h
+    · have h2 : θ / 2 < 0 := by linarith
+      rw [abs_of_neg h2, Real.sin_neg]
+      have hθ : θ ≠ 0 := h.ne
+      field_simp
+    · subst h; simp
+    · have h2 : 0 < θ / 2 := by linarith
+      rw [abs_of_pos h2]
+      field_simp
+  rw [hcos]
+  ext <;> simp only [hsin] <;> try ring
 
 end G3
 

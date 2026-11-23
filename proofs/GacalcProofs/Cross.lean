@@ -30,6 +30,15 @@ theorem cross_vec (a1 a2 a3 b1 b2 b3 : ℝ) :
       = vec (a2 * b3 - a3 * b2) (a3 * b1 - a1 * b3) (a1 * b2 - a2 * b1) := by
   simp only [cross, dual, I_inv, wedge, mul, vec]; ext <;> ring
 
+-- twin: GacalcProofs.G3.isVector_cross
+/-- **The cross product of two vectors is a vector** (grade 1): the dual of the bivector `a ∧ b`. -/
+theorem isVector_cross {a b : G3} (ha : IsVector a) (hb : IsVector b) : IsVector (cross a b) := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  obtain ⟨hbs, hb12, hb13, hb23, hb123⟩ := hb
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;>
+    simp only [cross, dual, I_inv, wedge, mul, has, ha12, ha13, ha23, ha123, hbs, hb12, hb13, hb23,
+      hb123] <;> ring
+
 /-- **The cross product is anticommutative:** `a × b = −(b × a)`, for vectors (the wedge is
     antisymmetric on vectors). -/
 theorem cross_anticomm {a b : G3} (ha : IsVector a) (hb : IsVector b) :

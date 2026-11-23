@@ -1,6 +1,7 @@
 import Mathlib
 import GacalcProofs.G2
 import GacalcProofs.Sandwich
+import GacalcProofs.StandardPosition2D
 
 /-! # Rotation from scratch, and the geometric product derived from it (2D)
 
@@ -122,6 +123,25 @@ theorem vec_mul_fullAngleRotor (θ : ℝ) {v : G2} (hv : G2.IsVector v) :
   obtain ⟨hs, h12⟩ := hv
   simp only [G2.mul, fullAngleRotor, G2.add, G2.smul, G2.one, G2.e_12, rot, G2.vec, hs, h12]
   ext <;> ring
+
+-- twin: GacalcProofs.rot_eq_rotPlane
+/-- **The angle rotation is the plane rotation with `(c, s) = (cos(θ), sin(θ))`:** on a vector,
+    `rot θ v = rotPlane (cos θ) (sin θ) v`. The bridge between the precalculus development (`rot`, by an
+    angle) and the standard-position one (`rotPlane`, by a `(cos, sin)` pair read off coordinates). -/
+theorem rot_eq_rotPlane (θ : ℝ) {v : G2} (hv : G2.IsVector v) :
+    rot θ v = G2.rotPlane (cos θ) (sin θ) v := by
+  obtain ⟨hs, h12⟩ := hv
+  simp only [rot, G2.rotPlane, G2.vec, hs, h12]
+  ext <;> ring
+
+-- twin: GacalcProofs.rot_eq_blend
+/-- **The book's blend formula for the angle rotation** (`eq-rotate-formula`): `rot θ v = cos(θ)*v + sin(θ)*(v
+    turned a quarter)`, `rot90 v = (−y, x)`. It was proved for `rotPlane` only; the bridge carries it to `rot`. -/
+theorem rot_eq_blend (θ : ℝ) {v : G2} (hv : G2.IsVector v) :
+    rot θ v = G2.add (G2.smul (cos θ) v) (G2.smul (sin θ) (G2.rot90 v)) := by
+  rw [rot_eq_rotPlane θ hv]
+  have h := G2.rotPlane_vec_eq_blend (cos θ) (sin θ) v.c1 v.c2
+  rwa [← G2.eq_vec_of_isVector hv] at h
 
 /-- A unit vector at angle α, as a linear combination of the basis *elements* `e_1`
     and `e_2` (not a raw coordinate tuple): cos(α)*e₁ + sin(α)*e₂. -/

@@ -271,6 +271,12 @@ theorem e_2_mul_e_1 : mul e_2 e_1 = neg e_12 := by
 theorem e_12_mul_e_3 : mul e_12 e_3 = e_123 := by
   simp only [mul, e_12, e_3, e_123]; ext <;> ring
 
+-- twin: GacalcProofs.G3.I_mul_comm
+/-- **The pseudoscalar commutes with everything in 𝒢₃:** `I * a = a * I` for every `a`. (In 𝒢₂ it
+    anticommutes with vectors; in odd dimension `I` is central.) -/
+theorem I_mul_comm (a : G3) : mul I a = mul a I := by
+  simp only [mul, I, e_123]; ext <;> ring
+
 /-- **The pseudoscalar squares to −1:** I₃² = −1 = (−1)^(3*2/2). -/
 theorem I_sq : mul I I = neg one := by simp only [mul, I, e_123, neg, one]; ext <;> ring
 

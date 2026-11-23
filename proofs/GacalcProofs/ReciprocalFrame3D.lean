@@ -304,6 +304,24 @@ theorem recip3_eq_normal_div {a1 a2 a3 m : G3} (ha1 : IsVector a1) (ha2 : IsVect
 
 /-! ### The peel: the rejections, and the last reciprocal vector -/
 
+/-- **The rejection from a plane is perpendicular to the plane and has dot `|w|²` with the rejected
+    vector, with no volume hypothesis:** for any vector `a₃` and a nondegenerate plane `a₁ ∧ a₂`
+    (`|a₁∧a₂|² ≠ 0`), `w = reject (a₁∧a₂) a₃` satisfies `w·a₁ = 0`, `w·a₂ = 0` and `w·a₃ = |w|²`.
+    (`reject_plane_facts` adds `w ≠ 0`, which needs `a₃` off the plane, hence the volume.) -/
+theorem reject_plane_perp {a1 a2 a3 : G3} (ha1 : IsVector a1) (ha2 : IsVector a2)
+    (ha3 : IsVector a3) (hP : normSq (wedge a1 a2) ≠ 0) :
+    dot (reject (wedge a1 a2) a3) a1 = 0 ∧ dot (reject (wedge a1 a2) a3) a2 = 0 ∧
+      dot (reject (wedge a1 a2) a3) a3 = normSq (reject (wedge a1 a2) a3) := by
+  obtain ⟨p1, p2, p3, rfl⟩ : ∃ x y z, a1 = vec x y z := ⟨_, _, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r1, r2, r3, rfl⟩ : ∃ x y z, a2 = vec x y z := ⟨_, _, _, eq_vec_of_isVector ha2⟩
+  obtain ⟨t1, t2, t3, rfl⟩ : ∃ x y z, a3 = vec x y z := ⟨_, _, _, eq_vec_of_isVector ha3⟩
+  have hC : crossSq p1 p2 p3 r1 r2 r3 ≠ 0 := by rwa [normSq_wedge_vec3] at hP
+  rw [normSq_reject_plane_vec hC, reject_plane_vec hC]
+  refine ⟨?_, ?_, ?_⟩
+  · rw [dot_vec]; field_simp; ring
+  · rw [dot_vec]; field_simp; ring
+  · rw [dot_vec]; field_simp; simp only [det3]; ring
+
 /-- **The rejection from the plane is perpendicular to the plane's vectors**, and its dot with `a₃` is
     its squared length: `w₃·a₁ = 0`, `w₃·a₂ = 0`, `w₃·a₃ = |w₃|²`. -/
 theorem reject_plane_facts {a1 a2 a3 : G3} (ha1 : IsVector a1) (ha2 : IsVector a2)

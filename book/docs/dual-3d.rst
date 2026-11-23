@@ -80,8 +80,10 @@ That vector has a familiar name. It is the cross product
 standard position; here it comes from one multiplication.
 
 The Lean proofs state the two dot products as ``dual_wedge_perp_left_dot`` and
-``dual_wedge_perp_right_dot`` in ``proofs/GacalcProofs/Projection3D.lean``. The companion notebook
-computes each step with symbolic coordinates.
+``dual_wedge_perp_right_dot`` in ``proofs/GacalcProofs/Projection3D.lean``, and the two cosines, the form
+this page argues, as ``dual_wedge_perp_left`` and ``dual_wedge_perp_right`` in
+``proofs/GacalcProofs/StudentTrigForms.lean``. The companion notebook computes each step with symbolic
+coordinates.
 
 .. toctree::
    :maxdepth: 1
