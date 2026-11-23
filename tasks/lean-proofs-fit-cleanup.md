@@ -1,6 +1,6 @@
 # Lean proofs: bring the corpus in line with the book, the Python and its own rules
 
-**Status:** in progress — phases 1 to 4 done 2026-11-22; phase 5 mostly done (leftovers below); phases 6 to 8 remain
+**Status:** in progress — phases 1 to 4 done 2026-11-22; phase 5 mostly done (leftovers below); phase 6 done 2026-11-23; phases 7 and 8 remain
 **Priority:** 5
 **Difficulty:** 7
 **Created:** 2026-11-22 (William Emerison Six <billsix@gmail.com>)
@@ -169,7 +169,25 @@ the 16 build warnings are all in files and lines this phase did not touch):
 - Items 2, 6 and 8 of `tasks/lean-proofs-remove-extras.md` named `ProjectionRotation3D` leaves that no longer exist;
   its audit still stands for the other files.
 
-**Remaining, in order:** the phase 5 leftovers above, then 6 (where Lean differs from the book or Python), 7 (results
+**Phase 6** (2026-11-23, one work commit on `lean-phase-5`; `lake build`, the `sorry` scan and the axioms gate pass,
+1094 declarations). All four items proved rather than the page changed:
+
+- `Contractions.leftContraction`/`rightContraction` are zero when the left grade exceeds the right one (and the
+  reverse), as `base.left_contraction` is; before, ℕ truncation returned the grade-0 part. New theorems:
+  `leftContraction_eq_zero_of_lt`, `rightContraction_eq_zero_of_lt`, `leftContraction_same_grade`,
+  `rightContraction_same_grade`; the three vector/scalar examples still hold.
+- `StandardPosition` (𝒢₃) and `StandardPosition2D`: `rejectSPByRotation` is the book's rotate / keep what is off
+  the x-axis / rotate back; `rejectSP_eq_rotate_keep_rest` proves it equals Python's `a − project_sp a b`, and
+  `rejectSPByRotation_eq_keep_yz` / `_keep_y` show what is kept for a vector is its `(y, z)` / `y`. The book page
+  `proof-projection.rst` cites the theorem.
+- `ReciprocalFrame2D`/`3D`: `peelLast_eq_coordinate`, `peelMid_eq_coordinate`, `peelFirst_eq_coordinate` show
+  the proofs' divide-by-`|w|²` coordinates equal `frame.py`'s `(w·y)/(w·v)`, from `dot_reject_second` (2D) and
+  `reject_plane_facts`/`reject_line_facts` (3D); `reject_plane_eq_iterated` shows the plane rejection `w₃` is the
+  iterated vector rejection `a₃ − proj_{w₁} a₃ − proj_{w₂} a₃` Python computes. New 𝒢₂ lemma
+  `dot_self_vec_eq_normSq`.
+- `Projection3D.proj_eq_dot_mul_inverse`: `proj_a b = (b·a)*a⁻¹` for 𝒢₃ (the 2D one is in `Bootstrap2D`).
+
+**Remaining, in order:** the phase 5 leftovers above, then 7 (results
 the book states that Lean lacks), 8 (rewrite the inventory and coverage map from the files as they then stand). These
 are proof rewrites with a full `lake build` (about 20 minutes) per iteration. The task's own plan allows splitting 7
 into a step task if it grows; the rest is a multi-session job.

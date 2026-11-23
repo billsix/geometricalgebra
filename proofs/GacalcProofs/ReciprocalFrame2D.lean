@@ -205,6 +205,32 @@ theorem dot_reject_self {a1 a2 : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
   field_simp
   ring
 
+/-- **The rejection's dot with the vector it came from is its squared length:** `w₂·a₂ = |w₂|²`, since
+    `a₂ = w₂ +` (a multiple of `a₁`) and `w₂ ⟂ a₁`. -/
+theorem dot_reject_second {a1 a2 : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
+    (hA : normSq (wedge a1 a2) ≠ 0) : dot (reject a1 a2) a2 = normSq (reject a1 a2) := by
+  obtain ⟨p, q, rfl⟩ : ∃ p q, a1 = vec p q := ⟨_, _, eq_vec_of_isVector ha1⟩
+  obtain ⟨r, t, rfl⟩ : ∃ r t, a2 = vec r t := ⟨_, _, eq_vec_of_isVector ha2⟩
+  have hn := sumSq_ne_zero_of_area (area_ne_zero_vec hA)
+  rw [normSq_reject_vec hn, reject_vec hn, dot_vec]
+  generalize hnn : p ^ 2 + q ^ 2 = n at hn ⊢
+  field_simp
+  ring
+
+/-- **The peel reads each coordinate the way `frame.py` does.** `peel` computes `x_last` as
+    `coordinate(y, v=a₂, m=w₂) = (w₂·y)/(w₂·a₂)`, dividing by the dot with the frame vector; the proofs'
+    `peelLast` divides by `|w₂|²`. The two agree because `w₂·a₂ = |w₂|²` (`dot_reject_second`). -/
+theorem peelLast_eq_coordinate {a1 a2 : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)
+    (hA : normSq (wedge a1 a2) ≠ 0) (y : G2) :
+    peelLast a1 a2 y = dot (reject a1 a2) y / dot (reject a1 a2) a2 := by
+  rw [peelLast, dot_reject_second ha1 ha2 hA]
+
+/-- The same for the first coordinate: `x₁ = (a₁·r)/(a₁·a₁)`, `w₁ = a₁`. -/
+theorem peelFirst_eq_coordinate {a1 a2 : G2} (ha1 : IsVector a1) (y : G2) :
+    peelFirst a1 a2 y
+      = dot a1 (sub y (smul (peelLast a1 a2 y) a2)) / dot a1 a1 := by
+  rw [peelFirst, dot_self_vec_eq_normSq ha1]
+
 /-- **The last reciprocal vector is the last rejection over its squared length:** `a² = w₂/|w₂|²`.
     The peel finds one face normal by rejection; the reciprocal frame folds its height in. -/
 theorem recip2_eq_reject_div {a1 a2 : G2} (ha1 : IsVector a1) (ha2 : IsVector a2)

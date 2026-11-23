@@ -121,7 +121,9 @@ The outer map is literally the inner one inverted.
 (That is the one fact doing the real work; it is proved once and for all in the library —
 ``proj_rotPlane_equivariant`` in ``proofs/GacalcProofs/StandardPosition2D.lean`` — and the
 whole rotate / keep-the-x-coordinate / rotate-back procedure is proved equal to the
-geometric-algebra projection there, as the single theorem ``projectSP_eq_proj``.)
+geometric-algebra projection there, as the single theorem ``projectSP_eq_proj``. The rejection
+gets the same treatment: ``rejectSP_eq_rotate_keep_rest`` shows that rotate / keep the y-coordinate /
+rotate back gives the same vector as the original minus its projection.)
 
 Now the algebra
 ---------------

@@ -372,4 +372,37 @@ theorem rejectSP_eq_reject {a b : G3} (hav : IsVector a) (hbv : IsVector b)
     (hb : magnitude b ≠ 0) (hbn : normSq b ≠ 0) : rejectSP a b = reject b a := by
   rw [rejectSP_eq_vecReject hbv hb, vecReject, reject_vec_eq hbv hav hbn]
 
+/-! ### The rejection as the book defines it: rotate, keep what is off the x-axis, rotate back -/
+
+/-- **The book's rejection:** align `b` onto the x-axis, keep everything of `a`'s image except its
+    x-component (for a vector, its `(y, z)` part), and rotate back. `rejectSP` is the Python form
+    `a − project_sp a b`; `rejectSP_eq_rotate_keep_rest` proves the two are the same. -/
+noncomputable def rejectSPByRotation (a b : G3) : G3 :=
+  unalignSP b (sub (alignSP b a) (vec (alignSP b a).c1 0 0))
+
+/-- Rotating back distributes over subtraction (both elementary rotations are linear). -/
+theorem unalignSP_sub (b u w : G3) :
+    unalignSP b (sub u w) = sub (unalignSP b u) (unalignSP b w) := by
+  simp only [unalignSP, rotXZ_apply, rotXY_apply, sub]; ext <;> ring
+
+/-- **The two definitions of the rejection agree:** `a − project_sp a b` (Python's `reject_sp`) is the
+    book's rotate / keep the rest / rotate back, because rotating back undoes the alignment of `a` and
+    distributes over the subtraction. For any nonzero vector `b` and any `a`. -/
+theorem rejectSP_eq_rotate_keep_rest {b : G3} (hbv : IsVector b) (hb : magnitude b ≠ 0) (a : G3) :
+    rejectSP a b = rejectSPByRotation a b := by
+  rw [rejectSPByRotation, unalignSP_sub, unalignSP_alignSP hbv hb]
+  rfl
+
+/-- **For a vector, what is kept is its `(y, z)` part:** the aligned image of a vector has no scalar,
+    bivector or pseudoscalar part, so subtracting its x-component leaves `(0, y, z)`, the rejection's
+    coordinates in standard position. -/
+theorem rejectSPByRotation_eq_keep_yz {a : G3} (ha : IsVector a) (b : G3) :
+    rejectSPByRotation a b = unalignSP b (vec 0 (alignSP b a).c2 (alignSP b a).c3) := by
+  obtain ⟨has, ha12, ha13, ha23, ha123⟩ := ha
+  have h : sub (alignSP b a) (vec (alignSP b a).c1 0 0)
+      = vec 0 (alignSP b a).c2 (alignSP b a).c3 := by
+    simp only [alignSP, rotXZ_apply, rotXY_apply, sub, vec, has, ha12, ha13, ha23, ha123]
+    ext <;> ring
+  rw [rejectSPByRotation, h]
+
 end GacalcProofs.G3

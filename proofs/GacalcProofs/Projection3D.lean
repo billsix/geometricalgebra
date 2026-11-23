@@ -24,6 +24,16 @@ namespace GacalcProofs.G3
     Rewriting the denominator to `normSq a` would narrow the def incorrectly — so it stays `dot a a`. -/
 noncomputable def proj (a b : G3) : G3 := smul (dot b a / dot a a) a
 
+/-- **Projection through the product** (3D twin of `Bootstrap2D.proj_eq_dot_mul_inverse`): for a vector
+    `a`, `proj_a b = (b·a)*a⁻¹`: the scalar `b·a` times the inverse of `a`, where `a⁻¹ = ã/|a|²` and `ã = a`
+    for a vector. (Both sides divide by `a·a`, so no nonzero hypothesis is needed in Lean.) -/
+theorem proj_eq_dot_mul_inverse {a : G3} (ha : IsVector a) (b : G3) :
+    proj a b = mul (scalar (dot b a)) (inverse a) := by
+  rw [inverse, GacalcProofs.G3.mul_smul, GacalcProofs.G3.scalar_mul, reverse_of_isVector ha,
+    GacalcProofs.G3.smul_smul, proj, dot_self_vec_eq_normSq ha]
+  congr 1
+  ring
+
 /-- **The rejection is perpendicular to `a`**: `(b − proj_a b) · a = 0`, for `a·a ≠ 0`.
 
     The hypothesis is the **general** `dot a a ≠ 0`, deliberately not `normSq a ≠ 0`: this holds for

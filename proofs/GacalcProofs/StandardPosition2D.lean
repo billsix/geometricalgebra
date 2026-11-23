@@ -309,4 +309,35 @@ theorem mul_eq_magnitude_smul_alignSP {a b : G2} (hav : IsVector a) (hbv : IsVec
   · ring
   · field_simp; ring
 
+/-! ### The rejection as the book defines it: rotate, keep y, rotate back -/
+
+/-- **The book's rejection:** align `b` onto the x-axis, keep everything of `a`'s image except its
+    x-component (for a vector, its y-coordinate), and rotate back. `rejectSP` is the Python form
+    `a − project_sp a b`; `rejectSP_eq_rotate_keep_rest` proves the two are the same. -/
+noncomputable def rejectSPByRotation (a b : G2) : G2 :=
+  unalignSP b (sub (alignSP b a) (vec (alignSP b a).c1 0))
+
+/-- Rotating back distributes over subtraction (the plane rotation is linear). -/
+theorem unalignSP_sub (b u w : G2) :
+    unalignSP b (sub u w) = sub (unalignSP b u) (unalignSP b w) := by
+  simp only [unalignSP, rotPlane, sub]; ext <;> ring
+
+/-- **The two definitions of the rejection agree:** `a − project_sp a b` is the book's rotate / keep y /
+    rotate back, because rotating back undoes the alignment of `a` and distributes over the
+    subtraction. For any nonzero vector `b` and any `a`. -/
+theorem rejectSP_eq_rotate_keep_rest {b : G2} (hbv : IsVector b) (hb : magnitude b ≠ 0) (a : G2) :
+    rejectSP a b = rejectSPByRotation a b := by
+  rw [rejectSPByRotation, unalignSP_sub, unalignSP_alignSP hbv hb]
+  rfl
+
+/-- **For a vector, what is kept is its y-coordinate:** the aligned image of a vector has no scalar or
+    area part, so subtracting its x-component leaves `(0, y)`. -/
+theorem rejectSPByRotation_eq_keep_y {a : G2} (ha : IsVector a) (b : G2) :
+    rejectSPByRotation a b = unalignSP b (vec 0 (alignSP b a).c2) := by
+  obtain ⟨has, ha12⟩ := ha
+  have h : sub (alignSP b a) (vec (alignSP b a).c1 0) = vec 0 (alignSP b a).c2 := by
+    simp only [alignSP, rotPlane, sub, vec, has, ha12]
+    ext <;> ring
+  rw [rejectSPByRotation, h]
+
 end GacalcProofs.G2
