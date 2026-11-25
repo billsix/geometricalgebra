@@ -56,52 +56,6 @@ class Paragraph:
     lines: list[str]
 
 
-def rewrap(lines: Sequence[str]) -> list[str]:
-    """Rewrap a paragraph to the limit, as a whole, keeping its list-item indent.
-
-    Args:
-        lines: the paragraph's lines, ``# `` prefixes and newlines included.
-
-    Returns:
-        list[str]: the rewrapped lines.
-    """
-    item: re.Match[str] | None = ITEM.match(lines[0])
-    first: str = "# " if item is None else "# " + item.group(1) + item.group(2)
-    rest: str = (
-        "# " if item is None else "# " + item.group(1) + " " * len(item.group(2))
-    )
-    words: str = " ".join(
-        [lines[0][len(first) :].strip()]
-        + [line[len(rest) :].strip() for line in lines[1:]]
-    )
-    glued: str = UNBREAKABLE.sub(lambda m: m.group(0).replace(" ", GLUE), words)
-    return [
-        line.replace(GLUE, " ") + "\n"
-        for line in textwrap.wrap(
-            glued,
-            width=LIMIT,
-            initial_indent=first,
-            subsequent_indent=rest,
-            break_long_words=False,
-            break_on_hyphens=False,
-        )
-    ]
-
-
-def needs_rewrap(paragraph: Paragraph) -> bool:
-    """Whether a paragraph has a line over the limit that rewrapping would change.
-
-    Args:
-        paragraph: the paragraph.
-
-    Returns:
-        bool: ``True`` when it should be reported.
-    """
-    return any(len(line.rstrip("\n")) > LIMIT for line in paragraph.lines) and (
-        rewrap(paragraph.lines) != paragraph.lines
-    )
-
-
 def split(text: str) -> list[Paragraph | str]:
     """Split a percent-format file into Markdown paragraphs and the lines between them.
 
@@ -157,6 +111,51 @@ def check_file(path: pathlib.Path, fix: bool) -> list[str]:
     Returns:
         list[str]: one ``path:line: message`` per paragraph still too wide.
     """
+
+    def rewrap(lines: Sequence[str]) -> list[str]:
+        """Rewrap a paragraph to the limit, as a whole, keeping its list-item indent.
+
+        Args:
+            lines: the paragraph's lines, ``# `` prefixes and newlines included.
+
+        Returns:
+            list[str]: the rewrapped lines.
+        """
+        item: re.Match[str] | None = ITEM.match(lines[0])
+        first: str = "# " if item is None else "# " + item.group(1) + item.group(2)
+        rest: str = (
+            "# " if item is None else "# " + item.group(1) + " " * len(item.group(2))
+        )
+        words: str = " ".join(
+            [lines[0][len(first) :].strip()]
+            + [line[len(rest) :].strip() for line in lines[1:]]
+        )
+        glued: str = UNBREAKABLE.sub(lambda m: m.group(0).replace(" ", GLUE), words)
+        return [
+            line.replace(GLUE, " ") + "\n"
+            for line in textwrap.wrap(
+                glued,
+                width=LIMIT,
+                initial_indent=first,
+                subsequent_indent=rest,
+                break_long_words=False,
+                break_on_hyphens=False,
+            )
+        ]
+
+    def needs_rewrap(paragraph: Paragraph) -> bool:
+        """Whether a paragraph has a line over the limit that rewrapping would change.
+
+        Args:
+            paragraph: the paragraph.
+
+        Returns:
+            bool: ``True`` when it should be reported.
+        """
+        return any(len(line.rstrip("\n")) > LIMIT for line in paragraph.lines) and (
+            rewrap(paragraph.lines) != paragraph.lines
+        )
+
     pieces: list[Paragraph | str] = split(path.read_text())
     reported: list[Paragraph] = [
         piece

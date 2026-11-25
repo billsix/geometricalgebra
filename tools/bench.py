@@ -47,25 +47,26 @@ def num_full(n: int, base: int) -> Gn:
     return Gn.from_blade_dict({b: base + i + 1 for i, b in enumerate(blades(n))})
 
 
-def to(cls: type[MultiVectorBase], g: Gn) -> MultiVectorBase:
-    return cls.from_blade_dict(g.to_blade_dict())
-
-
-def time_ms(fn: Callable[[], object], reps: int) -> float:
-    fn()  # warm up
-    t0: float = time.perf_counter()
-    _: int
-    for _ in range(reps):
-        fn()
-    return (time.perf_counter() - t0) / reps * 1000.0
-
-
-def report(label: str, gn_ms: float, sp_ms: float) -> None:
-    speedup: float = gn_ms / sp_ms if sp_ms else float("inf")
-    sys.stdout.write(f"{label:32s} {gn_ms:11.3f} {sp_ms:11.3f} {speedup:10.1f}x\n")
-
-
 def main() -> None:
+
+    def widen_sym(x: MultiVectorBase) -> Gn:
+        return Gn.from_blade_dict(x.to_blade_dict())
+
+    def report(label: str, gn_ms: float, sp_ms: float) -> None:
+        speedup: float = gn_ms / sp_ms if sp_ms else float("inf")
+        sys.stdout.write(f"{label:32s} {gn_ms:11.3f} {sp_ms:11.3f} {speedup:10.1f}x\n")
+
+    def time_ms(fn: Callable[[], object], reps: int) -> float:
+        fn()  # warm up
+        t0: float = time.perf_counter()
+        _: int
+        for _ in range(reps):
+            fn()
+        return (time.perf_counter() - t0) / reps * 1000.0
+
+    def to(cls: type[MultiVectorBase], g: Gn) -> MultiVectorBase:
+        return cls.from_blade_dict(g.to_blade_dict())
+
     sys.stdout.write(
         f"{'operation':32s} {'Gn (ms)':>11} {'spec (ms)':>11} {'speedup':>11}\n"
     )
@@ -168,10 +169,6 @@ def main() -> None:
             f"G{n} symbolic: Vector {t_typed_s:8.4f} ms   full G{n} {t_full_s:8.4f} ms"
             f"   (typed {t_full_s / t_typed_s:.1f}x vs full)\n"
         )
-
-
-def widen_sym(x: MultiVectorBase) -> Gn:
-    return Gn.from_blade_dict(x.to_blade_dict())
 
 
 if __name__ == "__main__":

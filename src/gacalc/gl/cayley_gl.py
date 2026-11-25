@@ -416,6 +416,12 @@ def build_standard(
     (``os.path.dirname(os.path.abspath(__file__))``), so the shaders load
     relative to the demo.  ``animated`` + ``project`` select the squash shader
     for the triangle/axis pipelines."""
+
+    def rectangular_prism_lines(b: RectangularPrism) -> np.ndarray:
+        """The orthographic box outline: front == back == ±half_size (no taper)."""
+        h: float = b.half_size
+        return _volume_edges(b.near_z, b.far_z, -h, h, h, -h, -h, h, h, -h)
+
     proj: str = project if animated else "project_identity.glsl"
     triangle: _p.Pipeline = _p.build_pipeline(
         "per_vertex_color.vert",
@@ -528,21 +534,6 @@ def build_standard(
 # ---------------------------------------------------------------------------
 
 
-def gui_button(
-    button: cayleyscene.GuiButton, on_jump: typing.Callable[[float], None]
-) -> None:
-    """A highlighted (when active) jump-button for a timeline substep."""
-    if button.active:
-        imgui.push_style_color(imgui.Col_.button.value, (0.6, 0.2, 0.2, 1.0))
-    imgui.push_id(f"{button.label}@{button.start}")
-    clicked: bool = imgui.button(button.label)
-    imgui.pop_id()
-    if button.active:
-        imgui.pop_style_color(1)
-    if clicked:
-        on_jump(button.start)
-
-
 def render_tree(
     group: cayleyscene.GuiGroup, on_jump: typing.Callable[[float], None]
 ) -> None:
@@ -551,6 +542,21 @@ def render_tree(
     reads as function composition, e.g. ``[T] o [R_z]``.
     ``on_jump(start_time)``
     is called when a button is clicked."""
+
+    def gui_button(
+        button: cayleyscene.GuiButton, on_jump: typing.Callable[[float], None]
+    ) -> None:
+        """A highlighted (when active) jump-button for a timeline substep."""
+        if button.active:
+            imgui.push_style_color(imgui.Col_.button.value, (0.6, 0.2, 0.2, 1.0))
+        imgui.push_id(f"{button.label}@{button.start}")
+        clicked: bool = imgui.button(button.label)
+        imgui.pop_id()
+        if button.active:
+            imgui.pop_style_color(1)
+        if clicked:
+            on_jump(button.start)
+
     imgui.set_next_item_open(True, imgui.Cond_.once)
     if imgui.tree_node(group.title):
         idx: int
@@ -749,12 +755,6 @@ def frustum_lines(f: Frustum) -> np.ndarray:
     bt: float = -f.far_z * math.tan(math.radians(f.field_of_view) / 2.0)
     br: float = bt * f.aspect_ratio
     return _volume_edges(f.near_z, f.far_z, -fr_, fr_, ft, -ft, -br, br, bt, -bt)
-
-
-def rectangular_prism_lines(b: RectangularPrism) -> np.ndarray:
-    """The orthographic box outline: front == back == ±half_size (no taper)."""
-    h: float = b.half_size
-    return _volume_edges(b.near_z, b.far_z, -h, h, h, -h, -h, h, h, -h)
 
 
 def framebuffer_grid_lines(

@@ -35,38 +35,37 @@ IDENT: re.Pattern[str] = re.compile(r"^[A-Za-z_][A-Za-z0-9_.'₀-₉]*$")
 KNOWN_OTHER: frozenset[str] = frozenset()
 
 
-def declared_names() -> set[str]:
-    """Every declared name in the proofs, by last dotted component.
-
-    Returns:
-        set[str]: the short names.
-    """
-    names: set[str] = set()
-    path: pathlib.Path
-    for path in sorted(PROOFS.glob("*.lean")):
-        text: str = path.read_text()
-        match: str
-        for match in DECL.findall(text):
-            names.add(match.split(".")[-1])
-    return names
-
-
-def section(text: str) -> str:
-    """The inventory-and-coverage part of the document.
-
-    Args:
-        text: The whole document.
-
-    Returns:
-        str: the text from ``## Inventory`` up to ``## Hypotheses``.
-    """
-    start: int = text.index("## Inventory")
-    end: int = text.index("## Hypotheses")
-    return text[start:end]
-
-
 def main() -> None:
     """Print each undeclared backticked identifier and how often it appears."""
+
+    def section(text: str) -> str:
+        """The inventory-and-coverage part of the document.
+
+        Args:
+            text: The whole document.
+
+        Returns:
+            str: the text from ``## Inventory`` up to ``## Hypotheses``.
+        """
+        start: int = text.index("## Inventory")
+        end: int = text.index("## Hypotheses")
+        return text[start:end]
+
+    def declared_names() -> set[str]:
+        """Every declared name in the proofs, by last dotted component.
+
+        Returns:
+            set[str]: the short names.
+        """
+        names: set[str] = set()
+        path: pathlib.Path
+        for path in sorted(PROOFS.glob("*.lean")):
+            text: str = path.read_text()
+            match: str
+            for match in DECL.findall(text):
+                names.add(match.split(".")[-1])
+        return names
+
     declared: set[str] = declared_names()
     files: set[str] = {path.stem for path in PROOFS.glob("*.lean")}
     counts: dict[str, int] = {}

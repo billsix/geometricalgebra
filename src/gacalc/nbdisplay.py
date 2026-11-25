@@ -227,29 +227,6 @@ def _cancelling_labels(
     return labels
 
 
-def _marked_product_latex(
-    row: int,
-    product: Mapping[Blade, Sequence[sympy.Expr]],
-    labels: Mapping[tuple[int, Blade, int], int],
-) -> str:
-    """One table product as inline LaTeX, each cancelling monomial under its
-    numbered ``\\underbrace``, broken into rows past ``TABLE_CELL_WIDTH``."""
-    tokens: list[str] = []
-    blade: Blade
-    terms: Sequence[sympy.Expr]
-    for blade, terms in product.items():
-        coefficient: list[str] = _marked_tokens(
-            terms, [labels.get((row, blade, index)) for index in range(len(terms))]
-        )
-        if blade != ():
-            coefficient[0] = "(" + coefficient[0]
-            coefficient[-1] = coefficient[-1] + ") " + blade_latex(blade)
-        if tokens:
-            coefficient[0] = "+ " + coefficient[0]
-        tokens.extend(coefficient)
-    return "$" + latex_broken(tokens, TABLE_CELL_WIDTH) + "$"
-
-
 def _with_operator(operator: str, latex: str) -> str:
     """``latex`` (``$...$``) with ``operator`` in front, inside the same math.
 
@@ -300,6 +277,29 @@ def product_table_markdown(a: MultiVectorBase, b: MultiVectorBase) -> str:
     >>> table.count("underbrace{1}_{1}")
     2
     """
+
+    def _marked_product_latex(
+        row: int,
+        product: Mapping[Blade, Sequence[sympy.Expr]],
+        labels: Mapping[tuple[int, Blade, int], int],
+    ) -> str:
+        """One table product as inline LaTeX, each cancelling monomial under its
+        numbered ``\\underbrace``, broken into rows past ``TABLE_CELL_WIDTH``."""
+        tokens: list[str] = []
+        blade: Blade
+        terms: Sequence[sympy.Expr]
+        for blade, terms in product.items():
+            coefficient: list[str] = _marked_tokens(
+                terms, [labels.get((row, blade, index)) for index in range(len(terms))]
+            )
+            if blade != ():
+                coefficient[0] = "(" + coefficient[0]
+                coefficient[-1] = coefficient[-1] + ") " + blade_latex(blade)
+            if tokens:
+                coefficient[0] = "+ " + coefficient[0]
+            tokens.extend(coefficient)
+        return "$" + latex_broken(tokens, TABLE_CELL_WIDTH) + "$"
+
     header: str = "| Left Component | * Right Component | = Product |"
     separator: str = "|---|---|---|"
     rows: list[
@@ -535,15 +535,6 @@ def _difference_latex(left: Real, right: Real, name: str) -> str:
     return line
 
 
-def _coefficients(value: MultiVectorBase | Real) -> Mapping[Blade, Real]:
-    """``value``'s blade dict; a number is a scalar-blade dict (empty for ``0``)."""
-    match value:
-        case MultiVectorBase():
-            return value.to_blade_dict()
-        case _:
-            return {} if sympy.sympify(value) == 0 else {(): value}
-
-
 def cancellation_latex(
     left: MultiVectorBase | Real, right: MultiVectorBase | Real
 ) -> list[str]:
@@ -590,6 +581,15 @@ def cancellation_latex(
         >>> cancellation_latex(a / (a + b) + b / (a + b), 1)
         ['(\\\\underbrace{1}_{1}) - (\\\\underbrace{1}_{1}) = 0']
     """
+
+    def _coefficients(value: MultiVectorBase | Real) -> Mapping[Blade, Real]:
+        """``value``'s blade dict; a number is a scalar-blade dict (empty for ``0``)."""
+        match value:
+            case MultiVectorBase():
+                return value.to_blade_dict()
+            case _:
+                return {} if sympy.sympify(value) == 0 else {(): value}
+
     if not isinstance(left, MultiVectorBase) and not isinstance(right, MultiVectorBase):
         return [_difference_latex(left, right, "")]
     left_coefficients: Mapping[Blade, Real] = _coefficients(left)
@@ -613,21 +613,6 @@ def cancellation_latex(
         )
         for blade in blades
     ] or ["0 - 0 = 0"]
-
-
-def _side_latex(value: MultiVectorBase | Real) -> str:
-    """``value`` as LaTeX without delimiters: a multivector through ``_latex``, a
-    number with each numerator expanded."""
-    match value:
-        case MultiVectorBase():
-            return _math_body(_latex(value))
-        case _:
-            numerator: sympy.Expr
-            denominator: sympy.Expr
-            numerator, denominator = sympy.fraction(
-                sympy.together(sympy.sympify(value))
-            )
-            return sympy.latex(sympy.expand(numerator) / denominator)
 
 
 def show_difference(
@@ -670,6 +655,21 @@ def show_cancellation(
         left_name: LaTeX for how the left side was built, e.g. ``a * (b + c)``.
         right_name: LaTeX for the right side.
     """
+
+    def _side_latex(value: MultiVectorBase | Real) -> str:
+        """``value`` as LaTeX without delimiters: a multivector through ``_latex``, a
+        number with each numerator expanded."""
+        match value:
+            case MultiVectorBase():
+                return _math_body(_latex(value))
+            case _:
+                numerator: sympy.Expr
+                denominator: sympy.Expr
+                numerator, denominator = sympy.fraction(
+                    sympy.together(sympy.sympify(value))
+                )
+                return sympy.latex(sympy.expand(numerator) / denominator)
+
     display(Markdown("**The left side**"))
     display(Math(f"{left_name} = " + _side_latex(left)))
     display(Markdown("**The right side**"))

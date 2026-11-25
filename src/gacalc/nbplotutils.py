@@ -100,51 +100,6 @@ def _to_xy(mv: MultiVectorBase) -> list[float]:
 extra_lines_multiplier: int = 3
 
 
-def generategridlines(
-    graph_bounds: tuple[int, int],
-    interval: int = 1,
-    cls: type[MultiVectorBase] = MultiVector,
-) -> Generator[tuple[list[MultiVectorBase], int], None, None]:
-    """Yield the world-space grid lines of a ``graph_bounds``-sized plane.
-
-    Each item is ``([start, end], thickness)`` — the two endpoint multivectors of
-    one line and its line width (the x = 0 and y = 0 axes get a thick line, the
-    rest thin).  ``create_basis`` maps these through a transform to draw a
-    transformed grid.
-    """
-    ex: MultiVectorBase = cls.basis_vector(1)
-    ey: MultiVectorBase = cls.basis_vector(2)
-    x: int
-    for x in range(
-        -graph_bounds[0] * extra_lines_multiplier,
-        graph_bounds[0] * extra_lines_multiplier,
-        interval,
-    ):
-        thickness: int = 4 if np.isclose(x, 0.0) else 1
-        yield (
-            [
-                x * ex + (-graph_bounds[1] * extra_lines_multiplier) * ey,
-                x * ex + (graph_bounds[1] * extra_lines_multiplier) * ey,
-            ],
-            thickness,
-        )
-
-    y: int
-    for y in range(
-        -graph_bounds[1] * extra_lines_multiplier,
-        graph_bounds[1] * extra_lines_multiplier,
-        interval,
-    ):
-        thickness: int = 4 if np.isclose(y, 0.0) else 1
-        yield (
-            [
-                (-graph_bounds[0] * extra_lines_multiplier) * ex + y * ey,
-                (graph_bounds[0] * extra_lines_multiplier) * ex + y * ey,
-            ],
-            thickness,
-        )
-
-
 #: The axes established by the enclosing ``create_graphs()`` block.
 #:
 #: A :class:`contextvars.ContextVar` rather than a plain module global for two
@@ -222,6 +177,51 @@ def create_basis(
     """Draw the coordinate grid as faint lines — its image under ``fn`` (identity
     by default), so a transform shows as a deformed grid.
     """
+
+    def generategridlines(
+        graph_bounds: tuple[int, int],
+        interval: int = 1,
+        cls: type[MultiVectorBase] = MultiVector,
+    ) -> Generator[tuple[list[MultiVectorBase], int], None, None]:
+        """Yield the world-space grid lines of a ``graph_bounds``-sized plane.
+
+        Each item is ``([start, end], thickness)`` — the two endpoint multivectors of
+        one line and its line width (the x = 0 and y = 0 axes get a thick line, the
+        rest thin).  ``create_basis`` maps these through a transform to draw a
+        transformed grid.
+        """
+        ex: MultiVectorBase = cls.basis_vector(1)
+        ey: MultiVectorBase = cls.basis_vector(2)
+        x: int
+        for x in range(
+            -graph_bounds[0] * extra_lines_multiplier,
+            graph_bounds[0] * extra_lines_multiplier,
+            interval,
+        ):
+            thickness: int = 4 if np.isclose(x, 0.0) else 1
+            yield (
+                [
+                    x * ex + (-graph_bounds[1] * extra_lines_multiplier) * ey,
+                    x * ex + (graph_bounds[1] * extra_lines_multiplier) * ey,
+                ],
+                thickness,
+            )
+
+        y: int
+        for y in range(
+            -graph_bounds[1] * extra_lines_multiplier,
+            graph_bounds[1] * extra_lines_multiplier,
+            interval,
+        ):
+            thickness: int = 4 if np.isclose(y, 0.0) else 1
+            yield (
+                [
+                    (-graph_bounds[0] * extra_lines_multiplier) * ex + y * ey,
+                    (graph_bounds[0] * extra_lines_multiplier) * ex + y * ey,
+                ],
+                thickness,
+            )
+
     # plot transformed basis
     vecs: list[MultiVectorBase]
     thickness: int
@@ -574,14 +574,6 @@ def draw_screen(
             axes.add_patch(square)
 
 
-def _coef_as_float(coef: Real) -> float | None:
-    """``coef`` as a ``float``, or ``None`` when it is symbolic (not convertible)."""
-    try:
-        return float(coef)
-    except TypeError, ValueError:
-        return None
-
-
 def plot_multivector(
     mv: MultiVectorBase,
     x_range: tuple[float, float] | None = None,
@@ -602,6 +594,14 @@ def plot_multivector(
     ``random_seed`` defaults to 0 for reproducibility — pass ``None`` for
     fresh randomness on every call.
     """
+
+    def _coef_as_float(coef: Real) -> float | None:
+        """``coef`` as a ``float``, or ``None`` when it is symbolic."""
+        try:
+            return float(coef)
+        except TypeError, ValueError:
+            return None
+
     blade_dict: Mapping[Blade, Real] = mv.to_blade_dict()
     blades: list[Blade] = sorted(blade_dict.keys(), key=lambda b: (len(b), b)) or [()]
     n: int = len(blades)

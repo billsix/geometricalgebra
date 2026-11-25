@@ -104,55 +104,6 @@ class Finding:
         return f"{self.path}:{self.line}: {self.kind:<5} {self.name}{tail}"
 
 
-def not_ignored() -> set[str] | None:
-    """Repo-relative paths git does not ignore (tracked or untracked), or None.
-
-    None means git is unavailable here (no ``git``, or not a checkout), and then
-    nothing is filtered.
-    """
-    try:
-        listing: subprocess.CompletedProcess[str] = subprocess.run(
-            ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
-            cwd=REPO,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except OSError, subprocess.CalledProcessError:
-        return None
-    return set(listing.stdout.splitlines())
-
-
-def in_scope() -> Iterator[pathlib.Path]:
-    """Every hand-written .py file under the in-scope directories, minus gitignored."""
-    visible: set[str] | None = not_ignored()
-    d: str
-    for d in SCOPE_DIRS:
-        root: pathlib.Path = REPO / d
-        if not root.is_dir():
-            continue
-        p: pathlib.Path
-        for p in sorted(root.rglob("*.py")):
-            rel: str = p.relative_to(REPO).as_posix()
-            if GENERATED.match(rel) or (visible is not None and rel not in visible):
-                continue
-            yield p
-
-
-def annotation_names(node: ast.expr | None) -> set[str]:
-    """Every bare ``Name`` appearing in an annotation expression."""
-    if node is None:
-        return set()
-    return {n.id for n in ast.walk(node) if isinstance(n, ast.Name)}
-
-
-def is_bare_generic(node: ast.expr | None) -> str | None:
-    """The generic's name when the annotation is an unsubscripted generic."""
-    if isinstance(node, ast.Name) and node.id in GENERIC_NAMES:
-        return node.id
-    return None
-
-
 def check_function(
     fn: ast.FunctionDef | ast.AsyncFunctionDef,
     rel: str,
@@ -164,6 +115,19 @@ def check_function(
     ``is_method`` says the ``def`` is lexically inside a ``class`` body, which is
     what makes an unannotated leading ``self`` conventional rather than a finding.
     """
+
+    def is_bare_generic(node: ast.expr | None) -> str | None:
+        """The generic's name when the annotation is an unsubscripted generic."""
+        if isinstance(node, ast.Name) and node.id in GENERIC_NAMES:
+            return node.id
+        return None
+
+    def annotation_names(node: ast.expr | None) -> set[str]:
+        """Every bare ``Name`` appearing in an annotation expression."""
+        if node is None:
+            return set()
+        return {n.id for n in ast.walk(node) if isinstance(n, ast.Name)}
+
     if fn.returns is None:
         out.append(Finding(rel, fn.lineno, "RET", fn.name))
 
@@ -223,33 +187,110 @@ def check_function(
         out.append(Finding(rel, fn.lineno, "ANY", f"{fn.name}() -> Any"))
 
 
-def is_type_definition(value: ast.expr) -> bool:
-    """Whether a module-level assignment's right-hand side *defines a type*.
-
-    Type aliases (``Real = int | float | sympy.Expr``, ``Blade = tuple[int, ...]``,
-    ``MultiVector = Gn``) and type-system constructors (``TypeVar``, ``NewType``,
-    ``ParamSpec``) look like ordinary assignments to ``ast`` but are not
-    annotation candidates -- annotating one changes what it means.  Recognized by
-    shape: a union, a subscripted generic, a bare capitalized name, or a call to a
-    typing constructor.
-    """
-    if isinstance(value, ast.Call):
-        fn: ast.expr = value.func
-        target: str = (
-            fn.attr if isinstance(fn, ast.Attribute) else getattr(fn, "id", "")
-        )
-        return target in {"TypeVar", "NewType", "ParamSpec", "TypeAliasType"}
-    if isinstance(value, ast.BinOp) and isinstance(value.op, ast.BitOr):
-        return True
-    if isinstance(value, ast.Subscript):
-        return True
-    if isinstance(value, ast.Name):
-        return value.id[:1].isupper()
-    return False
-
-
 def check_file(path: pathlib.Path) -> list[Finding]:
     """Every finding in one file."""
+
+    def scope_nodes(
+        scope: ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef,
+    ) -> Iterator[ast.AST]:
+        """Every node in one scope's body, not descending into nested scopes.
+
+        A nested ``def``/``class``/``lambda`` or a comprehension is its own scope (a
+        comprehension's targets stay inferred), so its bindings are not this scope's.
+        """
+        pending: list[ast.AST] = list(reversed(scope.body))
+        while pending:
+            node: ast.AST = pending.pop()
+            yield node
+            if isinstance(
+                node,
+                ast.FunctionDef
+                | ast.AsyncFunctionDef
+                | ast.ClassDef
+                | ast.Lambda
+                | ast.ListComp
+                | ast.SetComp
+                | ast.DictComp
+                | ast.GeneratorExp,
+            ):
+                continue
+            pending.extend(reversed(list(ast.iter_child_nodes(node))))
+
+    def check_doctests(tree: ast.Module, rel: str) -> list[Finding]:
+        """Every untyped binding in the docstring examples of one parsed file.
+
+        Args:
+            tree: The parsed module.
+            rel: Its repo-relative path, for the report.
+
+        Returns:
+            list[Finding]: one ``DOCTEST`` row per bare binding.
+        """
+        out: list[Finding] = []
+        parser: doctest.DocTestParser = doctest.DocTestParser()
+        node: ast.AST
+        for node in ast.walk(tree):
+            if not isinstance(
+                node, ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef
+            ):
+                continue
+            body_head: ast.stmt | None = node.body[0] if node.body else None
+            if not (
+                isinstance(body_head, ast.Expr)
+                and isinstance(body_head.value, ast.Constant)
+                and isinstance(body_head.value.value, str)
+            ):
+                continue
+            declared: set[str] = set()
+            example: doctest.Example
+            for example in parser.get_examples(body_head.value.value):
+                try:
+                    statements: list[ast.stmt] = ast.parse(example.source).body
+                except SyntaxError:
+                    continue
+                line: int = body_head.lineno + example.lineno
+                statement: ast.stmt
+                for statement in statements:
+                    if isinstance(statement, ast.AnnAssign) and isinstance(
+                        statement.target, ast.Name
+                    ):
+                        declared.add(statement.target.id)
+                    elif isinstance(statement, ast.Assign):
+                        names: list[str] = [
+                            n
+                            for target in statement.targets
+                            for n in bound_names(target)
+                            if n not in declared and not n.startswith("_")
+                        ]
+                        if names:
+                            out.append(Finding(rel, line, "DOCTEST", ", ".join(names)))
+                        declared.update(names)
+        return out
+
+    def is_type_definition(value: ast.expr) -> bool:
+        """Whether a module-level assignment's right-hand side *defines a type*.
+
+        Type aliases (``Real = int | float | sympy.Expr``, ``Blade = tuple[int, ...]``,
+        ``MultiVector = Gn``) and type-system constructors (``TypeVar``, ``NewType``,
+        ``ParamSpec``) look like ordinary assignments to ``ast`` but are not
+        annotation candidates -- annotating one changes what it means.  Recognized by
+        shape: a union, a subscripted generic, a bare capitalized name, or a call to a
+        typing constructor.
+        """
+        if isinstance(value, ast.Call):
+            fn: ast.expr = value.func
+            target: str = (
+                fn.attr if isinstance(fn, ast.Attribute) else getattr(fn, "id", "")
+            )
+            return target in {"TypeVar", "NewType", "ParamSpec", "TypeAliasType"}
+        if isinstance(value, ast.BinOp) and isinstance(value.op, ast.BitOr):
+            return True
+        if isinstance(value, ast.Subscript):
+            return True
+        if isinstance(value, ast.Name):
+            return value.id[:1].isupper()
+        return False
+
     rel: str = path.relative_to(REPO).as_posix()
     try:
         tree: ast.Module = ast.parse(path.read_text(), filename=str(path))
@@ -375,85 +416,6 @@ def check_file(path: pathlib.Path) -> list[Finding]:
     return out
 
 
-def check_doctests(tree: ast.Module, rel: str) -> list[Finding]:
-    """Every untyped binding in the docstring examples of one parsed file.
-
-    Args:
-        tree: The parsed module.
-        rel: Its repo-relative path, for the report.
-
-    Returns:
-        list[Finding]: one ``DOCTEST`` row per bare binding.
-    """
-    out: list[Finding] = []
-    parser: doctest.DocTestParser = doctest.DocTestParser()
-    node: ast.AST
-    for node in ast.walk(tree):
-        if not isinstance(
-            node, ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef
-        ):
-            continue
-        body_head: ast.stmt | None = node.body[0] if node.body else None
-        if not (
-            isinstance(body_head, ast.Expr)
-            and isinstance(body_head.value, ast.Constant)
-            and isinstance(body_head.value.value, str)
-        ):
-            continue
-        declared: set[str] = set()
-        example: doctest.Example
-        for example in parser.get_examples(body_head.value.value):
-            try:
-                statements: list[ast.stmt] = ast.parse(example.source).body
-            except SyntaxError:
-                continue
-            line: int = body_head.lineno + example.lineno
-            statement: ast.stmt
-            for statement in statements:
-                if isinstance(statement, ast.AnnAssign) and isinstance(
-                    statement.target, ast.Name
-                ):
-                    declared.add(statement.target.id)
-                elif isinstance(statement, ast.Assign):
-                    names: list[str] = [
-                        n
-                        for target in statement.targets
-                        for n in bound_names(target)
-                        if n not in declared and not n.startswith("_")
-                    ]
-                    if names:
-                        out.append(Finding(rel, line, "DOCTEST", ", ".join(names)))
-                    declared.update(names)
-    return out
-
-
-def scope_nodes(
-    scope: ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef,
-) -> Iterator[ast.AST]:
-    """Every node in one scope's body, not descending into nested scopes.
-
-    A nested ``def``/``class``/``lambda`` or a comprehension is its own scope (a
-    comprehension's targets stay inferred), so its bindings are not this scope's.
-    """
-    pending: list[ast.AST] = list(reversed(scope.body))
-    while pending:
-        node: ast.AST = pending.pop()
-        yield node
-        if isinstance(
-            node,
-            ast.FunctionDef
-            | ast.AsyncFunctionDef
-            | ast.ClassDef
-            | ast.Lambda
-            | ast.ListComp
-            | ast.SetComp
-            | ast.DictComp
-            | ast.GeneratorExp,
-        ):
-            continue
-        pending.extend(reversed(list(ast.iter_child_nodes(node))))
-
-
 def bound_names(target: ast.expr) -> list[str]:
     """The bare names an assignment or ``for`` target binds, unpacking included.
 
@@ -472,6 +434,41 @@ def bound_names(target: ast.expr) -> list[str]:
 
 
 def main() -> int:
+
+    def in_scope() -> Iterator[pathlib.Path]:
+        """Every hand-written .py file in the in-scope directories, minus gitignored."""
+
+        def not_ignored() -> set[str] | None:
+            """Repo-relative paths git does not ignore (tracked or untracked), or None.
+
+            None means git is unavailable here (no ``git``, or not a checkout), and then
+            nothing is filtered.
+            """
+            try:
+                listing: subprocess.CompletedProcess[str] = subprocess.run(
+                    ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+                    cwd=REPO,
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+            except OSError, subprocess.CalledProcessError:
+                return None
+            return set(listing.stdout.splitlines())
+
+        visible: set[str] | None = not_ignored()
+        d: str
+        for d in SCOPE_DIRS:
+            root: pathlib.Path = REPO / d
+            if not root.is_dir():
+                continue
+            p: pathlib.Path
+            for p in sorted(root.rglob("*.py")):
+                rel: str = p.relative_to(REPO).as_posix()
+                if GENERATED.match(rel) or (visible is not None and rel not in visible):
+                    continue
+                yield p
+
     ap: argparse.ArgumentParser = argparse.ArgumentParser(description=__doc__)
     ap.add_argument(
         "--full", action="store_true", help="print every row, not a summary"

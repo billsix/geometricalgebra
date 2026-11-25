@@ -45,25 +45,24 @@ def blades(n: int) -> list[tuple[int, ...]]:
     return out
 
 
-def blade_name(bl: tuple[int, ...], prefix: str) -> str:
-    """Field-name for a blade: () -> '<prefix>s', (1,2) -> '<prefix>12', etc."""
-    suffix: str = "s" if bl == () else "".join(str(i) for i in bl)
-    return prefix + suffix
-
-
-def dump(
-    title: str, value: Gn, prefix: str, all_blades: Sequence[tuple[int, ...]]
-) -> None:
-    """Print each coefficient of `value` as `<prefix><blade> = <expanded formula>`."""
-    coefs: Mapping[Blade, Real] = value.to_blade_dict()
-    print(f"\n=== {title} ===")  # noqa: T201 -- derived formulas are the tool's output
-    bl: tuple[int, ...]
-    for bl in all_blades:
-        coef: object = sympy.expand(coefs.get(bl, sympy.Integer(0)))
-        print(f"{blade_name(bl, prefix)} = {coef}")  # noqa: T201 -- see above
-
-
 def main() -> None:
+
+    def blade_name(bl: tuple[int, ...], prefix: str) -> str:
+        """Field-name for a blade: () -> '<prefix>s', (1,2) -> '<prefix>12', etc."""
+        suffix: str = "s" if bl == () else "".join(str(i) for i in bl)
+        return prefix + suffix
+
+    def dump(
+        title: str, value: Gn, prefix: str, all_blades: Sequence[tuple[int, ...]]
+    ) -> None:
+        """Print each coefficient of `value` as `<prefix><blade> = <formula>`."""
+        coefs: Mapping[Blade, Real] = value.to_blade_dict()
+        print(f"\n=== {title} ===")  # noqa: T201 -- derived formulas are the tool's output
+        bl: tuple[int, ...]
+        for bl in all_blades:
+            coef: object = sympy.expand(coefs.get(bl, sympy.Integer(0)))
+            print(f"{blade_name(bl, prefix)} = {coef}")  # noqa: T201 -- see above
+
     n: int = int(sys.argv[1]) if len(sys.argv) > 1 else 3
     all_blades: list[tuple[int, ...]] = blades(n)
     a: dict[tuple[int, ...], sympy.Symbol] = {

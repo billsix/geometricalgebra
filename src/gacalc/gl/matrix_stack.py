@@ -143,41 +143,6 @@ def set_current_matrix(matrix_stack: MatrixStack, m: np.ndarray) -> None:
             )
 
 
-def _push_matrix(matrix_stack: MatrixStack) -> None:
-    def top_copy() -> np.ndarray:
-        return np.copy(get_current_matrix(matrix_stack))
-
-    match matrix_stack:
-        case MatrixStack.model:
-            __modelStack__.append(top_copy())
-        case MatrixStack.view:
-            __viewStack__.append(top_copy())
-        case MatrixStack.projection:
-            __projectionStack__.append(top_copy())
-        case MatrixStack.modelview | MatrixStack.modelviewprojection:
-            raise _not_a_stack("push_matrix", matrix_stack)
-        case _:
-            raise ValueError(
-                f"push_matrix: unhandled MatrixStack member {matrix_stack!r}"
-            )
-
-
-def _pop_matrix(matrix_stack: MatrixStack) -> None:
-    match matrix_stack:
-        case MatrixStack.model:
-            __modelStack__.pop()
-        case MatrixStack.view:
-            __viewStack__.pop()
-        case MatrixStack.projection:
-            __projectionStack__.pop()
-        case MatrixStack.modelview | MatrixStack.modelviewprojection:
-            raise _not_a_stack("pop_matrix", matrix_stack)
-        case _:
-            raise ValueError(
-                f"pop_matrix: unhandled MatrixStack member {matrix_stack!r}"
-            )
-
-
 @contextlib.contextmanager
 def push_matrix(m: MatrixStack) -> typing.Generator[MatrixStack]:
     """Save the current matrix for the duration of a ``with`` block, restoring
@@ -200,6 +165,40 @@ def push_matrix(m: MatrixStack) -> typing.Generator[MatrixStack]:
     >>> np.diag(get_current_matrix(MatrixStack.model)).tolist()
     [1.0, 1.0, 1.0, 1.0]
     """
+
+    def _pop_matrix(matrix_stack: MatrixStack) -> None:
+        match matrix_stack:
+            case MatrixStack.model:
+                __modelStack__.pop()
+            case MatrixStack.view:
+                __viewStack__.pop()
+            case MatrixStack.projection:
+                __projectionStack__.pop()
+            case MatrixStack.modelview | MatrixStack.modelviewprojection:
+                raise _not_a_stack("pop_matrix", matrix_stack)
+            case _:
+                raise ValueError(
+                    f"pop_matrix: unhandled MatrixStack member {matrix_stack!r}"
+                )
+
+    def _push_matrix(matrix_stack: MatrixStack) -> None:
+        def top_copy() -> np.ndarray:
+            return np.copy(get_current_matrix(matrix_stack))
+
+        match matrix_stack:
+            case MatrixStack.model:
+                __modelStack__.append(top_copy())
+            case MatrixStack.view:
+                __viewStack__.append(top_copy())
+            case MatrixStack.projection:
+                __projectionStack__.append(top_copy())
+            case MatrixStack.modelview | MatrixStack.modelviewprojection:
+                raise _not_a_stack("push_matrix", matrix_stack)
+            case _:
+                raise ValueError(
+                    f"push_matrix: unhandled MatrixStack member {matrix_stack!r}"
+                )
+
     matrix_stack: MatrixStack = m
     try:
         _push_matrix(matrix_stack)
