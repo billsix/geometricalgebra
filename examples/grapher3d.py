@@ -15,34 +15,36 @@
 
 Run it with ``python examples/grapher3d.py`` (needs the ``gl`` extra and a
 display; ``make shell`` provides both).  Each surface below is ordinary Python
-built on gacalc; the Surface menu switches between them.  The window, controls
+built on gacalc, with no ``float`` casts, so sympy can differentiate each one for the
+lit surface's normals; the Surface menu switches between them.  The window, controls
 and drawing are :func:`gacalc.gl.grapher3d.run`.
 """
 
+from gacalc.base import Real
 from gacalc.g2 import Bivector, Vector, e_1, e_2, e_12
 from gacalc.gl import grapher3d
 
 
-def magnitude(x: float, y: float) -> float:
+def magnitude(x: Real, y: Real) -> Real:
     """|x * e_1 + y * e_2|: a cone with its tip at the origin."""
     v: Vector = x * e_1 + y * e_2
-    return float(v.magnitude())
+    return v.magnitude()
 
 
-def dot_with_diagonal(x: float, y: float) -> float:
+def dot_with_diagonal(x: Real, y: Real) -> Real:
     """(x * e_1 + y * e_2) · (1 * e_1 + 1 * e_2): a tilted plane, x + y."""
     v: Vector = x * e_1 + y * e_2
     diagonal: Vector = 1.0 * e_1 + 1.0 * e_2
-    return float(v.dot(diagonal).scalar_part()) / 2.0
+    return v.dot(diagonal).scalar_part() / 2
 
 
-def wedge_with_reflection(x: float, y: float) -> float:
+def wedge_with_reflection(x: Real, y: Real) -> Real:
     """The e_12 coefficient of a ∧ b for a = x * e_1 + y * e_2 and its mirror
     image b = y * e_1 + x * e_2: x² - y², a saddle (scaled by 1/8)."""
     a: Vector = x * e_1 + y * e_2
     b: Vector = y * e_1 + x * e_2
     A: Bivector = a ^ b
-    return float(A.coefficient(e_12)) / 8.0
+    return A.coefficient(e_12) / 8
 
 
 SURFACES: list[grapher3d.Surface] = [

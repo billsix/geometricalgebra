@@ -30,7 +30,7 @@ The shared shaders ship as package data in :data:`SHADER_DIR`; pass it as the
 
 >>> import os
 >>> sorted(f for f in os.listdir(SHADER_DIR) if f.endswith(".vert"))
-['billboard.vert', 'per_vertex_color.vert', 'uniform_color.vert']
+['billboard.vert', 'lit_surface.vert', 'per_vertex_color.vert', 'uniform_color.vert']
 """
 
 import pathlib

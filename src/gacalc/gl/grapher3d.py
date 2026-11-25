@@ -19,8 +19,12 @@ ground plane (the function value is the up/y coordinate), shown as a wireframe
 and/or a height-coloured solid mesh.  The imgui Controls menu sets the grid
 sampling steps **dx** and **dy** (live rebuild) and toggles wireframe/solid;
 the Surface menu picks which function; an orbit camera (left-drag / arrows /
-scroll) looks around it.  The solid mesh is unlit; the lit (Blinn-Phong)
-version is ``tasks/grapher3d-lit-mesh.md``.
+scroll) looks around it.  The solid mesh is lit per fragment with the
+Blinn-Phong half-vector model (one directional light, set from the Light menu),
+or, with the lighting switched off, shaded by height alone.  The normals are
+analytic: the cross product of the surface's two tangents, built from the
+partial derivatives that sympy takes of ``fn`` at runtime (central differences
+stand in when ``fn`` cannot be called on sympy symbols).
 
 The window, imgui and GL context, the orbit camera, the menubar helpers and the
 frame steps come from :mod:`gacalc.gl.cayley_gl`; the line and per-vertex-colour
@@ -39,8 +43,12 @@ import typing
 import glfw
 import numpy as np
 import OpenGL.GL as GL
+import sympy
 
 import gacalc.gl.matrix_stack as ms
+from gacalc.base import Real
+from gacalc.g3 import Vector as Vector3
+from gacalc.g3 import e_1, e_2, e_3
 from gacalc.gl import SHADER_DIR, cayley_gl
 from gacalc.gl import _pipeline as _p
 from gacalc.gl import labels as _labels
@@ -60,9 +68,12 @@ Color: typing.TypeAlias = tuple[float, float, float]
 @dataclasses.dataclass(frozen=True)
 class Surface:
     """One graphed surface: f(x, y), a label, a colour, and the LaTeX (authored
-    in source) that the billboard renderer typesets as its equation caption."""
+    in source) that the billboard renderer typesets as its equation caption.
 
-    fn: typing.Callable[[float, float], float]
+    ``fn`` takes plain numbers.  If it also accepts sympy symbols (no ``float``
+    casts), the lit surface's normals come from its exact derivatives."""
+
+    fn: typing.Callable[[Real, Real], Real]
     label: str
     color: Color
     latex: str
@@ -84,6 +95,10 @@ class View3D:
     show_wireframe: bool = True
     show_solid: bool = False  # start as a bare wireframe mesh; solid is opt-in
     show_labels: bool = True
+    lit: bool = True  # Blinn-Phong lighting on the solid; off = height colours
+    light_azimuth: float = 45.0  # degrees around the up axis, from +z toward +x
+    light_elevation: float = 45.0  # degrees above the ground plane
+    shininess: float = 64.0  # the specular exponent
 
 
 @dataclasses.dataclass
@@ -97,6 +112,8 @@ class SurfaceMeshes:
     solid_pos_vbo: int
     solid_color_vbo: int
     solid_count: int
+    lit_vao: int
+    solid_normal_vbo: int
 
 
 # ---------------------------------------------------------------------------
@@ -114,6 +131,16 @@ def _height_color(base: Color, t: float) -> list[float]:
     high) so the solid surface reads without any lighting."""
     scale: float = 0.3 + 0.7 * t
     return [base[0] * scale, base[1] * scale, base[2] * scale]
+
+
+def _triangle_corners(i: int, j: int) -> list[tuple[int, int]]:
+    """The grid indices of cell ``(i, j)``'s two triangles, three corners each
+    (counter-clockwise seen from above), in the order the solid mesh emits them.
+
+    >>> _triangle_corners(0, 0)
+    [(0, 0), (1, 0), (1, 1), (0, 0), (1, 1), (0, 1)]
+    """
+    return [(i, j), (i + 1, j), (i + 1, j + 1), (i, j), (i + 1, j + 1), (i, j + 1)]
 
 
 def build_wireframe(surface: Surface, dx: float, dy: float) -> np.ndarray:
@@ -203,17 +230,156 @@ def build_solid(
 
     for i in range(nx):
         for j in range(ny):
-            a: tuple[float, float, float] = grid[i][j]
-            b: tuple[float, float, float] = grid[i + 1][j]
-            c: tuple[float, float, float] = grid[i + 1][j + 1]
-            d: tuple[float, float, float] = grid[i][j + 1]
-            p: tuple[float, float, float]
-            for p in (a, b, c, a, c, d):
-                emit(p)
+            corner_i: int
+            corner_j: int
+            for corner_i, corner_j in _triangle_corners(i, j):
+                emit(grid[corner_i][corner_j])
     return (
         np.array(positions, dtype=np.float32),
         np.array(colors, dtype=np.float32),
     )
+
+
+def surface_gradient(
+    surface: Surface,
+) -> typing.Callable[[float, float], tuple[float, float]]:
+    """``(x, y) -> (df/dx, df/dy)`` for the surface's ``fn``.
+
+    The derivatives are exact when ``fn`` can be called on sympy symbols, which
+    it can when it is built from gacalc operations (the book's graphs are):
+    sympy differentiates the expression once and the result is evaluated at each
+    point.  A ``fn`` that cannot be (it casts to ``float``), and a point where
+    the derivative is undefined (the tip of a cone), use a central difference.
+
+    >>> white: Color = (1.0, 1.0, 1.0)
+    >>> saddle: Surface = Surface(
+    ...     fn=lambda x, y: (x * x - y * y) / 8, label="s", color=white, latex="s"
+    ... )
+    >>> surface_gradient(saddle)(2.0, 4.0)
+    (0.5, -1.0)
+    >>> opaque: Surface = Surface(
+    ...     fn=lambda x, y: float(x) * 0.5, label="o", color=white, latex="o"
+    ... )
+    >>> [round(c, 6) for c in surface_gradient(opaque)(1.0, 1.0)]
+    [0.5, 0.0]
+    """
+
+    def central_difference(x: float, y: float) -> tuple[float, float]:
+        step: float = 1e-4
+        return (
+            float(surface.fn(x + step, y) - surface.fn(x - step, y)) / (2.0 * step),
+            float(surface.fn(x, y + step) - surface.fn(x, y - step)) / (2.0 * step),
+        )
+
+    x_symbol: sympy.Symbol = sympy.Symbol("x", real=True)
+    y_symbol: sympy.Symbol = sympy.Symbol("y", real=True)
+    try:
+        height: sympy.Expr = sympy.sympify(surface.fn(x_symbol, y_symbol))
+    except TypeError:
+        return central_difference
+    partials: typing.Callable[[float, float], tuple[float, float]] = sympy.lambdify(
+        (x_symbol, y_symbol),
+        (sympy.diff(height, x_symbol), sympy.diff(height, y_symbol)),
+        "math",
+    )
+
+    def exact(x: float, y: float) -> tuple[float, float]:
+        try:
+            df_dx: float
+            df_dy: float
+            df_dx, df_dy = partials(x, y)
+            if math.isfinite(df_dx) and math.isfinite(df_dy):
+                return (float(df_dx), float(df_dy))
+        except ZeroDivisionError, ValueError:
+            pass  # undefined here: fall through to the central difference
+        return central_difference(x, y)
+
+    return exact
+
+
+def surface_normal(
+    gradient: typing.Callable[[float, float], tuple[float, float]],
+    x: float,
+    y: float,
+) -> Vector3:
+    """The unit normal of the height field at domain point ``(x, y)``, pointing up.
+
+    The height field is the world point ``(x, f(x, y), y)`` (domain y is world z),
+    so its tangents are ``(1, df/dx, 0)`` along world x and ``(0, df/dy, 1)``
+    along world z, and the normal is their cross product,
+    ``(-df/dx, 1, -df/dy)``, normalized.  The tilted plane ``f(x, y) = x`` leans
+    its normal away from the rising side:
+
+    >>> n: Vector3 = surface_normal(lambda x, y: (1.0, 0.0), 0.0, 0.0)
+    >>> [round(float(c), 4) for c in n]
+    [-0.7071, 0.7071, 0.0]
+    >>> [round(float(c), 4) for c in surface_normal(lambda x, y: (0.0, 0.0), 1.0, 2.0)]
+    [0.0, 1.0, 0.0]
+    """
+    df_dx: float
+    df_dy: float
+    df_dx, df_dy = gradient(x, y)
+    along_x: Vector3 = 1.0 * e_1 + df_dx * e_2 + 0.0 * e_3
+    along_z: Vector3 = 0.0 * e_1 + df_dy * e_2 + 1.0 * e_3
+    return along_z.cross(along_x).normalize()
+
+
+def build_normals(surface: Surface, dx: float, dy: float) -> np.ndarray:
+    """One unit normal per vertex of :func:`build_solid`, in the same order.
+
+    A step of 6 gives 8 triangles of 3 vertices, one normal each; on a flat
+    surface every normal is straight up:
+
+    >>> white: Color = (1.0, 1.0, 1.0)
+    >>> flat: Surface = Surface(fn=lambda x, y: 0.0, label="f", color=white, latex="0")
+    >>> normals: np.ndarray = build_normals(flat, 6.0, 6.0).reshape(-1, 3)
+    >>> normals.shape
+    (24, 3)
+    >>> normals[:, 1].min(), normals[:, 1].max()
+    (np.float32(1.0), np.float32(1.0))
+    """
+    nx: int = _axis_count(dx)
+    ny: int = _axis_count(dy)
+    gradient: typing.Callable[[float, float], tuple[float, float]] = surface_gradient(
+        surface
+    )
+    grid: list[list[Vector3]] = [
+        [
+            surface_normal(
+                gradient,
+                -DOMAIN_HALF + i * (2.0 * DOMAIN_HALF) / nx,
+                -DOMAIN_HALF + j * (2.0 * DOMAIN_HALF) / ny,
+            )
+            for j in range(ny + 1)
+        ]
+        for i in range(nx + 1)
+    ]
+    normals: list[float] = []
+    i: int
+    j: int
+    corner_i: int
+    corner_j: int
+    for i in range(nx):
+        for j in range(ny):
+            for corner_i, corner_j in _triangle_corners(i, j):
+                normals.extend(float(c) for c in grid[corner_i][corner_j])
+    return np.array(normals, dtype=np.float32)
+
+
+def light_vector(azimuth: float, elevation: float) -> tuple[float, float, float]:
+    """The unit world-space direction toward the light, from two angles in degrees.
+
+    The azimuth turns about the up (y) axis from +z toward +x; the elevation
+    lifts the light above the ground plane:
+
+    >>> [round(c, 4) for c in light_vector(0.0, 90.0)]
+    [0.0, 1.0, 0.0]
+    >>> [round(c, 4) for c in light_vector(90.0, 0.0)]
+    [1.0, 0.0, 0.0]
+    """
+    a: float = math.radians(azimuth)
+    e: float = math.radians(elevation)
+    return (math.cos(e) * math.sin(a), math.sin(e), math.cos(e) * math.cos(a))
 
 
 def build_axes() -> np.ndarray:
@@ -271,7 +437,9 @@ def run(
 
     Controls: left-drag / arrows orbit, the mouse wheel zooms, the Surface
     menu picks the function, ``W`` / ``S`` toggle the wireframe and the solid
-    mesh, ``L`` toggles the TeX labels, F11 toggles fullscreen and Esc quits.
+    mesh, ``T`` toggles the lighting, the Light menu sets the light's
+    direction and the highlight's sharpness, ``L`` toggles the TeX labels, F11
+    toggles fullscreen and Esc quits.
     """
     view: View3D = View3D()
     win_state: cayley_gl.WindowState = cayley_gl.WindowState()
@@ -298,6 +466,12 @@ def run(
         shader_dir=SHADER_DIR,
         per_vertex_color=True,
     )
+    lit_pipeline: _p.Pipeline = _p.build_pipeline(
+        "lit_surface.vert", "lit_surface.frag", shader_dir=SHADER_DIR
+    )
+    u_light: int = GL.glGetUniformLocation(lit_pipeline.program, "light_direction")
+    u_material: int = GL.glGetUniformLocation(lit_pipeline.program, "material_color")
+    u_shininess: int = GL.glGetUniformLocation(lit_pipeline.program, "shininess")
     # Runtime TeX billboard labels (no-op if texExpToPng is not on PATH).
     label_renderer: _labels.LabelRenderer = _labels.LabelRenderer(SHADER_DIR)
 
@@ -317,12 +491,14 @@ def run(
         return vao, vbo, data.size // _p.floats_per_vertex
 
     def dynamic_solid(
-        positions: np.ndarray, colors: np.ndarray
-    ) -> tuple[int, int, int, int]:
+        positions: np.ndarray, colors: np.ndarray, normals: np.ndarray
+    ) -> tuple[int, int, int, int, int, int]:
         pos: np.ndarray = np.ascontiguousarray(positions, dtype=np.float32)
         col: np.ndarray = np.ascontiguousarray(colors, dtype=np.float32)
+        nor: np.ndarray = np.ascontiguousarray(normals, dtype=np.float32)
         pos_vbo: int = _p.make_vbo(pos, usage=GL.GL_DYNAMIC_DRAW)
         color_vbo: int = _p.make_vbo(col, usage=GL.GL_DYNAMIC_DRAW)
+        normal_vbo: int = _p.make_vbo(nor, usage=GL.GL_DYNAMIC_DRAW)
         vao: int = _p.make_vao(
             [
                 _p.AttribSpec(
@@ -339,7 +515,30 @@ def run(
                 ),
             ]
         )
-        return vao, pos_vbo, color_vbo, pos.size // _p.floats_per_vertex
+        lit_vao: int = _p.make_vao(
+            [
+                _p.AttribSpec(
+                    vbo=pos_vbo,
+                    location=lit_pipeline.attr_position,
+                    size=_p.floats_per_vertex,
+                    layout=(0, 0),
+                ),
+                _p.AttribSpec(
+                    vbo=normal_vbo,
+                    location=GL.glGetAttribLocation(lit_pipeline.program, "normal_in"),
+                    size=3,
+                    layout=(0, 0),
+                ),
+            ]
+        )
+        return (
+            vao,
+            pos_vbo,
+            color_vbo,
+            pos.size // _p.floats_per_vertex,
+            lit_vao,
+            normal_vbo,
+        )
 
     def reupload(vbo: int, verts: np.ndarray) -> int:
         data: np.ndarray = np.ascontiguousarray(verts, dtype=np.float32)
@@ -360,9 +559,13 @@ def run(
         pos_vbo: int
         color_vbo: int
         solid_n: int
+        lit_vao: int
+        normal_vbo: int
         positions, colors = build_solid(surface, view.dx, view.dy)
         wire_vao, wire_vbo, wire_n = dynamic_lines(wire)
-        solid_vao, pos_vbo, color_vbo, solid_n = dynamic_solid(positions, colors)
+        solid_vao, pos_vbo, color_vbo, solid_n, lit_vao, normal_vbo = dynamic_solid(
+            positions, colors, build_normals(surface, view.dx, view.dy)
+        )
         return SurfaceMeshes(
             wire_vao=wire_vao,
             wire_vbo=wire_vbo,
@@ -371,6 +574,8 @@ def run(
             solid_pos_vbo=pos_vbo,
             solid_color_vbo=color_vbo,
             solid_count=solid_n,
+            lit_vao=lit_vao,
+            solid_normal_vbo=normal_vbo,
         )
 
     meshes: SurfaceMeshes = build_meshes()
@@ -392,6 +597,7 @@ def run(
         positions, colors = build_solid(surface, view.dx, view.dy)
         meshes.wire_count = reupload(meshes.wire_vbo, wire) // _p.floats_per_vertex
         reupload(meshes.solid_color_vbo, colors)
+        reupload(meshes.solid_normal_vbo, build_normals(surface, view.dx, view.dy))
         meshes.solid_count = (
             reupload(meshes.solid_pos_vbo, positions) // _p.floats_per_vertex
         )
@@ -403,6 +609,15 @@ def run(
         GL.glUniform3f(line_pipeline.u_color, *color)
         _p.set_uniforms(line_pipeline.u_m, line_pipeline.u_v, line_pipeline.u_p)
         GL.glDrawArrays(GL.GL_LINES, 0, count)
+
+    def draw_lit_solid() -> None:
+        GL.glUseProgram(lit_pipeline.program)
+        GL.glBindVertexArray(meshes.lit_vao)
+        _p.set_uniforms(lit_pipeline.u_m, lit_pipeline.u_v, lit_pipeline.u_p)
+        GL.glUniform3f(u_light, *light_vector(view.light_azimuth, view.light_elevation))
+        GL.glUniform3f(u_material, *surfaces[view.current].color)
+        GL.glUniform1f(u_shininess, view.shininess)
+        GL.glDrawArrays(GL.GL_TRIANGLES, 0, meshes.solid_count)
 
     def draw_solid() -> None:
         GL.glUseProgram(surface_pipeline.program)
@@ -420,6 +635,9 @@ def run(
 
     def toggle_solid() -> None:
         view.show_solid = not view.show_solid
+
+    def toggle_lit() -> None:
+        view.lit = not view.lit
 
     def toggle_labels() -> None:
         view.show_labels = not view.show_labels
@@ -452,8 +670,20 @@ def run(
             cayley_gl.menu_action(
                 "Solid surface", "S", toggle_solid, selected=view.show_solid
             )
+            cayley_gl.menu_action("Lighting", "T", toggle_lit, selected=view.lit)
             cayley_gl.menu_action(
                 "Labels", "L", toggle_labels, selected=view.show_labels
+            )
+            imgui.end_menu()
+        if imgui.begin_menu("Light", True):
+            _, view.light_azimuth = imgui.slider_float(
+                "Azimuth (deg)", view.light_azimuth, -180.0, 180.0
+            )
+            _, view.light_elevation = imgui.slider_float(
+                "Elevation (deg)", view.light_elevation, 0.0, 90.0
+            )
+            _, view.shininess = imgui.slider_float(
+                "Shininess", view.shininess, 1.0, 256.0
             )
             imgui.end_menu()
         if imgui.begin_menu("View", True):
@@ -477,6 +707,8 @@ def run(
                 toggle_wire()
             case glfw.KEY_S:
                 toggle_solid()
+            case glfw.KEY_T:
+                toggle_lit()
             case glfw.KEY_L:
                 toggle_labels()
             case _:
@@ -502,7 +734,10 @@ def run(
         cayley_gl.setup_orbit_view(camera, w, h)
         draw_lines(axes_vao, axes_count, AXIS_COLOR)
         if view.show_solid:
-            draw_solid()
+            if view.lit:
+                draw_lit_solid()
+            else:
+                draw_solid()
         if view.show_wireframe:
             draw_lines(meshes.wire_vao, meshes.wire_count, surfaces[view.current].color)
         if view.show_labels and label_renderer.available:
