@@ -125,13 +125,6 @@ def _axis_count(step: float) -> int:
     return max(1, int(round((2.0 * DOMAIN_HALF) / step)))
 
 
-def _height_color(base: Color, t: float) -> list[float]:
-    """Shade ``base`` by normalised height ``t`` in 0..1 (dark low, bright
-    high) so the solid surface reads without any lighting."""
-    scale: float = 0.3 + 0.7 * t
-    return [base[0] * scale, base[1] * scale, base[2] * scale]
-
-
 def _triangle_corners(i: int, j: int) -> list[tuple[int, int]]:
     """The grid indices of cell ``(i, j)``'s two triangles, three corners each
     (counter-clockwise seen from above), in the order the solid mesh emits them.
@@ -201,6 +194,13 @@ def build_solid(
     >>> positions.reshape(-1, 3).shape, colors.reshape(-1, 3).shape
     ((24, 3), (24, 3))
     """
+
+    def _height_color(base: Color, t: float) -> list[float]:
+        """Shade ``base`` by normalised height ``t`` in 0..1 (dark low, bright
+        high) so the solid surface reads without any lighting."""
+        scale: float = 0.3 + 0.7 * t
+        return [base[0] * scale, base[1] * scale, base[2] * scale]
+
     nx: int = _axis_count(dx)
     ny: int = _axis_count(dy)
     grid: list[list[tuple[float, float, float]]] = []

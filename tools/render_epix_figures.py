@@ -60,56 +60,76 @@ print(g.get("BACKGROUND", ""), end="")
 """
 
 
-def eepic_to_pdf(eepic: Path, pdf: Path) -> None:
-    """``elaps --pdf`` in a scratch dir (elaps litters its cwd with TeX transcripts)."""
-    with tempfile.TemporaryDirectory() as d:
-        scratch: Path = Path(d) / eepic.name
-        shutil.copy(eepic, scratch)
-        subprocess.run(
-            ["elaps", "--pdf", "-o", str(pdf), scratch.name],
-            cwd=d,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-
-
-def flatten_png(png: Path, background: str) -> None:
-    """Replace the PNG's transparent background with a solid colour (ImageMagick)."""
-    magick: str | None = shutil.which("magick") or shutil.which("convert")
-    if magick is None:
-        raise FileNotFoundError(
-            "ImageMagick (magick/convert) is needed to flatten PNGs"
-        )
-    subprocess.run(
-        [magick, str(png), "-background", background, "-flatten", str(png)],
-        check=True,
-        capture_output=True,
-    )
-
-
-def render_one(src: Path, dpi: int) -> None:
-    """Run one figure file in a fresh process and write its .pdf and .png."""
-    name: str = src.stem.replace("_", "-")
-    pdf: Path = OUT / f"{name}.pdf"
-    png: Path = OUT / f"{name}.png"
-    with tempfile.TemporaryDirectory() as d:
-        eepic: Path = Path(d) / f"{name}.eepic"
-        child: subprocess.CompletedProcess[str] = subprocess.run(
-            [sys.executable, "-c", _CHILD, str(src), str(eepic), str(png), str(dpi)],
-            check=True,
-            cwd=src.parent,
-            capture_output=True,
-            text=True,
-        )
-        # the figure's own BACKGROUND, or the default so nothing is left transparent
-        background: str = child.stdout.strip() or DEFAULT_BACKGROUND
-        flatten_png(png, background)
-        eepic_to_pdf(eepic, pdf)
-    print(f"rendered {src.relative_to(REPO)} -> {pdf.relative_to(REPO)}, {png.name}")
-
-
 def main() -> int:
+
+    def remove_orphans(names: AbstractSet[str]) -> None:
+        """Delete rendered outputs whose figure file no longer exists."""
+        output: Path
+        for output in sorted(OUT.glob("*.pdf")) + sorted(OUT.glob("*.png")):
+            if output.stem not in names:
+                output.unlink()
+                print(f"removed {output.relative_to(REPO)} (its figure file is gone)")
+
+    def render_one(src: Path, dpi: int) -> None:
+        """Run one figure file in a fresh process and write its .pdf and .png."""
+
+        def flatten_png(png: Path, background: str) -> None:
+            """Replace the PNG's transparent background with a solid colour."""
+            magick: str | None = shutil.which("magick") or shutil.which("convert")
+            if magick is None:
+                raise FileNotFoundError(
+                    "ImageMagick (magick/convert) is needed to flatten PNGs"
+                )
+            subprocess.run(
+                [magick, str(png), "-background", background, "-flatten", str(png)],
+                check=True,
+                capture_output=True,
+            )
+
+        def eepic_to_pdf(eepic: Path, pdf: Path) -> None:
+            """``elaps --pdf`` in a scratch dir.
+
+            elaps litters its cwd with TeX transcripts.
+            """
+            with tempfile.TemporaryDirectory() as d:
+                scratch: Path = Path(d) / eepic.name
+                shutil.copy(eepic, scratch)
+                subprocess.run(
+                    ["elaps", "--pdf", "-o", str(pdf), scratch.name],
+                    cwd=d,
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+
+        name: str = src.stem.replace("_", "-")
+        pdf: Path = OUT / f"{name}.pdf"
+        png: Path = OUT / f"{name}.png"
+        with tempfile.TemporaryDirectory() as d:
+            eepic: Path = Path(d) / f"{name}.eepic"
+            child: subprocess.CompletedProcess[str] = subprocess.run(
+                [
+                    sys.executable,
+                    "-c",
+                    _CHILD,
+                    str(src),
+                    str(eepic),
+                    str(png),
+                    str(dpi),
+                ],
+                check=True,
+                cwd=src.parent,
+                capture_output=True,
+                text=True,
+            )
+            # the figure's own BACKGROUND, or the default so nothing is left transparent
+            background: str = child.stdout.strip() or DEFAULT_BACKGROUND
+            flatten_png(png, background)
+            eepic_to_pdf(eepic, pdf)
+        print(
+            f"rendered {src.relative_to(REPO)} -> {pdf.relative_to(REPO)}, {png.name}"
+        )
+
     parser: argparse.ArgumentParser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--dpi", type=int, default=200, help="PNG resolution (default 200)"
@@ -153,15 +173,6 @@ def main() -> int:
     if not args.names:
         remove_orphans({p.stem.replace("_", "-") for p in sources})
     return status
-
-
-def remove_orphans(names: AbstractSet[str]) -> None:
-    """Delete rendered outputs whose figure file no longer exists."""
-    output: Path
-    for output in sorted(OUT.glob("*.pdf")) + sorted(OUT.glob("*.png")):
-        if output.stem not in names:
-            output.unlink()
-            print(f"removed {output.relative_to(REPO)} (its figure file is gone)")
 
 
 if __name__ == "__main__":

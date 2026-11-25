@@ -42,26 +42,27 @@ _VECTOR_FILL: epix.Color = epix.rgb(r=0.97, g=0.91, b=0.82)
 _ORANGE: epix.Color = epix.rgb(r=0.7, g=0.35, b=0.0)
 
 
-def _region(center: Point, radius: Point, edge: epix.Color, fill: epix.Color) -> None:
-    """A filled ellipse with a coloured edge."""
-    epix.pen(color=edge, width=1.2)
-    epix.fill(color=fill)
-    epix.ellipse(center=center, radius=radius)
-    epix.nofill()
-
-
-def _text(at: Point, text: str, color: epix.Color) -> None:
-    """A centred label in ``color``."""
-    epix.label_color(color=color)
-    epix.label(at=at, offset=Point(x=0, y=0), text=text, align=epix.LabelPos.c)
-
-
 @contextmanager
 def g2_subsets_scene() -> Generator[PendingFigure]:
     """The subsets diagram, as an open figure.
 
     Callers may draw more before it closes.
     """
+
+    def _text(at: Point, text: str, color: epix.Color) -> None:
+        """A centred label in ``color``."""
+        epix.label_color(color=color)
+        epix.label(at=at, offset=Point(x=0, y=0), text=text, align=epix.LabelPos.c)
+
+    def _region(
+        center: Point, radius: Point, edge: epix.Color, fill: epix.Color
+    ) -> None:
+        """A filled ellipse with a coloured edge."""
+        epix.pen(color=edge, width=1.2)
+        epix.fill(color=fill)
+        epix.ellipse(center=center, radius=radius)
+        epix.nofill()
+
     fig: PendingFigure
     with epix.figure(
         lower_left=_LOWER_LEFT,

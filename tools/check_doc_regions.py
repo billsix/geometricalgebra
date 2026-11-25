@@ -55,47 +55,47 @@ _END: re.Pattern[str] = re.compile(
 )
 
 
-def _errors_in(path: pathlib.Path) -> list[str]:
-    text: str = path.read_text()
-    rel: str = str(path.relative_to(_SRC.parent.parent))
-    errors: list[str] = []
-    begins: list[str] = [m.group("name") for m in _BEGIN.finditer(text)]
-    ends: list[str] = [m.group("name") for m in _END.finditer(text)]
-
-    marker_kind: str
-    names: list[str]
-    for marker_kind, names in (("begin", begins), ("end", ends)):
-        counts: collections.Counter[str] = collections.Counter(names)
-        name: str
-        count: int
-        for name, count in sorted(counts.items()):
-            if count > 1:
-                errors.append(
-                    f"{rel}: doc-region-{marker_kind} '{name}' appears "
-                    f"{count} times -- a query always selects the first"
-                )
-        unique: list[str] = sorted(counts)
-        shorter: str
-        longer: str
-        for shorter in unique:
-            for longer in unique:
-                if shorter != longer and longer.startswith(shorter):
-                    errors.append(
-                        f"{rel}: doc-region-{marker_kind} '{shorter}' is a "
-                        f"prefix of '{longer}' -- a query for the shorter can "
-                        f"match the longer's line"
-                    )
-
-    unmatched_begin: set[str] = set(begins) - set(ends)
-    unmatched_end: set[str] = set(ends) - set(begins)
-    for name in sorted(unmatched_begin):
-        errors.append(f"{rel}: doc-region-begin '{name}' has no matching end")
-    for name in sorted(unmatched_end):
-        errors.append(f"{rel}: doc-region-end '{name}' has no matching begin")
-    return errors
-
-
 def main() -> int:
+
+    def _errors_in(path: pathlib.Path) -> list[str]:
+        text: str = path.read_text()
+        rel: str = str(path.relative_to(_SRC.parent.parent))
+        errors: list[str] = []
+        begins: list[str] = [m.group("name") for m in _BEGIN.finditer(text)]
+        ends: list[str] = [m.group("name") for m in _END.finditer(text)]
+
+        marker_kind: str
+        names: list[str]
+        for marker_kind, names in (("begin", begins), ("end", ends)):
+            counts: collections.Counter[str] = collections.Counter(names)
+            name: str
+            count: int
+            for name, count in sorted(counts.items()):
+                if count > 1:
+                    errors.append(
+                        f"{rel}: doc-region-{marker_kind} '{name}' appears "
+                        f"{count} times -- a query always selects the first"
+                    )
+            unique: list[str] = sorted(counts)
+            shorter: str
+            longer: str
+            for shorter in unique:
+                for longer in unique:
+                    if shorter != longer and longer.startswith(shorter):
+                        errors.append(
+                            f"{rel}: doc-region-{marker_kind} '{shorter}' is a "
+                            f"prefix of '{longer}' -- a query for the shorter can "
+                            f"match the longer's line"
+                        )
+
+        unmatched_begin: set[str] = set(begins) - set(ends)
+        unmatched_end: set[str] = set(ends) - set(begins)
+        for name in sorted(unmatched_begin):
+            errors.append(f"{rel}: doc-region-begin '{name}' has no matching end")
+        for name in sorted(unmatched_end):
+            errors.append(f"{rel}: doc-region-end '{name}' has no matching begin")
+        return errors
+
     if not _SRC.exists():
         sys.stderr.write(f"no {_SRC}; run `make generate` first\n")
         return 1

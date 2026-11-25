@@ -213,11 +213,6 @@ def build_axes_and_ticks(spacing: float) -> np.ndarray:
     return np.array(verts, dtype=np.float32)
 
 
-def build_basis_shaft(dx: float, dy: float) -> np.ndarray:
-    """The shaft of the unit basis vector along (dx, dy) (GL_LINES)."""
-    return np.array([0.0, 0.0, 0.0, dx, dy, 0.0], dtype=np.float32)
-
-
 def build_basis_head(dx: float, dy: float) -> np.ndarray:
     """A filled triangular arrowhead at the tip of unit vector (dx, dy).
 
@@ -280,6 +275,11 @@ def run(
     pans, ``G`` cycles the backdrop (grid, axes, origin + e1/e2), ``L`` toggles
     the TeX labels, ``0`` resets the view, F11 toggles fullscreen and Esc quits.
     """
+
+    def build_basis_shaft(dx: float, dy: float) -> np.ndarray:
+        """The shaft of the unit basis vector along (dx, dy) (GL_LINES)."""
+        return np.array([0.0, 0.0, 0.0, dx, dy, 0.0], dtype=np.float32)
+
     view: View2D = View2D()
     win_state: cayley_gl.WindowState = cayley_gl.WindowState()
     #: Previous cursor position while a left-drag pan is in progress (else None).

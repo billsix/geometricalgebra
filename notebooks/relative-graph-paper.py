@@ -138,20 +138,20 @@ values: list[tuple[sympy.Symbol, Real]] = [(b_1, 4), (b_2, 1)]
 
 
 # %%
-def mapping(function: InvertibleFunction[Vector]) -> Mapping:
-    """Where ``function`` carries the spot ``(x, y)`` of the standard sheet."""
-
-    def carried(x_coordinate: float, y_coordinate: float) -> Point:
-        """The carried spot, as an ePiX point."""
-        spot: Vector = function(x_coordinate * e_1 + y_coordinate * e_2)
-        return point(coordinates=list(at_values(spot, values)))
-
-    return carried
-
-
 def draw(function: InvertibleFunction[Vector]) -> PendingFigure:
     """The standard sheet faintly, and the sheet ``function`` carries, captioned with
     the function."""
+
+    def mapping(function: InvertibleFunction[Vector]) -> Mapping:
+        """Where ``function`` carries the spot ``(x, y)`` of the standard sheet."""
+
+        def carried(x_coordinate: float, y_coordinate: float) -> Point:
+            """The carried spot, as an ePiX point."""
+            spot: Vector = function(x_coordinate * e_1 + y_coordinate * e_2)
+            return point(coordinates=list(at_values(spot, values)))
+
+        return carried
+
     fig: PendingFigure
     with paper_scene(
         lower_left=Point(x=-4, y=-4),

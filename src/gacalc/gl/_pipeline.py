@@ -119,12 +119,6 @@ def cleanup() -> None:
 # ---------------------------------------------------------------------------
 
 
-def init_fonts_and_markdown() -> None:
-    imgui_md.initialize_markdown()
-    font_loader: imgui_md.VoidFunction = imgui_md.get_font_loader_function()
-    font_loader()
-
-
 def setup_window(
     title: str,
     width: int = 1920,
@@ -133,6 +127,12 @@ def setup_window(
     """Initialize GLFW + a 3.3-core context + ImGui.  Returns
     ``(window, impl, imguiio)``.  Sets the standard background colour and
     enables depth testing."""
+
+    def init_fonts_and_markdown() -> None:
+        imgui_md.initialize_markdown()
+        font_loader: imgui_md.VoidFunction = imgui_md.get_font_loader_function()
+        font_loader()
+
     if not glfw.init():
         sys.exit(1)
 
@@ -220,48 +220,6 @@ def install_camera_scroll(
 # ---------------------------------------------------------------------------
 
 
-def _read_shader(name: str, shader_dir: str) -> str:
-    with open(os.path.join(shader_dir, name), "r") as f:
-        return f.read()
-
-
-def compile_program(
-    vert: str,
-    frag: str,
-    geom: Optional[str] = None,
-    project: Optional[str] = None,
-    *,
-    shader_dir: str,
-) -> int:
-    """Compile a vert+frag (and optional geom) program from shader files in
-    ``shader_dir`` -- usually :data:`gacalc.gl.SHADER_DIR`, the shared shaders,
-    or a program's own directory for shaders of its own.  The resulting program
-    is registered for cleanup.
-
-    ``project`` names a ``project_*.glsl`` snippet whose source is appended to
-    the vertex shader before compiling -- this supplies the body of the
-    forward-declared ``vec4 project(vec4)`` that ``per_vertex_color.vert`` /
-    ``uniform_color.vert`` call.  GLSL 330 has no ``#include``, so this string
-    concatenation is how each demo's projection animation is injected into the
-    two shared vertex shaders."""
-    vsrc: str = _read_shader(vert, shader_dir)
-    if project is not None:
-        vsrc = vsrc + "\n" + _read_shader(project, shader_dir)
-    vs: int = shaders.compileShader(vsrc, GL.GL_VERTEX_SHADER)
-    fs: int = shaders.compileShader(
-        _read_shader(frag, shader_dir), GL.GL_FRAGMENT_SHADER
-    )
-    if geom is None:
-        prog: int = shaders.compileProgram(vs, fs)
-    else:
-        gs: int = shaders.compileShader(
-            _read_shader(geom, shader_dir), GL.GL_GEOMETRY_SHADER
-        )
-        prog = shaders.compileProgram(vs, gs, fs)
-    all_programs.append(prog)
-    return prog
-
-
 # ---------------------------------------------------------------------------
 # Pipeline -- a compiled program plus its cached uniform/attribute locations.
 # ---------------------------------------------------------------------------
@@ -322,6 +280,47 @@ def build_pipeline(
     frustum-animation uniforms
     (``field_of_view`` / ``aspect_ratio`` / ``near_z`` / ``far_z`` / ``time``);
     ``screenspace`` -> ``u_thickness`` / ``u_viewport_size``."""
+
+    def compile_program(
+        vert: str,
+        frag: str,
+        geom: Optional[str] = None,
+        project: Optional[str] = None,
+        *,
+        shader_dir: str,
+    ) -> int:
+        """Compile a vert+frag (and optional geom) program from shader files in
+        ``shader_dir`` -- usually :data:`gacalc.gl.SHADER_DIR`, the shared shaders,
+        or a program's own directory for shaders of its own.  The resulting program
+        is registered for cleanup.
+
+        ``project`` names a ``project_*.glsl`` snippet whose source is appended to
+        the vertex shader before compiling -- this supplies the body of the
+        forward-declared ``vec4 project(vec4)`` that ``per_vertex_color.vert`` /
+        ``uniform_color.vert`` call.  GLSL 330 has no ``#include``, so this string
+        concatenation is how each demo's projection animation is injected into the
+        two shared vertex shaders."""
+
+        def _read_shader(name: str, shader_dir: str) -> str:
+            with open(os.path.join(shader_dir, name), "r") as f:
+                return f.read()
+
+        vsrc: str = _read_shader(vert, shader_dir)
+        if project is not None:
+            vsrc = vsrc + "\n" + _read_shader(project, shader_dir)
+        vs: int = shaders.compileShader(vsrc, GL.GL_VERTEX_SHADER)
+        fs: int = shaders.compileShader(
+            _read_shader(frag, shader_dir), GL.GL_FRAGMENT_SHADER
+        )
+        if geom is None:
+            prog: int = shaders.compileProgram(vs, fs)
+        else:
+            gs: int = shaders.compileShader(
+                _read_shader(geom, shader_dir), GL.GL_GEOMETRY_SHADER
+            )
+            prog = shaders.compileProgram(vs, gs, fs)
+        all_programs.append(prog)
+        return prog
 
     def u(name: str, enabled: bool) -> int:
         return GL.glGetUniformLocation(prog, name) if enabled else -1
@@ -700,17 +699,6 @@ def build_origin_sphere_solid(
     return np.array(verts, dtype=np.float32)
 
 
-def _cross_arrays(a: np.ndarray, b: np.ndarray) -> np.ndarray:
-    """gacalc's cross product of two 3-component arrays, as a float32 array.
-
-    Round-trips through ``g3.Vector`` so the cross product is gacalc's (the dual
-    of the wedge) rather than numpy's; iteration yields the coordinates back in
-    ``(e_1, e_2, e_3)`` order."""
-    u: Vector = float(a[0]) * e_1 + float(a[1]) * e_2 + float(a[2]) * e_3
-    v: Vector = float(b[0]) * e_1 + float(b[1]) * e_2 + float(b[2]) * e_3
-    return np.array(list(cross(u, v)), dtype=np.float32)
-
-
 def build_cylinders_for_edges(
     edges: typing.Sequence[
         tuple[tuple[float, float, float], tuple[float, float, float]]
@@ -726,6 +714,17 @@ def build_cylinders_for_edges(
     ``glDrawArrays(GL_TRIANGLES, ...)``.  5 triangles per slice per edge
     (cylinder side = 2, bottom cap = 1, top cap = 1, plus 1 spare for
     diagonal symmetry of the side strip)."""
+
+    def _cross_arrays(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+        """gacalc's cross product of two 3-component arrays, as a float32 array.
+
+        Round-trips through ``g3.Vector`` so the cross product is gacalc's (the dual
+        of the wedge) rather than numpy's; iteration yields the coordinates back in
+        ``(e_1, e_2, e_3)`` order."""
+        u: Vector = float(a[0]) * e_1 + float(a[1]) * e_2 + float(a[2]) * e_3
+        v: Vector = float(b[0]) * e_1 + float(b[1]) * e_2 + float(b[2]) * e_3
+        return np.array(list(cross(u, v)), dtype=np.float32)
+
     verts: list[float] = []
     raw_p0: tuple[float, float, float]
     raw_p1: tuple[float, float, float]

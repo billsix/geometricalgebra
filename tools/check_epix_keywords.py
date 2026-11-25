@@ -86,61 +86,6 @@ EXEMPT_BUILTINS: frozenset[str] = frozenset(
 )
 
 
-def callee(node: ast.Call) -> tuple[str, str] | None:
-    """(module, name) for ``name(...)`` / ``module.name(...)``; None otherwise."""
-    func: ast.expr = node.func
-    if isinstance(func, ast.Name):
-        return ("", func.id)
-    if isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name):
-        return (func.value.id, func.attr)
-    return None
-
-
-def names_for(key: tuple[str, str], arity: int) -> list[str] | None:
-    """The parameter list for ``key`` at this arity, if the table knows it."""
-    entry: Names | None = KNOWN.get(key)
-    if entry is None:
-        return None
-    if isinstance(entry, dict):
-        return entry.get(arity)
-    return entry
-
-
-def scan(path: Path) -> tuple[list[tuple[int, int, str]], list[str]]:
-    """Positional args to rewrite as (lineno, col, name) + unknown-callee reports."""
-    tree: ast.Module = ast.parse(path.read_text())
-    edits: list[tuple[int, int, str]] = []
-    unknown: list[str] = []
-    node: ast.AST
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Call) or not node.args:
-            continue
-        key: tuple[str, str] | None = callee(node)
-        if key is None:
-            # method calls (fig.save(...), Path(...).draw()): none take args here
-            continue
-        module: str
-        name: str
-        module, name = key
-        if module in EXEMPT_MODULES or (module == "" and name in EXEMPT_BUILTINS):
-            continue
-        params: list[str] | None = names_for(key, len(node.args) + len(node.keywords))
-        if params is None:
-            params = names_for(key, len(node.args))
-        if params is None:
-            unknown.append(
-                f"{path.name}:{node.lineno}: {module + '.' if module else ''}{name}(…)"
-            )
-            continue
-        arg: ast.expr
-        param: str
-        for arg, param in zip(node.args, params, strict=False):
-            if isinstance(arg, ast.Starred):
-                continue
-            edits.append((arg.lineno, arg.col_offset, param))
-    return edits, unknown
-
-
 def apply(path: Path, edits: Sequence[tuple[int, int, str]]) -> None:
     """Insert ``name=`` before each positional argument, last position first."""
     lines: list[str] = path.read_text().split("\n")
@@ -154,6 +99,63 @@ def apply(path: Path, edits: Sequence[tuple[int, int, str]]) -> None:
 
 
 def main() -> int:
+
+    def scan(path: Path) -> tuple[list[tuple[int, int, str]], list[str]]:
+        """Positional args to rewrite (lineno, col, name) and unknown-callee reports."""
+
+        def names_for(key: tuple[str, str], arity: int) -> list[str] | None:
+            """The parameter list for ``key`` at this arity, if the table knows it."""
+            entry: Names | None = KNOWN.get(key)
+            if entry is None:
+                return None
+            if isinstance(entry, dict):
+                return entry.get(arity)
+            return entry
+
+        def callee(node: ast.Call) -> tuple[str, str] | None:
+            """(module, name) for ``name(...)`` / ``module.name(...)``, else None."""
+            func: ast.expr = node.func
+            if isinstance(func, ast.Name):
+                return ("", func.id)
+            if isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name):
+                return (func.value.id, func.attr)
+            return None
+
+        tree: ast.Module = ast.parse(path.read_text())
+        edits: list[tuple[int, int, str]] = []
+        unknown: list[str] = []
+        node: ast.AST
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or not node.args:
+                continue
+            key: tuple[str, str] | None = callee(node)
+            if key is None:
+                # method calls (fig.save(...), Path(...).draw()): none take args here
+                continue
+            module: str
+            name: str
+            module, name = key
+            if module in EXEMPT_MODULES or (module == "" and name in EXEMPT_BUILTINS):
+                continue
+            params: list[str] | None = names_for(
+                key, len(node.args) + len(node.keywords)
+            )
+            if params is None:
+                params = names_for(key, len(node.args))
+            if params is None:
+                unknown.append(
+                    f"{path.name}:{node.lineno}: "
+                    f"{module + '.' if module else ''}{name}(…)"
+                )
+                continue
+            arg: ast.expr
+            param: str
+            for arg, param in zip(node.args, params, strict=False):
+                if isinstance(arg, ast.Starred):
+                    continue
+                edits.append((arg.lineno, arg.col_offset, param))
+        return edits, unknown
+
     parser: argparse.ArgumentParser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--fix", action="store_true", help="insert the keywords in place"

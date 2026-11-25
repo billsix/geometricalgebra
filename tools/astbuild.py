@@ -109,66 +109,6 @@ def marker(text: str) -> ast.Expr:
     return ast.Expr(ast.Constant(_MARKER_OPEN + text + _MARKER_CLOSE))
 
 
-def _is_classvar(annotation: ast.expr) -> bool:
-    """True if a field annotation is ``typing.ClassVar[...]`` (not an instance var)."""
-    if not isinstance(annotation, ast.Subscript):
-        return False
-    head: ast.expr = annotation.value
-    name: str | None = (
-        head.attr
-        if isinstance(head, ast.Attribute)
-        else head.id
-        if isinstance(head, ast.Name)
-        else None
-    )
-    return name == "ClassVar"
-
-
-def _is_overload(node: ast.stmt) -> bool:
-    """True if ``node`` is a ``@typing.overload`` (or bare ``@overload``) stub.
-
-    Overload stubs share the implementation's method name, so marking them would
-    emit duplicate ``<Class> <method> method`` regions; they are left unmarked and
-    only the implementation carries the method's doc-region."""
-    if not isinstance(node, ast.FunctionDef):
-        return False
-    decorator: ast.expr
-    for decorator in node.decorator_list:
-        if isinstance(decorator, ast.Attribute) and decorator.attr == "overload":
-            return True
-        if isinstance(decorator, ast.Name) and decorator.id == "overload":
-            return True
-    return False
-
-
-def _method_label(class_name: str, method: ast.FunctionDef, seen: set[str]) -> str:
-    """A unique, prefix-free region label for a method.
-
-    ``<class> <method> method`` normally, but a property **setter** / **deleter**
-    shares the getter's name, so it takes an ``<method> setter`` / ``deleter``
-    qualifier; any remaining duplicate gets a numeric one.  The qualifier goes
-    *before* the trailing ``method`` keyword so names stay prefix-free (``x
-    setter method`` does not contain ``x method``).  ``seen`` is mutated to track
-    the labels already used in this class.
-    """
-    decorator: ast.expr
-    accessor: str = ""
-    for decorator in method.decorator_list:
-        if isinstance(decorator, ast.Attribute) and decorator.attr in (
-            "setter",
-            "deleter",
-        ):
-            accessor = " " + decorator.attr
-    core: str = f"{method.name}{accessor}"
-    label: str = f"{class_name} {core} method"
-    suffix: int = 2
-    while label in seen:
-        label = f"{class_name} {core} {suffix} method"
-        suffix += 1
-    seen.add(label)
-    return label
-
-
 def inject_region_markers(body: Sequence[ast.stmt]) -> list[ast.stmt]:
     """Wrap each top-level class -- and, within it, its declaration, its instance
     variables, and each method -- in doc-region markers.
@@ -189,6 +129,64 @@ def inject_region_markers(body: Sequence[ast.stmt]) -> list[ast.stmt]:
     emitting it here would displace the docstring, so it is inserted at the text
     level in :func:`module_source` instead.
     """
+
+    def _method_label(class_name: str, method: ast.FunctionDef, seen: set[str]) -> str:
+        """A unique, prefix-free region label for a method.
+
+        ``<class> <method> method`` normally, but a property **setter** / **deleter**
+        shares the getter's name, so it takes an ``<method> setter`` / ``deleter``
+        qualifier; any remaining duplicate gets a numeric one.  The qualifier goes
+        *before* the trailing ``method`` keyword so names stay prefix-free (``x
+        setter method`` does not contain ``x method``).  ``seen`` is mutated to track
+        the labels already used in this class.
+        """
+        decorator: ast.expr
+        accessor: str = ""
+        for decorator in method.decorator_list:
+            if isinstance(decorator, ast.Attribute) and decorator.attr in (
+                "setter",
+                "deleter",
+            ):
+                accessor = " " + decorator.attr
+        core: str = f"{method.name}{accessor}"
+        label: str = f"{class_name} {core} method"
+        suffix: int = 2
+        while label in seen:
+            label = f"{class_name} {core} {suffix} method"
+            suffix += 1
+        seen.add(label)
+        return label
+
+    def _is_overload(node: ast.stmt) -> bool:
+        """True if ``node`` is a ``@typing.overload`` (or bare ``@overload``) stub.
+
+        Overload stubs share the implementation's method name, so marking them would
+        emit duplicate ``<Class> <method> method`` regions; they are left unmarked and
+        only the implementation carries the method's doc-region."""
+        if not isinstance(node, ast.FunctionDef):
+            return False
+        decorator: ast.expr
+        for decorator in node.decorator_list:
+            if isinstance(decorator, ast.Attribute) and decorator.attr == "overload":
+                return True
+            if isinstance(decorator, ast.Name) and decorator.id == "overload":
+                return True
+        return False
+
+    def _is_classvar(annotation: ast.expr) -> bool:
+        """True if a field annotation is ``typing.ClassVar[...]``."""
+        if not isinstance(annotation, ast.Subscript):
+            return False
+        head: ast.expr = annotation.value
+        name: str | None = (
+            head.attr
+            if isinstance(head, ast.Attribute)
+            else head.id
+            if isinstance(head, ast.Name)
+            else None
+        )
+        return name == "ClassVar"
+
     out: list[ast.stmt] = []
     node: ast.stmt
     for node in body:
@@ -249,37 +247,6 @@ def inject_region_markers(body: Sequence[ast.stmt]) -> list[ast.stmt]:
     return out
 
 
-def _insert_declaration_ends(src: str) -> str:
-    """Place each ``doc-region-end <C> declaration`` right after ``C``'s ``class`` line.
-
-    The declaration region's end must fall between the ``class`` line and the
-    docstring; doing that in the AST would bump the docstring out of first
-    position (rendering it as an escaped one-liner), so it is done here in text.
-    Keyed off the ``doc-region-begin <C> declaration`` comment already emitted
-    just above each class.
-    """
-    lines: list[str] = src.split("\n")
-    out_lines: list[str] = []
-    pending: str | None = None  # class name whose `class` line we're waiting for
-    begin_re: typing.Final = re.compile(
-        r"^\s*# doc-region-begin (?P<name>\S+) declaration$"
-    )
-    line: str
-    for line in lines:
-        out_lines.append(line)
-        begin: re.Match[str] | None = begin_re.match(line)
-        if begin is not None:
-            pending = begin.group("name")
-            continue
-        if pending is not None and re.match(
-            rf"^(?P<indent>\s*)class {re.escape(pending)}\b.*:\s*$", line
-        ):
-            indent: str = line[: len(line) - len(line.lstrip())]
-            out_lines.append(f"{indent}    # doc-region-end {pending} declaration")
-            pending = None
-    return "\n".join(out_lines)
-
-
 def module_source(body: list[ast.stmt]) -> str:
     """Render top-level statement nodes to source via `ast.unparse`.
 
@@ -293,6 +260,37 @@ def module_source(body: list[ast.stmt]) -> str:
     each class's ``declaration`` region is closed after its ``class`` line (all
     no-ops when there are no sentinels).
     """
+
+    def _insert_declaration_ends(src: str) -> str:
+        """Place each ``doc-region-end <C> declaration`` after ``C``'s ``class`` line.
+
+        The declaration region's end must fall between the ``class`` line and the
+        docstring; doing that in the AST would bump the docstring out of first
+        position (rendering it as an escaped one-liner), so it is done here in text.
+        Keyed off the ``doc-region-begin <C> declaration`` comment already emitted
+        just above each class.
+        """
+        lines: list[str] = src.split("\n")
+        out_lines: list[str] = []
+        pending: str | None = None  # class name whose `class` line we're waiting for
+        begin_re: typing.Final = re.compile(
+            r"^\s*# doc-region-begin (?P<name>\S+) declaration$"
+        )
+        line: str
+        for line in lines:
+            out_lines.append(line)
+            begin: re.Match[str] | None = begin_re.match(line)
+            if begin is not None:
+                pending = begin.group("name")
+                continue
+            if pending is not None and re.match(
+                rf"^(?P<indent>\s*)class {re.escape(pending)}\b.*:\s*$", line
+            ):
+                indent: str = line[: len(line) - len(line.lstrip())]
+                out_lines.append(f"{indent}    # doc-region-end {pending} declaration")
+                pending = None
+        return "\n".join(out_lines)
+
     module: ast.Module = ast.Module(body=body, type_ignores=[])
     rendered: str = ast.unparse(ast.fix_missing_locations(module))
     commented: str = _MARKER_RE.sub(r"\g<indent># \g<text>", rendered)

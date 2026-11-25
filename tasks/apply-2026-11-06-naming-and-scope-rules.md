@@ -1,119 +1,49 @@
 # Apply the 2026-11-06 naming and scope rules across geometricalgebra
 
-**Status:** approved 2026-11-25, to run when the maintainer is back; open questions answered (see Decisions)
-**Priority:** 5
-**Difficulty:** 6
-**Deferred** (William Emerison Six <billsix@gmail.com>, 2026-11-14): left out of the unattended batch run that day; the maintainer wants to be present to calibrate the triage. The open questions below are still open.
-**Created:** 2026-11-06 (William Emerison Six <billsix@gmail.com>): "make a task to search through all of
-geometricalgebra and see if there is programming advice that we added that should be applied to the
-codebase, to refactor it".
+**Done:** 2026-11-25 (work commit; the archive move follows). Source: the maintainer (William Emerison Six <billsix@gmail.com>, 2026-11-06): "make a task to search through all of geometricalgebra and see if there is programming advice that we added that should be applied to the codebase, to refactor it". Deferred on 2026-11-14 so the maintainer could be present; approved and run on 2026-11-25 as the last of the seven repositories.
 
-## BLUF
+## What this did
 
-The 2026-11-06 refactor of `Frame.to_invertible_function` produced five coding rules, now in the shared
-Python standard. So far they have been applied to that one method (and to `measure.signed_content`).
-This task searches the rest of gacalc for places that break them, records every candidate in a worklog,
-and refactors the ones that should change, with no change in behaviour. Done = every candidate is either
-refactored or recorded as left alone with its reason, `make test` and `make format` pass, and
-`tools/check_annotations.py` shows no new rows.
+Five rules entered the shared Python standard on 2026-11-06 (github.com/billsix/runClaudeInContainer, `tasks/reference/python-coding-standard.md`: "Inline a value used once, and name it in a comment instead of a binding" and "What earns an extraction"): inline a binding used once; a binding used twice does not automatically earn a name; declare a name at the point of use; nest a helper with one caller inside that caller; shadow deliberately when nesting. The task surveyed the hand-written Python in `src/gacalc/` (not the generated `g*.py`), `tools/`, `tests/`, `notebooks/`, `book/figures/epix/` and `examples/`, and refactored without changing behaviour. The vendored Emacs tree and `proofs/` (Lean) are out of scope.
 
-## Context (read first)
+## Decisions, in order (William Emerison Six <billsix@gmail.com>, 2026-11-25)
 
-- **The rules**, in the shared `python-coding-standard.md` (github.com/billsix/runClaudeInContainer
-  `tasks/reference/`; mounted at `~/.claude/reference/`), sections "Inline a value used once, and name
-  it in a comment instead of a binding" and "What earns an extraction":
-  1. **Inline a binding used once**, even one that exists to explain the expression; put a comment above
-     the inlined subexpression that describes it and gives it its name.
-  2. **Two uses do not automatically earn a name**: check whether one expression absorbs them (e.g.
-     `getattr(obj, name, fallback)` in place of a `None` check plus ternary), or whether a cheap
-     expression can be repeated. Keep the name when repeating the expression reads worse or recomputes
-     something expensive.
-  3. **Declare a name at the point of use**, not many lines earlier.
-  4. **Nest a helper with one caller inside that caller.**
-  5. **When nesting, shadow deliberately**: the helper's parameter takes the caller's name when it means
-     the same thing, and the shadowing is verified (the helper never needs the outer value; none of its
-     other names hide an enclosing binding).
-- **The worked example to imitate:** `tasks/reference/python-coding-standard-gacalc.md`, "Inline once,
-  declare at use, nest and shadow".
-- **Rules from the same session that are NOT in scope here:**
-  - The shared "must be a vector" check (`MultiVectorBase.require_vector`/`require_vectors`) was already
-    applied everywhere (`tasks/archive/2026/11/06/reuse-existing-vector-check.md`).
-  - Head-first recursion became a shared rule on 2026-11-18, in the sandbox repos'
-    `recursive-design.md` (`tasks/archive/2026/11/18/frame-inverse-head-first-recursion.md`).
-- **Rules that compete with these, and win:** an externally-defined name is never renamed; "annotate
-  every binding" still applies to every name that survives; `m`/`b`/`n`/`cls` naming; Hestenes
-  variable notation (`tasks/reference/hestenes-variable-notation.md`).
+- **Question 1, survey first, or survey and apply:** survey first, then use discretion and apply (taken from the maintainer's 2026-11-24 decision for the same question in the Programming3DComputerGraphics task).
+- **Question 2, a helper a test imports:** counts as having a second caller and stays at module level (same source and date).
+- **Question 3, the generator's emitted code:** apply the rules to the generator's own source only, not to what it emits. Recorded in `tasks/reference/python-coding-standard-gacalc.md` ("Where the naming and scope rules stop") and `tasks/reference/code-generator-architecture.md` ("How to change it").
+- **Question 4, the book notebooks:** include them, but a binding a cell displays or the page's prose names keeps its name. Recorded in the same two docs and in the checklist of `tasks/reference/book-notebook-teaching-style.md`.
+- **Mechanics:** rule 4 by the shared `nest_one_caller.py` (runClaudeInContainer `tasks/reference/`); the finished Programming3DComputerGraphics task, archived under `tasks/archive/2026/11/25/` there, is the worked example.
 
-## Scope
+## What was done
 
-- **In:** the hand-written Python in `src/gacalc/` (except the generated `g*.py`), `tools/` (including
-  `tools/gen_specialized.py` and `tools/astbuild.py`), `tests/`, `notebooks/` (the demo and book notebooks alike),
-  and `book/figures/epix/`.
-- **The generated `g1`–`g5`:** never edited by hand. A rule broken in emitted code is fixed in the
-  generator, and only if the change improves the emitted source a reader sees (Open Q3).
-- **Out:** the vendored Emacs tree under `entrypoint/` (off-limits), and `proofs/` (Lean; a different
-  language with its own conventions).
+- **Survey:** `tasks/adhoc/apply-2026-11-06-naming-and-scope-rules/discover.py` wrote 1,882 leads over the in-scope files: 942 `ONCE`, 754 `TWICE`, 54 `FAR`, 132 `ONE_CALLER`.
+- **Nested (rule 4): 83 helpers in 19 files.**
+  - **Library, 17:** `_marked_product_latex`, `_coefficients` and `_side_latex` in `nbdisplay.py`; `generategridlines` and `_coef_as_float` in `nbplotutils.py`; `_region` and `_text` in `epixscene/venn_scene.py`; `init_fonts_and_markdown`, `_read_shader`, `compile_program` and `_cross_arrays` in `gl/_pipeline.py`; `gui_button` and `rectangular_prism_lines` in `gl/cayley_gl.py`; `build_basis_shaft` in `gl/grapher2d.py`; `_height_color` in `gl/grapher3d.py`; `_push_matrix` and `_pop_matrix` in `gl/matrix_stack.py`.
+  - **Tools, 65:** the generator (`gen_specialized.py`, 35, for example `generate_constants`, `generate_quarter_turn` and `inject_method_docstrings` into `main`, and the class and graded-type helpers into `generate_class` and `generate_graded_type`), `astbuild.py` (4), and the checkers and report scripts (`check_annotations.py` 7, `bench.py` 4, `check_epix_keywords.py` 3, `check_notebook_prose_width.py`, `check_lean_arch_doc_names.py` and `derive_lean_algebra.py` 2 each, `check_doc_regions.py` 1, and the rest).
+  - **Notebooks and figures, 1:** `mapping` into `draw` in `notebooks/relative-graph-paper.py`. The tool had moved the jupytext `# %%` cell marker above `mapping` into the function body, which merged two cells; the marker was put back above `draw`, and no repository I nested has another indented cell marker.
+  - The tool skipped every helper with a doctest (`doctest` does not collect a nested function) and every helper named in another file (`_require_canonical_blades`, `draw_angle`, `arrow`, `basis_vectors`, `toggle_fullscreen`, `set_current_matrix`, `marker` and a few more); its output repeats each skip once per cascade pass. Notebooks and the non-underscore figure scripts were nested one at a time in a scratch repository (`nest_isolated.sh`), because they are run, never imported, and their same-named helpers are not callers of each other; only one one-caller helper turned up there. A second run of both modes found nothing to nest.
+- **No doc-region was touched:** the only hand-written files with real `doc-region` markers (`functions.py`, `transforms.py`) had no helper to nest; the `doc-region` strings in `astbuild.py` and `gen_specialized.py` are text the generator emits.
+- **Reformat:** `make format` re-wrapped the deeper code; nine single-line docstrings that the extra indent pushed past 88 columns were shortened or split into a summary line and a second line, and one f-string was split into two adjacent literals.
+- **Left alone, with the reason:**
+  - The generated `g1`–`g5` (decision 3).
+  - Every file in `tests/` (named inputs, expected values and case tables; no test helper was nested).
+  - The notebooks and figure scripts' `ONCE` and `TWICE` bindings (decision 4: a student's view shows the name, or the page's prose names it; no comment is added in a notebook).
+  - GL handles, pipelines, window state and uniform values in `gl/` (`FAR` leads such as `view`, `win_state`, `line_pipeline`, `label_renderer`: they are set up once at the top of `run` and read in many places, so a declaration at the first use would be repeated).
+  - The generator's multi-use `FAR` and `TWICE` locals (`fields`, `self_ann`, `mvb_ann`, `a_mv`, `b_mv`, `has_scalar`: named once and read by many emitted statements) and the 942 `ONCE` leads in `src/` and `tools/`, most of which are comprehension and `for` targets or teaching locals in `src/gacalc/`.
+  - No further inline or move was applied in this task: the nesting was verified as a whole, and an inline would have invalidated that verification.
 
-## Plan
+## Result
 
-1. **Discover with a script, not by reading every file.** Write
-   `tasks/adhoc/apply-2026-11-06-naming-and-scope-rules/discover.py`, an `ast` walk over the in-scope
-   paths (repo-relative paths) that reports:
-   - a local assigned once and loaded once (rule 1), with the line distance between the two (rule 3);
-   - a local assigned once and loaded exactly twice, flagged for a look (rule 2);
-   - a local whose first load is far from its assignment, e.g. more than 10 lines (rule 3);
-   - a module-level or enclosing-scope function called from exactly one function (rule 4);
-   - a nested function whose parameter names differ from an enclosing local holding the same kind of
-     value, as a lead for rule 5 (a judgment call, so a lead only).
-   Write the results to `tasks/adhoc/apply-2026-11-06-naming-and-scope-rules/data/candidates.txt` (a
-   committed snapshot worklog).
-2. **Triage the worklog** into: refactor; leave alone (with the reason, e.g. a loop accumulator, a value
-   bound for a debugger or a doctest, a name a test asserts on, a public parameter, an annotation that
-   carries information the inline form would lose); and ask the maintainer. Record the counts here.
-3. **Refactor in small batches, one module (or a few related ones) per commit**, matching the worked
-   example: inline with a naming comment, absorb double uses, move declarations down, nest one-caller
-   helpers and verify the shadowing. Re-run `tools/check_annotations.py`, `ruff`, and `ty` after each
-   batch.
-4. **Gates:** containerized `make test` and `make format`; `make check-generated` and
-   `make check-regions` if the generator or any doc-region-marked code was touched (book listings
-   include code by marker; a refactor that moves marked code moves its markers).
-5. Record in this doc what was changed, what was left alone and why, and any rule the survey showed
-   needs a sharper wording; feed that back to the shared standard (github.com/billsix/runClaudeInContainer,
-   mirrored in github.com/billsix/runCrushInContainer).
+- Applied: the 83 nestings, the docstring and f-string fixes, and one restored cell marker; 19 files changed. Behaviour is unchanged (see Verification).
 
-## Open questions (answered 2026-11-25, see Decisions)
+## Verification (containerized, lean image, 2026-11-25)
 
-1. **Survey first, or survey and apply?** (a) Run the discovery and triage, then stop and show you the
-   worklog before any refactor, or (b) apply the clear cases straight away and bring you only the
-   judgment calls. I recommend (a) for the first module or two, so you can calibrate the triage, then
-   (b) for the rest.
-2. **Does a nested helper need a stated reason to stay at module level?** Rule 4 says to nest a
-   one-caller helper. A module-level private helper with one caller in the library may still be imported
-   by a test, which nesting would break. Recommended: a helper a test imports counts as having a second
-   caller and stays at module level (the discovery script checks `tests/` imports before flagging).
-3. **The generator's emitted code** (`g1`–`g5`): apply the rules to what `tools/gen_specialized.py`
-   emits too, or only to the generator's own source? Recommended: only the generator's own source in
-   this task. The emitted locals are systematic CSE temporaries, and changing the emitted shape would
-   ripple through `make check-generated` and the doc regions for little reader benefit.
-4. **The book notebooks** (the book's companions in `notebooks/`) are student-facing, and a name bound once can be
-   there to show the student a step (`a_par: Vector = …` printed in the next cell). Include them, or
-   exempt any binding a notebook displays or explains? Recommended: include them, but exempt a binding
-   that a notebook cell displays or the page's prose names.
+- **The regenerated `g1.py`, `g2.py` and `g3.py` are byte-identical** before and after (checksums recorded before the change), which is the direct proof that nesting 35 helpers in the generator changed what it emits. `make check-generated` (two runs identical) exit 0, `make check-regions` exit 0.
+- `make format` exit 0 (ruff check, ruff format, `ty` over `src`, `tests`, `tools`, `notebooks` and `examples`, the changelog check, the epix keyword check and the notebook prose-width check); `make check-notebooks` (pyright) 0 errors, run again after the cell-marker fix.
+- `make test`: 1,412 passed, 3 skipped, 12 deselected.
+- **Not run:** the 12 tests marked `slow` (`make test-full`, about 27 minutes, which CI runs on push; none of the nested files is exercised by them), `make docs` (needs the full image), the ePiX scene helpers and figure scripts (`venn_scene`, `book/figures/epix`; ePiX is not in the lean image), and the OpenGL toolkit (`gl/`, nine nested helpers; it needs a display).
 
-## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-25)
+## Owed
 
-- **Question 1 (survey first, or survey and apply):** survey first, then use discretion and apply. Taken from the
-  maintainer's 2026-11-24 decision for the same question in the Programming3DComputerGraphics task, which matches
-  the recommendation here.
-- **Question 2 (a helper a test imports):** counts as having a second caller and stays at module level (the same
-  decision, same source and date; the mvp tool `nest_one_caller.py` also leaves a helper another file imports).
-- **Question 3 (the generator's emitted code):** apply the rules to the generator's own source only, as
-  recommended. Recorded in `tasks/reference/python-coding-standard-gacalc.md` ("Where the naming and scope rules
-  stop") and `tasks/reference/code-generator-architecture.md` ("How to change it").
-- **Question 4 (the book notebooks):** include them, but a binding a cell displays or the page's prose names keeps
-  its name, as recommended. Recorded in the same two docs and in the checklist of
-  `tasks/reference/book-notebook-teaching-style.md`; no comment is added in the notebooks, since a student's view
-  carries no developer comments.
-- **Mechanical nesting:** use the shared `nest_one_caller.py` (runClaudeInContainer `tasks/reference/`, mounted at
-  `~/.claude/reference/`) for rule 4; the finished Programming3DComputerGraphics task, archived under
-  `tasks/archive/2026/11/25/` there, is the worked example.
+- The maintainer runs `examples/grapher2d.py` and `examples/grapher3d.py` once on a real display (the Light menu and `T` key were already on the list from the 2026-11-25 batch), to see the nested GL helpers draw.
+- `make test-full` in CI on the pushed branch is the check for the slow tests.
