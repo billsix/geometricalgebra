@@ -296,7 +296,7 @@ Every proof should reach for a *named* leaf, not a fresh `ext <;> ring`. The lea
   (`(RuR̃)·(RvR̃) = |R|⁴ u·v`), `normSq_reverse_sandwich` (`|RvR̃|² = |R|⁴|v|²`); the pure-`ring`
   `wedge_reverse_sandwich` and `normSq_reverse_sandwich_wedge`; `normSq_smul`, `normSq_reverse`,
   `reverse_smul`; the isometries `sandwich_preserves_dot`, `sandwich_preserves_normSq`, `magnitude_sandwich`,
-  the outermorphism `sandwich_preserves_wedge` (`(RuR⁻¹)∧(RvR⁻¹) = R(u∧v)R⁻¹`), `sandwich_preserves_normSq_of_wedge`;
+  the outermorphism `sandwich_preserves_wedge` (`(RuR⁻¹)∧(RvR⁻¹) = R(u∧v)R⁻¹`, no `|R|² ≠ 0` guard: the identity holds at 0 because `1/0 = 0`), `sandwich_preserves_normSq_of_wedge`;
   the inverse facts `inverse_inverse`, `inverse_mul_self_of_isEvenVersor`/`mul_inverse_self_of_isEvenVersor`,
   and the round trip `sandwich_inverse_sandwich` (`sandwich R⁻¹ ∘ sandwich R = id`).
 - **Duals / pseudoscalar:** `I_inv`, `I_mul_I_inv`, `dual`, `dual_wedge_perp_left`/`_right`.
@@ -926,7 +926,7 @@ The Lean effort's standing decisions, so a reader does not need the archived umb
 1. **Purpose:** a private, machine-checked oracle for the *mathematics* behind the derivations — not
    student material, and not a verification of the Python (that is a separate, unstarted undertaking).
 2. **Lagrange identity** in the squared form `‖a‖²‖b‖² = (a·b)² + ‖a∧b‖²`.
-3. **Location and gate:** `proofs/`, `make lean` = `proofs/check.sh` (`lake build` + a `sorry`/`admit`
+3. **Location and gate:** `proofs/`, `make lean` = `proofs/check.sh` (`lake build --wfail` + a `sorry`/`admit`
    completeness gate); CI runs it on `v*` tags only.
 4. **From scratch, with an equivalence bridge.** Every result is proved on the coordinate structs
    `G1`/`G2`/`G3` (basis blades as genuine elements), never by citing Mathlib's general theorem as the

@@ -279,7 +279,7 @@ theorem vec_mul_bisector_eq {f t : G3} (hf : IsVector f) (ht : IsVector t) :
   clear_value sa sb
   simp only [mul, add, smul, one, vec]
   -- Every component is pure `ring` except the scalar, which needs `|f|² = f·f` (`hsa`).
-  ext <;> try ring
+  ext <;> try ring_nf
   linear_combination -sb * hsa
 
 /-- **`f̂ t̂ R = R̃`** — the key alignment identity: the product of the two unit vectors, times the

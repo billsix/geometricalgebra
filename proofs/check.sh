@@ -33,8 +33,10 @@ if [ ! -d .lake/packages/mathlib ]; then
   fi
 fi
 
-echo "[lean] lake build…"
-lake build || status=1
+echo "[lean] lake build (warnings are errors)…"
+# --wfail: any warning (an unreachable tactic, an unused variable, a no-op rewrite) fails the
+# build, so the proofs stay free of dead weight the linters can see.
+lake build --wfail || status=1
 
 # Quick completeness check: no `sorry`/`admit` in our own sources. Fast, and it names
 # the line, but it is textual: it cannot see a user `axiom`, `native_decide`, or a hole
