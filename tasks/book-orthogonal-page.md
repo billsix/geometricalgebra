@@ -1,6 +1,6 @@
 # Write the "Orthogonal" book page (still a placeholder)
 
-**Status:** proposed — needs go-ahead
+**Status:** go-ahead 2026-11-25, question 1 answered (see Decisions); not started
 **Priority:** 5
 **Difficulty:** 4
 **Created:** 2026-11-21 (William Emerison Six <billsix@gmail.com>), noticed while finishing
@@ -25,8 +25,14 @@ toctree with its outline entry updated.
 - Related library code: `src/gacalc/frame.py` (orthogonal frames), `transforms.py`
   (`line_to_line_projection` / `rejection`).
 
-## Open questions
+## Open questions (answered 2026-11-25, see Decisions)
 
 1. Keep the page (orthogonality of vectors and frames, after the dot product), or fold it into
    `product-from-projection` and drop it from the book? Recommend keeping it, about orthogonal
    decomposition and frames, since perpendicular lines are already covered.
+
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-25)
+
+1. Keep the page, about orthogonal decomposition and frames (perpendicular lines are already covered elsewhere); do not fold it into `product-from-projection`.
+
+The decision was the maintainer's "go with your suggestions" on the recommendation above.

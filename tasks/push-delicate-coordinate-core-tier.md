@@ -176,3 +176,7 @@ theorems over `IsVector`. These three remain, each needing a judgment about its 
   in the e₁₂ plane", i.e. `IsEvenVersor R` plus `R.c13 = 0 ∧ R.c23 = 0`.
 - `Sandwich.normSq_mul (s1 p1 q1 t1 s2 p2 q2 t2 : ℝ)`. It takes two versors' components. The
   architecture doc says these lift to `IsEvenVersor`.
+
+## Decision (William Emerison Six <billsix@gmail.com>, 2026-11-25)
+
+Start now: the maintainer said "go with your suggestions" to starting this task, which restates the 2026-10-22 GO. Not started yet as of this entry; the work-record sections above remain the state of the code.

@@ -1,6 +1,6 @@
 # One Dimension: teach plotting from scratch, then scale and translate on relative number lines
 
-**Status:** proposed — needs go-ahead (open questions below block the work)
+**Status:** question 1 answered 2026-11-25 (see Decisions); question 2 is still open and blocks the rest; not started
 **Priority:** 3
 **Difficulty:** 5
 **Created:** 2026-11-22 (William Emerison Six <billsix@gmail.com>)
@@ -73,7 +73,7 @@ notebook read that way, the two open questions are answered, and `make format`, 
    `m * x + b` on the other. Count on either. Drawn the way `relative-graph-paper` draws a carried sheet. No blue
    arrow.
 
-## Open questions
+## Open questions (Q1 answered 2026-11-25, Q2 still open)
 
 1. **Where does the turn by `e_1 * e_2` go?** The maintainer expected it at the end of this chapter. It is now its own
    page after `geometric-product` because the turn needs `e_2` and the product, taught later (a construction may use
@@ -114,3 +114,9 @@ notebook read that way, the two open questions are answered, and `make format`, 
 
 1. 2026-11-22 (William Emerison Six <billsix@gmail.com>): asked for after reading the chapter and the new
    `plotting-a-table` page. Two questions are open; the shape above is a draft.
+
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-25)
+
+1. Position (a): keep the turn on `plotting-a-table`, and make the one-dimension chapter end by naming the missing second direction and pointing forward to it, so the two pages read as one story. This keeps the teaching-order rule and costs the least.
+
+Question 2 (where scale and translate on relative number lines go, given 1) was not asked and is still open; it blocks the remaining work.

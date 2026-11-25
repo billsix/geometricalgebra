@@ -1,6 +1,6 @@
 # 3D grapher: lit triangle-mesh surface (Blinn-Phong, the half-vector model)
 
-**Status:** proposed, needs go-ahead and the three open questions answered. The grapher move it
+**Status:** go-ahead 2026-11-25, the three open questions answered (see Decisions); not started. The grapher move it
 waited for is done (2026-11-13), so the 3D grapher is now `src/gacalc/gl/grapher3d.py`.
 **Priority:** 7
 **Difficulty:** 6
@@ -86,7 +86,7 @@ These files are in mvp (github.com/billsix/modelviewprojection), under `ports/op
 - These shaders use the legacy built-ins `gl_ModelViewProjectionMatrix` and `gl_Normal`. Port the
   *math* into the grapher's own core-profile shader, with explicit `uniform` and `in` attributes.
 
-## Open questions
+## Open questions (answered 2026-11-25, see Decisions)
 
 1. Should the normals be analytic, from `∂f/∂x` and `∂f/∂y` of the authored function, or averaged
    from the adjacent triangle faces? Recommendation: analytic, since the inputs are known functions.
@@ -96,3 +96,11 @@ These files are in mvp (github.com/billsix/modelviewprojection), under `ports/op
    directional light, which gives the clearest highlight.
 3. Should the light direction and shininess be menubar sliders, rather than defaults hard-coded in
    source? Recommendation: sliders, because they are view settings, not function definitions.
+
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-25)
+
+1. Normals are analytic, from `∂f/∂x` and `∂f/∂y` of the authored function (an optional derivative field on `Surface`, or sympy differentiation, which gacalc already depends on).
+2. One directional light to start, which gives the clearest highlight.
+3. Light direction and shininess are menubar sliders, as view settings rather than function definitions.
+
+The decisions were the maintainer's "go with your suggestions" on the recommendations above.

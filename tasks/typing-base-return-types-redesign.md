@@ -1,6 +1,6 @@
 # Make `MultiVectorBase`'s return types true: honest overloads, plus a Protocol for transforms
 
-**Status:** proposed — needs go-ahead (parked)
+**Status:** question 1 answered 2026-11-25 (see Decisions); still parked, not started
 **Priority:** 7
 **Difficulty:** 6
 **Created:** 2026-11-08
@@ -136,8 +136,14 @@ Run `bash tasks/adhoc/typing-base-return-types-redesign/run.sh`.
   - `make check-generated`.
 - [ ] `CHANGELOG.md`: a typing-only change, but a consumer's type checker sees it, so record it.
 
-## Open questions
+## Open questions (answered 2026-11-25, see Decisions)
 
 1. Should `LinearSpace` be public (exported for users' own generic code) or private to
    `transforms.py`? Recommendation: public, in `functions.py`, because the notebooks and users write
    the same generic helpers.
+
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-25)
+
+1. `LinearSpace` is public, defined in `functions.py`, because the notebooks and users write the same generic helpers.
+
+This records the design answer only. The task stays parked: the maintainer answered the question but did not unpark the redesign.

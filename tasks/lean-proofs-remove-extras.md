@@ -1,6 +1,6 @@
 # Remove the extra hypotheses and no-op tactics from the Lean proofs, then gate on warnings
 
-**Status:** proposed — needs go-ahead (open questions 1 and 2)
+**Status:** go-ahead 2026-11-25, questions 1 and 2 answered (see Decisions); not started
 **Priority:** 6
 **Difficulty:** 2
 **Created:** 2026-11-05 (William Emerison Six <billsix@gmail.com>)
@@ -78,7 +78,7 @@ at `|R|² = 0` too, because in Lean `1/0 = 0`, so `inverse R = 0` and both sides
 7. Optional, as a reusable tool: promote the `clear`-test script to `tools/` (e.g.
    `tools/lean_clear_test.py`), and note it in the reference doc.
 
-## Open questions
+## Open questions (answered 2026-11-25, see Decisions)
 
 1. For #3–#5 (the `≠ 0` guards the proofs don't need): (a) drop them, which makes each theorem strictly
    stronger; or (b) keep them renamed `_hr`, as "meaning gates" saying the statement is only interesting when
@@ -88,3 +88,10 @@ at `|R|² = 0` too, because in Lean `1/0 = 0`, so `inverse R = 0` and both sides
    `warningAsError = true` in `lakefile.toml`, or (c) no gate? Recommendation: (a). It is one line, and
    `make lean` only runs on `v*` tags in CI, so it adds no per-push cost. Note that it can't catch #3–#5-style
    extras, which only the `clear` test finds.
+
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-25)
+
+1. Drop the unneeded `≠ 0` guards on #3–#5 (option a): each theorem becomes strictly stronger, per the architecture doc's "carry only what the proof uses".
+2. Add the fail-on-warning gate as `lake build --wfail` in `proofs/check.sh` (option a). `make lean` runs only on `v*` tags in CI, so there is no per-push cost; it cannot catch #3–#5-style extras, which only the `clear` test finds.
+
+The decisions were the maintainer's "go with your suggestions" on the recommendations above.

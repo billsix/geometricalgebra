@@ -1,15 +1,11 @@
 # Document the code-generation flow (sympy → AST), starting from Gn
 
-**Status:** blocked
+**Status:** go-ahead 2026-11-25 (question answered, see Decisions); not started. Was blocked on the Open question.
 **Priority:** 6
 **Difficulty:** 3
 **Started:** 2026-08-27 (William Emerison Six <billsix@gmail.com>)
 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — citations re-verified; stale line
 counts/dates dropped.
-**Blocked on:** maintainer answers the Open question below (contributor-facing doc update vs a new
-reader/book-facing explainer).
-**Recheck:** the Open question below is answered (maintainer-gated; `/recheck-blocked` surfaces it).
-
 ## BLUF
 
 Maintainer's idea, verbatim: *"For the reference docs, as an example for the code generation. I'm
@@ -44,9 +40,15 @@ the begin doc region and doc region sort of way that I have done other code."*
 - [ ] If a reader/book-facing explainer is wanted (Q1), draft that separately (the existing doc is
       contributor-facing).
 
-## Open questions
+## Open questions (answered 2026-11-25, see Decisions)
 
 1. **Audience** — is the wanted doc **contributor-facing** (extend the existing
    `code-generator-architecture.md` + module docstring), or **book/reader-facing** (a chapter explaining
    generation as a teaching example)? *(Recommend: update the contributor doc for the clarification; add
    a reader-facing explainer only if you want it in the book.)*
+
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-25)
+
+1. The audience is contributors: update `code-generator-architecture.md` (and the module docstring) to answer the core confusion. A reader-facing book explainer is added only if the maintainer asks for one later.
+
+The block is cleared. The decision was the maintainer's "go with your suggestions" on the recommendation above.

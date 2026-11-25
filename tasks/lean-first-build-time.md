@@ -1,6 +1,6 @@
 # Make the first `make lean` on a fresh checkout fast
 
-**Status:** proposed — needs go-ahead
+**Status:** go-ahead 2026-11-25, question 1 answered (see Decisions); not started
 **Priority:** 6
 **Difficulty:** 5
 **Created:** 2026-11-21 (William Emerison Six <billsix@gmail.com>), measured while finishing
@@ -24,7 +24,13 @@ the approach recorded in `tasks/reference/lean-ga-proof-architecture.md`.
   heavy `simp`/`ring`/`field_simp` calls; cache the project's `.lake/build` in CI between tag runs.
 - `tasks/lean-proofs-remove-extras.md` also touches the proofs; coordinate so the two don't fight.
 
-## Open questions
+## Open questions (answered 2026-11-25, see Decisions)
 
 1. Is a cached CI build acceptable, or must a clean build itself be fast? Recommend measuring the split
    and the slow proofs first; caching only hides the cost.
+
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-25)
+
+1. Measure first: split the clean-build time and find the slow proofs before choosing a cache. Caching only hides the cost, so no decision to rely on a cached CI build is made until the measurement is in this doc.
+
+The decision was the maintainer's "go with your suggestions" on the recommendation above.
