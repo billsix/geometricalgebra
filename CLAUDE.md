@@ -96,7 +96,8 @@ The library is split one-concept-per-file so a newcomer can import just the alge
   (TeX billboards, drawn when the image's `USE_TEX_LABELS` built `texExpToPng`), the shared shaders
   as package data (`gacalc.gl.SHADER_DIR`), and the graphing calculators `grapher2d` / `grapher3d`
   (`run(functions)` / `run(surfaces)`; numpy geometry builders at module level, the window and loop
-  inside `run`). Runners live in `examples/` (outside pytest's
+  inside `run`; `grapher3d`'s solid is lit per fragment, Blinn-Phong, with normals from sympy's derivatives
+  of the surface function). Runners live in `examples/` (outside pytest's
   `testpaths`, so a test run never opens a window; `format.sh` type-checks them). Import order,
   Wayland's `PYGLFW_LIBRARY`, headless runs and the GL conventions: `tasks/reference/gl-toolkit.md`.
 - `src/gacalc/nbplotutils.py` — matplotlib/LaTeX plotting helpers for notebooks, including
@@ -384,7 +385,9 @@ over a "run it on your host" instruction.
 - **`make test`** — the everyday suite: regenerates the gitignored `g*.py`, then runs
   `pytest -m "not slow"` inside the container (exit 0/nonzero contract; `pytest.ini` sets
   `pythonpath = src`, `testpaths = src tests tools`, `addopts = --doctest-modules` so docstrings run
-  as tests). **`make test-full`** runs everything, the tests marked `@pytest.mark.slow` included
+  as tests). **A `tools/` script must be import-safe** (its work in a `main()` under
+  `if __name__ == "__main__":`): `--doctest-modules` imports every file in `testpaths`, so a script that opens
+  a window or exits at import breaks collection. **`make test-full`** runs everything, the tests marked `@pytest.mark.slow` included
   (~1,600 tests, ~27 min, nearly all of it the 3D symbolic frame tests); CI runs it. **Mark a new test
   `slow` when it takes over 10 s in the container** (the marker is registered in `pytest.ini`; mark
   only the slow parametrized cases, with `pytest.param(..., marks=pytest.mark.slow)`), timed in `make
