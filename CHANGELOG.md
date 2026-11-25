@@ -12,6 +12,12 @@ Releases before 0.0.14 predate this changelog and are not retro-documented here 
 ## [Unreleased]
 
 ### Added
+- **`gacalc.gl.grapher3d`: the solid surface is lit (Blinn-Phong, one directional light).** The
+  solid mesh is now shaded per fragment instead of by height alone; the Light menu sets the
+  light's azimuth, elevation and the shininess, and `T` switches lighting off to get the old
+  height-coloured solid. The normals come from sympy's derivatives of `Surface.fn`, so a `fn` built
+  from gacalc operations with no `float` casts gets exact normals (any other `fn` falls back to
+  central differences). `Surface.fn` is now typed `Callable[[Real, Real], Real]`.
 - **`gacalc/py.typed`** (PEP 561): the package now says it ships its own type annotations,
   so mypy and pyright in a consumer read gacalc's signatures (the generated `@typing.overload`
   products included) instead of ignoring or inferring them. This can surface new type errors in

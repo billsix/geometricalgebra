@@ -55,7 +55,7 @@ theorem mul_proj_eq_dot {a b : G2} (ha : IsVector a) (hb : IsVector b) (han : no
     simpa [normSq, mul, reverse, has, ha12] using han
   have h2 : a.c1 ^ 2 + a.c2 ^ 2 ≠ 0 := fun h => han' (by linear_combination h)
   simp only [proj, mul, scalar, smul, dot, has, ha12, hbs, hb12]
-  ext <;> simp only <;> ring_nf <;> field_simp <;> ring
+  ext <;> simp only <;> (ring_nf; try (field_simp; ring))
 
 -- twin: GacalcProofs.G2.mul_reject_eq_wedge
 /-- **The wedge is `a` times the rejection of `b` from `a`:** `a*rej_a b = a∧b`. The rejection lies
@@ -69,7 +69,7 @@ theorem mul_reject_eq_wedge {a b : G2} (ha : IsVector a) (hb : IsVector b) (han 
     simpa [normSq, mul, reverse, has, ha12] using han
   have h2 : a.c1 ^ 2 + a.c2 ^ 2 ≠ 0 := fun h => han' (by linear_combination h)
   simp only [reject, inverse, normSq, reverse, mul, wedge, smul, has, ha12, hbs, hb12]
-  ext <;> simp only <;> ring_nf <;> field_simp <;> ring
+  ext <;> simp only <;> (ring_nf; try (field_simp; ring))
 
 /-- **The mirror of the dot:** `b*proj_b a = a*proj_a b`, both `a·b`. Projecting the other way and
     multiplying by the other vector gives the same number. -/

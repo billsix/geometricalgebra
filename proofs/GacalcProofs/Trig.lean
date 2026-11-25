@@ -52,7 +52,7 @@ theorem sandwich_preserves_cos {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠
 theorem sandwich_preserves_sin {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G3} :
     sin_between (sandwich R u) (sandwich R v) = sin_between u v := by
   have hnum : magnitude (wedge (sandwich R u) (sandwich R v)) = magnitude (wedge u v) := by
-    rw [sandwich_preserves_wedge hR hr]
+    rw [sandwich_preserves_wedge hR]
     simp only [magnitude]
     rw [sandwich_preserves_normSq_of_wedge hR hr]
   simp only [sin_between]
@@ -98,7 +98,7 @@ theorem sandwich_preserves_cos {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠
 theorem sandwich_preserves_sin {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G2} :
     sin_between (sandwich R u) (sandwich R v) = sin_between u v := by
   have hnum : magnitude (wedge (sandwich R u) (sandwich R v)) = magnitude (wedge u v) := by
-    rw [sandwich_preserves_wedge hR hr]
+    rw [sandwich_preserves_wedge hR]
     simp only [magnitude]
     rw [sandwich_preserves_normSq_of_wedge hR hr]
   simp only [sin_between]

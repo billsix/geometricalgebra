@@ -287,11 +287,11 @@ route, and `versor_from_vectors`/`versor_rotation`/`projection_rotation`), citin
 - **Prose + companion notebook** (gacalc + sympy/plot): hook, canonical-form,
   one-dimension, vectors-as-number-lines, relative-graph-paper, vector-addition,
   geometry-from-vectors, rotate,
-  geometric-product, plotting-a-table, projection, product-from-projection, reflection, dual, defining-g2,
+  geometric-product, plotting-a-table, projection, product-from-projection, reflection, orthogonal, dual, defining-g2,
   levels-of-abstraction, three-dimensions, projection-rejection-3d, frames-qr (`frame-qr-2d`,
   `frame-qr-3d`), and the proof pages `proof-rotate-from-a-to-b`, `proof-projection`,
   `proof-projection-3d`, `proof-cross`, `rotation-from-vectors`.
-- **Prose only** (for now): multiplication, trigonometry, sets, orthogonal,
+- **Prose only** (for now): multiplication, trigonometry, sets,
   interactive-calculator, blade-square-sign, and the proof page `proof-rotate`.
 - **Prose + ePiX figures, no companion notebook** (a conceptual page, not a notebook stub):
   `rotation-graph-paper` (in the toctree after `geometric-product`), the "rotation is turning the

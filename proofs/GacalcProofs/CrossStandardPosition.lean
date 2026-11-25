@@ -176,7 +176,7 @@ theorem reduceToPlane_b_in_plane (cx sx cz sz b1 b2 b3 j : ℝ) (hj : j ≠ 0)
 /-- **Cross product in the reduced frame:** `a × b = (0,0,m·b₂)` — a pure `e₃` vector, `a`'s
     axis-length times `b`'s in-plane height. Immediate from `cross_vec`. -/
 theorem cross_reduced (m b1 b2 : ℝ) : cross (vec m 0 0) (vec b1 b2 0) = vec 0 0 (m * b2) := by
-  rw [cross_vec]; ext <;> ring
+  rw [cross_vec]; ext <;> ring_nf
 
 /-! ### The cross-via-reduction capstone: cross = reduce → cross-in-frame → rotate back
 

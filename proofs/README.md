@@ -7,7 +7,7 @@ the Python implementation.
 
 - **Build + verify:** `make lean` from the repo root (runs `proofs/check.sh` in the
   container). It runs three steps:
-  - `lake build`;
+  - `lake build --wfail` (any warning fails the build);
   - a quick `sorry`/`admit` source grep;
   - the axioms gate, `scripts/CheckAxioms.lean`, which fails if any `GacalcProofs.*`
     declaration rests on an axiom other than `propext`, `Classical.choice` and `Quot.sound`.

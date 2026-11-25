@@ -105,8 +105,20 @@ Eleven GLSL shaders ship next to them as package data. The modules need the opti
 - **2D: line smoothing needs blending on.** Thousands of tiny `GL_LINE_STRIP` segments drop pixels
   under GL's diamond-exit rule, so `run` enables `GL_LINE_SMOOTH` with blending. That is also why
   the label pass must restore `GL_BLEND` (below).
-- **3D: the solid mesh is unlit**, shaded by normalised height per vertex. The lit (Blinn-Phong)
-  version is `tasks/grapher3d-lit-mesh.md`.
+- **3D: the solid mesh is lit per fragment (Blinn-Phong, half-vector model)** by one directional light
+  (`lit_surface.vert` / `lit_surface.frag`; the Light menu sets its azimuth, elevation and the
+  shininess; `T` switches lighting off, which leaves the height-coloured solid). The lighting is in
+  view space, so the shader needs no eye position: `L` is the light's world direction rotated by the
+  view matrix, `V` is `-position`, `H = normalize(L + V)`, and a fragment seen from behind has its
+  normal flipped toward the eye. The normals are `(-df/dx, 1, -df/dy)` normalized, built as the cross
+  product of the two tangents with gacalc (`surface_normal`, `build_normals`); the partial derivatives
+  come from sympy, which differentiates the `Surface.fn` once on symbols (so an authored `fn` must not
+  cast to `float`), and central differences stand in for a `fn` that cannot take symbols and for a
+  point where the derivative is undefined (a cone's tip).
+- **Rendering the 3D solid headless:** `python tools/grapher3d_render_probe.py OUT.png [lit|unlit]
+  [SURFACE_INDEX]` runs the real `run` under Xvfb with the solid on, reads the framebuffer with
+  `glReadPixels` and writes a PNG. At the default camera the plane surface (index 1) is seen exactly
+  edge-on and draws nothing, lit or not.
 - **Checking them headless:** run each runner under Xvfb with `timeout -s KILL 12`. Exit 137 with
   no traceback means it opened the window and drew frames for the whole run (2026-11-13, both
   runners).

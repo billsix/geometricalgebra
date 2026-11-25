@@ -54,7 +54,10 @@ From the toctrees in `book/docs/index.rst` and each page's own toctree:
   `projection` (its proof `proof-projection`, built on `rotation_from_to` and the base cases onto
   `e₁`) → `product-from-projection` (the product from projection and rejection; its child page
   `rotation-from-vectors`, the rotor from the product) → `reflection` → `orthogonal` → `dual` →
-  `defining-g2` → `levels-of-abstraction` → `interactive-calculator`.
+  `defining-g2` → `levels-of-abstraction` → `interactive-calculator`. `orthogonal` uses only what comes
+  before it: the angle measure of `product-from-projection` (`eq-angle-measure`), the quarter turn of
+  `plotting-a-table`, and projection and rejection from `projection`; its last section only *points
+  forward* to `frames-qr` (the same step in space), which it does not use.
 - **Part II, space:** `three-dimensions` → `blade-square-sign` → `projection-rejection-3d` (its
   proofs `proof-projection-3d`, `proof-cross`) → `dual-3d` (the dual of a plane, after `dual`) →
   `reflection-3d` (across a vector and in a plane, after `reflection` and `dual-3d`) →

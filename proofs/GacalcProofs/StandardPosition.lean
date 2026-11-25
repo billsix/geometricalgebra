@@ -122,7 +122,7 @@ theorem vecReject_rotXY_equivariant (c s : ℝ) (hcs : c ^ 2 + s ^ 2 = 1) (a b :
 -- twin: GacalcProofs.G3.mul_proj_eq_dot
 /-- **The projection recovers the dot** (object form): `a (proj_a b) = (b·a)·1` for a vector `a`
     (`|a|² ≠ 0`) and a vector `b`; the same statement as the 𝒢₂ `mul_proj_eq_dot`. -/
-theorem mul_proj_eq_dot {a b : G3} (ha_isv : IsVector a) (hb_isv : IsVector b) (ha : normSq a ≠ 0) :
+theorem mul_proj_eq_dot {a b : G3} (ha_isv : IsVector a) (_hb_isv : IsVector b) (ha : normSq a ≠ 0) :
     mul a (proj a b) = scalar (dot b a) := by
   have hdaa : dot a a ≠ 0 := by
     rw [dot_self_vec_eq_normSq ha_isv]; exact ha

@@ -42,7 +42,7 @@ notebooks/         every notebook: the book's companions and the explorations (R
 ```sh
 pip install "gacalc[gl]"         # [HOST] glfw, PyOpenGL, imgui-bundle, Pillow; the image has them
 python examples/grapher2d.py     # [CONTAINER] f(x) curves: pan, zoom, grid / axes / basis backdrop
-python examples/grapher3d.py     # [CONTAINER] f(x, y) surfaces: orbit, wireframe / solid mesh
+python examples/grapher3d.py     # [CONTAINER] f(x, y) surfaces: orbit, wireframe / lit solid mesh
 ```
 
 A runner is a list of functions and one `grapher2d.run(...)` / `grapher3d.run(...)` call. The

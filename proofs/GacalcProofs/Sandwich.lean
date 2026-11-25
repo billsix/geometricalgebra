@@ -242,7 +242,7 @@ theorem wedge_reverse_sandwich {R : G2} (hR : IsEvenVersor R) {u v : G2} :
 /-- **The sandwich preserves the outer product** (object form, 2D outermorphism):
     `(R*u*R⁻¹) ∧ (R*v*R⁻¹) = R*(u∧v)*R⁻¹` for an even versor `R` with `|R|² ≠ 0` and ANY `u`, `v`.
     In 𝒢₂ the wedge is the pseudoscalar (signed area), so this is "a rotation preserves signed area." -/
-theorem sandwich_preserves_wedge {R : G2} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G2} :
+theorem sandwich_preserves_wedge {R : G2} (hR : IsEvenVersor R) {u v : G2} :
     wedge (sandwich R u) (sandwich R v) = sandwich R (wedge u v) := by
   simp only [sandwich, inverse, GacalcProofs.G2.mul_smul, GacalcProofs.G2.wedge_smul_left,
              GacalcProofs.G2.wedge_smul_right, GacalcProofs.G2.smul_smul]
@@ -538,7 +538,7 @@ theorem wedge_reverse_sandwich {R : G3} (hR : IsEvenVersor R) {u v : G3} :
     sine / oriented-angle preservation. Structural: pull the inverse's `1/|R|²` out of each factor
     (`mul_smul`), collect the scalars through the bilinear wedge, apply `wedge_reverse_sandwich`, then
     `(1/|R|²)²*|R|² = 1/|R|²`. -/
-theorem sandwich_preserves_wedge {R : G3} (hR : IsEvenVersor R) (hr : normSq R ≠ 0) {u v : G3} :
+theorem sandwich_preserves_wedge {R : G3} (hR : IsEvenVersor R) {u v : G3} :
     wedge (sandwich R u) (sandwich R v) = sandwich R (wedge u v) := by
   simp only [sandwich, inverse, GacalcProofs.G3.mul_smul, GacalcProofs.G3.wedge_smul_left,
              GacalcProofs.G3.wedge_smul_right, GacalcProofs.G3.smul_smul]
@@ -680,42 +680,31 @@ theorem reverse_mul3_vec {a b c : G3} (ha : IsVector a) (hb : IsVector b) (hc : 
 
 /-- **The versor norm is multiplicative:** `|R₁ R₂|² = |R₁|²*|R₂|²` for even versors (the norm on
     𝒢₃'s even subalgebra ≅ the quaternions). -/
-theorem normSq_mul (s1 p1 q1 t1 s2 p2 q2 t2 : ℝ) :
-    normSq (mul (evenVersor s1 p1 q1 t1) (evenVersor s2 p2 q2 t2))
-      = normSq (evenVersor s1 p1 q1 t1) * normSq (evenVersor s2 p2 q2 t2) := by
-  simp only [normSq, evenVersor, mul, reverse]; ring
+theorem normSq_mul {R1 R2 : G3} (h1 : IsEvenVersor R1) (h2 : IsEvenVersor R2) :
+    normSq (mul R1 R2) = normSq R1 * normSq R2 := by
+  obtain ⟨a1, a2, a3, a123⟩ := h1
+  obtain ⟨b1, b2, b3, b123⟩ := h2
+  simp only [normSq, mul, reverse, a1, a2, a3, a123, b1, b2, b3, b123]
+  ring
 
-/-- **Inverse of a product:** `(R₁ R₂)⁻¹ = R₂⁻¹ R₁⁻¹` for even versors (`|R₁|², |R₂|² ≠ 0`). Uses the
-    anti-automorphism of reverse and multiplicativity of the norm. -/
-theorem inverse_mul (s1 p1 q1 t1 s2 p2 q2 t2 : ℝ)
-    (h1 : normSq (evenVersor s1 p1 q1 t1) ≠ 0) (h2 : normSq (evenVersor s2 p2 q2 t2) ≠ 0) :
-    inverse (mul (evenVersor s1 p1 q1 t1) (evenVersor s2 p2 q2 t2))
-      = mul (inverse (evenVersor s2 p2 q2 t2)) (inverse (evenVersor s1 p1 q1 t1)) := by
-  simp only [inverse, reverse_mul, normSq_mul, GacalcProofs.G3.smul_mul,
+/-- **Inverse of a product:** `(R₁ R₂)⁻¹ = R₂⁻¹ R₁⁻¹` for even versors, with no nonzero guard (at
+    `|R|² = 0` both sides are 0, as `1/0 = 0`). Uses the anti-automorphism of reverse and
+    multiplicativity of the norm. -/
+theorem inverse_mul {R1 R2 : G3} (h1 : IsEvenVersor R1) (h2 : IsEvenVersor R2) :
+    inverse (mul R1 R2) = mul (inverse R2) (inverse R1) := by
+  simp only [inverse, reverse_mul, normSq_mul h1 h2, GacalcProofs.G3.smul_mul,
              GacalcProofs.G3.mul_smul, GacalcProofs.G3.smul_smul]
   congr 1
   field_simp
 
 /-- **Rotations compose by multiplying versors:** `(R₁ R₂) v (R₁ R₂)⁻¹ = R₁ (R₂ v R₂⁻¹) R₁⁻¹`, i.e.
-    applying the sandwich by `R₂` then by `R₁` equals the single sandwich by the product `R₁ R₂`.
-    (For even versors with nonzero norm; `inverse_mul` + associativity.) -/
-theorem sandwich_comp_coord (s1 p1 q1 t1 s2 p2 q2 t2 : ℝ) (v : G3)
-    (h1 : normSq (evenVersor s1 p1 q1 t1) ≠ 0) (h2 : normSq (evenVersor s2 p2 q2 t2) ≠ 0) :
-    sandwich (mul (evenVersor s1 p1 q1 t1) (evenVersor s2 p2 q2 t2)) v
-      = sandwich (evenVersor s1 p1 q1 t1) (sandwich (evenVersor s2 p2 q2 t2) v) := by
-  simp only [sandwich]
-  rw [inverse_mul s1 p1 q1 t1 s2 p2 q2 t2 h1 h2]
-  simp only [GacalcProofs.G3.mul_assoc]
-
-/-- **Rotations compose by multiplying versors** (object form): `(R₁ R₂) v (R₁ R₂)⁻¹
-    = R₁ (R₂ v R₂⁻¹) R₁⁻¹`, for even versors `R₁`, `R₂` with nonzero norm and any `v`. -/
-theorem sandwich_comp {R1 R2 : G3} (hR1 : IsEvenVersor R1) (hR2 : IsEvenVersor R2) (v : G3)
-    (h1 : normSq R1 ≠ 0) (h2 : normSq R2 ≠ 0) :
+    applying the sandwich by `R₂` then by `R₁` equals the single sandwich by the product `R₁ R₂`,
+    for even versors `R₁`, `R₂` and any `v`. (`inverse_mul` + associativity.) -/
+theorem sandwich_comp {R1 R2 : G3} (hR1 : IsEvenVersor R1) (hR2 : IsEvenVersor R2) (v : G3) :
     sandwich (mul R1 R2) v = sandwich R1 (sandwich R2 v) := by
-  have h := sandwich_comp_coord R1.s R1.c12 R1.c13 R1.c23 R2.s R2.c12 R2.c13 R2.c23 v
-    (by rw [← eq_evenVersor_of_isEvenVersor hR1]; exact h1)
-    (by rw [← eq_evenVersor_of_isEvenVersor hR2]; exact h2)
-  rwa [← eq_evenVersor_of_isEvenVersor hR1, ← eq_evenVersor_of_isEvenVersor hR2] at h
+  simp only [sandwich]
+  rw [inverse_mul hR1 hR2]
+  simp only [GacalcProofs.G3.mul_assoc]
 
 /-! ### Object-form wrappers for the scaffold lemmas -/
 

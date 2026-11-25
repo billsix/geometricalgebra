@@ -215,6 +215,18 @@ version resolution is lake's own, not hand-picked):
 
   The script runs every step and propagates any failure (never `set -e`), and it is portable
   (container + host). The axioms step takes about 3 minutes.
+
+  **Build time (measured 2026-11-25, 24 cores, Lean v4.34.1):** a clean `lake build` of the whole
+  `GacalcProofs` library, from an empty `proofs/.lake/build` with Mathlib cached, took 2 min 42 s
+  wall (6 min 21 s CPU; the modules' own times sum to about 265 s). One module dominates the wall
+  clock: `ProjectionRotation3D.lean`, 119 s, because three 𝒢₃ theorems whose proofs end in a
+  big `field_simp` take the time (`inplane_perp_reject` about 147 s elaboration, `versor_mul_project_eq`
+  about 44 s, `versor_mul_reject_comm` about 39 s; they run in parallel, and most of it is
+  `field_simp`'s interpretation plus instantiating metavariables, not `ring`). Everything else is under 12 s
+  per module; `G3.lean` is 4 s. Find the slow declarations with
+  `lake env lean -Dtrace.profiler=true -Dtrace.profiler.threshold=4000 GacalcProofs/<File>.lean`
+  (names each slow theorem; plain `-Dprofiler=true` gives only totals). The tag-only CI job and a
+  fresh clone pay roughly this, divided by however many cores the runner has.
 - **Landed proofs:** `GacalcProofs/Lagrange.lean` (Lagrange 2D + 3D, by `ring`),
   `GacalcProofs/G2.lean` (a from-scratch 𝒢₂: geometric product, dot = symmetric part, wedge =
   antisymmetric part, dot ≡ coordinate sum, pseudoscalar `I₂² = −1 = (−1)^(r(r−1)/2)`, the basis
@@ -259,7 +271,7 @@ version resolution is lake's own, not hand-picked):
 
 *(Written 2026-11-05 after a corpus audit with Lean v4.34.1: extra linters plus a `clear`-test over all 32 (now 34)
 files and 571 theorems in `proofs/GacalcProofs/`. The fixes it found are tracked in
-`tasks/lean-proofs-remove-extras.md`.)*
+`tasks/archive/2026/11/25/lean-proofs-remove-extras.md`.)*
 
 **What `ha`, `hab`, `hr` are.** A theorem reads
 `theorem name (inputs) (assumptions) : conclusion := by proof`. Each assumption gets a name so the proof can
@@ -312,7 +324,7 @@ fires; a `have` that is never used; any `sorry`/`admit` (blocked by `proofs/chec
    it is obvious which theorems assume what. The corpus uses no `variable` today, which is fine.
 5. **Name by subject:** `ha`, `hab`, `hR`, `hr0`. Match the existing files.
 6. **Keep the build warning-free.** A warning is either fixed, or silenced at the site with a comment saying
-   why. A clean build is what makes a "fail on any warning" gate possible (`tasks/lean-proofs-remove-extras.md`).
+   why. A clean build is what makes a "fail on any warning" gate possible (`tasks/archive/2026/11/25/lean-proofs-remove-extras.md`).
 
 The deeper technical version (grade predicates vs nonzero guards vs meaning gates, and how to classify a
 failed delete-and-rebuild) is the "Hypotheses" section of `tasks/reference/lean-ga-proof-architecture.md`.
