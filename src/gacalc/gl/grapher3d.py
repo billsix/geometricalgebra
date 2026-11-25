@@ -46,9 +46,8 @@ import OpenGL.GL as GL
 import sympy
 
 import gacalc.gl.matrix_stack as ms
+from gacalc import g2, g3
 from gacalc.base import Real
-from gacalc.g3 import Vector as Vector3
-from gacalc.g3 import e_1, e_2, e_3
 from gacalc.gl import SHADER_DIR, cayley_gl
 from gacalc.gl import _pipeline as _p
 from gacalc.gl import labels as _labels
@@ -242,8 +241,8 @@ def build_solid(
 
 def surface_gradient(
     surface: Surface,
-) -> typing.Callable[[float, float], tuple[float, float]]:
-    """``(x, y) -> (df/dx, df/dy)`` for the surface's ``fn``.
+) -> typing.Callable[[float, float], g2.Vector]:
+    """``(x, y) -> df/dx * e_1 + df/dy * e_2``, the gradient of the surface's ``fn``.
 
     The derivatives are exact when ``fn`` can be called on sympy symbols, which
     it can when it is built from gacalc operations (the book's graphs are):
@@ -255,8 +254,8 @@ def surface_gradient(
     >>> saddle: Surface = Surface(
     ...     fn=lambda x, y: (x * x - y * y) / 8, label="s", color=white, latex="s"
     ... )
-    >>> surface_gradient(saddle)(2.0, 4.0)
-    (0.5, -1.0)
+    >>> [round(float(c), 6) for c in surface_gradient(saddle)(2.0, 4.0)]
+    [0.5, -1.0]
     >>> opaque: Surface = Surface(
     ...     fn=lambda x, y: float(x) * 0.5, label="o", color=white, latex="o"
     ... )
@@ -264,11 +263,15 @@ def surface_gradient(
     [0.5, 0.0]
     """
 
-    def central_difference(x: float, y: float) -> tuple[float, float]:
+    def central_difference(x: float, y: float) -> g2.Vector:
         step: float = 1e-4
         return (
-            float(surface.fn(x + step, y) - surface.fn(x - step, y)) / (2.0 * step),
-            float(surface.fn(x, y + step) - surface.fn(x, y - step)) / (2.0 * step),
+            float(surface.fn(x + step, y) - surface.fn(x - step, y))
+            / (2.0 * step)
+            * g2.e_1
+            + float(surface.fn(x, y + step) - surface.fn(x, y - step))
+            / (2.0 * step)
+            * g2.e_2
         )
 
     x_symbol: sympy.Symbol = sympy.Symbol("x", real=True)
@@ -283,13 +286,13 @@ def surface_gradient(
         "math",
     )
 
-    def exact(x: float, y: float) -> tuple[float, float]:
+    def exact(x: float, y: float) -> g2.Vector:
         try:
             df_dx: float
             df_dy: float
             df_dx, df_dy = partials(x, y)
             if math.isfinite(df_dx) and math.isfinite(df_dy):
-                return (float(df_dx), float(df_dy))
+                return float(df_dx) * g2.e_1 + float(df_dy) * g2.e_2
         except ZeroDivisionError, ValueError:
             pass  # undefined here: fall through to the central difference
         return central_difference(x, y)
@@ -298,10 +301,10 @@ def surface_gradient(
 
 
 def surface_normal(
-    gradient: typing.Callable[[float, float], tuple[float, float]],
+    gradient: typing.Callable[[float, float], g2.Vector],
     x: float,
     y: float,
-) -> Vector3:
+) -> g3.Vector:
     """The unit normal of the height field at domain point ``(x, y)``, pointing up.
 
     The height field is the world point ``(x, f(x, y), y)`` (domain y is world z),
@@ -310,17 +313,19 @@ def surface_normal(
     ``(-df/dx, 1, -df/dy)``, normalized.  The tilted plane ``f(x, y) = x`` leans
     its normal away from the rising side:
 
-    >>> n: Vector3 = surface_normal(lambda x, y: (1.0, 0.0), 0.0, 0.0)
+    >>> rising: g2.Vector = 1.0 * g2.e_1 + 0.0 * g2.e_2
+    >>> n: g3.Vector = surface_normal(lambda x, y: rising, 0.0, 0.0)
     >>> [round(float(c), 4) for c in n]
     [-0.7071, 0.7071, 0.0]
-    >>> [round(float(c), 4) for c in surface_normal(lambda x, y: (0.0, 0.0), 1.0, 2.0)]
+    >>> level: g2.Vector = 0.0 * g2.e_1 + 0.0 * g2.e_2
+    >>> [round(float(c), 4) for c in surface_normal(lambda x, y: level, 1.0, 2.0)]
     [0.0, 1.0, 0.0]
     """
-    df_dx: float
-    df_dy: float
-    df_dx, df_dy = gradient(x, y)
-    along_x: Vector3 = 1.0 * e_1 + df_dx * e_2 + 0.0 * e_3
-    along_z: Vector3 = 0.0 * e_1 + df_dy * e_2 + 1.0 * e_3
+    slope: g2.Vector = gradient(x, y)
+    df_dx: float = float(slope.coefficient(g2.e_1))
+    df_dy: float = float(slope.coefficient(g2.e_2))
+    along_x: g3.Vector = 1.0 * g3.e_1 + df_dx * g3.e_2 + 0.0 * g3.e_3
+    along_z: g3.Vector = 0.0 * g3.e_1 + df_dy * g3.e_2 + 1.0 * g3.e_3
     return along_z.cross(along_x).normalize()
 
 
@@ -340,10 +345,8 @@ def build_normals(surface: Surface, dx: float, dy: float) -> np.ndarray:
     """
     nx: int = _axis_count(dx)
     ny: int = _axis_count(dy)
-    gradient: typing.Callable[[float, float], tuple[float, float]] = surface_gradient(
-        surface
-    )
-    grid: list[list[Vector3]] = [
+    gradient: typing.Callable[[float, float], g2.Vector] = surface_gradient(surface)
+    grid: list[list[g3.Vector]] = [
         [
             surface_normal(
                 gradient,
@@ -366,20 +369,24 @@ def build_normals(surface: Surface, dx: float, dy: float) -> np.ndarray:
     return np.array(normals, dtype=np.float32)
 
 
-def light_vector(azimuth: float, elevation: float) -> tuple[float, float, float]:
+def light_vector(azimuth: float, elevation: float) -> g3.Vector:
     """The unit world-space direction toward the light, from two angles in degrees.
 
     The azimuth turns about the up (y) axis from +z toward +x; the elevation
     lifts the light above the ground plane:
 
-    >>> [round(c, 4) for c in light_vector(0.0, 90.0)]
+    >>> [round(float(c), 4) for c in light_vector(0.0, 90.0)]
     [0.0, 1.0, 0.0]
-    >>> [round(c, 4) for c in light_vector(90.0, 0.0)]
+    >>> [round(float(c), 4) for c in light_vector(90.0, 0.0)]
     [1.0, 0.0, 0.0]
     """
     a: float = math.radians(azimuth)
     e: float = math.radians(elevation)
-    return (math.cos(e) * math.sin(a), math.sin(e), math.cos(e) * math.cos(a))
+    return (
+        math.cos(e) * math.sin(a) * g3.e_1
+        + math.sin(e) * g3.e_2
+        + math.cos(e) * math.cos(a) * g3.e_3
+    )
 
 
 def build_axes() -> np.ndarray:
