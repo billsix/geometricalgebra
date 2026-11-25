@@ -32,17 +32,6 @@ noncomputable def projRotation (f t v : G3) : G3 :=
   add (mul (mul (project_onto (wedge f t) v) (normalizeVec f)) (normalizeVec t))
       (reject (wedge f t) v)
 
-/-- A vector is `vec` of its coordinates, for substituting in a proof body that needs them. -/
-theorem exists_vec {a : G3} (ha : IsVector a) : ∃ x y z : ℝ, a = vec x y z :=
-  ⟨a.c1, a.c2, a.c3, eq_vec_of_isVector ha⟩
-
-/-- The wedge of two vectors is a bivector (a plane). -/
-theorem isBivector_wedge {f t : G3} (hf : IsVector f) (ht : IsVector t) : IsBivector (wedge f t) := by
-  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
-  obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
-  rw [wedge_vec_eq_biv]
-  exact ⟨rfl, rfl, rfl, rfl, rfl⟩
-
 /-- **A nondegenerate plane has a nonzero first vector:** `|f∧t|² ≠ 0` forces `|f|² ≠ 0`, because Lagrange's
     identity `(f·t)² + |f∧t|² = |f|²*|t|²` would otherwise leave `|f∧t|² = −(f·t)² ≤ 0`. -/
 theorem normSq_ne_zero_of_wedge_left {f t : G3} (hf : IsVector f) (ht : IsVector t)
@@ -382,12 +371,8 @@ theorem projRotation_eq_sandwich {f t v : G3} (hf : IsVector f) (ht : IsVector t
         mul_inverse_self_of_isEvenVersor (isEvenVersor_versorFromVectors hf ht) hrn,
         GacalcProofs.G3.mul_one]
   -- `project + reject = v`, converting the plane wedge to its bivector literal.
-  have hsplit : add (project_onto (wedge f t) v) (reject (wedge f t) v) = v := by
-    obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
-    obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
-    obtain ⟨c1, c2, c3, rfl⟩ := exists_vec hv
-    rw [wedge_vec_eq_biv]
-    exact project_add_reject_coord c1 c2 c3 _ _ _ (by rwa [wedge_vec_eq_biv] at hpn)
+  have hsplit : add (project_onto (wedge f t) v) (reject (wedge f t) v) = v :=
+    project_add_reject (isBivector_wedge hf ht) hpn hv
   rw [projRotation, ← hI, ← hII, ← sandwich_add, hsplit]
 
 end GacalcProofs.G3

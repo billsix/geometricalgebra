@@ -390,6 +390,10 @@ theorem eq_vec_of_isVector {a : G3} (ha : IsVector a) : a = vec a.c1 a.c2 a.c3 :
   obtain ⟨hs, h12, h13, h23, h123⟩ := ha
   ext <;> simp only [vec] <;> first | rfl | assumption
 
+/-- A vector is `vec` of its coordinates, for substituting in a proof body that needs them. -/
+theorem exists_vec {a : G3} (ha : IsVector a) : ∃ x y z : ℝ, a = vec x y z :=
+  ⟨a.c1, a.c2, a.c3, eq_vec_of_isVector ha⟩
+
 /-- A coordinate vector is grade-1. -/
 theorem isVector_vec (x y z : ℝ) : IsVector (vec x y z) := ⟨rfl, rfl, rfl, rfl, rfl⟩
 
@@ -415,6 +419,13 @@ def IsBivector (B : G3) : Prop := B.s = 0 ∧ B.c1 = 0 ∧ B.c2 = 0 ∧ B.c3 = 0
 theorem eq_bivector_of_isBivector {B : G3} (hB : IsBivector B) : B = bivector B.c12 B.c13 B.c23 := by
   obtain ⟨hs, h1, h2, h3, h123⟩ := hB
   ext <;> simp only [bivector, zero] <;> first | rfl | assumption
+
+/-- The wedge of two vectors is a bivector (a plane). -/
+theorem isBivector_wedge {f t : G3} (hf : IsVector f) (ht : IsVector t) : IsBivector (wedge f t) := by
+  obtain ⟨a1, a2, a3, rfl⟩ := exists_vec hf
+  obtain ⟨b1, b2, b3, rfl⟩ := exists_vec ht
+  rw [wedge_vec_eq_biv]
+  exact ⟨rfl, rfl, rfl, rfl, rfl⟩
 
 /-- `T` is a **trivector** (the pseudoscalar, grade 3): every part but `e₁₂₃` vanishes. The grade-3
     companion of `IsVector`/`IsBivector`. -/

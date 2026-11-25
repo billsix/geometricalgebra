@@ -1,6 +1,6 @@
 # Push the delicate coordinate-core tier to object/getter form (optional)
 
-**Status:** in progress — 2D tier + carries-from-to capstones getter-native (2026-10-05); the clean
+**Status:** in progress — 2026-11-25: the 𝒢₃ Sandwich and Projection3D bridges converted (see "Work record (2026-11-25)"); the degree-blowup tier remains. Earlier: 2D tier + carries-from-to capstones getter-native (2026-10-05); the clean
 Cross equivariance leaves + `Projection3D.reject_vec_eq` converted (2026-10-22, see "Work record
 (2026-10-22)"); the ProjectionRotation3D degree-blowup scaffold + the delicate Sandwich/Projection3D
 `_coord` remain on their bridges. Updated 2026-10-22, William Emerison Six <billsix@gmail.com>.
@@ -177,6 +177,14 @@ theorems over `IsVector`. These three remain, each needing a judgment about its 
 - `Sandwich.normSq_mul (s1 p1 q1 t1 s2 p2 q2 t2 : ℝ)`. It takes two versors' components. The
   architecture doc says these lift to `IsEvenVersor`.
 
-## Decision (William Emerison Six <billsix@gmail.com>, 2026-11-25)
+## Work record (2026-11-25) — the Sandwich and Projection3D bridges converted
 
-Start now: the maintainer said "go with your suggestions" to starting this task, which restates the 2026-10-22 GO. Not started yet as of this entry; the work-record sections above remain the state of the code.
+Decision (William Emerison Six <billsix@gmail.com>, 2026-11-25): start now, restating the 2026-10-22 GO.
+
+**Converted (object form is now the only form; `lake build --wfail` and the axioms gate green):**
+
+- `Sandwich.lean` (𝒢₃): `normSq_mul`, `inverse_mul` and `sandwich_comp` take `IsEvenVersor` objects; `sandwich_comp_coord` and the scalar-argument forms are deleted. `inverse_mul` and `sandwich_comp` also lost their `≠ 0` guards (see `tasks/archive/2026/11/25/lean-proofs-remove-extras.md`).
+- `Projection3D.lean`: `project_add_reject_coord`, `reject_eq_proj_normal_coord` and `project_eq_sub_reject_coord` are deleted. `proj_plane_eq_project_onto` now assembles the object lemmas (`reject_eq_proj_normal`, `project_eq_sub_reject`) with `isBivector_wedge`, and `ProjectionRotation3D.projRotation_eq_sandwich`'s `hsplit` is `project_add_reject` directly.
+- `exists_vec` and `isBivector_wedge` moved from `ProjectionRotation3D.lean` to `G3.lean` (next to `eq_vec_of_isVector` and `eq_bivector_of_isBivector`), so the earlier files can use them.
+
+**Still on their bridges (not started): this task stays open.** The `ProjectionRotation3D` scaffold that divides by `normSq (f ∧ t)` (`projRotation_*_coord`, `key_reverse_sq_coord`, `fhat_that_eq_reverse_mul_inverse_coord`, `normalizeVec_*_coord`, `vec_mul_bisector_eq_coord`, the plane-projection `_coord`s); the 𝒢₃ `versorFromVectors_mul_reverse/inverse_coord`; `Projection3D.reject_vec_eq_coord`; `CrossStandardPosition` `cross_rot*_equivariant_coord`; `TrigEquiv.sin_between_eq_abs_signed_vec_coord`; the `Versor2D`/`Rotation3D` bisector `_coord`s; the `G3` `vec`-literal leaves kept by Decision 1. Regenerate the live list with the command in the sections above. The three proofs in `ProjectionRotation3D.lean` take 40-150 s each to elaborate (`tasks/lean-speed-up-projection-rotation-3d-proofs.md`), so converting that file is slow to iterate on; do `lean-speed-up-projection-rotation-3d-proofs` first if it is to be tackled.
