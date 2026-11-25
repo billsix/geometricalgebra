@@ -74,7 +74,12 @@ def main() -> None:
             if not word or not IDENT.match(word):
                 continue
             short: str = word.split(".")[-1]
-            if short in declared or word in files or short in files or word in KNOWN_OTHER:
+            if (
+                short in declared
+                or word in files
+                or short in files
+                or word in KNOWN_OTHER
+            ):
                 continue
             counts[word] = counts.get(word, 0) + 1
     name: str
