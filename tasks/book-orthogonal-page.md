@@ -1,38 +1,17 @@
-# Write the "Orthogonal" book page (still a placeholder)
+# Write the "Orthogonal" book page (done)
 
-**Status:** go-ahead 2026-11-25, question 1 answered (see Decisions); not started
-**Priority:** 5
-**Difficulty:** 4
-**Created:** 2026-11-21 (William Emerison Six <billsix@gmail.com>), noticed while finishing
-`tasks/archive/2026/11/21/book-opening-vectors-supersede-geometry-types.md`.
+**Created:** 2026-11-21 (William Emerison Six <billsix@gmail.com>), noticed while finishing `tasks/archive/2026/11/21/book-opening-vectors-supersede-geometry-types.md`. **Done:** 2026-11-25.
 
-## BLUF
-
-`book/docs/orthogonal.rst` is a one-line placeholder ("Define orthogonal, related to angles"). Perpendicular
-lines and the perpendicular bisector are now taught on `book/docs/product-from-projection.rst` ("Angle,
-area and perpendicular"). Decide what this page adds (orthogonal as a property of vectors and of
-subspaces, orthogonal frames, the link to the projection/rejection split) or fold it away, then write it
-in the book's style. Done = the page has content and a companion notebook, or it is removed from the
-toctree with its outline entry updated.
-
-## Context
-
-- Read first: `CLAUDE.md` (the three-forms rule, math-notation rules, "one name per operation",
-  companion notebooks with symbolic steps, live ePiX and `show_difference`), `tasks/reference/book-outline.md`
-  (§G "Orthogonal — define it, related to angles"), `tasks/reference/teaching-order-and-dependencies.md`
-  (it may only use results taught before it; update the dependency graph), and the new section on
-  `book/docs/product-from-projection.rst` so the two pages don't repeat each other.
-- Related library code: `src/gacalc/frame.py` (orthogonal frames), `transforms.py`
-  (`line_to_line_projection` / `rejection`).
-
-## Open questions (answered 2026-11-25, see Decisions)
-
-1. Keep the page (orthogonality of vectors and frames, after the dot product), or fold it into
-   `product-from-projection` and drop it from the book? Recommend keeping it, about orthogonal
-   decomposition and frames, since perpendicular lines are already covered.
+`book/docs/orthogonal.rst` was a one-line placeholder. Perpendicular lines and the perpendicular bisector were already taught in `book/docs/product-from-projection.rst` ("Angle, area and perpendicular").
 
 ## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-25)
 
-1. Keep the page, about orthogonal decomposition and frames (perpendicular lines are already covered elsewhere); do not fold it into `product-from-projection`.
+Keep the page, about orthogonal decomposition and frames (perpendicular lines are already covered elsewhere); do not fold it into `product-from-projection`.
 
-The decision was the maintainer's "go with your suggestions" on the recommendation above.
+## Result
+
+- **`book/docs/orthogonal.rst`:** orthogonal defined as `u · v = 0` (`eq-orthogonal`, citing `eq-angle-measure`), with the quarter turn of `plotting-a-table` as the first example; the rejection is orthogonal to what it was rejected from (`eq-rejection-orthogonal`, Lean `reject_perp_dot` / `reject_perp`) and Pythagoras for projection plus rejection (`eq-pythagoras`); orthogonal frames, where a vector is the sum of its projections onto the frame vectors (`eq-orthogonal-coordinates`), built from any two non-parallel vectors by keeping the first and rejecting it from the second (`make_orthogonal_frame`); a forward pointer to `frames-qr` for space. It reuses the `proj2` figure of `projection`.
+- **`notebooks/orthogonal.py`:** the companion, every step symbolic with `show_difference` for the checks (quarter turn, rejection ⊥, Pythagoras, frame ⊥, projections add back to `c`) and live ePiX figures for the split and the frame; in `notebooks/README.md`.
+- **Teaching order:** `tasks/reference/teaching-order-and-dependencies.md` records what `orthogonal` uses (all taught before it) and that its `frames-qr` mention only points forward; `tasks/reference/book-outline.md` moves `orthogonal` from "prose only" to "prose + companion notebook".
+- **Verification:** the notebook executes clean (`jupytext --execute`); `ty` and `pyright` (`make check-notebooks`) pass; `make docs` built the HTML and PDF with no undefined references for the new page and no overflow (0 equations or tables too wide); the one Sphinx warning is the ambiguous `InvertibleFunction` cross-reference in `gacalc.frame.Frame.to_invertible_function`, which predates this task.
+- **Not done:** a Lean statement of Pythagoras in 𝒢₂ (the 𝒢₃ `plane_pythagorean` exists; the page cites only what exists), and the maintainer's voice pass (the page carries the standard draft note).

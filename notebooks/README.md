@@ -35,6 +35,7 @@ is not on PyPI.
 | `product-from-projection.py` | The Geometric Product from Projection and Rejection |
 | `rotation-from-vectors.py` | A Rotation from Two Vectors — No Angle |
 | `reflection.py` | Reflection |
+| `orthogonal.py` | Orthogonal |
 | `dual.py` | The Dual |
 | `defining-g2.py` | Defining the Algebra: G2 |
 | `levels-of-abstraction.py` | Levels of Abstraction |
