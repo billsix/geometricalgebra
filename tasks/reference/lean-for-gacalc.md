@@ -215,6 +215,18 @@ version resolution is lake's own, not hand-picked):
 
   The script runs every step and propagates any failure (never `set -e`), and it is portable
   (container + host). The axioms step takes about 3 minutes.
+
+  **Build time (measured 2026-11-25, 24 cores, Lean v4.34.1):** a clean `lake build` of the whole
+  `GacalcProofs` library, from an empty `proofs/.lake/build` with Mathlib cached, took 2 min 42 s
+  wall (6 min 21 s CPU; the modules' own times sum to about 265 s). One module dominates the wall
+  clock: `ProjectionRotation3D.lean`, 119 s, because three 𝒢₃ theorems whose proofs end in a
+  big `field_simp` take the time (`inplane_perp_reject` about 147 s elaboration, `versor_mul_project_eq`
+  about 44 s, `versor_mul_reject_comm` about 39 s; they run in parallel, and most of it is
+  `field_simp`'s interpretation plus instantiating metavariables, not `ring`). Everything else is under 12 s
+  per module; `G3.lean` is 4 s. Find the slow declarations with
+  `lake env lean -Dtrace.profiler=true -Dtrace.profiler.threshold=4000 GacalcProofs/<File>.lean`
+  (names each slow theorem; plain `-Dprofiler=true` gives only totals). The tag-only CI job and a
+  fresh clone pay roughly this, divided by however many cores the runner has.
 - **Landed proofs:** `GacalcProofs/Lagrange.lean` (Lagrange 2D + 3D, by `ring`),
   `GacalcProofs/G2.lean` (a from-scratch 𝒢₂: geometric product, dot = symmetric part, wedge =
   antisymmetric part, dot ≡ coordinate sum, pseudoscalar `I₂² = −1 = (−1)^(r(r−1)/2)`, the basis
