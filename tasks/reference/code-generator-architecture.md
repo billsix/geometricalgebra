@@ -2,7 +2,7 @@
 
 **Reference document** — the deep contributor map for how the specialized (`G`) and
 graded (`Vector_n`/`Bivector_n`/`Trivector`/`Versor_n`/`Scalar`) modules are produced from the `Gn`
-reference. Not a task; update in place if the generator changes. Last updated 2026-09-27 (the header date is hand-maintained; `git log` is authoritative).
+reference. Not a task; update in place if the generator changes. Last updated 2026-11-25 (the header date is hand-maintained; `git log` is authoritative).
 
 Read this alongside — do not duplicate — the **"Code generation"** section of the repo
 `CLAUDE.md` (the *what* and the golden rules; its former "doc-region markers" subsection now lives in §6 below) and the sibling reference
@@ -13,6 +13,25 @@ precise-typing feature). This doc is the *how the machinery is wired* map.
 `tools/gen_specialized.py`** — the flow of ideas (`Gn` run on symbols → the captured formula →
 compiled code), an ASCII pipeline diagram, and a live, doctest'd worked trace. That is the
 human-readable front door; this doc is the dense, random-access map you graduate to.
+
+**The one idea: the generator runs `Gn`, it does not read it.** A reader who knows Lisp macros may expect
+the generator to read the source of `Gn` and rewrite it, as a macro rewrites code. It does not: it never parses
+or transforms any gacalc source. It **runs** the reference `Gn` once on sympy *symbols* instead of numbers
+(`a = Gn({(1,): a_e_1, (2,): a_e_2})`), and the product that comes back is a `Gn` whose coefficients are
+formulas. Those formulas are the only thing carried forward: `resolve` picks a result type from which blades
+are nonzero, `sympy.cse` factors the formulas, and `astbuild` builds Python `ast` nodes that `ast.unparse`
+prints as the method body. So the flow is **sympy defines, the AST emits**, and the generated fast path
+cannot disagree with `Gn` because its formula is what `Gn` computed. The three places to see it as running
+code:
+
+- the doctest in the module docstring of `tools/gen_specialized.py` ("The middle step, run live"), which
+  prints the scalar and bivector formulas of `Vector * Vector`;
+- the unit tests in `tests/test_generator.py` that pin each step: `test_product_result_geometric_vector_times_vector_is_versor`
+  (run `Gn`, read the blades), `test_resolve_smallest_covering_type` (blades → type),
+  `test_symbol_to_attr_rewrites_operand_symbols` and `test_cast_coef_wraps_compound_expression`
+  (formula → code), and `test_module_source_roundtrip` (nodes → text);
+- the generated file itself: `make generate`, then read `Vector._geometric_product` in `src/gacalc/g2.py`
+  (its `doc-region-begin Vector _geometric_product method` region, §6).
 
 The whole generator is three files under `tools/`:
 
