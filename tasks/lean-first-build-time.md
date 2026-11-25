@@ -22,7 +22,7 @@ the approach recorded in `tasks/reference/lean-ga-proof-architecture.md`.
 - Options to measure: split `G3.lean` (one huge file builds serially; smaller files build in parallel and
   rebuild less); find the slow proofs (`set_option profiler true`, or per-declaration timing) and replace
   heavy `simp`/`ring`/`field_simp` calls; cache the project's `.lake/build` in CI between tag runs.
-- `tasks/lean-proofs-remove-extras.md` also touches the proofs; coordinate so the two don't fight.
+- `tasks/archive/2026/11/25/lean-proofs-remove-extras.md` also touches the proofs; coordinate so the two don't fight.
 
 ## Open questions (answered 2026-11-25, see Decisions)
 

@@ -259,7 +259,7 @@ version resolution is lake's own, not hand-picked):
 
 *(Written 2026-11-05 after a corpus audit with Lean v4.34.1: extra linters plus a `clear`-test over all 32 (now 34)
 files and 571 theorems in `proofs/GacalcProofs/`. The fixes it found are tracked in
-`tasks/lean-proofs-remove-extras.md`.)*
+`tasks/archive/2026/11/25/lean-proofs-remove-extras.md`.)*
 
 **What `ha`, `hab`, `hr` are.** A theorem reads
 `theorem name (inputs) (assumptions) : conclusion := by proof`. Each assumption gets a name so the proof can
@@ -312,7 +312,7 @@ fires; a `have` that is never used; any `sorry`/`admit` (blocked by `proofs/chec
    it is obvious which theorems assume what. The corpus uses no `variable` today, which is fine.
 5. **Name by subject:** `ha`, `hab`, `hR`, `hr0`. Match the existing files.
 6. **Keep the build warning-free.** A warning is either fixed, or silenced at the site with a comment saying
-   why. A clean build is what makes a "fail on any warning" gate possible (`tasks/lean-proofs-remove-extras.md`).
+   why. A clean build is what makes a "fail on any warning" gate possible (`tasks/archive/2026/11/25/lean-proofs-remove-extras.md`).
 
 The deeper technical version (grade predicates vs nonzero guards vs meaning gates, and how to classify a
 failed delete-and-rebuild) is the "Hypotheses" section of `tasks/reference/lean-ga-proof-architecture.md`.
