@@ -73,7 +73,7 @@ notebook read that way, the two open questions are answered, and `make format`, 
    `m * x + b` on the other. Count on either. Drawn the way `relative-graph-paper` draws a carried sheet. No blue
    arrow.
 
-## Open questions (Q1 answered 2026-11-25, Q2 still open)
+## Open questions (Q1 answered 2026-11-25; Q2's form answered, its placement still open)
 
 1. **Where does the turn by `e_1 * e_2` go?** The maintainer expected it at the end of this chapter. It is now its own
    page after `geometric-product` because the turn needs `e_2` and the product, taught later (a construction may use
@@ -119,4 +119,6 @@ notebook read that way, the two open questions are answered, and `make format`, 
 
 1. Position (a): keep the turn on `plotting-a-table`, and make the one-dimension chapter end by naming the missing second direction and pointing forward to it, so the two pages read as one story. This keeps the teaching-order rule and costs the least.
 
-Question 2 (where scale and translate on relative number lines go, given 1) was not asked and is still open; it blocks the remaining work.
+2. **The form of the scale and translate section** (William Emerison Six <billsix@gmail.com>, 2026-11-25): relative number lines drawn above or below the other number lines, the way "skip counting" is shown to elementary school students, except that it is skip counting **and a translation**. With several operations, `n` relative number lines sit next to each other for `n` operations.
+
+**Placement is still open (one yes/no, below).** The answer describes the picture, not the page. My reading is that "the other number lines" are the stacked number lines of `one-dimension`, so the section stays on `one-dimension`, after those lines and before the turn, which keeps `eq-mx-plus-b` where it is (the cheat sheets still cite it). That is the alternative to the earlier recommendation (move the section to `plotting-a-table` with `eq-mx-plus-b`). Not started until the placement is confirmed.
