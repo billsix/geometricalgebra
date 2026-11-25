@@ -1,6 +1,6 @@
 # `make check-format` passes: `tools/check_lean_arch_doc_names.py` and `notebooks/orthogonal.py` fit the formatter
 
-**Done:** 2026-11-25 (work staged, not yet committed; the archive move follows once the GitHub run is green). Source: the maintainer (William Emerison Six <billsix@gmail.com>, 2026-11-25), who reported that `make check-format` fails here too and asked for the failure to be reproduced and tasked.
+**Done:** 2026-11-25 (the work is in commit `f692948`). Source: the maintainer (William Emerison Six <billsix@gmail.com>, 2026-11-25), who reported that `make check-format` fails here too and asked for the failure to be reproduced and tasked.
 
 ## What was wrong
 
@@ -21,7 +21,6 @@ An earlier draft of this task said "ten `E501` and one `T201` at line 82" and "r
 
 With the edits staged, `make check-format MINIMAL_IMAGE=1` exited 0 twice, and `git status` was identical after each run, so the second run changed nothing. The first attempt, with the edits unstaged, passed every format step and then failed at `git diff --exit-code`, because that command compares the working tree to the index; CI checks out committed files, so it is not affected. `python tools/check_notebook_prose_width.py` over all notebooks reported nothing.
 
-## Owed
+## Result on GitHub
 
-- The maintainer commits and pushes, then the `format` job is confirmed green through `https://api.github.com/repos/billsix/geometricalgebra/actions/runs`.
-- Archive this task (`git mv`) after that, as its own commit, and repoint the `CLAUDE.md` "Continuous integration" record line (`tasks/fix-check-lean-arch-doc-names-format.md`) at the archive path in the same commit.
+The `checks` run for `f692948` (run 127) passed, including the `format` job.
