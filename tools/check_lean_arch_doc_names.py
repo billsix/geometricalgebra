@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-"""List backticked names in the architecture doc's inventory and coverage map that no Lean file declares.
+"""List backticked names in the architecture doc that no Lean file declares.
 
-Reads ``tasks/reference/lean-ga-proof-architecture.md`` between the ``## Inventory`` heading and the
-``## Hypotheses`` heading, collects every backticked identifier, and reports the ones that are neither a
-declaration in ``proofs/GacalcProofs/*.lean`` (the last dotted component is compared, so ``G3.cross_vec``
-and ``cross_vec`` both match) nor a known non-declaration (a Python name, a Mathlib name, a file name).
-Read-only; the document is the reference for the Lean proofs, and this finds the names it still cites that a
-refactor deleted or renamed.
+Reads ``tasks/reference/lean-ga-proof-architecture.md`` between the ``## Inventory``
+heading and the ``## Hypotheses`` heading, collects every backticked identifier, and
+reports the ones that are neither a declaration in ``proofs/GacalcProofs/*.lean`` (the
+last dotted component is compared, so ``G3.cross_vec`` and ``cross_vec`` both match) nor
+a known non-declaration (a Python name, a Mathlib name, a file name). Read-only; the
+document is the reference for the Lean proofs, and this finds the names it still cites
+that a refactor deleted or renamed.
 
-Usage: ``python tools/check_lean_arch_doc_names.py``  (a report, not a gate: it never fails a build)
+Usage: ``python tools/check_lean_arch_doc_names.py``
+(a report, not a gate: it never fails a build)
 """
 
 from __future__ import annotations
@@ -28,7 +30,8 @@ DECL: re.Pattern[str] = re.compile(
 TICKED: re.Pattern[str] = re.compile(r"`([^`\n]+)`")
 IDENT: re.Pattern[str] = re.compile(r"^[A-Za-z_][A-Za-z0-9_.'₀-₉]*$")
 
-# Backticked words that are not Lean declarations of this repository (Python names, Mathlib, files, prose).
+# Backticked words that are not Lean declarations of this repository (Python names,
+# Mathlib, files, prose).
 KNOWN_OTHER: frozenset[str] = frozenset()
 
 
@@ -63,7 +66,7 @@ def section(text: str) -> str:
 
 
 def main() -> None:
-    """Print each undeclared backticked identifier with the number of times it appears."""
+    """Print each undeclared backticked identifier and how often it appears."""
     declared: set[str] = declared_names()
     files: set[str] = {path.stem for path in PROOFS.glob("*.lean")}
     counts: dict[str, int] = {}

@@ -144,6 +144,23 @@ What each change shows:
 
 Record: `tasks/archive/2026/11/06/refactor-frame-to-invertible-function.md`.
 
+## Where the naming and scope rules stop: generated code, and notebook bindings the page shows
+
+The shared "Inline a value used once" and "What earns an extraction" rules apply to hand-written Python.
+Two places in this repository get a narrower reading (William Emerison Six <billsix@gmail.com>, 2026-11-25):
+
+- **Generated code** (`src/gacalc/g1.py` .. `g5.py`, and the other emitted modules): the rules apply to the
+  generator's own source (`tools/gen_specialized.py`, `tools/astbuild.py`), not to what it emits. The emitted
+  locals are systematic common-subexpression temporaries; changing their shape would ripple through
+  `make check-generated` and the doc regions for little benefit to a reader. A change to the emitted shape is a
+  generator change, made on purpose and on its own (see `tasks/reference/code-generator-architecture.md`, "How to
+  change it"), never as a side effect of a style sweep.
+- **Notebooks** (`notebooks/`, the book's student-facing companions): the rules apply, except that **a binding a
+  cell displays, or that the page's prose names, keeps its name**: the student sees the name (for example
+  `a_par: Vector = ...` printed in the next cell), so inlining it would remove something the page shows. The
+  exemption is recorded here, not as a comment in the notebook: a student's view carries no developer comments
+  (`tasks/reference/book-notebook-teaching-style.md`, "Checklist").
+
 ## Tests: parametrize over the variants — gacalc worked examples (2026-11-07)
 
 The shared standard's "Tests: parametrize over the variants, don't copy the test" applied here (record:

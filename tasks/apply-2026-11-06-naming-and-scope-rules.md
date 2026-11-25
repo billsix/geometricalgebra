@@ -1,6 +1,6 @@
 # Apply the 2026-11-06 naming and scope rules across geometricalgebra
 
-**Status:** proposed — needs go-ahead (open questions below)
+**Status:** approved 2026-11-25, to run when the maintainer is back; open questions answered (see Decisions)
 **Priority:** 5
 **Difficulty:** 6
 **Deferred** (William Emerison Six <billsix@gmail.com>, 2026-11-14): left out of the unattended batch run that day; the maintainer wants to be present to calibrate the triage. The open questions below are still open.
@@ -81,7 +81,7 @@ refactored or recorded as left alone with its reason, `make test` and `make form
    needs a sharper wording; feed that back to the shared standard (github.com/billsix/runClaudeInContainer,
    mirrored in github.com/billsix/runCrushInContainer).
 
-## Open questions
+## Open questions (answered 2026-11-25, see Decisions)
 
 1. **Survey first, or survey and apply?** (a) Run the discovery and triage, then stop and show you the
    worklog before any refactor, or (b) apply the clear cases straight away and bring you only the
@@ -99,3 +99,21 @@ refactored or recorded as left alone with its reason, `make test` and `make form
    there to show the student a step (`a_par: Vector = …` printed in the next cell). Include them, or
    exempt any binding a notebook displays or explains? Recommended: include them, but exempt a binding
    that a notebook cell displays or the page's prose names.
+
+## Decisions (William Emerison Six <billsix@gmail.com>, 2026-11-25)
+
+- **Question 1 (survey first, or survey and apply):** survey first, then use discretion and apply. Taken from the
+  maintainer's 2026-11-24 decision for the same question in the Programming3DComputerGraphics task, which matches
+  the recommendation here.
+- **Question 2 (a helper a test imports):** counts as having a second caller and stays at module level (the same
+  decision, same source and date; the mvp tool `nest_one_caller.py` also leaves a helper another file imports).
+- **Question 3 (the generator's emitted code):** apply the rules to the generator's own source only, as
+  recommended. Recorded in `tasks/reference/python-coding-standard-gacalc.md` ("Where the naming and scope rules
+  stop") and `tasks/reference/code-generator-architecture.md` ("How to change it").
+- **Question 4 (the book notebooks):** include them, but a binding a cell displays or the page's prose names keeps
+  its name, as recommended. Recorded in the same two docs and in the checklist of
+  `tasks/reference/book-notebook-teaching-style.md`; no comment is added in the notebooks, since a student's view
+  carries no developer comments.
+- **Mechanical nesting:** use the shared `nest_one_caller.py` (runClaudeInContainer `tasks/reference/`, mounted at
+  `~/.claude/reference/`) for rule 4; the finished Programming3DComputerGraphics task, archived under
+  `tasks/archive/2026/11/25/` there, is the worked example.

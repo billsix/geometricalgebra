@@ -224,6 +224,9 @@ Set by William Emerison Six <billsix@gmail.com> while revising
 - Products whose expansion is the point are shown with `show_mult`, with a lead-in: at the plot
   values first, then symbolic.
 - No developer comments, pyright trailers or typing workarounds in the student's view.
+- A binding that a cell displays, or that the page's prose names, keeps its name even if it is used once: the
+  naming and scope rules do not apply to it (`python-coding-standard-gacalc.md`, "Where the naming and scope
+  rules stop").
 - One subject per notebook; a short, labelled aside (like `displaymv.py`'s units-as-arrows) is
   fine.
 - Headings are questions or claims; plain names come before jargon; sentences may run across

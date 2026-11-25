@@ -30,8 +30,8 @@
 #
 # 1. The quarter turn of a vector is orthogonal to it.
 # 2. The rejection of $\vec{\mathbf{a}}$ from $\vec{\mathbf{b}}$ is orthogonal to
-#    $\vec{\mathbf{b}}$, so $\vec{\mathbf{a}}$ splits into two orthogonal parts, and their
-#    squared lengths add up (Pythagoras).
+#    $\vec{\mathbf{b}}$, so $\vec{\mathbf{a}}$ splits into two orthogonal parts, and
+#    their squared lengths add up (Pythagoras).
 # 3. Two orthogonal vectors form a frame, and the projections onto them put any vector
 #    back together.
 #

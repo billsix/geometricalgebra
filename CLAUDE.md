@@ -545,6 +545,8 @@ base group (`d478c9d`). The full gate → tool → install-group audit (and why 
 **absent** from the base image — a host concern for `check-format`'s `git diff`, while `lean`
 installs its own for `lake`) is `tasks/archive/2026/10/09/dockerfile-missing-ci-packages.md`.
 
+**`make check-format` ends with `git diff --exit-code`, which compares the working tree to the index.** Run nested on unstaged edits it passes every format step and still fails at that last line; stage the edits first (CI checks out committed files and is not affected). `format.sh` runs every step and then exits nonzero, so the log shows all the red at once, but the final diff never runs while any step is red. The prose-width checker (`tools/check_notebook_prose_width.py`) is one of those steps, since `ruff` skips the notebooks for `E501`. GitHub's job logs need a login; `https://api.github.com/repos/billsix/geometricalgebra/actions/runs` and its `/jobs` answer anonymously. Record: `tasks/fix-check-lean-arch-doc-names-format.md`.
+
 ## Performance
 
 Specialized classes are ~15–35× faster than `Gn` numerically and **thousands×** symbolically

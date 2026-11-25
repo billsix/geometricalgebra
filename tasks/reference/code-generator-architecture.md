@@ -485,3 +485,9 @@ builders iterate blades in canonical `blades_for_dim` order precisely to keep it
 (`inject_method_docstrings`) plus the grade-specialized `CUSTOM_METHOD_DOCS` table gives every
 generated method a docstring (specialized text + doctests for g1–g3, copied base docstrings
 otherwise). Its own reference: `tasks/reference/generated-docstrings.md`.
+
+**A style sweep covers the generator's source, not its output.** The shared naming and scope rules (inline a name
+used once, declare at use, nest a one-caller helper) apply to `tools/gen_specialized.py` and `tools/astbuild.py`.
+The emitted `g1`..`g5` stay as the generator writes them, because their locals are systematic common-subexpression
+temporaries and a change of shape shows up in `make check-generated` and the doc regions (William Emerison Six <billsix@gmail.com>, 2026-11-25;
+`python-coding-standard-gacalc.md`, "Where the naming and scope rules stop").
