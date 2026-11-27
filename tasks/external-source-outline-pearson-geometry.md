@@ -24,7 +24,8 @@ hand.
 - **The outline, 127 entries:** 12 chapters, their lessons, and the objects the reference doc
   already listed.
   - Chapter and lesson titles are the table of contents the maintainer typed from his own copy
-    (`fromPearsonbook.txt`, an untracked file in his checkout, left as it was), in his lower case,
+    (`fromPearsonbook.txt`, an untracked file in his checkout, which he had deleted once every
+    line of it was confirmed present in the outline), in his lower case,
     with five spellings corrected.
   - Four lessons that the reference doc cites and his table of contents lacks (1-6, 1-7, 1-8, 3-1)
     are entered with a note saying so.
