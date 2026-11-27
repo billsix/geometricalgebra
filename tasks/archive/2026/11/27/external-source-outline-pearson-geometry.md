@@ -1,6 +1,6 @@
 # The first external source outline: the Pearson geometry textbook
 
-**Status:** done 2026-11-27 — staged; the archive move is owed after the work commit
+**Status:** done 2026-11-27
 **Priority:** 4
 **Difficulty:** 3
 **Created:** 2026-11-27 (William Emerison Six <billsix@gmail.com>)
@@ -50,6 +50,20 @@ covered, 2 planned, 95 not addressed, no problem lines; `--cite
 pearson-geo/within-triangles/medians/median` printed the citation with lesson 5-4 and page 312
 marked unchecked. The book was not rebuilt: the tags are reStructuredText comments, which do not
 render.
+
+## Order of events (2026-11-27, from the commit history before it was squashed)
+
+1. The outline, the tags, the task citation and the doc changes were made in one piece, after the
+   convention and tool existed in runClaudeInContainer. Each tag was placed only after a search of
+   the page's text for the topic; that search is why four topics the old "Where" column credited
+   to a page were left untagged.
+2. The maintainer had the typed table of contents deleted, and asked for a second outline, of
+   Illustrative Mathematics' Geometry course: `tasks/external-source-outline-illustrative-mathematics-geometry.md`.
+   He chose its newest edition whatever the licence.
+3. Session-end sweep: `tasks/verify-textbook-lesson-pages.md`, a blocked task from 2026-11-21 about
+   the same page numbers, was pointed at the outline. A first attempt to cite the outline from it
+   on a `**Source:**` line with no entry ID was reported by the tool as a problem and removed.
+   `entrypoint/format.sh` was run in the existing image: every step passed and no file changed.
 
 ## Left for the maintainer
 

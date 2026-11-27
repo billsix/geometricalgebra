@@ -25,8 +25,7 @@ book pages that already cover a lesson tagged.
   each field came from);
 - `tasks/reference/high-school-geometry-objects.md`, the vector construction of each textbook
   object;
-- `tasks/archive/` → `external-source-outline-pearson-geometry.md` (in `tasks/` until archived),
-  the record of how the first outline was made.
+- `tasks/archive/2026/11/27/external-source-outline-pearson-geometry.md`, the record of how the first outline was made.
 
 **Why a second source.** The maintainer decided on 2026-11-27 that Illustrative Mathematics
 Geometry becomes a second source (decision 3 of github.com/billsix/runClaudeInContainer's task
