@@ -30,9 +30,14 @@ ARG USE_LEAN=0
 # never-changing `dnf upgrade` layer, so no edit or flag change elsewhere in this
 # file rebuilds it. The toolchain installed is the one proofs/lean-toolchain pins,
 # so `lake` never fetches a second one.
-COPY entrypoint/install-lean.sh /usr/local/bin/
+#
+# Each install script in this file is bind-mounted into the one RUN that executes it:
+# the script's content is part of that layer's cache key, and no copy of it stays in
+# the image. One mount per script, with no relabel option (github.com/billsix/runClaudeInContainer
+# tasks/reference/build-time-bind-mounts-for-install-scripts.md).
 COPY proofs/lean-toolchain /opt/gacalc-proofs/
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
+RUN --mount=type=bind,source=entrypoint/install-lean.sh,target=/usr/local/bin/install-lean.sh \
+    --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     if [ "$USE_LEAN" = "1" ]; then \
       LEAN_TOOLCHAIN="$(cat /opt/gacalc-proofs/lean-toolchain)" \
@@ -67,13 +72,11 @@ COPY entrypoint/dotfiles/ /root/
 # installed; spyder/docs are flag-gated. The dnf cache mount + keepcache stay in the
 # Dockerfile (build plumbing); `dnf upgrade` ran in the earlier layer above. Config that
 # writes container paths (spyder.ini, the venv pip installs) also stays in the Dockerfile.
-COPY entrypoint/01-install-base.sh \
-     entrypoint/02-install-spyder.sh \
-     entrypoint/03-install-notebook-tex.sh \
-     entrypoint/04-install-docs.sh \
-     entrypoint/05-install-emacs.sh /usr/local/bin/
 
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
+RUN --mount=type=bind,source=entrypoint/01-install-base.sh,target=/usr/local/bin/01-install-base.sh \
+    --mount=type=bind,source=entrypoint/05-install-emacs.sh,target=/usr/local/bin/05-install-emacs.sh \
+    --mount=type=bind,source=entrypoint/02-install-spyder.sh,target=/usr/local/bin/02-install-spyder.sh \
+    --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     /usr/local/bin/01-install-base.sh && \
     if [ "$USE_EMACS" = "1" ]; then /usr/local/bin/05-install-emacs.sh ; fi && \
@@ -119,7 +122,8 @@ ARG BUILD_DOCS=0
 # font/latex COLLECTIONS this installs, so the docs build needs it too. When both
 # flags are 0 (the lean nested image) no TeX is installed at all; `make test` needs
 # none of it.
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
+RUN --mount=type=bind,source=entrypoint/03-install-notebook-tex.sh,target=/usr/local/bin/03-install-notebook-tex.sh \
+    --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     if [ "$USE_JUPYTER" = "1" ] || [ "$BUILD_DOCS" = "1" ]; then \
       /usr/local/bin/03-install-notebook-tex.sh ; \
@@ -148,7 +152,8 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
 # book's .svg figures into PDF for the LaTeX build. It used to arrive as a
 # transitive dependency of python3-sphinx; now that sphinx is a venv (pip) package,
 # it must be requested explicitly.
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
+RUN --mount=type=bind,source=entrypoint/04-install-docs.sh,target=/usr/local/bin/04-install-docs.sh \
+    --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     if [ "$BUILD_DOCS" = "1" ]; then \
       /usr/local/bin/04-install-docs.sh ; \
@@ -171,8 +176,10 @@ ARG EPIX_COMMIT=5f7a8c29f86c26dcc9fc1670cc99b0b32878a399
 # checks in), install-epix-stubs.sh installs only epix's type stubs from the same commit,
 # so ty and pyright still check the code that draws with it. The fetch is the only
 # network use and happens at build time; the installed tools run offline.
-COPY entrypoint/06-install-epix.sh entrypoint/install-epix.sh entrypoint/install-epix-stubs.sh /usr/local/bin/
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
+RUN --mount=type=bind,source=entrypoint/06-install-epix.sh,target=/usr/local/bin/06-install-epix.sh \
+    --mount=type=bind,source=entrypoint/install-epix.sh,target=/usr/local/bin/install-epix.sh \
+    --mount=type=bind,source=entrypoint/install-epix-stubs.sh,target=/usr/local/bin/install-epix-stubs.sh \
+    --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     if [ "$USE_EPIX" = "1" ]; then \
       /usr/local/bin/06-install-epix.sh && \
@@ -183,8 +190,8 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
 
 # OpenGL system libraries for gacalc.gl; always installed (no flag), since `make test`
 # imports gacalc.gl. See entrypoint/07-install-gl.sh.
-COPY entrypoint/07-install-gl.sh /usr/local/bin/
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
+RUN --mount=type=bind,source=entrypoint/07-install-gl.sh,target=/usr/local/bin/07-install-gl.sh \
+    --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     /usr/local/bin/07-install-gl.sh
 
@@ -195,8 +202,9 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
 # fetches, builds and checks it. The fetch is the only network use, at build time.
 ARG USE_TEX_LABELS=0
 ARG TEXEXP_COMMIT=67da442daf12eff07d5d8e6d57258be01492e3d0
-COPY entrypoint/08-install-tex-labels.sh entrypoint/install-texexp.sh /usr/local/bin/
-RUN --mount=type=cache,target=/var/cache/libdnf5 \
+RUN --mount=type=bind,source=entrypoint/08-install-tex-labels.sh,target=/usr/local/bin/08-install-tex-labels.sh \
+    --mount=type=bind,source=entrypoint/install-texexp.sh,target=/usr/local/bin/install-texexp.sh \
+    --mount=type=cache,target=/var/cache/libdnf5 \
     --mount=type=cache,target=/var/lib/dnf \
     if [ "$USE_TEX_LABELS" = "1" ]; then \
       /usr/local/bin/08-install-tex-labels.sh && \
