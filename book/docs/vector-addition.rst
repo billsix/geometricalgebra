@@ -61,6 +61,9 @@ This is the first of many times this book will read a fact off a picture and the
 coordinates. The companion notebook runs the same check with the coordinates left as symbols, so
 it holds for every pair of vectors at once.
 
+..
+   covers: pearson-geo/transformations/translations
+
 Translate: adding the same vector to everything
 -----------------------------------------------
 

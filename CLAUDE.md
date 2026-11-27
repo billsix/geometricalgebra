@@ -14,6 +14,14 @@ contributor/architecture overview. Design rationale, deep mechanics, and history
 dated snapshot of every dimension (the docs, book, code, tests, proofs, build/CI, backlog
 and archive). Re-check a finding against the tree before acting on it.
 
+**External sources the book reads:** `tasks/sources/<key>.toml` holds the outline of each (today
+`pearson-geo`, a high-school geometry textbook). A book page or notebook that covers one of its
+entries carries a `covers: <key>/<entry id>` comment above the passage, written with the page;
+`/source-coverage` derives what is covered, planned and not addressed. Never record coverage by
+hand, and never commit the source's own wording. Rules: the external-source-outlines.md reference
+doc of github.com/billsix/runClaudeInContainer; the objects' vector constructions:
+`tasks/reference/high-school-geometry-objects.md`.
+
 ## Module layout
 
 The library is split one-concept-per-file so a newcomer can import just the algebra they need:

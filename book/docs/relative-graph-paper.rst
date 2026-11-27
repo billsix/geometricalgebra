@@ -31,6 +31,9 @@ sheet change. The translate :math:`T_b` of :doc:`vector-addition` slides the she
 origin lands on :math:`\vec{\mathbf{b}}`; a rotation :math:`R` from :doc:`rotate` turns it about the
 origin. A ruler works the same way: a length means nothing until you say what it is laid against.
 
+..
+   covers: pearson-geo/transformations/compositions
+
 Two ways to read a composition
 ------------------------------
 

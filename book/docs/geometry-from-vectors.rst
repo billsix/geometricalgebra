@@ -27,6 +27,9 @@ multiply a vector by a number. That is already enough to build the first chapter
 course. Each object keeps its name. The name now means a set of vectors, and the set is written
 down, so a computer can draw it and check facts about it.
 
+..
+   covers: pearson-geo/tools/points-lines-planes/point
+
 Points
 ------
 
@@ -41,6 +44,9 @@ arrow's:
    \vec{\mathbf{a}} = a_1 * \vec{\mathbf{e}}_1 + a_2 * \vec{\mathbf{e}}_2.
 
 From here on this page names a point by its vector, and says "the point :math:`\vec{\mathbf{a}}`".
+
+..
+   covers: pearson-geo/tools/points-lines-planes/segment
 
 Segments
 --------
@@ -67,6 +73,10 @@ gives a point between them, and the set of all of them is the segment.
 This is the slide of :doc:`vector-addition`, stopped part way:
 ``translate(b=b - a).at(t)`` slides :math:`\vec{\mathbf{a}}` the fraction :math:`t` of the way
 along :math:`\vec{\mathbf{b}} - \vec{\mathbf{a}}`.
+
+..
+   covers: pearson-geo/tools/segments/midpoint
+   covers: pearson-geo/tools/coordinate-plane/midpoint-formula
 
 The midpoint
 ^^^^^^^^^^^^
@@ -102,6 +112,11 @@ the same vector, so the two halves have the same length and point the same way. 
 state both facts as ``segmentMidpoint_eq_segment_half`` and ``segmentMidpoint_halves`` in
 ``proofs/GacalcProofs/GeometryObjects2D.lean``.
 
+..
+   covers: pearson-geo/tools/segments/length
+   covers: pearson-geo/tools/segments/congruent-segments
+   covers: pearson-geo/tools/coordinate-plane/distance-formula
+
 Length and distance
 ^^^^^^^^^^^^^^^^^^^
 
@@ -114,6 +129,12 @@ coordinates are the legs of a right triangle, so the Pythagorean theorem gives
    |\vec{\mathbf{b}} - \vec{\mathbf{a}}| = \sqrt{(b_1 - a_1)^2 + (b_2 - a_2)^2},
 
 the textbook's distance formula. Two segments are **congruent** when they have the same length.
+
+..
+   covers: pearson-geo/tools/points-lines-planes/ray
+   covers: pearson-geo/tools/points-lines-planes/opposite-rays
+   covers: pearson-geo/tools/points-lines-planes/line
+   covers: pearson-geo/tools/points-lines-planes/collinear
 
 Rays and lines
 --------------
@@ -137,6 +158,10 @@ The textbook leaves "line" undefined; here it is a formula. Three points are **c
 third is on the line through the first two, that is, when
 :math:`\vec{\mathbf{c}} = \vec{\mathbf{a}} + t * (\vec{\mathbf{b}} - \vec{\mathbf{a}})` for some
 number :math:`t`.
+
+..
+   covers: pearson-geo/quadrilaterals/angle-sums/polygon
+   covers: pearson-geo/tools/perimeter-area/perimeter
 
 Triangles and polygons
 ----------------------
@@ -170,6 +195,10 @@ began. Its **perimeter** is the sum of the side lengths; for a triangle,
    :align: center
    :alt: a triangle with its three side vectors chained tip to tail, and the midsegment joining the midpoints of two sides
 
+..
+   covers: pearson-geo/within-triangles/midsegments/midsegment
+   covers: pearson-geo/within-triangles/medians/median
+
 The midsegment
 ^^^^^^^^^^^^^^
 
@@ -193,6 +222,9 @@ as long. (Lean: ``midsegment_eq_half_side``.)
 
 The median from :math:`\vec{\mathbf{a}}` is the segment from :math:`\vec{\mathbf{a}}` to the
 midpoint :math:`\frac{1}{2} * (\vec{\mathbf{b}} + \vec{\mathbf{c}})` of the opposite side.
+
+..
+   covers: pearson-geo/quadrilaterals/parallelograms/parallelogram
 
 Parallelograms
 ^^^^^^^^^^^^^^

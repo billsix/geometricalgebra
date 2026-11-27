@@ -4,6 +4,7 @@
 **Priority:** 7
 **Difficulty:** 7
 **Started:** 2026-08-27 (William Emerison Six <billsix@gmail.com>)
+**Source:** tasks/sources/pearson-geo.toml tools/points-lines-planes/plane, tools/points-lines-planes/intersection
 **Updated:** 2026-10-04 (William Emerison Six <billsix@gmail.com>) — citations re-verified;
 line-number anchor replaced by section/row names.
 **Blocked on:** maintainer answers the Open questions below — chiefly full PGA/CGA substrate vs a

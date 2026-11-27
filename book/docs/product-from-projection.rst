@@ -115,6 +115,17 @@ the identity the rest of the book leans on. (In Lean it is ``mul_eq_dot_add_wedg
 ``proofs/GacalcProofs/G2.lean``.) The projection and the rejection were in the product all along;
 the product just keeps them together, one as a number and one as an area.
 
+..
+   covers: pearson-geo/tools/angles/angle
+   covers: pearson-geo/tools/angles/measure
+   covers: pearson-geo/tools/angles/kinds
+   covers: pearson-geo/parallel/perpendicular-lines/perpendicular
+   covers: pearson-geo/within-triangles/bisectors/perpendicular-bisector
+   covers: pearson-geo/parallel/lines-and-angles/parallel-lines
+   covers: pearson-geo/tools/perimeter-area/area
+   covers: pearson-geo/area/parallelograms-triangles
+   covers: pearson-geo/quadrilaterals/rhombuses-rectangles-squares
+
 Angle, area and perpendicular
 -----------------------------
 
